@@ -1425,8 +1425,10 @@ function runAutopilot(dt,st){
   const acc=Math.min(dm,.088*st.thr*dt);
   sh.vx+=dvx/dm*acc;sh.vy+=dvy/dm*acc;
   G.fuel=Math.max(0,G.fuel-(G.tech.has("navi")?.011:.022)*dt*(acc/(.088*st.thr*dt||1)));
-  const face=Math.atan2(dvy,dvx);
-  sh.a+=clamp(angDiff(face,sh.a),-.08,.08)*dt;
+  /* смотрим на саму цель, а не на вектор коррекции: у коррекции возле цели
+     направление скачет туда-сюда, и корабль начинал вертеться на месте */
+  const face=Math.atan2(dy,dx);
+  sh.a+=clamp(angDiff(face,sh.a),-.055,.055)*dt;
   G.prompt="АВТОПИЛОТ · "+Math.round(gap)+" ед · "+Math.hypot(rvx,rvy).toFixed(1);
   return true;
 }
@@ -1546,7 +1548,7 @@ function updateSystem(dt){
   sh.x+=sh.vx*dt;sh.y+=sh.vy*dt;
   /* крен считаем по фактической скорости поворота — работает и на автопилоте */
   const rate=angDiff(sh.a,a0)/Math.max(dt,.0001);
-  sh.bank+=(clamp(rate*17,-.95,.95)-sh.bank)*Math.min(1,.11*dt);
+  sh.bank+=(clamp(rate*13,-.8,.8)-sh.bank)*Math.min(1,.07*dt);
   trailStep(dt,G.fuel>0&&(keys.thrust||apOn),!apOn&&(keys.left||keys.right));
 
   const d0=Math.hypot(sh.x,sh.y)||1;
@@ -2084,7 +2086,9 @@ function enterSurface(){
     plants.push({x,y:groundAt(tr,x),h:22+r()*46,k:Math.floor(r()*3),
       name:genName(r)+" "+pick(["простой","ветвистый","стелющийся","хрупкий","светящийся"],r),scanned:false});
   }
-  G.surf={p,tr,shipX:L.x,shipY:L.y,x:L.x+30,y:groundAt(tr,L.x+30)-10,
+  /* высаживаемся за пределами зоны взлёта (48), иначе первое же ДЕЙСТВ
+     отправляет обратно на орбиту вместо бурения */
+  G.surf={p,tr,shipX:L.x,shipY:L.y,x:L.x+72,y:groundAt(tr,L.x+72)-10,
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,mining:null,
     suit:100,warned:false,beacon:0};
   G.mode="surface";
@@ -2230,7 +2234,8 @@ function digCell(D,col,row){
   const r=rng(hashi(D.p.seed+col*7919,row*104729,0x5EED));
   const pool=PROFILE[D.p.type].concat(T.extra);
   let res=null,amount=0;
-  if(pool.length&&r()<.16+ti*.06){
+  /* с глубиной жилы и чаще, и жирнее — иначе шахта проигрывает поверхности */
+  if(pool.length&&r()<.22+ti*.10){
     res=pool[Math.floor(r()*pool.length)];
     amount=(1+Math.floor(r()*3))*T.mult;
   }
@@ -2322,7 +2327,7 @@ function updateDig(dt){
   }
   if(held()>=st.cargoMax&&cell.res){G.prompt=head+"\nТРЮМ ПОЛОН";D.target=null;return;}
   D.target=cell;
-  cell.prog+=.022*st.drill*dt;
+  cell.prog+=.055*st.drill*dt;
   G.prompt=head+"\nПРОХОДКА "+Math.round(clamp(cell.prog/cell.hard,0,1)*100)+"%"+
     (cell.res?" · ЖИЛА: "+RES[cell.res].ru.toUpperCase():"");
   if(cell.prog>=cell.hard){
