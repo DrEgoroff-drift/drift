@@ -28,6 +28,14 @@
 **Danger (optional)**
 - **Pirates** — absent near home, increasingly common the further out you push. Fighting is a bonus activity with its own gun module and bounty tech; outrunning or jumping away is always cheap and always valid.
 
+**Keeping track**
+- **Ship's log** — a collapsible panel that records what actually happened: kills, drone deliveries, sales, purchases, research, discoveries, jumps, cave-ins and wrecks. It persists with your save, so you can come back after a week and read what you were doing.
+
+**Looking at it**
+- Every hull is generated from its seed — a multi-station fuselage profile, swept wings, engine nacelles, canopy, panel lines, hull greebles, livery and blinking navigation lights. Pirates get their own hulls the same way, so no two raiders look alike.
+- Layered engine flames, an exhaust trail that hangs in space where you burned, and thruster puffs when you turn by hand.
+- Faceted rotating rocks in asteroid rings, ringed gas giants, a generated nebula, coloured twinkling starfields.
+
 **Persistence**
 - Local autosave, portable base64 save codes for moving between devices, and optional cloud sync against your own server.
 
