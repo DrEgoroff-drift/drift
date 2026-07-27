@@ -299,10 +299,33 @@ const SHIPS={
   mamont:{ru:"Мамонт",cls:"тяжёлый рудовоз",  seed:8849, thr:.7,  turn:.62, fuel:230,cargo:290,hull:220,price:24000,col:"#c58ae0",note:"Летающий склад с бронёй. Разворачивается как луна."}
 };
 const SHIP_KEYS=Object.keys(SHIPS);
+function shipData(id){return SHIPS[id]||G.uniqueShips[id];}
+const UNIQUE_COLS=["#7fe6d8","#9fd8ff","#f2b25c","#8fd08a","#ff9d7a","#c9c9d4","#e0d28a","#c58ae0","#ff6b6b","#6bffb8"];
+const UNIQUE_TAG=["уникальный корпус","экспериментальный корпус","одиночная сборка","опытный образец","штучная работа"];
+function genUniqueShip(seed){
+  const r=rng(seed);
+  const thr=+(0.75+r()*0.85).toFixed(2);
+  const turn=+(0.7+r()*0.85).toFixed(2);
+  const fuel=Math.round(90+r()*160);
+  const cargo=Math.round(30+r()*270);
+  const hull=Math.round(80+r()*180);
+  const power=(thr+turn)*.5+fuel/250+cargo/300+hull/260;
+  const price=Math.round(clamp(power*7200-6000,4000,30000)/50)*50;
+  return {ru:genName(r),cls:pick(UNIQUE_TAG,r),seed,thr,turn,fuel,cargo,hull,price,
+    col:pick(UNIQUE_COLS,r),note:"Единственный экземпляр. Больше такого не будет — предложение сменится.",unique:true};
+}
+function timeBucket(){return Math.floor(Date.now()/172800000);}
+function stationUniqueOffer(sys){
+  if(!sys.station)return null;
+  const r=rng(hashi(sys.seed,999,timeBucket()));
+  const chance=.35+sysDanger(sys.sx,sys.sy)*.35;
+  if(r()>chance)return null;
+  return genUniqueShip(hashi(sys.seed,4242,timeBucket()));
+}
 const HULL_CACHE={};
 function hullOf(id){
   if(HULL_CACHE[id])return HULL_CACHE[id];
-  const S=SHIPS[id],r=rng(S.seed);
+  const S=shipData(id),r=rng(S.seed);
   const nose=11+r()*10, bw=4.5+r()*5.5, mid=r()*.5+.25;
   const tail=-(7+r()*7), tw=bw*(.45+r()*.5);
   const half=[[nose,0],[nose*(.55+mid*.2),-bw*.5],[nose*mid,-bw],[0,-bw*(.85+r()*.3)],
@@ -320,7 +343,7 @@ function hullOf(id){
   HULL_CACHE[id]=h;return h;
 }
 function drawHull(id,thrusting,braking,lvl){
-  const S=SHIPS[id],h=hullOf(id);
+  const S=shipData(id),h=hullOf(id);
   if(thrusting){
     const f=8+Math.random()*11+lvl*2.6;
     const g=ctx.createLinearGradient(h.tail,0,h.tail-f,0);
@@ -514,13 +537,13 @@ const G={
   land:null,surf:null,st:null,belt:null,
   opts:{easyLand:true,autoDock:true,invX:false,invY:false,invYaw:false,lookSens:1},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
-  market:{}
+  market:{},uniqueShips:{}
 };
 for(const k of RES_KEYS)G.cargo[k]=0;
 G.sys=getSystem(0,0);
 
 function stat(){
-  const S=SHIPS[G.shipId],m=G.mods,T=G.tech,B=G.barter;
+  const S=shipData(G.shipId),m=G.mods,T=G.tech,B=G.barter;
   const drillBonus=G.shipId==="obod"?1.6:1;
   return {
     S,
@@ -584,12 +607,13 @@ function snapshot(){
     x:G.ship.x,y:G.ship.y,a:G.ship.a,fuel:G.fuel,hull:G.hull,
     cargo:G.cargo,credits:G.credits,data:G.data,mods:G.mods,
     tech:[...G.tech],barter:[...G.barter],found:[...G.found],species:[...G.species],
-    opts:G.opts,zoom:G.zoom,market:G.market,ts:Date.now()};
+    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
-  G.shipId=SHIPS[s.shipId]?s.shipId:"strizh";
+  G.uniqueShips=(s.uniqueShips&&typeof s.uniqueShips==="object")?s.uniqueShips:{};
+  G.shipId=shipData(s.shipId)?s.shipId:"strizh";
   G.owned=Object.assign({strizh:true},s.owned||{});
   for(const k in G.mods)G.mods[k]=clamp((s.mods&&s.mods[k])|0,0,4);
   G.tech=new Set(Array.isArray(s.tech)?s.tech.filter(k=>TECH[k]):[]);
@@ -1244,7 +1268,7 @@ function drawLanding(){
   ctx.restore();
 }
 function drawLander(broken,fire){
-  const col=broken?"#ff6b57":SHIPS[G.shipId].col;
+  const col=broken?"#ff6b57":shipData(G.shipId).col;
   if(fire){
     const f=8+Math.random()*12,g=ctx.createLinearGradient(0,10,0,10+f);
     g.addColorStop(0,"rgba(242,178,92,.95)");g.addColorStop(1,"rgba(255,80,50,0)");
@@ -1758,7 +1782,7 @@ function drawGlassHUD(b,proj,fwd,st){
 }
 /* ── остекление и приборная панель ── */
 function drawCockpit(b,st){
-  const S=SHIPS[G.shipId], hl=hullOf(G.shipId), acc=S.col;
+  const S=shipData(G.shipId), hl=hullOf(G.shipId), acc=S.col;
   const dashH=clamp(H*.26,116,214), dashY=H-dashH;
   const pw=clamp(W*.055+hl.bw*2.4,34,120);
   const brow=clamp(H*.10+hl.nose*.7,44,132);
@@ -1966,6 +1990,31 @@ function shipThumb(id,w,h){
   ctx=old;
   return cn;
 }
+function shipRow(id,S){
+  const mine=G.shipId===id,own=!!G.owned[id];
+  const r=el("div","row");
+  r.appendChild(shipThumb(id,52,42));
+  r.appendChild(el("div","nm","<b style='color:"+S.col+"'>«"+S.ru+"» <span style='color:var(--dim)'>"+
+    S.cls+"</span></b><s>"+S.note+"<br>тяга "+S.thr.toFixed(2)+" · поворот "+S.turn.toFixed(2)+
+    " · трюм "+S.cargo+" · бак "+S.fuel+" · корпус "+S.hull+"</s>"));
+  if(mine)r.appendChild(el("div","qt","В РЕЙСЕ"));
+  else{
+    const b=el("button","act"+(own?"":" gold"),own?"ПЕРЕСЕСТЬ":S.price.toLocaleString("ru")+" кр");
+    b.disabled=!own&&G.credits<S.price;
+    b.onclick=()=>{
+      if(!own){G.credits-=S.price;G.owned[id]=true;}
+      G.shipId=id;
+      const ns=stat();
+      G.fuel=Math.min(G.fuel,ns.fuelMax);G.hull=Math.min(G.hull,ns.hullMax);
+      let over=held()-ns.cargoMax;
+      for(const k of RES_KEYS){if(over<=0)break;
+        const t=Math.min(over,G.cargo[k]);G.cargo[k]-=t;over-=t;}
+      say("Приняли «"+S.ru+"»");renderTab();
+    };
+    r.appendChild(b);
+  }
+  return r;
+}
 function renderTab(){
   const st=stat();
   document.getElementById("wCr").textContent=G.credits.toLocaleString("ru")+" кр";
@@ -2008,30 +2057,13 @@ function renderTab(){
   }
   else if(tab==="yard"){
     $body.appendChild(el("div","sec","КОРПУСА В ДОКЕ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
-    for(const id of SHIP_KEYS){
-      const S=SHIPS[id],mine=G.shipId===id,own=!!G.owned[id];
-      const r=el("div","row");
-      r.appendChild(shipThumb(id,52,42));
-      r.appendChild(el("div","nm","<b style='color:"+S.col+"'>«"+S.ru+"» <span style='color:var(--dim)'>"+
-        S.cls+"</span></b><s>"+S.note+"<br>тяга "+S.thr.toFixed(2)+" · поворот "+S.turn.toFixed(2)+
-        " · трюм "+S.cargo+" · бак "+S.fuel+" · корпус "+S.hull+"</s>"));
-      if(mine)r.appendChild(el("div","qt","В РЕЙСЕ"));
-      else{
-        const b=el("button","act"+(own?"":" gold"),own?"ПЕРЕСЕСТЬ":S.price.toLocaleString("ru")+" кр");
-        b.disabled=!own&&G.credits<S.price;
-        b.onclick=()=>{
-          if(!own){G.credits-=S.price;G.owned[id]=true;}
-          G.shipId=id;
-          const ns=stat();
-          G.fuel=Math.min(G.fuel,ns.fuelMax);G.hull=Math.min(G.hull,ns.hullMax);
-          let over=held()-ns.cargoMax;
-          for(const k of RES_KEYS){if(over<=0)break;
-            const t=Math.min(over,G.cargo[k]);G.cargo[k]-=t;over-=t;}
-          say("Приняли «"+S.ru+"»");renderTab();
-        };
-        r.appendChild(b);
-      }
-      $body.appendChild(r);
+    for(const id of SHIP_KEYS)$body.appendChild(shipRow(id,SHIPS[id]));
+    const offer=stationUniqueOffer(G.sys);
+    if(offer){
+      const uid="u"+offer.seed;
+      G.uniqueShips[uid]=offer;
+      $body.appendChild(el("div","sec","НАЙДЕНО ЗДЕСЬ · ЕДИНСТВЕННЫЙ ЭКЗЕМПЛЯР · ПРЕДЛОЖЕНИЕ СМЕНИТСЯ"));
+      $body.appendChild(shipRow(uid,offer));
     }
   }
   else if(tab==="mods"){
