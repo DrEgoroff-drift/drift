@@ -216,6 +216,33 @@ const ROMAN=["I","II","III","IV","V","VI","VII","VIII","IX","X"];
 function genName(r){let s=pick(S1,r);if(r()<.55)s+=pick(S1,r);s+=pick(S2,r);
   return s[0].toUpperCase()+s.slice(1);}
 
+/* ══════════════ удалённость и настрой сектора ══════════════ */
+function sysDanger(sx,sy){return clamp(Math.hypot(sx,sy)/40,0,1);}
+function sysJitter(gx,gy){
+  const jr=rng(hashi(gx,gy,55551));
+  const a=jr()*TAU,rad=jr()*.42;
+  return [Math.cos(a)*rad,Math.sin(a)*rad];
+}
+const DESC_MOOD=[
+  {w:["тихий","забытый","сонный"],ok:s=>!s.station&&!s.belt},
+  {w:["оживлённый","обжитой","многообещающий"],ok:s=>!!(s.station&&s.belt)},
+  {w:["пограничный","неспокойный","дикий"],ok:s=>sysDanger(s.sx,s.sy)>.55},
+  {w:["разведанный","картографированный"],ok:s=>!!s.station&&sysDanger(s.sx,s.sy)<=.55}
+];
+const DESC_TAIL=["сектор","рубеж","участок","угол галактики","карман пространства","закоулок"];
+function genDesc(r,sys){
+  const cands=DESC_MOOD.filter(m=>m.ok(sys));
+  const pool=cands.length?cands:DESC_MOOD;
+  const mood=pick(pick(pool,r).w,r);
+  const tail=pick(DESC_TAIL,r);
+  const bits=[mood[0].toUpperCase()+mood.slice(1)+" "+tail];
+  const kinds=sys.planets.map(p=>p.T.ru).filter((v,i,a)=>a.indexOf(v)===i);
+  if(kinds.length)bits.push(kinds.length+" тип"+(kinds.length===1?"":(kinds.length<5?"а":"ов"))+" миров: "+kinds.join(", "));
+  if(sys.belt)bits.push("пояс богат "+sys.belt.res.map(k=>RES[k].ru.toLowerCase()).join(", "));
+  if(sys.station)bits.push(sys.station.kind.toLowerCase());
+  return bits.join(" · ");
+}
+
 /* ══════════════ ресурсы ══════════════ */
 const RES={
   ice:      {ru:"Лёд",       col:"#a8d8ea",price:7},
@@ -389,6 +416,7 @@ function getSystem(sx,sy){
       orbit:sys.radius+240+r()*280,ang:r()*TAU,spd:.00055,prices,
       fuelPrice:5+Math.round(r()*7),x:0,y:0,vx:0,vy:0};
   }
+  sys.desc=genDesc(r,sys);
   SYS_CACHE.set(key,sys);
   return sys;
 }
@@ -646,9 +674,16 @@ cvs.addEventListener("pointercancel",e=>ptr.delete(e.pointerId));
 
 function tap(sxp,syp){
   if(G.mode==="map"){
-    const cell=Math.min(W,H)/9.2;
-    const gx=Math.round((sxp-W/2)/cell)+G.sx,gy=Math.round((syp-H/2)/cell)+G.sy;
-    if(starAt(gx,gy)){G.sel.x=gx;G.sel.y=gy;}
+    const cell=Math.min(W,H)/9.2,R=5;
+    let best=null,bd=1e9;
+    for(let gy=G.sy-R;gy<=G.sy+R;gy++)for(let gx=G.sx-R;gx<=G.sx+R;gx++){
+      if(!starAt(gx,gy))continue;
+      const[jx,jy]=sysJitter(gx,gy);
+      const x=W/2+(gx-G.sx+jx)*cell,y=H/2+(gy-G.sy+jy)*cell;
+      const d=Math.hypot(sxp-x,syp-y);
+      if(d<bd){bd=d;best={gx,gy};}
+    }
+    if(best&&bd<cell*.6){G.sel.x=best.gx;G.sel.y=best.gy;}
     return;
   }
   if(G.mode!=="system")return;
@@ -968,21 +1003,43 @@ function drawStation(x,y,Z){
 }
 
 /* ══════════════ карта ══════════════ */
+function wrapCenter(text,x,y,maxW,lh){
+  const words=text.split(" ");let line="",ly=y;
+  for(const w of words){
+    const t=line?line+" "+w:w;
+    if(ctx.measureText(t).width>maxW&&line){ctx.fillText(line,x,ly);line=w;ly+=lh;}
+    else line=t;
+  }
+  if(line)ctx.fillText(line,x,ly);
+}
 function drawMap(){
   const st=stat();
   ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);drawStars(0,0,0);
   const cell=Math.min(W,H)/9.2,R=5;
-  ctx.strokeStyle="rgba(120,190,210,.07)";ctx.lineWidth=1;
-  for(let i=-R;i<=R;i++){
-    ctx.beginPath();ctx.moveTo(W/2+i*cell,0);ctx.lineTo(W/2+i*cell,H);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(0,H/2+i*cell);ctx.lineTo(W,H/2+i*cell);ctx.stroke();
-  }
   ctx.strokeStyle="rgba(127,230,216,.16)";
   ctx.beginPath();ctx.arc(W/2,H/2,(st.jump+.02)*cell,0,TAU);ctx.stroke();
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
+  const vis=[];
   for(let gy=G.sy-R;gy<=G.sy+R;gy++)for(let gx=G.sx-R;gx<=G.sx+R;gx++){
     if(!starAt(gx,gy))continue;
-    const s=getSystem(gx,gy),x=W/2+(gx-G.sx)*cell,y=H/2+(gy-G.sy)*cell,rr=3+s.cls.t*2.4;
+    const [jx,jy]=sysJitter(gx,gy);
+    vis.push({gx,gy,s:getSystem(gx,gy),x:W/2+(gx-G.sx+jx)*cell,y:H/2+(gy-G.sy+jy)*cell});
+  }
+  /* разветвлённые линии к ближайшим соседям вместо квадратной решётки */
+  ctx.strokeStyle="rgba(120,190,210,.14)";ctx.lineWidth=1;
+  const drawnLane=new Set();
+  for(const a of vis){
+    const near=vis.filter(b=>b!==a).map(b=>({b,d:Math.hypot(a.x-b.x,a.y-b.y)}))
+      .sort((p,q)=>p.d-q.d).slice(0,2);
+    for(const{b}of near){
+      const key=(a.gx*100000+a.gy)<(b.gx*100000+b.gy)?a.gx+","+a.gy+">"+b.gx+","+b.gy:b.gx+","+b.gy+">"+a.gx+","+a.gy;
+      if(drawnLane.has(key))continue;drawnLane.add(key);
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    }
+  }
+  let sel=null;
+  for(const v of vis){
+    const{gx,gy,s,x,y}=v,rr=3+s.cls.t*2.4;
     ctx.fillStyle=s.cls.col;ctx.globalAlpha=.9;
     ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.fill();ctx.globalAlpha=1;
     if(s.station){ctx.strokeStyle="rgba(242,178,92,.6)";ctx.lineWidth=1;
@@ -991,14 +1048,18 @@ function drawMap(){
       ctx.beginPath();ctx.arc(x,y,rr+9,0,TAU);ctx.stroke();}
     if(gx===G.sx&&gy===G.sy){ctx.strokeStyle="#7fe6d8";ctx.lineWidth=1.2;
       ctx.beginPath();ctx.arc(x,y,rr+13,0,TAU);ctx.stroke();}
-    if(gx===G.sel.x&&gy===G.sel.y){
-      ctx.strokeStyle="#f2b25c";ctx.lineWidth=1.4;
-      ctx.strokeRect(x-rr-15,y-rr-15,(rr+15)*2,(rr+15)*2);
-      ctx.fillStyle="#f2b25c";ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText(s.name.toUpperCase(),x,y+rr+28);
-      ctx.fillStyle="rgba(127,230,216,.6)";
-      ctx.fillText(s.cls.ru+" · "+s.planets.length+" планет"+(s.station?" · СТАНЦИЯ":"")+(s.belt?" · ПОЯС":""),x,y+rr+42);
-    }
+    if(gx===G.sel.x&&gy===G.sel.y)sel=v;
+  }
+  if(sel){
+    const{s,x,y}=sel,rr=3+s.cls.t*2.4;
+    ctx.strokeStyle="#f2b25c";ctx.lineWidth=1.4;
+    ctx.strokeRect(x-rr-15,y-rr-15,(rr+15)*2,(rr+15)*2);
+    ctx.fillStyle="#f2b25c";ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText(s.name.toUpperCase(),x,y+rr+28);
+    ctx.fillStyle="rgba(127,230,216,.6)";
+    ctx.fillText(s.cls.ru+" · "+s.planets.length+" планет"+(s.station?" · СТАНЦИЯ":"")+(s.belt?" · ПОЯС":""),x,y+rr+42);
+    ctx.fillStyle="rgba(160,182,192,.65)";ctx.font="9px ui-monospace,monospace";
+    wrapCenter(s.desc,x,y+rr+58,230,11);
   }
   const cost=Math.round(9+dsel*13);
   ctx.textAlign="left";ctx.font="10px ui-monospace,monospace";
