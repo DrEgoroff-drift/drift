@@ -132,6 +132,7 @@
   <button id="optbtn">⚙</button>
   <button id="zin">+</button>
   <button id="zout">−</button>
+  <button id="dronebtn" style="display:none">ДРОН</button>
 </div>
 
 <div class="pads">
@@ -395,6 +396,9 @@ const TECH={
   dock:{ru:"Автодок",note:"корпус медленно чинится сам",cost:80},
   navi:{ru:"Навигационный ИИ",note:"автопилот тратит вдвое меньше топлива",cost:55}
 };
+const DRONES={
+  miner:{ru:"Дрон-старатель",note:"работает на месте без вас, копит руду и сам продаёт её на ближайшей станции",price:2200,ratePerMin:.6,capacity:260}
+};
 const BARTER={
   crystplate:{ru:"Кристаллическая обшивка",note:"+40 к максимуму корпуса",cost:{crystal:35,iridium:15}},
   isosynth:{ru:"Изотопный стабилизатор",note:"вдвое эффективнее топливный синтез льда",cost:{isotopes:50}},
@@ -537,7 +541,7 @@ const G={
   land:null,surf:null,st:null,belt:null,
   opts:{easyLand:true,autoDock:true,invX:false,invY:false,invYaw:false,lookSens:1},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
-  market:{},uniqueShips:{}
+  market:{},uniqueShips:{},drones:[],droneInventory:0
 };
 for(const k of RES_KEYS)G.cargo[k]=0;
 G.sys=getSystem(0,0);
@@ -589,6 +593,54 @@ function sellCargo(sys,k,qty){
   m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
   return revenue;
 }
+function sellDroneYield(sys,k,qty){
+  const price=marketFor(sys)[k],revenue=qty*price;
+  const m=G.market[sys.key];
+  m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
+  return revenue;
+}
+
+/* ══════════════ дроны ══════════════ */
+function nearestStation(sx,sy){
+  for(let rad=0;rad<=24;rad++){
+    let best=null,bd=1e9;
+    for(let dx=-rad;dx<=rad;dx++)for(let dy=-rad;dy<=rad;dy++){
+      if(Math.max(Math.abs(dx),Math.abs(dy))!==rad)continue;
+      const gx=sx+dx,gy=sy+dy;
+      if(!starAt(gx,gy))continue;
+      const s=getSystem(gx,gy);
+      if(!s.station)continue;
+      const d=Math.hypot(dx,dy);
+      if(d<bd){bd=d;best=s;}
+    }
+    if(best)return best;
+  }
+  return getSystem(0,0);
+}
+let droneTarget=null;
+function deployDrone(){
+  if(G.droneInventory<=0||!droneTarget)return;
+  G.droneInventory--;
+  G.drones.push({sx:G.sx,sy:G.sy,res:droneTarget,rate:DRONES.miner.ratePerMin,
+    pool:DRONES.miner.capacity,soldAtMs:Date.now()});
+  say("Дрон размещён\nработает на "+RES[droneTarget].ru);
+  document.getElementById("dronebtn").style.display="none";
+}
+function tickDrones(){
+  const now=Date.now(),cap=24*3600*1000;
+  for(let i=G.drones.length-1;i>=0;i--){
+    const d=G.drones[i];
+    const elapsedMs=Math.min(Math.max(0,now-d.soldAtMs),cap);
+    const yieldN=Math.floor(Math.min(d.pool,d.rate*elapsedMs/60000));
+    if(yieldN>0){
+      const home=nearestStation(d.sx,d.sy);
+      const rev=sellDroneYield(home,d.res,yieldN);
+      G.credits+=rev;d.pool-=yieldN;d.soldAtMs=now;
+      say("Дрон продал "+yieldN+" "+RES[d.res].ru.toLowerCase()+" на «"+home.name+"»\n+"+rev.toLocaleString("ru")+" кр");
+    }
+    if(d.pool<=0){G.drones.splice(i,1);G.droneInventory++;}
+  }
+}
 
 /* ══════════════ сохранение ══════════════ */
 /* Облако включается заполнением этих полей. Пусто — работает только локально. */
@@ -607,7 +659,8 @@ function snapshot(){
     x:G.ship.x,y:G.ship.y,a:G.ship.a,fuel:G.fuel,hull:G.hull,
     cargo:G.cargo,credits:G.credits,data:G.data,mods:G.mods,
     tech:[...G.tech],barter:[...G.barter],found:[...G.found],species:[...G.species],
-    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,ts:Date.now()};
+    opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
+    drones:G.drones,droneInventory:G.droneInventory,ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
@@ -622,6 +675,8 @@ function applySave(s){
   Object.assign(G.opts,s.opts||{});
   G.zoom=clamp(s.zoom||1,.16,2.4);
   G.market=(s.market&&typeof s.market==="object")?s.market:{};
+  G.drones=Array.isArray(s.drones)?s.drones:[];
+  G.droneInventory=Math.max(0,s.droneInventory|0);
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
   for(const k of RES_KEYS)G.cargo[k]=Math.max(0,(s.cargo&&s.cargo[k])|0);
   const st=stat();
@@ -697,6 +752,7 @@ function navAction(){
 }
 document.getElementById("zin").addEventListener("click",()=>setZoom(G.zoom*1.35));
 document.getElementById("zout").addEventListener("click",()=>setZoom(G.zoom/1.35));
+document.getElementById("dronebtn").addEventListener("click",deployDrone);
 function setZoom(z){G.zoom=clamp(z,.16,2.4);}
 addEventListener("wheel",e=>{if(G.mode==="system")setZoom(G.zoom*(e.deltaY<0?1.12:.89));},{passive:true});
 
@@ -863,6 +919,7 @@ function arrive(){
 /* ══════════════ режим: система ══════════════ */
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
+  document.getElementById("dronebtn").style.display="none";
   for(const p of sys.planets){
     p.ang+=p.spd*dt*16;
     p.x=Math.cos(p.ang)*p.orbit;p.y=Math.sin(p.ang)*p.orbit;
@@ -1178,6 +1235,7 @@ function autoLandInputs(L,st){
 }
 function updateLanding(dt){
   const L=G.land,tr=L.tr,st=stat();
+  document.getElementById("dronebtn").style.display="none";
   if(L.over>0){
     L.over-=dt;
     if(L.over<=0){
@@ -1323,6 +1381,9 @@ function updateSurface(dt){
   let plant=null;
   for(const pl of S.plants)if(!pl.scanned&&Math.abs(pl.x-S.x)<30)plant=pl;
   S.mining=null;
+  const dbtn=document.getElementById("dronebtn");
+  if(dep&&G.droneInventory>0){droneTarget=dep.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[dep.res].ru.toUpperCase();}
+  else{droneTarget=null;dbtn.style.display="none";}
   if(dShip<48){
     G.prompt="ДЕЙСТВ — ВЗЛЁТ · ТРЮМ "+held()+"/"+st.cargoMax;
     if(actEdge)launch();
@@ -1582,6 +1643,9 @@ function updateBelt(dt){
   }
   if(best!==b.lock)b.prog=0;
   b.lock=best;b.beam=0;
+  const dbtn=document.getElementById("dronebtn");
+  if(best&&G.droneInventory>0){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
+  else{droneTarget=null;dbtn.style.display="none";}
   if(best&&keys.act){
     if(held()>=st.cargoMax)G.prompt="ТРЮМ ПОЛОН";
     else{
@@ -2065,6 +2129,22 @@ function renderTab(){
       $body.appendChild(el("div","sec","НАЙДЕНО ЗДЕСЬ · ЕДИНСТВЕННЫЙ ЭКЗЕМПЛЯР · ПРЕДЛОЖЕНИЕ СМЕНИТСЯ"));
       $body.appendChild(shipRow(uid,offer));
     }
+    const dr=DRONES.miner;
+    $body.appendChild(el("div","sec","ДРОНЫ · РАЗМЕЩАЮТСЯ НА ЗАЛЕЖИ ИЛИ АСТЕРОИДЕ · САМИ ВОЗЯТ И ПРОДАЮТ РУДУ"));
+    const rd=el("div","row");
+    rd.appendChild(el("div","nm","<b>"+dr.ru+"</b><s>"+dr.note+
+      "<br>в запасе: "+G.droneInventory+" · развёрнуто: "+G.drones.length+"</s>"));
+    const bd=el("button","act gold",dr.price.toLocaleString("ru")+" кр");
+    bd.disabled=G.credits<dr.price;
+    bd.onclick=()=>{G.credits-=dr.price;G.droneInventory++;say("Дрон куплен\nв запасе: "+G.droneInventory);renderTab();};
+    rd.appendChild(bd);$body.appendChild(rd);
+    for(const d of G.drones){
+      const home=nearestStation(d.sx,d.sy);
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b style='color:"+RES[d.res].col+"'>"+RES[d.res].ru+"</b><s>сектор "+d.sx+":"+d.sy+
+        " · везёт на «"+home.name+"» · осталось "+d.pool+"</s>"));
+      $body.appendChild(r);
+    }
   }
   else if(tab==="mods"){
     $body.appendChild(el("div","sec","МОДУЛИ — ДО 4 УРОВНЕЙ · ДЕЙСТВУЮТ НА ЛЮБОМ КОРПУСЕ"));
@@ -2264,6 +2344,7 @@ function hud(){
   else if(G.mode==="belt"){a=(G.belt?G.belt.B.name:"ПОЯС").toUpperCase();
     b="трюм "+held()+"/"+st.cargoMax;}
   else if(G.mode==="dock"){a=G.st.name.toUpperCase();b=G.st.kind;}
+  if(G.drones.length>0)b+=" · дронов работает: "+G.drones.length;
   $place.textContent=a;$sub.textContent=b;
   $msg.textContent=G.msgT>0?G.msg:"";
   $msg.style.opacity=G.msgT>0?clamp(G.msgT/40,0,1):0;
@@ -2276,11 +2357,13 @@ function hud(){
 
 /* ══════════════ цикл ══════════════ */
 let last=performance.now();
+let lastDroneTick=0;
 function frame(now){
   const dt=clamp((now-last)/16.667,0,3);last=now;
   actEdge=keys.act&&!prevAct;prevAct=keys.act;
   if(G.running){
     G.t+=dt;
+    if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();}
     if(G.msgT>0)G.msgT-=dt;
     if(G.mode==="system")autosave();
     if(G.mode==="system"||G.mode==="dock")updateSystem(dt);
