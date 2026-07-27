@@ -53,6 +53,8 @@
   .pads button[data-k=thrust]{width:66px;height:66px;border-color:rgba(242,178,92,.4);color:var(--amber);font-size:16px}
   .pads button[data-k=act]{border-color:rgba(242,178,92,.4);color:var(--amber);font-size:9px}
   .pads button[data-k=brake]{font-size:9px}
+  .pads button[data-k=fire]{font-size:9px;border-color:rgba(255,107,87,.55);color:var(--alarm)}
+  .pads button[data-k=fire].on{background:rgba(255,107,87,.26)}
 
   .side{position:fixed;right:10px;top:calc(env(safe-area-inset-top) + 62px);
     display:flex;flex-direction:column;gap:6px;align-items:flex-end;z-index:5}
@@ -137,7 +139,7 @@
 
 <div class="pads">
   <div><button data-k="left">◀</button><button data-k="right">▶</button></div>
-  <div><button data-k="brake">ТОРМ</button><button data-k="act">ДЕЙСТВ</button><button data-k="thrust">▲</button></div>
+  <div><button data-k="fire" id="firebtn" style="display:none">ОГОНЬ</button><button data-k="brake">ТОРМ</button><button data-k="act">ДЕЙСТВ</button><button data-k="thrust">▲</button></div>
 </div>
 
 <div class="scr" id="station">
@@ -176,6 +178,7 @@
     <tr><td>ТОРМ</td><td>гасит скорость до нуля</td></tr>
     <tr><td>ДЕЙСТВ</td><td>посадка · бурение · вход в пояс</td></tr>
     <tr><td>пояс астероидов</td><td>трёхмерный режим, руда прямо из скал</td></tr>
+    <tr><td>ОГОНЬ</td><td>появится с бортовым орудием · от пиратов можно просто уйти</td></tr>
   </table>
   <div class="choice">
     <button id="startCont" style="display:none">ПРОДОЛЖИТЬ ПОЛЁТ<small>загрузить запись</small></button>
@@ -384,7 +387,8 @@ const MODS={
   hold:{ru:"Расширение трюма",note:"вместимость груза",base:1100},
   armor:{ru:"Бронеплиты",note:"прочность корпуса",base:1000},
   drill:{ru:"Буровая установка",note:"скорость добычи и резак в поясе",base:1250},
-  hyper:{ru:"Гипердрайв",note:"дальность прыжка",base:1600}
+  hyper:{ru:"Гипердрайв",note:"дальность прыжка",base:1600},
+  weapon:{ru:"Бортовое орудие",note:"урон и скорострельность · кнопка ОГОНЬ",base:1150}
 };
 const TECH={
   deep:{ru:"Глубокий сканер",note:"состав недр планеты виден с орбиты",cost:30},
@@ -394,7 +398,10 @@ const TECH={
   coil:{ru:"Гиперкатушка",note:"+2.0 пк к дальности прыжка",cost:95},
   drone:{ru:"Дрон-бур",note:"удваивает скорость бурения",cost:85},
   dock:{ru:"Автодок",note:"корпус медленно чинится сам",cost:80},
-  navi:{ru:"Навигационный ИИ",note:"автопилот тратит вдвое меньше топлива",cost:55}
+  navi:{ru:"Навигационный ИИ",note:"автопилот тратит вдвое меньше топлива",cost:55},
+  radar:{ru:"Дальний радар",note:"пираты видны заранее, метки на краю экрана",cost:40},
+  cloak:{ru:"Гаситель сигнатуры",note:"пираты замечают вас вдвое позже",cost:90},
+  gunai:{ru:"Прицельный ИИ",note:"+35% к урону бортового орудия",cost:75}
 };
 const DRONES={
   miner:{ru:"Дрон-старатель",note:"работает на месте без вас, копит руду и сам продаёт её на ближайшей станции",price:2200,ratePerMin:.6,capacity:260}
@@ -525,7 +532,7 @@ function resize(){
 }
 addEventListener("resize",resize);resize();
 
-const keys={left:false,right:false,thrust:false,brake:false,act:false};
+const keys={left:false,right:false,thrust:false,brake:false,act:false,fire:false};
 let prevAct=false,actEdge=false;
 
 const G={
@@ -534,14 +541,15 @@ const G={
   ship:{x:0,y:-760,vx:1.1,vy:0,a:0},
   fuel:100,hull:100,
   cargo:{},credits:600,data:0,
-  mods:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0},
+  mods:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0},
   tech:new Set(),barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
   land:null,surf:null,st:null,belt:null,
   opts:{easyLand:true,autoDock:true,invX:false,invY:false,invYaw:false,lookSens:1},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
-  market:{},uniqueShips:{},drones:[],droneInventory:0
+  market:{},uniqueShips:{},drones:[],droneInventory:0,
+  pirates:[],shots:[]
 };
 for(const k of RES_KEYS)G.cargo[k]=0;
 G.sys=getSystem(0,0);
@@ -558,7 +566,10 @@ function stat(){
     hullMax:Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)),
     drill:(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1),
     synthRatio:B.has("isosynth")?8:4,
-    jump:3+m.hyper*.5+(T.has("coil")?2:0)
+    jump:3+m.hyper*.5+(T.has("coil")?2:0),
+    armed:m.weapon>0,
+    dmg:(5+m.weapon*4.5)*(T.has("gunai")?1.35:1),
+    cool:Math.round(34-m.weapon*4)
   };
 }
 const held=()=>RES_KEYS.reduce((a,k)=>a+G.cargo[k],0);
@@ -639,6 +650,112 @@ function tickDrones(){
       say("Дрон продал "+yieldN+" "+RES[d.res].ru.toLowerCase()+" на «"+home.name+"»\n+"+rev.toLocaleString("ru")+" кр");
     }
     if(d.pool<=0){G.drones.splice(i,1);G.droneInventory++;}
+  }
+}
+
+/* ══════════════ пираты ══════════════ */
+/* эфемерны: набираются заново при каждом входе в систему, как орбиты и пояс */
+const PIRATE_NAMES=["Шакал","Гриф","Клык","Ржавый","Стервятник","Сиплый","Крюк","Оса"];
+function spawnPirates(){
+  G.pirates=[];G.shots=[];
+  const danger=sysDanger(G.sx,G.sy);
+  const r=rng(hashi(G.sx,G.sy,Math.floor(Date.now()/900000)));
+  const n=r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0;
+  for(let i=0;i<n;i++){
+    const a=r()*TAU,rad=2200+r()*1600;
+    G.pirates.push({x:Math.cos(a)*rad,y:Math.sin(a)*rad,vx:0,vy:0,a:a+Math.PI,
+      hull:26+danger*70,hullMax:26+danger*70,name:pick(PIRATE_NAMES,r),
+      seed:hashi(G.sx,G.sy,i*977),cool:0,aware:false});
+  }
+}
+function fireShot(x,y,ang,speed,dmg,mine){
+  G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,mine,life:150});
+}
+let fireCool=0;
+function updateCombat(dt){
+  const sh=G.ship,st=stat();
+  const seeRange=G.tech.has("cloak")?520:1040;
+  if(fireCool>0)fireCool-=dt;
+  if(keys.fire&&st.armed&&fireCool<=0){
+    fireShot(sh.x,sh.y,sh.a,9,st.dmg,true);
+    fireCool=st.cool;
+  }
+  for(let i=G.pirates.length-1;i>=0;i--){
+    const p=G.pirates[i];
+    const dx=sh.x-p.x,dy=sh.y-p.y,d=Math.hypot(dx,dy)||1;
+    if(d<seeRange)p.aware=true;
+    else if(d>seeRange*2.4)p.aware=false;
+    if(p.aware){
+      const want=Math.atan2(dy,dx);
+      p.a+=clamp(angDiff(want,p.a),-.035,.035)*dt;
+      if(d>260){p.vx+=Math.cos(p.a)*.055*dt;p.vy+=Math.sin(p.a)*.055*dt;}
+      else{const k=Math.pow(.97,dt);p.vx*=k;p.vy*=k;}
+      p.cool-=dt;
+      if(d<760&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.35){
+        fireShot(p.x,p.y,p.a,7,3.5+sysDanger(G.sx,G.sy)*5,false);
+        p.cool=70+Math.random()*60;
+      }
+    }
+    const sp=Math.hypot(p.vx,p.vy),lim=4.4;
+    if(sp>lim){p.vx*=lim/sp;p.vy*=lim/sp;}
+    p.x+=p.vx*dt;p.y+=p.vy*dt;
+  }
+  for(let i=G.shots.length-1;i>=0;i--){
+    const s=G.shots[i];
+    s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;
+    let gone=s.life<=0;
+    if(!gone&&s.mine){
+      for(const p of G.pirates){
+        if(Math.hypot(s.x-p.x,s.y-p.y)<20){
+          p.hull-=s.dmg;gone=true;
+          if(p.hull<=0)killPirate(p);
+          break;
+        }
+      }
+    }else if(!gone){
+      if(Math.hypot(s.x-sh.x,s.y-sh.y)<18){
+        G.hull=Math.max(0,G.hull-s.dmg);gone=true;
+        if(G.hull<=0){wreck();return;}
+      }
+    }
+    if(gone)G.shots.splice(i,1);
+  }
+  G.pirates=G.pirates.filter(p=>p.hull>0);
+}
+function killPirate(p){
+  const r=rng(p.seed);
+  const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7));
+  G.credits+=bounty;
+  const loot=pick(RES_KEYS,r),got=addRes(loot,2+Math.floor(r()*7));
+  say("«"+p.name+"» разбит\n+"+bounty+" кр"+(got?"\nтрофей: "+RES[loot].ru+" ×"+got:""));
+}
+function drawCombat(zx,zy,Z){
+  for(const p of G.pirates){
+    const x=zx(p.x),y=zy(p.y);
+    if(x>-60&&x<W+60&&y>-60&&y<H+60){
+      ctx.save();ctx.translate(x,y);ctx.rotate(p.a);
+      ctx.scale(clamp(Z,.55,1.6),clamp(Z,.55,1.6));
+      ctx.strokeStyle="#ff6b57";ctx.fillStyle="#180a0a";ctx.lineWidth=1.4;
+      ctx.beginPath();
+      ctx.moveTo(13,0);ctx.lineTo(-4,-7);ctx.lineTo(-9,-3);ctx.lineTo(-9,3);ctx.lineTo(-4,7);
+      ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.restore();
+      const w=34,hp=clamp(p.hull/p.hullMax,0,1);
+      ctx.fillStyle="rgba(255,255,255,.14)";ctx.fillRect(x-w/2,y-26,w,3);
+      ctx.fillStyle="#ff6b57";ctx.fillRect(x-w/2,y-26,w*hp,3);
+      ctx.fillStyle="rgba(255,107,87,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText(p.name.toUpperCase(),x,y+26);
+    }else if(G.tech.has("radar")){
+      const ang=Math.atan2(p.y-G.ship.y,p.x-G.ship.x);
+      const mx=W/2+Math.cos(ang)*(Math.min(W,H)/2-26),my=H/2+Math.sin(ang)*(Math.min(W,H)/2-26);
+      ctx.fillStyle="rgba(255,107,87,.8)";
+      ctx.beginPath();ctx.arc(mx,my,3.4,0,TAU);ctx.fill();
+    }
+  }
+  for(const s of G.shots){
+    const x=zx(s.x),y=zy(s.y);
+    ctx.strokeStyle=s.mine?"rgba(127,230,216,.95)":"rgba(255,107,87,.95)";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-s.vx*1.6*Z,y-s.vy*1.6*Z);ctx.stroke();
   }
 }
 
@@ -728,18 +845,18 @@ function cloudPull(){
 document.querySelectorAll("[data-k]").forEach(b=>{
   const k=b.dataset.k;
   const on=e=>{e.preventDefault();keys[k]=true;b.classList.add("on");
-    if(k!=="act")G.ap=null;};
+    if(k!=="act"&&k!=="fire")G.ap=null;};
   const off=e=>{e.preventDefault();keys[k]=false;b.classList.remove("on");};
   b.addEventListener("pointerdown",on);b.addEventListener("pointerup",off);
   b.addEventListener("pointercancel",off);b.addEventListener("pointerleave",off);
   b.addEventListener("contextmenu",e=>e.preventDefault());
 });
 const KMAP={KeyA:"left",ArrowLeft:"left",KeyD:"right",ArrowRight:"right",KeyW:"thrust",
-  ArrowUp:"thrust",KeyS:"brake",ArrowDown:"brake",Space:"act",Enter:"act"};
+  ArrowUp:"thrust",KeyS:"brake",ArrowDown:"brake",Space:"act",Enter:"act",KeyF:"fire"};
 addEventListener("keydown",e=>{
   if(e.code==="KeyM"){navAction();e.preventDefault();return;}
   const k=KMAP[e.code];
-  if(k){keys[k]=true;if(k!=="act")G.ap=null;e.preventDefault();}
+  if(k){keys[k]=true;if(k!=="act"&&k!=="fire")G.ap=null;e.preventDefault();}
 });
 addEventListener("keyup",e=>{const k=KMAP[e.code];if(k){keys[k]=false;e.preventDefault();}});
 
@@ -840,7 +957,7 @@ document.getElementById("startHard").addEventListener("click",()=>start(false));
     b.addEventListener("click",()=>{
       if(loadGame()){
         document.getElementById("intro").style.display="none";
-        G.running=true;
+        G.running=true;spawnPirates();
         say("Полёт восстановлен\n"+G.sys.name+" · сектор "+G.sx+":"+G.sy);
       }else say("Запись повреждена");
     });
@@ -849,7 +966,7 @@ document.getElementById("startHard").addEventListener("click",()=>start(false));
 function start(easy){
   G.opts.easyLand=easy;
   document.getElementById("intro").style.display="none";
-  G.running=true;saveGame(true);
+  G.running=true;spawnPirates();saveGame(true);
   say("Система "+G.sys.name+"\nткните по объекту —\nавтопилот доведёт");
 }
 
@@ -931,6 +1048,8 @@ function updateSystem(dt){
     if(dt>0){S.vx=(S.x-px)/dt;S.vy=(S.y-py)/dt;}
   }
   if(G.mode!=="system")return;
+  updateCombat(dt);
+  if(G.mode!=="system")return;
   if(G.tech.has("dock")&&G.hull<st.hullMax)G.hull=Math.min(st.hullMax,G.hull+.012*dt);
 
   const apOn=G.ap&&runAutopilot(dt,st);
@@ -972,6 +1091,9 @@ function updateSystem(dt){
   }
   if(apOn)return;
   G.prompt="";
+  const hostile=G.pirates.filter(p=>p.aware).length;
+  if(hostile)G.prompt=(st.armed?"ОГОНЬ — ОТСТРЕЛИВАТЬСЯ":"ОРУДИЯ НЕТ")+
+    " · ПРЕСЛЕДУЮТ: "+hostile+"\nМОЖНО ПРОСТО УЙТИ ИЛИ ПРЫГНУТЬ";
 
   if(sys.station){
     const S=sys.station,ds=Math.hypot(sh.x-S.x,sh.y-S.y);
@@ -1068,6 +1190,7 @@ function drawSystem(){
     if(G.ap&&G.ap.kind==="station")reticle(x,y,34);
   }
   if(G.ap&&G.ap.kind==="belt")reticle(zx(G.ap.ax),zy(G.ap.ay),26);
+  drawCombat(zx,zy,Z);
   ctx.save();ctx.translate(W/2,H/2);ctx.rotate(sh.a);
   ctx.scale(clamp(Z,.55,1.6),clamp(Z,.55,1.6));
   drawHull(G.shipId,keys.thrust&&G.fuel>0||(G.ap&&G.fuel>0),keys.brake&&G.fuel>0,G.mods.engine);
@@ -1205,9 +1328,11 @@ function jump(cost){
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
   G.ship.vx=-Math.cos(a)*.7;G.ship.vy=-Math.sin(a)*.7;G.ship.a=a+Math.PI;
   G.mode="system";
+  spawnPirates();
   saveGame(true);
   say("Прибытие: "+G.sys.name+"\n"+G.sys.cls.ru+
-    (G.sys.station?"\nстанция":"")+(G.sys.belt?"\nпояс астероидов":""));
+    (G.sys.station?"\nстанция":"")+(G.sys.belt?"\nпояс астероидов":"")+
+    (G.pirates.length?"\nчужие сигнатуры: "+G.pirates.length:""));
 }
 
 /* ══════════════ посадка ══════════════ */
@@ -2314,6 +2439,7 @@ function wreck(){
   const a=Math.random()*TAU;
   G.ship.x=Math.cos(a)*1600;G.ship.y=Math.sin(a)*1600;
   G.ship.vx=0;G.ship.vy=0;G.mode="system";G.ap=null;G.belt=null;
+  G.pirates=[];G.shots=[];   /* без этого авария у пиратов превращается в петлю */
   let lost=0;for(const k of RES_KEYS){lost+=G.cargo[k];G.cargo[k]=0;}
   saveGame(true);
   say("Аварийный ремонт\n"+(lost?"груз потерян ("+lost+")":"трюм был пуст"));
@@ -2325,7 +2451,7 @@ const $fb=document.getElementById("fbar"),$hb=document.getElementById("hbar");
 const $place=document.getElementById("place"),$sub=document.getElementById("sub");
 const $msg=document.getElementById("msg"),$prompt=document.getElementById("prompt");
 const $bThr=document.querySelector("[data-k=thrust]"),$bBrk=document.querySelector("[data-k=brake]");
-const $nav=document.getElementById("navbtn");
+const $nav=document.getElementById("navbtn"),$fire=document.getElementById("firebtn");
 function hud(){
   const st=stat();
   $f.style.width=clamp(G.fuel/st.fuelMax*100,0,100).toFixed(1)+"%";
@@ -2352,6 +2478,7 @@ function hud(){
   $bThr.textContent=G.mode==="surface"?"ПРЫЖ":"▲";
   $bBrk.style.opacity=G.mode==="surface"?".3":"1";
   $nav.textContent=G.mode==="belt"?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА");
+  $fire.style.display=(G.mode==="system"&&st.armed)?"":"none";
   document.body.classList.toggle("inbelt",G.mode==="belt");
 }
 
