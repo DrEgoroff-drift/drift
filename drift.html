@@ -291,9 +291,16 @@ const RES={
   titan:    {ru:"Титан",     col:"#8fb0c4",price:38},
   isotopes: {ru:"Изотопы",   col:"#f2b25c",price:55},
   iridium:  {ru:"Иридий",    col:"#e0d28a",price:74},
-  crystal:  {ru:"Кристаллы", col:"#c58ae0",price:105}
+  crystal:  {ru:"Кристаллы", col:"#c58ae0",price:105},
+  /* только с фауны — в породе и в поясе не встречаются */
+  carbon:   {ru:"Углерод",   col:"#8a97a0",price:46},
+  xeno:     {ru:"Ксенобиом", col:"#ff7ac8",price:190}
 };
 const RES_KEYS=Object.keys(RES);
+/* ресурсы, добавленные позже: у них отдельный поток случайных чисел,
+   иначе сдвинулась бы генерация уже существующих станций */
+const FAUNA_RES=["carbon","xeno"];
+const ORE_KEYS=RES_KEYS.filter(k=>FAUNA_RES.indexOf(k)<0);
 const PROFILE={
   terran:["iron","silicon","organics","ice"],
   ocean:["ice","organics","silicon"],
@@ -727,7 +734,9 @@ function getSystem(sx,sy){
   }
   if((sx===0&&sy===0)||r()<.5){
     const prices={};
-    for(const k of RES_KEYS)prices[k]=Math.max(3,Math.round(RES[k].price*(.72+r()*.72)));
+    for(const k of ORE_KEYS)prices[k]=Math.max(3,Math.round(RES[k].price*(.72+r()*.72)));
+    const r2=rng(hashi(sx,sy,0xB10FA));
+    for(const k of FAUNA_RES)prices[k]=Math.max(3,Math.round(RES[k].price*(.72+r2()*.72)));
     sys.station={name:genName(r),kind:pick(ST_KIND,r),
       orbit:sys.radius+240+r()*280,ang:r()*TAU,spd:.00055,prices,
       fuelPrice:5+Math.round(r()*7),x:0,y:0,vx:0,vy:0};
@@ -777,16 +786,100 @@ function planetTex(p){
 }
 
 /* ══════════════ рельеф ══════════════ */
+/* ══════════════ рельеф ══════════════ */
+/* профиль собирается из нескольких независимых форм: пологие холмы, острые
+   хребты, столовые плато, дюны, кратеры с валом и врезанные каньоны. Вес
+   каждой формы — от типа планеты и её seed, поэтому две пустынные планеты
+   выглядят по-разному, но обе остаются пустынными. */
+const RELIEF_MIX={
+  terran:  {hill:1,  ridge:.55, mesa:.15, dune:0,   crater:.2,  canyon:.4},
+  ocean:   {hill:1,  ridge:.15, mesa:.05, dune:.2,  crater:.1,  canyon:.15},
+  desert:  {hill:.7, ridge:.3,  mesa:.85, dune:1,   crater:.35, canyon:.7},
+  rocky:   {hill:.8, ridge:1,   mesa:.5,  dune:0,   crater:1,   canyon:.5},
+  ice:     {hill:.9, ridge:.7,  mesa:.35, dune:.35, crater:.45, canyon:.6},
+  volcanic:{hill:.8, ridge:1,   mesa:.25, dune:0,   crater:.9,  canyon:.85},
+  toxic:   {hill:1,  ridge:.45, mesa:.4,  dune:.25, crater:.3,  canyon:.55},
+  gas:     {hill:1,  ridge:0,   mesa:0,   dune:0,   crater:0,   canyon:0}
+};
 function genTerrain(p){
-  const N=1100,step=6,base=820,h=new Float32Array(N);
+  const N=1500,step=6,base=900,h=new Float32Array(N);
+  const r=rng(p.seed^0x5f3b);
+  const M=RELIEF_MIX[p.type]||RELIEF_MIX.terran;
   const amp=60+p.rough*300;
-  for(let i=0;i<N;i++)h[i]=base-fbm1(i*.011,p.seed,5)*amp-fbm1(i*.061,p.seed+7,3)*amp*.28;
-  const rr=rng(p.seed^0x5f3b), pi=90+Math.floor(rr()*(N-190)),pw=16,py=h[pi];
+  /* каждой форме — свой множитель, чтобы планеты одного типа не повторялись */
+  const w={
+    hill:M.hill*(.6+r()*.7), ridge:M.ridge*(.4+r()*1.1),
+    mesa:M.mesa*(.4+r()*1.2), dune:M.dune*(.5+r()*1.0)
+  };
+  const mesaStep=amp*(.22+r()*.3), duneLen=.055+r()*.07, duneAmp=amp*.16*w.dune;
+  for(let i=0;i<N;i++){
+    let y=base;
+    y-=fbm1(i*.0055,p.seed,5)*amp*w.hill;
+    y-=fbm1(i*.05,p.seed+7,3)*amp*.22*w.hill;
+    if(w.ridge>.02){
+      const n=fbm1(i*.013,p.seed+31,4);
+      y-=Math.pow(1-Math.abs(1-2*n),2.1)*amp*.95*w.ridge;
+    }
+    if(w.mesa>.02){
+      const t=fbm1(i*.0042,p.seed+57,3);
+      y-=Math.round(t*3.4)/3.4*amp*.8*w.mesa;
+    }
+    if(duneAmp>.5){
+      const ph=fbm1(i*.006,p.seed+83,2)*7;
+      const s=Math.sin(i*duneLen+ph);
+      y-=(Math.pow(Math.abs(s),.55)*Math.sign(s)*.5+.5)*duneAmp;
+    }
+    h[i]=y;
+  }
+  /* кратеры: чаша плюс приподнятый вал по кромке */
+  const craters=[];
+  const nCr=Math.floor(M.crater*(1+r()*5));
+  for(let c=0;c<nCr;c++){
+    const ci=Math.floor(r()*N), rad=18+r()*72, depth=amp*(.12+r()*.34);
+    craters.push({i:ci,rad});
+    for(let i=Math.max(0,ci-rad*1.5|0);i<Math.min(N,ci+rad*1.5|0);i++){
+      const u=(i-ci)/rad;
+      if(Math.abs(u)>1.45)continue;
+      if(Math.abs(u)<=1)h[i]+=depth*Math.cos(u*Math.PI/2)*.9;          // чаша вниз
+      const rim=Math.exp(-Math.pow((Math.abs(u)-1)/.3,2));
+      h[i]-=depth*.42*rim;                                              // вал вверх
+    }
+  }
+  /* каньоны: узкие глубокие врезы с почти отвесными бортами */
+  const nCn=Math.floor(M.canyon*(1+r()*2.4));
+  for(let c=0;c<nCn;c++){
+    const ci=Math.floor(60+r()*(N-120)), half=7+r()*16, depth=amp*(.5+r()*.8);
+    for(let i=Math.max(0,ci-half*3|0);i<Math.min(N,ci+half*3|0);i++){
+      const u=Math.abs(i-ci)/half;
+      if(u>2.4)continue;
+      h[i]+=depth*(1/(1+Math.pow(u,7)));
+    }
+  }
+  /* площадка под посадку — ровная и подальше от кратеров */
+  let pi=90+Math.floor(r()*(N-190));
+  for(let t=0;t<40;t++){
+    const cand=90+Math.floor(r()*(N-190));
+    const near=craters.some(c=>Math.abs(cand-c.i)<c.rad*1.6);
+    if(!near){pi=cand;break;}
+  }
+  const pw=18,py=h[pi];
   for(let i=pi-pw;i<=pi+pw;i++){
     const t=clamp((Math.abs(i-pi)-pw*.5)/(pw*.5),0,1);
     h[i]=lerp(py,h[i],t*t);
   }
-  return {h,N,step,W:N*step,padI:pi,padX:pi*step,padY:h[pi]};
+  /* валуны и осыпь: детерминированы, лежат прямо на профиле */
+  const rocks=[];
+  const nRk=Math.floor(24+r()*40);
+  for(let i=0;i<nRk;i++){
+    const x=r()*N*step, rad=3+r()*r()*22, n=6+Math.floor(r()*6), poly=[];
+    for(let k=0;k<n;k++){
+      const a=k/n*TAU, q=rad*(.6+r()*.6);
+      poly.push([Math.cos(a)*q,Math.sin(a)*q*.72]);
+    }
+    rocks.push({x,rad,poly,tint:r(),flip:r()<.5});
+  }
+  return {h,N,step,W:N*step,padI:pi,padX:pi*step,padY:h[pi],rocks,
+    strata:2+Math.floor(r()*4), sseed:p.seed};
 }
 function groundAt(tr,x){
   const fx=clamp(x/tr.step,0,tr.N-1.001),i=Math.floor(fx),f=fx-i;
@@ -2021,7 +2114,7 @@ function updateLanding(dt){
     }
   }
 }
-function drawGround(tr,camx,camy,fill,line){
+function drawGround(tr,camx,camy,fill,line,pal){
   ctx.beginPath();
   const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
   const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
@@ -2029,7 +2122,65 @@ function drawGround(tr,camx,camy,fill,line){
   for(let i=i0;i<=i1;i++)ctx.lineTo(i*tr.step-camx,tr.h[i]-camy);
   ctx.lineTo(i1*tr.step-camx,H+10);ctx.lineTo(i0*tr.step-camx,H+10);ctx.closePath();
   ctx.fillStyle=fill;ctx.fill();
-  if(line){ctx.strokeStyle=line;ctx.lineWidth=1.4;ctx.stroke();}
+  /* слои породы — горизонтальные пласты, обрезанные силуэтом рельефа */
+  if(pal&&tr.strata){
+    ctx.save();ctx.clip();
+    const band=30;
+    const y0=Math.floor((camy-band*2)/band)*band;
+    for(let k=0;k<Math.ceil(H/band)+4;k++){
+      const wy=y0+k*band;
+      const n=((wy/band)|0)+((tr.sseed>>>3)&15);
+      const idx=Math.abs(n)%pal.length;
+      const c=pal[idx];
+      const th=band*(.3+((Math.abs(n*7)%5)/5)*.4);
+      ctx.fillStyle="rgba("+Math.round(c[0]*.5)+","+Math.round(c[1]*.5)+","+
+        Math.round(c[2]*.5)+",.30)";
+      ctx.fillRect(0,wy-camy,W,th);
+      ctx.fillStyle="rgba(0,0,0,.10)";
+      ctx.fillRect(0,wy-camy+th,W,1.4);
+    }
+    ctx.restore();
+  }
+  if(line){
+    /* корка: светлая кромка поверх тёмного тела породы */
+    ctx.strokeStyle=line;ctx.lineWidth=1.4;ctx.stroke();
+    ctx.save();ctx.clip();
+    ctx.strokeStyle="rgba(255,255,255,.09)";ctx.lineWidth=7;
+    ctx.beginPath();
+    ctx.moveTo(i0*tr.step-camx,tr.h[i0]-camy+4);
+    for(let i=i0;i<=i1;i++)ctx.lineTo(i*tr.step-camx,tr.h[i]-camy+4);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+/* валуны и осыпь на профиле */
+function drawRocks(tr,camx,camy,pal){
+  if(!tr.rocks)return;
+  for(const k of tr.rocks){
+    const x=k.x-camx;
+    if(x<-k.rad-20||x>W+k.rad+20)continue;
+    const y=groundAt(tr,k.x)-camy;
+    ctx.save();ctx.translate(x,y-k.rad*.42);
+    if(k.flip)ctx.scale(-1,1);
+    const c0=pal[2],c1=pal[4];
+    const t=k.tint;
+    const P=k.poly;
+    ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);
+    for(let i=1;i<P.length;i++)ctx.lineTo(P[i][0],P[i][1]);
+    ctx.closePath();
+    const g=ctx.createLinearGradient(0,-k.rad,0,k.rad);
+    g.addColorStop(0,"rgb("+Math.round(lerp(c0[0],c1[0],t)*.9)+","+
+      Math.round(lerp(c0[1],c1[1],t)*.9)+","+Math.round(lerp(c0[2],c1[2],t)*.9)+")");
+    g.addColorStop(1,"rgb("+Math.round(c0[0]*.32)+","+Math.round(c0[1]*.32)+","+
+      Math.round(c0[2]*.32)+")");
+    ctx.fillStyle=g;ctx.fill();
+    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke();
+    if(k.rad>7){   // скол на крупных валунах
+      ctx.strokeStyle="rgba(255,255,255,.10)";
+      ctx.beginPath();ctx.moveTo(P[1][0],P[1][1]);ctx.lineTo(P[3][0]*.3,P[3][1]*.3);ctx.stroke();
+    }
+    ctx.restore();
+  }
 }
 function skyGrad(p){
   const s=p.T.sky,g=ctx.createLinearGradient(0,0,0,H);
@@ -2044,7 +2195,9 @@ function drawLanding(){
   ctx.save();ctx.globalAlpha=.45;
   drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.4,camy*.55+60,"rgb("+p.T.pal[1].join(",")+")",null);
   ctx.restore();
-  drawGround(tr,camx,camy,"rgb("+p.T.pal[2].map(v=>Math.round(v*.6)).join(",")+")","rgba(180,230,240,.35)");
+  drawGround(tr,camx,camy,"rgb("+p.T.pal[2].map(v=>Math.round(v*.6)).join(",")+")",
+    "rgba(180,230,240,.35)",p.T.pal);
+  drawRocks(tr,camx,camy,p.T.pal);
   const px=tr.padX-camx,py=tr.padY-camy;
   ctx.strokeStyle="rgba(242,178,92,.85)";ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(px-46,py);ctx.lineTo(px+46,py);ctx.stroke();
@@ -2055,21 +2208,355 @@ function drawLanding(){
   drawLander(L.over>0&&!L.ok,L.thrOn&&L.over<=0);
   ctx.restore();
 }
+/* садится тот самый корабль, на котором летаешь: тот же корпус, только
+   развёрнутый носом вверх и с выпущенными опорами */
 function drawLander(broken,fire){
-  const col=broken?"#ff6b57":shipData(G.shipId).col;
-  if(fire){
-    const f=8+Math.random()*12,g=ctx.createLinearGradient(0,10,0,10+f);
-    g.addColorStop(0,"rgba(242,178,92,.95)");g.addColorStop(1,"rgba(255,80,50,0)");
-    ctx.fillStyle=g;ctx.beginPath();
-    ctx.moveTo(-4,10);ctx.lineTo(0,10+f);ctx.lineTo(4,10);ctx.closePath();ctx.fill();
+  const h=hullOf(G.shipId), s=38/h.len;
+  ctx.save();
+  ctx.rotate(-Math.PI/2);
+  ctx.scale(s,s);
+  /* опоры: от кормовых бортов вниз-наружу, с пятами */
+  const legY=h.tail*.55, spread=h.halfW*.85+10, drop=h.len*.42;
+  ctx.strokeStyle=rgba(h.col,.9);ctx.lineWidth=2.4/s>3?3/s:2.4;
+  ctx.lineCap="round";
+  for(const sg of [-1,1])for(let i=0;i<2;i++){
+    const bx=legY+i*h.len*.13, by=(h.bw*.75+i*2)*sg;
+    const fx=legY-drop, fy=spread*sg;
+    ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(fx,fy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(fx,fy);ctx.lineTo(fx+6,fy*.82);ctx.stroke();   // подкос
+    ctx.beginPath();
+    ctx.moveTo(fx-1,fy-4.5);ctx.lineTo(fx-1,fy+4.5);ctx.stroke();             // пята
   }
-  ctx.fillStyle=broken?"#3a1f1c":"#0a1119";ctx.strokeStyle=col;ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(0,-13);ctx.lineTo(9,3);ctx.lineTo(6,10);ctx.lineTo(-6,10);ctx.lineTo(-9,3);
-  ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.lineCap="butt";
+  drawHull(G.shipId,fire,false,G.mods.engine);
+  ctx.restore();
+  if(broken){
+    /* побитый корпус: трещины и дым, а не другая форма */
+    ctx.strokeStyle="rgba(255,90,60,.9)";ctx.lineWidth=1.6;
+    const r=rng(0x9911);
+    for(let i=0;i<5;i++){
+      const a=r()*TAU, d=6+r()*12;
+      ctx.beginPath();ctx.moveTo(Math.cos(a)*d*.3,Math.sin(a)*d*.3);
+      ctx.lineTo(Math.cos(a)*d,Math.sin(a)*d-4);ctx.stroke();
+    }
+    for(let i=0;i<4;i++){
+      const t=(G.t*.05+i*.9)%6;
+      ctx.fillStyle="rgba(90,80,78,"+(.3-t*.05).toFixed(2)+")";
+      ctx.beginPath();ctx.arc((i-1.5)*5,-12-t*7,3+t*2.2,0,TAU);ctx.fill();
+    }
+  }
+}
+/* ══════════════ астронавт ══════════════ */
+/* один и тот же силуэт на поверхности и в шахте: ранец, шлем с забралом,
+   фонарь и шагающие ноги. Акцент берётся от корабля, на котором прилетел. */
+function drawAstronaut(o){
+  const acc=hex2rgb(shipData(G.shipId).col);
+  const walk=o.walk?Math.sin(o.phase):0;
+  const walk2=o.walk?Math.sin(o.phase+Math.PI):0;
+  const air=o.air;
+  const suit="#dfe7ec", suitD="#9fb0bb", dark="#121a24";
+  ctx.save();
+  ctx.scale(o.face||1,1);
+  if(o.jet){   // ранцевый импульс при прыжке
+    const f=5+Math.random()*7;
+    const g=ctx.createLinearGradient(0,4,0,4+f);
+    g.addColorStop(0,"rgba(255,220,150,.9)");g.addColorStop(1,"rgba(255,110,60,0)");
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.moveTo(-3.4,4);ctx.lineTo(0,4+f);ctx.lineTo(3.4,4);ctx.closePath();ctx.fill();
+  }
+  /* ноги */
+  ctx.strokeStyle=suitD;ctx.lineWidth=2.6;ctx.lineCap="round";
+  const knee=air?3:0;
+  for(const [sw,sx] of [[walk,-1],[walk2,1]]){
+    const kx=sx*1.2+sw*2.6, ky=6+ (air?1:0);
+    const fx=sx*1.6+sw*4.6, fy=air?9.5-knee:11.5;
+    ctx.beginPath();ctx.moveTo(sx*1.4,2.5);ctx.lineTo(kx,ky);ctx.lineTo(fx,fy);ctx.stroke();
+    ctx.strokeStyle=dark;ctx.lineWidth=3.2;
+    ctx.beginPath();ctx.moveTo(fx-1.6,fy);ctx.lineTo(fx+1.8,fy);ctx.stroke();  // ботинок
+    ctx.strokeStyle=suitD;ctx.lineWidth=2.6;
+  }
+  /* ранец */
+  ctx.fillStyle="#2b3846";
+  ctx.beginPath();ctx.roundRect?ctx.roundRect(-5.4,-4.2,4.2,7.6,1.4):ctx.rect(-5.4,-4.2,4.2,7.6);
+  ctx.fill();
+  ctx.strokeStyle=rgba(acc,.75);ctx.lineWidth=.9;ctx.stroke();
+  ctx.strokeStyle=rgba(acc,.5);
+  ctx.beginPath();ctx.moveTo(-4.4,-5.6);ctx.lineTo(-4.4,-4.2);ctx.stroke();     // антенна
+  ctx.fillStyle=Math.sin(G.t*.12)>0?"#7fe6d8":"rgba(127,230,216,.25)";
+  ctx.beginPath();ctx.arc(-4.4,-6.1,1,0,TAU);ctx.fill();
+  /* корпус скафандра */
+  const bg=ctx.createLinearGradient(-3,-4,3,4);
+  bg.addColorStop(0,suit);bg.addColorStop(1,suitD);
+  ctx.fillStyle=bg;
   ctx.beginPath();
-  ctx.moveTo(-6,10);ctx.lineTo(-11,17);ctx.moveTo(6,10);ctx.lineTo(11,17);
-  ctx.moveTo(-14,17);ctx.lineTo(-8,17);ctx.moveTo(8,17);ctx.lineTo(14,17);ctx.stroke();
-  ctx.fillStyle="#f2b25c";ctx.beginPath();ctx.arc(0,-3,2.6,0,TAU);ctx.fill();
+  ctx.moveTo(-3.2,-4);ctx.lineTo(3.2,-4);ctx.lineTo(3.6,2.2);
+  ctx.lineTo(-3.6,2.2);ctx.closePath();ctx.fill();
+  ctx.strokeStyle="rgba(20,30,40,.55)";ctx.lineWidth=.8;ctx.stroke();
+  ctx.fillStyle=rgba(acc,.85);ctx.fillRect(-3.2,-1.2,6.4,1.3);                  // поясной кант
+  ctx.fillStyle="#1b2735";ctx.fillRect(.6,-3.2,2.4,2);                          // нагрудный блок
+  ctx.fillStyle=o.suitLow?"#ff6b57":"#7fe6d8";ctx.fillRect(1.2,-2.8,1.2,.9);
+  /* руки */
+  ctx.strokeStyle=suit;ctx.lineWidth=2.2;
+  const armSw=o.mining?0:walk2*2.4;
+  ctx.beginPath();ctx.moveTo(-2.2,-3);ctx.lineTo(-3.4-armSw*.4,-.4);
+  ctx.lineTo(-3+armSw*.5,2.2);ctx.stroke();
+  if(o.mining){ ctx.beginPath();ctx.moveTo(2.6,-3);ctx.lineTo(5.4,-1.4);ctx.lineTo(7.4,-.2);ctx.stroke(); }
+  else { ctx.beginPath();ctx.moveTo(2.4,-3);ctx.lineTo(3.6+armSw*.4,-.4);
+         ctx.lineTo(3.2-armSw*.5,2.2);ctx.stroke(); }
+  /* шлем */
+  ctx.fillStyle=suit;
+  ctx.beginPath();ctx.arc(.2,-6.6,4.1,0,TAU);ctx.fill();
+  ctx.strokeStyle="rgba(20,30,40,.5)";ctx.lineWidth=.9;ctx.stroke();
+  ctx.fillStyle="#0a1a26";
+  ctx.beginPath();ctx.ellipse(.9,-6.7,3,2.5,-.12,0,TAU);ctx.fill();            // забрало
+  const vg=ctx.createLinearGradient(-1.6,-8.6,2.8,-5);
+  vg.addColorStop(0,"rgba(160,235,255,.75)");vg.addColorStop(1,"rgba(120,200,230,0)");
+  ctx.fillStyle=vg;
+  ctx.beginPath();ctx.ellipse(.9,-6.7,3,2.5,-.12,0,TAU);ctx.fill();
+  ctx.fillStyle=rgba(acc,.9);
+  ctx.beginPath();ctx.arc(-2.9,-7.6,1.1,0,TAU);ctx.fill();                      // фонарь
+  ctx.restore();
+  /* луч фонаря — только под землёй */
+  if(o.lamp){
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const f=(o.face||1);
+    const g=ctx.createRadialGradient(f*3,-7,2,f*3,-7,64);
+    g.addColorStop(0,"rgba(255,244,205,.30)");g.addColorStop(1,"rgba(255,220,150,0)");
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.moveTo(f*2,-8.6);
+    ctx.lineTo(f*62,-30);ctx.lineTo(f*62,20);ctx.lineTo(f*2,-5);
+    ctx.closePath();ctx.fill();
+    ctx.restore();
+  }
+}
+
+/* ══════════════ флора ══════════════ */
+/* каждое растение — своё: ствол из сегментов, ветви и одна из четырёх крон.
+   Цвета берутся от палитры планеты, поэтому на токсичном мире флора ядовитая,
+   а на ледяном — блёклая. */
+const PLANT_FORM=["стеблевой","ветвистый","папоротниковый","стручковый","коралловый","стелющийся"];
+const PLANT_TRAIT=["хрупкий","светящийся","колючий","мясистый","полупрозрачный","жёсткий"];
+function genPlant(r,p,x,gy){
+  const kind=Math.floor(r()*4);
+  const h=20+r()*58;
+  const segs=3+Math.floor(r()*4);
+  const lean=(r()-.5)*.5, curl=(r()-.5)*.7;
+  const branches=[];
+  const nb=kind===1?3+Math.floor(r()*4):(kind===2?5+Math.floor(r()*4):Math.floor(r()*3));
+  for(let i=0;i<nb;i++){
+    branches.push({t:.25+r()*.7, ang:(r()<.5?-1:1)*(.5+r()*.9), len:h*(.16+r()*.34), w:1+r()*1.6});
+  }
+  const pal=p.T.pal;
+  const base=pal[Math.min(pal.length-1,2+Math.floor(r()*2))];
+  const hue=r();
+  const leaf=[clamp(base[0]*.5+hue*150,20,255),clamp(base[1]*.6+130+hue*60,30,255),
+              clamp(base[2]*.5+40+hue*90,20,255)];
+  const stem=[leaf[0]*.5+20,leaf[1]*.45+26,leaf[2]*.45+22];
+  return {x,y:gy,h,kind,segs,lean,curl,branches,
+    leaf,stem,glow:r()<.28,bloom:r()<.4,pods:2+Math.floor(r()*4),
+    sway:.008+r()*.02, phase:r()*TAU, w:1.4+r()*2.2,
+    name:genName(r)+" "+pick(PLANT_FORM,r)+", "+pick(PLANT_TRAIT,r),
+    scanned:false};
+}
+function drawPlant(pl,x,y){
+  const sc=pl.scanned;
+  const stemC=sc?"rgba(127,230,216,.85)":"rgb("+(pl.stem[0]|0)+","+(pl.stem[1]|0)+","+(pl.stem[2]|0)+")";
+  const leafC=sc?"rgba(127,230,216,.55)":"rgb("+(pl.leaf[0]|0)+","+(pl.leaf[1]|0)+","+(pl.leaf[2]|0)+")";
+  const bend=Math.sin(G.t*pl.sway+pl.phase);
+  ctx.save();ctx.translate(x,y);
+  /* ствол: ломаная из сегментов, верх качается сильнее низа */
+  const pts=[[0,0]];
+  for(let i=1;i<=pl.segs;i++){
+    const t=i/pl.segs;
+    pts.push([ (pl.lean+bend*.28)*pl.h*t*t + Math.sin(t*3.1)*pl.curl*pl.h*.18, -pl.h*t ]);
+  }
+  const tip=pts[pts.length-1];
+  ctx.strokeStyle=stemC;ctx.lineCap="round";ctx.lineJoin="round";
+  ctx.lineWidth=pl.w;
+  ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
+  ctx.stroke();
+  const at=t=>{
+    const f=clamp(t,0,1)*(pts.length-1), i=Math.floor(f), q=f-i;
+    const a=pts[Math.min(i,pts.length-1)], b=pts[Math.min(i+1,pts.length-1)];
+    return [lerp(a[0],b[0],q),lerp(a[1],b[1],q)];
+  };
+  /* ветви */
+  ctx.lineWidth=Math.max(.8,pl.w*.55);
+  for(const b of pl.branches){
+    const [bx,by]=at(b.t);
+    const a=b.ang+bend*.35;
+    ctx.beginPath();ctx.moveTo(bx,by);
+    ctx.quadraticCurveTo(bx+Math.sin(a)*b.len*.6,by-b.len*.35,
+                         bx+Math.sin(a)*b.len,by-b.len*.62);
+    ctx.stroke();
+    if(pl.kind===2){   // папоротник: перья вдоль ветви
+      ctx.strokeStyle=leafC;ctx.lineWidth=.9;
+      for(let k=1;k<=4;k++){
+        const q=k/5;
+        const px=bx+Math.sin(a)*b.len*q, py=by-b.len*.62*q;
+        ctx.beginPath();ctx.moveTo(px,py);
+        ctx.lineTo(px+Math.sin(a)*4,py-5);ctx.stroke();
+      }
+      ctx.strokeStyle=stemC;ctx.lineWidth=Math.max(.8,pl.w*.55);
+    }else if(pl.kind===3){   // стручки на концах ветвей
+      ctx.fillStyle=leafC;
+      ctx.beginPath();
+      ctx.ellipse(bx+Math.sin(a)*b.len,by-b.len*.62,2.4,3.6,a*.5,0,TAU);ctx.fill();
+    }
+  }
+  ctx.lineCap="butt";
+  /* крона */
+  ctx.fillStyle=leafC;
+  if(pl.kind===0){
+    for(let i=0;i<3;i++){
+      const o=(i-1)*4.5;
+      ctx.beginPath();
+      ctx.ellipse(tip[0]+o*.8,tip[1]-3-Math.abs(o)*.5,4.6-Math.abs(i-1)*1.2,6.4,o*.06,0,TAU);
+      ctx.fill();
+    }
+  }else if(pl.kind===1){
+    ctx.beginPath();ctx.arc(tip[0],tip[1]-4,5.6,0,TAU);ctx.fill();
+    ctx.fillStyle=sc?"rgba(127,230,216,.35)":"rgba(255,255,255,.16)";
+    ctx.beginPath();ctx.arc(tip[0]-1.6,tip[1]-5.6,2.4,0,TAU);ctx.fill();
+  }else if(pl.kind===2){
+    for(let i=-1;i<=1;i++){
+      ctx.beginPath();ctx.moveTo(tip[0],tip[1]);
+      ctx.quadraticCurveTo(tip[0]+i*9,tip[1]-9,tip[0]+i*13,tip[1]-1);
+      ctx.quadraticCurveTo(tip[0]+i*7,tip[1]-4,tip[0],tip[1]);ctx.fill();
+    }
+  }else{
+    for(let i=0;i<pl.pods;i++){
+      const a=-Math.PI/2+(i-(pl.pods-1)/2)*.55+bend*.2;
+      ctx.beginPath();
+      ctx.ellipse(tip[0]+Math.cos(a)*6,tip[1]+Math.sin(a)*6,2.6,4.4,a+Math.PI/2,0,TAU);
+      ctx.fill();
+    }
+  }
+  if(pl.bloom){
+    ctx.fillStyle=sc?"rgba(127,230,216,.9)":"rgba(255,225,140,.85)";
+    ctx.beginPath();ctx.arc(tip[0],tip[1]-6,1.7,0,TAU);ctx.fill();
+  }
+  if(pl.glow){
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g=ctx.createRadialGradient(tip[0],tip[1]-3,0,tip[0],tip[1]-3,16);
+    g.addColorStop(0,sc?"rgba(127,230,216,.28)":"rgba("+(pl.leaf[0]|0)+","+(pl.leaf[1]|0)+","+(pl.leaf[2]|0)+",.22)");
+    g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(tip[0],tip[1]-3,16,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+/* ══════════════ фауна ══════════════ */
+/* Наверху зверьё безобидное — его сканируют ради данных. В шахте живут
+   породные грызуны: кусают скафандр, оглушаются импульсом (ОГОНЬ), с
+   оглушённого берут образец (ТОРМ) — углерод и редкий ксенобиом. */
+const BEAST_FORM=["прыгун","ползун","шестиног","парусник","круглыш","тихоход"];
+const BEAST_TRAIT=["пугливый","любопытный","медлительный","стайный","бронированный","светящийся"];
+function genBeast(r,p,x,gy){
+  const pal=p.T.pal;
+  const base=pal[2+Math.floor(r()*2)];
+  /* насыщенный собственный тон плюс немного от планеты — иначе всё зверьё
+     выходит одинаково блёклым под цвет грунта */
+  const hue=r()*TAU, sat=70+r()*55, lum=96+r()*54;
+  const body=[clamp(lum+Math.cos(hue)*sat+base[0]*.18,34,250),
+              clamp(lum+Math.cos(hue-2.094)*sat+base[1]*.18,34,250),
+              clamp(lum+Math.cos(hue+2.094)*sat+base[2]*.18,34,250)];
+  return {x,y:gy,vx:(r()<.5?-1:1)*(.06+r()*.12),face:1,
+    r:5+r()*7, legs:2+Math.floor(r()*3)*2, tail:r()<.6, crest:r()<.45,
+    ears:r()<.5, spots:Math.floor(r()*4), glow:r()<.2,
+    body, eye:r()<.5?"#101820":"#f2f7ff",
+    hop:r()<.45, phase:r()*TAU, spd:.09+r()*.1,
+    name:genName(r)+" "+pick(BEAST_FORM,r)+", "+pick(BEAST_TRAIT,r),
+    scanned:false, shy:0};
+}
+/* тело собирается из тех же частей, но пропорции и набор — от seed */
+function drawBeast(b,x,y,hostile,stun){
+  const c=b.body;
+  const col=(k,a)=>"rgba("+Math.round(c[0]*k)+","+Math.round(c[1]*k)+","+Math.round(c[2]*k)+","+a+")";
+  const t=G.t*b.spd+b.phase;
+  const bob=b.hop?Math.abs(Math.sin(t))*b.r*.35:Math.sin(t)*b.r*.08;
+  ctx.save();ctx.translate(x,y-b.r*.9-bob);ctx.scale(b.face,1);
+  if(stun>0){
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g=ctx.createRadialGradient(0,0,0,0,0,b.r*2.6);
+    g.addColorStop(0,"rgba(140,220,255,.3)");g.addColorStop(1,"rgba(120,200,255,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,b.r*2.6,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+  /* ноги */
+  ctx.strokeStyle=col(.55,1);ctx.lineWidth=Math.max(1,b.r*.16);ctx.lineCap="round";
+  for(let i=0;i<b.legs;i++){
+    const u=(i/(b.legs-1||1)-.5)*1.7;
+    const sw=stun>0?0:Math.sin(t*2+i*1.9)*b.r*.3;
+    ctx.beginPath();
+    ctx.moveTo(u*b.r*.8,b.r*.35);
+    ctx.lineTo(u*b.r*.9+sw,b.r*.95);
+    ctx.stroke();
+  }
+  ctx.lineCap="butt";
+  if(b.tail){
+    ctx.strokeStyle=col(.7,1);ctx.lineWidth=Math.max(1,b.r*.22);
+    ctx.beginPath();ctx.moveTo(-b.r*.8,-b.r*.1);
+    ctx.quadraticCurveTo(-b.r*1.7,-b.r*.5-Math.sin(t*1.6)*b.r*.3,
+                         -b.r*1.9,b.r*.2);ctx.stroke();
+  }
+  /* туловище */
+  const g=ctx.createLinearGradient(0,-b.r,0,b.r);
+  g.addColorStop(0,col(1.15,1));g.addColorStop(1,col(.5,1));
+  ctx.fillStyle=g;
+  ctx.beginPath();ctx.ellipse(0,0,b.r*1.15,b.r*.85,0,0,TAU);ctx.fill();
+  ctx.strokeStyle=col(.35,.9);ctx.lineWidth=1;ctx.stroke();
+  for(let i=0;i<b.spots;i++){
+    ctx.fillStyle=col(1.4,.5);
+    ctx.beginPath();ctx.arc(-b.r*.4+i*b.r*.42,-b.r*.2+((i*7)%3)*b.r*.22,b.r*.14,0,TAU);ctx.fill();
+  }
+  if(b.crest){
+    ctx.fillStyle=col(1.3,.85);
+    ctx.beginPath();ctx.moveTo(-b.r*.3,-b.r*.75);
+    ctx.lineTo(0,-b.r*1.5);ctx.lineTo(b.r*.35,-b.r*.7);ctx.closePath();ctx.fill();
+  }
+  /* голова */
+  ctx.fillStyle=col(1.05,1);
+  ctx.beginPath();ctx.arc(b.r*.95,-b.r*.3,b.r*.62,0,TAU);ctx.fill();
+  ctx.strokeStyle=col(.35,.9);ctx.stroke();
+  if(b.ears){
+    ctx.fillStyle=col(.8,1);
+    for(const s of [-1,1]){
+      ctx.beginPath();ctx.ellipse(b.r*(.8+s*.18),-b.r*.95,b.r*.16,b.r*.34,s*.4,0,TAU);ctx.fill();
+    }
+  }
+  if(hostile){
+    /* жвалы — единственное, что отличает шахтную форму */
+    ctx.strokeStyle=col(.4,1);ctx.lineWidth=Math.max(1.2,b.r*.18);
+    for(const s of [-1,1]){
+      ctx.beginPath();ctx.moveTo(b.r*1.4,-b.r*.3+s*b.r*.2);
+      ctx.lineTo(b.r*1.95,-b.r*.3+s*b.r*.55);ctx.stroke();
+    }
+  }
+  /* глаз */
+  const blink=Math.sin(G.t*.05+b.phase*3)>.96;
+  ctx.fillStyle=stun>0?"#6fa8c8":(hostile?"#ff6b57":b.eye);
+  if(blink&&stun<=0){
+    ctx.fillRect(b.r*1.0,-b.r*.42,b.r*.36,b.r*.09);
+  }else{
+    ctx.beginPath();ctx.arc(b.r*1.14,-b.r*.4,b.r*.2,0,TAU);ctx.fill();
+    if(!hostile){ctx.fillStyle="rgba(255,255,255,.9)";
+      ctx.beginPath();ctx.arc(b.r*1.2,-b.r*.47,b.r*.07,0,TAU);ctx.fill();}
+  }
+  if(b.glow){
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const gg=ctx.createRadialGradient(0,0,0,0,0,b.r*2.2);
+    gg.addColorStop(0,col(1.4,.18));gg.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(0,0,b.r*2.2,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+  if(stun>0){
+    ctx.fillStyle="rgba(160,225,255,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText("ОГЛУШЁН",x,y-b.r*2.6);
+  }
 }
 
 /* ══════════════ поверхность ══════════════ */
@@ -2080,16 +2567,25 @@ function enterSurface(){
     const x=120+r()*(tr.W-240),k=prof[Math.floor(r()*prof.length)];
     deposits.push({x,y:groundAt(tr,x)-6,res:k,left:6+Math.floor(r()*11),prog:0});
   }
+  /* флора растёт куртинами, а не поштучно по всей планете */
   const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic";
-  if(flora)for(let i=0;i<14;i++){
-    const x=120+r()*(tr.W-240);
-    plants.push({x,y:groundAt(tr,x),h:22+r()*46,k:Math.floor(r()*3),
-      name:genName(r)+" "+pick(["простой","ветвистый","стелющийся","хрупкий","светящийся"],r),scanned:false});
+  if(flora)for(let c=0;c<16;c++){
+    const cx=120+r()*(tr.W-240), n=2+Math.floor(r()*6);
+    for(let i=0;i<n;i++){
+      const x=clamp(cx+(r()-.5)*260,60,tr.W-60);
+      plants.push(genPlant(r,p,x,groundAt(tr,x)));
+    }
   }
   /* высаживаемся за пределами зоны взлёта (48), иначе первое же ДЕЙСТВ
      отправляет обратно на орбиту вместо бурения */
+  /* зверьё водится там же, где флора: ему есть что есть */
+  const fauna=[];
+  if(flora)for(let i=0;i<10+Math.floor(r()*10);i++){
+    const x=120+r()*(tr.W-240);
+    fauna.push(genBeast(r,p,x,groundAt(tr,x)));
+  }
   G.surf={p,tr,shipX:L.x,shipY:L.y,x:L.x+72,y:groundAt(tr,L.x+72)-10,
-    vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,mining:null,
+    vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,
     suit:100,warned:false,beacon:0};
   G.mode="surface";
   logAdd("dim","Посадка на "+p.name+" · залежей: "+deposits.length);
@@ -2112,8 +2608,20 @@ function updateSurface(dt){
     const q=Math.abs(d.x-S.x);
     if(q<26&&q<dd){dd=q;dep=d;}
   }
+  /* зверьё бродит и слегка сторонится игрока, но не убегает насовсем */
+  for(const b of S.fauna||[]){
+    const away=S.x-b.x;
+    if(Math.abs(away)<70){b.shy=Math.min(1,b.shy+.02*dt);b.vx=-Math.sign(away)*.16*b.shy;}
+    else{b.shy=Math.max(0,b.shy-.01*dt);
+      if(Math.random()<.004*dt)b.vx=(Math.random()<.5?-1:1)*(.06+Math.random()*.12);}
+    b.x=clamp(b.x+b.vx*dt,40,tr.W-40);
+    b.y=groundAt(tr,b.x);
+    if(b.vx)b.face=b.vx>0?1:-1;
+  }
   let plant=null;
   for(const pl of S.plants)if(!pl.scanned&&Math.abs(pl.x-S.x)<30)plant=pl;
+  let beast=null;
+  for(const b of S.fauna||[])if(!b.scanned&&Math.abs(b.x-S.x)<34)beast=b;
   S.mining=null;
   const dbtn=document.getElementById("dronebtn");
   if(dep&&G.droneInventory>0){droneTarget=dep.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[dep.res].ru.toUpperCase();}
@@ -2136,6 +2644,12 @@ function updateSurface(dt){
         }
         if(dep.left<=0)say("Залежь выработана\n"+RES[dep.res].ru);
       }
+    }
+  }else if(beast){
+    G.prompt="ДЕЙСТВ — СКАНИРОВАТЬ ЖИВОТНОЕ\n"+beast.name.toUpperCase();
+    if(actEdge){
+      beast.scanned=true;G.species.add(beast.name);G.data+=14;
+      tell("","Новый вид: "+beast.name+" · +14 данных","Новый вид\n"+beast.name+"\n+14 данных");
     }
   }else if(plant){
     G.prompt="ДЕЙСТВ — СКАНИРОВАТЬ ОРГАНИЗМ";
@@ -2169,19 +2683,21 @@ function drawSurface(){
   ctx.save();ctx.globalAlpha=.4;
   drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.35,camy*.5+80,"rgb("+p.T.pal[1].join(",")+")",null);
   ctx.restore();
-  drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")","rgba(200,240,246,.4)");
+  drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
+    "rgba(200,240,246,.4)",p.T.pal);
+  drawRocks(tr,camx,camy,p.T.pal);
   ctx.save();ctx.translate(S.shipX-camx,S.shipY-camy);drawLander(false,false);ctx.restore();
   for(const pl of S.plants){
-    const x=pl.x-camx;if(x<-60||x>W+60)continue;
-    const y=pl.y-camy;
-    ctx.strokeStyle=pl.scanned?"rgba(127,230,216,.85)":"rgba(150,220,170,.8)";ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.sin(G.t*.02+pl.x)*3,y-pl.h);ctx.stroke();
-    ctx.fillStyle=pl.scanned?"rgba(127,230,216,.5)":"rgba(190,240,150,.6)";
-    if(pl.k===0){ctx.beginPath();ctx.arc(x,y-pl.h-3,5,0,TAU);ctx.fill();}
-    else if(pl.k===1){for(let i=0;i<3;i++){ctx.beginPath();
-      ctx.ellipse(x+(i-1)*7,y-pl.h+i*4,4,7,0,0,TAU);ctx.fill();}}
-    else{ctx.beginPath();ctx.moveTo(x-8,y-pl.h);ctx.lineTo(x,y-pl.h-12);ctx.lineTo(x+8,y-pl.h);
-      ctx.closePath();ctx.fill();}
+    const x=pl.x-camx;if(x<-70||x>W+70)continue;
+    drawPlant(pl,x,pl.y-camy);
+  }
+  for(const b of S.fauna||[]){
+    const x=b.x-camx;if(x<-50||x>W+50)continue;
+    drawBeast(b,x,b.y-camy,false,0);
+    if(b.scanned){
+      ctx.fillStyle="rgba(127,230,216,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText("ИЗУЧЕН",x,b.y-camy-b.r*2.6);
+    }
   }
   for(const d of S.deposits){
     if(d.left<=0)continue;
@@ -2206,16 +2722,10 @@ function drawSurface(){
     }
   }
   const x=W/2,y=S.y-camy;
-  ctx.save();ctx.translate(x,y);ctx.scale(S.face,1);
-  ctx.strokeStyle="#e8f4f2";ctx.lineWidth=2;ctx.fillStyle="#0a1119";
-  ctx.beginPath();ctx.arc(0,-4,5,0,TAU);ctx.fill();ctx.stroke();
-  ctx.fillStyle="rgba(127,230,216,.7)";ctx.beginPath();ctx.arc(1.5,-5,2.4,0,TAU);ctx.fill();
-  ctx.strokeStyle="#e8f4f2";
-  const w=S.on?Math.sin(G.t*.22)*3.5*((keys.left||keys.right)?1:0):2.5;
-  ctx.beginPath();ctx.moveTo(0,1);ctx.lineTo(0,7);
-  ctx.moveTo(0,7);ctx.lineTo(-w,12);ctx.moveTo(0,7);ctx.lineTo(w,12);
-  ctx.moveTo(0,2);ctx.lineTo(S.mining?6:4,S.mining?7:5);
-  ctx.stroke();ctx.restore();
+  ctx.save();ctx.translate(x,y-1);
+  drawAstronaut({face:S.face,walk:S.on&&(keys.left||keys.right),phase:G.t*.22,
+    air:!S.on,jet:!S.on&&S.vy<0,mining:!!S.mining,suitLow:S.suit<25});
+  ctx.restore();
   if(S.mining){
     ctx.strokeStyle="rgba(242,178,92,.7)";ctx.lineWidth=1.5;
     ctx.beginPath();ctx.moveTo(x+S.face*6,y+2);
@@ -2244,7 +2754,8 @@ function digCell(D,col,row){
 }
 function enterDig(){
   const S=G.surf;
-  G.dig={p:S.p,col:0,row:0,cells:{},target:null,move:0,deepest:0};
+  G.dig={p:S.p,col:0,row:0,cells:{},target:null,move:0,deepest:0,face:1,
+    bugs:[],zap:0,zapT:0};
   G.dig.cells["0,0"]={dug:true,res:null,amount:0,prog:0,hard:0,tint:0};
   G.mode="dig";
   say("Спуск в шахту\nДЕЙСТВ — вниз · ◀ ▶ — вбок\n▲ — наверх, на поверхности — выход");
@@ -2298,17 +2809,23 @@ function updateDig(dt){
   S.suit=Math.max(0,S.suit-(.0025+D.row*.0006)*st.suitWear*dt);
   if(S.suit<=25&&!S.warned){S.warned=true;say("СКАФАНДР НА ИСХОДЕ\n▲ наверх, к кораблю");}
   if(S.suit<=0){suitFailure();return;}
+  /* фауна живёт независимо от того, бурим мы сейчас или стоим */
+  digFauna(dt,st);
+  if(G.mode!=="dig")return;
   if(D.move>0)D.move-=dt;
   let dx=0,dy=0;
   if(keys.act)dy=1;
   else if(keys.thrust)dy=-1;
   else if(keys.left)dx=-1;
   else if(keys.right)dx=1;
+  if(dx)D.face=dx;
 
   if(D.row===0&&dy===-1){exitDig();return;}
   const depth=D.row*3;
   let head="ГЛУБИНА "+depth+" м · "+DEPTH_TIERS[tierAt(D.row)].ru.toUpperCase()+
     "\nСКАФАНДР "+Math.round(S.suit)+"% · ТРЮМ "+held()+"/"+st.cargoMax;
+  if(D.sample)head+="\nТОРМ — ВЗЯТЬ ОБРАЗЕЦ";
+  else if(D.bugs.some(b=>b.stun<=0&&b.flee<=0))head+="\nЖИВНОСТЬ РЯДОМ · ОГОНЬ — ИМПУЛЬС";
   if(!dx&&!dy){D.target=null;G.prompt=head+"\nДЕЙСТВ — ВНИЗ · ◀ ▶ — ВБОК · ▲ — ВВЕРХ";return;}
 
   const tc=D.col+dx,tr2=D.row+dy;
@@ -2344,6 +2861,86 @@ function updateDig(dt){
       suitHit(8+ti*6+cr()*8,"Обвал породы");
       if(G.mode!=="dig")return;
     }
+  }
+}
+/* ── порода живая: чем глубже, тем чаще из стен лезут грызуны ── */
+const ZAP_COOL=90, ZAP_R=78, STUN_T=420;
+function digFauna(dt,st){
+  const D=G.dig,S=G.surf;
+  const px=D.col*DIG_CELL+DIG_CELL/2, py=D.row*DIG_CELL+DIG_CELL/2;
+  const ti=tierAt(D.row);
+  /* подселяем по мере углубления, детерминированно от клетки */
+  if(ti>0&&D.bugs.length<2+ti){
+    const key=D.col+":"+D.row;
+    if(D.lastSpawnKey!==key){
+      D.lastSpawnKey=key;
+      const r=rng(hashi(D.p.seed+D.col*613,D.row*929,0xB17E));
+      if(r()<.055+ti*.055){
+        const side=r()<.5?-1:1;
+        const b=genBeast(r,D.p,0,0);
+        b.r=6+r()*6;b.hostile=true;b.stun=0;b.bite=0;b.flee=0;
+        b.x=px+side*(120+r()*90);b.y=py+(r()-.5)*90;
+        D.bugs.push(b);
+        say("В породе кто-то есть\nОГОНЬ — импульс");
+      }
+    }
+  }
+  /* импульсный разрядник — оглушает всех вокруг */
+  if(D.zap>0)D.zap-=dt;
+  if(D.zapT>0)D.zapT-=dt;
+  if(keys.fire&&D.zap<=0){
+    D.zap=ZAP_COOL;D.zapT=16;
+    let n=0;
+    for(const b of D.bugs)
+      if(Math.hypot(b.x-px,b.y-py)<ZAP_R){b.stun=STUN_T;b.flee=0;n++;}
+    say(n?"Импульс · оглушено: "+n:"Импульс · мимо");
+  }
+  for(let i=D.bugs.length-1;i>=0;i--){
+    const b=D.bugs[i];
+    if(b.stun>0){
+      b.stun-=dt;
+      if(b.stun<=0)b.flee=300;          // очнулся и уходит
+      continue;
+    }
+    const dx=px-b.x,dy=py-b.y,d=Math.hypot(dx,dy)||1;
+    if(b.flee>0){
+      b.flee-=dt;
+      b.x-=dx/d*.9*dt;b.y-=dy/d*.9*dt;
+      b.face=dx>0?-1:1;
+      if(b.flee<=0){D.bugs.splice(i,1);continue;}
+      continue;
+    }
+    if(d>10){b.x+=dx/d*.55*dt;b.y+=dy/d*.55*dt;b.face=dx>0?1:-1;}
+    if(b.bite>0)b.bite-=dt;
+    if(d<18&&b.bite<=0){
+      b.bite=100;
+      logAdd("warn","Укус на глубине "+(D.row*3)+" м · скафандр "+
+        Math.round(Math.max(0,S.suit-(3+ti*2)))+"%");
+      suitHit(3+ti*2,"Укус");
+      if(G.mode!=="dig")return;
+    }
+  }
+  /* образец с оглушённого — на ТОРМ, чтобы не мешать бурению */
+  const near=D.bugs.find(b=>b.stun>0&&Math.hypot(b.x-px,b.y-py)<46);
+  D.sample=near||null;
+  if(near&&keys.brake){
+    const r=rng(hashi(Math.round(near.x),Math.round(near.y),0x5A99));
+    const c=addRes("carbon",2+Math.floor(r()*4));
+    const x2=r()<.35+ti*.12?addRes("xeno",1+Math.floor(r()*2)):0;
+    D.bugs.splice(D.bugs.indexOf(near),1);
+    G.species.add(near.name);G.data+=6;
+    tell("tech","Образец: "+near.name+" · углерод ×"+c+(x2?" · ксенобиом ×"+x2:""),
+      "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+"\n+6 данных");
+  }
+}
+function drawDigFauna(camx,camy){
+  const D=G.dig;
+  for(const b of D.bugs)drawBeast(b,b.x-camx,b.y-camy+b.r*.9,true,b.stun);
+  if(D.zapT>0){
+    const px=D.col*DIG_CELL+DIG_CELL/2-camx, py=D.row*DIG_CELL+DIG_CELL/2-camy;
+    const k=1-D.zapT/16;
+    ctx.strokeStyle="rgba(150,225,255,"+((1-k)*.85).toFixed(2)+")";ctx.lineWidth=3-k*2;
+    ctx.beginPath();ctx.arc(px,py,ZAP_R*k,0,TAU);ctx.stroke();
   }
 }
 function drawDig(){
@@ -2390,17 +2987,13 @@ function drawDig(){
   if(camy<0){
     ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,-camy);
   }
+  drawDigFauna(camx,camy);
   const sx=px-camx+DIG_CELL/2,sy=py-camy+DIG_CELL/2;
-  ctx.save();ctx.translate(sx,sy);
-  ctx.strokeStyle="#e8f4f2";ctx.lineWidth=2;ctx.fillStyle="#0a1119";
-  ctx.beginPath();ctx.arc(0,-5,5,0,TAU);ctx.fill();ctx.stroke();
   const suit=G.surf.suit;
-  ctx.fillStyle=suit>25?"rgba(127,230,216,.75)":"rgba(255,107,87,.85)";
-  ctx.beginPath();ctx.arc(1.5,-6,2.4,0,TAU);ctx.fill();
-  ctx.strokeStyle="#e8f4f2";
-  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,6);
-  ctx.moveTo(0,6);ctx.lineTo(-4,11);ctx.moveTo(0,6);ctx.lineTo(4,11);
-  ctx.stroke();ctx.restore();
+  ctx.save();ctx.translate(sx,sy+4);
+  drawAstronaut({face:D.face||1,walk:!!D.target,phase:G.t*.3,air:false,
+    mining:!!D.target,suitLow:suit<25,lamp:true});
+  ctx.restore();
   ctx.fillStyle="rgba(127,230,216,.85)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
   ctx.fillText("ГЛУБИНА "+(D.row*3)+" м",12,H-30);
   ctx.fillStyle=suit>25?"rgba(93,115,130,.9)":"#ff6b57";
@@ -3741,9 +4334,19 @@ function hud(){
   $bThr.textContent=G.mode==="surface"?"ПРЫЖ":(G.mode==="dig"?"ВВЕРХ":"▲");
   if(G.mode==="belt")document.querySelector("[data-k=act]").textContent="РЕЗАК";
   else document.querySelector("[data-k=act]").textContent="ДЕЙСТВ";
-  $bBrk.style.opacity=(G.mode==="surface"||G.mode==="dig")?".3":"1";
+  if(G.mode==="dig"){
+    const s=G.dig&&G.dig.sample;
+    $bBrk.textContent=s?"ОБРАЗЕЦ":"ТОРМ";
+    $bBrk.style.opacity=s?"1":".3";
+  }else{
+    $bBrk.textContent="ТОРМ";
+    $bBrk.style.opacity=G.mode==="surface"?".3":"1";
+  }
   $nav.textContent=G.mode==="belt"?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА");
-  $fire.style.display=((G.mode==="system"||G.mode==="belt")&&st.armed)?"":"none";
+  /* под землёй ОГОНЬ — это импульсный разрядник, он есть всегда */
+  $fire.style.display=(G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed))?"":"none";
+  if(G.mode==="dig")$fire.textContent=(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС";
+  else $fire.textContent="ОГОНЬ";
   document.body.classList.toggle("inbelt",G.mode==="belt");
 }
 

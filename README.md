@@ -10,7 +10,8 @@
 - **Branching star map** — systems are laid out organically with connecting lanes, each with generated flavor text describing its worlds, belt, and station.
 
 **Getting ore**
-- **Surface prospecting** — land and mine visible deposits, and scan alien flora for research data.
+- **Surface prospecting** — land on generated terrain (ridges, mesas, dunes, cratered plains and canyons, all mixed to suit the world type), mine visible deposits, and scan alien flora and fauna for research data.
+- **Wildlife** — harmless generated creatures graze on the surface and wander off if you crowd them. The same stock underground is not harmless: burrowers bite through your suit. An EMP pulse stuns them, and a stunned one can be sampled for carbon and rare xenobiome, which no rock or asteroid will ever yield.
 - **Deep shafts** — sink a mine anywhere on bare ground and tunnel down through three depth tiers. Deeper rock is roughly 2× and 4× richer, gated behind drilling tech, and pressured by suit wear and occasional cave-ins. Damage underground costs your suit, never your ship.
 - **Asteroid belts** — a full 3D flight mode flown from a procedurally built cockpit. Pitch, yaw and roll with inertia; the horizon banks into your turns. Rocks are scattered far enough that reaching them is the trip, and they break into drifting debris when you mine them out or shoot them apart — the chunks are harmless and fade on their own.
 
@@ -34,6 +35,8 @@
 **Looking at it**
 - Every hull is generated from its seed — a multi-station fuselage profile, swept wings, engine nacelles, canopy, panel lines, hull greebles, livery and blinking navigation lights. Pirates get their own hulls the same way, so no two raiders look alike.
 - The belt cockpit is generated too: canopy frame, overhead thruster housings, side screens, a raised console with button grids, and a yoke and throttle that move with your inputs. Its proportions follow the ship you are flying.
+- The ship that sets down on a planet is the ship you actually fly — same generated hull, on deployed landing legs.
+- Plants, creatures and boulders are all generated per world: branching stems with ferns, pods or crowns, critters with their own colours, crests, tails and leg counts, and layered strata showing through the rock.
 - Layered engine flames, an exhaust trail that hangs in space where you burned, and thruster puffs when you turn by hand.
 - Faceted rotating rocks in asteroid rings, ringed gas giants, a generated nebula, coloured twinkling starfields.
 
