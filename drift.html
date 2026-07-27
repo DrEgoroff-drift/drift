@@ -149,6 +149,7 @@
     <button data-tab="yard">ВЕРФЬ</button>
     <button data-tab="mods">МОДУЛИ</button>
     <button data-tab="lab">НАУКА</button>
+    <button data-tab="barter">БАРТЕР</button>
   </nav>
   <div class="body" id="stBody"></div>
   <footer>
@@ -371,6 +372,13 @@ const TECH={
   dock:{ru:"Автодок",note:"корпус медленно чинится сам",cost:80},
   navi:{ru:"Навигационный ИИ",note:"автопилот тратит вдвое меньше топлива",cost:55}
 };
+const BARTER={
+  crystplate:{ru:"Кристаллическая обшивка",note:"+40 к максимуму корпуса",cost:{crystal:35,iridium:15}},
+  isosynth:{ru:"Изотопный стабилизатор",note:"вдвое эффективнее топливный синтез льда",cost:{isotopes:50}},
+  iridrill:{ru:"Иридиевый резак",note:"+25% к скорости бурения",cost:{iridium:70}},
+  bioseal:{ru:"Органическая герметизация",note:"+20% к вместимости трюма",cost:{organics:90}},
+  icecore:{ru:"Ледяное ядро реактора",note:"+50 к запасу топлива",cost:{ice:110}}
+};
 
 /* ══════════════ галактика ══════════════ */
 function starAt(sx,sy){return (sx===0&&sy===0)||h01(sx,sy,4242)<.52;}
@@ -500,7 +508,7 @@ const G={
   fuel:100,hull:100,
   cargo:{},credits:600,data:0,
   mods:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0},
-  tech:new Set(),
+  tech:new Set(),barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
   land:null,surf:null,st:null,belt:null,
@@ -512,16 +520,17 @@ for(const k of RES_KEYS)G.cargo[k]=0;
 G.sys=getSystem(0,0);
 
 function stat(){
-  const S=SHIPS[G.shipId],m=G.mods,T=G.tech;
+  const S=SHIPS[G.shipId],m=G.mods,T=G.tech,B=G.barter;
   const drillBonus=G.shipId==="obod"?1.6:1;
   return {
     S,
     thr:S.thr*(1+m.engine*.19),
     turn:S.turn*(1+m.engine*.07),
-    fuelMax:Math.round(S.fuel*(1+m.tank*.3)),
-    cargoMax:Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)),
-    hullMax:Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)),
-    drill:(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus,
+    fuelMax:Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)),
+    cargoMax:Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)),
+    hullMax:Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)),
+    drill:(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1),
+    synthRatio:B.has("isosynth")?8:4,
     jump:3+m.hyper*.5+(T.has("coil")?2:0)
   };
 }
@@ -574,7 +583,7 @@ function snapshot(){
   return {v:4,sx:G.sx,sy:G.sy,shipId:G.shipId,owned:G.owned,
     x:G.ship.x,y:G.ship.y,a:G.ship.a,fuel:G.fuel,hull:G.hull,
     cargo:G.cargo,credits:G.credits,data:G.data,mods:G.mods,
-    tech:[...G.tech],found:[...G.found],species:[...G.species],
+    tech:[...G.tech],barter:[...G.barter],found:[...G.found],species:[...G.species],
     opts:G.opts,zoom:G.zoom,market:G.market,ts:Date.now()};
 }
 function applySave(s){
@@ -584,6 +593,7 @@ function applySave(s){
   G.owned=Object.assign({strizh:true},s.owned||{});
   for(const k in G.mods)G.mods[k]=clamp((s.mods&&s.mods[k])|0,0,4);
   G.tech=new Set(Array.isArray(s.tech)?s.tech.filter(k=>TECH[k]):[]);
+  G.barter=new Set(Array.isArray(s.barter)?s.barter.filter(k=>BARTER[k]):[]);
   G.found=new Set(s.found||[]);G.species=new Set(s.species||[]);
   Object.assign(G.opts,s.opts||{});
   G.zoom=clamp(s.zoom||1,.16,2.4);
@@ -930,9 +940,10 @@ function updateSystem(dt){
   if(!G.prompt&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax){
     G.prompt="ДЕЙСТВ — СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА ("+G.cargo.ice+")";
     if(actEdge){
-      const n=Math.min(G.cargo.ice,Math.ceil((st.fuelMax-G.fuel)/4));
-      G.cargo.ice-=n;G.fuel=Math.min(st.fuelMax,G.fuel+n*4);
-      say("Синтез: "+n+" льда → "+(n*4)+" топлива");
+      const ratio=st.synthRatio;
+      const n=Math.min(G.cargo.ice,Math.ceil((st.fuelMax-G.fuel)/ratio));
+      G.cargo.ice-=n;G.fuel=Math.min(st.fuelMax,G.fuel+n*ratio);
+      say("Синтез: "+n+" льда → "+(n*ratio)+" топлива");
     }
   }
 }
@@ -2044,7 +2055,7 @@ function renderTab(){
       "<br>бур ×"+s2.drill.toFixed(2)+" · прыжок "+s2.jump.toFixed(1)+" пк</s>"));
     $body.appendChild(r);
   }
-  else{
+  else if(tab==="lab"){
     $body.appendChild(el("div","sec","ДАННЫЕ: "+G.data+
       " · ИСТОЧНИКИ — НОВЫЕ ПЛАНЕТЫ (+6) И ВИДЫ (+9)"));
     for(const k in TECH){
@@ -2055,6 +2066,25 @@ function renderTab(){
       b.disabled=done||G.data<T.cost;
       b.onclick=()=>{G.data-=T.cost;G.tech.add(k);if(k==="cera")G.hull+=30;
         say("Изучено:\n"+T.ru);renderTab();};
+      r.appendChild(b);$body.appendChild(r);
+    }
+  }
+  else if(tab==="barter"){
+    $body.appendChild(el("div","sec","ОБМЕН НА РЕСУРСЫ — БЕЗ ДЕНЕГ, ТОЛЬКО ГРУЗ ИЗ ТРЮМА"));
+    for(const k in BARTER){
+      const item=BARTER[k],done=G.barter.has(k);
+      const costTxt=Object.keys(item.cost).map(rk=>"<span style='color:"+RES[rk].col+"'>"+item.cost[rk]+" "+RES[rk].ru.toLowerCase()+"</span>").join(" + ");
+      const have=Object.keys(item.cost).every(rk=>G.cargo[rk]>=item.cost[rk]);
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+item.ru+"</b><s>"+item.note+"<br>"+costTxt+"</s>"));
+      const b=el("button","act"+(done?"":" gold"),done?"ПОЛУЧЕНО":"ОБМЕНЯТЬ");
+      b.disabled=done||!have;
+      b.onclick=()=>{
+        for(const rk in item.cost)G.cargo[rk]-=item.cost[rk];
+        G.barter.add(k);
+        const ns=stat();G.fuel=Math.min(G.fuel,ns.fuelMax);G.hull=Math.min(G.hull,ns.hullMax);
+        say("Получено:\n"+item.ru);renderTab();
+      };
       r.appendChild(b);$body.appendChild(r);
     }
   }
