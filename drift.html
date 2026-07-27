@@ -505,7 +505,8 @@ const G={
   ap:null,          // автопилот
   land:null,surf:null,st:null,belt:null,
   opts:{easyLand:true,autoDock:true,invX:false,invY:false,invYaw:false,lookSens:1},
-  sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0
+  sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
+  market:{}
 };
 for(const k of RES_KEYS)G.cargo[k]=0;
 G.sys=getSystem(0,0);
@@ -532,6 +533,31 @@ function addRes(k,n){
   const t=Math.min(n,free);if(t>0)G.cargo[k]+=t;return t;
 }
 
+/* ══════════════ живой рынок ══════════════ */
+function marketFor(sys){
+  const base=sys.station.prices;
+  let m=G.market[sys.key];
+  if(!m){m={pressure:{},t:G.t};G.market[sys.key]=m;}
+  const secs=Math.max(0,(G.t-m.t)/60);
+  if(secs>0){
+    const decay=Math.pow(.5,secs/1800);
+    for(const k of RES_KEYS)m.pressure[k]=(m.pressure[k]||0)*decay;
+    m.t=G.t;
+  }
+  const prices={};
+  for(const k of RES_KEYS)prices[k]=Math.max(1,Math.round(base[k]*clamp(1+(m.pressure[k]||0),.4,1.8)));
+  return prices;
+}
+function sellCargo(sys,k,qty){
+  qty=Math.min(qty,G.cargo[k]);
+  if(qty<=0)return 0;
+  const price=marketFor(sys)[k],revenue=qty*price;
+  G.credits+=revenue;G.cargo[k]-=qty;
+  const m=G.market[sys.key];
+  m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
+  return revenue;
+}
+
 /* ══════════════ сохранение ══════════════ */
 /* Облако включается заполнением этих полей. Пусто — работает только локально. */
 const CLOUD={url:"",id:""};
@@ -549,7 +575,7 @@ function snapshot(){
     x:G.ship.x,y:G.ship.y,a:G.ship.a,fuel:G.fuel,hull:G.hull,
     cargo:G.cargo,credits:G.credits,data:G.data,mods:G.mods,
     tech:[...G.tech],found:[...G.found],species:[...G.species],
-    opts:G.opts,zoom:G.zoom,ts:Date.now()};
+    opts:G.opts,zoom:G.zoom,market:G.market,ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
@@ -561,6 +587,7 @@ function applySave(s){
   G.found=new Set(s.found||[]);G.species=new Set(s.species||[]);
   Object.assign(G.opts,s.opts||{});
   G.zoom=clamp(s.zoom||1,.16,2.4);
+  G.market=(s.market&&typeof s.market==="object")?s.market:{};
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
   for(const k of RES_KEYS)G.cargo[k]=Math.max(0,(s.cargo&&s.cargo[k])|0);
   const st=stat();
@@ -1934,19 +1961,21 @@ function renderTab(){
   document.getElementById("wDt").textContent=G.data+" данных";
   $body.innerHTML="";
   if(tab==="market"){
+    const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
     $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
       " · ТОПЛИВО "+G.st.fuelPrice+" кр/ед · РЕМОНТ 14 кр/ед"));
     let any=false,tot=0;
     for(const k of RES_KEYS){
       const q=G.cargo[k];if(!q)continue;any=true;
-      const price=G.st.prices[k],base=RES[k].price;tot+=q*price;
-      const tg=price>base*1.12?"выгодно":(price<base*.9?"дёшево":"обычная цена");
+      const price=prices[k],base=RES[k].price;tot+=q*price;
+      let tg=price>base*1.12?"выгодно":(price<base*.9?"дёшево":"обычная цена");
+      if((mkt.pressure[k]||0)<-.05)tg+=" · недавно продавали здесь";
       const r=el("div","row");
       r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+
         "</b><s>"+price+" кр/ед · "+tg+" (база "+base+")</s>"));
       r.appendChild(el("div","qt",q+"<s>"+(q*price).toLocaleString("ru")+" кр</s>"));
       const b=el("button","act","ПРОДАТЬ");
-      b.onclick=()=>{G.credits+=q*price;G.cargo[k]=0;say("Продано: "+RES[k].ru+" ×"+q);renderTab();};
+      b.onclick=()=>{const rev=sellCargo(G.sys,k,q);say("Продано: "+RES[k].ru+" ×"+q+"\n+"+rev.toLocaleString("ru")+" кр");renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }
     if(any){
@@ -1954,15 +1983,15 @@ function renderTab(){
       r.appendChild(el("div","nm","<b>Продать весь груз</b><s>по ценам этой станции</s>"));
       r.appendChild(el("div","qt",tot.toLocaleString("ru")+"<s>кр</s>"));
       const b=el("button","act gold","ПРОДАТЬ ВСЁ");
-      b.onclick=()=>{G.credits+=tot;for(const k of RES_KEYS)G.cargo[k]=0;
-        say("Груз реализован\n+"+tot.toLocaleString("ru")+" кр");renderTab();};
+      b.onclick=()=>{let sum=0;for(const k of RES_KEYS){const q=G.cargo[k];if(q>0)sum+=sellCargo(G.sys,k,q);}
+        say("Груз реализован\n+"+sum.toLocaleString("ru")+" кр");renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }else $body.appendChild(el("div","sec","ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
-    $body.appendChild(el("div","sec","ЗАКУПОЧНЫЕ ЦЕНЫ ЗДЕСЬ"));
+    $body.appendChild(el("div","sec","ЗАКУПОЧНЫЕ ЦЕНЫ ЗДЕСЬ — МЕНЯЮТСЯ ОТ ПРОДАЖ И СО ВРЕМЕНЕМ"));
     for(const k of RES_KEYS){
       const r=el("div","row");
       r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b>"));
-      r.appendChild(el("div","qt",G.st.prices[k]+"<s>кр/ед</s>"));
+      r.appendChild(el("div","qt",prices[k]+"<s>кр/ед</s>"));
       $body.appendChild(r);
     }
   }
