@@ -135,6 +135,7 @@
   <button id="zin">+</button>
   <button id="zout">−</button>
   <button id="dronebtn" style="display:none">ДРОН</button>
+  <button id="beaconbtn" style="display:none">МАЯК</button>
 </div>
 
 <div class="pads">
@@ -404,8 +405,20 @@ const TECH={
   gunai:{ru:"Прицельный ИИ",note:"+35% к урону бортового орудия",cost:75},
   deepdrill:{ru:"Глубинный бур",note:"открывает второй пласт шахты — вдвое богаче",cost:65},
   deepcore:{ru:"Ядровой бур",note:"открывает ядровую породу — вчетверо богаче",cost:140},
-  suit:{ru:"Усиленный скафандр",note:"вдвое медленнее изнашивается в шахте",cost:70}
+  beacon:{ru:"Возвратный маяк",note:"кнопка МАЯК — мгновенный возврат к кораблю, перезаряжается",cost:80},
+  survey:{ru:"Геосканер",note:"жилы в породе видны на всю ширину ствола",cost:50},
+  /* повторяемые: у дерева всегда остаётся куда расти */
+  suit:{ru:"Усиленный скафандр",note:"медленнее изнашивается на планете",cost:70,max:4},
+  refine:{ru:"Обогащение руды",note:"+18% к добыче за уровень",cost:60,max:5},
+  hauler:{ru:"Логистика дронов",note:"+22% к выработке дронов за уровень",cost:65,max:4},
+  bounty:{ru:"Каперский патент",note:"+30% к награде за пиратов за уровень",cost:55,max:3}
 };
+/* уровень = старая одноразовая запись + докупленные уровни (совместимо со старыми записями) */
+const techLv=k=>(G.tech.has(k)?1:0)+(G.techLvl[k]|0);
+function techCost(k){
+  const T=TECH[k];
+  return Math.round(T.cost*Math.pow(1.65,techLv(k)));
+}
 /* пласты шахты: чем глубже, тем богаче и опаснее */
 const DEPTH_TIERS=[
   {row:0, mult:1,extra:[],                    ru:"верхний слой", need:""},
@@ -552,7 +565,7 @@ const G={
   fuel:100,hull:100,
   cargo:{},credits:600,data:0,
   mods:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0},
-  tech:new Set(),barter:new Set(),
+  tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
   land:null,surf:null,st:null,belt:null,dig:null,
@@ -581,7 +594,10 @@ function stat(){
     dmg:(5+m.weapon*4.5)*(T.has("gunai")?1.35:1),
     cool:Math.round(34-m.weapon*4),
     digTier:T.has("deepcore")?2:((T.has("deepdrill")||m.drill>=2)?1:0),
-    suitWear:T.has("suit")?.5:1
+    suitWear:1/(1+techLv("suit")*.55),
+    refine:1+techLv("refine")*.18,
+    droneRate:1+techLv("hauler")*.22,
+    bountyMul:1+techLv("bounty")*.3
   };
 }
 const held=()=>RES_KEYS.reduce((a,k)=>a+G.cargo[k],0);
@@ -590,6 +606,13 @@ function modCost(k,lvl){return Math.round(MODS[k].base*Math.pow(lvl+1,1.55));}
 function addRes(k,n){
   const cap=stat().cargoMax,free=cap-held();
   const t=Math.min(n,free);if(t>0)G.cargo[k]+=t;return t;
+}
+/* штучная добыча: дробный бонус обогащения копится, чтобы +18% не съедалось округлением */
+let refineBank=0;
+function minedUnit(k){
+  refineBank+=stat().refine;
+  const n=Math.floor(refineBank);refineBank-=n;
+  return addRes(k,n);
 }
 
 /* ══════════════ живой рынок ══════════════ */
@@ -644,7 +667,7 @@ let droneTarget=null;
 function deployDrone(){
   if(G.droneInventory<=0||!droneTarget)return;
   G.droneInventory--;
-  G.drones.push({sx:G.sx,sy:G.sy,res:droneTarget,rate:DRONES.miner.ratePerMin,
+  G.drones.push({sx:G.sx,sy:G.sy,res:droneTarget,rate:DRONES.miner.ratePerMin*stat().droneRate,
     pool:DRONES.miner.capacity,soldAtMs:Date.now()});
   say("Дрон размещён\nработает на "+RES[droneTarget].ru);
   document.getElementById("dronebtn").style.display="none";
@@ -736,7 +759,7 @@ function updateCombat(dt){
 }
 function killPirate(p){
   const r=rng(p.seed);
-  const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7));
+  const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7)*stat().bountyMul);
   G.credits+=bounty;
   const loot=pick(RES_KEYS,r),got=addRes(loot,2+Math.floor(r()*7));
   say("«"+p.name+"» разбит\n+"+bounty+" кр"+(got?"\nтрофей: "+RES[loot].ru+" ×"+got:""));
@@ -787,7 +810,7 @@ function snapshot(){
   return {v:4,sx:G.sx,sy:G.sy,shipId:G.shipId,owned:G.owned,
     x:G.ship.x,y:G.ship.y,a:G.ship.a,fuel:G.fuel,hull:G.hull,
     cargo:G.cargo,credits:G.credits,data:G.data,mods:G.mods,
-    tech:[...G.tech],barter:[...G.barter],found:[...G.found],species:[...G.species],
+    tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],species:[...G.species],
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
     drones:G.drones,droneInventory:G.droneInventory,ts:Date.now()};
 }
@@ -799,6 +822,9 @@ function applySave(s){
   G.owned=Object.assign({strizh:true},s.owned||{});
   for(const k in G.mods)G.mods[k]=clamp((s.mods&&s.mods[k])|0,0,4);
   G.tech=new Set(Array.isArray(s.tech)?s.tech.filter(k=>TECH[k]):[]);
+  G.techLvl={};
+  if(s.techLvl&&typeof s.techLvl==="object")
+    for(const k in TECH)if(TECH[k].max)G.techLvl[k]=Math.max(0,s.techLvl[k]|0);
   G.barter=new Set(Array.isArray(s.barter)?s.barter.filter(k=>BARTER[k]):[]);
   G.found=new Set(s.found||[]);G.species=new Set(s.species||[]);
   Object.assign(G.opts,s.opts||{});
@@ -882,6 +908,7 @@ function navAction(){
 document.getElementById("zin").addEventListener("click",()=>setZoom(G.zoom*1.35));
 document.getElementById("zout").addEventListener("click",()=>setZoom(G.zoom/1.35));
 document.getElementById("dronebtn").addEventListener("click",deployDrone);
+document.getElementById("beaconbtn").addEventListener("click",useBeacon);
 function setZoom(z){G.zoom=clamp(z,.16,2.4);}
 addEventListener("wheel",e=>{if(G.mode==="system")setZoom(G.zoom*(e.deltaY<0?1.12:.89));},{passive:true});
 
@@ -1494,7 +1521,8 @@ function enterSurface(){
       name:genName(r)+" "+pick(["простой","ветвистый","стелющийся","хрупкий","светящийся"],r),scanned:false});
   }
   G.surf={p,tr,shipX:L.x,shipY:L.y,x:L.x+30,y:groundAt(tr,L.x+30)-10,
-    vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,mining:null};
+    vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,mining:null,
+    suit:100,warned:false,beacon:0};
   G.mode="surface";
   say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length);
 }
@@ -1522,7 +1550,10 @@ function updateSurface(dt){
   if(dep&&G.droneInventory>0){droneTarget=dep.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[dep.res].ru.toUpperCase();}
   else{droneTarget=null;dbtn.style.display="none";}
   if(dShip<48){
-    G.prompt="ДЕЙСТВ — ВЗЛЁТ · ТРЮМ "+held()+"/"+st.cargoMax;
+    /* у корабля скафандр перезаряжается — сюда и возвращаются между заходами */
+    if(S.suit<100){S.suit=Math.min(100,S.suit+.5*dt);S.warned=false;}
+    G.prompt="ДЕЙСТВ — ВЗЛЁТ · ТРЮМ "+held()+"/"+st.cargoMax+
+      "\nСКАФАНДР "+Math.round(S.suit)+"%"+(S.suit<100?" · ЗАРЯДКА":" · ГОТОВ");
     if(actEdge)launch();
   }else if(dep){
     if(held()>=st.cargoMax)G.prompt="ТРЮМ ПОЛОН · "+RES[dep.res].ru.toUpperCase()+" ОСТАЛОСЬ "+dep.left;
@@ -1532,7 +1563,7 @@ function updateSurface(dt){
       if(keys.act){
         S.mining=dep;dep.prog+=.026*st.drill*dt;
         while(dep.prog>=1&&dep.left>0&&held()<st.cargoMax){
-          dep.prog-=1;dep.left--;G.cargo[dep.res]++;
+          dep.prog-=1;dep.left--;minedUnit(dep.res);
         }
         if(dep.left<=0)say("Залежь выработана\n"+RES[dep.res].ru);
       }
@@ -1643,7 +1674,7 @@ function digCell(D,col,row){
 }
 function enterDig(){
   const S=G.surf;
-  G.dig={p:S.p,col:0,row:0,cells:{},target:null,suit:100,move:0,deepest:0};
+  G.dig={p:S.p,col:0,row:0,cells:{},target:null,move:0,deepest:0};
   G.dig.cells["0,0"]={dug:true,res:null,amount:0,prog:0,hard:0,tint:0};
   G.mode="dig";
   say("Спуск в шахту\nДЕЙСТВ — вниз · ◀ ▶ — вбок\n▲ — наверх, на поверхности — выход");
@@ -1653,16 +1684,47 @@ function exitDig(){
   say("Подъём на поверхность\nв трюме: "+held());
   saveGame(true);
 }
+/* возвратный маяк: мгновенно к кораблю, с перезарядкой */
+const BEACON_COOL=2400;
+function useBeacon(){
+  const S=G.surf;
+  if(!S||!G.tech.has("beacon")||S.beacon>0)return;
+  S.beacon=BEACON_COOL;
+  G.dig=null;G.mode="surface";
+  S.x=S.shipX;S.y=groundAt(S.tr,S.shipX)-10;S.vy=0;
+  say("Маяк сработал\nвозврат к кораблю");
+}
+function beaconTick(dt){
+  const S=G.surf,b=document.getElementById("beaconbtn");
+  if(!S||!G.tech.has("beacon")||(G.mode!=="surface"&&G.mode!=="dig")){b.style.display="none";return;}
+  if(S.beacon>0)S.beacon=Math.max(0,S.beacon-dt);
+  b.style.display="";
+  const ready=S.beacon<=0;
+  b.textContent=ready?"МАЯК":Math.ceil(S.beacon/60)+"с";
+  b.style.opacity=ready?"1":".45";
+}
+
+/* скафандр — единственный расходник на планете, корпус здесь не страдает */
+function suitHit(n,why){
+  const S=G.surf;
+  S.suit=Math.max(0,S.suit-n);
+  if(why)say(why+"\nскафандр −"+Math.round(n));
+  if(S.suit<=0)suitFailure();
+}
+function suitFailure(){
+  const S=G.surf;
+  S.suit=0;
+  G.dig=null;G.mode="surface";
+  S.x=S.shipX;S.y=groundAt(S.tr,S.shipX)-10;S.vy=0;
+  say("СКАФАНДР РАЗРУШЕН\nаварийный возврат к кораблю");
+}
 function updateDig(dt){
-  const D=G.dig,st=stat();
+  const D=G.dig,S=G.surf,st=stat();
   document.getElementById("dronebtn").style.display="none";
-  /* износ скафандра растёт с глубиной; на нуле начинает страдать корпус */
-  D.suit=Math.max(0,D.suit-(.0025+D.row*.0006)*st.suitWear*dt);
-  if(D.suit<=0){
-    if(!D.warned){D.warned=true;say("СКАФАНДР ПРОБИТ\nкорпус тратится — ▲ наверх");}
-    G.hull=Math.max(0,G.hull-.05*dt);
-    if(G.hull<=0){G.dig=null;wreck();return;}
-  }
+  /* износ растёт с глубиной; на нуле — аварийный возврат, без урона кораблю */
+  S.suit=Math.max(0,S.suit-(.0025+D.row*.0006)*st.suitWear*dt);
+  if(S.suit<=25&&!S.warned){S.warned=true;say("СКАФАНДР НА ИСХОДЕ\n▲ наверх, к кораблю");}
+  if(S.suit<=0){suitFailure();return;}
   if(D.move>0)D.move-=dt;
   let dx=0,dy=0;
   if(keys.act)dy=1;
@@ -1673,7 +1735,7 @@ function updateDig(dt){
   if(D.row===0&&dy===-1){exitDig();return;}
   const depth=D.row*3;
   let head="ГЛУБИНА "+depth+" м · "+DEPTH_TIERS[tierAt(D.row)].ru.toUpperCase()+
-    "\nСКАФАНДР "+Math.round(D.suit)+"% · ТРЮМ "+held()+"/"+st.cargoMax;
+    "\nСКАФАНДР "+Math.round(S.suit)+"% · ТРЮМ "+held()+"/"+st.cargoMax;
   if(!dx&&!dy){D.target=null;G.prompt=head+"\nДЕЙСТВ — ВНИЗ · ◀ ▶ — ВБОК · ▲ — ВВЕРХ";return;}
 
   const tc=D.col+dx,tr2=D.row+dy;
@@ -1699,17 +1761,14 @@ function updateDig(dt){
     cell.dug=true;D.target=null;
     D.col=tc;D.row=tr2;D.move=7;D.deepest=Math.max(D.deepest,D.row);
     if(cell.res){
-      const got=addRes(cell.res,cell.amount);
+      const got=addRes(cell.res,Math.round(cell.amount*st.refine));
       if(got)say("Добыто: "+RES[cell.res].ru+" ×"+got);
     }
-    /* обвал: только урон, никогда не запирает игрока */
+    /* обвал: бьёт по скафандру, никогда не запирает игрока */
     const cr=rng(hashi(D.p.seed+tc*31,tr2*57,0xCAFE));
     if(ti>0&&cr()<.03+ti*.015){
-      const dmg=4+ti*4+cr()*6;
-      G.hull=Math.max(0,G.hull-dmg);
-      D.suit=Math.max(0,D.suit-8);
-      say("Обвал породы\nкорпус −"+Math.round(dmg));
-      if(G.hull<=0){G.dig=null;wreck();return;}
+      suitHit(8+ti*6+cr()*8,"Обвал породы");
+      if(G.mode!=="dig")return;
     }
   }
 }
@@ -1721,6 +1780,7 @@ function drawDig(){
   /* за пределами ствола — сплошная непроходимая порода, а не пустота */
   ctx.fillStyle="rgb("+Math.round(c0[0]*.28)+","+Math.round(c0[1]*.28)+","+Math.round(c0[2]*.28)+")";
   ctx.fillRect(0,0,W,H);
+  const scanAll=G.tech.has("survey");
   const r0=clamp(Math.floor(camy/DIG_CELL)-1,-1,1e9),r1=Math.ceil((camy+H)/DIG_CELL)+1;
   for(let row=Math.max(0,r0);row<=r1;row++)for(let col=-DIG_HALF;col<=DIG_HALF;col++){
     const x=col*DIG_CELL-camx,y=row*DIG_CELL-camy;
@@ -1736,7 +1796,8 @@ function drawDig(){
     ctx.fillRect(x,y,DIG_CELL,DIG_CELL);
     ctx.strokeStyle="rgba(0,0,0,.28)";ctx.lineWidth=1;
     ctx.strokeRect(x+.5,y+.5,DIG_CELL-1,DIG_CELL-1);
-    if(cell.res){
+    /* без геосканера жилы читаются только вблизи */
+    if(cell.res&&(scanAll||Math.hypot(col-D.col,row-D.row)<4.5)){
       ctx.fillStyle=RES[cell.res].col;ctx.globalAlpha=.75;
       for(let i=0;i<3;i++){
         const o=(cell.tint*7+i*11)%18;
@@ -1759,7 +1820,8 @@ function drawDig(){
   ctx.save();ctx.translate(sx,sy);
   ctx.strokeStyle="#e8f4f2";ctx.lineWidth=2;ctx.fillStyle="#0a1119";
   ctx.beginPath();ctx.arc(0,-5,5,0,TAU);ctx.fill();ctx.stroke();
-  ctx.fillStyle=D.suit>25?"rgba(127,230,216,.75)":"rgba(255,107,87,.85)";
+  const suit=G.surf.suit;
+  ctx.fillStyle=suit>25?"rgba(127,230,216,.75)":"rgba(255,107,87,.85)";
   ctx.beginPath();ctx.arc(1.5,-6,2.4,0,TAU);ctx.fill();
   ctx.strokeStyle="#e8f4f2";
   ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,6);
@@ -1767,8 +1829,8 @@ function drawDig(){
   ctx.stroke();ctx.restore();
   ctx.fillStyle="rgba(127,230,216,.85)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
   ctx.fillText("ГЛУБИНА "+(D.row*3)+" м",12,H-30);
-  ctx.fillStyle=D.suit>25?"rgba(93,115,130,.9)":"#ff6b57";
-  ctx.fillText("СКАФАНДР "+Math.round(D.suit)+"%",12,H-16);
+  ctx.fillStyle=suit>25?"rgba(93,115,130,.9)":"#ff6b57";
+  ctx.fillText("СКАФАНДР "+Math.round(suit)+"%",12,H-16);
 }
 
 /* ══════════════ ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ ══════════════ */
@@ -1940,7 +2002,7 @@ function updateBelt(dt){
       b.beam=1;
       b.prog+=.03*st.drill*dt;
       while(b.prog>=1&&best.left>0&&held()<st.cargoMax){
-        b.prog-=1;best.left--;G.cargo[best.res]++;
+        b.prog-=1;best.left--;minedUnit(best.res);
       }
       if(best.left<=0)say("Астероид выработан\n"+RES[best.res].ru);
       G.prompt="";
@@ -2459,13 +2521,20 @@ function renderTab(){
     $body.appendChild(el("div","sec","ДАННЫЕ: "+G.data+
       " · ИСТОЧНИКИ — НОВЫЕ ПЛАНЕТЫ (+6) И ВИДЫ (+9)"));
     for(const k in TECH){
-      const T=TECH[k],done=G.tech.has(k);
+      const T=TECH[k],max=T.max||1,lvl=techLv(k),done=lvl>=max,cost=techCost(k);
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+T.ru+"</b><s>"+T.note+"</s>"));
-      const b=el("button","act"+(done?"":" gold"),done?"ИЗУЧЕНО":T.cost+" дан");
-      b.disabled=done||G.data<T.cost;
-      b.onclick=()=>{G.data-=T.cost;G.tech.add(k);if(k==="cera")G.hull+=30;
-        say("Изучено:\n"+T.ru);renderTab();};
+      let dots="";
+      if(T.max)for(let i=0;i<max;i++)dots+="<i class='"+(i<lvl?"f":"")+"'></i>";
+      r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+T.ru+"</b><s>"+T.note+
+        "</s>"+(dots?"<div class='dots'>"+dots+"</div>":"")));
+      const b=el("button","act"+(done?"":" gold"),done?(T.max?"МАКСИМУМ":"ИЗУЧЕНО"):cost+" дан");
+      b.disabled=done||G.data<cost;
+      b.onclick=()=>{
+        G.data-=cost;
+        if(T.max)G.techLvl[k]=(G.techLvl[k]|0)+1; else G.tech.add(k);
+        if(k==="cera")G.hull+=30;
+        say("Изучено:\n"+T.ru+(T.max?"\nуровень "+techLv(k):""));renderTab();
+      };
       r.appendChild(b);$body.appendChild(r);
     }
   }
@@ -2629,7 +2698,7 @@ function hud(){
   else if(G.mode==="landing"){a=G.land.p.name.toUpperCase();
     b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;}
   else if(G.mode==="surface"){a=G.surf.p.name.toUpperCase();
-    b="трюм "+held()+"/"+st.cargoMax+" · видов "+G.species.size;}
+    b="трюм "+held()+"/"+st.cargoMax+" · скафандр "+Math.round(G.surf.suit)+"%";}
   else if(G.mode==="dig"){a="ШАХТА · "+(G.dig?G.dig.p.name.toUpperCase():"");
     b=(G.dig?G.dig.row*3:0)+" м · трюм "+held()+"/"+st.cargoMax;}
   else if(G.mode==="belt"){a=(G.belt?G.belt.B.name:"ПОЯС").toUpperCase();
@@ -2663,6 +2732,7 @@ function frame(now){
     else if(G.mode==="surface")updateSurface(dt);
     else if(G.mode==="dig"&&G.dig)updateDig(dt);
     else if(G.mode==="belt"&&G.belt)updateBelt(dt);
+    beaconTick(dt);
     if(G.mode==="system"||G.mode==="dock")drawSystem();
     else if(G.mode==="map")drawMap();
     else if(G.mode==="landing")drawLanding();
