@@ -28,7 +28,9 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],species:[...G.species],
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
-    drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
+    drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
+    mgrs:G.mgrs,blueprints:G.blueprints,
+    fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
@@ -102,6 +104,30 @@ function applySave(s){
     tMs:Date.now(),paidMs:Date.now()
   })).slice(0,8);
   G.allies=[];
+  /* управляющие: новое поле с безопасным дефолтом, формат записи прежний.
+     Портрет не сохраняется — он выводится из seed и всегда тот же самый. */
+  G.mgrs=(Array.isArray(s.mgrs)?s.mgrs:[]).filter(m=>m&&MGR_ROLES[m.role]).map(m=>({
+    id:String(m.id||("m"+(m.seed|0))),seed:m.seed|0,name:String(m.name||"—"),
+    role:m.role,
+    traits:(Array.isArray(m.traits)?m.traits:[]).filter(t=>MGR_TRAITS.some(x=>x.id===t)).slice(0,3),
+    xp:Math.max(0,+m.xp||0),lv0:clamp(m.lv0|0||1,1,6),
+    perks:(Array.isArray(m.perks)?m.perks:[]).filter(p=>mgrPerkList(m.role).some(x=>x.id===p)).slice(0,6),
+    rules:(Array.isArray(m.rules)?m.rules:[]).filter(x=>MGR_RULES[m.role].some(r=>r.id===x)).slice(0,6),
+    loy:clamp(+m.loy||0,0,100),fee:Math.max(0,m.fee|0),
+    shipId:(m.shipId&&G.owned[m.shipId])?m.shipId:null,
+    route:(Array.isArray(m.route)?m.route:[]).filter(x=>typeof x==="string").slice(0,4),
+    earned:Math.max(0,m.earned|0),spent:Math.max(0,m.spent|0),
+    tookCr:Math.max(0,m.tookCr|0),stole:Math.max(0,m.stole|0),
+    gotData:Math.max(0,m.gotData|0),prog:Math.max(0,+m.prog||0),
+    log:Array.isArray(m.log)?m.log.slice(0,8).map(e=>({t:+e.t||0,k:String(e.k||""),s:String(e.s||"")})):[],
+    tMs:Date.now()
+  })).slice(0,MGR_CAP);
+  /* один домен — один управляющий: если запись пришла битой, лишних отбрасываем */
+  const seen={};
+  G.mgrs=G.mgrs.filter(m=>seen[m.role]?false:(seen[m.role]=1));
+  G.blueprints={};
+  if(s.blueprints&&typeof s.blueprints==="object")
+    for(const k in s.blueprints)if(BLUEPRINTS[k])G.blueprints[k]=s.blueprints[k]>0?1:-1;
   /* базы: тоже новое поле с безопасным дефолтом. Отсчёт ленивого времени
      подтягиваем к загрузке, иначе простой начислится задним числом. */
   G.bases={};

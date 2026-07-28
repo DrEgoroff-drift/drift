@@ -199,6 +199,7 @@
   <button id="starbtn" style="display:none">К ЗВЕЗДЕ</button>
   <button id="shipbtn">КОРАБЛЬ</button>
   <button id="crewbtn" style="display:none">ЭКИПАЖ</button>
+  <button id="hqbtn" style="display:none">ШТАБ</button>
   <button id="logbtn">ЖУРНАЛ</button>
   <button id="optbtn">⚙</button>
   <button id="zin">+</button>
@@ -230,6 +231,7 @@
     <button data-tab="lab">НАУКА</button>
     <button data-tab="smelt">ПЕРЕПЛАВКА</button>
     <button data-tab="crew">ЭКИПАЖ</button>
+    <button data-tab="cantina">КАНТИНА</button>
     <button data-tab="bases">БАЗЫ</button>
     <button data-tab="fuse">ЛАБОРАТОРИЯ</button>
     <button data-tab="barter">БАРТЕР</button>
@@ -260,6 +262,15 @@
   </header>
   <div class="body" id="cvBody"></div>
   <footer><button class="act gold" id="cvClose">ЗАКРЫТЬ</button></footer>
+</div>
+
+<div class="scr" id="hqview">
+  <header>
+    <div><b>ШТАБ</b><s id="hqSub">—</s></div>
+    <div class="wallet"><em id="hqCr">0 кр</em><br><i id="hqCap">—</i></div>
+  </header>
+  <div class="body" id="hqBody"></div>
+  <footer><button class="act gold" id="hqClose">ЗАКРЫТЬ</button></footer>
 </div>
 
 <div class="scr" id="opts">
@@ -850,7 +861,13 @@ const TECH={
   hauler:{ru:"Логистика дронов",note:"+22% к выработке дронов за уровень",cost:65,max:4},
   bounty:{ru:"Каперский патент",note:"+30% к награде за пиратов за уровень",cost:55,max:3},
   /* потолок флота — не число из воздуха, а изученное право нанимать людей */
-  license:{ru:"Лицензия на флот",note:"+1 место в экипаже за уровень",cost:80,max:3}
+  license:{ru:"Лицензия на флот",note:"+1 место в экипаже за уровень",cost:80,max:3},
+  /* ── устав: наука про людей, а не про железо ──
+     Мест управляющих всегда четыре, по одному на домен, — расти можно не числом,
+     а тем, сколько рутины они с вас снимают и сколько берут за это. */
+  orders: {ru:"Регламент",note:"+1 слот стоящих приказов всем управляющим",cost:110,max:2},
+  audit:  {ru:"Аудит",    note:"−1.5 п.п. к доле всех управляющих за уровень",cost:130,max:3},
+  academy:{ru:"Академия", note:"в кантине не бывает совсем зелёных: все от 2 уровня",cost:150}
 };
 /* уровень = старая одноразовая запись + докупленные уровни (совместимо со старыми записями) */
 const techLv=k=>(G.tech.has(k)?1:0)+(G.techLvl[k]|0);
@@ -1197,15 +1214,15 @@ const SYS_CACHE=new Map();
    тут торговать, чинить и заправляться. Вес зависит от опасности системы:
    в глубине фронтира торговых узлов почти нет, зато аванпосты и заправки — норма. */
 const ST_TYPES=[
-  {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods","crew","bases"],
+  {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods","crew","cantina","bases"],
    mkt:1.08, fuel:1,    rep:1,    w:d=>2.6-d*1.9},
-  {id:"indust", ru:"Промышленный комбинат",tabs:["market","smelt","mods","crew","bases"],
+  {id:"indust", ru:"Промышленный комбинат",tabs:["market","smelt","mods","crew","cantina","bases"],
    mkt:.99,  fuel:.92,  rep:.5,   w:d=>1.5-d*.4},
-  {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","barter","crew","bases"],
+  {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","barter","crew","cantina","bases"],
    mkt:.95,  fuel:1.08, rep:.75,  w:d=>1.2-d*.7},
-  {id:"sci",    ru:"Научная станция",      tabs:["market","lab","fuse","mods","crew","bases"],
+  {id:"sci",    ru:"Научная станция",      tabs:["market","lab","fuse","mods","crew","cantina","bases"],
    mkt:.93,  fuel:1.08, rep:1,    w:d=>1.2-d*.8},
-  {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter","crew","bases"],
+  {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter","crew","cantina","bases"],
    mkt:.9,   fuel:1.22, rep:1.25, w:d=>.2+d*2.8},
   {id:"fuel",   ru:"Заправочная станция",  tabs:[],
    mkt:1,    fuel:.78,  rep:1.1,  w:d=>1.6+d*1.1}
@@ -1480,6 +1497,9 @@ const G={
   market:{},uniqueShips:{},drones:[],droneInventory:0,
   pirates:[],shots:[],log:[],logNew:0,
   crew:[],allies:[],  // наёмники персистятся, их корабли в системе — эфемерны
+  /* управляющие: четыре места, по одному на домен. Чертежи исследователя —
+     1 верный, −1 ошибочный: ошибка живёт, пока её не пересоберут. */
+  mgrs:[],blueprints:{},cantina:null,
   /* базы: разреженный оверлей «sx,sy:planetIdx» → решения игрока.
      Геология под базой регенерируется из seed планеты и не сохраняется. */
   bases:{},base:null,
@@ -1494,12 +1514,12 @@ function stat(){
   const mul=k=>Math.max(.25,1+(P[k]||0));   // штрафы не должны обнулять стат
   return {
     S,
-    thr:S.thr*(1+m.engine*.19)*mul("thrMul"),
+    thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93),
     turn:S.turn*(1+m.engine*.07)*mul("turnMul"),
     fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0))),
-    cargoMax:Math.max(8,Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul"))),
-    hullMax:Math.max(20,Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0))),
-    drill:(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul"),
+    cargoMax:Math.max(8,Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92))),
+    hullMax:Math.max(20,Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0)))),
+    drill:(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88),
     synthRatio:B.has("isosynth")?8:4,
     jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)),
     armed:m.weapon>0||!!P.gun,
@@ -1507,11 +1527,11 @@ function stat(){
     cool:Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul"))),
     shieldMax:Math.max(0,Math.round(P.shieldAdd||0)),
     shieldRegen:Math.max(0,P.regenAdd||0),
-    see:(T.has("cloak")?520:1040)+(P.scanAdd||0),
+    see:(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0)),
     digTier:T.has("deepcore")?2:((T.has("deepdrill")||m.drill>=2)?1:0),
     suitWear:1/(1+techLv("suit")*.55),
     refine:1+techLv("refine")*.18,
-    droneRate:1+techLv("hauler")*.22,
+    droneRate:(1+techLv("hauler")*.22)*mgrDroneRate(),
     bountyMul:1+techLv("bounty")*.3
   };
 }
@@ -2324,11 +2344,14 @@ function assignToBase(c,B,role){
   logAdd("",c.name+" → "+BASE_ROLES[role].ru+" на базе «"+B.name+"»");
   return true;
 }
-function crewCap(){return 1+techLv("license");}
+function crewCap(){return 1+techLv("license")+mgrCrewCap();}
+function mercFee(c){return Math.round(c.fee*mgrHireMul());}
 function hireMerc(c){
   if(G.crew.length>=crewCap()){say("Больше нанимать некому\nнужна лицензия на флот");return false;}
-  if(G.credits<c.fee){say("Не хватает кредитов");return false;}
-  G.credits-=c.fee;
+  const fee=mercFee(c);
+  if(G.credits<fee){say("Не хватает кредитов");return false;}
+  G.credits-=fee;
+  c=Object.assign({},c,{fee});
   const m=Object.assign({},c,{cargo:{},order:{kind:"home",sx:G.sx,sy:G.sy},
     tMs:Date.now(),paidMs:Date.now()});
   G.crew.push(m);
@@ -2365,7 +2388,7 @@ function crewAssignShip(c,id){
 function crewOrder(c,kind,sx,sy){
   if(!c.shipId&&kind!=="home"){say("Сначала выдайте корабль");return false;}
   /* упрямый игнорирует первый приказ — вилка поведения, а не поломка */
-  if(crewHas(c,"stubborn")&&c.order&&c.order.kind!==kind&&!c.balked){
+  if(crewHas(c,"stubborn")&&!mgrPerkOf("cmd","disc")&&c.order&&c.order.kind!==kind&&!c.balked){
     c.balked=true;
     logAdd("warn",c.name+" не принял приказ с первого раза — упрямый");
     say(c.name+" упрямится\nповторите приказ");
@@ -2422,6 +2445,7 @@ function crewUnload(c,quiet){
     sum+=q*((prices&&prices[k])||RES[k].price);n+=q;c.cargo[k]=0;
   }
   if(sum>0){
+    sum-=mgrCmdCut(sum);
     G.credits+=sum;c.earned=(c.earned||0)+sum;
     if(!quiet)logAdd("money",c.name+" сдал груз ×"+n+" · +"+sum.toLocaleString("ru")+" кр");
   }
@@ -2453,7 +2477,9 @@ function crewTripMinutes(c){
 /* насколько он эффективен сверх оклада: опыт и черты сидят и в жаловании тоже,
    поэтому в плюс выводят только переданные модули и высокая удача */
 function crewEff(c){
-  return crewMul(c,"yield")*(c.morale<.5?.5:1)*(1+crewModLv(c,"drill")*.2);
+  /* командир звена — множитель поверх, но он же берёт долю с выручки (crewCredit):
+     потолок домена растёт, чистые деньги — нет. Это подъём потолка, а не кран. */
+  return crewMul(c,"yield")*(c.morale<.5?.5:1)*(1+crewModLv(c,"drill")*.2)*mgrCrewYield();
 }
 function crewBusy(c){
   /* пока он в плену или в загуле, рейсы не идут и жалованье не капает */
@@ -2496,7 +2522,7 @@ function crewTick(){
     if(trips>CREW_TRIP_QUEUE){trips=CREW_TRIP_QUEUE;c.tripMin=0;}
     else c.tripMin-=trips*tm;
     for(let i=0;i<trips&&!c.gone&&!crewBusy(c);i++){
-      c.xp=(c.xp||0)+tm;
+      c.xp=(c.xp||0)+tm*mgrCrewXp();
       crewTrip(c,tm);
     }
   }
@@ -2632,6 +2658,8 @@ function crewDeliver(c,quiet){
 function crewCredit(c,sum){
   if(sum<=0)return 0;
   sum=Math.round(sum);
+  if(c.order&&c.order.kind==="hunt"&&mgrPerkOf("cmd","bounty"))sum=Math.round(sum*1.3);
+  sum-=mgrCmdCut(sum);
   G.credits+=sum;c.earned=(c.earned||0)+sum;
   return sum;
 }
@@ -2979,6 +3007,775 @@ function crewFreeHostagesAt(sx,sy){
 /* сколько всего просят за пленных — для подсказки на экране экипажа */
 function crewHostages(){return G.crew.filter(c=>c.state==="hostage");}
 
+/* ══════════════ управляющие: домен вместо приказов ══════════════ */
+/* Наёмник — ставка со скрытой удачей, которой игрок управляет вручную. Управляющий —
+   противоположность: всё видно (уровень, перки, доля), но он стоит дорого и имеет
+   собственное мнение. Он берёт домен целиком и держит его сам, пока ему платят.
+
+   Мест всегда четыре — по одному на домен. Это не про рост числа, а про выбор,
+   кем именно закрыть рутину; ИИ-ядро (позже) займёт такое же место, а не пятое. */
+const MGR_CAP=4;
+const MGR_ROLES={
+  cmd: {ru:"Командир звена",dom:"звено наёмников", pay:70,cut:.07,col:"#e0885a",
+        note:"держит наёмников: приказы, ремонт, дисциплина, трофеи"},
+  keep:{ru:"Смотритель",    dom:"дроны и базы",    pay:58,cut:.05,col:"#8fd08a",
+        note:"следит за дронами и стройкой, не даёт домену простаивать"},
+  fact:{ru:"Фактор",        dom:"торговый маршрут",pay:64,cut:.09,col:"#f2b25c",
+        note:"водит маршрут между известными станциями — живые деньги без вас"},
+  sci: {ru:"Исследователь",  dom:"лаборатория",     pay:52,cut:.04,col:"#7fb0e6",
+        note:"разбирает образцы: наука и чертежи, которых нет в продаже"}
+};
+const MGR_ROLE_KEYS=Object.keys(MGR_ROLES);
+/* ── черты: даны при генерации и не меняются ──
+   Черта — то, с чем игрок мирится, перк — то, что игрок выбирает. Поэтому черта
+   всегда двусторонняя: у неё есть и плюс, и цена. */
+const MGR_TRAITS=[
+  {id:"keen",  ru:"дотошный",      note:"+30% опыта, но домен работает на 10% медленнее",
+   xp:1.3,speed:.9},
+  {id:"grip",  ru:"хват",          note:"доля на 2 п.п. меньше, лояльность падает вдвое быстрее",
+   cut:-.02,loyDrop:2},
+  {id:"selfish",ru:"свои интересы",note:"тихо забирает часть домена сверх доли",
+   steal:.06},
+  {id:"mentor",ru:"наставник",     note:"подчинённые набирают опыт быстрее",
+   sub:1.5},
+  {id:"coward",ru:"трус",          note:"отзывает своих при первой опасности, даже когда не надо",
+   timid:1},
+  {id:"legend",ru:"легенда",       note:"найм в его домен дешевле на четверть",
+   hire:.75},
+  {id:"drink", ru:"пьющий",        note:"иногда домен простаивает, зато он почти не обижается",
+   idle:.12,loyDrop:.4},
+  {id:"para",  ru:"параноик",      note:"меньше риска, но требует держать резерв в 3000 кр",
+   risk:.75,reserve:3000},
+  {id:"xeno",  ru:"ксенофил",      note:"вдвое больше выхлопа с образцов и артефактов, людям неприятен",
+   sample:2,loyDrop:1.3},
+  {id:"pirate",ru:"бывший пират",  note:"знает чёрный ассортимент, но станции берут пошлину",
+   black:1,cut:.02},
+  {id:"blank", ru:"чистый лист",   note:"других черт нет — растёт быстрее всех",
+   xp:1.35,solo:1}
+];
+function mgrTrait(id){return MGR_TRAITS.find(t=>t.id===id)||MGR_TRAITS[0];}
+function mgrHas(m,id){return m.traits.indexOf(id)>=0;}
+function mgrTraitMul(m,k){
+  let v=1;for(const id of m.traits){const t=mgrTrait(id);if(t[k]!==undefined)v*=t[k];}
+  return v;
+}
+function mgrTraitAdd(m,k){
+  let v=0;for(const id of m.traits){const t=mgrTrait(id);if(t[k]!==undefined)v+=t[k];}
+  return v;
+}
+/* ── перки: три ветви на роль, шесть очков за прохождение ──
+   Ветвей всегда больше, чем очков: полностью выучить дерево нельзя никогда,
+   и два командира звена — разные люди, а не два одинаковых максимума. */
+const MGR_PERKS={
+  cmd:[
+    {ru:"Выучка",list:[
+      {id:"drill1",ru:"муштра",     note:"+18% к выработке звена"},
+      {id:"disc",  ru:"дисциплина", note:"«упрямый» слушается с первого раза"},
+      {id:"slot",  ru:"звено больше",note:"+1 место в экипаже"},
+      {id:"rota",  ru:"ротация",    note:"раненых сам отправляет на прикол чиниться"}]},
+    {ru:"Чутьё",list:[
+      {id:"hunch", ru:"чутьё",      note:"видна вилка скрытой удачи наёмника"},
+      {id:"read",  ru:"взгляд",     note:"черты кандидата видны до найма"},
+      {id:"exact", ru:"точный счёт",note:"скрытая удача видна числом"},
+      {id:"poach", ru:"перевербовка",note:"наём наёмников дешевле на треть"}]},
+    {ru:"Трофеи",list:[
+      {id:"bounty",ru:"патент",     note:"+30% к деньгам звена с боевых приказов"},
+      {id:"salv",  ru:"трофейщик",  note:"звено чаще приводит целый корпус"},
+      {id:"ransom",ru:"переговорщик",note:"выкуп за пленных вдвое дешевле"},
+      {id:"hunt",  ru:"охота",      note:"пиратские базы в соседних секторах отмечены"}]}
+  ],
+  keep:[
+    {ru:"Логистика",list:[
+      {id:"relay", ru:"перелёт",    note:"выработавший точку дрон сам ищет новую"},
+      {id:"rate",  ru:"наладка",    note:"+25% к выработке дронов"},
+      {id:"sell",  ru:"авто-сбыт",  note:"дроны сдают груз, не дожидаясь вас"},
+      {id:"swarm", ru:"рой",        note:"+40% на богатых точках, дроны работают парами"}]},
+    {ru:"Стройка",list:[
+      {id:"queue", ru:"очередь",    note:"база достраивает начатое сама"},
+      {id:"cheap", ru:"смета",      note:"−20% к стоимости построек"},
+      {id:"melt",  ru:"плавильня",  note:"переплавка идёт без присмотра"},
+      {id:"deep",  ru:"второй ярус",note:"базе разрешён ярус ниже"}]},
+    {ru:"Энергия",list:[
+      {id:"power", ru:"переброс",   note:"мощность сама течёт туда, где нужна"},
+      {id:"stable",ru:"стабилизация",note:"реактор не глохнет от перегруза"},
+      {id:"storm", ru:"буревой щит",note:"база переживает бурю без потерь"},
+      {id:"grid",  ru:"излишки",    note:"лишняя энергия продаётся станции"}]}
+  ],
+  fact:[
+    {ru:"Рынок",list:[
+      {id:"see",   ru:"сводка",     note:"цены маршрута видны из любой системы"},
+      {id:"limit", ru:"пороги",     note:"открывает приказы по цене"},
+      {id:"duty",  ru:"пошлины",    note:"−25% к сборам на маршруте"},
+      {id:"spec",  ru:"спекуляция", note:"+30% к доходу маршрута"}]},
+    {ru:"Связи",list:[
+      {id:"stock", ru:"обновление", note:"ассортимент станций меняется чаще"},
+      {id:"cheaphire",ru:"вербовщик",note:"наёмники и управляющие дешевле"},
+      {id:"black", ru:"чёрный список",note:"в кантине бывает редкий товар"},
+      {id:"friend",ru:"свой человек",note:"в кантине всегда есть сильный кандидат"}]},
+    {ru:"Караван",list:[
+      {id:"leg",   ru:"плечо",      note:"+1 станция в маршруте"},
+      {id:"convoy",ru:"конвой",     note:"маршрут не грабят"},
+      {id:"second",ru:"второй борт",note:"+45% к доходу маршрута"},
+      {id:"mono",  ru:"монополия",  note:"его товар поднимает цену на всём маршруте"}]}
+  ],
+  sci:[
+    {ru:"Метод",list:[
+      {id:"fast",  ru:"метод",      note:"образцы разбираются на 30% быстрее"},
+      {id:"safe",  ru:"проверка",   note:"втрое реже ошибочный вывод"},
+      {id:"par",   ru:"параллель",  note:"два образца сразу"},
+      {id:"redo",  ru:"пересборка", note:"повторный разбор возвращает половину"}]},
+    {ru:"Ксенология",list:[
+      {id:"bio",   ru:"биология",   note:"флора и фауна тоже идут в образцы"},
+      {id:"relic", ru:"чтение",     note:"артефакты открывают вторую строку"},
+      {id:"trace", ru:"происхождение",note:"артефакт указывает на следующий"},
+      {id:"synth", ru:"синтез",     note:"два артефакта дают третий"}]},
+    {ru:"Прикладное",list:[
+      {id:"draft", ru:"чертежи",    note:"разбор иногда даёт чертёж"},
+      {id:"better",ru:"допуск",     note:"чертежи на 15% сильнее"},
+      {id:"core",  ru:"схема ядра", note:"открывает сборку ИИ-ядра"},
+      {id:"batch", ru:"малая серия",note:"+50% к науке с образца"}]}
+  ]
+};
+function mgrPerkList(role){
+  const out=[];for(const br of MGR_PERKS[role])for(const p of br.list)out.push(p);
+  return out;
+}
+function mgrPerk(m,id){return !!(m.perks&&m.perks.indexOf(id)>=0);}
+/* ── уровни ──
+   Опыт капает от работы домена, а не от времени: висящий без дела управляющий
+   не растёт, иначе выгодно было бы просто ждать. */
+const MGR_XP=[0,45,110,210,360,570];
+function mgrLevel(m){
+  let lv=1;for(let i=1;i<MGR_XP.length;i++)if((m.xp||0)>=MGR_XP[i])lv=i+1;
+  return lv;
+}
+function mgrNext(m){const lv=mgrLevel(m);return lv>=6?null:MGR_XP[lv];}
+function mgrPoints(m){return mgrLevel(m)-1-(m.perks?m.perks.length:0);}
+function mgrLearn(m,id){
+  if(mgrPoints(m)<=0){say("Нет свободных очков\nнужен уровень");return false;}
+  if(mgrPerk(m,id))return false;
+  /* ветвь идёт по порядку, и это правило модели, а не интерфейса: иначе последний
+     перк ветви можно было бы взять первым, и «ветвей больше, чем очков» перестаёт
+     быть выбором — становится списком лучшего */
+  let found=null;
+  for(const br of MGR_PERKS[m.role]){
+    const i=br.list.findIndex(p=>p.id===id);
+    if(i<0)continue;
+    if(i>0&&!mgrPerk(m,br.list[i-1].id)){
+      say("Сначала «"+br.list[i-1].ru+"»\nветвь идёт по порядку");return false;
+    }
+    found=br.list[i];
+  }
+  if(!found)return false;
+  m.perks.push(id);
+  logAdd("",m.name+" выучил перк «"+found.ru+"»");
+  return true;
+}
+/* ── деньги ──
+   Оклад втрое против наёмника плюс доля с домена. Пока домен мал, управляющий
+   убыточен — и это правильно: он не ускоритель раннего старта, а способ поднять
+   потолок, когда потолок уже мешает. */
+function mgrPay(m){
+  return Math.round(MGR_ROLES[m.role].pay*(1+(mgrLevel(m)-1)*.18)*mgrTraitMul(m,"pay"));
+}
+function mgrCut(m){
+  let c=MGR_ROLES[m.role].cut+mgrTraitAdd(m,"cut")-techLv("audit")*.015;
+  return clamp(c,.01,.2);
+}
+/* доля снимается до того, как деньги попадут игроку, и всегда видна строкой */
+function mgrTake(m,gross){
+  if(gross<=0)return 0;
+  const cut=Math.round(gross*mgrCut(m));
+  const steal=Math.round(gross*mgrTraitAdd(m,"steal")*(m.loy<50?1.6:1));
+  m.tookCr=(m.tookCr||0)+cut+steal;
+  if(steal>0)m.stole=(m.stole||0)+steal;
+  return cut+steal;
+}
+function mgrOf(role){return G.mgrs.find(m=>m.role===role)||null;}
+function mgrPerkOf(role,id){const m=mgrOf(role);return m&&!m.stalled&&mgrPerk(m,id);}
+/* ── что домен даёт остальной игре ──
+   Все крючки в один список, чтобы правки шли здесь, а не расползались по модулям. */
+function mgrCrewYield(){
+  const m=mgrOf("cmd");if(!m)return 1;
+  return (mgrPerk(m,"drill1")?1.18:1)*(1+(mgrLevel(m)-1)*.04)*mgrTraitMul(m,"speed")*
+         (m.loy<50?.9:1);
+}
+/* доля командира снимается там же, где звено сдаёт деньги: игрок видит не «оклад
+   и потом непонятно что», а вычет ровно с той суммы, которую принесли его люди */
+function mgrCmdCut(sum){
+  const m=mgrOf("cmd");
+  if(!m||m.stalled||sum<=0)return 0;
+  const take=mgrTake(m,sum);
+  m.lastCut=(m.lastCut||0)+take;
+  return take;
+}
+function mgrCrewXp(){const m=mgrOf("cmd");return m&&mgrHas(m,"mentor")?mgrTrait("mentor").sub:1;}
+function mgrCrewCap(){return mgrPerkOf("cmd","slot")?1:0;}
+function mgrDroneRate(){
+  const m=mgrOf("keep");if(!m)return 1;
+  return (mgrPerk(m,"rate")?1.25:1)*(mgrPerk(m,"swarm")?1.4:1)*mgrTraitMul(m,"speed");
+}
+function mgrBuildDiscount(){return mgrPerkOf("keep","cheap")?.8:1;}
+function mgrHireMul(){
+  let v=1;
+  for(const m of G.mgrs){
+    if(mgrHas(m,"legend"))v*=mgrTrait("legend").hire;
+    if(mgrPerk(m,"poach")||mgrPerk(m,"cheaphire"))v*=.7;
+  }
+  return v;
+}
+/* ── генерация кандидата ──
+   У управляющего нет скрытых чисел: роль и черты видны. Вся неявность переехала
+   в лояльность — то есть в то, как игрок себя поведёт, а не в бросок при найме. */
+function genMgr(seed,rolePool){
+  const r=rng(seed);
+  const role=pick(rolePool&&rolePool.length?rolePool:MGR_ROLE_KEYS,r);
+  const traits=[];
+  if(r()<.12)traits.push("blank");
+  else{
+    const n=2+(r()<.4?1:0);
+    for(let i=0;i<n;i++){
+      const t=pick(MGR_TRAITS,r);
+      if(t.id!=="blank"&&traits.indexOf(t.id)<0)traits.push(t.id);
+    }
+    if(!traits.length)traits.push("keen");
+  }
+  const m={id:"m"+seed,seed,name:genName(r),role,traits,
+    lv0:1,xp:0,perks:[],rules:[],loy:55+Math.floor(r()*20),
+    tMs:0,earned:0,spent:0,tookCr:0,stole:0,shipId:null,route:[],
+    log:[]};
+  m.fee=Math.round((1400+r()*2600)*(1+MGR_ROLES[role].cut*4));
+  return m;
+}
+/* Кантина держится на seed станции и временном бакете — как ассортимент частей.
+   Ушёл и вернулся через час — другие люди, и это единственный способ «перебрать»
+   кандидатов: сохранять их некуда. */
+function cantinaPool(stype){
+  return stype==="trade"?["fact","fact","cmd"]:
+         stype==="indust"?["keep","keep","fact"]:
+         stype==="sci"?["sci","sci","keep"]:
+         stype==="yard"?["cmd","keep","fact","sci"]:
+         stype==="outpost"?["cmd","cmd","keep","fact"]:MGR_ROLE_KEYS;
+}
+function stationMgrs(sys){
+  if(!sys.station)return [];
+  const T=stTypeOf(sys.station.stype);
+  const r=rng(hashi(sys.seed,0x4A17,timeBucket()));
+  const n=2+Math.floor(r()*3);
+  const out=[];
+  for(let i=0;i<n;i++){
+    const m=genMgr(hashi(sys.seed,i*3313+71,timeBucket()),cantinaPool(T.id));
+    /* «свой человек» фактора: в кантине всегда есть кто-то стоящий */
+    if(i===0&&mgrPerkOf("fact","friend")){m.xp=MGR_XP[2];m.fee=Math.round(m.fee*1.4);}
+    if(techLv("academy")>0&&m.xp<MGR_XP[1])m.xp=MGR_XP[1];
+    out.push(m);
+  }
+  return out;
+}
+function mgrFee(m){return Math.round(m.fee*mgrHireMul());}
+function mgrTaken(role){return !!mgrOf(role);}
+function hireMgr(cand){
+  if(G.mgrs.length>=MGR_CAP){say("Все четыре места заняты\nсначала расчёт");return false;}
+  if(mgrTaken(cand.role)){say("Этот домен уже за "+mgrOf(cand.role).name+"\nодин домен — один управляющий");return false;}
+  const fee=mgrFee(cand);
+  if(G.credits<fee){say("Не хватает кредитов");return false;}
+  G.credits-=fee;
+  const m=Object.assign({},cand,{traits:cand.traits.slice(),perks:[],rules:[],
+    tMs:Date.now(),earned:0,spent:0,tookCr:0,stole:0,route:[],log:[]});
+  G.mgrs.push(m);
+  mgrSay(m,"Принял домен: "+MGR_ROLES[m.role].dom);
+  tell("money","Нанят "+m.name+" · "+MGR_ROLES[m.role].ru+" · −"+fee.toLocaleString("ru")+" кр",
+       "Нанят "+m.name+"\n"+MGR_ROLES[m.role].ru+"\nэкран ШТАБ — перки и приказы");
+  return true;
+}
+/* Расчёт дорог намеренно: управляющий — не расходник, которого перебирают,
+   а решение, с которым живут. */
+function mgrSeverance(m){return Math.round(m.fee*.6+mgrPay(m)*25);}
+function fireMgr(m){
+  const i=G.mgrs.indexOf(m);if(i<0)return false;
+  const cost=mgrSeverance(m);
+  if(G.credits<cost){say("Расчёт стоит "+cost.toLocaleString("ru")+" кр\nне хватает кредитов");return false;}
+  G.credits-=cost;
+  G.mgrs.splice(i,1);
+  logAdd("dim","Расчёт с "+m.name+" ("+MGR_ROLES[m.role].ru.toLowerCase()+") · −"+
+    cost.toLocaleString("ru")+" кр");
+  say("Расчёт с "+m.name+"\n−"+cost.toLocaleString("ru")+" кр");
+  return true;
+}
+/* короткая личная лента: по ней читается и работа домена, и настроение */
+function mgrSay(m,s,k){
+  m.log=m.log||[];
+  m.log.unshift({t:Date.now(),k:k||"",s});
+  if(m.log.length>8)m.log.length=8;
+}
+/* ══════════════ стоящие приказы ══════════════ */
+/* Это и есть «снимает рутину», выраженное механикой: правило «условие → действие»
+   кладётся в слот один раз. Слотов всегда меньше, чем правил, — игрок выбирает,
+   какую именно рутину отдать, и это выбор, а не настройка. */
+const MGR_RULES={
+  cmd:[
+    {id:"repair", ru:"корпус < 40% → отозвать и починить"},
+    {id:"nofight",ru:"в секторе опасно → звено не вылетает"},
+    {id:"payfirst",ru:"кредитов < 2000 → домен не тратит"},
+    {id:"ransom", ru:"своего взяли в плен → выкупить сразу"}
+  ],
+  keep:[
+    {id:"redeploy",ru:"точка выработана → перебросить дрон"},
+    {id:"sell",    ru:"трюм дрона полон → сдать на станции"},
+    {id:"build",   ru:"на базе есть недострой → достроить"},
+    {id:"payfirst",ru:"кредитов < 2000 → домен не тратит"}
+  ],
+  fact:[
+    {id:"run",    ru:"маршрут известен → водить постоянно"},
+    {id:"hold",   ru:"цена ниже средней → придержать товар"},
+    {id:"safe",   ru:"на плече опасно → обойти сектор"},
+    {id:"payfirst",ru:"кредитов < 2000 → домен не тратит"}
+  ],
+  sci:[
+    {id:"queue",  ru:"образец разобран → взять следующий"},
+    {id:"rare",   ru:"в трюме редкое сырьё → забрать в лабораторию"},
+    {id:"careful",ru:"вывод сомнителен → перепроверить"},
+    {id:"data",   ru:"копить науку, а не чертежи"}
+  ]
+};
+function mgrSlots(m){
+  const lv=mgrLevel(m);
+  return 1+(lv>=2?1:0)+(lv>=4?1:0)+(lv>=6?1:0)+techLv("orders");
+}
+function mgrRule(m,id){return m.rules.indexOf(id)>=0;}
+function mgrToggleRule(m,id){
+  const i=m.rules.indexOf(id);
+  if(i>=0){m.rules.splice(i,1);return true;}
+  if(m.rules.length>=mgrSlots(m)){say("Слоты приказов заняты\nснимите один или растите в уровне");return false;}
+  m.rules.push(id);return true;
+}
+/* ══════════════ ленивый тик домена ══════════════ */
+/* Считается от прошедшего времени, ровно как дроны и наёмники: никаких фоновых
+   NPC, ничего не идёт при закрытой игре. */
+function mgrTick(){
+  if(!G.mgrs||!G.mgrs.length)return;
+  const now=Date.now();
+  for(let i=G.mgrs.length-1;i>=0;i--){
+    const m=G.mgrs[i];
+    if(!m.tMs){m.tMs=now;continue;}
+    const dt=now-m.tMs;
+    if(dt<1000)continue;
+    m.tMs=now;
+    const min=Math.min(dt/60000,240);       // за долгое отсутствие домен не копит вечно
+    mgrPayroll(m,min);
+    if(m.gone){G.mgrs.splice(i,1);continue;}
+    /* пьющий иногда просто не работает — черта видна заранее, претензий нет */
+    const idle=mgrHas(m,"drink")&&
+      rng(hashi(m.seed,Math.floor(now/600000),0xD21))()<mgrTrait("drink").idle;
+    m.stalled=idle||m.loy<=0;
+    if(m.stalled)continue;
+    /* параноик не даёт домену работать, пока нет резерва: цена его осторожности */
+    const need=mgrTraitAdd(m,"reserve");
+    if(need&&G.credits<need){
+      if(!m.warnRes){m.warnRes=1;mgrSay(m,"Не начну, пока в кассе меньше "+need+" кр","warn");}
+      continue;
+    }
+    m.warnRes=0;
+    const work=mgrDomain(m,min);
+    if(work>0){
+      m.xp=(m.xp||0)+work*mgrTraitMul(m,"xp");
+      const lv=mgrLevel(m);
+      if(lv>(m.lv0|0)){
+        m.lv0=lv;
+        mgrSay(m,"Уровень "+lv+" · есть очко перка","good");
+        tell("","Уровень "+lv+": "+m.name,m.name+" вырос до уровня "+lv+"\nоткройте ШТАБ — есть очко перка");
+      }
+    }
+  }
+}
+/* ── жалованье и лояльность ──
+   Управляющий не ломается по корпусу — он уходит. Лояльность падает от задержек
+   и убыточного домена, и на нуле он забирает флагман: единственный источник
+   по-настоящему сильного противника поздней игры, которого игрок вырастил сам. */
+function mgrPayroll(m,min){
+  const due=mgrPay(m)*min;
+  const pay=Math.min(G.credits,due);
+  G.credits-=pay;m.spent=(m.spent||0)+pay;
+  const short=due-pay;
+  const drop=mgrTraitMul(m,"loyDrop");
+  if(short>0){
+    m.loy=Math.max(0,m.loy-min*1.6*drop);
+    if(!m.warnPay&&m.loy<45){
+      m.warnPay=1;mgrSay(m,"Жалованье не приходит. Я это помню.","warn");
+      logAdd("warn",m.name+" не получает жалованья — лояльность падает");
+    }
+    if(m.loy<=0){
+      const S=m.shipId?shipData(m.shipId):null;
+      if(m.shipId&&m.shipId!==G.shipId)delete G.owned[m.shipId];
+      logAdd("warn",m.name+" ушёл"+(S?" и забрал «"+S.ru+"»":"")+
+        " · домен «"+MGR_ROLES[m.role].dom+"» снова ваш");
+      tell("warn",m.name+" ушёл",m.name+" ушёл\n"+(S?"забрал «"+S.ru+"»":"домен остался без хозяина"));
+      m.gone=true;
+    }
+  }else{
+    m.warnPay=0;
+    /* лояльность растёт медленнее, чем падает: доверие дороже обиды */
+    m.loy=Math.min(100,m.loy+min*.35/drop);
+  }
+}
+/* ── работа домена: возвращает «сколько сделано» (оно же опыт) ── */
+function mgrDomain(m,min){
+  const speed=mgrTraitMul(m,"speed");
+  if(m.role==="cmd")   return mgrWorkCmd(m,min*speed);
+  if(m.role==="keep")  return mgrWorkKeep(m,min*speed);
+  if(m.role==="fact")  return mgrWorkFact(m,min*speed);
+  if(m.role==="sci")   return mgrWorkSci(m,min*speed);
+  return 0;
+}
+/* Командир не зарабатывает сам — он ведёт чужую работу. Опыт идёт от рейсов
+   звена, а доля снимается с того, что звено привозит (см. crewCredit). */
+function mgrWorkCmd(m,min){
+  const crew=G.crew.filter(c=>c.shipId&&c.order&&c.order.kind!=="home");
+  if(!crew.length)return 0;
+  for(const c of crew){
+    /* ротация: раненого он сам ставит на прикол, не дожидаясь вашего приказа */
+    if(mgrRule(m,"repair")&&mgrPerk(m,"rota")&&c.hull<c.hullMax*.4&&c.order.kind!=="home"){
+      c.order={kind:"home",sx:c.order.sx,sy:c.order.sy};c.tripMin=0;
+      mgrSay(m,c.name+" отозван: корпус "+Math.round(c.hull)+"/"+Math.round(c.hullMax));
+    }
+    /* трус отзывает всех при опасности — даже когда не надо */
+    if((mgrRule(m,"nofight")||mgrHas(m,"coward"))&&
+       sysDanger(c.order.sx,c.order.sy)>(mgrHas(m,"coward")?.35:.72)&&c.order.kind==="hunt"){
+      c.order={kind:"home",sx:c.order.sx,sy:c.order.sy};
+      mgrSay(m,c.name+" не пошёл в бой: сектор слишком дикий","warn");
+    }
+    if(mgrRule(m,"ransom")&&c.state==="hostage"&&c.ransom&&G.credits>=c.ransom*1.5){
+      if(typeof ransomPay==="function"&&ransomPay(c))
+        mgrSay(m,"Выкупил "+c.name+" не спрашивая — так дешевле","good");
+    }
+  }
+  return min*crew.length*.5;
+}
+/* Смотритель держит дронов и стройку. Доход у него не свой, поэтому опыт идёт
+   от числа живых точек: пустой домен не растит никого. */
+function mgrWorkKeep(m,min){
+  const n=(G.drones||[]).length;
+  let work=min*(n*.4+Object.keys(G.bases||{}).length*.3);
+  if(mgrRule(m,"redeploy")&&mgrPerk(m,"relay")&&G.droneInventory>0&&n<6){
+    /* дрон из трюма сам уходит на точку в системе, где стоит игрок */
+    m.pend=(m.pend||0)+min;
+    if(m.pend>8){m.pend=0;mgrSay(m,"Дрон переброшен на новую точку");}
+  }
+  return work;
+}
+/* Фактор — единственный, кто приносит чистые кредиты сам. Маршрут строится из
+   станций, которые игрок уже нашёл: он не открывает мир за игрока, он его доит. */
+/* Маршрут не выдумывается генератором: в него попадают станции, куда игрок
+   прилетал сам. Фактор не открывает мир за игрока — он доит уже открытое. */
+function mgrRouteVisit(sys){
+  const m=mgrOf("fact");
+  if(!m||!sys||!sys.station)return;
+  const key=sys.sx+","+sys.sy;
+  if(m.route.indexOf(key)>=0)return;
+  if(m.route.length>=mgrRouteMax(m)){
+    if(!mgrRule(m,"run"))return;
+    m.route.shift();                 // новое плечо вытесняет самое старое
+  }
+  m.route.push(key);
+  mgrSay(m,"Плечо маршрута: «"+sys.station.name+"»");
+}
+function mgrRouteMax(m){return 2+(mgrPerk(m,"leg")?1:0)+(mgrLevel(m)>=5?1:0);}
+function mgrWorkFact(m,min){
+  if(!mgrRule(m,"run"))return min*.2;
+  const legs=Math.min(m.route.length,mgrRouteMax(m));
+  if(legs<2)return min*.2;
+  let per=26*legs*(1+(mgrLevel(m)-1)*.12);
+  if(mgrPerk(m,"spec"))per*=1.3;
+  if(mgrPerk(m,"second"))per*=1.45;
+  if(mgrPerk(m,"duty"))per*=1.1;
+  if(mgrRule(m,"hold"))per*=1.12;
+  if(mgrHas(m,"pirate"))per*=.9;
+  let gross=Math.round(per*min);
+  /* без конвоя маршрут иногда грабят: домен не бесплатная рента */
+  if(!mgrPerk(m,"convoy")&&!mgrRule(m,"safe")&&
+     rng(hashi(m.seed,Math.floor(Date.now()/300000),0x7A1))()<.06*min){
+    gross=Math.round(gross*.35);
+    mgrSay(m,"Плечо накрыли — часть груза ушла","warn");
+  }
+  const take=mgrTake(m,gross);
+  const net=gross-take;
+  G.credits+=net;m.earned=(m.earned||0)+net;
+  if(net>0&&!(m.silent))m.lastNet=(m.lastNet||0)+net;
+  return min*1.2;
+}
+/* ── исследователь ──
+   Единственный домен, который не приносит кредитов вообще и первые часы выглядит
+   чистым убытком. Окупается один раз и навсегда — чертежом, который нельзя купить. */
+const BLUEPRINTS={
+  coldbore:{ru:"Холодный бур",   note:"+18% к скорости бурения",  bad:"бур греется: −12% к скорости"},
+  wide:    {ru:"Плотная укладка",note:"+12% к трюму",             bad:"перекос: −8% к трюму"},
+  hardweld:{ru:"Двойной шов",    note:"+25 к максимуму корпуса",  bad:"шов ведёт: −15 корпуса"},
+  cleanjet:{ru:"Чистая струя",   note:"+10% к тяге",              bad:"плюётся: −7% к тяге"},
+  longeye:  {ru:"Длинный глаз",  note:"+180 к дальности радара",  bad:"помехи: −120 к радару"}
+};
+const BP_KEYS=Object.keys(BLUEPRINTS);
+function bpState(k){return (G.blueprints&&G.blueprints[k])|0;}   // 1 верный, −1 ошибочный
+function bpMul(k,good,bad){const s=bpState(k);return s>0?good:(s<0?bad:1);}
+/* Игрок таскает редкое сырьё мимо лаборатории — теперь оно чем-то становится. */
+function mgrSamples(){
+  let n=0;for(const k of RARE_RES)n+=G.cargo[k]|0;
+  return n;
+}
+function mgrWorkSci(m,min){
+  const rate=(mgrPerk(m,"fast")?1.3:1)*(mgrPerk(m,"par")?1.8:1);
+  m.prog=(m.prog||0)+min*rate;
+  const need=14;
+  let done=0,guard=6;
+  while(m.prog>=need&&guard-->0){
+    m.prog-=need;done++;
+    /* образец из трюма ускоряет и усиливает вывод; без него он разбирает то,
+       что уже лежит в лаборатории, и выхлоп куда скромнее */
+    let sample=null;
+    if(mgrRule(m,"rare")){
+      for(const k of RARE_RES)if((G.cargo[k]|0)>0){sample=k;G.cargo[k]--;break;}
+    }
+    const r=rng(hashi(m.seed,Math.floor(Date.now()/60000)+done*17,0x5C1));
+    const mul=(sample?2.2:1)*mgrTraitMul(m,"sample")*(mgrPerk(m,"batch")?1.5:1);
+    const data=Math.round((2+r()*3)*mul);
+    G.data+=data;
+    m.gotData=(m.gotData||0)+data;
+    /* чертёж — редкий и не всегда верный: это единственный домен, где результат
+       бывает отрицательным, и видно это не сразу */
+    if(mgrPerk(m,"draft")&&!mgrRule(m,"data")&&r()<(sample?.3:.12)){
+      const free=BP_KEYS.filter(k=>!bpState(k));
+      if(free.length){
+        const k=pick(free,r);
+        const wrong=r()<(mgrPerk(m,"safe")?.06:.18);
+        G.blueprints[k]=wrong?-1:1;
+        mgrSay(m,"Чертёж: "+BLUEPRINTS[k].ru,wrong?"warn":"good");
+        tell("","Чертёж: "+BLUEPRINTS[k].ru,"«"+BLUEPRINTS[k].ru+"»\n"+
+          (wrong?"он уверен, что всё сходится":BLUEPRINTS[k].note));
+      }
+    }else if(sample){
+      mgrSay(m,"Разобран образец: "+RES[sample].ru.toLowerCase()+" · +"+data+" данных");
+    }
+  }
+  return min*(mgrRule(m,"queue")?1.3:1);
+}
+/* перепроверка ошибочного чертежа — отдельное решение игрока, а не автоисправление */
+function bpRecheck(k){
+  const m=mgrOf("sci");
+  if(!m){say("Нужен исследователь");return false;}
+  const cost=60;
+  if(G.data<cost){say("Нужно "+cost+" данных на пересборку");return false;}
+  G.data-=cost;
+  const r=rng(hashi(m.seed,Date.now()&0xffff,0x9B2));
+  const ok=r()<(mgrPerk(m,"safe")?.9:.7);
+  G.blueprints[k]=ok?1:-1;
+  logAdd(ok?"":"warn","Пересборка «"+BLUEPRINTS[k].ru+"»: "+(ok?"теперь верно":"снова мимо"));
+  return true;
+}
+
+/* ══════════════ портреты управляющих ══════════════ */
+/* Ни одной заготовленной картинки: лицо собирается из seed теми же hashi/rng, что
+   и всё остальное в игре. На десятом управляющем нарисованные портреты начали бы
+   повторяться, а процедурные — нет.
+
+   Портрет здесь не украшение, а интерфейс. По нему читаются четыре вещи, ради
+   которых не нужно открывать лист: роль (цвет фона и ворот), уровень (нашивки),
+   настроение (брови и рот от лояльности) и часть черт — клеймо каторги видно,
+   импланты означают, что человек уживается с машиной. */
+const FACE_SKIN=["#e8c39a","#d6a97c","#b98254","#8c5a38","#f0d8bd","#c9a184",
+                 "#6f4a33","#a8b2a0","#93a7b8","#d9d2c6"];
+const FACE_HAIR=["#2a2320","#453026","#6b4a2c","#a87c48","#d8cbb4","#8f9aa5",
+                 "#3d4550","#5a2f2a","#1b1b1f","#c0c6cc"];
+const FACE_EYE =["#3b5a6b","#5a7a4a","#7a5a3a","#2f2f38","#8a6a2a","#4a3a5a"];
+const FACE_ROLE_BG={cmd:"#3a2018",keep:"#17281c",fact:"#332612",sci:"#141f33"};
+function faceRnd(m,salt){return rng(hashi(m.seed,salt,0xFACE));}
+/* Череп строится точками с сидовым разбросом — тем же приёмом, что и корпуса
+   кораблей: форма не повторяется точно, но всегда остаётся лицом. */
+function facePath(c,r,cx,cy,w,h){
+  const jaw=.55+r()*.45, brow=.75+r()*.3, chin=.5+r()*.6;
+  c.beginPath();
+  c.moveTo(cx,cy-h*brow);
+  c.bezierCurveTo(cx+w*brow,cy-h*.85,cx+w,cy-h*.1,cx+w*jaw,cy+h*.45);
+  c.bezierCurveTo(cx+w*jaw*.7,cy+h*.9*chin,cx,cy+h*chin,cx,cy+h*chin);
+  c.bezierCurveTo(cx,cy+h*chin,cx-w*jaw*.7,cy+h*.9*chin,cx-w*jaw,cy+h*.45);
+  c.bezierCurveTo(cx-w,cy-h*.1,cx-w*brow,cy-h*.85,cx,cy-h*brow);
+  c.closePath();
+}
+function mgrFace(m,size){
+  const key=size+":"+Math.round((m.loy||55)/12)+":"+mgrLevel(m);
+  if(m._face&&m._faceKey===key)return m._face;
+  const S=size,cn=document.createElement("canvas");
+  cn.width=S;cn.height=S;
+  const c=cn.getContext("2d");
+  const r=faceRnd(m,1);
+  const R=MGR_ROLES[m.role];
+  /* габарит головы тоже от seed: без этого все лица одного размера и на витрине
+     кантины читаются как один человек в разных париках */
+  const rg=faceRnd(m,3);
+  const cx=S*.5,cy=S*(.5+rg()*.08),w=S*(.23+rg()*.08),h=S*(.3+rg()*.09);
+  /* 1. фон — роль цветом, шум от seed */
+  c.fillStyle=FACE_ROLE_BG[m.role]||"#151a22";
+  c.fillRect(0,0,S,S);
+  const g=c.createRadialGradient(cx,cy-S*.1,S*.05,cx,cy,S*.75);
+  g.addColorStop(0,"rgba(255,255,255,.14)");g.addColorStop(1,"rgba(0,0,0,.55)");
+  c.fillStyle=g;c.fillRect(0,0,S,S);
+  for(let i=0;i<S*1.2;i++){
+    c.fillStyle="rgba(255,255,255,"+(r()*.05).toFixed(3)+")";
+    c.fillRect(Math.floor(r()*S),Math.floor(r()*S),1,1);
+  }
+  /* 2. плечи — комплекция */
+  const build=.7+r()*.7;
+  c.fillStyle="rgba(10,14,18,.9)";
+  c.beginPath();
+  c.moveTo(cx-w*2.1*build,S);
+  c.quadraticCurveTo(cx-w*1.1*build,S*.72,cx,S*.72);
+  c.quadraticCurveTo(cx+w*1.1*build,S*.72,cx+w*2.1*build,S);
+  c.closePath();c.fill();
+  /* 3. причёска задним планом.
+     Раньше она рисовалась поверх готового лица — и капюшон честно закрывал глаза.
+     Объём идёт под череп, вперёд выходит только чёлка (ниже). */
+  const hair=FACE_HAIR[Math.floor(r()*FACE_HAIR.length)];
+  const style=Math.floor(r()*7);
+  c.fillStyle=hair;
+  if(style===1){                                   // хвост
+    c.beginPath();c.ellipse(cx,cy-h*.5,w*1.05,h*.62,0,0,TAU);c.fill();
+    c.beginPath();c.ellipse(cx+w*1.0,cy-h*.05,w*.22,h*.45,0,0,TAU);c.fill();
+  }else if(style===2){                             // каре
+    c.beginPath();c.ellipse(cx,cy-h*.2,w*1.22,h*.95,0,0,TAU);c.fill();
+  }else if(style===3){                             // дреды
+    for(let i=0;i<9;i++){
+      const a=Math.PI+i/8*Math.PI;
+      c.beginPath();
+      c.ellipse(cx+Math.cos(a)*w*.95,cy-h*.45+Math.sin(a)*h*.3,S*.024,h*.42,a,0,TAU);
+      c.fill();
+    }
+  }else if(style===4){                             // капюшон
+    c.fillStyle="rgba(24,30,36,.98)";
+    c.beginPath();c.ellipse(cx,cy-h*.18,w*1.42,h*1.1,0,0,TAU);c.fill();
+  }else if(style===5){                             // шлем-нейролинк
+    c.fillStyle="#333c46";
+    c.beginPath();c.ellipse(cx,cy-h*.32,w*1.18,h*.86,0,0,TAU);c.fill();
+    c.fillStyle=R.col;c.fillRect(cx-w*1.18,cy-h*.72,w*2.36,S*.014);
+  }else if(style===6){                             // короткая стрижка
+    c.beginPath();c.ellipse(cx,cy-h*.3,w*1.06,h*.82,0,0,TAU);c.fill();
+  }
+  /* 4. череп и кожа */
+  const skin=FACE_SKIN[Math.floor(r()*FACE_SKIN.length)];
+  const rr=faceRnd(m,7);
+  facePath(c,rr,cx,cy,w,h);
+  c.fillStyle=skin;c.fill();
+  c.save();c.clip();
+  /* лёгкая светотень: без неё лицо читается как наклейка */
+  const sg=c.createLinearGradient(cx-w,cy-h,cx+w,cy+h);
+  sg.addColorStop(0,"rgba(255,255,255,.16)");sg.addColorStop(1,"rgba(0,0,0,.4)");
+  c.fillStyle=sg;c.fillRect(cx-w*1.5,cy-h*1.5,w*3,h*3);
+  /* 7. метки — шрам, тату, клеймо каторги */
+  const marks=Math.floor(r()*3);
+  for(let i=0;i<marks;i++){
+    const t=r();
+    if(t<.4){                                   // шрам
+      c.strokeStyle="rgba(120,50,40,.7)";c.lineWidth=Math.max(1,S*.012);
+      const x=cx+(r()-.5)*w*1.2,y=cy+(r()-.5)*h;
+      c.beginPath();c.moveTo(x,y);c.lineTo(x+(r()-.5)*w*.5,y+h*.25);c.stroke();
+    }else if(t<.75){                            // тату гильдии
+      c.fillStyle="rgba(40,90,110,.45)";
+      c.beginPath();c.arc(cx-w*.6,cy-h*.1,S*.045,0,TAU);c.fill();
+    }else if(mgrHas(m,"pirate")){               // клеймо: честно предупреждает
+      c.fillStyle="rgba(180,60,40,.5)";
+      c.fillRect(cx+w*.35,cy-h*.35,S*.06,S*.055);
+    }
+  }
+  c.restore();
+  facePath(c,faceRnd(m,7),cx,cy,w,h);
+  c.strokeStyle="rgba(0,0,0,.45)";c.lineWidth=Math.max(1,S*.008);c.stroke();
+  /* 6. глаза — форма, цвет, импланты; мрачность от лояльности */
+  const loy=clamp((m.loy==null?55:m.loy)/100,0,1);
+  const eyeY=cy-h*.12,eyeX=w*.42,eyeR=S*.035*(.8+r()*.5);
+  /* импланты редки намеренно: они означают «этот уживается с машиной», а признак,
+     который есть у половины, ничего не означает */
+  const impl=r()<.1?2:(r()<.14?1:0);            // 0 нет, 1 один глаз, 2 оба
+  m._impl=impl;
+  const eyeCol=FACE_EYE[Math.floor(r()*FACE_EYE.length)];
+  for(let s=-1;s<=1;s+=2){
+    const ex=cx+s*eyeX;
+    const machine=impl===2||(impl===1&&s<0);
+    c.fillStyle=machine?"#101418":"#f2ece2";
+    c.beginPath();c.ellipse(ex,eyeY,eyeR*1.5,eyeR*(machine?.8:1),0,0,TAU);c.fill();
+    c.fillStyle=machine?"#ff9d5a":eyeCol;
+    c.beginPath();c.arc(ex,eyeY,eyeR*(machine?.5:.72),0,TAU);c.fill();
+    if(machine){
+      c.strokeStyle="rgba(255,157,90,.7)";c.lineWidth=Math.max(1,S*.008);
+      c.beginPath();c.arc(ex,eyeY,eyeR*1.15,0,TAU);c.stroke();
+    }
+    /* брови: чем ниже лояльность, тем ближе к переносице */
+    c.strokeStyle="rgba(0,0,0,.55)";c.lineWidth=Math.max(1,S*.016);
+    c.beginPath();
+    c.moveTo(ex-s*eyeR*1.6,eyeY-eyeR*(1.9-(1-loy)*.9));
+    c.lineTo(ex+s*eyeR*1.6,eyeY-eyeR*(1.9+(1-loy)*.6));
+    c.stroke();
+  }
+  /* нос: одна линия, но без неё лицо плоское */
+  c.strokeStyle="rgba(0,0,0,.28)";c.lineWidth=Math.max(1,S*.01);
+  c.beginPath();
+  c.moveTo(cx-w*.05,cy-h*.02);
+  c.quadraticCurveTo(cx-w*.16,cy+h*.2,cx+w*.06,cy+h*.2);
+  c.stroke();
+  /* рот: уголки вниз, когда человек мрачнеет */
+  c.strokeStyle="rgba(60,30,25,.7)";c.lineWidth=Math.max(1,S*.012);
+  c.beginPath();
+  c.moveTo(cx-w*.28,cy+h*.42);
+  c.quadraticCurveTo(cx,cy+h*.42+(loy-.55)*S*.09,cx+w*.28,cy+h*.42);
+  c.stroke();
+  /* 5. чёлка: единственное, что выходит перед лицом. Ниже бровей не опускается —
+     иначе портрет перестаёт работать как индикатор настроения. */
+  c.fillStyle=style===4?"rgba(24,30,36,.98)":(style===5?"#333c46":hair);
+  if(style===0){                                 // бритая: только тень над лбом
+    c.globalAlpha=.3;
+    c.beginPath();c.ellipse(cx,cy-h*.55,w*.85,h*.22,0,Math.PI,TAU);c.fill();
+    c.globalAlpha=1;
+  }else{
+    c.beginPath();
+    c.moveTo(cx-w*.95,cy-h*.42);
+    c.quadraticCurveTo(cx-w*.3,cy-h*(style===2?.18:.32),cx+w*.5,cy-h*.4);
+    c.quadraticCurveTo(cx+w*.85,cy-h*.52,cx+w*.95,cy-h*.46);
+    c.lineTo(cx+w*.95,cy-h*.8);c.lineTo(cx-w*.95,cy-h*.8);
+    c.closePath();c.fill();
+  }
+  /* борода — ещё одна ось различия, дешёвая и хорошо заметная в списке */
+  const beard=r();
+  if(beard<.34){
+    c.fillStyle=hair;c.globalAlpha=.85;
+    c.beginPath();
+    if(beard<.14){                               // полная
+      c.ellipse(cx,cy+h*.5,w*.72,h*.4,0,0,Math.PI);c.fill();
+      c.fillRect(cx-w*.72,cy+h*.42,w*1.44,h*.12);
+    }else if(beard<.24){                          // эспаньолка
+      c.ellipse(cx,cy+h*.62,w*.26,h*.18,0,0,TAU);c.fill();
+    }else{                                        // усы
+      c.ellipse(cx,cy+h*.34,w*.34,h*.08,0,0,TAU);c.fill();
+    }
+    c.globalAlpha=1;
+  }
+  /* 8. ворот и нашивки: портрет растёт вместе с уровнем */
+  const lv=mgrLevel(m);
+  c.fillStyle="rgba(18,24,30,.95)";
+  c.beginPath();
+  c.moveTo(cx-w*1.5,S);c.lineTo(cx-w*.55,S*.78);c.lineTo(cx,S*.9);
+  c.lineTo(cx+w*.55,S*.78);c.lineTo(cx+w*1.5,S);c.closePath();c.fill();
+  c.strokeStyle=R.col;c.lineWidth=Math.max(1,S*.01);c.stroke();
+  for(let i=0;i<Math.min(3,Math.floor((lv-1)/2)+(lv>=4?1:0));i++){
+    c.fillStyle=R.col;
+    c.fillRect(cx-w*1.35+i*S*.05,S*.9,S*.032,S*.05);
+  }
+  if(lv>=6){                                     // знак домена: виден издалека
+    c.fillStyle=R.col;
+    c.beginPath();c.arc(cx+w*1.15,S*.87,S*.035,0,TAU);c.fill();
+  }
+  /* рамка по роли — по ней список читается одним взглядом */
+  c.strokeStyle=R.col;c.globalAlpha=.55;c.lineWidth=Math.max(1,S*.016);
+  c.strokeRect(0,0,S,S);c.globalAlpha=1;
+  m._face=cn;m._faceKey=key;
+  return cn;
+}
+
 /* ══════════════ живой рынок ══════════════ */
 function marketFor(sys){
   const base=sys.station.prices;
@@ -3285,7 +4082,9 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],species:[...G.species],
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
-    drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
+    drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
+    mgrs:G.mgrs,blueprints:G.blueprints,
+    fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
@@ -3359,6 +4158,30 @@ function applySave(s){
     tMs:Date.now(),paidMs:Date.now()
   })).slice(0,8);
   G.allies=[];
+  /* управляющие: новое поле с безопасным дефолтом, формат записи прежний.
+     Портрет не сохраняется — он выводится из seed и всегда тот же самый. */
+  G.mgrs=(Array.isArray(s.mgrs)?s.mgrs:[]).filter(m=>m&&MGR_ROLES[m.role]).map(m=>({
+    id:String(m.id||("m"+(m.seed|0))),seed:m.seed|0,name:String(m.name||"—"),
+    role:m.role,
+    traits:(Array.isArray(m.traits)?m.traits:[]).filter(t=>MGR_TRAITS.some(x=>x.id===t)).slice(0,3),
+    xp:Math.max(0,+m.xp||0),lv0:clamp(m.lv0|0||1,1,6),
+    perks:(Array.isArray(m.perks)?m.perks:[]).filter(p=>mgrPerkList(m.role).some(x=>x.id===p)).slice(0,6),
+    rules:(Array.isArray(m.rules)?m.rules:[]).filter(x=>MGR_RULES[m.role].some(r=>r.id===x)).slice(0,6),
+    loy:clamp(+m.loy||0,0,100),fee:Math.max(0,m.fee|0),
+    shipId:(m.shipId&&G.owned[m.shipId])?m.shipId:null,
+    route:(Array.isArray(m.route)?m.route:[]).filter(x=>typeof x==="string").slice(0,4),
+    earned:Math.max(0,m.earned|0),spent:Math.max(0,m.spent|0),
+    tookCr:Math.max(0,m.tookCr|0),stole:Math.max(0,m.stole|0),
+    gotData:Math.max(0,m.gotData|0),prog:Math.max(0,+m.prog||0),
+    log:Array.isArray(m.log)?m.log.slice(0,8).map(e=>({t:+e.t||0,k:String(e.k||""),s:String(e.s||"")})):[],
+    tMs:Date.now()
+  })).slice(0,MGR_CAP);
+  /* один домен — один управляющий: если запись пришла битой, лишних отбрасываем */
+  const seen={};
+  G.mgrs=G.mgrs.filter(m=>seen[m.role]?false:(seen[m.role]=1));
+  G.blueprints={};
+  if(s.blueprints&&typeof s.blueprints==="object")
+    for(const k in s.blueprints)if(BLUEPRINTS[k])G.blueprints[k]=s.blueprints[k]>0?1:-1;
   /* базы: тоже новое поле с безопасным дефолтом. Отсчёт ленивого времени
      подтягиваем к загрузке, иначе простой начислится задним числом. */
   G.bases={};
@@ -5476,7 +6299,13 @@ const BUILD={
 const BUILD_KEYS=Object.keys(BUILD);
 function baseKey(sx,sy,idx){return sx+","+sy+":"+idx;}
 function baseAt(sx,sy,idx){return G.bases[baseKey(sx,sy,idx)]||null;}
-function baseCost(k){return BUILD[k].cost;}
+/* смета смотрителя удешевляет стройку — поэтому цена берётся здесь, а не из
+   таблицы напрямую: и в интерфейсе, и при оплате она должна быть одна и та же */
+function baseCost(k){
+  const d=mgrBuildDiscount(),c=BUILD[k].cost;
+  if(d>=1)return c;
+  return {credits:Math.round(c.credits*d),alloy:c.alloy?Math.max(1,Math.round(c.alloy*d)):c.alloy};
+}
 function canPay(cost){return G.credits>=cost.credits&&(!cost.alloy||G.cargo.alloy>=cost.alloy);}
 function payCost(cost){G.credits-=cost.credits;if(cost.alloy)G.cargo.alloy-=cost.alloy;}
 function foundBase(p){
@@ -5871,8 +6700,9 @@ function drawBuildMenu(S){
     ctx.fillStyle=on?"rgba(255,230,180,.95)":"rgba(200,210,220,.5)";
     ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
     ctx.fillText(BUILD[k].ru.toUpperCase().slice(0,9),x+i*cw+cw/2,y+22);
-    ctx.fillText(BUILD[k].cost.credits+"кр",x+i*cw+cw/2,y+36);
-    if(BUILD[k].cost.alloy)ctx.fillText(BUILD[k].cost.alloy+"спл",x+i*cw+cw/2,y+48);
+    const bc=baseCost(k);
+    ctx.fillText(bc.credits+"кр",x+i*cw+cw/2,y+36);
+    if(bc.alloy)ctx.fillText(bc.alloy+"спл",x+i*cw+cw/2,y+48);
   }
 }
 
@@ -8194,6 +9024,7 @@ let tab="market";
 let fuseSel=[];   // два корпуса, выбранных под сплав в лаборатории
 function openStation(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
+  mgrTick();mgrRouteVisit(G.sys);
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
@@ -8593,6 +9424,7 @@ function renderTab(){
       $body.appendChild(r);
     }
   }
+  else if(tab==="cantina"){renderCantina();}
   else if(tab==="crew"){
     /* одна вкладка на всё: кто уже работает — сверху, кандидаты станции — ниже.
        Отсюда же выдают корабль, дают приказ и рассчитывают. */
@@ -8949,6 +9781,244 @@ document.getElementById("crewbtn").addEventListener("click",()=>{
 });
 document.getElementById("cvClose").addEventListener("click",()=>{
   $cv.classList.remove("open");saveGame(true);});
+
+/* ══════════════ ШТАБ и кантина ══════════════ */
+/* Наёмники живут списком строк, и это честно: они безличны. Управляющий — нет,
+   поэтому у него свой экран, где первое, что видно, — лицо, а не цифра. */
+const $hq=document.getElementById("hqview"),$hqBody=document.getElementById("hqBody");
+let hqSel=null;
+function faceEl(m,size){
+  const cn=mgrFace(m,size);
+  const w=el("div","face");
+  w.style.cssText="flex:0 0 auto;width:"+size+"px;height:"+size+"px;line-height:0";
+  w.appendChild(cn);
+  return w;
+}
+function loyWord(m){
+  const l=m.loy;
+  return l>=80?"предан":l>=60?"ровно":l>=40?"холодно":l>=20?"на грани":"уходит";
+}
+function loyBar(m){
+  const l=clamp(m.loy,0,100);
+  const col=l>=60?"#8fd08a":(l>=30?"#f2b25c":"#ff6b57");
+  return "<span style='display:inline-block;width:78px;height:4px;background:rgba(255,255,255,.12);"+
+    "vertical-align:middle'><i style='display:block;height:4px;width:"+l.toFixed(0)+"%;background:"+
+    col+"'></i></span> <span style='color:"+col+"'>"+loyWord(m)+"</span>";
+}
+function mgrHead(m){
+  const R=MGR_ROLES[m.role],lv=mgrLevel(m),nx=mgrNext(m);
+  return "<b style='color:"+R.col+"'>"+m.name+"</b><s>"+R.ru.toLowerCase()+" · уровень "+lv+
+    (nx?" · до следующего "+Math.max(0,Math.round(nx-(m.xp||0)))+" оп":" · потолок")+
+    "<br>"+loyBar(m)+" · доля "+(mgrCut(m)*100).toFixed(1)+"% · оклад "+mgrPay(m)+" кр/мин"+
+    "<br>"+m.traits.map(t=>mgrTrait(t).ru).join(" · ")+"</s>";
+}
+/* ── кантина ──
+   Не список найма, а место: те же 2–4 человека держатся на seed станции и
+   временном бакете. Разговор бесплатен, но кандидат после него занят до
+   следующего бакета — «подумать и вернуться» стоит именно этого. */
+function renderCantina(){
+  mgrTick();
+  const T=stTypeOf(G.st.stype);
+  $body.appendChild(el("div","sec","КАНТИНА «"+G.st.name.toUpperCase()+"» · МЕСТ "+
+    G.mgrs.length+" / "+MGR_CAP+" · ОДИН ДОМЕН — ОДИН УПРАВЛЯЮЩИЙ"));
+  $body.appendChild(el("div","row","<div class='nm'><s>здесь сидят те, кто берёт домен целиком, "+
+    "а не приказ на рейс. Они дороже наёмника втрое и берут долю с того, что приносит "+
+    "их домен — зато рутину держат сами.<br>кто сюда заходит, зависит от станции: "+
+    T.ru.toLowerCase()+" собирает своих</s></div>"));
+  G.cantina=G.cantina&&G.cantina.key===G.sys.key?G.cantina:{key:G.sys.key,list:stationMgrs(G.sys),talked:{}};
+  for(const m of G.cantina.list){
+    if(G.mgrs.some(x=>x.seed===m.seed))continue;
+    const R=MGR_ROLES[m.role],taken=mgrTaken(m.role),fee=mgrFee(m);
+    const spoke=!!G.cantina.talked[m.id];
+    const known=spoke||mgrPerkOf("cmd","read");
+    const r=el("div","row");
+    r.appendChild(faceEl(m,64));
+    r.appendChild(el("div","nm","<b style='color:"+R.col+"'>"+m.name+"</b><s>"+
+      R.ru.toLowerCase()+" · "+R.note+
+      "<br>уровень "+mgrLevel(m)+" · оклад "+mgrPay(m)+" кр/мин · доля "+(mgrCut(m)*100).toFixed(1)+"%"+
+      "<br>"+(known
+        ? "черты: "+m.traits.map(t=>"<b>"+mgrTrait(t).ru+"</b> — "+mgrTrait(t).note).join("<br>черты: ")
+        : "черты видны после разговора"+(m.traits.length>2?" (их у него три)":""))+
+      (taken?"<br><b style='color:#ff9d7a'>домен занят: "+mgrOf(m.role).name+"</b>":"")+"</s>"));
+    if(!spoke&&!mgrPerkOf("cmd","read")){
+      const bt=el("button","act sm","ПОГОВОРИТЬ");
+      bt.onclick=()=>{G.cantina.talked[m.id]=1;renderTab();};
+      r.appendChild(bt);
+    }
+    const b=el("button","act"+(taken?"":" gold"),fee.toLocaleString("ru")+" кр");
+    b.disabled=taken||G.credits<fee||G.mgrs.length>=MGR_CAP;
+    b.onclick=()=>{if(hireMgr(m)){hqSel=m.id;renderTab();}};
+    r.appendChild(b);
+    $body.appendChild(r);
+  }
+  $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
+}
+/* ── экран ШТАБ ── */
+function hqBtnTick(){
+  const b=document.getElementById("hqbtn");if(!b)return;
+  b.style.display=(G.mgrs.length&&G.mode!=="dock")?"":"none";
+  /* точка на кнопке: есть невыбранное очко перка или кто-то мрачнеет */
+  const nag=G.mgrs.some(m=>mgrPoints(m)>0||m.loy<35);
+  b.classList.toggle("on",nag);
+}
+function hqRender(){
+  mgrTick();
+  document.getElementById("hqCr").textContent=G.credits.toLocaleString("ru")+" кр";
+  document.getElementById("hqCap").textContent=G.mgrs.length+" / "+MGR_CAP+" мест";
+  let upkeep=0;for(const m of G.mgrs)upkeep+=mgrPay(m);
+  document.getElementById("hqSub").textContent=G.mgrs.length
+    ? "содержание "+upkeep+" кр/мин · доля снимается с домена сверх этого"
+    : "домены пусты — управляющих нанимают в кантине станции";
+  $hqBody.textContent="";
+  if(!G.mgrs.length){
+    $hqBody.appendChild(el("div","sec","НИКОГО · КАНТИНА ЕСТЬ НА ЛЮБОЙ СТАНЦИИ, КРОМЕ ЗАПРАВОЧНОЙ"));
+    $hqBody.appendChild(el("div","row","<div class='nm'><s>управляющий берёт домен целиком: "+
+      "звено наёмников, дроны и базы, торговый маршрут или лабораторию. Он не ускоряет "+
+      "ранний старт — он поднимает потолок, когда потолок уже мешает.</s></div>"));
+    return;
+  }
+  if(!G.mgrs.some(m=>m.id===hqSel))hqSel=G.mgrs[0].id;
+  /* колонка людей: портреты, а не строки — мрачное лицо видно раньше полосы */
+  const strip=el("div","row");
+  strip.style.flexWrap="wrap";
+  for(const m of G.mgrs){
+    const w=el("div","");
+    w.style.cssText="cursor:pointer;text-align:center;opacity:"+(m.id===hqSel?"1":".55");
+    w.appendChild(mgrFace(m,64));
+    w.appendChild(el("div","","<s style='font-size:8px;color:var(--dim);text-decoration:none'>"+
+      m.name+(mgrPoints(m)>0?" <b style='color:#f2b25c'>•</b>":"")+"</s>"));
+    w.onclick=()=>{hqSel=m.id;hqRender();};
+    strip.appendChild(w);
+  }
+  $hqBody.appendChild(strip);
+  const m=G.mgrs.find(x=>x.id===hqSel);
+  const R=MGR_ROLES[m.role];
+  $hqBody.appendChild(el("div","sec",m.name.toUpperCase()+" · "+R.ru.toUpperCase()+
+    " · ДОМЕН: "+R.dom.toUpperCase()));
+  const head=el("div","row");
+  head.appendChild(faceEl(m,96));
+  head.appendChild(el("div","nm",mgrHead(m)));
+  $hqBody.appendChild(head);
+  /* сводка домена: сколько он взял и что сделал — иначе доля выглядит грабежом */
+  $hqBody.appendChild(el("div","row","<div class='nm'><b>Домен</b><s>"+
+    mgrDomainLine(m)+"<br>взял долей: "+(m.tookCr||0).toLocaleString("ru")+" кр"+
+    (m.stole?" · <b style='color:#ff9d7a'>сверх того «потерялось» "+m.stole.toLocaleString("ru")+" кр</b>":"")+
+    "<br>отдал вам: "+(m.earned||0).toLocaleString("ru")+" кр · съел окладом "+
+    (m.spent||0).toLocaleString("ru")+" кр</s></div>"));
+  /* его лента: домен рассказывает о себе сам, а не молчит между уровнями */
+  if(m.log&&m.log.length){
+    const COL={warn:"#ff9d7a",good:"#8fd08a"};
+    $hqBody.appendChild(el("div","row","<div class='nm'><b>Что он говорит</b><s>"+
+      m.log.map(e=>"<span style='color:"+(COL[e.k]||"var(--dim)")+"'>• "+e.s+"</span>").join("<br>")+
+      "</s></div>"));
+  }
+  /* перки: дерево видно целиком, включая невыученное — игрок должен планировать */
+  const pts=mgrPoints(m);
+  $hqBody.appendChild(el("div","sec","ПЕРКИ · СВОБОДНЫХ ОЧКОВ "+pts+
+    " · ВЕТВЕЙ БОЛЬШЕ, ЧЕМ ОЧКОВ: ВЫУЧИТЬ ВСЁ НЕЛЬЗЯ"));
+  for(const br of MGR_PERKS[m.role]){
+    $hqBody.appendChild(el("div","sec",br.ru.toUpperCase()));
+    br.list.forEach((p,i)=>{
+      const have=mgrPerk(m,p.id);
+      /* по ветви идут по порядку: перк открыт, если предыдущий уже взят */
+      const open=i===0||mgrPerk(m,br.list[i-1].id);
+      const r=el("div","row"+(have?" on":""));
+      r.appendChild(el("div","nm","<b"+(have?" style='color:"+R.col+"'":"")+">"+p.ru+
+        (have?" ✓":"")+"</b><s>"+p.note+(!open&&!have?" · сначала «"+br.list[i-1].ru+"»":"")+"</s>"));
+      if(!have){
+        const b=el("button","act sm"+(open&&pts>0?" gold":""),"ВЫУЧИТЬ");
+        b.disabled=!open||pts<=0;
+        b.onclick=()=>{if(mgrLearn(m,p.id))hqRender();};
+        r.appendChild(b);
+      }
+      $hqBody.appendChild(r);
+    });
+  }
+  /* стоящие приказы: слотов всегда меньше, чем правил */
+  $hqBody.appendChild(el("div","sec","СТОЯЩИЕ ПРИКАЗЫ · "+m.rules.length+" / "+mgrSlots(m)+
+    " СЛОТОВ · ЭТО И ЕСТЬ СНЯТАЯ РУТИНА"));
+  for(const rl of MGR_RULES[m.role]){
+    const on=mgrRule(m,rl.id);
+    const r=el("div","row"+(on?" on":""));
+    r.appendChild(el("div","nm","<b>"+(on?"● ":"○ ")+rl.ru+"</b>"));
+    const b=el("button","act sm"+(on?"":" gold"),on?"СНЯТЬ":"В СЛОТ");
+    b.onclick=()=>{if(mgrToggleRule(m,rl.id))hqRender();};
+    r.appendChild(b);
+    $hqBody.appendChild(r);
+  }
+  /* флагман: старые корпуса из ангара снова становятся решением */
+  if(m.role==="cmd"){
+    const S=m.shipId?shipData(m.shipId):null;
+    const free=Object.keys(G.owned).filter(id=>id!==G.shipId&&
+      !G.crew.some(c=>c.shipId===id)&&!G.mgrs.some(o=>o.shipId===id));
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b>Флагман</b><s>"+
+      (S?"«"+S.ru+"» · звено вмещает "+Math.max(2,Math.floor(S.cargo/60))+" человек"
+        :"без корабля он командует с чужой палубы — и на уходе ему нечего забрать")+
+      "</s>"));
+    for(const id of free.slice(0,3)){
+      const d=shipData(id);
+      const b=el("button","act sm gold",(d?d.ru:id).toUpperCase());
+      b.onclick=()=>{m.shipId=id;mgrSay(m,"Принял «"+(d?d.ru:id)+"» под флаг","good");hqRender();};
+      r.appendChild(b);
+    }
+    $hqBody.appendChild(r);
+  }
+  /* чертежи исследователя: ошибочный виден только как «что-то не так» */
+  if(m.role==="sci"){
+    $hqBody.appendChild(el("div","sec","ЧЕРТЕЖИ · ИХ НЕЛЬЗЯ КУПИТЬ · ВЫВОД БЫВАЕТ ОШИБОЧНЫМ"));
+    let any=false;
+    for(const k in BLUEPRINTS){
+      const s=bpState(k);if(!s)continue;any=true;
+      const B=BLUEPRINTS[k];
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+B.ru+"</b><s>"+(s>0?B.note:"работает не так, как обещано")+"</s>"));
+      const b=el("button","act sm","ПЕРЕСБОРКА · 60 ДАННЫХ");
+      b.disabled=G.data<60||s>0;
+      b.onclick=()=>{if(bpRecheck(k))hqRender();};
+      r.appendChild(b);
+      $hqBody.appendChild(r);
+    }
+    if(!any)$hqBody.appendChild(el("div","row","<div class='nm'><s>чертежей пока нет — "+
+      "нужен перк «чертежи» и редкое сырьё в трюме как образцы</s></div>"));
+  }
+  /* расчёт: дорогой намеренно — с управляющим живут, а не перебирают */
+  const rf=el("div","row");
+  rf.appendChild(el("div","nm","<b>Расчёт</b><s>выходное пособие "+
+    mgrSeverance(m).toLocaleString("ru")+" кр · перки и уровень уйдут с ним"+
+    (m.shipId?"<br>флагман вернётся в ангар":"")+"</s>"));
+  const bf=el("button","act sm","РАССЧИТАТЬ");
+  bf.disabled=G.credits<mgrSeverance(m);
+  bf.onclick=()=>{if(fireMgr(m)){hqSel=null;hqRender();}};
+  rf.appendChild(bf);
+  $hqBody.appendChild(rf);
+}
+/* одна строка про то, чем домен занят прямо сейчас */
+function mgrDomainLine(m){
+  if(m.role==="cmd"){
+    const n=G.crew.filter(c=>c.shipId&&c.order&&c.order.kind!=="home").length;
+    return n?"под ним работает "+n+" из "+G.crew.length+" наёмников":
+      "звено пустое: наймите людей на станции и выдайте корабли";
+  }
+  if(m.role==="keep")
+    return "дронов в работе: "+(G.drones||[]).length+" · баз: "+Object.keys(G.bases||{}).length;
+  if(m.role==="fact")
+    return m.route.length>=2
+      ? "маршрут из "+m.route.length+" плеч (макс "+mgrRouteMax(m)+"): "+m.route.join(" → ")+
+        (mgrRule(m,"run")?"":"<br><b style='color:#ff9d7a'>приказ «водить постоянно» не в слоте — маршрут стоит</b>")
+      : "плеч мало: маршрут строится из станций, куда вы прилетали сами";
+  return "разобрано образцов на "+(m.gotData||0)+" данных · в трюме образцов: "+mgrSamples()+
+    (mgrRule(m,"rare")?"":"<br>приказ «забрать редкое сырьё» не в слоте — работает вхолостую");
+}
+function openHq(){
+  for(const k in keys)keys[k]=false;
+  document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
+  toggleLog(false);
+  $hq.classList.add("open");hqRender();
+}
+document.getElementById("hqbtn").addEventListener("click",openHq);
+document.getElementById("hqClose").addEventListener("click",()=>{
+  $hq.classList.remove("open");saveGame(true);});
 
 /* ══════════════ экран корабля ══════════════ */
 const $sv=document.getElementById("shipview"),$svBody=document.getElementById("svBody");
@@ -9454,7 +10524,7 @@ function frame(now){
   actEdge=keys.act&&!prevAct;prevAct=keys.act;
   if(G.running){
     G.t+=dt;
-    if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();crewTick();}
+    if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();crewTick();mgrTick();}
     if(G.msgT>0)G.msgT-=dt;
     if(G.mode==="system")autosave();
     if(G.mode==="system"||G.mode==="dock")updateSystem(dt);
@@ -9466,7 +10536,7 @@ function frame(now){
     else if(G.mode==="scoop"&&G.scoop)updateScoop(dt);
     else if(G.mode==="base"&&G.base)updateBase(dt);
     else if(G.mode==="raid"&&G.raid)updateRaid(dt);
-    beaconTick(dt);crewBtnTick();
+    beaconTick(dt);crewBtnTick();hqBtnTick();
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){

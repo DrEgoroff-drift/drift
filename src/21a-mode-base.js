@@ -17,7 +17,13 @@ const BUILD={
 const BUILD_KEYS=Object.keys(BUILD);
 function baseKey(sx,sy,idx){return sx+","+sy+":"+idx;}
 function baseAt(sx,sy,idx){return G.bases[baseKey(sx,sy,idx)]||null;}
-function baseCost(k){return BUILD[k].cost;}
+/* смета смотрителя удешевляет стройку — поэтому цена берётся здесь, а не из
+   таблицы напрямую: и в интерфейсе, и при оплате она должна быть одна и та же */
+function baseCost(k){
+  const d=mgrBuildDiscount(),c=BUILD[k].cost;
+  if(d>=1)return c;
+  return {credits:Math.round(c.credits*d),alloy:c.alloy?Math.max(1,Math.round(c.alloy*d)):c.alloy};
+}
 function canPay(cost){return G.credits>=cost.credits&&(!cost.alloy||G.cargo.alloy>=cost.alloy);}
 function payCost(cost){G.credits-=cost.credits;if(cost.alloy)G.cargo.alloy-=cost.alloy;}
 function foundBase(p){
@@ -412,7 +418,8 @@ function drawBuildMenu(S){
     ctx.fillStyle=on?"rgba(255,230,180,.95)":"rgba(200,210,220,.5)";
     ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
     ctx.fillText(BUILD[k].ru.toUpperCase().slice(0,9),x+i*cw+cw/2,y+22);
-    ctx.fillText(BUILD[k].cost.credits+"кр",x+i*cw+cw/2,y+36);
-    if(BUILD[k].cost.alloy)ctx.fillText(BUILD[k].cost.alloy+"спл",x+i*cw+cw/2,y+48);
+    const bc=baseCost(k);
+    ctx.fillText(bc.credits+"кр",x+i*cw+cw/2,y+36);
+    if(bc.alloy)ctx.fillText(bc.alloy+"спл",x+i*cw+cw/2,y+48);
   }
 }

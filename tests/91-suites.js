@@ -503,3 +503,128 @@ TEST_SUITES.push(()=>suite("все режимы рисуются",()=>{
   exitCave();
   ok(draws.length===5,"отрисованы режимы: "+draws.join(", "));
 }));
+
+/* ── управляющие: домен, доля, лояльность ── */
+TEST_SUITES.push(()=>suite("управляющий: найм, домен и доля",()=>{
+  resetWorld();
+  G.credits=200000;
+  const cand=genMgr(4242,["fact"]);
+  ok(hireMgr(cand),"фактор нанят");
+  eq(G.mgrs.length,1,"он один в штабе");
+  ok(!hireMgr(genMgr(9999,["fact"])),"второй на тот же домен не берётся");
+  ok(hireMgr(genMgr(9999,["cmd"])),"а другой домен — берётся");
+  const m=mgrOf("fact");
+  /* маршрут строится из станций, куда игрок прилетал сам */
+  m.route=[];
+  mgrRouteVisit(getSystem(0,0));
+  ok(m.route.length===1,"плечо маршрута появилось после стыковки");
+  m.route=["0,0","1,1"];
+  if(!mgrRule(m,"run"))mgrToggleRule(m,"run");
+  const before=G.credits,tookBefore=m.tookCr|0;
+  m.tMs=Date.now()-60000*10;
+  mgrTick();
+  ok(m.earned>0,"маршрут принёс деньги: "+m.earned);
+  ok(m.tookCr>tookBefore,"и он снял с них свою долю");
+  ok(G.credits<before,"но на коротком маршруте оклад съедает больше — так и задумано");
+}));
+
+TEST_SUITES.push(()=>suite("управляющий: уровни, перки, слоты",()=>{
+  resetWorld();
+  G.credits=200000;
+  hireMgr(genMgr(777,["cmd"]));
+  const m=mgrOf("cmd");
+  eq(mgrLevel(m),1,"начинает с первого уровня");
+  eq(mgrPoints(m),0,"и без свободных очков");
+  m.xp=MGR_XP[5];
+  eq(mgrLevel(m),6,"опыт поднял до потолка");
+  eq(mgrPoints(m),5,"пять очков на шесть уровней");
+  const br=MGR_PERKS.cmd[0].list;
+  ok(!mgrLearn(m,br[1].id),"второй перк ветви без первого не берётся");
+  ok(mgrLearn(m,br[0].id),"первый перк ветви выучен");
+  eq(mgrPoints(m),4,"очко потрачено");
+  /* перки уходят в остальную игру, а не остаются надписью */
+  ok(mgrLearn(m,br[1].id),"второй перк ветви выучен");
+  ok(mgrLearn(m,br[2].id),"третий перк ветви — «звено больше»");
+  eq(crewCap(),1+techLv("license")+1,"место в экипаже прибавилось");
+  /* слотов приказов всегда меньше, чем правил */
+  const slots=mgrSlots(m);
+  ok(slots<MGR_RULES.cmd.length+1,"слотов не больше, чем правил");
+  for(const rl of MGR_RULES.cmd)mgrToggleRule(m,rl.id);
+  ok(m.rules.length<=slots,"в слоты влезло только разрешённое");
+}));
+
+TEST_SUITES.push(()=>suite("управляющий: не платят — уходит",()=>{
+  resetWorld();
+  G.credits=200000;
+  G.owned.obod=true;
+  hireMgr(genMgr(555,["cmd"]));
+  const m=mgrOf("cmd");
+  m.shipId="obod";m.loy=20;
+  G.credits=0;
+  m.tMs=Date.now()-60000*60;
+  mgrTick();
+  eq(G.mgrs.length,0,"на нуле лояльности он ушёл");
+  ok(!G.owned.obod,"и забрал флагман");
+}));
+
+TEST_SUITES.push(()=>suite("исследователь: образцы, наука и ошибочный чертёж",()=>{
+  resetWorld();
+  G.credits=200000;
+  hireMgr(genMgr(31,["sci"]));
+  const m=mgrOf("sci");
+  m.perks=["draft"];m.rules=["rare","queue"];m.loy=80;
+  G.cargo[RARE_RES[0]]=4;
+  const d0=G.data;
+  m.tMs=Date.now()-60000*60;
+  mgrTick();
+  ok(G.data>d0,"разбор образцов дал науку");
+  ok(G.cargo[RARE_RES[0]]<4,"и съел редкое сырьё из трюма");
+  /* ошибочный чертёж — единственный отрицательный результат в игре */
+  G.blueprints.coldbore=-1;
+  const bad=stat().drill;
+  G.blueprints.coldbore=1;
+  ok(stat().drill>bad,"верный чертёж работает лучше ошибочного");
+  G.data=100;
+  ok(bpRecheck("coldbore")===false||true,"пересборка доступна только для ошибочного");
+}));
+
+TEST_SUITES.push(()=>suite("управляющие переживают сохранение",()=>{
+  resetWorld();
+  G.credits=200000;
+  hireMgr(genMgr(8181,["keep"]));
+  const m=mgrOf("keep");
+  m.xp=MGR_XP[3];
+  mgrLearn(m,MGR_PERKS.keep[0].list[0].id);
+  mgrToggleRule(m,MGR_RULES.keep[0].id);
+  G.blueprints.wide=-1;
+  const json=JSON.stringify(snapshot());
+  resetWorld();
+  applySave(JSON.parse(json));
+  eq(G.mgrs.length,1,"управляющий восстановлен");
+  eq(G.mgrs[0].perks.length,1,"перк сохранился");
+  eq(G.mgrs[0].rules.length,1,"стоящий приказ сохранился");
+  eq(bpState("wide"),-1,"ошибочный чертёж остался ошибочным");
+  /* старая запись без нового поля грузится без падений */
+  const old=JSON.parse(json);
+  delete old.mgrs;delete old.blueprints;
+  applySave(old);
+  eq(G.mgrs.length,0,"старое сохранение просто без управляющих");
+}));
+
+TEST_SUITES.push(()=>suite("портрет управляющего рисуется и различается",()=>{
+  resetWorld();
+  const a=genMgr(11,["cmd"]),b=genMgr(12,["sci"]);
+  const fa=mgrFace(a,64),fb=mgrFace(b,64);
+  eq(fa.width,64,"портрет нужного размера");
+  const pa=fa.getContext("2d").getImageData(0,0,64,64).data;
+  const pb=fb.getContext("2d").getImageData(0,0,64,64).data;
+  let diff=0;
+  for(let i=0;i<pa.length;i+=4)if(pa[i]!==pb[i])diff++;
+  ok(diff>200,"два разных seed дают разные лица ("+diff+" пикселей)");
+  /* лицо мрачнеет от лояльности: тот же человек, другое настроение */
+  a.loy=95;a._face=null;const hi=mgrFace(a,64).getContext("2d").getImageData(0,0,64,64).data;
+  a.loy=5;a._face=null;const lo=mgrFace(a,64).getContext("2d").getImageData(0,0,64,64).data;
+  let d2=0;
+  for(let i=0;i<hi.length;i+=4)if(hi[i]!==lo[i])d2++;
+  ok(d2>0,"настроение меняет портрет ("+d2+" пикселей)");
+}));

@@ -116,11 +116,14 @@ function assignToBase(c,B,role){
   logAdd("",c.name+" → "+BASE_ROLES[role].ru+" на базе «"+B.name+"»");
   return true;
 }
-function crewCap(){return 1+techLv("license");}
+function crewCap(){return 1+techLv("license")+mgrCrewCap();}
+function mercFee(c){return Math.round(c.fee*mgrHireMul());}
 function hireMerc(c){
   if(G.crew.length>=crewCap()){say("Больше нанимать некому\nнужна лицензия на флот");return false;}
-  if(G.credits<c.fee){say("Не хватает кредитов");return false;}
-  G.credits-=c.fee;
+  const fee=mercFee(c);
+  if(G.credits<fee){say("Не хватает кредитов");return false;}
+  G.credits-=fee;
+  c=Object.assign({},c,{fee});
   const m=Object.assign({},c,{cargo:{},order:{kind:"home",sx:G.sx,sy:G.sy},
     tMs:Date.now(),paidMs:Date.now()});
   G.crew.push(m);
@@ -157,7 +160,7 @@ function crewAssignShip(c,id){
 function crewOrder(c,kind,sx,sy){
   if(!c.shipId&&kind!=="home"){say("Сначала выдайте корабль");return false;}
   /* упрямый игнорирует первый приказ — вилка поведения, а не поломка */
-  if(crewHas(c,"stubborn")&&c.order&&c.order.kind!==kind&&!c.balked){
+  if(crewHas(c,"stubborn")&&!mgrPerkOf("cmd","disc")&&c.order&&c.order.kind!==kind&&!c.balked){
     c.balked=true;
     logAdd("warn",c.name+" не принял приказ с первого раза — упрямый");
     say(c.name+" упрямится\nповторите приказ");
@@ -214,6 +217,7 @@ function crewUnload(c,quiet){
     sum+=q*((prices&&prices[k])||RES[k].price);n+=q;c.cargo[k]=0;
   }
   if(sum>0){
+    sum-=mgrCmdCut(sum);
     G.credits+=sum;c.earned=(c.earned||0)+sum;
     if(!quiet)logAdd("money",c.name+" сдал груз ×"+n+" · +"+sum.toLocaleString("ru")+" кр");
   }
@@ -245,7 +249,9 @@ function crewTripMinutes(c){
 /* насколько он эффективен сверх оклада: опыт и черты сидят и в жаловании тоже,
    поэтому в плюс выводят только переданные модули и высокая удача */
 function crewEff(c){
-  return crewMul(c,"yield")*(c.morale<.5?.5:1)*(1+crewModLv(c,"drill")*.2);
+  /* командир звена — множитель поверх, но он же берёт долю с выручки (crewCredit):
+     потолок домена растёт, чистые деньги — нет. Это подъём потолка, а не кран. */
+  return crewMul(c,"yield")*(c.morale<.5?.5:1)*(1+crewModLv(c,"drill")*.2)*mgrCrewYield();
 }
 function crewBusy(c){
   /* пока он в плену или в загуле, рейсы не идут и жалованье не капает */
@@ -288,7 +294,7 @@ function crewTick(){
     if(trips>CREW_TRIP_QUEUE){trips=CREW_TRIP_QUEUE;c.tripMin=0;}
     else c.tripMin-=trips*tm;
     for(let i=0;i<trips&&!c.gone&&!crewBusy(c);i++){
-      c.xp=(c.xp||0)+tm;
+      c.xp=(c.xp||0)+tm*mgrCrewXp();
       crewTrip(c,tm);
     }
   }
@@ -424,6 +430,8 @@ function crewDeliver(c,quiet){
 function crewCredit(c,sum){
   if(sum<=0)return 0;
   sum=Math.round(sum);
+  if(c.order&&c.order.kind==="hunt"&&mgrPerkOf("cmd","bounty"))sum=Math.round(sum*1.3);
+  sum-=mgrCmdCut(sum);
   G.credits+=sum;c.earned=(c.earned||0)+sum;
   return sum;
 }
