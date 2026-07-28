@@ -304,6 +304,42 @@ function renderTab(){
       r.appendChild(b);$body.appendChild(r);
     }
   }
+  else if(tab==="bases"){
+    /* сеть баз одним экраном: где, что копают, сколько накопили, чем больны */
+    baseTick();
+    const list=baseList();
+    $body.appendChild(el("div","sec","ВАШИ БАЗЫ "+list.length+
+      " · НАКОПЛЕННОЕ ЖДЁТ НА МЕСТЕ · ПЛОЩАДКА ПОЗВОЛЯЕТ ПЕРЕБРОСКУ"));
+    if(!list.length)$body.appendChild(el("div","sec",
+      "БАЗ НЕТ — САДИТЕСЬ НА ПЛАНЕТУ И ЗАКЛАДЫВАЙТЕ (2500 КР + 10 СПЛАВОВ)"));
+    for(const B of list){
+      const P=basePower(B),hold=basePoolHeld(B);
+      const here=B.sx===G.sx&&B.sy===G.sy;
+      const warn=[];
+      if(P.eff<.99)warn.push("энергии не хватает — всё замедлено");
+      if(!P.drills)warn.push("нет буровой — база ничего не добывает");
+      if(hold>=P.store*.98)warn.push("склад полон — добыча встала");
+      if(P.habPenalty)warn.push("жилой отсек прижат к реактору");
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+B.name+"</b> <span style='color:var(--dim)'>сектор "+
+        B.sx+","+B.sy+(here?" · вы здесь":"")+"</span><s>"+
+        "энергия "+P.prod+"/"+P.cons+" · отдача "+Math.round(P.eff*100)+"% · буров "+P.drills+
+        "<br>склад "+hold+"/"+P.store+
+        (hold?" · "+Object.keys(B.pool).filter(k=>B.pool[k]>0)
+          .map(k=>RES[k].ru.toLowerCase()+" "+B.pool[k]).join(", "):"")+
+        (warn.length?"<br><b style='color:#ff6b57'>"+warn.join(" · ")+"</b>":"")+"</s>"));
+      r.appendChild(el("div","qt",P.pads?"площадка":"—"));
+      if(P.pads&&!here){
+        const c=baseJumpCost(B);
+        const b=el("button","act gold",c.credits+" кр");
+        b.disabled=G.credits<c.credits||G.fuel<c.fuel;
+        b.title="переброска: "+c.credits+" кр и "+c.fuel+" топлива";
+        b.onclick=()=>{if(jumpToBase(B))closeStation();};
+        r.appendChild(b);
+      }
+      $body.appendChild(r);
+    }
+  }
   else if(tab==="crew"){
     /* одна вкладка на всё: кто уже работает — сверху, кандидаты станции — ниже.
        Отсюда же выдают корабль, дают приказ и рассчитывают. */

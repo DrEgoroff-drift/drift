@@ -137,6 +137,37 @@ function baseCollect(B){
   else say("Забирать нечего\nили трюм полон");
   return n;
 }
+/* ══════════════ сеть баз ══════════════ */
+/* Площадка (`pad`) связывает базы между собой и со станциями: перелёт стоит
+   топлива и кредитов, зато не требует лететь через полгалактики руками. */
+function baseList(){
+  const out=[];
+  for(const k in G.bases)out.push(G.bases[k]);
+  return out.sort((a,b)=>a.built-b.built);
+}
+function basePads(){return baseList().filter(B=>basePower(B).pads>0);}
+function baseJumpCost(B){
+  const d=Math.hypot(B.sx-G.sx,B.sy-G.sy);
+  return {fuel:Math.ceil(6+d*.9),credits:Math.round(120+d*40)};
+}
+function jumpToBase(B){
+  const c=baseJumpCost(B);
+  if(G.fuel<c.fuel){say("Не хватает топлива\nнужно "+c.fuel);return false;}
+  if(G.credits<c.credits){say("Не хватает кредитов\nнужно "+c.credits);return false;}
+  G.fuel-=c.fuel;G.credits-=c.credits;
+  G.sx=B.sx;G.sy=B.sy;G.sys=getSystem(B.sx,B.sy);
+  const p=G.sys.planets[B.idx];
+  const a=Math.atan2(G.ship.y,G.ship.x)||0;
+  if(p){G.ship.x=p.x+Math.cos(a)*(p.radius+170);G.ship.y=p.y+Math.sin(a)*(p.radius+170);}
+  G.ship.vx=0;G.ship.vy=0;
+  G.mode="system";G.base=null;G.st=null;G.ap=null;G.orbit=null;
+  document.getElementById("station").classList.remove("open");
+  spawnPirates();spawnAllies();
+  saveGame(true);
+  tell("","Переброска на базу «"+B.name+"» · −"+c.credits+" кр, −"+c.fuel+" топлива",
+       "Переброска\n"+B.name);
+  return true;
+}
 /* ══════════════ обновление сцены ══════════════ */
 function updateBase(dt){
   const S=G.base,B=S.B;
@@ -179,6 +210,17 @@ function updateBase(dt){
     "\nНА СКЛАДЕ "+basePoolHeld(B)+" / "+P.store;
   if(cell){
     const M=BUILD[cell.k];
+    /* стоя на площадке, ДЕЙСТВ отправляет на следующую базу сети, а не собирает груз */
+    const net=cell.k==="pad"?basePads().filter(o=>o!==B):[];
+    if(net.length){
+      /* цель — ближайшая площадка сети: выбирать некому, стрелки заняты ходьбой */
+      net.sort((a,b)=>Math.hypot(a.sx-B.sx,a.sy-B.sy)-Math.hypot(b.sx-B.sx,b.sy-B.sy));
+      const T=net[0],c=baseJumpCost(T);
+      G.prompt=head+"\nПЛОЩАДКА · ДЕЙСТВ — ПЕРЕБРОСКА НА «"+T.name.toUpperCase()+"»"+
+        "\n"+c.credits+" кр и "+c.fuel+" топлива";
+      if(actEdge)jumpToBase(T);
+      return;
+    }
     G.prompt=head+"\n"+M.ru.toUpperCase()+" · "+M.note+
       (basePoolHeld(B)>0?"\nДЕЙСТВ — ЗАБРАТЬ НАКОПЛЕННОЕ":"");
     if(actEdge&&basePoolHeld(B)>0)baseCollect(B);

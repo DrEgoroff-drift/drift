@@ -229,6 +229,7 @@
     <button data-tab="lab">НАУКА</button>
     <button data-tab="smelt">ПЕРЕПЛАВКА</button>
     <button data-tab="crew">ЭКИПАЖ</button>
+    <button data-tab="bases">БАЗЫ</button>
     <button data-tab="barter">БАРТЕР</button>
   </nav>
   <div class="body" id="stBody"></div>
@@ -1113,15 +1114,15 @@ const SYS_CACHE=new Map();
    тут торговать, чинить и заправляться. Вес зависит от опасности системы:
    в глубине фронтира торговых узлов почти нет, зато аванпосты и заправки — норма. */
 const ST_TYPES=[
-  {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods","crew"],
+  {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods","crew","bases"],
    mkt:1.08, fuel:1,    rep:1,    w:d=>2.6-d*1.9},
-  {id:"indust", ru:"Промышленный комбинат",tabs:["market","smelt","mods","crew"],
+  {id:"indust", ru:"Промышленный комбинат",tabs:["market","smelt","mods","crew","bases"],
    mkt:.99,  fuel:.92,  rep:.5,   w:d=>1.5-d*.4},
-  {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","barter","crew"],
+  {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","barter","crew","bases"],
    mkt:.95,  fuel:1.08, rep:.75,  w:d=>1.2-d*.7},
-  {id:"sci",    ru:"Научная станция",      tabs:["market","lab","mods","crew"],
+  {id:"sci",    ru:"Научная станция",      tabs:["market","lab","mods","crew","bases"],
    mkt:.93,  fuel:1.08, rep:1,    w:d=>1.2-d*.8},
-  {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter","crew"],
+  {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter","crew","bases"],
    mkt:.9,   fuel:1.22, rep:1.25, w:d=>.2+d*2.8},
   {id:"fuel",   ru:"Заправочная станция",  tabs:[],
    mkt:1,    fuel:.78,  rep:1.1,  w:d=>1.6+d*1.1}
@@ -4972,6 +4973,37 @@ function baseCollect(B){
   else say("Забирать нечего\nили трюм полон");
   return n;
 }
+/* ══════════════ сеть баз ══════════════ */
+/* Площадка (`pad`) связывает базы между собой и со станциями: перелёт стоит
+   топлива и кредитов, зато не требует лететь через полгалактики руками. */
+function baseList(){
+  const out=[];
+  for(const k in G.bases)out.push(G.bases[k]);
+  return out.sort((a,b)=>a.built-b.built);
+}
+function basePads(){return baseList().filter(B=>basePower(B).pads>0);}
+function baseJumpCost(B){
+  const d=Math.hypot(B.sx-G.sx,B.sy-G.sy);
+  return {fuel:Math.ceil(6+d*.9),credits:Math.round(120+d*40)};
+}
+function jumpToBase(B){
+  const c=baseJumpCost(B);
+  if(G.fuel<c.fuel){say("Не хватает топлива\nнужно "+c.fuel);return false;}
+  if(G.credits<c.credits){say("Не хватает кредитов\nнужно "+c.credits);return false;}
+  G.fuel-=c.fuel;G.credits-=c.credits;
+  G.sx=B.sx;G.sy=B.sy;G.sys=getSystem(B.sx,B.sy);
+  const p=G.sys.planets[B.idx];
+  const a=Math.atan2(G.ship.y,G.ship.x)||0;
+  if(p){G.ship.x=p.x+Math.cos(a)*(p.radius+170);G.ship.y=p.y+Math.sin(a)*(p.radius+170);}
+  G.ship.vx=0;G.ship.vy=0;
+  G.mode="system";G.base=null;G.st=null;G.ap=null;G.orbit=null;
+  document.getElementById("station").classList.remove("open");
+  spawnPirates();spawnAllies();
+  saveGame(true);
+  tell("","Переброска на базу «"+B.name+"» · −"+c.credits+" кр, −"+c.fuel+" топлива",
+       "Переброска\n"+B.name);
+  return true;
+}
 /* ══════════════ обновление сцены ══════════════ */
 function updateBase(dt){
   const S=G.base,B=S.B;
@@ -5014,6 +5046,17 @@ function updateBase(dt){
     "\nНА СКЛАДЕ "+basePoolHeld(B)+" / "+P.store;
   if(cell){
     const M=BUILD[cell.k];
+    /* стоя на площадке, ДЕЙСТВ отправляет на следующую базу сети, а не собирает груз */
+    const net=cell.k==="pad"?basePads().filter(o=>o!==B):[];
+    if(net.length){
+      /* цель — ближайшая площадка сети: выбирать некому, стрелки заняты ходьбой */
+      net.sort((a,b)=>Math.hypot(a.sx-B.sx,a.sy-B.sy)-Math.hypot(b.sx-B.sx,b.sy-B.sy));
+      const T=net[0],c=baseJumpCost(T);
+      G.prompt=head+"\nПЛОЩАДКА · ДЕЙСТВ — ПЕРЕБРОСКА НА «"+T.name.toUpperCase()+"»"+
+        "\n"+c.credits+" кр и "+c.fuel+" топлива";
+      if(actEdge)jumpToBase(T);
+      return;
+    }
     G.prompt=head+"\n"+M.ru.toUpperCase()+" · "+M.note+
       (basePoolHeld(B)>0?"\nДЕЙСТВ — ЗАБРАТЬ НАКОПЛЕННОЕ":"");
     if(actEdge&&basePoolHeld(B)>0)baseCollect(B);
@@ -7171,6 +7214,42 @@ function renderTab(){
         renderTab();
       };
       r.appendChild(b);$body.appendChild(r);
+    }
+  }
+  else if(tab==="bases"){
+    /* сеть баз одним экраном: где, что копают, сколько накопили, чем больны */
+    baseTick();
+    const list=baseList();
+    $body.appendChild(el("div","sec","ВАШИ БАЗЫ "+list.length+
+      " · НАКОПЛЕННОЕ ЖДЁТ НА МЕСТЕ · ПЛОЩАДКА ПОЗВОЛЯЕТ ПЕРЕБРОСКУ"));
+    if(!list.length)$body.appendChild(el("div","sec",
+      "БАЗ НЕТ — САДИТЕСЬ НА ПЛАНЕТУ И ЗАКЛАДЫВАЙТЕ (2500 КР + 10 СПЛАВОВ)"));
+    for(const B of list){
+      const P=basePower(B),hold=basePoolHeld(B);
+      const here=B.sx===G.sx&&B.sy===G.sy;
+      const warn=[];
+      if(P.eff<.99)warn.push("энергии не хватает — всё замедлено");
+      if(!P.drills)warn.push("нет буровой — база ничего не добывает");
+      if(hold>=P.store*.98)warn.push("склад полон — добыча встала");
+      if(P.habPenalty)warn.push("жилой отсек прижат к реактору");
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+B.name+"</b> <span style='color:var(--dim)'>сектор "+
+        B.sx+","+B.sy+(here?" · вы здесь":"")+"</span><s>"+
+        "энергия "+P.prod+"/"+P.cons+" · отдача "+Math.round(P.eff*100)+"% · буров "+P.drills+
+        "<br>склад "+hold+"/"+P.store+
+        (hold?" · "+Object.keys(B.pool).filter(k=>B.pool[k]>0)
+          .map(k=>RES[k].ru.toLowerCase()+" "+B.pool[k]).join(", "):"")+
+        (warn.length?"<br><b style='color:#ff6b57'>"+warn.join(" · ")+"</b>":"")+"</s>"));
+      r.appendChild(el("div","qt",P.pads?"площадка":"—"));
+      if(P.pads&&!here){
+        const c=baseJumpCost(B);
+        const b=el("button","act gold",c.credits+" кр");
+        b.disabled=G.credits<c.credits||G.fuel<c.fuel;
+        b.title="переброска: "+c.credits+" кр и "+c.fuel+" топлива";
+        b.onclick=()=>{if(jumpToBase(B))closeStation();};
+        r.appendChild(b);
+      }
+      $body.appendChild(r);
     }
   }
   else if(tab==="crew"){
