@@ -70,7 +70,7 @@ function updateCave(dt){
   }
   const nearBug=C.fauna.find(b=>b.stun>0&&Math.hypot(b.x-C.x,b.y-C.y)<46);
   C.sample=nearBug||null;
-  if(nearBug&&keys.brake){
+  if(nearBug){   /* образец берётся сам, как и в шахте */
     const r=rng(hashi(Math.round(nearBug.x),Math.round(nearBug.y),0x5A99));
     const c=addRes("carbon",2+Math.floor(r()*4));
     const x2=r()<.4?addRes("xeno",1+Math.floor(r()*2)):0;
@@ -94,8 +94,6 @@ function updateCave(dt){
       C.found=true;G.data+=20;
       tell("tech","Находка в пещере · +20 данных","Находка в пещере\n+20 данных");
     }
-  }else if(nearBug){
-    G.prompt="ТОРМ — ВЗЯТЬ ОБРАЗЕЦ";
   }else if(plant){
     G.prompt="ДЕЙСТВ — СКАНИРОВАТЬ ОРГАНИЗМ";
     if(actEdge){
@@ -103,8 +101,8 @@ function updateCave(dt){
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
   }else if(C.fauna.some(b=>b.stun<=0&&b.flee<=0)){
-    G.prompt="ЖИВНОСТЬ РЯДОМ · ОГОНЬ — ИМПУЛЬС";
-  }else G.prompt="◀ ▶ — ИДТИ · ищите проход";
+    G.prompt="КУСАЧИЕ РЯДОМ · ОГОНЬ (F) — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
+  }else G.prompt="A D — ИДТИ · В ДАЛЬНЕМ КОНЦЕ НАХОДКА · У ВХОДА ДЕЙСТВ — НАРУЖУ";
 }
 function drawCave(){
   const C=G.cave;

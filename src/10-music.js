@@ -46,18 +46,39 @@ const WORLD_MOOD={
   toxic:["locrian","phrygian","whole","insen","hirajoshi"],
   gas:["whole","lydian","major","overtone","pentMaj"]
 };
+/* Характер типа мира: не только лад, но и сам состав слоёв. Раньше планетная
+   сцена отличалась от космической почти одним ладом (тоже из «светлого» набора),
+   при одинаковом наборе слоёв — на слух это была та же музыка. Теперь у планет
+   свой профиль: земля живёт ритмом и мелодией, космос — дроном и маяками. */
+const WORLD_VOICE={
+  terran:  {bpm:[54,72],perc:.42,motif:.55,air:.2, beacon:.12,bass:.5, timbre:"triangle"},
+  ocean:   {bpm:[40,54],perc:.14,motif:.45,air:.62,beacon:.3, bass:.4, timbre:"sine"},
+  desert:  {bpm:[48,64],perc:.5, motif:.42,air:.16,beacon:.1, bass:.55,timbre:"sawtooth"},
+  rocky:   {bpm:[44,58],perc:.3, motif:.34,air:.24,beacon:.18,bass:.62,timbre:"triangle"},
+  ice:     {bpm:[30,42],perc:.06,motif:.3, air:.75,beacon:.45,bass:.28,timbre:"sine"},
+  volcanic:{bpm:[62,84],perc:.66,motif:.4, air:.12,beacon:.06,bass:.7, timbre:"sawtooth"},
+  toxic:   {bpm:[36,50],perc:.22,motif:.28,air:.6, beacon:.4, bass:.45,timbre:"sawtooth"},
+  gas:     {bpm:[28,40],perc:0,  motif:.26,air:.8, beacon:.55,bass:.3, timbre:"sine"}
+};
 function planetScene(p){
-  const bi=planetBiome(p);
   const r=rng(hashi(p.seed,3141,7));
   /* тип мира лежит в p.type (p.kind не существует — на нём музыка всех планет
      схлопывалась в один мрачный лад) */
   const moods=WORLD_MOOD[p.type]||WORLD_MOOD.rocky;
+  const V=WORLD_VOICE[p.type]||WORLD_VOICE.rocky;
+  /* тоника уводится далеко от космической (-5): планета всегда звучит из другого
+     регистра, поэтому переход с орбиты на грунт слышно сразу */
+  const root=(r()<.5?-19:-13)+Math.round(r()*3);
   return {scale:moods[Math.floor(r()*moods.length)|0],
-    root:-14+Math.round(r()*13),
-    bpm:Math.round(34+r()*22),
-    pad:1,bass:.3+r()*.25,motif:.15+r()*.3,perc:0,air:.2+r()*.3,
-    beacon:.5+r()*.6,
-    timbre:r()<.5?"triangle":"sine"};
+    root,
+    bpm:Math.round(V.bpm[0]+r()*(V.bpm[1]-V.bpm[0])),
+    pad:.75+r()*.25,
+    bass:V.bass*(.85+r()*.3),
+    motif:V.motif*(.85+r()*.3),
+    perc:V.perc*(.8+r()*.4),
+    air:V.air*(.85+r()*.3),
+    beacon:V.beacon*(.7+r()*.6),
+    timbre:V.timbre};
 }
 const MUS={ready:false,key:null,sc:null,layers:{},pad:null,timer:null,
   next:0,step:0,intensity:0,iTarget:0,phrase:null,pi:0,shift:0};
@@ -349,6 +370,13 @@ function musicSceneNow(){
     Object.assign({},MUSIC_SCENES.cave,{root:MUSIC_SCENES.cave.root})];
   if(G.mode==="dig"&&G.dig)return ["dig:"+G.dig.p.seed,MUSIC_SCENES.dig];
   if(G.mode==="surface"&&G.surf)return ["surface:"+G.surf.p.seed,planetScene(G.surf.p)];
+  /* база, абордаж и заход в атмосферу гиганта раньше проваливались в «космос» */
+  if(G.mode==="base"&&G.base)return ["base",
+    Object.assign({},MUSIC_SCENES.dock,{scale:"pentMin",root:-9,bpm:50,perc:.35,air:.3,beacon:.2})];
+  if(G.mode==="raid"&&G.raid)return ["raid",
+    Object.assign({},MUSIC_SCENES.belt,{scale:"phrygian",root:-12,bpm:74,perc:.7,motif:.35,beacon:.05})];
+  if(G.mode==="scoop"&&G.scoop)return ["scoop",
+    Object.assign({},MUSIC_SCENES.map,{scale:"overtone",root:-8,bpm:38,air:.8,motif:.2})];
   return ["system",MUSIC_SCENES.system];
 }
 function musicStop(){

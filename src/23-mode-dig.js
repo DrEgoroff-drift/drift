@@ -47,32 +47,38 @@ function enterDig(){
     bugs:[],zap:0,zapT:0,walkAmp:0,walkPhase:0};
   G.dig.cells["0,0"]={dug:true,res:null,amount:0,prog:0,hard:0,tint:0};
   G.mode="dig";
-  say("Спуск в шахту\nДЕЙСТВ — вниз · ◀ ▶ — вбок\n▲ — наверх, на поверхности — выход");
+  say("Спуск в шахту\nW A S D — копать вверх/вбок/вниз\nна поверхности W — выход · ОГОНЬ — импульс");
 }
 function exitDig(){
   G.dig=null;G.mode="surface";
   say("Подъём на поверхность\nв трюме: "+held());
   saveGame(true);
 }
-/* возвратный маяк: мгновенно к кораблю, с перезарядкой */
+/* возвратный маяк: мгновенно к кораблю, с перезарядкой.
+   Раньше кнопка появлялась только после покупки науки «Возвратный маяк», и на
+   планете телепорта просто не было. Теперь он есть всегда, а наука сокращает
+   перезарядку вчетверо — за неё платят скоростью, а не самой возможностью. */
 const BEACON_COOL=2400;
+function beaconCool(){return G.tech.has("beacon")?BEACON_COOL/4:BEACON_COOL;}
 function useBeacon(){
   const S=G.surf;
-  if(!S||!G.tech.has("beacon")||S.beacon>0)return;
+  if(!S||S.beacon>0)return;
   const deep=G.dig?G.dig.row:0;
-  S.beacon=BEACON_COOL;
+  S.beacon=beaconCool();
   G.dig=null;G.cave=null;G.mode="surface";
   S.x=S.shipX;S.y=groundAt(S.tr,S.shipX)-10;S.vy=0;
-  say("Маяк сработал\nвозврат к кораблю");
+  S.walkTarget=null;
+  sfx("ui",{f:220,to:1400,d:.35,v:.5});
+  say("Телепорт к кораблю\nмаяк заряжается");
   logAdd("tech","Маяк: возврат к кораблю с "+(deep*3)+" м");
 }
 function beaconTick(dt){
   const S=G.surf,b=document.getElementById("beaconbtn");
-  if(!S||!G.tech.has("beacon")||(G.mode!=="surface"&&G.mode!=="dig"&&G.mode!=="cave")){b.style.display="none";return;}
+  if(!S||(G.mode!=="surface"&&G.mode!=="dig"&&G.mode!=="cave")){b.style.display="none";return;}
   if(S.beacon>0)S.beacon=Math.max(0,S.beacon-dt);
   b.style.display="";
   const ready=S.beacon<=0;
-  b.textContent=ready?"МАЯК":Math.ceil(S.beacon/60)+"с";
+  b.textContent=ready?"→ КОРАБЛЬ":Math.ceil(S.beacon/60)+"с";
   b.style.opacity=ready?"1":".45";
 }
 
@@ -104,7 +110,9 @@ function updateDig(dt){
   if(G.mode!=="dig")return;
   if(D.move>0)D.move-=dt;
   let dx=0,dy=0;
-  if(keys.act)dy=1;
+  /* копаем в ту сторону, куда нажали: S (ТОРМ) — вниз, W (▲) — вверх, A/D — вбок.
+     ДЕЙСТВ оставлен синонимом «вниз» — на телефоне это привычная большая кнопка. */
+  if(keys.brake||keys.act)dy=1;
   else if(keys.thrust)dy=-1;
   else if(keys.left)dx=-1;
   else if(keys.right)dx=1;
@@ -113,7 +121,7 @@ function updateDig(dt){
     if(!dCol&&!dRow)D.walkTarget=null;
     else if(dRow>0)dy=1;else if(dRow<0)dy=-1;else dx=Math.sign(dCol);
   }
-  if(keys.act||keys.thrust||keys.left||keys.right)D.walkTarget=null;
+  if(keys.act||keys.brake||keys.thrust||keys.left||keys.right)D.walkTarget=null;
   if(dx)D.face=dx;
   const digging=!!(dx||dy);
   D.walkAmp=clamp(D.walkAmp+(digging?1:-1)*.12*dt,0,1);
@@ -123,9 +131,10 @@ function updateDig(dt){
   const depth=D.row*3;
   let head="ГЛУБИНА "+depth+" м · "+DEPTH_TIERS[tierAt(D.row)].ru.toUpperCase()+
     "\nСКАФАНДР "+Math.round(S.suit)+"% · ТРЮМ "+held()+"/"+st.cargoMax;
-  if(D.sample)head+="\nТОРМ — ВЗЯТЬ ОБРАЗЕЦ";
-  else if(D.bugs.some(b=>b.stun<=0&&b.flee<=0))head+="\nЖИВНОСТЬ РЯДОМ · ОГОНЬ — ИМПУЛЬС";
-  if(!dx&&!dy){D.target=null;G.prompt=head+"\nДЕЙСТВ — ВНИЗ · ◀ ▶ — ВБОК · ▲ — ВВЕРХ";return;}
+  if(D.bugs.some(b=>b.stun<=0&&b.flee<=0))
+    head+="\nКУСАЧИЕ РЯДОМ · ОГОНЬ (F) — ИМПУЛЬС, ПОТОМ ПОДОЙТИ ЗА ОБРАЗЦОМ";
+  if(!dx&&!dy){D.target=null;
+    G.prompt=head+"\nW A S D — КОПАТЬ ВВЕРХ / ВБОК / ВНИЗ";return;}
 
   const tc=D.col+dx,tr2=D.row+dy;
   if(tr2<0||Math.abs(tc)>DIG_HALF){D.target=null;G.prompt=head;return;}
@@ -137,18 +146,24 @@ function updateDig(dt){
   }
   const cell=digCell(D,tc,tr2);
   if(cell.dug){
-    if(D.move<=0){D.col=tc;D.row=tr2;D.move=7;D.deepest=Math.max(D.deepest,D.row);}
+    if(D.move<=0){D.col=tc;D.row=tr2;D.move=11;D.deepest=Math.max(D.deepest,D.row);}
     D.target=null;G.prompt=head;
     return;
   }
   if(held()>=st.cargoMax&&cell.res){G.prompt=head+"\nТРЮМ ПОЛОН";D.target=null;return;}
   D.target=cell;
-  cell.prog+=.055*st.drill*dt;
+  /* проходка вдвое медленнее прежней: шахта должна быть работой, а не прокруткой
+     экрана. Ускоряется за деньги — модуль БУРОВАЯ УСТАНОВКА на станции даёт
+     st.drill, он же множитель здесь. */
+  cell.prog+=.019*st.drill*dt;
   G.prompt=head+"\nПРОХОДКА "+Math.round(clamp(cell.prog/cell.hard,0,1)*100)+"%"+
-    (cell.res?" · ЖИЛА: "+RES[cell.res].ru.toUpperCase():"");
+    (cell.res?" · ЖИЛА: "+RES[cell.res].ru.toUpperCase():"")+
+    (st.drill<1.3?"\nБЫСТРЕЕ — МОДУЛЬ «БУРОВАЯ УСТАНОВКА» НА СТАНЦИИ":"");
   if(cell.prog>=cell.hard){
     cell.dug=true;D.target=null;
-    D.col=tc;D.row=tr2;D.move=7;D.deepest=Math.max(D.deepest,D.row);
+    /* по вертикальному ходу остаётся лесенка: видно, где можно подняться обратно */
+    if(dy){cell.ladder=true;digCell(D,D.col,D.row).ladder=true;}
+    D.col=tc;D.row=tr2;D.move=11;D.deepest=Math.max(D.deepest,D.row);
     if(cell.res){
       const got=addRes(cell.res,Math.round(cell.amount*st.refine));
       if(got)say("Добыто: "+RES[cell.res].ru+" ×"+got);
@@ -168,19 +183,24 @@ function digFauna(dt,st){
   const D=G.dig,S=G.surf;
   const px=D.col*DIG_CELL+DIG_CELL/2, py=D.row*DIG_CELL+DIG_CELL/2;
   const ti=tierAt(D.row);
-  /* подселяем по мере углубления, детерминированно от клетки */
-  if(ti>0&&D.bugs.length<2+ti){
+  /* подселяем по мере углубления, детерминированно от клетки. Раньше кусачие
+     заводились только со второго пласта (ti>0) — до него доходили единицы, и
+     механика выглядела несуществующей. Теперь они есть с первых метров, просто
+     реже и слабее. */
+  if(D.row>2&&D.bugs.length<2+ti){
     const key=D.col+":"+D.row;
     if(D.lastSpawnKey!==key){
       D.lastSpawnKey=key;
       const r=rng(hashi(D.p.seed+D.col*613,D.row*929,0xB17E));
-      if(r()<.055+ti*.055){
+      /* верхний пласт упирается в потолок в 15 рядов (глубже нужен бур), и при
+         шансе 10% на клетку игрок вполне мог не встретить никого вообще */
+      if(r()<.18+ti*.06){
         const side=r()<.5?-1:1;
         const b=genBeast(r,D.p,0,0);
         b.r=6+r()*6;b.hostile=true;b.stun=0;b.bite=0;b.flee=0;
         b.x=px+side*(120+r()*90);b.y=py+(r()-.5)*90;
         D.bugs.push(b);
-        say("В породе кто-то есть\nОГОНЬ — импульс");
+        say("В породе кто-то есть\nОГОНЬ (F) — импульсный разрядник\nоглушённого можно забрать, подойдя вплотную");
       }
     }
   }
@@ -219,10 +239,11 @@ function digFauna(dt,st){
       if(G.mode!=="dig")return;
     }
   }
-  /* образец с оглушённого — на ТОРМ, чтобы не мешать бурению */
-  const near=D.bugs.find(b=>b.stun>0&&Math.hypot(b.x-px,b.y-py)<46);
+  /* образец берётся сам, стоит подойти вплотную: отдельная кнопка (ТОРМ) теперь
+     занята копанием вниз, да и лишний жест здесь никому не был нужен */
+  const near=D.bugs.find(b=>b.stun>0&&Math.hypot(b.x-px,b.y-py)<40);
   D.sample=near||null;
-  if(near&&keys.brake){
+  if(near){
     const r=rng(hashi(Math.round(near.x),Math.round(near.y),0x5A99));
     const c=addRes("carbon",2+Math.floor(r()*4));
     const x2=r()<.35+ti*.12?addRes("xeno",1+Math.floor(r()*2)):0;
@@ -258,6 +279,18 @@ function drawDig(){
     const cell=known||digCell(D,col,row);
     if(cell.dug){
       ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(x,y,DIG_CELL,DIG_CELL);
+      /* лесенка в вертикальном ходе: две тетивы и перекладины */
+      if(cell.ladder){
+        ctx.strokeStyle="rgba(196,150,92,.75)";ctx.lineWidth=1.4;
+        ctx.beginPath();
+        ctx.moveTo(x+DIG_CELL*.36,y);ctx.lineTo(x+DIG_CELL*.36,y+DIG_CELL);
+        ctx.moveTo(x+DIG_CELL*.64,y);ctx.lineTo(x+DIG_CELL*.64,y+DIG_CELL);
+        for(let k=1;k<=3;k++){
+          const ry=y+DIG_CELL*k/4;
+          ctx.moveTo(x+DIG_CELL*.36,ry);ctx.lineTo(x+DIG_CELL*.64,ry);
+        }
+        ctx.stroke();
+      }
       continue;
     }
     const t=cell.tint*.35+tierAt(row)*.18;

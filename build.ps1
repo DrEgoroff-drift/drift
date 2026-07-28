@@ -36,7 +36,22 @@ function Build {
 
   [System.IO.File]::WriteAllText($out, $html, $enc)
   $kb = [math]::Round((Get-Item $out).Length / 1KB)
-  "{0}  собран из {1} модулей, {2} КБ" -f (Get-Date -Format "HH:mm:ss"), $files.Count, $kb
+  $msg = "{0}  собран из {1} модулей, {2} КБ" -f (Get-Date -Format "HH:mm:ss"), $files.Count, $kb
+
+  # tests.html — та же игра плюс набор проверок в конце. Отдельный файл, чтобы
+  # drift.html оставался чистым, и при этом тесты гоняли ровно тот же код.
+  $tsrc = Join-Path $root "tests"
+  if (Test-Path $tsrc) {
+    $tfiles = Get-ChildItem (Join-Path $tsrc "*.js") | Sort-Object Name
+    if ($tfiles.Count -gt 0) {
+      $tparts = foreach ($f in $tfiles) { [System.IO.File]::ReadAllText($f.FullName, $enc) }
+      $tjs = $js + "`n" + ($tparts -join "`n")
+      $thtml = $shell.Replace("/*{{STYLE}}*/", $css).Replace("//{{SCRIPT}}", $tjs)
+      [System.IO.File]::WriteAllText((Join-Path $root "tests.html"), $thtml, $enc)
+      $msg += " · tests.html из {0} наборов" -f $tfiles.Count
+    }
+  }
+  $msg
 }
 
 Build

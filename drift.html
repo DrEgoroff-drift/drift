@@ -198,6 +198,7 @@
   <button id="navbtn">КАРТА</button>
   <button id="starbtn" style="display:none">К ЗВЕЗДЕ</button>
   <button id="shipbtn">КОРАБЛЬ</button>
+  <button id="crewbtn" style="display:none">ЭКИПАЖ</button>
   <button id="logbtn">ЖУРНАЛ</button>
   <button id="optbtn">⚙</button>
   <button id="zin">+</button>
@@ -250,6 +251,15 @@
   <nav id="svfilter"></nav>
   <div class="body" id="svBody"></div>
   <footer><button class="act gold" id="svClose">ЗАКРЫТЬ</button></footer>
+</div>
+
+<div class="scr" id="crewview">
+  <header>
+    <div><b>ЭКИПАЖ</b><s id="cvSub">—</s></div>
+    <div class="wallet"><em id="cvCr">0 кр</em><br><i id="cvCap">—</i></div>
+  </header>
+  <div class="body" id="cvBody"></div>
+  <footer><button class="act gold" id="cvClose">ЗАКРЫТЬ</button></footer>
 </div>
 
 <div class="scr" id="opts">
@@ -832,7 +842,7 @@ const TECH={
   gunai:{ru:"Прицельный ИИ",note:"+35% к урону бортового орудия",cost:75},
   deepdrill:{ru:"Глубинный бур",note:"открывает второй пласт шахты — вдвое богаче",cost:65},
   deepcore:{ru:"Ядровой бур",note:"открывает ядровую породу — вчетверо богаче",cost:140},
-  beacon:{ru:"Возвратный маяк",note:"кнопка МАЯК — мгновенный возврат к кораблю, перезаряжается",cost:80},
+  beacon:{ru:"Быстрый маяк",note:"телепорт к кораблю (кнопка → КОРАБЛЬ) заряжается вчетверо быстрее",cost:80},
   survey:{ru:"Геосканер",note:"жилы в породе видны на всю ширину ствола",cost:50},
   /* повторяемые: у дерева всегда остаётся куда расти */
   suit:{ru:"Усиленный скафандр",note:"медленнее изнашивается на планете",cost:70,max:4},
@@ -1794,18 +1804,39 @@ const WORLD_MOOD={
   toxic:["locrian","phrygian","whole","insen","hirajoshi"],
   gas:["whole","lydian","major","overtone","pentMaj"]
 };
+/* Характер типа мира: не только лад, но и сам состав слоёв. Раньше планетная
+   сцена отличалась от космической почти одним ладом (тоже из «светлого» набора),
+   при одинаковом наборе слоёв — на слух это была та же музыка. Теперь у планет
+   свой профиль: земля живёт ритмом и мелодией, космос — дроном и маяками. */
+const WORLD_VOICE={
+  terran:  {bpm:[54,72],perc:.42,motif:.55,air:.2, beacon:.12,bass:.5, timbre:"triangle"},
+  ocean:   {bpm:[40,54],perc:.14,motif:.45,air:.62,beacon:.3, bass:.4, timbre:"sine"},
+  desert:  {bpm:[48,64],perc:.5, motif:.42,air:.16,beacon:.1, bass:.55,timbre:"sawtooth"},
+  rocky:   {bpm:[44,58],perc:.3, motif:.34,air:.24,beacon:.18,bass:.62,timbre:"triangle"},
+  ice:     {bpm:[30,42],perc:.06,motif:.3, air:.75,beacon:.45,bass:.28,timbre:"sine"},
+  volcanic:{bpm:[62,84],perc:.66,motif:.4, air:.12,beacon:.06,bass:.7, timbre:"sawtooth"},
+  toxic:   {bpm:[36,50],perc:.22,motif:.28,air:.6, beacon:.4, bass:.45,timbre:"sawtooth"},
+  gas:     {bpm:[28,40],perc:0,  motif:.26,air:.8, beacon:.55,bass:.3, timbre:"sine"}
+};
 function planetScene(p){
-  const bi=planetBiome(p);
   const r=rng(hashi(p.seed,3141,7));
   /* тип мира лежит в p.type (p.kind не существует — на нём музыка всех планет
      схлопывалась в один мрачный лад) */
   const moods=WORLD_MOOD[p.type]||WORLD_MOOD.rocky;
+  const V=WORLD_VOICE[p.type]||WORLD_VOICE.rocky;
+  /* тоника уводится далеко от космической (-5): планета всегда звучит из другого
+     регистра, поэтому переход с орбиты на грунт слышно сразу */
+  const root=(r()<.5?-19:-13)+Math.round(r()*3);
   return {scale:moods[Math.floor(r()*moods.length)|0],
-    root:-14+Math.round(r()*13),
-    bpm:Math.round(34+r()*22),
-    pad:1,bass:.3+r()*.25,motif:.15+r()*.3,perc:0,air:.2+r()*.3,
-    beacon:.5+r()*.6,
-    timbre:r()<.5?"triangle":"sine"};
+    root,
+    bpm:Math.round(V.bpm[0]+r()*(V.bpm[1]-V.bpm[0])),
+    pad:.75+r()*.25,
+    bass:V.bass*(.85+r()*.3),
+    motif:V.motif*(.85+r()*.3),
+    perc:V.perc*(.8+r()*.4),
+    air:V.air*(.85+r()*.3),
+    beacon:V.beacon*(.7+r()*.6),
+    timbre:V.timbre};
 }
 const MUS={ready:false,key:null,sc:null,layers:{},pad:null,timer:null,
   next:0,step:0,intensity:0,iTarget:0,phrase:null,pi:0,shift:0};
@@ -2097,6 +2128,13 @@ function musicSceneNow(){
     Object.assign({},MUSIC_SCENES.cave,{root:MUSIC_SCENES.cave.root})];
   if(G.mode==="dig"&&G.dig)return ["dig:"+G.dig.p.seed,MUSIC_SCENES.dig];
   if(G.mode==="surface"&&G.surf)return ["surface:"+G.surf.p.seed,planetScene(G.surf.p)];
+  /* база, абордаж и заход в атмосферу гиганта раньше проваливались в «космос» */
+  if(G.mode==="base"&&G.base)return ["base",
+    Object.assign({},MUSIC_SCENES.dock,{scale:"pentMin",root:-9,bpm:50,perc:.35,air:.3,beacon:.2})];
+  if(G.mode==="raid"&&G.raid)return ["raid",
+    Object.assign({},MUSIC_SCENES.belt,{scale:"phrygian",root:-12,bpm:74,perc:.7,motif:.35,beacon:.05})];
+  if(G.mode==="scoop"&&G.scoop)return ["scoop",
+    Object.assign({},MUSIC_SCENES.map,{scale:"overtone",root:-8,bpm:38,air:.8,motif:.2})];
   return ["system",MUSIC_SCENES.system];
 }
 function musicStop(){
@@ -2290,7 +2328,7 @@ function crewAssignShip(c,id){
   if(G.crew.some(o=>o!==c&&o.shipId===id))return false;
   c.shipId=id;
   const S=shipData(id);
-  c.hullMax=S?S.hull:100;c.hull=c.hullMax;
+  c.hullMax=Math.round((S?S.hull:100)*(1+crewModLv(c,"armor")*.3));c.hull=c.hullMax;
   logAdd("dim",c.name+" принял «"+(S?S.ru:id)+"»");
   return true;
 }
@@ -2308,6 +2346,37 @@ function crewOrder(c,kind,sx,sy){
   c.order={kind,sx:sx!=null?sx:G.sx,sy:sy!=null?sy:G.sy};
   c.tMs=Date.now();
   logAdd("",c.name+" → "+ORDERS[kind].ru+" · сектор "+c.order.sx+","+c.order.sy);
+  /* показываем его в небе сразу, а не только при следующем входе в систему —
+     иначе игрок отдаёт приказ и не видит никаких признаков, что кто-то работает */
+  if(G.mode==="system"||G.mode==="dock")spawnAllies();
+  return true;
+}
+/* ══════════════ переданные модули ══════════════ */
+/* Игрок покупает уровни модулей себе; снятые уровни лежат мёртвым грузом.
+   Их можно отдать наёмнику — он не носит части, но большой трюм, броня и бур
+   работают у него так же. Это и есть «перекинуть свои модули». */
+const CREW_MODS={
+  hold: {ru:"Расширение трюма", note:"+35% к трюму за уровень"},
+  armor:{ru:"Бронеплиты",       note:"+30% к корпусу за уровень"},
+  drill:{ru:"Буровая установка",note:"+20% к выработке за уровень"}
+};
+function crewModLv(c,k){return (c.mods&&c.mods[k])|0;}
+/* свободные уровни у игрока: куплено минус стоит на корабле минус уже роздано */
+function spareModLv(k){
+  let given=0;for(const c of G.crew)given+=crewModLv(c,k);
+  return Math.max(0,(G.modsOwned[k]|0)-(G.mods[k]|0)-given);
+}
+function crewGiveMod(c,k,d){
+  if(!CREW_MODS[k])return false;
+  if(d>0&&spareModLv(k)<=0){say("Свободных уровней нет\nснимите модуль на вкладке МОДУЛИ");return false;}
+  if(d<0&&crewModLv(c,k)<=0)return false;
+  c.mods=c.mods||{};
+  c.mods[k]=Math.max(0,crewModLv(c,k)+d);
+  if(c.shipId){const S=shipData(c.shipId);
+    c.hullMax=Math.round((S?S.hull:100)*(1+crewModLv(c,"armor")*.3));
+    c.hull=Math.min(c.hull,c.hullMax);}
+  logAdd("dim",c.name+(d>0?" получил ":" вернул ")+CREW_MODS[k].ru.toLowerCase()+
+    " · уровень "+crewModLv(c,k));
   return true;
 }
 /* груз наёмника сдаётся на ближайшую к его району станцию по живым ценам */
@@ -2322,13 +2391,14 @@ function crewUnload(c,quiet){
     sum+=q*((prices&&prices[k])||RES[k].price);n+=q;c.cargo[k]=0;
   }
   if(sum>0){
-    G.credits+=sum;
+    G.credits+=sum;c.earned=(c.earned||0)+sum;
     if(!quiet)logAdd("money",c.name+" сдал груз ×"+n+" · +"+sum.toLocaleString("ru")+" кр");
   }
   return sum;
 }
 function crewHold(c){let s=0;for(const k in c.cargo)s+=c.cargo[k]|0;return s;}
-function crewCargoMax(c){const S=shipData(c.shipId);return S?S.cargo:0;}
+function crewCargoMax(c){const S=shipData(c.shipId);
+  return S?Math.round(S.cargo*(1+crewModLv(c,"hold")*.35)):0;}
 /* ══════════════ ленивая симуляция ══════════════ */
 const CREW_OFFLINE_CAP=8*3600*1000;   // за ночь начислится не больше восьми часов
 function crewTick(){
@@ -2345,7 +2415,8 @@ function crewTick(){
     const needsShip=c.order&&c.order.kind!=="home"&&c.order.kind!=="base";
     if(!c.order||c.order.kind==="home"||(needsShip&&!c.shipId)){crewRest(c,min);continue;}
     if(c.hull<=0){crewRest(c,min);continue;}
-    const eff=crewSkill(c)*crewMul(c,"yield")*(c.morale<.5?.5:1);
+    const eff=crewSkill(c)*crewMul(c,"yield")*(c.morale<.5?.5:1)*
+              (1+crewModLv(c,"drill")*.2);
     const danger=sysDanger(c.order.sx,c.order.sy);
     const r=rng(hashi(c.seed,Math.floor(now/60000),0xC7E));
     /* на базе человек не зарабатывает сам — его вклад считает baseTick */
@@ -2363,10 +2434,17 @@ function crewTick(){
    долг и падает мораль: сначала работают вполсилы, потом бросают приказ, потом
    уходят и забирают корабль в счёт долга. Жёстко, но с предупреждением заранее. */
 function crewPayroll(c,min){
-  const due=crewPay(c)*min*(c.order&&c.order.kind==="home"?.45:1);   // на приколе кормят дешевле
+  /* За простой не платят. Раньше человек на приколе — или с приказом, но без
+     выданного корабля — всё равно съедал 45% жалованья, ничего не зарабатывая:
+     первый же нанятый уходил в долг и забирал корпус в счёт него. Деньги идут
+     только за работу, которую он реально может делать. */
+  const idle=!c.order||c.order.kind==="home"||
+             (c.order.kind!=="base"&&c.order.kind!=="home"&&!c.shipId);
+  if(idle)return;
+  const due=crewPay(c)*min;
   if(due<=0)return;
   const pay=Math.min(G.credits,due);
-  G.credits-=pay;
+  G.credits-=pay;c.spent=(c.spent||0)+pay;
   const short=due-pay;
   if(short>0){
     c.debt+=short;
@@ -2426,9 +2504,9 @@ function crewDamage(c,amount){
 }
 function crewHunt(c,min,eff,danger,r){
   const kills=min*(.22+danger*.35)*eff;
-  const bounty=Math.round(kills*(120+danger*150)*stat().bountyMul);
+  const bounty=Math.round(kills*(170+danger*200)*stat().bountyMul);
   if(bounty>0){
-    G.credits+=bounty;
+    G.credits+=bounty;c.earned=(c.earned||0)+bounty;
     if(bounty>40)logAdd("money",c.name+" сдал награды за пиратов · +"+bounty.toLocaleString("ru")+" кр");
   }
   /* урон соразмерен ремонту: час в опасном секторе — счёт за починку, а не похороны */
@@ -2437,10 +2515,16 @@ function crewHunt(c,min,eff,danger,r){
 }
 function crewMine(c,min,eff,danger,r){
   const cap=crewCargoMax(c);
-  const rate=min*(.5+eff*.95);   // около полутора единиц руды в минуту: выше жалованья, но не принтер
+  /* выработка поднята: при прежних полутора единицах в минуту добытчик приносил
+     ~15 кр/мин против 26 кр/мин жалованья — он гарантированно разорял игрока.
+     Теперь около трёх единиц: работа заметно прибыльна, но и не печатает деньги. */
+  const rate=min*(1.4+eff*1.6);
   let left=Math.min(rate,Math.max(0,cap-crewHold(c)));
   const sys=getSystem(c.order.sx,c.order.sy);
-  const pool=sys.belt?sys.belt.res:(sys.planets.length?sys.planets[0].res:["iron"]);
+  let pool=sys.belt?sys.belt.res:(sys.planets.length?sys.planets[0].res:["iron"]);
+  /* приоритет по материалу: если игрок указал, что нужно, и оно тут есть —
+     берём только его, иначе работаем по всему, что попадётся */
+  if(c.pref&&c.pref!=="all"&&pool.indexOf(c.pref)>=0)pool=[c.pref];
   while(left>=1){
     const k=pick(pool.length?pool:["iron"],r);
     c.cargo[k]=(c.cargo[k]|0)+1;left--;
@@ -2449,9 +2533,11 @@ function crewMine(c,min,eff,danger,r){
   if(crewHas(c,"greedy")&&crewHold(c)>0&&r()<min*.35){
     for(const k in c.cargo)if(c.cargo[k]>0){c.cargo[k]--;break;}
   }
-  if(crewHold(c)>=cap*.98){
+  /* сдаём с полтрюма, а не только под завязку: иначе на большом корпусе первая
+     выручка приходила через полчаса, и казалось, что человек просто ест деньги */
+  if(crewHold(c)>=cap*.5){
     const sum=crewUnload(c);
-    if(sum>0)logAdd("money",c.name+" сдал полный трюм · +"+sum.toLocaleString("ru")+" кр");
+    if(sum>0)logAdd("money",c.name+" сдал руду · +"+sum.toLocaleString("ru")+" кр");
   }
   if(danger>.25)crewDamage(c,min*danger*1.1*crewMul(c,"risk"));
 }
@@ -2459,9 +2545,11 @@ function crewHaul(c,min,eff,danger,r){
   const S=shipData(c.shipId);
   /* доход маршрута тянет вместимость корпуса: большой трюм — заметно выгоднее,
      но всё равно в разы ближе к жалованью, чем к бесконечным деньгам */
-  const pay=Math.round(min*(S?S.cargo:20)*.17*eff);
+  /* рейс тоже был убыточен: 20 единиц трюма давали 3 кр/мин при жалованье 22.
+     Зависимость от трюма нарочно пологая — иначе большой корпус печатал бы деньги */
+  const pay=Math.round(min*(14+(S?S.cargo:20)*.5)*eff);
   if(pay>0){
-    G.credits+=pay;
+    G.credits+=pay;c.earned=(c.earned||0)+pay;
     if(pay>60)logAdd("money",c.name+" закрыл рейс · +"+pay.toLocaleString("ru")+" кр");
   }
   if(danger>.35&&r()<min*.12)crewDamage(c,4+danger*14);
@@ -2480,6 +2568,28 @@ function spawnAllies(){
   }
   if(G.allies.length)say("В системе работает ваш экипаж\n"+G.allies.map(A=>A.c.name).join(", "));
 }
+/* точка работы наёмника в текущей системе: место видно на глаз, поэтому «он
+   работает» перестаёт быть строчкой в журнале и становится наблюдаемым фактом */
+function allyWork(A){
+  const sys=G.sys,kind=A.c.order?A.c.order.kind:"home";
+  A.wt=(A.wt||0)+.004;                       // свой медленный оборот вокруг точки
+  const around=(cx,cy,r)=>({x:cx+Math.cos(A.wt)*r,y:cy+Math.sin(A.wt)*r});
+  if(kind==="mine"){
+    if(sys.belt){
+      const a=A.wt+(A.c.seed%100)/100*TAU;
+      return {x:Math.cos(a)*sys.belt.orbit,y:Math.sin(a)*sys.belt.orbit};
+    }
+    const p=sys.planets[(A.c.seed>>>3)%Math.max(1,sys.planets.length)];
+    if(p)return around(p.x,p.y,p.radius+120);
+  }
+  if(kind==="haul"&&sys.station)return around(sys.station.x,sys.station.y,180);
+  if(kind==="hunt"){
+    const r=(sys.belt?sys.belt.orbit:2000)*.8;
+    const a=A.wt*1.6+(A.c.seed%50)/50*TAU;
+    return {x:Math.cos(a)*r,y:Math.sin(a)*r};
+  }
+  return null;
+}
 function updateAllies(dt){
   if(!G.allies||!G.allies.length)return;
   const sh=G.ship,st=stat();
@@ -2490,9 +2600,18 @@ function updateAllies(dt){
       const d=Math.hypot(p.x-A.x,p.y-A.y);
       if(d<1500&&d<td){td=d;tgt=p;}
     }
-    const gx=tgt?tgt.x:sh.x+180,gy=tgt?tgt.y:sh.y+180;
+    /* без боя наёмник летит не «рядом с игроком», а туда, где по приказу и должен
+       быть: добытчик — к поясу или планете, перевозчик — к станции, боевой —
+       патрулирует вокруг звезды. Иначе в режиме наблюдения видно только, как он
+       без дела висит у борта. */
+    let wx=sh.x+180,wy=sh.y+180;
+    if(!tgt){
+      const W2=allyWork(A);
+      if(W2){wx=W2.x;wy=W2.y;}
+    }
+    const gx=tgt?tgt.x:wx,gy=tgt?tgt.y:wy;
     const dx=gx-A.x,dy=gy-A.y,d=Math.hypot(dx,dy)||1;
-    const want=tgt?Math.min(d-260,3.4):Math.min(d-140,3.2);
+    const want=tgt?Math.min(d-260,3.4):clamp(d*.05,0,3.2);
     A.vx+=(dx/d*want-A.vx)*Math.min(1,.02*dt);
     A.vy+=(dy/d*want-A.vy)*Math.min(1,.02*dt);
     A.x+=A.vx*dt;A.y+=A.vy*dt;
@@ -2880,6 +2999,11 @@ function applySave(s){
     hull:Math.max(0,+c.hull||0),hullMax:Math.max(1,+c.hullMax||100),
     cargo:(c.cargo&&typeof c.cargo==="object")?c.cargo:{},
     debt:Math.max(0,c.debt|0),morale:clamp(+c.morale||1,0,1),fee:Math.max(0,c.fee|0),
+    /* новые поля — с безопасными дефолтами, формат записи не меняется */
+    pref:(c.pref&&(c.pref==="all"||RES[c.pref]))?c.pref:"all",
+    mods:(c.mods&&typeof c.mods==="object")
+         ?{hold:c.mods.hold|0,armor:c.mods.armor|0,drill:c.mods.drill|0}:{},
+    earned:Math.max(0,c.earned|0),spent:Math.max(0,c.spent|0),
     tMs:Date.now(),paidMs:Date.now()
   })).slice(0,8);
   G.allies=[];
@@ -3159,8 +3283,11 @@ function tap(sxp,syp){
     return;
   }
   if(G.mode!=="system")return;
-  const Z=G.zoom,sh=G.ship;
-  const wx=sh.x+(sxp-W/2)/Z, wy=sh.y+(syp-H/2)/Z;
+  /* в режиме наблюдения камера стоит на наёмнике — тычок должен считаться от
+     неё же, иначе автопилот получал бы цель со смещением на пол-экрана */
+  const Z=G.zoom,sh=G.ship,wA=G.watch?allyOf(G.watch):null;
+  const cx0=wA?wA.x:sh.x, cy0=wA?wA.y:sh.y;
+  const wx=cx0+(sxp-W/2)/Z, wy=cy0+(syp-H/2)/Z;
   let best=null,bd=1e9;
   for(const p of G.sys.planets){
     const d=Math.hypot(wx-p.x,wy-p.y);
@@ -3286,12 +3413,17 @@ function runAutopilot(dt,st){
     ax=T.x+T.vx*t; ay=T.y+T.vy*t;
   }
   const ldx=ax-sh.x, ldy=ay-sh.y, ldist=Math.hypot(ldx,ldy)||1;
-  if(gap<12&&Math.hypot(rvx,rvy)<.25){
+  /* приёмка цели: раньше требовалось подойти на 12 единиц и почти замереть, но
+     минимальная скорость сближения была .25 — условие не выполнялось никогда, и
+     автопилот наматывал круги у самой планеты. Теперь коридор широкий, а на
+     подлёте скорость гасится до нуля, а не до «ползком». */
+  const rel=Math.hypot(rvx,rvy);
+  if(gap<34&&rel<1.4){
     sh.vx=T.vx;sh.vy=T.vy;
     return arrive();
   }
   if(G.fuel<=0){G.ap=null;say("Топливо кончилось\nавтопилот отключён");return false;}
-  const want=clamp(gap/26,.25,cruise);
+  const want=clamp(gap/22,0,cruise);
   const dvx=ldx/ldist*want-rvx, dvy=ldy/ldist*want-rvy;
   const dm=Math.hypot(dvx,dvy)||1;
   const acc=Math.min(dm,.088*st.thr*dt);
@@ -3584,10 +3716,14 @@ function updateSystem(dt){
 }
 function drawSystem(){
   const sh=G.ship,sys=G.sys,Z=G.zoom;
-  const zx=x=>W/2+(x-sh.x)*Z, zy=y=>H/2+(y-sh.y)*Z;
+  /* режим наблюдения за наёмником: двигается только камера, корабль игрока
+     продолжает лететь сам по себе и остаётся видимым на своём месте */
+  const wA=G.watch?allyOf(G.watch):null;
+  const cx0=wA?wA.x:sh.x, cy0=wA?wA.y:sh.y;
+  const zx=x=>W/2+(x-cx0)*Z, zy=y=>H/2+(y-cy0)*Z;
   ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
-  drawNebula(sh.x*.06*Z,sh.y*.06*Z,1);
-  drawStars(sh.x*.06*Z,sh.y*.06*Z,1);
+  drawNebula(cx0*.06*Z,cy0*.06*Z,1);
+  drawStars(cx0*.06*Z,cy0*.06*Z,1);
   const ox=zx(0),oy=zy(0);
   ctx.strokeStyle="rgba(120,190,210,.10)";ctx.lineWidth=1;
   for(const p of sys.planets){ctx.beginPath();ctx.arc(ox,oy,p.orbit*Z,0,TAU);ctx.stroke();}
@@ -3668,13 +3804,23 @@ function drawSystem(){
   drawCombat(zx,zy,Z);
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);
-  ctx.save();ctx.translate(W/2,H/2);ctx.rotate(sh.a);
+  ctx.save();ctx.translate(zx(sh.x),zy(sh.y));ctx.rotate(sh.a);
   ctx.scale(clamp(Z,.55,1.6),clamp(Z,.55,1.6));
   drawHull(G.shipId,keys.thrust&&G.fuel>0||(G.ap&&G.fuel>0),keys.brake&&G.fuel>0,G.mods.engine,sh.bank);
   ctx.restore();
+  /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
+     и куда нажать, чтобы вернуться */
+  if(wA){
+    ctx.fillStyle="rgba(127,230,216,.9)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";
+    /* ниже приборов: сверху слева датчики, справа сводка — там текст не читался */
+    ctx.fillText("НАБЛЮДЕНИЕ · "+wA.c.name.toUpperCase()+" · "+
+                 ORDERS[wA.c.order.kind].ru.toUpperCase(),W/2,H-52);
+    ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="9px ui-monospace,monospace";
+    ctx.fillText("ЭКИПАЖ — ВЕРНУТЬ КАМЕРУ",W/2,H-38);
+  }
   if(Z<.55){
     ctx.strokeStyle="rgba(127,230,216,.5)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(W/2,H/2,13,0,TAU);ctx.stroke();
+    ctx.beginPath();ctx.arc(zx(sh.x),zy(sh.y),13,0,TAU);ctx.stroke();
   }
   ctx.fillStyle="rgba(93,115,130,.75)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
   ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),12,H-14);
@@ -5404,12 +5550,23 @@ function enterSurface(){
     const x=120+r()*(tr.W-240);
     fauna.push(genBeast(r,p,x,groundAt(tr,x)));
   }
-  /* вход в пещеру — не на каждой планете, и подальше от корабля, чтобы стоило дойти */
-  const caveMouth=r()<.65?{x:clamp(400+r()*(tr.W-800),150,tr.W-150)}:null;
+  /* вход в пещеру есть на каждой планете: раньше он выпадал с шансом .65, и
+     игрок, обойдя пару планет без пещеры, решал, что механику убрали. Место
+     по-прежнему случайное и далеко от корабля — дойти надо, а вот гадать,
+     существует ли пещера в принципе, не надо: путь показывает навигатор сверху. */
+  const caveMouth={x:clamp(400+r()*(tr.W-800),150,tr.W-150)};
+  /* расчищаем пятачок у входа: залежь или куст, оказавшись на устье, перехватывали
+     подсказку ДЕЙСТВ (бурение важнее по порядку проверок), и пещеру нельзя было
+     открыть, стоя прямо на ней — отсюда и «пещер нет» */
+  const clearNear=(arr,rad)=>{
+    for(let i=arr.length-1;i>=0;i--)if(Math.abs(arr[i].x-caveMouth.x)<rad)arr.splice(i,1);
+  };
+  clearNear(deposits,70);clearNear(plants,50);clearNear(fauna,60);
   G.surf={p,tr,shipX:L.x,shipY:L.y,x:L.x+72,y:groundAt(tr,L.x+72)-10,
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,
     suit:100,warned:false,beacon:0,walkAmp:0,walkPhase:0,cave:caveMouth};
   G.mode="surface";
+  G.surfTipShown=0;
   logAdd("dim","Посадка на "+p.name+" · залежей: "+deposits.length);
   say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length);
 }
@@ -5472,7 +5629,13 @@ function updateSurface(dt){
      взлёт теперь отдельная кнопка с удержанием (см. tickLaunchHold), а не ДЕЙСТВ,
      чтобы добыча ресурса рядом с посадочной площадкой не отправляла в полёт случайно */
   if(dShip<48&&S.suit<100){S.suit=Math.min(100,S.suit+.5*dt);S.warned=false;}
-  if(dep){
+  /* вход в пещеру проверяется раньше залежей и организмов: он редкий и разовый,
+     а бурить и сканировать можно где угодно ещё */
+  if(S.cave&&Math.abs(S.cave.x-S.x)<34){
+    G.prompt="ДЕЙСТВ — ВОЙТИ В ПЕЩЕРУ";
+    if(actEdge){enterCave();return;}
+  }
+  else if(dep){
     if(held()>=st.cargoMax)G.prompt="ТРЮМ ПОЛОН · "+RES[dep.res].ru.toUpperCase()+" ОСТАЛОСЬ "+dep.left;
     else{
       G.prompt="УДЕРЖИВАЙТЕ ДЕЙСТВ — БУРЕНИЕ\n"+RES[dep.res].ru.toUpperCase()+" · ЗАЛЕЖЬ "+dep.left+
@@ -5506,9 +5669,6 @@ function updateSurface(dt){
   }else if(dShip<48&&!baseAt(G.sx,G.sy,S.p.idx)&&S.p.type!=="gas"){
     G.prompt="ДЕЙСТВ — ЗАЛОЖИТЬ БАЗУ · 2500 КР + 10 СПЛАВОВ";
     if(actEdge&&foundBase(S.p)){enterBase(S.p);return;}
-  }else if(S.cave&&Math.abs(S.cave.x-S.x)<34){
-    G.prompt="ДЕЙСТВ — ВОЙТИ В ПЕЩЕРУ";
-    if(actEdge){enterCave();return;}
   }else if(S.on){
     G.prompt="ДЕЙСТВ — ЗАЛОЖИТЬ ШАХТУ · ВГЛУБЬ ПОРОДА БОГАЧЕ\n▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
     if(actEdge){enterDig();return;}
@@ -5594,6 +5754,64 @@ function launch(){
   say("Выход на орбиту\nв трюме: "+held());
   G.land=null;G.surf=null;
 }
+/* ══════════════ навигатор и подсказки сверху ══════════════ */
+/* Всё неочевидное на планете игрок должен видеть, не догадываясь: где пещера,
+   что у корабля можно заложить базу, чем занят скафандр. Одна строка сверху и
+   стрелка к цели — этого хватает, чтобы не искать вслепую. */
+function surfaceHint(){
+  const S=G.surf;if(!S)return null;
+  const dShip=Math.abs(S.x-S.shipX);
+  if(S.suit<35)return "СКАФАНДР НА ИСХОДЕ · К КОРАБЛЮ ИЛИ КНОПКА → КОРАБЛЬ";
+  if(dShip<48){
+    if(baseAt(G.sx,G.sy,S.p.idx))return "ЗДЕСЬ ВАША БАЗА · ДЕЙСТВ — СПУСТИТЬСЯ ВНИЗ";
+    if(S.p.type!=="gas")return "У КОРАБЛЯ МОЖНО ЗАЛОЖИТЬ БАЗУ · ДЕЙСТВ · 2500 КР + 10 СПЛАВОВ";
+  }
+  if(S.cave&&Math.abs(S.cave.x-S.x)<34)return "ВХОД В ПЕЩЕРУ · ДЕЙСТВ — ВНУТРЬ";
+  if(!G.surfTipShown||G.t-G.surfTipShown<900){
+    if(!G.surfTipShown)G.surfTipShown=G.t;
+    return "ЦВЕТНЫЕ КРИСТАЛЛЫ — ЗАЛЕЖИ · СТРЕЛКИ СВЕРХУ ВЕДУТ К ПЕЩЕРЕ И КОРАБЛЮ";
+  }
+  return null;
+}
+function drawSurfaceHud(camx,camy){
+  const S=G.surf;
+  ctx.textAlign="center";
+  /* строка-подсказка сверху */
+  /* полоса идёт ниже приборов: сверху слева датчики, справа сводка системы,
+     справа же колонка кнопок — туда текст залезать не должен */
+  const TOP=58, RIGHT_PAD=118;
+  const hint=surfaceHint();
+  if(hint){
+    ctx.font="10px ui-monospace,monospace";
+    const w=Math.min(W-RIGHT_PAD-20,ctx.measureText(hint).width+22);
+    const cx=(W-RIGHT_PAD)/2;
+    ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(cx-w/2,TOP,w,20);
+    ctx.strokeStyle="rgba(127,230,216,.28)";ctx.lineWidth=1;
+    ctx.strokeRect(cx-w/2+.5,TOP+.5,w-1,19);
+    ctx.fillStyle="rgba(190,235,240,.92)";ctx.fillText(hint,cx,TOP+14);
+  }
+  /* навигатор: маркеры цели у верхней кромки — корабль и пещера */
+  const marks=[];
+  marks.push({x:S.shipX,ru:"КОРАБЛЬ",col:"rgba(242,178,92,.9)"});
+  if(S.cave)marks.push({x:S.cave.x,ru:"ПЕЩЕРА",col:"rgba(150,225,255,.9)"});
+  ctx.font="9px ui-monospace,monospace";
+  for(const m of marks){
+    const d=m.x-S.x, ad=Math.abs(d);
+    const sx=clamp(m.x-camx,64,W-RIGHT_PAD-14);   // запас под подпись по центру
+    const y=(hint?TOP+34:TOP+6);
+    ctx.fillStyle=m.col;
+    if(ad>W*.45){                       // цель за краем — рисуем стрелку направления
+      const dir=Math.sign(d);
+      ctx.beginPath();
+      ctx.moveTo(sx+dir*8,y);ctx.lineTo(sx-dir*4,y-5);ctx.lineTo(sx-dir*4,y+5);
+      ctx.closePath();ctx.fill();
+      ctx.fillText(m.ru+" "+Math.round(ad)+" м",sx,y+16);
+    }else{
+      ctx.fillRect(sx-1,y-5,2,10);
+      ctx.fillText(m.ru,sx,y+16);
+    }
+  }
+}
 function drawSurface(){
   const S=G.surf,tr=S.tr,p=S.p;
   ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
@@ -5648,7 +5866,9 @@ function drawSurface(){
     ctx.globalAlpha=1;
     if(Math.abs(d.x-S.x)<70){
       ctx.fillStyle=col;ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText(RES[d.res].ru.toUpperCase()+" "+d.left,x,y-24);
+      /* соседние залежи разводим по высоте: рядом стоящие подписи наезжали друг
+         на друга и читались как каша из двух названий */
+      ctx.fillText(RES[d.res].ru.toUpperCase()+" "+d.left,x,y-24-(Math.round(d.x/60)%2)*11);
     }
     if(S.mining===d){
       ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x-18,y-20,36,4);
@@ -5666,6 +5886,7 @@ function drawSurface(){
     ctx.beginPath();ctx.moveTo(x+S.face*6,y+2);
     ctx.lineTo(S.mining.x-camx,S.mining.y-camy-4);ctx.stroke();
   }
+  drawSurfaceHud(camx,camy);
 }
 
 /* ══════════════ пещера: горизонтальная полость под поверхностью ══════════════ */
@@ -5740,7 +5961,7 @@ function updateCave(dt){
   }
   const nearBug=C.fauna.find(b=>b.stun>0&&Math.hypot(b.x-C.x,b.y-C.y)<46);
   C.sample=nearBug||null;
-  if(nearBug&&keys.brake){
+  if(nearBug){   /* образец берётся сам, как и в шахте */
     const r=rng(hashi(Math.round(nearBug.x),Math.round(nearBug.y),0x5A99));
     const c=addRes("carbon",2+Math.floor(r()*4));
     const x2=r()<.4?addRes("xeno",1+Math.floor(r()*2)):0;
@@ -5764,8 +5985,6 @@ function updateCave(dt){
       C.found=true;G.data+=20;
       tell("tech","Находка в пещере · +20 данных","Находка в пещере\n+20 данных");
     }
-  }else if(nearBug){
-    G.prompt="ТОРМ — ВЗЯТЬ ОБРАЗЕЦ";
   }else if(plant){
     G.prompt="ДЕЙСТВ — СКАНИРОВАТЬ ОРГАНИЗМ";
     if(actEdge){
@@ -5773,8 +5992,8 @@ function updateCave(dt){
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
   }else if(C.fauna.some(b=>b.stun<=0&&b.flee<=0)){
-    G.prompt="ЖИВНОСТЬ РЯДОМ · ОГОНЬ — ИМПУЛЬС";
-  }else G.prompt="◀ ▶ — ИДТИ · ищите проход";
+    G.prompt="КУСАЧИЕ РЯДОМ · ОГОНЬ (F) — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
+  }else G.prompt="A D — ИДТИ · В ДАЛЬНЕМ КОНЦЕ НАХОДКА · У ВХОДА ДЕЙСТВ — НАРУЖУ";
 }
 function drawCave(){
   const C=G.cave;
@@ -5863,32 +6082,38 @@ function enterDig(){
     bugs:[],zap:0,zapT:0,walkAmp:0,walkPhase:0};
   G.dig.cells["0,0"]={dug:true,res:null,amount:0,prog:0,hard:0,tint:0};
   G.mode="dig";
-  say("Спуск в шахту\nДЕЙСТВ — вниз · ◀ ▶ — вбок\n▲ — наверх, на поверхности — выход");
+  say("Спуск в шахту\nW A S D — копать вверх/вбок/вниз\nна поверхности W — выход · ОГОНЬ — импульс");
 }
 function exitDig(){
   G.dig=null;G.mode="surface";
   say("Подъём на поверхность\nв трюме: "+held());
   saveGame(true);
 }
-/* возвратный маяк: мгновенно к кораблю, с перезарядкой */
+/* возвратный маяк: мгновенно к кораблю, с перезарядкой.
+   Раньше кнопка появлялась только после покупки науки «Возвратный маяк», и на
+   планете телепорта просто не было. Теперь он есть всегда, а наука сокращает
+   перезарядку вчетверо — за неё платят скоростью, а не самой возможностью. */
 const BEACON_COOL=2400;
+function beaconCool(){return G.tech.has("beacon")?BEACON_COOL/4:BEACON_COOL;}
 function useBeacon(){
   const S=G.surf;
-  if(!S||!G.tech.has("beacon")||S.beacon>0)return;
+  if(!S||S.beacon>0)return;
   const deep=G.dig?G.dig.row:0;
-  S.beacon=BEACON_COOL;
+  S.beacon=beaconCool();
   G.dig=null;G.cave=null;G.mode="surface";
   S.x=S.shipX;S.y=groundAt(S.tr,S.shipX)-10;S.vy=0;
-  say("Маяк сработал\nвозврат к кораблю");
+  S.walkTarget=null;
+  sfx("ui",{f:220,to:1400,d:.35,v:.5});
+  say("Телепорт к кораблю\nмаяк заряжается");
   logAdd("tech","Маяк: возврат к кораблю с "+(deep*3)+" м");
 }
 function beaconTick(dt){
   const S=G.surf,b=document.getElementById("beaconbtn");
-  if(!S||!G.tech.has("beacon")||(G.mode!=="surface"&&G.mode!=="dig"&&G.mode!=="cave")){b.style.display="none";return;}
+  if(!S||(G.mode!=="surface"&&G.mode!=="dig"&&G.mode!=="cave")){b.style.display="none";return;}
   if(S.beacon>0)S.beacon=Math.max(0,S.beacon-dt);
   b.style.display="";
   const ready=S.beacon<=0;
-  b.textContent=ready?"МАЯК":Math.ceil(S.beacon/60)+"с";
+  b.textContent=ready?"→ КОРАБЛЬ":Math.ceil(S.beacon/60)+"с";
   b.style.opacity=ready?"1":".45";
 }
 
@@ -5920,7 +6145,9 @@ function updateDig(dt){
   if(G.mode!=="dig")return;
   if(D.move>0)D.move-=dt;
   let dx=0,dy=0;
-  if(keys.act)dy=1;
+  /* копаем в ту сторону, куда нажали: S (ТОРМ) — вниз, W (▲) — вверх, A/D — вбок.
+     ДЕЙСТВ оставлен синонимом «вниз» — на телефоне это привычная большая кнопка. */
+  if(keys.brake||keys.act)dy=1;
   else if(keys.thrust)dy=-1;
   else if(keys.left)dx=-1;
   else if(keys.right)dx=1;
@@ -5929,7 +6156,7 @@ function updateDig(dt){
     if(!dCol&&!dRow)D.walkTarget=null;
     else if(dRow>0)dy=1;else if(dRow<0)dy=-1;else dx=Math.sign(dCol);
   }
-  if(keys.act||keys.thrust||keys.left||keys.right)D.walkTarget=null;
+  if(keys.act||keys.brake||keys.thrust||keys.left||keys.right)D.walkTarget=null;
   if(dx)D.face=dx;
   const digging=!!(dx||dy);
   D.walkAmp=clamp(D.walkAmp+(digging?1:-1)*.12*dt,0,1);
@@ -5939,9 +6166,10 @@ function updateDig(dt){
   const depth=D.row*3;
   let head="ГЛУБИНА "+depth+" м · "+DEPTH_TIERS[tierAt(D.row)].ru.toUpperCase()+
     "\nСКАФАНДР "+Math.round(S.suit)+"% · ТРЮМ "+held()+"/"+st.cargoMax;
-  if(D.sample)head+="\nТОРМ — ВЗЯТЬ ОБРАЗЕЦ";
-  else if(D.bugs.some(b=>b.stun<=0&&b.flee<=0))head+="\nЖИВНОСТЬ РЯДОМ · ОГОНЬ — ИМПУЛЬС";
-  if(!dx&&!dy){D.target=null;G.prompt=head+"\nДЕЙСТВ — ВНИЗ · ◀ ▶ — ВБОК · ▲ — ВВЕРХ";return;}
+  if(D.bugs.some(b=>b.stun<=0&&b.flee<=0))
+    head+="\nКУСАЧИЕ РЯДОМ · ОГОНЬ (F) — ИМПУЛЬС, ПОТОМ ПОДОЙТИ ЗА ОБРАЗЦОМ";
+  if(!dx&&!dy){D.target=null;
+    G.prompt=head+"\nW A S D — КОПАТЬ ВВЕРХ / ВБОК / ВНИЗ";return;}
 
   const tc=D.col+dx,tr2=D.row+dy;
   if(tr2<0||Math.abs(tc)>DIG_HALF){D.target=null;G.prompt=head;return;}
@@ -5953,18 +6181,24 @@ function updateDig(dt){
   }
   const cell=digCell(D,tc,tr2);
   if(cell.dug){
-    if(D.move<=0){D.col=tc;D.row=tr2;D.move=7;D.deepest=Math.max(D.deepest,D.row);}
+    if(D.move<=0){D.col=tc;D.row=tr2;D.move=11;D.deepest=Math.max(D.deepest,D.row);}
     D.target=null;G.prompt=head;
     return;
   }
   if(held()>=st.cargoMax&&cell.res){G.prompt=head+"\nТРЮМ ПОЛОН";D.target=null;return;}
   D.target=cell;
-  cell.prog+=.055*st.drill*dt;
+  /* проходка вдвое медленнее прежней: шахта должна быть работой, а не прокруткой
+     экрана. Ускоряется за деньги — модуль БУРОВАЯ УСТАНОВКА на станции даёт
+     st.drill, он же множитель здесь. */
+  cell.prog+=.019*st.drill*dt;
   G.prompt=head+"\nПРОХОДКА "+Math.round(clamp(cell.prog/cell.hard,0,1)*100)+"%"+
-    (cell.res?" · ЖИЛА: "+RES[cell.res].ru.toUpperCase():"");
+    (cell.res?" · ЖИЛА: "+RES[cell.res].ru.toUpperCase():"")+
+    (st.drill<1.3?"\nБЫСТРЕЕ — МОДУЛЬ «БУРОВАЯ УСТАНОВКА» НА СТАНЦИИ":"");
   if(cell.prog>=cell.hard){
     cell.dug=true;D.target=null;
-    D.col=tc;D.row=tr2;D.move=7;D.deepest=Math.max(D.deepest,D.row);
+    /* по вертикальному ходу остаётся лесенка: видно, где можно подняться обратно */
+    if(dy){cell.ladder=true;digCell(D,D.col,D.row).ladder=true;}
+    D.col=tc;D.row=tr2;D.move=11;D.deepest=Math.max(D.deepest,D.row);
     if(cell.res){
       const got=addRes(cell.res,Math.round(cell.amount*st.refine));
       if(got)say("Добыто: "+RES[cell.res].ru+" ×"+got);
@@ -5984,19 +6218,24 @@ function digFauna(dt,st){
   const D=G.dig,S=G.surf;
   const px=D.col*DIG_CELL+DIG_CELL/2, py=D.row*DIG_CELL+DIG_CELL/2;
   const ti=tierAt(D.row);
-  /* подселяем по мере углубления, детерминированно от клетки */
-  if(ti>0&&D.bugs.length<2+ti){
+  /* подселяем по мере углубления, детерминированно от клетки. Раньше кусачие
+     заводились только со второго пласта (ti>0) — до него доходили единицы, и
+     механика выглядела несуществующей. Теперь они есть с первых метров, просто
+     реже и слабее. */
+  if(D.row>2&&D.bugs.length<2+ti){
     const key=D.col+":"+D.row;
     if(D.lastSpawnKey!==key){
       D.lastSpawnKey=key;
       const r=rng(hashi(D.p.seed+D.col*613,D.row*929,0xB17E));
-      if(r()<.055+ti*.055){
+      /* верхний пласт упирается в потолок в 15 рядов (глубже нужен бур), и при
+         шансе 10% на клетку игрок вполне мог не встретить никого вообще */
+      if(r()<.18+ti*.06){
         const side=r()<.5?-1:1;
         const b=genBeast(r,D.p,0,0);
         b.r=6+r()*6;b.hostile=true;b.stun=0;b.bite=0;b.flee=0;
         b.x=px+side*(120+r()*90);b.y=py+(r()-.5)*90;
         D.bugs.push(b);
-        say("В породе кто-то есть\nОГОНЬ — импульс");
+        say("В породе кто-то есть\nОГОНЬ (F) — импульсный разрядник\nоглушённого можно забрать, подойдя вплотную");
       }
     }
   }
@@ -6035,10 +6274,11 @@ function digFauna(dt,st){
       if(G.mode!=="dig")return;
     }
   }
-  /* образец с оглушённого — на ТОРМ, чтобы не мешать бурению */
-  const near=D.bugs.find(b=>b.stun>0&&Math.hypot(b.x-px,b.y-py)<46);
+  /* образец берётся сам, стоит подойти вплотную: отдельная кнопка (ТОРМ) теперь
+     занята копанием вниз, да и лишний жест здесь никому не был нужен */
+  const near=D.bugs.find(b=>b.stun>0&&Math.hypot(b.x-px,b.y-py)<40);
   D.sample=near||null;
-  if(near&&keys.brake){
+  if(near){
     const r=rng(hashi(Math.round(near.x),Math.round(near.y),0x5A99));
     const c=addRes("carbon",2+Math.floor(r()*4));
     const x2=r()<.35+ti*.12?addRes("xeno",1+Math.floor(r()*2)):0;
@@ -6074,6 +6314,18 @@ function drawDig(){
     const cell=known||digCell(D,col,row);
     if(cell.dug){
       ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(x,y,DIG_CELL,DIG_CELL);
+      /* лесенка в вертикальном ходе: две тетивы и перекладины */
+      if(cell.ladder){
+        ctx.strokeStyle="rgba(196,150,92,.75)";ctx.lineWidth=1.4;
+        ctx.beginPath();
+        ctx.moveTo(x+DIG_CELL*.36,y);ctx.lineTo(x+DIG_CELL*.36,y+DIG_CELL);
+        ctx.moveTo(x+DIG_CELL*.64,y);ctx.lineTo(x+DIG_CELL*.64,y+DIG_CELL);
+        for(let k=1;k<=3;k++){
+          const ry=y+DIG_CELL*k/4;
+          ctx.moveTo(x+DIG_CELL*.36,ry);ctx.lineTo(x+DIG_CELL*.64,ry);
+        }
+        ctx.stroke();
+      }
       continue;
     }
     const t=cell.tint*.35+tierAt(row)*.18;
@@ -7830,7 +8082,10 @@ function renderTab(){
         Object.keys(fm).length+" из "+slots.length+" слотов занято · в инвентаре "+
         G.inv.length+" частей</s>"));
       const b=el("button","act sm gold","ОТКРЫТЬ");
-      b.onclick=()=>{$st.classList.remove("open");openShipView();};
+      /* уходим на экран корабля, не отстыковываясь: раньше здесь просто снимали
+         .open со станции, режим оставался "dock", и после ЗАКРЫТЬ игрок висел
+         в космосе без управления. Теперь помним, что вернуться надо на станцию. */
+      b.onclick=()=>{svReturn="station";$st.classList.remove("open");openShipView();};
       r.appendChild(b);$body.appendChild(r);
     }
 
@@ -8001,6 +8256,11 @@ function renderTab(){
         (cap?" · трюм "+hold+"/"+cap:"")+
         "<br>жалованье "+crewPay(c)+" кр/мин · опыт "+Math.round(c.xp)+
         " · настрой "+Math.round(c.morale*100)+"%"+
+        /* главный вопрос к наёмнику — окупается ли он; ответ должен быть на виду */
+        "<br>заработал "+(c.earned||0).toLocaleString("ru")+" кр · съел "+
+        (c.spent||0).toLocaleString("ru")+" кр · итог <b style='color:"+
+        (((c.earned||0)-(c.spent||0))>=0?"#8fd08a":"#ff6b57")+"'>"+
+        ((c.earned||0)-(c.spent||0)).toLocaleString("ru")+" кр</b>"+
         (c.debt>0?" · <b style='color:#ff6b57'>долг "+Math.round(c.debt)+" кр</b>":"")+"</s>"));
       const box=el("div","qt","");
       r.appendChild(box);
@@ -8134,10 +8394,158 @@ document.getElementById("optbtn").addEventListener("click",()=>{
   $opts.classList.add("open");renderOpts();
 });
 document.getElementById("optClose").addEventListener("click",()=>$opts.classList.remove("open"));
+/* ══════════════ экран экипажа ══════════════ */
+/* Наёмники раньше жили только во вкладке станции: нанял — и до следующей стыковки
+   не видно ни где человек, ни что он делает, ни приносит ли он деньги. Экран
+   открывается из полёта кнопкой ЭКИПАЖ, показывает баланс каждого, даёт приказ,
+   приоритет по материалу, передачу своих модулей и режим наблюдения. */
+const $cv=document.getElementById("crewview"),$cvBody=document.getElementById("cvBody");
+function crewByIdG(id){return G.crew.find(c=>c.id===id)||null;}
+/* кого сейчас видно в этой системе настоящим кораблём */
+function allyOf(id){return (G.allies||[]).find(A=>A.c.id===id)||null;}
+function crewBtnTick(){
+  const b=document.getElementById("crewbtn");if(!b)return;
+  const show=G.crew.length>0&&G.mode!=="dock";
+  b.style.display=show?"":"none";
+  if(G.watch&&!allyOf(G.watch))G.watch=null;
+  b.classList.toggle("on",!!G.watch);
+}
+/* ── наблюдение: камера системы едет за наёмником, управление кораблём не трогаем ── */
+function watchCrew(c){
+  const A=allyOf(c.id);
+  if(!A){
+    say(c.name+" сейчас не в этой системе\nсектор "+c.order.sx+","+c.order.sy);
+    return;
+  }
+  G.watch=(G.watch===c.id)?null:c.id;
+  $cv.classList.remove("open");
+  say(G.watch?"Наблюдение: "+c.name+"\nповторное нажатие ЭКИПАЖ — обратно"
+             :"Камера вернулась к кораблю");
+}
+function crewRender(){
+  crewTick();
+  document.getElementById("cvCr").textContent=G.credits.toLocaleString("ru")+" кр";
+  document.getElementById("cvCap").textContent=G.crew.length+" / "+crewCap()+" мест";
+  document.getElementById("cvSub").textContent=
+    "сектор "+G.sx+","+G.sy+" · нанимают на станциях";
+  $cvBody.textContent="";
+  if(!G.crew.length){
+    $cvBody.appendChild(el("div","sec","ПОКА НИКОГО · НАЙМИТЕ НА СТАНЦИИ, ВКЛАДКА ЭКИПАЖ"));
+    return;
+  }
+  for(const c of G.crew){
+    const S=c.shipId?shipData(c.shipId):null;
+    const hold=crewHold(c),cap=crewCargoMax(c);
+    const here=!!allyOf(c.id);
+    const bal=(c.earned||0)-(c.spent||0);
+    $cvBody.appendChild(el("div","sec",c.name.toUpperCase()+" · "+
+      CREW_SPEC[c.spec].ru.toUpperCase()+(here?" · В ЭТОЙ СИСТЕМЕ":"")));
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<s>приказ: <b>"+ORDERS[c.order.kind].ru+
+      "</b> · сектор "+c.order.sx+","+c.order.sy+
+      "<br>корабль: "+(S?"«"+S.ru+"» корпус "+Math.round(c.hull)+"/"+Math.round(c.hullMax)
+                        :"<b style='color:#ff9d7a'>не выдан — он не может работать</b>")+
+      (cap?" · трюм "+hold+"/"+cap:"")+
+      "<br>жалованье "+crewPay(c)+" кр/мин · заработал "+(c.earned||0).toLocaleString("ru")+
+      " кр · съел "+(c.spent||0).toLocaleString("ru")+" кр"+
+      "<br>итог: <b style='color:"+(bal>=0?"#8fd08a":"#ff6b57")+"'>"+
+      (bal>=0?"+":"")+bal.toLocaleString("ru")+" кр</b>"+
+      (c.debt>0?" · <b style='color:#ff6b57'>долг "+Math.round(c.debt)+" кр</b>":"")+"</s>"));
+    const bw=el("button","act sm"+(G.watch===c.id?"":" gold"),
+      G.watch===c.id?"НЕ СЛЕДИТЬ":"СЛЕДИТЬ");
+    bw.disabled=!here;
+    bw.onclick=()=>watchCrew(c);
+    r.appendChild(bw);
+    $cvBody.appendChild(r);
+
+    /* приказ */
+    if(c.shipId){
+      const ro=el("div","row");
+      ro.appendChild(el("div","nm","<b>Приказ</b><s>"+ORDERS[c.order.kind].note+
+        "<br>район берётся по системе, где вы сейчас</s>"));
+      for(const k in ORDERS){
+        if(ORDERS[k].spec&&ORDERS[k].spec!==c.spec)continue;
+        if(k==="base")continue;
+        const b=el("button","act sm"+(c.order.kind===k?"":" gold"),ORDERS[k].ru.toUpperCase());
+        b.disabled=c.order.kind===k&&c.order.sx===G.sx&&c.order.sy===G.sy;
+        b.onclick=()=>{crewOrder(c,k);crewRender();};
+        ro.appendChild(b);
+      }
+      $cvBody.appendChild(ro);
+    }else{
+      const free=Object.keys(G.owned).filter(id=>id!==G.shipId&&!G.crew.some(o=>o.shipId===id));
+      const rr=el("div","row");
+      rr.appendChild(el("div","nm","<b>Выдать корабль</b><s>"+
+        (free.length?"без корпуса приказ не выполняется — и жалованья тоже нет"
+                    :"свободных корпусов нет: купите второй на верфи или пересядьте")+"</s>"));
+      for(const id of free.slice(0,3)){
+        const d=shipData(id);
+        const b=el("button","act sm gold",(d?d.ru:id).toUpperCase());
+        b.onclick=()=>{crewAssignShip(c,id);crewRender();};
+        rr.appendChild(b);
+      }
+      $cvBody.appendChild(rr);
+    }
+
+    /* приоритет по материалу — только добытчику: остальным нечего выбирать */
+    if(c.spec==="mine"){
+      const sys=getSystem(c.order.sx,c.order.sy);
+      const pool=sys.belt?sys.belt.res:(sys.planets.length?sys.planets[0].res:["iron"]);
+      const rp=el("div","row");
+      rp.appendChild(el("div","nm","<b>Что добывать</b><s>«всё» — берёт что попадётся; "+
+        "выбранное сырьё копает только если оно есть в районе<br>в районе: "+
+        pool.map(k=>RES[k].ru.toLowerCase()).join(", ")+"</s>"));
+      const mk=(key,label)=>{
+        const b=el("button","act sm"+((c.pref||"all")===key?"":" gold"),label);
+        b.disabled=(c.pref||"all")===key;
+        b.onclick=()=>{c.pref=key;crewRender();};
+        rp.appendChild(b);
+      };
+      mk("all","ВСЁ");
+      for(const k of pool)mk(k,RES[k].ru.toUpperCase());
+      $cvBody.appendChild(rp);
+    }
+
+    /* передача модулей: снятые уровни игрока работают у наёмника */
+    for(const k in CREW_MODS){
+      const M=CREW_MODS[k],lv=crewModLv(c,k),spare=spareModLv(k);
+      const rm=el("div","row");
+      rm.appendChild(el("div","nm","<b>"+M.ru+"</b><s>"+M.note+
+        " · у него уровень "+lv+" · свободно у вас "+spare+
+        (spare===0&&lv===0?"<br>снимите уровень на станции (МОДУЛИ, кнопка −) — и его можно отдать":"")+
+        "</s>"));
+      const bm=el("button","act sm","−");
+      bm.disabled=lv<=0;
+      bm.onclick=()=>{crewGiveMod(c,k,-1);crewRender();};
+      const bp=el("button","act sm"+(spare>0?" gold":""),"+");
+      bp.disabled=spare<=0;
+      bp.onclick=()=>{crewGiveMod(c,k,1);crewRender();};
+      rm.appendChild(bm);rm.appendChild(bp);
+      $cvBody.appendChild(rm);
+    }
+  }
+}
+function openCrewView(){
+  for(const k in keys)keys[k]=false;
+  document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
+  toggleLog(false);
+  $cv.classList.add("open");crewRender();
+}
+document.getElementById("crewbtn").addEventListener("click",()=>{
+  /* кнопка работает и как выход из наблюдения — так из режима камеры
+     всегда есть очевидный путь назад */
+  if(G.watch){G.watch=null;say("Камера вернулась к кораблю");return;}
+  openCrewView();
+});
+document.getElementById("cvClose").addEventListener("click",()=>{
+  $cv.classList.remove("open");saveGame(true);});
+
 /* ══════════════ экран корабля ══════════════ */
 const $sv=document.getElementById("shipview"),$svBody=document.getElementById("svBody");
 const $svCan=document.getElementById("svcan"),$svFil=document.getElementById("svfilter");
 let svSlot=-1, svFilter="all", svHit=[];
+/* куда вернуться по ЗАКРЫТЬ: "station" — обратно в терминал станции, иначе в полёт */
+let svReturn=null;
 function svDraw(){
   const id=G.shipId,h=hullOf(id),anchors=slotAnchors(id),fm=G.fit[id]||{};
   const cw=$sv.clientWidth||W, ch=Math.max(150,Math.min(260,Math.round((window.innerHeight||600)*.32)));
@@ -8282,9 +8690,14 @@ function openShipView(){
   $sv.classList.add("open");
   svRender();
 }
-document.getElementById("shipbtn").addEventListener("click",openShipView);
+document.getElementById("shipbtn").addEventListener("click",()=>{svReturn=null;openShipView();});
 document.getElementById("svClose").addEventListener("click",()=>{
-  $sv.classList.remove("open");saveGame(true);});
+  $sv.classList.remove("open");saveGame(true);
+  /* если сюда пришли со станции — возвращаемся в терминал, а не в открытый космос */
+  if(svReturn==="station"){svReturn=null;
+    if(G.mode==="dock"&&G.st){$st.classList.add("open");syncTabs();renderTab();}
+  }
+  svReturn=null;});
 $svCan.addEventListener("click",e=>{
   const rc=$svCan.getBoundingClientRect();
   const mx=e.clientX-rc.left,my=e.clientY-rc.top;
@@ -8547,11 +8960,12 @@ function hud(){
   $prompt.textContent=G.mode==="dock"?"":G.prompt;
   $bThr.textContent=G.mode==="surface"?"ПРЫЖ":(G.mode==="dig"?"ВВЕРХ":"▲");
   if(G.mode==="belt")document.querySelector("[data-k=act]").textContent="РЕЗАК";
+  /* в шахте копают в четыре стороны: большая кнопка — «вниз», как и клавиша S */
+  else if(G.mode==="dig")document.querySelector("[data-k=act]").textContent="ВНИЗ";
   else document.querySelector("[data-k=act]").textContent="ДЕЙСТВ";
   if(G.mode==="dig"){
-    const s=G.dig&&G.dig.sample;
-    $bBrk.textContent=s?"ОБРАЗЕЦ":"ТОРМ";
-    $bBrk.style.opacity=s?"1":".3";
+    $bBrk.textContent="ВНИЗ";
+    $bBrk.style.opacity=".45";
   }else{
     $bBrk.textContent="ТОРМ";
     $bBrk.style.opacity=G.mode==="surface"?".3":"1";
@@ -8640,7 +9054,12 @@ function frame(now){
     else if(G.mode==="scoop"&&G.scoop)updateScoop(dt);
     else if(G.mode==="base"&&G.base)updateBase(dt);
     else if(G.mode==="raid"&&G.raid)updateRaid(dt);
-    beaconTick(dt);
+    beaconTick(dt);crewBtnTick();
+    /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
+       означал бы, что игрок смотрит на космос и не может двигаться */
+    if(G.mode==="dock"&&!document.querySelector(".scr.open")){
+      if(G.st)openStation();else G.mode="system";
+    }
     audioTick(dt);
     if(G.mode==="system"||G.mode==="dock")drawSystem();
     else if(G.mode==="map")drawMap();

@@ -24,12 +24,23 @@ function enterSurface(){
     const x=120+r()*(tr.W-240);
     fauna.push(genBeast(r,p,x,groundAt(tr,x)));
   }
-  /* вход в пещеру — не на каждой планете, и подальше от корабля, чтобы стоило дойти */
-  const caveMouth=r()<.65?{x:clamp(400+r()*(tr.W-800),150,tr.W-150)}:null;
+  /* вход в пещеру есть на каждой планете: раньше он выпадал с шансом .65, и
+     игрок, обойдя пару планет без пещеры, решал, что механику убрали. Место
+     по-прежнему случайное и далеко от корабля — дойти надо, а вот гадать,
+     существует ли пещера в принципе, не надо: путь показывает навигатор сверху. */
+  const caveMouth={x:clamp(400+r()*(tr.W-800),150,tr.W-150)};
+  /* расчищаем пятачок у входа: залежь или куст, оказавшись на устье, перехватывали
+     подсказку ДЕЙСТВ (бурение важнее по порядку проверок), и пещеру нельзя было
+     открыть, стоя прямо на ней — отсюда и «пещер нет» */
+  const clearNear=(arr,rad)=>{
+    for(let i=arr.length-1;i>=0;i--)if(Math.abs(arr[i].x-caveMouth.x)<rad)arr.splice(i,1);
+  };
+  clearNear(deposits,70);clearNear(plants,50);clearNear(fauna,60);
   G.surf={p,tr,shipX:L.x,shipY:L.y,x:L.x+72,y:groundAt(tr,L.x+72)-10,
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,
     suit:100,warned:false,beacon:0,walkAmp:0,walkPhase:0,cave:caveMouth};
   G.mode="surface";
+  G.surfTipShown=0;
   logAdd("dim","Посадка на "+p.name+" · залежей: "+deposits.length);
   say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length);
 }
@@ -92,7 +103,13 @@ function updateSurface(dt){
      взлёт теперь отдельная кнопка с удержанием (см. tickLaunchHold), а не ДЕЙСТВ,
      чтобы добыча ресурса рядом с посадочной площадкой не отправляла в полёт случайно */
   if(dShip<48&&S.suit<100){S.suit=Math.min(100,S.suit+.5*dt);S.warned=false;}
-  if(dep){
+  /* вход в пещеру проверяется раньше залежей и организмов: он редкий и разовый,
+     а бурить и сканировать можно где угодно ещё */
+  if(S.cave&&Math.abs(S.cave.x-S.x)<34){
+    G.prompt="ДЕЙСТВ — ВОЙТИ В ПЕЩЕРУ";
+    if(actEdge){enterCave();return;}
+  }
+  else if(dep){
     if(held()>=st.cargoMax)G.prompt="ТРЮМ ПОЛОН · "+RES[dep.res].ru.toUpperCase()+" ОСТАЛОСЬ "+dep.left;
     else{
       G.prompt="УДЕРЖИВАЙТЕ ДЕЙСТВ — БУРЕНИЕ\n"+RES[dep.res].ru.toUpperCase()+" · ЗАЛЕЖЬ "+dep.left+
@@ -126,9 +143,6 @@ function updateSurface(dt){
   }else if(dShip<48&&!baseAt(G.sx,G.sy,S.p.idx)&&S.p.type!=="gas"){
     G.prompt="ДЕЙСТВ — ЗАЛОЖИТЬ БАЗУ · 2500 КР + 10 СПЛАВОВ";
     if(actEdge&&foundBase(S.p)){enterBase(S.p);return;}
-  }else if(S.cave&&Math.abs(S.cave.x-S.x)<34){
-    G.prompt="ДЕЙСТВ — ВОЙТИ В ПЕЩЕРУ";
-    if(actEdge){enterCave();return;}
   }else if(S.on){
     G.prompt="ДЕЙСТВ — ЗАЛОЖИТЬ ШАХТУ · ВГЛУБЬ ПОРОДА БОГАЧЕ\n▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
     if(actEdge){enterDig();return;}
@@ -214,6 +228,64 @@ function launch(){
   say("Выход на орбиту\nв трюме: "+held());
   G.land=null;G.surf=null;
 }
+/* ══════════════ навигатор и подсказки сверху ══════════════ */
+/* Всё неочевидное на планете игрок должен видеть, не догадываясь: где пещера,
+   что у корабля можно заложить базу, чем занят скафандр. Одна строка сверху и
+   стрелка к цели — этого хватает, чтобы не искать вслепую. */
+function surfaceHint(){
+  const S=G.surf;if(!S)return null;
+  const dShip=Math.abs(S.x-S.shipX);
+  if(S.suit<35)return "СКАФАНДР НА ИСХОДЕ · К КОРАБЛЮ ИЛИ КНОПКА → КОРАБЛЬ";
+  if(dShip<48){
+    if(baseAt(G.sx,G.sy,S.p.idx))return "ЗДЕСЬ ВАША БАЗА · ДЕЙСТВ — СПУСТИТЬСЯ ВНИЗ";
+    if(S.p.type!=="gas")return "У КОРАБЛЯ МОЖНО ЗАЛОЖИТЬ БАЗУ · ДЕЙСТВ · 2500 КР + 10 СПЛАВОВ";
+  }
+  if(S.cave&&Math.abs(S.cave.x-S.x)<34)return "ВХОД В ПЕЩЕРУ · ДЕЙСТВ — ВНУТРЬ";
+  if(!G.surfTipShown||G.t-G.surfTipShown<900){
+    if(!G.surfTipShown)G.surfTipShown=G.t;
+    return "ЦВЕТНЫЕ КРИСТАЛЛЫ — ЗАЛЕЖИ · СТРЕЛКИ СВЕРХУ ВЕДУТ К ПЕЩЕРЕ И КОРАБЛЮ";
+  }
+  return null;
+}
+function drawSurfaceHud(camx,camy){
+  const S=G.surf;
+  ctx.textAlign="center";
+  /* строка-подсказка сверху */
+  /* полоса идёт ниже приборов: сверху слева датчики, справа сводка системы,
+     справа же колонка кнопок — туда текст залезать не должен */
+  const TOP=58, RIGHT_PAD=118;
+  const hint=surfaceHint();
+  if(hint){
+    ctx.font="10px ui-monospace,monospace";
+    const w=Math.min(W-RIGHT_PAD-20,ctx.measureText(hint).width+22);
+    const cx=(W-RIGHT_PAD)/2;
+    ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(cx-w/2,TOP,w,20);
+    ctx.strokeStyle="rgba(127,230,216,.28)";ctx.lineWidth=1;
+    ctx.strokeRect(cx-w/2+.5,TOP+.5,w-1,19);
+    ctx.fillStyle="rgba(190,235,240,.92)";ctx.fillText(hint,cx,TOP+14);
+  }
+  /* навигатор: маркеры цели у верхней кромки — корабль и пещера */
+  const marks=[];
+  marks.push({x:S.shipX,ru:"КОРАБЛЬ",col:"rgba(242,178,92,.9)"});
+  if(S.cave)marks.push({x:S.cave.x,ru:"ПЕЩЕРА",col:"rgba(150,225,255,.9)"});
+  ctx.font="9px ui-monospace,monospace";
+  for(const m of marks){
+    const d=m.x-S.x, ad=Math.abs(d);
+    const sx=clamp(m.x-camx,64,W-RIGHT_PAD-14);   // запас под подпись по центру
+    const y=(hint?TOP+34:TOP+6);
+    ctx.fillStyle=m.col;
+    if(ad>W*.45){                       // цель за краем — рисуем стрелку направления
+      const dir=Math.sign(d);
+      ctx.beginPath();
+      ctx.moveTo(sx+dir*8,y);ctx.lineTo(sx-dir*4,y-5);ctx.lineTo(sx-dir*4,y+5);
+      ctx.closePath();ctx.fill();
+      ctx.fillText(m.ru+" "+Math.round(ad)+" м",sx,y+16);
+    }else{
+      ctx.fillRect(sx-1,y-5,2,10);
+      ctx.fillText(m.ru,sx,y+16);
+    }
+  }
+}
 function drawSurface(){
   const S=G.surf,tr=S.tr,p=S.p;
   ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
@@ -268,7 +340,9 @@ function drawSurface(){
     ctx.globalAlpha=1;
     if(Math.abs(d.x-S.x)<70){
       ctx.fillStyle=col;ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText(RES[d.res].ru.toUpperCase()+" "+d.left,x,y-24);
+      /* соседние залежи разводим по высоте: рядом стоящие подписи наезжали друг
+         на друга и читались как каша из двух названий */
+      ctx.fillText(RES[d.res].ru.toUpperCase()+" "+d.left,x,y-24-(Math.round(d.x/60)%2)*11);
     }
     if(S.mining===d){
       ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x-18,y-20,36,4);
@@ -286,4 +360,5 @@ function drawSurface(){
     ctx.beginPath();ctx.moveTo(x+S.face*6,y+2);
     ctx.lineTo(S.mining.x-camx,S.mining.y-camy-4);ctx.stroke();
   }
+  drawSurfaceHud(camx,camy);
 }

@@ -207,10 +207,14 @@ function updateSystem(dt){
 }
 function drawSystem(){
   const sh=G.ship,sys=G.sys,Z=G.zoom;
-  const zx=x=>W/2+(x-sh.x)*Z, zy=y=>H/2+(y-sh.y)*Z;
+  /* режим наблюдения за наёмником: двигается только камера, корабль игрока
+     продолжает лететь сам по себе и остаётся видимым на своём месте */
+  const wA=G.watch?allyOf(G.watch):null;
+  const cx0=wA?wA.x:sh.x, cy0=wA?wA.y:sh.y;
+  const zx=x=>W/2+(x-cx0)*Z, zy=y=>H/2+(y-cy0)*Z;
   ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
-  drawNebula(sh.x*.06*Z,sh.y*.06*Z,1);
-  drawStars(sh.x*.06*Z,sh.y*.06*Z,1);
+  drawNebula(cx0*.06*Z,cy0*.06*Z,1);
+  drawStars(cx0*.06*Z,cy0*.06*Z,1);
   const ox=zx(0),oy=zy(0);
   ctx.strokeStyle="rgba(120,190,210,.10)";ctx.lineWidth=1;
   for(const p of sys.planets){ctx.beginPath();ctx.arc(ox,oy,p.orbit*Z,0,TAU);ctx.stroke();}
@@ -291,13 +295,23 @@ function drawSystem(){
   drawCombat(zx,zy,Z);
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);
-  ctx.save();ctx.translate(W/2,H/2);ctx.rotate(sh.a);
+  ctx.save();ctx.translate(zx(sh.x),zy(sh.y));ctx.rotate(sh.a);
   ctx.scale(clamp(Z,.55,1.6),clamp(Z,.55,1.6));
   drawHull(G.shipId,keys.thrust&&G.fuel>0||(G.ap&&G.fuel>0),keys.brake&&G.fuel>0,G.mods.engine,sh.bank);
   ctx.restore();
+  /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
+     и куда нажать, чтобы вернуться */
+  if(wA){
+    ctx.fillStyle="rgba(127,230,216,.9)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";
+    /* ниже приборов: сверху слева датчики, справа сводка — там текст не читался */
+    ctx.fillText("НАБЛЮДЕНИЕ · "+wA.c.name.toUpperCase()+" · "+
+                 ORDERS[wA.c.order.kind].ru.toUpperCase(),W/2,H-52);
+    ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="9px ui-monospace,monospace";
+    ctx.fillText("ЭКИПАЖ — ВЕРНУТЬ КАМЕРУ",W/2,H-38);
+  }
   if(Z<.55){
     ctx.strokeStyle="rgba(127,230,216,.5)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(W/2,H/2,13,0,TAU);ctx.stroke();
+    ctx.beginPath();ctx.arc(zx(sh.x),zy(sh.y),13,0,TAU);ctx.stroke();
   }
   ctx.fillStyle="rgba(93,115,130,.75)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
   ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),12,H-14);

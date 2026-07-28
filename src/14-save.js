@@ -84,6 +84,11 @@ function applySave(s){
     hull:Math.max(0,+c.hull||0),hullMax:Math.max(1,+c.hullMax||100),
     cargo:(c.cargo&&typeof c.cargo==="object")?c.cargo:{},
     debt:Math.max(0,c.debt|0),morale:clamp(+c.morale||1,0,1),fee:Math.max(0,c.fee|0),
+    /* новые поля — с безопасными дефолтами, формат записи не меняется */
+    pref:(c.pref&&(c.pref==="all"||RES[c.pref]))?c.pref:"all",
+    mods:(c.mods&&typeof c.mods==="object")
+         ?{hold:c.mods.hold|0,armor:c.mods.armor|0,drill:c.mods.drill|0}:{},
+    earned:Math.max(0,c.earned|0),spent:Math.max(0,c.spent|0),
     tMs:Date.now(),paidMs:Date.now()
   })).slice(0,8);
   G.allies=[];

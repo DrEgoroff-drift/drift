@@ -193,8 +193,11 @@ function tap(sxp,syp){
     return;
   }
   if(G.mode!=="system")return;
-  const Z=G.zoom,sh=G.ship;
-  const wx=sh.x+(sxp-W/2)/Z, wy=sh.y+(syp-H/2)/Z;
+  /* в режиме наблюдения камера стоит на наёмнике — тычок должен считаться от
+     неё же, иначе автопилот получал бы цель со смещением на пол-экрана */
+  const Z=G.zoom,sh=G.ship,wA=G.watch?allyOf(G.watch):null;
+  const cx0=wA?wA.x:sh.x, cy0=wA?wA.y:sh.y;
+  const wx=cx0+(sxp-W/2)/Z, wy=cy0+(syp-H/2)/Z;
   let best=null,bd=1e9;
   for(const p of G.sys.planets){
     const d=Math.hypot(wx-p.x,wy-p.y);

@@ -52,7 +52,16 @@ PowerShell. Собранный `drift.html` коммитится вместе с
 
 ## Как проверять
 
-Скриншоты canvas в этой игре ненадёжны (гонки с rAF, снимки панели предпросмотра). Работает:
+**Сначала автотесты.** `build.ps1` собирает ещё и `tests.html` — та же игра плюс
+`tests/*.js` в конце. Открыть файл в браузере: отчёт печатается на страницу, в консоль
+и в `window.TEST` (`TEST.summary`, `TEST.failed`). Тесты гоняют настоящий `G` через
+`resetWorld()`, ничего не мокают. Новая механика — новый набор в `tests/91-suites.js`.
+
+```bash
+powershell -ExecutionPolicy Bypass -File build.ps1
+```
+
+Дальше — руками, потому что не всё выразимо утверждением:
 
 - парс — `new Function(document.scripts[0].textContent)` в браузере;
 - `read_console_messages` на ошибки;

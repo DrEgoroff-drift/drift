@@ -247,7 +247,10 @@ function renderTab(){
         Object.keys(fm).length+" из "+slots.length+" слотов занято · в инвентаре "+
         G.inv.length+" частей</s>"));
       const b=el("button","act sm gold","ОТКРЫТЬ");
-      b.onclick=()=>{$st.classList.remove("open");openShipView();};
+      /* уходим на экран корабля, не отстыковываясь: раньше здесь просто снимали
+         .open со станции, режим оставался "dock", и после ЗАКРЫТЬ игрок висел
+         в космосе без управления. Теперь помним, что вернуться надо на станцию. */
+      b.onclick=()=>{svReturn="station";$st.classList.remove("open");openShipView();};
       r.appendChild(b);$body.appendChild(r);
     }
 
@@ -418,6 +421,11 @@ function renderTab(){
         (cap?" · трюм "+hold+"/"+cap:"")+
         "<br>жалованье "+crewPay(c)+" кр/мин · опыт "+Math.round(c.xp)+
         " · настрой "+Math.round(c.morale*100)+"%"+
+        /* главный вопрос к наёмнику — окупается ли он; ответ должен быть на виду */
+        "<br>заработал "+(c.earned||0).toLocaleString("ru")+" кр · съел "+
+        (c.spent||0).toLocaleString("ru")+" кр · итог <b style='color:"+
+        (((c.earned||0)-(c.spent||0))>=0?"#8fd08a":"#ff6b57")+"'>"+
+        ((c.earned||0)-(c.spent||0)).toLocaleString("ru")+" кр</b>"+
         (c.debt>0?" · <b style='color:#ff6b57'>долг "+Math.round(c.debt)+" кр</b>":"")+"</s>"));
       const box=el("div","qt","");
       r.appendChild(box);

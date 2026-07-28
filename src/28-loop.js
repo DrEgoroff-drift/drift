@@ -60,11 +60,12 @@ function hud(){
   $prompt.textContent=G.mode==="dock"?"":G.prompt;
   $bThr.textContent=G.mode==="surface"?"ПРЫЖ":(G.mode==="dig"?"ВВЕРХ":"▲");
   if(G.mode==="belt")document.querySelector("[data-k=act]").textContent="РЕЗАК";
+  /* в шахте копают в четыре стороны: большая кнопка — «вниз», как и клавиша S */
+  else if(G.mode==="dig")document.querySelector("[data-k=act]").textContent="ВНИЗ";
   else document.querySelector("[data-k=act]").textContent="ДЕЙСТВ";
   if(G.mode==="dig"){
-    const s=G.dig&&G.dig.sample;
-    $bBrk.textContent=s?"ОБРАЗЕЦ":"ТОРМ";
-    $bBrk.style.opacity=s?"1":".3";
+    $bBrk.textContent="ВНИЗ";
+    $bBrk.style.opacity=".45";
   }else{
     $bBrk.textContent="ТОРМ";
     $bBrk.style.opacity=G.mode==="surface"?".3":"1";
@@ -153,7 +154,12 @@ function frame(now){
     else if(G.mode==="scoop"&&G.scoop)updateScoop(dt);
     else if(G.mode==="base"&&G.base)updateBase(dt);
     else if(G.mode==="raid"&&G.raid)updateRaid(dt);
-    beaconTick(dt);
+    beaconTick(dt);crewBtnTick();
+    /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
+       означал бы, что игрок смотрит на космос и не может двигаться */
+    if(G.mode==="dock"&&!document.querySelector(".scr.open")){
+      if(G.st)openStation();else G.mode="system";
+    }
     audioTick(dt);
     if(G.mode==="system"||G.mode==="dock")drawSystem();
     else if(G.mode==="map")drawMap();

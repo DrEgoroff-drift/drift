@@ -72,12 +72,17 @@ function runAutopilot(dt,st){
     ax=T.x+T.vx*t; ay=T.y+T.vy*t;
   }
   const ldx=ax-sh.x, ldy=ay-sh.y, ldist=Math.hypot(ldx,ldy)||1;
-  if(gap<12&&Math.hypot(rvx,rvy)<.25){
+  /* приёмка цели: раньше требовалось подойти на 12 единиц и почти замереть, но
+     минимальная скорость сближения была .25 — условие не выполнялось никогда, и
+     автопилот наматывал круги у самой планеты. Теперь коридор широкий, а на
+     подлёте скорость гасится до нуля, а не до «ползком». */
+  const rel=Math.hypot(rvx,rvy);
+  if(gap<34&&rel<1.4){
     sh.vx=T.vx;sh.vy=T.vy;
     return arrive();
   }
   if(G.fuel<=0){G.ap=null;say("Топливо кончилось\nавтопилот отключён");return false;}
-  const want=clamp(gap/26,.25,cruise);
+  const want=clamp(gap/22,0,cruise);
   const dvx=ldx/ldist*want-rvx, dvy=ldy/ldist*want-rvy;
   const dm=Math.hypot(dvx,dvy)||1;
   const acc=Math.min(dm,.088*st.thr*dt);

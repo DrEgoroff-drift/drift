@@ -120,7 +120,7 @@ function crewAssignShip(c,id){
   if(G.crew.some(o=>o!==c&&o.shipId===id))return false;
   c.shipId=id;
   const S=shipData(id);
-  c.hullMax=S?S.hull:100;c.hull=c.hullMax;
+  c.hullMax=Math.round((S?S.hull:100)*(1+crewModLv(c,"armor")*.3));c.hull=c.hullMax;
   logAdd("dim",c.name+" принял «"+(S?S.ru:id)+"»");
   return true;
 }
@@ -138,6 +138,37 @@ function crewOrder(c,kind,sx,sy){
   c.order={kind,sx:sx!=null?sx:G.sx,sy:sy!=null?sy:G.sy};
   c.tMs=Date.now();
   logAdd("",c.name+" → "+ORDERS[kind].ru+" · сектор "+c.order.sx+","+c.order.sy);
+  /* показываем его в небе сразу, а не только при следующем входе в систему —
+     иначе игрок отдаёт приказ и не видит никаких признаков, что кто-то работает */
+  if(G.mode==="system"||G.mode==="dock")spawnAllies();
+  return true;
+}
+/* ══════════════ переданные модули ══════════════ */
+/* Игрок покупает уровни модулей себе; снятые уровни лежат мёртвым грузом.
+   Их можно отдать наёмнику — он не носит части, но большой трюм, броня и бур
+   работают у него так же. Это и есть «перекинуть свои модули». */
+const CREW_MODS={
+  hold: {ru:"Расширение трюма", note:"+35% к трюму за уровень"},
+  armor:{ru:"Бронеплиты",       note:"+30% к корпусу за уровень"},
+  drill:{ru:"Буровая установка",note:"+20% к выработке за уровень"}
+};
+function crewModLv(c,k){return (c.mods&&c.mods[k])|0;}
+/* свободные уровни у игрока: куплено минус стоит на корабле минус уже роздано */
+function spareModLv(k){
+  let given=0;for(const c of G.crew)given+=crewModLv(c,k);
+  return Math.max(0,(G.modsOwned[k]|0)-(G.mods[k]|0)-given);
+}
+function crewGiveMod(c,k,d){
+  if(!CREW_MODS[k])return false;
+  if(d>0&&spareModLv(k)<=0){say("Свободных уровней нет\nснимите модуль на вкладке МОДУЛИ");return false;}
+  if(d<0&&crewModLv(c,k)<=0)return false;
+  c.mods=c.mods||{};
+  c.mods[k]=Math.max(0,crewModLv(c,k)+d);
+  if(c.shipId){const S=shipData(c.shipId);
+    c.hullMax=Math.round((S?S.hull:100)*(1+crewModLv(c,"armor")*.3));
+    c.hull=Math.min(c.hull,c.hullMax);}
+  logAdd("dim",c.name+(d>0?" получил ":" вернул ")+CREW_MODS[k].ru.toLowerCase()+
+    " · уровень "+crewModLv(c,k));
   return true;
 }
 /* груз наёмника сдаётся на ближайшую к его району станцию по живым ценам */
@@ -152,13 +183,14 @@ function crewUnload(c,quiet){
     sum+=q*((prices&&prices[k])||RES[k].price);n+=q;c.cargo[k]=0;
   }
   if(sum>0){
-    G.credits+=sum;
+    G.credits+=sum;c.earned=(c.earned||0)+sum;
     if(!quiet)logAdd("money",c.name+" сдал груз ×"+n+" · +"+sum.toLocaleString("ru")+" кр");
   }
   return sum;
 }
 function crewHold(c){let s=0;for(const k in c.cargo)s+=c.cargo[k]|0;return s;}
-function crewCargoMax(c){const S=shipData(c.shipId);return S?S.cargo:0;}
+function crewCargoMax(c){const S=shipData(c.shipId);
+  return S?Math.round(S.cargo*(1+crewModLv(c,"hold")*.35)):0;}
 /* ══════════════ ленивая симуляция ══════════════ */
 const CREW_OFFLINE_CAP=8*3600*1000;   // за ночь начислится не больше восьми часов
 function crewTick(){
@@ -175,7 +207,8 @@ function crewTick(){
     const needsShip=c.order&&c.order.kind!=="home"&&c.order.kind!=="base";
     if(!c.order||c.order.kind==="home"||(needsShip&&!c.shipId)){crewRest(c,min);continue;}
     if(c.hull<=0){crewRest(c,min);continue;}
-    const eff=crewSkill(c)*crewMul(c,"yield")*(c.morale<.5?.5:1);
+    const eff=crewSkill(c)*crewMul(c,"yield")*(c.morale<.5?.5:1)*
+              (1+crewModLv(c,"drill")*.2);
     const danger=sysDanger(c.order.sx,c.order.sy);
     const r=rng(hashi(c.seed,Math.floor(now/60000),0xC7E));
     /* на базе человек не зарабатывает сам — его вклад считает baseTick */
@@ -193,10 +226,17 @@ function crewTick(){
    долг и падает мораль: сначала работают вполсилы, потом бросают приказ, потом
    уходят и забирают корабль в счёт долга. Жёстко, но с предупреждением заранее. */
 function crewPayroll(c,min){
-  const due=crewPay(c)*min*(c.order&&c.order.kind==="home"?.45:1);   // на приколе кормят дешевле
+  /* За простой не платят. Раньше человек на приколе — или с приказом, но без
+     выданного корабля — всё равно съедал 45% жалованья, ничего не зарабатывая:
+     первый же нанятый уходил в долг и забирал корпус в счёт него. Деньги идут
+     только за работу, которую он реально может делать. */
+  const idle=!c.order||c.order.kind==="home"||
+             (c.order.kind!=="base"&&c.order.kind!=="home"&&!c.shipId);
+  if(idle)return;
+  const due=crewPay(c)*min;
   if(due<=0)return;
   const pay=Math.min(G.credits,due);
-  G.credits-=pay;
+  G.credits-=pay;c.spent=(c.spent||0)+pay;
   const short=due-pay;
   if(short>0){
     c.debt+=short;
@@ -256,9 +296,9 @@ function crewDamage(c,amount){
 }
 function crewHunt(c,min,eff,danger,r){
   const kills=min*(.22+danger*.35)*eff;
-  const bounty=Math.round(kills*(120+danger*150)*stat().bountyMul);
+  const bounty=Math.round(kills*(170+danger*200)*stat().bountyMul);
   if(bounty>0){
-    G.credits+=bounty;
+    G.credits+=bounty;c.earned=(c.earned||0)+bounty;
     if(bounty>40)logAdd("money",c.name+" сдал награды за пиратов · +"+bounty.toLocaleString("ru")+" кр");
   }
   /* урон соразмерен ремонту: час в опасном секторе — счёт за починку, а не похороны */
@@ -267,10 +307,16 @@ function crewHunt(c,min,eff,danger,r){
 }
 function crewMine(c,min,eff,danger,r){
   const cap=crewCargoMax(c);
-  const rate=min*(.5+eff*.95);   // около полутора единиц руды в минуту: выше жалованья, но не принтер
+  /* выработка поднята: при прежних полутора единицах в минуту добытчик приносил
+     ~15 кр/мин против 26 кр/мин жалованья — он гарантированно разорял игрока.
+     Теперь около трёх единиц: работа заметно прибыльна, но и не печатает деньги. */
+  const rate=min*(1.4+eff*1.6);
   let left=Math.min(rate,Math.max(0,cap-crewHold(c)));
   const sys=getSystem(c.order.sx,c.order.sy);
-  const pool=sys.belt?sys.belt.res:(sys.planets.length?sys.planets[0].res:["iron"]);
+  let pool=sys.belt?sys.belt.res:(sys.planets.length?sys.planets[0].res:["iron"]);
+  /* приоритет по материалу: если игрок указал, что нужно, и оно тут есть —
+     берём только его, иначе работаем по всему, что попадётся */
+  if(c.pref&&c.pref!=="all"&&pool.indexOf(c.pref)>=0)pool=[c.pref];
   while(left>=1){
     const k=pick(pool.length?pool:["iron"],r);
     c.cargo[k]=(c.cargo[k]|0)+1;left--;
@@ -279,9 +325,11 @@ function crewMine(c,min,eff,danger,r){
   if(crewHas(c,"greedy")&&crewHold(c)>0&&r()<min*.35){
     for(const k in c.cargo)if(c.cargo[k]>0){c.cargo[k]--;break;}
   }
-  if(crewHold(c)>=cap*.98){
+  /* сдаём с полтрюма, а не только под завязку: иначе на большом корпусе первая
+     выручка приходила через полчаса, и казалось, что человек просто ест деньги */
+  if(crewHold(c)>=cap*.5){
     const sum=crewUnload(c);
-    if(sum>0)logAdd("money",c.name+" сдал полный трюм · +"+sum.toLocaleString("ru")+" кр");
+    if(sum>0)logAdd("money",c.name+" сдал руду · +"+sum.toLocaleString("ru")+" кр");
   }
   if(danger>.25)crewDamage(c,min*danger*1.1*crewMul(c,"risk"));
 }
@@ -289,9 +337,11 @@ function crewHaul(c,min,eff,danger,r){
   const S=shipData(c.shipId);
   /* доход маршрута тянет вместимость корпуса: большой трюм — заметно выгоднее,
      но всё равно в разы ближе к жалованью, чем к бесконечным деньгам */
-  const pay=Math.round(min*(S?S.cargo:20)*.17*eff);
+  /* рейс тоже был убыточен: 20 единиц трюма давали 3 кр/мин при жалованье 22.
+     Зависимость от трюма нарочно пологая — иначе большой корпус печатал бы деньги */
+  const pay=Math.round(min*(14+(S?S.cargo:20)*.5)*eff);
   if(pay>0){
-    G.credits+=pay;
+    G.credits+=pay;c.earned=(c.earned||0)+pay;
     if(pay>60)logAdd("money",c.name+" закрыл рейс · +"+pay.toLocaleString("ru")+" кр");
   }
   if(danger>.35&&r()<min*.12)crewDamage(c,4+danger*14);
@@ -310,6 +360,28 @@ function spawnAllies(){
   }
   if(G.allies.length)say("В системе работает ваш экипаж\n"+G.allies.map(A=>A.c.name).join(", "));
 }
+/* точка работы наёмника в текущей системе: место видно на глаз, поэтому «он
+   работает» перестаёт быть строчкой в журнале и становится наблюдаемым фактом */
+function allyWork(A){
+  const sys=G.sys,kind=A.c.order?A.c.order.kind:"home";
+  A.wt=(A.wt||0)+.004;                       // свой медленный оборот вокруг точки
+  const around=(cx,cy,r)=>({x:cx+Math.cos(A.wt)*r,y:cy+Math.sin(A.wt)*r});
+  if(kind==="mine"){
+    if(sys.belt){
+      const a=A.wt+(A.c.seed%100)/100*TAU;
+      return {x:Math.cos(a)*sys.belt.orbit,y:Math.sin(a)*sys.belt.orbit};
+    }
+    const p=sys.planets[(A.c.seed>>>3)%Math.max(1,sys.planets.length)];
+    if(p)return around(p.x,p.y,p.radius+120);
+  }
+  if(kind==="haul"&&sys.station)return around(sys.station.x,sys.station.y,180);
+  if(kind==="hunt"){
+    const r=(sys.belt?sys.belt.orbit:2000)*.8;
+    const a=A.wt*1.6+(A.c.seed%50)/50*TAU;
+    return {x:Math.cos(a)*r,y:Math.sin(a)*r};
+  }
+  return null;
+}
 function updateAllies(dt){
   if(!G.allies||!G.allies.length)return;
   const sh=G.ship,st=stat();
@@ -320,9 +392,18 @@ function updateAllies(dt){
       const d=Math.hypot(p.x-A.x,p.y-A.y);
       if(d<1500&&d<td){td=d;tgt=p;}
     }
-    const gx=tgt?tgt.x:sh.x+180,gy=tgt?tgt.y:sh.y+180;
+    /* без боя наёмник летит не «рядом с игроком», а туда, где по приказу и должен
+       быть: добытчик — к поясу или планете, перевозчик — к станции, боевой —
+       патрулирует вокруг звезды. Иначе в режиме наблюдения видно только, как он
+       без дела висит у борта. */
+    let wx=sh.x+180,wy=sh.y+180;
+    if(!tgt){
+      const W2=allyWork(A);
+      if(W2){wx=W2.x;wy=W2.y;}
+    }
+    const gx=tgt?tgt.x:wx,gy=tgt?tgt.y:wy;
     const dx=gx-A.x,dy=gy-A.y,d=Math.hypot(dx,dy)||1;
-    const want=tgt?Math.min(d-260,3.4):Math.min(d-140,3.2);
+    const want=tgt?Math.min(d-260,3.4):clamp(d*.05,0,3.2);
     A.vx+=(dx/d*want-A.vx)*Math.min(1,.02*dt);
     A.vy+=(dy/d*want-A.vy)*Math.min(1,.02*dt);
     A.x+=A.vx*dt;A.y+=A.vy*dt;

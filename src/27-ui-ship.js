@@ -2,6 +2,8 @@
 const $sv=document.getElementById("shipview"),$svBody=document.getElementById("svBody");
 const $svCan=document.getElementById("svcan"),$svFil=document.getElementById("svfilter");
 let svSlot=-1, svFilter="all", svHit=[];
+/* куда вернуться по ЗАКРЫТЬ: "station" — обратно в терминал станции, иначе в полёт */
+let svReturn=null;
 function svDraw(){
   const id=G.shipId,h=hullOf(id),anchors=slotAnchors(id),fm=G.fit[id]||{};
   const cw=$sv.clientWidth||W, ch=Math.max(150,Math.min(260,Math.round((window.innerHeight||600)*.32)));
@@ -146,9 +148,14 @@ function openShipView(){
   $sv.classList.add("open");
   svRender();
 }
-document.getElementById("shipbtn").addEventListener("click",openShipView);
+document.getElementById("shipbtn").addEventListener("click",()=>{svReturn=null;openShipView();});
 document.getElementById("svClose").addEventListener("click",()=>{
-  $sv.classList.remove("open");saveGame(true);});
+  $sv.classList.remove("open");saveGame(true);
+  /* если сюда пришли со станции — возвращаемся в терминал, а не в открытый космос */
+  if(svReturn==="station"){svReturn=null;
+    if(G.mode==="dock"&&G.st){$st.classList.add("open");syncTabs();renderTab();}
+  }
+  svReturn=null;});
 $svCan.addEventListener("click",e=>{
   const rc=$svCan.getBoundingClientRect();
   const mx=e.clientX-rc.left,my=e.clientY-rc.top;
