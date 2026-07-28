@@ -82,7 +82,7 @@ function jump(cost){
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
   G.ship.vx=-Math.cos(a)*.7;G.ship.vy=-Math.sin(a)*.7;G.ship.a=a+Math.PI;
   G.mode="system";
-  spawnPirates();
+  spawnPirates();spawnAllies();
   sfx("jump");
   saveGame(true);
   logAdd("dim","Прыжок в "+G.sys.name+" ("+G.sx+":"+G.sy+") · −"+cost+" топлива"+

@@ -232,7 +232,7 @@ document.getElementById("startHard").addEventListener("click",()=>start(false));
     b.addEventListener("click",()=>{
       if(loadGame()){
         document.getElementById("intro").style.display="none";
-        G.running=true;spawnPirates();
+        G.running=true;spawnPirates();spawnAllies();
         say("Полёт восстановлен\n"+G.sys.name+" · сектор "+G.sx+":"+G.sy);
       }else say("Запись повреждена");
     });
@@ -241,6 +241,6 @@ document.getElementById("startHard").addEventListener("click",()=>start(false));
 function start(easy){
   G.opts.easyLand=easy;
   document.getElementById("intro").style.display="none";
-  G.running=true;spawnPirates();saveGame(true);
+  G.running=true;spawnPirates();spawnAllies();saveGame(true);
   say("Система "+G.sys.name+"\nткните по объекту —\nавтопилот доведёт");
 }

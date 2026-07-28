@@ -28,7 +28,7 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],species:[...G.species],
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
-    drones:G.drones,droneInventory:G.droneInventory,log:G.log,ts:Date.now()};
+    drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,log:G.log,ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
@@ -70,6 +70,21 @@ function applySave(s){
   G.market=(s.market&&typeof s.market==="object")?s.market:{};
   G.drones=Array.isArray(s.drones)?s.drones:[];
   G.droneInventory=Math.max(0,s.droneInventory|0);
+  /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».
+     Момент последнего начисления подтягиваем к текущему времени, иначе после
+     долгого перерыва зарплата и добыча начислились бы задним числом дважды. */
+  G.crew=(Array.isArray(s.crew)?s.crew:[]).filter(c=>c&&c.spec&&CREW_SPEC[c.spec]).map(c=>({
+    id:String(c.id||("c"+(c.seed|0))),seed:c.seed|0,name:String(c.name||"Безымянный"),
+    spec:c.spec,traits:(Array.isArray(c.traits)?c.traits:[]).filter(t=>CREW_TRAITS.some(x=>x.id===t)),
+    xp:Math.max(0,+c.xp||0),shipId:(c.shipId&&G.owned[c.shipId])?c.shipId:null,
+    order:(c.order&&ORDERS[c.order.kind])?{kind:c.order.kind,sx:c.order.sx|0,sy:c.order.sy|0}
+          :{kind:"home",sx:G.sx,sy:G.sy},
+    hull:Math.max(0,+c.hull||0),hullMax:Math.max(1,+c.hullMax||100),
+    cargo:(c.cargo&&typeof c.cargo==="object")?c.cargo:{},
+    debt:Math.max(0,c.debt|0),morale:clamp(+c.morale||1,0,1),fee:Math.max(0,c.fee|0),
+    tMs:Date.now(),paidMs:Date.now()
+  })).slice(0,8);
+  G.allies=[];
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];

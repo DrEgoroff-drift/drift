@@ -137,7 +137,7 @@ function frame(now){
   actEdge=keys.act&&!prevAct;prevAct=keys.act;
   if(G.running){
     G.t+=dt;
-    if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();}
+    if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();crewTick();}
     if(G.msgT>0)G.msgT-=dt;
     if(G.mode==="system")autosave();
     if(G.mode==="system"||G.mode==="dock")updateSystem(dt);

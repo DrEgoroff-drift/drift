@@ -34,6 +34,7 @@ function updateSystem(dt){
   }
   if(G.mode!=="system")return;
   updateCombat(dt);
+  updateAllies(dt);
   if(G.mode!=="system")return;
   if(G.tech.has("dock")&&G.hull<st.hullMax)G.hull=Math.min(st.hullMax,G.hull+.012*dt);
   if(G.ap)G.orbit=null;
@@ -276,6 +277,7 @@ function drawSystem(){
   if(G.ap&&G.ap.kind==="belt")reticle(zx(G.ap.ax),zy(G.ap.ay),26);
   drawTrail(zx,zy,Z);
   drawCombat(zx,zy,Z);
+  drawAllies(zx,zy,Z);
   ctx.save();ctx.translate(W/2,H/2);ctx.rotate(sh.a);
   ctx.scale(clamp(Z,.55,1.6),clamp(Z,.55,1.6));
   drawHull(G.shipId,keys.thrust&&G.fuel>0||(G.ap&&G.fuel>0),keys.brake&&G.fuel>0,G.mods.engine,sh.bank);

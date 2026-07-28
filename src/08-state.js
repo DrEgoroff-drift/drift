@@ -36,7 +36,8 @@ const G={
     audio:{on:true,music:.6,sfx:.6,engine:.4}},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,
-  pirates:[],shots:[],log:[],logNew:0
+  pirates:[],shots:[],log:[],logNew:0,
+  crew:[],allies:[]   // наёмники персистятся, их корабли в системе — эфемерны
 };
 for(const k of RES_KEYS)G.cargo[k]=0;
 G.sys=getSystem(0,0);

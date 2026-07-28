@@ -228,6 +228,7 @@
     <button data-tab="mods">МОДУЛИ</button>
     <button data-tab="lab">НАУКА</button>
     <button data-tab="smelt">ПЕРЕПЛАВКА</button>
+    <button data-tab="crew">ЭКИПАЖ</button>
     <button data-tab="barter">БАРТЕР</button>
   </nav>
   <div class="body" id="stBody"></div>
@@ -763,7 +764,9 @@ const TECH={
   suit:{ru:"Усиленный скафандр",note:"медленнее изнашивается на планете",cost:70,max:4},
   refine:{ru:"Обогащение руды",note:"+18% к добыче за уровень",cost:60,max:5},
   hauler:{ru:"Логистика дронов",note:"+22% к выработке дронов за уровень",cost:65,max:4},
-  bounty:{ru:"Каперский патент",note:"+30% к награде за пиратов за уровень",cost:55,max:3}
+  bounty:{ru:"Каперский патент",note:"+30% к награде за пиратов за уровень",cost:55,max:3},
+  /* потолок флота — не число из воздуха, а изученное право нанимать людей */
+  license:{ru:"Лицензия на флот",note:"+1 место в экипаже за уровень",cost:80,max:3}
 };
 /* уровень = старая одноразовая запись + докупленные уровни (совместимо со старыми записями) */
 const techLv=k=>(G.tech.has(k)?1:0)+(G.techLvl[k]|0);
@@ -1110,15 +1113,15 @@ const SYS_CACHE=new Map();
    тут торговать, чинить и заправляться. Вес зависит от опасности системы:
    в глубине фронтира торговых узлов почти нет, зато аванпосты и заправки — норма. */
 const ST_TYPES=[
-  {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods"],
+  {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods","crew"],
    mkt:1.08, fuel:1,    rep:1,    w:d=>2.6-d*1.9},
-  {id:"indust", ru:"Промышленный комбинат",tabs:["market","smelt","mods"],
+  {id:"indust", ru:"Промышленный комбинат",tabs:["market","smelt","mods","crew"],
    mkt:.99,  fuel:.92,  rep:.5,   w:d=>1.5-d*.4},
-  {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","barter"],
+  {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","barter","crew"],
    mkt:.95,  fuel:1.08, rep:.75,  w:d=>1.2-d*.7},
-  {id:"sci",    ru:"Научная станция",      tabs:["market","lab","mods"],
+  {id:"sci",    ru:"Научная станция",      tabs:["market","lab","mods","crew"],
    mkt:.93,  fuel:1.08, rep:1,    w:d=>1.2-d*.8},
-  {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter"],
+  {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter","crew"],
    mkt:.9,   fuel:1.22, rep:1.25, w:d=>.2+d*2.8},
   {id:"fuel",   ru:"Заправочная станция",  tabs:[],
    mkt:1,    fuel:.78,  rep:1.1,  w:d=>1.6+d*1.1}
@@ -1391,7 +1394,8 @@ const G={
     audio:{on:true,music:.6,sfx:.6,engine:.4}},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,
-  pirates:[],shots:[],log:[],logNew:0
+  pirates:[],shots:[],log:[],logNew:0,
+  crew:[],allies:[]   // наёмники персистятся, их корабли в системе — эфемерны
 };
 for(const k of RES_KEYS)G.cargo[k]=0;
 G.sys=getSystem(0,0);
@@ -2086,6 +2090,264 @@ function minedUnit(k){
   return addRes(k,n);
 }
 
+/* ══════════════ наёмники: флот, которым не управляешь напрямую ══════════════ */
+/* Старые корпуса из G.owned перестают быть мусором: нанятому нужен корабль, и
+   это главное решение игрока. Летающих в фоне NPC нет — как и у дронов, всё
+   считается от прошедшего времени, когда игра снова смотрит на счётчик. */
+const CREW_SPEC={
+  fight:{ru:"боевой",   note:"охота на пиратов: награды и трофеи",       pay:34},
+  mine: {ru:"добытчик", note:"добыча в поясе и на планетах",             pay:26},
+  haul: {ru:"перевозчик",note:"маршруты между системами: живые деньги",  pay:22}
+};
+const SPEC_KEYS=Object.keys(CREW_SPEC);
+/* Черта — это множители и пороги, ничего нового в движке: она даёт вилку
+   поведения, а не отдельную ветку кода. */
+const CREW_TRAITS=[
+  {id:"vet",     ru:"ветеран",   note:"дороже, но выходит живым",        pay:1.4,  risk:.55,yield:1.15},
+  {id:"careful", ru:"осторожный",note:"отступает рано: меньше добычи, зато цел",pay:1,risk:.4,yield:.75},
+  {id:"greedy",  ru:"жадный",    note:"подворовывает из груза",          pay:.82, risk:1,  yield:1,   steal:.16},
+  {id:"stubborn",ru:"упрямый",   note:"не отзывается по первому приказу",pay:.88, risk:1.15,yield:1.1, stubborn:true},
+  {id:"lucky",   ru:"везучий",   note:"находит больше, чем должен",      pay:1.15,risk:.9, yield:1.25},
+  {id:"green",   ru:"необстрелянный",note:"дёшев и неопытен",            pay:.62, risk:1.35,yield:.72}
+];
+function traitOf(id){return CREW_TRAITS.find(t=>t.id===id)||CREW_TRAITS[0];}
+function crewMul(c,k){
+  let m=1;for(const id of c.traits)m*=(traitOf(id)[k]!==undefined?traitOf(id)[k]:1);
+  return m;
+}
+function crewHas(c,flag){return c.traits.some(id=>!!traitOf(id)[flag]);}
+/* опыт даёт эффективность: 0 → ×1, 100 приказо-минут → примерно ×1.5 */
+function crewSkill(c){return 1+Math.min(.6,(c.xp||0)/200);}
+function crewPay(c){return Math.round(CREW_SPEC[c.spec].pay*crewMul(c,"pay")*crewSkill(c));}
+function genMerc(seed,specPool){
+  const r=rng(seed);
+  const spec=pick(specPool&&specPool.length?specPool:SPEC_KEYS,r);
+  const traits=[];
+  const n=2+(r()<.35?1:0);
+  for(let i=0;i<n;i++){
+    const t=pick(CREW_TRAITS,r);
+    if(traits.indexOf(t.id)<0)traits.push(t.id);
+  }
+  const c={id:"c"+seed,seed,name:genName(r),spec,traits,xp:Math.floor(r()*40),
+    shipId:null,order:null,hull:100,hullMax:100,cargo:{},debt:0,morale:1,
+    tMs:0,paidMs:0,fee:0};
+  c.fee=Math.round((260+r()*420)*crewMul(c,"pay"));   // разовая плата за наём
+  return c;
+}
+/* кандидаты на станции: ничего не персистится, состав держится на seed станции
+   и временном бакете — ровно как ассортимент частей */
+function stationMercs(sys){
+  if(!sys.station)return [];
+  const T=stTypeOf(sys.station.stype);
+  const pool=T.id==="outpost"?["fight","fight","mine"]:
+             T.id==="yard"?SPEC_KEYS:
+             T.id==="trade"?["haul","haul","mine"]:
+             T.id==="indust"?["mine","haul"]:["mine","haul","fight"];
+  const r=rng(hashi(sys.seed,0xC5EE,timeBucket()));
+  const n=1+Math.floor(r()*3);
+  const out=[];
+  for(let i=0;i<n;i++)out.push(genMerc(hashi(sys.seed,i*7717+13,timeBucket()),pool));
+  return out;
+}
+/* ══════════════ приказы ══════════════ */
+const ORDERS={
+  hunt:{ru:"охота на пиратов",spec:"fight",note:"патрулирует сектор и бьёт пиратов — награды и трофеи"},
+  mine:{ru:"добыча",          spec:"mine", note:"работает в поясе или на залежи, сдаёт руду на ближайшую станцию"},
+  haul:{ru:"перевозка",       spec:"haul", note:"возит грузы между станциями — чистые кредиты"},
+  home:{ru:"на приколе",      spec:null,   note:"стоит без дела: не зарабатывает, зато и не рискует"}
+};
+function crewCap(){return 1+techLv("license");}
+function hireMerc(c){
+  if(G.crew.length>=crewCap()){say("Больше нанимать некому\nнужна лицензия на флот");return false;}
+  if(G.credits<c.fee){say("Не хватает кредитов");return false;}
+  G.credits-=c.fee;
+  const m=Object.assign({},c,{cargo:{},order:{kind:"home",sx:G.sx,sy:G.sy},
+    tMs:Date.now(),paidMs:Date.now()});
+  G.crew.push(m);
+  tell("money","Нанят "+m.name+" · "+CREW_SPEC[m.spec].ru+" · −"+c.fee+" кр",
+       "Нанят "+m.name+"\n"+CREW_SPEC[m.spec].ru+"\nвыдайте корабль на вкладке ЭКИПАЖ");
+  return true;
+}
+function fireMerc(i){
+  const c=G.crew[i];if(!c)return;
+  /* корабль возвращается в ангар вместе с тем, что он успел набрать */
+  crewUnload(c,true);
+  G.crew.splice(i,1);
+  logAdd("dim","Расчёт с "+c.name+(c.debt>0?" · долг "+c.debt+" кр списан":""));
+  say("Расчёт с "+c.name);
+}
+function crewAssignShip(c,id){
+  if(!G.owned[id]||id===G.shipId)return false;
+  if(G.crew.some(o=>o!==c&&o.shipId===id))return false;
+  c.shipId=id;
+  const S=shipData(id);
+  c.hullMax=S?S.hull:100;c.hull=c.hullMax;
+  logAdd("dim",c.name+" принял «"+(S?S.ru:id)+"»");
+  return true;
+}
+function crewOrder(c,kind,sx,sy){
+  if(!c.shipId&&kind!=="home"){say("Сначала выдайте корабль");return false;}
+  /* упрямый игнорирует первый приказ — вилка поведения, а не поломка */
+  if(crewHas(c,"stubborn")&&c.order&&c.order.kind!==kind&&!c.balked){
+    c.balked=true;
+    logAdd("warn",c.name+" не принял приказ с первого раза — упрямый");
+    say(c.name+" упрямится\nповторите приказ");
+    return false;
+  }
+  c.balked=false;
+  crewTick();                       // закрываем прошлый отрезок по старому приказу
+  c.order={kind,sx:sx!=null?sx:G.sx,sy:sy!=null?sy:G.sy};
+  c.tMs=Date.now();
+  logAdd("",c.name+" → "+ORDERS[kind].ru+" · сектор "+c.order.sx+","+c.order.sy);
+  return true;
+}
+/* груз наёмника сдаётся на ближайшую к его району станцию по живым ценам */
+function crewUnload(c,quiet){
+  let sum=0,n=0;
+  /* nearestStation отдаёт систему — цены берём её живым рынком, тем же, по
+     которому торгует игрок; редкое сырьё рынок не берёт и остаётся в трюме */
+  const home=nearestStation(c.order?c.order.sx:G.sx,c.order?c.order.sy:G.sy);
+  const prices=(home&&home.station)?marketFor(home):null;
+  for(const k in c.cargo){
+    const q=c.cargo[k]|0;if(q<=0||RARE_RES.indexOf(k)>=0)continue;
+    sum+=q*((prices&&prices[k])||RES[k].price);n+=q;c.cargo[k]=0;
+  }
+  if(sum>0){
+    G.credits+=sum;
+    if(!quiet)logAdd("money",c.name+" сдал груз ×"+n+" · +"+sum.toLocaleString("ru")+" кр");
+  }
+  return sum;
+}
+function crewHold(c){let s=0;for(const k in c.cargo)s+=c.cargo[k]|0;return s;}
+function crewCargoMax(c){const S=shipData(c.shipId);return S?S.cargo:0;}
+/* ══════════════ ленивая симуляция ══════════════ */
+const CREW_OFFLINE_CAP=8*3600*1000;   // за ночь начислится не больше восьми часов
+function crewTick(){
+  if(!G.crew.length)return;
+  const now=Date.now();
+  for(const c of G.crew){
+    if(!c.tMs){c.tMs=now;continue;}
+    const dtMs=Math.min(now-c.tMs,CREW_OFFLINE_CAP);
+    if(dtMs<1000)continue;
+    c.tMs=now;
+    const min=dtMs/60000;
+    if(!c.order||c.order.kind==="home"||!c.shipId){crewRest(c,min);continue;}
+    if(c.hull<=0){crewRest(c,min);continue;}
+    const eff=crewSkill(c)*crewMul(c,"yield")*(c.morale<.5?.5:1);
+    const danger=sysDanger(c.order.sx,c.order.sy);
+    const r=rng(hashi(c.seed,Math.floor(now/60000),0xC7E));
+    if(c.order.kind==="hunt")crewHunt(c,min,eff,danger,r);
+    else if(c.order.kind==="mine")crewMine(c,min,eff,danger,r);
+    else if(c.order.kind==="haul")crewHaul(c,min,eff,danger,r);
+    c.xp=(c.xp||0)+min;
+  }
+}
+function crewRest(c,min){
+  /* на приколе корпус чинится сам — медленно и бесплатно */
+  if(c.hull<c.hullMax)c.hull=Math.min(c.hullMax,c.hull+min*.6);
+}
+function crewDamage(c,amount){
+  c.hull-=amount;
+  if(c.hull<=0){
+    c.hull=0;
+    const lost=c.shipId,S=shipData(lost);
+    logAdd("warn",c.name+" потерял «"+(S?S.ru:lost)+"» — корабль не вернулся");
+    if(lost&&lost!==G.shipId)delete G.owned[lost];
+    c.shipId=null;c.order={kind:"home",sx:c.order?c.order.sx:G.sx,sy:c.order?c.order.sy:G.sy};
+    c.cargo={};
+  }
+}
+function crewHunt(c,min,eff,danger,r){
+  const kills=min*(.16+danger*.5)*eff;
+  const bounty=Math.round(kills*(70+danger*180)*stat().bountyMul);
+  if(bounty>0){
+    G.credits+=bounty;
+    if(bounty>40)logAdd("money",c.name+" сдал награды за пиратов · +"+bounty.toLocaleString("ru")+" кр");
+  }
+  const hit=min*(1.4+danger*5.5)*crewMul(c,"risk");
+  if(hit>0)crewDamage(c,hit);
+}
+function crewMine(c,min,eff,danger,r){
+  const cap=crewCargoMax(c);
+  const rate=min*(.9+eff*1.4);
+  let left=Math.min(rate,Math.max(0,cap-crewHold(c)));
+  const sys=getSystem(c.order.sx,c.order.sy);
+  const pool=sys.belt?sys.belt.res:(sys.planets.length?sys.planets[0].res:["iron"]);
+  while(left>=1){
+    const k=pick(pool.length?pool:["iron"],r);
+    c.cargo[k]=(c.cargo[k]|0)+1;left--;
+  }
+  /* жадный отсыпает себе — видно только по недостаче */
+  if(crewHas(c,"greedy")&&crewHold(c)>0&&r()<min*.35){
+    for(const k in c.cargo)if(c.cargo[k]>0){c.cargo[k]--;break;}
+  }
+  if(crewHold(c)>=cap*.98){
+    const sum=crewUnload(c);
+    if(sum>0)logAdd("money",c.name+" сдал полный трюм · +"+sum.toLocaleString("ru")+" кр");
+  }
+  if(danger>.25)crewDamage(c,min*danger*1.1*crewMul(c,"risk"));
+}
+function crewHaul(c,min,eff,danger,r){
+  const S=shipData(c.shipId);
+  const pay=Math.round(min*(S?S.cargo:20)*.55*eff);
+  if(pay>0){
+    G.credits+=pay;
+    if(pay>60)logAdd("money",c.name+" закрыл рейс · +"+pay.toLocaleString("ru")+" кр");
+  }
+  if(danger>.35&&r()<min*.12)crewDamage(c,4+danger*14);
+}
+/* ══════════════ встреча в космосе ══════════════ */
+/* Если игрок влетел в систему, где работает его наёмник, тот спавнится
+   настоящим кораблём: тот же каркас NPC, что и у пиратов, только на своей стороне. */
+function spawnAllies(){
+  G.allies=[];
+  for(const c of G.crew){
+    if(!c.shipId||!c.order||c.order.kind==="home")continue;
+    if(c.order.sx!==G.sx||c.order.sy!==G.sy)continue;
+    const a=rng(hashi(c.seed,G.sx*131+G.sy,5))()*TAU;
+    G.allies.push({c,x:G.ship.x+Math.cos(a)*420,y:G.ship.y+Math.sin(a)*420,
+      vx:0,vy:0,a:a,cool:0,thrust:false});
+  }
+  if(G.allies.length)say("В системе работает ваш экипаж\n"+G.allies.map(A=>A.c.name).join(", "));
+}
+function updateAllies(dt){
+  if(!G.allies||!G.allies.length)return;
+  const sh=G.ship,st=stat();
+  for(const A of G.allies){
+    /* цель — ближайший пират в поле зрения, иначе держимся возле игрока */
+    let tgt=null,td=1e9;
+    for(const p of G.pirates){
+      const d=Math.hypot(p.x-A.x,p.y-A.y);
+      if(d<1500&&d<td){td=d;tgt=p;}
+    }
+    const gx=tgt?tgt.x:sh.x+180,gy=tgt?tgt.y:sh.y+180;
+    const dx=gx-A.x,dy=gy-A.y,d=Math.hypot(dx,dy)||1;
+    const want=tgt?Math.min(d-260,3.4):Math.min(d-140,3.2);
+    A.vx+=(dx/d*want-A.vx)*Math.min(1,.02*dt);
+    A.vy+=(dy/d*want-A.vy)*Math.min(1,.02*dt);
+    A.x+=A.vx*dt;A.y+=A.vy*dt;
+    A.a+=angDiff(Math.atan2(dy,dx),A.a)*Math.min(1,.08*dt);
+    A.thrust=Math.hypot(A.vx,A.vy)>.6;
+    if(A.cool>0)A.cool-=dt;
+    if(tgt&&td<900&&A.cool<=0&&A.c.spec==="fight"){
+      A.cool=40;
+      fireShot(A.x,A.y,A.a,7.5,4+crewSkill(A.c)*3,true);
+    }
+  }
+}
+function drawAllies(zx,zy,Z){
+  if(!G.allies)return;
+  for(const A of G.allies){
+    const x=zx(A.x),y=zy(A.y);
+    if(x<-80||x>W+80||y<-80||y>H+80)continue;
+    ctx.save();ctx.translate(x,y);ctx.scale(clamp(Z,.3,1.4),clamp(Z,.3,1.4));ctx.rotate(A.a);
+    drawHull(A.c.shipId,A.thrust,false,0);
+    ctx.restore();
+    ctx.fillStyle="rgba(127,230,216,.75)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText(A.c.name.toUpperCase(),x,y-26*clamp(Z,.3,1.4)-6);
+  }
+}
+
 /* ══════════════ живой рынок ══════════════ */
 function marketFor(sys){
   const base=sys.station.prices;
@@ -2392,7 +2654,7 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],species:[...G.species],
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
-    drones:G.drones,droneInventory:G.droneInventory,log:G.log,ts:Date.now()};
+    drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,log:G.log,ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
@@ -2434,6 +2696,21 @@ function applySave(s){
   G.market=(s.market&&typeof s.market==="object")?s.market:{};
   G.drones=Array.isArray(s.drones)?s.drones:[];
   G.droneInventory=Math.max(0,s.droneInventory|0);
+  /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».
+     Момент последнего начисления подтягиваем к текущему времени, иначе после
+     долгого перерыва зарплата и добыча начислились бы задним числом дважды. */
+  G.crew=(Array.isArray(s.crew)?s.crew:[]).filter(c=>c&&c.spec&&CREW_SPEC[c.spec]).map(c=>({
+    id:String(c.id||("c"+(c.seed|0))),seed:c.seed|0,name:String(c.name||"Безымянный"),
+    spec:c.spec,traits:(Array.isArray(c.traits)?c.traits:[]).filter(t=>CREW_TRAITS.some(x=>x.id===t)),
+    xp:Math.max(0,+c.xp||0),shipId:(c.shipId&&G.owned[c.shipId])?c.shipId:null,
+    order:(c.order&&ORDERS[c.order.kind])?{kind:c.order.kind,sx:c.order.sx|0,sy:c.order.sy|0}
+          :{kind:"home",sx:G.sx,sy:G.sy},
+    hull:Math.max(0,+c.hull||0),hullMax:Math.max(1,+c.hullMax||100),
+    cargo:(c.cargo&&typeof c.cargo==="object")?c.cargo:{},
+    debt:Math.max(0,c.debt|0),morale:clamp(+c.morale||1,0,1),fee:Math.max(0,c.fee|0),
+    tMs:Date.now(),paidMs:Date.now()
+  })).slice(0,8);
+  G.allies=[];
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];
@@ -2730,7 +3007,7 @@ document.getElementById("startHard").addEventListener("click",()=>start(false));
     b.addEventListener("click",()=>{
       if(loadGame()){
         document.getElementById("intro").style.display="none";
-        G.running=true;spawnPirates();
+        G.running=true;spawnPirates();spawnAllies();
         say("Полёт восстановлен\n"+G.sys.name+" · сектор "+G.sx+":"+G.sy);
       }else say("Запись повреждена");
     });
@@ -2739,7 +3016,7 @@ document.getElementById("startHard").addEventListener("click",()=>start(false));
 function start(easy){
   G.opts.easyLand=easy;
   document.getElementById("intro").style.display="none";
-  G.running=true;spawnPirates();saveGame(true);
+  G.running=true;spawnPirates();spawnAllies();saveGame(true);
   say("Система "+G.sys.name+"\nткните по объекту —\nавтопилот доведёт");
 }
 
@@ -2942,6 +3219,7 @@ function updateSystem(dt){
   }
   if(G.mode!=="system")return;
   updateCombat(dt);
+  updateAllies(dt);
   if(G.mode!=="system")return;
   if(G.tech.has("dock")&&G.hull<st.hullMax)G.hull=Math.min(st.hullMax,G.hull+.012*dt);
   if(G.ap)G.orbit=null;
@@ -3184,6 +3462,7 @@ function drawSystem(){
   if(G.ap&&G.ap.kind==="belt")reticle(zx(G.ap.ax),zy(G.ap.ay),26);
   drawTrail(zx,zy,Z);
   drawCombat(zx,zy,Z);
+  drawAllies(zx,zy,Z);
   ctx.save();ctx.translate(W/2,H/2);ctx.rotate(sh.a);
   ctx.scale(clamp(Z,.55,1.6),clamp(Z,.55,1.6));
   drawHull(G.shipId,keys.thrust&&G.fuel>0||(G.ap&&G.fuel>0),keys.brake&&G.fuel>0,G.mods.engine,sh.bank);
@@ -3578,7 +3857,7 @@ function jump(cost){
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
   G.ship.vx=-Math.cos(a)*.7;G.ship.vy=-Math.sin(a)*.7;G.ship.a=a+Math.PI;
   G.mode="system";
-  spawnPirates();
+  spawnPirates();spawnAllies();
   sfx("jump");
   saveGame(true);
   logAdd("dim","Прыжок в "+G.sys.name+" ("+G.sx+":"+G.sy+") · −"+cost+" топлива"+
@@ -6489,6 +6768,73 @@ function renderTab(){
       r.appendChild(b);$body.appendChild(r);
     }
   }
+  else if(tab==="crew"){
+    /* одна вкладка на всё: кто уже работает — сверху, кандидаты станции — ниже.
+       Отсюда же выдают корабль, дают приказ и рассчитывают. */
+    crewTick();
+    $body.appendChild(el("div","sec","ВАШ ЭКИПАЖ "+G.crew.length+" / "+crewCap()+
+      " · ЛИЦЕНЗИЯ РАСШИРЯЕТ ФЛОТ · ЗАРПЛАТА ИДЁТ ПОКА ОНИ РАБОТАЮТ"));
+    if(!G.crew.length)$body.appendChild(el("div","sec","ПОКА НИКОГО — НАЙМИТЕ НИЖЕ"));
+    G.crew.forEach((c,i)=>{
+      const S=c.shipId?shipData(c.shipId):null;
+      const hold=crewHold(c),cap=crewCargoMax(c);
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+c.name+"</b> <span style='color:var(--dim)'>"+
+        CREW_SPEC[c.spec].ru+"</span><s>"+c.traits.map(t=>traitOf(t).ru).join(" · ")+
+        "<br>приказ: "+ORDERS[c.order.kind].ru+" · сектор "+c.order.sx+","+c.order.sy+
+        "<br>корабль: "+(S?"«"+S.ru+"» корпус "+Math.round(c.hull)+"/"+Math.round(c.hullMax):"не выдан")+
+        (cap?" · трюм "+hold+"/"+cap:"")+
+        "<br>жалованье "+crewPay(c)+" кр/мин · опыт "+Math.round(c.xp)+
+        (c.debt>0?" · <b style='color:#ff6b57'>долг "+c.debt+" кр</b>":"")+"</s>"));
+      const box=el("div","qt","");
+      r.appendChild(box);
+      const bFire=el("button","act","РАСЧЁТ");
+      bFire.onclick=()=>{fireMerc(i);renderTab();};
+      r.appendChild(bFire);
+      $body.appendChild(r);
+      /* выдача корабля: только свободные корпуса из ангара, свой текущий не отдаём */
+      if(!c.shipId){
+        const free=Object.keys(G.owned).filter(id=>id!==G.shipId&&!G.crew.some(o=>o.shipId===id));
+        const rr=el("div","row");
+        rr.appendChild(el("div","nm","<b>Выдать корабль</b><s>"+
+          (free.length?"свободны: "+free.map(id=>{const d=shipData(id);return d?d.ru:id;}).join(", ")
+                      :"свободных корпусов нет — купите или пересядьте")+"</s>"));
+        for(const id of free.slice(0,3)){
+          const d=shipData(id);
+          const b=el("button","act gold",(d?d.ru:id).toUpperCase());
+          b.onclick=()=>{crewAssignShip(c,id);renderTab();};
+          rr.appendChild(b);
+        }
+        $body.appendChild(rr);
+      }else{
+        const ro=el("div","row");
+        ro.appendChild(el("div","nm","<b>Приказ</b><s>"+ORDERS[c.order.kind].note+
+          "<br>район назначается по системе, где вы сейчас: "+G.sx+","+G.sy+"</s>"));
+        for(const k in ORDERS){
+          if(ORDERS[k].spec&&ORDERS[k].spec!==c.spec)continue;
+          const b=el("button","act"+(c.order.kind===k?"":" gold"),ORDERS[k].ru.toUpperCase());
+          b.disabled=c.order.kind===k&&c.order.sx===G.sx&&c.order.sy===G.sy;
+          b.onclick=()=>{crewOrder(c,k);renderTab();};
+          ro.appendChild(b);
+        }
+        $body.appendChild(ro);
+      }
+    });
+    $body.appendChild(el("div","sec","ИЩУТ РАБОТУ ЗДЕСЬ · СОСТАВ МЕНЯЕТСЯ СО ВРЕМЕНЕМ"));
+    for(const m of stationMercs(G.sys)){
+      if(G.crew.some(c=>c.id===m.id))continue;
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+m.name+"</b> <span style='color:var(--dim)'>"+
+        CREW_SPEC[m.spec].ru+"</span><s>"+CREW_SPEC[m.spec].note+
+        "<br>"+m.traits.map(t=>traitOf(t).ru+" — "+traitOf(t).note).join("<br>")+
+        "<br>жалованье "+crewPay(m)+" кр/мин · опыт "+m.xp+"</s>"));
+      r.appendChild(el("div","qt",m.fee.toLocaleString("ru")+"<s>кр найм</s>"));
+      const b=el("button","act gold","НАНЯТЬ");
+      b.disabled=G.credits<m.fee||G.crew.length>=crewCap();
+      b.onclick=()=>{if(hireMerc(m))renderTab();};
+      r.appendChild(b);$body.appendChild(r);
+    }
+  }
   else if(tab==="smelt"){
     /* сплавы нигде не добываются — только здесь: руда в печь, на выходе слиток.
        Это единственная точка входа для сырья, которое потом тратится (M40, M37, M46). */
@@ -7037,7 +7383,7 @@ function frame(now){
   actEdge=keys.act&&!prevAct;prevAct=keys.act;
   if(G.running){
     G.t+=dt;
-    if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();}
+    if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();crewTick();}
     if(G.msgT>0)G.msgT-=dt;
     if(G.mode==="system")autosave();
     if(G.mode==="system"||G.mode==="dock")updateSystem(dt);

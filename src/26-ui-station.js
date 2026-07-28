@@ -304,6 +304,73 @@ function renderTab(){
       r.appendChild(b);$body.appendChild(r);
     }
   }
+  else if(tab==="crew"){
+    /* одна вкладка на всё: кто уже работает — сверху, кандидаты станции — ниже.
+       Отсюда же выдают корабль, дают приказ и рассчитывают. */
+    crewTick();
+    $body.appendChild(el("div","sec","ВАШ ЭКИПАЖ "+G.crew.length+" / "+crewCap()+
+      " · ЛИЦЕНЗИЯ РАСШИРЯЕТ ФЛОТ · ЗАРПЛАТА ИДЁТ ПОКА ОНИ РАБОТАЮТ"));
+    if(!G.crew.length)$body.appendChild(el("div","sec","ПОКА НИКОГО — НАЙМИТЕ НИЖЕ"));
+    G.crew.forEach((c,i)=>{
+      const S=c.shipId?shipData(c.shipId):null;
+      const hold=crewHold(c),cap=crewCargoMax(c);
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+c.name+"</b> <span style='color:var(--dim)'>"+
+        CREW_SPEC[c.spec].ru+"</span><s>"+c.traits.map(t=>traitOf(t).ru).join(" · ")+
+        "<br>приказ: "+ORDERS[c.order.kind].ru+" · сектор "+c.order.sx+","+c.order.sy+
+        "<br>корабль: "+(S?"«"+S.ru+"» корпус "+Math.round(c.hull)+"/"+Math.round(c.hullMax):"не выдан")+
+        (cap?" · трюм "+hold+"/"+cap:"")+
+        "<br>жалованье "+crewPay(c)+" кр/мин · опыт "+Math.round(c.xp)+
+        (c.debt>0?" · <b style='color:#ff6b57'>долг "+c.debt+" кр</b>":"")+"</s>"));
+      const box=el("div","qt","");
+      r.appendChild(box);
+      const bFire=el("button","act","РАСЧЁТ");
+      bFire.onclick=()=>{fireMerc(i);renderTab();};
+      r.appendChild(bFire);
+      $body.appendChild(r);
+      /* выдача корабля: только свободные корпуса из ангара, свой текущий не отдаём */
+      if(!c.shipId){
+        const free=Object.keys(G.owned).filter(id=>id!==G.shipId&&!G.crew.some(o=>o.shipId===id));
+        const rr=el("div","row");
+        rr.appendChild(el("div","nm","<b>Выдать корабль</b><s>"+
+          (free.length?"свободны: "+free.map(id=>{const d=shipData(id);return d?d.ru:id;}).join(", ")
+                      :"свободных корпусов нет — купите или пересядьте")+"</s>"));
+        for(const id of free.slice(0,3)){
+          const d=shipData(id);
+          const b=el("button","act gold",(d?d.ru:id).toUpperCase());
+          b.onclick=()=>{crewAssignShip(c,id);renderTab();};
+          rr.appendChild(b);
+        }
+        $body.appendChild(rr);
+      }else{
+        const ro=el("div","row");
+        ro.appendChild(el("div","nm","<b>Приказ</b><s>"+ORDERS[c.order.kind].note+
+          "<br>район назначается по системе, где вы сейчас: "+G.sx+","+G.sy+"</s>"));
+        for(const k in ORDERS){
+          if(ORDERS[k].spec&&ORDERS[k].spec!==c.spec)continue;
+          const b=el("button","act"+(c.order.kind===k?"":" gold"),ORDERS[k].ru.toUpperCase());
+          b.disabled=c.order.kind===k&&c.order.sx===G.sx&&c.order.sy===G.sy;
+          b.onclick=()=>{crewOrder(c,k);renderTab();};
+          ro.appendChild(b);
+        }
+        $body.appendChild(ro);
+      }
+    });
+    $body.appendChild(el("div","sec","ИЩУТ РАБОТУ ЗДЕСЬ · СОСТАВ МЕНЯЕТСЯ СО ВРЕМЕНЕМ"));
+    for(const m of stationMercs(G.sys)){
+      if(G.crew.some(c=>c.id===m.id))continue;
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+m.name+"</b> <span style='color:var(--dim)'>"+
+        CREW_SPEC[m.spec].ru+"</span><s>"+CREW_SPEC[m.spec].note+
+        "<br>"+m.traits.map(t=>traitOf(t).ru+" — "+traitOf(t).note).join("<br>")+
+        "<br>жалованье "+crewPay(m)+" кр/мин · опыт "+m.xp+"</s>"));
+      r.appendChild(el("div","qt",m.fee.toLocaleString("ru")+"<s>кр найм</s>"));
+      const b=el("button","act gold","НАНЯТЬ");
+      b.disabled=G.credits<m.fee||G.crew.length>=crewCap();
+      b.onclick=()=>{if(hireMerc(m))renderTab();};
+      r.appendChild(b);$body.appendChild(r);
+    }
+  }
   else if(tab==="smelt"){
     /* сплавы нигде не добываются — только здесь: руда в печь, на выходе слиток.
        Это единственная точка входа для сырья, которое потом тратится (M40, M37, M46). */
