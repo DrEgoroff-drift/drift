@@ -28,6 +28,7 @@
   .bar i{position:absolute;inset:0 auto 0 0;background:var(--phos);transition:width .15s linear}
   .bar.hull i{background:var(--amber)}
   .bar.hold i{background:#c58ae0}
+  .bar.shld i{background:#9fd8ff}
   .bar.low i{background:var(--alarm)}
   .stat{margin-left:auto;text-align:right;background:var(--panel);border:1px solid var(--line);
     padding:5px 7px;backdrop-filter:blur(6px)}
@@ -119,6 +120,9 @@
   .dots{display:flex;gap:3px;margin-top:5px}
   .dots i{width:12px;height:3px;background:rgba(255,255,255,.14)}
   .dots i.f{background:var(--phos)}
+  .dots i.o{background:rgba(127,230,216,.28)}
+  .modbtns{display:flex;gap:6px;align-items:center;flex-shrink:0}
+  .act.sm{padding:8px 10px;min-width:auto}
   .sec{padding:14px 16px 6px;color:var(--dim);font-size:9px;letter-spacing:.16em;line-height:1.7}
   .scr footer{display:flex;gap:8px;padding:10px 16px 0;border-top:1px solid var(--line)}
   .scr footer .act{flex:1;text-align:center;padding:11px 4px}
@@ -159,6 +163,7 @@
 <div class="hud">
   <div class="gauge"><b>ТОПЛИВО</b><div class="bar" id="fbar"><i></i></div></div>
   <div class="gauge"><b>КОРПУС</b><div class="bar hull" id="hbar"><i></i></div></div>
+  <div class="gauge" id="sgauge" style="display:none"><b>ЩИТ</b><div class="bar shld" id="sbar"><i></i></div></div>
   <div class="gauge"><b>ТРЮМ</b><div class="bar hold" id="cbar"><i></i></div></div>
   <div class="stat"><u id="place">—</u><s id="sub">—</s></div>
 </div>
@@ -378,6 +383,22 @@ function stationUniqueOffer(sys){
   const chance=.35+sysDanger(sys.sx,sys.sy)*.35;
   if(r()>chance)return null;
   return genUniqueShip(hashi(sys.seed,4242,timeBucket()));
+}
+/* части в продаже: как и уникальный корабль — ничего не персистится,
+   ассортимент детерминирован seed станции и временным бакетом */
+function stationParts(sys){
+  if(!sys||!sys.station)return [];
+  const bucket=timeBucket(),d=sysDanger(sys.sx,sys.sy);
+  const r=rng(hashi(sys.seed,8181,bucket));
+  const n=1+Math.floor(r()*3);
+  const out=[];
+  for(let i=0;i<n;i++){
+    const seed=hashi(sys.seed,i*613+17,bucket);
+    const part=genPart(seed,tierFromDanger(d,rng(seed)));
+    const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*(.85+r()*.4)/10)*10;
+    out.push({key:sys.key+"|"+bucket+"|"+i,part,price});
+  }
+  return out;
 }
 const HULL_CACHE={};
 /* корпуса NPC живут отдельно от G.uniqueShips — те персистятся, эти нет */
@@ -718,6 +739,213 @@ const BARTER={
   icecore:{ru:"Ледяное ядро реактора",note:"+50 к запасу топлива",cost:{ice:110}}
 };
 
+/* ══════════════ части корабля ══════════════ */
+/* Часть хранится в сохранении как {s:seed,t:тир,k:категория,g:версия генератора} —
+   имя, аффиксы и числа восстанавливаются из seed этой же функцией. Поэтому
+   genPart НЕЛЬЗЯ менять задним числом: при правке заводим новую ветку по g,
+   иначе у всех игроков втихую поменяются уже собранные части. */
+const PART_GEN=1;
+/* g — род существительного: прилагательное в имени части согласуется с ним */
+const PART_KINDS={
+  gun:   {ru:"Орудие",           col:"#ff9d7a",note:"бортовой огонь",g:"n"},
+  /* lead — обязательный первый аффикс: без ёмкости «силовое поле» с одной
+     регенерацией не делает вообще ничего, такую часть выдавать нельзя */
+  shield:{ru:"Силовое поле",     col:"#9fd8ff",note:"поглощает урон до корпуса",g:"n",lead:"shieldAdd"},
+  engine:{ru:"Двигательный блок",col:"#7fe6d8",note:"тяга и поворот",g:"m"},
+  hull:  {ru:"Обшивка",          col:"#e0d28a",note:"прочность корпуса",g:"f"},
+  core:  {ru:"Реактор",          col:"#c58ae0",note:"топливо и дальность прыжка",g:"m"},
+  util:  {ru:"Утилита",          col:"#8fd08a",note:"трюм, бур, обзор",g:"f"}
+};
+/* все PART_PRE — мужской род на -ый/-ой/-ий, поэтому хватает подмены окончания */
+function adjTo(adj,g){
+  if(g==="m")return adj;
+  return adj.slice(0,-2)+(g==="f"?"ая":"ое");
+}
+const PART_KEYS=Object.keys(PART_KINDS);
+/* аффиксы: step — величина на тир; flat — прибавка, иначе доля; fix — знаков после запятой */
+const AFFIX=[
+  {k:"dmgMul",   ru:"урон",             step:.11, kinds:["gun"]},
+  {k:"rateMul",  ru:"скорострельность", step:.09, kinds:["gun"]},
+  {k:"shieldAdd",ru:"щит",              step:9,   kinds:["shield"],flat:1},
+  {k:"regenAdd", ru:"регенерация щита", step:.45, kinds:["shield"],flat:1,fix:2},
+  {k:"thrMul",   ru:"тяга",             step:.08, kinds:["engine"]},
+  {k:"turnMul",  ru:"поворот",          step:.07, kinds:["engine"]},
+  {k:"hullAdd",  ru:"корпус",           step:11,  kinds:["hull"], flat:1},
+  {k:"fuelAdd",  ru:"бак",              step:10,  kinds:["core"], flat:1},
+  {k:"jumpAdd",  ru:"дальность прыжка", step:.35, kinds:["core"], flat:1,fix:1,unit:" пк"},
+  {k:"cargoMul", ru:"трюм",             step:.09, kinds:["util"]},
+  {k:"drillMul", ru:"бур",              step:.10, kinds:["util"]},
+  {k:"scanAdd",  ru:"обзор",            step:90,  kinds:["util"], flat:1}
+];
+/* штрафы: у сильной части есть цена, иначе выбор очевиден и сборка бессмысленна */
+const AFFIX_BAD=["thrMul","turnMul","cargoMul","hullAdd","fuelAdd","rateMul"];
+const AFFIX_BY_K={};for(const a of AFFIX)AFFIX_BY_K[a.k]=a;
+const PART_PRE=["Тяжёлый","Форсированный","Кустарный","Трофейный","Опытный","Импульсный",
+  "Резонансный","Полевой","Штурмовой","Компактный","Усиленный","Аварийный","Сдвоенный","Литой"];
+const PART_SUF=["М1","М2","К-7","Тип-3","серия B","мод. 9","Р-12","XT","дубль","прототип","ТУ-4","«Клык»"];
+const TIER_RU=["","обычная","добротная","редкая","отменная","легендарная"];
+/* off — аффикс не из профиля категории: даём его вполсилы, иначе орудие с жирным
+   бонусом к трюму размывает смысл категорий и бонусы бесконтрольно стакаются */
+function affVal(a,tier,r,bad,off){
+  let v=a.step*tier*(.7+r()*.6);
+  if(off)v*=.45;
+  if(bad)v=-Math.abs(v)*.55;
+  return a.fix?+v.toFixed(a.fix):(a.flat?Math.round(v):+v.toFixed(3));
+}
+function affLabel(x){
+  const a=AFFIX_BY_K[x.k],v=x.v;
+  const s=a.flat?(a.fix?v.toFixed(a.fix):Math.round(v)):Math.round(v*100)+"%";
+  return (v>0?"+":"−")+String(s).replace("-","")+(a.unit||"")+" "+a.ru;
+}
+/* тир по опасности сектора: у дома падает мусор, на фронтире — то, ради чего летят */
+function tierFromDanger(d,r){
+  const base=1+d*3.2+r()*1.4;
+  return clamp(Math.round(base),1,5);
+}
+function genPart(seed,tier,kind){
+  const r=rng((seed>>>0)||1);
+  tier=clamp(tier|0||1,1,5);
+  kind=kind||pick(PART_KEYS,r);
+  const own=AFFIX.filter(a=>a.kinds.indexOf(kind)>=0);
+  const other=AFFIX.filter(a=>a.kinds.indexOf(kind)<0);
+  const n=clamp(1+Math.floor(r()*(1+tier*.55)),1,3);
+  const aff=[],used={};
+  /* первый аффикс всегда профильный — часть должна делать то, что обещает категория */
+  const lead=PART_KINDS[kind].lead;
+  const first=lead?AFFIX_BY_K[lead]:pick(own,r);
+  aff.push({k:first.k,v:affVal(first,tier,r,0)});used[first.k]=1;
+  while(aff.length<n){
+    const off=r()>=.72;
+    const pool=(off?other:own).filter(a=>!used[a.k]);
+    if(!pool.length)break;
+    const a=pick(pool,r);
+    aff.push({k:a.k,v:affVal(a,tier,r,0,off)});used[a.k]=1;
+  }
+  /* чем сильнее часть, тем вероятнее у неё обратная сторона */
+  if(tier>=3&&r()<.22+tier*.1){
+    const pool=AFFIX_BAD.filter(k=>!used[k]);
+    if(pool.length){
+      const k=pick(pool,r);
+      aff.push({k,v:affVal(AFFIX_BY_K[k],tier,r,1)});used[k]=1;
+    }
+  }
+  const bonus={};
+  for(const x of aff)bonus[x.k]=(bonus[x.k]||0)+x.v;
+  if(kind==="gun")bonus.gun=1;
+  return {seed:seed>>>0,tier,kind,gen:PART_GEN,aff,bonus,
+    name:adjTo(pick(PART_PRE,r),PART_KINDS[kind].g)+" "+PART_KINDS[kind].ru.toLowerCase()+" "+pick(PART_SUF,r),
+    cap:Math.ceil(tier/2)};
+}
+/* ── ёмкость оснастки: модули и части делят один бюджет ──
+   Нижняя граница подобрана так, чтобы полностью прокачанные модули (7×4=28)
+   влезали на любой корпус: старое сохранение не должно ничего отключать. */
+function capOf(id){
+  const S=shipData(id);
+  if(!S)return 32;
+  return Math.round(clamp(26+S.hull/22+S.cargo/40+(S.fuel-90)/40,30,48));
+}
+const SLOT_CACHE={};
+function slotsOf(id){
+  if(SLOT_CACHE[id])return SLOT_CACHE[id];
+  const S=shipData(id);
+  if(!S)return ["gun","engine","hull","util"];
+  const r=rng(hashi(S.seed,5150,77));
+  const w={gun:1+(S.thr>1.1?1.2:0),shield:1,engine:1+(S.turn>1.05?1.2:0),
+    hull:1+(S.hull>150?1.6:0),core:1+(S.fuel>140?1.2:0),util:1+(S.cargo>120?1.6:0)};
+  const n=clamp(Math.round(3.4+S.hull/150+S.cargo/170+S.fuel/230),4,8);
+  const out=["gun","engine"];                 // без них корабль не корабль
+  while(out.length<n){
+    let tot=0;for(const k in w)tot+=w[k];
+    let t=r()*tot,got=PART_KEYS[0];
+    for(const k in w){t-=w[k];if(t<=0){got=k;break;}}
+    out.push(got);
+    w[got]*=.45;                              // повтор возможен, но реже
+  }
+  SLOT_CACHE[id]=out;
+  return out;
+}
+/* сумма бонусов установленных частей — кэшируется, stat() зовут каждый кадр */
+let PART_BONUS=null;
+function invalidateParts(){PART_BONUS=null;}
+function partById(id){
+  for(const p of G.inv)if(p.id===id)return p;
+  return null;
+}
+function fitMap(){
+  let f=G.fit[G.shipId];
+  if(!f){f={};G.fit[G.shipId]=f;}
+  return f;
+}
+function fittedParts(){
+  const f=G.fit[G.shipId]||{},out=[];
+  for(const k in f){const p=partById(f[k]);if(p)out.push(p);}
+  return out;
+}
+function partBonus(){
+  if(PART_BONUS)return PART_BONUS;
+  const b={};
+  for(const p of fittedParts())for(const k in p.bonus)b[k]=(b[k]||0)+p.bonus[k];
+  PART_BONUS=b;
+  return b;
+}
+function capUsed(){
+  let n=0;
+  for(const k in G.mods)n+=G.mods[k];
+  for(const p of fittedParts())n+=p.cap;
+  return n;
+}
+const PART_MAX=60;
+let partSeq=1;
+function addPart(p){
+  p.id="p"+(partSeq++);
+  G.inv.push(p);
+  /* инвентарь не должен раздувать сохранение: вытесняем самый слабый лишний */
+  while(G.inv.length>PART_MAX){
+    let wi=-1,wt=99;
+    for(let i=0;i<G.inv.length;i++){
+      const q=G.inv[i];
+      if(isFitted(q.id))continue;
+      if(q.tier<wt){wt=q.tier;wi=i;}
+    }
+    if(wi<0)break;
+    G.inv.splice(wi,1);
+  }
+  return p;
+}
+function isFitted(id){
+  for(const s in G.fit){const f=G.fit[s];for(const k in f)if(f[k]===id)return true;}
+  return false;
+}
+function unfitPart(slot){
+  const f=fitMap();
+  if(f[slot]!=null){delete f[slot];invalidateParts();afterFitChange();}
+}
+function fitPart(slot,id){
+  const p=partById(id),slots=slotsOf(G.shipId);
+  if(!p||slots[slot]!==p.kind)return false;
+  if(isFitted(id))return false;
+  const f=fitMap(),prev=f[slot];
+  if(prev!=null)delete f[slot];
+  if(capUsed()+p.cap>capOf(G.shipId)){if(prev!=null)f[slot]=prev;return false;}
+  f[slot]=id;invalidateParts();afterFitChange();
+  return true;
+}
+/* после любой смены оснастки текущие топливо/корпус могут оказаться выше нового максимума */
+function afterFitChange(){
+  invalidateParts();
+  const s=stat();
+  G.fuel=Math.min(G.fuel,s.fuelMax);
+  G.hull=Math.min(G.hull,s.hullMax);
+  G.shield=Math.min(G.shield,s.shieldMax);
+}
+function packPart(p){return {s:p.seed,t:p.tier,k:p.kind,g:p.gen,i:p.id};}
+function unpackPart(o){
+  if(!o||!PART_KINDS[o.k])return null;
+  const p=genPart(o.s>>>0,o.t|0,o.k);
+  p.id=typeof o.i==="string"?o.i:("p"+(partSeq++));
+  return p;
+}
+
 /* ══════════════ галактика ══════════════ */
 function starAt(sx,sy){return (sx===0&&sy===0)||h01(sx,sy,4242)<.52;}
 const SYS_CACHE=new Map();
@@ -960,7 +1188,10 @@ const G={
   ship:{x:0,y:-760,vx:1.1,vy:0,a:0,av:0,bank:0},
   fuel:100,hull:100,
   cargo:{},credits:600,data:0,
+  /* mods — установленные уровни, modsOwned — купленные: модуль можно снять и вернуть без потери денег */
   mods:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0},
+  modsOwned:{engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0},
+  inv:[],fit:{},shield:0,loot:[],partsBought:{},
   tech:new Set(),techLvl:{},barter:new Set(),
   found:new Set(),species:new Set(),
   ap:null,          // автопилот
@@ -977,21 +1208,25 @@ for(const k of RES_KEYS)G.cargo[k]=0;
 G.sys=getSystem(0,0);
 
 function stat(){
-  const S=shipData(G.shipId),m=G.mods,T=G.tech,B=G.barter;
+  const S=shipData(G.shipId),m=G.mods,T=G.tech,B=G.barter,P=partBonus();
   const drillBonus=G.shipId==="obod"?1.6:1;
+  const mul=k=>Math.max(.25,1+(P[k]||0));   // штрафы не должны обнулять стат
   return {
     S,
-    thr:S.thr*(1+m.engine*.19),
-    turn:S.turn*(1+m.engine*.07),
-    fuelMax:Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)),
-    cargoMax:Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)),
-    hullMax:Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)),
-    drill:(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1),
+    thr:S.thr*(1+m.engine*.19)*mul("thrMul"),
+    turn:S.turn*(1+m.engine*.07)*mul("turnMul"),
+    fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0))),
+    cargoMax:Math.max(8,Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul"))),
+    hullMax:Math.max(20,Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0))),
+    drill:(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul"),
     synthRatio:B.has("isosynth")?8:4,
-    jump:3+m.hyper*.5+(T.has("coil")?2:0),
-    armed:m.weapon>0,
-    dmg:(5+m.weapon*4.5)*(T.has("gunai")?1.35:1),
-    cool:Math.round(34-m.weapon*4),
+    jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)),
+    armed:m.weapon>0||!!P.gun,
+    dmg:(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul"),
+    cool:Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul"))),
+    shieldMax:Math.max(0,Math.round(P.shieldAdd||0)),
+    shieldRegen:Math.max(0,P.regenAdd||0),
+    see:(T.has("cloak")?520:1040)+(P.scanAdd||0),
     digTier:T.has("deepcore")?2:((T.has("deepdrill")||m.drill>=2)?1:0),
     suitWear:1/(1+techLv("suit")*.55),
     refine:1+techLv("refine")*.18,
@@ -1150,7 +1385,8 @@ function pirateShipId(seed){
   return id;
 }
 function spawnPirates(){
-  G.pirates=[];G.shots=[];
+  G.pirates=[];G.shots=[];G.loot=[];
+  G.shield=stat().shieldMax;
   const danger=sysDanger(G.sx,G.sy);
   const r=rng(hashi(G.sx,G.sy,Math.floor(Date.now()/900000)));
   const n=r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0;
@@ -1168,7 +1404,24 @@ function fireShot(x,y,ang,speed,dmg,mine){
 let fireCool=0;
 function updateCombat(dt){
   const sh=G.ship,st=stat();
-  const seeRange=G.tech.has("cloak")?520:1040;
+  const seeRange=st.see;
+  /* щит восстанавливается только когда по вам никто не целится */
+  if(st.shieldMax>0){
+    const calm=!G.pirates.some(p=>p.aware);
+    if(calm&&G.shield<st.shieldMax)
+      G.shield=Math.min(st.shieldMax,G.shield+st.shieldRegen*dt*.06);
+  }else G.shield=0;
+  /* контейнеры с трофеями: подбираются пролётом сквозь */
+  for(let i=G.loot.length-1;i>=0;i--){
+    const L=G.loot[i];
+    L.x+=L.vx*dt;L.y+=L.vy*dt;L.vx*=.996;L.vy*=.996;L.spin+=.02*dt;L.life-=dt;
+    if(Math.hypot(L.x-sh.x,L.y-sh.y)<40){
+      addPart(L.part);
+      tell("kill","Подобрана часть: "+L.part.name+" ("+TIER_RU[L.part.tier]+")",
+           "Контейнер вскрыт\n"+L.part.name+"\n"+L.part.aff.map(affLabel).join("\n"));
+      G.loot.splice(i,1);
+    }else if(L.life<=0)G.loot.splice(i,1);
+  }
   if(fireCool>0)fireCool-=dt;
   if(keys.fire&&st.armed&&fireCool<=0){
     fireShot(sh.x,sh.y,sh.a,9,st.dmg,true);
@@ -1216,8 +1469,13 @@ function updateCombat(dt){
       }
     }else if(!gone){
       if(Math.hypot(s.x-sh.x,s.y-sh.y)<18){
-        G.hull=Math.max(0,G.hull-s.dmg);gone=true;
-        if(G.hull<=0){wreck();return;}
+        gone=true;
+        let d=s.dmg;
+        if(G.shield>0){const a=Math.min(G.shield,d);G.shield-=a;d-=a;}
+        if(d>0){
+          G.hull=Math.max(0,G.hull-d);
+          if(G.hull<=0){wreck();return;}
+        }
       }
     }
     if(gone)G.shots.splice(i,1);
@@ -1229,11 +1487,48 @@ function killPirate(p){
   const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7)*stat().bountyMul);
   G.credits+=bounty;
   const loot=pick(RES_KEYS,r),got=addRes(loot,2+Math.floor(r()*7));
-  say("«"+p.name+"» разбит\n+"+bounty+" кр"+(got?"\nтрофей: "+RES[loot].ru+" ×"+got:""));
+  const d=sysDanger(G.sx,G.sy);
+  /* обломок с частью — не в трюм сразу, а контейнером: у боя своя петля «убил → собрал» */
+  let dropped=null;
+  if(r()<.3+d*.45){
+    dropped=genPart(hashi(p.seed,3131,Math.floor(Date.now()/1000)),tierFromDanger(d,r));
+    const a=r()*TAU,sp=.35+r()*.5;
+    G.loot.push({x:p.x,y:p.y,vx:p.vx*.4+Math.cos(a)*sp,vy:p.vy*.4+Math.sin(a)*sp,
+      spin:r()*TAU,life:5400,part:dropped});
+  }
+  say("«"+p.name+"» разбит\n+"+bounty+" кр"+(got?"\nтрофей: "+RES[loot].ru+" ×"+got:"")+
+    (dropped?"\nотделился контейнер":""));
   logAdd("kill","Пират «"+p.name+"» уничтожен · +"+bounty+" кр"+
-    (got?" · трофей "+RES[loot].ru.toLowerCase()+" ×"+got:""));
+    (got?" · трофей "+RES[loot].ru.toLowerCase()+" ×"+got:"")+
+    (dropped?" · контейнер с частью":""));
 }
 function drawCombat(zx,zy,Z){
+  /* контейнеры: гранёная коробка в цвет категории части, мигает маячком */
+  for(const L of G.loot){
+    const x=zx(L.x),y=zy(L.y);
+    if(x<-40||x>W+40||y<-40||y>H+40){
+      const ang=Math.atan2(L.y-G.ship.y,L.x-G.ship.x);
+      const mx=W/2+Math.cos(ang)*(Math.min(W,H)/2-40),my=H/2+Math.sin(ang)*(Math.min(W,H)/2-40);
+      ctx.fillStyle=PART_KINDS[L.part.kind].col;ctx.globalAlpha=.7;
+      ctx.beginPath();ctx.arc(mx,my,2.6,0,TAU);ctx.fill();ctx.globalAlpha=1;
+      continue;
+    }
+    const col=PART_KINDS[L.part.kind].col,s=clamp(Z,.6,1.6)*7;
+    ctx.save();ctx.translate(x,y);ctx.rotate(L.spin);
+    ctx.fillStyle="rgba(20,24,30,.9)";ctx.strokeStyle=col;ctx.lineWidth=1.4;
+    ctx.beginPath();
+    for(let i=0;i<6;i++){const a=i/6*TAU;const rr=s*(i%2?.72:1);
+      i?ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):ctx.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}
+    ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.restore();
+    const pulse=.45+.55*Math.abs(Math.sin(G.t*.05+L.spin));
+    ctx.fillStyle=col;ctx.globalAlpha=pulse;
+    ctx.beginPath();ctx.arc(x,y,2.2,0,TAU);ctx.fill();ctx.globalAlpha=1;
+    if(L.life<900){   // перед исчезновением предупреждаем
+      ctx.fillStyle="rgba(255,157,122,.8)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText(Math.ceil(L.life/60)+"с",x,y-s-5);
+    }
+  }
   for(const p of G.pirates){
     const x=zx(p.x),y=zy(p.y);
     if(x>-60&&x<W+60&&y>-60&&y<H+60){
@@ -1273,10 +1568,22 @@ function b64enc(s){const b=new TextEncoder().encode(s);let o="";
   for(let i=0;i<b.length;i++)o+=String.fromCharCode(b[i]);return btoa(o);}
 function b64dec(s){const bin=atob(s.replace(/\s+/g,""));const a=new Uint8Array(bin.length);
   for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return new TextDecoder().decode(a);}
+/* флаги «уже куплено» живут ровно столько, сколько живёт сам ассортимент:
+   бакеты старше текущего выбрасываем, иначе объект растёт вечно */
+function prunePartsBought(){
+  const now=timeBucket(),out={};
+  for(const k in G.partsBought){
+    const b=+k.split("|")[1];
+    if(b>=now-1)out[k]=1;
+  }
+  G.partsBought=out;
+  return out;
+}
 function snapshot(){
   return {v:4,sx:G.sx,sy:G.sy,shipId:G.shipId,owned:G.owned,
     x:G.ship.x,y:G.ship.y,a:G.ship.a,fuel:G.fuel,hull:G.hull,
-    cargo:G.cargo,credits:G.credits,data:G.data,mods:G.mods,
+    cargo:G.cargo,credits:G.credits,data:G.data,mods:G.mods,modsOwned:G.modsOwned,
+    inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],species:[...G.species],
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
     drones:G.drones,droneInventory:G.droneInventory,log:G.log,ts:Date.now()};
@@ -1287,7 +1594,29 @@ function applySave(s){
   G.uniqueShips=(s.uniqueShips&&typeof s.uniqueShips==="object")?s.uniqueShips:{};
   G.shipId=shipData(s.shipId)?s.shipId:"strizh";
   G.owned=Object.assign({strizh:true},s.owned||{});
-  for(const k in G.mods)G.mods[k]=clamp((s.mods&&s.mods[k])|0,0,4);
+  /* старое сохранение знает только s.mods — считаем, что всё купленное и установлено.
+     Ёмкость (capOf) подобрана так, чтобы даже полностью прокачанные модули влезли. */
+  for(const k in G.mods){
+    G.modsOwned[k]=clamp(((s.modsOwned&&s.modsOwned[k])!=null?s.modsOwned[k]:(s.mods&&s.mods[k]))|0,0,4);
+    G.mods[k]=clamp((s.mods&&s.mods[k])|0,0,G.modsOwned[k]);
+  }
+  partSeq=1;
+  G.inv=(Array.isArray(s.inv)?s.inv:[]).map(unpackPart).filter(Boolean).slice(0,PART_MAX);
+  for(const p of G.inv){const n=+String(p.id).slice(1);if(n>=partSeq)partSeq=n+1;}
+  G.fit={};
+  if(s.fit&&typeof s.fit==="object")
+    for(const sid in s.fit){
+      const src=s.fit[sid],dst={};
+      if(!src||typeof src!=="object")continue;
+      const slots=slotsOf(sid);
+      for(const k in src){
+        const p=partById(src[k]);
+        if(p&&slots[k]===p.kind&&!Object.values(dst).includes(p.id))dst[k]=p.id;
+      }
+      G.fit[sid]=dst;
+    }
+  invalidateParts();
+  G.partsBought=(s.partsBought&&typeof s.partsBought==="object")?s.partsBought:{};
   G.tech=new Set(Array.isArray(s.tech)?s.tech.filter(k=>TECH[k]):[]);
   G.techLvl={};
   if(s.techLvl&&typeof s.techLvl==="object")
@@ -1308,6 +1637,7 @@ function applySave(s){
   const st=stat();
   G.fuel=clamp(+s.fuel||0,0,st.fuelMax);
   G.hull=clamp(+s.hull||st.hullMax,1,st.hullMax);
+  G.shield=st.shieldMax;G.loot=[];   // щит и лут в системе — эфемерные, не персистятся
   G.ship.x=+s.x||0;G.ship.y=+s.y||-760;G.ship.a=+s.a||0;
   G.ship.vx=0;G.ship.vy=0;G.ship.av=0;G.ship.bank=0;
   G.mode="system";G.ap=null;G.land=null;G.surf=null;G.belt=null;G.st=null;G.dig=null;G.cave=null;
@@ -3199,6 +3529,8 @@ function totalLoss(){
   const pname=S?S.p.name:"поверхности";
   G.shipId="strizh";G.owned={strizh:true};
   G.mods={engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0};
+  G.modsOwned={engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0};
+  G.inv=[];G.fit={};G.loot=[];invalidateParts();
   for(const k of RES_KEYS)G.cargo[k]=0;
   G.credits=0;
   const st0=stat();
@@ -4873,26 +5205,122 @@ function renderTab(){
     }
   }
   else if(tab==="mods"){
-    $body.appendChild(el("div","sec","МОДУЛИ — ДО 4 УРОВНЕЙ · ДЕЙСТВУЮТ НА ЛЮБОМ КОРПУСЕ"));
+    const cap=capOf(G.shipId);
+    const capBar=()=>{
+      const used=capUsed();
+      $body.appendChild(el("div","sec","ОСНАСТКА: "+used+" / "+cap+
+        " · МОДУЛИ И ЧАСТИ ДЕЛЯТ ОДИН БЮДЖЕТ"+(used>cap?" · ПЕРЕГРУЗ":"")));
+    };
+    capBar();
+    $body.appendChild(el("div","sec","МОДУЛИ — ДО 4 УРОВНЕЙ · КАЖДЫЙ УРОВЕНЬ ЗАНИМАЕТ 1 МЕСТО"));
     for(const k in MODS){
-      const M=MODS[k],lvl=G.mods[k],cost=modCost(k,lvl),max=lvl>=4;
+      const M=MODS[k],own=G.modsOwned[k],lvl=G.mods[k],cost=modCost(k,own),max=own>=4;
       const r=el("div","row");
-      let dots="";for(let i=0;i<4;i++)dots+="<i class='"+(i<lvl?"f":"")+"'></i>";
-      r.appendChild(el("div","nm","<b>"+M.ru+"</b><s>"+M.note+"</s><div class='dots'>"+dots+"</div>"));
+      /* точка залита — уровень стоит на корабле, обведена — куплен, но снят */
+      let dots="";for(let i=0;i<4;i++)dots+="<i class='"+(i<lvl?"f":(i<own?"o":""))+"'></i>";
+      r.appendChild(el("div","nm","<b>"+M.ru+"</b><s>"+M.note+
+        (own>lvl?" · снято "+(own-lvl):"")+"</s><div class='dots'>"+dots+"</div>"));
+      const box=el("div","modbtns");
+      if(lvl>0){
+        const bm=el("button","act sm","−");
+        bm.title="снять уровень";
+        bm.onclick=()=>{G.mods[k]--;afterFitChange();renderTab();};
+        box.appendChild(bm);
+      }
+      if(lvl<own){
+        const bp=el("button","act sm","+");
+        bp.title="поставить уровень";
+        bp.disabled=capUsed()+1>cap;
+        bp.onclick=()=>{
+          if(capUsed()+1>cap){say("Не хватает места в оснастке");return;}
+          G.mods[k]++;afterFitChange();renderTab();};
+        box.appendChild(bp);
+      }
       const b=el("button","act"+(max?"":" gold"),max?"МАКСИМУМ":cost.toLocaleString("ru")+" кр");
       b.disabled=max||G.credits<cost;
-      b.onclick=()=>{G.credits-=cost;G.mods[k]++;
-        const ns=stat();G.fuel=Math.min(G.fuel,ns.fuelMax);
-        tell("money",M.ru+" → ур."+G.mods[k]+" · −"+cost.toLocaleString("ru")+" кр",
-             M.ru+"\nуровень "+G.mods[k]);
+      b.onclick=()=>{G.credits-=cost;G.modsOwned[k]++;
+        if(capUsed()+1<=cap)G.mods[k]++;
+        else say("Куплено, но места в оснастке нет\nснимите что-нибудь");
+        afterFitChange();
+        tell("money",M.ru+" → ур."+G.modsOwned[k]+" · −"+cost.toLocaleString("ru")+" кр",
+             M.ru+"\nуровень "+G.modsOwned[k]);
         renderTab();};
-      r.appendChild(b);$body.appendChild(r);
+      box.appendChild(b);
+      r.appendChild(box);$body.appendChild(r);
     }
+
+    /* ── слоты корпуса ── */
+    const slots=slotsOf(G.shipId),fm=G.fit[G.shipId]||{};
+    $body.appendChild(el("div","sec","СЛОТЫ КОРПУСА «"+shipData(G.shipId).ru.toUpperCase()+"»"));
+    slots.forEach((kind,i)=>{
+      const K=PART_KINDS[kind],cur=fm[i]!=null?partById(fm[i]):null;
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b style='color:"+K.col+"'>"+(i+1)+" · "+K.ru+"</b><s>"+
+        (cur?cur.name+" · "+TIER_RU[cur.tier]+" · место "+cur.cap+"<br>"+
+             cur.aff.map(a=>"<span style='color:"+(a.v>0?"#8fd08a":"#ff9d7a")+"'>"+affLabel(a)+"</span>").join(" · ")
+            :"пусто · "+K.note)+"</s>"));
+      if(cur){
+        const b=el("button","act sm","СНЯТЬ");
+        b.onclick=()=>{unfitPart(i);renderTab();};
+        r.appendChild(b);
+      }
+      $body.appendChild(r);
+    });
+
+    /* ── инвентарь ── */
+    $body.appendChild(el("div","sec","ИНВЕНТАРЬ ЧАСТЕЙ: "+G.inv.length+" / "+PART_MAX));
+    if(!G.inv.length)$body.appendChild(el("div","row","<div class='nm dim'><s>пусто · части падают с пиратов и продаются на станциях</s></div>"));
+    for(const p of G.inv.slice().sort((a,b)=>b.tier-a.tier)){
+      const K=PART_KINDS[p.kind],on=isFitted(p.id);
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b style='color:"+K.col+"'>"+p.name+"</b><s>"+
+        K.ru.toLowerCase()+" · "+TIER_RU[p.tier]+" · место "+p.cap+(on?" · <b>установлена</b>":"")+"<br>"+
+        p.aff.map(a=>"<span style='color:"+(a.v>0?"#8fd08a":"#ff9d7a")+"'>"+affLabel(a)+"</span>").join(" · ")+"</s>"));
+      const box=el("div","modbtns");
+      if(!on){
+        /* первый свободный подходящий слот, иначе первый подходящий вообще */
+        let target=-1;
+        for(let i=0;i<slots.length;i++)if(slots[i]===p.kind&&fm[i]==null){target=i;break;}
+        if(target<0)for(let i=0;i<slots.length;i++)if(slots[i]===p.kind){target=i;break;}
+        const b=el("button","act sm",target<0?"НЕТ СЛОТА":"СТАВИТЬ");
+        b.disabled=target<0;
+        b.onclick=()=>{
+          if(!fitPart(target,p.id))say("Не хватает места в оснастке\nили слот занят");
+          renderTab();};
+        box.appendChild(b);
+      }
+      r.appendChild(box);$body.appendChild(r);
+    }
+
+    /* ── части в продаже: ассортимент детерминирован seed станции и временным бакетом ── */
+    const offers=stationParts(G.sys);
+    if(offers.length){
+      $body.appendChild(el("div","sec","ЧАСТИ В ПРОДАЖЕ · АССОРТИМЕНТ СМЕНИТСЯ"));
+      for(const o of offers){
+        const K=PART_KINDS[o.part.kind],bought=G.partsBought[o.key];
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b style='color:"+K.col+"'>"+o.part.name+"</b><s>"+
+          K.ru.toLowerCase()+" · "+TIER_RU[o.part.tier]+" · место "+o.part.cap+"<br>"+
+          o.part.aff.map(a=>"<span style='color:"+(a.v>0?"#8fd08a":"#ff9d7a")+"'>"+affLabel(a)+"</span>").join(" · ")+"</s>"));
+        const b=el("button","act"+(bought?"":" gold"),bought?"КУПЛЕНО":o.price.toLocaleString("ru")+" кр");
+        b.disabled=!!bought||G.credits<o.price;
+        b.onclick=()=>{
+          G.credits-=o.price;G.partsBought[o.key]=1;
+          addPart(genPart(o.part.seed,o.part.tier,o.part.kind));
+          tell("money","Куплена часть: "+o.part.name+" · −"+o.price.toLocaleString("ru")+" кр",
+               o.part.name+"\nв инвентаре");
+          renderTab();};
+        r.appendChild(b);$body.appendChild(r);
+      }
+    }
+
     $body.appendChild(el("div","sec","ТЕКУЩИЕ ХАРАКТЕРИСТИКИ"));
     const s2=stat(),r=el("div","row");
     r.appendChild(el("div","nm","<s>тяга "+s2.thr.toFixed(2)+" · поворот "+s2.turn.toFixed(2)+
       "<br>бак "+s2.fuelMax+" · трюм "+s2.cargoMax+" · корпус "+s2.hullMax+
-      "<br>бур ×"+s2.drill.toFixed(2)+" · прыжок "+s2.jump.toFixed(1)+" пк</s>"));
+      (s2.shieldMax?" · щит "+s2.shieldMax:"")+
+      "<br>бур ×"+s2.drill.toFixed(2)+" · прыжок "+s2.jump.toFixed(1)+" пк"+
+      (s2.armed?"<br>урон "+s2.dmg.toFixed(1)+" · откат "+s2.cool:"")+"</s>"));
     $body.appendChild(r);
   }
   else if(tab==="lab"){
@@ -5127,6 +5555,7 @@ function wreck(){
 /* ══════════════ телеметрия ══════════════ */
 const $f=document.querySelector("#fbar i"),$h=document.querySelector("#hbar i"),$cg=document.querySelector("#cbar i");
 const $fb=document.getElementById("fbar"),$hb=document.getElementById("hbar");
+const $sh=document.querySelector("#sbar i"),$sg=document.getElementById("sgauge");
 const $place=document.getElementById("place"),$sub=document.getElementById("sub");
 const $msg=document.getElementById("msg"),$prompt=document.getElementById("prompt");
 const $bThr=document.querySelector("[data-k=thrust]"),$bBrk=document.querySelector("[data-k=brake]");
@@ -5136,6 +5565,8 @@ function hud(){
   $f.style.width=clamp(G.fuel/st.fuelMax*100,0,100).toFixed(1)+"%";
   $h.style.width=clamp(G.hull/st.hullMax*100,0,100).toFixed(1)+"%";
   $cg.style.width=clamp(held()/st.cargoMax*100,0,100).toFixed(1)+"%";
+  $sg.style.display=st.shieldMax>0?"":"none";
+  if(st.shieldMax>0)$sh.style.width=clamp(G.shield/st.shieldMax*100,0,100).toFixed(1)+"%";
   $fb.classList.toggle("low",G.fuel/st.fuelMax<.2);
   $hb.classList.toggle("low",G.hull/st.hullMax<.3);
   let a="—",b="—";

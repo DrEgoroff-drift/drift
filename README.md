@@ -25,7 +25,8 @@
 
 **Getting stronger**
 - **Ships** — eight hand-built hulls plus one-off procedurally generated ships that turn up at some stations and rotate over time.
-- **Modules** — seven upgrade tracks (engine, tanks, hold, armor, drill, hyperdrive, gun), four levels each.
+- **Modules** — seven upgrade tracks (engine, tanks, hold, armor, drill, hyperdrive, gun), four levels each. Buying a level is permanent, but fitting it is not: modules can be pulled off and put back at no cost.
+- **Parts and rigging capacity** — every hull has a rigging budget that modules *and* parts draw from, so you can't run everything at once. Parts are generated: six categories (gun, shield, engine, plating, reactor, utility), one to three affixes, and the strong ones come with a real drawback — a drill that outpaces your turn rate, a shield that costs you thrust. They drop from destroyed pirates as containers you have to fly through and collect, and stations sell a rotating handful. Hulls have their own slot layouts, so a courier fields two guns where a freighter fields plating and utility bays. Shields absorb damage before your hull and recharge once nobody is shooting at you.
 - **Tech tree** — research paid for with survey data, including repeatable tracks that keep scaling so there's always something left to chase.
 - **Return beacon** — researched tech that teleports you back to your lander from anywhere on the planet, on a cooldown.
 
