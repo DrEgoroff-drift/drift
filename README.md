@@ -5,14 +5,17 @@
 ## Gameplay
 
 **Flying**
-- **Autopilot** — tap any object to approach, close in, and dock automatically.
-- **Manual control** — thrust, a brake that kills velocity outright, and turning with real angular inertia: the ship carves an arc and banks into it rather than pivoting on the spot.
-- **Branching star map** — systems are laid out organically with connecting lanes, each with generated flavor text describing its worlds, belt, and station.
+- **Autopilot** — tap any object to approach, close in, and dock automatically. Near a planet or moon it doesn't just get close and stall out — it captures a stable circular orbit around the body and holds it (co-rotating, no drift) until you throttle, brake or turn manually.
+- **Manual control** — thrust, a brake that kills velocity outright, and turning with real angular inertia: the ship carves an arc and banks into it rather than pivoting on the spot. Every key is rebindable (separate layouts for flight/planet and for the belt) from Settings, and on-screen buttons can auto-hide whenever you're driving from a keyboard or mouse.
+- **Branching star map** — systems are laid out organically with connecting lanes, each with generated flavor text describing its worlds, belt, and station. Planets follow real elliptical (Keplerian) orbits at a slower, calmer pace; gas giants dwarf rocky worlds, and many planets carry their own moons — pick a moon or the planet itself to land on.
+- **Gravitic anchor** — drift too far from the star and a gentle pull (plus an on-screen compass to the star, station and current target) brings you back, so the open galaxy never turns into getting lost in empty space. A one-tap "TO STAR" autopilot works from anywhere.
+- **Stranded restart** — run out of fuel on a planet with no way to refuel, and you can pay for an emergency evacuation to the nearest station; without the credits for that, you get a fresh starter ship back at the origin system rather than a dead save.
 
 **Getting ore**
-- **Surface prospecting** — land on generated terrain (ridges, mesas, dunes, cratered plains and canyons, all mixed to suit the world type), mine visible deposits, and scan alien flora and fauna for research data.
-- **Wildlife** — harmless generated creatures graze on the surface and wander off if you crowd them. The same stock underground is not harmless: burrowers bite through your suit. An EMP pulse stuns them, and a stunned one can be sampled for carbon and rare xenobiome, which no rock or asteroid will ever yield.
-- **Deep shafts** — sink a mine anywhere on bare ground and tunnel down through three depth tiers. Deeper rock is roughly 2× and 4× richer, gated behind drilling tech, and pressured by suit wear and occasional cave-ins. Damage underground costs your suit, never your ship.
+- **Surface prospecting** — land on generated terrain (ridges, mesas, dunes, cratered plains and canyons, all mixed to suit the world type), mine visible deposits, and scan alien flora and fauna for research data. Click/tap-to-walk works alongside the keyboard, and launch/evacuation lives on its own hold-to-confirm button so mining next to the lander can't accidentally send you back to orbit.
+- **Wildlife** — harmless generated creatures graze on the surface and wander off if you crowd them. Every planet has its own "genome" — a bias toward certain plant and animal forms, sizes and hues — so worlds actually look different from each other, from ankle-high moss and crystal druses to towering giant trees and oversized fauna. The same stock underground is not harmless: burrowers bite through your suit. An EMP pulse stuns them, and a stunned one can be sampled for carbon and rare xenobiome, which no rock or asteroid will ever yield.
+- **Deep shafts** — sink a mine anywhere on bare ground and tunnel down through three depth tiers. Ore now lives only in scattered veins (highlighted through the rock once you're close, or from further away with the geo-scanner) rather than everywhere, so finding a rich pocket is the point. Deeper rock is roughly 2× and 4× richer, gated behind drilling tech, and pressured by suit wear and occasional cave-ins. Damage underground costs your suit, never your ship.
+- **Cave systems** — some planets hide a walkable cave mouth alongside the mine shaft: a winding natural passage (not a dig) lit only by your suit lamp and glowing cave flora, home to its own hostile fauna and a one-off data find at the far end.
 - **Asteroid belts** — a full 3D flight mode flown from a procedurally built cockpit. Pitch, yaw and roll with inertia; the horizon banks into your turns. Rocks are scattered far enough that reaching them is the trip, and they break into drifting debris when you mine them out or shoot them apart — the chunks are harmless and fade on their own.
 
 **Making it pay**
@@ -33,7 +36,8 @@
 - **Ship's log** — a collapsible panel that records what actually happened: kills, drone deliveries, sales, purchases, research, discoveries, jumps, cave-ins and wrecks. It persists with your save, so you can come back after a week and read what you were doing.
 
 **Looking at it**
-- Every hull is generated from its seed — a multi-station fuselage profile, swept wings, engine nacelles, canopy, panel lines, hull greebles, livery and blinking navigation lights. Pirates get their own hulls the same way, so no two raiders look alike.
+- Every hull is generated from its seed — a multi-station fuselage profile, swept wings, engine nacelles, canopy, panel lines, hull greebles, livery and blinking navigation lights. Banking is a real roll now — the silhouette squashes and a shaded belly peeks out from the side you're leaning into, instead of just skewing sideways. Pirates get their own hulls the same way, so no two raiders look alike.
+- A graphics settings page lets you dial draw distance, model detail, particle density and surface plant/animal density up or down (with quick presets), to trade looks for performance on slower machines.
 - The belt cockpit is generated too: canopy frame, overhead thruster housings, side screens, a raised console with button grids, and a yoke and throttle that move with your inputs. Its proportions follow the ship you are flying.
 - The ship that sets down on a planet is the ship you actually fly — same generated hull, on deployed landing legs.
 - Plants, creatures and boulders are all generated per world: branching stems with ferns, pods or crowns, critters with their own colours, crests, tails and leg counts, and layered strata showing through the rock.
