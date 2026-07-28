@@ -122,6 +122,12 @@
   .dots i.f{background:var(--phos)}
   .dots i.o{background:rgba(127,230,216,.28)}
   .modbtns{display:flex;gap:6px;align-items:center;flex-shrink:0}
+  input.vol{-webkit-appearance:none;appearance:none;flex:0 0 118px;height:3px;
+    background:rgba(255,255,255,.14);outline:none;margin:0}
+  input.vol::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+    background:var(--phos);border-radius:50%;cursor:pointer}
+  input.vol::-moz-range-thumb{width:14px;height:14px;background:var(--phos);
+    border:0;border-radius:50%;cursor:pointer}
   .act.sm{padding:8px 10px;min-width:auto}
   .sec{padding:14px 16px 6px;color:var(--dim);font-size:9px;letter-spacing:.16em;line-height:1.7}
 
@@ -1335,7 +1341,7 @@ const G={
   opts:{easyLand:true,autoDock:true,invX:false,invY:false,invYaw:false,lookSens:1,
     keys:{main:{},belt:{}},pads:"auto",padSize:1,
     gfx:{draw:1,detail:1,particles:1,plants:1},
-    audio:{on:true,music:.3,sfx:.6}},
+    audio:{on:true,music:.6,sfx:.6,engine:.4}},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,
   pirates:[],shots:[],log:[],logNew:0
@@ -1391,19 +1397,22 @@ function initAudio(){
     comp.attack.value=.004;comp.release.value=.18;
     const m=c.createGain();m.gain.value=.9;
     m.connect(comp);comp.connect(c.destination);
-    const mus=c.createGain(),sf=c.createGain();
-    mus.connect(m);sf.connect(m);
-    SND.ctx=c;SND.master=m;SND.music=mus;SND.sfx=sf;SND.ready=true;
+    /* двигатель — своя шина: он звучит непрерывно и потому громче всего мешает,
+       регулировать его вместе с остальными эффектами оказалось нельзя */
+    const mus=c.createGain(),sf=c.createGain(),en=c.createGain();
+    mus.connect(m);sf.connect(m);en.connect(m);
+    SND.ctx=c;SND.master=m;SND.music=mus;SND.sfx=sf;SND.eng=en;SND.ready=true;
     applyVolumes();
     return c;
   }catch(e){return null;}
 }
 function applyVolumes(){
   if(!SND.ready)return;
-  const a=G.opts.audio||{music:.3,sfx:.6,on:true};
+  const a=G.opts.audio||{music:.6,sfx:.6,engine:.4,on:true};
   const on=a.on!==false?1:0;
-  SND.music.gain.value=(a.music==null?.3:a.music)*on;
+  SND.music.gain.value=(a.music==null?.6:a.music)*on;
   SND.sfx.gain.value=(a.sfx==null?.6:a.sfx)*on;
+  SND.eng.gain.value=(a.engine==null?.4:a.engine)*on;
 }
 function unlockAudio(){
   if(!audioOn())return;
@@ -1436,14 +1445,22 @@ function noise(c){
   s.buffer=noiseBuf;s.loop=true;
   return s;
 }
+/* Учёт голосов с двойной страховкой. Основной путь — событие окончания
+   источника. Но если рецепт забудет позвать freeVoice (так уже случилось
+   с тревогой), слот утечёт навсегда и после VOICE_MAX срабатываний звук
+   в игре умолкнет целиком — поэтому есть ещё и аварийный сброс по времени. */
+let curTok=null;
 function voice(){
   if(SND.voices>=VOICE_MAX)return false;
   SND.voices++;
+  const tk=curTok={freed:false};
+  setTimeout(()=>{if(!tk.freed){tk.freed=true;SND.voices=Math.max(0,SND.voices-1);}},4000);
   return true;
 }
-function freeVoice(node,t){
-  /* releaseVoice по факту окончания источника, а не по таймеру */
-  node.onended=()=>{SND.voices=Math.max(0,SND.voices-1);};
+function freeVoice(node){
+  const tk=curTok;
+  if(!node||!tk)return;
+  node.onended=()=>{if(!tk.freed){tk.freed=true;SND.voices=Math.max(0,SND.voices-1);}};
 }
 /* ── эффекты ── */
 const SFX={
@@ -1531,6 +1548,7 @@ const SFX={
   },
   alarm(o){
     const c=SND.ctx,t=c.currentTime;
+    let lastOsc=null;
     for(let i=0;i<2;i++){
       const osc=c.createOscillator(),g=c.createGain();
       osc.type="square";
@@ -1541,7 +1559,11 @@ const SFX={
       g.gain.exponentialRampToValueAtTime(0.0001,t0+.13);
       osc.connect(g);g.connect(SND.sfx);
       osc.start(t0);osc.stop(t0+.16);
+      lastOsc=osc;
     }
+    /* голос освобождает последний из двух гудков: без этого каждая тревога
+       навсегда съедала слот и после 18 штук звук в игре умолкал целиком */
+    freeVoice(lastOsc);
   },
   jump(){
     const c=SND.ctx,t=c.currentTime;
@@ -1561,7 +1583,8 @@ function sfx(name,o){
   if(!audioOn()||!SND.ready||!SFX[name])return;
   if(SND.ctx.state!=="running")return;
   if(!voice())return;                  // полифония кончилась — молча пропускаем
-  try{SFX[name](o);}catch(e){SND.voices=Math.max(0,SND.voices-1);}
+  try{SFX[name](o);}
+  catch(e){if(curTok&&!curTok.freed){curTok.freed=true;SND.voices=Math.max(0,SND.voices-1);}}
 }
 /* ── непрерывный гул двигателя: один голос, живёт всё время полёта ── */
 function engineLoop(level,tone){
@@ -1569,19 +1592,24 @@ function engineLoop(level,tone){
   const c=SND.ctx;
   let L=SND.loops.engine;
   if(!L){
-    const n=noise(c),g=c.createGain(),lp=c.createBiquadFilter(),
+    const n=noise(c),g=c.createGain(),lp=c.createBiquadFilter(),hp=c.createBiquadFilter(),
           osc=c.createOscillator(),og=c.createGain();
     lp.type="lowpass";lp.frequency.value=340;
+    /* без среза низов двигатель превращался в сплошное гудение,
+       которое перекрывало и музыку, и всё остальное */
+    hp.type="highpass";hp.frequency.value=110;
     g.gain.value=0;
-    osc.type="sawtooth";osc.frequency.value=52;og.gain.value=.35;
-    n.connect(lp);lp.connect(g);osc.connect(og);og.connect(g);g.connect(SND.sfx);
+    /* пила давала «дребезг»; треугольник тише и чище, и его доля втрое меньше */
+    osc.type="triangle";osc.frequency.value=78;og.gain.value=.12;
+    n.connect(lp);lp.connect(hp);osc.connect(og);og.connect(hp);hp.connect(g);g.connect(SND.eng);
     n.start();osc.start();
-    L=SND.loops.engine={n,g,lp,osc,og};
+    L=SND.loops.engine={n,g,lp,hp,osc,og};
   }
   const t=c.currentTime;
-  L.g.gain.setTargetAtTime(clamp(level,0,1)*.3,t,.09);
-  L.lp.frequency.setTargetAtTime(220+level*760,t,.12);
-  L.osc.frequency.setTargetAtTime(40+(tone||0)*36,t,.12);
+  L.g.gain.setTargetAtTime(clamp(level,0,1)*.15,t,.09);
+  L.lp.frequency.setTargetAtTime(280+level*900,t,.12);
+  L.hp.frequency.setTargetAtTime(150-level*60,t,.12);
+  L.osc.frequency.setTargetAtTime(66+(tone||0)*34,t,.12);
 }
 function stopEngine(){
   const L=SND.loops.engine;
@@ -1640,7 +1668,7 @@ function planetScene(p){
     timbre:r()<.5?"triangle":"sine"};
 }
 const MUS={ready:false,key:null,sc:null,layers:{},pad:null,timer:null,
-  next:0,step:0,intensity:0,iTarget:0};
+  next:0,step:0,intensity:0,iTarget:0,phrase:null,pi:0,shift:0};
 const MUS_LAYERS=["pad","bass","motif","perc","air"];
 function midiHz(n){return 110*Math.pow(2,n/12);}   // 0 = A2
 function musicInit(){
@@ -1650,11 +1678,15 @@ function musicInit(){
     const g=c.createGain();g.gain.value=0;g.connect(SND.music);
     MUS.layers[k]=g;
   }
-  /* дрон — три расстроенных генератора, живут постоянно и только перестраиваются */
+  /* дрон — три расстроенных генератора, живут постоянно и только перестраиваются.
+     Верхний срез оставляет ему воздух, нижний убирает бубнёж, в котором
+     раньше тонула мелодия. */
   const oscs=[],base=c.createGain();
   base.gain.value=.5;base.connect(MUS.layers.pad);
+  const hp=c.createBiquadFilter();
+  hp.type="highpass";hp.frequency.value=130;hp.connect(base);
   const lp=c.createBiquadFilter();
-  lp.type="lowpass";lp.frequency.value=700;lp.connect(base);
+  lp.type="lowpass";lp.frequency.value=1100;lp.connect(hp);
   for(let i=0;i<3;i++){
     const o=c.createOscillator(),g=c.createGain();
     o.type=i?"sawtooth":"triangle";
@@ -1690,6 +1722,12 @@ function musPerc(when,peak){
 function musicSetScene(key,scene){
   if(MUS.key===key)return;
   MUS.key=key;MUS.sc=scene;
+  /* своя фраза на локацию: seed из ключа сцены, поэтому одна и та же планета
+     всегда встречает одной и той же мелодией */
+  let ks=0;for(let i=0;i<key.length;i++)ks=(ks*31+key.charCodeAt(i))|0;
+  MUS.phrase=makePhrase(hashi(ks,scene.bpm,SCALE_KEYS.indexOf(scene.scale)+1),
+                        SCALES[scene.scale]||SCALES.minor);
+  MUS.pi=0;MUS.shift=0;
   if(!MUS.ready)return;
   const c=SND.ctx,t=c.currentTime;
   const sc=SCALES[scene.scale]||SCALES.minor;
@@ -1707,11 +1745,34 @@ function layerLevel(k,scene){
   const w=scene[k]||0;
   /* перкуссия и плотность мотива подчиняются напряжению: в бою музыка
      собирается сама, а после — расходится, без отдельного «боевого трека» */
-  if(k==="perc")return (w+MUS.intensity*.5)*.16;
-  if(k==="motif")return (w+MUS.intensity*.25)*.13;
-  if(k==="pad")return w*.2;
-  if(k==="bass")return w*.2;
-  return w*.09;
+  if(k==="perc")return (w+MUS.intensity*.5)*.2;
+  /* мелодия — то, ради чего музыка вообще есть: она должна быть отчётливо
+     слышна, а не угадываться под дроном, поэтому её уровень заметно выше */
+  if(k==="motif")return (w+MUS.intensity*.25)*.55;
+  if(k==="pad")return w*.16;
+  if(k==="bass")return w*.22;
+  return w*.22;
+}
+/* ── фраза: короткая мелодия, выведенная из seed сцены ──
+   Раньше мотив был случайными нотами и потому не запоминался. Теперь у каждой
+   локации и каждой планеты своя узнаваемая фраза, которая повторяется с вариациями. */
+function makePhrase(seed,steps){
+  const r=rng(seed>>>0||1);
+  const len=[8,12,16][Math.floor(r()*3)];
+  const out=[];
+  let deg=Math.floor(r()*steps.length);
+  for(let i=0;i<len;i++){
+    if(r()<.24){out.push(null);continue;}           // пауза — фразе нужен воздух
+    /* ходим по ступеням лада шагами, а не прыгаем случайно: так получается
+       мелодия, а не набор нот. От краёв диапазона отражаемся, а не упираемся —
+       при обрезке мелодия залипала на одной ноте. */
+    deg+=Math.floor(r()*5)-2;
+    if(deg<0)deg=-deg;
+    if(deg>steps.length-1)deg=2*(steps.length-1)-deg;
+    deg=clamp(deg,0,steps.length-1);
+    out.push({deg,oct:r()<.22?1:0,len:1+(r()<.3?1:0)});
+  }
+  return out;
 }
 /* планировщик на аудио-часах: раскладывает ноты вперёд, поэтому просадки FPS
    музыку не дёргают — она вообще не привязана к requestAnimationFrame */
@@ -1725,10 +1786,19 @@ function musicTick(){
     const r=rng(hashi(s,MUS.key.length*31,777));
     if(sc.bass>0&&s%8===0)
       musNote("bass",midiHz(sc.root-12),t,spb*3.4,"triangle",.5,260);
-    if(sc.motif>0&&r()<.26+MUS.intensity*.3){
-      const deg=steps[Math.floor(r()*steps.length)];
-      const oct=12*(1+(r()<.35?1:0));
-      musNote("motif",midiHz(sc.root+deg+oct),t,spb*(1.2+r()*1.6),sc.timbre,.34,3600);
+    /* мелодия идёт по фразе, а не наугад; каждый проход фраза может сместиться
+       на ступень — так она не приедается, оставаясь узнаваемой */
+    if(sc.motif>0&&MUS.phrase&&MUS.phrase.length){
+      const note=MUS.phrase[MUS.pi%MUS.phrase.length];
+      if(MUS.pi>0&&MUS.pi%MUS.phrase.length===0)
+        MUS.shift=(r()<.45)?[0,2,-2,4][Math.floor(r()*4)]:0;
+      MUS.pi++;
+      if(note){
+        const di=clamp(note.deg+MUS.shift,0,steps.length-1);
+        /* на две октавы выше тоники: там мелодию слышно поверх дрона и баса */
+        musNote("motif",midiHz(sc.root+steps[di]+24+note.oct*12),
+                t,spb*(note.len*.9),sc.timbre,.5,4200);
+      }
     }
     if((sc.perc>0||MUS.intensity>.25)&&s%4===0)
       musPerc(t,.5+MUS.intensity*.4);
@@ -2186,9 +2256,10 @@ function applySave(s){
   if(!G.opts.pads)G.opts.pads="auto";if(!G.opts.padSize)G.opts.padSize=1;
   if(!G.opts.gfx||typeof G.opts.gfx!=="object")G.opts.gfx={draw:1,detail:1,particles:1,plants:1};
   for(const k of["draw","detail","particles","plants"])if(!G.opts.gfx[k])G.opts.gfx[k]=1;
-  if(!G.opts.audio||typeof G.opts.audio!=="object")G.opts.audio={on:true,music:.3,sfx:.6};
-  if(typeof G.opts.audio.music!=="number")G.opts.audio.music=.3;
+  if(!G.opts.audio||typeof G.opts.audio!=="object")G.opts.audio={on:true,music:.6,sfx:.6,engine:.4};
+  if(typeof G.opts.audio.music!=="number")G.opts.audio.music=.6;
   if(typeof G.opts.audio.sfx!=="number")G.opts.audio.sfx=.6;
+  if(typeof G.opts.audio.engine!=="number")G.opts.audio.engine=.4;
   invalidateKeyMap();applyPadMode();applyPadSize();applyVolumes();
   return true;
 }
@@ -6118,21 +6189,30 @@ function renderOpts(){
   mk("Звук","всё синтезируется на лету — ни одного звукового файла",
     audioOn(),()=>{G.opts.audio.on=!audioOn();applyVolumes();
       if(audioOn())unlockAudio();else{stopEngine();musicStop();}});
-  /* шаги совпадают со значениями по умолчанию — иначе кнопка врёт про текущий уровень */
-  const VOL=[[0,"ВЫКЛ"],[.3,"ТИХО"],[.6,"СРЕДНЕ"],[.9,"ГРОМКО"]];
-  const volRow=(title,note,key)=>{
+  /* ползунок, а не перебор шагов: три источника приходится сводить друг с другом,
+     и четырёх ступеней для этого мало */
+  const volRow=(title,note,key,onTest)=>{
     const rr=el("div","row");
-    rr.appendChild(el("div","nm","<b>"+title+"</b><s>"+note+"</s>"));
-    const i0=VOL.findIndex(v=>Math.abs(v[0]-G.opts.audio[key])<.02);
-    const bb=el("button","act gold",VOL[i0<0?2:i0][1]);
-    bb.onclick=()=>{G.opts.audio[key]=VOL[((i0<0?2:i0)+1)%VOL.length][0];
+    const lab=el("div","nm","<b>"+title+"</b><s>"+note+"</s>");
+    rr.appendChild(lab);
+    const val=el("div","qt",Math.round(G.opts.audio[key]*100)+"%");
+    const sl=document.createElement("input");
+    sl.type="range";sl.min=0;sl.max=100;sl.step=5;
+    sl.value=Math.round(G.opts.audio[key]*100);
+    sl.className="vol";
+    sl.oninput=()=>{
+      G.opts.audio[key]=(+sl.value)/100;
+      val.textContent=sl.value+"%";
       applyVolumes();unlockAudio();
-      if(key==="sfx")sfx("ui",{f:900});
-      renderOpts();};
-    rr.appendChild(bb);$optBody.appendChild(rr);
+    };
+    sl.onchange=()=>{if(onTest)onTest();};
+    rr.appendChild(sl);rr.appendChild(val);
+    $optBody.appendChild(rr);
   };
-  volRow("Громкость музыки","фоновая музыка своя в каждой локации","music");
-  volRow("Громкость эффектов","двигатель, выстрелы, бур, шаги","sfx");
+  volRow("Музыка","фоновая мелодия, своя в каждой локации и на каждой планете","music");
+  volRow("Эффекты","выстрелы, бур, шаги, интерфейс","sfx",()=>sfx("ui",{f:900}));
+  volRow("Двигатель","гул тяги — звучит только когда двигатель работает","engine",()=>{
+    engineLoop(1,.5);setTimeout(stopEngine,700);});
   $optBody.appendChild(el("div","sec","ГРАФИКА"));
   const GLV=[[.6,"НИЗКАЯ"],[1,"СРЕДНЯЯ"],[1.5,"ВЫСОКАЯ"],[2,"МАКСИМУМ"]];
   const gfxRow=(title,note,key)=>{
@@ -6339,14 +6419,15 @@ function audioTick(dt){
     MUS.layers.perc.gain.setTargetAtTime(layerLevel("perc",MUS.sc),t,.6);
     MUS.layers.motif.gain.setTargetAtTime(layerLevel("motif",MUS.sc),t,.6);
   }
-  /* двигатель: в системе от тяги, в поясе — постоянный ход */
+  /* двигатель звучит только когда реально работает: постоянный холостой гул
+     превращался в бесконечное гудение и глушил всю остальную звуковую картину */
   if(G.mode==="system"||G.mode==="dock"){
-    const on=(keys.thrust||G.ap)&&G.fuel>0;
-    engineLoop(on?1:(G.mode==="dock"?0:.12),G.mods.engine/4);
+    const on=(keys.thrust||G.ap)&&G.fuel>0&&G.mode!=="dock";
+    if(on)engineLoop(1,G.mods.engine/4);else stopEngine();
   }else if(G.mode==="belt"&&G.belt){
-    engineLoop(keys.thrust?.9:.3,G.mods.engine/4);
+    if(keys.thrust)engineLoop(.9,G.mods.engine/4);else stopEngine();
   }else if(G.mode==="landing"&&G.land){
-    engineLoop(keys.thrust?1:.1,.5);
+    if(keys.thrust)engineLoop(1,.5);else stopEngine();
   }else stopEngine();
   /* шаги: в такт уже существующей фазе ходьбы, а не по своему таймеру */
   let ph=null,ground=420;
