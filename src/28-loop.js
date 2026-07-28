@@ -64,9 +64,11 @@ function hud(){
   else if(G.mode==="dig")document.querySelector("[data-k=act]").textContent="ВНИЗ";
   else document.querySelector("[data-k=act]").textContent="ДЕЙСТВ";
   if(G.mode==="dig"){
-    $bBrk.textContent="ВНИЗ";
-    $bBrk.style.opacity=".45";
+    /* «вниз» уже висит на большой кнопке — второй такой же рядом только путает.
+       Клавиша S при этом продолжает работать, раскладка WASD не рвётся. */
+    $bBrk.style.display="none";
   }else{
+    $bBrk.style.display="";
     $bBrk.textContent="ТОРМ";
     $bBrk.style.opacity=G.mode==="surface"?".3":"1";
   }
