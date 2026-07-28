@@ -1,6 +1,7 @@
 /* ══════════════ станция ══════════════ */
 const $st=document.getElementById("station"),$body=document.getElementById("stBody");
 let tab="market";
+let fuseSel=[];   // два корпуса, выбранных под сплав в лаборатории
 function openStation(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
   logAdd("dim","Стыковка с «"+G.st.name+"»");
@@ -301,6 +302,54 @@ function renderTab(){
              "Изучено:\n"+T.ru+(T.max?"\nуровень "+techLv(k):""));
         renderTab();
       };
+      r.appendChild(b);$body.appendChild(r);
+    }
+  }
+  else if(tab==="fuse"){
+    /* сплав корпусов: два корабля из ангара и редкое сырьё — на выходе один
+       новый, исходные расходуются. Прибавка тает с каждым поколением. */
+    const c=fuseCost();
+    $body.appendChild(el("div","sec","СПЛАВ КОРПУСОВ · ПОКОЛЕНИЕ "+(fuseGen()+1)+
+      " · ИСХОДНЫЕ КОРАБЛИ РАСХОДУЮТСЯ БЕЗВОЗВРАТНО"));
+    const free=Object.keys(G.owned).filter(id=>!G.crew.some(o=>o.shipId===id));
+    if(!fuseSel)fuseSel=[];
+    fuseSel=fuseSel.filter(id=>free.indexOf(id)>=0);
+    for(const id of free){
+      const S=shipData(id);if(!S)continue;
+      const on=fuseSel.indexOf(id)>=0;
+      const r=el("div","row");
+      r.appendChild(shipThumb(id,52,42));
+      r.appendChild(el("div","nm","<b style='color:"+S.col+"'>«"+S.ru+"»</b><s>"+
+        "тяга "+S.thr.toFixed(2)+" · поворот "+S.turn.toFixed(2)+" · трюм "+S.cargo+
+        " · бак "+S.fuel+" · корпус "+S.hull+(id===G.shipId?"<br>сейчас в рейсе — сплав пересадит вас на результат":"")+"</s>"));
+      const b=el("button","act"+(on?" gold":""),on?"ВЫБРАН":"ВЗЯТЬ");
+      b.onclick=()=>{
+        if(on)fuseSel.splice(fuseSel.indexOf(id),1);
+        else if(fuseSel.length<2)fuseSel.push(id);
+        else{fuseSel.shift();fuseSel.push(id);}
+        renderTab();
+      };
+      r.appendChild(b);$body.appendChild(r);
+    }
+    const need=el("div","row");
+    need.appendChild(el("div","nm","<b>Стоимость плавки</b><s>"+
+      c.credits.toLocaleString("ru")+" кр · сплавы "+G.cargo.alloy+"/"+c.alloy+
+      " · летучие газы "+G.cargo.volatiles+"/"+c.volatiles+
+      " · кристаллы льда "+G.cargo.icecrys+"/"+c.icecrys+
+      "<br>лишнее редкое сырьё в трюме идёт в прибавку, но каждое поколение прибавляет меньше</s>"));
+    const bf=el("button","act gold","СПЛАВИТЬ");
+    bf.disabled=fuseSel.length!==2||!fuseAffordable(c);
+    bf.onclick=()=>{if(fuseShips(fuseSel[0],fuseSel[1])){fuseSel=[];renderTab();}};
+    need.appendChild(bf);$body.appendChild(need);
+    $body.appendChild(el("div","sec","СБОРКА ЧАСТЕЙ ИЗ РЕДКОГО СЫРЬЯ · СТОК ДЛЯ ИЗЛИШКОВ"));
+    for(const spec of CRAFT_TIERS){
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+spec.ru[0].toUpperCase()+spec.ru.slice(1)+"</b><s>"+
+        TIER_RU[spec.tier]+" · "+Object.keys(spec.cost).map(k=>
+          k==="credits"?spec.cost[k]+" кр":RES[k].ru.toLowerCase()+" "+spec.cost[k]).join(" · ")+"</s>"));
+      const b=el("button","act gold","СОБРАТЬ");
+      b.disabled=!craftAffordable(spec.cost)||G.inv.length>=PART_MAX;
+      b.onclick=()=>{craftPart(spec);renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }
   }

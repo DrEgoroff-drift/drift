@@ -12,7 +12,7 @@ const ST_TYPES=[
    mkt:.99,  fuel:.92,  rep:.5,   w:d=>1.5-d*.4},
   {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","barter","crew","bases"],
    mkt:.95,  fuel:1.08, rep:.75,  w:d=>1.2-d*.7},
-  {id:"sci",    ru:"Научная станция",      tabs:["market","lab","mods","crew","bases"],
+  {id:"sci",    ru:"Научная станция",      tabs:["market","lab","fuse","mods","crew","bases"],
    mkt:.93,  fuel:1.08, rep:1,    w:d=>1.2-d*.8},
   {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter","crew","bases"],
    mkt:.9,   fuel:1.22, rep:1.25, w:d=>.2+d*2.8},

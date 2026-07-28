@@ -25,6 +25,78 @@ function genUniqueShip(seed){
   return {ru:genName(r),cls:pick(UNIQUE_TAG,r),seed,thr,turn,fuel,cargo,hull,price,
     col:pick(UNIQUE_COLS,r),note:"Единственный экземпляр. Больше такого не будет — предложение сменится.",unique:true};
 }
+/* ══════════════ лаборатория: сплав двух корпусов ══════════════ */
+/* Статы смешиваются взвешенно, а не суммируются: сильный родитель тянет сильнее,
+   редкое сырьё добавляет процент сверху. Прирост затухает с каждым поколением,
+   иначе за час получается корабль, после которого играть не во что. */
+function fuseGen(){return Math.max(0,G.fuseGen|0);}
+function fuseCost(){
+  const g=fuseGen();
+  return {credits:Math.round(4000*Math.pow(1.8,g)),
+    alloy:6+g*5, volatiles:3+g*3, icecrys:2+g*3};
+}
+function fuseAffordable(c){
+  return G.credits>=c.credits&&G.cargo.alloy>=c.alloy&&
+    G.cargo.volatiles>=c.volatiles&&G.cargo.icecrys>=c.icecrys;
+}
+function fuseShips(idA,idB){
+  const A=shipData(idA),B=shipData(idB);
+  if(!A||!B||idA===idB)return null;
+  const c=fuseCost();
+  if(!fuseAffordable(c))return null;
+  const g=fuseGen();
+  const seed=hashi(hashi(A.seed||1,B.seed||2,0xF05E),Date.now()&0xffff,g);
+  const base=genUniqueShip(seed);
+  /* доля редкого сырья сверх обязательного минимума и есть «бонус за редкость» */
+  const rich=clamp((G.cargo.volatiles+G.cargo.icecrys)/(c.volatiles+c.icecrys+24),0,1);
+  const gain=(.06+rich*.09)*Math.pow(.55,g);   // затухание: второе поколение даёт втрое меньше
+  const mix=(a,b)=>{
+    const w=a>=b?.62:.38;
+    return a*w+b*(1-w);
+  };
+  base.thr=+(mix(A.thr,B.thr)*(1+gain)).toFixed(2);
+  base.turn=+(mix(A.turn,B.turn)*(1+gain)).toFixed(2);
+  base.fuel=Math.round(mix(A.fuel,B.fuel)*(1+gain));
+  base.cargo=Math.round(mix(A.cargo,B.cargo)*(1+gain));
+  base.hull=Math.round(mix(A.hull,B.hull)*(1+gain));
+  base.cls="лабораторный сплав";
+  base.note="Сплав «"+A.ru+"» и «"+B.ru+"». Поколение "+(g+1)+".";
+  base.fused=g+1;
+  const id="f"+seed;
+  G.credits-=c.credits;
+  G.cargo.alloy-=c.alloy;G.cargo.volatiles-=c.volatiles;G.cargo.icecrys-=c.icecrys;
+  delete G.owned[idA];delete G.owned[idB];
+  for(const cw of G.crew)if(cw.shipId===idA||cw.shipId===idB)cw.shipId=null;
+  G.uniqueShips[id]=base;G.owned[id]=true;
+  G.fuseGen=g+1;
+  if(G.shipId===idA||G.shipId===idB)G.shipId=id;
+  invalidateParts();
+  tell("tech","Сплав корпусов: «"+A.ru+"» + «"+B.ru+"» → «"+base.ru+"»",
+       "Сплав готов\n«"+base.ru+"»\nпоколение "+(g+1));
+  return id;
+}
+/* крафт частей — сток для излишков редкого сырья: чем больше вкладываешь,
+   тем выше тир, но случайность и слоты остаются генератора */
+const CRAFT_TIERS=[
+  {tier:1,ru:"рядовая сборка",  cost:{credits:900, alloy:3}},
+  {tier:2,ru:"точная сборка",   cost:{credits:2600,alloy:6, volatiles:4}},
+  {tier:3,ru:"штучная сборка",  cost:{credits:6400,alloy:12,volatiles:8,icecrys:6}}
+];
+function craftAffordable(cost){
+  if(G.credits<cost.credits)return false;
+  for(const k in cost)if(k!=="credits"&&(G.cargo[k]|0)<cost[k])return false;
+  return true;
+}
+function craftPart(spec){
+  if(!craftAffordable(spec.cost))return null;
+  G.credits-=spec.cost.credits;
+  for(const k in spec.cost)if(k!=="credits")G.cargo[k]-=spec.cost[k];
+  const part=genPart(hashi(Date.now()&0xffffff,partSeq*7717,0xC7AF),spec.tier);
+  addPart(part);
+  tell("tech","Собрана часть: "+part.name+" ("+TIER_RU[part.tier]+")",
+       "Часть собрана\n"+part.name);
+  return part;
+}
 function timeBucket(){return Math.floor(Date.now()/172800000);}
 function stationUniqueOffer(sys){
   if(!sys.station)return null;
