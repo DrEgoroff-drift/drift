@@ -2158,8 +2158,39 @@ const ORDERS={
   hunt:{ru:"охота на пиратов",spec:"fight",note:"патрулирует сектор и бьёт пиратов — награды и трофеи"},
   mine:{ru:"добыча",          spec:"mine", note:"работает в поясе или на залежи, сдаёт руду на ближайшую станцию"},
   haul:{ru:"перевозка",       spec:"haul", note:"возит грузы между станциями — чистые кредиты"},
+  base:{ru:"работа на базе",  spec:null,   note:"живёт в жилом отсеке и держит одну из ролей базы"},
   home:{ru:"на приколе",      spec:null,   note:"стоит без дела: не зарабатывает, зато и не рискует"}
 };
+/* Роли на базе (M47). Роль можно дать любую, но по своей специальности человек
+   работает в полную силу, а по чужой — вполсилы: это выбор, а не формальность. */
+const BASE_ROLES={
+  driller:{ru:"бурильщик",spec:"mine", note:"+выработка буровых"},
+  engineer:{ru:"инженер", spec:"mine", note:"меньше потерь энергии, чинит разбитые отсеки"},
+  guard:  {ru:"охранник", spec:"fight",note:"отражает налёты пиратов на базу"},
+  logist: {ru:"логист",   spec:"haul", note:"позволяет забирать добычу со станции, не прилетая"}
+};
+const ROLE_KEYS=Object.keys(BASE_ROLES);
+function roleForce(c){return BASE_ROLES[c.role]&&BASE_ROLES[c.role].spec===c.spec?1:.5;}
+/* сколько людей помещается: жилые отсеки, по двое на каждый */
+function baseSlots(B){return basePower(B).hab*2;}
+function baseStaff(B){
+  return G.crew.filter(c=>c.order&&c.order.kind==="base"&&
+    c.order.sx===B.sx&&c.order.sy===B.sy&&c.order.idx===B.idx);
+}
+function baseRoleForce(B,role){
+  let f=0;for(const c of baseStaff(B))if(c.role===role)f+=roleForce(c)*crewSkill(c)*(c.morale<.5?.5:1);
+  return f;
+}
+function assignToBase(c,B,role){
+  if(!BASE_ROLES[role])return false;
+  if(baseStaff(B).length>=baseSlots(B)){say("На базе нет жилых мест\nстройте жилой отсек");return false;}
+  crewTick();
+  c.role=role;
+  c.order={kind:"base",sx:B.sx,sy:B.sy,idx:B.idx};
+  c.tMs=Date.now();
+  logAdd("",c.name+" → "+BASE_ROLES[role].ru+" на базе «"+B.name+"»");
+  return true;
+}
 function crewCap(){return 1+techLv("license");}
 function hireMerc(c){
   if(G.crew.length>=crewCap()){say("Больше нанимать некому\nнужна лицензия на флот");return false;}
@@ -2236,11 +2267,15 @@ function crewTick(){
     c.tMs=now;
     const min=dtMs/60000;
     crewPayroll(c,min);
-    if(!c.order||c.order.kind==="home"||!c.shipId){crewRest(c,min);continue;}
+    /* на базе корабль не нужен — там живут, а не летают */
+    const needsShip=c.order&&c.order.kind!=="home"&&c.order.kind!=="base";
+    if(!c.order||c.order.kind==="home"||(needsShip&&!c.shipId)){crewRest(c,min);continue;}
     if(c.hull<=0){crewRest(c,min);continue;}
     const eff=crewSkill(c)*crewMul(c,"yield")*(c.morale<.5?.5:1);
     const danger=sysDanger(c.order.sx,c.order.sy);
     const r=rng(hashi(c.seed,Math.floor(now/60000),0xC7E));
+    /* на базе человек не зарабатывает сам — его вклад считает baseTick */
+    if(c.order.kind==="base"){crewRest(c,min);c.xp=(c.xp||0)+min*.6;continue;}
     if(c.order.kind==="hunt")crewHunt(c,min,eff,danger,r);
     else if(c.order.kind==="mine")crewMine(c,min,eff,danger,r);
     else if(c.order.kind==="haul")crewHaul(c,min,eff,danger,r);
@@ -2764,8 +2799,10 @@ function applySave(s){
     id:String(c.id||("c"+(c.seed|0))),seed:c.seed|0,name:String(c.name||"Безымянный"),
     spec:c.spec,traits:(Array.isArray(c.traits)?c.traits:[]).filter(t=>CREW_TRAITS.some(x=>x.id===t)),
     xp:Math.max(0,+c.xp||0),shipId:(c.shipId&&G.owned[c.shipId])?c.shipId:null,
-    order:(c.order&&ORDERS[c.order.kind])?{kind:c.order.kind,sx:c.order.sx|0,sy:c.order.sy|0}
+    order:(c.order&&ORDERS[c.order.kind])
+          ?{kind:c.order.kind,sx:c.order.sx|0,sy:c.order.sy|0,idx:c.order.idx|0}
           :{kind:"home",sx:G.sx,sy:G.sy},
+    role:BASE_ROLES[c.role]?c.role:"driller",
     hull:Math.max(0,+c.hull||0),hullMax:Math.max(1,+c.hullMax||100),
     cargo:(c.cargo&&typeof c.cargo==="object")?c.cargo:{},
     debt:Math.max(0,c.debt|0),morale:clamp(+c.morale||1,0,1),fee:Math.max(0,c.fee|0),
@@ -4905,7 +4942,7 @@ function basePower(B){
   let prod=0,cons=0,drills=0,drillEff=0,hab=0,habPenalty=0,store=0,ref=0,pads=0;
   const cls=(getSystem(B.sx,B.sy).cls&&getSystem(B.sx,B.sy).cls.lum)||1;
   for(let r=0;r<BASE_ROWS;r++)for(let c=0;c<BASE_COLS;c++){
-    const cell=baseCell(B,c,r);if(!cell)continue;
+    const cell=baseCell(B,c,r);if(!cell||cell.hp<=0)continue;   // разбитый отсек не работает и не ест энергию
     const M=BUILD[cell.k];if(!M)continue;
     const near=baseNeighbors(B,c,r);
     if(cell.k==="solar"){prod+=M.power*(r===0?1:.25)*cls;continue;}
@@ -4941,9 +4978,14 @@ function baseTick(){
     if(dtMs<1000)continue;
     B.tMs=now;
     const P=basePower(B),min=dtMs/60000;
+    baseRaid(B,min);baseFixTick(B,min);
     if(!P.drills)continue;
     const cap=P.store;
-    let left=Math.min(min*P.drillEff*P.eff*1.1,Math.max(0,cap-basePoolHeld(B)));
+    /* персонал (M47) — множитель к тому, что база и так умеет: бурильщик ускоряет
+       выработку, инженер вытягивает отдачу при нехватке энергии */
+    const crewBoost=1+baseRoleForce(B,"driller")*.45;
+    const eff=clamp(P.eff+baseRoleForce(B,"engineer")*.18,0,1);
+    let left=Math.min(min*P.drillEff*eff*crewBoost*1.1,Math.max(0,cap-basePoolHeld(B)));
     const r=rng(hashi(B.sx*7919+B.sy,B.idx,Math.floor(now/60000)));
     const pool=(B.res&&B.res.length)?B.res:["iron"];
     while(left>=1){
@@ -4952,13 +4994,60 @@ function baseTick(){
     }
     /* плавильня превращает часть добытого в сплавы прямо на месте */
     if(P.ref){
-      let conv=Math.floor(min*P.ref*P.eff*.15);   // медленнее станции: база берёт не темпом, а тем, что работает сама
+      let conv=Math.floor(min*P.ref*eff*.15);   // медленнее станции: база берёт не темпом, а тем, что работает сама
       while(conv>0){
         let src=null;
         for(const k in B.pool)if((B.pool[k]|0)>=4&&RARE_RES.indexOf(k)<0){src=k;break;}
         if(!src)break;
         B.pool[src]-=4;B.pool.alloy=(B.pool.alloy|0)+1;conv--;
       }
+    }
+  }
+}
+/* ══════════════ налёты пиратов на базу ══════════════ */
+/* Разрешаются ленивым счётчиком, без отдельной сцены: последствия видно в
+   разрезе (разбитый отсек) и в журнале. Охранник — единственная защита, и
+   поэтому осмысленный. */
+function baseRaid(B,min){
+  const danger=sysDanger(B.sx,B.sy);
+  if(danger<=.05)return;
+  const chance=min*danger*.012;
+  /* seed берём от самого отрезка времени, а не от текущей минуты: иначе
+     несколько тиков подряд внутри одной минуты дают один и тот же исход */
+  B.raidSeq=(B.raidSeq|0)+1;
+  const r=rng(hashi(B.sx*131+B.sy,B.idx*7+3,hashi(B.tMs|0,B.raidSeq,0x2A1D)));
+  if(r()>chance)return;
+  const guard=baseRoleForce(B,"guard");
+  if(guard>0&&r()<guard*.7){
+    logAdd("kill","Налёт на базу «"+B.name+"» отбит охраной");
+    return;
+  }
+  /* без охраны пропадает часть накопленного, иногда ломается отсек */
+  let lost=0;
+  for(const k in B.pool){
+    const q=B.pool[k]|0;if(q<=0)continue;
+    const t=Math.ceil(q*(.3+r()*.4));B.pool[k]=q-t;lost+=t;
+  }
+  let broke=null;
+  if(r()<.4){
+    const live=[];
+    for(let i=0;i<B.cells.length;i++)if(B.cells[i]&&B.cells[i].hp>0&&B.cells[i].k!=="reactor")live.push(i);
+    if(live.length){
+      const i=live[Math.floor(r()*live.length)];
+      B.cells[i].hp=0;broke=BUILD[B.cells[i].k].ru;
+    }
+  }
+  logAdd("warn","Налёт на базу «"+B.name+"»"+(lost?" · унесено "+lost+" ед":"")+
+    (broke?" · разбит отсек: "+broke:"")+(guard?"":" · охраны нет"));
+}
+/* инженер чинит разбитое сам, медленно */
+function baseFixTick(B,min){
+  const eng=baseRoleForce(B,"engineer");
+  if(eng<=0)return;
+  for(const cell of B.cells){
+    if(cell&&cell.hp<1){
+      cell.hp=Math.min(1,cell.hp+min*eng*.02);
+      if(cell.hp>=1)logAdd("dim","Инженер восстановил отсек на базе «"+B.name+"»");
     }
   }
 }
@@ -5094,7 +5183,13 @@ function drawBase(){
       ctx.strokeRect(x+6,y+6,BCELL_W-12,BCELL_H-12);
       continue;
     }
-    drawModule(cell.k,x,y,lit,c,r,B);
+    drawModule(cell.k,x,y,cell.hp>0?lit:.12,c,r,B);
+    if(cell.hp<=0){
+      /* разбитый отсек: перечёркнут и тёмен — видно, что налёт был не бесплатным */
+      ctx.strokeStyle="rgba(255,80,60,.7)";ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(x+14,y+14);ctx.lineTo(x+BCELL_W-14,y+BCELL_H-14);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x+BCELL_W-14,y+14);ctx.lineTo(x+14,y+BCELL_H-14);ctx.stroke();
+    }
   }
   /* коридор-стяжка между отсеками одного уровня и шахта лифта */
   ctx.strokeStyle="rgba(242,178,92,"+(.2+lit*.3).toFixed(2)+")";ctx.lineWidth=2;
@@ -7240,7 +7335,18 @@ function renderTab(){
         (hold?" · "+Object.keys(B.pool).filter(k=>B.pool[k]>0)
           .map(k=>RES[k].ru.toLowerCase()+" "+B.pool[k]).join(", "):"")+
         (warn.length?"<br><b style='color:#ff6b57'>"+warn.join(" · ")+"</b>":"")+"</s>"));
+      const staff=baseStaff(B);
+      if(staff.length||baseSlots(B))
+        r.firstChild.innerHTML+="<s>персонал "+staff.length+"/"+baseSlots(B)+
+          (staff.length?" · "+staff.map(c=>c.name+" — "+BASE_ROLES[c.role].ru+
+            (roleForce(c)<1?" (не по профилю)":"")).join(", "):"")+"</s>";
       r.appendChild(el("div","qt",P.pads?"площадка":"—"));
+      /* логист на месте — груз можно забрать отсюда, не прилетая (M38) */
+      if(baseRoleForce(B,"logist")>0&&hold>0){
+        const b=el("button","act","ЗАБРАТЬ");
+        b.onclick=()=>{baseCollect(B);renderTab();};
+        r.appendChild(b);
+      }
       if(P.pads&&!here){
         const c=baseJumpCost(B);
         const b=el("button","act gold",c.credits+" кр");
@@ -7304,12 +7410,30 @@ function renderTab(){
           "<br>район назначается по системе, где вы сейчас: "+G.sx+","+G.sy+"</s>"));
         for(const k in ORDERS){
           if(ORDERS[k].spec&&ORDERS[k].spec!==c.spec)continue;
+          if(k==="base")continue;               // на базу отправляют отдельной строкой ниже
           const b=el("button","act"+(c.order.kind===k?"":" gold"),ORDERS[k].ru.toUpperCase());
           b.disabled=c.order.kind===k&&c.order.sx===G.sx&&c.order.sy===G.sy;
           b.onclick=()=>{crewOrder(c,k);renderTab();};
           ro.appendChild(b);
         }
         $body.appendChild(ro);
+      }
+      /* на базу берут и без корабля: там живут, а не летают */
+      const localBase=baseList().find(B=>B.sx===G.sx&&B.sy===G.sy);
+      if(localBase&&baseSlots(localBase)>0){
+        const rb=el("div","row");
+        rb.appendChild(el("div","nm","<b>На базу «"+localBase.name+"»</b><s>мест "+
+          baseStaff(localBase).length+"/"+baseSlots(localBase)+
+          " · по своей специальности человек работает вдвое лучше</s>"));
+        for(const role of ROLE_KEYS){
+          const R=BASE_ROLES[role];
+          const b=el("button","act"+(c.order.kind==="base"&&c.role===role?"":" gold"),R.ru.toUpperCase());
+          b.title=R.note;
+          b.disabled=c.order.kind==="base"&&c.role===role;
+          b.onclick=()=>{assignToBase(c,localBase,role);renderTab();};
+          rb.appendChild(b);
+        }
+        $body.appendChild(rb);
       }
     });
     $body.appendChild(el("div","sec","ИЩУТ РАБОТУ ЗДЕСЬ · СОСТАВ МЕНЯЕТСЯ СО ВРЕМЕНЕМ"));

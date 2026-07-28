@@ -77,8 +77,10 @@ function applySave(s){
     id:String(c.id||("c"+(c.seed|0))),seed:c.seed|0,name:String(c.name||"Безымянный"),
     spec:c.spec,traits:(Array.isArray(c.traits)?c.traits:[]).filter(t=>CREW_TRAITS.some(x=>x.id===t)),
     xp:Math.max(0,+c.xp||0),shipId:(c.shipId&&G.owned[c.shipId])?c.shipId:null,
-    order:(c.order&&ORDERS[c.order.kind])?{kind:c.order.kind,sx:c.order.sx|0,sy:c.order.sy|0}
+    order:(c.order&&ORDERS[c.order.kind])
+          ?{kind:c.order.kind,sx:c.order.sx|0,sy:c.order.sy|0,idx:c.order.idx|0}
           :{kind:"home",sx:G.sx,sy:G.sy},
+    role:BASE_ROLES[c.role]?c.role:"driller",
     hull:Math.max(0,+c.hull||0),hullMax:Math.max(1,+c.hullMax||100),
     cargo:(c.cargo&&typeof c.cargo==="object")?c.cargo:{},
     debt:Math.max(0,c.debt|0),morale:clamp(+c.morale||1,0,1),fee:Math.max(0,c.fee|0),

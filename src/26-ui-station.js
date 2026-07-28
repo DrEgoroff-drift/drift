@@ -328,7 +328,18 @@ function renderTab(){
         (hold?" · "+Object.keys(B.pool).filter(k=>B.pool[k]>0)
           .map(k=>RES[k].ru.toLowerCase()+" "+B.pool[k]).join(", "):"")+
         (warn.length?"<br><b style='color:#ff6b57'>"+warn.join(" · ")+"</b>":"")+"</s>"));
+      const staff=baseStaff(B);
+      if(staff.length||baseSlots(B))
+        r.firstChild.innerHTML+="<s>персонал "+staff.length+"/"+baseSlots(B)+
+          (staff.length?" · "+staff.map(c=>c.name+" — "+BASE_ROLES[c.role].ru+
+            (roleForce(c)<1?" (не по профилю)":"")).join(", "):"")+"</s>";
       r.appendChild(el("div","qt",P.pads?"площадка":"—"));
+      /* логист на месте — груз можно забрать отсюда, не прилетая (M38) */
+      if(baseRoleForce(B,"logist")>0&&hold>0){
+        const b=el("button","act","ЗАБРАТЬ");
+        b.onclick=()=>{baseCollect(B);renderTab();};
+        r.appendChild(b);
+      }
       if(P.pads&&!here){
         const c=baseJumpCost(B);
         const b=el("button","act gold",c.credits+" кр");
@@ -392,12 +403,30 @@ function renderTab(){
           "<br>район назначается по системе, где вы сейчас: "+G.sx+","+G.sy+"</s>"));
         for(const k in ORDERS){
           if(ORDERS[k].spec&&ORDERS[k].spec!==c.spec)continue;
+          if(k==="base")continue;               // на базу отправляют отдельной строкой ниже
           const b=el("button","act"+(c.order.kind===k?"":" gold"),ORDERS[k].ru.toUpperCase());
           b.disabled=c.order.kind===k&&c.order.sx===G.sx&&c.order.sy===G.sy;
           b.onclick=()=>{crewOrder(c,k);renderTab();};
           ro.appendChild(b);
         }
         $body.appendChild(ro);
+      }
+      /* на базу берут и без корабля: там живут, а не летают */
+      const localBase=baseList().find(B=>B.sx===G.sx&&B.sy===G.sy);
+      if(localBase&&baseSlots(localBase)>0){
+        const rb=el("div","row");
+        rb.appendChild(el("div","nm","<b>На базу «"+localBase.name+"»</b><s>мест "+
+          baseStaff(localBase).length+"/"+baseSlots(localBase)+
+          " · по своей специальности человек работает вдвое лучше</s>"));
+        for(const role of ROLE_KEYS){
+          const R=BASE_ROLES[role];
+          const b=el("button","act"+(c.order.kind==="base"&&c.role===role?"":" gold"),R.ru.toUpperCase());
+          b.title=R.note;
+          b.disabled=c.order.kind==="base"&&c.role===role;
+          b.onclick=()=>{assignToBase(c,localBase,role);renderTab();};
+          rb.appendChild(b);
+        }
+        $body.appendChild(rb);
       }
     });
     $body.appendChild(el("div","sec","ИЩУТ РАБОТУ ЗДЕСЬ · СОСТАВ МЕНЯЕТСЯ СО ВРЕМЕНЕМ"));

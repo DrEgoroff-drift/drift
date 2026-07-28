@@ -62,8 +62,39 @@ const ORDERS={
   hunt:{ru:"охота на пиратов",spec:"fight",note:"патрулирует сектор и бьёт пиратов — награды и трофеи"},
   mine:{ru:"добыча",          spec:"mine", note:"работает в поясе или на залежи, сдаёт руду на ближайшую станцию"},
   haul:{ru:"перевозка",       spec:"haul", note:"возит грузы между станциями — чистые кредиты"},
+  base:{ru:"работа на базе",  spec:null,   note:"живёт в жилом отсеке и держит одну из ролей базы"},
   home:{ru:"на приколе",      spec:null,   note:"стоит без дела: не зарабатывает, зато и не рискует"}
 };
+/* Роли на базе (M47). Роль можно дать любую, но по своей специальности человек
+   работает в полную силу, а по чужой — вполсилы: это выбор, а не формальность. */
+const BASE_ROLES={
+  driller:{ru:"бурильщик",spec:"mine", note:"+выработка буровых"},
+  engineer:{ru:"инженер", spec:"mine", note:"меньше потерь энергии, чинит разбитые отсеки"},
+  guard:  {ru:"охранник", spec:"fight",note:"отражает налёты пиратов на базу"},
+  logist: {ru:"логист",   spec:"haul", note:"позволяет забирать добычу со станции, не прилетая"}
+};
+const ROLE_KEYS=Object.keys(BASE_ROLES);
+function roleForce(c){return BASE_ROLES[c.role]&&BASE_ROLES[c.role].spec===c.spec?1:.5;}
+/* сколько людей помещается: жилые отсеки, по двое на каждый */
+function baseSlots(B){return basePower(B).hab*2;}
+function baseStaff(B){
+  return G.crew.filter(c=>c.order&&c.order.kind==="base"&&
+    c.order.sx===B.sx&&c.order.sy===B.sy&&c.order.idx===B.idx);
+}
+function baseRoleForce(B,role){
+  let f=0;for(const c of baseStaff(B))if(c.role===role)f+=roleForce(c)*crewSkill(c)*(c.morale<.5?.5:1);
+  return f;
+}
+function assignToBase(c,B,role){
+  if(!BASE_ROLES[role])return false;
+  if(baseStaff(B).length>=baseSlots(B)){say("На базе нет жилых мест\nстройте жилой отсек");return false;}
+  crewTick();
+  c.role=role;
+  c.order={kind:"base",sx:B.sx,sy:B.sy,idx:B.idx};
+  c.tMs=Date.now();
+  logAdd("",c.name+" → "+BASE_ROLES[role].ru+" на базе «"+B.name+"»");
+  return true;
+}
 function crewCap(){return 1+techLv("license");}
 function hireMerc(c){
   if(G.crew.length>=crewCap()){say("Больше нанимать некому\nнужна лицензия на флот");return false;}
@@ -140,11 +171,15 @@ function crewTick(){
     c.tMs=now;
     const min=dtMs/60000;
     crewPayroll(c,min);
-    if(!c.order||c.order.kind==="home"||!c.shipId){crewRest(c,min);continue;}
+    /* на базе корабль не нужен — там живут, а не летают */
+    const needsShip=c.order&&c.order.kind!=="home"&&c.order.kind!=="base";
+    if(!c.order||c.order.kind==="home"||(needsShip&&!c.shipId)){crewRest(c,min);continue;}
     if(c.hull<=0){crewRest(c,min);continue;}
     const eff=crewSkill(c)*crewMul(c,"yield")*(c.morale<.5?.5:1);
     const danger=sysDanger(c.order.sx,c.order.sy);
     const r=rng(hashi(c.seed,Math.floor(now/60000),0xC7E));
+    /* на базе человек не зарабатывает сам — его вклад считает baseTick */
+    if(c.order.kind==="base"){crewRest(c,min);c.xp=(c.xp||0)+min*.6;continue;}
     if(c.order.kind==="hunt")crewHunt(c,min,eff,danger,r);
     else if(c.order.kind==="mine")crewMine(c,min,eff,danger,r);
     else if(c.order.kind==="haul")crewHaul(c,min,eff,danger,r);

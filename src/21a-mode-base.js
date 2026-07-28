@@ -69,7 +69,7 @@ function basePower(B){
   let prod=0,cons=0,drills=0,drillEff=0,hab=0,habPenalty=0,store=0,ref=0,pads=0;
   const cls=(getSystem(B.sx,B.sy).cls&&getSystem(B.sx,B.sy).cls.lum)||1;
   for(let r=0;r<BASE_ROWS;r++)for(let c=0;c<BASE_COLS;c++){
-    const cell=baseCell(B,c,r);if(!cell)continue;
+    const cell=baseCell(B,c,r);if(!cell||cell.hp<=0)continue;   // разбитый отсек не работает и не ест энергию
     const M=BUILD[cell.k];if(!M)continue;
     const near=baseNeighbors(B,c,r);
     if(cell.k==="solar"){prod+=M.power*(r===0?1:.25)*cls;continue;}
@@ -105,9 +105,14 @@ function baseTick(){
     if(dtMs<1000)continue;
     B.tMs=now;
     const P=basePower(B),min=dtMs/60000;
+    baseRaid(B,min);baseFixTick(B,min);
     if(!P.drills)continue;
     const cap=P.store;
-    let left=Math.min(min*P.drillEff*P.eff*1.1,Math.max(0,cap-basePoolHeld(B)));
+    /* персонал (M47) — множитель к тому, что база и так умеет: бурильщик ускоряет
+       выработку, инженер вытягивает отдачу при нехватке энергии */
+    const crewBoost=1+baseRoleForce(B,"driller")*.45;
+    const eff=clamp(P.eff+baseRoleForce(B,"engineer")*.18,0,1);
+    let left=Math.min(min*P.drillEff*eff*crewBoost*1.1,Math.max(0,cap-basePoolHeld(B)));
     const r=rng(hashi(B.sx*7919+B.sy,B.idx,Math.floor(now/60000)));
     const pool=(B.res&&B.res.length)?B.res:["iron"];
     while(left>=1){
@@ -116,13 +121,60 @@ function baseTick(){
     }
     /* плавильня превращает часть добытого в сплавы прямо на месте */
     if(P.ref){
-      let conv=Math.floor(min*P.ref*P.eff*.15);   // медленнее станции: база берёт не темпом, а тем, что работает сама
+      let conv=Math.floor(min*P.ref*eff*.15);   // медленнее станции: база берёт не темпом, а тем, что работает сама
       while(conv>0){
         let src=null;
         for(const k in B.pool)if((B.pool[k]|0)>=4&&RARE_RES.indexOf(k)<0){src=k;break;}
         if(!src)break;
         B.pool[src]-=4;B.pool.alloy=(B.pool.alloy|0)+1;conv--;
       }
+    }
+  }
+}
+/* ══════════════ налёты пиратов на базу ══════════════ */
+/* Разрешаются ленивым счётчиком, без отдельной сцены: последствия видно в
+   разрезе (разбитый отсек) и в журнале. Охранник — единственная защита, и
+   поэтому осмысленный. */
+function baseRaid(B,min){
+  const danger=sysDanger(B.sx,B.sy);
+  if(danger<=.05)return;
+  const chance=min*danger*.012;
+  /* seed берём от самого отрезка времени, а не от текущей минуты: иначе
+     несколько тиков подряд внутри одной минуты дают один и тот же исход */
+  B.raidSeq=(B.raidSeq|0)+1;
+  const r=rng(hashi(B.sx*131+B.sy,B.idx*7+3,hashi(B.tMs|0,B.raidSeq,0x2A1D)));
+  if(r()>chance)return;
+  const guard=baseRoleForce(B,"guard");
+  if(guard>0&&r()<guard*.7){
+    logAdd("kill","Налёт на базу «"+B.name+"» отбит охраной");
+    return;
+  }
+  /* без охраны пропадает часть накопленного, иногда ломается отсек */
+  let lost=0;
+  for(const k in B.pool){
+    const q=B.pool[k]|0;if(q<=0)continue;
+    const t=Math.ceil(q*(.3+r()*.4));B.pool[k]=q-t;lost+=t;
+  }
+  let broke=null;
+  if(r()<.4){
+    const live=[];
+    for(let i=0;i<B.cells.length;i++)if(B.cells[i]&&B.cells[i].hp>0&&B.cells[i].k!=="reactor")live.push(i);
+    if(live.length){
+      const i=live[Math.floor(r()*live.length)];
+      B.cells[i].hp=0;broke=BUILD[B.cells[i].k].ru;
+    }
+  }
+  logAdd("warn","Налёт на базу «"+B.name+"»"+(lost?" · унесено "+lost+" ед":"")+
+    (broke?" · разбит отсек: "+broke:"")+(guard?"":" · охраны нет"));
+}
+/* инженер чинит разбитое сам, медленно */
+function baseFixTick(B,min){
+  const eng=baseRoleForce(B,"engineer");
+  if(eng<=0)return;
+  for(const cell of B.cells){
+    if(cell&&cell.hp<1){
+      cell.hp=Math.min(1,cell.hp+min*eng*.02);
+      if(cell.hp>=1)logAdd("dim","Инженер восстановил отсек на базе «"+B.name+"»");
     }
   }
 }
@@ -258,7 +310,13 @@ function drawBase(){
       ctx.strokeRect(x+6,y+6,BCELL_W-12,BCELL_H-12);
       continue;
     }
-    drawModule(cell.k,x,y,lit,c,r,B);
+    drawModule(cell.k,x,y,cell.hp>0?lit:.12,c,r,B);
+    if(cell.hp<=0){
+      /* разбитый отсек: перечёркнут и тёмен — видно, что налёт был не бесплатным */
+      ctx.strokeStyle="rgba(255,80,60,.7)";ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(x+14,y+14);ctx.lineTo(x+BCELL_W-14,y+BCELL_H-14);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x+BCELL_W-14,y+14);ctx.lineTo(x+14,y+BCELL_H-14);ctx.stroke();
+    }
   }
   /* коридор-стяжка между отсеками одного уровня и шахта лифта */
   ctx.strokeStyle="rgba(242,178,92,"+(.2+lit*.3).toFixed(2)+")";ctx.lineWidth=2;
