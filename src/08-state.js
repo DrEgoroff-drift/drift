@@ -37,7 +37,10 @@ const G={
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,
   pirates:[],shots:[],log:[],logNew:0,
-  crew:[],allies:[]   // наёмники персистятся, их корабли в системе — эфемерны
+  crew:[],allies:[],  // наёмники персистятся, их корабли в системе — эфемерны
+  /* базы: разреженный оверлей «sx,sy:planetIdx» → решения игрока.
+     Геология под базой регенерируется из seed планеты и не сохраняется. */
+  bases:{},base:null
 };
 for(const k of RES_KEYS)G.cargo[k]=0;
 G.sys=getSystem(0,0);

@@ -28,7 +28,7 @@ function snapshot(){
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],species:[...G.species],
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
-    drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,log:G.log,ts:Date.now()};
+    drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,log:G.log,ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
@@ -85,6 +85,24 @@ function applySave(s){
     tMs:Date.now(),paidMs:Date.now()
   })).slice(0,8);
   G.allies=[];
+  /* базы: тоже новое поле с безопасным дефолтом. Отсчёт ленивого времени
+     подтягиваем к загрузке, иначе простой начислится задним числом. */
+  G.bases={};
+  if(s.bases&&typeof s.bases==="object")
+    for(const k in s.bases){
+      const b=s.bases[k];
+      if(!b||!Array.isArray(b.cells))continue;
+      const cells=[];
+      for(let i=0;i<BASE_COLS*BASE_ROWS;i++){
+        const c=b.cells[i];
+        cells.push(c&&BUILD[c.k]?{k:c.k,hp:clamp(+c.hp||1,0,1)}:null);
+      }
+      G.bases[k]={sx:b.sx|0,sy:b.sy|0,idx:b.idx|0,name:String(b.name||"База"),
+        type:String(b.type||"rocky"),res:Array.isArray(b.res)?b.res.filter(x=>RES[x]):["iron"],
+        cells,pool:(b.pool&&typeof b.pool==="object")?b.pool:{},
+        tMs:Date.now(),built:+b.built||Date.now()};
+    }
+  G.base=null;
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];

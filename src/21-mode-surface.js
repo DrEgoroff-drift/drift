@@ -119,6 +119,13 @@ function updateSurface(dt){
       plant.scanned=true;G.species.add(plant.name);G.data+=9;
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
+  }else if(dShip<48&&baseAt(G.sx,G.sy,S.p.idx)){
+    /* шлюз базы стоит рядом с кораблём — вход тем же жестом, что в пещеру */
+    G.prompt="ДЕЙСТВ — СПУСТИТЬСЯ В БАЗУ";
+    if(actEdge){enterBase(S.p);return;}
+  }else if(dShip<48&&!baseAt(G.sx,G.sy,S.p.idx)&&S.p.type!=="gas"){
+    G.prompt="ДЕЙСТВ — ЗАЛОЖИТЬ БАЗУ · 2500 КР + 10 СПЛАВОВ";
+    if(actEdge&&foundBase(S.p)){enterBase(S.p);return;}
   }else if(S.cave&&Math.abs(S.cave.x-S.x)<34){
     G.prompt="ДЕЙСТВ — ВОЙТИ В ПЕЩЕРУ";
     if(actEdge){enterCave();return;}
