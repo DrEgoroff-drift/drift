@@ -48,6 +48,8 @@ function hud(){
     b="сбор летучих газов";}
   else if(G.mode==="base"){a="БАЗА · "+(G.base?G.base.p.name.toUpperCase():"");
     b="разрез грунта";}
+  else if(G.mode==="raid"){a=(G.raid?G.raid.PB.name:"АБОРДАЖ").toUpperCase();
+    b="пиратская база · "+(G.raid?G.raid.foes.filter(f=>f.hp>0).length+" живых":"");}
   else if(G.mode==="dock"){a=G.st.name.toUpperCase();b=G.st.kind;}
   if(G.drones.length>0)b+=" · дронов работает: "+G.drones.length;
   const sbtn=document.getElementById("starbtn");
@@ -150,6 +152,7 @@ function frame(now){
     else if(G.mode==="belt"&&G.belt)updateBelt(dt);
     else if(G.mode==="scoop"&&G.scoop)updateScoop(dt);
     else if(G.mode==="base"&&G.base)updateBase(dt);
+    else if(G.mode==="raid"&&G.raid)updateRaid(dt);
     beaconTick(dt);
     audioTick(dt);
     if(G.mode==="system"||G.mode==="dock")drawSystem();
@@ -161,6 +164,7 @@ function frame(now){
     else if(G.mode==="belt"&&G.belt)drawBelt();
     else if(G.mode==="scoop"&&G.scoop)drawScoop();
     else if(G.mode==="base"&&G.base)drawBase();
+    else if(G.mode==="raid"&&G.raid)drawRaid();
     hud();
   }else{
     ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);

@@ -151,6 +151,18 @@ function updateSystem(dt){
       if(actEdge){enterBelt();return;}
     }
   }
+  /* пиратская база — точка входа в абордаж; есть только в опасных секторах */
+  {
+    const PB=sysPirateBase();
+    if(PB){
+      const d=Math.hypot(sh.x-PB.x,sh.y-PB.y);
+      if(d<160){
+        G.prompt="ПИРАТСКАЯ БАЗА · "+PB.name.toUpperCase()+
+          "\nДЕЙСТВ — АБОРДАЖ"+(st.armed?"":" (ОРУЖИЯ НЕТ)");
+        if(actEdge){enterRaid(PB);return;}
+      }
+    }
+  }
   let near=null,nd=1e9;
   for(const p of sys.planets){
     const d=Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius;
@@ -278,6 +290,7 @@ function drawSystem(){
   drawTrail(zx,zy,Z);
   drawCombat(zx,zy,Z);
   drawAllies(zx,zy,Z);
+  drawPirateBase(zx,zy,Z);
   ctx.save();ctx.translate(W/2,H/2);ctx.rotate(sh.a);
   ctx.scale(clamp(Z,.55,1.6),clamp(Z,.55,1.6));
   drawHull(G.shipId,keys.thrust&&G.fuel>0||(G.ap&&G.fuel>0),keys.brake&&G.fuel>0,G.mods.engine,sh.bank);
