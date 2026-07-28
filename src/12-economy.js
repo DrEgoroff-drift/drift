@@ -9,8 +9,8 @@ function marketFor(sys){
     for(const k of RES_KEYS)m.pressure[k]=(m.pressure[k]||0)*decay;
     m.t=G.t;
   }
-  const prices={};
-  for(const k of RES_KEYS)prices[k]=Math.max(1,Math.round(base[k]*clamp(1+(m.pressure[k]||0),.4,1.8)));
+  const prices={},mul=stTypeOf(sys.station.stype).mkt;   /* торговый узел платит больше, аванпост — меньше */
+  for(const k of RES_KEYS)prices[k]=Math.max(1,Math.round(base[k]*mul*clamp(1+(m.pressure[k]||0),.4,1.8)));
   return prices;
 }
 function sellCargo(sys,k,qty){

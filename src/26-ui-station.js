@@ -8,8 +8,26 @@ function openStation(){
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
   document.getElementById("stName").textContent=G.st.name.toUpperCase();
   document.getElementById("stKind").textContent=G.st.kind+" · система "+G.sys.name;
+  syncTabs();
   $st.classList.add("open");renderTab();saveGame(true);
 }
+/* тип станции решает, какие вкладки вообще есть: лишние кнопки прячем,
+   а если открытая вкладка тут не водится — переключаемся на первую доступную */
+function syncTabs(){
+  const has=stTypeOf(G.st.stype).tabs;
+  let first=null;
+  document.querySelectorAll("#station nav button").forEach(b=>{
+    const ok=has.indexOf(b.dataset.tab)>=0;
+    b.style.display=ok?"":"none";
+    b.classList.remove("on");
+    if(ok&&!first)first=b.dataset.tab;
+  });
+  if(has.indexOf(tab)<0)tab=first||"none";
+  document.querySelectorAll("#station nav button").forEach(b=>{
+    if(b.dataset.tab===tab)b.classList.add("on");
+  });
+}
+function repairCost(){return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep));}
 function closeStation(){
   $st.classList.remove("open");G.mode="system";
   const S=G.st,dx=G.ship.x-S.x,dy=G.ship.y-S.y,d=Math.hypot(dx,dy)||1;
@@ -32,7 +50,7 @@ document.getElementById("bRefuel").addEventListener("click",()=>{
 document.getElementById("bRepair").addEventListener("click",()=>{
   const st=stat(),need=Math.ceil(st.hullMax-G.hull);
   if(need<=0){say("Корпус цел");return;}
-  const per=14,can=Math.min(need,Math.floor(G.credits/per));
+  const per=repairCost(),can=Math.min(need,Math.floor(G.credits/per));
   if(can<=0){say("Не хватает кредитов");return;}
   G.credits-=can*per;G.hull+=can;renderTab();
 });
@@ -83,10 +101,18 @@ function renderTab(){
   document.getElementById("wCr").textContent=G.credits.toLocaleString("ru")+" кр";
   document.getElementById("wDt").textContent=G.data+" данных";
   $body.innerHTML="";
+  if(tab==="none"){
+    /* заправочная: вкладок нет вовсе, но экран не должен выглядеть сломанным */
+    $body.appendChild(el("div","sec","ТОПЛИВО "+G.st.fuelPrice+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
+    $body.appendChild(el("div","row","<div class='nm'><b>Только заправка и ремонт</b>"+
+      "<s>перевалочный узел на отшибе: ни рынка, ни верфи, ни лаборатории —<br>"+
+      "зато баки полны и корпус залатан</s></div>"));
+    return;
+  }
   if(tab==="market"){
     const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
     $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
-      " · ТОПЛИВО "+G.st.fuelPrice+" кр/ед · РЕМОНТ 14 кр/ед"));
+      " · ТОПЛИВО "+G.st.fuelPrice+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
     let any=false,tot=0;
     for(const k of RES_KEYS){
       const q=G.cargo[k];if(!q)continue;any=true;
@@ -127,7 +153,8 @@ function renderTab(){
   else if(tab==="yard"){
     $body.appendChild(el("div","sec","КОРПУСА В ДОКЕ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
     for(const id of SHIP_KEYS)$body.appendChild(shipRow(id,SHIPS[id]));
-    const offer=stationUniqueOffer(G.sys);
+    /* уникальный корпус строят только на верфи — у торгового узла док слабый */
+    const offer=G.st.stype==="yard"?stationUniqueOffer(G.sys):null;
     if(offer){
       const uid="u"+offer.seed;
       G.uniqueShips[uid]=offer;

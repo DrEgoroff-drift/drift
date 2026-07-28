@@ -1,7 +1,34 @@
 /* ══════════════ галактика ══════════════ */
 function starAt(sx,sy){return (sx===0&&sy===0)||h01(sx,sy,4242)<.52;}
 const SYS_CACHE=new Map();
-const ST_KIND=["Торговый узел","Ремонтный док","Научная станция","Перевалочная база","Рудная биржа"];
+/* Типы станций (M44). Тип — не картинка, а набор возможностей: `tabs` решает,
+   какие вкладки вообще существуют на этой станции, множители — насколько выгодно
+   тут торговать, чинить и заправляться. Вес зависит от опасности системы:
+   в глубине фронтира торговых узлов почти нет, зато аванпосты и заправки — норма. */
+const ST_TYPES=[
+  {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods"],
+   mkt:1.08, fuel:1,    rep:1,    w:d=>2.6-d*1.9},
+  {id:"indust", ru:"Промышленный комбинат",tabs:["market","mods"],
+   mkt:.99,  fuel:.92,  rep:.5,   w:d=>1.5-d*.4},
+  {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","barter"],
+   mkt:.95,  fuel:1.08, rep:.75,  w:d=>1.2-d*.7},
+  {id:"sci",    ru:"Научная станция",      tabs:["market","lab","mods"],
+   mkt:.93,  fuel:1.08, rep:1,    w:d=>1.2-d*.8},
+  {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter"],
+   mkt:.9,   fuel:1.22, rep:1.25, w:d=>.2+d*2.8},
+  {id:"fuel",   ru:"Заправочная станция",  tabs:[],
+   mkt:1,    fuel:.78,  rep:1.1,  w:d=>1.6+d*1.1}
+];
+function stTypeOf(id){return ST_TYPES.find(t=>t.id===id)||ST_TYPES[0];}
+/* один вызов r() — ровно как прежний pick(), поэтому поток случайных чисел
+   не сдвигается и уже сгенерированные системы остаются прежними */
+function pickStType(r,danger){
+  const w=ST_TYPES.map(t=>Math.max(.05,t.w(danger)));
+  let tot=0;for(const v of w)tot+=v;
+  let x=r()*tot;
+  for(let i=0;i<w.length;i++){x-=w[i];if(x<=0)return ST_TYPES[i];}
+  return ST_TYPES[ST_TYPES.length-1];
+}
 /* эллиптическая орбита по Кеплеру: ang — средняя аномалия (растёт равномерно),
    решаем уравнение Кеплера в 4 итерациях Ньютона — этого достаточно при ecc<.4 */
 function keplerPos(a,e,M,argp){
@@ -68,9 +95,14 @@ function getSystem(sx,sy){
     for(const k of ORE_KEYS)prices[k]=Math.max(3,Math.round(RES[k].price*(.72+r()*.72)));
     const r2=rng(hashi(sx,sy,0xB10FA));
     for(const k of FAUNA_RES)prices[k]=Math.max(3,Math.round(RES[k].price*(.72+r2()*.72)));
-    sys.station={name:genName(r),kind:pick(ST_KIND,r),
+    const stName=genName(r);
+    let ST=pickStType(r,sysDanger(sx,sy));
+    /* в родной системе всегда полноценный узел: стартовать у заправки,
+       где нет ни верфи, ни рынка, — значит остаться без первого шага */
+    if(sx===0&&sy===0)ST=stTypeOf("trade");
+    sys.station={name:stName,stype:ST.id,kind:ST.ru,
       orbit:sys.radius+240+r()*280,ang:r()*TAU,spd:.00055,prices,
-      fuelPrice:5+Math.round(r()*7),x:0,y:0,vx:0,vy:0};
+      fuelPrice:Math.max(2,Math.round((5+r()*7)*ST.fuel)),x:0,y:0,vx:0,vy:0};
   }
   sys.desc=genDesc(r,sys);
   SYS_CACHE.set(key,sys);

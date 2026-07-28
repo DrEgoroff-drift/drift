@@ -393,52 +393,191 @@ function drawBeltRing(ox,oy,B,Z){
   ctx.beginPath();ctx.arc(ox,oy,B.orbit*Z,0,TAU);ctx.stroke();
   drawBeltRocks(ox,oy,B,Z,G.ship.x,G.ship.y);
 }
-function drawStation(x,y,Z){
-  const s=clamp(Z,.4,1.5);
-  ctx.save();ctx.translate(x,y);ctx.scale(s,s);
-  /* солнечные панели — неподвижны относительно звезды */
+/* Станция рисуется процедурно, тем же приёмом, что корпуса кораблей (03-ships):
+   общий скелет — ядро, причал, огни, — а силуэт задаёт тип станции, пропорции и
+   мелочь берутся из seed системы. Кэшируем в S.viz: станция эфемерна и живёт
+   ровно столько, сколько система в SYS_CACHE. */
+function stationViz(S){
+  if(S.viz)return S.viz;
+  const r=rng(hashi(G.sys.seed,0x57A71,7));
+  S.viz={a:.75+r()*.55,b:.8+r()*.5,n:3+Math.floor(r()*3),ph:r()*TAU,f:r()};
+  return S.viz;
+}
+const ST_GOLD="rgba(242,178,92,.75)";
+function stPanels(len,wid){        /* солнечные панели — неподвижны относительно звезды */
   ctx.fillStyle="rgba(40,72,110,.85)";ctx.strokeStyle="rgba(130,190,230,.5)";ctx.lineWidth=1;
   for(const s of [-1,1]){
-    ctx.beginPath();ctx.rect(-3,s>0?18:-30,6,12);ctx.fill();ctx.stroke();
-    for(let i=1;i<4;i++){
-      const yy=(s>0?18:-30)+i*3;
-      ctx.beginPath();ctx.moveTo(-3,yy);ctx.lineTo(3,yy);ctx.stroke();
+    const y0=s>0?18:-18-len;
+    ctx.beginPath();ctx.rect(-wid/2,y0,wid,len);ctx.fill();ctx.stroke();
+    for(let i=1;i*3<len;i++){
+      ctx.beginPath();ctx.moveTo(-wid/2,y0+i*3);ctx.lineTo(wid/2,y0+i*3);ctx.stroke();
     }
   }
-  ctx.strokeStyle="rgba(242,178,92,.75)";ctx.lineWidth=2;ctx.fillStyle="#0a1119";
-  ctx.save();ctx.rotate(G.t*.006);
-  ctx.beginPath();ctx.ellipse(0,0,30,10,0,0,TAU);ctx.stroke();
-  ctx.beginPath();ctx.ellipse(0,0,20,7,0,0,TAU);ctx.stroke();
+}
+function stCore(w,h,seams){        /* центральный ствол с причальным раструбом наверху */
+  const bg=ctx.createLinearGradient(-w,0,w,0);
+  bg.addColorStop(0,"#182636");bg.addColorStop(.45,"#0a1119");bg.addColorStop(1,"#05080d");
+  ctx.fillStyle=bg;ctx.strokeStyle=ST_GOLD;ctx.lineWidth=2;
+  ctx.beginPath();ctx.rect(-w,-h,w*2,h*2);ctx.fill();ctx.stroke();
+  if(seams){
+    ctx.strokeStyle="rgba(242,178,92,.3)";ctx.lineWidth=1;
+    for(let i=-h+4;i<h;i+=6){ctx.beginPath();ctx.moveTo(-w,i);ctx.lineTo(w,i);ctx.stroke();}
+    ctx.strokeStyle=ST_GOLD;ctx.lineWidth=2;
+  }
+  ctx.beginPath();ctx.moveTo(-w+2,-h);ctx.lineTo(-w-1,-h-6);ctx.lineTo(w+1,-h-6);ctx.lineTo(w-2,-h);ctx.stroke();
+  ctx.fillStyle=(Math.sin(G.t*.09)>0)?"#7fe6d8":"rgba(127,230,216,.2)";
+  ctx.beginPath();ctx.arc(0,-h-8,2.4,0,TAU);ctx.fill();
+  ctx.fillStyle=(Math.sin(G.t*.09)>0)?"rgba(255,107,87,.9)":"rgba(255,107,87,.2)";
+  ctx.beginPath();ctx.arc(0,h+2,1.8,0,TAU);ctx.fill();
+}
+function stRing(V,rx,ry){          /* вращающийся тор с жилыми модулями на ободе */
+  ctx.strokeStyle=ST_GOLD;ctx.lineWidth=2;ctx.fillStyle="#0a1119";
+  ctx.save();ctx.rotate(G.t*.006+V.ph);
+  ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,TAU);ctx.stroke();
+  ctx.beginPath();ctx.ellipse(0,0,rx*.66,ry*.7,0,0,TAU);ctx.stroke();
   for(let i=0;i<8;i++){
     const t=i*Math.PI/4;
-    ctx.beginPath();ctx.moveTo(Math.cos(t)*20,Math.sin(t)*7);
-    ctx.lineTo(Math.cos(t)*30,Math.sin(t)*10);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(Math.cos(t)*rx*.66,Math.sin(t)*ry*.7);
+    ctx.lineTo(Math.cos(t)*rx,Math.sin(t)*ry);ctx.stroke();
   }
-  /* жилые модули на ободе */
   ctx.fillStyle="#101a26";
   for(let i=0;i<6;i++){
-    const t=i*Math.PI/3+.4;
-    const bx=Math.cos(t)*30,by=Math.sin(t)*10;
+    const t=i*Math.PI/3+.4,bx=Math.cos(t)*rx,by=Math.sin(t)*ry;
     ctx.beginPath();ctx.rect(bx-2.4,by-1.8,4.8,3.6);ctx.fill();ctx.stroke();
     ctx.fillStyle=(Math.sin(G.t*.05+i)>.2)?"rgba(255,230,170,.9)":"rgba(255,230,170,.25)";
     ctx.fillRect(bx-1,by-.7,2,1.4);
     ctx.fillStyle="#101a26";
   }
   ctx.restore();
-  const bg=ctx.createLinearGradient(-6,0,6,0);
-  bg.addColorStop(0,"#182636");bg.addColorStop(.45,"#0a1119");bg.addColorStop(1,"#05080d");
-  ctx.fillStyle=bg;
-  ctx.beginPath();ctx.rect(-6,-16,12,32);ctx.fill();ctx.stroke();
-  ctx.strokeStyle="rgba(242,178,92,.3)";ctx.lineWidth=1;
-  for(let i=-12;i<=12;i+=6){ctx.beginPath();ctx.moveTo(-6,i);ctx.lineTo(6,i);ctx.stroke();}
-  /* причальный раструб */
-  ctx.strokeStyle="rgba(242,178,92,.75)";ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(-4,-16);ctx.lineTo(-7,-22);ctx.lineTo(7,-22);ctx.lineTo(4,-16);ctx.stroke();
-  ctx.fillStyle=(Math.sin(G.t*.09)>0)?"#7fe6d8":"rgba(127,230,216,.2)";
-  ctx.beginPath();ctx.arc(0,-24,2.4,0,TAU);ctx.fill();
-  ctx.fillStyle=(Math.sin(G.t*.09)>0)?"rgba(255,107,87,.9)":"rgba(255,107,87,.2)";
-  ctx.beginPath();ctx.arc(0,18,1.8,0,TAU);ctx.fill();
+}
+function drawStation(x,y,Z){
+  const s=clamp(Z,.4,1.5),S=G.sys.station,V=stationViz(S),ty=S.stype||"trade";
+  ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+  if(ty==="trade"){
+    /* раздутые склады и гроздь причалов: контейнеры висят на штангах по бортам */
+    stPanels(12,6);
+    stRing(V,30*V.a,10*V.b);
+    ctx.strokeStyle=ST_GOLD;ctx.lineWidth=1.4;
+    for(let i=0;i<V.n+1;i++){
+      const yy=-10+i*8,sx=(i%2?1:-1);
+      ctx.beginPath();ctx.moveTo(sx*6,yy);ctx.lineTo(sx*20,yy);ctx.stroke();
+      for(let j=0;j<2;j++){
+        ctx.fillStyle=j?"#1d2f42":"#243a2c";
+        ctx.beginPath();ctx.rect(sx*(11+j*6)-3,yy-3.2,6,6.4);ctx.fill();ctx.stroke();
+      }
+    }
+    stCore(6,16,true);
+  }else if(ty==="indust"){
+    /* домны и факел: переработка видна снаружи — конвейеры, дым, огонь */
+    stPanels(9,5);
+    ctx.strokeStyle="rgba(210,140,80,.8)";ctx.lineWidth=2;ctx.fillStyle="#14161a";
+    for(const sx of [-1,1]){
+      ctx.beginPath();
+      ctx.moveTo(sx*9,-8);ctx.lineTo(sx*24*V.a,-13);ctx.lineTo(sx*24*V.a,9);ctx.lineTo(sx*9,6);
+      ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillStyle=(Math.sin(G.t*.04+(sx>0?0:1.7))>0)?"rgba(255,150,60,.75)":"rgba(255,150,60,.3)";
+      ctx.fillRect(sx*14-3,-4,6,7);
+      ctx.fillStyle="#14161a";
+    }
+    ctx.strokeStyle="rgba(242,178,92,.45)";ctx.lineWidth=1;
+    for(let i=-6;i<=6;i+=4){ctx.beginPath();ctx.moveTo(-24*V.a,i+2);ctx.lineTo(24*V.a,i+2);ctx.stroke();}
+    stCore(7,15,false);
+    /* факельная труба: пламя пляшет, дым сносит вбок */
+    ctx.strokeStyle="rgba(210,140,80,.8)";ctx.lineWidth=2;ctx.fillStyle="#0a1119";
+    ctx.beginPath();ctx.rect(-3,-28,6,12);ctx.fill();ctx.stroke();
+    const fl=1.4+Math.abs(Math.sin(G.t*.13+V.ph))*3.4;
+    ctx.fillStyle="rgba(255,170,70,.85)";
+    ctx.beginPath();ctx.ellipse(0,-30-fl*.5,2.2,fl,0,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(255,120,50,.35)";
+    ctx.beginPath();ctx.arc(2,-34-fl,3.4,0,TAU);ctx.fill();
+  }else if(ty==="yard"){
+    /* открытый эллинг: рама, а внутри шпангоуты строящегося корпуса и кран */
+    stPanels(10,5);
+    ctx.strokeStyle=ST_GOLD;ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(-22,-20);ctx.lineTo(-22,20);ctx.lineTo(22,20);ctx.lineTo(22,-20);ctx.stroke();
+    ctx.lineWidth=1.2;ctx.strokeStyle="rgba(242,178,92,.4)";
+    for(let i=-18;i<=18;i+=9){
+      ctx.beginPath();ctx.moveTo(-22,i);ctx.lineTo(-16,i);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(22,i);ctx.lineTo(16,i);ctx.stroke();
+    }
+    ctx.strokeStyle="rgba(150,190,220,.6)";
+    for(let i=0;i<4;i++){
+      const yy=-13+i*8, w=13-Math.abs(i-1.4)*3.4;
+      ctx.beginPath();ctx.ellipse(0,yy,w,2.6,0,0,TAU);ctx.stroke();
+    }
+    ctx.strokeStyle="rgba(150,190,220,.45)";
+    ctx.beginPath();ctx.moveTo(0,-17);ctx.lineTo(0,15);ctx.stroke();
+    /* кран ползает вдоль эллинга — видно, что верфь работает */
+    const cy=Math.sin(G.t*.02+V.ph)*15;
+    ctx.strokeStyle="rgba(255,210,130,.8)";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(-22,cy);ctx.lineTo(22,cy);ctx.stroke();
+    ctx.fillStyle=(Math.sin(G.t*.3)>0)?"rgba(180,255,255,.9)":"rgba(180,255,255,.15)";
+    ctx.beginPath();ctx.arc(6,cy,1.6,0,TAU);ctx.fill();
+    stCore(5,10,false);
+  }else if(ty==="sci"){
+    /* тонкий силуэт: мачта, тарелки антенн и решётки радиаторов */
+    ctx.strokeStyle="rgba(130,200,220,.6)";ctx.lineWidth=1;ctx.fillStyle="rgba(30,60,80,.7)";
+    for(const sx of [-1,1]){
+      ctx.beginPath();ctx.rect(sx>0?9:-25,-4,16,8);ctx.fill();ctx.stroke();
+      for(let i=1;i<5;i++){
+        const xx=(sx>0?9:-25)+i*3.2;
+        ctx.beginPath();ctx.moveTo(xx,-4);ctx.lineTo(xx,4);ctx.stroke();
+      }
+    }
+    ctx.strokeStyle=ST_GOLD;ctx.lineWidth=1.6;ctx.fillStyle="#0a1119";
+    for(const sy of [-1,1]){
+      const dy=sy*22,ang=G.t*.004*sy+V.ph;
+      ctx.beginPath();ctx.moveTo(0,sy*12);ctx.lineTo(0,dy);ctx.stroke();
+      ctx.save();ctx.translate(0,dy);ctx.rotate(ang);
+      ctx.beginPath();ctx.ellipse(0,0,9*V.a,3.2,0,0,Math.PI,true);ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-4.5);ctx.stroke();
+      ctx.restore();
+    }
+    stCore(4.5,13,true);
+    ctx.fillStyle=(Math.sin(G.t*.06+V.ph)>.4)?"rgba(140,240,255,.9)":"rgba(140,240,255,.2)";
+    ctx.beginPath();ctx.arc(0,0,2,0,TAU);ctx.fill();
+  }else if(ty==="outpost"){
+    /* угловатый броневой блок с турелями: панелей нет, только красные огни */
+    ctx.strokeStyle="rgba(220,120,90,.8)";ctx.lineWidth=2;ctx.fillStyle="#141a20";
+    ctx.beginPath();
+    for(let i=0;i<6;i++){
+      const t=i*Math.PI/3+.3,rx=Math.cos(t)*20*V.a,ry=Math.sin(t)*17*V.b;
+      i?ctx.lineTo(rx,ry):ctx.moveTo(rx,ry);
+    }
+    ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.lineWidth=1.2;ctx.strokeStyle="rgba(220,120,90,.45)";
+    ctx.beginPath();ctx.moveTo(-14,-6);ctx.lineTo(14,-6);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-14,6);ctx.lineTo(14,6);ctx.stroke();
+    /* турели поводят стволами — станция явно сторожевая */
+    ctx.strokeStyle="rgba(255,160,120,.9)";ctx.lineWidth=2.4;ctx.fillStyle="#1b2229";
+    for(let i=0;i<3;i++){
+      const t=i*TAU/3+V.ph,bx=Math.cos(t)*17*V.a,by=Math.sin(t)*15*V.b;
+      const ga=t+Math.sin(G.t*.012+i)*.5;
+      ctx.beginPath();ctx.arc(bx,by,3.4,0,TAU);ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+Math.cos(ga)*8,by+Math.sin(ga)*8);ctx.stroke();
+    }
+    stCore(5,12,false);
+    ctx.fillStyle=(Math.sin(G.t*.14)>.3)?"rgba(255,80,60,.95)":"rgba(255,80,60,.15)";
+    for(const sx of [-1,1]){ctx.beginPath();ctx.arc(sx*20*V.a,0,2,0,TAU);ctx.fill();}
+  }else{
+    /* заправочная: бак с причалом, ничего лишнего */
+    ctx.strokeStyle=ST_GOLD;ctx.lineWidth=2;
+    const g=ctx.createLinearGradient(-16,0,16,0);
+    g.addColorStop(0,"#1b2a38");g.addColorStop(.5,"#0c141c");g.addColorStop(1,"#070b10");
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.ellipse(0,2,15*V.a,19*V.b,0,0,TAU);ctx.fill();ctx.stroke();
+    ctx.strokeStyle="rgba(242,178,92,.35)";ctx.lineWidth=1;
+    for(const yy of [-6,2,10]){
+      ctx.beginPath();ctx.ellipse(0,yy,15*V.a*.94,4,0,0,Math.PI);ctx.stroke();
+    }
+    ctx.strokeStyle="rgba(150,190,220,.5)";ctx.lineWidth=1.6;
+    for(const sx of [-1,1]){
+      ctx.beginPath();ctx.moveTo(sx*13*V.a,-4);ctx.lineTo(sx*20,-9);ctx.lineTo(sx*20,4);ctx.stroke();
+    }
+    stCore(4,12,false);
+  }
   ctx.restore();
   ctx.fillStyle="rgba(242,178,92,.6)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText(G.sys.station.name.toUpperCase(),x,y+40);
+  ctx.fillText(S.name.toUpperCase(),x,y+40);
 }
