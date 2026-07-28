@@ -48,6 +48,7 @@
 
 **Hearing it**
 - Every sound is synthesised at runtime — there is not a single audio file in the project. Oscillators, filtered noise and envelopes make the engine hum that rises with your throttle, weapon fire, hull hits, the drill, footsteps that follow your actual walk cycle, and low-fuel warnings. Guns take their timbre from the fitted part's seed, so different weapons sound different for free, and each creature's call comes from its own seed. Music and effect volumes are separate settings, and audio only starts after your first input, the way browsers require.
+- **Generative music** — no tracks, just five layers (drone, bass, motif, percussion, atmosphere) that drift in and out, so there are no seams and no loop to notice. Each location has its own mode and tempo: lydian and unhurried in open space, whole-tone on the star map, locrian and sparse in caves, phrygian and driving in a fight. Planets pick their mode, key and tempo from the same genome that decides their plants and creatures, so every world has its own music and sounds the same each time you return. A single tension value — pirates closing in, a battered hull, mine depth — thickens the percussion and motif on its own, then lets them thin out again, instead of switching to a separate combat track.
 
 **Persistence**
 - Local autosave, portable base64 save codes for moving between devices, and optional cloud sync against your own server.
