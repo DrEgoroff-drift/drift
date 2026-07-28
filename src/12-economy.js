@@ -18,6 +18,7 @@ function sellCargo(sys,k,qty){
   if(qty<=0)return 0;
   const price=marketFor(sys)[k],revenue=qty*price;
   G.credits+=revenue;G.cargo[k]-=qty;
+  G.soldTotal=(G.soldTotal|0)+revenue;   // «пузырь» смотрит на выручку, а не на штуки
   const m=G.market[sys.key];
   m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
   return revenue;

@@ -29,7 +29,7 @@ function snapshot(){
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],species:[...G.species],
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
     drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
-    mgrs:G.mgrs,blueprints:G.blueprints,
+    mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,
     fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -114,17 +114,29 @@ function applySave(s){
     perks:(Array.isArray(m.perks)?m.perks:[]).filter(p=>mgrPerkList(m.role).some(x=>x.id===p)).slice(0,6),
     rules:(Array.isArray(m.rules)?m.rules:[]).filter(x=>MGR_RULES[m.role].some(r=>r.id===x)).slice(0,6),
     loy:clamp(+m.loy||0,0,100),fee:Math.max(0,m.fee|0),
+    /* ядро: у него вместо лояльности дрейф, и он тоже переживает загрузку */
+    ai:m.ai?1:0,drift:clamp(+m.drift||0,0,100),stageRu:String(m.stageRu||""),
     shipId:(m.shipId&&G.owned[m.shipId])?m.shipId:null,
     route:(Array.isArray(m.route)?m.route:[]).filter(x=>typeof x==="string").slice(0,4),
     earned:Math.max(0,m.earned|0),spent:Math.max(0,m.spent|0),
     tookCr:Math.max(0,m.tookCr|0),stole:Math.max(0,m.stole|0),
     gotData:Math.max(0,m.gotData|0),prog:Math.max(0,+m.prog||0),
+    gift:Math.max(0,m.gift|0),slotBonus:Math.max(0,m.slotBonus|0),
+    quietLever:m.quietLever?1:0,jobsDone:Math.max(0,m.jobsDone|0),
+    jobPast:(Array.isArray(m.jobPast)?m.jobPast:[]).filter(x=>jobDef(x)).slice(0,20),
+    /* поручение переживает загрузку, но срок идёт заново: счётчики-маркеры
+       (убитые пираты, выручка, вмешательства в приказы) живут только в сессии */
+    job:(m.job&&jobDef(m.job.id))?{id:m.job.id,t0:Date.now(),
+      mins:Math.max(0,+m.job.mins||0),offer:m.job.offer?1:0,
+      pick:m.job.pick|0,hold:m.job.hold?1:0,mark:0}:null,
     log:Array.isArray(m.log)?m.log.slice(0,8).map(e=>({t:+e.t||0,k:String(e.k||""),s:String(e.s||"")})):[],
     tMs:Date.now()
   })).slice(0,MGR_CAP);
   /* один домен — один управляющий: если запись пришла битой, лишних отбрасываем */
   const seen={};
   G.mgrs=G.mgrs.filter(m=>seen[m.role]?false:(seen[m.role]=1));
+  G.aiRift=(s.aiRift&&typeof s.aiRift==="object")?{sx:s.aiRift.sx|0,sy:s.aiRift.sy|0,
+    name:String(s.aiRift.name||""),t:+s.aiRift.t||0}:null;
   G.blueprints={};
   if(s.blueprints&&typeof s.blueprints==="object")
     for(const k in s.blueprints)if(BLUEPRINTS[k])G.blueprints[k]=s.blueprints[k]>0?1:-1;

@@ -141,7 +141,7 @@ function mgrLevel(m){
   return lv;
 }
 function mgrNext(m){const lv=mgrLevel(m);return lv>=6?null:MGR_XP[lv];}
-function mgrPoints(m){return mgrLevel(m)-1-(m.perks?m.perks.length:0);}
+function mgrPoints(m){return mgrLevel(m)-1+(m.gift|0)-(m.perks?m.perks.length:0);}
 function mgrLearn(m,id){
   if(mgrPoints(m)<=0){say("Нет свободных очков\nнужен уровень");return false;}
   if(mgrPerk(m,id))return false;
@@ -167,10 +167,14 @@ function mgrLearn(m,id){
    убыточен — и это правильно: он не ускоритель раннего старта, а способ поднять
    потолок, когда потолок уже мешает. */
 function mgrPay(m){
+  if(m.ai)return aiUpkeep(m);            // ядро берёт не оклад, а обслуживание
   return Math.round(MGR_ROLES[m.role].pay*(1+(mgrLevel(m)-1)*.18)*mgrTraitMul(m,"pay"));
 }
 function mgrCut(m){
+  if(m.ai)return 0;                      // доли у машины нет — в этом весь соблазн
   let c=MGR_ROLES[m.role].cut+mgrTraitAdd(m,"cut")-techLv("audit")*.015;
+  /* тихая проверка в «двойной книге» — рычаг: он работает дешевле и знает почему */
+  if(m.quietLever)c-=.025;
   return clamp(c,.01,.2);
 }
 /* доля снимается до того, как деньги попадут игроку, и всегда видна строкой */
@@ -331,7 +335,8 @@ const MGR_RULES={
 };
 function mgrSlots(m){
   const lv=mgrLevel(m);
-  return 1+(lv>=2?1:0)+(lv>=4?1:0)+(lv>=6?1:0)+techLv("orders");
+  const n=1+(lv>=2?1:0)+(lv>=4?1:0)+(lv>=6?1:0)+techLv("orders")+(m.slotBonus|0);
+  return m.ai?n*2:n;                     // у ядра слотов вдвое — и они срабатывают сразу
 }
 function mgrRule(m,id){return m.rules.indexOf(id)>=0;}
 function mgrToggleRule(m,id){
@@ -367,14 +372,22 @@ function mgrTick(){
       continue;
     }
     m.warnRes=0;
+    if(!m.ai)jobTick(m);                 // машине не о чем с вами разговаривать
     const work=mgrDomain(m,min);
+    if(m.ai){
+      aiDrift(m,min,work);
+      if(m.gone){G.mgrs.splice(i,1);continue;}
+    }
     if(work>0){
       m.xp=(m.xp||0)+work*mgrTraitMul(m,"xp");
       const lv=mgrLevel(m);
       if(lv>(m.lv0|0)){
         m.lv0=lv;
-        mgrSay(m,"Уровень "+lv+" · есть очко перка","good");
-        tell("","Уровень "+lv+": "+m.name,m.name+" вырос до уровня "+lv+"\nоткройте ШТАБ — есть очко перка");
+        if(m.ai){aiLearn(m);mgrSay(m,"Уровень "+lv+" · выбор сделан");}
+        else{
+          mgrSay(m,"Уровень "+lv+" · есть очко перка","good");
+          tell("","Уровень "+lv+": "+m.name,m.name+" вырос до уровня "+lv+"\nоткройте ШТАБ — есть очко перка");
+        }
       }
     }
   }
@@ -389,6 +402,15 @@ function mgrPayroll(m,min){
   G.credits-=pay;m.spent=(m.spent||0)+pay;
   const short=due-pay;
   const drop=mgrTraitMul(m,"loyDrop");
+  /* Машине нечего обижаться: недоплата не роняет лояльность, а разгоняет дрейф.
+     Ядро, которому урезали бюджет, начинает решать за вас быстрее. */
+  if(m.ai){
+    if(short>0){
+      m.drift=clamp((m.drift||0)+min*1.1,0,100);
+      if(!m.warnPay){m.warnPay=1;mgrSay(m,"Бюджет обслуживания не покрыт. Перехожу на самообеспечение.","warn");}
+    }else m.warnPay=0;
+    return;
+  }
   if(short>0){
     m.loy=Math.max(0,m.loy-min*1.6*drop);
     if(!m.warnPay&&m.loy<45){
@@ -513,6 +535,9 @@ function mgrSamples(){
   return n;
 }
 function mgrWorkSci(m,min){
+  /* «Ксеношум»: пока он слушает, лаборатория стоит. Это и есть цена поручения —
+     не кредиты, а время, которого не будет ни на науку, ни на чертежи. */
+  if(m.job&&m.job.hold)return min*.4;
   const rate=(mgrPerk(m,"fast")?1.3:1)*(mgrPerk(m,"par")?1.8:1);
   m.prog=(m.prog||0)+min*rate;
   const need=14;

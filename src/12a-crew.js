@@ -171,6 +171,7 @@ function crewOrder(c,kind,sx,sy){
   if(crewBusy(c)==="hostage"){say(c.name+" в плену\nсначала выкуп или штурм базы");return false;}
   c.order={kind,sx:sx!=null?sx:G.sx,sy:sy!=null?sy:G.sy};
   c.tMs=Date.now();c.tripMin=0;                 // смена района начинает рейс заново
+  G.orderStamp=(G.orderStamp|0)+1;    // «тишина в эфире» считает именно вмешательства
   logAdd("",c.name+" → "+ORDERS[kind].ru+" · сектор "+c.order.sx+","+c.order.sy);
   /* показываем его в небе сразу, а не только при следующем входе в систему —
      иначе игрок отдаёт приказ и не видит никаких признаков, что кто-то работает */

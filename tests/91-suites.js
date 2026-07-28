@@ -628,3 +628,107 @@ TEST_SUITES.push(()=>suite("портрет управляющего рисует
   for(let i=0;i<hi.length;i+=4)if(hi[i]!==lo[i])d2++;
   ok(d2>0,"настроение меняет портрет ("+d2+" пикселей)");
 }));
+
+/* ── поручения: сцена с решением, а не маршрут с точкой ── */
+TEST_SUITES.push(()=>suite("поручение: цель, срок и провал",()=>{
+  resetWorld();
+  G.credits=300000;
+  hireMgr(genMgr(4242,["cmd"]));
+  const m=mgrOf("cmd");m.loy=70;
+  /* цель считается по обычному состоянию игры, а не по счётчику ради квеста */
+  m.job={id:"showfight",t0:Date.now(),mins:25,offer:1};
+  ok(jobAccept(m),"поручение принято");
+  eq(m.job.offer,undefined,"предложение стало работой");
+  jobTick(m);
+  ok(!!m.job,"без убитых пиратов оно висит");
+  G.kills=(G.kills|0)+6;
+  jobTick(m);
+  ok(!m.job,"шесть пиратов закрыли поручение");
+  ok(mgrPoints(m)>0,"награда — очко перка вне очереди");
+  /* «тишина в эфире» ломается любым вашим приказом — и он это помнит */
+  const loy0=m.loy;
+  m.job={id:"silence",t0:Date.now(),mins:18,mark:G.orderStamp|0};
+  jobTick(m);
+  ok(!!m.job,"пока вы молчите, поручение идёт");
+  G.orderStamp++;                       // влезли с приказом
+  jobTick(m);
+  ok(!m.job&&m.loy<loy0,"вмешательство закрыло поручение не в вашу пользу");
+}));
+
+TEST_SUITES.push(()=>suite("поручение: выбор стоит денег и лояльности",()=>{
+  resetWorld();
+  G.credits=300000;
+  hireMgr(genMgr(4242,["cmd"]));
+  const m=mgrOf("cmd");m.loy=60;
+  m.job={id:"honor",t0:Date.now(),mins:0,offer:1};
+  const cr=G.credits,loy=m.loy;
+  ok(jobPick(m,0),"вариант «выкупить» выбран");
+  ok(G.credits<cr,"он списал деньги");
+  ok(m.loy>loy,"и запомнил это в вашу пользу");
+  ok(!m.job,"сцена закрылась");
+  /* одно и то же поручение не приходит дважды */
+  ok((m.jobPast||[]).indexOf("honor")>=0,"поручение ушло в прошедшие");
+  m.job={id:"honor",t0:Date.now(),mins:0,offer:1};
+  const pool=MGR_JOBS.filter(J=>J.role==="cmd"&&(m.jobPast||[]).indexOf(J.id)<0);
+  ok(pool.length<MGR_JOBS.filter(J=>J.role==="cmd").length,"пул поручений сузился");
+}));
+
+/* ── ИИ-ядро: дешевле человека и постепенно перестаёт быть вашим ── */
+TEST_SUITES.push(()=>suite("ИИ-ядро: место, бюджет и дрейф",()=>{
+  resetWorld();
+  G.credits=300000;
+  /* без схемы ядра его не собрать */
+  ok(!buildAi("keep"),"без перка «схема ядра» ядро не собирается");
+  hireMgr(genMgr(31,["sci"]));
+  const sci=mgrOf("sci");
+  sci.xp=MGR_XP[5];
+  for(const id of ["draft","better","core"])mgrLearn(sci,id);
+  ok(aiCanBuild(),"схема ядра открыта");
+  G.cargo.iridium=60;G.cargo.crystal=50;G.cargo.isotopes=40;
+  ok(buildAi("keep"),"ядро собрано на свободный домен");
+  const ai=mgrOf("keep");
+  ok(ai.ai===1,"это машина, а не человек");
+  eq(mgrCut(ai),0,"доли не берёт");
+  ok(mgrPay(ai)<MGR_ROLES.keep.pay,"обслуживание дешевле оклада человека");
+  const human=genMgr(1,["keep"]);human.xp=ai.xp;human.perks=[];human.slotBonus=0;
+  eq(mgrSlots(ai),mgrSlots(human)*2,"слотов приказов у него вдвое против человека того же уровня");
+  /* занятый домен вторым ядром не берётся, и пятого места нет */
+  ok(!buildAi("keep"),"на занятый домен второе ядро не встаёт");
+  G.credits=300000;G.cargo.iridium=60;G.cargo.crystal=50;G.cargo.isotopes=40;
+  ok(buildAi("cmd"),"второй свободный домен закрыт ядром");
+  G.credits=300000;G.cargo.iridium=60;G.cargo.crystal=50;G.cargo.isotopes=40;
+  ok(buildAi("fact"),"третий тоже");
+  eq(G.mgrs.length,MGR_CAP,"мест по-прежнему четыре");
+  ok(!buildAi("sci"),"пятого места не появилось");
+  /* дрейф растёт от работы, и на сотне ядро уходит вместе с доменом */
+  ai.drift=0;
+  aiDrift(ai,60,50);
+  ok(ai.drift>0,"дрейф вырос от самостоятельной работы");
+  ai.drift=99.9;
+  aiDrift(ai,1,0);
+  ok(ai.gone,"на сотне ядро разошлось");
+  ok(!!G.aiRift,"и видно, куда именно оно ушло");
+}));
+
+TEST_SUITES.push(()=>suite("ИИ-ядро: учится само и переживает сохранение",()=>{
+  resetWorld();
+  G.credits=300000;
+  hireMgr(genMgr(31,["sci"]));
+  const sci=mgrOf("sci");
+  sci.xp=MGR_XP[5];
+  for(const id of ["draft","better","core"])mgrLearn(sci,id);
+  G.cargo.iridium=60;G.cargo.crystal=50;G.cargo.isotopes=40;
+  buildAi("cmd");
+  const ai=mgrOf("cmd");
+  ai.xp=MGR_XP[3];
+  aiLearn(ai);
+  ok(ai.perks.length>0,"очки оно потратило само");
+  eq(mgrPoints(ai),0,"и не оставило свободных");
+  ai.drift=55;
+  const json=JSON.stringify(snapshot());
+  resetWorld();
+  applySave(JSON.parse(json));
+  const back=mgrOf("cmd");
+  ok(back&&back.ai===1,"ядро восстановлено машиной");
+  near(back.drift,55,.1,"дрейф сохранился");
+}));

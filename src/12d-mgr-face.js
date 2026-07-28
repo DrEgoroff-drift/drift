@@ -27,13 +27,14 @@ function facePath(c,r,cx,cy,w,h){
   c.closePath();
 }
 function mgrFace(m,size){
-  const key=size+":"+Math.round((m.loy||55)/12)+":"+mgrLevel(m);
+  const key=size+":"+Math.round((m.loy||55)/12)+":"+mgrLevel(m)+":"+Math.round((m.drift||0)/10);
   if(m._face&&m._faceKey===key)return m._face;
   const S=size,cn=document.createElement("canvas");
   cn.width=S;cn.height=S;
   const c=cn.getContext("2d");
   const r=faceRnd(m,1);
   const R=MGR_ROLES[m.role];
+  if(m.ai){aiFace(c,m,S,r,R);m._face=cn;m._faceKey=key;return cn;}
   /* габарит головы тоже от seed: без этого все лица одного размера и на витрине
      кантины читаются как один человек в разных париках */
   const rg=faceRnd(m,3);
@@ -201,4 +202,43 @@ function mgrFace(m,size){
   c.strokeRect(0,0,S,S);c.globalAlpha=1;
   m._face=cn;m._faceKey=key;
   return cn;
+}
+/* ── лицо ядра ──
+   Никаких глаз и бровей: у машины нечего читать по лицу, и это само по себе
+   информация. Настроение заменяет геометрия — чем выше дрейф, тем сильнее
+   рисунок расходится с сеткой, по которой его собирали. */
+function aiFace(c,m,S,r,R){
+  const d=clamp((m.drift||0)/100,0,1);
+  c.fillStyle="#080b10";c.fillRect(0,0,S,S);
+  /* сетка: ровная у исполнителя, поехавшая у разошедшегося */
+  c.strokeStyle="rgba(127,230,216,.13)";c.lineWidth=1;
+  for(let i=1;i<6;i++){
+    const off=(r()-.5)*d*S*.16;
+    c.beginPath();c.moveTo(S*i/6+off,0);c.lineTo(S*i/6-off,S);c.stroke();
+    c.beginPath();c.moveTo(0,S*i/6-off);c.lineTo(S,S*i/6+off);c.stroke();
+  }
+  const cx=S*.5,cy=S*.5;
+  /* ядро: правильный многоугольник, который тем кривее, чем дальше зашло */
+  const n=5+Math.floor(r()*4);
+  const col=d<.45?R.col:(d<.9?"#f2b25c":"#ff6b57");
+  c.strokeStyle=col;c.lineWidth=Math.max(1.5,S*.022);
+  c.beginPath();
+  for(let i=0;i<=n;i++){
+    const a=i/n*TAU-Math.PI/2;
+    const rad=S*(.2+r()*.05)*(1+Math.sin(a*3)*d*.35);
+    const x=cx+Math.cos(a)*rad,y=cy+Math.sin(a)*rad;
+    if(i)c.lineTo(x,y);else c.moveTo(x,y);
+  }
+  c.closePath();c.stroke();
+  c.fillStyle=col;c.globalAlpha=.13+d*.2;c.fill();c.globalAlpha=1;
+  /* зрачок-точка: единственное, что похоже на взгляд */
+  c.fillStyle=col;
+  c.beginPath();c.arc(cx,cy,S*(.035+d*.02),0,TAU);c.fill();
+  /* уровень — те же нашивки, что у человека: система одна */
+  const lv=mgrLevel(m);
+  for(let i=0;i<Math.min(3,Math.floor((lv-1)/2)+(lv>=4?1:0));i++){
+    c.fillStyle=R.col;c.fillRect(S*.1+i*S*.05,S*.88,S*.032,S*.05);
+  }
+  c.strokeStyle=col;c.globalAlpha=.6;c.lineWidth=Math.max(1,S*.016);
+  c.strokeRect(0,0,S,S);c.globalAlpha=1;
 }

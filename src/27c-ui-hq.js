@@ -23,6 +23,16 @@ function loyBar(m){
 }
 function mgrHead(m){
   const R=MGR_ROLES[m.role],lv=mgrLevel(m),nx=mgrNext(m);
+  /* у машины нет лояльности и доли — вместо них поведение словами. Дрейф числом
+     не показывается нигде: он читается по журналу, а не по полосе */
+  if(m.ai){
+    const st=aiStage(m);
+    return "<b style='color:"+R.col+"'>"+m.name+"</b><s>ИИ-ядро · "+R.ru.toLowerCase()+
+      " · уровень "+lv+(nx?" · до следующего "+Math.max(0,Math.round(nx-(m.xp||0)))+" оп":"")+
+      "<br>режим: <b style='color:"+((m.drift||0)>=45?"#ff9d7a":"#8fd08a")+"'>"+st.ru+
+      "</b> — "+st.note+
+      "<br>доли не берёт · обслуживание "+mgrPay(m)+" кр/мин · перки выбирает само</s>";
+  }
   return "<b style='color:"+R.col+"'>"+m.name+"</b><s>"+R.ru.toLowerCase()+" · уровень "+lv+
     (nx?" · до следующего "+Math.max(0,Math.round(nx-(m.xp||0)))+" оп":" · потолок")+
     "<br>"+loyBar(m)+" · доля "+(mgrCut(m)*100).toFixed(1)+"% · оклад "+mgrPay(m)+" кр/мин"+
@@ -91,6 +101,7 @@ function hqRender(){
     $hqBody.appendChild(el("div","row","<div class='nm'><s>управляющий берёт домен целиком: "+
       "звено наёмников, дроны и базы, торговый маршрут или лабораторию. Он не ускоряет "+
       "ранний старт — он поднимает потолок, когда потолок уже мешает.</s></div>"));
+    hqAiOffer();
     return;
   }
   if(!G.mgrs.some(m=>m.id===hqSel))hqSel=G.mgrs[0].id;
@@ -121,6 +132,8 @@ function hqRender(){
     (m.stole?" · <b style='color:#ff9d7a'>сверх того «потерялось» "+m.stole.toLocaleString("ru")+" кр</b>":"")+
     "<br>отдал вам: "+(m.earned||0).toLocaleString("ru")+" кр · съел окладом "+
     (m.spent||0).toLocaleString("ru")+" кр</s></div>"));
+  /* поручение — первое, что должно бросаться в глаза: у него есть срок */
+  if(m.job)hqJobCard(m);
   /* его лента: домен рассказывает о себе сам, а не молчит между уровнями */
   if(m.log&&m.log.length){
     const COL={warn:"#ff9d7a",good:"#8fd08a"};
@@ -128,8 +141,9 @@ function hqRender(){
       m.log.map(e=>"<span style='color:"+(COL[e.k]||"var(--dim)")+"'>• "+e.s+"</span>").join("<br>")+
       "</s></div>"));
   }
-  /* перки: дерево видно целиком, включая невыученное — игрок должен планировать */
-  const pts=mgrPoints(m);
+  /* перки: дерево видно целиком, включая невыученное — игрок должен планировать.
+     У ядра то же дерево, но рука своя: кнопок нет, только след его выбора. */
+  const pts=m.ai?0:mgrPoints(m);
   $hqBody.appendChild(el("div","sec","ПЕРКИ · СВОБОДНЫХ ОЧКОВ "+pts+
     " · ВЕТВЕЙ БОЛЬШЕ, ЧЕМ ОЧКОВ: ВЫУЧИТЬ ВСЁ НЕЛЬЗЯ"));
   for(const br of MGR_PERKS[m.role]){
@@ -141,7 +155,7 @@ function hqRender(){
       const r=el("div","row"+(have?" on":""));
       r.appendChild(el("div","nm","<b"+(have?" style='color:"+R.col+"'":"")+">"+p.ru+
         (have?" ✓":"")+"</b><s>"+p.note+(!open&&!have?" · сначала «"+br.list[i-1].ru+"»":"")+"</s>"));
-      if(!have){
+      if(!have&&!m.ai){
         const b=el("button","act sm"+(open&&pts>0?" gold":""),"ВЫУЧИТЬ");
         b.disabled=!open||pts<=0;
         b.onclick=()=>{if(mgrLearn(m,p.id))hqRender();};
@@ -198,6 +212,8 @@ function hqRender(){
     if(!any)$hqBody.appendChild(el("div","row","<div class='nm'><s>чертежей пока нет — "+
       "нужен перк «чертежи» и редкое сырьё в трюме как образцы</s></div>"));
   }
+  /* сборка ядра на свободный домен: оно занимает место, а не добавляет пятое */
+  hqAiOffer();
   /* расчёт: дорогой намеренно — с управляющим живут, а не перебирают */
   const rf=el("div","row");
   rf.appendChild(el("div","nm","<b>Расчёт</b><s>выходное пособие "+
@@ -208,6 +224,65 @@ function hqRender(){
   bf.onclick=()=>{if(fireMgr(m)){hqSel=null;hqRender();}};
   rf.appendChild(bf);
   $hqBody.appendChild(rf);
+}
+/* ── сборка ИИ-ядра ──
+   Появляется только когда исследователь дошёл до «схемы ядра». Выбор честный:
+   человек стоит денег и требует внимания к настроению, машина бесплатна и
+   безразлична — и постепенно перестаёт быть вашей. */
+function hqAiOffer(){
+  if(!aiCanBuild())return;
+  const free=MGR_ROLE_KEYS.filter(k=>!mgrTaken(k));
+  if(!free.length||G.mgrs.length>=MGR_CAP)return;
+  $hqBody.appendChild(el("div","sec","ИИ-ЯДРО · ЗАНИМАЕТ МЕСТО ЧЕЛОВЕКА, А НЕ ПЯТОЕ"));
+  const r=el("div","row");
+  r.appendChild(el("div","nm","<b>Собрать ядро</b><s>не берёт долю и оклада не просит, "+
+    "слотов приказов вдвое, не уходит и не ворует.<br>но бюджет оно тратит само и не "+
+    "спрашивает, а чем дольше работает — тем больше решает за вас."+
+    "<br>цена: "+AI_COST.credits.toLocaleString("ru")+" кр · иридий "+AI_COST.iridium+
+    " · кристаллы "+AI_COST.crystal+" · изотопы "+AI_COST.isotopes+
+    " (в трюме: "+(G.cargo.iridium|0)+"/"+(G.cargo.crystal|0)+"/"+(G.cargo.isotopes|0)+")</s>"));
+  for(const k of free){
+    const b=el("button","act sm"+(aiAfford()?" gold":""),MGR_ROLES[k].ru.toUpperCase());
+    b.disabled=!aiAfford();
+    b.onclick=()=>{if(buildAi(k)){hqSel=null;hqRender();}};
+    r.appendChild(b);
+  }
+  $hqBody.appendChild(r);
+}
+/* ── карточка поручения ──
+   Его слова даются от первого лица и без пояснений от игры: это разговор,
+   а не задание из журнала. */
+function hqJobCard(m){
+  const J=jobDef(m.job.id);
+  if(!J)return;
+  const left=jobLeft(m);
+  $hqBody.appendChild(el("div","sec","ПОРУЧЕНИЕ · "+J.ru.toUpperCase()+
+    (m.job.offer?" · ЖДЁТ ОТВЕТА":(J.mins||m.job.mins?" · ОСТАЛОСЬ "+Math.ceil(left)+" МИН":""))));
+  $hqBody.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;font-size:10px;"+
+    "line-height:1.8'>— "+J.text+"</s></div>"));
+  const r=el("div","row");
+  if(m.job.offer&&J.choice){
+    r.appendChild(el("div","nm","<s>решать вам, он исполнит</s>"));
+    J.opts.forEach((o,i)=>{
+      const b=el("button","act sm"+(o.bad?"":" gold"),o.ru);
+      b.disabled=!!(o.cost&&G.credits<o.cost);
+      b.onclick=()=>{if(jobPick(m,i))hqRender();};
+      r.appendChild(b);
+    });
+  }else if(m.job.offer){
+    r.appendChild(el("div","nm","<s>срок "+J.mins+" минут · отказ он запомнит</s>"));
+    const ba=el("button","act sm gold","ВЗЯТЬСЯ");
+    ba.onclick=()=>{if(jobAccept(m))hqRender();};
+    const bn=el("button","act sm","ОТКАЗАТЬ");
+    bn.onclick=()=>{if(jobRefuse(m))hqRender();};
+    r.appendChild(ba);r.appendChild(bn);
+  }else{
+    r.appendChild(el("div","nm","<s>идёт · "+(J.win_ru?"на кону: "+J.win_ru.toLowerCase():"")+"</s>"));
+    const bn=el("button","act sm","БРОСИТЬ");
+    bn.onclick=()=>{if(jobRefuse(m))hqRender();};
+    r.appendChild(bn);
+  }
+  $hqBody.appendChild(r);
 }
 /* одна строка про то, чем домен занят прямо сейчас */
 function mgrDomainLine(m){
