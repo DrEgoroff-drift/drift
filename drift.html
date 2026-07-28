@@ -1334,7 +1334,8 @@ const G={
   land:null,surf:null,st:null,belt:null,dig:null,cave:null,
   opts:{easyLand:true,autoDock:true,invX:false,invY:false,invYaw:false,lookSens:1,
     keys:{main:{},belt:{}},pads:"auto",padSize:1,
-    gfx:{draw:1,detail:1,particles:1,plants:1}},
+    gfx:{draw:1,detail:1,particles:1,plants:1},
+    audio:{on:true,music:.3,sfx:.6}},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,
   pirates:[],shots:[],log:[],logNew:0
@@ -1372,6 +1373,217 @@ function stat(){
 const held=()=>RES_KEYS.reduce((a,k)=>a+G.cargo[k],0);
 function say(s,d){G.msg=s;G.msgT=d||150;}
 
+/* ══════════════ звук: чистый синтез, ни одного файла ══════════════ */
+/* Браузер не даёт завести AudioContext до жеста пользователя, поэтому
+   контекст создаётся лениво из unlockAudio(), повешенного на первый ввод. */
+const SND={ctx:null,master:null,music:null,sfx:null,ready:false,voices:0,loops:{}};
+const VOICE_MAX=18;
+function audioOn(){return G.opts.audio&&G.opts.audio.on!==false;}
+function initAudio(){
+  if(SND.ctx)return SND.ctx;
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)return null;
+  try{
+    const c=new AC();
+    /* компрессор — чтобы залп из десятка выстрелов не рвал колонки */
+    const comp=c.createDynamicsCompressor();
+    comp.threshold.value=-16;comp.knee.value=22;comp.ratio.value=8;
+    comp.attack.value=.004;comp.release.value=.18;
+    const m=c.createGain();m.gain.value=.9;
+    m.connect(comp);comp.connect(c.destination);
+    const mus=c.createGain(),sf=c.createGain();
+    mus.connect(m);sf.connect(m);
+    SND.ctx=c;SND.master=m;SND.music=mus;SND.sfx=sf;SND.ready=true;
+    applyVolumes();
+    return c;
+  }catch(e){return null;}
+}
+function applyVolumes(){
+  if(!SND.ready)return;
+  const a=G.opts.audio||{music:.3,sfx:.6,on:true};
+  const on=a.on!==false?1:0;
+  SND.music.gain.value=(a.music==null?.3:a.music)*on;
+  SND.sfx.gain.value=(a.sfx==null?.6:a.sfx)*on;
+}
+function unlockAudio(){
+  if(!audioOn())return;
+  const c=initAudio();
+  if(c&&c.state==="suspended")c.resume();
+}
+/* ── кирпичики синтеза ── */
+function env(g,t,a,d,peak){
+  g.gain.cancelScheduledValues(t);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(Math.max(.0002,peak),t+a);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+a+d);
+}
+let noiseBuf=null;
+function noise(c){
+  if(!noiseBuf||noiseBuf.sampleRate!==c.sampleRate){
+    const n=Math.floor(c.sampleRate*1.2);
+    noiseBuf=c.createBuffer(1,n,c.sampleRate);
+    const d=noiseBuf.getChannelData(0);
+    /* розоватый шум: чуть мягче белого, ближе к «железу», а не к шипению */
+    let last=0;
+    for(let i=0;i<n;i++){const w=Math.random()*2-1;last=(last+w*.22)*.94;d[i]=clamp(last*3,-1,1);}
+  }
+  const s=c.createBufferSource();
+  s.buffer=noiseBuf;s.loop=true;
+  return s;
+}
+function voice(){
+  if(SND.voices>=VOICE_MAX)return false;
+  SND.voices++;
+  return true;
+}
+function freeVoice(node,t){
+  /* releaseVoice по факту окончания источника, а не по таймеру */
+  node.onended=()=>{SND.voices=Math.max(0,SND.voices-1);};
+}
+/* ── эффекты ── */
+const SFX={
+  /* короткий нисходящий свип: чем выше тон, тем «легче» орудие */
+  shot(o){
+    const c=SND.ctx,t=c.currentTime,f0=o&&o.f||620;
+    const osc=c.createOscillator(),g=c.createGain(),lp=c.createBiquadFilter();
+    osc.type="sawtooth";
+    osc.frequency.setValueAtTime(f0,t);
+    osc.frequency.exponentialRampToValueAtTime(f0*.28,t+.13);
+    lp.type="lowpass";lp.frequency.setValueAtTime(f0*3.2,t);
+    lp.frequency.exponentialRampToValueAtTime(f0*.7,t+.13);
+    env(g,t,.005,.14,(o&&o.v||.5)*1.1);
+    osc.connect(lp);lp.connect(g);g.connect(SND.sfx);
+    osc.start(t);osc.stop(t+.17);freeVoice(osc);
+  },
+  hit(o){
+    const c=SND.ctx,t=c.currentTime;
+    const n=noise(c),g=c.createGain(),bp=c.createBiquadFilter();
+    bp.type="bandpass";bp.Q.value=1.1;
+    bp.frequency.setValueAtTime(1400,t);
+    bp.frequency.exponentialRampToValueAtTime(240,t+.2);
+    env(g,t,.003,.22,(o&&o.v||.45)*2);
+    n.connect(bp);bp.connect(g);g.connect(SND.sfx);
+    n.start(t);n.stop(t+.26);freeVoice(n);
+  },
+  boom(o){
+    const c=SND.ctx,t=c.currentTime,v=(o&&o.v||.75)*.34;
+    const n=noise(c),g=c.createGain(),lp=c.createBiquadFilter();
+    lp.type="lowpass";
+    lp.frequency.setValueAtTime(1900,t);
+    lp.frequency.exponentialRampToValueAtTime(90,t+.7);
+    env(g,t,.006,.8,v);
+    n.connect(lp);lp.connect(g);g.connect(SND.sfx);
+    n.start(t);n.stop(t+.9);freeVoice(n);
+    /* низкий «удар» под шумом — иначе взрыв звучит как шипение */
+    const osc=c.createOscillator(),g2=c.createGain();
+    osc.type="sine";
+    osc.frequency.setValueAtTime(150,t);
+    osc.frequency.exponentialRampToValueAtTime(38,t+.45);
+    env(g2,t,.008,.5,v*.8);
+    osc.connect(g2);g2.connect(SND.sfx);
+    osc.start(t);osc.stop(t+.6);
+  },
+  drill(){
+    const c=SND.ctx,t=c.currentTime;
+    const n=noise(c),g=c.createGain(),bp=c.createBiquadFilter();
+    /* узкая полоса съедала почти всю энергию — бур был не слышен, Q пришлось опустить */
+    bp.type="bandpass";bp.Q.value=1.8;bp.frequency.value=320+Math.random()*260;
+    env(g,t,.004,.1,1.1);
+    n.connect(bp);bp.connect(g);g.connect(SND.sfx);
+    n.start(t);n.stop(t+.13);freeVoice(n);
+  },
+  step(o){
+    const c=SND.ctx,t=c.currentTime;
+    const n=noise(c),g=c.createGain(),lp=c.createBiquadFilter();
+    lp.type="lowpass";lp.frequency.value=(o&&o.f||420);
+    env(g,t,.003,.07,.5);
+    n.connect(lp);lp.connect(g);g.connect(SND.sfx);
+    n.start(t);n.stop(t+.1);freeVoice(n);
+  },
+  /* интерфейс: чистые тоны, короткие, без хвоста */
+  ui(o){
+    const c=SND.ctx,t=c.currentTime;
+    const osc=c.createOscillator(),g=c.createGain();
+    osc.type="triangle";
+    osc.frequency.setValueAtTime((o&&o.f||760),t);
+    if(o&&o.to)osc.frequency.exponentialRampToValueAtTime(o.to,t+.1);
+    env(g,t,.004,(o&&o.d||.09),(o&&o.v||.3)*3);
+    osc.connect(g);g.connect(SND.sfx);
+    osc.start(t);osc.stop(t+(o&&o.d||.09)+.05);freeVoice(osc);
+  },
+  /* голос существа: тембр целиком из его seed — у каждого зверя свой */
+  beast(o){
+    const c=SND.ctx,t=c.currentTime,r=rng((o&&o.seed||1)>>>0);
+    const base=90+r()*260;
+    const osc=c.createOscillator(),g=c.createGain(),lp=c.createBiquadFilter();
+    osc.type=r()<.5?"sawtooth":"square";
+    osc.frequency.setValueAtTime(base,t);
+    osc.frequency.linearRampToValueAtTime(base*(.6+r()*.9),t+.18);
+    lp.type="lowpass";lp.frequency.value=base*(4+r()*5);
+    env(g,t,.02,.24,.22);
+    osc.connect(lp);lp.connect(g);g.connect(SND.sfx);
+    osc.start(t);osc.stop(t+.3);freeVoice(osc);
+  },
+  alarm(o){
+    const c=SND.ctx,t=c.currentTime;
+    for(let i=0;i<2;i++){
+      const osc=c.createOscillator(),g=c.createGain();
+      osc.type="square";
+      osc.frequency.value=(o&&o.f||440);
+      const t0=t+i*.17;
+      g.gain.setValueAtTime(0.0001,t0);
+      g.gain.exponentialRampToValueAtTime(.22,t0+.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+.13);
+      osc.connect(g);g.connect(SND.sfx);
+      osc.start(t0);osc.stop(t0+.16);
+    }
+  },
+  jump(){
+    const c=SND.ctx,t=c.currentTime;
+    const osc=c.createOscillator(),g=c.createGain(),lp=c.createBiquadFilter();
+    osc.type="sawtooth";
+    osc.frequency.setValueAtTime(70,t);
+    osc.frequency.exponentialRampToValueAtTime(1500,t+.55);
+    lp.type="lowpass";
+    lp.frequency.setValueAtTime(300,t);
+    lp.frequency.exponentialRampToValueAtTime(4200,t+.55);
+    env(g,t,.12,.5,.2);
+    osc.connect(lp);lp.connect(g);g.connect(SND.sfx);
+    osc.start(t);osc.stop(t+.7);freeVoice(osc);
+  }
+};
+function sfx(name,o){
+  if(!audioOn()||!SND.ready||!SFX[name])return;
+  if(SND.ctx.state!=="running")return;
+  if(!voice())return;                  // полифония кончилась — молча пропускаем
+  try{SFX[name](o);}catch(e){SND.voices=Math.max(0,SND.voices-1);}
+}
+/* ── непрерывный гул двигателя: один голос, живёт всё время полёта ── */
+function engineLoop(level,tone){
+  if(!audioOn()||!SND.ready||SND.ctx.state!=="running"){stopEngine();return;}
+  const c=SND.ctx;
+  let L=SND.loops.engine;
+  if(!L){
+    const n=noise(c),g=c.createGain(),lp=c.createBiquadFilter(),
+          osc=c.createOscillator(),og=c.createGain();
+    lp.type="lowpass";lp.frequency.value=340;
+    g.gain.value=0;
+    osc.type="sawtooth";osc.frequency.value=52;og.gain.value=.35;
+    n.connect(lp);lp.connect(g);osc.connect(og);og.connect(g);g.connect(SND.sfx);
+    n.start();osc.start();
+    L=SND.loops.engine={n,g,lp,osc,og};
+  }
+  const t=c.currentTime;
+  L.g.gain.setTargetAtTime(clamp(level,0,1)*.3,t,.09);
+  L.lp.frequency.setTargetAtTime(220+level*760,t,.12);
+  L.osc.frequency.setTargetAtTime(40+(tone||0)*36,t,.12);
+}
+function stopEngine(){
+  const L=SND.loops.engine;
+  if(!L||!SND.ready)return;
+  L.g.gain.setTargetAtTime(0,SND.ctx.currentTime,.08);
+}
+
 /* ══════════════ бортовой журнал ══════════════ */
 /* сообщения по центру экрана живут пару секунд, журнал помнит их между сеансами */
 const LOG_MAX=90;
@@ -1382,7 +1594,13 @@ function logAdd(kind,text){
   if(logOpen)renderLog(); else{G.logNew=(G.logNew|0)+1;logBtnLabel();}
 }
 /* сказать и записать одним движением */
-function tell(kind,short,full){say(full||short);logAdd(kind,short);}
+const TELL_SFX={money:{f:660,to:990,d:.13,v:.3},tech:{f:520,to:1180,d:.2,v:.3},
+                kill:{f:880,to:520,d:.12,v:.26},warn:{f:300,to:190,d:.2,v:.3}};
+function tell(kind,short,full){
+  const s=TELL_SFX[kind];
+  if(s)sfx("ui",s);
+  say(full||short);logAdd(kind,short);
+}
 function logTime(ms){
   const d=new Date(ms);
   return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);
@@ -1422,6 +1640,7 @@ function addRes(k,n){
 /* штучная добыча: дробный бонус обогащения копится, чтобы +18% не съедалось округлением */
 let refineBank=0;
 function minedUnit(k){
+  sfx("drill");
   refineBank+=stat().refine;
   const n=Math.floor(refineBank);refineBank-=n;
   return addRes(k,n);
@@ -1535,6 +1754,13 @@ function spawnPirates(){
 }
 function fireShot(x,y,ang,speed,dmg,mine){
   G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,mine,life:150});
+  /* тембр своего выстрела берём из установленной пушки: у каждой части свой seed,
+     значит разные орудия звучат по-разному сами собой, без отдельного контента */
+  if(mine){
+    const g=fittedParts().filter(p=>p.kind==="gun")[0];
+    const f=g?420+(g.seed%9)*90:620;
+    sfx("shot",{f,v:.5});
+  }else sfx("shot",{f:300,v:.3});
 }
 let fireCool=0;
 function updateCombat(dt){
@@ -1552,6 +1778,7 @@ function updateCombat(dt){
     L.x+=L.vx*dt;L.y+=L.vy*dt;L.vx*=.996;L.vy*=.996;L.spin+=.02*dt;L.life-=dt;
     if(Math.hypot(L.x-sh.x,L.y-sh.y)<40){
       addPart(L.part);
+      sfx("ui",{f:520,to:1040,d:.16,v:.34});
       tell("kill","Подобрана часть: "+L.part.name+" ("+TIER_RU[L.part.tier]+")",
            "Контейнер вскрыт\n"+L.part.name+"\n"+L.part.aff.map(affLabel).join("\n"));
       G.loot.splice(i,1);
@@ -1598,6 +1825,7 @@ function updateCombat(dt){
       for(const p of G.pirates){
         if(Math.hypot(s.x-p.x,s.y-p.y)<20){
           p.hull-=s.dmg;gone=true;
+          sfx("hit",{v:.3});
           if(p.hull<=0)killPirate(p);
           break;
         }
@@ -1606,8 +1834,10 @@ function updateCombat(dt){
       if(Math.hypot(s.x-sh.x,s.y-sh.y)<18){
         gone=true;
         let d=s.dmg;
-        if(G.shield>0){const a=Math.min(G.shield,d);G.shield-=a;d-=a;}
+        /* по щиту — звонкий отбой, по корпусу — глухой удар: слышно, что пробили */
+        if(G.shield>0){const a=Math.min(G.shield,d);G.shield-=a;d-=a;sfx("ui",{f:1250,to:700,d:.12,v:.28});}
         if(d>0){
+          sfx("hit",{v:.55});
           G.hull=Math.max(0,G.hull-d);
           if(G.hull<=0){wreck();return;}
         }
@@ -1619,6 +1849,7 @@ function updateCombat(dt){
 }
 function killPirate(p){
   const r=rng(p.seed);
+  sfx("boom",{v:.8});
   const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7)*stat().bountyMul);
   G.credits+=bounty;
   const loot=pick(RES_KEYS,r),got=addRes(loot,2+Math.floor(r()*7));
@@ -1781,7 +2012,10 @@ function applySave(s){
   if(!G.opts.pads)G.opts.pads="auto";if(!G.opts.padSize)G.opts.padSize=1;
   if(!G.opts.gfx||typeof G.opts.gfx!=="object")G.opts.gfx={draw:1,detail:1,particles:1,plants:1};
   for(const k of["draw","detail","particles","plants"])if(!G.opts.gfx[k])G.opts.gfx[k]=1;
-  invalidateKeyMap();applyPadMode();applyPadSize();
+  if(!G.opts.audio||typeof G.opts.audio!=="object")G.opts.audio={on:true,music:.3,sfx:.6};
+  if(typeof G.opts.audio.music!=="number")G.opts.audio.music=.3;
+  if(typeof G.opts.audio.sfx!=="number")G.opts.audio.sfx=.6;
+  invalidateKeyMap();applyPadMode();applyPadSize();applyVolumes();
   return true;
 }
 function saveGame(quiet){
@@ -1834,6 +2068,9 @@ function applyPadMode(){
 function padsFadeOut(){if(G.opts.pads==="auto")$padsEl.classList.add("faded");}
 function padsFadeIn(){if(G.opts.pads==="auto")$padsEl.classList.remove("faded");}
 addEventListener("keydown",padsFadeOut,{capture:true});
+/* первый же ввод любого рода снимает блокировку автоплея — раньше нельзя */
+for(const ev of ["pointerdown","keydown","touchstart"])
+  addEventListener(ev,unlockAudio,{capture:true});
 addEventListener("mousemove",padsFadeOut);
 /* ══════════════ ввод ══════════════ */
 document.querySelectorAll("[data-k]").forEach(b=>{
@@ -2735,6 +2972,7 @@ function jump(cost){
   G.ship.vx=-Math.cos(a)*.7;G.ship.vy=-Math.sin(a)*.7;G.ship.a=a+Math.PI;
   G.mode="system";
   spawnPirates();
+  sfx("jump");
   saveGame(true);
   logAdd("dim","Прыжок в "+G.sys.name+" ("+G.sx+":"+G.sy+") · −"+cost+" топлива"+
     (G.pirates.length?" · чужих сигнатур: "+G.pirates.length:""));
@@ -3594,6 +3832,8 @@ function updateSurface(dt){
   }else if(beast){
     G.prompt="ДЕЙСТВ — СКАНИРОВАТЬ ЖИВОТНОЕ\n"+beast.name.toUpperCase();
     if(actEdge){
+      /* существо подаёт голос: тембр из его же seed, у каждого свой */
+      sfx("beast",{seed:beast.seed||hashi(beast.x|0,beast.r*100|0,7)});
       beast.scanned=true;G.species.add(beast.name);G.data+=14;
       tell("","Новый вид: "+beast.name+" · +14 данных","Новый вид\n"+beast.name+"\n+14 данных");
     }
@@ -3819,7 +4059,7 @@ function updateCave(dt){
   if(walking)C.walkPhase+=dt*.22;
   /* фауна — тот же оглушить/собрать цикл, что и в шахте */
   if(keys.fire&&(C.zap||0)<=0){
-    C.zap=90;C.zapT=16;let n=0;
+    C.zap=90;C.zapT=16;sfx("ui",{f:1500,to:180,d:.22,v:.4});let n=0;
     for(const b of C.fauna)if(Math.hypot(b.x-C.x,b.y-C.y)<80){b.stun=420;b.flee=0;n++;}
     say(n?"Импульс · оглушено: "+n:"Импульс · мимо");
   }
@@ -3992,6 +4232,7 @@ function beaconTick(dt){
 /* скафандр — единственный расходник на планете, корпус здесь не страдает */
 function suitHit(n,why){
   const S=G.surf;
+  sfx("hit",{v:.5});
   S.suit=Math.max(0,S.suit-n);
   if(why)say(why+"\nскафандр −"+Math.round(n));
   if(S.suit<=0)suitFailure();
@@ -4100,7 +4341,7 @@ function digFauna(dt,st){
   if(D.zap>0)D.zap-=dt;
   if(D.zapT>0)D.zapT-=dt;
   if(keys.fire&&D.zap<=0){
-    D.zap=ZAP_COOL;D.zapT=16;
+    D.zap=ZAP_COOL;D.zapT=16;sfx("ui",{f:1500,to:180,d:.22,v:.4});
     let n=0;
     for(const b of D.bugs)
       if(Math.hypot(b.x-px,b.y-py)<ZAP_R){b.stun=STUN_T;b.flee=0;n++;}
@@ -5699,6 +5940,25 @@ function renderOpts(){
   bsz.onclick=()=>{const i=SZ.findIndex(s=>s[0]===G.opts.padSize);G.opts.padSize=SZ[(i+1)%SZ.length][0];
     applyPadSize();renderOpts();};
   rps.appendChild(bsz);$optBody.appendChild(rps);
+  $optBody.appendChild(el("div","sec","ЗВУК"));
+  mk("Звук","всё синтезируется на лету — ни одного звукового файла",
+    audioOn(),()=>{G.opts.audio.on=!audioOn();applyVolumes();
+      if(audioOn())unlockAudio();else stopEngine();});
+  /* шаги совпадают со значениями по умолчанию — иначе кнопка врёт про текущий уровень */
+  const VOL=[[0,"ВЫКЛ"],[.3,"ТИХО"],[.6,"СРЕДНЕ"],[.9,"ГРОМКО"]];
+  const volRow=(title,note,key)=>{
+    const rr=el("div","row");
+    rr.appendChild(el("div","nm","<b>"+title+"</b><s>"+note+"</s>"));
+    const i0=VOL.findIndex(v=>Math.abs(v[0]-G.opts.audio[key])<.02);
+    const bb=el("button","act gold",VOL[i0<0?2:i0][1]);
+    bb.onclick=()=>{G.opts.audio[key]=VOL[((i0<0?2:i0)+1)%VOL.length][0];
+      applyVolumes();unlockAudio();
+      if(key==="sfx")sfx("ui",{f:900});
+      renderOpts();};
+    rr.appendChild(bb);$optBody.appendChild(rr);
+  };
+  volRow("Громкость музыки","фоновая музыка своя в каждой локации","music");
+  volRow("Громкость эффектов","двигатель, выстрелы, бур, шаги","sfx");
   $optBody.appendChild(el("div","sec","ГРАФИКА"));
   const GLV=[[.6,"НИЗКАЯ"],[1,"СРЕДНЯЯ"],[1.5,"ВЫСОКАЯ"],[2,"МАКСИМУМ"]];
   const gfxRow=(title,note,key)=>{
@@ -5807,6 +6067,7 @@ function renderOpts(){
 
 /* ══════════════ авария ══════════════ */
 function wreck(){
+  sfx("boom",{v:1});stopEngine();
   const st=stat();
   G.hull=Math.round(st.hullMax*.45);G.fuel=Math.max(G.fuel,30);
   const a=Math.random()*TAU;
@@ -5877,6 +6138,41 @@ function hud(){
   document.body.classList.toggle("inbelt",G.mode==="belt");
 }
 
+/* ══════════════ звук по кадрам ══════════════ */
+/* Гул двигателя и шаги — единственное, что зависит от каждого кадра.
+   Всё остальное дёргается событиями из игровой логики. */
+let sndWalk=0, lastFuelWarn=0, lastHullWarn=0;
+function audioTick(dt){
+  if(!audioOn()||!SND.ready){return;}
+  const st=stat();
+  /* двигатель: в системе от тяги, в поясе — постоянный ход */
+  if(G.mode==="system"||G.mode==="dock"){
+    const on=(keys.thrust||G.ap)&&G.fuel>0;
+    engineLoop(on?1:(G.mode==="dock"?0:.12),G.mods.engine/4);
+  }else if(G.mode==="belt"&&G.belt){
+    engineLoop(keys.thrust?.9:.3,G.mods.engine/4);
+  }else if(G.mode==="landing"&&G.land){
+    engineLoop(keys.thrust?1:.1,.5);
+  }else stopEngine();
+  /* шаги: в такт уже существующей фазе ходьбы, а не по своему таймеру */
+  let ph=null,ground=420;
+  if(G.mode==="surface"&&G.surf&&G.surf.on){ph=G.surf.walkPhase;ground=520;}
+  else if(G.mode==="cave"&&G.cave){ph=G.cave.walkPhase;ground=300;}
+  else if(G.mode==="dig"&&G.dig){ph=G.dig.walkPhase;ground=260;}
+  if(ph!=null){
+    const s=Math.floor(ph/Math.PI);
+    if(s!==sndWalk){sndWalk=s;sfx("step",{f:ground});}
+  }
+  /* предупреждения: не чаще раза в несколько секунд, иначе это пытка */
+  const nowT=G.t;
+  if(G.fuel/st.fuelMax<.12&&nowT-lastFuelWarn>420&&G.mode!=="dock"){
+    lastFuelWarn=nowT;sfx("alarm",{f:330});
+  }
+  if(G.hull/st.hullMax<.25&&nowT-lastHullWarn>420){
+    lastHullWarn=nowT;sfx("alarm",{f:220});
+  }
+}
+
 /* ══════════════ цикл ══════════════ */
 let last=performance.now();
 let lastDroneTick=0;
@@ -5895,6 +6191,7 @@ function frame(now){
     else if(G.mode==="cave"&&G.cave)updateCave(dt);
     else if(G.mode==="belt"&&G.belt)updateBelt(dt);
     beaconTick(dt);
+    audioTick(dt);
     if(G.mode==="system"||G.mode==="dock")drawSystem();
     else if(G.mode==="map")drawMap();
     else if(G.mode==="landing")drawLanding();

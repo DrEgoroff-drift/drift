@@ -46,6 +46,9 @@
 - Layered engine flames, an exhaust trail that hangs in space where you burned, and thruster puffs when you turn by hand.
 - Faceted rotating rocks in asteroid rings, ringed gas giants, a generated nebula, coloured twinkling starfields.
 
+**Hearing it**
+- Every sound is synthesised at runtime — there is not a single audio file in the project. Oscillators, filtered noise and envelopes make the engine hum that rises with your throttle, weapon fire, hull hits, the drill, footsteps that follow your actual walk cycle, and low-fuel warnings. Guns take their timbre from the fitted part's seed, so different weapons sound different for free, and each creature's call comes from its own seed. Music and effect volumes are separate settings, and audio only starts after your first input, the way browsers require.
+
 **Persistence**
 - Local autosave, portable base64 save codes for moving between devices, and optional cloud sync against your own server.
 
