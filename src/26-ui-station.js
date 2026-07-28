@@ -321,9 +321,17 @@ function renderTab(){
         "<br>корабль: "+(S?"«"+S.ru+"» корпус "+Math.round(c.hull)+"/"+Math.round(c.hullMax):"не выдан")+
         (cap?" · трюм "+hold+"/"+cap:"")+
         "<br>жалованье "+crewPay(c)+" кр/мин · опыт "+Math.round(c.xp)+
-        (c.debt>0?" · <b style='color:#ff6b57'>долг "+c.debt+" кр</b>":"")+"</s>"));
+        " · настрой "+Math.round(c.morale*100)+"%"+
+        (c.debt>0?" · <b style='color:#ff6b57'>долг "+Math.round(c.debt)+" кр</b>":"")+"</s>"));
       const box=el("div","qt","");
       r.appendChild(box);
+      /* ремонт: сам идёт медленно и бесплатно на приколе, за деньги — сразу */
+      if(c.shipId&&c.hull<c.hullMax){
+        const bRep=el("button","act gold",crewRepairCost(c).toLocaleString("ru")+" кр");
+        bRep.disabled=G.credits<crewRepairCost(c);
+        bRep.onclick=()=>{if(crewRepair(c))renderTab();};
+        r.appendChild(bRep);
+      }
       const bFire=el("button","act","РАСЧЁТ");
       bFire.onclick=()=>{fireMerc(i);renderTab();};
       r.appendChild(bFire);

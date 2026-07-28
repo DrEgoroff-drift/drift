@@ -2231,6 +2231,7 @@ function crewTick(){
     if(dtMs<1000)continue;
     c.tMs=now;
     const min=dtMs/60000;
+    crewPayroll(c,min);
     if(!c.order||c.order.kind==="home"||!c.shipId){crewRest(c,min);continue;}
     if(c.hull<=0){crewRest(c,min);continue;}
     const eff=crewSkill(c)*crewMul(c,"yield")*(c.morale<.5?.5:1);
@@ -2241,6 +2242,56 @@ function crewTick(){
     else if(c.order.kind==="haul")crewHaul(c,min,eff,danger,r);
     c.xp=(c.xp||0)+min;
   }
+  /* ушедшие вычищаются одним проходом, чтобы не рвать цикл посередине */
+  for(let i=G.crew.length-1;i>=0;i--)if(G.crew[i].gone)G.crew.splice(i,1);
+}
+/* ══════════════ жалованье, долг и мораль ══════════════ */
+/* Плата идёт по тому же ленивому счётчику, что и работа. Нечем платить — копится
+   долг и падает мораль: сначала работают вполсилы, потом бросают приказ, потом
+   уходят и забирают корабль в счёт долга. Жёстко, но с предупреждением заранее. */
+function crewPayroll(c,min){
+  const due=crewPay(c)*min*(c.order&&c.order.kind==="home"?.45:1);   // на приколе кормят дешевле
+  if(due<=0)return;
+  const pay=Math.min(G.credits,due);
+  G.credits-=pay;
+  const short=due-pay;
+  if(short>0){
+    c.debt+=short;
+    c.morale=Math.max(0,c.morale-min*.05);
+    if(!c.warned&&c.morale<.6){
+      c.warned=true;
+      logAdd("warn",c.name+" не получает жалованья · долг "+Math.round(c.debt)+" кр — работает вполсилы");
+    }
+    if(c.morale<=.25&&c.order&&c.order.kind!=="home"){
+      c.order={kind:"home",sx:c.order.sx,sy:c.order.sy};
+      logAdd("warn",c.name+" бросил приказ: не платят");
+    }
+    if(c.morale<=0){
+      const S=c.shipId?shipData(c.shipId):null;
+      if(c.shipId&&c.shipId!==G.shipId)delete G.owned[c.shipId];
+      logAdd("warn",c.name+" ушёл и забрал «"+(S?S.ru:"корабль")+"» в счёт долга "+Math.round(c.debt)+" кр");
+      c.gone=true;
+    }
+  }else{
+    c.debt=Math.max(0,c.debt-min*crewPay(c)*.3);
+    if(c.debt<=0){c.warned=false;c.morale=Math.min(1,c.morale+min*.03);}
+  }
+  /* опыт превращается в прибавку: старый дешёвый работник дорожает сам */
+  const step=Math.floor((c.xp||0)/50);
+  if(step>(c.paidStep|0)){
+    c.paidStep=step;
+    logAdd("dim",c.name+" набрался опыта — жалованье теперь "+crewPay(c)+" кр/мин");
+  }
+}
+/* быстрый ремонт за деньги: тот же параметр, что чинится сам, только сразу */
+function crewRepairCost(c){return Math.ceil((c.hullMax-c.hull)*9);}
+function crewRepair(c){
+  const cost=crewRepairCost(c);
+  if(cost<=0){say("Корпус цел");return false;}
+  if(G.credits<cost){say("Не хватает кредитов\nнужно "+cost+" кр");return false;}
+  G.credits-=cost;c.hull=c.hullMax;
+  logAdd("money","Ремонт корабля "+c.name+" · −"+cost.toLocaleString("ru")+" кр");
+  return true;
 }
 function crewRest(c,min){
   /* на приколе корпус чинится сам — медленно и бесплатно */
@@ -2251,25 +2302,29 @@ function crewDamage(c,amount){
   if(c.hull<=0){
     c.hull=0;
     const lost=c.shipId,S=shipData(lost);
-    logAdd("warn",c.name+" потерял «"+(S?S.ru:lost)+"» — корабль не вернулся");
     if(lost&&lost!==G.shipId)delete G.owned[lost];
     c.shipId=null;c.order={kind:"home",sx:c.order?c.order.sx:G.sx,sy:c.order?c.order.sy:G.sy};
     c.cargo={};
+    /* корабль потерян всегда, человек — не всегда: ветеран чаще дотягивает до капсулы */
+    const survive=rng(hashi(c.seed,Math.floor(Date.now()/60000),0x5A7E))()<(.55/crewMul(c,"risk"));
+    if(survive)logAdd("warn",c.name+" потерял «"+(S?S.ru:lost)+"», сам спасся — ждёт нового корабля");
+    else{logAdd("warn",c.name+" не вернулся вместе с «"+(S?S.ru:lost)+"»");c.gone=true;}
   }
 }
 function crewHunt(c,min,eff,danger,r){
-  const kills=min*(.16+danger*.5)*eff;
-  const bounty=Math.round(kills*(70+danger*180)*stat().bountyMul);
+  const kills=min*(.22+danger*.35)*eff;
+  const bounty=Math.round(kills*(120+danger*150)*stat().bountyMul);
   if(bounty>0){
     G.credits+=bounty;
     if(bounty>40)logAdd("money",c.name+" сдал награды за пиратов · +"+bounty.toLocaleString("ru")+" кр");
   }
-  const hit=min*(1.4+danger*5.5)*crewMul(c,"risk");
+  /* урон соразмерен ремонту: час в опасном секторе — счёт за починку, а не похороны */
+  const hit=min*(.5+danger*2.2)*crewMul(c,"risk");
   if(hit>0)crewDamage(c,hit);
 }
 function crewMine(c,min,eff,danger,r){
   const cap=crewCargoMax(c);
-  const rate=min*(.9+eff*1.4);
+  const rate=min*(.5+eff*.95);   // около полутора единиц руды в минуту: выше жалованья, но не принтер
   let left=Math.min(rate,Math.max(0,cap-crewHold(c)));
   const sys=getSystem(c.order.sx,c.order.sy);
   const pool=sys.belt?sys.belt.res:(sys.planets.length?sys.planets[0].res:["iron"]);
@@ -2289,7 +2344,9 @@ function crewMine(c,min,eff,danger,r){
 }
 function crewHaul(c,min,eff,danger,r){
   const S=shipData(c.shipId);
-  const pay=Math.round(min*(S?S.cargo:20)*.55*eff);
+  /* доход маршрута тянет вместимость корпуса: большой трюм — заметно выгоднее,
+     но всё равно в разы ближе к жалованью, чем к бесконечным деньгам */
+  const pay=Math.round(min*(S?S.cargo:20)*.17*eff);
   if(pay>0){
     G.credits+=pay;
     if(pay>60)logAdd("money",c.name+" закрыл рейс · +"+pay.toLocaleString("ru")+" кр");
@@ -6785,9 +6842,17 @@ function renderTab(){
         "<br>корабль: "+(S?"«"+S.ru+"» корпус "+Math.round(c.hull)+"/"+Math.round(c.hullMax):"не выдан")+
         (cap?" · трюм "+hold+"/"+cap:"")+
         "<br>жалованье "+crewPay(c)+" кр/мин · опыт "+Math.round(c.xp)+
-        (c.debt>0?" · <b style='color:#ff6b57'>долг "+c.debt+" кр</b>":"")+"</s>"));
+        " · настрой "+Math.round(c.morale*100)+"%"+
+        (c.debt>0?" · <b style='color:#ff6b57'>долг "+Math.round(c.debt)+" кр</b>":"")+"</s>"));
       const box=el("div","qt","");
       r.appendChild(box);
+      /* ремонт: сам идёт медленно и бесплатно на приколе, за деньги — сразу */
+      if(c.shipId&&c.hull<c.hullMax){
+        const bRep=el("button","act gold",crewRepairCost(c).toLocaleString("ru")+" кр");
+        bRep.disabled=G.credits<crewRepairCost(c);
+        bRep.onclick=()=>{if(crewRepair(c))renderTab();};
+        r.appendChild(bRep);
+      }
       const bFire=el("button","act","РАСЧЁТ");
       bFire.onclick=()=>{fireMerc(i);renderTab();};
       r.appendChild(bFire);
