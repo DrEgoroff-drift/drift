@@ -6,11 +6,11 @@ function marketFor(sys){
   const secs=Math.max(0,(G.t-m.t)/60);
   if(secs>0){
     const decay=Math.pow(.5,secs/1800);
-    for(const k of RES_KEYS)m.pressure[k]=(m.pressure[k]||0)*decay;
+    for(const k of TRADE_KEYS)m.pressure[k]=(m.pressure[k]||0)*decay;
     m.t=G.t;
   }
   const prices={},mul=stTypeOf(sys.station.stype).mkt;   /* торговый узел платит больше, аванпост — меньше */
-  for(const k of RES_KEYS)prices[k]=Math.max(1,Math.round(base[k]*mul*clamp(1+(m.pressure[k]||0),.4,1.8)));
+  for(const k of TRADE_KEYS)prices[k]=Math.max(1,Math.round(base[k]*mul*clamp(1+(m.pressure[k]||0),.4,1.8)));
   return prices;
 }
 function sellCargo(sys,k,qty){

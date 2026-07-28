@@ -114,7 +114,7 @@ function renderTab(){
     $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
       " · ТОПЛИВО "+G.st.fuelPrice+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
     let any=false,tot=0;
-    for(const k of RES_KEYS){
+    for(const k of TRADE_KEYS){
       const q=G.cargo[k];if(!q)continue;any=true;
       const price=prices[k],base=RES[k].price;tot+=q*price;
       let tg=price>base*1.12?"выгодно":(price<base*.9?"дёшево":"обычная цена");
@@ -136,14 +136,26 @@ function renderTab(){
       r.appendChild(el("div","qt",tot.toLocaleString("ru")+"<s>кр</s>"));
       const b=el("button","act gold","ПРОДАТЬ ВСЁ");
       b.onclick=()=>{let sum=0,n=0;
-        for(const k of RES_KEYS){const q=G.cargo[k];if(q>0){sum+=sellCargo(G.sys,k,q);n+=q;}}
+        for(const k of TRADE_KEYS){const q=G.cargo[k];if(q>0){sum+=sellCargo(G.sys,k,q);n+=q;}}
         tell("money","Груз сдан на «"+G.st.name+"» · "+n+" ед · +"+sum.toLocaleString("ru")+" кр",
              "Груз реализован\n+"+sum.toLocaleString("ru")+" кр");
         renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }else $body.appendChild(el("div","sec","ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
+    /* редкое лежит в том же трюме, но купить его никто не возьмётся:
+       оно тратится, а не продаётся — поэтому отдельной секцией и без кнопки */
+    if(RARE_RES.some(k=>G.cargo[k]>0)){
+      $body.appendChild(el("div","sec","РЕДКОЕ СЫРЬЁ · РЫНОК НЕ БЕРЁТ · ИДЁТ НА ЛАБОРАТОРИЮ, БАЗЫ И КОРАБЛИ"));
+      for(const k of RARE_RES){
+        const q=G.cargo[k];if(!q)continue;
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+RES[k].rare+"</s>"));
+        r.appendChild(el("div","qt",q+"<s>ед</s>"));
+        $body.appendChild(r);
+      }
+    }
     $body.appendChild(el("div","sec","ЗАКУПОЧНЫЕ ЦЕНЫ ЗДЕСЬ — МЕНЯЮТСЯ ОТ ПРОДАЖ И СО ВРЕМЕНЕМ"));
-    for(const k of RES_KEYS){
+    for(const k of TRADE_KEYS){
       const r=el("div","row");
       r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b>"));
       r.appendChild(el("div","qt",prices[k]+"<s>кр/ед</s>"));
@@ -287,6 +299,32 @@ function renderTab(){
         if(k==="cera")G.hull+=30;
         tell("tech","Изучено: "+T.ru+(T.max?" (ур."+techLv(k)+")":"")+" · −"+cost+" данных",
              "Изучено:\n"+T.ru+(T.max?"\nуровень "+techLv(k):""));
+        renderTab();
+      };
+      r.appendChild(b);$body.appendChild(r);
+    }
+  }
+  else if(tab==="smelt"){
+    /* сплавы нигде не добываются — только здесь: руда в печь, на выходе слиток.
+       Это единственная точка входа для сырья, которое потом тратится (M40, M37, M46). */
+    $body.appendChild(el("div","sec","ПЕРЕПЛАВКА · СЫРЬЁ ИЗ ТРЮМА → СПЛАВЫ · СПЛАВЫ НЕ ПРОДАЮТСЯ"));
+    /* места в трюме не спрашиваем: плавка всегда съедает больше, чем отдаёт,
+       так что после неё груза становится меньше, а не больше */
+    for(const R of SMELT){
+      const have=Math.min(...R.in.map(([k,q])=>Math.floor(G.cargo[k]/q)));
+      const can=Math.min(have,Math.floor(G.credits/R.fee));
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b style='color:"+RES.alloy.col+"'>"+R.ru+"</b><s>"+
+        R.in.map(([k,q])=>RES[k].ru.toLowerCase()+" ×"+q).join(" + ")+" → сплавы ×1 · "+R.fee+" кр за плавку"+
+        "<br>в трюме хватит на "+have+"</s>"));
+      r.appendChild(el("div","qt",G.cargo.alloy+"<s>сплавов</s>"));
+      const b=el("button","act"+(can?" gold":""),can?"ПЛАВИТЬ ×"+Math.min(can,10):"НЕ ХВАТАЕТ");
+      b.disabled=!can;
+      b.onclick=()=>{
+        const n=Math.min(can,10);
+        for(const [k,q] of R.in)G.cargo[k]-=q*n;
+        G.credits-=R.fee*n;G.cargo.alloy+=n;
+        tell("money","Переплавка на «"+G.st.name+"»: сплавы ×"+n,"Переплавка\nсплавы ×"+n);
         renderTab();
       };
       r.appendChild(b);$body.appendChild(r);

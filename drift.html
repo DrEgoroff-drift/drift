@@ -227,6 +227,7 @@
     <button data-tab="yard">ВЕРФЬ</button>
     <button data-tab="mods">МОДУЛИ</button>
     <button data-tab="lab">НАУКА</button>
+    <button data-tab="smelt">ПЕРЕПЛАВКА</button>
     <button data-tab="barter">БАРТЕР</button>
   </nav>
   <div class="body" id="stBody"></div>
@@ -346,13 +347,22 @@ const RES={
   crystal:  {ru:"Кристаллы", col:"#c58ae0",price:105},
   /* только с фауны — в породе и в поясе не встречаются */
   carbon:   {ru:"Углерод",   col:"#8a97a0",price:46},
-  xeno:     {ru:"Ксенобиом", col:"#ff7ac8",price:190}
+  xeno:     {ru:"Ксенобиом", col:"#ff7ac8",price:190},
+  /* Редкие (M39): не товар, а сырьё под лабораторию, базы и корабли наёмников.
+     Рынок их не берёт вовсе — иначе они превратились бы в дорогую строку
+     в трюме и разогнали бы инфляцию. У каждого свой глагол добычи. */
+  volatiles:{ru:"Летучие газы",col:"#7fe0c8",price:0,rare:"сбор в атмосфере газового гиганта"},
+  icecrys:  {ru:"Кристаллы льда",col:"#bfe8ff",price:0,rare:"пояс на дальней орбите"},
+  techcomp: {ru:"Техкомпоненты",col:"#ffb347",price:0,rare:"рейд на пиратскую базу"},
+  alloy:    {ru:"Сплавы",     col:"#d9dde3",price:0,rare:"переплавка на промышленной станции"}
 };
 const RES_KEYS=Object.keys(RES);
 /* ресурсы, добавленные позже: у них отдельный поток случайных чисел,
    иначе сдвинулась бы генерация уже существующих станций */
 const FAUNA_RES=["carbon","xeno"];
-const ORE_KEYS=RES_KEYS.filter(k=>FAUNA_RES.indexOf(k)<0);
+const RARE_RES=RES_KEYS.filter(k=>!!RES[k].rare);
+const TRADE_KEYS=RES_KEYS.filter(k=>RARE_RES.indexOf(k)<0);
+const ORE_KEYS=TRADE_KEYS.filter(k=>FAUNA_RES.indexOf(k)<0);
 const PROFILE={
   terran:["iron","silicon","organics","ice"],
   ocean:["ice","organics","silicon"],
@@ -363,6 +373,11 @@ const PROFILE={
   toxic:["organics","isotopes","crystal","silicon"],
   gas:[]
 };
+/* рецепты промышленной станции: единственный источник сплавов */
+const SMELT=[
+  {ru:"Чёрная плавка",  in:[["iron",4],["silicon",2]],           fee:60},
+  {ru:"Тяжёлая плавка", in:[["titan",2],["iridium",1]],          fee:130}
+];
 const BELT_RES=["iron","silicon","titan","iridium","isotopes","crystal","ice"];
 
 /* ══════════════ миры ══════════════ */
@@ -1097,7 +1112,7 @@ const SYS_CACHE=new Map();
 const ST_TYPES=[
   {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods"],
    mkt:1.08, fuel:1,    rep:1,    w:d=>2.6-d*1.9},
-  {id:"indust", ru:"Промышленный комбинат",tabs:["market","mods"],
+  {id:"indust", ru:"Промышленный комбинат",tabs:["market","smelt","mods"],
    mkt:.99,  fuel:.92,  rep:.5,   w:d=>1.5-d*.4},
   {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","barter"],
    mkt:.95,  fuel:1.08, rep:.75,  w:d=>1.2-d*.7},
@@ -2079,11 +2094,11 @@ function marketFor(sys){
   const secs=Math.max(0,(G.t-m.t)/60);
   if(secs>0){
     const decay=Math.pow(.5,secs/1800);
-    for(const k of RES_KEYS)m.pressure[k]=(m.pressure[k]||0)*decay;
+    for(const k of TRADE_KEYS)m.pressure[k]=(m.pressure[k]||0)*decay;
     m.t=G.t;
   }
   const prices={},mul=stTypeOf(sys.station.stype).mkt;   /* торговый узел платит больше, аванпост — меньше */
-  for(const k of RES_KEYS)prices[k]=Math.max(1,Math.round(base[k]*mul*clamp(1+(m.pressure[k]||0),.4,1.8)));
+  for(const k of TRADE_KEYS)prices[k]=Math.max(1,Math.round(base[k]*mul*clamp(1+(m.pressure[k]||0),.4,1.8)));
   return prices;
 }
 function sellCargo(sys,k,qty){
@@ -2277,7 +2292,7 @@ function killPirate(p){
   sfx("boom",{v:.8});
   const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7)*stat().bountyMul);
   G.credits+=bounty;
-  const loot=pick(RES_KEYS,r),got=addRes(loot,2+Math.floor(r()*7));
+  const loot=pick(TRADE_KEYS,r),   /* редкое с обломков не падает: у него свои способы добычи */got=addRes(loot,2+Math.floor(r()*7));
   const d=sysDanger(G.sx,G.sy);
   /* обломок с частью — не в трюм сразу, а контейнером: у боя своя петля «убил → собрал» */
   let dropped=null;
@@ -2594,6 +2609,7 @@ document.getElementById("starbtn").addEventListener("click",()=>{
 });
 function navAction(){
   if(G.mode==="belt"){exitBelt();return;}
+  if(G.mode==="scoop"){exitScoop("Уход на орбиту");return;}
   if(G.mode==="system"){G.mode="map";G.sel.x=G.sx;G.sel.y=G.sy;}
   else if(G.mode==="map")G.mode="system";
   else say("Навигация недоступна\nвне свободного полёта");
@@ -3058,7 +3074,11 @@ function updateSystem(dt){
            "Открыто: "+near.name+"\n"+near.T.ru+"\n+6 данных");
     }
     if(nd<110){
-      if(near.type==="gas")G.prompt="ГАЗОВЫЙ ГИГАНТ · ПОСАДКА НЕВОЗМОЖНА";
+      if(near.type==="gas"){
+        /* сесть по-прежнему некуда, но в верхние слои можно зайти за газами */
+        G.prompt="ГАЗОВЫЙ ГИГАНТ · ПОСАДКИ НЕТ\nДЕЙСТВ — ЗАХОД ЗА ЛЕТУЧИМИ ГАЗАМИ";
+        if(actEdge){startScoop(near);return;}
+      }
       else if(!G.opts.easyLand&&sp>3.2)G.prompt="СЛИШКОМ БЫСТРО · "+sp.toFixed(1)+"\nТОРМ — ГАШЕНИЕ";
       else{
         let ln="ДЕЙСТВ — "+(G.opts.easyLand?"АВТО-ПОСАДКА":"ПОСАДКА")+" · "+near.name;
@@ -3566,6 +3586,152 @@ function jump(cost){
   say("Прибытие: "+G.sys.name+"\n"+G.sys.cls.ru+
     (G.sys.station?"\nстанция":"")+(G.sys.belt?"\nпояс астероидов":"")+
     (G.pirates.length?"\nчужие сигнатуры: "+G.pirates.length:""));
+}
+
+/* ══════════════ сбор летучих газов: заход в атмосферу гиганта ══════════════ */
+/* Газовый гигант перестал быть красивой картинкой, мимо которой пролетаешь:
+   сесть на него по-прежнему нельзя, но можно пройти по касательной в верхних
+   слоях и набрать летучие газы. Смысл сцены — узкий коридор высоты: выше
+   сборник хватает пустоту, ниже растёт нагрев, а турбулентность всё время
+   сбивает с высоты, поэтому это работа руками, а не полоска прогресса. */
+const SCOOP_BAND=[.50,.63];        // коридор сбора в долях высоты экрана
+function scoopBand(){return [H*SCOOP_BAND[0],H*SCOOP_BAND[1]];}
+function startScoop(p){
+  G.scoop={p,y:H*.34,vy:0,heat:0,bank:0,got:0,x:0,phase:rng(hashi(p.seed,0x6A5,3))()*TAU,
+    lastWarn:0,shake:0};
+  G.mode="scoop";G.ap=null;G.orbit=null;
+  for(const k in keys)keys[k]=false;
+  document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
+  say("Заход в атмосферу\n"+p.name+"\n▲ ▼ — высота · держитесь в полосе сбора\nНАЗАД — уход на орбиту");
+}
+function exitScoop(msg){
+  const S=G.scoop,p=S.p;
+  const a=Math.atan2(G.ship.y-p.y,G.ship.x-p.x)||0;
+  G.ship.x=p.x+Math.cos(a)*(p.radius+150);G.ship.y=p.y+Math.sin(a)*(p.radius+150);
+  G.ship.vx=p.vx||0;G.ship.vy=p.vy||0;
+  G.scoop=null;G.mode="system";
+  saveGame(true);
+  say(msg+"\nлетучих газов в трюме: "+G.cargo.volatiles);
+}
+function updateScoop(dt){
+  const S=G.scoop,st=stat(),[bt,bb]=scoopBand();
+  S.x+=(5.2+st.thr*.7)*dt;S.phase+=dt*.03;
+  /* высота: тяга поднимает, тормоз прижимает, и всегда есть снос вниз —
+     висеть в коридоре, ничего не трогая, не получится */
+  if(keys.thrust&&G.fuel>0){S.vy-=.055*st.thr*dt;G.fuel=Math.max(0,G.fuel-.016*dt);}
+  if(keys.brake)S.vy+=.045*dt;
+  S.vy+=.021*dt;
+  /* турбулентность: чем глубже, тем сильнее болтанка */
+  const deep=clamp((S.y-bt)/(H*.3),0,1.6);
+  S.vy+=Math.sin(S.x*.021+S.phase)*.012*dt*(.4+deep*1.9);
+  S.vy+=Math.sin(S.x*.0071+S.phase*2.3)*.02*dt*(.3+deep);
+  S.vy*=Math.pow(.94,dt);
+  S.y=clamp(S.y+S.vy*dt*4,H*.14,H*.86);
+  if(S.y<=H*.14+.5&&S.vy<0)S.vy=0;
+  S.bank+=(clamp(S.vy*.5,-.7,.7)-S.bank)*Math.min(1,.09*dt);
+  S.shake=Math.max(0,S.shake-dt*.05);
+  /* нагрев копится только ниже коридора и медленно стравливается выше него */
+  if(S.y>bb){
+    S.heat=Math.min(120,S.heat+(S.y-bb)*.019*dt);
+    S.shake=Math.min(1,S.shake+(S.y-bb)*.0016*dt);
+  }else S.heat=Math.max(0,S.heat-.34*dt);
+  if(S.heat>=100){
+    G.hull-=.5*dt;
+    if(G.t-S.lastWarn>90){S.lastWarn=G.t;sfx("hit");}
+    if(G.hull<=0){G.scoop=null;G.mode="system";wreck();return;}
+  }
+  /* сбор идёт только в коридоре и только пока есть место в трюме */
+  const inBand=S.y>=bt&&S.y<=bb;
+  const full=held()>=st.cargoMax;
+  if(inBand&&!full){
+    S.got+=(.008+st.drill*.004)*dt;
+    while(S.got>=1){S.got-=1;if(addRes("volatiles",1))sfx("drill");}
+  }
+  if(keys.left)S.vy-=.006*dt;      // мелкая доводка рулями, чтобы удержание было точнее
+  if(keys.right)S.vy+=.006*dt;
+  const heat=Math.round(S.heat);
+  G.prompt=(full?"ТРЮМ ПОЛОН · НАЗАД — УХОД":
+      inBand?"СБОР ИДЁТ · ДЕРЖИТЕ ВЫСОТУ":
+      S.y<bt?"ВЫШЕ КОРИДОРА · СБОРНИК ХВАТАЕТ ПУСТОТУ":"НИЖЕ КОРИДОРА · НАГРЕВ РАСТЁТ")+
+    "\nНАГРЕВ "+heat+"% · ГАЗЫ "+G.cargo.volatiles+" · ТРЮМ "+held()+"/"+st.cargoMax;
+  if(G.fuel<=0&&S.y>bb)G.prompt="ТОПЛИВО КОНЧИЛОСЬ · ПОДНЯТЬСЯ НЕЧЕМ";
+}
+function drawScoop(){
+  const S=G.scoop,p=S.p,[bt,bb]=scoopBand();
+  const pal=p.T.pal;
+  const sh=(S.shake>0?(Math.random()-.5)*S.shake*7:0);
+  ctx.save();ctx.translate(0,sh);
+  /* небо гиганта: сверху разрежённая тьма, ниже — всё плотнее слои */
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,"#05070c");
+  g.addColorStop(.28,"rgb("+pal[0].join(",")+")");
+  g.addColorStop(.62,"rgb("+pal[2].join(",")+")");
+  g.addColorStop(1,"rgb("+pal[4].join(",")+")");
+  ctx.fillStyle=g;ctx.fillRect(0,-20,W,H+40);
+  /* полосы облаков едут навстречу — это и есть ощущение скорости */
+  for(let i=0;i<26;i++){
+    const rr=rng(hashi(p.seed,i*613,0xC10D));
+    const yy=H*.16+rr()*H*.9, hgt=6+rr()*30;
+    const spd=.35+rr()*1.5, off=(S.x*spd*7+rr()*4000)%(W+520)-260;
+    const c=pal[1+Math.floor(rr()*4)];
+    ctx.fillStyle="rgba("+c.join(",")+","+(.14+rr()*.3).toFixed(2)+")";
+    ctx.beginPath();ctx.ellipse(off,yy,150+rr()*260,hgt,0,0,TAU);ctx.fill();
+  }
+  /* коридор сбора: единственная подсказка, где держаться */
+  ctx.fillStyle="rgba(127,224,200,.10)";ctx.fillRect(0,bt,W,bb-bt);
+  ctx.strokeStyle="rgba(127,224,200,.55)";ctx.lineWidth=1.5;ctx.setLineDash([12,10]);
+  ctx.beginPath();ctx.moveTo(0,bt);ctx.lineTo(W,bt);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,bb);ctx.lineTo(W,bb);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle="rgba(127,224,200,.7)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
+  ctx.fillText("ПОЛОСА СБОРА",14,bt-6);
+  /* горизонт нижних слоёв — туда лучше не опускаться */
+  const hz=H*.82;
+  const hg=ctx.createLinearGradient(0,hz-40,0,H);
+  hg.addColorStop(0,"rgba(255,150,90,0)");hg.addColorStop(1,"rgba(255,120,60,.5)");
+  ctx.fillStyle=hg;ctx.fillRect(0,hz-40,W,H-hz+40);
+  /* корабль: летит боком, слева направо, с набегающим потоком */
+  const sx=W*.34,sy=S.y;
+  if(S.y>bb){
+    const k=clamp((S.y-bb)/120,0,1);
+    ctx.strokeStyle="rgba(255,170,90,"+(.25+k*.5).toFixed(2)+")";ctx.lineWidth=2;
+    for(let i=0;i<9;i++){
+      const yy=sy-26+i*6.5, l=30+Math.abs(Math.sin(i*1.7+S.x*.05))*70*k;
+      ctx.beginPath();ctx.moveTo(sx-14,yy);ctx.lineTo(sx-14-l,yy+ (i-4)*1.6);ctx.stroke();
+    }
+  }
+  ctx.save();ctx.translate(sx,sy);ctx.rotate(S.bank*.5);
+  drawHull(G.shipId,keys.thrust&&G.fuel>0,false,S.bank);
+  ctx.restore();
+  /* сборник: два раструба забирают газ, пока корабль в коридоре */
+  if(sy>=bt&&sy<=bb){
+    ctx.strokeStyle="rgba(127,224,200,.8)";ctx.lineWidth=1.6;
+    for(const s of [-1,1]){
+      ctx.beginPath();
+      ctx.moveTo(sx-6,sy+s*7);ctx.lineTo(sx-30,sy+s*13);ctx.stroke();
+      for(let i=0;i<5;i++){
+        const t=(S.x*4+i*22)%110;
+        ctx.globalAlpha=.5-t/220;
+        ctx.beginPath();ctx.arc(sx-30-t,sy+s*13+Math.sin(t*.1+i)*4,1.8,0,TAU);ctx.stroke();
+      }
+      ctx.globalAlpha=1;
+    }
+  }
+  ctx.restore();
+  /* приборы: нагрев — главный, он же и убивает */
+  const bw=Math.min(W-40,300),bx=W/2-bw/2,by=26;
+  ctx.fillStyle="rgba(6,10,16,.72)";ctx.fillRect(bx-6,by-6,bw+12,20);
+  ctx.strokeStyle="rgba(242,178,92,.5)";ctx.lineWidth=1;ctx.strokeRect(bx-6,by-6,bw+12,20);
+  const hk=clamp(S.heat/100,0,1);
+  ctx.fillStyle=hk>.8?"rgba(255,80,60,.95)":(hk>.5?"rgba(255,180,80,.9)":"rgba(127,224,200,.85)");
+  ctx.fillRect(bx,by,bw*hk,8);
+  ctx.fillStyle="rgba(242,178,92,.85)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+  ctx.fillText("НАГРЕВ КОРПУСА "+Math.round(S.heat)+"%",W/2,by+16);
+  if(S.heat>=100){
+    ctx.fillStyle=(Math.sin(G.t*.3)>0)?"rgba(255,70,50,.9)":"rgba(255,70,50,.3)";
+    ctx.textAlign="center";ctx.font="12px ui-monospace,monospace";
+    ctx.fillText("ПЕРЕГРЕВ · КОРПУС ГОРИТ",W/2,by+34);
+  }
 }
 
 /* ══════════════ посадка ══════════════ */
@@ -5141,12 +5307,16 @@ function hexRGB(h){
 const BELT_HALF=2000, DUST_HALF=340;
 const AST_N=112, AST_MIN=560;   // ближе AST_MIN не спавним — до руды надо долететь
 const BELT_AVLIM=.042;   // предел скорости поворота — на полном отклонении ~140°/с
+function beltIcy(B){return B.orbit>1500;}
 function enterBelt(){
   const sys=G.sys,B=sys.belt,r=rng(B.seed);
   const ast=[];
   for(let i=0;i<AST_N;i++){
     const rad=26+r()*78;
-    const res=B.res[Math.floor(r()*B.res.length)];
+    let res=B.res[Math.floor(r()*B.res.length)];
+    /* кристаллы льда намерзают только на дальних, холодных кольцах — и тянутся
+       из отдельного потока, чтобы состав уже существующих поясов не поехал */
+    if(beltIcy(B)&&rng(hashi(B.seed,i*977,0x1CEC))()<.22)res="icecrys";
     let x=0,y=0,z=0;
     for(let t=0;t<24;t++){
       x=(r()-.5)*2*BELT_HALF;y=(r()-.5)*780;z=(r()-.5)*2*BELT_HALF;
@@ -5168,6 +5338,7 @@ function enterBelt(){
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(bb=>bb.classList.remove("on"));
   say("Вход в "+B.name+"\nруда: "+B.res.map(k=>RES[k].ru).join(", ")+
+    (beltIcy(B)?"\nкольцо дальнее — попадаются кристаллы льда":"")+
     "\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор");
 }
 /* обломки: разлетаются, тают и ничего не задевают */
@@ -5332,7 +5503,8 @@ function updateBelt(dt){
   if(best!==b.lock)b.prog=0;
   b.lock=best;b.beam=0;
   const dbtn=document.getElementById("dronebtn");
-  if(best&&G.droneInventory>0){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
+  /* дрон живёт продажами, поэтому на редкое сырьё его не посадить */
+  if(best&&G.droneInventory>0&&RARE_RES.indexOf(best.res)<0){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
   else{droneTarget=null;dbtn.style.display="none";}
 
   if(!best){G.prompt="НАВЕДИТЕ ПРИЦЕЛ НА АСТЕРОИД";return;}
@@ -6127,7 +6299,7 @@ function renderTab(){
     $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
       " · ТОПЛИВО "+G.st.fuelPrice+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
     let any=false,tot=0;
-    for(const k of RES_KEYS){
+    for(const k of TRADE_KEYS){
       const q=G.cargo[k];if(!q)continue;any=true;
       const price=prices[k],base=RES[k].price;tot+=q*price;
       let tg=price>base*1.12?"выгодно":(price<base*.9?"дёшево":"обычная цена");
@@ -6149,14 +6321,26 @@ function renderTab(){
       r.appendChild(el("div","qt",tot.toLocaleString("ru")+"<s>кр</s>"));
       const b=el("button","act gold","ПРОДАТЬ ВСЁ");
       b.onclick=()=>{let sum=0,n=0;
-        for(const k of RES_KEYS){const q=G.cargo[k];if(q>0){sum+=sellCargo(G.sys,k,q);n+=q;}}
+        for(const k of TRADE_KEYS){const q=G.cargo[k];if(q>0){sum+=sellCargo(G.sys,k,q);n+=q;}}
         tell("money","Груз сдан на «"+G.st.name+"» · "+n+" ед · +"+sum.toLocaleString("ru")+" кр",
              "Груз реализован\n+"+sum.toLocaleString("ru")+" кр");
         renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }else $body.appendChild(el("div","sec","ТРЮМ ПУСТ — САДИТЕСЬ НА ПЛАНЕТУ ИЛИ ИДИТЕ В ПОЯС"));
+    /* редкое лежит в том же трюме, но купить его никто не возьмётся:
+       оно тратится, а не продаётся — поэтому отдельной секцией и без кнопки */
+    if(RARE_RES.some(k=>G.cargo[k]>0)){
+      $body.appendChild(el("div","sec","РЕДКОЕ СЫРЬЁ · РЫНОК НЕ БЕРЁТ · ИДЁТ НА ЛАБОРАТОРИЮ, БАЗЫ И КОРАБЛИ"));
+      for(const k of RARE_RES){
+        const q=G.cargo[k];if(!q)continue;
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+RES[k].rare+"</s>"));
+        r.appendChild(el("div","qt",q+"<s>ед</s>"));
+        $body.appendChild(r);
+      }
+    }
     $body.appendChild(el("div","sec","ЗАКУПОЧНЫЕ ЦЕНЫ ЗДЕСЬ — МЕНЯЮТСЯ ОТ ПРОДАЖ И СО ВРЕМЕНЕМ"));
-    for(const k of RES_KEYS){
+    for(const k of TRADE_KEYS){
       const r=el("div","row");
       r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b>"));
       r.appendChild(el("div","qt",prices[k]+"<s>кр/ед</s>"));
@@ -6300,6 +6484,32 @@ function renderTab(){
         if(k==="cera")G.hull+=30;
         tell("tech","Изучено: "+T.ru+(T.max?" (ур."+techLv(k)+")":"")+" · −"+cost+" данных",
              "Изучено:\n"+T.ru+(T.max?"\nуровень "+techLv(k):""));
+        renderTab();
+      };
+      r.appendChild(b);$body.appendChild(r);
+    }
+  }
+  else if(tab==="smelt"){
+    /* сплавы нигде не добываются — только здесь: руда в печь, на выходе слиток.
+       Это единственная точка входа для сырья, которое потом тратится (M40, M37, M46). */
+    $body.appendChild(el("div","sec","ПЕРЕПЛАВКА · СЫРЬЁ ИЗ ТРЮМА → СПЛАВЫ · СПЛАВЫ НЕ ПРОДАЮТСЯ"));
+    /* места в трюме не спрашиваем: плавка всегда съедает больше, чем отдаёт,
+       так что после неё груза становится меньше, а не больше */
+    for(const R of SMELT){
+      const have=Math.min(...R.in.map(([k,q])=>Math.floor(G.cargo[k]/q)));
+      const can=Math.min(have,Math.floor(G.credits/R.fee));
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b style='color:"+RES.alloy.col+"'>"+R.ru+"</b><s>"+
+        R.in.map(([k,q])=>RES[k].ru.toLowerCase()+" ×"+q).join(" + ")+" → сплавы ×1 · "+R.fee+" кр за плавку"+
+        "<br>в трюме хватит на "+have+"</s>"));
+      r.appendChild(el("div","qt",G.cargo.alloy+"<s>сплавов</s>"));
+      const b=el("button","act"+(can?" gold":""),can?"ПЛАВИТЬ ×"+Math.min(can,10):"НЕ ХВАТАЕТ");
+      b.disabled=!can;
+      b.onclick=()=>{
+        const n=Math.min(can,10);
+        for(const [k,q] of R.in)G.cargo[k]-=q*n;
+        G.credits-=R.fee*n;G.cargo.alloy+=n;
+        tell("money","Переплавка на «"+G.st.name+"»: сплавы ×"+n,"Переплавка\nсплавы ×"+n);
         renderTab();
       };
       r.appendChild(b);$body.appendChild(r);
@@ -6734,6 +6944,8 @@ function hud(){
     b="трюм "+held()+"/"+st.cargoMax+" · скафандр "+Math.round(G.surf.suit)+"%";}
   else if(G.mode==="belt"){a=(G.belt?G.belt.B.name:"ПОЯС").toUpperCase();
     b="трюм "+held()+"/"+st.cargoMax;}
+  else if(G.mode==="scoop"){a=(G.scoop?G.scoop.p.name:"АТМОСФЕРА").toUpperCase();
+    b="сбор летучих газов";}
   else if(G.mode==="dock"){a=G.st.name.toUpperCase();b=G.st.kind;}
   if(G.drones.length>0)b+=" · дронов работает: "+G.drones.length;
   const sbtn=document.getElementById("starbtn");
@@ -6753,7 +6965,7 @@ function hud(){
     $bBrk.textContent="ТОРМ";
     $bBrk.style.opacity=G.mode==="surface"?".3":"1";
   }
-  $nav.textContent=G.mode==="belt"?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА");
+  $nav.textContent=(G.mode==="belt"||G.mode==="scoop")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА");
   /* под землёй ОГОНЬ — это импульсный разрядник, он есть всегда */
   $fire.style.display=(G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed))?"":"none";
   if(G.mode==="dig")$fire.textContent=(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС";
@@ -6834,6 +7046,7 @@ function frame(now){
     else if(G.mode==="dig"&&G.dig)updateDig(dt);
     else if(G.mode==="cave"&&G.cave)updateCave(dt);
     else if(G.mode==="belt"&&G.belt)updateBelt(dt);
+    else if(G.mode==="scoop"&&G.scoop)updateScoop(dt);
     beaconTick(dt);
     audioTick(dt);
     if(G.mode==="system"||G.mode==="dock")drawSystem();
@@ -6843,6 +7056,7 @@ function frame(now){
     else if(G.mode==="dig"&&G.dig)drawDig();
     else if(G.mode==="cave"&&G.cave)drawCave();
     else if(G.mode==="belt"&&G.belt)drawBelt();
+    else if(G.mode==="scoop"&&G.scoop)drawScoop();
     hud();
   }else{
     ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);

@@ -166,7 +166,11 @@ function updateSystem(dt){
            "Открыто: "+near.name+"\n"+near.T.ru+"\n+6 данных");
     }
     if(nd<110){
-      if(near.type==="gas")G.prompt="ГАЗОВЫЙ ГИГАНТ · ПОСАДКА НЕВОЗМОЖНА";
+      if(near.type==="gas"){
+        /* сесть по-прежнему некуда, но в верхние слои можно зайти за газами */
+        G.prompt="ГАЗОВЫЙ ГИГАНТ · ПОСАДКИ НЕТ\nДЕЙСТВ — ЗАХОД ЗА ЛЕТУЧИМИ ГАЗАМИ";
+        if(actEdge){startScoop(near);return;}
+      }
       else if(!G.opts.easyLand&&sp>3.2)G.prompt="СЛИШКОМ БЫСТРО · "+sp.toFixed(1)+"\nТОРМ — ГАШЕНИЕ";
       else{
         let ln="ДЕЙСТВ — "+(G.opts.easyLand?"АВТО-ПОСАДКА":"ПОСАДКА")+" · "+near.name;

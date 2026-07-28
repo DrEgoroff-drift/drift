@@ -44,6 +44,8 @@ function hud(){
     b="трюм "+held()+"/"+st.cargoMax+" · скафандр "+Math.round(G.surf.suit)+"%";}
   else if(G.mode==="belt"){a=(G.belt?G.belt.B.name:"ПОЯС").toUpperCase();
     b="трюм "+held()+"/"+st.cargoMax;}
+  else if(G.mode==="scoop"){a=(G.scoop?G.scoop.p.name:"АТМОСФЕРА").toUpperCase();
+    b="сбор летучих газов";}
   else if(G.mode==="dock"){a=G.st.name.toUpperCase();b=G.st.kind;}
   if(G.drones.length>0)b+=" · дронов работает: "+G.drones.length;
   const sbtn=document.getElementById("starbtn");
@@ -63,7 +65,7 @@ function hud(){
     $bBrk.textContent="ТОРМ";
     $bBrk.style.opacity=G.mode==="surface"?".3":"1";
   }
-  $nav.textContent=G.mode==="belt"?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА");
+  $nav.textContent=(G.mode==="belt"||G.mode==="scoop")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА");
   /* под землёй ОГОНЬ — это импульсный разрядник, он есть всегда */
   $fire.style.display=(G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed))?"":"none";
   if(G.mode==="dig")$fire.textContent=(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС";
@@ -144,6 +146,7 @@ function frame(now){
     else if(G.mode==="dig"&&G.dig)updateDig(dt);
     else if(G.mode==="cave"&&G.cave)updateCave(dt);
     else if(G.mode==="belt"&&G.belt)updateBelt(dt);
+    else if(G.mode==="scoop"&&G.scoop)updateScoop(dt);
     beaconTick(dt);
     audioTick(dt);
     if(G.mode==="system"||G.mode==="dock")drawSystem();
@@ -153,6 +156,7 @@ function frame(now){
     else if(G.mode==="dig"&&G.dig)drawDig();
     else if(G.mode==="cave"&&G.cave)drawCave();
     else if(G.mode==="belt"&&G.belt)drawBelt();
+    else if(G.mode==="scoop"&&G.scoop)drawScoop();
     hud();
   }else{
     ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);

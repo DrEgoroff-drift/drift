@@ -10,13 +10,22 @@ const RES={
   crystal:  {ru:"Кристаллы", col:"#c58ae0",price:105},
   /* только с фауны — в породе и в поясе не встречаются */
   carbon:   {ru:"Углерод",   col:"#8a97a0",price:46},
-  xeno:     {ru:"Ксенобиом", col:"#ff7ac8",price:190}
+  xeno:     {ru:"Ксенобиом", col:"#ff7ac8",price:190},
+  /* Редкие (M39): не товар, а сырьё под лабораторию, базы и корабли наёмников.
+     Рынок их не берёт вовсе — иначе они превратились бы в дорогую строку
+     в трюме и разогнали бы инфляцию. У каждого свой глагол добычи. */
+  volatiles:{ru:"Летучие газы",col:"#7fe0c8",price:0,rare:"сбор в атмосфере газового гиганта"},
+  icecrys:  {ru:"Кристаллы льда",col:"#bfe8ff",price:0,rare:"пояс на дальней орбите"},
+  techcomp: {ru:"Техкомпоненты",col:"#ffb347",price:0,rare:"рейд на пиратскую базу"},
+  alloy:    {ru:"Сплавы",     col:"#d9dde3",price:0,rare:"переплавка на промышленной станции"}
 };
 const RES_KEYS=Object.keys(RES);
 /* ресурсы, добавленные позже: у них отдельный поток случайных чисел,
    иначе сдвинулась бы генерация уже существующих станций */
 const FAUNA_RES=["carbon","xeno"];
-const ORE_KEYS=RES_KEYS.filter(k=>FAUNA_RES.indexOf(k)<0);
+const RARE_RES=RES_KEYS.filter(k=>!!RES[k].rare);
+const TRADE_KEYS=RES_KEYS.filter(k=>RARE_RES.indexOf(k)<0);
+const ORE_KEYS=TRADE_KEYS.filter(k=>FAUNA_RES.indexOf(k)<0);
 const PROFILE={
   terran:["iron","silicon","organics","ice"],
   ocean:["ice","organics","silicon"],
@@ -27,6 +36,11 @@ const PROFILE={
   toxic:["organics","isotopes","crystal","silicon"],
   gas:[]
 };
+/* рецепты промышленной станции: единственный источник сплавов */
+const SMELT=[
+  {ru:"Чёрная плавка",  in:[["iron",4],["silicon",2]],           fee:60},
+  {ru:"Тяжёлая плавка", in:[["titan",2],["iridium",1]],          fee:130}
+];
 const BELT_RES=["iron","silicon","titan","iridium","isotopes","crystal","ice"];
 
 /* ══════════════ миры ══════════════ */

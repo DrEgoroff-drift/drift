@@ -84,12 +84,16 @@ function hexRGB(h){
 const BELT_HALF=2000, DUST_HALF=340;
 const AST_N=112, AST_MIN=560;   // ближе AST_MIN не спавним — до руды надо долететь
 const BELT_AVLIM=.042;   // предел скорости поворота — на полном отклонении ~140°/с
+function beltIcy(B){return B.orbit>1500;}
 function enterBelt(){
   const sys=G.sys,B=sys.belt,r=rng(B.seed);
   const ast=[];
   for(let i=0;i<AST_N;i++){
     const rad=26+r()*78;
-    const res=B.res[Math.floor(r()*B.res.length)];
+    let res=B.res[Math.floor(r()*B.res.length)];
+    /* кристаллы льда намерзают только на дальних, холодных кольцах — и тянутся
+       из отдельного потока, чтобы состав уже существующих поясов не поехал */
+    if(beltIcy(B)&&rng(hashi(B.seed,i*977,0x1CEC))()<.22)res="icecrys";
     let x=0,y=0,z=0;
     for(let t=0;t<24;t++){
       x=(r()-.5)*2*BELT_HALF;y=(r()-.5)*780;z=(r()-.5)*2*BELT_HALF;
@@ -111,6 +115,7 @@ function enterBelt(){
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(bb=>bb.classList.remove("on"));
   say("Вход в "+B.name+"\nруда: "+B.res.map(k=>RES[k].ru).join(", ")+
+    (beltIcy(B)?"\nкольцо дальнее — попадаются кристаллы льда":"")+
     "\n◀ ▶ курс · ▲ ▼ тангаж · Q E крен\nПРОБЕЛ тяга · тяните по стеклу — обзор");
 }
 /* обломки: разлетаются, тают и ничего не задевают */
@@ -275,7 +280,8 @@ function updateBelt(dt){
   if(best!==b.lock)b.prog=0;
   b.lock=best;b.beam=0;
   const dbtn=document.getElementById("dronebtn");
-  if(best&&G.droneInventory>0){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
+  /* дрон живёт продажами, поэтому на редкое сырьё его не посадить */
+  if(best&&G.droneInventory>0&&RARE_RES.indexOf(best.res)<0){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
   else{droneTarget=null;dbtn.style.display="none";}
 
   if(!best){G.prompt="НАВЕДИТЕ ПРИЦЕЛ НА АСТЕРОИД";return;}
