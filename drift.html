@@ -6145,6 +6145,20 @@ const RAID_ROOMS={
   bridge: {ru:"мостик",      col:[66,44,44]}
 };
 function raidIdx(c,r){return r*RAID_N+c;}
+/* Типы врагов — те же поля, разные числа: этого хватает, чтобы бой читался
+   по-разному, и не заводит второй ИИ. */
+const FOE_KINDS={
+  grunt:{ru:"пират",   hp:26,dmg:5, speed:1.5,range:700,cool:46,col:"#c4694f",r:9},
+  rusher:{ru:"налётчик",hp:20,dmg:8, speed:3.1,range:150,cool:30,col:"#e08a5a",r:8},
+  heavy:{ru:"тяжёлый", hp:60,dmg:9, speed:.9, range:620,cool:64,col:"#b85a6a",r:12},
+  boss: {ru:"главарь", hp:120,dmg:12,speed:1.7,range:760,cool:24,col:"#ff6b57",r:14}
+};
+/* Пикапы — весь «расходный» слой сцены: лечение, броня, патроны. */
+const PICKUPS={
+  medkit:{ru:"аптечка",   col:"#7fe6d8"},
+  armor: {ru:"пластина",  col:"#9fd8ff"},
+  ammo:  {ru:"боезапас",  col:"#f2b25c"}
+};
 /* ══════════════ генерация: комнаты и коридоры со связностью ══════════════ */
 function genRaid(seed,level){
   const r=rng(seed);
@@ -6175,8 +6189,25 @@ function genRaid(seed,level){
     while(c!==b.cx){c+=c<b.cx?1:-1;cells[raidIdx(c,rr)]=1;if(!kind[raidIdx(c,rr)])kind[raidIdx(c,rr)]="corr";}
     while(rr!==b.cy){rr+=rr<b.cy?1:-1;cells[raidIdx(c,rr)]=1;if(!kind[raidIdx(c,rr)])kind[raidIdx(c,rr)]="corr";}
   }
-  return {seed,level,cells,kind,rooms};
+  /* антресоли и пандусы — то, ради чего вообще выбран полигональный рендер:
+     часть комнат получает второй ярус, к нему ведёт наклонный въезд */
+  const hi=new Float32Array(RAID_N*RAID_N);
+  for(const rm of rooms){
+    if(rm.k==="hangar"||rm.c1-rm.c0<5||rm.r1-rm.r0<5||r()<.45)continue;
+    const w=2+Math.floor(r()*2);
+    for(let c=rm.c0;c<rm.c0+w;c++)for(let rr=rm.r0;rr<rm.r1;rr++)hi[raidIdx(c,rr)]=52;
+    /* пандус: одна колонка со ступенчатым подъёмом, чтобы наверх можно было выйти */
+    const rampR=rm.r0+Math.floor((rm.r1-rm.r0)/2);
+    hi[raidIdx(rm.c0+w,rampR)]=26;
+    rm.loft=true;
+  }
+  return {seed,level,cells,kind,rooms,hi};
 }
+function raidFloorH(R,c,rr){
+  if(c<0||rr<0||c>=RAID_N||rr>=RAID_N)return 0;
+  return R.hi?R.hi[raidIdx(c,rr)]:0;
+}
+function raidFloorAt(R,x,z){return raidFloorH(R,Math.floor(x/RCELL),Math.floor(z/RCELL));}
 function raidSolid(R,c,rr){
   if(c<0||rr<0||c>=RAID_N||rr>=RAID_N)return true;
   return R.cells[raidIdx(c,rr)]===0;
@@ -6233,7 +6264,7 @@ function enterRaid(PB){
   const st=stat();
   const start=R.rooms[0];
   const [sx0,sz0]=cellCenter(start.cx,start.cy);
-  const foes=[],loot=[];
+  const foes=[],loot=[],picks=[];
   const r=rng(hashi(PB.seed,77,0x0E));
   for(const rm of R.rooms){
     if(rm.k==="hangar")continue;
@@ -6241,15 +6272,27 @@ function enterRaid(PB){
     for(let i=0;i<n;i++){
       const c=rm.c0+Math.floor(r()*(rm.c1-rm.c0)),rr=rm.r0+Math.floor(r()*(rm.r1-rm.r0));
       const [x,z]=cellCenter(c,rr);
-      const boss=rm.k==="bridge"&&i===0;
-      foes.push({x,z,a:r()*TAU,hp:(boss?70:26)+PB.level*14,hpMax:(boss?70:26)+PB.level*14,
-        boss,cool:0,aware:false,seed:hashi(PB.seed,foes.length*131,9),bob:r()*TAU});
+      /* мини-босс сторожит мостик; в остальном тип берётся от отсека —
+         в жилом чаще налётчики, в реакторном тяжёлые */
+      const kind=(rm.k==="bridge"&&i===0)?"boss":
+        (rm.k==="living"?(r()<.6?"rusher":"grunt"):
+         rm.k==="reactor"?(r()<.5?"heavy":"grunt"):
+         (r()<.25?"heavy":(r()<.5?"rusher":"grunt")));
+      const K=FOE_KINDS[kind],hp=K.hp+PB.level*12;
+      foes.push({x,z,a:r()*TAU,kind,hp,hpMax:hp,boss:kind==="boss",
+        cool:0,aware:false,seed:hashi(PB.seed,foes.length*131,9),bob:r()*TAU});
     }
     const [lx,lz]=cellCenter(rm.cx,rm.cy);
     loot.push({x:lx,z:lz,kind:rm.k==="bridge"?"part":(rm.k==="store"?"tech":"data"),taken:false,
       seed:hashi(PB.seed,loot.length*613,4)});
+    /* расходники лежат по отсекам: жилой лечит, склад даёт патроны, прочее — броню */
+    const pk=rm.k==="living"?"medkit":(rm.k==="store"?"ammo":(r()<.5?"armor":"medkit"));
+    const pc=rm.c0+Math.floor(r()*(rm.c1-rm.c0)),pr=rm.r0+Math.floor(r()*(rm.r1-rm.r0));
+    const [px,pz]=cellCenter(pc,pr);
+    picks.push({x:px,z:pz,kind:pk,taken:false});
   }
-  G.raid={PB,R,foes,loot,x:sx0,z:sz0,a:0,vx:0,vz:0,suit:100,cool:0,bag:{parts:[],tech:0,data:0},
+  G.raid={PB,R,foes,loot,picks,x:sx0,z:sz0,y:0,a:0,vx:0,vz:0,suit:100,cool:0,
+    ammo:60,armor:0,bag:{parts:[],tech:0,data:0},
     walkPhase:0,hurt:0,flash:0,shots:[],exit:[sx0,sz0],level:PB.level};
   G.mode="raid";G.ap=null;
   for(const k in keys)keys[k]=false;
@@ -6284,13 +6327,16 @@ function updateRaid(dt){
   const nx=S.x+Math.sin(S.a)*spd*3.1*dt, nz=S.z+Math.cos(S.a)*spd*3.1*dt;
   if(!raidSolidAt(R,nx,S.z))S.x=nx;
   if(!raidSolidAt(R,S.x,nz))S.z=nz;
+  /* высота пола: пандус поднимает плавно, поэтому переход на антресоль виден */
+  const wantY=raidFloorAt(R,S.x,S.z);
+  S.y+=clamp(wantY-S.y,-4*dt,4*dt);
   S.walkPhase+=Math.abs(spd)*.2*dt;
   if(S.cool>0)S.cool-=dt;
   if(S.hurt>0)S.hurt-=dt;
   if(S.flash>0)S.flash-=dt;
   /* оружие берётся из установленной части: собранный корабль решает, чем воюешь */
-  if(keys.fire&&S.cool<=0&&st.armed){
-    S.cool=Math.max(7,st.cool*.5);S.flash=6;
+  if(keys.fire&&S.cool<=0&&st.armed&&S.ammo>0){
+    S.cool=Math.max(7,st.cool*.5);S.flash=6;S.ammo--;
     S.shots.push({x:S.x,z:S.z,vx:Math.sin(S.a)*9,vz:Math.cos(S.a)*9,life:60,dmg:st.dmg,mine:true});
     sfx("shot",{f:520,v:.4});
   }
@@ -6302,24 +6348,35 @@ function updateRaid(dt){
   /* враги: идут на шум, стреляют с дистанции, за стеной не видят */
   for(const f of S.foes){
     if(f.hp<=0)continue;
+    const K=FOE_KINDS[f.kind]||FOE_KINDS.grunt;
     const dx=S.x-f.x,dz=S.z-f.z,d=Math.hypot(dx,dz)||1;
-    const see=d<720&&raidLineOfSight(R,f.x,f.z,S.x,S.z);
+    const see=d<760&&raidLineOfSight(R,f.x,f.z,S.x,S.z);
     if(see)f.aware=true;
     if(f.aware){
       f.a=Math.atan2(dx,dz);
-      if(d>190&&see){
-        const nfx=f.x+dx/d*1.5*dt, nfz=f.z+dz/d*1.5*dt;
+      /* налётчик прёт вплотную, тяжёлый держит дистанцию — разница видна в бою */
+      const keep=f.kind==="rusher"?40:190;
+      if(d>keep&&see){
+        const nfx=f.x+dx/d*K.speed*dt, nfz=f.z+dz/d*K.speed*dt;
         if(!raidSolidAt(R,nfx,f.z))f.x=nfx;
         if(!raidSolidAt(R,f.x,nfz))f.z=nfz;
       }
       if(f.cool>0)f.cool-=dt;
-      if(see&&d<700&&f.cool<=0){
-        f.cool=f.boss?26:46;
-        S.shots.push({x:f.x,z:f.z,vx:dx/d*7,vz:dz/d*7,life:70,dmg:(f.boss?9:5)+S.level*2,mine:false});
-        sfx("shot",{f:280,v:.28});
+      if(see&&d<K.range&&f.cool<=0){
+        f.cool=K.cool;
+        S.shots.push({x:f.x,z:f.z,vx:dx/d*7,vz:dz/d*7,life:70,dmg:K.dmg+S.level*2,mine:false});
+        sfx("shot",{f:f.kind==="heavy"?200:280,v:.28});
       }
     }
     f.bob+=.05*dt;
+  }
+  /* расходники подбираются проходом насквозь — останавливаться незачем */
+  for(const P of S.picks){
+    if(P.taken||Math.hypot(P.x-S.x,P.z-S.z)>52)continue;
+    P.taken=true;sfx("ui",{f:640,to:960,d:.14,v:.3});
+    if(P.kind==="medkit"){S.suit=Math.min(100,S.suit+34);say("Аптечка\nскафандр "+Math.round(S.suit)+"%");}
+    else if(P.kind==="armor"){S.armor=Math.min(.5,S.armor+.18);say("Бронепластина\nурон −"+Math.round(S.armor*100)+"%");}
+    else{S.ammo+=30;say("Боезапас +30\nвсего "+S.ammo);}
   }
   /* попадания: пуля против круга — этого достаточно на таких скоростях */
   for(let i=S.shots.length-1;i>=0;i--){
@@ -6330,7 +6387,7 @@ function updateRaid(dt){
         if(Math.hypot(f.x-sh.x,f.z-sh.z)<34){
           f.hp-=sh.dmg;S.shots.splice(i,1);
           if(f.hp<=0){
-            logAdd("kill","На абордаже: "+(f.boss?"главарь":"пират")+" уничтожен");
+            logAdd("kill","На абордаже: "+(FOE_KINDS[f.kind]||FOE_KINDS.grunt).ru+" уничтожен");
             S.bag.data+=f.boss?12:3;
             sfx("boom",{v:.4});
           }else sfx("hit",{v:.3});
@@ -6340,7 +6397,7 @@ function updateRaid(dt){
     }else if(Math.hypot(S.x-sh.x,S.z-sh.z)<30){
       S.shots.splice(i,1);
       /* здоровье — скафандр, ровно как в шахте */
-      S.suit-=sh.dmg*st.suitWear;S.hurt=10;sfx("hit",{v:.45});
+      S.suit-=sh.dmg*st.suitWear*(1-S.armor);S.hurt=10;sfx("hit",{v:.45});
       if(S.suit<=0){raidLeave("Скафандр пробит · аварийная эвакуация",.5);return;}
     }
   }
@@ -6377,9 +6434,11 @@ function updateRaid(dt){
       (alive?"\nна базе ещё "+alive+" стволов":"\nбаза зачищена");
     if(actEdge){raidLeave(alive?"Уход с базы":"База зачищена",0);return;}
   }else{
-    G.prompt="СКАФАНДР "+Math.round(S.suit)+"% · ЖИВЫХ "+alive+
+    G.prompt="СКАФАНДР "+Math.round(S.suit)+"% · ЗАРЯДОВ "+S.ammo+
+      (S.armor>0?" · БРОНЯ −"+Math.round(S.armor*100)+"%":"")+" · ЖИВЫХ "+alive+
       "\nтехкомпонентов "+S.bag.tech+" · данных "+S.bag.data+
-      (st.armed?"":"\nОРУЖИЯ НЕТ — ПОСТАВЬТЕ ПУШКУ НА КОРАБЛЬ");
+      (!st.armed?"\nОРУЖИЯ НЕТ — ПОСТАВЬТЕ ПУШКУ НА КОРАБЛЬ":
+        (S.ammo<=0?"\nЗАРЯДЫ КОНЧИЛИСЬ — ИЩИТЕ БОЕЗАПАС НА СКЛАДЕ":""));
   }
 }
 /* видимость по сетке: шаг вдоль луча, дёшево и предсказуемо */
@@ -6401,7 +6460,7 @@ function drawRaid(){
     const cx=S.x-Math.sin(S.a)*t, cz=S.z-Math.cos(S.a)*t;
     if(!raidSolidAt(R,cx,cz)){back=t;break;}
   }
-  const cam=[S.x-Math.sin(S.a)*back, 78, S.z-Math.cos(S.a)*back];
+  const cam=[S.x-Math.sin(S.a)*back, 78+S.y, S.z-Math.cos(S.a)*back];
   const fwd=[Math.sin(S.a),-.16,Math.cos(S.a)];
   const fl=Math.hypot(fwd[0],fwd[1],fwd[2]);fwd[0]/=fl;fwd[1]/=fl;fwd[2]/=fl;
   const right=[Math.cos(S.a),0,-Math.sin(S.a)];
@@ -6429,16 +6488,45 @@ function drawRaid(){
     const x0=c*RCELL,z0=rr*RCELL,x1=x0+RCELL,z1=z0+RCELL;
     const K=R.kind[raidIdx(c,rr)];
     const base=RAID_ROOMS[K]?RAID_ROOMS[K].col:[40,44,52];
-    /* затухание с расстоянием заменяет освещение: дальше — темнее */
-    const dd=Math.hypot(x0+RCELL/2-S.x,z0+RCELL/2-S.z);
-    const li=clamp(1.15-dd/(RCELL*9),.12,1);
-    quad([x0,0,z0],[x1,0,z0],[x1,0,z1],[x0,0,z1],base,li*.9,false);
+    const h=raidFloorH(R,c,rr);
+    /* затухание с расстоянием заменяет освещение; фонарь на шлеме добавляет
+       света прямо по курсу, а аварийные лампы дышат по всему отсеку */
+    const cxw=x0+RCELL/2,czw=z0+RCELL/2;
+    const dd=Math.hypot(cxw-S.x,czw-S.z);
+    const ang=Math.abs(angDiff(Math.atan2(cxw-S.x,czw-S.z),S.a));
+    const lamp=K==="reactor"?.16*Math.sin(G.t*.09+c):(K==="corr"?.1*Math.sin(G.t*.05+rr):0);
+    const torch=clamp((1-ang/1.1),0,1)*clamp(1-dd/620,0,1)*.5;
+    const li=clamp(.95-dd/(RCELL*9)+torch+lamp,.1,1.15);
+    quad([x0,h,z0],[x1,h,z0],[x1,h,z1],[x0,h,z1],base,li*.9,false);
     quad([x0,RAID_H,z1],[x1,RAID_H,z1],[x1,RAID_H,z0],[x0,RAID_H,z0],base,li*.5,false);
     /* стены рисуем только там, где соседняя клетка — порода */
-    if(raidSolid(R,c,rr-1))quad([x0,0,z0],[x0,RAID_H,z0],[x1,RAID_H,z0],[x1,0,z0],base,li,true);
-    if(raidSolid(R,c,rr+1))quad([x1,0,z1],[x1,RAID_H,z1],[x0,RAID_H,z1],[x0,0,z1],base,li,true);
-    if(raidSolid(R,c-1,rr))quad([x0,0,z1],[x0,RAID_H,z1],[x0,RAID_H,z0],[x0,0,z0],base,li*.92,true);
-    if(raidSolid(R,c+1,rr))quad([x1,0,z0],[x1,RAID_H,z0],[x1,RAID_H,z1],[x1,0,z1],base,li*.92,true);
+    if(raidSolid(R,c,rr-1))quad([x0,h,z0],[x0,RAID_H,z0],[x1,RAID_H,z0],[x1,h,z0],base,li,true);
+    if(raidSolid(R,c,rr+1))quad([x1,h,z1],[x1,RAID_H,z1],[x0,RAID_H,z1],[x0,h,z1],base,li,true);
+    if(raidSolid(R,c-1,rr))quad([x0,h,z1],[x0,RAID_H,z1],[x0,RAID_H,z0],[x0,h,z0],base,li*.92,true);
+    if(raidSolid(R,c+1,rr))quad([x1,h,z0],[x1,RAID_H,z0],[x1,RAID_H,z1],[x1,h,z1],base,li*.92,true);
+    /* перепад высоты к соседу — вертикальный борт антресоли или пандуса */
+    const sideCol=[base[0]+14,base[1]+12,base[2]+10];
+    const hn=raidFloorH(R,c,rr-1),hs=raidFloorH(R,c,rr+1),
+          hw=raidFloorH(R,c-1,rr),he=raidFloorH(R,c+1,rr);
+    if(!raidSolid(R,c,rr-1)&&hn<h)quad([x0,hn,z0],[x0,h,z0],[x1,h,z0],[x1,hn,z0],sideCol,li,true);
+    if(!raidSolid(R,c,rr+1)&&hs<h)quad([x1,hs,z1],[x1,h,z1],[x0,h,z1],[x0,hs,z1],sideCol,li,true);
+    if(!raidSolid(R,c-1,rr)&&hw<h)quad([x0,hw,z1],[x0,h,z1],[x0,h,z0],[x0,hw,z0],sideCol,li,true);
+    if(!raidSolid(R,c+1,rr)&&he<h)quad([x1,he,z0],[x1,h,z0],[x1,h,z1],[x1,he,z1],sideCol,li,true);
+    /* дверной проём: клетка коридора у самой комнаты получает косяк */
+    if(K==="corr"){
+      for(const [dc,dr] of [[0,-1],[0,1],[-1,0],[1,0]]){
+        const nk=(!raidSolid(R,c+dc,rr+dr))?R.kind[raidIdx(c+dc,rr+dr)]:null;
+        if(!nk||nk==="corr")continue;
+        const jamb=[90,70,60];
+        if(dr){
+          const zz=dr<0?z0:z1;
+          quad([x0,h,zz],[x0,h+14,zz],[x1,h+14,zz],[x1,h,zz],jamb,li*.8,true);
+        }else{
+          const xx=dc<0?x0:x1;
+          quad([xx,h,z0],[xx,h+14,z0],[xx,h+14,z1],[xx,h,z1],jamb,li*.8,true);
+        }
+      }
+    }
   }
   polys.sort((a,b)=>b.d-a.d);
   for(const P of polys){
@@ -6458,12 +6546,17 @@ function drawRaid(){
     const p=proj(L.x,22,L.z);if(!p)continue;
     marks.push({p,kind:"loot",o:L});
   }
+  for(const P of S.picks){
+    if(P.taken)continue;
+    const p=proj(P.x,raidFloorAt(R,P.x,P.z)+16,P.z);if(!p)continue;
+    marks.push({p,kind:"pick",o:P});
+  }
   for(const f of S.foes){
     if(f.hp<=0)continue;
-    const p=proj(f.x,40+Math.sin(f.bob)*3,f.z);if(!p)continue;
+    const p=proj(f.x,raidFloorAt(R,f.x,f.z)+40+Math.sin(f.bob)*3,f.z);if(!p)continue;
     marks.push({p,kind:"foe",o:f});
   }
-  const me=proj(S.x,42,S.z);
+  const me=proj(S.x,S.y+42,S.z);
   if(me)marks.push({p:me,kind:"me",o:S});
   marks.sort((a,b)=>b.p.z-a.p.z);
   for(const m of marks){
@@ -6473,11 +6566,23 @@ function drawRaid(){
       ctx.beginPath();ctx.rect(m.p.x-11*s,m.p.y-9*s,22*s,18*s);ctx.fill();ctx.stroke();
       ctx.fillStyle=(Math.sin(G.t*.14)>0)?"#7fe6d8":"rgba(127,230,216,.3)";
       ctx.beginPath();ctx.arc(m.p.x,m.p.y-13*s,2.4*s,0,TAU);ctx.fill();
+    }else if(m.kind==="pick"){
+      const P=m.o,C=PICKUPS[P.kind];
+      ctx.save();ctx.translate(m.p.x,m.p.y+Math.sin(G.t*.06)*2*s);ctx.scale(s,s);
+      ctx.fillStyle=C.col;ctx.globalAlpha=.85;
+      ctx.beginPath();ctx.rect(-7,-7,14,14);ctx.fill();
+      ctx.globalAlpha=1;ctx.strokeStyle="rgba(255,255,255,.8)";ctx.lineWidth=1.4;
+      if(P.kind==="medkit"){ctx.beginPath();ctx.moveTo(-4,0);ctx.lineTo(4,0);
+        ctx.moveTo(0,-4);ctx.lineTo(0,4);ctx.stroke();}
+      else if(P.kind==="armor"){ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(5,-1);
+        ctx.lineTo(0,5);ctx.lineTo(-5,-1);ctx.closePath();ctx.stroke();}
+      else{ctx.beginPath();ctx.rect(-3,-4,6,8);ctx.stroke();}
+      ctx.restore();
     }else if(m.kind==="foe"){
-      const f=m.o;
+      const f=m.o,K=FOE_KINDS[f.kind]||FOE_KINDS.grunt;
       ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s*.9,s*.9);
-      ctx.fillStyle=f.boss?"#ff6b57":"#c4694f";
-      ctx.beginPath();ctx.ellipse(0,0,9,15,0,0,TAU);ctx.fill();
+      ctx.fillStyle=K.col;
+      ctx.beginPath();ctx.ellipse(0,0,K.r,K.r*1.6,0,0,TAU);ctx.fill();
       ctx.fillStyle="#1b2229";ctx.beginPath();ctx.arc(0,-13,7,0,TAU);ctx.fill();
       ctx.fillStyle=f.aware?"rgba(255,90,70,.95)":"rgba(255,200,120,.7)";
       ctx.beginPath();ctx.arc(0,-13,3,0,TAU);ctx.fill();
@@ -6494,7 +6599,8 @@ function drawRaid(){
   }
   /* выстрелы и вспышки — последними, поверх всего */
   for(const sh of S.shots){
-    const p=proj(sh.x,40,sh.z),q=proj(sh.x-sh.vx*2,40,sh.z-sh.vz*2);
+    const sy2=raidFloorAt(R,sh.x,sh.z)+40;
+    const p=proj(sh.x,sy2,sh.z),q=proj(sh.x-sh.vx*2,sy2,sh.z-sh.vz*2);
     if(!p||!q)continue;
     ctx.strokeStyle=sh.mine?"rgba(127,230,216,.95)":"rgba(255,120,90,.95)";
     ctx.lineWidth=Math.max(1,2200/p.z*.06);
@@ -6509,7 +6615,8 @@ function drawRaid(){
   ctx.fillStyle=S.suit>40?"rgba(127,230,216,.85)":"rgba(255,90,70,.9)";
   ctx.fillRect(bx,by,bw*clamp(S.suit/100,0,1),8);
   ctx.fillStyle="rgba(242,178,92,.8)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText("СКАФАНДР "+Math.round(S.suit)+"%",bx,by+18);
+  ctx.fillText("СКАФАНДР "+Math.round(S.suit)+"% · ЗАРЯДОВ "+S.ammo+
+    (S.armor>0?" · БРОНЯ "+Math.round(S.armor*100)+"%":""),bx,by+18);
 }
 
 /* ══════════════ ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ ══════════════ */
