@@ -30,8 +30,10 @@ function crewRender(){
   crewTick();
   document.getElementById("cvCr").textContent=G.credits.toLocaleString("ru")+" кр";
   document.getElementById("cvCap").textContent=G.crew.length+" / "+crewCap()+" мест";
-  document.getElementById("cvSub").textContent=
-    "сектор "+G.sx+","+G.sy+" · нанимают на станциях";
+  const hs=crewHostages();
+  document.getElementById("cvSub").textContent=hs.length
+    ? "в плену: "+hs.map(c=>c.name).join(", ")
+    : "сектор "+G.sx+","+G.sy+" · платите за риск, а не за доход";
   $cvBody.textContent="";
   if(!G.crew.length){
     $cvBody.appendChild(el("div","sec","ПОКА НИКОГО · НАЙМИТЕ НА СТАНЦИИ, ВКЛАДКА ЭКИПАЖ"));
@@ -42,8 +44,10 @@ function crewRender(){
     const hold=crewHold(c),cap=crewCargoMax(c);
     const here=!!allyOf(c.id);
     const bal=(c.earned||0)-(c.spent||0);
+    const tag=c.state==="hostage"?" · В ПЛЕНУ":(c.state==="away"?" · В ЗАГУЛЕ":
+              (here?" · В ЭТОЙ СИСТЕМЕ":""));
     $cvBody.appendChild(el("div","sec",c.name.toUpperCase()+" · "+
-      CREW_SPEC[c.spec].ru.toUpperCase()+(here?" · В ЭТОЙ СИСТЕМЕ":"")));
+      CREW_SPEC[c.spec].ru.toUpperCase()+tag));
     const r=el("div","row");
     r.appendChild(el("div","nm","<s>приказ: <b>"+ORDERS[c.order.kind].ru+
       "</b> · сектор "+c.order.sx+","+c.order.sy+
@@ -62,8 +66,53 @@ function crewRender(){
     r.appendChild(bw);
     $cvBody.appendChild(r);
 
-    /* приказ */
+    /* ── плен: выкуп или штурм ── */
+    if(c.state==="hostage"){
+      const rh=el("div","row");
+      rh.appendChild(el("div","nm","<b style='color:#ff6b57'>В ПЛЕНУ</b><s>"+
+        "держат в секторе "+c.ransomSx+","+c.ransomSy+" · выкуп растёт, пока вы тянете"+
+        "<br>можно не платить: возьмите пиратскую базу в этом секторе на абордаж — "+
+        "штурм освобождает даром</s>"));
+      const b=el("button","act gold","ВЫКУП "+(c.ransom||0).toLocaleString("ru")+" кр");
+      b.disabled=G.credits<(c.ransom||0);
+      b.onclick=()=>{if(ransomPay(c))crewRender();};
+      rh.appendChild(b);$cvBody.appendChild(rh);
+    }else if(c.state==="away"){
+      const left=Math.max(0,Math.ceil(((c.stateUntil||0)-Date.now())/3600000));
+      $cvBody.appendChild(el("div","row","<div class='nm'><b>В ЗАГУЛЕ</b><s>вернётся примерно через "+
+        left+" ч · жалованье за это время не идёт</s></div>"));
+    }
+
+    /* ── ставка: чем рискованнее приказ, тем длиннее оба хвоста ── */
     if(c.shipId){
+      const rr2=el("div","row");
+      rr2.appendChild(el("div","nm","<b>Как работать</b><s>риск двигает и провалы, и находки; "+
+        "осторожно — ровно и скучно, отчаянно — как повезёт</s>"));
+      const RISKS=[["safe","ОСТОРОЖНО"],["norm","ОБЫЧНО"],["bold","ОТЧАЯННО"]];
+      for(const [k,lab] of RISKS){
+        const b=el("button","act sm"+((c.risk||"norm")===k?"":" gold"),lab);
+        b.disabled=(c.risk||"norm")===k;
+        b.onclick=()=>{c.risk=k;crewRender();};
+        rr2.appendChild(b);
+      }
+      $cvBody.appendChild(rr2);
+    }
+
+    /* ── история: единственный способ понять, везучий он или нет ── */
+    if(c.hist&&c.hist.length){
+      const COL={cat:"#ff6b57",bad:"#ff9d7a",norm:"var(--dim)",good:"#8fd08a",jack:"#f2b25c"};
+      const rows=c.hist.slice(0,6).map(h=>
+        "<span style='color:"+(COL[h.cat]||"var(--dim)")+"'>• "+h.ru+"</span>").join("<br>");
+      $cvBody.appendChild(el("div","row","<div class='nm'><b>Последние рейсы</b><s>"+
+        "всего рейсов: "+(c.trips||0)+"<br>"+rows+"</s></div>"));
+    }else{
+      $cvBody.appendChild(el("div","row","<div class='nm'><s>рейсов ещё не было — "+
+        "каков он на деле, покажет только работа</s></div>"));
+    }
+
+    /* приказ */
+    if(c.state==="hostage"){/* пока он у пиратов, приказывать некому */}
+    else if(c.shipId){
       const ro=el("div","row");
       ro.appendChild(el("div","nm","<b>Приказ</b><s>"+ORDERS[c.order.kind].note+
         "<br>район берётся по системе, где вы сейчас</s>"));

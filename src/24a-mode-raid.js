@@ -179,6 +179,9 @@ function raidLeave(msg,lostShare){
   for(const p of bag.parts)addPart(p);
   G.raid=null;G.mode="system";
   G.hull=Math.max(1,G.hull);
+  /* если в этом секторе пираты держат ваших людей — штурм освобождает их даром.
+     Выкуп остаётся вариантом для тех, кому лень лететь; это и есть выбор */
+  if(lostShare<=0)crewFreeHostagesAt(G.sx,G.sy);
   saveGame(true);
   tell(lostShare>0?"warn":"kill",msg+" · техкомпонентов "+bag.tech+", данных "+bag.data+
     (bag.parts.length?", частей "+bag.parts.length:""),

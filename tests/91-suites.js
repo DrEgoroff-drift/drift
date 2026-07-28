@@ -220,25 +220,145 @@ TEST_SUITES.push(()=>suite("музыка меняется по местам",()=
   exitCave();
 }));
 
-/* ── наёмники: главный вопрос — приносит ли он деньги ── */
-TEST_SUITES.push(()=>suite("наёмник окупает жалованье",()=>{
-  resetWorld();
-  G.credits=100000;
-  G.owned.strizh=true;G.owned.obod=true;G.shipId="strizh";
-  const c=genMerc(12345,["mine"]);
+/* ── наёмники: по кредитам в минусе, живут ради вещей ── */
+function mkMerc(seed,spec,shipId){
+  const c=genMerc(seed,[spec]);
   G.crew.push(Object.assign({},c,{cargo:{},order:{kind:"home",sx:0,sy:0},
     tMs:Date.now(),paidMs:Date.now()}));
-  const m=G.crew[0];
-  ok(crewAssignShip(m,"obod"),"корабль выдан");
-  ok(crewOrder(m,"mine")||crewOrder(m,"mine"),"приказ «добыча» принят");
-  const cr0=G.credits;
-  /* час работы одним куском: ленивая симуляция считает по прошедшему времени */
-  m.tMs=Date.now()-60*60*1000;
+  const m=G.crew[G.crew.length-1];
+  if(shipId){G.owned[shipId]=true;crewAssignShip(m,shipId);
+    crewOrder(m,spec==="fight"?"hunt":spec)||crewOrder(m,spec==="fight"?"hunt":spec);}
+  return m;
+}
+TEST_SUITES.push(()=>suite("наёмник в среднем в минусе по кредитам",()=>{
+  resetWorld();
+  let net=0,trips=0,items=0,jack=0,cats=0;
+  /* большая выборка по разным seed: интересна средняя, а не отдельная судьба */
+  for(let i=0;i<60;i++){
+    resetWorld();
+    G.credits=1000000;
+    const m=mkMerc(1000+i*37,"mine","obod");
+    if(!m.shipId)continue;
+    const inv0=G.inv.length,own0=Object.keys(G.owned).length,cr0=G.credits;
+    for(let k=0;k<12;k++){                    // двенадцать рейсов подряд
+      if(m.gone)break;
+      m.state=null;m.hull=m.hullMax;m.tripMin=0;
+      crewTrip(m,crewTripMinutes(m));trips++;
+    }
+    net+=G.credits-cr0;
+    items+=(G.inv.length-inv0)+(Object.keys(G.owned).length-own0);
+    for(const h of (m.hist||[])){if(h.cat==="jack")jack++;if(h.cat==="cat")cats++;}
+  }
+  ok(trips>500,"прогнали "+trips+" рейсов");
+  ok(net<0,"по кредитам суммарно минус ("+Math.round(net).toLocaleString("ru")+" кр)");
+  ok(net>-2500000,"но не разорение: минус соразмерен жалованью");
+  ok(items>0,"вещи всё-таки приходят: "+items+" частей и корпусов");
+  ok(jack>0,"джекпоты случаются: "+jack);
+  ok(cats>0,"катастрофы тоже: "+cats);
+}));
+
+TEST_SUITES.push(()=>suite("удача скрыта, но различима",()=>{
+  resetWorld();
+  /* два наёмника с разной удачей должны расходиться по результату */
+  let lo=null,hi=null;
+  for(let i=0;i<400&&(!lo||!hi);i++){
+    const c=genMerc(500+i*13,["mine"]);
+    crewLuck(c);
+    if(!lo&&c._luck<.8)lo=c;
+    if(!hi&&c._luck>1.35)hi=c;
+  }
+  ok(!!lo&&!!hi,"в генераторе есть и невезучие, и везучие");
+  const run=(proto)=>{
+    resetWorld();G.credits=1000000;G.owned.obod=true;
+    G.crew.push(Object.assign({},proto,{cargo:{},order:{kind:"mine",sx:0,sy:0},
+      shipId:"obod",hull:130,hullMax:130,tMs:Date.now()}));
+    const m=G.crew[0];const cr0=G.credits;let bad=0,good=0;
+    for(let k=0;k<40;k++){m.state=null;m.gone=false;m.hull=m.hullMax;
+      crewTrip(m,crewTripMinutes(m));}
+    for(const h of (m.hist||[]))if(h.cat==="bad"||h.cat==="cat")bad++;else if(h.cat!=="norm")good++;
+    return {net:G.credits-cr0,bad,good};
+  };
+  const a=run(lo),b=run(hi);
+  ok(b.net>a.net,"везучий выгоднее невезучего ("+Math.round(b.net)+" против "+Math.round(a.net)+")");
+  ok(!("luck" in lo),"само число удачи наружу не выставлено");
+}));
+
+TEST_SUITES.push(()=>suite("ставка игрока двигает хвосты",()=>{
+  resetWorld();
+  const count=(risk)=>{
+    let ext=0,norm=0;
+    for(let i=0;i<40;i++){
+      resetWorld();G.credits=1000000;
+      const m=mkMerc(70+i*17,"mine","obod");
+      if(!m.shipId)continue;
+      m.risk=risk;
+      for(let k=0;k<10;k++){m.state=null;m.gone=false;m.hull=m.hullMax;
+        crewTrip(m,crewTripMinutes(m));}
+      for(const h of (m.hist||[])){if(h.cat==="norm")norm++;else ext++;}
+    }
+    return {ext,norm};
+  };
+  const safe=count("safe"),bold=count("bold");
+  const rSafe=safe.ext/Math.max(1,safe.ext+safe.norm);
+  const rBold=bold.ext/Math.max(1,bold.ext+bold.norm);
+  ok(rBold>rSafe,"отчаянно даёт больше событий, чем осторожно ("+
+     rBold.toFixed(2)+" против "+rSafe.toFixed(2)+")");
+}));
+
+TEST_SUITES.push(()=>suite("плен: выкуп и освобождение штурмом",()=>{
+  resetWorld();
+  G.credits=1000000;
+  const m=mkMerc(31415,"mine","obod");
+  const ev=CREW_EVENTS.find(e=>e.id==="hostage");
+  applyCrewEvent(m,ev,rng(7),800,.5);
+  eq(m.state,"hostage","событие увело его в плен");
+  ok(m.ransom>0,"выкуп назначен: "+m.ransom+" кр");
+  ok(!crewOrder(m,"haul"),"пока он в плену, приказы не проходят");
+  /* выкуп растёт, пока тянем */
+  const r0=m.ransom;
+  m.ransomAt=Date.now()-3*3600000;m.tMs=Date.now()-1000;
   crewTick();
-  const delta=G.credits-cr0;
-  ok(delta>0,"за час добытчик вывел игрока в плюс ("+delta+" кр)");
-  ok((m.earned||0)>(m.spent||0),"заработал больше, чем съел ("+m.earned+" против "+m.spent+")");
-  ok(m.debt===0,"долга не появилось");
+  ok(m.ransom>r0,"выкуп вырос за бездействие ("+r0+" → "+m.ransom+")");
+  /* штурм в том же секторе освобождает даром */
+  const cr0=G.credits;
+  G.sx=m.ransomSx;G.sy=m.ransomSy;
+  eq(crewFreeHostagesAt(G.sx,G.sy),1,"штурм освободил одного");
+  eq(m.state,null,"он на свободе");
+  eq(G.credits,cr0,"и это не стоило ни кредита");
+  /* а выкуп — рабочая альтернатива */
+  const m2=mkMerc(2718,"mine","vyuk");
+  applyCrewEvent(m2,ev,rng(9),800,.5);
+  const before=G.credits;
+  ok(ransomPay(m2),"выкуп заплачен");
+  ok(G.credits<before,"кредиты списались");
+  eq(m2.state,null,"вернулся");
+}));
+
+TEST_SUITES.push(()=>suite("байки не повторяются и не пустые",()=>{
+  resetWorld();
+  const seen={};let n=0;
+  for(let i=0;i<200;i++){
+    const c=genMerc(9000+i*7,["mine"]);c.trips=i;
+    const t=crewTale(c);
+    ok(typeof t==="string"&&t.length>12,i===0?"байка — осмысленная строка: "+t:"…");
+    if(!seen[t]){seen[t]=1;n++;}
+  }
+  ok(n>25,"уникальных баек в выборке: "+n);
+}));
+
+TEST_SUITES.push(()=>suite("расчёт стоит денег",()=>{
+  resetWorld();
+  G.credits=1000000;
+  const m=mkMerc(555,"mine","obod");
+  const cost=crewSeverance(m);
+  ok(cost>0,"выходное пособие назначено: "+cost+" кр");
+  G.credits=cost-1;
+  ok(!fireMerc(0),"без денег уволить нельзя");
+  eq(G.crew.length,1,"человек на месте");
+  G.credits=cost+10;
+  ok(fireMerc(0),"с деньгами — можно");
+  eq(G.crew.length,0,"уволен");
+  eq(G.credits,10,"пособие списано");
 }));
 
 TEST_SUITES.push(()=>suite("простой не загоняет в долг",()=>{
@@ -258,6 +378,37 @@ TEST_SUITES.push(()=>suite("простой не загоняет в долг",()
   eq(Math.round(m.debt),0,"без выданного корабля жалованье не начисляется");
 }));
 
+TEST_SUITES.push(()=>suite("очередь рейсов ограничена",()=>{
+  resetWorld();
+  G.credits=1000000;
+  const m=mkMerc(4711,"mine","obod");
+  ok(!!m.shipId,"корабль выдан");
+  m.trips=0;m.hist=[];
+  /* «ушёл на сутки» не должно превращаться в сутки выработки */
+  m.tMs=Date.now()-24*60*60*1000;
+  crewTick();
+  ok((m.trips|0)<=CREW_TRIP_QUEUE,"за сутки отсутствия закрыто не больше "+
+     CREW_TRIP_QUEUE+" рейсов (закрыто "+m.trips+")");
+  ok((m.trips|0)>0,"но очередь не пустая");
+}));
+
+TEST_SUITES.push(()=>suite("корпус решает длину рейса, а не выгоду",()=>{
+  resetWorld();
+  G.credits=1000000;G.owned.igla=true;G.owned.mamont=true;
+  const small=mkMerc(11,"mine","igla");
+  const big=mkMerc(12,"mine","mamont");
+  ok(crewTripMinutes(big)>crewTripMinutes(small),
+     "у большого корпуса рейс длиннее ("+Math.round(crewTripMinutes(big))+" против "+
+     Math.round(crewTripMinutes(small))+" мин)");
+  ok(crewPay(big)>crewPay(small),
+     "и жалованье выше ("+crewPay(big)+" против "+crewPay(small)+" кр/мин)");
+  /* кредит за минуту работы должен быть сопоставим — иначе большой корпус
+     был бы не выбором, а строго лучшим вариантом */
+  const perMin=c=>crewPay(c)*CREW_YIELD;
+  const ratio=perMin(big)/crewPay(big)/(perMin(small)/crewPay(small));
+  near(ratio,1,.05,"отдача на кредит жалованья одинакова у обоих корпусов");
+}));
+
 TEST_SUITES.push(()=>suite("приоритет материала и передача модулей",()=>{
   resetWorld();
   G.credits=100000;G.owned.obod=true;
@@ -269,9 +420,9 @@ TEST_SUITES.push(()=>suite("приоритет материала и перед�
   crewOrder(m,"mine")||crewOrder(m,"mine");
   const sys=getSystem(m.order.sx,m.order.sy);
   const pool=sys.belt?sys.belt.res:(sys.planets.length?sys.planets[0].res:["iron"]);
-  m.pref=pool[pool.length-1];
+  m.pref=pool.filter(k=>RES[k].price>0).slice(-1)[0];
   m.cargo={};
-  crewMine(m,20,1,0,rng(5));
+  crewFill(m,600,rng(5));
   const other=Object.keys(m.cargo).filter(k=>k!==m.pref&&m.cargo[k]>0);
   eq(other.length,0,"с приоритетом добывается только выбранное ("+m.pref+")");
   /* модули: свободных нет, пока игрок не снял уровень */

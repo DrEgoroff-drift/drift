@@ -414,9 +414,14 @@ function renderTab(){
       const S=c.shipId?shipData(c.shipId):null;
       const hold=crewHold(c),cap=crewCargoMax(c);
       const r=el("div","row");
+      const st8=c.state==="hostage"
+        ? "<br><b style='color:#ff6b57'>В ПЛЕНУ · выкуп "+(c.ransom||0).toLocaleString("ru")+
+          " кр — платить или штурмовать базу в секторе "+c.ransomSx+","+c.ransomSy+"</b>"
+        : (c.state==="away"?"<br><b style='color:#f2b25c'>В ЗАГУЛЕ</b>":"");
       r.appendChild(el("div","nm","<b>"+c.name+"</b> <span style='color:var(--dim)'>"+
-        CREW_SPEC[c.spec].ru+"</span><s>"+c.traits.map(t=>traitOf(t).ru).join(" · ")+
+        CREW_SPEC[c.spec].ru+"</span><s>"+c.traits.map(t=>traitOf(t).ru).join(" · ")+st8+
         "<br>приказ: "+ORDERS[c.order.kind].ru+" · сектор "+c.order.sx+","+c.order.sy+
+        " · рейсов "+(c.trips||0)+
         "<br>корабль: "+(S?"«"+S.ru+"» корпус "+Math.round(c.hull)+"/"+Math.round(c.hullMax):"не выдан")+
         (cap?" · трюм "+hold+"/"+cap:"")+
         "<br>жалованье "+crewPay(c)+" кр/мин · опыт "+Math.round(c.xp)+
@@ -436,7 +441,8 @@ function renderTab(){
         bRep.onclick=()=>{if(crewRepair(c))renderTab();};
         r.appendChild(bRep);
       }
-      const bFire=el("button","act","РАСЧЁТ");
+      const bFire=el("button","act","РАСЧЁТ "+crewSeverance(c).toLocaleString("ru"));
+      bFire.title="выходное пособие — чтобы перебор наёмников не был бесплатным";
       bFire.onclick=()=>{fireMerc(i);renderTab();};
       r.appendChild(bFire);
       $body.appendChild(r);

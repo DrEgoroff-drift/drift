@@ -89,6 +89,16 @@ function applySave(s){
     mods:(c.mods&&typeof c.mods==="object")
          ?{hold:c.mods.hold|0,armor:c.mods.armor|0,drill:c.mods.drill|0}:{},
     earned:Math.max(0,c.earned|0),spent:Math.max(0,c.spent|0),
+    /* рейсы, скрытая удача и события: сама удача не сохраняется — она выводится
+       из seed, поэтому у одного и того же человека всегда одна и та же */
+    risk:(c.risk==="safe"||c.risk==="bold")?c.risk:"norm",
+    trips:Math.max(0,c.trips|0),tripMin:Math.max(0,+c.tripMin||0),
+    hist:Array.isArray(c.hist)?c.hist.slice(0,12).map(h=>({cat:String(h.cat||""),
+      id:String(h.id||""),ru:String(h.ru||""),t:+h.t||0})):[],
+    state:(c.state==="hostage"||c.state==="away")?c.state:null,
+    stateUntil:+c.stateUntil||0,hangover:c.hangover?1:0,
+    ransom:Math.max(0,c.ransom|0),ransomBase:Math.max(0,c.ransomBase|0),
+    ransomAt:+c.ransomAt||0,ransomSx:c.ransomSx|0,ransomSy:c.ransomSy|0,
     tMs:Date.now(),paidMs:Date.now()
   })).slice(0,8);
   G.allies=[];

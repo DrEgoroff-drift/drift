@@ -19,6 +19,21 @@ const CREW_TRAITS=[
   {id:"green",   ru:"необстрелянный",note:"дёшев и неопытен",            pay:.62, risk:1.35,yield:.72}
 ];
 function traitOf(id){return CREW_TRAITS.find(t=>t.id===id)||CREW_TRAITS[0];}
+/* ── скрытая удача ──
+   Главное число наёмника, и его нигде не видно. Оно двигает таблицу событий и
+   выработку. Узнать его можно только по истории рейсов — то есть перебором, а
+   перебор стоит денег: найм невозвратен, а расчёт — с выходным пособием.
+   Черта «везучий» видна в найме и лишь слегка смещает настоящую удачу: подсказка,
+   которая имеет право соврать. */
+function crewLuck(c){
+  if(c._luck==null){
+    const r=rng(hashi(c.seed,0x10CC,0x9E37));
+    c._luck=.62+r()*.83+(crewHas(c,"lucky")?.12:0);      // 0.62 … 1.57
+    c._swing=.7+r()*.95;                                  // насколько его качает
+  }
+  return c._luck;
+}
+function crewSwing(c){crewLuck(c);return c._swing;}
 function crewMul(c,k){
   let m=1;for(const id of c.traits)m*=(traitOf(id)[k]!==undefined?traitOf(id)[k]:1);
   return m;
@@ -26,7 +41,13 @@ function crewMul(c,k){
 function crewHas(c,flag){return c.traits.some(id=>!!traitOf(id)[flag]);}
 /* опыт даёт эффективность: 0 → ×1, 100 приказо-минут → примерно ×1.5 */
 function crewSkill(c){return 1+Math.min(.6,(c.xp||0)/200);}
-function crewPay(c){return Math.round(CREW_SPEC[c.spec].pay*crewMul(c,"pay")*crewSkill(c));}
+/* Оклад тянет корпус, а не только специальность: «Мамонт» с трюмом на 290 стоит
+   дороже «Иглы» с трюмом на 26. Иначе большой корпус был бы не выбором, а строго
+   лучшим вариантом — выручка от него росла, а расходы нет. */
+function crewHullPay(c){const S=c.shipId?shipData(c.shipId):null;return S?S.cargo*.1:0;}
+function crewPay(c){
+  return Math.round((CREW_SPEC[c.spec].pay+crewHullPay(c))*crewMul(c,"pay")*crewSkill(c));
+}
 function genMerc(seed,specPool){
   const r=rng(seed);
   const spec=pick(specPool&&specPool.length?specPool:SPEC_KEYS,r);
@@ -107,13 +128,22 @@ function hireMerc(c){
        "Нанят "+m.name+"\n"+CREW_SPEC[m.spec].ru+"\nвыдайте корабль на вкладке ЭКИПАЖ");
   return true;
 }
+/* Расчёт стоит денег — и это не жадность, а защита механики. Удача скрыта, значит
+   без выходного пособия оптимальной игрой был бы бесплатный перебор: нанял, погонял
+   три рейса, уволил, повторил. С пособием перебор — тоже ставка. */
+function crewSeverance(c){return Math.round(c.fee*.5+crewPay(c)*15);}
 function fireMerc(i){
-  const c=G.crew[i];if(!c)return;
+  const c=G.crew[i];if(!c)return false;
+  const cost=crewSeverance(c);
+  if(G.credits<cost){say("Расчёт стоит "+cost.toLocaleString("ru")+" кр\nне хватает кредитов");return false;}
+  G.credits-=cost;
   /* корабль возвращается в ангар вместе с тем, что он успел набрать */
   crewUnload(c,true);
   G.crew.splice(i,1);
-  logAdd("dim","Расчёт с "+c.name+(c.debt>0?" · долг "+c.debt+" кр списан":""));
-  say("Расчёт с "+c.name);
+  logAdd("dim","Расчёт с "+c.name+" · выходное пособие "+cost.toLocaleString("ru")+" кр"+
+    (c.debt>0?" · долг "+Math.round(c.debt)+" кр списан":""));
+  say("Расчёт с "+c.name+"\n−"+cost.toLocaleString("ru")+" кр");
+  return true;
 }
 function crewAssignShip(c,id){
   if(!G.owned[id]||id===G.shipId)return false;
@@ -135,8 +165,9 @@ function crewOrder(c,kind,sx,sy){
   }
   c.balked=false;
   crewTick();                       // закрываем прошлый отрезок по старому приказу
+  if(crewBusy(c)==="hostage"){say(c.name+" в плену\nсначала выкуп или штурм базы");return false;}
   c.order={kind,sx:sx!=null?sx:G.sx,sy:sy!=null?sy:G.sy};
-  c.tMs=Date.now();
+  c.tMs=Date.now();c.tripMin=0;                 // смена района начинает рейс заново
   logAdd("",c.name+" → "+ORDERS[kind].ru+" · сектор "+c.order.sx+","+c.order.sy);
   /* показываем его в небе сразу, а не только при следующем входе в систему —
      иначе игрок отдаёт приказ и не видит никаких признаков, что кто-то работает */
@@ -191,35 +222,92 @@ function crewUnload(c,quiet){
 function crewHold(c){let s=0;for(const k in c.cargo)s+=c.cargo[k]|0;return s;}
 function crewCargoMax(c){const S=shipData(c.shipId);
   return S?Math.round(S.cargo*(1+crewModLv(c,"hold")*.35)):0;}
-/* ══════════════ ленивая симуляция ══════════════ */
-const CREW_OFFLINE_CAP=8*3600*1000;   // за ночь начислится не больше восьми часов
+/* ══════════════ ленивая симуляция: рейсами, а не минутами ══════════════ */
+/* Единица работы — рейс. Он длится столько, сколько наёмник наполняет трюм, и
+   заканчивается броском по таблице событий. Отсюда два следствия.
+
+   Во-первых, за отсутствие копится очередь из трёх рейсов, а не восемь часов по
+   ставке: вернуться утром к предсказуемым трём раздачам можно, к экспоненте — нет.
+
+   Во-вторых, корпус перестаёт быть просто «больше выручка»: большой трюм — это
+   редкие крупные рейсы, маленький — частые мелкие. Одинаковые деньги, разное
+   число бросков, а значит разная дисперсия. Это выбор ставки, а не апгрейд.
+
+   По кредитам наёмник в среднем в минусе: рейс приносит примерно 85% жалованья.
+   Он окупается хвостами — трофейными частями, редким сырьём, изредка целым
+   корпусом. Кредиты здесь ставка, приз — вещи. */
+const CREW_TRIP_QUEUE=3;              // сколько рейсов копится за отсутствие
+const CREW_YIELD=.85;                 // доля жалованья, которую рейс отбивает валом
+function crewTripMinutes(c){
+  const S=c.shipId?shipData(c.shipId):null;
+  return clamp(7+(S?S.cargo:40)*.085,8,30);
+}
+/* насколько он эффективен сверх оклада: опыт и черты сидят и в жаловании тоже,
+   поэтому в плюс выводят только переданные модули и высокая удача */
+function crewEff(c){
+  return crewMul(c,"yield")*(c.morale<.5?.5:1)*(1+crewModLv(c,"drill")*.2);
+}
+function crewBusy(c){
+  /* пока он в плену или в загуле, рейсы не идут и жалованье не капает */
+  if(c.state==="hostage")return "hostage";
+  if(c.state==="away"&&(c.stateUntil||0)>Date.now())return "away";
+  if(c.state==="away")c.state=null;
+  return null;
+}
 function crewTick(){
   if(!G.crew.length)return;
   const now=Date.now();
   for(const c of G.crew){
+    crewLuck(c);
     if(!c.tMs){c.tMs=now;continue;}
-    const dtMs=Math.min(now-c.tMs,CREW_OFFLINE_CAP);
+    const busy=crewBusy(c);
+    if(busy){
+      c.tMs=now;
+      if(busy==="hostage"&&c.ransom){
+        /* выкуп растёт, пока тянешь: бездействие — тоже ход, просто плохой */
+        const h=(now-(c.ransomAt||now))/3600000;
+        c.ransom=Math.round(c.ransomBase*(1+Math.min(2.5,h*.35)));
+      }
+      continue;
+    }
+    const dtMs=now-c.tMs;
     if(dtMs<1000)continue;
     c.tMs=now;
     const min=dtMs/60000;
-    crewPayroll(c,min);
-    /* на базе корабль не нужен — там живут, а не летают */
+    /* на приколе, без корабля и на базе рейсов нет: там не летают.
+       За простой не платят — иначе первый же нанятый уходил в долг ни за что. */
     const needsShip=c.order&&c.order.kind!=="home"&&c.order.kind!=="base";
-    if(!c.order||c.order.kind==="home"||(needsShip&&!c.shipId)){crewRest(c,min);continue;}
-    if(c.hull<=0){crewRest(c,min);continue;}
-    const eff=crewSkill(c)*crewMul(c,"yield")*(c.morale<.5?.5:1)*
-              (1+crewModLv(c,"drill")*.2);
-    const danger=sysDanger(c.order.sx,c.order.sy);
-    const r=rng(hashi(c.seed,Math.floor(now/60000),0xC7E));
-    /* на базе человек не зарабатывает сам — его вклад считает baseTick */
+    if(!c.order||c.order.kind==="home"||(needsShip&&!c.shipId)||c.hull<=0){
+      crewRest(c,min);continue;
+    }
     if(c.order.kind==="base"){crewRest(c,min);c.xp=(c.xp||0)+min*.6;continue;}
-    if(c.order.kind==="hunt")crewHunt(c,min,eff,danger,r);
-    else if(c.order.kind==="mine")crewMine(c,min,eff,danger,r);
-    else if(c.order.kind==="haul")crewHaul(c,min,eff,danger,r);
-    c.xp=(c.xp||0)+min;
+    /* копим отработанное время и закрываем им рейсы */
+    const tm=crewTripMinutes(c);
+    c.tripMin=(c.tripMin||0)+min;
+    let trips=Math.floor(c.tripMin/tm);
+    if(trips>CREW_TRIP_QUEUE){trips=CREW_TRIP_QUEUE;c.tripMin=0;}
+    else c.tripMin-=trips*tm;
+    for(let i=0;i<trips&&!c.gone&&!crewBusy(c);i++){
+      c.xp=(c.xp||0)+tm;
+      crewTrip(c,tm);
+    }
   }
   /* ушедшие вычищаются одним проходом, чтобы не рвать цикл посередине */
   for(let i=G.crew.length-1;i>=0;i--)if(G.crew[i].gone)G.crew.splice(i,1);
+}
+/* ── один рейс ── */
+function crewTrip(c,tm){
+  /* счётчик крутится здесь, а не в вызывающем: он же и есть зерно броска, и если
+     его забыть увеличить, наёмник будет вечно вытягивать одну и ту же карту */
+  c.trips=(c.trips||0)+1;
+  const r=rng(hashi(c.seed,(c.trips|0)*7919,0xC7E));
+  const danger=sysDanger(c.order.sx,c.order.sy);
+  /* жалованье списывается за отработанный рейс целиком */
+  crewPayroll(c,tm);
+  if(c.gone)return;
+  const gross=Math.round(crewPay(c)*tm*CREW_YIELD*crewEff(c)*(.85+crewLuck(c)*.2));
+  const ev=rollCrewEvent(c,r,danger);
+  applyCrewEvent(c,ev,r,gross,danger);
 }
 /* ══════════════ жалованье, долг и мораль ══════════════ */
 /* Плата идёт по тому же ленивому счётчику, что и работа. Нечем платить — копится
@@ -294,57 +382,56 @@ function crewDamage(c,amount){
     else{logAdd("warn",c.name+" не вернулся вместе с «"+(S?S.ru:lost)+"»");c.gone=true;}
   }
 }
-function crewHunt(c,min,eff,danger,r){
-  const kills=min*(.22+danger*.35)*eff;
-  const bounty=Math.round(kills*(170+danger*200)*stat().bountyMul);
-  if(bounty>0){
-    G.credits+=bounty;c.earned=(c.earned||0)+bounty;
-    if(bounty>40)logAdd("money",c.name+" сдал награды за пиратов · +"+bounty.toLocaleString("ru")+" кр");
-  }
-  /* урон соразмерен ремонту: час в опасном секторе — счёт за починку, а не похороны */
-  const hit=min*(.5+danger*2.2)*crewMul(c,"risk");
-  if(hit>0)crewDamage(c,hit);
-}
-function crewMine(c,min,eff,danger,r){
-  const cap=crewCargoMax(c);
-  /* выработка поднята: при прежних полутора единицах в минуту добытчик приносил
-     ~15 кр/мин против 26 кр/мин жалованья — он гарантированно разорял игрока.
-     Теперь около трёх единиц: работа заметно прибыльна, но и не печатает деньги. */
-  const rate=min*(1.4+eff*1.6);
-  let left=Math.min(rate,Math.max(0,cap-crewHold(c)));
+/* ── чем именно закрывается рейс ──
+   Выработка меряется в стоимости, а не в штуках: три единицы железа (11 кр) и три
+   единицы кристаллов (105 кр) — это разница в девять раз при одинаковом окладе, и
+   балансировать её одним числом невозможно. Теперь рейс приносит заданную
+   ценность, а во что она превратится — вопрос того, что лежит в секторе. */
+function crewSectorPool(c){
   const sys=getSystem(c.order.sx,c.order.sy);
   let pool=sys.belt?sys.belt.res:(sys.planets.length?sys.planets[0].res:["iron"]);
-  /* приоритет по материалу: если игрок указал, что нужно, и оно тут есть —
-     берём только его, иначе работаем по всему, что попадётся */
-  if(c.pref&&c.pref!=="all"&&pool.indexOf(c.pref)>=0)pool=[c.pref];
-  while(left>=1){
-    const k=pick(pool.length?pool:["iron"],r);
-    c.cargo[k]=(c.cargo[k]|0)+1;left--;
-  }
-  /* жадный отсыпает себе — видно только по недостаче */
-  if(crewHas(c,"greedy")&&crewHold(c)>0&&r()<min*.35){
-    for(const k in c.cargo)if(c.cargo[k]>0){c.cargo[k]--;break;}
-  }
-  /* сдаём с полтрюма, а не только под завязку: иначе на большом корпусе первая
-     выручка приходила через полчаса, и казалось, что человек просто ест деньги */
-  if(crewHold(c)>=cap*.5){
-    const sum=crewUnload(c);
-    if(sum>0)logAdd("money",c.name+" сдал руду · +"+sum.toLocaleString("ru")+" кр");
-  }
-  if(danger>.25)crewDamage(c,min*danger*1.1*crewMul(c,"risk"));
+  pool=pool.filter(k=>RES[k]&&RES[k].price>0);
+  if(!pool.length)pool=["iron"];
+  /* приоритет по материалу работает, только если это сырьё в секторе вообще есть */
+  if(c.pref&&c.pref!=="all"&&pool.indexOf(c.pref)>=0)return [c.pref];
+  return pool;
 }
-function crewHaul(c,min,eff,danger,r){
-  const S=shipData(c.shipId);
-  /* доход маршрута тянет вместимость корпуса: большой трюм — заметно выгоднее,
-     но всё равно в разы ближе к жалованью, чем к бесконечным деньгам */
-  /* рейс тоже был убыточен: 20 единиц трюма давали 3 кр/мин при жалованье 22.
-     Зависимость от трюма нарочно пологая — иначе большой корпус печатал бы деньги */
-  const pay=Math.round(min*(14+(S?S.cargo:20)*.5)*eff);
-  if(pay>0){
-    G.credits+=pay;c.earned=(c.earned||0)+pay;
-    if(pay>60)logAdd("money",c.name+" закрыл рейс · +"+pay.toLocaleString("ru")+" кр");
+/* value — в кредитах; набивает трюм, пока хватает места и ценности.
+   Считаем по тем же ценам, по которым потом и продадим (живой рынок ближайшей
+   станции): иначе бюджет рейса и выручка расходятся, и наёмник тихо выходит в
+   плюс на одной только разнице базовой цены и рыночной. Единицу дороже остатка
+   не берём — округление вверх на каждом рейсе тоже складывается в доход. */
+function crewFill(c,value,r){
+  const cap=crewCargoMax(c),pool=crewSectorPool(c);
+  const home=nearestStation(c.order.sx,c.order.sy);
+  const prices=(home&&home.station)?marketFor(home):null;
+  const pr=k=>(prices&&prices[k])||RES[k].price;
+  let guard=900;
+  while(value>0&&crewHold(c)<cap&&guard-->0){
+    const k=pick(pool,r),p=pr(k);
+    if(p>value){
+      if(pool.every(q=>pr(q)>value))break;
+      continue;
+    }
+    c.cargo[k]=(c.cargo[k]|0)+1;value-=p;
   }
-  if(danger>.35&&r()<min*.12)crewDamage(c,4+danger*14);
+}
+function crewDeliver(c,quiet){
+  const sum=crewUnload(c,true);
+  if(sum>0&&!quiet)logAdd("money",c.name+" сдал груз · +"+sum.toLocaleString("ru")+" кр");
+  return sum;
+}
+function crewCredit(c,sum){
+  if(sum<=0)return 0;
+  sum=Math.round(sum);
+  G.credits+=sum;c.earned=(c.earned||0)+sum;
+  return sum;
+}
+/* обычная выручка рейса: добытчик привозит сырьё, остальные — деньги */
+function crewPayload(c,value,r){
+  if(value<=0)return 0;
+  if(c.spec==="mine"){crewFill(c,value,r);return crewDeliver(c,true);}
+  return crewCredit(c,value);
 }
 /* ══════════════ встреча в космосе ══════════════ */
 /* Если игрок влетел в систему, где работает его наёмник, тот спавнится
@@ -353,6 +440,7 @@ function spawnAllies(){
   G.allies=[];
   for(const c of G.crew){
     if(!c.shipId||!c.order||c.order.kind==="home")continue;
+    if(crewBusy(c))continue;          // пленных и загулявших в небе нет
     if(c.order.sx!==G.sx||c.order.sy!==G.sy)continue;
     const a=rng(hashi(c.seed,G.sx*131+G.sy,5))()*TAU;
     G.allies.push({c,x:G.ship.x+Math.cos(a)*420,y:G.ship.y+Math.sin(a)*420,
