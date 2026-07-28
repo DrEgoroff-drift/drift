@@ -2918,10 +2918,19 @@ function updateSurface(dt){
   const walking=S.on&&(keys.left||keys.right||S.walkTarget!=null);
   S.walkAmp=clamp(S.walkAmp+(walking?1:-1)*.12*dt,0,1);
   if(walking)S.walkPhase+=dt*.22;
-  S.vy+=S.g*dt;S.y+=S.vy*dt;
+  /* пока стоим на земле — жёстко следуем рельефу, а не догоняем его свободным
+     падением: на склоне гравитация отставала от подъёма/спуска на один-два
+     кадра, "на земле" мигало туда-обратно, отсюда дрожь ног и мелькание
+     подсказки (ДЕЙСТВ у шахты то есть, то нет). Свободное падение — только
+     пока реально в прыжке. */
   const gy=groundAt(tr,S.x)-10;
-  if(S.y>=gy){S.y=gy;S.vy=0;S.on=true;}else S.on=false;
-  if(keys.thrust&&S.on){S.vy=-2.4;S.on=false;}
+  if(S.on){
+    S.y=gy;S.vy=0;
+    if(keys.thrust){S.vy=-2.4;S.on=false;}
+  }else{
+    S.vy+=S.g*dt;S.y+=S.vy*dt;
+    if(S.vy>=0&&S.y>=gy){S.y=gy;S.vy=0;S.on=true;}
+  }
   const dShip=Math.abs(S.x-S.shipX);
   let dep=null,dd=1e9;
   for(const d of S.deposits){
