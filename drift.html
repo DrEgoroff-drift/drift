@@ -2858,26 +2858,58 @@ function drawPlant(pl,x,y){
    оглушённого берут образец (ТОРМ) — углерод и редкий ксенобиом. */
 const BEAST_FORM=["прыгун","ползун","шестиног","парусник","круглыш","тихоход"];
 const BEAST_TRAIT=["пугливый","любопытный","медлительный","стайный","бронированный","светящийся"];
+/* натуральная гамма — мех/шкура/чешуя, без ядовитых неоновых тонов;
+   лёгкий уклон от планеты и куда больший разброс светлота/охра/серость,
+   чем радужный hue-поворот, который был раньше */
+const FUR_TONES=[
+  [101,72,42],[134,103,63],[168,138,94],[201,176,132],[221,201,163],
+  [96,92,84],[132,128,118],[74,70,66],[47,44,40],
+  [110,100,72],[86,96,72],[128,118,84],[150,132,96],[64,58,52]
+];
+function furColor(r,base){
+  const a=pick(FUR_TONES,r), bT=pick(FUR_TONES,r);
+  const m=.3+r()*.5;
+  const lum=.82+r()*.36;
+  return [
+    clamp(lerp(a[0],bT[0],m)*lum+base[0]*.06,18,235),
+    clamp(lerp(a[1],bT[1],m)*lum+base[1]*.06,18,235),
+    clamp(lerp(a[2],bT[2],m)*lum+base[2]*.06,18,235)
+  ];
+}
+/* силуэт — не всегда одна и та же капсула: пять архетипов пропорций плюс
+   гранёный (не идеально гладкий) контур тела, свой на каждую тварь */
+const BEAST_SHAPES=["capsule","long","stout","upright","segmented"];
 function genBeast(r,p,x,gy){
   const pal=p.T.pal;
   const base=pal[2+Math.floor(r()*2)];
-  /* насыщенный собственный тон плюс немного от планеты — иначе всё зверьё
-     выходит одинаково блёклым под цвет грунта */
-  const hue=r()*TAU, sat=70+r()*55, lum=96+r()*54;
-  const body=[clamp(lum+Math.cos(hue)*sat+base[0]*.18,34,250),
-              clamp(lum+Math.cos(hue-2.094)*sat+base[1]*.18,34,250),
-              clamp(lum+Math.cos(hue+2.094)*sat+base[2]*.18,34,250)];
+  const body=furColor(r,base);
   const bi=planetBiome(p);
   const sizeMul=bi.scale*(r()<.08?2.2+r()*1.6:.55+r()*1.1);
+  const shape=Math.floor(r()*BEAST_SHAPES.length);
+  /* гранёный контур тела: N опорных точек с собственным радиусом —
+     не идеальный эллипс, а слегка неровный многоугольник */
+  const nv=7+Math.floor(r()*4);
+  const poly=[];
+  for(let i=0;i<nv;i++){
+    const a=i/nv*TAU;
+    poly.push([Math.cos(a),Math.sin(a)*(.62+r()*.14)*(.85+r()*.3)]);
+  }
+  const bx=shape===1?1.55:(shape===2?.92:(shape===3?.8:1.15));
+  const by=shape===1?.68:(shape===2?1.05:(shape===3?1.15:.85));
+  const headSize=shape===3?.78:(shape===1?.46:.62);
+  const headX=shape===1?1.25:(shape===2?.75:.95);
+  const furTufts=6+Math.floor(r()*7);
   return {x,y:gy,vx:(r()<.5?-1:1)*(.06+r()*.12),face:1,
-    r:(5+r()*7)*sizeMul, legs:2+Math.floor(r()*3)*2, tail:r()<.6, crest:r()<.45,
+    r:(5+r()*7)*sizeMul, legs:shape===4?6+Math.floor(r()*2)*2:2+Math.floor(r()*3)*2,
+    tail:r()<.6, crest:r()<.45,
     ears:r()<.5, spots:Math.floor(r()*4), glow:r()<.2,
+    shape,poly,bx,by,headSize,headX,furTufts,
     body, eye:r()<.5?"#101820":"#f2f7ff",
     hop:r()<.45, phase:r()*TAU, spd:.09+r()*.1,
     name:genName(r)+" "+pick(BEAST_FORM,r)+", "+pick(BEAST_TRAIT,r),
     scanned:false, shy:0};
 }
-/* тело собирается из тех же частей, но пропорции и набор — от seed */
+/* тело собирается из тех же частей, но пропорции, силуэт и набор — от seed */
 function drawBeast(b,x,y,hostile,stun){
   const c=b.body;
   const col=(k,a)=>"rgba("+Math.round(c[0]*k)+","+Math.round(c[1]*k)+","+Math.round(c[2]*k)+","+a+")";
@@ -2897,59 +2929,81 @@ function drawBeast(b,x,y,hostile,stun){
     const u=(i/(b.legs-1||1)-.5)*1.7;
     const sw=stun>0?0:Math.sin(t*2+i*1.9)*b.r*.3;
     ctx.beginPath();
-    ctx.moveTo(u*b.r*.8,b.r*.35);
-    ctx.lineTo(u*b.r*.9+sw,b.r*.95);
+    ctx.moveTo(u*b.r*.8*b.bx,b.r*.35*b.by);
+    ctx.lineTo(u*b.r*.9*b.bx+sw,b.r*.95);
     ctx.stroke();
   }
   ctx.lineCap="butt";
   if(b.tail){
     ctx.strokeStyle=col(.7,1);ctx.lineWidth=Math.max(1,b.r*.22);
-    ctx.beginPath();ctx.moveTo(-b.r*.8,-b.r*.1);
-    ctx.quadraticCurveTo(-b.r*1.7,-b.r*.5-Math.sin(t*1.6)*b.r*.3,
-                         -b.r*1.9,b.r*.2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-b.r*.8*b.bx,-b.r*.1);
+    ctx.quadraticCurveTo(-b.r*1.7*b.bx,-b.r*.5-Math.sin(t*1.6)*b.r*.3,
+                         -b.r*1.9*b.bx,b.r*.2);ctx.stroke();
   }
-  /* туловище */
-  const g=ctx.createLinearGradient(0,-b.r,0,b.r);
+  /* туловище: гранёный многоугольник (не гладкий эллипс), каждая грань
+     чуть светлее/темнее соседней — читается как настоящая полигональная форма */
+  const P=b.poly;
+  ctx.beginPath();
+  ctx.moveTo(P[0][0]*b.r*b.bx,P[0][1]*b.r*b.by);
+  for(let i=1;i<P.length;i++)ctx.lineTo(P[i][0]*b.r*b.bx,P[i][1]*b.r*b.by);
+  ctx.closePath();
+  const g=ctx.createLinearGradient(0,-b.r*b.by,0,b.r*b.by);
   g.addColorStop(0,col(1.15,1));g.addColorStop(1,col(.5,1));
-  ctx.fillStyle=g;
-  ctx.beginPath();ctx.ellipse(0,0,b.r*1.15,b.r*.85,0,0,TAU);ctx.fill();
+  ctx.fillStyle=g;ctx.fill();
+  for(let i=0;i<P.length;i++){
+    const a=P[i],bN=P[(i+1)%P.length];
+    ctx.beginPath();
+    ctx.moveTo(a[0]*b.r*b.bx,a[1]*b.r*b.by);ctx.lineTo(bN[0]*b.r*b.bx,bN[1]*b.r*b.by);
+    ctx.lineTo(0,0);ctx.closePath();
+    ctx.fillStyle=col(((i&1)?1.22:.92),.16);ctx.fill();
+  }
   ctx.strokeStyle=col(.35,.9);ctx.lineWidth=1;ctx.stroke();
+  /* шерсть: короткие штрихи по контуру, торчащие наружу */
+  ctx.strokeStyle=col(.6,.7);ctx.lineWidth=Math.max(.6,b.r*.05);
+  for(let i=0;i<b.furTufts;i++){
+    const a=(i/b.furTufts)*TAU;
+    const px=Math.cos(a)*b.r*b.bx*.95,py=Math.sin(a)*b.r*b.by*.95;
+    const nx=Math.cos(a),ny=Math.sin(a)*.8;
+    ctx.beginPath();ctx.moveTo(px,py);
+    ctx.lineTo(px+nx*b.r*.22,py+ny*b.r*.22);ctx.stroke();
+  }
   for(let i=0;i<b.spots;i++){
     ctx.fillStyle=col(1.4,.5);
-    ctx.beginPath();ctx.arc(-b.r*.4+i*b.r*.42,-b.r*.2+((i*7)%3)*b.r*.22,b.r*.14,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.arc(-b.r*.4*b.bx+i*b.r*.42,-b.r*.2+((i*7)%3)*b.r*.22,b.r*.14,0,TAU);ctx.fill();
   }
   if(b.crest){
     ctx.fillStyle=col(1.3,.85);
-    ctx.beginPath();ctx.moveTo(-b.r*.3,-b.r*.75);
-    ctx.lineTo(0,-b.r*1.5);ctx.lineTo(b.r*.35,-b.r*.7);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(-b.r*.3,-b.r*.75*b.by);
+    ctx.lineTo(0,-b.r*1.5*b.by);ctx.lineTo(b.r*.35,-b.r*.7*b.by);ctx.closePath();ctx.fill();
   }
   /* голова */
+  const hx=b.r*b.headX,hs=b.r*b.headSize;
   ctx.fillStyle=col(1.05,1);
-  ctx.beginPath();ctx.arc(b.r*.95,-b.r*.3,b.r*.62,0,TAU);ctx.fill();
+  ctx.beginPath();ctx.arc(hx,-b.r*.3*b.by,hs,0,TAU);ctx.fill();
   ctx.strokeStyle=col(.35,.9);ctx.stroke();
   if(b.ears){
     ctx.fillStyle=col(.8,1);
     for(const s of [-1,1]){
-      ctx.beginPath();ctx.ellipse(b.r*(.8+s*.18),-b.r*.95,b.r*.16,b.r*.34,s*.4,0,TAU);ctx.fill();
+      ctx.beginPath();ctx.ellipse(hx+s*hs*.3,-b.r*.3*b.by-hs*.85,b.r*.16,b.r*.34,s*.4,0,TAU);ctx.fill();
     }
   }
   if(hostile){
     /* жвалы — единственное, что отличает шахтную форму */
     ctx.strokeStyle=col(.4,1);ctx.lineWidth=Math.max(1.2,b.r*.18);
     for(const s of [-1,1]){
-      ctx.beginPath();ctx.moveTo(b.r*1.4,-b.r*.3+s*b.r*.2);
-      ctx.lineTo(b.r*1.95,-b.r*.3+s*b.r*.55);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(hx+hs*.5,-b.r*.3*b.by+s*b.r*.2);
+      ctx.lineTo(hx+hs*1.05,-b.r*.3*b.by+s*b.r*.55);ctx.stroke();
     }
   }
   /* глаз */
   const blink=Math.sin(G.t*.05+b.phase*3)>.96;
   ctx.fillStyle=stun>0?"#6fa8c8":(hostile?"#ff6b57":b.eye);
   if(blink&&stun<=0){
-    ctx.fillRect(b.r*1.0,-b.r*.42,b.r*.36,b.r*.09);
+    ctx.fillRect(hx+hs*.05,-b.r*.3*b.by-hs*.2,hs*.4,hs*.15);
   }else{
-    ctx.beginPath();ctx.arc(b.r*1.14,-b.r*.4,b.r*.2,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.arc(hx+hs*.2,-b.r*.3*b.by-hs*.1,hs*.22,0,TAU);ctx.fill();
     if(!hostile){ctx.fillStyle="rgba(255,255,255,.9)";
-      ctx.beginPath();ctx.arc(b.r*1.2,-b.r*.47,b.r*.07,0,TAU);ctx.fill();}
+      ctx.beginPath();ctx.arc(hx+hs*.28,-b.r*.3*b.by-hs*.22,hs*.08,0,TAU);ctx.fill();}
   }
   if(b.glow){
     ctx.save();ctx.globalCompositeOperation="lighter";
