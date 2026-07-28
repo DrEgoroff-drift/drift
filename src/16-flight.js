@@ -62,21 +62,30 @@ function runAutopilot(dt,st){
   const dx=T.x-sh.x, dy=T.y-sh.y, dist=Math.hypot(dx,dy)||1;
   const rvx=sh.vx-T.vx, rvy=sh.vy-T.vy;
   const gap=dist-T.park;
+  /* упреждение: летим не в текущую точку цели, а в точку встречи — иначе
+     на движущемся теле автопилот вечно отстаёт и догоняет его по кругу.
+     Одной итерации уточнения хватает, скорость тела считается численно. */
+  const cruise=6.4+st.thr*1.6;
+  let ax=T.x, ay=T.y;
+  for(let i=0;i<2;i++){
+    const t=Math.min(Math.hypot(ax-sh.x,ay-sh.y)/Math.max(cruise*.7,.001),900);
+    ax=T.x+T.vx*t; ay=T.y+T.vy*t;
+  }
+  const ldx=ax-sh.x, ldy=ay-sh.y, ldist=Math.hypot(ldx,ldy)||1;
   if(gap<12&&Math.hypot(rvx,rvy)<.25){
     sh.vx=T.vx;sh.vy=T.vy;
     return arrive();
   }
   if(G.fuel<=0){G.ap=null;say("Топливо кончилось\nавтопилот отключён");return false;}
-  const maxSp=6.4+st.thr*1.6;
-  const want=clamp(gap/26,.25,maxSp);
-  const dvx=dx/dist*want-rvx, dvy=dy/dist*want-rvy;
+  const want=clamp(gap/26,.25,cruise);
+  const dvx=ldx/ldist*want-rvx, dvy=ldy/ldist*want-rvy;
   const dm=Math.hypot(dvx,dvy)||1;
   const acc=Math.min(dm,.088*st.thr*dt);
   sh.vx+=dvx/dm*acc;sh.vy+=dvy/dm*acc;
   G.fuel=Math.max(0,G.fuel-(G.tech.has("navi")?.011:.022)*dt*(acc/(.088*st.thr*dt||1)));
   /* смотрим на саму цель, а не на вектор коррекции: у коррекции возле цели
      направление скачет туда-сюда, и корабль начинал вертеться на месте */
-  const face=Math.atan2(dy,dx);
+  const face=Math.atan2(ldy,ldx);
   sh.a+=clamp(angDiff(face,sh.a),-.055,.055)*dt;
   G.prompt="АВТОПИЛОТ · "+Math.round(gap)+" ед · "+Math.hypot(rvx,rvy).toFixed(1);
   return true;
@@ -95,7 +104,10 @@ function arrive(){
     const rx=sh.x-p.x,ry=sh.y-p.y,r=Math.hypot(rx,ry)||ap.p.radius+70;
     const ang0=Math.atan2(ry,rx);
     const dirCcw=(rx*sh.vy-ry*sh.vx)>=0?1:-1;
-    const w=dirCcw*clamp(.6/Math.sqrt(r),.004,.03);
+    /* тела стали медленнее (M43), поэтому и захват перенастроен: касательная
+       скорость по орбите зажата долей крейсерской, иначе корабль обгоняет цель */
+    const cruise=6.4+stat().thr*1.6;
+    const w=dirCcw*clamp(Math.min(.6/Math.sqrt(r),cruise*.28/Math.max(r,1)),.002,.03);
     G.orbit={p,r,ang:ang0,w};
     G.ap=null;
     say("Захват орбиты\n"+p.name+(G.opts.easyLand?"\nДЕЙСТВ — авто-посадка":"\nДЕЙСТВ — посадка"));

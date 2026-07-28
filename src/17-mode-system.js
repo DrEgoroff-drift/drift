@@ -2,14 +2,24 @@
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
   document.getElementById("dronebtn").style.display="none";
+  /* Догонять приходится линейную скорость, а не угловую: у станции на радиусе 700
+     касательная ω·r доходила почти до крейсерской, и корабль вечно подлетал туда,
+     где цели уже нет. Поэтому зажимаем именно v=ω·r долей от крейсерской скорости —
+     соотношение по Кеплеру (дальние медленнее) при этом сохраняется. */
+  const cruise=6.4+st.thr*1.6;
+  const angRate=(spd,r,frac)=>{
+    const w=spd*16, lim=cruise*frac/Math.max(r,1);
+    return Math.sign(w)*Math.min(Math.abs(w),lim);
+  };
   for(const p of sys.planets){
-    p.ang+=p.spd*dt*16;
+    p.ang+=angRate(p.spd,p.orbit,.15)*dt;
     const pos=keplerPos(p.orbit,p.ecc,p.ang,p.argp);
     const ppx=p.x,ppy=p.y;
     p.x=pos.x;p.y=pos.y;
     if(dt>0){p.vx=(p.x-ppx)/dt;p.vy=(p.y-ppy)/dt;}
     for(const m of p.moons){
-      m.ang+=m.spd*dt*16;
+      /* спутнику доля меньше: к его собственной скорости добавляется скорость планеты */
+      m.ang+=angRate(m.spd,m.orbit,.07)*dt;
       const mpos=keplerPos(m.orbit,m.ecc,m.ang,m.argp);
       const mpx=m.x,mpy=m.y;
       m.x=p.x+mpos.x;m.y=p.y+mpos.y;
@@ -18,7 +28,7 @@ function updateSystem(dt){
   }
   if(sys.station){
     const S=sys.station,px=S.x,py=S.y;
-    S.ang+=S.spd*dt*16;
+    S.ang+=angRate(S.spd,S.orbit,.12)*dt;
     S.x=Math.cos(S.ang)*S.orbit;S.y=Math.sin(S.ang)*S.orbit;
     if(dt>0){S.vx=(S.x-px)/dt;S.vy=(S.y-py)/dt;}
   }
