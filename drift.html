@@ -2367,6 +2367,44 @@ function drawGround(tr,camx,camy,fill,line,pal){
   for(let i=i0;i<=i1;i++)ctx.lineTo(i*tr.step-camx,tr.h[i]-camy);
   ctx.lineTo(i1*tr.step-camx,H+10);ctx.lineTo(i0*tr.step-camx,H+10);ctx.closePath();
   ctx.fillStyle=fill;ctx.fill();
+  /* склон, обращённый к солнцу (вправо-вверх), светлее; в тень — темнее.
+     Простое псевдо-освещение по наклону вместо одной плоской заливки. */
+  if(pal&&i1>i0){
+    const lit=pal[Math.min(pal.length-1,4)], shade=pal[Math.min(pal.length-1,1)];
+    const stripD=48;
+    for(let i=i0;i<i1;i++){
+      const x0=i*tr.step-camx,x1=(i+1)*tr.step-camx;
+      if(x1<-4||x0>W+4)continue;
+      const y0=tr.h[i]-camy,y1=tr.h[i+1]-camy;
+      const slope=clamp((tr.h[i+1]-tr.h[i])/tr.step,-2.5,2.5);
+      const t=clamp(.52-slope*.22,.08,.92);
+      const r=Math.round(lerp(shade[0],lit[0],t)*.62),
+            g=Math.round(lerp(shade[1],lit[1],t)*.62),
+            b=Math.round(lerp(shade[2],lit[2],t)*.62);
+      ctx.fillStyle="rgb("+r+","+g+","+b+")";
+      ctx.beginPath();
+      ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+stripD);ctx.lineTo(x0,y0+stripD);
+      ctx.closePath();ctx.fill();
+    }
+    /* мелкая крошка/пучки на самой кромке — деш;во и оживляет силуэт вблизи */
+    const dstep=Math.max(1,Math.round(14/tr.step));
+    for(let i=i0;i<i1;i+=dstep){
+      const wx=i*tr.step,x=wx-camx;if(x<-6||x>W+6)continue;
+      const y=tr.h[i]-camy;
+      const hh=hashi(Math.floor(wx/14),tr.sseed,0x6E55);
+      if((hh&7)===0)continue;
+      const grass=(hh&3)!==0;
+      ctx.strokeStyle=grass?"rgba(255,255,255,.14)":"rgba(0,0,0,.22)";
+      ctx.lineWidth=1;
+      if(grass){
+        const th=2+((hh>>>4)&3);
+        ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4),y-th);ctx.stroke();
+      }else{
+        ctx.fillStyle=ctx.strokeStyle;
+        ctx.beginPath();ctx.arc(x,y-1,1+((hh>>>6)&1),0,TAU);ctx.fill();
+      }
+    }
+  }
   /* слои породы — горизонтальные пласты, обрезанные силуэтом рельефа */
   if(pal&&tr.strata){
     ctx.save();ctx.clip();
@@ -2429,12 +2467,72 @@ function drawRocks(tr,camx,camy,pal){
 }
 function skyGrad(p){
   const s=p.T.sky,g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,"rgb("+s[1].join(",")+")");g.addColorStop(1,"rgb("+s[0].join(",")+")");
+  g.addColorStop(0,"rgb("+s[1].join(",")+")");
+  g.addColorStop(.62,"rgb("+s[0].map((v,i)=>Math.round(lerp(v,s[1][i],.25))).join(",")+")");
+  g.addColorStop(1,"rgb("+s[0].join(",")+")");
   return g;
+}
+/* тень-контакт: приплюснутый мягкий эллипс под ногами/стволом — единственное,
+   что реально "приклеивает" объект к рельефу, а не даёт ему висеть на глаз */
+function groundShadow(x,y,rx,ry){
+  ctx.save();
+  const g=ctx.createRadialGradient(x,y,0,x,y,rx);
+  g.addColorStop(0,"rgba(0,0,0,.32)");g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=g;
+  ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,TAU);ctx.fill();
+  ctx.restore();
+}
+/* небо: солнечное марево + процедурные облака для миров с атмосферой —
+   вызывается один раз в кадр поверх заливки skyGrad, перед рельефом */
+function drawSkyLayer(p,camx,camy){
+  const hasAtm=p.T.atm!=="отсутствует";
+  const sunX=W*.78,sunY=H*.16;
+  const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a";
+  const g=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,W*.5);
+  g.addColorStop(0,rgba(hex2rgb(sc),.55));
+  g.addColorStop(.12,rgba(hex2rgb(sc),.16));
+  g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="rgb("+p.T.sky[1].join(",")+")";
+  ctx.beginPath();ctx.arc(sunX,sunY,H*.045,0,TAU);ctx.globalAlpha=.85;ctx.fill();ctx.globalAlpha=1;
+  if(!hasAtm)return;
+  /* облака: несколько плоских кластеров эллипсов, детерминированных от seed,
+     медленно плывущих и заворачивающих по ширине мира */
+  const seed=p.seed^0x510D;
+  const n=5+Math.floor((hashi(seed,1,1)*7)%4);
+  for(let i=0;i<n;i++){
+    const r=rng(hashi(seed,i,0xC10D));
+    const laneY=H*(.08+r()*.3), speed=.006+r()*.01, span=1400+r()*1200;
+    const wx=(r()*4000+G.t*speed*100)%span - span*.5;
+    const sx=(wx - camx*.12)%(span)+ (camx*.12<0?span:0);
+    const x=((sx%W)+W*3)%(W+400)-200;
+    const y=laneY-camy*.05;
+    const alpha=.16+r()*.14;
+    ctx.fillStyle="rgba(255,255,255,"+alpha.toFixed(2)+")";
+    const blobs=3+Math.floor(r()*3),baseR=26+r()*30;
+    for(let k=0;k<blobs;k++){
+      const ox=(k-(blobs-1)/2)*baseR*.85,oy=Math.sin(k*1.7)*baseR*.18;
+      ctx.beginPath();ctx.ellipse(x+ox,y+oy,baseR*(.6+r()*.5),baseR*.42,0,0,TAU);ctx.fill();
+    }
+  }
+}
+/* пыль/пыльца в воздухе — только там, где есть атмосфера, для ощущения глубины */
+function drawDustMotes(camx,camy,p){
+  if(p.T.atm==="отсутствует")return;
+  const n=26;
+  for(let i=0;i<n;i++){
+    const r=rng(hashi(Math.floor(p.seed),i,0xD05));
+    const wx=(r()*3000+G.t*(6+r()*10))%3000;
+    const x=((wx-camx*.6)%(W+60)+W+60)%(W+60)-30;
+    const y=(r()*H*.8+Math.sin(G.t*.03+i)*14);
+    ctx.fillStyle="rgba(255,255,255,"+(.05+r()*.12).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(x,y,.8+r()*1.2,0,TAU);ctx.fill();
+  }
 }
 function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
   ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
+  drawSkyLayer(p,L.x,L.y);
   if(p.T.atm==="отсутствует")drawStars(L.x*.1,0,1);
   const camx=L.x-W/2,camy=clamp(L.y-H*.42,-400,1e5);
   ctx.save();ctx.globalAlpha=.45;
@@ -2443,6 +2541,7 @@ function drawLanding(){
   drawGround(tr,camx,camy,"rgb("+p.T.pal[2].map(v=>Math.round(v*.6)).join(",")+")",
     "rgba(180,230,240,.35)",p.T.pal);
   drawRocks(tr,camx,camy,p.T.pal);
+  drawDustMotes(camx,camy,p);
   const px=tr.padX-camx,py=tr.padY-camy;
   ctx.strokeStyle="rgba(242,178,92,.85)";ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(px-46,py);ctx.lineTo(px+46,py);ctx.stroke();
@@ -3074,6 +3173,7 @@ function launch(){
 function drawSurface(){
   const S=G.surf,tr=S.tr,p=S.p;
   ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
+  drawSkyLayer(p,S.x,S.y);
   if(p.T.atm==="отсутствует"||p.type==="ice")drawStars(S.x*.1,0,1);
   const camx=S.x-W/2,camy=clamp(S.y-H*.58,-300,1e5);
   ctx.save();ctx.globalAlpha=.4;
@@ -3082,7 +3182,9 @@ function drawSurface(){
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
     "rgba(200,240,246,.4)",p.T.pal);
   drawRocks(tr,camx,camy,p.T.pal);
+  groundShadow(S.shipX-camx,S.shipY-camy+2,34,7);
   ctx.save();ctx.translate(S.shipX-camx,S.shipY-camy);drawLander(false,false);ctx.restore();
+  drawDustMotes(camx,camy,p);
   if(S.cave){
     const cx=S.cave.x-camx;
     if(cx>-60&&cx<W+60){
@@ -3095,10 +3197,12 @@ function drawSurface(){
   }
   for(const pl of S.plants){
     const x=pl.x-camx;if(x<-70||x>W+70)continue;
+    groundShadow(x,pl.y-camy+1,Math.min(22,pl.h*.32),3.2);
     drawPlant(pl,x,pl.y-camy);
   }
   for(const b of S.fauna||[]){
     const x=b.x-camx;if(x<-50||x>W+50)continue;
+    groundShadow(x,b.y-camy+1,b.r*.9,2.6);
     drawBeast(b,x,b.y-camy,false,0);
     if(b.scanned){
       ctx.fillStyle="rgba(127,230,216,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
@@ -3128,6 +3232,7 @@ function drawSurface(){
     }
   }
   const x=W/2,y=S.y-camy;
+  if(S.on)groundShadow(x,y+1,7,2);
   ctx.save();ctx.translate(x,y-1);
   drawAstronaut({face:S.face,amp:S.walkAmp,phase:S.walkPhase,
     air:!S.on,jet:!S.on&&S.vy<0,mining:!!S.mining,suitLow:S.suit<25});
