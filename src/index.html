@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#05070c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ДРЕЙФ — процедурная разведка</title>
+<style>
+/*{{STYLE}}*/
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div class="hud">
+  <div class="gauge"><b>ТОПЛИВО</b><div class="bar" id="fbar"><i></i></div></div>
+  <div class="gauge"><b>КОРПУС</b><div class="bar hull" id="hbar"><i></i></div></div>
+  <div class="gauge" id="sgauge" style="display:none"><b>ЩИТ</b><div class="bar shld" id="sbar"><i></i></div></div>
+  <div class="gauge"><b>ТРЮМ</b><div class="bar hold" id="cbar"><i></i></div></div>
+  <div class="stat"><u id="place">—</u><s id="sub">—</s></div>
+</div>
+
+<div id="msg"></div>
+<div id="prompt"></div>
+
+<div class="side">
+  <button id="navbtn">КАРТА</button>
+  <button id="starbtn" style="display:none">К ЗВЕЗДЕ</button>
+  <button id="shipbtn">КОРАБЛЬ</button>
+  <button id="logbtn">ЖУРНАЛ</button>
+  <button id="optbtn">⚙</button>
+  <button id="zin">+</button>
+  <button id="zout">−</button>
+  <button id="dronebtn" style="display:none">ДРОН</button>
+  <button id="beaconbtn" style="display:none">МАЯК</button>
+</div>
+<button data-k="launch" id="launchbtn" style="display:none"><i id="launchbar"></i><span>ВЗЛЁТ</span></button>
+
+<div id="logwin">
+  <b>БОРТОВОЙ ЖУРНАЛ<span id="logclose">×</span></b>
+  <div id="loglist"></div>
+</div>
+
+<div class="pads">
+  <div><button data-k="pup" class="beltonly">▲</button><button data-k="left">◀</button><button data-k="right">▶</button><button data-k="pdown" class="beltonly">▼</button></div>
+  <div><button data-k="fire" id="firebtn" style="display:none">ОГОНЬ</button><button data-k="brake">ТОРМ</button><button data-k="act">ДЕЙСТВ</button><button data-k="thrust">▲</button></div>
+</div>
+
+<div class="scr" id="station">
+  <header>
+    <div><b id="stName">—</b><s id="stKind">—</s></div>
+    <div class="wallet"><em id="wCr">0 кр</em><br><i id="wDt">0 данных</i></div>
+  </header>
+  <nav>
+    <button data-tab="market" class="on">РЫНОК</button>
+    <button data-tab="yard">ВЕРФЬ</button>
+    <button data-tab="mods">МОДУЛИ</button>
+    <button data-tab="lab">НАУКА</button>
+    <button data-tab="barter">БАРТЕР</button>
+  </nav>
+  <div class="body" id="stBody"></div>
+  <footer>
+    <button class="act" id="bRefuel">ЗАПРАВКА</button>
+    <button class="act" id="bRepair">РЕМОНТ</button>
+    <button class="act gold" id="bUndock">ОТСТЫКОВКА</button>
+  </footer>
+</div>
+
+<div class="scr" id="shipview">
+  <header>
+    <div><b id="svName">—</b><s id="svSub">—</s></div>
+    <div class="wallet"><em id="svCap">—</em><br><i id="svSlots">—</i></div>
+  </header>
+  <div id="svstage"><canvas id="svcan"></canvas><div id="svhint">выберите слот на корпусе</div></div>
+  <nav id="svfilter"></nav>
+  <div class="body" id="svBody"></div>
+  <footer><button class="act gold" id="svClose">ЗАКРЫТЬ</button></footer>
+</div>
+
+<div class="scr" id="opts">
+  <header><div><b>НАСТРОЙКИ</b><s>полётный профиль</s></div></header>
+  <div class="body" id="optBody"></div>
+  <footer><button class="act gold" id="optClose">ЗАКРЫТЬ</button></footer>
+</div>
+
+<div id="intro"><div class="wrap">
+  <h1>ДРЕЙФ</h1>
+  <p class="sub">РАЗВЕДЫВАТЕЛЬНЫЙ ЗОНД · СЕКТОР 0:0<br>СБОРКА 4 · КАБИНА · ПРИБОРЫ · ИНВЕРСИЯ ОСЕЙ</p>
+  <table>
+    <tr><td>тап по объекту</td><td>автопилот: подлёт, сближение, стыковка</td></tr>
+    <tr><td>щипок / + −</td><td>масштаб обзора</td></tr>
+    <tr><td>◀ ▶ ▲</td><td>ручное управление</td></tr>
+    <tr><td>ТОРМ</td><td>гасит скорость до нуля</td></tr>
+    <tr><td>ДЕЙСТВ</td><td>посадка · бурение · вход в пояс</td></tr>
+    <tr><td>ОГОНЬ</td><td>появится с бортовым орудием · от пиратов можно просто уйти</td></tr>
+    <tr><td>в поясе</td><td>◀ ▶ курс · ▲ ▼ тангаж · Q E крен<br>ПРОБЕЛ тяга · C торможение · R резак · F огонь<br>протяжка по стеклу — свободный обзор</td></tr>
+  </table>
+  <div class="choice">
+    <button id="startCont" style="display:none">ПРОДОЛЖИТЬ ПОЛЁТ<small>загрузить запись</small></button>
+    <button id="startEasy">ЛЁГКИЙ СТАРТ<small>корабль садится сам</small></button>
+    <button id="startHard" class="alt">РУЧНОЕ УПРАВЛЕНИЕ<small>посадка на руках</small></button>
+  </div>
+</div></div>
+
+<script>
+//{{SCRIPT}}
+</script>
+</body>
+</html>

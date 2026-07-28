@@ -57,13 +57,21 @@
 
 | File | Purpose |
 |---|---|
-| [`drift.html`](drift.html) | The entire game — rendering, simulation, UI, and save/load logic in one file. Open it directly in a browser to play. |
+| [`drift.html`](drift.html) | The entire game in one self-contained file — open it directly in a browser to play. **Built from `src/`; don't edit it by hand.** |
+| [`src/`](src) | The sources: `index.html` shell, `style.css`, and 28 JavaScript modules (audio, music, galaxy, ships, parts, one per game mode, …). Concatenated in filename order, since it all shares one scope. |
+| [`build.ps1`](build.ps1) | Rebuilds `drift.html` from `src/`. No dependencies. Pass `-Watch` to rebuild on save. |
 | [`server.js`](server.js) | Optional zero-dependency Node.js server (Node 18+) for self-hosting the game and persisting cloud saves to a `./saves` folder. |
 | [`worker.js`](worker.js) | Optional Cloudflare Worker alternative to `server.js`, storing saves in a KV namespace. |
 
 ## Running it
 
-**Just play it:** open `drift.html` in any modern browser.
+**Just play it:** open `drift.html` in any modern browser. No server, no build, no dependencies — it is one file.
+
+**Work on it:** edit files under `src/`, then rebuild.
+
+```bash
+powershell -ExecutionPolicy Bypass -File build.ps1
+```
 
 **Self-host with cloud saves:**
 
