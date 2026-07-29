@@ -27,7 +27,7 @@ function enterCave(){
   }
   C.findX=CAVE_W-140;
   G.cave=C;G.mode="cave";
-  say("Пещера\nищите проход · ДЕЙСТВ у выхода — назад на поверхность");
+  say("Пещера\nищите проход · ДЕЙСТВИЕ у выхода — назад на поверхность");
 }
 function exitCave(){
   G.cave=null;G.mode="surface";
@@ -86,23 +86,23 @@ function updateCave(dt){
     say("СКАФАНДР РАЗРУШЕН\nаварийный возврат к кораблю");
     S.x=S.shipX;S.y=groundAt(S.tr,S.shipX)-10;S.vy=0;return;}
   if(C.x<70){
-    G.prompt="ДЕЙСТВ — НАЗАД НА ПОВЕРХНОСТЬ";
+    G.prompt="ДЕЙСТВИЕ — НАЗАД НА ПОВЕРХНОСТЬ";
     if(actEdge){exitCave();return;}
   }else if(!C.found&&C.x>C.findX-40){
-    G.prompt="ДЕЙСТВ — ОСМОТРЕТЬ НАХОДКУ";
+    G.prompt="ДЕЙСТВИЕ — ОСМОТРЕТЬ НАХОДКУ";
     if(actEdge){
       C.found=true;G.data+=20;
       tell("tech","Находка в пещере · +20 данных","Находка в пещере\n+20 данных");
     }
   }else if(plant){
-    G.prompt="ДЕЙСТВ — СКАНИРОВАТЬ ОРГАНИЗМ";
+    G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
     if(actEdge){
       plant.scanned=true;G.species.add(plant.name);G.data+=9;
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
   }else if(C.fauna.some(b=>b.stun<=0&&b.flee<=0)){
     G.prompt="КУСАЧИЕ РЯДОМ · ОГОНЬ (F) — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
-  }else G.prompt="A D — ИДТИ · В ДАЛЬНЕМ КОНЦЕ НАХОДКА · У ВХОДА ДЕЙСТВ — НАРУЖУ";
+  }else G.prompt="A D — ИДТИ · В ДАЛЬНЕМ КОНЦЕ НАХОДКА · У ВХОДА ДЕЙСТВИЕ — НАРУЖУ";
 }
 function drawCave(){
   const C=G.cave;

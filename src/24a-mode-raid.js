@@ -163,7 +163,7 @@ function enterRaid(PB){
     walkPhase:0,hurt:0,flash:0,shots:[],exit:[sx0,sz0],level:PB.level};
   G.mode="raid";G.ap=null;
   for(const k in keys)keys[k]=false;
-  say("Абордаж · "+PB.name+"\n◀ ▶ — поворот · ▲ ▼ — ход\nОГОНЬ — стрельба · вернитесь в ангар и ДЕЙСТВ — уход");
+  say("Абордаж · "+PB.name+"\n◀ ▶ — поворот · ▲ ▼ — ход\nОГОНЬ — стрельба · вернитесь в ангар и ДЕЙСТВИЕ — уход");
 }
 function raidLeave(msg,lostShare){
   const S=G.raid;if(!S)return;
@@ -280,7 +280,7 @@ function updateRaid(dt){
   const atExit=Math.hypot(S.exit[0]-S.x,S.exit[1]-S.z)<70;
   const alive=S.foes.filter(f=>f.hp>0).length;
   if(near){
-    G.prompt="СКАФАНДР "+Math.round(S.suit)+"% · ДЕЙСТВ — ВСКРЫТЬ КОНТЕЙНЕР";
+    G.prompt="СКАФАНДР "+Math.round(S.suit)+"% · ДЕЙСТВИЕ — ВСКРЫТЬ КОНТЕЙНЕР";
     if(actEdge){
       near.taken=true;
       if(near.kind==="part"){
@@ -298,7 +298,7 @@ function updateRaid(dt){
       }
     }
   }else if(atExit){
-    G.prompt="СКАФАНДР "+Math.round(S.suit)+"% · АНГАР · ДЕЙСТВ — УХОД С ДОБЫЧЕЙ"+
+    G.prompt="СКАФАНДР "+Math.round(S.suit)+"% · АНГАР · ДЕЙСТВИЕ — УХОД С ДОБЫЧЕЙ"+
       "\nв сумке: техкомпонентов "+S.bag.tech+", данных "+S.bag.data+
       (S.bag.parts.length?", частей "+S.bag.parts.length:"")+
       (alive?"\nна базе ещё "+alive+" стволов":"\nбаза зачищена");

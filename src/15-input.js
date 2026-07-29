@@ -101,7 +101,36 @@ addEventListener("keyup",e=>{
   if(a||b)e.preventDefault();
 });
 
+/* ── ящик бортовых систем ──
+   Раньше на правом борту стояло до девяти кнопок по 27 px: половина из них
+   нужна раз за полёт, а мажешь по ним всё время. Постоянными остались КАРТА
+   и МЕНЮ, остальное — здесь. Любой выбор закрывает ящик: он не панель,
+   а список дверей. */
+const $menu=document.getElementById("menu");
+function toggleMenu(on){
+  const open=on===undefined?!$menu.classList.contains("open"):on;
+  $menu.classList.toggle("open",open);
+  if(open)toggleLog(false);
+}
+document.getElementById("menubtn").addEventListener("click",()=>toggleMenu());
+document.getElementById("menuclose").addEventListener("click",()=>toggleMenu(false));
+$menu.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>toggleMenu(false)));
+/* тап мимо ящика закрывает его — иначе он оставался висеть поверх полёта */
+addEventListener("pointerdown",e=>{
+  if($menu.classList.contains("open")&&!$menu.contains(e.target)&&
+     e.target.id!=="menubtn")toggleMenu(false);
+},true);
+
 document.getElementById("logbtn").addEventListener("click",()=>toggleLog());
+/* клавиши на заставке спрятаны за кнопкой: таблица была первым, что видит
+   игрок, и первым же, чего он не читает */
+(function(){
+  const b=document.getElementById("introKeys"),box=document.getElementById("introKeysBox");
+  if(b&&box)b.addEventListener("click",()=>{
+    const on=box.classList.toggle("open");
+    b.textContent=on?"СВЕРНУТЬ":"УПРАВЛЕНИЕ";
+  });
+})();
 document.getElementById("logclose").addEventListener("click",()=>toggleLog(false));
 document.getElementById("navbtn").addEventListener("click",navAction);
 document.getElementById("starbtn").addEventListener("click",()=>{

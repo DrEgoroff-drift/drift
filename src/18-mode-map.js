@@ -84,7 +84,7 @@ function drawMap(){
   ctx.fillText("ТЕЛ ОТКРЫТО: "+G.found.size,W-16,H-78);
   ctx.fillText("ВИДОВ: "+G.species.size,W-16,H-64);
   ctx.fillText("КРЕДИТОВ: "+Math.round(G.credits).toLocaleString("ru"),W-16,H-50);
-  G.prompt="ТАП ПО ЗВЕЗДЕ — ВЫБОР · ДЕЙСТВ — ПРЫЖОК";
+  G.prompt="ТАП ПО ЗВЕЗДЕ — ВЫБОР · ДЕЙСТВИЕ — ПРЫЖОК";
   if(actEdge){
     if(!bad)jump(cost);
     else if(dsel>0)say("Прыжок невозможен");

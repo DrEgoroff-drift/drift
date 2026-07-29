@@ -106,13 +106,13 @@ function updateSurface(dt){
   /* вход в пещеру проверяется раньше залежей и организмов: он редкий и разовый,
      а бурить и сканировать можно где угодно ещё */
   if(S.cave&&Math.abs(S.cave.x-S.x)<34){
-    G.prompt="ДЕЙСТВ — ВОЙТИ В ПЕЩЕРУ";
+    G.prompt="ДЕЙСТВИЕ — ВОЙТИ В ПЕЩЕРУ";
     if(actEdge){enterCave();return;}
   }
   else if(dep){
     if(held()>=st.cargoMax)G.prompt="ТРЮМ ПОЛОН · "+RES[dep.res].ru.toUpperCase()+" ОСТАЛОСЬ "+dep.left;
     else{
-      G.prompt="УДЕРЖИВАЙТЕ ДЕЙСТВ — БУРЕНИЕ\n"+RES[dep.res].ru.toUpperCase()+" · ЗАЛЕЖЬ "+dep.left+
+      G.prompt="УДЕРЖИВАЙТЕ ДЕЙСТВИЕ — БУРЕНИЕ\n"+RES[dep.res].ru.toUpperCase()+" · ЗАЛЕЖЬ "+dep.left+
         " · ТРЮМ "+held()+"/"+st.cargoMax;
       if(keys.act){
         S.mining=dep;dep.prog+=.026*st.drill*dt;
@@ -123,7 +123,7 @@ function updateSurface(dt){
       }
     }
   }else if(beast){
-    G.prompt="ДЕЙСТВ — СКАНИРОВАТЬ ЖИВОТНОЕ\n"+beast.name.toUpperCase();
+    G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ЖИВОТНОЕ\n"+beast.name.toUpperCase();
     if(actEdge){
       /* существо подаёт голос: тембр из его же seed, у каждого свой */
       sfx("beast",{seed:beast.seed||hashi(beast.x|0,beast.r*100|0,7)});
@@ -131,20 +131,20 @@ function updateSurface(dt){
       tell("","Новый вид: "+beast.name+" · +14 данных","Новый вид\n"+beast.name+"\n+14 данных");
     }
   }else if(plant){
-    G.prompt="ДЕЙСТВ — СКАНИРОВАТЬ ОРГАНИЗМ";
+    G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
     if(actEdge){
       plant.scanned=true;G.species.add(plant.name);G.data+=9;
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
   }else if(dShip<48&&baseAt(G.sx,G.sy,S.p.idx)){
     /* шлюз базы стоит рядом с кораблём — вход тем же жестом, что в пещеру */
-    G.prompt="ДЕЙСТВ — СПУСТИТЬСЯ В БАЗУ";
+    G.prompt="ДЕЙСТВИЕ — СПУСТИТЬСЯ В БАЗУ";
     if(actEdge){enterBase(S.p);return;}
   }else if(dShip<48&&!baseAt(G.sx,G.sy,S.p.idx)&&S.p.type!=="gas"){
-    G.prompt="ДЕЙСТВ — ЗАЛОЖИТЬ БАЗУ · 2500 КР + 10 СПЛАВОВ";
+    G.prompt="ДЕЙСТВИЕ — ЗАЛОЖИТЬ БАЗУ · 2500 КР + 10 СПЛАВОВ";
     if(actEdge&&foundBase(S.p)){enterBase(S.p);return;}
   }else if(S.on){
-    G.prompt="ДЕЙСТВ — ЗАЛОЖИТЬ ШАХТУ · ВГЛУБЬ ПОРОДА БОГАЧЕ\n▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
+    G.prompt="ДЕЙСТВИЕ — ЗАЛОЖИТЬ ШАХТУ · ВГЛУБЬ ПОРОДА БОГАЧЕ\n▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
     if(actEdge){enterDig();return;}
   }else if(dShip<48){
     G.prompt=(G.fuel<8?"НЕТ ТОПЛИВА · КНОПКА ВЗЛЁТА — ЭВАКУАЦИЯ":"КНОПКА ВЗЛЁТА — УДЕРЖАТЬ")+
@@ -237,10 +237,10 @@ function surfaceHint(){
   const dShip=Math.abs(S.x-S.shipX);
   if(S.suit<35)return "СКАФАНДР НА ИСХОДЕ · К КОРАБЛЮ ИЛИ КНОПКА → КОРАБЛЬ";
   if(dShip<48){
-    if(baseAt(G.sx,G.sy,S.p.idx))return "ЗДЕСЬ ВАША БАЗА · ДЕЙСТВ — СПУСТИТЬСЯ ВНИЗ";
-    if(S.p.type!=="gas")return "У КОРАБЛЯ МОЖНО ЗАЛОЖИТЬ БАЗУ · ДЕЙСТВ · 2500 КР + 10 СПЛАВОВ";
+    if(baseAt(G.sx,G.sy,S.p.idx))return "ЗДЕСЬ ВАША БАЗА · ДЕЙСТВИЕ — СПУСТИТЬСЯ ВНИЗ";
+    if(S.p.type!=="gas")return "У КОРАБЛЯ МОЖНО ЗАЛОЖИТЬ БАЗУ · ДЕЙСТВИЕ · 2500 КР + 10 СПЛАВОВ";
   }
-  if(S.cave&&Math.abs(S.cave.x-S.x)<34)return "ВХОД В ПЕЩЕРУ · ДЕЙСТВ — ВНУТРЬ";
+  if(S.cave&&Math.abs(S.cave.x-S.x)<34)return "ВХОД В ПЕЩЕРУ · ДЕЙСТВИЕ — ВНУТРЬ";
   if(!G.surfTipShown||G.t-G.surfTipShown<900){
     if(!G.surfTipShown)G.surfTipShown=G.t;
     return "ЦВЕТНЫЕ КРИСТАЛЛЫ — ЗАЛЕЖИ · СТРЕЛКИ СВЕРХУ ВЕДУТ К ПЕЩЕРЕ И КОРАБЛЮ";

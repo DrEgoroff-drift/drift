@@ -19,10 +19,20 @@ function logTime(ms){
   const d=new Date(ms);
   return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);
 }
+/* Счётчик непрочитанного — значок внутри пункта меню, а не переписанная
+   подпись: у пункта есть ещё и вторая строка, и затирать её нельзя. */
 function logBtnLabel(){
-  const b=document.getElementById("logbtn");
-  b.innerHTML="ЖУРНАЛ";
-  if(G.logNew){const i=document.createElement("i");i.textContent=G.logNew>99?"99+":G.logNew;b.appendChild(i);}
+  const b=document.getElementById("logbtn");if(!b)return;
+  const em=b.querySelector("em")||b;
+  em.textContent="ЖУРНАЛ";
+  if(G.logNew){
+    const i=document.createElement("i");
+    i.textContent=G.logNew>99?"99+":G.logNew;
+    em.appendChild(i);
+  }
+  /* точка на кнопке МЕНЮ: ящик закрыт, а внутри что-то новое */
+  const mb=document.getElementById("menubtn");
+  if(mb)mb.classList.toggle("on",!!G.logNew);
 }
 function renderLog(){
   const box=document.getElementById("loglist");

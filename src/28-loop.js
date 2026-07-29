@@ -17,22 +17,44 @@ function wreck(){
 const $f=document.querySelector("#fbar i"),$h=document.querySelector("#hbar i"),$cg=document.querySelector("#cbar i");
 const $fb=document.getElementById("fbar"),$hb=document.getElementById("hbar");
 const $sh=document.querySelector("#sbar i"),$sg=document.getElementById("sgauge");
+/* числа рядом со шкалами: «полоска чуть больше половины» не отвечает на
+   вопрос «дотяну ли до станции», а «34/100» отвечает */
+const $fn=document.getElementById("fnum"),$hn=document.getElementById("hnum");
+const $sn=document.getElementById("snum"),$cn=document.getElementById("cnum");
+const $vf=document.getElementById("vFuel"),$vh=document.getElementById("vHull");
+const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse");
 const $place=document.getElementById("place"),$sub=document.getElementById("sub");
 const $msg=document.getElementById("msg"),$prompt=document.getElementById("prompt");
 const $bThr=document.querySelector("[data-k=thrust]"),$bBrk=document.querySelector("[data-k=brake]");
 const $nav=document.getElementById("navbtn"),$fire=document.getElementById("firebtn");
 function hud(){
   const st=stat();
-  $f.style.width=clamp(G.fuel/st.fuelMax*100,0,100).toFixed(1)+"%";
-  $h.style.width=clamp(G.hull/st.hullMax*100,0,100).toFixed(1)+"%";
-  $cg.style.width=clamp(held()/st.cargoMax*100,0,100).toFixed(1)+"%";
+  const fr=G.fuel/st.fuelMax, hr=G.hull/st.hullMax, cr=held()/st.cargoMax;
+  $f.style.width=clamp(fr*100,0,100).toFixed(1)+"%";
+  $h.style.width=clamp(hr*100,0,100).toFixed(1)+"%";
+  $cg.style.width=clamp(cr*100,0,100).toFixed(1)+"%";
+  $fn.textContent=Math.round(G.fuel)+"/"+Math.round(st.fuelMax);
+  $hn.textContent=Math.round(G.hull)+"/"+Math.round(st.hullMax);
+  $cn.textContent=held()+"/"+st.cargoMax;
   $sg.style.display=st.shieldMax>0?"":"none";
-  if(st.shieldMax>0)$sh.style.width=clamp(G.shield/st.shieldMax*100,0,100).toFixed(1)+"%";
-  $fb.classList.toggle("low",G.fuel/st.fuelMax<.2);
-  $hb.classList.toggle("low",G.hull/st.hullMax<.3);
+  if(st.shieldMax>0){
+    $sh.style.width=clamp(G.shield/st.shieldMax*100,0,100).toFixed(1)+"%";
+    $sn.textContent=Math.round(G.shield)+"/"+Math.round(st.shieldMax);
+  }
+  $fb.classList.toggle("low",fr<.2);
+  $hb.classList.toggle("low",hr<.3);
+  /* две ступени тревоги вместо одной: «мало» подсвечивается, «вот-вот» мигает.
+     Мигание ловится боковым зрением — во время боя смотреть на приборы некогда. */
+  $vf.classList.toggle("low",fr<.2);$vf.classList.toggle("crit",fr<.08);
+  $vh.classList.toggle("low",hr<.3);$vh.classList.toggle("crit",hr<.15);
+  $vc.classList.toggle("low",cr>=1);
+  $purse.textContent=Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан";
+  /* пока открыт любой экран, приборы и кнопки полёта не нужны: они просвечивали
+     сквозь экран и читались как брак */
+  document.body.classList.toggle("screen",!!document.querySelector(".scr.open"));
   let a="—",b="—";
-  if(G.mode==="system"){a=G.sys.name.toUpperCase();
-    b="«"+st.S.ru+"» · "+G.credits.toLocaleString("ru")+" кр · "+G.data+" дан";}
+  /* кошелёк вынесен отдельной строкой ниже — здесь он был бы вторым разом */
+  if(G.mode==="system"){a=G.sys.name.toUpperCase();b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;}
   else if(G.mode==="map"){a="НАВИГАЦИЯ";b="радиус "+st.jump.toFixed(1)+" пк";}
   else if(G.mode==="landing"){a=G.land.p.name.toUpperCase();
     b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;}
@@ -58,18 +80,32 @@ function hud(){
   $msg.textContent=G.msgT>0?G.msg:"";
   $msg.style.opacity=G.msgT>0?clamp(G.msgT/40,0,1):0;
   $prompt.textContent=G.mode==="dock"?"":G.prompt;
-  $bThr.textContent=G.mode==="surface"?"ПРЫЖ":(G.mode==="dig"?"ВВЕРХ":"▲");
-  if(G.mode==="belt")document.querySelector("[data-k=act]").textContent="РЕЗАК";
-  /* в шахте копают в четыре стороны: большая кнопка — «вниз», как и клавиша S */
-  else if(G.mode==="dig")document.querySelector("[data-k=act]").textContent="ВНИЗ";
-  else document.querySelector("[data-k=act]").textContent="ДЕЙСТВ";
+  $bThr.textContent=G.mode==="surface"?"ПРЫЖОК":(G.mode==="dig"?"ВВЕРХ":"▲");
+  /* Кнопка называет то, что сделает, а не то, как она называется. «ДЕЙСТВИЕ»
+     не отвечает ни на один вопрос игрока; «СТЫКОВКА» отвечает на все.
+     Глагол уже есть в подсказке — берём оттуда, чтобы не заводить второй
+     источник правды, который однажды разойдётся с первым. */
+  const $act=document.querySelector("[data-k=act]");
+  let actLbl="ДЕЙСТВИЕ";
+  if(G.mode==="belt")actLbl="РЕЗАК";
+  else if(G.mode==="dig")actLbl="ВНИЗ";   // в шахте копают в четыре стороны, вниз — на большой кнопке
+  else{
+    const m=/^ДЕЙСТВИЕ\s*—\s*([^·\n]+)/.exec(G.prompt||"");
+    if(m){
+      const v=m[1].trim();
+      if(v.length<=14)actLbl=v;
+    }
+  }
+  $act.textContent=actLbl;
+  /* подсвечиваем, когда действие вообще есть: иначе кнопка выглядит живой всегда */
+  $act.classList.toggle("ready",actLbl!=="ДЕЙСТВИЕ");
   if(G.mode==="dig"){
     /* «вниз» уже висит на большой кнопке — второй такой же рядом только путает.
        Клавиша S при этом продолжает работать, раскладка WASD не рвётся. */
     $bBrk.style.display="none";
   }else{
     $bBrk.style.display="";
-    $bBrk.textContent="ТОРМ";
+    $bBrk.textContent="ТОРМОЗ";
     $bBrk.style.opacity=G.mode==="surface"?".3":"1";
   }
   $nav.textContent=(G.mode==="belt"||G.mode==="scoop")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА");

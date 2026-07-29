@@ -106,7 +106,7 @@ function arrive(){
   if(ap.kind==="station"){
     G.ap=null;
     if(G.opts.autoDock){openStation();return true;}
-    say("Сближение завершено\nДЕЙСТВ — стыковка");
+    say("Сближение завершено\nДЕЙСТВИЕ — стыковка");
   }else if(ap.kind==="planet"){
     /* вместо того чтобы гоняться регулятором за движущимся телом (и дрожать
        на подлёте), корабль захватывает круговую орбиту вокруг него и держит её,
@@ -126,11 +126,11 @@ function arrive(){
     const w=dirCcw*clamp(Math.min(.6/Math.sqrt(r),cruise*.28/Math.max(r,1)),.002,.03);
     G.orbit={p,r,ang:ang0,w};
     G.ap=null;
-    say("Захват орбиты\n"+p.name+(G.opts.easyLand?"\nДЕЙСТВ — авто-посадка":"\nДЕЙСТВ — посадка"));
+    say("Захват орбиты\n"+p.name+(G.opts.easyLand?"\nДЕЙСТВИЕ — авто-посадка":"\nДЕЙСТВИЕ — посадка"));
   }else if(ap.kind==="star"){
     G.ap=null;say("Подлёт к звезде\n"+G.sys.name);
   }else{
-    G.ap=null;say("У кромки пояса\nДЕЙСТВ — вход");
+    G.ap=null;say("У кромки пояса\nДЕЙСТВИЕ — вход");
   }
   return false;
 }

@@ -13,21 +13,49 @@ function openStation(){
   syncTabs();
   $st.classList.add("open");renderTab();saveGame(true);
 }
-/* тип станции решает, какие вкладки вообще есть: лишние кнопки прячем,
-   а если открытая вкладка тут не водится — переключаемся на первую доступную */
+/* ── навигация станции: раздел, потом вкладка ──
+   Десять вкладок в один ряд сжимались до полусотни пикселей и обрезали подписи.
+   Разделов же всегда мало, и они отвечают на вопрос, с которым игрок пришёл:
+   продать, снарядиться, узнать, нанять, распорядиться. Внутри раздела с одной
+   вкладкой вторая ступень не показывается — нечего выбирать. */
+const ST_GROUPS=[
+  {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","smelt"]},
+  {id:"ship",  ru:"КОРАБЛЬ",   tabs:["yard","mods","fuse"]},
+  {id:"know",  ru:"НАУКА",     tabs:["lab"]},
+  {id:"folk",  ru:"ЛЮДИ",      tabs:["crew","cantina"]},
+  {id:"hold",  ru:"ВЛАДЕНИЯ",  tabs:["bases"]}
+];
+function stGroupOf(t){const g=ST_GROUPS.find(G0=>G0.tabs.indexOf(t)>=0);return g?g.id:ST_GROUPS[0].id;}
+let stGroup="trade";
 function syncTabs(){
   const has=stTypeOf(G.st.stype).tabs;
-  let first=null;
-  document.querySelectorAll("#station nav button").forEach(b=>{
-    const ok=has.indexOf(b.dataset.tab)>=0;
+  /* раздел живёт, только если у него есть хоть одна вкладка на этой станции */
+  const live=ST_GROUPS.filter(g=>g.tabs.some(t=>has.indexOf(t)>=0));
+  if(has.indexOf(tab)<0)tab=(live[0]&&live[0].tabs.filter(t=>has.indexOf(t)>=0)[0])||"none";
+  stGroup=stGroupOf(tab);
+  const $g=document.getElementById("stGroups");
+  $g.textContent="";
+  for(const g of live){
+    const b=document.createElement("button");
+    b.textContent=g.ru;
+    if(g.id===stGroup)b.classList.add("on");
+    b.addEventListener("click",()=>{
+      const first=g.tabs.filter(t=>has.indexOf(t)>=0)[0];
+      if(!first)return;
+      tab=first;syncTabs();renderTab();
+    });
+    $g.appendChild(b);
+  }
+  const grp=ST_GROUPS.find(g=>g.id===stGroup);
+  let shown=0;
+  document.querySelectorAll("#stTabs button").forEach(b=>{
+    const ok=has.indexOf(b.dataset.tab)>=0&&grp&&grp.tabs.indexOf(b.dataset.tab)>=0;
     b.style.display=ok?"":"none";
-    b.classList.remove("on");
-    if(ok&&!first)first=b.dataset.tab;
+    if(ok)shown++;
+    b.classList.toggle("on",b.dataset.tab===tab);
   });
-  if(has.indexOf(tab)<0)tab=first||"none";
-  document.querySelectorAll("#station nav button").forEach(b=>{
-    if(b.dataset.tab===tab)b.classList.add("on");
-  });
+  /* одна вкладка в разделе — вторая ступень только мешает */
+  document.getElementById("stTabs").classList.toggle("solo",shown<2);
 }
 function repairCost(){return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep));}
 function closeStation(){
@@ -37,8 +65,8 @@ function closeStation(){
   G.ship.vx=S.vx;G.ship.vy=S.vy;
   say("Отстыковка");
 }
-document.querySelectorAll("#station nav button").forEach(b=>b.addEventListener("click",()=>{
-  document.querySelectorAll("#station nav button").forEach(x=>x.classList.remove("on"));
+document.querySelectorAll("#stTabs button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#stTabs button").forEach(x=>x.classList.remove("on"));
   b.classList.add("on");tab=b.dataset.tab;renderTab();
 }));
 document.getElementById("bUndock").addEventListener("click",closeStation);

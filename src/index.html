@@ -15,30 +15,52 @@
 <body>
 <canvas id="c"></canvas>
 
+<!-- ══ приборы: слева жизнь корабля, справа где мы и с чем ══
+     Порядок не случайный: взгляд читает слева направо, поэтому слева то,
+     что решает «жив ли я», справа — то, что решает «куда я». -->
 <div class="hud">
-  <div class="gauge"><b>ТОПЛИВО</b><div class="bar" id="fbar"><i></i></div></div>
-  <div class="gauge"><b>КОРПУС</b><div class="bar hull" id="hbar"><i></i></div></div>
-  <div class="gauge" id="sgauge" style="display:none"><b>ЩИТ</b><div class="bar shld" id="sbar"><i></i></div></div>
-  <div class="gauge"><b>ТРЮМ</b><div class="bar hold" id="cbar"><i></i></div></div>
-  <div class="stat"><u id="place">—</u><s id="sub">—</s></div>
+  <div class="vitals">
+    <div class="v" id="vFuel"><b>ТОПЛИВО</b><div class="bar" id="fbar"><i></i></div><u id="fnum">—</u></div>
+    <div class="v" id="vHull"><b>КОРПУС</b><div class="bar hull" id="hbar"><i></i></div><u id="hnum">—</u></div>
+    <div class="v" id="sgauge" style="display:none"><b>ЩИТ</b><div class="bar shld" id="sbar"><i></i></div><u id="snum">—</u></div>
+    <div class="v" id="vHold"><b>ТРЮМ</b><div class="bar hold" id="cbar"><i></i></div><u id="cnum">—</u></div>
+  </div>
+  <div class="locus">
+    <u id="place">—</u>
+    <s id="sub">—</s>
+    <em id="purse">—</em>
+  </div>
 </div>
 
 <div id="msg"></div>
 <div id="prompt"></div>
 
-<div class="side">
-  <button id="navbtn">КАРТА</button>
-  <button id="starbtn" style="display:none">К ЗВЕЗДЕ</button>
-  <button id="shipbtn">КОРАБЛЬ</button>
-  <button id="crewbtn" style="display:none">ЭКИПАЖ</button>
-  <button id="hqbtn" style="display:none">ШТАБ</button>
-  <button id="logbtn">ЖУРНАЛ</button>
-  <button id="optbtn">⚙</button>
-  <button id="zin">+</button>
-  <button id="zout">−</button>
-  <button id="dronebtn" style="display:none">ДРОН</button>
-  <button id="beaconbtn" style="display:none">МАЯК</button>
+<!-- ══ правый борт ══
+     Всегда видны только две кнопки и масштаб. Всё остальное живёт в меню
+     или появляется само, когда для него есть повод. -->
+<div class="rail">
+  <div class="ctx">
+    <button id="starbtn" style="display:none">К ЗВЕЗДЕ</button>
+    <button id="dronebtn" style="display:none">ДРОН</button>
+    <button id="beaconbtn" style="display:none">МАЯК</button>
+  </div>
+  <button id="navbtn" class="key">КАРТА</button>
+  <button id="menubtn" class="key">МЕНЮ</button>
+  <div class="zoom">
+    <button id="zin" aria-label="приблизить">+</button>
+    <button id="zout" aria-label="отдалить">−</button>
+  </div>
 </div>
+
+<div id="menu">
+  <b>БОРТОВЫЕ СИСТЕМЫ<span id="menuclose">×</span></b>
+  <button id="shipbtn"><em>КОРАБЛЬ</em><s>корпус, слоты, части</s></button>
+  <button id="crewbtn" style="display:none"><em>ЭКИПАЖ</em><s>наёмники и их рейсы</s></button>
+  <button id="hqbtn" style="display:none"><em>ШТАБ</em><s>управляющие и домены</s></button>
+  <button id="logbtn"><em>ЖУРНАЛ</em><s>что происходило</s></button>
+  <button id="optbtn"><em>НАСТРОЙКИ</em><s>звук, управление, запись</s></button>
+</div>
+
 <button data-k="launch" id="launchbtn" style="display:none"><i id="launchbar"></i><span>ВЗЛЁТ</span></button>
 
 <div id="logwin">
@@ -46,27 +68,29 @@
   <div id="loglist"></div>
 </div>
 
+<!-- ══ управление ══ большим пальцем, поэтому по нижним углам ══ -->
 <div class="pads">
   <div><button data-k="pup" class="beltonly">▲</button><button data-k="left">◀</button><button data-k="right">▶</button><button data-k="pdown" class="beltonly">▼</button></div>
-  <div><button data-k="fire" id="firebtn" style="display:none">ОГОНЬ</button><button data-k="brake">ТОРМ</button><button data-k="act">ДЕЙСТВ</button><button data-k="thrust">▲</button></div>
+  <div><button data-k="fire" id="firebtn" style="display:none">ОГОНЬ</button><button data-k="brake">ТОРМОЗ</button><button data-k="act">ДЕЙСТВИЕ</button><button data-k="thrust">▲</button></div>
 </div>
 
 <div class="scr" id="station">
   <header>
-    <div><b id="stName">—</b><s id="stKind">—</s></div>
-    <div class="wallet"><em id="wCr">0 кр</em><br><i id="wDt">0 данных</i></div>
+    <div class="ttl"><b id="stName">—</b><s id="stKind">—</s></div>
+    <div class="wallet"><em id="wCr">0 кр</em><i id="wDt">0 данных</i></div>
   </header>
-  <nav>
+  <nav class="groups" id="stGroups"></nav>
+  <nav class="tabs" id="stTabs">
     <button data-tab="market" class="on">РЫНОК</button>
+    <button data-tab="barter">БАРТЕР</button>
+    <button data-tab="smelt">ПЕРЕПЛАВКА</button>
     <button data-tab="yard">ВЕРФЬ</button>
     <button data-tab="mods">МОДУЛИ</button>
+    <button data-tab="fuse">СПЛАВ КОРПУСОВ</button>
     <button data-tab="lab">НАУКА</button>
-    <button data-tab="smelt">ПЕРЕПЛАВКА</button>
-    <button data-tab="crew">ЭКИПАЖ</button>
+    <button data-tab="crew">НАЁМНИКИ</button>
     <button data-tab="cantina">КАНТИНА</button>
     <button data-tab="bases">БАЗЫ</button>
-    <button data-tab="fuse">ЛАБОРАТОРИЯ</button>
-    <button data-tab="barter">БАРТЕР</button>
   </nav>
   <div class="body" id="stBody"></div>
   <footer>
@@ -78,19 +102,19 @@
 
 <div class="scr" id="shipview">
   <header>
-    <div><b id="svName">—</b><s id="svSub">—</s></div>
-    <div class="wallet"><em id="svCap">—</em><br><i id="svSlots">—</i></div>
+    <div class="ttl"><b id="svName">—</b><s id="svSub">—</s></div>
+    <div class="wallet"><em id="svCap">—</em><i id="svSlots">—</i></div>
   </header>
   <div id="svstage"><canvas id="svcan"></canvas><div id="svhint">выберите слот на корпусе</div></div>
-  <nav id="svfilter"></nav>
+  <nav class="tabs" id="svfilter"></nav>
   <div class="body" id="svBody"></div>
   <footer><button class="act gold" id="svClose">ЗАКРЫТЬ</button></footer>
 </div>
 
 <div class="scr" id="crewview">
   <header>
-    <div><b>ЭКИПАЖ</b><s id="cvSub">—</s></div>
-    <div class="wallet"><em id="cvCr">0 кр</em><br><i id="cvCap">—</i></div>
+    <div class="ttl"><b>ЭКИПАЖ</b><s id="cvSub">—</s></div>
+    <div class="wallet"><em id="cvCr">0 кр</em><i id="cvCap">—</i></div>
   </header>
   <div class="body" id="cvBody"></div>
   <footer><button class="act gold" id="cvClose">ЗАКРЫТЬ</button></footer>
@@ -98,36 +122,53 @@
 
 <div class="scr" id="hqview">
   <header>
-    <div><b>ШТАБ</b><s id="hqSub">—</s></div>
-    <div class="wallet"><em id="hqCr">0 кр</em><br><i id="hqCap">—</i></div>
+    <div class="ttl"><b>ШТАБ</b><s id="hqSub">—</s></div>
+    <div class="wallet"><em id="hqCr">0 кр</em><i id="hqCap">—</i></div>
   </header>
   <div class="body" id="hqBody"></div>
   <footer><button class="act gold" id="hqClose">ЗАКРЫТЬ</button></footer>
 </div>
 
 <div class="scr" id="opts">
-  <header><div><b>НАСТРОЙКИ</b><s>полётный профиль</s></div></header>
+  <header><div class="ttl"><b>НАСТРОЙКИ</b><s>полётный профиль</s></div></header>
   <div class="body" id="optBody"></div>
   <footer><button class="act gold" id="optClose">ЗАКРЫТЬ</button></footer>
 </div>
 
 <div id="intro"><div class="wrap">
-  <h1>ДРЕЙФ</h1>
-  <p class="sub">РАЗВЕДЫВАТЕЛЬНЫЙ ЗОНД · СЕКТОР 0:0<br><span id="ver">ВЕРСИЯ</span> · КАБИНА · ПРИБОРЫ · ИНВЕРСИЯ ОСЕЙ</p>
-  <table>
-    <tr><td>тап по объекту</td><td>автопилот: подлёт, сближение, стыковка</td></tr>
-    <tr><td>щипок / + −</td><td>масштаб обзора</td></tr>
-    <tr><td>◀ ▶ ▲</td><td>ручное управление</td></tr>
-    <tr><td>ТОРМ</td><td>гасит скорость до нуля</td></tr>
-    <tr><td>ДЕЙСТВ</td><td>посадка · бурение · вход в пояс</td></tr>
-    <tr><td>ОГОНЬ</td><td>появится с бортовым орудием · от пиратов можно просто уйти</td></tr>
-    <tr><td>в поясе</td><td>◀ ▶ курс · ▲ ▼ тангаж · Q E крен<br>ПРОБЕЛ тяга · C торможение · R резак · F огонь<br>протяжка по стеклу — свободный обзор</td></tr>
-  </table>
+  <div class="mark">
+    <h1>ДРЕЙФ</h1>
+    <p class="sub">ПРОЦЕДУРНАЯ РАЗВЕДКА · СЕКТОР 0:0</p>
+  </div>
   <div class="choice">
-    <button id="startCont" style="display:none">ПРОДОЛЖИТЬ ПОЛЁТ<small>загрузить запись</small></button>
+    <button id="startCont" style="display:none">ПРОДОЛЖИТЬ ПОЛЁТ<small>загрузить последнюю запись</small></button>
     <button id="startEasy">ЛЁГКИЙ СТАРТ<small>корабль садится сам</small></button>
     <button id="startHard" class="alt">РУЧНОЕ УПРАВЛЕНИЕ<small>посадка на руках</small></button>
   </div>
+  <button class="keysbtn" id="introKeys">УПРАВЛЕНИЕ</button>
+  <div class="keys" id="introKeysBox">
+    <div class="kgrp">
+      <b>ПОЛЁТ В СИСТЕМЕ</b>
+      <table>
+        <tr><td>тап по объекту</td><td>автопилот доведёт и станет на орбиту</td></tr>
+        <tr><td>◀ ▶ ▲</td><td>курс и тяга вручную</td></tr>
+        <tr><td>ТОРМОЗ</td><td>гасит скорость до нуля</td></tr>
+        <tr><td>ДЕЙСТВИЕ</td><td>подпись меняется: стыковка, посадка, вход</td></tr>
+        <tr><td>щипок · + −</td><td>масштаб обзора</td></tr>
+      </table>
+    </div>
+    <div class="kgrp">
+      <b>ПОЯС АСТЕРОИДОВ</b>
+      <table>
+        <tr><td>◀ ▶ · ▲ ▼</td><td>курс и тангаж</td></tr>
+        <tr><td>Q E</td><td>крен</td></tr>
+        <tr><td>ПРОБЕЛ · C</td><td>тяга и торможение</td></tr>
+        <tr><td>R · F</td><td>резак и орудие</td></tr>
+        <tr><td>протяжка</td><td>свободный обзор</td></tr>
+      </table>
+    </div>
+  </div>
+  <p class="ver"><span id="ver">ВЕРСИЯ</span></p>
 </div></div>
 
 <script>

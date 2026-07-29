@@ -144,9 +144,9 @@ function updateSystem(dt){
     const S=sys.station,ds=Math.hypot(sh.x-S.x,sh.y-S.y);
     if(ds<300){
       if(ds<95){
-        if(sp>2.6)G.prompt="СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМ — ГАШЕНИЕ";
+        if(sp>2.6)G.prompt="СБРОСЬТЕ СКОРОСТЬ · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ";
         else{
-          G.prompt="ДЕЙСТВ — СТЫКОВКА · "+S.kind.toUpperCase();
+          G.prompt="ДЕЙСТВИЕ — СТЫКОВКА · "+S.kind.toUpperCase();
           if(actEdge)openStation();
         }
         return;
@@ -158,7 +158,7 @@ function updateSystem(dt){
   if(B){
     const rr=Math.hypot(sh.x,sh.y);
     if(Math.abs(rr-B.orbit)<90){
-      G.prompt="ДЕЙСТВ — ВОЙТИ В "+B.name.toUpperCase()+"\nРУДА: "+B.res.map(k=>RES[k].ru).join(", ");
+      G.prompt="ДЕЙСТВИЕ — ВОЙТИ В "+B.name.toUpperCase()+"\nРУДА: "+B.res.map(k=>RES[k].ru).join(", ");
       if(actEdge){enterBelt();return;}
     }
   }
@@ -169,7 +169,7 @@ function updateSystem(dt){
       const d=Math.hypot(sh.x-PB.x,sh.y-PB.y);
       if(d<160){
         G.prompt="ПИРАТСКАЯ БАЗА · "+PB.name.toUpperCase()+
-          "\nДЕЙСТВ — АБОРДАЖ"+(st.armed?"":" (ОРУЖИЯ НЕТ)");
+          "\nДЕЙСТВИЕ — АБОРДАЖ"+(st.armed?"":" (ОРУЖИЯ НЕТ)");
         if(actEdge){enterRaid(PB);return;}
       }
     }
@@ -192,12 +192,12 @@ function updateSystem(dt){
     if(nd<110){
       if(near.type==="gas"){
         /* сесть по-прежнему некуда, но в верхние слои можно зайти за газами */
-        G.prompt="ГАЗОВЫЙ ГИГАНТ · ПОСАДКИ НЕТ\nДЕЙСТВ — ЗАХОД ЗА ЛЕТУЧИМИ ГАЗАМИ";
+        G.prompt="ГАЗОВЫЙ ГИГАНТ · ПОСАДКИ НЕТ\nДЕЙСТВИЕ — ЗАХОД ЗА ЛЕТУЧИМИ ГАЗАМИ";
         if(actEdge){startScoop(near);return;}
       }
-      else if(!G.opts.easyLand&&sp>3.2)G.prompt="СЛИШКОМ БЫСТРО · "+sp.toFixed(1)+"\nТОРМ — ГАШЕНИЕ";
+      else if(!G.opts.easyLand&&sp>3.2)G.prompt="СЛИШКОМ БЫСТРО · "+sp.toFixed(1)+"\nТОРМОЗ — ГАШЕНИЕ";
       else{
-        let ln="ДЕЙСТВ — "+(G.opts.easyLand?"АВТО-ПОСАДКА":"ПОСАДКА")+" · "+near.name;
+        let ln="ДЕЙСТВИЕ — "+(G.opts.easyLand?"АВТО-ПОСАДКА":"ПОСАДКА")+" · "+near.name;
         if(G.tech.has("deep")&&near.res.length)
           ln+="\nНЕДРА: "+near.res.map(k=>RES[k].ru).join(", ");
         G.prompt=ln;
@@ -207,7 +207,7 @@ function updateSystem(dt){
     return;
   }
   if(!G.prompt&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax){
-    G.prompt="ДЕЙСТВ — СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА ("+G.cargo.ice+")";
+    G.prompt="ДЕЙСТВИЕ — СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА ("+G.cargo.ice+")";
     if(actEdge){
       const ratio=st.synthRatio;
       const n=Math.min(G.cargo.ice,Math.ceil((st.fuelMax-G.fuel)/ratio));
@@ -324,8 +324,9 @@ function drawSystem(){
     ctx.strokeStyle="rgba(127,230,216,.5)";ctx.lineWidth=1;
     ctx.beginPath();ctx.arc(zx(sh.x),zy(sh.y),13,0,TAU);ctx.stroke();
   }
+  /* масштаб — над пэдом, а не под ним: внизу слева его закрывал руль */
   ctx.fillStyle="rgba(93,115,130,.75)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),12,H-14);
+  ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),14,H-108);
   /* компас на край экрана: звезда, станция и текущая цель автопилота,
      если они за кадром — чтобы в бесконечном космосе нельзя было заблудиться */
   const marks=[{x:0,y:0,c:"#f2b25c",l:"ЗВЕЗДА"}];

@@ -48,7 +48,7 @@ function enterBase(p){
   G.base.x=cellX(G.base.cur);G.base.y=cellY(0);
   G.mode="base";
   for(const k in keys)keys[k]=false;
-  say("База «"+p.name+"»\n◀ ▶ — переход · ▲ ▼ — уровни\nДЕЙСТВ — строить в пустой ячейке · НАЗАД — наружу");
+  say("База «"+p.name+"»\n◀ ▶ — переход · ▲ ▼ — уровни\nДЕЙСТВИЕ — строить в пустой ячейке · НАЗАД — наружу");
 }
 function exitBase(){
   G.base=null;G.mode="surface";
@@ -245,7 +245,7 @@ function updateBase(dt){
     G.prompt="СТРОИТЬ: "+M.ru.toUpperCase()+"\n"+M.note+
       "\n"+M.cost.credits+" кр"+(M.cost.alloy?" + "+M.cost.alloy+" сплавов":"")+
       (bad?"\nТОЛЬКО НА ВЕРХНЕМ УРОВНЕ":"")+
-      "\n◀ ▶ — выбор · ДЕЙСТВ — построить";
+      "\n◀ ▶ — выбор · ДЕЙСТВИЕ — построить";
     if(actEdge){
       if(bad)say("Панель ставится только сверху");
       else if(!canPay(M.cost))say("Не хватает: "+M.cost.credits+" кр"+(M.cost.alloy?" и "+M.cost.alloy+" сплавов":""));
@@ -274,16 +274,16 @@ function updateBase(dt){
       /* цель — ближайшая площадка сети: выбирать некому, стрелки заняты ходьбой */
       net.sort((a,b)=>Math.hypot(a.sx-B.sx,a.sy-B.sy)-Math.hypot(b.sx-B.sx,b.sy-B.sy));
       const T=net[0],c=baseJumpCost(T);
-      G.prompt=head+"\nПЛОЩАДКА · ДЕЙСТВ — ПЕРЕБРОСКА НА «"+T.name.toUpperCase()+"»"+
+      G.prompt=head+"\nПЛОЩАДКА · ДЕЙСТВИЕ — ПЕРЕБРОСКА НА «"+T.name.toUpperCase()+"»"+
         "\n"+c.credits+" кр и "+c.fuel+" топлива";
       if(actEdge)jumpToBase(T);
       return;
     }
     G.prompt=head+"\n"+M.ru.toUpperCase()+" · "+M.note+
-      (basePoolHeld(B)>0?"\nДЕЙСТВ — ЗАБРАТЬ НАКОПЛЕННОЕ":"");
+      (basePoolHeld(B)>0?"\nДЕЙСТВИЕ — ЗАБРАТЬ НАКОПЛЕННОЕ":"");
     if(actEdge&&basePoolHeld(B)>0)baseCollect(B);
   }else{
-    G.prompt=head+"\nПОРОДА · ДЕЙСТВ — ПРОКОПАТЬ И ПОСТАВИТЬ МОДУЛЬ";
+    G.prompt=head+"\nПОРОДА · ДЕЙСТВИЕ — ПРОКОПАТЬ И ПОСТАВИТЬ МОДУЛЬ";
     if(actEdge){S.menu=true;S.pick=0;}
   }
 }
