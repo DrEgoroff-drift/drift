@@ -1,6 +1,9 @@
 /* ══════════════ посадка ══════════════ */
 function startLanding(p){
   const tr=genTerrain(p),r=rng(p.seed^0x77);
+  /* достопримечательности вписываются в рельеф до того, как по нему расставят
+     залежи и флору: они выравнивают под собой грунт (20a-poi) */
+  genPOI(tr,p);
   G.ap=null;
   G.land={p,tr,x:tr.padX+(r()-.5)*(G.opts.easyLand?900:640),y:110,
     vx:(r()-.5)*1.3,vy:.35,a:0,
@@ -260,6 +263,7 @@ function drawLanding(){
   ctx.restore();
   drawGround(tr,camx,camy,"rgb("+p.T.pal[2].map(v=>Math.round(v*.6)).join(",")+")",
     "rgba(180,230,240,.35)",p.T.pal);
+  drawPOI(tr,camx,camy,p);
   drawRocks(tr,camx,camy,p.T.pal);
   drawDustMotes(camx,camy,p);
   const px=tr.padX-camx,py=tr.padY-camy;

@@ -268,11 +268,18 @@ function drawSurfaceHud(camx,camy){
   const marks=[];
   marks.push({x:S.shipX,ru:"КОРАБЛЬ",col:"rgba(242,178,92,.9)"});
   if(S.cave)marks.push({x:S.cave.x,ru:"ПЕЩЕРА",col:"rgba(150,225,255,.9)"});
+  /* достопримечательность ведут отдельно от пещеры: до неё далеко, и без
+     маркера игрок пройдёт мимо ровно того, ради чего стоило садиться */
+  const poi=nearestPOI(S.tr,S.x);
+  if(poi)marks.push({x:poi.x,ru:poi.ru,col:"rgba(212,180,255,.9)"});
   ctx.font="9px ui-monospace,monospace";
-  for(const m of marks){
+  for(let mi=0;mi<marks.length;mi++){
+    const m=marks[mi];
     const d=m.x-S.x, ad=Math.abs(d);
     const sx=clamp(m.x-camx,64,W-RIGHT_PAD-14);   // запас под подпись по центру
-    const y=(hint?TOP+34:TOP+6);
+    /* маркеры разводим по строкам: две цели рядом давали кашу из наложенных
+       подписей, и не читалась ни одна */
+    const y=(hint?TOP+34:TOP+6)+mi*13;
     ctx.fillStyle=m.col;
     if(ad>W*.45){                       // цель за краем — рисуем стрелку направления
       const dir=Math.sign(d);
@@ -297,6 +304,7 @@ function drawSurface(){
   ctx.restore();
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
     "rgba(200,240,246,.4)",p.T.pal);
+  drawPOI(tr,camx,camy,p);
   drawRocks(tr,camx,camy,p.T.pal);
   groundShadow(S.shipX-camx,S.shipY-camy+2,34,7);
   ctx.save();ctx.translate(S.shipX-camx,S.shipY-camy);drawLander(false,false);ctx.restore();
