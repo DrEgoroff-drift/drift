@@ -82,7 +82,13 @@ function runAutopilot(dt,st){
     return arrive();
   }
   if(G.fuel<=0){G.ap=null;say("Топливо кончилось\nавтопилот отключён");return false;}
-  const want=clamp(gap/22,0,cruise);
+  /* тормозной профиль: скорость подхода ограничена тем, что реально успеешь
+     погасить оставшейся тягой. Линейное gap/22 разрешало 8 ед/кадр уже за 176
+     единиц до цели, а гасить их с ускорением .088 нужно ~360 — автопилот
+     влетал в тело насквозь и захватывал орбиту внутри планеты.
+     Запас в .8 от паспортного ускорения — на поворот и на движение цели. */
+  const brake=.088*st.thr*.8;
+  const want=clamp(Math.sqrt(Math.max(gap,0)*2*brake),0,cruise);
   const dvx=ldx/ldist*want-rvx, dvy=ldy/ldist*want-rvy;
   const dm=Math.hypot(dvx,dvy)||1;
   const acc=Math.min(dm,.088*st.thr*dt);
@@ -106,8 +112,13 @@ function arrive(){
        на подлёте), корабль захватывает круговую орбиту вокруг него и держит её,
        пока игрок сам не возьмётся за ручное управление */
     const p=ap.p,sh=G.ship;
-    const rx=sh.x-p.x,ry=sh.y-p.y,r=Math.hypot(rx,ry)||ap.p.radius+70;
-    const ang0=Math.atan2(ry,rx);
+    const rx=sh.x-p.x,ry=sh.y-p.y;
+    /* радиус захвата не может оказаться внутри тела: иначе корабль запирался
+       под поверхностью, пропадал из виду и мелко дрожал на крошечной орбите */
+    const rMin=p.radius+46;
+    const r=Math.max(Math.hypot(rx,ry)||rMin,rMin);
+    const ang0=Math.atan2(ry,rx)||0;
+    sh.x=p.x+Math.cos(ang0)*r;sh.y=p.y+Math.sin(ang0)*r;
     const dirCcw=(rx*sh.vy-ry*sh.vx)>=0?1:-1;
     /* тела стали медленнее (M43), поэтому и захват перенастроен: касательная
        скорость по орбите зажата долей крейсерской, иначе корабль обгоняет цель */

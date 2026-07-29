@@ -44,7 +44,7 @@ function updateSystem(dt){
      мы только подменяем то, как двигается корабль. */
   if(G.orbit&&(keys.thrust||keys.brake||keys.left||keys.right))G.orbit=null;
   const orbiting=!!G.orbit;
-  let a0=sh.a,apOn=false,sp=Math.hypot(sh.vx,sh.vy);
+  let a0=sh.a,apOn=false,sp=Math.hypot(sh.vx,sh.vy),atEdge=false;
   if(orbiting){
     const O=G.orbit;O.ang+=O.w*dt;
     const p=O.p;
@@ -91,19 +91,31 @@ function updateSystem(dt){
     const na=cur+angDiff(sh.a,cur)*Math.min(1,.06*dt);
     sh.vx=Math.cos(na)*sp;sh.vy=Math.sin(na)*sp;
   }
-  sh.x+=sh.vx*dt;sh.y+=sh.vy*dt;
-  /* гравитационный якорь: за краем системы мягко тянет назад к звезде,
-     чтобы в бесконечном космосе нельзя было буквально потеряться */
+  /* гравитационный якорь: за краем системы уход от звезды сходит на нет,
+     чтобы в бесконечном космосе нельзя было буквально потеряться.
+     Держим это ограничением на скорость «прочь», а не встречной тягой:
+     встречная была сильнее двигателя, корабль вставал колом на месте и
+     дёргался туда-сюда каждый кадр — а вместе с ним и вся картинка,
+     потому что камера жёстко привязана к кораблю. Ход к звезде и вдоль
+     края остаётся полностью свободным. */
   {
     const rEdge=(sys.belt?sys.belt.orbit:2400)*1.6;
-    const d=Math.hypot(sh.x,sh.y);
+    const d=Math.hypot(sh.x,sh.y)||1;
     if(d>rEdge){
-      const over=d-rEdge,pull=Math.min(.09,over*.00006)*dt;
-      sh.vx-=sh.x/d*pull;sh.vy-=sh.y/d*pull;
-      if(!G.edgeWarned||G.t-G.edgeWarned>6){G.edgeWarned=G.t;
-        say("ГРАВИТАЦИОННЫЙ ЯКОРЬ\nвы покидаете систему · курс мягко тянет к звезде");}
+      const nx=sh.x/d, ny=sh.y/d;
+      const out=sh.vx*nx+sh.vy*ny;                       // >0 — уходим от звезды
+      const cap=(1-clamp((d-rEdge)/700,0,1))*maxSp;      // на кромке ещё можно, дальше — нет
+      if(out>cap){sh.vx-=nx*(out-cap);sh.vy-=ny*(out-cap);}
+      atEdge=true;
+      /* G.t растёт примерно на единицу в кадр — прежний интервал в 6 означал
+         десяток одинаковых сообщений в секунду */
+      if(!G.edgeWarned||G.t-G.edgeWarned>900){G.edgeWarned=G.t;
+        say("ГРАВИТАЦИОННЫЙ ЯКОРЬ\nдальше корабль не уходит\nкурс к звезде свободен");}
     }
   }
+  /* якорь режет скорость до шага, а не после — иначе корабль всё равно
+     уползал бы за край по чуть-чуть каждый кадр */
+  sh.x+=sh.vx*dt;sh.y+=sh.vy*dt;
   /* крен считаем по фактической скорости поворота — работает и на автопилоте */
   const rate=angDiff(sh.a,a0)/Math.max(dt,.0001);
   sh.bank+=(clamp(rate*13,-.8,.8)-sh.bank)*Math.min(1,.07*dt);
@@ -111,11 +123,10 @@ function updateSystem(dt){
   }
 
   const d0=Math.hypot(sh.x,sh.y)||1;
-  if(d0>5200){
-    sh.vx-=sh.x/d0*.16*dt;sh.vy-=sh.y/d0*.16*dt;
-    if(!apOn)G.prompt="ГРАВИТАЦИОННЫЙ ЯКОРЬ · ВОЗВРАТ К ЗВЕЗДЕ";
-    return;
-  }
+  /* второй, жёсткий якорь на 5200 отсюда убран: он тянул к звезде сильнее, чем
+     тянет двигатель, и вдобавок обрывал кадр — заодно с ним пропадали подсказки,
+     стыковка и посадка. Ограничения скорости выше достаточно: дальше кромки
+     корабль просто перестаёт уходить, оставаясь полностью управляемым. */
   if(d0<sys.radius+30){
     G.hull=Math.max(0,G.hull-.9*dt);
     sh.vx-=sh.x/d0*.4*dt;sh.vy-=sh.y/d0*.4*dt;
@@ -124,7 +135,7 @@ function updateSystem(dt){
     return;
   }
   if(apOn)return;
-  G.prompt="";
+  G.prompt=atEdge?"ГРАВИТАЦИОННЫЙ ЯКОРЬ · КРАЙ СИСТЕМЫ\nКУРС К ЗВЕЗДЕ СВОБОДЕН":"";
   const hostile=G.pirates.filter(p=>p.aware).length;
   if(hostile)G.prompt=(st.armed?"ОГОНЬ — ОТСТРЕЛИВАТЬСЯ":"ОРУДИЯ НЕТ")+
     " · ПРЕСЛЕДУЮТ: "+hostile+"\nМОЖНО ПРОСТО УЙТИ ИЛИ ПРЫГНУТЬ";

@@ -227,6 +227,9 @@ function tap(sxp,syp){
   }else{G.ap=null;}
 }
 
+/* версия проставляется из кода, а не руками в разметке — иначе заставка и
+   патчноуты рано или поздно разойдутся */
+document.getElementById("ver").textContent="ВЕРСИЯ "+VER;
 document.getElementById("startEasy").addEventListener("click",()=>start(true));
 document.getElementById("startHard").addEventListener("click",()=>start(false));
 (function(){

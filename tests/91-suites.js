@@ -732,3 +732,46 @@ TEST_SUITES.push(()=>suite("ИИ-ядро: учится само и пережи
   ok(back&&back.ai===1,"ядро восстановлено машиной");
   near(back.drift,55,.1,"дрейф сохранился");
 }));
+
+TEST_SUITES.push(()=>suite("автопилот: подходит снаружи тела, а не сквозь него",()=>{
+  resetWorld();
+  const p=G.sys.planets[G.sys.planets.length-1];
+  /* до правки тормозной профиль был линейным (gap/22): разрешённая скорость
+     подхода вдвое превышала ту, что успевала погаситься, и корабль захватывал
+     орбиту внутри планеты — пропадал из виду и дрожал на крошечном радиусе */
+  G.fuel=1e6;G.ship.x=2500;G.ship.y=-1800;G.ship.vx=0;G.ship.vy=0;
+  G.ap={kind:"planet",p};
+  let f=0;for(;f<9000&&G.ap&&G.mode==="system";f++)updateSystem(1);
+  ok(f<9000,"автопилот дошёл, а не наматывал круги");
+  ok(!!G.orbit,"орбита захвачена");
+  ok(G.orbit.r>p.radius,"радиус захвата снаружи планеты, а не под её поверхностью");
+  const r=Math.hypot(G.ship.x-p.x,G.ship.y-p.y);
+  near(r,G.orbit.r,1,"корабль стоит именно на этом радиусе");
+}));
+
+TEST_SUITES.push(()=>suite("гравитационный якорь: стена, а не тряска",()=>{
+  resetWorld();
+  G.fuel=1e6;G.pirates=[];
+  G.ship.x=3000;G.ship.y=0;G.ship.a=0;G.ship.vx=0;G.ship.vy=0;
+  keys.thrust=true;
+  /* прежний якорь тянул к звезде сильнее двигателя: корабль вставал колом и
+     каждый кадр дёргался туда-сюда — вместе с ним дрожала вся картинка,
+     потому что камера привязана к кораблю. Считаем смены знака радиальной
+     скорости: у стены их быть не должно ни одной. */
+  let prev=null,rev=0;
+  for(let i=0;i<2500;i++){
+    updateSystem(1);
+    const d=Math.hypot(G.ship.x,G.ship.y)||1;
+    const vr=(G.ship.x*G.ship.vx+G.ship.y*G.ship.vy)/d;
+    if(prev!==null&&Math.sign(vr)!==Math.sign(prev))rev++;
+    prev=vr;
+  }
+  const dEnd=Math.hypot(G.ship.x,G.ship.y);
+  eq(rev,0,"на краю нет ни одной смены знака хода — дрожать нечему");
+  ok(dEnd<5000,"дальше края корабль не уходит");
+  /* и это не ловушка: к звезде и вдоль края ход остаётся свободным */
+  G.ship.a=Math.PI;
+  for(let i=0;i<400;i++)updateSystem(1);
+  keys.thrust=false;
+  ok(Math.hypot(G.ship.x,G.ship.y)<dEnd-200,"обратный курс свободен");
+}));
