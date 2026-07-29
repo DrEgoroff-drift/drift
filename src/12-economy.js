@@ -10,7 +10,14 @@ function marketFor(sys){
     m.t=G.t;
   }
   const prices={},mul=stTypeOf(sys.station.stype).mkt;   /* торговый узел платит больше, аванпост — меньше */
-  for(const k of TRADE_KEYS)prices[k]=Math.max(1,Math.round(base[k]*mul*clamp(1+(m.pressure[k]||0),.4,1.8)));
+  /* «Монополия» фактора: на плечах его маршрута цена держится выше — вы продаёте
+     туда же, куда возит он, и это единственный перк, который игрок чувствует
+     собственным кошельком, а не строчкой в сводке домена */
+  const F=typeof mgrOf==="function"?mgrOf("fact"):null;
+  const onRoute=F&&!F.stalled&&mgrPerk(F,"mono")&&F.route.indexOf(sys.sx+","+sys.sy)>=0;
+  const boost=onRoute?1.18:1;
+  for(const k of TRADE_KEYS)
+    prices[k]=Math.max(1,Math.round(base[k]*mul*boost*clamp(1+(m.pressure[k]||0),.4,1.8)));
   return prices;
 }
 function sellCargo(sys,k,qty){
@@ -62,7 +69,10 @@ function tickDrones(){
   for(let i=G.drones.length-1;i>=0;i--){
     const d=G.drones[i];
     const elapsedMs=Math.min(Math.max(0,now-d.soldAtMs),cap);
-    const yieldN=Math.floor(Math.min(d.pool,d.rate*elapsedMs/60000));
+    /* «Авто-сбыт» смотрителя: дрон не ждёт полного трюма, а сдаёт по мере
+       выработки — быстрее оборот и меньше потерь, если точка кончится раньше */
+    const rate=d.rate*(mgrPerkOf("keep","sell")?1.35:1);
+    const yieldN=Math.floor(Math.min(d.pool,rate*elapsedMs/60000));
     if(yieldN>0){
       const home=nearestStation(d.sx,d.sy);
       const rev=sellDroneYield(home,d.res,yieldN);

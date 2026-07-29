@@ -508,7 +508,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.12.0";
+const VER="0.13.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -731,7 +731,13 @@ function craftPart(spec){
        "Часть собрана\n"+part.name);
   return part;
 }
-function timeBucket(){return Math.floor(Date.now()/172800000);}
+/* «Обновление» фактора: ассортимент станций перебирается втрое чаще — его связи
+   в том и состоят, что он знает о новом раньше. Бакет один на весь ассортимент
+   (части, уникальный корпус, кантина), поэтому перк правится здесь, в одном месте. */
+function timeBucket(){
+  const period=(typeof mgrPerkOf==="function"&&mgrPerkOf("fact","stock"))?57600000:172800000;
+  return Math.floor(Date.now()/period);
+}
 function stationUniqueOffer(sys){
   if(!sys.station)return null;
   const r=rng(hashi(sys.seed,999,timeBucket()));
@@ -752,6 +758,15 @@ function stationParts(sys){
     const part=genPart(seed,tierFromDanger(d,rng(seed)));
     const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*(.85+r()*.4)/10)*10;
     out.push({key:sys.key+"|"+bucket+"|"+i,part,price});
+  }
+  /* «Чёрный список» фактора: его связи открывают то, чего в открытой продаже нет —
+     одна часть заведомо высокого класса и дороже рынка. Не «+10% ко всему»,
+     а конкретная вещь, за которой имеет смысл прилететь. */
+  if(typeof mgrPerkOf==="function"&&mgrPerkOf("fact","black")){
+    const seed=hashi(sys.seed,0xB1AC,bucket);
+    const part=genPart(seed,Math.min(3,tierFromDanger(d,rng(seed))+1));
+    const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*1.45/10)*10;
+    out.push({key:sys.key+"|"+bucket+"|black",part,price,black:1});
   }
   return out;
 }
@@ -2459,6 +2474,13 @@ function minedUnit(k){
 /* Старые корпуса из G.owned перестают быть мусором: нанятому нужен корабль, и
    это главное решение игрока. Летающих в фоне NPC нет — как и у дронов, всё
    считается от прошедшего времени, когда игра снова смотрит на счётчик. */
+/* Потолок на «ленивое время»: за сутки простоя домен начисляет ровно сутки,
+   а не всё, что накопилось. Одна константа на наёмников, базы и всё прочее,
+   что считается от прошедшего времени, — иначе они разойдутся.
+
+   Её не существовало, хотя `baseTick` её читал: каждый тик базы после первого
+   падал с ReferenceError, а вместе с ним падал и вход в базу. */
+const CREW_OFFLINE_CAP=24*3600*1000;
 const CREW_SPEC={
   fight:{ru:"боевой",   note:"охота на пиратов: награды и трофеи",       pay:34},
   mine: {ru:"добытчик", note:"добыча в поясе и на планетах",             pay:26},
@@ -2731,11 +2753,14 @@ function crewTick(){
       if(busy==="hostage"&&c.ransom){
         /* выкуп растёт, пока тянешь: бездействие — тоже ход, просто плохой */
         const h=(now-(c.ransomAt||now))/3600000;
-        c.ransom=Math.round(c.ransomBase*(1+Math.min(2.5,h*.35)));
+        /* «Переговорщик» командира: он торгуется, и выкуп выходит вдвое дешевле.
+           Считаем здесь, а не при выплате, — цену игрок должен видеть заранее. */
+        c.ransom=Math.round(c.ransomBase*(1+Math.min(2.5,h*.35))*
+          (mgrPerkOf("cmd","ransom")?.5:1));
       }
       continue;
     }
-    const dtMs=now-c.tMs;
+    const dtMs=Math.min(now-c.tMs,CREW_OFFLINE_CAP);
     if(dtMs<1000)continue;
     c.tMs=now;
     const min=dtMs/60000;
@@ -3067,6 +3092,9 @@ function rollCrewEvent(c,r,danger){
   /* и наконец собственная ставка игрока */
   if(risk==="safe"){w.cat*=.4;w.bad*=.7;w.jack*=.5;w.good*=.8;w.norm*=1.9;}
   if(risk==="bold"){w.cat*=1.9;w.bad*=1.3;w.jack*=2.2;w.good*=1.3;w.norm*=.5;}
+  /* «Трофейщик» командира: звено чаще возвращается с чужим добром — это
+     тот самый хвост таблицы, ради которого наёмник и держится */
+  if(mgrPerkOf("cmd","salv"))w.jack*=1.8;
   /* без корабля и без груза красть нечего, а терять некому */
   const cats=Object.keys(w);
   let sum=0;for(const k of cats)sum+=w[k];
@@ -3615,7 +3643,11 @@ const MGR_RULES={
     {id:"run",    ru:"маршрут известен → водить постоянно"},
     {id:"hold",   ru:"цена ниже средней → придержать товар"},
     {id:"safe",   ru:"на плече опасно → обойти сектор"},
-    {id:"payfirst",ru:"кредитов < 2000 → домен не тратит"}
+    {id:"payfirst",ru:"кредитов < 2000 → домен не тратит"},
+    /* «Пороги» открывают два приказа по цене: без перка их в списке нет вовсе,
+       поэтому перк расширяет не силу, а словарь того, что домену можно поручить */
+    {id:"buylow", ru:"цена просела → закупить впрок",     need:"limit"},
+    {id:"sellhi", ru:"цена выше средней → сбыть всё",     need:"limit"}
   ],
   sci:[
     {id:"queue",  ru:"образец разобран → взять следующий"},
@@ -3793,6 +3825,11 @@ function mgrWorkFact(m,min){
   if(mgrPerk(m,"second"))per*=1.45;
   if(mgrPerk(m,"duty"))per*=1.1;
   if(mgrRule(m,"hold"))per*=1.12;
+  /* «Пороги» работают только будучи в слоте — как и всё прочее у домена */
+  if(mgrRule(m,"buylow"))per*=1.14;
+  if(mgrRule(m,"sellhi"))per*=1.14;
+  /* «Монополия»: его товар тянет вверх цену на всём маршруте (см. marketFor) */
+  if(mgrPerk(m,"mono"))per*=1.25;
   if(mgrHas(m,"pirate"))per*=.9;
   let gross=Math.round(per*min);
   /* без конвоя маршрут иногда грабят: домен не бесплатная рента */
@@ -4160,7 +4197,14 @@ function marketFor(sys){
     m.t=G.t;
   }
   const prices={},mul=stTypeOf(sys.station.stype).mkt;   /* торговый узел платит больше, аванпост — меньше */
-  for(const k of TRADE_KEYS)prices[k]=Math.max(1,Math.round(base[k]*mul*clamp(1+(m.pressure[k]||0),.4,1.8)));
+  /* «Монополия» фактора: на плечах его маршрута цена держится выше — вы продаёте
+     туда же, куда возит он, и это единственный перк, который игрок чувствует
+     собственным кошельком, а не строчкой в сводке домена */
+  const F=typeof mgrOf==="function"?mgrOf("fact"):null;
+  const onRoute=F&&!F.stalled&&mgrPerk(F,"mono")&&F.route.indexOf(sys.sx+","+sys.sy)>=0;
+  const boost=onRoute?1.18:1;
+  for(const k of TRADE_KEYS)
+    prices[k]=Math.max(1,Math.round(base[k]*mul*boost*clamp(1+(m.pressure[k]||0),.4,1.8)));
   return prices;
 }
 function sellCargo(sys,k,qty){
@@ -4212,7 +4256,10 @@ function tickDrones(){
   for(let i=G.drones.length-1;i>=0;i--){
     const d=G.drones[i];
     const elapsedMs=Math.min(Math.max(0,now-d.soldAtMs),cap);
-    const yieldN=Math.floor(Math.min(d.pool,d.rate*elapsedMs/60000));
+    /* «Авто-сбыт» смотрителя: дрон не ждёт полного трюма, а сдаёт по мере
+       выработки — быстрее оборот и меньше потерь, если точка кончится раньше */
+    const rate=d.rate*(mgrPerkOf("keep","sell")?1.35:1);
+    const yieldN=Math.floor(Math.min(d.pool,rate*elapsedMs/60000));
     if(yieldN>0){
       const home=nearestStation(d.sx,d.sy);
       const rev=sellDroneYield(home,d.res,yieldN);
@@ -5300,14 +5347,17 @@ function applySave(s){
     for(const k in s.bases){
       const b=s.bases[k];
       if(!b||!Array.isArray(b.cells))continue;
+      /* число рядов у базы своё: «второй ярус» смотрителя вскрывает пятый
+         и остаётся у неё навсегда, поэтому длина массива больше не константа */
+      const rows=clamp(b.rows|0,BASE_ROWS,BASE_ROWS_DEEP)||BASE_ROWS;
       const cells=[];
-      for(let i=0;i<BASE_COLS*BASE_ROWS;i++){
+      for(let i=0;i<BASE_COLS*rows;i++){
         const c=b.cells[i];
         cells.push(c&&BUILD[c.k]?{k:c.k,hp:clamp(+c.hp||1,0,1)}:null);
       }
       G.bases[k]={sx:b.sx|0,sy:b.sy|0,idx:b.idx|0,name:String(b.name||"База"),
         type:String(b.type||"rocky"),res:Array.isArray(b.res)?b.res.filter(x=>RES[x]):["iron"],
-        cells,pool:(b.pool&&typeof b.pool==="object")?b.pool:{},
+        rows,cells,pool:(b.pool&&typeof b.pool==="object")?b.pool:{},
         tMs:Date.now(),built:+b.built||Date.now()};
     }
   G.base=null;
@@ -6525,6 +6575,19 @@ function drawMap(){
       ctx.fillStyle="rgba(127,176,230,.9)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText("РАСХОЖДЕНИЕ",x,y+rr+21);
     }
+    /* «Охота» командира: пиратские базы соседних секторов помечены заранее.
+       Без перка их находят только прилетев — перк и продаёт именно это знание. */
+    if(mgrPerkOf("cmd","hunt")&&Math.max(Math.abs(gx-G.sx),Math.abs(gy-G.sy))<=4&&
+       pirateBaseOf(s)){
+      ctx.strokeStyle="rgba(255,107,87,.75)";ctx.lineWidth=1;
+      ctx.beginPath();
+      for(let i=0;i<5;i++){
+        const a=i*TAU/5-Math.PI/2,rr2=rr+13;
+        i?ctx.lineTo(x+Math.cos(a)*rr2,y+Math.sin(a)*rr2)
+         :ctx.moveTo(x+Math.cos(a)*rr2,y+Math.sin(a)*rr2);
+      }
+      ctx.closePath();ctx.stroke();
+    }
     /* след артефакта: сектор, который вычитал исследователь с «происхождением» */
     if(G.relicHint&&G.relicHint.sx===gx&&G.relicHint.sy===gy){
       ctx.strokeStyle="#c58ae0";ctx.lineWidth=1;ctx.setLineDash([3,3]);
@@ -7472,7 +7535,19 @@ function drawBeast(b,x,y,hostile,stun){
    вкопанные отсеки, коридоры и шахта лифта. Видно всё сразу — реактор светится,
    бур уходит в породу, в жилом горит свет. Ходьба, свет и камера — те же, что
    в пещере, поэтому сцена стоит дёшево. */
-const BASE_COLS=5, BASE_ROWS=4, BCELL_W=150, BCELL_H=104;
+const BASE_COLS=5, BASE_ROWS=4, BASE_ROWS_DEEP=5, BCELL_W=150, BCELL_H=104;
+/* «Второй ярус» смотрителя: базе разрешён ещё ряд вниз. Однажды вскрытый ярус
+   остаётся у базы навсегда — иначе расчёт со смотрителем стирал бы построенное
+   вместе с ним. Поэтому число рядов живёт на самой базе, а перк только его даёт. */
+function baseRows(B){return B?Math.max(B.rows|0,BASE_ROWS):BASE_ROWS;}
+function baseGrowCheck(B){
+  if(!B||(B.rows|0)>=BASE_ROWS_DEEP)return false;
+  if(!mgrPerkOf("keep","deep"))return false;
+  B.rows=BASE_ROWS_DEEP;
+  while(B.cells.length<BASE_COLS*B.rows)B.cells.push(null);
+  logAdd("tech","База «"+B.name+"»: смотритель вскрыл нижний ярус");
+  return true;
+}
 const BUILD={
   reactor:{ru:"Реактор",    cost:{credits:1800,alloy:6},  power:14, note:"даёт энергию всей базе; рядом с буром потерь меньше"},
   solar:  {ru:"Солнечная панель",cost:{credits:700,alloy:2},power:5,surfaceOnly:true,
@@ -7517,6 +7592,9 @@ function foundBase(p){
 function enterBase(p){
   const B=baseAt(G.sx,G.sy,p.idx);if(!B)return;
   baseTick();
+  /* ярус проверяем и на входе: иначе вскрытый нижний ряд появлялся бы только
+     после следующего тика, и игрок не понимал бы, что уже можно строить ниже */
+  baseGrowCheck(B);
   G.base={B,p,cur:Math.floor(BASE_COLS/2),row:0,x:0,y:0,walkPhase:0,menu:false,pick:0};
   G.base.x=cellX(G.base.cur);G.base.y=cellY(0);
   G.mode="base";
@@ -7538,16 +7616,16 @@ function baseNeighbors(B,c,r){
   const out=[];
   for(const [dc,dr] of [[-1,0],[1,0],[0,-1],[0,1]]){
     const cc=c+dc,rr=r+dr;
-    if(cc<0||cc>=BASE_COLS||rr<0||rr>=BASE_ROWS)continue;
+    if(cc<0||cc>=BASE_COLS||rr<0||rr>=baseRows(B))continue;
     const cell=baseCell(B,cc,rr);
     if(cell)out.push(cell.k);
   }
   return out;
 }
 function basePower(B){
-  let prod=0,cons=0,drills=0,drillEff=0,hab=0,habPenalty=0,store=0,ref=0,pads=0;
+  let prod=0,cons=0,core=0,drills=0,drillEff=0,hab=0,habPenalty=0,store=0,ref=0,pads=0;
   const cls=(getSystem(B.sx,B.sy).cls&&getSystem(B.sx,B.sy).cls.lum)||1;
-  for(let r=0;r<BASE_ROWS;r++)for(let c=0;c<BASE_COLS;c++){
+  for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
     const cell=baseCell(B,c,r);if(!cell||cell.hp<=0)continue;   // разбитый отсек не работает и не ест энергию
     const M=BUILD[cell.k];if(!M)continue;
     const near=baseNeighbors(B,c,r);
@@ -7567,10 +7645,22 @@ function basePower(B){
     if(cell.k==="storage")store+=120;
     if(cell.k==="refinery")ref++;
     if(cell.k==="pad")pads++;
+    /* ядро нагрузки — то, ради чего база стоит: остальное можно и притушить */
+    if(cell.k==="drill"||cell.k==="lab")core+=use;
     cons+=use;
   }
-  const eff=cons<=0?1:clamp(prod/cons,0,1);
-  return {prod:Math.round(prod*10)/10,cons:Math.round(cons*10)/10,eff,
+  /* ── ветка «Энергия» смотрителя ──
+     «Переброс»: при нехватке половина необязательной нагрузки сбрасывается,
+     и мощность достаётся тому, ради чего база и стоит, — буру и лаборатории.
+     «Стабилизация»: реактор держит нижний порог и не глохнет совсем. */
+  let load=cons;
+  if(mgrPerkOf("keep","power")&&cons>core)load=core+(cons-core)*.5;
+  let eff=load<=0?1:clamp(prod/load,0,1);
+  if(mgrPerkOf("keep","stable"))eff=Math.max(eff,.35);
+  /* «Излишки»: всё, что база не съела, уходит станции — редкий случай,
+     когда лишний реактор осмысленно ставить нарочно */
+  const surplus=Math.max(0,prod-cons);
+  return {prod:Math.round(prod*10)/10,cons:Math.round(cons*10)/10,eff,surplus,
     drills,drillEff,hab,habPenalty,store:180+store,ref,pads};
 }
 function basePoolHeld(B){let s=0;for(const k in B.pool)s+=B.pool[k]|0;return s;}
@@ -7583,8 +7673,20 @@ function baseTick(){
     const dtMs=Math.min(now-B.tMs,CREW_OFFLINE_CAP);
     if(dtMs<1000)continue;
     B.tMs=now;
+    baseGrowCheck(B);
     const P=basePower(B),min=dtMs/60000;
-    baseRaid(B,min);baseFixTick(B,min);
+    baseRaid(B,min);baseFixTick(B,min);baseStorm(B,min);
+    /* «Излишки»: лишняя мощность продаётся станции. Считается всегда, даже
+       если бура нет вовсе — солнечная ферма без бура тоже чего-то стоит. */
+    if(P.surplus>0&&mgrPerkOf("keep","grid")){
+      const cr=Math.round(P.surplus*min*1.4);
+      if(cr>0){
+        G.credits+=cr;
+        B.sold=(B.sold|0)+cr;
+        if(B.sold>=400){logAdd("money","База «"+B.name+"» сдала излишки энергии · +"+
+          B.sold.toLocaleString("ru")+" кр");B.sold=0;}
+      }
+    }
     if(!P.drills)continue;
     const cap=P.store;
     /* персонал (M47) — множитель к тому, что база и так умеет: бурильщик ускоряет
@@ -7600,7 +7702,10 @@ function baseTick(){
     }
     /* плавильня превращает часть добытого в сплавы прямо на месте */
     if(P.ref){
-      let conv=Math.floor(min*P.ref*eff*.15);   // медленнее станции: база берёт не темпом, а тем, что работает сама
+      /* «Плавильня» смотрителя: переплавка идёт без присмотра — вдвое быстрее
+         и не проседает вместе с энергией */
+      const melt=mgrPerkOf("keep","melt");
+      let conv=Math.floor(min*P.ref*(melt?1:eff)*(melt?.3:.15));   // медленнее станции: база берёт не темпом, а тем, что работает сама
       while(conv>0){
         let src=null;
         for(const k in B.pool)if((B.pool[k]|0)>=4&&RARE_RES.indexOf(k)<0){src=k;break;}
@@ -7646,9 +7751,38 @@ function baseRaid(B,min){
   logAdd("warn","Налёт на базу «"+B.name+"»"+(lost?" · унесено "+lost+" ед":"")+
     (broke?" · разбит отсек: "+broke:"")+(guard?"":" · охраны нет"));
 }
-/* инженер чинит разбитое сам, медленно */
+/* ══════════════ буря ══════════════ */
+/* У базы должна быть угроза, которую нельзя отбить охраной: налёт — про людей,
+   буря — про место. Она бьёт по тому, что стоит наверху (панели ловят её первыми),
+   и её отменяет «буревой щит» смотрителя. Мир у планеты уже есть: тип задаёт,
+   насколько тут вообще дует. */
+const STORM_WORLDS={terran:.5,ocean:.9,desert:1.4,rocky:.7,ice:1.3,volcanic:1.4,toxic:1.5,gas:0};
+function baseStorm(B,min){
+  const force=STORM_WORLDS[B.type]!==undefined?STORM_WORLDS[B.type]:.8;
+  if(force<=0)return;
+  B.stormSeq=(B.stormSeq|0)+1;
+  const r=rng(hashi(B.sx*313+B.sy,B.idx*11+5,hashi(B.tMs|0,B.stormSeq,0x51D)));
+  if(r()>min*force*.010)return;
+  if(mgrPerkOf("keep","storm")){
+    logAdd("dim","Буря на «"+B.name+"» прошла без потерь — щит держит");
+    return;
+  }
+  /* сначала достаётся тому, что снаружи: панели и верхний ряд */
+  const top=[];
+  for(let i=0;i<BASE_COLS;i++)if(B.cells[i]&&B.cells[i].hp>0)top.push(i);
+  const solar=[];
+  for(let i=0;i<B.cells.length;i++)if(B.cells[i]&&B.cells[i].k==="solar"&&B.cells[i].hp>0)solar.push(i);
+  const pickList=solar.length?solar:top;
+  if(!pickList.length){logAdd("dim","Буря на «"+B.name+"» — ломать снаружи нечего");return;}
+  const i=pickList[Math.floor(r()*pickList.length)];
+  B.cells[i].hp=Math.max(0,B.cells[i].hp-(.5+r()*.5));
+  logAdd("warn","Буря на «"+B.name+"» повредила отсек: "+BUILD[B.cells[i].k].ru+
+    (B.cells[i].hp<=0?" (выбит)":""));
+}
+/* инженер чинит разбитое сам, медленно.
+   «Очередь» смотрителя доводит начатое до конца и без инженера: домен на то и домен. */
 function baseFixTick(B,min){
-  const eng=baseRoleForce(B,"engineer");
+  const eng=baseRoleForce(B,"engineer")+(mgrPerkOf("keep","queue")?.8:0);
   if(eng<=0)return;
   for(const cell of B.cells){
     if(cell&&cell.hp<1){
@@ -7741,7 +7875,7 @@ function updateBase(dt){
   if(keys.left&&!S.held){S.cur=Math.max(0,S.cur-1);S.held=1;}
   if(keys.right&&!S.held){S.cur=Math.min(BASE_COLS-1,S.cur+1);S.held=1;}
   if(keys.thrust&&!S.held){S.row=Math.max(0,S.row-1);S.held=1;}
-  if(keys.brake&&!S.held){S.row=Math.min(BASE_ROWS-1,S.row+1);S.held=1;}
+  if(keys.brake&&!S.held){S.row=Math.min(baseRows(B)-1,S.row+1);S.held=1;}
   if(!keys.left&&!keys.right&&!keys.thrust&&!keys.brake)S.held=0;
   const cell=baseCell(B,S.cur,S.row);
   const P=basePower(B);
@@ -7772,7 +7906,7 @@ function updateBase(dt){
 function drawBase(){
   const S=G.base,B=S.B,P=basePower(B);
   const camx=clamp(S.x-W/2,-40,BASE_COLS*BCELL_W+180-W);
-  const camy=clamp(S.y-H/2,-120,BASE_ROWS*BCELL_H+260-H);
+  const camy=clamp(S.y-H/2,-120,baseRows(B)*BCELL_H+260-H);
   const X=x=>x-camx, Y=y=>y-camy;
   /* небо и грунт: сверху планета, ниже срез породы */
   const sky=G.sys.planets[B.idx]?G.sys.planets[B.idx].T.sky:[[20,24,34],[8,10,16]];
@@ -7782,13 +7916,13 @@ function drawBase(){
   ctx.fillStyle=g;ctx.fillRect(0,0,W,Y(150));
   ctx.fillStyle="#2a2119";ctx.fillRect(0,Y(150),W,H);
   /* слои породы — чтобы глубина читалась */
-  for(let r=0;r<BASE_ROWS;r++){
+  for(let r=0;r<baseRows(B);r++){
     ctx.fillStyle=r%2?"rgba(0,0,0,.13)":"rgba(255,255,255,.03)";
     ctx.fillRect(0,Y(150+r*BCELL_H),W,BCELL_H);
   }
   /* тусклость от нехватки энергии — это и есть «видно, что энергии мало» */
   const lit=.35+P.eff*.65;
-  for(let r=0;r<BASE_ROWS;r++)for(let c=0;c<BASE_COLS;c++){
+  for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
     const x=X(90+c*BCELL_W),y=Y(150+r*BCELL_H);
     if(x>W+40||x+BCELL_W<-40)continue;
     const cell=baseCell(B,c,r);
@@ -7807,13 +7941,13 @@ function drawBase(){
   }
   /* коридор-стяжка между отсеками одного уровня и шахта лифта */
   ctx.strokeStyle="rgba(242,178,92,"+(.2+lit*.3).toFixed(2)+")";ctx.lineWidth=2;
-  for(let r=0;r<BASE_ROWS;r++){
+  for(let r=0;r<baseRows(B);r++){
     const y=Y(150+r*BCELL_H+BCELL_H*.78);
     ctx.beginPath();ctx.moveTo(X(96),y);ctx.lineTo(X(90+BASE_COLS*BCELL_W-6),y);ctx.stroke();
   }
   const lx=X(cellX(Math.floor(BASE_COLS/2)));
   ctx.strokeStyle="rgba(150,190,220,.35)";
-  ctx.beginPath();ctx.moveTo(lx,Y(150));ctx.lineTo(lx,Y(150+BASE_ROWS*BCELL_H));ctx.stroke();
+  ctx.beginPath();ctx.moveTo(lx,Y(150));ctx.lineTo(lx,Y(150+baseRows(B)*BCELL_H));ctx.stroke();
   /* астронавт — тот же силуэт, что на поверхности и в шахте */
   ctx.save();ctx.translate(X(S.x),Y(S.y)+26);ctx.scale(.9,.9);
   drawAstronaut({phase:S.walkPhase,amp:Math.abs(cellX(S.cur)-S.x)>2?1:0,walk:false,air:false});
@@ -10530,7 +10664,8 @@ function renderTab(){
       for(const o of offers){
         const K=PART_KINDS[o.part.kind],bought=G.partsBought[o.key];
         const r=el("div","row");
-        r.appendChild(el("div","nm","<b style='color:"+K.col+"'>"+o.part.name+"</b><s>"+
+        r.appendChild(el("div","nm","<b style='color:"+K.col+"'>"+o.part.name+
+          (o.black?" <span style='color:#c58ae0;font-size:9px'>ПО СВЯЗЯМ ФАКТОРА</span>":"")+"</b><s>"+
           K.ru.toLowerCase()+" · "+TIER_RU[o.part.tier]+" · место "+o.part.cap+"<br>"+
           o.part.aff.map(a=>"<span style='color:"+(a.v>0?"#8fd08a":"#ff9d7a")+"'>"+affLabel(a)+"</span>").join(" · ")+"</s>"));
         const b=el("button","act"+(bought?"":" gold"),bought?"КУПЛЕНО":o.price.toLocaleString("ru")+" кр");
@@ -11219,6 +11354,9 @@ function hqRender(){
   $hqBody.appendChild(el("div","sec","СТОЯЩИЕ ПРИКАЗЫ · "+m.rules.length+" / "+mgrSlots(m)+
     " СЛОТОВ · ЭТО И ЕСТЬ СНЯТАЯ РУТИНА"));
   for(const rl of MGR_RULES[m.role]){
+    /* приказ, запертый перком, в списке не показываем совсем: перк открывает
+       не силу, а словарь того, что домену вообще можно поручить */
+    if(rl.need&&!mgrPerk(m,rl.need))continue;
     const on=mgrRule(m,rl.id);
     const r=el("div","row"+(on?" on":""));
     r.appendChild(el("div","nm","<b>"+(on?"● ":"○ ")+rl.ru+"</b>"));
@@ -11378,6 +11516,28 @@ function hqJobCard(m){
   }
   $hqBody.appendChild(r);
 }
+/* «Сводка» фактора: цены его маршрута видны из любой системы — до перка узнать
+   их можно было только прилетев. Показываем лучшее предложение по каждому плечу:
+   развёрнутая таблица здесь превратилась бы в терминал, а решение принимается
+   по одной строке — «куда везти». */
+function factPrices(m){
+  if(!mgrPerk(m,"see")||!m.route.length)return "";
+  const rows=[];
+  for(const key of m.route){
+    const [sx,sy]=key.split(",").map(Number);
+    const sys=getSystem(sx,sy);
+    if(!sys||!sys.station)continue;
+    const pr=marketFor(sys);
+    let best=null;
+    for(const k of TRADE_KEYS){
+      const rel=pr[k]/RES[k].price;
+      if(!best||rel>best.rel)best={k,rel,p:pr[k]};
+    }
+    if(best)rows.push(sys.station.name+": "+RES[best.k].ru.toLowerCase()+" "+best.p+" кр"+
+      (best.rel>1.12?" ↑":""));
+  }
+  return rows.length?"<br><span style='color:#8fd08a'>сводка по маршруту:</span> "+rows.join(" · "):"";
+}
 /* одна строка про то, чем домен занят прямо сейчас */
 function mgrDomainLine(m){
   if(m.role==="cmd"){
@@ -11390,6 +11550,8 @@ function mgrDomainLine(m){
   if(m.role==="fact")
     return m.route.length>=2
       ? "маршрут из "+m.route.length+" плеч (макс "+mgrRouteMax(m)+"): "+m.route.join(" → ")+
+        (mgrPerk(m,"mono")?"<br><b style='color:#8fd08a'>монополия: на плечах маршрута цена держится выше</b>":"")+
+        factPrices(m)+
         (mgrRule(m,"run")?"":"<br><b style='color:#ff9d7a'>приказ «водить постоянно» не в слоте — маршрут стоит</b>")
       : "плеч мало: маршрут строится из станций, куда вы прилетали сами";
   return "разобрано образцов на "+(m.gotData||0)+" данных · в трюме образцов: "+mgrSamples()+

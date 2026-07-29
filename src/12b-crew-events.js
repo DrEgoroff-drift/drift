@@ -81,6 +81,9 @@ function rollCrewEvent(c,r,danger){
   /* и наконец собственная ставка игрока */
   if(risk==="safe"){w.cat*=.4;w.bad*=.7;w.jack*=.5;w.good*=.8;w.norm*=1.9;}
   if(risk==="bold"){w.cat*=1.9;w.bad*=1.3;w.jack*=2.2;w.good*=1.3;w.norm*=.5;}
+  /* «Трофейщик» командира: звено чаще возвращается с чужим добром — это
+     тот самый хвост таблицы, ради которого наёмник и держится */
+  if(mgrPerkOf("cmd","salv"))w.jack*=1.8;
   /* без корабля и без груза красть нечего, а терять некому */
   const cats=Object.keys(w);
   let sum=0;for(const k of cats)sum+=w[k];

@@ -299,7 +299,8 @@ function renderTab(){
       for(const o of offers){
         const K=PART_KINDS[o.part.kind],bought=G.partsBought[o.key];
         const r=el("div","row");
-        r.appendChild(el("div","nm","<b style='color:"+K.col+"'>"+o.part.name+"</b><s>"+
+        r.appendChild(el("div","nm","<b style='color:"+K.col+"'>"+o.part.name+
+          (o.black?" <span style='color:#c58ae0;font-size:9px'>ПО СВЯЗЯМ ФАКТОРА</span>":"")+"</b><s>"+
           K.ru.toLowerCase()+" · "+TIER_RU[o.part.tier]+" · место "+o.part.cap+"<br>"+
           o.part.aff.map(a=>"<span style='color:"+(a.v>0?"#8fd08a":"#ff9d7a")+"'>"+affLabel(a)+"</span>").join(" · ")+"</s>"));
         const b=el("button","act"+(bought?"":" gold"),bought?"КУПЛЕНО":o.price.toLocaleString("ru")+" кр");

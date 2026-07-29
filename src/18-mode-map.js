@@ -58,6 +58,19 @@ function drawMap(){
       ctx.fillStyle="rgba(127,176,230,.9)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText("РАСХОЖДЕНИЕ",x,y+rr+21);
     }
+    /* «Охота» командира: пиратские базы соседних секторов помечены заранее.
+       Без перка их находят только прилетев — перк и продаёт именно это знание. */
+    if(mgrPerkOf("cmd","hunt")&&Math.max(Math.abs(gx-G.sx),Math.abs(gy-G.sy))<=4&&
+       pirateBaseOf(s)){
+      ctx.strokeStyle="rgba(255,107,87,.75)";ctx.lineWidth=1;
+      ctx.beginPath();
+      for(let i=0;i<5;i++){
+        const a=i*TAU/5-Math.PI/2,rr2=rr+13;
+        i?ctx.lineTo(x+Math.cos(a)*rr2,y+Math.sin(a)*rr2)
+         :ctx.moveTo(x+Math.cos(a)*rr2,y+Math.sin(a)*rr2);
+      }
+      ctx.closePath();ctx.stroke();
+    }
     /* след артефакта: сектор, который вычитал исследователь с «происхождением» */
     if(G.relicHint&&G.relicHint.sx===gx&&G.relicHint.sy===gy){
       ctx.strokeStyle="#c58ae0";ctx.lineWidth=1;ctx.setLineDash([3,3]);

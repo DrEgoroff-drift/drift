@@ -174,14 +174,17 @@ function applySave(s){
     for(const k in s.bases){
       const b=s.bases[k];
       if(!b||!Array.isArray(b.cells))continue;
+      /* число рядов у базы своё: «второй ярус» смотрителя вскрывает пятый
+         и остаётся у неё навсегда, поэтому длина массива больше не константа */
+      const rows=clamp(b.rows|0,BASE_ROWS,BASE_ROWS_DEEP)||BASE_ROWS;
       const cells=[];
-      for(let i=0;i<BASE_COLS*BASE_ROWS;i++){
+      for(let i=0;i<BASE_COLS*rows;i++){
         const c=b.cells[i];
         cells.push(c&&BUILD[c.k]?{k:c.k,hp:clamp(+c.hp||1,0,1)}:null);
       }
       G.bases[k]={sx:b.sx|0,sy:b.sy|0,idx:b.idx|0,name:String(b.name||"База"),
         type:String(b.type||"rocky"),res:Array.isArray(b.res)?b.res.filter(x=>RES[x]):["iron"],
-        cells,pool:(b.pool&&typeof b.pool==="object")?b.pool:{},
+        rows,cells,pool:(b.pool&&typeof b.pool==="object")?b.pool:{},
         tMs:Date.now(),built:+b.built||Date.now()};
     }
   G.base=null;

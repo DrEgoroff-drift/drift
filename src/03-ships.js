@@ -97,7 +97,13 @@ function craftPart(spec){
        "Часть собрана\n"+part.name);
   return part;
 }
-function timeBucket(){return Math.floor(Date.now()/172800000);}
+/* «Обновление» фактора: ассортимент станций перебирается втрое чаще — его связи
+   в том и состоят, что он знает о новом раньше. Бакет один на весь ассортимент
+   (части, уникальный корпус, кантина), поэтому перк правится здесь, в одном месте. */
+function timeBucket(){
+  const period=(typeof mgrPerkOf==="function"&&mgrPerkOf("fact","stock"))?57600000:172800000;
+  return Math.floor(Date.now()/period);
+}
 function stationUniqueOffer(sys){
   if(!sys.station)return null;
   const r=rng(hashi(sys.seed,999,timeBucket()));
@@ -118,6 +124,15 @@ function stationParts(sys){
     const part=genPart(seed,tierFromDanger(d,rng(seed)));
     const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*(.85+r()*.4)/10)*10;
     out.push({key:sys.key+"|"+bucket+"|"+i,part,price});
+  }
+  /* «Чёрный список» фактора: его связи открывают то, чего в открытой продаже нет —
+     одна часть заведомо высокого класса и дороже рынка. Не «+10% ко всему»,
+     а конкретная вещь, за которой имеет смысл прилететь. */
+  if(typeof mgrPerkOf==="function"&&mgrPerkOf("fact","black")){
+    const seed=hashi(sys.seed,0xB1AC,bucket);
+    const part=genPart(seed,Math.min(3,tierFromDanger(d,rng(seed))+1));
+    const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*1.45/10)*10;
+    out.push({key:sys.key+"|"+bucket+"|black",part,price,black:1});
   }
   return out;
 }

@@ -169,6 +169,9 @@ function hqRender(){
   $hqBody.appendChild(el("div","sec","СТОЯЩИЕ ПРИКАЗЫ · "+m.rules.length+" / "+mgrSlots(m)+
     " СЛОТОВ · ЭТО И ЕСТЬ СНЯТАЯ РУТИНА"));
   for(const rl of MGR_RULES[m.role]){
+    /* приказ, запертый перком, в списке не показываем совсем: перк открывает
+       не силу, а словарь того, что домену вообще можно поручить */
+    if(rl.need&&!mgrPerk(m,rl.need))continue;
     const on=mgrRule(m,rl.id);
     const r=el("div","row"+(on?" on":""));
     r.appendChild(el("div","nm","<b>"+(on?"● ":"○ ")+rl.ru+"</b>"));
@@ -328,6 +331,28 @@ function hqJobCard(m){
   }
   $hqBody.appendChild(r);
 }
+/* «Сводка» фактора: цены его маршрута видны из любой системы — до перка узнать
+   их можно было только прилетев. Показываем лучшее предложение по каждому плечу:
+   развёрнутая таблица здесь превратилась бы в терминал, а решение принимается
+   по одной строке — «куда везти». */
+function factPrices(m){
+  if(!mgrPerk(m,"see")||!m.route.length)return "";
+  const rows=[];
+  for(const key of m.route){
+    const [sx,sy]=key.split(",").map(Number);
+    const sys=getSystem(sx,sy);
+    if(!sys||!sys.station)continue;
+    const pr=marketFor(sys);
+    let best=null;
+    for(const k of TRADE_KEYS){
+      const rel=pr[k]/RES[k].price;
+      if(!best||rel>best.rel)best={k,rel,p:pr[k]};
+    }
+    if(best)rows.push(sys.station.name+": "+RES[best.k].ru.toLowerCase()+" "+best.p+" кр"+
+      (best.rel>1.12?" ↑":""));
+  }
+  return rows.length?"<br><span style='color:#8fd08a'>сводка по маршруту:</span> "+rows.join(" · "):"";
+}
 /* одна строка про то, чем домен занят прямо сейчас */
 function mgrDomainLine(m){
   if(m.role==="cmd"){
@@ -340,6 +365,8 @@ function mgrDomainLine(m){
   if(m.role==="fact")
     return m.route.length>=2
       ? "маршрут из "+m.route.length+" плеч (макс "+mgrRouteMax(m)+"): "+m.route.join(" → ")+
+        (mgrPerk(m,"mono")?"<br><b style='color:#8fd08a'>монополия: на плечах маршрута цена держится выше</b>":"")+
+        factPrices(m)+
         (mgrRule(m,"run")?"":"<br><b style='color:#ff9d7a'>приказ «водить постоянно» не в слоте — маршрут стоит</b>")
       : "плеч мало: маршрут строится из станций, куда вы прилетали сами";
   return "разобрано образцов на "+(m.gotData||0)+" данных · в трюме образцов: "+mgrSamples()+

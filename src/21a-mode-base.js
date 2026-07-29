@@ -3,7 +3,19 @@
    вкопанные отсеки, коридоры и шахта лифта. Видно всё сразу — реактор светится,
    бур уходит в породу, в жилом горит свет. Ходьба, свет и камера — те же, что
    в пещере, поэтому сцена стоит дёшево. */
-const BASE_COLS=5, BASE_ROWS=4, BCELL_W=150, BCELL_H=104;
+const BASE_COLS=5, BASE_ROWS=4, BASE_ROWS_DEEP=5, BCELL_W=150, BCELL_H=104;
+/* «Второй ярус» смотрителя: базе разрешён ещё ряд вниз. Однажды вскрытый ярус
+   остаётся у базы навсегда — иначе расчёт со смотрителем стирал бы построенное
+   вместе с ним. Поэтому число рядов живёт на самой базе, а перк только его даёт. */
+function baseRows(B){return B?Math.max(B.rows|0,BASE_ROWS):BASE_ROWS;}
+function baseGrowCheck(B){
+  if(!B||(B.rows|0)>=BASE_ROWS_DEEP)return false;
+  if(!mgrPerkOf("keep","deep"))return false;
+  B.rows=BASE_ROWS_DEEP;
+  while(B.cells.length<BASE_COLS*B.rows)B.cells.push(null);
+  logAdd("tech","База «"+B.name+"»: смотритель вскрыл нижний ярус");
+  return true;
+}
 const BUILD={
   reactor:{ru:"Реактор",    cost:{credits:1800,alloy:6},  power:14, note:"даёт энергию всей базе; рядом с буром потерь меньше"},
   solar:  {ru:"Солнечная панель",cost:{credits:700,alloy:2},power:5,surfaceOnly:true,
@@ -48,6 +60,9 @@ function foundBase(p){
 function enterBase(p){
   const B=baseAt(G.sx,G.sy,p.idx);if(!B)return;
   baseTick();
+  /* ярус проверяем и на входе: иначе вскрытый нижний ряд появлялся бы только
+     после следующего тика, и игрок не понимал бы, что уже можно строить ниже */
+  baseGrowCheck(B);
   G.base={B,p,cur:Math.floor(BASE_COLS/2),row:0,x:0,y:0,walkPhase:0,menu:false,pick:0};
   G.base.x=cellX(G.base.cur);G.base.y=cellY(0);
   G.mode="base";
@@ -69,16 +84,16 @@ function baseNeighbors(B,c,r){
   const out=[];
   for(const [dc,dr] of [[-1,0],[1,0],[0,-1],[0,1]]){
     const cc=c+dc,rr=r+dr;
-    if(cc<0||cc>=BASE_COLS||rr<0||rr>=BASE_ROWS)continue;
+    if(cc<0||cc>=BASE_COLS||rr<0||rr>=baseRows(B))continue;
     const cell=baseCell(B,cc,rr);
     if(cell)out.push(cell.k);
   }
   return out;
 }
 function basePower(B){
-  let prod=0,cons=0,drills=0,drillEff=0,hab=0,habPenalty=0,store=0,ref=0,pads=0;
+  let prod=0,cons=0,core=0,drills=0,drillEff=0,hab=0,habPenalty=0,store=0,ref=0,pads=0;
   const cls=(getSystem(B.sx,B.sy).cls&&getSystem(B.sx,B.sy).cls.lum)||1;
-  for(let r=0;r<BASE_ROWS;r++)for(let c=0;c<BASE_COLS;c++){
+  for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
     const cell=baseCell(B,c,r);if(!cell||cell.hp<=0)continue;   // разбитый отсек не работает и не ест энергию
     const M=BUILD[cell.k];if(!M)continue;
     const near=baseNeighbors(B,c,r);
@@ -98,10 +113,22 @@ function basePower(B){
     if(cell.k==="storage")store+=120;
     if(cell.k==="refinery")ref++;
     if(cell.k==="pad")pads++;
+    /* ядро нагрузки — то, ради чего база стоит: остальное можно и притушить */
+    if(cell.k==="drill"||cell.k==="lab")core+=use;
     cons+=use;
   }
-  const eff=cons<=0?1:clamp(prod/cons,0,1);
-  return {prod:Math.round(prod*10)/10,cons:Math.round(cons*10)/10,eff,
+  /* ── ветка «Энергия» смотрителя ──
+     «Переброс»: при нехватке половина необязательной нагрузки сбрасывается,
+     и мощность достаётся тому, ради чего база и стоит, — буру и лаборатории.
+     «Стабилизация»: реактор держит нижний порог и не глохнет совсем. */
+  let load=cons;
+  if(mgrPerkOf("keep","power")&&cons>core)load=core+(cons-core)*.5;
+  let eff=load<=0?1:clamp(prod/load,0,1);
+  if(mgrPerkOf("keep","stable"))eff=Math.max(eff,.35);
+  /* «Излишки»: всё, что база не съела, уходит станции — редкий случай,
+     когда лишний реактор осмысленно ставить нарочно */
+  const surplus=Math.max(0,prod-cons);
+  return {prod:Math.round(prod*10)/10,cons:Math.round(cons*10)/10,eff,surplus,
     drills,drillEff,hab,habPenalty,store:180+store,ref,pads};
 }
 function basePoolHeld(B){let s=0;for(const k in B.pool)s+=B.pool[k]|0;return s;}
@@ -114,8 +141,20 @@ function baseTick(){
     const dtMs=Math.min(now-B.tMs,CREW_OFFLINE_CAP);
     if(dtMs<1000)continue;
     B.tMs=now;
+    baseGrowCheck(B);
     const P=basePower(B),min=dtMs/60000;
-    baseRaid(B,min);baseFixTick(B,min);
+    baseRaid(B,min);baseFixTick(B,min);baseStorm(B,min);
+    /* «Излишки»: лишняя мощность продаётся станции. Считается всегда, даже
+       если бура нет вовсе — солнечная ферма без бура тоже чего-то стоит. */
+    if(P.surplus>0&&mgrPerkOf("keep","grid")){
+      const cr=Math.round(P.surplus*min*1.4);
+      if(cr>0){
+        G.credits+=cr;
+        B.sold=(B.sold|0)+cr;
+        if(B.sold>=400){logAdd("money","База «"+B.name+"» сдала излишки энергии · +"+
+          B.sold.toLocaleString("ru")+" кр");B.sold=0;}
+      }
+    }
     if(!P.drills)continue;
     const cap=P.store;
     /* персонал (M47) — множитель к тому, что база и так умеет: бурильщик ускоряет
@@ -131,7 +170,10 @@ function baseTick(){
     }
     /* плавильня превращает часть добытого в сплавы прямо на месте */
     if(P.ref){
-      let conv=Math.floor(min*P.ref*eff*.15);   // медленнее станции: база берёт не темпом, а тем, что работает сама
+      /* «Плавильня» смотрителя: переплавка идёт без присмотра — вдвое быстрее
+         и не проседает вместе с энергией */
+      const melt=mgrPerkOf("keep","melt");
+      let conv=Math.floor(min*P.ref*(melt?1:eff)*(melt?.3:.15));   // медленнее станции: база берёт не темпом, а тем, что работает сама
       while(conv>0){
         let src=null;
         for(const k in B.pool)if((B.pool[k]|0)>=4&&RARE_RES.indexOf(k)<0){src=k;break;}
@@ -177,9 +219,38 @@ function baseRaid(B,min){
   logAdd("warn","Налёт на базу «"+B.name+"»"+(lost?" · унесено "+lost+" ед":"")+
     (broke?" · разбит отсек: "+broke:"")+(guard?"":" · охраны нет"));
 }
-/* инженер чинит разбитое сам, медленно */
+/* ══════════════ буря ══════════════ */
+/* У базы должна быть угроза, которую нельзя отбить охраной: налёт — про людей,
+   буря — про место. Она бьёт по тому, что стоит наверху (панели ловят её первыми),
+   и её отменяет «буревой щит» смотрителя. Мир у планеты уже есть: тип задаёт,
+   насколько тут вообще дует. */
+const STORM_WORLDS={terran:.5,ocean:.9,desert:1.4,rocky:.7,ice:1.3,volcanic:1.4,toxic:1.5,gas:0};
+function baseStorm(B,min){
+  const force=STORM_WORLDS[B.type]!==undefined?STORM_WORLDS[B.type]:.8;
+  if(force<=0)return;
+  B.stormSeq=(B.stormSeq|0)+1;
+  const r=rng(hashi(B.sx*313+B.sy,B.idx*11+5,hashi(B.tMs|0,B.stormSeq,0x51D)));
+  if(r()>min*force*.010)return;
+  if(mgrPerkOf("keep","storm")){
+    logAdd("dim","Буря на «"+B.name+"» прошла без потерь — щит держит");
+    return;
+  }
+  /* сначала достаётся тому, что снаружи: панели и верхний ряд */
+  const top=[];
+  for(let i=0;i<BASE_COLS;i++)if(B.cells[i]&&B.cells[i].hp>0)top.push(i);
+  const solar=[];
+  for(let i=0;i<B.cells.length;i++)if(B.cells[i]&&B.cells[i].k==="solar"&&B.cells[i].hp>0)solar.push(i);
+  const pickList=solar.length?solar:top;
+  if(!pickList.length){logAdd("dim","Буря на «"+B.name+"» — ломать снаружи нечего");return;}
+  const i=pickList[Math.floor(r()*pickList.length)];
+  B.cells[i].hp=Math.max(0,B.cells[i].hp-(.5+r()*.5));
+  logAdd("warn","Буря на «"+B.name+"» повредила отсек: "+BUILD[B.cells[i].k].ru+
+    (B.cells[i].hp<=0?" (выбит)":""));
+}
+/* инженер чинит разбитое сам, медленно.
+   «Очередь» смотрителя доводит начатое до конца и без инженера: домен на то и домен. */
 function baseFixTick(B,min){
-  const eng=baseRoleForce(B,"engineer");
+  const eng=baseRoleForce(B,"engineer")+(mgrPerkOf("keep","queue")?.8:0);
   if(eng<=0)return;
   for(const cell of B.cells){
     if(cell&&cell.hp<1){
@@ -272,7 +343,7 @@ function updateBase(dt){
   if(keys.left&&!S.held){S.cur=Math.max(0,S.cur-1);S.held=1;}
   if(keys.right&&!S.held){S.cur=Math.min(BASE_COLS-1,S.cur+1);S.held=1;}
   if(keys.thrust&&!S.held){S.row=Math.max(0,S.row-1);S.held=1;}
-  if(keys.brake&&!S.held){S.row=Math.min(BASE_ROWS-1,S.row+1);S.held=1;}
+  if(keys.brake&&!S.held){S.row=Math.min(baseRows(B)-1,S.row+1);S.held=1;}
   if(!keys.left&&!keys.right&&!keys.thrust&&!keys.brake)S.held=0;
   const cell=baseCell(B,S.cur,S.row);
   const P=basePower(B);
@@ -303,7 +374,7 @@ function updateBase(dt){
 function drawBase(){
   const S=G.base,B=S.B,P=basePower(B);
   const camx=clamp(S.x-W/2,-40,BASE_COLS*BCELL_W+180-W);
-  const camy=clamp(S.y-H/2,-120,BASE_ROWS*BCELL_H+260-H);
+  const camy=clamp(S.y-H/2,-120,baseRows(B)*BCELL_H+260-H);
   const X=x=>x-camx, Y=y=>y-camy;
   /* небо и грунт: сверху планета, ниже срез породы */
   const sky=G.sys.planets[B.idx]?G.sys.planets[B.idx].T.sky:[[20,24,34],[8,10,16]];
@@ -313,13 +384,13 @@ function drawBase(){
   ctx.fillStyle=g;ctx.fillRect(0,0,W,Y(150));
   ctx.fillStyle="#2a2119";ctx.fillRect(0,Y(150),W,H);
   /* слои породы — чтобы глубина читалась */
-  for(let r=0;r<BASE_ROWS;r++){
+  for(let r=0;r<baseRows(B);r++){
     ctx.fillStyle=r%2?"rgba(0,0,0,.13)":"rgba(255,255,255,.03)";
     ctx.fillRect(0,Y(150+r*BCELL_H),W,BCELL_H);
   }
   /* тусклость от нехватки энергии — это и есть «видно, что энергии мало» */
   const lit=.35+P.eff*.65;
-  for(let r=0;r<BASE_ROWS;r++)for(let c=0;c<BASE_COLS;c++){
+  for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
     const x=X(90+c*BCELL_W),y=Y(150+r*BCELL_H);
     if(x>W+40||x+BCELL_W<-40)continue;
     const cell=baseCell(B,c,r);
@@ -338,13 +409,13 @@ function drawBase(){
   }
   /* коридор-стяжка между отсеками одного уровня и шахта лифта */
   ctx.strokeStyle="rgba(242,178,92,"+(.2+lit*.3).toFixed(2)+")";ctx.lineWidth=2;
-  for(let r=0;r<BASE_ROWS;r++){
+  for(let r=0;r<baseRows(B);r++){
     const y=Y(150+r*BCELL_H+BCELL_H*.78);
     ctx.beginPath();ctx.moveTo(X(96),y);ctx.lineTo(X(90+BASE_COLS*BCELL_W-6),y);ctx.stroke();
   }
   const lx=X(cellX(Math.floor(BASE_COLS/2)));
   ctx.strokeStyle="rgba(150,190,220,.35)";
-  ctx.beginPath();ctx.moveTo(lx,Y(150));ctx.lineTo(lx,Y(150+BASE_ROWS*BCELL_H));ctx.stroke();
+  ctx.beginPath();ctx.moveTo(lx,Y(150));ctx.lineTo(lx,Y(150+baseRows(B)*BCELL_H));ctx.stroke();
   /* астронавт — тот же силуэт, что на поверхности и в шахте */
   ctx.save();ctx.translate(X(S.x),Y(S.y)+26);ctx.scale(.9,.9);
   drawAstronaut({phase:S.walkPhase,amp:Math.abs(cellX(S.cur)-S.x)>2?1:0,walk:false,air:false});
