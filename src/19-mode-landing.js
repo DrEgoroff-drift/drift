@@ -83,15 +83,23 @@ function updateLanding(dt){
   }
 }
 function drawGround(tr,camx,camy,fill,line,pal){
-  ctx.beginPath();
+  /* силуэт строится в Path2D и живёт до конца функции. Раньше он лежал в
+     текущем пути контекста, и первый же beginPath в цикле склонов его затирал:
+     дальше clip для пластов и обводка кромки применялись к последней
+     шестипиксельной полоске, то есть пласты породы не рисовались вовсе. */
   const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
   const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
-  ctx.moveTo(i0*tr.step-camx,tr.h[i0]-camy);
-  for(let i=i0;i<=i1;i++)ctx.lineTo(i*tr.step-camx,tr.h[i]-camy);
-  ctx.lineTo(i1*tr.step-camx,H+10);ctx.lineTo(i0*tr.step-camx,H+10);ctx.closePath();
-  ctx.fillStyle=fill;ctx.fill();
+  const P=new Path2D();
+  P.moveTo(i0*tr.step-camx,tr.h[i0]-camy);
+  for(let i=i0;i<=i1;i++)P.lineTo(i*tr.step-camx,tr.h[i]-camy);
+  P.lineTo(i1*tr.step-camx,H+10);P.lineTo(i0*tr.step-camx,H+10);P.closePath();
+  ctx.fillStyle=fill;ctx.fill(P);
+  /* порода: бесшовный тайл-материал вместо плоской заливки (18a-material).
+     Заливка под ним остаётся — она держит силуэт, если материала ещё нет. */
+  if(tr.mat)fillMaterial(tr.mat,camx,camy,.92,.26,P);
   /* склон, обращённый к солнцу (вправо-вверх), светлее; в тень — темнее.
-     Простое псевдо-освещение по наклону вместо одной плоской заливки. */
+     Простое псевдо-освещение по наклону вместо одной плоской заливки.
+     Полосы полупрозрачные: непрозрачные закрашивали материал обратно в фигуру. */
   if(pal&&i1>i0){
     const lit=pal[Math.min(pal.length-1,4)], shade=pal[Math.min(pal.length-1,1)];
     const stripD=48;
@@ -104,7 +112,7 @@ function drawGround(tr,camx,camy,fill,line,pal){
       const r=Math.round(lerp(shade[0],lit[0],t)*.62),
             g=Math.round(lerp(shade[1],lit[1],t)*.62),
             b=Math.round(lerp(shade[2],lit[2],t)*.62);
-      ctx.fillStyle="rgb("+r+","+g+","+b+")";
+      ctx.fillStyle="rgba("+r+","+g+","+b+","+(tr.mat?.55:1)+")";
       ctx.beginPath();
       ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+stripD);ctx.lineTo(x0,y0+stripD);
       ctx.closePath();ctx.fill();
@@ -130,7 +138,7 @@ function drawGround(tr,camx,camy,fill,line,pal){
   }
   /* слои породы — горизонтальные пласты, обрезанные силуэтом рельефа */
   if(pal&&tr.strata){
-    ctx.save();ctx.clip();
+    ctx.save();ctx.clip(P);
     const band=30;
     const y0=Math.floor((camy-band*2)/band)*band;
     for(let k=0;k<Math.ceil(H/band)+4;k++){
@@ -140,17 +148,27 @@ function drawGround(tr,camx,camy,fill,line,pal){
       const c=pal[idx];
       const th=band*(.3+((Math.abs(n*7)%5)/5)*.4);
       ctx.fillStyle="rgba("+Math.round(c[0]*.5)+","+Math.round(c[1]*.5)+","+
-        Math.round(c[2]*.5)+",.30)";
+        Math.round(c[2]*.5)+","+(tr.mat?.15:.30)+")";
       ctx.fillRect(0,wy-camy,W,th);
       ctx.fillStyle="rgba(0,0,0,.10)";
       ctx.fillRect(0,wy-camy+th,W,1.4);
     }
     ctx.restore();
   }
+  /* глубина: тело породы гаснет вниз. Без этого низ экрана — ровное пятно
+     той же светлоты, что и освещённая поверхность, и грунт читается плоским. */
+  if(tr.mat){
+    ctx.save();ctx.clip(P);
+    const dg=ctx.createLinearGradient(0,Math.max(0,tr.h[i0]-camy-40),0,H);
+    dg.addColorStop(0,"rgba(0,0,0,0)");
+    dg.addColorStop(1,"rgba(0,0,0,.72)");
+    ctx.fillStyle=dg;ctx.fillRect(0,0,W,H);
+    ctx.restore();
+  }
   if(line){
     /* корка: светлая кромка поверх тёмного тела породы */
-    ctx.strokeStyle=line;ctx.lineWidth=1.4;ctx.stroke();
-    ctx.save();ctx.clip();
+    ctx.strokeStyle=line;ctx.lineWidth=1.4;ctx.stroke(P);
+    ctx.save();ctx.clip(P);
     ctx.strokeStyle="rgba(255,255,255,.09)";ctx.lineWidth=7;
     ctx.beginPath();
     ctx.moveTo(i0*tr.step-camx,tr.h[i0]-camy+4);
@@ -171,16 +189,31 @@ function drawRocks(tr,camx,camy,pal){
     const c0=pal[2],c1=pal[4];
     const t=k.tint;
     const P=k.poly;
-    ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);
-    for(let i=1;i<P.length;i++)ctx.lineTo(P[i][0],P[i][1]);
-    ctx.closePath();
+    /* грани валуна дробим на подотрезки со смещением: ровный многоугольник
+       читается как фигура, скол и выкрошенная кромка — как камень */
+    const RP=new Path2D();
+    RP.moveTo(P[0][0],P[0][1]);
+    for(let i=1;i<=P.length;i++){
+      const a=P[i-1],b=P[i%P.length];
+      for(let s=1;s<=3;s++){
+        const u=s/3;
+        const hj=hashi(Math.floor(k.x)+i*13,s,0x0BEE)/4294967296-.5;
+        const nx=-(b[1]-a[1]),ny=(b[0]-a[0]);
+        const nl=Math.hypot(nx,ny)||1,d=hj*Math.min(3.5,k.rad*.22);
+        RP.lineTo(lerp(a[0],b[0],u)+nx/nl*d,lerp(a[1],b[1],u)+ny/nl*d);
+      }
+    }
+    RP.closePath();
     const g=ctx.createLinearGradient(0,-k.rad,0,k.rad);
     g.addColorStop(0,"rgb("+Math.round(lerp(c0[0],c1[0],t)*.9)+","+
       Math.round(lerp(c0[1],c1[1],t)*.9)+","+Math.round(lerp(c0[2],c1[2],t)*.9)+")");
     g.addColorStop(1,"rgb("+Math.round(c0[0]*.32)+","+Math.round(c0[1]*.32)+","+
       Math.round(c0[2]*.32)+")");
-    ctx.fillStyle=g;ctx.fill();
-    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle=g;ctx.fill(RP);
+    /* та же порода, что под ногами: валун из другого материала выглядит
+       принесённым из другой игры */
+    if(tr.mat)fillMaterial(tr.mat,camx-x,camy-y+k.rad*.42,.5,.35,RP);
+    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke(RP);
     if(k.rad>7){   // скол на крупных валунах
       ctx.strokeStyle="rgba(255,255,255,.10)";
       ctx.beginPath();ctx.moveTo(P[1][0],P[1][1]);ctx.lineTo(P[3][0]*.3,P[3][1]*.3);ctx.stroke();
@@ -254,6 +287,7 @@ function drawDustMotes(camx,camy,p){
 }
 function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
+  tr.mat=planetMat(p);
   ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
   drawSkyLayer(p,L.x,L.y);
   if(p.T.atm==="отсутствует")drawStars(L.x*.1,0,1);

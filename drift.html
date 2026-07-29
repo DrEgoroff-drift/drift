@@ -6515,6 +6515,117 @@ function drawStation(x,y,Z){
   ctx.fillText(S.name.toUpperCase(),x,y+40);
 }
 
+/* ══════════════ материал грунта ══════════════ */
+/* Большая заливка одним цветом мгновенно выдаёт «нарисовано фигурами», сколько
+   бы объектов сверху ни стояло. Поэтому у каждой планеты есть свой материал —
+   бесшовный тайл 256×256, посчитанный один раз при заходе на посадку и дальше
+   работающий обычным паттерном: на кадр это один fillRect по клипу.
+
+   В тайле три масштаба сразу:
+   макро  — геологические пятна и выветренные поля;
+   средний— осадочные потёки, трещины, минеральные жилы;
+   микро  — зерно, крошка, редкие вкрапления кристаллов.
+   Ещё один масштаб добавляется при отрисовке: тот же тайл кладётся вторым
+   проходом с увеличением 3.7×, и повторяемость 256 px перестаёт читаться. */
+
+/* шум, бесшовный по обеим осям: решётка берётся по модулю L, поэтому правый
+   край сходится с левым, а нижний с верхним — без этого швы видны сразу */
+function tnoise(x,y,L,s){
+  const fx=x*L,fy=y*L;
+  const i=Math.floor(fx),j=Math.floor(fy),u=fx-i,v=fy-j;
+  const su=u*u*(3-2*u),sv=v*v*(3-2*v);
+  const m=(a,b)=>h01(((a%L)+L)%L,((b%L)+L)%L,s);
+  return lerp(lerp(m(i,j),m(i+1,j),su),lerp(m(i,j+1),m(i+1,j+1),su),sv);
+}
+function tfbm(x,y,L,s,oct){
+  let v=0,a=.5,f=1,n=0;
+  for(let i=0;i<oct;i++){v+=a*tnoise(x,y,L*f,s+i*97);n+=a;a*=.5;f*=2;}
+  return v/n;
+}
+/* хребтовой шум: из него получаются трещины и жилы — узкие ветвящиеся линии,
+   а не пятна. Степень задаёт, насколько тонкой выходит линия. */
+const ridged=(v,p)=>Math.pow(1-Math.abs(1-2*v),p);
+/* минеральная примесь: у каждой планеты своя, иначе все жилы одного цвета */
+const MINERAL=[[210,180,110],[120,210,220],[220,130,150],[150,230,160],
+               [190,160,240],[240,190,120],[120,160,230],[230,230,240]];
+const MAT_S=256;
+function planetMat(p){
+  if(p.mat)return p.mat;
+  const S=MAT_S,cn=document.createElement("canvas");cn.width=cn.height=S;
+  const c=cn.getContext("2d"),img=c.createImageData(S,S),d=img.data;
+  const pal=p.T.pal,sd=(p.seed^0x4D41)>>>0;
+  const mn=MINERAL[sd%MINERAL.length];
+  /* сколько чего на этой планете: выветренность, трещиноватость, богатство жил.
+     Две каменистые планеты благодаря этому не выглядят одной и той же породой. */
+  const r=rng(sd);
+  const wear=.35+r()*.5, crackK=.25+r()*.85, veinK=r()*r()*.75, grainK=.5+r()*.9;
+  for(let y=0;y<S;y++)for(let x=0;x<S;x++){
+    const o=(y*S+x)*4,u=x/S,v=y/S;
+    /* макро: крупные поля породы */
+    const macro=tfbm(u,v,3,sd,4);
+    /* средний: осадочные потёки — растянуты по горизонтали, как намытый слой */
+    const sed=tfbm(u*.55,v*2.2,6,sd+11,3);
+    let t=clamp(macro*.66+sed*.34,0,1);
+    /* выветривание сдвигает светлоту пятнами, а не ровно */
+    t=clamp(t+(tfbm(u,v,9,sd+71,2)-.5)*wear,0,1);
+    /* диапазон палитры сжат к середине: во всю ширину порода прыгает от
+       глубокой тени до снега и читается как камуфляж, а не как камень */
+    const c0=ramp(pal,.26+t*.5);
+    /* и слегка сводим к собственной светлоте — цветовой разброс внутри одного
+       материала должен быть заметен, но не спорить с биомом */
+    const lum=(c0[0]*.3+c0[1]*.59+c0[2]*.11);
+    let R=lerp(c0[0],lum,.22),Gc=lerp(c0[1],lum,.22),B=lerp(c0[2],lum,.22);
+    /* трещины: тонкая тёмная сеть, глубже в углублениях */
+    /* трещина должна быть волосяной: широкая «жила» ридж-шума читается
+       кишками, а не разломом — отсюда высокая степень и мелкая решётка */
+    const crack=ridged(tfbm(u,v,17,sd+29,3),17)*crackK;
+    const k=1-clamp(crack,0,.40);
+    R*=k;Gc*=k;B*=k;
+    /* жилы: узкие светящиеся прожилки минерала, редкие */
+    const vein=ridged(tfbm(u,v,5,sd+53,4),38)*veinK;
+    if(vein>.01){
+      const w=clamp(vein,0,.55);
+      R=lerp(R,mn[0],w);Gc=lerp(Gc,mn[1],w);B=lerp(B,mn[2],w);
+    }
+    /* микро: зерно породы и редкая крошка */
+    const g=(h01(x,y,sd+7)-.5)*15*grainK;
+    R+=g;Gc+=g;B+=g;
+    const peb=h01(x>>1,y>>1,sd+13);
+    if(peb>.982){const s2=(peb-.982)*36;R+=s2*70;Gc+=s2*70;B+=s2*70;}
+    else if(peb<.006){R*=.62;Gc*=.62;B*=.62;}
+    d[o]=clamp(R,0,255);d[o+1]=clamp(Gc,0,255);d[o+2]=clamp(B,0,255);d[o+3]=255;
+  }
+  c.putImageData(img,0,0);
+  p.mat=c.createPattern(cn,"repeat");
+  p.matCn=cn;
+  return p.mat;
+}
+/* положить материал в уже построенный путь (путь должен быть текущим).
+   Два прохода: свой масштаб и увеличенный — второй убивает видимую сетку 256. */
+function fillMaterial(mat,camx,camy,a1,a2,P){
+  if(!mat)return;
+  ctx.save();
+  if(P)ctx.clip(P);else ctx.clip();
+  ctx.globalAlpha=a1;
+  ctx.translate(-camx,-camy);
+  ctx.fillStyle=mat;
+  ctx.fillRect(camx-4,camy-4,W+8,H+8);
+  ctx.restore();
+  /* второй проход — тот же тайл крупно и в режиме overlay: он добавляет
+     светлые и тёмные поля масштабом с полэкрана, из-за которых сетка 256
+     перестаёт читаться, но цвет породы не уезжает */
+  ctx.save();
+  if(P)ctx.clip(P);else ctx.clip();
+  ctx.globalCompositeOperation="overlay";
+  ctx.globalAlpha=a2;
+  const K=3.7;
+  ctx.scale(K,K);
+  ctx.translate(-camx/K*.55,-camy/K*.55);
+  ctx.fillStyle=mat;
+  ctx.fillRect(camx/K*.55-4,camy/K*.55-4,W/K+8,H/K+8);
+  ctx.restore();
+}
+
 /* ══════════════ карта ══════════════ */
 function wrapCenter(text,x,y,maxW,lh){
   const words=text.split(" ");let line="",ly=y;
@@ -6874,15 +6985,23 @@ function updateLanding(dt){
   }
 }
 function drawGround(tr,camx,camy,fill,line,pal){
-  ctx.beginPath();
+  /* силуэт строится в Path2D и живёт до конца функции. Раньше он лежал в
+     текущем пути контекста, и первый же beginPath в цикле склонов его затирал:
+     дальше clip для пластов и обводка кромки применялись к последней
+     шестипиксельной полоске, то есть пласты породы не рисовались вовсе. */
   const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
   const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
-  ctx.moveTo(i0*tr.step-camx,tr.h[i0]-camy);
-  for(let i=i0;i<=i1;i++)ctx.lineTo(i*tr.step-camx,tr.h[i]-camy);
-  ctx.lineTo(i1*tr.step-camx,H+10);ctx.lineTo(i0*tr.step-camx,H+10);ctx.closePath();
-  ctx.fillStyle=fill;ctx.fill();
+  const P=new Path2D();
+  P.moveTo(i0*tr.step-camx,tr.h[i0]-camy);
+  for(let i=i0;i<=i1;i++)P.lineTo(i*tr.step-camx,tr.h[i]-camy);
+  P.lineTo(i1*tr.step-camx,H+10);P.lineTo(i0*tr.step-camx,H+10);P.closePath();
+  ctx.fillStyle=fill;ctx.fill(P);
+  /* порода: бесшовный тайл-материал вместо плоской заливки (18a-material).
+     Заливка под ним остаётся — она держит силуэт, если материала ещё нет. */
+  if(tr.mat)fillMaterial(tr.mat,camx,camy,.92,.26,P);
   /* склон, обращённый к солнцу (вправо-вверх), светлее; в тень — темнее.
-     Простое псевдо-освещение по наклону вместо одной плоской заливки. */
+     Простое псевдо-освещение по наклону вместо одной плоской заливки.
+     Полосы полупрозрачные: непрозрачные закрашивали материал обратно в фигуру. */
   if(pal&&i1>i0){
     const lit=pal[Math.min(pal.length-1,4)], shade=pal[Math.min(pal.length-1,1)];
     const stripD=48;
@@ -6895,7 +7014,7 @@ function drawGround(tr,camx,camy,fill,line,pal){
       const r=Math.round(lerp(shade[0],lit[0],t)*.62),
             g=Math.round(lerp(shade[1],lit[1],t)*.62),
             b=Math.round(lerp(shade[2],lit[2],t)*.62);
-      ctx.fillStyle="rgb("+r+","+g+","+b+")";
+      ctx.fillStyle="rgba("+r+","+g+","+b+","+(tr.mat?.55:1)+")";
       ctx.beginPath();
       ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+stripD);ctx.lineTo(x0,y0+stripD);
       ctx.closePath();ctx.fill();
@@ -6921,7 +7040,7 @@ function drawGround(tr,camx,camy,fill,line,pal){
   }
   /* слои породы — горизонтальные пласты, обрезанные силуэтом рельефа */
   if(pal&&tr.strata){
-    ctx.save();ctx.clip();
+    ctx.save();ctx.clip(P);
     const band=30;
     const y0=Math.floor((camy-band*2)/band)*band;
     for(let k=0;k<Math.ceil(H/band)+4;k++){
@@ -6931,17 +7050,27 @@ function drawGround(tr,camx,camy,fill,line,pal){
       const c=pal[idx];
       const th=band*(.3+((Math.abs(n*7)%5)/5)*.4);
       ctx.fillStyle="rgba("+Math.round(c[0]*.5)+","+Math.round(c[1]*.5)+","+
-        Math.round(c[2]*.5)+",.30)";
+        Math.round(c[2]*.5)+","+(tr.mat?.15:.30)+")";
       ctx.fillRect(0,wy-camy,W,th);
       ctx.fillStyle="rgba(0,0,0,.10)";
       ctx.fillRect(0,wy-camy+th,W,1.4);
     }
     ctx.restore();
   }
+  /* глубина: тело породы гаснет вниз. Без этого низ экрана — ровное пятно
+     той же светлоты, что и освещённая поверхность, и грунт читается плоским. */
+  if(tr.mat){
+    ctx.save();ctx.clip(P);
+    const dg=ctx.createLinearGradient(0,Math.max(0,tr.h[i0]-camy-40),0,H);
+    dg.addColorStop(0,"rgba(0,0,0,0)");
+    dg.addColorStop(1,"rgba(0,0,0,.72)");
+    ctx.fillStyle=dg;ctx.fillRect(0,0,W,H);
+    ctx.restore();
+  }
   if(line){
     /* корка: светлая кромка поверх тёмного тела породы */
-    ctx.strokeStyle=line;ctx.lineWidth=1.4;ctx.stroke();
-    ctx.save();ctx.clip();
+    ctx.strokeStyle=line;ctx.lineWidth=1.4;ctx.stroke(P);
+    ctx.save();ctx.clip(P);
     ctx.strokeStyle="rgba(255,255,255,.09)";ctx.lineWidth=7;
     ctx.beginPath();
     ctx.moveTo(i0*tr.step-camx,tr.h[i0]-camy+4);
@@ -6962,16 +7091,31 @@ function drawRocks(tr,camx,camy,pal){
     const c0=pal[2],c1=pal[4];
     const t=k.tint;
     const P=k.poly;
-    ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);
-    for(let i=1;i<P.length;i++)ctx.lineTo(P[i][0],P[i][1]);
-    ctx.closePath();
+    /* грани валуна дробим на подотрезки со смещением: ровный многоугольник
+       читается как фигура, скол и выкрошенная кромка — как камень */
+    const RP=new Path2D();
+    RP.moveTo(P[0][0],P[0][1]);
+    for(let i=1;i<=P.length;i++){
+      const a=P[i-1],b=P[i%P.length];
+      for(let s=1;s<=3;s++){
+        const u=s/3;
+        const hj=hashi(Math.floor(k.x)+i*13,s,0x0BEE)/4294967296-.5;
+        const nx=-(b[1]-a[1]),ny=(b[0]-a[0]);
+        const nl=Math.hypot(nx,ny)||1,d=hj*Math.min(3.5,k.rad*.22);
+        RP.lineTo(lerp(a[0],b[0],u)+nx/nl*d,lerp(a[1],b[1],u)+ny/nl*d);
+      }
+    }
+    RP.closePath();
     const g=ctx.createLinearGradient(0,-k.rad,0,k.rad);
     g.addColorStop(0,"rgb("+Math.round(lerp(c0[0],c1[0],t)*.9)+","+
       Math.round(lerp(c0[1],c1[1],t)*.9)+","+Math.round(lerp(c0[2],c1[2],t)*.9)+")");
     g.addColorStop(1,"rgb("+Math.round(c0[0]*.32)+","+Math.round(c0[1]*.32)+","+
       Math.round(c0[2]*.32)+")");
-    ctx.fillStyle=g;ctx.fill();
-    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle=g;ctx.fill(RP);
+    /* та же порода, что под ногами: валун из другого материала выглядит
+       принесённым из другой игры */
+    if(tr.mat)fillMaterial(tr.mat,camx-x,camy-y+k.rad*.42,.5,.35,RP);
+    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke(RP);
     if(k.rad>7){   // скол на крупных валунах
       ctx.strokeStyle="rgba(255,255,255,.10)";
       ctx.beginPath();ctx.moveTo(P[1][0],P[1][1]);ctx.lineTo(P[3][0]*.3,P[3][1]*.3);ctx.stroke();
@@ -7045,6 +7189,7 @@ function drawDustMotes(camx,camy,p){
 }
 function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
+  tr.mat=planetMat(p);
   ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
   drawSkyLayer(p,L.x,L.y);
   if(p.T.atm==="отсутствует")drawStars(L.x*.1,0,1);
@@ -8736,6 +8881,7 @@ function drawSurfaceHud(camx,camy){
 }
 function drawSurface(){
   const S=G.surf,tr=S.tr,p=S.p;
+  tr.mat=planetMat(p);
   ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
   drawSkyLayer(p,S.x,S.y);
   if(p.T.atm==="отсутствует"||p.type==="ice")drawStars(S.x*.1,0,1);
