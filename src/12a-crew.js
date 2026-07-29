@@ -28,7 +28,8 @@ function traitOf(id){return CREW_TRAITS.find(t=>t.id===id)||CREW_TRAITS[0];}
 function crewLuck(c){
   if(c._luck==null){
     const r=rng(hashi(c.seed,0x10CC,0x9E37));
-    c._luck=.62+r()*.83+(crewHas(c,"lucky")?.12:0);      // 0.62 … 1.57
+    c._luck=.62+r()*.83+(crewHas(c,"lucky")?.12:0);
+    if(relicOn("dice"))c._luck=Math.max(c._luck,1);   /* «Счётная кость»: ниже средней не бывает */      // 0.62 … 1.57
     c._swing=.7+r()*.95;                                  // насколько его качает
   }
   return c._luck;
@@ -160,7 +161,7 @@ function crewAssignShip(c,id){
 function crewOrder(c,kind,sx,sy){
   if(!c.shipId&&kind!=="home"){say("Сначала выдайте корабль");return false;}
   /* упрямый игнорирует первый приказ — вилка поведения, а не поломка */
-  if(crewHas(c,"stubborn")&&!mgrPerkOf("cmd","disc")&&c.order&&c.order.kind!==kind&&!c.balked){
+  if(crewHas(c,"stubborn")&&!mgrPerkOf("cmd","disc")&&!relicOn("seal")&&c.order&&c.order.kind!==kind&&!c.balked){
     c.balked=true;
     logAdd("warn",c.name+" не принял приказ с первого раза — упрямый");
     say(c.name+" упрямится\nповторите приказ");

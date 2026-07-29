@@ -58,6 +58,13 @@ function drawMap(){
       ctx.fillStyle="rgba(127,176,230,.9)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText("РАСХОЖДЕНИЕ",x,y+rr+21);
     }
+    /* след артефакта: сектор, который вычитал исследователь с «происхождением» */
+    if(G.relicHint&&G.relicHint.sx===gx&&G.relicHint.sy===gy){
+      ctx.strokeStyle="#c58ae0";ctx.lineWidth=1;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.arc(x,y,rr+25,0,TAU);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle="rgba(197,138,224,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText("СЛЕД АРТЕФАКТА",x,y-rr-29);
+    }
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
   }
   if(sel){

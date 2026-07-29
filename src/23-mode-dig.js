@@ -168,6 +168,18 @@ function updateDig(dt){
       const got=addRes(cell.res,Math.round(cell.amount*st.refine));
       if(got)say("Добыто: "+RES[cell.res].ru+" ×"+got);
     }
+    /* Артефакты лежат в глубине и нигде не продаются. Шанс растёт с глубиной,
+       а «след» исследователя (перк «происхождение») удваивает его в том самом
+       секторе, который он назвал: указание должно что-то значить. */
+    if(tr2>=14){
+      const onTrail=G.relicHint&&G.relicHint.sx===G.sx&&G.relicHint.sy===G.sy;
+      const ch=Math.min(.05,(tr2-14)*.0012)*(onTrail?2:1);
+      const id=relicRoll(hashi(D.p.seed+tc*17,tr2*91,0x2E1),ch);
+      if(id){
+        relicFind(id,"из пласта на "+(tr2*3)+" м");
+        if(onTrail)G.relicHint=null;
+      }
+    }
     /* обвал: бьёт по скафандру, никогда не запирает игрока */
     const cr=rng(hashi(D.p.seed+tc*31,tr2*57,0xCAFE));
     if(ti>0&&cr()<.03+ti*.015){

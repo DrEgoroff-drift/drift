@@ -508,7 +508,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.11.0";
+const VER="0.12.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -1076,7 +1076,10 @@ const TECH={
      а тем, сколько рутины они с вас снимают и сколько берут за это. */
   orders: {ru:"Регламент",note:"+1 слот стоящих приказов всем управляющим",cost:110,max:2},
   audit:  {ru:"Аудит",    note:"−1.5 п.п. к доле всех управляющих за уровень",cost:130,max:3},
-  academy:{ru:"Академия", note:"в кантине не бывает совсем зелёных: все от 2 уровня",cost:150}
+  academy:{ru:"Академия", note:"в кантине не бывает совсем зелёных: все от 2 уровня",cost:150},
+  /* исследователю нужен не корабль, а лаборатория: без неё домен пуст */
+  lab:    {ru:"Лаборатория",note:"открывает постройку лаборатории на базе — рабочее место исследователя",cost:140},
+  relic:  {ru:"Ксеноархив",note:"слот артефакта у управляющего; на карте видны следы находок",cost:170}
 };
 /* уровень = старая одноразовая запись + докупленные уровни (совместимо со старыми записями) */
 const techLv=k=>(G.tech.has(k)?1:0)+(G.techLvl[k]|0);
@@ -1711,6 +1714,9 @@ const G={
   mgrs:[],blueprints:{},cantina:null,aiRift:null,
   /* ушедшие: ренегат сидит в своём секторе и дерётся, изгнанник ждёт в кантине */
   rogues:[],exiles:[],
+  /* артефакты: найденные лежат здесь, надетый — в поле relic у управляющего.
+     relicHint — сектор, на который указал исследователь с «происхождением». */
+  relics:{},relicHint:null,bio:0,
   /* счётчики для поручений: живут в сессии, при загрузке отсчёт начинается заново */
   orderStamp:0,kills:0,soldTotal:0,
   /* базы: разреженный оверлей «sx,sy:planetIdx» → решения игрока.
@@ -2479,7 +2485,8 @@ function traitOf(id){return CREW_TRAITS.find(t=>t.id===id)||CREW_TRAITS[0];}
 function crewLuck(c){
   if(c._luck==null){
     const r=rng(hashi(c.seed,0x10CC,0x9E37));
-    c._luck=.62+r()*.83+(crewHas(c,"lucky")?.12:0);      // 0.62 … 1.57
+    c._luck=.62+r()*.83+(crewHas(c,"lucky")?.12:0);
+    if(relicOn("dice"))c._luck=Math.max(c._luck,1);   /* «Счётная кость»: ниже средней не бывает */      // 0.62 … 1.57
     c._swing=.7+r()*.95;                                  // насколько его качает
   }
   return c._luck;
@@ -2611,7 +2618,7 @@ function crewAssignShip(c,id){
 function crewOrder(c,kind,sx,sy){
   if(!c.shipId&&kind!=="home"){say("Сначала выдайте корабль");return false;}
   /* упрямый игнорирует первый приказ — вилка поведения, а не поломка */
-  if(crewHas(c,"stubborn")&&!mgrPerkOf("cmd","disc")&&c.order&&c.order.kind!==kind&&!c.balked){
+  if(crewHas(c,"stubborn")&&!mgrPerkOf("cmd","disc")&&!relicOn("seal")&&c.order&&c.order.kind!==kind&&!c.balked){
     c.balked=true;
     logAdd("warn",c.name+" не принял приказ с первого раза — упрямый");
     say(c.name+" упрямится\nповторите приказ");
@@ -3409,6 +3416,7 @@ function mgrCut(m){
   /* тихая проверка в «двойной книге» — рычаг: он работает дешевле и знает почему */
   if(m.quietLever)c-=.025;
   if(m.cutBonus)c+=m.cutBonus;           // цена ультиматума, на который согласились
+  if(relicOn("blank"))c-=.03;            // «Пустой контракт» — единственное, что сбивает долю всем сразу
   return clamp(c,.01,.2);
 }
 /* доля снимается до того, как деньги попадут игроку, и всегда видна строкой */
@@ -3700,6 +3708,8 @@ function mgrPayroll(m,min){
     }else m.warnPay=0;
     return;
   }
+  /* вторая строка «Пустого контракта»: деньгами его больше не обидеть */
+  if(short>0&&relicDeep("blank")){m.warnPay=0;return;}
   if(short>0){
     m.loy=Math.max(0,m.loy-min*1.6*drop);
     if(!m.warnPay&&m.loy<45){
@@ -3809,7 +3819,13 @@ const BLUEPRINTS={
 };
 const BP_KEYS=Object.keys(BLUEPRINTS);
 function bpState(k){return (G.blueprints&&G.blueprints[k])|0;}   // 1 верный, −1 ошибочный
-function bpMul(k,good,bad){const s=bpState(k);return s>0?good:(s<0?bad:1);}
+/* «Допуск»: верный чертёж сильнее на 15% — усиливается прибавка, а не сам
+   множитель, иначе +20% превратились бы в +38% и перк перекосил бы всё дерево. */
+function bpMul(k,good,bad){
+  const s=bpState(k);
+  if(s>0)return mgrPerkOf("sci","better")?good+(good-1)*.15:good;
+  return s<0?bad:1;
+}
 /* Игрок таскает редкое сырьё мимо лаборатории — теперь оно чем-то становится. */
 function mgrSamples(){
   let n=0;for(const k of RARE_RES)n+=G.cargo[k]|0;
@@ -3819,7 +3835,18 @@ function mgrWorkSci(m,min){
   /* «Ксеношум»: пока он слушает, лаборатория стоит. Это и есть цена поручения —
      не кредиты, а время, которого не будет ни на науку, ни на чертежи. */
   if(m.job&&m.job.hold)return min*.4;
-  const rate=(mgrPerk(m,"fast")?1.3:1)*(mgrPerk(m,"par")?1.8:1);
+  /* Лаборатория — его домен (§14.7). Без неё он не бездельничает совсем, но
+     разбирает образцы в кают-компании: втрое медленнее и без чертежей.
+     Это то же самое, что пустое звено у командира, только видно не сразу. */
+  const lab=labWorking();
+  if(!lab&&!m.warnLab){
+    m.warnLab=1;
+    mgrSay(m,"Работать негде. Нужна лаборатория на базе — и жилой отсек рядом.","warn");
+  }
+  if(lab)m.warnLab=0;
+  /* «Синтез» и «происхождение» — работа поверх основной, раз в долгую смену */
+  if(lab){relicSynth(m);relicHint(m);}
+  const rate=(lab?1:.34)*(mgrPerk(m,"fast")?1.3:1)*(mgrPerk(m,"par")?1.8:1);
   m.prog=(m.prog||0)+min*rate;
   const need=14;
   let done=0,guard=6;
@@ -3831,6 +3858,9 @@ function mgrWorkSci(m,min){
     if(mgrRule(m,"rare")){
       for(const k of RARE_RES)if((G.cargo[k]|0)>0){sample=k;G.cargo[k]--;break;}
     }
+    /* «Биология»: отсканированные твари и растения тоже идут в образцы —
+       разведка перестаёт быть только строчкой в счётчике видов */
+    if(!sample&&mgrPerk(m,"bio")&&(G.bio|0)>0){G.bio--;sample="bio";}
     const r=rng(hashi(m.seed,Math.floor(Date.now()/60000)+done*17,0x5C1));
     const mul=(sample?2.2:1)*mgrTraitMul(m,"sample")*(mgrPerk(m,"batch")?1.5:1);
     const data=Math.round((2+r()*3)*mul);
@@ -3848,8 +3878,11 @@ function mgrWorkSci(m,min){
         tell("","Чертёж: "+BLUEPRINTS[k].ru,"«"+BLUEPRINTS[k].ru+"»\n"+
           (wrong?"он уверен, что всё сходится":BLUEPRINTS[k].note));
       }
+      /* глубокий разбор изредка вскрывает не чертёж, а находку: артефакты
+         не покупаются, и лаборатория — один из немногих их источников */
     }else if(sample){
-      mgrSay(m,"Разобран образец: "+RES[sample].ru.toLowerCase()+" · +"+data+" данных");
+      mgrSay(m,"Разобран образец: "+
+        (sample==="bio"?"живая ткань":RES[sample].ru.toLowerCase())+" · +"+data+" данных");
     }
   }
   return min*(mgrRule(m,"queue")?1.3:1);
@@ -3858,7 +3891,9 @@ function mgrWorkSci(m,min){
 function bpRecheck(k){
   const m=mgrOf("sci");
   if(!m){say("Нужен исследователь");return false;}
-  const cost=60;
+  /* «Пересборка»: половина данных возвращается — перк делает перепроверку
+     дешёвой привычкой, а не разовым жестом отчаяния */
+  const cost=mgrPerk(m,"redo")?30:60;
   if(G.data<cost){say("Нужно "+cost+" данных на пересборку");return false;}
   G.data-=cost;
   const r=rng(hashi(m.seed,Date.now()&0xffff,0x9B2));
@@ -4532,7 +4567,9 @@ function buildAi(role){
    Растёт от каждого самостоятельного решения, то есть от работы: чем полезнее
    ядро, тем быстрее оно перестаёт быть вашим. Это и есть цена. */
 function aiDrift(m,min,work){
-  const d=min*.35+work*.02;
+  /* «Тихий маяк»: ядро дрейфует вдвое медленнее — единственный способ
+     удержать машину, кроме отката прошивки */
+  const d=(min*.35+work*.02)*(relicOn("quiet")?.5:1);
   m.drift=clamp((m.drift||0)+d,0,100);
   const st=aiStage(m);
   if(m.stageRu!==st.ru){
@@ -4710,6 +4747,10 @@ function rogueDefeated(p){
     /* всё, что он утащил долей, лежало у него в трюме */
     const back=Math.round(2200+R.lv*900);
     G.credits+=back;
+    /* §12: трофей с ушедшего управляющего — один из источников артефактов.
+       Он унёс с собой не только корпус. */
+    const relic=relicRoll(hashi(R.seed,R.lv,0x3B7),.45);
+    if(relic)relicFind(relic,"трофей с "+R.name);
     if(!G.exiles)G.exiles=[];
     G.exiles.push({name:R.name,role:R.role,seed:R.seed,lv:R.lv,perks:R.perks.slice(),
       traits:R.traits.slice(),fee:Math.round(R.fee*.35),t:Date.now()});
@@ -4730,6 +4771,147 @@ function exileCandidates(){
     xp:MGR_XP[clamp(e.lv-1,0,MGR_XP.length-1)],loy:28,rules:[],lv0:e.lv,
     tMs:0,earned:0,spent:0,tookCr:0,stole:0,shipId:null,route:[],log:[],
     fee:e.fee,exile:1}));
+}
+
+/* ══════════════ артефакты и лаборатория ══════════════
+   Последний невыполненный шаг порядка из DESIGN-managers.md (§14.7).
+
+   До этого исследователь разбирал образцы «в воздухе»: роль была, домена не было.
+   Лаборатория — его домен, здание на базе: дорогое, прожорливое и бесполезное
+   без жилого отсека рядом. Пустая лаборатория — то же, что пустое звено
+   у командира: человек на окладе и без работы.
+
+   Артефакт — единственная вещь в игре с глобальным эффектом. Слот один на
+   управляющего, поэтому семь артефактов на прохождение — это всегда выбор,
+   кому дать и что оставить в ящике. Вторая строка эффекта открывается только
+   при исследователе с перком «чтение»: без него артефакт работает вполшага,
+   и это единственная причина держать исследователя, кроме чертежей. */
+
+/* ── лаборатория ── */
+function labCount(){
+  let n=0;
+  for(const k in G.bases){
+    const B=G.bases[k];
+    if(!B||!B.cells)continue;
+    for(const c of B.cells)if(c&&c.k==="lab"&&c.hp>0)n++;
+  }
+  return n;
+}
+/* Жилой отсек рядом — не украшение: разбирать образцы вахтой из скафандра нельзя.
+   Проверяем соседей по строке и столбцу, как и всё прочее на сетке базы. */
+function labStaffed(B,i){
+  const c=i%BASE_COLS, r=Math.floor(i/BASE_COLS);
+  const at=(cc,rr)=>(cc<0||rr<0||cc>=BASE_COLS||rr>=BASE_ROWS)?null:B.cells[rr*BASE_COLS+cc];
+  return [at(c-1,r),at(c+1,r),at(c,r-1),at(c,r+1)].some(x=>x&&x.k==="habitat"&&x.hp>0);
+}
+function labWorking(){
+  for(const k in G.bases){
+    const B=G.bases[k];
+    if(!B||!B.cells)continue;
+    for(let i=0;i<B.cells.length;i++){
+      const c=B.cells[i];
+      if(c&&c.k==="lab"&&c.hp>0&&labStaffed(B,i))return true;
+    }
+  }
+  return false;
+}
+
+/* ── таблица ──
+   Первая строка работает всегда. Вторая — только с «чтением» (§12).
+   Эффекты глобальные, поэтому у каждого есть свой крючок в чужом модуле;
+   здесь только объявление, чтобы правки шли в одном месте. */
+const ARTIFACTS={
+  seal:  {ru:"Печать конвоя", one:"наёмники не упрямятся с приказом",
+          two:"отзыв доходит мгновенно, на любой дистанции"},
+  dice:  {ru:"Счётная кость", one:"удача нового наёмника не бывает ниже средней",
+          two:"удачу одного наёмника можно перебросить"},
+  chart: {ru:"Карта чужой руки", one:"на карте видно, где торгуют редким",
+          two:"и то, чего там ещё нет"},
+  blank: {ru:"Пустой контракт", one:"доля всех управляющих меньше на 3 пункта",
+          two:"лояльность больше не падает от задержек жалованья"},
+  key:   {ru:"Ключ от верфи", one:"уникальный корпус встречается в любом доке",
+          two:"и приходит уже с частями в слотах"},
+  ledger:{ru:"Чёрный журнал", one:"скрытая удача наёмников видна числом",
+          two:"и черты управляющих видны в кантине до найма"},
+  quiet: {ru:"Тихий маяк", one:"ИИ-ядро набирает дрейф вдвое медленнее",
+          two:"разошедшееся ядро можно уговорить вернуться"}
+};
+const RELIC_KEYS=Object.keys(ARTIFACTS);
+
+/* ── владение и слоты ── */
+function relicHave(id){return !!(G.relics&&G.relics[id]);}
+function relicOwned(){return RELIC_KEYS.filter(relicHave);}
+/* Слот появляется только с «Ксеноархивом»: до него артефакт — просто находка
+   в ящике, и это честно видно в интерфейсе. */
+function relicSlotOpen(){return techLv("relic")>0;}
+function relicHolder(id){return (G.mgrs||[]).find(m=>m.relic===id&&!m.stalled)||null;}
+/* Первая строка: артефакт найден и надет на живого управляющего. */
+function relicOn(id){return relicSlotOpen()&&relicHave(id)&&!!relicHolder(id);}
+/* Вторая строка: сверх того есть исследователь, умеющий читать. */
+function relicDeep(id){return relicOn(id)&&!!mgrPerkOf("sci","relic");}
+
+function relicEquip(m,id){
+  if(!relicSlotOpen()){say("Нужен «Ксеноархив»\nбез него артефакт носить негде");return false;}
+  if(!relicHave(id))return false;
+  const other=relicHolder(id);
+  if(other&&other!==m)other.relic=null;      // артефакт один, носить его двоим нельзя
+  m.relic=id;
+  mgrSay(m,"Взял «"+ARTIFACTS[id].ru+"»");
+  return true;
+}
+function relicUnequip(m){if(m.relic){mgrSay(m,"Отдал «"+ARTIFACTS[m.relic].ru+"»");m.relic=null;}}
+
+/* ── находки ──
+   Артефакт не покупается: он приходит из глубины, с боя или из синтеза. */
+function relicFind(id,why){
+  if(!id||!ARTIFACTS[id]||relicHave(id))return false;
+  if(!G.relics)G.relics={};
+  G.relics[id]=1;
+  const A=ARTIFACTS[id];
+  logAdd("tech","Артефакт: «"+A.ru+"» — "+(why||"находка"));
+  tell("tech","Артефакт: «"+A.ru+"»",
+    "«"+A.ru+"»\n"+A.one+
+    (relicSlotOpen()?"\nэкран ШТАБ — надеть на управляющего"
+                    :"\nнужен «Ксеноархив», чтобы его носили"));
+  return true;
+}
+/* Случайный из ненайденных — общий вход для всех источников. */
+function relicRoll(seed,chance){
+  const free=RELIC_KEYS.filter(k=>!relicHave(k));
+  if(!free.length)return null;
+  const r=rng(seed);
+  if(r()>chance)return null;
+  return free[Math.floor(r()*free.length)];
+}
+/* «Синтез»: два артефакта в руках дают третий. Перк поздний и стоит очка —
+   поэтому и срабатывает не мгновенно, а раз в долгую работу лаборатории. */
+function relicSynth(m){
+  if(!mgrPerk(m,"synth"))return false;
+  if(relicOwned().length<2)return false;
+  const id=relicRoll(hashi(m.seed,Math.floor(Date.now()/60000),0x5E7),.04);
+  if(!id)return false;
+  relicFind(id,"синтез в лаборатории");
+  mgrSay(m,"Собрал третий из двух. Не спрашивайте как.","good");
+  return true;
+}
+/* «Происхождение»: артефакт указывает, где искать следующий. Метка живёт
+   на карте, как ренегат и расхождение, — иначе указание некуда положить. */
+function relicHint(m){
+  if(!mgrPerk(m,"trace"))return false;
+  if(G.relicHint)return false;
+  if(!relicOwned().length)return false;
+  const r=rng(hashi(m.seed,relicOwned().length*31,0x7A9));
+  for(let i=0;i<40;i++){
+    const sx=G.sx+Math.round((r()*2-1)*5), sy=G.sy+Math.round((r()*2-1)*5);
+    if(starAt(sx,sy)){
+      G.relicHint={sx,sy};
+      mgrSay(m,"В записях есть координаты: "+sx+":"+sy,"good");
+      tell("tech","След артефакта: сектор "+sx+":"+sy,
+        "Исследователь вычитал координаты\nсектор "+sx+":"+sy+"\nищите в глубине");
+      return true;
+    }
+  }
+  return false;
 }
 
 /* ══════════════ пираты ══════════════ */
@@ -4974,6 +5156,7 @@ function snapshot(){
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
     drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
+    relics:G.relics,relicHint:G.relicHint,bio:G.bio,
     fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -5067,6 +5250,11 @@ function applySave(s){
     gotData:Math.max(0,m.gotData|0),prog:Math.max(0,+m.prog||0),
     gift:Math.max(0,m.gift|0),slotBonus:Math.max(0,m.slotBonus|0),
     quietLever:m.quietLever?1:0,jobsDone:Math.max(0,m.jobsDone|0),
+    /* надетый артефакт — часть решения игрока, а не эфемерное состояние.
+       Список полей здесь белый, поэтому новое поле надо вносить явно,
+       иначе оно молча теряется при каждой загрузке. */
+    relic:(m.relic&&ARTIFACTS[m.relic])?m.relic:null,
+    cutBonus:+m.cutBonus||0,ultCount:Math.max(0,m.ultCount|0),
     jobPast:(Array.isArray(m.jobPast)?m.jobPast:[]).filter(x=>jobDef(x)).slice(0,20),
     /* поручение переживает загрузку, но срок идёт заново: счётчики-маркеры
        (убитые пираты, выручка, вмешательства в приказы) живут только в сессии */
@@ -5085,6 +5273,23 @@ function applySave(s){
      Роль сверяется с таблицей, иначе битая запись уронила бы бой и кантину. */
   G.rogues=Array.isArray(s.rogues)?s.rogues.filter(R=>R&&MGR_ROLES[R.role]).slice(0,ROGUE_CAP):[];
   G.exiles=Array.isArray(s.exiles)?s.exiles.filter(E=>E&&MGR_ROLES[E.role]).slice(0,ROGUE_CAP):[];
+  /* артефакты: только те, что есть в таблице — иначе битая запись пролезла бы
+     в слот и в глобальный эффект */
+  G.relics={};
+  if(s.relics&&typeof s.relics==="object")
+    for(const k in s.relics)if(ARTIFACTS[k]&&s.relics[k])G.relics[k]=1;
+  G.relicHint=(s.relicHint&&typeof s.relicHint==="object")
+    ?{sx:s.relicHint.sx|0,sy:s.relicHint.sy|0}:null;
+  G.bio=+s.bio||0;
+  /* надетый артефакт должен быть найденным и ровно у одного владельца */
+  {
+    const worn={};
+    for(const m of G.mgrs){
+      if(!m.relic)continue;
+      if(!G.relics[m.relic]||worn[m.relic])m.relic=null;
+      else worn[m.relic]=1;
+    }
+  }
   G.blueprints={};
   if(s.blueprints&&typeof s.blueprints==="object")
     for(const k in s.blueprints)if(BLUEPRINTS[k])G.blueprints[k]=s.blueprints[k]>0?1:-1;
@@ -6320,6 +6525,13 @@ function drawMap(){
       ctx.fillStyle="rgba(127,176,230,.9)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText("РАСХОЖДЕНИЕ",x,y+rr+21);
     }
+    /* след артефакта: сектор, который вычитал исследователь с «происхождением» */
+    if(G.relicHint&&G.relicHint.sx===gx&&G.relicHint.sy===gy){
+      ctx.strokeStyle="#c58ae0";ctx.lineWidth=1;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.arc(x,y,rr+25,0,TAU);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle="rgba(197,138,224,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText("СЛЕД АРТЕФАКТА",x,y-rr-29);
+    }
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
   }
   if(sel){
@@ -7269,7 +7481,11 @@ const BUILD={
   storage:{ru:"Склад",      cost:{credits:600,alloy:2},   power:-1, note:"+120 к тому, сколько база может накопить"},
   habitat:{ru:"Жилой отсек",cost:{credits:1200,alloy:3},  power:-4, note:"места для персонала; рядом с реактором людям хуже"},
   refinery:{ru:"Плавильня", cost:{credits:2200,alloy:8},  power:-11,note:"сама переплавляет добытое в сплавы"},
-  pad:    {ru:"Площадка",   cost:{credits:2600,alloy:10}, power:-3, note:"причал для переброски между базами"}
+  pad:    {ru:"Площадка",   cost:{credits:2600,alloy:10}, power:-3, note:"причал для переброски между базами"},
+  /* дорогая, прожорливая и мёртвая без жилого отсека рядом: разбирать образцы
+     вахтой из скафандра нельзя, а исследователю больше работать негде */
+  lab:    {ru:"Лаборатория", cost:{credits:3200,alloy:12},power:-16,needTech:"lab",
+           note:"рабочее место исследователя; нужен жилой отсек по соседству"}
 };
 const BUILD_KEYS=Object.keys(BUILD);
 function baseKey(sx,sy,idx){return sx+","+sy+":"+idx;}
@@ -7498,16 +7714,24 @@ function updateBase(dt){
     if(keys.right&&!S.held){S.pick=(S.pick+1)%BUILD_KEYS.length;S.held=1;}
     if(!keys.left&&!keys.right)S.held=0;
     const k=BUILD_KEYS[S.pick],M=BUILD[k];
-    const bad=M.surfaceOnly&&S.row>0;
+    /* постройка бывает заперта наукой: лаборатория до «Лаборатории» не ставится.
+       Показываем её всё равно — игрок должен видеть, за чем идти. */
+    const locked=M.needTech&&techLv(M.needTech)<=0;
+    const bad=(M.surfaceOnly&&S.row>0)||locked;
     G.prompt="СТРОИТЬ: "+M.ru.toUpperCase()+"\n"+M.note+
-      "\n"+M.cost.credits+" кр"+(M.cost.alloy?" + "+M.cost.alloy+" сплавов":"")+
-      (bad?"\nТОЛЬКО НА ВЕРХНЕМ УРОВНЕ":"")+
+      "\n"+baseCost(k).credits+" кр"+(M.cost.alloy?" + "+baseCost(k).alloy+" сплавов":"")+
+      (locked?"\nНУЖНА НАУКА: "+TECH[M.needTech].ru.toUpperCase():"")+
+      (M.surfaceOnly&&S.row>0?"\nТОЛЬКО НА ВЕРХНЕМ УРОВНЕ":"")+
       "\n◀ ▶ — выбор · ДЕЙСТВИЕ — построить";
     if(actEdge){
-      if(bad)say("Панель ставится только сверху");
-      else if(!canPay(M.cost))say("Не хватает: "+M.cost.credits+" кр"+(M.cost.alloy?" и "+M.cost.alloy+" сплавов":""));
+      if(locked)say("Сначала нужна наука\n«"+TECH[M.needTech].ru+"»");
+      else if(bad)say("Панель ставится только сверху");
+      /* цена — через baseCost: смета смотрителя должна работать и здесь,
+         иначе скидка показывалась в интерфейсе, а списывалось полное */
+      else if(!canPay(baseCost(k)))say("Не хватает: "+baseCost(k).credits+" кр"+
+        (M.cost.alloy?" и "+baseCost(k).alloy+" сплавов":""));
       else{
-        payCost(M.cost);baseSet(B,S.cur,S.row,{k,hp:1});
+        payCost(baseCost(k));baseSet(B,S.cur,S.row,{k,hp:1});
         S.menu=false;
         tell("money","На базе «"+B.name+"» построено: "+M.ru,"Построено\n"+M.ru);
       }
@@ -7810,13 +8034,13 @@ function updateSurface(dt){
     if(actEdge){
       /* существо подаёт голос: тембр из его же seed, у каждого свой */
       sfx("beast",{seed:beast.seed||hashi(beast.x|0,beast.r*100|0,7)});
-      beast.scanned=true;G.species.add(beast.name);G.data+=14;
+      beast.scanned=true;G.species.add(beast.name);G.data+=14;G.bio=(G.bio|0)+1;
       tell("","Новый вид: "+beast.name+" · +14 данных","Новый вид\n"+beast.name+"\n+14 данных");
     }
   }else if(plant){
     G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
     if(actEdge){
-      plant.scanned=true;G.species.add(plant.name);G.data+=9;
+      plant.scanned=true;G.species.add(plant.name);G.data+=9;G.bio=(G.bio|0)+1;
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
   }else if(dShip<48&&baseAt(G.sx,G.sy,S.p.idx)){
@@ -8123,7 +8347,7 @@ function updateCave(dt){
     const c=addRes("carbon",2+Math.floor(r()*4));
     const x2=r()<.4?addRes("xeno",1+Math.floor(r()*2)):0;
     C.fauna.splice(C.fauna.indexOf(nearBug),1);
-    G.species.add(nearBug.name);G.data+=6;
+    G.species.add(nearBug.name);G.data+=6;G.bio=(G.bio|0)+1;
     tell("tech","Образец: "+nearBug.name+" · углерод ×"+c+(x2?" · ксенобиом ×"+x2:""),
       "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+"\n+6 данных");
   }
@@ -8145,7 +8369,7 @@ function updateCave(dt){
   }else if(plant){
     G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
     if(actEdge){
-      plant.scanned=true;G.species.add(plant.name);G.data+=9;
+      plant.scanned=true;G.species.add(plant.name);G.data+=9;G.bio=(G.bio|0)+1;
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
   }else if(C.fauna.some(b=>b.stun<=0&&b.flee<=0)){
@@ -8359,6 +8583,18 @@ function updateDig(dt){
     if(cell.res){
       const got=addRes(cell.res,Math.round(cell.amount*st.refine));
       if(got)say("Добыто: "+RES[cell.res].ru+" ×"+got);
+    }
+    /* Артефакты лежат в глубине и нигде не продаются. Шанс растёт с глубиной,
+       а «след» исследователя (перк «происхождение») удваивает его в том самом
+       секторе, который он назвал: указание должно что-то значить. */
+    if(tr2>=14){
+      const onTrail=G.relicHint&&G.relicHint.sx===G.sx&&G.relicHint.sy===G.sy;
+      const ch=Math.min(.05,(tr2-14)*.0012)*(onTrail?2:1);
+      const id=relicRoll(hashi(D.p.seed+tc*17,tr2*91,0x2E1),ch);
+      if(id){
+        relicFind(id,"из пласта на "+(tr2*3)+" м");
+        if(onTrail)G.relicHint=null;
+      }
     }
     /* обвал: бьёт по скафандру, никогда не запирает игрока */
     const cr=rng(hashi(D.p.seed+tc*31,tr2*57,0xCAFE));
@@ -10107,7 +10343,13 @@ function shipRow(id,S){
     b.disabled=!own&&G.credits<S.price;
     b.onclick=()=>{
       if(!own){G.credits-=S.price;G.owned[id]=true;
-        logAdd("money","Куплен корабль «"+S.ru+"» за "+S.price.toLocaleString("ru")+" кр");}
+        logAdd("money","Куплен корабль «"+S.ru+"» за "+S.price.toLocaleString("ru")+" кр");
+        /* вторая строка «Ключа от верфи»: уникальный корпус приходит не пустым */
+        if(relicDeep("key")&&id[0]==="u"){
+          const seed=hashi(S.seed||0,0x4EF0,3);
+          for(let i=0;i<2;i++)addPart(genPart(hashi(seed,i,0x71),2));
+          logAdd("tech","«Ключ от верфи»: корпус пришёл с частями");
+        }}
       else logAdd("dim","Пересадка на «"+S.ru+"»");
       G.shipId=id;
       const ns=stat();
@@ -10191,11 +10433,14 @@ function renderTab(){
     $body.appendChild(el("div","sec","КОРПУСА В ДОКЕ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
     for(const id of SHIP_KEYS)$body.appendChild(shipRow(id,SHIPS[id]));
     /* уникальный корпус строят только на верфи — у торгового узла док слабый */
-    const offer=G.st.stype==="yard"?stationUniqueOffer(G.sys):null;
+    /* «Ключ от верфи» открывает единственный экземпляр в любом доке, а не
+       только на верфи: это его первая строка и есть */
+    const offer=(G.st.stype==="yard"||relicOn("key"))?stationUniqueOffer(G.sys):null;
     if(offer){
       const uid="u"+offer.seed;
       G.uniqueShips[uid]=offer;
-      $body.appendChild(el("div","sec","НАЙДЕНО ЗДЕСЬ · ЕДИНСТВЕННЫЙ ЭКЗЕМПЛЯР · ПРЕДЛОЖЕНИЕ СМЕНИТСЯ"));
+      $body.appendChild(el("div","sec","НАЙДЕНО ЗДЕСЬ · ЕДИНСТВЕННЫЙ ЭКЗЕМПЛЯР · ПРЕДЛОЖЕНИЕ СМЕНИТСЯ"+
+        (relicDeep("key")?" · УЖЕ С ЧАСТЯМИ В СЛОТАХ":"")));
       $body.appendChild(shipRow(uid,offer));
     }
     const dr=DRONES.miner;
@@ -10599,6 +10844,23 @@ const $cv=document.getElementById("crewview"),$cvBody=document.getElementById("c
 function crewByIdG(id){return G.crew.find(c=>c.id===id)||null;}
 /* кого сейчас видно в этой системе настоящим кораблём */
 function allyOf(id){return (G.allies||[]).find(A=>A.c.id===id)||null;}
+/* ── скрытая удача наружу ──
+   По умолчанию её не видно нигде и никогда: наёмник — ставка, и в этом весь он.
+   Открывают её только три вещи, и каждая стоит игроку выбора: «чутьё» показывает
+   вилку, «точный счёт» — число, «Чёрный журнал» — число сразу у всех.
+   Это и есть обещанное в замысле «самый важный перк в игре»: он превращает
+   непознаваемый шум в информацию, и стоит не кредитов, а уровней. */
+function luckLine(c){
+  const exact=mgrPerkOf("cmd","exact")||relicOn("ledger");
+  const fork=mgrPerkOf("cmd","hunch");
+  if(!exact&&!fork)return "";
+  const L=crewLuck(c);
+  if(exact)return "<br>скрытая удача: <b style='color:"+
+    (L>=1.15?"#8fd08a":(L>=.9?"#f2b25c":"#ff9d7a"))+"'>"+L.toFixed(2)+"</b>";
+  /* вилка нарочно широкая и своя у каждого: чутьё — не точный счёт */
+  const w=.18+((c.seed||0)%7)*.02;
+  return "<br>чутьё: удача около <b>"+Math.max(.5,L-w).toFixed(1)+"…"+(L+w).toFixed(1)+"</b>";
+}
 function crewBtnTick(){
   const b=document.getElementById("crewbtn");if(!b)return;
   const show=G.crew.length>0&&G.mode!=="dock";
@@ -10650,7 +10912,8 @@ function crewRender(){
       " кр · съел "+(c.spent||0).toLocaleString("ru")+" кр"+
       "<br>итог: <b style='color:"+(bal>=0?"#8fd08a":"#ff6b57")+"'>"+
       (bal>=0?"+":"")+bal.toLocaleString("ru")+" кр</b>"+
-      (c.debt>0?" · <b style='color:#ff6b57'>долг "+Math.round(c.debt)+" кр</b>":"")+"</s>"));
+      (c.debt>0?" · <b style='color:#ff6b57'>долг "+Math.round(c.debt)+" кр</b>":"")+
+      luckLine(c)+"</s>"));
     const bw=el("button","act sm"+(G.watch===c.id?"":" gold"),
       G.watch===c.id?"НЕ СЛЕДИТЬ":"СЛЕДИТЬ");
     bw.disabled=!here;
@@ -10843,7 +11106,7 @@ function renderCantina(){
     if(G.mgrs.some(x=>x.seed===m.seed))continue;
     const R=MGR_ROLES[m.role],taken=mgrTaken(m.role),fee=mgrFee(m);
     const spoke=!!G.cantina.talked[m.id];
-    const known=spoke||mgrPerkOf("cmd","read");
+    const known=spoke||mgrPerkOf("cmd","read")||relicDeep("ledger");
     const r=el("div","row");
     r.appendChild(faceEl(m,64));
     r.appendChild(el("div","nm","<b style='color:"+R.col+"'>"+m.name+"</b><s>"+
@@ -10853,7 +11116,7 @@ function renderCantina(){
         ? "черты: "+m.traits.map(t=>"<b>"+mgrTrait(t).ru+"</b> — "+mgrTrait(t).note).join("<br>черты: ")
         : "черты видны после разговора"+(m.traits.length>2?" (их у него три)":""))+
       (taken?"<br><b style='color:#ff9d7a'>домен занят: "+mgrOf(m.role).name+"</b>":"")+"</s>"));
-    if(!spoke&&!mgrPerkOf("cmd","read")){
+    if(!spoke&&!mgrPerkOf("cmd","read")&&!relicDeep("ledger")){
       const bt=el("button","act sm","ПОГОВОРИТЬ");
       bt.onclick=()=>{G.cantina.talked[m.id]=1;renderTab();};
       r.appendChild(bt);
@@ -10931,6 +11194,7 @@ function hqRender(){
   /* перки: дерево видно целиком, включая невыученное — игрок должен планировать.
      У ядра то же дерево, но рука своя: кнопок нет, только след его выбора. */
   const pts=m.ai?0:mgrPoints(m);
+  hqRelicSlot(m);
   $hqBody.appendChild(el("div","sec","ПЕРКИ · СВОБОДНЫХ ОЧКОВ "+pts+
     " · ВЕТВЕЙ БОЛЬШЕ, ЧЕМ ОЧКОВ: ВЫУЧИТЬ ВСЁ НЕЛЬЗЯ"));
   for(const br of MGR_PERKS[m.role]){
@@ -11035,6 +11299,42 @@ function hqAiOffer(){
     r.appendChild(b);
   }
   $hqBody.appendChild(r);
+}
+/* ── слот артефакта ──
+   Слот один на управляющего, а артефактов за прохождение семь: это всегда
+   выбор, кому дать и что оставить лежать. Вторая строка эффекта открывается
+   только при исследователе с «чтением» — и видно, что она есть и заперта,
+   иначе половина артефакта была бы невидимой. */
+function hqRelicSlot(m){
+  if(!relicSlotOpen()&&!relicOwned().length)return;
+  const own=relicOwned();
+  $hqBody.appendChild(el("div","sec","АРТЕФАКТ · СЛОТ ОДИН · НАЙДЕНО "+own.length+" / "+RELIC_KEYS.length));
+  if(!relicSlotOpen()){
+    $hqBody.appendChild(el("div","row","<div class='nm'><s>носить артефакт негде: "+
+      "нужна наука «Ксеноархив». Находки лежат в ящике и ничего не делают."+
+      (own.length?"<br>в ящике: "+own.map(k=>"«"+ARTIFACTS[k].ru+"»").join(", "):"")+
+      "</s></div>"));
+    return;
+  }
+  if(!own.length){
+    $hqBody.appendChild(el("div","row","<div class='nm'><s>артефакты не покупаются: "+
+      "они лежат в глубоких пластах, достаются трофеем с ушедшего и собираются "+
+      "в лаборатории из двух других</s></div>"));
+    return;
+  }
+  const deep=!!mgrPerkOf("sci","relic");
+  for(const id of own){
+    const A=ARTIFACTS[id],holder=relicHolder(id),mine=m.relic===id;
+    const r=el("div","row"+(mine?" on":""));
+    r.appendChild(el("div","nm","<b style='color:#c58ae0'>"+A.ru+"</b><s>"+A.one+
+      "<br><span style='color:"+(deep?"#8fd08a":"var(--dim)")+"'>"+
+      (deep?"вторая строка: "+A.two:"вторая строка заперта — нужен исследователь с «чтением»")+
+      "</span>"+(holder&&!mine?"<br><b style='color:#f2b25c'>носит "+holder.name+"</b>":"")+"</s>"));
+    const b=el("button","act sm"+(mine?"":" gold"),mine?"СНЯТЬ":"НАДЕТЬ");
+    b.onclick=()=>{if(mine)relicUnequip(m);else relicEquip(m,id);hqRender();};
+    r.appendChild(b);
+    $hqBody.appendChild(r);
+  }
 }
 /* ── карточка поручения ──
    Его слова даются от первого лица и без пояснений от игры: это разговор,

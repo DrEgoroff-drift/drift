@@ -176,6 +176,7 @@ function mgrCut(m){
   /* тихая проверка в «двойной книге» — рычаг: он работает дешевле и знает почему */
   if(m.quietLever)c-=.025;
   if(m.cutBonus)c+=m.cutBonus;           // цена ультиматума, на который согласились
+  if(relicOn("blank"))c-=.03;            // «Пустой контракт» — единственное, что сбивает долю всем сразу
   return clamp(c,.01,.2);
 }
 /* доля снимается до того, как деньги попадут игроку, и всегда видна строкой */
@@ -467,6 +468,8 @@ function mgrPayroll(m,min){
     }else m.warnPay=0;
     return;
   }
+  /* вторая строка «Пустого контракта»: деньгами его больше не обидеть */
+  if(short>0&&relicDeep("blank")){m.warnPay=0;return;}
   if(short>0){
     m.loy=Math.max(0,m.loy-min*1.6*drop);
     if(!m.warnPay&&m.loy<45){
@@ -576,7 +579,13 @@ const BLUEPRINTS={
 };
 const BP_KEYS=Object.keys(BLUEPRINTS);
 function bpState(k){return (G.blueprints&&G.blueprints[k])|0;}   // 1 верный, −1 ошибочный
-function bpMul(k,good,bad){const s=bpState(k);return s>0?good:(s<0?bad:1);}
+/* «Допуск»: верный чертёж сильнее на 15% — усиливается прибавка, а не сам
+   множитель, иначе +20% превратились бы в +38% и перк перекосил бы всё дерево. */
+function bpMul(k,good,bad){
+  const s=bpState(k);
+  if(s>0)return mgrPerkOf("sci","better")?good+(good-1)*.15:good;
+  return s<0?bad:1;
+}
 /* Игрок таскает редкое сырьё мимо лаборатории — теперь оно чем-то становится. */
 function mgrSamples(){
   let n=0;for(const k of RARE_RES)n+=G.cargo[k]|0;
@@ -586,7 +595,18 @@ function mgrWorkSci(m,min){
   /* «Ксеношум»: пока он слушает, лаборатория стоит. Это и есть цена поручения —
      не кредиты, а время, которого не будет ни на науку, ни на чертежи. */
   if(m.job&&m.job.hold)return min*.4;
-  const rate=(mgrPerk(m,"fast")?1.3:1)*(mgrPerk(m,"par")?1.8:1);
+  /* Лаборатория — его домен (§14.7). Без неё он не бездельничает совсем, но
+     разбирает образцы в кают-компании: втрое медленнее и без чертежей.
+     Это то же самое, что пустое звено у командира, только видно не сразу. */
+  const lab=labWorking();
+  if(!lab&&!m.warnLab){
+    m.warnLab=1;
+    mgrSay(m,"Работать негде. Нужна лаборатория на базе — и жилой отсек рядом.","warn");
+  }
+  if(lab)m.warnLab=0;
+  /* «Синтез» и «происхождение» — работа поверх основной, раз в долгую смену */
+  if(lab){relicSynth(m);relicHint(m);}
+  const rate=(lab?1:.34)*(mgrPerk(m,"fast")?1.3:1)*(mgrPerk(m,"par")?1.8:1);
   m.prog=(m.prog||0)+min*rate;
   const need=14;
   let done=0,guard=6;
@@ -598,6 +618,9 @@ function mgrWorkSci(m,min){
     if(mgrRule(m,"rare")){
       for(const k of RARE_RES)if((G.cargo[k]|0)>0){sample=k;G.cargo[k]--;break;}
     }
+    /* «Биология»: отсканированные твари и растения тоже идут в образцы —
+       разведка перестаёт быть только строчкой в счётчике видов */
+    if(!sample&&mgrPerk(m,"bio")&&(G.bio|0)>0){G.bio--;sample="bio";}
     const r=rng(hashi(m.seed,Math.floor(Date.now()/60000)+done*17,0x5C1));
     const mul=(sample?2.2:1)*mgrTraitMul(m,"sample")*(mgrPerk(m,"batch")?1.5:1);
     const data=Math.round((2+r()*3)*mul);
@@ -615,8 +638,11 @@ function mgrWorkSci(m,min){
         tell("","Чертёж: "+BLUEPRINTS[k].ru,"«"+BLUEPRINTS[k].ru+"»\n"+
           (wrong?"он уверен, что всё сходится":BLUEPRINTS[k].note));
       }
+      /* глубокий разбор изредка вскрывает не чертёж, а находку: артефакты
+         не покупаются, и лаборатория — один из немногих их источников */
     }else if(sample){
-      mgrSay(m,"Разобран образец: "+RES[sample].ru.toLowerCase()+" · +"+data+" данных");
+      mgrSay(m,"Разобран образец: "+
+        (sample==="bio"?"живая ткань":RES[sample].ru.toLowerCase())+" · +"+data+" данных");
     }
   }
   return min*(mgrRule(m,"queue")?1.3:1);
@@ -625,7 +651,9 @@ function mgrWorkSci(m,min){
 function bpRecheck(k){
   const m=mgrOf("sci");
   if(!m){say("Нужен исследователь");return false;}
-  const cost=60;
+  /* «Пересборка»: половина данных возвращается — перк делает перепроверку
+     дешёвой привычкой, а не разовым жестом отчаяния */
+  const cost=mgrPerk(m,"redo")?30:60;
   if(G.data<cost){say("Нужно "+cost+" данных на пересборку");return false;}
   G.data-=cost;
   const r=rng(hashi(m.seed,Date.now()&0xffff,0x9B2));

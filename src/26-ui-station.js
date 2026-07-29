@@ -112,7 +112,13 @@ function shipRow(id,S){
     b.disabled=!own&&G.credits<S.price;
     b.onclick=()=>{
       if(!own){G.credits-=S.price;G.owned[id]=true;
-        logAdd("money","Куплен корабль «"+S.ru+"» за "+S.price.toLocaleString("ru")+" кр");}
+        logAdd("money","Куплен корабль «"+S.ru+"» за "+S.price.toLocaleString("ru")+" кр");
+        /* вторая строка «Ключа от верфи»: уникальный корпус приходит не пустым */
+        if(relicDeep("key")&&id[0]==="u"){
+          const seed=hashi(S.seed||0,0x4EF0,3);
+          for(let i=0;i<2;i++)addPart(genPart(hashi(seed,i,0x71),2));
+          logAdd("tech","«Ключ от верфи»: корпус пришёл с частями");
+        }}
       else logAdd("dim","Пересадка на «"+S.ru+"»");
       G.shipId=id;
       const ns=stat();
@@ -196,11 +202,14 @@ function renderTab(){
     $body.appendChild(el("div","sec","КОРПУСА В ДОКЕ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
     for(const id of SHIP_KEYS)$body.appendChild(shipRow(id,SHIPS[id]));
     /* уникальный корпус строят только на верфи — у торгового узла док слабый */
-    const offer=G.st.stype==="yard"?stationUniqueOffer(G.sys):null;
+    /* «Ключ от верфи» открывает единственный экземпляр в любом доке, а не
+       только на верфи: это его первая строка и есть */
+    const offer=(G.st.stype==="yard"||relicOn("key"))?stationUniqueOffer(G.sys):null;
     if(offer){
       const uid="u"+offer.seed;
       G.uniqueShips[uid]=offer;
-      $body.appendChild(el("div","sec","НАЙДЕНО ЗДЕСЬ · ЕДИНСТВЕННЫЙ ЭКЗЕМПЛЯР · ПРЕДЛОЖЕНИЕ СМЕНИТСЯ"));
+      $body.appendChild(el("div","sec","НАЙДЕНО ЗДЕСЬ · ЕДИНСТВЕННЫЙ ЭКЗЕМПЛЯР · ПРЕДЛОЖЕНИЕ СМЕНИТСЯ"+
+        (relicDeep("key")?" · УЖЕ С ЧАСТЯМИ В СЛОТАХ":"")));
       $body.appendChild(shipRow(uid,offer));
     }
     const dr=DRONES.miner;

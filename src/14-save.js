@@ -30,6 +30,7 @@ function snapshot(){
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
     drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
+    relics:G.relics,relicHint:G.relicHint,bio:G.bio,
     fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -123,6 +124,11 @@ function applySave(s){
     gotData:Math.max(0,m.gotData|0),prog:Math.max(0,+m.prog||0),
     gift:Math.max(0,m.gift|0),slotBonus:Math.max(0,m.slotBonus|0),
     quietLever:m.quietLever?1:0,jobsDone:Math.max(0,m.jobsDone|0),
+    /* надетый артефакт — часть решения игрока, а не эфемерное состояние.
+       Список полей здесь белый, поэтому новое поле надо вносить явно,
+       иначе оно молча теряется при каждой загрузке. */
+    relic:(m.relic&&ARTIFACTS[m.relic])?m.relic:null,
+    cutBonus:+m.cutBonus||0,ultCount:Math.max(0,m.ultCount|0),
     jobPast:(Array.isArray(m.jobPast)?m.jobPast:[]).filter(x=>jobDef(x)).slice(0,20),
     /* поручение переживает загрузку, но срок идёт заново: счётчики-маркеры
        (убитые пираты, выручка, вмешательства в приказы) живут только в сессии */
@@ -141,6 +147,23 @@ function applySave(s){
      Роль сверяется с таблицей, иначе битая запись уронила бы бой и кантину. */
   G.rogues=Array.isArray(s.rogues)?s.rogues.filter(R=>R&&MGR_ROLES[R.role]).slice(0,ROGUE_CAP):[];
   G.exiles=Array.isArray(s.exiles)?s.exiles.filter(E=>E&&MGR_ROLES[E.role]).slice(0,ROGUE_CAP):[];
+  /* артефакты: только те, что есть в таблице — иначе битая запись пролезла бы
+     в слот и в глобальный эффект */
+  G.relics={};
+  if(s.relics&&typeof s.relics==="object")
+    for(const k in s.relics)if(ARTIFACTS[k]&&s.relics[k])G.relics[k]=1;
+  G.relicHint=(s.relicHint&&typeof s.relicHint==="object")
+    ?{sx:s.relicHint.sx|0,sy:s.relicHint.sy|0}:null;
+  G.bio=+s.bio||0;
+  /* надетый артефакт должен быть найденным и ровно у одного владельца */
+  {
+    const worn={};
+    for(const m of G.mgrs){
+      if(!m.relic)continue;
+      if(!G.relics[m.relic]||worn[m.relic])m.relic=null;
+      else worn[m.relic]=1;
+    }
+  }
   G.blueprints={};
   if(s.blueprints&&typeof s.blueprints==="object")
     for(const k in s.blueprints)if(BLUEPRINTS[k])G.blueprints[k]=s.blueprints[k]>0?1:-1;

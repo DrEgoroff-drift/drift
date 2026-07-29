@@ -7,6 +7,23 @@ const $cv=document.getElementById("crewview"),$cvBody=document.getElementById("c
 function crewByIdG(id){return G.crew.find(c=>c.id===id)||null;}
 /* кого сейчас видно в этой системе настоящим кораблём */
 function allyOf(id){return (G.allies||[]).find(A=>A.c.id===id)||null;}
+/* ── скрытая удача наружу ──
+   По умолчанию её не видно нигде и никогда: наёмник — ставка, и в этом весь он.
+   Открывают её только три вещи, и каждая стоит игроку выбора: «чутьё» показывает
+   вилку, «точный счёт» — число, «Чёрный журнал» — число сразу у всех.
+   Это и есть обещанное в замысле «самый важный перк в игре»: он превращает
+   непознаваемый шум в информацию, и стоит не кредитов, а уровней. */
+function luckLine(c){
+  const exact=mgrPerkOf("cmd","exact")||relicOn("ledger");
+  const fork=mgrPerkOf("cmd","hunch");
+  if(!exact&&!fork)return "";
+  const L=crewLuck(c);
+  if(exact)return "<br>скрытая удача: <b style='color:"+
+    (L>=1.15?"#8fd08a":(L>=.9?"#f2b25c":"#ff9d7a"))+"'>"+L.toFixed(2)+"</b>";
+  /* вилка нарочно широкая и своя у каждого: чутьё — не точный счёт */
+  const w=.18+((c.seed||0)%7)*.02;
+  return "<br>чутьё: удача около <b>"+Math.max(.5,L-w).toFixed(1)+"…"+(L+w).toFixed(1)+"</b>";
+}
 function crewBtnTick(){
   const b=document.getElementById("crewbtn");if(!b)return;
   const show=G.crew.length>0&&G.mode!=="dock";
@@ -58,7 +75,8 @@ function crewRender(){
       " кр · съел "+(c.spent||0).toLocaleString("ru")+" кр"+
       "<br>итог: <b style='color:"+(bal>=0?"#8fd08a":"#ff6b57")+"'>"+
       (bal>=0?"+":"")+bal.toLocaleString("ru")+" кр</b>"+
-      (c.debt>0?" · <b style='color:#ff6b57'>долг "+Math.round(c.debt)+" кр</b>":"")+"</s>"));
+      (c.debt>0?" · <b style='color:#ff6b57'>долг "+Math.round(c.debt)+" кр</b>":"")+
+      luckLine(c)+"</s>"));
     const bw=el("button","act sm"+(G.watch===c.id?"":" gold"),
       G.watch===c.id?"НЕ СЛЕДИТЬ":"СЛЕДИТЬ");
     bw.disabled=!here;

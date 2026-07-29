@@ -56,7 +56,7 @@ function renderCantina(){
     if(G.mgrs.some(x=>x.seed===m.seed))continue;
     const R=MGR_ROLES[m.role],taken=mgrTaken(m.role),fee=mgrFee(m);
     const spoke=!!G.cantina.talked[m.id];
-    const known=spoke||mgrPerkOf("cmd","read");
+    const known=spoke||mgrPerkOf("cmd","read")||relicDeep("ledger");
     const r=el("div","row");
     r.appendChild(faceEl(m,64));
     r.appendChild(el("div","nm","<b style='color:"+R.col+"'>"+m.name+"</b><s>"+
@@ -66,7 +66,7 @@ function renderCantina(){
         ? "черты: "+m.traits.map(t=>"<b>"+mgrTrait(t).ru+"</b> — "+mgrTrait(t).note).join("<br>черты: ")
         : "черты видны после разговора"+(m.traits.length>2?" (их у него три)":""))+
       (taken?"<br><b style='color:#ff9d7a'>домен занят: "+mgrOf(m.role).name+"</b>":"")+"</s>"));
-    if(!spoke&&!mgrPerkOf("cmd","read")){
+    if(!spoke&&!mgrPerkOf("cmd","read")&&!relicDeep("ledger")){
       const bt=el("button","act sm","ПОГОВОРИТЬ");
       bt.onclick=()=>{G.cantina.talked[m.id]=1;renderTab();};
       r.appendChild(bt);
@@ -144,6 +144,7 @@ function hqRender(){
   /* перки: дерево видно целиком, включая невыученное — игрок должен планировать.
      У ядра то же дерево, но рука своя: кнопок нет, только след его выбора. */
   const pts=m.ai?0:mgrPoints(m);
+  hqRelicSlot(m);
   $hqBody.appendChild(el("div","sec","ПЕРКИ · СВОБОДНЫХ ОЧКОВ "+pts+
     " · ВЕТВЕЙ БОЛЬШЕ, ЧЕМ ОЧКОВ: ВЫУЧИТЬ ВСЁ НЕЛЬЗЯ"));
   for(const br of MGR_PERKS[m.role]){
@@ -248,6 +249,42 @@ function hqAiOffer(){
     r.appendChild(b);
   }
   $hqBody.appendChild(r);
+}
+/* ── слот артефакта ──
+   Слот один на управляющего, а артефактов за прохождение семь: это всегда
+   выбор, кому дать и что оставить лежать. Вторая строка эффекта открывается
+   только при исследователе с «чтением» — и видно, что она есть и заперта,
+   иначе половина артефакта была бы невидимой. */
+function hqRelicSlot(m){
+  if(!relicSlotOpen()&&!relicOwned().length)return;
+  const own=relicOwned();
+  $hqBody.appendChild(el("div","sec","АРТЕФАКТ · СЛОТ ОДИН · НАЙДЕНО "+own.length+" / "+RELIC_KEYS.length));
+  if(!relicSlotOpen()){
+    $hqBody.appendChild(el("div","row","<div class='nm'><s>носить артефакт негде: "+
+      "нужна наука «Ксеноархив». Находки лежат в ящике и ничего не делают."+
+      (own.length?"<br>в ящике: "+own.map(k=>"«"+ARTIFACTS[k].ru+"»").join(", "):"")+
+      "</s></div>"));
+    return;
+  }
+  if(!own.length){
+    $hqBody.appendChild(el("div","row","<div class='nm'><s>артефакты не покупаются: "+
+      "они лежат в глубоких пластах, достаются трофеем с ушедшего и собираются "+
+      "в лаборатории из двух других</s></div>"));
+    return;
+  }
+  const deep=!!mgrPerkOf("sci","relic");
+  for(const id of own){
+    const A=ARTIFACTS[id],holder=relicHolder(id),mine=m.relic===id;
+    const r=el("div","row"+(mine?" on":""));
+    r.appendChild(el("div","nm","<b style='color:#c58ae0'>"+A.ru+"</b><s>"+A.one+
+      "<br><span style='color:"+(deep?"#8fd08a":"var(--dim)")+"'>"+
+      (deep?"вторая строка: "+A.two:"вторая строка заперта — нужен исследователь с «чтением»")+
+      "</span>"+(holder&&!mine?"<br><b style='color:#f2b25c'>носит "+holder.name+"</b>":"")+"</s>"));
+    const b=el("button","act sm"+(mine?"":" gold"),mine?"СНЯТЬ":"НАДЕТЬ");
+    b.onclick=()=>{if(mine)relicUnequip(m);else relicEquip(m,id);hqRender();};
+    r.appendChild(b);
+    $hqBody.appendChild(r);
+  }
 }
 /* ── карточка поручения ──
    Его слова даются от первого лица и без пояснений от игры: это разговор,

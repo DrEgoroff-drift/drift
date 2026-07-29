@@ -12,7 +12,11 @@ const BUILD={
   storage:{ru:"Склад",      cost:{credits:600,alloy:2},   power:-1, note:"+120 к тому, сколько база может накопить"},
   habitat:{ru:"Жилой отсек",cost:{credits:1200,alloy:3},  power:-4, note:"места для персонала; рядом с реактором людям хуже"},
   refinery:{ru:"Плавильня", cost:{credits:2200,alloy:8},  power:-11,note:"сама переплавляет добытое в сплавы"},
-  pad:    {ru:"Площадка",   cost:{credits:2600,alloy:10}, power:-3, note:"причал для переброски между базами"}
+  pad:    {ru:"Площадка",   cost:{credits:2600,alloy:10}, power:-3, note:"причал для переброски между базами"},
+  /* дорогая, прожорливая и мёртвая без жилого отсека рядом: разбирать образцы
+     вахтой из скафандра нельзя, а исследователю больше работать негде */
+  lab:    {ru:"Лаборатория", cost:{credits:3200,alloy:12},power:-16,needTech:"lab",
+           note:"рабочее место исследователя; нужен жилой отсек по соседству"}
 };
 const BUILD_KEYS=Object.keys(BUILD);
 function baseKey(sx,sy,idx){return sx+","+sy+":"+idx;}
@@ -241,16 +245,24 @@ function updateBase(dt){
     if(keys.right&&!S.held){S.pick=(S.pick+1)%BUILD_KEYS.length;S.held=1;}
     if(!keys.left&&!keys.right)S.held=0;
     const k=BUILD_KEYS[S.pick],M=BUILD[k];
-    const bad=M.surfaceOnly&&S.row>0;
+    /* постройка бывает заперта наукой: лаборатория до «Лаборатории» не ставится.
+       Показываем её всё равно — игрок должен видеть, за чем идти. */
+    const locked=M.needTech&&techLv(M.needTech)<=0;
+    const bad=(M.surfaceOnly&&S.row>0)||locked;
     G.prompt="СТРОИТЬ: "+M.ru.toUpperCase()+"\n"+M.note+
-      "\n"+M.cost.credits+" кр"+(M.cost.alloy?" + "+M.cost.alloy+" сплавов":"")+
-      (bad?"\nТОЛЬКО НА ВЕРХНЕМ УРОВНЕ":"")+
+      "\n"+baseCost(k).credits+" кр"+(M.cost.alloy?" + "+baseCost(k).alloy+" сплавов":"")+
+      (locked?"\nНУЖНА НАУКА: "+TECH[M.needTech].ru.toUpperCase():"")+
+      (M.surfaceOnly&&S.row>0?"\nТОЛЬКО НА ВЕРХНЕМ УРОВНЕ":"")+
       "\n◀ ▶ — выбор · ДЕЙСТВИЕ — построить";
     if(actEdge){
-      if(bad)say("Панель ставится только сверху");
-      else if(!canPay(M.cost))say("Не хватает: "+M.cost.credits+" кр"+(M.cost.alloy?" и "+M.cost.alloy+" сплавов":""));
+      if(locked)say("Сначала нужна наука\n«"+TECH[M.needTech].ru+"»");
+      else if(bad)say("Панель ставится только сверху");
+      /* цена — через baseCost: смета смотрителя должна работать и здесь,
+         иначе скидка показывалась в интерфейсе, а списывалось полное */
+      else if(!canPay(baseCost(k)))say("Не хватает: "+baseCost(k).credits+" кр"+
+        (M.cost.alloy?" и "+baseCost(k).alloy+" сплавов":""));
       else{
-        payCost(M.cost);baseSet(B,S.cur,S.row,{k,hp:1});
+        payCost(baseCost(k));baseSet(B,S.cur,S.row,{k,hp:1});
         S.menu=false;
         tell("money","На базе «"+B.name+"» построено: "+M.ru,"Построено\n"+M.ru);
       }

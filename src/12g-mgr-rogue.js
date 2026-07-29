@@ -101,6 +101,10 @@ function rogueDefeated(p){
     /* всё, что он утащил долей, лежало у него в трюме */
     const back=Math.round(2200+R.lv*900);
     G.credits+=back;
+    /* §12: трофей с ушедшего управляющего — один из источников артефактов.
+       Он унёс с собой не только корпус. */
+    const relic=relicRoll(hashi(R.seed,R.lv,0x3B7),.45);
+    if(relic)relicFind(relic,"трофей с "+R.name);
     if(!G.exiles)G.exiles=[];
     G.exiles.push({name:R.name,role:R.role,seed:R.seed,lv:R.lv,perks:R.perks.slice(),
       traits:R.traits.slice(),fee:Math.round(R.fee*.35),t:Date.now()});
