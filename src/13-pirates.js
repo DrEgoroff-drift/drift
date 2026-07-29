@@ -24,6 +24,9 @@ function spawnPirates(){
       seed:hashi(G.sx,G.sy,i*977),shipId:pirateShipId(hashi(G.sx,G.sy,i*977)),
       cool:0,aware:false,thrust:false});
   }
+  /* ушедший управляющий сидит в своём секторе и ждёт: он такая же запись в
+     G.pirates, поэтому весь бой уже написан — добавлять к нему нечего */
+  rogueSpawn();
 }
 function fireShot(x,y,ang,speed,dmg,mine){
   G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,mine,life:150});
@@ -76,7 +79,8 @@ function updateCombat(dt){
       else{const k=Math.pow(.97,dt);p.vx*=k;p.vy*=k;}
       p.cool-=dt;
       if(d<760&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.35){
-        fireShot(p.x,p.y,p.a,7,3.5+sysDanger(G.sx,G.sy)*5,false);
+        /* у ренегата свой урон: он бьёт вашими же перками */
+        fireShot(p.x,p.y,p.a,7,p.dmg||3.5+sysDanger(G.sx,G.sy)*5,false);
         p.cool=70+Math.random()*60;
       }
     }
@@ -121,6 +125,8 @@ function updateCombat(dt){
   G.pirates=G.pirates.filter(p=>p.hull>0);
 }
 function killPirate(p){
+  /* ренегат — не пират: за него не дают награды, за него возвращают корпус */
+  if(p.rogue){rogueDefeated(p);return;}
   const r=rng(p.seed);
   sfx("boom",{v:.8});
   const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7)*stat().bountyMul);
@@ -176,11 +182,18 @@ function drawCombat(zx,zy,Z){
       ctx.scale(s,s);
       drawHull(p.shipId,p.thrust,false,1,p.bank||0);
       ctx.restore();
-      const w=34,hp=clamp(p.hull/p.hullMax,0,1);
-      ctx.fillStyle="rgba(255,255,255,.14)";ctx.fillRect(x-w/2,y-26,w,3);
-      ctx.fillStyle="#ff6b57";ctx.fillRect(x-w/2,y-26,w*hp,3);
-      ctx.fillStyle="rgba(255,107,87,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      /* ренегата видно сразу: полоса шире, имя ярче и подпись, кто это такой —
+         игрок должен узнать своего человека раньше, чем получит от него */
+      const w=p.rogue?54:34,hp=clamp(p.hull/p.hullMax,0,1);
+      ctx.fillStyle="rgba(255,255,255,.14)";ctx.fillRect(x-w/2,y-26,w,p.rogue?4:3);
+      ctx.fillStyle=p.rogue?"#c58ae0":"#ff6b57";ctx.fillRect(x-w/2,y-26,w*hp,p.rogue?4:3);
+      ctx.fillStyle=p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)";
+      ctx.font=(p.rogue?"9px":"8px")+" ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText(p.name.toUpperCase(),x,y+26);
+      if(p.rogue){
+        ctx.fillStyle="rgba(197,138,224,.6)";ctx.font="8px ui-monospace,monospace";
+        ctx.fillText("БЫВШИЙ УПРАВЛЯЮЩИЙ",x,y+37);
+      }
     }else if(G.tech.has("radar")){
       const ang=Math.atan2(p.y-G.ship.y,p.x-G.ship.x);
       const mx=W/2+Math.cos(ang)*(Math.min(W,H)/2-26),my=H/2+Math.sin(ang)*(Math.min(W,H)/2-26);

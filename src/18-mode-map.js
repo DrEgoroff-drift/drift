@@ -44,6 +44,20 @@ function drawMap(){
       ctx.beginPath();ctx.arc(x,y,rr+9,0,TAU);ctx.stroke();}
     if(gx===G.sx&&gy===G.sy){ctx.strokeStyle="#7fe6d8";ctx.lineWidth=1.2;
       ctx.beginPath();ctx.arc(x,y,rr+13,0,TAU);ctx.stroke();}
+    /* ушедший управляющий и разошедшееся ядро — единственные метки на карте,
+       которые поставил не мир, а сам игрок. Без них до них не долететь. */
+    if((G.rogues||[]).some(R=>R.sx===gx&&R.sy===gy)){
+      ctx.strokeStyle="#c58ae0";ctx.lineWidth=1.4;
+      ctx.beginPath();ctx.arc(x,y,rr+17,0,TAU);ctx.stroke();
+      ctx.fillStyle="rgba(197,138,224,.9)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText("РЕНЕГАТ",x,y-rr-21);
+    }
+    if(G.aiRift&&G.aiRift.sx===gx&&G.aiRift.sy===gy){
+      ctx.strokeStyle="#7fb0e6";ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.arc(x,y,rr+21,0,TAU);ctx.stroke();
+      ctx.fillStyle="rgba(127,176,230,.9)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText("РАСХОЖДЕНИЕ",x,y+rr+21);
+    }
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
   }
   if(sel){
@@ -69,7 +83,7 @@ function drawMap(){
   ctx.fillStyle="rgba(93,115,130,.9)";ctx.textAlign="right";
   ctx.fillText("ТЕЛ ОТКРЫТО: "+G.found.size,W-16,H-78);
   ctx.fillText("ВИДОВ: "+G.species.size,W-16,H-64);
-  ctx.fillText("КРЕДИТОВ: "+G.credits,W-16,H-50);
+  ctx.fillText("КРЕДИТОВ: "+Math.round(G.credits).toLocaleString("ru"),W-16,H-50);
   G.prompt="ТАП ПО ЗВЕЗДЕ — ВЫБОР · ДЕЙСТВ — ПРЫЖОК";
   if(actEdge){
     if(!bad)jump(cost);

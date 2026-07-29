@@ -302,7 +302,7 @@
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.9.0";
+const VER="0.10.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -1503,6 +1503,8 @@ const G={
   /* управляющие: четыре места, по одному на домен. Чертежи исследователя —
      1 верный, −1 ошибочный: ошибка живёт, пока её не пересоберут. */
   mgrs:[],blueprints:{},cantina:null,aiRift:null,
+  /* ушедшие: ренегат сидит в своём секторе и дерётся, изгнанник ждёт в кантине */
+  rogues:[],exiles:[],
   /* счётчики для поручений: живут в сессии, при загрузке отсчёт начинается заново */
   orderStamp:0,kills:0,soldTotal:0,
   /* базы: разреженный оверлей «sx,sy:planetIdx» → решения игрока.
@@ -3190,13 +3192,21 @@ function mgrCut(m){
   let c=MGR_ROLES[m.role].cut+mgrTraitAdd(m,"cut")-techLv("audit")*.015;
   /* тихая проверка в «двойной книге» — рычаг: он работает дешевле и знает почему */
   if(m.quietLever)c-=.025;
+  if(m.cutBonus)c+=m.cutBonus;           // цена ультиматума, на который согласились
   return clamp(c,.01,.2);
 }
 /* доля снимается до того, как деньги попадут игроку, и всегда видна строкой */
+/* Ниже пятидесяти человек начинает «терять» проценты домена в свою пользу —
+   любой, не только «свои интересы». Наружу это не выводится числом: видно
+   только по сверке в сводке домена, где утечка идёт отдельной строкой. */
+function mgrLeak(m){
+  if(m.ai||m.loy>=50)return 0;
+  return (50-m.loy)/50*.05;
+}
 function mgrTake(m,gross){
   if(gross<=0)return 0;
   const cut=Math.round(gross*mgrCut(m));
-  const steal=Math.round(gross*mgrTraitAdd(m,"steal")*(m.loy<50?1.6:1));
+  const steal=Math.round(gross*(mgrTraitAdd(m,"steal")*(m.loy<50?1.6:1)+mgrLeak(m)));
   m.tookCr=(m.tookCr||0)+cut+steal;
   if(steal>0)m.stole=(m.stole||0)+steal;
   return cut+steal;
@@ -3280,7 +3290,11 @@ function stationMgrs(sys){
     if(techLv("academy")>0&&m.xp<MGR_XP[1])m.xp=MGR_XP[1];
     out.push(m);
   }
-  return out;
+  /* Изгнанник — тот, кого вы однажды довели до ухода и потом разбили. Он есть
+     в кантине любой станции, стоит треть обычного и приходит с уже выученными
+     перками: за них вы заплатили тогда. Начинает с низкой лояльностью — он
+     помнит, чем всё кончилось в прошлый раз. */
+  return exileCandidates().concat(out);
 }
 function mgrFee(m){return Math.round(m.fee*mgrHireMul());}
 function mgrTaken(role){return !!mgrOf(role);}
@@ -3290,8 +3304,11 @@ function hireMgr(cand){
   const fee=mgrFee(cand);
   if(G.credits<fee){say("Не хватает кредитов");return false;}
   G.credits-=fee;
-  const m=Object.assign({},cand,{traits:cand.traits.slice(),perks:[],rules:[],
+  /* изгнанник возвращается со своими перками — вы за них уже платили однажды */
+  const m=Object.assign({},cand,{traits:cand.traits.slice(),
+    perks:cand.exile?cand.perks.slice():[],rules:[],
     tMs:Date.now(),earned:0,spent:0,tookCr:0,stole:0,route:[],log:[]});
+  if(cand.exile&&G.exiles)G.exiles=G.exiles.filter(e=>e.seed!==cand.seed);
   G.mgrs.push(m);
   mgrSay(m,"Принял домен: "+MGR_ROLES[m.role].dom);
   tell("money","Нанят "+m.name+" · "+MGR_ROLES[m.role].ru+" · −"+fee.toLocaleString("ru")+" кр",
@@ -3301,6 +3318,41 @@ function hireMgr(cand){
 /* Расчёт дорог намеренно: управляющий — не расходник, которого перебирают,
    а решение, с которым живут. */
 function mgrSeverance(m){return Math.round(m.fee*.6+mgrPay(m)*25);}
+/* ── ультиматум ──
+   Ниже двадцати пяти он перестаёт просить и начинает ставить условие. Это то же
+   поручение-сцена, что и все прочие, только приходит не по желанию, а по цифре,
+   и отказ здесь стоит не шести очков лояльности, а всей оставшейся.
+   Пока ультиматум висит, он ещё работает — но недолго. */
+function mgrUltimatum(m){
+  if(m.job&&m.job.id==="ultimatum"){
+    /* срок идёт здесь, а не в jobTick: тот пропускается, когда домен встал,
+       а ультиматум обязан дотикать в любом случае */
+    if(jobLeft(m)<=0){
+      m.job=null;
+      mgrSay(m,"Ответа не было. Считаю, что ответ есть.","warn");
+      mgrDefect(m,"ult");
+    }
+    return;
+  }
+  if(m.job)m.job=null;                   // разговоры кончились: это важнее любого поручения
+  if(m.ultCount>=2){mgrDefect(m,"ult");return;}   // третий раз он не приходит
+  m.ultCount=(m.ultCount||0)+1;
+  m.job={id:"ultimatum",t0:Date.now(),mins:12,offer:1,choice:1};
+  mgrSay(m,"Так больше нельзя. У меня есть условие.","warn");
+  tell("warn","Ультиматум: "+m.name,
+    m.name+" ставит условие\nэкран ШТАБ · "+MGR_ROLES[m.role].ru.toLowerCase());
+}
+/* ── уход ──
+   Он не исчезает из игры: становится ренегатом в соседнем секторе (12g).
+   Место домена освобождается сразу — рутина возвращается к игроку. */
+function mgrDefect(m,why){
+  if(m.gone)return;
+  m.gone=true;m.job=null;
+  /* убираем сразу, а не ждём тика: уход может прийти из кнопки в ШТАБе,
+     и рисовать после этого его карточку было бы враньём */
+  const i=G.mgrs.indexOf(m);if(i>=0)G.mgrs.splice(i,1);
+  rogueFrom(m,why||"loy");
+}
 function fireMgr(m){
   const i=G.mgrs.indexOf(m);if(i<0)return false;
   const cost=mgrSeverance(m);
@@ -3374,6 +3426,10 @@ function mgrTick(){
     m.tMs=now;
     const min=Math.min(dt/60000,240);       // за долгое отсутствие домен не копит вечно
     mgrPayroll(m,min);
+    /* лояльность падает не только от денег — от отказов и провалов тоже,
+       поэтому ультиматум и уход проверяются здесь, а не внутри жалованья */
+    if(!m.ai&&m.loy<25&&!m.gone)mgrUltimatum(m);
+    if(!m.ai&&m.loy<=0&&!m.gone)mgrDefect(m);
     if(m.gone){G.mgrs.splice(i,1);continue;}
     /* пьющий иногда просто не работает — черта видна заранее, претензий нет */
     const idle=mgrHas(m,"drink")&&
@@ -3412,7 +3468,9 @@ function mgrTick(){
    и убыточного домена, и на нуле он забирает флагман: единственный источник
    по-настоящему сильного противника поздней игры, которого игрок вырастил сам. */
 function mgrPayroll(m,min){
-  const due=mgrPay(m)*min;
+  /* округляем здесь: жалованье считается от дробных минут, и без этого
+     на счету игрока накапливался хвост вида 295577.3657999 */
+  const due=Math.round(mgrPay(m)*min);
   const pay=Math.min(G.credits,due);
   G.credits-=pay;m.spent=(m.spent||0)+pay;
   const short=due-pay;
@@ -3431,14 +3489,6 @@ function mgrPayroll(m,min){
     if(!m.warnPay&&m.loy<45){
       m.warnPay=1;mgrSay(m,"Жалованье не приходит. Я это помню.","warn");
       logAdd("warn",m.name+" не получает жалованья — лояльность падает");
-    }
-    if(m.loy<=0){
-      const S=m.shipId?shipData(m.shipId):null;
-      if(m.shipId&&m.shipId!==G.shipId)delete G.owned[m.shipId];
-      logAdd("warn",m.name+" ушёл"+(S?" и забрал «"+S.ru+"»":"")+
-        " · домен «"+MGR_ROLES[m.role].dom+"» снова ваш");
-      tell("warn",m.name+" ушёл",m.name+" ушёл\n"+(S?"забрал «"+S.ru+"»":"домен остался без хозяина"));
-      m.gone=true;
     }
   }else{
     m.warnPay=0;
@@ -4014,6 +4064,19 @@ function jobChoose(m,i){
 /* check возвращает "win" | "fail" | null. Всё, что она читает, — обычное
    состояние игры: никаких отдельных счётчиков ради квестов. */
 const MGR_JOBS=[
+  /* ── общее: приходит не по желанию, а по цифре (§10) ──
+     Ультиматум — единственная сцена, где отказ стоит не лояльности, а человека.
+     Роли у него нет: так разговаривает любой, кому надоело. */
+  {id:"ultimatum",role:"*",ru:"Ультиматум",mins:12,loss:100,ult:1,choice:1,
+   text:m=>"Я держу «"+MGR_ROLES[m.role].dom+"» "+(mgrLevel(m))+
+     " уровнем и вижу, сколько это приносит. Мне столько не достаётся. "+
+     "Или мы договариваемся сегодня, или я ухожу — и ухожу не пустым.",
+   opts:[
+     {ru:"ПОДНЯТЬ ДОЛЮ · +3 п.п.",said:"Вот теперь разговор.",cutUp:.03,setLoy:62},
+     {ru:"ОТСТУПНЫЕ",said:"Деньги — не то же самое, что уважение. Но сойдёт.",
+      payoff:1,setLoy:52},
+     {ru:"ОТКАЗАТЬ",said:"Понял. Больше не побеспокою.",bad:1,defect:1}
+   ]},
   /* ── командир звена ── */
   {id:"silence",role:"cmd",ru:"Тишина в эфире",mins:18,loss:8,
    text:"Сутки — ни одного приказа. Ни мне, ни людям. Хочу посмотреть, как звено "+
@@ -4166,8 +4229,19 @@ function jobPick(m,i){
   const J=jobDef(m.job&&m.job.id);
   if(!J||!J.opts||!J.opts[i])return false;
   const opt=J.opts[i];
-  if(opt.cost&&G.credits<opt.cost){say("Не хватает кредитов\nнужно "+opt.cost+" кр");return false;}
-  if(opt.cost)G.credits-=opt.cost;
+  /* цена отступных считается от человека, а не из таблицы: дорогой управляющий
+     и требует дорого. Кнопка сама показывает сумму — см. hqJobCard. */
+  const cost=opt.payoff?mgrUltCost(m):opt.cost;
+  if(cost&&G.credits<cost){say("Не хватает кредитов\nнужно "+cost.toLocaleString("ru")+" кр");return false;}
+  if(cost)G.credits-=cost;
+  if(opt.defect){
+    m.job=null;
+    mgrSay(m,opt.said,"warn");
+    mgrDefect(m,"ult");
+    return true;
+  }
+  if(opt.cutUp)m.cutBonus=(m.cutBonus||0)+opt.cutUp;
+  if(opt.setLoy)m.loy=Math.max(m.loy,opt.setLoy);
   if(opt.quiet)m.quietLever=1;           // рычаг: он работает дешевле и знает почему
   if(opt.cut&&m.route.length)m.route.pop();
   if(opt.rollback){
@@ -4175,9 +4249,13 @@ function jobPick(m,i){
   }
   return jobChoose(m,i);
 }
+/* Сколько он хочет отступными: столько же, во что обошёлся бы расчёт,
+   плюс надбавка за уровень. Дешёвого выхода из ультиматума нет. */
+function mgrUltCost(m){return Math.round(mgrSeverance(m)*1.3+mgrPay(m)*mgrLevel(m)*12);}
 /* ход поручения внутри общего тика домена */
 function jobTick(m){
   if(!m.job){jobOffer(m);return;}
+  if(m.job.id==="ultimatum")return;      // у него свой срок, он тикает в mgrUltimatum
   if(m.job.offer)return;                 // предложение ждёт игрока сколько угодно
   const J=jobDef(m.job.id);
   if(!J||!J.check)return;
@@ -4313,6 +4391,131 @@ function aiUpkeep(m){
   return Math.round((16+(mgrLevel(m)-1)*5)*(1+(m.drift||0)/60));
 }
 
+/* ══════════════ ушедший управляющий: ренегат ══════════════ */
+/* Управляющий не ломается по корпусу — он уходит. И уходит не в пустоту:
+   забирает флагман, забирает тех наёмников, кого считает своими, и садится
+   в соседнем секторе как собственная маленькая фракция.
+
+   Смысл в том, что это единственный по-настоящему сильный противник поздней
+   игры, которого игрок вырастил сам: он летит на вашем корпусе, дерётся с
+   вашими перками и знает то, чему вы его научили. Разбить его можно — корпус
+   вернётся, а сам он останется в мире и однажды снова пойдёт наниматься,
+   дёшево и ненавидя вас ровно столько, сколько помнит. */
+const ROGUE_CAP=3;                       // больше трёх — уже не сюжет, а список
+
+/* Куда он ушёл: близко, чтобы можно было долететь, но не в текущий сектор —
+   иначе он свалился бы на голову в ту же секунду. */
+function rogueSector(m){
+  const r=rng(hashi(m.seed,0x60E,5));
+  for(let i=0;i<40;i++){
+    const sx=G.sx+Math.round((r()*2-1)*4), sy=G.sy+Math.round((r()*2-1)*4);
+    if((sx!==G.sx||sy!==G.sy)&&starAt(sx,sy))return {sx,sy};
+  }
+  return {sx:G.sx+3,sy:G.sy+2};
+}
+/* Он уводит своих: наёмников, которые сейчас в рейсе под его началом.
+   Командир уводит звено, остальные — никого: чужих людей не забирают. */
+function rogueTakesCrew(m){
+  if(m.role!=="cmd"||!G.crew.length)return [];
+  const mine=G.crew.filter(c=>c.shipId&&c.order&&c.order.kind!=="home");
+  const took=mine.slice(0,Math.max(1,Math.floor(mine.length*.6)));
+  for(const c of took){
+    const i=G.crew.indexOf(c);
+    if(i>=0)G.crew.splice(i,1);
+    if(c.shipId&&c.shipId!==G.shipId)delete G.owned[c.shipId];
+  }
+  return took.map(c=>c.name);
+}
+/* Запись ренегата — не ссылка на управляющего, а слепок: он больше не в G.mgrs,
+   и всё, что о нём нужно знать бою и карте, лежит здесь. */
+function rogueFrom(m,why){
+  const lv=mgrLevel(m);
+  const S=m.shipId?shipData(m.shipId):null;
+  const crew=rogueTakesCrew(m);
+  const place=rogueSector(m);
+  /* перки — не украшение: за каждый он бьёт чуть больнее и держит чуть дольше */
+  const grit=1+m.perks.length*.12+(lv-1)*.15;
+  const R={sx:place.sx,sy:place.sy,name:m.name,role:m.role,seed:m.seed,
+    lv,perks:m.perks.slice(),traits:m.traits.slice(),
+    shipId:m.shipId||null,crew,fee:m.fee,why:why||"loy",
+    hullMax:Math.round((S?S.hull:100)*grit+60*lv),
+    dmg:+(5+lv*1.6+m.perks.length*.5).toFixed(2),
+    t:Date.now()};
+  R.hull=R.hullMax;
+  if(!G.rogues)G.rogues=[];
+  G.rogues.push(R);
+  while(G.rogues.length>ROGUE_CAP)G.rogues.shift();
+  /* корпус уходит вместе с ним: он теперь на нём летает, а не стоит в ангаре */
+  if(m.shipId&&m.shipId!==G.shipId)delete G.owned[m.shipId];
+  logAdd("warn",m.name+" ушёл"+(S?" на «"+S.ru+"»":"")+
+    (crew.length?" и увёл "+crew.length+" чел.":"")+
+    " · видели в секторе "+R.sx+":"+R.sy);
+  tell("warn",m.name+" ушёл",
+    m.name+" ушёл\n"+(S?"забрал «"+S.ru+"»\n":"")+
+    (crew.length?"увёл: "+crew.join(", ")+"\n":"")+
+    "сектор "+R.sx+":"+R.sy);
+  return R;
+}
+function rogueHere(){
+  if(!G.rogues)return null;
+  return G.rogues.find(R=>R.sx===G.sx&&R.sy===G.sy)||null;
+}
+/* Спавн в бой: он — обычная запись в G.pirates, поэтому всё уже написанное
+   (наведение, выстрелы, попадания, отрисовка корпуса) работает без правок. */
+function rogueSpawn(){
+  const R=rogueHere();if(!R)return;
+  const r=rng(hashi(R.seed,0x51A,9));
+  const a=r()*TAU,rad=1500+r()*900;
+  G.pirates.push({x:Math.cos(a)*rad,y:Math.sin(a)*rad,vx:0,vy:0,a:a+Math.PI,
+    hull:R.hull,hullMax:R.hullMax,name:R.name,seed:R.seed,
+    shipId:R.shipId||pirateShipId(R.seed),
+    dmg:R.dmg,cool:0,aware:false,thrust:false,rogue:1});
+  /* уведённые люди летят с ним — их видно поимённо, и это неприятно намеренно */
+  for(let i=0;i<Math.min(R.crew.length,3);i++){
+    const ea=r()*TAU,er=rad*(.85+r()*.3);
+    G.pirates.push({x:Math.cos(ea)*er,y:Math.sin(ea)*er,vx:0,vy:0,a:ea+Math.PI,
+      hull:40+R.lv*18,hullMax:40+R.lv*18,name:R.crew[i],seed:hashi(R.seed,i,0x2C),
+      shipId:pirateShipId(hashi(R.seed,i,0x2C)),
+      dmg:3.5+R.lv*.7,cool:0,aware:false,thrust:false,rogueEsc:1});
+  }
+}
+/* Разбит: корпус возвращается в ангар, а сам он остаётся в мире —
+   изгнанником, которого однажды можно взять обратно (и дёшево). */
+function rogueDefeated(p){
+  const R=(G.rogues||[]).find(x=>x.seed===p.seed);
+  sfx("boom",{v:1});
+  if(R){
+    const i=G.rogues.indexOf(R);G.rogues.splice(i,1);
+    if(R.shipId&&!G.owned[R.shipId]){
+      G.owned[R.shipId]=true;
+      const S=shipData(R.shipId);
+      logAdd("kill","«"+(S?S.ru:R.shipId)+"» отбит у "+R.name);
+    }
+    /* всё, что он утащил долей, лежало у него в трюме */
+    const back=Math.round(2200+R.lv*900);
+    G.credits+=back;
+    if(!G.exiles)G.exiles=[];
+    G.exiles.push({name:R.name,role:R.role,seed:R.seed,lv:R.lv,perks:R.perks.slice(),
+      traits:R.traits.slice(),fee:Math.round(R.fee*.35),t:Date.now()});
+    while(G.exiles.length>ROGUE_CAP)G.exiles.shift();
+    tell("kill",R.name+" разбит · +"+back.toLocaleString("ru")+" кр",
+      R.name+" разбит\n"+(R.shipId?"корпус отбит\n":"")+
+      "+"+back.toLocaleString("ru")+" кр\nон выжил — и однажды придёт в кантину");
+    logAdd("kill",R.name+" разбит · +"+back.toLocaleString("ru")+" кр · он выжил");
+  }
+  const j=G.pirates.indexOf(p);if(j>=0)G.pirates.splice(j,1);
+}
+/* Изгнанник в кантине: дешевле всех, начинает с низкой лояльностью и с уже
+   выученными перками — вы за них однажды заплатили. */
+function exileCandidates(){
+  if(!G.exiles||!G.exiles.length)return [];
+  return G.exiles.map(e=>({
+    name:e.name,role:e.role,seed:e.seed,traits:e.traits.slice(),perks:e.perks.slice(),
+    xp:MGR_XP[clamp(e.lv-1,0,MGR_XP.length-1)],loy:28,rules:[],lv0:e.lv,
+    tMs:0,earned:0,spent:0,tookCr:0,stole:0,shipId:null,route:[],log:[],
+    fee:e.fee,exile:1}));
+}
+
 /* ══════════════ пираты ══════════════ */
 /* эфемерны: набираются заново при каждом входе в систему, как орбиты и пояс */
 const PIRATE_NAMES=["Шакал","Гриф","Клык","Ржавый","Стервятник","Сиплый","Крюк","Оса"];
@@ -4339,6 +4542,9 @@ function spawnPirates(){
       seed:hashi(G.sx,G.sy,i*977),shipId:pirateShipId(hashi(G.sx,G.sy,i*977)),
       cool:0,aware:false,thrust:false});
   }
+  /* ушедший управляющий сидит в своём секторе и ждёт: он такая же запись в
+     G.pirates, поэтому весь бой уже написан — добавлять к нему нечего */
+  rogueSpawn();
 }
 function fireShot(x,y,ang,speed,dmg,mine){
   G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,mine,life:150});
@@ -4391,7 +4597,8 @@ function updateCombat(dt){
       else{const k=Math.pow(.97,dt);p.vx*=k;p.vy*=k;}
       p.cool-=dt;
       if(d<760&&p.cool<=0&&Math.abs(angDiff(want,p.a))<.35){
-        fireShot(p.x,p.y,p.a,7,3.5+sysDanger(G.sx,G.sy)*5,false);
+        /* у ренегата свой урон: он бьёт вашими же перками */
+        fireShot(p.x,p.y,p.a,7,p.dmg||3.5+sysDanger(G.sx,G.sy)*5,false);
         p.cool=70+Math.random()*60;
       }
     }
@@ -4436,6 +4643,8 @@ function updateCombat(dt){
   G.pirates=G.pirates.filter(p=>p.hull>0);
 }
 function killPirate(p){
+  /* ренегат — не пират: за него не дают награды, за него возвращают корпус */
+  if(p.rogue){rogueDefeated(p);return;}
   const r=rng(p.seed);
   sfx("boom",{v:.8});
   const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7)*stat().bountyMul);
@@ -4491,11 +4700,18 @@ function drawCombat(zx,zy,Z){
       ctx.scale(s,s);
       drawHull(p.shipId,p.thrust,false,1,p.bank||0);
       ctx.restore();
-      const w=34,hp=clamp(p.hull/p.hullMax,0,1);
-      ctx.fillStyle="rgba(255,255,255,.14)";ctx.fillRect(x-w/2,y-26,w,3);
-      ctx.fillStyle="#ff6b57";ctx.fillRect(x-w/2,y-26,w*hp,3);
-      ctx.fillStyle="rgba(255,107,87,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      /* ренегата видно сразу: полоса шире, имя ярче и подпись, кто это такой —
+         игрок должен узнать своего человека раньше, чем получит от него */
+      const w=p.rogue?54:34,hp=clamp(p.hull/p.hullMax,0,1);
+      ctx.fillStyle="rgba(255,255,255,.14)";ctx.fillRect(x-w/2,y-26,w,p.rogue?4:3);
+      ctx.fillStyle=p.rogue?"#c58ae0":"#ff6b57";ctx.fillRect(x-w/2,y-26,w*hp,p.rogue?4:3);
+      ctx.fillStyle=p.rogue?"rgba(197,138,224,.95)":"rgba(255,107,87,.75)";
+      ctx.font=(p.rogue?"9px":"8px")+" ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText(p.name.toUpperCase(),x,y+26);
+      if(p.rogue){
+        ctx.fillStyle="rgba(197,138,224,.6)";ctx.font="8px ui-monospace,monospace";
+        ctx.fillText("БЫВШИЙ УПРАВЛЯЮЩИЙ",x,y+37);
+      }
     }else if(G.tech.has("radar")){
       const ang=Math.atan2(p.y-G.ship.y,p.x-G.ship.x);
       const mx=W/2+Math.cos(ang)*(Math.min(W,H)/2-26),my=H/2+Math.sin(ang)*(Math.min(W,H)/2-26);
@@ -4541,7 +4757,7 @@ function snapshot(){
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],species:[...G.species],
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
     drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
-    mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,
+    mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -4649,6 +4865,10 @@ function applySave(s){
   G.mgrs=G.mgrs.filter(m=>seen[m.role]?false:(seen[m.role]=1));
   G.aiRift=(s.aiRift&&typeof s.aiRift==="object")?{sx:s.aiRift.sx|0,sy:s.aiRift.sy|0,
     name:String(s.aiRift.name||""),t:+s.aiRift.t||0}:null;
+  /* ренегаты и изгнанники — решения игрока, а не производная от seed: сохраняем.
+     Роль сверяется с таблицей, иначе битая запись уронила бы бой и кантину. */
+  G.rogues=Array.isArray(s.rogues)?s.rogues.filter(R=>R&&MGR_ROLES[R.role]).slice(0,ROGUE_CAP):[];
+  G.exiles=Array.isArray(s.exiles)?s.exiles.filter(E=>E&&MGR_ROLES[E.role]).slice(0,ROGUE_CAP):[];
   G.blueprints={};
   if(s.blueprints&&typeof s.blueprints==="object")
     for(const k in s.blueprints)if(BLUEPRINTS[k])G.blueprints[k]=s.blueprints[k]>0?1:-1;
@@ -5840,6 +6060,20 @@ function drawMap(){
       ctx.beginPath();ctx.arc(x,y,rr+9,0,TAU);ctx.stroke();}
     if(gx===G.sx&&gy===G.sy){ctx.strokeStyle="#7fe6d8";ctx.lineWidth=1.2;
       ctx.beginPath();ctx.arc(x,y,rr+13,0,TAU);ctx.stroke();}
+    /* ушедший управляющий и разошедшееся ядро — единственные метки на карте,
+       которые поставил не мир, а сам игрок. Без них до них не долететь. */
+    if((G.rogues||[]).some(R=>R.sx===gx&&R.sy===gy)){
+      ctx.strokeStyle="#c58ae0";ctx.lineWidth=1.4;
+      ctx.beginPath();ctx.arc(x,y,rr+17,0,TAU);ctx.stroke();
+      ctx.fillStyle="rgba(197,138,224,.9)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText("РЕНЕГАТ",x,y-rr-21);
+    }
+    if(G.aiRift&&G.aiRift.sx===gx&&G.aiRift.sy===gy){
+      ctx.strokeStyle="#7fb0e6";ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.arc(x,y,rr+21,0,TAU);ctx.stroke();
+      ctx.fillStyle="rgba(127,176,230,.9)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText("РАСХОЖДЕНИЕ",x,y+rr+21);
+    }
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
   }
   if(sel){
@@ -5865,7 +6099,7 @@ function drawMap(){
   ctx.fillStyle="rgba(93,115,130,.9)";ctx.textAlign="right";
   ctx.fillText("ТЕЛ ОТКРЫТО: "+G.found.size,W-16,H-78);
   ctx.fillText("ВИДОВ: "+G.species.size,W-16,H-64);
-  ctx.fillText("КРЕДИТОВ: "+G.credits,W-16,H-50);
+  ctx.fillText("КРЕДИТОВ: "+Math.round(G.credits).toLocaleString("ru"),W-16,H-50);
   G.prompt="ТАП ПО ЗВЕЗДЕ — ВЫБОР · ДЕЙСТВ — ПРЫЖОК";
   if(actEdge){
     if(!bad)jump(cost);
@@ -10535,16 +10769,23 @@ function hqJobCard(m){
   const J=jobDef(m.job.id);
   if(!J)return;
   const left=jobLeft(m);
-  $hqBody.appendChild(el("div","sec","ПОРУЧЕНИЕ · "+J.ru.toUpperCase()+
-    (m.job.offer?" · ЖДЁТ ОТВЕТА":(J.mins||m.job.mins?" · ОСТАЛОСЬ "+Math.ceil(left)+" МИН":""))));
-  $hqBody.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;font-size:10px;"+
-    "line-height:1.8'>— "+J.text+"</s></div>"));
+  /* у ультиматума срок идёт и пока он «ждёт ответа» — молчание тоже ответ */
+  $hqBody.appendChild(el("div","sec",J.ult
+    ?"УЛЬТИМАТУМ · ОН УЙДЁТ ЧЕРЕЗ "+Math.ceil(left)+" МИН"
+    :"ПОРУЧЕНИЕ · "+J.ru.toUpperCase()+
+      (m.job.offer?" · ЖДЁТ ОТВЕТА":(J.mins||m.job.mins?" · ОСТАЛОСЬ "+Math.ceil(left)+" МИН":""))));
+  /* текст бывает и от человека, а не только от таблицы */
+  const txt=typeof J.text==="function"?J.text(m):J.text;
+  $hqBody.appendChild(el("div","row","<div class='nm'><s style='color:"+(J.ult?"#ffb2a0":"#cfe3ea")+
+    ";font-size:10px;line-height:1.8'>— "+txt+"</s></div>"));
   const r=el("div","row");
   if(m.job.offer&&J.choice){
-    r.appendChild(el("div","nm","<s>решать вам, он исполнит</s>"));
+    r.appendChild(el("div","nm","<s>"+(J.ult?"молчание — тоже отказ":"решать вам, он исполнит")+"</s>"));
     J.opts.forEach((o,i)=>{
-      const b=el("button","act sm"+(o.bad?"":" gold"),o.ru);
-      b.disabled=!!(o.cost&&G.credits<o.cost);
+      const cost=o.payoff?mgrUltCost(m):o.cost;
+      const b=el("button","act sm"+(o.bad?"":" gold"),
+        o.ru+(o.payoff?" · "+cost.toLocaleString("ru")+" кр":""));
+      b.disabled=!!(cost&&G.credits<cost);
       b.onclick=()=>{if(jobPick(m,i))hqRender();};
       r.appendChild(b);
     });

@@ -256,16 +256,23 @@ function hqJobCard(m){
   const J=jobDef(m.job.id);
   if(!J)return;
   const left=jobLeft(m);
-  $hqBody.appendChild(el("div","sec","ПОРУЧЕНИЕ · "+J.ru.toUpperCase()+
-    (m.job.offer?" · ЖДЁТ ОТВЕТА":(J.mins||m.job.mins?" · ОСТАЛОСЬ "+Math.ceil(left)+" МИН":""))));
-  $hqBody.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;font-size:10px;"+
-    "line-height:1.8'>— "+J.text+"</s></div>"));
+  /* у ультиматума срок идёт и пока он «ждёт ответа» — молчание тоже ответ */
+  $hqBody.appendChild(el("div","sec",J.ult
+    ?"УЛЬТИМАТУМ · ОН УЙДЁТ ЧЕРЕЗ "+Math.ceil(left)+" МИН"
+    :"ПОРУЧЕНИЕ · "+J.ru.toUpperCase()+
+      (m.job.offer?" · ЖДЁТ ОТВЕТА":(J.mins||m.job.mins?" · ОСТАЛОСЬ "+Math.ceil(left)+" МИН":""))));
+  /* текст бывает и от человека, а не только от таблицы */
+  const txt=typeof J.text==="function"?J.text(m):J.text;
+  $hqBody.appendChild(el("div","row","<div class='nm'><s style='color:"+(J.ult?"#ffb2a0":"#cfe3ea")+
+    ";font-size:10px;line-height:1.8'>— "+txt+"</s></div>"));
   const r=el("div","row");
   if(m.job.offer&&J.choice){
-    r.appendChild(el("div","nm","<s>решать вам, он исполнит</s>"));
+    r.appendChild(el("div","nm","<s>"+(J.ult?"молчание — тоже отказ":"решать вам, он исполнит")+"</s>"));
     J.opts.forEach((o,i)=>{
-      const b=el("button","act sm"+(o.bad?"":" gold"),o.ru);
-      b.disabled=!!(o.cost&&G.credits<o.cost);
+      const cost=o.payoff?mgrUltCost(m):o.cost;
+      const b=el("button","act sm"+(o.bad?"":" gold"),
+        o.ru+(o.payoff?" · "+cost.toLocaleString("ru")+" кр":""));
+      b.disabled=!!(cost&&G.credits<cost);
       b.onclick=()=>{if(jobPick(m,i))hqRender();};
       r.appendChild(b);
     });

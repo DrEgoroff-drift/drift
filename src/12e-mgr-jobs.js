@@ -85,6 +85,19 @@ function jobChoose(m,i){
 /* check возвращает "win" | "fail" | null. Всё, что она читает, — обычное
    состояние игры: никаких отдельных счётчиков ради квестов. */
 const MGR_JOBS=[
+  /* ── общее: приходит не по желанию, а по цифре (§10) ──
+     Ультиматум — единственная сцена, где отказ стоит не лояльности, а человека.
+     Роли у него нет: так разговаривает любой, кому надоело. */
+  {id:"ultimatum",role:"*",ru:"Ультиматум",mins:12,loss:100,ult:1,choice:1,
+   text:m=>"Я держу «"+MGR_ROLES[m.role].dom+"» "+(mgrLevel(m))+
+     " уровнем и вижу, сколько это приносит. Мне столько не достаётся. "+
+     "Или мы договариваемся сегодня, или я ухожу — и ухожу не пустым.",
+   opts:[
+     {ru:"ПОДНЯТЬ ДОЛЮ · +3 п.п.",said:"Вот теперь разговор.",cutUp:.03,setLoy:62},
+     {ru:"ОТСТУПНЫЕ",said:"Деньги — не то же самое, что уважение. Но сойдёт.",
+      payoff:1,setLoy:52},
+     {ru:"ОТКАЗАТЬ",said:"Понял. Больше не побеспокою.",bad:1,defect:1}
+   ]},
   /* ── командир звена ── */
   {id:"silence",role:"cmd",ru:"Тишина в эфире",mins:18,loss:8,
    text:"Сутки — ни одного приказа. Ни мне, ни людям. Хочу посмотреть, как звено "+
@@ -237,8 +250,19 @@ function jobPick(m,i){
   const J=jobDef(m.job&&m.job.id);
   if(!J||!J.opts||!J.opts[i])return false;
   const opt=J.opts[i];
-  if(opt.cost&&G.credits<opt.cost){say("Не хватает кредитов\nнужно "+opt.cost+" кр");return false;}
-  if(opt.cost)G.credits-=opt.cost;
+  /* цена отступных считается от человека, а не из таблицы: дорогой управляющий
+     и требует дорого. Кнопка сама показывает сумму — см. hqJobCard. */
+  const cost=opt.payoff?mgrUltCost(m):opt.cost;
+  if(cost&&G.credits<cost){say("Не хватает кредитов\nнужно "+cost.toLocaleString("ru")+" кр");return false;}
+  if(cost)G.credits-=cost;
+  if(opt.defect){
+    m.job=null;
+    mgrSay(m,opt.said,"warn");
+    mgrDefect(m,"ult");
+    return true;
+  }
+  if(opt.cutUp)m.cutBonus=(m.cutBonus||0)+opt.cutUp;
+  if(opt.setLoy)m.loy=Math.max(m.loy,opt.setLoy);
   if(opt.quiet)m.quietLever=1;           // рычаг: он работает дешевле и знает почему
   if(opt.cut&&m.route.length)m.route.pop();
   if(opt.rollback){
@@ -246,9 +270,13 @@ function jobPick(m,i){
   }
   return jobChoose(m,i);
 }
+/* Сколько он хочет отступными: столько же, во что обошёлся бы расчёт,
+   плюс надбавка за уровень. Дешёвого выхода из ультиматума нет. */
+function mgrUltCost(m){return Math.round(mgrSeverance(m)*1.3+mgrPay(m)*mgrLevel(m)*12);}
 /* ход поручения внутри общего тика домена */
 function jobTick(m){
   if(!m.job){jobOffer(m);return;}
+  if(m.job.id==="ultimatum")return;      // у него свой срок, он тикает в mgrUltimatum
   if(m.job.offer)return;                 // предложение ждёт игрока сколько угодно
   const J=jobDef(m.job.id);
   if(!J||!J.check)return;

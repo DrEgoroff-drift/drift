@@ -38,6 +38,7 @@ function resetWorld(){
   G.ap=null;G.orbit=null;G.watch=null;
   G.land=null;G.surf=null;G.st=null;G.belt=null;G.dig=null;G.cave=null;G.base=null;
   G.crew=[];G.allies=[];G.bases={};G.drones=[];G.droneInventory=0;
+  G.rogues=[];G.exiles=[];G.aiRift=null;
   G.mgrs=[];G.blueprints={};G.cantina=null;G.aiRift=null;
   G.orderStamp=0;G.kills=0;G.soldTotal=0;
   G.pirates=[];G.shots=[];G.log=[];G.prompt="";G.msg="";

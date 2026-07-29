@@ -175,13 +175,21 @@ function mgrCut(m){
   let c=MGR_ROLES[m.role].cut+mgrTraitAdd(m,"cut")-techLv("audit")*.015;
   /* тихая проверка в «двойной книге» — рычаг: он работает дешевле и знает почему */
   if(m.quietLever)c-=.025;
+  if(m.cutBonus)c+=m.cutBonus;           // цена ультиматума, на который согласились
   return clamp(c,.01,.2);
 }
 /* доля снимается до того, как деньги попадут игроку, и всегда видна строкой */
+/* Ниже пятидесяти человек начинает «терять» проценты домена в свою пользу —
+   любой, не только «свои интересы». Наружу это не выводится числом: видно
+   только по сверке в сводке домена, где утечка идёт отдельной строкой. */
+function mgrLeak(m){
+  if(m.ai||m.loy>=50)return 0;
+  return (50-m.loy)/50*.05;
+}
 function mgrTake(m,gross){
   if(gross<=0)return 0;
   const cut=Math.round(gross*mgrCut(m));
-  const steal=Math.round(gross*mgrTraitAdd(m,"steal")*(m.loy<50?1.6:1));
+  const steal=Math.round(gross*(mgrTraitAdd(m,"steal")*(m.loy<50?1.6:1)+mgrLeak(m)));
   m.tookCr=(m.tookCr||0)+cut+steal;
   if(steal>0)m.stole=(m.stole||0)+steal;
   return cut+steal;
@@ -265,7 +273,11 @@ function stationMgrs(sys){
     if(techLv("academy")>0&&m.xp<MGR_XP[1])m.xp=MGR_XP[1];
     out.push(m);
   }
-  return out;
+  /* Изгнанник — тот, кого вы однажды довели до ухода и потом разбили. Он есть
+     в кантине любой станции, стоит треть обычного и приходит с уже выученными
+     перками: за них вы заплатили тогда. Начинает с низкой лояльностью — он
+     помнит, чем всё кончилось в прошлый раз. */
+  return exileCandidates().concat(out);
 }
 function mgrFee(m){return Math.round(m.fee*mgrHireMul());}
 function mgrTaken(role){return !!mgrOf(role);}
@@ -275,8 +287,11 @@ function hireMgr(cand){
   const fee=mgrFee(cand);
   if(G.credits<fee){say("Не хватает кредитов");return false;}
   G.credits-=fee;
-  const m=Object.assign({},cand,{traits:cand.traits.slice(),perks:[],rules:[],
+  /* изгнанник возвращается со своими перками — вы за них уже платили однажды */
+  const m=Object.assign({},cand,{traits:cand.traits.slice(),
+    perks:cand.exile?cand.perks.slice():[],rules:[],
     tMs:Date.now(),earned:0,spent:0,tookCr:0,stole:0,route:[],log:[]});
+  if(cand.exile&&G.exiles)G.exiles=G.exiles.filter(e=>e.seed!==cand.seed);
   G.mgrs.push(m);
   mgrSay(m,"Принял домен: "+MGR_ROLES[m.role].dom);
   tell("money","Нанят "+m.name+" · "+MGR_ROLES[m.role].ru+" · −"+fee.toLocaleString("ru")+" кр",
@@ -286,6 +301,41 @@ function hireMgr(cand){
 /* Расчёт дорог намеренно: управляющий — не расходник, которого перебирают,
    а решение, с которым живут. */
 function mgrSeverance(m){return Math.round(m.fee*.6+mgrPay(m)*25);}
+/* ── ультиматум ──
+   Ниже двадцати пяти он перестаёт просить и начинает ставить условие. Это то же
+   поручение-сцена, что и все прочие, только приходит не по желанию, а по цифре,
+   и отказ здесь стоит не шести очков лояльности, а всей оставшейся.
+   Пока ультиматум висит, он ещё работает — но недолго. */
+function mgrUltimatum(m){
+  if(m.job&&m.job.id==="ultimatum"){
+    /* срок идёт здесь, а не в jobTick: тот пропускается, когда домен встал,
+       а ультиматум обязан дотикать в любом случае */
+    if(jobLeft(m)<=0){
+      m.job=null;
+      mgrSay(m,"Ответа не было. Считаю, что ответ есть.","warn");
+      mgrDefect(m,"ult");
+    }
+    return;
+  }
+  if(m.job)m.job=null;                   // разговоры кончились: это важнее любого поручения
+  if(m.ultCount>=2){mgrDefect(m,"ult");return;}   // третий раз он не приходит
+  m.ultCount=(m.ultCount||0)+1;
+  m.job={id:"ultimatum",t0:Date.now(),mins:12,offer:1,choice:1};
+  mgrSay(m,"Так больше нельзя. У меня есть условие.","warn");
+  tell("warn","Ультиматум: "+m.name,
+    m.name+" ставит условие\nэкран ШТАБ · "+MGR_ROLES[m.role].ru.toLowerCase());
+}
+/* ── уход ──
+   Он не исчезает из игры: становится ренегатом в соседнем секторе (12g).
+   Место домена освобождается сразу — рутина возвращается к игроку. */
+function mgrDefect(m,why){
+  if(m.gone)return;
+  m.gone=true;m.job=null;
+  /* убираем сразу, а не ждём тика: уход может прийти из кнопки в ШТАБе,
+     и рисовать после этого его карточку было бы враньём */
+  const i=G.mgrs.indexOf(m);if(i>=0)G.mgrs.splice(i,1);
+  rogueFrom(m,why||"loy");
+}
 function fireMgr(m){
   const i=G.mgrs.indexOf(m);if(i<0)return false;
   const cost=mgrSeverance(m);
@@ -359,6 +409,10 @@ function mgrTick(){
     m.tMs=now;
     const min=Math.min(dt/60000,240);       // за долгое отсутствие домен не копит вечно
     mgrPayroll(m,min);
+    /* лояльность падает не только от денег — от отказов и провалов тоже,
+       поэтому ультиматум и уход проверяются здесь, а не внутри жалованья */
+    if(!m.ai&&m.loy<25&&!m.gone)mgrUltimatum(m);
+    if(!m.ai&&m.loy<=0&&!m.gone)mgrDefect(m);
     if(m.gone){G.mgrs.splice(i,1);continue;}
     /* пьющий иногда просто не работает — черта видна заранее, претензий нет */
     const idle=mgrHas(m,"drink")&&
@@ -397,7 +451,9 @@ function mgrTick(){
    и убыточного домена, и на нуле он забирает флагман: единственный источник
    по-настоящему сильного противника поздней игры, которого игрок вырастил сам. */
 function mgrPayroll(m,min){
-  const due=mgrPay(m)*min;
+  /* округляем здесь: жалованье считается от дробных минут, и без этого
+     на счету игрока накапливался хвост вида 295577.3657999 */
+  const due=Math.round(mgrPay(m)*min);
   const pay=Math.min(G.credits,due);
   G.credits-=pay;m.spent=(m.spent||0)+pay;
   const short=due-pay;
@@ -416,14 +472,6 @@ function mgrPayroll(m,min){
     if(!m.warnPay&&m.loy<45){
       m.warnPay=1;mgrSay(m,"Жалованье не приходит. Я это помню.","warn");
       logAdd("warn",m.name+" не получает жалованья — лояльность падает");
-    }
-    if(m.loy<=0){
-      const S=m.shipId?shipData(m.shipId):null;
-      if(m.shipId&&m.shipId!==G.shipId)delete G.owned[m.shipId];
-      logAdd("warn",m.name+" ушёл"+(S?" и забрал «"+S.ru+"»":"")+
-        " · домен «"+MGR_ROLES[m.role].dom+"» снова ваш");
-      tell("warn",m.name+" ушёл",m.name+" ушёл\n"+(S?"забрал «"+S.ru+"»":"домен остался без хозяина"));
-      m.gone=true;
     }
   }else{
     m.warnPay=0;

@@ -29,7 +29,7 @@ function snapshot(){
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],species:[...G.species],
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
     drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
-    mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,
+    mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -137,6 +137,10 @@ function applySave(s){
   G.mgrs=G.mgrs.filter(m=>seen[m.role]?false:(seen[m.role]=1));
   G.aiRift=(s.aiRift&&typeof s.aiRift==="object")?{sx:s.aiRift.sx|0,sy:s.aiRift.sy|0,
     name:String(s.aiRift.name||""),t:+s.aiRift.t||0}:null;
+  /* ренегаты и изгнанники — решения игрока, а не производная от seed: сохраняем.
+     Роль сверяется с таблицей, иначе битая запись уронила бы бой и кантину. */
+  G.rogues=Array.isArray(s.rogues)?s.rogues.filter(R=>R&&MGR_ROLES[R.role]).slice(0,ROGUE_CAP):[];
+  G.exiles=Array.isArray(s.exiles)?s.exiles.filter(E=>E&&MGR_ROLES[E.role]).slice(0,ROGUE_CAP):[];
   G.blueprints={};
   if(s.blueprints&&typeof s.blueprints==="object")
     for(const k in s.blueprints)if(BLUEPRINTS[k])G.blueprints[k]=s.blueprints[k]>0?1:-1;
