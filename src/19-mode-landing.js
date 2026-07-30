@@ -130,7 +130,11 @@ function drawGround(tr,camx,camy,fill,line,pal){
       ctx.lineWidth=1;
       if(grass){
         const th=2+((hh>>>4)&3);
-        ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4),y-th);ctx.stroke();
+        /* трава кланяется ветру: каждая пучка со своей фазой от координаты,
+           иначе весь склон качается одним куском */
+        const sw=WIND*(1.6+th*.5)*(.7+.3*Math.sin(G.t*.045+wx*.07));
+        ctx.beginPath();ctx.moveTo(x,y);
+        ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);ctx.stroke();
       }else{
         ctx.fillStyle=ctx.strokeStyle;
         ctx.beginPath();ctx.arc(x,y-1,1+((hh>>>6)&1),0,TAU);ctx.fill();
@@ -291,9 +295,11 @@ function drawDustMotes(camx,camy,p){
   const n=26;
   for(let i=0;i<n;i++){
     const r=rng(hashi(Math.floor(p.seed),i,0xD05));
-    const wx=(r()*3000+G.t*(6+r()*10))%3000;
+    /* пыль несёт тем же ветром, что и траву, и по той же оси: разнонаправленное
+       движение мелочи сразу выдаёт, что это отдельные генераторы */
+    const wx=(r()*3000+G.t*(6+r()*10)*(1+WIND*1.6))%3000;
     const x=((wx-camx*.6)%(W+60)+W+60)%(W+60)-30;
-    const y=(r()*H*.8+Math.sin(G.t*.03+i)*14);
+    const y=(r()*H*.8+Math.sin(G.t*.03+i)*14+WIND*Math.sin(G.t*.02+i*2)*8);
     ctx.fillStyle="rgba(255,255,255,"+(.05+r()*.12).toFixed(2)+")";
     ctx.beginPath();ctx.arc(x,y,.8+r()*1.2,0,TAU);ctx.fill();
   }
@@ -301,6 +307,7 @@ function drawDustMotes(camx,camy,p){
 function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
   tr.mat=planetMat(p);tr.p=p;
+  WIND=windOf(p);
   ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
   if(p.T.atm==="отсутствует")drawStars(L.x*.1,0,1);
   drawSkyLayer(p,L.x,L.y);

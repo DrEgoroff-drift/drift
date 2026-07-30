@@ -7222,6 +7222,17 @@ function skyField(p,e,x,y,dim){
    цветной подсвет от неба в тенях (главный приём — без него тень мёртвая);
    воздушная перспектива: далёкое уводится к цвету неба, а не просто гасится. */
 const SUN_DIR={x:.55,y:-.83};                 // солнце в drawSkyLayer справа сверху
+/* ветер живёт в общей переменной: его читают трава в drawGround, пыль и
+   растения, и все они должны качаться в одну сторону — рассинхрон читается
+   как брак быстрее, чем полное отсутствие движения */
+let WIND=0;
+function windOf(p){
+  const base=(h01((p.seed|0),3,0x117A)-.5)*2;
+  const air=p.T.atm==="отсутствует"?.06:(p.T.atm.indexOf("разреженная")>=0?.5:1);
+  /* порывами, а не ровным потоком: ровный ветер глаз не замечает вообще */
+  const gust=.62+.38*Math.sin(G.t*.0037+p.seed%7)*Math.sin(G.t*.0011+2);
+  return base*air*gust;
+}
 function starRGB(){
   const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a";
   return hex2rgb(sc);
@@ -7248,6 +7259,33 @@ function litRGB(base,slope,p,sun,amb,k){
   const g=base[1]*(k*amb[1]/255+I*sun[1]/255);
   const b=base[2]*(k*amb[2]/255+I*sun[2]/255);
   return [clamp(r,0,255)|0,clamp(g,0,255)|0,clamp(b,0,255)|0];
+}
+/* ── камера ──
+   Камера, жёстко привязанная к персонажу, читается как «экран едет», а не как
+   «оператор идёт рядом». Нужны три вещи: инерция, взгляд вперёд по ходу
+   движения и дыхание. Плюс тряска от удара — единственное, что даёт миру вес.
+   Состояние живёт в S, поэтому переход между режимами его не ломает. */
+function camStep(S,dt,walking){
+  if(!S.cam)S.cam={x:S.x,y:S.y};
+  /* взгляд вперёд: на ходу камера уводится в сторону движения, на месте
+     возвращается. Иначе игрок всегда смотрит ровно в центр и не видит, куда идёт. */
+  const look=(walking?S.face*54:0);
+  S.camLook=lerp(S.camLook||0,look,Math.min(1,.045*dt));
+  const tx=S.x+S.camLook;
+  /* по вертикали камера мягче: рельеф под ногами дёргается на каждой кочке,
+     и жёсткое следование превращает ходьбу в тряску */
+  S.cam.x+=(tx-S.cam.x)*Math.min(1,.11*dt);
+  S.cam.y+=(S.y-S.cam.y)*Math.min(1,(S.on?.055:.10)*dt);
+  S.shake=Math.max(0,(S.shake||0)-.55*dt);
+}
+/* смещение камеры на кадр: дыхание плюс затухающая тряска */
+function camOffset(S){
+  const sh=S.shake||0;
+  const b=Math.sin(G.t*.0062)*1.7;                        // дыхание оператора
+  if(sh<=0)return {x:0,y:b};
+  /* тряска не синусоида, а рваная: синус читается как качели */
+  return {x:(h01((G.t*3)|0,1,0x5A)-.5)*sh*1.8,
+          y:b+(h01((G.t*3)|0,2,0x5A)-.5)*sh*1.8};
 }
 /* ── воздушная перспектива ──
    далёкий хребет не «полупрозрачный», а выцветший в цвет неба: именно этим
@@ -7446,7 +7484,11 @@ function drawGround(tr,camx,camy,fill,line,pal){
       ctx.lineWidth=1;
       if(grass){
         const th=2+((hh>>>4)&3);
-        ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4),y-th);ctx.stroke();
+        /* трава кланяется ветру: каждая пучка со своей фазой от координаты,
+           иначе весь склон качается одним куском */
+        const sw=WIND*(1.6+th*.5)*(.7+.3*Math.sin(G.t*.045+wx*.07));
+        ctx.beginPath();ctx.moveTo(x,y);
+        ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);ctx.stroke();
       }else{
         ctx.fillStyle=ctx.strokeStyle;
         ctx.beginPath();ctx.arc(x,y-1,1+((hh>>>6)&1),0,TAU);ctx.fill();
@@ -7607,9 +7649,11 @@ function drawDustMotes(camx,camy,p){
   const n=26;
   for(let i=0;i<n;i++){
     const r=rng(hashi(Math.floor(p.seed),i,0xD05));
-    const wx=(r()*3000+G.t*(6+r()*10))%3000;
+    /* пыль несёт тем же ветром, что и траву, и по той же оси: разнонаправленное
+       движение мелочи сразу выдаёт, что это отдельные генераторы */
+    const wx=(r()*3000+G.t*(6+r()*10)*(1+WIND*1.6))%3000;
     const x=((wx-camx*.6)%(W+60)+W+60)%(W+60)-30;
-    const y=(r()*H*.8+Math.sin(G.t*.03+i)*14);
+    const y=(r()*H*.8+Math.sin(G.t*.03+i)*14+WIND*Math.sin(G.t*.02+i*2)*8);
     ctx.fillStyle="rgba(255,255,255,"+(.05+r()*.12).toFixed(2)+")";
     ctx.beginPath();ctx.arc(x,y,.8+r()*1.2,0,TAU);ctx.fill();
   }
@@ -7617,6 +7661,7 @@ function drawDustMotes(camx,camy,p){
 function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
   tr.mat=planetMat(p);tr.p=p;
+  WIND=windOf(p);
   ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
   if(p.T.atm==="отсутствует")drawStars(L.x*.1,0,1);
   drawSkyLayer(p,L.x,L.y);
@@ -9246,8 +9291,14 @@ function updateSurface(dt){
     if(keys.thrust){S.vy=-2.4;S.on=false;}
   }else{
     S.vy+=S.g*dt;S.y+=S.vy*dt;
-    if(S.vy>=0&&S.y>=gy){S.y=gy;S.vy=0;S.on=true;}
+    if(S.vy>=0&&S.y>=gy){
+      /* удар о грунт: тряска пропорциональна скорости падения. Без неё прыжок
+         с обрыва ничем не отличается от шага, и вес у мира пропадает. */
+      if(S.vy>1.1)S.shake=Math.min(11,S.vy*2.6);
+      S.y=gy;S.vy=0;S.on=true;
+    }
   }
+  camStep(S,dt,walking);
   const dShip=Math.abs(S.x-S.shipX);
   let dep=null,dd=1e9;
   for(const d of S.deposits){
@@ -9475,7 +9526,13 @@ function drawSurface(){
      диск гиганта и убивают его объём */
   if(p.T.atm==="отсутствует"||p.type==="ice")drawStars(S.x*.1,0,1);
   drawSkyLayer(p,S.x,S.y);
-  const camx=S.x-W/2,camy=clamp(S.y-H*.58,-300,1e5);
+  WIND=windOf(p);
+  /* камера идёт рядом, а не приклеена: инерция, взгляд вперёд, дыхание,
+     тряска от удара (19c-light). Если камеры ещё нет — первый кадр берём по
+     персонажу, чтобы не было рывка от нуля. */
+  if(!S.cam)S.cam={x:S.x,y:S.y};
+  const co=camOffset(S);
+  const camx=S.cam.x-W/2+co.x, camy=clamp(S.cam.y-H*.58,-300,1e5)+co.y;
   /* дальний хребет не гасится прозрачностью, а выцветает в цвет неба: именно
      этим глаз мерит расстояние (19c-light). Двух слоёв достаточно, третий уже
      не читается, а стоит столько же. */
@@ -9502,7 +9559,12 @@ function drawSurface(){
   for(const pl of S.plants){
     const x=pl.x-camx;if(x<-70||x>W+70)continue;
     groundShadow(x,pl.y-camy+1,Math.min(22,pl.h*.32),3.2);
-    drawPlant(pl,x,pl.y-camy);
+    /* растение кланяется от основания: высокое сильнее низкого, у каждого своя
+       фаза от координаты — иначе куртина качается одним куском */
+    const sw=WIND*.055*(.6+pl.h/90)*(.75+.25*Math.sin(G.t*.028+pl.x*.05));
+    ctx.save();ctx.translate(x,pl.y-camy);ctx.rotate(sw);
+    drawPlant(pl,0,0);
+    ctx.restore();
   }
   for(const b of S.fauna||[]){
     const x=b.x-camx;if(x<-50||x>W+50)continue;
@@ -9537,7 +9599,9 @@ function drawSurface(){
       ctx.fillStyle=col;ctx.fillRect(x-18,y-20,36*clamp(d.prog,0,1),4);
     }
   }
-  const x=W/2,y=S.y-camy;
+  /* астронавт рисуется по своей координате, а не в центре экрана: с инерцией
+     и взглядом вперёд центр экрана — уже не он */
+  const x=S.x-camx,y=S.y-camy;
   if(S.on)groundShadow(x,y+1,7,2);
   ctx.save();ctx.translate(x,y-1);
   drawAstronaut({face:S.face,amp:S.walkAmp,phase:S.walkPhase,

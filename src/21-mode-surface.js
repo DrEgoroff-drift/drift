@@ -72,8 +72,14 @@ function updateSurface(dt){
     if(keys.thrust){S.vy=-2.4;S.on=false;}
   }else{
     S.vy+=S.g*dt;S.y+=S.vy*dt;
-    if(S.vy>=0&&S.y>=gy){S.y=gy;S.vy=0;S.on=true;}
+    if(S.vy>=0&&S.y>=gy){
+      /* удар о грунт: тряска пропорциональна скорости падения. Без неё прыжок
+         с обрыва ничем не отличается от шага, и вес у мира пропадает. */
+      if(S.vy>1.1)S.shake=Math.min(11,S.vy*2.6);
+      S.y=gy;S.vy=0;S.on=true;
+    }
   }
+  camStep(S,dt,walking);
   const dShip=Math.abs(S.x-S.shipX);
   let dep=null,dd=1e9;
   for(const d of S.deposits){
@@ -301,7 +307,13 @@ function drawSurface(){
      диск гиганта и убивают его объём */
   if(p.T.atm==="отсутствует"||p.type==="ice")drawStars(S.x*.1,0,1);
   drawSkyLayer(p,S.x,S.y);
-  const camx=S.x-W/2,camy=clamp(S.y-H*.58,-300,1e5);
+  WIND=windOf(p);
+  /* камера идёт рядом, а не приклеена: инерция, взгляд вперёд, дыхание,
+     тряска от удара (19c-light). Если камеры ещё нет — первый кадр берём по
+     персонажу, чтобы не было рывка от нуля. */
+  if(!S.cam)S.cam={x:S.x,y:S.y};
+  const co=camOffset(S);
+  const camx=S.cam.x-W/2+co.x, camy=clamp(S.cam.y-H*.58,-300,1e5)+co.y;
   /* дальний хребет не гасится прозрачностью, а выцветает в цвет неба: именно
      этим глаз мерит расстояние (19c-light). Двух слоёв достаточно, третий уже
      не читается, а стоит столько же. */
@@ -328,7 +340,12 @@ function drawSurface(){
   for(const pl of S.plants){
     const x=pl.x-camx;if(x<-70||x>W+70)continue;
     groundShadow(x,pl.y-camy+1,Math.min(22,pl.h*.32),3.2);
-    drawPlant(pl,x,pl.y-camy);
+    /* растение кланяется от основания: высокое сильнее низкого, у каждого своя
+       фаза от координаты — иначе куртина качается одним куском */
+    const sw=WIND*.055*(.6+pl.h/90)*(.75+.25*Math.sin(G.t*.028+pl.x*.05));
+    ctx.save();ctx.translate(x,pl.y-camy);ctx.rotate(sw);
+    drawPlant(pl,0,0);
+    ctx.restore();
   }
   for(const b of S.fauna||[]){
     const x=b.x-camx;if(x<-50||x>W+50)continue;
@@ -363,7 +380,9 @@ function drawSurface(){
       ctx.fillStyle=col;ctx.fillRect(x-18,y-20,36*clamp(d.prog,0,1),4);
     }
   }
-  const x=W/2,y=S.y-camy;
+  /* астронавт рисуется по своей координате, а не в центре экрана: с инерцией
+     и взглядом вперёд центр экрана — уже не он */
+  const x=S.x-camx,y=S.y-camy;
   if(S.on)groundShadow(x,y+1,7,2);
   ctx.save();ctx.translate(x,y-1);
   drawAstronaut({face:S.face,amp:S.walkAmp,phase:S.walkPhase,
