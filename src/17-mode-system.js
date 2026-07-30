@@ -224,8 +224,11 @@ function drawSystem(){
   const cx0=wA?wA.x:sh.x, cy0=wA?wA.y:sh.y;
   const zx=x=>W/2+(x-cx0)*Z, zy=y=>H/2+(y-cy0)*Z;
   ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
-  drawNebula(cx0*.06*Z,cy0*.06*Z,1);
+  /* туманность и пыль — свои у каждой системы (16a-space). Одна туманность на
+     всю игру означала, что все сорок систем выглядят одним местом. */
+  drawSysNebula(sys,cx0*.06*Z,cy0*.06*Z);
   drawStars(cx0*.06*Z,cy0*.06*Z,1);
+  drawSpaceDust(cx0*Z,cy0*Z,Z,sysStyle(sys).dust);
   const ox=zx(0),oy=zy(0);
   ctx.strokeStyle="rgba(120,190,210,.10)";ctx.lineWidth=1;
   for(const p of sys.planets){ctx.beginPath();ctx.arc(ox,oy,p.orbit*Z,0,TAU);ctx.stroke();}
@@ -233,27 +236,10 @@ function drawSystem(){
     ctx.beginPath();ctx.arc(ox,oy,sys.station.orbit*Z,0,TAU);ctx.stroke();}
   if(sys.belt)drawBeltRing(ox,oy,sys.belt,Z);
   const R=sys.radius*Z;
-  /* протуберанцы: медленно вращаются и дышат */
-  ctx.save();ctx.translate(ox,oy);ctx.rotate(G.t*.0014);
-  ctx.fillStyle="rgba(255,214,164,.05)";
-  for(let i=0;i<14;i++){
-    const a=i/14*TAU, len=R*(1.15+.5*Math.abs(Math.sin(G.t*.009+i*1.7)));
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(a-.09)*R*.94,Math.sin(a-.09)*R*.94);
-    ctx.lineTo(Math.cos(a)*len,Math.sin(a)*len);
-    ctx.lineTo(Math.cos(a+.09)*R*.94,Math.sin(a+.09)*R*.94);
-    ctx.closePath();ctx.fill();
-  }
-  ctx.restore();
-  const g=ctx.createRadialGradient(ox,oy,0,ox,oy,R*7);
-  g.addColorStop(0,sys.cls.col);g.addColorStop(.09,sys.cls.col);
-  g.addColorStop(.3,"rgba(255,200,140,.16)");g.addColorStop(1,"rgba(0,0,0,0)");
-  ctx.fillStyle=g;ctx.beginPath();ctx.arc(ox,oy,R*7,0,TAU);ctx.fill();
-  const core=ctx.createRadialGradient(ox,oy,0,ox,oy,R*.85);
-  core.addColorStop(0,"rgba(255,253,247,"+(.82+.07*Math.sin(G.t*.04)).toFixed(2)+")");
-  core.addColorStop(.5,"rgba(255,243,212,.42)");
-  core.addColorStop(1,"rgba(255,228,178,0)");
-  ctx.fillStyle=core;ctx.beginPath();ctx.arc(ox,oy,R*.85,0,TAU);ctx.fill();
+  /* светило по своему типу: двойная, красный гигант, белый карлик, нейтронная,
+     редко чёрная дыра (16a-space). Освещение и опасность по-прежнему считаются
+     от sys.cls — экзотика меняет только вид. */
+  drawStarBody(ox,oy,R,sys);
 
   /* эллиптическая орбита — тонкий контур по формуле Кеплера, не окружность */
   ctx.strokeStyle="rgba(120,190,210,.08)";ctx.lineWidth=1;
