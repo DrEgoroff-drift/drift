@@ -195,7 +195,11 @@ function mouseWalkAt(clientX,clientY){
   const rc=cvs.getBoundingClientRect();
   const sx=(clientX-rc.left)*W/rc.width, sy=(clientY-rc.top)*H/rc.height;
   if(G.mode==="surface"&&G.surf){
-    const camx=G.surf.x-W/2;
+    /* камера больше не приклеена к персонажу (инерция, взгляд вперёд, тряска),
+       поэтому пересчёт тычка в мир обязан брать ту самую камеру, по которой
+       кадр был нарисован — иначе «идти сюда» уводит мимо на десятки единиц.
+       drawSurface кладёт её в G.viewX. */
+    const camx=(G.viewX!==undefined?G.viewX:G.surf.x-W/2);
     G.surf.walkTarget=camx+sx;
   }else if(G.mode==="dig"&&G.dig){
     const D=G.dig,px=D.col*DIG_CELL,py=D.row*DIG_CELL;
@@ -225,7 +229,10 @@ function tap(sxp,syp){
   /* в режиме наблюдения камера стоит на наёмнике — тычок должен считаться от
      неё же, иначе автопилот получал бы цель со смещением на пол-экрана */
   const Z=G.zoom,sh=G.ship,wA=G.watch?allyOf(G.watch):null;
-  const cx0=wA?wA.x:sh.x, cy0=wA?wA.y:sh.y;
+  /* та же камера, по которой нарисован кадр: у неё есть отставание и тряска,
+     и без этого автопилот получал цель со смещением */
+  const cx0=(G.viewCX!==undefined?G.viewCX:(wA?wA.x:sh.x));
+  const cy0=(G.viewCY!==undefined?G.viewCY:(wA?wA.y:sh.y));
   const wx=cx0+(sxp-W/2)/Z, wy=cy0+(syp-H/2)/Z;
   let best=null,bd=1e9;
   for(const p of G.sys.planets){

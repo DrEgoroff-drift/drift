@@ -93,6 +93,78 @@ function drawSpaceDust(cx,cy,Z,dens){
   }
   ctx.restore();
 }
+/* ── ощущение полёта ──
+   Корабль двигался как курсор: камера приклеена, тяга ничем не отмечена, кроме
+   мелких частиц шлейфа. Скорость чувствуется по трём вещам — камера отстаёт,
+   сопло светит, воздух за соплом дрожит. Все три ничего не стоят.
+
+   Камера живёт в G.fcam, смещение — в G.fshake; ввод пересчитывает тычок через
+   те же значения (17-mode-system кладёт их в G.viewX/G.viewY). */
+function flightCam(dt,tx,ty,thrusting,speed){
+  if(!G.fcam)G.fcam={x:tx,y:ty};
+  /* корабль умеет исчезать и появляться в другом месте: гиперпрыжок, взлёт,
+     эвакуация, авария. Плавно доезжать туда полсекунды нельзя — игрок увидит
+     пустоту вместо корабля, поэтому на большом разрыве камера прыгает разом. */
+  if(Math.hypot(tx-G.fcam.x,ty-G.fcam.y)>320){G.fcam.x=tx;G.fcam.y=ty;G.fshake=0;}
+  /* отставание тем больше, чем быстрее летим: на месте камера стоит точно,
+     на разгоне тянется следом — это и читается как масса */
+  const k=Math.min(1,(.16-clamp(speed*.012,0,.10))*dt);
+  G.fcam.x+=(tx-G.fcam.x)*k;
+  G.fcam.y+=(ty-G.fcam.y)*k;
+  /* тряска на разгоне: слабая, иначе через минуту полёта укачивает */
+  const want=thrusting?clamp(.5+speed*.06,0,1.7):0;
+  G.fshake=(G.fshake||0)+(want-(G.fshake||0))*Math.min(1,.08*dt);
+  return {x:G.fcam.x+(h01((G.t*4)|0,3,0x9C)-.5)*G.fshake*2.2,
+          y:G.fcam.y+(h01((G.t*4)|0,5,0x9C)-.5)*G.fshake*2.2};
+}
+/* сопло: ядро, факел и раскалённый воздух за ним. Дрожание воздуха подделано
+   парой полупрозрачных дуг переменного радиуса — настоящего искажения в
+   canvas 2D нет, а глаз читает именно колебание кромки */
+function drawExhaust(zx,zy,Z,thr){
+  if(thr<=0)return;
+  const sh=G.ship,h=hullOf(G.shipId);
+  const ca=Math.cos(sh.a),sa=Math.sin(sh.a);
+  ctx.save();
+  ctx.globalCompositeOperation="lighter";
+  for(const e of h.eng){
+    const ex=sh.x+e.x*ca-e.y*sa, ey=sh.y+(e.x*sa+e.y*ca);
+    const px=zx(ex),py=zy(ey);
+    const R=Math.max(2.5,e.r*Z*2.2);
+    const puls=.82+.18*Math.sin(G.t*.55+e.x);
+    /* факел вытянут против носа и живёт своей длиной на каждом кадре */
+    const L=R*(3.4+2.6*puls)*thr;
+    const fx=px-ca*L, fy=py-sa*L;
+    const g=ctx.createLinearGradient(px,py,fx,fy);
+    g.addColorStop(0,"rgba(255,246,222,"+(.55*thr).toFixed(3)+")");
+    g.addColorStop(.35,"rgba(255,178,96,"+(.32*thr).toFixed(3)+")");
+    g.addColorStop(1,"rgba(255,96,48,0)");
+    ctx.fillStyle=g;
+    ctx.beginPath();
+    ctx.moveTo(px-sa*R*.7,py+ca*R*.7);
+    ctx.lineTo(fx,fy);
+    ctx.lineTo(px+sa*R*.7,py-ca*R*.7);
+    ctx.closePath();ctx.fill();
+    /* ядро сопла */
+    const cg=ctx.createRadialGradient(px,py,0,px,py,R*1.7);
+    cg.addColorStop(0,"rgba(255,255,250,"+(.8*thr).toFixed(3)+")");
+    cg.addColorStop(.4,"rgba(255,206,150,"+(.4*thr).toFixed(3)+")");
+    cg.addColorStop(1,"rgba(255,140,80,0)");
+    ctx.fillStyle=cg;ctx.beginPath();ctx.arc(px,py,R*1.7,0,TAU);ctx.fill();
+    /* дрожь воздуха */
+    /* дуги дрожи держим почти на пороге видимости: заметные читаются как
+       нарисованные рёбра, а не как раскалённый воздух */
+    ctx.strokeStyle="rgba(255,220,190,"+(.045*thr).toFixed(3)+")";
+    for(let i=0;i<3;i++){
+      const t=(G.t*.06+i*.33)%1;
+      const rr=R*(1.2+t*3.4);
+      ctx.lineWidth=1+(1-t)*1.6;
+      ctx.beginPath();
+      ctx.arc(px-ca*L*t*.6,py-sa*L*t*.6,rr,sh.a+2.1,sh.a+4.2);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
 /* ── светило ──
    один и тот же шар для карлика и для гиганта — потеря почти бесплатного
    разнообразия: класс звезды уже лежит в данных, его надо только показать */

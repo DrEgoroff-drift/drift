@@ -221,8 +221,16 @@ function drawSystem(){
   /* режим наблюдения за наёмником: двигается только камера, корабль игрока
      продолжает лететь сам по себе и остаётся видимым на своём месте */
   const wA=G.watch?allyOf(G.watch):null;
-  const cx0=wA?wA.x:sh.x, cy0=wA?wA.y:sh.y;
+  /* камера отстаёт от корабля и подрагивает на разгоне (16a-space): без этого
+     корабль движется как курсор мыши, а не как масса с двигателем.
+     В режиме наблюдения сглаживание не нужно — там камера и так не игрока. */
+  const spd=Math.hypot(sh.vx,sh.vy);
+  const thrusting=(keys.thrust||!!G.ap)&&G.fuel>0;
+  const fc=wA?{x:wA.x,y:wA.y}:flightCam(1,sh.x,sh.y,thrusting,spd);
+  const cx0=fc.x, cy0=fc.y;
   const zx=x=>W/2+(x-cx0)*Z, zy=y=>H/2+(y-cy0)*Z;
+  /* ввод пересчитывает тычок через ту же камеру */
+  G.viewCX=cx0;G.viewCY=cy0;
   ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
   /* туманность и пыль — свои у каждой системы (16a-space). Одна туманность на
      всю игру означала, что все сорок систем выглядят одним местом. */
@@ -289,6 +297,8 @@ function drawSystem(){
   }
   if(G.ap&&G.ap.kind==="belt")reticle(zx(G.ap.ax),zy(G.ap.ay),26);
   drawTrail(zx,zy,Z);
+  /* факел рисуется до корпуса: иначе яркое ядро сопла ложится поверх обшивки */
+  drawExhaust(zx,zy,Z,thrusting?1:0);
   drawCombat(zx,zy,Z);
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);
