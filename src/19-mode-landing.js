@@ -94,9 +94,12 @@ function drawGround(tr,camx,camy,fill,line,pal){
   for(let i=i0;i<=i1;i++)P.lineTo(i*tr.step-camx,tr.h[i]-camy);
   P.lineTo(i1*tr.step-camx,H+10);P.lineTo(i0*tr.step-camx,H+10);P.closePath();
   ctx.fillStyle=fill;ctx.fill(P);
+  /* сначала строение (какие слои и где), потом материал (из чего они сложены):
+     обратный порядок закрашивал разрез ровным зерном и снова давал «фигуру» */
+  if(pal&&tr.p)drawStrata(tr,camx,camy,tr.p,P);
   /* порода: бесшовный тайл-материал вместо плоской заливки (18a-material).
      Заливка под ним остаётся — она держит силуэт, если материала ещё нет. */
-  if(tr.mat)fillMaterial(tr.mat,camx,camy,.92,.26,P);
+  if(tr.mat)fillMaterial(tr.mat,camx,camy,tr.p?.5:.92,.22,P);
   /* склон, обращённый к солнцу (вправо-вверх), светлее; в тень — темнее.
      Простое псевдо-освещение по наклону вместо одной плоской заливки.
      Полосы полупрозрачные: непрозрачные закрашивали материал обратно в фигуру. */
@@ -141,32 +144,14 @@ function drawGround(tr,camx,camy,fill,line,pal){
       }
     }
   }
-  /* слои породы — горизонтальные пласты, обрезанные силуэтом рельефа */
-  if(pal&&tr.strata){
-    ctx.save();ctx.clip(P);
-    const band=30;
-    const y0=Math.floor((camy-band*2)/band)*band;
-    for(let k=0;k<Math.ceil(H/band)+4;k++){
-      const wy=y0+k*band;
-      const n=((wy/band)|0)+((tr.sseed>>>3)&15);
-      const idx=Math.abs(n)%pal.length;
-      const c=pal[idx];
-      const th=band*(.3+((Math.abs(n*7)%5)/5)*.4);
-      ctx.fillStyle="rgba("+Math.round(c[0]*.5)+","+Math.round(c[1]*.5)+","+
-        Math.round(c[2]*.5)+","+(tr.mat?.15:.30)+")";
-      ctx.fillRect(0,wy-camy,W,th);
-      ctx.fillStyle="rgba(0,0,0,.10)";
-      ctx.fillRect(0,wy-camy+th,W,1.4);
-    }
-    ctx.restore();
-  }
   /* глубина: тело породы гаснет вниз. Без этого низ экрана — ровное пятно
      той же светлоты, что и освещённая поверхность, и грунт читается плоским. */
   if(tr.mat){
     ctx.save();ctx.clip(P);
     const dg=ctx.createLinearGradient(0,Math.max(0,tr.h[i0]-camy-40),0,H);
     dg.addColorStop(0,"rgba(0,0,0,0)");
-    dg.addColorStop(1,"rgba(0,0,0,.72)");
+    dg.addColorStop(.45,"rgba(0,0,0,.42)");
+    dg.addColorStop(1,"rgba(0,0,0,.88)");
     ctx.fillStyle=dg;ctx.fillRect(0,0,W,H);
     ctx.restore();
   }

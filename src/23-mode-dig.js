@@ -129,7 +129,10 @@ function updateDig(dt){
 
   if(D.row===0&&dy===-1){exitDig();return;}
   const depth=D.row*3;
+  /* к ярусу добавлена порода из разреза: игрок читает не только «как глубоко»,
+     но и «в чём именно копает» — это то же название, что у слоя в срезе */
   let head="ГЛУБИНА "+depth+" м · "+DEPTH_TIERS[tierAt(D.row)].ru.toUpperCase()+
+    " · "+geoAt(D.p,D.row*DIG_CELL).ru.toUpperCase()+
     "\nСКАФАНДР "+Math.round(S.suit)+"% · ТРЮМ "+held()+"/"+st.cargoMax;
   if(D.bugs.some(b=>b.stun<=0&&b.flee<=0))
     head+="\nКУСАЧИЕ РЯДОМ · ОГОНЬ (F) — ИМПУЛЬС, ПОТОМ ПОДОЙТИ ЗА ОБРАЗЦОМ";
@@ -318,9 +321,14 @@ function drawDig(){
       }
       continue;
     }
-    const t=cell.tint*.35+tierAt(row)*.18;
-    ctx.fillStyle="rgba("+Math.round(lerp(c0[0],c1[0],t)*.62)+","+
-      Math.round(lerp(c0[1],c1[1],t)*.62)+","+Math.round(lerp(c0[2],c1[2],t)*.62)+",.72)";
+    /* цвет забоя берётся из разреза планеты (18b-geology): чем глубже, тем
+       другая порода — и это та же порода, которую игрок видел в срезе грунта
+       на поверхности, а не отдельная случайная раскраска клеток */
+    const L=geoAt(p,row*DIG_CELL);
+    const t=cell.tint*.35;
+    const lc=L.col;
+    ctx.fillStyle="rgba("+Math.round(lerp(lc[0],c1[0],t))+","+
+      Math.round(lerp(lc[1],c1[1],t))+","+Math.round(lerp(lc[2],c1[2],t))+",.80)";
     ctx.fillRect(x,y,DIG_CELL,DIG_CELL);
     /* кромка клетки не линией, а сколом: ровная сетка выдаёт таблицу */
     ctx.fillStyle="rgba(0,0,0,"+(.06+((cell.tint*97)%5)/40).toFixed(3)+")";
