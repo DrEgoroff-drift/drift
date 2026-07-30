@@ -312,7 +312,10 @@ function updateBelt(dt){
 }
 function drawBelt(){
   const b=G.belt,st=stat();
-  ctx.fillStyle="#03050a";ctx.fillRect(0,0,W,H);
+  /* фон не плоский: к плоскости пояса подмешан холодный отсвет туманности */
+  {const bg=ctx.createLinearGradient(0,0,0,H);
+   bg.addColorStop(0,"#04060c");bg.addColorStop(.55,"#03050a");bg.addColorStop(1,"#05070f");
+   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);}
   const bas=beltBasis(b),fwd=bas.fwd,right=bas.right,up=bas.up;
   const cam=[b.x,b.y,b.z];
   const F=Math.min(W,H)*.95;
@@ -323,6 +326,48 @@ function drawBelt(){
     const xc=vx*right[0]+vy*right[1]+vz*right[2];
     const yc=vx*up[0]+vy*up[1]+vz*up[2];
     return {x:W/2+xc*F/zc, y:H/2-yc*F/zc, z:zc};
+  }
+  /* ── свет и фон ──
+     Пустота была залита одним цветом «#03050a», а грани камня освещались
+     вектором, взятым из головы. Отсюда чёрный кадр без глубины: ни откуда
+     свет, ни где мы, ни что вокруг.
+
+     Светило системы стоит в начале координат, значит его можно спроецировать
+     той же камерой — и взять из него настоящее направление света. Тогда
+     освещённая сторона камня всегда обращена к звезде, а игрок читает, где
+     она, даже когда она за спиной. */
+  const stl=sysStyle(G.sys);
+  const scol=hex2rgb(G.sys.cls.col);
+  const neb0=stl.neb[0];
+  const sunP=proj(0,0,0);
+  const dsun=Math.hypot(b.x,b.y,b.z)||1;
+  const SUN=[-b.x/dsun,-b.y/dsun,-b.z/dsun];   // из камня в сторону светила
+  /* туманность: четыре мягких пятна на звёздной сфере. Дешевле тайла и
+     достаточно, чтобы пустота перестала быть плоской заливкой */
+  for(let i=0;i<4;i++){
+    const h=hashi(G.sys.seed,i,0x4EB0);
+    const th=(h&1023)/1023*TAU, ph=((h>>>10)&511)/511*1.8-.9;
+    const p=proj(b.x+Math.cos(ph)*Math.sin(th)*9000,b.y+Math.sin(ph)*9000,
+                 b.z+Math.cos(ph)*Math.cos(th)*9000);
+    if(!p)continue;
+    const R=W*(.5+((h>>>19)&7)/7*.6);
+    const c=stl.neb[i&1];
+    const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,R);
+    g.addColorStop(0,"rgba("+c.join(",")+",.13)");
+    g.addColorStop(1,"rgba("+c.join(",")+",0)");
+    ctx.fillStyle=g;ctx.fillRect(p.x-R,p.y-R,R*2,R*2);
+  }
+  /* само светило: диск с ореолом. По нему сразу понятно, с какой стороны
+     плоскость пояса освещена, и куда лететь «к звезде» */
+  if(sunP){
+    const R=Math.max(6,W*.06*(2400/Math.max(600,dsun)));
+    const g=ctx.createRadialGradient(sunP.x,sunP.y,0,sunP.x,sunP.y,R*7);
+    g.addColorStop(0,"rgba("+scol.join(",")+",.55)");
+    g.addColorStop(.14,"rgba("+scol.join(",")+",.16)");
+    g.addColorStop(1,"rgba("+scol.join(",")+",0)");
+    ctx.fillStyle=g;ctx.fillRect(sunP.x-R*7,sunP.y-R*7,R*14,R*14);
+    ctx.fillStyle="rgba(255,250,236,.92)";
+    ctx.beginPath();ctx.arc(sunP.x,sunP.y,R,0,TAU);ctx.fill();
   }
   /* звёздная сфера */
   ctx.fillStyle="rgba(185,212,235,.5)";
@@ -364,8 +409,15 @@ function drawBelt(){
       const vx2=wc[0]-wa[0],vy2=wc[1]-wa[1],vz2=wc[2]-wa[2];
       let nx=uy*vz2-uz*vy2, ny=uz*vx2-ux*vz2, nz=ux*vy2-uy*vx2;
       const nl=Math.hypot(nx,ny,nz)||1;nx/=nl;ny/=nl;nz/=nl;
-      const li=clamp(nx*.46+ny*.74+nz*.24,0,1)*L.tint[fi];
-      polys.push({A,B:B2,C,d:(A.z+B2.z+C.z)/3,li,ore:L.ore[fi],
+      const li=clamp(nx*SUN[0]+ny*SUN[1]+nz*SUN[2],0,1)*L.tint[fi];
+      /* кромочный свет: грань, стоящая к камере ребром, ловит отражённый свет
+         плоскости пояса. Это подделка — но именно она отделяет камень от
+         черноты, когда он повёрнут к нам теневой стороной */
+      const vw=(wa[0]+wb[0]+wc[0])/3-cam[0],vw2=(wa[1]+wb[1]+wc[1])/3-cam[1],
+            vw3=(wa[2]+wb[2]+wc[2])/3-cam[2];
+      const vl=Math.hypot(vw,vw2,vw3)||1;
+      const rim=Math.pow(1-Math.abs(nx*vw/vl+ny*vw2/vl+nz*vw3/vl),3.2);
+      polys.push({A,B:B2,C,d:(A.z+B2.z+C.z)/3,li,rim,ore:L.ore[fi],
         oreCol,rock,locked,alpha,edge:lod===2});
     }
   }
@@ -402,9 +454,14 @@ function drawBelt(){
     }
     const vein=p.ore>.57;
     const base=vein?p.oreCol:p.rock;
-    const k=.13+p.li*(vein?1.25:.92);
+    const k=.24+p.li*(vein?1.30:.98);
     const fog=clamp(1-p.d/2600,.1,1);
-    let r=base[0]*k*fog,g=base[1]*k*fog,bl=base[2]*k*fog;
+    /* три составляющих вместо одной: свет звезды своего цвета, холодный
+       подсвет от туманности в тенях и кромочный блик. Одна давала камень
+       либо белым, либо чёрным */
+    let r=(base[0]*k*(scol[0]/230)+neb0[0]*.22+p.rim*52)*fog,
+        g=(base[1]*k*(scol[1]/230)+neb0[1]*.22+p.rim*55)*fog,
+        bl=(base[2]*k*(scol[2]/230)+neb0[2]*.28+p.rim*62)*fog;
     if(p.locked){r=r*.82+26;g=g*.82+52;bl=bl*.82+50;}   // подсветка цели, но камень остаётся камнем
     if(p.alpha<1)ctx.globalAlpha=p.alpha;
     ctx.fillStyle="rgb("+(r|0)+","+(g|0)+","+(bl|0)+")";
