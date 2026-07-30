@@ -9251,11 +9251,32 @@ function furColor(r,base){
 /* силуэт — не всегда одна и та же капсула: пять архетипов пропорций плюс
    гранёный (не идеально гладкий) контур тела, свой на каждую тварь */
 const BEAST_SHAPES=["capsule","long","stout","upright","segmented"];
+/* Пять чужих архетипов вместо «земного зверя другого цвета». Как и у флоры,
+   планета получает уклон: на одной висят медузы, на другой ходят панцирные —
+   если каждый мир населён всем каталогом, миры опять сливаются.
+
+   Летающие формы держатся над грунтом (hover) — это единственное, что тут
+   отличается по механике отрисовки, и оно же сильнее всего меняет ощущение
+   от планеты. */
+const BEAST_ALIEN=["jelly","strider","crystal","manta","shell"];
+function beastBias(p){
+  if(p.fauna2)return p.fauna2;
+  const r=rng(p.seed^0xFA02);
+  const b=BEAST_ALIEN.map(()=>.08+r()*.18);
+  const n=1+Math.floor(r()*2);
+  for(let i=0;i<n;i++)b[Math.floor(r()*b.length)]+=1.1+r()*1.4;
+  p.fauna2={bias:b,alienShare:.45+r()*.45};
+  return p.fauna2;
+}
 function genBeast(r,p,x,gy){
   const pal=p.T.pal;
   const base=pal[2+Math.floor(r()*2)];
   const body=furColor(r,base);
   const bi=planetBiome(p);
+  const fb=beastBias(p);
+  /* часть фауны — чужие архетипы, остальное прежние формы: смесь читается
+     живее, чем один тип на всю планету */
+  const alien=r()<fb.alienShare?BEAST_ALIEN[pickKindByBias(fb.bias,r)]:null;
   const sizeMul=bi.scale*(r()<.08?2.2+r()*1.6:.55+r()*1.1);
   const shape=Math.floor(r()*BEAST_SHAPES.length);
   /* гранёный контур тела: N опорных точек с собственным радиусом —
@@ -9278,11 +9299,174 @@ function genBeast(r,p,x,gy){
     shape,poly,bx,by,headSize,headX,furTufts,
     body, eye:r()<.5?"#101820":"#f2f7ff",
     hop:r()<.45, phase:r()*TAU, spd:.09+r()*.1,
+    alien, tent:4+Math.floor(r()*4), facets:5+Math.floor(r()*4),
+    span:1.5+r()*1.2, hover:(alien==="jelly"||alien==="manta")?(14+r()*30):0,
     name:genName(r)+" "+pick(BEAST_FORM,r)+", "+pick(BEAST_TRAIT,r),
     scanned:false, shy:0};
 }
+/* ── чужие архетипы ──
+   Не «зверь другого цвета»: медуза висит и пульсирует, ходун стоит на высоких
+   дугах, кристаллическое насекомое гранёное и светится в шве, манта идёт
+   волной по крылу, панцирный похож на камень, пока не пошёл. */
+function drawBeastAlien(b,x,y,hostile,stun){
+  const c=b.body;
+  const col=(k,a)=>"rgba("+Math.round(c[0]*k)+","+Math.round(c[1]*k)+","+Math.round(c[2]*k)+","+a+")";
+  const t=G.t*b.spd+b.phase;
+  const R=b.r;
+  const hov=b.hover?b.hover*(1+.16*Math.sin(t*.6)):0;
+  ctx.save();
+  ctx.translate(x,y-R*.9-hov);
+  ctx.scale(b.face,1);
+  if(stun>0){
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g=ctx.createRadialGradient(0,0,0,0,0,R*2.6);
+    g.addColorStop(0,"rgba(140,220,255,.3)");g.addColorStop(1,"rgba(120,200,255,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,R*2.6,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+  const hi=hostile?"rgba(255,120,90,.9)":col(1.25,.95);
+  if(b.alien==="jelly"){
+    /* купол пульсирует: сжался — потянулся вверх, это и есть его движение */
+    const puls=.82+.18*Math.sin(t*1.6);
+    const bw=R*1.25*puls, bh=R*.95/puls;
+    ctx.fillStyle=col(.9,.62);
+    ctx.beginPath();ctx.ellipse(0,0,bw,bh,0,Math.PI,TAU);ctx.fill();
+    ctx.fillStyle=col(1.5,.28);
+    ctx.beginPath();ctx.ellipse(-bw*.25,-bh*.35,bw*.4,bh*.32,0,0,TAU);ctx.fill();
+    ctx.strokeStyle=col(.6,.5);ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.ellipse(0,0,bw,bh,0,Math.PI,TAU);ctx.stroke();
+    /* щупальца тянутся вниз с задержкой по фазе */
+    ctx.strokeStyle=col(1.1,.45);
+    for(let i=0;i<b.tent;i++){
+      const u=(i/(b.tent-1)-.5)*1.7;
+      const sx=u*bw*.85;
+      ctx.lineWidth=1+(1-Math.abs(u))*1.2;
+      ctx.beginPath();ctx.moveTo(sx,0);
+      const L=R*(1.6+Math.abs(u)*.9);
+      ctx.quadraticCurveTo(sx+Math.sin(t*1.3+i)*R*.4,L*.55,
+        sx+Math.sin(t*1.1+i*1.7)*R*.7,L);
+      ctx.stroke();
+    }
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g=ctx.createRadialGradient(0,-bh*.2,0,0,-bh*.2,R*2.2);
+    g.addColorStop(0,col(1.6,.20));g.addColorStop(1,col(1.6,0));
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,-bh*.2,R*2.2,0,TAU);ctx.fill();
+    ctx.restore();
+  }else if(b.alien==="strider"){
+    /* шесть высоких дуг: тело висит вверху, ноги переступают попарно */
+    const legH=R*2.2;
+    ctx.strokeStyle=col(.65,.9);
+    for(let i=0;i<6;i++){
+      const side=i<3?-1:1, k=i%3;
+      const px=(k-1)*R*.55;
+      const step=Math.sin(t*1.4+i*2.1)*R*.5;
+      ctx.lineWidth=1.6;
+      ctx.beginPath();
+      ctx.moveTo(px,0);
+      ctx.quadraticCurveTo(px+side*R*1.1,legH*.45,px+step+side*R*.5,legH);
+      ctx.stroke();
+    }
+    ctx.fillStyle=col(.95,.95);
+    ctx.beginPath();ctx.ellipse(0,0,R*.95,R*.5,0,0,TAU);ctx.fill();
+    ctx.strokeStyle=col(.55,.8);ctx.lineWidth=1;ctx.stroke();
+    /* маленькая голова на длинной шее — по ней силуэт и опознаётся */
+    ctx.strokeStyle=col(.7,.9);ctx.lineWidth=1.6;
+    ctx.beginPath();ctx.moveTo(R*.7,-R*.2);
+    ctx.quadraticCurveTo(R*1.5,-R*.9,R*1.7,-R*1.5);ctx.stroke();
+    ctx.fillStyle=col(1.05,.95);
+    ctx.beginPath();ctx.ellipse(R*1.75,-R*1.65,R*.34,R*.26,0,0,TAU);ctx.fill();
+    ctx.fillStyle=hi;
+    ctx.beginPath();ctx.arc(R*1.9,-R*1.7,1.6,0,TAU);ctx.fill();
+  }else if(b.alien==="crystal"){
+    /* гранёное тело: жёсткие плоскости и светящийся шов между ними */
+    const P=[];
+    for(let i=0;i<b.facets;i++){
+      const a=i/b.facets*TAU;
+      P.push([Math.cos(a)*R*(.9+((i*37)%5)/5*.5),Math.sin(a)*R*.62]);
+    }
+    ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);
+    for(let i=1;i<P.length;i++)ctx.lineTo(P[i][0],P[i][1]);
+    ctx.closePath();
+    const g=ctx.createLinearGradient(-R,-R*.6,R,R*.6);
+    g.addColorStop(0,col(1.5,.85));g.addColorStop(.5,col(.8,.9));g.addColorStop(1,col(1.2,.8));
+    ctx.fillStyle=g;ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.35)";ctx.lineWidth=.8;ctx.stroke();
+    ctx.strokeStyle=col(1.8,.5+.3*Math.sin(t*2));
+    ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);ctx.lineTo(P[(b.facets>>1)][0],P[(b.facets>>1)][1]);
+    ctx.stroke();
+    /* тонкие ноги-иглы */
+    ctx.strokeStyle=col(.6,.85);ctx.lineWidth=1;
+    for(let i=0;i<6;i++){
+      const px=(i%3-1)*R*.5, side=i<3?-1:1;
+      const step=Math.sin(t*1.8+i)*R*.3;
+      ctx.beginPath();ctx.moveTo(px,R*.3);
+      ctx.lineTo(px+step+side*R*.6,R*1.25);ctx.stroke();
+    }
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const gg=ctx.createRadialGradient(0,0,0,0,0,R*1.8);
+    gg.addColorStop(0,col(1.9,.16));gg.addColorStop(1,col(1.9,0));
+    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(0,0,R*1.8,0,TAU);ctx.fill();
+    ctx.restore();
+  }else if(b.alien==="manta"){
+    /* крыло идёт волной: три сегмента с разной фазой вместо жёсткой дуги */
+    const S=R*b.span;
+    for(const side of [-1,1]){
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      const w1=Math.sin(t*1.5+(side>0?0:.9))*R*.5;
+      const w2=Math.sin(t*1.5+1+(side>0?0:.9))*R*.7;
+      ctx.quadraticCurveTo(side*S*.5,w1-R*.5,side*S,w2);
+      ctx.quadraticCurveTo(side*S*.5,w1+R*.35,0,R*.45);
+      ctx.closePath();
+      const g=ctx.createLinearGradient(0,0,side*S,0);
+      g.addColorStop(0,col(1.05,.92));g.addColorStop(1,col(.55,.55));
+      ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle=col(.45,.6);ctx.lineWidth=1;ctx.stroke();
+    }
+    ctx.fillStyle=col(1.1,.95);
+    ctx.beginPath();ctx.ellipse(0,R*.1,R*.42,R*.6,0,0,TAU);ctx.fill();
+    ctx.fillStyle=hi;
+    ctx.beginPath();ctx.arc(R*.18,-R*.05,1.5,0,TAU);ctx.fill();
+    /* хвост-жало */
+    ctx.strokeStyle=col(.7,.7);ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(0,R*.6);
+    ctx.quadraticCurveTo(-R*.3,R*1.4,-R*.1+Math.sin(t)*R*.3,R*2.1);ctx.stroke();
+  }else{
+    /* панцирный: купол-камень на коротких ногах, пока стоит — не отличить
+       от валуна, и в этом весь смысл */
+    ctx.fillStyle=col(.5,.95);
+    for(let i=0;i<4;i++){
+      const px=(i-1.5)*R*.5;
+      const step=Math.sin(t*1.6+i*1.6)*R*.22;
+      ctx.fillRect(px-1.2,R*.2,2.4,R*.6+step);
+    }
+    const g=ctx.createLinearGradient(0,-R*.9,0,R*.3);
+    g.addColorStop(0,col(1.35,.95));g.addColorStop(1,col(.55,.95));
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.ellipse(0,R*.15,R*1.15,R*.85,0,Math.PI,TAU);ctx.fill();
+    ctx.strokeStyle=col(.35,.8);ctx.lineWidth=1.2;ctx.stroke();
+    /* рёбра панциря */
+    ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=1;
+    for(let i=1;i<4;i++){
+      const u=i/4*2-1;
+      ctx.beginPath();
+      ctx.ellipse(0,R*.15,R*1.15*Math.abs(u),R*.85*Math.abs(u),0,Math.PI,TAU);
+      ctx.stroke();
+    }
+    /* голова выглядывает только на ходу */
+    if(Math.abs(b.vx)>.02){
+      ctx.fillStyle=col(.9,.95);
+      ctx.beginPath();ctx.ellipse(R*1.15,R*.05,R*.3,R*.22,0,0,TAU);ctx.fill();
+      ctx.fillStyle=hi;
+      ctx.beginPath();ctx.arc(R*1.3,0,1.4,0,TAU);ctx.fill();
+    }
+  }
+  ctx.restore();
+}
 /* тело собирается из тех же частей, но пропорции, силуэт и набор — от seed */
 function drawBeast(b,x,y,hostile,stun){
+  if(b.alien){drawBeastAlien(b,x,y,hostile,stun);return;}
   const c=b.body;
   const col=(k,a)=>"rgba("+Math.round(c[0]*k)+","+Math.round(c[1]*k)+","+Math.round(c[2]*k)+","+a+")";
   const t=G.t*b.spd+b.phase;
