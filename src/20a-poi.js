@@ -70,12 +70,86 @@ function poiGlow(x,y,rad,col,a){
   g.addColorStop(1,"rgba("+col+",0)");
   ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rad,0,TAU);ctx.fill();
 }
-function poiPoly(pts,fill,line){
-  ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
-  for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
-  ctx.closePath();
-  if(fill){ctx.fillStyle=fill;ctx.fill();}
-  if(line){ctx.strokeStyle=line;ctx.lineWidth=1;ctx.stroke();}
+/* Ровная грань в триста пикселей читается фигурой при любом цвете. Древним
+   постройку делает не форма, а то, что с ней случилось: выкрошенная кромка,
+   обвалившийся угол, потёки по стене, занос у основания. Поэтому всё тело
+   строится через poiPoly, а он дробит каждую грань и уводит точки по нормали.
+   Смещение детерминировано от seed — постройка не дрожит между кадрами. */
+let POI_SEED=0, POI_MAT=null, POI_OX=0, POI_OY=0;
+function poiPath(pts,amp){
+  const P=new Path2D();
+  P.moveTo(pts[0][0],pts[0][1]);
+  let n=0;
+  for(let i=1;i<=pts.length;i++){
+    const a=pts[i-1],b=pts[i%pts.length];
+    const ex=b[0]-a[0],ey=b[1]-a[1],el=Math.hypot(ex,ey)||1;
+    /* длинную грань дробим чаще короткой: иначе у крупной постройки скол
+       один на всю стену, а у мелкой — пила */
+    const seg=clamp(Math.round(el/26),2,7);
+    for(let s=1;s<=seg;s++){
+      const u=s/seg;
+      const d=(h01(n++,i,POI_SEED)-.5)*amp*(s===seg?.35:1);
+      P.lineTo(a[0]+ex*u-ey/el*d, a[1]+ey*u+ex/el*d);
+    }
+  }
+  P.closePath();
+  return P;
+}
+function poiPoly(pts,fill,line,amp){
+  const P=poiPath(pts,amp===undefined?2.2:amp);
+  if(fill){ctx.fillStyle=fill;ctx.fill(P);}
+  poiSkin(P);
+  if(line){ctx.strokeStyle=line;ctx.lineWidth=1;ctx.stroke(P);}
+  return P;
+}
+/* порода планеты, копоть сверху вниз и волосяные трещины — то, из-за чего
+   стена перестаёт быть заливкой. Всё внутри клипа по силуэту самой постройки. */
+function poiSkin(P){
+  if(!POI_MAT)return;
+  fillMaterial(POI_MAT,POI_OX,POI_OY,.34,.22,P);
+  ctx.save();ctx.clip(P);
+  /* потёки: вертикальные грязные полосы, шире книзу — так стекает вода и пыль */
+  for(let i=0;i<7;i++){
+    const sx=(h01(i,3,POI_SEED)-.5)*260;
+    const w=2+h01(i,5,POI_SEED)*9;
+    const g=ctx.createLinearGradient(0,-400,0,60);
+    g.addColorStop(0,"rgba(0,0,0,0)");
+    g.addColorStop(1,"rgba(0,0,0,"+(.10+h01(i,9,POI_SEED)*.16).toFixed(3)+")");
+    ctx.fillStyle=g;ctx.fillRect(sx,-400,w,460);
+  }
+  /* трещины по телу: ломаные, а не прямые */
+  ctx.strokeStyle="rgba(0,0,0,.34)";ctx.lineWidth=1;
+  for(let i=0;i<5;i++){
+    let cx=(h01(i,11,POI_SEED)-.5)*240, cy=-h01(i,13,POI_SEED)*300;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    for(let s=0;s<5;s++){
+      cx+=(h01(i,s+17,POI_SEED)-.5)*26;cy+=8+h01(i,s+23,POI_SEED)*22;
+      ctx.lineTo(cx,cy);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+/* осыпь и занос у подножия: без неё постройка приставлена к земле,
+   а не стоит в ней миллион лет */
+function poiDrift(w,pal){
+  const c=pal[1];
+  ctx.fillStyle="rgba("+c.map(v=>Math.round(v*.8)).join(",")+",.55)";
+  ctx.beginPath();ctx.moveTo(-w,4);
+  for(let i=0;i<=14;i++){
+    const u=i/14, xx=-w+2*w*u;
+    const hh=Math.sin(u*Math.PI)*(6+h01(i,29,POI_SEED)*11);
+    ctx.lineTo(xx,4-hh);
+  }
+  ctx.lineTo(w,4);ctx.closePath();ctx.fill();
+  /* отдельные обломки, отвалившиеся от тела */
+  for(let i=0;i<7;i++){
+    const bx=(h01(i,31,POI_SEED)-.5)*w*2.6, s=2+h01(i,37,POI_SEED)*6;
+    ctx.fillStyle="rgba("+pal[2].map(v=>Math.round(v*.55)).join(",")+",.85)";
+    ctx.beginPath();
+    ctx.moveTo(bx-s,2);ctx.lineTo(bx-s*.3,2-s*.9);ctx.lineTo(bx+s*.8,2-s*.3);ctx.lineTo(bx+s*.5,2);
+    ctx.closePath();ctx.fill();
+  }
 }
 /* тело постройки красится градиентом «низ тёмный — верх подсвечен небом»:
    один этот приём отделяет силуэт от фона убедительнее любого контура */
@@ -106,6 +180,9 @@ function drawPOI(tr,camx,camy,p){
        на неё наступит — в этом весь смысл */
     if(x<-q.h*1.6-200||x>W+q.h*1.6+200)continue;
     ctx.save();ctx.translate(x,y);
+    /* всё, что нужно «скину», кладём в общие переменные: тащить пять
+       аргументов через десять функций рисования — только шум */
+    POI_SEED=q.seed;POI_MAT=tr.mat;POI_OX=camx-x;POI_OY=camy-y;
     const rr=rng(q.seed);
     /* рукотворное красится своим сплавом, а не палитрой грунта: покрашенная
        биомом постройка сливается с холмами и перестаёт читаться как постройка.
@@ -113,24 +190,25 @@ function drawPOI(tr,camx,camy,p){
     const mix=(a,b)=>Math.round(lerp(a,b,.22));
     const dark="rgb("+[mix(28,pal[0][0]),mix(30,pal[0][1]),mix(36,pal[0][2])].join(",")+")";
     const lite="rgb("+[mix(150,pal[3][0]),mix(158,pal[3][1]),mix(168,pal[3][2])].join(",")+")";
-    if(q.k==="wreck")drawWreck(q,rr,dark,lite);
-    else if(q.k==="temple")drawTemple(q,rr,dark,lite);
+    if(q.k==="wreck")drawWreck(q,rr,dark,lite,pal);
+    else if(q.k==="temple")drawTemple(q,rr,dark,lite,pal);
     else if(q.k==="elevator")drawElevator(q,rr,dark,lite);
     else if(q.k==="crystals")drawCrystalForest(q,rr,pal);
     else if(q.k==="ring")drawAccel(q,rr,dark,lite);
     else if(q.k==="anomaly")drawAnomaly(q,rr,pal);
-    else if(q.k==="monolith")drawMonolith(q,rr,dark,lite);
-    else if(q.k==="factory")drawFactory(q,rr,dark,lite);
-    else if(q.k==="portal")drawPortal(q,rr);
-    else if(q.k==="observ")drawObserv(q,rr,dark,lite);
+    else if(q.k==="monolith")drawMonolith(q,rr,dark,lite,pal);
+    else if(q.k==="factory")drawFactory(q,rr,dark,lite,pal);
+    else if(q.k==="portal")drawPortal(q,rr,pal);
+    else if(q.k==="observ")drawObserv(q,rr,dark,lite,pal);
     ctx.restore();
   }
   ctx.restore();
 }
 /* ── разбившийся мегакорабль: корпус вошёл в грунт под углом, хребет переломлен ── */
-function drawWreck(q,r,dark,lite){
+function drawWreck(q,r,dark,lite,pal){
   const L=q.h*2.6, tilt=(-.24-r()*.22);
   groundShadow(0,2,L*.42,9);
+  poiDrift(L*.36,pal);
   ctx.save();ctx.rotate(tilt);
   const bw=q.h*.34;
   poiPoly([[-L*.5,0],[-L*.36,-bw*.9],[L*.28,-bw],[L*.5,-bw*.42],[L*.46,bw*.2],[-L*.44,bw*.3]],
@@ -169,27 +247,45 @@ function drawWreck(q,r,dark,lite){
   }
 }
 /* ── древний храм: ступенчатая пирамида, вход светится ── */
-function drawTemple(q,r,dark,lite){
+function drawTemple(q,r,dark,lite,pal){
   const w=q.h*1.5, steps=5+Math.floor(r()*3);
   groundShadow(0,2,w*.6,10);
+  /* верхние ступени осыпались неровно, и одна съехала вбок: целая пирамида
+     выглядит построенной вчера */
+  const broke=1+Math.floor(r()*2);
   for(let i=0;i<steps;i++){
-    const t=i/steps, tw=w*(1-t*.72)*.5, th=q.h/steps;
+    const t=i/steps, th=q.h/steps;
+    let tw=w*(1-t*.72)*.5;
     const y0=-i*th;
-    poiPoly([[-tw,y0],[tw,y0],[tw*.94,y0-th],[-tw*.94,y0-th]],
-      poiBody(th,dark,lite),"rgba(0,0,0,.35)");
+    const top=i>=steps-broke;
+    if(top)tw*=.55+r()*.3;
+    const sh=(i===steps-broke-1)?(r()-.5)*w*.06:0;   // съехавший блок
+    poiPoly([[-tw+sh,y0],[tw+sh,y0],[tw*.94+sh,y0-th*(top?.6:1)],[-tw*.94+sh,y0-th*(top?.8:1)]],
+      poiBody(th,dark,lite),"rgba(0,0,0,.35)",3.2);
   }
+  poiDrift(w*.55,pal);
   /* обелиски по бокам — вертикали, задающие ритм */
   for(const s of [-1,1]){
     ctx.save();ctx.translate(s*w*.62,0);
     poiPoly([[-5,0],[5,0],[3.5,-q.h*.6],[-3.5,-q.h*.6]],poiBody(q.h*.6,dark,lite),"rgba(0,0,0,.4)");
     ctx.restore();
   }
-  const gw=w*.11, gh=q.h*.3;
-  poiGlow(0,-gh*.5,gh*2.2,"120,220,255",.32);
-  const g=ctx.createLinearGradient(0,0,0,-gh);
-  g.addColorStop(0,"rgba(140,235,255,.75)");g.addColorStop(1,"rgba(60,120,190,.15)");
-  ctx.fillStyle=g;ctx.fillRect(-gw,-gh,gw*2,gh);
-  ctx.strokeStyle="rgba(160,240,255,.5)";ctx.lineWidth=1.5;ctx.strokeRect(-gw,-gh,gw*2,gh);
+  /* вход: сначала тёмная глубина проёма, потом свет изнутри и только он мягкий.
+     Резкий светлый прямоугольник с обводкой был самой плоской вещью в кадре —
+     проём должен читаться дырой в толстой стене, а не наклейкой на ней. */
+  const gw=w*.105, gh=q.h*.32;
+  const jamb=poiPath([[-gw*1.5,0],[gw*1.5,0],[gw*1.25,-gh*1.06],[0,-gh*1.18],[-gw*1.25,-gh*1.06]],2.4);
+  ctx.fillStyle="rgba(4,6,9,.94)";ctx.fill(jamb);
+  ctx.save();ctx.clip(jamb);
+  const g=ctx.createRadialGradient(0,-gh*.42,0,0,-gh*.42,gh*.9);
+  g.addColorStop(0,"rgba(190,245,255,.62)");
+  g.addColorStop(.45,"rgba(90,180,225,.24)");
+  g.addColorStop(1,"rgba(10,20,34,0)");
+  ctx.fillStyle=g;ctx.fillRect(-gw*2,-gh*1.3,gw*4,gh*1.4);
+  ctx.restore();
+  poiGlow(0,-gh*.45,gh*2.4,"120,220,255",.22);
+  /* порог, вытертый до блеска — единственная светлая линия у входа */
+  ctx.fillStyle="rgba(200,240,255,.16)";ctx.fillRect(-gw*1.4,-2.4,gw*2.8,2.4);
 }
 /* ── космический лифт: лента уходит выше кромки экрана ── */
 function drawElevator(q,r,dark,lite){
@@ -203,7 +299,7 @@ function drawElevator(q,r,dark,lite){
   g.addColorStop(.55,"rgba(190,215,230,.28)");
   g.addColorStop(1,"rgba(190,215,230,.04)");
   ctx.fillStyle=g;
-  poiPoly([[-bw*.8,-q.h*.14],[bw*.8,-q.h*.14],[bw*.16,-q.h],[-bw*.16,-q.h]],g,null);
+  poiPoly([[-bw*.8,-q.h*.14],[bw*.8,-q.h*.14],[bw*.16,-q.h],[-bw*.16,-q.h]],g,null,0);
   /* кабина ползёт вверх — единственное, что здесь движется */
   const t=(G.t*.0016+((q.seed&255)/255))%1;
   const cy=-q.h*(.16+t*.8), cw=bw*.5*(1-t*.7);
@@ -231,7 +327,9 @@ function drawCrystalForest(q,r,pal){
     g.addColorStop(0,"rgba("+col+",.30)");
     g.addColorStop(.6,"rgba("+col+",.62)");
     g.addColorStop(1,"rgba(255,255,255,.85)");
-    poiPoly([[-s.w,0],[s.w,0],[s.w*.35,-s.h*.82],[0,-s.h],[-s.w*.42,-s.h*.8]],g,"rgba(255,255,255,.28)");
+    /* кристалл — единственное, у чего грань обязана остаться острой: скол
+       по кромке превращает его в обычный камень */
+    poiPoly([[-s.w,0],[s.w,0],[s.w*.35,-s.h*.82],[0,-s.h],[-s.w*.42,-s.h*.8]],g,"rgba(255,255,255,.28)",.35);
     /* блик: узкая грань, которая «загорается» на своей фазе */
     const tw=.35+.65*Math.pow(Math.max(0,Math.sin(G.t*.02+s.ph)),6);
     ctx.fillStyle="rgba(255,255,255,"+(.30*tw).toFixed(3)+")";
@@ -292,10 +390,13 @@ function drawAnomaly(q,r,pal){
   }
 }
 /* ── монолит: ничего, кроме пропорции и кромочного света ── */
-function drawMonolith(q,r,dark,lite){
+function drawMonolith(q,r,dark,lite,pal){
   const w=q.h*.19;
   groundShadow(0,2,w*3.4,9);
-  poiPoly([[-w,0],[w,0],[w*.93,-q.h],[-w*.93,-q.h]],"rgba(6,6,10,.96)","rgba(0,0,0,.6)");
+  /* у монолита кромка почти идеальна — в этом весь его характер: рядом с
+     выветренным камнем безупречная грань и читается как чужая работа */
+  poiPoly([[-w,0],[w,0],[w*.93,-q.h],[-w*.93,-q.h]],"rgba(6,6,10,.96)","rgba(0,0,0,.6)",.7);
+  poiDrift(w*1.5,pal);
   /* тонкая световая кромка со стороны солнца (солнце в drawSkyLayer справа) */
   ctx.strokeStyle="rgba(210,235,255,.4)";ctx.lineWidth=1.6;
   ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(w*.93,-q.h);ctx.stroke();
@@ -308,38 +409,95 @@ function drawMonolith(q,r,dark,lite){
   poiGlow(0,-q.h*.55,q.h*.7,"90,170,220",.06);
 }
 /* ── заброшенный завод: башни, трубы, баки; из одной трубы ещё идёт дым ── */
-function drawFactory(q,r,dark,lite){
+function drawFactory(q,r,dark,lite,pal){
   const w=q.h*1.4;
   groundShadow(0,2,w*.75,10);
+  poiDrift(w*.7,pal);
+  /* ржавчина: завод стоял тут долго, и это единственное, что отличает его
+     цвет от свежей постройки */
+  const rust="rgba("+(90+Math.floor(r()*40))+",48,26,";
+  /* башни: у каждой свой венец, рёбра и лестница — плоская плита читается
+     ровно как плита, сколько её ни выветривай */
   const towers=4+Math.floor(r()*3);
   for(let i=0;i<towers;i++){
-    const tx=-w*.5+ (i+.5)/towers*w;
-    const th=q.h*(.4+r()*.6), tw=w*.055*(.7+r()*.8);
-    poiPoly([[tx-tw,0],[tx+tw,0],[tx+tw*.8,-th],[tx-tw*.8,-th]],poiBody(th,dark,lite),"rgba(0,0,0,.45)");
-    ctx.fillStyle="rgba(0,0,0,.35)";
-    ctx.fillRect(tx-tw*.9,-th*.55,tw*1.8,3);
+    const tx=-w*.5+(i+.5)/towers*w+(r()-.5)*w*.06;
+    const th=q.h*(.4+r()*.6), tw=w*.05*(.7+r()*.9);
+    const lean=(r()-.5)*.05;
+    ctx.save();ctx.translate(tx,0);ctx.rotate(lean);
+    poiPoly([[-tw,0],[tw,0],[tw*.82,-th],[-tw*.82,-th]],poiBody(th,dark,lite),"rgba(0,0,0,.45)",2.6);
+    /* венец трубы шире тела — по нему силуэт и опознаётся как труба */
+    poiPoly([[-tw*1.15,-th],[tw*1.15,-th],[tw*1.05,-th-tw*.5],[-tw*1.05,-th-tw*.5]],
+      poiBody(tw*.5,dark,lite),"rgba(0,0,0,.5)",1.8);
+    /* стяжные обручи */
+    for(let k=1;k<5;k++){
+      ctx.fillStyle="rgba(0,0,0,.30)";
+      ctx.fillRect(-tw*.95,-th*k/5,tw*1.9,2.2);
+      ctx.fillStyle=rust+".18)";
+      ctx.fillRect(-tw*.95,-th*k/5+2.2,tw*1.9,1.4);
+    }
+    /* лестница на теневой стороне */
+    if(tw>w*.045){
+      ctx.strokeStyle="rgba(0,0,0,.4)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(-tw*.5,-2);ctx.lineTo(-tw*.5,-th*.92);
+      ctx.moveTo(-tw*.28,-2);ctx.lineTo(-tw*.28,-th*.92);ctx.stroke();
+      for(let k=0;k<Math.floor(th/9);k++){
+        ctx.beginPath();ctx.moveTo(-tw*.5,-6-k*9);ctx.lineTo(-tw*.28,-6-k*9);ctx.stroke();
+      }
+    }
+    ctx.restore();
     if(i===1){   // единственная живая труба
       const sm=(G.t*.5)%400;
-      for(let s=0;s<7;s++){
-        const t=((sm+s*57)%400)/400;
-        ctx.fillStyle="rgba(190,195,200,"+(.16*(1-t)).toFixed(3)+")";
-        ctx.beginPath();ctx.arc(tx+Math.sin(t*4+q.seed)*t*26,-th-t*q.h*.9,4+t*22,0,TAU);ctx.fill();
+      for(let s=0;s<8;s++){
+        const t=((sm+s*50)%400)/400;
+        ctx.fillStyle="rgba(184,188,196,"+(.13*(1-t)).toFixed(3)+")";
+        ctx.beginPath();ctx.arc(tx+Math.sin(t*4+q.seed)*t*30,-th-tw*.5-t*q.h*1.1,5+t*26,0,TAU);ctx.fill();
       }
     }
   }
-  /* баки и связывающие их трубы — горизонтали, без них башни рассыпаются */
+  /* баки: цилиндр, а не круг. Идеальная окружность — самая заметная фигура
+     в кадре, поэтому корпус собирается многоугольником с обручами и тенью. */
   for(let i=0;i<3;i++){
-    const bx=-w*.42+ r()*w*.85, br=q.h*(.09+r()*.08);
-    ctx.fillStyle=poiBody(br*2,dark,lite);
-    ctx.beginPath();ctx.ellipse(bx,-br,br,br,0,0,TAU);ctx.fill();
-    ctx.strokeStyle="rgba(0,0,0,.4)";ctx.lineWidth=1;ctx.stroke();
+    const bx=-w*.40+r()*w*.8, br=q.h*(.09+r()*.07), bh=br*(1.1+r()*.7);
+    ctx.save();ctx.translate(bx,0);
+    const pts=[];
+    const seg=14;
+    for(let k=0;k<=seg;k++){const a=Math.PI+k/seg*Math.PI;pts.push([Math.cos(a)*br,-bh+Math.sin(a)*br*.34]);}
+    pts.push([br,0]);pts.push([-br,0]);
+    poiPoly(pts,poiBody(bh+br,dark,lite),"rgba(0,0,0,.45)",1.6);
+    /* верхняя крышка отдельным эллипсом — она и даёт объём */
+    ctx.fillStyle="rgba(255,255,255,.06)";
+    ctx.beginPath();ctx.ellipse(0,-bh,br*.98,br*.32,0,0,TAU);ctx.fill();
+    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke();
+    for(let k=1;k<3;k++){
+      ctx.fillStyle="rgba(0,0,0,.24)";ctx.fillRect(-br*.99,-bh*k/3,br*1.98,2);
+    }
+    /* потёк ржавчины из-под шва */
+    ctx.fillStyle=rust+".22)";
+    ctx.fillRect(-br*.35,-bh*.66,3.4,bh*.6);
+    ctx.restore();
   }
-  ctx.strokeStyle=dark;ctx.lineWidth=q.h*.022;
-  ctx.beginPath();ctx.moveTo(-w*.5,-q.h*.26);ctx.lineTo(w*.5,-q.h*.32);ctx.stroke();
+  /* эстакада: сегменты на опорах с провисом, а не одна прямая через кадр */
+  const py0=-q.h*.28;
+  let px=-w*.52;
+  ctx.strokeStyle=dark;
+  while(px<w*.5){
+    const seg=w*(.12+r()*.1), sag=4+r()*7;
+    ctx.lineWidth=q.h*.02;
+    ctx.beginPath();ctx.moveTo(px,py0+(r()-.5)*8);
+    ctx.quadraticCurveTo(px+seg*.5,py0+sag,px+seg,py0+(r()-.5)*8);ctx.stroke();
+    ctx.strokeStyle="rgba(0,0,0,.4)";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(px+seg,py0);ctx.lineTo(px+seg+(r()-.5)*6,0);ctx.stroke();
+    ctx.strokeStyle=dark;
+    px+=seg;
+  }
+  /* аварийный огонь на дальней башне: точка внимания в мёртвом объекте */
+  const fl=.5+.5*Math.sin(G.t*.035);
+  poiGlow(w*.28,-q.h*.7,26,"255,120,60",.22*fl);
 }
 /* ── врата: стоящее кольцо, внутри — не этот мир ── */
-function drawPortal(q,r){
+function drawPortal(q,r,pal){
   const R=q.h*.42, cy=-q.h*.52;
+  poiDrift(R*.9,pal);
   poiGlow(0,cy,R*2.6,"170,120,255",.22);
   /* внутренность: концентрические кольца, медленно вращающиеся */
   ctx.save();
@@ -364,9 +522,10 @@ function drawPortal(q,r){
   groundShadow(0,2,R*1.2,7);
 }
 /* ── обсерватория: купол с прорезью и тарелка, которая медленно ведёт по небу ── */
-function drawObserv(q,r,dark,lite){
+function drawObserv(q,r,dark,lite,pal){
   const R=q.h*.55;
   groundShadow(0,2,R*1.8,9);
+  poiDrift(R*1.3,pal);
   poiPoly([[-R*1.05,0],[R*1.05,0],[R*.9,-q.h*.32],[-R*.9,-q.h*.32]],poiBody(q.h*.32,dark,lite),"rgba(0,0,0,.4)");
   ctx.fillStyle=poiBody(R,dark,lite);
   ctx.beginPath();ctx.arc(0,-q.h*.32,R*.9,Math.PI,TAU);ctx.fill();
