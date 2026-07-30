@@ -93,11 +93,26 @@ const PLANT_FORM=["стеблевой","ветвистый","папоротни�
 const PLANT_TRAIT=["хрупкий","светящийся","колючий","мясистый","полупрозрачный","жёсткий"];
 /* «геном планеты»: у каждого мира свой уклон по формам и размерам жизни,
    поэтому соседние планеты выглядят по-разному, а не как один и тот же набор */
+/* Форм стало двенадцать: к прежним семи добавлены те, что узнаются силуэтом
+   с любого расстояния — гриб, спиральное дерево, зонтик, шар на привязи,
+   ленточная трава (7..11).
+
+   Уклон не просто случайный по всем формам: две-три формы получают сильный
+   перевес, остальные почти гасятся. Иначе на каждой планете растёт весь
+   каталог сразу, и планеты снова перестают различаться — «своя флора» это
+   не про количество видов, а про то, что здесь растёт именно вот это. */
+const PLANT_KINDS=12;
 function planetBiome(p){
   if(p.biome)return p.biome;
   const r=rng(p.seed^0x8107E);
-  const bias=[1,1,1,1,1,1,1].map(()=>.3+r()*1.4);
-  p.biome={kindBias:bias,scale:.7+r()*.9,giantChance:r()*.1,hueBias:r()};
+  const bias=new Array(PLANT_KINDS).fill(0).map(()=>.06+r()*.2);
+  const domN=2+Math.floor(r()*2);
+  for(let i=0;i<domN;i++)bias[Math.floor(r()*PLANT_KINDS)]+=1.2+r()*1.6;
+  /* у безвоздушных и вулканических миров крупных форм почти нет: нечем дышать
+     и нечему расти большим — это читается как характер места, а не как правило */
+  const harsh=p.T.atm==="отсутствует"||p.type==="volcanic";
+  p.biome={kindBias:bias,scale:(harsh?.5:.7)+r()*(harsh?.5:.9),
+    giantChance:harsh?r()*.03:r()*.14,hueBias:r()};
   return p.biome;
 }
 function pickKindByBias(bias,r){
@@ -110,12 +125,19 @@ function genPlant(r,p,x,gy){
   const kind=pickKindByBias(bi.kindBias,r);
   const giant=r()<bi.giantChance;
   const sizeMul=bi.scale*(giant?(2.4+r()*2.2):(.4+r()*1.3));
-  const h=(kind===6?6+r()*10:(kind===4?10+r()*16:20+r()*58))*sizeMul;
+  /* высота по форме: гриб и зонтик заметно выше травы, иначе силуэт не работает */
+  const h=(kind===6?6+r()*10:
+          (kind===4?10+r()*16:
+          (kind===7?34+r()*54:
+          (kind===9?46+r()*70:
+          (kind===8?40+r()*60:
+          (kind===10?26+r()*36:
+          (kind===11?18+r()*34:20+r()*58)))))))*sizeMul;
   const segs=3+Math.floor(r()*4);
   const lean=(r()-.5)*.5, curl=(r()-.5)*.7;
   const branches=[];
   const nb=kind===1?3+Math.floor(r()*4):(kind===2?5+Math.floor(r()*4):
-    (kind===4||kind===6?0:Math.floor(r()*3)));
+    (kind>=4&&kind<=11?0:Math.floor(r()*3)));
   for(let i=0;i<nb;i++){
     branches.push({t:.25+r()*.7, ang:(r()<.5?-1:1)*(.5+r()*.9), len:h*(.16+r()*.34), w:1+r()*1.6});
   }
@@ -126,12 +148,164 @@ function genPlant(r,p,x,gy){
               clamp(base[2]*.5+40+hue*90,20,255)];
   const stem=[leaf[0]*.5+20,leaf[1]*.45+26,leaf[2]*.45+22];
   return {x,y:gy,h,kind,segs,lean,curl,branches,
+    /* параметры новых форм: шляпка, витки спирали, рёбра зонтика, шары */
+    cap:.55+r()*.6, turns:2+r()*2.4, ribs:5+Math.floor(r()*4),
+    balls:1+Math.floor(r()*3), ribbons:3+Math.floor(r()*5),
     leaf,stem,glow:r()<.28,bloom:r()<.4,pods:2+Math.floor(r()*4),
     facets:5+Math.floor(r()*4),blobs:3+Math.floor(r()*4),
     sway:kind===4?0:.008+r()*.02, phase:r()*TAU, w:(1.4+r()*2.2)*Math.min(2,sizeMul),
     giant,
     name:genName(r)+" "+pick(PLANT_FORM,r)+", "+pick(PLANT_TRAIT,r),
     scanned:false};
+}
+/* Формы, которые опознаются по одному силуэту: гриб, спираль, зонтик, шар на
+   привязи, ленты. Ни одна из них не «палка с листьями» — именно это и было
+   главной претензией к прежней флоре.
+
+   Свечение снизу шляпки и внутри мембраны — не украшение: оно отделяет
+   растение от грунта в темноте, когда силуэт уже не читается. */
+function drawPlantAlien(pl,x,y,stemC,leafC,sc){
+  const bend=Math.sin(G.t*pl.sway+pl.phase);
+  const gl=sc?"127,230,216":((pl.leaf[0]|0)+","+(pl.leaf[1]|0)+","+(pl.leaf[2]|0));
+  ctx.save();ctx.translate(x,y);
+  const lean=(pl.lean+bend*.22)*pl.h*.2;
+  if(pl.kind===7){
+    /* гриб: толстая ножка с утолщением у земли, широкая шляпка, пластинки */
+    const capW=pl.h*pl.cap, st=Math.max(2.4,pl.w*1.5);
+    ctx.fillStyle=stemC;
+    ctx.beginPath();
+    ctx.moveTo(-st*1.5,0);
+    ctx.quadraticCurveTo(-st*.7,-pl.h*.45,-st*.5+lean,-pl.h*.92);
+    ctx.lineTo(st*.5+lean,-pl.h*.92);
+    ctx.quadraticCurveTo(st*.7,-pl.h*.45,st*1.5,0);
+    ctx.closePath();ctx.fill();
+    /* пластинки под шляпкой */
+    ctx.strokeStyle="rgba(0,0,0,.28)";ctx.lineWidth=1;
+    for(let i=-3;i<=3;i++){
+      ctx.beginPath();ctx.moveTo(lean,-pl.h*.9);
+      ctx.lineTo(lean+i*capW*.26,-pl.h*.9+Math.abs(i)*1.6+3);ctx.stroke();
+    }
+    ctx.fillStyle=leafC;
+    ctx.beginPath();
+    ctx.moveTo(lean-capW,-pl.h*.88);
+    ctx.quadraticCurveTo(lean,-pl.h*1.30,lean+capW,-pl.h*.88);
+    ctx.quadraticCurveTo(lean,-pl.h*.98,lean-capW,-pl.h*.88);
+    ctx.closePath();ctx.fill();
+    /* крап на шляпке — по нему гриб и опознаётся грибом */
+    ctx.fillStyle="rgba(255,255,255,.18)";
+    for(let i=0;i<5;i++){
+      const u=(i/4-.5)*1.7;
+      ctx.beginPath();
+      ctx.ellipse(lean+u*capW*.8,-pl.h*(1.02+Math.cos(u)*.06),capW*.09,capW*.05,0,0,TAU);
+      ctx.fill();
+    }
+    if(pl.glow){
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      const g=ctx.createRadialGradient(lean,-pl.h*.86,0,lean,-pl.h*.86,capW*1.5);
+      g.addColorStop(0,"rgba("+gl+",.26)");g.addColorStop(1,"rgba("+gl+",0)");
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(lean,-pl.h*.86,capW*1.5,0,TAU);ctx.fill();
+      ctx.restore();
+    }
+  }else if(pl.kind===8){
+    /* спиральное дерево: ствол уходит витками, листья только на внешней кромке */
+    /* виток должен быть толстым и широким: тонкая спираль малого радиуса
+       читается закорючкой, а не деревом */
+    ctx.strokeStyle=stemC;ctx.lineWidth=Math.max(3,pl.w*2.2);ctx.lineCap="round";
+    ctx.beginPath();
+    const N=46;
+    for(let i=0;i<=N;i++){
+      const t=i/N;
+      const a=t*pl.turns*TAU;
+      const rr=pl.h*.30*(1-t*.62);
+      const px=Math.sin(a)*rr+lean*t, py=-pl.h*t;
+      if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+    ctx.fillStyle=leafC;
+    for(let i=0;i<6;i++){
+      const t=.35+i/6*.6;
+      const a=t*pl.turns*TAU;
+      const rr=pl.h*.30*(1-t*.62);
+      const px=Math.sin(a)*rr+lean*t, py=-pl.h*t;
+      ctx.beginPath();
+      ctx.ellipse(px+Math.sign(Math.sin(a))*5,py,pl.h*.10,pl.h*.035,a,0,TAU);
+      ctx.fill();
+    }
+    ctx.lineCap="butt";
+  }else if(pl.kind===9){
+    /* зонтик: тонкая высокая ножка и натянутая мембрана на рёбрах */
+    const capW=pl.h*.42*pl.cap;
+    ctx.strokeStyle=stemC;ctx.lineWidth=Math.max(1.2,pl.w*.7);
+    ctx.beginPath();ctx.moveTo(0,0);
+    ctx.quadraticCurveTo(lean*.5,-pl.h*.5,lean,-pl.h);ctx.stroke();
+    ctx.fillStyle=leafC;
+    ctx.globalAlpha=.85;
+    /* купол одной дугой, зубцы только по самой кромке: цепочка квадратичных
+       кривых по всей ширине давала гусеницу вместо мембраны */
+    ctx.beginPath();
+    ctx.ellipse(lean,-pl.h*.96,capW,pl.h*.20,0,Math.PI,TAU);
+    for(let i=pl.ribs;i>=0;i--){
+      const u=i/pl.ribs-.5;
+      ctx.lineTo(lean+u*capW*2,-pl.h*.96+(i%2?pl.h*.035:0));
+    }
+    ctx.closePath();ctx.fill();
+    ctx.globalAlpha=1;
+    ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=1;
+    for(let i=0;i<=pl.ribs;i++){
+      const u=i/pl.ribs-.5;
+      ctx.beginPath();ctx.moveTo(lean,-pl.h*1.02);
+      ctx.lineTo(lean+u*capW*2,-pl.h*.95);ctx.stroke();
+    }
+    if(pl.glow){
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      ctx.fillStyle="rgba("+gl+",.14)";
+      ctx.beginPath();ctx.ellipse(lean,-pl.h*.9,capW*1.3,pl.h*.18,0,0,TAU);ctx.fill();
+      ctx.restore();
+    }
+  }else if(pl.kind===10){
+    /* шар на привязи: висит выше, чем стоял бы стебель, и медленно дышит */
+    const lift=pl.h*(.5+.06*Math.sin(G.t*.01+pl.phase));
+    ctx.strokeStyle=stemC;ctx.lineWidth=1;
+    for(let i=0;i<pl.balls;i++){
+      const bx=(i-(pl.balls-1)/2)*pl.h*.34+lean;
+      const br=pl.h*(.16+((i*37)%5)/5*.1);
+      const by=-lift-pl.h*.3-((i*23)%4)/4*pl.h*.16;
+      ctx.beginPath();ctx.moveTo(bx*.4,0);
+      ctx.quadraticCurveTo(bx*.7,by*.4,bx,by+br);ctx.stroke();
+      const g=ctx.createRadialGradient(bx-br*.3,by-br*.35,br*.1,bx,by,br);
+      g.addColorStop(0,"rgba(255,255,255,.35)");
+      g.addColorStop(.5,leafC);
+      g.addColorStop(1,"rgba(0,0,0,.25)");
+      ctx.fillStyle=g;
+      ctx.beginPath();ctx.ellipse(bx,by,br,br*1.12,0,0,TAU);ctx.fill();
+      ctx.strokeStyle="rgba(255,255,255,.18)";ctx.lineWidth=.8;ctx.stroke();
+      ctx.strokeStyle=stemC;ctx.lineWidth=1;
+      if(pl.glow){
+        ctx.save();ctx.globalCompositeOperation="lighter";
+        const gg=ctx.createRadialGradient(bx,by,0,bx,by,br*2.4);
+        gg.addColorStop(0,"rgba("+gl+",.20)");gg.addColorStop(1,"rgba("+gl+",0)");
+        ctx.fillStyle=gg;ctx.beginPath();ctx.arc(bx,by,br*2.4,0,TAU);ctx.fill();
+        ctx.restore();
+      }
+    }
+  }else{
+    /* ленты: широкие плоские полосы, идущие волной от основания */
+    for(let i=0;i<pl.ribbons;i++){
+      const ph=pl.phase+i*1.3;
+      const w=pl.h*(.05+((i*29)%5)/5*.05);
+      const hh=pl.h*(.6+((i*41)%6)/6*.6);
+      const sway=Math.sin(G.t*pl.sway*1.6+ph)*pl.h*.22+lean;
+      ctx.fillStyle=i%2?leafC:stemC;
+      ctx.globalAlpha=.9;
+      ctx.beginPath();
+      ctx.moveTo(-w,0);
+      ctx.quadraticCurveTo(sway*.4-w*.5,-hh*.55,sway,-hh);
+      ctx.quadraticCurveTo(sway*.4+w*.5,-hh*.55,w,0);
+      ctx.closePath();ctx.fill();
+      ctx.globalAlpha=1;
+    }
+  }
+  ctx.restore();
 }
 function drawPlant(pl,x,y){
   const sc=pl.scanned;
@@ -174,6 +348,8 @@ function drawPlant(pl,x,y){
     }
     ctx.restore();return;
   }
+  /* ── формы, узнаваемые силуэтом ── */
+  if(pl.kind>=7&&pl.kind<=11){drawPlantAlien(pl,x,y,stemC,leafC,sc);return;}
   const bend=Math.sin(G.t*pl.sway+pl.phase);
   ctx.save();ctx.translate(x,y);
   /* ствол: ломаная из сегментов, верх качается сильнее низа */
