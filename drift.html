@@ -7053,8 +7053,8 @@ function drawScoop(){
 
    Плотная атмосфера гасит всё небесное вдвое — значит, самые сильные виды
    достаются безвоздушным миром, где игрок и так чувствует себя одиноко. */
-const SKY_LOUD=["giant","galaxy","hole","aurora"];
-const SKY_QUIET=["moon","moon","nebula","comet","pulsar","field","rings"];
+const SKY_LOUD=["giant","world","galaxy","hole","aurora","world"];
+const SKY_QUIET=["moon","moon","nebula","comet","pulsar","field","rings","world"];
 function skyScene(p){
   if(p.sky2)return p.sky2;
   const r=rng((p.seed^0x5C1E)>>>0);
@@ -7121,7 +7121,100 @@ function drawSkyBodies(p,camx,camy){
     else if(e.k==="comet")skyComet(p,e,x,y,dim);
     else if(e.k==="pulsar")skyPulsar(p,e,x,y,dim);
     else if(e.k==="field")skyField(p,e,x,y,dim);
+    else if(e.k==="world")skyWorld(p,e,x,y,dim);
   }
+}
+/* ── соседний мир ──
+   Плоский цветной кружок в небе выдаёт себя мгновенно. Настоящее тело узнаётся
+   по четырём вещам: очертания материков, полярные шапки, вихри облаков и
+   светящаяся кромка атмосферы. Текстура считается один раз на тело (96×96) и
+   дальше только рисуется — как и всё остальное дорогое в этой игре.
+
+   Своё небесное тело у каждого элемента сцены, поэтому кэш живёт на нём. */
+const SKY_WORLD_KINDS=[
+  {k:"ocean",  sea:[18,52,96], land:[54,96,64],  cap:[228,240,246], cloud:.55},
+  {k:"desert", sea:[128,88,48],land:[176,132,80],cap:[226,214,190], cloud:.18},
+  {k:"jungle", sea:[16,58,74], land:[40,104,58],  cap:[210,226,222], cloud:.42},
+  {k:"toxic",  sea:[54,62,20], land:[104,124,40], cap:[190,200,140], cloud:.5},
+  {k:"ice",    sea:[92,124,156],land:[176,206,226],cap:[246,250,252],cloud:.3},
+  {k:"lava",   sea:[52,14,10], land:[120,36,18],  cap:[86,40,30],    cloud:.22},
+  {k:"metal",  sea:[46,48,54], land:[104,108,118],cap:[168,172,180], cloud:.10}
+];
+function skyWorldTex(e){
+  if(e.tex)return e.tex;
+  const S=96,cn=document.createElement("canvas");cn.width=cn.height=S;
+  const c=cn.getContext("2d"),img=c.createImageData(S,S),d=img.data;
+  const K=SKY_WORLD_KINDS[e.seed%SKY_WORLD_KINDS.length];
+  e.kind=K;
+  const sd=(e.seed^0x77A9)>>>0;
+  /* сколько на этом мире суши: от почти сплошного океана до почти сплошной
+     пустыни — по одному взгляду видно, что это другой мир, а не другой цвет */
+  const sea=.34+((sd>>>7)&255)/255*.34;
+  for(let y=0;y<S;y++)for(let x=0;x<S;x++){
+    const o=(y*S+x)*4;
+    const nx=(x+.5)/S*2-1, ny=(y+.5)/S*2-1, r2=nx*nx+ny*ny;
+    if(r2>1){d[o+3]=0;continue;}
+    const nz=Math.sqrt(1-r2);
+    /* проекция на шар: у кромки детали сжимаются, из-за этого диск и читается
+       как шар, а не как круглая картинка */
+    const lon=Math.atan2(nx,nz), lat=Math.asin(clamp(ny,-1,1));
+    const h=fbm2(lon*1.9+7,lat*1.9+3,sd,5);
+    const land=h>sea;
+    let col;
+    if(land){
+      const t=clamp((h-sea)/(1-sea),0,1);
+      col=[lerp(K.sea[0],K.land[0],.35+t*.8),lerp(K.sea[1],K.land[1],.35+t*.8),
+           lerp(K.sea[2],K.land[2],.35+t*.8)];
+    }else{
+      const t=clamp(h/sea,0,1);
+      col=[K.sea[0]*(.7+t*.4),K.sea[1]*(.7+t*.4),K.sea[2]*(.7+t*.4)];
+    }
+    /* полярные шапки: по широте, с рваной кромкой — ровный колпак читается
+       наклейкой */
+    const capEdge=1.16-fbm2(lon*3,lat*2+11,sd+31,3)*.34;
+    const la=Math.abs(lat)/1.5708;
+    if(la>capEdge*.78){
+      const w=clamp((la-capEdge*.78)/.3,0,1);
+      col=[lerp(col[0],K.cap[0],w),lerp(col[1],K.cap[1],w),lerp(col[2],K.cap[2],w)];
+    }
+    /* облачные вихри: отдельный слой шума, вытянутый по широте */
+    const cl=clamp((fbm2(lon*2.6+21,lat*5.2+5,sd+53,4)-.52)*3.4,0,1)*K.cloud;
+    col=[lerp(col[0],238,cl),lerp(col[1],242,cl),lerp(col[2],246,cl)];
+    d[o]=clamp(col[0],0,255);d[o+1]=clamp(col[1],0,255);d[o+2]=clamp(col[2],0,255);
+    d[o+3]=255;
+  }
+  c.putImageData(img,0,0);
+  e.tex=cn;return cn;
+}
+function skyWorld(p,e,x,y,dim){
+  const T=skyWorldTex(e);
+  const R=H*(e.k==="world"?.12:.09)*e.s;
+  const K=e.kind||SKY_WORLD_KINDS[0];
+  ctx.save();
+  ctx.globalAlpha=dim*.96;
+  /* кромка атмосферы: тонкий светящийся ободок снаружи диска. Он и отличает
+     мир с воздухом от камня, и стоит один градиент */
+  const ag=ctx.createRadialGradient(x,y,R*.94,x,y,R*1.22);
+  ag.addColorStop(0,"rgba("+K.sea.map(v=>Math.round(v*.6+90)).join(",")+",.34)");
+  ag.addColorStop(1,"rgba("+K.sea.join(",")+",0)");
+  ctx.fillStyle=ag;ctx.beginPath();ctx.arc(x,y,R*1.22,0,TAU);ctx.fill();
+  ctx.save();
+  ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.clip();
+  ctx.drawImage(T,x-R,y-R,R*2,R*2);
+  /* ночная сторона и мягкий терминатор */
+  const tg=ctx.createLinearGradient(x+R*.1,y,x+R*1.02,y);
+  tg.addColorStop(0,"rgba(0,0,0,0)");tg.addColorStop(1,"rgba(2,4,10,.88)");
+  ctx.fillStyle=tg;ctx.fillRect(x-R,y-R,R*2,R*2);
+  /* и подсвет со стороны звезды — без него шар плоский */
+  const lg=ctx.createRadialGradient(x-R*.42,y-R*.38,0,x-R*.42,y-R*.38,R*1.5);
+  lg.addColorStop(0,"rgba(255,246,226,.20)");
+  lg.addColorStop(1,"rgba(255,246,226,0)");
+  ctx.fillStyle=lg;ctx.fillRect(x-R,y-R,R*2,R*2);
+  ctx.restore();
+  ctx.strokeStyle="rgba(255,248,232,"+(.26*dim).toFixed(2)+")";
+  ctx.lineWidth=1.4;
+  ctx.beginPath();ctx.arc(x,y,R,Math.PI*.58,Math.PI*1.46);ctx.stroke();
+  ctx.restore();
 }
 /* ── газовый гигант: полосы, терминатор, кромочный свет, иногда кольца ── */
 function skyGiant(p,e,x,y,dim,ringy){
