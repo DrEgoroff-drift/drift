@@ -604,7 +604,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.19.0";
+const VER="0.20.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -730,14 +730,14 @@ const STAR_CLASS=[
 
 /* ══════════════ корабли: процедурные корпуса ══════════════ */
 const SHIPS={
-  strizh:{ru:"Стриж", cls:"лёгкий разведчик", seed:1101, thr:1,   turn:1,   fuel:100,cargo:40, hull:100,price:0,    col:"#7fe6d8",note:"Стандартный корпус разведзонда. Ничего лишнего."},
-  igla:  {ru:"Игла",  cls:"зонд дальнего хода",seed:2207, thr:1.12,turn:1.2, fuel:130,cargo:26, hull:74, price:3400, col:"#9fd8ff",note:"Тонкий корпус и большой бак. Ходит далеко, возит мало."},
-  vyuk:  {ru:"Вьюк",  cls:"грузовой тягач",   seed:3313, thr:.82, turn:.78, fuel:150,cargo:150,hull:135,price:6200, col:"#f2b25c",note:"Трюм вчетверо больше, разгон вялый. Возит руду мешками."},
-  skat:  {ru:"Скат",  cls:"рудный челнок",    seed:4421, thr:.95, turn:1.05,fuel:120,cargo:96, hull:118,price:8100, col:"#8fd08a",note:"Широкая рама с боковыми бункерами. Крепкий середняк."},
-  klinok:{ru:"Клинок",cls:"курьер",           seed:5527, thr:1.5, turn:1.45,fuel:95, cargo:32, hull:88, price:9800, col:"#ff9d7a",note:"Гоночная рама. Садится точно, но трюм крошечный."},
-  obod:  {ru:"Обод",  cls:"кольцевой буровик",seed:6631, thr:.88, turn:.9,  fuel:170,cargo:130,hull:160,price:15000,col:"#c9c9d4",note:"Каркас вокруг буровой шахты. Грызёт астероиды быстрее всех."},
-  topor: {ru:"Топор", cls:"броневой тральщик",seed:7741, thr:1.05,turn:.82, fuel:140,cargo:88, hull:250,price:19500,col:"#e0d28a",note:"Толстая скула. Переживает то, что убивает остальных."},
-  mamont:{ru:"Мамонт",cls:"тяжёлый рудовоз",  seed:8849, thr:.7,  turn:.62, fuel:230,cargo:290,hull:220,price:24000,col:"#c58ae0",note:"Летающий склад с бронёй. Разворачивается как луна."}
+  strizh:{ru:"Стриж", cls:"лёгкий разведчик", hcls:"scout", seed:1101, thr:1,   turn:1,   fuel:100,cargo:40, hull:100,price:0,    col:"#7fe6d8",note:"Стандартный корпус разведзонда. Ничего лишнего."},
+  igla:  {ru:"Игла",  cls:"зонд дальнего хода",hcls:"survey", seed:2207, thr:1.12,turn:1.2, fuel:130,cargo:26, hull:74, price:3400, col:"#9fd8ff",note:"Тонкий корпус и большой бак. Ходит далеко, возит мало."},
+  vyuk:  {ru:"Вьюк",  cls:"грузовой тягач",   hcls:"hauler", seed:3313, thr:.82, turn:.78, fuel:150,cargo:150,hull:135,price:6200, col:"#f2b25c",note:"Трюм вчетверо больше, разгон вялый. Возит руду мешками."},
+  skat:  {ru:"Скат",  cls:"рудный челнок",    hcls:"hauler", seed:4421, thr:.95, turn:1.05,fuel:120,cargo:96, hull:118,price:8100, col:"#8fd08a",note:"Широкая рама с боковыми бункерами. Крепкий середняк."},
+  klinok:{ru:"Клинок",cls:"курьер",           hcls:"courier",seed:5527, thr:1.5, turn:1.45,fuel:95, cargo:32, hull:88, price:9800, col:"#ff9d7a",note:"Гоночная рама. Садится точно, но трюм крошечный."},
+  obod:  {ru:"Обод",  cls:"кольцевой буровик",hcls:"miner",  seed:6631, thr:.88, turn:.9,  fuel:170,cargo:130,hull:160,price:15000,col:"#c9c9d4",note:"Каркас вокруг буровой шахты. Грызёт астероиды быстрее всех."},
+  topor: {ru:"Топор", cls:"броневой тральщик",hcls:"warship",seed:7741, thr:1.05,turn:.82, fuel:140,cargo:88, hull:250,price:19500,col:"#e0d28a",note:"Толстая скула. Переживает то, что убивает остальных."},
+  mamont:{ru:"Мамонт",cls:"тяжёлый рудовоз",  hcls:"hauler", seed:8849, thr:.7,  turn:.62, fuel:230,cargo:290,hull:220,price:24000,col:"#c58ae0",note:"Летающий склад с бронёй. Разворачивается как луна."}
 };
 const SHIP_KEYS=Object.keys(SHIPS);
 function shipData(id){return SHIPS[id]||G.uniqueShips[id]||NPC_SHIPS[id];}
@@ -886,16 +886,57 @@ function profW(prof,x){
   }
   return x>prof[0][0]?prof[0][1]:prof[prof.length-1][1];
 }
+/* ══════════════ класс корпуса ══════════════ */
+/* Генератор делал «просто корабль»: пропорции гуляли от seed, но силуэт ничего
+   не сообщал. В системе летали восемь разных кораблей, и ни по одному нельзя
+   было сказать, кто это — рудовоз, курьер или фрегат, пока не подлетишь и не
+   прочитаешь подпись.
+
+   Класс — это не новая таблица кораблей, а **уклон генератора**: те же
+   станции профиля, но с другими пропорциями, и одна-две узнаваемые детали.
+   Рудовоз широк и обвешан контейнерами, у буровика бур в носу, у фрегата
+   стволы и скула, у яхты лента окон, у исследователя тарелка и панели.
+   Читается силуэтом на любом масштабе, а это единственное, что видно
+   в системе. */
+const HULL_CLASS={
+  scout:  {ru:"разведчик",     bw:.85,len:1.00,wing:[1,3],nac:.62,notch:.55,dish:1},
+  courier:{ru:"курьер",        bw:.62,len:1.28,wing:[2,3],nac:.80,notch:.30,fin:1},
+  hauler: {ru:"рудовоз",       bw:1.55,len:1.16,wing:[0,2],nac:.38,notch:.85,cont:1},
+  miner:  {ru:"буровик",       bw:1.34,len:.94,wing:[0,2],nac:.50,notch:.70,cont:1,drill:1},
+  warship:{ru:"фрегат",        bw:1.02,len:1.10,wing:[2,3],nac:.74,notch:.50,guns:1,armor:1},
+  yacht:  {ru:"яхта",          bw:.92,len:1.16,wing:[1,2],nac:.50,notch:.10,win:1,fin:1},
+  survey: {ru:"исследователь", bw:.96,len:1.02,wing:[1,2],nac:.52,notch:.40,dish:1,panel:1}
+};
+function hullClassOf(id,S){
+  if(S.hcls)return S.hcls;
+  let k;
+  /* у пирата корпус всегда боевой или курьерский: он либо дерётся, либо
+     догоняет. Мирного рудовоза среди них быть не должно — силуэт врага
+     обязан читаться враждебно ещё до первого выстрела */
+  if(id&&id[0]==="p")k=(hashi(S.seed,3,0x9A17)&3)?"warship":"courier";
+  else if(S.cls&&/буровик|шахт/.test(S.cls))k="miner";
+  else if(S.cargo>=140)k="hauler";
+  else if(S.hull>=200)k="warship";
+  else if(S.thr>=1.35)k="courier";
+  else if(S.fuel>=150&&S.cargo<70)k="survey";
+  else if(S.unique||S.fused)k=["scout","yacht","survey","warship"][hashi(S.seed,5,0x77)&3];
+  else k="scout";
+  S.hcls=k;return k;
+}
 function hullOf(id){
   if(HULL_CACHE[id])return HULL_CACHE[id];
   const S=shipData(id),r=rng(S.seed);
+  const K=HULL_CLASS[hullClassOf(id,S)]||HULL_CLASS.scout;
 
   /* ── продольный профиль: станции от носа к корме ── */
-  const nose=16+r()*14, tail=-(13+r()*13), len=nose-tail;
-  const bw=3.8+r()*4.4;
+  const nose=(16+r()*14)*K.len, tail=-(13+r()*13)*K.len, len=nose-tail;
+  const bw=(3.8+r()*4.4)*K.bw;
   const segs=9+Math.floor(r()*5);
-  const noseW=bw*(.10+r()*.16), tailW=bw*(.42+r()*.46), tp=.28+r()*.3;
-  const hasNotch=r()<.55, notch=.6+r()*.28, notchT=tp+.16+r()*.3;
+  /* у рудовоза корма почти равна миделю — корпус-ящик; у курьера сходит
+     на конус. Это и есть первое, что читается силуэтом */
+  const noseW=bw*(.10+r()*.16)*(K.cont?1.5:1), tailW=bw*(.42+r()*.46)*(K.cont?1.3:1);
+  const tp=.28+r()*.3;
+  const hasNotch=r()<K.notch, notch=.6+r()*.28, notchT=tp+.16+r()*.3;
   const prof=[];
   for(let i=0;i<=segs;i++){
     const t=i/segs, x=lerp(nose,tail,t);
@@ -912,7 +953,7 @@ function hullOf(id){
   for(let i=prof.length-1;i>=0;i--)poly.push([prof[i][0],prof[i][1]]);
 
   /* ── крылья: многозвенные, со скосом ── */
-  const wingN=1+Math.floor(r()*3), wings=[];
+  const wingN=K.wing[0]+Math.floor(r()*(K.wing[1]-K.wing[0]+1)), wings=[];
   for(let i=0;i<wingN;i++){
     const root=lerp(nose*.1,tail*.82,(i+.3+r()*.4)/wingN);
     const chord=len*(.12+r()*.16), span=bw*(1.15+r()*1.5)+2.5;
@@ -929,7 +970,7 @@ function hullOf(id){
 
   /* ── гондолы двигателей ── */
   const nacs=[];
-  if(r()<.66){
+  if(r()<K.nac){
     const nl=len*(.24+r()*.2), nr=bw*(.18+r()*.2)+1;
     nacs.push({x:tail+nl*(.5+r()*.3), y:bw*(.85+r()*1.05)+nr, l:nl, r:nr});
   }
@@ -962,6 +1003,30 @@ function hullOf(id){
   const ribs=[];
   for(let i=2;i<prof.length-1;i++)if(r()<.55)ribs.push(i);
 
+  /* ── приметы класса ──
+     По одной-две на корпус, и все на своих местах: контейнеры вдоль хребта,
+     бур в носу, стволы вдоль скулы, тарелка на штанге у кормы. Больше не
+     нужно: силуэт должен опознаваться, а не описываться. */
+  const mark={};
+  if(K.cont){
+    mark.cont=[];
+    const n=3+Math.floor(r()*4);
+    const cl=len*.62/n;
+    for(let i=0;i<n;i++)
+      mark.cont.push([tail+len*.14+i*cl, cl*.82, bw*(.52+r()*.28)]);
+  }
+  if(K.drill)mark.drill={x:nose+1.5,l:5+r()*5,r:Math.max(2.2,noseW*1.5)};
+  if(K.guns){
+    mark.guns=[];
+    const gn=1+Math.floor(r()*2);
+    for(let i=0;i<gn;i++)
+      mark.guns.push([lerp(nose*.62,nose*.1,i/Math.max(1,gn)),bw*(.5+i*.3),4+r()*6]);
+  }
+  if(K.armor)mark.armor=nose*(.42+r()*.2);
+  if(K.dish)mark.dish={x:lerp(tail*.6,nose*.1,r()),r:1.8+r()*2.2,boom:2.5+r()*3};
+  if(K.panel)mark.panel={x:lerp(tail*.7,tail*.2,r()),l:len*(.16+r()*.12),w:bw*(1.5+r()*1.2)};
+  if(K.win)mark.win=[nose*(.2+r()*.2),tail*(.2+r()*.3)];
+
   const canopy={x:lerp(nose,tail,.12+r()*.12),rx:2+r()*3.4,ry:0};
   canopy.ry=Math.min(profW(prof,canopy.x)*.62,canopy.rx*(.6+r()*.5));
   const stripe={a:.2+r()*.28,b:.58+r()*.34,from:.1+r()*.2,to:.62+r()*.32};
@@ -974,7 +1039,8 @@ function hullOf(id){
   for(const p of pods)hw=Math.max(hw,p[1]+p[3]);
 
   const col=hex2rgb(S.col);
-  const h={poly,prof,wings,pods,nacs,eng,greeb,ants,ribs,canopy,stripe,fin,
+  const h={poly,prof,wings,pods,nacs,eng,greeb,ants,ribs,canopy,stripe,fin,mark,
+    hcls:S.hcls,clsRu:K.ru,
     nose,bw,tail,len,tailW,halfW:hw,
     col, lite:mixc(col,[255,255,255],.42), dark:mixc(col,[6,10,17],.82),
     body:mixc(col,[8,13,21],.72), edge:mixc(col,[10,16,26],.35)};
@@ -1012,6 +1078,77 @@ function bankTransform(bank){
      поворачивается вокруг продольной оси, а не просто едет "плашмя" вбок */
   ctx.transform(1,0,0,Math.cos(bank),0,0);
   return true;
+}
+/* приметы класса рисуются поверх корпуса, но под фонарём и огнями: это
+   навеска, а не корпус, и она обязана читаться отдельным слоем */
+function drawHullMarks(h){
+  const M=h.mark;if(!M)return;
+  if(M.cont)for(const c of M.cont)for(const s of [1,-1]){
+    const y=c[2]*s;
+    ctx.fillStyle=rgba(h.dark,1);ctx.strokeStyle=rgba(h.col,.7);ctx.lineWidth=.9;
+    ctx.beginPath();ctx.rect(c[0],s>0?y-c[2]*.55:y-c[2]*.45,c[1],c[2]);
+    ctx.fill();ctx.stroke();
+    /* стяжки контейнера: без них ящик читается пустым прямоугольником */
+    ctx.strokeStyle="rgba(0,0,0,.42)";ctx.lineWidth=.7;
+    ctx.beginPath();
+    ctx.moveTo(c[0]+c[1]*.5,s>0?y-c[2]*.55:y-c[2]*.45);
+    ctx.lineTo(c[0]+c[1]*.5,(s>0?y-c[2]*.55:y-c[2]*.45)+c[2]);
+    ctx.stroke();
+  }
+  if(M.drill){
+    const d=M.drill;
+    ctx.fillStyle=rgba(h.lite,.85);
+    ctx.beginPath();
+    ctx.moveTo(d.x+d.l,0);ctx.lineTo(d.x,-d.r);ctx.lineTo(d.x,d.r);ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle=rgba(h.dark,1);ctx.lineWidth=.8;
+    for(let i=1;i<4;i++){
+      const t=i/4;
+      ctx.beginPath();
+      ctx.moveTo(d.x+d.l*t,-d.r*(1-t));ctx.lineTo(d.x+d.l*t,d.r*(1-t));ctx.stroke();
+    }
+  }
+  if(M.guns)for(const g of M.guns)for(const s of [1,-1]){
+    ctx.strokeStyle=rgba(h.lite,.75);ctx.lineWidth=1.7;
+    ctx.beginPath();ctx.moveTo(g[0],g[1]*s);ctx.lineTo(g[0]+g[2],g[1]*s);ctx.stroke();
+    ctx.fillStyle=rgba(h.dark,1);
+    ctx.fillRect(g[0]-2.5,g[1]*s-1.6,4,3.2);
+  }
+  if(M.armor){
+    /* скула: утолщённая носовая плита, из-за неё фрегат выглядит тупоносым */
+    ctx.fillStyle=rgba(h.lite,.28);
+    ctx.beginPath();
+    ctx.moveTo(h.nose,0);
+    ctx.lineTo(M.armor,-profW(h.prof,M.armor)*.92);
+    ctx.lineTo(M.armor,profW(h.prof,M.armor)*.92);
+    ctx.closePath();ctx.fill();
+    ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=.9;ctx.stroke();
+  }
+  if(M.panel)for(const s of [1,-1]){
+    const p=M.panel;
+    ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=.8;
+    ctx.beginPath();ctx.moveTo(p.x,h.bw*.6*s);ctx.lineTo(p.x,p.w*s);ctx.stroke();
+    ctx.fillStyle="rgba(40,70,110,.85)";
+    ctx.strokeStyle=rgba(h.lite,.5);
+    ctx.beginPath();ctx.rect(p.x-p.l*.5,p.w*s-(s>0?0:2.6),p.l,2.6);
+    ctx.fill();ctx.stroke();
+  }
+  if(M.dish){
+    const d=M.dish;
+    ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=.8;
+    ctx.beginPath();ctx.moveTo(d.x,0);ctx.lineTo(d.x-d.boom*.4,-h.bw-d.boom);ctx.stroke();
+    ctx.fillStyle="rgba(200,230,245,.22)";
+    ctx.strokeStyle=rgba(h.lite,.7);ctx.lineWidth=.9;
+    ctx.beginPath();
+    ctx.ellipse(d.x-d.boom*.4,-h.bw-d.boom,d.r,d.r*.55,-.5,0,TAU);
+    ctx.fill();ctx.stroke();
+  }
+  if(M.win){
+    /* лента окон — единственное, что отличает яхту от курьера на расстоянии */
+    ctx.fillStyle="rgba(190,240,255,.55)";
+    const y=h.bw*.28;
+    for(let x=M.win[0];x>M.win[1];x-=3.2)ctx.fillRect(x,-y-.6,1.7,1.2);
+  }
 }
 function drawHull(id,thrusting,braking,lvl,bank){
   const h=hullOf(id),blink=Math.sin(G.t*.07);
@@ -1111,6 +1248,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
   ctx.restore();
   ctx.strokeStyle=rgba(h.col,.95);ctx.lineWidth=1.25;
   tracePoly(h.poly);ctx.stroke();
+  drawHullMarks(h);
   /* ── боксы по бортам ── */
   for(const p of h.pods)for(const s of [1,-1]){
     ctx.fillStyle=rgba(h.dark,1);ctx.strokeStyle=rgba(h.col,.75);ctx.lineWidth=.9;
