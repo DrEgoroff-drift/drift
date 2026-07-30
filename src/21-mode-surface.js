@@ -297,8 +297,10 @@ function drawSurface(){
   const S=G.surf,tr=S.tr,p=S.p;
   tr.mat=planetMat(p);
   ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
-  drawSkyLayer(p,S.x,S.y);
+  /* звёзды — до небесных тел: нарисованные после, они просвечивают сквозь
+     диск гиганта и убивают его объём */
   if(p.T.atm==="отсутствует"||p.type==="ice")drawStars(S.x*.1,0,1);
+  drawSkyLayer(p,S.x,S.y);
   const camx=S.x-W/2,camy=clamp(S.y-H*.58,-300,1e5);
   ctx.save();ctx.globalAlpha=.4;
   drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.35,camy*.5+80,"rgb("+p.T.pal[1].join(",")+")",null);

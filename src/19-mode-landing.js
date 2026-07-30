@@ -249,6 +249,9 @@ function drawSkyLayer(p,camx,camy){
   g.addColorStop(.12,rgba(hex2rgb(sc),.16));
   g.addColorStop(1,"rgba(0,0,0,0)");
   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  /* небесные тела идут между заревом звезды и облаками: за облаками, но
+     перед общим градиентом — так они и оказываются «в небе», а не поверх него */
+  drawSkyBodies(p,camx,camy);
   ctx.fillStyle="rgb("+p.T.sky[1].join(",")+")";
   ctx.beginPath();ctx.arc(sunX,sunY,H*.045,0,TAU);ctx.globalAlpha=.85;ctx.fill();ctx.globalAlpha=1;
   if(!hasAtm)return;
@@ -289,8 +292,8 @@ function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
   tr.mat=planetMat(p);
   ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
-  drawSkyLayer(p,L.x,L.y);
   if(p.T.atm==="отсутствует")drawStars(L.x*.1,0,1);
+  drawSkyLayer(p,L.x,L.y);
   const camx=L.x-W/2,camy=clamp(L.y-H*.42,-400,1e5);
   ctx.save();ctx.globalAlpha=.45;
   drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.4,camy*.55+60,"rgb("+p.T.pal[1].join(",")+")",null);
