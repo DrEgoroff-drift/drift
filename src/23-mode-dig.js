@@ -283,6 +283,19 @@ function drawDig(){
   /* за пределами ствола — сплошная непроходимая порода, а не пустота */
   ctx.fillStyle="rgb("+Math.round(c0[0]*.28)+","+Math.round(c0[1]*.28)+","+Math.round(c0[2]*.28)+")";
   ctx.fillRect(0,0,W,H);
+  /* та же порода, что на поверхности: шахта в плоской заливке выглядела
+     таблицей клеток, а не срезом грунта той же планеты */
+  const mat=planetMat(p);
+  if(mat){
+    ctx.save();
+    ctx.globalAlpha=.5;
+    ctx.translate(-camx,-camy);
+    ctx.fillStyle=mat;ctx.fillRect(camx,camy,W,H);
+    ctx.restore();
+    /* непроходимая порода за стенками ствола должна быть темнее забоя, иначе
+       поля по краям читаются как продолжение шахты, куда просто не дают копать */
+    ctx.fillStyle="rgba(0,0,0,.38)";ctx.fillRect(0,0,W,H);
+  }
   const scanAll=G.tech.has("survey");
   const r0=clamp(Math.floor(camy/DIG_CELL)-1,-1,1e9),r1=Math.ceil((camy+H)/DIG_CELL)+1;
   for(let row=Math.max(0,r0);row<=r1;row++)for(let col=-DIG_HALF;col<=DIG_HALF;col++){
@@ -306,9 +319,14 @@ function drawDig(){
       continue;
     }
     const t=cell.tint*.35+tierAt(row)*.18;
-    ctx.fillStyle="rgb("+Math.round(lerp(c0[0],c1[0],t)*.62)+","+
-      Math.round(lerp(c0[1],c1[1],t)*.62)+","+Math.round(lerp(c0[2],c1[2],t)*.62)+")";
+    ctx.fillStyle="rgba("+Math.round(lerp(c0[0],c1[0],t)*.62)+","+
+      Math.round(lerp(c0[1],c1[1],t)*.62)+","+Math.round(lerp(c0[2],c1[2],t)*.62)+",.72)";
     ctx.fillRect(x,y,DIG_CELL,DIG_CELL);
+    /* кромка клетки не линией, а сколом: ровная сетка выдаёт таблицу */
+    ctx.fillStyle="rgba(0,0,0,"+(.06+((cell.tint*97)%5)/40).toFixed(3)+")";
+    ctx.fillRect(x,y+DIG_CELL-3,DIG_CELL,3);
+    ctx.fillStyle="rgba(255,255,255,.035)";
+    ctx.fillRect(x,y,DIG_CELL,1.4);
     /* рудное тело подсвечивается сквозь породу даже там, где ещё не копали;
        геосканер снимает ограничение по дальности */
     if(!cell.dug&&cell.nearNode&&(scanAll||Math.hypot(col-D.col,row-D.row)<7)){

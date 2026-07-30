@@ -110,12 +110,30 @@ function drawCave(){
   ctx.fillStyle="#03040a";ctx.fillRect(0,0,W,H);
   /* свод и пол — сплошная порода, между ними тёмный проход */
   ctx.fillStyle="#0c1016";
-  ctx.beginPath();ctx.moveTo(0,0);
-  for(let sx=0;sx<=W;sx+=16){const wx=camx+sx;ctx.lineTo(sx,caveCeil(C,wx)-C.y+H*.56);}
-  ctx.lineTo(W,0);ctx.closePath();ctx.fill();
-  ctx.beginPath();ctx.moveTo(0,H);
-  for(let sx=0;sx<=W;sx+=16){const wx=camx+sx;ctx.lineTo(sx,caveFloor(C,wx)-C.y+H*.56);}
-  ctx.lineTo(W,H);ctx.closePath();ctx.fill();
+  const CP=new Path2D();
+  CP.moveTo(0,0);
+  for(let sx=0;sx<=W;sx+=16){const wx=camx+sx;CP.lineTo(sx,caveCeil(C,wx)-C.y+H*.56);}
+  CP.lineTo(W,0);CP.closePath();
+  const FP=new Path2D();
+  FP.moveTo(0,H);
+  for(let sx=0;sx<=W;sx+=16){const wx=camx+sx;FP.lineTo(sx,caveFloor(C,wx)-C.y+H*.56);}
+  FP.lineTo(W,H);FP.closePath();
+  ctx.fill(CP);ctx.fill(FP);
+  /* порода той же планеты и на своде, и на полу: без неё пещера — два чёрных
+     силуэта, и по ним не понять, в чьих недрах игрок находится */
+  const cp=G.surf&&G.surf.p;
+  if(cp){
+    const mat=planetMat(cp);
+    fillMaterial(mat,camx,C.y-H*.56,.30,.18,CP);
+    fillMaterial(mat,camx,C.y-H*.56,.30,.18,FP);
+    /* и сразу гасим: тайл рассчитан на освещённую поверхность, под землёй он
+       светит как днём и убивает единственное, что есть у пещеры — темноту */
+    ctx.fillStyle="rgba(2,4,9,.62)";
+    ctx.fill(CP);ctx.fill(FP);
+    /* влажный блик по кромке свода — единственный источник формы в темноте */
+    ctx.strokeStyle="rgba(150,200,230,.14)";ctx.lineWidth=1.6;
+    ctx.stroke(CP);ctx.stroke(FP);
+  }
   for(const pl of C.plants){
     const x=pl.x-camx;if(x<-70||x>W+70)continue;
     drawPlant(pl,x,pl.y-C.y+H*.56);
