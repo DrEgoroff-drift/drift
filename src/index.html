@@ -44,21 +44,24 @@
     <button id="dronebtn" style="display:none">ДРОН</button>
     <button id="beaconbtn" style="display:none">МАЯК</button>
   </div>
-  <button id="navbtn" class="key">КАРТА</button>
-  <button id="menubtn" class="key">МЕНЮ</button>
+  <!-- Иконки тонкой линией и все из одного набора: круг-орбита, три полосы
+       систем, плюс и минус одной толщины. Значок опознают быстрее слова,
+       но слово оставлено — оно снимает сомнение. -->
+  <button id="navbtn" class="key"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><ellipse cx="8" cy="8" rx="6" ry="2.4"/><path d="M8 2v12"/></svg>КАРТА</button>
+  <button id="menubtn" class="key"><svg viewBox="0 0 16 16"><path d="M2.5 4h11M2.5 8h11M2.5 12h7"/></svg>МЕНЮ</button>
   <div class="zoom">
-    <button id="zin" aria-label="приблизить">+</button>
-    <button id="zout" aria-label="отдалить">−</button>
+    <button id="zin" aria-label="приблизить"><svg viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9"/></svg></button>
+    <button id="zout" aria-label="отдалить"><svg viewBox="0 0 16 16"><path d="M3.5 8h9"/></svg></button>
   </div>
 </div>
 
 <div id="menu">
   <b>БОРТОВЫЕ СИСТЕМЫ<span id="menuclose">×</span></b>
-  <button id="shipbtn"><em>КОРАБЛЬ</em><s>корпус, слоты, части</s></button>
-  <button id="crewbtn" style="display:none"><em>ЭКИПАЖ</em><s>наёмники и их рейсы</s></button>
-  <button id="hqbtn" style="display:none"><em>ШТАБ</em><s>управляющие и домены</s></button>
-  <button id="logbtn"><em>ЖУРНАЛ</em><s>что происходило</s></button>
-  <button id="optbtn"><em>НАСТРОЙКИ</em><s>звук, управление, запись</s></button>
+  <button id="shipbtn"><svg viewBox="0 0 16 16"><path d="M8 1.5 11 8l-3 6.5L5 8z"/><path d="M5 9.5 2.5 12M11 9.5 13.5 12"/></svg><span class="tx"><em>КОРАБЛЬ</em><s>корпус, слоты, части</s></span></button>
+  <button id="crewbtn" style="display:none"><svg viewBox="0 0 16 16"><circle cx="6" cy="5.5" r="2.4"/><path d="M1.8 13.5c0-2.4 1.9-4 4.2-4s4.2 1.6 4.2 4"/><path d="M11 4.2a2.4 2.4 0 0 1 0 4.6M12 13.5c0-1.7-.6-3-1.6-3.8"/></svg><span class="tx"><em>ЭКИПАЖ</em><s>наёмники и их рейсы</s></span></button>
+  <button id="hqbtn" style="display:none"><svg viewBox="0 0 16 16"><path d="M8 1.6 14 5v6l-6 3.4L2 11V5z"/><circle cx="8" cy="8" r="2.2"/></svg><span class="tx"><em>ШТАБ</em><s>управляющие и домены</s></span></button>
+  <button id="logbtn"><svg viewBox="0 0 16 16"><path d="M3.5 2.5h9v11h-9z"/><path d="M5.8 5.6h4.4M5.8 8h4.4M5.8 10.4h2.6"/></svg><span class="tx"><em>ЖУРНАЛ</em><s>что происходило</s></span></button>
+  <button id="optbtn"><svg viewBox="0 0 16 16"><path d="M2.5 5h11M2.5 11h11"/><circle cx="6" cy="5" r="1.9"/><circle cx="10.5" cy="11" r="1.9"/></svg><span class="tx"><em>НАСТРОЙКИ</em><s>звук, управление, запись</s></span></button>
 </div>
 
 <button data-k="launch" id="launchbtn" style="display:none"><i id="launchbar"></i><span>ВЗЛЁТ</span></button>

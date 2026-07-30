@@ -27,6 +27,18 @@ const $place=document.getElementById("place"),$sub=document.getElementById("sub"
 const $msg=document.getElementById("msg"),$prompt=document.getElementById("prompt");
 const $bThr=document.querySelector("[data-k=thrust]"),$bBrk=document.querySelector("[data-k=brake]");
 const $nav=document.getElementById("navbtn"),$fire=document.getElementById("firebtn");
+/* ── пробуждение приборов ──
+   Сравниваем не значения по одному, а строку показаний: любое изменение
+   будит панель на пару секунд. Тревога держит её открытой, пока не пройдёт.
+   Состояние хранится тут, а не в `G`: это оформление, а не игра, и в
+   сохранение ему нельзя. */
+let HUD_SIG="", HUD_T=0;
+const $hudp=document.querySelector(".hud");
+function hudWake(sig,alarm){
+  if(sig!==HUD_SIG){HUD_SIG=sig;HUD_T=performance.now();}
+  const live=alarm||performance.now()-HUD_T<2400;
+  if($hudp)$hudp.classList.toggle("live",live);
+}
 function hud(){
   const st=stat();
   const fr=G.fuel/st.fuelMax, hr=G.hull/st.hullMax, cr=held()/st.cargoMax;
@@ -49,6 +61,12 @@ function hud(){
   $vh.classList.toggle("low",hr<.3);$vh.classList.toggle("crit",hr<.15);
   $vc.classList.toggle("low",cr>=1);
   $purse.textContent=Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан";
+  /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
+     Повод — изменившееся показание, тревога или открытый режим, где приборы
+     и есть содержание кадра. Панель, которая горит всегда, перестаёт читаться
+     как сообщение и становится частью рамки экрана. */
+  hudWake(Math.round(G.fuel)+"|"+Math.round(G.hull)+"|"+held()+"|"+Math.round(G.credits),
+    fr<.2||hr<.3||cr>=1);
   /* пока открыт любой экран, приборы и кнопки полёта не нужны: они просвечивали
      сквозь экран и читались как брак */
   document.body.classList.toggle("screen",!!document.querySelector(".scr.open"));
