@@ -101,18 +101,19 @@ function drawGround(tr,camx,camy,fill,line,pal){
      Простое псевдо-освещение по наклону вместо одной плоской заливки.
      Полосы полупрозрачные: непрозрачные закрашивали материал обратно в фигуру. */
   if(pal&&i1>i0){
-    const lit=pal[Math.min(pal.length-1,4)], shade=pal[Math.min(pal.length-1,1)];
-    const stripD=48;
+    const stripD=66;
+    /* свет считается от звезды и от неба (19c-light), а не по константе
+       «вправо-вверх светлее»: у токсичного мира тени зелёные, у ледяного
+       синие, и планета опознаётся по освещению раньше, чем по форме */
+    const P0=pal[Math.min(pal.length-1,3)];
+    const sun=starRGB(), amb=tr.p?ambRGB(tr.p):pal[1], k=tr.p?ambK(tr.p):.3;
     for(let i=i0;i<i1;i++){
       const x0=i*tr.step-camx,x1=(i+1)*tr.step-camx;
       if(x1<-4||x0>W+4)continue;
       const y0=tr.h[i]-camy,y1=tr.h[i+1]-camy;
       const slope=clamp((tr.h[i+1]-tr.h[i])/tr.step,-2.5,2.5);
-      const t=clamp(.52-slope*.22,.08,.92);
-      const r=Math.round(lerp(shade[0],lit[0],t)*.62),
-            g=Math.round(lerp(shade[1],lit[1],t)*.62),
-            b=Math.round(lerp(shade[2],lit[2],t)*.62);
-      ctx.fillStyle="rgba("+r+","+g+","+b+","+(tr.mat?.55:1)+")";
+      const c=litRGB(P0,slope,null,sun,amb,k);
+      ctx.fillStyle="rgba("+c[0]+","+c[1]+","+c[2]+","+(tr.mat?.42:1)+")";
       ctx.beginPath();
       ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+stripD);ctx.lineTo(x0,y0+stripD);
       ctx.closePath();ctx.fill();
@@ -266,12 +267,21 @@ function drawSkyLayer(p,camx,camy){
     const sx=(wx - camx*.12)%(span)+ (camx*.12<0?span:0);
     const x=((sx%W)+W*3)%(W+400)-200;
     const y=laneY-camy*.05;
-    const alpha=.16+r()*.14;
-    ctx.fillStyle="rgba(255,255,255,"+alpha.toFixed(2)+")";
-    const blobs=3+Math.floor(r()*3),baseR=26+r()*30;
+    /* сгусток с мягкой кромкой вместо плоского эллипса: у эллипса край режет
+       небо ножом, и облако читается наклейкой. Низ подкрашен цветом неба,
+       верх — цветом звезды: облако освещено сверху, как и всё остальное. */
+    const alpha=.13+r()*.11;
+    const blobs=4+Math.floor(r()*4),baseR=30+r()*34;
+    const sun=starRGB(),amb=p.T.sky[1];
     for(let k=0;k<blobs;k++){
-      const ox=(k-(blobs-1)/2)*baseR*.85,oy=Math.sin(k*1.7)*baseR*.18;
-      ctx.beginPath();ctx.ellipse(x+ox,y+oy,baseR*(.6+r()*.5),baseR*.42,0,0,TAU);ctx.fill();
+      const ox=(k-(blobs-1)/2)*baseR*.72,oy=Math.sin(k*1.7+i)*baseR*.22;
+      const rr=baseR*(.55+r()*.6);
+      const cg=ctx.createRadialGradient(x+ox,y+oy-rr*.25,rr*.15,x+ox,y+oy,rr);
+      cg.addColorStop(0,"rgba("+[0,1,2].map(j=>Math.round(lerp(255,sun[j],.35))).join(",")+","+alpha.toFixed(3)+")");
+      cg.addColorStop(.55,"rgba("+[0,1,2].map(j=>Math.round(lerp(230,amb[j],.45))).join(",")+","+(alpha*.55).toFixed(3)+")");
+      cg.addColorStop(1,"rgba("+amb.join(",")+",0)");
+      ctx.fillStyle=cg;
+      ctx.beginPath();ctx.ellipse(x+ox,y+oy,rr,rr*.5,0,0,TAU);ctx.fill();
     }
   }
 }
@@ -290,14 +300,14 @@ function drawDustMotes(camx,camy,p){
 }
 function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
-  tr.mat=planetMat(p);
+  tr.mat=planetMat(p);tr.p=p;
   ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
   if(p.T.atm==="отсутствует")drawStars(L.x*.1,0,1);
   drawSkyLayer(p,L.x,L.y);
   const camx=L.x-W/2,camy=clamp(L.y-H*.42,-400,1e5);
-  ctx.save();ctx.globalAlpha=.45;
-  drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.4,camy*.55+60,"rgb("+p.T.pal[1].join(",")+")",null);
-  ctx.restore();
+  drawGround({h:tr.h,N:tr.N,step:tr.step*3.6},camx*.26,camy*.46+110,hazeFar(p,.58),null);
+  drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.4,camy*.55+60,hazeFar(p,.32),null);
+  hazeBand(p,H*.46,H*.20);
   drawGround(tr,camx,camy,"rgb("+p.T.pal[2].map(v=>Math.round(v*.6)).join(",")+")",
     "rgba(180,230,240,.35)",p.T.pal);
   drawPOI(tr,camx,camy,p);
@@ -312,6 +322,8 @@ function drawLanding(){
   ctx.save();ctx.translate(L.x-camx,L.y-camy);ctx.rotate(L.a);
   drawLander(L.over>0&&!L.ok,L.thrOn&&L.over<=0);
   ctx.restore();
+  lightShafts(p);
+  gradePass(p);
 }
 /* садится тот самый корабль, на котором летаешь: тот же корпус, только
    развёрнутый носом вверх и с выпущенными опорами */

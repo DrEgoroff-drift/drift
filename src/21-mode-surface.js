@@ -295,16 +295,19 @@ function drawSurfaceHud(camx,camy){
 }
 function drawSurface(){
   const S=G.surf,tr=S.tr,p=S.p;
-  tr.mat=planetMat(p);
+  tr.mat=planetMat(p);tr.p=p;
   ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
   /* звёзды — до небесных тел: нарисованные после, они просвечивают сквозь
      диск гиганта и убивают его объём */
   if(p.T.atm==="отсутствует"||p.type==="ice")drawStars(S.x*.1,0,1);
   drawSkyLayer(p,S.x,S.y);
   const camx=S.x-W/2,camy=clamp(S.y-H*.58,-300,1e5);
-  ctx.save();ctx.globalAlpha=.4;
-  drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.35,camy*.5+80,"rgb("+p.T.pal[1].join(",")+")",null);
-  ctx.restore();
+  /* дальний хребет не гасится прозрачностью, а выцветает в цвет неба: именно
+     этим глаз мерит расстояние (19c-light). Двух слоёв достаточно, третий уже
+     не читается, а стоит столько же. */
+  drawGround({h:tr.h,N:tr.N,step:tr.step*3.6},camx*.22,camy*.42+130,hazeFar(p,.58),null);
+  drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.35,camy*.5+80,hazeFar(p,.32),null);
+  hazeBand(p,H*.52,H*.22);
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
     "rgba(200,240,246,.4)",p.T.pal);
   drawPOI(tr,camx,camy,p);
@@ -371,5 +374,9 @@ function drawSurface(){
     ctx.beginPath();ctx.moveTo(x+S.face*6,y+2);
     ctx.lineTo(S.mining.x-camx,S.mining.y-camy-4);ctx.stroke();
   }
+  /* лучи и свёртка — последними, поверх всего мира и до приборов: приборы
+     должны остаться читаемыми, их виньетка касаться не должна */
+  lightShafts(p);
+  gradePass(p);
   drawSurfaceHud(camx,camy);
 }

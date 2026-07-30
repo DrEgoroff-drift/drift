@@ -1,0 +1,102 @@
+/* ══════════════ свет и воздух ══════════════ */
+/* До этого свет на грунте был зашит константами: «склон вправо-вверх светлее».
+   Он не знал ни цвета звезды, ни цвета неба, поэтому все планеты освещались
+   одинаково — а именно освещение, а не форма, отвечает за то, верит ли игрок
+   в место.
+
+   Три вещи, которые дают почти весь эффект:
+   направленный свет звезды своего цвета;
+   цветной подсвет от неба в тенях (главный приём — без него тень мёртвая);
+   воздушная перспектива: далёкое уводится к цвету неба, а не просто гасится. */
+const SUN_DIR={x:.55,y:-.83};                 // солнце в drawSkyLayer справа сверху
+function starRGB(){
+  const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a";
+  return hex2rgb(sc);
+}
+/* небо как источник заполняющего света: у токсичного мира тени зелёные,
+   у ледяного — синие, и это читается сразу */
+function ambRGB(p){return p.T.sky[1];}
+/* сколько света вообще: у безвоздушного мира тень почти чёрная (нечему
+   рассеивать), у плотной атмосферы — мягкая */
+function ambK(p){
+  const a=p.T.atm;
+  if(a==="отсутствует")return .13;
+  if(a.indexOf("разреженная")>=0)return .26;
+  return .40;
+}
+/* освещённость склона: ламберт по нормали профиля плюс заполнение от неба */
+function litRGB(base,slope,p,sun,amb,k){
+  const nl=Math.hypot(slope,1);
+  const nx=-slope/nl, ny=-1/nl;
+  const d=clamp(nx*SUN_DIR.x+ny*SUN_DIR.y,0,1);
+  /* мягкий переход у терминатора: жёсткий ламберт даёт «пластик» */
+  const I=Math.pow(d,.72)*.78;
+  const r=base[0]*(k*amb[0]/255+I*sun[0]/255);
+  const g=base[1]*(k*amb[1]/255+I*sun[1]/255);
+  const b=base[2]*(k*amb[2]/255+I*sun[2]/255);
+  return [clamp(r,0,255)|0,clamp(g,0,255)|0,clamp(b,0,255)|0];
+}
+/* ── воздушная перспектива ──
+   далёкий хребет не «полупрозрачный», а выцветший в цвет неба: именно этим
+   глаз мерит расстояние. Отдельная функция, потому что дальний слой рисуется
+   тем же drawGround, что и близкий. */
+function hazeFar(p,k){
+  const s=p.T.sky[0],a=p.T.sky[1];
+  const c=[lerp(s[0],a[0],.5),lerp(s[1],a[1],.5),lerp(s[2],a[2],.5)];
+  const pal=p.T.pal[1];
+  return "rgb("+[0,1,2].map(i=>Math.round(lerp(pal[i]*.8,c[i],k))).join(",")+")";
+}
+/* дымка в низинах и у горизонта: одна полоса градиента, но она делает
+   глубину сильнее, чем любой дополнительный слой рельефа */
+function hazeBand(p,y0,h){
+  const c=p.T.sky[1];
+  const g=ctx.createLinearGradient(0,y0-h,0,y0+h*.35);
+  g.addColorStop(0,"rgba("+c.join(",")+",0)");
+  g.addColorStop(.55,"rgba("+c.join(",")+","+(p.T.atm==="отсутствует"?.10:.34)+")");
+  g.addColorStop(1,"rgba("+c.join(",")+",0)");
+  ctx.fillStyle=g;ctx.fillRect(0,y0-h,W,h*1.35);
+}
+/* ── лучи от звезды ──
+   объёмного света в canvas 2D нет, но есть то, ради чего его хотят: несколько
+   мягких клиньев от солнца, медленно дышащих. Только там, где есть чему
+   светиться — в вакууме лучей не бывает. */
+function lightShafts(p){
+  if(p.T.atm==="отсутствует")return;
+  const sx=W*.78,sy=H*.16;
+  const sun=starRGB();
+  ctx.save();
+  ctx.globalCompositeOperation="lighter";
+  for(let i=0;i<5;i++){
+    const a=1.05+i*.19+Math.sin(G.t*.0016+i)*.035;
+    const wdt=.030+((i*7)%3)*.012;
+    const len=H*1.25;
+    const al=(.020+((i*5)%3)*.010)*(1+Math.sin(G.t*.0021+i*2)*.35);
+    const g=ctx.createLinearGradient(sx,sy,sx+Math.cos(a)*len,sy+Math.sin(a)*len);
+    g.addColorStop(0,"rgba("+sun.join(",")+","+al.toFixed(3)+")");
+    g.addColorStop(1,"rgba("+sun.join(",")+",0)");
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.moveTo(sx,sy);
+    ctx.lineTo(sx+Math.cos(a-wdt)*len,sy+Math.sin(a-wdt)*len);
+    ctx.lineTo(sx+Math.cos(a+wdt)*len,sy+Math.sin(a+wdt)*len);
+    ctx.closePath();ctx.fill();
+  }
+  ctx.restore();
+}
+/* ── финальная свёртка кадра ──
+   виньетка и лёгкий цветовой сдвиг: две заливки, которые сводят разнородные
+   слои в одну картинку. Всё, что тут делается, стоит два fillRect. */
+function gradePass(p){
+  const g=ctx.createRadialGradient(W*.5,H*.46,Math.min(W,H)*.30,W*.5,H*.46,Math.max(W,H)*.78);
+  g.addColorStop(0,"rgba(0,0,0,0)");
+  g.addColorStop(1,"rgba(0,0,0,.34)");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  /* холодная тень внизу, тёплый свет сверху — сдвиг маленький, но именно он
+     не даёт кадру рассыпаться на «фон + фигуры» */
+  const sun=starRGB(),amb=ambRGB(p);
+  const t=ctx.createLinearGradient(0,0,0,H);
+  t.addColorStop(0,"rgba("+sun.join(",")+",.055)");
+  t.addColorStop(.5,"rgba(0,0,0,0)");
+  t.addColorStop(1,"rgba("+amb.join(",")+",.075)");
+  ctx.save();ctx.globalCompositeOperation="lighter";
+  ctx.fillStyle=t;ctx.fillRect(0,0,W,H);ctx.restore();
+}
