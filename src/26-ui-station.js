@@ -9,7 +9,11 @@ function openStation(){
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
   document.getElementById("stName").textContent=G.st.name.toUpperCase();
-  document.getElementById("stKind").textContent=G.st.kind+" · система "+G.sys.name;
+  /* модули названы прямо в шапке: снаружи игрок видит их силуэты, внутри —
+     читает списком. Услуги при этом по-прежнему от типа станции, модули
+     ничего не открывают (17a-station-mod) */
+  document.getElementById("stKind").textContent=
+    G.st.kind+" · система "+G.sys.name+"\n"+stationModsLine(G.sys);
   syncTabs();
   $st.classList.add("open");renderTab();saveGame(true);
 }

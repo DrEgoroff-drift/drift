@@ -100,8 +100,18 @@ function getSystem(sx,sy){
     /* в родной системе всегда полноценный узел: стартовать у заправки,
        где нет ни верфи, ни рынка, — значит остаться без первого шага */
     if(sx===0&&sy===0)ST=stTypeOf("trade");
+    /* Станция стояла на sys.radius+240..520, то есть внутри орбиты первой
+       планеты (та начинается с 540) и фактически в короне звезды — у красного
+       гиганта она просто тонула в свечении. Теперь её место между первой и
+       второй планетой, а при одной планете — заметно снаружи неё. Нижняя
+       граница отсчитывается от радиуса светила: шесть радиусов гарантированно
+       выводят станцию за видимый диск и протуберанцы даже у гиганта. */
+    const p0=sys.planets.length?sys.planets[0].orbit:900;
+    const p1=sys.planets.length>1?sys.planets[1].orbit:p0*1.9;
+    let sorb=sys.planets.length>1?lerp(p0,p1,.38+r()*.24):p0*(1.35+r()*.35);
+    sorb=Math.max(sorb,sys.radius*6+260);
     sys.station={name:stName,stype:ST.id,kind:ST.ru,
-      orbit:sys.radius+240+r()*280,ang:r()*TAU,spd:.00055,prices,
+      orbit:Math.round(sorb),ang:r()*TAU,spd:.00055,prices,
       fuelPrice:Math.max(2,Math.round((5+r()*7)*ST.fuel)),x:0,y:0,vx:0,vy:0};
   }
   sys.desc=genDesc(r,sys);

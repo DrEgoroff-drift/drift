@@ -174,6 +174,11 @@ function drawRocks(tr,camx,camy,pal){
     const x=k.x-camx;
     if(x<-k.rad-20||x>W+k.rad+20)continue;
     const y=groundAt(tr,k.x)-camy;
+    /* контактная тень: без неё валун лежит поверх грунта, а не на нём.
+       Смещена в сторону от солнца (оно справа сверху) и вытянута по земле. */
+    ctx.save();ctx.globalAlpha=.7;
+    groundShadow(x-k.rad*.35,y+1.5,k.rad*1.5,Math.max(2.2,k.rad*.3));
+    ctx.restore();
     ctx.save();ctx.translate(x,y-k.rad*.42);
     if(k.flip)ctx.scale(-1,1);
     const c0=pal[2],c1=pal[4];
@@ -202,7 +207,8 @@ function drawRocks(tr,camx,camy,pal){
     ctx.fillStyle=g;ctx.fill(RP);
     /* та же порода, что под ногами: валун из другого материала выглядит
        принесённым из другой игры */
-    if(tr.mat)fillMaterial(tr.mat,camx-x,camy-y+k.rad*.42,.5,.35,RP);
+    if(tr.mat)fillMaterial(tr.mat,camx-x,camy-y+k.rad*.42,.5,.35,RP,
+      {x:-k.rad*1.4,y:-k.rad*1.4,w:k.rad*2.8,h:k.rad*2.8});
     ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke(RP);
     if(k.rad>7){   // скол на крупных валунах
       ctx.strokeStyle="rgba(255,255,255,.10)";

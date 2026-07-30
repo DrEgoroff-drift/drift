@@ -494,6 +494,9 @@ function stRing(V,rx,ry){          /* вращающийся тор с жилы�
 function drawStation(x,y,Z){
   const s=clamp(Z,.4,1.5),S=G.sys.station,V=stationViz(S),ty=S.stype||"trade";
   ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+  /* модули идут первым слоем: они висят на штангах вокруг ядра, и ядро типа
+     должно перекрывать их, а не наоборот (17a-station-mod) */
+  drawStationMods(G.sys);
   if(ty==="trade"){
     /* раздутые склады и гроздь причалов: контейнеры висят на штангах по бортам */
     stPanels(12,6);

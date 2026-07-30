@@ -205,8 +205,10 @@ body.screen #msg,body.screen #launchbtn{opacity:0;pointer-events:none}
 .scr header .ttl{min-width:0}
 .scr header b{font-weight:400;font-size:17px;letter-spacing:.16em;display:block;color:var(--phos);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* вторая строка подписи — перечень модулей станции: перенос по \n, поэтому
+   pre-line, и мягче цветом, чтобы не спорить с названием */
 .scr header s{text-decoration:none;color:var(--dim);font-size:10px;letter-spacing:.04em;display:block;
-  margin-top:5px}
+  margin-top:5px;white-space:pre-line;line-height:1.5}
 .wallet{margin-left:auto;text-align:right;font-size:11px;line-height:1.6;white-space:nowrap;
   font-variant-numeric:tabular-nums}
 .wallet em{font-style:normal;color:var(--amber);display:block}
@@ -1535,8 +1537,18 @@ function getSystem(sx,sy){
     /* в родной системе всегда полноценный узел: стартовать у заправки,
        где нет ни верфи, ни рынка, — значит остаться без первого шага */
     if(sx===0&&sy===0)ST=stTypeOf("trade");
+    /* Станция стояла на sys.radius+240..520, то есть внутри орбиты первой
+       планеты (та начинается с 540) и фактически в короне звезды — у красного
+       гиганта она просто тонула в свечении. Теперь её место между первой и
+       второй планетой, а при одной планете — заметно снаружи неё. Нижняя
+       граница отсчитывается от радиуса светила: шесть радиусов гарантированно
+       выводят станцию за видимый диск и протуберанцы даже у гиганта. */
+    const p0=sys.planets.length?sys.planets[0].orbit:900;
+    const p1=sys.planets.length>1?sys.planets[1].orbit:p0*1.9;
+    let sorb=sys.planets.length>1?lerp(p0,p1,.38+r()*.24):p0*(1.35+r()*.35);
+    sorb=Math.max(sorb,sys.radius*6+260);
     sys.station={name:stName,stype:ST.id,kind:ST.ru,
-      orbit:sys.radius+240+r()*280,ang:r()*TAU,spd:.00055,prices,
+      orbit:Math.round(sorb),ang:r()*TAU,spd:.00055,prices,
       fuelPrice:Math.max(2,Math.round((5+r()*7)*ST.fuel)),x:0,y:0,vx:0,vy:0};
   }
   sys.desc=genDesc(r,sys);
@@ -6178,6 +6190,188 @@ function drawTrail(zx,zy,Z){
   }
 }
 
+/* ══════════════ модули станции ══════════════ */
+/* У станции был силуэт по типу: шесть типов — шесть картинок. Тип отвечает за
+   то, что тут можно делать (`stTypeOf(...).tabs`), и это правильно; но две
+   торговые станции в разных концах галактики выглядели одинаково, и станция
+   переставала быть местом.
+
+   Теперь тип задаёт ядро — оно и остаётся узнаваемым языком «верфь», «завод»,
+   «научная», — а сверху навешивается три-шесть модулей от seed системы.
+   Каждый модуль это и силуэт, и строка в терминале: игрок видит снаружи, что
+   у этой станции есть кантина и ремонтный док, ещё не состыковавшись.
+
+   Модули ничего не открывают и не закрывают: услуги по-прежнему живут в типе.
+   Иначе получилось бы, что снаружи станция обещает больше, чем внутри есть. */
+const ST_MODULES=[
+  {id:"cargo",  ru:"грузовой терминал", sh:"rack",  w:1.2, on:["trade","indust"]},
+  {id:"habit",  ru:"жилой сектор",      sh:"drum",  w:1.4},
+  {id:"cantina",ru:"кантина",           sh:"pods",  w:1.2},
+  {id:"repair", ru:"ремонтный док",     sh:"hangar",w:1.1, on:["yard","trade","indust"]},
+  {id:"fuel",   ru:"топливный узел",    sh:"tank",  w:1.2},
+  {id:"lab",    ru:"лаборатория",       sh:"dish",  w:.9,  on:["sci","yard"]},
+  {id:"med",    ru:"медотсек",          sh:"cross", w:.9},
+  {id:"customs",ru:"таможня",           sh:"cage",  w:.8},
+  {id:"black",  ru:"чёрный рынок",      sh:"pods",  w:.7,  dark:1},
+  {id:"prison", ru:"изолятор",          sh:"cage",  w:.5,  dark:1},
+  {id:"green",  ru:"оранжерея",         sh:"farm",  w:.9},
+  {id:"comm",   ru:"узел связи",        sh:"mast",  w:1.0},
+  {id:"mine",   ru:"рудная контора",    sh:"rack",  w:.9,  on:["indust","mine"]},
+  {id:"lux",    ru:"верхний ярус",      sh:"drum",  w:.5,  rich:1}
+];
+function stationMods(sys){
+  const S=sys.station;if(!S)return [];
+  if(S.mods)return S.mods;
+  const r=rng(hashi(sys.seed,0x50DD,17));
+  const ty=S.stype||"trade";
+  const danger=sysDanger(sys.sx,sys.sy);
+  const pool=ST_MODULES.filter(m=>!m.on||m.on.indexOf(ty)>=0);
+  const out=[];
+  const n=3+Math.floor(r()*4);
+  for(let i=0;i<n&&pool.length;i++){
+    /* тёмное чаще на окраине, «верхний ярус» — наоборот, у обжитых систем:
+       по набору модулей читается, куда игрок забрался */
+    let tot=0;
+    for(const m of pool)tot+=m.w*(m.dark?.35+danger*1.8:1)*(m.rich?1.4-danger:1);
+    let pick=r()*tot,M=pool[0];
+    for(const m of pool){
+      pick-=m.w*(m.dark?.35+danger*1.8:1)*(m.rich?1.4-danger:1);
+      if(pick<=0){M=m;break;}
+    }
+    pool.splice(pool.indexOf(M),1);
+    /* точка крепления: угол по кольцу и вынос от ядра. Модули разводятся по
+       углам, иначе слипаются в один ком с одной стороны. */
+    const ang=(i/n)*TAU+(r()-.5)*.5;
+    out.push({id:M.id,ru:M.ru,sh:M.sh,ang,d:22+r()*16,s:.7+r()*.7,ph:r()*TAU});
+  }
+  S.mods=out;
+  return out;
+}
+/* строка для терминала и для подписи в системе */
+function stationModsLine(sys){
+  const m=stationMods(sys);
+  return m.map(q=>q.ru).join(" · ");
+}
+/* ── силуэты модулей ──
+   Каждый рисуется в своей системе координат у конца штанги. Формы намеренно
+   простые: на масштабе станции в системе читается только силуэт. */
+function drawStModule(q,S){
+  const s=q.s;
+  ctx.save();
+  ctx.rotate(q.ang);
+  ctx.translate(q.d,0);
+  /* штанга к ядру: без неё модуль висит в пустоте */
+  ctx.strokeStyle="rgba(242,178,92,.5)";ctx.lineWidth=1.4;
+  ctx.beginPath();ctx.moveTo(-q.d+6,0);ctx.lineTo(-4*s,0);ctx.stroke();
+  ctx.rotate(-q.ang);                       // сам модуль не заваливается вместе со штангой
+  ctx.strokeStyle="rgba(242,178,92,.7)";ctx.lineWidth=1.2;
+  ctx.fillStyle="#0b1119";
+  if(q.sh==="drum"){
+    ctx.beginPath();ctx.rect(-5*s,-7*s,10*s,14*s);ctx.fill();ctx.stroke();
+    ctx.strokeStyle="rgba(242,178,92,.28)";
+    for(let i=1;i<4;i++){
+      ctx.beginPath();ctx.moveTo(-5*s,-7*s+i*3.5*s);ctx.lineTo(5*s,-7*s+i*3.5*s);ctx.stroke();
+    }
+    /* окна жилого сектора горят вразнобой — единственный тёплый свет станции */
+    for(let i=0;i<4;i++){
+      const on=Math.sin(G.t*.03+q.ph+i*1.7)>-.2;
+      ctx.fillStyle=on?"rgba(255,226,170,.85)":"rgba(255,226,170,.18)";
+      ctx.fillRect(-3.4*s,-5.6*s+i*3.4*s,1.8*s,1.4*s);
+    }
+  }else if(q.sh==="rack"){
+    /* стойка контейнеров */
+    ctx.beginPath();ctx.moveTo(-6*s,-8*s);ctx.lineTo(-6*s,8*s);ctx.stroke();
+    for(let i=0;i<3;i++)for(let j=0;j<2;j++){
+      ctx.fillStyle=((i+j+(q.ph*3|0))%3===0)?"#243a2c":"#1d2f42";
+      ctx.beginPath();ctx.rect(-5*s+j*5*s,-7*s+i*5*s,4.4*s,4.4*s);ctx.fill();ctx.stroke();
+    }
+  }else if(q.sh==="pods"){
+    /* гроздь капсул на общей балке */
+    ctx.beginPath();ctx.moveTo(-6*s,0);ctx.lineTo(7*s,0);ctx.stroke();
+    for(let i=0;i<3;i++){
+      const px=-3*s+i*4.4*s, py=(i%2?1:-1)*3.4*s;
+      ctx.beginPath();ctx.ellipse(px,py,3*s,2.4*s,0,0,TAU);ctx.fill();ctx.stroke();
+      ctx.fillStyle=(Math.sin(G.t*.045+i*2+q.ph)>0)?"rgba(255,150,90,.8)":"rgba(255,150,90,.2)";
+      ctx.beginPath();ctx.arc(px,py,.9*s,0,TAU);ctx.fill();
+      ctx.fillStyle="#0b1119";
+    }
+  }else if(q.sh==="hangar"){
+    /* открытый док: створки и пустой зев, куда заходит корабль */
+    ctx.beginPath();ctx.rect(-8*s,-6*s,16*s,12*s);ctx.fill();ctx.stroke();
+    ctx.fillStyle="#04070c";
+    ctx.beginPath();ctx.rect(-2*s,-5*s,9*s,10*s);ctx.fill();
+    ctx.strokeStyle="rgba(150,220,255,.55)";
+    ctx.beginPath();ctx.moveTo(7*s,-5*s);ctx.lineTo(7*s,5*s);ctx.stroke();
+    /* сварка внутри дока вспыхивает */
+    if(Math.sin(G.t*.4+q.ph)>.72){
+      ctx.fillStyle="rgba(190,240,255,.9)";
+      ctx.beginPath();ctx.arc(3*s,(Math.sin(q.ph*7)*2)*s,1.6*s,0,TAU);ctx.fill();
+    }
+  }else if(q.sh==="tank"){
+    /* сферические баки в обойме */
+    for(let i=0;i<2;i++){
+      const px=(i-.5)*7*s;
+      const g=ctx.createRadialGradient(px-2*s,-2*s,0,px,0,5*s);
+      g.addColorStop(0,"#26313d");g.addColorStop(1,"#0b1119");
+      ctx.fillStyle=g;
+      ctx.beginPath();ctx.arc(px,0,4.4*s,0,TAU);ctx.fill();ctx.stroke();
+    }
+    ctx.strokeStyle="rgba(242,178,92,.35)";
+    ctx.beginPath();ctx.moveTo(-8*s,0);ctx.lineTo(8*s,0);ctx.stroke();
+  }else if(q.sh==="dish"){
+    /* тарелка, медленно ведущая цель */
+    ctx.save();ctx.rotate(Math.sin(G.t*.004+q.ph)*.6);
+    ctx.beginPath();ctx.ellipse(0,0,7*s,3*s,0,0,TAU);
+    ctx.fillStyle="rgba(40,70,90,.85)";ctx.fill();ctx.stroke();
+    ctx.strokeStyle="rgba(150,200,220,.5)";
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-5*s);ctx.stroke();
+    ctx.restore();
+  }else if(q.sh==="cross"){
+    /* медотсек: белый крест — единственный знак, читаемый мгновенно */
+    ctx.beginPath();ctx.rect(-6*s,-6*s,12*s,12*s);ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(220,240,255,.8)";
+    ctx.fillRect(-1.4*s,-4*s,2.8*s,8*s);
+    ctx.fillRect(-4*s,-1.4*s,8*s,2.8*s);
+  }else if(q.sh==="cage"){
+    /* глухой блок с решёткой и одиноким огнём */
+    ctx.beginPath();ctx.rect(-6*s,-5*s,12*s,10*s);ctx.fill();ctx.stroke();
+    ctx.strokeStyle="rgba(242,178,92,.3)";
+    for(let i=1;i<5;i++){
+      ctx.beginPath();ctx.moveTo(-6*s+i*2.4*s,-5*s);ctx.lineTo(-6*s+i*2.4*s,5*s);ctx.stroke();
+    }
+    ctx.fillStyle=(Math.sin(G.t*.02+q.ph)>.5)?"rgba(255,90,70,.8)":"rgba(255,90,70,.2)";
+    ctx.beginPath();ctx.arc(0,-6.6*s,1.2*s,0,TAU);ctx.fill();
+  }else if(q.sh==="farm"){
+    /* оранжерея: прозрачный купол с зеленью внутри */
+    ctx.beginPath();ctx.ellipse(0,2*s,8*s,7*s,0,Math.PI,TAU);
+    ctx.fillStyle="rgba(120,190,160,.18)";ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(90,200,120,.55)";
+    for(let i=0;i<4;i++){
+      const px=(i-1.5)*3.4*s;
+      ctx.beginPath();ctx.ellipse(px,0,1.6*s,2.6*s+Math.sin(q.ph+i)*s,0,0,TAU);ctx.fill();
+    }
+    ctx.strokeStyle="rgba(242,178,92,.5)";
+    ctx.beginPath();ctx.moveTo(-8*s,2*s);ctx.lineTo(8*s,2*s);ctx.stroke();
+  }else{
+    /* мачта связи: решётчатая стрела с проблесковым огнём на конце */
+    ctx.beginPath();ctx.moveTo(-2*s,0);ctx.lineTo(2*s,0);ctx.lineTo(1*s,-12*s);ctx.lineTo(-1*s,-12*s);
+    ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.strokeStyle="rgba(242,178,92,.3)";
+    for(let i=1;i<5;i++){
+      const yy=-i*2.4*s, w=2*s-i*.2*s;
+      ctx.beginPath();ctx.moveTo(-w,yy);ctx.lineTo(w,yy-1.4*s);ctx.stroke();
+    }
+    const bl=Math.pow(Math.max(0,Math.sin(G.t*.06+q.ph)),8);
+    ctx.fillStyle="rgba(120,230,255,"+(.25+.7*bl).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(0,-13*s,1.4*s,0,TAU);ctx.fill();
+  }
+  ctx.restore();
+}
+function drawStationMods(sys){
+  const m=stationMods(sys);
+  for(const q of m)drawStModule(q,sys.station);
+}
+
 /* ══════════════ режим: система ══════════════ */
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
@@ -6674,6 +6868,9 @@ function stRing(V,rx,ry){          /* вращающийся тор с жилы�
 function drawStation(x,y,Z){
   const s=clamp(Z,.4,1.5),S=G.sys.station,V=stationViz(S),ty=S.stype||"trade";
   ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+  /* модули идут первым слоем: они висят на штангах вокруг ядра, и ядро типа
+     должно перекрывать их, а не наоборот (17a-station-mod) */
+  drawStationMods(G.sys);
   if(ty==="trade"){
     /* раздутые склады и гроздь причалов: контейнеры висят на штангах по бортам */
     stPanels(12,6);
@@ -6890,14 +7087,19 @@ function planetMat(p){
 }
 /* положить материал в уже построенный путь (путь должен быть текущим).
    Два прохода: свой масштаб и увеличенный — второй убивает видимую сетку 256. */
-function fillMaterial(mat,camx,camy,a1,a2,P){
+/* bnd — прямоугольник в текущих координатах, которым ограничен залив. Без него
+   заливались бы все W×H на каждый вызов: на сорока валунах это восемьдесят
+   полноэкранных заливок за кадр, то есть вся производительность режима. */
+function fillMaterial(mat,camx,camy,a1,a2,P,bnd){
   if(!mat)return;
+  const bx=bnd?bnd.x:-4, by=bnd?bnd.y:-4;
+  const bw=bnd?bnd.w:W+8, bh=bnd?bnd.h:H+8;
   ctx.save();
   if(P)ctx.clip(P);else ctx.clip();
   ctx.globalAlpha=a1;
   ctx.translate(-camx,-camy);
   ctx.fillStyle=mat;
-  ctx.fillRect(camx-4,camy-4,W+8,H+8);
+  ctx.fillRect(camx+bx,camy+by,bw,bh);
   ctx.restore();
   /* второй проход — тот же тайл крупно и в режиме overlay: он добавляет
      светлые и тёмные поля масштабом с полэкрана, из-за которых сетка 256
@@ -6906,11 +7108,16 @@ function fillMaterial(mat,camx,camy,a1,a2,P){
   if(P)ctx.clip(P);else ctx.clip();
   ctx.globalCompositeOperation="overlay";
   ctx.globalAlpha=a2;
-  const K=3.7;
+  const K=3.7, PH=91;
+  /* Смещение второго прохода обязано быть таким же, как у первого (делённым на
+     масштаб), иначе крупный слой ползёт относительно мелкого при движении
+     камеры. Именно это читалось как «камни что-то отражают»: на валуне ползущее
+     светлое поле выглядит скользящим по нему бликом, а не породой.
+     Развожу проходы постоянной фазой PH, а не разной скоростью. */
   ctx.scale(K,K);
-  ctx.translate(-camx/K*.55,-camy/K*.55);
+  ctx.translate(-(camx+PH)/K,-(camy+PH)/K);
   ctx.fillStyle=mat;
-  ctx.fillRect(camx/K*.55-4,camy/K*.55-4,W/K+8,H/K+8);
+  ctx.fillRect((camx+PH+bx)/K,(camy+PH+by)/K,bw/K,bh/K);
   ctx.restore();
 }
 
@@ -8050,6 +8257,11 @@ function drawRocks(tr,camx,camy,pal){
     const x=k.x-camx;
     if(x<-k.rad-20||x>W+k.rad+20)continue;
     const y=groundAt(tr,k.x)-camy;
+    /* контактная тень: без неё валун лежит поверх грунта, а не на нём.
+       Смещена в сторону от солнца (оно справа сверху) и вытянута по земле. */
+    ctx.save();ctx.globalAlpha=.7;
+    groundShadow(x-k.rad*.35,y+1.5,k.rad*1.5,Math.max(2.2,k.rad*.3));
+    ctx.restore();
     ctx.save();ctx.translate(x,y-k.rad*.42);
     if(k.flip)ctx.scale(-1,1);
     const c0=pal[2],c1=pal[4];
@@ -8078,7 +8290,8 @@ function drawRocks(tr,camx,camy,pal){
     ctx.fillStyle=g;ctx.fill(RP);
     /* та же порода, что под ногами: валун из другого материала выглядит
        принесённым из другой игры */
-    if(tr.mat)fillMaterial(tr.mat,camx-x,camy-y+k.rad*.42,.5,.35,RP);
+    if(tr.mat)fillMaterial(tr.mat,camx-x,camy-y+k.rad*.42,.5,.35,RP,
+      {x:-k.rad*1.4,y:-k.rad*1.4,w:k.rad*2.8,h:k.rad*2.8});
     ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke(RP);
     if(k.rad>7){   // скол на крупных валунах
       ctx.strokeStyle="rgba(255,255,255,.10)";
@@ -8397,6 +8610,20 @@ function drawPOI(tr,camx,camy,p){
   /* всё, что ниже линии грунта, срезается: иначе упавший корпус лежит поверх
      земли, как наклейка, вместо того чтобы уходить в неё. Запас в 6 px оставлен
      контактным теням — без них постройка висит в воздухе. */
+  /* Тени рисуем ДО клипа. Раньше groundShadow вызывался внутри самих построек,
+     то есть уже под клипом «всё ниже линии грунта срезать» — от эллипса
+     оставался тонкий обрезок сверху, и это читалось как странная полоска под
+     объектом. Заодно пропорция: тень широкая и низкая (ry ≈ rx/7), а не
+     блин на девять пикселей при двухстах в ширину. */
+  for(const q of list){
+    const x=q.x-camx, y=q.y-camy;
+    if(x<-q.h*1.6-200||x>W+q.h*1.6+200)continue;
+    const rx=q.h*(q.k==="wreck"?1.1:(q.k==="ring"?.9:.55));
+    ctx.save();
+    ctx.globalAlpha=.55;
+    groundShadow(x+rx*.12,y+3,rx,Math.max(4,rx*.15));
+    ctx.restore();
+  }
   ctx.save();
   ctx.beginPath();
   ctx.rect(0,0,W,H);
@@ -8440,7 +8667,7 @@ function drawPOI(tr,camx,camy,p){
 /* ── разбившийся мегакорабль: корпус вошёл в грунт под углом, хребет переломлен ── */
 function drawWreck(q,r,dark,lite,pal){
   const L=q.h*2.6, tilt=(-.24-r()*.22);
-  groundShadow(0,2,L*.42,9);
+
   poiDrift(L*.36,pal);
   ctx.save();ctx.rotate(tilt);
   const bw=q.h*.34;
@@ -8482,7 +8709,7 @@ function drawWreck(q,r,dark,lite,pal){
 /* ── древний храм: ступенчатая пирамида, вход светится ── */
 function drawTemple(q,r,dark,lite,pal){
   const w=q.h*1.5, steps=5+Math.floor(r()*3);
-  groundShadow(0,2,w*.6,10);
+
   /* верхние ступени осыпались неровно, и одна съехала вбок: целая пирамида
      выглядит построенной вчера */
   const broke=1+Math.floor(r()*2);
@@ -8523,7 +8750,7 @@ function drawTemple(q,r,dark,lite,pal){
 /* ── космический лифт: лента уходит выше кромки экрана ── */
 function drawElevator(q,r,dark,lite){
   const bw=q.h*.06;
-  groundShadow(0,2,bw*3,8);
+
   poiPoly([[-bw*2.4,0],[bw*2.4,0],[bw*.9,-q.h*.16],[-bw*.9,-q.h*.16]],
     poiBody(q.h*.16,dark,lite),"rgba(0,0,0,.45)");
   /* сама лента: сужается кверху и тает в дымке — так читается высота */
@@ -8625,7 +8852,7 @@ function drawAnomaly(q,r,pal){
 /* ── монолит: ничего, кроме пропорции и кромочного света ── */
 function drawMonolith(q,r,dark,lite,pal){
   const w=q.h*.19;
-  groundShadow(0,2,w*3.4,9);
+
   /* у монолита кромка почти идеальна — в этом весь его характер: рядом с
      выветренным камнем безупречная грань и читается как чужая работа */
   poiPoly([[-w,0],[w,0],[w*.93,-q.h],[-w*.93,-q.h]],"rgba(6,6,10,.96)","rgba(0,0,0,.6)",.7);
@@ -8644,7 +8871,7 @@ function drawMonolith(q,r,dark,lite,pal){
 /* ── заброшенный завод: башни, трубы, баки; из одной трубы ещё идёт дым ── */
 function drawFactory(q,r,dark,lite,pal){
   const w=q.h*1.4;
-  groundShadow(0,2,w*.75,10);
+
   poiDrift(w*.7,pal);
   /* ржавчина: завод стоял тут долго, и это единственное, что отличает его
      цвет от свежей постройки */
@@ -8752,12 +8979,12 @@ function drawPortal(q,r,pal){
   ctx.beginPath();ctx.arc(0,cy,R,Math.PI+.1,TAU-.1);ctx.stroke();
   ctx.strokeStyle="rgba(200,170,255,.35)";ctx.lineWidth=1.4;
   ctx.beginPath();ctx.arc(0,cy,R*1.08,0,TAU);ctx.stroke();
-  groundShadow(0,2,R*1.2,7);
+
 }
 /* ── обсерватория: купол с прорезью и тарелка, которая медленно ведёт по небу ── */
 function drawObserv(q,r,dark,lite,pal){
   const R=q.h*.55;
-  groundShadow(0,2,R*1.8,9);
+
   poiDrift(R*1.3,pal);
   poiPoly([[-R*1.05,0],[R*1.05,0],[R*.9,-q.h*.32],[-R*.9,-q.h*.32]],poiBody(q.h*.32,dark,lite),"rgba(0,0,0,.4)");
   ctx.fillStyle=poiBody(R,dark,lite);
@@ -12706,7 +12933,11 @@ function openStation(){
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
   document.getElementById("stName").textContent=G.st.name.toUpperCase();
-  document.getElementById("stKind").textContent=G.st.kind+" · система "+G.sys.name;
+  /* модули названы прямо в шапке: снаружи игрок видит их силуэты, внутри —
+     читает списком. Услуги при этом по-прежнему от типа станции, модули
+     ничего не открывают (17a-station-mod) */
+  document.getElementById("stKind").textContent=
+    G.st.kind+" · система "+G.sys.name+"\n"+stationModsLine(G.sys);
   syncTabs();
   $st.classList.add("open");renderTab();saveGame(true);
 }

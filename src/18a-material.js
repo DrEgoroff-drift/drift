@@ -85,14 +85,19 @@ function planetMat(p){
 }
 /* положить материал в уже построенный путь (путь должен быть текущим).
    Два прохода: свой масштаб и увеличенный — второй убивает видимую сетку 256. */
-function fillMaterial(mat,camx,camy,a1,a2,P){
+/* bnd — прямоугольник в текущих координатах, которым ограничен залив. Без него
+   заливались бы все W×H на каждый вызов: на сорока валунах это восемьдесят
+   полноэкранных заливок за кадр, то есть вся производительность режима. */
+function fillMaterial(mat,camx,camy,a1,a2,P,bnd){
   if(!mat)return;
+  const bx=bnd?bnd.x:-4, by=bnd?bnd.y:-4;
+  const bw=bnd?bnd.w:W+8, bh=bnd?bnd.h:H+8;
   ctx.save();
   if(P)ctx.clip(P);else ctx.clip();
   ctx.globalAlpha=a1;
   ctx.translate(-camx,-camy);
   ctx.fillStyle=mat;
-  ctx.fillRect(camx-4,camy-4,W+8,H+8);
+  ctx.fillRect(camx+bx,camy+by,bw,bh);
   ctx.restore();
   /* второй проход — тот же тайл крупно и в режиме overlay: он добавляет
      светлые и тёмные поля масштабом с полэкрана, из-за которых сетка 256
@@ -101,10 +106,15 @@ function fillMaterial(mat,camx,camy,a1,a2,P){
   if(P)ctx.clip(P);else ctx.clip();
   ctx.globalCompositeOperation="overlay";
   ctx.globalAlpha=a2;
-  const K=3.7;
+  const K=3.7, PH=91;
+  /* Смещение второго прохода обязано быть таким же, как у первого (делённым на
+     масштаб), иначе крупный слой ползёт относительно мелкого при движении
+     камеры. Именно это читалось как «камни что-то отражают»: на валуне ползущее
+     светлое поле выглядит скользящим по нему бликом, а не породой.
+     Развожу проходы постоянной фазой PH, а не разной скоростью. */
   ctx.scale(K,K);
-  ctx.translate(-camx/K*.55,-camy/K*.55);
+  ctx.translate(-(camx+PH)/K,-(camy+PH)/K);
   ctx.fillStyle=mat;
-  ctx.fillRect(camx/K*.55-4,camy/K*.55-4,W/K+8,H/K+8);
+  ctx.fillRect((camx+PH+bx)/K,(camy+PH+by)/K,bw/K,bh/K);
   ctx.restore();
 }

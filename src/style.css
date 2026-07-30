@@ -194,8 +194,10 @@ body.screen #msg,body.screen #launchbtn{opacity:0;pointer-events:none}
 .scr header .ttl{min-width:0}
 .scr header b{font-weight:400;font-size:17px;letter-spacing:.16em;display:block;color:var(--phos);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* вторая строка подписи — перечень модулей станции: перенос по \n, поэтому
+   pre-line, и мягче цветом, чтобы не спорить с названием */
 .scr header s{text-decoration:none;color:var(--dim);font-size:10px;letter-spacing:.04em;display:block;
-  margin-top:5px}
+  margin-top:5px;white-space:pre-line;line-height:1.5}
 .wallet{margin-left:auto;text-align:right;font-size:11px;line-height:1.6;white-space:nowrap;
   font-variant-numeric:tabular-nums}
 .wallet em{font-style:normal;color:var(--amber);display:block}

@@ -164,6 +164,20 @@ function drawPOI(tr,camx,camy,p){
   /* всё, что ниже линии грунта, срезается: иначе упавший корпус лежит поверх
      земли, как наклейка, вместо того чтобы уходить в неё. Запас в 6 px оставлен
      контактным теням — без них постройка висит в воздухе. */
+  /* Тени рисуем ДО клипа. Раньше groundShadow вызывался внутри самих построек,
+     то есть уже под клипом «всё ниже линии грунта срезать» — от эллипса
+     оставался тонкий обрезок сверху, и это читалось как странная полоска под
+     объектом. Заодно пропорция: тень широкая и низкая (ry ≈ rx/7), а не
+     блин на девять пикселей при двухстах в ширину. */
+  for(const q of list){
+    const x=q.x-camx, y=q.y-camy;
+    if(x<-q.h*1.6-200||x>W+q.h*1.6+200)continue;
+    const rx=q.h*(q.k==="wreck"?1.1:(q.k==="ring"?.9:.55));
+    ctx.save();
+    ctx.globalAlpha=.55;
+    groundShadow(x+rx*.12,y+3,rx,Math.max(4,rx*.15));
+    ctx.restore();
+  }
   ctx.save();
   ctx.beginPath();
   ctx.rect(0,0,W,H);
@@ -207,7 +221,7 @@ function drawPOI(tr,camx,camy,p){
 /* ── разбившийся мегакорабль: корпус вошёл в грунт под углом, хребет переломлен ── */
 function drawWreck(q,r,dark,lite,pal){
   const L=q.h*2.6, tilt=(-.24-r()*.22);
-  groundShadow(0,2,L*.42,9);
+
   poiDrift(L*.36,pal);
   ctx.save();ctx.rotate(tilt);
   const bw=q.h*.34;
@@ -249,7 +263,7 @@ function drawWreck(q,r,dark,lite,pal){
 /* ── древний храм: ступенчатая пирамида, вход светится ── */
 function drawTemple(q,r,dark,lite,pal){
   const w=q.h*1.5, steps=5+Math.floor(r()*3);
-  groundShadow(0,2,w*.6,10);
+
   /* верхние ступени осыпались неровно, и одна съехала вбок: целая пирамида
      выглядит построенной вчера */
   const broke=1+Math.floor(r()*2);
@@ -290,7 +304,7 @@ function drawTemple(q,r,dark,lite,pal){
 /* ── космический лифт: лента уходит выше кромки экрана ── */
 function drawElevator(q,r,dark,lite){
   const bw=q.h*.06;
-  groundShadow(0,2,bw*3,8);
+
   poiPoly([[-bw*2.4,0],[bw*2.4,0],[bw*.9,-q.h*.16],[-bw*.9,-q.h*.16]],
     poiBody(q.h*.16,dark,lite),"rgba(0,0,0,.45)");
   /* сама лента: сужается кверху и тает в дымке — так читается высота */
@@ -392,7 +406,7 @@ function drawAnomaly(q,r,pal){
 /* ── монолит: ничего, кроме пропорции и кромочного света ── */
 function drawMonolith(q,r,dark,lite,pal){
   const w=q.h*.19;
-  groundShadow(0,2,w*3.4,9);
+
   /* у монолита кромка почти идеальна — в этом весь его характер: рядом с
      выветренным камнем безупречная грань и читается как чужая работа */
   poiPoly([[-w,0],[w,0],[w*.93,-q.h],[-w*.93,-q.h]],"rgba(6,6,10,.96)","rgba(0,0,0,.6)",.7);
@@ -411,7 +425,7 @@ function drawMonolith(q,r,dark,lite,pal){
 /* ── заброшенный завод: башни, трубы, баки; из одной трубы ещё идёт дым ── */
 function drawFactory(q,r,dark,lite,pal){
   const w=q.h*1.4;
-  groundShadow(0,2,w*.75,10);
+
   poiDrift(w*.7,pal);
   /* ржавчина: завод стоял тут долго, и это единственное, что отличает его
      цвет от свежей постройки */
@@ -519,12 +533,12 @@ function drawPortal(q,r,pal){
   ctx.beginPath();ctx.arc(0,cy,R,Math.PI+.1,TAU-.1);ctx.stroke();
   ctx.strokeStyle="rgba(200,170,255,.35)";ctx.lineWidth=1.4;
   ctx.beginPath();ctx.arc(0,cy,R*1.08,0,TAU);ctx.stroke();
-  groundShadow(0,2,R*1.2,7);
+
 }
 /* ── обсерватория: купол с прорезью и тарелка, которая медленно ведёт по небу ── */
 function drawObserv(q,r,dark,lite,pal){
   const R=q.h*.55;
-  groundShadow(0,2,R*1.8,9);
+
   poiDrift(R*1.3,pal);
   poiPoly([[-R*1.05,0],[R*1.05,0],[R*.9,-q.h*.32],[-R*.9,-q.h*.32]],poiBody(q.h*.32,dark,lite),"rgba(0,0,0,.4)");
   ctx.fillStyle=poiBody(R,dark,lite);
