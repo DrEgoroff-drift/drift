@@ -108,7 +108,10 @@ function enterBelt(){
   const dust=[];
   for(let i=0;i<240;i++)
     dust.push({x:(r()-.5)*2*DUST_HALF,y:(r()-.5)*2*DUST_HALF,z:(r()-.5)*2*DUST_HALF});
-  G.belt={B,ast,dust,chunks:[],shots:[],x:0,y:0,z:0,vx:0,vy:0,vz:0,
+  /* ориентиры (24b-belt-poi) считаются до старта: они расчищают под собой
+     камни, иначе скала торчит сквозь конструкцию */
+  const poi=genBeltPOI(B,ast);
+  G.belt={B,ast,dust,poi,chunks:[],shots:[],x:0,y:0,z:0,vx:0,vy:0,vz:0,
     yaw:0,pitch:0,roll:0,avYaw:0,avPitch:0,avRoll:0,prevYaw:0,
     lock:null,prog:0,hit:0,near:9999,beam:0,cool:0,flash:0};
   G.mode="belt";G.ap=null;
@@ -381,8 +384,22 @@ function drawBelt(){
     meshPolys({mesh:c.mesh,rx:c.rx,ry:c.ry,r0:c.pr},c.x,c.y,c.z,c.r,
       d<220?1:0,clamp(c.life*1.7,0,1),c.ore,c.mesh.rock,false);
   }
+  /* ориентиры кладём в тот же буфер: иначе конструкция всплывает поверх скалы,
+     за которой на самом деле стоит */
+  for(const q of b.poi||[]){
+    const p=proj(q.x,q.y,q.z);
+    if(!p)continue;
+    const F2=Math.min(W,H)*.95;
+    const sc=F2/p.z;
+    if(q.size*sc<2)continue;
+    polys.push({spr:q,px:p.x,py:p.y,sc,d:p.z});
+  }
   polys.sort((p,q)=>q.d-p.d);
   for(const p of polys){
+    if(p.spr){
+      drawBeltPOISprite(p.spr,p.px,p.py,p.sc,clamp(1-p.d/3400,.12,1));
+      continue;
+    }
     const vein=p.ore>.57;
     const base=vein?p.oreCol:p.rock;
     const k=.13+p.li*(vein?1.25:.92);
