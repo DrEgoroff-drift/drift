@@ -251,34 +251,8 @@ function drawSkyLayer(p,camx,camy){
   ctx.fillStyle="rgb("+p.T.sky[1].join(",")+")";
   ctx.beginPath();ctx.arc(sunX,sunY,H*.045,0,TAU);ctx.globalAlpha=.85;ctx.fill();ctx.globalAlpha=1;
   if(!hasAtm)return;
-  /* облака: несколько плоских кластеров эллипсов, детерминированных от seed,
-     медленно плывущих и заворачивающих по ширине мира */
-  const seed=p.seed^0x510D;
-  const n=5+Math.floor((hashi(seed,1,1)*7)%4);
-  for(let i=0;i<n;i++){
-    const r=rng(hashi(seed,i,0xC10D));
-    const laneY=H*(.08+r()*.3), speed=.006+r()*.01, span=1400+r()*1200;
-    const wx=(r()*4000+G.t*speed*100)%span - span*.5;
-    const sx=(wx - camx*.12)%(span)+ (camx*.12<0?span:0);
-    const x=((sx%W)+W*3)%(W+400)-200;
-    const y=laneY-camy*.05;
-    /* сгусток с мягкой кромкой вместо плоского эллипса: у эллипса край режет
-       небо ножом, и облако читается наклейкой. Низ подкрашен цветом неба,
-       верх — цветом звезды: облако освещено сверху, как и всё остальное. */
-    const alpha=.13+r()*.11;
-    const blobs=4+Math.floor(r()*4),baseR=30+r()*34;
-    const sun=starRGB(),amb=p.T.sky[1];
-    for(let k=0;k<blobs;k++){
-      const ox=(k-(blobs-1)/2)*baseR*.72,oy=Math.sin(k*1.7+i)*baseR*.22;
-      const rr=baseR*(.55+r()*.6);
-      const cg=ctx.createRadialGradient(x+ox,y+oy-rr*.25,rr*.15,x+ox,y+oy,rr);
-      cg.addColorStop(0,"rgba("+[0,1,2].map(j=>Math.round(lerp(255,sun[j],.35))).join(",")+","+alpha.toFixed(3)+")");
-      cg.addColorStop(.55,"rgba("+[0,1,2].map(j=>Math.round(lerp(230,amb[j],.45))).join(",")+","+(alpha*.55).toFixed(3)+")");
-      cg.addColorStop(1,"rgba("+amb.join(",")+",0)");
-      ctx.fillStyle=cg;
-      ctx.beginPath();ctx.ellipse(x+ox,y+oy,rr,rr*.5,0,0,TAU);ctx.fill();
-    }
-  }
+  /* облака живут в 19e: поле плотности в перспективе, а не гроздь эллипсов */
+  drawClouds(p,camx,camy);
 }
 /* пыль/пыльца в воздухе — только там, где есть атмосфера, для ощущения глубины */
 function drawDustMotes(camx,camy,p){
