@@ -320,6 +320,7 @@ function drawLanding(){
   ctx.save();ctx.translate(L.x-camx,L.y-camy);ctx.rotate(L.a);
   drawLander(L.over>0&&!L.ok,L.thrOn&&L.over<=0);
   ctx.restore();
+  drawWeather(p,camx,camy);
   lightShafts(p);
   gradePass(p);
 }

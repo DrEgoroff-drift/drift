@@ -59,7 +59,11 @@ function hud(){
   else if(G.mode==="landing"){a=G.land.p.name.toUpperCase();
     b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;}
   else if(G.mode==="surface"){a=G.surf.p.name.toUpperCase();
-    b="трюм "+held()+"/"+st.cargoMax+" · скафандр "+Math.round(G.surf.suit)+"%";}
+    b="трюм "+held()+"/"+st.cargoMax+" · скафандр "+Math.round(G.surf.suit)+"%";
+    /* погода в сводке: игрок должен понимать, почему вокруг потемнело, и
+       что это пройдёт — она ходит циклом (19d-weather) */
+    const wn=weatherName(G.surf.p);
+    if(wn)b+=" · "+wn;}
   else if(G.mode==="dig"){a="ШАХТА · "+(G.dig?G.dig.p.name.toUpperCase():"");
     b=(G.dig?G.dig.row*3:0)+" м · трюм "+held()+"/"+st.cargoMax;}
   else if(G.mode==="cave"){a="ПЕЩЕРА · "+G.surf.p.name.toUpperCase();
