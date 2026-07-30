@@ -4,7 +4,9 @@
    флора, кусачая фауна (как в шахте) и одна находка в дальнем конце. */
 const CAVE_W=2200;
 function caveFloor(C,x){return fbm1(x*C.freq+11,C.seed,4)*C.amp;}
-function caveCeil(C,x){return caveFloor(C,x)-92-fbm1(x*C.freq*1.4+5,C.seed+91,3)*46;}
+/* свод: базовый зазор плюс подъём зала. caveVault только поднимает — зазор
+   от него может стать шире, но не уже, поэтому схлопнуться ход не может */
+function caveCeil(C,x){return caveFloor(C,x)-92-fbm1(x*C.freq*1.4+5,C.seed+91,3)*46-caveVault(C,x);}
 function enterCave(){
   const S=G.surf,p=S.p,r=rng(p.seed^0xCA5E);
   const plants=[],fauna=[];
@@ -26,6 +28,7 @@ function enterCave(){
     fauna.push(b);
   }
   C.findX=CAVE_W-140;
+  caveZones(C);caveDeco(C,p);
   G.cave=C;G.mode="cave";
   say("Пещера\nищите проход · ДЕЙСТВИЕ у выхода — назад на поверхность");
 }
@@ -36,7 +39,10 @@ function exitCave(){
 function updateCave(dt){
   const C=G.cave,S=G.surf,st=stat();
   document.getElementById("dronebtn").style.display="none";
-  const mv=.62*dt;
+  /* по колено в воде идут медленнее — это единственное, чем озеро вмешивается
+     в механику, и этого хватает, чтобы оно не было картинкой */
+  const wet=caveWet(C,C.x);
+  const mv=.62*dt*(wet?.66:1);
   if(keys.left||keys.right)C.walkTarget=null;
   if(keys.left){C.x-=mv;C.face=-1;}
   if(keys.right){C.x+=mv;C.face=1;}
@@ -49,7 +55,21 @@ function updateCave(dt){
   C.y=caveFloor(C,C.x);
   const walking=keys.left||keys.right||C.walkTarget!=null;
   C.walkAmp=clamp(C.walkAmp+(walking?1:-1)*.12*dt,0,1);
-  if(walking)C.walkPhase+=dt*.22;
+  if(walking)C.walkPhase+=dt*(wet?.16:.22);
+  updateCaveDeco(C,dt);
+  /* смена зала — единственное событие на длинном ходу, и назвать его стоит:
+     иначе игрок проходит грот и не замечает, что грот был */
+  const zk=caveZoneAt(C,C.x).kind;
+  if(C.zone&&C.zone!==zk)say(caveZoneAt(C,C.x).Z.ru);
+  C.zone=zk;
+  /* шаг по воде даёт свой всплеск: звук важнее ряби, по нему понятно, что
+     под ногами не камень */
+  if(walking&&wet){
+    C.splashT=(C.splashT||0)-dt;
+    if(C.splashT<=0){C.splashT=34;
+      C.deco.splash={x:C.x,y:caveFloor(C,C.x),t:26};
+      sfx("ui",{f:520,to:190,d:.16,v:.10});}
+  }
   /* фауна — тот же оглушить/собрать цикл, что и в шахте */
   if(keys.fire&&(C.zap||0)<=0){
     C.zap=90;C.zapT=16;sfx("ui",{f:1500,to:180,d:.22,v:.4});let n=0;
@@ -128,12 +148,29 @@ function drawCave(){
     fillMaterial(mat,camx,C.y-H*.56,.30,.18,FP);
     /* и сразу гасим: тайл рассчитан на освещённую поверхность, под землёй он
        светит как днём и убивает единственное, что есть у пещеры — темноту */
-    ctx.fillStyle="rgba(2,4,9,.62)";
+    ctx.fillStyle="rgba(2,4,9,.44)";
     ctx.fill(CP);ctx.fill(FP);
+    /* и уводим в черноту к краям кадра: у самой кромки порода ещё читается
+       зерном, в глубине массива её нет вовсе. Плоской заливки не остаётся
+       нигде — то, что кажется чёрным, на деле градиент по зерну */
+    const dg=ctx.createLinearGradient(0,0,0,H);
+    dg.addColorStop(0,"rgba(0,1,5,.72)");
+    dg.addColorStop(.42,"rgba(0,1,5,0)");
+    dg.addColorStop(.62,"rgba(0,1,5,0)");
+    dg.addColorStop(1,"rgba(0,1,5,.80)");
+    ctx.fillStyle=dg;ctx.fill(CP);ctx.fill(FP);
     /* влажный блик по кромке свода — единственный источник формы в темноте */
     ctx.strokeStyle="rgba(150,200,230,.14)";ctx.lineWidth=1.6;
     ctx.stroke(CP);ctx.stroke(FP);
   }
+  /* убранство: строение раньше материала — натёки уже вылеплены породой выше,
+     тут только их силуэт и вода, а свет пойдёт после темноты */
+  const camy=C.y-H*.56;
+  drawCaveBack(C,camx,camy);
+  drawCaveSolid(C,camx,camy);
+  drawCaveWater(C,camx,camy);
+  drawCaveDark(C,W/2,H*.56);
+  drawCaveGlow(C,camx,camy,W/2,H*.56);
   for(const pl of C.plants){
     const x=pl.x-camx;if(x<-70||x>W+70)continue;
     drawPlant(pl,x,pl.y-C.y+H*.56);
@@ -155,7 +192,7 @@ function drawCave(){
     mining:false,suitLow:G.surf.suit<25,lamp:true});
   ctx.restore();
   ctx.fillStyle="rgba(127,230,216,.85)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText("ПЕЩЕРА · "+Math.round(C.x)+"/"+CAVE_W,12,H-30);
+  ctx.fillText(caveZoneAt(C,C.x).Z.ru.toUpperCase()+" · "+Math.round(C.x)+"/"+CAVE_W,12,H-30);
   ctx.fillStyle=G.surf.suit>25?"rgba(93,115,130,.9)":"#ff6b57";
   ctx.fillText("СКАФАНДР "+Math.round(G.surf.suit)+"%",12,H-16);
 }
