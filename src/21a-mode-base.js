@@ -383,9 +383,20 @@ function updateBase(dt){
    там просто порода, в которой ещё не прорубились. */
 function baseRoomPath(B,X,Y,pad){
   const P=new Path2D();
-  for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
-    if(!baseCell(B,c,r))continue;
-    P.rect(X(90+c*BCELL_W)+pad,Y(150+r*BCELL_H)+pad,BCELL_W-pad*2,BCELL_H-pad*2);
+  /* соседние отсеки — одна выработка, а не ряд коробок: идущие подряд ячейки
+     собираются в один прямоугольник, иначе между ними остаётся полоска породы
+     и разрез снова читается таблицей */
+  for(let r=0;r<baseRows(B);r++){
+    let run=-1;
+    for(let c=0;c<=BASE_COLS;c++){
+      const has=c<BASE_COLS&&!!baseCell(B,c,r);
+      if(has&&run<0)run=c;
+      if(!has&&run>=0){
+        P.rect(X(90+run*BCELL_W)+pad,Y(150+r*BCELL_H)+pad,
+               (c-run)*BCELL_W-pad*2,BCELL_H-pad*2);
+        run=-1;
+      }
+    }
   }
   /* ствол лифта — тоже пустота, и он связывает уровни в одно сооружение.
      Копаем его лишь до самого нижнего построенного яруса: пустая шахта
@@ -439,12 +450,12 @@ function drawBase(){
     ctx.fillStyle=r%2?"rgba(0,0,0,.30)":"rgba(255,255,255,.055)";ctx.fill();
   }
   const mat=pl?planetMat(pl):null;
-  if(mat)fillMaterial(mat,camx,camy,.42,.26,GP,{x:0,y:Math.max(0,gy),w:W,h:H});
+  if(mat)fillMaterial(mat,camx,camy,.34,.26,GP,{x:0,y:Math.max(0,gy),w:W,h:H});
   /* Материал планеты — это её ПОВЕРХНОСТЬ: во всю силу под землёй он читается
      мхом и травой. Умножением уводим всё в бурое: фактура остаётся, зелень
      уходит, и разрез начинает выглядеть разрезом */
   ctx.globalCompositeOperation="multiply";
-  ctx.fillStyle="rgb(150,112,78)";ctx.fill(GP);
+  ctx.fillStyle="rgb(126,94,64)";ctx.fill(GP);
   ctx.globalCompositeOperation="source-over";
   /* верхний слой почвы: без него кромка грунта — просто линия среза */
   ctx.save();ctx.clip(GP);
@@ -524,7 +535,22 @@ function drawBase(){
   const on=Math.sin(G.t*.12)>0;
   ctx.strokeStyle=on?"rgba(127,230,216,.95)":"rgba(127,230,216,.4)";
   ctx.lineWidth=2;
-  if(baseCell(B,S.cur,S.row))ctx.strokeRect(sx+4,sy+4,BCELL_W-8,BCELL_H-8);
+  const selCell=baseCell(B,S.cur,S.row);
+  if(selCell){
+    /* у построенного отсека — не рамка во всю клетку, а уголки и подпись:
+       имена всех отсеков разом снова превращали разрез в таблицу */
+    const x1=sx+6,y1=sy+6,x2=sx+BCELL_W-6,y2=sy+BCELL_H-6,L=12;
+    ctx.beginPath();
+    ctx.moveTo(x1,y1+L);ctx.lineTo(x1,y1);ctx.lineTo(x1+L,y1);
+    ctx.moveTo(x2-L,y1);ctx.lineTo(x2,y1);ctx.lineTo(x2,y1+L);
+    ctx.moveTo(x2,y2-L);ctx.lineTo(x2,y2);ctx.lineTo(x2-L,y2);
+    ctx.moveTo(x1+L,y2);ctx.lineTo(x1,y2);ctx.lineTo(x1,y2-L);
+    ctx.stroke();
+    ctx.fillStyle="rgba(180,240,232,.9)";
+    ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+    const nm=BUILD[selCell.k].ru.toUpperCase()+(selCell.hp<=0?" · РАЗБИТ":"");
+    ctx.fillText(nm,sx+BCELL_W/2,y1-5);
+  }
   else{
     ctx.setLineDash([7,7]);
     ctx.strokeRect(sx+10,sy+10,BCELL_W-20,BCELL_H-20);
@@ -534,18 +560,27 @@ function drawBase(){
   }
   if(S.menu)drawBuildMenu(S);
 }
+/* Отсек — это НЕ коробка в клетке: пустота уже вырублена общим путём (baseRoomPath),
+   и рамка вокруг каждой ячейки возвращает разрезу вид таблицы. Рисуем только то,
+   что в отсеке стоит, и пол, на котором оно стоит. Подпись — лишь у выбранного. */
 function drawModule(k,x,y,lit,c,r,B){
   const w=BCELL_W-12,h=BCELL_H-12,x0=x+6,y0=y+6;
-  ctx.fillStyle="#0d141d";ctx.strokeStyle="rgba(242,178,92,"+(.35+lit*.45).toFixed(2)+")";ctx.lineWidth=2;
-  ctx.beginPath();ctx.rect(x0,y0,w,h);ctx.fill();ctx.stroke();
-  const cx=x0+w/2,cy=y0+h/2;
+  const cx=x0+w/2,cy=y0+h/2,fy=y0+h-6;
+  /* пол: плита со светом сверху, под ней — тень, которой оборудование касается */
+  ctx.fillStyle="rgba(120,132,146,"+(.10+lit*.14).toFixed(2)+")";
+  ctx.fillRect(x0+2,fy-4,w-4,4);
+  ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(x0+2,fy,w-4,3);
+  const sh=ctx.createRadialGradient(cx,fy-2,2,cx,fy-2,w*.42);
+  sh.addColorStop(0,"rgba(0,0,0,.5)");sh.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=sh;ctx.beginPath();ctx.ellipse(cx,fy-2,w*.42,7,0,0,TAU);ctx.fill();
   if(k==="reactor"){
     /* светится тем ярче, чем больше отдача — источник света всей базы */
     const pulse=.55+Math.sin(G.t*.06)*.12;
     const gg=ctx.createRadialGradient(cx,cy,2,cx,cy,w*.5);
     gg.addColorStop(0,"rgba(140,240,255,"+(pulse*lit).toFixed(2)+")");
     gg.addColorStop(1,"rgba(140,240,255,0)");
-    ctx.fillStyle=gg;ctx.fillRect(x0,y0,w,h);
+    /* свечение кругом, а не заливкой ячейки: у прямоугольного нимба видно край */
+    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(cx,cy,w*.5,0,TAU);ctx.fill();
     ctx.strokeStyle="rgba(140,240,255,.8)";ctx.lineWidth=2;
     ctx.beginPath();ctx.arc(cx,cy,16,0,TAU);ctx.stroke();
     ctx.beginPath();ctx.arc(cx,cy,9,0,TAU);ctx.stroke();
@@ -593,9 +628,6 @@ function drawModule(k,x,y,lit,c,r,B){
       ctx.beginPath();ctx.arc(cx+Math.cos(a)*w*.34,cy+8+Math.sin(a)*10,2.4,0,TAU);ctx.fill();
     }
   }
-  ctx.fillStyle="rgba(242,178,92,"+(.4+lit*.4).toFixed(2)+")";
-  ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText(BUILD[k].ru.toUpperCase(),cx,y0+h-4);
 }
 function drawBuildMenu(S){
   const w=Math.min(W-40,420),x=W/2-w/2,y=H-150;
