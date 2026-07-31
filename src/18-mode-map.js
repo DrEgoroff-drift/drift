@@ -180,7 +180,7 @@ function drawMap(){
       ctx.lineTo(x+Math.cos(a)*r1,y+Math.sin(a)*r1);
     }
     ctx.stroke();
-    const cw=Math.min(300,W-32), cx=16, cy=H-PAD_SAFE-118;
+    const cw=Math.min(300,W-32), cx=16, cy=H-PAD_SAFE-158;   // выше строк прыжка: они налезали на карточку
     ctx.strokeStyle="rgba(242,178,92,.22)";ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(x,y+rr+18);ctx.lineTo(cx+cw*.35,cy+12);ctx.stroke();
     ctx.fillStyle="rgba(6,10,16,.62)";ctx.fillRect(cx,cy,cw,104);

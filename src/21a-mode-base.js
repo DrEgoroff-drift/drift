@@ -387,9 +387,13 @@ function baseRoomPath(B,X,Y,pad){
     if(!baseCell(B,c,r))continue;
     P.rect(X(90+c*BCELL_W)+pad,Y(150+r*BCELL_H)+pad,BCELL_W-pad*2,BCELL_H-pad*2);
   }
-  /* ствол лифта — тоже пустота, и он связывает уровни в одно сооружение */
+  /* ствол лифта — тоже пустота, и он связывает уровни в одно сооружение.
+     Копаем его лишь до самого нижнего построенного яруса: пустая шахта
+     в нетронутой породе выглядит как забытая линия */
+  let deep=1;
+  for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++)if(baseCell(B,c,r))deep=Math.max(deep,r+1);
   const lx=X(cellX(Math.floor(BASE_COLS/2)));
-  P.rect(lx-13,Y(150),26,baseRows(B)*BCELL_H);
+  P.rect(lx-13,Y(150),26,deep*BCELL_H);
   return P;
 }
 function drawBase(){
@@ -406,30 +410,46 @@ function drawBase(){
   g.addColorStop(0,"rgb("+sky[1].join(",")+")");
   g.addColorStop(1,"rgb("+sky[0].join(",")+")");
   ctx.fillStyle=g;ctx.fillRect(0,0,W,Math.max(0,gy));
-  /* кромка грунта не линейка: мелкий рельеф из того же шума, что и планета */
-  ctx.beginPath();
-  ctx.moveTo(0,H);ctx.lineTo(0,gy);
+  /* кромка грунта не линейка: мелкий рельеф из того же шума, что и планета.
+     Путь держим объектом: fillMaterial клипует по ПЕРЕДАННОМУ пути, а не по
+     текущему — иначе материал ляжет в последний нарисованный пласт (так и было) */
+  const GP=new Path2D();
+  GP.moveTo(0,H);GP.lineTo(0,gy);
   for(let x=0;x<=W;x+=6){
     const wob=(fbm2((x+camx)*.008,3.3,B.idx*77+13,3)-.5)*16;
-    ctx.lineTo(x,gy+wob);
+    GP.lineTo(x,gy+wob);
   }
-  ctx.lineTo(W,H);ctx.closePath();
+  GP.lineTo(W,H);GP.closePath();
+  /* Порода — это НЕ палитра поверхности: пески и зелень с картинки планеты под
+     землёй читаются как трава и небо (так и вышло с первого раза). Берём тот же
+     цвет, но уведённый в тёмное и обесцвеченный — узнаваемо и при этом подземно */
+  const rc=i=>mixc(pal[Math.min(i,pal.length-1)],[26,19,14],.66);
   const rock=ctx.createLinearGradient(0,gy,0,Y(150+baseRows(B)*BCELL_H+120));
-  rock.addColorStop(0,"rgb("+pal[Math.min(1,pal.length-1)].join(",")+")");
-  rock.addColorStop(.55,"rgb("+pal[Math.min(3,pal.length-1)].join(",")+")");
-  rock.addColorStop(1,"rgb("+pal[pal.length-1].join(",")+")");
-  ctx.fillStyle=rock;ctx.fill();
+  rock.addColorStop(0,rgba(rc(1),1));
+  rock.addColorStop(.55,rgba(rc(3),1));
+  rock.addColorStop(1,rgba(rc(4),1));
+  ctx.fillStyle=rock;ctx.fill(GP);
   /* пласты: границы гуляют, поэтому это порода, а не полосатый матрас */
-  ctx.save();ctx.clip();
+  ctx.save();ctx.clip(GP);
   for(let r=0;r<baseRows(B)+2;r++){
     const y0=150+r*BCELL_H*1.15;
     ctx.beginPath();ctx.moveTo(0,Y(y0));
     for(let x=0;x<=W;x+=10)ctx.lineTo(x,Y(y0)+(fbm2((x+camx)*.004,r*2.7,B.idx*31+5,3)-.5)*26);
     ctx.lineTo(W,Y(y0)+BCELL_H*1.15);ctx.lineTo(0,Y(y0)+BCELL_H*1.15);ctx.closePath();
-    ctx.fillStyle=r%2?"rgba(0,0,0,.16)":"rgba(255,255,255,.035)";ctx.fill();
+    ctx.fillStyle=r%2?"rgba(0,0,0,.30)":"rgba(255,255,255,.055)";ctx.fill();
   }
   const mat=pl?planetMat(pl):null;
-  if(mat)fillMaterial(mat,camx,camy,.5,.3,null,{x:0,y:Math.max(0,gy),w:W,h:H});
+  if(mat)fillMaterial(mat,camx,camy,.42,.26,GP,{x:0,y:Math.max(0,gy),w:W,h:H});
+  /* Материал планеты — это её ПОВЕРХНОСТЬ: во всю силу под землёй он читается
+     мхом и травой. Умножением уводим всё в бурое: фактура остаётся, зелень
+     уходит, и разрез начинает выглядеть разрезом */
+  ctx.globalCompositeOperation="multiply";
+  ctx.fillStyle="rgb(150,112,78)";ctx.fill(GP);
+  ctx.globalCompositeOperation="source-over";
+  /* верхний слой почвы: без него кромка грунта — просто линия среза */
+  ctx.save();ctx.clip(GP);
+  ctx.fillStyle="rgba(20,14,9,.45)";ctx.fillRect(0,Math.max(0,gy),W,16);
+  ctx.restore();
   /* свет с глубиной сходит на нет */
   const dk=clamp((camy+H*.5)/2000,0,.42);
   ctx.fillStyle="rgba(2,4,9,"+(.12+dk).toFixed(3)+")";ctx.fillRect(0,Math.max(0,gy),W,H);
@@ -471,17 +491,27 @@ function drawBase(){
     }
   }
   /* коридор-стяжка вдоль пола и ствол лифта */
+  /* Стяжка идёт по полу только там, где есть отсеки: раньше она чертилась во всю
+     ширину базы на каждом ярусе, включая нетронутые, и оранжевые линии висели
+     прямо в породе */
   ctx.strokeStyle="rgba(242,178,92,"+(.16+lit*.26).toFixed(2)+")";ctx.lineWidth=2;
+  let deepest=0;
   for(let r=0;r<baseRows(B);r++){
+    let c0=-1,c1=-1;
+    for(let c=0;c<BASE_COLS;c++)if(baseCell(B,c,r)){if(c0<0)c0=c;c1=c;}
+    if(c0<0)continue;
+    deepest=r+1;
     const y=Y(150+r*BCELL_H+BCELL_H*.78);
-    ctx.beginPath();ctx.moveTo(X(96),y);ctx.lineTo(X(90+BASE_COLS*BCELL_W-6),y);ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(X(96+c0*BCELL_W),y);ctx.lineTo(X(90+(c1+1)*BCELL_W-6),y);ctx.stroke();
   }
   const lx=X(cellX(Math.floor(BASE_COLS/2)));
   ctx.strokeStyle="rgba(150,190,220,.30)";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(lx-10,Y(150));ctx.lineTo(lx-10,Y(150+baseRows(B)*BCELL_H));
-  ctx.moveTo(lx+10,Y(150));ctx.lineTo(lx+10,Y(150+baseRows(B)*BCELL_H));ctx.stroke();
+  const shaftB=Y(150+Math.max(1,deepest)*BCELL_H);
+  ctx.beginPath();ctx.moveTo(lx-10,Y(150));ctx.lineTo(lx-10,shaftB);
+  ctx.moveTo(lx+10,Y(150));ctx.lineTo(lx+10,shaftB);ctx.stroke();
   ctx.strokeStyle="rgba(150,190,220,.16)";
-  for(let r=0;r<=baseRows(B)*2;r++){
+  for(let r=0;r<=Math.max(1,deepest)*2;r++){
     const y=Y(150+r*BCELL_H*.5);
     ctx.beginPath();ctx.moveTo(lx-10,y);ctx.lineTo(lx+10,y);ctx.stroke();
   }

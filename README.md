@@ -1,8 +1,79 @@
-# Drift
+<div align="center">
 
-**Drift** is a procedural space game that runs entirely from a single HTML file — no build step, no dependencies, no frameworks, not one asset file. Pilot a lone survey probe through an endless generated galaxy: prospect planets, tunnel into their crust, strip asteroid belts, skim gas giants, run trade routes across a living market, found bases, hire a crew that works while you are away, and board pirate stations on foot.
+# Дрейф · Drift
 
-Everything you see and hear is generated at runtime from seeds — hulls, terrain, creatures, station architecture, interiors, and the music.
+**A procedural space game in a single HTML file.**
+No build step, no dependencies, no frameworks, not one asset file — every pixel and every sound
+is generated at runtime from seeds.
+
+<img src="docs/shots/cockpit1.png" alt="Mining ship cockpit in an asteroid belt" width="100%">
+
+</div>
+
+Pilot a lone survey probe through an endless generated galaxy: prospect planets, tunnel into their
+crust, strip asteroid belts, skim gas giants, run trade routes across a living market, found bases,
+hire a crew that works while you are away, and board pirate stations on foot.
+
+> **Play it now:** download [`drift.html`](drift.html) and double-click it. That's the whole game —
+> one file, offline, no server.
+
+---
+
+## What it looks like
+
+Nothing below is hand-drawn. Hulls, cockpits, terrain, cloud bands, star fields and interiors are
+all built from the same seed that names the system you are in.
+
+<table>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/shots/map.png" alt="Galaxy map" width="100%">
+<b>The galaxy map is a night sky, not a diagram.</b> Stars emit light instead of sitting on the
+background — halo, colour and diffraction spikes come from the spectral class. Depth is darkness:
+distant sectors dim, unreachable ones halve. The jump radius is a lit area rather than a hairline
+circle, and lanes are drawn only where they mean something.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/system.png" alt="Flying through a system" width="100%">
+<b>Flight leaves a wake.</b> The exhaust ribbon lives in system coordinates, so a turn draws the
+trajectory you actually flew. Its colour comes from the hull and its length from engine thrust and
+the fitted engine module — an upgrade is visible in flight, not just in a number.
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/shots/cockpit2.png" alt="Research ship cockpit" width="100%">
+<b>The cockpit tells you what you fly.</b> A survey ship gets a thin frame, clean plastics and a
+hologram over the dash; the miner at the top of this page gets heavy pillars, a cross beam, rivets,
+grime and hazard stripes. The canopy opening has real thickness — an outer and an inner contour with
+a lit bevel between them.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/scoop.png" alt="Skimming a gas giant" width="100%">
+<b>Gas giants are flown, not looked at.</b> Latitude bands are not drawn as shapes — they are
+stripes warped sideways by two scales of noise, with storms bending the same field, so festoons and
+vortices appear on their own. Two parallax echelons give the speed; the collection corridor is a
+glowing layer of denser gas you fly inside.
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/shots/base.png" alt="Base cross-section" width="100%">
+<b>Bases are a cut through the ground.</b> Compartments are carved out of rock as a single path —
+planet material over drifting strata, light spilling from the reactor onto the stone. Cells you
+never dug are simply not drawn: there is no grid, only rock.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/raid.png" alt="Boarding a pirate base" width="100%">
+<b>Pirate stations are boarded on foot.</b> The same projection and painter sort the asteroid belt
+uses, with walls shaded top-to-bottom, distance haze, ceiling lamps and dust hanging in the beam of
+your helmet lamp. The gun you fitted to your ship is the gun you carry.
+</td>
+</tr>
+</table>
+
+---
+
 
 ## Gameplay
 
@@ -108,9 +179,9 @@ Pirates are absent near home and increasingly common the further out you push. F
 ## How it looks and sounds
 
 - Every hull is generated from its seed: multi-station fuselage profile, swept wings, engine nacelles, canopy, panel lines, greebles, livery, blinking navigation lights. Banking is a real roll — the silhouette squashes and a shaded belly peeks out. Pirates get their hulls the same way.
-- The belt cockpit is generated too — canopy frame, thruster housings, side screens, a console with button grids, a yoke and throttle that move with your inputs — with proportions following the ship you fly. The ship that sets down on a planet is the ship you fly, on deployed legs.
+- The belt cockpit is generated per hull class: canopy shape, frame weight, metal, wear, hazard striping, holography and indicator colour all follow what you fly, and a laboratory-fused hull gets an asymmetric organic frame nothing else has. The opening has thickness, the glass carries tint, glare, a reflection of the dash and scratches, and the yoke and throttle move with your inputs. What it never does is cover the view: everything laid on the glass is transparent, and the six instruments left on the dash are the ones nothing else already tells you. The ship that sets down on a planet is the ship you fly, on deployed legs.
 - Plants, creatures and boulders are generated per world: branching stems with ferns, pods or crowns; critters with their own colours, crests, tails and leg counts; layered strata showing through rock.
-- Layered engine flames, an exhaust trail that hangs in space where you burned, thruster puffs when you turn by hand, faceted rotating asteroids, ringed gas giants, a generated nebula and coloured twinkling starfields.
+- Layered engine flames and an exhaust ribbon that hangs in space where you burned, tinted by the hull and stretched by the engine module. Attitude jets fire against the turn, the way a real pair does — bow thruster one way, stern thruster the other — and braking uses the bow jets instead of spinning the ship around. Faceted rotating asteroids lit by the system's own star, ringed gas giants, a generated nebula and coloured twinkling starfields.
 - A graphics page dials draw distance, model detail, particle density and surface life density up or down, with presets, to trade looks for performance.
 - **Every sound is synthesised at runtime** — there is not one audio file in the project. Oscillators, filtered noise and envelopes make the engine hum that rises with throttle, weapon fire, hull hits, the drill, footsteps that follow your actual walk cycle, low-fuel warnings. Guns take their timbre from the fitted part's seed, and each creature's call comes from its own seed. Music, effects and engine get separate volume sliders.
 - **Generative music** — no tracks, just six layers (drone, bass, motif, beacons, percussion, atmosphere) drifting in and out, so there is no loop to notice. Notes swell over a second or more and trail into synthesised reverb and feedback delay. The beacon voice is brown noise squeezed through a very narrow band-pass filter, which turns noise into a pitch that breathes. The melody is a real phrase that walks the scale, sometimes answered a beat later by a third or a fifth. Sixteen modes are in play; each location has its own mode and tempo — lydian and unhurried in open space, whole-tone on the star map, locrian and sparse in caves — and planets pick theirs from the same genome that decides their plants, so every world sounds the same each time you return. A single tension value (pirates closing, a battered hull, mine depth) tightens the rhythmic grid and thickens percussion on its own, instead of switching to a combat track.
@@ -124,12 +195,13 @@ Local autosave, portable base64 save codes for moving between devices, and optio
 | File | Purpose |
 |---|---|
 | [`drift.html`](drift.html) | The entire game in one self-contained file — open it directly to play. **Built from `src/`; don't edit it by hand.** |
-| [`src/`](src) | The sources: `index.html` shell, `style.css`, and 32 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
+| [`src/`](src) | The sources: `index.html` shell, `style.css`, and 52 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
 | [`build.ps1`](build.ps1) | Rebuilds `drift.html` from `src/`. No dependencies — PowerShell, because Node isn't assumed. Pass `-Watch` to rebuild on save. |
 | [`server.js`](server.js) | Optional zero-dependency Node.js server (Node 18+) for self-hosting and persisting cloud saves to a `./saves` folder. |
 | [`worker.js`](worker.js) | Optional Cloudflare Worker alternative, storing saves in a KV namespace. |
 | [`CLAUDE.md`](CLAUDE.md) | House rules for working on the code: what lives where, what must not change, how to verify. |
 | [`PLAN.md`](PLAN.md) | The design log — each milestone, what problem it solved and why it was built that way. |
+| [`PATCHNOTES.md`](PATCHNOTES.md) | One entry per version, in plain language: what changed and what it fixed. |
 
 ## Running it
 
