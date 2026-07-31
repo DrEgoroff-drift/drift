@@ -376,7 +376,7 @@ function drawRaid(){
     const torch=clamp((1-ang/1.1),0,1)*clamp(1-dd/620,0,1)*.5;
     const li=clamp(.95-dd/(RCELL*9)+torch+lamp,.1,1.15);
     quad([x0,h,z0],[x1,h,z0],[x1,h,z1],[x0,h,z1],base,li*.9,false);
-    quad([x0,RAID_H,z1],[x1,RAID_H,z1],[x1,RAID_H,z0],[x0,RAID_H,z0],base,li*.5,false);
+    quad([x0,RAID_H,z1],[x1,RAID_H,z1],[x1,RAID_H,z0],[x0,RAID_H,z0],base,li*.28,false);   // потолок темнее пола: свет идёт сверху вниз
     /* стены рисуем только там, где соседняя клетка — порода */
     if(raidSolid(R,c,rr-1))wall([x0,h,z0],[x0,RAID_H,z0],[x1,RAID_H,z0],[x1,h,z0],base,li);
     if(raidSolid(R,c,rr+1))wall([x1,h,z1],[x1,RAID_H,z1],[x0,RAID_H,z1],[x0,h,z1],base,li);
@@ -386,9 +386,11 @@ function drawRaid(){
        свет был только числом в li — на экране светильников не было вовсе */
     if(K==="corr"||K==="reactor"||K==="hangar"){
       const em=K==="reactor"?[120,220,230]:[255,232,196];
-      const f=K==="reactor"?(.7+Math.sin(G.t*.09+c)*.3):(K==="corr"?.85:.6);
-      quad([x0+RCELL*.36,RAID_H-3,z0+RCELL*.12],[x0+RCELL*.64,RAID_H-3,z0+RCELL*.12],
-           [x0+RCELL*.64,RAID_H-3,z1-RCELL*.12],[x0+RCELL*.36,RAID_H-3,z1-RCELL*.12],em,f,false,1);
+      const f=K==="reactor"?(.5+Math.sin(G.t*.09+c)*.22):(K==="corr"?.62:.42);
+      /* полоса узкая и короткая: во всю клетку она под острым углом заливала
+         светом полкадра и потолок читался ярче пола */
+      quad([x0+RCELL*.45,RAID_H-3,z0+RCELL*.3],[x0+RCELL*.55,RAID_H-3,z0+RCELL*.3],
+           [x0+RCELL*.55,RAID_H-3,z1-RCELL*.3],[x0+RCELL*.45,RAID_H-3,z1-RCELL*.3],em,f,false,1);
     }
     /* перепад высоты к соседу — вертикальный борт антресоли или пандуса */
     const sideCol=[base[0]+14,base[1]+12,base[2]+10];
@@ -418,7 +420,7 @@ function drawRaid(){
   /* Дымка расстояния: без неё дальняя геометрия просто темнеет, и глубина
      не читается. Смешиваем цвет грани с цветом взвешенной пыли тем сильнее,
      чем дальше грань. Светильники дымкой не гасим — они и должны пробиваться */
-  const FOG=[16,20,30], FAR=RCELL*10;
+  const FOG=[9,11,17], FAR=RCELL*10;
   for(const P of polys){
     const [r8,g8,b8]=P.col;
     const k=P.emis?0:clamp((P.d-RCELL*1.5)/FAR,0,.85);
