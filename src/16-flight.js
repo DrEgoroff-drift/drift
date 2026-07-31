@@ -136,10 +136,27 @@ function arrive(){
 }
 
 /* ══════════════ шлейф двигателей и струи ориентации ══════════════ */
-/* частицы живут в координатах системы, поэтому шлейф остаётся висеть там, где корабль был */
-const TRAIL=[],TRAIL_MAX=170;
-function trailStep(dt,thrusting,turning){
-  const sh=G.ship,h=hullOf(G.shipId);
+/* Частицы живут в координатах системы, поэтому шлейф остаётся висеть там, где
+   корабль был, и на развороте выписывает ту самую дугу, по которой шли.
+   Рисуется он не облаком точек, а лентой: точки одного сопла соединяются
+   в полосу, которая ширится и гаснет к хвосту. Дуга траектории видна только так.
+
+   Цвет — от корпуса. Ядро у всех добела раскалённое, а перо тонировано
+   акцентом корабля и уходит в него же: «Стриж» тянет бирюзовый хвост,
+   «Мамонт» — сиреневый. Длина зависит от двигателя: паспортная тяга задаёт
+   базу, модуль двигателя её растягивает — прокачка видна в полёте, а не
+   только цифрой на экране корабля. */
+const TRAIL=[],TRAIL_MAX=320;
+const TRAIL_TINT={};
+function trailTint(id){
+  if(TRAIL_TINT[id])return TRAIL_TINT[id];
+  const c=hex2rgb(shipData(id).col);
+  /* ядро — почти белое с оттенком акцента, чтобы не выглядело чужой наклейкой */
+  const T={core:mixc(c,[255,252,238],.82), mid:mixc(c,[255,214,150],.42), edge:c};
+  TRAIL_TINT[id]=T;return T;
+}
+function trailStep(dt,thrusting,turning,braking){
+  const sh=G.ship,h=hullOf(G.shipId),st=stat();
   for(let i=TRAIL.length-1;i>=0;i--){
     const t=TRAIL[i];
     t.x+=t.vx*dt;t.y+=t.vy*dt;t.life-=dt;
@@ -147,32 +164,101 @@ function trailStep(dt,thrusting,turning){
     if(t.life<=0)TRAIL.splice(i,1);
   }
   const ca=Math.cos(sh.a),sa=Math.sin(sh.a);
+  const lvl=G.mods.engine|0;
+  /* длина хвоста: тяга корпуса × модуль двигателя. Ниже единицы не опускаем —
+     у «Мамонта» шлейф короткий, но он есть */
+  const span=(.45+st.thr*.5)*(1+lvl*.28);
   if(thrusting&&TRAIL.length<TRAIL_MAX){
-    for(const e of h.eng){
-      if(Math.random()>.55*G.opts.gfx.particles)continue;   // пореже, иначе шлейф превращается в сплошную кашу
+    /* лента непрерывна, поэтому точки ставятся каждый кадр; на слабой графике
+       сопла берутся через одно, лента становится реже, но не рвётся */
+    const skip=G.opts.gfx.particles<1?2:1;
+    for(let i=0;i<h.eng.length;i++){
+      if(i%skip)continue;
+      const e=h.eng[i];
       const ex=sh.x+e.x*ca-e.y*sa, ey=sh.y+(e.x*sa+e.y*ca);
-      const spread=(Math.random()-.5)*.34, sp=1.2+Math.random()*1.6;
-      TRAIL.push({x:ex,y:ey,hot:1,r:e.r*(.22+Math.random()*.3),max:40,life:22+Math.random()*18,
+      /* разброс почти нулевой: лента складывается из этих точек, и любой заметный
+         джиттер превращает хвост в лесенку вместо плавной дуги */
+      const spread=(Math.random()-.5)*.04, sp=(1.2+Math.random()*.3)*(.8+span*.4);
+      TRAIL.push({x:ex,y:ey,hot:1,e:i,r:e.r*(.54+Math.random()*.08),
+        max:26*span,life:26*span,
         vx:sh.vx*.3-Math.cos(sh.a+spread)*sp, vy:sh.vy*.3-Math.sin(sh.a+spread)*sp});
     }
   }
-  if(turning&&TRAIL.length<TRAIL_MAX&&Math.random()<.55){
-    const s=keys.left?-1:1, px=h.nose*.55, py=h.bw*.75*s;
-    const ex=sh.x+px*ca-py*sa, ey=sh.y+(px*sa+py*ca);
-    const pa=sh.a+Math.PI/2*s;
-    TRAIL.push({x:ex,y:ey,hot:0,r:1.5+Math.random(),max:22,life:14+Math.random()*8,
-      vx:sh.vx*.6+Math.cos(pa)*1.5, vy:sh.vy*.6+Math.sin(pa)*1.5});
+  /* ── струи ориентации ──
+     Газ уходит в сторону, ПРОТИВОПОЛОЖНУЮ повороту: чтобы нос пошёл влево,
+     носовое сопло выбрасывает вправо, кормовое — влево. Пара струй крест-накрест
+     и есть то, чем корабль разворачивают в пустоте. Раньше обе били туда же,
+     куда шёл разворот, и картинка спорила с физикой. */
+  if(turning&&TRAIL.length<TRAIL_MAX-6&&Math.random()<.4){
+    const s=keys.left?-1:1;                      // -1 — разворот влево
+    const jets=[[h.nose*.55, h.bw*.8*-s, -s],    // нос: газ наружу по борту -s
+                [h.tail*.55, h.bw*.8*s,   s]];   // корма: газ в другую сторону
+    for(const j of jets){
+      const ex=sh.x+j[0]*ca-j[1]*sa, ey=sh.y+(j[0]*sa+j[1]*ca);
+      const pa=sh.a+Math.PI/2*j[2];
+      /* струя короткая: это укол газа у борта, а не второй шлейф —
+         длинная белая цепочка вдоль всего курса читалась как помеха */
+      TRAIL.push({x:ex,y:ey,hot:0,e:-1,r:1.4+Math.random(),max:9,life:6+Math.random()*3,
+        vx:sh.vx*.9+Math.cos(pa)*2.2, vy:sh.vy*.9+Math.sin(pa)*2.2});
+    }
+  }
+  /* ── торможение: носовые маневровые бьют вперёд ── */
+  if(braking&&TRAIL.length<TRAIL_MAX-6&&Math.random()<.8){
+    for(const s of [-1,1]){
+      const px=h.nose*.5, py=h.bw*.5*s;
+      const ex=sh.x+px*ca-py*sa, ey=sh.y+(px*sa+py*ca);
+      const pa=sh.a+(Math.random()-.5)*.5;       // газ вперёд по курсу
+      TRAIL.push({x:ex,y:ey,hot:0,e:-1,r:1.2+Math.random()*.9,max:11,life:7+Math.random()*4,
+        vx:sh.vx*.85+Math.cos(pa)*2.4, vy:sh.vy*.85+Math.sin(pa)*2.4});
+    }
   }
 }
 function drawTrail(zx,zy,Z){
+  const T=trailTint(G.shipId);
+  /* ленты по соплам: массив хронологичен, поэтому в каждой корзине точки
+     идут от самой старой к свежей — ровно порядок отрисовки полосы */
+  const lanes={};
   for(const t of TRAIL){
+    if(!t.hot)continue;
+    (lanes[t.e]||(lanes[t.e]=[])).push(t);
+  }
+  ctx.save();
+  ctx.globalCompositeOperation="lighter";
+  /* стык встык, а не скруглённый: у быстрого корабля соседние точки далеко,
+     и круглые торцы превращали ленту в цепочку бусин */
+  ctx.lineCap="butt";ctx.lineJoin="round";
+  for(const k in lanes){
+    const arr=lanes[k];
+    for(let i=1;i<arr.length;i++){
+      const a=arr[i-1],b2=arr[i];
+      const x0=zx(a.x),y0=zy(a.y),x1=zx(b2.x),y1=zy(b2.y);
+      if((x0<-60&&x1<-60)||(x0>W+60&&x1>W+60)||(y0<-60&&y1<-60)||(y0>H+60&&y1>H+60))continue;
+      const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1);
+      /* у сопла — белое ядро, к хвосту цвет уходит в акцент корпуса */
+      const col=u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
+      ctx.strokeStyle=rgba(col,(u*.13+u*u*u*.3).toFixed(3));
+      ctx.lineWidth=Math.max(.6,b2.r*Z*(1.7-u*1.05));
+      ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+    }
+    /* добела раскалённый корешок у самого сопла */
+    const f=arr[arr.length-1];
+    if(f){
+      const x=zx(f.x),y=zy(f.y);
+      if(x>-40&&x<W+40&&y>-40&&y<H+40){
+        ctx.fillStyle=rgba(T.core,.5);
+        ctx.beginPath();ctx.arc(x,y,Math.max(.8,f.r*Z*.9),0,TAU);ctx.fill();
+      }
+    }
+  }
+  ctx.restore();
+  /* холодные струи маневровых — короткие дымки, не лента */
+  for(const t of TRAIL){
+    if(t.hot)continue;
     const x=zx(t.x),y=zy(t.y);
     if(x<-30||x>W+30||y<-30||y>H+30)continue;
     const u=clamp(t.life/t.max,0,1);
     const rr=Math.max(.5,t.r*Z*(2.6-u*1.9));
-    ctx.fillStyle=t.hot
-      ? "rgba(255,"+((105+125*u)|0)+","+((50+75*u)|0)+","+(u*u*.3).toFixed(3)+")"
-      : "rgba(205,232,246,"+(u*.2).toFixed(3)+")";
+    ctx.fillStyle="rgba(205,232,246,"+(u*.22).toFixed(3)+")";
     ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.fill();
   }
 }

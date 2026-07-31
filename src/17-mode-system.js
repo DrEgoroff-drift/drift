@@ -74,10 +74,13 @@ function updateSystem(dt){
     if(keys.brake&&G.fuel>0){
       const sp0=Math.hypot(sh.vx,sh.vy);
       if(sp0>.03){
-        const dec=Math.min(sp0,.075*st.thr*dt);
+        const dec=Math.min(sp0,.058*st.thr*dt);
         sh.vx-=sh.vx/sp0*dec;sh.vy-=sh.vy/sp0*dec;
         G.fuel=Math.max(0,G.fuel-.017*dt);
-        sh.a+=clamp(angDiff(Math.atan2(-sh.vy,-sh.vx),sh.a),-.045,.045)*dt;
+        /* корабль больше не разворачивается кормой к курсу: тормозят носовые
+           маневровые, курс остаётся тем, который держит игрок. Разворот на
+           торможении сбивал прицел и читался как потеря управления — а тяга
+           у маневровых и так меньше маршевой, так что цена честная. */
       }else{sh.vx=0;sh.vy=0;}
     }
   }
@@ -119,7 +122,8 @@ function updateSystem(dt){
   /* крен считаем по фактической скорости поворота — работает и на автопилоте */
   const rate=angDiff(sh.a,a0)/Math.max(dt,.0001);
   sh.bank+=(clamp(rate*13,-.8,.8)-sh.bank)*Math.min(1,.07*dt);
-  trailStep(dt,G.fuel>0&&(keys.thrust||apOn),!apOn&&(keys.left||keys.right));
+  trailStep(dt,G.fuel>0&&(keys.thrust||apOn),!apOn&&(keys.left||keys.right),
+    !apOn&&keys.brake&&G.fuel>0&&sp>.03);
   }
 
   const d0=Math.hypot(sh.x,sh.y)||1;
