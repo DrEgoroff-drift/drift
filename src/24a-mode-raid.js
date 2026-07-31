@@ -344,11 +344,19 @@ function drawRaid(){
             y:H/2-(vx*up[0]+vy*up[1]+vz*up[2])*F/zc, z:zc};
   }
   const polys=[];
-  function quad(a,b,c,d,col,li,edge){
+  /* Стена одним прямоугольником одного тона — плоская наклейка. Делим её по
+     высоте надвое: низ светлее, верх уходит в темноту под потолком. Это
+     дешёвая подделка вместо освещения, но именно она даёт отсеку объём. */
+  function wall(a,b,c,d,col,li){
+    const m0=[a[0],(a[1]+b[1])/2,a[2]], m1=[d[0],(c[1]+d[1])/2,d[2]];
+    quad(a,m0,m1,d,col,li*1.08,true);
+    quad(m0,b,c,m1,col,li*.72,true);
+  }
+  function quad(a,b,c,d,col,li,edge,emis){
     const A=proj(a[0],a[1],a[2]),B=proj(b[0],b[1],b[2]),
           C=proj(c[0],c[1],c[2]),D=proj(d[0],d[1],d[2]);
     if(!A||!B||!C||!D)return;
-    polys.push({p:[A,B,C,D],d:(A.z+B.z+C.z+D.z)/4,col,li,edge});
+    polys.push({p:[A,B,C,D],d:(A.z+B.z+C.z+D.z)/4,col,li,edge,emis});
   }
   const c0=Math.floor(S.x/RCELL),r0=Math.floor(S.z/RCELL);
   const rad=Math.round(9*G.opts.gfx.draw);
@@ -370,10 +378,18 @@ function drawRaid(){
     quad([x0,h,z0],[x1,h,z0],[x1,h,z1],[x0,h,z1],base,li*.9,false);
     quad([x0,RAID_H,z1],[x1,RAID_H,z1],[x1,RAID_H,z0],[x0,RAID_H,z0],base,li*.5,false);
     /* стены рисуем только там, где соседняя клетка — порода */
-    if(raidSolid(R,c,rr-1))quad([x0,h,z0],[x0,RAID_H,z0],[x1,RAID_H,z0],[x1,h,z0],base,li,true);
-    if(raidSolid(R,c,rr+1))quad([x1,h,z1],[x1,RAID_H,z1],[x0,RAID_H,z1],[x0,h,z1],base,li,true);
-    if(raidSolid(R,c-1,rr))quad([x0,h,z1],[x0,RAID_H,z1],[x0,RAID_H,z0],[x0,h,z0],base,li*.92,true);
-    if(raidSolid(R,c+1,rr))quad([x1,h,z0],[x1,RAID_H,z0],[x1,RAID_H,z1],[x1,h,z1],base,li*.92,true);
+    if(raidSolid(R,c,rr-1))wall([x0,h,z0],[x0,RAID_H,z0],[x1,RAID_H,z0],[x1,h,z0],base,li);
+    if(raidSolid(R,c,rr+1))wall([x1,h,z1],[x1,RAID_H,z1],[x0,RAID_H,z1],[x0,h,z1],base,li);
+    if(raidSolid(R,c-1,rr))wall([x0,h,z1],[x0,RAID_H,z1],[x0,RAID_H,z0],[x0,h,z0],base,li*.92);
+    if(raidSolid(R,c+1,rr))wall([x1,h,z0],[x1,RAID_H,z0],[x1,RAID_H,z1],[x1,h,z1],base,li*.92);
+    /* потолочная лампа: единственный видимый источник света в отсеке. Раньше
+       свет был только числом в li — на экране светильников не было вовсе */
+    if(K==="corr"||K==="reactor"||K==="hangar"){
+      const em=K==="reactor"?[120,220,230]:[255,232,196];
+      const f=K==="reactor"?(.7+Math.sin(G.t*.09+c)*.3):(K==="corr"?.85:.6);
+      quad([x0+RCELL*.36,RAID_H-3,z0+RCELL*.12],[x0+RCELL*.64,RAID_H-3,z0+RCELL*.12],
+           [x0+RCELL*.64,RAID_H-3,z1-RCELL*.12],[x0+RCELL*.36,RAID_H-3,z1-RCELL*.12],em,f,false,1);
+    }
     /* перепад высоты к соседу — вертикальный борт антресоли или пандуса */
     const sideCol=[base[0]+14,base[1]+12,base[2]+10];
     const hn=raidFloorH(R,c,rr-1),hs=raidFloorH(R,c,rr+1),
@@ -399,9 +415,15 @@ function drawRaid(){
     }
   }
   polys.sort((a,b)=>b.d-a.d);
+  /* Дымка расстояния: без неё дальняя геометрия просто темнеет, и глубина
+     не читается. Смешиваем цвет грани с цветом взвешенной пыли тем сильнее,
+     чем дальше грань. Светильники дымкой не гасим — они и должны пробиваться */
+  const FOG=[16,20,30], FAR=RCELL*10;
   for(const P of polys){
     const [r8,g8,b8]=P.col;
-    ctx.fillStyle="rgb("+Math.round(r8*P.li)+","+Math.round(g8*P.li)+","+Math.round(b8*P.li)+")";
+    const k=P.emis?0:clamp((P.d-RCELL*1.5)/FAR,0,.85);
+    const mix=(v,f)=>Math.round(v*P.li*(1-k)+f*k);
+    ctx.fillStyle="rgb("+mix(r8,FOG[0])+","+mix(g8,FOG[1])+","+mix(b8,FOG[2])+")";
     ctx.beginPath();ctx.moveTo(P.p[0].x,P.p[0].y);
     for(let i=1;i<P.p.length;i++)ctx.lineTo(P.p[i].x,P.p[i].y);
     ctx.closePath();ctx.fill();
@@ -467,6 +489,26 @@ function drawRaid(){
       ctx.restore();
     }
   }
+  /* ── воздух отсека ──
+     Пыль в луче нашлемного фонаря: три десятка частиц, привязанных к сетке
+     вокруг игрока, чтобы они не «ехали» вместе с камерой. Без взвеси объём
+     пустого коридора ничем не выдаёт себя. */
+  {
+    const gx0=Math.round(S.x/RCELL),gz0=Math.round(S.z/RCELL);
+    ctx.fillStyle="rgba(210,225,240,.5)";
+    for(let i=0;i<34;i++){
+      const hh=hashi(gx0*31+i,gz0*17+i*7,0xD05);
+      const px=(gx0-1.5)*RCELL+((hh>>>3)&255)/255*RCELL*3;
+      const pz=(gz0-1.5)*RCELL+((hh>>>11)&255)/255*RCELL*3;
+      const py=14+((hh>>>19)&127)/127*(RAID_H-24)+Math.sin(G.t*.03+i)*4;
+      const p=proj(px,py,pz);if(!p)continue;
+      const dd=Math.hypot(px-S.x,pz-S.z);
+      ctx.globalAlpha=clamp(.28-dd/1400,0,.28);
+      const s2=clamp(1600/p.z,.4,2.4);
+      ctx.fillRect(p.x,p.y,s2,s2);
+    }
+    ctx.globalAlpha=1;
+  }
   /* выстрелы и вспышки — последними, поверх всего */
   for(const sh of S.shots){
     const sy2=raidFloorAt(R,sh.x,sh.z)+40;
@@ -475,6 +517,20 @@ function drawRaid(){
     ctx.strokeStyle=sh.mine?"rgba(127,230,216,.95)":"rgba(255,120,90,.95)";
     ctx.lineWidth=Math.max(1,2200/p.z*.06);
     ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(p.x,p.y);ctx.stroke();
+  }
+  /* ── свет шлема и тьма по краям ──
+     Фонарь до сих пор жил только числом в li: сцена была равномерно освещена
+     ниоткуда. Тёплое пятно по курсу и глубокая виньетка по краям делают
+     из этого чужую базу, в которую влезли с фонарём. */
+  {
+    const tg=ctx.createRadialGradient(W/2,H*.52,0,W/2,H*.52,Math.min(W,H)*.5);
+    tg.addColorStop(0,"rgba(255,238,205,.10)");
+    tg.addColorStop(1,"rgba(255,238,205,0)");
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    ctx.fillStyle=tg;ctx.fillRect(0,0,W,H);ctx.restore();
+    const vg=ctx.createRadialGradient(W/2,H*.5,Math.min(W,H)*.28,W/2,H*.5,Math.max(W,H)*.72);
+    vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.62)");
+    ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
   }
   if(S.hurt>0){
     ctx.fillStyle="rgba(255,50,40,"+(S.hurt/10*.28).toFixed(2)+")";ctx.fillRect(0,0,W,H);

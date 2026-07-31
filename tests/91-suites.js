@@ -1385,3 +1385,34 @@ TEST_SUITES.push(()=>suite("кабина у каждого класса своя
   ok(pMiner>pCour,"у буровика переплёт тяжелее курьерского");
   delete G.uniqueShips.tAlien;
 }));
+
+TEST_SUITES.push(()=>suite("три пересмотренные сцены рисуются",()=>{
+  resetWorld();
+  /* Правки чисто рисовальные, утверждать про пиксели нечего — но упасть на
+     первом кадре они могут запросто (Path2D, отсутствующая планета, пустая
+     сетка). Проверяем, что каждая сцена переживает отрисовку в своём режиме. */
+  G.mode="map";G.sel={x:G.sx+1,y:G.sy};
+  drawMap();ok(true,"карта рисуется");
+  G.sel={x:G.sx+9,y:G.sy+9};                 // вне радиуса прыжка
+  drawMap();ok(true,"карта рисуется и с целью вне радиуса");
+  const p=G.sys.planets[0];
+  G.credits=1e6;G.cargo.alloy=99;
+  ok(foundBase(p),"база закладывается");
+  enterBase(p);
+  drawBase();ok(true,"база в разрезе рисуется");
+  /* пустая клетка под курсором — та ветка, где раньше рисовалась рамка на всём */
+  G.base.cur=(G.base.cur+1)%BASE_COLS;
+  drawBase();ok(true,"база рисуется и с курсором на породе");
+  let PB=null;
+  for(let x=-12;x<12&&!PB;x++)for(let y=-12;y<12&&!PB;y++){
+    if(!starAt(x,y))continue;
+    const s=getSystem(x,y),b=pirateBaseOf(s);
+    if(b){G.sys=s;G.sx=x;G.sy=y;PB=b;}
+  }
+  ok(!!PB,"пиратская база в галактике находится");
+  if(PB){
+    enterRaid(PB);
+    drawRaid();ok(true,"абордаж рисуется");
+  }
+  G.base=null;G.raid=null;G.mode="system";
+}));

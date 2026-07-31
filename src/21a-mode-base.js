@@ -371,34 +371,97 @@ function updateBase(dt){
   }
 }
 /* ══════════════ рисование разреза ══════════════ */
+/* ── база в разрезе ──
+   Прежняя версия рисовала таблицу: коричневый прямоугольник, полосатые ряды,
+   и на каждой ячейке — рамка, включая пустые. Ровно та же ошибка, что была в
+   шахте до M60: на экране читалась сетка, а не порода.
+
+   Лечится тем же приёмом. Порода — материал планеты (`planetMat`) поверх пластов,
+   темнеющих с глубиной. Помещения не обводятся по клеткам: все построенные
+   отсеки собираются в ОДИН путь, он вырезается тьмой, и только по его кромке
+   идёт грань со светом сверху и тенью снизу. Пустая клетка не рисуется вовсе —
+   там просто порода, в которой ещё не прорубились. */
+function baseRoomPath(B,X,Y,pad){
+  const P=new Path2D();
+  for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
+    if(!baseCell(B,c,r))continue;
+    P.rect(X(90+c*BCELL_W)+pad,Y(150+r*BCELL_H)+pad,BCELL_W-pad*2,BCELL_H-pad*2);
+  }
+  /* ствол лифта — тоже пустота, и он связывает уровни в одно сооружение */
+  const lx=X(cellX(Math.floor(BASE_COLS/2)));
+  P.rect(lx-13,Y(150),26,baseRows(B)*BCELL_H);
+  return P;
+}
 function drawBase(){
   const S=G.base,B=S.B,P=basePower(B);
   const camx=clamp(S.x-W/2,-40,BASE_COLS*BCELL_W+180-W);
   const camy=clamp(S.y-H/2,-120,baseRows(B)*BCELL_H+260-H);
   const X=x=>x-camx, Y=y=>y-camy;
-  /* небо и грунт: сверху планета, ниже срез породы */
-  const sky=G.sys.planets[B.idx]?G.sys.planets[B.idx].T.sky:[[20,24,34],[8,10,16]];
-  const g=ctx.createLinearGradient(0,Y(0),0,Y(150));
-  g.addColorStop(0,"rgb("+sky[0].join(",")+")");
-  g.addColorStop(1,"rgb("+sky[1].join(",")+")");
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,Y(150));
-  ctx.fillStyle="#2a2119";ctx.fillRect(0,Y(150),W,H);
-  /* слои породы — чтобы глубина читалась */
-  for(let r=0;r<baseRows(B);r++){
-    ctx.fillStyle=r%2?"rgba(0,0,0,.13)":"rgba(255,255,255,.03)";
-    ctx.fillRect(0,Y(150+r*BCELL_H),W,BCELL_H);
+  const pl=G.sys.planets[B.idx];
+  const sky=pl?pl.T.sky:[[20,24,34],[8,10,16]];
+  const pal=pl?pl.T.pal:[[70,58,46],[52,42,34],[38,30,24],[26,20,16],[18,14,11]];
+  const gy=Y(150);                                   // уровень грунта
+  /* ── небо и поверхность ── */
+  const g=ctx.createLinearGradient(0,Y(-140),0,gy);
+  g.addColorStop(0,"rgb("+sky[1].join(",")+")");
+  g.addColorStop(1,"rgb("+sky[0].join(",")+")");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,Math.max(0,gy));
+  /* кромка грунта не линейка: мелкий рельеф из того же шума, что и планета */
+  ctx.beginPath();
+  ctx.moveTo(0,H);ctx.lineTo(0,gy);
+  for(let x=0;x<=W;x+=6){
+    const wob=(fbm2((x+camx)*.008,3.3,B.idx*77+13,3)-.5)*16;
+    ctx.lineTo(x,gy+wob);
   }
-  /* тусклость от нехватки энергии — это и есть «видно, что энергии мало» */
+  ctx.lineTo(W,H);ctx.closePath();
+  const rock=ctx.createLinearGradient(0,gy,0,Y(150+baseRows(B)*BCELL_H+120));
+  rock.addColorStop(0,"rgb("+pal[Math.min(1,pal.length-1)].join(",")+")");
+  rock.addColorStop(.55,"rgb("+pal[Math.min(3,pal.length-1)].join(",")+")");
+  rock.addColorStop(1,"rgb("+pal[pal.length-1].join(",")+")");
+  ctx.fillStyle=rock;ctx.fill();
+  /* пласты: границы гуляют, поэтому это порода, а не полосатый матрас */
+  ctx.save();ctx.clip();
+  for(let r=0;r<baseRows(B)+2;r++){
+    const y0=150+r*BCELL_H*1.15;
+    ctx.beginPath();ctx.moveTo(0,Y(y0));
+    for(let x=0;x<=W;x+=10)ctx.lineTo(x,Y(y0)+(fbm2((x+camx)*.004,r*2.7,B.idx*31+5,3)-.5)*26);
+    ctx.lineTo(W,Y(y0)+BCELL_H*1.15);ctx.lineTo(0,Y(y0)+BCELL_H*1.15);ctx.closePath();
+    ctx.fillStyle=r%2?"rgba(0,0,0,.16)":"rgba(255,255,255,.035)";ctx.fill();
+  }
+  const mat=pl?planetMat(pl):null;
+  if(mat)fillMaterial(mat,camx,camy,.5,.3,null,{x:0,y:Math.max(0,gy),w:W,h:H});
+  /* свет с глубиной сходит на нет */
+  const dk=clamp((camy+H*.5)/2000,0,.42);
+  ctx.fillStyle="rgba(2,4,9,"+(.12+dk).toFixed(3)+")";ctx.fillRect(0,Math.max(0,gy),W,H);
+  ctx.restore();
+  /* ── помещения: один путь на всё сооружение ── */
   const lit=.35+P.eff*.65;
+  const RP=baseRoomPath(B,X,Y,6);
+  ctx.save();
+  /* грань выработки: свет сверху, тень снизу — та же фаска, что у проёма кабины */
+  ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=9;ctx.stroke(RP);
+  ctx.fillStyle="#05070c";ctx.fill(RP);
+  ctx.strokeStyle="rgba(210,226,240,"+(.10+lit*.10).toFixed(2)+")";ctx.lineWidth=1.4;ctx.stroke(RP);
+  ctx.restore();
+  /* свет изнутри ложится на породу вокруг отсеков */
+  ctx.save();ctx.globalCompositeOperation="lighter";
+  for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
+    const cell=baseCell(B,c,r);if(!cell||cell.hp<=0)continue;
+    const cx=X(cellX(c)),cy=Y(cellY(r));
+    if(cx<-260||cx>W+260)continue;
+    const gg=ctx.createRadialGradient(cx,cy,4,cx,cy,BCELL_W*.95);
+    const warm=cell.k==="reactor"?[140,240,255]:[242,178,92];
+    gg.addColorStop(0,"rgba("+warm.join(",")+","+(.10*lit).toFixed(3)+")");
+    gg.addColorStop(1,"rgba("+warm.join(",")+",0)");
+    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(cx,cy,BCELL_W*.95,0,TAU);ctx.fill();
+  }
+  ctx.restore();
+  /* ── модули ── */
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
     const x=X(90+c*BCELL_W),y=Y(150+r*BCELL_H);
     if(x>W+40||x+BCELL_W<-40)continue;
     const cell=baseCell(B,c,r);
-    if(!cell){
-      ctx.strokeStyle="rgba(255,255,255,.05)";ctx.lineWidth=1;
-      ctx.strokeRect(x+6,y+6,BCELL_W-12,BCELL_H-12);
-      continue;
-    }
+    if(!cell)continue;                       // пустая клетка — просто порода
     drawModule(cell.k,x,y,cell.hp>0?lit:.12,c,r,B);
     if(cell.hp<=0){
       /* разбитый отсек: перечёркнут и тёмен — видно, что налёт был не бесплатным */
@@ -407,23 +470,38 @@ function drawBase(){
       ctx.beginPath();ctx.moveTo(x+BCELL_W-14,y+14);ctx.lineTo(x+14,y+BCELL_H-14);ctx.stroke();
     }
   }
-  /* коридор-стяжка между отсеками одного уровня и шахта лифта */
-  ctx.strokeStyle="rgba(242,178,92,"+(.2+lit*.3).toFixed(2)+")";ctx.lineWidth=2;
+  /* коридор-стяжка вдоль пола и ствол лифта */
+  ctx.strokeStyle="rgba(242,178,92,"+(.16+lit*.26).toFixed(2)+")";ctx.lineWidth=2;
   for(let r=0;r<baseRows(B);r++){
     const y=Y(150+r*BCELL_H+BCELL_H*.78);
     ctx.beginPath();ctx.moveTo(X(96),y);ctx.lineTo(X(90+BASE_COLS*BCELL_W-6),y);ctx.stroke();
   }
   const lx=X(cellX(Math.floor(BASE_COLS/2)));
-  ctx.strokeStyle="rgba(150,190,220,.35)";
-  ctx.beginPath();ctx.moveTo(lx,Y(150));ctx.lineTo(lx,Y(150+baseRows(B)*BCELL_H));ctx.stroke();
+  ctx.strokeStyle="rgba(150,190,220,.30)";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(lx-10,Y(150));ctx.lineTo(lx-10,Y(150+baseRows(B)*BCELL_H));
+  ctx.moveTo(lx+10,Y(150));ctx.lineTo(lx+10,Y(150+baseRows(B)*BCELL_H));ctx.stroke();
+  ctx.strokeStyle="rgba(150,190,220,.16)";
+  for(let r=0;r<=baseRows(B)*2;r++){
+    const y=Y(150+r*BCELL_H*.5);
+    ctx.beginPath();ctx.moveTo(lx-10,y);ctx.lineTo(lx+10,y);ctx.stroke();
+  }
   /* астронавт — тот же силуэт, что на поверхности и в шахте */
   ctx.save();ctx.translate(X(S.x),Y(S.y)+26);ctx.scale(.9,.9);
   drawAstronaut({phase:S.walkPhase,amp:Math.abs(cellX(S.cur)-S.x)>2?1:0,walk:false,air:false});
   ctx.restore();
-  /* рамка выбранной ячейки */
+  /* место под застройку: не рамка на каждой клетке, а метка только на выбранной */
   const sx=X(90+S.cur*BCELL_W),sy=Y(150+S.row*BCELL_H);
-  ctx.strokeStyle=(Math.sin(G.t*.12)>0)?"rgba(127,230,216,.95)":"rgba(127,230,216,.4)";
-  ctx.lineWidth=2;ctx.strokeRect(sx+4,sy+4,BCELL_W-8,BCELL_H-8);
+  const on=Math.sin(G.t*.12)>0;
+  ctx.strokeStyle=on?"rgba(127,230,216,.95)":"rgba(127,230,216,.4)";
+  ctx.lineWidth=2;
+  if(baseCell(B,S.cur,S.row))ctx.strokeRect(sx+4,sy+4,BCELL_W-8,BCELL_H-8);
+  else{
+    ctx.setLineDash([7,7]);
+    ctx.strokeRect(sx+10,sy+10,BCELL_W-20,BCELL_H-20);
+    ctx.setLineDash([]);
+    ctx.fillStyle="rgba(127,230,216,.5)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText("МЕСТО ПОД ЗАСТРОЙКУ",sx+BCELL_W/2,sy+BCELL_H/2+3);
+  }
   if(S.menu)drawBuildMenu(S);
 }
 function drawModule(k,x,y,lit,c,r,B){
