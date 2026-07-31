@@ -44,6 +44,10 @@ const WORLD_MOOD={
   ice:["whole","lydian","minor","kumoi","hirajoshi"],
   volcanic:["phrygian","minor","locrian","harmMin","byzantine"],
   toxic:["locrian","phrygian","whole","insen","hirajoshi"],
+  crystal:["whole","lydian","hirajoshi","kumoi","overtone"],
+  jungle:["dorian","mixolydian","pentMaj","lydian","insen"],
+  metal:["locrian","harmMin","minor","phrygian","pentMin"],
+  ruin:["phrygian","harmMin","byzantine","minor","insen"],
   gas:["whole","lydian","major","overtone","pentMaj"]
 };
 /* Характер типа мира: не только лад, но и сам состав слоёв. Раньше планетная
@@ -58,6 +62,13 @@ const WORLD_VOICE={
   ice:     {bpm:[30,42],perc:.06,motif:.3, air:.75,beacon:.45,bass:.28,timbre:"sine"},
   volcanic:{bpm:[62,84],perc:.66,motif:.4, air:.12,beacon:.06,bass:.7, timbre:"sawtooth"},
   toxic:   {bpm:[36,50],perc:.22,motif:.28,air:.6, beacon:.4, bass:.45,timbre:"sawtooth"},
+  /* кристаллический звенит и почти не движется; джунгли — ритм и голоса;
+     металлический глух и низок; руинный держится редкими маяками — эхо
+     чужого маяка, который никто не выключил */
+  crystal: {bpm:[32,44],perc:.10,motif:.5, air:.7, beacon:.55,bass:.3, timbre:"sine"},
+  jungle:  {bpm:[58,78],perc:.6, motif:.5, air:.35,beacon:.14,bass:.5, timbre:"triangle"},
+  metal:   {bpm:[40,54],perc:.34,motif:.22,air:.18,beacon:.2, bass:.75,timbre:"sawtooth"},
+  ruin:    {bpm:[34,48],perc:.16,motif:.34,air:.5, beacon:.5, bass:.5, timbre:"triangle"},
   gas:     {bpm:[28,40],perc:0,  motif:.26,air:.8, beacon:.55,bass:.3, timbre:"sine"}
 };
 function planetScene(p){
@@ -65,7 +76,7 @@ function planetScene(p){
   /* тип мира лежит в p.type (p.kind не существует — на нём музыка всех планет
      схлопывалась в один мрачный лад) */
   const moods=WORLD_MOOD[p.type]||WORLD_MOOD.rocky;
-  const V=WORLD_VOICE[p.type]||WORLD_VOICE.rocky;
+  const V=wtab(p).voice||WORLD_VOICE[p.type]||WORLD_VOICE.rocky;
   /* тоника уводится далеко от космической (-5): планета всегда звучит из другого
      регистра, поэтому переход с орбиты на грунт слышно сразу */
   const root=(r()<.5?-19:-13)+Math.round(r()*3);

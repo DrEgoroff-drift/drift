@@ -1,13 +1,16 @@
 /* ══════════════ поверхность ══════════════ */
 function enterSurface(){
   const L=G.land,tr=L.tr,p=L.p,r=rng(p.seed^0x1234);
-  const deposits=[],plants=[],prof=PROFILE[p.type];
+  /* залежи берутся из профиля ПЛАНЕТЫ (у смешанного мира он свой), а не из
+     таблицы типа: иначе на «ледяной, с вулканами» лежало бы то же, что на
+     чистой ледяной, и смесь осталась бы одной раскраской */
+  const deposits=[],plants=[],prof=p.res||PROFILE[p.type]||[];
   if(prof.length)for(let i=0;i<22;i++){
     const x=120+r()*(tr.W-240),k=prof[Math.floor(r()*prof.length)];
     deposits.push({x,y:groundAt(tr,x)-6,res:k,left:6+Math.floor(r()*11),prog:0});
   }
   /* флора растёт куртинами, а не поштучно по всей планете */
-  const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic";
+  const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.mix==="toxic"||p.mix==="jungle";
   const gp=G.opts.gfx.plants;
   if(flora)for(let c=0;c<Math.round(16*gp);c++){
     const cx=120+r()*(tr.W-240), n=2+Math.floor(r()*6);

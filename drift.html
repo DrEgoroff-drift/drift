@@ -664,6 +664,133 @@ function genDesc(r,sys){
   return bits.join(" · ");
 }
 
+/* ══════════════ смешанные миры ══════════════ */
+/* Двенадцати истинных типов хватает на двенадцать образов, но не на галактику:
+   на четвёртой ледяной планете игрок перестаёт спускаться, потому что уже
+   знает, что увидит. Поэтому истинный мир стал редкостью, а обычная планета
+   собирается из двух: ведущий тип задаёт, чем этот мир ЯВЛЯЕТСЯ, второй —
+   чем он ЗАРАЖЁН. Доля второго (`mw`) от .18 до .48; выше половины смесь
+   перестала бы читаться как «эта планета с примесью той» и стала бы кашей.
+
+   Смешивается всё, из чего складывается впечатление: палитра, шероховатость,
+   тяжесть, небо, набор форм рельефа, разрез грунта, погода, облака, голос
+   музыки и залежи. Смешивать что-то одно бессмысленно — вышла бы ледяная
+   планета в чужих цветах, а не другой мир.
+
+   Никакой персистентности: планета целиком выводится из seed системы, смесь
+   считается там же и в сохранение не попадает. */
+
+/* С кем тип уживается. Список не симметричен намеренно: вулканический океан
+   (острова в пару) — да, океаническая пустыня — нет, это просто океан. */
+const MIX_KIN={
+  terran:  ["ocean","desert","jungle","ice","toxic","ruin","crystal","rocky"],
+  ocean:   ["terran","ice","volcanic","jungle","toxic"],
+  desert:  ["rocky","ruin","crystal","terran","metal","volcanic"],
+  rocky:   ["metal","ice","crystal","desert","volcanic","ruin"],
+  ice:     ["rocky","ocean","crystal","terran","metal"],
+  volcanic:["rocky","toxic","metal","desert","ocean"],
+  toxic:   ["jungle","volcanic","ocean","terran","ruin"],
+  crystal: ["rocky","ice","desert","metal","toxic"],
+  jungle:  ["terran","ocean","toxic","ruin"],
+  metal:   ["rocky","ruin","volcanic","crystal","desert"],
+  ruin:    ["desert","rocky","jungle","terran","metal","crystal"]
+};
+/* палитра смеси: обе растягиваются на общую шкалу и смешиваются по долям —
+   так остаются и полосы ведущего типа, и цвет второго в них */
+function mixPal(a,b,w){
+  const N=6,out=[];
+  for(let i=0;i<N;i++){
+    const t=i/(N-1);
+    const ca=ramp(a,t*.999), cb=ramp(b,t*.999);
+    out.push([lerp(ca[0],cb[0],w),lerp(ca[1],cb[1],w),lerp(ca[2],cb[2],w)]);
+  }
+  return out;
+}
+function mixNum(A,B,w,keys){
+  const o={};for(const k of keys)o[k]=lerp(A[k],B[k],w);return o;
+}
+/* собрать описание мира: ведущий тип, второй и доля второго */
+function makeWorld(ak,bk,w){
+  const A=TYPES[ak];
+  if(!bk||bk===ak||!TYPES[bk])return {T:A,type:ak,mix:null,mw:0};
+  const B=TYPES[bk];
+  const T={
+    ru:A.ru+", "+B.mix,
+    /* атмосферу берёт ведущий: воздух — не оттенок, им либо дышат, либо нет,
+       и «наполовину пригодная» ни о чём игроку не говорит */
+    atm:A.atm,
+    pal:mixPal(A.pal,B.pal,w),
+    rough:lerp(A.rough,B.rough,w),
+    grav:lerp(A.grav,B.grav,w),
+    sky:[[0,1,2].map(j=>lerp(A.sky[0][j],B.sky[0][j],w)),
+         [0,1,2].map(j=>lerp(A.sky[1][j],B.sky[1][j],w))],
+    mix:A.mix,pure:false
+  };
+  return {T,type:ak,mix:bk,mw:w};
+}
+/* выбрать мир для планеты: сначала истинный тип (его выбирает орбита),
+   потом — с какой вероятностью и чем он разбавлен */
+function rollWorld(tk,r){
+  /* гигант не смешивается: смесь — про поверхность, а её у него нет */
+  if(tk==="gas")return {T:TYPES.gas,type:"gas",mix:null,mw:0};
+  const kin=MIX_KIN[tk]||[];
+  /* чистый мир — примерно каждый четвёртый: тогда «настоящая землеподобная»
+     снова событие, а не фон */
+  if(!kin.length||r()<.28)return {T:TYPES[tk],type:tk,mix:null,mw:0};
+  const bk=kin[Math.floor(r()*kin.length)];
+  return makeWorld(tk,bk,.18+r()*.30);
+}
+/* таблицы, разложенные по планете один раз при генерации: дальше их читают
+   рельеф, геология, погода, облака и музыка, не зная про смесь ничего */
+const RELIEF_KEYS=["hill","ridge","mesa","dune","crater","canyon"];
+const CLOUD_KEYS=["n","soft","hi","cir"];
+const VOICE_KEYS=["perc","motif","air","beacon","bass"];
+/* Таблицы раскладываются ЛЕНИВО, при первом обращении, а не в getSystem:
+   стартовая система строится ещё во время загрузки скрипта, когда таблицы
+   облаков, погоды и музыки ниже по файлу и до них не дошло исполнение. */
+function wtab(p){return p._wt?p:worldTables(p);}
+function worldTables(p){
+  p._wt=true;
+  const tk=p.type, mk=p.mix, w=p.mw||0;
+  const relA=RELIEF_MIX[tk]||RELIEF_MIX.terran;
+  const clA=CLOUD_KIND[tk]||CLOUD_KIND.terran;
+  const vA=WORLD_VOICE[tk]||WORLD_VOICE.rocky;
+  if(!mk){
+    p.relief=relA;p.geoTpl=GEO_TPL[tk]||GEO_TPL.terran;
+    p.wxPool=WEATHER_BY_TYPE[tk]||[];p.cloudK=clA;p.voice=vA;
+    return p;
+  }
+  const relB=RELIEF_MIX[mk]||relA, clB=CLOUD_KIND[mk]||clA, vB=WORLD_VOICE[mk]||vA;
+  p.relief=mixNum(relA,relB,w,RELIEF_KEYS);
+  p.cloudK=mixNum(clA,clB,w,CLOUD_KEYS);
+  p.voice=Object.assign(mixNum(vA,vB,w,VOICE_KEYS),{
+    bpm:[lerp(vA.bpm[0],vB.bpm[0],w),lerp(vA.bpm[1],vB.bpm[1],w)],
+    /* тембр не смешивается: полусинус — это просто другой тембр, а не смесь.
+       Его берёт тот тип, чья доля больше */
+    timbre:vA.timbre});
+  /* разрез: слои ведущего, но с примесью пород второго — заметная доля даёт
+     право подмешать вариант в каждый слой, слабая только в рудный горизонт */
+  const gA=GEO_TPL[tk]||GEO_TPL.terran, gB=GEO_TPL[mk]||gA;
+  p.geoTpl=gA.map((L,i)=>{
+    const alt=gB[Math.min(gB.length-1,i)]||[];
+    if(i===gA.length-1)return L;                    // основание общее у всех миров
+    return (w>=.3||i===gA.length-2)?L.concat(alt):L;
+  });
+  /* погода: пул ведущего плюс столько записей второго, сколько тянет его доля */
+  const wA=WEATHER_BY_TYPE[tk]||[], wB=WEATHER_BY_TYPE[mk]||[];
+  p.wxPool=wA.concat(wB.slice(0,Math.round(wB.length*w*2)));
+  return p;
+}
+/* залежи смешанного мира: профиль ведущего плюс верхушка профиля второго */
+function worldRes(tk,mk,w){
+  const out=(PROFILE[tk]||[]).slice();
+  if(mk){
+    const n=Math.max(1,Math.round((PROFILE[mk]||[]).length*w));
+    for(const k of (PROFILE[mk]||[]).slice(0,n))if(out.indexOf(k)<0)out.push(k);
+  }
+  return out.filter((v,j,a)=>a.indexOf(v)===j);
+}
+
 /* ══════════════ ресурсы ══════════════ */
 const RES={
   ice:      {ru:"Лёд",       col:"#a8d8ea",price:7},
@@ -700,6 +827,10 @@ const PROFILE={
   ice:["ice","isotopes","silicon"],
   volcanic:["iron","titan","iridium","crystal"],
   toxic:["organics","isotopes","crystal","silicon"],
+  crystal:["crystal","silicon","iridium","isotopes"],
+  jungle:["organics","silicon","iron","ice"],
+  metal:["iron","titan","iridium","isotopes"],
+  ruin:["silicon","titan","crystal","iron"],
   gas:[]
 };
 /* рецепты промышленной станции: единственный источник сплавов */
@@ -710,16 +841,37 @@ const SMELT=[
 const BELT_RES=["iron","silicon","titan","iridium","isotopes","crystal","ice"];
 
 /* ══════════════ миры ══════════════ */
+/* Двенадцать истинных миров. `mix` — как этот тип называют, когда он в мире
+   вторым: имя смешанной планеты собирается как «<истинная> , <mix второго>»
+   («ледяная, с вулканами»), и это единственная форма, в которой два типа
+   уживаются в одной строке по-русски. Гигант не смешивается ни с чем: у него
+   нет поверхности, а смесь — про то, из чего сложена поверхность. */
 const TYPES={
-  terran:{ru:"землеподобная",pal:[[14,38,72],[22,64,104],[46,102,70],[104,138,72],[186,178,150],[236,240,244]],rough:.55,atm:"плотная, пригодна",sky:[[86,132,168],[26,44,74]],grav:1},
-  ocean:{ru:"океаническая",pal:[[8,26,58],[14,52,96],[28,92,132],[52,132,150],[214,224,226]],rough:.25,atm:"влажная, пригодна",sky:[[92,150,180],[20,48,86]],grav:1.05},
-  desert:{ru:"пустынная",pal:[[92,58,34],[144,96,52],[186,140,78],[214,176,116],[236,214,176]],rough:.7,atm:"разреженная, CO₂",sky:[[196,148,92],[92,54,34]],grav:.85},
-  rocky:{ru:"каменистая",pal:[[26,26,30],[52,52,58],[86,84,88],[126,122,124],[168,164,164]],rough:1,atm:"отсутствует",sky:[[16,16,22],[4,4,8]],grav:.6},
-  ice:{ru:"ледяная",pal:[[36,58,84],[74,106,140],[136,172,200],[196,220,236],[244,250,252]],rough:.5,atm:"азотная, разреженная",sky:[[132,168,198],[28,46,74]],grav:.7},
-  volcanic:{ru:"вулканическая",pal:[[18,10,10],[54,20,14],[112,32,18],[198,74,22],[248,178,64]],rough:.95,atm:"сернистая, токсична",sky:[[104,34,26],[22,8,8]],grav:1.15},
-  toxic:{ru:"токсичная",pal:[[26,34,14],[54,70,22],[96,116,36],[148,164,62],[204,214,120]],rough:.65,atm:"метановая, токсична",sky:[[132,146,64],[34,42,18]],grav:.95},
-  gas:{ru:"газовый гигант",pal:[[52,38,72],[96,68,110],[152,116,138],[204,168,158],[238,216,198]],rough:0,atm:"нет поверхности",sky:[[0,0,0],[0,0,0]],grav:2.4}
+  terran:{ru:"землеподобная",mix:"с зеленью",pal:[[14,38,72],[22,64,104],[46,102,70],[104,138,72],[186,178,150],[236,240,244]],rough:.55,atm:"плотная, пригодна",sky:[[86,132,168],[26,44,74]],grav:1},
+  ocean:{ru:"океаническая",mix:"с морями",pal:[[8,26,58],[14,52,96],[28,92,132],[52,132,150],[214,224,226]],rough:.25,atm:"влажная, пригодна",sky:[[92,150,180],[20,48,86]],grav:1.05},
+  desert:{ru:"пустынная",mix:"с пустынями",pal:[[92,58,34],[144,96,52],[186,140,78],[214,176,116],[236,214,176]],rough:.7,atm:"разреженная, CO₂",sky:[[196,148,92],[92,54,34]],grav:.85},
+  rocky:{ru:"каменистая",mix:"с голым камнем",pal:[[26,26,30],[52,52,58],[86,84,88],[126,122,124],[168,164,164]],rough:1,atm:"отсутствует",sky:[[16,16,22],[4,4,8]],grav:.6},
+  ice:{ru:"ледяная",mix:"со льдами",pal:[[36,58,84],[74,106,140],[136,172,200],[196,220,236],[244,250,252]],rough:.5,atm:"азотная, разреженная",sky:[[132,168,198],[28,46,74]],grav:.7},
+  volcanic:{ru:"вулканическая",mix:"с вулканами",pal:[[18,10,10],[54,20,14],[112,32,18],[198,74,22],[248,178,64]],rough:.95,atm:"сернистая, токсична",sky:[[104,34,26],[22,8,8]],grav:1.15},
+  toxic:{ru:"токсичная",mix:"с ядовитым воздухом",pal:[[26,34,14],[54,70,22],[96,116,36],[148,164,62],[204,214,120]],rough:.65,atm:"метановая, токсична",sky:[[132,146,64],[34,42,18]],grav:.95},
+  /* ── четыре поздних мира ── */
+  /* Кристаллический: не «камень другого цвета», а поле граней. Палитра идёт
+     от почти чёрного основания к белому свечению на изломе — иначе грани
+     сливаются в однотонный склон. */
+  crystal:{ru:"кристаллическая",mix:"с друзами",pal:[[16,14,34],[42,32,72],[86,62,124],[146,116,196],[206,186,240],[246,240,255]],rough:.85,atm:"разреженная, инертная",sky:[[92,74,142],[18,14,34]],grav:.8},
+  /* Джунгли — не землеподобная с большим числом кустов: там тёмный полог,
+     свет пробивается пятнами, и почва почти не видна. */
+  jungle:{ru:"джунглевая",mix:"с джунглями",pal:[[8,22,16],[16,48,28],[30,84,42],[68,124,52],[126,166,72],[196,206,140]],rough:.6,atm:"влажная и душная, пригодна",sky:[[108,146,110],[24,46,36]],grav:1.1},
+  /* Металлический: голое ядро без мантии. Серо-стальной с ржавчиной в низах,
+     блик почти зеркальный — по нему тип и опознают с орбиты. */
+  metal:{ru:"металлическая",mix:"с рудными полями",pal:[[22,20,20],[58,50,46],[104,96,92],[152,148,150],[196,198,204],[232,236,242]],rough:.9,atm:"отсутствует",sky:[[18,18,24],[4,4,8]],grav:1.3},
+  /* Руинный мир — мёртвая цивилизация под пылью: охра и бетонная серость,
+     ровные ступени рельефа вместо природных склонов. */
+  ruin:{ru:"руинная",mix:"с руинами",pal:[[28,26,24],[68,60,50],[112,100,84],[156,142,120],[196,184,160],[226,218,200]],rough:.7,atm:"разреженная, пыльная",sky:[[152,134,108],[42,36,30]],grav:.9},
+  gas:{ru:"газовый гигант",mix:"",pal:[[52,38,72],[96,68,110],[152,116,138],[204,168,158],[238,216,198]],rough:0,atm:"нет поверхности",sky:[[0,0,0],[0,0,0]],grav:2.4}
 };
+/* истинные миры, между которыми возможна смесь (гигант — вне) */
+const MIX_TYPES=Object.keys(TYPES).filter(k=>k!=="gas");
 const STAR_CLASS=[
   {ru:"красный карлик",col:"#ff7a52",t:.5},
   {ru:"оранжевая",col:"#ffab5e",t:.7},
@@ -1718,38 +1870,51 @@ function getSystem(sx,sy){
   for(let i=0;i<n;i++){
     orbit+=200+r()*300;
     const far=orbit/2200, u=r();
+    /* Орбита решает, чем мир может быть: у звезды сорванная мантия и лава,
+       на середине вода и жизнь, снаружи лёд и газ. Кристаллические поля растут
+       там, где холодно и тихо, руинные миры не привязаны ни к чему — чужая
+       цивилизация селилась, где хотела. */
     let tk;
-    if(far>.62) tk=u<.5?"gas":(u<.8?"ice":"rocky");
-    else if(far<.2) tk=u<.5?"volcanic":(u<.8?"rocky":"desert");
-    else tk=u<.24?"terran":(u<.4?"ocean":(u<.6?"desert":(u<.78?"rocky":"toxic")));
-    const T=TYPES[tk], pseed=hashi(seed,i*7919,31337), pr2=rng(pseed);
+    if(far>.62) tk=u<.45?"gas":(u<.70?"ice":(u<.82?"rocky":(u<.92?"crystal":"ruin")));
+    /* Порог горячей зоны был .2, а ближайшая орбита даёт far≈.25 — то есть
+       вулканических миров в игре не существовало вовсе, хотя таблицы, музыка
+       и погода для них были написаны. Нашлось проверкой «встретились все типы». */
+    else if(far<.30) tk=u<.42?"volcanic":(u<.62?"rocky":(u<.78?"desert":(u<.92?"metal":"crystal")));
+    else tk=u<.18?"terran":(u<.30?"ocean":(u<.44?"desert":(u<.58?"rocky":
+        (u<.70?"toxic":(u<.82?"jungle":(u<.91?"ruin":(u<.96?"metal":"crystal")))))));
+    const pseed=hashi(seed,i*7919,31337), pr2=rng(pseed);
+    /* смесь берёт числа из своего потока (pr2), чтобы не сдвинуть орбиты */
+    const Wd=rollWorld(tk,pr2), T=Wd.T;
     /* газовые гиганты заметно крупнее каменистых миров — пропорции читаются на глаз */
     const radius=tk==="gas"?(78+r()*58):(18+r()*30);
     const nMoons=tk==="gas"?Math.floor(pr2()*4):(pr2()<.35?1:0);
     const moons=[];
     for(let m=0;m<nMoons;m++){
       const mseed=hashi(pseed,m*1319+7,0x00E), mr=rng(mseed);
-      const mtk=pick(["rocky","ice"],mr);
+      /* спутник — обломок или ледышка, изредка рудный или руинный: сложных
+         миров размером в шесть пикселей не бывает */
+      const mtk=pick(["rocky","rocky","ice","ice","metal","ruin"],mr);
+      const mW=rollWorld(mtk,mr);
       moons.push({
-        key:key+":"+i+"m"+m,parentIdx:i,idx:m,type:mtk,T:TYPES[mtk],seed:mseed,
+        key:key+":"+i+"m"+m,parentIdx:i,idx:m,type:mW.type,mix:mW.mix,mw:mW.mw,T:mW.T,seed:mseed,
         name:sys.name+" "+ROMAN[i]+"-"+(m+1),
         radius:3+mr()*6,orbit:radius*(2.2+m*1.6)+mr()*20,
         ecc:mr()*.12,argp:mr()*TAU,
         ang:mr()*TAU,spd:(mr()<.5?-1:1)*.0026/Math.pow(1+m,1.1),
-        rough:clamp(TYPES[mtk].rough*(.6+mr()*.8),0,1.2),
+        rough:clamp(mW.T.rough*(.6+mr()*.8),0,1.2),
         moons:[],x:0,y:0,vx:0,vy:0,tex:null,
-        res:PROFILE[mtk].filter((v,j,a)=>a.indexOf(v)===j)
+        res:worldRes(mW.type,mW.mix,mW.mw)
       });
     }
     sys.planets.push({
-      key:key+":"+i,idx:i,type:tk,T,seed:pseed,
+      key:key+":"+i,idx:i,type:Wd.type,mix:Wd.mix,mw:Wd.mw,T,seed:pseed,
       name:sys.name+" "+ROMAN[i],radius,orbit,
       ecc:.04+pr2()*.28,argp:pr2()*TAU,
       /* орбитальная скорость снижена в разы против прежней — планеты кружат неспешно */
       ang:pr2()*TAU,spd:(pr2()<.5?-1:1)*0.00014/Math.pow(orbit/500,1.4),
       rough:clamp(T.rough*(.6+pr2()*.8),0,1.2),
       moons,x:0,y:0,vx:0,vy:0,tex:null,
-      res:PROFILE[tk].filter((v,j,a)=>a.indexOf(v)===j)
+      res:worldRes(Wd.type,Wd.mix,Wd.mw)
     });
   }
   if(r()<.78){
@@ -1841,12 +2006,19 @@ const RELIEF_MIX={
   ice:     {hill:.9, ridge:.7,  mesa:.35, dune:.35, crater:.45, canyon:.6},
   volcanic:{hill:.8, ridge:1,   mesa:.25, dune:0,   crater:.9,  canyon:.85},
   toxic:   {hill:1,  ridge:.45, mesa:.4,  dune:.25, crater:.3,  canyon:.55},
+  /* кристаллический — частокол острых гряд почти без пологого; джунгли —
+     мягкие валы с врезанными руслами; металлический — битый кратерами шар
+     без осадочных плато; руинный — ступени плато, как разрушенные террасы */
+  crystal: {hill:.35,ridge:1.2, mesa:.6,  dune:0,   crater:.5,  canyon:.4},
+  jungle:  {hill:1.1,ridge:.4,  mesa:.2,  dune:0,   crater:.1,  canyon:.9},
+  metal:   {hill:.6, ridge:.8,  mesa:.3,  dune:0,   crater:1.3, canyon:.35},
+  ruin:    {hill:.7, ridge:.35, mesa:1.1, dune:.4,  crater:.5,  canyon:.6},
   gas:     {hill:1,  ridge:0,   mesa:0,   dune:0,   crater:0,   canyon:0}
 };
 function genTerrain(p){
   const N=1500,step=6,base=900,h=new Float32Array(N);
   const r=rng(p.seed^0x5f3b);
-  const M=RELIEF_MIX[p.type]||RELIEF_MIX.terran;
+  const M=wtab(p).relief||RELIEF_MIX[p.type]||RELIEF_MIX.terran;
   const amp=60+p.rough*300;
   /* каждой форме — свой множитель, чтобы планеты одного типа не повторялись */
   const w={
@@ -2300,6 +2472,10 @@ const WORLD_MOOD={
   ice:["whole","lydian","minor","kumoi","hirajoshi"],
   volcanic:["phrygian","minor","locrian","harmMin","byzantine"],
   toxic:["locrian","phrygian","whole","insen","hirajoshi"],
+  crystal:["whole","lydian","hirajoshi","kumoi","overtone"],
+  jungle:["dorian","mixolydian","pentMaj","lydian","insen"],
+  metal:["locrian","harmMin","minor","phrygian","pentMin"],
+  ruin:["phrygian","harmMin","byzantine","minor","insen"],
   gas:["whole","lydian","major","overtone","pentMaj"]
 };
 /* Характер типа мира: не только лад, но и сам состав слоёв. Раньше планетная
@@ -2314,6 +2490,13 @@ const WORLD_VOICE={
   ice:     {bpm:[30,42],perc:.06,motif:.3, air:.75,beacon:.45,bass:.28,timbre:"sine"},
   volcanic:{bpm:[62,84],perc:.66,motif:.4, air:.12,beacon:.06,bass:.7, timbre:"sawtooth"},
   toxic:   {bpm:[36,50],perc:.22,motif:.28,air:.6, beacon:.4, bass:.45,timbre:"sawtooth"},
+  /* кристаллический звенит и почти не движется; джунгли — ритм и голоса;
+     металлический глух и низок; руинный держится редкими маяками — эхо
+     чужого маяка, который никто не выключил */
+  crystal: {bpm:[32,44],perc:.10,motif:.5, air:.7, beacon:.55,bass:.3, timbre:"sine"},
+  jungle:  {bpm:[58,78],perc:.6, motif:.5, air:.35,beacon:.14,bass:.5, timbre:"triangle"},
+  metal:   {bpm:[40,54],perc:.34,motif:.22,air:.18,beacon:.2, bass:.75,timbre:"sawtooth"},
+  ruin:    {bpm:[34,48],perc:.16,motif:.34,air:.5, beacon:.5, bass:.5, timbre:"triangle"},
   gas:     {bpm:[28,40],perc:0,  motif:.26,air:.8, beacon:.55,bass:.3, timbre:"sine"}
 };
 function planetScene(p){
@@ -2321,7 +2504,7 @@ function planetScene(p){
   /* тип мира лежит в p.type (p.kind не существует — на нём музыка всех планет
      схлопывалась в один мрачный лад) */
   const moods=WORLD_MOOD[p.type]||WORLD_MOOD.rocky;
-  const V=WORLD_VOICE[p.type]||WORLD_VOICE.rocky;
+  const V=wtab(p).voice||WORLD_VOICE[p.type]||WORLD_VOICE.rocky;
   /* тоника уводится далеко от космической (-5): планета всегда звучит из другого
      регистра, поэтому переход с орбиты на грунт слышно сразу */
   const root=(r()<.5?-19:-13)+Math.round(r()*3);
@@ -7494,12 +7677,16 @@ const GEO_TPL={
   ice:     [["snow"],["ice"],["ice","sed"],["rock"],["crystal"],["bedrock"]],
   volcanic:[["ash"],["basalt"],["basalt","rock"],["metal"],["magma"],["bedrock"]],
   toxic:   [["silt","soil"],["sed"],["crystal","sed"],["rock"],["metal"],["bedrock"]],
+  crystal: [["sand","ash"],["crystal"],["crystal","rock"],["rock"],["crystal","metal"],["bedrock"]],
+  jungle:  [["soil"],["soil","silt"],["sed"],["sandst","rock"],["metal","crystal"],["bedrock"]],
+  metal:   [["ash"],["metal"],["metal","rock"],["basalt"],["metal","crystal"],["bedrock"]],
+  ruin:    [["sand","ash"],["sed"],["rock","sandst"],["metal","rock"],["crystal","metal"],["bedrock"]],
   gas:     [["ash"],["bedrock"]]
 };
 function geologyOf(p){
   if(p.geo)return p.geo;
   const r=rng((p.seed^0x6E01)>>>0);
-  const tpl=GEO_TPL[p.type]||GEO_TPL.terran;
+  const tpl=wtab(p).geoTpl||GEO_TPL[p.type]||GEO_TPL.terran;
   const pal=p.T.pal;
   const out=[];
   let d=0;
@@ -8668,11 +8855,18 @@ const WEATHER_BY_TYPE={
   ocean:   ["rain","fog","rain"],
   toxic:   ["acid","spore","fog"],
   rocky:   [],
+  /* у кристаллического воздух почти пуст — только редкая пыль от осыпей;
+     джунгли живут дождём и спорами; металлический безвоздушен; руинный
+     засыпан своей же пылью */
+  crystal: ["fog","dust"],
+  jungle:  ["rain","spore","rain","fog"],
+  metal:   [],
+  ruin:    ["dust","dust","fog"],
   gas:     []
 };
 function weatherOf(p){
   if(p.wx)return p.wx;
-  const pool=(p.T.atm==="отсутствует")?[]:(WEATHER_BY_TYPE[p.type]||[]);
+  const pool=(p.T.atm==="отсутствует")?[]:(wtab(p).wxPool||WEATHER_BY_TYPE[p.type]||[]);
   if(!pool.length){p.wx={kind:null};return p.wx;}
   const r=rng((p.seed^0x3EA7)>>>0);
   p.wx={kind:pool[Math.floor(r()*pool.length)],
@@ -8870,6 +9064,10 @@ const CLOUD_KIND={
   volcanic:{n:.75, soft:.30,hi:.30,cir:.6},
   toxic:   {n:1.20,soft:.44,hi:.24,cir:1.1},
   rocky:   {n:.30, soft:.28,hi:.34,cir:.5},
+  crystal: {n:.22, soft:.22,hi:.38,cir:1.6},
+  jungle:  {n:1.45,soft:.46,hi:.20,cir:.8},
+  metal:   {n:.10, soft:.24,hi:.36,cir:.3},
+  ruin:    {n:.45, soft:.30,hi:.32,cir:.9},
   gas:     {n:1.50,soft:.50,hi:.20,cir:1.5}
 };
 const CLOUD_SPR=6;        // столько силуэтов пекётся на планету
@@ -8969,7 +9167,7 @@ function cirrusSprite(p,seed){
 }
 function cloudsOf(p){
   if(p.clouds)return p.clouds;
-  const K=CLOUD_KIND[p.type]||CLOUD_KIND.terran;
+  const K=wtab(p).cloudK||CLOUD_KIND[p.type]||CLOUD_KIND.terran;
   const sprites=[];
   for(let i=0;i<CLOUD_SPR;i++)
     sprites.push(cloudSprite(p,hashi(p.seed,i,0x0C10D),K.soft*(i%2?1:.78)));
@@ -9398,16 +9596,16 @@ function drawLander(broken,fire){
    Под каждой достопримечательностью рельеф выравнивается — иначе постройка
    висит на зубцах и сразу читается как наклейка. */
 const POI_KINDS=[
-  {k:"wreck",   ru:"ОСТОВ КОРАБЛЯ",  on:["rocky","desert","ice","terran","toxic","volcanic","ocean"],w:1.3,h:150,flat:420},
-  {k:"temple",  ru:"ХРАМ",           on:["terran","toxic","desert","ocean"],                        w:1.0,h:220,flat:360},
-  {k:"elevator",ru:"КОСМИЧЕСКИЙ ЛИФТ",on:["terran","desert","toxic","ice","ocean"],                  w:.7, h:900,flat:260},
-  {k:"crystals",ru:"КРИСТАЛЛЫ",      on:["ice","rocky","toxic","volcanic","desert"],                 w:1.2,h:280,flat:300},
-  {k:"ring",    ru:"УСКОРИТЕЛЬ",     on:["rocky","ice","desert","volcanic"],                         w:.8, h:340,flat:520},
-  {k:"anomaly", ru:"АНОМАЛИЯ",       on:["rocky","toxic","volcanic","ice","terran","desert","ocean"],w:.6, h:300,flat:240},
-  {k:"monolith",ru:"МОНОЛИТ",        on:["rocky","ice","desert","terran","ocean","toxic","volcanic"],w:.9, h:260,flat:180},
-  {k:"factory", ru:"ЗАВОД",          on:["volcanic","toxic","desert","rocky"],                       w:1.0,h:250,flat:440},
-  {k:"portal",  ru:"ВРАТА",          on:["terran","toxic","ice","ocean","volcanic"],                 w:.5, h:230,flat:220},
-  {k:"observ",  ru:"ОБСЕРВАТОРИЯ",   on:["rocky","ice","desert","terran"],                           w:.9, h:190,flat:300}
+  {k:"wreck",   ru:"ОСТОВ КОРАБЛЯ",  on:["rocky","desert","ice","terran","toxic","volcanic","ocean","crystal","jungle","metal","ruin"],w:1.3,h:150,flat:420},
+  {k:"temple",  ru:"ХРАМ",           on:["terran","toxic","desert","ocean","jungle","ruin"],         w:1.0,h:220,flat:360},
+  {k:"elevator",ru:"КОСМИЧЕСКИЙ ЛИФТ",on:["terran","desert","toxic","ice","ocean","jungle","ruin","metal"],w:.7,h:900,flat:260},
+  {k:"crystals",ru:"КРИСТАЛЛЫ",      on:["ice","rocky","toxic","volcanic","desert","crystal","metal"],w:1.2,h:280,flat:300},
+  {k:"ring",    ru:"УСКОРИТЕЛЬ",     on:["rocky","ice","desert","volcanic","metal","ruin"],          w:.8, h:340,flat:520},
+  {k:"anomaly", ru:"АНОМАЛИЯ",       on:["rocky","toxic","volcanic","ice","terran","desert","ocean","crystal","jungle","metal","ruin"],w:.6,h:300,flat:240},
+  {k:"monolith",ru:"МОНОЛИТ",        on:["rocky","ice","desert","terran","ocean","toxic","volcanic","crystal","jungle","metal","ruin"],w:.9,h:260,flat:180},
+  {k:"factory", ru:"ЗАВОД",          on:["volcanic","toxic","desert","rocky","metal","ruin"],        w:1.0,h:250,flat:440},
+  {k:"portal",  ru:"ВРАТА",          on:["terran","toxic","ice","ocean","volcanic","crystal","jungle","ruin"],w:.5,h:230,flat:220},
+  {k:"observ",  ru:"ОБСЕРВАТОРИЯ",   on:["rocky","ice","desert","terran","crystal","metal","ruin"],  w:.9, h:190,flat:300}
 ];
 /* сгенерировать и вписать в рельеф; вызывается один раз из startLanding */
 function genPOI(tr,p){
@@ -9415,7 +9613,9 @@ function genPOI(tr,p){
   tr.poi=[];
   if(p.type==="gas")return tr.poi;
   const r=rng(p.seed^0x9E37);
-  const pool=POI_KINDS.filter(k=>k.on.indexOf(p.type)>=0);
+  /* смешанный мир принимает находки обоих родителей: руины на ледяной планете
+     объясняются именно тем, что она наполовину руинная */
+  const pool=POI_KINDS.filter(k=>k.on.indexOf(p.type)>=0||(p.mix&&k.on.indexOf(p.mix)>=0));
   if(!pool.length)return tr.poi;
   const n=2+Math.floor(r()*3);
   const put=[];
@@ -10068,7 +10268,7 @@ function planetBiome(p){
   for(let i=0;i<domN;i++)bias[Math.floor(r()*PLANT_KINDS)]+=1.2+r()*1.6;
   /* у безвоздушных и вулканических миров крупных форм почти нет: нечем дышать
      и нечему расти большим — это читается как характер места, а не как правило */
-  const harsh=p.T.atm==="отсутствует"||p.type==="volcanic";
+  const harsh=p.T.atm==="отсутствует"||p.type==="volcanic"||p.type==="crystal"||p.type==="metal";
   p.biome={kindBias:bias,scale:(harsh?.5:.7)+r()*(harsh?.5:.9),
     giantChance:harsh?r()*.03:r()*.14,hueBias:r()};
   return p.biome;
@@ -12123,13 +12323,16 @@ function drawBuildMenu(S){
 /* ══════════════ поверхность ══════════════ */
 function enterSurface(){
   const L=G.land,tr=L.tr,p=L.p,r=rng(p.seed^0x1234);
-  const deposits=[],plants=[],prof=PROFILE[p.type];
+  /* залежи берутся из профиля ПЛАНЕТЫ (у смешанного мира он свой), а не из
+     таблицы типа: иначе на «ледяной, с вулканами» лежало бы то же, что на
+     чистой ледяной, и смесь осталась бы одной раскраской */
+  const deposits=[],plants=[],prof=p.res||PROFILE[p.type]||[];
   if(prof.length)for(let i=0;i<22;i++){
     const x=120+r()*(tr.W-240),k=prof[Math.floor(r()*prof.length)];
     deposits.push({x,y:groundAt(tr,x)-6,res:k,left:6+Math.floor(r()*11),prog:0});
   }
   /* флора растёт куртинами, а не поштучно по всей планете */
-  const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic";
+  const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.mix==="toxic"||p.mix==="jungle";
   const gp=G.opts.gfx.plants;
   if(flora)for(let c=0;c<Math.round(16*gp);c++){
     const cx=120+r()*(tr.W-240), n=2+Math.floor(r()*6);
@@ -13162,7 +13365,7 @@ function oreNode(D,nc,nr){
   if(key in cache)return cache[key];
   const r=rng(hashi(D.p.seed+nc*92821,nr*68111,0xA10E));
   const ti=tierAt(nr*ORE_NODE_H);
-  const pool=PROFILE[D.p.type].concat(DEPTH_TIERS[ti].extra);
+  const pool=(D.p.res||PROFILE[D.p.type]||[]).concat(DEPTH_TIERS[ti].extra);
   const exists=pool.length>0&&r()<.42;
   const node=exists?{
     cx:nc*ORE_NODE_W+1.5+r()*(ORE_NODE_W-3),
@@ -17682,11 +17885,20 @@ const $nav=document.getElementById("navbtn"),$fire=document.getElementById("fire
    будит панель на пару секунд. Тревога держит её открытой, пока не пройдёт.
    Состояние хранится тут, а не в `G`: это оформление, а не игра, и в
    сохранение ему нельзя. */
-let HUD_SIG="", HUD_T=0;
+/* Порог на канал: изменение мельче — расход, крупнее — событие. Расход
+   топлива за кадр — сотые доли, попадание по корпусу и любая монета — целые
+   единицы, поэтому порог посередине (0.75) отделяет одно от другого начисто. */
+const HUD_STEP=[.75,.75,.5,.5,1.5];
+let HUD_PREV=null, HUD_T=0;
 const $hudp=document.querySelector(".hud");
-function hudWake(sig,alarm){
-  if(sig!==HUD_SIG){HUD_SIG=sig;HUD_T=performance.now();}
-  const live=alarm||performance.now()-HUD_T<2400;
+function hudWake(vals,alarm){
+  const now=performance.now();
+  if(HUD_PREV){
+    for(let i=0;i<vals.length;i++)
+      if(Math.abs(vals[i]-HUD_PREV[i])>=HUD_STEP[i]){HUD_T=now;break;}
+  }else HUD_T=now;
+  HUD_PREV=vals;
+  const live=alarm||now-HUD_T<2400;
   if($hudp)$hudp.classList.toggle("live",live);
 }
 function hud(){
@@ -17715,13 +17927,13 @@ function hud(){
      Повод — изменившееся показание, тревога или открытый режим, где приборы
      и есть содержание кадра. Панель, которая горит всегда, перестаёт читаться
      как сообщение и становится частью рамки экрана. */
-  /* Скафандр входит в повод огрублённым до пяти процентов: он течёт каждый
-     кадр, и от точного значения панель горела бы на поверхности всегда — то
-     есть не гасла бы там, где сидит дольше всего. А на исходе он тревога,
-     и тогда панель открыта и без всяких поводов. */
+  /* Поводом считается СКАЧОК показания, а не любое его изменение. Топливо и
+     скафандр текут непрерывно: на сравнении округлённых строк панель раз в
+     несколько секунд вспыхивала и гасла — сверху экрана шло мигание, которое
+     ничего не сообщало. Плавный расход теперь молчит, а удар по корпусу,
+     монета и груз — целые единицы, они панель будят. */
   const suit=G.surf?G.surf.suit:100;
-  hudWake(Math.round(G.fuel)+"|"+Math.round(G.hull)+"|"+held()+"|"+Math.round(G.credits)+
-    "|"+Math.round(suit/5),
+  hudWake([G.fuel,G.hull,held(),G.credits,suit],
     fr<.2||hr<.3||cr>=1||suit<25);
   /* пока открыт любой экран, приборы и кнопки полёта не нужны: они просвечивали
      сквозь экран и читались как брак */

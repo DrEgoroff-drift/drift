@@ -9,16 +9,16 @@
    Под каждой достопримечательностью рельеф выравнивается — иначе постройка
    висит на зубцах и сразу читается как наклейка. */
 const POI_KINDS=[
-  {k:"wreck",   ru:"ОСТОВ КОРАБЛЯ",  on:["rocky","desert","ice","terran","toxic","volcanic","ocean"],w:1.3,h:150,flat:420},
-  {k:"temple",  ru:"ХРАМ",           on:["terran","toxic","desert","ocean"],                        w:1.0,h:220,flat:360},
-  {k:"elevator",ru:"КОСМИЧЕСКИЙ ЛИФТ",on:["terran","desert","toxic","ice","ocean"],                  w:.7, h:900,flat:260},
-  {k:"crystals",ru:"КРИСТАЛЛЫ",      on:["ice","rocky","toxic","volcanic","desert"],                 w:1.2,h:280,flat:300},
-  {k:"ring",    ru:"УСКОРИТЕЛЬ",     on:["rocky","ice","desert","volcanic"],                         w:.8, h:340,flat:520},
-  {k:"anomaly", ru:"АНОМАЛИЯ",       on:["rocky","toxic","volcanic","ice","terran","desert","ocean"],w:.6, h:300,flat:240},
-  {k:"monolith",ru:"МОНОЛИТ",        on:["rocky","ice","desert","terran","ocean","toxic","volcanic"],w:.9, h:260,flat:180},
-  {k:"factory", ru:"ЗАВОД",          on:["volcanic","toxic","desert","rocky"],                       w:1.0,h:250,flat:440},
-  {k:"portal",  ru:"ВРАТА",          on:["terran","toxic","ice","ocean","volcanic"],                 w:.5, h:230,flat:220},
-  {k:"observ",  ru:"ОБСЕРВАТОРИЯ",   on:["rocky","ice","desert","terran"],                           w:.9, h:190,flat:300}
+  {k:"wreck",   ru:"ОСТОВ КОРАБЛЯ",  on:["rocky","desert","ice","terran","toxic","volcanic","ocean","crystal","jungle","metal","ruin"],w:1.3,h:150,flat:420},
+  {k:"temple",  ru:"ХРАМ",           on:["terran","toxic","desert","ocean","jungle","ruin"],         w:1.0,h:220,flat:360},
+  {k:"elevator",ru:"КОСМИЧЕСКИЙ ЛИФТ",on:["terran","desert","toxic","ice","ocean","jungle","ruin","metal"],w:.7,h:900,flat:260},
+  {k:"crystals",ru:"КРИСТАЛЛЫ",      on:["ice","rocky","toxic","volcanic","desert","crystal","metal"],w:1.2,h:280,flat:300},
+  {k:"ring",    ru:"УСКОРИТЕЛЬ",     on:["rocky","ice","desert","volcanic","metal","ruin"],          w:.8, h:340,flat:520},
+  {k:"anomaly", ru:"АНОМАЛИЯ",       on:["rocky","toxic","volcanic","ice","terran","desert","ocean","crystal","jungle","metal","ruin"],w:.6,h:300,flat:240},
+  {k:"monolith",ru:"МОНОЛИТ",        on:["rocky","ice","desert","terran","ocean","toxic","volcanic","crystal","jungle","metal","ruin"],w:.9,h:260,flat:180},
+  {k:"factory", ru:"ЗАВОД",          on:["volcanic","toxic","desert","rocky","metal","ruin"],        w:1.0,h:250,flat:440},
+  {k:"portal",  ru:"ВРАТА",          on:["terran","toxic","ice","ocean","volcanic","crystal","jungle","ruin"],w:.5,h:230,flat:220},
+  {k:"observ",  ru:"ОБСЕРВАТОРИЯ",   on:["rocky","ice","desert","terran","crystal","metal","ruin"],  w:.9, h:190,flat:300}
 ];
 /* сгенерировать и вписать в рельеф; вызывается один раз из startLanding */
 function genPOI(tr,p){
@@ -26,7 +26,9 @@ function genPOI(tr,p){
   tr.poi=[];
   if(p.type==="gas")return tr.poi;
   const r=rng(p.seed^0x9E37);
-  const pool=POI_KINDS.filter(k=>k.on.indexOf(p.type)>=0);
+  /* смешанный мир принимает находки обоих родителей: руины на ледяной планете
+     объясняются именно тем, что она наполовину руинная */
+  const pool=POI_KINDS.filter(k=>k.on.indexOf(p.type)>=0||(p.mix&&k.on.indexOf(p.mix)>=0));
   if(!pool.length)return tr.poi;
   const n=2+Math.floor(r()*3);
   const put=[];
