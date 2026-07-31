@@ -52,8 +52,14 @@ function renderCantina(){
     "их домен — зато рутину держат сами.<br>кто сюда заходит, зависит от станции: "+
     T.ru.toLowerCase()+" собирает своих</s></div>"));
   G.cantina=G.cantina&&G.cantina.key===G.sys.key?G.cantina:{key:G.sys.key,list:stationMgrs(G.sys),talked:{}};
-  for(const m of G.cantina.list){
-    if(G.mgrs.some(x=>x.seed===m.seed))continue;
+  const free=G.cantina.list.filter(m=>!G.mgrs.some(x=>x.seed===m.seed));
+  if(free.length)$body.appendChild(el("div","sec",
+    cantSel?"ТКНИТЕ ПО НЕМУ ЕЩЁ РАЗ ИЛИ ПО ДРУГОМУ — ВЕРНЁТЕСЬ В ЗАЛ"
+           :"ТКНИТЕ ПО ЧЕЛОВЕКУ В ЗАЛЕ — ОТКРОЕТСЯ ЕГО КАРТОЧКА"));
+  /* ── зал ── */
+  if(free.length)cantinaScene(free);
+  for(const m of free){
+    if(cantSel&&m.id!==cantSel)continue;      // выбрали человека — показываем его
     const R=MGR_ROLES[m.role],taken=mgrTaken(m.role),fee=mgrFee(m);
     const spoke=!!G.cantina.talked[m.id];
     const known=spoke||mgrPerkOf("cmd","read")||relicDeep("ledger");
@@ -77,7 +83,53 @@ function renderCantina(){
     r.appendChild(b);
     $body.appendChild(r);
   }
+  if(!free.length)
+    $body.appendChild(el("div","row","<div class='nm'><s>зал пуст: всех, кто тут сидел, "+
+      "вы уже наняли. Состав меняется сам — загляните позже или на другой станции.</s></div>"));
   $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
+}
+/* Зал: канва во всю ширину панели, по сидящему тыкают. Перерисовывается своим
+   rAF, пока канва жива и вкладка та же, — иначе цикл продолжал бы крутиться
+   после ухода со вкладки и жёг бы кадр впустую. */
+let cantSel=null, cantHover=null;
+function cantinaScene(list){
+  const wrap=el("div","");
+  wrap.style.cssText="margin:6px 0 10px;line-height:0;position:relative";
+  const cn=document.createElement("canvas");
+  const cssW=Math.max(360,Math.min(($body.clientWidth||640)-4,980));
+  const cssH=Math.round(clamp(cssW*.30,190,260));
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  cn.width=Math.round(cssW*dpr);cn.height=Math.round(cssH*dpr);
+  cn.style.cssText="width:100%;height:"+cssH+"px;display:block;border-radius:8px;"+
+    "border:1px solid rgba(120,150,170,.25);cursor:pointer;touch-action:manipulation";
+  wrap.appendChild(cn);
+  $body.appendChild(wrap);
+  if(cantSel&&!list.some(m=>m.id===cantSel))cantSel=null;
+  let hits=[];
+  const pick=ev=>{
+    const r=cn.getBoundingClientRect();
+    const px=(ev.clientX-r.left)/r.width*cn.width/dpr;
+    const py=(ev.clientY-r.top)/r.height*cn.height/dpr;
+    return (hits.find(h=>px>=h.x&&px<=h.x+h.w&&py>=h.y&&py<=h.y+h.h)||{}).id||null;
+  };
+  cn.onmousemove=ev=>{cantHover=pick(ev);};
+  cn.onmouseleave=()=>{cantHover=null;};
+  cn.onclick=ev=>{
+    const id=pick(ev);
+    /* повторное касание того же человека закрывает карточку — так зал снова
+       виден целиком, и не приходится искать кнопку «назад» */
+    cantSel=(id&&id===cantSel)?null:id;
+    sfx("ui");renderTab();
+  };
+  const frame=()=>{
+    if(!cn.isConnected||tab!=="cantina")return;
+    const c=cn.getContext("2d");
+    c.setTransform(dpr,0,0,dpr,0,0);
+    hits=drawCantinaRoom({width:cn.width/dpr,height:cn.height/dpr,getContext:()=>c},
+                          list,cantSel,cantHover);
+    requestAnimationFrame(frame);
+  };
+  frame();
 }
 /* ── экран ШТАБ ── */
 function hqBtnTick(){
