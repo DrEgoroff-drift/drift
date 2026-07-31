@@ -421,6 +421,54 @@ function drawBase(){
   g.addColorStop(0,"rgb("+sky[1].join(",")+")");
   g.addColorStop(1,"rgb("+sky[0].join(",")+")");
   ctx.fillStyle=g;ctx.fillRect(0,0,W,Math.max(0,gy));
+  /* Четверть кадра занимала ровная заливка — небо было пустым полем краски.
+     Ставим два плана дальнего рельефа (дальний светлее и выше по горизонту),
+     пыль у самой земли и то, что база построила на поверхности. */
+  if(gy>0){
+    for(let pl2=0;pl2<2;pl2++){
+      const far=pl2===0;
+      /* дальняя гряда выше и бледнее (её съедает воздух), ближняя ниже и темнее.
+         Частота у обеих заметная: на низкой шум давал почти прямую линию, и
+         «рельеф» читался просто второй полосой краски */
+      const amp=far?24:30, base0=gy-(far?34:6), par=far?.3:.6;
+      ctx.fillStyle=rgba(mixc(sky[0],[12,14,20],far?.45:.78),far?.75:.95);
+      ctx.beginPath();ctx.moveTo(0,gy+2);
+      for(let sx2=0;sx2<=W;sx2+=6){
+        const wx=(sx2+camx*par)*.005;
+        ctx.lineTo(sx2,base0-fbm2(wx,pl2*4.7+B.idx,B.idx*53+9,4)*amp
+                        -Math.sin(wx*3.1+pl2)*amp*.25);
+      }
+      ctx.lineTo(W,gy+2);ctx.closePath();ctx.fill();
+    }
+    /* пыль у горизонта: воздух между базой и грядой */
+    const dg=ctx.createLinearGradient(0,gy-54,0,gy);
+    dg.addColorStop(0,"rgba("+sky[0].join(",")+",0)");
+    dg.addColorStop(1,"rgba("+sky[0].join(",")+",.35)");
+    ctx.fillStyle=dg;ctx.fillRect(0,Math.max(0,gy-54),W,Math.min(54,gy));
+    /* мачта связи и — если площадка построена — её огни над грунтом:
+       база должна быть видна снаружи, а не только в разрезе */
+    const mx2=X(cellX(1))+10;
+    ctx.strokeStyle="rgba(30,36,44,.85)";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(mx2,gy);ctx.lineTo(mx2,gy-44);ctx.stroke();
+    ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(mx2-7,gy-4);ctx.lineTo(mx2,gy-18);ctx.lineTo(mx2+7,gy-4);ctx.stroke();
+    const bl=Math.sin(G.t*.06)>0;
+    ctx.fillStyle=bl?"rgba(255,110,90,.9)":"rgba(255,110,90,.25)";
+    ctx.beginPath();ctx.arc(mx2,gy-46,2.2,0,TAU);ctx.fill();
+    let hasPad=false;
+    for(let c2=0;c2<BASE_COLS;c2++){const cc=baseCell(B,c2,0);if(cc&&cc.k==="pad"&&cc.hp>0)hasPad=true;}
+    if(hasPad){
+      const pxs=X(cellX(Math.min(BASE_COLS-1,3)));
+      ctx.fillStyle="rgba(28,34,42,.9)";
+      ctx.beginPath();ctx.moveTo(pxs-40,gy);ctx.lineTo(pxs-30,gy-10);
+      ctx.lineTo(pxs+30,gy-10);ctx.lineTo(pxs+40,gy);ctx.closePath();ctx.fill();
+      for(let i=0;i<5;i++){
+        const on=((G.t*.08|0)%5)===i;
+        ctx.fillStyle=on?"rgba(127,230,216,.95)":"rgba(127,230,216,.25)";
+        ctx.beginPath();ctx.arc(pxs-24+i*12,gy-12,2,0,TAU);ctx.fill();
+      }
+    }
+  }
   /* кромка грунта не линейка: мелкий рельеф из того же шума, что и планета.
      Путь держим объектом: fillMaterial клипует по ПЕРЕДАННОМУ пути, а не по
      текущему — иначе материал ляжет в последний нарисованный пласт (так и было) */
