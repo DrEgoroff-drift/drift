@@ -85,12 +85,48 @@ procedural faces as the manager list, in front of a window that matches the stat
 hire by clicking the person, not a row in a table.
 </td>
 </tr>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/shots/world-ruin.png" alt="Ruined world" width="100%">
+<b>A ruined world is masonry under dust.</b> The ground itself follows a rubble law — rectangular
+blocks along the axes, in patches rather than everywhere, because continuous brickwork reads as graph
+paper. Standing on it are wall fragments with courses, a doorway and fallen column drums.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/world-jungle.png" alt="Jungle world" width="100%">
+<b>Under a canopy it is dark.</b> The moss law is the inverse of the obvious one: mostly deep shade
+with light punching through in patches, ground litter and dark roots. Canopy trees are tiered dark
+masses with branches to the trunk and hanging vines that sway on the world's own wind.
+</td>
+</tr>
 </table>
 
 ---
 
 
 ## Gameplay
+
+### Worlds
+
+Twelve true world types — terran, ocean, desert, rocky, ice, volcanic, toxic, crystal, jungle, metal,
+ruin and gas giant — and **most planets are a blend of two of them**. A blend is not a recolour: the
+palette, roughness, gravity, sky, relief weights, strata, weather pool, clouds, musical mode and ore
+profile all mix by the same share, and the name comes out as "icy, with volcanoes". Air never mixes:
+you either breathe it or you don't. Kinship is deliberately asymmetric — a volcanic ocean exists, an
+oceanic desert does not.
+
+- **The ground is a material, not a fill.** Every planet bakes one seamless tile holding three scales
+  at once (geological patches, sedimentary runs and veins, grain and crystal specks), laid twice at
+  different zooms so the repeat never reads.
+- **Late worlds have their own law of form** on top of that noise, because colour alone was not
+  enough: faceted cells with one lit edge for crystal, big plates with a dark seam and rust runs for
+  metal, a dappled dark canopy for jungle, axis-aligned rubble for ruin.
+- **Weather can't overrule the world.** Each type caps how strong its weather gets, so a crystal
+  planet is never painted flat white by fog — the reason you flew there stays visible.
+- **Three scales of object.** Boulders underfoot, a middle scale that belongs to the type (druses,
+  torn hull plates, broken trusses, walls, columns, canopy trees), and two to four landmarks per nine
+  thousand units of terrain — a wreck, a temple, a space elevator, an accelerator ring, an anomaly.
+  The emptiness between them is deliberate: without it a find stops being a find.
 
 ### Flying
 
@@ -148,6 +184,29 @@ Old hulls sitting in your hangar stop being dead weight: **a hire needs one of y
 - **Experience** raises both what they produce and what they demand, so a cheap hire becomes an expensive veteran you would rather not lose. Fleet size is a researched licence.
 - **Meeting them in space** — fly into a sector where your crew is working and they spawn as a real ship alongside you, built on the pirate NPC frame, shooting at pirates.
 - Everything they do lands in the ship's log: deliveries, bounties, damage, warnings.
+
+### Managers and domains
+
+Mercenaries fly your ships; **managers take a whole domain off your hands** — the crew wing, drones
+and bases, a trade route, or the laboratory. There are exactly four seats, one per domain, and the AI
+core takes one of those four rather than a fifth: the system is about which chore you hand over, not
+about growing a headcount.
+
+- **A cut, not a wage.** Each manager draws a salary *and* a percentage of their own domain, taken
+  before the money reaches you and always shown as a line — hidden, it reads as theft. Audit tech and
+  one artifact are the only things that shave the cut for everyone.
+- **Loyalty is the whole tension.** Miss payroll and it slides; below fifty a manager quietly starts
+  "losing" a slice of the domain in their own favour, and the only trace is a discrepancy line in the
+  domain summary. At twenty-five they issue an ultimatum you can pay or refuse.
+- **Leaving is not a log line.** At zero loyalty a manager defects and becomes a renegade in their own
+  sector, flying your flagship with your perks. Beating them does not kill them: they turn up in a
+  cantina as an exile, cheaper to re-hire and remembering everything.
+- **Perks are code, not labels.** The whole tree is visible from the start, including what you have
+  not bought, and a test refuses to pass if any perk id in the tree is not read by the game.
+- **Procedural portraits** that gain detail with level and darken as loyalty drops — a sour face is
+  visible before any bar is.
+- **Artifacts** — seven of them from the laboratory, one worn per manager, each with a second line of
+  effect that unlocks deeper in.
 
 ### Bases
 
@@ -210,7 +269,7 @@ Local autosave, portable base64 save codes for moving between devices, and optio
 | File | Purpose |
 |---|---|
 | [`drift.html`](drift.html) | The entire game in one self-contained file — open it directly to play. **Built from `src/`; don't edit it by hand.** |
-| [`src/`](src) | The sources: `index.html` shell, `style.css`, and 52 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
+| [`src/`](src) | The sources: `index.html` shell, `style.css`, and 55 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
 | [`build.ps1`](build.ps1) | Rebuilds `drift.html` from `src/`. No dependencies — PowerShell, because Node isn't assumed. Pass `-Watch` to rebuild on save. |
 | [`server.js`](server.js) | Optional zero-dependency Node.js server (Node 18+) for self-hosting and persisting cloud saves to a `./saves` folder. |
 | [`worker.js`](worker.js) | Optional Cloudflare Worker alternative, storing saves in a KV namespace. |
@@ -240,4 +299,4 @@ Then point the `CLOUD` config inside `drift.html` at your server's `/save` endpo
 
 ## Status
 
-Actively evolving. The planned milestone queue — celestial mechanics, station types, rare materials, mercenaries, bases, the laboratory and the boarding mode — is complete; mechanics, content and balance are still being iterated on. Balance numbers in particular are tuned against measurements rather than long play sessions, so they move.
+Actively evolving. The planned milestone queue — celestial mechanics, station types, rare materials, mercenaries, bases, the laboratory, the boarding mode, twelve blended world types and their surface language — is complete; a walkable HQ apartment is specced and next in line; mechanics, content and balance are still being iterated on. Balance numbers in particular are tuned against measurements rather than long play sessions, so they move.
