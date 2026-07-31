@@ -92,9 +92,13 @@ const CKPT={key:"",plan:null,tex:null};
 function cockpitPlan(id){
   const S=shipData(id),hl=hullOf(id),r=rng((S.seed^0xC0C4)>>>0);
   const K=CKPT_STYLE[cockpitStyleKey(id)];
-  const dashH=clamp(H*.30*K.dash,120,252), dashY=H-dashH;
-  const pw=clamp((W*.045+hl.bw*2.2)*K.pill,20,124);      // боковая стойка
-  const brow=clamp((H*.115+hl.nose*1.1)*K.brow,44,168);  // низ потолочного блока
+  /* Кабина ужата вдвое против первой версии. Она обязана читаться как кабина,
+     но смотрят из неё наружу: доска, потолок и стойки забирают ровно столько,
+     сколько нужно, чтобы проём имел края. Всё, что не отвечает на вопрос
+     «куда лететь и на чём», с доски убрано. */
+  const dashH=clamp(H*.17*K.dash,92,168), dashY=H-dashH;
+  const pw=clamp((W*.026+hl.bw*1.5)*K.pill,14,78);       // боковая стойка
+  const brow=clamp((H*.055+hl.nose*.6)*K.brow,24,86);   // низ потолочного блока
   const dip=clamp(hl.bw*1.9+14,18,58);                   // нос корпуса снизу
   const glass=glassOutline(K.shape,pw,brow,dashY,dip,rng(S.seed^0x5151));
   const outer=glassOutline(K.shape,pw,brow,dashY,dip,rng(S.seed^0x5151),
@@ -109,27 +113,27 @@ function cockpitPlan(id){
   }
   /* поперечная балка: только у тяжёлых корпусов, зато читается сразу */
   const beam=(K.shape==="boxy")?{y:brow+(dashY-brow)*(.28+r()*.1),h:5+r()*4}:null;
-  const nPod=2+Math.floor(r()*3), pods=[];
-  for(let i=0;i<nPod;i++)
-    pods.push({dx:W*(.14+i*.125), y:brow*(.30+r()*.16), r:brow*(.14+r()*.09)});
-  const mfd={w:clamp(W*.155,92,214), h:clamp(brow*.86,44,112),
-    y:brow*.12, tilt:.045+r()*.05, rows:3+Math.floor(r()*3)};
-  const ohc={w:clamp(W*.185,104,250), y0:brow*.08, y1:brow*1.02,
-    bars:9+Math.floor(r()*7)};
+  /* потолочные раструбы: две пары, у самого края потолка — намёк на маневровые,
+     а не ряд иллюминаторов. Больше не помещается, да и не надо. */
+  const pods=[];
+  for(let i=0;i<2;i++)
+    pods.push({dx:W*(.17+i*.13), y:brow*(.34+r()*.14), r:brow*(.16+r()*.08)});
   const BW=Math.min(W-24,1060), x0=(W-BW)/2;
-  const stack={x:x0+BW*.355, w:BW*.29, lift:clamp(dashH*.15,14,32)};
+  const stack={x:x0+BW*.355, w:BW*.29, lift:clamp(dashH*.13,10,24)};
   /* нижняя полоса доски уходит под экранные пэды — приборы туда не ставим */
-  const UH=Math.max(112,dashH-64);
+  /* приборы живут только в верхней полосе доски: нижняя уходит под экранные
+     кнопки режима, и всё, что туда попадёт, игрок просто не увидит */
+  const UH=clamp(dashH-96,52,120);
   const grid=[];
   for(let side=0;side<2;side++){
-    const cols=4+Math.floor(r()*3), rows=2;
-    const cw=BW*.026, ch=UH*.10;
-    grid.push({x:side?x0+BW-8-cols*(cw+4):x0+8, y:dashY+UH+4,
-      cols,rows,cw,ch, lit:Array.from({length:cols*rows},()=>r()<.32)});
+    const cols=3+Math.floor(r()*2), rows=1;
+    const cw=BW*.022, ch=UH*.12;
+    grid.push({x:side?x0+BW-8-cols*(cw+4):x0+8, y:dashY+UH+6,
+      cols,rows,cw,ch, lit:Array.from({length:cols},()=>r()<.32)});
   }
   const vents=[];
-  for(let i=0;i<3+Math.floor(r()*3);i++)
-    vents.push({x:lerp(x0+BW*.1,x0+BW*.9,r()), y:dashY+dashH*(.82+r()*.1), w:BW*(.03+r()*.05)});
+  for(let i=0;i<2+Math.floor(r()*2);i++)
+    vents.push({x:lerp(x0+BW*.12,x0+BW*.88,r()), y:dashY+dashH*(.84+r()*.08), w:BW*(.03+r()*.04)});
   /* потёртости рамы */
   const scr=[];
   for(let i=0;i<Math.round((8+r()*10)*K.wear);i++)
@@ -140,11 +144,11 @@ function cockpitPlan(id){
     gscr.push([pw+r()*(W-pw*2), brow+r()*(dashY-brow), 8+r()*46, r()*TAU, .04+r()*.05]);
   /* лампы на боковых стойках: моргают вразнобой, у каждой свой период */
   const leds=[];
-  for(let i=0;i<5+Math.floor(r()*4);i++)
-    leds.push({y:lerp(brow*1.2,dashY-14,i/8+r()*.06), r:1.6+r()*1.6,
+  for(let i=0;i<4;i++)
+    leds.push({y:lerp(brow*1.4,dashY-16,i/4+r()*.08), r:1.4+r()*1.2,
       ph:r()*TAU, sp:.02+r()*.09, on:r()<.72});
   return {S,hl,K,acc:S.col,dashH,dashY,UH,pw,brow,dip,glass,outer,strut,beam,pods,
-    mfd,ohc,BW,x0,stack,grid,vents,scr,gscr,leds,seed:S.seed};
+    BW,x0,stack,grid,vents,scr,gscr,leds,seed:S.seed};
 }
 /* addPath не сбрасывает текущий путь — нужно для дырки по evenodd */
 function addPath(c,pts){
@@ -238,15 +242,8 @@ function cockpitTex(id){
     c.fillStyle="#05080d";c.beginPath();c.arc(x,y,rr*.2,0,TAU);c.fill();
   }
 
-  /* ── центральный потолочный блок ── */
-  const O=P.ohc, ox=W/2-O.w/2;
-  plate(c,ox,O.y0,O.w,O.y1-O.y0,"#222c38","#0a0f16");
-  c.strokeStyle="rgba(0,0,0,.6)";c.lineWidth=1.6;c.strokeRect(ox,O.y0,O.w,O.y1-O.y0);
-  c.fillStyle="#05080c";
-  c.fillRect(ox+7,O.y0+7,O.w-14,O.y1-O.y0-14);
-  c.strokeStyle=rgba(A,.35);c.lineWidth=1;
-  c.strokeRect(ox+7,O.y0+7,O.w-14,O.y1-O.y0-14);
-  if(K.hazard)hazardBand(c,ox,O.y1-4,O.w,4,.7);
+  /* Центральный потолочный экран со столбиками тяги убран: он повторял рычаг
+     тяги на доске и занимал верх кадра ради красивого мельтешения. */
 
   /* ── боковые консоли: трапеции, уходящие к остеклению ──
      Это главное, что превращает раму в помещение: борта не параллельны
@@ -272,23 +269,9 @@ function cockpitTex(id){
     if(K.hazard)hazardBand(c,s<0?0:W-14,yBot-46,14,46,.55);
   }
 
-  /* ── окантовки боковых экранов ── */
-  const M=P.mfd;
-  for(const s of [-1,1]){
-    c.save();
-    const bx=s<0?10:W-10-M.w;
-    c.translate(bx+M.w/2,M.y+M.h/2);c.rotate(M.tilt*s);
-    plate(c,-M.w/2,-M.h/2,M.w,M.h,"#28323f","#0c1119");
-    c.strokeStyle="rgba(0,0,0,.65)";c.lineWidth=2;
-    c.strokeRect(-M.w/2,-M.h/2,M.w,M.h);
-    c.strokeStyle=rgba(A,.4);c.lineWidth=1;
-    c.strokeRect(-M.w/2+3,-M.h/2+3,M.w-6,M.h-6);
-    c.fillStyle="#04070b";c.fillRect(-M.w/2+6,-M.h/2+6,M.w-12,M.h-12);
-    /* кнопки по нижней кромке */
-    c.fillStyle=rgba(A,.22);
-    for(let i=0;i<5;i++)c.fillRect(-M.w/2+9+i*((M.w-18)/5),M.h/2-5.5,(M.w-18)/5-3,3);
-    c.restore();
-  }
+  /* Два боковых экрана (обстановка слева, системы справа) убраны целиком:
+     они занимали верхние углы кадра и показывали то же, что радар и полосы
+     на доске. Углы вернулись космосу. */
 
   /* ── фаска проёма: кольцо между наружным и внутренним контуром ──
      Свет падает сверху, поэтому верх фаски светлый, низ уходит в тень —
@@ -408,7 +391,7 @@ function cockpitTex(id){
 
   /* ── виньетка: углы кадра уходят в тень кабины ── */
   const vg=c.createRadialGradient(W/2,H*.42,Math.min(W,H)*.34,W/2,H*.42,Math.max(W,H)*.72);
-  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.5)");
+  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.34)");
   c.fillStyle=vg;c.fillRect(0,0,W,H);
 
   CKPT.key=key;CKPT.plan=P;CKPT.tex=cn;
@@ -452,125 +435,27 @@ function drawCockpit(b,st){
     }
   }
 
-  /* ── боковые экраны ── */
-  const M=P.mfd, spd=Math.hypot(b.vx,b.vy,b.vz);
-  for(const s of [-1,1]){
-    ctx.save();
-    const bx=s<0?10:W-10-M.w;
-    ctx.translate(bx+M.w/2,M.y+M.h/2);ctx.rotate(M.tilt*s);
-    ctx.beginPath();ctx.rect(-M.w/2+6,-M.h/2+6,M.w-12,M.h-12);ctx.clip();
-    const iw=M.w-12, ih=M.h-12, ix=-M.w/2+6, iy=-M.h/2+6;
-    ctx.strokeStyle=rgba(A,.1);ctx.lineWidth=1;
-    for(let i=1;i<5;i++){
-      ctx.beginPath();ctx.moveTo(ix,iy+ih*i/5);ctx.lineTo(ix+iw,iy+ih*i/5);ctx.stroke();
-    }
-    if(s<0){
-      /* слева — обстановка вокруг: точки камней по дальности */
-      ctx.fillStyle=rgba(A,.85);ctx.font="7px ui-monospace,monospace";ctx.textAlign="left";
-      ctx.fillText("ОБСТАНОВКА",ix+4,iy+9);
-      for(const a of b.ast){
-        const dd=Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
-        if(dd>2000)continue;
-        const px=ix+4+((a.x-b.x)/2000*.5+.5)*(iw-8);
-        const py=iy+13+(1-dd/2000)*(ih-20);
-        ctx.fillStyle=a===b.lock?"#f2b25c":RES[a.res].col;
-        ctx.globalAlpha=a===b.lock?1:.55;
-        ctx.fillRect(px,py,2.2,2.2);
-      }
-      ctx.globalAlpha=1;
-      ctx.fillStyle=rgba(A,.6);ctx.font="7px ui-monospace,monospace";
-      ctx.fillText("КАМНЕЙ "+b.ast.length,ix+4,iy+ih-4);
-    }else{
-      /* справа — состояние систем в столбиках */
-      ctx.fillStyle=rgba(A,.85);ctx.font="7px ui-monospace,monospace";ctx.textAlign="left";
-      ctx.fillText("СИСТЕМЫ",ix+4,iy+9);
-      const rowsv=[["ТОПЛ",G.fuel/st.fuelMax,"#7fe6d8"],["КОРП",G.hull/st.hullMax,"#f2b25c"],
-        ["ТРЮМ",held()/st.cargoMax,"#c58ae0"],["РЕЗАК",b.beam?1:0,"#ff9d7a"]];
-      rowsv.forEach((rv,i)=>{
-        const y=iy+16+i*((ih-22)/rowsv.length);
-        ctx.fillStyle="rgba(140,170,190,.7)";ctx.fillText(rv[0],ix+4,y+5);
-        ctx.fillStyle="rgba(255,255,255,.08)";ctx.fillRect(ix+30,y,iw-36,4);
-        ctx.fillStyle=rv[2];ctx.fillRect(ix+30,y,(iw-36)*clamp(rv[1],0,1),4);
-      });
-    }
-    /* развёртка экрана: бегущая строка и мерцание — экран живой, а не картинка */
-    if(K.holo>.2){
-      const sy=iy+((G.t*1.7)%(ih));
-      ctx.fillStyle=rgba(A,(.05*K.holo).toFixed(3));ctx.fillRect(ix,sy,iw,3);
-      if(Math.random()<.02*K.holo){
-        ctx.fillStyle="rgba(255,255,255,.05)";ctx.fillRect(ix,iy,iw,ih);
-      }
-    }
-    ctx.restore();
-  }
-
-  /* ── центральный потолочный экран: столбики тяги ── */
-  const O=P.ohc, ox=W/2-O.w/2;
-  const iw2=O.w-14, ih2=O.y1-O.y0-14, ix2=ox+7, iy2=O.y0+7;
-  const bw2=iw2/O.bars;
-  for(let i=0;i<O.bars;i++){
-    const ph=Math.sin(G.t*.07+i*.7)*.5+.5;
-    const lvl=clamp((keys.thrust?.55:.2)+ph*.45,0,1);
-    ctx.fillStyle=rgba(A,.16+lvl*.5);
-    ctx.fillRect(ix2+i*bw2+1,iy2+ih2*(1-lvl),bw2-2,ih2*lvl);
-  }
-  ctx.strokeStyle=rgba(A,.25);ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(ix2,iy2+ih2*.5);ctx.lineTo(ix2+iw2,iy2+ih2*.5);ctx.stroke();
-
-  /* ── голограмма над доской: висит в воздухе, не закрывает мир ──
-     У исследователя и яхты она большая, у буровика её почти нет: голография
-     дорогая, и на рабочей лохани её не ставят. */
-  if(K.holo>.3){
-    const hx=x0+BW*.5, hy=D-clamp(DH*.22,22,44), hr=clamp(BW*.05,20,44)*K.holo;
-    ctx.save();
-    ctx.globalCompositeOperation="lighter";
-    const hgl=ctx.createRadialGradient(hx,hy,0,hx,hy,hr*1.8);
-    hgl.addColorStop(0,rgba(A,.10));hgl.addColorStop(1,rgba(A,0));
-    ctx.fillStyle=hgl;ctx.beginPath();ctx.arc(hx,hy,hr*1.8,0,TAU);ctx.fill();
-    /* кольца планетарной сетки — крутятся, мерцают строчками */
-    ctx.strokeStyle=rgba(A,.35);ctx.lineWidth=1;
-    for(let i=0;i<3;i++){
-      const t=G.t*.012+i*.7;
-      ctx.beginPath();
-      ctx.ellipse(hx,hy,hr*(1-i*.16),hr*(1-i*.16)*Math.abs(Math.cos(t))*.55+1.5,0,0,TAU);
-      ctx.stroke();
-    }
-    ctx.strokeStyle=rgba(A,.18);
-    ctx.beginPath();ctx.ellipse(hx,hy,hr*.35,hr*.35,0,0,TAU);ctx.stroke();
-    for(let i=0;i<3;i++){
-      const y=hy-hr+((G.t*.9+i*hr*.7)%(hr*2));
-      ctx.fillStyle=rgba(A,.07);ctx.fillRect(hx-hr,y,hr*2,1);
-    }
-    ctx.restore();
-  }
-
-  /* ── левый блок доски: полёт ── */
-  const pad=D+13;
+  /* ── доска: только то, что отвечает «куда лететь и на чём» ──
+     Убраны два боковых экрана, потолочные столбики тяги, показания тангажа и
+     крена (они есть на стекле лесенкой), высота над плоскостью пояса, счётчик
+     камней и подпись дальности радара. Прибор, который дублирует другой прибор
+     или стекло, — не прибор, а шум. */
+  const spd=Math.hypot(b.vx,b.vy,b.vz), pad=D+11;
   ctx.font="8px ui-monospace,monospace";ctx.textAlign="left";
-  vbar(x0+6,pad,10,UH-28,G.fuel/st.fuelMax,"#7fe6d8","ТОПЛ");
-  vbar(x0+34,pad,10,UH-28,G.hull/st.hullMax,"#f2b25c","КОРП");
-  const lx=x0+62;
-  ctx.fillStyle="rgba(93,115,130,.9)";ctx.fillText("СКОРОСТЬ",lx,pad+8);
-  ctx.fillStyle="#7fe6d8";ctx.font="17px ui-monospace,monospace";
-  ctx.fillText(spd.toFixed(1),lx,pad+28);
-  ctx.font="8px ui-monospace,monospace";ctx.fillStyle="rgba(93,115,130,.9)";
-  ctx.fillText("ТЯГА",lx,pad+46);
-  ctx.fillStyle="rgba(255,255,255,.08)";ctx.fillRect(lx,pad+50,86,5);
-  ctx.fillStyle=keys.thrust?"#f2b25c":"rgba(242,178,92,.3)";
-  ctx.fillRect(lx,pad+50,86*(keys.thrust?1:(keys.brake?.15:0)),5);
-  ctx.fillStyle="rgba(93,115,130,.9)";
-  ctx.fillText("ПЛОСКОСТЬ ПОЯСА "+(b.y>=0?"+":"")+Math.round(b.y),lx,pad+70);
-  ctx.fillText("ТАНГАЖ "+(b.pitch*57.3).toFixed(0)+"°  КРЕН "+(b.roll*57.3).toFixed(0)+"°",lx,pad+84);
+  vbar(x0+6,pad,8,UH-22,G.fuel/st.fuelMax,"#7fe6d8","ТОПЛ");
+  vbar(x0+30,pad,8,UH-22,G.hull/st.hullMax,"#f2b25c","КОРП");
+  const lx=x0+52;
+  ctx.fillStyle="rgba(93,115,130,.8)";ctx.fillText("СКОРОСТЬ",lx,pad+8);
+  ctx.fillStyle="#7fe6d8";ctx.font="18px ui-monospace,monospace";
+  ctx.fillText(spd.toFixed(1),lx,pad+27);
 
-  /* ── радар на центральной стойке ── */
-  const rr=Math.min(UH*.40,56), rcx=x0+BW*.5, rcy=D+UH*.46;
-  ctx.strokeStyle="rgba(120,190,210,.3)";ctx.lineWidth=1;
+  /* ── радар: единственный прибор, которого не заменить взглядом в окно ── */
+  const rr=Math.min(UH*.44,44), rcx=x0+BW*.5, rcy=D+UH*.5;
+  ctx.strokeStyle="rgba(120,190,210,.28)";ctx.lineWidth=1;
   ctx.beginPath();ctx.arc(rcx,rcy,rr,0,TAU);ctx.stroke();
+  ctx.strokeStyle="rgba(120,190,210,.12)";
   ctx.beginPath();ctx.arc(rcx,rcy,rr*.55,0,TAU);ctx.stroke();
-  ctx.strokeStyle="rgba(120,190,210,.14)";
-  ctx.beginPath();ctx.moveTo(rcx-rr,rcy);ctx.lineTo(rcx+rr,rcy);
-  ctx.moveTo(rcx,rcy-rr);ctx.lineTo(rcx,rcy+rr);ctx.stroke();
-  ctx.fillStyle="rgba(127,230,216,.12)";
+  ctx.fillStyle="rgba(127,230,216,.10)";
   ctx.beginPath();ctx.moveTo(rcx,rcy);
   ctx.arc(rcx,rcy,rr,-Math.PI/2-.42,-Math.PI/2+.42);ctx.closePath();ctx.fill();
   const RANGE=2000;
@@ -580,70 +465,65 @@ function drawCockpit(b,st){
     const dd=Math.hypot(dx,dy,dz);
     if(dd>RANGE)continue;
     const px=(dx*rx+dz*rz)/RANGE*rr, py=(dx*fx+dz*fz)/RANGE*rr;
-    const s=a===b.lock?3.4:clamp(a.r/34,1.2,2.6);
+    const s=a===b.lock?3.2:clamp(a.r/38,1,2.2);
     ctx.fillStyle=a===b.lock?"#f2b25c":RES[a.res].col;
-    ctx.globalAlpha=a===b.lock?1:clamp(1-Math.abs(dy)/700,.22,1);
+    ctx.globalAlpha=a===b.lock?1:clamp(1-Math.abs(dy)/700,.2,.9);
     ctx.beginPath();ctx.arc(rcx+px,rcy-py,s,0,TAU);ctx.fill();
     ctx.globalAlpha=1;
   }
   ctx.fillStyle="#e8f4f2";
   ctx.beginPath();ctx.moveTo(rcx,rcy-4);ctx.lineTo(rcx-3,rcy+3);ctx.lineTo(rcx+3,rcy+3);
   ctx.closePath();ctx.fill();
-  ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText("ОБЗОР 2000",rcx,rcy+rr+12);
 
-  /* ── правый блок: цель и трюм ── */
-  const tx=x0+BW*.60;
-  ctx.textAlign="left";
-  ctx.fillStyle="rgba(93,115,130,.9)";ctx.font="8px ui-monospace,monospace";
-  ctx.fillText("ЦЕЛЬ",tx,pad+8);
+  /* ── цель и трюм ── */
+  const tx=x0+BW*.62;
+  ctx.textAlign="left";ctx.font="8px ui-monospace,monospace";
   if(b.lock){
     const dd=Math.hypot(b.lock.x-b.x,b.lock.y-b.y,b.lock.z-b.z)-b.lock.r;
     ctx.fillStyle=RES[b.lock.res].col;ctx.font="12px ui-monospace,monospace";
-    ctx.fillText(RES[b.lock.res].ru.toUpperCase(),tx,pad+24);
+    ctx.fillText(RES[b.lock.res].ru.toUpperCase()+" ×"+b.lock.left,tx,pad+12);
     ctx.font="8px ui-monospace,monospace";
     ctx.fillStyle=dd>CUT_RANGE?"rgba(255,107,87,.9)":"rgba(93,115,130,.9)";
-    ctx.fillText("×"+b.lock.left+"   "+Math.round(dd)+" М"+
-      (dd>CUT_RANGE?"   ДАЛЕКО":""),tx,pad+38);
-    ctx.fillStyle="rgba(255,255,255,.08)";ctx.fillRect(tx,pad+44,110,5);
-    ctx.fillStyle="#f2b25c";ctx.fillRect(tx,pad+44,110*clamp(b.prog,0,1),5);
+    ctx.fillText(Math.round(dd)+" М"+(dd>CUT_RANGE?"   ДАЛЕКО":""),tx,pad+24);
+    ctx.fillStyle="rgba(255,255,255,.08)";ctx.fillRect(tx,pad+30,104,4);
+    ctx.fillStyle="#f2b25c";ctx.fillRect(tx,pad+30,104*clamp(b.prog,0,1),4);
   }else{
-    ctx.fillStyle="rgba(93,115,130,.5)";ctx.font="11px ui-monospace,monospace";
-    ctx.fillText("— НЕТ ЗАХВАТА —",tx,pad+24);
+    ctx.fillStyle="rgba(93,115,130,.45)";ctx.font="11px ui-monospace,monospace";
+    ctx.fillText("— НЕТ ЗАХВАТА —",tx,pad+12);
     ctx.font="8px ui-monospace,monospace";
   }
-  ctx.fillStyle="rgba(93,115,130,.9)";
-  ctx.fillText("ТРЮМ "+held()+" / "+st.cargoMax,tx,pad+66);
   let cxp=tx;
-  const cw=Math.min(130,BW*.22);
-  ctx.fillStyle="rgba(255,255,255,.07)";ctx.fillRect(tx,pad+70,cw,7);
+  const cw=Math.min(118,BW*.2);
+  ctx.fillStyle="rgba(255,255,255,.07)";ctx.fillRect(tx,pad+50,cw,6);
   for(const k of RES_KEYS){
     const q=G.cargo[k];if(!q)continue;
     const w=cw*q/st.cargoMax;
-    ctx.fillStyle=RES[k].col;ctx.fillRect(cxp,pad+70,w,7);cxp+=w;
+    ctx.fillStyle=RES[k].col;ctx.fillRect(cxp,pad+50,w,6);cxp+=w;
   }
-
-  /* ── лампы ── */
+  ctx.fillStyle="rgba(93,115,130,.8)";
+  ctx.fillText("ТРЮМ "+held()+" / "+st.cargoMax,tx,pad+46);
+  /* ── лампы: три, и все три означают беду ──
+     «Резак» и «орудие» убраны: и то и другое видно в самом кадре. */
   const lamps=[
     ["СБЛИЖЕНИЕ",b.near<130,"#ff6b57"],
-    ["ТРЮМ ПОЛОН",held()>=st.cargoMax,"#c58ae0"],
     ["ТОПЛИВО",G.fuel/st.fuelMax<.2,"#ff6b57"],
-    ["РЕЗАК",!!b.beam,"#f2b25c"],
-    ["ОРУДИЕ",st.armed&&b.cool<=0,"#7fe6d8"]
+    ["ТРЮМ ПОЛОН",held()>=st.cargoMax,"#c58ae0"]
   ];
-  let lx2=x0+BW-8;
-  ctx.textAlign="right";ctx.font="8px ui-monospace,monospace";
+  /* строкой, а не столбиком у правого борта: правый борт доски уходит под
+     экранные кнопки режима, и там лампы просто не видно */
+  ctx.textAlign="left";ctx.font="8px ui-monospace,monospace";
+  const ly=pad+UH-10, lstep=Math.min(92,(rcx-rr-lx-10)/3);
   lamps.forEach((L,i)=>{
-    const y=pad+6+i*16;
+    const x=lx+i*lstep;
     const on=L[1]&&(L[0]!=="СБЛИЖЕНИЕ"||Math.sin(G.t*.25)>-.2);
     ctx.fillStyle=on?L[2]:"rgba(255,255,255,.05)";
-    ctx.fillRect(lx2-7,y-6,7,7);
+    ctx.fillRect(x,ly-6,6,6);
     if(on){   // горящая лампа подсвечивает раму вокруг себя
       ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=.25;
-      ctx.beginPath();ctx.arc(lx2-3.5,y-2.5,9,0,TAU);ctx.fill();ctx.restore();
+      ctx.beginPath();ctx.arc(x+3,ly-3,8,0,TAU);ctx.fill();ctx.restore();
     }
-    ctx.fillStyle=on?L[2]:"rgba(93,115,130,.45)";
-    ctx.fillText(L[0],lx2-13,y);
+    ctx.fillStyle=on?L[2]:"rgba(93,115,130,.4)";
+    ctx.fillText(L[0],x+9,ly);
   });
 
   /* ── рукоятки и рычаг тяги ──
