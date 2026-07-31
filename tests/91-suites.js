@@ -1511,3 +1511,53 @@ TEST_SUITES.push(()=>suite("миры: двенадцать истинных и �
   for(let sx=0;sx<8;sx++)for(const p of getSystem(sx,0).planets)if(p.type==="gas"&&p.mix)gasMix++;
   eq(gasMix,0,"газовый гигант ни с чем не смешан");
 }));
+
+TEST_SUITES.push(()=>suite("крупная форма: поздний мир виден силуэтом",()=>{
+  resetWorld();
+  /* Тип мира должен читаться СРЕДНИМ масштабом — тем, что между валуном
+     (радиус до 22) и достопримечательностью (150–900). Проверка держит три
+     вещи: форма есть у всех четырёх поздних миров, она из своего набора и
+     она не залезает ни в зону взлёта, ни под постройку. */
+  const bad=[];
+  for(const k of DECO_KINDS)if(!TYPES[k.on])bad.push(k.k+"→"+k.on);
+  eq(bad.join(", "),"","набор формы ссылается на существующие миры");
+  const late=["crystal","metal","jungle","ruin"];
+  for(const t of late){
+    const W0=makeWorld(t,null,0);
+    const P={type:t,mix:null,mw:0,T:W0.T,rough:W0.T.rough,seed:hashi(9,t.length,0x77)};
+    worldTables(P);
+    const tr=genTerrain(P);
+    genPOI(tr,P);genDeco(tr,P);
+    ok(tr.deco.length>2,t+": крупная форма выросла ("+tr.deco.length+" штук)");
+    if(!tr.deco.length)continue;
+    const alien=tr.deco.filter(d=>!DECO_KINDS.some(k=>k.k===d.k&&k.on===t));
+    eq(alien.length,0,t+": формы только из своего набора");
+    const onPad=tr.deco.filter(d=>Math.abs(d.x-tr.padX)<420);
+    eq(onPad.length,0,t+": в зоне взлёта пусто — обстановка фантомна");
+    const inPoi=tr.deco.filter(d=>tr.poi.some(q=>Math.abs(q.x-d.x)<q.h*.3));
+    eq(inPoi.length,0,t+": не торчит сквозь постройку");
+    const hi=Math.max.apply(null,tr.deco.map(d=>d.h));
+    ok(hi>40&&hi<330,t+": масштаб между валуном и постройкой ("+Math.round(hi)+" px)");
+    /* и всё это рисуется: восемь форм на четыре мира, каждая своим кодом */
+    G.land={p:P,tr,x:tr.padX,y:groundAt(tr,tr.padX)};
+    enterSurface();
+    G.surf.x=tr.deco[0].x;
+    drawSurface();
+    ok(true,t+": кадр с крупной формой рисуется");
+  }
+  /* чистый ранний мир не обрастает ничем: язык форм принадлежит типу */
+  const R=makeWorld("rocky",null,0);
+  const PR={type:"rocky",mix:null,mw:0,T:R.T,rough:R.T.rough,seed:5};
+  worldTables(PR);
+  const tr2=genTerrain(PR);genDeco(tr2,PR);
+  eq(tr2.deco.length,0,"каменистый мир остаётся камнем без чужих форм");
+  /* смесь принимает форму соседа, но реже, чем собственную */
+  const M0=makeWorld("ice","ruin",.4);
+  const PM={type:"ice",mix:"ruin",mw:.4,T:M0.T,rough:M0.T.rough,seed:31};
+  worldTables(PM);
+  const tr3=genTerrain(PM);genDeco(tr3,PM);
+  ok(tr3.deco.length>0,"на ледяной с руинами стены есть ("+tr3.deco.length+")");
+  ok(tr3.deco.length<tr2.deco.length+18,"но их меньше, чем на своём мире");
+  ok(tr3.deco.every(d=>d.k==="wall"||d.k==="column"),"и это именно руины соседа");
+  G.surf=null;G.land=null;G.mode="system";
+}));

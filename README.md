@@ -70,6 +70,21 @@ uses, with walls shaded top-to-bottom, distance haze, ceiling lamps and dust han
 your helmet lamp. The gun you fitted to your ship is the gun you carry.
 </td>
 </tr>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/shots/surface.png" alt="Crystal world surface" width="100%">
+<b>Every world type reads by its own big form.</b> Between the boulder and the landmark sits a
+middle scale: crystal druses, torn hull plates and broken trusses, walls and columns, jungle canopy.
+The ground material already differed per world; now the silhouette does too, with the 24 px
+astronaut as the measure.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/cantina.png" alt="Station cantina" width="100%">
+<b>The cantina is a room with people in it.</b> Candidates sit at the counter, drawn with the same
+procedural faces as the manager list, in front of a window that matches the station type. You pick a
+hire by clicking the person, not a row in a table.
+</td>
+</tr>
 </table>
 
 ---
