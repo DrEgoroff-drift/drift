@@ -33,11 +33,18 @@ const WEATHER_BY_TYPE={
   ocean:   ["rain","fog","rain"],
   toxic:   ["acid","spore","fog"],
   rocky:   [],
+  /* у кристаллического воздух почти пуст — только редкая пыль от осыпей;
+     джунгли живут дождём и спорами; металлический безвоздушен; руинный
+     засыпан своей же пылью */
+  crystal: ["fog","dust"],
+  jungle:  ["rain","spore","rain","fog"],
+  metal:   [],
+  ruin:    ["dust","dust","fog"],
   gas:     []
 };
 function weatherOf(p){
   if(p.wx)return p.wx;
-  const pool=(p.T.atm==="отсутствует")?[]:(WEATHER_BY_TYPE[p.type]||[]);
+  const pool=(p.T.atm==="отсутствует")?[]:(wtab(p).wxPool||WEATHER_BY_TYPE[p.type]||[]);
   if(!pool.length){p.wx={kind:null};return p.wx;}
   const r=rng((p.seed^0x3EA7)>>>0);
   p.wx={kind:pool[Math.floor(r()*pool.length)],

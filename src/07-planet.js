@@ -51,12 +51,19 @@ const RELIEF_MIX={
   ice:     {hill:.9, ridge:.7,  mesa:.35, dune:.35, crater:.45, canyon:.6},
   volcanic:{hill:.8, ridge:1,   mesa:.25, dune:0,   crater:.9,  canyon:.85},
   toxic:   {hill:1,  ridge:.45, mesa:.4,  dune:.25, crater:.3,  canyon:.55},
+  /* кристаллический — частокол острых гряд почти без пологого; джунгли —
+     мягкие валы с врезанными руслами; металлический — битый кратерами шар
+     без осадочных плато; руинный — ступени плато, как разрушенные террасы */
+  crystal: {hill:.35,ridge:1.2, mesa:.6,  dune:0,   crater:.5,  canyon:.4},
+  jungle:  {hill:1.1,ridge:.4,  mesa:.2,  dune:0,   crater:.1,  canyon:.9},
+  metal:   {hill:.6, ridge:.8,  mesa:.3,  dune:0,   crater:1.3, canyon:.35},
+  ruin:    {hill:.7, ridge:.35, mesa:1.1, dune:.4,  crater:.5,  canyon:.6},
   gas:     {hill:1,  ridge:0,   mesa:0,   dune:0,   crater:0,   canyon:0}
 };
 function genTerrain(p){
   const N=1500,step=6,base=900,h=new Float32Array(N);
   const r=rng(p.seed^0x5f3b);
-  const M=RELIEF_MIX[p.type]||RELIEF_MIX.terran;
+  const M=wtab(p).relief||RELIEF_MIX[p.type]||RELIEF_MIX.terran;
   const amp=60+p.rough*300;
   /* каждой форме — свой множитель, чтобы планеты одного типа не повторялись */
   const w={

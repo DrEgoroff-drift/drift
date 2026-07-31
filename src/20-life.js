@@ -110,7 +110,7 @@ function planetBiome(p){
   for(let i=0;i<domN;i++)bias[Math.floor(r()*PLANT_KINDS)]+=1.2+r()*1.6;
   /* у безвоздушных и вулканических миров крупных форм почти нет: нечем дышать
      и нечему расти большим — это читается как характер места, а не как правило */
-  const harsh=p.T.atm==="отсутствует"||p.type==="volcanic";
+  const harsh=p.T.atm==="отсутствует"||p.type==="volcanic"||p.type==="crystal"||p.type==="metal";
   p.biome={kindBias:bias,scale:(harsh?.5:.7)+r()*(harsh?.5:.9),
     giantChance:harsh?r()*.03:r()*.14,hueBias:r()};
   return p.biome;

@@ -36,12 +36,16 @@ const GEO_TPL={
   ice:     [["snow"],["ice"],["ice","sed"],["rock"],["crystal"],["bedrock"]],
   volcanic:[["ash"],["basalt"],["basalt","rock"],["metal"],["magma"],["bedrock"]],
   toxic:   [["silt","soil"],["sed"],["crystal","sed"],["rock"],["metal"],["bedrock"]],
+  crystal: [["sand","ash"],["crystal"],["crystal","rock"],["rock"],["crystal","metal"],["bedrock"]],
+  jungle:  [["soil"],["soil","silt"],["sed"],["sandst","rock"],["metal","crystal"],["bedrock"]],
+  metal:   [["ash"],["metal"],["metal","rock"],["basalt"],["metal","crystal"],["bedrock"]],
+  ruin:    [["sand","ash"],["sed"],["rock","sandst"],["metal","rock"],["crystal","metal"],["bedrock"]],
   gas:     [["ash"],["bedrock"]]
 };
 function geologyOf(p){
   if(p.geo)return p.geo;
   const r=rng((p.seed^0x6E01)>>>0);
-  const tpl=GEO_TPL[p.type]||GEO_TPL.terran;
+  const tpl=wtab(p).geoTpl||GEO_TPL[p.type]||GEO_TPL.terran;
   const pal=p.T.pal;
   const out=[];
   let d=0;

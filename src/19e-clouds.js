@@ -43,6 +43,10 @@ const CLOUD_KIND={
   volcanic:{n:.75, soft:.30,hi:.30,cir:.6},
   toxic:   {n:1.20,soft:.44,hi:.24,cir:1.1},
   rocky:   {n:.30, soft:.28,hi:.34,cir:.5},
+  crystal: {n:.22, soft:.22,hi:.38,cir:1.6},
+  jungle:  {n:1.45,soft:.46,hi:.20,cir:.8},
+  metal:   {n:.10, soft:.24,hi:.36,cir:.3},
+  ruin:    {n:.45, soft:.30,hi:.32,cir:.9},
   gas:     {n:1.50,soft:.50,hi:.20,cir:1.5}
 };
 const CLOUD_SPR=6;        // столько силуэтов пекётся на планету
@@ -142,7 +146,7 @@ function cirrusSprite(p,seed){
 }
 function cloudsOf(p){
   if(p.clouds)return p.clouds;
-  const K=CLOUD_KIND[p.type]||CLOUD_KIND.terran;
+  const K=wtab(p).cloudK||CLOUD_KIND[p.type]||CLOUD_KIND.terran;
   const sprites=[];
   for(let i=0;i<CLOUD_SPR;i++)
     sprites.push(cloudSprite(p,hashi(p.seed,i,0x0C10D),K.soft*(i%2?1:.78)));

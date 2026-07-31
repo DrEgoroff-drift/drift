@@ -966,6 +966,34 @@ TEST_SUITES.push(()=>suite("интерфейс: приборы и кнопки �
   }
 }));
 
+TEST_SUITES.push(()=>suite("интерфейс: приборы не мигают от расхода",()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  G.mode="system";
+  const $h=document.querySelector(".hud"), st=stat();
+  /* Топливо и скафандр текут непрерывно. Пока поводом считалось любое
+     изменение округлённого показания, панель раз в несколько секунд
+     вспыхивала и гасла сама по себе — сверху шло мигание ни о чём. */
+  G.fuel=st.fuelMax;G.hull=st.hullMax;G.credits=1000;
+  hud();
+  /* сто кадров плавного расхода: панель должна успокоиться и не просыпаться */
+  for(let i=0;i<100;i++){G.fuel-=.02;hud();}
+  HUD_T=performance.now()-9e3;hud();
+  ok(!$h.classList.contains("live"),"плавный расход панель не будит");
+  for(let i=0;i<50;i++){G.fuel-=.02;hud();}
+  ok(!$h.classList.contains("live"),"и не будит дальше");
+  /* а событие — будит */
+  G.hull-=12;hud();
+  ok($h.classList.contains("live"),"удар по корпусу будит");
+  HUD_T=performance.now()-9e3;hud();
+  ok(!$h.classList.contains("live"),"и панель снова гаснет");
+  G.credits+=250;hud();
+  ok($h.classList.contains("live"),"деньги будят");
+  G.fuel=st.fuelMax*.05;hud();
+  ok($h.classList.contains("live"),"на исходе топлива панель открыта без поводов");
+  G.fuel=st.fuelMax;G.hull=st.hullMax;hud();
+}));
+
 TEST_SUITES.push(()=>suite("интерфейс: кнопка называет действие, а не себя",()=>{
   resetWorld();
   /* «ДЕЙСТВИЕ» не отвечает ни на один вопрос игрока, «СТЫКОВКА» отвечает
@@ -1415,4 +1443,71 @@ TEST_SUITES.push(()=>suite("три пересмотренные сцены ри�
     drawRaid();ok(true,"абордаж рисуется");
   }
   G.base=null;G.raid=null;G.mode="system";
+}));
+
+TEST_SUITES.push(()=>suite("миры: двенадцать истинных и смеси из них",()=>{
+  resetWorld();
+  /* Таблиц, разложенных по типу мира, восемь штук в разных файлах, и добавить
+     тип, забыв одну из них, — самая лёгкая ошибка в этой части. Проверка
+     держит их синхронными, а не глаза. */
+  const keys=Object.keys(TYPES);
+  eq(keys.length,12,"истинных миров двенадцать");
+  const miss=[];
+  for(const k of keys){
+    if(!PROFILE[k])miss.push("PROFILE:"+k);
+    if(!RELIEF_MIX[k])miss.push("RELIEF_MIX:"+k);
+    if(!GEO_TPL[k])miss.push("GEO_TPL:"+k);
+    if(!WEATHER_BY_TYPE[k])miss.push("WEATHER:"+k);
+    if(!CLOUD_KIND[k])miss.push("CLOUD_KIND:"+k);
+    if(!WORLD_MOOD[k])miss.push("MOOD:"+k);
+    if(!WORLD_VOICE[k])miss.push("VOICE:"+k);
+    if(k!=="gas"){
+      if(!MIX_KIN[k]||!MIX_KIN[k].length)miss.push("MIX_KIN:"+k);
+      if(!TYPES[k].mix)miss.push("mix-имя:"+k);
+    }
+  }
+  eq(miss.join(", "),"","у каждого типа заполнены все таблицы");
+  /* родство симметрично по смыслу не обязано быть, но ссылаться на живой тип обязано */
+  const bad=[];
+  for(const k in MIX_KIN)for(const m of MIX_KIN[k])if(!TYPES[m]||m==="gas")bad.push(k+"→"+m);
+  eq(bad.join(", "),"","родство ссылается только на существующие миры");
+
+  /* смесь — это другой мир, а не другая раскраска */
+  const W=makeWorld("ice","volcanic",.4);
+  eq(W.type,"ice","ведущий тип остаётся ледяным");
+  eq(W.mix,"volcanic","второй записан");
+  eq(W.T.ru,"ледяная, с вулканами","имя собирается из двух");
+  eq(W.T.atm,TYPES.ice.atm,"воздух берёт ведущий: полупригодного не бывает");
+  eq(W.T.pal.length,6,"палитра смешана в шесть ступеней");
+  ok(W.T.rough>TYPES.ice.rough&&W.T.rough<TYPES.volcanic.rough,"шероховатость между двумя");
+  const P={type:W.type,mix:W.mix,mw:.4,T:W.T,seed:12345};
+  worldTables(P);
+  ok(P.relief.crater>RELIEF_MIX.ice.crater,"кратеров стало больше, чем у чистой ледяной");
+  eq(P.geoTpl.length,GEO_TPL.ice.length,"слоёв столько же, сколько у ведущего");
+  ok(P.wxPool.indexOf("ash")>=0,"в погоду попал пепел вулканического соседа");
+  ok(P.voice.bpm[0]>WORLD_VOICE.ice.bpm[0],"музыка ускорилась в сторону вулканической");
+  const R=worldRes("ice","volcanic",.4);
+  ok(R.length>PROFILE.ice.length,"залежи пополнились породами соседа");
+  ok(R.indexOf("iron")>=0||R.indexOf("titan")>=0,"и это именно его породы");
+  /* чистый мир не обрастает ничем */
+  const pure=makeWorld("ice",null,0);
+  eq(pure.T,TYPES.ice,"без второго типа мир остаётся собой");
+
+  /* галактика: встречаются все двенадцать, и смеси преобладают */
+  const seen={},cnt={pure:0,mix:0};
+  for(let sx=0;sx<8;sx++)for(let sy=0;sy<8;sy++){
+    for(const p of getSystem(sx,sy).planets){
+      seen[p.type]=(seen[p.type]||0)+1;
+      if(p.mix)cnt.mix++;else cnt.pure++;
+      if(p.type!=="gas")ok(p.res.length>0,"у мира есть чем поживиться")&&0;
+    }
+  }
+  const absent=Object.keys(TYPES).filter(k=>!seen[k]);
+  eq(absent.join(", "),"","в шестидесяти четырёх секторах встретились все двенадцать миров");
+  ok(cnt.mix>cnt.pure,"смешанных больше, чем чистых ("+cnt.mix+" против "+cnt.pure+")");
+  ok(cnt.pure/(cnt.pure+cnt.mix)>.15,"но чистые не вымерли");
+  /* гигант не смешивается: смесь про поверхность, а её у него нет */
+  let gasMix=0;
+  for(let sx=0;sx<8;sx++)for(const p of getSystem(sx,0).planets)if(p.type==="gas"&&p.mix)gasMix++;
+  eq(gasMix,0,"газовый гигант ни с чем не смешан");
 }));

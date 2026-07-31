@@ -49,38 +49,51 @@ function getSystem(sx,sy){
   for(let i=0;i<n;i++){
     orbit+=200+r()*300;
     const far=orbit/2200, u=r();
+    /* Орбита решает, чем мир может быть: у звезды сорванная мантия и лава,
+       на середине вода и жизнь, снаружи лёд и газ. Кристаллические поля растут
+       там, где холодно и тихо, руинные миры не привязаны ни к чему — чужая
+       цивилизация селилась, где хотела. */
     let tk;
-    if(far>.62) tk=u<.5?"gas":(u<.8?"ice":"rocky");
-    else if(far<.2) tk=u<.5?"volcanic":(u<.8?"rocky":"desert");
-    else tk=u<.24?"terran":(u<.4?"ocean":(u<.6?"desert":(u<.78?"rocky":"toxic")));
-    const T=TYPES[tk], pseed=hashi(seed,i*7919,31337), pr2=rng(pseed);
+    if(far>.62) tk=u<.45?"gas":(u<.70?"ice":(u<.82?"rocky":(u<.92?"crystal":"ruin")));
+    /* Порог горячей зоны был .2, а ближайшая орбита даёт far≈.25 — то есть
+       вулканических миров в игре не существовало вовсе, хотя таблицы, музыка
+       и погода для них были написаны. Нашлось проверкой «встретились все типы». */
+    else if(far<.30) tk=u<.42?"volcanic":(u<.62?"rocky":(u<.78?"desert":(u<.92?"metal":"crystal")));
+    else tk=u<.18?"terran":(u<.30?"ocean":(u<.44?"desert":(u<.58?"rocky":
+        (u<.70?"toxic":(u<.82?"jungle":(u<.91?"ruin":(u<.96?"metal":"crystal")))))));
+    const pseed=hashi(seed,i*7919,31337), pr2=rng(pseed);
+    /* смесь берёт числа из своего потока (pr2), чтобы не сдвинуть орбиты */
+    const Wd=rollWorld(tk,pr2), T=Wd.T;
     /* газовые гиганты заметно крупнее каменистых миров — пропорции читаются на глаз */
     const radius=tk==="gas"?(78+r()*58):(18+r()*30);
     const nMoons=tk==="gas"?Math.floor(pr2()*4):(pr2()<.35?1:0);
     const moons=[];
     for(let m=0;m<nMoons;m++){
       const mseed=hashi(pseed,m*1319+7,0x00E), mr=rng(mseed);
-      const mtk=pick(["rocky","ice"],mr);
+      /* спутник — обломок или ледышка, изредка рудный или руинный: сложных
+         миров размером в шесть пикселей не бывает */
+      const mtk=pick(["rocky","rocky","ice","ice","metal","ruin"],mr);
+      const mW=rollWorld(mtk,mr);
       moons.push({
-        key:key+":"+i+"m"+m,parentIdx:i,idx:m,type:mtk,T:TYPES[mtk],seed:mseed,
+        key:key+":"+i+"m"+m,parentIdx:i,idx:m,type:mW.type,mix:mW.mix,mw:mW.mw,T:mW.T,seed:mseed,
         name:sys.name+" "+ROMAN[i]+"-"+(m+1),
         radius:3+mr()*6,orbit:radius*(2.2+m*1.6)+mr()*20,
         ecc:mr()*.12,argp:mr()*TAU,
         ang:mr()*TAU,spd:(mr()<.5?-1:1)*.0026/Math.pow(1+m,1.1),
-        rough:clamp(TYPES[mtk].rough*(.6+mr()*.8),0,1.2),
+        rough:clamp(mW.T.rough*(.6+mr()*.8),0,1.2),
         moons:[],x:0,y:0,vx:0,vy:0,tex:null,
-        res:PROFILE[mtk].filter((v,j,a)=>a.indexOf(v)===j)
+        res:worldRes(mW.type,mW.mix,mW.mw)
       });
     }
     sys.planets.push({
-      key:key+":"+i,idx:i,type:tk,T,seed:pseed,
+      key:key+":"+i,idx:i,type:Wd.type,mix:Wd.mix,mw:Wd.mw,T,seed:pseed,
       name:sys.name+" "+ROMAN[i],radius,orbit,
       ecc:.04+pr2()*.28,argp:pr2()*TAU,
       /* орбитальная скорость снижена в разы против прежней — планеты кружат неспешно */
       ang:pr2()*TAU,spd:(pr2()<.5?-1:1)*0.00014/Math.pow(orbit/500,1.4),
       rough:clamp(T.rough*(.6+pr2()*.8),0,1.2),
       moons,x:0,y:0,vx:0,vy:0,tex:null,
-      res:PROFILE[tk].filter((v,j,a)=>a.indexOf(v)===j)
+      res:worldRes(Wd.type,Wd.mix,Wd.mw)
     });
   }
   if(r()<.78){

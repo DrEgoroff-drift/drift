@@ -16,7 +16,7 @@ function oreNode(D,nc,nr){
   if(key in cache)return cache[key];
   const r=rng(hashi(D.p.seed+nc*92821,nr*68111,0xA10E));
   const ti=tierAt(nr*ORE_NODE_H);
-  const pool=PROFILE[D.p.type].concat(DEPTH_TIERS[ti].extra);
+  const pool=(D.p.res||PROFILE[D.p.type]||[]).concat(DEPTH_TIERS[ti].extra);
   const exists=pool.length>0&&r()<.42;
   const node=exists?{
     cx:nc*ORE_NODE_W+1.5+r()*(ORE_NODE_W-3),
