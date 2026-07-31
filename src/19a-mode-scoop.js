@@ -66,40 +66,140 @@ function updateScoop(dt){
     "\nНАГРЕВ "+heat+"% · ГАЗЫ "+G.cargo.volatiles+" · ТРЮМ "+held()+"/"+st.cargoMax;
   if(G.fuel<=0&&S.y>bb)G.prompt="ТОПЛИВО КОНЧИЛОСЬ · ПОДНЯТЬСЯ НЕЧЕМ";
 }
+/* ══════════════ небо гиганта: полосы, а не лепёшки ══════════════ */
+/* Первая версия рисовала два десятка полупрозрачных эллипсов на вертикальном
+   градиенте. На экране это читалось как наклейки на обоях: у гиганта не было
+   ни течения, ни глубины, ни масштаба — а масштаб здесь и есть содержание
+   сцены. Настоящие ленты Юпитера получаются не из фигур, а из **искажения
+   области**: широтные полосы, продавленные шумом по горизонтали, дают
+   фестоны, завихрения и вихри сами собой, без единого нарисованного овала.
+
+   Считается это один раз на планету в отдельный канвас (384×192), дальше
+   только растягивается и прокручивается тремя эшелонами с разной скоростью —
+   параллакс и есть ощущение скорости. */
+const GIANT={key:"",tex:null};
+function giantTex(p){
+  if(GIANT.key===p.seed)return GIANT.tex;
+  const TW=512,TH=256;
+  const cn=document.createElement("canvas");cn.width=TW;cn.height=TH;
+  const c=cn.getContext("2d"),img=c.createImageData(TW,TH),d=img.data;
+  const pal=p.T.pal,sd=p.seed|0;
+  /* два-три вихря: не рисуются поверх, а вмешиваются в само искажение —
+     поэтому полосы вокруг них загибаются, как в настоящем шторме */
+  const rr=rng(hashi(sd,0x5701,9)),eyes=[];
+  for(let i=0;i<2+Math.floor(rr()*2);i++)
+    eyes.push({x:rr(),y:.18+rr()*.64,r:.06+rr()*.09,s:(rr()<.5?-1:1)*(.5+rr())});
+  /* цвет одной точки ленты. u берётся не только в [0,1): у краёв текстуру
+     считают дважды — при u и при u-1 — и сшивают. Так лента замыкается в кольцо
+     без шва и без зеркала: зеркало склеивало кромку, но на пол-экрана
+     расплывалась бабочка из отражённого вихря. */
+  function pix(u,v){
+    const w1=fbm2(u*3.2,v*8.5,sd,4)-.5;
+    const w2=fbm2(u*7.4+3.1,v*15.0-2.2,sd^0x99,3)-.5;
+    let uu=u+w1*.30+w2*.07, vv=v+w2*.022+w1*.012;
+    for(const e of eyes){
+      let dx=u-e.x;dx-=Math.round(dx);                 // ближайшая копия по кругу
+      const dy=(v-e.y)*1.9, dd=Math.hypot(dx,dy);
+      if(dd<e.r*2.2){
+        const k=(1-dd/(e.r*2.2)),ang=k*k*e.s*2.4;
+        const ca=Math.cos(ang),sa=Math.sin(ang);
+        uu=e.x+(dx*ca-dy*sa);vv=e.y+(dx*sa+dy*ca)/1.9;
+      }
+    }
+    /* широта задаёт полосу, шум — её толщину и рваность */
+    const band=Math.sin(vv*Math.PI*14.0+Math.sin(uu*2.1)*.5)*.5+.5;
+    const grain=fbm2(uu*9,vv*22,sd^0x1234,3)-.5;
+    /* контраст: полосы должны читаться лентами, а не переливом */
+    let t=clamp(vv*.42+band*.52+grain*.18,0,1);
+    t=clamp((t-.5)*1.5+.5,0,1);t=Math.pow(t,1.35);   // светлые сливки — редкость, а не фон
+    const fi=t*(pal.length-1), i0=Math.min(pal.length-1,Math.floor(fi)), i1=Math.min(pal.length-1,i0+1);
+    const f=fi-i0, a=pal[i0], b=pal[i1];
+    /* мелкая турбулентность в светлоте — иначе лента остаётся плоской заливкой */
+    const lift=1+(fbm2(uu*26,vv*40,sd^0x77,2)-.5)*.20;
+    return [(a[0]+(b[0]-a[0])*f)*lift,(a[1]+(b[1]-a[1])*f)*lift,(a[2]+(b[2]-a[2])*f)*lift];
+  }
+  const SEAM=.22;                                    // ширина сшивки в долях ленты
+  for(let y=0;y<TH;y++){
+    const v=y/TH;
+    for(let x=0;x<TW;x++){
+      const o=(y*TW+x)*4, u=x/TW;
+      let col=pix(u,v);
+      if(u>1-SEAM){
+        const s=(u-(1-SEAM))/SEAM, k=s*s*(3-2*s);      // мягкая ступень
+        const col2=pix(u-1,v);
+        col=[col[0]+(col2[0]-col[0])*k,col[1]+(col2[1]-col[1])*k,col[2]+(col2[2]-col[2])*k];
+      }
+      d[o]=clamp(col[0],0,255);d[o+1]=clamp(col[1],0,255);d[o+2]=clamp(col[2],0,255);d[o+3]=255;
+    }
+  }
+  c.putImageData(img,0,0);
+  GIANT.key=p.seed;GIANT.tex=cn;return cn;
+}
 function drawScoop(){
   const S=G.scoop,p=S.p,[bt,bb]=scoopBand();
   const pal=p.T.pal;
   const sh=(S.shake>0?(Math.random()-.5)*S.shake*7:0);
   ctx.save();ctx.translate(0,sh);
-  /* небо гиганта: сверху разрежённая тьма, ниже — всё плотнее слои */
-  const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,"#05070c");
-  g.addColorStop(.28,"rgb("+pal[0].join(",")+")");
-  g.addColorStop(.62,"rgb("+pal[2].join(",")+")");
-  g.addColorStop(1,"rgb("+pal[4].join(",")+")");
-  ctx.fillStyle=g;ctx.fillRect(0,-20,W,H+40);
-  /* полосы облаков едут навстречу — это и есть ощущение скорости */
-  for(let i=0;i<26;i++){
-    const rr=rng(hashi(p.seed,i*613,0xC10D));
-    const yy=H*.16+rr()*H*.9, hgt=6+rr()*30;
-    const spd=.35+rr()*1.5, off=(S.x*spd*7+rr()*4000)%(W+520)-260;
-    const c=pal[1+Math.floor(rr()*4)];
-    ctx.fillStyle="rgba("+c.join(",")+","+(.14+rr()*.3).toFixed(2)+")";
-    ctx.beginPath();ctx.ellipse(off,yy,150+rr()*260,hgt,0,0,TAU);ctx.fill();
+  const T=giantTex(p);
+  /* Два эшелона одной ленты: дальний крупный и медленный, ближний мельче и
+     быстрее. Скорость читается только по разнице между ними. Трёх не берём:
+     одинаковая лента, наложенная трижды, взаимно усредняется в розовую кашу */
+  const layers=[[1.35,.30,1,1],[1.0,.85,.3,.9]];
+  for(const L of layers){
+    const hgt=H*L[0], wid=hgt*.62;
+    const off=-((S.x*L[1]*9)%wid);
+    ctx.globalAlpha=L[2];
+    const yTop=H*.5-hgt*.5*L[3];
+    for(let i=-1;i<=Math.ceil(W/wid)+1;i++)ctx.drawImage(T,off+i*wid,yTop,wid,hgt);
   }
-  /* коридор сбора: единственная подсказка, где держаться */
-  ctx.fillStyle="rgba(127,224,200,.10)";ctx.fillRect(0,bt,W,bb-bt);
-  ctx.strokeStyle="rgba(127,224,200,.55)";ctx.lineWidth=1.5;ctx.setLineDash([12,10]);
-  ctx.beginPath();ctx.moveTo(0,bt);ctx.lineTo(W,bt);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(0,bb);ctx.lineTo(W,bb);ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle="rgba(127,224,200,.7)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
+  ctx.globalAlpha=1;
+  /* глубина: разрежённая тьма сверху, раскалённая муть снизу */
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,"rgba(4,6,12,.92)");
+  g.addColorStop(.22,"rgba(8,10,20,.25)");
+  g.addColorStop(.62,"rgba(0,0,0,0)");
+  g.addColorStop(1,"rgba("+pal[4].join(",")+",.40)");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  /* набегающий поток: тонкие штрихи по всему кадру, гуще к низу */
+  ctx.strokeStyle="rgba(255,255,255,.05)";ctx.lineWidth=1;
+  for(let i=0;i<26;i++){
+    const rr2=rng(hashi(p.seed,i*331,0x51EA));
+    const yy=rr2()*H, len=40+rr2()*180, spd=2+rr2()*5;
+    const xx=(W+220)-((S.x*spd*11+rr2()*3000)%(W+440));
+    ctx.globalAlpha=.03+.09*(yy/H);
+    ctx.beginPath();ctx.moveTo(xx,yy);ctx.lineTo(xx+len,yy);ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+  /* гроза в нижних слоях: редкая вспышка снизу — там, куда лучше не опускаться */
+  if(Math.random()<.012){
+    const lx=Math.random()*W, ly=H*(.86+Math.random()*.1);
+    const fg=ctx.createRadialGradient(lx,ly,0,lx,ly,180);
+    fg.addColorStop(0,"rgba(255,246,220,.5)");fg.addColorStop(1,"rgba(255,200,140,0)");
+    ctx.fillStyle=fg;ctx.beginPath();ctx.arc(lx,ly,180,0,TAU);ctx.fill();
+  }
+  /* коридор сбора: не две пунктирные линейки поверх мира, а слой более
+     плотного газа — он светится и в нём висит взвесь, которую и собирают */
+  const cg=ctx.createLinearGradient(0,bt,0,bb);
+  cg.addColorStop(0,"rgba(127,224,200,0)");
+  cg.addColorStop(.5,"rgba(127,224,200,.13)");
+  cg.addColorStop(1,"rgba(127,224,200,0)");
+  ctx.fillStyle=cg;ctx.fillRect(0,bt,W,bb-bt);
+  ctx.fillStyle="rgba(190,255,238,.5)";
+  for(let i=0;i<40;i++){
+    const rr3=rng(hashi(p.seed,i*97,0x9AD));
+    const yy=bt+rr3()*(bb-bt), spd=3+rr3()*4;
+    const xx=(W+60)-((S.x*spd*12+rr3()*2600)%(W+120));
+    ctx.globalAlpha=.10+rr3()*.35;
+    ctx.fillRect(xx,yy,2.4,1.4);
+  }
+  ctx.globalAlpha=1;
+  ctx.strokeStyle="rgba(127,224,200,.30)";ctx.lineWidth=1;
+  for(const yy of [bt,bb]){
+    ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(34,yy);
+    ctx.moveTo(W-34,yy);ctx.lineTo(W,yy);ctx.stroke();
+  }
+  ctx.fillStyle="rgba(127,224,200,.55)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
   ctx.fillText("ПОЛОСА СБОРА",14,bt-6);
-  /* горизонт нижних слоёв — туда лучше не опускаться */
-  const hz=H*.82;
-  const hg=ctx.createLinearGradient(0,hz-40,0,H);
-  hg.addColorStop(0,"rgba(255,150,90,0)");hg.addColorStop(1,"rgba(255,120,60,.5)");
-  ctx.fillStyle=hg;ctx.fillRect(0,hz-40,W,H-hz+40);
   /* корабль: летит боком, слева направо, с набегающим потоком */
   const sx=W*.34,sy=S.y;
   if(S.y>bb){
@@ -110,7 +210,7 @@ function drawScoop(){
       ctx.beginPath();ctx.moveTo(sx-14,yy);ctx.lineTo(sx-14-l,yy+ (i-4)*1.6);ctx.stroke();
     }
   }
-  ctx.save();ctx.translate(sx,sy);ctx.rotate(S.bank*.5);
+  ctx.save();ctx.translate(sx,sy);ctx.rotate(S.bank*.5);ctx.scale(1.5,1.5);
   drawHull(G.shipId,keys.thrust&&G.fuel>0,false,S.bank);
   ctx.restore();
   /* сборник: два раструба забирают газ, пока корабль в коридоре */
@@ -129,7 +229,7 @@ function drawScoop(){
   }
   ctx.restore();
   /* приборы: нагрев — главный, он же и убивает */
-  const bw=Math.min(W-40,300),bx=W/2-bw/2,by=26;
+  const bw=Math.min(W-40,300),bx=W/2-bw/2,by=H*.145;   /* ниже угловых панелей: на 26 полоса налезала на них */
   ctx.fillStyle="rgba(6,10,16,.72)";ctx.fillRect(bx-6,by-6,bw+12,20);
   ctx.strokeStyle="rgba(242,178,92,.5)";ctx.lineWidth=1;ctx.strokeRect(bx-6,by-6,bw+12,20);
   const hk=clamp(S.heat/100,0,1);
