@@ -39,6 +39,9 @@ function enterSurface(){
     for(let i=arr.length-1;i>=0;i--)if(Math.abs(arr[i].x-caveMouth.x)<rad)arr.splice(i,1);
   };
   clearNear(deposits,70);clearNear(plants,50);clearNear(fauna,60);
+  /* и крупную форму: стена или друза перед устьем закрывала сам вход, к
+     которому ведёт стрелка навигатора */
+  if(tr.deco)clearNear(tr.deco,90);
   G.surf={p,tr,shipX:L.x,shipY:L.y,x:L.x+72,y:groundAt(tr,L.x+72)-10,
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,
     suit:100,warned:false,beacon:0,walkAmp:0,walkPhase:0,cave:caveMouth};
@@ -329,6 +332,9 @@ function drawSurface(){
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
     "rgba(200,240,246,.4)",p.T.pal);
   drawPOI(tr,camx,camy,p);
+  /* средний масштаб между валуном и постройкой — тем же светом и той же
+     породой, что грунт под ним (21b-surface-deco) */
+  drawDeco(tr,camx,camy,p);
   drawRocks(tr,camx,camy,p.T.pal);
   groundShadow(S.shipX-camx,S.shipY-camy+2,34,7);
   ctx.save();ctx.translate(S.shipX-camx,S.shipY-camy);drawLander(false,false);ctx.restore();
