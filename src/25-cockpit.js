@@ -400,6 +400,12 @@ function cockpitTex(id){
 function drawCockpit(b,st){
   const C=cockpitTex(G.shipId), P=C.plan, K=P.K, A=hex2rgb(P.acc);
   const D=P.dashY, DH=P.dashH, UH=P.UH, x0=P.x0, BW=P.BW;
+  /* Кегль приборов считается от высоты доски, а не задан числом. На широком
+     экране доска растягивается, а надписи в 8 px остаются теми же — показания
+     приходится разбирать. Множитель ограничен снизу единицей: на узком экране
+     мельчить дальше уже некуда. */
+  const FS=clamp(UH/70,1,1.75);
+  const fnt=s=>Math.round(s*FS)+"px ui-monospace,monospace";
 
   /* ── стекло: тонировка, блик и отражение приборов ──
      всё это прозрачное и живёт внутри проёма, мир под ним остаётся виден */
@@ -441,16 +447,17 @@ function drawCockpit(b,st){
      камней и подпись дальности радара. Прибор, который дублирует другой прибор
      или стекло, — не прибор, а шум. */
   const spd=Math.hypot(b.vx,b.vy,b.vz), pad=D+11;
-  ctx.font="8px ui-monospace,monospace";ctx.textAlign="left";
-  vbar(x0+6,pad,8,UH-22,G.fuel/st.fuelMax,"#7fe6d8","ТОПЛ");
-  vbar(x0+30,pad,8,UH-22,G.hull/st.hullMax,"#f2b25c","КОРП");
-  const lx=x0+52;
-  ctx.fillStyle="rgba(93,115,130,.8)";ctx.fillText("СКОРОСТЬ",lx,pad+8);
-  ctx.fillStyle="#7fe6d8";ctx.font="18px ui-monospace,monospace";
-  ctx.fillText(spd.toFixed(1),lx,pad+27);
+  ctx.font=fnt(8);ctx.textAlign="left";
+  const bw2=Math.round(8*FS);
+  vbar(x0+6,pad,bw2,UH-22,G.fuel/st.fuelMax,"#7fe6d8","ТОПЛ",FS);
+  vbar(x0+30*FS,pad,bw2,UH-22,G.hull/st.hullMax,"#f2b25c","КОРП",FS);
+  const lx=x0+Math.round(52*FS);
+  ctx.fillStyle="rgba(93,115,130,.8)";ctx.fillText("СКОРОСТЬ",lx,pad+8*FS);
+  ctx.fillStyle="#7fe6d8";ctx.font=fnt(18);
+  ctx.fillText(spd.toFixed(1),lx,pad+27*FS);
 
   /* ── радар: единственный прибор, которого не заменить взглядом в окно ── */
-  const rr=Math.min(UH*.44,44), rcx=x0+BW*.5, rcy=D+UH*.5;
+  const rr=Math.min(UH*.44,44*FS), rcx=x0+BW*.5, rcy=D+UH*.5;
   ctx.strokeStyle="rgba(120,190,210,.28)";ctx.lineWidth=1;
   ctx.beginPath();ctx.arc(rcx,rcy,rr,0,TAU);ctx.stroke();
   ctx.strokeStyle="rgba(120,190,210,.12)";
@@ -477,31 +484,31 @@ function drawCockpit(b,st){
 
   /* ── цель и трюм ── */
   const tx=x0+BW*.62;
-  ctx.textAlign="left";ctx.font="8px ui-monospace,monospace";
+  ctx.textAlign="left";ctx.font=fnt(8);
   if(b.lock){
     const dd=Math.hypot(b.lock.x-b.x,b.lock.y-b.y,b.lock.z-b.z)-b.lock.r;
-    ctx.fillStyle=RES[b.lock.res].col;ctx.font="12px ui-monospace,monospace";
-    ctx.fillText(RES[b.lock.res].ru.toUpperCase()+" ×"+b.lock.left,tx,pad+12);
-    ctx.font="8px ui-monospace,monospace";
+    ctx.fillStyle=RES[b.lock.res].col;ctx.font=fnt(12);
+    ctx.fillText(RES[b.lock.res].ru.toUpperCase()+" ×"+b.lock.left,tx,pad+12*FS);
+    ctx.font=fnt(8);
     ctx.fillStyle=dd>CUT_RANGE?"rgba(255,107,87,.9)":"rgba(93,115,130,.9)";
-    ctx.fillText(Math.round(dd)+" М"+(dd>CUT_RANGE?"   ДАЛЕКО":""),tx,pad+24);
-    ctx.fillStyle="rgba(255,255,255,.08)";ctx.fillRect(tx,pad+30,104,4);
-    ctx.fillStyle="#f2b25c";ctx.fillRect(tx,pad+30,104*clamp(b.prog,0,1),4);
+    ctx.fillText(Math.round(dd)+" М"+(dd>CUT_RANGE?"   ДАЛЕКО":""),tx,pad+24*FS);
+    ctx.fillStyle="rgba(255,255,255,.08)";ctx.fillRect(tx,pad+30*FS,104,4);
+    ctx.fillStyle="#f2b25c";ctx.fillRect(tx,pad+30*FS,104*clamp(b.prog,0,1),4);
   }else{
-    ctx.fillStyle="rgba(93,115,130,.45)";ctx.font="11px ui-monospace,monospace";
-    ctx.fillText("— НЕТ ЗАХВАТА —",tx,pad+12);
-    ctx.font="8px ui-monospace,monospace";
+    ctx.fillStyle="rgba(93,115,130,.45)";ctx.font=fnt(11);
+    ctx.fillText("— НЕТ ЗАХВАТА —",tx,pad+12*FS);
+    ctx.font=fnt(8);
   }
   let cxp=tx;
   const cw=Math.min(118,BW*.2);
-  ctx.fillStyle="rgba(255,255,255,.07)";ctx.fillRect(tx,pad+50,cw,6);
+  ctx.fillStyle="rgba(255,255,255,.07)";ctx.fillRect(tx,pad+50*FS,cw,6);
   for(const k of RES_KEYS){
     const q=G.cargo[k];if(!q)continue;
     const w=cw*q/st.cargoMax;
-    ctx.fillStyle=RES[k].col;ctx.fillRect(cxp,pad+50,w,6);cxp+=w;
+    ctx.fillStyle=RES[k].col;ctx.fillRect(cxp,pad+50*FS,w,6);cxp+=w;
   }
   ctx.fillStyle="rgba(93,115,130,.8)";
-  ctx.fillText("ТРЮМ "+held()+" / "+st.cargoMax,tx,pad+46);
+  ctx.fillText("ТРЮМ "+held()+" / "+st.cargoMax,tx,pad+46*FS);
   /* ── лампы: три, и все три означают беду ──
      «Резак» и «орудие» убраны: и то и другое видно в самом кадре. */
   const lamps=[
@@ -511,7 +518,7 @@ function drawCockpit(b,st){
   ];
   /* строкой, а не столбиком у правого борта: правый борт доски уходит под
      экранные кнопки режима, и там лампы просто не видно */
-  ctx.textAlign="left";ctx.font="8px ui-monospace,monospace";
+  ctx.textAlign="left";ctx.font=fnt(8);
   const ly=pad+UH-10, lstep=Math.min(92,(rcx-rr-lx-10)/3);
   lamps.forEach((L,i)=>{
     const x=lx+i*lstep;
@@ -560,7 +567,7 @@ function drawCockpit(b,st){
     ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(thx-hw-1,th-1,hw*2+2,2);
   }
 
-  function vbar(x,y,w,h,frac,col,label){
+  function vbar(x,y,w,h,frac,col,label,fs){
     ctx.fillStyle="rgba(255,255,255,.07)";ctx.fillRect(x,y,w,h);
     const f=clamp(frac,0,1);
     ctx.fillStyle=f<.22?"#ff6b57":col;
@@ -569,7 +576,9 @@ function drawCockpit(b,st){
     for(let i=1;i<5;i++){
       ctx.beginPath();ctx.moveTo(x,y+h*i/5);ctx.lineTo(x+w,y+h*i/5);ctx.stroke();
     }
-    ctx.fillStyle="rgba(93,115,130,.9)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="left";
-    ctx.fillText(label,x-1,y+h+11);
+    const F=fs||1;
+    ctx.fillStyle="rgba(93,115,130,.9)";
+    ctx.font=Math.round(8*F)+"px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillText(label,x-1,y+h+11*F);
   }
 }

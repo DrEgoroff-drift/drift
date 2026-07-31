@@ -77,9 +77,16 @@ function updateScoop(dt){
    Считается это один раз на планету в отдельный канвас (384×192), дальше
    только растягивается и прокручивается тремя эшелонами с разной скоростью —
    параллакс и есть ощущение скорости. */
-const GIANT={key:"",tex:null};
+/* Кэш на три последних гиганта, а не на одного: выпечка неба стоит ~400 мс,
+   и с кэшем в одну запись каждый вход в соседний гигант пёк заново — на
+   третьем-четвёртом заходе пауза уже заметна. Три записи покрывают обычный
+   маршрут «полетал у одного, слетал ко второму, вернулся». */
+const GIANT={key:"",tex:null,cache:[]};
+const GIANT_KEEP=3;
 function giantTex(p){
   if(GIANT.key===p.seed)return GIANT.tex;
+  const hit=GIANT.cache.find(e=>e.key===p.seed);
+  if(hit){GIANT.key=hit.key;GIANT.tex=hit.tex;return hit.tex;}
   const TW=512,TH=256;
   const cn=document.createElement("canvas");cn.width=TW;cn.height=TH;
   const c=cn.getContext("2d"),img=c.createImageData(TW,TH),d=img.data;
@@ -136,7 +143,10 @@ function giantTex(p){
     }
   }
   c.putImageData(img,0,0);
-  GIANT.key=p.seed;GIANT.tex=cn;return cn;
+  GIANT.key=p.seed;GIANT.tex=cn;
+  GIANT.cache.push({key:p.seed,tex:cn});
+  while(GIANT.cache.length>GIANT_KEEP)GIANT.cache.shift();
+  return cn;
 }
 function drawScoop(){
   const S=G.scoop,p=S.p,[bt,bb]=scoopBand();
