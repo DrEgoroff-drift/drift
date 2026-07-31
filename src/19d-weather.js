@@ -36,12 +36,20 @@ const WEATHER_BY_TYPE={
   /* у кристаллического воздух почти пуст — только редкая пыль от осыпей;
      джунгли живут дождём и спорами; металлический безвоздушен; руинный
      засыпан своей же пылью */
-  crystal: ["fog","dust"],
+  /* тумана на кристаллическом нет: в разреженной инертной атмосфере ему не из
+     чего взяться, а в кадре он гасил и палитру, и грани — мир превращался
+     в сиреневое молоко */
+  crystal: ["dust"],
   jungle:  ["rain","spore","rain","fog"],
   metal:   [],
   ruin:    ["dust","dust","fog"],
   gas:     []
 };
+/* Потолок силы по типу мира. Пул отвечает на вопрос «что бывает», но не на
+   вопрос «насколько». Без потолка редкая пыль на кристаллическом мире
+   выпадала сильной бурей и красила весь кадр в охру — то есть погода
+   перебивала сам тип, ради которого туда летели. Единица — обычный мир. */
+const WEATHER_CAP={crystal:.34,ruin:.8,jungle:1,metal:0};
 function weatherOf(p){
   if(p.wx)return p.wx;
   const pool=(p.T.atm==="отсутствует")?[]:(wtab(p).wxPool||WEATHER_BY_TYPE[p.type]||[]);
@@ -51,7 +59,10 @@ function weatherOf(p){
     /* период цикла и фаза свои: две планеты одного типа не штормят синхронно */
     per:2600+r()*5200, ph:r()*TAU,
     /* характер: у одной планеты погода почти всегда лёгкая, у другой — злая */
-    lo:r()*.25, hi:.45+r()*.75};
+    lo:r()*.25, hi:.45+r()*.75,
+    /* у смеси потолок берётся по доле: наполовину руинный мир пылит вполсилы */
+    cap:lerp(WEATHER_CAP[p.type]!==undefined?WEATHER_CAP[p.type]:1,
+             WEATHER_CAP[p.mix]!==undefined?WEATHER_CAP[p.mix]:1, p.mw||0)};
   return p.wx;
 }
 /* текущая сила 0..1 */
@@ -60,7 +71,7 @@ function weatherPower(p){
   if(!w.kind)return 0;
   const t=Math.sin(G.t/w.per*TAU+w.ph)*.5+.5;
   /* степень делает затишья длиннее бурь: буря должна быть событием */
-  return clamp(lerp(w.lo,w.hi,Math.pow(t,1.7)),0,1);
+  return clamp(lerp(w.lo,w.hi,Math.pow(t,1.7))*(w.cap===undefined?1:w.cap),0,1);
 }
 function weatherName(p){
   const w=weatherOf(p);

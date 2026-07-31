@@ -57,7 +57,9 @@ const RELIEF_MIX={
   crystal: {hill:.35,ridge:1.2, mesa:.6,  dune:0,   crater:.5,  canyon:.4},
   jungle:  {hill:1.1,ridge:.4,  mesa:.2,  dune:0,   crater:.1,  canyon:.9},
   metal:   {hill:.6, ridge:.8,  mesa:.3,  dune:0,   crater:1.3, canyon:.35},
-  ruin:    {hill:.7, ridge:.35, mesa:1.1, dune:.4,  crater:.5,  canyon:.6},
+  /* mesa 1.1 давало ровное плато во весь кадр — руинный мир выходил столом.
+     Ступени остались, но теперь между ними есть подъёмы и врезы */
+  ruin:    {hill:1.0,ridge:.35, mesa:.7,  dune:.4,  crater:.5,  canyon:.85},
   gas:     {hill:1,  ridge:0,   mesa:0,   dune:0,   crater:0,   canyon:0}
 };
 function genTerrain(p){
