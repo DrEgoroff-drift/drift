@@ -1649,3 +1649,58 @@ TEST_SUITES.push(()=>suite("посадочный корабль: масштаб 
     "высаживаемся за зоной взлёта, а не под кораблём");
   G.surf=null;G.land=null;G.mode="system";
 }));
+
+/* ── M82: пиратский корпус ──
+   Пират рисовался вашим же генератором корпусов в другой раскраске: полтора
+   десятка полигонов, аккуратная симметрия. Проверяем ровно то, из-за чего
+   затевалось: бюджет полигонов, асимметрия, четыре опознаваемых класса и то,
+   что сотня полигонов не считается каждый кадр. */
+TEST_SUITES.push(()=>suite("пиратский корпус: сварен, а не покрашен",()=>{
+  resetWorld();
+  const seen={};
+  for(let i=0;i<40;i++){
+    const id=pirateShipId(hashi(i,7,3));
+    const art=pirateArtOf(id);
+    seen[art.cls]=(seen[art.cls]||0)+1;
+    const n=art.B.polys.length;
+    ok(n>=60&&n<=120,"полигонов "+n+" (нужно 60–120), класс "+art.ru);
+    /* асимметрия — правило, а не шум: слева пилон, справа бак, и они разной
+       эпохи. Считать массу или число деталей по бортам бесполезно — хребет
+       почти симметричен и топит разницу, а случайная мелочь её подделывает.
+       Спрашиваем ровно то, что видно глазом: у скольких вершин НЕТ пары,
+       отражённой через ось. У штампованного корпуса таких почти нет. */
+    const V=[];
+    for(const q of art.B.polys)for(const pt of q.p)V.push(pt);
+    const tol=art.B.L*.008;
+    let lone=0;
+    for(const v of V){
+      if(!V.some(w=>Math.abs(w[0]-v[0])<tol&&Math.abs(w[1]+v[1])<tol))lone++;
+    }
+    ok(lone/V.length>.5,"корпус не зеркален: без пары "+
+      Math.round(lone/V.length*100)+"% вершин");
+    ok(art.B.eng.length>=2,"движков не меньше двух");
+  }
+  ok(seen.fast&&seen.raid&&seen.heavy,"все три вольных класса встречаются: "+
+    JSON.stringify(seen));
+  /* выпечка: второй запрос отдаёт ту же канву, а не считает заново */
+  const a=pirateArtOf(pirateShipId(hashi(3,7,3)));
+  const b=pirateArtOf(pirateShipId(hashi(3,7,3)));
+  ok(a===b&&a.cn.width>0,"корпус выпекается один раз на seed");
+  /* флагман ренегата — ваш корпус, обвешанный чужим */
+  const rg=pirateArtOf(G.shipId,true);
+  eq(rg.cls,"flag","у ренегата класс флагмана");
+  ok(rg!==pirateArtOf(G.shipId),"тот же id без пометки — не тот же корабль");
+  /* и всё это рисуется живьём, с повреждениями и без */
+  const c=document.createElement("canvas");c.width=c.height=260;
+  const old=ctx;ctx=c.getContext("2d");
+  try{
+    ctx.translate(130,130);
+    for(const hp of [1,.7,.4,.2]){
+      drawPirate({shipId:pirateShipId(hashi(5,7,3)),seed:5,hull:hp*100,hullMax:100,
+        thrust:hp<.5});
+    }
+  }finally{ctx=old;}
+  const d=c.getContext("2d").getImageData(0,0,260,260).data;
+  let ink=0;for(let i=3;i<d.length;i+=4)if(d[i]>20)ink++;
+  ok(ink>1200,"подбитый пират рисуется и виден ("+ink+" px)");
+}));
