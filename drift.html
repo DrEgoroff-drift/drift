@@ -604,7 +604,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.33.1";
+const VER="0.34.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -3272,7 +3272,9 @@ function crewPayroll(c,min){
     }
   }else{
     c.debt=Math.max(0,c.debt-min*crewPay(c)*.3);
-    if(c.debt<=0){c.warned=false;c.morale=Math.min(1,c.morale+min*.03);}
+    /* жилая часть дома: между рейсами человек живёт не в кабине, и мораль
+       возвращается вдвое быстрее (12j) */
+    if(c.debt<=0){c.warned=false;c.morale=Math.min(1,c.morale+min*.03*homeMoraleMul());}
   }
   /* опыт превращается в прибавку: старый дешёвый работник дорожает сам */
   const step=Math.floor((c.xp||0)/50);
@@ -4095,7 +4097,9 @@ const MGR_RULES={
 };
 function mgrSlots(m){
   const lv=mgrLevel(m);
-  const n=1+(lv>=2?1:0)+(lv>=4?1:0)+(lv>=6?1:0)+techLv("orders")+(m.slotBonus|0);
+  /* кабинет дома даёт каждому управляющему ещё одно место под приказ (12j) */
+  const n=1+(lv>=2?1:0)+(lv>=4?1:0)+(lv>=6?1:0)+techLv("orders")+(m.slotBonus|0)+
+    homeOrderBonus();
   return m.ai?n*2:n;                     // у ядра слотов вдвое — и они срабатывают сразу
 }
 function mgrRule(m,id){return m.rules.indexOf(id)>=0;}
@@ -4193,6 +4197,9 @@ function mgrPayroll(m,min){
 }
 /* ── работа домена: возвращает «сколько сделано» (оно же опыт) ── */
 function mgrDomain(m,min){
+  /* витрина дома — репутация, а не склад: чем она богаче, тем охотнее с вами
+     работают, но не больше десятой части сверху (12j) */
+  min=min*(1+homeShowBonus());
   const speed=mgrTraitMul(m,"speed");
   if(m.role==="cmd")   return mgrWorkCmd(m,min*speed);
   if(m.role==="keep")  return mgrWorkKeep(m,min*speed);
@@ -5517,6 +5524,9 @@ function pirateBuild(seed,cls){
        по дыму раньше, чем по факелу */
     eng.push({x:tail-el*.45,y:ey,r:ew,ph:r()*TAU,dirty:i===0?2:(r()<.45?1:0)});
   }
+  /* всё, что ниже, — навесное: в бою оно и отрывается первым. Граница нужна
+     выпечке «побитого» силуэта (см. `pirateArtOf`) */
+  const coreN=polys.length;
   /* ── навесное: заплаты внахлёст поверх швов ── */
   const patchN=8+Math.floor(r()*8);
   for(let i=0;i<patchN;i++){
@@ -5588,11 +5598,13 @@ function pirateBuild(seed,cls){
   /* метки сбитых: короткие насечки на носовой плите, число — по seed */
   const kills=Math.floor(r()*7);
   for(let i=0;i<kills;i++)lines.push([nose*.45-i*L*.03,-hw*.35,nose*.45-i*L*.03,-hw*.12,1]);
-  return {L,hw,nose,tail,polys,lines,rust,eng,turrets,cls,kills,top:bodyTop};
+  return {L,hw,nose,tail,polys,lines,rust,eng,turrets,cls,kills,top:bodyTop,coreN};
 }
 /* ── выпечка: один раз на seed, дальше — картинка с поворотом ── */
-function pirateArtOf(id,rogue){
-  const key=id+(rogue?"!r":"");
+function pirateArtOf(id,rogue,hurt){
+  /* побитый корабль — вторая выпечка, а не пятна поверх целой: пока силуэт
+     оставался прежним, разбитый пират выглядел просто испачканным */
+  const key=id+(rogue?"!r":"")+(hurt?"!h":"");
   if(PIR_ART[key])return PIR_ART[key];
   /* `shipData` знает все три источника корпусов: у ренегата это ВАШ корабль */
   const S=shipData(id)||{seed:hashi(1,2,3),col:"#d95a3c"};
@@ -5622,7 +5634,14 @@ function pirateArtOf(id,rogue){
     ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=1/k;ctx.stroke();
     ctx.restore();
   }
-  for(const q of B.polys){
+  /* у побитого отрывает навесное и часть кормы: силуэт становится рваным,
+     и подбитого видно по форме, а не только по полоске */
+  const hr=rng(hashi(S.seed,0x8B17,7));
+  const drop=[];
+  if(hurt)for(let i=0;i<B.polys.length;i++)drop.push(i>=B.coreN?hr()<.55:false);
+  for(let qi=0;qi<B.polys.length;qi++){
+    const q=B.polys[qi];
+    if(hurt&&drop[qi])continue;
     ctx.beginPath();ctx.moveTo(q.p[0][0],q.p[0][1]);
     for(let i=1;i<q.p.length;i++)ctx.lineTo(q.p[i][0],q.p[i][1]);
     ctx.closePath();
@@ -5647,6 +5666,36 @@ function pirateArtOf(id,rogue){
     ctx.strokeStyle=rgba(C[2],.9);ctx.lineWidth=t.r*.5;
     ctx.beginPath();ctx.moveTo(t.x,t.y);
     ctx.lineTo(t.x+Math.cos(t.a)*t.r*2.6,t.y+Math.sin(t.a)*t.r*2.6);ctx.stroke();
+  }
+  /* у побитого выгрызаем куски самого корпуса: рваный силуэт узнаётся
+     раньше, чем копоть на нём */
+  if(hurt){
+    ctx.globalCompositeOperation="destination-out";
+    for(let i=0;i<3;i++){
+      const bx=lerp(B.tail,B.nose*.4,hr()), by=(hr()<.5?-1:1)*B.hw*(.5+hr()*.6);
+      /* пробоина из трёх наложенных кругов: один ровный круг читается дыркой
+         дырокола, а не вырванным металлом */
+      for(let j=0;j<3;j++){
+        ctx.beginPath();
+        ctx.arc(bx+(hr()-.5)*B.hw*.7,by+(hr()-.5)*B.hw*.7,
+          B.hw*(.16+hr()*.3),0,TAU);
+        ctx.fill();
+      }
+      /* рваная кромка: несколько треугольных выкусов по краю пробоины, иначе
+         дыра остаётся ровной окружностью дырокола */
+      for(let j=0;j<5;j++){
+        const a=hr()*TAU, rr=B.hw*(.3+hr()*.3);
+        ctx.beginPath();
+        ctx.moveTo(bx+Math.cos(a)*rr,by+Math.sin(a)*rr);
+        ctx.lineTo(bx+Math.cos(a+.5)*rr*1.5,by+Math.sin(a+.5)*rr*1.5);
+        ctx.lineTo(bx+Math.cos(a-.3)*rr*1.3,by+Math.sin(a-.3)*rr*1.3);
+        ctx.closePath();ctx.fill();
+      }
+    }
+    ctx.globalCompositeOperation="source-atop";
+    ctx.fillStyle="rgba(18,14,12,.3)";
+    ctx.fillRect(-rad,-rad,rad*2,rad*2);
+    ctx.globalCompositeOperation="source-over";
   }
   /* ── один свет на весь корабль ──
      Пока каждая деталь заливалась своим ровным цветом, корабль оставался кучей
@@ -5676,8 +5725,10 @@ function pirateArtOf(id,rogue){
    Повреждения копятся вместе с hp, выхлоп грязный и несинхронный — и то и
    другое меняется каждый кадр, поэтому идёт поверх выпечки. */
 function drawPirate(p){
-  const art=pirateArtOf(p.shipId,p.rogue);
   const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
+  /* ниже половины берём вторую выпечку — рваный корпус, а не тот же силуэт
+     в пятнах. Обе картинки живут в кэше и считаются по одному разу */
+  const art=pirateArtOf(p.shipId,p.rogue,hp<.5);
   const B=art.B;
   /* выхлоп: чад из закопчённых сопел, у каждого своя фаза — один обязательно
      чадит сильнее прочих */
@@ -5696,23 +5747,22 @@ function drawPirate(p){
   /* ── повреждения: раньше урон читался только полоской над кораблём ── */
   if(hp<.85){
     const r=rng(hashi(p.seed||1,0x0D06,5));
-    const n=Math.round((1-hp)*7);
+    /* пятен поверх меньше, когда силуэт уже рваный: иначе копоть удваивается */
+    const n=Math.round((1-hp)*(hp<.5?3:7));
     for(let i=0;i<n;i++){
       const x=lerp(B.tail,B.nose*.8,r()), y=(r()*2-1)*B.hw*.7, s=B.hw*(.1+r()*.18);
       ctx.fillStyle="rgba(18,14,12,.85)";
       ctx.beginPath();ctx.arc(x,y,s,0,TAU);ctx.fill();
       ctx.strokeStyle="rgba(255,120,60,.35)";ctx.lineWidth=.7;ctx.stroke();
     }
-    /* ниже половины отрывает секцию, из пробоины бьёт факел */
+    /* из пробоины бьёт факел: сама пробоина уже вырезана в выпечке */
     if(hp<.5){
       const bx=B.tail+B.L*.35, by=B.hw*.55;
-      ctx.fillStyle="rgba(10,9,9,.95)";
-      ctx.beginPath();ctx.arc(bx,by,B.hw*.3,0,TAU);ctx.fill();
       const f=B.hw*(.32+Math.sin(G.t*.31)*.1);
       const fg=ctx.createRadialGradient(bx,by,0,bx,by,f*2.2);
-      fg.addColorStop(0,"rgba(255,220,150,.9)");fg.addColorStop(.4,"rgba(255,130,60,.5)");
+      fg.addColorStop(0,"rgba(255,220,150,.6)");fg.addColorStop(.4,"rgba(255,130,60,.3)");
       fg.addColorStop(1,"rgba(255,80,40,0)");
-      ctx.fillStyle=fg;ctx.beginPath();ctx.arc(bx,by,f*2.2,0,TAU);ctx.fill();
+      ctx.fillStyle=fg;ctx.beginPath();ctx.arc(bx,by,f*1.5,0,TAU);ctx.fill();
     }
     if(hp<.3){          // дым тянется за подбитым и виден издалека
       for(let i=0;i<4;i++){
@@ -5854,6 +5904,44 @@ function homeShow(res,qty){
   G.home.showcase[res]=(G.home.showcase[res]||0)+qty;
   logAdd("dim","На витрину дома: "+RES[res].ru+" ×"+qty);
   return true;
+}
+/* ══════════════ что ступени дают ══════════════
+   Ступень без последствий — та же «подпись без кода», за которую на M53
+   ловили перки: игрок видит комнату и вправе ждать, что она работает.
+   Всё, что ниже, — из спецификации M78, подключённое к настоящим местам. */
+/* КАБИНЕТ: место для ещё одного стоящего приказа у каждого управляющего.
+   Читается в `mgrSlots` (12c-mgr-core). */
+function homeOrderBonus(){return homeHas("study")?1:0;}
+/* ЖИЛАЯ ЧАСТЬ: наёмник между рейсами живёт в доме, а не в кабине, и мораль
+   восстанавливается вдвое быстрее. Читается в `crewTick`. */
+function homeMoraleMul(){return homeHas("living")?2:1;}
+/* ВИТРИНА: выставленное редкое сырьё — не склад, а репутация. Домен приносит
+   надбавку тем большую, чем богаче витрина, но не больше десятой части.
+   Читается в `mgrDomain`. */
+function homeShowBonus(){
+  if(!homeHas("case"))return 0;
+  let n=0;
+  for(const k in G.home.showcase)n+=G.home.showcase[k]|0;
+  return Math.min(.1,n*.004);
+}
+/* МАСТЕРСКАЯ: переборка части — аффиксы генерируются заново, но ступенью ниже.
+   Это не улучшение, а второй бросок: плохая часть перестаёт быть мусором, а
+   хорошую перебирать себе дороже. */
+function homeCanRebuild(){return homeHas("shop");}
+function homeRebuild(id){
+  if(!homeCanRebuild())return null;
+  const i=G.inv.findIndex(p=>p.id===id);
+  if(i<0)return null;
+  const p=G.inv[i];
+  const tier=Math.max(1,(p.tier|0)-1);
+  const np=genPart(hashi(p.seed,Date.now()&0xffff,0x5EB),tier,p.kind);
+  np.id=p.id;
+  G.inv[i]=np;
+  invalidateParts();
+  logAdd("tech","Мастерская дома: «"+p.name+"» перебрана в «"+np.name+"» ("+
+    TIER_RU[np.tier]+")");
+  say("Перебрано\n"+np.name+"\n"+np.aff.map(affLabel).join("\n"));
+  return np;
 }
 
 /* ══════════════ пираты ══════════════ */
@@ -10351,6 +10439,9 @@ function drawLanding(){
   drawLander(L.over>0&&!L.ok,L.thrOn&&L.over<=0,
     {gear:L.gear,sq:L.sq,hot:L.hot,landed:L.over>0&&L.ok,tr:tr,gx:L.x});
   ctx.restore();
+  /* пыль из-под струи на подходе: чем ниже, тем гуще. Без неё грунт до самого
+     касания оставался нетронутым, и посадка не чувствовалась тяжёлой */
+  landingDust(L,tr,camx,camy);
   drawWeather(p,camx,camy);
   lightShafts(p);
   gradePass(p);
@@ -10413,7 +10504,9 @@ function drawLander(broken,fire,opt){
   const bY=LAND_GY-19+sq*4, tY=bY-bodyH;
   const gy=x=>opt.tr?clamp(groundAt(opt.tr,(opt.gx||0)+x)-groundAt(opt.tr,opt.gx||0),-9,9):0;
   ctx.save();
-  ctx.rotate(-.05);                     // нос чуть задран
+  /* нос чуть задран, а на касании опускается вместе с просадкой стоек: без
+     этого посадка оставалась подменой картинки, как и было обещано в M81 */
+  ctx.rotate(-.05+sq*.12);
   /* ── стойки: три точки, разнос 0.84 длины; средняя — дальнего борта ── */
   const legs=[[-half*.42,1],[-half*.10,.62],[half*.42,1]];
   for(const lg of legs){
@@ -10532,7 +10625,23 @@ function drawLander(broken,fire,opt){
       hg.addColorStop(1,"rgba(255,90,40,0)");
       ctx.fillStyle=hg;ctx.beginPath();ctx.arc(ex+d,ey+er*.6,er*2.2,0,TAU);ctx.fill();
     }
-    if(fire){ctx.save();ctx.rotate(Math.PI/2);drawFlame(-ey-er*.8,ex+d,er*.8,1+(G.mods.engine||0)*.22);ctx.restore();}
+    /* маршевые сопла на посадке только тлеют: тягу вниз дают не они */
+  }
+  /* ── тормозные сопла в брюхе ──
+     Тяга на посадке направлена ВВЕРХ (`L.vy-=cos(a)…`), а маршевые движки
+     смотрят назад: пока факел бил из кормы, корабль на подходе выглядел так,
+     будто разгоняется вбок, а не висит. Жмёт тягу — из брюха бьют вниз три
+     коротких факела, и они же поднимают пыль. */
+  if(fire){
+    const lvl=1+(G.mods.engine||0)*.22;
+    for(const bx of [-half*.5,-half*.05,half*.42]){
+      const by=bY-bodyH*.02, br=bodyH*.13;
+      ctx.fillStyle=rgba(h.dark,1);
+      ctx.fillRect(bx-br*.9,by-br*.6,br*1.8,br*1.2);
+      ctx.save();ctx.translate(bx,by);ctx.rotate(Math.PI/2);
+      drawFlame(0,0,br*.8,lvl*(.8+Math.random()*.25));
+      ctx.restore();
+    }
   }
   /* проблесковый маяк */
   if(Math.sin(G.t*.07)>.2){
@@ -10555,7 +10664,38 @@ function drawLander(broken,fire,opt){
       ctx.beginPath();ctx.arc((i-1.5)*5,-12-t*7,3+t*2.2,0,TAU);ctx.fill();
     }
   }
+}/* ── пыль от струи ──
+   Работает и на подходе (пока жмёшь тягу), и в первые мгновения после касания:
+   осевшее облако не исчезает мгновенно. На мире без атмосферы пыль ниже и
+   резче — ей нечем виться. */
+function landingDust(L,tr,camx,camy){
+  const alt=groundAt(tr,L.x)-L.y-LAND_GY;
+  const push=(L.thrOn?1:0)+(L.over>0&&L.ok?Math.max(0,1-(70-L.over)/40):0);
+  if(push<=0||alt>150)return;
+  const p=L.p, thin=p.T.atm==="отсутствует";
+  const k=push*clamp(1-alt/150,0,1);
+  const n=Math.round(10+k*16);
+  for(let i=0;i<n;i++){
+    const r=rng(hashi(i,Math.floor(G.t*.5)+i,0xD05));
+    const side=r()<.5?-1:1;
+    const t=r();
+    /* пыль расходится от точки под кораблём вдоль СВОЕГО грунта, а не по
+       прямой: на склоне ровное облако сразу выдаёт наклейку */
+    const dx=side*(10+t*90*k);
+    const gx=L.x+dx, gy=groundAt(tr,gx);
+    const rise=(thin?6:16)*k*(1-t)*(.5+r()*.7);
+    const x=gx-camx, y=gy-camy-rise;
+    const a=(thin?.3:.45)*k*(1-t)*(.6+r()*.7);
+    const rad=(3+t*13)*(thin?.8:1.25)*(.6+k);
+    /* пыль того же цвета, что грунт под ней, и ЛЕЖИТ по земле сплюснутым
+       облаком: круглые светлые шары читались мыльными пузырями */
+    const base=p.T.pal?p.T.pal[3]||p.T.pal[2]:[150,140,130];
+    const col=mixc(base,[40,34,30],.35);
+    ctx.fillStyle="rgba("+col.map(v=>Math.round(v)).join(",")+","+a.toFixed(2)+")";
+    ctx.beginPath();ctx.ellipse(x,y,rad*1.7,rad*.55,0,0,TAU);ctx.fill();
+  }
 }
+
 /* ══════════════ точки интереса ══════════════ */
 /* Одна огромная вещь на горизонте стоит полусотни мелких украшений: она даёт
    масштаб (астронавт 20 px против корпуса в 400) и повод идти именно туда.
@@ -17832,6 +17972,61 @@ function renderTab(){
       hb.addEventListener("click",()=>{if(homeBeacon()){closeStation();renderTab();}});
       hr.appendChild(hb);
       $body.appendChild(hr);
+      /* ── что дом умеет: по одной строке на ступень, и только на ту, что есть.
+         Раньше поставить корабль в гараж или вынести редкое на витрину можно
+         было только из кода, то есть нельзя. ── */
+      if(homeHas("garage")){
+        const free=Object.keys(G.owned).filter(id=>
+          id!==G.shipId&&!G.home.garage.includes(id)&&shipData(id));
+        const gr=el("div","row");
+        gr.appendChild(el("div","nm","<b>Гараж</b><s>"+
+          (G.home.garage.length
+            ?"стоят: "+G.home.garage.map(id=>"«"+shipData(id).ru+"»").join(", ")
+            :"пуст — потеряв корабль, вы вернётесь домой пешком")+
+          "<br>отсюда поднимается корабль, если ваш погиб</s>"));
+        if(free.length){
+          const gb=document.createElement("button");
+          gb.textContent="ПОСТАВИТЬ «"+shipData(free[0]).ru.toUpperCase()+"»";
+          gb.addEventListener("click",()=>{homeStore(free[0]);renderTab();});
+          gr.appendChild(gb);
+        }
+        $body.appendChild(gr);
+      }
+      if(homeHas("case")){
+        const have=RARE_RES.filter(k=>(G.cargo[k]|0)>0);
+        const shown=Object.keys(G.home.showcase||{});
+        const cr=el("div","row");
+        cr.appendChild(el("div","nm","<b>Витрина</b><s>"+
+          (shown.length?shown.map(k=>RES[k].ru.toLowerCase()+" ×"+G.home.showcase[k]).join(", ")
+            :"пуста")+
+          "<br>надбавка доменам +"+Math.round(homeShowBonus()*100)+
+          "% · выставленное не продаётся</s>"));
+        if(have.length){
+          const cb=document.createElement("button");
+          const k=have[0],q=Math.min(3,G.cargo[k]|0);
+          cb.textContent="ВЫСТАВИТЬ "+RES[k].ru.toUpperCase()+" ×"+q;
+          cb.addEventListener("click",()=>{homeShow(k,q);renderTab();});
+          cr.appendChild(cb);
+        }
+        $body.appendChild(cr);
+      }
+      if(homeCanRebuild()){
+        $body.appendChild(el("div","sec",
+          "МАСТЕРСКАЯ · ПЕРЕБОРКА ВЫДАЁТ НОВЫЕ СВОЙСТВА, НО СТУПЕНЬЮ НИЖЕ"));
+        const free=G.inv.filter(p=>!Object.values(G.fit[G.shipId]||{}).includes(p.id));
+        if(!free.length)$body.appendChild(el("div","row",
+          "<div class='nm'><s>перебирать нечего: все части стоят на корабле</s></div>"));
+        for(const p of free.slice(0,6)){
+          const pr2=el("div","row");
+          pr2.appendChild(el("div","nm","<b>"+p.name+"</b> <span style='color:var(--dim)'>"+
+            TIER_RU[p.tier]+"</span><s>"+p.aff.map(affLabel).join(" · ")+"</s>"));
+          const pb=document.createElement("button");
+          pb.textContent=p.tier>1?"ПЕРЕБРАТЬ":"ПЕРЕБРАТЬ · УЖЕ НИЖЕ НЕКУДА";
+          pb.addEventListener("click",()=>{homeRebuild(p.id);renderTab();});
+          pr2.appendChild(pb);
+          $body.appendChild(pr2);
+        }
+      }
     }
     /* сеть баз одним экраном: где, что копают, сколько накопили, чем больны */
     baseTick();

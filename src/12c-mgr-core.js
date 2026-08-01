@@ -390,7 +390,9 @@ const MGR_RULES={
 };
 function mgrSlots(m){
   const lv=mgrLevel(m);
-  const n=1+(lv>=2?1:0)+(lv>=4?1:0)+(lv>=6?1:0)+techLv("orders")+(m.slotBonus|0);
+  /* кабинет дома даёт каждому управляющему ещё одно место под приказ (12j) */
+  const n=1+(lv>=2?1:0)+(lv>=4?1:0)+(lv>=6?1:0)+techLv("orders")+(m.slotBonus|0)+
+    homeOrderBonus();
   return m.ai?n*2:n;                     // у ядра слотов вдвое — и они срабатывают сразу
 }
 function mgrRule(m,id){return m.rules.indexOf(id)>=0;}
@@ -488,6 +490,9 @@ function mgrPayroll(m,min){
 }
 /* ── работа домена: возвращает «сколько сделано» (оно же опыт) ── */
 function mgrDomain(m,min){
+  /* витрина дома — репутация, а не склад: чем она богаче, тем охотнее с вами
+     работают, но не больше десятой части сверху (12j) */
+  min=min*(1+homeShowBonus());
   const speed=mgrTraitMul(m,"speed");
   if(m.role==="cmd")   return mgrWorkCmd(m,min*speed);
   if(m.role==="keep")  return mgrWorkKeep(m,min*speed);
