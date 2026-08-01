@@ -181,8 +181,17 @@ function drawMap(){
     }
     ctx.stroke();
     const cw=Math.min(300,W-32), cx=16, cy=H-PAD_SAFE-158;   // выше строк прыжка: они налезали на карточку
+    /* Волосок к звезде теперь короткий. Во всю длину он был диагональю через
+       всю карту: пересекал чужие системы и связи между ними и читался не как
+       указатель, а как случайная линия неизвестно откуда куда — тем вернее,
+       чем дальше выбранная звезда от угла с карточкой. Указывать направление
+       достаточно: саму звезду уже держат кольцо и уголки прицела. Если звезда
+       рядом, отрезок дотянется до неё целиком — прежнее поведение сохранено. */
+    const ax=cx+cw*.35, ay=cy+12;
+    const dx=x-ax, dy=(y+rr+18)-ay, dd=Math.hypot(dx,dy)||1;
+    const L=Math.min(dd,86);
     ctx.strokeStyle="rgba(242,178,92,.22)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(x,y+rr+18);ctx.lineTo(cx+cw*.35,cy+12);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax+dx/dd*L,ay+dy/dd*L);ctx.stroke();
     ctx.fillStyle="rgba(6,10,16,.62)";ctx.fillRect(cx,cy,cw,104);
     ctx.strokeStyle="rgba(127,230,216,.18)";ctx.strokeRect(cx+.5,cy+.5,cw,104);
     ctx.textAlign="left";
