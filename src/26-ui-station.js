@@ -409,11 +409,26 @@ function renderTab(){
       const pr=homeProgress();
       $body.appendChild(el("div","sec","ВАШ ДОМ · СЕКТОР "+G.home.sx+","+G.home.sy+
         " · ОБОРОТ "+G.home.turn.toLocaleString("ru")+" КР"));
+      /* дом — помещение, а не список: комната растёт слева направо, и в ней
+         видно нажитое (27e-ui-home). Кадр рисуется один раз при открытии:
+         своего цикла у экрана станции нет и заводить его незачем */
+      /* картинка ровно такой ширины, какой сам дом: он растёт — растёт и она.
+         Растянутая на всю панель комната из двух ступеней теряла масштаб, а
+         вписанная в высоту жалась к левому краю */
+      const hcv=document.createElement("canvas");
+      const dpr=window.devicePixelRatio||1, upx=1.5;
+      const roomW=homeRoomW();
+      hcv.width=Math.round(roomW*upx*dpr);
+      hcv.height=Math.round(HOME_ROOM_H*upx*dpr);
+      hcv.style.cssText="display:block;border-radius:8px;margin:6px 0;max-width:100%;"+
+        "width:"+Math.round(roomW*upx)+"px";
+      $body.appendChild(hcv);
+      drawHomeRoom(hcv);
       const rooms=HOME_TIERS.slice(0,G.home.tier).map(t=>t.ru).join(" · ");
       const hr=el("div","row");
+      /* строку «до ступени» не повторяем: она уже нарисована в самой комнате */
       hr.appendChild(el("div","nm","<b>"+rooms+"</b><s>"+
-        (pr.done?"дом достроен":pr.ru)+
-        "<br>здесь вас не найдут пираты, и сюда вы вернётесь, потеряв корабль</s>"));
+        "здесь вас не найдут пираты, и сюда вы вернётесь, потеряв корабль</s>"));
       const hb=document.createElement("button");
       const hc=homeBeaconCost();
       hb.textContent="МАЯК ДОМОЙ · "+hc.toLocaleString("ru")+" КР";
