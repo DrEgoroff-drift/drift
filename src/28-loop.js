@@ -262,3 +262,58 @@ function frame(now){
 }
 applyPadMode();applyPadSize();
 requestAnimationFrame(frame);
+
+/* ══════════════ dbg() — что держит корабль ══════════════
+   Отладка полёта началась с того, что игрок не мог сдвинуться с места, а
+   консоль была пуста и кадры шли ровно шестьдесят. По ошибкам такое не ищется:
+   корабль удерживает не исключение, а состояние — захват орбиты, автопилот,
+   залипшая клавиша, открытый экран, потерянный фокус. Команда печатает ровно
+   эти пять вещей и меряет кадр, чтобы больше не гадать.
+
+   Звать `dbg()` в консоли. Возвращает объект, а не строку: в консоли он
+   разворачивается сам, `copy(dbg())` кладёт в буфер. */
+function dbg(){
+  const sh=G.ship,sys=G.sys,st=stat();
+  const heldKeys=Object.keys(keys).filter(k=>keys[k]);
+  const scr=document.querySelector(".scr.open");
+  const O=G.orbit;
+  let holds=[];
+  if(O)holds.push("захват орбиты вокруг «"+(O.p&&O.p.name||"?")+"»"+
+    (O.sys&&O.sys!==G.sx+","+G.sy?" ИЗ ЧУЖОГО СЕКТОРА "+O.sys:""));
+  if(G.ap)holds.push("автопилот ("+G.ap.kind+", "+G.ap.phase+")");
+  if(heldKeys.length)holds.push("зажаты клавиши: "+heldKeys.join(", "));
+  if(scr)holds.push("открыт экран #"+scr.id);
+  if(!document.hasFocus())holds.push("страница не в фокусе");
+  if(!G.running)holds.push("игра не запущена (заставка)");
+  if(G.watch)holds.push("режим наблюдения за наёмником");
+  if(G.fuel<=0)holds.push("топливо на нуле");
+  /* кадр меряем по-настоящему, а не по G.t: жалоба на «залипание» одинаково
+     звучит и при тридцати кадрах, и при намертво удерживающем состоянии */
+  let n=0,t0=performance.now(),lt=t0,mx=0,slow=0;
+  return new Promise(r=>{
+    (function f(){
+      const t=performance.now(),d=t-lt;lt=t;
+      if(n++){mx=Math.max(mx,d);if(d>25)slow++;}
+      if(t-t0<1000)requestAnimationFrame(f);
+      else{
+        const out={
+          версия:VER, держит:holds.length?holds:"ничего — корабль свободен",
+          режим:G.mode, сектор:G.sx+":"+G.sy, система:sys&&sys.name,
+          корабль:{x:Math.round(sh.x),y:Math.round(sh.y),
+            скорость:+Math.hypot(sh.vx,sh.vy).toFixed(3),
+            поворот:+sh.av.toFixed(4), курс:+sh.a.toFixed(2)},
+          ресурсы:{топливо:+G.fuel.toFixed(1)+"/"+Math.round(st.fuelMax),
+            корпус:Math.round(G.hull)+"/"+Math.round(st.hullMax),
+            трюм:held()+"/"+st.cargoMax, кредиты:Math.round(G.credits)},
+          вокруг:{пираты:G.pirates.length, выстрелы:G.shots.length,
+            дроны:G.drones.length, союзники:(G.allies||[]).length},
+          кадр:{fps:+(n/((t-t0)/1000)).toFixed(1), средний:+((t-t0)/n).toFixed(1),
+            худший:+mx.toFixed(1), просевших:slow},
+          экран:{зум:+G.zoom.toFixed(2), холст:[c.width,c.height], dpr:devicePixelRatio}
+        };
+        console.log(out);r(out);
+      }
+    })();
+  });
+}
+window.dbg=dbg;
