@@ -1783,3 +1783,51 @@ TEST_SUITES.push(()=>suite("доход идёт одной воронкой",()=
   const hits=(src.match(/G\.credits\+=/g)||[]).length;
   eq(hits,1,"G.credits+= осталось только внутри earn()");
 }));
+
+/* ── M83, хвост: ступени должны что-то ДАВАТЬ ──
+   Комната без последствий — та же «подпись без кода», что перки на M53:
+   игрок видит мастерскую и вправе ждать, что она работает. */
+TEST_SUITES.push(()=>suite("ступени дома работают, а не украшают",()=>{
+  resetWorld();
+  earn(1200,"test");
+  const m=genMgr(21,["cmd"]);G.mgrs=[m];
+  const slots0=mgrSlots(m);
+  G.home.tier=6;                              // кабинет
+  eq(mgrSlots(m),slots0+1,"кабинет даёт ещё одно место под приказ");
+  G.home.tier=5;
+  eq(mgrSlots(m),slots0,"без кабинета — как было");
+  /* витрина: надбавка домену растёт с выставленным, но упирается в потолок */
+  G.home.tier=4;
+  eq(homeShowBonus(),0,"пустая витрина не даёт ничего");
+  G.cargo.iridium=(G.cargo.iridium|0)+10;
+  ok(homeShow("iridium",10),"редкое ушло на витрину");
+  eq(G.cargo.iridium,0,"и покинуло трюм");
+  ok(homeShowBonus()>0.03,"витрина даёт надбавку: "+homeShowBonus());
+  G.home.showcase.iridium=1000;
+  ok(homeShowBonus()<=.1,"но не больше десятой части");
+  /* жилая часть: мораль возвращается вдвое быстрее */
+  G.home.tier=6;eq(homeMoraleMul(),1,"без жилой части мораль как была");
+  G.home.tier=7;eq(homeMoraleMul(),2,"с жилой частью — вдвое");
+  /* мастерская: переборка даёт новые свойства ступенью ниже */
+  G.home.tier=5;
+  const p=genPart(12345,4,"gun");
+  addPart(p);
+  const was={name:p.name,tier:p.tier,aff:JSON.stringify(p.aff)};
+  const np=homeRebuild(p.id);
+  ok(!!np,"часть перебрана");
+  eq(np.id,p.id,"это та же часть, а не новая");
+  eq(np.tier,was.tier-1,"ступенью ниже");
+  ok(JSON.stringify(np.aff)!==was.aff,"свойства другие");
+  eq(G.inv.filter(x=>x.id===p.id).length,1,"в инвентаре она одна");
+  /* без мастерской переборки нет */
+  G.home.tier=4;
+  eq(homeRebuild(np.id),null,"без мастерской перебирать нечем");
+  /* гараж: свой корабль в гараж не ставится, чужой — нет */
+  G.home.tier=3;
+  eq(homeStore(G.shipId),false,"корабль, на котором летишь, в гараж не поставить");
+  const other=SHIP_KEYS.find(k=>k!==G.shipId);
+  eq(homeStore(other),false,"чужой корабль тоже");
+  G.owned[other]=true;
+  ok(homeStore(other),"свой второй — можно");
+  eq(homeStore(other),false,"дважды один и тот же — нет");
+}));

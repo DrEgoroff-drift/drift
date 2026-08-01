@@ -117,6 +117,9 @@ function pirateBuild(seed,cls){
        по дыму раньше, чем по факелу */
     eng.push({x:tail-el*.45,y:ey,r:ew,ph:r()*TAU,dirty:i===0?2:(r()<.45?1:0)});
   }
+  /* всё, что ниже, — навесное: в бою оно и отрывается первым. Граница нужна
+     выпечке «побитого» силуэта (см. `pirateArtOf`) */
+  const coreN=polys.length;
   /* ── навесное: заплаты внахлёст поверх швов ── */
   const patchN=8+Math.floor(r()*8);
   for(let i=0;i<patchN;i++){
@@ -188,11 +191,13 @@ function pirateBuild(seed,cls){
   /* метки сбитых: короткие насечки на носовой плите, число — по seed */
   const kills=Math.floor(r()*7);
   for(let i=0;i<kills;i++)lines.push([nose*.45-i*L*.03,-hw*.35,nose*.45-i*L*.03,-hw*.12,1]);
-  return {L,hw,nose,tail,polys,lines,rust,eng,turrets,cls,kills,top:bodyTop};
+  return {L,hw,nose,tail,polys,lines,rust,eng,turrets,cls,kills,top:bodyTop,coreN};
 }
 /* ── выпечка: один раз на seed, дальше — картинка с поворотом ── */
-function pirateArtOf(id,rogue){
-  const key=id+(rogue?"!r":"");
+function pirateArtOf(id,rogue,hurt){
+  /* побитый корабль — вторая выпечка, а не пятна поверх целой: пока силуэт
+     оставался прежним, разбитый пират выглядел просто испачканным */
+  const key=id+(rogue?"!r":"")+(hurt?"!h":"");
   if(PIR_ART[key])return PIR_ART[key];
   /* `shipData` знает все три источника корпусов: у ренегата это ВАШ корабль */
   const S=shipData(id)||{seed:hashi(1,2,3),col:"#d95a3c"};
@@ -222,7 +227,14 @@ function pirateArtOf(id,rogue){
     ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=1/k;ctx.stroke();
     ctx.restore();
   }
-  for(const q of B.polys){
+  /* у побитого отрывает навесное и часть кормы: силуэт становится рваным,
+     и подбитого видно по форме, а не только по полоске */
+  const hr=rng(hashi(S.seed,0x8B17,7));
+  const drop=[];
+  if(hurt)for(let i=0;i<B.polys.length;i++)drop.push(i>=B.coreN?hr()<.55:false);
+  for(let qi=0;qi<B.polys.length;qi++){
+    const q=B.polys[qi];
+    if(hurt&&drop[qi])continue;
     ctx.beginPath();ctx.moveTo(q.p[0][0],q.p[0][1]);
     for(let i=1;i<q.p.length;i++)ctx.lineTo(q.p[i][0],q.p[i][1]);
     ctx.closePath();
@@ -247,6 +259,36 @@ function pirateArtOf(id,rogue){
     ctx.strokeStyle=rgba(C[2],.9);ctx.lineWidth=t.r*.5;
     ctx.beginPath();ctx.moveTo(t.x,t.y);
     ctx.lineTo(t.x+Math.cos(t.a)*t.r*2.6,t.y+Math.sin(t.a)*t.r*2.6);ctx.stroke();
+  }
+  /* у побитого выгрызаем куски самого корпуса: рваный силуэт узнаётся
+     раньше, чем копоть на нём */
+  if(hurt){
+    ctx.globalCompositeOperation="destination-out";
+    for(let i=0;i<3;i++){
+      const bx=lerp(B.tail,B.nose*.4,hr()), by=(hr()<.5?-1:1)*B.hw*(.5+hr()*.6);
+      /* пробоина из трёх наложенных кругов: один ровный круг читается дыркой
+         дырокола, а не вырванным металлом */
+      for(let j=0;j<3;j++){
+        ctx.beginPath();
+        ctx.arc(bx+(hr()-.5)*B.hw*.7,by+(hr()-.5)*B.hw*.7,
+          B.hw*(.16+hr()*.3),0,TAU);
+        ctx.fill();
+      }
+      /* рваная кромка: несколько треугольных выкусов по краю пробоины, иначе
+         дыра остаётся ровной окружностью дырокола */
+      for(let j=0;j<5;j++){
+        const a=hr()*TAU, rr=B.hw*(.3+hr()*.3);
+        ctx.beginPath();
+        ctx.moveTo(bx+Math.cos(a)*rr,by+Math.sin(a)*rr);
+        ctx.lineTo(bx+Math.cos(a+.5)*rr*1.5,by+Math.sin(a+.5)*rr*1.5);
+        ctx.lineTo(bx+Math.cos(a-.3)*rr*1.3,by+Math.sin(a-.3)*rr*1.3);
+        ctx.closePath();ctx.fill();
+      }
+    }
+    ctx.globalCompositeOperation="source-atop";
+    ctx.fillStyle="rgba(18,14,12,.3)";
+    ctx.fillRect(-rad,-rad,rad*2,rad*2);
+    ctx.globalCompositeOperation="source-over";
   }
   /* ── один свет на весь корабль ──
      Пока каждая деталь заливалась своим ровным цветом, корабль оставался кучей
@@ -276,8 +318,10 @@ function pirateArtOf(id,rogue){
    Повреждения копятся вместе с hp, выхлоп грязный и несинхронный — и то и
    другое меняется каждый кадр, поэтому идёт поверх выпечки. */
 function drawPirate(p){
-  const art=pirateArtOf(p.shipId,p.rogue);
   const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
+  /* ниже половины берём вторую выпечку — рваный корпус, а не тот же силуэт
+     в пятнах. Обе картинки живут в кэше и считаются по одному разу */
+  const art=pirateArtOf(p.shipId,p.rogue,hp<.5);
   const B=art.B;
   /* выхлоп: чад из закопчённых сопел, у каждого своя фаза — один обязательно
      чадит сильнее прочих */
@@ -296,23 +340,22 @@ function drawPirate(p){
   /* ── повреждения: раньше урон читался только полоской над кораблём ── */
   if(hp<.85){
     const r=rng(hashi(p.seed||1,0x0D06,5));
-    const n=Math.round((1-hp)*7);
+    /* пятен поверх меньше, когда силуэт уже рваный: иначе копоть удваивается */
+    const n=Math.round((1-hp)*(hp<.5?3:7));
     for(let i=0;i<n;i++){
       const x=lerp(B.tail,B.nose*.8,r()), y=(r()*2-1)*B.hw*.7, s=B.hw*(.1+r()*.18);
       ctx.fillStyle="rgba(18,14,12,.85)";
       ctx.beginPath();ctx.arc(x,y,s,0,TAU);ctx.fill();
       ctx.strokeStyle="rgba(255,120,60,.35)";ctx.lineWidth=.7;ctx.stroke();
     }
-    /* ниже половины отрывает секцию, из пробоины бьёт факел */
+    /* из пробоины бьёт факел: сама пробоина уже вырезана в выпечке */
     if(hp<.5){
       const bx=B.tail+B.L*.35, by=B.hw*.55;
-      ctx.fillStyle="rgba(10,9,9,.95)";
-      ctx.beginPath();ctx.arc(bx,by,B.hw*.3,0,TAU);ctx.fill();
       const f=B.hw*(.32+Math.sin(G.t*.31)*.1);
       const fg=ctx.createRadialGradient(bx,by,0,bx,by,f*2.2);
-      fg.addColorStop(0,"rgba(255,220,150,.9)");fg.addColorStop(.4,"rgba(255,130,60,.5)");
+      fg.addColorStop(0,"rgba(255,220,150,.6)");fg.addColorStop(.4,"rgba(255,130,60,.3)");
       fg.addColorStop(1,"rgba(255,80,40,0)");
-      ctx.fillStyle=fg;ctx.beginPath();ctx.arc(bx,by,f*2.2,0,TAU);ctx.fill();
+      ctx.fillStyle=fg;ctx.beginPath();ctx.arc(bx,by,f*1.5,0,TAU);ctx.fill();
     }
     if(hp<.3){          // дым тянется за подбитым и виден издалека
       for(let i=0;i<4;i++){

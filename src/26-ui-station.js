@@ -436,6 +436,61 @@ function renderTab(){
       hb.addEventListener("click",()=>{if(homeBeacon()){closeStation();renderTab();}});
       hr.appendChild(hb);
       $body.appendChild(hr);
+      /* ── что дом умеет: по одной строке на ступень, и только на ту, что есть.
+         Раньше поставить корабль в гараж или вынести редкое на витрину можно
+         было только из кода, то есть нельзя. ── */
+      if(homeHas("garage")){
+        const free=Object.keys(G.owned).filter(id=>
+          id!==G.shipId&&!G.home.garage.includes(id)&&shipData(id));
+        const gr=el("div","row");
+        gr.appendChild(el("div","nm","<b>Гараж</b><s>"+
+          (G.home.garage.length
+            ?"стоят: "+G.home.garage.map(id=>"«"+shipData(id).ru+"»").join(", ")
+            :"пуст — потеряв корабль, вы вернётесь домой пешком")+
+          "<br>отсюда поднимается корабль, если ваш погиб</s>"));
+        if(free.length){
+          const gb=document.createElement("button");
+          gb.textContent="ПОСТАВИТЬ «"+shipData(free[0]).ru.toUpperCase()+"»";
+          gb.addEventListener("click",()=>{homeStore(free[0]);renderTab();});
+          gr.appendChild(gb);
+        }
+        $body.appendChild(gr);
+      }
+      if(homeHas("case")){
+        const have=RARE_RES.filter(k=>(G.cargo[k]|0)>0);
+        const shown=Object.keys(G.home.showcase||{});
+        const cr=el("div","row");
+        cr.appendChild(el("div","nm","<b>Витрина</b><s>"+
+          (shown.length?shown.map(k=>RES[k].ru.toLowerCase()+" ×"+G.home.showcase[k]).join(", ")
+            :"пуста")+
+          "<br>надбавка доменам +"+Math.round(homeShowBonus()*100)+
+          "% · выставленное не продаётся</s>"));
+        if(have.length){
+          const cb=document.createElement("button");
+          const k=have[0],q=Math.min(3,G.cargo[k]|0);
+          cb.textContent="ВЫСТАВИТЬ "+RES[k].ru.toUpperCase()+" ×"+q;
+          cb.addEventListener("click",()=>{homeShow(k,q);renderTab();});
+          cr.appendChild(cb);
+        }
+        $body.appendChild(cr);
+      }
+      if(homeCanRebuild()){
+        $body.appendChild(el("div","sec",
+          "МАСТЕРСКАЯ · ПЕРЕБОРКА ВЫДАЁТ НОВЫЕ СВОЙСТВА, НО СТУПЕНЬЮ НИЖЕ"));
+        const free=G.inv.filter(p=>!Object.values(G.fit[G.shipId]||{}).includes(p.id));
+        if(!free.length)$body.appendChild(el("div","row",
+          "<div class='nm'><s>перебирать нечего: все части стоят на корабле</s></div>"));
+        for(const p of free.slice(0,6)){
+          const pr2=el("div","row");
+          pr2.appendChild(el("div","nm","<b>"+p.name+"</b> <span style='color:var(--dim)'>"+
+            TIER_RU[p.tier]+"</span><s>"+p.aff.map(affLabel).join(" · ")+"</s>"));
+          const pb=document.createElement("button");
+          pb.textContent=p.tier>1?"ПЕРЕБРАТЬ":"ПЕРЕБРАТЬ · УЖЕ НИЖЕ НЕКУДА";
+          pb.addEventListener("click",()=>{homeRebuild(p.id);renderTab();});
+          pr2.appendChild(pb);
+          $body.appendChild(pr2);
+        }
+      }
     }
     /* сеть баз одним экраном: где, что копают, сколько накопили, чем больны */
     baseTick();

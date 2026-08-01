@@ -129,3 +129,41 @@ function homeShow(res,qty){
   logAdd("dim","На витрину дома: "+RES[res].ru+" ×"+qty);
   return true;
 }
+/* ══════════════ что ступени дают ══════════════
+   Ступень без последствий — та же «подпись без кода», за которую на M53
+   ловили перки: игрок видит комнату и вправе ждать, что она работает.
+   Всё, что ниже, — из спецификации M78, подключённое к настоящим местам. */
+/* КАБИНЕТ: место для ещё одного стоящего приказа у каждого управляющего.
+   Читается в `mgrSlots` (12c-mgr-core). */
+function homeOrderBonus(){return homeHas("study")?1:0;}
+/* ЖИЛАЯ ЧАСТЬ: наёмник между рейсами живёт в доме, а не в кабине, и мораль
+   восстанавливается вдвое быстрее. Читается в `crewTick`. */
+function homeMoraleMul(){return homeHas("living")?2:1;}
+/* ВИТРИНА: выставленное редкое сырьё — не склад, а репутация. Домен приносит
+   надбавку тем большую, чем богаче витрина, но не больше десятой части.
+   Читается в `mgrDomain`. */
+function homeShowBonus(){
+  if(!homeHas("case"))return 0;
+  let n=0;
+  for(const k in G.home.showcase)n+=G.home.showcase[k]|0;
+  return Math.min(.1,n*.004);
+}
+/* МАСТЕРСКАЯ: переборка части — аффиксы генерируются заново, но ступенью ниже.
+   Это не улучшение, а второй бросок: плохая часть перестаёт быть мусором, а
+   хорошую перебирать себе дороже. */
+function homeCanRebuild(){return homeHas("shop");}
+function homeRebuild(id){
+  if(!homeCanRebuild())return null;
+  const i=G.inv.findIndex(p=>p.id===id);
+  if(i<0)return null;
+  const p=G.inv[i];
+  const tier=Math.max(1,(p.tier|0)-1);
+  const np=genPart(hashi(p.seed,Date.now()&0xffff,0x5EB),tier,p.kind);
+  np.id=p.id;
+  G.inv[i]=np;
+  invalidateParts();
+  logAdd("tech","Мастерская дома: «"+p.name+"» перебрана в «"+np.name+"» ("+
+    TIER_RU[np.tier]+")");
+  say("Перебрано\n"+np.name+"\n"+np.aff.map(affLabel).join("\n"));
+  return np;
+}
