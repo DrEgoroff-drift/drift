@@ -12,7 +12,8 @@ is generated at runtime from seeds.
 
 Pilot a lone survey probe through an endless generated galaxy: prospect planets, tunnel into their
 crust, strip asteroid belts, skim gas giants, run trade routes across a living market, found bases,
-hire a crew that works while you are away, and board pirate stations on foot.
+hire a crew that works while you are away, board pirate stations on foot — and come back to a home
+that grew out of what you earned.
 
 > **Play it now:** download [`drift.html`](drift.html) and double-click it. That's the whole game —
 > one file, offline, no server.
@@ -87,16 +88,51 @@ hire by clicking the person, not a row in a table.
 </tr>
 <tr>
 <td width="50%" valign="top">
+<img src="docs/shots/lander.png" alt="Lander standing on a planet surface" width="100%">
+<b>The lander is a machine, not a toy on sticks.</b> The flight view is top-down and the landing view
+is side-on, so the lander has a silhouette of its own: three and a half to five human heights long,
+three-point gear with shock struts whose pads each settle on their own patch of ground, an open hatch
+with a lit interior and a ramp whose 10 px steps give you the scale at a glance. Touchdown is a
+movement — legs deploy on approach, struts compress under the impact and spring back, the nose dips.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/pirates-fight.png" alt="Pirates closing in" width="100%">
+<b>Pirates weld their ships out of three other people's.</b> Sixty to a hundred and twenty polygons
+instead of a dozen, asymmetry as a rule rather than noise — a pylon on one side, a tank on the other,
+a whole foreign section welded to one flank. Damage accumulates with the hull: scorches, then a
+breach with a flame, then a smoke trail. Below half, the ship is baked a second time with its hung
+gear torn off and bites taken out of the plating, so a wreck reads by shape.
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/shots/home.png" alt="Your home, seen as a room" width="100%">
+<b>Your home is a room, not a list of buildings.</b> It grows on its own out of accumulated
+turnover — one lamp, a warm wall, and everything you have earned standing on the floor: the mattress
+of the rented corner, the garage with your ship on props, the showcase, the workbench. Each tier adds
+its own stretch left to right, and the picture is exactly as wide as the house is. There is not one
+price on the screen.
+</td>
+<td width="50%" valign="top">
 <img src="docs/shots/world-ruin.png" alt="Ruined world" width="100%">
 <b>A ruined world is masonry under dust.</b> The ground itself follows a rubble law — rectangular
 blocks along the axes, in patches rather than everywhere, because continuous brickwork reads as graph
 paper. Standing on it are wall fragments with courses, a doorway and fallen column drums.
 </td>
+</tr>
+<tr>
 <td width="50%" valign="top">
 <img src="docs/shots/world-jungle.png" alt="Jungle world" width="100%">
 <b>Under a canopy it is dark.</b> The moss law is the inverse of the obvious one: mostly deep shade
 with light punching through in patches, ground litter and dark roots. Canopy trees are tiered dark
 masses with branches to the trunk and hanging vines that sway on the world's own wind.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/pirate-classes.png" alt="The four pirate classes" width="100%">
+<b>Four pirate classes read at a glance.</b> The interceptor is small and narrow, the raider carries
+cargo cages with pale bars, the heavy leads with a ram and armour plates, and the renegade's flagship
+is <i>your</i> real hull with other people's scrap welded over it. Each is baked once into an
+offscreen canvas from its seed, so a hundred polygons never reach the frame.
 </td>
 </tr>
 </table>
@@ -134,7 +170,7 @@ oceanic desert does not.
 - **Manual control** — thrust, a brake that kills velocity outright, and turning with real angular inertia: the ship carves an arc and banks into it rather than pivoting on the spot. Every key is rebindable (separate layouts for flight and for the belt), and on-screen buttons auto-hide when you are driving from a keyboard.
 - **Branching star map** — systems laid out organically with connecting lanes, each with generated flavour text describing its worlds, belt and station. Planets follow elliptical Keplerian orbits; orbital speeds are capped by *tangential* velocity so every body stays catchable even in the starter ship, while distant worlds still move more slowly than close ones.
 - **Gravitic anchor** — drift too far from the star and a gentle pull, plus an on-screen compass to the star, station and current target, brings you back. A one-tap "TO STAR" autopilot works from anywhere.
-- **Stranded restart** — out of fuel with no way to refuel, you can pay for emergency evacuation; without the credits you get a fresh starter ship at the origin system rather than a dead save.
+- **Stranded restart** — out of fuel with no way to refuel, you can pay for emergency evacuation. Without the credits you wake up at home, take a ship out of the garage and lose the cargo and half your credits; before there is a home to go back to, you get a fresh starter ship at the origin system rather than a dead save.
 
 ### Getting materials
 
@@ -208,6 +244,28 @@ about growing a headcount.
 - **Artifacts** — seven of them from the laboratory, one worn per manager, each with a second line of
   effect that unlocks deeper in.
 
+### Home
+
+There is exactly one home in the universe and **it is not for sale**. Rooms bought with credits would
+turn it into another shop; instead the home grows out of *accumulated turnover* — everything the
+universe has paid you, from sales and drones to domain income, mercenary runs, bounties and base
+takings. Nothing is ever deducted: you do not buy the place, you earn it, and money already spent
+still counts toward something you own.
+
+- **It appears on its own** after your first honest sale, in whatever sector you happened to be in,
+  and never moves. Eight tiers follow: a rented corner, a hall, a garage, a showcase, a workshop, a
+  study, living quarters, and a berth with a beacon.
+- **Death stops being a wipe.** Losing your ship with no money for evacuation used to hand you a bare
+  starter hull back at the origin system, erasing the whole run. Now you wake up at home, take a ship
+  out of the garage, and lose the cargo and half your credits instead of your history.
+- **The tiers do things.** The study gives every manager one more standing-order slot; the living
+  quarters double morale recovery; the showcase turns displayed rare material into reputation worth
+  up to a tenth extra from your domains; the workshop rerolls a part's affixes one tier down — not an
+  upgrade but a second throw, so junk becomes usable and good parts are not worth touching.
+- **It cannot be farmed.** No free fuel, repairs or weapons; the beacon home is paid for and gets
+  dearer the further out you are, you fly away under your own power, and anything on the showcase can
+  never be sold.
+
 ### Bases
 
 The planet stays flat 2D; the volume comes from **a cut through the ground** — sky and surface on top, buried compartments below, a lift shaft down the middle.
@@ -246,6 +304,37 @@ Dangerous sectors hold pirate stations you can board on foot. The map is a 2D gr
 - **Barter shop** — a tab where unique gear costs specific raw resources instead of credits.
 - **Ship's log** — a collapsible panel recording what actually happened: kills, drone deliveries, sales, research, discoveries, crew reports, base raids, wrecks. It persists with your save.
 
+### Landing
+
+Setting down is its own short flight, not a cutscene. You fly the lander against real gravity for the
+world, and touching down too fast, too sideways, tilted, or on a slope costs hull.
+
+- **The lander has its own side-on silhouette** — 90 to 130 px against a 24 px astronaut, because the
+  flight view is top-down and rotating one into the other is not a thing that works. Its hull colour,
+  livery and class markings still come from the ship you actually fly.
+- **Landing gear behaves.** Legs unfold on approach, each pad settles onto its own patch of terrain,
+  shock struts compress under the impact and spring back, and the nose dips with them.
+- **Thrust is vertical**, so three retro nozzles fire from the belly rather than the main engines, and
+  the jet raises a low cloud of ground-coloured dust that lingers after touchdown. On an airless world
+  the dust is lower and sharper — there is nothing for it to billow in.
+
+### Pirates
+
+The main antagonist used to be drawn with the player's own hull generator in a different palette — a
+dozen polygons, clean symmetry, tidy panels. Now a pirate **welds his ship out of three other
+people's**, and that is his language of form.
+
+- Sixty to a hundred and twenty polygons: a dark body mass, a spine of overlapping plates, a nose or
+  a ram, side modules, cargo cages, engines. **Asymmetry is a rule, not noise** — a pylon on one
+  flank, a fuel tank on the other, a whole foreign section welded on, and the scrap collects on the
+  "busy" side.
+- Hung over that: patches lapped over the seams, spikes, tow hooks, turrets on guy wires, whip
+  antennas, rust running from every weld, kill marks by seed.
+- **Damage is visible and cumulative** — scorches, then a breach with a flame, then a smoke trail.
+  Below half hull the ship is baked a second time with its hung gear torn off and bites taken out of
+  the plating: a wreck reads by silhouette rather than by a health bar.
+- Exhaust is dirty and out of sync, and one engine on every pirate always smokes harder than the rest.
+
 ### Danger is optional
 
 Pirates are absent near home and increasingly common the further out you push. Fighting has its own gun module and bounty tech, but outrunning or jumping away is always cheap and always valid. Bases, boarding and mercenary hunts are opt-in layers on top, not gates.
@@ -269,7 +358,7 @@ Local autosave, portable base64 save codes for moving between devices, and optio
 | File | Purpose |
 |---|---|
 | [`drift.html`](drift.html) | The entire game in one self-contained file — open it directly to play. **Built from `src/`; don't edit it by hand.** |
-| [`src/`](src) | The sources: `index.html` shell, `style.css`, and 55 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
+| [`src/`](src) | The sources: `index.html` shell, `style.css`, and 58 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
 | [`build.ps1`](build.ps1) | Rebuilds `drift.html` from `src/`. No dependencies — PowerShell, because Node isn't assumed. Pass `-Watch` to rebuild on save. |
 | [`server.js`](server.js) | Optional zero-dependency Node.js server (Node 18+) for self-hosting and persisting cloud saves to a `./saves` folder. |
 | [`worker.js`](worker.js) | Optional Cloudflare Worker alternative, storing saves in a KV namespace. |
@@ -299,4 +388,4 @@ Then point the `CLOUD` config inside `drift.html` at your server's `/save` endpo
 
 ## Status
 
-Actively evolving. The planned milestone queue — celestial mechanics, station types, rare materials, mercenaries, bases, the laboratory, the boarding mode, twelve blended world types and their surface language — is complete; a walkable HQ apartment is specced and next in line; mechanics, content and balance are still being iterated on. Balance numbers in particular are tuned against measurements rather than long play sessions, so they move.
+Actively evolving. The planned milestone queue — celestial mechanics, station types, rare materials, mercenaries, bases, the laboratory, the boarding mode, twelve blended world types and their surface language, the side-on lander, welded pirate hulls and the home that grows on its own — is complete. Next in line: a trade route you can hand to someone, and a quest journal where every accepted obligation carries an address and an arrow to it. Mechanics, content and balance are still being iterated on. Balance numbers in particular are tuned against measurements rather than long play sessions, so they move.
