@@ -1597,3 +1597,55 @@ TEST_SUITES.push(()=>suite("крупная форма: поздний мир в�
   ok(tr3.deco.every(d=>d.k==="wall"||d.k==="column"),"и это именно руины соседа");
   G.surf=null;G.land=null;G.mode="system";
 }));
+
+/* ── M81: посадочный корабль ──
+   Раньше на грунте стоял полётный силуэт, повёрнутый носом вверх и сжатый до
+   38 px при астронавте 24: игрушка на палочках. Мерило — человек, поэтому
+   проверяем именно длину, три точки опоры и зону «у корабля» от корпуса. */
+function landerInk(id,opt){
+  const c=document.createElement("canvas");c.width=260;c.height=200;
+  const old=ctx, prev=G.shipId;
+  ctx=c.getContext("2d");G.shipId=id;
+  ctx.translate(130,120);
+  try{drawLander(false,false,opt||{gear:1,sq:0,landed:true,hot:1});}
+  finally{ctx=old;G.shipId=prev;}
+  const d=c.getContext("2d").getImageData(0,0,260,200).data;
+  const at=(x,y)=>x>=0&&x<260&&y>=0&&y<200&&d[((y*260+x)<<2)+3]>20;
+  let x0=1e9,x1=-1e9,y0=1e9;
+  for(let y=0;y<200;y++)for(let x=0;x<260;x++)if(at(x,y)){
+    if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;
+  }
+  return {at,x0:x0-130,x1:x1-130,top:y0-120};
+}
+TEST_SUITES.push(()=>suite("посадочный корабль: масштаб и три точки опоры",()=>{
+  resetWorld();
+  const ASTRO=24;
+  for(const id of SHIP_KEYS){
+    const L=landerLen(id);
+    ok(L>=90&&L<=130,id+": длина силуэта 90–130 px ("+Math.round(L)+")");
+    ok(L>=3*ASTRO,id+": корабль не короче трёх астронавтов");
+    ok(shipZoneR(id)>L*.5,id+": зона «у корабля» больше половины корпуса");
+    const ink=landerInk(id);
+    ok(ink.x1-ink.x0>=L*.9,id+": кадр рисуется во всю длину ("+(ink.x1-ink.x0)+" px)");
+  }
+  /* и на уникальном корпусе тоже: он живёт в G.uniqueShips, а не в SHIPS */
+  const uid=Object.keys(G.uniqueShips||{})[0];
+  if(uid)ok(landerInk(uid).x1>0,"уникальный корпус тоже рисуется");
+  /* три пяты: под каждой из трёх опор есть чернила у линии касания (11) */
+  const L=landerLen(G.shipId), ink=landerInk(G.shipId);
+  for(const lx of [-L*.21,-L*.05,L*.21]){
+    let hit=false;
+    for(let x=Math.round(130+lx)-7;x<=Math.round(130+lx)+7&&!hit;x++)
+      for(let y=120+4;y<=120+18;y++)if(ink.at(x,y)){hit=true;break;}
+    ok(hit,"опора на "+Math.round(lx)+" px стоит на грунте");
+  }
+  ok(ink.x1-ink.x0>=L*.8,"разнос опор и корпуса не уже 0.8 длины");
+  /* убранное шасси действительно убрано: в полёте пят у грунта нет */
+  const up=landerInk(G.shipId,{gear:0,sq:0,landed:false});
+  ok(up.top>ink.top-40,"со сложенным шасси силуэт не выше, чем со стоящим");
+  /* зона у корабля не пускает высадку под днище */
+  landOnTestPlanet();
+  ok(Math.abs(G.surf.x-G.surf.shipX)>shipZoneR(),
+    "высаживаемся за зоной взлёта, а не под кораблём");
+  G.surf=null;G.land=null;G.mode="system";
+}));
