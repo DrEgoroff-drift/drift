@@ -74,7 +74,9 @@ function updateSystem(dt){
     if(keys.right)sh.av+=acc;
     if(!keys.left&&!keys.right)sh.av*=Math.pow(.9,dt);
     sh.av=clamp(sh.av,-lim,lim);
-    sh.a+=sh.av*dt;
+    /* курс сворачиваем сразу: за долгий полёт он копится оборотами, а всё, что
+       считается от него, живёт в пределах полуоборота */
+    sh.a=angWrap(sh.a+sh.av*dt);
     if(keys.thrust&&G.fuel>0){
       sh.vx+=Math.cos(sh.a)*.082*st.thr*dt;
       sh.vy+=Math.sin(sh.a)*.082*st.thr*dt;
