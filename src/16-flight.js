@@ -43,6 +43,21 @@ function drawNebula(cx,cy,par){
   ctx.globalAlpha=.6;ctx.drawImage(N,ox,oy,W+ex,H+ey);ctx.globalAlpha=1;
 }
 
+/* Тело из текущей системы или из прежней? Сектор проверяется первым — он ловит
+   прыжок. Сверка по ссылке ловит второй случай: система та же, но пересобрана
+   из seed (кэш вытеснил старую), и объект планеты уже другой — захват за старый
+   так же мёртв, его тоже надо снять. */
+function bodyInSystem(p,sys){
+  if(!p||!sys)return false;
+  if(G.orbit&&G.orbit.sys&&G.orbit.sys!==G.sx+","+G.sy)return false;
+  if(sys.station===p)return true;
+  for(const pl of sys.planets){
+    if(pl===p)return true;
+    for(const m of pl.moons)if(m===p)return true;
+  }
+  return false;
+}
+
 /* ══════════════ автопилот ══════════════ */
 function targetPos(){
   const ap=G.ap;if(!ap)return null;
@@ -125,6 +140,7 @@ function arrive(){
     const cruise=6.4+stat().thr*1.6;
     const w=dirCcw*clamp(Math.min(.6/Math.sqrt(r),cruise*.28/Math.max(r,1)),.002,.03);
     G.orbit={p,r,ang:ang0,w};
+    G.orbit.sys=G.sx+","+G.sy;
     G.ap=null;
     say("Захват орбиты\n"+p.name+(G.opts.easyLand?"\nДЕЙСТВИЕ — авто-посадка":"\nДЕЙСТВИЕ — посадка"));
   }else if(ap.kind==="star"){

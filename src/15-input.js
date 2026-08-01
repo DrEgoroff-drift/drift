@@ -107,6 +107,7 @@ addEventListener("keyup",e=>{
    гашение съедает набранное каждый кадр, тяга не успевает победить, и это
    читается как «управление умерло» — при честных шестидесяти кадрах и пустой
    консоли, поэтому по ошибкам такое не ищется. */
+let wasBlurred=false;
 function releaseAllKeys(){
   for(const k in keys)keys[k]=false;
   document.querySelectorAll("[data-k].on").forEach(b=>b.classList.remove("on"));

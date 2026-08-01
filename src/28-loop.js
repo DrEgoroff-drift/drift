@@ -214,6 +214,13 @@ let last=performance.now();
 let lastDroneTick=0;
 function frame(now){
   const dt=clamp((now-last)/16.667,0,3);last=now;
+  /* второй рубеж против залипших клавиш: событие blur приходит не всегда —
+     фокус, ушедший в DevTools того же окна, его может не поднять. Пока страница
+     не в фокусе, нажатым не может быть ничего по определению, и кадр это
+     проверяет сам. Без этого залипшая тяга жжёт топливо, а залипший руль крутит
+     корабль на месте — при живом управлении и пустой консоли. */
+  if(!document.hasFocus()){if(!wasBlurred){wasBlurred=true;releaseAllKeys();}}
+  else wasBlurred=false;
   actEdge=keys.act&&!prevAct;prevAct=keys.act;
   if(G.running){
     G.t+=dt;
