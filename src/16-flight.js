@@ -169,7 +169,7 @@ function arrive(){
    мира, а его выхлоп уходил в доли пикселя и попросту исчезал. Оставался
    голый силуэт, к которому пришлось пририсовывать кружок-метку. */
 const shipZ=Z=>clamp(Z,.55,1.6);
-const TRAIL=[],TRAIL_MAX=320;
+const TRAIL=[],TRAIL_MAX=560;
 const TRAIL_TINT={};
 function trailTint(id){
   if(TRAIL_TINT[id])return TRAIL_TINT[id];
@@ -187,6 +187,11 @@ function trailStep(dt,thrusting,turning,braking){
     if(t.life<=0)TRAIL.splice(i,1);
   }
   const ca=Math.cos(sh.a),sa=Math.sin(sh.a);
+  /* Сопла ставим там, где они нарисованы. Корпус рисуется в масштабе shipZ, а
+     смещения сопел до сих пор откладывались в мировых единицах — на экране они
+     сходились к середине силуэта, и шлейф бил из центра корабля, а не из дюз.
+     Тот же коэффициент переводит смещение из «единиц корпуса» в мировые. */
+  const eScale=shipZ(G.zoom)/G.zoom;
   const lvl=G.mods.engine|0;
   /* длина хвоста: тяга корпуса × модуль двигателя. Ниже единицы не опускаем —
      у «Мамонта» шлейф короткий, но он есть */
@@ -198,13 +203,22 @@ function trailStep(dt,thrusting,turning,braking){
     for(let i=0;i<h.eng.length;i++){
       if(i%skip)continue;
       const e=h.eng[i];
-      const ex=sh.x+e.x*ca-e.y*sa, ey=sh.y+(e.x*sa+e.y*ca);
+      const ex=sh.x+(e.x*ca-e.y*sa)*eScale, ey=sh.y+(e.x*sa+e.y*ca)*eScale;
       /* разброс почти нулевой: лента складывается из этих точек, и любой заметный
          джиттер превращает хвост в лесенку вместо плавной дуги */
-      const spread=(Math.random()-.5)*.04, sp=(1.2+Math.random()*.3)*(.8+span*.4);
+      /* Точка почти не имеет своей скорости. Раньше она наследовала треть
+         скорости корабля и получала полновесный толчок назад — облако уезжало
+         следом за кораблём, и хвост выходил коротким мазком у кормы. Газ,
+         выброшенный в пустоту, никуда не летит вместе с кораблём: он остаётся
+         там, где выброшен. Отсюда и берётся дуга пройденного пути — лента
+         просто висит на месте и гаснет. */
+      const spread=(Math.random()-.5)*.04, sp=(1.2+Math.random()*.3)*(.8+span*.4)*.4;
+      /* лента живёт дольше, чем раньше (было 26): на глаз хвост читался обрубком
+         сразу за соплом — видно, что двигатель работает, но не видно, откуда
+         корабль пришёл. Дуга траектории — главное, что шлейф вообще сообщает */
       TRAIL.push({x:ex,y:ey,hot:1,e:i,r:e.r*(.54+Math.random()*.08),
-        max:26*span,life:26*span,
-        vx:sh.vx*.3-Math.cos(sh.a+spread)*sp, vy:sh.vy*.3-Math.sin(sh.a+spread)*sp});
+        max:64*span,life:64*span,
+        vx:-Math.cos(sh.a+spread)*sp, vy:-Math.sin(sh.a+spread)*sp});
     }
   }
   /* ── струи ориентации ──
@@ -217,7 +231,7 @@ function trailStep(dt,thrusting,turning,braking){
     const jets=[[h.nose*.55, h.bw*.8*-s, -s],    // нос: газ наружу по борту -s
                 [h.tail*.55, h.bw*.8*s,   s]];   // корма: газ в другую сторону
     for(const j of jets){
-      const ex=sh.x+j[0]*ca-j[1]*sa, ey=sh.y+(j[0]*sa+j[1]*ca);
+      const ex=sh.x+(j[0]*ca-j[1]*sa)*eScale, ey=sh.y+(j[0]*sa+j[1]*ca)*eScale;
       const pa=sh.a+Math.PI/2*j[2];
       /* струя короткая: это укол газа у борта, а не второй шлейф —
          длинная белая цепочка вдоль всего курса читалась как помеха */
@@ -229,7 +243,7 @@ function trailStep(dt,thrusting,turning,braking){
   if(braking&&TRAIL.length<TRAIL_MAX-6&&Math.random()<.8){
     for(const s of [-1,1]){
       const px=h.nose*.5, py=h.bw*.5*s;
-      const ex=sh.x+px*ca-py*sa, ey=sh.y+(px*sa+py*ca);
+      const ex=sh.x+(px*ca-py*sa)*eScale, ey=sh.y+(px*sa+py*ca)*eScale;
       const pa=sh.a+(Math.random()-.5)*.5;       // газ вперёд по курсу
       TRAIL.push({x:ex,y:ey,hot:0,e:-1,r:1.2+Math.random()*.9,max:11,life:7+Math.random()*4,
         vx:sh.vx*.85+Math.cos(pa)*2.4, vy:sh.vy*.85+Math.sin(pa)*2.4});
@@ -259,8 +273,11 @@ function drawTrail(zx,zy,Z){
       const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1);
       /* у сопла — белое ядро, к хвосту цвет уходит в акцент корпуса */
       const col=u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
-      ctx.strokeStyle=rgba(col,(u*.13+u*u*u*.3).toFixed(3));
-      ctx.lineWidth=Math.max(.6,b2.r*SZ*(1.7-u*1.05));
+      /* яркость и толщина подняты примерно вдвое: прежние .13/.30 при толщине
+         в пиксель давали ленту на пороге видимости — на тёмном фоне её просто
+         не было. Профиль тот же, лента по-прежнему ширится и гаснет к хвосту */
+      ctx.strokeStyle=rgba(col,(u*.24+u*u*u*.46).toFixed(3));
+      ctx.lineWidth=Math.max(1,b2.r*SZ*(2.7-u*1.6));
       ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
     }
     /* добела раскалённый корешок у самого сопла */
@@ -268,8 +285,8 @@ function drawTrail(zx,zy,Z){
     if(f){
       const x=zx(f.x),y=zy(f.y);
       if(x>-40&&x<W+40&&y>-40&&y<H+40){
-        ctx.fillStyle=rgba(T.core,.5);
-        ctx.beginPath();ctx.arc(x,y,Math.max(.8,f.r*SZ*.9),0,TAU);ctx.fill();
+        ctx.fillStyle=rgba(T.core,.62);
+        ctx.beginPath();ctx.arc(x,y,Math.max(.8,f.r*SZ*1.3),0,TAU);ctx.fill();
       }
     }
   }
