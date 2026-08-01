@@ -5962,6 +5962,7 @@ addEventListener("keyup",e=>{
    гашение съедает набранное каждый кадр, тяга не успевает победить, и это
    читается как «управление умерло» — при честных шестидесяти кадрах и пустой
    консоли, поэтому по ошибкам такое не ищется. */
+let wasBlurred=false;
 function releaseAllKeys(){
   for(const k in keys)keys[k]=false;
   document.querySelectorAll("[data-k].on").forEach(b=>b.classList.remove("on"));
@@ -6487,6 +6488,21 @@ function drawNebula(cx,cy,par){
   ctx.globalAlpha=.6;ctx.drawImage(N,ox,oy,W+ex,H+ey);ctx.globalAlpha=1;
 }
 
+/* Тело из текущей системы или из прежней? Сектор проверяется первым — он ловит
+   прыжок. Сверка по ссылке ловит второй случай: система та же, но пересобрана
+   из seed (кэш вытеснил старую), и объект планеты уже другой — захват за старый
+   так же мёртв, его тоже надо снять. */
+function bodyInSystem(p,sys){
+  if(!p||!sys)return false;
+  if(G.orbit&&G.orbit.sys&&G.orbit.sys!==G.sx+","+G.sy)return false;
+  if(sys.station===p)return true;
+  for(const pl of sys.planets){
+    if(pl===p)return true;
+    for(const m of pl.moons)if(m===p)return true;
+  }
+  return false;
+}
+
 /* ══════════════ автопилот ══════════════ */
 function targetPos(){
   const ap=G.ap;if(!ap)return null;
@@ -6569,6 +6585,7 @@ function arrive(){
     const cruise=6.4+stat().thr*1.6;
     const w=dirCcw*clamp(Math.min(.6/Math.sqrt(r),cruise*.28/Math.max(r,1)),.002,.03);
     G.orbit={p,r,ang:ang0,w};
+    G.orbit.sys=G.sx+","+G.sy;
     G.ap=null;
     say("Захват орбиты\n"+p.name+(G.opts.easyLand?"\nДЕЙСТВИЕ — авто-посадка":"\nДЕЙСТВИЕ — посадка"));
   }else if(ap.kind==="star"){
@@ -6934,6 +6951,15 @@ function updateSystem(dt){
      Посадка и прочие проверки ниже по коду продолжают работать как обычно —
      мы только подменяем то, как двигается корабль. */
   if(G.orbit&&(keys.thrust||keys.brake||keys.left||keys.right))G.orbit=null;
+  /* захват принадлежит телу, а тело — системе. Прыжок, стыковка, посадка, пояс,
+     абордаж и авария сбрасывали автопилот, но не захват: корабль оставался
+     привязан к планете из прежней системы. Её координаты больше никто не
+     обновляет, и он кружит на месте по крошечному кругу — без расхода топлива,
+     без ошибок в консоли, послушный рулю и глухой ко всему остальному.
+     Сбрасывать по одному месту ненадёжно: следующий новый режим забудут снова.
+     Поэтому проверяем то, что важно на самом деле, — тело всё ещё в этой
+     системе или нет. */
+  if(G.orbit&&!bodyInSystem(G.orbit.p,sys))G.orbit=null;
   const orbiting=!!G.orbit;
   let a0=sh.a,apOn=false,sp=Math.hypot(sh.vx,sh.vy),atEdge=false;
   if(orbiting){
@@ -18793,6 +18819,13 @@ let last=performance.now();
 let lastDroneTick=0;
 function frame(now){
   const dt=clamp((now-last)/16.667,0,3);last=now;
+  /* второй рубеж против залипших клавиш: событие blur приходит не всегда —
+     фокус, ушедший в DevTools того же окна, его может не поднять. Пока страница
+     не в фокусе, нажатым не может быть ничего по определению, и кадр это
+     проверяет сам. Без этого залипшая тяга жжёт топливо, а залипший руль крутит
+     корабль на месте — при живом управлении и пустой консоли. */
+  if(!document.hasFocus()){if(!wasBlurred){wasBlurred=true;releaseAllKeys();}}
+  else wasBlurred=false;
   actEdge=keys.act&&!prevAct;prevAct=keys.act;
   if(G.running){
     G.t+=dt;
