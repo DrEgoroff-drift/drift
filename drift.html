@@ -2157,7 +2157,7 @@ const G={
   rogues:[],exiles:[],
   /* артефакты: найденные лежат здесь, надетый — в поле relic у управляющего.
      relicHint — сектор, на который указал исследователь с «происхождением». */
-  relics:{},relicHint:null,bio:0,
+  relics:{},relicHint:null,bio:0,home:null,
   /* счётчики для поручений: живут в сессии, при загрузке отсчёт начинается заново */
   orderStamp:0,kills:0,soldTotal:0,
   /* базы: разреженный оверлей «sx,sy:planetIdx» → решения игрока.
@@ -3136,7 +3136,7 @@ function crewUnload(c,quiet){
   }
   if(sum>0){
     sum-=mgrCmdCut(sum);
-    G.credits+=sum;c.earned=(c.earned||0)+sum;
+    earn(sum,"crew");c.earned=(c.earned||0)+sum;
     if(!quiet)logAdd("money",c.name+" сдал груз ×"+n+" · +"+sum.toLocaleString("ru")+" кр");
   }
   return sum;
@@ -3353,7 +3353,7 @@ function crewCredit(c,sum){
   sum=Math.round(sum);
   if(c.order&&c.order.kind==="hunt"&&mgrPerkOf("cmd","bounty"))sum=Math.round(sum*1.3);
   sum-=mgrCmdCut(sum);
-  G.credits+=sum;c.earned=(c.earned||0)+sum;
+  earn(sum,"crew");c.earned=(c.earned||0)+sum;
   return sum;
 }
 /* обычная выручка рейса: добытчик привозит сырьё, остальные — деньги */
@@ -4277,7 +4277,7 @@ function mgrWorkFact(m,min){
   }
   const take=mgrTake(m,gross);
   const net=gross-take;
-  G.credits+=net;m.earned=(m.earned||0)+net;
+  earn(net,"mgr");m.earned=(m.earned||0)+net;
   if(net>0&&!(m.silent))m.lastNet=(m.lastNet||0)+net;
   return min*1.2;
 }
@@ -4648,7 +4648,7 @@ function sellCargo(sys,k,qty){
   qty=Math.min(qty,G.cargo[k]);
   if(qty<=0)return 0;
   const price=marketFor(sys)[k],revenue=qty*price;
-  G.credits+=revenue;G.cargo[k]-=qty;
+  earn(revenue,"trade");G.cargo[k]-=qty;
   G.soldTotal=(G.soldTotal|0)+revenue;   // «пузырь» смотрит на выручку, а не на штуки
   const m=G.market[sys.key];
   m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
@@ -4700,7 +4700,7 @@ function tickDrones(){
     if(yieldN>0){
       const home=nearestStation(d.sx,d.sy);
       const rev=sellDroneYield(home,d.res,yieldN);
-      G.credits+=rev;d.pool-=yieldN;d.soldAtMs=now;
+      earn(rev,"drone");d.pool-=yieldN;d.soldAtMs=now;
       say("Дрон продал "+yieldN+" "+RES[d.res].ru.toLowerCase()+" на «"+home.name+"»\n+"+rev.toLocaleString("ru")+" кр");
       logAdd("money","Дрон сдал "+yieldN+" "+RES[d.res].ru.toLowerCase()+" на «"+home.name+
         "» · +"+rev.toLocaleString("ru")+" кр");
@@ -4730,7 +4730,7 @@ function jobGive(m,what,arg){
   if(what==="perk"){m.gift=(m.gift||0)+1;return "свободное очко перка";}
   if(what==="slot"){m.slotBonus=(m.slotBonus||0)+1;return "+1 слот приказов навсегда";}
   if(what==="loy"){m.loy=clamp(m.loy+arg,0,100);return arg>0?"он это запомнил":"он это тоже запомнил";}
-  if(what==="credits"){G.credits+=arg;return "+"+arg.toLocaleString("ru")+" кр";}
+  if(what==="credits"){earn(arg,"job");return "+"+arg.toLocaleString("ru")+" кр";}
   if(what==="data"){G.data+=arg;return "+"+arg+" данных";}
   if(what==="rare"){
     const k=RARE_RES[Math.abs(arg)%RARE_RES.length];
@@ -5069,7 +5069,7 @@ function aiDrift(m,min,work){
     if(spend>0){
       G.credits-=spend;m.spent=(m.spent||0)+spend;
       const good=r()<.45;
-      if(good){const back=Math.round(spend*(1.3+r()*.9));G.credits+=back;m.earned=(m.earned||0)+back;
+      if(good){const back=Math.round(spend*(1.3+r()*.9));earn(back,"ai");m.earned=(m.earned||0)+back;
         mgrSay(m,"Потрачено "+spend+" кр без запроса · возврат "+back+" кр");}
       else mgrSay(m,"Потрачено "+spend+" кр без запроса","warn");
     }
@@ -5230,7 +5230,7 @@ function rogueDefeated(p){
     }
     /* всё, что он утащил долей, лежало у него в трюме */
     const back=Math.round(2200+R.lv*900);
-    G.credits+=back;
+    earn(back,"rogue");
     /* §12: трофей с ушедшего управляющего — один из источников артефактов.
        Он унёс с собой не только корпус. */
     const relic=relicRoll(hashi(R.seed,R.lv,0x3B7),.45);
@@ -5724,6 +5724,138 @@ function drawPirate(p){
   }
 }
 
+/* ══════════════ дом ══════════════
+   Дом один на всю вселенную, и он НЕ ПОКУПАЕТСЯ. Комнаты за деньги превратили
+   бы его в ещё один магазин, а он должен быть тем, что нажилось: дом растёт сам
+   от оборота — от всего, что вселенная вам принесла. Со счёта при этом не
+   списывается ничего.
+
+   Оборот — не баланс. Копится всё заработанное: продажи, дроны, домены, рейсы
+   наёмников, награды за пиратов, выручка баз. Поэтому у денег появляется вторая
+   жизнь: даже потраченные, они остаются в том, что у вас есть. */
+const HOME_TIERS=[
+  {t:1000,   key:"corner",ru:"угол",         say:"вы сняли угол"},
+  {t:25000,  key:"hall",  ru:"прихожая",     say:"появилась прихожая"},
+  {t:70000,  key:"garage",ru:"гараж",        say:"пристроен гараж"},
+  {t:160000, key:"case",  ru:"витрина",      say:"поставлена витрина"},
+  {t:320000, key:"shop",  ru:"мастерская",   say:"собрана мастерская"},
+  {t:600000, key:"study", ru:"кабинет",      say:"обставлен кабинет"},
+  {t:1100000,key:"living",ru:"жилая часть",  say:"обжита жилая часть"},
+  {t:2000000,key:"dock",  ru:"причал с маяком",say:"построен причал, маяк зажжён"}
+];
+function homeInit(){
+  return {turn:0,tier:0,sx:0,sy:0,made:0,garage:[],showcase:{},trophies:[]};
+}
+function homeHas(key){
+  if(!G.home||!G.home.tier)return false;
+  const i=HOME_TIERS.findIndex(t=>t.key===key);
+  return i>=0&&G.home.tier>i;
+}
+function homeNext(){
+  const H=G.home;if(!H)return HOME_TIERS[0];
+  return HOME_TIERS[H.tier]||null;
+}
+/* ── единственная воронка дохода ──
+   Раньше кредиты прибавлялись в десяти местах руками; теперь все они зовут
+   `earn`, и дом видит ровно то, что видит игрок. Новый источник дохода,
+   добавленный мимо этой функции, не будет учтён — это и есть проверка на
+   ревизии. */
+function earn(sum,why){
+  sum=Math.round(sum);
+  if(!isFinite(sum)||sum<=0)return 0;
+  G.credits+=sum;
+  homeTurn(sum,why);
+  return sum;
+}
+function homeTurn(sum,why){
+  if(!G.home)G.home=homeInit();
+  const H=G.home;
+  H.turn+=sum;
+  /* дом заводится сам после первой честной выручки и встаёт там, где вы в этот
+     момент были: он не выбирается из списка, он просто появляется */
+  while(H.tier<HOME_TIERS.length&&H.turn>=HOME_TIERS[H.tier].t){
+    const T=HOME_TIERS[H.tier];
+    H.tier++;
+    if(H.tier===1){H.sx=G.sx;H.sy=G.sy;H.made=Date.now();}
+    logAdd("good","Дом: "+T.say+" · оборот "+H.turn.toLocaleString("ru")+" кр");
+    say("ДОМ\n"+T.say);
+    sfx("ok",{v:.5});
+  }
+}
+/* строка «до следующей ступени» — вместо ценника, которого у дома нет */
+function homeProgress(){
+  const H=G.home;if(!H)return null;
+  const N=homeNext();
+  if(!N)return {done:true,ru:"дом достроен",frac:1};
+  const prev=H.tier?HOME_TIERS[H.tier-1].t:0;
+  const frac=clamp((H.turn-prev)/(N.t-prev),0,1);
+  return {done:false,ru:"до ступени «"+N.ru+"» ещё "+
+    Math.max(0,N.t-H.turn).toLocaleString("ru")+" кр оборота",frac,next:N};
+}
+/* ── дом как безопасное место ──
+   Смерть перестаёт быть обнулением и становится потерей рейса: груз и часть
+   денег теряются, но дом, его ступени и корабли в гараже целы. Прежний
+   `totalLoss` выдавал новый «Стриж» в системе старта, то есть наказание стирало
+   и историю тоже. */
+function homeCanRevive(){return !!(G.home&&G.home.tier>0);}
+function homeRevive(pname){
+  const H=G.home;
+  const lost=Math.round(G.credits*.5);
+  G.credits=Math.max(0,G.credits-lost);
+  for(const k of RES_KEYS)G.cargo[k]=0;
+  /* корабль берётся из гаража, если он там есть; иначе дом даёт «Стриж» —
+     не из милости, а потому что без корабля игра кончается */
+  const fromGarage=homeHas("garage")&&H.garage.length?H.garage.shift():null;
+  if(fromGarage&&G.owned[fromGarage])G.shipId=fromGarage;
+  else if(!G.owned[G.shipId]){G.shipId="strizh";G.owned.strizh=true;}
+  G.sx=H.sx;G.sy=H.sy;G.sys=getSystem(H.sx,H.sy);
+  const st0=stat();
+  G.fuel=st0.fuelMax;G.hull=st0.hullMax;
+  G.ship.x=900;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;
+  G.mode="system";G.ap=null;G.belt=null;G.dig=null;G.cave=null;G.surf=null;G.land=null;
+  G.pirates=[];G.shots=[];
+  saveGame(true);
+  logAdd("warn","Корабль потерян на "+pname+" · вы дома, груз и "+
+    lost.toLocaleString("ru")+" кр потеряны");
+  say("Вы дома\nрейс потерян: груз и "+lost.toLocaleString("ru")+" кр\nдом цел");
+}
+/* маяк домой платный, а ОТ дома летят своим ходом: иначе дом превращается в
+   бесплатное такси по галактике */
+function homeBeaconCost(){
+  const d=Math.hypot(G.sx-(G.home?G.home.sx:0),G.sy-(G.home?G.home.sy:0));
+  return Math.round(600+180*d);
+}
+function homeBeacon(){
+  if(!homeCanRevive())return false;
+  const cost=homeBeaconCost();
+  if(G.credits<cost){say("Маяк домой\nнужно "+cost.toLocaleString("ru")+" кр");return false;}
+  if(G.mode!=="system"){say("Маяк домой\nтолько из полёта по системе");return false;}
+  G.credits-=cost;
+  G.sx=G.home.sx;G.sy=G.home.sy;G.sys=getSystem(G.sx,G.sy);
+  G.ship.x=900;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;
+  G.ap=null;G.pirates=[];G.shots=[];
+  logAdd("dim","Маяк домой · −"+cost.toLocaleString("ru")+" кр");
+  say("Вы дома");
+  return true;
+}
+/* витрина и гараж: выставленное домой не продаётся и не летает — это память о
+   рейсах, а не склад */
+function homeStore(shipId){
+  if(!homeHas("garage")||!G.owned[shipId]||shipId===G.shipId)return false;
+  if(G.home.garage.includes(shipId))return false;
+  G.home.garage.push(shipId);
+  logAdd("good","В гараж дома поставлен «"+(shipData(shipId)||{}).ru+"»");
+  return true;
+}
+function homeShow(res,qty){
+  if(!homeHas("case")||!RES_KEYS.includes(res)||qty<=0)return false;
+  if((G.cargo[res]|0)<qty)return false;
+  G.cargo[res]-=qty;
+  G.home.showcase[res]=(G.home.showcase[res]||0)+qty;
+  logAdd("dim","На витрину дома: "+RES[res].ru+" ×"+qty);
+  return true;
+}
+
 /* ══════════════ пираты ══════════════ */
 /* эфемерны: набираются заново при каждом входе в систему, как орбиты и пояс */
 const PIRATE_NAMES=["Шакал","Гриф","Клык","Ржавый","Стервятник","Сиплый","Крюк","Оса"];
@@ -5856,7 +5988,7 @@ function killPirate(p){
   const r=rng(p.seed);
   sfx("boom",{v:.8});
   const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7)*stat().bountyMul);
-  G.credits+=bounty;G.kills=(G.kills|0)+1;
+  earn(bounty,"bounty");G.kills=(G.kills|0)+1;
   const loot=pick(TRADE_KEYS,r),   /* редкое с обломков не падает: у него свои способы добычи */got=addRes(loot,2+Math.floor(r()*7));
   const d=sysDanger(G.sx,G.sy);
   /* обломок с частью — не в трюм сразу, а контейнером: у боя своя петля «убил → собрал» */
@@ -5969,7 +6101,7 @@ function snapshot(){
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
     drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
-    relics:G.relics,relicHint:G.relicHint,bio:G.bio,
+    relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -6094,6 +6226,19 @@ function applySave(s){
   G.relicHint=(s.relicHint&&typeof s.relicHint==="object")
     ?{sx:s.relicHint.sx|0,sy:s.relicHint.sy|0}:null;
   G.bio=+s.bio||0;
+  /* дом: безопасный дефолт, поля проверяются поимённо — записи старых версий
+     грузятся без дома и заводят его при первой же выручке */
+  if(s.home&&typeof s.home==="object"){
+    const h=homeInit();
+    h.turn=Math.max(0,+s.home.turn||0);
+    h.tier=clamp(s.home.tier|0,0,HOME_TIERS.length);
+    h.sx=s.home.sx|0;h.sy=s.home.sy|0;h.made=+s.home.made||0;
+    h.garage=Array.isArray(s.home.garage)?s.home.garage.filter(id=>!!shipData(id)):[];
+    if(s.home.showcase&&typeof s.home.showcase==="object")
+      for(const k of RES_KEYS)if(s.home.showcase[k]>0)h.showcase[k]=+s.home.showcase[k];
+    h.trophies=Array.isArray(s.home.trophies)?s.home.trophies.slice(0,64):[];
+    G.home=h;
+  }else G.home=null;
   /* надетый артефакт должен быть найденным и ровно у одного владельца */
   {
     const worn={};
@@ -11922,7 +12067,7 @@ function baseTick(){
     if(P.surplus>0&&mgrPerkOf("keep","grid")){
       const cr=Math.round(P.surplus*min*1.4);
       if(cr>0){
-        G.credits+=cr;
+        earn(cr,"base");
         B.sold=(B.sold|0)+cr;
         if(B.sold>=400){logAdd("money","База «"+B.name+"» сдала излишки энергии · +"+
           B.sold.toLocaleString("ru")+" кр");B.sold=0;}
@@ -13930,6 +14075,10 @@ function evacuate(){
 function totalLoss(){
   const S=G.surf;
   const pname=S?S.p.name:"поверхности";
+  /* если дом уже есть — возвращаемся туда: смерть перестаёт быть обнулением и
+     становится потерей рейса. Обнуление стирало вместе с кораблём всю историю,
+     то есть наказывало сильнее, чем игра стоит (12j-home) */
+  if(homeCanRevive()){homeRevive(pname);return;}
   G.shipId="strizh";G.owned={strizh:true};
   G.mods={engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0};
   G.modsOwned={engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0};
@@ -17647,6 +17796,28 @@ function renderTab(){
     }
   }
   else if(tab==="bases"){
+    /* ── дом первой строкой ──
+       До настоящего экрана-помещения (следующий проход M83) дом должен быть
+       хотя бы видим: игрок не обязан догадываться, что у него что-то растёт.
+       Здесь нет ни одной цены — дом не покупается, и вместо ценника стоит
+       строка «до следующей ступени столько-то оборота». */
+    if(G.home&&G.home.tier){
+      const pr=homeProgress();
+      $body.appendChild(el("div","sec","ВАШ ДОМ · СЕКТОР "+G.home.sx+","+G.home.sy+
+        " · ОБОРОТ "+G.home.turn.toLocaleString("ru")+" КР"));
+      const rooms=HOME_TIERS.slice(0,G.home.tier).map(t=>t.ru).join(" · ");
+      const hr=el("div","row");
+      hr.appendChild(el("div","nm","<b>"+rooms+"</b><s>"+
+        (pr.done?"дом достроен":pr.ru)+
+        "<br>здесь вас не найдут пираты, и сюда вы вернётесь, потеряв корабль</s>"));
+      const hb=document.createElement("button");
+      const hc=homeBeaconCost();
+      hb.textContent="МАЯК ДОМОЙ · "+hc.toLocaleString("ru")+" КР";
+      hb.disabled=G.credits<hc||(G.sx===G.home.sx&&G.sy===G.home.sy);
+      hb.addEventListener("click",()=>{if(homeBeacon()){closeStation();renderTab();}});
+      hr.appendChild(hb);
+      $body.appendChild(hr);
+    }
     /* сеть баз одним экраном: где, что копают, сколько накопили, чем больны */
     baseTick();
     const list=baseList();

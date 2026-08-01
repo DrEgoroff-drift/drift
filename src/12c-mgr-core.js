@@ -572,7 +572,7 @@ function mgrWorkFact(m,min){
   }
   const take=mgrTake(m,gross);
   const net=gross-take;
-  G.credits+=net;m.earned=(m.earned||0)+net;
+  earn(net,"mgr");m.earned=(m.earned||0)+net;
   if(net>0&&!(m.silent))m.lastNet=(m.lastNet||0)+net;
   return min*1.2;
 }

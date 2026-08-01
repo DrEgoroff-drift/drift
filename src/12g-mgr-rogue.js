@@ -100,7 +100,7 @@ function rogueDefeated(p){
     }
     /* всё, что он утащил долей, лежало у него в трюме */
     const back=Math.round(2200+R.lv*900);
-    G.credits+=back;
+    earn(back,"rogue");
     /* §12: трофей с ушедшего управляющего — один из источников артефактов.
        Он унёс с собой не только корпус. */
     const relic=relicRoll(hashi(R.seed,R.lv,0x3B7),.45);

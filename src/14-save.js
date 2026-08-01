@@ -30,7 +30,7 @@ function snapshot(){
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
     drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
-    relics:G.relics,relicHint:G.relicHint,bio:G.bio,
+    relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -155,6 +155,19 @@ function applySave(s){
   G.relicHint=(s.relicHint&&typeof s.relicHint==="object")
     ?{sx:s.relicHint.sx|0,sy:s.relicHint.sy|0}:null;
   G.bio=+s.bio||0;
+  /* дом: безопасный дефолт, поля проверяются поимённо — записи старых версий
+     грузятся без дома и заводят его при первой же выручке */
+  if(s.home&&typeof s.home==="object"){
+    const h=homeInit();
+    h.turn=Math.max(0,+s.home.turn||0);
+    h.tier=clamp(s.home.tier|0,0,HOME_TIERS.length);
+    h.sx=s.home.sx|0;h.sy=s.home.sy|0;h.made=+s.home.made||0;
+    h.garage=Array.isArray(s.home.garage)?s.home.garage.filter(id=>!!shipData(id)):[];
+    if(s.home.showcase&&typeof s.home.showcase==="object")
+      for(const k of RES_KEYS)if(s.home.showcase[k]>0)h.showcase[k]=+s.home.showcase[k];
+    h.trophies=Array.isArray(s.home.trophies)?s.home.trophies.slice(0,64):[];
+    G.home=h;
+  }else G.home=null;
   /* надетый артефакт должен быть найденным и ровно у одного владельца */
   {
     const worn={};

@@ -24,7 +24,7 @@ function sellCargo(sys,k,qty){
   qty=Math.min(qty,G.cargo[k]);
   if(qty<=0)return 0;
   const price=marketFor(sys)[k],revenue=qty*price;
-  G.credits+=revenue;G.cargo[k]-=qty;
+  earn(revenue,"trade");G.cargo[k]-=qty;
   G.soldTotal=(G.soldTotal|0)+revenue;   // «пузырь» смотрит на выручку, а не на штуки
   const m=G.market[sys.key];
   m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
@@ -76,7 +76,7 @@ function tickDrones(){
     if(yieldN>0){
       const home=nearestStation(d.sx,d.sy);
       const rev=sellDroneYield(home,d.res,yieldN);
-      G.credits+=rev;d.pool-=yieldN;d.soldAtMs=now;
+      earn(rev,"drone");d.pool-=yieldN;d.soldAtMs=now;
       say("Дрон продал "+yieldN+" "+RES[d.res].ru.toLowerCase()+" на «"+home.name+"»\n+"+rev.toLocaleString("ru")+" кр");
       logAdd("money","Дрон сдал "+yieldN+" "+RES[d.res].ru.toLowerCase()+" на «"+home.name+
         "» · +"+rev.toLocaleString("ru")+" кр");

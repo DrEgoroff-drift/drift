@@ -149,7 +149,7 @@ function baseTick(){
     if(P.surplus>0&&mgrPerkOf("keep","grid")){
       const cr=Math.round(P.surplus*min*1.4);
       if(cr>0){
-        G.credits+=cr;
+        earn(cr,"base");
         B.sold=(B.sold|0)+cr;
         if(B.sold>=400){logAdd("money","База «"+B.name+"» сдала излишки энергии · +"+
           B.sold.toLocaleString("ru")+" кр");B.sold=0;}
