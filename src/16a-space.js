@@ -126,10 +126,13 @@ function drawExhaust(zx,zy,Z,thr){
   const ca=Math.cos(sh.a),sa=Math.sin(sh.a);
   ctx.save();
   ctx.globalCompositeOperation="lighter";
+  /* сопла ставим от центра корпуса в его же масштабе, а не через мировые
+     координаты: корпус при отдалении рисуется крупнее мира, и факел, считанный
+     по настоящему Z, отрывался от него и уползал внутрь силуэта */
+  const SZ=shipZ(Z),cx0=zx(sh.x),cy0=zy(sh.y);
   for(const e of h.eng){
-    const ex=sh.x+e.x*ca-e.y*sa, ey=sh.y+(e.x*sa+e.y*ca);
-    const px=zx(ex),py=zy(ey);
-    const R=Math.max(2.5,e.r*Z*2.2);
+    const px=cx0+(e.x*ca-e.y*sa)*SZ, py=cy0+(e.x*sa+e.y*ca)*SZ;
+    const R=Math.max(2.5,e.r*SZ*2.2);
     const puls=.82+.18*Math.sin(G.t*.55+e.x);
     /* факел вытянут против носа и живёт своей длиной на каждом кадре */
     const L=R*(3.4+2.6*puls)*thr;

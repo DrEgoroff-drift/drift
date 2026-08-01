@@ -162,6 +162,13 @@ function arrive(){
    «Мамонт» — сиреневый. Длина зависит от двигателя: паспортная тяга задаёт
    базу, модуль двигателя её растягивает — прокачка видна в полёте, а не
    только цифрой на экране корабля. */
+/* Масштаб, в котором рисуется сам корабль. При сильном отдалении он держится
+   выше мирового, иначе корпус вырождается в точку. Всё, что принадлежит
+   кораблю, — факел, шлейф, струи маневровых — обязано считаться по нему же:
+   пока эффекты шли по настоящему Z, при зуме 0.16 корпус был втрое крупнее
+   мира, а его выхлоп уходил в доли пикселя и попросту исчезал. Оставался
+   голый силуэт, к которому пришлось пририсовывать кружок-метку. */
+const shipZ=Z=>clamp(Z,.55,1.6);
 const TRAIL=[],TRAIL_MAX=320;
 const TRAIL_TINT={};
 function trailTint(id){
@@ -230,7 +237,7 @@ function trailStep(dt,thrusting,turning,braking){
   }
 }
 function drawTrail(zx,zy,Z){
-  const T=trailTint(G.shipId);
+  const T=trailTint(G.shipId),SZ=shipZ(Z);
   /* ленты по соплам: массив хронологичен, поэтому в каждой корзине точки
      идут от самой старой к свежей — ровно порядок отрисовки полосы */
   const lanes={};
@@ -253,7 +260,7 @@ function drawTrail(zx,zy,Z){
       /* у сопла — белое ядро, к хвосту цвет уходит в акцент корпуса */
       const col=u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
       ctx.strokeStyle=rgba(col,(u*.13+u*u*u*.3).toFixed(3));
-      ctx.lineWidth=Math.max(.6,b2.r*Z*(1.7-u*1.05));
+      ctx.lineWidth=Math.max(.6,b2.r*SZ*(1.7-u*1.05));
       ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
     }
     /* добела раскалённый корешок у самого сопла */
@@ -262,7 +269,7 @@ function drawTrail(zx,zy,Z){
       const x=zx(f.x),y=zy(f.y);
       if(x>-40&&x<W+40&&y>-40&&y<H+40){
         ctx.fillStyle=rgba(T.core,.5);
-        ctx.beginPath();ctx.arc(x,y,Math.max(.8,f.r*Z*.9),0,TAU);ctx.fill();
+        ctx.beginPath();ctx.arc(x,y,Math.max(.8,f.r*SZ*.9),0,TAU);ctx.fill();
       }
     }
   }
@@ -273,7 +280,7 @@ function drawTrail(zx,zy,Z){
     const x=zx(t.x),y=zy(t.y);
     if(x<-30||x>W+30||y<-30||y>H+30)continue;
     const u=clamp(t.life/t.max,0,1);
-    const rr=Math.max(.5,t.r*Z*(2.6-u*1.9));
+    const rr=Math.max(.5,t.r*SZ*(2.6-u*1.9));
     ctx.fillStyle="rgba(205,232,246,"+(u*.22).toFixed(3)+")";
     ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.fill();
   }
