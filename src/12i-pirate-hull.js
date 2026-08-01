@@ -71,7 +71,7 @@ function pirateBuild(seed,cls){
   }
   /* ── нос: клин или таран, но всегда несимметричный ── */
   if(K.ram){
-    add([[nose+L*.10,0],[nose*.6,-hw*.5],[nose*.55,hw*.42]],3);
+    add([[nose+L*.20,0],[nose*.6,-hw*.55],[nose*.55,hw*.46]],3);
     add([[nose+L*.04,-hw*.12],[nose*.5,-hw*.62],[nose*.5,-hw*.1]],2);
     for(let i=0;i<3;i++)                 // зубья тарана
       add([[nose+L*.10-i*L*.05,hw*.1+i*hw*.16],[nose*.62-i*L*.04,hw*.05+i*hw*.16],
@@ -98,10 +98,13 @@ function pirateBuild(seed,cls){
     const sg=i%2?1:-1;
     add([[cx-cw,sg*(hw*.7)],[cx+cw,sg*(hw*.7)],[cx+cw*.86,sg*(hw*.7+ch)],
       [cx-cw*.86,sg*(hw*.7+ch)]],0);
-    for(let b=0;b<4;b++){                // прутья — линиями, они не полигоны
-      const bx=cx-cw+b*cw*.66;
-      lines.push([bx,sg*hw*.7,bx,sg*(hw*.7+ch),.7]);
+    /* прутья светлые и частые: тёмными клетка сливалась с бортом, и
+       налётчик ничем не отличался от перехватчика */
+    for(let b=0;b<6;b++){
+      const bx=cx-cw+b*cw*.4;
+      lines.push([bx,sg*hw*.7,bx,sg*(hw*.7+ch),.7,1]);
     }
+    lines.push([cx-cw*.9,sg*(hw*.7+ch),cx+cw*.9,sg*(hw*.7+ch),1.1,1]);
   }
   /* ── движки: несинхронные, разной длины, у каждого своя фаза чада ── */
   for(let i=0;i<K.eng;i++){
@@ -110,7 +113,9 @@ function pirateBuild(seed,cls){
     add([[tail+el,ey-ew],[tail-el*.2,ey-ew*1.3],[tail-el*.2,ey+ew*1.3],[tail+el,ey+ew]],3);
     add([[tail-el*.2,ey-ew*1.3],[tail-el*.5,ey-ew*.8],[tail-el*.5,ey+ew*.8],
       [tail-el*.2,ey+ew*1.3]],0);
-    eng.push({x:tail-el*.45,y:ey,r:ew,ph:r()*TAU,dirty:r()<.45});
+    /* один движок всегда чадит заметно сильнее прочих: несинхронность видно
+       по дыму раньше, чем по факелу */
+    eng.push({x:tail-el*.45,y:ey,r:ew,ph:r()*TAU,dirty:i===0?2:(r()<.45?1:0)});
   }
   /* ── навесное: заплаты внахлёст поверх швов ── */
   const patchN=8+Math.floor(r()*8);
@@ -232,7 +237,8 @@ function pirateArtOf(id,rogue){
     ctx.fillStyle=rg;ctx.fillRect(R[0]-R[2]*.16,R[1],R[2]*.32,R[2]);
   }
   for(const l of B.lines){
-    ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.6).toFixed(2)+")";ctx.lineWidth=l[4];
+    ctx.strokeStyle=l[5]?"rgba(240,222,200,.5)":"rgba(0,0,0,"+(l[4]*.6).toFixed(2)+")";
+    ctx.lineWidth=l[4];
     ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(l[2],l[3]);ctx.stroke();
   }
   for(const t of B.turrets){
@@ -278,9 +284,10 @@ function drawPirate(p){
   for(const e of B.eng){
     if(p.thrust)drawFlame(e.x,e.y,e.r*.9,.8+Math.sin(G.t*.2+e.ph)*.2);
     if(e.dirty||hp<.6){
-      for(let i=0;i<3;i++){
+      const puffs=(e.dirty===2?5:3);
+      for(let i=0;i<puffs;i++){
         const t=((G.t*.03+i*.7+e.ph)%3);
-        ctx.fillStyle="rgba(60,54,50,"+(.28-t*.09).toFixed(2)+")";
+        ctx.fillStyle="rgba(60,54,50,"+((e.dirty===2?.38:.28)-t*.09).toFixed(2)+")";
         ctx.beginPath();ctx.arc(e.x-t*7,e.y+Math.sin(t*2+e.ph)*2,1.6+t*2.4,0,TAU);ctx.fill();
       }
     }
