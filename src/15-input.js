@@ -100,6 +100,20 @@ addEventListener("keyup",e=>{
   if(b)keys[b]=false;
   if(a||b)e.preventDefault();
 });
+/* ── потеря фокуса отпускает всё ──
+   keyup приходит тому окну, которое в фокусе. Стоит переключиться на DevTools,
+   другое окно или вкладку с зажатой клавишей — отпускание уходит туда, а у нас
+   клавиша остаётся нажатой навсегда. С залипшим тормозом корабль встаёт колом:
+   гашение съедает набранное каждый кадр, тяга не успевает победить, и это
+   читается как «управление умерло» — при честных шестидесяти кадрах и пустой
+   консоли, поэтому по ошибкам такое не ищется. */
+function releaseAllKeys(){
+  for(const k in keys)keys[k]=false;
+  document.querySelectorAll("[data-k].on").forEach(b=>b.classList.remove("on"));
+}
+addEventListener("blur",releaseAllKeys);
+addEventListener("pagehide",releaseAllKeys);
+document.addEventListener("visibilitychange",()=>{if(document.hidden)releaseAllKeys();});
 
 /* ── ящик бортовых систем ──
    Раньше на правом борту стояло до девяти кнопок по 27 px: половина из них
