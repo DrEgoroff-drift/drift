@@ -199,7 +199,9 @@ function applySave(s){
   G.fuel=clamp(+s.fuel||0,0,st.fuelMax);
   G.hull=clamp(+s.hull||st.hullMax,1,st.hullMax);
   G.shield=st.shieldMax;G.loot=[];   // щит и лут в системе — эфемерные, не персистятся
-  G.ship.x=+s.x||0;G.ship.y=+s.y||-760;G.ship.a=+s.a||0;
+  /* курс из старых записей мог накопить десятки оборотов — чиним на входе,
+     иначе испорченное сохранение чинит себя только после полного разворота */
+  G.ship.x=+s.x||0;G.ship.y=+s.y||-760;G.ship.a=angWrap(+s.a||0);
   G.ship.vx=0;G.ship.vy=0;G.ship.av=0;G.ship.bank=0;
   G.mode="system";G.ap=null;G.land=null;G.surf=null;G.belt=null;G.st=null;G.dig=null;G.cave=null;
   if(!G.opts.keys||typeof G.opts.keys!=="object")G.opts.keys={main:{},belt:{}};

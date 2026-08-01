@@ -628,7 +628,15 @@ function noise2(x,y,s){
 }
 function fbm2(x,y,s,oct){let v=0,a=.5,f=1,n=0;oct=oct||5;
   for(let i=0;i<oct;i++){v+=a*noise2(x*f,y*f,s+i*97);n+=a;a*=.5;f*=2;}return v/n;}
-const angDiff=(a,b)=>((a-b+Math.PI*3)%TAU)-Math.PI;
+/* Разница углов, кратчайшей дугой. Прежняя формула — ((a-b+3π)%TAU)-π — верна
+   ровно до тех пор, пока a-b не меньше -3π: остаток в JS берёт знак делимого,
+   и на больших отрицательных разностях ответ уезжает и по знаку, и за пределы
+   полуоборота. Курс корабля нигде не сворачивался и копился оборотами — в живом
+   сохранении он дорос до -500 рад, и доворот вектора скорости к носу принялся
+   разворачивать скорость в противоположную сторону. Корабль дёргался на месте
+   под полной тягой и жёг топливо: ни ошибки, ни просадки кадров. */
+const angWrap=x=>{const d=x%TAU;return d>Math.PI?d-TAU:(d<-Math.PI?d+TAU:d);};
+const angDiff=(a,b)=>angWrap(a-b);
 
 /* ══════════════ имена ══════════════ */
 const S1=["ка","зе","вор","ти","мел","сар","ква","ар","ни","кси","лу","дра","он","пи","ха","ци","ур","гал","об","векс","сол","ит","кор","энт","ра","тау","ней","ом"];
@@ -5801,7 +5809,9 @@ function applySave(s){
   G.fuel=clamp(+s.fuel||0,0,st.fuelMax);
   G.hull=clamp(+s.hull||st.hullMax,1,st.hullMax);
   G.shield=st.shieldMax;G.loot=[];   // щит и лут в системе — эфемерные, не персистятся
-  G.ship.x=+s.x||0;G.ship.y=+s.y||-760;G.ship.a=+s.a||0;
+  /* курс из старых записей мог накопить десятки оборотов — чиним на входе,
+     иначе испорченное сохранение чинит себя только после полного разворота */
+  G.ship.x=+s.x||0;G.ship.y=+s.y||-760;G.ship.a=angWrap(+s.a||0);
   G.ship.vx=0;G.ship.vy=0;G.ship.av=0;G.ship.bank=0;
   G.mode="system";G.ap=null;G.land=null;G.surf=null;G.belt=null;G.st=null;G.dig=null;G.cave=null;
   if(!G.opts.keys||typeof G.opts.keys!=="object")G.opts.keys={main:{},belt:{}};
@@ -6982,7 +6992,9 @@ function updateSystem(dt){
     if(keys.right)sh.av+=acc;
     if(!keys.left&&!keys.right)sh.av*=Math.pow(.9,dt);
     sh.av=clamp(sh.av,-lim,lim);
-    sh.a+=sh.av*dt;
+    /* курс сворачиваем сразу: за долгий полёт он копится оборотами, а всё, что
+       считается от него, живёт в пределах полуоборота */
+    sh.a=angWrap(sh.a+sh.av*dt);
     if(keys.thrust&&G.fuel>0){
       sh.vx+=Math.cos(sh.a)*.082*st.thr*dt;
       sh.vy+=Math.sin(sh.a)*.082*st.thr*dt;
@@ -18908,31 +18920,58 @@ function dbg(){
   if(!G.running)holds.push("игра не запущена (заставка)");
   if(G.watch)holds.push("режим наблюдения за наёмником");
   if(G.fuel<=0)holds.push("топливо на нуле");
+  /* курс, накопивший обороты, ломает всякий расчёт по углу — проверяем прямо */
+  if(Math.abs(sh.a)>Math.PI*3)
+    holds.push("курс накопил "+Math.round(Math.abs(sh.a)/TAU)+" оборотов ("+
+      sh.a.toFixed(1)+" рад) — расчёт углов врёт");
+  const d0=Math.hypot(sh.x,sh.y);
+  const rEdge=(sys&&sys.belt?sys.belt.orbit:2400)*1.6;
+  if(d0>rEdge)holds.push("за кромкой системы: "+Math.round(d0)+" при кромке "+
+    Math.round(rEdge)+" — курс «прочь» тут заворачивает к звезде");
   /* кадр меряем по-настоящему, а не по G.t: жалоба на «залипание» одинаково
-     звучит и при тридцати кадрах, и при намертво удерживающем состоянии */
+     звучит и при тридцати кадрах, и при намертво удерживающем состоянии.
+     Заодно следим за скоростью и топливом: «жжёт и не едет» — отдельная
+     болезнь, и её надо называть отдельно от просадки кадров. */
   let n=0,t0=performance.now(),lt=t0,mx=0,slow=0;
+  const v0=Math.hypot(sh.vx,sh.vy),f0=G.fuel;
   return new Promise(r=>{
     (function f(){
       const t=performance.now(),d=t-lt;lt=t;
       if(n++){mx=Math.max(mx,d);if(d>25)slow++;}
       if(t-t0<1000)requestAnimationFrame(f);
       else{
+        const v1=Math.hypot(sh.vx,sh.vy),burnt=f0-G.fuel;
+        const fps=n/((t-t0)/1000);
+        let verdict;
+        if(burnt>.05&&v1<.5&&v1<=v0+.05)
+          verdict="ДВИГАТЕЛЬ РАБОТАЕТ ВПУСТУЮ — за секунду сожжено "+burnt.toFixed(1)+
+            " топлива, а скорость "+v0.toFixed(2)+" → "+v1.toFixed(2);
+        else if(holds.length)verdict="корабль удерживается, см. «что держит»";
+        else if(fps<45)verdict="просадка кадров: "+fps.toFixed(0)+" fps — управление живо, но отклик вязкий";
+        else verdict="корабль свободен и слушается";
         const out={
-          версия:VER, держит:holds.length?holds:"ничего — корабль свободен",
-          режим:G.mode, сектор:G.sx+":"+G.sy, система:sys&&sys.name,
-          корабль:{x:Math.round(sh.x),y:Math.round(sh.y),
-            скорость:+Math.hypot(sh.vx,sh.vy).toFixed(3),
-            поворот:+sh.av.toFixed(4), курс:+sh.a.toFixed(2)},
-          ресурсы:{топливо:+G.fuel.toFixed(1)+"/"+Math.round(st.fuelMax),
-            корпус:Math.round(G.hull)+"/"+Math.round(st.hullMax),
-            трюм:held()+"/"+st.cargoMax, кредиты:Math.round(G.credits)},
-          вокруг:{пираты:G.pirates.length, выстрелы:G.shots.length,
-            дроны:G.drones.length, союзники:(G.allies||[]).length},
-          кадр:{fps:+(n/((t-t0)/1000)).toFixed(1), средний:+((t-t0)/n).toFixed(1),
-            худший:+mx.toFixed(1), просевших:slow},
-          экран:{зум:+G.zoom.toFixed(2), холст:[c.width,c.height], dpr:devicePixelRatio}
+          версия:VER, вердикт:verdict,
+          чтоДержит:holds.length?holds:["ничего"],
+          где:"система "+(sys&&sys.name)+", сектор "+G.sx+":"+G.sy+", режим "+G.mode+
+            ", "+Math.round(d0)+" ед. от звезды",
+          корабль:"скорость "+v1.toFixed(2)+", поворот "+sh.av.toFixed(3)+
+            ", курс "+sh.a.toFixed(2)+" рад",
+          ресурсы:"топливо "+G.fuel.toFixed(1)+"/"+Math.round(st.fuelMax)+
+            ", корпус "+Math.round(G.hull)+"/"+Math.round(st.hullMax)+
+            ", трюм "+held()+"/"+st.cargoMax,
+          вокруг:"пиратов "+G.pirates.length+", выстрелов "+G.shots.length+
+            ", дронов "+G.drones.length+", союзников "+(G.allies||[]).length,
+          кадр:fps.toFixed(0)+" fps, худший "+mx.toFixed(0)+" мс, просевших "+slow,
+          экран:"зум "+G.zoom.toFixed(2)+", холст "+c.width+"×"+c.height+", dpr "+devicePixelRatio
         };
-        console.log(out);r(out);
+        /* печатаем текстом: из простыни JSON человеку ничего не видно, а так
+           верхняя строка сразу говорит, что не так */
+        console.log("\nДРЕЙФ "+VER+" · диагностика полёта\n\n  ВЕРДИКТ: "+verdict+
+          "\n\n  что держит:\n"+out.чтоДержит.map(s=>"    · "+s).join("\n")+
+          "\n  где:      "+out.где+"\n  корабль:  "+out.корабль+
+          "\n  ресурсы:  "+out.ресурсы+"\n  вокруг:   "+out.вокруг+
+          "\n  кадр:     "+out.кадр+"\n  экран:    "+out.экран+"\n");
+        r(out);
       }
     })();
   });

@@ -287,31 +287,58 @@ function dbg(){
   if(!G.running)holds.push("игра не запущена (заставка)");
   if(G.watch)holds.push("режим наблюдения за наёмником");
   if(G.fuel<=0)holds.push("топливо на нуле");
+  /* курс, накопивший обороты, ломает всякий расчёт по углу — проверяем прямо */
+  if(Math.abs(sh.a)>Math.PI*3)
+    holds.push("курс накопил "+Math.round(Math.abs(sh.a)/TAU)+" оборотов ("+
+      sh.a.toFixed(1)+" рад) — расчёт углов врёт");
+  const d0=Math.hypot(sh.x,sh.y);
+  const rEdge=(sys&&sys.belt?sys.belt.orbit:2400)*1.6;
+  if(d0>rEdge)holds.push("за кромкой системы: "+Math.round(d0)+" при кромке "+
+    Math.round(rEdge)+" — курс «прочь» тут заворачивает к звезде");
   /* кадр меряем по-настоящему, а не по G.t: жалоба на «залипание» одинаково
-     звучит и при тридцати кадрах, и при намертво удерживающем состоянии */
+     звучит и при тридцати кадрах, и при намертво удерживающем состоянии.
+     Заодно следим за скоростью и топливом: «жжёт и не едет» — отдельная
+     болезнь, и её надо называть отдельно от просадки кадров. */
   let n=0,t0=performance.now(),lt=t0,mx=0,slow=0;
+  const v0=Math.hypot(sh.vx,sh.vy),f0=G.fuel;
   return new Promise(r=>{
     (function f(){
       const t=performance.now(),d=t-lt;lt=t;
       if(n++){mx=Math.max(mx,d);if(d>25)slow++;}
       if(t-t0<1000)requestAnimationFrame(f);
       else{
+        const v1=Math.hypot(sh.vx,sh.vy),burnt=f0-G.fuel;
+        const fps=n/((t-t0)/1000);
+        let verdict;
+        if(burnt>.05&&v1<.5&&v1<=v0+.05)
+          verdict="ДВИГАТЕЛЬ РАБОТАЕТ ВПУСТУЮ — за секунду сожжено "+burnt.toFixed(1)+
+            " топлива, а скорость "+v0.toFixed(2)+" → "+v1.toFixed(2);
+        else if(holds.length)verdict="корабль удерживается, см. «что держит»";
+        else if(fps<45)verdict="просадка кадров: "+fps.toFixed(0)+" fps — управление живо, но отклик вязкий";
+        else verdict="корабль свободен и слушается";
         const out={
-          версия:VER, держит:holds.length?holds:"ничего — корабль свободен",
-          режим:G.mode, сектор:G.sx+":"+G.sy, система:sys&&sys.name,
-          корабль:{x:Math.round(sh.x),y:Math.round(sh.y),
-            скорость:+Math.hypot(sh.vx,sh.vy).toFixed(3),
-            поворот:+sh.av.toFixed(4), курс:+sh.a.toFixed(2)},
-          ресурсы:{топливо:+G.fuel.toFixed(1)+"/"+Math.round(st.fuelMax),
-            корпус:Math.round(G.hull)+"/"+Math.round(st.hullMax),
-            трюм:held()+"/"+st.cargoMax, кредиты:Math.round(G.credits)},
-          вокруг:{пираты:G.pirates.length, выстрелы:G.shots.length,
-            дроны:G.drones.length, союзники:(G.allies||[]).length},
-          кадр:{fps:+(n/((t-t0)/1000)).toFixed(1), средний:+((t-t0)/n).toFixed(1),
-            худший:+mx.toFixed(1), просевших:slow},
-          экран:{зум:+G.zoom.toFixed(2), холст:[c.width,c.height], dpr:devicePixelRatio}
+          версия:VER, вердикт:verdict,
+          чтоДержит:holds.length?holds:["ничего"],
+          где:"система "+(sys&&sys.name)+", сектор "+G.sx+":"+G.sy+", режим "+G.mode+
+            ", "+Math.round(d0)+" ед. от звезды",
+          корабль:"скорость "+v1.toFixed(2)+", поворот "+sh.av.toFixed(3)+
+            ", курс "+sh.a.toFixed(2)+" рад",
+          ресурсы:"топливо "+G.fuel.toFixed(1)+"/"+Math.round(st.fuelMax)+
+            ", корпус "+Math.round(G.hull)+"/"+Math.round(st.hullMax)+
+            ", трюм "+held()+"/"+st.cargoMax,
+          вокруг:"пиратов "+G.pirates.length+", выстрелов "+G.shots.length+
+            ", дронов "+G.drones.length+", союзников "+(G.allies||[]).length,
+          кадр:fps.toFixed(0)+" fps, худший "+mx.toFixed(0)+" мс, просевших "+slow,
+          экран:"зум "+G.zoom.toFixed(2)+", холст "+c.width+"×"+c.height+", dpr "+devicePixelRatio
         };
-        console.log(out);r(out);
+        /* печатаем текстом: из простыни JSON человеку ничего не видно, а так
+           верхняя строка сразу говорит, что не так */
+        console.log("\nДРЕЙФ "+VER+" · диагностика полёта\n\n  ВЕРДИКТ: "+verdict+
+          "\n\n  что держит:\n"+out.чтоДержит.map(s=>"    · "+s).join("\n")+
+          "\n  где:      "+out.где+"\n  корабль:  "+out.корабль+
+          "\n  ресурсы:  "+out.ресурсы+"\n  вокруг:   "+out.вокруг+
+          "\n  кадр:     "+out.кадр+"\n  экран:    "+out.экран+"\n");
+        r(out);
       }
     })();
   });
