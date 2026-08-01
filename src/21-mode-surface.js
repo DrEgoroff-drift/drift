@@ -19,7 +19,7 @@ function enterSurface(){
       plants.push(genPlant(r,p,x,groundAt(tr,x)));
     }
   }
-  /* высаживаемся за пределами зоны взлёта (48), иначе первое же ДЕЙСТВ
+  /* высаживаемся за пределами зоны взлёта (`shipZoneR`), иначе первое же ДЕЙСТВ
      отправляет обратно на орбиту вместо бурения */
   /* зверьё водится там же, где флора: ему есть что есть */
   const fauna=[];
@@ -42,7 +42,8 @@ function enterSurface(){
   /* и крупную форму: стена или друза перед устьем закрывала сам вход, к
      которому ведёт стрелка навигатора */
   if(tr.deco)clearNear(tr.deco,90);
-  G.surf={p,tr,shipX:L.x,shipY:L.y,x:L.x+72,y:groundAt(tr,L.x+72)-10,
+  const offX=L.x+shipZoneR()+26;
+  G.surf={p,tr,shipX:L.x,shipY:L.y,x:offX,y:groundAt(tr,offX)-10,t0:G.t,
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,
     suit:100,warned:false,beacon:0,walkAmp:0,walkPhase:0,cave:caveMouth};
   G.mode="surface";
@@ -114,7 +115,7 @@ function updateSurface(dt){
   /* у корабля скафандр перезаряжается — сюда и возвращаются между заходами;
      взлёт теперь отдельная кнопка с удержанием (см. tickLaunchHold), а не ДЕЙСТВ,
      чтобы добыча ресурса рядом с посадочной площадкой не отправляла в полёт случайно */
-  if(dShip<48&&S.suit<100){S.suit=Math.min(100,S.suit+.5*dt);S.warned=false;}
+  if(dShip<shipZoneR()&&S.suit<100){S.suit=Math.min(100,S.suit+.5*dt);S.warned=false;}
   /* вход в пещеру проверяется раньше залежей и организмов: он редкий и разовый,
      а бурить и сканировать можно где угодно ещё */
   if(S.cave&&Math.abs(S.cave.x-S.x)<34){
@@ -148,29 +149,29 @@ function updateSurface(dt){
       plant.scanned=true;G.species.add(plant.name);G.data+=9;G.bio=(G.bio|0)+1;
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
-  }else if(dShip<48&&baseAt(G.sx,G.sy,S.p.idx)){
+  }else if(dShip<shipZoneR()&&baseAt(G.sx,G.sy,S.p.idx)){
     /* шлюз базы стоит рядом с кораблём — вход тем же жестом, что в пещеру */
     G.prompt="ДЕЙСТВИЕ — СПУСТИТЬСЯ В БАЗУ";
     if(actEdge){enterBase(S.p);return;}
-  }else if(dShip<48&&!baseAt(G.sx,G.sy,S.p.idx)&&S.p.type!=="gas"){
+  }else if(dShip<shipZoneR()&&!baseAt(G.sx,G.sy,S.p.idx)&&S.p.type!=="gas"){
     G.prompt="ДЕЙСТВИЕ — ЗАЛОЖИТЬ БАЗУ · 2500 КР + 10 СПЛАВОВ";
     if(actEdge&&foundBase(S.p)){enterBase(S.p);return;}
   }else if(S.on){
     G.prompt="ДЕЙСТВИЕ — ЗАЛОЖИТЬ ШАХТУ · ВГЛУБЬ ПОРОДА БОГАЧЕ\n▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
     if(actEdge){enterDig();return;}
-  }else if(dShip<48){
+  }else if(dShip<shipZoneR()){
     G.prompt=(G.fuel<8?"НЕТ ТОПЛИВА · КНОПКА ВЗЛЁТА — ЭВАКУАЦИЯ":"КНОПКА ВЗЛЁТА — УДЕРЖАТЬ")+
       "\nТРЮМ "+held()+"/"+st.cargoMax+" · СКАФАНДР "+Math.round(S.suit)+"%"+(S.suit<100?" · ЗАРЯДКА":" · ГОТОВ");
   }else G.prompt="▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
   /* синтез топлива изо льда доступен и на поверхности, не только в полёте */
-  if(dShip<48&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax&&keys.act&&!S.mining){
+  if(dShip<shipZoneR()&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax&&keys.act&&!S.mining){
     const ratio=st.synthRatio,n=Math.min(G.cargo.ice,Math.ceil((st.fuelMax-G.fuel)/ratio));
     G.cargo.ice-=n;G.fuel=Math.min(st.fuelMax,G.fuel+n*ratio);
     say("Синтез: "+n+" льда → "+(n*ratio)+" топлива");
   }
   const lbtn=document.getElementById("launchbtn");
   if(lbtn){
-    if(dShip<48){
+    if(dShip<shipZoneR()){
       lbtn.style.display="";
       lbtn.textContent=G.fuel<8?"ЭВАКУАЦИЯ":"ВЗЛЁТ";
     }else lbtn.style.display="none";
@@ -180,7 +181,7 @@ let launchHold=0;
 function tickLaunchHold(dt){
   const S=G.surf;if(!S)return;
   const dShip=Math.abs(S.x-S.shipX);
-  if(dShip<48&&keys.launch){
+  if(dShip<shipZoneR()&&keys.launch){
     launchHold+=dt;
     const lbar=document.getElementById("launchbar");
     if(lbar)lbar.style.width=clamp(launchHold/36*100,0,100)+"%";
@@ -251,7 +252,7 @@ function surfaceHint(){
   const S=G.surf;if(!S)return null;
   const dShip=Math.abs(S.x-S.shipX);
   if(S.suit<35)return "СКАФАНДР НА ИСХОДЕ · К КОРАБЛЮ ИЛИ КНОПКА → КОРАБЛЬ";
-  if(dShip<48){
+  if(dShip<shipZoneR()){
     if(baseAt(G.sx,G.sy,S.p.idx))return "ЗДЕСЬ ВАША БАЗА · ДЕЙСТВИЕ — СПУСТИТЬСЯ ВНИЗ";
     if(S.p.type!=="gas")return "У КОРАБЛЯ МОЖНО ЗАЛОЖИТЬ БАЗУ · ДЕЙСТВИЕ · 2500 КР + 10 СПЛАВОВ";
   }
@@ -339,8 +340,14 @@ function drawSurface(){
      породой, что грунт под ним (21b-surface-deco) */
   drawDeco(tr,camx,camy,p);
   drawRocks(tr,camx,camy,p.T.pal);
-  groundShadow(S.shipX-camx,S.shipY-camy+2,34,7);
-  ctx.save();ctx.translate(S.shipX-camx,S.shipY-camy);drawLander(false,false);ctx.restore();
+  /* тень по длине корпуса, а не по прежним 34 px: у нового посадочного силуэта
+     она иначе выдаёт игрушку на палочках */
+  groundShadow(S.shipX-camx,S.shipY-camy+12,landerLen(G.shipId)*.46,8);
+  ctx.save();ctx.translate(S.shipX-camx,S.shipY-camy);
+  /* стоим: шасси выпущено, трап спущен, сопла ещё остывают после посадки */
+  drawLander(false,false,{gear:1,sq:0,landed:true,tr:S.tr,gx:S.shipX,
+    hot:Math.max(0,1-(G.t-(S.t0||0))/700)});
+  ctx.restore();
   drawDustMotes(camx,camy,p);
   if(S.cave){
     const cx=S.cave.x-camx;
