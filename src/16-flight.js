@@ -170,13 +170,39 @@ function arrive(){
    голый силуэт, к которому пришлось пририсовывать кружок-метку. */
 const shipZ=Z=>clamp(Z,.55,1.6);
 const TRAIL=[],TRAIL_MAX=560;
+let trailBurst=0,trailOn=false;   // см. «номер очереди» в trailStep
+/* ── характер хвоста по классу корпуса ──
+   Класс уже сказан игроку словами на экране корабля: курьер, тягач, буровик.
+   Хвост повторяет это же на глаз, а не заводит вторую систему признаков.
+   Курьер тянет длинное узкое перо, тягач выдыхает коротко и широко, зонд —
+   тонкую нитку. Числа множат общую длину и общую толщину, поэтому правка
+   базовых величин остаётся одной правкой и не рассыпается по классам. */
+const TRAIL_CHAR={
+  courier:{len:1.4, w:.72},   // «Клинок»: гоночное перо
+  survey: {len:1.3, w:.66},   // «Игла»: длинная нитка
+  scout:  {len:1,   w:1},     // «Стриж»: мера, от которой считаются остальные
+  warship:{len:.95, w:1.4},   // «Топор»: плотный и тяжёлый
+  miner:  {len:.85, w:1.32},  // «Обод»
+  hauler: {len:.78, w:1.6}    // «Вьюк», «Скат», «Мамонт»: короткий выдох
+};
+const trailChar=id=>TRAIL_CHAR[shipData(id).hcls]||TRAIL_CHAR.scout;
 const TRAIL_TINT={};
-function trailTint(id){
-  if(TRAIL_TINT[id])return TRAIL_TINT[id];
+/* Цвет зависит ещё и от модуля двигателя: чем горячее камера, тем белее и
+   голубее пламя — прокачка видна в полёте, а не только строкой в меню.
+   Поэтому в ключ кэша входит уровень модуля, иначе после покупки остался бы
+   старый цвет до перезагрузки. */
+function trailTint(id,lvl){
+  lvl=lvl|0;
+  const key=id+":"+lvl;
+  if(TRAIL_TINT[key])return TRAIL_TINT[key];
   const c=hex2rgb(shipData(id).col);
+  const heat=clamp(lvl*.26,0,.78);                 // 0 — паспортный, выше — форсаж
+  const hot=mixc([255,252,238],[214,236,255],heat); // добела → в голубизну
   /* ядро — почти белое с оттенком акцента, чтобы не выглядело чужой наклейкой */
-  const T={core:mixc(c,[255,252,238],.82), mid:mixc(c,[255,214,150],.42), edge:c};
-  TRAIL_TINT[id]=T;return T;
+  const T={core:mixc(c,hot,.82+heat*.12),
+           mid:mixc(c,mixc([255,214,150],[188,220,255],heat),.42+heat*.2),
+           edge:c};
+  TRAIL_TINT[key]=T;return T;
 }
 function trailStep(dt,thrusting,turning,braking){
   const sh=G.ship,h=hullOf(G.shipId),st=stat();
@@ -193,9 +219,17 @@ function trailStep(dt,thrusting,turning,braking){
      Тот же коэффициент переводит смещение из «единиц корпуса» в мировые. */
   const eScale=shipZ(G.zoom)/G.zoom;
   const lvl=G.mods.engine|0;
-  /* длина хвоста: тяга корпуса × модуль двигателя. Ниже единицы не опускаем —
-     у «Мамонта» шлейф короткий, но он есть */
-  const span=(.45+st.thr*.5)*(1+lvl*.28);
+  /* длина хвоста: тяга корпуса × модуль двигателя × характер класса.
+     Ниже единицы не опускаем — у «Мамонта» шлейф короткий, но он есть */
+  const span=(.45+st.thr*.5)*(1+lvl*.28)*trailChar(G.shipId).len;
+  /* ── номер очереди ──
+     Лента соединяет подряд идущие точки одного сопла, и до сих пор ей было
+     всё равно, был ли между ними перерыв. Отпустил тягу, отлетел, дал снова —
+     и последняя старая точка сшивалась отрезком с первой новой: поперёк пустоты
+     тянулась прямая, которой корабль не летел. Каждая очередь тяги получает
+     свой номер, и полоса рисуется только внутри одной очереди. */
+  if(thrusting&&!trailOn)trailBurst++;
+  trailOn=thrusting;
   if(thrusting&&TRAIL.length<TRAIL_MAX){
     /* лента непрерывна, поэтому точки ставятся каждый кадр; на слабой графике
        сопла берутся через одно, лента становится реже, но не рвётся */
@@ -224,11 +258,11 @@ function trailStep(dt,thrusting,turning,braking){
          струя. «Клинок» страдал сильнее всех: у него и скорость выше, и лента
          длиннее — обе величины растут от тяги. */
       const bx=ex-sh.vx*dt*.5, by=ey-sh.vy*dt*.5;
-      TRAIL.push({x:bx,y:by,hot:1,e:i,r:e.r*(.54+Math.random()*.08),
-        max:30*span,life:30*span-.5,
+      TRAIL.push({x:bx,y:by,hot:1,e:i,b:trailBurst,r:e.r*(.54+Math.random()*.08),
+        max:40*span,life:40*span-.5,
         vx:-Math.cos(sh.a+spread)*sp, vy:-Math.sin(sh.a+spread)*sp});
-      TRAIL.push({x:ex,y:ey,hot:1,e:i,r:e.r*(.54+Math.random()*.08),
-        max:30*span,life:30*span,
+      TRAIL.push({x:ex,y:ey,hot:1,e:i,b:trailBurst,r:e.r*(.54+Math.random()*.08),
+        max:40*span,life:40*span,
         vx:-Math.cos(sh.a+spread)*sp, vy:-Math.sin(sh.a+spread)*sp});
     }
   }
@@ -262,13 +296,16 @@ function trailStep(dt,thrusting,turning,braking){
   }
 }
 function drawTrail(zx,zy,Z){
-  const T=trailTint(G.shipId),SZ=shipZ(Z);
+  const T=trailTint(G.shipId,G.mods.engine|0),SZ=shipZ(Z),CW=trailChar(G.shipId).w;
   /* ленты по соплам: массив хронологичен, поэтому в каждой корзине точки
      идут от самой старой к свежей — ровно порядок отрисовки полосы */
   const lanes={};
   for(const t of TRAIL){
     if(!t.hot)continue;
-    (lanes[t.e]||(lanes[t.e]=[])).push(t);
+    /* ключ — сопло И номер очереди: разные очереди тяги не сшиваются в одну
+       полосу, поэтому поперёк пропуска больше нет прямой */
+    const k=t.e+"/"+(t.b|0);
+    (lanes[k]||(lanes[k]=[])).push(t);
   }
   ctx.save();
   ctx.globalCompositeOperation="lighter";
@@ -291,7 +328,7 @@ function drawTrail(zx,zy,Z){
          до конца и выглядел начерченной линией. Газ должен рассеиваться —
          половина пути и половина яркости не одно и то же. */
       ctx.strokeStyle=rgba(col,(u*u*.30+u*u*u*u*.5).toFixed(3));
-      ctx.lineWidth=Math.max(1,b2.r*SZ*(2.4-u*1.3));
+      ctx.lineWidth=Math.max(1,b2.r*SZ*(2.4-u*1.3)*CW*1.35);
       ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
     }
     /* добела раскалённый корешок у самого сопла */
