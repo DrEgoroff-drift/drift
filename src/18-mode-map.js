@@ -90,7 +90,7 @@ function drawMap(){
       ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
     }
   }
-  let sel=null;
+  let sel=null,cur=null;
   for(const v of vis){
     const{gx,gy,s,x,y}=v;
     const here=gx===G.sx&&gy===G.sy;
@@ -164,6 +164,47 @@ function drawMap(){
       ctx.fillText("СЛЕД АРТЕФАКТА",x,y-rr-29);
     }
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
+    if(here)cur=v;
+  }
+  const cost=Math.round(9+dsel*13);
+  const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0;
+  /* ── курс прыжка ──
+     Раньше отсюда к карточке шёл волосок «вот о какой звезде речь». Он не
+     сообщал ничего, чего не сказали бы кольцо и уголки прицела, зато на дальней
+     цели превращался в диагональ через полкарты. Вместо него линия, которая
+     отвечает на настоящий вопрос: откуда, куда и чем это обойдётся. Цена стоит
+     прямо на курсе — там, куда и так смотрит глаз, а не в строке внизу экрана.
+     Пунктир, потому что сплошными нарисованы связи между системами: курс — это
+     намерение игрока, а не устройство мира, и путать их нельзя. */
+  if(cur&&sel&&dsel>0){
+    const x0=cur.x,y0=cur.y,x1=sel.x,y1=sel.y;
+    const far=dsel>st.jump+.02, poor=!far&&cost>G.fuel;
+    const col=far?"rgba(255,107,87,.5)":poor?"rgba(255,107,87,.75)":"rgba(242,178,92,.8)";
+    ctx.save();
+    ctx.setLineDash(far?[2,6]:[7,5]);
+    ctx.strokeStyle=col;ctx.lineWidth=far?1:1.4;
+    ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+    ctx.setLineDash([]);
+    /* подпись на середине курса, на своей подложке — поверх звёзд и туманности
+       голый текст не читается */
+    const mx=(x0+x1)/2,my=(y0+y1)/2;
+    const label=far?"ВНЕ РАДИУСА":(cost+" ТОПЛИВА"+(poor?" · НЕ ХВАТАЕТ":""));
+    ctx.font="10px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
+    const tw=ctx.measureText(label).width;
+    ctx.fillStyle="rgba(6,10,16,.82)";
+    ctx.fillRect(mx-tw/2-7,my-9,tw+14,18);
+    ctx.strokeStyle=col;ctx.lineWidth=1;
+    ctx.strokeRect(mx-tw/2-6.5,my-8.5,tw+13,17);
+    ctx.fillStyle=far||poor?"rgba(255,150,135,.95)":"#f2b25c";
+    ctx.fillText(label,mx,my+.5);
+    /* сколько останется в баке — вторая строка, мельче: это уже подробность */
+    if(!far&&!poor){
+      ctx.font="8px ui-monospace,monospace";
+      ctx.fillStyle="rgba(160,182,192,.7)";
+      ctx.fillText("останется "+Math.round(G.fuel-cost),mx,my+18);
+    }
+    ctx.restore();
+    ctx.textBaseline="alphabetic";
   }
   /* ── карточка выбранной системы ──
      Раньше подпись висела прямо под звездой и на нижнем ряду секторов уезжала
@@ -181,17 +222,6 @@ function drawMap(){
     }
     ctx.stroke();
     const cw=Math.min(300,W-32), cx=16, cy=H-PAD_SAFE-158;   // выше строк прыжка: они налезали на карточку
-    /* Волосок к звезде теперь короткий. Во всю длину он был диагональю через
-       всю карту: пересекал чужие системы и связи между ними и читался не как
-       указатель, а как случайная линия неизвестно откуда куда — тем вернее,
-       чем дальше выбранная звезда от угла с карточкой. Указывать направление
-       достаточно: саму звезду уже держат кольцо и уголки прицела. Если звезда
-       рядом, отрезок дотянется до неё целиком — прежнее поведение сохранено. */
-    const ax=cx+cw*.35, ay=cy+12;
-    const dx=x-ax, dy=(y+rr+18)-ay, dd=Math.hypot(dx,dy)||1;
-    const L=Math.min(dd,86);
-    ctx.strokeStyle="rgba(242,178,92,.22)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax+dx/dd*L,ay+dy/dd*L);ctx.stroke();
     ctx.fillStyle="rgba(6,10,16,.62)";ctx.fillRect(cx,cy,cw,104);
     ctx.strokeStyle="rgba(127,230,216,.18)";ctx.strokeRect(cx+.5,cy+.5,cw,104);
     ctx.textAlign="left";
@@ -202,8 +232,6 @@ function drawMap(){
     ctx.fillStyle="rgba(160,182,192,.62)";
     wrapLeft(s.desc,cx+12,cy+54,cw-24,11);
   }
-  const cost=Math.round(9+dsel*13);
-  const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0;
   /* строка прыжка — над карточкой и над кнопками; PAD_SAFE держит её выше
      экранных пэдов, на которые она налезала в нижних углах */
   ctx.textAlign="left";ctx.font="10px ui-monospace,monospace";
