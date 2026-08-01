@@ -212,6 +212,10 @@ function evacuate(){
 function totalLoss(){
   const S=G.surf;
   const pname=S?S.p.name:"поверхности";
+  /* если дом уже есть — возвращаемся туда: смерть перестаёт быть обнулением и
+     становится потерей рейса. Обнуление стирало вместе с кораблём всю историю,
+     то есть наказывало сильнее, чем игра стоит (12j-home) */
+  if(homeCanRevive()){homeRevive(pname);return;}
   G.shipId="strizh";G.owned={strizh:true};
   G.mods={engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0};
   G.modsOwned={engine:0,tank:0,hold:0,armor:0,drill:0,hyper:0,weapon:0};

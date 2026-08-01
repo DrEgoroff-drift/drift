@@ -16,7 +16,7 @@ function jobGive(m,what,arg){
   if(what==="perk"){m.gift=(m.gift||0)+1;return "свободное очко перка";}
   if(what==="slot"){m.slotBonus=(m.slotBonus||0)+1;return "+1 слот приказов навсегда";}
   if(what==="loy"){m.loy=clamp(m.loy+arg,0,100);return arg>0?"он это запомнил":"он это тоже запомнил";}
-  if(what==="credits"){G.credits+=arg;return "+"+arg.toLocaleString("ru")+" кр";}
+  if(what==="credits"){earn(arg,"job");return "+"+arg.toLocaleString("ru")+" кр";}
   if(what==="data"){G.data+=arg;return "+"+arg+" данных";}
   if(what==="rare"){
     const k=RARE_RES[Math.abs(arg)%RARE_RES.length];

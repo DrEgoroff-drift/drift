@@ -400,6 +400,28 @@ function renderTab(){
     }
   }
   else if(tab==="bases"){
+    /* ── дом первой строкой ──
+       До настоящего экрана-помещения (следующий проход M83) дом должен быть
+       хотя бы видим: игрок не обязан догадываться, что у него что-то растёт.
+       Здесь нет ни одной цены — дом не покупается, и вместо ценника стоит
+       строка «до следующей ступени столько-то оборота». */
+    if(G.home&&G.home.tier){
+      const pr=homeProgress();
+      $body.appendChild(el("div","sec","ВАШ ДОМ · СЕКТОР "+G.home.sx+","+G.home.sy+
+        " · ОБОРОТ "+G.home.turn.toLocaleString("ru")+" КР"));
+      const rooms=HOME_TIERS.slice(0,G.home.tier).map(t=>t.ru).join(" · ");
+      const hr=el("div","row");
+      hr.appendChild(el("div","nm","<b>"+rooms+"</b><s>"+
+        (pr.done?"дом достроен":pr.ru)+
+        "<br>здесь вас не найдут пираты, и сюда вы вернётесь, потеряв корабль</s>"));
+      const hb=document.createElement("button");
+      const hc=homeBeaconCost();
+      hb.textContent="МАЯК ДОМОЙ · "+hc.toLocaleString("ru")+" КР";
+      hb.disabled=G.credits<hc||(G.sx===G.home.sx&&G.sy===G.home.sy);
+      hb.addEventListener("click",()=>{if(homeBeacon()){closeStation();renderTab();}});
+      hr.appendChild(hb);
+      $body.appendChild(hr);
+    }
     /* сеть баз одним экраном: где, что копают, сколько накопили, чем больны */
     baseTick();
     const list=baseList();

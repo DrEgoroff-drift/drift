@@ -68,7 +68,7 @@ function aiDrift(m,min,work){
     if(spend>0){
       G.credits-=spend;m.spent=(m.spent||0)+spend;
       const good=r()<.45;
-      if(good){const back=Math.round(spend*(1.3+r()*.9));G.credits+=back;m.earned=(m.earned||0)+back;
+      if(good){const back=Math.round(spend*(1.3+r()*.9));earn(back,"ai");m.earned=(m.earned||0)+back;
         mgrSay(m,"Потрачено "+spend+" кр без запроса · возврат "+back+" кр");}
       else mgrSay(m,"Потрачено "+spend+" кр без запроса","warn");
     }

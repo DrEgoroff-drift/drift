@@ -1224,7 +1224,8 @@ TEST_SUITES.push(()=>suite("дерево перков: подписей без �
      обман. На ревизии таких нашлось 24 из 48.
      Считаем «подключённым» перк, который читают через mgrPerk/mgrPerkOf или
      который открывает стоящий приказ (поле need в MGR_RULES). */
-  const src=document.scripts[0].textContent;
+  /* только код игры: тесты живут в том же файле, и их строки не в счёт */
+  const src=document.scripts[0].textContent.split("TEST_SUITES")[0];
   const needed={};
   for(const role in MGR_RULES)for(const r of MGR_RULES[role])if(r.need)needed[r.need]=1;
   const dead=[];
@@ -1703,4 +1704,82 @@ TEST_SUITES.push(()=>suite("пиратский корпус: сварен, а н
   const d=c.getContext("2d").getImageData(0,0,260,260).data;
   let ink=0;for(let i=3;i<d.length;i+=4)if(d[i]>20)ink++;
   ok(ink>1200,"подбитый пират рисуется и виден ("+ink+" px)");
+}));
+
+/* ── M83: дом ──
+   Дом растёт сам от оборота и не покупается; смерть перестала быть обнулением.
+   Проверяем воронку дохода целиком: новый источник, добавленный мимо `earn`,
+   до дома не дойдёт, и это тот самый случай, когда «подпись без кода» надо
+   ловить тестом, а не глазами. */
+TEST_SUITES.push(()=>suite("дом растёт сам от оборота",()=>{
+  resetWorld();
+  ok(!G.home||!G.home.tier,"в начале дома нет");
+  const c0=G.credits;
+  earn(400,"test");
+  eq(G.credits,c0+400,"заработок попадает на счёт");
+  ok(G.home&&G.home.turn===400,"и в оборот дома");
+  ok(!G.home.tier,"на 400 кр дома ещё нет");
+  earn(700,"test");
+  eq(G.home.tier,1,"после первой честной выручки появился угол");
+  eq(G.home.sx,G.sx,"дом встал там, где вы были");
+  /* оборот, а не баланс: тратим всё — дом не худеет */
+  G.credits=0;
+  earn(24000,"test");
+  eq(G.home.tier,2,"25 000 оборота — прихожая");
+  ok(G.home.turn===25100,"оборот считает всё заработанное: "+G.home.turn);
+  ok(homeHas("hall")&&!homeHas("garage"),"ступени открываются по порядку");
+  const pr=homeProgress();
+  ok(/гараж/.test(pr.ru)&&pr.frac<1,"строка ведёт к следующей ступени: "+pr.ru);
+  /* дом один: второй раз не заводится и не переезжает */
+  const sx=G.home.sx;
+  G.sx=5;G.sy=5;
+  earn(50000,"test");
+  eq(G.home.sx,sx,"дом не переезжает следом за игроком");
+  eq(G.home.tier,3,"70 000 — гараж");
+  /* смерть без топлива: возвращаемся домой, а не в пустой «Стриж» со старта */
+  G.credits=10000;
+  G.cargo.iron=20;
+  const wasTier=G.home.tier;
+  landOnTestPlanet();
+  totalLoss();
+  eq(G.mode,"system","после потери корабля мы в системе");
+  eq(G.sx,G.home.sx,"и это система дома, а не система старта");
+  eq(G.home.tier,wasTier,"дом и его ступени целы");
+  eq(G.cargo.iron,0,"груз потерян");
+  ok(G.credits>0&&G.credits<10000,"потеряна часть денег, а не всё: "+G.credits);
+  /* корабль из гаража поднимается сам */
+  const other=SHIP_KEYS.find(k=>k!=="strizh");
+  G.home.tier=8;G.owned[other]=true;G.home.garage=[other];
+  G.shipId="strizh";
+  landOnTestPlanet();
+  totalLoss();
+  eq(G.shipId,other,"корабль поднят из гаража дома");
+  eq(G.home.garage.length,0,"и в гараже его больше нет");
+  /* дом переживает сохранение, старая запись грузится без дома */
+  const json=JSON.stringify(snapshot());
+  applySave(JSON.parse(json));
+  ok(G.home&&G.home.tier===8,"дом пережил сохранение");
+  const old=JSON.parse(json);delete old.home;
+  applySave(old);
+  ok(!G.home,"старая запись грузится без дома и заведёт его при первой выручке");
+  /* маяк домой платный, и от дома летят своим ходом */
+  resetWorld();
+  earn(1200,"test");
+  G.sx=3;G.sy=4;G.sys=getSystem(3,4);G.mode="system";
+  const cost=homeBeaconCost();
+  ok(cost>600,"маяк домой стоит тем дороже, чем дальше забрались: "+cost);
+  G.credits=cost-1;
+  ok(!homeBeacon(),"без денег маяк не срабатывает");
+  G.credits=cost+10;
+  ok(homeBeacon(),"с деньгами — срабатывает");
+  eq(G.sx,G.home.sx,"и приводит домой");
+  eq(G.credits,10,"деньги списаны ровно по цене");
+}));
+/* весь доход в игре идёт через одну воронку: иначе дом видит не то, что игрок */
+TEST_SUITES.push(()=>suite("доход идёт одной воронкой",()=>{
+  /* только код игры: тесты живут в том же файле, и их строки не в счёт */
+  const src=document.scripts[0].textContent.split("TEST_SUITES")[0];
+  /* в самой воронке прибавка к счёту законна, в остальных местах — нет */
+  const hits=(src.match(/G\.credits\+=/g)||[]).length;
+  eq(hits,1,"G.credits+= осталось только внутри earn()");
 }));

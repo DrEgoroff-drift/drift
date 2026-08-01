@@ -227,7 +227,7 @@ function crewUnload(c,quiet){
   }
   if(sum>0){
     sum-=mgrCmdCut(sum);
-    G.credits+=sum;c.earned=(c.earned||0)+sum;
+    earn(sum,"crew");c.earned=(c.earned||0)+sum;
     if(!quiet)logAdd("money",c.name+" сдал груз ×"+n+" · +"+sum.toLocaleString("ru")+" кр");
   }
   return sum;
@@ -444,7 +444,7 @@ function crewCredit(c,sum){
   sum=Math.round(sum);
   if(c.order&&c.order.kind==="hunt"&&mgrPerkOf("cmd","bounty"))sum=Math.round(sum*1.3);
   sum-=mgrCmdCut(sum);
-  G.credits+=sum;c.earned=(c.earned||0)+sum;
+  earn(sum,"crew");c.earned=(c.earned||0)+sum;
   return sum;
 }
 /* обычная выручка рейса: добытчик привозит сырьё, остальные — деньги */

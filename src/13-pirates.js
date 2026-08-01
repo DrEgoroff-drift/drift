@@ -130,7 +130,7 @@ function killPirate(p){
   const r=rng(p.seed);
   sfx("boom",{v:.8});
   const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7)*stat().bountyMul);
-  G.credits+=bounty;G.kills=(G.kills|0)+1;
+  earn(bounty,"bounty");G.kills=(G.kills|0)+1;
   const loot=pick(TRADE_KEYS,r),   /* редкое с обломков не падает: у него свои способы добычи */got=addRes(loot,2+Math.floor(r()*7));
   const d=sysDanger(G.sx,G.sy);
   /* обломок с частью — не в трюм сразу, а контейнером: у боя своя петля «убил → собрал» */
