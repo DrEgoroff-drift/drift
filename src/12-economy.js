@@ -17,7 +17,9 @@ function marketFor(sys){
   const onRoute=F&&!F.stalled&&mgrPerk(F,"mono")&&F.route.indexOf(sys.sx+","+sys.sy)>=0;
   const boost=onRoute?1.18:1;
   for(const k of TRADE_KEYS)
-    prices[k]=Math.max(1,Math.round(base[k]*mul*boost*clamp(1+(m.pressure[k]||0),.4,1.8)));
+    /* занятая система: скупщик один, и он знает, что деваться некуда */
+    prices[k]=Math.max(1,Math.round(base[k]*mul*boost*occPriceMul(sys.sx,sys.sy)*
+                                    clamp(1+(m.pressure[k]||0),.4,1.8)));
   return prices;
 }
 function sellCargo(sys,k,qty){
@@ -84,6 +86,8 @@ function tickDrones(){
        выработки — быстрее оборот и меньше потерь, если точка кончится раньше */
     const rate=d.rate*(mgrPerkOf("keep","sell")?1.35:1);
     const yieldN=Math.floor(Math.min(d.pool,rate*elapsedMs/60000));
+    /* под блокадой дрону некуда сдавать: он копит, но не продаёт */
+    if(occLvl(d.sx,d.sy)>=2){d.soldAtMs=now;continue;}
     if(yieldN>0){
       const home=nearestStation(d.sx,d.sy);
       const rev=sellDroneYield(home,d.res,yieldN);

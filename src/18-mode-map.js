@@ -117,6 +117,43 @@ function drawMap(){
     ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.fill();
     ctx.restore();
     ctx.globalAlpha=fade;
+    /* ── занятая пиратами система ──
+       Кольцо из штрихов вместо ровного круга: занятость должна читаться как
+       оцепление, а не как ещё одна метка станции. Чем выше уровень, тем гуще
+       штрихи и тем краснее — фронт виден одним взглядом на карту. */
+    const ol=occLvl(gx,gy);
+    if(ol){
+      /* Оцепление читается зубцами наружу, а не тонким кольцом: на карте, где
+         у станции уже есть свой кружок, ещё одна окружность терялась среди них. */
+      const orr=10+ol*3,n=5+ol*3;
+      const oc=[255,96-ol*14,72-ol*12];
+      /* Оцепление НЕ тускнеет с расстоянием, в отличие от звёзд: фронт — это то,
+         ради чего на карту и смотрят, и он обязан читаться на краю радиуса
+         так же, как под носом. Глубина остаётся у звёзд, а не у меток. */
+      const of=Math.max(.75,fade);
+      ctx.strokeStyle=rgba(oc,(.85+ol*.05)*of);ctx.lineWidth=2.2+ol*.6;
+      for(let i=0;i<n;i++){
+        const a=i/n*TAU+G.t*.02*(ol%2?1:-1);
+        ctx.beginPath();
+        ctx.arc(x,y,orr,a,a+TAU/n*.46);
+        ctx.stroke();
+        // зубец наружу на конце каждого штриха
+        const ae=a+TAU/n*.46;
+        ctx.beginPath();
+        ctx.moveTo(x+Math.cos(ae)*orr,y+Math.sin(ae)*orr);
+        ctx.lineTo(x+Math.cos(ae)*(orr+2.5+ol*.6),y+Math.sin(ae)*(orr+2.5+ol*.6));
+        ctx.stroke();
+      }
+      if(ol>=2){
+        ctx.fillStyle=rgba(oc,.95*of);ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+        ctx.fillText(ol>=OCC_MAX?"ПОД ПИРАТАМИ":"БЛОКАДА",x,y+orr+11);
+      }
+      if(ol>=OCC_MAX){                       // под пиратами: заливка изнутри
+        const og=ctx.createRadialGradient(x,y,0,x,y,orr);
+        og.addColorStop(0,rgba(oc,.22*of));og.addColorStop(1,rgba(oc,0));
+        ctx.fillStyle=og;ctx.beginPath();ctx.arc(x,y,orr,0,TAU);ctx.fill();
+      }
+    }
     if(s.station){ctx.strokeStyle="rgba(242,178,92,.55)";ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(x,y,rr+6,0,TAU);ctx.stroke();}
     if(s.belt){ctx.strokeStyle="rgba(180,190,200,.3)";ctx.lineWidth=1;
@@ -245,6 +282,13 @@ function drawMap(){
   ctx.fillStyle="rgba(93,115,130,.85)";ctx.textAlign="right";
   ctx.fillText("ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
     Math.round(G.credits).toLocaleString("ru")+" кр",W-16,H-PAD_SAFE-14);
+  /* фронт одной строкой: цель игры должна быть видна там, где на неё смотрят,
+     то есть на карте, а не в меню */
+  const occN=G.occ?Object.keys(G.occ).length:0;
+  if(occN||(G.freed|0)){
+    ctx.fillStyle=occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)";
+    ctx.fillText(occSummary(),W-16,H-PAD_SAFE-30);
+  }
   G.prompt="ТАП ПО ЗВЕЗДЕ — ВЫБОР · ДЕЙСТВИЕ — ПРЫЖОК";
   if(actEdge){
     if(!bad)jump(cost);

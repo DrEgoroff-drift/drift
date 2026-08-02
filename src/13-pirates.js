@@ -2,6 +2,17 @@
 /* эфемерны: набираются заново при каждом входе в систему, как орбиты и пояс */
 const PIRATE_NAMES=["Шакал","Гриф","Клык","Ржавый","Стервятник","Сиплый","Крюк","Оса"];
 const PIRATE_COLS=["#ff6b57","#d95a3c","#c4694f","#e08a5a","#b85a6a","#cf7a45"];
+/* ── ранги ──
+   Ранг — не «плюс к числам», а то, кого вы встретили: залётный шакал, ветеран
+   на сколоченном корпусе, капитан патруля и барон, который держит систему.
+   Награда и живучесть растут вместе с рангом, поэтому занятая система — это
+   и риск, и заработок. */
+const PIRATE_RANKS=[
+  {ru:"",         pre:"",        hull:1,   bounty:1,   col:null},
+  {ru:"ветеран",  pre:"Старый",  hull:1.6, bounty:1.7, col:"#e0885a"},
+  {ru:"капитан",  pre:"Капитан", hull:2.4, bounty:2.8, col:"#f2b25c"},
+  {ru:"барон",    pre:"Барон",   hull:4.2, bounty:6,   col:"#ff9d7a"}
+];
 /* у каждого пирата свой генерируемый корпус — через NPC_SHIPS, мимо персистентных G.uniqueShips */
 function pirateShipId(seed){
   const id="p"+seed;
@@ -16,12 +27,27 @@ function spawnPirates(){
   G.shield=stat().shieldMax;
   const danger=sysDanger(G.sx,G.sy);
   const r=rng(hashi(G.sx,G.sy,Math.floor(Date.now()/900000)));
-  const n=r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0;
+  /* под пиратами система держит патруль сверх обычного случайного налёта */
+  const n=(r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0)+occExtraPirates(G.sx,G.sy);
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;
+    const seed=hashi(G.sx,G.sy,i*977);
+    /* ── ранг ──
+       Один и тот же «пират» на всю галактику делал бой одинаковым от начала
+       до конца. Ранг растёт от опасности сектора и от того, насколько плотно
+       система занята: в занятой системе стоит патруль, а не залётный шакал.
+       Барон появляется только под полной оккупацией — он и есть тот, ради кого
+       туда летят. */
+    const occ=occLvl(G.sx,G.sy);
+    let rank=0;
+    if(r()<danger*.5+occ*.16)rank=1;
+    if(occ>=2&&r()<.4+danger*.3)rank=2;
+    if(occ>=OCC_MAX&&i===0)rank=3;
+    const R=PIRATE_RANKS[rank];
+    const hp=(26+danger*70)*R.hull;
     G.pirates.push({x:Math.cos(a)*rad,y:Math.sin(a)*rad,vx:0,vy:0,a:a+Math.PI,
-      hull:26+danger*70,hullMax:26+danger*70,name:pick(PIRATE_NAMES,r),
-      seed:hashi(G.sx,G.sy,i*977),shipId:pirateShipId(hashi(G.sx,G.sy,i*977)),
+      hull:hp,hullMax:hp,name:(R.pre?R.pre+" ":"")+pick(PIRATE_NAMES,r),
+      rank,seed,shipId:pirateShipId(seed),
       cool:0,aware:false,thrust:false});
   }
   /* ушедший управляющий сидит в своём секторе и ждёт: он такая же запись в
@@ -129,8 +155,11 @@ function killPirate(p){
   if(p.rogue){rogueDefeated(p);return;}
   const r=rng(p.seed);
   sfx("boom",{v:.8});
-  const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7)*stat().bountyMul);
+  const RK=PIRATE_RANKS[p.rank|0]||PIRATE_RANKS[0];
+  const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7)*stat().bountyMul*RK.bounty);
   earn(bounty,"bounty");G.kills=(G.kills|0)+1;
+  /* сбитый в занятой системе идёт в счёт её освобождения */
+  occKill(G.sx,G.sy);
   const loot=pick(TRADE_KEYS,r),   /* редкое с обломков не падает: у него свои способы добычи */got=addRes(loot,2+Math.floor(r()*7));
   const d=sysDanger(G.sx,G.sy);
   /* обломок с частью — не в трюм сразу, а контейнером: у боя своя петля «убил → собрал» */
