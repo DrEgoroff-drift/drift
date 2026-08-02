@@ -59,6 +59,13 @@ const NODE_B=["шов","ключ","зуб","вал","клин","стык","об�
   "усилитель","преобразователь"];
 const NODE_C=["левый","правый","верхний","нижний","обратный","прямой","двойной",
   "тройной","опорный","ведущий","ведомый","запасной","аварийный","рабочий","поверочный"];
+/* ── где узлы водятся ──
+   Список ЗАКРЫТЫЙ и один на всю игру: и каталог, и места падения берут места
+   отсюда. В первом заходе половина списка не была подключена ни к чему, и
+   пятьсот с лишним узлов оказались недостижимы — ровно та же ошибка, что
+   «перк без кода». Набор `узлы падают отовсюду, где сказано` стережёт это. */
+const NODE_WHERE=["с пиратов","в шахте","в рейде на базу","в поясе","в пещере",
+                  "с ушедшего управляющего","в аномалии"];
 const NODE_PER_FAM=100;                 // десять семей по сто — ровно тысяча
 const NODES=[];
 const NODE_BY_ID={};
@@ -83,8 +90,7 @@ const NODE_BY_ID={};
       const node={id,idx:NODES.length,fam:F.id,famRu:F.ru,ru,grade:grade.id,
         gradeRu:grade.ru,col:grade.col,seed,
         /* место, где узел вообще может выпасть: это и есть «где искать» */
-        where:pick(["с пиратов","в шахте","в рейде на базу","в поясе","в пещере",
-                    "с ушедшего управляющего","в аномалии"],r)};
+        where:pick(NODE_WHERE,r)};
       NODES.push(node);NODE_BY_ID[id]=node;
     }
   }
@@ -324,4 +330,45 @@ function nodeIconEl(node,size){
   c.translate(size/2,size/2);
   drawNodeIcon(c,node,size);
   return cn;
+}
+/* ── венцы на корабле ──
+   Венец работал, но не показывался нигде, кроме экрана наборов: сотня узлов
+   ради строчки в списке. Теперь собранный венец висит на корпусе — маленький
+   знак у кормы, свой на каждый набор, и их видно в полёте. Рисуется только на
+   ВАШЕМ корабле: это ваша заслуга, а не свойство корпуса. */
+function drawCrowns(h,id){
+  if(id!==G.shipId||!G.crowns)return;
+  const list=NODE_FAMS.filter(f=>G.crowns[f.id]);
+  if(!list.length)return;
+  /* Наградная колодка вдоль борта, а не россыпь у кормы: ромбики впритык к
+     обшивке читались мусором на корпусе. Планка даёт им основание, и знаки
+     сразу опознаются как знаки. */
+  const x0=h.tail+5, step=4.6;
+  const rows=[[],[]];
+  list.forEach((F,i)=>rows[i%2].push(F));
+  rows.forEach((row,s0)=>{
+    if(!row.length)return;
+    const s=s0?1:-1;
+    const y=s*(h.tailW*.5+2.6);
+    const w=row.length*step;
+    ctx.fillStyle="rgba(0,0,0,.45)";
+    ctx.fillRect(x0-1.6,y-1.9,w+1.6,3.8);
+    ctx.strokeStyle="rgba(255,255,255,.14)";ctx.lineWidth=.5;
+    ctx.strokeRect(x0-1.6,y-1.9,w+1.6,3.8);
+    row.forEach((F,k)=>{
+      const col=hex2rgb(F.col);
+      const x=x0+k*step+step*.5-.6;
+      const pu=.65+.35*Math.sin(G.t*.06+k*1.3+s0);
+      ctx.fillStyle=rgba(mixc(col,[255,255,255],.4),.95*pu);
+      ctx.beginPath();
+      ctx.moveTo(x,y-1.4);ctx.lineTo(x+1.5,y);ctx.lineTo(x,y+1.4);ctx.lineTo(x-1.5,y);
+      ctx.closePath();ctx.fill();
+    });
+  });
+  /* общий отблеск: чем больше венцов, тем заметнее корабль в темноте */
+  const gl=ctx.createRadialGradient(x0,0,1,x0,0,7+list.length*2.2);
+  gl.addColorStop(0,rgba(hex2rgb(list[0].col),.14));
+  gl.addColorStop(1,rgba(hex2rgb(list[0].col),0));
+  ctx.fillStyle=gl;
+  ctx.beginPath();ctx.arc(x0,0,7+list.length*2.2,0,TAU);ctx.fill();
 }
