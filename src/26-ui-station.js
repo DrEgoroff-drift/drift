@@ -107,8 +107,11 @@ function shipRow(id,S){
   const mine=G.shipId===id,own=!!G.owned[id];
   const r=el("div","row");
   r.appendChild(shipThumb(id,52,42));
+  /* Тир — первое, что видно в строке: он говорит, встретите ли вы такой ещё раз */
+  const T=typeof tierOf==="function"?tierOf(S):null;
   r.appendChild(el("div","nm","<b style='color:"+S.col+"'>«"+S.ru+"» <span style='color:var(--dim)'>"+
-    S.cls+"</span></b><s>"+S.note+"<br>тяга "+S.thr.toFixed(2)+" · поворот "+S.turn.toFixed(2)+
+    S.cls+"</span></b><s>"+(T?"<b style='color:"+T.col+"'>"+T.ru.toUpperCase()+"</b> — "+T.note+"<br>":"")+
+    S.note+"<br>тяга "+S.thr.toFixed(2)+" · поворот "+S.turn.toFixed(2)+
     " · трюм "+S.cargo+" · бак "+S.fuel+" · корпус "+S.hull+"</s>"));
   if(mine)r.appendChild(el("div","qt","В РЕЙСЕ"));
   else{
@@ -203,7 +206,18 @@ function renderTab(){
     }
   }
   else if(tab==="yard"){
-    $body.appendChild(el("div","sec","КОРПУСА В ДОКЕ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
+    /* Ряд дока, а не склад всей галактики: что стоит здесь сегодня. Ряд держится
+       на seed станции и временном бакете — вернулись через час, ряд другой. */
+    const yard=stationFleet(G.sys);
+    $body.appendChild(el("div","sec","КОРПУСА В ЭТОМ ДОКЕ · РЯД МЕНЯЕТСЯ САМ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
+    for(const id of yard)$body.appendChild(shipRow(id,FLEET[id]));
+    /* Свои корпуса из ангара показываем всегда: пересесть обратно можно везде */
+    const own=Object.keys(G.owned).filter(id=>id!==G.shipId&&yard.indexOf(id)<0);
+    if(own.length){
+      $body.appendChild(el("div","sec","ВАШ АНГАР · ПЕРЕСЕСТЬ МОЖНО В ЛЮБОМ ДОКЕ"));
+      for(const id of own){const S=shipData(id);if(S)$body.appendChild(shipRow(id,S));}
+    }
+    $body.appendChild(el("div","sec","СЕРИЙНЫЙ РЯД · ЕСТЬ В ЛЮБОМ ДОКЕ"));
     for(const id of SHIP_KEYS)$body.appendChild(shipRow(id,SHIPS[id]));
     /* уникальный корпус строят только на верфи — у торгового узла док слабый */
     /* «Ключ от верфи» открывает единственный экземпляр в любом доке, а не

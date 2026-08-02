@@ -10,7 +10,7 @@ const SHIPS={
   mamont:{ru:"Мамонт",cls:"тяжёлый рудовоз",  hcls:"hauler", seed:8849, thr:.7,  turn:.62, fuel:230,cargo:290,hull:220,price:24000,col:"#c58ae0",note:"Летающий склад с бронёй. Разворачивается как луна."}
 };
 const SHIP_KEYS=Object.keys(SHIPS);
-function shipData(id){return SHIPS[id]||G.uniqueShips[id]||NPC_SHIPS[id];}
+function shipData(id){return SHIPS[id]||(typeof FLEET!=="undefined"&&FLEET[id])||G.uniqueShips[id]||NPC_SHIPS[id];}
 const UNIQUE_COLS=["#7fe6d8","#9fd8ff","#f2b25c","#8fd08a","#ff9d7a","#c9c9d4","#e0d28a","#c58ae0","#ff6b6b","#6bffb8"];
 const UNIQUE_TAG=["уникальный корпус","экспериментальный корпус","одиночная сборка","опытный образец","штучная работа"];
 function genUniqueShip(seed){
@@ -169,13 +169,17 @@ function profW(prof,x){
    Читается силуэтом на любом масштабе, а это единственное, что видно
    в системе. */
 const HULL_CLASS={
-  scout:  {ru:"разведчик",     bw:.85,len:1.00,wing:[1,3],nac:.62,notch:.55,dish:1},
-  courier:{ru:"курьер",        bw:.62,len:1.28,wing:[2,3],nac:.80,notch:.30,fin:1},
-  hauler: {ru:"рудовоз",       bw:1.55,len:1.16,wing:[0,2],nac:.38,notch:.85,cont:1},
-  miner:  {ru:"буровик",       bw:1.34,len:.94,wing:[0,2],nac:.50,notch:.70,cont:1,drill:1},
-  warship:{ru:"фрегат",        bw:1.02,len:1.10,wing:[2,3],nac:.74,notch:.50,guns:1,armor:1},
-  yacht:  {ru:"яхта",          bw:.92,len:1.16,wing:[1,2],nac:.50,notch:.10,win:1,fin:1},
-  survey: {ru:"исследователь", bw:.96,len:1.02,wing:[1,2],nac:.52,notch:.40,dish:1,panel:1}
+  /* Пропорции разведены сильнее, чем были: на листе из ста корпусов классы
+     сливались в одну «стрелу с крыльями». Курьер теперь вдвое длиннее своей
+     ширины, рудовоз — почти ящик, яхта — веретено, и размах крыла тоже свой
+     (`wsp`): рудовозу крылья ни к чему, фрегату они и есть силуэт. */
+  scout:  {ru:"разведчик",     bw:.85,len:1.00,wing:[1,3],nac:.62,notch:.55,dish:1,wsp:1},
+  courier:{ru:"курьер",        bw:.50,len:1.52,wing:[2,3],nac:.80,notch:.30,fin:1,wsp:1.25},
+  hauler: {ru:"рудовоз",       bw:1.90,len:1.04,wing:[0,1],nac:.38,notch:.85,cont:1,wsp:.5},
+  miner:  {ru:"буровик",       bw:1.52,len:.92,wing:[0,2],nac:.50,notch:.70,cont:1,drill:1,wsp:.62},
+  warship:{ru:"фрегат",        bw:1.16,len:1.12,wing:[2,3],nac:.74,notch:.50,guns:1,armor:1,wsp:1.18},
+  yacht:  {ru:"яхта",          bw:.74,len:1.34,wing:[1,2],nac:.50,notch:.10,win:1,fin:1,wsp:1.05},
+  survey: {ru:"исследователь", bw:.92,len:1.14,wing:[1,2],nac:.52,notch:.40,dish:1,panel:1,wsp:.92}
 };
 function hullClassOf(id,S){
   if(S.hcls)return S.hcls;
@@ -204,7 +208,8 @@ function hullOf(id){
   const segs=9+Math.floor(r()*5);
   /* у рудовоза корма почти равна миделю — корпус-ящик; у курьера сходит
      на конус. Это и есть первое, что читается силуэтом */
-  const noseW=bw*(.10+r()*.16)*(K.cont?1.5:1), tailW=bw*(.42+r()*.46)*(K.cont?1.3:1);
+  // У иглы-курьера нос сходил в нить: держим минимум, иначе силуэт теряет тело
+  const noseW=Math.max(.9,bw*(.10+r()*.16)*(K.cont?1.5:1)), tailW=bw*(.42+r()*.46)*(K.cont?1.3:1);
   const tp=.28+r()*.3;
   const hasNotch=r()<K.notch, notch=.6+r()*.28, notchT=tp+.16+r()*.3;
   const prof=[];
@@ -226,7 +231,7 @@ function hullOf(id){
   const wingN=K.wing[0]+Math.floor(r()*(K.wing[1]-K.wing[0]+1)), wings=[];
   for(let i=0;i<wingN;i++){
     const root=lerp(nose*.1,tail*.82,(i+.3+r()*.4)/wingN);
-    const chord=len*(.12+r()*.16), span=bw*(1.15+r()*1.5)+2.5;
+    const chord=len*(.12+r()*.16), span=(bw*(1.15+r()*1.5)+2.5)*(K.wsp||1);
     const sweep=-chord*(.3+r()*.9), rw=profW(prof,root);
     wings.push([
       [root+chord*.5,-rw*.82],
@@ -242,7 +247,7 @@ function hullOf(id){
   const nacs=[];
   if(r()<K.nac){
     const nl=len*(.24+r()*.2), nr=bw*(.18+r()*.2)+1;
-    nacs.push({x:tail+nl*(.5+r()*.3), y:bw*(.85+r()*1.05)+nr, l:nl, r:nr});
+    nacs.push({x:tail+nl*(.5+r()*.3), y:bw*(.72+r()*.5)+nr*.8, l:nl, r:nr});
   }
 
   /* ── сопла: откуда бьёт факел ── */
@@ -283,7 +288,9 @@ function hullOf(id){
     const n=3+Math.floor(r()*4);
     const cl=len*.62/n;
     for(let i=0;i<n;i++)
-      mark.cont.push([tail+len*.14+i*cl, cl*.82, bw*(.52+r()*.28)]);
+      // контейнеры прижаты к БОРТУ, а не отставлены на ширину корпуса:
+      // при широком рудовозе они уезжали в стороны и висели двумя тумбами
+      mark.cont.push([tail+len*.14+i*cl, cl*.82, Math.max(1.6,profW(prof,tail+len*.14+i*cl)*.62)]);
   }
   if(K.drill)mark.drill={x:nose+1.5,l:5+r()*5,r:Math.max(2.2,noseW*1.5)};
   if(K.guns){
@@ -310,7 +317,7 @@ function hullOf(id){
 
   const col=hex2rgb(S.col);
   const h={poly,prof,wings,pods,nacs,eng,greeb,ants,ribs,canopy,stripe,fin,mark,
-    hcls:S.hcls,clsRu:K.ru,
+    hcls:S.hcls,clsRu:K.ru,tier:S.tier,seed:S.seed,
     nose,bw,tail,len,tailW,halfW:hw,
     col, lite:mixc(col,[255,255,255],.42), dark:mixc(col,[6,10,17],.82),
     body:mixc(col,[8,13,21],.72), edge:mixc(col,[10,16,26],.35)};
@@ -348,6 +355,88 @@ function bankTransform(bank){
      поворачивается вокруг продольной оси, а не просто едет "плашмя" вбок */
   ctx.transform(1,0,0,Math.cos(bank),0,0);
   return true;
+}
+/* ── отделка по тиру ──
+   Тир — не строчка в карточке, а то, как корпус выглядит. Рабочая лошадка ходит
+   в заплатах и потёках, редкий носит акцентную окантовку, легендарный — двойной
+   кант и эмблему на скуле, люкс — ленту окон и глянцевую блик-полосу, опытный
+   показывает открытые узлы и кабели, которые на серийном закрыли бы кожухом.
+   Рисуется ПОД навеской класса: это шкура корпуса, а не то, что на него навесили. */
+function drawTierTrim(h){
+  const t=h.tier;if(!t||t==="line")return;
+  const P=h.prof,r=rng(hashi(h.seed||1,0x71E4,3));
+  if(t==="work"){
+    /* заплаты: куски обшивки другого тона и потёки под ними */
+    const n=3+((r()*3)|0);
+    for(let i=0;i<n;i++){
+      const x=lerp(h.nose*.7,h.tail*.85,r()),w=profW(P,x);
+      const px=x,py=(r()*2-1)*w*.55,pw=2.2+r()*4,ph=1.6+r()*2.6;
+      ctx.fillStyle="rgba(0,0,0,.34)";ctx.fillRect(px-pw/2,py-ph/2,pw,ph);
+      ctx.strokeStyle=rgba(h.lite,.34);ctx.lineWidth=.7;
+      ctx.strokeRect(px-pw/2,py-ph/2,pw,ph);
+      ctx.fillStyle="rgba(0,0,0,.14)";                 // потёк вниз по потоку
+      ctx.fillRect(px-pw*.2,py+ph/2,pw*.4,1.4+r()*2.6);
+    }
+  }else if(t==="rare"){
+    ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.8;  // акцентная окантовка
+    for(const s of [1,-1]){
+      ctx.beginPath();
+      for(let i=1;i<P.length-1;i++)ctx.lineTo(P[i][0],P[i][1]*.86*s);
+      ctx.stroke();
+    }
+  }else if(t==="legend"){
+    ctx.strokeStyle=rgba(h.lite,.65);ctx.lineWidth=1.1; // двойной кант
+    for(const s of [1,-1])for(const f of [.9,.66]){
+      ctx.beginPath();
+      for(let i=1;i<P.length-1;i++)ctx.lineTo(P[i][0],P[i][1]*f*s);
+      ctx.stroke();
+    }
+    const ex=h.nose*.42,ew=Math.max(1.6,profW(P,ex)*.34);  // эмблема на скуле
+    for(const s of [1,-1]){
+      ctx.fillStyle=rgba(h.lite,.75);
+      ctx.beginPath();ctx.moveTo(ex+ew,ew*.2*s);ctx.lineTo(ex,ew*1.2*s);
+      ctx.lineTo(ex-ew,ew*.2*s);ctx.closePath();ctx.fill();
+    }
+  }else if(t==="luxe"){
+    /* лента окон по борту и глянец: яхту опознают по свету изнутри */
+    for(const s of [1,-1]){
+      const y0=h.nose*.42,y1=h.tail*.5;
+      // окна крупнее и с тёплым свечением: на листе флота лента в полтора
+      // пикселя пропадала, и яхта читалась курьером
+      for(let x=y1;x<y0;x+=3.2){
+        const w=profW(P,x);if(w<1.2)continue;
+        ctx.fillStyle="rgba(255,236,190,.85)";
+        ctx.fillRect(x,w*.72*s-.9,2.2,1.9);
+        ctx.fillStyle="rgba(255,214,150,.22)";
+        ctx.fillRect(x-.8,w*.72*s-1.7,3.8,3.5);
+      }
+      ctx.strokeStyle="rgba(255,255,255,.35)";ctx.lineWidth=.7;
+      ctx.beginPath();
+      for(let i=1;i<P.length-1;i++)ctx.lineTo(P[i][0],P[i][1]*.34*s);
+      ctx.stroke();
+    }
+    const gg=ctx.createLinearGradient(h.nose,0,h.tail,0);  // продольный глянец
+    gg.addColorStop(0,"rgba(255,255,255,.18)");
+    gg.addColorStop(.45,"rgba(255,255,255,.02)");
+    gg.addColorStop(1,"rgba(255,255,255,0)");
+    ctx.fillStyle=gg;
+    ctx.beginPath();
+    for(let i=1;i<P.length-1;i++)ctx.lineTo(P[i][0],-P[i][1]*.55);
+    for(let i=P.length-2;i>0;i--)ctx.lineTo(P[i][0],-P[i][1]*.12);
+    ctx.closePath();ctx.fill();
+  }else if(t==="proto"){
+    /* открытые узлы: рама наружу, кабельная коса вдоль борта */
+    ctx.strokeStyle="rgba(255,157,122,.5)";ctx.lineWidth=.7;
+    for(const s of [1,-1]){
+      ctx.beginPath();
+      for(let i=2;i<P.length-2;i++)ctx.lineTo(P[i][0],P[i][1]*(.5+(i%2)*.28)*s);
+      ctx.stroke();
+    }
+    for(let i=3;i<P.length-2;i+=2){                    // поперечины рамы
+      ctx.strokeStyle="rgba(0,0,0,.35)";
+      ctx.beginPath();ctx.moveTo(P[i][0],-P[i][1]*.8);ctx.lineTo(P[i][0],P[i][1]*.8);ctx.stroke();
+    }
+  }
 }
 /* приметы класса рисуются поверх корпуса, но под фонарём и огнями: это
    навеска, а не корпус, и она обязана читаться отдельным слоем */
@@ -518,6 +607,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
   ctx.restore();
   ctx.strokeStyle=rgba(h.col,.95);ctx.lineWidth=1.25;
   tracePoly(h.poly);ctx.stroke();
+  drawTierTrim(h);
   drawHullMarks(h);
   /* ── боксы по бортам ── */
   for(const p of h.pods)for(const s of [1,-1]){

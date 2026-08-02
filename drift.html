@@ -900,7 +900,7 @@ const SHIPS={
   mamont:{ru:"Мамонт",cls:"тяжёлый рудовоз",  hcls:"hauler", seed:8849, thr:.7,  turn:.62, fuel:230,cargo:290,hull:220,price:24000,col:"#c58ae0",note:"Летающий склад с бронёй. Разворачивается как луна."}
 };
 const SHIP_KEYS=Object.keys(SHIPS);
-function shipData(id){return SHIPS[id]||G.uniqueShips[id]||NPC_SHIPS[id];}
+function shipData(id){return SHIPS[id]||(typeof FLEET!=="undefined"&&FLEET[id])||G.uniqueShips[id]||NPC_SHIPS[id];}
 const UNIQUE_COLS=["#7fe6d8","#9fd8ff","#f2b25c","#8fd08a","#ff9d7a","#c9c9d4","#e0d28a","#c58ae0","#ff6b6b","#6bffb8"];
 const UNIQUE_TAG=["уникальный корпус","экспериментальный корпус","одиночная сборка","опытный образец","штучная работа"];
 function genUniqueShip(seed){
@@ -1059,13 +1059,17 @@ function profW(prof,x){
    Читается силуэтом на любом масштабе, а это единственное, что видно
    в системе. */
 const HULL_CLASS={
-  scout:  {ru:"разведчик",     bw:.85,len:1.00,wing:[1,3],nac:.62,notch:.55,dish:1},
-  courier:{ru:"курьер",        bw:.62,len:1.28,wing:[2,3],nac:.80,notch:.30,fin:1},
-  hauler: {ru:"рудовоз",       bw:1.55,len:1.16,wing:[0,2],nac:.38,notch:.85,cont:1},
-  miner:  {ru:"буровик",       bw:1.34,len:.94,wing:[0,2],nac:.50,notch:.70,cont:1,drill:1},
-  warship:{ru:"фрегат",        bw:1.02,len:1.10,wing:[2,3],nac:.74,notch:.50,guns:1,armor:1},
-  yacht:  {ru:"яхта",          bw:.92,len:1.16,wing:[1,2],nac:.50,notch:.10,win:1,fin:1},
-  survey: {ru:"исследователь", bw:.96,len:1.02,wing:[1,2],nac:.52,notch:.40,dish:1,panel:1}
+  /* Пропорции разведены сильнее, чем были: на листе из ста корпусов классы
+     сливались в одну «стрелу с крыльями». Курьер теперь вдвое длиннее своей
+     ширины, рудовоз — почти ящик, яхта — веретено, и размах крыла тоже свой
+     (`wsp`): рудовозу крылья ни к чему, фрегату они и есть силуэт. */
+  scout:  {ru:"разведчик",     bw:.85,len:1.00,wing:[1,3],nac:.62,notch:.55,dish:1,wsp:1},
+  courier:{ru:"курьер",        bw:.50,len:1.52,wing:[2,3],nac:.80,notch:.30,fin:1,wsp:1.25},
+  hauler: {ru:"рудовоз",       bw:1.90,len:1.04,wing:[0,1],nac:.38,notch:.85,cont:1,wsp:.5},
+  miner:  {ru:"буровик",       bw:1.52,len:.92,wing:[0,2],nac:.50,notch:.70,cont:1,drill:1,wsp:.62},
+  warship:{ru:"фрегат",        bw:1.16,len:1.12,wing:[2,3],nac:.74,notch:.50,guns:1,armor:1,wsp:1.18},
+  yacht:  {ru:"яхта",          bw:.74,len:1.34,wing:[1,2],nac:.50,notch:.10,win:1,fin:1,wsp:1.05},
+  survey: {ru:"исследователь", bw:.92,len:1.14,wing:[1,2],nac:.52,notch:.40,dish:1,panel:1,wsp:.92}
 };
 function hullClassOf(id,S){
   if(S.hcls)return S.hcls;
@@ -1094,7 +1098,8 @@ function hullOf(id){
   const segs=9+Math.floor(r()*5);
   /* у рудовоза корма почти равна миделю — корпус-ящик; у курьера сходит
      на конус. Это и есть первое, что читается силуэтом */
-  const noseW=bw*(.10+r()*.16)*(K.cont?1.5:1), tailW=bw*(.42+r()*.46)*(K.cont?1.3:1);
+  // У иглы-курьера нос сходил в нить: держим минимум, иначе силуэт теряет тело
+  const noseW=Math.max(.9,bw*(.10+r()*.16)*(K.cont?1.5:1)), tailW=bw*(.42+r()*.46)*(K.cont?1.3:1);
   const tp=.28+r()*.3;
   const hasNotch=r()<K.notch, notch=.6+r()*.28, notchT=tp+.16+r()*.3;
   const prof=[];
@@ -1116,7 +1121,7 @@ function hullOf(id){
   const wingN=K.wing[0]+Math.floor(r()*(K.wing[1]-K.wing[0]+1)), wings=[];
   for(let i=0;i<wingN;i++){
     const root=lerp(nose*.1,tail*.82,(i+.3+r()*.4)/wingN);
-    const chord=len*(.12+r()*.16), span=bw*(1.15+r()*1.5)+2.5;
+    const chord=len*(.12+r()*.16), span=(bw*(1.15+r()*1.5)+2.5)*(K.wsp||1);
     const sweep=-chord*(.3+r()*.9), rw=profW(prof,root);
     wings.push([
       [root+chord*.5,-rw*.82],
@@ -1132,7 +1137,7 @@ function hullOf(id){
   const nacs=[];
   if(r()<K.nac){
     const nl=len*(.24+r()*.2), nr=bw*(.18+r()*.2)+1;
-    nacs.push({x:tail+nl*(.5+r()*.3), y:bw*(.85+r()*1.05)+nr, l:nl, r:nr});
+    nacs.push({x:tail+nl*(.5+r()*.3), y:bw*(.72+r()*.5)+nr*.8, l:nl, r:nr});
   }
 
   /* ── сопла: откуда бьёт факел ── */
@@ -1173,7 +1178,9 @@ function hullOf(id){
     const n=3+Math.floor(r()*4);
     const cl=len*.62/n;
     for(let i=0;i<n;i++)
-      mark.cont.push([tail+len*.14+i*cl, cl*.82, bw*(.52+r()*.28)]);
+      // контейнеры прижаты к БОРТУ, а не отставлены на ширину корпуса:
+      // при широком рудовозе они уезжали в стороны и висели двумя тумбами
+      mark.cont.push([tail+len*.14+i*cl, cl*.82, Math.max(1.6,profW(prof,tail+len*.14+i*cl)*.62)]);
   }
   if(K.drill)mark.drill={x:nose+1.5,l:5+r()*5,r:Math.max(2.2,noseW*1.5)};
   if(K.guns){
@@ -1200,7 +1207,7 @@ function hullOf(id){
 
   const col=hex2rgb(S.col);
   const h={poly,prof,wings,pods,nacs,eng,greeb,ants,ribs,canopy,stripe,fin,mark,
-    hcls:S.hcls,clsRu:K.ru,
+    hcls:S.hcls,clsRu:K.ru,tier:S.tier,seed:S.seed,
     nose,bw,tail,len,tailW,halfW:hw,
     col, lite:mixc(col,[255,255,255],.42), dark:mixc(col,[6,10,17],.82),
     body:mixc(col,[8,13,21],.72), edge:mixc(col,[10,16,26],.35)};
@@ -1238,6 +1245,88 @@ function bankTransform(bank){
      поворачивается вокруг продольной оси, а не просто едет "плашмя" вбок */
   ctx.transform(1,0,0,Math.cos(bank),0,0);
   return true;
+}
+/* ── отделка по тиру ──
+   Тир — не строчка в карточке, а то, как корпус выглядит. Рабочая лошадка ходит
+   в заплатах и потёках, редкий носит акцентную окантовку, легендарный — двойной
+   кант и эмблему на скуле, люкс — ленту окон и глянцевую блик-полосу, опытный
+   показывает открытые узлы и кабели, которые на серийном закрыли бы кожухом.
+   Рисуется ПОД навеской класса: это шкура корпуса, а не то, что на него навесили. */
+function drawTierTrim(h){
+  const t=h.tier;if(!t||t==="line")return;
+  const P=h.prof,r=rng(hashi(h.seed||1,0x71E4,3));
+  if(t==="work"){
+    /* заплаты: куски обшивки другого тона и потёки под ними */
+    const n=3+((r()*3)|0);
+    for(let i=0;i<n;i++){
+      const x=lerp(h.nose*.7,h.tail*.85,r()),w=profW(P,x);
+      const px=x,py=(r()*2-1)*w*.55,pw=2.2+r()*4,ph=1.6+r()*2.6;
+      ctx.fillStyle="rgba(0,0,0,.34)";ctx.fillRect(px-pw/2,py-ph/2,pw,ph);
+      ctx.strokeStyle=rgba(h.lite,.34);ctx.lineWidth=.7;
+      ctx.strokeRect(px-pw/2,py-ph/2,pw,ph);
+      ctx.fillStyle="rgba(0,0,0,.14)";                 // потёк вниз по потоку
+      ctx.fillRect(px-pw*.2,py+ph/2,pw*.4,1.4+r()*2.6);
+    }
+  }else if(t==="rare"){
+    ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.8;  // акцентная окантовка
+    for(const s of [1,-1]){
+      ctx.beginPath();
+      for(let i=1;i<P.length-1;i++)ctx.lineTo(P[i][0],P[i][1]*.86*s);
+      ctx.stroke();
+    }
+  }else if(t==="legend"){
+    ctx.strokeStyle=rgba(h.lite,.65);ctx.lineWidth=1.1; // двойной кант
+    for(const s of [1,-1])for(const f of [.9,.66]){
+      ctx.beginPath();
+      for(let i=1;i<P.length-1;i++)ctx.lineTo(P[i][0],P[i][1]*f*s);
+      ctx.stroke();
+    }
+    const ex=h.nose*.42,ew=Math.max(1.6,profW(P,ex)*.34);  // эмблема на скуле
+    for(const s of [1,-1]){
+      ctx.fillStyle=rgba(h.lite,.75);
+      ctx.beginPath();ctx.moveTo(ex+ew,ew*.2*s);ctx.lineTo(ex,ew*1.2*s);
+      ctx.lineTo(ex-ew,ew*.2*s);ctx.closePath();ctx.fill();
+    }
+  }else if(t==="luxe"){
+    /* лента окон по борту и глянец: яхту опознают по свету изнутри */
+    for(const s of [1,-1]){
+      const y0=h.nose*.42,y1=h.tail*.5;
+      // окна крупнее и с тёплым свечением: на листе флота лента в полтора
+      // пикселя пропадала, и яхта читалась курьером
+      for(let x=y1;x<y0;x+=3.2){
+        const w=profW(P,x);if(w<1.2)continue;
+        ctx.fillStyle="rgba(255,236,190,.85)";
+        ctx.fillRect(x,w*.72*s-.9,2.2,1.9);
+        ctx.fillStyle="rgba(255,214,150,.22)";
+        ctx.fillRect(x-.8,w*.72*s-1.7,3.8,3.5);
+      }
+      ctx.strokeStyle="rgba(255,255,255,.35)";ctx.lineWidth=.7;
+      ctx.beginPath();
+      for(let i=1;i<P.length-1;i++)ctx.lineTo(P[i][0],P[i][1]*.34*s);
+      ctx.stroke();
+    }
+    const gg=ctx.createLinearGradient(h.nose,0,h.tail,0);  // продольный глянец
+    gg.addColorStop(0,"rgba(255,255,255,.18)");
+    gg.addColorStop(.45,"rgba(255,255,255,.02)");
+    gg.addColorStop(1,"rgba(255,255,255,0)");
+    ctx.fillStyle=gg;
+    ctx.beginPath();
+    for(let i=1;i<P.length-1;i++)ctx.lineTo(P[i][0],-P[i][1]*.55);
+    for(let i=P.length-2;i>0;i--)ctx.lineTo(P[i][0],-P[i][1]*.12);
+    ctx.closePath();ctx.fill();
+  }else if(t==="proto"){
+    /* открытые узлы: рама наружу, кабельная коса вдоль борта */
+    ctx.strokeStyle="rgba(255,157,122,.5)";ctx.lineWidth=.7;
+    for(const s of [1,-1]){
+      ctx.beginPath();
+      for(let i=2;i<P.length-2;i++)ctx.lineTo(P[i][0],P[i][1]*(.5+(i%2)*.28)*s);
+      ctx.stroke();
+    }
+    for(let i=3;i<P.length-2;i+=2){                    // поперечины рамы
+      ctx.strokeStyle="rgba(0,0,0,.35)";
+      ctx.beginPath();ctx.moveTo(P[i][0],-P[i][1]*.8);ctx.lineTo(P[i][0],P[i][1]*.8);ctx.stroke();
+    }
+  }
 }
 /* приметы класса рисуются поверх корпуса, но под фонарём и огнями: это
    навеска, а не корпус, и она обязана читаться отдельным слоем */
@@ -1408,6 +1497,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
   ctx.restore();
   ctx.strokeStyle=rgba(h.col,.95);ctx.lineWidth=1.25;
   tracePoly(h.poly);ctx.stroke();
+  drawTierTrim(h);
   drawHullMarks(h);
   /* ── боксы по бортам ── */
   for(const p of h.pods)for(const s of [1,-1]){
@@ -1445,6 +1535,198 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.beginPath();ctx.moveTo(h.tail*.35,-h.bw-lvl*.7);ctx.lineTo(h.tail*.35,h.bw+lvl*.7);ctx.stroke();
   }
   if(banked)ctx.restore();
+}
+
+/* ══════════════ флот: сто корпусов и их редкость ══════════════ */
+/* Восемь ручных корпусов были всей номенклатурой игры: к середине прохождения
+   покупать становилось нечего, и «сменить корабль» переставало быть решением.
+   Здесь — каталог на сотню: те же процедурные корпуса (`hullOf` рисует их
+   без единой правки), но у каждого свой класс, тир и место в мире.
+
+   ПРАВИЛА, КОТОРЫМ ПОДЧИНЁН ФАЙЛ:
+   1. Каталог ДЕТЕРМИНИРОВАН: он выводится из одного seed и не сохраняется.
+      Сохранять сотню записей значило бы, что правка генератора ломает старые
+      записи, — а так корабль под тем же ключом всегда один и тот же.
+   2. Тир — это не «больше цифр», а роль в жизни игрока. Рабочая лошадка стоит
+      дёшево и есть везде; редкий попадается в доке через раз; легендарный —
+      событие; люкс не окупается никогда и покупается ради себя самого.
+   3. В доке видно не сто корпусов, а срез: что стоит в этом доке сегодня.
+      Список из ста строк — это склад, а не верфь. */
+const FLEET_TIERS={
+  work:  {ru:"рабочая лошадка",w:32,mul:.90,price:.72,col:"#9fb0bd",
+          note:"серийная машина, каких в галактике тысячи"},
+  line:  {ru:"серийный",       w:30,mul:1.00,price:1.00,col:"#8fd08a",
+          note:"обычный корпус, каких много в любом доке"},
+  rare:  {ru:"редкий",         w:20,mul:1.16,price:1.55,col:"#7fb0e6",
+          note:"малая серия: в доке бывает не каждый раз"},
+  legend:{ru:"легендарный",    w:9, mul:1.38,price:2.9, col:"#f2b25c",
+          note:"о таком рассказывают в кантинах — их считают штуками"},
+  luxe:  {ru:"люкс",           w:9, mul:1.10,price:4.2, col:"#c58ae0",
+          note:"яхта: трюм смешной, ход прекрасный, окупается никогда"},
+  proto: {ru:"опытный",        w:4, mul:1.30,price:2.2, col:"#ff9d7a",
+          note:"опытный образец: сильный перекос в одну сторону"}
+};
+const FLEET_TIER_KEYS=Object.keys(FLEET_TIERS);
+/* Профили классов: во что генератор целится по статам. Силуэт даёт `HULL_CLASS`,
+   а здесь — характер: рудовоз возит, курьер бегает, яхта не делает ни того ни
+   другого и живёт видом. */
+const FLEET_PROFILE={
+  scout:  {thr:[.95,1.25],turn:[.95,1.30],fuel:[95,150], cargo:[26,60],  hull:[70,120]},
+  courier:{thr:[1.30,1.70],turn:[1.25,1.60],fuel:[85,130],cargo:[18,46], hull:[70,110]},
+  hauler: {thr:[.62,.95], turn:[.55,.85], fuel:[120,240],cargo:[120,340],hull:[120,240]},
+  miner:  {thr:[.78,1.00],turn:[.72,1.00],fuel:[130,210],cargo:[90,190], hull:[130,220]},
+  warship:{thr:[.95,1.30],turn:[.75,1.10],fuel:[110,180],cargo:[40,110], hull:[200,340]},
+  yacht:  {thr:[1.15,1.55],turn:[1.10,1.45],fuel:[130,220],cargo:[14,44], hull:[80,150]},
+  survey: {thr:[1.00,1.25],turn:[1.00,1.30],fuel:[160,280],cargo:[22,60], hull:[80,140]}
+};
+/* Кому какой тир вообще положен: люкс — только яхта, рабочая лошадка — не яхта.
+   Без этого генератор выдавал «рабочую лошадку — люксовую яхту», и тир переставал
+   что-либо значить. */
+const FLEET_TIER_CLS={
+  work:  ["hauler","hauler","miner","scout","courier"],
+  line:  ["scout","courier","hauler","miner","warship","survey"],
+  rare:  ["courier","warship","miner","survey","hauler","scout"],
+  legend:["warship","hauler","courier","survey","miner"],
+  luxe:  ["yacht"],
+  proto: ["survey","warship","courier","scout"]
+};
+/* Приставки серий: у рабочих лошадок номер, у легенд — прозвище. Имя корабля
+   должно говорить, из какого он ряда, раньше, чем игрок откроет карточку. */
+const FLEET_MARK=["М","Т","К","Д","Р","С","Л","Э"];
+const FLEET_EPITH=["Старший","Долгий","Верный","Тёмный","Последний","Вольный",
+                   "Тихий","Крайний","Первый","Упрямый"];
+const FLEET_LUXE=["Аврора","Лазурь","Комета","Эклипс","Вега","Селена","Мираж",
+                  "Заря","Хрусталь","Каприз"];
+const FLEET_NOTE={
+  work:  ["Возит, чинится в поле, не ломается насмерть.",
+          "Ничего лишнего и ничего нового. Работает.",
+          "Такие стоят в каждом доке и переживают хозяев."],
+  line:  ["Крепкий середняк без сюрпризов.",
+          "Ходовая серия: всё на месте, ничего сверх.",
+          "То, на чём летает половина сектора."],
+  rare:  ["Малая серия — их собирали недолго и немного.",
+          "Собран под задачу и заметно лучше ряда.",
+          "Из тех, за которыми в док приходят специально."],
+  legend:["О нём знают в кантинах трёх секторов.",
+          "Их считают штуками, и каждая с именем.",
+          "Такой корпус переживёт и вас, и того, кто его строил."],
+  luxe:  ["Каюта, окна во всю скулу и трюм на два ящика.",
+          "Собран не для дела. Собран, чтобы на нём летели вы.",
+          "Стоит как дом. Возит как чемодан."],
+  proto: ["Один параметр вытянут до предела, остальные принесены в жертву.",
+          "Опытный образец: странный, но в своём хорош."]
+};
+/* ── краска корпуса ──
+   Красить корабль в цвет тира было ошибкой первого прохода: сотня корпусов
+   выходила в четыре краски, и весь флот выглядел таблицей, а не флотом. Цвет
+   теперь свой у каждого, а тир читается ОТДЕЛКОЙ (см. `drawTierTrim`): у
+   рабочей лошадки заплаты, у легенды окантовка и эмблема, у люкса лента окон.
+   Палитра тира задаёт только настроение: серийное — рабочее и пыльное,
+   легендарное — тёплое и глубокое, люкс — светлый перламутр. */
+const FLEET_PAL={
+  work:  ["#9fb0bd","#b0a08a","#8fa39a","#a89a86","#94a6b4","#b09a94"],
+  line:  ["#7fe6d8","#9fd8ff","#8fd08a","#c9c9d4","#a8d8ea","#8fb0c4","#c0a878"],
+  rare:  ["#7fb0e6","#6bffb8","#e0885a","#c58ae0","#5fd0c8","#e8c46a"],
+  legend:["#f2b25c","#e0d28a","#ff9d7a","#d8a0ff","#ffd9a0","#c8f0ff"],
+  luxe:  ["#f0e6ff","#dff4ff","#ffe8f2","#e8fff0","#fff4e0"],
+  proto: ["#ff9d7a","#ff6b6b","#ffb347","#9fd8ff","#c9ff8a"]
+};
+function fleetColor(tier,r){return pick(FLEET_PAL[tier]||FLEET_PAL.line,r);}
+/* Имён в списках меньше, чем корпусов, и три «Авроры» в одном каталоге читались
+   ошибкой генератора. Повтор получает номер серии — так делают и настоящие
+   верфи, и это честнее, чем расширять список до сотни выдуманных слов. */
+const FLEET_SEEN={},FLEET_ROMAN=["II","III","IV","V","VI","VII","VIII","IX","X"];
+function fleetUniqueName(ru){
+  const n=(FLEET_SEEN[ru]|0);FLEET_SEEN[ru]=n+1;
+  if(!n)return ru;
+  const mark=FLEET_ROMAN[Math.min(n-1,FLEET_ROMAN.length-1)];
+  return ru[0]==="«"?ru.slice(0,-1)+" "+mark+"»":ru+" "+mark;
+}
+const FLEET_N=92;                       // плюс восемь ручных = сотня
+const FLEET={};
+/* ── сборка каталога ──
+   Один проход на старте: сотня объектов — это дешевле, чем ветка `if` при
+   каждом обращении, и позволяет считать статистику номенклатуры тестами. */
+(function buildFleet(){
+  for(let i=0;i<FLEET_N;i++){
+    const seed=hashi(0xF1EE7,i*7919+13,0x5A17), r=rng(seed);
+    /* тир: взвешенно, но детерминированно — корабль под ключом всегда один */
+    let tot=0;for(const k of FLEET_TIER_KEYS)tot+=FLEET_TIERS[k].w;
+    let roll=r()*tot, tier=FLEET_TIER_KEYS[0];
+    for(const k of FLEET_TIER_KEYS){roll-=FLEET_TIERS[k].w;if(roll<=0){tier=k;break;}}
+    const T=FLEET_TIERS[tier];
+    const hcls=pick(FLEET_TIER_CLS[tier],r);
+    const P=FLEET_PROFILE[hcls];
+    const span=(a,k)=>a[0]+(a[1]-a[0])*k;
+    /* «опытный» перекошен: один параметр к верхней границе, остальные к нижней */
+    const skewK=tier==="proto"?(r()*4|0):-1;
+    const roll4=[r(),r(),r(),r(),r()];
+    const val=(a,n)=>{
+      let k=roll4[n];
+      if(skewK>=0)k=(n===skewK)?.92+r()*.08:k*.45;
+      return span(a,k);
+    };
+    const thr =+(val(P.thr,0) *T.mul).toFixed(2);
+    const turn=+(val(P.turn,1)*T.mul).toFixed(2);
+    const fuel=Math.round(val(P.fuel,2)*T.mul);
+    const cargo=Math.round(val(P.cargo,3)*(hcls==="yacht"?1:T.mul));
+    const hull=Math.round(val(P.hull,4)*T.mul);
+    /* цена: сила корпуса, помноженная на редкость. Люкс дорог не за силу —
+       за то, что он люкс, и это честно написано в карточке */
+    const power=(thr+turn)*.5+fuel/240+cargo/280+hull/250;
+    const price=Math.round(clamp(power*7000*T.price-4000,1200,260000)/50)*50;
+    const base=genName(r);
+    const ru=tier==="luxe"?"«"+pick(FLEET_LUXE,r)+"»":
+             tier==="legend"?pick(FLEET_EPITH,r)+" "+base:
+             tier==="work"?base+"-"+pick(FLEET_MARK,r)+(1+(r()*7|0)):base;
+    FLEET["f"+i]={ru:fleetUniqueName(ru),cls:HULL_CLASS[hcls].ru+" · "+T.ru,hcls,seed,tier,
+      thr,turn,fuel,cargo,hull,price,col:fleetColor(tier,r),
+      note:pick(FLEET_NOTE[tier],r)};
+  }
+})();
+const FLEET_KEYS=Object.keys(FLEET);
+/* Ручные восемь тоже получают тир: без него они выпадали бы из разговора
+   о редкости, хотя это и есть тот ряд, с которого игрок начинает. */
+(function tagHandmade(){
+  const t={strizh:"work",igla:"line",vyuk:"work",skat:"line",
+           klinok:"rare",obod:"line",topor:"rare",mamont:"rare"};
+  for(const id in t)if(SHIPS[id])SHIPS[id].tier=t[id];
+})();
+function shipTier(S){return (S&&S.tier)||"line";}
+function tierOf(S){return FLEET_TIERS[shipTier(S)]||FLEET_TIERS.line;}
+/* ── что стоит в доке сегодня ──
+   Ассортимент держится на seed станции и временном бакете, как части и кантина:
+   ушёл и вернулся через час — другой ряд. Редкое попадается тем реже, чем оно
+   реже; на верфи выбор шире, на аванпосте — три корыта. */
+const YARD_CHANCE={work:1,line:.8,rare:.34,legend:.09,luxe:.05,proto:.12};
+function stationFleet(sys){
+  if(!sys||!sys.station)return [];
+  const T=sys.station.stype;
+  const slots=T==="yard"?9:(T==="trade"?7:(T==="outpost"?4:6));
+  const r=rng(hashi(sys.seed,0xF1EE,timeBucket()));
+  const out=[],seen={};
+  /* Ряд собирается «броском на каждый слот», а не выборкой из отсортированного
+     списка: иначе на верфи всегда лежало бы одно и то же лучшее. */
+  for(let i=0;i<slots*6&&out.length<slots;i++){
+    const id=FLEET_KEYS[(r()*FLEET_KEYS.length)|0];
+    if(seen[id])continue;
+    const S=FLEET[id];
+    let ch=YARD_CHANCE[S.tier]||.5;
+    /* верфь строит редкое чаще, аванпост — почти никогда */
+    if(T==="yard")ch*=2.2;else if(T==="outpost")ch*=.45;
+    /* научная станция держит исследователей, промышленная — рудовозы */
+    if(T==="sci"&&S.hcls==="survey")ch*=2;
+    if(T==="indust"&&(S.hcls==="hauler"||S.hcls==="miner"))ch*=1.8;
+    if(T==="trade"&&S.hcls==="courier")ch*=1.6;
+    if(r()<ch){seen[id]=1;out.push(id);}
+  }
+  /* В доке всегда есть на чём улететь: если бросок не дал ничего дешёвого,
+     доставляем рабочую лошадку — игрок не должен застревать без корабля. */
+  if(!out.some(id=>FLEET[id].price<9000)){
+    const cheap=FLEET_KEYS.filter(id=>FLEET[id].price<9000);
+    if(cheap.length)out.push(cheap[(rng(hashi(sys.seed,0xC4EA,timeBucket()))()*cheap.length)|0]);
+  }
+  return out;
 }
 
 /* ══════════════ модули и наука ══════════════ */
@@ -17706,8 +17988,11 @@ function shipRow(id,S){
   const mine=G.shipId===id,own=!!G.owned[id];
   const r=el("div","row");
   r.appendChild(shipThumb(id,52,42));
+  /* Тир — первое, что видно в строке: он говорит, встретите ли вы такой ещё раз */
+  const T=typeof tierOf==="function"?tierOf(S):null;
   r.appendChild(el("div","nm","<b style='color:"+S.col+"'>«"+S.ru+"» <span style='color:var(--dim)'>"+
-    S.cls+"</span></b><s>"+S.note+"<br>тяга "+S.thr.toFixed(2)+" · поворот "+S.turn.toFixed(2)+
+    S.cls+"</span></b><s>"+(T?"<b style='color:"+T.col+"'>"+T.ru.toUpperCase()+"</b> — "+T.note+"<br>":"")+
+    S.note+"<br>тяга "+S.thr.toFixed(2)+" · поворот "+S.turn.toFixed(2)+
     " · трюм "+S.cargo+" · бак "+S.fuel+" · корпус "+S.hull+"</s>"));
   if(mine)r.appendChild(el("div","qt","В РЕЙСЕ"));
   else{
@@ -17802,7 +18087,18 @@ function renderTab(){
     }
   }
   else if(tab==="yard"){
-    $body.appendChild(el("div","sec","КОРПУСА В ДОКЕ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
+    /* Ряд дока, а не склад всей галактики: что стоит здесь сегодня. Ряд держится
+       на seed станции и временном бакете — вернулись через час, ряд другой. */
+    const yard=stationFleet(G.sys);
+    $body.appendChild(el("div","sec","КОРПУСА В ЭТОМ ДОКЕ · РЯД МЕНЯЕТСЯ САМ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
+    for(const id of yard)$body.appendChild(shipRow(id,FLEET[id]));
+    /* Свои корпуса из ангара показываем всегда: пересесть обратно можно везде */
+    const own=Object.keys(G.owned).filter(id=>id!==G.shipId&&yard.indexOf(id)<0);
+    if(own.length){
+      $body.appendChild(el("div","sec","ВАШ АНГАР · ПЕРЕСЕСТЬ МОЖНО В ЛЮБОМ ДОКЕ"));
+      for(const id of own){const S=shipData(id);if(S)$body.appendChild(shipRow(id,S));}
+    }
+    $body.appendChild(el("div","sec","СЕРИЙНЫЙ РЯД · ЕСТЬ В ЛЮБОМ ДОКЕ"));
     for(const id of SHIP_KEYS)$body.appendChild(shipRow(id,SHIPS[id]));
     /* уникальный корпус строят только на верфи — у торгового узла док слабый */
     /* «Ключ от верфи» открывает единственный экземпляр в любом доке, а не
