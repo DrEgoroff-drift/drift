@@ -203,6 +203,8 @@ function drawMap(){
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
     if(here)cur=v;
   }
+  /* маршрут домена — под курсом игрока: мир под намерением, а не наоборот */
+  drawFactRoute(vis);
   const cost=Math.round(9+dsel*13);
   const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0;
   /* ── курс прыжка ──

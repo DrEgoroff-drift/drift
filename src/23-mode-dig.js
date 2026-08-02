@@ -52,10 +52,13 @@ function enterDig(){
   G.dig={p:S.p,col:0,row:0,cells:{},nodes:{},target:null,move:0,deepest:0,face:1,
     bugs:[],zap:0,zapT:0,walkAmp:0,walkPhase:0};
   G.dig.cells["0,0"]={dug:true,res:null,amount:0,prog:0,hard:0,tint:0};
+  /* то, что уже выкопано в этой шахте, остаётся выкопанным */
+  mineLoad(G.dig,S.p);
   G.mode="dig";
   say("Спуск в шахту\nW A S D — копать вверх/вбок/вниз\nна поверхности W — выход · ОГОНЬ — импульс");
 }
 function exitDig(){
+  mineSave(G.dig,G.dig.p);
   G.dig=null;G.mode="surface";
   say("Подъём на поверхность\nв трюме: "+held());
   saveGame(true);
@@ -71,6 +74,8 @@ function useBeacon(){
   if(!S||S.beacon>0)return;
   const deep=G.dig?G.dig.row:0;
   S.beacon=beaconCool();
+  /* маяк выдёргивает из ствола, но выработка остаётся выработкой */
+  if(G.dig)mineSave(G.dig,G.dig.p);
   G.dig=null;G.cave=null;G.mode="surface";
   S.x=S.shipX;S.y=groundAt(S.tr,S.shipX)-10;S.vy=0;
   S.walkTarget=null;
@@ -99,6 +104,7 @@ function suitHit(n,why){
 function suitFailure(){
   const S=G.surf;
   S.suit=0;
+  if(G.dig)mineSave(G.dig,G.dig.p);
   G.dig=null;G.mode="surface";
   S.x=S.shipX;S.y=groundAt(S.tr,S.shipX)-10;S.vy=0;
   say("СКАФАНДР РАЗРУШЕН\nаварийный возврат к кораблю");
@@ -513,4 +519,29 @@ function drawDig(){
   ctx.fillText("ГЛУБИНА "+(D.row*3)+" м · "+geoAt(p,D.row*DIG_CELL*DIG_GEO_K).ru.toUpperCase(),12,H-30);
   ctx.fillStyle=suit>25?"rgba(93,115,130,.9)":"#ff6b57";
   ctx.fillText("СКАФАНДР "+Math.round(suit)+"%",12,H-16);
+}
+/* ── шахта остаётся выкопанной ──
+   Ствол осыпался, стоило подняться на поверхность: спустился второй раз — снова
+   целая порода. Это врало о мире: копали-то по-настоящему, руда из ячейки
+   уходила в трюм насовсем. Теперь выработка персистентна, а порода — нет:
+   сохраняется ТОЛЬКО то, что игрок изменил, то есть список выкопанных ячеек.
+   Всё остальное (руда, твёрдость, жилы) по-прежнему выводится из seed. */
+function mineKey(p){return G.sx+","+G.sy+":"+(p&&p.idx!==undefined?p.idx:0);}
+function mineLoad(D,p){
+  const rec=G.mines&&G.mines[mineKey(p)];
+  if(!rec)return;
+  for(const key of rec.dug||[]){
+    const c=digCell(D,...key.split(",").map(Number));
+    /* выкопанное — пустая ячейка: руду из неё уже вынесли, второй раз её нет */
+    c.dug=true;c.res=null;c.amount=0;c.prog=0;
+  }
+  D.deepest=rec.deepest|0;
+}
+function mineSave(D,p){
+  if(!G.mines)G.mines={};
+  const dug=[];
+  for(const key in D.cells)if(D.cells[key].dug)dug.push(key);
+  /* ствол растёт, и запись растёт вместе с ним; но она плоская и коротка —
+     тысяча ячеек это тысяча строк "c,r", а не тысяча объектов */
+  G.mines[mineKey(p)]={dug,deepest:D.deepest|0};
 }

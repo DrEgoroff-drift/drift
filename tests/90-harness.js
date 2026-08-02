@@ -40,6 +40,8 @@ function resetWorld(){
   G.crew=[];G.allies=[];G.bases={};G.drones=[];G.droneInventory=0;
   G.rogues=[];G.exiles=[];G.aiRift=null;
   G.relics={};G.relicHint=null;G.bio=0;G.home=null;
+  /* мир заново — значит и шахты нетронуты, и фронт пиратов пуст */
+  G.mines={};G.occ={};G.occCalm={};G.occT=0;G.freed=0;
   G.mgrs=[];G.blueprints={};G.cantina=null;G.aiRift=null;
   G.orderStamp=0;G.kills=0;G.soldTotal=0;
   G.pirates=[];G.shots=[];G.log=[];G.prompt="";G.msg="";

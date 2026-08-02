@@ -604,7 +604,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.36.1";
+const VER="0.37.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -2431,7 +2431,7 @@ const G={
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,
   /* фронт пиратов и счёт отбитых систем: цель игры видна числом */
-  occ:{},occT:0,freed:0,occCalm:{},
+  occ:{},occT:0,freed:0,occCalm:{},mines:{},
   pirates:[],shots:[],log:[],logNew:0,
   crew:[],allies:[],  // наёмники персистятся, их корабли в системе — эфемерны
   /* управляющие: четыре места, по одному на домен. Чертежи исследователя —
@@ -6542,6 +6542,66 @@ function occLairName(sx,sy){
   const l=occLvl(sx,sy);
   return l>=OCC_MAX?"ЛОГОВО БАРОНА":(l>=2?"ОПОРНЫЙ ПУНКТ":"");
 }
+/* ── маршрут фактора на карте ──
+   Домен считался по настоящим ценам (M84), но игрок видел это одной строкой в
+   карточке управляющего. Маршрут — вещь пространственная: он должен лежать на
+   карте, как лежит на ней курс прыжка. Линия соединяет плечи, на лучшем плече
+   стоит подпись «что везём и за сколько», и по ней сразу видно, куда выгодно
+   лететь самому: фактор находит спред, а пользуется им кто хочет. */
+function drawFactRoute(vis){
+  const m=typeof mgrOf==="function"?mgrOf("fact"):null;
+  if(!m||m.stalled||!m.route||m.route.length<2)return;
+  const at=key=>{
+    const [sx,sy]=key.split(",").map(Number);
+    return vis.find(v=>v.gx===sx&&v.gy===sy)||null;
+  };
+  const pts=m.route.slice(0,mgrRouteMax(m)).map(at).filter(Boolean);
+  if(pts.length<2)return;
+  const col="rgba(242,178,92,";
+  ctx.save();
+  ctx.setLineDash([1,5]);ctx.lineCap="round";
+  ctx.strokeStyle=col+".45)";ctx.lineWidth=1.2;
+  ctx.beginPath();
+  pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+  ctx.stroke();
+  ctx.setLineDash([]);ctx.lineCap="butt";
+  /* борт идёт по маршруту: точка, ползущая от плеча к плечу, — это и есть
+     «домен работает», видимое без единой цифры */
+  if(pts.length>1){
+    const seg=(G.t*.06)%(pts.length-1);
+    const i0=Math.floor(seg),t=seg-i0;
+    const a=pts[i0],b=pts[Math.min(pts.length-1,i0+1)];
+    const bx=lerp(a.x,b.x,t),by=lerp(a.y,b.y,t);
+    ctx.fillStyle=col+".9)";
+    ctx.beginPath();ctx.arc(bx,by,2.6,0,TAU);ctx.fill();
+    ctx.strokeStyle=col+".35)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(bx,by,5.5,0,TAU);ctx.stroke();
+  }
+  /* метки плеч: маленький ромб, чтобы плечо отличалось от просто станции */
+  for(const p of pts){
+    ctx.strokeStyle=col+".6)";ctx.lineWidth=1.2;
+    ctx.beginPath();
+    ctx.moveTo(p.x,p.y-9);ctx.lineTo(p.x+9,p.y);ctx.lineTo(p.x,p.y+9);
+    ctx.lineTo(p.x-9,p.y);ctx.closePath();ctx.stroke();
+  }
+  /* подпись на лучшем плече: что и почём везут прямо сейчас */
+  const leg=mgrBestLeg(m);
+  if(!leg)return;
+  const a=at(leg.from.sx+","+leg.from.sy),b=at(leg.to.sx+","+leg.to.sy);
+  if(!a||!b)return;
+  ctx.strokeStyle=col+".85)";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+  const mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+  const rel=Math.round((leg.sell-leg.buy)/Math.max(1,leg.buy)*100);
+  const label=RES[leg.k].ru.toUpperCase()+" "+leg.buy+" → "+leg.sell+" ("+rel+"%)";
+  ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
+  const tw=ctx.measureText(label).width;
+  ctx.fillStyle="rgba(6,10,16,.85)";ctx.fillRect(mx-tw/2-6,my-8,tw+12,16);
+  ctx.strokeStyle=col+".55)";ctx.lineWidth=1;ctx.strokeRect(mx-tw/2-5.5,my-7.5,tw+11,15);
+  ctx.fillStyle="#f2b25c";ctx.fillText(label,mx,my+.5);
+  ctx.textBaseline="alphabetic";
+  ctx.restore();
+}
 
 /* ══════════════ пираты ══════════════ */
 /* эфемерны: набираются заново при каждом входе в систему, как орбиты и пояс */
@@ -6819,7 +6879,7 @@ function snapshot(){
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
-    fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
+    fuseGen:G.fuseGen,mines:G.mines,log:G.log,ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
@@ -6864,6 +6924,8 @@ function applySave(s){
   G.occ=(s.occ&&typeof s.occ==="object")?s.occ:{};
   G.freed=s.freed|0;
   G.occCalm=(s.occCalm&&typeof s.occCalm==="object")?s.occCalm:{};
+  /* выработка шахт: только список выкопанных ячеек, порода выводится из seed */
+  G.mines=(s.mines&&typeof s.mines==="object")?s.mines:{};
   G.drones=Array.isArray(s.drones)?s.drones:[];
   G.droneInventory=Math.max(0,s.droneInventory|0);
   /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».
@@ -9460,6 +9522,8 @@ function drawMap(){
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
     if(here)cur=v;
   }
+  /* маршрут домена — под курсом игрока: мир под намерением, а не наоборот */
+  drawFactRoute(vis);
   const cost=Math.round(9+dsel*13);
   const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0;
   /* ── курс прыжка ──
@@ -14679,6 +14743,177 @@ function decoFrond(A){
   ctx.beginPath();ctx.ellipse(0,3,w*.5,Math.max(2,w*.12),0,0,TAU);ctx.fill();
 }
 
+/* ══════════════ ваши постройки видны с земли ══════════════ */
+/* База и дом существовали строчками в меню: чтобы понять, что они у вас есть,
+   нужно было зайти в раздел. Сели на планету, где стоит ваша база, — на горизонте
+   ничего. Теперь постройки стоят там, где стоят: с земли их видно, к ним идут
+   ногами, и вход в них — это подойти, а не найти пункт в списке.
+
+   ПРАВИЛА:
+   1. Строение рисуется тем же слоем, что и POI (`21b-surface-deco`): сначала
+      тень на грунте, потом тело с клипом по профилю — иначе оно висит в воздухе
+      или врастает в скалу.
+   2. Ничего не персистится сверх уже имеющегося: где база — знает `G.bases`,
+      где дом — `G.home`. Место на поверхности выводится из seed планеты, как
+      и всё остальное в мире.
+   3. Масштаб держится человеком: ангар базы вдвое выше астронавта, дом —
+      в полтора. Постройка, которую видно от горизонта, врёт о размере мира. */
+function builtKey(sx,sy){return sx+","+sy;}
+/* что стоит в этой системе на этой планете */
+function builtHere(){
+  const S=G.surf;if(!S)return [];
+  const out=[];
+  const key=builtKey(G.sx,G.sy);
+  const B=G.bases&&G.bases[key];
+  /* база привязана к системе, а не к планете: ставим её на ту планету, куда
+     игрок садился первой, — иначе она «телепортируется» вслед за игроком */
+  if(B&&(B.pIdx===undefined||B.pIdx===S.p.idx))
+    out.push({kind:"base",ru:"ВАША БАЗА",lvl:(B.cells?Object.keys(B.cells).length:1)});
+  const H=G.home;
+  if(H&&H.tier&&H.sx===G.sx&&H.sy===G.sy&&(H.pIdx===undefined||H.pIdx===S.p.idx))
+    out.push({kind:"home",ru:"ВАШ ДОМ",lvl:H.tier});
+  return out;
+}
+/* место постройки на профиле: детерминировано от seed планеты, поэтому
+   возвращаться к своему дому всегда приходится в одно и то же место */
+function builtSpot(tr,p,kind){
+  const r=rng(hashi(p.seed,kind==="home"?0x40E:0xBA5,11));
+  /* Ровное место, а не случайный индекс: на склоне у дома половина двери
+     оказывалась в грунте, а база висела над обрывом. Ищем участок с наименьшим
+     перепадом на ширине постройки — так строят и в жизни. */
+  const half=Math.max(3,Math.round(70/tr.step));
+  const from=Math.floor(tr.N*.14),to=Math.floor(tr.N*.86);
+  let best=null;
+  for(let k=0;k<28;k++){
+    const i=clamp(from+Math.floor(r()*(to-from)),half,tr.N-half-1);
+    let lo=1e9,hi=-1e9;
+    for(let j=i-half;j<=i+half;j++){lo=Math.min(lo,tr.h[j]);hi=Math.max(hi,tr.h[j]);}
+    const flat=hi-lo;
+    if(!best||flat<best.flat)best={i,flat};
+    if(flat<6)break;                    // достаточно ровно — дальше не ищем
+  }
+  const i=best.i;
+  /* ставим на самую высокую точку площадки: лучше пусть подножие уйдёт
+     в грунт, чем постройка повиснет над ямой */
+  let y=-1e9;
+  for(let j=i-half;j<=i+half;j++)y=Math.max(y,tr.h[j]);
+  return {x:i*tr.step,y};
+}
+function drawBuilt(tr,camx,camy,p){
+  const list=builtHere();if(!list.length)return;
+  for(const b of list){
+    const sp=builtSpot(tr,p,b.kind);
+    const x=sp.x-camx,y=sp.y-camy;
+    if(x<-360||x>W+360)continue;
+    const hgt=b.kind==="base"?150:110;
+    ctx.save();ctx.globalAlpha=.7;
+    groundShadow(x-60,y+2,140,7);
+    ctx.restore();
+    /* клип по профилю: постройка стоит НА земле — ниже линии грунта её нет */
+    const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
+    const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
+    const SKY=new Path2D();
+    SKY.moveTo(i0*tr.step-camx,-4000);
+    for(let i=i0;i<=i1;i++)SKY.lineTo(i*tr.step-camx,tr.h[i]-camy+8);
+    SKY.lineTo(i1*tr.step-camx,-4000);
+    SKY.closePath();
+    ctx.save();ctx.clip(SKY);
+    ctx.translate(x,y);
+    if(b.kind==="base")drawBaseBuilding(b,hgt);
+    else drawHomeBuilding(b,hgt);
+    ctx.restore();
+    /* подпись: постройку видно издалека, но чья она — только по метке */
+    /* подпись на подложке и выше конька: голый текст тонул в небе и налезал
+       на строку планеты */
+    const col=b.kind==="home"?"242,178,92":"143,208,138";
+    ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+    const lab=b.ru+" · "+(b.kind==="home"?("ступеней "+b.lvl):("ячеек "+b.lvl));
+    const tw=ctx.measureText(lab).width;
+    const ly=y-hgt-30;
+    ctx.fillStyle="rgba(6,10,16,.8)";ctx.fillRect(x-tw/2-6,ly-10,tw+12,15);
+    ctx.strokeStyle="rgba("+col+",.5)";ctx.lineWidth=1;
+    ctx.strokeRect(x-tw/2-5.5,ly-9.5,tw+11,14);
+    ctx.fillStyle="rgba("+col+",.95)";ctx.fillText(lab,x,ly);
+    ctx.strokeStyle="rgba("+col+",.35)";                    // выноска к крыше
+    ctx.beginPath();ctx.moveTo(x,ly+5);ctx.lineTo(x,y-hgt-6);ctx.stroke();
+  }
+}
+/* ── ангар базы ──
+   Куб на опорах, шлюз, мачта связи и панели: то же, что игрок видит в разрезе
+   (`21a-mode-base`), только снаружи и целиком. */
+function drawBaseBuilding(b,hgt){
+  const w=104,h=hgt;
+  const g=ctx.createLinearGradient(0,-h,0,0);
+  g.addColorStop(0,"rgba(58,70,84,1)");g.addColorStop(1,"rgba(26,32,42,1)");
+  ctx.fillStyle=g;
+  ctx.beginPath();
+  ctx.moveTo(-w/2,0);ctx.lineTo(-w/2,-h*.62);ctx.lineTo(-w*.3,-h*.82);
+  ctx.lineTo(w*.3,-h*.82);ctx.lineTo(w/2,-h*.62);ctx.lineTo(w/2,0);
+  ctx.closePath();ctx.fill();
+  ctx.strokeStyle="rgba(143,208,138,.35)";ctx.lineWidth=1.4;ctx.stroke();
+  /* опоры: без них куб лежит на грунте брюхом */
+  ctx.fillStyle="rgba(30,36,46,1)";
+  for(const s of [-1,1])ctx.fillRect(s*w*.36-4,-h*.12,8,h*.12);
+  /* ряды окон: свет изнутри — единственное, что говорит «тут живут» */
+  for(let r=0;r<3;r++)for(let c=0;c<5;c++){
+    const on=((r*5+c)%3)!==1;
+    ctx.fillStyle=on?"rgba(255,226,180,.75)":"rgba(20,26,34,.9)";
+    ctx.fillRect(-w*.36+c*w*.17,-h*.7+r*h*.18,10,7);
+  }
+  ctx.fillStyle="rgba(18,22,30,1)";                    // шлюз
+  ctx.fillRect(-13,-h*.24,26,h*.24);
+  ctx.fillStyle="rgba(143,208,138,.5)";ctx.fillRect(-13,-h*.24,26,2);
+  ctx.strokeStyle="rgba(120,140,160,.6)";ctx.lineWidth=1.6; // мачта
+  ctx.beginPath();ctx.moveTo(w*.4,-h*.62);ctx.lineTo(w*.44,-h*1.15);ctx.stroke();
+  ctx.fillStyle=(Math.sin(G.t*.2)>0)?"rgba(255,90,70,.95)":"rgba(255,90,70,.25)";
+  ctx.beginPath();ctx.arc(w*.44,-h*1.17,2.6,0,TAU);ctx.fill();
+  ctx.strokeStyle="rgba(127,176,230,.5)";ctx.lineWidth=1.2;  // панели
+  for(let i=0;i<3;i++){
+    ctx.beginPath();
+    ctx.moveTo(-w*.5-6-i*11,-h*.3);ctx.lineTo(-w*.5-2-i*11,-h*.52);ctx.stroke();
+  }
+}
+/* ── дом ──
+   Не куб, а жильё: скат крыши, тёплые окна, труба, флажок причала на верхних
+   ступенях. Дом должен читаться домом с первого взгляда, иначе он не награда. */
+function drawHomeBuilding(b,hgt){
+  const w=88,h=hgt,tier=b.lvl|0;
+  const g=ctx.createLinearGradient(0,-h,0,0);
+  g.addColorStop(0,"rgba(74,62,52,1)");g.addColorStop(1,"rgba(34,28,26,1)");
+  ctx.fillStyle=g;
+  ctx.fillRect(-w/2,-h*.62,w,h*.62);
+  ctx.strokeStyle="rgba(242,178,92,.35)";ctx.lineWidth=1.4;
+  ctx.strokeRect(-w/2,-h*.62,w,h*.62);
+  ctx.fillStyle="rgba(52,44,38,1)";                    // скат крыши
+  ctx.beginPath();
+  ctx.moveTo(-w*.58,-h*.62);ctx.lineTo(0,-h*.95);ctx.lineTo(w*.58,-h*.62);
+  ctx.closePath();ctx.fill();
+  ctx.strokeStyle="rgba(255,214,150,.25)";ctx.stroke();
+  /* окна: их столько, сколько ступеней построено — дом растёт на глазах */
+  const wins=Math.max(2,Math.min(8,tier+1));
+  for(let i=0;i<wins;i++){
+    const wx=-w*.38+(i%4)*w*.25,wy=-h*.5+Math.floor(i/4)*h*.24;
+    ctx.fillStyle="rgba(255,226,180,.8)";ctx.fillRect(wx,wy,13,10);
+    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(wx+6.5,wy);ctx.lineTo(wx+6.5,wy+10);ctx.stroke();
+  }
+  ctx.fillStyle="rgba(18,14,12,1)";ctx.fillRect(-11,-h*.22,22,h*.22);  // дверь
+  ctx.fillStyle="rgba(255,226,180,.5)";ctx.fillRect(-11,-h*.22,22,2);
+  ctx.fillStyle="rgba(44,38,34,1)";ctx.fillRect(w*.2,-h*1.06,12,h*.16); // труба
+  /* дым: тёплая ниточка вверх — то, что делает дом обитаемым */
+  ctx.strokeStyle="rgba(220,214,206,.20)";ctx.lineWidth=3;
+  ctx.beginPath();
+  for(let i=0;i<5;i++)
+    ctx.lineTo(w*.26+Math.sin(G.t*.05+i)*4,-h*1.08-i*9);
+  ctx.stroke();
+  if(tier>=8){                                          // причал с маяком
+    ctx.strokeStyle="rgba(242,178,92,.6)";ctx.lineWidth=1.6;
+    ctx.beginPath();ctx.moveTo(-w*.62,-h*.2);ctx.lineTo(-w*.62,-h*.75);ctx.stroke();
+    ctx.fillStyle=(Math.sin(G.t*.16)>0)?"rgba(255,226,180,.95)":"rgba(255,226,180,.3)";
+    ctx.beginPath();ctx.arc(-w*.62,-h*.78,3.2,0,TAU);ctx.fill();
+  }
+}
+
 /* ══════════════ поверхность ══════════════ */
 function enterSurface(){
   const L=G.land,tr=L.tr,p=L.p,r=rng(p.seed^0x1234);
@@ -15024,6 +15259,9 @@ function drawSurface(){
   /* средний масштаб между валуном и постройкой — тем же светом и той же
      породой, что грунт под ним (21b-surface-deco) */
   drawDeco(tr,camx,camy,p);
+  /* ваши постройки — тем же слоем, что и POI: их видно с земли, заходить
+     в меню, чтобы узнать об их существовании, больше не нужно */
+  drawBuilt(tr,camx,camy,p);
   drawRocks(tr,camx,camy,p.T.pal);
   /* тень по длине корпуса, а не по прежним 34 px: у нового посадочного силуэта
      она иначе выдаёт игрушку на палочках */
@@ -15780,10 +16018,13 @@ function enterDig(){
   G.dig={p:S.p,col:0,row:0,cells:{},nodes:{},target:null,move:0,deepest:0,face:1,
     bugs:[],zap:0,zapT:0,walkAmp:0,walkPhase:0};
   G.dig.cells["0,0"]={dug:true,res:null,amount:0,prog:0,hard:0,tint:0};
+  /* то, что уже выкопано в этой шахте, остаётся выкопанным */
+  mineLoad(G.dig,S.p);
   G.mode="dig";
   say("Спуск в шахту\nW A S D — копать вверх/вбок/вниз\nна поверхности W — выход · ОГОНЬ — импульс");
 }
 function exitDig(){
+  mineSave(G.dig,G.dig.p);
   G.dig=null;G.mode="surface";
   say("Подъём на поверхность\nв трюме: "+held());
   saveGame(true);
@@ -15799,6 +16040,8 @@ function useBeacon(){
   if(!S||S.beacon>0)return;
   const deep=G.dig?G.dig.row:0;
   S.beacon=beaconCool();
+  /* маяк выдёргивает из ствола, но выработка остаётся выработкой */
+  if(G.dig)mineSave(G.dig,G.dig.p);
   G.dig=null;G.cave=null;G.mode="surface";
   S.x=S.shipX;S.y=groundAt(S.tr,S.shipX)-10;S.vy=0;
   S.walkTarget=null;
@@ -15827,6 +16070,7 @@ function suitHit(n,why){
 function suitFailure(){
   const S=G.surf;
   S.suit=0;
+  if(G.dig)mineSave(G.dig,G.dig.p);
   G.dig=null;G.mode="surface";
   S.x=S.shipX;S.y=groundAt(S.tr,S.shipX)-10;S.vy=0;
   say("СКАФАНДР РАЗРУШЕН\nаварийный возврат к кораблю");
@@ -16241,6 +16485,31 @@ function drawDig(){
   ctx.fillText("ГЛУБИНА "+(D.row*3)+" м · "+geoAt(p,D.row*DIG_CELL*DIG_GEO_K).ru.toUpperCase(),12,H-30);
   ctx.fillStyle=suit>25?"rgba(93,115,130,.9)":"#ff6b57";
   ctx.fillText("СКАФАНДР "+Math.round(suit)+"%",12,H-16);
+}
+/* ── шахта остаётся выкопанной ──
+   Ствол осыпался, стоило подняться на поверхность: спустился второй раз — снова
+   целая порода. Это врало о мире: копали-то по-настоящему, руда из ячейки
+   уходила в трюм насовсем. Теперь выработка персистентна, а порода — нет:
+   сохраняется ТОЛЬКО то, что игрок изменил, то есть список выкопанных ячеек.
+   Всё остальное (руда, твёрдость, жилы) по-прежнему выводится из seed. */
+function mineKey(p){return G.sx+","+G.sy+":"+(p&&p.idx!==undefined?p.idx:0);}
+function mineLoad(D,p){
+  const rec=G.mines&&G.mines[mineKey(p)];
+  if(!rec)return;
+  for(const key of rec.dug||[]){
+    const c=digCell(D,...key.split(",").map(Number));
+    /* выкопанное — пустая ячейка: руду из неё уже вынесли, второй раз её нет */
+    c.dug=true;c.res=null;c.amount=0;c.prog=0;
+  }
+  D.deepest=rec.deepest|0;
+}
+function mineSave(D,p){
+  if(!G.mines)G.mines={};
+  const dug=[];
+  for(const key in D.cells)if(D.cells[key].dug)dug.push(key);
+  /* ствол растёт, и запись растёт вместе с ним; но она плоская и коротка —
+     тысяча ячеек это тысяча строк "c,r", а не тысяча объектов */
+  G.mines[mineKey(p)]={dug,deepest:D.deepest|0};
 }
 
 /* ══════════════ рейд на пиратскую базу: полигональный интерьер ══════════════ */
