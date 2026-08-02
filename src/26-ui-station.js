@@ -61,7 +61,10 @@ function syncTabs(){
   /* одна вкладка в разделе — вторая ступень только мешает */
   document.getElementById("stTabs").classList.toggle("solo",shown<2);
 }
-function repairCost(){return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep));}
+function repairCost(){
+  /* репутация станции идёт в цену работы: чинят руки, а не рынок (12k-rep) */
+  return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep*repRepairMul()));
+}
 function closeStation(){
   $st.classList.remove("open");G.mode="system";
   const S=G.st,dx=G.ship.x-S.x,dy=G.ship.y-S.y,d=Math.hypot(dx,dy)||1;
@@ -77,7 +80,7 @@ document.getElementById("bUndock").addEventListener("click",closeStation);
 document.getElementById("bRefuel").addEventListener("click",()=>{
   const st=stat(),need=Math.ceil(st.fuelMax-G.fuel);
   if(need<=0){say("Баки полны");return;}
-  const per=G.st.fuelPrice,can=Math.min(need,Math.floor(G.credits/per));
+  const per=fuelPriceHere(),can=Math.min(need,Math.floor(G.credits/per));
   if(can<=0){say("Не хватает кредитов");return;}
   G.credits-=can*per;G.fuel+=can;renderTab();
 });
@@ -146,7 +149,7 @@ function renderTab(){
   $body.innerHTML="";
   if(tab==="none"){
     /* заправочная: вкладок нет вовсе, но экран не должен выглядеть сломанным */
-    $body.appendChild(el("div","sec","ТОПЛИВО "+G.st.fuelPrice+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
+    $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
     $body.appendChild(el("div","row","<div class='nm'><b>Только заправка и ремонт</b>"+
       "<s>перевалочный узел на отшибе: ни рынка, ни верфи, ни лаборатории —<br>"+
       "зато баки полны и корпус залатан</s></div>"));

@@ -124,6 +124,8 @@ function occKill(sx,sy){
     return;
   }
   G.freed=(G.freed|0)+1;
+  /* тех, кто снял блокаду, на станции помнят долго */
+  if(sys.station&&typeof repAdd==="function")repAdd(2,sys);
   const prize=sys.station?Math.round(2400+sysDanger(sx,sy)*9000):0;
   if(prize)earn(prize,"free");
   tell("good","Система «"+sys.name+"» свободна"+(prize?" · +"+prize.toLocaleString("ru")+" кр":""),

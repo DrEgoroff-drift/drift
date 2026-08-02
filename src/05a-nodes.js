@@ -114,11 +114,22 @@ function nodeFound(node){
    Место падения не декорация: узел выпадает только там, где он «водится».
    Шанс — от грейда и от опасности сектора; полного мусора не бывает, но и
    тысячу узлов за вечер не собрать. */
-function nodeRoll(where,danger,seed){
+function nodeRoll(where,danger,seed,lair){
   const r=rng(seed>>>0||1);
   /* базовый шанс низкий намеренно: узлы — не валюта, а находки */
   if(r()>.06+danger*.10)return null;
-  const pool=NODES.filter(n=>n.where===where&&!nodeHas(n.id));
+  let pool=NODES.filter(n=>n.where===where&&!nodeHas(n.id));
+  if(!pool.length)return null;
+  /* ── последние узлы набора ──
+     Пока в семье осталось больше трёх ненайденных, они падают везде, где
+     водятся. Последние три — только в логове барона: набор должен кончаться
+     не тем, что вы ещё сто раз слетали в шахту, а тем, что вы туда дошли. */
+  const tail=pool.filter(n=>{
+    const left=NODE_PER_FAM-nodeCount(n.fam);
+    return left<=3;
+  });
+  if(tail.length===pool.length&&!lair)return null;
+  if(!lair)pool=pool.filter(n=>tail.indexOf(n)<0);
   if(!pool.length)return null;
   /* грейд решает частоту: несбыточный узел из пула вытягивается вшестнадцатеро
      реже рядового, и последние узлы набора всегда даются тяжелее всего */
@@ -129,8 +140,8 @@ function nodeRoll(where,danger,seed){
   }
   return null;
 }
-function nodeDrop(where,danger,seed){
-  const n=nodeRoll(where,danger,seed);
+function nodeDrop(where,danger,seed,lair){
+  const n=nodeRoll(where,danger,seed,lair);
   if(!n)return null;
   nodeFound(n);
   return n;
@@ -189,8 +200,128 @@ function nodesRender(){
     $body.appendChild(el("div","sec","ПОСЛЕДНИЕ НАХОДКИ"));
     for(const n of last){
       const F=NODE_FAMS.find(f=>f.id===n.fam);
-      $body.appendChild(el("div","row","<div class='nm'><b style='color:"+n.col+"'>«"+
-        n.ru+"»</b><s>"+n.gradeRu+" узел набора «"+F.ru+"» · находят "+n.where+"</s></div>"));
+      const row=el("div","row");
+      row.appendChild(nodeIconEl(n,44));
+      row.appendChild(el("div","nm","<b style='color:"+n.col+"'>«"+n.ru+
+        "»</b><s>"+n.gradeRu+" узел набора «"+F.ru+"» · находят "+n.where+"</s>"));
+      $body.appendChild(row);
     }
   }
+}
+/* ── как узел выглядит ──
+   Тысяча находок, у каждой имя — и все они были строчкой текста. Вещь, которую
+   нельзя увидеть, не ощущается вещью, поэтому у узла есть облик: он собирается
+   из его же seed по тем же правилам, что корпуса и части. Форма идёт от семьи
+   (у «Ковчега» — обод, у «Костра» — сопло, у «Ткацкого» — катушка), а грейд
+   добавляет отделку: точный получает кант, штучный — клеймо, утраченный —
+   патину и скол, несбыточный — свечение изнутри. */
+function drawNodeIcon(c,node,S){
+  const r=rng(node.seed),F=NODE_FAMS.find(f=>f.id===node.fam)||NODE_FAMS[0];
+  const col=hex2rgb(F.col),gc=hex2rgb(node.col);
+  const k=S/40;                                  // рисуем в единицах 40×40
+  c.save();c.scale(k,k);
+  /* тело: многоугольник с числом граней от семьи — узел должен быть предметом,
+     а не иконкой из шрифта */
+  const sides=4+(NODE_FAMS.indexOf(F)%5);
+  const rad=13+r()*2.5;
+  const body=[];
+  for(let i=0;i<sides;i++){
+    const a=i/sides*TAU-Math.PI/2;
+    const rr=rad*(.86+r()*.28);
+    body.push([Math.cos(a)*rr,Math.sin(a)*rr]);
+  }
+  c.beginPath();
+  body.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));
+  c.closePath();
+  const g=c.createLinearGradient(-rad,-rad,rad,rad);
+  g.addColorStop(0,rgba(mixc(col,[255,255,255],.35),.95));
+  g.addColorStop(.55,rgba(mixc(col,[12,16,24],.45),.98));
+  g.addColorStop(1,rgba(mixc(col,[6,10,16],.7),.98));
+  c.fillStyle=g;c.fill();
+  c.strokeStyle=rgba(mixc(col,[255,255,255],.5),.55);c.lineWidth=1.2;c.stroke();
+  /* нутро по семье: одна деталь, которая опознаётся с одного взгляда */
+  c.strokeStyle=rgba(col,.8);c.lineWidth=1.6;
+  /* Каждой семье своя деталь. В первом проходе семьи делили рисунок парами,
+     и «Ковчег» было не отличить от «Колодца»: десять наборов — десять нутр. */
+  if(F.id==="ark"){                                     // обод с перемычками
+    c.beginPath();c.arc(0,0,7.5,0,TAU);c.stroke();
+    for(let i=0;i<4;i++){const a=i*TAU/4+.4;
+      c.beginPath();c.moveTo(Math.cos(a)*3,Math.sin(a)*3);
+      c.lineTo(Math.cos(a)*7.5,Math.sin(a)*7.5);c.stroke();}
+  }else if(F.id==="pyre"){                              // сопло с огнём
+    c.beginPath();c.moveTo(-6,7);c.lineTo(-2.5,-6);c.lineTo(2.5,-6);c.lineTo(6,7);
+    c.closePath();c.stroke();
+    c.fillStyle=rgba(mixc(col,[255,236,190],.6),.75);
+    c.beginPath();c.moveTo(-2.6,-6);c.lineTo(0,-11);c.lineTo(2.6,-6);c.closePath();c.fill();
+  }else if(F.id==="moth"){                              // два крыла
+    for(const s of [1,-1]){
+      c.beginPath();c.moveTo(0,2);c.lineTo(s*9,-6);c.lineTo(s*4,4);c.closePath();c.stroke();
+    }
+  }else if(F.id==="well"){                              // колодец: кольца и дно
+    for(let i=0;i<3;i++){c.beginPath();c.arc(0,0,3+i*3.2,0,TAU);c.stroke();}
+    c.fillStyle=rgba(col,.85);c.beginPath();c.arc(0,0,1.6,0,TAU);c.fill();
+  }else if(F.id==="loom"){                              // катушка на валу
+    c.beginPath();c.moveTo(0,-8);c.lineTo(0,8);c.stroke();
+    for(let i=-1;i<=1;i++){
+      c.beginPath();c.ellipse(0,i*5,6,2.2,0,0,TAU);c.stroke();
+    }
+  }else if(F.id==="cair"){                              // кладка кургана
+    for(let rr=0;rr<3;rr++)for(let cc=0;cc<2;cc++){
+      const w=6,h=3.4;
+      c.strokeRect(-6+cc*w+(rr%2?2:0),-5+rr*h,w-1,h-1);
+    }
+  }else if(F.id==="echo"){                              // волны из точки
+    c.fillStyle=rgba(col,.9);c.beginPath();c.arc(-4,0,1.8,0,TAU);c.fill();
+    for(let i=0;i<3;i++){c.beginPath();c.arc(-4,0,4+i*3.4,-1,1);c.stroke();}
+  }else if(F.id==="veil"){                              // складка
+    c.beginPath();
+    for(let i=0;i<=6;i++)c.lineTo(-8+i*2.7,(i%2?-1:1)*4.5);
+    c.stroke();
+    c.beginPath();
+    for(let i=0;i<=6;i++)c.lineTo(-8+i*2.7,(i%2?-1:1)*4.5+5);
+    c.stroke();
+  }else if(F.id==="kiln"){                              // под печи: арка и решётка
+    c.beginPath();c.arc(0,3,7,Math.PI,0);c.stroke();
+    for(let i=-1;i<=1;i++){c.beginPath();c.moveTo(i*4,3);c.lineTo(i*4,-3);c.stroke();}
+  }else{                                                // прилив: волна
+    for(let k2=0;k2<2;k2++){
+      c.beginPath();
+      for(let x=-8;x<=8;x+=1.6)c.lineTo(x,Math.sin(x*.45+k2*1.6)*3+k2*4-2);
+      c.stroke();
+    }
+  }
+  /* отделка по грейду: редкость видна на самой вещи, а не только в подписи */
+  if(node.grade!=="plain"){
+    c.strokeStyle=rgba(gc,.85);c.lineWidth=1;
+    c.beginPath();
+    body.forEach((p,i)=>{const q=[p[0]*.78,p[1]*.78];i?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]);});
+    c.closePath();c.stroke();
+  }
+  if(node.grade==="single"||node.grade==="lost"||node.grade==="never"){
+    c.fillStyle=rgba(gc,.9);                            // клеймо
+    c.beginPath();c.arc(rad*.55,-rad*.55,2.2,0,TAU);c.fill();
+  }
+  if(node.grade==="lost"){                              // патина и скол
+    c.fillStyle="rgba(0,0,0,.3)";
+    c.beginPath();c.moveTo(-rad*.7,rad*.2);c.lineTo(-rad*.2,rad*.75);
+    c.lineTo(-rad*.75,rad*.6);c.closePath();c.fill();
+  }
+  if(node.grade==="never"){                             // свечение изнутри
+    const gl=c.createRadialGradient(0,0,1,0,0,rad*1.5);
+    gl.addColorStop(0,rgba(gc,.5));gl.addColorStop(1,rgba(gc,0));
+    c.fillStyle=gl;c.beginPath();c.arc(0,0,rad*1.5,0,TAU);c.fill();
+  }
+  c.restore();
+}
+/* элемент для списка: канва вместо цветного кружка */
+function nodeIconEl(node,size){
+  const cn=document.createElement("canvas");
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  cn.width=size*dpr;cn.height=size*dpr;
+  cn.style.cssText="width:"+size+"px;height:"+size+"px;flex:0 0 auto;line-height:0";
+  const c=cn.getContext("2d");
+  c.setTransform(dpr,0,0,dpr,0,0);
+  c.translate(size/2,size/2);
+  drawNodeIcon(c,node,size);
+  return cn;
 }

@@ -32,7 +32,7 @@ function snapshot(){
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
-    fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,
+    fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,
     nodes:G.nodes,crowns:G.crowns,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
@@ -89,6 +89,8 @@ function applySave(s){
   /* дела кантины: отвеченные и те, чей исход ещё не пришёл */
   G.dealsDone=(s.dealsDone&&typeof s.dealsDone==="object")?s.dealsDone:{};
   G.dealsWait=Array.isArray(s.dealsWait)?s.dealsWait:[];
+  /* репутация: своя у каждой станции, только от поступков */
+  G.rep=(s.rep&&typeof s.rep==="object")?s.rep:{};
   G.drones=Array.isArray(s.drones)?s.drones:[];
   G.droneInventory=Math.max(0,s.droneInventory|0);
   /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».

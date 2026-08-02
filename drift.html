@@ -616,7 +616,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.39.1";
+const VER="0.40.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -1924,11 +1924,22 @@ function nodeFound(node){
    Место падения не декорация: узел выпадает только там, где он «водится».
    Шанс — от грейда и от опасности сектора; полного мусора не бывает, но и
    тысячу узлов за вечер не собрать. */
-function nodeRoll(where,danger,seed){
+function nodeRoll(where,danger,seed,lair){
   const r=rng(seed>>>0||1);
   /* базовый шанс низкий намеренно: узлы — не валюта, а находки */
   if(r()>.06+danger*.10)return null;
-  const pool=NODES.filter(n=>n.where===where&&!nodeHas(n.id));
+  let pool=NODES.filter(n=>n.where===where&&!nodeHas(n.id));
+  if(!pool.length)return null;
+  /* ── последние узлы набора ──
+     Пока в семье осталось больше трёх ненайденных, они падают везде, где
+     водятся. Последние три — только в логове барона: набор должен кончаться
+     не тем, что вы ещё сто раз слетали в шахту, а тем, что вы туда дошли. */
+  const tail=pool.filter(n=>{
+    const left=NODE_PER_FAM-nodeCount(n.fam);
+    return left<=3;
+  });
+  if(tail.length===pool.length&&!lair)return null;
+  if(!lair)pool=pool.filter(n=>tail.indexOf(n)<0);
   if(!pool.length)return null;
   /* грейд решает частоту: несбыточный узел из пула вытягивается вшестнадцатеро
      реже рядового, и последние узлы набора всегда даются тяжелее всего */
@@ -1939,8 +1950,8 @@ function nodeRoll(where,danger,seed){
   }
   return null;
 }
-function nodeDrop(where,danger,seed){
-  const n=nodeRoll(where,danger,seed);
+function nodeDrop(where,danger,seed,lair){
+  const n=nodeRoll(where,danger,seed,lair);
   if(!n)return null;
   nodeFound(n);
   return n;
@@ -1999,10 +2010,130 @@ function nodesRender(){
     $body.appendChild(el("div","sec","ПОСЛЕДНИЕ НАХОДКИ"));
     for(const n of last){
       const F=NODE_FAMS.find(f=>f.id===n.fam);
-      $body.appendChild(el("div","row","<div class='nm'><b style='color:"+n.col+"'>«"+
-        n.ru+"»</b><s>"+n.gradeRu+" узел набора «"+F.ru+"» · находят "+n.where+"</s></div>"));
+      const row=el("div","row");
+      row.appendChild(nodeIconEl(n,44));
+      row.appendChild(el("div","nm","<b style='color:"+n.col+"'>«"+n.ru+
+        "»</b><s>"+n.gradeRu+" узел набора «"+F.ru+"» · находят "+n.where+"</s>"));
+      $body.appendChild(row);
     }
   }
+}
+/* ── как узел выглядит ──
+   Тысяча находок, у каждой имя — и все они были строчкой текста. Вещь, которую
+   нельзя увидеть, не ощущается вещью, поэтому у узла есть облик: он собирается
+   из его же seed по тем же правилам, что корпуса и части. Форма идёт от семьи
+   (у «Ковчега» — обод, у «Костра» — сопло, у «Ткацкого» — катушка), а грейд
+   добавляет отделку: точный получает кант, штучный — клеймо, утраченный —
+   патину и скол, несбыточный — свечение изнутри. */
+function drawNodeIcon(c,node,S){
+  const r=rng(node.seed),F=NODE_FAMS.find(f=>f.id===node.fam)||NODE_FAMS[0];
+  const col=hex2rgb(F.col),gc=hex2rgb(node.col);
+  const k=S/40;                                  // рисуем в единицах 40×40
+  c.save();c.scale(k,k);
+  /* тело: многоугольник с числом граней от семьи — узел должен быть предметом,
+     а не иконкой из шрифта */
+  const sides=4+(NODE_FAMS.indexOf(F)%5);
+  const rad=13+r()*2.5;
+  const body=[];
+  for(let i=0;i<sides;i++){
+    const a=i/sides*TAU-Math.PI/2;
+    const rr=rad*(.86+r()*.28);
+    body.push([Math.cos(a)*rr,Math.sin(a)*rr]);
+  }
+  c.beginPath();
+  body.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));
+  c.closePath();
+  const g=c.createLinearGradient(-rad,-rad,rad,rad);
+  g.addColorStop(0,rgba(mixc(col,[255,255,255],.35),.95));
+  g.addColorStop(.55,rgba(mixc(col,[12,16,24],.45),.98));
+  g.addColorStop(1,rgba(mixc(col,[6,10,16],.7),.98));
+  c.fillStyle=g;c.fill();
+  c.strokeStyle=rgba(mixc(col,[255,255,255],.5),.55);c.lineWidth=1.2;c.stroke();
+  /* нутро по семье: одна деталь, которая опознаётся с одного взгляда */
+  c.strokeStyle=rgba(col,.8);c.lineWidth=1.6;
+  /* Каждой семье своя деталь. В первом проходе семьи делили рисунок парами,
+     и «Ковчег» было не отличить от «Колодца»: десять наборов — десять нутр. */
+  if(F.id==="ark"){                                     // обод с перемычками
+    c.beginPath();c.arc(0,0,7.5,0,TAU);c.stroke();
+    for(let i=0;i<4;i++){const a=i*TAU/4+.4;
+      c.beginPath();c.moveTo(Math.cos(a)*3,Math.sin(a)*3);
+      c.lineTo(Math.cos(a)*7.5,Math.sin(a)*7.5);c.stroke();}
+  }else if(F.id==="pyre"){                              // сопло с огнём
+    c.beginPath();c.moveTo(-6,7);c.lineTo(-2.5,-6);c.lineTo(2.5,-6);c.lineTo(6,7);
+    c.closePath();c.stroke();
+    c.fillStyle=rgba(mixc(col,[255,236,190],.6),.75);
+    c.beginPath();c.moveTo(-2.6,-6);c.lineTo(0,-11);c.lineTo(2.6,-6);c.closePath();c.fill();
+  }else if(F.id==="moth"){                              // два крыла
+    for(const s of [1,-1]){
+      c.beginPath();c.moveTo(0,2);c.lineTo(s*9,-6);c.lineTo(s*4,4);c.closePath();c.stroke();
+    }
+  }else if(F.id==="well"){                              // колодец: кольца и дно
+    for(let i=0;i<3;i++){c.beginPath();c.arc(0,0,3+i*3.2,0,TAU);c.stroke();}
+    c.fillStyle=rgba(col,.85);c.beginPath();c.arc(0,0,1.6,0,TAU);c.fill();
+  }else if(F.id==="loom"){                              // катушка на валу
+    c.beginPath();c.moveTo(0,-8);c.lineTo(0,8);c.stroke();
+    for(let i=-1;i<=1;i++){
+      c.beginPath();c.ellipse(0,i*5,6,2.2,0,0,TAU);c.stroke();
+    }
+  }else if(F.id==="cair"){                              // кладка кургана
+    for(let rr=0;rr<3;rr++)for(let cc=0;cc<2;cc++){
+      const w=6,h=3.4;
+      c.strokeRect(-6+cc*w+(rr%2?2:0),-5+rr*h,w-1,h-1);
+    }
+  }else if(F.id==="echo"){                              // волны из точки
+    c.fillStyle=rgba(col,.9);c.beginPath();c.arc(-4,0,1.8,0,TAU);c.fill();
+    for(let i=0;i<3;i++){c.beginPath();c.arc(-4,0,4+i*3.4,-1,1);c.stroke();}
+  }else if(F.id==="veil"){                              // складка
+    c.beginPath();
+    for(let i=0;i<=6;i++)c.lineTo(-8+i*2.7,(i%2?-1:1)*4.5);
+    c.stroke();
+    c.beginPath();
+    for(let i=0;i<=6;i++)c.lineTo(-8+i*2.7,(i%2?-1:1)*4.5+5);
+    c.stroke();
+  }else if(F.id==="kiln"){                              // под печи: арка и решётка
+    c.beginPath();c.arc(0,3,7,Math.PI,0);c.stroke();
+    for(let i=-1;i<=1;i++){c.beginPath();c.moveTo(i*4,3);c.lineTo(i*4,-3);c.stroke();}
+  }else{                                                // прилив: волна
+    for(let k2=0;k2<2;k2++){
+      c.beginPath();
+      for(let x=-8;x<=8;x+=1.6)c.lineTo(x,Math.sin(x*.45+k2*1.6)*3+k2*4-2);
+      c.stroke();
+    }
+  }
+  /* отделка по грейду: редкость видна на самой вещи, а не только в подписи */
+  if(node.grade!=="plain"){
+    c.strokeStyle=rgba(gc,.85);c.lineWidth=1;
+    c.beginPath();
+    body.forEach((p,i)=>{const q=[p[0]*.78,p[1]*.78];i?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]);});
+    c.closePath();c.stroke();
+  }
+  if(node.grade==="single"||node.grade==="lost"||node.grade==="never"){
+    c.fillStyle=rgba(gc,.9);                            // клеймо
+    c.beginPath();c.arc(rad*.55,-rad*.55,2.2,0,TAU);c.fill();
+  }
+  if(node.grade==="lost"){                              // патина и скол
+    c.fillStyle="rgba(0,0,0,.3)";
+    c.beginPath();c.moveTo(-rad*.7,rad*.2);c.lineTo(-rad*.2,rad*.75);
+    c.lineTo(-rad*.75,rad*.6);c.closePath();c.fill();
+  }
+  if(node.grade==="never"){                             // свечение изнутри
+    const gl=c.createRadialGradient(0,0,1,0,0,rad*1.5);
+    gl.addColorStop(0,rgba(gc,.5));gl.addColorStop(1,rgba(gc,0));
+    c.fillStyle=gl;c.beginPath();c.arc(0,0,rad*1.5,0,TAU);c.fill();
+  }
+  c.restore();
+}
+/* элемент для списка: канва вместо цветного кружка */
+function nodeIconEl(node,size){
+  const cn=document.createElement("canvas");
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  cn.width=size*dpr;cn.height=size*dpr;
+  cn.style.cssText="width:"+size+"px;height:"+size+"px;flex:0 0 auto;line-height:0";
+  const c=cn.getContext("2d");
+  c.setTransform(dpr,0,0,dpr,0,0);
+  c.translate(size/2,size/2);
+  drawNodeIcon(c,node,size);
+  return cn;
 }
 
 /* ══════════════ части корабля ══════════════ */
@@ -2641,7 +2772,7 @@ const G={
   market:{},uniqueShips:{},drones:[],droneInventory:0,
   /* фронт пиратов и счёт отбитых систем: цель игры видна числом */
   occ:{},occT:0,freed:0,occCalm:{},mines:{},quests:[],nodes:{},crowns:{},
-  dealsDone:{},dealsWait:[],
+  dealsDone:{},dealsWait:[],rep:{},
   pirates:[],shots:[],log:[],logNew:0,
   crew:[],allies:[],  // наёмники персистятся, их корабли в системе — эфемерны
   /* управляющие: четыре места, по одному на домен. Чертежи исследователя —
@@ -4567,7 +4698,8 @@ function mgrDroneRate(){
 }
 function mgrBuildDiscount(){return mgrPerkOf("keep","cheap")?.8:1;}
 function mgrHireMul(){
-  let v=1;
+  /* репутация на станции: у тех, кто вас знает, наниматься дешевле (12k-rep) */
+  let v=(typeof repHireMul==="function")?repHireMul():1;
   for(const m of G.mgrs){
     if(mgrHas(m,"legend"))v*=mgrTrait("legend").hire;
     if(mgrPerk(m,"poach")||mgrPerk(m,"cheaphire"))v*=.7;
@@ -6677,6 +6809,72 @@ function yachtMoraleMul(){
   return homeHas("dock")?1.5:1.25;
 }
 
+/* ══════════════ репутация: вас помнят там, где вы бывали ══════════════ */
+/* В таблице дел (`27g-deals`) цена «rep» была заложена с самого начала, но
+   тратить её было некуда: репутации в игре не существовало. Обещание без кода —
+   это обман, поэтому либо цену убрать, либо сделать репутацию. Сделана она
+   узко и честно: репутация ЛОКАЛЬНА (у каждой станции своя), меняется только
+   от поступков, и влияет на цену того, что покупают у людей, — топливо, ремонт,
+   найм. Товары на рынке она не трогает: рынок про спрос, а не про симпатию.
+
+   ПРАВИЛА:
+   1. Одна шкала на станцию, от −5 до +5, без дробей и процентов на экране:
+      игроку нужно слово, а не число.
+   2. Репутация не копится сама. Ни за время, ни за налёт: только поступки —
+      закрытые дела, освобождение системы, сорванные обещания.
+   3. Влияние маленькое и заметное: до четверти на топливе и ремонте, до трети
+      на найме. Больше — и игра превратилась бы в «прокачай репутацию сначала». */
+const REP_MIN=-5,REP_MAX=5;
+const REP_WORDS=[
+  {at:-4,ru:"вас тут не ждут",  col:"#ff6b57"},
+  {at:-2,ru:"смотрят косо",     col:"#ff9d7a"},
+  {at:-1,ru:"помнят нехорошее", col:"#f2b25c"},
+  {at:0, ru:"вы им никто",      col:"#9fb0bd"},
+  {at:1, ru:"вас знают",        col:"#8fd08a"},
+  {at:3, ru:"вам рады",         col:"#7fe6d8"},
+  {at:5, ru:"вы тут свой",      col:"#c8f0ff"}
+];
+function repKey(sys){return (sys?sys.sx:G.sx)+","+(sys?sys.sy:G.sy);}
+function repAt(sys){
+  const v=G.rep&&G.rep[repKey(sys)];
+  return clamp(v|0,REP_MIN,REP_MAX);
+}
+function repWord(v){
+  let out=REP_WORDS[0];
+  for(const w of REP_WORDS)if(v>=w.at)out=w;
+  return out;
+}
+function repAdd(n,sys){
+  if(!n)return 0;
+  if(!G.rep)G.rep={};
+  const k=repKey(sys),was=repAt(sys);
+  G.rep[k]=clamp(was+n,REP_MIN,REP_MAX);
+  const now=repAt(sys);
+  if(now!==was){
+    const W=repWord(now);
+    logAdd(n>0?"good":"warn",
+      "«"+((sys||G.sys).station?(sys||G.sys).station.name:"станция")+"»: "+W.ru);
+  }
+  return now-was;
+}
+/* ── что репутация меняет ──
+   Только то, что назначает человек: топливо, ремонт, наём. Рыночные цены она
+   не трогает — иначе торговля перестала бы быть про спрос. */
+function repFuelMul(){return 1-repAt()*.05;}      // ±25% на краях шкалы
+function repRepairMul(){return 1-repAt()*.05;}
+function repHireMul(){return 1-repAt()*.06;}      // ±30% на найме
+/* строка для шапки станции: слово, а не число */
+function repLine(sys){
+  const v=repAt(sys),W=repWord(v);
+  return W.ru;
+}
+/* ── цена топлива и ремонта с учётом того, как к вам относятся ──
+   Обе функции живут здесь, а не в станции: цена — это отношение, и держать её
+   рядом с репутацией честнее, чем размазывать множители по экранам. */
+function fuelPriceHere(){
+  return Math.max(1,Math.round((G.st?G.st.fuelPrice:10)*repFuelMul()));
+}
+
 /* ══════════════ пираты берут системы ══════════════ */
 /* Пираты были погодой: сколько-то их встречается в опасных секторах, и всё.
    Отношения с ними не менялись ни от чего — убил и полетел дальше.
@@ -6803,6 +7001,8 @@ function occKill(sx,sy){
     return;
   }
   G.freed=(G.freed|0)+1;
+  /* тех, кто снял блокаду, на станции помнят долго */
+  if(sys.station&&typeof repAdd==="function")repAdd(2,sys);
   const prize=sys.station?Math.round(2400+sysDanger(sx,sy)*9000):0;
   if(prize)earn(prize,"free");
   tell("good","Система «"+sys.name+"» свободна"+(prize?" · +"+prize.toLocaleString("ru")+" кр":""),
@@ -7245,7 +7445,7 @@ function snapshot(){
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
-    fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,
+    fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,
     nodes:G.nodes,crowns:G.crowns,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
@@ -7302,6 +7502,8 @@ function applySave(s){
   /* дела кантины: отвеченные и те, чей исход ещё не пришёл */
   G.dealsDone=(s.dealsDone&&typeof s.dealsDone==="object")?s.dealsDone:{};
   G.dealsWait=Array.isArray(s.dealsWait)?s.dealsWait:[];
+  /* репутация: своя у каждой станции, только от поступков */
+  G.rep=(s.rep&&typeof s.rep==="object")?s.rep:{};
   G.drones=Array.isArray(s.drones)?s.drones:[];
   G.droneInventory=Math.max(0,s.droneInventory|0);
   /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».
@@ -17166,7 +17368,7 @@ function updateRaid(dt){
             logAdd("kill","На абордаже: "+(FOE_KINDS[f.kind]||FOE_KINDS.grunt).ru+" уничтожен");
             S.bag.data+=f.boss?12:3;
             nodeDrop("в рейде на базу",sysDanger(G.sx,G.sy)+(f.baron?.5:0),
-              hashi(f.seed,0x9D,Date.now()&0xffff));
+              hashi(f.seed,0x9D,Date.now()&0xffff),f.baron?1:0);
             sfx("boom",{v:.4});
           }else sfx("hit",{v:.3});
           break;
@@ -19015,7 +19217,10 @@ function syncTabs(){
   /* одна вкладка в разделе — вторая ступень только мешает */
   document.getElementById("stTabs").classList.toggle("solo",shown<2);
 }
-function repairCost(){return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep));}
+function repairCost(){
+  /* репутация станции идёт в цену работы: чинят руки, а не рынок (12k-rep) */
+  return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep*repRepairMul()));
+}
 function closeStation(){
   $st.classList.remove("open");G.mode="system";
   const S=G.st,dx=G.ship.x-S.x,dy=G.ship.y-S.y,d=Math.hypot(dx,dy)||1;
@@ -19031,7 +19236,7 @@ document.getElementById("bUndock").addEventListener("click",closeStation);
 document.getElementById("bRefuel").addEventListener("click",()=>{
   const st=stat(),need=Math.ceil(st.fuelMax-G.fuel);
   if(need<=0){say("Баки полны");return;}
-  const per=G.st.fuelPrice,can=Math.min(need,Math.floor(G.credits/per));
+  const per=fuelPriceHere(),can=Math.min(need,Math.floor(G.credits/per));
   if(can<=0){say("Не хватает кредитов");return;}
   G.credits-=can*per;G.fuel+=can;renderTab();
 });
@@ -19100,7 +19305,7 @@ function renderTab(){
   $body.innerHTML="";
   if(tab==="none"){
     /* заправочная: вкладок нет вовсе, но экран не должен выглядеть сломанным */
-    $body.appendChild(el("div","sec","ТОПЛИВО "+G.st.fuelPrice+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
+    $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
     $body.appendChild(el("div","row","<div class='nm'><b>Только заправка и ремонт</b>"+
       "<s>перевалочный узел на отшибе: ни рынка, ни верфи, ни лаборатории —<br>"+
       "зато баки полны и корпус залатан</s></div>"));
@@ -21873,6 +22078,8 @@ function dealAnswer(d,i){
   if(opt.cost){G.credits-=opt.cost;}
   if(opt.gain){earn(opt.gain,"deal");}
   if(opt.data){G.data+=opt.data;}
+  /* поступок стоит отношения: поручиться — рискнуть именем, отказать — ничего */
+  if(opt.rep)repAdd(opt.rep);
   tell("","«"+d.name+"»: "+opt.said,d.name+"\n— "+opt.said);
   if(opt.later){
     const L=opt.later;
@@ -21904,6 +22111,8 @@ function dealsTick(){
     if(R.hull)G.hull=Math.max(1,G.hull+R.hull);
     if(R.crew&&typeof crewGift==="function")crewGift();
     if(R.node&&typeof nodeDrop==="function")nodeDrop(R.node,.6,hashi(d.at,7,3));
+    /* чем кончилось — тем и запомнят: удачное дело красит имя, провал портит */
+    repAdd(good?1:-1);
     if(good)questDone(d.key,R.say);else questFail(d.key,R.say);
     tell(good?"good":"warn",R.say,R.say);
   }
