@@ -122,7 +122,9 @@ function stationParts(sys){
   for(let i=0;i<n;i++){
     const seed=hashi(sys.seed,i*613+17,bucket);
     const part=genPart(seed,tierFromDanger(d,rng(seed)));
-    const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*(.85+r()*.4)/10)*10;
+    /* репутация станции идёт и в цену железа: продавец тоже человек (12k-rep) */
+    const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*
+      (.85+r()*.4)*repPartMul(sys)/10)*10;
     out.push({key:sys.key+"|"+bucket+"|"+i,part,price});
   }
   /* «Чёрный список» фактора: его связи открывают то, чего в открытой продаже нет —
@@ -131,7 +133,8 @@ function stationParts(sys){
   if(typeof mgrPerkOf==="function"&&mgrPerkOf("fact","black")){
     const seed=hashi(sys.seed,0xB1AC,bucket);
     const part=genPart(seed,Math.min(3,tierFromDanger(d,rng(seed))+1));
-    const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*1.45/10)*10;
+    const price=Math.round((320+part.tier*part.tier*460+part.aff.length*180)*1.45*
+      repPartMul(sys)/10)*10;
     out.push({key:sys.key+"|"+bucket+"|black",part,price,black:1});
   }
   return out;

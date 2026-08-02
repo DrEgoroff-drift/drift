@@ -579,3 +579,81 @@ function poiNear(S,tr){
   }
   return null;
 }
+/* ══════════════ осмотр достопримечательности ══════════════ */
+/* Первый заход дал всем POI один и тот же осмотр: данные и, если повезёт, узел.
+   Но храм, завод и врата отличаются не только видом — иначе десять форм на
+   горизонте были бы десятью способами получить одно и то же. У каждой свой
+   ответ на вопрос «зачем к ней идти», и ответ этот дан тем, что в игре уже
+   есть: части, редкое сырьё, топливо, координаты, наука.
+
+   ПРАВИЛА:
+   1. Ни один осмотр не даёт кредитов. Памятник — не банкомат: он даёт вещи,
+      знания и направление, а деньги игрок получает работой.
+   2. Осмотр разовый и помнится (`G.poiSeen`), поэтому награда может быть
+      весомой: это не источник дохода, а находка.
+   3. Узел «из аномалии» падает с любого памятника — они все аномалии для того,
+      кто их не строил. */
+const POI_FIND={
+  wreck:  {ru:"остов корабля",note:"в разбитой рубке нашлась годная часть",
+           give:(r,d)=>{addPart(genPart(hashi(Date.now()&0xffffff,7,0x1E),tierFromDanger(d,r)));
+             return "часть с обломков";}},
+  temple: {ru:"храм",note:"на плитах вырезаны координаты",
+           give:(r,d)=>{
+             if(G.relicHint)return "запись повторяет то, что вы уже знаете";
+             for(let i=0;i<40;i++){
+               const sx=G.sx+Math.round((r()*2-1)*5),sy=G.sy+Math.round((r()*2-1)*5);
+               if(starAt(sx,sy)){G.relicHint={sx,sy};return "координаты: сектор "+sx+":"+sy;}
+             }
+             return "надписи стёрты";}},
+  factory:{ru:"завод",note:"конвейер стоит, но склад цел",
+           give:(r,d)=>{const n=3+Math.floor(r()*6+d*4);
+             return addRes("techcomp",n)?("техкомпоненты ×"+n):"трюм полон";}},
+  portal: {ru:"врата",note:"кольцо ещё держит заряд",
+           give:(r,d)=>{const st=stat(),n=Math.min(Math.round(st.fuelMax*.4),
+             Math.round(st.fuelMax-G.fuel));
+             if(n<=0)return "баки и так полны";
+             G.fuel+=n;return "топливо ×"+n;}},
+  observ: {ru:"обсерватория",note:"в архиве лежат чужие наблюдения",
+           give:(r,d)=>{
+             /* открывает соседнюю систему как посещённую рынком: фактор сможет
+                взять её плечом, а вы — увидеть цены, не летая */
+             for(let i=0;i<30;i++){
+               const sx=G.sx+Math.round((r()*2-1)*4),sy=G.sy+Math.round((r()*2-1)*4);
+               if(!starAt(sx,sy))continue;
+               const s=getSystem(sx,sy);
+               if(!s.station||(G.market&&G.market[s.key]))continue;
+               if(!G.market)G.market={};
+               G.market[s.key]={pressure:{},t:G.t};
+               return "цены станции «"+s.station.name+"» ("+sx+":"+sy+")";
+             }
+             return "наблюдения о том, что вы и так видели";}},
+  crystals:{ru:"друза",note:"кристаллы растут прямо из породы",
+           give:(r,d)=>{const n=4+Math.floor(r()*7+d*5);
+             return addRes("crystal",n)?("кристаллы ×"+n):"трюм полон";}},
+  ring:   {ru:"ускоритель",note:"кольцо разгоняло что-то тяжёлое",
+           give:(r,d)=>{const n=2+Math.floor(r()*4);
+             return addRes("iridium",n)?("иридий ×"+n):"трюм полон";}},
+  elevator:{ru:"космический лифт",note:"трос уходит выше облаков",
+           give:(r,d)=>{G.data+=24;return "записи подъёмника · +24 данных";}},
+  monolith:{ru:"монолит",note:"поверхность отвечает на касание",
+           give:(r,d)=>{G.data+=18;return "снимок поверхности · +18 данных";}},
+  anomaly:{ru:"аномалия",note:"приборы врут по-разному каждый раз",
+           give:(r,d)=>{G.data+=14;return "замеры · +14 данных";}}
+};
+function poiInspect(q){
+  if(!q)return false;
+  if(G.poiSeen&&G.poiSeen[q.seed])return false;
+  if(!G.poiSeen)G.poiSeen={};
+  G.poiSeen[q.seed]=1;
+  const F=POI_FIND[q.k]||POI_FIND.anomaly;
+  const r=rng(hashi(q.seed,0xF17D,3)),d=sysDanger(G.sx,G.sy);
+  const got=F.give(r,d);
+  const base=8+Math.floor(d*10);
+  G.data+=base;
+  tell("tech",F.ru+": "+got+" · +"+base+" данных",
+       q.ru+"\n"+F.note+"\n"+got+"\n+"+base+" данных");
+  logAdd("tech","Осмотр: "+F.ru+" · "+got);
+  /* любой памятник — аномалия для того, кто его не строил */
+  nodeDrop("в аномалии",.4+d*.6,hashi(q.seed,0xA0,3));
+  return true;
+}

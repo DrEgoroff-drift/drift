@@ -2295,3 +2295,56 @@ TEST_SUITES.push(()=>suite("достопримечательности осма�
   G.poiSeen={};applySave(snap);
   ok(G.poiSeen[q.seed],"осмотренное помнится после загрузки");
 }));
+
+/* ── у каждого памятника свой ответ ── */
+TEST_SUITES.push(()=>suite("памятники: осмотр отличается по типу",()=>{
+  resetWorld();landOnTestPlanet();
+  /* таблица покрывает все виды POI: иначе часть форм даёт «аномалию» молча */
+  for(const K of POI_KINDS)ok(POI_FIND[K.k],"у «"+K.ru+"» есть свой осмотр");
+  for(const k in POI_FIND){
+    ok(POI_KINDS.some(K=>K.k===k),"«"+k+"» — настоящий вид POI, а не выдумка таблицы");
+    ok(typeof POI_FIND[k].give==="function","у «"+k+"» осмотр что-то даёт");
+  }
+  /* ни один осмотр не выдаёт кредитов: памятник не банкомат */
+  const cr=G.credits;
+  const kinds=Object.keys(POI_FIND);
+  kinds.forEach((k,i)=>{
+    G.poiSeen={};G.cargo.techcomp=0;G.cargo.crystal=0;G.cargo.iridium=0;
+    const q={k,ru:POI_FIND[k].ru.toUpperCase(),seed:1000+i};
+    ok(poiInspect(q),"«"+k+"» осмотрен");
+    eq(poiInspect(q),false,"дважды один памятник не осматривается");
+  });
+  eq(G.credits,cr,"осмотры не дали ни кредита");
+  /* конкретные ответы: завод — техкомпоненты, друза — кристаллы, врата — топливо */
+  G.poiSeen={};G.cargo.techcomp=0;
+  poiInspect({k:"factory",ru:"ЗАВОД",seed:77});
+  ok(G.cargo.techcomp>0,"завод отдал техкомпоненты: "+G.cargo.techcomp);
+  G.poiSeen={};G.cargo.crystal=0;
+  poiInspect({k:"crystals",ru:"КРИСТАЛЛЫ",seed:78});
+  ok(G.cargo.crystal>0,"друза отдала кристаллы: "+G.cargo.crystal);
+  G.poiSeen={};G.fuel=10;
+  poiInspect({k:"portal",ru:"ВРАТА",seed:79});
+  ok(G.fuel>10,"врата долили топлива: "+G.fuel);
+  G.poiSeen={};G.relicHint=null;
+  poiInspect({k:"temple",ru:"ХРАМ",seed:80});
+  ok(G.relicHint,"храм дал координаты");
+}));
+
+/* ── репутация в цене железа ── */
+TEST_SUITES.push(()=>suite("репутация: железо в доке тоже дешевеет",()=>{
+  resetWorld();
+  const sys=(function(){for(let dx=-8;dx<=8;dx++)for(let dy=-8;dy<=8;dy++){
+    if(!starAt(dx,dy))continue;const s=getSystem(dx,dy);if(s.station)return s;}return null;})();
+  G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;G.st=sys.station;G.rep={};
+  const p0=stationParts(sys)[0];
+  ok(p0,"в доке есть части");
+  const base=p0.price,shipBase=repShipMul(sys);
+  repAdd(5);
+  const p1=stationParts(sys)[0];
+  ok(p1.price<base,"своим части дешевле: "+base+" → "+p1.price);
+  ok(repShipMul(sys)<shipBase,"и корпуса тоже");
+  /* но скидка на железе меньше, чем на работе: станок вас не помнит */
+  ok(1-repPartMul(sys)<1-repRepairMul(),"скидка на железе меньше, чем на ремонте");
+  repAdd(-10);
+  ok(stationParts(sys)[0].price>base,"у тех, кто вас не ждёт, дороже");
+}));
