@@ -365,7 +365,8 @@ function crewPayroll(c,min){
     c.debt=Math.max(0,c.debt-min*crewPay(c)*.3);
     /* жилая часть дома: между рейсами человек живёт не в кабине, и мораль
        возвращается вдвое быстрее (12j) */
-    if(c.debt<=0){c.warned=false;c.morale=Math.min(1,c.morale+min*.03*homeMoraleMul());}
+    if(c.debt<=0){c.warned=false;
+      c.morale=Math.min(1,c.morale+min*.03*homeMoraleMul()*yachtMoraleMul());}
   }
   /* опыт превращается в прибавку: старый дешёвый работник дорожает сам */
   const step=Math.floor((c.xp||0)/50);

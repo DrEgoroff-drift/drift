@@ -31,7 +31,7 @@ function snapshot(){
     drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
-    occ:G.occ,freed:G.freed,
+    occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -76,6 +76,7 @@ function applySave(s){
      к системе. Старые записи грузятся с пустым фронтом — он нарастёт сам */
   G.occ=(s.occ&&typeof s.occ==="object")?s.occ:{};
   G.freed=s.freed|0;
+  G.occCalm=(s.occCalm&&typeof s.occCalm==="object")?s.occCalm:{};
   G.drones=Array.isArray(s.drones)?s.drones:[];
   G.droneInventory=Math.max(0,s.droneInventory|0);
   /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».

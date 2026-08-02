@@ -167,3 +167,20 @@ function homeRebuild(id){
   say("Перебрано\n"+np.name+"\n"+np.aff.map(affLabel).join("\n"));
   return np;
 }
+/* ── яхта у причала ──
+   Люксовая яхта не окупается ничем — это её замысел. Но стоять мёртвым грузом
+   она не должна: на неё смотрят. Пока яхта в ангаре, наёмники отдыхают между
+   рейсами лучше (мораль возвращается быстрее), а с достроенным причалом дом
+   держит её на виду, и эффект сильнее — это единственное, что яхта «делает»,
+   и оно про людей, а не про кредиты. */
+function yachtOwned(){
+  for(const id in G.owned){
+    const S=shipData(id);
+    if(S&&(S.hcls==="yacht"||(typeof shipTier==="function"&&shipTier(S)==="luxe")))return S;
+  }
+  return null;
+}
+function yachtMoraleMul(){
+  if(!yachtOwned())return 1;
+  return homeHas("dock")?1.5:1.25;
+}
