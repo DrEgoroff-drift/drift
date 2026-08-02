@@ -63,3 +63,7 @@ function repLine(sys){
 function fuelPriceHere(){
   return Math.max(1,Math.round((G.st?G.st.fuelPrice:10)*repFuelMul()));
 }
+/* железо в доке: части и корпуса. Скидка вдвое меньше, чем на работе, — станок
+   не помнит вас лично, а продавец помнит наполовину */
+function repPartMul(sys){return 1-repAt(sys)*.03;}
+function repShipMul(sys){return 1-repAt(sys)*.02;}

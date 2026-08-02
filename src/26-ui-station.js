@@ -118,11 +118,13 @@ function shipRow(id,S){
     " · трюм "+S.cargo+" · бак "+S.fuel+" · корпус "+S.hull+"</s>"));
   if(mine)r.appendChild(el("div","qt","В РЕЙСЕ"));
   else{
-    const b=el("button","act"+(own?"":" gold"),own?"ПЕРЕСЕСТЬ":S.price.toLocaleString("ru")+" кр");
-    b.disabled=!own&&G.credits<S.price;
+    /* цена корпуса с поправкой на то, как к вам тут относятся (12k-rep) */
+    const pay=Math.round(S.price*repShipMul(G.sys));
+    const b=el("button","act"+(own?"":" gold"),own?"ПЕРЕСЕСТЬ":pay.toLocaleString("ru")+" кр");
+    b.disabled=!own&&G.credits<pay;
     b.onclick=()=>{
-      if(!own){G.credits-=S.price;G.owned[id]=true;
-        logAdd("money","Куплен корабль «"+S.ru+"» за "+S.price.toLocaleString("ru")+" кр");
+      if(!own){G.credits-=pay;G.owned[id]=true;
+        logAdd("money","Куплен корабль «"+S.ru+"» за "+pay.toLocaleString("ru")+" кр");
         /* вторая строка «Ключа от верфи»: уникальный корпус приходит не пустым */
         if(relicDeep("key")&&id[0]==="u"){
           const seed=hashi(S.seed||0,0x4EF0,3);
