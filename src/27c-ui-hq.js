@@ -56,9 +56,14 @@ function renderCantina(){
   if(free.length)$body.appendChild(el("div","sec",
     cantSel?"ТКНИТЕ ПО НЕМУ ЕЩЁ РАЗ ИЛИ ПО ДРУГОМУ — ВЕРНЁТЕСЬ В ЗАЛ"
            :"ТКНИТЕ ПО ЧЕЛОВЕКУ В ЗАЛЕ — ОТКРОЕТСЯ ЕГО КАРТОЧКА"));
-  /* ── зал ── */
-  if(free.length)cantinaScene(free);
+  /* ── зал ──
+     Кандидаты у стойки, дела за столиками: рисуются одной сценой, потому что
+     это одно помещение. Выбор в зале фильтрует то, что раскрывается ниже. */
+  const deals=stationDeals(G.sys).filter(d=>!dealTaken(d.key));
+  const dealSel=cantSel&&cantSel.indexOf("deal:")===0?cantSel.slice(5):null;
+  if(free.length||deals.length)cantinaScene(free,deals);
   for(const m of free){
+    if(dealSel)break;                          // выбрали столик — люди у стойки ждут
     if(cantSel&&m.id!==cantSel)continue;      // выбрали человека — показываем его
     const R=MGR_ROLES[m.role],taken=mgrTaken(m.role),fee=mgrFee(m);
     const spoke=!!G.cantina.talked[m.id];
@@ -89,11 +94,11 @@ function renderCantina(){
   /* ── за столиками ──
      Не найм и не поручение: люди со своими делами. Всё, что здесь делает игрок, —
      отвечает; работа уже сделана кем-то другим (27g-deals). */
-  const deals=stationDeals(G.sys).filter(d=>!dealTaken(d.key));
   if(deals.length){
     $body.appendChild(el("div","sec","ЗА СТОЛИКАМИ · ЛЮДИ СО СВОИМИ ДЕЛАМИ · "+
       "ОТВЕТ СТОИТ ДЕНЕГ, ВРЕМЕНИ ИЛИ ЧУЖОЙ СУДЬБЫ"));
     for(const d of deals){
+      if(dealSel&&d.key!==dealSel)continue;   // подошли к столику — говорим с ним
       const D=d.def;
       $body.appendChild(el("div","row","<div class='nm'><b style='color:#f2b25c'>"+
         D.ru+"</b><s>"+d.name+" · "+D.who+
@@ -115,7 +120,7 @@ function renderCantina(){
    rAF, пока канва жива и вкладка та же, — иначе цикл продолжал бы крутиться
    после ухода со вкладки и жёг бы кадр впустую. */
 let cantSel=null, cantHover=null;
-function cantinaScene(list){
+function cantinaScene(list,deals){
   const wrap=el("div","");
   wrap.style.cssText="margin:6px 0 10px;line-height:0;position:relative";
   const cn=document.createElement("canvas");
@@ -127,7 +132,11 @@ function cantinaScene(list){
     "border:1px solid rgba(120,150,170,.25);cursor:pointer;touch-action:manipulation";
   wrap.appendChild(cn);
   $body.appendChild(wrap);
-  if(cantSel&&!list.some(m=>m.id===cantSel))cantSel=null;
+  /* выбор мог указывать на человека, которого уже наняли, или на дело,
+     на которое уже ответили: и то и другое просто снимается */
+  if(cantSel&&cantSel.indexOf("deal:")!==0&&!list.some(m=>m.id===cantSel))cantSel=null;
+  if(cantSel&&cantSel.indexOf("deal:")===0&&
+     !(deals||[]).some(d=>("deal:"+d.key)===cantSel))cantSel=null;
   let hits=[];
   const pick=ev=>{
     const r=cn.getBoundingClientRect();
@@ -149,7 +158,7 @@ function cantinaScene(list){
     const c=cn.getContext("2d");
     c.setTransform(dpr,0,0,dpr,0,0);
     hits=drawCantinaRoom({width:cn.width/dpr,height:cn.height/dpr,getContext:()=>c},
-                          list,cantSel,cantHover);
+                          list,cantSel,cantHover,deals);
     requestAnimationFrame(frame);
   };
   frame();

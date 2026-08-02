@@ -29,7 +29,7 @@ function cantStyle(){
   return S;
 }
 /* ── сцена ── */
-function drawCantinaRoom(cn,list,sel,hover){
+function drawCantinaRoom(cn,list,sel,hover,deals){
   const c=cn.getContext("2d");
   /* Рисуем в СВОИХ единицах: комната высотой 200, ширина — сколько дала панель.
      Без этого на широком экране зал растягивался в ленту, а люди в нём
@@ -37,12 +37,12 @@ function drawCantinaRoom(cn,list,sel,hover){
   c.clearRect(0,0,cn.width,cn.height);
   const k=cn.height/200, H2=200, W2=cn.width/k;
   c.save();c.scale(k,k);
-  const hits=cantRoomBody(c,W2,H2,list,sel,hover);
+  const hits=cantRoomBody(c,W2,H2,list,sel,hover,deals);
   c.restore();
   for(const h of hits){h.x*=k;h.y*=k;h.w*=k;h.h*=k;}
   return hits;
 }
-function cantRoomBody(c,W2,H2,list,sel,hover){
+function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   const S=cantStyle(),seed=(G.sys.seed^0xCA47)>>>0,R=rng(seed);
   const acc=hex2rgb(S.acc);
   const fy=H2-20;                                  // пол
@@ -190,6 +190,9 @@ function cantRoomBody(c,W2,H2,list,sel,hover){
       c.textAlign="left";
     }
   });
+  /* столики с делами — на переднем плане, после стойки: подойти к ним можно,
+     только пройдя зал, и порядок рисования говорит ровно это */
+  for(const h of cantTables(c,W2,fy,cy,deals,sel,hover,acc,seed))hits.push(h);
   /* ── воздух: пыль в конусах и виньетка ── */
   c.save();c.globalCompositeOperation="lighter";
   for(let i=0;i<26;i++){
@@ -396,4 +399,66 @@ function cantProps(c,props,W2,fy,cy,seed,acc){
       c.restore();
     }
   }
+}
+/* ── столики с делами ──
+   За стойкой сидят те, кого нанимают; за столиками — те, у кого своё дело
+   (`27g-deals`). Разные люди должны и располагаться по-разному: наём — у стойки
+   лицом к бармену, дело — в глубине зала, за отдельным столом, куда подходят
+   поговорить. Столик рисуется ПОСЛЕ стойки и ближе к нижней кромке: он на
+   переднем плане, и это единственное, что отделяет его от «зала за спиной».  */
+function cantTables(c,W2,fy,cy,deals,sel,hover,acc,seed){
+  const hits=[];
+  if(!deals||!deals.length)return hits;
+  const n=Math.min(3,deals.length);
+  for(let i=0;i<n;i++){
+    const d=deals[i],id="deal:"+d.key;
+    const on=sel===id,hv=hover===id;
+    /* столики стоят на переднем плане слева направо, но не под стойкой */
+    /* столики подняты над нижней кромкой и разнесены шире: у самого низа
+       у сидящих обрезало плечи, а метки налезали на стойку */
+    const x=W2*(.14+i*.34)+((seed>>(i*4))&9);
+    const y=fy-10;
+    const R=rng(hashi(d.seed||1,i*97,0x7AB));
+    /* тень и ножка: стол должен стоять, а не висеть */
+    c.fillStyle="rgba(0,0,0,.4)";
+    c.beginPath();c.ellipse(x,y+3,26,5,0,0,TAU);c.fill();
+    if(on||hv){
+      const g2=c.createRadialGradient(x,y-34,2,x,y-34,54);
+      g2.addColorStop(0,rgba(acc,on?.30:.16));g2.addColorStop(1,rgba(acc,0));
+      c.fillStyle=g2;c.beginPath();c.arc(x,y-34,54,0,TAU);c.fill();
+    }
+    /* человек сидит ЗА столом: рисуется первым, стол перекроет ему низ */
+    /* за столиком сидят в тени зала: тон темнее, чем у стойки, — иначе это
+       читается как ещё один кандидат на найм */
+    cantFigure(c,x,y-10,[92,84,76],G.t*.022+i*1.9,null,0);
+    c.fillStyle="rgba(38,32,26,.98)";                 // ножка
+    c.fillRect(x-3,y-14,6,14);
+    c.fillStyle="rgba(58,46,36,.99)";                 // столешница
+    c.beginPath();c.ellipse(x,y-15,24,7,0,0,TAU);c.fill();
+    c.fillStyle="rgba(210,190,160,.18)";
+    c.beginPath();c.ellipse(x,y-16.4,24,7,0,0,TAU);c.fill();
+    /* что на столе: кружка и то, ради чего пришли, — бумага, ящик или колода */
+    c.fillStyle="rgba(190,215,225,.22)";c.fillRect(x+8,y-24,7,9);
+    c.fillStyle="rgba(230,244,250,.22)";c.fillRect(x+8,y-24,1.4,9);
+    if(R()<.5){                                        // бумаги
+      c.fillStyle="rgba(226,220,200,.7)";
+      c.save();c.translate(x-9,y-19);c.rotate(-.2);c.fillRect(-7,-4,14,8);c.restore();
+    }else{                                             // ящик
+      c.fillStyle="rgba(70,62,52,.95)";c.fillRect(x-16,y-25,13,10);
+      c.fillStyle="rgba(255,255,255,.07)";c.fillRect(x-16,y-25,13,1.6);
+    }
+    /* метка над столиком: у дела есть имя, и его видно из зала */
+    c.font="8px ui-monospace,monospace";c.textAlign="center";
+    const lab=d.def.ru.toUpperCase();
+    const tw=c.measureText(lab).width;
+    const ly=y-58;
+    c.fillStyle="rgba(6,10,16,.85)";c.fillRect(x-tw/2-5,ly-9,tw+10,13);
+    c.strokeStyle=rgba(acc,on?.8:.45);c.lineWidth=1;
+    c.strokeRect(x-tw/2-4.5,ly-8.5,tw+9,12);
+    c.fillStyle=on?"#e8f4f2":"rgba(226,214,190,.85)";
+    c.fillText(lab,x,ly);
+    c.textAlign="left";
+    hits.push({id,x:x-30,y:y-60,w:60,h:62});
+  }
+  return hits;
 }
