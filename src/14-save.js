@@ -32,7 +32,8 @@ function snapshot(){
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
-    fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,log:G.log,ts:Date.now()};
+    fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,
+    nodes:G.nodes,crowns:G.crowns,log:G.log,ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
@@ -81,6 +82,9 @@ function applySave(s){
   G.mines=(s.mines&&typeof s.mines==="object")?s.mines:{};
   /* журнал дел: обещания игрока переживают перезаход */
   G.quests=Array.isArray(s.quests)?s.quests:[];
+  /* найденные узлы и собранные венцы: в записи только номера */
+  G.nodes=(s.nodes&&typeof s.nodes==="object")?s.nodes:{};
+  G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
   G.drones=Array.isArray(s.drones)?s.drones:[];
   G.droneInventory=Math.max(0,s.droneInventory|0);
   /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».

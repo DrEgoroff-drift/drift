@@ -352,6 +352,8 @@ function renderTab(){
     $body.appendChild(r);
   }
   else if(tab==="lab"){
+    /* наборы узлов идут первыми: это долгая цель, а наука — текущая работа */
+    if(nodeCount()>0||Object.keys(G.crowns||{}).length)nodesRender();
     $body.appendChild(el("div","sec","ДАННЫЕ: "+G.data+
       " · ИСТОЧНИКИ — НОВЫЕ ПЛАНЕТЫ (+6) И ВИДЫ (+9)"));
     for(const k in TECH){

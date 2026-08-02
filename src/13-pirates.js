@@ -160,6 +160,8 @@ function killPirate(p){
   earn(bounty,"bounty");G.kills=(G.kills|0)+1;
   /* сбитый в занятой системе идёт в счёт её освобождения */
   occKill(G.sx,G.sy);
+  /* узел с обломков: редкая находка, а не вторая валюта (05a-nodes) */
+  nodeDrop("с пиратов",sysDanger(G.sx,G.sy),hashi(p.seed,0x40DE,Date.now()&0xffff));
   const loot=pick(TRADE_KEYS,r),   /* редкое с обломков не падает: у него свои способы добычи */got=addRes(loot,2+Math.floor(r()*7));
   const d=sysDanger(G.sx,G.sy);
   /* обломок с частью — не в трюм сразу, а контейнером: у боя своя петля «убил → собрал» */
