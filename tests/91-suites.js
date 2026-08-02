@@ -2101,3 +2101,47 @@ TEST_SUITES.push(()=>suite("журнал: принял, записалось, е
   G.quests=[];applySave(snap);
   ok(questAll().length>=2,"журнал сохранился");
 }));
+
+/* ── тысяча узлов и венцы ── */
+TEST_SUITES.push(()=>suite("узлы: тысяча находок и венец за набор",()=>{
+  resetWorld();
+  eq(NODE_N,1000,"узлов ровно тысяча");
+  eq(NODE_FAMS.length*NODE_PER_FAM,1000,"десять наборов по сто");
+  /* имена уникальны: «узел №417» — это не предмет */
+  const names={};let dup=0;
+  for(const n of NODES){if(names[n.ru])dup++;names[n.ru]=1;}
+  eq(dup,0,"имена не повторяются");
+  /* каждый грейд встречается, рядовых больше несбыточных */
+  const byG={};for(const n of NODES)byG[n.grade]=(byG[n.grade]|0)+1;
+  for(const g of NODE_GRADES)ok(byG[g.id]>0,"грейд «"+g.ru+"» есть: "+byG[g.id]);
+  ok(byG.plain>byG.never*4,"рядовых кратно больше несбыточных");
+  /* узел сам по себе ничего не меняет: сила приходит только с венцом */
+  const before=stat().dmg;
+  const pyre=NODES.filter(n=>n.fam==="pyre");
+  for(let i=0;i<50;i++)nodeFound(pyre[i]);
+  eq(nodeCount("pyre"),50,"полсотни узлов набора найдено");
+  eq(stat().dmg,before,"полнабора не даёт ничего");
+  eq(crownReady("pyre"),false,"венец ещё не готов");
+  eq(crownForge("pyre"),false,"и не собирается раньше срока");
+  /* полный набор — венец, и он работает через stat, как модули и части */
+  for(const n of pyre)nodeFound(n);
+  eq(nodeCount("pyre"),NODE_PER_FAM,"набор собран целиком");
+  ok(crownReady("pyre"),"венец готов к сборке");
+  ok(crownForge("pyre"),"венец собран");
+  eq(crownForge("pyre"),false,"дважды один венец не куётся");
+  ok(stat().dmg>before,"венец «Костра» усилил орудие: "+before.toFixed(1)+" → "+stat().dmg.toFixed(1));
+  /* найденный узел не находится второй раз */
+  eq(nodeFound(pyre[0]),false,"повторная находка не считается");
+  /* узлы падают из мира, но редко: сто бросков на спокойном секторе дают немного */
+  G.nodes={};
+  let got=0;
+  for(let i=0;i<200;i++)if(nodeRoll("в шахте",.1,hashi(i,7,3)))got++;
+  ok(got>0,"что-то падает: "+got+" из 200");
+  ok(got<70,"но это находки, а не валюта: "+got+" из 200");
+  /* сохранение: в записи только номера */
+  const snap=JSON.parse(JSON.stringify(snapshot()));
+  ok(JSON.stringify(snap.nodes).length<40000,"запись компактна");
+  G.nodes={};G.crowns={};
+  applySave(snap);
+  ok(crownOwned("pyre"),"венец пережил сохранение");
+}));

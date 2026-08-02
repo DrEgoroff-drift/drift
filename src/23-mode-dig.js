@@ -179,6 +179,10 @@ function updateDig(dt){
     /* по вертикальному ходу остаётся лесенка: видно, где можно подняться обратно */
     if(dy){cell.ladder=true;digCell(D,D.col,D.row).ladder=true;}
     D.col=tc;D.row=tr2;D.move=11;D.deepest=Math.max(D.deepest,D.row);
+    /* чем глубже ствол, тем вероятнее узел: глубина и есть та цена, которую
+       за находку платят (05a-nodes) */
+    nodeDrop("в шахте",clamp(D.row/60,0,1)+sysDanger(G.sx,G.sy)*.4,
+      hashi(D.col,D.row,0x0DE7));
     if(cell.res){
       const got=addRes(cell.res,Math.round(cell.amount*st.refine));
       if(got)say("Добыто: "+RES[cell.res].ru+" ×"+got);

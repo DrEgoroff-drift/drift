@@ -271,6 +271,8 @@ function updateRaid(dt){
           if(f.hp<=0){
             logAdd("kill","На абордаже: "+(FOE_KINDS[f.kind]||FOE_KINDS.grunt).ru+" уничтожен");
             S.bag.data+=f.boss?12:3;
+            nodeDrop("в рейде на базу",sysDanger(G.sx,G.sy)+(f.baron?.5:0),
+              hashi(f.seed,0x9D,Date.now()&0xffff));
             sfx("boom",{v:.4});
           }else sfx("hit",{v:.3});
           break;
