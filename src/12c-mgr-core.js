@@ -221,7 +221,8 @@ function mgrDroneRate(){
 }
 function mgrBuildDiscount(){return mgrPerkOf("keep","cheap")?.8:1;}
 function mgrHireMul(){
-  let v=1;
+  /* репутация на станции: у тех, кто вас знает, наниматься дешевле (12k-rep) */
+  let v=(typeof repHireMul==="function")?repHireMul():1;
   for(const m of G.mgrs){
     if(mgrHas(m,"legend"))v*=mgrTrait("legend").hire;
     if(mgrPerk(m,"poach")||mgrPerk(m,"cheaphire"))v*=.7;

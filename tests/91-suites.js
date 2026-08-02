@@ -2192,3 +2192,58 @@ TEST_SUITES.push(()=>suite("кантина: дела с ответом и отл
   G.dealsDone={};applySave(snap);
   ok(Object.keys(G.dealsDone).length>0,"отвеченные дела сохранились");
 }));
+
+/* ── репутация и хвост набора ── */
+TEST_SUITES.push(()=>suite("репутация станции и последние узлы",()=>{
+  resetWorld();
+  G.rep={};G.credits=1e6;
+  const sys=(function(){for(let dx=-8;dx<=8;dx++)for(let dy=-8;dy<=8;dy++){
+    if(!starAt(dx,dy))continue;const s=getSystem(dx,dy);if(s.station)return s;}return null;})();
+  ok(sys,"нашлась станция");
+  G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;G.st=sys.station;
+  eq(repAt(),0,"сначала вы им никто");
+  const fuel0=fuelPriceHere(),rep0=repairCost(),hire0=mgrHireMul();
+  repAdd(3);
+  eq(repAt(),3,"репутация выросла");
+  ok(fuelPriceHere()<=fuel0,"топливо не дороже: "+fuel0+" → "+fuelPriceHere());
+  ok(repairCost()<rep0,"ремонт дешевле");
+  ok(mgrHireMul()<hire0,"наниматься дешевле");
+  repAdd(-8);
+  eq(repAt(),REP_MIN,"шкала не уходит за край");
+  ok(fuelPriceHere()>fuel0,"у тех, кто вас не ждёт, топливо дороже");
+  ok(repWord(repAt()).ru.length>0,"состояние читается словом: "+repWord(repAt()).ru);
+  /* репутация локальна: соседняя станция вас не знает */
+  const other={sx:sys.sx+1,sy:sys.sy+1,station:{name:"другая"}};
+  eq(repAt(other),0,"на другой станции репутации нет");
+  /* освобождение системы красит имя */
+  G.rep={};G.occ={};occSet(sys.sx,sys.sy,1);
+  for(let i=0;i<occInfo(1).need;i++)occKill(sys.sx,sys.sy);
+  ok(repAt()>0,"снявших блокаду помнят: "+repAt());
+  /* последние три узла набора падают только в логове */
+  G.nodes={};
+  const fam=NODE_FAMS[0].id;
+  const mine=NODES.filter(n=>n.fam===fam&&n.where==="в шахте");
+  ok(mine.length>3,"в семье есть шахтные узлы");
+  /* закрываем всё, кроме трёх последних */
+  for(const n of NODES)if(n.fam===fam)nodesHave()[n.id]=1;
+  const tail=NODES.filter(n=>n.fam===fam&&n.where==="в шахте").slice(0,3);
+  for(const n of tail)delete nodesHave()[n.id];
+  /* правило узкое: вне логова не выпадают ИМЕННО хвостовые узлы почти
+     закрытой семьи; чужие семьи продолжают падать где падали */
+  const tailIds={};for(const n of tail)tailIds[n.id]=1;
+  let outsideTail=0,inLairTail=0;
+  for(let i=0;i<400;i++){
+    const n=nodeRoll("в шахте",1,hashi(i,3,9),0);
+    if(n&&tailIds[n.id])outsideTail++;
+  }
+  for(let i=0;i<400;i++){
+    const n=nodeRoll("в шахте",1,hashi(i,3,9),1);
+    if(n&&tailIds[n.id])inLairTail++;
+  }
+  eq(outsideTail,0,"хвост набора вне логова не выпадает");
+  ok(inLairTail>0,"а в логове выпадает: "+inLairTail+" из 400");
+  /* сохранение репутации */
+  const snap=JSON.parse(JSON.stringify(snapshot()));
+  G.rep={};applySave(snap);
+  ok(Object.keys(G.rep).length>0,"репутация сохранилась");
+}));

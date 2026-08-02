@@ -157,6 +157,8 @@ function dealAnswer(d,i){
   if(opt.cost){G.credits-=opt.cost;}
   if(opt.gain){earn(opt.gain,"deal");}
   if(opt.data){G.data+=opt.data;}
+  /* поступок стоит отношения: поручиться — рискнуть именем, отказать — ничего */
+  if(opt.rep)repAdd(opt.rep);
   tell("","«"+d.name+"»: "+opt.said,d.name+"\n— "+opt.said);
   if(opt.later){
     const L=opt.later;
@@ -188,6 +190,8 @@ function dealsTick(){
     if(R.hull)G.hull=Math.max(1,G.hull+R.hull);
     if(R.crew&&typeof crewGift==="function")crewGift();
     if(R.node&&typeof nodeDrop==="function")nodeDrop(R.node,.6,hashi(d.at,7,3));
+    /* чем кончилось — тем и запомнят: удачное дело красит имя, провал портит */
+    repAdd(good?1:-1);
     if(good)questDone(d.key,R.say);else questFail(d.key,R.say);
     tell(good?"good":"warn",R.say,R.say);
   }
