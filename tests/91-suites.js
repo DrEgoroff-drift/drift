@@ -2010,3 +2010,50 @@ TEST_SUITES.push(()=>suite("очаг подавлен, логово, яхта",(
   G.home={turn:0,tier:HOME_TIERS.length,sx:0,sy:0,made:0,garage:[],showcase:{},trophies:[]};
   ok(yachtMoraleMul()>noDock,"с причалом дома эффект сильнее");
 }));
+
+/* ── шахта остаётся выкопанной, постройки видны с земли ── */
+TEST_SUITES.push(()=>suite("шахта помнит выработку",()=>{
+  resetWorld();landOnTestPlanet();
+  enterDig();
+  const D=G.dig;
+  ok(D,"спустились в шахту");
+  /* копаем несколько ячеек руками: просто помечаем — важна персистентность */
+  for(let r=1;r<=4;r++){const c=digCell(D,0,r);c.dug=true;c.res=null;}
+  D.deepest=4;
+  const p=D.p;
+  exitDig();
+  ok(G.mines&&G.mines[mineKey(p)],"выработка записана");
+  eq(G.mines[mineKey(p)].dug.length,5,"пять ячеек: устье и четыре вниз");
+  /* спустились снова — ствол на месте, порода не отросла */
+  enterDig();
+  eq(G.dig.deepest,4,"глубина помнится");
+  for(let r=1;r<=4;r++)ok(digCell(G.dig,0,r).dug,"ячейка "+r+" по-прежнему выкопана");
+  ok(!digCell(G.dig,3,7).dug,"нетронутая порода осталась породой");
+  /* руду из выкопанной ячейки второй раз не выносят */
+  for(let r=1;r<=4;r++)eq(digCell(G.dig,0,r).res,null,"в выработке руды нет");
+  exitDig();
+  /* сохранение переживает запись и загрузку */
+  const snap=JSON.parse(JSON.stringify(snapshot()));
+  G.mines={};
+  applySave(snap);
+  ok(G.mines[mineKey(p)],"выработка пережила сохранение");
+}));
+
+TEST_SUITES.push(()=>suite("постройки видны с земли",()=>{
+  resetWorld();landOnTestPlanet();
+  eq(builtHere().length,0,"пока ничего не построено");
+  G.bases[G.sx+","+G.sy]={cells:{a:1,b:1}};
+  const b=builtHere();
+  eq(b.length,1,"база видна на планете");
+  eq(b[0].kind,"base","это база");
+  G.home={turn:0,tier:3,sx:G.sx,sy:G.sy,made:0,garage:[],showcase:{},trophies:[]};
+  eq(builtHere().length,2,"и дом рядом");
+  /* место постройки детерминировано: дом не бегает по планете */
+  const s1=builtSpot(G.surf.tr,G.surf.p,"home");
+  const s2=builtSpot(G.surf.tr,G.surf.p,"home");
+  eq(s1.x,s2.x,"дом всегда на одном месте");
+  ok(builtSpot(G.surf.tr,G.surf.p,"base").x!==s1.x,"база стоит не там же, где дом");
+  /* дом в другой системе на этой планете не показывается */
+  G.home.sx=G.sx+3;
+  eq(builtHere().length,1,"чужая система — дома здесь нет");
+}));
