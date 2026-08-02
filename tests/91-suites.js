@@ -1919,3 +1919,59 @@ TEST_SUITES.push(()=>suite("флот: сто корпусов, тиры и ря�
   ok(yard.some(id=>FLEET[id].price<9000),"в доке всегда есть дешёвый корпус");
   eq(stationFleet(sys).join(),yard.join(),"ряд детерминирован: тот же док — тот же ряд");
 }));
+
+/* ── пираты берут системы, игрок отбивает ── */
+TEST_SUITES.push(()=>suite("фронт пиратов: занять и отбить",()=>{
+  resetWorld();
+  G.occ={};G.freed=0;
+  const sys=(function(){for(let dx=-9;dx<=9;dx++)for(let dy=-9;dy<=9;dy++){
+    if(!starAt(dx,dy))continue;const s=getSystem(dx,dy);if(s.station)return s;}return null;})();
+  ok(sys,"нашлась система со станцией");
+  eq(occLvl(sys.sx,sys.sy),0,"сначала свободна");
+  /* занятость отнимает службы и роняет цену — это и есть «занято» */
+  const free=marketFor(sys).iron;
+  occSet(sys.sx,sys.sy,3);
+  eq(occLvl(sys.sx,sys.sy),3,"занята под завязку");
+  G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;
+  ok(marketFor(sys).iron<free,"скупщик занижает: "+marketFor(sys).iron+" против "+free);
+  eq(occService("yard"),false,"док закрыт");
+  eq(occService("fuel"),true,"заправка работает всегда");
+  ok(occExtraPirates(sys.sx,sys.sy)>=3,"стоит патруль");
+  /* отбивается боем: набили норму — уровень упал */
+  const need=occInfo(3).need;
+  for(let i=0;i<need;i++)occKill(sys.sx,sys.sy);
+  eq(occLvl(sys.sx,sys.sy),2,"уровень упал после нормы");
+  for(let i=0;i<occInfo(2).need;i++)occKill(sys.sx,sys.sy);
+  for(let i=0;i<occInfo(1).need;i++)occKill(sys.sx,sys.sy);
+  eq(occLvl(sys.sx,sys.sy),0,"система освобождена");
+  eq(G.freed,1,"счёт отбитых вырос");
+  eq(occService("yard"),true,"док снова открыт");
+  /* наступление идёт ОТКУДА-ТО: новая занятая система соседствует с прежней */
+  G.occ={};occSet(4,4,1);
+  G.occT=0;occTick();
+  const keys=Object.keys(G.occ);
+  ok(keys.length>=1,"фронт не исчез");
+  for(const k of keys){
+    const [x,y]=k.split(",").map(Number);
+    ok(Math.max(Math.abs(x-4),Math.abs(y-4))<=1,"занятое рядом с прежним: "+k);
+  }
+  /* сохранение: фронт переживает запись и загрузку */
+  const snap=JSON.parse(JSON.stringify(snapshot()));
+  G.occ={};G.freed=0;
+  applySave(snap);
+  ok(Object.keys(G.occ).length===keys.length,"фронт сохранился");
+  eq(G.freed,1,"счёт отбитых сохранился");
+}));
+
+/* ── ранги пиратов ── */
+TEST_SUITES.push(()=>suite("пираты: ранги растут с занятостью",()=>{
+  eq(PIRATE_RANKS.length,4,"четыре ранга");
+  ok(PIRATE_RANKS[3].bounty>PIRATE_RANKS[0].bounty*4,"за барона платят кратно больше");
+  ok(PIRATE_RANKS[3].hull>PIRATE_RANKS[1].hull,"барон живучее ветерана");
+  resetWorld();
+  G.occ={};
+  /* в занятой системе патруль плотнее, чем в такой же свободной */
+  const a=occExtraPirates(5,5);
+  occSet(5,5,3);
+  ok(occExtraPirates(5,5)>a,"под пиратами их больше");
+}));

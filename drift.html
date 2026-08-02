@@ -604,7 +604,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.35.0";
+const VER="0.36.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -2430,6 +2430,8 @@ const G={
     audio:{on:true,music:.6,sfx:.6,engine:.4}},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,
+  /* фронт пиратов и счёт отбитых систем: цель игры видна числом */
+  occ:{},occT:0,freed:0,
   pirates:[],shots:[],log:[],logNew:0,
   crew:[],allies:[],  // наёмники персистятся, их корабли в системе — эфемерны
   /* управляющие: четыре места, по одному на домен. Чертежи исследователя —
@@ -4982,7 +4984,9 @@ function marketFor(sys){
   const onRoute=F&&!F.stalled&&mgrPerk(F,"mono")&&F.route.indexOf(sys.sx+","+sys.sy)>=0;
   const boost=onRoute?1.18:1;
   for(const k of TRADE_KEYS)
-    prices[k]=Math.max(1,Math.round(base[k]*mul*boost*clamp(1+(m.pressure[k]||0),.4,1.8)));
+    /* занятая система: скупщик один, и он знает, что деваться некуда */
+    prices[k]=Math.max(1,Math.round(base[k]*mul*boost*occPriceMul(sys.sx,sys.sy)*
+                                    clamp(1+(m.pressure[k]||0),.4,1.8)));
   return prices;
 }
 function sellCargo(sys,k,qty){
@@ -5049,6 +5053,8 @@ function tickDrones(){
        выработки — быстрее оборот и меньше потерь, если точка кончится раньше */
     const rate=d.rate*(mgrPerkOf("keep","sell")?1.35:1);
     const yieldN=Math.floor(Math.min(d.pool,rate*elapsedMs/60000));
+    /* под блокадой дрону некуда сдавать: он копит, но не продаёт */
+    if(occLvl(d.sx,d.sy)>=2){d.soldAtMs=now;continue;}
     if(yieldN>0){
       const home=nearestStation(d.sx,d.sy);
       const rev=sellDroneYield(home,d.res,yieldN);
@@ -6289,10 +6295,211 @@ function homeRebuild(id){
   return np;
 }
 
+/* ══════════════ пираты берут системы ══════════════ */
+/* Пираты были погодой: сколько-то их встречается в опасных секторах, и всё.
+   Отношения с ними не менялись ни от чего — убил и полетел дальше.
+   Теперь у них есть карта: очаги расползаются по соседним системам, занятая
+   система теряет службы, а игрок может её отбить. Галактика перестала быть
+   фоном и стала тем, что можно потерять или вернуть.
+
+   ПРАВИЛА, КОТОРЫМ ПОДЧИНЁН ФАЙЛ:
+   1. Захват идёт ТОЛЬКО от соседства с уже занятым или от очага (пиратской
+      базы). Случайный захват на другом конце галактики читался бы шумом,
+      а не наступлением.
+   2. Занятость — это отнятые СЛУЖБЫ, а не отнятые числа. Под блокадой док не
+      строит корпуса, лаборатория молчит, дроны не сдают груз; цены падают,
+      потому что скупщик один и он знает, что деваться некуда.
+   3. Отбивается система тем же, чем игралась игра: боем в ней. Никакой
+      отдельной кнопки «освободить» — счётчик набивается сбитыми.
+   4. Всё персистентно и компактно: `G.occ` — разреженный объект по ключу
+      "sx,sy", как и всё привязанное к системе. */
+const OCC_MAX=3;
+const OCC_LVL=[
+  {ru:"спокойно"},
+  {ru:"шалят",   note:"патрули пиратов, скупщик занижает цену",   need:3, price:.90},
+  {ru:"блокада", note:"док и лаборатория закрыты, дроны не сдают",need:5, price:.78},
+  {ru:"под пиратами",note:"станция не работает, только топливо втридорога",need:8,price:.62}
+];
+/* Как быстро расползается: раз в столько миллисекунд игра бросает кости на
+   расширение. Медленно намеренно — это фон, а не таймер на шее. */
+const OCC_PERIOD=180000;
+function occInit(){return {};}
+function occKey(sx,sy){return sx+","+sy;}
+function occAt(sx,sy){
+  const o=G.occ&&G.occ[occKey(sx,sy)];
+  return o&&o.lvl>0?o:null;
+}
+function occLvl(sx,sy){const o=occAt(sx,sy);return o?o.lvl:0;}
+function occHere(){return occLvl(G.sx,G.sy);}
+function occInfo(lvl){return OCC_LVL[clamp(lvl|0,0,OCC_MAX)];}
+/* ── очаги ──
+   Пиратская база в поясе — это и есть очаг: пока она стоит, соседние системы
+   продолжают занимать. Разбитая база (её уже умеет `24a-mode-raid`) гасит
+   расширение вокруг себя, и это единственный способ остановить наступление
+   насовсем. */
+function occNest(sx,sy){
+  if(G.bases&&G.bases[occKey(sx,sy)])return false;      // ваша база — не очаг
+  const d=sysDanger(sx,sy);
+  if(d<.35)return false;
+  return rng(hashi(sx,sy,0x0CC5))()<d*.5;
+}
+function occSet(sx,sy,lvl){
+  if(!G.occ)G.occ=occInit();
+  const k=occKey(sx,sy);
+  if(lvl<=0){delete G.occ[k];return;}
+  const o=G.occ[k]||(G.occ[k]={lvl:0,kills:0,t:Date.now()});
+  o.lvl=Math.min(OCC_MAX,lvl);o.kills=0;o.t=Date.now();
+}
+/* ── наступление ──
+   Один бросок на такт: берём случайную занятую систему и пробуем расширить её
+   на соседа; если занятых нет, зажигаем очаг. Так наступление всегда идёт
+   ОТКУДА-ТО, и игрок видит фронт, а не сыпь по карте. */
+function occTick(){
+  if(!G.occ)G.occ=occInit();
+  const now=Date.now();
+  if(!G.occT)G.occT=now;
+  if(now-G.occT<OCC_PERIOD)return;
+  G.occT=now;
+  const keys=Object.keys(G.occ);
+  const r=rng(hashi(now&0xffffff,keys.length,0x9E55));
+  if(!keys.length){
+    /* первый очаг: далеко от центра, чтобы начало игры оставалось тихим */
+    for(let i=0;i<40;i++){
+      const sx=Math.round((r()*2-1)*22),sy=Math.round((r()*2-1)*22);
+      if(!starAt(sx,sy)||!occNest(sx,sy))continue;
+      occSet(sx,sy,1);
+      logAdd("warn","Пираты закрепились в секторе "+sx+":"+sy);
+      return;
+    }
+    return;
+  }
+  const from=keys[(r()*keys.length)|0].split(",").map(Number);
+  const o=G.occ[occKey(from[0],from[1])];
+  /* сперва укрепляются там, где уже стоят, и только потом ползут дальше:
+     иначе фронт расплывался пятном в один уровень на всю галактику */
+  if(o.lvl<OCC_MAX&&r()<.45){
+    occSet(from[0],from[1],o.lvl+1);
+    const sys=getSystem(from[0],from[1]);
+    logAdd("warn","«"+(sys.name||"")+"»: пираты усилились — "+occInfo(o.lvl).ru);
+    if(sys.station)tell("warn","Пираты усилились в системе «"+sys.name+"»",
+      "«"+sys.name+"»\n"+occInfo(o.lvl).ru+"\n"+occInfo(o.lvl).note);
+    return;
+  }
+  const dirs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]];
+  for(let i=0;i<8;i++){
+    const d=dirs[(r()*8)|0],nx=from[0]+d[0],ny=from[1]+d[1];
+    if(!starAt(nx,ny)||occLvl(nx,ny))continue;
+    /* обжитое сопротивляется: рядом со станцией захват идёт вдвое реже */
+    const sys=getSystem(nx,ny);
+    if(sys.station&&r()<.5)continue;
+    occSet(nx,ny,1);
+    logAdd("warn","Пираты пришли в «"+(sys.name||(nx+":"+ny))+"»");
+    return;
+  }
+}
+/* ── отбить ──
+   Считаются сбитые именно в этой системе. Набрал норму уровня — уровень падает.
+   Ноль — система свободна, и за это платят: не «наградой за квест», а тем, что
+   станция снова работает, плюс разовые призовые от неё. */
+function occKill(sx,sy){
+  const o=occAt(sx,sy);if(!o)return;
+  o.kills=(o.kills|0)+1;
+  const need=occInfo(o.lvl).need;
+  if(o.kills<need){
+    say("Отбито "+o.kills+" из "+need+"\nсистема ещё под ними");
+    return;
+  }
+  const lvl=o.lvl-1;
+  occSet(sx,sy,lvl);
+  const sys=getSystem(sx,sy);
+  if(lvl>0){
+    tell("good","«"+sys.name+"»: пиратов потеснили — "+occInfo(lvl).ru,
+         "Потеснили\n«"+sys.name+"»\n"+occInfo(lvl).ru);
+    return;
+  }
+  G.freed=(G.freed|0)+1;
+  const prize=sys.station?Math.round(2400+sysDanger(sx,sy)*9000):0;
+  if(prize)earn(prize,"free");
+  tell("good","Система «"+sys.name+"» свободна"+(prize?" · +"+prize.toLocaleString("ru")+" кр":""),
+       "«"+sys.name+"» свободна\n"+(prize?"призовые "+prize.toLocaleString("ru")+" кр\n":"")+
+       "освобождено систем: "+G.freed);
+}
+/* ── что занятость делает с миром ── */
+function occPriceMul(sx,sy){return occInfo(occLvl(sx,sy)).price||1;}
+/* службы станции: под блокадой закрывается док, под пиратами — всё, кроме заправки */
+function occService(kind){
+  const l=occHere();
+  if(l>=OCC_MAX)return kind==="fuel";
+  if(l>=2)return kind!=="yard"&&kind!=="lab";
+  return true;
+}
+/* сколько лишних пиратов держит занятая система: это и есть «патруль» */
+function occExtraPirates(sx,sy){
+  const l=occLvl(sx,sy);
+  return l?l+(l>=OCC_MAX?1:0):0;
+}
+/* ── сводка для игрока ──
+   Одна строка на экран карты: сколько занято и сколько отбито. Цель игры должна
+   быть видна числом, а не подразумеваться. */
+function occSummary(){
+  const n=G.occ?Object.keys(G.occ).length:0;
+  return "занято систем: "+n+" · отбито вами: "+(G.freed|0);
+}
+/* ── карточка цели ──
+   Три вещи, ради которых играют: дом, который растёт от оборота; собственная
+   яхта, которая не окупается никогда и потому и есть роскошь; галактика,
+   которую отбивают у пиратов система за системой. Всё считается по настоящему
+   состоянию — ни одного флажка «квест выполнен». */
+function goalOwnYacht(){
+  for(const id in G.owned){
+    const S=shipData(id);
+    if(S&&(S.hcls==="yacht"||shipTier(S)==="luxe"))return S;
+  }
+  return null;
+}
+function goalCard(){
+  const H=G.home,tier=H?H.tier|0:0;
+  const yacht=goalOwnYacht();
+  const occN=G.occ?Object.keys(G.occ).length:0;
+  const line=(done,head,body)=>
+    "<div class='nm'><b style='color:"+(done?"#8fd08a":"#f2b25c")+"'>"+
+    (done?"✓ ":"• ")+head+"</b><s>"+body+"</s></div>";
+  $body.appendChild(el("div","sec","К ЧЕМУ ВСЁ ИДЁТ · ТРИ ВЕЩИ, РАДИ КОТОРЫХ ЛЕТАЮТ"));
+  $body.appendChild(el("div","row",line(tier>=HOME_TIERS.length,
+    "Дом · "+tier+" из "+HOME_TIERS.length+" ступеней",
+    tier?"построено: "+HOME_TIERS.slice(0,tier).map(t=>t.ru).join(", ")+
+      (homeNext()?"<br>дальше: "+homeNext().ru+" — нужен оборот "+
+        homeNext().t.toLocaleString("ru")+" кр":"<br>дом достроен целиком")
+      :"дома пока нет: он появится сам, когда оборот дойдёт до "+
+       HOME_TIERS[0].t.toLocaleString("ru")+" кр")));
+  $body.appendChild(el("div","row",line(!!yacht,
+    "Яхта · "+(yacht?"«"+yacht.ru+"»":"нет"),
+    yacht?"стоит в ангаре. Трюм смешной, ход прекрасный — она и не должна окупаться"
+         :"люксовая яхта попадается в доке редко и стоит как дом. "+
+          "Это единственная покупка в игре, которая не отбивается ничем")));
+  $body.appendChild(el("div","row",line(occN===0&&(G.freed|0)>0,
+    "Галактика · отбито "+(G.freed|0)+" · под пиратами "+occN,
+    occN?"фронт виден на карте: занятые системы обведены штрихами. "+
+         "Систему отбивают боем в ней самой — сбитые считаются по системе"
+        :"сейчас свободно всё, до чего вы дотянулись. Пираты вернутся: "+
+         "их очаги — базы в поясах, и пока база цела, наступление продолжится")));
+}
+
 /* ══════════════ пираты ══════════════ */
 /* эфемерны: набираются заново при каждом входе в систему, как орбиты и пояс */
 const PIRATE_NAMES=["Шакал","Гриф","Клык","Ржавый","Стервятник","Сиплый","Крюк","Оса"];
 const PIRATE_COLS=["#ff6b57","#d95a3c","#c4694f","#e08a5a","#b85a6a","#cf7a45"];
+/* ── ранги ──
+   Ранг — не «плюс к числам», а то, кого вы встретили: залётный шакал, ветеран
+   на сколоченном корпусе, капитан патруля и барон, который держит систему.
+   Награда и живучесть растут вместе с рангом, поэтому занятая система — это
+   и риск, и заработок. */
+const PIRATE_RANKS=[
+  {ru:"",         pre:"",        hull:1,   bounty:1,   col:null},
+  {ru:"ветеран",  pre:"Старый",  hull:1.6, bounty:1.7, col:"#e0885a"},
+  {ru:"капитан",  pre:"Капитан", hull:2.4, bounty:2.8, col:"#f2b25c"},
+  {ru:"барон",    pre:"Барон",   hull:4.2, bounty:6,   col:"#ff9d7a"}
+];
 /* у каждого пирата свой генерируемый корпус — через NPC_SHIPS, мимо персистентных G.uniqueShips */
 function pirateShipId(seed){
   const id="p"+seed;
@@ -6307,12 +6514,27 @@ function spawnPirates(){
   G.shield=stat().shieldMax;
   const danger=sysDanger(G.sx,G.sy);
   const r=rng(hashi(G.sx,G.sy,Math.floor(Date.now()/900000)));
-  const n=r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0;
+  /* под пиратами система держит патруль сверх обычного случайного налёта */
+  const n=(r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0)+occExtraPirates(G.sx,G.sy);
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;
+    const seed=hashi(G.sx,G.sy,i*977);
+    /* ── ранг ──
+       Один и тот же «пират» на всю галактику делал бой одинаковым от начала
+       до конца. Ранг растёт от опасности сектора и от того, насколько плотно
+       система занята: в занятой системе стоит патруль, а не залётный шакал.
+       Барон появляется только под полной оккупацией — он и есть тот, ради кого
+       туда летят. */
+    const occ=occLvl(G.sx,G.sy);
+    let rank=0;
+    if(r()<danger*.5+occ*.16)rank=1;
+    if(occ>=2&&r()<.4+danger*.3)rank=2;
+    if(occ>=OCC_MAX&&i===0)rank=3;
+    const R=PIRATE_RANKS[rank];
+    const hp=(26+danger*70)*R.hull;
     G.pirates.push({x:Math.cos(a)*rad,y:Math.sin(a)*rad,vx:0,vy:0,a:a+Math.PI,
-      hull:26+danger*70,hullMax:26+danger*70,name:pick(PIRATE_NAMES,r),
-      seed:hashi(G.sx,G.sy,i*977),shipId:pirateShipId(hashi(G.sx,G.sy,i*977)),
+      hull:hp,hullMax:hp,name:(R.pre?R.pre+" ":"")+pick(PIRATE_NAMES,r),
+      rank,seed,shipId:pirateShipId(seed),
       cool:0,aware:false,thrust:false});
   }
   /* ушедший управляющий сидит в своём секторе и ждёт: он такая же запись в
@@ -6420,8 +6642,11 @@ function killPirate(p){
   if(p.rogue){rogueDefeated(p);return;}
   const r=rng(p.seed);
   sfx("boom",{v:.8});
-  const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7)*stat().bountyMul);
+  const RK=PIRATE_RANKS[p.rank|0]||PIRATE_RANKS[0];
+  const bounty=Math.round((90+sysDanger(G.sx,G.sy)*420)*(.7+r()*.7)*stat().bountyMul*RK.bounty);
   earn(bounty,"bounty");G.kills=(G.kills|0)+1;
+  /* сбитый в занятой системе идёт в счёт её освобождения */
+  occKill(G.sx,G.sy);
   const loot=pick(TRADE_KEYS,r),   /* редкое с обломков не падает: у него свои способы добычи */got=addRes(loot,2+Math.floor(r()*7));
   const d=sysDanger(G.sx,G.sy);
   /* обломок с частью — не в трюм сразу, а контейнером: у боя своя петля «убил → собрал» */
@@ -6535,6 +6760,7 @@ function snapshot(){
     drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
+    occ:G.occ,freed:G.freed,
     fuseGen:G.fuseGen,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -6575,6 +6801,10 @@ function applySave(s){
   Object.assign(G.opts,s.opts||{});
   G.zoom=clamp(s.zoom||1,.16,2.4);
   G.market=(s.market&&typeof s.market==="object")?s.market:{};
+  /* фронт пиратов: разреженный объект по ключу "sx,sy", как всё привязанное
+     к системе. Старые записи грузятся с пустым фронтом — он нарастёт сам */
+  G.occ=(s.occ&&typeof s.occ==="object")?s.occ:{};
+  G.freed=s.freed|0;
   G.drones=Array.isArray(s.drones)?s.drones:[];
   G.droneInventory=Math.max(0,s.droneInventory|0);
   /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».
@@ -9085,6 +9315,43 @@ function drawMap(){
     ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.fill();
     ctx.restore();
     ctx.globalAlpha=fade;
+    /* ── занятая пиратами система ──
+       Кольцо из штрихов вместо ровного круга: занятость должна читаться как
+       оцепление, а не как ещё одна метка станции. Чем выше уровень, тем гуще
+       штрихи и тем краснее — фронт виден одним взглядом на карту. */
+    const ol=occLvl(gx,gy);
+    if(ol){
+      /* Оцепление читается зубцами наружу, а не тонким кольцом: на карте, где
+         у станции уже есть свой кружок, ещё одна окружность терялась среди них. */
+      const orr=10+ol*3,n=5+ol*3;
+      const oc=[255,96-ol*14,72-ol*12];
+      /* Оцепление НЕ тускнеет с расстоянием, в отличие от звёзд: фронт — это то,
+         ради чего на карту и смотрят, и он обязан читаться на краю радиуса
+         так же, как под носом. Глубина остаётся у звёзд, а не у меток. */
+      const of=Math.max(.75,fade);
+      ctx.strokeStyle=rgba(oc,(.85+ol*.05)*of);ctx.lineWidth=2.2+ol*.6;
+      for(let i=0;i<n;i++){
+        const a=i/n*TAU+G.t*.02*(ol%2?1:-1);
+        ctx.beginPath();
+        ctx.arc(x,y,orr,a,a+TAU/n*.46);
+        ctx.stroke();
+        // зубец наружу на конце каждого штриха
+        const ae=a+TAU/n*.46;
+        ctx.beginPath();
+        ctx.moveTo(x+Math.cos(ae)*orr,y+Math.sin(ae)*orr);
+        ctx.lineTo(x+Math.cos(ae)*(orr+2.5+ol*.6),y+Math.sin(ae)*(orr+2.5+ol*.6));
+        ctx.stroke();
+      }
+      if(ol>=2){
+        ctx.fillStyle=rgba(oc,.95*of);ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+        ctx.fillText(ol>=OCC_MAX?"ПОД ПИРАТАМИ":"БЛОКАДА",x,y+orr+11);
+      }
+      if(ol>=OCC_MAX){                       // под пиратами: заливка изнутри
+        const og=ctx.createRadialGradient(x,y,0,x,y,orr);
+        og.addColorStop(0,rgba(oc,.22*of));og.addColorStop(1,rgba(oc,0));
+        ctx.fillStyle=og;ctx.beginPath();ctx.arc(x,y,orr,0,TAU);ctx.fill();
+      }
+    }
     if(s.station){ctx.strokeStyle="rgba(242,178,92,.55)";ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(x,y,rr+6,0,TAU);ctx.stroke();}
     if(s.belt){ctx.strokeStyle="rgba(180,190,200,.3)";ctx.lineWidth=1;
@@ -9213,6 +9480,13 @@ function drawMap(){
   ctx.fillStyle="rgba(93,115,130,.85)";ctx.textAlign="right";
   ctx.fillText("ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
     Math.round(G.credits).toLocaleString("ru")+" кр",W-16,H-PAD_SAFE-14);
+  /* фронт одной строкой: цель игры должна быть видна там, где на неё смотрят,
+     то есть на карте, а не в меню */
+  const occN=G.occ?Object.keys(G.occ).length:0;
+  if(occN||(G.freed|0)){
+    ctx.fillStyle=occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)";
+    ctx.fillText(occSummary(),W-16,H-PAD_SAFE-30);
+  }
   G.prompt="ТАП ПО ЗВЕЗДЕ — ВЫБОР · ДЕЙСТВИЕ — ПРЫЖОК";
   if(actEdge){
     if(!bad)jump(cost);
@@ -18087,6 +18361,14 @@ function renderTab(){
     }
   }
   else if(tab==="yard"){
+    /* Под блокадой док не строит и не продаёт: занятость — это отнятые службы,
+       а не отнятые числа. Топливо остаётся всегда, иначе игрок застревает */
+    if(!occService("yard")){
+      $body.appendChild(el("div","sec","ДОК ЗАКРЫТ · СИСТЕМА ПОД ПИРАТАМИ"));
+      $body.appendChild(el("div","row","<div class='nm'><s>"+occInfo(occHere()).note+
+        "<br>верфь откроется, когда систему отобьют: сбивайте патрули здесь же — "+
+        "счёт идёт по этой системе.</s></div>"));
+    }else{
     /* Ряд дока, а не склад всей галактики: что стоит здесь сегодня. Ряд держится
        на seed станции и временном бакете — вернулись через час, ряд другой. */
     const yard=stationFleet(G.sys);
@@ -18130,6 +18412,7 @@ function renderTab(){
         " · везёт на «"+home.name+"» · осталось "+d.pool+"</s>"));
       $body.appendChild(r);
     }
+  }
   }
   else if(tab==="mods"){
     const cap=capOf(G.shipId);
@@ -18295,6 +18578,11 @@ function renderTab(){
     }
   }
   else if(tab==="bases"){
+    /* ── к чему всё идёт ──
+       У игры не было названной цели: дом рос сам, яхта была одним из корпусов,
+       пиратов сбивали без счёта. Три строки называют это вслух — и каждая
+       считается по настоящему состоянию, а не по флажку «квест выполнен». */
+    goalCard();
     /* ── дом первой строкой ──
        До настоящего экрана-помещения (следующий проход M83) дом должен быть
        хотя бы видим: игрок не обязан догадываться, что у него что-то растёт.
@@ -21112,7 +21400,7 @@ function frame(now){
   actEdge=keys.act&&!prevAct;prevAct=keys.act;
   if(G.running){
     G.t+=dt;
-    if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();crewTick();mgrTick();}
+    if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();crewTick();mgrTick();occTick();}
     if(G.msgT>0)G.msgT-=dt;
     if(G.mode==="system")autosave();
     if(G.mode==="system"||G.mode==="dock")updateSystem(dt);
