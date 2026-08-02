@@ -19876,43 +19876,61 @@ function hqTable(c,W2,H2,fy,seed){
      видна, а не угадываться: планета в разрезе орбит, звёзды сектора вокруг
      и метка вашей системы. Бледная проекция превращала стол в серую плиту. */
   c.save();c.globalCompositeOperation="lighter";
-  const RR=rng(seed^0x33),pr=23;
+  const RR=rng(seed^0x33),pr=15;
   /* планета над столом */
   /* Шар рисуется КРУГОМ с терминатором, а параллели обрезаются по нему.
      Кольца эллипсами поверх давали клубок «бантиков» — то же, чем когда-то
      болели вращающиеся детали базы. */
   const py0=ty-26;
+  /* в середине — ваша звезда, и цвет у неё её собственный: по одному взгляду
+     на стол должно быть понятно, в какой вы системе */
+  const scol=(G.sys&&G.sys.cls&&G.sys.cls.col)?hex2rgb(G.sys.cls.col):[150,205,240];
   const pg=c.createRadialGradient(cx-pr*.35,py0-pr*.35,2,cx,py0,pr);
-  pg.addColorStop(0,"rgba(180,230,255,.50)");
-  pg.addColorStop(.55,"rgba(85,160,220,.26)");
-  pg.addColorStop(1,"rgba(40,100,160,.05)");
+  pg.addColorStop(0,rgba(mixc(scol,[255,255,255],.6),.55));
+  pg.addColorStop(.55,rgba(scol,.28));
+  pg.addColorStop(1,rgba(scol,.06));
   c.fillStyle=pg;c.beginPath();c.arc(cx,py0,pr,0,TAU);c.fill();
+  /* Это ЗВЕЗДА, а не планета: ни параллелей, ни терминатора — они делали из неё
+     глобус, вокруг которого нелепо крутились планеты. Только ядро, зерно
+     поверхности и дышащая корона. */
   c.save();c.beginPath();c.arc(cx,py0,pr,0,TAU);c.clip();
-  c.strokeStyle="rgba(190,235,255,.13)";c.lineWidth=.8;   // параллели внутри шара
-  for(let i=-1;i<=1;i++){
-    c.beginPath();c.ellipse(cx,py0+i*10,pr,pr*.26,0,0,TAU);c.stroke();
+  const SR=rng(0x57A2);
+  for(let i=0;i<26;i++){                                  // зерно поверхности
+    const a=SR()*TAU,rr=Math.sqrt(SR())*pr;
+    c.fillStyle=rgba(mixc(scol,[255,255,255],.5),(.05+SR()*.10).toFixed(3)*1);
+    c.beginPath();c.arc(cx+Math.cos(a)*rr,py0+Math.sin(a)*rr,1+SR()*2.4,0,TAU);c.fill();
   }
-  const mer=(G.t*.2)%1;                                   // меридианы медленно едут
-  for(let i=0;i<4;i++){
-    const t=((i/4+mer)%1)*2-1;
-    c.beginPath();c.ellipse(cx,py0,Math.abs(t)*pr,pr,0,0,TAU);c.stroke();
-  }
-  c.fillStyle="rgba(0,10,20,.35)";                        // терминатор
-  c.beginPath();c.arc(cx+pr*.55,py0+pr*.2,pr,0,TAU);c.fill();
   c.restore();
-  c.strokeStyle="rgba(190,235,255,.28)";c.lineWidth=1;
-  c.beginPath();c.arc(cx,py0,pr,0,TAU);c.stroke();
-  /* одно кольцо, наклонённое: два и больше читались клубком */
-  c.strokeStyle="rgba(190,235,255,.42)";c.lineWidth=1.2;
-  c.save();c.translate(cx,py0+4);c.rotate(-.22);
-  c.beginPath();c.ellipse(0,0,pr*1.6,pr*.34,0,0,TAU);c.stroke();
-  c.restore();
-  for(let i=0;i<26;i++){                                   // звёзды сектора
-    const a=RR()*TAU,rr=.35+RR()*.65;
-    const px=cx+Math.cos(a)*rx*.86*rr,py=ty-14-Math.abs(Math.sin(a))*26*rr;
+  const puls=1+.05*Math.sin(G.t*1.1);
+  c.strokeStyle=rgba(mixc(scol,[255,255,255],.5),.35);c.lineWidth=1;
+  c.beginPath();c.arc(cx,py0,pr*puls,0,TAU);c.stroke();
+  /* корона звезды вместо кольца: кольцо спорило с орбитами планет */
+  const cg2=c.createRadialGradient(cx,py0,pr*.8,cx,py0,pr*2.1);
+  cg2.addColorStop(0,rgba(scol,.16));cg2.addColorStop(1,rgba(scol,0));
+  c.fillStyle=cg2;c.beginPath();c.arc(cx,py0,pr*2.1,0,TAU);c.fill();
+  /* Вокруг шара — НАСТОЯЩИЕ планеты вашей системы на своих орбитах, а не
+     россыпь точек: рубка показывает то, где вы сейчас. Выдуманный сектор здесь
+     был единственным прибором в игре, который врал. */
+  const pl=(G.sys&&G.sys.planets)||[];
+  const omax=pl.length?pl[pl.length-1].orbit:1;
+  c.strokeStyle="rgba(150,205,240,.16)";c.lineWidth=.8;
+  pl.forEach((p,i)=>{
+    const orr=rx*.20+(p.orbit/omax)*rx*.34;
+    c.beginPath();c.ellipse(cx,py0+6,orr,orr*.26,0,0,TAU);c.stroke();
+    const a=p.ang+G.t*p.spd*160;
+    const px=cx+Math.cos(a)*orr,py=py0+6+Math.sin(a)*orr*.26;
+    const col=p.T&&p.T.col?hex2rgb(p.T.col):[150,205,240];
+    c.fillStyle=rgba(col,.85);
+    c.beginPath();c.arc(px,py,1.6+Math.min(2.4,p.radius/26),0,TAU);c.fill();
+    c.fillStyle=rgba(col,.22);
+    c.beginPath();c.arc(px,py,4+Math.min(3,p.radius/26),0,TAU);c.fill();
+  });
+  for(let i=0;i<14;i++){                                   // дальние звёзды фона
+    const a=RR()*TAU,rr=.5+RR()*.5;
+    const px=cx+Math.cos(a)*rx*.92*rr,py=ty-16-Math.abs(Math.sin(a))*28*rr;
     const tw=.5+.5*Math.sin(G.t*1.4+i);
-    c.fillStyle="rgba(150,205,240,"+(.14+tw*.22).toFixed(2)+")";
-    c.beginPath();c.arc(px,py,1+RR()*1.5,0,TAU);c.fill();
+    c.fillStyle="rgba(150,205,240,"+(.08+tw*.14).toFixed(2)+")";
+    c.beginPath();c.arc(px,py,.9+RR()*1.1,0,TAU);c.fill();
   }
   /* метка «вы здесь»: ромб с пульсацией */
   const mk=.5+.5*Math.sin(G.t*2.2),mx=cx+rx*.44,my=ty-24;
