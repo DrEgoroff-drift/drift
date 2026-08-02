@@ -609,6 +609,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
   tracePoly(h.poly);ctx.stroke();
   drawTierTrim(h);
   drawHullMarks(h);
+  if(typeof drawCrowns==="function")drawCrowns(h,id);
   /* ── боксы по бортам ── */
   for(const p of h.pods)for(const s of [1,-1]){
     ctx.fillStyle=rgba(h.dark,1);ctx.strokeStyle=rgba(h.col,.75);ctx.lineWidth=.9;

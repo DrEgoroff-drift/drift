@@ -568,3 +568,14 @@ function nearestPOI(tr,x){
   for(const q of tr.poi){const d=Math.abs(q.x-x);if(d<bd){bd=d;best=q;}}
   return best;
 }
+/* ── ближайшая достопримечательность ──
+   Радиус подхода считается от ширины самой формы, а не константой: к монолиту
+   подходят вплотную, а космический лифт видно и слышно за сотню метров. */
+function poiNear(S,tr){
+  const list=(tr&&tr.poi)||[];
+  for(const q of list){
+    const r=Math.max(36,q.h*.22*(q.sc||1));
+    if(Math.abs(q.x-S.x)<r)return q;
+  }
+  return null;
+}

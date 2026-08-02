@@ -91,6 +91,8 @@ function rogueSpawn(){
 function rogueDefeated(p){
   const R=(G.rogues||[]).find(x=>x.seed===p.seed);
   sfx("boom",{v:1});
+  /* с ушедшего снимают и то, что он унёс с собой (05a-nodes) */
+  nodeDrop("с ушедшего управляющего",1,hashi(p.seed,0xF00D,7));
   if(R){
     const i=G.rogues.indexOf(R);G.rogues.splice(i,1);
     if(R.shipId&&!G.owned[R.shipId]){

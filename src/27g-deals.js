@@ -134,7 +134,11 @@ const DEAL_KINDS=[
 function stationDeals(sys){
   if(!sys||!sys.station)return [];
   const r=rng(hashi(sys.seed,0xDEA1,timeBucket()));
-  const n=1+Math.floor(r()*2.4);
+  /* Своим предлагают больше: репутация станции добавляет столик и убирает его
+     у тех, кого тут не ждут. Это единственное, чем репутация правит кантину, —
+     содержание дел она не трогает, иначе вышла бы «прокачка доступа». */
+  const rep=(typeof repAt==="function")?repAt(sys):0;
+  const n=clamp(1+Math.floor(r()*2.4)+(rep>=3?1:0)-(rep<=-3?1:0),1,4);
   const out=[],used={};
   for(let i=0;i<n*4&&out.length<n;i++){
     const D=DEAL_KINDS[(r()*DEAL_KINDS.length)|0];

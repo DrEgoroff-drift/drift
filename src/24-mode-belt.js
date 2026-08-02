@@ -304,6 +304,9 @@ function updateBelt(dt){
         if(best.left%4===0)shatter(b,best,1,.8);
       }
       if(best.left<=0){
+        /* выработанный камень иногда отдаёт узел: пояс — одно из мест,
+           где они водятся (05a-nodes) */
+        nodeDrop("в поясе",sysDanger(G.sx,G.sy)+.2,hashi(best.seed||1,0xB7,Date.now()&0xffff));
         say("Астероид выработан\n"+RES[best.res].ru);
         killRock(b,best,1.2);
       }

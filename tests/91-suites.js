@@ -2247,3 +2247,51 @@ TEST_SUITES.push(()=>suite("репутация станции и последн�
   G.rep={};applySave(snap);
   ok(Object.keys(G.rep).length>0,"репутация сохранилась");
 }));
+
+/* ── узлы падают отовсюду, где сказано ──
+   Половина списка мест не была подключена ни к чему, и пятьсот с лишним узлов
+   оказались недостижимы — та же ошибка, что «перк без кода». Набор ловит её
+   двумя способами: список мест закрыт и совпадает с каталогом, и по каждому
+   месту узел действительно достаётся. */
+TEST_SUITES.push(()=>suite("узлы: каждое место падения живое",()=>{
+  resetWorld();
+  const inCatalog={};
+  for(const n of NODES)inCatalog[n.where]=(inCatalog[n.where]|0)+1;
+  eq(Object.keys(inCatalog).sort().join("|"),NODE_WHERE.slice().sort().join("|"),
+     "каталог не знает мест сверх списка");
+  for(const w of NODE_WHERE)ok(inCatalog[w]>0,"в «"+w+"» что-то водится: "+inCatalog[w]);
+  /* по каждому месту узел достаётся: если место нигде не вызывается, эти узлы
+     недостижимы — тест этого не увидит, но увидит, что механика их отдаёт */
+  for(const w of NODE_WHERE){
+    G.nodes={};
+    let got=null;
+    for(let i=0;i<400&&!got;i++)got=nodeDrop(w,1,hashi(i*7717,w.length,3),1);
+    ok(got,"из «"+w+"» узел достаётся");
+    eq(got.where,w,"и это узел именно оттуда");
+  }
+}));
+
+/* ── памятники стали местом, а не декорацией ── */
+TEST_SUITES.push(()=>suite("достопримечательности осматриваются",()=>{
+  resetWorld();landOnTestPlanet();
+  const S=G.surf,tr=S.tr;
+  const list=(tr.poi||[]);
+  if(!list.length){ok(true,"на этой планете памятников нет — проверять нечего");return;}
+  const q=list[0];
+  eq(poiNear({x:q.x+4000},tr),null,"издалека ничего не найдено");
+  ok(poiNear({x:q.x},tr),"вплотную — найдено");
+  /* осмотр даёт данные один раз */
+  G.poiSeen={};
+  const d0=G.data;
+  S.x=q.x;
+  actEdge=true;updateSurface(1);actEdge=false;
+  ok(G.data>d0,"осмотр дал данные: "+d0+" → "+G.data);
+  ok(G.poiSeen[q.seed],"памятник записан как осмотренный");
+  const d1=G.data;
+  actEdge=true;updateSurface(1);actEdge=false;
+  eq(G.data,d1,"второй раз тот же памятник ничего не даёт");
+  /* переживает сохранение */
+  const snap=JSON.parse(JSON.stringify(snapshot()));
+  G.poiSeen={};applySave(snap);
+  ok(G.poiSeen[q.seed],"осмотренное помнится после загрузки");
+}));

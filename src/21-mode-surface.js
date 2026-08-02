@@ -122,6 +122,25 @@ function updateSurface(dt){
     G.prompt="ДЕЙСТВИЕ — ВОЙТИ В ПЕЩЕРУ";
     if(actEdge){enterCave();return;}
   }
+  /* ── памятники и аномалии ──
+     Они стояли на горизонте чистой декорацией: подойти было можно, сделать
+     нельзя. Осмотр даёт данные и иногда узел — и это единственное место, где
+     узлы «из аномалии» вообще выпадают (05a-nodes). Осмотренное помнится:
+     второй раз к тому же монолиту идти незачем. */
+  else if(poiNear(S,tr)){
+    const q=poiNear(S,tr);
+    const seen=G.poiSeen&&G.poiSeen[q.seed];
+    G.prompt=seen?"ОСМОТРЕНО · "+q.ru:"ДЕЙСТВИЕ — ОСМОТРЕТЬ · "+q.ru;
+    if(actEdge&&!seen){
+      if(!G.poiSeen)G.poiSeen={};
+      G.poiSeen[q.seed]=1;
+      const d=12+Math.floor(sysDanger(G.sx,G.sy)*18);
+      G.data+=d;
+      tell("tech",q.ru.toLowerCase()+" осмотрен · +"+d+" данных",
+           q.ru+"\n+"+d+" данных");
+      nodeDrop("в аномалии",.5+sysDanger(G.sx,G.sy)*.5,hashi(q.seed,0xA0,3));
+    }
+  }
   else if(dep){
     if(held()>=st.cargoMax)G.prompt="ТРЮМ ПОЛОН · "+RES[dep.res].ru.toUpperCase()+" ОСТАЛОСЬ "+dep.left;
     else{
