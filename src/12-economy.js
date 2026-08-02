@@ -54,12 +54,23 @@ function nearestStation(sx,sy){
   }
   return getSystem(0,0);
 }
+/* ── сколько дрон возьмёт с точки ──
+   Пул был один на все ресурсы (260 штук), а цены разнятся вдевятеро: дрон на
+   кристаллах возвращал двенадцать своих цен, дрон на железе — полторы. Точка
+   теперь меряется не штуками, а тем, сколько в ней стоит: пул обратен КОРНЮ
+   цены. Дорогое сырьё по-прежнему выгоднее (вдвое-втрое, а не вдевятеро) и
+   вырабатывается втрое быстрее — выбор остаётся выбором, а не единственно
+   верным ходом. */
+function droneCapacity(k){
+  const p=Math.max(1,RES[k]?RES[k].price:11);
+  return clamp(Math.round(1200/Math.sqrt(p)),90,420);
+}
 let droneTarget=null;
 function deployDrone(){
   if(G.droneInventory<=0||!droneTarget)return;
   G.droneInventory--;
   G.drones.push({sx:G.sx,sy:G.sy,res:droneTarget,rate:DRONES.miner.ratePerMin*stat().droneRate,
-    pool:DRONES.miner.capacity,soldAtMs:Date.now()});
+    pool:droneCapacity(droneTarget),soldAtMs:Date.now()});
   say("Дрон размещён\nработает на "+RES[droneTarget].ru);
   logAdd("","Дрон развёрнут в системе "+G.sys.name+" · "+RES[droneTarget].ru.toLowerCase());
   document.getElementById("dronebtn").style.display="none";
