@@ -1883,3 +1883,39 @@ TEST_SUITES.push(()=>suite("дрон: точка меряется деньгам
   ok(vRich<vCheap*4,"но не вдевятеро: "+vCheap+" против "+vRich);
   ok(vRich/DRONES.miner.price<7,"возврат дрона не запределен: x"+(vRich/DRONES.miner.price).toFixed(1));
 }));
+
+/* ── номенклатура: сотня корпусов и их редкость ── */
+TEST_SUITES.push(()=>suite("флот: сто корпусов, тиры и ряд дока",()=>{
+  eq(SHIP_KEYS.length+FLEET_KEYS.length,100,"корпусов ровно сто");
+  const names={};let dup=0;
+  for(const id of FLEET_KEYS){const n=FLEET[id].ru;if(names[n])dup++;names[n]=1;}
+  eq(dup,0,"имена не повторяются");
+  /* каждый тир представлен: иначе редкость — слово без содержания */
+  const byTier={};
+  for(const id of FLEET_KEYS)byTier[FLEET[id].tier]=(byTier[FLEET[id].tier]|0)+1;
+  for(const t of FLEET_TIER_KEYS)ok(byTier[t]>0,"тир «"+FLEET_TIERS[t].ru+"» есть: "+(byTier[t]|0));
+  ok(byTier.work>byTier.legend,"лошадок больше, чем легенд");
+  ok(byTier.luxe<=byTier.rare,"люкс не частее редкого");
+  /* люкс — всегда яхта, и трюм у него смешной: он не для дела */
+  for(const id of FLEET_KEYS)if(FLEET[id].tier==="luxe"){
+    eq(FLEET[id].hcls,"yacht","люкс — яхта");
+    ok(FLEET[id].cargo<=50,"у яхты трюм на два ящика: "+FLEET[id].cargo);
+  }
+  /* редкость стоит денег: средняя цена растёт от лошадки к легенде */
+  const avg=t=>{const a=FLEET_KEYS.filter(id=>FLEET[id].tier===t);
+    return a.reduce((s,id)=>s+FLEET[id].price,0)/Math.max(1,a.length);};
+  ok(avg("work")<avg("line"),"лошадка дешевле серийного");
+  ok(avg("line")<avg("rare"),"серийный дешевле редкого");
+  ok(avg("rare")<avg("legend"),"редкий дешевле легендарного");
+  /* корпус достаётся по ключу и рисуется: каталог не должен ломать hullOf */
+  const h=hullOf(FLEET_KEYS[0]);
+  ok(h&&h.poly&&h.poly.length>3,"корпус из каталога строится");
+  /* ряд дока: не склад из ста строк, и всегда есть на чём улететь */
+  const sys=(function(){for(let dx=-8;dx<=8;dx++)for(let dy=-8;dy<=8;dy++){
+    if(!starAt(dx,dy))continue;const s=getSystem(dx,dy);if(s.station)return s;}return null;})();
+  ok(sys,"нашлась станция");
+  const yard=stationFleet(sys);
+  ok(yard.length>=3&&yard.length<=12,"ряд дока обозрим: "+yard.length);
+  ok(yard.some(id=>FLEET[id].price<9000),"в доке всегда есть дешёвый корпус");
+  eq(stationFleet(sys).join(),yard.join(),"ряд детерминирован: тот же док — тот же ряд");
+}));
