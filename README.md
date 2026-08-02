@@ -135,6 +135,62 @@ is <i>your</i> real hull with other people's scrap welded over it. Each is baked
 offscreen canvas from its seed, so a hundred polygons never reach the frame.
 </td>
 </tr>
+<tr>
+<td colspan="2" valign="top">
+<img src="docs/shots/fleet.png" alt="Part of the hundred-hull catalogue" width="100%">
+<b>A hundred hulls, and the tier is the hull, not a label.</b> Class comes from proportion — the
+courier is a needle, the freighter a crate with containers strapped to its flanks, the yacht a
+spindle. Tier comes from finish: a workhorse wears patches and streaks, a rare hull an accent line,
+a legend double piping and a crest emblem, a prototype its guts on the outside. Colour is per-ship,
+because painting a hundred hulls by tier produced a fleet in four colours.
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/shots/yachts.png" alt="Luxury yachts" width="100%">
+<b>Luxury yachts never pay for themselves, and that is the point.</b> A hold of two crates, a strip
+of lit windows down the flank, a gloss highlight along the spine, and a price the size of a house.
+The only thing a yacht does is let the crew rest on it between runs — morale, not credits.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/hq.png" alt="The HQ bridge" width="100%">
+<b>The HQ screen is a room, not a list.</b> Four domain consoles, and at each stands whoever holds
+that domain — pose per role, portrait per person. The screens show real state: crew on assignment,
+drones and bases, the route polyline with a ship crawling along it. An empty domain is a dead
+console under a dust sheet. On the holo table is <i>your</i> system: your star, your planets.
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/shots/built.png" alt="Your home on a planet surface" width="100%">
+<b>What you own stands on the ground.</b> Land on the planet where your base or your home is and you
+see it on the horizon — no menu needed to learn it exists. The spot is found by searching for level
+ground, because the first version put the house on a slope and buried half the door. Windows count
+your home's completed tiers; the eighth lights the mooring beacon.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/occupation.png" alt="The pirate front on the map" width="100%">
+<b>Pirates take systems, and the front is visible.</b> Occupied systems wear a toothed cordon that
+does <i>not</i> dim with distance — depth belongs to the stars, not to the thing you are looking
+for. A blockade closes the dock and stops drones selling; full occupation leaves only refuelling.
+You take a system back by fighting in it.
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/shots/route.png" alt="A trade route on the map" width="100%">
+<b>Your factor's trade route lies on the map.</b> Dashes between the legs, diamonds on each station,
+a ship crawling along the line, and on the best leg the deal itself: goods, buy price, sell price,
+margin. The domain earns from the real market — and once it is drawn, you can fly that spread
+yourself.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/foes.png" alt="Boarding party opponents" width="100%">
+<b>Boarders have bodies.</b> Shoulders wider than hips, legs apart in two tones, both hands on the
+weapon, a visor band instead of an eye dot. The heavy braces a bipod; the baron wears a split cloak,
+pauldrons and a crest — rank reads from the shoulders, not from size.
+</td>
+</tr>
 </table>
 
 ---
@@ -177,6 +233,8 @@ oceanic desert does not.
 - **Surface prospecting** — land on generated terrain (ridges, mesas, dunes, cratered plains, canyons, mixed to suit the world type), mine visible deposits, and scan alien flora and fauna for research data. Click-to-walk works alongside the keyboard; launch lives on its own hold-to-confirm button.
 - **Wildlife** — every planet has a genome biasing its plant and animal forms, sizes and hues, so worlds look distinct — ankle-high moss and crystal druses on one, giant trees and oversized fauna on another. Underground the same stock bites through your suit; an EMP pulse stuns them, and a stunned one can be sampled for carbon and rare xenobiome that no rock will ever yield.
 - **Deep shafts** — sink a mine on bare ground and tunnel through three depth tiers. Ore lives in scattered veins, highlighted through rock when close or from range with the geo-scanner. Deeper rock is roughly 2× and 4× richer, gated behind drilling tech and pressured by suit wear and cave-ins. Damage underground costs your suit, never your ship.
+- **A shaft stays dug.** Come back to a mine you started and you drop into your own tunnel, not fresh rock: only the excavated cells are saved, everything else (ore, hardness, veins) is still derived from the seed.
+- **What you built stands on the ground.** Land where your base or your home is and you see it from the surface — no menu required to learn it exists.
 - **Cave systems** — some planets hide a walkable cave mouth: a winding natural passage lit only by your suit lamp and glowing flora, with hostile fauna and a one-off data find at the far end.
 - **Asteroid belts** — a full 3D flight mode flown from a generated cockpit. Pitch, yaw and roll with inertia, the horizon banking into your turns. Rocks break into drifting debris as you mine or shoot them apart.
 - **Gas skimming** — gas giants can't be landed on, but you can enter their upper atmosphere and collect volatiles. The scene is a narrow altitude corridor: above it the scoop takes nothing, below it hull heat climbs until the ship burns, and turbulence keeps pushing you out of the band. Flying it is the mechanic, not a progress bar.
@@ -289,7 +347,9 @@ Dangerous sectors hold pirate stations you can board on foot. The map is a 2D gr
 
 ### Getting stronger
 
-- **Ships** — eight hand-built hulls plus one-off generated ships that turn up at shipyards and rotate over time.
+- **A hundred hulls in six tiers** — eight hand-built ships plus a deterministic catalogue of ninety-two, from workhorses that stand in every dock to legends counted in single units and luxury yachts that never pay for themselves. What a dock actually stocks is a *slice*, keyed to that station's seed and a time bucket: a hundred-line list is a warehouse, not a shipyard. Rarity shows in the finish of the hull itself, and a cheap hull is always available so you can never be stranded.
+- **A thousand nodes and ten crowns** — named artifact nodes in ten families of a hundred, five grades of rarity. A node does nothing on its own; it is a letter. Complete a family and it forges a **crown** — an effect you cannot obtain any other way, read by `stat()` alongside modules and parts. Nodes are never sold or crafted: they only drop, and rarely, from pirates, deep shafts and boarding actions.
+- **Ships** — one-off generated hulls still turn up at shipyards and rotate over time.
 - **Modules** — seven upgrade tracks (engine, tanks, hold, armour, drill, hyperdrive, gun), four levels each. Buying a level is permanent; fitting it is not.
 - **Parts and rigging capacity** — every hull has a rigging budget that modules *and* parts draw from, so you cannot run everything at once. Parts are generated across six categories with one to three affixes, and the strong ones carry a real drawback — a drill that outpaces your turn rate, a shield that costs you thrust. They drop from pirates as containers you fly through, and stations sell a rotating handful.
 - **Ship screen** — slots are drawn on the hull itself: a gun point on the wingtip, an engine block at the nacelle, a reactor in the belly. Every candidate part states exactly what it would do to your numbers before you commit.
@@ -317,6 +377,39 @@ world, and touching down too fast, too sideways, tilted, or on a slope costs hul
 - **Thrust is vertical**, so three retro nozzles fire from the belly rather than the main engines, and
   the jet raises a low cloud of ground-coloured dust that lingers after touchdown. On an airless world
   the dust is lower and sharper — there is nothing for it to billow in.
+
+### The front: pirates take systems
+
+Pirates used to be weather — a few of them in dangerous sectors, and nothing you did changed that.
+Now they hold ground.
+
+- **Occupation spreads from somewhere.** A nest, then its neighbours; never a random flare on the far
+  side of the galaxy, so what you see on the map is a front rather than a rash.
+- **Occupation takes services, not numbers.** Level one puts patrols out and lets the single buyer
+  underpay you. A blockade shuts the dock and the laboratory and stops drones from selling. Under
+  full occupation only refuelling is left.
+- **Ranks.** Jackal, veteran, captain, and — only under full occupation — a **baron**, three times
+  the toughness of a mini-boss, sitting on the bridge of what the game now calls the baron's lair:
+  the same boarding action, harder, and named accordingly.
+- **You take a system back by playing the game in it.** Kills count per system; hit the quota and the
+  level drops. Clearing it pays a prize and turns the station back on. Breaking the pirate base itself
+  *suppresses the nest*: the advance around it stalls for a day.
+- **Three goals are stated out loud** on the holdings screen — the home that grows from turnover, a
+  yacht of your own, and a galaxy without occupied systems. All three are counted from real state,
+  with no quest flags anywhere.
+
+### Business, not errands
+
+The cantina seats people with their own business, and none of it is "bring me ten ore". You only ever
+**answer**: buy a captain's debt at a third of face value, vouch for a pilot nobody will hire, take a
+crate with no explanation, back a bet on someone else's race, buy a survey map off a geologist who
+was thrown out of his expedition, carry a passenger with no return ticket. Every answer costs
+something — there is no free option on any of them — and answers with a tail become entries in the
+journal with an address and a deadline. The outcome roll is made in advance from the deal's key, so
+the same deal cannot end differently depending on when you open the journal.
+
+The **journal** is where accepted business lives: what you took, from whom, how long is left and what
+was promised. Every line with an address is clickable, and clicking lays the course on the map.
 
 ### Pirates
 
@@ -358,7 +451,7 @@ Local autosave, portable base64 save codes for moving between devices, and optio
 | File | Purpose |
 |---|---|
 | [`drift.html`](drift.html) | The entire game in one self-contained file — open it directly to play. **Built from `src/`; don't edit it by hand.** |
-| [`src/`](src) | The sources: `index.html` shell, `style.css`, and 58 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
+| [`src/`](src) | The sources: `index.html` shell, `style.css`, and 64 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
 | [`build.ps1`](build.ps1) | Rebuilds `drift.html` from `src/`. No dependencies — PowerShell, because Node isn't assumed. Pass `-Watch` to rebuild on save. |
 | [`server.js`](server.js) | Optional zero-dependency Node.js server (Node 18+) for self-hosting and persisting cloud saves to a `./saves` folder. |
 | [`worker.js`](worker.js) | Optional Cloudflare Worker alternative, storing saves in a KV namespace. |
@@ -370,7 +463,10 @@ Local autosave, portable base64 save codes for moving between devices, and optio
 
 **Just play it:** open `drift.html` in any modern browser. No server, no build, no dependencies.
 
-**Work on it:** edit files under `src/`, then rebuild.
+**Work on it:** edit files under `src/`, then rebuild. The same build produces `tests.html` —
+open it in a browser and it runs the suite against the real game state (currently 1 199 assertions,
+nothing mocked) and prints the report on the page.
+
 
 ```bash
 powershell -ExecutionPolicy Bypass -File build.ps1
