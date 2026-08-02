@@ -77,6 +77,9 @@ function occTick(){
     return;
   }
   const from=keys[(r()*keys.length)|0].split(",").map(Number);
+  /* рядом с подавленным очагом наступление замирает: разбитая база должна
+     что-то ЗНАЧИТЬ, иначе отбивать системы можно только бесконечно */
+  if(occCalmNear(from[0],from[1]))return;
   const o=G.occ[occKey(from[0],from[1])];
   /* сперва укрепляются там, где уже стоят, и только потом ползут дальше:
      иначе фронт расплывался пятном в один уровень на всю галактику */
@@ -177,7 +180,10 @@ function goalCard(){
        HOME_TIERS[0].t.toLocaleString("ru")+" кр")));
   $body.appendChild(el("div","row",line(!!yacht,
     "Яхта · "+(yacht?"«"+yacht.ru+"»":"нет"),
-    yacht?"стоит в ангаре. Трюм смешной, ход прекрасный — она и не должна окупаться"
+    yacht?"стоит в ангаре. Трюм смешной, ход прекрасный — она и не должна окупаться"+
+      "<br>наёмники отдыхают на ней между рейсами: мораль возвращается на "+
+      Math.round((yachtMoraleMul()-1)*100)+"% быстрее"+
+      (homeHas("dock")?" (причал дома держит её на виду)":" — с причалом дома будет больше")
          :"люксовая яхта попадается в доке редко и стоит как дом. "+
           "Это единственная покупка в игре, которая не отбивается ничем")));
   $body.appendChild(el("div","row",line(occN===0&&(G.freed|0)>0,
@@ -186,4 +192,38 @@ function goalCard(){
          "Систему отбивают боем в ней самой — сбитые считаются по системе"
         :"сейчас свободно всё, до чего вы дотянулись. Пираты вернутся: "+
          "их очаги — базы в поясах, и пока база цела, наступление продолжится")));
+}
+/* ── очаг подавлен ──
+   Разбитая пиратская база — единственный способ остановить наступление, а не
+   отбивать одну систему бесконечно: пока очаг цел, соседи будут заниматься
+   снова и снова. Подавление держится сутки игрового времени и гасит расширение
+   в радиусе двух секторов. */
+const OCC_CALM_MS=86400000;
+function occSuppress(sx,sy){
+  if(!G.occCalm)G.occCalm={};
+  G.occCalm[occKey(sx,sy)]=Date.now();
+  const had=occLvl(sx,sy);
+  if(had)occSet(sx,sy,had-1);
+  tell("kill","Очаг в этом секторе подавлен"+(had?" · система: "+occInfo(had-1).ru:""),
+       "Очаг подавлен\nнаступление вокруг замрёт на сутки"+
+       (had?"\nсистема: "+occInfo(had-1).ru:""));
+}
+function occCalmNear(sx,sy){
+  if(!G.occCalm)return false;
+  const now=Date.now();
+  for(const k in G.occCalm){
+    if(now-G.occCalm[k]>OCC_CALM_MS){delete G.occCalm[k];continue;}
+    const [cx,cy]=k.split(",").map(Number);
+    if(Math.max(Math.abs(cx-sx),Math.abs(cy-sy))<=2)return true;
+  }
+  return false;
+}
+/* ── логово ──
+   В занятой системе пиратская база — не просто база, а логово: уровень выше,
+   на мостике сидит барон, и разгром гасит очаг. Отдельного режима под это не
+   нужно — абордаж (`24a-mode-raid`) уже умеет всё, чего это требует. */
+function occLairLevel(sx,sy){return occLvl(sx,sy);}
+function occLairName(sx,sy){
+  const l=occLvl(sx,sy);
+  return l>=OCC_MAX?"ЛОГОВО БАРОНА":(l>=2?"ОПОРНЫЙ ПУНКТ":"");
 }

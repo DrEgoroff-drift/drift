@@ -1975,3 +1975,38 @@ TEST_SUITES.push(()=>suite("пираты: ранги растут с занят�
   occSet(5,5,3);
   ok(occExtraPirates(5,5)>a,"под пиратами их больше");
 }));
+
+/* ── хвосты M87: очаг, логово, яхта ── */
+TEST_SUITES.push(()=>suite("очаг подавлен, логово, яхта",()=>{
+  resetWorld();
+  G.occ={};G.occCalm={};G.freed=0;
+  /* разбитая база гасит наступление вокруг себя на сутки */
+  occSet(6,6,2);
+  occSuppress(6,6);
+  eq(occLvl(6,6),1,"подавление сбивает уровень");
+  ok(occCalmNear(6,6),"рядом с очагом тихо");
+  ok(occCalmNear(7,7),"тишина достаёт на два сектора");
+  ok(!occCalmNear(12,12),"но не на всю галактику");
+  /* пока тихо, фронт от этой системы не растёт */
+  const before=Object.keys(G.occ).length;
+  G.occT=0;occTick();
+  eq(Object.keys(G.occ).length,before,"наступление замерло");
+  /* логово: имя и уровень зависят от занятости */
+  occSet(6,6,3);
+  eq(occLairLevel(6,6),3,"логово по уровню занятости");
+  ok(/БАРОН/.test(occLairName(6,6)),"под пиратами это логово барона");
+  occSet(6,6,1);
+  eq(occLairName(6,6),"","на слабой занятости логова нет");
+  /* яхта: не приносит кредитов, но поднимает мораль */
+  G.owned={};
+  eq(yachtOwned(),null,"яхты нет");
+  eq(yachtMoraleMul(),1,"и надбавки нет");
+  const luxe=FLEET_KEYS.filter(id=>FLEET[id].tier==="luxe")[0];
+  ok(luxe,"в каталоге есть люкс");
+  G.owned[luxe]=true;
+  ok(yachtOwned(),"яхта в ангаре");
+  ok(yachtMoraleMul()>1,"мораль возвращается быстрее");
+  const noDock=yachtMoraleMul();
+  G.home={turn:0,tier:HOME_TIERS.length,sx:0,sy:0,made:0,garage:[],showcase:{},trophies:[]};
+  ok(yachtMoraleMul()>noDock,"с причалом дома эффект сильнее");
+}));

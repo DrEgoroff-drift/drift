@@ -127,6 +127,12 @@ function drawPirateBase(zx,zy,Z){
   ctx.fillText(PB.name.toUpperCase(),x,y+34);
 }
 function enterRaid(PB){
+  /* В занятой системе база — логово: уровень выше на занятость, поэтому и
+     отсеки крупнее, и охраны больше. Отдельный режим под «данж» не нужен —
+     абордаж уже умеет всё, чего это требует. */
+  const lair=occLairLevel(G.sx,G.sy);
+  if(lair){PB=Object.assign({},PB,{level:PB.level+lair,
+    name:(occLairName(G.sx,G.sy)||PB.name)});}
   const R=genRaid(PB.seed,PB.level);
   const st=stat();
   const start=R.rooms[0];
@@ -146,7 +152,11 @@ function enterRaid(PB){
          rm.k==="reactor"?(r()<.5?"heavy":"grunt"):
          (r()<.25?"heavy":(r()<.5?"rusher":"grunt")));
       const K=FOE_KINDS[kind],hp=K.hp+PB.level*12;
-      foes.push({x,z,a:r()*TAU,kind,hp,hpMax:hp,boss:kind==="boss",
+      /* барон сидит на мостике логова: он не «ещё один босс», а тот, ради кого
+         сюда и летят, — втрое живучее обычного мини-босса */
+      const baron=lair>=OCC_MAX&&rm.k==="bridge"&&i===0;
+      foes.push({x,z,a:r()*TAU,kind,hp:baron?hp*3:hp,hpMax:baron?hp*3:hp,
+        boss:kind==="boss",baron,
         cool:0,aware:false,seed:hashi(PB.seed,foes.length*131,9),bob:r()*TAU});
     }
     const [lx,lz]=cellCenter(rm.cx,rm.cy);
@@ -182,6 +192,8 @@ function raidLeave(msg,lostShare){
   /* если в этом секторе пираты держат ваших людей — штурм освобождает их даром.
      Выкуп остаётся вариантом для тех, кому лень лететь; это и есть выбор */
   if(lostShare<=0)crewFreeHostagesAt(G.sx,G.sy);
+  /* разбитая база гасит очаг: наступление вокруг замирает на сутки */
+  if(lostShare<=0)occSuppress(G.sx,G.sy);
   saveGame(true);
   tell(lostShare>0?"warn":"kill",msg+" · техкомпонентов "+bag.tech+", данных "+bag.data+
     (bag.parts.length?", частей "+bag.parts.length:""),
@@ -528,16 +540,18 @@ function drawRaid(){
     }else if(m.kind==="foe"){
       const f=m.o,K=FOE_KINDS[f.kind]||FOE_KINDS.grunt;
       ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s*.9,s*.9);
-      ctx.fillStyle=K.col;
-      ctx.beginPath();ctx.ellipse(0,0,K.r,K.r*1.6,0,0,TAU);ctx.fill();
-      ctx.fillStyle="#1b2229";ctx.beginPath();ctx.arc(0,-13,7,0,TAU);ctx.fill();
-      ctx.fillStyle=f.aware?"rgba(255,90,70,.95)":"rgba(255,200,120,.7)";
-      ctx.beginPath();ctx.arc(0,-13,3,0,TAU);ctx.fill();
+      drawFoeBody(f,K);
       ctx.restore();
-      const w=34*s,hp=clamp(f.hp/f.hpMax,0,1);
-      ctx.fillStyle="rgba(0,0,0,.6)";ctx.fillRect(m.p.x-w/2,m.p.y-26*s,w,4);
-      ctx.fillStyle=f.boss?"rgba(255,90,70,.95)":"rgba(242,178,92,.9)";
-      ctx.fillRect(m.p.x-w/2,m.p.y-26*s,w*hp,4);
+      const w=(f.baron?52:34)*s,hp=clamp(f.hp/f.hpMax,0,1);
+      ctx.fillStyle="rgba(0,0,0,.6)";ctx.fillRect(m.p.x-w/2,m.p.y-26*s,w,f.baron?6:4);
+      ctx.fillStyle=f.baron?"rgba(255,140,90,.98)":
+                   (f.boss?"rgba(255,90,70,.95)":"rgba(242,178,92,.9)");
+      ctx.fillRect(m.p.x-w/2,m.p.y-26*s,w*hp,f.baron?6:4);
+      if(f.baron){
+        ctx.fillStyle="rgba(255,180,120,.95)";ctx.font="9px ui-monospace,monospace";
+        ctx.textAlign="center";
+        ctx.fillText("БАРОН",m.p.x,m.p.y-31*s);
+      }
     }else{
       ctx.save();ctx.translate(m.p.x,m.p.y+10*s);ctx.scale(s*.8,s*.8);
       drawAstronaut({phase:S.walkPhase,amp:keys.thrust||keys.brake?1:0,walk:false,air:false});
@@ -598,4 +612,79 @@ function drawRaid(){
   ctx.fillStyle="rgba(242,178,92,.8)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
   ctx.fillText("СКАФАНДР "+Math.round(S.suit)+"% · ЗАРЯДОВ "+S.ammo+
     (S.armor>0?" · БРОНЯ "+Math.round(S.armor*100)+"%":""),bx,by+18);
+}
+/* ── тело противника ──
+   Абордаж — единственное место игры, где враг стоит на ногах в полный рост,
+   а рисовался овалом с кружком-головой: на фоне отсеков с их сваркой и
+   решётками это читалось фишкой из настолки. Здесь тело по тем же правилам,
+   что фигуры в кантине и рубке: плечи шире таза, ноги врозь с разным тоном,
+   оружие в руках, шлем с забралом. Барон отличается не размером, а силуэтом —
+   плащ, гребень на шлеме и тяжёлый ствол на сошке. */
+function drawFoeBody(f,K){
+  const col=hex2rgb(K.col),r=K.r;
+  const body=rgba(col,.95),dark=rgba(mixc(col,[8,12,18],.6),.96);
+  const sc=f.baron?1.35:1;
+  ctx.scale(sc,sc);
+  const bob=Math.sin((f.bob||0)+G.t*.05)*.8;
+  ctx.fillStyle="rgba(0,0,0,.45)";                 // тень под ногами
+  ctx.beginPath();ctx.ellipse(0,r*1.5,r*1.1,r*.3,0,0,TAU);ctx.fill();
+  if(f.baron){
+    /* Плащ — трапеция с изломом по низу, а не эллипс: округлый «мешок» съедал
+       силуэт и делал барона снеговиком. Рисуется ДО ног, поэтому ноги видны. */
+    ctx.fillStyle=rgba(mixc(col,[18,10,14],.55),.92);
+    ctx.beginPath();
+    // плащ узкий и с вырезом: широкий закрывал ноги, и барон читался конусом
+    ctx.moveTo(-r*.62,-r*.85);ctx.lineTo(-r*1.05,r*1.2);ctx.lineTo(-r*.62,r*1.05);
+    ctx.lineTo(-r*.5,r*.2);ctx.lineTo(r*.5,r*.2);ctx.lineTo(r*.62,r*1.05);
+    ctx.lineTo(r*1.05,r*1.2);ctx.lineTo(r*.62,-r*.85);ctx.closePath();ctx.fill();
+    ctx.strokeStyle=rgba(mixc(col,[255,220,190],.4),.35);ctx.lineWidth=r*.07;
+    ctx.stroke();
+  }
+  ctx.fillStyle=dark;                              // ноги длиннее: тело было пеньком
+  ctx.fillRect(r*.14,r*.45,r*.4,r*1.35);
+  ctx.fillStyle=rgba(mixc(col,[8,12,18],.3),.96);
+  ctx.fillRect(-r*.54,r*.45,r*.4,r*1.35);
+  ctx.fillStyle="rgba(0,0,0,.35)";                 // подошвы
+  ctx.fillRect(r*.1,r*1.68,r*.48,r*.16);ctx.fillRect(-r*.58,r*1.68,r*.48,r*.16);
+  ctx.fillStyle=body;                              // торс трапецией
+  ctx.beginPath();
+  ctx.moveTo(-r*.62,-r*.75+bob);ctx.lineTo(r*.62,-r*.75+bob);
+  ctx.lineTo(r*.82,-r*.15+bob);ctx.lineTo(r*.56,r*.55);ctx.lineTo(-r*.56,r*.55);
+  ctx.lineTo(-r*.82,-r*.15+bob);ctx.closePath();ctx.fill();
+  const sg=ctx.createLinearGradient(-r,0,r,0);     // объём
+  sg.addColorStop(0,"rgba(255,255,255,.12)");sg.addColorStop(1,"rgba(0,0,0,.3)");
+  ctx.fillStyle=sg;ctx.fill();
+  ctx.fillStyle="rgba(0,0,0,.3)";                  // ремень
+  ctx.fillRect(-r*.6,r*.12,r*1.2,r*.16);
+  /* оружие: у тяжёлого и барона — ствол на сошке, у прочих короткий автомат */
+  ctx.strokeStyle=dark;ctx.lineWidth=r*.28;ctx.lineCap="round";
+  // обе руки: одна на рукояти, вторая на цевье — раньше ствол торчал из плеча
+  ctx.beginPath();ctx.moveTo(r*.6,-r*.5+bob);ctx.lineTo(r*.85,r*.05);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-r*.55,-r*.45+bob);ctx.lineTo(r*.1,r*.1);
+  ctx.lineTo(r*1.15,-r*.02);ctx.stroke();
+  ctx.lineCap="butt";
+  ctx.fillStyle="rgba(40,46,56,.98)";
+  const gl=f.baron||f.kind==="heavy"?r*1.5:r*.95;
+  ctx.fillRect(r*.75,-r*.1,gl,r*.22);
+  if(f.baron||f.kind==="heavy"){                   // сошка под стволом
+    ctx.strokeStyle="rgba(40,46,56,.9)";ctx.lineWidth=r*.1;
+    ctx.beginPath();ctx.moveTo(r*1.6,r*.1);ctx.lineTo(r*1.4,r*.6);
+    ctx.moveTo(r*1.6,r*.1);ctx.lineTo(r*1.9,r*.6);ctx.stroke();
+  }
+  ctx.fillStyle=dark;                              // шея
+  ctx.fillRect(-r*.16,-r*.95+bob,r*.32,r*.22);
+  ctx.fillStyle="#1b2229";                         // шлем: голова была втрое велика
+  ctx.beginPath();ctx.arc(0,-r*1.18+bob,r*.5,0,TAU);ctx.fill();
+  if(f.baron){                                     // гребень: узкий и с завалом назад
+    ctx.fillStyle=rgba(mixc(col,[255,220,180],.55),.95);
+    ctx.beginPath();
+    ctx.moveTo(r*.05,-r*1.72+bob);ctx.lineTo(r*.14,-r*1.62+bob);
+    ctx.lineTo(r*.12,-r*1.35+bob);ctx.lineTo(-r*.26,-r*1.45+bob);ctx.closePath();ctx.fill();
+    // наплечники: ранг виден плечами, а не размером
+    ctx.fillStyle=rgba(mixc(col,[255,225,190],.35),.95);
+    ctx.beginPath();ctx.ellipse(-r*.7,-r*.6+bob,r*.26,r*.16,-.4,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.ellipse(r*.7,-r*.6+bob,r*.26,r*.16,.4,0,TAU);ctx.fill();
+  }
+  ctx.fillStyle=f.aware?"rgba(255,90,70,.95)":"rgba(255,200,120,.7)";
+  ctx.fillRect(-r*.34,-r*1.28+bob,r*.68,r*.18);    // забрало-полоса, а не глаз-точка
 }
