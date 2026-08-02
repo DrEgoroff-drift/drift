@@ -157,19 +157,11 @@ function hqRender(){
     return;
   }
   if(!G.mgrs.some(m=>m.id===hqSel))hqSel=G.mgrs[0].id;
-  /* колонка людей: портреты, а не строки — мрачное лицо видно раньше полосы */
-  const strip=el("div","row");
-  strip.style.flexWrap="wrap";
-  for(const m of G.mgrs){
-    const w=el("div","");
-    w.style.cssText="cursor:pointer;text-align:center;opacity:"+(m.id===hqSel?"1":".55");
-    w.appendChild(mgrFace(m,64));
-    w.appendChild(el("div","","<s style='font-size:8px;color:var(--dim);text-decoration:none'>"+
-      m.name+(mgrPoints(m)>0?" <b style='color:#f2b25c'>•</b>":"")+"</s>"));
-    w.onclick=()=>{hqSel=m.id;hqRender();};
-    strip.appendChild(w);
-  }
-  $hqBody.appendChild(strip);
+  /* рубка: люди стоят у пультов своих доменов, по человеку тыкают.
+     Полоска портретов была плоской вырезкой — здесь видно и место, и то,
+     чем домен занят прямо сейчас (`27f-hq-room`). */
+  hqScene();
+  $hqBody.appendChild(el("div","sec","ТКНИТЕ ПО ЧЕЛОВЕКУ У ПУЛЬТА · ПУСТОЙ ПУЛЬТ — СВОБОДНЫЙ ДОМЕН"));
   const m=G.mgrs.find(x=>x.id===hqSel);
   const R=MGR_ROLES[m.role];
   $hqBody.appendChild(el("div","sec",m.name.toUpperCase()+" · "+R.ru.toUpperCase()+
