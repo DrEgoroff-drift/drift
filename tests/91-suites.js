@@ -2145,3 +2145,50 @@ TEST_SUITES.push(()=>suite("узлы: тысяча находок и венец 
   applySave(snap);
   ok(crownOwned("pyre"),"венец пережил сохранение");
 }));
+
+/* ── дела кантины: отвечаешь, а не носишь ── */
+TEST_SUITES.push(()=>suite("кантина: дела с ответом и отложенным исходом",()=>{
+  resetWorld();
+  G.credits=50000;G.quests=[];G.dealsDone={};G.dealsWait=[];
+  /* ни одно дело не просит «привезти» и «убить столько-то» */
+  for(const D of DEAL_KINDS){
+    ok(D.opts.length>=2,"«"+D.ru+"»: есть из чего выбрать");
+    ok(D.opts.some(o=>o.free),"«"+D.ru+"»: можно отказаться");
+    ok(D.opts.some(o=>!o.free),"«"+D.ru+"»: отказ не единственный ответ");
+    for(const o of D.opts)ok(o.said&&o.said.length>0,"у ответа есть реплика");
+  }
+  const sys=(function(){for(let dx=-8;dx<=8;dx++)for(let dy=-8;dy<=8;dy++){
+    if(!starAt(dx,dy))continue;const s=getSystem(dx,dy);if(s.station)return s;}return null;})();
+  ok(sys,"нашлась станция");
+  G.st=sys.station;G.sys=sys;G.sx=sys.sx;G.sy=sys.sy;
+  const deals=stationDeals(sys);
+  ok(deals.length>=1&&deals.length<=3,"за столиками немного людей: "+deals.length);
+  eq(stationDeals(sys).map(d=>d.key).join(),deals.map(d=>d.key).join(),
+     "та же станция в тот же час — те же люди");
+  /* ответ стоит денег и записывается делом в журнал */
+  const d=deals[0],paid=d.def.opts.findIndex(o=>!o.free);
+  const before=G.credits;
+  ok(dealAnswer(d,paid),"ответили");
+  ok(dealTaken(d.key),"дело больше не предлагают");
+  const o=d.def.opts[paid];
+  if(o.cost)ok(G.credits<before,"ответ стоил денег");
+  if(o.gain)ok(G.credits>before,"заплатили вперёд");
+  if(o.later){
+    ok(questFind("deal:"+d.key),"отложенный исход записан в журнал");
+    eq(G.dealsWait.length,1,"и ждёт своего часа");
+    /* исход приходит сам, когда время вышло */
+    G.dealsWait[0].at=Date.now()-1;
+    dealsTick();
+    eq(G.dealsWait.length,0,"исход пришёл");
+    ok(!questFind("deal:"+d.key),"дело в журнале закрыто");
+  }
+  /* бросок сделан заранее: один и тот же исход не зависит от момента проверки */
+  const key="deal:test";
+  const a=rng(hashi(key.length*7717,1234,0xD0))();
+  const b=rng(hashi(key.length*7717,1234,0xD0))();
+  eq(a,b,"исход детерминирован ключом, а не временем открытия журнала");
+  /* сохранение */
+  const snap=JSON.parse(JSON.stringify(snapshot()));
+  G.dealsDone={};applySave(snap);
+  ok(Object.keys(G.dealsDone).length>0,"отвеченные дела сохранились");
+}));

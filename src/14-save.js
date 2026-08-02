@@ -33,7 +33,8 @@ function snapshot(){
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,
-    nodes:G.nodes,crowns:G.crowns,log:G.log,ts:Date.now()};
+    nodes:G.nodes,crowns:G.crowns,
+    dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
@@ -85,6 +86,9 @@ function applySave(s){
   /* найденные узлы и собранные венцы: в записи только номера */
   G.nodes=(s.nodes&&typeof s.nodes==="object")?s.nodes:{};
   G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
+  /* дела кантины: отвеченные и те, чей исход ещё не пришёл */
+  G.dealsDone=(s.dealsDone&&typeof s.dealsDone==="object")?s.dealsDone:{};
+  G.dealsWait=Array.isArray(s.dealsWait)?s.dealsWait:[];
   G.drones=Array.isArray(s.drones)?s.drones:[];
   G.droneInventory=Math.max(0,s.droneInventory|0);
   /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».

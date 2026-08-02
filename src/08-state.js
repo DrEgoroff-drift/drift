@@ -38,6 +38,7 @@ const G={
   market:{},uniqueShips:{},drones:[],droneInventory:0,
   /* фронт пиратов и счёт отбитых систем: цель игры видна числом */
   occ:{},occT:0,freed:0,occCalm:{},mines:{},quests:[],nodes:{},crowns:{},
+  dealsDone:{},dealsWait:[],
   pirates:[],shots:[],log:[],logNew:0,
   crew:[],allies:[],  // наёмники персистятся, их корабли в системе — эфемерны
   /* управляющие: четыре места, по одному на домен. Чертежи исследователя —
