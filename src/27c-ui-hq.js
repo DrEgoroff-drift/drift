@@ -86,6 +86,29 @@ function renderCantina(){
   if(!free.length)
     $body.appendChild(el("div","row","<div class='nm'><s>зал пуст: всех, кто тут сидел, "+
       "вы уже наняли. Состав меняется сам — загляните позже или на другой станции.</s></div>"));
+  /* ── за столиками ──
+     Не найм и не поручение: люди со своими делами. Всё, что здесь делает игрок, —
+     отвечает; работа уже сделана кем-то другим (27g-deals). */
+  const deals=stationDeals(G.sys).filter(d=>!dealTaken(d.key));
+  if(deals.length){
+    $body.appendChild(el("div","sec","ЗА СТОЛИКАМИ · ЛЮДИ СО СВОИМИ ДЕЛАМИ · "+
+      "ОТВЕТ СТОИТ ДЕНЕГ, ВРЕМЕНИ ИЛИ ЧУЖОЙ СУДЬБЫ"));
+    for(const d of deals){
+      const D=d.def;
+      $body.appendChild(el("div","row","<div class='nm'><b style='color:#f2b25c'>"+
+        D.ru+"</b><s>"+d.name+" · "+D.who+
+        "<br><span style='color:#cfe3ea;line-height:1.8'>— "+D.text+"</span></s></div>"));
+      const rr=el("div","row");
+      D.opts.forEach((o,i)=>{
+        const b=el("button","act sm"+(o.free?"":" gold"),
+          o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" кр":""));
+        b.disabled=!!(o.cost&&G.credits<o.cost);
+        b.onclick=()=>{if(dealAnswer(d,i))renderTab();};
+        rr.appendChild(b);
+      });
+      $body.appendChild(rr);
+    }
+  }
   $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
 }
 /* Зал: канва во всю ширину панели, по сидящему тыкают. Перерисовывается своим
