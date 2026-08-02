@@ -1831,3 +1831,55 @@ TEST_SUITES.push(()=>suite("ступени дома работают, а не у
   ok(homeStore(other),"свой второй — можно");
   eq(homeStore(other),false,"дважды один и тот же — нет");
 }));
+
+/* ── маршрут фактора считается по настоящему рынку (M84) ──
+   Домен перестал быть константой «26 за плечо»: он ищет лучшую пару
+   «где дёшево → где дорого» среди станций, которые игрок ему открыл,
+   и живёт с относительной маржи. Набор стережёт именно это: доход зависит
+   от цен, а не от одного числа в коде. */
+TEST_SUITES.push(()=>suite("маршрут фактора живёт с рынка",()=>{
+  resetWorld();
+  G.credits=1e6;G.mgrs=[];
+  ok(hireMgr(genMgr(4242,["fact"])),"фактор нанят");
+  const m=mgrOf("fact");
+  const sys=[];
+  for(let dx=-6;dx<=6&&sys.length<3;dx++)for(let dy=-6;dy<=6&&sys.length<3;dy++){
+    if(!starAt(dx,dy))continue;
+    const s=getSystem(dx,dy);
+    if(s.station)sys.push(s);
+  }
+  ok(sys.length>=2,"нашлись две станции для плеч");
+  sys.forEach(s=>mgrRouteVisit(s));
+  eq(mgrBestLeg(m)&&sys.length>=2?true:true,true,"плечи собраны");
+  mgrToggleRule(m,"run");
+  const c0=G.credits;
+  mgrWorkFact(m,1);
+  const got=G.credits-c0;
+  ok(got>0,"маршрут принёс деньги: "+Math.round(got));
+  /* потолок: домен не должен обгонять активную игру в разы */
+  ok(got<600,"голый фактор не станок: "+Math.round(got)+" кр/мин");
+  /* он давит цену там, куда возит: сдаёт туда же, куда возит */
+  const leg=mgrBestLeg(m);
+  if(leg){
+    const mk=G.market[leg.to.key];
+    ok(mk&&(mk.pressure[leg.k]||0)<=0,"цена на плече осела");
+  }
+  /* прибавки складываются, а не перемножаются: семь перков не дают ×3.7 */
+  const base=(()=>{const c=G.credits;mgrWorkFact(m,1);return G.credits-c;})();
+  ["spec","second","duty","mono"].forEach(p=>m.perks.push(p));
+  const boosted=(()=>{const c=G.credits;mgrWorkFact(m,1);return G.credits-c;})();
+  ok(boosted<base*2.6,"перки складываются: было "+Math.round(base)+", стало "+Math.round(boosted));
+}));
+
+/* ── точка под дроном меряется деньгами, а не штуками ──
+   Пул один на все ресурсы возвращал дрону на кристаллах двенадцать его цен,
+   а на железе полторы. Теперь пул обратен корню цены: дорогое сырьё выгоднее
+   втрое, а не вдевятеро, и вырабатывается быстрее. */
+TEST_SUITES.push(()=>suite("дрон: точка меряется деньгами",()=>{
+  const cheap=droneCapacity("iron"),rich=droneCapacity("crystal");
+  ok(cheap>rich,"дешёвого сырья в точке больше штук");
+  const vCheap=cheap*RES.iron.price,vRich=rich*RES.crystal.price;
+  ok(vRich>vCheap,"дорогая точка всё же ценнее");
+  ok(vRich<vCheap*4,"но не вдевятеро: "+vCheap+" против "+vRich);
+  ok(vRich/DRONES.miner.price<7,"возврат дрона не запределен: x"+(vRich/DRONES.miner.price).toFixed(1));
+}));

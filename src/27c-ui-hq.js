@@ -409,6 +409,8 @@ function mgrDomainLine(m){
   if(m.role==="fact")
     return m.route.length>=2
       ? "маршрут из "+m.route.length+" плеч (макс "+mgrRouteMax(m)+"): "+m.route.join(" → ")+
+        (m.legNote?"<br><span style='color:#8fd08a'>везёт сейчас:</span> "+m.legNote
+                  :"<br><b style='color:#ff9d7a'>цены на плечах сошлись — возить нечего</b>")+
         (mgrPerk(m,"mono")?"<br><b style='color:#8fd08a'>монополия: на плечах маршрута цена держится выше</b>":"")+
         factPrices(m)+
         (mgrRule(m,"run")?"":"<br><b style='color:#ff9d7a'>приказ «водить постоянно» не в слоте — маршрут стоит</b>")

@@ -553,22 +553,74 @@ function mgrRouteVisit(sys){
   mgrSay(m,"Плечо маршрута: «"+sys.station.name+"»");
 }
 function mgrRouteMax(m){return 2+(mgrPerk(m,"leg")?1:0)+(mgrLevel(m)>=5?1:0);}
+/* ── лучшее плечо маршрута ──
+   Маршрут перестал быть числом «26 за плечо»: фактор возит НАСТОЯЩИЙ товар по
+   настоящим ценам (`marketFor`) между станциями, которые вы ему открыли. Ищем
+   лучшую пару «где дёшево → где дорого» по всем плечам и всем товарам: это и
+   есть то, чем он занят. Возвращает {k,buy,sell,margin,from,to} или null. */
+function mgrBestLeg(m){
+  const keys=m.route.slice(0,mgrRouteMax(m));
+  const sys=[],pr=[];
+  for(const key of keys){
+    const [sx,sy]=key.split(",").map(Number);
+    const s=getSystem(sx,sy);
+    if(!s||!s.station)continue;
+    sys.push(s);pr.push(marketFor(s));
+  }
+  if(sys.length<2)return null;
+  let best=null;
+  for(let a=0;a<sys.length;a++)for(let b=0;b<sys.length;b++){
+    if(a===b)continue;
+    for(const k of TRADE_KEYS){
+      const margin=pr[b][k]-pr[a][k];
+      if(margin<=0)continue;
+      if(!best||margin>best.margin)
+        best={k,margin,buy:pr[a][k],sell:pr[b][k],from:sys[a],to:sys[b]};
+    }
+  }
+  return best;
+}
 function mgrWorkFact(m,min){
   if(!mgrRule(m,"run"))return min*.2;
   const legs=Math.min(m.route.length,mgrRouteMax(m));
   if(legs<2)return min*.2;
-  let per=26*legs*(1+(mgrLevel(m)-1)*.12);
-  if(mgrPerk(m,"spec"))per*=1.3;
-  if(mgrPerk(m,"second"))per*=1.45;
-  if(mgrPerk(m,"duty"))per*=1.1;
-  if(mgrRule(m,"hold"))per*=1.12;
+  const leg=mgrBestLeg(m);
+  /* Пол маржи: даже когда цены на плечах сошлись, маршрут не встаёт — фактор
+     возит подряды и мелочь. Без пола домен молча уходил в ноль на ровном рынке,
+     и игрок видел бы не решение, а поломку. */
+  /* Пол относительной маржи: даже на сошедшихся ценах маршрут не встаёт —
+     фактор возит подряды и мелочь. Потолок — чтобы дикая вилка на одном товаре
+     не превращала домен в станок. */
+  const rel=clamp(leg?leg.margin/Math.max(1,leg.buy):.05,.05,.35);
+  if(!leg&&!m.dryTold){mgrSay(m,"Цены на плечах сошлись — везу мелочь","warn");m.dryTold=1;}
+  if(leg)m.dryTold=0;
+  /* Оборотный капитал: сколько кредитов он успевает прокрутить за минуту.
+     Считать по АБСОЛЮТНОЙ марже нельзя — тогда он «возит» ксенобиом по 190 кр
+     мешками и приносит 1200 кр/мин с двух плеч. Он возит объём, а доход даёт
+     относительная маржа: та же наценка на дешёвом товаре и на дорогом.
+     Прибавки СКЛАДЫВАЮТСЯ, а не перемножаются: семь множителей подряд давали
+     ×3.7 и превращали домен из «поднимает потолок» в «кормит вместо игры». */
+  let vol=260*legs*(1+(mgrLevel(m)-1)*.12);
+  let add=0;
+  if(mgrPerk(m,"spec"))add+=.30;
+  if(mgrPerk(m,"second"))add+=.45;
+  if(mgrPerk(m,"duty"))add+=.10;
+  if(mgrRule(m,"hold"))add+=.12;
   /* «Пороги» работают только будучи в слоте — как и всё прочее у домена */
-  if(mgrRule(m,"buylow"))per*=1.14;
-  if(mgrRule(m,"sellhi"))per*=1.14;
+  if(mgrRule(m,"buylow"))add+=.14;
+  if(mgrRule(m,"sellhi"))add+=.14;
   /* «Монополия»: его товар тянет вверх цену на всём маршруте (см. marketFor) */
-  if(mgrPerk(m,"mono"))per*=1.25;
-  if(mgrHas(m,"pirate"))per*=.9;
-  let gross=Math.round(per*min);
+  if(mgrPerk(m,"mono"))add+=.25;
+  if(mgrHas(m,"pirate"))add-=.10;
+  vol*=Math.max(.2,1+add);
+  const cap=vol*min;                 // прокручено кредитов
+  let gross=Math.round(cap*rel);
+  m.legNote=leg?(RES[leg.k].ru.toLowerCase()+": «"+leg.from.station.name+"» "+leg.buy+
+            " → «"+leg.to.station.name+"» "+leg.sell+" кр"):"";
+  /* Он давит собственную маржу: сдаёт туда же, куда возит, и цена там оседает.
+     Без этого маршрут был вечной рентой, не замечающей рынка. */
+  const mk=leg?G.market[leg.to.key]:null;
+  if(mk)mk.pressure[leg.k]=clamp((mk.pressure[leg.k]||0)-(cap/Math.max(1,leg.buy))*.004,-.35,0);
   /* без конвоя маршрут иногда грабят: домен не бесплатная рента */
   if(!mgrPerk(m,"convoy")&&!mgrRule(m,"safe")&&
      rng(hashi(m.seed,Math.floor(Date.now()/300000),0x7A1))()<.06*min){
