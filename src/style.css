@@ -424,3 +424,15 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
   .locus u{font-size:12px}
   :root{--pad:12px}
 }
+
+/* ── дела в журнале ──
+   Строка дела крупнее записи ленты и явно нажимаема: у неё своя подложка,
+   левая полоса-акцент и стрелка на строках с адресом. Журнал — не лента,
+   и выглядеть одинаково они не должны. */
+#loglist .li.quest{background:rgba(127,230,216,.045);
+  border-left:2px solid rgba(242,178,92,.55);align-items:flex-start}
+#loglist .li.quest span{color:var(--text)}
+#loglist .li.quest span i{font-style:normal;color:var(--dim);font-size:10px}
+#loglist .li.quest em{color:var(--amber)}
+#loglist .li.quest.go:active{background:rgba(242,178,92,.14)}
+#loglist .li.quest.go span b:first-child::after{content:" →";color:var(--amber)}

@@ -37,6 +37,42 @@ function logBtnLabel(){
 function renderLog(){
   const box=document.getElementById("loglist");
   box.textContent="";
+  /* ── дела впереди ленты ──
+     Лента отвечает на вопрос «что было», журнал — «что я должен». Второе важнее,
+     поэтому оно сверху, и по строке можно ткнуть: курс ляжет на карту. */
+  if(typeof questSync==="function"){
+    questSync();
+    const open=questOpen();
+    if(open.length){
+      const head=document.createElement("div");
+      head.className="li dim";
+      const hs=document.createElement("span");
+      hs.textContent="ДЕЛА · "+open.length+" · ТКНИТЕ ПО СТРОКЕ — КУРС НА КАРТЕ";
+      head.appendChild(hs);box.appendChild(head);
+      for(const q of open){
+        const row=document.createElement("div");
+        row.className="li quest"+(q.sx!==null?" go":"");
+        const em=document.createElement("em");
+        em.textContent=q.sx!==null?(q.sx+":"+q.sy):"—";
+        const sp=document.createElement("span");
+        const left=questLeft(q);
+        sp.innerHTML="<b>"+q.ru+"</b>"+(q.from?" <i>· "+q.from+"</i>":"")+
+          (left?" <b style='color:#f2b25c'>· "+left+"</b>":"")+
+          (q.note?"<br><i>"+q.note+"</i>":"")+
+          (q.reward?"<br><i style='color:#8fd08a'>награда: "+q.reward+"</i>":"");
+        row.appendChild(em);row.appendChild(sp);
+        if(q.sx!==null){
+          row.style.cursor="pointer";
+          row.onclick=()=>{questGoto(q);};
+        }
+        box.appendChild(row);
+      }
+      const sep=document.createElement("div");
+      sep.className="li dim";
+      const ss=document.createElement("span");ss.textContent="ЛЕНТА СОБЫТИЙ";
+      sep.appendChild(ss);box.appendChild(sep);
+    }
+  }
   if(!G.log.length){
     const e=document.createElement("div");e.className="li dim";
     const s=document.createElement("span");s.textContent="пока пусто";
