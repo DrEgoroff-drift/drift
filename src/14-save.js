@@ -32,7 +32,7 @@ function snapshot(){
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
-    fuseGen:G.fuseGen,mines:G.mines,log:G.log,ts:Date.now()};
+    fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,log:G.log,ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
@@ -79,6 +79,8 @@ function applySave(s){
   G.occCalm=(s.occCalm&&typeof s.occCalm==="object")?s.occCalm:{};
   /* выработка шахт: только список выкопанных ячеек, порода выводится из seed */
   G.mines=(s.mines&&typeof s.mines==="object")?s.mines:{};
+  /* журнал дел: обещания игрока переживают перезаход */
+  G.quests=Array.isArray(s.quests)?s.quests:[];
   G.drones=Array.isArray(s.drones)?s.drones:[];
   G.droneInventory=Math.max(0,s.droneInventory|0);
   /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».

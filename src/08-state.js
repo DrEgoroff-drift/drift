@@ -37,7 +37,7 @@ const G={
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,
   /* фронт пиратов и счёт отбитых систем: цель игры видна числом */
-  occ:{},occT:0,freed:0,occCalm:{},mines:{},
+  occ:{},occT:0,freed:0,occCalm:{},mines:{},quests:[],
   pirates:[],shots:[],log:[],logNew:0,
   crew:[],allies:[],  // наёмники персистятся, их корабли в системе — эфемерны
   /* управляющие: четыре места, по одному на домен. Чертежи исследователя —

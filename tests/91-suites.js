@@ -2057,3 +2057,47 @@ TEST_SUITES.push(()=>suite("постройки видны с земли",()=>{
   G.home.sx=G.sx+3;
   eq(builtHere().length,1,"чужая система — дома здесь нет");
 }));
+
+/* ── журнал дел ── */
+TEST_SUITES.push(()=>suite("журнал: принял, записалось, есть куда лететь",()=>{
+  resetWorld();
+  G.credits=1e6;G.quests=[];
+  eq(questOpen().length,0,"журнал пуст");
+  /* поручение управляющего: принял — записалось */
+  ok(hireMgr(genMgr(777,["cmd"])),"командир нанят");
+  const m=mgrOf("cmd");
+  const J=MGR_JOBS.filter(j=>j.role==="cmd"&&!j.choice)[0];
+  ok(J,"нашлось поручение без выбора");
+  m.job={id:J.id,offer:1,t0:Date.now(),mins:J.mins};
+  ok(jobAccept(m),"взялись");
+  const q=questFind("job:"+m.id+":"+J.id);
+  ok(q,"дело в журнале");
+  eq(q.state,"active","и оно открыто");
+  eq(q.sx,G.sx,"адрес — сектор, где взяли");
+  ok(q.until>Date.now(),"срок записан");
+  ok(questLeft(q).length>0,"срок показывается словами: "+questLeft(q));
+  /* курс по делу: ткнули — карта и выбранная система */
+  q.sx=3;q.sy=4;
+  ok(questGoto(q),"курс проложен");
+  eq(G.sel.x,3,"выбрана та система");
+  eq(G.mode,"map","и открыта карта");
+  /* закрылось — ушло из открытых, но осталось в истории */
+  questDone("job:"+m.id+":"+J.id,"сделано");
+  eq(questOpen().length,0,"открытых дел нет");
+  eq(questAll().length,1,"а запись осталась");
+  /* мир заводит дела сам: занятая система, где вы были */
+  G.market["5,5"]={pressure:{},t:0};
+  occSet(5,5,2);
+  questSync();
+  ok(questFind("occ:5,5"),"дело на отбитие завелось");
+  occSet(5,5,0);
+  questSync();
+  ok(!questFind("occ:5,5"),"и закрылось само, когда система освобождена");
+  /* дважды одно дело не заводится */
+  questAdd("x",{ru:"раз"});questAdd("x",{ru:"раз"});
+  eq(questAll().filter(z=>z.key==="x").length,1,"повтор не плодит строк");
+  /* переживает сохранение */
+  const snap=JSON.parse(JSON.stringify(snapshot()));
+  G.quests=[];applySave(snap);
+  ok(questAll().length>=2,"журнал сохранился");
+}));

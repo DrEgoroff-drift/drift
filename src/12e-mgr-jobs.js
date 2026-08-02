@@ -39,6 +39,7 @@ function jobDone(m,text){
   m.loy=clamp(m.loy+8,0,100);
   m.jobsDone=(m.jobsDone||0)+1;
   m.jobPast=(m.jobPast||[]).concat(m.job.id);
+  questDone("job:"+m.id+":"+J.id,got.filter(Boolean).join(", "));
   mgrSay(m,(text||J.win_ru)+" · "+got.filter(Boolean).join(", "),"good");
   tell("","Поручение закрыто: "+J.ru,m.name+": "+J.ru+"\n"+got.filter(Boolean).join("\n"));
   m.job=null;
@@ -47,6 +48,7 @@ function jobFail(m,text){
   const J=jobDef(m.job.id);
   m.loy=clamp(m.loy-(J.loss||10),0,100);
   m.jobPast=(m.jobPast||[]).concat(m.job.id);
+  questFail("job:"+m.id+":"+J.id,text||J.fail_ru);
   mgrSay(m,(text||J.fail_ru),"warn");
   logAdd("warn",m.name+": "+(text||J.fail_ru));
   m.job=null;
@@ -57,6 +59,7 @@ function jobRefuse(m){
   const J=jobDef(m.job.id);
   m.loy=clamp(m.loy-6,0,100);
   m.jobPast=(m.jobPast||[]).concat(m.job.id);
+  questFail("job:"+m.id+":"+J.id,"вы отказались");
   mgrSay(m,"Отказ принят. "+(J.refuse_ru||"Ладно."),"warn");
   m.job=null;
   return true;
@@ -243,6 +246,13 @@ function jobAccept(m){
   m.job={id:J.id,t0:Date.now(),mins:J.mins,mark:0};
   if(J.start)J.start(m);
   mgrSay(m,"Взялись. Срок — "+J.mins+" минут");
+  /* принятое поручение живёт в журнале, а не только во всплывающей строке:
+     адрес — сектор, где стоит домен, туда и лететь, если понадобится */
+  questAdd("job:"+m.id+":"+J.id,{ru:J.ru,kind:"job",from:m.name,
+    note:(typeof J.text==="function"?J.text(m):J.text)||"",
+    sx:G.sx,sy:G.sy,place:"домен «"+MGR_ROLES[m.role].dom+"»",
+    until:Date.now()+(J.mins||10)*60000,
+    reward:J.win_ru||""});
   return true;
 }
 /* оплаченный вариант выбора списывает деньги до последствий */
