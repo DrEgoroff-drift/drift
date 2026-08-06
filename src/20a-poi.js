@@ -662,5 +662,12 @@ function poiInspect(q){
   logAdd("tech","Осмотр: "+F.ru+" · "+got);
   /* любой памятник — аномалия для того, кто его не строил */
   nodeDrop("в аномалии",.4+d*.6,hashi(q.seed,0xA0,3));
+  /* редкость на своём адресе (12m-rare). Храм с уже известной координатой
+     отдаёт свою, отдельную ветку — это и есть закрытый хвост M92 «храм молчит
+     при известной координате»: он не отмалчивается, он отдаёт редкость плит. */
+  if(typeof rareTake==="function"){
+    if(q.k==="temple"&&G.relicHint)rareTake("temple",q.seed);
+    else rareTake("poi",q.seed);
+  }
   return true;
 }

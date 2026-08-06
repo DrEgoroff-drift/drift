@@ -2426,3 +2426,70 @@ TEST_SUITES.push(()=>suite("баржа: гибель оставляет след
   eq(G.bargePax.length,1,"пассажир заведён ровно один раз");
   ok(G.bargePax[0].id.indexOf("bp")===0,"пассажир — кандидат в звено с id bp*");
 }));
+
+TEST_SUITES.push(()=>suite("редкости: сто адресов, ни одного повтора",()=>{
+  resetWorld();
+  /* закрытая таблица ровно на сто, id уникальны */
+  eq(RARE.length,100,"в таблице ровно 100 редкостей");
+  const ids={};let dup=0;for(const R of RARE){if(ids[R.id])dup++;ids[R.id]=1;}
+  eq(dup,0,"все id уникальны");
+
+  /* ни один эффект — не кредиты */
+  const tags={};RARE_FX.forEach(f=>tags[f.tag]=1);
+  ok(!tags.credits&&!tags.cash,"среди тегов эффектов нет кредитов");
+  let credit=0;for(const R of RARE)if(/кредит|деньг/i.test(R.fx.ru))credit++;
+  eq(credit,0,"ни одна редкость не сулит кредиты");
+
+  /* каждое значение where — среди живых мест галактики. Логово барона живёт
+     только в опасных секторах (sysDanger>.5, т.е. далеко от старта), поэтому
+     обход идёт кольцами наружу, а не квадратом у нуля. */
+  for(const W of RARE_WHERE){
+    let live=null;
+    for(let rad=0;rad<=30&&!live;rad++){
+      for(let dx=-rad;dx<=rad&&!live;dx++)for(let dy=-rad;dy<=rad;dy++){
+        if(Math.max(Math.abs(dx),Math.abs(dy))!==rad)continue;   // только кромка кольца
+        if(!starAt(dx,dy))continue;const s=getSystem(dx,dy);
+        if(W.live(dx,dy,s)){live=s;break;}
+      }
+    }
+    ok(!!live,"место «"+W.ru+"» встречается в галактике");
+    ok((RARE_BY_WHERE[W.id]||[]).length>0,"у места «"+W.ru+"» есть свои редкости");
+  }
+
+  /* достижимость: перебором ключей достаётся КАЖДАЯ из ста — тот же сторож,
+     что нашёл недостижимые узлы на M91 */
+  const reach={};
+  for(const W of RARE_WHERE)
+    for(let k=1;k<4000;k++){const R=rareAtPlace(W.id,k);if(R)reach[R.id]=1;}
+  eq(Object.keys(reach).length,100,"все сто редкостей достижимы с какого-то адреса");
+
+  /* адрес детерминирован: то же место — тот же ответ */
+  eq(rareAtPlace("poi",777).id,rareAtPlace("poi",777).id,"адрес стабилен");
+
+  /* взять можно ровно один раз */
+  G.rareFound=[];
+  const R0=rareTake("poi",12345);
+  ok(!!R0,"с адреса достаётся редкость");
+  eq(rareCount(),1,"унесена одна");
+  const again=rareTake("poi",12345);
+  ok(!again,"с того же адреса второй раз — ничего");
+  eq(rareCount(),1,"счёт не вырос от повтора");
+
+  /* эффект собирается из унесённого и читается статой */
+  G.rareFound=[];
+  const gun=RARE.find(R=>R.fx.tag==="dmg");
+  G.rareFound=[gun.id];
+  ok(rareSum("dmg")>0,"эффект «орудие злее» суммируется");
+  const before=(function(){G.rareFound=[];return stat().dmg;})();
+  G.rareFound=[gun.id];
+  ok(stat().dmg>before,"редкость поднимает урон в stat()");
+
+  /* персист: только список id, переживает snapshot/applySave */
+  G.rareFound=[gun.id,RARE[0].id];
+  applySave(snapshot());
+  eq(rareCount(),2,"унесённые редкости пережили сохранение");
+  ok(rareHas(gun.id),"конкретная редкость на месте после загрузки");
+  /* мусор в записи отбрасывается, не роняя загрузку */
+  applySave(Object.assign(snapshot(),{rareFound:[123,null,"r5"]}));
+  eq(rareCount(),1,"из битого списка остаётся только валидный id");
+}));

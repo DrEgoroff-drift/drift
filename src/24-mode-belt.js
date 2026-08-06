@@ -307,6 +307,8 @@ function updateBelt(dt){
         /* выработанный камень иногда отдаёт узел: пояс — одно из мест,
            где они водятся (05a-nodes) */
         nodeDrop("в поясе",sysDanger(G.sx,G.sy)+.2,hashi(best.seed||1,0xB7,Date.now()&0xffff));
+        /* редкость на адресе выработки (12m-rare): ключ — seed самого камня */
+        if(typeof rareTake==="function")rareTake("belt",hashi(best.seed||1,0xB7,0xBEE7));
         say("Астероид выработан\n"+RES[best.res].ru);
         killRock(b,best,1.2);
       }

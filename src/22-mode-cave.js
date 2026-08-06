@@ -115,6 +115,8 @@ function updateCave(dt){
       tell("tech","Находка в пещере · +20 данных","Находка в пещере\n+20 данных");
       /* в глубине пещеры лежит не только запись данных (05a-nodes) */
       nodeDrop("в пещере",.5+sysDanger(G.sx,G.sy)*.5,hashi(C.findX|0,0xCA7,3));
+      /* редкость на адресе пещеры (12m-rare): ключ стабилен по системе и забою */
+      if(typeof rareTake==="function")rareTake("cave",hashi(G.sx,G.sy,(C.findX|0)^0xCA7E));
     }
   }else if(plant){
     G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
