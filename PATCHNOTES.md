@@ -1,83 +1,86 @@
-# Дрейф — патчноуты
+# Drift — patch notes
 
-Версия игры показывается на заставке. К формату сохранения (`v:4`) отношения не имеет:
-записи прошлых версий продолжают грузиться.
+The game version is shown on the title screen. It has nothing to do with the save format
+(`v:4`): records written by earlier versions keep loading.
 
----
-
-## 0.46.0 — «Сто редкостей»
-
-**Редкости.** Новый, самый твёрдый слой находок: закрытая таблица ровно на сто
-редких вещей. У каждой — свой адрес, а не шанс выпадения. Место либо хранит
-редкость, либо нет, и перезагрузка этого не качнёт: перебором её не взять.
-
-**Где искать.** Только среди уже живого: на памятниках, под плитами храма, в
-глубине пещеры, в выработке пояса, в логове барона, в трюме потопленной баржи.
-Собранное копится на доске рядом с наборами узлов.
-
-**Эффект — не деньги.** Каждая редкость даёт малое свойство вещи (радар дальше,
-трюм просторнее, орудие злее), читаемое там же, где модули и венцы. Кредитов не
-приносит ни одна: витрина — не банкомат. Полный набор из ста откроет то, что
-нельзя купить.
-
-**Храм с известной координатой заговорил.** Раньше он отмалчивался, если
-координата артефакта уже была; теперь отдаёт редкость своих плит — закрыт хвост
-M92.
+Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
+older entries below are left as they were written — translating history would cost more than it
+could ever save.
 
 ---
 
-## 0.45.0 — «Баржа в беде»
+## 0.46.0 — "A hundred rarities"
 
-**Перехват.** Иногда баржу застаёшь уже под обстрелом пиратов. Три исхода, и
-каждый — поступок: отогнать пиратов и спасти баржу (репутация вверх, доля груза
-благодарностью, капитан запомнил), пройти мимо, или добить самому — груз ваш,
-но фракция это запомнит, а репутация резко падает.
+**Rarities.** A new and hardest layer of finds: a closed table of exactly one hundred rare things.
+Each has an address of its own rather than a drop chance. A place either holds a rarity or it
+doesn't, and reloading won't budge it: you can't grind one out.
 
-**Контракт охраны.** У мирной баржи можно наняться охраной: аванс платят вперёд,
-адрес назначения ложится в журнал. Провал не отнимает кредиты — он бьёт по
-репутации. Стабильного плюса тут нет, как и у наёмника.
+**Where to look.** Only among what already lives: on monuments, under a temple's slabs, deep in a
+cave, in a worked-out belt rock, in a baron's lair, in the hold of a sunken barge. What you carry
+off accumulates on a board next to the node sets.
 
-**Обломки.** Потопленная баржа оставляет в системе остов — его можно обыскать
-ровно раз и достать годную часть, как с «остова корабля» на планете. Остовы
-переживают перезаход: это след вашего решения, а не декорация.
+**The effect is not money.** Every rarity grants a small property of a thing (radar reaches
+further, a roomier hold, a meaner gun), read in the same place as modules and crowns. Not one of
+them pays credits: the showcase is not an ATM. The full hundred will open something that cannot be
+bought.
 
-**Пассажир.** Изредка баржа в беде везёт не груз, а человека. Спасли — он всплывёт
-в кантине наёмником со строкой про тот рейс и пойдёт к вам дешевле обычного. Это
-единственный наёмник, который приходит сам.
+**The temple with a known coordinate speaks again.** It used to stay silent if the artifact
+coordinate was already known; now it hands over the rarity of its slabs — the M92 tail is closed.
 
-**У торгового фактора появилось тело.** Маршрут, который раньше был спредом на
-карте и строкой в сводке домена, теперь возит настоящий груз между настоящими
-станциями фактора. Баржа — длинный работяга с контейнерным хребтом, большими
-тихоходными раструбами и ходовой рубкой; оружия нет. К ней можно подойти в
-системе и сторговаться без стыковки.
-
-**Торг без стыковки.** Баржа продаёт свой груз дороже станции назначения и
-покупает ваш товар дешевле неё: денег на этом не выгадать, выигрыш — во времени,
-не нужно лететь до самой станции. У капитана есть имя и норов (прижимистый,
-пугливый, крепкий) — от него зависит уступка в цене. Сделка чуть двигает
-репутацию, как маленькая станция.
-
-**На карте — медленная точка** между двумя станциями на плече маршрута фактора:
-гружёная туда, порожняя обратно. Баржи эфемерны, как пираты и пояс, — в
-сохранение не идут.
-
-**Репутация станции.** Своя у каждой станции, от «вас тут не ждут» до «вы тут
-свой». Растёт от закрытых дел и снятых блокад, падает от сорванных обещаний.
-Влияет на топливо, ремонт и наём — на то, что назначает человек, а не рынок.
-
-**Последние узлы набора — только в логове барона.** Пока в семье осталось
-больше трёх ненайденных, они падают где падали; хвост берут там, куда надо
-дойти.
-
-**Узел стал вещью.** У каждого из тысячи узлов свой облик, собранный из его
-seed: тело многоугольником, деталь по семье и отделка по редкости — кант,
-клеймо, патина со сколом или свечение изнутри.
-
-**Дела кантины сели за столики** в нарисованном зале: по столику тыкают, как по
-кандидату у стойки.
-
-1214 зелёных.
 ---
+
+## 0.45.0 — "A barge in distress"
+
+**Interception.** Sometimes you find a barge already under pirate fire. Three outcomes, each of
+them a deed: drive the pirates off and save her (reputation up, a share of the cargo in thanks, the
+captain remembers), pass by, or finish her yourself — the cargo is yours, but the faction will
+remember and reputation drops sharply.
+
+**Escort contract.** A peaceful barge will hire you as escort: the advance is paid up front and the
+destination goes into the journal. Failure doesn't take credits — it hits reputation. There is no
+steady profit here, same as with a hired hand.
+
+**Wreckage.** A sunken barge leaves a wreck in the system — searchable exactly once for a usable
+part, like a planet-side "ship wreck". Wrecks survive a restart: they are the trace of your
+decision, not scenery.
+
+**A passenger.** Now and then a barge in distress carries a person rather than cargo. Save them and
+they surface in the cantina as a hire with a line about that run, and come cheaper than usual. The
+only hired hand who comes to you on their own.
+
+**The trade factor has a body now.** The route that used to be a spread on the map and a line in a
+domain summary now carries real cargo between the factor's real stations. A barge is a long
+workhorse with a container spine, big slow nozzles and a wheelhouse; no weapons. You can approach
+one in a system and haggle without docking.
+
+**Trading without docking.** A barge sells its cargo dearer than the destination station and buys
+yours cheaper than it does: there is no money in the spread, the gain is time — you don't have to
+fly all the way to the station. The captain has a name and a temper (tight-fisted, timid, sturdy)
+which drives the discount. A deal nudges reputation, like a small station would.
+
+**On the map, a slow dot** between two stations on a leg of the factor's route: loaded out, empty
+back. Barges are ephemeral, like pirates and the belt — they never enter the save.
+
+**Station reputation.** Its own per station, from "you aren't welcome here" to "you're one of ours".
+It rises from closed business and lifted blockades, falls from broken promises. It affects fuel,
+repair and hiring — the things a person prices, not the market.
+
+**A set's last nodes are only in a baron's lair.** While more than three in a family are still
+missing they drop where they always did; the tail is taken where you have to go and get it.
+
+**A node became a thing.** Each of the thousand nodes has a look assembled from its seed: a polygon
+body, a detail per family and a finish per rarity — piping, a stamp, chipped patina or a glow from
+within.
+
+**Cantina business sat down at the tables** in the drawn room: you poke a table the way you poke a
+candidate at the counter.
+
+1214 green.
+
+---
+
+*Entries below are in Russian.*
+
 
 ## 0.36.1 — «Логово, подавленный очаг и яхта, которая что-то значит»
 
