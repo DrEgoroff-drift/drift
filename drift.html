@@ -627,7 +627,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.45.0";
+const VER="0.46.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -2038,6 +2038,9 @@ function nodesRender(){
       $body.appendChild(row);
     }
   }
+  /* редкости живут на той же доске, что и узлы: и то и другое — коллекция,
+     которую нельзя купить (12m-rare) */
+  if(typeof rareRender==="function")rareRender();
 }
 /* ── как узел выглядит ──
    Тысяча находок, у каждой имя — и все они были строчкой текста. Вещь, которую
@@ -2866,27 +2869,30 @@ function stat(){
   /* венцы наборов: собранная сотня узлов читается здесь же, где модули и части,
      а не отдельной системой множителей (05a-nodes) */
   const cr=k=>(typeof crownHas==="function"&&crownHas(k));
+  /* редкости: малые прибавки от собранных редких вещей, читаются тут же, где
+     модули и венцы, а не отдельной системой множителей (12m-rare) */
+  const rs=t=>(typeof rareSum==="function"?rareSum(t):0);
   return {
     S,
-    thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1),
-    turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1),
-    fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0))),
-    cargoMax:Math.max(8,Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1))),
+    thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1)*(1+rs("thr")),
+    turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn")),
+    fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel"))),
+    cargoMax:Math.max(8,Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
     hullMax:Math.max(20,Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0))),
-    drill:(cr("cair")?1.3:1)*(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88),
+    drill:(cr("cair")?1.3:1)*(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88)*(1+rs("drill")),
     synthRatio:B.has("isosynth")?8:4,
-    jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)),
+    jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)+rs("jump")),
     armed:m.weapon>0||!!P.gun,
-    dmg:(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1),
-    cool:Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1))),
-    shieldMax:Math.max(0,Math.round((P.shieldAdd||0)+(cr("veil")?40:0))),
+    dmg:(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1)*(1+rs("dmg")),
+    cool:Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1)/(1+rs("cool")))),
+    shieldMax:Math.max(0,Math.round((P.shieldAdd||0)+(cr("veil")?40:0)+rs("shield"))),
     shieldRegen:Math.max(0,P.regenAdd||0),
-    see:((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0)),
+    see:(((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0)))+rs("see"),
     digTier:T.has("deepcore")?2:((T.has("deepdrill")||m.drill>=2)?1:0),
     suitWear:1/(1+techLv("suit")*.55),
     refine:1+techLv("refine")*.18,
-    droneRate:(1+techLv("hauler")*.22)*mgrDroneRate()*(cr("loom")?1.33:1),
-    bountyMul:1+techLv("bounty")*.3
+    droneRate:(1+techLv("hauler")*.22)*mgrDroneRate()*(cr("loom")?1.33:1)*(1+rs("drone")),
+    bountyMul:(1+techLv("bounty")*.3)*(1+rs("bounty"))
   };
 }
 const held=()=>RES_KEYS.reduce((a,k)=>a+G.cargo[k],0);
@@ -7279,6 +7285,8 @@ function wreckInteract(sh){
     else if(typeof addPart==="function"){addPart(genPart(hashi(near.seed,7,0x1E),near.tier|0));got="часть с обломков";}
     tell("tech","Остов баржи: "+got,"Остов баржи «"+near.name+"»\n"+got);
     logAdd("tech","Обыск остова баржи «"+near.name+"» · "+got);
+    /* редкость в трюме баржи (12m-rare): адрес — seed остова */
+    if(typeof rareTake==="function")rareTake("barge",hashi(near.seed,0x2A2E,7));
     if(typeof saveGame==="function")saveGame(true);
   }
   return true;
@@ -7610,6 +7618,170 @@ function renderBarge(){
   }else{
     $bgBody.appendChild(el("div","row","<div class='nm'><b>Трюм пуст</b>"+
       "<s>барже нечего у вас купить — но её груз можно взять</s></div>"));
+  }
+}
+
+/* ══════════════ редкости: сто адресов, а не рулетка ══════════════ */
+/* Части (05-parts) сыплются, узлы (05a-nodes) выпадают по шансу. Редкость —
+   третий, самый твёрдый слой: у неё НЕТ шанса выпадения. При генерации мира
+   каждая редкость сидит на своём месте — либо она там есть, либо её там нет,
+   и никакая перезагрузка этого не качнёт. Собрать все сто — работа на всё
+   прохождение, и её итог (планета, M97) нельзя купить, как нельзя перебрать.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Таблица ЗАКРЫТА и ровно на сто записей. Генерируется детерминированно от
+      постоянного зерна (как NODES), но фиксирована навсегда: id уже выданной
+      редкости не должен меняться от правки генератора.
+   2. Место — детерминированная функция ключа места, а не бросок. Ключ памятника
+      (q.seed), пещеры, выработки пояса, логова, остова баржи всегда даёт одну и
+      ту же редкость. Farming перезагрузкой невозможен: то же место — тот же ответ.
+   3. Достижимость гарантируется раскладкой по остаткам от деления: ключей мест
+      бесконечно много, редкостей — сто, поэтому у каждой редкости бесконечно
+      много ключей, которые на неё указывают. Ни одной недостижимой (тот же
+      сторож, что нашёл 500 недостижимых узлов на M91).
+   4. Эффект — маленький и никогда не кредиты: памятник не банкомат, и витрина
+      тоже. Читается там же, где модули и венцы, — из stat() и подобных.
+   5. Персистится только унесённое: G.rareFound — список id, дефолт []. */
+
+/* где редкости водятся: только среди уже живых мест. `live` отвечает на вопрос
+   теста «есть ли такое место в галактике вообще» — тем же, чем игра решает,
+   что показать игроку. */
+const RARE_WHERE=[
+  {id:"poi",   ru:"на памятнике",       live:(sx,sy,s)=>s.planets.some(p=>p.type!=="gas")},
+  {id:"temple",ru:"под плитами храма",  live:(sx,sy,s)=>s.planets.some(p=>["terran","toxic","desert","ocean","jungle","ruin"].indexOf(p.type)>=0)},
+  {id:"cave",  ru:"в глубине пещеры",   live:(sx,sy,s)=>s.planets.some(p=>p.type!=="gas")},
+  {id:"belt",  ru:"в выработке пояса",  live:(sx,sy,s)=>!!s.belt},
+  {id:"lair",  ru:"в логове барона",    live:(sx,sy,s)=>sysDanger(sx,sy)>.5},
+  {id:"barge", ru:"в трюме баржи",      live:(sx,sy,s)=>!!s.station}
+];
+const RARE_WHERE_IX={};RARE_WHERE.forEach((w,i)=>RARE_WHERE_IX[w.id]=i+1);
+/* эффекты: один тег на редкость, малый по величине, читается из stat(). Ни один
+   тег не про кредиты — редкость даёт свойство вещи, а не деньги. `mul:true` —
+   слагаемое к множителю (×(1+Σ)), иначе прямая прибавка к статy. */
+const RARE_FX=[
+  {tag:"see",   ru:"радар дальше",       base:60, mul:false},
+  {tag:"cargo", ru:"трюм просторнее",    base:.03,mul:true},
+  {tag:"fuel",  ru:"бак глубже",         base:7,  mul:false},
+  {tag:"drill", ru:"добыча быстрее",     base:.05,mul:true},
+  {tag:"dmg",   ru:"орудие злее",        base:.06,mul:true},
+  {tag:"thr",   ru:"тяга ровнее",        base:.04,mul:true},
+  {tag:"turn",  ru:"поворот острее",     base:.05,mul:true},
+  {tag:"shield",ru:"щит плотнее",        base:6,  mul:false},
+  {tag:"jump",  ru:"прыжок дальше",      base:1,  mul:false},
+  {tag:"bounty",ru:"награда за голову выше",base:.05,mul:true},
+  {tag:"drone", ru:"дроны прилежнее",    base:.04,mul:true},
+  {tag:"cool",  ru:"ствол остывает",     base:.05,mul:true}
+];
+const RARE_GRADES=[
+  {id:"обиходная", w:40,mul:1  },
+  {id:"приметная", w:26,mul:1.4},
+  {id:"именная",   w:18,mul:2  },
+  {id:"забытая",   w:11,mul:3  },
+  {id:"баснословная",w:5,mul:4.5}
+];
+/* слова для имени: существительные только мужского рода — иначе прилагательное
+   не согласуется («Стеклянный линза»), и вещь читается опечаткой, а не находкой */
+const RARE_A=["Стеклянный","Поющий","Немой","Лунный","Кровавый","Спящий","Слепой",
+  "Вечный","Треснувший","Полый","Солёный","Дымный","Ледяной","Ржавый","Медный",
+  "Костяной","Зеркальный","Тихий","Голодный","Сизый","Смолистый","Меловой",
+  "Янтарный","Гулкий","Восковой"];
+const RARE_B=["венец","глаз","компас","ключ","осколок","медальон","гвоздь","колокол",
+  "кубок","перстень","якорь","фонарь","череп","гребень","свиток","кинжал","маятник",
+  "идол","бубен","зуб","коготь","жетон","кокон","обелиск","слепок"];
+const RARE_NOTE=["никто не помнит, кто его сделал","он теплее, чем должен быть",
+  "на нём чужие буквы","за него убивали","он был чьим-то до вас","он не отбрасывает тени",
+  "его искали дольше, чем помнят","он звенит без ветра","в нём заперт чей-то день",
+  "он старше этой звезды","его считали выдумкой","он не тонет и не горит",
+  "от него отводят глаза","он помнит другую руку","его нельзя купить",
+  "он холоден даже на солнце"];
+const RARE=[];
+const RARE_BY_ID={};
+const RARE_BY_WHERE={};
+const RARE_SALT=0x2A2E;
+(function buildRare(){
+  const seen={};
+  for(let i=0;i<100;i++){
+    const seed=hashi(RARE_SALT,i*131+7,0x2AB1E), r=rng(seed);
+    /* where раскладываем циклом, а не броском: так каждое из шести мест
+       гарантированно населено, и ни одно не остаётся пустым */
+    const W=RARE_WHERE[i%RARE_WHERE.length];
+    /* грейд взвешенно: баснословных единицы на всю таблицу */
+    let tot=0;for(const g of RARE_GRADES)tot+=g.w;
+    let roll=r()*tot,grade=RARE_GRADES[0];
+    for(const g of RARE_GRADES){roll-=g.w;if(roll<=0){grade=g;break;}}
+    const fx=RARE_FX[(seed>>>3)%RARE_FX.length];
+    const val=fx.mul?+(fx.base*grade.mul).toFixed(3):Math.max(1,Math.round(fx.base*grade.mul));
+    /* имя из двух слов, при совпадении — номер серии, как у корпусов и узлов */
+    let base=pick(RARE_A,r)+" "+pick(RARE_B,r);
+    const n0=(seen[base]|0);seen[base]=n0+1;
+    const ru=n0?base+" "+(n0+1):base;
+    const rec={id:"r"+i,idx:i,ru,where:W.id,whereRu:W.ru,
+      grade:grade.id,note:pick(RARE_NOTE,r),
+      fx:{tag:fx.tag,ru:fx.ru,val,mul:fx.mul},seed};
+    RARE.push(rec);RARE_BY_ID[rec.id]=rec;
+    (RARE_BY_WHERE[W.id]||(RARE_BY_WHERE[W.id]=[])).push(rec);
+  }
+})();
+/* ── унесённое ── список id, дефолт [] (14-save) */
+function rareList(){return (G.rareFound||(G.rareFound=[]));}
+function rareHas(id){return rareList().indexOf(id)>=0;}
+function rareCount(){return rareList().length;}
+/* ── что лежит в этом месте ──
+   Ключ места (стабильный seed) детерминированно указывает на одну редкость.
+   Никакого шанса: то же место — тот же ответ, всегда. */
+function rareAtPlace(where,key){
+  const pool=RARE_BY_WHERE[where];if(!pool||!pool.length)return null;
+  const h=hashi((key>>>0)||1,RARE_SALT,RARE_WHERE_IX[where]||1);
+  return pool[(h%pool.length+pool.length)%pool.length];
+}
+/* забрать, если она тут есть и ещё не унесена. Возвращает запись либо null. */
+function rareTake(where,key){
+  const R=rareAtPlace(where,key);
+  if(!R||rareHas(R.id))return null;
+  rareList().push(R.id);
+  const c=rareCount();
+  tell("tech","Редкость: «"+R.ru+"» · "+c+"/100",
+       "«"+R.ru+"»\n"+R.grade+", "+R.note+"\n"+R.whereRu+"\nэффект: "+R.fx.ru+
+       "\n\nсобрано редкостей: "+c+" из 100");
+  logAdd("tech","Найдена редкость «"+R.ru+"» ("+R.whereRu+") · "+c+"/100");
+  if(typeof saveGame==="function")saveGame(true);
+  return R;
+}
+/* ── эффект ── сумма по тегу среди унесённых. stat() и подобные читают отсюда,
+   не заводя отдельной системы множителей. */
+function rareSum(tag){
+  let s=0;const list=rareList();
+  for(let i=0;i<list.length;i++){
+    const R=RARE_BY_ID[list[i]];
+    if(R&&R.fx.tag===tag)s+=R.fx.val;
+  }
+  return s;
+}
+/* ── витрина ── сотня редкостей не списком (это склад), а сводкой: сколько
+   собрано, по каким местам разложено остальное, что уже даёт. Полноценная
+   стена-музей — в доме (M100); здесь — доска рядом с наборами узлов. */
+function rareRender(){
+  const done=rareCount();
+  $body.appendChild(el("div","sec","РЕДКОСТИ · "+done+" / 100 · У КАЖДОЙ СВОЙ АДРЕС, "+
+    "НЕ ШАНС"));
+  $body.appendChild(el("div","row","<div class='nm'><s>редкость сидит на одном "+
+    "месте: либо она там есть, либо нет. Перебором не берётся. Полный набор из ста "+
+    "открывает то, что нельзя купить.</s></div>"));
+  /* где искать: по каждому месту — сколько его редкостей ещё не унесено */
+  for(const W of RARE_WHERE){
+    const pool=RARE_BY_WHERE[W.id]||[];
+    const got=pool.filter(R=>rareHas(R.id)).length;
+    const pct=pool.length?Math.round(got/pool.length*100):0;
+    $body.appendChild(el("div","row","<div class='nm'><b>"+W.ru+"</b><s>"+got+
+      " из "+pool.length+" · "+pct+"%</s></div>"));
+  }
+  /* последние находки: коллекция должна рассказывать, а не только считать */
+  const have=rareList().map(id=>RARE_BY_ID[id]).filter(Boolean);
+  if(have.length){
+    $body.appendChild(el("div","sec","ПОСЛЕДНИЕ РЕДКОСТИ"));
+    for(const R of have.slice(-6).reverse())
+      $body.appendChild(el("div","row","<div class='nm'><b>«"+R.ru+"»</b><s>"+
+        R.grade+" · "+R.whereRu+" · "+R.note+" · "+R.fx.ru+"</s></div>"));
   }
 }
 
@@ -8189,7 +8361,7 @@ function snapshot(){
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
-    nodes:G.nodes,crowns:G.crowns,wrecks:G.wrecks,bargePax:G.bargePax,
+    nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,wrecks:G.wrecks,bargePax:G.bargePax,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -8242,6 +8414,8 @@ function applySave(s){
   /* найденные узлы и собранные венцы: в записи только номера */
   G.nodes=(s.nodes&&typeof s.nodes==="object")?s.nodes:{};
   G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
+  /* редкости: только список унесённых id (12m-rare) */
+  G.rareFound=Array.isArray(s.rareFound)?s.rareFound.filter(x=>typeof x==="string"):[];
   /* дела кантины: отвеченные и те, чей исход ещё не пришёл */
   G.dealsDone=(s.dealsDone&&typeof s.dealsDone==="object")?s.dealsDone:{};
   G.dealsWait=Array.isArray(s.dealsWait)?s.dealsWait:[];
@@ -13449,6 +13623,13 @@ function poiInspect(q){
   logAdd("tech","Осмотр: "+F.ru+" · "+got);
   /* любой памятник — аномалия для того, кто его не строил */
   nodeDrop("в аномалии",.4+d*.6,hashi(q.seed,0xA0,3));
+  /* редкость на своём адресе (12m-rare). Храм с уже известной координатой
+     отдаёт свою, отдельную ветку — это и есть закрытый хвост M92 «храм молчит
+     при известной координате»: он не отмалчивается, он отдаёт редкость плит. */
+  if(typeof rareTake==="function"){
+    if(q.k==="temple"&&G.relicHint)rareTake("temple",q.seed);
+    else rareTake("poi",q.seed);
+  }
   return true;
 }
 
@@ -17344,6 +17525,8 @@ function updateCave(dt){
       tell("tech","Находка в пещере · +20 данных","Находка в пещере\n+20 данных");
       /* в глубине пещеры лежит не только запись данных (05a-nodes) */
       nodeDrop("в пещере",.5+sysDanger(G.sx,G.sy)*.5,hashi(C.findX|0,0xCA7,3));
+      /* редкость на адресе пещеры (12m-rare): ключ стабилен по системе и забою */
+      if(typeof rareTake==="function")rareTake("cave",hashi(G.sx,G.sy,(C.findX|0)^0xCA7E));
     }
   }else if(plant){
     G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
@@ -18255,6 +18438,9 @@ function updateRaid(dt){
             S.bag.data+=f.boss?12:3;
             nodeDrop("в рейде на базу",sysDanger(G.sx,G.sy)+(f.baron?.5:0),
               hashi(f.seed,0x9D,Date.now()&0xffff),f.baron?1:0);
+            /* редкость логова (12m-rare): только на бароне, ключ — сама система,
+               так что у логова каждого сектора своя, стабильная */
+            if(f.baron&&typeof rareTake==="function")rareTake("lair",hashi(G.sx,G.sy,0x1A18));
             sfx("boom",{v:.4});
           }else sfx("hit",{v:.3});
           break;
@@ -19168,6 +19354,8 @@ function updateBelt(dt){
         /* выработанный камень иногда отдаёт узел: пояс — одно из мест,
            где они водятся (05a-nodes) */
         nodeDrop("в поясе",sysDanger(G.sx,G.sy)+.2,hashi(best.seed||1,0xB7,Date.now()&0xffff));
+        /* редкость на адресе выработки (12m-rare): ключ — seed самого камня */
+        if(typeof rareTake==="function")rareTake("belt",hashi(best.seed||1,0xB7,0xBEE7));
         say("Астероид выработан\n"+RES[best.res].ru);
         killRock(b,best,1.2);
       }

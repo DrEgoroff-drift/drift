@@ -273,6 +273,9 @@ function updateRaid(dt){
             S.bag.data+=f.boss?12:3;
             nodeDrop("в рейде на базу",sysDanger(G.sx,G.sy)+(f.baron?.5:0),
               hashi(f.seed,0x9D,Date.now()&0xffff),f.baron?1:0);
+            /* редкость логова (12m-rare): только на бароне, ключ — сама система,
+               так что у логова каждого сектора своя, стабильная */
+            if(f.baron&&typeof rareTake==="function")rareTake("lair",hashi(G.sx,G.sy,0x1A18));
             sfx("boom",{v:.4});
           }else sfx("hit",{v:.3});
           break;

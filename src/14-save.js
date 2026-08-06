@@ -33,7 +33,7 @@ function snapshot(){
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
-    nodes:G.nodes,crowns:G.crowns,wrecks:G.wrecks,bargePax:G.bargePax,
+    nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,wrecks:G.wrecks,bargePax:G.bargePax,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -86,6 +86,8 @@ function applySave(s){
   /* найденные узлы и собранные венцы: в записи только номера */
   G.nodes=(s.nodes&&typeof s.nodes==="object")?s.nodes:{};
   G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
+  /* редкости: только список унесённых id (12m-rare) */
+  G.rareFound=Array.isArray(s.rareFound)?s.rareFound.filter(x=>typeof x==="string"):[];
   /* дела кантины: отвеченные и те, чей исход ещё не пришёл */
   G.dealsDone=(s.dealsDone&&typeof s.dealsDone==="object")?s.dealsDone:{};
   G.dealsWait=Array.isArray(s.dealsWait)?s.dealsWait:[];

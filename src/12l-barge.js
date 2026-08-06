@@ -319,6 +319,8 @@ function wreckInteract(sh){
     else if(typeof addPart==="function"){addPart(genPart(hashi(near.seed,7,0x1E),near.tier|0));got="часть с обломков";}
     tell("tech","Остов баржи: "+got,"Остов баржи «"+near.name+"»\n"+got);
     logAdd("tech","Обыск остова баржи «"+near.name+"» · "+got);
+    /* редкость в трюме баржи (12m-rare): адрес — seed остова */
+    if(typeof rareTake==="function")rareTake("barge",hashi(near.seed,0x2A2E,7));
     if(typeof saveGame==="function")saveGame(true);
   }
   return true;

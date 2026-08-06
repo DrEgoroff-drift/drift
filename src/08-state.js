@@ -70,27 +70,30 @@ function stat(){
   /* венцы наборов: собранная сотня узлов читается здесь же, где модули и части,
      а не отдельной системой множителей (05a-nodes) */
   const cr=k=>(typeof crownHas==="function"&&crownHas(k));
+  /* редкости: малые прибавки от собранных редких вещей, читаются тут же, где
+     модули и венцы, а не отдельной системой множителей (12m-rare) */
+  const rs=t=>(typeof rareSum==="function"?rareSum(t):0);
   return {
     S,
-    thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1),
-    turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1),
-    fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0))),
-    cargoMax:Math.max(8,Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1))),
+    thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1)*(1+rs("thr")),
+    turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn")),
+    fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel"))),
+    cargoMax:Math.max(8,Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
     hullMax:Math.max(20,Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0))),
-    drill:(cr("cair")?1.3:1)*(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88),
+    drill:(cr("cair")?1.3:1)*(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88)*(1+rs("drill")),
     synthRatio:B.has("isosynth")?8:4,
-    jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)),
+    jump:Math.max(1,3+m.hyper*.5+(T.has("coil")?2:0)+(P.jumpAdd||0)+rs("jump")),
     armed:m.weapon>0||!!P.gun,
-    dmg:(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1),
-    cool:Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1))),
-    shieldMax:Math.max(0,Math.round((P.shieldAdd||0)+(cr("veil")?40:0))),
+    dmg:(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1)*(1+rs("dmg")),
+    cool:Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1)/(1+rs("cool")))),
+    shieldMax:Math.max(0,Math.round((P.shieldAdd||0)+(cr("veil")?40:0)+rs("shield"))),
     shieldRegen:Math.max(0,P.regenAdd||0),
-    see:((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0)),
+    see:(((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0)))+rs("see"),
     digTier:T.has("deepcore")?2:((T.has("deepdrill")||m.drill>=2)?1:0),
     suitWear:1/(1+techLv("suit")*.55),
     refine:1+techLv("refine")*.18,
-    droneRate:(1+techLv("hauler")*.22)*mgrDroneRate()*(cr("loom")?1.33:1),
-    bountyMul:1+techLv("bounty")*.3
+    droneRate:(1+techLv("hauler")*.22)*mgrDroneRate()*(cr("loom")?1.33:1)*(1+rs("drone")),
+    bountyMul:(1+techLv("bounty")*.3)*(1+rs("bounty"))
   };
 }
 const held=()=>RES_KEYS.reduce((a,k)=>a+G.cargo[k],0);
