@@ -53,6 +53,40 @@ function Build {
   }
   $msg += " · " + (Index $files $tfiles)
   $msg
+  Bulk $files $tfiles
+}
+
+# Сторож размера. Не ошибка, а напоминание: модуль за 40 КБ уже нельзя прочитать
+# целиком дёшево, и следующая веха в нём будет стоить дороже, чем распил. То же
+# с живым планом — он обязан читаться за один раз, иначе смысл архива теряется.
+#
+# Правило про будущее, а не про прошлое. Четыре модуля уже перевалили за порог
+# по делу: резать их сейчас — переписывать работающее ради круглого числа.
+# Они записаны ниже со своим размером, и сторож молчит, пока они не РАСТУТ.
+# Новый модуль, перешагнувший порог, — предупреждается сразу.
+$BULK_KB = 40      # порог для модуля src/ и набора tests/
+$PLAN_KB = 60      # порог для PLAN.md
+$BULK_OLD = @{     # известные крупные, замерены 2026-08-07
+  "21aa-base-rooms.js" = 49; "12c-mgr-core.js" = 45
+  "26-ui-station.js"   = 44; "27f-hq-room.js"  = 40
+}
+function Bulk($files, $tfiles) {
+  $big = @(@($files) + @($tfiles) | Where-Object {
+    if (-not $_) { return $false }
+    $kb = [math]::Round($_.Length / 1KB)
+    if ($BULK_OLD.ContainsKey($_.Name)) { $kb -gt $BULK_OLD[$_.Name] } else { $kb -gt $BULK_KB }
+  } | Sort-Object Length -Descending)
+  if ($big.Count) {
+    "  ! просятся на распил (>{0} КБ): {1}" -f $BULK_KB,
+      (($big | ForEach-Object { "{0} {1} КБ" -f $_.Name, [math]::Round($_.Length / 1KB) }) -join ", ")
+  }
+  $plan = Join-Path $root "PLAN.md"
+  if (Test-Path $plan) {
+    $pkb = [math]::Round((Get-Item $plan).Length / 1KB)
+    if ($pkb -gt $PLAN_KB) {
+      "  ! PLAN.md разросся до {0} КБ: закрытые вехи пора переносить в docs/PLAN-archive.md" -f $pkb
+    }
+  }
 }
 
 # Индекс символов — docs/INDEX.md. Не для чтения человеком и не для загрузки
