@@ -668,7 +668,9 @@ function renderTab(){
       if(G.crew.some(c=>c.id===m.id))continue;
       const r=el("div","row");
       r.appendChild(el("div","nm","<b>"+m.name+"</b> <span style='color:var(--dim)'>"+
-        CREW_SPEC[m.spec].ru+"</span><s>"+CREW_SPEC[m.spec].note+
+        CREW_SPEC[m.spec].ru+"</span>"+(m.pax?" <span style='color:var(--phos)'>· спасён с баржи</span>":"")+"<s>"+
+        (m.pax&&m.story?"<i style='color:var(--phos)'>"+m.story+"</i><br>":"")+
+        CREW_SPEC[m.spec].note+
         "<br>"+m.traits.map(t=>traitOf(t).ru+" — "+traitOf(t).note).join("<br>")+
         "<br>жалованье "+crewPay(m)+" кр/мин · опыт "+m.xp+"</s>"));
       r.appendChild(el("div","qt",m.fee.toLocaleString("ru")+"<s>кр найм</s>"));

@@ -84,6 +84,15 @@ function stationMercs(sys){
   const n=1+Math.floor(r()*3);
   const out=[];
   for(let i=0;i<n;i++)out.push(genMerc(hashi(sys.seed,i*7717+13,timeBucket()),pool));
+  /* спасённые с барж пассажиры ищут вас в кантине — в любой, где вы окажетесь
+     (12l-barge). Они приходят к вам сами: единственный наёмник, который не
+     «ищет работу здесь», а помнит, кто его вытащил. */
+  for(const p of (G.bargePax||[])){
+    if(G.crew.some(c=>c.id===p.id))continue;
+    const m=genMerc(p.seed,null);
+    m.id=p.id;m.fee=p.fee|0;m.pax=1;m.story=p.story||"";
+    out.push(m);
+  }
   return out;
 }
 /* ══════════════ приказы ══════════════ */
@@ -135,6 +144,8 @@ function hireMerc(c){
   const m=Object.assign({},c,{cargo:{},order:{kind:"home",sx:G.sx,sy:G.sy},
     tMs:Date.now(),paidMs:Date.now()});
   G.crew.push(m);
+  /* спасённый с баржи, если это он: больше в кантине не мелькает */
+  if(Array.isArray(G.bargePax))G.bargePax=G.bargePax.filter(p=>p.id!==m.id);
   tell("money","Нанят "+m.name+" · "+CREW_SPEC[m.spec].ru+" · −"+c.fee+" кр",
        "Нанят "+m.name+"\n"+CREW_SPEC[m.spec].ru+"\nвыдайте корабль на вкладке ЭКИПАЖ");
   return true;

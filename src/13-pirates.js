@@ -136,6 +136,8 @@ function updateCombat(dt){
           break;
         }
       }
+      /* ваш выстрел мог прийтись и по барже — так её добивают самому (12l) */
+      if(!gone&&typeof bargeMineHit==="function"&&bargeMineHit(s))gone=true;
     }else if(!gone){
       if(Math.hypot(s.x-sh.x,s.y-sh.y)<18){
         gone=true;
