@@ -51,7 +51,56 @@ function Build {
       $msg += " · tests.html из {0} наборов" -f $tfiles.Count
     }
   }
+  $msg += " · " + (Index $files $tfiles)
   $msg
+}
+
+# Индекс символов — docs/INDEX.md. Не для чтения человеком и не для загрузки
+# целиком: это адресная книга, по которой grep за один вызов отвечает, в каком
+# файле и на какой строке живёт функция. Дешевле, чем читать модуль по 80 КБ.
+function Index($files, $tfiles) {
+  $all = @(@($files) + @($tfiles) | Where-Object { $_ })
+  $lines = New-Object System.Collections.ArrayList
+  $sym   = New-Object System.Collections.ArrayList
+  $n = 0
+  foreach ($f in $all) {
+    $rel = ($f.FullName.Substring($root.Length + 1)) -replace '\\', '/'
+    $text = [System.IO.File]::ReadAllText($f.FullName, $enc)
+    $rows = $text -split "`n"
+    $kb = [math]::Round($f.Length / 1KB)
+    # заголовки разделов /* ═══ имя ═══ */ — крупные вехи внутри файла
+    $secs = @()
+    for ($i = 0; $i -lt $rows.Count; $i++) {
+      if ($rows[$i] -match '^\s*/\*\s*[═=]{3,}\s*(.+?)\s*[═=]{3,}') { $secs += ("{0}:{1}" -f $matches[1], ($i + 1)) }
+      if ($rows[$i] -match '^(?:function\s*\*?|const|let|var|class)\s+([A-Za-z_$][\w$]*)') {
+        [void]$sym.Add(("{0,-28} {1}:{2}" -f $matches[1], $rel, ($i + 1)))
+        $n++
+      }
+    }
+    [void]$lines.Add("")
+    [void]$lines.Add(("## {0} · {1} КБ" -f $rel, $kb))
+    if ($secs.Count) { foreach ($s in $secs) { [void]$lines.Add("  · $s") } }
+  }
+  $head = @(
+    "# Индекс «Дрейфа» — генерируется build.ps1, руками не править",
+    "",
+    "Адресная книга исходников: где что лежит, с точностью до строки.",
+    "Читать целиком не надо — искать grep-ом:",
+    "",
+    '    grep -n "^rareTake " docs/INDEX.md      # где объявлен символ',
+    '    grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера',
+    "",
+    ("Файлов: {0} · символов верхнего уровня: {1}" -f $all.Count, $n),
+    "",
+    "## СИМВОЛЫ",
+    ""
+  )
+  $body = @("", "## ФАЙЛЫ И РАЗДЕЛЫ")
+  $doc = ($head + ($sym | Sort-Object) + $body + $lines) -join "`n"
+  $dir = Join-Path $root "docs"
+  if (-not (Test-Path $dir)) { [void](New-Item -ItemType Directory $dir) }
+  [System.IO.File]::WriteAllText((Join-Path $dir "INDEX.md"), $doc, $enc)
+  "INDEX.md: {0} символов" -f $n
 }
 
 Build
