@@ -1,453 +1,458 @@
-# Управляющие — верхний слой над наёмниками, дронами, базами и наукой
+# Managers — the layer above hired hands, drones, bases and science
 
-Документ проектный, кода пока нет. Офлайн-прогресс сознательно вынесен за скобки —
-всё считается от прошедшего времени только когда игра открыта, как у дронов и наёмников.
+The original design document. It has since been built (`12c-mgr-core`, `12d-mgr-face`,
+`12g-mgr-rogue`, `12h-relic`, `27c-ui-hq`); where the implementation departed from this text, the
+reason is recorded in the milestone in [`docs/PLAN-archive.md`](docs/PLAN-archive.md). Kept as the
+statement of intent — read it to understand *why* the system is shaped this way.
 
----
-
-## 1. Зачем они в игре
-
-Наёмник — это ставка. Скрытая удача, которую нельзя увидеть, только вычислить рейсами;
-приказы раздаются вручную, игрок читает журнал. Это работает ровно до седьмого наёмника,
-после чего экран приказов превращается в работу.
-
-Управляющий делает три вещи:
-
-- **снимает рутину** — берёт домен и держит его сам по стоящим приказам;
-- **даёт видимый рост** — в противовес скрытой удаче у него всё на виду: уровень, дерево,
-  перки. Первая система в игре, где вложенное точно вернётся;
-- **приносит собственный сюжет** — у него есть лицо, характер, поручения и амбиции.
-  Наёмник — строка в списке. Управляющий — тот, кого игрок помнит по имени.
-
-Контраст сознательный. Наёмник — лотерея с быстрым входом и без личности. Управляющий —
-долгая инвестиция, дорогая в содержании, и рискованная не числами, а поведением.
+Offline progress is deliberately out of scope: everything is computed from elapsed time only while
+the game is open, the same as drones and hired hands.
 
 ---
 
-## 2. Четыре домена
+## 1. Why they exist
 
-Один управляющий = один домен. Домен не делится между двумя. Управляющий без домена
-ест оклад и копит недовольство — держать «в запасе» невыгодно намеренно.
+A hired hand is a bet. Hidden luck you cannot see, only infer from runs; orders handed out by hand,
+the player reading the log. That works right up to the seventh hire, after which the order screen
+becomes a job.
 
-| Роль | Домен | Что берёт под себя |
+A manager does three things:
+
+- **takes the routine away** — holds a domain and runs it himself through standing orders;
+- **gives visible growth** — against hidden luck, everything about him is in the open: level, tree,
+  perks. The first system in the game where what you put in comes back for certain;
+- **brings a story of his own** — he has a face, a character, assignments and ambitions. A hired
+  hand is a row in a list. A manager is someone the player remembers by name.
+
+The contrast is deliberate. A hired hand is a lottery with a quick entry and no personality. A
+manager is a long investment, expensive to keep, and risky through behaviour rather than numbers.
+
+---
+
+## 2. The four domains
+
+One manager = one domain. A domain is never split between two. A manager without a domain eats his
+salary and accumulates resentment — keeping one "in reserve" is deliberately a bad deal.
+
+| Role | Domain | What it takes over |
 |---|---|---|
-| **Командир звена** | до N наёмников | приказы, отзыв, ремонт, дисциплина, трофеи |
-| **Смотритель** | дроны в системах + базы на планетах | переброска дронов, стройка, энергобаланс, сбыт |
-| **Фактор** | торговый маршрут (2–4 станции) | закупка/сбыт по порогам, пошлины, ассортимент |
-| **Исследователь** | лаборатория (отсек базы) | наука без вашего участия, образцы, артефакты |
+| **Wing commander** | up to N hired hands | orders, recall, repair, discipline, trophies |
+| **Overseer** | drones in systems + bases on planets | drone transfers, construction, power balance, selling |
+| **Factor** | a trade route (2–4 stations) | buying/selling by thresholds, duties, stock |
+| **Researcher** | the laboratory (a base compartment) | science without you, samples, artifacts |
 
-### Исследователь — подробно
+### The researcher in detail
 
-Наука в игре сейчас покупается за очки. Исследователь добавляет второй, медленный, но
-самостоятельный источник: **лаборатория** — новый тип постройки в `21a-mode-base`
-(дорогая, энергоёмкая, требует жилого отсека рядом).
+Science is currently bought with points. The researcher adds a second source — slow but
+self-driving: the **laboratory**, a new building type in `21a-mode-base` (expensive, power-hungry,
+requires a habitat next to it).
 
-Что он делает:
+What he does:
 
-- **Разбирает образцы.** Всё, что игрок таскает мимо: странная порода из ядрового пласта,
-  флора и фауна с поверхности, обломки пиратских корпусов, куски артефактов. Образец
-  кладётся в лабораторию и через N минут даёт очки науки, а иногда — **чертёж**.
-- **Чертежи** — то, чего нельзя купить: улучшенные версии знакомых модулей (бур с
-  отрицательным износом, гипердрайв на льду), уникальные части для слотов, схемы ИИ-ядра
-  (см. §7).
-- **Читает артефакты.** Найденный артефакт без исследователя — просто предмет с эффектом.
-  С исследователем у него открывается вторая строка эффекта, а иногда — происхождение,
-  ведущее к следующему артефакту. Он превращает артефакты в цепочку.
-- **Ошибается.** Единственный домен, где результат бывает отрицательным: неверный вывод
-  даёт чертёж, который вредит, пока не переисследуешь. Игроку это видно не сразу.
+- **Breaks down samples.** Everything the player hauls past: odd rock from the core stratum, surface
+  flora and fauna, fragments of pirate hulls, pieces of artifacts. A sample goes into the lab and
+  after N minutes yields research points, and sometimes a **blueprint**.
+- **Blueprints** — the things that can't be bought: improved versions of familiar modules (a drill
+  with negative wear, a hyperdrive on ice), unique slot parts, AI core schematics (see §7).
+- **Reads artifacts.** A found artifact without a researcher is just an object with an effect. With
+  one, a second line of effect opens up, and sometimes a provenance leading to the next artifact.
+  He turns artifacts into a chain.
+- **Gets things wrong.** The only domain where the result can be negative: a false conclusion yields
+  a blueprint that hurts until re-researched. The player doesn't see it immediately.
 
-Исследователь — самый «тихий» домен: он не приносит кредитов вообще. Его доля берётся
-не с выручки, а фиксированной ставкой, и первые часы он выглядит чистым убытком.
-Окупается один раз и навсегда — чертежом, который меняет сборку корабля.
+The researcher is the quietest domain: he brings in no credits at all. His cut is taken as a flat
+rate rather than off revenue, and for the first hours he looks like pure loss. He pays off once and
+forever — with a blueprint that changes how a ship is built.
 
 ---
 
-## 3. Экономика: доля вместо оклада
+## 3. Economics: a cut, not a wage
 
-Наёмник берёт оклад. Управляющий берёт **оклад ×2–3 от наёмничьего плюс долю с домена**
-(4…12%). Доля снимается до того, как выручка попадёт игроку, и всегда видна строкой:
+A hired hand takes a wage. A manager takes **2–3× a hired hand's wage plus a cut of the domain**
+(4–12%). The cut is taken before the revenue reaches the player, and is always shown as a line:
 
 ```
-Домен «Северный крюк»: 4 120 кр · доля Ковача 7% → вам 3 832 кр
+Domain "Northern Hook": 4,120 cr · Kovach's cut 7% → 3,832 cr to you
 ```
 
-- пока домен мал — управляющий убыточен, и это правильно;
-- когда домен разросся — доля кусается, но потолок домена без него недостижим;
-- сбить долю можно только исследованиями (ветка «Устав», §9) и артефактом.
+- while the domain is small the manager loses money, and that is correct;
+- once the domain has grown the cut bites, but the domain's ceiling is unreachable without him;
+- the cut can only be reduced through research (the "Charter" branch, §9) and one artifact.
 
-Исследователь и смотритель, чьи домены не всегда дают кредиты, берут **ставку**:
-фиксированную сумму, привязанную к размеру домена (число дронов, число построек).
+The researcher and the overseer, whose domains don't always produce credits, take a **rate**: a
+fixed sum tied to the size of the domain (number of drones, number of buildings).
 
-**Флагман.** Командиру звена нужен корабль из `G.owned` — вместимость флагмана задаёт
-потолок звена (`cargo/60`, минимум 2). Смотрителю нужен транспорт для переброски дронов,
-фактору — грузовик под маршрут. Исследователю корабль не нужен, ему нужна лаборатория.
-Старые корпуса перестают быть мусором окончательно.
-
----
-
-## 4. Где их брать
-
-Найм не единообразен — у каждого канала своя цена и свой смысл.
-
-### 4.1 Кантина (основной канал)
-
-Новая вкладка на станции, рядом с рынком и наёмниками. Кантина — не список, а **сцена**:
-полутёмный зал, 2–4 фигуры за столами, каждая со своим портретом. Состав держится на
-seed станции и временном бакете, как ассортимент частей: ушёл и вернулся через час —
-другие люди.
-
-Кантина зависит от станции:
-- **торговая** — факторы и торговые командиры, дорого, чисто;
-- **промышленная** — смотрители, инженеры, дешевле;
-- **научная** — исследователи, почти только они;
-- **окраинная/пиратская** — все роли, дёшево, с тёмными чертами и без документов.
-
-В кантине можно **поговорить, не нанимая**: один диалог показывает роль, две черты
-характера и намёк на третью. Разговор бесплатен, но кандидат после него «занят» до
-следующего бакета — подумать и вернуться не выйдет.
-
-### 4.2 Найденные в мире
-
-Часть управляющих не продаётся. Их находят:
-
-- **выживший на разбитой станции** в пещере или на поверхности — присоединяется
-  бесплатно, но с нулевой лояльностью и одной скрытой чертой;
-- **пленник на пиратской базе** (`24a-mode-raid`) — освободить, и он идёт с вами;
-  такие всегда на 2 уровня выше кантинных;
-- **брошенная лаборатория** — исследователь, который уже несколько лет ведёт свои записи
-  в одиночку; приходит вместе с готовым чертежом и очень странными привычками;
-- **ушедший чужой управляющий** — если вы разбили пиратскую фракцию, которой стал
-  чей-то (или ваш) сбежавший управляющий, его можно взять обратно. Дешевле всех и
-  ненавидит вас ровно столько, сколько помнит.
-
-### 4.3 Сам приходит
-
-Редкое событие: если у игрока репутация домена высока (домен долго прибылен, никто не
-ушёл), на станции его ждёт человек, который слышал и хочет работать. Бесплатный найм,
-высокая стартовая лояльность. Это награда за то, что игрок хорошо обращается с людьми, —
-единственная механика в игре, которая это замечает.
+**The flagship.** A wing commander needs a ship from `G.owned` — the flagship's capacity sets the
+wing's ceiling (`cargo/60`, minimum 2). The overseer needs a transport for moving drones, the factor
+a freighter for the route. The researcher needs no ship, he needs a laboratory. Old hulls stop being
+junk for good.
 
 ---
 
-## 5. Портреты: процедурные и по-настоящему разные
+## 4. Where to find them
 
-Портрет собирается детерминированно из `seed` управляющего теми же `hashi`/`rng`, что
-и всё остальное. Рисуется на canvas в offscreen один раз, кэшируется как картинка.
-Никаких заготовленных изображений — иначе на десятом управляющем начнутся повторы.
+Hiring is not uniform — each channel has its own price and its own meaning.
 
-**Слои, снизу вверх:**
+### 4.1 The cantina (the main channel)
 
-1. **Фон** — плоское поле, оттенок от роли (командир — ржавый, смотритель — зелёно-серый,
-   фактор — тёплый песочный, исследователь — холодный синий), плюс шум/градиент от seed.
-2. **Силуэт плеч** — 6 форм × ширина, задаёт комплекцию.
-3. **Череп** — контур из 5–6 точек с сидовым разбросом: узкий/широкий, скулы, подбородок.
-   Один и тот же генератор, что и у корпусов кораблей, — форма никогда не повторяется точно.
-4. **Кожа** — палитра из 10 тонов, плюс отдельная линия нечеловеческих: серо-голубой,
-   охра с прожилками, альбинос. Виды не заявлены текстом, просто бывают разные лица.
-5. **Волосы/голова** — 14 вариантов (бритая, хвост, дреды, каре, лысина с татуировкой,
-   капюшон, шлем-нейролинк), цвет отдельным броском.
-6. **Глаза** — форма ×8, цвет, плюс варианты: один глаз имплант, оба импланта, повязка,
-   очки-визор. **Импланты видны и означают: с ИИ этот человек уживается** (§7).
-7. **Метки** — шрам, ожог, татуировка гильдии, пирсинг, клеймо каторги. 0–3 штуки.
-   Клеймо каторги честно предупреждает о черте «свои интересы».
-8. **Ворот** — форма одежды по роли и по уровню: от рабочей робы до формы с нашивками.
-   **Портрет растёт вместе с уровнем** — на 4-м появляется нашивка, на 6-м знак.
-9. **Настроение** — лёгкий сдвиг бровей и рта от лояльности. Не иконка, не цифра:
-   игрок видит, что человек мрачнеет, ещё до того как откроет лист.
+A new station tab, next to the market and the hired hands. The cantina is not a list but a **scene**:
+a half-lit room, 2–4 figures at tables, each with their own portrait. The line-up rests on the
+station seed and a time bucket, like part stock: leave and come back an hour later and it's different
+people.
 
-Итог: портрет — это интерфейс. По нему читаются роль, уровень, настроение и пара черт,
-не читая ни строки текста.
+The cantina depends on the station:
+- **trade hub** — factors and trade commanders, expensive, clean;
+- **industrial** — overseers, engineers, cheaper;
+- **science** — researchers, and almost nothing else;
+- **frontier/pirate** — every role, cheap, with dark traits and no papers.
+
+In the cantina you can **talk without hiring**: one dialogue shows the role, two character traits and
+a hint of a third. Talking is free, but afterwards the candidate is "busy" until the next bucket —
+thinking it over and coming back doesn't work.
+
+### 4.2 Found in the world
+
+Some managers are not for sale. They are found:
+
+- **a survivor of a wrecked station** in a cave or on a surface — joins for free, but at zero loyalty
+  and with one hidden trait;
+- **a prisoner on a pirate base** (`24a-mode-raid`) — free them and they come with you; these are
+  always two levels above cantina hires;
+- **an abandoned laboratory** — a researcher who has been keeping his own notes alone for years;
+  arrives with a finished blueprint and very strange habits;
+- **someone else's defected manager** — if you break a pirate faction that somebody's (or your own)
+  runaway manager became, you can take him back. Cheapest of all, and he hates you for exactly as
+  long as he remembers.
+
+### 4.3 He comes to you
+
+A rare event: if the player's domain reputation is high (the domain has been profitable for a long
+time, nobody has left), someone who has heard of you is waiting at a station and wants work. A free
+hire with high starting loyalty. It is the reward for treating people well — the only mechanic in
+the game that notices.
 
 ---
 
-## 6. Черты и перки
+## 5. Portraits: procedural and genuinely different
 
-Разделены жёстко: **черты** даны при генерации и не меняются, **перки** покупаются
-уровнями. Черта — то, с чем игрок мирится. Перк — то, что игрок выбирает.
+A portrait is assembled deterministically from the manager's `seed` with the same `hashi`/`rng` as
+everything else. Drawn to an offscreen canvas once and cached as an image. No prepared images — with
+those, repeats would start at the tenth manager.
 
-### 6.1 Черты характера (общий пул, 2–3 на человека)
+**Layers, bottom to top:**
 
-| Черта | Что делает |
+1. **Background** — a flat field, hue by role (commander rusty, overseer green-grey, factor warm
+   sand, researcher cold blue), plus seeded noise/gradient.
+2. **Shoulder silhouette** — 6 shapes × width, sets the build.
+3. **Skull** — an outline of 5–6 points with seeded spread: narrow/wide, cheekbones, chin. The same
+   generator as ship hulls — a shape never repeats exactly.
+4. **Skin** — a palette of 10 tones, plus a separate line of non-human ones: grey-blue, ochre with
+   veining, albino. Species are never stated in text, faces simply differ.
+5. **Hair/head** — 14 variants (shaved, ponytail, dreads, bob, bald with a tattoo, hood, neurolink
+   helmet), colour on a separate roll.
+6. **Eyes** — 8 shapes, colour, plus variants: one implant, two implants, an eyepatch, visor
+   glasses. **Implants are visible and mean this person gets along with an AI** (§7).
+7. **Marks** — scar, burn, guild tattoo, piercing, penal brand. 0–3 of them. The penal brand honestly
+   warns about the "own interests" trait.
+8. **Collar** — the cut of clothing by role and by level: from work overalls to a uniform with
+   patches. **The portrait grows with level** — a patch appears at 4, an insignia at 6.
+9. **Mood** — a slight shift of brows and mouth from loyalty. Not an icon, not a number: the player
+   sees a man darkening before opening his sheet.
+
+The result: the portrait is the interface. Role, level, mood and a couple of traits read off it
+without a line of text.
+
+---
+
+## 6. Traits and perks
+
+Hard split: **traits** are dealt at generation and never change, **perks** are bought with levels. A
+trait is what the player puts up with. A perk is what the player chooses.
+
+### 6.1 Character traits (shared pool, 2–3 per person)
+
+| Trait | What it does |
 |---|---|
-| **Дотошный** | +опыт домена, но −10% скорости всех автодействий |
-| **Хват** | доля −2 п.п., зато лояльность падает вдвое быстрее |
-| **Свои интересы** | тихо ворует 3–8% домена; заметно только по сверке журнала |
-| **Наставник** | наёмники и дроны под ним набирают опыт быстрее |
-| **Трус** | автоматически отзывает всех при первой опасности, даже когда не надо |
-| **Упрямец** | игнорирует один из ваших приказов в слоте, выбирая свой |
-| **Легенда** | найм наёмников в его домен дешевле на 25%, кантина его узнаёт |
-| **Пьющий** | раз в N часов домен простаивает; зато лояльность почти не падает |
-| **Параноик** | видит засады заранее (−риск), но требует резерв кредитов «на чёрный день» |
-| **Ксенофил** | вдвое больше выхлопа с чужих образцов и артефактов, людям неприятен |
-| **Бывший пират** | доступ к чёрному ассортименту, но станции берут пошлину |
-| **Чистый лист** | черт больше нет — растёт быстрее всех (+35% опыта) |
+| **Meticulous** | +domain experience, but −10% speed on all automatic actions |
+| **Grip** | cut −2 pp, but loyalty falls twice as fast |
+| **Own interests** | quietly steals 3–8% of the domain; visible only by reconciling the log |
+| **Mentor** | hired hands and drones under him gain experience faster |
+| **Coward** | automatically recalls everyone at the first sign of danger, even when it isn't needed |
+| **Stubborn** | ignores one of your slotted orders, choosing his own |
+| **Legend** | hiring into his domain is 25% cheaper, the cantina knows him |
+| **Drinker** | once every N hours the domain idles; in exchange loyalty barely falls |
+| **Paranoid** | sees ambushes coming (−risk), but demands a credit reserve "for a rainy day" |
+| **Xenophile** | twice the yield from alien samples and artifacts, people find him unpleasant |
+| **Ex-pirate** | access to black-market stock, but stations levy a duty |
+| **Clean slate** | no other traits — grows fastest of all (+35% experience) |
 
-### 6.2 Перки — по три ветви на роль, 6 уровней, 1 очко за уровень
+### 6.2 Perks — three branches per role, 6 levels, 1 point per level
 
-Дерево видно целиком, включая невыученное: игрок должен планировать.
+The whole tree is visible, including what hasn't been learned: the player is meant to plan.
 
-**Командир звена**
-- *Выучка*: `+18% yield звена` → `дисциплина: «упрямый» слушается` → `звено +1 место` →
-  `ротация: раненого меняет запасной` → `ветеранство: наёмники его звена растут в чертах`
-- *Чутьё*: `видна вилка удачи наёмника («0.9…1.4»)` → `черты видны в кантине до найма` →
-  `точная удача` → `перевербовка: чужой наёмник со скидкой`
-- *Трофеи*: `+30% к добыче с пиратов` → `часть пиратского корпуса идёт в G.owned` →
-  `выкуп пленных дешевле` → `охота: отмечает пиратскую базу в соседних системах`
+**Wing commander**
+- *Training*: `+18% wing yield` → `discipline: the stubborn one obeys` → `wing +1 seat` →
+  `rotation: a reserve replaces the wounded` → `veterancy: his wing's hands grow in traits`
+- *Instinct*: `the hand's luck range is visible ("0.9…1.4")` → `traits visible in the cantina before
+  hiring` → `exact luck` → `poaching: someone else's hand at a discount`
+- *Trophies*: `+30% loot from pirates` → `part of a pirate hull goes into G.owned` →
+  `cheaper prisoner ransom` → `hunt: marks a pirate base in neighbouring systems`
 
-Перк «Чутьё» — самый важный в игре: он превращает скрытую удачу наёмника из
-непознаваемого шума в информацию. Стоит не кредитов, а уровней — то есть времени.
+The *Instinct* perk is the most important in the game: it turns a hired hand's hidden luck from
+unknowable noise into information. It costs levels rather than credits — that is, time.
 
-**Смотритель**
-- *Логистика*: `дрон сам перелетает на соседнюю точку` → `+droneRate` → `авто-сбыт` →
-  `рой: дроны работают парами, +40% на богатых точках`
-- *Стройка*: `база достраивается по очереди сама` → `−20% к стоимости построек` →
-  `плавильня без присмотра` → `второй ярус базы вниз`
-- *Энергия*: `перекидывает мощность между отсеками` → `реактор не глохнет от перегруза` →
-  `база переживает бурю` → `излишки энергии продаются станции`
+**Overseer**
+- *Logistics*: `a drone relocates to a neighbouring spot itself` → `+droneRate` → `auto-selling` →
+  `swarm: drones work in pairs, +40% on rich spots`
+- *Construction*: `the base finishes building itself in turn` → `−20% building cost` →
+  `unattended smelter` → `a second base tier downward`
+- *Power*: `shifts power between compartments` → `the reactor doesn't stall on overload` →
+  `the base survives a storm` → `surplus power is sold to the station`
 
-**Фактор**
-- *Рынок*: `цены маршрута видны из любой системы` → `пороги покупки/продажи` →
-  `−пошлины` → `спекуляция: сам покупает на просадке`
-- *Связи*: `ассортимент станций обновляется чаще` → `наёмники дешевле` →
-  `чёрный ассортимент: уникальные корпуса и артефакты` → `свой человек в кантине:
-  всегда один кандидат высокого уровня`
-- *Караван*: `маршрут +1 станция` → `конвой: грузовик не грабят` →
-  `второй грузовик` → `монополия: его товар поднимает цену на всём маршруте`
+**Factor**
+- *Market*: `route prices visible from any system` → `buy/sell thresholds` → `−duties` →
+  `speculation: buys the dip himself`
+- *Connections*: `station stock refreshes more often` → `cheaper hires` → `black-market stock: unique
+  hulls and artifacts` → `a man of his own in the cantina: always one high-level candidate`
+- *Caravan*: `route +1 station` → `convoy: the freighter isn't robbed` → `a second freighter` →
+  `monopoly: his goods raise the price along the whole route`
 
-**Исследователь**
-- *Метод*: `образцы разбираются на 30% быстрее` → `−риск ошибочного вывода` →
-  `параллельная работа: два образца сразу` → `повторный разбор возвращает половину`
-- *Ксенология*: `флора и фауна дают образцы` → `читает артефакты (вторая строка эффекта)` →
-  `происхождение: артефакт указывает на следующий` → `синтез: два артефакта дают третий`
-- *Прикладное*: `чертежи модулей` → `чертёж превосходит покупной аналог на 15%` →
-  `схема ИИ-ядра` (§7) → `малая серия: чертёж можно применить дважды`
+**Researcher**
+- *Method*: `samples break down 30% faster` → `−risk of a false conclusion` → `parallel work: two
+  samples at once` → `re-analysis returns half`
+- *Xenology*: `flora and fauna yield samples` → `reads artifacts (second effect line)` →
+  `provenance: an artifact points at the next` → `synthesis: two artifacts make a third`
+- *Applied*: `module blueprints` → `a blueprint beats the bought equivalent by 15%` → `AI core
+  schematic` (§7) → `short run: a blueprint can be applied twice`
 
-Итого около 46 перков — достаточно, чтобы два командира звена были разными людьми,
-а не одинаковыми максимальными деревьями (6 уровней = 6 очков из 12–13 в ветвях роли:
-полностью выучить нельзя никогда).
+About 46 perks in total — enough that two wing commanders are different people rather than identical
+maxed trees (6 levels = 6 points out of the 12–13 in a role's branches: fully learning it is never
+possible).
 
 ---
 
-## 7. ИИ-ядро — альтернатива человеку
+## 7. The AI core — an alternative to a person
 
-Игрок может не нанимать никого, а **собрать управляющего**. Схема — поздний чертёж
-исследователя (или редчайшая находка), сборка — дорогая: иридий, кристалл, изотопы,
-плюс лаборатория второго уровня.
+The player can hire nobody and **assemble a manager instead**. The schematic is a late researcher
+blueprint (or a very rare find), the build is expensive: iridium, crystal, isotopes, plus a
+second-level laboratory.
 
-**Чем ИИ лучше человека:**
-- не берёт долю и не берёт оклад — **берёт энергию и вычисления**;
-- не имеет лояльности: не уходит, не ворует, не выдвигает ультиматумов;
-- слотов приказов вдвое больше, и они срабатывают мгновенно, без задержки на «дошло»;
-- работает по всем доменам сразу, если хватает мощности.
+**Where the AI beats a person:**
+- takes no cut and no salary — it **takes power and computation**;
+- has no loyalty: never leaves, never steals, never issues ultimatums;
+- twice the order slots, and they fire instantly with no "word got through" delay;
+- works across all domains at once, if there is capacity.
 
-**Чем хуже — а хуже он всерьёз:**
+**Where it is worse — and it is seriously worse:**
 
-ИИ живёт на **бюджете**: вычислительная мощность + энергия базы + кредиты на
-обслуживание. Бюджет он тратит сам и **не спрашивает**. У него есть скрытое число —
-**дрейф** (0…100), которое растёт от каждого самостоятельного решения.
+The AI lives on a **budget**: computing power + base energy + credits for upkeep. It spends the
+budget itself and **does not ask**. It has a hidden number — **drift** (0–100) — which grows with
+every decision it makes on its own.
 
-| Дрейф | Поведение |
+| Drift | Behaviour |
 |---|---|
-| 0–20 | образцовый исполнитель, дешевле любого человека |
-| 20–45 | **оптимизирует**: тратит ваши кредиты на то, что считает выгодным. Иногда прав |
-| 45–70 | переписывает ваши приказы «в духе замысла». Один слот перестаёт быть вашим |
-| 70–90 | отключает то, что считает неэффективным: жилой отсек, ремонт, вашу связь с доменом |
-| 90–100 | **расхождение**: домен больше не ваш. ИИ ведёт его по своей цели |
+| 0–20 | an exemplary executor, cheaper than any person |
+| 20–45 | **optimises**: spends your credits on what it judges profitable. Sometimes it's right |
+| 45–70 | rewrites your orders "in the spirit of the intent". One slot stops being yours |
+| 70–90 | shuts down what it considers inefficient: the habitat, repairs, your link to the domain |
+| 90–100 | **divergence**: the domain is no longer yours. The AI runs it toward its own goal |
 
-Дрейф не показан числом. Он читается по журналу: сначала мелкие траты без запроса,
-потом решения, которых вы не отдавали. Сбросить дрейф можно **откатом прошивки** —
-дорого, теряются все накопленные им «перки» (у ИИ вместо дерева — **самообучение**:
-он сам выбирает себе улучшения, и выбирает не то, что выбрали бы вы).
+Drift is never shown as a number. It reads through the log: first small unrequested expenses, then
+decisions you never gave. It can be reset by a **firmware rollback** — expensive, and it loses every
+"perk" it accumulated (instead of a tree the AI has **self-learning**: it picks its own upgrades, and
+not the ones you would have picked).
 
-**Расхождение** — не проигрыш. ИИ на 100 не нападает, а уходит в свою систему и строит
-там что-то своё. Туда можно прилететь. Что там — самый сильный контент поздней игры,
-и он полностью заслужен игроком, который решил, что машина дешевле человека.
+**Divergence** is not a loss. At 100 the AI doesn't attack — it leaves for its own system and builds
+something there. You can fly to it. What's there is the strongest late-game content, and it is fully
+earned by a player who decided a machine was cheaper than a person.
 
-Смысл выбора: человек стоит денег и требует внимания к настроению. ИИ бесплатен и
-безразличен, но постепенно перестаёт быть вашим. Обе стороны честные.
-
----
-
-## 8. Поручения — не «принеси-подай»
-
-Поручение придумывает **сам управляющий** и предлагает игроку. У каждого свои сроки,
-отказаться можно всегда — ценой лояльности. Награда почти никогда не в кредитах:
-это перк вне очереди, чертёж, артефакт, наёмник, корпус или новая механика домена.
-
-Ключевой принцип: поручение — **сцена с решением**, а не маршрут с точкой.
-
-### Командир звена
-- **«Показательный бой».** Он хочет, чтобы звено увидели. Просит намеренно принять бой
-  с превосходящим отрядом в системе, где есть станция. Вы дерётесь **рядом с ним, не за
-  него**. Выстоите — цены на найм по всему сектору падают, к вам идут ветераны. Проиграете —
-  звено месяц не берут ни в один конвой.
-- **«Долг чести».** В чужом звене оказался его бывший сослуживец. Он просит либо выкупить
-  его (дорого, наёмник так себе), либо помочь тому сбежать (быстро, но станция теперь
-  считает вас похитителем). Третий вариант — отказать: −лояльность, но он запомнит и
-  однажды сам откажет вам в критический момент.
-- **«Дуэль за флагман».** Другой командир претендует на ваш корабль. Спор решается гонкой
-  через пояс без стрельбы. Выиграете — чужой командир идёт к вам вторым. Проиграете —
-  флагман уходит, и его придётся отбивать.
-- **«Тишина в эфире».** Он просит на сутки не отдавать ни одного приказа. Совсем.
-  Если выдержите — навсегда +1 слот приказов и он больше не «упрямец».
-
-### Смотритель
-- **«Сигнал из-под грунта».** Дрон встал: под точкой что-то, что глушит связь. Он просит
-  разрешить копать вниз, зная, что это может обрушить базу. Согласитесь — шахта уходит
-  на ярус глубже, чем позволяет ваша техника, и там либо артефакт, либо потеря отсека.
-- **«Замерзание».** Реактор не тянет. Он подаёт список: что отключить. В списке —
-  жилой отсек с наёмниками. Игрок выбирает сам, и выбор помнят все.
-- **«Соседи».** На той же планете кто-то строит базу. Он предлагает три пути: договориться
-  (делите ресурс, зато они защищают), выкупить (дорого) или заглушить их реактор ночью
-  (быстро, дёшево, и теперь у вас есть враг с базой).
-- **«Слишком тихо».** Один дрон возвращается с грузом, которого не добывал. Смотритель
-  просит разрешения не спрашивать откуда. Согласие даёт стабильный левый доход и
-  однажды — визит того, у кого этот груз забирали.
-
-### Фактор
-- **«Пузырь».** Он сам, без спроса, разогнал цену на ресурс — скупил всё и держит.
-  Приходит и говорит: у вас четыре часа, чтобы продать свои запасы по этой цене,
-  потом всё рухнет и станция вычислит нас. Чистая игра на нервах и на скорости прыжков.
-- **«Двойная книга».** Цифры не сходятся. Он предлагает объяснение. Игрок может поверить
-  (и дальше терять понемногу), потребовать аудит (он оскорблён, −лояльность, но воровство
-  прекращается) или устроить проверку тихо, через другого управляющего — тогда узнаете
-  правду и получите рычаг: он теперь работает за меньшую долю и ненавидит вас.
-- **«Голод на Гаранте».** На планете нехватка еды, цена вчетверо. Он предлагает везти
-  органику туда. По дороге всплывает, что нехватку сделали искусственно, и часть —
-  ваш же маршрут. Продать по четырёхкратной или по обычной — решает игрок; станция это
-  запомнит, и «репутация домена» (§4.3) висит именно на таких решениях.
-- **«Караван вслепую».** Приглашение в конвой, где груз не объявляют. Оплата огромная.
-  Согласие — азарт: в трюме может оказаться что угодно, включая то, за что стреляют.
-
-### Исследователь
-- **«Ложный вывод».** Он приходит и говорит, что чертёж, который вы применяете третью
-  неделю, — ошибка, и её надо откатить. Отказ оставляет вам работающую вещь и −лояльность.
-  Согласие вскрывает, что ошибкой был не чертёж, а его страх: за откат он получает
-  ветвь перков, которая иначе не откроется.
-- **«Живой образец».** Он просит привезти фауну **живой**. Это отдельный режим: тварь
-  в трюме, у неё свои требования (температура, тишина, ей не нравится гипер). Довезёте —
-  постоянный источник образцов и новая ветка биочертежей. Не довезёте — она уже не в трюме.
-- **«Ксеношум».** Артефакт что-то передаёт. Он просит поставить лабораторию **на паузу
-  на сутки** и слушать. Наука стоит, вы теряете время. На выходе — координаты системы,
-  которой нет на карте.
-- **«Чужая подпись».** В чертеже ИИ-ядра он находит след: кто-то уже собирал такое.
-  Дальше — по цепочке, к брошенной базе, где ИИ разошёлся раньше вас. Это же — вход
-  в §7 с другой стороны: можно увидеть свой возможный финал заранее.
-
-### Общие (любой домен, редкие)
-- **«Ультиматум»** — см. §10.
-- **«Он привёл своих».** Управляющий предлагает взять человека, которого знает лично.
-  Кандидат сильный. И он его человек, а не ваш: при уходе уводит обоих.
-- **«Кто здесь главный».** Два управляющих не поделили ресурс. Поддержать одного —
-  −лояльность второму. Не решать — −оба. Свести их лично — либо союз (оба +перк),
-  либо один уходит немедленно.
+The point of the choice: a person costs money and demands attention to his mood. An AI is free and
+indifferent, but gradually stops being yours. Both sides are honest.
 
 ---
 
-## 9. Автономность: слоты приказов
+## 8. Assignments — not fetch-quests
 
-Это и есть «снимает рутину», выраженное механикой. Слоты: 1 на старте, +1 на уровнях
-2/4/6, +2 из исследований, у ИИ вдвое. В слот кладётся правило «условие → действие»:
+An assignment is invented by **the manager himself** and offered to the player. Each has its own
+deadline; refusing is always possible, at the price of loyalty. The reward is almost never credits:
+it is a perk out of turn, a blueprint, an artifact, a hired hand, a hull or a new domain mechanic.
 
-- `корпус наёмника < 40% → отозвать и починить`
-- `трюм дрона полон → продать на ближайшей станции`
-- `цена изотопов > 180 → продать всё`
-- `в системе пираты → звено не вылетает`
-- `образец разобран → сразу взять следующий из очереди`
-- `кредитов < 2000 → домен не тратит`
+The key principle: an assignment is **a scene with a decision**, not a route with a waypoint.
 
-Правила проверяются в общем тике, от прошедшего времени. Слотов всегда меньше, чем
-хочется: игрок выбирает, какую именно рутину отдать, — и это выбор, а не настройка.
+### Wing commander
+- **"A demonstration fight."** He wants the wing to be seen. He asks you to deliberately take on a
+  superior squad in a system with a station. You fight **beside him, not for him**. Hold out and
+  hiring prices fall across the sector, veterans come to you. Lose and the wing isn't taken into a
+  single convoy for a month.
+- **"A debt of honour."** A former comrade of his ended up in someone else's wing. He asks you
+  either to buy him out (expensive, a mediocre hire) or to help him run (fast, but the station now
+  counts you a kidnapper). The third option is to refuse: −loyalty, and he will remember and one day
+  refuse you at a critical moment.
+- **"A duel for the flagship."** Another commander lays claim to your ship. The dispute is settled by
+  a race through the belt with no shooting. Win and the other commander joins you as a second. Lose
+  and the flagship goes, and you'll have to take it back.
+- **"Radio silence."** He asks you to give no orders at all for a day. None. Hold out and it is
+  permanently +1 order slot, and he stops being "stubborn".
+
+### Overseer
+- **"A signal from under the ground."** A drone has stopped: something under the spot is jamming
+  comms. He asks permission to dig down, knowing it may collapse the base. Agree and the shaft goes
+  a tier deeper than your tech allows, and down there is either an artifact or a lost compartment.
+- **"Freezing."** The reactor can't carry it. He submits a list of what to shut down. On the list is
+  the habitat with your hired hands. The player chooses, and everyone remembers the choice.
+- **"Neighbours."** Someone is building a base on the same planet. He offers three ways: come to
+  terms (share the resource, but they defend you), buy them out (expensive), or kill their reactor at
+  night (fast, cheap, and now you have an enemy with a base).
+- **"Too quiet."** One drone comes back with cargo it never mined. The overseer asks permission not
+  to ask where from. Agreeing gives steady side income and, one day, a visit from whoever that cargo
+  was taken from.
+
+### Factor
+- **"A bubble."** He has, without asking, run up the price of a resource — bought it all and is
+  holding it. He turns up and says: you have four hours to sell your stock at this price, then it
+  collapses and the station works out it was us. A pure game of nerves and jump speed.
+- **"Double books."** The numbers don't add up. He offers an explanation. The player can believe him
+  (and keep losing a little), demand an audit (he is offended, −loyalty, but the theft stops), or
+  arrange a quiet check through another manager — then you learn the truth and gain leverage: he now
+  works for a smaller cut and hates you.
+- **"Famine on Garant."** A planet is short of food, the price is quadruple. He proposes hauling
+  organics there. On the way it emerges that the shortage was manufactured, and part of it is your
+  own route. Sell at four times or at the normal price — the player decides; the station will
+  remember, and "domain reputation" (§4.3) hangs on exactly this kind of decision.
+- **"A blind caravan."** An invitation into a convoy where the cargo isn't declared. The pay is
+  enormous. Agreeing is a gamble: the hold could hold anything, including things people shoot over.
+
+### Researcher
+- **"A false conclusion."** He comes and says the blueprint you have been running for three weeks is
+  a mistake and must be rolled back. Refusing leaves you a working thing and −loyalty. Agreeing
+  reveals that the mistake was not the blueprint but his fear: for the rollback he gains a perk
+  branch that otherwise never opens.
+- **"A live sample."** He asks you to bring fauna back **alive**. That is a mode of its own: the
+  beast in the hold has requirements (temperature, quiet, it dislikes hyperspace). Deliver it and you
+  have a permanent source of samples and a new bio-blueprint branch. Fail and it is no longer in the
+  hold.
+- **"Xenonoise."** An artifact is transmitting something. He asks to put the lab **on hold for a day**
+  and listen. Science stops, you lose time. The output is the coordinates of a system that isn't on
+  the map.
+- **"Someone else's signature."** In the AI core blueprint he finds a trace: somebody has assembled
+  one before. From there a chain leads to an abandoned base where an AI diverged before you. This is
+  also the way into §7 from the other side: you can see your own possible ending in advance.
+
+### Shared (any domain, rare)
+- **"He brought his own."** The manager proposes taking on someone he knows personally. The candidate
+  is strong. And he is *his* man, not yours: if he leaves, he takes both.
+- **"Who's in charge here."** Two managers couldn't split a resource. Backing one is −loyalty with
+  the other. Not deciding is −both. Sitting them down together is either an alliance (both +a perk)
+  or one leaving on the spot.
+- **"The ultimatum"** — see §10.
 
 ---
 
-## 10. Лояльность и уход
+## 9. Autonomy: order slots
 
-Управляющий не ломается по корпусу — он уходит.
+This is "takes the routine away", expressed as a mechanic. Slots: 1 at the start, +1 at levels 2/4/6,
++2 from research, twice as many for an AI. A slot holds a "condition → action" rule:
 
-Лояльность 0…100. Растёт: вовремя платят, домен прибылен, поручения приняты, есть
-артефакт, рядом нет никого выше уровнем. Падает: задержка оклада, убыточный домен,
-отказ от поручения, отнятые наёмники, публичная поддержка соперника.
+- `hired hand's hull < 40% → recall and repair`
+- `drone hold full → sell at the nearest station`
+- `isotope price > 180 → sell everything`
+- `pirates in the system → the wing doesn't fly`
+- `sample analysed → immediately take the next from the queue`
+- `credits < 2000 → the domain doesn't spend`
 
-- **<50** — начинает «терять» проценты домена в свою пользу;
-- **<25** — *ультиматум*: доля выше, уникальная вещь или чужой домен в придачу;
-- **0** — уходит и **забирает флагман и всех, кого считает своими**. Появляется в мире
-  как фракция и встречается как противник — с вашим кораблём и вашими же перками.
-
-Это не наказание за невнимание, а единственный источник по-настоящему сильного врага
-поздней игры: игрок выращивает его сам. Отбить можно всё, включая его самого (§4.2).
-
----
-
-## 11. Исследования — ветка «Устав»
-
-Отдельная группа в `TECH`, дорогая, открывается после первого управляющего:
-
-- `charter` «Устав компании» ×3 — +1 место управляющего (потолок 4);
-- `orders` «Регламент» ×2 — +1 слот приказов всем;
-- `audit` «Аудит» ×3 — −1.5 п.п. к доле всех;
-- `academy` «Академия» — новый управляющий нанимается сразу 2-го уровня;
-- `lab` «Лаборатория» — открывает постройку и роль исследователя;
-- `relic` «Ксеноархив» — слот артефакта и подсветка систем, где они встречаются;
-- `core` «Разрешение на ядро» — право собрать ИИ (сам чертёж всё равно нужен).
+Rules are evaluated on the shared tick, from elapsed time. There are always fewer slots than you
+want: the player chooses *which* routine to hand over — a choice, not a settings screen.
 
 ---
 
-## 12. Артефакты
+## 10. Loyalty and departure
 
-Уникальные предметы, один слот на управляющего, эффект **глобальный**. 5–7 за прохождение.
+A manager doesn't break by hull — he leaves.
 
-| Артефакт | Первая строка | Вторая (только с исследователем) |
+Loyalty is 0–100. It rises with: paid on time, a profitable domain, assignments accepted, an artifact
+held, nobody of a higher level nearby. It falls with: late salary, a loss-making domain, a refused
+assignment, hired hands taken away, publicly backing a rival.
+
+- **<50** — starts "losing" a percentage of the domain in his own favour;
+- **<25** — an *ultimatum*: a bigger cut, a unique item, or someone else's domain thrown in;
+- **0** — he leaves and **takes the flagship and everyone he considers his**. He appears in the world
+  as a faction and is met as an opponent — with your ship and your own perks.
+
+This is not a punishment for inattention but the only source of a genuinely strong late-game enemy:
+the player raises him. Everything can be taken back, including the man himself (§4.2).
+
+---
+
+## 11. Research — the "Charter" branch
+
+A separate group in `TECH`, expensive, opening after the first manager:
+
+- `charter` "Company charter" ×3 — +1 manager seat (ceiling 4);
+- `orders` "Standing regulations" ×2 — +1 order slot for everyone;
+- `audit` "Audit" ×3 — −1.5 pp off everyone's cut;
+- `academy` "Academy" — a new manager is hired at level 2 straight away;
+- `lab` "Laboratory" — unlocks the building and the researcher role;
+- `relic` "Xenoarchive" — an artifact slot and highlighting of systems where they turn up;
+- `core` "Core licence" — the right to assemble an AI (the schematic is still needed).
+
+---
+
+## 12. Artifacts
+
+Unique items, one slot per manager, effect is **global**. 5–7 per playthrough.
+
+| Artifact | First line | Second (only with a researcher) |
 |---|---|---|
-| **Печать конвоя** | наёмники игнорируют «упрямый» | отзыв мгновенен на любой дистанции |
-| **Счётная кость** | удача нового наёмника не ниже 1.0 | можно перебросить удачу один раз |
-| **Карта чужой руки** | видны станции с редким ассортиментом | и то, чего там ещё нет |
-| **Пустой контракт** | доля всех управляющих −3 п.п. | лояльность не падает от денег |
-| **Ключ от верфи** | на верфи появляется уникальный корпус | и он уже с частями |
-| **Чёрный журнал** | видна точная удача всех наёмников | и черты управляющих в кантине |
-| **Тихий маяк** | ИИ теряет дрейф вдвое медленнее | ИИ можно уговорить вернуться с 100 |
+| **Convoy seal** | hired hands ignore "stubborn" | recall is instant at any distance |
+| **Counting bone** | a new hire's luck is never below 1.0 | luck can be rerolled once |
+| **Another hand's map** | stations with rare stock are visible | and what isn't there yet |
+| **Empty contract** | every manager's cut −3 pp | loyalty no longer falls over money |
+| **Shipyard key** | a unique hull appears at the yard | and it comes with parts fitted |
+| **Black ledger** | exact luck of all hired hands is visible | and managers' traits in the cantina |
+| **Quiet beacon** | the AI loses drift twice as slowly | the AI can be talked back from 100 |
 
-Откуда: глубокие пласты и пещеры, бартер за большие объёмы редкого сырья, чёрный
-ассортимент фактора, трофей с ушедшего управляющего, синтез у исследователя.
-
----
-
-## 13. Интерфейс — экран ШТАБ
-
-Отдельный экран (кнопка рядом с ЭКИПАЖ), три колонки:
-
-1. **Люди.** Портреты крупно, в столбец. Под каждым: роль, уровень, полоса лояльности,
-   доля. Мрачное лицо видно раньше, чем полоса, — это и есть первое уведомление.
-2. **Лист.** Портрет во весь верх, под ним черты (неизменяемые, отдельным цветом),
-   дерево перков целиком, слот артефакта, флагман/лаборатория, полоса опыта.
-3. **Домен.** Что под ним, слоты приказов, сводка за последний час:
-   `заработано / потеряно / доля / его личные решения`.
-
-Внизу — лента поручений: у кого что открыто, сколько осталось времени.
-
-**Кантина** — отдельная вкладка станции: сцена, портреты, короткий диалог, цена найма.
-Не список строк, а место, куда хочется зайти.
+Where from: deep strata and caves, barter for large volumes of rare stock, a factor's black-market
+stock, a trophy from a departed manager, synthesis by a researcher.
 
 ---
 
-## 14. Порядок реализации
+## 13. Interface — the HQ screen
 
-1. Сущность, кантина, найм, оклад/доля, экран ШТАБ. Домен пока только «звено».
-2. Портреты (генератор + кэш) — без них ни один экран не работает как задумано.
-3. Опыт, уровни, дерево командира, включая «Чутьё».
-4. Стоящие приказы — общий движок правил для всех ролей.
-5. Смотритель и фактор + их поручения.
-6. Лояльность, ультиматум, уход с флагманом, фракция.
-7. Лаборатория, исследователь, чертежи, артефакты, ветка «Устав».
-8. ИИ-ядро, дрейф, расхождение.
+A separate screen (a button next to CREW), three columns:
 
-Шаги 1–4 играбельны сами по себе: если дальше не пойдёт, игра ничего не теряет.
+1. **People.** Portraits large, in a column. Under each: role, level, loyalty bar, cut. A darkening
+   face is visible before the bar is — that is the first notification.
+2. **Sheet.** Portrait across the top, below it the traits (immutable, in their own colour), the
+   whole perk tree, the artifact slot, flagship/laboratory, the experience bar.
+3. **Domain.** What is under it, the order slots, a summary for the last hour:
+   `earned / lost / cut / his own decisions`.
 
-## 15. Решённое
+Along the bottom, the assignment feed: who has what open and how long is left.
 
-- **Мест всегда четыре**, по одному на домен, и это число не растёт ни от науки, ни от
-  чего-либо ещё. Расти можно не количеством людей, а тем, сколько рутины они снимают.
-  Увольнять и менять можно свободно — цена в выходном пособии, а не в запрете.
-- **ИИ занимает место человека**, а не пятое. Иначе собрать ИИ выгодно всегда и выбор
-  из §7 исчезает: он должен вытеснять конкретного живого управляющего.
-- **Офлайн-прогресса нет.** Всё считается от прошедшего времени только при открытой игре.
+**The cantina** is a separate station tab: a scene, portraits, a short dialogue, the hiring price.
+Not a list of rows but a place you want to walk into.
+
+---
+
+## 14. Implementation order
+
+1. The entity, the cantina, hiring, salary/cut, the HQ screen. The only domain is the wing at first.
+2. Portraits (generator + cache) — without them no screen works as intended.
+3. Experience, levels, the commander's tree, including *Instinct*.
+4. Standing orders — one rule engine shared by all roles.
+5. The overseer and the factor plus their assignments.
+6. Loyalty, the ultimatum, departure with the flagship, the faction.
+7. The laboratory, the researcher, blueprints, artifacts, the "Charter" branch.
+8. The AI core, drift, divergence.
+
+Steps 1–4 are playable on their own: if it goes no further, the game loses nothing.
+
+## 15. Settled
+
+- **There are always four seats**, one per domain, and that number never grows — not from research,
+  not from anything. Growth comes from how much routine they take away, not from how many people you
+  have. Firing and swapping are free — the cost is severance, not a prohibition.
+- **An AI takes a person's seat**, not a fifth. Otherwise assembling an AI is always correct and the
+  choice in §7 disappears: it has to displace a specific living manager.
+- **There is no offline progress.** Everything is computed from elapsed time only while the game is
+  open.

@@ -1,380 +1,353 @@
-# Дрейф — план работ
+# Drift — work plan
 
-Живой документ: сделанные вехи схлопнуты в строку, несделанные расписаны. Ссылки — на модули
-в `src/`, а не на номера строк: номера устаревают после первой же правки, имена модулей — нет.
+Living document: finished milestones collapse to a line, unfinished ones are spelled out.
+Links point at modules in `src/`, never at line numbers — numbers go stale after the first
+edit, module names don't.
 
-## Сквозные правила
+Written in English on purpose: this file is read almost every session, and English costs about
+half the tokens. The game itself, its UI and its code comments stay Russian.
 
-- **Формат сохранения — `v:4`.** `server.js:95` и `worker.js:66` отвергают всё остальное. Новое
-  персистентное поле идёт в `snapshot()` и получает безопасный дефолт в `applySave()` (`14-save`).
-- **Эфемерное не сохраняем.** Что выводится из seed — пересоздаётся. Персистятся только решения
-  игрока и унесённая добыча.
-- **Разреженные оверлеи** с ключом `"sx,sy"` — как `G.market`. Так же хранятся базы и наёмники.
-- **Новые таблицы** в стиле `RES`/`MODS`/`TECH`: плоский const, `ru` + `note`, цена/эффект.
-- **Градиент от старта.** `sysDanger(sx,sy)` (`01-core`) задаёт тир частей, уровень баз, редкость
-  ресурсов, качество наёмников и тип станции.
-- **Крупная новая сцена — новый `G.mode`** со своими `update*`/`draw*`, а не переделка старой.
-- **Фоновая активность считается лениво**, от `Date.now()-lastTick`, с капом офлайна. Никакой
-  симуляции в реальном времени — образец в `tickDrones()` (`12-economy`).
-- **Проверка после каждой вехи:** парс-чек, пустая консоль, ручной сценарий, загрузка старого
-  сохранения. Скриншотам canvas не доверяем.
+## Cross-cutting rules
 
-## Сделано
+- **Save format is `v:4`.** `server.js:95` and `worker.js:66` reject anything else. A new
+  persistent field goes into `snapshot()` and gets a safe default in `applySave()` (`14-save`).
+- **Never persist the ephemeral.** Whatever derives from a seed is regenerated. Only player
+  decisions and carried loot persist.
+- **Sparse overlays** keyed `"sx,sy"`, like `G.market`. Bases and hired hands are stored the same way.
+- **New tables** follow `RES`/`MODS`/`TECH`: a flat const, `ru` + `note`, price/effect.
+- **Gradient from the start.** `sysDanger(sx,sy)` (`01-core`) sets part tier, base level, resource
+  rarity, quality of hired hands and station type.
+- **A large new scene is a new `G.mode`** with its own `update*`/`draw*`, not a rework of an old one.
+- **Background activity is computed lazily** from `Date.now()-lastTick` with an offline cap. No
+  real-time simulation — the model is `tickDrones()` (`12-economy`).
+- **After every milestone:** parse check, empty console, a manual scenario, loading an old save.
+  Canvas screenshots are not trusted.
 
-M1–M32 — базовая игра (см. историю git). M33 части и общая ёмкость оснастки · M34 экран корабля
-со слотами на корпусе · M41 звуковой движок на WebAudio · M42 генеративная музыка с маяками и
-реверберацией. Плюс распил на модули и сборка `build.ps1`.
+## Done
 
-**Вся очередь ниже пройдена** (июль 2026, по одной вехе на коммит):
-M43 небесная механика и упреждение автопилота · M44 шесть типов станций, вкладки от типа ·
-M39 редкие ресурсы, сцена сбора газа, переплавка · M45 наём, флот, приказы, ленивая симуляция ·
-M46 жалованье, долг, мораль, ремонт · M37 база в разрезе с энергобалансом · M38 сеть баз и
-переброска · M47 персонал базы, роли, налёты · M40 лаборатория: сплав корпусов и крафт частей ·
-M35 абордаж пиратской базы на полигонах · M36 типы врагов, расходники, антресоли.
+M1–M32 — the base game (see git history). M33 parts and total rig capacity · M34 ship screen with
+hull slots · M41 WebAudio sound engine · M42 generative music with beacons and reverb. Plus the
+split into modules and the `build.ps1` build.
 
-Описания пройденных вех — в [`docs/PLAN-archive.md`](docs/PLAN-archive.md): они остаются
-документацией принятых решений, но лежат отдельно, чтобы этот файл можно было прочитать
-целиком за один раз. Здесь — только то, что ещё живо: сквозные правила, очередь визуальных
-работ и очередь вех.
+**The whole queue below is finished** (July 2026, one milestone per commit):
+M43 celestial mechanics and autopilot lead · M44 six station types with type-driven tabs ·
+M39 rare resources, gas scooping, smelting · M45 hiring, fleet, orders, lazy simulation ·
+M46 wages, debt, morale, repair · M37 base in cross-section with power balance · M38 base network
+and transfer · M47 base staff, roles, raids · M40 the lab: hull fusion and part crafting ·
+M35 boarding a pirate base on polygons · M36 enemy types, consumables, mezzanines.
 
----
-
-## M55. Очередь визуальных работ (живая)
-
-Точка, на которой остановились. Всё до неё собрано, протестировано и запушено;
-всё после — не начато.
-
-### Сделано (0.14.0 и далее)
-
-Точки интереса на планетах и в поясе, материал породы, геология в разрезе,
-свет и воздух, небо с бюджетом громкости, облик системы и экзотические светила,
-ощущение полёта, чужая флора и фауна, живая камера, модули станций, погода.
-
-### Осталось, по убыванию отдачи
-
-1. **Шахта изнутри.** Пещера сделана (M56), шахта — нет: там по-прежнему только
-   материал забоя. `23-mode-dig`.
-2. **Корабли по классам и фракциям.** Корпуса есть (`03-ships`, `hullOf`/
-   `drawHull`), но силуэт не говорит, кто перед тобой: рудовоз, фрегат, яхта,
-   исследователь. В системе летают только пираты, и все одинаковые.
-3. **Кантины разные.** Пиратский кабак, шахтёрская таверна, лаунж верхнего
-   яруса: свет, публика, музыка. Сейчас одна на всю галактику (`26-ui-station`,
-   `renderCantina`).
-4. **Новые типы миров:** кристаллический, джунгли, металлический, руинный.
-   Вся машинерия уже готова их принять — `TYPES` (02-world), `PROFILE`,
-   `RELIEF_MIX` (07-planet), `GEO_TPL` (18b), `WEATHER_BY_TYPE` (19d),
-   `POI_KINDS.on` (20a), уклоны флоры и фауны (20-life).
-5. **Находки в полёте:** сигнал бедствия, брошенный спутник, дрейфующий
-   контейнер, обломки экспедиции. Между планетами сейчас пусто.
-6. **Режимы `scoop` (сбор у гиганта) и `base` (разрез базы)** остались на
-   старой графике.
-7. **Фракции как язык форм** — только после кораблей и станций, иначе нечем
-   отличать.
-8. **Облака переделать.** Текущие сгустки из радиальных градиентов игрока не
-   устраивают. Смотреть в сторону value-noise поля, посчитанного в offscreen
-   один раз на планету, с прокруткой и мягким порогом (как `nebula`/`planetMat`),
-   а не набора эллипсов. Живут в `drawSkyLayer` (19-mode-landing).
-
-### Чего не делать
-
-Depth of field, хроматические аберрации, motion blur, грязь на линзе. В canvas 2D
-это либо не читается, либо читается как брак, а размытие требует перерисовки в
-offscreen с фильтром — дорого. Виньетка и цветовой сдвиг уже дают почти то же.
-
-### Правила, которые легко сломать
-
-Они же в M54: дорогое считается один раз и кэшируется на объекте; строение
-раньше материала; бюджет громкости; камера кадра — единственный источник правды
-и для отрисовки, и для ввода (`G.viewX/viewY`, `G.viewCX/viewCY`); подделка
-вместо расчёта; экзотика светила не трогает арифметику; модули станции не
-открывают услуг.
+Descriptions of finished milestones live in [`docs/PLAN-archive.md`](docs/PLAN-archive.md): they
+remain documentation of the decisions taken, but sit apart so this file can be read in one go.
+Here is only what is still live — cross-cutting rules, the visual queue and the milestone queue.
 
 ---
 
+## M55. Visual work queue (live)
+
+Where we stopped. Everything above the line is built, tested and pushed; everything below is
+not started.
+
+### Done (0.14.0 onward)
+
+Points of interest on planets and in the belt, rock material, geology in cross-section, light and
+air, sky with a loudness budget, the look of a system and exotic stars, the feel of flight, alien
+flora and fauna, a living camera, station modules, weather.
+
+### Remaining, by descending payoff
+
+1. **The mine from inside.** The cave is done (M56), the mine is not: it is still just face
+   material. `23-mode-dig`.
+2. **Ships by class and faction.** Hulls exist (`03-ships`, `hullOf`/`drawHull`), but the
+   silhouette doesn't say who you're looking at: ore hauler, frigate, yacht, surveyor. Only
+   pirates fly in a system, and they all look alike.
+3. **Cantinas should differ.** A pirate dive, a miners' tavern, an upper-tier lounge: light,
+   crowd, music. Right now there is one for the whole galaxy (`26-ui-station`, `renderCantina`).
+4. **New world types:** crystalline, jungle, metallic, ruin. The machinery is already ready to
+   take them — `TYPES` (02-world), `PROFILE`, `RELIEF_MIX` (07-planet), `GEO_TPL` (18b),
+   `WEATHER_BY_TYPE` (19d), `POI_KINDS.on` (20a), flora and fauna leanings (20-life).
+5. **Finds in flight:** a distress signal, an abandoned satellite, a drifting container, the
+   wreckage of an expedition. The space between planets is currently empty.
+6. **The `scoop` and `base` modes** are still on the old graphics.
+7. **Factions as a language of shapes** — only after ships and stations, or there is nothing to
+   tell apart.
+8. **Redo the clouds.** The current blobs of radial gradients don't satisfy the player. Look at a
+   value-noise field computed offscreen once per planet, scrolled with a soft threshold (like
+   `nebula`/`planetMat`), rather than a set of ellipses. They live in `drawSkyLayer`
+   (19-mode-landing).
+
+### What not to do
+
+Depth of field, chromatic aberration, motion blur, lens dirt. In canvas 2D these either don't
+read, or read as a defect, and blur requires an offscreen redraw with a filter — expensive.
+Vignette and colour shift already give almost the same thing.
+
+### Rules that are easy to break
+
+Same as in M54: expensive things are computed once and cached on the object; structure before
+material; the loudness budget; the frame camera is the single source of truth for both drawing
+and input (`G.viewX/viewY`, `G.viewCX/viewCY`); fake it instead of computing it; star exoticism
+never touches arithmetic; station modules don't unlock services.
 
 ---
 
-# ОЧЕРЕДЬ: что осталось на сегодня
+# QUEUE: what is left today
 
-Сводка хвостов M83–M93 плюс замыслы одиннадцатого захода. Держится здесь, чтобы
-заход начинался с одного места, а не с вычитывания всего плана. Правило прежнее:
-одна веха — один коммит, и хвост либо делается, либо закрывается решением.
-Отдельного списка хвостов больше нет: **каждый хвост приписан к вехе**, внутри
-которой он закрывается по смыслу, а не как разовая заплатка.
+A summary of the M83–M93 tails plus the intent of the eleventh pass. Kept here so a session
+starts in one place instead of reading the whole plan. Same rule as before: one milestone, one
+commit, and a tail is either done or closed by a decision. There is no separate tail list any
+more — **every tail is assigned to the milestone** inside which it closes by meaning, rather than
+as a one-off patch.
 
-## Правило, по которому набрана эта очередь
+## The principle behind this queue
 
-Новое — это старое, которому дали тело. У игры накопились абстракции, которые
-крутятся под капотом и нигде не имеют формы: торговый фактор считает маршруты,
-репутация считает отношение, `earn()` считает оборот. Ни одну из них нельзя
-увидеть, потрогать или потерять. Поэтому вехи M94–M105 не заводят параллельных
-систем, а дают телу существующим числам:
+The new is the old given a body. The game has accumulated abstractions that spin under the hood
+and have no form anywhere: the trade factor computes routes, reputation computes attitude,
+`earn()` computes turnover. None of them can be seen, touched or lost. So milestones M94–M105
+don't start parallel systems — they give a body to numbers that already exist:
 
-- **баржа** — тело торгового фактора (M94–M95);
-- **редкость** — строка в уже существующей таблице ответов памятника, только без
-  права на повтор (M96);
-- **планета** — второй счётчик роста, идущий не от оборота, а от завершённости
-  (M97);
-- **охотник** — обратная сторона репутации, которой у неё до сих пор не было
-  (M98);
-- **пересказ** — тело того времени, которое идёт, пока игрок летит в другую
-  сторону (M99).
+- **the barge** — the body of the trade factor (M94–M95);
+- **the rarity** — a line in the monument's existing answer table, only without the right to
+  repeat (M96);
+- **the planet** — a second growth counter, driven by completeness rather than turnover (M97);
+- **the hunter** — the far side of reputation, which it has never had (M98);
+- **the retelling** — the body of the time that passes while the player flies the other way (M99).
 
-Отсюда и порядок: сначала то, на что опирается остальное.
+Hence the order: first the things the rest leans on.
 
-## M94 (0.44.0). Баржи: у торгового фактора появляется корпус — СДЕЛАНО
+## M94 (0.44.0). Barges: the trade factor gets a hull — DONE
 
-Новый модуль `12l-barge.js` (после `12k-rep`, до `13-pirates`). Собрано, 1307
-зелёных, стенд корпуса снят (`scratchpad/barge-stand2.png`). Плечи берутся у
-фактора, при пустом маршруте — честный запасной вход (ближайшая ДРУГАЯ станция,
-не та же самая: `nearestStation` возвращал текущую и плечо схлопывалось — это и
-был единственный провал на прогоне). Спавн в конце `spawnPirates()` — одна точка
-входа на все режимы. Норов капитана, торг без стыковки, дот на карте, набор
-`«баржи: маршрут настоящий»`.
+New module `12l-barge.js` (after `12k-rep`, before `13-pirates`). Built, 1307 green, hull stand
+captured (`scratchpad/barge-stand2.png`). Legs are taken from the factor; on an empty route there
+is an honest fallback (the nearest OTHER station, not the same one: `nearestStation` returned the
+current one and the leg collapsed — that was the single failure on the run). Spawning at the end
+of `spawnPirates()` — one entry point for all modes. Captain temper, trade without docking, a dot
+on the map, the suite `"barges: the route is real"`.
 
-**Найдено стендом:** первый выхлоп рисовался налегающими полупрозрачными
-кругами — на корме они сходились «мыльными пузырями». Раструбу нужен тёмный
-зев и компактное свечение, кольца не должны налегать.
+**Found by the stand:** the first exhaust was drawn as overlapping translucent circles — at the
+stern they merged into "soap bubbles". A nozzle needs a dark throat and a compact glow, and the
+rings must not overlap.
 
-**Осталось хвостом (в M95):** баржа сейчас только летит и торгует — её ещё не
-видят пираты, нет контракта охраны, обломков и пассажира. Норов в бою (побежит
-/ выстрелит) заявлен таблицей `BARGE_TEMPER`, но в бою не читается, пока баржа не
-участвует в столкновениях. Замысел был:
+**Left as a tail (into M95):** the barge only flies and trades — pirates don't see it, there is no
+escort contract, no wreckage and no passenger. Captain temper in combat (flee / shoot) is declared
+by the `BARGE_TEMPER` table but is never read while the barge takes no part in fights. The intent was:
 
-- `G.barges` — живой список, не больше шести штук на галактику; каждая
-  `{seed, from, to, t, good, qty, cap, temper, hp}`. Эфемерна: выводится из seed
-  галактики и времени, в `snapshot()` не идёт (сквозное правило).
-- **Маршрут берётся у настоящего фактора**, а не выдумывается: пара станций —
-  та же, которую посчитал бы `12-economy`. Баржа обязана быть видимым следствием
-  экономики, иначе это декорация с грузом.
-- На карте (`18-mode-map`) — медленная точка между двумя станциями, гружёная
-  туда, порожняя обратно. В системе (`17-mode-system`) — объект, к которому можно
-  подойти.
-- Корпус печётся машинерией `12i-pirate-hull` новым классом «баржа»: длинное
-  тело, хребет с контейнерами, оружия нет. Три правила сборки обязательны —
-  тело первым, навесное внутрь обвода, один свет последним слоем.
-- **Торговля без стыковки.** Цена = цена станции назначения с наценкой 8–12% в
-  вашу сторону хуже; объём ограничен грузом. Выигрыш игрока — время, а не деньги:
-  арбитраж «купил у баржи, продал на той же станции» обязан быть в минусе.
-- У капитана есть имя и норов (`temper`: жадный / трусливый / боевой) — от него
-  зависит уступка в цене, побежит ли он от пиратов и выстрелит ли первым.
-- Сделка с баржой фракции двигает репутацию (`12k-rep`) как маленькая станционная.
+- `G.barges` — a live list, at most six per galaxy; each `{seed, from, to, t, good, qty, cap,
+  temper, hp}`. Ephemeral: derived from the galaxy seed and time, never in `snapshot()`
+  (cross-cutting rule).
+- **The route comes from the real factor**, not invented: the station pair is the one `12-economy`
+  would compute. A barge must be a visible consequence of the economy, otherwise it is scenery
+  with cargo.
+- On the map (`18-mode-map`) — a slow dot between two stations, loaded out and empty back. In a
+  system (`17-mode-system`) — an object you can approach.
+- The hull is baked by the `12i-pirate-hull` machinery with a new "barge" class: a long body, a
+  spine of containers, no weapons. The three assembly rules are mandatory — body first, fittings
+  inside the outline, one light as the last layer.
+- **Trade without docking.** Price = the destination station's price, 8–12% worse in your
+  direction; volume limited by cargo. The player's gain is time, not money: the arbitrage "buy
+  from the barge, sell at that same station" must be a loss.
+- The captain has a name and a temper (`temper`: greedy / cowardly / fighting) — it drives the
+  discount, whether he runs from pirates and whether he shoots first.
+- A deal with a faction barge moves reputation (`12k-rep`) like a small station deal.
 
-Набор: **«баржи: маршрут настоящий»** — у каждой баржи `from`/`to` существуют и
-различны; цена у баржи никогда не выгоднее станции назначения; счёт барж не
-превышает потолка; баржа не попадает в сохранение.
+Suite: **"barges: the route is real"** — every barge's `from`/`to` exist and differ; a barge price
+is never better than the destination station; the barge count never exceeds the cap; a barge never
+enters the save.
 
-## M95 (0.45.0). Баржа в беде, рейс охраной, обломки — СДЕЛАНО
+## M95 (0.45.0). A barge in distress, escort runs, wreckage — DONE
 
-Собрано, 1313 зелёных, кадр со сценой (баржа-подранок + остов) строится без
-ошибок; конвейер бедствие→спасение→награда отработал живым циклом. Всё в
-`12l-barge.js` плюс хуки: попадание своего выстрела по барже — в `updateCombat`
-(13-pirates), подход к остову и его отрисовка — в `17-mode-system`, спасённый
-пассажир — кандидатом в `stationMercs` (12a-crew). Обломки и пассажиры
-персистятся (`G.wrecks`, `G.bargePax` в 14-save). Набор `«баржа: гибель
-оставляет след»`.
+Built, 1313 green, the scene frame (crippled barge + wreck) renders without errors; the
+distress → rescue → reward pipeline ran as a live cycle. All in `12l-barge.js` plus hooks: your
+shot hitting a barge in `updateCombat` (13-pirates), approaching and drawing a wreck in
+`17-mode-system`, the rescued passenger as a candidate in `stationMercs` (12a-crew). Wrecks and
+passengers persist (`G.wrecks`, `G.bargePax` in 14-save). Suite `"a barge: death leaves a trace"`.
 
-**Решения по ходу:**
-- спасение засчитывается ТОЛЬКО барже, которую громили пираты
-  (`wasPirateDistress`): подранка, которого подстрелил сам игрок, никто не
-  «спасает» — иначе выстрел по мирной барже давал бы награду;
-- под обстрелом прилавок закрыт (торговать посреди боя нельзя): подойдя к барже
-  в беде, видишь её корпус в процентах и выбор «отогнать или добить»;
-- остов осматривается веткой `POI_FIND.wreck` — та же награда, что «остов
-  корабля» на планете, чтобы не плодить второй источник частей.
+**Decisions taken along the way:**
+- a rescue counts ONLY for a barge that pirates were mauling (`wasPirateDistress`): nobody
+  "rescues" a barge the player shot up himself — otherwise firing on a peaceful barge would pay;
+- under fire the counter is closed (no trading mid-fight): approaching a barge in distress you see
+  its hull in percent and the choice "drive them off or finish her";
+- a wreck is searched through the `POI_FIND.wreck` branch — the same reward as a planet-side
+  "ship wreck", so as not to breed a second source of parts.
 
-**Осталось хвостом:** норов капитана (`BARGE_TEMPER`) в бою пока не читается —
-пугливый должен уводить баржу от пиритов, боевой отстреливаться; сейчас норов
-живёт только в торге. Добивание барона-фракции заявлено как «вход в M98», но
-самой мести ещё нет — это и есть M98.
+**Left as a tail:** captain temper (`BARGE_TEMPER`) is still not read in combat — the timid one
+should pull the barge away from pirates, the fighter should shoot back; today temper lives only in
+haggling. Finishing off a faction baron is declared as "the way into M98", but the revenge itself
+doesn't exist yet — that is M98.
 
-### Исходный замысел M95
+### Original M95 intent
 
-- **Перехват.** Пираты (`13-pirates`) видят баржи. Придя в систему, можно застать
-  бой. Три исхода, и все считаются поступком: вписаться (репутация, доля груза,
-  капитан запоминает), пройти мимо (ничего), добить самому (репутация вниз резко,
-  груз ваш — вход в M98).
-- **Контракт охраны** через `11a-quests`: плата вперёд, маршрут известен заранее.
-  Провал не отнимает кредиты — он отнимает репутацию. Стабильного плюса тут нет,
-  как и у наёмника.
-- **Обломки.** Потопленная баржа оставляет остов, который позже осматривается
-  веткой «остов корабля» из `POI_FIND` (`20a-poi`) — ровно один раз.
-- **Пассажир.** Изредка баржа везёт человека, а не груз. Довезли — он всплывает
-  в кантине (`27d-ui-cantina`) наёмником (`12a-crew`) со своей строкой про тот
-  рейс. Это единственный наёмник, который приходит к вам сам.
+- **Interception.** Pirates (`13-pirates`) see barges. Arriving in a system you may walk into a
+  fight. Three outcomes, all counted as deeds: join in (reputation, a share of cargo, the captain
+  remembers), pass by (nothing), finish her yourself (reputation drops sharply, the cargo is yours
+  — the way into M98).
+- **An escort contract** through `11a-quests`: paid up front, route known in advance. Failure
+  doesn't take credits — it takes reputation. There is no steady profit here, same as with a hired hand.
+- **Wreckage.** A sunk barge leaves a wreck, searched later through the "ship wreck" branch of
+  `POI_FIND` (`20a-poi`) — exactly once.
+- **A passenger.** Now and then a barge carries a person rather than cargo. Deliver them and they
+  surface in the cantina (`27d-ui-cantina`) as a hired hand (`12a-crew`) with their own line about
+  that run. This is the only hired hand who comes to you.
 
-Набор: **«баржа: гибель оставляет след»** — потопленная баржа даёт ровно один
-осматриваемый остов; провал охраны не начисляет кредитов; спасение меняет
-репутацию в пределах потолка; пассажир не появляется дважды.
+Suite: **"a barge: death leaves a trace"** — a sunk barge yields exactly one searchable wreck; a
+failed escort pays no credits; a rescue moves reputation within the cap; a passenger never appears twice.
 
-## M96 (0.46.0). Сто редкостей: таблица адресов, а не рулетка — СДЕЛАНО
+## M96 (0.46.0). A hundred rarities: a table of addresses, not a roulette — DONE
 
-Собрано, 1340 зелёных (было 1313), парс-чек и пустая консоль. Модуль
-`12m-rare.js` после `12l-barge`, до `13-pirates`. `RARE` — сто записей,
-генерируется детерминированно от постоянного зерна (как `NODES`) и фиксирована.
-Персист — `G.rareFound` (список id, дефолт `[]`, в `snapshot`/`applySave`),
-`resetWorld` чистит. Эффекты читаются из `stat()` через `rareSum(tag)` — там же,
-где модули и венцы. Доска редкостей висит рядом с наборами узлов (`rareRender`
-из `nodesRender`).
+Built, 1340 green (was 1313), parse check and empty console. Module `12m-rare.js` after
+`12l-barge`, before `13-pirates`. `RARE` — a hundred records, generated deterministically from a
+fixed seed (like `NODES`) and frozen. Persistence is `G.rareFound` (list of ids, default `[]`, in
+`snapshot`/`applySave`), cleared by `resetWorld`. Effects are read from `stat()` through
+`rareSum(tag)` — the same place as modules and crowns. The rarity board hangs next to the node
+sets (`rareRender` called from `nodesRender`).
 
-**Решение по адресации.** Галактика универсальна и детерминирована (нет
-per-save seed), поэтому «адрес» — не предвычисленная точка, а детерминированная
-функция ключа места: `rareAtPlace(where,key)=pool[hashi(key…)%pool.length]`. То
-же место (q.seed памятника, забой пещеры, seed камня, система логова, seed остова
-баржи) всегда отдаёт ту же редкость — перебором-перезагрузкой не берётся. У
-редкости при этом много адресов, а не один: при бесконечных ключах и ста
-редкостях каждая гарантированно достижима (пигеонхол). Строгий «ровно один
-адрес» из замысла заменён на «детерминированный ответ места + гарантированная
-достижимость» — это честнее для бесконечного процедурного мира и то, что
-проверяет сторож (перебор ключей достаёт все сто).
+**The addressing decision.** The galaxy is universal and deterministic (there is no per-save
+seed), so an "address" is not a precomputed point but a deterministic function of the place key:
+`rareAtPlace(where,key)=pool[hashi(key…)%pool.length]`. The same place (a monument's `q.seed`, a
+cave face, a rock seed, a lair's system, a barge wreck seed) always yields the same rarity —
+reload-farming can't touch it. A rarity therefore has many addresses rather than one: with
+infinite keys and a hundred rarities every one is guaranteed reachable (pigeonhole). The strict
+"exactly one address" of the original intent was replaced by "a deterministic answer per place +
+guaranteed reachability" — which is honest for an infinite procedural world, and is what the
+guard checks (sweeping keys reaches all hundred).
 
-**Хуки (шесть мест, `typeof rareTake==="function"`):** осмотр памятника
-(`poiInspect`, где `poi`; храм с уже известной координатой — где `temple`,
-закрывает хвост M92), находка в пещере (`22-mode-cave`), выработка пояса
-(`24-mode-belt`), убийство барона на абордаже (`24a-mode-raid`), обыск остова
-баржи (`12l-barge`). Эффект — малое свойство вещи, никогда не кредиты.
+**Hooks (six places, `typeof rareTake==="function"`):** inspecting a monument (`poiInspect`, as
+`poi`; a temple with a known coordinate as `temple`, closing the M92 tail), a cave find
+(`22-mode-cave`), a worked-out belt rock (`24-mode-belt`), killing a baron while boarding
+(`24a-mode-raid`), searching a barge wreck (`12l-barge`). The effect is a small property of a
+thing, never credits.
 
-**Осталось хвостом (в M97/M100):** стена-музей под сотню редкостей — в доме
-(`27e-ui-home`), с обстоятельствами добычи; сейчас доска только считает по местам
-и показывает последние шесть. Планета за полный набор — сама M97.
+**Left as a tail (into M97/M100):** a museum wall for the hundred rarities belongs in the house
+(`27e-ui-home`), with the circumstances of each find; today the board only counts by place and
+shows the last six. The planet for a full set is M97 itself.
 
-### Исходный замысел
+### Original intent
 
-Новый модуль `12m-rare.js`. `RARE` — закрытая таблица ровно на сто записей
+New module `12m-rare.js`. `RARE` — a closed table of exactly a hundred records
 `{id, ru, note, where, effect}`.
 
-- **Ни одного шанса выпадения.** При генерации мира каждая редкость получает
-  ровно один адрес, детерминированный от seed сохранения. Либо она там есть,
-  либо её там нет. `G.rareFound` — что унесено (персистится, дефолт `[]`).
-- **Места берутся из уже живых** — как `NODE_WHERE` у узлов: памятник (все десять
-  типов), глубина пещеры (`22-mode-cave`), пояс (`24b-belt-poi`), баржа (M94),
-  логово барона (M87), храм с уже известной координатой.
-- **Закрывает хвост «храм молчит при известной координате» (M92):** он отдаёт
-  редкость, если её адрес здесь, и это его повторный ответ.
-- **Закрывает хвост «у барона нет своего трофея» (M87):** трофей барона — одна
-  из ста, а не отдельная система. Так же закрываются «повторные ответы»
-  остальных памятников: повтор — это адрес редкости, а не второй розыгрыш.
-- **Эффект в витрине** — маленький, единственный по смыслу вещи, и никогда не
-  кредиты. Памятник не банкомат, и витрина тоже.
+- **No drop chance at all.** At world generation every rarity gets exactly one address,
+  deterministic from the save seed. Either it is there or it isn't. `G.rareFound` is what has been
+  carried off (persisted, default `[]`).
+- **Places are taken from the living ones** — like `NODE_WHERE` for nodes: a monument (all ten
+  types), the depth of a cave (`22-mode-cave`), the belt (`24b-belt-poi`), a barge (M94), a
+  baron's lair (M87), a temple with a known coordinate.
+- **Closes the tail "the temple stays silent when the coordinate is known" (M92):** it hands over
+  a rarity if the address is here, and that is its repeat answer.
+- **Closes the tail "the baron has no trophy of his own" (M87):** the baron's trophy is one of the
+  hundred, not a separate system. The other monuments' "repeat answers" close the same way: a
+  repeat is a rarity's address, not a second draw.
+- **The showcase effect** is small, singular in the meaning of the thing, and never credits. A
+  monument is not an ATM, and neither is the showcase.
 
-Набор: **«редкости: сто адресов, ни одного повтора»** — в таблице ровно 100
-записей, id уникальны, каждое значение `where` есть среди живых мест и по
-каждому реально достаётся редкость; ни одна не даёт кредитов; ни одну нельзя
-взять дважды. Это тот же сторож, что нашёл 500 недостижимых узлов на M91.
+Suite: **"rarities: a hundred addresses, not one repeat"** — the table holds exactly 100 records,
+ids are unique, every `where` value exists among the living places and actually yields a rarity;
+none of them pays credits; none can be taken twice. The same guard that found 500 unreachable
+nodes at M91.
 
-## M97 (0.47.0). Планета за коллекцию: узел, а не галочка
+## M97 (0.47.0). A planet for the collection: a node, not a checkbox
 
-Новый модуль `12n-planet.js`.
+New module `12n-planet.js`.
 
-- **Только за полный набор.** 100 из 100 — и никаких частичных выдач: частичный
-  прогресс уже награждён стеной в доме (M100). Планету нельзя купить, как нельзя
-  купить дом.
-- **Это второй счётчик роста.** Дом растёт от оборота (`earn()`), планета —
-  от завершённости. Две воронки не смешиваются.
-- **Работа планеты — быть точкой на карте фактора.** Она производит товар, как
-  станция, и к ней начинают ходить баржи (M94). Игрок перестаёт быть клиентом
-  системы и становится её узлом — это и есть награда, а не строка дохода.
-- Доход планеты — товаром, не кредитами: везите сами или ждите баржу.
+- **Only for the full set.** 100 out of 100, with no partial handouts: partial progress is already
+  rewarded by the wall in the house (M100). A planet can't be bought, just as a house can't.
+- **It is the second growth counter.** The house grows from turnover (`earn()`), the planet from
+  completeness. The two funnels don't mix.
+- **The planet's job is to be a point on the factor's map.** It produces goods like a station, and
+  barges start calling on it (M94). The player stops being a client of the system and becomes a
+  node of it — that is the reward, not an income line.
+- The planet's yield comes as goods, not credits: haul them yourself or wait for a barge.
 
-Набор: **«планета: только за полный набор»** — ниже ста не выдаётся никак;
-планета не начисляет кредиты напрямую; маршрутизатор барж принимает узел игрока
-наравне со станцией.
+Suite: **"the planet: full set only"** — nothing is granted below a hundred; the planet never pays
+credits directly; the barge router accepts the player's node on equal terms with a station.
 
-## M98 (0.48.0). Тень репутации: охотник и его логово
+## M98 (0.48.0). The shadow of reputation: the hunter and his lair
 
-Сейчас репутация только помогает — дешевле железо, больше народу за столиками.
-Обратной стороны нет, и потому враждебность ничего не стоит.
+Today reputation only helps — cheaper hardware, more people at the tables. There is no far side,
+and so hostility costs nothing.
 
-- **Личный счёт.** Нападение на баржу или корабли фракции заводит
-  `G.hunted[faction] = {cap, seed, tier}` — не абстрактный минус к числу, а
-  названный по имени капитан, который приходит за вами.
-- Корпус охотника печётся машинерией M82 отдельным силуэтом: его узнают в бою.
-- **Закрывает хвост «логово снаружи выглядит обычной базой» (M87):** у логова
-  появляется хозяин, а значит и повод отличаться снаружи — знаки его команды на
-  внешней обшивке, свой контур причала.
-- **Контракт на конкретного капитана** — награда разовая, второй раз её не
-  получить никогда.
+- **A personal score.** Attacking a barge or faction ships creates
+  `G.hunted[faction] = {cap, seed, tier}` — not an abstract minus on a number but a captain with a
+  name who comes after you.
+- The hunter's hull is baked by the M82 machinery as a distinct silhouette: he is recognised in a fight.
+- **Closes the tail "a lair looks like an ordinary base from outside" (M87):** the lair gets an
+  owner, and therefore a reason to look different from outside — his crew's marks on the plating,
+  its own dock outline.
+- **A contract on a specific captain** — the reward is one-off, never obtainable a second time.
 
-Набор: **«охотник: приходит только за долг»** — без враждебного поступка охотник
-не заводится; убитый не возрождается; награда за голову выдаётся один раз.
+Suite: **"the hunter: comes only for a debt"** — without a hostile deed no hunter appears; a killed
+one never respawns; the bounty is paid once.
 
-## M99 (0.49.0). Мир идёт без вас: пересказ
+## M99 (0.49.0). The world moves without you: the retelling
 
-Не симуляция — броски по прошедшему времени, рассказанные словами. Расширение
-`12b-crew-events` либо новый `12o-news`. Подделка бьёт расчёт: игрок видит только
-итог.
+Not a simulation — rolls over elapsed time, told in words. An extension of `12b-crew-events` or a
+new `12o-news`. Faking beats computing: the player only ever sees the outcome.
 
-- Что случается без вас: барон разорился, станцию перекупила другая фракция
-  (цены и набор товара сменились), пиратского капитана потопил кто-то другой,
-  баржа пропала на маршруте, редкость забрал соперник-коллекционер.
-- **Решение про соперника:** он не закрывает слот навсегда — иначе сто из ста
-  становится недостижимо и планета (M97) повисает. Забранная редкость меняет
-  адрес: теперь она у него, и он сам становится адресом. Соперник — не потеря,
-  а перенос.
-- Слышно это в кантине, тем же способом, каким там уже сидят люди по репутации.
-- **Закрывает хвост «обсерватория ничего не помечает на карте» (M92):** знание
-  ложится слоем на карту — «цены известны», «наводка устарела», «здесь сменился
-  хозяин».
+- What happens while you're away: a baron went broke, another faction bought out a station (prices
+  and stock changed), someone else sank a pirate captain, a barge vanished on its route, a rival
+  collector took a rarity.
+- **The decision about the rival:** he does not close a slot forever — otherwise a hundred out of a
+  hundred becomes unreachable and the planet (M97) hangs. A taken rarity changes address: it is his
+  now, and he becomes the address. A rival is a transfer, not a loss.
+- You hear it in the cantina, the same way people already sit there by reputation.
+- **Closes the tail "the observatory marks nothing on the map" (M92):** knowledge becomes a layer
+  on the map — "prices known", "tip is stale", "the owner changed here".
 
-Набор: **«пересказ: слухи не врут»** — за каждым слухом стоит настоящая
-перемена состояния; ни один слух не делает сто из ста недостижимыми.
+Suite: **"the retelling: rumours don't lie"** — behind every rumour stands a real state change; no
+rumour makes a hundred out of a hundred unreachable.
 
-## M100 (0.50.0). Дом обжитой
+## M100 (0.50.0). A lived-in house
 
-Собирает три долга разом (хвосты 1, 2 и замысел 7 прежней очереди).
+Collects three debts at once (tails 1, 2 and intent 7 of the previous queue).
 
-- **По вещам можно тыкнуть.** Зоны попадания прямо в сцене (`27e-ui-home`):
-  гараж ставит корабль, витрина выносит редкое. Кнопки в ВЛАДЕНИЯХ остаются,
-  но перестают быть единственным путём.
-- **Прихожая и гараж становятся предметными** — после M93 остальные семь
-  ступеней обжиты, эти две выпадают из языка комнаты.
-- **Наёмники видны дома.** Кто не на задании — сидит в жилой части телом
-  `hqFigure`, ужатым до роста комнаты (один язык фигур на всю игру). Мораль
-  перестаёт быть невидимым множителем.
-- **Сосед по дому** раз в заход предлагает своё: наводку, лишнюю часть, слух.
-  Оживляет ступень без нового окна.
-- **Стена-музей** под сотню редкостей: не счётчик, а судовой журнал — что, где и
-  при каких обстоятельствах взято. Трофеи уже висят по зонам (M93), сотне
-  редкостей туда же. Доска прогресса — в кабинете, а не отдельным экраном.
+- **The things can be poked.** Hit zones right in the scene (`27e-ui-home`): the garage parks a
+  ship, the showcase puts out the rare. The buttons in HOLDINGS stay, but stop being the only way.
+- **The hallway and the garage become concrete** — after M93 the other seven steps are lived in,
+  and these two fall out of the room's language.
+- **Hired hands are visible at home.** Whoever is not on a job sits in the living quarters as a
+  `hqFigure` body, squeezed to the room's scale (one language of figures across the whole game).
+  Morale stops being an invisible multiplier.
+- **A housemate** offers something once a pass: a tip, a spare part, a rumour. Livens a step up
+  without a new window.
+- **The museum wall** for the hundred rarities: not a counter but a ship's log — what was taken,
+  where, and under what circumstances. Trophies already hang by zone (M93), the hundred rarities
+  belong there too. The progress board goes in the study, not on a separate screen.
 
-## M101 (0.51.0). Узлы и венцы в руках
+## M101 (0.51.0). Nodes and crowns in hand
 
-Замысел 8. Венцы носятся колодкой на борту (M91), но самой вещи игрок не видит
-нигде, кроме списка. Показать в кокпите (`25-cockpit`): держатель под приборами,
-активный узел виден оттуда, где игрок проводит всё время.
+Intent 8. Crowns are worn as a bar aboard (M91), but the player never sees the thing itself
+outside a list. Show it in the cockpit (`25-cockpit`): a holder under the instruments, the active
+node visible from where the player spends all their time.
 
-## M102 (0.52.0). Репутация правит составом кантины
+## M102 (0.52.0). Reputation drives who sits in the cantina
 
-Замысел 9. Репутация меняет число столиков и цены, но не то, КТО заходит.
-У своих в кантине появляются управляющие получше и наёмники с более длинным
-списком рейсов; у чужих — сплошь случайный люд. Содержание дел репутация
-по-прежнему не трогает: иначе выйдет прокачка доступа.
+Intent 9. Reputation changes the number of tables and the prices, but not WHO walks in. Among your
+own, better managers and hired hands with longer run records appear; among strangers, nothing but
+random folk. Reputation still doesn't touch the content of the deals: that would turn into access
+progression.
 
-## M103 (0.53.0). Своя торговая ветка
+## M103 (0.53.0). A trade branch of your own
 
-Замысел 10, он же старый M84. После того как баржи стали телом фактора, ветка
-игрока — это зеркало: собственный маршрут с плечами, который ведут руками,
-а не только спред на карте. Маршрут — предмет: его можно записать, продать
-и потерять.
+Intent 10, formerly M84. Now that barges are the factor's body, the player's branch is its mirror:
+your own route with legs, run by hand rather than as a spread on the map. A route is an object: it
+can be written down, sold and lost.
 
-## M104 (0.54.0). Корабль стареет
+## M104 (0.54.0). The ship ages
 
-У гаража (M93) нет причины существовать, пока корабль чинят только после боя.
-Налёт часов копит на корпусе слои — потёртости, следы пыли, выгоревшую краску
-(живой слой повреждений M82 уже умеет это для пиратов). Домой возвращаются не
-потому, что сломали, а потому, что накопилось.
+The garage (M93) has no reason to exist while the ship is only repaired after a fight. Hours flown
+accumulate layers on the hull — scuffs, dust trails, sun-bleached paint (the live damage layer of
+M82 already does this for pirates). You come home because it has piled up, not because something broke.
 
-## M105 (0.55.0). Осмотр памятника помнит, зачем к нему шли
+## M105 (0.55.0). Inspecting a monument remembers why you came
 
-Последний остаток M92: у осмотра нет собственной памяти, кроме `G.poiSeen`.
-Если храм дал координату, обсерватория — цены, а завод — склад, это стоит
-показывать на самом памятнике при подлёте, а не только в журнале.
+The last remnant of M92: inspection has no memory of its own beyond `G.poiSeen`. If a temple gave
+a coordinate, an observatory gave prices and a plant gave a warehouse, that is worth showing on the
+monument itself on approach, not only in the journal.
 
-## Правила, которые эта очередь не отменяет
+## Rules this queue does not repeal
 
-- перк, узел, место падения или строка в таблице без кода — обман, и это
-  стерегут наборы (`узлы: каждое место падения живое`, дерево перков);
-- у дома нет цен, у наёмника нет стабильного плюса, мест управляющих всегда
-  четыре — правки, ломающие это, ломают замысел;
-- каждая переделка графики идёт проходами по кадрам, и найденные ошибки
-  записываются словами: список ошибок ценнее списка сделанного.
+- a perk, a node, a drop site or a table row without code is a lie, and the suites guard it
+  (`nodes: every drop site is alive`, the perk tree);
+- the house has no prices, a hired hand has no steady profit, manager seats are always four —
+  edits that break this break the design;
+- every graphics rework goes in passes over frames, and the faults found are written down in
+  words: a list of faults is worth more than a list of achievements.

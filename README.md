@@ -451,12 +451,15 @@ Local autosave, portable base64 save codes for moving between devices, and optio
 | File | Purpose |
 |---|---|
 | [`drift.html`](drift.html) | The entire game in one self-contained file — open it directly to play. **Built from `src/`; don't edit it by hand.** |
-| [`src/`](src) | The sources: `index.html` shell, `style.css`, and 64 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
+| [`src/`](src) | The sources: `index.html` shell, `style.css`, and 69 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
+| [`tests/`](tests) | The suites, split by topic (`90-harness`, then `91a-flight` … `91n-barge`). They drive the real game state through `resetWorld()` and mock nothing. |
 | [`build.ps1`](build.ps1) | Rebuilds `drift.html` from `src/`. No dependencies — PowerShell, because Node isn't assumed. Pass `-Watch` to rebuild on save. |
 | [`server.js`](server.js) | Optional zero-dependency Node.js server (Node 18+) for self-hosting and persisting cloud saves to a `./saves` folder. |
 | [`worker.js`](worker.js) | Optional Cloudflare Worker alternative, storing saves in a KV namespace. |
 | [`CLAUDE.md`](CLAUDE.md) | House rules for working on the code: what lives where, what must not change, how to verify. |
-| [`PLAN.md`](PLAN.md) | The design log — each milestone, what problem it solved and why it was built that way. |
+| [`PLAN.md`](PLAN.md) | The live plan: cross-cutting rules and the milestones still ahead. |
+| [`docs/PLAN-archive.md`](docs/PLAN-archive.md) | The design log — every finished milestone, what problem it solved and why it was built that way. |
+| [`docs/INDEX.md`](docs/INDEX.md) | Generated address book of the sources: every top-level symbol as `file:line`. Grep it, don't read it. |
 | [`PATCHNOTES.md`](PATCHNOTES.md) | One entry per version, in plain language: what changed and what it fixed. |
 
 ## Running it
@@ -464,7 +467,7 @@ Local autosave, portable base64 save codes for moving between devices, and optio
 **Just play it:** open `drift.html` in any modern browser. No server, no build, no dependencies.
 
 **Work on it:** edit files under `src/`, then rebuild. The same build produces `tests.html` —
-open it in a browser and it runs the suite against the real game state (currently 1 199 assertions,
+open it in a browser and it runs the suites against the real game state (currently 1 340 assertions,
 nothing mocked) and prints the report on the page.
 
 
@@ -484,4 +487,4 @@ Then point the `CLOUD` config inside `drift.html` at your server's `/save` endpo
 
 ## Status
 
-Actively evolving. The planned milestone queue — celestial mechanics, station types, rare materials, mercenaries, bases, the laboratory, the boarding mode, twelve blended world types and their surface language, the side-on lander, welded pirate hulls and the home that grows on its own — is complete. Next in line: a trade route you can hand to someone, and a quest journal where every accepted obligation carries an address and an arrow to it. Mechanics, content and balance are still being iterated on. Balance numbers in particular are tuned against measurements rather than long play sessions, so they move.
+Actively evolving. The planned milestone queue — celestial mechanics, station types, rare materials, mercenaries, bases, the laboratory, the boarding mode, twelve blended world types and their surface language, the side-on lander, welded pirate hulls and the home that grows on its own — is complete. So is the pass that gave the abstractions a body: trade barges flying the factor's real routes, a barge in distress you can rescue or finish off, and a hundred rarities that sit at fixed addresses rather than on a drop chance. Next in line: a planet of your own, granted only for the full hundred, and the far side of reputation — a named hunter who comes after you. Mechanics, content and balance are still being iterated on. Balance numbers in particular are tuned against measurements rather than long play sessions, so they move.

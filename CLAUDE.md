@@ -1,154 +1,170 @@
-# Дрейф — правила работы над проектом
+# Drift — project rules
 
-Однофайловая процедурная space-игра на canvas 2D, ванильный JS, русский интерфейс.
+A single-file procedural space game: canvas 2D, vanilla JS, Russian UI.
 
-## Главное: править src/, а не drift.html
+**Language rule.** Docs (`CLAUDE.md`, `PLAN.md`, `README.md`, `PATCHNOTES.md`, `docs/*`) are
+written in English — it costs about half the tokens of Russian, and these files are read every
+session. Code comments and everything the player sees stay Russian: the game is Russian, and
+translating its voice would break it. New patchnote and milestone entries go in English too.
 
-`drift.html` — **артефакт сборки**. Любая правка в нём будет затёрта при следующей сборке.
-Исходники лежат в `src/`, склеиваются по алфавиту имён (числовой префикс = порядок).
+## The main rule: edit `src/`, never `drift.html`
 
-```bash
-powershell -ExecutionPolicy Bypass -File build.ps1
-```
-
-`-Watch` — пересобирать при сохранении. Node на машине не установлен, поэтому сборка на
-PowerShell. Собранный `drift.html` коммитится вместе с исходниками: игра должна открываться
-двойным кликом, без сервера и зависимостей.
-
-Порядок склейки значим: весь код живёт в одной области видимости, константы и таблицы должны
-быть объявлены раньше, чем их читают на верхнем уровне. Новый модуль — новый числовой префикс
-в нужном месте; переименовывать соседей не нужно, хватает дробного шага (`09a-`).
-
-## Где что лежит
-
-| Файл | Что внутри |
-|---|---|
-| `01-core` | математика, seeded RNG (`hashi`/`rng`/`fbm`), генерация имён, `sysDanger` |
-| `02-world` `06-galaxy` `07-planet` | ресурсы, типы миров, `starAt`/`getSystem`, текстуры и рельеф планет |
-| `03-ships` `04-mods` `05-parts` | корпуса (`hullOf`/`drawHull`), модули и наука, генерация частей и слотов |
-| `08-state` `14-save` | объект `G`, `snapshot()`/`applySave()` |
-| `09-audio` `10-music` | синтез звука, генеративная музыка |
-| `11-log` `12-economy` `13-pirates` | журнал, живой рынок и дроны, пираты |
-| `12a-crew` | наёмники: черты, приказы, рейсы, скрытая удача, жалованье, роли на базе |
-| `12b-crew-events` | таблица событий рейса, байки про загулы, плен и выкуп |
-| `12c-mgr-core` | управляющие: четыре домена, доля, черты, перки, стоящие приказы, лояльность, чертежи |
-| `12d-mgr-face` | процедурные портреты управляющих (растут с уровнем, мрачнеют от лояльности) |
-| `12g-mgr-rogue` | ушедший управляющий: ренегат в своём секторе, изгнанник в кантине |
-| `12h-relic` | лаборатория как здание, семь артефактов, слот и вторая строка эффекта |
-| `15-input` `16-flight` | клавиши/пэды/мышь, фон, автопилот, шлейф |
-| `17`–`25` `mode-*` | режимы: система, карта, посадка, поверхность, пещера, шахта, пояс, кабина; `20-life` — астронавт, флора, фауна |
-| `19a-mode-scoop` | сбор летучих газов в атмосфере гиганта |
-| `21a-mode-base` | база в разрезе: сетка ячеек, энергобаланс, сеть баз |
-| `21aa-base-rooms` | внутренности отсеков базы: кисти (`bBox`/`bWorker`/…) и `BASE_ROOM` |
-| `24a-mode-raid` | абордаж пиратской базы: сетка + полигоны, проекция из пояса |
-| `26-ui-station` `27-ui-ship` | станция со вкладками, экран корабля со слотами |
-| `27c-ui-hq` | экран ШТАБ и кантина: портреты, дерево перков, слоты приказов, сводка домена |
-| `28-loop` | авария, телеметрия, `audioTick`, `frame()` |
-
-## С чего начинать поиск: `docs/INDEX.md`
-
-Таблица выше — карта на уровне файлов; `docs/INDEX.md` — адресная книга на уровне строк.
-Её собирает `build.ps1` вместе с игрой, руками не править и **целиком не читать**: это
-grep-таблица, а не документ. Порядок работы, когда нужно найти код:
-
-```bash
-grep -n "^rareTake " docs/INDEX.md      # где объявлен символ → файл:строка
-grep -rn "rareTake(" src                # кто его зовёт
-```
-
-Дальше читать только нужный кусок (`Read` со смещением), а не файл на 80 КБ. Так новый
-сеанс выходит на код за два дешёвых вызова вместо чтения половины `src/`.
-
-Документы читаются так же — по частям, а не целиком:
-
-| Что нужно | Куда идти |
-|---|---|
-| что делать дальше | `PLAN.md` (33 КБ) — только живая очередь, читается целиком |
-| почему что-то сделано так | `docs/PLAN-archive.md` (210 КБ) — **только grep-ом по вехе** |
-| что менялось в версии | `PATCHNOTES.md` — новое сверху, хватает первых 40 строк |
-| где объявлен символ | `docs/INDEX.md` — только grep-ом |
-
-Целиком не читать: `docs/PLAN-archive.md`, `docs/INDEX.md`, `drift.html`, `tests.html`
-(последние два — артефакты сборки, в них нечего искать: всё есть в `src/` и `tests/`).
-
-## Жёсткие ограничения
-
-- **Формат сохранения — `v:4`, менять нельзя.** `server.js:95` и `worker.js:66` жёстко
-  отвергают всё остальное. Новое персистентное поле получает безопасный дефолт в `applySave()`
-  (`G.foo = s.foo || {}`), тогда старые записи продолжают грузиться.
-- **Эфемерное не сохраняем.** Всё, что детерминированно выводится из seed (системы, орбиты,
-  пояс, шахта, пираты), пересоздаётся при загрузке. Персистится только то, что игрок изменил.
-- **Части сериализуются компактно** — `{s,t,k,g,i}` и регенерация через `genPart`. `PART_GEN`
-  фиксирует версию генератора, чтобы уже выданные части не менялись при правке генератора.
-- Привязанное к системе, но не к `SYS_CACHE`, живёт в разреженном объекте с ключом `"sx,sy"`.
-- **Наёмник по кредитам убыточен, и это не баг.** Рейс отбивает ~85% жалованья
-  (`CREW_YIELD`), прибыль живёт в хвостах таблицы событий: части, редкое сырьё, изредка
-  трофейный корпус. Правки, после которых он выходит в стабильный плюс, ломают замысел —
-  это ставка, а не источник дохода. Скрытая удача (`crewLuck`) наружу не выводится нигде.
-- Git: не `--force`, не `--no-verify`, не `amend`, не трогать git config.
-- **У управляющего один домен, и мест всегда четыре.** Второго на занятый домен взять
-  нельзя, ИИ-ядро (когда появится) займёт такое же место, а не пятое. Правки, после
-  которых мест становится больше, ломают замысел: система про выбор, кем закрыть рутину,
-  а не про рост числа. Доля снимается до того, как деньги попадут игроку, и всегда
-  показывается строкой — иначе она читается как воровство.
-- **Интерфейс держится на трёх правилах** (они же в шапке `style.css`): иерархия —
-  размером и цветом, а не капслоком; всё, во что тыкают пальцем, — не меньше 44 px;
-  поверх мира висит только нужное сейчас. Постоянных кнопок на правом борту две,
-  остальное — в `#menu` или приходит по поводу. Кнопка действия называет действие,
-  а глагол берёт из подсказки, а не из второй таблицы. Всё это стерегут автотесты.
-- **Перк без кода — обман.** Дерево перков видно игроку целиком, и очко уровня тратится
-  всерьёз. Прежде чем добавлять перк в `MGR_PERKS`, подключи его к чему-нибудь; прежде
-  чем закрывать веху — прогони проверку, что каждый `id` из дерева кто-то читает через
-  `mgrPerk`/`mgrPerkOf`. На M53 таких «подписей без кода» нашлось 24 из 48.
-- **Список полей управляющего в `applySave` — белый.** Новое поле у `m` не сохранится,
-  пока его не внесут туда руками (`relic`, `cutBonus`, `ultCount` так и терялись).
-- **Ушедший управляющий не исчезает.** На нуле лояльности он становится ренегатом
-  (`12g-mgr-rogue`): свой сектор, ваш флагман, ваши перки. Разбить его — не убить:
-  он возвращается изгнанником в кантину. Правки, после которых уход снова сводится
-  к строке в журнале, ломают замысел — это единственный сильный противник поздней
-  игры, которого игрок вырастил сам.
-
-## Как проверять
-
-**Сначала автотесты.** `build.ps1` собирает ещё и `tests.html` — та же игра плюс
-`tests/*.js` в конце. Открыть файл в браузере: отчёт печатается на страницу, в консоль
-и в `window.TEST` (`TEST.summary`, `TEST.failed`). Тесты гоняют настоящий `G` через
-`resetWorld()`, ничего не мокают.
-
-Наборы разложены по темам: `tests/91a-flight` … `91n-barge` (каркас — `90-harness`).
-Новая механика идёт в набор по смыслу, а не в конец файла; если темы нет — новый файл
-`91x-имя.js` (порядок склейки по алфавиту, но наборы независимы: каждый начинается
-с `resetWorld()`). Файл на 140 КБ был один, и открыть его ради одной проверки
-стоило дороже, чем её написать.
-
-Панель предпросмотра кэширует `file://` — после пересборки открывать
-`tests.html?v=N` с новым `N`, иначе увидишь прошлый прогон.
+`drift.html` is a **build artifact**. Any edit to it is overwritten by the next build.
+Sources live in `src/` and are concatenated in filename order (numeric prefix = order).
 
 ```bash
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-Дальше — руками, потому что не всё выразимо утверждением:
+`-Watch` rebuilds on save. Node is not installed on this machine, hence the PowerShell build.
+The built `drift.html` is committed alongside the sources: the game must open with a double
+click, no server and no dependencies.
 
-- парс — `new Function(document.scripts[0].textContent)` в браузере;
-- `read_console_messages` на ошибки;
-- пиксели — синхронный `ctx.getImageData`;
-- логика — утверждения через `javascript_exec`;
-- звук — `AnalyserNode` по RMS и спектру. **Чтение `AudioParam.value` не отражает идущую
-  автоматизацию** — мерить только выход узла.
+Concatenation order matters — all code shares one scope, so constants and tables must be
+declared before anything reads them at top level. A new module gets a new numeric prefix in
+the right place; renaming neighbours is unnecessary, a fractional step is enough (`09a-`).
 
-Панель предпросмотра иногда не перезагружается по-настоящему: надёжнее `location.reload()`
-изнутри страницы. `javascript_exec` делит глобальную область между вызовами — повторное
-`const` с тем же именем падает, оборачивай в IIFE.
+## Where to start looking: `docs/INDEX.md`
 
-## План
+The table below is a file-level map; `docs/INDEX.md` is a line-level address book. It is
+generated by `build.ps1` together with the game — never edit it by hand and **never read it
+whole**: it is a grep table, not a document. To find code:
 
-Версия игры — константа `VER` в `01-core`, она же на заставке. Что и когда менялось —
-в [`PATCHNOTES.md`](PATCHNOTES.md), одна запись на версию.
+```bash
+grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared → file:line
+grep -rn "rareTake(" src                # who calls it
+```
 
-Живой план — в [`PLAN.md`](PLAN.md): сквозные правила, очередь визуальных работ и очередь вех
-M94→M105. Пройденные вехи вынесены в [`docs/PLAN-archive.md`](docs/PLAN-archive.md) как
-документация решений — туда ходят grep-ом за конкретной вехой, а не читают подряд.
-Новые работы дописывать в `PLAN.md`, одной вехой на коммит; закрытую веху со временем
-переносить в архив, чтобы живой план не разрастался.
+Then read only the part you need (`Read` with an offset), not an 80 KB file. That way a fresh
+session reaches the code in two cheap calls instead of reading half of `src/`.
 
+Documents work the same way — in parts, not whole:
+
+| What you need | Where to go |
+|---|---|
+| what to do next | `PLAN.md` (~33 KB) — live queue only, safe to read whole |
+| why something was done this way | `docs/PLAN-archive.md` (~210 KB) — **grep by milestone only** |
+| what changed in a version | `PATCHNOTES.md` — newest first, the first 40 lines usually suffice |
+| where a symbol is declared | `docs/INDEX.md` — grep only |
+
+Never read whole: `docs/PLAN-archive.md`, `docs/INDEX.md`, `drift.html`, `tests.html`
+(the last two are build artifacts — there is nothing to find in them that is not in
+`src/` and `tests/`).
+
+## Size guard
+
+`build.ps1` warns when a module in `src/` or a suite in `tests/` passes **40 KB**, and when
+`PLAN.md` passes **60 KB**. It is a reminder, not an error: past that size a file can no longer
+be read whole cheaply, and the next milestone inside it costs more than splitting it would.
+
+The rule looks forward, not back. Four modules are already over the threshold for good reason
+(`21aa-base-rooms`, `12c-mgr-core`, `26-ui-station`, `27f-hq-room`); they are listed in
+`build.ps1` with their measured size and stay silent until they **grow**. A new module crossing
+the line is flagged immediately. When splitting: cut along an existing seam (a section header,
+a family of functions), keep the concatenation order, and never split a `const` table.
+
+## Where things live
+
+| File | What's inside |
+|---|---|
+| `01-core` | math, seeded RNG (`hashi`/`rng`/`fbm`), name generation, `sysDanger` |
+| `02-world` `06-galaxy` `07-planet` | resources, world types, `starAt`/`getSystem`, planet textures and relief |
+| `03-ships` `04-mods` `05-parts` | hulls (`hullOf`/`drawHull`), modules and science, part and slot generation |
+| `08-state` `14-save` | the `G` object, `snapshot()`/`applySave()` |
+| `09-audio` `10-music` | sound synthesis, generative music |
+| `11-log` `12-economy` `13-pirates` | journal, live market and drones, pirates |
+| `12a-crew` | hired hands: traits, orders, runs, hidden luck, wages, roles on a base |
+| `12b-crew-events` | run event table, benders, capture and ransom |
+| `12c-mgr-core` | managers: four domains, cut, traits, perks, standing orders, loyalty, blueprints |
+| `12d-mgr-face` | procedural manager portraits (grow with level, darken with loyalty) |
+| `12g-mgr-rogue` | the manager who left: renegade in his own sector, exile in the cantina |
+| `12h-relic` | the lab as a building, seven artifacts, the slot and the second effect line |
+| `12l-barge` | trade barges: real routes, a barge in distress, wrecks, passengers |
+| `12m-rare` | the hundred rarities: a table of addresses, not a roulette |
+| `15-input` `16-flight` | keys/pads/mouse, starfield, autopilot, trail |
+| `17`–`25` `mode-*` | modes: system, map, landing, surface, cave, mine, belt, cockpit; `20-life` — astronaut, flora, fauna |
+| `19a-mode-scoop` | scooping volatiles from a gas giant's atmosphere |
+| `21a-mode-base` | the base in cross-section: cell grid, power balance, base network |
+| `21aa-base-rooms` | base room interiors: the brushes (`bBox`/`bWorker`/…) and `BASE_ROOM` |
+| `24a-mode-raid` | boarding a pirate base: grid + polygons, projected from the belt |
+| `26-ui-station` `27-ui-ship` | station with sections, ship screen with hull slots |
+| `27c-ui-hq` | the HQ and cantina screens: portraits, perk tree, order slots, domain summary |
+| `28-loop` | crash handling, telemetry, `audioTick`, `frame()` |
+
+## Hard constraints
+
+- **Save format is `v:4` and must not change.** `server.js:95` and `worker.js:66` reject
+  anything else. A new persistent field gets a safe default in `applySave()`
+  (`G.foo = s.foo || {}`) so old saves keep loading.
+- **Never persist the ephemeral.** Anything derived deterministically from a seed (systems,
+  orbits, belt, mine, pirates) is regenerated on load. Only what the player changed persists.
+- **Parts serialize compactly** — `{s,t,k,g,i}` plus regeneration through `genPart`. `PART_GEN`
+  pins the generator version so already-issued parts don't change when the generator is edited.
+- Anything tied to a system but not to `SYS_CACHE` lives in a sparse object keyed `"sx,sy"`.
+- **A hired hand loses money, and that is not a bug.** A run recovers ~85% of wages
+  (`CREW_YIELD`); the profit lives in the tails of the event table — parts, rare stock, the odd
+  captured hull. Edits that put him in steady profit break the design: he is a bet, not an
+  income stream. Hidden luck (`crewLuck`) is never surfaced anywhere.
+- Git: no `--force`, no `--no-verify`, no `amend`, don't touch git config.
+- **A manager holds one domain, and there are always four seats.** No second manager on a taken
+  domain; the AI core (once it exists) takes such a seat rather than a fifth. Edits that grow the
+  number of seats break the design: the system is about choosing who covers the routine, not
+  about growth. The cut is taken before the money reaches the player and is always shown as a
+  line — otherwise it reads as theft.
+- **The interface rests on three rules** (also at the top of `style.css`): hierarchy comes from
+  size and colour, not caps; anything poked with a finger is at least 44 px; only what is needed
+  right now hangs over the world. Two permanent buttons on the right edge, the rest lives in
+  `#menu` or arrives when there's a reason. An action button names the action, and takes its verb
+  from the prompt rather than a second table. Autotests guard all of this.
+- **A perk without code is a lie.** The player sees the whole perk tree and spends level points
+  for real. Before adding a perk to `MGR_PERKS`, wire it to something; before closing a
+  milestone, check that every `id` in the tree is read by someone via `mgrPerk`/`mgrPerkOf`.
+  At M53 there were 24 such "signatures without code" out of 48.
+- **The manager field list in `applySave` is a whitelist.** A new field on `m` will not persist
+  until it is added there by hand (`relic`, `cutBonus`, `ultCount` were all lost this way).
+- **The manager who leaves does not vanish.** At zero loyalty he turns renegade
+  (`12g-mgr-rogue`): his own sector, your flagship, your perks. Beating him is not killing him —
+  he comes back as an exile in the cantina. Edits that reduce his departure to a log line again
+  break the design: he is the one strong late-game opponent the player raised himself.
+
+## How to verify
+
+**Autotests first.** `build.ps1` also builds `tests.html` — the same game plus `tests/*.js` at
+the end. Open it in a browser: the report is printed to the page, to the console and to
+`window.TEST` (`TEST.summary`, `TEST.failed`). Tests drive the real `G` through `resetWorld()`
+and mock nothing.
+
+Suites are split by topic: `tests/91a-flight` … `91n-barge` (harness in `90-harness`). New
+mechanics go into the suite they belong to, not at the end of a file; if there is no fitting
+topic, add `91x-name.js` (concatenation is alphabetical, but suites are independent — each
+starts with `resetWorld()`).
+
+The preview pane caches `file://` — after a rebuild open `tests.html?v=N` with a fresh `N`, or
+you'll be reading the previous run.
+
+```bash
+powershell -ExecutionPolicy Bypass -File build.ps1
+```
+
+Then by hand, because not everything can be expressed as an assertion:
+
+- parsing — `new Function(document.scripts[0].textContent)` in the browser;
+- `read_console_messages` for errors;
+- pixels — synchronous `ctx.getImageData`;
+- logic — assertions through `javascript_exec`;
+- sound — `AnalyserNode` by RMS and spectrum. **Reading `AudioParam.value` does not reflect
+  automation in flight** — measure the node's output only.
+
+`javascript_exec` shares the global scope between calls — a repeated `const` with the same name
+throws, so wrap in an IIFE.
+
+## The plan
+
+The game version is the `VER` constant in `01-core`, also shown on the title screen. What changed
+and when is in [`PATCHNOTES.md`](PATCHNOTES.md), one entry per version.
+
+The live plan is [`PLAN.md`](PLAN.md): cross-cutting rules, the visual work queue and the
+milestone queue M94→M105. Completed milestones are moved to
+[`docs/PLAN-archive.md`](docs/PLAN-archive.md) as documentation of decisions — grep it for a
+specific milestone, don't read it through. New work is written into `PLAN.md`, one milestone per
+commit; a closed milestone is eventually moved to the archive so the live plan stays short.
