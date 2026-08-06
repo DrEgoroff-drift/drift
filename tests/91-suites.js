@@ -2383,3 +2383,46 @@ TEST_SUITES.push(()=>suite("баржи: маршрут настоящий",()=>{
   const snap=snapshot();
   ok(!("barges"in snap),"баржи не попадают в snapshot()");
 }));
+
+/* ── баржа: гибель оставляет след ── */
+TEST_SUITES.push(()=>suite("баржа: гибель оставляет след",()=>{
+  resetWorld();
+  const sys=(function(){for(let dx=-8;dx<=8;dx++)for(let dy=-8;dy<=8;dy++){
+    if(!starAt(dx,dy))continue;const s=getSystem(dx,dy);if(s.station)return s;}return null;})();
+  G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;
+  const legs=bargeLegs();const leg=legs[0];
+  const mk=extra=>Object.assign({seed:777,from:leg[0].key,to:leg[1].key,good:"iron",
+    qty:20,cap:100,budget:3000,temper:"bold",capName:"Тук",hullMax:100,hp:40,
+    distress:1,wasPirateDistress:1,paxSeed:0,repGiven:0,dealt:0,escort:0,done:0,
+    x:0,y:0,vx:0,vy:0,a:0},extra||{});
+
+  /* потопленная баржа оставляет РОВНО один осматриваемый остов */
+  G.wrecks={};G.barges=[mk()];
+  bargeSunk(G.barges[0],"pirates");
+  const key=G.sx+","+G.sy;
+  eq((G.wrecks[key]||[]).length,1,"один остов после гибели");
+  ok(G.wrecks[key][0].seen===0,"остов ещё не обыскан");
+
+  /* провал охраны НЕ начисляет кредитов (аванс уже был, назад не отбирают) */
+  G.credits=1000;G.barges=[mk({seed:778,distress:0,wasPirateDistress:0})];
+  bargeEscortAccept(G.barges[0]);
+  const afterAdvance=G.credits;                       // аванс уже выплачен
+  ok(afterAdvance>1000,"аванс охраны выплачен вперёд");
+  bargeSunk(G.barges[0],"pirates");                   // баржу потеряли — провал
+  eq(G.credits,afterAdvance,"провал охраны не трогает кредиты");
+  ok(!questFind("escort:778"),"дело охраны закрыто (сорвано)");
+
+  /* спасение меняет репутацию, но в пределах потолка шкалы */
+  const dst=bargeSysAt(leg[1].key);
+  G.rep={};repAdd(REP_MAX,dst);                        // уже на потолке
+  G.pirates=[];G.barges=[mk({seed:779})];
+  updateBarges(1);                                     // нет нападавших → спасение
+  ok(repAt(dst)<=REP_MAX,"репутация после спасения не выходит за потолок");
+
+  /* пассажир не появляется в кантине дважды */
+  G.bargePax=[];
+  const bp=mk({seed:780,paxSeed:12321,capName:"Севрюга"});
+  bargePaxDeliver(bp);bargePaxDeliver(bp);
+  eq(G.bargePax.length,1,"пассажир заведён ровно один раз");
+  ok(G.bargePax[0].id.indexOf("bp")===0,"пассажир — кандидат в звено с id bp*");
+}));

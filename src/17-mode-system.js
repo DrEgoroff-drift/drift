@@ -223,6 +223,8 @@ function updateSystem(dt){
   }
   /* торговая баржа — к ней можно подойти и сторговаться без стыковки (12l) */
   if(typeof bargeInteract==="function"&&bargeInteract(sh))return;
+  /* остов погибшей баржи — обыскать ровно раз (12l) */
+  if(typeof wreckInteract==="function"&&wreckInteract(sh))return;
   let near=null,nd=1e9;
   for(const p of sys.planets){
     const d=Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius;
@@ -349,6 +351,7 @@ function drawSystem(){
   /* факел рисуется до корпуса: иначе яркое ядро сопла ложится поверх обшивки */
   drawExhaust(zx,zy,Z,thrusting?1:0);
   drawCombat(zx,zy,Z);
+  if(typeof drawWrecksSystem==="function")drawWrecksSystem(zx,zy,Z);
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);

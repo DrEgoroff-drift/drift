@@ -117,24 +117,54 @@ function spawnBarges(){
     const a=rb()*TAU, rad=2600+rb()*900;
     const heading=a+Math.PI+(rb()-.5)*.7;
     const sp=.7+rb()*.5;
+    /* застали в беде: если в системе есть пираты, часть барж встречаешь уже под
+       обстрелом. Их корпус подранен, они тише ходят — и тут решает поступок:
+       вписаться, пройти мимо или добить самому. */
+    const distress=G.pirates&&G.pirates.some(p=>!p.rogue)&&rb()<.5;
+    /* пассажир — не груз, а человек: изредка, только на баржах в беде (их-то и
+       спасают). Довезённый всплывёт в кантине наёмником. */
+    const paxSeed=(distress&&rb()<.4)?hashi(seed,0x9A5,3):0;
     G.barges.push({
       seed,from:from.key,to:to.key,good,
       qty:Math.floor(cap*(.4+rb()*.5)),cap,budget:1400+Math.floor(rb()*2600),
       temper:BARGE_TKEYS[Math.floor(rb()*BARGE_TKEYS.length)],
       capName:BARGE_CAPNAMES[Math.floor(rb()*BARGE_CAPNAMES.length)],
       fac:(from.station&&from.station.name)||"вольный торг",
-      hp:hullMax,hullMax,repGiven:0,dealt:0,
-      x:Math.cos(a)*rad,y:Math.sin(a)*rad,
-      vx:Math.cos(heading)*sp,vy:Math.sin(heading)*sp,a:heading
+      hullMax,hp:distress?Math.floor(hullMax*(.3+rb()*.3)):hullMax,
+      distress:distress?1:0,wasPirateDistress:distress?1:0,paxSeed,
+      repGiven:0,dealt:0,escort:0,done:0,
+      x:Math.cos(a)*(distress?rad*.6:rad),y:Math.sin(a)*(distress?rad*.6:rad),
+      vx:Math.cos(heading)*(distress?sp*.5:sp),vy:Math.sin(heading)*(distress?sp*.5:sp),a:heading
     });
     made++;
   }
 }
+function bargeAttackers(b){
+  return G.pirates.filter(p=>p&&!p.rogue&&p.hull>0&&Math.hypot(p.x-b.x,p.y-b.y)<1500);
+}
 function updateBarges(dt){
-  for(const b of G.barges){
+  for(let i=G.barges.length-1;i>=0;i--){
+    const b=G.barges[i];
     b.x+=b.vx*dt;b.y+=b.vy*dt;
-    /* ушла далеко за край — разворачивается обратно к системе, чтобы не пропасть
-       из виду навсегда за один пролёт */
+    /* ── баржа в беде: пираты выгрызают корпус, пока их не отгонят ── */
+    if(b.distress){
+      const atk=bargeAttackers(b);
+      b.underFire=atk.length;
+      if(atk.length){
+        b.hp-=(.05+.03*atk.length)*dt;
+        /* пираты и правда стреляют по ней — видно, что бой настоящий */
+        for(const p of atk)if(Math.random()<.02*dt){
+          const ang=Math.atan2(b.y-p.y,b.x-p.x);
+          fireShot(p.x,p.y,ang,6,0,false);b._pshot=1;
+        }
+        if(b.hp<=0){bargeSunk(b,b.mineHit?"player":"pirates");continue;}
+      }else if(b.wasPirateDistress&&!b.done){
+        /* всех нападавших отогнали, а баржа жива — вы её спасли. Только для той,
+           что громили пираты: баржу, которую подстрелили вы сами, никто не
+           «спасает» — она просто идёт подранком */
+        bargeRescued(b);
+      }
+    }
     const d=Math.hypot(b.x,b.y);
     if(d>4200){
       const inb=Math.atan2(-b.y,-b.x);
@@ -143,6 +173,70 @@ function updateBarges(dt){
       b.vx=Math.cos(b.a)*sp;b.vy=Math.sin(b.a)*sp;
     }
   }
+}
+/* ── попадание вашего выстрела по барже: только так её можно добить самому ── */
+function bargeMineHit(s){
+  for(const b of G.barges){
+    if(Math.hypot(s.x-b.x,s.y-b.y)<26){
+      b.hp-=s.dmg;b.distress=1;b.mineHit=1;   // выстрелив по ней, вы её и добиваете
+      if(typeof sfx==="function")sfx("hit",{v:.3});
+      if(b.hp<=0)bargeSunk(b,"player");
+      return true;
+    }
+  }
+  return false;
+}
+/* ── исход: спасли ──
+   Репутация вверх (в пределах потолка шкалы), доля груза благодарностью, и
+   капитан вас запомнил. Пассажир, если он был, теперь довезён — ждёт в кантине. */
+function bargeRescued(b){
+  if(b.done)return;b.done=1;b.distress=0;b.rescued=1;
+  const dst=bargeSysAt(b.to)||bargeSysAt(b.from);
+  if(dst&&typeof repAdd==="function")repAdd(2,dst);
+  const share=3+Math.floor(Math.random()*5);
+  const got=addRes(b.good,share);
+  if(b.escort)bargeEscortEnd(b,true);
+  if(b.paxSeed)bargePaxDeliver(b);
+  say("Баржа «"+b.capName+"» спасена"+(got?"\n+"+got+" "+RES[b.good].ru.toLowerCase()+" в благодарность":""));
+  logAdd("good","Баржа «"+b.capName+"» спасена от пиратов"+
+    (got?" · +"+got+" "+RES[b.good].ru.toLowerCase():""));
+}
+/* ── исход: погибла ──
+   Оставляет остов в этой системе — его позже можно осмотреть ровно раз. Если её
+   добили ВЫ, фракция это запомнит (репутация вниз резко; полноценная месть — в
+   M98), а груз ваш. Если добили пираты — вы просто опоздали. */
+function bargeSunk(b,cause){
+  const i=G.barges.indexOf(b);if(i>=0)G.barges.splice(i,1);
+  if(b.escort)bargeEscortEnd(b,false);
+  const key=G.sx+","+G.sy;
+  if(!G.wrecks[key])G.wrecks[key]=[];
+  if(G.wrecks[key].length<12)
+    G.wrecks[key].push({seed:hashi(b.seed,0x3E7,cause==="player"?1:2),
+      x:b.x,y:b.y,tier:clamp(1+Math.floor(sysDanger(G.sx,G.sy)*2),0,3),
+      seen:0,good:b.good,name:b.capName});
+  if(cause==="player"){
+    const dst=bargeSysAt(b.from)||bargeSysAt(b.to);
+    if(dst&&typeof repAdd==="function")repAdd(-3,dst);
+    /* груз ваш: часть добычи падает контейнерами, как с пирата */
+    if(typeof addRes==="function")addRes(b.good,4+Math.floor(Math.random()*6));
+    say("Баржа «"+b.capName+"» разбита вами\nгруз ваш · вас запомнят");
+    logAdd("warn","Вы разбили баржу «"+b.capName+"» · груз взят, репутация упала");
+  }else{
+    say("Баржу «"+b.capName+"» потопили пираты\nостался остов");
+    logAdd("warn","Баржа «"+b.capName+"» погибла · остался остов");
+  }
+}
+/* ── пассажир доставлен: встаёт кандидатом в кантине (12a-crew), не дважды ── */
+function bargePaxDeliver(b){
+  if(!b.paxSeed)return;
+  if(G.bargePax.some(p=>p.seed===b.paxSeed))return;
+  const c=genMerc(b.paxSeed,null);
+  c.id="bp"+b.paxSeed;
+  c.story="вы вытащили его с баржи «"+b.capName+"»";
+  G.bargePax.push({id:c.id,seed:c.seed,name:c.name,spec:c.spec,traits:c.traits,
+    xp:c.xp,fee:Math.round(c.fee*.6),story:c.story});   // спасённый идёт к вам дешевле
+  b.paxSeed=0;
+  logAdd("good","С баржи спасён пассажир — "+c.name+" ищет вас в кантине");
 }
 /* ── проверка подхода: возвращает true, если игрок у баржи (и, может, открыл торг) */
 function bargeInteract(sh){
@@ -153,10 +247,108 @@ function bargeInteract(sh){
   }
   if(!near||nd>230)return false;
   const T=BARGE_TEMPER[near.temper]||BARGE_TEMPER.bold;
+  /* под обстрелом не торгуют: баржу надо сперва отбить у пиратов. Прилавок
+     закрыт, зато видно, что помочь можно огнём — или добить самому. */
+  if(near.distress){
+    G.prompt="БАРЖА «"+near.capName.toUpperCase()+"» ПОД ОБСТРЕЛОМ · "+
+      Math.round(clamp(near.hp/near.hullMax,0,1)*100)+"%\n"+
+      "ОТГОНИТЕ ПИРАТОВ — ИЛИ ДОБЕЙТЕ САМИ";
+    return true;
+  }
   G.prompt="ТОРГОВАЯ БАРЖА «"+near.capName.toUpperCase()+"» · "+T.ru.toUpperCase()+
     "\nДЕЙСТВИЕ — ТОРГ БЕЗ СТЫКОВКИ";
   if(actEdge)openBarge(near);
   return true;
+}
+
+/* ══════════════ контракт охраны ══════════════
+   Наняться проводить баржу: плата вперёд, маршрут известен заранее (адрес — в
+   журнале). Провал НЕ отнимает кредиты — он отнимает репутацию. Стабильного
+   плюса тут нет, как и у наёмника: аванс мал, а риск ваш. */
+function bargeEscortAdvance(b){return 200+Math.floor((b.cap||100)*3);}
+function bargeEscortAccept(b){
+  if(b.escort||b.distress)return false;
+  b.escort=1;
+  const adv=bargeEscortAdvance(b);
+  earn(adv,"escort");
+  const dst=bargeSysAt(b.to);
+  if(typeof questAdd==="function")questAdd("escort:"+b.seed,{
+    ru:"Проводить баржу «"+b.capName+"»",kind:"job",from:"баржа",
+    note:"довести до «"+((dst&&dst.station&&dst.station.name)||"назначения")+
+      "» живой. Аванс уже выплачен; провал бьёт по репутации, не по кошельку",
+    sx:dst?dst.sx:null,sy:dst?dst.sy:null,reward:"репутация у назначения"});
+  say("Аванс охраны +"+adv+" кр\nдоведите баржу живой");
+  logAdd("money","Наняты охраной баржи «"+b.capName+"» · аванс +"+adv+" кр");
+  return true;
+}
+function bargeEscortEnd(b,ok){
+  if(!b.escort)return;b.escort=0;
+  const key="escort:"+b.seed;
+  if(ok){
+    if(typeof questDone==="function")questDone(key,"баржа дошла");
+  }else{
+    if(typeof questFail==="function")questFail(key,"баржу потеряли");
+    /* провал: репутация вниз, но кредиты (аванс) не отбираются */
+    const dst=bargeSysAt(b.to)||bargeSysAt(b.from);
+    if(dst&&typeof repAdd==="function")repAdd(-2,dst);
+  }
+}
+/* баржа ушла из системы живой с контрактом — довели: засчитываем при despawn.
+   Здесь нет отдельного despawn-события, поэтому договор закрывается либо
+   спасением (bargeRescued), либо гибелью (bargeSunk); если баржа просто мирно
+   ушла за край без боя, считаем это доводкой. */
+function bargeEscortLeave(b){if(b.escort)bargeEscortEnd(b,true);}
+
+/* ══════════════ остовы погибших барж ══════════════ */
+function wrecksHere(){return G.wrecks[G.sx+","+G.sy]||null;}
+/* подход к остову в системе → осмотр ровно раз (та же награда, что «остов
+   корабля» из POI_FIND: годная часть с обломков) */
+function wreckInteract(sh){
+  const list=wrecksHere();if(!list)return false;
+  let near=null,nd=1e9;
+  for(const w of list){const d=Math.hypot(sh.x-w.x,sh.y-w.y);if(d<nd){nd=d;near=w;}}
+  if(!near||nd>240)return false;
+  if(near.seen){G.prompt="ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"» · УЖЕ ОБЫСКАН";return true;}
+  G.prompt="ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"»\nДЕЙСТВИЕ — ОБЫСКАТЬ ОБЛОМКИ";
+  if(actEdge){
+    near.seen=1;
+    const F=(typeof POI_FIND!=="undefined"&&POI_FIND.wreck)?POI_FIND.wreck:null;
+    const r=rng(hashi(near.seed,0xF17D,3));
+    let got="ничего годного";
+    if(F&&typeof F.give==="function")got=F.give(r,sysDanger(G.sx,G.sy));
+    else if(typeof addPart==="function"){addPart(genPart(hashi(near.seed,7,0x1E),near.tier|0));got="часть с обломков";}
+    tell("tech","Остов баржи: "+got,"Остов баржи «"+near.name+"»\n"+got);
+    logAdd("tech","Обыск остова баржи «"+near.name+"» · "+got);
+    if(typeof saveGame==="function")saveGame(true);
+  }
+  return true;
+}
+function drawWrecksSystem(zx,zy,Z){
+  const list=wrecksHere();if(!list)return;
+  for(const w of list){
+    const x=zx(w.x),y=zy(w.y);
+    if(x<-60||x>W+60||y<-60||y>H+60)continue;
+    /* тёмный переломленный корпус: тело, обвод, тусклый аварийный маяк */
+    ctx.save();ctx.translate(x,y);
+    const s=clamp(Z,.5,1.4);ctx.scale(s,s);ctx.rotate((w.seed%628)/100);
+    ctx.fillStyle="rgba(24,26,32,.96)";ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=.8;
+    ctx.beginPath();
+    ctx.moveTo(-34,-6);ctx.lineTo(-6,-11);ctx.lineTo(30,-7);ctx.lineTo(34,3);
+    ctx.lineTo(-4,7);ctx.lineTo(-30,6);ctx.closePath();ctx.fill();ctx.stroke();
+    for(let i=0;i<5;i++){ctx.strokeStyle="rgba(0,0,0,.4)";
+      ctx.beginPath();ctx.moveTo(-24+i*12,-9);ctx.lineTo(-24+i*12,6);ctx.stroke();}
+    /* отломанная секция рядом */
+    ctx.fillStyle="rgba(20,22,28,.95)";
+    ctx.beginPath();ctx.moveTo(40,4);ctx.lineTo(52,-2);ctx.lineTo(50,8);ctx.closePath();ctx.fill();
+    ctx.restore();
+    if(!w.seen){
+      const bl=Math.pow(Math.max(0,Math.sin(G.t*.05+w.seed)),8);
+      if(bl>.02){ctx.fillStyle="rgba(255,110,90,"+(.9*bl).toFixed(2)+")";
+        ctx.beginPath();ctx.arc(x,y-10,2.2,0,TAU);ctx.fill();}
+      ctx.fillStyle="rgba(255,150,120,.7)";ctx.font="8px ui-monospace,monospace";
+      ctx.textAlign="center";ctx.fillText("ОСТОВ БАРЖИ",x,y+22);
+    }
+  }
 }
 
 /* ══════════════ корпус баржи ══════════════
@@ -409,6 +601,15 @@ function renderBarge(){
   $bgBody.innerHTML="";
   $bgBody.appendChild(el("div","sec","БАРЖА ВЕЗЁТ · "+RES[b.good].ru.toUpperCase()+
     " ×"+b.qty+" · назначение «"+((bargeSysAt(b.to)||{station:{name:"?"}}).station.name)+"»"));
+  /* наняться охраной: аванс вперёд, довести живой (12l — контракт охраны) */
+  if(!b.escort){
+    const adv=bargeEscortAdvance(b);
+    $bgBody.appendChild(bargeElRow("НАНЯТЬСЯ ОХРАНОЙ",
+      "аванс +"+adv+" кр вперёд · довести до назначения живой · провал бьёт по репутации, не по кошельку",
+      [{txt:"ВЗЯТЬ РЕЙС",gold:1,dis:false,on:()=>{bargeEscortAccept(b);renderBarge();}}]));
+  }else{
+    $bgBody.appendChild(el("div","sec","ВЫ ОХРАНА ЭТОГО РЕЙСА · ведите баржу до назначения"));
+  }
   /* купить у баржи её груз */
   {
     const p=bargeSellPrice(b,b.good);

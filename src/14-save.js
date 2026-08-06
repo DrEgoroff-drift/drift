@@ -33,7 +33,7 @@ function snapshot(){
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
-    nodes:G.nodes,crowns:G.crowns,
+    nodes:G.nodes,crowns:G.crowns,wrecks:G.wrecks,bargePax:G.bargePax,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -93,6 +93,22 @@ function applySave(s){
   G.rep=(s.rep&&typeof s.rep==="object")?s.rep:{};
   /* осмотренные памятники: помнятся, чтобы не ходить к ним дважды */
   G.poiSeen=(s.poiSeen&&typeof s.poiSeen==="object")?s.poiSeen:{};
+  /* обломки барж: разреженный оверлей по "sx,sy", каждый — список остовов.
+     Новое поле с безопасным дефолтом (сквозное правило). */
+  G.wrecks={};
+  if(s.wrecks&&typeof s.wrecks==="object")
+    for(const k in s.wrecks){
+      const arr=s.wrecks[k];if(!Array.isArray(arr))continue;
+      G.wrecks[k]=arr.filter(w=>w&&typeof w==="object").slice(0,12).map(w=>({
+        seed:w.seed|0,x:+w.x||0,y:+w.y||0,tier:clamp(w.tier|0,0,3),seen:w.seen?1:0,
+        good:(w.good&&RES[w.good])?w.good:null,name:String(w.name||"баржа")}));
+    }
+  /* пассажиры спасённых барж, ждущие в звене — решение игрока, персистятся */
+  G.bargePax=(Array.isArray(s.bargePax)?s.bargePax:[]).filter(p=>p&&CREW_SPEC[p.spec])
+    .slice(0,8).map(p=>({id:String(p.id||("bp"+(p.seed|0))),seed:p.seed|0,
+    name:String(p.name||"Пассажир"),spec:p.spec,
+    traits:(Array.isArray(p.traits)?p.traits:[]).filter(t=>CREW_TRAITS.some(x=>x.id===t)),
+    xp:Math.max(0,p.xp|0),fee:Math.max(0,p.fee|0),story:String(p.story||"")}));
   G.drones=Array.isArray(s.drones)?s.drones:[];
   G.droneInventory=Math.max(0,s.droneInventory|0);
   /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».
