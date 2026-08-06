@@ -53,6 +53,9 @@ function spawnPirates(){
   /* ушедший управляющий сидит в своём секторе и ждёт: он такая же запись в
      G.pirates, поэтому весь бой уже написан — добавлять к нему нечего */
   rogueSpawn();
+  /* баржи набираются тем же входом, что и пираты: одна точка на все режимы,
+     откуда входят в систему (12l-barge) */
+  if(typeof spawnBarges==="function")spawnBarges();
 }
 function fireShot(x,y,ang,speed,dmg,mine){
   G.shots.push({x,y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,dmg,mine,life:150});

@@ -35,6 +35,7 @@ function updateSystem(dt){
   if(G.mode!=="system")return;
   updateCombat(dt);
   updateAllies(dt);
+  if(typeof updateBarges==="function")updateBarges(dt);
   if(G.mode!=="system")return;
   if(G.tech.has("dock")&&G.hull<st.hullMax)G.hull=Math.min(st.hullMax,G.hull+.012*dt);
   if(G.ap)G.orbit=null;
@@ -220,6 +221,8 @@ function updateSystem(dt){
       }
     }
   }
+  /* торговая баржа — к ней можно подойти и сторговаться без стыковки (12l) */
+  if(typeof bargeInteract==="function"&&bargeInteract(sh))return;
   let near=null,nd=1e9;
   for(const p of sys.planets){
     const d=Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius;
@@ -346,6 +349,7 @@ function drawSystem(){
   /* факел рисуется до корпуса: иначе яркое ядро сопла ложится поверх обшивки */
   drawExhaust(zx,zy,Z,thrusting?1:0);
   drawCombat(zx,zy,Z);
+  if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);
   ctx.save();ctx.translate(zx(sh.x),zy(sh.y));ctx.rotate(sh.a);

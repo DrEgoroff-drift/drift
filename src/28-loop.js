@@ -227,7 +227,7 @@ function frame(now){
     if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();crewTick();mgrTick();occTick();dealsTick();}
     if(G.msgT>0)G.msgT-=dt;
     if(G.mode==="system")autosave();
-    if(G.mode==="system"||G.mode==="dock")updateSystem(dt);
+    if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")updateSystem(dt);
     else if(G.mode==="landing")updateLanding(dt);
     else if(G.mode==="surface"){updateSurface(dt);tickLaunchHold(dt);}
     else if(G.mode==="dig"&&G.dig)updateDig(dt);
@@ -242,8 +242,9 @@ function frame(now){
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){
       if(G.st)openStation();else G.mode="system";
     }
+    if(G.mode==="barge"&&!document.querySelector(".scr.open"))G.mode="system";
     audioTick(dt);
-    if(G.mode==="system"||G.mode==="dock")drawSystem();
+    if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")drawSystem();
     else if(G.mode==="map")drawMap();
     else if(G.mode==="landing")drawLanding();
     else if(G.mode==="surface")drawSurface();
