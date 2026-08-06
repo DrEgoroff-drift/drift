@@ -2348,3 +2348,38 @@ TEST_SUITES.push(()=>suite("репутация: железо в доке тож�
   repAdd(-10);
   ok(stationParts(sys)[0].price>base,"у тех, кто вас не ждёт, дороже");
 }));
+
+/* ── баржи: маршрут настоящий, цена никогда не выгоднее станции назначения ── */
+TEST_SUITES.push(()=>suite("баржи: маршрут настоящий",()=>{
+  resetWorld();
+  const sys=(function(){for(let dx=-8;dx<=8;dx++)for(let dy=-8;dy<=8;dy++){
+    if(!starAt(dx,dy))continue;const s=getSystem(dx,dy);if(s.station)return s;}return null;})();
+  G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;
+  const legs=bargeLegs();
+  ok(legs.length>=1,"есть хотя бы одно плечо маршрута");
+  for(const l of legs){
+    ok(l[0].station&&l[1].station,"оба конца плеча — станции");
+    ok(l[0].key!==l[1].key,"концы плеча различны");
+  }
+  /* спавн: набор эфемерен, но потолок и валидность соблюдаются всегда */
+  spawnBarges();
+  ok(G.barges.length<=6,"барж не больше потолка ("+G.barges.length+")");
+  for(const b of G.barges){
+    ok(!!bargeSysAt(b.from)&&!!bargeSysAt(b.to),"у баржи настоящие концы");
+    ok(b.from!==b.to,"баржа идёт между разными станциями");
+  }
+  /* цена: и продажа, и покупка у баржи ХУЖЕ станции назначения — иначе это был
+     бы бесплатный арбитраж. Строим баржу на первом плече и проверяем. */
+  const leg=legs[0];
+  const b={seed:12345,from:leg[0].key,to:leg[1].key,good:"iron",qty:50,cap:100,
+    budget:5000,temper:"bold",repGiven:0};
+  const dest=bargeDestPrice(b,"iron");
+  ok(bargeSellPrice(b,"iron")>dest,"баржа продаёт дороже станции назначения ("+
+    bargeSellPrice(b,"iron")+" > "+dest+")");
+  ok(bargeBuyPrice(b,"iron")<=dest,"баржа покупает не дороже станции назначения ("+
+    bargeBuyPrice(b,"iron")+" ≤ "+dest+")");
+  ok(dest-bargeSellPrice(b,"iron")<0,"арбитраж «купил у баржи → продал на станции» в минусе");
+  /* баржа эфемерна: в сохранении её нет */
+  const snap=snapshot();
+  ok(!("barges"in snap),"баржи не попадают в snapshot()");
+}));
