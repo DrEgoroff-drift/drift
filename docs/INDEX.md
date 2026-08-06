@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 71 · символов верхнего уровня: 1116
+Файлов: 85 · символов верхнего уровня: 1116
 
 ## СИМВОЛЫ
 
@@ -109,7 +109,7 @@ bargeSysAt                   src/12l-barge.js:25
 BARTER                       src/04-mods.js:60
 BASE_COLS                    src/21a-mode-base.js:6
 BASE_ROLES                   src/12a-crew.js:108
-BASE_ROOM                    src/21a-mode-base.js:783
+BASE_ROOM                    src/21aa-base-rooms.js:177
 baseAt                       src/21a-mode-base.js:35
 baseCell                     src/21a-mode-base.js:78
 baseCollect                  src/21a-mode-base.js:263
@@ -132,8 +132,8 @@ baseSlots                    src/12a-crew.js:117
 baseStaff                    src/12a-crew.js:118
 baseStorm                    src/21a-mode-base.js:228
 baseTick                     src/21a-mode-base.js:136
-bBox                         src/21a-mode-base.js:629
-bCrate                       src/21a-mode-base.js:678
+bBox                         src/21aa-base-rooms.js:23
+bCrate                       src/21aa-base-rooms.js:72
 BEACON_COOL                  src/23-mode-dig.js:70
 beaconCool                   src/23-mode-dig.js:71
 beaconTick                   src/23-mode-dig.js:86
@@ -150,28 +150,28 @@ beltBasis                    src/24-mode-belt.js:151
 beltFwd                      src/24-mode-belt.js:146
 beltIcy                      src/24-mode-belt.js:87
 BG                           src/16-flight.js:3
-bGlow                        src/21a-mode-base.js:706
-bHazard                      src/21a-mode-base.js:697
-bLamp                        src/21a-mode-base.js:687
+bGlow                        src/21aa-base-rooms.js:100
+bHazard                      src/21aa-base-rooms.js:91
+bLamp                        src/21aa-base-rooms.js:81
 BLUEPRINTS                   src/12c-mgr-core.js:640
-BM_WARM                      src/21a-mode-base.js:626
+BM_WARM                      src/21aa-base-rooms.js:20
 bodyInSystem                 src/16-flight.js:50
 BP_KEYS                      src/12c-mgr-core.js:647
-bPipe                        src/21a-mode-base.js:652
+bPipe                        src/21aa-base-rooms.js:46
 bpMul                        src/12c-mgr-core.js:651
 bpRecheck                    src/12c-mgr-core.js:718
 bpState                      src/12c-mgr-core.js:648
 brownBuf                     src/10-music.js:119
 brownNoise                   src/10-music.js:120
-bScreen                      src/21a-mode-base.js:664
+bScreen                      src/21aa-base-rooms.js:58
 BUILD                        src/21a-mode-base.js:19
 BUILD_KEYS                   src/21a-mode-base.js:33
 buildAi                      src/12f-mgr-ai.js:29
 builtHere                    src/21c-built.js:18
 builtKey                     src/21c-built.js:16
 builtSpot                    src/21c-built.js:34
-bWall                        src/21a-mode-base.js:637
-bWorker                      src/21a-mode-base.js:719
+bWall                        src/21aa-base-rooms.js:31
+bWorker                      src/21aa-base-rooms.js:113
 camOffset                    src/19c-light.js:69
 camStep                      src/19c-light.js:55
 canPay                       src/21a-mode-base.js:43
@@ -325,7 +325,7 @@ drawBelt                     src/24-mode-belt.js:318
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17-mode-system.js:478
 drawBeltRocks                src/17-mode-system.js:436
-drawBuildMenu                src/21a-mode-base.js:1358
+drawBuildMenu                src/21aa-base-rooms.js:752
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
 drawCave                     src/22-mode-cave.js:131
@@ -360,7 +360,7 @@ drawLander                   src/19-mode-landing.js:363
 drawLandGear                 src/19-mode-landing.js:337
 drawLanding                  src/19-mode-landing.js:281
 drawMap                      src/18-mode-map.js:51
-drawModule                   src/21a-mode-base.js:765
+drawModule                   src/21aa-base-rooms.js:159
 drawMonolith                 src/20a-poi.js:409
 drawNebula                   src/16-flight.js:39
 drawNodeIcon                 src/05a-nodes.js:227
@@ -592,7 +592,7 @@ labStaffed                   src/12h-relic.js:27
 labWorking                   src/12h-relic.js:32
 LAND_GY                      src/19-mode-landing.js:321
 landerGearTick               src/19-mode-landing.js:326
-landerInk                    tests/91-suites.js:1606
+landerInk                    tests/91j-art.js:154
 landerLen                    src/19-mode-landing.js:322
 landingDust                  src/19-mode-landing.js:537
 landOnTestPlanet             tests/90-harness.js:54
@@ -692,7 +692,7 @@ MIX_TYPES                    src/02-world.js:81
 mixc                         src/03-ships.js:150
 mixNum                       src/02a-worldmix.js:43
 mixPal                       src/02a-worldmix.js:34
-mkMerc                       tests/91-suites.js:224
+mkMerc                       tests/91b-crew.js:3
 modCost                      src/11-log.js:95
 MODS                         src/04-mods.js:2
 mouseWalkAt                  src/15-input.js:209
@@ -1302,7 +1302,11 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · флора:88
   · фауна:439
 
-## src/21a-mode-base.js · 84 КБ
+## src/21aa-base-rooms.js · 49 КБ
+  · база: внутренности отсеков:1
+  · внутренности отсеков:5
+
+## src/21a-mode-base.js · 36 КБ
   · база на планете: вид в разрезе:1
   · энергия и соседство:80
   · ленивое время базы:135
@@ -1311,7 +1315,6 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · сеть баз:273
   · обновление сцены:304
   · рисование разреза:373
-  · внутренности отсеков:611
 
 ## src/21b-surface-deco.js · 31 КБ
   · крупная форма на поверхности:1
@@ -1383,7 +1386,46 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/90-harness.js · 5 КБ
   · автотесты: каркас:1
 
-## tests/91-suites.js · 139 КБ
+## tests/91a-flight.js · 11 КБ
   · автотесты: наборы:1
+
+## tests/91b-crew.js · 14 КБ
+  · автотесты: наёмники: убыток по кредитам, удача, плен, рейсы, сохранение:1
+
+## tests/91c-mgr.js · 12 КБ
+  · автотесты: управляющие: домен и доля, перки, поручения, ИИ-ядро:1
+
+## tests/91d-nav.js · 8 КБ
+  · автотесты: навигация: подход снаружи тела, честный курс, якорь, корона:1
+
+## tests/91e-rogue.js · 6 КБ
+  · автотесты: ушедший управляющий: ультиматум, ренегат, изгнанник:1
+
+## tests/91f-ui.js · 8 КБ
+  · автотесты: интерфейс: 44 px, непересечение, кнопка называет действие, разделы:1
+
+## tests/91g-relic.js · 8 КБ
+  · автотесты: лаборатория и артефакты: слот, эффекты, дерево перков без пустот:1
+
+## tests/91h-base.js · 8 КБ
+  · автотесты: база: энергия и стройка, смотритель, буря, перки фактора:1
+
+## tests/91i-cockpit.js · 3 КБ
+  · автотесты: кабина и манёвр: торможение, струи ориентации, класс корабля:1
+
+## tests/91j-art.js · 16 КБ
+  · автотесты: картинка: сцены, двенадцать миров, крупная форма, корпуса:1
+
+## tests/91k-home.js · 11 КБ
+  · автотесты: дом и деньги: ступени, одна воронка дохода, маршрут фактора, дрон:1
+
+## tests/91l-fleet.js · 10 КБ
+  · автотесты: флот и фронт: сто корпусов, занятые системы, ранги, следы на земле:1
+
+## tests/91m-nodes.js · 17 КБ
+  · автотесты: журнал, тысяча узлов и венцы, кантина, репутация, памятники:1
+
+## tests/91n-barge.js · 9 КБ
+  · автотесты: баржи и редкости: настоящий маршрут, остовы, сто адресов:1
 
 ## tests/99-run.js · 0 КБ
