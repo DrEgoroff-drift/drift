@@ -1,4 +1,4 @@
-/* ══════════════ точки интереса ══════════════ */
+﻿/* ══════════════ точки интереса ══════════════ */
 /* Одна огромная вещь на горизонте стоит полусотни мелких украшений: она даёт
    масштаб (астронавт 20 px против корпуса в 400) и повод идти именно туда.
    Поэтому на планету приходится 2–4 достопримечательности на 9000 единиц пути,
@@ -18,7 +18,11 @@ const POI_KINDS=[
   {k:"monolith",ru:"МОНОЛИТ",        on:["rocky","ice","desert","terran","ocean","toxic","volcanic","crystal","jungle","metal","ruin"],w:.9,h:260,flat:180},
   {k:"factory", ru:"ЗАВОД",          on:["volcanic","toxic","desert","rocky","metal","ruin"],        w:1.0,h:250,flat:440},
   {k:"portal",  ru:"ВРАТА",          on:["terran","toxic","ice","ocean","volcanic","crystal","jungle","ruin"],w:.5,h:230,flat:220},
-  {k:"observ",  ru:"ОБСЕРВАТОРИЯ",   on:["rocky","ice","desert","terran","crystal","metal","ruin"],  w:.9, h:190,flat:300}
+  {k:"observ",  ru:"ОБСЕРВАТОРИЯ",   on:["rocky","ice","desert","terran","crystal","metal","ruin"],  w:.9, h:190,flat:300},
+  /* зарубка — не памятник чужих, а межевой знак «Долгого Хода» (12q-lore):
+     режется на любом твёрдом мире, встречается редко (вес мал) и стоит того,
+     чтобы к ней идти, потому что называет адрес, а не отдаёт вещь */
+  {k:"obelisk", ru:"ЗАРУБКА",        on:["rocky","ice","desert","terran","toxic","volcanic","ocean","crystal","jungle","metal","ruin"],w:.45,h:230,flat:260}
 ];
 /* сгенерировать и вписать в рельеф; вызывается один раз из startLanding */
 function genPOI(tr,p){
@@ -216,6 +220,7 @@ function drawPOI(tr,camx,camy,p){
     else if(q.k==="factory")drawFactory(q,rr,dark,lite,pal);
     else if(q.k==="portal")drawPortal(q,rr,pal);
     else if(q.k==="observ")drawObserv(q,rr,dark,lite,pal);
+    else if(q.k==="obelisk")drawObelisk(q,rr,dark,lite,pal);
     ctx.restore();
   }
   ctx.restore();
@@ -424,6 +429,62 @@ function drawMonolith(q,r,dark,lite,pal){
   }
   poiGlow(0,-q.h*.55,q.h*.7,"90,170,220",.06);
 }
+/* ── зарубка: межевой знак «Долгого Хода» ──
+   Рядом с монолитом она обязана читаться СВОЕЙ: монолит — безупречная чужая
+   грань, зарубка — камень, поставленный руками и в спешке. Отсюда наклон,
+   грубый скол вершины и ряды засечек, врезанных не по линейке: это отчёт, а
+   не памятник. Всё, что светится, — тонкая полоса на срезе, поймавшая солнце. */
+function drawObelisk(q,r,dark,lite,pal){
+  /* Разброс силуэта — не украшение, а смысл: зарубки резали в разное время
+     разные руки и в спешке. Первый заход дал три камня по трём семенам,
+     неотличимых глазом: наклон был ±0.04, ширина постоянной. Теперь от семени
+     идут ширина (±35%), наклон, угол скола и то, куда камень заваливается. */
+  const s1=(q.seed>>>3)&7, s2=(q.seed>>>7)&7, s3=(q.seed>>>11)&7;
+  const w=q.h*(.13+s1*.011), tilt=(s2-3.5)*.030;
+  ctx.save();
+  ctx.rotate(tilt);
+  poiDrift(w*2.2,pal);
+  /* тело: книзу шире, вершина сколота наискось — целая плита читается плитой.
+     Заливка — камень (`dark`), а не чернота: первый заход дал силуэт-дыру,
+     который рядом с рельефом читался вырезанным отверстием, а не породой. */
+  const cut=q.h*(.04+s3*.022);                       // скол вершины: от лёгкого до косого
+  const lean=(s3%2?1:-1)*w*.10;                      // куда заваливается верх
+  const P=poiPoly([[-w,0],[w,0],[w*.72+lean,-q.h+cut],[-w*.62+lean,-q.h]],
+                  dark,"rgba(0,0,0,.55)",.7);
+  /* объём: солнце справа (см. drawSkyLayer), поэтому правая треть светлее,
+     левая уходит в тень. Без этого плита остаётся плоской заливкой. */
+  ctx.save();ctx.clip(P);
+  const g=ctx.createLinearGradient(-w,0,w,0);
+  g.addColorStop(0,"rgba(0,0,0,.42)");
+  g.addColorStop(.55,"rgba(0,0,0,0)");
+  g.addColorStop(1,"rgba(255,244,214,.16)");
+  ctx.fillStyle=g;ctx.fillRect(-w*1.2,-q.h-4,w*2.4,q.h+8);
+  ctx.restore();
+  /* световая кромка со стороны солнца */
+  ctx.strokeStyle="rgba(238,228,200,.5)";ctx.lineWidth=1.6;
+  ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(w*.72,-q.h+cut);ctx.stroke();
+  /* засечки: ряды коротких врезов, длина и сдвиг из семени — читаются как
+     счёт, а не как орнамент. Их не «зажигаем»: камень не работает. Врез —
+     тёмная канавка со светлой нижней кромкой, иначе на расстоянии его нет. */
+  ctx.lineWidth=1.1;
+  ctx.strokeStyle="rgba(0,0,0,.5)";
+  const rows=7+((q.seed>>>2)%5);
+  for(let i=0;i<rows;i++){
+    const yy=-q.h*(.12+i*(.78/rows));
+    const n=2+((q.seed>>>(i%12))&3);
+    for(let j=0;j<n;j++){
+      const xx=-w*.5+j*(w*1.0/Math.max(1,n));
+      ctx.strokeStyle="rgba(0,0,0,.5)";
+      ctx.beginPath();ctx.moveTo(xx,yy);ctx.lineTo(xx+w*.18,yy-w*.1);ctx.stroke();
+      ctx.strokeStyle="rgba(236,226,200,.28)";
+      ctx.beginPath();ctx.moveTo(xx,yy+1.2);ctx.lineTo(xx+w*.18,yy-w*.1+1.2);ctx.stroke();
+    }
+  }
+  /* у подножия — стёсанная площадка: сюда садились, отсюда резали */
+  ctx.fillStyle="rgba(0,0,0,.35)";
+  ctx.beginPath();ctx.ellipse(0,0,w*2.6,w*.5,0,0,TAU);ctx.fill();
+  ctx.restore();
+}
 /* ── заброшенный завод: башни, трубы, баки; из одной трубы ещё идёт дым ── */
 function drawFactory(q,r,dark,lite,pal){
   const w=q.h*1.4;
@@ -578,109 +639,4 @@ function poiNear(S,tr){
     if(Math.abs(q.x-S.x)<r)return q;
   }
   return null;
-}
-/* ══════════════ осмотр достопримечательности ══════════════ */
-/* Первый заход дал всем POI один и тот же осмотр: данные и, если повезёт, узел.
-   Но храм, завод и врата отличаются не только видом — иначе десять форм на
-   горизонте были бы десятью способами получить одно и то же. У каждой свой
-   ответ на вопрос «зачем к ней идти», и ответ этот дан тем, что в игре уже
-   есть: части, редкое сырьё, топливо, координаты, наука.
-
-   ПРАВИЛА:
-   1. Ни один осмотр не даёт кредитов. Памятник — не банкомат: он даёт вещи,
-      знания и направление, а деньги игрок получает работой.
-   2. Осмотр разовый и помнится (`G.poiSeen`), поэтому награда может быть
-      весомой: это не источник дохода, а находка.
-   3. Узел «из аномалии» падает с любого памятника — они все аномалии для того,
-      кто их не строил. */
-const POI_FIND={
-  wreck:  {ru:"остов корабля",note:"в разбитой рубке нашлась годная часть",
-           give:(r,d)=>{addPart(genPart(hashi(Date.now()&0xffffff,7,0x1E),tierFromDanger(d,r)));
-             return "часть с обломков";}},
-  temple: {ru:"храм",note:"на плитах вырезаны координаты",
-           give:(r,d)=>{
-             /* Если координата уже есть, храм не отмалчивается: он отдаёт то,
-                чем эти плиты и держатся, — редкий образец для лаборатории.
-                Награда «ничего, вы это уже знаете» читается поломкой. */
-             if(G.relicHint){
-               const n=2+Math.floor(r()*3+d*2);
-               return addRes("xeno",n)?("образцы с плит: ксенобиом ×"+n)
-                                      :"плиты те же, а трюм полон";
-             }
-             for(let i=0;i<40;i++){
-               const sx=G.sx+Math.round((r()*2-1)*5),sy=G.sy+Math.round((r()*2-1)*5);
-               if(starAt(sx,sy)){G.relicHint={sx,sy};return "координаты: сектор "+sx+":"+sy;}
-             }
-             return "надписи стёрты";}},
-  factory:{ru:"завод",note:"конвейер стоит, но склад цел",
-           give:(r,d)=>{const n=3+Math.floor(r()*6+d*4);
-             return addRes("techcomp",n)?("техкомпоненты ×"+n):"трюм полон";}},
-  portal: {ru:"врата",note:"кольцо ещё держит заряд",
-           give:(r,d)=>{const st=stat(),n=Math.min(Math.round(st.fuelMax*.4),
-             Math.round(st.fuelMax-G.fuel));
-             if(n<=0)return "баки и так полны";
-             G.fuel+=n;return "топливо ×"+n;}},
-  observ: {ru:"обсерватория",note:"в архиве лежат чужие наблюдения",
-           give:(r,d)=>{
-             /* открывает соседнюю систему как посещённую рынком: фактор сможет
-                взять её плечом, а вы — увидеть цены, не летая */
-             for(let i=0;i<30;i++){
-               const sx=G.sx+Math.round((r()*2-1)*4),sy=G.sy+Math.round((r()*2-1)*4);
-               if(!starAt(sx,sy))continue;
-               const s=getSystem(sx,sy);
-               if(!s.station||(G.market&&G.market[s.key]))continue;
-               if(!G.market)G.market={};
-               G.market[s.key]={pressure:{},t:G.t};
-               return "цены станции «"+s.station.name+"» ("+sx+":"+sy+")";
-             }
-             return "наблюдения о том, что вы и так видели";}},
-  crystals:{ru:"друза",note:"кристаллы растут прямо из породы",
-           give:(r,d)=>{const n=4+Math.floor(r()*7+d*5);
-             return addRes("crystal",n)?("кристаллы ×"+n):"трюм полон";}},
-  ring:   {ru:"ускоритель",note:"кольцо разгоняло что-то тяжёлое",
-           give:(r,d)=>{const n=2+Math.floor(r()*4);
-             return addRes("iridium",n)?("иридий ×"+n):"трюм полон";}},
-  elevator:{ru:"космический лифт",note:"трос уходит выше облаков",
-           give:(r,d)=>{G.data+=24;return "записи подъёмника · +24 данных";}},
-  monolith:{ru:"монолит",note:"поверхность отвечает на касание",
-           give:(r,d)=>{G.data+=18;return "снимок поверхности · +18 данных";}},
-  anomaly:{ru:"аномалия",note:"приборы врут по-разному каждый раз",
-           give:(r,d)=>{G.data+=14;return "замеры · +14 данных";}}
-};
-/* ══════════════ память памятника ══════════════
-   Раньше в `G.poiSeen` лежала единица — «осмотрено», и всё. То, зачем игрок
-   сюда шёл (координата храма, цены обсерватории, склад завода), оставалось
-   только строкой в журнале, а сам камень при следующем заходе молчал. Теперь
-   в той же ячейке лежит запись {k,got,t}: подойдя, игрок читает её на месте.
-   Формат сейва не меняется (v:4) — старые сохранения хранят единицу, и она
-   честно читается как «осмотрено, но чем — уже не вспомнить». */
-function poiMemo(seed){
-  const v=G.poiSeen&&G.poiSeen[seed];
-  if(!v)return null;
-  return (typeof v==="object")?v:{};
-}
-function poiInspect(q){
-  if(!q)return false;
-  if(poiMemo(q.seed))return false;
-  if(!G.poiSeen)G.poiSeen={};
-  G.poiSeen[q.seed]=1;
-  const F=POI_FIND[q.k]||POI_FIND.anomaly;
-  const r=rng(hashi(q.seed,0xF17D,3)),d=sysDanger(G.sx,G.sy);
-  const got=F.give(r,d);
-  const base=8+Math.floor(d*10);
-  G.data+=base;
-  G.poiSeen[q.seed]={k:q.k,got:got,t:Math.round(G.t||0)};
-  tell("tech",F.ru+": "+got+" · +"+base+" данных",
-       q.ru+"\n"+F.note+"\n"+got+"\n+"+base+" данных");
-  logAdd("tech","Осмотр: "+F.ru+" · "+got);
-  /* любой памятник — аномалия для того, кто его не строил */
-  nodeDrop("в аномалии",.4+d*.6,hashi(q.seed,0xA0,3));
-  /* редкость на своём адресе (12m-rare). Храм с уже известной координатой
-     отдаёт свою, отдельную ветку — это и есть закрытый хвост M92 «храм молчит
-     при известной координате»: он не отмалчивается, он отдаёт редкость плит. */
-  if(typeof rareTake==="function"){
-    if(q.k==="temple"&&G.relicHint)rareTake("temple",q.seed);
-    else rareTake("poi",q.seed);
-  }
-  return true;
 }

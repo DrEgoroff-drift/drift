@@ -90,6 +90,9 @@ function drawMap(){
       ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
     }
   }
+  /* засечки «Долгого Хода» (12q-lore) — поверх линий, но под звёздами: адрес,
+     до которого сегодня не дотянуться, обязан читаться и за краем листа */
+  if(typeof drawLoreMarks==="function")drawLoreMarks(cell);
   let sel=null,cur=null;
   for(const v of vis){
     const{gx,gy,s,x,y}=v;
