@@ -386,6 +386,31 @@ Three consequences, and they are binding:
 - **The end changes the map, not the text.** The last answer is a state of the world — a layer, a
   route, a settlement that lives or doesn't — not a screen with the truth on it.
 
+## The shape it is told in: a survey that turns into an investigation
+
+The structure this pass follows is the one classic Russian children's science fiction uses — a
+collecting expedition that stumbles into a mystery and solves it by **interviewing witnesses**,
+each of whom holds one piece and none of whom can simply tell you. Nothing is borrowed but the
+architecture: the names, the places and the creatures here are our own, and no character, phrase
+or plot of anyone else's book enters the game. What we take is a way of building, and it is worth
+spelling out because it is stricter than "collect fragments":
+
+1. **The question comes before the fragments.** The player is not handed a mystery to be curious
+   about; he walks into an incident in the first hours — something happened here, plainly, and it
+   was aimed at somebody. Everything after that is him asking about it while doing his job.
+2. **Every witness is partial and none of them lies.** One repeats a phrase it does not
+   understand. One saw the end and not the beginning. One was there and no longer remembers,
+   because that is what was done to him. Contradictions come from vantage, never from deceit —
+   a lying source teaches the player to distrust sources, which kills the whole structure.
+3. **The witnesses are places and creatures, not text boxes.** A mined-out world with a machine
+   still transmitting to nobody. An animal that repeats what it heard. A settlement that remembers
+   a face. All of these are things the game already knows how to build.
+4. **The villain is someone the player already knows and has been dealing with comfortably.** Not
+   a hidden power: a familiar figure with a plausible trade. The reveal costs the player something
+   he had come to rely on, which is the only kind of reveal that lands in a game.
+5. **The truth is a person, not an event.** At the end of the chain there is someone the
+   expedition left behind — alive, and unable to say so.
+
 ## The spine
 
 Kept here so every milestone below can be checked against it. The player never reads this; he
@@ -404,6 +429,20 @@ What the expedition found, and what their obelisks are dated against, is a thing
 That is why the story is a **calendar**, not a treasure map — and why the last chapter is an
 evacuation and not a boss. The player's own settlement is the fork: repeat their run, or do the
 one thing they failed to do.
+
+**They did not all die, and that is the answer at the end of the chain.** The expedition was cut
+apart on its last leg by people who traded with it — and one of its officers came out alive, with
+his record wiped, and has been in the galaxy ever since doing small work at the tables. He is not
+hidden anywhere: the player meets him early and cheaply, as one more face in a cantina. He cannot
+tell his own story because it was taken from him; the fragments the player collects are the pieces
+of it, and what returns him is having his own account read back to him. That is why the ending
+needs no revelation screen — the payoff is that a man the player had been walking past for twenty
+hours stands up and finishes the survey.
+
+**And it was not pirates.** The ones who cut «Долгий Ход» apart were its counterparties — the
+trading house that ran its supply legs, `«Ласковый»`. Which means the reveal costs the player
+something he uses daily, not something he was already fighting. The survivor is **Тихоня**; the
+thing on schedule is **Прибой**; the names are set out in full below.
 
 ## M106 (0.56.0). Obelisks: the map is opened, not scanned
 
@@ -572,6 +611,135 @@ The last milestone of the pass, and deliberately cheap in code — everything it
 
 Suite **"the account: assembled, not narrated"** — the survey layer only shows what fragments were
 earned; no fragment is required twice; the pass is completable without M114 having succeeded.
+
+# The witnesses: five things that carry the story instead of text
+
+Everything above says the story arrives on the back of useful things. This section says **which
+things**. Each is a witness in the sense of the detective shape: partial, honest, and unable to
+explain itself. Four of them are archetypes from the same tradition, rebuilt on our machinery —
+a worked-out world of machines, a bazaar where the dead captain's belongings are resold, an animal
+that repeats what it heard, and a flora that replays what stood in front of it. The names below
+are ours; the roles are the classic ones.
+
+**Why these four and not a quest log.** Each is already half-built in `Drift`: we have fauna and
+flora with species (`20-life`), station types (`26-ui-station`), settlements coming in M109 and a
+light model good enough that an eclipse can be a plot device. A witness costs a table and a hook.
+A quest log costs a subsystem and reads as homework.
+
+## The names
+
+In-game names are Russian, like everything the player sees, and they lean the way the game already
+leans: plain, slightly rude, funny by understatement rather than by joke. A name here is a working
+label a spacer would actually use, not a title.
+
+| Role | Name in game | Why |
+|---|---|---|
+| the previous expedition | **«Долгий Ход»** | how a crew names its own worst contract |
+| the thing on schedule | **Прибой** | it comes in, it goes out, it is not personal |
+| an obelisk | **зарубка** (player) · **камушек** (the digger's word) | a survey mark, not a monument |
+| the digger | **Грохотун**, by trade a **копач** | eight limbs, one volume setting |
+| what he takes as payment | **настойка** (barrels of `xeno`) | he calls it medicine, everyone else calls it a problem |
+| the repeater animal | **трепло ушастое** | mock-taxonomic, exactly how a species table reads |
+| the flora that replays light | **подглядка зеркальная** | it was watching the whole time |
+| the worked-out machine world | **Жестянка** | what is left when a world is a container |
+| the bazaar station type | **блошинец** | a flea market with a docking clamp |
+| the trading house that cut them apart | **торговый дом «Ласковый»** | the nicest name on the invoice |
+| the survivor at the tables | **Тихоня** | a nickname, because his record is blank |
+
+`Прибой` and `«Долгий Ход»` are the only two the player has to piece together; the rest he hears in
+the first hours. The joke in every one of them is that nothing in space gets a grand name — it gets
+the name the third shift gave it.
+
+## M116 (0.66.0). Трепло: an animal that carries a sentence it does not understand
+
+The single best fit in the whole pass, because it turns a fragment into an object with a lifetime.
+
+- **A fauna species** (`20-life`) that repeats sound it has heard: prices shouted at a dock, a
+  bearing read aloud, a phrase in the expedition's pidgin. It is not caught in the wild first —
+  the first one is **bought at a bazaar (M120) out of a dead man's effects**, which is how the
+  player learns there was a dead man.
+- **It pays before it is understood.** What it repeats includes things with immediate cash value —
+  a station's prices from before you got there, a bearing to a find. That is its rent.
+- **Retroactive comprehension is the mechanic.** Phrases in the pidgin are stored verbatim as
+  glyphs (`G.heard`, persisted). They cannot be read until vocabulary arrives from fragments and
+  the settlement (M109). Every new word **re-reads everything already stored**: a bird bought in
+  hour two starts speaking in hour twenty, without the player going anywhere. Nothing else in the
+  game gets better while sitting still, and that alone justifies the milestone.
+- It repeats what it hears **from the player too** — including at the wrong moment, in front of the
+  wrong faction. A witness that can testify against you is a witness worth having.
+
+Suite **"the repeater: it says only what it heard"** — every stored phrase traces to a real event
+the player was present for; a phrase is never invented; a decoded phrase matches the vocabulary
+owned at the moment of decoding, not at the moment of hearing.
+
+## M117 (0.67.0). Подглядка: the meadow that remembers light
+
+The one place where the expedition is **seen** rather than read about, and the payoff that makes
+the calendar (M107) matter.
+
+- A flora species on a small number of worlds whose surface replays the light that fell on it: what
+  stood here, once, as a moving silhouette in the existing surface renderer — our own figures
+  (`hqFigure` scale rules), no new art language.
+- **It only replays in the dark**, so it replays during an eclipse (M107) or not at all. A player
+  can stand on the right planet for hours and see nothing; an obelisk that names the date is
+  suddenly the most valuable thing he owns. This is the hook that ties the whole calendar together.
+- What it shows is never captioned. A figure, a number of them, what they carried, which way they
+  went. The player reads it or he doesn't.
+
+## M118 (0.68.0). Жестянка: machines still on shift
+
+- A world type variant: mined out to nothing, atmosphere sour, and the automation from the previous
+  owner still running with nobody to run it for. It transmits (M108's satellite family) on a loop.
+- **It asks for one consumable** and it asks in the wrong units, because whoever set the request up
+  is not there to fix it. Supplying it restarts a small piece of production — a settlement (M109)
+  with no mood and no opinions, the cheap version, and a good place to learn the giving loop before
+  a living village is at stake.
+- **Its log is the honest witness.** Machines record everything and understand none of it: the log
+  gives exact times and headings for events it cannot describe. Times feed the calendar; headings
+  feed the map.
+
+## M119 (0.69.0). Грохотун: the one partner who does not work for money
+
+A recurring figure — loud, many-limbed, delighted to see you, catastrophically indiscreet — who
+digs the expedition's sites for a living and knows what an obelisk **is** while knowing nothing
+about who left it.
+
+- **He is a run, not a crew member.** Reuses the hired-hand machinery (`12a-crew`): hand him a site
+  from your map layer, fly away, come back to a result. He never joins the ship and never takes a
+  seat: the four-manager rule stands untouched.
+- **He is not paid in credits.** He takes a specific good, in quantity, and the quantity is
+  unreasonable — the one supply line in the game that exists for a person rather than a profit.
+  The monument-is-not-an-ATM rule, seen from the other side.
+- **His flaw is the content.** A dig is loud and slow: it draws pirates to a system you care about,
+  and he talks about your finds at the tables, which is one of the ways the antagonist knows where
+  you have been (M98). Sending him somewhere is a real decision, not a free errand.
+- He is also the tutor: the first fragment the player cannot use is explained by him, once.
+
+## M120 (0.70.0). Блошинец: a station type where everything is somebody's
+
+A seventh station type (`26-ui-station`), and the only one whose stock is **used goods**.
+
+- Parts with previous owners, the odd rarity out of an estate, living creatures, and information
+  sold as merchandise — including information about you, which is how the antagonist buys your
+  route.
+- **Everything here has provenance**, and provenance is where fragments hide: a part off a hull
+  nobody scrapped, a bird out of a dead captain's effects. The tag is one line and it is real —
+  it names a place the player can go.
+- It is the natural home for scrip (M113): a bazaar quotes in its own paper by default and in
+  credits at a penalty.
+
+Suite **"the bazaar: every lot came from somewhere"** — no lot without a provenance record; every
+provenance names a reachable place; buying the same estate lot twice is impossible.
+
+## What this section deliberately does not take
+
+- **No comic double act, no bumbling villain pair.** Our antagonist is a counterparty the player
+  trades with (M98, the spine); making him funny makes the reveal free.
+- **No child aboard, no zoo.** The player flies alone and collects rarities already (M96); a second
+  collection funnel of live animals would compete with the hundred and with the planet (M97). The
+  repeater is one species with a job, not a menagerie.
+- **No talking-to-everyone.** Nobody in `Drift` has dialogue, and this pass does not introduce it.
+  Every witness above answers in goods, glyphs, logs or light.
 
 ## Rules this queue does not repeal
 
