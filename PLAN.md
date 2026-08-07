@@ -337,11 +337,241 @@ The garage (M93) has no reason to exist while the ship is only repaired after a 
 accumulate layers on the hull — scuffs, dust trails, sun-bleached paint (the live damage layer of
 M82 already does this for pirates). You come home because it has piled up, not because something broke.
 
-## M105 (0.55.0). Inspecting a monument remembers why you came
+## M105 (0.47.0). Inspecting a monument remembers why you came — DONE
 
-The last remnant of M92: inspection has no memory of its own beyond `G.poiSeen`. If a temple gave
-a coordinate, an observatory gave prices and a plant gave a warehouse, that is worth showing on the
-monument itself on approach, not only in the journal.
+Taken out of order, ahead of M97–M104: it is the ground the obelisks (M106) stand on, and a
+monument with no memory cannot carry a second, dated answer. Built, 1348 green (was 1340), empty
+console, live scenario on the surface: walk up, inspect, walk away, come back and read it.
+
+`G.poiSeen[seed]` now holds `{k, got, t}` instead of `1`, read through the new `poiMemo(seed)`
+(`20a-poi`). The save format does not change (`v:4`): an old save holds `1`, and `poiMemo` reads
+that honestly as "inspected, but what it gave is no longer remembered" — guarded by the suite.
+On approach the prompt shows the monument's own answer instead of a bare "ОСМОТРЕНО"
+(`21-mode-surface`).
+
+**Found on the way, and it is the bigger half of this milestone.** The surface had its own,
+cut-down inspection inline in `21-mode-surface` — data plus a node — and never called
+`poiInspect`. So the whole `POI_FIND` table was dead in the actual game: the temple's coordinate,
+the observatory's prices, the factory's warehouse, the gates' fuel and the rarity hook (`rareTake`,
+M96) fired only in tests, which called `poiInspect` directly and therefore reported green. Ten
+shapes on the horizon really were ten ways to get the same thing. The surface now goes through the
+single door. The lesson is worth keeping: **a suite that calls the function instead of the path
+proves the function, not the game.**
+
+**Left as a tail (into M106):** a monument's memory is per-seed and lives only on the ground —
+nothing shows on the map that this planet has already been read. The obelisk needs exactly that
+layer, so it is built there rather than patched in here.
+
+# QUEUE: the twelfth pass — the thing that is found in pieces
+
+M94–M105 gave a body to numbers that already existed. This pass gives the galaxy a **reason to be
+crossed**. Today the far corner differs from the near one by a coefficient (`sysDanger`) and
+nothing else: no place is worth reaching for its own sake. Everything below exists to fix that,
+and it hangs on one long story the player assembles out of fragments.
+
+## The principle behind this queue
+
+**A fragment is useful before it is understood.** A piece of the story never arrives as a piece of
+the story. It arrives as a coordinate, a price, a schematic, a word of their language — something
+that pays on the spot. Only later does it turn out that the twenty things that paid were one
+account of what happened here. The player assembles the story out of greed, not politeness.
+
+Three consequences, and they are binding:
+
+- **No lore item.** Nothing in the game is picked up whose only property is text. A fragment lives
+  on the back of a thing that already has a use (an address, a rate, a vocabulary entry). If a
+  fragment can be deleted without any mechanic noticing, it is a lie in the sense of the perk rule.
+- **The story is closed and finite**, like `NODES` and `RARE`: a fixed table generated from a fixed
+  seed, with a guard sweeping for reachability. An infinite generated story is noise.
+- **The end changes the map, not the text.** The last answer is a state of the world — a layer, a
+  route, a settlement that lives or doesn't — not a screen with the truth on it.
+
+## The spine
+
+Kept here so every milestone below can be checked against it. The player never reads this; he
+reconstructs it.
+
+The obelisks were not put up by aliens. They were put up by the **expedition before yours** —
+people with the same job, the same barges, the same debts. They mapped this arm, seeded settlements,
+built system defences, and left their survey the only way that survives without power: cut into
+stone, addressed by sky events rather than by coordinates, because coordinates drift and the sky
+does not. Then they stopped arriving.
+
+The locals remember them — not as gods, as the people who used to come. Their language is the
+expedition's pidgin, worn down; that is why fragments teach you to speak with them.
+
+What the expedition found, and what their obelisks are dated against, is a thing on a schedule.
+That is why the story is a **calendar**, not a treasure map — and why the last chapter is an
+evacuation and not a boss. The player's own settlement is the fork: repeat their run, or do the
+one thing they failed to do.
+
+## M106 (0.56.0). Obelisks: the map is opened, not scanned
+
+New module `12q-lore.js` (after `12n-planet`, before `13-pirates`), plus a new kind in
+`POI_KINDS.on` (`20a-poi`) and a layer in `18-mode-map`.
+
+- **`LORE` — a closed table of ~40 fragments**, generated deterministically from a fixed seed and
+  frozen, exactly like `NODES`/`RARE`. Each `{id, ru, gives, chap}`: `gives` is the useful payload,
+  `chap` its place in the account.
+- **Addressing follows M96's decision**, which is now proven: not a precomputed point but
+  `loreAtPlace(where,key)` over the place key. An obelisk's key is its system key, so the same
+  obelisk always says the same thing and reload-farming can't touch it.
+- **What an obelisk gives is an address, never a fact.** The reveal on the map is one system with a
+  name and one thing actually in it — not a scanned area. And it is always **outside the current
+  jump radius**: an obelisk that reveals a neighbour is a decoration. The layer is `G.loreKnown`
+  (list of ids + revealed system keys, persisted, default `[]`).
+- **The obelisk is a monument**, so it inherits M105 for free: on approach it shows what it already
+  gave you. Its repeat answer is a rarity address (M96), not a second fragment.
+- **The second answer is dated.** Part of what an obelisk holds does not open until a sky event
+  (M107) is standing over it. Then the same monument, in the same place, says a second thing. This
+  is the single hook that makes the calendar a mechanic instead of a light show.
+
+Suite **"the obelisks: every fragment has an address"** — the table is exactly its declared size,
+ids unique, every fragment reachable by sweeping keys, no fragment obtainable twice, every revealed
+system exists and holds the thing that was promised, no reveal lands inside the current jump radius.
+
+## M107 (0.57.0). The sky keeps a calendar
+
+New module `06a-celest.js` (after `06-galaxy`, before `07-planet`) — pure arithmetic over the
+orbits M43 already computes honestly. Drawing hooks into `19-mode-landing` (sky), `25-cockpit` and
+`20-life`.
+
+- **Four events, all computed, none rolled:** conjunction (a parade — three or more bodies inside
+  an angular window), eclipse (a moon crosses the star from the surface point you stand on), a
+  comet on a long ellipse, and the nebula the system already sits in read as weather rather than
+  backdrop.
+- **`celestAt(sys, t)` is a function of time, not a state.** Nothing about it enters `snapshot()` —
+  cross-cutting rule. A date is a number the obelisk can name and the player can wait for.
+- **It is light, not UI.** An eclipse drops the key light and lifts ambient blue; the astronaut's
+  shadow shortens and dies; flora that leans on light closes (`20-life`), fauna quiets. A parade is
+  a line of discs in the sky with the loudness budget respected — the sky does not start shouting.
+- **Almost no arithmetic.** The rule from exotic stars stands: the sky never touches prices or
+  yields. Its one mechanical right is opening an obelisk's second answer (M106) — a date is worth
+  travelling to because of what stands there, not because of a bonus.
+
+Suite **"the calendar: the sky is computed"** — the same system and time always give the same
+event; an eclipse only ever occurs where a moon can actually cross; no celestial state persists;
+no event changes a price or a yield.
+
+## M108 (0.58.0). Finds in flight, and half of them are theirs
+
+Closes item 5 of the visual queue (`M55`) — the space between planets is empty — and pays the
+story's rent at the same time. `17-mode-system`, reusing `POI_FIND` (`20a-poi`) and the M95 wreck
+machinery rather than growing a second one.
+
+- Four kinds: a distress signal, a dead satellite still transmitting, a drifting container, the
+  wreck of a survey ship. All are approached the way a barge wreck already is.
+- **The satellite is the expedition's**: it is the one find that carries a fragment, and what it
+  transmits is a bearing you can fly. The other three pay in the ordinary currency of the game.
+- A find is deterministic per system key + a coarse time bucket, so the space is not a slot machine
+  and cannot be farmed by re-entering.
+
+## M109 (0.59.0). The settlement: you give, they decide
+
+New module `12p-settle.js`. The largest thing in this pass, and the one most at risk of becoming a
+second base system. It must not be.
+
+- **`G.settle["sx,sy"] = {seed, stage, mood, stock, built[], lastTick}`** — persisted, sparse, keyed
+  like everything else. Growth is a lazy roll over `Date.now()-lastTick` with the offline cap, the
+  `tickDrones()` model, never a live simulation.
+- **You cannot order.** The whole difference from your own base (M37/M38) is authority: you hand
+  over resources and they choose what to raise, by their own leaning (from `seed`) tilted by what
+  you kept giving. Handing them ore for ten hours makes a different village than handing them
+  volatiles. The player's control is a diet, not a build menu.
+- **They pay in goods, on their terms.** No wage, no percentage, no steady line: you fly in and ask,
+  and `mood` decides how much is ready. The hired-hand rule applies unchanged — this is a bet, not
+  an income stream. Edits that make the settlement a reliable earner break the design.
+- **At stage 3 they become a point on the factor's map** and barges start calling (M94), exactly as
+  the player's planet does at M97. That is the real reward: you put a node on the map that trades
+  without you.
+- **Their speech is the expedition's pidgin.** No translated text ever. A settlement answers in
+  glyphs drawn from its seed; each `LORE` fragment (M106) unlocks one word, and an unlocked word
+  turns a guess into a request you can actually make. This is what stops fragments from being lore:
+  vocabulary is the interface.
+
+Suite **"the settlement: a gift, not an order"** — no call path lets the player choose a building;
+the settlement never pays credits; growth respects the offline cap; a settlement below stage 3 is
+invisible to the barge router; every glyph shown corresponds to an owned fragment.
+
+## M110 (0.60.0). The ones who live here stand between you and the fauna
+
+Small, and it is what makes M109 felt on foot rather than in a tally.
+
+- Inside a settlement's biome, hostile fauna (`20-life`) keeps its distance — not a buff on the
+  player but a fact about the ground: their watchers are out there, and you can see them working.
+- It cuts the other way. Pirates you pull in over their heads land on them: a raid in a settled
+  system costs the village `mood` and buildings, and that is the price of using them as cover.
+- The tie into M98: a hunter who follows you here does not care whose roof it is.
+
+## M111 (0.61.0). System defence: the battery that is built, not bought
+
+A building in the base cross-section (`21a-mode-base`), inside the existing power balance — it eats
+reactor output, so defence competes with production and is a real decision.
+
+- It fires at pirates in **its own system**, visible from `17-mode-system` as a line from the ground.
+- **It cuts the small raids only.** Killing pirates as content is not on the table: the battery
+  clears the noise so the player stops flying home for nuisances, and does nothing against a baron
+  or a hunter (M98). Edits that let a battery hold a system break the design.
+- The expedition built these too, and the ruined ones are on the ground already — a dead battery is
+  one of the places `loreAtPlace` answers.
+
+## M112 (0.62.0). Missiles
+
+A new part kind in `05-parts` with its own slot behaviour, not another number on the existing gun.
+
+- **Ammunition is cargo.** A missile takes hold space, so arming up is paid for in the same currency
+  as trading — the decision is logistics, not a purchase. That is the whole reason this is
+  interesting; a missile that fires forever is just a bigger gun.
+- Crafting sits with the lab (`12h-relic`) alongside part crafting, so warheads come out of the
+  system that already exists.
+
+## M113 (0.63.0). Local scrip and a rate that moves for reasons
+
+`12-economy` plus the retelling (M99). The riskiest idea in the pass, so the guard rails come first.
+
+- A faction's scrip is not a second wallet — it is a **claim on that faction's stations**, bought
+  and sold at a spread. Holding it is a bet on that faction's fortunes.
+- **The rate only moves on events that really happened** (M99 rolls them anyway): a station changes
+  owner, a baron goes broke, a route is cut, a settlement of yours reaches stage 3. No random walk,
+  no drift term. If the rate can be predicted from noise, it is free money, and free money kills
+  the market the game already has.
+- The spread and a per-visit conversion cap make round-tripping a loss, the same way M94 made barge
+  arbitrage a loss. The player's edge is knowing the news first — which he does, because he causes
+  most of it.
+
+Suite **"scrip: the rate has reasons"** — every rate move traces to a recorded world event;
+buy-then-sell without an intervening event is never profitable; the wallet cannot go negative.
+
+## M114 (0.64.0). Evacuation: a world that ends on schedule
+
+The chapter M106 and M107 are both built to reach, and the point where the story stops being
+background. Only fires for a settlement the player actually raised.
+
+- The obelisks' calendar names a date for a system. When it comes, that world ends — the event is
+  the one the expedition was measuring, and it was never mysterious to them, only unavoidable.
+- **The player can lift them.** Hold space, trips, time — the ordinary machinery of the game used
+  for something that is not cargo. Nobody assists: managers and hired hands can be assigned, and
+  the number carried is the number you organised.
+- **Where they land is the outcome.** A rehomed settlement restarts elsewhere at reduced stage,
+  keeping its vocabulary and its memory of who came. Not lifting them is a permitted ending: the
+  system stays on the map, empty, and their glyphs stop being answerable.
+- This is the fork the spine promised: the expedition measured the date and left. You have the same
+  date and a ship.
+
+## M115 (0.65.0). The assembled account
+
+The last milestone of the pass, and deliberately cheap in code — everything it needs exists by then.
+
+- With the fragments in hand, obelisks stop being separate: the map layer joins into **the
+  expedition's own survey**, drawn in their notation over yours, including the places they marked
+  that you have never visited.
+- The museum wall (M100) gains its final shelf: not a hundred rarities but one account, assembled
+  in the order the player actually found it, which is different for every player.
+- **No revelation screen.** The reward is the survey layer, the settlement that lives, and the
+  glyphs you can now read. If the ending needs a paragraph to land, this pass failed.
+
+Suite **"the account: assembled, not narrated"** — the survey layer only shows what fragments were
+earned; no fragment is required twice; the pass is completable without M114 having succeeded.
 
 ## Rules this queue does not repeal
 

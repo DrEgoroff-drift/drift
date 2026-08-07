@@ -164,7 +164,7 @@ The game version is the `VER` constant in `01-core`, also shown on the title scr
 and when is in [`PATCHNOTES.md`](PATCHNOTES.md), one entry per version.
 
 The live plan is [`PLAN.md`](PLAN.md): cross-cutting rules, the visual work queue and the
-milestone queue M94→M105. Completed milestones are moved to
+milestone queue M94→M115. Completed milestones are moved to
 [`docs/PLAN-archive.md`](docs/PLAN-archive.md) as documentation of decisions — grep it for a
 specific milestone, don't read it through. New work is written into `PLAN.md`, one milestone per
 commit; a closed milestone is eventually moved to the archive so the live plan stays short.

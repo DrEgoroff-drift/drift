@@ -9,6 +9,19 @@ could ever save.
 
 ---
 
+## 0.47.0 — "The monument remembers"
+
+**Monuments answer by type again.** The surface ran its own cut-down inspection and never called
+`poiInspect`, so the whole per-kind reward table was dead in the game while the tests, which called
+the function directly, stayed green. Walking up to a temple now really hands over a coordinate, an
+observatory its prices, a factory its warehouse, the gates their fuel — and the rarity on that
+place's address (0.46.0) is finally taken on the ground rather than only in tests.
+
+**And it remembers what it gave.** An inspected monument no longer greets you with a bare
+"осмотрено": it shows its own answer where it stands, so a second walk out to it is a decision
+rather than a guess. Old saves keep loading — a monument inspected before this version simply has
+nothing to recall.
+
 ## 0.46.0 — "A hundred rarities"
 
 **Rarities.** A new and hardest layer of finds: a closed table of exactly one hundred rare things.

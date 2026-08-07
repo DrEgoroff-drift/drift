@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 85 · символов верхнего уровня: 1116
+Файлов: 85 · символов верхнего уровня: 1117
 
 ## СИМВОЛЫ
 
@@ -387,8 +387,8 @@ drawStation                  src/17-mode-system.js:548
 drawStationMods              src/17a-station-mod.js:178
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:84
-drawSurface                  src/21-mode-surface.js:335
-drawSurfaceHud               src/21-mode-surface.js:289
+drawSurface                  src/21-mode-surface.js:334
+drawSurfaceHud               src/21-mode-surface.js:288
 drawSysNebula                src/16a-space.js:65
 drawSystem                   src/17-mode-system.js:270
 drawTemple                   src/20a-poi.js:266
@@ -412,7 +412,7 @@ enterRaid                    src/24a-mode-raid.js:129
 enterSurface                 src/21-mode-surface.js:2
 env                          src/09-audio.js:47
 eq                           tests/90-harness.js:23
-evacuate                     src/21-mode-surface.js:214
+evacuate                     src/21-mode-surface.js:213
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:72
 exitBelt                     src/24-mode-belt.js:162
@@ -598,8 +598,8 @@ landingDust                  src/19-mode-landing.js:537
 landOnTestPlanet             tests/90-harness.js:54
 last                         src/28-loop.js:213
 lastDroneTick                src/28-loop.js:214
-launch                       src/21-mode-surface.js:254
-launchHold                   src/21-mode-surface.js:199
+launch                       src/21-mode-surface.js:253
+launchHold                   src/21-mode-surface.js:198
 layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:101
@@ -815,7 +815,8 @@ POI_SEED                     src/20a-poi.js:80
 poiBody                      src/20a-poi.js:158
 poiDrift                     src/20a-poi.js:137
 poiGlow                      src/20a-poi.js:68
-poiInspect                   src/20a-poi.js:650
+poiInspect                   src/20a-poi.js:662
+poiMemo                      src/20a-poi.js:657
 poiNear                      src/20a-poi.js:574
 poiPath                      src/20a-poi.js:81
 poiPoly                      src/20a-poi.js:100
@@ -1028,7 +1029,7 @@ suite                        tests/90-harness.js:12
 suitFailure                  src/23-mode-dig.js:104
 suitHit                      src/23-mode-dig.js:97
 SUN_DIR                      src/19c-light.js:11
-surfaceHint                  src/21-mode-surface.js:274
+surfaceHint                  src/21-mode-surface.js:273
 svDraw                       src/27-ui-ship.js:7
 svRender                     src/27-ui-ship.js:45
 svReturn                     src/27-ui-ship.js:6
@@ -1056,7 +1057,7 @@ TEST                         tests/90-harness.js:10
 TEST_SUITES                  tests/90-harness.js:85
 tfbm                         src/18a-material.js:23
 tickDrones                   src/12-economy.js:80
-tickLaunchHold               src/21-mode-surface.js:200
+tickLaunchHold               src/21-mode-surface.js:199
 TIER_RU                      src/05-parts.js:45
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:60
@@ -1065,7 +1066,7 @@ timeBucket                   src/03-ships.js:103
 tnoise                       src/18a-material.js:16
 toggleLog                    src/11-log.js:89
 toggleMenu                   src/15-input.js:125
-totalLoss                    src/21-mode-surface.js:231
+totalLoss                    src/21-mode-surface.js:230
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03-ships.js:329
 TRADE_KEYS                   src/02-world.js:27
@@ -1293,9 +1294,10 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/19-mode-landing.js · 31 КБ
   · посадка:1
 
-## src/20a-poi.js · 37 КБ
+## src/20a-poi.js · 38 КБ
   · точки интереса:1
   · осмотр достопримечательности:582
+  · память памятника:650
 
 ## src/20-life.js · 38 КБ
   · астронавт:1
@@ -1322,9 +1324,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/21c-built.js · 10 КБ
   · ваши постройки видны с земли:1
 
-## src/21-mode-surface.js · 25 КБ
+## src/21-mode-surface.js · 26 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:270
+  · навигатор и подсказки сверху:269
 
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
@@ -1422,7 +1424,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91l-fleet.js · 10 КБ
   · автотесты: флот и фронт: сто корпусов, занятые системы, ранги, следы на земле:1
 
-## tests/91m-nodes.js · 17 КБ
+## tests/91m-nodes.js · 18 КБ
   · автотесты: журнал, тысяча узлов и венцы, кантина, репутация, памятники:1
 
 ## tests/91n-barge.js · 9 КБ
