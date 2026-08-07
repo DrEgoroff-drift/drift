@@ -34,6 +34,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
     nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,wrecks:G.wrecks,bargePax:G.bargePax,
+    loreFound:G.loreFound,loreMarks:G.loreMarks,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -88,6 +89,10 @@ function applySave(s){
   G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
   /* редкости: только список унесённых id (12m-rare) */
   G.rareFound=Array.isArray(s.rareFound)?s.rareFound.filter(x=>typeof x==="string"):[];
+  /* отчёт «Долгого Хода» (12q-lore): формат сейва не менялся (v:4), старые
+     записи просто не имеют этих полей и начинают с пустого */
+  G.loreFound=Array.isArray(s.loreFound)?s.loreFound.filter(x=>typeof x==="string"):[];
+  G.loreMarks=Array.isArray(s.loreMarks)?s.loreMarks.filter(m=>m&&typeof m==="object"):[];
   /* дела кантины: отвеченные и те, чей исход ещё не пришёл */
   G.dealsDone=(s.dealsDone&&typeof s.dealsDone==="object")?s.dealsDone:{};
   G.dealsWait=Array.isArray(s.dealsWait)?s.dealsWait:[];

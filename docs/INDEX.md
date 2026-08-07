@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 85 · символов верхнего уровня: 1117
+Файлов: 88 · символов верхнего уровня: 1140
 
 ## СИМВОЛЫ
 
@@ -65,7 +65,7 @@ angWrap                      src/01-core.js:35
 applyCrewEvent               src/12b-crew-events.js:211
 applyPadMode                 src/15-input.js:6
 applyPadSize                 src/15-input.js:5
-applySave                    src/14-save.js:39
+applySave                    src/14-save.js:40
 applyVolumes                 src/09-audio.js:28
 apVel                        src/16-flight.js:73
 arrive                       src/16-flight.js:119
@@ -75,7 +75,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:160
 autoLandInputs               src/19-mode-landing.js:18
-autosave                     src/14-save.js:278
+autosave                     src/14-save.js:283
 b64dec                       src/14-save.js:11
 b64enc                       src/14-save.js:9
 bankTransform                src/03-ships.js:354
@@ -214,8 +214,8 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudPull                    src/14-save.js:300
-cloudPush                    src/14-save.js:292
+cloudPull                    src/14-save.js:305
+cloudPush                    src/14-save.js:297
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
 cockpitPlan                  src/25-cockpit.js:92
@@ -310,9 +310,9 @@ digCell                      src/23-mode-dig.js:29
 digFauna                     src/23-mode-dig.js:213
 digRockPass                  src/23-mode-dig.js:311
 digVoidPath                  src/23-mode-dig.js:356
-drawAccel                    src/20a-poi.js:359
+drawAccel                    src/20a-poi.js:364
 drawAllies                   src/12a-crew.js:541
-drawAnomaly                  src/20a-poi.js:384
+drawAnomaly                  src/20a-poi.js:389
 drawAstronaut                src/20-life.js:4
 drawBarge                    src/12l-barge.js:481
 drawBarges                   src/12l-barge.js:512
@@ -338,14 +338,14 @@ drawClouds                   src/19e-clouds.js:169
 drawCockpit                  src/25-cockpit.js:400
 drawCombat                   src/13-pirates.js:186
 drawCrowns                   src/05a-nodes.js:342
-drawCrystalForest            src/20a-poi.js:331
+drawCrystalForest            src/20a-poi.js:336
 drawDeco                     src/21b-surface-deco.js:147
 drawDig                      src/23-mode-dig.js:376
 drawDigFauna                 src/23-mode-dig.js:287
 drawDustMotes                src/19-mode-landing.js:267
-drawElevator                 src/20a-poi.js:307
+drawElevator                 src/20a-poi.js:312
 drawExhaust                  src/16a-space.js:133
-drawFactory                  src/20a-poi.js:428
+drawFactory                  src/20a-poi.js:489
 drawFactRoute                src/13b-occupy.js:238
 drawFlame                    src/03-ships.js:335
 drawFoeBody                  src/24a-mode-raid.js:628
@@ -359,18 +359,20 @@ drawHullMarks                src/03-ships.js:446
 drawLander                   src/19-mode-landing.js:363
 drawLandGear                 src/19-mode-landing.js:337
 drawLanding                  src/19-mode-landing.js:281
+drawLoreMarks                src/12q-lore.js:181
 drawMap                      src/18-mode-map.js:51
 drawModule                   src/21aa-base-rooms.js:159
-drawMonolith                 src/20a-poi.js:409
+drawMonolith                 src/20a-poi.js:414
 drawNebula                   src/16-flight.js:39
 drawNodeIcon                 src/05a-nodes.js:227
-drawObserv                   src/20a-poi.js:541
+drawObelisk                  src/20a-poi.js:437
+drawObserv                   src/20a-poi.js:602
 drawPirate                   src/12i-pirate-hull.js:320
 drawPirateBase               src/24a-mode-raid.js:103
 drawPlant                    src/20-life.js:310
 drawPlantAlien               src/20-life.js:167
-drawPOI                      src/20a-poi.js:163
-drawPortal                   src/20a-poi.js:514
+drawPOI                      src/20a-poi.js:167
+drawPortal                   src/20a-poi.js:575
 drawRaid                     src/24a-mode-raid.js:341
 drawRing                     src/17-mode-system.js:399
 drawRocks                    src/19-mode-landing.js:180
@@ -391,11 +393,11 @@ drawSurface                  src/21-mode-surface.js:334
 drawSurfaceHud               src/21-mode-surface.js:288
 drawSysNebula                src/16a-space.js:65
 drawSystem                   src/17-mode-system.js:270
-drawTemple                   src/20a-poi.js:266
+drawTemple                   src/20a-poi.js:271
 drawTierTrim                 src/03-ships.js:368
 drawTrail                    src/16-flight.js:298
 drawWeather                  src/19d-weather.js:92
-drawWreck                    src/20a-poi.js:224
+drawWreck                    src/20a-poi.js:229
 drawWrecksSystem             src/12l-barge.js:328
 droneCapacity                src/12-economy.js:66
 DRONES                       src/04-mods.js:57
@@ -419,7 +421,7 @@ exitBelt                     src/24-mode-belt.js:162
 exitCave                     src/22-mode-cave.js:35
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
-exportCode                   src/14-save.js:287
+exportCode                   src/14-save.js:292
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -478,7 +480,7 @@ genMgr                       src/12c-mgr-core.js:235
 genName                      src/01-core.js:42
 genPart                      src/05-parts.js:64
 genPlant                     src/20-life.js:123
-genPOI                       src/20a-poi.js:24
+genPOI                       src/20a-poi.js:28
 genRaid                      src/24a-mode-raid.js:30
 genTerrain                   src/07-planet.js:65
 genUniqueShip                src/03-ships.js:16
@@ -500,7 +502,7 @@ groundShadow                 src/19-mode-landing.js:238
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:286
+hasSave                      src/14-save.js:291
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:89
 hazeFar                      src/19c-light.js:81
@@ -560,7 +562,7 @@ hullClassOf                  src/03-ships.js:187
 hullOf                       src/03-ships.js:203
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:288
+importCode                   src/14-save.js:293
 initAudio                    src/09-audio.js:7
 invalidateKeyMap             src/15-input.js:40
 invalidateParts              src/05-parts.js:181
@@ -576,7 +578,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:301
+jump                         src/18-mode-map.js:304
 jumpToBase                   src/21a-mode-base.js:286
 keplerPos                    src/06-galaxy.js:34
 keyLabel                     src/15-input.js:62
@@ -595,7 +597,7 @@ landerGearTick               src/19-mode-landing.js:326
 landerInk                    tests/91j-art.js:154
 landerLen                    src/19-mode-landing.js:322
 landingDust                  src/19-mode-landing.js:537
-landOnTestPlanet             tests/90-harness.js:54
+landOnTestPlanet             tests/90-harness.js:55
 last                         src/28-loop.js:213
 lastDroneTick                src/28-loop.js:214
 launch                       src/21-mode-surface.js:253
@@ -604,12 +606,33 @@ layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:101
 litRGB                       src/19c-light.js:39
-loadGame                     src/14-save.js:282
+loadGame                     src/14-save.js:287
 LOG_MAX                      src/11-log.js:3
 logAdd                       src/11-log.js:5
 logBtnLabel                  src/11-log.js:24
 logOpen                      src/11-log.js:4
 logTime                      src/11-log.js:18
+LORE                         src/12q-lore.js:67
+LORE_ACT                     src/12q-lore.js:47
+LORE_BY_CHAP                 src/12q-lore.js:69
+LORE_BY_ID                   src/12q-lore.js:68
+LORE_CHAP                    src/12q-lore.js:31
+LORE_CHAP_IX                 src/12q-lore.js:41
+LORE_GIVE                    src/12q-lore.js:61
+LORE_SALT                    src/12q-lore.js:70
+LORE_TAIL                    src/12q-lore.js:50
+LORE_WHO                     src/12q-lore.js:45
+LORE_WORDS                   src/12q-lore.js:56
+loreAddr                     src/12q-lore.js:116
+loreAtPlace                  src/12q-lore.js:109
+loreChapter                  src/12q-lore.js:99
+loreChaptersRead             src/12q-lore.js:105
+loreCount                    src/12q-lore.js:90
+loreHas                      src/12q-lore.js:89
+loreList                     src/12q-lore.js:88
+loreMarks                    src/12q-lore.js:91
+loreTake                     src/12q-lore.js:134
+loreVocab                    src/12q-lore.js:93
 loyBar                       src/27c-ui-hq.js:17
 loyWord                      src/27c-ui-hq.js:13
 luckLine                     src/27b-ui-crew.js:16
@@ -710,7 +733,7 @@ musNote                      src/10-music.js:187
 musPerc                      src/10-music.js:244
 navAction                    src/15-input.js:156
 near                         tests/90-harness.js:24
-nearestPOI                   src/20a-poi.js:565
+nearestPOI                   src/20a-poi.js:626
 nearestStation               src/12-economy.js:43
 NEBULA                       src/16-flight.js:22
 nebula                       src/16-flight.js:23
@@ -809,18 +832,18 @@ PLANT_FORM                   src/20-life.js:92
 PLANT_KINDS                  src/20-life.js:104
 PLANT_TRAIT                  src/20-life.js:93
 plate                        src/25-cockpit.js:160
-POI_FIND                     src/20a-poi.js:596
+POI_FIND                     src/20b-poi-find.js:18
 POI_KINDS                    src/20a-poi.js:11
-POI_SEED                     src/20a-poi.js:80
-poiBody                      src/20a-poi.js:158
-poiDrift                     src/20a-poi.js:137
-poiGlow                      src/20a-poi.js:68
-poiInspect                   src/20a-poi.js:662
-poiMemo                      src/20a-poi.js:657
-poiNear                      src/20a-poi.js:574
-poiPath                      src/20a-poi.js:81
-poiPoly                      src/20a-poi.js:100
-poiSkin                      src/20a-poi.js:109
+POI_SEED                     src/20a-poi.js:84
+poiBody                      src/20a-poi.js:162
+poiDrift                     src/20a-poi.js:141
+poiGlow                      src/20a-poi.js:72
+poiInspect                   src/20b-poi-find.js:95
+poiMemo                      src/20b-poi-find.js:90
+poiNear                      src/20a-poi.js:635
+poiPath                      src/20a-poi.js:85
+poiPoly                      src/20a-poi.js:104
+poiSkin                      src/20a-poi.js:113
 prevAct                      src/08-state.js:16
 prism                        src/21b-surface-deco.js:201
 PROFILE                      src/02-world.js:29
@@ -930,11 +953,11 @@ rollCrewEvent                src/12b-crew-events.js:70
 rollWorld                    src/02a-worldmix.js:67
 ROMAN                        src/01-core.js:41
 runAutopilot                 src/16-flight.js:74
-runTests                     tests/90-harness.js:64
+runTests                     tests/90-harness.js:65
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:4
-saveGame                     src/14-save.js:272
+saveGame                     src/14-save.js:277
 say                          src/08-state.js:100
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -1013,7 +1036,7 @@ stationViz                   src/17-mode-system.js:495
 statPreview                  src/05-parts.js:255
 stCore                       src/17-mode-system.js:512
 stDel                        src/14-save.js:8
-steps                        tests/90-harness.js:62
+steps                        tests/90-harness.js:63
 stGet                        src/14-save.js:6
 stGroup                      src/26-ui-station.js:33
 stGroupOf                    src/26-ui-station.js:32
@@ -1054,7 +1077,7 @@ techLv                       src/04-mods.js:45
 tell                         src/11-log.js:13
 TELL_SFX                     src/11-log.js:11
 TEST                         tests/90-harness.js:10
-TEST_SUITES                  tests/90-harness.js:85
+TEST_SUITES                  tests/90-harness.js:86
 tfbm                         src/18a-material.js:23
 tickDrones                   src/12-economy.js:80
 tickLaunchHold               src/21-mode-surface.js:199
@@ -1238,13 +1261,16 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12m-rare.js · 12 КБ
   · редкости: сто адресов, а не рулетка:1
 
+## src/12q-lore.js · 14 КБ
+  · отчёт «Долгого Хода»: сто кусков:1
+
 ## src/13b-occupy.js · 17 КБ
   · пираты берут системы:1
 
 ## src/13-pirates.js · 13 КБ
   · пираты:1
 
-## src/14-save.js · 19 КБ
+## src/14-save.js · 20 КБ
   · сохранение:1
 
 ## src/15-input.js · 15 КБ
@@ -1294,10 +1320,12 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/19-mode-landing.js · 31 КБ
   · посадка:1
 
-## src/20a-poi.js · 38 КБ
+## src/20a-poi.js · 36 КБ
   · точки интереса:1
-  · осмотр достопримечательности:582
-  · память памятника:650
+
+## src/20b-poi-find.js · 9 КБ
+  · осмотр достопримечательности:1
+  · память памятника:83
 
 ## src/20-life.js · 38 КБ
   · астронавт:1
@@ -1429,5 +1457,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## tests/91n-barge.js · 9 КБ
   · автотесты: баржи и редкости: настоящий маршрут, остовы, сто адресов:1
+
+## tests/91p-lore.js · 6 КБ
+  · отчёт «Долгого Хода»: сто кусков:1
 
 ## tests/99-run.js · 0 КБ

@@ -449,9 +449,37 @@ thing on schedule is **Прибой**; the names are set out in full below.
 New module `12q-lore.js` (after `12n-planet`, before `13-pirates`), plus a new kind in
 `POI_KINDS.on` (`20a-poi`) and a layer in `18-mode-map`.
 
-- **`LORE` — a closed table of ~40 fragments**, generated deterministically from a fixed seed and
-  frozen, exactly like `NODES`/`RARE`. Each `{id, ru, gives, chap}`: `gives` is the useful payload,
-  `chap` its place in the account.
+- **`LORE` — a closed table of exactly 100 fragments**, generated deterministically from a fixed
+  seed and frozen, exactly like `NODES`/`RARE`. Each `{id, ru, gives, chap, word}`: `gives` is the
+  useful payload, `chap` its place in the account, `word` the pidgin entry it teaches (M109/M116).
+
+**What a hundred forces, and these are decisions, not notes.** Forty fragments could each be a
+separate trip. A hundred cannot: at ten minutes apiece that is a second job, and the last thirty
+would be filler by arithmetic. So the number changes the design in four places:
+
+- **Fragments come in clutches.** A satellite hands over three or four at once, a machine world's
+  log a dozen, the meadow (M117) a whole scene's worth. The unit of travel is a **site**, not a
+  fragment; roughly 25–30 sites hold the hundred. This is what keeps the pace of forty with the
+  density of a hundred.
+- **Eight chapters, and a chapter reads as soon as it is whole.** `chap` groups the hundred into
+  eight accounts of about a dozen each. The player never waits for 100/100 to understand anything:
+  a finished chapter is a finished thought, and the assembled record (M115) is the eight together.
+  A hundred-piece story with one payoff at the end is a hundred-piece story nobody finishes.
+- **Completion is not required, and the guard enforces it.** Every chapter is legible from any
+  two-thirds of its fragments — the missing third repeats what its neighbours already said, from
+  another vantage. A hundred mandatory pieces would make the ending hostage to one unlucky address.
+  The full hundred earns the survey layer's last quarter and nothing else.
+- **The vocabulary is a subset.** Only about 30 of the hundred carry a `word`; the rest pay in
+  addresses, prices and schematics. If every fragment taught a word, the pidgin would be readable
+  long before the story was, and M116's retroactive decoding would fire all at once instead of
+  arriving in waves.
+
+**And it must not become a second `RARE`.** There are already a hundred rarities (M96), and two
+hundreds side by side read as one grind unless they differ in kind. They do, and the difference is
+load-bearing: a rarity is **taken from a place**, one address, and is over. A fragment is **heard
+from a witness** — it can arrive twice from two vantages, it can decode later than it was
+collected (M116), and it is worthless alone and worth a lot in a chapter. Rarities are a
+collection; fragments are testimony. Any edit that makes fragments droppable loot breaks this.
 - **Addressing follows M96's decision**, which is now proven: not a precomputed point but
   `loreAtPlace(where,key)` over the place key. An obelisk's key is its system key, so the same
   obelisk always says the same thing and reload-farming can't touch it.
@@ -465,9 +493,49 @@ New module `12q-lore.js` (after `12n-planet`, before `13-pirates`), plus a new k
   (M107) is standing over it. Then the same monument, in the same place, says a second thing. This
   is the single hook that makes the calendar a mechanic instead of a light show.
 
-Suite **"the obelisks: every fragment has an address"** — the table is exactly its declared size,
-ids unique, every fragment reachable by sweeping keys, no fragment obtainable twice, every revealed
-system exists and holds the thing that was promised, no reveal lands inside the current jump radius.
+Suite **"the obelisks: every fragment has an address"** — the table holds exactly 100 records, ids
+unique, every fragment reachable by sweeping keys, no fragment obtainable twice, every revealed
+system exists and holds the thing that was promised, no reveal lands inside the current jump
+radius, all eight chapters are non-empty, and no chapter needs more than two-thirds of its own
+fragments to read. The same guard that found 500 unreachable nodes at M91.
+
+### M106 — state on pause (built, green, not finished)
+
+Built and pushed at 1780 green (was 1348), empty console, live scenario walked on the ground:
+approach → inspect → fragment taken → address recorded outside the jump radius → map drawn with
+the mark. New module `12q-lore.js`, new POI kind `obelisk` (`ЗАРУБКА`), `drawLoreMarks` called from
+`18-mode-map`, `G.loreFound`/`G.loreMarks` in the save with safe defaults (`v:4` untouched), suite
+`91p-lore.js` in four parts.
+
+**Decision taken along the way.** The plan wanted a per-witness pool like `RARE_BY_WHERE`. Dropped:
+obelisks are the only witness that exists today, so five of six pools would be unreachable until
+M116–M118 and the guard would have to be weakened to stay green. `loreAtPlace(key)` therefore maps
+any place key over all hundred — every fragment reachable from day one, and later witnesses add
+density instead of unlocking regions.
+
+**Also done:** `20a-poi.js` crossed the 40 KB guard the moment the obelisk was added, so it was cut
+at its natural seam — `20b-poi-find.js` now holds the inspection half (`POI_FIND`, `poiInspect`,
+`poiMemo`); `20a` keeps generation and drawing.
+
+**Faults found by looking at the stand, in words, and only half fixed:**
+
+1. three obelisks on three seeds were indistinguishable — tilt was ±0.04 and width constant.
+   Fixed: width ±35%, real lean, cut angle and fall direction all come from the seed;
+2. the body was drawn near-black and read as a hole cut out of the terrain rather than as stone.
+   Fixed: it fills with the rock colour and takes a side gradient (sun on the right, per
+   `drawSkyLayer`), plus a lit edge and a light lower lip on each notch;
+3. **not fixed — the notches still read as wallpaper.** Even rows of even hatching across the whole
+   face. They must read as a tally: grouped, uneven, thinning downward, some rows struck through.
+   This is the difference between "a decorated stone" and "somebody was counting something here";
+4. **not fixed — the base shadow is a round black blob**, too dark and too circular for a stone
+   that has been standing in dust;
+5. **not captured — there is no stand shot in `docs/shots`** and no `docs/mkstone.ps1` alongside the
+   other stand scripts. The stand was assembled by hand in the console; it should be a script like
+   `mkfoes.ps1` so the next pass can look at the same frame.
+
+**Remaining tail for the next session:** faults 3–5 above; the obelisk's second, dated answer
+(needs M107); and the fragment board — a hundred pieces and eight chapters are collected with no
+place to read them, so the record currently lives only in `tell()` and the journal.
 
 ## M107 (0.57.0). The sky keeps a calendar
 

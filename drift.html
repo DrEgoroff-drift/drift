@@ -7785,6 +7785,219 @@ function rareRender(){
   }
 }
 
+/* ══════════════ отчёт «Долгого Хода»: сто кусков ══════════════ */
+/* Зарубки на планетах оставила не чужая рука. Их резала экспедиция, которая шла
+   здесь до вас — с той же работой, теми же баржами и теми же долгами. Игрок
+   собирает её отчёт не из вежливости, а из жадности: каждый кусок платит на
+   месте — адресом, ценами, словом чужого языка, — и только потом выясняется,
+   что сотня окупившихся находок была одним рассказом.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Таблица ЗАКРЫТА и ровно на сто записей, детерминирована от постоянного
+      зерна (как NODES и RARE) и зафиксирована навсегда: id уже полученного
+      куска не меняется от правки генератора.
+   2. Куска-«лора» не существует. У каждого есть полезная выдача (`gives`),
+      которая работает сама по себе, до того как игрок поймёт, о чём речь.
+      Кусок, который можно удалить, и ни одна механика не заметит, — ложь.
+   3. Место — детерминированная функция ключа места, а не бросок, как у
+      редкостей (12m-rare). Но пул здесь ОДИН на все сто: зарубки — пока
+      единственный свидетель, и ни один кусок не должен быть недостижим,
+      пока не построены остальные (трепло, Жестянка, подглядка — M116-M118).
+   4. Восемь глав. Глава читается с двух третей своих кусков: недостающая треть
+      повторяет соседей с другой точки обзора. Сотня обязательных кусков сделала
+      бы финал заложником одного неудачного адреса.
+   5. Адрес всегда ВНЕ радиуса прыжка. Зарубка, открывающая соседа, — украшение.
+
+   ЧЕМ ЭТО НЕ ЯВЛЯЕТСЯ. Рядом уже лежит сотня редкостей (12m-rare), и две сотни
+   читаются одной повинностью, если не различаются по роду. Различаются:
+   редкость БЕРУТ с места — один адрес, и дело закрыто. Кусок СЛЫШАТ от
+   свидетеля — он может прийти дважды с разных сторон и расшифроваться позже,
+   чем найден (M116). Редкости — коллекция, куски — показания. */
+
+/* восемь глав: имя и то, о чём она вообще */
+const LORE_CHAP=[
+  {id:"podryad", ru:"Подряд",  note:"кто их сюда послал и на каких условиях"},
+  {id:"plecho",  ru:"Плечо",   note:"как держали снабжение и кто его вёл"},
+  {id:"sosedi",  ru:"Соседи",  note:"первые встречи с местными и общий язык"},
+  {id:"schet",   ru:"Счёт",    note:"накладные, которые не сошлись"},
+  {id:"priboy",  ru:"Прибой",  note:"что они мерили и почему торопились"},
+  {id:"raskol",  ru:"Раскол",  note:"когда экипаж перестал быть одним"},
+  {id:"tishina", ru:"Тишина",  note:"последние сутки связи"},
+  {id:"tihonya", ru:"Тихоня",  note:"тот, кто вышел"}
+];
+const LORE_CHAP_IX={};LORE_CHAP.forEach((c,i)=>LORE_CHAP_IX[c.id]=i);
+/* строка отчёта собирается из трёх банок: кто — что сделал — при чём тут это.
+   Банки нарочно сухие: это судовой журнал, а не проза. Жуть берётся из того,
+   что запись обрывается на накладной, а не из эпитетов. */
+const LORE_WHO=["первый борт","второй борт","третий борт","штурман","связист",
+  "старший копач","врач","снабженец","капитан","инженер","досмотр","младший борт"];
+const LORE_ACT=["не вернулся","молчит вторые сутки","отдал груз","сменил курс",
+  "закрыл журнал","ушёл на тихой тяге","считает дни","не подписал накладную",
+  "остался прикрывать","просит воды","списан на берег","идёт без огней"];
+const LORE_TAIL=["с дальнего плеча","за поясом","у третьей от звезды",
+  "по счёту «Ласкового»","на чужой частоте","до прибоя восемь","без груза",
+  "и это последняя запись","второй раз за декаду","по старой зарубке"];
+/* словарь: тридцать слов пиджина на сотню кусков. Если бы слово несла каждая
+   запись, язык прочитался бы раньше истории, и расшифровка задним числом
+   (трепло, M116) сработала бы разом вместо волн. */
+const LORE_WORDS=["вода","долг","звезда","уйти","прийти","считать","друг","чужой",
+  "камень","огонь","дом","берег","волна","много","мало","бояться","помнить",
+  "забыть","дать","взять","говорить","молчать","третий","дальше","ближе",
+  "корабль","человек","земля","небо","конец"];
+/* что кусок отдаёт СЕЙЧАС. Ни один не даёт кредитов — правило памятника. */
+const LORE_GIVE=[
+  {k:"addr", ru:"адрес"},   // открывает систему вне радиуса прыжка
+  {k:"price",ru:"цены"},    // открывает рынок станции, как обсерватория
+  {k:"word", ru:"слово"},   // запись в словарь (читается в M109/M116)
+  {k:"data", ru:"замеры"}   // данные: самый скромный, но не пустой
+];
+const LORE=[];
+const LORE_BY_ID={};
+const LORE_BY_CHAP={};
+const LORE_SALT=0x10DE;
+(function buildLore(){
+  for(let i=0;i<100;i++){
+    const seed=hashi(LORE_SALT,i*137+11,0x10B1E), r=rng(seed);
+    /* главы раскладываем циклом, а не броском: ни одна не остаётся пустой,
+       и в каждой ровно по дюжине с небольшим */
+    const C=LORE_CHAP[i%LORE_CHAP.length];
+    /* слово несёт каждый третий с небольшим — тридцать штук на сотню */
+    const wi=(i%10<3)?((i*7+3)%LORE_WORDS.length):-1;
+    const g=wi>=0?LORE_GIVE[2]:LORE_GIVE[(seed>>>5)%3===0?0:((seed>>>7)%2?1:3)];
+    const ru=pick(LORE_WHO,r)+" "+pick(LORE_ACT,r)+" "+pick(LORE_TAIL,r);
+    const rec={id:"L"+i,idx:i,chap:C.id,chapRu:C.ru,ru,
+      give:g.k,word:wi>=0?LORE_WORDS[wi]:null,seed};
+    LORE.push(rec);LORE_BY_ID[rec.id]=rec;
+    (LORE_BY_CHAP[C.id]||(LORE_BY_CHAP[C.id]=[])).push(rec);
+  }
+})();
+/* ── собранное ── */
+function loreList(){return (G.loreFound||(G.loreFound=[]));}
+function loreHas(id){return loreList().indexOf(id)>=0;}
+function loreCount(){return loreList().length;}
+function loreMarks(){return (G.loreMarks||(G.loreMarks=[]));}
+/* словарь: только те слова, что уже пришли с кусками */
+function loreVocab(){
+  const out=[];
+  for(const id of loreList()){const R=LORE_BY_ID[id];if(R&&R.word&&out.indexOf(R.word)<0)out.push(R.word);}
+  return out;
+}
+/* глава читается с двух третей: недостающее повторяет соседей с другой стороны */
+function loreChapter(cid){
+  const all=LORE_BY_CHAP[cid]||[];
+  let have=0;for(const R of all)if(loreHas(R.id))have++;
+  return {id:cid,total:all.length,have,need:Math.ceil(all.length*2/3),
+          read:have>=Math.ceil(all.length*2/3)};
+}
+function loreChaptersRead(){let n=0;for(const c of LORE_CHAP)if(loreChapter(c.id).read)n++;return n;}
+/* ── что лежит в этом месте ── ключ места детерминированно указывает на кусок.
+   Пул один на все сто (правило 3), поэтому у каждого куска бесконечно много
+   ключей: недостижимых нет. */
+function loreAtPlace(key){
+  const h=hashi((key>>>0)||1,LORE_SALT,7);
+  return LORE[(h%100+100)%100];
+}
+/* ── адрес вне радиуса прыжка ──
+   Ищем звезду в кольце «дальше, чем дотягивается рука, но в пределах листа
+   карты»: адрес обязан быть недостижим сегодня и виден как метка. */
+function loreAddr(seed){
+  const st=(typeof stat==="function")?stat():{jump:3};
+  const lo=st.jump+.6, hi=Math.max(lo+1.2,5.4);
+  const r=rng(hashi(seed,0xADD,5));
+  for(let i=0;i<160;i++){
+    const a=r()*TAU, d=lo+r()*(hi-lo);
+    const sx=G.sx+Math.round(Math.cos(a)*d), sy=G.sy+Math.round(Math.sin(a)*d);
+    const dd=Math.hypot(sx-G.sx,sy-G.sy);
+    if(dd<lo||dd>hi)continue;
+    if(!starAt(sx,sy))continue;
+    const s=getSystem(sx,sy);
+    /* пустой адрес — обман: в системе должно быть куда идти */
+    if(!s.station&&!(s.planets&&s.planets.length))continue;
+    return {sx,sy,s};
+  }
+  return null;
+}
+/* ── взять кусок ── возвращает запись либо null, если это место уже отдало своё */
+function loreTake(key){
+  const R=loreAtPlace(key);
+  if(!R||loreHas(R.id))return null;
+  loreList().push(R.id);
+  let got="";
+  if(R.give==="addr"){
+    const A=loreAddr(R.seed);
+    if(A){
+      loreMarks().push({sx:A.sx,sy:A.sy,id:R.id});
+      got="адрес: сектор "+A.sx+":"+A.sy+(A.s.station?" · станция «"+A.s.station.name+"»":"");
+    }else{got="направление стёрлось";G.data+=10;}
+  }else if(R.give==="price"){
+    let done=false;
+    for(let i=0;i<40&&!done;i++){
+      const rr=rng(hashi(R.seed,i,0x9C1));
+      const sx=G.sx+Math.round((rr()*2-1)*4), sy=G.sy+Math.round((rr()*2-1)*4);
+      if(!starAt(sx,sy))continue;
+      const s=getSystem(sx,sy);
+      if(!s.station||(G.market&&G.market[s.key]))continue;
+      if(!G.market)G.market={};
+      G.market[s.key]={pressure:{},t:G.t};
+      got="цены станции «"+s.station.name+"» ("+sx+":"+sy+")";done=true;
+    }
+    if(!done){G.data+=12;got="сводка цен, которые вы и так знаете · +12 данных";}
+  }else if(R.give==="word"){
+    got="слово чужого языка: «"+R.word+"» · словарь "+loreVocab().length+"/30";
+  }else{
+    const n=14+((R.seed>>>4)%12);G.data+=n;got="замеры с плит · +"+n+" данных";
+  }
+  const c=loreCount(), ch=loreChapter(R.chap);
+  tell("tech","Кусок отчёта · "+c+"/100 · "+got,
+       "«"+R.ru+"»\n\nглава: "+R.chapRu+" ("+ch.have+" из "+ch.total+")\n"+got+
+       "\n\nсобрано кусков: "+c+" из 100");
+  logAdd("tech","Зарубка: "+R.ru+" · "+R.chapRu+" · "+c+"/100");
+  /* глава дочитана — это событие само по себе: игрок не ждёт сотни из ста */
+  if(ch.read&&ch.have===ch.need){
+    tell("tech","Глава сложилась: "+R.chapRu,
+         "Глава «"+R.chapRu+"» сложилась.\n"+
+         (LORE_CHAP[LORE_CHAP_IX[R.chap]].note)+"\n\nглав прочитано: "+loreChaptersRead()+" из 8");
+    logAdd("tech","Сложилась глава «"+R.chapRu+"» · "+loreChaptersRead()+"/8");
+  }
+  if(typeof saveGame==="function")saveGame(true);
+  return R;
+}
+/* ── метки на карте ──
+   Зарубка называет адрес, до которого сегодня не дотянуться, поэтому метка
+   обязана читаться и за краем листа: не точка в пустоте, а направление. */
+function drawLoreMarks(cell){
+  const list=loreMarks();if(!list.length)return;
+  const cx=W/2, cy=H/2;
+  ctx.save();
+  for(const m of list){
+    const here=(m.sx===G.sx&&m.sy===G.sy);
+    const x=cx+(m.sx-G.sx)*cell, y=cy+(m.sy-G.sy)*cell;
+    const inside=x>18&&x<W-18&&y>18&&y<H-18;
+    ctx.strokeStyle=here?"rgba(255,214,120,.85)":"rgba(255,196,92,.55)";
+    ctx.lineWidth=1.2;
+    if(inside){
+      /* кольцо-засечка: не звезда и не станция, чтобы не спорить с картой */
+      ctx.beginPath();ctx.arc(x,y,9,0,TAU);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x,y-13);ctx.lineTo(x,y-9);ctx.stroke();
+      if(here){
+        ctx.fillStyle="rgba(255,214,120,.9)";
+        ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+        ctx.fillText("ЗАРУБКА",x,y+22);
+      }
+    }else{
+      /* за краем — стрелка на кромке: адрес есть, руки не хватает */
+      const a=Math.atan2(y-cy,x-cx);
+      const ex=cx+Math.cos(a)*(Math.min(W,H)/2-16), ey=cy+Math.sin(a)*(Math.min(W,H)/2-16);
+      ctx.beginPath();
+      ctx.moveTo(ex+Math.cos(a)*7,ey+Math.sin(a)*7);
+      ctx.lineTo(ex+Math.cos(a+2.5)*7,ey+Math.sin(a+2.5)*7);
+      ctx.lineTo(ex+Math.cos(a-2.5)*7,ey+Math.sin(a-2.5)*7);
+      ctx.closePath();ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
 /* ══════════════ пираты берут системы ══════════════ */
 /* Пираты были погодой: сколько-то их встречается в опасных секторах, и всё.
    Отношения с ними не менялись ни от чего — убил и полетел дальше.
@@ -8362,6 +8575,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
     nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,wrecks:G.wrecks,bargePax:G.bargePax,
+    loreFound:G.loreFound,loreMarks:G.loreMarks,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -8416,6 +8630,10 @@ function applySave(s){
   G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
   /* редкости: только список унесённых id (12m-rare) */
   G.rareFound=Array.isArray(s.rareFound)?s.rareFound.filter(x=>typeof x==="string"):[];
+  /* отчёт «Долгого Хода» (12q-lore): формат сейва не менялся (v:4), старые
+     записи просто не имеют этих полей и начинают с пустого */
+  G.loreFound=Array.isArray(s.loreFound)?s.loreFound.filter(x=>typeof x==="string"):[];
+  G.loreMarks=Array.isArray(s.loreMarks)?s.loreMarks.filter(m=>m&&typeof m==="object"):[];
   /* дела кантины: отвеченные и те, чей исход ещё не пришёл */
   G.dealsDone=(s.dealsDone&&typeof s.dealsDone==="object")?s.dealsDone:{};
   G.dealsWait=Array.isArray(s.dealsWait)?s.dealsWait:[];
@@ -10929,6 +11147,9 @@ function drawMap(){
       ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
     }
   }
+  /* засечки «Долгого Хода» (12q-lore) — поверх линий, но под звёздами: адрес,
+     до которого сегодня не дотянуться, обязан читаться и за краем листа */
+  if(typeof drawLoreMarks==="function")drawLoreMarks(cell);
   let sel=null,cur=null;
   for(const v of vis){
     const{gx,gy,s,x,y}=v;
@@ -12979,7 +13200,11 @@ const POI_KINDS=[
   {k:"monolith",ru:"МОНОЛИТ",        on:["rocky","ice","desert","terran","ocean","toxic","volcanic","crystal","jungle","metal","ruin"],w:.9,h:260,flat:180},
   {k:"factory", ru:"ЗАВОД",          on:["volcanic","toxic","desert","rocky","metal","ruin"],        w:1.0,h:250,flat:440},
   {k:"portal",  ru:"ВРАТА",          on:["terran","toxic","ice","ocean","volcanic","crystal","jungle","ruin"],w:.5,h:230,flat:220},
-  {k:"observ",  ru:"ОБСЕРВАТОРИЯ",   on:["rocky","ice","desert","terran","crystal","metal","ruin"],  w:.9, h:190,flat:300}
+  {k:"observ",  ru:"ОБСЕРВАТОРИЯ",   on:["rocky","ice","desert","terran","crystal","metal","ruin"],  w:.9, h:190,flat:300},
+  /* зарубка — не памятник чужих, а межевой знак «Долгого Хода» (12q-lore):
+     режется на любом твёрдом мире, встречается редко (вес мал) и стоит того,
+     чтобы к ней идти, потому что называет адрес, а не отдаёт вещь */
+  {k:"obelisk", ru:"ЗАРУБКА",        on:["rocky","ice","desert","terran","toxic","volcanic","ocean","crystal","jungle","metal","ruin"],w:.45,h:230,flat:260}
 ];
 /* сгенерировать и вписать в рельеф; вызывается один раз из startLanding */
 function genPOI(tr,p){
@@ -13177,6 +13402,7 @@ function drawPOI(tr,camx,camy,p){
     else if(q.k==="factory")drawFactory(q,rr,dark,lite,pal);
     else if(q.k==="portal")drawPortal(q,rr,pal);
     else if(q.k==="observ")drawObserv(q,rr,dark,lite,pal);
+    else if(q.k==="obelisk")drawObelisk(q,rr,dark,lite,pal);
     ctx.restore();
   }
   ctx.restore();
@@ -13385,6 +13611,62 @@ function drawMonolith(q,r,dark,lite,pal){
   }
   poiGlow(0,-q.h*.55,q.h*.7,"90,170,220",.06);
 }
+/* ── зарубка: межевой знак «Долгого Хода» ──
+   Рядом с монолитом она обязана читаться СВОЕЙ: монолит — безупречная чужая
+   грань, зарубка — камень, поставленный руками и в спешке. Отсюда наклон,
+   грубый скол вершины и ряды засечек, врезанных не по линейке: это отчёт, а
+   не памятник. Всё, что светится, — тонкая полоса на срезе, поймавшая солнце. */
+function drawObelisk(q,r,dark,lite,pal){
+  /* Разброс силуэта — не украшение, а смысл: зарубки резали в разное время
+     разные руки и в спешке. Первый заход дал три камня по трём семенам,
+     неотличимых глазом: наклон был ±0.04, ширина постоянной. Теперь от семени
+     идут ширина (±35%), наклон, угол скола и то, куда камень заваливается. */
+  const s1=(q.seed>>>3)&7, s2=(q.seed>>>7)&7, s3=(q.seed>>>11)&7;
+  const w=q.h*(.13+s1*.011), tilt=(s2-3.5)*.030;
+  ctx.save();
+  ctx.rotate(tilt);
+  poiDrift(w*2.2,pal);
+  /* тело: книзу шире, вершина сколота наискось — целая плита читается плитой.
+     Заливка — камень (`dark`), а не чернота: первый заход дал силуэт-дыру,
+     который рядом с рельефом читался вырезанным отверстием, а не породой. */
+  const cut=q.h*(.04+s3*.022);                       // скол вершины: от лёгкого до косого
+  const lean=(s3%2?1:-1)*w*.10;                      // куда заваливается верх
+  const P=poiPoly([[-w,0],[w,0],[w*.72+lean,-q.h+cut],[-w*.62+lean,-q.h]],
+                  dark,"rgba(0,0,0,.55)",.7);
+  /* объём: солнце справа (см. drawSkyLayer), поэтому правая треть светлее,
+     левая уходит в тень. Без этого плита остаётся плоской заливкой. */
+  ctx.save();ctx.clip(P);
+  const g=ctx.createLinearGradient(-w,0,w,0);
+  g.addColorStop(0,"rgba(0,0,0,.42)");
+  g.addColorStop(.55,"rgba(0,0,0,0)");
+  g.addColorStop(1,"rgba(255,244,214,.16)");
+  ctx.fillStyle=g;ctx.fillRect(-w*1.2,-q.h-4,w*2.4,q.h+8);
+  ctx.restore();
+  /* световая кромка со стороны солнца */
+  ctx.strokeStyle="rgba(238,228,200,.5)";ctx.lineWidth=1.6;
+  ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(w*.72,-q.h+cut);ctx.stroke();
+  /* засечки: ряды коротких врезов, длина и сдвиг из семени — читаются как
+     счёт, а не как орнамент. Их не «зажигаем»: камень не работает. Врез —
+     тёмная канавка со светлой нижней кромкой, иначе на расстоянии его нет. */
+  ctx.lineWidth=1.1;
+  ctx.strokeStyle="rgba(0,0,0,.5)";
+  const rows=7+((q.seed>>>2)%5);
+  for(let i=0;i<rows;i++){
+    const yy=-q.h*(.12+i*(.78/rows));
+    const n=2+((q.seed>>>(i%12))&3);
+    for(let j=0;j<n;j++){
+      const xx=-w*.5+j*(w*1.0/Math.max(1,n));
+      ctx.strokeStyle="rgba(0,0,0,.5)";
+      ctx.beginPath();ctx.moveTo(xx,yy);ctx.lineTo(xx+w*.18,yy-w*.1);ctx.stroke();
+      ctx.strokeStyle="rgba(236,226,200,.28)";
+      ctx.beginPath();ctx.moveTo(xx,yy+1.2);ctx.lineTo(xx+w*.18,yy-w*.1+1.2);ctx.stroke();
+    }
+  }
+  /* у подножия — стёсанная площадка: сюда садились, отсюда резали */
+  ctx.fillStyle="rgba(0,0,0,.35)";
+  ctx.beginPath();ctx.ellipse(0,0,w*2.6,w*.5,0,0,TAU);ctx.fill();
+  ctx.restore();
+}
 /* ── заброшенный завод: башни, трубы, баки; из одной трубы ещё идёт дым ── */
 function drawFactory(q,r,dark,lite,pal){
   const w=q.h*1.4;
@@ -13540,7 +13822,11 @@ function poiNear(S,tr){
   }
   return null;
 }
+
 /* ══════════════ осмотр достопримечательности ══════════════ */
+/* Отрезано от 20a-poi на M106: генерация и рисовка форм переросли 40 КБ, а шов
+   здесь естественный — там камень ставят и рисуют, тут в него всматриваются.
+   Порядок склейки сохранён: 20a кладёт POI_KINDS и poiNear, 20b читает их. */
 /* Первый заход дал всем POI один и тот же осмотр: данные и, если повезёт, узел.
    Но храм, завод и врата отличаются не только видом — иначе десять форм на
    горизонте были бы десятью способами получить одно и то же. У каждой свой
@@ -13606,7 +13892,18 @@ const POI_FIND={
   monolith:{ru:"монолит",note:"поверхность отвечает на касание",
            give:(r,d)=>{G.data+=18;return "снимок поверхности · +18 данных";}},
   anomaly:{ru:"аномалия",note:"приборы врут по-разному каждый раз",
-           give:(r,d)=>{G.data+=14;return "замеры · +14 данных";}}
+           give:(r,d)=>{G.data+=14;return "замеры · +14 данных";}},
+  /* зарубка отдаёт кусок отчёта — и вместе с ним то, чем этот кусок платит
+     сегодня: адрес, цены, слово. Ключ места — q.seed, как у редкостей, так что
+     одна и та же зарубка всегда говорит одно и то же. */
+  obelisk:{ru:"зарубка",note:"засечка резана рукой, знавшей, что вернутся не все",
+           give:(r,d,q)=>{
+             const L=(typeof loreTake==="function")&&loreTake(q?q.seed:0);
+             if(L)return "кусок отчёта · "+L.chapRu;
+             /* эта засечка уже прочитана — но камень не молчит: под ней лежит
+                редкость на своём адресе, и это его повторный ответ */
+             G.data+=16;
+             return "засечка знакомая · +16 данных";}}
 };
 /* ══════════════ память памятника ══════════════
    Раньше в `G.poiSeen` лежала единица — «осмотрено», и всё. То, зачем игрок
@@ -13627,7 +13924,7 @@ function poiInspect(q){
   G.poiSeen[q.seed]=1;
   const F=POI_FIND[q.k]||POI_FIND.anomaly;
   const r=rng(hashi(q.seed,0xF17D,3)),d=sysDanger(G.sx,G.sy);
-  const got=F.give(r,d);
+  const got=F.give(r,d,q);
   const base=8+Math.floor(d*10);
   G.data+=base;
   G.poiSeen[q.seed]={k:q.k,got:got,t:Math.round(G.t||0)};
