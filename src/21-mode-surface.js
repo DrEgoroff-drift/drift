@@ -129,17 +129,16 @@ function updateSurface(dt){
      второй раз к тому же монолиту идти незачем. */
   else if(poiNear(S,tr)){
     const q=poiNear(S,tr);
-    const seen=G.poiSeen&&G.poiSeen[q.seed];
-    G.prompt=seen?"ОСМОТРЕНО · "+q.ru:"ДЕЙСТВИЕ — ОСМОТРЕТЬ · "+q.ru;
-    if(actEdge&&!seen){
-      if(!G.poiSeen)G.poiSeen={};
-      G.poiSeen[q.seed]=1;
-      const d=12+Math.floor(sysDanger(G.sx,G.sy)*18);
-      G.data+=d;
-      tell("tech",q.ru.toLowerCase()+" осмотрен · +"+d+" данных",
-           q.ru+"\n+"+d+" данных");
-      nodeDrop("в аномалии",.5+sysDanger(G.sx,G.sy)*.5,hashi(q.seed,0xA0,3));
-    }
+    /* Осмотр идёт единственной дорогой — через `poiInspect` (20a-poi). Здесь
+       раньше стоял свой, урезанный осмотр: данные и узел, без ответа по типу
+       памятника. Из-за этого вся таблица `POI_FIND` — координаты храма, цены
+       обсерватории, склад завода, редкость на своём адресе — в игре не
+       срабатывала ни разу, хотя тесты её проверяли.
+       Осмотренный камень теперь не молчит: он показывает, что отдал. */
+    const memo=poiMemo(q.seed);
+    G.prompt=memo?("ОСМОТРЕНО · "+q.ru+(memo.got?"\n"+String(memo.got).toUpperCase():""))
+                 :("ДЕЙСТВИЕ — ОСМОТРЕТЬ · "+q.ru);
+    if(actEdge&&!memo)poiInspect(q);
   }
   else if(dep){
     if(held()>=st.cargoMax)G.prompt="ТРЮМ ПОЛОН · "+RES[dep.res].ru.toUpperCase()+" ОСТАЛОСЬ "+dep.left;

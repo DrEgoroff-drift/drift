@@ -647,9 +647,21 @@ const POI_FIND={
   anomaly:{ru:"аномалия",note:"приборы врут по-разному каждый раз",
            give:(r,d)=>{G.data+=14;return "замеры · +14 данных";}}
 };
+/* ══════════════ память памятника ══════════════
+   Раньше в `G.poiSeen` лежала единица — «осмотрено», и всё. То, зачем игрок
+   сюда шёл (координата храма, цены обсерватории, склад завода), оставалось
+   только строкой в журнале, а сам камень при следующем заходе молчал. Теперь
+   в той же ячейке лежит запись {k,got,t}: подойдя, игрок читает её на месте.
+   Формат сейва не меняется (v:4) — старые сохранения хранят единицу, и она
+   честно читается как «осмотрено, но чем — уже не вспомнить». */
+function poiMemo(seed){
+  const v=G.poiSeen&&G.poiSeen[seed];
+  if(!v)return null;
+  return (typeof v==="object")?v:{};
+}
 function poiInspect(q){
   if(!q)return false;
-  if(G.poiSeen&&G.poiSeen[q.seed])return false;
+  if(poiMemo(q.seed))return false;
   if(!G.poiSeen)G.poiSeen={};
   G.poiSeen[q.seed]=1;
   const F=POI_FIND[q.k]||POI_FIND.anomaly;
@@ -657,6 +669,7 @@ function poiInspect(q){
   const got=F.give(r,d);
   const base=8+Math.floor(d*10);
   G.data+=base;
+  G.poiSeen[q.seed]={k:q.k,got:got,t:Math.round(G.t||0)};
   tell("tech",F.ru+": "+got+" · +"+base+" данных",
        q.ru+"\n"+F.note+"\n"+got+"\n+"+base+" данных");
   logAdd("tech","Осмотр: "+F.ru+" · "+got);
