@@ -40,6 +40,8 @@ const G={
   occ:{},occT:0,freed:0,occCalm:{},mines:{},quests:[],nodes:{},crowns:{},
   /* планета-узел за полный набор редкостей (12n): null, пока сотни нет */
   pnode:null,
+  /* личный счёт фракций к вам (12o): пусто, пока не наделали дел */
+  hunted:{},
   dealsDone:{},dealsWait:[],rep:{},poiSeen:{},
   pirates:[],shots:[],log:[],logNew:0,barges:[],
   /* обломки погибших барж — след, а не эфемерное: решение (спасли/добили/прошли

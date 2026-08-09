@@ -265,7 +265,19 @@ delivery, never a purchase. Persisted through `G.pnode`; the save format stayed 
 Suite: **"the planet: full set only"** — nothing is granted below a hundred; the planet never pays
 credits directly; the barge router accepts the player's node on equal terms with a station.
 
-## M98 (0.48.0). The shadow of reputation: the hunter and his lair
+## M98 (0.49.0). The shadow of reputation: the hunter and his lair — DONE
+
+New module `12o-hunter.js`, suite `91r-hunter`, all green (1837 assertions). `huntMark` is the only
+entrance and it is called from a deed (`bargeSunk` by the player), never from a number; `huntHere`
+keeps him inside `HUNT_RADIUS` of his own sector; `huntSpawn` puts him into `G.pirates` through the
+one entry point everybody uses, with the flagship bake (12i) for the silhouette. `huntDefeated`
+writes `dead`/`paid` — the bounty is one-off and survives saves. The lair got its owner: in his
+sector the base takes his name and colour outside and one more tier of guard inside.
+
+**Deliberately left for the visual queue:** his crew's marks on the lair plating and its own dock
+outline. Today the difference outside is name, colour and guard — real, but not yet drawn.
+
+## M98 (0.48.0). The shadow of reputation — original spec
 
 Today reputation only helps — cheaper hardware, more people at the tables. There is no far side,
 and so hostility costs nothing.

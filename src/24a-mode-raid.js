@@ -106,7 +106,11 @@ function drawPirateBase(zx,zy,Z){
   if(x<-60||x>W+60||y<-60||y>H+60)return;
   ctx.save();ctx.translate(x,y);ctx.scale(s,s);
   /* угловатая, тёмная, с красными огнями — читается как чужая с первого взгляда */
-  ctx.fillStyle="#171013";ctx.strokeStyle="rgba(220,90,70,.85)";ctx.lineWidth=2;
+  /* у базы с хозяином (12o) свой обвод и своё имя: логово наконец отличается
+     снаружи, а не только изнутри */
+  const HL=typeof huntLairAt==="function"?huntLairAt(G.sx,G.sy):null;
+  ctx.fillStyle=HL?"#1b0f16":"#171013";
+  ctx.strokeStyle=HL?"rgba(197,138,224,.9)":"rgba(220,90,70,.85)";ctx.lineWidth=2;
   ctx.beginPath();
   for(let i=0;i<5;i++){
     const a=i*TAU/5+G.t*.002;
@@ -123,8 +127,9 @@ function drawPirateBase(zx,zy,Z){
   ctx.fillStyle=(Math.sin(G.t*.18)>0)?"rgba(255,60,50,.95)":"rgba(255,60,50,.15)";
   ctx.beginPath();ctx.arc(0,0,4,0,TAU);ctx.fill();
   ctx.restore();
-  ctx.fillStyle="rgba(220,90,70,.65)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText(PB.name.toUpperCase(),x,y+34);
+  ctx.fillStyle=HL?"rgba(197,138,224,.8)":"rgba(220,90,70,.65)";
+  ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+  ctx.fillText(((HL?huntLairName(G.sx,G.sy):PB.name)||PB.name).toUpperCase(),x,y+34);
 }
 function enterRaid(PB){
   /* В занятой системе база — логово: уровень выше на занятость, поэтому и
@@ -133,6 +138,11 @@ function enterRaid(PB){
   const lair=occLairLevel(G.sx,G.sy);
   if(lair){PB=Object.assign({},PB,{level:PB.level+lair,
     name:(occLairName(G.sx,G.sy)||PB.name)});}
+  /* у логова появился хозяин (12o): в секторе вашего охотника база носит его
+     имя и держит охрану на ступень выше — сюда летят за ним, а не за «ещё
+     одной базой» */
+  const HL=typeof huntLairAt==="function"?huntLairAt(G.sx,G.sy):null;
+  if(HL)PB=Object.assign({},PB,{level:PB.level+1,name:huntLairName(G.sx,G.sy)});
   const R=genRaid(PB.seed,PB.level);
   const st=stat();
   const start=R.rooms[0];
