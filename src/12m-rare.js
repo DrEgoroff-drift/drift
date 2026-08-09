@@ -115,6 +115,14 @@ function rareAtPlace(where,key){
 function rareTake(where,key){
   const R=rareAtPlace(where,key);
   if(!R||rareHas(R.id))return null;
+  /* её унесли раньше вас (12p): место пусто, но предмет не потерян — сменился
+     адрес, и новый адрес — человек */
+  if(typeof rivalHolds==="function"&&rivalHolds(R.id)){
+    const V=rivalOf(R.id);
+    tell("dim","Здесь было пусто: «"+R.ru+"» унёс "+V.who,
+         "«"+R.ru+"»\nздесь её больше нет\nона у "+V.who+" · сектор "+V.sx+", "+V.sy);
+    return null;
+  }
   rareList().push(R.id);
   const c=rareCount();
   tell("tech","Редкость: «"+R.ru+"» · "+c+"/100",

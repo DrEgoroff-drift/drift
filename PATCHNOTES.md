@@ -9,6 +9,25 @@ could ever save.
 
 ---
 
+## 0.50.0 — "The world moved without you"
+
+**Time away is told in words, not simulated.** New module `12p-news.js` rolls the elapsed time
+into rumours you hear in the cantina — a station squeezed dry, an owner changed, a barge that
+never arrived, a pirate captain someone else took down. Behind every rumour stands a real state
+change you can fly out and check: market pressure, a wreck lying where it fell, a sector gone
+quiet.
+
+**Knowledge is a layer on the map now.** Each rumour leaves a mark on its sector — "prices moved",
+"the owner changed here", "a barge wreck" — closing the M92 tail where knowing something and
+seeing nothing on the map amounted to not knowing it.
+
+**A rival collector is a transfer, not a loss.** He takes a rarity you had not found yet, and
+becomes its address: he flies his own sector, he does not give it up willingly, and beating him
+hands the piece over. He never takes the last one, so a hundred out of a hundred — and the planet
+that depends on it — stays reachable.
+
+New suite **"the retelling: rumours don't lie"**.
+
 ## 0.49.0 — "Somebody came for you"
 
 **Reputation finally has a far side.** Until now it only helped — cheaper fuel, more people at the

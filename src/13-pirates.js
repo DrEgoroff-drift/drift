@@ -56,6 +56,8 @@ function spawnPirates(){
   /* охотник за вами (12o): приходит только за долгом и только около своего
      сектора — тем же входом, что все, кто появляется в системе */
   if(typeof huntSpawn==="function")huntSpawn();
+  /* соперник-коллекционер (12p): он держит редкость, и он же её адрес */
+  if(typeof rivalSpawn==="function")rivalSpawn();
   /* баржи набираются тем же входом, что и пираты: одна точка на все режимы,
      откуда входят в систему (12l-barge) */
   if(typeof spawnBarges==="function")spawnBarges();
@@ -163,6 +165,8 @@ function killPirate(p){
   if(p.rogue){rogueDefeated(p);return;}
   /* охотник — тоже не рядовой пират: его награда разовая и записана навсегда */
   if(p.hunter){huntDefeated(p);return;}
+  /* соперник отдаёт то, что унёс, — награды за него нет, есть предмет */
+  if(p.rival){rivalDefeated(p);return;}
   const r=rng(p.seed);
   sfx("boom",{v:.8});
   const RK=PIRATE_RANKS[p.rank|0]||PIRATE_RANKS[0];

@@ -294,7 +294,18 @@ and so hostility costs nothing.
 Suite: **"the hunter: comes only for a debt"** — without a hostile deed no hunter appears; a killed
 one never respawns; the bounty is paid once.
 
-## M99 (0.49.0). The world moves without you: the retelling
+## M99 (0.50.0). The world moves without you: the retelling — DONE
+
+New module `12p-news.js` (12o went to the hunter), suite `91s-news`, all green (2820 assertions).
+Five kinds of change, each applying real state before it says a word: market pressure, an owner
+swap, a barge wreck added to `G.wrecks`, a sector quieted through `occCalm`/`occSet`, and the rival
+collector. Rolled lazily off `G.newsT`, at most three per return, heard in the cantina. Every
+rumour drops a `newsMark`, and the map draws that layer (M92 tail closed). The rival takes only
+rarities you have not found, never the last free one, flies his own sector as an ordinary
+`G.pirates` entry and yields the piece when beaten — `rareTake` on his address tells you who has it
+instead of going silent.
+
+## M99 (0.49.0). The world moves without you — original spec
 
 Not a simulation — rolls over elapsed time, told in words. An extension of `12b-crew-events` or a
 new `12o-news`. Faking beats computing: the player only ever sees the outcome.
