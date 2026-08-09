@@ -225,6 +225,8 @@ function updateSystem(dt){
   if(typeof bargeInteract==="function"&&bargeInteract(sh))return;
   /* остов погибшей баржи — обыскать ровно раз (12l) */
   if(typeof wreckInteract==="function"&&wreckInteract(sh))return;
+  /* находка в пустоте: капсула, спутник, контейнер, остов разведчика (17b) */
+  if(typeof findInteract==="function"&&findInteract(sh))return;
   let near=null,nd=1e9;
   for(const p of sys.planets){
     const d=Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius;
@@ -352,6 +354,7 @@ function drawSystem(){
   drawExhaust(zx,zy,Z,thrusting?1:0);
   drawCombat(zx,zy,Z);
   if(typeof drawWrecksSystem==="function")drawWrecksSystem(zx,zy,Z);
+  if(typeof drawFindsSystem==="function")drawFindsSystem(zx,zy,Z);
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);

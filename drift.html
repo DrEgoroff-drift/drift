@@ -628,7 +628,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.56.0";
+const VER="0.57.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -3073,6 +3073,8 @@ const G={
   trade:{legs:[],loops:0,cursor:0,sold:0},
   /* налёт часов по корпусам: ключ — id корабля, значение — кадры в полёте */
   wear:{},
+  /* осмотренные находки в пустоте: ключ находки → 1 (17b) */
+  findsSeen:{},
   /* фронт пиратов и счёт отбитых систем: цель игры видна числом */
   occ:{},occT:0,freed:0,occCalm:{},mines:{},quests:[],nodes:{},crowns:{},
   /* планета-узел за полный набор редкостей (12n): null, пока сотни нет */
@@ -9889,7 +9891,7 @@ function snapshot(){
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
-    fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
+    fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,
@@ -10010,6 +10012,8 @@ function applySave(s){
   G.rep=(s.rep&&typeof s.rep==="object")?s.rep:{};
   /* осмотренные памятники: помнятся, чтобы не ходить к ним дважды */
   G.poiSeen=(s.poiSeen&&typeof s.poiSeen==="object")?s.poiSeen:{};
+  /* осмотренные находки в пустоте: только то, что игрок забрал (17b) */
+  G.findsSeen=(s.findsSeen&&typeof s.findsSeen==="object")?s.findsSeen:{};
   /* обломки барж: разреженный оверлей по "sx,sy", каждый — список остовов.
      Новое поле с безопасным дефолтом (сквозное правило). */
   G.wrecks={};
@@ -11372,6 +11376,205 @@ function drawStationMods(sys){
   for(const q of m)drawStModule(q,sys.station);
 }
 
+/* ══════════════ находки в полёте ══════════════
+   Пункт 5 очереди графики: пространство между планетами пусто. Между звездой и
+   поясом лететь было НЕ НА ЧТО СМОТРЕТЬ — там не случалось ничего, и минуты
+   перелёта игрок просто пережидал.
+
+   Четыре находки, и все четыре — на уже готовой машинерии: подход и осмотр
+   ровно такие же, как у остова баржи (12l), награды берутся из `POI_FIND` (20b)
+   и `rareTake` (12m). Пятой системы здесь нет и не заводится.
+
+   Одна из четырёх — их. Мёртвый спутник «Долгого Хода» продолжает передавать в
+   пустоту, и это единственная находка, которая несёт кусок отчёта (12q): он
+   даёт не вещь, а ПЕЛЕНГ — адрес, по которому можно лететь.
+
+   Находка детерминирована ключом системы и грубым бакетом времени: перезаход в
+   систему не крутит барабан, а вернувшись через сутки, вы застанете другое.
+   Взятое помнится (`G.findsSeen`) и не возвращается никогда. */
+const FIND_BUCKET=6*3600*1000;      /* шесть часов: не автомат, но и не навсегда */
+function findBucket(){return Math.floor(Date.now()/FIND_BUCKET);}
+const FIND_KINDS={
+  sos: {ru:"сигнал бедствия",  col:"#ff6b57",act:"ПРИНЯТЬ СИГНАЛ"},
+  sat: {ru:"спутник",          col:"#f2b25c",act:"СНЯТЬ ЗАПИСЬ"},
+  cont:{ru:"контейнер",        col:"#7fe6d8",act:"ЗАБРАТЬ ГРУЗ"},
+  hulk:{ru:"остов разведчика", col:"#a8b4c0",act:"ОБЫСКАТЬ"}
+};
+const FIND_CACHE={};
+function findsIn(sys){
+  if(!sys)return [];
+  const key=sys.key+"|"+findBucket();
+  if(FIND_CACHE.key===key)return FIND_CACHE.list;
+  const r=rng(hashi(sys.seed|0,findBucket(),0xF1D5));
+  const d=sysDanger(sys.sx,sys.sy);
+  /* сколько находок: чаще ноль или одна. Пустая система — это правильно, иначе
+     находка перестаёт быть находкой */
+  const n=r()<.42?0:(r()<.78?1:2);
+  const list=[];
+  for(let i=0;i<n;i++){
+    /* спутник встречается реже прочего и тем чаще, чем дальше от центра: их
+       линия шла на окраину */
+    const q=r();
+    const k=q<.18+d*.22?"sat":(q<.46?"cont":(q<.74?"hulk":"sos"));
+    const a=r()*TAU, rad=700+r()*2100;
+    list.push({i,k,seed:hashi(sys.seed|0,i*97+findBucket(),0x5EE),
+      x:Math.cos(a)*rad,y:Math.sin(a)*rad,
+      id:sys.key+":"+findBucket()+":"+i});
+  }
+  FIND_CACHE.key=key;FIND_CACHE.list=list;
+  return list;
+}
+function findsHere(){return findsIn(G.sys);}
+function findSeen(f){return !!(G.findsSeen&&G.findsSeen[f.id]);}
+/* ── что даёт находка ──
+   Три обычные платят той же монетой, что и весь остальной мир: часть, сырьё,
+   топливо, редкость. Спутник платит куском отчёта и пеленгом. */
+function findTake(f){
+  if(!G.findsSeen)G.findsSeen={};
+  G.findsSeen[f.id]=1;
+  const r=rng(hashi(f.seed,0x7A1,3)),d=sysDanger(G.sx,G.sy);
+  if(f.k==="sat"){
+    /* спутник «Долгого Хода»: место у зарубки своё, поэтому кусок берётся по
+       адресу этой находки, а не по планетному POI */
+    const R=typeof loreTake==="function"?loreTake("sat:"+f.id):null;
+    if(R){
+      /* Спутник передаёт не текст, а ПЕЛЕНГ: кусок отчёта может достаться
+         любой — словом, ценами, замерами, — но сама передача всегда указывает
+         куда-то. Без этого находка иногда оказывалась строчкой в журнале, по
+         которой некуда лететь, а «слушать пустоту» ради строчки не стоит. */
+      const A=typeof loreAddr==="function"?loreAddr(hashi(f.seed,0xBEA5,11)):null;
+      if(A){
+        loreMarks().push({sx:A.sx,sy:A.sy,id:"sat:"+f.id});
+        tell("tech","Пеленг спутника: сектор "+A.sx+":"+A.sy,
+             "Спутник передаёт в пустоту\nпеленг: сектор "+A.sx+":"+A.sy+
+             (A.s.station?"\nстанция «"+A.s.station.name+"»":"")+"\nметка на карте");
+      }
+      return null;                    /* loreTake уже сказал всё остальное */
+    }
+    /* все куски этой главы собраны — спутник отдаёт то, чем он и был: приборы */
+    const n=2+Math.floor(r()*4);
+    return addRes("techcomp",n)?("приборы спутника: техкомпоненты ×"+n)
+                               :"приборы снять некуда — трюм полон";
+  }
+  if(f.k==="cont"){
+    const KS=TRADE_KEYS.filter(k=>k!=="ice");
+    const k=KS[Math.floor(r()*KS.length)],n=4+Math.floor(r()*9+d*6);
+    if(typeof rareTake==="function")rareTake("cont",hashi(f.seed,0x2A2E,5));
+    return addRes(k,n)?(RES[k].ru.toLowerCase()+" ×"+n):"трюм полон — груз остался дрейфовать";
+  }
+  if(f.k==="hulk"){
+    const F=POI_FIND.wreck;
+    const got=F&&typeof F.give==="function"?F.give(r,d):"часть с обломков";
+    if(typeof rareTake==="function")rareTake("hulk",hashi(f.seed,0x2A2E,9));
+    return got;
+  }
+  /* сигнал бедствия: живой человек, а не склад. Платит тем, что у него есть, —
+     благодарностью, которая в этой игре называется репутацией, и остатком
+     топлива из бака спасательной капсулы */
+  const st=stat(),fu=Math.min(Math.round(st.fuelMax*.25),Math.round(st.fuelMax-G.fuel));
+  if(fu>0)G.fuel+=fu;
+  if(typeof repAdd==="function")repAdd(2,G.sys);
+  return "экипаж подобран"+(fu>0?" · топливо ×"+fu:"")+" · о вас здесь будут помнить";
+}
+function findInteract(sh){
+  const list=findsHere();
+  if(!list.length)return false;
+  let near=null,nd=1e9;
+  for(const f of list){const d=Math.hypot(sh.x-f.x,sh.y-f.y);if(d<nd){nd=d;near=f;}}
+  if(!near||nd>240)return false;
+  const K=FIND_KINDS[near.k];
+  if(findSeen(near)){G.prompt=K.ru.toUpperCase()+" · УЖЕ ОСМОТРЕН";return true;}
+  G.prompt=K.ru.toUpperCase()+"\nДЕЙСТВИЕ — "+K.act;
+  if(actEdge){
+    const got=findTake(near);
+    if(got)tell("tech",K.ru[0].toUpperCase()+K.ru.slice(1)+": "+got,
+                K.ru[0].toUpperCase()+K.ru.slice(1)+"\n"+got);
+    if(typeof saveGame==="function")saveGame(true);
+  }
+  return true;
+}
+/* ── находки на кадре ──
+   Правило «много кусков — одно тело»: сперва тёмная масса, всё навесное внутрь
+   обвода, один свет последним. Четыре силуэта опознаются с расстояния, потому
+   что различаются формой, а не подписью: капсула, коробка с крыльями панелей,
+   ящик, переломленный корпус. Подпись — только пока не осмотрено. */
+function drawFindsSystem(zx,zy,Z){
+  const list=findsHere();
+  if(!list.length)return;
+  for(const f of list){
+    const x=zx(f.x),y=zy(f.y);
+    if(x<-70||x>W+70||y<-70||y>H+70)continue;
+    const K=FIND_KINDS[f.k],taken=findSeen(f);
+    const s=clamp(Z,.5,1.5);
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    const spin=(f.seed%628)/100+G.t*.002*((f.seed&1)?1:-1);
+    ctx.rotate(spin);
+    ctx.fillStyle="rgba(22,25,31,.96)";ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.9;
+    if(f.k==="sos"){
+      /* спасательная капсула: короткое тело с иллюминатором */
+      ctx.beginPath();ctx.ellipse(0,0,13,7,0,0,TAU);ctx.fill();ctx.stroke();
+      ctx.fillStyle="rgba(60,70,84,.9)";
+      ctx.beginPath();ctx.ellipse(4,0,3.4,3.4,0,0,TAU);ctx.fill();
+      ctx.strokeStyle="rgba(80,92,108,.8)";
+      ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(-19,0);ctx.stroke();
+    }else if(f.k==="sat"){
+      /* спутник: коробка приборов и две панели — силуэт, который ни с чем
+         не спутать даже точкой */
+      ctx.beginPath();ctx.rect(-6,-5,12,10);ctx.fill();ctx.stroke();
+      ctx.fillStyle="rgba(34,44,60,.95)";
+      ctx.beginPath();ctx.rect(-22,-3.4,14,6.8);ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.rect(8,-3.4,14,6.8);ctx.fill();ctx.stroke();
+      ctx.strokeStyle="rgba(70,84,104,.7)";ctx.lineWidth=.6;
+      for(let i=1;i<4;i++){
+        ctx.beginPath();ctx.moveTo(-22+i*3.5,-3.4);ctx.lineTo(-22+i*3.5,3.4);
+        ctx.moveTo(8+i*3.5,-3.4);ctx.lineTo(8+i*3.5,3.4);ctx.stroke();
+      }
+      /* тарелка: она и передаёт */
+      ctx.fillStyle="rgba(48,58,72,.95)";
+      ctx.beginPath();ctx.arc(0,-9,4.2,Math.PI,TAU);ctx.fill();
+    }else if(f.k==="cont"){
+      /* Ящик, а не панель. В первом кадре контейнер был прямоугольником в
+         клетку и путался с крылом спутника: два разных предмета читались одной
+         фигурой. Отличает его толщина и торцы — то, чем ящик и отличается от
+         листа: тяжёлые оковки по краям и одна стяжка поперёк. */
+      ctx.beginPath();ctx.rect(-15,-9,30,18);ctx.fill();ctx.stroke();
+      ctx.fillStyle="rgba(38,42,50,.98)";
+      ctx.fillRect(-17,-10,5,20);ctx.fillRect(12,-10,5,20);
+      ctx.strokeStyle="rgba(0,0,0,.5)";
+      ctx.strokeRect(-17,-10,5,20);ctx.strokeRect(12,-10,5,20);
+      ctx.strokeStyle="rgba(96,110,126,.65)";ctx.lineWidth=1.4;
+      ctx.beginPath();ctx.moveTo(-12,-2);ctx.lineTo(12,-2);ctx.stroke();
+    }else{
+      /* остов разведчика: тот же язык, что у остова баржи, но мельче и с
+         отломанным крылом */
+      ctx.beginPath();
+      ctx.moveTo(-20,-4);ctx.lineTo(-2,-7);ctx.lineTo(17,-4);ctx.lineTo(19,2);
+      ctx.lineTo(-3,5);ctx.lineTo(-18,4);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.moveTo(24,3);ctx.lineTo(33,-2);ctx.lineTo(31,6);ctx.closePath();ctx.fill();
+    }
+    ctx.restore();
+    if(taken)continue;
+    /* один свет на находку: маяк своего цвета. Спутник ещё и «говорит» —
+       кольцо передачи расходится в пустоту, которую никто не слушает */
+    const bl=Math.pow(Math.max(0,Math.sin(G.t*.045+f.seed)),8);
+    if(bl>.02){
+      ctx.fillStyle=K.col;
+      ctx.globalAlpha=.9*bl;
+      ctx.beginPath();ctx.arc(x,y-11*s,2.2,0,TAU);ctx.fill();
+      ctx.globalAlpha=1;
+    }
+    if(f.k==="sat"){
+      const ph=(G.t*.012+f.seed%10)%1;
+      ctx.strokeStyle="rgba(242,178,92,"+(.30*(1-ph)).toFixed(3)+")";ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(x,y,14+ph*46,0,TAU);ctx.stroke();
+    }
+    ctx.fillStyle=K.col;ctx.globalAlpha=.75;
+    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText(K.ru.toUpperCase(),x,y+24*s);
+    ctx.globalAlpha=1;
+  }
+}
+
 /* ══════════════ режим: система ══════════════ */
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
@@ -11599,6 +11802,8 @@ function updateSystem(dt){
   if(typeof bargeInteract==="function"&&bargeInteract(sh))return;
   /* остов погибшей баржи — обыскать ровно раз (12l) */
   if(typeof wreckInteract==="function"&&wreckInteract(sh))return;
+  /* находка в пустоте: капсула, спутник, контейнер, остов разведчика (17b) */
+  if(typeof findInteract==="function"&&findInteract(sh))return;
   let near=null,nd=1e9;
   for(const p of sys.planets){
     const d=Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius;
@@ -11726,6 +11931,7 @@ function drawSystem(){
   drawExhaust(zx,zy,Z,thrusting?1:0);
   drawCombat(zx,zy,Z);
   if(typeof drawWrecksSystem==="function")drawWrecksSystem(zx,zy,Z);
+  if(typeof drawFindsSystem==="function")drawFindsSystem(zx,zy,Z);
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);
