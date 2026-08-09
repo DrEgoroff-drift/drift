@@ -86,6 +86,7 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `12s-wear` | the hull ages by hours flown: the look of it, −12% to the hands, service at the yard or at home |
 | `15-input` `16-flight` | keys/pads/mouse, starfield, autopilot, trail |
 | `17`–`25` `mode-*` | modes: system, map, landing, surface, cave, mine, belt, cockpit; `20-life` — astronaut, flora, fauna |
+| `17b-finds` | four finds in the void: capsule, satellite, container, hulk — the satellite is theirs |
 | `19a-mode-scoop` | scooping volatiles from a gas giant's atmosphere |
 | `21a-mode-base` | the base in cross-section: cell grid, power balance, base network |
 | `21aa-base-rooms` | base room interiors: the brushes (`bBox`/`bWorker`/…) and `BASE_ROOM` |

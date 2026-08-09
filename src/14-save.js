@@ -32,7 +32,7 @@ function snapshot(){
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
-    fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
+    fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,
@@ -153,6 +153,8 @@ function applySave(s){
   G.rep=(s.rep&&typeof s.rep==="object")?s.rep:{};
   /* осмотренные памятники: помнятся, чтобы не ходить к ним дважды */
   G.poiSeen=(s.poiSeen&&typeof s.poiSeen==="object")?s.poiSeen:{};
+  /* осмотренные находки в пустоте: только то, что игрок забрал (17b) */
+  G.findsSeen=(s.findsSeen&&typeof s.findsSeen==="object")?s.findsSeen:{};
   /* обломки барж: разреженный оверлей по "sx,sy", каждый — список остовов.
      Новое поле с безопасным дефолтом (сквозное правило). */
   G.wrecks={};

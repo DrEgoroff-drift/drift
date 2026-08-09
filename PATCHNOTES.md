@@ -9,6 +9,24 @@ could ever save.
 
 ---
 
+## 0.57.0 — "Finds in flight, and half of them are theirs"
+
+**The space between planets was empty** — item 5 of the visual queue, open since M55. Minutes of
+transit were something to sit through.
+
+- **Four finds**: an escape capsule still calling, a dead satellite still transmitting, a drifting
+  container, the wreck of a survey ship. Approach and inspection are exactly the barge-wreck ones
+  (M95); rewards come from `POI_FIND` and `rareTake`. No fifth system was grown for this.
+- **One of the four is theirs.** The satellite belongs to «Долгий Ход» and is the only find that
+  carries a fragment of the report — and it always transmits a **bearing**: a sector you can fly
+  to, marked on the map. The other three pay in the ordinary currency of the game: parts, cargo,
+  fuel, reputation. None of them pays credits.
+- **Deterministic by system key and a coarse six-hour bucket.** Re-entering a system does not spin
+  the drum; come back tomorrow and the void has changed. What you took stays taken forever.
+- **Empty systems are normal** — about two in five. A find that is always there is not a find.
+
+Suite **"finds: the void stopped being empty"** — 2938 green.
+
 ## 0.56.0 — "The sky keeps a calendar"
 
 **The far corner of the galaxy differed from the near one by a danger coefficient and nothing
