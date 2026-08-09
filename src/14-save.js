@@ -33,7 +33,8 @@ function snapshot(){
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
-    nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,wrecks:G.wrecks,bargePax:G.bargePax,
+    nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,pnode:G.pnode,
+    wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
@@ -89,6 +90,22 @@ function applySave(s){
   G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
   /* редкости: только список унесённых id (12m-rare) */
   G.rareFound=Array.isArray(s.rareFound)?s.rareFound.filter(x=>typeof x==="string"):[];
+  /* планета-узел (12n): решение игрока в ней есть — где он стоял, когда собрал
+     сотню, — поэтому она персистится. Склад чинится по месту: список ресурсов
+     перепроверяется по ходовым товарам, чтобы старая запись не завела редкое. */
+  G.pnode=null;
+  const pn=s.pnode;
+  if(pn&&typeof pn==="object"&&typeof pn.key==="string"){
+    const res=(Array.isArray(pn.res)?pn.res:[]).filter(k=>TRADE_KEYS.indexOf(k)>=0);
+    const N={key:pn.key,sx:pn.sx|0,sy:pn.sy|0,idx:pn.idx|0,
+      name:typeof pn.name==="string"?pn.name:"узел",
+      res:res.length?res.slice(0,4):["iron"],stock:{},
+      made:+pn.made||Date.now(),last:+pn.last||Date.now(),
+      hauled:Math.max(0,pn.hauled|0),calls:Math.max(0,pn.calls|0)};
+    if(pn.stock&&typeof pn.stock==="object")
+      for(const k of N.res)N.stock[k]=clamp(+pn.stock[k]||0,0,PLANET_CAP);
+    G.pnode=N;
+  }
   /* отчёт «Долгого Хода» (12q-lore): формат сейва не менялся (v:4), старые
      записи просто не имеют этих полей и начинают с пустого */
   G.loreFound=Array.isArray(s.loreFound)?s.loreFound.filter(x=>typeof x==="string"):[];

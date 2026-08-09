@@ -244,9 +244,14 @@ ids are unique, every `where` value exists among the living places and actually 
 none of them pays credits; none can be taken twice. The same guard that found 500 unreachable
 nodes at M91.
 
-## M97 (0.47.0). A planet for the collection: a node, not a checkbox
+## M97 (0.48.0). A planet for the collection: a node, not a checkbox — DONE
 
-New module `12n-planet.js`.
+New module `12n-planet.js`. Built, all green (1815 assertions), suite `91q-planet`. The hundredth
+rarity grants the planet you are standing on (`planetGrant` from `rareTake`); stock accrues lazily
+by real time and is capped per resource; `planetHaul` only works in the node's own system. The
+barge router takes the node as a stop (`planetStop` inside `bargeSysAt`, a leg in `bargeLegs`), and
+a passing barge carries your goods to you for free (`planetBargeLoad`/`planetTakeLoad`) — a
+delivery, never a purchase. Persisted through `G.pnode`; the save format stayed `v:4`.
 
 - **Only for the full set.** 100 out of 100, with no partial handouts: partial progress is already
   rewarded by the wall in the house (M100). A planet can't be bought, just as a house can't.

@@ -121,6 +121,9 @@ function rareTake(where,key){
        "«"+R.ru+"»\n"+R.grade+", "+R.note+"\n"+R.whereRu+"\nэффект: "+R.fx.ru+
        "\n\nсобрано редкостей: "+c+" из 100");
   logAdd("tech","Найдена редкость «"+R.ru+"» ("+R.whereRu+") · "+c+"/100");
+  /* сотая редкость — единственный вход в планету (12n): не покупка и не выбор,
+     а следствие полноты. Стоим там, где нашли, — эта планета и станет узлом. */
+  if(c>=100&&typeof planetGrant==="function")planetGrant();
   if(typeof saveGame==="function")saveGame(true);
   return R;
 }

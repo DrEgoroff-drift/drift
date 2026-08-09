@@ -9,6 +9,24 @@ could ever save.
 
 ---
 
+## 0.48.0 — "A planet of your own"
+
+**The full hundred buys what money cannot.** Collecting all 100 rarities (12m) now hands you a
+planet — the one you were standing on when the hundredth came in. It is not bought, not chosen
+from a list, and nothing is handed out below a hundred: partial progress is already paid for by
+the wall at home. New module `12n-planet.js`.
+
+**It is a second growth counter.** The house grows from turnover, the planet from completeness,
+and the two funnels never mix: the node produces goods and **never pays credits**. Its stock
+accrues lazily by real time up to a ceiling per resource — haul it yourself while you are in the
+system, or wait for a barge.
+
+**You stop being a client of the economy and become a node of it.** The barge router (12l) takes
+the node as a stop on equal terms with a station: it appears in route legs, and a barge that
+passes through carries your goods to you for free — a delivery, not a deal.
+
+New suite **"the planet: full set only"**.
+
 ## 0.47.0 — "The monument remembers"
 
 **Monuments answer by type again.** The surface ran its own cut-down inspection and never called

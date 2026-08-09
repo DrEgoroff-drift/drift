@@ -38,6 +38,8 @@ const G={
   market:{},uniqueShips:{},drones:[],droneInventory:0,
   /* фронт пиратов и счёт отбитых систем: цель игры видна числом */
   occ:{},occT:0,freed:0,occCalm:{},mines:{},quests:[],nodes:{},crowns:{},
+  /* планета-узел за полный набор редкостей (12n): null, пока сотни нет */
+  pnode:null,
   dealsDone:{},dealsWait:[],rep:{},poiSeen:{},
   pirates:[],shots:[],log:[],logNew:0,barges:[],
   /* обломки погибших барж — след, а не эфемерное: решение (спасли/добили/прошли
