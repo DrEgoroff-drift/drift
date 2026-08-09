@@ -160,10 +160,27 @@ function loreTake(key){
   }else{
     const n=14+((R.seed>>>4)%12);G.data+=n;got="замеры с плит · +"+n+" данных";
   }
+  /* ── второй ответ ──
+     Зарубки «Долгого Хода» датированы небом, а не координатами: плита отвечает
+     дважды, если читать её тогда, когда небо в том же положении, в каком её
+     резали. Это единственное право календаря вмешиваться в механику (M107):
+     не прибавка, а второй адрес — куда идти дальше по этой же главе. */
+  let second="";
+  if(typeof celEventNow==="function"&&celEventNow()){
+    const mine=loreList();
+    const next=LORE.find(x=>x.chap===R.chap&&mine.indexOf(x.id)<0&&x.give==="addr");
+    const A=next?loreAddr(next.seed):null;
+    if(A){
+      loreMarks().push({sx:A.sx,sy:A.sy,id:next.id});
+      second="\n\nвторой ответ (плиту читали под тем же небом):\nсектор "+A.sx+":"+A.sy+
+             (A.s.station?" · станция «"+A.s.station.name+"»":"")+" — там следующая";
+      logAdd("tech","Второй ответ зарубки: сектор "+A.sx+":"+A.sy+" · небо совпало");
+    }
+  }
   const c=loreCount(), ch=loreChapter(R.chap);
   tell("tech","Кусок отчёта · "+c+"/100 · "+got,
        "«"+R.ru+"»\n\nглава: "+R.chapRu+" ("+ch.have+" из "+ch.total+")\n"+got+
-       "\n\nсобрано кусков: "+c+" из 100");
+       "\n\nсобрано кусков: "+c+" из 100"+second);
   logAdd("tech","Зарубка: "+R.ru+" · "+R.chapRu+" · "+c+"/100");
   /* глава дочитана — это событие само по себе: игрок не ждёт сотни из ста */
   if(ch.read&&ch.have===ch.need){

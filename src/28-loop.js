@@ -111,6 +111,9 @@ function hud(){
     b="пиратская база · "+(G.raid?G.raid.foes.filter(f=>f.hp>0).length+" живых":"");}
   else if(G.mode==="dock"){a=G.st.name.toUpperCase();b=G.st.kind;}
   if(G.drones.length>0)b+=" · дронов работает: "+G.drones.length;
+  /* небо говорит само за себя, но событие обязано быть НАЗВАНО: без имени
+     затмение читается как «что-то с картинкой» (06a-celest) */
+  if(typeof celLine==="function"){const cl=celLine();if(cl)b+=" · "+cl;}
   const sbtn=document.getElementById("starbtn");
   sbtn.style.display=(G.mode==="system"&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none";
   /* кнопка плеча: только на карте и только у выбранной системы со станцией —

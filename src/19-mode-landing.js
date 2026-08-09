@@ -247,6 +247,15 @@ function groundShadow(x,y,rx,ry){
    вызывается один раз в кадр поверх заливки skyGrad, перед рельефом */
 function drawSkyLayer(p,camx,camy){
   const hasAtm=p.T.atm!=="отсутствует";
+  /* небо садится вместе со светом: без этого затмение выглядело так, будто
+     грунт погас, а день на месте (06a-celest) */
+  const DK=typeof celDark==="function"?celDark():0;
+  if(DK>.02){
+    /* небу достаётся половина: остальное сводит gradePass на весь кадр, иначе
+       затмение получается «тёмное небо над дневной планетой» */
+    ctx.fillStyle="rgba(8,12,26,"+(.34*DK).toFixed(3)+")";
+    ctx.fillRect(0,0,W,H);
+  }
   const sunX=W*.78,sunY=H*.16;
   const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a";
   const g=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,W*.5);
@@ -259,6 +268,9 @@ function drawSkyLayer(p,camx,camy){
   drawSkyBodies(p,camx,camy);
   ctx.fillStyle="rgb("+p.T.sky[1].join(",")+")";
   ctx.beginPath();ctx.arc(sunX,sunY,H*.045,0,TAU);ctx.globalAlpha=.85;ctx.fill();ctx.globalAlpha=1;
+  /* календарь неба поверх звезды: диск спутника наезжает на неё, комета и парад
+     идут своим чередом (06a-celest). Ниже облаков — они всё равно главнее */
+  if(typeof drawCelest==="function")drawCelest(p,sunX,sunY,H*.045);
   if(!hasAtm)return;
   /* облака живут в 19e: поле плотности в перспективе, а не гроздь эллипсов */
   drawClouds(p,camx,camy);

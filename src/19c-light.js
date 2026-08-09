@@ -22,7 +22,14 @@ function windOf(p){
 }
 function starRGB(){
   const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a";
-  return hex2rgb(sc);
+  const c=hex2rgb(sc);
+  /* затмение гасит НАПРАВЛЕННЫЙ свет и только его: заполняющий от неба остаётся,
+     поэтому мир не чернеет, а становится плоским и синим — так это и выглядит
+     на самом деле (06a-celest) */
+  const d=typeof celDark==="function"?celDark():0;
+  if(d<=0)return c;
+  const k=1-d;
+  return [c[0]*k|0,c[1]*k|0,c[2]*k|0];
 }
 /* небо как источник заполняющего света: у токсичного мира тени зелёные,
    у ледяного — синие, и это читается сразу */
@@ -124,6 +131,20 @@ function lightShafts(p){
    виньетка и лёгкий цветовой сдвиг: две заливки, которые сводят разнородные
    слои в одну картинку. Всё, что тут делается, стоит два fillRect. */
 function gradePass(p){
+  /* ── затмение сводится здесь, а не в небе ──
+     Первый проход гасил только небо: сверху темнело, а грунт, флора и
+     скафандр оставались дневными, и кадр разваливался на две картинки.
+     Затмение — это свет, а свет в кадре сводится последней свёрткой: одна
+     холодная заливка на всё сразу, и мир садится целиком (06a-celest). */
+  const DK=typeof celDark==="function"?celDark():0;
+  if(DK>.02){
+    ctx.fillStyle="rgba(10,16,34,"+(.52*DK).toFixed(3)+")";
+    ctx.fillRect(0,0,W,H);
+    /* и цвет уходит: в сумерках глаз теряет насыщенность раньше яркости */
+    ctx.save();ctx.globalCompositeOperation="saturation";
+    ctx.fillStyle="rgba(128,128,128,"+(.5*DK).toFixed(3)+")";
+    ctx.fillRect(0,0,W,H);ctx.restore();
+  }
   const g=ctx.createRadialGradient(W*.5,H*.46,Math.min(W,H)*.30,W*.5,H*.46,Math.max(W,H)*.78);
   g.addColorStop(0,"rgba(0,0,0,0)");
   g.addColorStop(1,"rgba(0,0,0,.34)");

@@ -9,6 +9,30 @@ could ever save.
 
 ---
 
+## 0.56.0 — "The sky keeps a calendar"
+
+**The far corner of the galaxy differed from the near one by a danger coefficient and nothing
+else.** A place becomes a place when time is attached to it: come back on such a day, because on
+that day something happens here. This is the first milestone of the long story told in pieces.
+
+- **Four events, all computed, none rolled.** An eclipse (a moon of the world you stand on crosses
+  the star), a parade of three or more planets inside an angular window, a comet on a long ellipse
+  that arrives and leaves on schedule, and the day count itself. `celestAt(sys, t)` is a function
+  of time — the same day in the same system always gives the same sky, which is what makes it
+  possible to arrange to meet there.
+- **The world has a second, slow clock.** In the system view planets circle in half a minute — that
+  motion is a flight playground, deliberately clamped so the autopilot can catch things. A calendar
+  cannot rest on it. `CEL_DAY` is a minute of play; moon periods run 4–21 days, comets 200–470.
+- **It is light, not UI.** An eclipse takes the directional light out and leaves the sky's fill, so
+  the world goes flat and blue rather than black; colour drains before brightness does; flora that
+  lives on light folds up. The header names the event, because a picture with no name reads as a
+  glitch.
+- **Its one mechanical right**: reading an obelisk (M106) under the same sky it was cut under gives
+  a **second answer** — the address of the next fragment in that chapter. No bonus, no multiplier.
+  Prices and yields never see the sky.
+
+Suite **"the calendar: the sky is computed"** — 2923 green.
+
 ## 0.55.0 — "The ship ages"
 
 **The garage had nothing to do.** A hull only ever went bad in a fight, and a fight is patched at

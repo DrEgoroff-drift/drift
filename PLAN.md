@@ -631,7 +631,27 @@ at its natural seam — `20b-poi-find.js` now holds the inspection half (`POI_FI
 (needs M107); and the fragment board — a hundred pieces and eight chapters are collected with no
 place to read them, so the record currently lives only in `tell()` and the journal.
 
-## M107 (0.57.0). The sky keeps a calendar
+## M107 (0.56.0). The sky keeps a calendar — DONE
+
+`06a-celest` — eclipse, parade, comet and the day count, all as `celestAt(sys,t)`; nothing enters
+`snapshot()`. Light hooks: `starRGB` loses the directional light, `gradePass` sinks the whole frame
+and drains its colour, `drawSkyLayer` darkens the sky, flora folds in `20-life`. The header names
+the event. `loreTake` gives a second answer when the sky matches.
+
+**Decisions taken while building it:**
+- the calendar runs on a **second, slow clock** (`CEL_DAY` = a minute of play), not on the drawn
+  orbits. The system view is deliberately arcade — a moon laps in six seconds and the rate is
+  clamped against the player's own thrust so the autopilot can catch things. Eclipses every six
+  seconds are weather, not a calendar; the two clocks stay separate on purpose;
+- eclipse depth goes by the moon's **angular size** (`radius / orbit` against `CEL_STAR_ANG`), not
+  by the planet's radius. The first version measured against the world you stand on, so on a large
+  planet every moon was a chip and a total eclipse never happened anywhere;
+- the eclipse is graded **on the whole frame**, not on the sky. Darkening only the sky gave a night
+  sky over a daylight planet — two pictures in one frame;
+- the parade needed a **line**. Three dim 2 px dots in a daylight sky were indistinguishable from
+  dust: the event was named in the header and absent from the frame.
+
+## M107 (0.57.0). The sky keeps a calendar — original spec
 
 New module `06a-celest.js` (after `06-galaxy`, before `07-planet`) — pure arithmetic over the
 orbits M43 already computes honestly. Drawing hooks into `19-mode-landing` (sky), `25-cockpit` and

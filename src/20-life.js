@@ -168,6 +168,11 @@ function drawPlantAlien(pl,x,y,stemC,leafC,sc){
   const bend=Math.sin(G.t*pl.sway+pl.phase);
   const gl=sc?"127,230,216":((pl.leaf[0]|0)+","+(pl.leaf[1]|0)+","+(pl.leaf[2]|0));
   ctx.save();ctx.translate(x,y);
+  /* затмение (06a-celest): то, что живёт светом, на свету и складывается —
+     флора приседает и жмётся, пока звезда закрыта. Это единственная реакция
+     жизни на календарь и единственное, по чему затмение видно не глядя вверх */
+  const DK=typeof celDark==="function"?celDark():0;
+  if(DK>.05)ctx.scale(1-.10*DK,1-.32*DK);
   const lean=(pl.lean+bend*.22)*pl.h*.2;
   if(pl.kind===7){
     /* гриб: толстая ножка с утолщением у земли, широкая шляпка, пластинки */
