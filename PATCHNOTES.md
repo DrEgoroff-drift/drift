@@ -9,6 +9,29 @@ could ever save.
 
 ---
 
+## 0.54.0 — "A trade branch of your own"
+
+**The factor had a route; the player had a sticky note.** Since M84 the domain has been trading
+real goods at real prices, and the player kept "where titanium is cheap" in his head. Now the
+route is a thing on the table.
+
+- **Mark 2–4 stations on the map** (`В МАРШРУТ` on the selected system) and the game reads the
+  live market for you: what to take on each leg, at what price it lands, how much the loop nets
+  after fuel. The ring closes — the way back is half the money, and it is counted.
+- **It lies on the map, not in a list**: numbered stops, arrows for the direction of travel, and
+  one label on the best leg. One, not four: three plates turned the map into a table.
+- **It can be sold.** An information buyer pays for the spread and starts working it himself:
+  the route leaves your map and the prices on it settle. Sold means lost, and that is the price
+  of quick money. The paper is valued at a full hold, not at your current purse — a spread does
+  not get cheaper because you are broke.
+- **It can be handed to the factor**, who takes as many legs as his level and the `плечо` perk
+  allow, and carries it instead of you.
+- **It wears out.** Every loop you run presses the price down where you sell (the market has done
+  this since M84), so the ring thins with use and asks to be replanned. A route is not a machine
+  for money.
+
+Suite **"the route: legs, the count and the paper"** — 2891 green.
+
 ## 0.53.0 — "Reputation decides who walks in"
 
 **Reputation changed the prices and the number of tables, but never who sat at them.** Now it

@@ -4,7 +4,7 @@ let tab="market";
 let fuseSel=[];   // два корпуса, выбранных под сплав в лаборатории
 function openStation(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
-  mgrTick();mgrRouteVisit(G.sys);
+  mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
@@ -161,6 +161,7 @@ function renderTab(){
     const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
     $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
       " · ТОПЛИВО "+G.st.fuelPrice+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
+    renderRoute();
     let any=false,tot=0;
     for(const k of TRADE_KEYS){
       const q=G.cargo[k];if(!q)continue;any=true;

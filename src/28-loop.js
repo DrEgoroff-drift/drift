@@ -113,6 +113,14 @@ function hud(){
   if(G.drones.length>0)b+=" · дронов работает: "+G.drones.length;
   const sbtn=document.getElementById("starbtn");
   sbtn.style.display=(G.mode==="system"&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none";
+  /* кнопка плеча: только на карте и только у выбранной системы со станцией —
+     иначе она обещает действие, которого нет */
+  const rbtn=document.getElementById("routebtn");
+  if(G.mode==="map"&&typeof routeHas==="function"){
+    const ss=getSystem(G.sel.x,G.sel.y),inR=routeHas(G.sel.x,G.sel.y);
+    rbtn.style.display=(ss&&ss.station)||inR?"":"none";
+    rbtn.textContent=inR?"ИЗ МАРШРУТА":"В МАРШРУТ";
+  }else rbtn.style.display="none";
   $place.textContent=a;$sub.textContent=b;
   $msg.textContent=G.msgT>0?G.msg:"";
   $msg.style.opacity=G.msgT>0?clamp(G.msgT/40,0,1):0;

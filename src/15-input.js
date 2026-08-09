@@ -165,6 +165,13 @@ document.getElementById("zin").addEventListener("click",()=>setZoom(G.zoom*1.35)
 document.getElementById("zout").addEventListener("click",()=>setZoom(G.zoom/1.35));
 document.getElementById("dronebtn").addEventListener("click",deployDrone);
 document.getElementById("beaconbtn").addEventListener("click",useBeacon);
+/* плечо маршрута ставится там же, где выбирается цель прыжка: маршрут — это
+   карта, а не пункт меню */
+document.getElementById("routebtn").addEventListener("click",()=>{
+  if(G.mode!=="map")return;
+  say(routeToggle(G.sel.x,G.sel.y));
+  sfx("ui",{f:520,to:820,d:.12,v:.28});
+});
 function setZoom(z){G.zoom=clamp(z,.16,2.4);}
 addEventListener("wheel",e=>{if(G.mode==="system")setZoom(G.zoom*(e.deltaY<0?1.12:.89));},{passive:true});
 

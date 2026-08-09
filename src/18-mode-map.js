@@ -220,6 +220,8 @@ function drawMap(){
   }
   /* маршрут домена — под курсом игрока: мир под намерением, а не наоборот */
   drawFactRoute(vis);
+  /* свой маршрут — поверх маршрута домена: это намерение игрока, и оно главнее */
+  if(typeof drawRouteMap==="function")drawRouteMap(vis);
   if(typeof drawBargesMap==="function")drawBargesMap(vis);
   const cost=Math.round(9+dsel*13);
   const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0;
@@ -306,6 +308,17 @@ function drawMap(){
   if(occN||(G.freed|0)){
     ctx.fillStyle=occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)";
     ctx.fillText(occSummary(),W-16,H-PAD_SAFE-30);
+  }
+  /* сводка своего маршрута — там же, где фронт: карта отвечает на оба вопроса,
+     «куда лететь драться» и «куда лететь возить» */
+  if(typeof routeOf==="function"&&routeOf().legs.length>=2){
+    /* слева, в столбце прыжка: справа на этой высоте стоит подсказка по центру,
+       и сводка налезала на неё серединой экрана. Здесь же она читается вместе
+       с ценой прыжка — оба числа про «сколько это стоит». */
+    ctx.textAlign="left";
+    ctx.fillStyle="rgba(127,230,216,.75)";
+    ctx.fillText(routeLine(),16,H-PAD_SAFE-46);
+    ctx.textAlign="right";
   }
   G.prompt="ТАП ПО ЗВЕЗДЕ — ВЫБОР · ДЕЙСТВИЕ — ПРЫЖОК";
   if(actEdge){
