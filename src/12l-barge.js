@@ -24,6 +24,10 @@ const BARGE_CAPNAMES=["Тук","Барма","Овод","Севрюга","Кря�
 
 function bargeSysAt(key){
   if(typeof key!=="string")return null;
+  /* узел игрока (12n) — такая же остановка, как станция: у фактора нет причин
+     различать, кому принадлежит точка, если товар с неё реален */
+  const P=typeof planetStop==="function"?planetStop():null;
+  if(P&&P.key===key)return P;
   const p=key.split(",");if(p.length!==2)return null;
   const sx=+p[0],sy=+p[1];
   if(!isFinite(sx)||!isFinite(sy)||!starAt(sx,sy))return null;
@@ -48,22 +52,27 @@ function bargeLegs(){
     const keys=F.route.slice(0,typeof mgrRouteMax==="function"?mgrRouteMax(F):4);
     for(let i=0;i<keys.length-1;i++)push(bargeSysAt(keys[i]),bargeSysAt(keys[i+1]));
   }
+  /* узел игрока (12n) входит в маршрут на равных со станцией: раз он родит
+     товар, у фактора есть причина туда заходить */
+  const P=typeof planetStop==="function"?planetStop():null;
+  if(P)push(P,bargeNearOther(P));
   if(!legs.length){
     const here=G.sys&&G.sys.station?G.sys:bargeSysAt(G.sx+","+G.sy);
-    if(here){
-      /* ближайшая ДРУГАЯ станция: nearestStation может вернуть ту же систему,
-         поэтому ищем первую станцию с ключом, отличным от here */
-      let other=null;
-      for(let rad=1;rad<=24&&!other;rad++)
-        for(let dx=-rad;dx<=rad&&!other;dx++)for(let dy=-rad;dy<=rad;dy++){
-          if(Math.max(Math.abs(dx),Math.abs(dy))!==rad)continue;
-          const s=bargeSysAt((here.sx+dx)+","+(here.sy+dy));
-          if(s&&s.key!==here.key){other=s;break;}
-        }
-      if(other)push(here,other);
-    }
+    if(here)push(here,bargeNearOther(here));
   }
   return legs;
+}
+/* ближайшая ДРУГАЯ станция: nearestStation может вернуть ту же систему,
+   поэтому ищем первую станцию с ключом, отличным от here */
+function bargeNearOther(here){
+  if(!here)return null;
+  for(let rad=1;rad<=24;rad++)
+    for(let dx=-rad;dx<=rad;dx++)for(let dy=-rad;dy<=rad;dy++){
+      if(Math.max(Math.abs(dx),Math.abs(dy))!==rad)continue;
+      const s=bargeSysAt((here.sx+dx)+","+(here.sy+dy));
+      if(s&&s.key!==here.key)return s;
+    }
+  return null;
 }
 /* цена товара на станции назначения — та же, что заплатил бы игрок сам, довезя
    груз. От неё пляшет весь торг с баржой. */
@@ -136,6 +145,8 @@ function spawnBarges(){
       x:Math.cos(a)*(distress?rad*.6:rad),y:Math.sin(a)*(distress?rad*.6:rad),
       vx:Math.cos(heading)*(distress?sp*.5:sp),vy:Math.sin(heading)*(distress?sp*.5:sp),a:heading
     });
+    /* зашла на ваш узел по дороге — значит, везёт и ваш товар (12n) */
+    if(typeof planetBargeLoad==="function")planetBargeLoad(G.barges[G.barges.length-1]);
     made++;
   }
 }
@@ -630,6 +641,10 @@ function renderBarge(){
        {txt:"ВСЁ",gold:1,dis:canN<1,on:()=>buy(canN)}]));
   }
   /* продать барже из своего трюма — по любому ходовому товару */
+  /* ваш собственный груз с узла — до всякой торговли: это не сделка (12n) */
+  if(typeof planetBargeRow==="function"){
+    const pr=planetBargeRow(b);if(pr)$bgBody.appendChild(pr);
+  }
   const mine=TRADE_KEYS.filter(k=>G.cargo[k]>0);
   if(mine.length){
     $bgBody.appendChild(el("div","sec","ПРОДАТЬ БАРЖЕ · платит меньше станции, зато прямо здесь"));

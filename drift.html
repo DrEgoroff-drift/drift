@@ -627,7 +627,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.47.0";
+const VER="0.48.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -2041,6 +2041,8 @@ function nodesRender(){
   /* редкости живут на той же доске, что и узлы: и то и другое — коллекция,
      которую нельзя купить (12m-rare) */
   if(typeof rareRender==="function")rareRender();
+  /* и то, что даёт полный набор: планета-узел (12n) */
+  if(typeof planetRender==="function")planetRender();
 }
 /* ── как узел выглядит ──
    Тысяча находок, у каждой имя — и все они были строчкой текста. Вещь, которую
@@ -2837,6 +2839,8 @@ const G={
   market:{},uniqueShips:{},drones:[],droneInventory:0,
   /* фронт пиратов и счёт отбитых систем: цель игры видна числом */
   occ:{},occT:0,freed:0,occCalm:{},mines:{},quests:[],nodes:{},crowns:{},
+  /* планета-узел за полный набор редкостей (12n): null, пока сотни нет */
+  pnode:null,
   dealsDone:{},dealsWait:[],rep:{},poiSeen:{},
   pirates:[],shots:[],log:[],logNew:0,barges:[],
   /* обломки погибших барж — след, а не эфемерное: решение (спасли/добили/прошли
@@ -6990,6 +6994,10 @@ const BARGE_CAPNAMES=["Тук","Барма","Овод","Севрюга","Кря�
 
 function bargeSysAt(key){
   if(typeof key!=="string")return null;
+  /* узел игрока (12n) — такая же остановка, как станция: у фактора нет причин
+     различать, кому принадлежит точка, если товар с неё реален */
+  const P=typeof planetStop==="function"?planetStop():null;
+  if(P&&P.key===key)return P;
   const p=key.split(",");if(p.length!==2)return null;
   const sx=+p[0],sy=+p[1];
   if(!isFinite(sx)||!isFinite(sy)||!starAt(sx,sy))return null;
@@ -7014,22 +7022,27 @@ function bargeLegs(){
     const keys=F.route.slice(0,typeof mgrRouteMax==="function"?mgrRouteMax(F):4);
     for(let i=0;i<keys.length-1;i++)push(bargeSysAt(keys[i]),bargeSysAt(keys[i+1]));
   }
+  /* узел игрока (12n) входит в маршрут на равных со станцией: раз он родит
+     товар, у фактора есть причина туда заходить */
+  const P=typeof planetStop==="function"?planetStop():null;
+  if(P)push(P,bargeNearOther(P));
   if(!legs.length){
     const here=G.sys&&G.sys.station?G.sys:bargeSysAt(G.sx+","+G.sy);
-    if(here){
-      /* ближайшая ДРУГАЯ станция: nearestStation может вернуть ту же систему,
-         поэтому ищем первую станцию с ключом, отличным от here */
-      let other=null;
-      for(let rad=1;rad<=24&&!other;rad++)
-        for(let dx=-rad;dx<=rad&&!other;dx++)for(let dy=-rad;dy<=rad;dy++){
-          if(Math.max(Math.abs(dx),Math.abs(dy))!==rad)continue;
-          const s=bargeSysAt((here.sx+dx)+","+(here.sy+dy));
-          if(s&&s.key!==here.key){other=s;break;}
-        }
-      if(other)push(here,other);
-    }
+    if(here)push(here,bargeNearOther(here));
   }
   return legs;
+}
+/* ближайшая ДРУГАЯ станция: nearestStation может вернуть ту же систему,
+   поэтому ищем первую станцию с ключом, отличным от here */
+function bargeNearOther(here){
+  if(!here)return null;
+  for(let rad=1;rad<=24;rad++)
+    for(let dx=-rad;dx<=rad;dx++)for(let dy=-rad;dy<=rad;dy++){
+      if(Math.max(Math.abs(dx),Math.abs(dy))!==rad)continue;
+      const s=bargeSysAt((here.sx+dx)+","+(here.sy+dy));
+      if(s&&s.key!==here.key)return s;
+    }
+  return null;
 }
 /* цена товара на станции назначения — та же, что заплатил бы игрок сам, довезя
    груз. От неё пляшет весь торг с баржой. */
@@ -7102,6 +7115,8 @@ function spawnBarges(){
       x:Math.cos(a)*(distress?rad*.6:rad),y:Math.sin(a)*(distress?rad*.6:rad),
       vx:Math.cos(heading)*(distress?sp*.5:sp),vy:Math.sin(heading)*(distress?sp*.5:sp),a:heading
     });
+    /* зашла на ваш узел по дороге — значит, везёт и ваш товар (12n) */
+    if(typeof planetBargeLoad==="function")planetBargeLoad(G.barges[G.barges.length-1]);
     made++;
   }
 }
@@ -7596,6 +7611,10 @@ function renderBarge(){
        {txt:"ВСЁ",gold:1,dis:canN<1,on:()=>buy(canN)}]));
   }
   /* продать барже из своего трюма — по любому ходовому товару */
+  /* ваш собственный груз с узла — до всякой торговли: это не сделка (12n) */
+  if(typeof planetBargeRow==="function"){
+    const pr=planetBargeRow(b);if(pr)$bgBody.appendChild(pr);
+  }
   const mine=TRADE_KEYS.filter(k=>G.cargo[k]>0);
   if(mine.length){
     $bgBody.appendChild(el("div","sec","ПРОДАТЬ БАРЖЕ · платит меньше станции, зато прямо здесь"));
@@ -7744,6 +7763,9 @@ function rareTake(where,key){
        "«"+R.ru+"»\n"+R.grade+", "+R.note+"\n"+R.whereRu+"\nэффект: "+R.fx.ru+
        "\n\nсобрано редкостей: "+c+" из 100");
   logAdd("tech","Найдена редкость «"+R.ru+"» ("+R.whereRu+") · "+c+"/100");
+  /* сотая редкость — единственный вход в планету (12n): не покупка и не выбор,
+     а следствие полноты. Стоим там, где нашли, — эта планета и станет узлом. */
+  if(c>=100&&typeof planetGrant==="function")planetGrant();
   if(typeof saveGame==="function")saveGame(true);
   return R;
 }
@@ -7783,6 +7805,191 @@ function rareRender(){
       $body.appendChild(el("div","row","<div class='nm'><b>«"+R.ru+"»</b><s>"+
         R.grade+" · "+R.whereRu+" · "+R.note+" · "+R.fx.ru+"</s></div>"));
   }
+}
+
+/* ══════════════ планета для коллекции ══════════════
+   У дома (12j) есть своя воронка — оборот: всё, что вселенная принесла деньгами.
+   У сотни редкостей (12m) воронки не было вовсе: сотый предмет клал строчку в
+   журнал и на этом заканчивался. Планета — вторая воронка роста, и растит её
+   ПОЛНОТА, а не оборот. Две воронки не смешиваются: планету нельзя купить, как
+   дом нельзя купить, и частичный набор не даёт ничего — за частичный уже платит
+   стена в доме.
+
+   Что она такое по замыслу: не строка дохода, а точка на карте фактора. Она
+   родит товар, как станция, и к ней начинают заходить баржи (12l). Награда в
+   том, что игрок перестаёт быть клиентом системы и становится её узлом. Кредитов
+   планета не платит НИКОГДА — только товаром: увезите сами или дождитесь баржи. */
+
+const PLANET_FULL=100;                   // только полный набор, без раздач по частям
+const PLANET_RATE=2.4;                   // единиц в минуту на каждый свой ресурс
+const PLANET_CAP=260;                    // потолок склада на ресурс: узел не копит вечно
+const PLANET_BARGE=.6;                   // сколько своих запасов баржа берёт на борт
+
+function planetReady(){
+  return typeof rareCount==="function"&&rareCount()>=PLANET_FULL;
+}
+/* ── выдача ──
+   Не выбирается из списка и не покупается: узлом становится та планета, где вы
+   стояли, когда собрали сотую. Место находки и есть награда. */
+function planetGrant(p){
+  if(G.pnode)return null;
+  if(!planetReady())return null;
+  p=p||(G.land&&G.land.p)||(G.sys&&G.sys.planets&&G.sys.planets[0]);
+  if(!p||typeof p.key!=="string")return null;
+  const sxy=p.key.split(":")[0].split(",");
+  const res=(p.res||[]).filter(k=>TRADE_KEYS.indexOf(k)>=0).slice(0,4);
+  G.pnode={key:p.key,sx:+sxy[0]|0,sy:+sxy[1]|0,idx:p.idx|0,name:p.name,
+    res:res.length?res:["iron"],stock:{},made:Date.now(),last:Date.now(),
+    hauled:0,calls:0};
+  logAdd("good","Сотня собрана. «"+p.name+"» — ваш узел: она родит товар, к ней пойдут баржи");
+  say("УЗЕЛ\n«"+p.name+"» теперь ваша\nне доход, а точка на карте");
+  if(typeof sfx==="function")sfx("ok",{v:.6});
+  if(typeof saveGame==="function")saveGame(true);
+  return G.pnode;
+}
+/* ── добыча, считаемая лениво ──
+   Ни таймера, ни тика в кадре: склад досчитывается в момент, когда на него
+   смотрят, — по прошедшему времени, как рейсы наёмников. */
+function planetTick(){
+  const N=G.pnode;if(!N)return null;
+  const now=Date.now();
+  const mins=(now-(N.last||now))/60000;
+  if(mins>0){
+    N.last=now;
+    for(const k of N.res)
+      N.stock[k]=Math.min(PLANET_CAP,(N.stock[k]||0)+mins*PLANET_RATE);
+  }
+  return N;
+}
+function planetStockOf(k){const N=G.pnode;return N?Math.floor(N.stock[k]||0):0;}
+function planetStockSum(){
+  const N=planetTick();if(!N)return 0;
+  let s=0;for(const k of N.res)s+=Math.floor(N.stock[k]||0);
+  return s;
+}
+function planetHere(){
+  const N=G.pnode;
+  return !!(N&&G.sx===N.sx&&G.sy===N.sy);
+}
+/* ── увезти самому ──
+   Ровно то, что влезает в трюм, и только в своей системе. */
+function planetHaul(){
+  const N=planetTick();if(!N)return 0;
+  if(!planetHere()){say("Узел «"+N.name+"» в другой системе");return 0;}
+  const st=stat();
+  let room=Math.max(0,st.cargoMax-held()),got=0;
+  for(const k of N.res){
+    if(room<=0)break;
+    const take=Math.min(room,Math.floor(N.stock[k]||0));
+    if(take<=0)continue;
+    N.stock[k]-=take;G.cargo[k]+=take;room-=take;got+=take;
+  }
+  if(got){
+    N.hauled+=got;
+    logAdd("good","С узла «"+N.name+"» взято товара ×"+got);
+    say("С узла взято ×"+got+"\nтрюм "+held()+"/"+st.cargoMax);
+    if(typeof sfx==="function")sfx("ok",{v:.4});
+    if(typeof saveGame==="function")saveGame(true);
+  }else say("На узле пока нечего брать");
+  return got;
+}
+/* ── узел глазами фактора ──
+   Плечо маршрута требует остановки со станцией: у неё берут цены и имя. У
+   планеты станции нет, поэтому узел выдаёт себя за остановку — с честным
+   прейскурантом по базовым ценам ресурсов. Никакого арбитража это не создаёт:
+   баржа всё равно торгует хуже станции назначения (bargeMarkup). */
+function planetStop(){
+  const N=G.pnode;if(!N)return null;
+  if(!starAt(N.sx,N.sy))return null;
+  const sys=getSystem(N.sx,N.sy);
+  if(!sys)return null;
+  if(sys.station)return sys;             // своя станция есть — узел ей не мешает
+  const prices={};
+  for(const k of TRADE_KEYS)prices[k]=Math.max(1,RES[k].price);
+  return {key:sys.key,sx:sys.sx,sy:sys.sy,planets:sys.planets,name:sys.name,pnode:1,
+    station:{name:"узел «"+N.name+"»",stype:"trade",kind:"частный узел",
+      orbit:0,ang:0,spd:0,prices,fuelPrice:9,x:0,y:0,vx:0,vy:0}};
+}
+/* ── баржа, зашедшая за вашим товаром ──
+   Это и есть «дождаться баржи»: она не платит кредитами, она увозит ваш груз к
+   вам в трюм за один разговор. Берёт часть склада на борт при подлёте, отдаёт —
+   когда сблизились. */
+function planetBargeLoad(b){
+  const N=planetTick();if(!N||!b)return 0;
+  const key=N.sx+","+N.sy;
+  if(b.from!==key&&b.to!==key)return 0;
+  let got=0;const load={};
+  for(const k of N.res){
+    const t=Math.floor((N.stock[k]||0)*PLANET_BARGE);
+    if(t<=0)continue;
+    N.stock[k]-=t;load[k]=t;got+=t;
+  }
+  if(!got)return 0;
+  b.pload=load;N.calls++;
+  return got;
+}
+function planetLoadSum(b){
+  let s=0;if(b&&b.pload)for(const k in b.pload)s+=b.pload[k]|0;
+  return s;
+}
+function planetTakeLoad(b){
+  if(!b||!b.pload)return 0;
+  const st=stat();
+  let room=Math.max(0,st.cargoMax-held()),got=0;
+  for(const k in b.pload){
+    if(room<=0)break;
+    const t=Math.min(room,b.pload[k]|0);
+    if(t<=0)continue;
+    b.pload[k]-=t;G.cargo[k]+=t;room-=t;got+=t;
+  }
+  if(got){
+    G.pnode.hauled+=got;
+    logAdd("good","Баржа «"+b.capName+"» доставила с вашего узла ×"+got);
+    if(typeof sfx==="function")sfx("ok",{v:.4});
+    if(typeof saveGame==="function")saveGame(true);
+  }else say("Некуда: трюм полон");
+  return got;
+}
+/* строка в окне торга с баржой — только если она пришла с вашего узла */
+function planetBargeRow(b){
+  const n=planetLoadSum(b);
+  if(!n||!G.pnode)return null;
+  return bargeElRow("ВАШ ГРУЗ С УЗЛА «"+G.pnode.name+"» ×"+n,
+    "узел не платит кредитами — он родит товар; баржа довезла его до вас даром",
+    [{txt:"ЗАБРАТЬ",gold:1,dis:false,on:()=>{planetTakeLoad(b);renderBarge();}}]);
+}
+/* ── доска ──
+   Живёт там же, где узлы и редкости: всё это одна коллекция, которую нельзя
+   купить. Пока сотня не собрана — здесь только счётчик, без обещаний. */
+function planetRender(){
+  const N=G.pnode;
+  if(!N){
+    if(typeof rareCount!=="function")return;
+    const c=rareCount();
+    $body.appendChild(el("div","sec","ПЛАНЕТА · "+c+" / 100"));
+    $body.appendChild(el("div","row","<div class='nm'><s>полный набор из ста "+
+      "редкостей делает одну планету вашей: она родит товар и к ней пойдут баржи. "+
+      "Частичный набор не даёт ничего — за него платит стена в доме.</s></div>"));
+    return;
+  }
+  planetTick();
+  $body.appendChild(el("div","sec","ВАШ УЗЕЛ · «"+N.name.toUpperCase()+"»"));
+  const where=planetHere()?"вы в её системе":"сектор "+N.sx+", "+N.sy;
+  $body.appendChild(el("div","row","<div class='nm'><b>"+where+"</b><s>увезено "+
+    N.hauled+" ед · заходов баржи "+N.calls+" · кредитов узел не платит</s></div>"));
+  for(const k of N.res)
+    $body.appendChild(el("div","row","<div class='nm'><b>"+RES[k].ru+"</b><s>"+
+      planetStockOf(k)+" из "+PLANET_CAP+" на складе</s></div>"));
+  const sum=planetStockSum();
+  const r=el("div","row");
+  r.appendChild(el("div","nm","<b>ЗАБРАТЬ В ТРЮМ</b><s>"+
+    (planetHere()?"влезет столько, сколько свободно в трюме":"только в системе узла")+
+    "</s>"));
+  const b=el("button","act gold","ЗАБРАТЬ ×"+sum);
+  b.disabled=!sum||!planetHere();
+  b.onclick=()=>{if(planetHaul())renderTab();};
+  r.appendChild(b);
+  $body.appendChild(r);
 }
 
 /* ══════════════ отчёт «Долгого Хода»: сто кусков ══════════════ */
@@ -8574,7 +8781,8 @@ function snapshot(){
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
-    nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,wrecks:G.wrecks,bargePax:G.bargePax,
+    nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,pnode:G.pnode,
+    wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
@@ -8630,6 +8838,22 @@ function applySave(s){
   G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
   /* редкости: только список унесённых id (12m-rare) */
   G.rareFound=Array.isArray(s.rareFound)?s.rareFound.filter(x=>typeof x==="string"):[];
+  /* планета-узел (12n): решение игрока в ней есть — где он стоял, когда собрал
+     сотню, — поэтому она персистится. Склад чинится по месту: список ресурсов
+     перепроверяется по ходовым товарам, чтобы старая запись не завела редкое. */
+  G.pnode=null;
+  const pn=s.pnode;
+  if(pn&&typeof pn==="object"&&typeof pn.key==="string"){
+    const res=(Array.isArray(pn.res)?pn.res:[]).filter(k=>TRADE_KEYS.indexOf(k)>=0);
+    const N={key:pn.key,sx:pn.sx|0,sy:pn.sy|0,idx:pn.idx|0,
+      name:typeof pn.name==="string"?pn.name:"узел",
+      res:res.length?res.slice(0,4):["iron"],stock:{},
+      made:+pn.made||Date.now(),last:+pn.last||Date.now(),
+      hauled:Math.max(0,pn.hauled|0),calls:Math.max(0,pn.calls|0)};
+    if(pn.stock&&typeof pn.stock==="object")
+      for(const k of N.res)N.stock[k]=clamp(+pn.stock[k]||0,0,PLANET_CAP);
+    G.pnode=N;
+  }
   /* отчёт «Долгого Хода» (12q-lore): формат сейва не менялся (v:4), старые
      записи просто не имеют этих полей и начинают с пустого */
   G.loreFound=Array.isArray(s.loreFound)?s.loreFound.filter(x=>typeof x==="string"):[];
