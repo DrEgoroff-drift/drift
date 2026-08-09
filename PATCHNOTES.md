@@ -9,6 +9,17 @@ could ever save.
 
 ---
 
+## 0.53.0 — "Reputation decides who walks in"
+
+**Reputation changed the prices and the number of tables, but never who sat at them.** Now it
+decides the company: where you are known, at least one manager at the bar has a level (two at the
+top of the scale, and they ask more for themselves), and a hired hand with a real flight record is
+looking for work. Where you are remembered badly, whoever turns up has no history at all.
+
+**It is not access progression.** The room never empties, and the content of a deal never changes
+with reputation — the same deal reads the same at +5 and at −5. Reputation buys company and price,
+never content.
+
 ## 0.52.0 — "Nodes and crowns in hand"
 
 **The thing stands where you actually look.** A holder on the left cockpit pillar (`25-cockpit`)

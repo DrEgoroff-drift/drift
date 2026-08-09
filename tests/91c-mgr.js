@@ -227,3 +227,36 @@ TEST_SUITES.push(()=>suite("ИИ-ядро: учится само и пережи
   ok(back&&back.ai===1,"ядро восстановлено машиной");
   near(back.drift,55,.1,"дрейф сохранился");
 }));
+
+/* ── репутация решает, кто заходит в кантину (M102) ── */
+TEST_SUITES.push(()=>suite("репутация: у своих садятся стоящие",()=>{
+  resetWorld();
+  const sys=(function(){for(let dx=-8;dx<=8;dx++)for(let dy=-8;dy<=8;dy++){
+    if(!starAt(dx,dy))continue;const s=getSystem(dx,dy);if(s.station)return s;}return null;})();
+  ok(!!sys,"станция найдена");
+  G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;G.st=sys.station;G.rep={};
+  const best=list=>list.reduce((a,m)=>Math.max(a,m.xp|0),0);
+  const m0=best(stationMgrs(sys)), c0=best(stationMercs(sys));
+  /* свои: кто-то стоящий за столом обязательно есть */
+  repAdd(5,sys);
+  const m1=stationMgrs(sys), c1=stationMercs(sys);
+  ok(best(m1)>=m0,"у своих управляющие не хуже: "+m0+" → "+best(m1));
+  ok(best(m1)>=MGR_XP[1],"и хотя бы один — с уровнем");
+  ok(best(c1)>c0||best(c1)>=100,"у своих есть наёмник с налётом: "+c0+" → "+best(c1));
+  /* состав зала — не доступ. Число столиков репутация меняла и раньше (M92),
+     а вот СОДЕРЖАНИЕ дела при этом обязано остаться прежним: иначе она
+     превратится в прогрессию доступа к контенту. */
+  const d5={};for(const d of stationDeals(sys))d5[d.key]=JSON.stringify(d);
+  repAdd(-10,sys);
+  let shared=0;
+  for(const d of stationDeals(sys))if(d5[d.key]){
+    shared++;
+    eq(JSON.stringify(d),d5[d.key],"дело «"+d.key+"» не изменилось от репутации");
+  }
+  ok(shared>0,"общие дела вообще есть: сравнение не пустое");
+  /* где вас не ждут — приходят никакие */
+  const m2=stationMgrs(sys), c2=stationMercs(sys);
+  ok(best(m2)<=m0,"у чужих управляющие не лучше прежнего: "+best(m2));
+  ok(best(c2)<=c0,"и наёмники тоже: "+best(c2));
+  ok(m2.length>0,"но зал не пустеет: репутация меняет качество, а не доступ");
+}));

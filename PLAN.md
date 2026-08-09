@@ -370,7 +370,15 @@ Intent 8. Crowns are worn as a bar aboard (M91), but the player never sees the t
 outside a list. Show it in the cockpit (`25-cockpit`): a holder under the instruments, the active
 node visible from where the player spends all their time.
 
-## M102 (0.52.0). Reputation drives who sits in the cantina
+## M102 (0.53.0). Reputation drives who sits in the cantina — DONE
+
+`stationMgrs` (12c) and `stationMercs` (12a) read `repAt(sys)`: at +2 one candidate is levelled (at
++4 two, and they cost 15% more), at −2 everyone's record is cut down. Suite added to `91c-mgr` —
+"reputation: the ones worth hiring sit with their own". The guard that matters: the room never
+empties, and a deal's content is byte-identical at +5 and −5 (the count of deals already moved with
+reputation since M92 — that is table count, not content).
+
+## M102 (0.52.0). Reputation drives who sits in the cantina — original spec
 
 Intent 9. Reputation changes the number of tables and the prices, but not WHO walks in. Among your
 own, better managers and hired hands with longer run records appear; among strangers, nothing but
