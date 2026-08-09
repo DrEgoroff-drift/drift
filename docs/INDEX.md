@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 97 · символов верхнего уровня: 1217
+Файлов: 99 · символов верхнего уровня: 1229
 
 ## СИМВОЛЫ
 
@@ -21,7 +21,7 @@ $hudp                        src/28-loop.js:40
 $menu                        src/15-input.js:124
 $msg                         src/28-loop.js:27
 $nav                         src/28-loop.js:29
-$opts                        src/26-ui-station.js:765
+$opts                        src/26-ui-station.js:788
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:26
 $sh                          src/28-loop.js:19
@@ -75,7 +75,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:168
 autoLandInputs               src/19-mode-landing.js:18
-autosave                     src/14-save.js:336
+autosave                     src/14-save.js:339
 b64dec                       src/14-save.js:11
 b64enc                       src/14-save.js:9
 bankTransform                src/03-ships.js:354
@@ -215,8 +215,8 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudPull                    src/14-save.js:358
-cloudPush                    src/14-save.js:350
+cloudPull                    src/14-save.js:361
+cloudPush                    src/14-save.js:353
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
 cockpitPlan                  src/25-cockpit.js:92
@@ -398,6 +398,7 @@ drawSystem                   src/17-mode-system.js:270
 drawTemple                   src/20a-poi.js:271
 drawTierTrim                 src/03-ships.js:368
 drawTrail                    src/16-flight.js:298
+drawWear                     src/12s-wear.js:69
 drawWeather                  src/19d-weather.js:92
 drawWreck                    src/20a-poi.js:229
 drawWrecksSystem             src/12l-barge.js:341
@@ -423,7 +424,7 @@ exitBelt                     src/24-mode-belt.js:162
 exitCave                     src/22-mode-cave.js:35
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
-exportCode                   src/14-save.js:345
+exportCode                   src/14-save.js:348
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -504,11 +505,11 @@ groundShadow                 src/19-mode-landing.js:238
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:344
+hasSave                      src/14-save.js:347
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:89
 hazeFar                      src/19c-light.js:81
-held                         src/08-state.js:109
+held                         src/08-state.js:113
 hex2rgb                      src/03-ships.js:145
 hexRGB                       src/24-mode-belt.js:80
 hireMerc                     src/12a-crew.js:148
@@ -523,7 +524,7 @@ homeBeacon                   src/12j-home.js:162
 homeBeaconCost               src/12j-home.js:158
 homeCanRebuild               src/12j-home.js:214
 homeCanRevive                src/12j-home.js:134
-homeCrewFigure               src/27e-ui-home.js:663
+homeCrewFigure               src/27e-ui-home.js:673
 homeFigure                   src/27e-ui-home.js:606
 homeHas                      src/12j-home.js:24
 homeHitAt                    src/27e-ui-home.js:35
@@ -540,7 +541,7 @@ homeRevive                   src/12j-home.js:135
 homeRoomBody                 src/27e-ui-home.js:63
 homeRoomW                    src/27e-ui-home.js:21
 homeSceneClick               src/27e-ui-home.js:621
-homeShade                    src/27e-ui-home.js:679
+homeShade                    src/27e-ui-home.js:689
 homeShow                     src/12j-home.js:184
 homeShowBonus                src/12j-home.js:205
 homeStore                    src/12j-home.js:177
@@ -586,7 +587,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:346
+importCode                   src/14-save.js:349
 initAudio                    src/09-audio.js:7
 invalidateKeyMap             src/15-input.js:40
 invalidateParts              src/05-parts.js:181
@@ -607,7 +608,7 @@ jumpToBase                   src/21a-mode-base.js:286
 keplerPos                    src/06-galaxy.js:34
 keyLabel                     src/15-input.js:62
 keyMap                       src/15-input.js:51
-keyRow                       src/27-ui-ship.js:171
+keyRow                       src/27-ui-ship.js:173
 keys                         src/08-state.js:14
 killPirate                   src/13-pirates.js:163
 killRock                     src/24-mode-belt.js:140
@@ -630,7 +631,7 @@ layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:101
 litRGB                       src/19c-light.js:39
-loadGame                     src/14-save.js:340
+loadGame                     src/14-save.js:343
 LOG_MAX                      src/11-log.js:3
 logAdd                       src/11-log.js:5
 logBtnLabel                  src/11-log.js:24
@@ -826,7 +827,7 @@ ok                           tests/90-harness.js:19
 openBarge                    src/12l-barge.js:576
 openCrewView                 src/27b-ui-crew.js:199
 openHq                       src/27c-ui-hq.js:455
-openShipView                 src/27-ui-ship.js:143
+openShipView                 src/27-ui-ship.js:145
 openStation                  src/26-ui-station.js:5
 ORDERS                       src/12a-crew.js:109
 ORE_KEYS                     src/02-world.js:28
@@ -969,7 +970,7 @@ RELIEF_MIX                   src/07-planet.js:46
 renderBarge                  src/12l-barge.js:611
 renderCantina                src/27c-ui-hq.js:45
 renderLog                    src/11-log.js:37
-renderOpts                   src/27-ui-ship.js:181
+renderOpts                   src/27-ui-ship.js:183
 renderRoute                  src/12r-route.js:225
 renderTab                    src/26-ui-station.js:147
 REP_MIN                      src/12k-rep.js:16
@@ -987,7 +988,7 @@ repShipMul                   src/12k-rep.js:69
 repWord                      src/12k-rep.js:31
 RES                          src/02-world.js:2
 RES_KEYS                     src/02-world.js:22
-resetArm                     src/26-ui-station.js:764
+resetArm                     src/26-ui-station.js:787
 resetWorld                   tests/90-harness.js:27
 resize                       src/08-state.js:6
 reticle                      src/17-mode-system.js:411
@@ -1034,8 +1035,8 @@ runTests                     tests/90-harness.js:65
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:4
-saveGame                     src/14-save.js:330
-say                          src/08-state.js:110
+saveGame                     src/14-save.js:333
+say                          src/08-state.js:114
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
 SCOOP_BAND                   src/19a-mode-scoop.js:7
@@ -1099,7 +1100,7 @@ starRGB                      src/19c-light.js:23
 start                        src/15-input.js:306
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
-stat                         src/08-state.js:76
+stat                         src/08-state.js:78
 STAT_SHOW                    src/05-parts.js:264
 stationDeals                 src/27g-deals.js:134
 stationFleet                 src/04b-fleet.js:163
@@ -1205,6 +1206,17 @@ VOICE_MAX                    src/09-audio.js:5
 W                            src/08-state.js:5
 wasBlurred                   src/15-input.js:110
 watchCrew                    src/27b-ui-crew.js:35
+WEAR_FULL                    src/12s-wear.js:16
+WEAR_RATE                    src/12s-wear.js:18
+WEAR_RU                      src/12s-wear.js:36
+wearAll                      src/12s-wear.js:20
+wearLine                     src/12s-wear.js:42
+wearMul                      src/12s-wear.js:35
+wearOf                       src/12s-wear.js:23
+wearRu                       src/12s-wear.js:37
+wearService                  src/12s-wear.js:49
+wearTick                     src/12s-wear.js:26
+wearYardCost                 src/12s-wear.js:58
 WEATHER                      src/19d-weather.js:15
 WEATHER_BY_TYPE              src/19d-weather.js:28
 WEATHER_CAP                  src/19d-weather.js:52
@@ -1268,7 +1280,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · рельеф:40
   · рельеф:41
 
-## src/08-state.js · 7 КБ
+## src/08-state.js · 8 КБ
   · состояние:1
 
 ## src/09-audio.js · 11 КБ
@@ -1354,6 +1366,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## src/12r-route.js · 16 КБ
   · свой торговый маршрут:1
+
+## src/12s-wear.js · 9 КБ
+  · корабль стареет:1
 
 ## src/13b-occupy.js · 17 КБ
   · пираты берут системы:1
@@ -1472,9 +1487,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/25-cockpit.js · 34 КБ
   · кабина: процедурная, статика в offscreen:1
 
-## src/26-ui-station.js · 46 КБ
+## src/26-ui-station.js · 48 КБ
   · станция:1
-  · настройки:763
+  · настройки:786
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -1485,7 +1500,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/27d-ui-cantina.js · 25 КБ
   · кантина: помещение, а не список:1
 
-## src/27e-ui-home.js · 42 КБ
+## src/27e-ui-home.js · 43 КБ
   · дом: помещение, а не список:1
 
 ## src/27f-hq-room.js · 40 КБ
@@ -1494,7 +1509,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/27g-deals.js · 14 КБ
   · кантина: дела, а не поручения:1
 
-## src/27-ui-ship.js · 19 КБ
+## src/27-ui-ship.js · 20 КБ
   · экран корабля:1
 
 ## src/28-loop.js · 23 КБ
@@ -1566,5 +1581,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## tests/91u-route.js · 6 КБ
   · автотесты: свой торговый маршрут:1
+
+## tests/91v-wear.js · 3 КБ
+  · автотесты: корабль стареет:1
 
 ## tests/99-run.js · 0 КБ

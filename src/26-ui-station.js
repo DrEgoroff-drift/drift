@@ -222,6 +222,29 @@ function renderTab(){
     }else{
     /* Ряд дока, а не склад всей галактики: что стоит здесь сегодня. Ряд держится
        на seed станции и временном бакете — вернулись через час, ряд другой. */
+    /* ── налёт часов ──
+       Верфь берёт деньги и снимает половину: работа сменная, корабль ждать
+       не будет. До чистого доводят только дома, в своём гараже (12s-wear). */
+    $body.appendChild(el("div","sec",wearLine()));
+    if(wearOf()>.05){
+      const cost=wearYardCost();
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>Обслуживание корпуса</b><s>"+
+        "снимут половину налёта: пескоструй, промывка сопел, подкраска.<br>"+
+        "до чистого доводят только в своём гараже</s>"));
+      r.appendChild(el("div","qt",cost.toLocaleString("ru")+"<s>кр</s>"));
+      const b=el("button","act","ОБСЛУЖИТЬ");
+      b.disabled=G.credits<cost;
+      b.onclick=()=>{
+        if(G.credits<cost)return;
+        G.credits-=cost;
+        const got=wearService(.5);
+        tell("tech","Обслуживание на «"+G.st.name+"» · снято "+Math.round(got*100)+"% налёта",
+             "Корпус обслужен\nналёт "+Math.round(wearOf()*100)+"%");
+        renderTab();
+      };
+      r.appendChild(b);$body.appendChild(r);
+    }
     const yard=stationFleet(G.sys);
     $body.appendChild(el("div","sec","КОРПУСА В ЭТОМ ДОКЕ · РЯД МЕНЯЕТСЯ САМ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
     for(const id of yard)$body.appendChild(shipRow(id,FLEET[id]));

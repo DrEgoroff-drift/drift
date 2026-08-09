@@ -628,7 +628,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.54.0";
+const VER="0.55.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -1521,6 +1521,9 @@ function drawHull(id,thrusting,braking,lvl,bank){
   const sp=ctx.createLinearGradient(0,-h.bw*.9+bo,0,-h.bw*.1+bo);
   sp.addColorStop(0,"rgba(255,255,255,0)");sp.addColorStop(1,"rgba(255,255,255,.14)");
   ctx.fillStyle=sp;ctx.fillRect(h.tail,-h.bw,h.len,h.bw*2);
+  /* налёт прожитых часов — последним слоем и внутри обрезки по корпусу, чтобы
+     ни одна царапина не вылезла за силуэт (12s-wear) */
+  if(typeof drawWear==="function")drawWear(h,wearOf(id));
   ctx.restore();
   ctx.strokeStyle=rgba(h.col,.95);ctx.lineWidth=1.25;
   tracePoly(h.poly);ctx.stroke();
@@ -2875,6 +2878,8 @@ const G={
   market:{},uniqueShips:{},drones:[],droneInventory:0,
   /* свой торговый маршрут: 2–4 станции, порядок обхода и накатанные круги */
   trade:{legs:[],loops:0,cursor:0,sold:0},
+  /* налёт часов по корпусам: ключ — id корабля, значение — кадры в полёте */
+  wear:{},
   /* фронт пиратов и счёт отбитых систем: цель игры видна числом */
   occ:{},occT:0,freed:0,occCalm:{},mines:{},quests:[],nodes:{},crowns:{},
   /* планета-узел за полный набор редкостей (12n): null, пока сотни нет */
@@ -2922,8 +2927,10 @@ function stat(){
   const rs=t=>(typeof rareSum==="function"?rareSum(t):0);
   return {
     S,
-    thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1)*(1+rs("thr")),
-    turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn")),
+    /* налёт часов: облезлая машина слушается хуже — единственное, чем износ
+       вмешивается в арифметику (12s-wear) */
+    thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1)*(1+rs("thr"))*wearMul(),
+    turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn"))*wearMul(),
     fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel"))),
     cargoMax:Math.max(8,Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
     hullMax:Math.max(20,Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0))),
@@ -8949,6 +8956,145 @@ function renderRoute(){
   }
 }
 
+/* ══════════════ корабль стареет ══════════════
+   Гараж (M93) стоял без дела: домой не за чем было возвращаться, потому что
+   корпус приходил в негодность только в бою, а бой чинят на любой станции за
+   четырнадцать кредитов. Корабль ничего не помнил о прожитых часах.
+
+   Здесь у корпуса появляется НАЛЁТ. Он копится сам, от часов в полёте, и быстрее
+   там, где грязно: пояс точит абразивом, шахта пылит, атмосфера газового гиганта
+   травит краску. Налёт видно — потёртости, пылевые дорожки, выгоревшая на солнце
+   полоса, — и он немного стоит: изношенная машина хуже слушается руля и тяги.
+
+   Чинить и обслуживать — разные вещи, и это главное правило этой вехи. Станция
+   латает пробоины (`repairCost`), но налёт снимают только руками и с временем:
+   на верфи за деньги и наполовину, дома в гараже — до чистого и бесплатно, потому
+   что дом не берёт денег (правило M83). Домой возвращаются не потому, что
+   сломалось, а потому, что накопилось. */
+const WEAR_FULL=180*60*60;      /* кадров полёта до полного износа: три часа за рулём */
+/* Где корабль пачкается быстрее: не «сложность режима», а грязь вокруг него */
+const WEAR_RATE={system:1,map:0,dock:0,belt:1.7,dig:1.5,cave:1.2,scoop:2.1,
+                 landing:1.3,surface:.4,base:0,raid:0,barge:.6};
+function wearAll(){if(!G.wear||typeof G.wear!=="object")G.wear={};return G.wear;}
+/* Налёт живёт на КОРПУСЕ, а не на игроке: пересесть на второй корабль — это
+   способ дать первому постоять, а не обнулить его историю */
+function wearOf(id){
+  return clamp((wearAll()[id||G.shipId]||0)/WEAR_FULL,0,1);
+}
+function wearTick(dt){
+  const r=WEAR_RATE[G.mode];
+  if(!r)return;
+  const W=wearAll(),id=G.shipId;
+  W[id]=(W[id]||0)+dt*r;
+}
+/* Цена износа: рулёжка и тяга. Не корпус и не топливо — облезлая машина
+   слушается хуже, а не разваливается; потолок в 12% заметен рукой и никогда
+   не превращает полёт в наказание. */
+function wearMul(){return 1-.12*wearOf();}
+const WEAR_RU=[[.12,"свежий"],[.35,"запылённый"],[.6,"потёртый"],[.85,"выгоревший"],[2,"облезлый"]];
+function wearRu(w){
+  w=(w===undefined)?wearOf():w;
+  for(const [t,ru] of WEAR_RU)if(w<t)return ru;
+  return"облезлый";
+}
+function wearLine(id){
+  const w=wearOf(id);
+  return"НАЛЁТ "+Math.round(w*100)+"% · "+wearRu(w).toUpperCase()+
+    (w>.12?" · РУЛЬ И ТЯГА −"+Math.round(12*w)+"%":"");
+}
+/* Обслуживание. `part` — доля, которую снимают: верфь берёт полдела и деньги,
+   гараж дома снимает всё и не берёт ничего. */
+function wearService(part,id){
+  id=id||G.shipId;
+  const W=wearAll(),before=wearOf(id);
+  if(before<=0)return 0;
+  W[id]=Math.max(0,(W[id]||0)*(1-clamp(part,0,1)));
+  return before-wearOf(id);
+}
+/* Цена верфи считается от того, сколько налёта снимут: платить за полировку
+   свежего корабля игрок не должен, и кнопка это показывает числом. */
+function wearYardCost(){
+  const w=wearOf();
+  return w<=.05?0:Math.round(140+w*2600*(typeof repShipMul==="function"?repShipMul(G.sys):1));
+}
+/* ── налёт на кадре ──
+   Рисуется ВНУТРИ обрезки по корпусу (`drawHull`), поэтому ни одна царапина не
+   выходит за силуэт. Всё детерминировано от seed корпуса: корабль обязан
+   стареть одинаково от кадра к кадру, иначе это не износ, а рябь.
+   Три слоя и ровно в таком порядке: выгорание краски (большое и мягкое),
+   пылевые дорожки по потоку (длинные), задиры и сколы (мелкие и последние) — от
+   общего к частному, как и всё остальное в этой графике. */
+function drawWear(h,w){
+  if(w<=.02)return;
+  const R=rng(hashi(h.seed||1,0x9E17,5));
+  const L=h.len,bw=h.bw;
+  ctx.save();
+  /* Первый проход красил корабль ровным серым по всему борту: на трети налёта
+     разведчик уже терял свой цвет и делался цементным. Налёт СОБИРАЕТСЯ ПО
+     МЕСТАМ, а не покрывает: выгорает верх, куда бьёт свет (тот же верх, где у
+     корпуса блик, — свет в кадре один), пылевые дорожки тянутся по потоку от
+     носа к корме, копоть садится у сопел. Между этими тремя местами краска
+     остаётся краской. */
+  /* ── выгорает КРАСКА, а не корпус ──
+     Мягкая пелена поверх борта не читалась ничем, кроме тумана: на полётном
+     масштабе корабль был неотличим от свежего. Выгорать должно то, что и есть
+     окраска, — продольная полоса цвета: с часами она садится к цвету борта, и
+     корабль теряет опознавательный знак раньше, чем обзаводится царапинами.
+     Это видно и в кадре размером с ноготь. */
+  const P=h.prof,S1=h.stripe;
+  if(P&&S1){
+    const i0=Math.floor(S1.from*(P.length-1)),i1=Math.ceil(S1.to*(P.length-1));
+    ctx.beginPath();
+    for(let i=i0;i<=i1;i++)ctx.lineTo(P[i][0],-P[i][1]*S1.a);
+    for(let i=i1;i>=i0;i--)ctx.lineTo(P[i][0],-P[i][1]*S1.b);
+    ctx.closePath();
+    ctx.fillStyle=rgba(h.body,(.75*w).toFixed(3));ctx.fill();
+    /* поверх выцветшей полосы — тёплая пыль: краска не просто темнеет,
+       она пылится, и это единственное тёплое пятно на холодном корпусе */
+    ctx.fillStyle="rgba(196,182,158,"+(.10*w).toFixed(3)+")";ctx.fill();
+  }
+  /* выгорание сверху, куда бьёт свет: слабое, только чтобы верх не остался
+     единственным чистым местом */
+  const sg=ctx.createLinearGradient(0,-bw,0,0);
+  sg.addColorStop(0,"rgba(214,202,178,"+(.09*w).toFixed(3)+")");
+  sg.addColorStop(1,"rgba(214,202,178,0)");
+  ctx.fillStyle=sg;ctx.fillRect(h.tail,-bw,L,bw);
+  /* пылевые дорожки: длинные, тонкие и вдоль потока. Толстые короткие мазки
+     первого прохода читались смазанной грязью на стекле, а не следом хода */
+  const nd=Math.round(4+w*14);
+  ctx.lineCap="round";
+  for(let i=0;i<nd;i++){
+    const x=h.tail+R()*L*.9,len=L*(.18+R()*.34);
+    /* прижаты к бортам: середина борта обдувается, грязь держится у рёбер */
+    const y=(R()<.5?-1:1)*bw*(.45+R()*.5);
+    ctx.strokeStyle="rgba(26,22,17,"+(.05+.13*w*R()).toFixed(3)+")";
+    ctx.lineWidth=.35+R()*.5;
+    ctx.beginPath();ctx.moveTo(x,y);
+    ctx.lineTo(Math.max(h.tail,x-len),y+(R()*2-1)*.8);
+    ctx.stroke();
+  }
+  /* задиры: светлый металл из-под краски, и только по передней кромке — там,
+     куда прилетает пыль на ходу. По всему борту они читались снегом */
+  if(w>.25){
+    const ns=Math.round((w-.25)*26);
+    for(let i=0;i<ns;i++){
+      const x=h.nose-R()*L*.45,y=(R()<.5?-1:1)*bw*(.3+R()*.65);
+      ctx.strokeStyle="rgba(232,238,242,"+(.07+.20*R()*w).toFixed(3)+")";
+      ctx.lineWidth=.35+R()*.5;
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-1-R()*3,y+(R()*2-1)*1.2);ctx.stroke();
+    }
+  }
+  /* копоть у сопел — единственная грязь, которую корабль делает сам */
+  if(w>.45){
+    const cg=ctx.createLinearGradient(h.tail,0,h.tail+L*.26,0);
+    cg.addColorStop(0,"rgba(10,8,8,"+(.30*w).toFixed(3)+")");
+    cg.addColorStop(1,"rgba(10,8,8,0)");
+    ctx.fillStyle=cg;ctx.fillRect(h.tail,-bw,L*.26,bw*2);
+  }
+  ctx.lineCap="butt";
+  ctx.restore();
+}
+
 /* ══════════════ пираты берут системы ══════════════ */
 /* Пираты были погодой: сколько-то их встречается в опасных секторах, и всё.
    Отношения с ними не менялись ни от чего — убил и полетел дальше.
@@ -9532,7 +9678,7 @@ function snapshot(){
     drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
-    occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,
+    occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
@@ -9581,6 +9727,9 @@ function applySave(s){
   /* фронт пиратов: разреженный объект по ключу "sx,sy", как всё привязанное
      к системе. Старые записи грузятся с пустым фронтом — он нарастёт сам */
   G.occ=(s.occ&&typeof s.occ==="object")?s.occ:{};
+  /* налёт часов по корпусам: старая запись приходит без него — корабль просто
+     считается свежим, и это честнее, чем задним числом состарить его */
+  G.wear=(s.wear&&typeof s.wear==="object")?s.wear:{};
   /* свой маршрут: старые сохранения приходят без него — заводим пустой */
   G.trade=(s.trade&&Array.isArray(s.trade.legs))
     ?{legs:s.trade.legs.slice(0,ROUTE_MAX),loops:s.trade.loops|0,
@@ -21884,6 +22033,29 @@ function renderTab(){
     }else{
     /* Ряд дока, а не склад всей галактики: что стоит здесь сегодня. Ряд держится
        на seed станции и временном бакете — вернулись через час, ряд другой. */
+    /* ── налёт часов ──
+       Верфь берёт деньги и снимает половину: работа сменная, корабль ждать
+       не будет. До чистого доводят только дома, в своём гараже (12s-wear). */
+    $body.appendChild(el("div","sec",wearLine()));
+    if(wearOf()>.05){
+      const cost=wearYardCost();
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>Обслуживание корпуса</b><s>"+
+        "снимут половину налёта: пескоструй, промывка сопел, подкраска.<br>"+
+        "до чистого доводят только в своём гараже</s>"));
+      r.appendChild(el("div","qt",cost.toLocaleString("ru")+"<s>кр</s>"));
+      const b=el("button","act","ОБСЛУЖИТЬ");
+      b.disabled=G.credits<cost;
+      b.onclick=()=>{
+        if(G.credits<cost)return;
+        G.credits-=cost;
+        const got=wearService(.5);
+        tell("tech","Обслуживание на «"+G.st.name+"» · снято "+Math.round(got*100)+"% налёта",
+             "Корпус обслужен\nналёт "+Math.round(wearOf()*100)+"%");
+        renderTab();
+      };
+      r.appendChild(b);$body.appendChild(r);
+    }
     const yard=stationFleet(G.sys);
     $body.appendChild(el("div","sec","КОРПУСА В ЭТОМ ДОКЕ · РЯД МЕНЯЕТСЯ САМ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));
     for(const id of yard)$body.appendChild(shipRow(id,FLEET[id]));
@@ -24202,6 +24374,16 @@ function homeSceneClick(cn,e){
   const z=homeHitAt(px,py);
   if(!z)return false;
   if(z.id==="garage"){
+    /* Первое, зачем сюда заходят: снять налёт прожитых часов. Дома это делают
+       до чистого и не берут денег — дом вообще не берёт денег (12s-wear).
+       Поэтому обслуживание идёт вперёд «поставить корпус на хранение». */
+    if(typeof wearOf==="function"&&wearOf()>.02){
+      const got=wearService(1);
+      logAdd("tech","Гараж дома: с «"+shipData(G.shipId).ru+"» снят налёт ("+
+        Math.round(got*100)+"%)");
+      say("Гараж\n«"+shipData(G.shipId).ru+"» отмыт и подкрашен\nналёт снят");
+      return true;
+    }
     const free=Object.keys(G.owned).filter(id=>id!==G.shipId&&
       !(G.home.garage||[]).includes(id));
     if(free.length&&homeStore(free[0])){say("В гараж поставлен «"+shipData(free[0]).ru+"»");return true;}
@@ -25210,6 +25392,8 @@ function svRender(){
 
   /* ── занятые слоты ── */
   const filled=slots.map((k,i)=>i).filter(i=>fm[i]!=null&&(svFilter==="all"||slots[i]===svFilter));
+  /* налёт часов — первой строкой: это состояние машины, а не одна из её частей */
+  $svBody.appendChild(el("div","sec",wearLine()));
   if(filled.length){
     $svBody.appendChild(el("div","sec","УСТАНОВЛЕНО"));
     for(const i of filled){
@@ -25740,7 +25924,7 @@ function frame(now){
     else if(G.mode==="scoop"&&G.scoop)updateScoop(dt);
     else if(G.mode==="base"&&G.base)updateBase(dt);
     else if(G.mode==="raid"&&G.raid)updateRaid(dt);
-    beaconTick(dt);crewBtnTick();hqBtnTick();
+    beaconTick(dt);crewBtnTick();hqBtnTick();wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){

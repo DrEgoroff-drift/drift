@@ -407,7 +407,25 @@ Intent 10, formerly M84. Now that barges are the factor's body, the player's bra
 your own route with legs, run by hand rather than as a spread on the map. A route is an object: it
 can be written down, sold and lost.
 
-## M104 (0.54.0). The ship ages
+## M104 (0.55.0). The ship ages — DONE
+
+`12s-wear` — hours flown pile up on the hull (`G.wear` keyed by ship id, `WEAR_RATE` per mode:
+the belt and the scoop are dirtier than empty space). Costs up to −12% thrust and turn and nothing
+else. The yard takes half for money; the home garage takes all of it for free, which is what
+finally gives M93's garage a job.
+
+**Decisions taken while building it, and the two faults the frames showed:**
+- the first pass washed the whole hull in even grey — at a third of the wear the scout had already
+  lost its colour and read as cement. Wear **collects in places**: the bleach follows the paint
+  stripe, dust runs along the flow by the ribs, soot sits at the nozzles, and the paint between
+  them stays paint;
+- the second pass was invisible at flight scale, which defeats the point. The readable signal is
+  the **colour stripe fading toward the body colour** — the ship loses its identifying mark before
+  it gains a single scratch, and that reads in a thumbnail;
+- wear never touches hull, tank or hold: an unwashed ship **handles** worse, it does not break.
+  Anything else would turn ageing into a repair chore, and repair already exists.
+
+## M104 (0.54.0). The ship ages — original spec
 
 The garage (M93) has no reason to exist while the ship is only repaired after a fight. Hours flown
 accumulate layers on the hull — scuffs, dust trails, sun-bleached paint (the live damage layer of

@@ -607,6 +607,9 @@ function drawHull(id,thrusting,braking,lvl,bank){
   const sp=ctx.createLinearGradient(0,-h.bw*.9+bo,0,-h.bw*.1+bo);
   sp.addColorStop(0,"rgba(255,255,255,0)");sp.addColorStop(1,"rgba(255,255,255,.14)");
   ctx.fillStyle=sp;ctx.fillRect(h.tail,-h.bw,h.len,h.bw*2);
+  /* налёт прожитых часов — последним слоем и внутри обрезки по корпусу, чтобы
+     ни одна царапина не вылезла за силуэт (12s-wear) */
+  if(typeof drawWear==="function")drawWear(h,wearOf(id));
   ctx.restore();
   ctx.strokeStyle=rgba(h.col,.95);ctx.lineWidth=1.25;
   tracePoly(h.poly);ctx.stroke();

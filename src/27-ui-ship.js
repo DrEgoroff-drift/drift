@@ -72,6 +72,8 @@ function svRender(){
 
   /* ── занятые слоты ── */
   const filled=slots.map((k,i)=>i).filter(i=>fm[i]!=null&&(svFilter==="all"||slots[i]===svFilter));
+  /* налёт часов — первой строкой: это состояние машины, а не одна из её частей */
+  $svBody.appendChild(el("div","sec",wearLine()));
   if(filled.length){
     $svBody.appendChild(el("div","sec","УСТАНОВЛЕНО"));
     for(const i of filled){

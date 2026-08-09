@@ -38,6 +38,8 @@ const G={
   market:{},uniqueShips:{},drones:[],droneInventory:0,
   /* свой торговый маршрут: 2–4 станции, порядок обхода и накатанные круги */
   trade:{legs:[],loops:0,cursor:0,sold:0},
+  /* налёт часов по корпусам: ключ — id корабля, значение — кадры в полёте */
+  wear:{},
   /* фронт пиратов и счёт отбитых систем: цель игры видна числом */
   occ:{},occT:0,freed:0,occCalm:{},mines:{},quests:[],nodes:{},crowns:{},
   /* планета-узел за полный набор редкостей (12n): null, пока сотни нет */
@@ -85,8 +87,10 @@ function stat(){
   const rs=t=>(typeof rareSum==="function"?rareSum(t):0);
   return {
     S,
-    thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1)*(1+rs("thr")),
-    turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn")),
+    /* налёт часов: облезлая машина слушается хуже — единственное, чем износ
+       вмешивается в арифметику (12s-wear) */
+    thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1)*(1+rs("thr"))*wearMul(),
+    turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn"))*wearMul(),
     fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel"))),
     cargoMax:Math.max(8,Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
     hullMax:Math.max(20,Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0))),

@@ -9,6 +9,27 @@ could ever save.
 
 ---
 
+## 0.55.0 — "The ship ages"
+
+**The garage had nothing to do.** A hull only ever went bad in a fight, and a fight is patched at
+any station for fourteen credits a point. Now the ship remembers the hours.
+
+- **Wear accumulates by itself**, from hours flown, and faster where it is dirty: the belt sands
+  the paint, the mine dusts it, a gas giant's atmosphere eats it. Three hours at the stick take a
+  hull from `свежий` to `облезлый`.
+- **You can see it.** The colour stripe — the ship's one identifying mark — fades toward the body
+  colour and dusts over; scuffs open along the leading edge; soot settles by the nozzles. It reads
+  at thumbnail size, which is the only size that matters in flight.
+- **It costs the hands, not the hull.** Up to −12% thrust and turn, and nothing else: an unwashed
+  ship handles worse, it does not break. Hull, tank and hold are untouched.
+- **Repair and service are different things.** A station patches holes; the yard will take half the
+  wear off for real money. Only your own garage at home takes it down to clean, and takes nothing
+  for it — the house has no prices. You come home because it has piled up.
+- Wear lives on the **hull**, not on the player: switching ships lets one rest, it does not wipe
+  its history.
+
+Suite **"wear: it piles up in flight and comes off by hand"** — 2908 green.
+
 ## 0.54.0 — "A trade branch of your own"
 
 **The factor had a route; the player had a sticky note.** Since M84 the domain has been trading
