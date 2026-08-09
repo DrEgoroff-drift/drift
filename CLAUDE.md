@@ -81,6 +81,7 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `12h-relic` | the lab as a building, seven artifacts, the slot and the second effect line |
 | `12l-barge` | trade barges: real routes, a barge in distress, wrecks, passengers |
 | `12m-rare` | the hundred rarities: a table of addresses, not a roulette |
+| `12r-route` | the player's own trade ring: legs off the live market, sold or handed to the factor |
 | `15-input` `16-flight` | keys/pads/mouse, starfield, autopilot, trail |
 | `17`–`25` `mode-*` | modes: system, map, landing, surface, cave, mine, belt, cockpit; `20-life` — astronaut, flora, fauna |
 | `19a-mode-scoop` | scooping volatiles from a gas giant's atmosphere |

@@ -385,7 +385,23 @@ own, better managers and hired hands with longer run records appear; among stran
 random folk. Reputation still doesn't touch the content of the deals: that would turn into access
 progression.
 
-## M103 (0.53.0). A trade branch of your own
+## M103 (0.54.0). A trade branch of your own — DONE
+
+`12r-route` — the player's own ring of 2–4 stations, read off the live market: what to take on
+each leg, what the loop nets after fuel, drawn on the map with arrows and one label on the best
+leg. Sold to an information buyer it leaves the map and the prices on it settle; handed to the
+factor it becomes his route and stops being yours. Every loop presses the destination price down,
+so the ring thins with use — the wear that keeps it from being a machine for money.
+
+**Decisions taken while building it:**
+- the paper is valued at a **full hold**, not at what the player can afford right now: a spread
+  does not get cheaper because you are broke, and the buyer has his own purse;
+- **one label on the map, on the best leg only.** Three plates on three legs collided with each
+  other and with the jump price — the map turned into a table, and the table lives on the station;
+- the loop counter advances **in order**: docking out of order re-anchors the cursor instead of
+  punishing, but only a full ring counts as a loop.
+
+## M103 (0.53.0). A trade branch of your own — original spec
 
 Intent 10, formerly M84. Now that barges are the factor's body, the player's branch is its mirror:
 your own route with legs, run by hand rather than as a spread on the map. A route is an object: it
