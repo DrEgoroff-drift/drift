@@ -355,7 +355,16 @@ Collects three debts at once (tails 1, 2 and intent 7 of the previous queue).
   where, and under what circumstances. Trophies already hang by zone (M93), the hundred rarities
   belong there too. The progress board goes in the study, not on a separate screen.
 
-## M101 (0.51.0). Nodes and crowns in hand
+## M101 (0.52.0). Nodes and crowns in hand — DONE
+
+`nodeHold`/`nodeHolder` in `05a-nodes`, drawn live in `drawCockpit` (not in the baked dash texture:
+the node changes and it sways). Persisted as `G.nodeShow`, validated against the collection on
+load. Tests added to `91m-nodes` — "the holder: the thing stands where you look": a node you do not
+own cannot be put in, the holder never touches `stat()`, and a node that leaves the collection
+leaves the holder. **Fault found by eye:** on the central stack the node collided with the pitch
+ladder and the hull nose and read as a rock outside the glass; it moved to the left pillar.
+
+## M101 (0.51.0). Nodes and crowns in hand — original spec
 
 Intent 8. Crowns are worn as a bar aboard (M91), but the player never sees the thing itself
 outside a list. Show it in the cockpit (`25-cockpit`): a holder under the instruments, the active

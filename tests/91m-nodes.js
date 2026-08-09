@@ -302,3 +302,34 @@ TEST_SUITES.push(()=>suite("репутация: железо в доке тож�
   repAdd(-10);
   ok(stationParts(sys)[0].price>base,"у тех, кто вас не ждёт, дороже");
 }));
+
+/* ── узел в руках: держатель под приборами (M101) ── */
+TEST_SUITES.push(()=>suite("держатель: вещь стоит там, где на неё смотрят",()=>{
+  resetWorld();
+  eq(nodeHolder(),null,"пустой держатель у того, кто ничего не нашёл");
+  /* находим два узла: держатель по умолчанию показывает последний */
+  const ids=Object.keys(NODE_BY_ID);
+  const a=NODE_BY_ID[ids[3]], b2=NODE_BY_ID[ids[40]];
+  ok(nodeFound(a)&&nodeFound(b2),"найдены два разных узла");
+  eq(nodeHolder().id,b2.id,"без выбора в держателе стоит последний найденный");
+  /* выбранный держится */
+  ok(nodeHold(a.id),"узел ставится в держатель");
+  eq(nodeHolder().id,a.id,"и стоит там");
+  eq(G.nodeShow,a.id,"выбор записан");
+  /* чужого туда не поставить */
+  const notMine=NODE_BY_ID[Object.keys(NODE_BY_ID).find(id=>!nodeHas(id))];
+  ok(!!notMine,"есть ненайденный узел");
+  ok(!nodeHold(notMine.id),"ненайденный в держатель не встаёт");
+  eq(nodeHolder().id,a.id,"и держатель не подменился");
+  /* держатель ничего не даёт: ни один множитель не зависит от выбора */
+  const before=JSON.stringify(stat());
+  nodeHold(b2.id);
+  eq(JSON.stringify(stat()),before,"держатель не трогает характеристики");
+  /* переживает перезагрузку, но не переживает потерю узла */
+  applySave(snapshot());
+  eq(G.nodeShow,b2.id,"выбор пережил сохранение");
+  const snap=snapshot();
+  delete snap.nodes[b2.id];
+  applySave(snap);
+  eq(G.nodeShow,null,"узел, которого нет, из держателя убирается");
+}));

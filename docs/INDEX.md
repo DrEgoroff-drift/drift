@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 95 · символов верхнего уровня: 1199
+Файлов: 95 · символов верхнего уровня: 1201
 
 ## СИМВОЛЫ
 
@@ -75,7 +75,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:160
 autoLandInputs               src/19-mode-landing.js:18
-autosave                     src/14-save.js:329
+autosave                     src/14-save.js:331
 b64dec                       src/14-save.js:11
 b64enc                       src/14-save.js:9
 bankTransform                src/03-ships.js:354
@@ -215,8 +215,8 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudPull                    src/14-save.js:351
-cloudPush                    src/14-save.js:343
+cloudPull                    src/14-save.js:353
+cloudPush                    src/14-save.js:345
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
 cockpitPlan                  src/25-cockpit.js:92
@@ -338,7 +338,7 @@ drawCaveWater                src/22a-cave-deco.js:288
 drawClouds                   src/19e-clouds.js:169
 drawCockpit                  src/25-cockpit.js:400
 drawCombat                   src/13-pirates.js:195
-drawCrowns                   src/05a-nodes.js:344
+drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20a-poi.js:336
 drawDeco                     src/21b-surface-deco.js:147
 drawDig                      src/23-mode-dig.js:376
@@ -365,7 +365,7 @@ drawMap                      src/18-mode-map.js:51
 drawModule                   src/21aa-base-rooms.js:159
 drawMonolith                 src/20a-poi.js:414
 drawNebula                   src/16-flight.js:39
-drawNodeIcon                 src/05a-nodes.js:229
+drawNodeIcon                 src/05a-nodes.js:264
 drawObelisk                  src/20a-poi.js:437
 drawObserv                   src/20a-poi.js:602
 drawPirate                   src/12i-pirate-hull.js:320
@@ -422,7 +422,7 @@ exitBelt                     src/24-mode-belt.js:162
 exitCave                     src/22-mode-cave.js:35
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
-exportCode                   src/14-save.js:338
+exportCode                   src/14-save.js:340
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -503,11 +503,11 @@ groundShadow                 src/19-mode-landing.js:238
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:337
+hasSave                      src/14-save.js:339
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:89
 hazeFar                      src/19c-light.js:81
-held                         src/08-state.js:105
+held                         src/08-state.js:107
 hex2rgb                      src/03-ships.js:145
 hexRGB                       src/24-mode-belt.js:80
 hireMerc                     src/12a-crew.js:138
@@ -585,7 +585,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:339
+importCode                   src/14-save.js:341
 initAudio                    src/09-audio.js:7
 invalidateKeyMap             src/15-input.js:40
 invalidateParts              src/05-parts.js:181
@@ -629,7 +629,7 @@ layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:101
 litRGB                       src/19c-light.js:39
-loadGame                     src/14-save.js:333
+loadGame                     src/14-save.js:335
 LOG_MAX                      src/11-log.js:3
 logAdd                       src/11-log.js:5
 logBtnLabel                  src/11-log.js:24
@@ -786,7 +786,9 @@ nodeCount                    src/05a-nodes.js:104
 nodeDrop                     src/05a-nodes.js:149
 nodeFound                    src/05a-nodes.js:109
 nodeHas                      src/05a-nodes.js:103
-nodeIconEl                   src/05a-nodes.js:328
+nodeHold                     src/05a-nodes.js:241
+nodeHolder                   src/05a-nodes.js:251
+nodeIconEl                   src/05a-nodes.js:363
 nodeRoll                     src/05a-nodes.js:123
 NODES                        src/05a-nodes.js:70
 nodesHave                    src/05a-nodes.js:102
@@ -1016,8 +1018,8 @@ runTests                     tests/90-harness.js:65
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:4
-saveGame                     src/14-save.js:323
-say                          src/08-state.js:106
+saveGame                     src/14-save.js:325
+say                          src/08-state.js:108
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
 SCOOP_BAND                   src/19a-mode-scoop.js:7
@@ -1081,7 +1083,7 @@ starRGB                      src/19c-light.js:23
 start                        src/15-input.js:299
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
-stat                         src/08-state.js:72
+stat                         src/08-state.js:74
 STAT_SHOW                    src/05-parts.js:264
 stationDeals                 src/27g-deals.js:134
 stationFleet                 src/04b-fleet.js:163
@@ -1235,8 +1237,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/04-mods.js · 7 КБ
   · модули и наука:1
 
-## src/05a-nodes.js · 24 КБ
+## src/05a-nodes.js · 26 КБ
   · узлы: тысяча вещей, из которых собирают невозможное:1
+  · узел в руках:231
 
 ## src/05-parts.js · 15 КБ
   · части корабля:1
@@ -1447,7 +1450,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/24-mode-belt.js · 27 КБ
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
-## src/25-cockpit.js · 30 КБ
+## src/25-cockpit.js · 34 КБ
   · кабина: процедурная, статика в offscreen:1
 
 ## src/26-ui-station.js · 46 КБ
@@ -1521,7 +1524,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91l-fleet.js · 10 КБ
   · автотесты: флот и фронт: сто корпусов, занятые системы, ранги, следы на земле:1
 
-## tests/91m-nodes.js · 18 КБ
+## tests/91m-nodes.js · 20 КБ
   · автотесты: журнал, тысяча узлов и венцы, кантина, репутация, памятники:1
 
 ## tests/91n-barge.js · 9 КБ

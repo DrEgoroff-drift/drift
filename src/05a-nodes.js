@@ -208,8 +208,17 @@ function nodesRender(){
       const F=NODE_FAMS.find(f=>f.id===n.fam);
       const row=el("div","row");
       row.appendChild(nodeIconEl(n,44));
+      const inHold=(nodeHolder()||{}).id===n.id;
       row.appendChild(el("div","nm","<b style='color:"+n.col+"'>«"+n.ru+
-        "»</b><s>"+n.gradeRu+" узел набора «"+F.ru+"» · находят "+n.where+"</s>"));
+        "»</b><s>"+n.gradeRu+" узел набора «"+F.ru+"» · находят "+n.where+
+        (inHold?" · <b style='color:#f2b25c'>стоит в держателе рубки</b>":"")+"</s>"));
+      /* держатель под приборами: узел ставится туда, где на него смотрят.
+         Ничего не даёт — и не должен (M101) */
+      const hb=document.createElement("button");
+      hb.textContent=inHold?"В ДЕРЖАТЕЛЕ":"В ДЕРЖАТЕЛЬ";
+      hb.disabled=inHold;
+      hb.addEventListener("click",()=>{if(nodeHold(n.id))renderTab();});
+      row.appendChild(hb);
       $body.appendChild(row);
     }
   }
@@ -218,6 +227,32 @@ function nodesRender(){
   if(typeof rareRender==="function")rareRender();
   /* и то, что даёт полный набор: планета-узел (12n) */
   if(typeof planetRender==="function")planetRender();
+}
+/* ══════════════ узел в руках ══════════════
+   Тысяча узлов и десять венцов существовали как строчки в экране наборов и
+   полоска вдоль борта, которую видно только снаружи. Вещь, которую нельзя
+   взять и поставить на виду, вещью не ощущается. Держатель под приборами
+   (25-cockpit) — то место, где игрок проводит всё время: узел стоит там, где
+   на него смотрят, и качается вместе с кораблём.
+
+   Держатель НИЧЕГО НЕ ДАЁТ. Он не слот и не бонус: эффекты по-прежнему только
+   у венцов. Иначе выбор «что поставить» превратился бы в оптимизацию, а не в
+   «хочу смотреть на это». */
+function nodeHold(id){
+  if(!nodeHas(id))return false;
+  G.nodeShow=id;
+  const n=NODE_BY_ID[id];
+  if(n)say("В держатель: «"+n.ru+"»");
+  if(typeof saveGame==="function")saveGame(true);
+  return true;
+}
+/* что стоит в держателе: выбранный узел, а если не выбран — последний найденный.
+   Пустой держатель у игрока без узлов — это честно: там нечему стоять. */
+function nodeHolder(){
+  if(G.nodeShow&&nodeHas(G.nodeShow)&&NODE_BY_ID[G.nodeShow])return NODE_BY_ID[G.nodeShow];
+  const have=Object.keys(nodesHave());
+  for(let i=have.length-1;i>=0;i--)if(NODE_BY_ID[have[i]])return NODE_BY_ID[have[i]];
+  return null;
 }
 /* ── как узел выглядит ──
    Тысяча находок, у каждой имя — и все они были строчкой текста. Вещь, которую

@@ -9,6 +9,22 @@ could ever save.
 
 ---
 
+## 0.52.0 — "Nodes and crowns in hand"
+
+**The thing stands where you actually look.** A holder on the left cockpit pillar (`25-cockpit`)
+carries one found node — a real object drawn by the same generator as everywhere else, hanging on
+a short line and swaying with roll and yaw. The forged crowns sit on the bracket itself as a small
+bar, so the marks that were only ever visible along the hull from outside are finally visible from
+the seat.
+
+**The holder gives nothing.** It is not a slot and not a bonus — effects still come from crowns
+only. Choosing what stands there is "what I want to look at", not an optimisation. Any node you
+own can be put in from the sets screen; without a choice it shows the last one found, and a node
+that leaves your collection leaves the holder.
+
+Fault found by eye and fixed in the same pass: mounted on the central stack the node landed inside
+the pitch ladder and the hull nose and read as a rock *outside* the glass.
+
 ## 0.51.0 — "A lived-in house"
 
 **The things can be poked.** Clicking the garage parks a ship, clicking the showcase puts the rare
