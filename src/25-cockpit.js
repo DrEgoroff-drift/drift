@@ -533,6 +533,66 @@ function drawCockpit(b,st){
     ctx.fillText(L[0],x+9,ly);
   });
 
+  /* ── держатель под приборами (M101) ──
+     Узлы и венцы жили строчками в экране наборов и полоской вдоль борта,
+     которую видно только снаружи. Здесь стоит сама вещь — на приподнятой
+     стойке, над доской, там, где игрок и так проводит всё время. Держатель
+     ничего не даёт: он про «смотреть», а не про «оптимизировать».
+     Рисуется живым слоем, а не в выпечке доски: узел меняют, и он качается. */
+  if(typeof nodeHolder==="function"){
+    const N=nodeHolder();
+    /* Первый заход ставил держатель на центральную стойку доски: узел попадал
+       ровно в лесенку тангажа и нос корпуса и читался камнем ЗА стеклом. Место
+       ему — на левой боковой стойке кабины: там пусто, там он заведомо внутри,
+       и взгляд на него падает тем же движением, что на приборы. */
+    const hx=P.pw+16, hy=D-70;
+    const crowns=NODE_FAMS.filter(F=>G.crowns&&G.crowns[F.id]);
+    if(N||crowns.length){
+      ctx.save();
+      /* кронштейн от стойки: горизонтальная рука с косынкой, а не полка в воздухе */
+      ctx.fillStyle="rgba(14,20,28,.95)";
+      ctx.fillRect(hx-18,hy-4,30,4.5);
+      ctx.beginPath();                                    // косынка к стойке
+      ctx.moveTo(hx-18,hy-4);ctx.lineTo(hx-18,hy+10);ctx.lineTo(hx-8,hy+.5);
+      ctx.closePath();ctx.fill();
+      ctx.strokeStyle=rgba(A,.35);ctx.lineWidth=1;
+      ctx.strokeRect(hx-18.5,hy-4.5,31,5.5);
+      ctx.fillStyle="rgba(255,255,255,.06)";ctx.fillRect(hx-18,hy-4,30,1.2);
+      if(N){
+        /* качается вместе с кораблём: подвес отстаёт от крена, поэтому вещь
+           ощущается висящей, а не приклеенной */
+        /* качается вместе с кораблём и ВИСИТ ПОД рукой: снизу он не спорит ни с
+           лесенкой на стекле, ни с приборами */
+        const sw=clamp(b.roll*.6+b.avYaw*3,-.5,.5);
+        ctx.save();
+        ctx.translate(hx+2,hy+1);
+        ctx.rotate(Math.sin(G.t*.045)*.05+sw*.5);
+        ctx.strokeStyle="rgba(180,200,215,.35)";ctx.lineWidth=1;   // тросик
+        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,9);ctx.stroke();
+        ctx.translate(0,9+12);
+        drawNodeIcon(ctx,N,24);
+        ctx.restore();
+        /* мягкий отсвет от узла: он светится в тёмной кабине */
+        const ng=ctx.createRadialGradient(hx+2,hy+22,2,hx+2,hy+22,24);
+        ng.addColorStop(0,rgba(hex2rgb(N.col),.10));
+        ng.addColorStop(1,rgba(hex2rgb(N.col),0));
+        ctx.fillStyle=ng;ctx.beginPath();ctx.arc(hx+2,hy+22,24,0,TAU);ctx.fill();
+      }
+      /* венцы — колодкой на самом кронштейне: те же ромбы, что вдоль борта,
+         только отсюда их наконец видно (05a-nodes, drawCrowns) */
+      crowns.forEach((F,i)=>{
+        const cx2=hx-15+i*3.4;
+        const col=hex2rgb(F.col);
+        const pu=.6+.4*Math.sin(G.t*.06+i*1.3);
+        ctx.fillStyle=rgba(mixc(col,[255,255,255],.35),.9*pu);
+        ctx.beginPath();
+        ctx.moveTo(cx2,hy-1.6);ctx.lineTo(cx2+1.5,hy);ctx.lineTo(cx2,hy+1.6);
+        ctx.lineTo(cx2-1.5,hy);ctx.closePath();ctx.fill();
+      });
+      ctx.restore();
+    }
+  }
+
   /* ── рукоятки и рычаг тяги ──
      просвет между экранными пэдами считаем по той же геометрии, что задаёт CSS
      режима пояса: слева 4 кнопки по 44, справа три по 44 и одна 56 */

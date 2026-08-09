@@ -33,7 +33,7 @@ function snapshot(){
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
-    nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
+    nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,
@@ -89,6 +89,8 @@ function applySave(s){
   /* найденные узлы и собранные венцы: в записи только номера */
   G.nodes=(s.nodes&&typeof s.nodes==="object")?s.nodes:{};
   G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
+  /* что стоит в держателе рубки: только настоящий и только свой узел */
+  G.nodeShow=(typeof s.nodeShow==="string"&&G.nodes[s.nodeShow])?s.nodeShow:null;
   /* редкости: только список унесённых id (12m-rare) */
   G.rareFound=Array.isArray(s.rareFound)?s.rareFound.filter(x=>typeof x==="string"):[];
   /* пересказ (12p): слухи и метки — память о переменах, которые уже случились в

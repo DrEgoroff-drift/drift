@@ -627,7 +627,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.51.0";
+const VER="0.52.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -2033,8 +2033,17 @@ function nodesRender(){
       const F=NODE_FAMS.find(f=>f.id===n.fam);
       const row=el("div","row");
       row.appendChild(nodeIconEl(n,44));
+      const inHold=(nodeHolder()||{}).id===n.id;
       row.appendChild(el("div","nm","<b style='color:"+n.col+"'>«"+n.ru+
-        "»</b><s>"+n.gradeRu+" узел набора «"+F.ru+"» · находят "+n.where+"</s>"));
+        "»</b><s>"+n.gradeRu+" узел набора «"+F.ru+"» · находят "+n.where+
+        (inHold?" · <b style='color:#f2b25c'>стоит в держателе рубки</b>":"")+"</s>"));
+      /* держатель под приборами: узел ставится туда, где на него смотрят.
+         Ничего не даёт — и не должен (M101) */
+      const hb=document.createElement("button");
+      hb.textContent=inHold?"В ДЕРЖАТЕЛЕ":"В ДЕРЖАТЕЛЬ";
+      hb.disabled=inHold;
+      hb.addEventListener("click",()=>{if(nodeHold(n.id))renderTab();});
+      row.appendChild(hb);
       $body.appendChild(row);
     }
   }
@@ -2043,6 +2052,32 @@ function nodesRender(){
   if(typeof rareRender==="function")rareRender();
   /* и то, что даёт полный набор: планета-узел (12n) */
   if(typeof planetRender==="function")planetRender();
+}
+/* ══════════════ узел в руках ══════════════
+   Тысяча узлов и десять венцов существовали как строчки в экране наборов и
+   полоска вдоль борта, которую видно только снаружи. Вещь, которую нельзя
+   взять и поставить на виду, вещью не ощущается. Держатель под приборами
+   (25-cockpit) — то место, где игрок проводит всё время: узел стоит там, где
+   на него смотрят, и качается вместе с кораблём.
+
+   Держатель НИЧЕГО НЕ ДАЁТ. Он не слот и не бонус: эффекты по-прежнему только
+   у венцов. Иначе выбор «что поставить» превратился бы в оптимизацию, а не в
+   «хочу смотреть на это». */
+function nodeHold(id){
+  if(!nodeHas(id))return false;
+  G.nodeShow=id;
+  const n=NODE_BY_ID[id];
+  if(n)say("В держатель: «"+n.ru+"»");
+  if(typeof saveGame==="function")saveGame(true);
+  return true;
+}
+/* что стоит в держателе: выбранный узел, а если не выбран — последний найденный.
+   Пустой держатель у игрока без узлов — это честно: там нечему стоять. */
+function nodeHolder(){
+  if(G.nodeShow&&nodeHas(G.nodeShow)&&NODE_BY_ID[G.nodeShow])return NODE_BY_ID[G.nodeShow];
+  const have=Object.keys(nodesHave());
+  for(let i=have.length-1;i>=0;i--)if(NODE_BY_ID[have[i]])return NODE_BY_ID[have[i]];
+  return null;
 }
 /* ── как узел выглядит ──
    Тысяча находок, у каждой имя — и все они были строчкой текста. Вещь, которую
@@ -2843,6 +2878,8 @@ const G={
   pnode:null,
   /* личный счёт фракций к вам (12o): пусто, пока не наделали дел */
   hunted:{},
+  /* узел, стоящий в держателе рубки (05a-nodes, M101): украшение, не слот */
+  nodeShow:null,
   /* пересказ мира (12p): слухи, метки знания на карте и соперники с адресами */
   news:[],newsMarks:{},newsT:0,rivals:{},
   dealsDone:{},dealsWait:[],rep:{},poiSeen:{},
@@ -9188,7 +9225,7 @@ function snapshot(){
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
-    nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
+    nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,
@@ -9244,6 +9281,8 @@ function applySave(s){
   /* найденные узлы и собранные венцы: в записи только номера */
   G.nodes=(s.nodes&&typeof s.nodes==="object")?s.nodes:{};
   G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
+  /* что стоит в держателе рубки: только настоящий и только свой узел */
+  G.nodeShow=(typeof s.nodeShow==="string"&&G.nodes[s.nodeShow])?s.nodeShow:null;
   /* редкости: только список унесённых id (12m-rare) */
   G.rareFound=Array.isArray(s.rareFound)?s.rareFound.filter(x=>typeof x==="string"):[];
   /* пересказ (12p): слухи и метки — память о переменах, которые уже случились в
@@ -21176,6 +21215,66 @@ function drawCockpit(b,st){
     ctx.fillStyle=on?L[2]:"rgba(93,115,130,.4)";
     ctx.fillText(L[0],x+9,ly);
   });
+
+  /* ── держатель под приборами (M101) ──
+     Узлы и венцы жили строчками в экране наборов и полоской вдоль борта,
+     которую видно только снаружи. Здесь стоит сама вещь — на приподнятой
+     стойке, над доской, там, где игрок и так проводит всё время. Держатель
+     ничего не даёт: он про «смотреть», а не про «оптимизировать».
+     Рисуется живым слоем, а не в выпечке доски: узел меняют, и он качается. */
+  if(typeof nodeHolder==="function"){
+    const N=nodeHolder();
+    /* Первый заход ставил держатель на центральную стойку доски: узел попадал
+       ровно в лесенку тангажа и нос корпуса и читался камнем ЗА стеклом. Место
+       ему — на левой боковой стойке кабины: там пусто, там он заведомо внутри,
+       и взгляд на него падает тем же движением, что на приборы. */
+    const hx=P.pw+16, hy=D-70;
+    const crowns=NODE_FAMS.filter(F=>G.crowns&&G.crowns[F.id]);
+    if(N||crowns.length){
+      ctx.save();
+      /* кронштейн от стойки: горизонтальная рука с косынкой, а не полка в воздухе */
+      ctx.fillStyle="rgba(14,20,28,.95)";
+      ctx.fillRect(hx-18,hy-4,30,4.5);
+      ctx.beginPath();                                    // косынка к стойке
+      ctx.moveTo(hx-18,hy-4);ctx.lineTo(hx-18,hy+10);ctx.lineTo(hx-8,hy+.5);
+      ctx.closePath();ctx.fill();
+      ctx.strokeStyle=rgba(A,.35);ctx.lineWidth=1;
+      ctx.strokeRect(hx-18.5,hy-4.5,31,5.5);
+      ctx.fillStyle="rgba(255,255,255,.06)";ctx.fillRect(hx-18,hy-4,30,1.2);
+      if(N){
+        /* качается вместе с кораблём: подвес отстаёт от крена, поэтому вещь
+           ощущается висящей, а не приклеенной */
+        /* качается вместе с кораблём и ВИСИТ ПОД рукой: снизу он не спорит ни с
+           лесенкой на стекле, ни с приборами */
+        const sw=clamp(b.roll*.6+b.avYaw*3,-.5,.5);
+        ctx.save();
+        ctx.translate(hx+2,hy+1);
+        ctx.rotate(Math.sin(G.t*.045)*.05+sw*.5);
+        ctx.strokeStyle="rgba(180,200,215,.35)";ctx.lineWidth=1;   // тросик
+        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,9);ctx.stroke();
+        ctx.translate(0,9+12);
+        drawNodeIcon(ctx,N,24);
+        ctx.restore();
+        /* мягкий отсвет от узла: он светится в тёмной кабине */
+        const ng=ctx.createRadialGradient(hx+2,hy+22,2,hx+2,hy+22,24);
+        ng.addColorStop(0,rgba(hex2rgb(N.col),.10));
+        ng.addColorStop(1,rgba(hex2rgb(N.col),0));
+        ctx.fillStyle=ng;ctx.beginPath();ctx.arc(hx+2,hy+22,24,0,TAU);ctx.fill();
+      }
+      /* венцы — колодкой на самом кронштейне: те же ромбы, что вдоль борта,
+         только отсюда их наконец видно (05a-nodes, drawCrowns) */
+      crowns.forEach((F,i)=>{
+        const cx2=hx-15+i*3.4;
+        const col=hex2rgb(F.col);
+        const pu=.6+.4*Math.sin(G.t*.06+i*1.3);
+        ctx.fillStyle=rgba(mixc(col,[255,255,255],.35),.9*pu);
+        ctx.beginPath();
+        ctx.moveTo(cx2,hy-1.6);ctx.lineTo(cx2+1.5,hy);ctx.lineTo(cx2,hy+1.6);
+        ctx.lineTo(cx2-1.5,hy);ctx.closePath();ctx.fill();
+      });
+      ctx.restore();
+    }
+  }
 
   /* ── рукоятки и рычаг тяги ──
      просвет между экранными пэдами считаем по той же геометрии, что задаёт CSS
