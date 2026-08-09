@@ -459,6 +459,12 @@ function renderTab(){
         "width:"+Math.round(roomW*upx)+"px";
       $body.appendChild(hcv);
       drawHomeRoom(hcv);
+      /* ── по вещам можно ткнуть ──
+         Кнопки ниже остаются, но перестают быть единственным входом: гараж
+         ставит корабль, витрина выносит редкое, кабинет и жилая часть
+         рассказывают, что там есть. Зоны считает сам рисунок (27e-ui-home),
+         второго описания геометрии нет. */
+      hcv.addEventListener("click",(e)=>{if(homeSceneClick(hcv,e))renderTab();});
       const rooms=HOME_TIERS.slice(0,G.home.tier).map(t=>t.ru).join(" · ");
       const hr=el("div","row");
       /* строку «до ступени» не повторяем: она уже нарисована в самой комнате */
@@ -474,6 +480,31 @@ function renderTab(){
       /* ── что дом умеет: по одной строке на ступень, и только на ту, что есть.
          Раньше поставить корабль в гараж или вынести редкое на витрину можно
          было только из кода, то есть нельзя. ── */
+      /* домочадец: раз на ступень и ни разом больше (12j) */
+      if(typeof homeMateKind==="function"&&homeMateKind()){
+        const mr=el("div","row");
+        mr.appendChild(el("div","nm","<b>"+homeMateName()+"</b><s>"+
+          "живёт тут же и хочет что-то сказать · один раз на ступень</s>"));
+        const mb=document.createElement("button");
+        mb.textContent="ПОГОВОРИТЬ";
+        mb.addEventListener("click",()=>{homeMateTake();renderTab();});
+        mr.appendChild(mb);
+        $body.appendChild(mr);
+      }
+      /* стена-музей: доска прогресса живёт в кабинете, а не на отдельном экране */
+      if(homeHas("study")&&typeof rareCount==="function"){
+        $body.appendChild(el("div","sec","СТЕНА В КАБИНЕТЕ · "+rareCount()+" / 100 · "+
+          "ЧТО УНЕСЕНО И ОТКУДА"));
+        const have=rareList().map(id=>RARE_BY_ID[id]).filter(Boolean).slice(-5).reverse();
+        if(!have.length)$body.appendChild(el("div","row",
+          "<div class='nm'><s>гвозди вбиты, рамки пусты: пока не принесено ничего</s></div>"));
+        for(const R of have)
+          $body.appendChild(el("div","row","<div class='nm'><b>«"+R.ru+"»</b><s>"+
+            R.grade+" · "+R.whereRu+" · "+R.note+"</s></div>"));
+        const rv=Object.keys(G.rivals||{}).length;
+        if(rv)$body.appendChild(el("div","row","<div class='nm'><b>у соперников: "+rv+
+          "</b><s>их адреса — в кантине: унесённое не потеряно, оно переехало</s></div>"));
+      }
       if(homeHas("garage")){
         const free=Object.keys(G.owned).filter(id=>
           id!==G.shipId&&!G.home.garage.includes(id)&&shipData(id));

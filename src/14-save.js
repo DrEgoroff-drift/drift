@@ -254,6 +254,9 @@ function applySave(s){
     if(s.home.showcase&&typeof s.home.showcase==="object")
       for(const k of RES_KEYS)if(s.home.showcase[k]>0)h.showcase[k]=+s.home.showcase[k];
     h.trophies=Array.isArray(s.home.trophies)?s.home.trophies.slice(0,64):[];
+    /* домочадец говорил на этой ступени — иначе перезагрузка сделала бы из него
+       кран с частями (12j) */
+    h.mateTier=clamp(s.home.mateTier|0,0,HOME_TIERS.length);
     G.home=h;
   }else G.home=null;
   /* надетый артефакт должен быть найденным и ровно у одного владельца */

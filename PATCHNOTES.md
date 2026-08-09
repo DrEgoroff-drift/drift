@@ -9,6 +9,32 @@ could ever save.
 
 ---
 
+## 0.51.0 — "A lived-in house"
+
+**The things can be poked.** Clicking the garage parks a ship, clicking the showcase puts the rare
+stock out, the study and the living quarters answer with what is in them. The buttons in HOLDINGS
+stay — the scene is a second way in, not a second set of rules, and the hit zones are computed by
+the drawing itself, so there is no second description of the geometry to drift out of sync.
+
+**The hallway and the garage caught up with the rest.** After M93 the other steps were lived in
+and these two were a door with three hooks and a niche with a ship. Now: a doorway with a frame and
+panels, a plank of hooks with coats that have shoulders, boots by the threshold, a shelf with keys;
+in the garage a workbench with parts, a tool board under the ceiling, a drum, rags and a puddle
+under the stern. Faults found by eye and fixed in the same pass: the coats read as a bottle until
+the hallway grew wider, the tool board lay inside the ship's hull, the ship floated above its
+trestles, the power cable crossed the silhouette like a whip, and the museum wall shouted over the
+whole room until its colours were mixed down into the wall.
+
+**People are visible at home.** Whoever is not on a run sits in the living quarters as a real body
+(the same `hqFigure` as everywhere else, squeezed to the room's scale). Low morale is drawn — the
+figure is smaller, darker and sits — so it stops being an invisible multiplier.
+
+**A housemate speaks once per step.** A tip that leaves a real mark on the map, a spare part, or a
+rumour — once per tier and never again, remembered through saves, so he never becomes a tap.
+
+**The museum wall** hangs over the desk in the study: taken pieces framed, the rest bare nails.
+The progress board lives there too, as a log of what was brought and from where.
+
 ## 0.50.0 — "The world moved without you"
 
 **Time away is told in words, not simulated.** New module `12p-news.js` rolls the elapsed time

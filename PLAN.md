@@ -323,7 +323,22 @@ new `12o-news`. Faking beats computing: the player only ever sees the outcome.
 Suite: **"the retelling: rumours don't lie"** — behind every rumour stands a real state change; no
 rumour makes a hundred out of a hundred unreachable.
 
-## M100 (0.50.0). A lived-in house
+## M100 (0.51.0). A lived-in house — DONE
+
+Suite `91t-home-live`, all green (2846). Hit zones (`HOME_HIT`/`homeHitAt`/`homeSceneClick`) are
+emitted by the drawing pass itself — one description of the geometry, not two. The hallway grew to
+50 units and got a real doorway, coats with shoulders, boots and a shelf; the garage got a
+workbench, a tool board, a drum and a puddle. Crew at home are drawn as `hqFigure` bodies with
+morale in the pose (`homeCrewFigure`). The housemate (`homeMate*` in 12j) gives one thing per tier,
+remembered in `H.mateTier` through the save. The museum wall hangs in the study, with the progress
+log in the panel below.
+
+**Faults found by eye in this pass** (worth more than a list of achievements): coats read as a
+bottle in a 40-unit hallway; the tool board sat inside the ship's hull; the ship floated above its
+trestles; the power cable crossed the silhouette; the museum wall shouted over the room until its
+colours were mixed into the wall.
+
+## M100 (0.50.0). A lived-in house — original spec
 
 Collects three debts at once (tails 1, 2 and intent 7 of the previous queue).
 

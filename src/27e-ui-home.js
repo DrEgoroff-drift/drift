@@ -15,15 +15,33 @@ const HOME_ROOM_H=200;
 /* ширина комнаты в своих единицах: ровно столько, сколько занимают уже
    построенные ступени плюс поля. Комната с самого начала не должна быть
    лентой, в которой добро жмётся к левому краю */
-const HOME_STEP_W=[52,40,88,56,60,58,56,70];
+/* прихожая шире двери с крючками: в 40 единицах одежда налезала на дверь и
+   читалась бутылкой, а не одеждой — это видно только глазами, не проверкой */
+const HOME_STEP_W=[52,50,88,56,60,58,56,70];
 function homeRoomW(){
   const t=(G.home&&G.home.tier)||0;
   let w=28;
   for(let i=0;i<t;i++)w+=HOME_STEP_W[i];
   return w+46;                                      // поле под хозяина справа
 }
+/* ── зоны нажатия ──
+   Кнопки в «ВЛАДЕНИИ» остаются, но перестают быть единственным входом: вещь,
+   на которую смотришь, должна отзываться на палец. Зоны собираются в тех же
+   единицах комнаты, что и рисунок, — второго описания геометрии нет, иначе они
+   разъедутся при первой же правке. Правило интерфейса про 44 px соблюдается на
+   уровне экрана: зона — это целая ступень, а не мелкая деталь в ней. */
+let HOME_HIT=[];
+let HOME_VIEW={k:1,pad:0};
+function homeHitAt(px,py){
+  const k=HOME_VIEW.k||1;
+  const rx=(px-HOME_VIEW.pad)/k, ry=py/k;
+  for(const z of HOME_HIT)
+    if(rx>=z.x&&rx<=z.x+z.w&&ry>=z.y&&ry<=z.y+z.h)return z;
+  return null;
+}
 function drawHomeRoom(cn){
   const H=G.home;if(!H||!H.tier)return;
+  HOME_HIT=[];
   const c=cn.getContext("2d");
   c.clearRect(0,0,cn.width,cn.height);
   /* масштаб берём по ШИРИНЕ содержимого, а не по высоте канвы: иначе
@@ -36,6 +54,8 @@ function drawHomeRoom(cn){
   const W2=homeRoomW();
   const k=Math.min(cn.width/W2,2.2), H2=cn.height/k;
   const pad=(cn.width-W2*k)/2;
+  /* тот же перевод, что у рисунка, — им же и попадают пальцем */
+  HOME_VIEW={k,pad:Math.max(0,pad)};
   c.save();c.translate(Math.max(0,pad),0);c.scale(k,k);
   homeRoomBody(c,W2,H2);
   c.restore();
@@ -152,6 +172,8 @@ function homeRoomBody(c,W2,H2){
   /* ── ступени слева направо: комната растёт, а не подсвечивается ── */
   let x=14;
   const step=(w,fn)=>{fn(x,w);x+=w;};
+  /* зона на всю ступень: помечает вещь, с которой можно что-то сделать */
+  const zone=(x0,w,id,ru)=>HOME_HIT.push({x:x0-2,y:fy-76,w:w+4,h:78,id,ru});
   /* 1. угол: матрас, ящик вместо стола, лампа на полу */
   if(H.tier>=1)step(52,(x0)=>{
     /* Первая ступень — это про бедность, а не про пустоту: матрас на полу,
@@ -184,17 +206,56 @@ function homeRoomBody(c,W2,H2){
     c.fillStyle=lg;c.beginPath();c.arc(x0+36,fy-4,26,0,TAU);c.fill();
   });
   /* 2. прихожая: дверь, крючки, коврик */
-  if(H.tier>=2)step(40,(x0)=>{
+  if(H.tier>=2)step(50,(x0)=>{
+    /* Прихожая была дверью, тремя крючками и ковриком — на фоне обжитых семи
+       ступеней она выпадала из языка комнаты (хвост M93). Дверь получила
+       толщину и притолоку, крючки — то, что на них висит, а пол — следы
+       человека, который только что вошёл. */
+    c.fillStyle="rgba(0,0,0,.35)";c.fillRect(x0+2,fy-60,30,60);      // проём с косяком
     c.fillStyle=rgba(mixc(wall,[18,20,26],.7),1);
     c.fillRect(x0+4,fy-58,26,58);
+    c.fillStyle="rgba(255,255,255,.05)";c.fillRect(x0+4,fy-58,26,1.4);
     c.strokeStyle="rgba(255,255,255,.12)";c.lineWidth=1;
     c.strokeRect(x0+4.5,fy-57.5,25,57);
+    c.fillStyle="rgba(0,0,0,.3)";                                    // филёнки двери
+    c.fillRect(x0+7,fy-53,20,20);c.fillRect(x0+7,fy-29,20,22);
+    c.fillStyle="rgba(255,255,255,.06)";
+    c.fillRect(x0+7,fy-53,20,1);c.fillRect(x0+7,fy-29,20,1);
     c.fillStyle=rgba(acc,.8);c.beginPath();c.arc(x0+26,fy-30,1.6,0,TAU);c.fill();
-    for(let i=0;i<3;i++){                            // крючки с одеждой
-      c.strokeStyle="rgba(255,255,255,.2)";
-      c.beginPath();c.moveTo(x0+33+i*3,fy-52);c.lineTo(x0+33+i*3,fy-48);c.stroke();
+    /* планка с крючками, а не крючки в воздухе — и на них настоящая одежда */
+    c.fillStyle=rgba(mixc(wall,[70,62,54],.9),1);c.fillRect(x0+32,fy-54,16,2.4);
+    const coats=[[92,84,72],[74,88,84]];
+    for(let i=0;i<3;i++){
+      const hx=x0+35+i*5.5;
+      c.strokeStyle="rgba(255,255,255,.22)";c.lineWidth=1;
+      c.beginPath();c.moveTo(hx,fy-52);c.lineTo(hx,fy-49);c.stroke();
+      if(i<2){                                       // две вещи висят, третий крючок пуст
+        /* у одежды есть плечи и подол: без них она читалась бутылкой на полке */
+        c.fillStyle=rgba(coats[i],.9);
+        c.beginPath();
+        c.moveTo(hx,fy-49);
+        c.lineTo(hx-4.6,fy-45);c.lineTo(hx-3.6,fy-28);
+        c.lineTo(hx+3.8,fy-28);c.lineTo(hx+4.8,fy-45);
+        c.closePath();c.fill();
+        c.fillStyle="rgba(255,255,255,.07)";                     // блик по плечу
+        c.beginPath();c.moveTo(hx,fy-49);c.lineTo(hx-4.6,fy-45);c.lineTo(hx-2,fy-44);
+        c.closePath();c.fill();
+        c.fillStyle="rgba(0,0,0,.22)";c.fillRect(hx-3.4,fy-38,7,1.2);   // пояс
+      }
     }
+    /* обувь у порога, ботинок набок: дом — это когда разуваются */
+    c.fillStyle="rgba(46,42,40,1)";
+    c.fillRect(x0+3,fy-4,7,4);
+    c.fillRect(x0+11,fy-3.4,7,3.4);
+    c.fillStyle="rgba(255,255,255,.06)";c.fillRect(x0+3,fy-4,7,1);
+    /* коврик — с ворсом и вмятиной, а не полоска */
     c.fillStyle="rgba(120,100,86,.7)";c.fillRect(x0+2,fy-3,32,3);
+    c.fillStyle="rgba(0,0,0,.25)";
+    for(let i=0;i<10;i++)c.fillRect(x0+3+i*3,fy-2.4,1.4,2.4);
+    /* полка над крючками: ключи, перчатки, скомканная бумага */
+    c.fillStyle=rgba(mixc(wall,[64,58,52],.9),1);c.fillRect(x0+32,fy-62,16,2);
+    c.fillStyle="rgba(214,206,190,.5)";c.fillRect(x0+34,fy-65,5,3);
+    c.fillStyle=rgba(acc,.5);c.fillRect(x0+42,fy-64,2,2);
   });
   /* 3. гараж: корабль боком, вчетверо шире человека — сюда вы вернётесь */
   if(H.tier>=3)step(88,(x0)=>{
@@ -213,18 +274,22 @@ function homeRoomBody(c,W2,H2){
     c.fillStyle="rgba(0,0,0,.45)";
     c.beginPath();c.ellipse(x0+42,fy-4,30,4.5,0,0,TAU);c.fill();
     /* козлы, на которых он стоит: без них корабль висит в нише */
+    /* козлы ДОСТАЮТ до брюха: на прежней высоте корабль висел над ними, и
+       гараж читался ангаром с левитацией */
     c.fillStyle="rgba(70,64,58,1)";
     for(const dx of [-20,20]){
-      c.fillRect(x0+42+dx-6,fy-14,12,3);
+      c.fillRect(x0+42+dx-6,fy-22,12,3);
       c.fillStyle="rgba(52,48,44,1)";
-      c.fillRect(x0+42+dx-5,fy-11,2.6,11);c.fillRect(x0+42+dx+2.4,fy-11,2.6,11);
+      c.fillRect(x0+42+dx-5,fy-19,2.6,19);c.fillRect(x0+42+dx+2.4,fy-19,2.6,19);
+      c.fillStyle="rgba(90,84,76,1)";                  // подкладка под корпус
+      c.fillRect(x0+42+dx-6,fy-23.6,12,1.6);
       c.fillStyle="rgba(70,64,58,1)";
     }
     /* НАСТОЯЩИЙ корпус, а не силуэт: тот же `drawHull`, что в полёте. Плоская
        заливка по контуру превращала корабль в розовую сосиску — сюда же он
        поставлен ради того, чтобы на него смотреть. */
     c.save();
-    c.translate(x0+42,fy-30);
+    c.translate(x0+42,fy-31);
     const hl=hullOf(gid),s=Math.min(70/hl.len,26/Math.max(6,hl.halfW*2));
     c.scale(s,s);
     const prev=ctx;ctx=c;
@@ -234,9 +299,39 @@ function homeRoomBody(c,W2,H2){
     /* кабель питания с потолка ниши к корме */
     c.strokeStyle="rgba(242,178,92,.35)";c.lineWidth=1;
     c.beginPath();
-    c.moveTo(x0+70,fy-64);c.quadraticCurveTo(x0+64,fy-44,x0+56,fy-32);c.stroke();
+    /* кабель идёт к КОРМЕ и не пересекает силуэт: через корпус он читался
+       хлыстом поперёк корабля */
+    c.moveTo(x0+30,fy-64);c.quadraticCurveTo(x0+26,fy-50,x0+24,fy-38);c.stroke();
     c.fillStyle="rgba(242,178,92,.6)";
-    c.beginPath();c.arc(x0+56,fy-32,1.6,0,TAU);c.fill();
+    c.beginPath();c.arc(x0+24,fy-38,1.6,0,TAU);c.fill();
+    /* Гараж был нишей с кораблём: место, где корабль стоит, но никто не
+       работает (хвост M93). Работа видна по вещам — верстак с инструментом,
+       щит с ключами по силуэтам, бочка, ветошь и лужа под кормой. */
+    c.fillStyle=rgba(mixc(wall,[66,60,54],.92),1);                    // верстак у стены
+    c.fillRect(x0+2,fy-20,20,3);
+    c.fillStyle="rgba(0,0,0,.45)";c.fillRect(x0+3,fy-17,2.4,17);c.fillRect(x0+19,fy-17,2.4,17);
+    c.fillStyle="rgba(255,255,255,.08)";c.fillRect(x0+2,fy-20,20,1);
+    c.fillStyle="rgba(150,140,120,.7)";c.fillRect(x0+5,fy-23,6,3);    // коробка деталей
+    c.fillStyle="rgba(190,160,110,.6)";c.fillRect(x0+13,fy-22,5,2);
+    /* щит уходит ПОД потолок ниши: на прежнем месте он лежал прямо на корпусе
+       корабля — две вещи в одном объёме, чего в комнате быть не должно */
+    c.fillStyle="rgba(30,34,40,.9)";c.fillRect(x0+3,fy-62,22,14);
+    c.strokeStyle="rgba(255,255,255,.12)";c.lineWidth=1;
+    c.strokeRect(x0+3.5,fy-61.5,21,13);
+    c.strokeStyle="rgba(190,200,210,.45)";
+    for(let i=0;i<4;i++){                                             // ключи по силуэтам
+      const kx=x0+7+i*4.6;
+      c.beginPath();c.moveTo(kx,fy-59);c.lineTo(kx,fy-53-((i*3)%4));c.stroke();
+      c.beginPath();c.arc(kx,fy-59.6,1.2,0,TAU);c.stroke();
+    }
+    c.fillStyle="rgba(70,66,60,1)";                                   // бочка и ветошь
+    c.fillRect(x0+74,fy-14,9,14);
+    c.fillStyle="rgba(255,255,255,.07)";c.fillRect(x0+74,fy-14,9,1.4);
+    c.fillStyle="rgba(130,120,100,.6)";
+    c.beginPath();c.ellipse(x0+70,fy-1.5,4,1.6,0,0,TAU);c.fill();
+    c.fillStyle="rgba(20,26,24,.5)";                                  // лужа под кормой
+    c.beginPath();c.ellipse(x0+58,fy-1,7,2,0,0,TAU);c.fill();
+    zone(x0,84,"garage","гараж");
   });
   /* 4. витрина: стекло, полки, редкое сырьё огоньками */
   if(H.tier>=4)step(56,(x0)=>{
@@ -292,6 +387,7 @@ function homeRoomBody(c,W2,H2){
     c.fillStyle="rgba(255,255,255,.06)";
     c.beginPath();c.moveTo(x0+8,fy-2);c.lineTo(x0+30,fy-60);c.lineTo(x0+38,fy-60);
     c.lineTo(x0+16,fy-2);c.closePath();c.fill();
+    zone(x0,56,"case","витрина");
   });
   /* 5. мастерская: верстак по бедро, тиски, доска с инструментом, стружка
         Дощечка на двух палках выглядела чертежом мебели. Верстак получил
@@ -362,6 +458,33 @@ function homeRoomBody(c,W2,H2){
     c.fillStyle=tg;c.beginPath();c.arc(x0+17,fy-38,30,0,TAU);c.fill();
     c.fillStyle="rgba(240,235,220,.75)";                             // стопка бумаг
     for(let i=0;i<3;i++)c.fillRect(x0+30+i*.6,fy-31-i*1.2,14,1.4);
+    /* ── стена-музей (12m) ──
+       Сотня редкостей была счётчиком, а счётчик ничего не рассказывает. Здесь
+       она висит над столом: занятая ячейка — предмет в рамке своего грейда,
+       пустая — гвоздь и пятно на обоях. Доска прогресса живёт в кабинете, а не
+       на отдельном экране. */
+    const got=typeof rareCount==="function"?rareCount():0;
+    const cols=8,rows=3;
+    for(let i=0;i<cols*rows;i++){
+      const gx=x0+6+(i%cols)*5.6, gy=fy-72+Math.floor(i/cols)*5.4;
+      /* заполняем ряды по числу собранного: сотня раскладывается на 24 ячейки */
+      const filled=i<Math.round(got/100*cols*rows);
+      if(filled){
+        /* стена — не коробка с таблетками: цвет приглушён к стене, иначе
+           двадцать четыре ярких квадрата перекрикивают всю комнату */
+        const base=hex2rgb(["#c8f0ff","#f2b25c","#c58ae0","#8fd08a"][i%4]);
+        const col=mixc(base,wall,.55);
+        c.fillStyle="rgba(0,0,0,.5)";c.fillRect(gx,gy,4.6,4.4);
+        c.fillStyle=rgba(col,.8);c.fillRect(gx+.8,gy+.8,3,2.8);
+        c.strokeStyle=rgba(mixc(base,wall,.3),.45);c.lineWidth=.6;
+        c.strokeRect(gx+.3,gy+.3,4,3.8);
+        c.fillStyle="rgba(255,255,255,.10)";c.fillRect(gx+.8,gy+.8,3,.7);
+      }else{
+        c.fillStyle="rgba(255,255,255,.06)";c.fillRect(gx+2,gy+1,1,1);   // гвоздь
+        c.fillStyle="rgba(0,0,0,.14)";c.fillRect(gx,gy,4.6,4.4);         // пятно
+      }
+    }
+    zone(x0,58,"study","кабинет");
   });
   /* 7. жилая часть: койки в два яруса — сюда возвращаются наёмники */
   if(H.tier>=7)step(56,(x0)=>{
@@ -388,6 +511,17 @@ function homeRoomBody(c,W2,H2){
     c.fillStyle=rgba(mixc(wall,[60,56,52],.9),1);                     // тумбочка
     c.fillRect(x0+2,fy-13,13,13);
     c.fillStyle=rgba(acc,.6);c.beginPath();c.arc(x0+8,fy-16,2.2,0,TAU);c.fill();
+    /* ── кто дома ──
+       Наёмник, который не в рейсе, сидит здесь телом, а не строкой в списке:
+       тот же `hqFigure`, ужатый под комнату — один язык фигур на всю игру.
+       Настроение перестаёт быть невидимым множителем: у поникшего опущены
+       плечи, и это видно раньше, чем откроешь его карточку. */
+    const home=(G.crew||[]).filter(cr=>!cr.order&&!(typeof crewBusy==="function"&&crewBusy(cr)));
+    for(let i=0;i<Math.min(home.length,3);i++){
+      const cr=home[i];
+      homeCrewFigure(c,x0+10+i*15,fy,clamp(cr.morale===undefined?1:cr.morale,0,1));
+    }
+    zone(x0,56,"living","жилая часть");
   });
   /* 8. причал с маяком: окно в док и живой огонь маяка */
   if(H.tier>=8)step(70,(x0)=>{
@@ -478,6 +612,67 @@ function homeFigure(c,x,fy,acc){
   /* кружка в руке: мелочь, из-за которой человек дома, а не на вахте */
   c.fillStyle="rgba(190,215,225,.5)";
   c.fillRect(x+8,fy-30,4,5);
+}
+/* ── палец по комнате ──
+   Действие берётся у той же ступени, что нарисована: гараж ставит корабль,
+   витрина выносит редкое, кабинет и жилая часть отвечают тем, что в них есть.
+   Ни одна зона не делает того, чего нельзя сделать кнопкой, — это второй вход,
+   а не второй набор правил. */
+function homeSceneClick(cn,e){
+  const rc=cn.getBoundingClientRect();
+  /* координаты канвы, а не экрана: канва рисуется крупнее и ужимается стилем */
+  const px=(e.clientX-rc.left)*(cn.width/rc.width);
+  const py=(e.clientY-rc.top)*(cn.height/rc.height);
+  const z=homeHitAt(px,py);
+  if(!z)return false;
+  if(z.id==="garage"){
+    const free=Object.keys(G.owned).filter(id=>id!==G.shipId&&
+      !(G.home.garage||[]).includes(id));
+    if(free.length&&homeStore(free[0])){say("В гараж поставлен «"+shipData(free[0]).ru+"»");return true;}
+    say("Гараж: "+((G.home.garage||[]).length
+      ?(G.home.garage.map(id=>"«"+shipData(id).ru+"»").join(", "))
+      :"пуст")+"\nставить нечего");
+    return false;
+  }
+  if(z.id==="case"){
+    const have=RARE_RES.filter(k=>(G.cargo[k]|0)>0);
+    if(have.length){
+      const k=have[0],q=Math.min(3,G.cargo[k]|0);
+      if(homeShow(k,q)){say("На витрину: "+RES[k].ru+" ×"+q);return true;}
+    }
+    say("Витрина\nвыставлять нечего: редкое сырьё нужно привезти в трюме");
+    return false;
+  }
+  if(z.id==="study"){
+    const got=typeof rareCount==="function"?rareCount():0;
+    say("Стена редкостей\n"+got+" из 100"+(got>=100?"\nсобрано всё":"\nпустые гвозди ждут"));
+    return false;
+  }
+  if(z.id==="living"){
+    const home=(G.crew||[]).filter(cr=>!cr.order&&!(typeof crewBusy==="function"&&crewBusy(cr)));
+    say(home.length?"Дома: "+home.map(cr=>cr.name+
+        (cr.morale<.5?" (поник)":"")).join(", ")
+      :"Жилая часть пуста\nвсе в рейсах или никого нет");
+    return false;
+  }
+  return false;
+}
+/* ── наёмник дома ──
+   Мельче хозяина: он тут гость, а не хозяин, и комната от этого не теряет
+   мерило. Настроение читается позой и цветом — поникший темнее и ниже. */
+function homeCrewFigure(c,x,fy,mood){
+  const low=mood<.5;
+  const k=(low?50:55)/89;
+  c.save();c.translate(x,fy);c.scale(k,k);
+  const skin=low?[120,112,100]:[150,138,118];
+  hqFigure(c,0,0,skin,G.t*.014+x,null,0,null,0);
+  c.restore();
+  homeShade(c,x,fy,14);
+  /* поникший сидит на краю койки: плечи ниже линии, и её видно */
+  if(low){
+    c.fillStyle="rgba(0,0,0,.25)";
+    c.fillRect(x-6,fy-32,12,1.4);
+  }
 }
 /* тень на полу под мебелью: у всего, что стоит, она должна быть — без неё
    предметы висят в воздухе, чем дом и болел в первом заходе */

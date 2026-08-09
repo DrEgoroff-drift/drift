@@ -18,7 +18,8 @@ const HOME_TIERS=[
   {t:2000000,key:"dock",  ru:"причал с маяком",say:"построен причал, маяк зажжён"}
 ];
 function homeInit(){
-  return {turn:0,tier:0,sx:0,sy:0,made:0,garage:[],showcase:{},trophies:[]};
+  /* mateTier — на какой ступени домочадец уже говорил: ровно раз на ступень */
+  return {turn:0,tier:0,sx:0,sy:0,made:0,garage:[],showcase:{},trophies:[],mateTier:0};
 }
 function homeHas(key){
   if(!G.home||!G.home.tier)return false;
@@ -55,6 +56,65 @@ function homeTurn(sum,why){
     say("ДОМ\n"+T.say);
     sfx("ok",{v:.5});
   }
+}
+/* ══════════════ домочадец ══════════════
+   Дом рос вещами, но в нём никто не жил, кроме хозяина. Домочадец — не новое
+   окно и не второй наёмник: он один раз на ступень предлагает что-то одно и
+   замолкает до следующей. Ровно это оживляет прибавку комнаты, не заводя
+   отдельной системы: ступень становится событием, а не новым прямоугольником.
+
+   Правило: за ступень — ровно один раз. Иначе он превращается в кран, из
+   которого капают части, а дом — в источник дохода, которым он не является. */
+const HOME_MATE=["Тётка Устя","Сосед Гошка","Дед Кузьма","Племянница Лика","Постоялец Ким"];
+function homeMateName(){
+  const H=G.home;if(!H)return HOME_MATE[0];
+  return HOME_MATE[Math.abs(hashi(H.sx,H.sy,0x4A7))%HOME_MATE.length];
+}
+/* что он даст на этой ступени: вид определён ступенью, а не броском при показе,
+   иначе перезаход в экран перебирал бы подарки */
+function homeMateKind(){
+  const H=G.home;if(!H||!H.tier)return null;
+  if((H.mateTier|0)>=H.tier)return null;             /* на этой ступени уже говорили */
+  return ["tip","part","rumour"][H.tier%3];
+}
+function homeMateTake(){
+  const H=G.home;const kind=homeMateKind();if(!kind)return null;
+  H.mateTier=H.tier;
+  const who=homeMateName();
+  const r=rng(hashi(H.sx*131+H.sy,H.tier,0x9C7));
+  if(kind==="part"){
+    /* запасная часть из его закромов: ступенью ниже нынешней опасности — это
+       подарок, а не источник снабжения */
+    const p=genPart(hashi(H.sx,H.sy,H.tier*77),1);
+    G.inv.push(p);
+    logAdd("good",who+" отдал вам «"+p.name+"»: «лежала, кому она тут нужна»");
+    say(who+"\n«"+p.name+"» вам в руки");
+  }else if(kind==="tip"){
+    /* наводка — настоящая метка на карте (12p): знание должно быть слоем */
+    let s=null;
+    for(let i=0;i<20&&!s;i++){
+      const sx=H.sx+Math.floor((r()-.5)*10),sy=H.sy+Math.floor((r()-.5)*10);
+      if(!starAt(sx,sy))continue;
+      const t=getSystem(sx,sy);
+      if(t&&t.station)s=t;
+    }
+    if(s&&typeof newsMark==="function"){
+      newsMark(s.sx+","+s.sy,"наводка от своих","#8fd08a");
+      logAdd("good",who+" подсказал, куда слетать: сектор "+s.sx+", "+s.sy);
+      say(who+"\n«слетай в "+s.sx+", "+s.sy+", там знают»");
+    }else{
+      logAdd("dim",who+" рассказал, что вокруг ничего интересного");
+      say(who+"\n«да некуда тут летать»");
+    }
+  }else{
+    /* слух: тот же поворот мира, что в кантине, но услышанный дома */
+    if(typeof newsTick==="function"){G.newsT=Date.now()-NEWS_EVERY-1;newsTick();}
+    const last=(G.news||[])[(G.news||[]).length-1];
+    logAdd("dim",who+" пересказал новость"+(last?": "+last.ru:""));
+    say(who+"\n"+(last?last.ru:"«говорят всякое»"));
+  }
+  if(typeof saveGame==="function")saveGame(true);
+  return kind;
 }
 /* строка «до следующей ступени» — вместо ценника, которого у дома нет */
 function homeProgress(){
