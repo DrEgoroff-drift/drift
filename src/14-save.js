@@ -33,7 +33,7 @@ function snapshot(){
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
-    nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,pnode:G.pnode,
+    nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
@@ -90,6 +90,17 @@ function applySave(s){
   G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
   /* редкости: только список унесённых id (12m-rare) */
   G.rareFound=Array.isArray(s.rareFound)?s.rareFound.filter(x=>typeof x==="string"):[];
+  /* охотники (12o): счёт фракции к игроку — чистое следствие поступков, и
+     мёртвый должен остаться мёртвым после перезагрузки */
+  G.hunted={};
+  if(s.hunted&&typeof s.hunted==="object")
+    for(const k in s.hunted){
+      const h=s.hunted[k];
+      if(!h||typeof h!=="object"||typeof h.cap!=="string")continue;
+      G.hunted[k]={cap:h.cap,seed:h.seed|0,tier:clamp(h.tier|0,0,HUNT_TIERS.length-1),
+        made:+h.made||Date.now(),deeds:Math.max(0,h.deeds|0),
+        dead:h.dead?1:0,paid:h.paid?1:0,seen:h.seen?1:0};
+    }
   /* планета-узел (12n): решение игрока в ней есть — где он стоял, когда собрал
      сотню, — поэтому она персистится. Склад чинится по месту: список ресурсов
      перепроверяется по ходовым товарам, чтобы старая запись не завела редкое. */

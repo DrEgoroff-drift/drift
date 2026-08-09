@@ -53,6 +53,9 @@ function spawnPirates(){
   /* ушедший управляющий сидит в своём секторе и ждёт: он такая же запись в
      G.pirates, поэтому весь бой уже написан — добавлять к нему нечего */
   rogueSpawn();
+  /* охотник за вами (12o): приходит только за долгом и только около своего
+     сектора — тем же входом, что все, кто появляется в системе */
+  if(typeof huntSpawn==="function")huntSpawn();
   /* баржи набираются тем же входом, что и пираты: одна точка на все режимы,
      откуда входят в систему (12l-barge) */
   if(typeof spawnBarges==="function")spawnBarges();
@@ -158,6 +161,8 @@ function updateCombat(dt){
 function killPirate(p){
   /* ренегат — не пират: за него не дают награды, за него возвращают корпус */
   if(p.rogue){rogueDefeated(p);return;}
+  /* охотник — тоже не рядовой пират: его награда разовая и записана навсегда */
+  if(p.hunter){huntDefeated(p);return;}
   const r=rng(p.seed);
   sfx("boom",{v:.8});
   const RK=PIRATE_RANKS[p.rank|0]||PIRATE_RANKS[0];

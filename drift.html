@@ -627,7 +627,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.48.0";
+const VER="0.49.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -2841,6 +2841,8 @@ const G={
   occ:{},occT:0,freed:0,occCalm:{},mines:{},quests:[],nodes:{},crowns:{},
   /* планета-узел за полный набор редкостей (12n): null, пока сотни нет */
   pnode:null,
+  /* личный счёт фракций к вам (12o): пусто, пока не наделали дел */
+  hunted:{},
   dealsDone:{},dealsWait:[],rep:{},poiSeen:{},
   pirates:[],shots:[],log:[],logNew:0,barges:[],
   /* обломки погибших барж — след, а не эфемерное: решение (спасли/добили/прошли
@@ -6665,7 +6667,9 @@ function drawPirate(p){
   const hp=clamp((p.hull||0)/(p.hullMax||1),0,1);
   /* ниже половины берём вторую выпечку — рваный корпус, а не тот же силуэт
      в пятнах. Обе картинки живут в кэше и считаются по одному разу */
-  const art=pirateArtOf(p.shipId,p.rogue,hp<.5);
+  /* охотник (12o) печётся флагманской выпечкой, как ренегат: его силуэт должен
+     опознаваться в бою с одного взгляда */
+  const art=pirateArtOf(p.shipId,p.rogue||p.hunter,hp<.5);
   const B=art.B;
   /* выхлоп: чад из закопчённых сопел, у каждого своя фаза — один обязательно
      чадит сильнее прочих */
@@ -7198,6 +7202,8 @@ function bargeSunk(b,cause){
   if(cause==="player"){
     const dst=bargeSysAt(b.from)||bargeSysAt(b.to);
     if(dst&&typeof repAdd==="function")repAdd(-3,dst);
+    /* и у минуса появляется тело: за баржу приходит капитан с именем (12o) */
+    if(dst&&typeof huntMark==="function")huntMark(dst,"разбитую баржу");
     /* груз ваш: часть добычи падает контейнерами, как с пирата */
     if(typeof addRes==="function")addRes(b.good,4+Math.floor(Math.random()*6));
     say("Баржа «"+b.capName+"» разбита вами\nгруз ваш · вас запомнят");
@@ -7992,6 +7998,132 @@ function planetRender(){
   $body.appendChild(r);
 }
 
+/* ══════════════ охотник: тень репутации ══════════════
+   Репутация (12k) до сих пор умела только помогать: дешевле топливо, больше
+   людей за столами. Обратной стороны у неё не было, и потому враждебность
+   ничего не стоила — разбитая баржа отнимала три очка в таблице, которую никто
+   не читает.
+
+   Здесь у минуса появляется тело. Не абстрактный штраф, а капитан с именем,
+   которого наняли за вами: он держится своих мест, растёт с каждым новым делом,
+   и в бою его узнают по силуэту. Правила, которые легко сломать:
+
+   1. Охотник приходит ТОЛЬКО за долгом. Нет враждебного поступка — нет
+      охотника; он не появляется «для сложности» и не наказывает за бедность.
+   2. Убитый не возвращается. Он один, у него одно имя, и второй такой же с тем
+      же именем обесценил бы первого.
+   3. Награда за него разовая. Контракт закрывается один раз навсегда, даже
+      если по фракции снова накопится долг. */
+
+const HUNT_NAMES=["Клык","Сажа","Веретено","Гарпун","Кремень","Сухарь","Тесак","Полынь"];
+const HUNT_TIERS=[
+  {ru:"наёмник",   hull:1.6,dmg:1.3,pay:1400},
+  {ru:"охотник",   hull:2.4,dmg:1.7,pay:2600},
+  {ru:"ловчий",    hull:3.6,dmg:2.2,pay:4800}
+];
+const HUNT_RADIUS=5;                     // сколько секторов вокруг его места он держит
+
+function huntKey(sys){return (sys?sys.sx:G.sx)+","+(sys?sys.sy:G.sy);}
+function huntAll(){return (G.hunted||(G.hunted={}));}
+function huntTierOf(H){return HUNT_TIERS[clamp(H.tier|0,0,HUNT_TIERS.length-1)];}
+/* ── долг записан ──
+   Единственный вход. Зовут его поступки, а не числа: разбитая баржа, добитый
+   спасатель, всё, за что фракция и так снимает репутацию. */
+function huntMark(sys,why){
+  const k=huntKey(sys);if(!k||k==="null,null")return null;
+  const all=huntAll();
+  let H=all[k];
+  if(H&&H.dead)return null;              /* убитого не воскрешают ничем */
+  if(!H){
+    const seed=hashi((sys?sys.sx:G.sx)*131+(sys?sys.sy:G.sy),0x4A17,7);
+    const r=rng(seed);
+    H=all[k]={cap:pick(HUNT_NAMES,r)+" "+pick(PIRATE_NAMES,r),seed,tier:0,
+      made:Date.now(),deeds:0,dead:0,paid:0,seen:0};
+    logAdd("warn","За «"+(why||"дело")+"» вами занялись: капитан "+H.cap+
+      " ищет вас в секторе "+k);
+    say("ЗА ВАМИ ПОШЛИ\nкапитан "+H.cap+"\nсектор "+k);
+  }else if(H.tier<HUNT_TIERS.length-1){
+    H.tier++;
+    logAdd("warn","Капитан "+H.cap+" пришёл за вами всерьёз: "+huntTierOf(H).ru);
+  }
+  H.deeds++;
+  huntQuest(H,k);
+  if(typeof saveGame==="function")saveGame(true);
+  return H;
+}
+/* адрес в журнале: у долга должно быть место, куда лететь его закрывать */
+function huntQuest(H,k){
+  if(typeof questAdd!=="function")return;
+  const p=k.split(",");
+  questAdd("hunt:"+H.seed,{
+    ru:"Капитан "+H.cap,kind:"debt",from:"фракция сектора "+k,
+    note:"вы ему должны кровью: "+huntTierOf(H).ru+", ходит вокруг своего сектора. "+
+      "Награда за него одна и больше не повторится",
+    sx:+p[0]|0,sy:+p[1]|0,reward:huntTierOf(H).pay+" кр разово"});
+}
+/* ── где он ходит ──
+   Вокруг своего сектора, а не по всей галактике: у мести есть география. */
+function huntHere(){
+  const all=G.hunted;if(!all)return null;
+  for(const k in all){
+    const H=all[k];if(!H||H.dead)continue;
+    const p=k.split(",");
+    if(Math.max(Math.abs(G.sx-(+p[0]|0)),Math.abs(G.sy-(+p[1]|0)))<=HUNT_RADIUS)
+      return Object.assign({key:k},H);
+  }
+  return null;
+}
+/* его логово: свой сектор, и вот у него наконец есть владелец (закрывает хвост
+   M87 — логово выглядело обычной базой снаружи) */
+function huntLairAt(sx,sy){
+  const all=G.hunted;if(!all)return null;
+  const k=sx+","+sy,H=all[k];
+  return H&&!H.dead?Object.assign({key:k},H):null;
+}
+function huntLairName(sx,sy){
+  const H=huntLairAt(sx,sy);
+  return H?"логово капитана "+H.cap:null;
+}
+/* ── выход в систему ──
+   Такая же запись в G.pirates, как ренегат: весь бой уже написан. Корпус
+   печётся флагманской выпечкой (12i), поэтому в кадре он опознаётся сразу. */
+function huntSpawn(){
+  const H=huntHere();if(!H)return;
+  const T=huntTierOf(H);
+  const r=rng(hashi(H.seed,0x0FF,5));
+  const a=r()*TAU,rad=2000+r()*1100;
+  const hp=(60+sysDanger(G.sx,G.sy)*90)*T.hull;
+  G.pirates.push({x:Math.cos(a)*rad,y:Math.sin(a)*rad,vx:0,vy:0,a:a+Math.PI,
+    hull:hp,hullMax:hp,name:"капитан "+H.cap,seed:H.seed,
+    shipId:pirateShipId(hashi(H.seed,0xB16,3)),
+    dmg:5+T.dmg*3,cool:0,aware:false,thrust:false,hunter:1,huntKey:H.key});
+  const rec=huntAll()[H.key];
+  if(rec&&!rec.seen){
+    rec.seen=1;
+    say("КАПИТАН "+H.cap.toUpperCase()+"\n"+T.ru+" · он нашёл вас первым");
+  }
+}
+/* ── разбит ──
+   Награда разовая и записана навсегда: второй раз этих денег не получить, и
+   второго такого капитана не будет. */
+function huntDefeated(p){
+  const all=huntAll(),H=all[p.huntKey];
+  sfx("boom",{v:1});
+  if(!H||H.dead)return;
+  H.dead=1;
+  const T=huntTierOf(H);
+  let pay=0;
+  if(!H.paid){H.paid=1;pay=Math.round(T.pay*stat().bountyMul);earn(pay,"bounty");}
+  G.kills=(G.kills|0)+1;
+  /* с него падает узел: он вёз своё (05a-nodes) */
+  if(typeof nodeDrop==="function")nodeDrop("с охотника",1,hashi(H.seed,0x1D0,9));
+  if(typeof questDone==="function")questDone("hunt:"+H.seed,"долг закрыт");
+  say("Капитан "+H.cap+" разбит"+(pay?"\n+"+pay+" кр · награда разовая":""));
+  logAdd("kill","Капитан "+H.cap+" уничтожен"+(pay?" · +"+pay+" кр (разово)":"")+
+    " · второй раз он не придёт");
+  if(typeof saveGame==="function")saveGame(true);
+}
+
 /* ══════════════ отчёт «Долгого Хода»: сто кусков ══════════════ */
 /* Зарубки на планетах оставила не чужая рука. Их резала экспедиция, которая шла
    здесь до вас — с той же работой, теми же баржами и теми же долгами. Игрок
@@ -8552,6 +8684,9 @@ function spawnPirates(){
   /* ушедший управляющий сидит в своём секторе и ждёт: он такая же запись в
      G.pirates, поэтому весь бой уже написан — добавлять к нему нечего */
   rogueSpawn();
+  /* охотник за вами (12o): приходит только за долгом и только около своего
+     сектора — тем же входом, что все, кто появляется в системе */
+  if(typeof huntSpawn==="function")huntSpawn();
   /* баржи набираются тем же входом, что и пираты: одна точка на все режимы,
      откуда входят в систему (12l-barge) */
   if(typeof spawnBarges==="function")spawnBarges();
@@ -8657,6 +8792,8 @@ function updateCombat(dt){
 function killPirate(p){
   /* ренегат — не пират: за него не дают награды, за него возвращают корпус */
   if(p.rogue){rogueDefeated(p);return;}
+  /* охотник — тоже не рядовой пират: его награда разовая и записана навсегда */
+  if(p.hunter){huntDefeated(p);return;}
   const r=rng(p.seed);
   sfx("boom",{v:.8});
   const RK=PIRATE_RANKS[p.rank|0]||PIRATE_RANKS[0];
@@ -8781,7 +8918,7 @@ function snapshot(){
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
-    nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,pnode:G.pnode,
+    nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
@@ -8838,6 +8975,17 @@ function applySave(s){
   G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
   /* редкости: только список унесённых id (12m-rare) */
   G.rareFound=Array.isArray(s.rareFound)?s.rareFound.filter(x=>typeof x==="string"):[];
+  /* охотники (12o): счёт фракции к игроку — чистое следствие поступков, и
+     мёртвый должен остаться мёртвым после перезагрузки */
+  G.hunted={};
+  if(s.hunted&&typeof s.hunted==="object")
+    for(const k in s.hunted){
+      const h=s.hunted[k];
+      if(!h||typeof h!=="object"||typeof h.cap!=="string")continue;
+      G.hunted[k]={cap:h.cap,seed:h.seed|0,tier:clamp(h.tier|0,0,HUNT_TIERS.length-1),
+        made:+h.made||Date.now(),deeds:Math.max(0,h.deeds|0),
+        dead:h.dead?1:0,paid:h.paid?1:0,seen:h.seen?1:0};
+    }
   /* планета-узел (12n): решение игрока в ней есть — где он стоял, когда собрал
      сотню, — поэтому она персистится. Склад чинится по месту: список ресурсов
      перепроверяется по ходовым товарам, чтобы старая запись не завела редкое. */
@@ -18809,7 +18957,11 @@ function drawPirateBase(zx,zy,Z){
   if(x<-60||x>W+60||y<-60||y>H+60)return;
   ctx.save();ctx.translate(x,y);ctx.scale(s,s);
   /* угловатая, тёмная, с красными огнями — читается как чужая с первого взгляда */
-  ctx.fillStyle="#171013";ctx.strokeStyle="rgba(220,90,70,.85)";ctx.lineWidth=2;
+  /* у базы с хозяином (12o) свой обвод и своё имя: логово наконец отличается
+     снаружи, а не только изнутри */
+  const HL=typeof huntLairAt==="function"?huntLairAt(G.sx,G.sy):null;
+  ctx.fillStyle=HL?"#1b0f16":"#171013";
+  ctx.strokeStyle=HL?"rgba(197,138,224,.9)":"rgba(220,90,70,.85)";ctx.lineWidth=2;
   ctx.beginPath();
   for(let i=0;i<5;i++){
     const a=i*TAU/5+G.t*.002;
@@ -18826,8 +18978,9 @@ function drawPirateBase(zx,zy,Z){
   ctx.fillStyle=(Math.sin(G.t*.18)>0)?"rgba(255,60,50,.95)":"rgba(255,60,50,.15)";
   ctx.beginPath();ctx.arc(0,0,4,0,TAU);ctx.fill();
   ctx.restore();
-  ctx.fillStyle="rgba(220,90,70,.65)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText(PB.name.toUpperCase(),x,y+34);
+  ctx.fillStyle=HL?"rgba(197,138,224,.8)":"rgba(220,90,70,.65)";
+  ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
+  ctx.fillText(((HL?huntLairName(G.sx,G.sy):PB.name)||PB.name).toUpperCase(),x,y+34);
 }
 function enterRaid(PB){
   /* В занятой системе база — логово: уровень выше на занятость, поэтому и
@@ -18836,6 +18989,11 @@ function enterRaid(PB){
   const lair=occLairLevel(G.sx,G.sy);
   if(lair){PB=Object.assign({},PB,{level:PB.level+lair,
     name:(occLairName(G.sx,G.sy)||PB.name)});}
+  /* у логова появился хозяин (12o): в секторе вашего охотника база носит его
+     имя и держит охрану на ступень выше — сюда летят за ним, а не за «ещё
+     одной базой» */
+  const HL=typeof huntLairAt==="function"?huntLairAt(G.sx,G.sy):null;
+  if(HL)PB=Object.assign({},PB,{level:PB.level+1,name:huntLairName(G.sx,G.sy)});
   const R=genRaid(PB.seed,PB.level);
   const st=stat();
   const start=R.rooms[0];

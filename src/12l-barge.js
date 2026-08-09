@@ -228,6 +228,8 @@ function bargeSunk(b,cause){
   if(cause==="player"){
     const dst=bargeSysAt(b.from)||bargeSysAt(b.to);
     if(dst&&typeof repAdd==="function")repAdd(-3,dst);
+    /* и у минуса появляется тело: за баржу приходит капитан с именем (12o) */
+    if(dst&&typeof huntMark==="function")huntMark(dst,"разбитую баржу");
     /* груз ваш: часть добычи падает контейнерами, как с пирата */
     if(typeof addRes==="function")addRes(b.good,4+Math.floor(Math.random()*6));
     say("Баржа «"+b.capName+"» разбита вами\nгруз ваш · вас запомнят");

@@ -9,6 +9,24 @@ could ever save.
 
 ---
 
+## 0.49.0 — "Somebody came for you"
+
+**Reputation finally has a far side.** Until now it only helped — cheaper fuel, more people at the
+tables — so hostility cost nothing. Breaking a barge yourself now creates a personal score: a
+captain with a name (`G.hunted`, new module `12o-hunter.js`) who works his own sectors and grows
+a tier with every fresh deed.
+
+**He comes only for a debt, and only once.** No hostile act, no hunter; he never appears "for
+difficulty". Killed, he stays killed — through saves — and his bounty is paid exactly one time,
+never again, even if the faction's score against you starts over.
+
+**Recognised in a fight, and his lair has an owner.** He is baked with the flagship silhouette
+(12i), so he reads at a glance among ordinary pirates. His home sector's base now carries his
+name and his colour from the outside and holds one tier more guard inside — closing the M87 tail
+where a lair looked like any other base until you boarded it.
+
+New suite **"the hunter: comes only for a debt"**.
+
 ## 0.48.0 — "A planet of your own"
 
 **The full hundred buys what money cannot.** Collecting all 100 rarities (12m) now hands you a
