@@ -68,6 +68,7 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | File | What's inside |
 |---|---|
 | `01-core` | math, seeded RNG (`hashi`/`rng`/`fbm`), name generation, `sysDanger` |
+| `06a-celest` | the sky's calendar: eclipse, parade, comet — `celestAt(sys,t)`, computed, never stored |
 | `02-world` `06-galaxy` `07-planet` | resources, world types, `starAt`/`getSystem`, planet textures and relief |
 | `03-ships` `04-mods` `05-parts` | hulls (`hullOf`/`drawHull`), modules and science, part and slot generation |
 | `08-state` `14-save` | the `G` object, `snapshot()`/`applySave()` |
