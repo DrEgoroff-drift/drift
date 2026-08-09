@@ -51,6 +51,8 @@ function renderCantina(){
     "а не приказ на рейс. Они дороже наёмника втрое и берут долю с того, что приносит "+
     "их домен — зато рутину держат сами.<br>кто сюда заходит, зависит от станции: "+
     T.ru.toLowerCase()+" собирает своих</s></div>"));
+  /* новости слышны там, где их и слышат: мир двигался, пока вас не было (12p) */
+  if(typeof newsRender==="function")newsRender();
   G.cantina=G.cantina&&G.cantina.key===G.sys.key?G.cantina:{key:G.sys.key,list:stationMgrs(G.sys),talked:{}};
   const free=G.cantina.list.filter(m=>!G.mgrs.some(x=>x.seed===m.seed));
   if(free.length)$body.appendChild(el("div","sec",

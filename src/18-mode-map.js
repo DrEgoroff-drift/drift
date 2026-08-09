@@ -196,6 +196,18 @@ function drawMap(){
       }
       ctx.closePath();ctx.stroke();
     }
+    /* метка знания (12p): слух — это адрес, и он ложится слоем на карту.
+       Закрывает хвост M92: знать что-то и не видеть этого на карте — то же, что
+       не знать. */
+    const NM=typeof newsMarkAt==="function"?newsMarkAt(gx,gy):null;
+    if(NM){
+      ctx.strokeStyle=NM.col;ctx.globalAlpha=.75;ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(x,y,rr+9,-.6,.6);ctx.stroke();
+      ctx.beginPath();ctx.arc(x,y,rr+9,Math.PI-.6,Math.PI+.6);ctx.stroke();
+      ctx.fillStyle=NM.col;ctx.font="7px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText(NM.what.toUpperCase(),x,y+rr+13);
+      ctx.globalAlpha=1;
+    }
     /* след артефакта: сектор, который вычитал исследователь с «происхождением» */
     if(G.relicHint&&G.relicHint.sx===gx&&G.relicHint.sy===gy){
       ctx.strokeStyle="#c58ae0";ctx.lineWidth=1;ctx.setLineDash([3,3]);

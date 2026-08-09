@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 92 · символов верхнего уровня: 1171
+Файлов: 94 · символов верхнего уровня: 1190
 
 ## СИМВОЛЫ
 
@@ -65,7 +65,7 @@ angWrap                      src/01-core.js:35
 applyCrewEvent               src/12b-crew-events.js:211
 applyPadMode                 src/15-input.js:6
 applyPadSize                 src/15-input.js:5
-applySave                    src/14-save.js:41
+applySave                    src/14-save.js:42
 applyVolumes                 src/09-audio.js:28
 apVel                        src/16-flight.js:73
 arrive                       src/16-flight.js:119
@@ -75,7 +75,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:160
 autoLandInputs               src/19-mode-landing.js:18
-autosave                     src/14-save.js:311
+autosave                     src/14-save.js:326
 b64dec                       src/14-save.js:11
 b64enc                       src/14-save.js:9
 bankTransform                src/03-ships.js:354
@@ -179,11 +179,11 @@ canPay                       src/21a-mode-base.js:43
 CANT_STYLE                   src/27d-ui-cantina.js:15
 cantFigure                   src/27d-ui-cantina.js:221
 cantinaPool                  src/12c-mgr-core.js:258
-cantinaScene                 src/27c-ui-hq.js:123
+cantinaScene                 src/27c-ui-hq.js:125
 cantProps                    src/27d-ui-cantina.js:321
 cantRoomBody                 src/27d-ui-cantina.js:45
 cantSeats                    src/27d-ui-cantina.js:213
-cantSel                      src/27c-ui-hq.js:122
+cantSel                      src/27c-ui-hq.js:124
 cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina.js:409
 cantView                     src/27d-ui-cantina.js:262
@@ -215,8 +215,8 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudPull                    src/14-save.js:333
-cloudPush                    src/14-save.js:325
+cloudPull                    src/14-save.js:348
+cloudPush                    src/14-save.js:340
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
 cockpitPlan                  src/25-cockpit.js:92
@@ -337,7 +337,7 @@ drawCaveSolid                src/22a-cave-deco.js:214
 drawCaveWater                src/22a-cave-deco.js:288
 drawClouds                   src/19e-clouds.js:169
 drawCockpit                  src/25-cockpit.js:400
-drawCombat                   src/13-pirates.js:191
+drawCombat                   src/13-pirates.js:195
 drawCrowns                   src/05a-nodes.js:344
 drawCrystalForest            src/20a-poi.js:336
 drawDeco                     src/21b-surface-deco.js:147
@@ -422,7 +422,7 @@ exitBelt                     src/24-mode-belt.js:162
 exitCave                     src/22-mode-cave.js:35
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
-exportCode                   src/14-save.js:320
+exportCode                   src/14-save.js:335
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -430,16 +430,16 @@ FACE_SKIN                    src/12d-mgr-face.js:10
 faceEl                       src/27c-ui-hq.js:6
 facePath                     src/12d-mgr-face.js:19
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:414
+factPrices                   src/27c-ui-hq.js:416
 FAUNA_RES                    src/02-world.js:25
 fbm1                         src/01-core.js:19
 fbm2                         src/01-core.js:26
 fbm3                         src/24-mode-belt.js:16
 fillMaterial                 src/18a-material.js:205
-fireCool                     src/13-pirates.js:73
+fireCool                     src/13-pirates.js:75
 fireMerc                     src/12a-crew.js:157
 fireMgr                      src/12c-mgr-core.js:341
-fireShot                     src/13-pirates.js:63
+fireShot                     src/13-pirates.js:65
 fitMap                       src/05-parts.js:186
 fitPart                      src/05-parts.js:235
 fittedParts                  src/05-parts.js:191
@@ -503,11 +503,11 @@ groundShadow                 src/19-mode-landing.js:238
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:319
+hasSave                      src/14-save.js:334
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:89
 hazeFar                      src/19c-light.js:81
-held                         src/08-state.js:103
+held                         src/08-state.js:105
 hex2rgb                      src/03-ships.js:145
 hexRGB                       src/24-mode-belt.js:80
 hireMerc                     src/12a-crew.js:138
@@ -537,14 +537,14 @@ homeStore                    src/12j-home.js:117
 homeTurn                     src/12j-home.js:44
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
-hqAiOffer                    src/27c-ui-hq.js:312
-hqBtnTick                    src/27c-ui-hq.js:167
+hqAiOffer                    src/27c-ui-hq.js:314
+hqBtnTick                    src/27c-ui-hq.js:169
 hqConsole                    src/27f-hq-room.js:228
 hqFigure                     src/27f-hq-room.js:509
 hqHover                      src/27f-hq-room.js:675
-hqJobCard                    src/27c-ui-hq.js:371
-hqRelicSlot                  src/27c-ui-hq.js:337
-hqRender                     src/27c-ui-hq.js:174
+hqJobCard                    src/27c-ui-hq.js:373
+hqRelicSlot                  src/27c-ui-hq.js:339
+hqRender                     src/27c-ui-hq.js:176
 hqRoomBody                   src/27f-hq-room.js:32
 hqScene                      src/27f-hq-room.js:640
 hqScreenData                 src/27f-hq-room.js:312
@@ -576,7 +576,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:321
+importCode                   src/14-save.js:336
 initAudio                    src/09-audio.js:7
 invalidateKeyMap             src/15-input.js:40
 invalidateParts              src/05-parts.js:181
@@ -592,14 +592,14 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:304
+jump                         src/18-mode-map.js:316
 jumpToBase                   src/21a-mode-base.js:286
 keplerPos                    src/06-galaxy.js:34
 keyLabel                     src/15-input.js:62
 keyMap                       src/15-input.js:51
 keyRow                       src/27-ui-ship.js:171
 keys                         src/08-state.js:14
-killPirate                   src/13-pirates.js:161
+killPirate                   src/13-pirates.js:163
 killRock                     src/24-mode-belt.js:140
 KMAP                         src/15-input.js:28
 KMAP_BELT                    src/15-input.js:31
@@ -620,7 +620,7 @@ layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:101
 litRGB                       src/19c-light.js:39
-loadGame                     src/14-save.js:315
+loadGame                     src/14-save.js:330
 LOG_MAX                      src/11-log.js:3
 logAdd                       src/11-log.js:5
 logBtnLabel                  src/11-log.js:24
@@ -680,7 +680,7 @@ mgrCrewYield                 src/12c-mgr-core.js:202
 mgrCut                       src/12c-mgr-core.js:173
 mgrDefect                    src/12c-mgr-core.js:333
 mgrDomain                    src/12c-mgr-core.js:493
-mgrDomainLine                src/27c-ui-hq.js:433
+mgrDomainLine                src/27c-ui-hq.js:435
 mgrDroneRate                 src/12c-mgr-core.js:218
 mgrFace                      src/12d-mgr-face.js:29
 mgrFee                       src/12c-mgr-core.js:284
@@ -751,6 +751,19 @@ nearestPOI                   src/20a-poi.js:626
 nearestStation               src/12-economy.js:43
 NEBULA                       src/16-flight.js:22
 nebula                       src/16-flight.js:23
+NEWS_EVERY                   src/12p-news.js:13
+NEWS_KEEP                    src/12p-news.js:15
+NEWS_KINDS                   src/12p-news.js:89
+NEWS_MAX_ROLL                src/12p-news.js:14
+NEWS_RIVALS                  src/12p-news.js:16
+newsAll                      src/12p-news.js:18
+newsMark                     src/12p-news.js:22
+newsMarkAt                   src/12p-news.js:26
+newsMarks                    src/12p-news.js:19
+newsRender                   src/12p-news.js:173
+newsRivals                   src/12p-news.js:40
+newsSomewhere                src/12p-news.js:28
+newsTick                     src/12p-news.js:150
 NODE_A                       src/05a-nodes.js:51
 NODE_B                       src/05a-nodes.js:54
 NODE_BY_ID                   src/05a-nodes.js:71
@@ -800,7 +813,7 @@ occTick                      src/13b-occupy.js:60
 ok                           tests/90-harness.js:19
 openBarge                    src/12l-barge.js:576
 openCrewView                 src/27b-ui-crew.js:199
-openHq                       src/27c-ui-hq.js:453
+openHq                       src/27c-ui-hq.js:455
 openShipView                 src/27-ui-ship.js:143
 openStation                  src/26-ui-station.js:5
 ORDERS                       src/12a-crew.js:99
@@ -920,8 +933,8 @@ rareAtPlace                  src/12m-rare.js:109
 rareCount                    src/12m-rare.js:105
 rareHas                      src/12m-rare.js:104
 rareList                     src/12m-rare.js:103
-rareRender                   src/12m-rare.js:143
-rareSum                      src/12m-rare.js:132
+rareRender                   src/12m-rare.js:151
+rareSum                      src/12m-rare.js:140
 rareTake                     src/12m-rare.js:115
 rebinding                    src/15-input.js:80
 refineBank                   src/11-log.js:101
@@ -967,6 +980,12 @@ resize                       src/08-state.js:6
 reticle                      src/17-mode-system.js:411
 rgba                         src/03-ships.js:149
 ridged                       src/18a-material.js:30
+rivalDefeated                src/12p-news.js:81
+rivalHere                    src/12p-news.js:63
+rivalHolds                   src/12p-news.js:42
+rivalOf                      src/12p-news.js:41
+rivalSpawn                   src/12p-news.js:71
+rivalYield                   src/12p-news.js:44
 rivetLine                    src/25-cockpit.js:179
 rng                          src/01-core.js:15
 ROCK_CELL                    src/17-mode-system.js:435
@@ -988,8 +1007,8 @@ runTests                     tests/90-harness.js:65
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:4
-saveGame                     src/14-save.js:305
-say                          src/08-state.js:104
+saveGame                     src/14-save.js:320
+say                          src/08-state.js:106
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
 SCOOP_BAND                   src/19a-mode-scoop.js:7
@@ -1053,7 +1072,7 @@ starRGB                      src/19c-light.js:23
 start                        src/15-input.js:299
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
-stat                         src/08-state.js:70
+stat                         src/08-state.js:72
 STAT_SHOW                    src/05-parts.js:264
 stationDeals                 src/27g-deals.js:134
 stationFleet                 src/04b-fleet.js:163
@@ -1144,7 +1163,7 @@ updateBase                   src/21a-mode-base.js:305
 updateBelt                   src/24-mode-belt.js:172
 updateCave                   src/22-mode-cave.js:39
 updateCaveDeco               src/22a-cave-deco.js:178
-updateCombat                 src/13-pirates.js:74
+updateCombat                 src/13-pirates.js:76
 updateDig                    src/23-mode-dig.js:113
 updateLanding                src/19-mode-landing.js:30
 updateRaid                   src/24a-mode-raid.js:213
@@ -1289,7 +1308,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · корпус баржи:369
   · торг с баржой:573
 
-## src/12m-rare.js · 12 КБ
+## src/12m-rare.js · 13 КБ
   · редкости: сто адресов, а не рулетка:1
 
 ## src/12n-planet.js · 10 КБ
@@ -1298,16 +1317,19 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12o-hunter.js · 7 КБ
   · охотник: тень репутации:1
 
+## src/12p-news.js · 11 КБ
+  · пересказ: мир двигался, пока вас не было:1
+
 ## src/12q-lore.js · 14 КБ
   · отчёт «Долгого Хода»: сто кусков:1
 
 ## src/13b-occupy.js · 17 КБ
   · пираты берут системы:1
 
-## src/13-pirates.js · 13 КБ
+## src/13-pirates.js · 14 КБ
   · пираты:1
 
-## src/14-save.js · 21 КБ
+## src/14-save.js · 22 КБ
   · сохранение:1
 
 ## src/15-input.js · 15 КБ
@@ -1334,7 +1356,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/18b-geology.js · 8 КБ
   · геология:1
 
-## src/18-mode-map.js · 18 КБ
+## src/18-mode-map.js · 19 КБ
   · карта:1
   · карта: ночное небо, а не схема молекулы:21
 
@@ -1503,5 +1525,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## tests/91r-hunter.js · 3 КБ
   · охотник: приходит только за долгом:1
+
+## tests/91s-news.js · 4 КБ
+  · пересказ: за слухом стоит перемена:1
 
 ## tests/99-run.js · 0 КБ

@@ -34,6 +34,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
     nodes:G.nodes,crowns:G.crowns,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
+    news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
@@ -90,6 +91,20 @@ function applySave(s){
   G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
   /* редкости: только список унесённых id (12m-rare) */
   G.rareFound=Array.isArray(s.rareFound)?s.rareFound.filter(x=>typeof x==="string"):[];
+  /* пересказ (12p): слухи и метки — память о переменах, которые уже случились в
+     состоянии мира, поэтому они переживают перезагрузку вместе с ним. Соперник
+     хранится обязательно: иначе унесённая редкость потеряла бы адрес. */
+  G.news=Array.isArray(s.news)?s.news.filter(n=>n&&typeof n==="object").slice(-NEWS_KEEP):[];
+  G.newsMarks=(s.newsMarks&&typeof s.newsMarks==="object")?s.newsMarks:{};
+  G.newsT=+s.newsT||0;
+  G.rivals={};
+  if(s.rivals&&typeof s.rivals==="object")
+    for(const id in s.rivals){
+      const v=s.rivals[id];
+      if(!v||typeof v!=="object"||typeof v.who!=="string"||!RARE_BY_ID[id])continue;
+      if(G.rareFound.indexOf(id)>=0)continue;   /* уже у вас — соперника нет */
+      G.rivals[id]={who:v.who,sx:v.sx|0,sy:v.sy|0,t:+v.t||Date.now()};
+    }
   /* охотники (12o): счёт фракции к игроку — чистое следствие поступков, и
      мёртвый должен остаться мёртвым после перезагрузки */
   G.hunted={};
