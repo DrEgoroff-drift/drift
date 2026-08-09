@@ -31,7 +31,7 @@ function snapshot(){
     drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
-    occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,
+    occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
@@ -80,6 +80,9 @@ function applySave(s){
   /* фронт пиратов: разреженный объект по ключу "sx,sy", как всё привязанное
      к системе. Старые записи грузятся с пустым фронтом — он нарастёт сам */
   G.occ=(s.occ&&typeof s.occ==="object")?s.occ:{};
+  /* налёт часов по корпусам: старая запись приходит без него — корабль просто
+     считается свежим, и это честнее, чем задним числом состарить его */
+  G.wear=(s.wear&&typeof s.wear==="object")?s.wear:{};
   /* свой маршрут: старые сохранения приходят без него — заводим пустой */
   G.trade=(s.trade&&Array.isArray(s.trade.legs))
     ?{legs:s.trade.legs.slice(0,ROUTE_MAX),loops:s.trade.loops|0,

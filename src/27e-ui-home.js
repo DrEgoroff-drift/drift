@@ -626,6 +626,16 @@ function homeSceneClick(cn,e){
   const z=homeHitAt(px,py);
   if(!z)return false;
   if(z.id==="garage"){
+    /* Первое, зачем сюда заходят: снять налёт прожитых часов. Дома это делают
+       до чистого и не берут денег — дом вообще не берёт денег (12s-wear).
+       Поэтому обслуживание идёт вперёд «поставить корпус на хранение». */
+    if(typeof wearOf==="function"&&wearOf()>.02){
+      const got=wearService(1);
+      logAdd("tech","Гараж дома: с «"+shipData(G.shipId).ru+"» снят налёт ("+
+        Math.round(got*100)+"%)");
+      say("Гараж\n«"+shipData(G.shipId).ru+"» отмыт и подкрашен\nналёт снят");
+      return true;
+    }
     const free=Object.keys(G.owned).filter(id=>id!==G.shipId&&
       !(G.home.garage||[]).includes(id));
     if(free.length&&homeStore(free[0])){say("В гараж поставлен «"+shipData(free[0]).ru+"»");return true;}
