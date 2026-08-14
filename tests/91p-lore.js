@@ -95,3 +95,54 @@ TEST_SUITES.push(()=>suite("зарубки: камень на планете —
   G.loreFound=all.slice(0,2).map(R=>R.id);
   ok(!loreChapter(c).read,"двух кусков не хватает");
 }));
+
+/* ── доска отчёта ──
+   Читальня обязана быть честной: показывать ровно собранное, держать пропуски
+   пропусками и не открывать замечание главы раньше, чем глава сложилась. */
+TEST_SUITES.push(()=>suite("отчёт: доска, на которой это читают",()=>{
+  resetWorld();
+  G.loreFound=[];G.loreMarks=[];
+  const box=document.getElementById("lorelist");
+  ok(!!box,"доска есть в разметке");
+  renderLoreBoard();
+  const rows=()=>Array.from(box.querySelectorAll(".li"));
+  const txt=()=>rows().map(r=>r.querySelector("span").textContent).join("\n");
+  /* пустая доска: сто мест, ни одного куска */
+  eq(rows().filter(r=>r.classList.contains("gap")&&r.querySelector("em").textContent).length,100,
+     "на пустой доске сто пропусков");
+  ok(txt().indexOf("СОБРАНО 0 ИЗ 100")>=0,"шапка считает от нуля");
+  for(const C of LORE_CHAP)
+    ok(txt().indexOf(C.note)<0,"замечание главы «"+C.ru+"» закрыто до того, как она сложилась");
+  /* кусок на доске появляется своим текстом и на своём месте */
+  const R=LORE_BY_CHAP[LORE_CHAP[0].id][0];
+  loreList().push(R.id);
+  renderLoreBoard();
+  ok(txt().indexOf(R.ru)>=0,"собранный кусок читается дословно");
+  eq(rows().filter(r=>r.classList.contains("gap")&&r.querySelector("em").textContent).length,99,
+     "пропусков стало на один меньше");
+  /* глава сложилась — открылось замечание, и только оно */
+  const all=LORE_BY_CHAP[LORE_CHAP[0].id];
+  G.loreFound=all.slice(0,Math.ceil(all.length*2/3)).map(x=>x.id);
+  renderLoreBoard();
+  ok(txt().indexOf(LORE_CHAP[0].note)>=0,"замечание сложившейся главы открылось");
+  ok(txt().indexOf(LORE_CHAP[1].note)<0,"замечание соседней главы осталось закрытым");
+  /* доска ничего не досказывает: каждая непустая строка — либо шапка, либо
+     заголовок, либо ровно то, что собрано */
+  const known=new Set();
+  for(const x of loreList()){const r=LORE_BY_ID[x];if(r)known.add(r.ru);}
+  for(const r of rows()){
+    const s=r.querySelector("span").textContent;
+    if(r.classList.contains("gap")||r.classList.contains("chap")||
+       r.classList.contains("head")||r.classList.contains("note")||
+       r.classList.contains("vocab"))continue;
+    if(/^сектор /.test(s)||/^ни /.test(s))continue;
+    ok(known.has(s.split(" · «")[0]),"строка на доске подобрана игроком: "+s.slice(0,40));
+  }
+  /* словарь и адреса считаются по факту, а не по обещаниям */
+  eq(loreVocab().length,new Set(loreList().map(x=>LORE_BY_ID[x]&&LORE_BY_ID[x].word)
+     .filter(Boolean)).size,"словарь на доске равен собранному");
+  toggleLoreBoard(true);
+  ok(document.getElementById("lorewin").classList.contains("open"),"доска открывается");
+  toggleLoreBoard(false);
+  ok(!document.getElementById("lorewin").classList.contains("open"),"и закрывается");
+}));

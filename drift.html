@@ -257,6 +257,32 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 #loglist .li.tech span{color:var(--rare)}
 #loglist .li.dim span{color:var(--dim)}
 
+/* ── доска отчёта ── тот же каркас, что у журнала: это второе окно, а не
+   второй язык. Отличие одно — оно шире и выше, потому что читают его подолгу,
+   а не проглядывают. Собранное горит, пропуски остаются пропусками: по доске
+   видно не «сколько процентов», а какой формы дыра. */
+#lorewin{position:fixed;left:12px;top:calc(env(safe-area-inset-top) + 12px);z-index:6;
+  width:min(420px,86vw);max-height:66vh;background:var(--glass);border:1px solid var(--edge2);
+  border-radius:var(--rad-p);backdrop-filter:blur(18px) saturate(1.2);
+  box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
+  display:none;flex-direction:column;font-size:10px;overflow:hidden}
+#lorewin.open{display:flex;animation:winIn .2s var(--ease)}
+#lorewin>b{font-weight:400;color:var(--dim);letter-spacing:.18em;font-size:8px;
+  padding:11px 12px;border-bottom:1px solid var(--edge);display:flex;align-items:center}
+#lorewin>b span{margin-left:auto;color:var(--phos);font-size:17px;line-height:.7;padding:0 4px;cursor:pointer}
+#lorelist{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px}
+#lorelist .li{display:flex;gap:9px;padding:7px 12px;line-height:1.6;
+  border-bottom:1px solid rgba(127,230,216,.06)}
+#lorelist .li em{font-style:normal;color:var(--dim);font-size:9px;flex:0 0 22px;
+  font-variant-numeric:tabular-nums}
+#lorelist .li span{flex:1;min-width:0;color:var(--text)}
+#lorelist .li.gap span{color:#33424c}                 /* пропуск: виден, но не читается */
+#lorelist .li.chap{border-top:1px solid var(--edge);margin-top:6px;padding-top:10px}
+#lorelist .li.chap span{color:var(--phos);letter-spacing:.14em}
+#lorelist .li.chap.read span{color:var(--amber)}
+#lorelist .li.note span{color:var(--dim);font-style:italic}
+#lorelist .li.head span{color:var(--dim);letter-spacing:.16em}
+
 /* ══════════════ экраны ══════════════
    Один каркас на все: шапка с названием и кошельком, навигация, тело,
    подвал с действиями. Фон непрозрачный — сквозь прежние 96% просвечивали
@@ -500,6 +526,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
   <button id="crewbtn" style="display:none"><svg viewBox="0 0 16 16"><circle cx="6" cy="5.5" r="2.4"/><path d="M1.8 13.5c0-2.4 1.9-4 4.2-4s4.2 1.6 4.2 4"/><path d="M11 4.2a2.4 2.4 0 0 1 0 4.6M12 13.5c0-1.7-.6-3-1.6-3.8"/></svg><span class="tx"><em>ЭКИПАЖ</em><s>наёмники и их рейсы</s></span></button>
   <button id="hqbtn" style="display:none"><svg viewBox="0 0 16 16"><path d="M8 1.6 14 5v6l-6 3.4L2 11V5z"/><circle cx="8" cy="8" r="2.2"/></svg><span class="tx"><em>ШТАБ</em><s>управляющие и домены</s></span></button>
   <button id="logbtn"><svg viewBox="0 0 16 16"><path d="M3.5 2.5h9v11h-9z"/><path d="M5.8 5.6h4.4M5.8 8h4.4M5.8 10.4h2.6"/></svg><span class="tx"><em>ЖУРНАЛ</em><s>что происходило</s></span></button>
+  <button id="lorebtn" style="display:none"><svg viewBox="0 0 16 16"><path d="M3 2.6h6.5l3.5 3.4v7.4H3z"/><path d="M9.5 2.6V6H13"/><path d="M5.4 8.4h5.2M5.4 10.8h3.4"/></svg><span class="tx"><em>ОТЧЁТ</em><s>то, что собрано по зарубкам</s></span></button>
   <button id="optbtn"><svg viewBox="0 0 16 16"><path d="M2.5 5h11M2.5 11h11"/><circle cx="6" cy="5" r="1.9"/><circle cx="10.5" cy="11" r="1.9"/></svg><span class="tx"><em>НАСТРОЙКИ</em><s>звук, управление, запись</s></span></button>
 </div>
 
@@ -508,6 +535,11 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 <div id="logwin">
   <b>БОРТОВОЙ ЖУРНАЛ<span id="logclose">×</span></b>
   <div id="loglist"></div>
+</div>
+
+<div id="lorewin">
+  <b>ОТЧЁТ «ДОЛГОГО ХОДА»<span id="loreclose">×</span></b>
+  <div id="lorelist"></div>
 </div>
 
 <!-- ══ управление ══ большим пальцем, поэтому по нижним углам ══ -->
@@ -25822,6 +25854,78 @@ function dealsTick(){
   }
 }
 
+/* ══════════════ доска отчёта: место, где собранное можно прочесть ══════════════ */
+/* Сто кусков и восемь глав собирались с M106, а читать их было негде: запись
+   жила в `tell()` на один кадр и в ленте журнала вперемешку с ценами. Отсюда
+   доска — второе окно того же каркаса, что журнал, и три правила:
+
+   1. **Доска ничего не добавляет.** Здесь нет ни одной строки, которой игрок
+      не подобрал сам. Это читальня, а не сводка: правило «конец меняет карту,
+      а не текст» осталось бы пустым, если бы доска досказывала.
+   2. **Пропуск остаётся пропуском.** Ненайденный кусок — не «???» и не
+      проценты, а пустая строка на своём месте в главе. По доске видно не
+      «сколько собрано», а какой формы дыра: в «Тишине» подряд четыре пробела,
+      и это само по себе сведения.
+   3. **Замечание главы открывается вместе с главой.** Восемь заметок,
+      показанных с первого куска, — это оглавление чужой истории, выданное
+      вперёд. Глава складывается с двух третей (`loreChapter`) — тогда и
+      появляется строка о том, про что она была. */
+let loreWinOpen=false;
+function loreBtnTick(){
+  const b=document.getElementById("lorebtn");if(!b)return;
+  /* кнопки нет, пока нет ни куска: пустая читальня объявляет о существовании
+     истории раньше, чем игрок наткнулся на первую зарубку */
+  b.style.display=(typeof loreCount==="function"&&loreCount()&&G.mode!=="dock")?"":"none";
+}
+function loreRow(box,cls,num,text){
+  const row=document.createElement("div");row.className="li "+(cls||"");
+  const em=document.createElement("em");em.textContent=num||"";
+  const sp=document.createElement("span");sp.textContent=text;
+  row.appendChild(em);row.appendChild(sp);box.appendChild(row);
+  return row;
+}
+function renderLoreBoard(){
+  const box=document.getElementById("lorelist");if(!box)return;
+  box.textContent="";
+  const n=loreCount();
+  loreRow(box,"head","","СОБРАНО "+n+" ИЗ 100 · ГЛАВ СЛОЖИЛОСЬ "+loreChaptersRead()+" ИЗ 8");
+  for(const C of LORE_CHAP){
+    const ch=loreChapter(C.id);
+    loreRow(box,"chap"+(ch.read?" read":""),"",
+      C.ru.toUpperCase()+" · "+ch.have+" из "+ch.total+(ch.read?" · СЛОЖИЛАСЬ":""));
+    if(ch.read)loreRow(box,"note","",C.note);
+    const all=LORE_BY_CHAP[C.id]||[];
+    all.forEach((R,i)=>{
+      const has=loreHas(R.id);
+      /* номер — порядковый внутри главы, а не id: игрок читает главу, а не базу */
+      loreRow(box,has?"":"gap",String(i+1),
+        has?(R.ru+(R.word?" · «"+R.word+"»":"")):"· · · · · · · · · ·");
+    });
+  }
+  /* словарь: тридцать слов пиджина. Здесь он лежит целиком и в одном месте —
+     до доски его приходилось помнить по всплывающим строкам. */
+  const V=loreVocab();
+  loreRow(box,"chap","","СЛОВАРЬ · "+V.length+" ИЗ 30");
+  loreRow(box,"vocab"+(V.length?"":" gap"),"",V.length?V.join(", "):"ни одного слова");
+  /* адреса: то, ради чего кусок вообще брали. Метки уже нарисованы на карте
+     (`drawLoreMarks`), здесь они списком — чтобы было видно, сколько мест
+     зарубки успели назвать, и не одно ли и то же место названо дважды. */
+  const M=loreMarks();
+  loreRow(box,"chap","","АДРЕСА · "+M.length);
+  if(!M.length)loreRow(box,"gap","","ни одного");
+  else for(const m of M){
+    const R=LORE_BY_ID[m.id];
+    loreRow(box,"","","сектор "+m.sx+":"+m.sy+(R?" · "+R.chapRu:""));
+  }
+}
+function toggleLoreBoard(open){
+  loreWinOpen=open===undefined?!loreWinOpen:open;
+  document.getElementById("lorewin").classList.toggle("open",loreWinOpen);
+  if(loreWinOpen)renderLoreBoard();
+}
+document.getElementById("lorebtn").addEventListener("click",()=>toggleLoreBoard(true));
+document.getElementById("loreclose").addEventListener("click",()=>toggleLoreBoard(false));
+
 /* ══════════════ экран корабля ══════════════ */
 const $sv=document.getElementById("shipview"),$svBody=document.getElementById("svBody");
 const $svCan=document.getElementById("svcan"),$svFil=document.getElementById("svfilter");
@@ -26431,7 +26535,7 @@ function frame(now){
     else if(G.mode==="scoop"&&G.scoop)updateScoop(dt);
     else if(G.mode==="base"&&G.base)updateBase(dt);
     else if(G.mode==="raid"&&G.raid)updateRaid(dt);
-    beaconTick(dt);crewBtnTick();hqBtnTick();wearTick(dt);
+    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){
