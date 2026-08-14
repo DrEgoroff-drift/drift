@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 104 · символов верхнего уровня: 1265
+Файлов: 104 · символов верхнего уровня: 1267
 
 ## СИМВОЛЫ
 
@@ -78,7 +78,7 @@ autoLandInputs               src/19-mode-landing.js:18
 autosave                     src/14-save.js:341
 b64dec                       src/14-save.js:11
 b64enc                       src/14-save.js:9
-bankTransform                src/03-ships.js:429
+bankTransform                src/03-ships.js:454
 BARGE_ART                    src/12l-barge.js:376
 BARGE_CAP                    src/12l-barge.js:13
 BARGE_CAPNAMES               src/12l-barge.js:23
@@ -369,15 +369,15 @@ drawExhaust                  src/16a-space.js:133
 drawFactory                  src/20a-poi.js:539
 drawFactRoute                src/13b-occupy.js:238
 drawFindsSystem              src/17b-finds.js:123
-drawFlame                    src/03-ships.js:410
+drawFlame                    src/03-ships.js:435
 drawFoeBody                  src/24a-mode-raid.js:638
 drawGlassHUD                 src/24-mode-belt.js:518
 drawGround                   src/19-mode-landing.js:94
 drawHomeBuilding             src/21c-built.js:134
 drawHomeRoom                 src/27e-ui-home.js:42
 drawHqRoom                   src/27f-hq-room.js:22
-drawHull                     src/03-ships.js:687
-drawHullMarks                src/03-ships.js:521
+drawHull                     src/03-ships.js:784
+drawHullMarks                src/03-ships.js:561
 drawLander                   src/19-mode-landing.js:375
 drawLandGear                 src/19-mode-landing.js:349
 drawLanding                  src/19-mode-landing.js:293
@@ -417,7 +417,7 @@ drawSurfaceHud               src/21-mode-surface.js:288
 drawSysNebula                src/16a-space.js:65
 drawSystem                   src/17-mode-system.js:272
 drawTemple                   src/20a-poi.js:271
-drawTierTrim                 src/03-ships.js:443
+drawTierTrim                 src/03-ships.js:468
 drawTrail                    src/16-flight.js:298
 drawWear                     src/12s-wear.js:69
 drawWeather                  src/19d-weather.js:92
@@ -603,6 +603,7 @@ HULL_CACHE                   src/03-ships.js:142
 HULL_CLASS                   src/03-ships.js:174
 hullClassOf                  src/03-ships.js:200
 hullOf                       src/03-ships.js:216
+hullShade                    src/03-ships.js:553
 HUNT_NAMES                   src/12o-hunter.js:18
 HUNT_RADIUS                  src/12o-hunter.js:24
 HUNT_TIERS                   src/12o-hunter.js:19
@@ -1083,6 +1084,7 @@ sellDroneYield               src/12-economy.js:35
 setZoom                      src/15-input.js:175
 sfx                          src/09-audio.js:201
 SFX                          src/09-audio.js:85
+SH_DX                        src/03-ships.js:552
 shatter                      src/24-mode-belt.js:125
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
@@ -1205,7 +1207,7 @@ toggleLoreBoard              src/27h-ui-lore.js:65
 toggleMenu                   src/15-input.js:125
 totalLoss                    src/21-mode-surface.js:230
 tracePath                    src/25-cockpit.js:159
-tracePoly                    src/03-ships.js:404
+tracePoly                    src/03-ships.js:429
 TRADE_KEYS                   src/02-world.js:27
 TRAIL                        src/16-flight.js:172
 TRAIL_CHAR                   src/16-flight.js:180
@@ -1290,7 +1292,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · ресурсы:1
   · миры:50
 
-## src/03-ships.js · 57 КБ
+## src/03-ships.js · 63 КБ
   · корабли: процедурные корпуса:1
   · лаборатория: сплав двух корпусов:28
   · класс корпуса:162
