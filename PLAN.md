@@ -148,10 +148,28 @@ flora and fauna, a living camera, station modules, weather.
    the end and read as mushrooms on stalks (now breech, tapering tube and a muzzle swell);
    radiators hung off a single strut like combs in mid-air.
 
+   **Fourth pass — height, and four more things a ship needs.** The criticism this time: nothing
+   cast a shadow, so a nacelle and a rectangle painted on the plating had the same depth; every
+   class wore the same fighter canopy, including the ore hauler; the nozzles were identical
+   although thrust is exactly what separates a freighter from a courier; and the ship spends the
+   whole game docking at stations while having nothing to dock **with**.
+
+   - **shadows give the height.** One light direction for every hull (upper left, as on a planet
+     surface), so shadows fall down-and-right and their length *is* the part's height. Cast by
+     nacelles, side boxes, containers and sponsons — and longer under the bridge, which stands
+     highest. Clipped to the hull outline: a shadow has nothing to land on outside the ship.
+   - **a bridge instead of a canopy** on hulls that carry (`cont`) or fight (`armor`): a raised
+     block with a dark skirt at its base, a lit top face and a row of forward windows. Tiering is
+     the other half of volume — the part gets a bottom and a top instead of being a patch.
+   - **nozzles by the work**: a freighter has few and large, a courier one long one on the axis,
+     a frigate a cluster of small ones it can steer with.
+   - **a docking ring** with three latches on the cheek.
+
+   **Fault caught at 6× and fixed:** the stencilled hull number came out upside down — the hull is
+   already drawn rotated nose-forward, so the text had to turn the other way.
+
    **Not done:** faction. There is still one visual language for everybody, and in a system only
-   pirates fly. Per the queue below, factions come after stations. Also still open: the ships are
-   pure top-down with no sense of height — nothing casts a shadow onto the hull, so a nacelle and
-   a painted rectangle sit in the same plane.
+   pirates fly. Per the queue below, factions come after stations.
 3. **Cantinas should differ.** A pirate dive, a miners' tavern, an upper-tier lounge: light,
    crowd, music. Right now there is one for the whole galaxy (`26-ui-station`, `renderCantina`).
 4. **New world types:** crystalline, jungle, metallic, ruin. The machinery is already ready to

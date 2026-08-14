@@ -1223,8 +1223,25 @@ function hullOf(id){
     eng.push({x:n.x-n.l*.5,y:-n.y,r:n.r*.92});
     eng.push({x:n.x-n.l*.5,y:n.y,r:n.r*.92});
   }
-  if(tailW>bw*.55){eng.push({x:tail,y:-tailW*.46,r:tailW*.44});eng.push({x:tail,y:tailW*.46,r:tailW*.44});}
-  else eng.push({x:tail,y:0,r:Math.max(1.6,tailW*.82)});
+  /* ── сопла по работе ──
+     Были одинаковы у всех, хотя тяга и есть главное различие между грузовиком
+     и курьером. Грузовик тащит массу: у него мало сопел и они большие.
+     Курьер разгоняется: одно длинное по оси. Фрегат должен уметь дёргаться:
+     блок мелких, которыми удобно рулить. Остальным — прежняя пара. */
+  if(K.cont){                                   // рудовоз и буровик
+    const rr=Math.max(2.4,tailW*.62);
+    eng.push({x:tail,y:-tailW*.4,r:rr});
+    eng.push({x:tail,y:tailW*.4,r:rr});
+  }else if(K.atm&&K.len>1.4){                   // курьер: одно, по оси
+    eng.push({x:tail,y:0,r:Math.max(2,tailW*.95)});
+  }else if(K.guns){                             // фрегат: блок мелких
+    const rr=Math.max(1.1,tailW*.3);
+    for(let i=0;i<4;i++)
+      eng.push({x:tail+(i%2?1.2:0),y:(i-1.5)*tailW*.42,r:rr});
+  }else if(tailW>bw*.55){
+    eng.push({x:tail,y:-tailW*.46,r:tailW*.44});
+    eng.push({x:tail,y:tailW*.46,r:tailW*.44});
+  }else eng.push({x:tail,y:0,r:Math.max(1.6,tailW*.82)});
 
   /* ── навеска: боксы, антенны, рёбра обшивки ── */
   const pods=[];
@@ -1283,6 +1300,14 @@ function hullOf(id){
   if(K.boom)mark.boom={l:len*(.18+r()*.12),r:.8+r()*.5};
   /* пилоны яхты: гондолы вынесены на тонких кронштейнах, крыла нет вовсе */
   if(K.pylon)mark.pylon=1;
+  /* Рубка вместо фонаря у крупных: колпак истребителя на рудовозе — нелепость.
+     Рубка стоит НАД палубой, у неё своя тень и ряд окон по фронту, и именно
+     она даёт кораблю высоту, которой у плоского вида сверху нет. */
+  if(K.cont||K.armor)mark.bridge={x:lerp(nose,tail,.20+r()*.10),
+    l:len*(.14+r()*.07), w:bw*(.52+r()*.18)};
+  /* причальный узел: корабль всю игру швартуется к станциям, а стыковаться
+     ему было нечем. Кольцо с тремя захватами на скуле — и сразу видно, чем */
+  mark.dock={x:lerp(nose*.75,nose*.25,r()), s:(r()<.5?1:-1), r:1.5+r()*.9};
   /* Экранная изоляция — только тем, кто в атмосферу не садится: у садящегося
      фольгу сорвёт на первом же входе, ему нужна обшивка. Пятно небольшое и
      на своём месте у каждого корпуса — первый заход давал всем одинаковый
@@ -1464,8 +1489,42 @@ function drawTierTrim(h){
 }
 /* приметы класса рисуются поверх корпуса, но под фонарём и огнями: это
    навеска, а не корпус, и она обязана читаться отдельным слоем */
+/* ── тени навески на корпус ──
+   Главное, чего кораблю не хватало: всё лежало в одной плоскости, и гондола
+   ничем не отличалась от нарисованного на борту прямоугольника. Свет в кадре
+   один и тот же для всех корпусов (сверху-слева, как на поверхности планеты),
+   поэтому тень падает вниз-вправо, а её длина — это и есть высота детали.
+   Тень клипуется по корпусу: за борт она уходить не должна, там пустота. */
+const SH_DX=1.7, SH_DY=1.25;
+function hullShade(h,hgt,fn){
+  ctx.save();
+  tracePoly(h.poly);ctx.clip();
+  ctx.translate(SH_DX*hgt,SH_DY*hgt);
+  ctx.fillStyle="rgba(0,0,0,.38)";
+  fn();
+  ctx.restore();
+}
 function drawHullMarks(h){
   const M=h.mark;if(!M)return;
+  /* один проход теней на всю навеску: высота у каждой семьи своя */
+  hullShade(h,1,()=>{
+    for(const n of h.nacs)for(const s of [1,-1]){
+      const y=n.y*s;
+      ctx.fillRect(n.x-n.l*.5,y-n.r,n.l,n.r*2);
+    }
+    for(const p of h.pods)for(const s of [1,-1])
+      ctx.fillRect(p[0],p[1]*s-(s>0?0:p[3]),p[2],p[3]);
+    if(M.cont)for(const c of M.cont)for(const s of [1,-1]){
+      const y=c[2]*s;
+      ctx.fillRect(c[0],s>0?y-c[2]*.55:y-c[2]*.45,c[1],c[2]);
+    }
+    if(M.guns)for(const g of M.guns)for(const s of [1,-1])
+      ctx.fillRect(g[0]-4.5,g[1]*s-2.2,9,4.4);
+  });
+  /* рубка выше всего остального, поэтому её тень длиннее */
+  if(M.bridge)hullShade(h,1.9,()=>{
+    ctx.fillRect(M.bridge.x-M.bridge.l*.5,-M.bridge.w*.5,M.bridge.l,M.bridge.w);
+  });
   if(M.cont)for(const c of M.cont)for(const s of [1,-1]){
     const y=c[2]*s;
     /* контейнер — чужая тара, а не часть корабля: он из голого металла и
@@ -1570,6 +1629,41 @@ function drawHullMarks(h){
       ctx.lineTo(d.x-d.boom*.4+d.r*.7,dy);ctx.stroke();
     }
   }
+  /* ── рубка ── стоит НАД палубой: тёмный цоколь по нижней кромке, светлый
+     верх, ряд окон по фронту. Ярусность и есть тот объём, которого нет у
+     плоского вида сверху: у детали появляется низ и верх, а не только пятно */
+  if(M.bridge){
+    const B=M.bridge, x0=B.x-B.l*.5, y0=-B.w*.5;
+    const g=ctx.createLinearGradient(0,y0,0,y0+B.w);
+    g.addColorStop(0,rgba(mixc(h.body,[255,255,255],.24),1));
+    g.addColorStop(.55,rgba(h.body,1));
+    g.addColorStop(1,rgba(h.dark,1));
+    ctx.fillStyle=g;ctx.fillRect(x0,y0,B.l,B.w);
+    ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x0,y0+B.w-.7,B.l,.7);  // цоколь
+    ctx.fillStyle=rgba(h.lite,.55);ctx.fillRect(x0,y0,B.l,.5);         // верхняя грань
+    ctx.strokeStyle=rgba(h.dark,1);ctx.lineWidth=.45;
+    ctx.strokeRect(x0+.22,y0+.22,B.l-.44,B.w-.44);
+    /* окна рубки по фронту — вперёд смотрят люди, а не пушки */
+    ctx.fillStyle="rgba(186,232,250,.62)";
+    const wn=Math.max(2,Math.round(B.w/2.2));
+    for(let i=0;i<wn;i++)
+      ctx.fillRect(x0+B.l-1.5,y0+1+i*(B.w-2)/wn,1,Math.max(.8,(B.w-2)/wn-.7));
+  }
+  /* ── причальный узел ── кольцо с тремя захватами на скуле: тем и швартуются */
+  if(M.dock){
+    const D2=M.dock, y=profW(h.prof,D2.x)*.86*D2.s;
+    ctx.strokeStyle=rgba(h.steel,1);ctx.lineWidth=.5;
+    ctx.beginPath();ctx.arc(D2.x,y,D2.r,0,TAU);ctx.stroke();
+    ctx.fillStyle=rgba(mixc(h.steel,[0,0,0],.5),1);
+    ctx.beginPath();ctx.arc(D2.x,y,D2.r*.52,0,TAU);ctx.fill();
+    ctx.strokeStyle=rgba(h.steel,.9);ctx.lineWidth=.4;
+    for(let i=0;i<3;i++){
+      const a=i*TAU/3+.4;
+      ctx.beginPath();
+      ctx.moveTo(D2.x+Math.cos(a)*D2.r*.55,y+Math.sin(a)*D2.r*.55);
+      ctx.lineTo(D2.x+Math.cos(a)*D2.r*1.25,y+Math.sin(a)*D2.r*1.25);ctx.stroke();
+    }
+  }
   /* ── шлюз ── с одного борта, с поручнем: место, куда выходит человек.
      Масштаб задаётся им же — по люку видно, какого корабль размера */
   if(M.lock&&M.lock.r>1){
@@ -1605,8 +1699,11 @@ function drawHullMarks(h){
     ctx.fillStyle="rgba(232,238,245,.42)";
     ctx.font="2.6px ui-monospace,monospace";
     ctx.textAlign="center";ctx.textBaseline="middle";
+    /* Читается по ходу корабля, а не вверх ногами: корпус рисуется уже
+       повёрнутым носом вперёд, поэтому надпись доворачивается в другую
+       сторону — на зуме перевёрнутый номер был первым, что бросалось в глаза */
     ctx.translate(lerp(h.nose*.35,h.tail*.5,.5),-h.bw*.52);
-    ctx.rotate(-Math.PI/2);
+    ctx.rotate(Math.PI/2);
     ctx.fillText(M.num,0,0);
     ctx.restore();
   }
@@ -1889,8 +1986,10 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.beginPath();ctx.moveTo(a[0],a[1]*s);
     ctx.lineTo(a[0]-a[2]*Math.sin(a[3]),(a[1]-a[2])*s);ctx.stroke();
   }
-  /* ── фонарь кабины ── */
+  /* ── фонарь кабины ── у кого есть рубка, фонаря нет: колпак истребителя на
+     рудовозе был самой нелепой деталью листа */
   const cp=h.canopy;
+  if(!h.mark.bridge){
   ctx.fillStyle="rgba(10,26,38,.95)";
   ctx.beginPath();ctx.ellipse(cp.x,0,cp.rx,cp.ry,0,0,TAU);ctx.fill();
   ctx.strokeStyle=rgba(h.lite,.6);ctx.lineWidth=.5;ctx.stroke();
@@ -1898,6 +1997,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
   cg.addColorStop(0,"rgba(180,240,255,.55)");cg.addColorStop(1,"rgba(120,200,230,0)");
   ctx.fillStyle=cg;
   ctx.beginPath();ctx.ellipse(cp.x,0,cp.rx*.86,cp.ry*.72,0,0,TAU);ctx.fill();
+  }
   /* ── бортовые огни ── */
   /* Огни ставились по законцовке первого крыла, а при её отсутствии — по
      ±bw*1.6, то есть заведомо ЗА бортом: у рудовоза и яхты две точки висели
