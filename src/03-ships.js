@@ -450,9 +450,15 @@ function hullOf(id){
   }
 
   /* ── навеска: боксы, антенны, рёбра обшивки ── */
+  /* ── боксы по бортам ──
+     Пятый элемент в списке хвостов: вся навеска ставилась зеркально, и
+     корабль читался гербом, а не машиной. У настоящей техники оборудование
+     висит там, где нашлось место: бокс с одного борта, ящик с другого, и
+     они разной длины. `s` — борт, на котором стоит именно этот бокс. */
   const pods=[];
   const podN=Math.floor(r()*3);
-  for(let i=0;i<podN;i++)pods.push([tail*.5-r()*3, bw+2.2+i*3.4, 4+r()*4, 2.2+r()*1.6]);
+  for(let i=0;i<podN;i++)pods.push([tail*.5-r()*3, bw+2.2+i*3.4, 4+r()*4, 2.2+r()*1.6,
+                                    (r()<.34?0:(r()<.5?1:-1))]);
   const greeb=[];
   const gn=8+Math.floor(r()*10);
   for(let i=0;i<gn;i++){
@@ -678,7 +684,7 @@ function hullOf(id){
   const own=hex2rgb(S.col);
   const col=YAC?own:mixc([214,211,200],own,.10);
   const h={poly,prof,wings,pods,nacs,eng,greeb,ants,ribs,canopy,stripe,fin,mark,
-    hcls:S.hcls,clsRu:K.ru,tier:S.tier,seed:S.seed,lux:LUX,yac:YAC,form,
+    hcls:S.hcls,clsRu:K.ru,tier:S.tier,seed:S.seed,lux:LUX,yac:YAC,form,pirate:!!(id&&id[0]==="p"),
     nose,bw,tail,len,tailW,halfW:hw,
     /* акцент — кирпичный сурик, а не подмешанный цвет владельца: подмес к
        голубому давал серо-сиреневое пятно, которого на борту не видно.
@@ -903,7 +909,7 @@ function drawHullMarks(h){
       const y=n.y*s;
       ctx.fillRect(n.x-n.l*.5,y-n.r,n.l,n.r*2);
     }
-    for(const p of h.pods)for(const s of [1,-1])
+    for(const p of h.pods)for(const s of (p[4]?[p[4]]:[1,-1]))
       ctx.fillRect(p[0],p[1]*s-(s>0?0:p[3]),p[2],p[3]);
     if(M.cont)for(const c of M.cont)for(const s of [1,-1]){
       const y=c[2]*s;
@@ -1047,33 +1053,82 @@ function drawHullMarks(h){
     for(let i=0;i<wn;i++)
       ctx.fillRect(x0+B.l-1.5,y0+1+i*(B.w-2)/wn,1,Math.max(.8,(B.w-2)/wn-.7));
   }
-  /* ── причальный узел ── кольцо с тремя захватами на скуле: тем и швартуются */
+  /* ── причальный узел ──
+     Хвост, записанный в план ещё после яхты: кольцо было тремя серыми
+     окружностями — шайба, приклеенная к борту, самая дешёвая деталь на
+     корпусе, где всё остальное уже доведено. Настоящий узел — это ВОРОТНИК:
+     утопленная площадка с тёмным жерлом, кольцевой фланец с крепежом по
+     кругу, три захвата и белая наводочная метка, по которой к нему целятся.
+     Здесь не нужен ни один новый приём — только те, что уже работают на
+     обшивке: тон, тень, крепёж, краска. */
   if(M.dock){
-    const D2=M.dock, y=profW(h.prof,D2.x)*.86*D2.s;
-    ctx.strokeStyle=rgba(h.steel,1);ctx.lineWidth=.5;
-    ctx.beginPath();ctx.arc(D2.x,y,D2.r,0,TAU);ctx.stroke();
-    ctx.fillStyle=rgba(mixc(h.steel,[0,0,0],.5),1);
-    ctx.beginPath();ctx.arc(D2.x,y,D2.r*.52,0,TAU);ctx.fill();
-    ctx.strokeStyle=rgba(h.steel,.9);ctx.lineWidth=.4;
-    for(let i=0;i<3;i++){
+    const D2=M.dock, y=profW(h.prof,D2.x)*.86*D2.s, R=D2.r*1.15;
+    const met=h.yac?h.steel:h.iron;
+    ctx.fillStyle="rgba(0,0,0,.4)";                       // тень воротника
+    ctx.beginPath();ctx.arc(D2.x+.5,y+.5,R*1.12,0,TAU);ctx.fill();
+    const g=ctx.createRadialGradient(D2.x-R*.4,y-R*.4,R*.1,D2.x,y,R*1.1);
+    g.addColorStop(0,rgba(mixc(met,[255,255,255],.42),1));
+    g.addColorStop(1,rgba(mixc(met,[0,0,0],.2),1));
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.arc(D2.x,y,R*1.1,0,TAU);ctx.fill();
+    ctx.strokeStyle=rgba(mixc(met,[0,0,0],.7),1);ctx.lineWidth=.45;ctx.stroke();
+    ctx.fillStyle="rgba(6,8,12,.95)";                     // жерло
+    ctx.beginPath();ctx.arc(D2.x,y,R*.5,0,TAU);ctx.fill();
+    ctx.strokeStyle=rgba(mixc(met,[255,255,255],.3),.9);ctx.lineWidth=.35;ctx.stroke();
+    ctx.fillStyle=rgba(mixc(met,[0,0,0],.55),1);          // крепёж по фланцу
+    for(let i=0;i<8;i++){
+      const a=i*TAU/8+.2;
+      ctx.beginPath();ctx.arc(D2.x+Math.cos(a)*R*.82,y+Math.sin(a)*R*.82,.28,0,TAU);ctx.fill();
+    }
+    ctx.strokeStyle=rgba(mixc(met,[255,255,255],.25),1);ctx.lineWidth=.5;
+    for(let i=0;i<3;i++){                                 // захваты
       const a=i*TAU/3+.4;
       ctx.beginPath();
-      ctx.moveTo(D2.x+Math.cos(a)*D2.r*.55,y+Math.sin(a)*D2.r*.55);
-      ctx.lineTo(D2.x+Math.cos(a)*D2.r*1.25,y+Math.sin(a)*D2.r*1.25);ctx.stroke();
+      ctx.moveTo(D2.x+Math.cos(a)*R*.52,y+Math.sin(a)*R*.52);
+      ctx.lineTo(D2.x+Math.cos(a)*R*1.02,y+Math.sin(a)*R*1.02);ctx.stroke();
+    }
+    if(!h.yac){                                           // наводочная метка
+      ctx.strokeStyle="rgba(236,236,228,.75)";ctx.lineWidth=.4;
+      ctx.beginPath();
+      ctx.moveTo(D2.x-R*1.5,y);ctx.lineTo(D2.x-R*1.15,y);
+      ctx.moveTo(D2.x+R*1.15,y);ctx.lineTo(D2.x+R*1.5,y);ctx.stroke();
     }
   }
   /* ── шлюз ── с одного борта, с поручнем: место, куда выходит человек.
      Масштаб задаётся им же — по люку видно, какого корабль размера */
   if(M.lock&&M.lock.r>1){
     const L=M.lock, y=profW(h.prof,L.x)*.72*L.s;
-    ctx.fillStyle=rgba(h.dark,1);
-    ctx.beginPath();ctx.arc(L.x,y,L.r,0,TAU);ctx.fill();
-    ctx.strokeStyle=rgba(h.steel,1);ctx.lineWidth=.45;ctx.stroke();
-    ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.4;
-    ctx.beginPath();ctx.arc(L.x,y,L.r*.55,0,TAU);ctx.stroke();
-    ctx.strokeStyle=rgba(h.steel,.9);ctx.lineWidth=.4;   // поручень
+    const met=h.yac?h.steel:h.iron;
+    /* второй хвост из плана: люк был кружком в кружке. Люк, из которого
+       выходит человек, устроен иначе — он ОБРАМЛЁН: утопленная рама, створка
+       со скруглением, ручка-штурвал посередине, поручень рядом и жёлтая
+       окантовка проёма. По нему же читается размер всего корабля. */
+    ctx.fillStyle="rgba(0,0,0,.38)";
+    ctx.fillRect(L.x-L.r*1.15+.4,y-L.r*1.05+.4,L.r*2.3,L.r*2.1);
+    ctx.fillStyle=rgba(mixc(met,[0,0,0],.35),1);
+    ctx.fillRect(L.x-L.r*1.15,y-L.r*1.05,L.r*2.3,L.r*2.1);
+    ctx.strokeStyle="rgba(196,142,52,.4)";ctx.lineWidth=.35;  // окантовка проёма
+    ctx.strokeRect(L.x-L.r*1.15,y-L.r*1.05,L.r*2.3,L.r*2.1);
+    const g=ctx.createLinearGradient(0,y-L.r,0,y+L.r);
+    g.addColorStop(0,rgba(mixc(met,[255,255,255],.34),1));
+    g.addColorStop(1,rgba(mixc(met,[0,0,0],.5),1));
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.arc(L.x,y,L.r*.82,0,TAU);ctx.fill();
+    ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=.4;ctx.stroke();
+    ctx.strokeStyle=rgba(mixc(met,[255,255,255],.4),1);ctx.lineWidth=.4;
+    for(let i=0;i<4;i++){                                     // штурвал
+      const a=i*TAU/4+.3;
+      ctx.beginPath();
+      ctx.moveTo(L.x+Math.cos(a)*L.r*.18,y+Math.sin(a)*L.r*.18);
+      ctx.lineTo(L.x+Math.cos(a)*L.r*.6,y+Math.sin(a)*L.r*.6);ctx.stroke();
+    }
+    ctx.beginPath();ctx.arc(L.x,y,L.r*.2,0,TAU);ctx.stroke();
+    ctx.strokeStyle=rgba(mixc(met,[255,255,255],.2),1);ctx.lineWidth=.4;  // поручень
     ctx.beginPath();
-    ctx.moveTo(L.x-L.r*1.5,y+L.r*.9*L.s);ctx.lineTo(L.x+L.r*1.5,y+L.r*.9*L.s);ctx.stroke();
+    ctx.moveTo(L.x-L.r*1.5,y+L.r*1.35*L.s);ctx.lineTo(L.x+L.r*1.5,y+L.r*1.35*L.s);
+    ctx.moveTo(L.x-L.r*1.5,y+L.r*1.35*L.s);ctx.lineTo(L.x-L.r*1.4,y+L.r*1.05*L.s);
+    ctx.moveTo(L.x+L.r*1.5,y+L.r*1.35*L.s);ctx.lineTo(L.x+L.r*1.4,y+L.r*1.05*L.s);
+    ctx.stroke();
   }
   /* ── манипулятор ── одна штука, с одного борта, сложен вдоль корпуса */
   if(M.arm){
@@ -1497,6 +1552,42 @@ function drawStencils(h){
     const y=(((hh>>>8)&7)/7-.5)*w*1.2;
     for(let k=0;k<3+(hh&3);k++)ctx.fillRect(x+k*.55,y,.35,.5);
   }
+}
+/* ── пиратский борт ──
+   Пират опознавался только силуэтом класса, а вблизи это был тот же
+   аккуратный корабль с инвентарным номером. Пират — не другая машина, а
+   машина с ЧУЖОЙ историей: номер закрашен полосой, поверх грунта наляпаны
+   заплаты чужого тона, обшивка в подпалинах от собственных стволов. Ни одной
+   новой формы — только следы на той же вещи.
+   Рисуется ПОСЛЕ навески и номера: закрашивают ведь то, что уже нанесено, —
+   в первом заходе мазок лёг под номер, и номер спокойно читался поверх. */
+function drawPirateSkin(h){
+  ctx.save();tracePoly(h.poly);ctx.clip();
+  const P2=h.prof;
+  ctx.fillStyle="rgba(38,34,30,.9)";
+  ctx.fillRect(lerp(h.nose*.35,h.tail*.5,.5)-2.6,-h.bw*.62-2.6,5.2,5.2);
+  for(let i=0;i<8;i++){
+    const hh=hashi(i,h.seed,0xB17E);
+    const x=lerp(h.nose*.8,h.tail*.9,((hh>>>3)&31)/31);
+    const w=profW(P2,x);if(w<1.2)continue;
+    const y=(((hh>>>9)&15)/15-.5)*w*1.5;
+    const pw=1.6+((hh>>>14)&3)*1.1, ph=1.1+((hh>>>17)&3)*.8;
+    ctx.fillStyle=((hh>>>19)&1)?"rgba(74,58,42,.75)":"rgba(48,54,60,.8)";
+    ctx.fillRect(x-pw/2,y-ph/2,pw,ph);
+    ctx.strokeStyle="rgba(10,9,7,.6)";ctx.lineWidth=.3;
+    ctx.strokeRect(x-pw/2,y-ph/2,pw,ph);
+  }
+  /* подпалины у скулы — прямоугольным мазком, а не эллипсом: первый заход
+     рисовал их дугой, и на стенде вылезли рыжие круги в полкорабля */
+  ctx.fillStyle="rgba(22,16,12,.4)";
+  for(let i=0;i<5;i++){
+    const hh=hashi(i+5,h.seed,0xC0A1);
+    const x=lerp(h.nose*.7,h.nose*.05,((hh>>>4)&7)/7), w=profW(P2,x);
+    if(!(w>.5))continue;
+    const y=w*.62*((hh&1)?1:-1);
+    ctx.fillRect(x-1.2,y-.5,2.4+((hh>>>8)&3)*.5,1);
+  }
+  ctx.restore();
 }
 function drawHull(id,thrusting,braking,lvl,bank){
   const h=hullOf(id),blink=Math.sin(G.t*.07);
@@ -1978,6 +2069,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
   ctx.restore();
   drawTierTrim(h);
   drawHullMarks(h);
+  if(h.pirate)drawPirateSkin(h);
   if(typeof drawCrowns==="function")drawCrowns(h,id);
   /* ── боксы по бортам ──
      Были голым прямоугольником с полупрозрачной обводкой в .9: вдали сходило,
@@ -1985,7 +2077,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
      двойной линией вокруг пустоты. Правило, по которому теперь живёт вся
      навеска: обводка вдвое тоньше и НЕПРОЗРАЧНАЯ, а объём даёт не она, а
      светлая кромка со стороны света, тёмная с теневой и одно ребро внутри. */
-  for(const p of h.pods)for(const s of [1,-1]){
+  for(const p of h.pods)for(const s of (p[4]?[p[4]]:[1,-1])){
     const y=p[1]*s-(s>0?0:p[3]), w=p[2], hgt=p[3];
     const g=ctx.createLinearGradient(0,y,0,y+hgt);
     g.addColorStop(0,rgba(mixc(h.iron,[255,255,255],.18),1));

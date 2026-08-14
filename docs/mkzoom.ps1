@@ -20,7 +20,7 @@ setTimeout(function(){
   c.fillStyle="#0a0d12";c.fillRect(0,0,W2,H2);
   var old=ctx;ctx=c;
   cls.forEach(function(k,n){
-    var id="zoom_"+k;
+    var id=(n<3?"zoom_":"p_zoom_")+k;
     NPC_SHIPS[id]={name:id,seed:(n*7919+31)>>>0,hcls:k,col:"#9fd8ff",
       hull:100,cargo:60,fuel:100,thr:1,cls:k,tier:["line","work","rare","legend","proto","line"][n]};
     delete HULL_CACHE[id];
@@ -28,7 +28,7 @@ setTimeout(function(){
     c.save();c.translate(cx,cy);c.scale(7,7);c.rotate(-Math.PI/2);
     drawHull(id,false,false,0,0);c.restore();
     c.fillStyle="#7d94a4";c.font="11px ui-monospace,monospace";c.textAlign="left";
-    c.fillText(HULL_CLASS[k].ru.toUpperCase(),(n%COLS)*CELL+10,((n/COLS)|0)*CELL+18);
+    c.fillText((n<3?"":"ПИРАТ · ")+HULL_CLASS[k].ru.toUpperCase(),(n%COLS)*CELL+10,((n/COLS)|0)*CELL+18);
     c.strokeStyle="rgba(120,150,175,.10)";
     c.strokeRect((n%COLS)*CELL+.5,((n/COLS)|0)*CELL+.5,CELL-1,CELL-1);
   });
