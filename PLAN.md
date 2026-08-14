@@ -272,9 +272,23 @@ fracture and is now thinner than the contour and no brighter than the sand.
 soot or hairline cracks — the frame is honest about silhouette, tally and contact, and says nothing
 about the skin. Checking the skin needs a stand on a real planet trace.
 
-**Remaining tail for the next session:** the obelisk's second, dated answer (M107 exists now, so
-this is unblocked); and the fragment board — a hundred pieces and eight chapters are collected with
-no place to read them, so the record currently lives only in `tell()` and the journal.
+**Tail closed.** Both remaining items are done:
+
+- **the second, dated answer** turned out to be already built — it went in with M107 and lives in
+  `loreTake` (`12q-lore`): read a notch while the sky is doing what it was dated against
+  (`celEventNow`) and the slab names a second address, the next one in the same chapter. The plan
+  entry was stale, not the code;
+- **the fragment board** — new module `27h-ui-lore.js`, a second window on the journal's frame
+  (`#lorewin`, `ОТЧЁТ` in the menu, hidden until the first piece). Three rules it is built on and
+  the suite guards: it adds nothing the player did not pick up himself; **a gap stays a gap** —
+  a missing piece is an empty numbered line in its place, so the board shows the shape of the hole
+  rather than a percentage; and a chapter's note opens only when the chapter comes together
+  (`loreChapter().read`, two thirds), because eight notes shown from the first piece are somebody
+  else's table of contents handed over in advance. Vocabulary and addresses sit at the bottom.
+  Suite: `отчёт: доска, на которой это читают` in `91p-lore.js`.
+
+**Known limit:** the board is one long scroll — about 110 rows with no way to jump between
+chapters. Fine while the record is short; if it starts being read often it wants chapter anchors.
 
 ## M107 (0.56.0). The sky keeps a calendar — DONE
 

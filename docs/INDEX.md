@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 103 · символов верхнего уровня: 1260
+Файлов: 104 · символов верхнего уровня: 1265
 
 ## СИМВОЛЫ
 
@@ -681,14 +681,17 @@ LORE_WHO                     src/12q-lore.js:45
 LORE_WORDS                   src/12q-lore.js:56
 loreAddr                     src/12q-lore.js:116
 loreAtPlace                  src/12q-lore.js:109
+loreBtnTick                  src/27h-ui-lore.js:18
 loreChapter                  src/12q-lore.js:99
 loreChaptersRead             src/12q-lore.js:105
 loreCount                    src/12q-lore.js:90
 loreHas                      src/12q-lore.js:89
 loreList                     src/12q-lore.js:88
 loreMarks                    src/12q-lore.js:91
+loreRow                      src/27h-ui-lore.js:24
 loreTake                     src/12q-lore.js:134
 loreVocab                    src/12q-lore.js:93
+loreWinOpen                  src/27h-ui-lore.js:17
 loyBar                       src/27c-ui-hq.js:17
 loyWord                      src/27c-ui-hq.js:13
 luckLine                     src/27b-ui-crew.js:16
@@ -1001,6 +1004,7 @@ RELIEF_MIX                   src/07-planet.js:46
 renderBarge                  src/12l-barge.js:611
 renderCantina                src/27c-ui-hq.js:45
 renderLog                    src/11-log.js:37
+renderLoreBoard              src/27h-ui-lore.js:31
 renderOpts                   src/27-ui-ship.js:183
 renderRoute                  src/12r-route.js:225
 renderTab                    src/26-ui-station.js:147
@@ -1197,6 +1201,7 @@ tierOf                       src/04b-fleet.js:157
 timeBucket                   src/03-ships.js:103
 tnoise                       src/18a-material.js:16
 toggleLog                    src/11-log.js:89
+toggleLoreBoard              src/27h-ui-lore.js:65
 toggleMenu                   src/15-input.js:125
 totalLoss                    src/21-mode-surface.js:230
 tracePath                    src/25-cockpit.js:159
@@ -1546,6 +1551,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/27g-deals.js · 14 КБ
   · кантина: дела, а не поручения:1
 
+## src/27h-ui-lore.js · 5 КБ
+  · доска отчёта: место, где собранное можно прочесть:1
+
 ## src/27-ui-ship.js · 20 КБ
   · экран корабля:1
 
@@ -1601,7 +1609,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91n-barge.js · 9 КБ
   · автотесты: баржи и редкости: настоящий маршрут, остовы, сто адресов:1
 
-## tests/91p-lore.js · 6 КБ
+## tests/91p-lore.js · 9 КБ
   · отчёт «Долгого Хода»: сто кусков:1
 
 ## tests/91q-planet.js · 4 КБ
