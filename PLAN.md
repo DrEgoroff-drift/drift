@@ -98,9 +98,26 @@ flora and fauna, a living camera, station modules, weather.
    **Still open:** the landings in the shaft barely read; a tub sitting in a cell dug below the
    drift floor looks like a crate in a pit; and a long shaft is still a long shaft — niches and a
    change of section would do more for it than any amount of texture.
-2. **Ships by class and faction.** Hulls exist (`03-ships`, `hullOf`/`drawHull`), but the
-   silhouette doesn't say who you're looking at: ore hauler, frigate, yacht, surveyor. Only
-   pirates fly in a system, and they all look alike.
+2. **Ships by class and faction** — *class done, faction not started.* `03-ships`. The stand
+   (`docs/mkhulls.ps1` → `docs/shots/hulls.png`: seven class rows, six seeds each) showed the
+   complaint was true for four classes of seven — hauler, miner and courier read at once, while
+   scout, frigate, yacht and surveyor were one and the same arrow-with-wings.
+
+   **The cause was not proportion but placement.** Every class mark — dish, guns, panels, windows
+   — was drawn *inside* the outline and drowned in the greebles. A silhouette is an outline, so a
+   class mark has to stick out of it. Fixed by giving four classes something that breaks the
+   contour: an instrument boom running forward past the nose (scout — the only hull whose nose
+   continues beyond the envelope); sponsons carrying the guns outboard, barrels forward (frigate);
+   no wing at all and nacelles on thin pylons, so the gap between hull and nacelle is what
+   identifies it (yacht); and panels opened square across the hull on brackets plus a big dish on
+   a long boom (surveyor — right angles against everyone else's sweep).
+
+   **Bug found on the same stand and fixed:** navigation lights were placed at the first wing tip,
+   and with no wings they fell back to ±`bw`\*1.6 — plainly *outside* the hull. On a hauler and a
+   yacht two lights hung in empty space beside the ship. They are now computed off the profile.
+
+   **Not done:** faction. There is still one visual language for everybody, and in a system only
+   pirates fly. Per the queue below, factions come after stations.
 3. **Cantinas should differ.** A pirate dive, a miners' tavern, an upper-tier lounge: light,
    crowd, music. Right now there is one for the whole galaxy (`26-ui-station`, `renderCantina`).
 4. **New world types:** crystalline, jungle, metallic, ruin. The machinery is already ready to

@@ -1122,13 +1122,20 @@ const HULL_CLASS={
      сливались в одну «стрелу с крыльями». Курьер теперь вдвое длиннее своей
      ширины, рудовоз — почти ящик, яхта — веретено, и размах крыла тоже свой
      (`wsp`): рудовозу крылья ни к чему, фрегату они и есть силуэт. */
-  scout:  {ru:"разведчик",     bw:.85,len:1.00,wing:[1,3],nac:.62,notch:.55,dish:1,wsp:1},
+  /* Лист по классам показал: рудовоз, буровик и курьер опознаются сразу, а
+     разведчик, фрегат, яхта и исследователь — одна и та же «стрела с крыльями».
+     Причина не в пропорциях, а в том, что примета класса рисовалась ВНУТРИ
+     контура: тарелка, стволы и панели тонули в навеске. Силуэт — это контур,
+     значит примета обязана из него торчать. Отсюда `boom` у разведчика,
+     спонсоны у фрегата, отсутствие крыла и пилоны у яхты, раскрытые панели
+     и тарелка на длинной штанге у исследователя. */
+  scout:  {ru:"разведчик",     bw:.85,len:1.00,wing:[1,2],nac:.40,notch:.55,dish:1,boom:1,wsp:.95},
   courier:{ru:"курьер",        bw:.50,len:1.52,wing:[2,3],nac:.80,notch:.30,fin:1,wsp:1.25},
   hauler: {ru:"рудовоз",       bw:1.90,len:1.04,wing:[0,1],nac:.38,notch:.85,cont:1,wsp:.5},
   miner:  {ru:"буровик",       bw:1.52,len:.92,wing:[0,2],nac:.50,notch:.70,cont:1,drill:1,wsp:.62},
-  warship:{ru:"фрегат",        bw:1.16,len:1.12,wing:[2,3],nac:.74,notch:.50,guns:1,armor:1,wsp:1.18},
-  yacht:  {ru:"яхта",          bw:.74,len:1.34,wing:[1,2],nac:.50,notch:.10,win:1,fin:1,wsp:1.05},
-  survey: {ru:"исследователь", bw:.92,len:1.14,wing:[1,2],nac:.52,notch:.40,dish:1,panel:1,wsp:.92}
+  warship:{ru:"фрегат",        bw:1.16,len:1.12,wing:[2,2],nac:.74,notch:.50,guns:1,armor:1,wsp:.86},
+  yacht:  {ru:"яхта",          bw:.74,len:1.34,wing:[0,0],nac:.85,notch:.10,win:1,fin:1,pylon:1,wsp:.7},
+  survey: {ru:"исследователь", bw:.92,len:1.14,wing:[0,1],nac:.52,notch:.40,dish:1,panel:1,wsp:.8}
 };
 function hullClassOf(id,S){
   if(S.hcls)return S.hcls;
@@ -1243,14 +1250,28 @@ function hullOf(id){
   }
   if(K.drill)mark.drill={x:nose+1.5,l:5+r()*5,r:Math.max(2.2,noseW*1.5)};
   if(K.guns){
+    /* спонсоны: стволы вынесены за борт на короткой площадке и смотрят вперёд.
+       Раньше они лежали вдоль скулы внутри контура и на силуэте их не было —
+       фрегат ничем не отличался от разведчика */
     mark.guns=[];
     const gn=1+Math.floor(r()*2);
     for(let i=0;i<gn;i++)
-      mark.guns.push([lerp(nose*.62,nose*.1,i/Math.max(1,gn)),bw*(.5+i*.3),4+r()*6]);
+      mark.guns.push([lerp(nose*.5,nose*.02,i/Math.max(1,gn)),
+        bw*(1.15+i*.34), 7+r()*7]);
   }
   if(K.armor)mark.armor=nose*(.42+r()*.2);
-  if(K.dish)mark.dish={x:lerp(tail*.6,nose*.1,r()),r:1.8+r()*2.2,boom:2.5+r()*3};
-  if(K.panel)mark.panel={x:lerp(tail*.7,tail*.2,r()),l:len*(.16+r()*.12),w:bw*(1.5+r()*1.2)};
+  /* тарелка у исследователя — на длинной штанге и крупная: это его силуэт.
+     У разведчика она осталась маленькой и прижатой: он про «дотянуться», а не
+     про «слушать» */
+  if(K.dish)mark.dish=K.panel
+    ?{x:lerp(tail*.5,nose*.1,r()),r:3.4+r()*2.4,boom:bw*1.6+5+r()*4}
+    :{x:lerp(tail*.6,nose*.1,r()),r:1.8+r()*1.6,boom:2.5+r()*3};
+  if(K.panel)mark.panel={x:lerp(tail*.6,tail*.1,r()),l:len*(.26+r()*.14),w:bw*(2.3+r()*1.1)};
+  /* штанга приборов вперёд по оси: единственный корпус, у которого нос
+     продолжается за габарит. Разведчик опознаётся по ней издалека */
+  if(K.boom)mark.boom={l:len*(.18+r()*.12),r:.8+r()*.5};
+  /* пилоны яхты: гондолы вынесены на тонких кронштейнах, крыла нет вовсе */
+  if(K.pylon)mark.pylon=1;
   if(K.win)mark.win=[nose*(.2+r()*.2),tail*(.2+r()*.3)];
 
   const canopy={x:lerp(nose,tail,.12+r()*.12),rx:2+r()*3.4,ry:0};
@@ -1416,11 +1437,21 @@ function drawHullMarks(h){
       ctx.moveTo(d.x+d.l*t,-d.r*(1-t));ctx.lineTo(d.x+d.l*t,d.r*(1-t));ctx.stroke();
     }
   }
+  /* Спонсон: площадка за бортом на короткой консоли, на ней тумба и ствол
+     вперёд. Раньше ствол лежал вдоль скулы внутри контура — на силуэте его
+     не было вовсе, и фрегат читался разведчиком. */
   if(M.guns)for(const g of M.guns)for(const s of [1,-1]){
-    ctx.strokeStyle=rgba(h.lite,.75);ctx.lineWidth=1.7;
-    ctx.beginPath();ctx.moveTo(g[0],g[1]*s);ctx.lineTo(g[0]+g[2],g[1]*s);ctx.stroke();
+    const y=g[1]*s;
+    ctx.strokeStyle=rgba(h.col,.75);ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(g[0]-1,h.bw*.5*s);ctx.lineTo(g[0]-1,y);ctx.stroke();
+    ctx.fillStyle=rgba(h.body,1);
+    ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.8;
+    ctx.beginPath();ctx.rect(g[0]-4.5,y-2.2*s-(s>0?0:0),9,4.4*s);
+    ctx.fill();ctx.stroke();
+    ctx.strokeStyle=rgba(h.lite,.8);ctx.lineWidth=1.9;
+    ctx.beginPath();ctx.moveTo(g[0]+1,y);ctx.lineTo(g[0]+g[2],y);ctx.stroke();
     ctx.fillStyle=rgba(h.dark,1);
-    ctx.fillRect(g[0]-2.5,g[1]*s-1.6,4,3.2);
+    ctx.beginPath();ctx.arc(g[0]+g[2],y,1.5,0,TAU);ctx.fill();
   }
   if(M.armor){
     /* скула: утолщённая носовая плита, из-за неё фрегат выглядит тупоносым */
@@ -1432,24 +1463,55 @@ function drawHullMarks(h){
     ctx.closePath();ctx.fill();
     ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=.9;ctx.stroke();
   }
+  /* Панели раскрыты поперёк корпуса на кронштейнах и разбиты на секции: это
+     плоскость, а не полоска у борта. Прямые углы против стреловидного крыла —
+     единственное, что надёжно отличает исследователя от разведчика. */
   if(M.panel)for(const s of [1,-1]){
-    const p=M.panel;
-    ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=.8;
-    ctx.beginPath();ctx.moveTo(p.x,h.bw*.6*s);ctx.lineTo(p.x,p.w*s);ctx.stroke();
-    ctx.fillStyle="rgba(40,70,110,.85)";
-    ctx.strokeStyle=rgba(h.lite,.5);
-    ctx.beginPath();ctx.rect(p.x-p.l*.5,p.w*s-(s>0?0:2.6),p.l,2.6);
-    ctx.fill();ctx.stroke();
+    const p=M.panel, y0=p.w*s, th=3.4;
+    ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=1.1;
+    ctx.beginPath();
+    ctx.moveTo(p.x-p.l*.22,h.bw*.5*s);ctx.lineTo(p.x-p.l*.16,y0);
+    ctx.moveTo(p.x+p.l*.22,h.bw*.5*s);ctx.lineTo(p.x+p.l*.16,y0);
+    ctx.stroke();
+    ctx.fillStyle="rgba(34,58,96,.9)";
+    ctx.strokeStyle=rgba(h.lite,.55);ctx.lineWidth=.9;
+    const py=y0-(s>0?0:th);
+    ctx.beginPath();ctx.rect(p.x-p.l*.5,py,p.l,th);ctx.fill();ctx.stroke();
+    ctx.strokeStyle="rgba(150,190,230,.30)";ctx.lineWidth=.7;
+    for(let k=1;k<4;k++){
+      const gx=p.x-p.l*.5+p.l*k/4;
+      ctx.beginPath();ctx.moveTo(gx,py);ctx.lineTo(gx,py+th);ctx.stroke();
+    }
   }
   if(M.dish){
-    const d=M.dish;
-    ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=.8;
-    ctx.beginPath();ctx.moveTo(d.x,0);ctx.lineTo(d.x-d.boom*.4,-h.bw-d.boom);ctx.stroke();
+    const d=M.dish, dy=-h.bw-d.boom;
+    ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=1.1;
+    ctx.beginPath();ctx.moveTo(d.x,0);ctx.lineTo(d.x-d.boom*.4,dy);ctx.stroke();
     ctx.fillStyle="rgba(200,230,245,.22)";
     ctx.strokeStyle=rgba(h.lite,.7);ctx.lineWidth=.9;
     ctx.beginPath();
-    ctx.ellipse(d.x-d.boom*.4,-h.bw-d.boom,d.r,d.r*.55,-.5,0,TAU);
+    ctx.ellipse(d.x-d.boom*.4,dy,d.r,d.r*.55,-.5,0,TAU);
     ctx.fill();ctx.stroke();
+    /* облучатель на трёх ногах: без него тарелка читается блином */
+    if(d.r>2.6){
+      ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.7;
+      ctx.beginPath();
+      ctx.moveTo(d.x-d.boom*.4-d.r*.7,dy);ctx.lineTo(d.x-d.boom*.4+d.r*.15,dy-d.r*.8);
+      ctx.lineTo(d.x-d.boom*.4+d.r*.7,dy);ctx.stroke();
+    }
+  }
+  /* штанга приборов вперёд: у разведчика нос продолжается за габарит */
+  if(M.boom){
+    const b=M.boom;
+    ctx.strokeStyle=rgba(h.lite,.55);ctx.lineWidth=b.r*1.6;
+    ctx.beginPath();ctx.moveTo(h.nose,0);ctx.lineTo(h.nose+b.l,0);ctx.stroke();
+    ctx.fillStyle=rgba(h.lite,.6);
+    ctx.beginPath();ctx.arc(h.nose+b.l,0,b.r*1.5,0,TAU);ctx.fill();
+    for(const s of [1,-1]){
+      ctx.strokeStyle=rgba(h.col,.55);ctx.lineWidth=.7;
+      ctx.beginPath();
+      ctx.moveTo(h.nose+b.l*.62,0);ctx.lineTo(h.nose+b.l*.5,s*b.r*3.6);ctx.stroke();
+    }
   }
   if(M.win){
     /* лента окон — единственное, что отличает яхту от курьера на расстоянии */
@@ -1498,6 +1560,19 @@ function drawHull(id,thrusting,braking,lvl,bank){
   /* ── гондолы ── */
   for(const n of h.nacs)for(const s of [1,-1]){
     const y=n.y*s;
+    /* пилон: у яхты крыла нет вовсе, и гондола держится на тонком кронштейне.
+       Просвет между корпусом и гондолой — то, по чему яхту узнают: у всех
+       остальных там крыло */
+    if(h.mark.pylon){
+      ctx.strokeStyle=rgba(h.col,.8);ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.moveTo(n.x+n.l*.1,profW(h.prof,n.x)*.8*s);
+      ctx.lineTo(n.x+n.l*.05,y-n.r*.6*s);ctx.stroke();
+      ctx.strokeStyle=rgba(h.lite,.35);ctx.lineWidth=.7;
+      ctx.beginPath();
+      ctx.moveTo(n.x-n.l*.2,profW(h.prof,n.x)*.8*s);
+      ctx.lineTo(n.x-n.l*.1,y-n.r*.6*s);ctx.stroke();
+    }
     ctx.beginPath();
     ctx.moveTo(n.x+n.l*.5,y-n.r*.45);
     ctx.lineTo(n.x+n.l*.28,y-n.r);ctx.lineTo(n.x-n.l*.5,y-n.r);
@@ -1583,9 +1658,15 @@ function drawHull(id,thrusting,braking,lvl,bank){
   ctx.fillStyle=cg;
   ctx.beginPath();ctx.ellipse(cp.x,0,cp.rx*.86,cp.ry*.72,0,0,TAU);ctx.fill();
   /* ── бортовые огни ── */
+  /* Огни ставились по законцовке первого крыла, а при её отсутствии — по
+     ±bw*1.6, то есть заведомо ЗА бортом: у рудовоза и яхты две точки висели
+     в пустоте рядом с корпусом. Огонь горит на самой дальней точке борта,
+     поэтому запасной вариант считается по обводу, а не по числу. */
   const on=blink>0;
   for(const [s,c] of [[-1,"255,80,70"],[1,"110,255,150"]]){
-    const wy=h.wings.length?h.wings[0][2]:[h.nose*.2,-h.bw*1.6];
+    let wy;
+    if(h.wings.length)wy=h.wings[0][2];
+    else{const lx=h.nose*.18;wy=[lx,-profW(h.prof,lx)*1.02];}
     ctx.fillStyle="rgba("+c+","+(on?.95:.25)+")";
     ctx.beginPath();ctx.arc(wy[0],wy[1]*s,1.25,0,TAU);ctx.fill();
   }
