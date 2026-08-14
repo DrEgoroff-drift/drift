@@ -2499,42 +2499,6 @@ function drawStencils(h){
     for(let k=0;k<3+(hh&3);k++)ctx.fillRect(x+k*.55,y,.35,.5);
   }
 }
-/* ── пиратский борт ──
-   Пират опознавался только силуэтом класса, а вблизи это был тот же
-   аккуратный корабль с инвентарным номером. Пират — не другая машина, а
-   машина с ЧУЖОЙ историей: номер закрашен полосой, поверх грунта наляпаны
-   заплаты чужого тона, обшивка в подпалинах от собственных стволов. Ни одной
-   новой формы — только следы на той же вещи.
-   Рисуется ПОСЛЕ навески и номера: закрашивают ведь то, что уже нанесено, —
-   в первом заходе мазок лёг под номер, и номер спокойно читался поверх. */
-function drawPirateSkin(h){
-  ctx.save();tracePoly(h.poly);ctx.clip();
-  const P2=h.prof;
-  ctx.fillStyle="rgba(38,34,30,.9)";
-  ctx.fillRect(lerp(h.nose*.35,h.tail*.5,.5)-2.6,-h.bw*.62-2.6,5.2,5.2);
-  for(let i=0;i<8;i++){
-    const hh=hashi(i,h.seed,0xB17E);
-    const x=lerp(h.nose*.8,h.tail*.9,((hh>>>3)&31)/31);
-    const w=profW(P2,x);if(w<1.2)continue;
-    const y=(((hh>>>9)&15)/15-.5)*w*1.5;
-    const pw=1.6+((hh>>>14)&3)*1.1, ph=1.1+((hh>>>17)&3)*.8;
-    ctx.fillStyle=((hh>>>19)&1)?"rgba(74,58,42,.75)":"rgba(48,54,60,.8)";
-    ctx.fillRect(x-pw/2,y-ph/2,pw,ph);
-    ctx.strokeStyle="rgba(10,9,7,.6)";ctx.lineWidth=.3;
-    ctx.strokeRect(x-pw/2,y-ph/2,pw,ph);
-  }
-  /* подпалины у скулы — прямоугольным мазком, а не эллипсом: первый заход
-     рисовал их дугой, и на стенде вылезли рыжие круги в полкорабля */
-  ctx.fillStyle="rgba(22,16,12,.4)";
-  for(let i=0;i<5;i++){
-    const hh=hashi(i+5,h.seed,0xC0A1);
-    const x=lerp(h.nose*.7,h.nose*.05,((hh>>>4)&7)/7), w=profW(P2,x);
-    if(!(w>.5))continue;
-    const y=w*.62*((hh&1)?1:-1);
-    ctx.fillRect(x-1.2,y-.5,2.4+((hh>>>8)&3)*.5,1);
-  }
-  ctx.restore();
-}
 function drawHull(id,thrusting,braking,lvl,bank){
   const h=hullOf(id),blink=Math.sin(G.t*.07);
   lvl=lvl||0;
@@ -2987,6 +2951,35 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.arc(cx,0,R*.9,-.5,-.1);ctx.closePath();ctx.fill();
   }
   if(!h.yac)drawStencils(h);
+  /* ── пиратский борт ──
+     Пират опознавался только силуэтом класса, а вблизи это был тот же
+     аккуратный корабль с инвентарным номером. Пират — не другая машина, а
+     машина с ЧУЖОЙ историей: номер закрашен полосой, поверх грунта наляпаны
+     заплаты чужого тона, обшивка в подпалинах от собственных стволов и в
+     ржавых потёках. Ни одной новой формы — только следы на той же вещи. */
+  if(h.pirate){
+    const P2=h.prof;
+    ctx.fillStyle="rgba(38,34,30,.85)";                 // мазок по номеру
+    ctx.fillRect(lerp(h.nose*.35,h.tail*.5,.5)-2.2,-h.bw*.62-2.4,4.4,4.8);
+    for(let i=0;i<7;i++){                               // заплаты чужой обшивки
+      const hh=hashi(i,h.seed,0xB17E);
+      const x=lerp(h.nose*.8,h.tail*.9,((hh>>>3)&31)/31);
+      const w=profW(P2,x);if(w<1.2)continue;
+      const y=(((hh>>>9)&15)/15-.5)*w*1.5;
+      const pw=1.4+((hh>>>14)&3)*.9, ph=1+((hh>>>17)&3)*.7;
+      ctx.fillStyle=((hh>>>19)&1)?"rgba(74,62,50,.55)":"rgba(54,60,66,.6)";
+      ctx.fillRect(x-pw/2,y-ph/2,pw,ph);
+      ctx.strokeStyle="rgba(12,10,8,.5)";ctx.lineWidth=.3;
+      ctx.strokeRect(x-pw/2,y-ph/2,pw,ph);
+    }
+    ctx.fillStyle="rgba(24,18,14,.35)";                 // подпалины у скулы
+    for(let i=0;i<4;i++){
+      const hh=hashi(i+5,h.seed,0xC0A1);
+      const x=lerp(h.nose*.7,h.nose*.1,((hh>>>4)&7)/7), w=profW(P2,x);
+      ctx.beginPath();
+      ctx.ellipse(x,w*.6*((hh&1)?1:-1),1.6+((hh>>>8)&3)*.5,.9,0,0,TAU);ctx.fill();
+    }
+  }
   /* навеска */
   for(const g of h.greeb){
     ctx.fillStyle=g[4]?"rgba(255,255,255,.13)":"rgba(0,0,0,.4)";
@@ -3015,7 +3008,6 @@ function drawHull(id,thrusting,braking,lvl,bank){
   ctx.restore();
   drawTierTrim(h);
   drawHullMarks(h);
-  if(h.pirate)drawPirateSkin(h);
   if(typeof drawCrowns==="function")drawCrowns(h,id);
   /* ── боксы по бортам ──
      Были голым прямоугольником с полупрозрачной обводкой в .9: вдали сходило,
@@ -28394,28 +28386,26 @@ window.dbg=dbg;
 setTimeout(function(){
   G.running=false;
   var i=document.getElementById("intro"); if(i)i.style.display="none";
-  var cls=["scout","courier","hauler","miner","warship","survey"];
-  var COLS=3,CELL=430,W2=CELL*COLS,H2=CELL*2,dpr=2;
-  var cv=document.createElement("canvas");cv.width=W2*dpr;cv.height=H2*dpr;
-  cv.style.cssText="position:fixed;left:0;top:0;z-index:99999;width:"+W2+"px;height:"+H2+"px";
+  var list=[["grunt",0],["rusher",0],["heavy",0],["boss",0],["boss",1]];
+  var CELL=200,W2=CELL*list.length,H2=260,dpr=2;
+  var cv=document.createElement("canvas");
+  cv.width=W2*dpr;cv.height=H2*dpr;
+  cv.style.cssText="position:fixed;left:0;top:0;width:"+W2+"px;height:"+H2+"px;z-index:99999;background:#0c0f14";
   document.body.appendChild(cv);
   var c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);
-  c.fillStyle="#0a0d12";c.fillRect(0,0,W2,H2);
   var old=ctx;ctx=c;
-  cls.forEach(function(k,n){
-    var id=(n<3?"zoom_":"p_zoom_")+k;
-    NPC_SHIPS[id]={name:id,seed:(n*7919+31)>>>0,hcls:k,col:"#9fd8ff",
-      hull:100,cargo:60,fuel:100,thr:1,cls:k,tier:["line","work","rare","legend","proto","line"][n]};
-    delete HULL_CACHE[id];
-    var cx=(n%COLS)*CELL+CELL/2, cy=((n/COLS)|0)*CELL+CELL/2;
-    c.save();c.translate(cx,cy);c.scale(7,7);c.rotate(-Math.PI/2);
-    drawHull(id,false,false,0,0);c.restore();
-    c.fillStyle="#7d94a4";c.font="11px ui-monospace,monospace";c.textAlign="left";
-    c.fillText((n<3?"":"РџРР РђРў В· ")+HULL_CLASS[k].ru.toUpperCase(),(n%COLS)*CELL+10,((n/COLS)|0)*CELL+18);
-    c.strokeStyle="rgba(120,150,175,.10)";
-    c.strokeRect((n%COLS)*CELL+.5,((n/COLS)|0)*CELL+.5,CELL-1,CELL-1);
+  list.forEach(function(p,n){
+    var K=FOE_KINDS[p[0]];
+    var f={kind:p[0],baron:!!p[1],boss:p[0]==="boss",aware:n%2===0,bob:n};
+    c.save();
+    c.strokeStyle="rgba(120,150,175,.12)";c.strokeRect(n*CELL+.5,.5,CELL-1,H2-1);
+    c.translate(n*CELL+CELL/2,H2/2+40);c.scale(4,4);
+    drawFoeBody(f,K);
+    c.restore();
+    c.font="10px ui-monospace,monospace";c.textAlign="center";
+    c.fillStyle=p[1]?"#ffb478":"#cfe3ea";
+    c.fillText(p[1]?"Р‘РђР РћРќ":K.ru.toUpperCase(),n*CELL+CELL/2,H2-16);
   });
   ctx=old;
-  try{fetch("/hullzoom.png",{method:"POST",body:cv.toDataURL("image/png")});}catch(e){}
 },1400);
 </script></body></html>

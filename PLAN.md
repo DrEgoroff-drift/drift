@@ -185,8 +185,18 @@ flora and fauna, a living camera, station modules, weather.
    the bow; the first spindles hung in empty space beside the wing because they were placed by
    hull coordinate rather than by where the plate actually is.
 
-   **Still open:** the yacht's own docking ring and airlock are the fleet's grey washers, unchanged
-   on a hull where everything else is finished; and the promenade railing barely reads below 3×.
+   **The tail was closed later:** the docking ring became a collar — a recessed pad with a dark
+   throat, a flange with fasteners round it, three latches and a sighting mark; the airlock got a
+   frame, a wheel and a handrail; pods stopped being mirrored (each sits on one side by seed); and
+   pirates got a hull of their own — number painted over, patches in somebody else's tone, scorch
+   by the cheek. **Caught in that pass:** `drawPirate` already existed in `12i-pirate-hull`, and
+   since every module shares one scope the new one silently replaced it — the stand showed a
+   ship-sized orange blur where the baked pirate art was being drawn with the wrong argument.
+   Renamed to `drawPirateSkin`.
+
+   **Still open:** the promenade railing on a yacht barely reads below 3×; the whole fleet is still
+   mirror-symmetric apart from the pods; and the view is flat-on with one flat light, which is
+   where the reference sheets get half of their richness.
 
    **Not done:** faction. There is still one visual language for everybody, and in a system only
    pirates fly. Per the queue below, factions come after stations.
