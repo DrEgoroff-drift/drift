@@ -1129,13 +1129,19 @@ const HULL_CLASS={
      значит примета обязана из него торчать. Отсюда `boom` у разведчика,
      спонсоны у фрегата, отсутствие крыла и пилоны у яхты, раскрытые панели
      и тарелка на длинной штанге у исследователя. */
-  scout:  {ru:"разведчик",     bw:.85,len:1.00,wing:[1,2],nac:.40,notch:.55,dish:1,boom:1,wsp:.95},
-  courier:{ru:"курьер",        bw:.50,len:1.52,wing:[2,3],nac:.80,notch:.30,fin:1,wsp:1.25},
-  hauler: {ru:"рудовоз",       bw:1.90,len:1.04,wing:[0,1],nac:.38,notch:.85,cont:1,wsp:.5},
-  miner:  {ru:"буровик",       bw:1.52,len:.92,wing:[0,2],nac:.50,notch:.70,cont:1,drill:1,wsp:.62},
-  warship:{ru:"фрегат",        bw:1.16,len:1.12,wing:[2,2],nac:.74,notch:.50,guns:1,armor:1,wsp:.86},
-  yacht:  {ru:"яхта",          bw:.74,len:1.34,wing:[0,0],nac:.85,notch:.10,win:1,fin:1,pylon:1,wsp:.7},
-  survey: {ru:"исследователь", bw:.92,len:1.14,wing:[0,1],nac:.52,notch:.40,dish:1,panel:1,wsp:.8}
+  /* `atm` — садится в атмосферу, и только поэтому имеет право на крыло.
+     Остальным крыло не нужно и мешает: вместо него радиаторы (`rad`) —
+     единственная деталь, которая у настоящего корабля обязана быть и которой
+     тут не было вовсе. `blunt` — тупой нос: острый нос нужен тому, кто входит
+     в воздух, а вакууму он безразличен. Так форма начинает следовать работе,
+     а не привычке рисовать самолёт. */
+  scout:  {ru:"разведчик",     bw:.85,len:1.00,wing:[1,2],nac:.40,notch:.55,dish:1,boom:1,wsp:.95,atm:1},
+  courier:{ru:"курьер",        bw:.50,len:1.52,wing:[2,3],nac:.80,notch:.30,fin:1,wsp:1.25,atm:1},
+  hauler: {ru:"рудовоз",       bw:1.90,len:1.04,wing:[0,0],nac:.38,notch:.85,cont:1,wsp:.5,rad:1,blunt:1,arm:1},
+  miner:  {ru:"буровик",       bw:1.52,len:.92,wing:[0,0],nac:.50,notch:.70,cont:1,drill:1,wsp:.62,rad:1,blunt:1,frame:1},
+  warship:{ru:"фрегат",        bw:1.16,len:1.12,wing:[1,1],nac:.74,notch:.50,guns:1,armor:1,wsp:.86,rad:1,blunt:1},
+  yacht:  {ru:"яхта",          bw:.74,len:1.34,wing:[0,0],nac:.85,notch:.10,win:1,fin:1,pylon:1,wsp:.7,atm:1},
+  survey: {ru:"исследователь", bw:.92,len:1.14,wing:[0,0],nac:.52,notch:.40,dish:1,panel:1,wsp:.8,rad:1,blunt:1}
 };
 function hullClassOf(id,S){
   if(S.hcls)return S.hcls;
@@ -1165,7 +1171,12 @@ function hullOf(id){
   /* у рудовоза корма почти равна миделю — корпус-ящик; у курьера сходит
      на конус. Это и есть первое, что читается силуэтом */
   // У иглы-курьера нос сходил в нить: держим минимум, иначе силуэт теряет тело
-  const noseW=Math.max(.9,bw*(.10+r()*.16)*(K.cont?1.5:1)), tailW=bw*(.42+r()*.46)*(K.cont?1.3:1);
+  /* тупой нос у тех, кто не входит в атмосферу: острый обвод — требование
+     воздуха, а не вакуума, и на всех подряд он читался как «самолётик» */
+  const noseW=K.blunt
+    ? bw*(.40+r()*.20)
+    : Math.max(.9,bw*(.10+r()*.16)*(K.cont?1.5:1));
+  const tailW=bw*(.42+r()*.46)*(K.cont?1.3:1);
   const tp=.28+r()*.3;
   const hasNotch=r()<K.notch, notch=.6+r()*.28, notchT=tp+.16+r()*.3;
   const prof=[];
@@ -1272,6 +1283,40 @@ function hullOf(id){
   if(K.boom)mark.boom={l:len*(.18+r()*.12),r:.8+r()*.5};
   /* пилоны яхты: гондолы вынесены на тонких кронштейнах, крыла нет вовсе */
   if(K.pylon)mark.pylon=1;
+  /* Экранная изоляция — только тем, кто в атмосферу не садится: у садящегося
+     фольгу сорвёт на первом же входе, ему нужна обшивка. Пятно небольшое и
+     на своём месте у каждого корпуса — первый заход давал всем одинаковый
+     жёлтый носок на корме, и он стал самым громким элементом кадра. */
+  if(!K.atm){
+    const a=.04+r()*.12;
+    mark.foil={a,b:a+.14+r()*.13};
+  }
+  /* ── радиаторы ──
+     Тепло девать некуда, значит панели обязаны быть: тонкие пластины, вынесенные
+     от борта, тёмные с той стороны, что смотрит в пустоту. Единственная деталь,
+     которой нет ни у кого другого, — поэтому она же и заменяет крыло тем, кто
+     в атмосферу не садится. */
+  if(K.rad){
+    mark.rad=[];
+    const rn=K.panel?1:1+Math.floor(r()*2);   // у исследователя уже есть панели
+    for(let i=0;i<rn;i++)
+      mark.rad.push({x:lerp(tail*.8,tail*.05,(i+.4)/rn), l:len*(.20+r()*.14),
+        w:bw*(1.12+r()*.5), th:1.5+r()*1.2});
+  }
+  /* каркас вокруг шахты: у буровика в таблице так и написано, а рисовалась
+     сплошная капля — описание врало силуэту. Теперь врать нечему */
+  if(K.frame)mark.frame={x0:nose*.62,x1:tail*.35,w:bw*1.18};
+  /* манипулятор: одна штука и с ОДНОГО борта. Все корпуса были зеркальны,
+     отчего выглядели не машинами, а гербами */
+  if(K.arm)mark.arm={x:lerp(nose*.4,tail*.2,r()),s:(r()<.5?1:-1),
+    a1:5+r()*4,a2:4+r()*4};
+  /* шлюз с поручнем — тоже с одного борта: место, куда выходит человек */
+  mark.lock={x:lerp(nose*.5,tail*.4,r()),s:(r()<.5?1:-1),r:Math.min(2.6,bw*.42)};
+  /* бортовой номер: две буквы и две цифры трафаретом. Ничто не делает вещь
+     сделанной так дёшево, как инвентарный номер на боку */
+  const AZ="АБВГДЕЖЗИКЛМНОПРСТУФЦЧШЭЮЯ";
+  mark.num=AZ[Math.floor(r()*AZ.length)]+AZ[Math.floor(r()*AZ.length)]+"-"+
+    (10+Math.floor(r()*89));
   if(K.win)mark.win=[nose*(.2+r()*.2),tail*(.2+r()*.3)];
 
   const canopy={x:lerp(nose,tail,.12+r()*.12),rx:2+r()*3.4,ry:0};
@@ -1290,7 +1335,16 @@ function hullOf(id){
     hcls:S.hcls,clsRu:K.ru,tier:S.tier,seed:S.seed,
     nose,bw,tail,len,tailW,halfW:hw,
     col, lite:mixc(col,[255,255,255],.42), dark:mixc(col,[6,10,17],.82),
-    body:mixc(col,[8,13,21],.72), edge:mixc(col,[10,16,26],.35)};
+    body:mixc(col,[8,13,21],.72), edge:mixc(col,[10,16,26],.35),
+    /* ── материалы ──
+       Весь корабль был выкрашен в один `col`, отчего выглядел пластиковым:
+       обшивка, бак, контейнер, радиатор и керамика не отличались ничем.
+       Четыре семейства, дальше все детали красятся только ими:
+       `steel` — голый металл навески, цвета владельца не имеет вовсе;
+       `foil` — мятая экранная изоляция, тёплая и матовая, ею укрыты баки;
+       `radm` — радиатор: почти чёрный, он и должен быть холодным пятном;
+       `cer`  — керамика щита: светлая, мёртвая, без блика. */
+    steel:[118,124,132], foil:[176,148,86], radm:[26,29,34], cer:[196,192,182]};
   HULL_CACHE[id]=h;return h;
 }
 function tracePoly(pts,sy){
@@ -1414,8 +1468,15 @@ function drawHullMarks(h){
   const M=h.mark;if(!M)return;
   if(M.cont)for(const c of M.cont)for(const s of [1,-1]){
     const y=c[2]*s;
-    ctx.fillStyle=rgba(h.dark,1);ctx.strokeStyle=rgba(h.col,.7);ctx.lineWidth=.5;
-    ctx.beginPath();ctx.rect(c[0],s>0?y-c[2]*.55:y-c[2]*.45,c[1],c[2]);
+    /* контейнер — чужая тара, а не часть корабля: он из голого металла и
+       цвета владельца не имеет. Один этот сдвиг материала снимает половину
+       «пластиковости»: корабль перестаёт быть выкрашенным целиком */
+    const gy=s>0?y-c[2]*.55:y-c[2]*.45;
+    const g=ctx.createLinearGradient(0,gy,0,gy+c[2]);
+    g.addColorStop(0,rgba(mixc(h.steel,[255,255,255],.22),1));
+    g.addColorStop(1,rgba(mixc(h.steel,[0,0,0],.55),1));
+    ctx.fillStyle=g;ctx.strokeStyle=rgba(mixc(h.steel,[0,0,0],.7),1);ctx.lineWidth=.45;
+    ctx.beginPath();ctx.rect(c[0],gy,c[1],c[2]);
     ctx.fill();ctx.stroke();
     /* стяжки контейнера: без них ящик читается пустым прямоугольником */
     ctx.strokeStyle="rgba(0,0,0,.42)";ctx.lineWidth=.7;
@@ -1448,10 +1509,19 @@ function drawHullMarks(h){
     ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.45;
     ctx.beginPath();ctx.rect(g[0]-4.5,y-2.2*s-(s>0?0:0),9,4.4*s);
     ctx.fill();ctx.stroke();
-    ctx.strokeStyle=rgba(h.lite,.8);ctx.lineWidth=.5;
-    ctx.beginPath();ctx.moveTo(g[0]+1,y);ctx.lineTo(g[0]+g[2],y);ctx.stroke();
+    /* Ствол был линией с шариком на конце — на листе это читалось грибом
+       на ножке. У ствола есть казённик (толстый, у самой тумбы), тело,
+       сходящее на конус, и дульный срез — короткое утолщение, а не шар. */
+    ctx.fillStyle=rgba(h.steel,1);
+    ctx.fillRect(g[0]+.5,y-1.05,3.2,2.1);
+    ctx.beginPath();
+    ctx.moveTo(g[0]+3.4,y-.8);ctx.lineTo(g[0]+g[2]-1.4,y-.45);
+    ctx.lineTo(g[0]+g[2]-1.4,y+.45);ctx.lineTo(g[0]+3.4,y+.8);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle=rgba(mixc(h.steel,[0,0,0],.42),1);
+    ctx.fillRect(g[0]+g[2]-1.6,y-.8,1.7,1.6);
     ctx.fillStyle=rgba(h.dark,1);
-    ctx.beginPath();ctx.arc(g[0]+g[2],y,1.5,0,TAU);ctx.fill();
+    ctx.fillRect(g[0]+g[2]-.45,y-.3,.6,.6);
   }
   if(M.armor){
     /* скула: утолщённая носовая плита, из-за неё фрегат выглядит тупоносым */
@@ -1500,6 +1570,46 @@ function drawHullMarks(h){
       ctx.lineTo(d.x-d.boom*.4+d.r*.7,dy);ctx.stroke();
     }
   }
+  /* ── шлюз ── с одного борта, с поручнем: место, куда выходит человек.
+     Масштаб задаётся им же — по люку видно, какого корабль размера */
+  if(M.lock&&M.lock.r>1){
+    const L=M.lock, y=profW(h.prof,L.x)*.72*L.s;
+    ctx.fillStyle=rgba(h.dark,1);
+    ctx.beginPath();ctx.arc(L.x,y,L.r,0,TAU);ctx.fill();
+    ctx.strokeStyle=rgba(h.steel,1);ctx.lineWidth=.45;ctx.stroke();
+    ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.4;
+    ctx.beginPath();ctx.arc(L.x,y,L.r*.55,0,TAU);ctx.stroke();
+    ctx.strokeStyle=rgba(h.steel,.9);ctx.lineWidth=.4;   // поручень
+    ctx.beginPath();
+    ctx.moveTo(L.x-L.r*1.5,y+L.r*.9*L.s);ctx.lineTo(L.x+L.r*1.5,y+L.r*.9*L.s);ctx.stroke();
+  }
+  /* ── манипулятор ── одна штука, с одного борта, сложен вдоль корпуса */
+  if(M.arm){
+    const A=M.arm, y=profW(h.prof,A.x)*.85*A.s;
+    ctx.strokeStyle=rgba(h.steel,1);ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(A.x,y);ctx.lineTo(A.x+A.a1,y+A.a1*.35*A.s);
+    ctx.lineTo(A.x+A.a1-A.a2*.7,y+(A.a1*.35+A.a2)*A.s);ctx.stroke();
+    ctx.fillStyle=rgba(h.steel,1);
+    ctx.beginPath();ctx.arc(A.x,y,1.1,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.arc(A.x+A.a1,y+A.a1*.35*A.s,.9,0,TAU);ctx.fill();
+    ctx.strokeStyle=rgba(h.lite,.55);ctx.lineWidth=.4;   // схват
+    const gx=A.x+A.a1-A.a2*.7, gy=y+(A.a1*.35+A.a2)*A.s;
+    ctx.beginPath();ctx.moveTo(gx-1.4,gy);ctx.lineTo(gx,gy+1.6*A.s);
+    ctx.lineTo(gx+1.4,gy);ctx.stroke();
+  }
+  /* ── бортовой номер ── трафаретом, вдоль борта, всегда мельче всего
+     остального: его не читают, его замечают */
+  if(M.num&&h.bw>2.6){
+    ctx.save();
+    ctx.fillStyle="rgba(232,238,245,.42)";
+    ctx.font="2.6px ui-monospace,monospace";
+    ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.translate(lerp(h.nose*.35,h.tail*.5,.5),-h.bw*.52);
+    ctx.rotate(-Math.PI/2);
+    ctx.fillText(M.num,0,0);
+    ctx.restore();
+  }
   /* штанга приборов вперёд: у разведчика нос продолжается за габарит */
   if(M.boom){
     const b=M.boom;
@@ -1545,6 +1655,47 @@ function drawHull(id,thrusting,braking,lvl,bank){
       const y=h.bw*.5*s;
       ctx.beginPath();ctx.moveTo(h.nose*.5,y-1.8);ctx.lineTo(h.nose*.5+f,y);
       ctx.lineTo(h.nose*.5,y+1.8);ctx.closePath();ctx.fill();
+    }
+  }
+  /* ── радиаторы ── позади корпуса, как и крылья: пластина уходит под борт.
+     Тёмная сторона смотрит в пустоту, рёбра идут поперёк — по ним панель и
+     опознаётся как теплоотвод, а не как крыло */
+  if(h.mark.rad)for(const R of h.mark.rad)for(const s of [1,-1]){
+    const y0=profW(h.prof,R.x)*.9*s, y1=R.w*s;
+    /* вынос на ДВУХ стойках: на одной панель висела расчёской в пустоте,
+       и было непонятно, чем она держится */
+    ctx.strokeStyle=rgba(h.steel,1);ctx.lineWidth=.5;
+    ctx.beginPath();
+    ctx.moveTo(R.x-R.l*.3,y0);ctx.lineTo(R.x-R.l*.3,y1);
+    ctx.moveTo(R.x+R.l*.3,y0);ctx.lineTo(R.x+R.l*.3,y1);
+    ctx.stroke();
+    ctx.strokeStyle=rgba(h.steel,.7);ctx.lineWidth=.4;   // раскос между стойками
+    ctx.beginPath();
+    ctx.moveTo(R.x-R.l*.3,y0);ctx.lineTo(R.x+R.l*.3,(y0+y1)*.5);ctx.stroke();
+    const g=ctx.createLinearGradient(R.x-R.l*.5,0,R.x+R.l*.5,0);
+    g.addColorStop(0,rgba(h.radm,1));
+    g.addColorStop(.5,rgba(mixc(h.radm,[70,76,86],.5),1));
+    g.addColorStop(1,rgba(h.radm,1));
+    ctx.fillStyle=g;
+    ctx.fillRect(R.x-R.l*.5,Math.min(y1,y1+R.th*s)-(s>0?0:0),R.l,R.th*s);
+    ctx.strokeStyle=rgba(h.steel,.8);ctx.lineWidth=.4;
+    for(let k=1;k<6;k++){
+      const gx=R.x-R.l*.5+R.l*k/6;
+      ctx.beginPath();ctx.moveTo(gx,y1);ctx.lineTo(gx,y1+R.th*s);ctx.stroke();
+    }
+  }
+  /* ── каркас буровика ── две балки вдоль борта и перемычки: шахта внутри,
+     и это видно. Раньше «каркас вокруг шахты» из описания корабля никак не
+     подтверждался силуэтом */
+  if(h.mark.frame)for(const s of [1,-1]){
+    const F=h.mark.frame, y=F.w*s;
+    ctx.strokeStyle=rgba(h.steel,1);ctx.lineWidth=.9;
+    ctx.beginPath();ctx.moveTo(F.x0,y*.55);ctx.lineTo(F.x0-Math.abs(F.x0-F.x1)*.12,y);
+    ctx.lineTo(F.x1,y);ctx.lineTo(F.x1-2,y*.7);ctx.stroke();
+    ctx.strokeStyle=rgba(h.steel,.75);ctx.lineWidth=.5;
+    for(let k=0;k<4;k++){
+      const t=(k+.5)/4, bx=lerp(F.x0,F.x1,t);
+      ctx.beginPath();ctx.moveTo(bx,y);ctx.lineTo(bx+2.4,profW(h.prof,bx)*.9*s);ctx.stroke();
     }
   }
   /* ── крылья ── */
@@ -1651,6 +1802,28 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.fillStyle="rgba(0,0,0,.22)";
     const pw2=profW(P,x1);
     for(let y=-pw2+1.4;y<pw2-1;y+=2.2)ctx.fillRect(x1-1.5,y,.6,.6);
+  }
+  /* ── экранная изоляция ──
+     Кусок корпуса у кормы укрыт мятой фольгой: тёплое матовое пятно с
+     изломами, которое не красится в цвет владельца. Это второй материал в
+     кадре после голого металла, и именно он читается как «космический
+     аппарат», а не как крашеный самолёт. */
+  if(h.mark.foil){
+    const F=h.mark.foil;
+    const fx0=lerp(h.tail,h.nose,F.a), fx1=lerp(h.tail,h.nose,F.b);
+    ctx.fillStyle=rgba(mixc(h.foil,[10,12,16],.46),1);
+    ctx.fillRect(Math.min(fx0,fx1),-h.bw*1.3,Math.abs(fx1-fx0),h.bw*2.6);
+    /* изломы: короткие светлые и тёмные грани поперёк — фольгу мнут руками */
+    for(let i=0;i<9;i++){
+      const hh=hashi(i,h.seed,0xF010);
+      const x=lerp(Math.min(fx0,fx1),Math.max(fx0,fx1),((hh>>>3)&31)/31);
+      const y0=(((hh>>>9)&31)/31-.5)*h.bw*2.2;
+      const ln=1.5+((hh>>>15)&7)*.5, ang=((hh>>>19)&7)/7*1.2-.6;
+      ctx.strokeStyle=(hh&1)?"rgba(255,240,200,.16)":"rgba(0,0,0,.28)";
+      ctx.lineWidth=.5;
+      ctx.beginPath();ctx.moveTo(x,y0);
+      ctx.lineTo(x+Math.cos(ang)*ln,y0+Math.sin(ang)*ln);ctx.stroke();
+    }
   }
   /* люки: два прямоугольника со скруглением, всегда на борту, не по оси */
   for(let k=0;k<2;k++){
