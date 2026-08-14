@@ -1414,7 +1414,7 @@ function drawHullMarks(h){
   const M=h.mark;if(!M)return;
   if(M.cont)for(const c of M.cont)for(const s of [1,-1]){
     const y=c[2]*s;
-    ctx.fillStyle=rgba(h.dark,1);ctx.strokeStyle=rgba(h.col,.7);ctx.lineWidth=.9;
+    ctx.fillStyle=rgba(h.dark,1);ctx.strokeStyle=rgba(h.col,.7);ctx.lineWidth=.5;
     ctx.beginPath();ctx.rect(c[0],s>0?y-c[2]*.55:y-c[2]*.45,c[1],c[2]);
     ctx.fill();ctx.stroke();
     /* стяжки контейнера: без них ящик читается пустым прямоугольником */
@@ -1430,7 +1430,7 @@ function drawHullMarks(h){
     ctx.beginPath();
     ctx.moveTo(d.x+d.l,0);ctx.lineTo(d.x,-d.r);ctx.lineTo(d.x,d.r);ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle=rgba(h.dark,1);ctx.lineWidth=.8;
+    ctx.strokeStyle=rgba(h.dark,1);ctx.lineWidth=.45;
     for(let i=1;i<4;i++){
       const t=i/4;
       ctx.beginPath();
@@ -1442,13 +1442,13 @@ function drawHullMarks(h){
      не было вовсе, и фрегат читался разведчиком. */
   if(M.guns)for(const g of M.guns)for(const s of [1,-1]){
     const y=g[1]*s;
-    ctx.strokeStyle=rgba(h.col,.75);ctx.lineWidth=1.4;
+    ctx.strokeStyle=rgba(h.col,.75);ctx.lineWidth=.55;
     ctx.beginPath();ctx.moveTo(g[0]-1,h.bw*.5*s);ctx.lineTo(g[0]-1,y);ctx.stroke();
     ctx.fillStyle=rgba(h.body,1);
-    ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.8;
+    ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.45;
     ctx.beginPath();ctx.rect(g[0]-4.5,y-2.2*s-(s>0?0:0),9,4.4*s);
     ctx.fill();ctx.stroke();
-    ctx.strokeStyle=rgba(h.lite,.8);ctx.lineWidth=1.9;
+    ctx.strokeStyle=rgba(h.lite,.8);ctx.lineWidth=.5;
     ctx.beginPath();ctx.moveTo(g[0]+1,y);ctx.lineTo(g[0]+g[2],y);ctx.stroke();
     ctx.fillStyle=rgba(h.dark,1);
     ctx.beginPath();ctx.arc(g[0]+g[2],y,1.5,0,TAU);ctx.fill();
@@ -1461,20 +1461,20 @@ function drawHullMarks(h){
     ctx.lineTo(M.armor,-profW(h.prof,M.armor)*.92);
     ctx.lineTo(M.armor,profW(h.prof,M.armor)*.92);
     ctx.closePath();ctx.fill();
-    ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=.9;ctx.stroke();
+    ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=.5;ctx.stroke();
   }
   /* Панели раскрыты поперёк корпуса на кронштейнах и разбиты на секции: это
      плоскость, а не полоска у борта. Прямые углы против стреловидного крыла —
      единственное, что надёжно отличает исследователя от разведчика. */
   if(M.panel)for(const s of [1,-1]){
     const p=M.panel, y0=p.w*s, th=3.4;
-    ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=1.1;
+    ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=.5;
     ctx.beginPath();
     ctx.moveTo(p.x-p.l*.22,h.bw*.5*s);ctx.lineTo(p.x-p.l*.16,y0);
     ctx.moveTo(p.x+p.l*.22,h.bw*.5*s);ctx.lineTo(p.x+p.l*.16,y0);
     ctx.stroke();
     ctx.fillStyle="rgba(34,58,96,.9)";
-    ctx.strokeStyle=rgba(h.lite,.55);ctx.lineWidth=.9;
+    ctx.strokeStyle=rgba(h.lite,.55);ctx.lineWidth=.5;
     const py=y0-(s>0?0:th);
     ctx.beginPath();ctx.rect(p.x-p.l*.5,py,p.l,th);ctx.fill();ctx.stroke();
     ctx.strokeStyle="rgba(150,190,230,.30)";ctx.lineWidth=.7;
@@ -1485,10 +1485,10 @@ function drawHullMarks(h){
   }
   if(M.dish){
     const d=M.dish, dy=-h.bw-d.boom;
-    ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=1.1;
+    ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=.5;
     ctx.beginPath();ctx.moveTo(d.x,0);ctx.lineTo(d.x-d.boom*.4,dy);ctx.stroke();
     ctx.fillStyle="rgba(200,230,245,.22)";
-    ctx.strokeStyle=rgba(h.lite,.7);ctx.lineWidth=.9;
+    ctx.strokeStyle=rgba(h.lite,.7);ctx.lineWidth=.5;
     ctx.beginPath();
     ctx.ellipse(d.x-d.boom*.4,dy,d.r,d.r*.55,-.5,0,TAU);
     ctx.fill();ctx.stroke();
@@ -1503,7 +1503,7 @@ function drawHullMarks(h){
   /* штанга приборов вперёд: у разведчика нос продолжается за габарит */
   if(M.boom){
     const b=M.boom;
-    ctx.strokeStyle=rgba(h.lite,.55);ctx.lineWidth=b.r*1.6;
+    ctx.strokeStyle=rgba(h.lite,.55);ctx.lineWidth=b.r*.9;
     ctx.beginPath();ctx.moveTo(h.nose,0);ctx.lineTo(h.nose+b.l,0);ctx.stroke();
     ctx.fillStyle=rgba(h.lite,.6);
     ctx.beginPath();ctx.arc(h.nose+b.l,0,b.r*1.5,0,TAU);ctx.fill();
@@ -1553,8 +1553,13 @@ function drawHull(id,thrusting,braking,lvl,bank){
     const g=ctx.createLinearGradient(0,-h.bw*3*s,0,h.bw*s);
     g.addColorStop(0,rgba(h.edge,.95));g.addColorStop(1,rgba(h.dark,1));
     ctx.fillStyle=g;ctx.fill();
-    ctx.strokeStyle=rgba(h.col,.45);ctx.lineWidth=.7;ctx.stroke();
-    ctx.strokeStyle=rgba(h.col,.22);ctx.lineWidth=.7;
+    /* та же пара, что у корпуса: тёмная кромка снаружи, светлый кант внутри */
+    ctx.strokeStyle=rgba(h.dark,1);ctx.lineWidth=.5;ctx.stroke();
+    ctx.save();ctx.clip();
+    ctx.strokeStyle=rgba(h.lite,.42);ctx.lineWidth=1;
+    tracePoly(w,s);ctx.stroke();
+    ctx.restore();
+    ctx.strokeStyle=rgba(h.dark,.8);ctx.lineWidth=.45;   // лонжерон
     ctx.beginPath();ctx.moveTo(w[0][0],w[0][1]*s*.55);ctx.lineTo(w[2][0],w[2][1]*s*.8);ctx.stroke();
   }
   /* ── гондолы ── */
@@ -1564,7 +1569,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
        Просвет между корпусом и гондолой — то, по чему яхту узнают: у всех
        остальных там крыло */
     if(h.mark.pylon){
-      ctx.strokeStyle=rgba(h.col,.8);ctx.lineWidth=1.5;
+      ctx.strokeStyle=rgba(h.col,.8);ctx.lineWidth=.6;
       ctx.beginPath();
       ctx.moveTo(n.x+n.l*.1,profW(h.prof,n.x)*.8*s);
       ctx.lineTo(n.x+n.l*.05,y-n.r*.6*s);ctx.stroke();
@@ -1581,10 +1586,15 @@ function drawHull(id,thrusting,braking,lvl,bank){
     const g=ctx.createLinearGradient(0,y-n.r,0,y+n.r);
     g.addColorStop(0,rgba(h.lite,.5));g.addColorStop(.4,rgba(h.body,1));g.addColorStop(1,rgba(h.dark,1));
     ctx.fillStyle=g;ctx.fill();
-    ctx.strokeStyle=rgba(h.col,.7);ctx.lineWidth=.75;ctx.stroke();
-    ctx.strokeStyle=rgba(h.col,.4);ctx.lineWidth=.8;
+    /* обвод гондолы: тонкий и непрозрачный, тем же приёмом, что и боксы */
+    ctx.strokeStyle=rgba(mixc(h.col,[6,10,17],.4),1);ctx.lineWidth=.45;ctx.stroke();
+    ctx.fillStyle=rgba(h.lite,.42);
+    ctx.fillRect(n.x-n.l*.5,y-n.r,n.l*.78,.45);            // блик по верхней грани
+    ctx.strokeStyle=rgba(h.dark,1);ctx.lineWidth=.45;
     ctx.beginPath();ctx.moveTo(n.x+n.l*.16,y-n.r);ctx.lineTo(n.x+n.l*.16,y+n.r);ctx.stroke();
-    ctx.strokeStyle="rgba(255,160,90,.55)";
+    ctx.strokeStyle=rgba(h.lite,.22);ctx.lineWidth=.4;      // хомут: две нити, а не одна жирная
+    ctx.beginPath();ctx.moveTo(n.x+n.l*.16+.7,y-n.r);ctx.lineTo(n.x+n.l*.16+.7,y+n.r);ctx.stroke();
+    ctx.strokeStyle="rgba(255,160,90,.5)";ctx.lineWidth=.5;
     ctx.beginPath();ctx.moveTo(n.x-n.l*.5,y-n.r);ctx.lineTo(n.x-n.l*.5,y+n.r);ctx.stroke();
   }
   /* ── корпус ── */
@@ -1669,18 +1679,39 @@ function drawHull(id,thrusting,braking,lvl,bank){
      ни одна царапина не вылезла за силуэт (12s-wear) */
   if(typeof drawWear==="function")drawWear(h,wearOf(id));
   ctx.restore();
-  ctx.strokeStyle=rgba(h.col,.62);ctx.lineWidth=.65;
+  /* ── грань корпуса ──
+     Полупрозрачная линия в цвет корпуса — не грань, а ореол: вблизи она
+     мылится и читается наклейкой. Настоящая грань состоит из двух вещей:
+     непрозрачной тёмной кромки снаружи (там металл кончается) и светлого
+     канта изнутри (там он ловит свет). Обе тоньше прежней одной. */
+  tracePoly(h.poly);
+  ctx.strokeStyle=rgba(h.dark,1);ctx.lineWidth=.5;ctx.stroke();
+  ctx.save();ctx.clip();
+  ctx.strokeStyle=rgba(h.lite,.55);ctx.lineWidth=1;   // половина уйдёт наружу за клип
   tracePoly(h.poly);ctx.stroke();
+  ctx.restore();
   drawTierTrim(h);
   drawHullMarks(h);
   if(typeof drawCrowns==="function")drawCrowns(h,id);
-  /* ── боксы по бортам ── */
+  /* ── боксы по бортам ──
+     Были голым прямоугольником с полупрозрачной обводкой в .9: вдали сходило,
+     вблизи (а игрок приближает часто — иначе корабль мелкий) читалось мыльной
+     двойной линией вокруг пустоты. Правило, по которому теперь живёт вся
+     навеска: обводка вдвое тоньше и НЕПРОЗРАЧНАЯ, а объём даёт не она, а
+     светлая кромка со стороны света, тёмная с теневой и одно ребро внутри. */
   for(const p of h.pods)for(const s of [1,-1]){
-    ctx.fillStyle=rgba(h.dark,1);ctx.strokeStyle=rgba(h.col,.75);ctx.lineWidth=.9;
-    ctx.beginPath();ctx.rect(p[0],p[1]*s-(s>0?0:p[3]),p[2],p[3]);ctx.fill();ctx.stroke();
+    const y=p[1]*s-(s>0?0:p[3]), w=p[2], hgt=p[3];
+    const g=ctx.createLinearGradient(0,y,0,y+hgt);
+    g.addColorStop(0,rgba(h.body,1));g.addColorStop(1,rgba(h.dark,1));
+    ctx.fillStyle=g;ctx.fillRect(p[0],y,w,hgt);
+    ctx.fillStyle=rgba(h.lite,.5);ctx.fillRect(p[0],y,w,.45);          // кромка света
+    ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(p[0],y+hgt-.45,w,.45); // теневая
+    ctx.strokeStyle=rgba(mixc(h.col,[6,10,17],.45),1);ctx.lineWidth=.45;
+    ctx.strokeRect(p[0]+.22,y+.22,w-.44,hgt-.44);
+    ctx.fillStyle="rgba(0,0,0,.32)";ctx.fillRect(p[0]+w*.62,y+.6,.5,hgt-1.2);
   }
   /* ── антенны ── */
-  ctx.strokeStyle=rgba(h.col,.5);ctx.lineWidth=.7;
+  ctx.strokeStyle=rgba(h.col,.5);ctx.lineWidth=.5;
   for(const a of h.ants)for(const s of [1,-1]){
     ctx.beginPath();ctx.moveTo(a[0],a[1]*s);
     ctx.lineTo(a[0]-a[2]*Math.sin(a[3]),(a[1]-a[2])*s);ctx.stroke();
@@ -1689,7 +1720,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
   const cp=h.canopy;
   ctx.fillStyle="rgba(10,26,38,.95)";
   ctx.beginPath();ctx.ellipse(cp.x,0,cp.rx,cp.ry,0,0,TAU);ctx.fill();
-  ctx.strokeStyle=rgba(h.lite,.6);ctx.lineWidth=.8;ctx.stroke();
+  ctx.strokeStyle=rgba(h.lite,.6);ctx.lineWidth=.5;ctx.stroke();
   const cg=ctx.createLinearGradient(cp.x+cp.rx,0,cp.x-cp.rx,0);
   cg.addColorStop(0,"rgba(180,240,255,.55)");cg.addColorStop(1,"rgba(120,200,230,0)");
   ctx.fillStyle=cg;
@@ -1708,7 +1739,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.beginPath();ctx.arc(wy[0],wy[1]*s,1.25,0,TAU);ctx.fill();
   }
   if(h.fin){
-    ctx.strokeStyle=rgba(h.lite,.45);ctx.lineWidth=.9;
+    ctx.strokeStyle=rgba(h.lite,.45);ctx.lineWidth=.5;
     ctx.beginPath();ctx.moveTo(h.tail*.65,0);ctx.lineTo(h.tail-3.5,0);ctx.stroke();
   }
   if(lvl>1){
