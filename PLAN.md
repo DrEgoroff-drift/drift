@@ -252,18 +252,29 @@ at its natural seam — `20b-poi-find.js` now holds the inspection half (`POI_FI
 2. the body was drawn near-black and read as a hole cut out of the terrain rather than as stone.
    Fixed: it fills with the rock colour and takes a side gradient (sun on the right, per
    `drawSkyLayer`), plus a lit edge and a light lower lip on each notch;
-3. **not fixed — the notches still read as wallpaper.** Even rows of even hatching across the whole
-   face. They must read as a tally: grouped, uneven, thinning downward, some rows struck through.
-   This is the difference between "a decorated stone" and "somebody was counting something here";
-4. **not fixed — the base shadow is a round black blob**, too dark and too circular for a stone
-   that has been standing in dust;
-5. **not captured — there is no stand shot in `docs/shots`** and no `docs/mkstone.ps1` alongside the
-   other stand scripts. The stand was assembled by hand in the console; it should be a script like
-   `mkfoes.ps1` so the next pass can look at the same frame.
+3. ~~the notches read as wallpaper~~ — **fixed.** They are a tally now: marks grouped in fives
+   (four and a crossing stroke), rows thinning downward because cutting low is awkward, uneven row
+   spacing, about one row in five struck through as a closed count, and the last group of the last
+   row left unfinished — counting stopped mid-five. The field of the tally follows the taper and
+   the lean of the face, so nothing is cut into the air;
+4. ~~the base shadow is a round black blob~~ — **fixed.** It is offset away from the sun, elliptical,
+   soft-edged, never black (dust is lit), with a light drift skirt of what the wind has piled
+   against the stone over the years;
+5. ~~no stand shot and no script~~ — **fixed.** `docs/mkstone.ps1` builds `docs/stone.html`: six
+   stones on six seeds in a row plus a monolith for comparison of the two visual languages, with a
+   ground line so it is visible whether the stone stands or floats. Shot in `docs/shots/stone.png`.
 
-**Remaining tail for the next session:** faults 3–5 above; the obelisk's second, dated answer
-(needs M107); and the fragment board — a hundred pieces and eight chapters are collected with no
-place to read them, so the record currently lives only in `tell()` and the journal.
+**Fault found by looking at the new stand and fixed in the same pass:** the lit edge on the sun
+side was 1.6 px at .5 alpha and read as a neon tube glued to the stone; it is a highlight on a
+fracture and is now thinner than the contour and no brighter than the sand.
+
+**Known limit of the stand:** it draws with no `POI_MAT`, so the body carries no rock material,
+soot or hairline cracks — the frame is honest about silhouette, tally and contact, and says nothing
+about the skin. Checking the skin needs a stand on a real planet trace.
+
+**Remaining tail for the next session:** the obelisk's second, dated answer (M107 exists now, so
+this is unblocked); and the fragment board — a hundred pieces and eight chapters are collected with
+no place to read them, so the record currently lives only in `tell()` and the journal.
 
 ## M107 (0.56.0). The sky keeps a calendar — DONE
 

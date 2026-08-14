@@ -366,7 +366,7 @@ drawDigFauna                 src/23-mode-dig.js:287
 drawDustMotes                src/19-mode-landing.js:279
 drawElevator                 src/20a-poi.js:312
 drawExhaust                  src/16a-space.js:133
-drawFactory                  src/20a-poi.js:489
+drawFactory                  src/20a-poi.js:539
 drawFactRoute                src/13b-occupy.js:238
 drawFindsSystem              src/17b-finds.js:123
 drawFlame                    src/03-ships.js:335
@@ -388,13 +388,13 @@ drawMonolith                 src/20a-poi.js:414
 drawNebula                   src/16-flight.js:39
 drawNodeIcon                 src/05a-nodes.js:264
 drawObelisk                  src/20a-poi.js:437
-drawObserv                   src/20a-poi.js:602
+drawObserv                   src/20a-poi.js:652
 drawPirate                   src/12i-pirate-hull.js:320
 drawPirateBase               src/24a-mode-raid.js:103
 drawPlant                    src/20-life.js:315
 drawPlantAlien               src/20-life.js:167
 drawPOI                      src/20a-poi.js:167
-drawPortal                   src/20a-poi.js:575
+drawPortal                   src/20a-poi.js:625
 drawRaid                     src/24a-mode-raid.js:351
 drawRing                     src/17-mode-system.js:402
 drawRocks                    src/19-mode-landing.js:180
@@ -789,7 +789,7 @@ musNote                      src/10-music.js:187
 musPerc                      src/10-music.js:244
 navAction                    src/15-input.js:156
 near                         tests/90-harness.js:24
-nearestPOI                   src/20a-poi.js:626
+nearestPOI                   src/20a-poi.js:676
 nearestStation               src/12-economy.js:43
 NEBULA                       src/16-flight.js:22
 nebula                       src/16-flight.js:23
@@ -928,7 +928,7 @@ poiDrift                     src/20a-poi.js:141
 poiGlow                      src/20a-poi.js:72
 poiInspect                   src/20b-poi-find.js:95
 poiMemo                      src/20b-poi-find.js:90
-poiNear                      src/20a-poi.js:635
+poiNear                      src/20a-poi.js:685
 poiPath                      src/20a-poi.js:85
 poiPoly                      src/20a-poi.js:104
 poiSkin                      src/20a-poi.js:113
@@ -1463,7 +1463,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/19-mode-landing.js · 32 КБ
   · посадка:1
 
-## src/20a-poi.js · 36 КБ
+## src/20a-poi.js · 40 КБ
   · точки интереса:1
 
 ## src/20b-poi-find.js · 9 КБ
