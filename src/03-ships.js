@@ -260,6 +260,54 @@ function hullOf(id){
      то есть класс опознавался ценой, а не силуэтом. `YAC` — обвод яхты,
      `LUX` — лак, тик, латунь и жемчуг поверх него. */
   const YAC=!!K.win, LUX=!!(K.win&&S.tier==="luxe");
+  /* ══════════════ схема планера ══════════════
+     Класс отвечал на вопрос «кто это», но внутри класса все шесть семян были
+     одним кораблём со сдвинутыми пропорциями: стреловидное крыло и пара
+     гондол у борта — и так семь раз. На листах, по которым это переделано,
+     схем много, и они не про роль, а про КОНСТРУКЦИЮ: дельта, крест,
+     катамаран с двумя балками, плита-контейнеровоз, диск, трезубец.
+     Схема выбирается семенем из тех, что классу дозволены (рудовозу дельта
+     ни к чему, курьеру — плита), и меняет обвод, крыло и расстановку тяги.
+     Семь классов на пять-шесть схем — полсотни разных силуэтов. */
+  const FORM_BY_CLASS={
+    scout:  ["swept","delta","xwing","trident","twin"],
+    courier:["swept","delta","trident","twin","xwing"],
+    hauler: ["slab","twin","boxed","disc"],
+    miner:  ["boxed","slab","twin","trident"],
+    warship:["delta","xwing","swept","trident","boxed"],
+    yacht:  ["swept"],
+    survey: ["disc","twin","boxed","xwing","swept"]
+  };
+  const forms=FORM_BY_CLASS[S.hcls]||["swept"];
+  const form=YAC?"swept":forms[Math.floor(r()*forms.length)];
+  /* диск и плита — не веретено: у них свой обвод, иначе схема остаётся
+     припиской к прежнему корпусу. Диск почти круглый в плане, плита —
+     прямоугольник со срезанными углами */
+  /* ── уступ носа ──
+     Нос у всех был гладким конусом, отчего семь классов сходились к одной
+     заострённой капле. На листах носовая часть почти всегда СТУПЕНЧАТАЯ:
+     обтекатель уже корпуса и стоит на нём с явной ступенью. Треть кораблей
+     получает такой уступ, и его видно даже пятном в системе. */
+  if(!YAC&&r()<.42){
+    const N=prof.length-1, st=.18+r()*.14, k=.60+r()*.14;
+    for(let i=0;i<=N;i++)if(i/N<st)prof[i][1]*=k;
+    poly.length=0;poly.push(tip);
+    for(const p of prof)poly.push([p[0],-p[1]]);
+    for(let i=prof.length-1;i>=0;i--)poly.push([prof[i][0],prof[i][1]]);
+  }
+  if(form==="disc"||form==="slab"){
+    const N=prof.length-1;
+    for(let i=0;i<=N;i++){
+      const t=i/N;
+      prof[i][1]=form==="disc"
+        ? Math.max(.8,bw*1.5*Math.sqrt(Math.max(.02,1-Math.pow(t*2-1,2))))
+        : Math.max(.8,bw*(t<.08?.45+t*7:t>.94?.55:1.15));
+    }
+    tip[0]=nose+(form==="disc"?.6:1.2);
+    poly.length=0;poly.push(tip);
+    for(const p of prof)poly.push([p[0],-p[1]]);
+    for(let i=prof.length-1;i>=0;i--)poly.push([prof[i][0],prof[i][1]]);
+  }
   if(YAC){
     /* ── проход по форме ──
        Первая версия обвода была морской яхтой в виде сверху: широкий мидель у
@@ -286,9 +334,42 @@ function hullOf(id){
     for(const p of prof)poly.push([p[0],-p[1]]);
     for(let i=prof.length-1;i>=0;i--)poly.push([prof[i][0],prof[i][1]]);
   }
-
-  /* ── крылья: многозвенные, со скосом ── */
-  const wingN=K.wing[0]+Math.floor(r()*(K.wing[1]-K.wing[0]+1)), wings=[];
+  const wings=[];
+  const wingN=(form==="swept")
+    ?K.wing[0]+Math.floor(r()*(K.wing[1]-K.wing[0]+1)):0;
+  if(form==="delta"){
+    /* дельта: одна толстая треугольная плоскость от миделя к самой корме,
+       с прямой задней кромкой. Её ни с чем не спутать даже пятном */
+    const root=nose*(.30+r()*.16), back=tail*(.72+r()*.24);
+    const span=bw*(2.2+r()*1.1);
+    wings.push([[root,-bw*.7],[root-len*.12,-span*.45],
+                [back+len*.06,-span],[back,-span*.92],[back,-bw*.85]]);
+  }else if(form==="xwing"){
+    /* крест: четыре коротких плоскости под углом, гондолы на концах.
+       Симметрия здесь не герб, а конструкция — так и рисуют на листах */
+    for(const k of [0,1]){
+      const root=k?tail*.30:nose*.22, dir=k?-1:1;
+      const chord=len*(.16+r()*.06), span=bw*(1.6+r()*.7);
+      wings.push([[root+chord*.5,-bw*.7],[root+chord*.5-dir*len*.10,-span],
+                  [root-chord*.5-dir*len*.10,-span*.86],[root-chord*.5,-bw*.8]]);
+    }
+  }else if(form==="twin"){
+    /* катамаран: две балки по бортам от миделя до кормы, соединённые с
+       корпусом перемычками. Между балкой и телом — просвет, и он-то и виден */
+    const x0=nose*(.18+r()*.12), x1=tail*(.86+r()*.12), off=bw*(1.5+r()*.6);
+    wings.push([[x0,-off*.62],[x0-len*.04,-off],[x1,-off],
+                [x1,-off*.66],[x1+len*.06,-off*.5],[x0,-bw*.72]]);
+  }else if(form==="slab"){
+    /* плита: корпус-контейнеровоз, «крыло» — грузовая палуба во всю длину */
+    const x0=nose*(.52+r()*.16), x1=tail*(.88+r()*.10), off=bw*(1.25+r()*.45);
+    wings.push([[x0,-bw*.9],[x0,-off],[x1,-off],[x1,-bw*.9]]);
+  }else if(form==="trident"){
+    /* трезубец: две плоскости, вынесенные ВПЕРЁД за мидель, острыми
+       законцовками. Нос от этого читается тремя остриями */
+    const root=nose*(.16+r()*.12), span=bw*(1.7+r()*.8);
+    wings.push([[root+len*.16,-bw*.6],[root+len*.22,-span*.8],
+                [root+len*.06,-span],[root-len*.14,-span*.7],[root-len*.06,-bw*.8]]);
+  }
   for(let i=0;i<wingN;i++){
     const root=lerp(nose*.1,tail*.82,(i+.3+r()*.4)/wingN);
     const chord=len*(.12+r()*.16), span=(bw*(1.15+r()*1.5)+2.5)*(K.wsp||1);
@@ -308,6 +389,26 @@ function hullOf(id){
   if(r()<K.nac){
     const nl=len*(.24+r()*.2), nr=bw*(.18+r()*.2)+1;
     nacs.push({x:tail+nl*(.5+r()*.3), y:bw*(.72+r()*.5)+nr*.8, l:nl, r:nr});
+  }
+  /* ── гондолы стоят по СХЕМЕ ──
+     Пара у борта — только один из способов, и на листах он не самый частый.
+     У дельты и креста двигатель уезжает на законцовку, у катамарана он
+     ВСТРОЕН в балку, у плиты сидит под палубой. Это меняет силуэт сильнее,
+     чем любая правка обвода: по расстановке тяги корабль и опознают. */
+  if(!YAC&&nacs.length){
+    const n0=nacs[0];
+    if(form==="delta"||form==="xwing"){
+      let sp=bw*1.6;
+      for(const w of wings)for(const p of w)sp=Math.max(sp,Math.abs(p[1]));
+      n0.y=sp*.82; n0.x=tail+n0.l*.42;
+    }else if(form==="twin"){
+      n0.y=bw*(1.5+r()*.6); n0.l=len*(.30+r()*.10); n0.x=tail+n0.l*.5;
+    }else if(form==="slab"||form==="boxed"){
+      n0.y=bw*(.62+r()*.3); n0.r*=1.25; n0.x=tail+n0.l*.4;
+      nacs.push({x:n0.x,y:n0.y+n0.r*2.2,l:n0.l*.8,r:n0.r*.8});   // вторая пара
+    }else if(form==="disc"){
+      n0.y=bw*(1.05+r()*.2); n0.l=len*(.34+r()*.1); n0.x=tail+n0.l*.34;
+    }
   }
 
   /* ── сопла: откуда бьёт факел ── */
@@ -335,6 +436,18 @@ function hullOf(id){
     eng.push({x:tail,y:-tailW*.46,r:tailW*.44});
     eng.push({x:tail,y:tailW*.46,r:tailW*.44});
   }else eng.push({x:tail,y:0,r:Math.max(1.6,tailW*.82)});
+  /* ── тяга стоит РЯДОМ по корме ──
+     Пара сопел, разнесённая к бортам, читалась двумя ушами: между ними пустой
+     транец, а на листах корма — это плотный ряд из трёх-четырёх раструбов,
+     занимающий её целиком. Ряд собирается по ширине кормы, а не по числу из
+     таблицы: сколько влезло, столько и стоит. */
+  if(!YAC&&!K.guns){
+    const rr=Math.max(1.5,tailW*.42);
+    const n=Math.max(2,Math.min(4,Math.round(tailW/rr)));
+    eng.length=0;
+    for(let i=0;i<n;i++)
+      eng.push({x:tail+((i%2)?.5:0), y:(i-(n-1)/2)*rr*2.05, r:rr});
+  }
 
   /* ── навеска: боксы, антенны, рёбра обшивки ── */
   const pods=[];
@@ -565,7 +678,7 @@ function hullOf(id){
   const own=hex2rgb(S.col);
   const col=YAC?own:mixc([214,211,200],own,.10);
   const h={poly,prof,wings,pods,nacs,eng,greeb,ants,ribs,canopy,stripe,fin,mark,
-    hcls:S.hcls,clsRu:K.ru,tier:S.tier,seed:S.seed,lux:LUX,yac:YAC,
+    hcls:S.hcls,clsRu:K.ru,tier:S.tier,seed:S.seed,lux:LUX,yac:YAC,form,
     nose,bw,tail,len,tailW,halfW:hw,
     /* акцент — кирпичный сурик, а не подмешанный цвет владельца: подмес к
        голубому давал серо-сиреневое пятно, которого на борту не видно.
@@ -768,6 +881,22 @@ function hullShade(h,hgt,fn){
 }
 function drawHullMarks(h){
   const M=h.mark;if(!M)return;
+  /* ── контактная тень ──
+     Навеска отбрасывала тень только по своим габаритам, и в месте, где она
+     СТОИТ на обшивке, стыка не было — деталь выглядела наклеенной. На листах
+     под каждым агрегатом лежит короткая плотная тень у самого основания,
+     помимо длинной по высоте. Это дешевле любой светотени и решает всё. */
+  hullShade(h,.35,()=>{
+    ctx.fillStyle="rgba(0,0,0,.5)";
+    for(const n of h.nacs)for(const s of [1,-1])
+      ctx.fillRect(n.x-n.l*.55,n.y*s-n.r*1.12,n.l*1.1,n.r*2.24);
+    if(M.cont)for(const c of M.cont)for(const s of [1,-1]){
+      const y=c[2]*s;
+      ctx.fillRect(c[0]-.6,(s>0?y-c[2]*.55:y-c[2]*.45)-.6,c[1]+1.2,c[2]+1.2);
+    }
+    if(M.bridge)ctx.fillRect(M.bridge.x-M.bridge.l*.55,-M.bridge.w*.55,
+                             M.bridge.l*1.1,M.bridge.w*1.1);
+  });
   /* один проход теней на всю навеску: высота у каждой семьи своя */
   hullShade(h,1,()=>{
     for(const n of h.nacs)for(const s of [1,-1]){
@@ -787,15 +916,22 @@ function drawHullMarks(h){
   if(M.bridge)hullShade(h,1.9,()=>{
     ctx.fillRect(M.bridge.x-M.bridge.l*.5,-M.bridge.w*.5,M.bridge.l,M.bridge.w);
   });
-  if(M.cont)for(const c of M.cont)for(const s of [1,-1]){
+  if(M.cont)M.cont.forEach((c,ci)=>{for(const s of [1,-1]){
     const y=c[2]*s;
     /* контейнер — чужая тара, а не часть корабля: он из голого металла и
        цвета владельца не имеет. Один этот сдвиг материала снимает половину
        «пластиковости»: корабль перестаёт быть выкрашенным целиком */
     const gy=s>0?y-c[2]*.55:y-c[2]*.45;
+    /* ── тара разного хозяина ──
+       Контейнеры были одного стального тона, и палуба читалась одной деталью
+       с насечками. На листах это главное украшение грузовика: ящики РАЗНЫЕ —
+       синий, ржавый, оливковый, выгоревший серый, каждый со своей историей.
+       Тон берётся от индекса и семени, поэтому у корабля он постоянен. */
+    const CARGO=[[62,86,116],[128,72,44],[86,92,64],[112,116,120],[54,60,70]];
+    const cc=CARGO[hashi(ci,h.seed,0x3F1)%CARGO.length];
     const g=ctx.createLinearGradient(0,gy,0,gy+c[2]);
-    g.addColorStop(0,rgba(mixc(h.steel,[255,255,255],.22),1));
-    g.addColorStop(1,rgba(mixc(h.steel,[0,0,0],.55),1));
+    g.addColorStop(0,rgba(mixc(cc,[255,255,255],.26),1));
+    g.addColorStop(1,rgba(mixc(cc,[0,0,0],.5),1));
     ctx.fillStyle=g;ctx.strokeStyle=rgba(mixc(h.steel,[0,0,0],.7),1);ctx.lineWidth=.45;
     ctx.beginPath();ctx.rect(c[0],gy,c[1],c[2]);
     ctx.fill();ctx.stroke();
@@ -805,7 +941,7 @@ function drawHullMarks(h){
     ctx.moveTo(c[0]+c[1]*.5,s>0?y-c[2]*.55:y-c[2]*.45);
     ctx.lineTo(c[0]+c[1]*.5,(s>0?y-c[2]*.55:y-c[2]*.45)+c[2]);
     ctx.stroke();
-  }
+  }});
   if(M.drill){
     const d=M.drill;
     ctx.fillStyle=rgba(h.lite,.85);
@@ -1324,6 +1460,33 @@ function drawStencils(h){
     ctx.fillStyle=rgba(h.accent,.8);
     ctx.beginPath();ctx.arc(cx,cy,cr*.4,0,TAU);ctx.fill();
   }
+  /* ── щели ──
+     На листах между агрегатами всегда есть чёрный провал: не тень, а зазор,
+     в который не попадает свет. Он и держит глубину — без него панели лежат
+     в одной плоскости, как аппликация. Три-четыре узкие щели поперёк борта. */
+  for(let i=0;i<4;i++){
+    const hh=hashi(i+3,S,0x51D3);
+    const x=lerp(h.nose*.55,h.tail*.8,((hh>>>3)&15)/15);
+    const w=profW(P,x);if(w<1.5)continue;
+    ctx.fillStyle="rgba(4,6,10,.55)";
+    ctx.fillRect(x,-w*.82,.7,w*1.64);
+    ctx.fillStyle="rgba(255,255,255,.09)";      // светлая кромка с одной стороны
+    ctx.fillRect(x+.7,-w*.82,.3,w*1.64);
+  }
+  /* ── потёки ──
+     Чистый металл бывает у модели, а не у машины. Тёмные полосы вниз по
+     потоку от люков и стыков — самое дешёвое, что отличает вещь в работе */
+  for(let i=0;i<5;i++){
+    const hh=hashi(i+21,S,0x9C4);
+    const x=lerp(h.nose*.6,h.tail*.7,((hh>>>3)&31)/31);
+    const w=profW(P,x);if(w<1.2)continue;
+    const y=(((hh>>>10)&15)/15-.5)*w*1.5;
+    const g=ctx.createLinearGradient(x,0,x-2.5-((hh>>>16)&3),0);
+    g.addColorStop(0,"rgba(30,26,22,.32)");
+    g.addColorStop(1,"rgba(30,26,22,0)");
+    ctx.fillStyle=g;
+    ctx.fillRect(x-2.5-((hh>>>16)&3),y,2.5+((hh>>>16)&3),.7);
+  }
   /* мелкая техническая надпись у люка: две-три группы. Читать нечего,
      замечать — есть что */
   ctx.fillStyle="rgba(20,24,30,.5)";
@@ -1511,6 +1674,28 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.save();ctx.clip();
     ctx.strokeStyle=rgba(h.lite,.42);ctx.lineWidth=1;
     tracePoly(w,s);ctx.stroke();
+    /* ── плоскость тоже СОБРАНА ──
+       Крыло было залито одним тоном, и рядом с обшитым панелями корпусом
+       читалось картонкой. На листах плоскость несёт то же, что борт: нервюры
+       поперёк, разнотон секций, лючки и краску на законцовке. */
+    if(!h.yac){
+      let x0=1e9,x1=-1e9,ymax=0;
+      for(const p of w){x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);ymax=Math.max(ymax,Math.abs(p[1]));}
+      const seg=4+((h.seed>>>9)&3);
+      for(let k=0;k<seg;k++){
+        const a=((hashi(k,h.seed,0x1D7)&15)/15-.5)*.16;
+        ctx.fillStyle=(a>0?"rgba(255,255,255,":"rgba(0,0,0,")+Math.abs(a).toFixed(3)+")";
+        ctx.fillRect(x0+(x1-x0)*k/seg,-ymax*s-(s>0?0:0),(x1-x0)/seg,ymax*2*s);
+        ctx.fillStyle="rgba(0,0,0,.34)";                       // нервюра
+        ctx.fillRect(x0+(x1-x0)*k/seg,-ymax*s,.55,ymax*2*s);
+      }
+      /* законцовочная балка и краска на ней: край плоскости на листах всегда
+         жирнее самой плоскости — по нему её и видно на фоне */
+      ctx.fillStyle=rgba(mixc(h.iron,[0,0,0],.25),1);
+      ctx.fillRect(x0,ymax*.93*s-(s>0?0:.9),x1-x0,.9*s);
+      ctx.fillStyle=rgba(h.accent,.95);
+      ctx.fillRect(x0+(x1-x0)*.52,ymax*.72*s-(s>0?0:1.1),(x1-x0)*.34,1.1*s);
+    }
     ctx.restore();
     ctx.strokeStyle=rgba(h.dark,.8);ctx.lineWidth=.45;   // лонжерон
     ctx.beginPath();ctx.moveTo(w[0][0],w[0][1]*s*.55);ctx.lineTo(w[2][0],w[2][1]*s*.8);ctx.stroke();
@@ -1738,6 +1923,31 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.fillRect(hx-hs,hy-hs*.6,hs*2,hs*1.2);
     ctx.strokeStyle="rgba(255,255,255,.10)";ctx.lineWidth=.5;
     ctx.strokeRect(hx-hs,hy-hs*.6,hs*2,hs*1.2);
+  }
+  /* ── диск: кольца, а не блин ──
+     Круглый корпус, залитый ровным тоном, читается монетой. На листах диск
+     собран кольцевыми панелями с радиальными швами и рядом окон по ободу —
+     и только это делает его кораблём, а не пятном. */
+  if(h.form==="disc"){
+    const cx=(h.nose+h.tail)*.5, R=h.bw*1.5;
+    ctx.strokeStyle="rgba(0,0,0,.34)";ctx.lineWidth=.5;
+    for(const f of [.42,.72,.92]){
+      ctx.beginPath();ctx.ellipse(cx,0,R*f*.86,R*f,0,0,TAU);ctx.stroke();
+    }
+    for(let k=0;k<12;k++){                       // радиальные швы
+      const a=k*TAU/12;
+      ctx.beginPath();
+      ctx.moveTo(cx+Math.cos(a)*R*.42*.86,Math.sin(a)*R*.42);
+      ctx.lineTo(cx+Math.cos(a)*R*.92*.86,Math.sin(a)*R*.92);ctx.stroke();
+    }
+    ctx.fillStyle="rgba(186,232,250,.55)";       // окна по ободу
+    for(let k=0;k<16;k++){
+      const a=k*TAU/16;
+      ctx.fillRect(cx+Math.cos(a)*R*.8*.86-.35,Math.sin(a)*R*.8-.35,.7,.7);
+    }
+    ctx.fillStyle=rgba(h.accent,.9);             // сектор краской
+    ctx.beginPath();ctx.moveTo(cx,0);
+    ctx.arc(cx,0,R*.9,-.5,-.1);ctx.closePath();ctx.fill();
   }
   if(!h.yac)drawStencils(h);
   /* навеска */

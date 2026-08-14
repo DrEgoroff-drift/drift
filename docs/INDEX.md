@@ -78,7 +78,7 @@ autoLandInputs               src/19-mode-landing.js:18
 autosave                     src/14-save.js:341
 b64dec                       src/14-save.js:11
 b64enc                       src/14-save.js:9
-bankTransform                src/03-ships.js:644
+bankTransform                src/03-ships.js:757
 BARGE_ART                    src/12l-barge.js:376
 BARGE_CAP                    src/12l-barge.js:13
 BARGE_CAPNAMES               src/12l-barge.js:23
@@ -369,21 +369,21 @@ drawExhaust                  src/16a-space.js:133
 drawFactory                  src/20a-poi.js:539
 drawFactRoute                src/13b-occupy.js:238
 drawFindsSystem              src/17b-finds.js:123
-drawFlame                    src/03-ships.js:606
+drawFlame                    src/03-ships.js:719
 drawFoeBody                  src/24a-mode-raid.js:638
 drawGlassHUD                 src/24-mode-belt.js:518
 drawGround                   src/19-mode-landing.js:94
 drawHomeBuilding             src/21c-built.js:134
 drawHomeRoom                 src/27e-ui-home.js:42
 drawHqRoom                   src/27f-hq-room.js:22
-drawHull                     src/03-ships.js:1338
-drawHullMarks                src/03-ships.js:769
+drawHull                     src/03-ships.js:1501
+drawHullMarks                src/03-ships.js:882
 drawLander                   src/19-mode-landing.js:375
 drawLandGear                 src/19-mode-landing.js:349
 drawLanding                  src/19-mode-landing.js:293
 drawLoreMarks                src/12q-lore.js:198
-drawLuxeDeck                 src/03-ships.js:1113
-drawLuxeSkin                 src/03-ships.js:1031
+drawLuxeDeck                 src/03-ships.js:1249
+drawLuxeSkin                 src/03-ships.js:1167
 drawMap                      src/18-mode-map.js:51
 drawModule                   src/21aa-base-rooms.js:159
 drawMonolith                 src/20a-poi.js:414
@@ -412,7 +412,7 @@ drawStars                    src/16-flight.js:6
 drawStarSingle               src/16a-space.js:201
 drawStation                  src/17-mode-system.js:551
 drawStationMods              src/17a-station-mod.js:178
-drawStencils                 src/03-ships.js:1275
+drawStencils                 src/03-ships.js:1411
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:84
 drawSurface                  src/21-mode-surface.js:334
@@ -420,7 +420,7 @@ drawSurfaceHud               src/21-mode-surface.js:288
 drawSysNebula                src/16a-space.js:65
 drawSystem                   src/17-mode-system.js:272
 drawTemple                   src/20a-poi.js:271
-drawTierTrim                 src/03-ships.js:658
+drawTierTrim                 src/03-ships.js:771
 drawTrail                    src/16-flight.js:298
 drawWear                     src/12s-wear.js:69
 drawWeather                  src/19d-weather.js:92
@@ -606,7 +606,7 @@ HULL_CACHE                   src/03-ships.js:142
 HULL_CLASS                   src/03-ships.js:174
 hullClassOf                  src/03-ships.js:200
 hullOf                       src/03-ships.js:216
-hullShade                    src/03-ships.js:761
+hullShade                    src/03-ships.js:874
 HUNT_NAMES                   src/12o-hunter.js:18
 HUNT_RADIUS                  src/12o-hunter.js:24
 HUNT_TIERS                   src/12o-hunter.js:19
@@ -699,7 +699,7 @@ loreWinOpen                  src/27h-ui-lore.js:17
 loyBar                       src/27c-ui-hq.js:17
 loyWord                      src/27c-ui-hq.js:13
 luckLine                     src/27b-ui-crew.js:16
-luxPal                       src/03-ships.js:1020
+luxPal                       src/03-ships.js:1156
 MAIN_CTX                     src/08-state.js:4
 makeIR                       src/10-music.js:103
 makePhrase                   src/10-music.js:293
@@ -1088,7 +1088,7 @@ sellDroneYield               src/12-economy.js:35
 setZoom                      src/15-input.js:175
 sfx                          src/09-audio.js:201
 SFX                          src/09-audio.js:85
-SH_DX                        src/03-ships.js:760
+SH_DX                        src/03-ships.js:873
 shatter                      src/24-mode-belt.js:125
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
@@ -1211,7 +1211,7 @@ toggleLoreBoard              src/27h-ui-lore.js:65
 toggleMenu                   src/15-input.js:125
 totalLoss                    src/21-mode-surface.js:230
 tracePath                    src/25-cockpit.js:159
-tracePoly                    src/03-ships.js:597
+tracePoly                    src/03-ships.js:710
 TRADE_KEYS                   src/02-world.js:27
 TRAIL                        src/16-flight.js:172
 TRAIL_CHAR                   src/16-flight.js:180
@@ -1296,11 +1296,12 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · ресурсы:1
   · миры:50
 
-## src/03-ships.js · 115 КБ
+## src/03-ships.js · 128 КБ
   · корабли: процедурные корпуса:1
   · лаборатория: сплав двух корпусов:28
   · класс корпуса:162
-  · люксовая яхта:1005
+  · схема планера:263
+  · люксовая яхта:1141
 
 ## src/04b-fleet.js · 14 КБ
   · флот: сто корпусов и их редкость:1
