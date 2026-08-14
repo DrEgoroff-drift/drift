@@ -1553,7 +1553,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
     const g=ctx.createLinearGradient(0,-h.bw*3*s,0,h.bw*s);
     g.addColorStop(0,rgba(h.edge,.95));g.addColorStop(1,rgba(h.dark,1));
     ctx.fillStyle=g;ctx.fill();
-    ctx.strokeStyle=rgba(h.col,.55);ctx.lineWidth=.95;ctx.stroke();
+    ctx.strokeStyle=rgba(h.col,.45);ctx.lineWidth=.7;ctx.stroke();
     ctx.strokeStyle=rgba(h.col,.22);ctx.lineWidth=.7;
     ctx.beginPath();ctx.moveTo(w[0][0],w[0][1]*s*.55);ctx.lineTo(w[2][0],w[2][1]*s*.8);ctx.stroke();
   }
@@ -1581,7 +1581,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
     const g=ctx.createLinearGradient(0,y-n.r,0,y+n.r);
     g.addColorStop(0,rgba(h.lite,.5));g.addColorStop(.4,rgba(h.body,1));g.addColorStop(1,rgba(h.dark,1));
     ctx.fillStyle=g;ctx.fill();
-    ctx.strokeStyle=rgba(h.col,.9);ctx.lineWidth=1.1;ctx.stroke();
+    ctx.strokeStyle=rgba(h.col,.7);ctx.lineWidth=.75;ctx.stroke();
     ctx.strokeStyle=rgba(h.col,.4);ctx.lineWidth=.8;
     ctx.beginPath();ctx.moveTo(n.x+n.l*.16,y-n.r);ctx.lineTo(n.x+n.l*.16,y+n.r);ctx.stroke();
     ctx.strokeStyle="rgba(255,160,90,.55)";
@@ -1617,6 +1617,43 @@ function drawHull(id,thrusting,braking,lvl,bank){
     for(let i=0;i<P.length;i++)ctx.lineTo(P[i][0],P[i][1]*f);
     ctx.stroke();
   }
+  /* ── обшивка панелями ──
+     Контур был обведён в 1.25 px почти в полную яркость: на маленьком корабле
+     это половина его ширины, и силуэт читался наклейкой с жирной каймой.
+     Обводка утоньшена, а корпус вместо неё детализирован — тем, чем и должен
+     быть детализирован металл: разнотоном листов, швами между ними, рядами
+     заклёпок по шву и парой люков. Тонкая линия плюс фактура читается
+     аккуратнее толстой линии без фактуры. */
+  const np=4+((h.seed>>>6)&3);
+  for(let k=0;k<np;k++){
+    const t0=k/np, t1=(k+1)/np;
+    const x0=lerp(h.nose,h.tail,t0), x1=lerp(h.nose,h.tail,t1);
+    const hh=hashi(k,h.seed,0x5A1E);
+    /* лист чуть светлее или темнее соседнего: партия обшивки была разной */
+    const a=((hh&7)/7-.5)*.09;
+    ctx.fillStyle=(a>0?"rgba(255,255,255,":"rgba(0,0,0,")+Math.abs(a).toFixed(3)+")";
+    ctx.fillRect(Math.min(x0,x1),-h.bw*1.3,Math.abs(x1-x0),h.bw*2.6);
+    /* шов между листами: тёмная нить со светлой кромкой снизу */
+    ctx.fillStyle="rgba(0,0,0,.30)";ctx.fillRect(x1-.35,-h.bw*1.3,.7,h.bw*2.6);
+    ctx.fillStyle="rgba(255,255,255,.07)";ctx.fillRect(x1+.35,-h.bw*1.3,.45,h.bw*2.6);
+    /* заклёпки по шву: точки в полпикселя — на расстоянии они дают зерно,
+       вблизи читаются рядом крепежа */
+    ctx.fillStyle="rgba(0,0,0,.22)";
+    const pw2=profW(P,x1);
+    for(let y=-pw2+1.4;y<pw2-1;y+=2.2)ctx.fillRect(x1-1.5,y,.6,.6);
+  }
+  /* люки: два прямоугольника со скруглением, всегда на борту, не по оси */
+  for(let k=0;k<2;k++){
+    const hh=hashi(k+11,h.seed,0x40C7);
+    const hx=lerp(h.nose*.62,h.tail*.7,((hh>>>3)&15)/15);
+    const pw2=profW(P,hx), hs=Math.min(3.2,pw2*.5);
+    if(hs<1.2)continue;
+    const hy=(k?1:-1)*pw2*.45;
+    ctx.fillStyle="rgba(0,0,0,.20)";
+    ctx.fillRect(hx-hs,hy-hs*.6,hs*2,hs*1.2);
+    ctx.strokeStyle="rgba(255,255,255,.10)";ctx.lineWidth=.5;
+    ctx.strokeRect(hx-hs,hy-hs*.6,hs*2,hs*1.2);
+  }
   /* навеска */
   for(const g of h.greeb){
     ctx.fillStyle=g[4]?"rgba(255,255,255,.13)":"rgba(0,0,0,.4)";
@@ -1632,7 +1669,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
      ни одна царапина не вылезла за силуэт (12s-wear) */
   if(typeof drawWear==="function")drawWear(h,wearOf(id));
   ctx.restore();
-  ctx.strokeStyle=rgba(h.col,.95);ctx.lineWidth=1.25;
+  ctx.strokeStyle=rgba(h.col,.62);ctx.lineWidth=.65;
   tracePoly(h.poly);ctx.stroke();
   drawTierTrim(h);
   drawHullMarks(h);
