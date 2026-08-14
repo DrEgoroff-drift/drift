@@ -374,6 +374,24 @@ function musicTick(){
 /* какая сцена сейчас — считается из состояния игры, а не задаётся вручную */
 function musicSceneNow(){
   if(G.mode==="map")return ["map",MUSIC_SCENES.map];
+  /* ── музыка кантины ──
+     Свет и толпа развели пять залов, а звучали они одинаково: на станции
+     играла одна `dock` независимо от того, кабак это после смены или тихая
+     комната отдыха. Отдельного трека не нужно — сцена наклоняется, как везде
+     в этом движке: лад, темп и плотность слоёв. Комбинат — низко и глухо,
+     с ударом, потому что там пьют после работы; научная — тонко, почти без
+     баса; аванпост — одна линия и много воздуха, играть некому; верфь —
+     ровный рабочий ход; торговый узел остаётся эталонной `dock`.
+     Звучит это только в кантине: у прилавка музыка станции прежняя. */
+  if(G.mode==="dock"&&tab==="cantina"&&G.st){
+    const B={
+      indust: {scale:"phrygian", root:-12,bpm:52,perc:.45,bass:.7, motif:.3, air:.1},
+      sci:    {scale:"kumoi",    root:-3, bpm:40,perc:0,  bass:.15,motif:.35,air:.5},
+      outpost:{scale:"insen",    root:-10,bpm:36,perc:.05,bass:.25,motif:.18,air:.6},
+      yard:   {scale:"dorian",   root:-7, bpm:58,perc:.3, bass:.55,motif:.3, air:.15}
+    }[G.st.stype];
+    if(B)return ["cant:"+G.st.stype,Object.assign({},MUSIC_SCENES.dock,B)];
+  }
   if(G.mode==="dock")return ["dock",MUSIC_SCENES.dock];
   if(G.mode==="belt")return ["belt",MUSIC_SCENES.belt];
   if(G.mode==="landing"&&G.land)return ["landing",MUSIC_SCENES.landing];

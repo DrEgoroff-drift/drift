@@ -792,7 +792,7 @@ MUSIC_SCENES                 src/10-music.js:27
 musicInit                    src/10-music.js:136
 musicSceneNow                src/10-music.js:375
 musicSetScene                src/10-music.js:254
-musicStop                    src/10-music.js:393
+musicStop                    src/10-music.js:411
 musicTick                    src/10-music.js:319
 musNote                      src/10-music.js:187
 musPerc                      src/10-music.js:244
@@ -1334,7 +1334,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/09-audio.js · 11 КБ
   · звук: чистый синтез, ни одного файла:1
 
-## src/10-music.js · 23 КБ
+## src/10-music.js · 24 КБ
   · музыка: слои, а не треки:1
 
 ## src/11a-quests.js · 6 КБ
