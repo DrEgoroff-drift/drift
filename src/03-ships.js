@@ -555,12 +555,28 @@ function hullOf(id){
   for(const n of nacs)hw=Math.max(hw,n.y+n.r);
   for(const p of pods)hw=Math.max(hw,p[1]+p[3]);
 
-  const col=hex2rgb(S.col);
+  /* ── костяная обшивка ──
+     Весь флот был выкрашен в цвет владельца, отчего в системе летали синие,
+     зелёные и лиловые машины — красиво на палитре и неправдоподобно в кадре.
+     Рабочий корабль красят в то, что дёшево и хорошо видно: белёсый костяной
+     грунт. Цвет владельца остаётся, но становится тем, чем он и бывает на
+     настоящей технике, — АКЦЕНТОМ: несколько панелей, кант, полоса на киле.
+     Яхты живут по своим правилам (лак и латунь), их это не касается. */
+  const own=hex2rgb(S.col);
+  const col=YAC?own:mixc([214,211,200],own,.10);
   const h={poly,prof,wings,pods,nacs,eng,greeb,ants,ribs,canopy,stripe,fin,mark,
     hcls:S.hcls,clsRu:K.ru,tier:S.tier,seed:S.seed,lux:LUX,yac:YAC,
     nose,bw,tail,len,tailW,halfW:hw,
-    col, lite:mixc(col,[255,255,255],.42), dark:mixc(col,[6,10,17],.82),
-    body:mixc(col,[8,13,21],.72), edge:mixc(col,[10,16,26],.35),
+    /* акцент — кирпичный сурик, а не подмешанный цвет владельца: подмес к
+       голубому давал серо-сиреневое пятно, которого на борту не видно.
+       Владелец слышен в нём чуть-чуть, остальное — краска, которой метят
+       технику везде и всегда */
+    col, own, accent:YAC?own:mixc([138,44,32],own,.10),
+    /* железо навески: почти графит. Прежний светлый сталистый тон делал
+       сопла белыми ушами по бокам кормы */
+    iron:[52,55,62],
+    lite:mixc(col,[255,255,255],.42), dark:mixc(col,[6,10,17],YAC?.82:.62),
+    body:mixc(col,[8,13,21],YAC?.72:.34), edge:mixc(col,[10,16,26],YAC?.35:.5),
     /* ── материалы ──
        Весь корабль был выкрашен в один `col`, отчего выглядел пластиковым:
        обшивка, бак, контейнер, радиатор и керамика не отличались ничем.
@@ -655,24 +671,39 @@ function drawTierTrim(h){
       ctx.fillRect(px-pw*.2,py+ph/2,pw*.4,1.4+r()*2.6);
     }
   }else if(t==="rare"){
-    ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.8;  // акцентная окантовка
+    /* На костяном борту светлый кант пропал вовсе: белым по белому тир не
+       читался, то есть игрок не видел, что корабль редкий. Метка редкого —
+       ДВЕ нити краски по борту, тёмная и в цвет акцента: так метят технику
+       ограниченной серии, и это видно на любом фоне. */
     for(const s of [1,-1]){
+      ctx.strokeStyle="rgba(24,28,34,.55)";ctx.lineWidth=.9;
       ctx.beginPath();
       for(let i=1;i<P.length-1;i++)ctx.lineTo(P[i][0],P[i][1]*.86*s);
       ctx.stroke();
+      ctx.strokeStyle=rgba(h.accent,.9);ctx.lineWidth=.5;
+      ctx.beginPath();
+      for(let i=1;i<P.length-1;i++)ctx.lineTo(P[i][0],P[i][1]*.86*s-.7*s);
+      ctx.stroke();
     }
   }else if(t==="legend"){
-    ctx.strokeStyle=rgba(h.lite,.65);ctx.lineWidth=1.1; // двойной кант
+    /* легенда — тот же приём, но в два пояса и с клеймом: у машины, которую
+       знают по имени, метка крупнее и стоит на скуле, где её видно первой */
     for(const s of [1,-1])for(const f of [.9,.66]){
+      ctx.strokeStyle="rgba(20,24,30,.6)";ctx.lineWidth=1.2;
       ctx.beginPath();
       for(let i=1;i<P.length-1;i++)ctx.lineTo(P[i][0],P[i][1]*f*s);
       ctx.stroke();
+      ctx.strokeStyle=rgba(mixc(h.accent,[255,220,150],.35),.95);ctx.lineWidth=.55;
+      ctx.beginPath();
+      for(let i=1;i<P.length-1;i++)ctx.lineTo(P[i][0],P[i][1]*f*s-.6*s);
+      ctx.stroke();
     }
-    const ex=h.nose*.42,ew=Math.max(1.6,profW(P,ex)*.34);  // эмблема на скуле
+    const ex=h.nose*.42,ew=Math.max(1.6,profW(P,ex)*.34);  // клеймо на скуле
     for(const s of [1,-1]){
-      ctx.fillStyle=rgba(h.lite,.75);
+      ctx.fillStyle=rgba(mixc(h.accent,[255,224,160],.4),.95);
       ctx.beginPath();ctx.moveTo(ex+ew,ew*.2*s);ctx.lineTo(ex,ew*1.2*s);
       ctx.lineTo(ex-ew,ew*.2*s);ctx.closePath();ctx.fill();
+      ctx.strokeStyle="rgba(20,24,30,.6)";ctx.lineWidth=.35;ctx.stroke();
     }
   }else if(t==="luxe"){
     /* у люксовой ЯХТЫ вся отделка своя (drawLuxeSkin/drawLuxeDeck): лента
@@ -927,7 +958,19 @@ function drawHullMarks(h){
      остального: его не читают, его замечают */
   if(M.num&&h.bw>2.6){
     ctx.save();
-    ctx.fillStyle="rgba(232,238,245,.42)";
+    /* номер лежит на СВОЁМ поле: светлая плашка с тёмной рамкой. Без неё
+       буквы плавали поверх швов и разнотона и читались водяным знаком */
+    if(!h.yac){
+      ctx.save();
+      ctx.translate(lerp(h.nose*.35,h.tail*.5,.5),-h.bw*.52);
+      ctx.rotate(Math.PI/2);
+      const tw=M.num.length*1.7;
+      ctx.fillStyle="rgba(228,228,220,.85)";ctx.fillRect(-tw/2-.6,-1.7,tw+1.2,3.4);
+      ctx.strokeStyle="rgba(20,24,30,.5)";ctx.lineWidth=.35;
+      ctx.strokeRect(-tw/2-.6,-1.7,tw+1.2,3.4);
+      ctx.restore();
+    }
+    ctx.fillStyle=h.yac?"rgba(232,238,245,.42)":"rgba(24,28,34,.9)";
     ctx.font="2.6px ui-monospace,monospace";
     ctx.textAlign="center";ctx.textBaseline="middle";
     /* Читается по ходу корабля, а не вверх ногами: корпус рисуется уже
@@ -1224,6 +1267,74 @@ function drawLuxeDeck(h,L){
   for(const s of [1,-1])for(let x=L.rail[0];x>L.rail[1];x-=4.5)
     ctx.fillRect(x,profW(h.prof,x)*.9*s-.3,.6,.6);
 }
+/* ── трафареты и мелочь на борту ──
+   То, чем настоящая техника отличается от модели: инвентарные надписи, номера
+   у люков, решётки забора, «зебра» у опасных мест, кокарда. Ни одна из этих
+   вещей не важна по отдельности — важно, что их МНОГО и они разного размера.
+   Рисуется внутри обрезки по корпусу, последним слоем поверх обшивки. */
+function drawStencils(h){
+  const P=h.prof,S=h.seed;
+  /* решётка забора у миделя: ряд коротких линий поперёк, с обоих бортов */
+  for(const s of [1,-1]){
+    const gx=lerp(h.nose*.5,h.tail*.2,((S>>>4)&7)/7);
+    const gw=profW(P,gx);
+    if(gw>1.6){
+      ctx.strokeStyle="rgba(0,0,0,.42)";ctx.lineWidth=.4;
+      for(let k=0;k<5;k++){
+        const y=gw*(.32+k*.1)*s;
+        ctx.beginPath();ctx.moveTo(gx-1.6,y);ctx.lineTo(gx+1.6,y);ctx.stroke();
+      }
+    }
+  }
+  /* лючки: квадрат с двумя болтами и номером рядом. Пять штук по семени */
+  for(let i=0;i<5;i++){
+    const hh=hashi(i,S,0x2B71);
+    const x=lerp(h.nose*.78,h.tail*.86,((hh>>>3)&31)/31);
+    const w=profW(P,x);if(w<1.4)continue;
+    const y=(((hh>>>9)&15)/15-.5)*w*1.3, sz=.8+((hh>>>14)&3)*.35;
+    ctx.fillStyle="rgba(0,0,0,.22)";ctx.fillRect(x-sz,y-sz*.7,sz*2,sz*1.4);
+    ctx.strokeStyle="rgba(255,255,255,.14)";ctx.lineWidth=.35;
+    ctx.strokeRect(x-sz,y-sz*.7,sz*2,sz*1.4);
+    ctx.fillStyle="rgba(0,0,0,.4)";
+    ctx.fillRect(x-sz+.2,y-sz*.7+.2,.35,.35);
+    ctx.fillRect(x+sz-.55,y+sz*.7-.55,.35,.35);
+  }
+  /* «зебра» у кормы: косые полосы, которыми метят то, обо что обжигаются */
+  const zx=lerp(h.tail,h.nose,.10), zw=profW(P,zx);
+  if(zw>1.8)for(const s of [1,-1]){
+    ctx.save();
+    ctx.beginPath();ctx.rect(zx-1.4,zw*.42*s-(s>0?0:zw*.42),2.8,zw*.42);
+    ctx.clip();
+    for(let k=-4;k<6;k++){
+      ctx.fillStyle=(k&1)?"rgba(20,20,22,.65)":"rgba(214,150,44,.75)";
+      ctx.beginPath();
+      ctx.moveTo(zx-1.4+k*.8,zw*.9*s);ctx.lineTo(zx-1.4+k*.8+.8,zw*.9*s);
+      ctx.lineTo(zx-1.4+k*.8+1.4,0);ctx.lineTo(zx-1.4+k*.8+.6,0);
+      ctx.closePath();ctx.fill();
+    }
+    ctx.restore();
+  }
+  /* кокарда: круг с точкой, у половины корпусов. Опознавательный знак —
+     то, из-за чего машина выглядит принадлежащей кому-то */
+  if((S>>>7&3)&&h.bw>3){
+    const cx=lerp(h.nose*.34,h.tail*.3,((S>>>11)&7)/7), cw=profW(P,cx);
+    const cy=cw*.5*((S&1)?1:-1), cr=Math.min(1.7,cw*.34);
+    ctx.strokeStyle=rgba(h.accent,.8);ctx.lineWidth=.6;
+    ctx.beginPath();ctx.arc(cx,cy,cr,0,TAU);ctx.stroke();
+    ctx.fillStyle=rgba(h.accent,.8);
+    ctx.beginPath();ctx.arc(cx,cy,cr*.4,0,TAU);ctx.fill();
+  }
+  /* мелкая техническая надпись у люка: две-три группы. Читать нечего,
+     замечать — есть что */
+  ctx.fillStyle="rgba(20,24,30,.5)";
+  for(let i=0;i<3;i++){
+    const hh=hashi(i+9,S,0x77C1);
+    const x=lerp(h.nose*.6,h.tail*.7,((hh>>>3)&15)/15);
+    const w=profW(P,x);if(w<1.6)continue;
+    const y=(((hh>>>8)&7)/7-.5)*w*1.2;
+    for(let k=0;k<3+(hh&3);k++)ctx.fillRect(x+k*.55,y,.35,.5);
+  }
+}
 function drawHull(id,thrusting,braking,lvl,bank){
   const h=hullOf(id),blink=Math.sin(G.t*.07);
   lvl=lvl||0;
@@ -1252,6 +1363,31 @@ function drawHull(id,thrusting,braking,lvl,bank){
   else for(const e of h.eng){   // холостой ход — только тлеющее сопло
     ctx.fillStyle="rgba(255,140,70,"+(.2+Math.random()*.12).toFixed(2)+")";
     ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.42,0,TAU);ctx.fill();
+  }
+  /* ── двигатель как ЖЕЛЕЗО ──
+     Сопло было дыркой в корме с огоньком: у корабля не было двигателя, был
+     источник факела. На честном виде сверху двигатель — толстая тёмная бочка,
+     которая ТОРЧИТ за обвод: корпус кончился, а машина продолжается. У неё
+     свои пояса жёсткости, светлая верхняя грань и чёрный зев внутри.
+     Рисуется до корпуса, чтобы уйти под него, и не касается яхт: у тех своя
+     школа сопел (кольцо среза с латунным пояском). */
+  if(!h.yac)for(const e of h.eng){
+    const bl=Math.max(3,e.r*2.4), br=e.r*1.05;
+    const g=ctx.createLinearGradient(0,e.y-br,0,e.y+br);
+    g.addColorStop(0,rgba(mixc(h.iron,[255,255,255],.30),1));
+    g.addColorStop(.42,rgba(mixc(h.iron,[0,0,0],.42),1));
+    g.addColorStop(1,rgba(mixc(h.iron,[0,0,0],.72),1));
+    ctx.fillStyle=g;
+    ctx.fillRect(e.x-bl*.1,e.y-br,bl,br*2);
+    ctx.strokeStyle="rgba(0,0,0,.62)";ctx.lineWidth=.45;
+    ctx.strokeRect(e.x-bl*.1,e.y-br,bl,br*2);
+    ctx.fillStyle="rgba(0,0,0,.5)";                       // пояса жёсткости
+    for(let k=1;k<3;k++)ctx.fillRect(e.x-bl*.1+bl*k/3,e.y-br,.6,br*2);
+    ctx.fillStyle="rgba(255,255,255,.16)";
+    ctx.fillRect(e.x-bl*.1,e.y-br,bl,.5);
+    ctx.fillStyle="rgba(6,8,12,.95)";                     // зев
+    ctx.beginPath();ctx.ellipse(e.x-bl*.06,e.y,br*.34,br*.74,0,0,TAU);ctx.fill();
+    ctx.strokeStyle=rgba(mixc(h.iron,[255,255,255],.2),.8);ctx.lineWidth=.4;ctx.stroke();
   }
   if(braking){
     const f=4+Math.random()*6;
@@ -1368,7 +1504,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
   for(const w of h.wings)for(const s of [1,-1]){
     tracePoly(w,s);
     const g=ctx.createLinearGradient(0,-h.bw*3*s,0,h.bw*s);
-    g.addColorStop(0,rgba(h.edge,.95));g.addColorStop(1,rgba(h.dark,1));
+    g.addColorStop(0,rgba(h.edge,1));g.addColorStop(1,rgba(h.dark,1));
     ctx.fillStyle=g;ctx.fill();
     /* та же пара, что у корпуса: тёмная кромка снаружи, светлый кант внутри */
     ctx.strokeStyle=rgba(h.dark,1);ctx.lineWidth=.5;ctx.stroke();
@@ -1444,8 +1580,15 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.lineTo(n.x+n.l*.28,y-n.r);ctx.lineTo(n.x-n.l*.5,y-n.r);
     ctx.lineTo(n.x-n.l*.5,y+n.r);ctx.lineTo(n.x+n.l*.28,y+n.r);
     ctx.lineTo(n.x+n.l*.5,y+n.r*.45);ctx.closePath();
+    /* ── агрегат темнее корпуса ──
+       Гондола была того же тона, что борт, и корабль читался вырезанным из
+       одного листа. На всех листах, по которым это рисуется, машина ТЕМНЕЕ
+       обшивки: графит против кости. Светлая только верхняя грань — там, где
+       на неё падает свет. Один этот сдвиг тона и даёт слоёность. */
     const g=ctx.createLinearGradient(0,y-n.r,0,y+n.r);
-    g.addColorStop(0,rgba(h.lite,.5));g.addColorStop(.4,rgba(h.body,1));g.addColorStop(1,rgba(h.dark,1));
+    g.addColorStop(0,rgba(mixc(h.iron,[255,255,255],.5),1));
+    g.addColorStop(.35,rgba(mixc(h.iron,[255,255,255],.12),1));
+    g.addColorStop(1,rgba(mixc(h.iron,[0,0,0],.45),1));
     ctx.fillStyle=g;ctx.fill();
     /* обвод гондолы: тонкий и непрозрачный, тем же приёмом, что и боксы */
     ctx.strokeStyle=rgba(mixc(h.col,[6,10,17],.4),1);ctx.lineWidth=.45;ctx.stroke();
@@ -1461,19 +1604,53 @@ function drawHull(id,thrusting,braking,lvl,bank){
   /* ── корпус ── */
   tracePoly(h.poly);
   const bg=ctx.createLinearGradient(0,-h.bw*1.25,0,h.bw*1.25);
-  bg.addColorStop(0,rgba(h.lite,.55));
+  /* ── плотность ──
+     На крупном плане корабль просвечивал насквозь: гондола, крыло и бокс
+     держали альфу меньше единицы, и сквозь навеску читался корпус. Ни один
+     из листов, по которым это рисуется, не знает полупрозрачного металла:
+     деталь либо закрывает то, что под ней, либо её нет. Все заливки корпуса
+     и навески теперь непрозрачны, а глубину даёт тень и тон, а не просвет. */
+  bg.addColorStop(0,rgba(h.lite,1));
   bg.addColorStop(.26,rgba(h.body,1));
   bg.addColorStop(.62,rgba(h.dark,1));
-  bg.addColorStop(1,rgba(h.edge,.9));
+  bg.addColorStop(1,rgba(h.edge,1));
   ctx.fillStyle=bg;ctx.fill();
   ctx.save();ctx.clip();
   /* окраска: продольная полоса */
   const P=h.prof,S1=h.stripe;
   const i0=Math.floor(S1.from*(P.length-1)),i1=Math.ceil(S1.to*(P.length-1));
+  /* акцент лежит по БОРТУ, а не по хребту: осевая полоса на виде сверху —
+     это полоса на спине, её никто так не красит. Красят борт, потому что
+     борт видно с земли и с соседнего корабля */
+  const sa=h.yac?S1.a:.60, sb=h.yac?S1.b:.90;
   ctx.beginPath();
-  for(let i=i0;i<=i1;i++)ctx.lineTo(P[i][0],-P[i][1]*S1.a);
-  for(let i=i1;i>=i0;i--)ctx.lineTo(P[i][0],-P[i][1]*S1.b);
-  ctx.closePath();ctx.fillStyle=rgba(h.col,.2);ctx.fill();
+  for(let i=i0;i<=i1;i++)ctx.lineTo(P[i][0],-P[i][1]*sa);
+  for(let i=i1;i>=i0;i--)ctx.lineTo(P[i][0],-P[i][1]*sb);
+  /* ── акцентная панель ──
+     На костяном борту цвет владельца работает не заливкой, а ЗАПЛАТОЙ: одна
+     панель другого тона с тёмной окантовкой, как крашеный лист на белом
+     грунте. Прежняя полупрозрачная полоса в .2 просто мылила борт. */
+  ctx.closePath();ctx.fillStyle=rgba(h.accent,h.yac?.2:1);ctx.fill();
+  if(!h.yac){
+    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.4;ctx.stroke();
+    /* та же панель с другого борта: борт красят с обеих сторон */
+    ctx.beginPath();
+    for(let i=i0;i<=i1;i++)ctx.lineTo(P[i][0],P[i][1]*sa);
+    for(let i=i1;i>=i0;i--)ctx.lineTo(P[i][0],P[i][1]*sb);
+    ctx.closePath();ctx.fillStyle=rgba(h.accent,1);ctx.fill();
+    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.4;ctx.stroke();
+    /* и вторая, короткая, у самой кормы: так метят машинное отделение */
+    const ax0=lerp(h.tail,h.nose,.06), ax1=lerp(h.tail,h.nose,.20);
+    ctx.fillStyle=rgba(mixc(h.accent,[0,0,0],.2),.8);
+    ctx.beginPath();
+    ctx.moveTo(ax0,-profW(P,ax0)*.9);ctx.lineTo(ax1,-profW(P,ax1)*.9);
+    ctx.lineTo(ax1,-profW(P,ax1)*.44);ctx.lineTo(ax0,-profW(P,ax0)*.44);
+    ctx.closePath();ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(ax0,profW(P,ax0)*.9);ctx.lineTo(ax1,profW(P,ax1)*.9);
+    ctx.lineTo(ax1,profW(P,ax1)*.44);ctx.lineTo(ax0,profW(P,ax0)*.44);
+    ctx.closePath();ctx.fill();
+  }
   /* панельные рёбра */
   ctx.strokeStyle="rgba(0,0,0,.34)";ctx.lineWidth=.75;
   for(const i of h.ribs){
@@ -1495,24 +1672,38 @@ function drawHull(id,thrusting,braking,lvl,bank){
      быть детализирован металл: разнотоном листов, швами между ними, рядами
      заклёпок по шву и парой люков. Тонкая линия плюс фактура читается
      аккуратнее толстой линии без фактуры. */
-  const np=4+((h.seed>>>6)&3);
+  /* ── обшивка плитами ──
+     Корабль собирают из панелей, и на любом честном виде сверху это первое,
+     что видно: сетка плит с тёмными стыками, разнотон партий, ряд крепежа по
+     шву. Прежний вариант делал только поперечные листы и вполсилы (разнотон
+     в .09), отчего борт читался крашеной жестью. Плита теперь двумерная —
+     стык и поперёк, и вдоль, — а разнотон вдвое сильнее: именно он даёт
+     ощущение, что корпус СОБРАН, а не отлит. */
+  const np=5+((h.seed>>>6)&3);
   if(h.lux)drawLuxeSkin(h);
   else for(let k=0;k<np;k++){
     const t0=k/np, t1=(k+1)/np;
     const x0=lerp(h.nose,h.tail,t0), x1=lerp(h.nose,h.tail,t1);
-    const hh=hashi(k,h.seed,0x5A1E);
-    /* лист чуть светлее или темнее соседнего: партия обшивки была разной */
-    const a=((hh&7)/7-.5)*.09;
-    ctx.fillStyle=(a>0?"rgba(255,255,255,":"rgba(0,0,0,")+Math.abs(a).toFixed(3)+")";
-    ctx.fillRect(Math.min(x0,x1),-h.bw*1.3,Math.abs(x1-x0),h.bw*2.6);
+    const rows=2+(hashi(k,h.seed,0x31B)&1);        // сколько плит поперёк борта
+    for(let j=0;j<rows;j++){
+      const hh=hashi(k*7+j,h.seed,0x5A1E);
+      const y0=-h.bw*1.3+j*(h.bw*2.6/rows), yh=h.bw*2.6/rows;
+      const a=((hh&15)/15-.5)*.19;
+      ctx.fillStyle=(a>0?"rgba(255,255,255,":"rgba(0,0,0,")+Math.abs(a).toFixed(3)+")";
+      ctx.fillRect(Math.min(x0,x1),y0,Math.abs(x1-x0),yh);
+      if(j){                                        // продольный стык плит
+        ctx.fillStyle="rgba(0,0,0,.26)";
+        ctx.fillRect(Math.min(x0,x1),y0-.3,Math.abs(x1-x0),.6);
+      }
+    }
     /* шов между листами: тёмная нить со светлой кромкой снизу */
-    ctx.fillStyle="rgba(0,0,0,.30)";ctx.fillRect(x1-.35,-h.bw*1.3,.7,h.bw*2.6);
-    ctx.fillStyle="rgba(255,255,255,.07)";ctx.fillRect(x1+.35,-h.bw*1.3,.45,h.bw*2.6);
+    ctx.fillStyle="rgba(0,0,0,.38)";ctx.fillRect(x1-.4,-h.bw*1.3,.8,h.bw*2.6);
+    ctx.fillStyle="rgba(255,255,255,.10)";ctx.fillRect(x1+.4,-h.bw*1.3,.5,h.bw*2.6);
     /* заклёпки по шву: точки в полпикселя — на расстоянии они дают зерно,
        вблизи читаются рядом крепежа */
-    ctx.fillStyle="rgba(0,0,0,.22)";
+    ctx.fillStyle="rgba(0,0,0,.3)";
     const pw2=profW(P,x1);
-    for(let y=-pw2+1.4;y<pw2-1;y+=2.2)ctx.fillRect(x1-1.5,y,.6,.6);
+    for(let y=-pw2+1.2;y<pw2-.8;y+=1.7)ctx.fillRect(x1-1.4,y,.5,.5);
   }
   /* ── экранная изоляция ──
      Кусок корпуса у кормы укрыт мятой фольгой: тёплое матовое пятно с
@@ -1548,6 +1739,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.strokeStyle="rgba(255,255,255,.10)";ctx.lineWidth=.5;
     ctx.strokeRect(hx-hs,hy-hs*.6,hs*2,hs*1.2);
   }
+  if(!h.yac)drawStencils(h);
   /* навеска */
   for(const g of h.greeb){
     ctx.fillStyle=g[4]?"rgba(255,255,255,.13)":"rgba(0,0,0,.4)";
@@ -1586,9 +1778,11 @@ function drawHull(id,thrusting,braking,lvl,bank){
   for(const p of h.pods)for(const s of [1,-1]){
     const y=p[1]*s-(s>0?0:p[3]), w=p[2], hgt=p[3];
     const g=ctx.createLinearGradient(0,y,0,y+hgt);
-    g.addColorStop(0,rgba(h.body,1));g.addColorStop(1,rgba(h.dark,1));
+    g.addColorStop(0,rgba(mixc(h.iron,[255,255,255],.18),1));
+    g.addColorStop(1,rgba(mixc(h.iron,[0,0,0],.5),1));
     ctx.fillStyle=g;ctx.fillRect(p[0],y,w,hgt);
-    ctx.fillStyle=rgba(h.lite,.5);ctx.fillRect(p[0],y,w,.45);          // кромка света
+    ctx.fillStyle=rgba(mixc(h.iron,[255,255,255],.55),1);
+    ctx.fillRect(p[0],y,w,.45);                                        // кромка света
     ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(p[0],y+hgt-.45,w,.45); // теневая
     ctx.strokeStyle=rgba(mixc(h.col,[6,10,17],.45),1);ctx.lineWidth=.45;
     ctx.strokeRect(p[0]+.22,y+.22,w-.44,hgt-.44);
@@ -1611,6 +1805,22 @@ function drawHull(id,thrusting,braking,lvl,bank){
   cg.addColorStop(0,"rgba(180,240,255,.55)");cg.addColorStop(1,"rgba(120,200,230,0)");
   ctx.fillStyle=cg;
   ctx.beginPath();ctx.ellipse(cp.x,0,cp.rx*.86,cp.ry*.72,0,0,TAU);ctx.fill();
+  /* ── переплёт фонаря ──
+     Голубой овал читался глазом, приклеенным к носу. У кабины есть переплёт:
+     две-три поперечные рамы и продольный гребень. Стекло от этого перестаёт
+     быть каплей краски и становится остеклением, за которым сидят. */
+  if(!h.yac){
+    ctx.strokeStyle="rgba(12,20,28,.85)";ctx.lineWidth=.45;
+    for(let k=1;k<3;k++){
+      const x=cp.x-cp.rx+cp.rx*2*k/3;
+      const yr=cp.ry*Math.sqrt(Math.max(0,1-Math.pow((x-cp.x)/cp.rx,2)));
+      ctx.beginPath();ctx.moveTo(x,-yr);ctx.lineTo(x,yr);ctx.stroke();
+    }
+    ctx.beginPath();ctx.moveTo(cp.x-cp.rx,0);ctx.lineTo(cp.x+cp.rx,0);ctx.stroke();
+    ctx.strokeStyle="rgba(255,255,255,.22)";ctx.lineWidth=.35;
+    ctx.beginPath();ctx.moveTo(cp.x-cp.rx*.5,-cp.ry*.5);ctx.lineTo(cp.x+cp.rx*.6,-cp.ry*.2);
+    ctx.stroke();
+  }
   }
   /* ── бортовые огни ── */
   /* Огни ставились по законцовке первого крыла, а при её отсутствии — по

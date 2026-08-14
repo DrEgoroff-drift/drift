@@ -28092,30 +28092,28 @@ window.dbg=dbg;
 setTimeout(function(){
   G.running=false;
   var i=document.getElementById("intro"); if(i)i.style.display="none";
-  var cls=Object.keys(HULL_CLASS);
-  var COLS=6,CELL=190,W2=CELL*COLS+130,H2=CELL*cls.length,dpr=2;
+  var cls=["scout","courier","hauler","miner","warship","survey"];
+  var COLS=3,CELL=430,W2=CELL*COLS,H2=CELL*2,dpr=2;
   var cv=document.createElement("canvas");cv.width=W2*dpr;cv.height=H2*dpr;
   cv.style.cssText="position:fixed;left:0;top:0;z-index:99999;width:"+W2+"px;height:"+H2+"px";
   document.body.appendChild(cv);
   var c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);
   c.fillStyle="#0a0d12";c.fillRect(0,0,W2,H2);
   var old=ctx;ctx=c;
-  cls.forEach(function(k,ri){
-    c.fillStyle="#8fa6b4";c.font="11px ui-monospace,monospace";c.textAlign="left";
-    c.fillText(HULL_CLASS[k].ru.toUpperCase(),8,ri*CELL+CELL/2);
-    for(var n=0;n<COLS;n++){
-      var id="stand_"+k+"_"+n;
-      NPC_SHIPS[id]={name:id,seed:(n*7919+ri*104729)>>>0,hcls:k,col:"#9fd8ff",
-        hull:100,cargo:60,fuel:100,thr:1,cls:k};
-      delete HULL_CACHE[id];
-      c.save();c.translate(130+n*CELL+CELL/2,ri*CELL+CELL/2);
-      c.scale(2.1,2.1);c.rotate(-Math.PI/2);
-      drawHull(id,false,false,0,0);c.restore();
-      c.strokeStyle="rgba(120,150,175,.10)";
-      c.strokeRect(130+n*CELL+.5,ri*CELL+.5,CELL-1,CELL-1);
-    }
+  cls.forEach(function(k,n){
+    var id="zoom_"+k;
+    NPC_SHIPS[id]={name:id,seed:(n*7919+31)>>>0,hcls:k,col:"#9fd8ff",
+      hull:100,cargo:60,fuel:100,thr:1,cls:k,tier:["line","work","rare","legend","proto","line"][n]};
+    delete HULL_CACHE[id];
+    var cx=(n%COLS)*CELL+CELL/2, cy=((n/COLS)|0)*CELL+CELL/2;
+    c.save();c.translate(cx,cy);c.scale(7,7);c.rotate(-Math.PI/2);
+    drawHull(id,false,false,0,0);c.restore();
+    c.fillStyle="#7d94a4";c.font="11px ui-monospace,monospace";c.textAlign="left";
+    c.fillText(HULL_CLASS[k].ru.toUpperCase(),(n%COLS)*CELL+10,((n/COLS)|0)*CELL+18);
+    c.strokeStyle="rgba(120,150,175,.10)";
+    c.strokeRect((n%COLS)*CELL+.5,((n/COLS)|0)*CELL+.5,CELL-1,CELL-1);
   });
   ctx=old;
-  try{fetch("/hulls.png",{method:"POST",body:cv.toDataURL("image/png")});}catch(e){}
+  try{fetch("/hullzoom.png",{method:"POST",body:cv.toDataURL("image/png")});}catch(e){}
 },1400);
 </script></body></html>
