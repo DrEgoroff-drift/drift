@@ -55,8 +55,31 @@ flora and fauna, a living camera, station modules, weather.
 
 ### Remaining, by descending payoff
 
-1. **The mine from inside.** The cave is done (M56), the mine is not: it is still just face
-   material. `23-mode-dig`.
+1. **The mine from inside** — *first pass done, not finished.* `23-mode-dig`. The entry above was
+   stale: strata, veins, the void path and the wall edges had grown in since. What the stand
+   (`docs/mkmine.ps1` → `docs/shots/mine.png`) showed instead, in words:
+
+   - ~~**the lamp lit through solid rock**~~ — fixed. The cone spilled past the edge of the
+     working and lit half a screen of strata: underground, that is a lie in the loudest place in
+     frame. Cone and dust are now clipped to the void;
+   - ~~**the working was a black rectangle**~~ — fixed. There is a floor now where the drift ends
+     in rock: a band of spoil, broken stone lying coarser against the walls, a contact shadow and
+     a hair of light along the edge. Plus a vertical gradient inside the void, because air has a
+     top and a bottom;
+   - ~~**light that landed nowhere**~~ — fixed. A pool on the floor in front of the man and a close
+     bounce around him: light that lights nothing is a film over the frame, not light;
+   - ~~**timber was an orange bracket, the ladder a zip fastener**~~ — fixed. The set is two posts
+     and a cap with corner braces, leaning slightly with age, grain on the posts; it stands in the
+     drifts too, and (after a second fault, that the "roof above is solid" test wiped it out of the
+     shaft entirely) in the shaft as well. The ladder is stiles nailed to the wall, four-metre
+     lengths with a clamp at the joint and a shadow behind it.
+
+   **Faults still open, by descending payoff:** the rock near the cutting face still has almost no
+   grain — the chips and cutter pocks are there but drown; the far end of a drift reads as flat
+   black, with no falloff along the axis of the working; the ore body glows through the rock as a
+   shapeless blue blob unrelated to the stone around it; long stretches of shaft are monotonous —
+   same ladder, same set, no landings, niches or ventilation; and nothing in a mine says work has
+   happened here — no rails, no tub, no tool left against a wall.
 2. **Ships by class and faction.** Hulls exist (`03-ships`, `hullOf`/`drawHull`), but the
    silhouette doesn't say who you're looking at: ore hauler, frigate, yacht, surveyor. Only
    pirates fly in a system, and they all look alike.
