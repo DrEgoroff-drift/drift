@@ -200,8 +200,20 @@ flora and fauna, a living camera, station modules, weather.
 
    **Not done:** faction. There is still one visual language for everybody, and in a system only
    pirates fly. Per the queue below, factions come after stations.
-3. **Cantinas should differ.** A pirate dive, a miners' tavern, an upper-tier lounge: light,
-   crowd, music. Right now there is one for the whole galaxy (`26-ui-station`, `renderCantina`).
+3. **Cantinas should differ** — *in progress; the entry above was stale.* The hall stopped being a
+   list long ago: it is a room (`27d-ui-cantina`, `drawCantinaRoom`) with palette, sign, window and
+   props per station type. What the stand (`docs/mkcantroom.ps1` → `docs/shots/cantina-types.png`)
+   showed instead: five rooms differing by a sign, a view and an accent colour, and **lit
+   identically** — three lamps at equal spacing, the same cone in every one of them.
+
+   - ~~**one lighting plan for every bar**~~ — fixed. Light is now a layout, not decoration: how
+     many lamps, what colour, how wide the cone and what happens between them. Trade has four and
+     even; the works has two dirty yellow ones with visible black gaps; the yard's hang on brackets
+     and sway; the science hall has five cold narrow ones and no proper cones, because it is a rest
+     room and not a bar; the outpost has exactly one, and half the hall is dark.
+   - **still open:** the crowd is the same two figures everywhere — a works hall after a shift
+     should be full and an outpost nearly empty; and the layout never changes (the same counter and
+     the same wall of bottles), where an outpost would have crates and the science hall flasks.
 4. **New world types:** crystalline, jungle, metallic, ruin. The machinery is already ready to
    take them — `TYPES` (02-world), `PROFILE`, `RELIEF_MIX` (07-planet), `GEO_TPL` (18b),
    `WEATHER_BY_TYPE` (19d), `POI_KINDS.on` (20a), flora and fauna leanings (20-life).

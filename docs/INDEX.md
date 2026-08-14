@@ -177,16 +177,16 @@ camOffset                    src/19c-light.js:76
 camStep                      src/19c-light.js:62
 canPay                       src/21a-mode-base.js:43
 CANT_STYLE                   src/27d-ui-cantina.js:15
-cantFigure                   src/27d-ui-cantina.js:221
+cantFigure                   src/27d-ui-cantina.js:251
 cantinaPool                  src/12c-mgr-core.js:258
 cantinaScene                 src/27c-ui-hq.js:125
-cantProps                    src/27d-ui-cantina.js:321
+cantProps                    src/27d-ui-cantina.js:351
 cantRoomBody                 src/27d-ui-cantina.js:45
-cantSeats                    src/27d-ui-cantina.js:213
+cantSeats                    src/27d-ui-cantina.js:243
 cantSel                      src/27c-ui-hq.js:124
 cantStyle                    src/27d-ui-cantina.js:27
-cantTables                   src/27d-ui-cantina.js:409
-cantView                     src/27d-ui-cantina.js:262
+cantTables                   src/27d-ui-cantina.js:439
+cantView                     src/27d-ui-cantina.js:292
 capOf                        src/05-parts.js:101
 capUsed                      src/05-parts.js:203
 CAVE_W                       src/22-mode-cave.js:5
@@ -376,7 +376,7 @@ drawGround                   src/19-mode-landing.js:94
 drawHomeBuilding             src/21c-built.js:134
 drawHomeRoom                 src/27e-ui-home.js:42
 drawHqRoom                   src/27f-hq-room.js:22
-drawHull                     src/03-ships.js:1592
+drawHull                     src/03-ships.js:1602
 drawHullMarks                src/03-ships.js:888
 drawLander                   src/19-mode-landing.js:375
 drawLandGear                 src/19-mode-landing.js:349
@@ -393,7 +393,7 @@ drawObelisk                  src/20a-poi.js:437
 drawObserv                   src/20a-poi.js:652
 drawPirate                   src/12i-pirate-hull.js:320
 drawPirateBase               src/24a-mode-raid.js:103
-drawPirateSkin               src/03-ships.js:1564
+drawPirateSkin               src/03-ships.js:1574
 drawPlant                    src/20-life.js:315
 drawPlantAlien               src/20-life.js:167
 drawPOI                      src/20a-poi.js:167
@@ -413,7 +413,7 @@ drawStars                    src/16-flight.js:6
 drawStarSingle               src/16a-space.js:201
 drawStation                  src/17-mode-system.js:551
 drawStationMods              src/17a-station-mod.js:178
-drawStencils                 src/03-ships.js:1466
+drawStencils                 src/03-ships.js:1476
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:84
 drawSurface                  src/21-mode-surface.js:334
@@ -1297,7 +1297,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · ресурсы:1
   · миры:50
 
-## src/03-ships.js · 134 КБ
+## src/03-ships.js · 135 КБ
   · корабли: процедурные корпуса:1
   · лаборатория: сплав двух корпусов:28
   · класс корпуса:162
@@ -1548,7 +1548,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/27c-ui-hq.js · 28 КБ
   · ШТАБ и кантина:1
 
-## src/27d-ui-cantina.js · 25 КБ
+## src/27d-ui-cantina.js · 27 КБ
   · кантина: помещение, а не список:1
 
 ## src/27e-ui-home.js · 43 КБ
