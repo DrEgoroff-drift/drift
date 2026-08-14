@@ -221,9 +221,15 @@ flora and fauna, a living camera, station modules, weather.
      station, and no shelf at all at the outpost — crates stacked one on another with a stencil,
      because nobody freights furniture out there.
 
-   **Still open:** music (the queue asked for light, crowd and music, and only the first two are
-   done — the generative engine is `10-music`, and the hall could lean it warm or thin); and the
-   counter itself is the same length and shape everywhere.
+   - ~~**one tune for every station**~~ — fixed, and it is the third thing the queue asked for.
+     No new track: the scene leans, the way everything leans in this engine — mode, root, tempo
+     and layer weights. The works is low, dark and has a beat, because that is where people drink
+     after a shift; the science hall is thin and nearly bassless; the outpost is one line and a lot
+     of air, since there is nobody to play; the yard keeps a working pulse; the trade hall stays the
+     reference `dock`. It only sounds in the cantina — at the counter the station's music is
+     unchanged (`musicSceneNow`, `10-music`).
+
+   **Still open:** the counter itself is the same length and shape in every hall.
 4. **New world types:** crystalline, jungle, metallic, ruin. The machinery is already ready to
    take them — `TYPES` (02-world), `PROFILE`, `RELIEF_MIX` (07-planet), `GEO_TPL` (18b),
    `WEATHER_BY_TYPE` (19d), `POI_KINDS.on` (20a), flora and fauna leanings (20-life).
