@@ -168,6 +168,26 @@ flora and fauna, a living camera, station modules, weather.
    **Fault caught at 6× and fixed:** the stencilled hull number came out upside down — the hull is
    already drawn rotated nose-forward, so the text had to turn the other way.
 
+   **Fifth pass through tenth — the luxe yacht alone** (`docs/mkyacht.ps1` →
+   `docs/shots/yachts.png`). The complaint that started it: the one hull bought for its look was
+   an arrow wearing a strip of identical yellow windows. What the passes changed, in order:
+   form (long thin body, beam aft of midships, a tail running to a thread), materials (lacquer
+   with metallic grain, teak, brass, pearl and carbon — four surfaces no other hull has), deck
+   zoning and glazing (teak only where a person walks; continuous panorama with light spilling
+   onto the deck), the fittings (spindle nacelles, tender port, name in brass instead of a
+   stencilled number), then a second series over the silhouette: a manta wing grown out of the
+   hull by a strake, nacelles standing **on** the wing with needles forward, and three engine
+   schools with cool thrust.
+
+   **Faults found by looking and fixed inside the same passes:** teak planked the whole ship and
+   read as parquet; the superstructure was measured off half-beam and came out a plank a third of
+   the deck wide; the carbon weave read as gauze in a chequer; the metallic grain read as dust on
+   the bow; the first spindles hung in empty space beside the wing because they were placed by
+   hull coordinate rather than by where the plate actually is.
+
+   **Still open:** the yacht's own docking ring and airlock are the fleet's grey washers, unchanged
+   on a hull where everything else is finished; and the promenade railing barely reads below 3×.
+
    **Not done:** faction. There is still one visual language for everybody, and in a system only
    pirates fly. Per the queue below, factions come after stations.
 3. **Cantinas should differ.** A pirate dive, a miners' tavern, an upper-tier lounge: light,
