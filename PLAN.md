@@ -116,8 +116,42 @@ flora and fauna, a living camera, station modules, weather.
    and with no wings they fell back to ±`bw`\*1.6 — plainly *outside* the hull. On a hauler and a
    yacht two lights hung in empty space beside the ship. They are now computed off the profile.
 
+   **Third pass — form and material, not line weight.** The self-criticism that drove it: these
+   were aeroplanes, not spacecraft. Every hull had nose-wings-nozzles; the hull table said the
+   `Обод` is *"a frame around a drill shaft"* and the silhouette drew a solid teardrop, so either
+   the description or the picture was lying; every nose was pointed, which is a demand made by air
+   and not by vacuum; the whole ship was painted in one `col`, so plating, tank, container,
+   radiator and ceramic were indistinguishable; there was no heat rejection anywhere, though a
+   real ship must have it; nothing said the thing was built by people — no airlock, no handrail,
+   no hull number; and everything was perfectly mirror-symmetric, which reads as a coat of arms
+   rather than a working machine.
+
+   What that turned into:
+
+   - **a wing is now a licence, not a decoration**: only `atm` classes (scout, courier, yacht)
+     have one, because only they land in air. The rest got **radiators** instead — thin dark
+     plates carried out on two struts with a brace, ribbed across so they read as heat rejection
+     rather than as wings;
+   - **blunt noses** for everyone who never enters atmosphere;
+   - **the miner got its frame**: two beams down the sides with cross-ties, so the shaft is
+     visibly inside a cage and the hull table stops lying;
+   - **four materials instead of one paint**: bare `steel` for hardware (containers are somebody
+     else's freight and carry no owner colour at all), `foil` for a patch of crumpled thermal
+     blanket — only on ships that never land, since an entry would strip it — near-black `radm`
+     for radiators, and `cer` held for ceramic. This is what removes the plastic look;
+   - **evidence of people**: an airlock with a handrail, a manipulator arm — both on **one** side
+     only, which is the first asymmetry any of these hulls has had — and a stencilled hull number.
+
+   **Faults found on the stand during the pass and fixed in it:** the thermal blanket first landed
+   in the same place on every hull at full saturation and became the loudest thing in frame (now
+   seed-placed, muted, and denied to landers); the frigate's barrels were a line with a ball on
+   the end and read as mushrooms on stalks (now breech, tapering tube and a muzzle swell);
+   radiators hung off a single strut like combs in mid-air.
+
    **Not done:** faction. There is still one visual language for everybody, and in a system only
-   pirates fly. Per the queue below, factions come after stations.
+   pirates fly. Per the queue below, factions come after stations. Also still open: the ships are
+   pure top-down with no sense of height — nothing casts a shadow onto the hull, so a nacelle and
+   a painted rectangle sit in the same plane.
 3. **Cantinas should differ.** A pirate dive, a miners' tavern, an upper-tier lounge: light,
    crowd, music. Right now there is one for the whole galaxy (`26-ui-station`, `renderCantina`).
 4. **New world types:** crystalline, jungle, metallic, ruin. The machinery is already ready to
