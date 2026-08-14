@@ -20062,8 +20062,53 @@ function drawDig(){
   ctx.restore();
   /* ── выработка ── */
   const VP=digVoidPath(D,camx,camy);
-  ctx.fillStyle="rgba(3,5,10,.90)";
-  ctx.fill(VP);
+  /* Была залита почти чёрным — ход читался дырой в бумаге, и человек в нём
+     висел в пустоте. Пустота под землёй не чёрная: это воздух над полом, и у
+     неё есть верх и низ. Отсюда вертикальный градиент внутри хода. */
+  ctx.save();ctx.clip(VP);
+  const vg=ctx.createLinearGradient(0,-camy%DIG_CELL,0,H);
+  vg.addColorStop(0,"rgba(4,5,8,.94)");
+  vg.addColorStop(1,"rgba(9,8,7,.88)");
+  ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+  ctx.restore();
+  /* ── зерно на обнажённой породе ──
+     Пласты дают цвет, `planetMat` — общий шум по всему кадру, и вблизи камень
+     оставался заливкой: стена не отличалась от фона. Свежий скол виден на
+     кромке — сколы, выщербины и следы резака, — и рисуется он СНАРУЖИ хода:
+     клип по «всё, кроме выработки» (evenodd поверх полного кадра). */
+  ctx.save();
+  const OUT=new Path2D();
+  OUT.rect(0,0,W,H);OUT.addPath(VP);
+  ctx.clip(OUT,"evenodd");
+  for(let row=r0;row<=r1;row++)for(let col=-DIG_HALF;col<=DIG_HALF;col++){
+    const cell=D.cells[col+","+row];
+    if(!cell||!cell.dug)continue;
+    const x=col*DIG_CELL-camx, y=row*DIG_CELL-camy;
+    const h0=hashi(col,row,0x5C01);
+    /* свежий скол светлее породы, и чем ближе к человеку, тем он заметнее:
+       дальний конец штрека уже присыпало пылью */
+    const near=clamp(1-Math.hypot(col-D.col,row-D.row)/9,0,1);
+    if(near<=.02)continue;
+    ctx.fillStyle="rgba(214,206,188,"+(.05+near*.09).toFixed(3)+")";
+    for(let i=0;i<7;i++){
+      const hh=hashi(col*31+i,row*17+i*7,0x9F1C);
+      const ang=(hh&3), len=3+((hh>>>2)&5);
+      const ox=(hh>>>5&31)/31*(DIG_CELL+8)-4, oy=(hh>>>10&31)/31*(DIG_CELL+8)-4;
+      ctx.fillRect(x+ox,y+oy,ang%2?len:1.4,ang%2?1.4:len);
+    }
+    /* выщербины от резака: тёмные точки со светлой нижней губой */
+    for(let i=0;i<4;i++){
+      const hh=hashi(col*13+i*5,row*29+i,0xB3E7);
+      const ox=(hh&31)/31*(DIG_CELL+8)-4, oy=((hh>>>6)&31)/31*(DIG_CELL+8)-4;
+      const rr=1+((hh>>>12)&2)*.7;
+      ctx.fillStyle="rgba(0,0,0,"+(.16+near*.18).toFixed(3)+")";
+      ctx.beginPath();ctx.arc(x+ox,y+oy,rr,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(226,218,200,"+(.05+near*.08).toFixed(3)+")";
+      ctx.fillRect(x+ox-rr*.7,y+oy+rr*.5,rr*1.4,.9);
+    }
+    void h0;
+  }
+  ctx.restore();
   /* Кромку нельзя обводить целиком: объединённый путь хранит контуры всех
      клеток, и обводка вылезает волосками поперёк хода через каждые тридцать
      пикселей — та же сетка, только светящаяся. Поэтому грань рисуется только
@@ -20087,37 +20132,117 @@ function drawDig(){
       ctx.fillStyle="rgba(185,220,240,.10)";ctx.fillRect(x-4,y-4,1.2,DIG_CELL+8);}
     if(!dug(col+1,row)){wall(x+DIG_CELL-4,y-4,8,DIG_CELL+8,-8,0);
       ctx.fillStyle="rgba(185,220,240,.10)";ctx.fillRect(x+DIG_CELL+2.8,y-4,1.2,DIG_CELL+8);}
+    /* ── пол ──
+       Главное, чего не хватало: человек стоял в чёрном прямоугольнике. Пол —
+       это место, где ход кончается породой снизу: полоса осыпи, отбитая
+       порода под ногами и контактная тень у стен. Без него нет ни низа,
+       ни верха, ни масштаба. */
+    if(!dug(col,row+1)){
+      const fy=y+DIG_CELL-3;
+      const fg=ctx.createLinearGradient(0,fy-7,0,fy+6);
+      fg.addColorStop(0,"rgba(0,0,0,0)");
+      fg.addColorStop(1,"rgba(96,86,70,.42)");
+      ctx.fillStyle=fg;ctx.fillRect(x-4,fy-7,DIG_CELL+8,13);
+      /* отбитая порода: куски крупнее у стен, мельче посередине — так ложится
+         то, что откалывают и сгребают к краям */
+      for(let i=0;i<6;i++){
+        const hh=hashi(col*41+i,row*23,0x71B0);
+        const ox=(hh&63)/63*DIG_CELL, s=1.2+((hh>>>7)&3)*.8;
+        const edge=Math.abs(ox-DIG_CELL/2)/(DIG_CELL/2);
+        ctx.fillStyle="rgba("+(118+((hh>>>9)&15))+","+(106+((hh>>>13)&15))+",88,"+
+          (.22+edge*.26).toFixed(2)+")";
+        ctx.beginPath();
+        ctx.moveTo(x+ox-s,fy+3);ctx.lineTo(x+ox-s*.3,fy+3-s*1.1);
+        ctx.lineTo(x+ox+s*.8,fy+3-s*.4);ctx.lineTo(x+ox+s*.5,fy+3);
+        ctx.closePath();ctx.fill();
+      }
+      /* волосок света по кромке пола: он ловит фонарь и отделяет пол от стены */
+      ctx.fillStyle="rgba(206,196,172,.10)";
+      ctx.fillRect(x-4,fy-7.4,DIG_CELL+8,1);
+    }
   }
   ctx.restore();
-  /* крепь: рама через каждые четыре метра ствола. Она же даёт масштаб —
-     без неё ход одинаков на любой глубине */
-  for(let row=r0;row<=r1;row++){
-    if(row%4)continue;
-    const cell=D.cells["0,"+row];
+  /* ── крепь ──
+     Была рамкой-скобкой в одном только стволе: читалась как оранжевый контур
+     поверх лестницы, а не как то, чем держат потолок. Крепь — это две стойки
+     и верхняк на них, с подхватом; ставят её и в стволе, и в штреках, и
+     ставят там, где есть что держать, — под сплошной кровлей. Стойка стоит
+     на полу, если пол есть, иначе уходит за кадр клетки: подпёртый потолок
+     без низа читается неправильно. */
+  const timber=(x,y,seedv)=>{
+    const h=hashi(seedv,0x7100,3);
+    const lean=((h&7)/7-.5)*1.6;                 // рама повело за годы
+    const w0=1.9+((h>>>3)&3)*.35, top=y+2.2;
+    const post=(px,dir)=>{
+      ctx.fillStyle="rgba(122,92,58,.86)";
+      ctx.beginPath();
+      ctx.moveTo(px,y+DIG_CELL);ctx.lineTo(px+w0,y+DIG_CELL);
+      ctx.lineTo(px+w0+dir*lean,top);ctx.lineTo(px+dir*lean,top);
+      ctx.closePath();ctx.fill();
+      /* волокно: две светлые нити вдоль стойки, иначе брус — палка */
+      ctx.fillStyle="rgba(198,162,110,.16)";
+      ctx.fillRect(px+w0*.3,top+2,.8,DIG_CELL-4);
+      ctx.fillStyle="rgba(0,0,0,.28)";
+      ctx.fillRect(px+w0-.7,top+1,.7,DIG_CELL-2);
+    };
+    post(x-2.4,1);post(x+DIG_CELL+.6,-1);
+    /* верхняк с напуском в обе стороны и тень под ним */
+    ctx.fillStyle="rgba(138,104,64,.9)";
+    ctx.fillRect(x-5,top-2.6,DIG_CELL+10,4.4);
+    ctx.fillStyle="rgba(214,182,132,.18)";
+    ctx.fillRect(x-5,top-2.6,DIG_CELL+10,1);
+    ctx.fillStyle="rgba(0,0,0,.34)";
+    ctx.fillRect(x-5,top+1.8,DIG_CELL+10,2.2);
+    /* подхваты в углах: косынки, по ним крепь и опознаётся */
+    ctx.fillStyle="rgba(120,90,56,.8)";
+    for(const s of [-1,1]){
+      const px=s<0?x-1.6:x+DIG_CELL+1.6;
+      ctx.beginPath();
+      ctx.moveTo(px,top+2);ctx.lineTo(px+s*5.5,top+2);ctx.lineTo(px,top+8);
+      ctx.closePath();ctx.fill();
+    }
+  };
+  for(let row=r0;row<=r1;row++)for(let col=-DIG_HALF;col<=DIG_HALF;col++){
+    const cell=D.cells[col+","+row];
     if(!cell||!cell.dug)continue;
-    const x=-camx, y=row*DIG_CELL-camy;
-    ctx.strokeStyle="rgba(150,116,74,.55)";ctx.lineWidth=2.4;
-    ctx.beginPath();
-    ctx.moveTo(x-2,y+DIG_CELL);ctx.lineTo(x-2,y+2);
-    ctx.lineTo(x+DIG_CELL+2,y+2);ctx.lineTo(x+DIG_CELL+2,y+DIG_CELL);
-    ctx.stroke();
-    ctx.strokeStyle="rgba(230,200,160,.16)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(x-1,y+3.4);ctx.lineTo(x+DIG_CELL+1,y+3.4);ctx.stroke();
+    /* Первый заход пропускал клетку, если сверху уже выкопано, — и в стволе,
+       где сверху выкопано всегда, крепи не осталось вовсе. Держат не только
+       кровлю: в стволе рама распирает стенки. Ставим в стволе через четыре
+       метра, в штреке — через четыре клетки от нуля, чтобы ряды не сбивались
+       в кучу на пересечении. */
+    if(col===0?(row%4):(col%4))continue;
+    timber(col*DIG_CELL-camx,row*DIG_CELL-camy,col*73856+row*19349);
   }
-  /* лесенка в вертикальном ходе */
+  /* ── лестница ──
+     Шла сплошной ровной строчкой через всю глубину и читалась застёжкой.
+     Лестница — это тетивы, прибитые к стене, звенья по четыре метра со
+     стыком внахлёст, и тень на породе за ней. */
   for(let row=r0;row<=r1;row++)for(let col=-DIG_HALF;col<=DIG_HALF;col++){
     const cell=D.cells[col+","+row];
     if(!cell||!cell.dug||!cell.ladder)continue;
     const x=col*DIG_CELL-camx,y=row*DIG_CELL-camy;
-    ctx.strokeStyle="rgba(196,150,92,.62)";ctx.lineWidth=1.4;
-    ctx.beginPath();
-    ctx.moveTo(x+DIG_CELL*.36,y);ctx.lineTo(x+DIG_CELL*.36,y+DIG_CELL);
-    ctx.moveTo(x+DIG_CELL*.64,y);ctx.lineTo(x+DIG_CELL*.64,y+DIG_CELL);
-    for(let k=1;k<=3;k++){
-      const ry=y+DIG_CELL*k/4;
-      ctx.moveTo(x+DIG_CELL*.36,ry);ctx.lineTo(x+DIG_CELL*.64,ry);
+    const h=hashi(col,row,0x1ADD);
+    const off=((h&7)/7-.5)*1.4;                   // звено повело
+    const L=x+DIG_CELL*.34+off, R=x+DIG_CELL*.62+off;
+    /* тень на стене за лестницей: без неё она приклеена к породе */
+    ctx.fillStyle="rgba(0,0,0,.30)";
+    ctx.fillRect(L+2.2,y,R-L,DIG_CELL);
+    ctx.fillStyle="rgba(150,112,66,.85)";
+    ctx.fillRect(L,y,1.8,DIG_CELL);ctx.fillRect(R,y,1.8,DIG_CELL);
+    ctx.fillStyle="rgba(206,168,112,.20)";
+    ctx.fillRect(L,y,.7,DIG_CELL);ctx.fillRect(R,y,.7,DIG_CELL);
+    for(let k=0;k<4;k++){
+      const ry=y+DIG_CELL*(k+.5)/4;
+      ctx.fillStyle="rgba(164,124,74,.9)";
+      ctx.fillRect(L,ry,R-L+1.8,1.7);
+      ctx.fillStyle="rgba(0,0,0,.3)";
+      ctx.fillRect(L,ry+1.7,R-L+1.8,.9);
     }
-    ctx.stroke();
+    /* стык звеньев: каждые четыре метра тетивы перехвачены хомутом */
+    if(row%4===0){
+      ctx.fillStyle="rgba(96,104,112,.8)";
+      ctx.fillRect(L-1.4,y+1.5,R-L+4.6,2.2);
+    }
   }
   /* забой под резаком: подсветка и полоса проходки */
   if(D.target){
@@ -20155,7 +20280,11 @@ function drawDig(){
     g.addColorStop(1,"rgba(0,1,4,.80)");
     ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
   }
-  ctx.save();ctx.globalCompositeOperation="lighter";
+  /* Фонарь светил СКВОЗЬ породу: конус уходил за кромку выработки и подсвечивал
+     пласты на полэкрана — под землёй это ложь в самом заметном месте кадра.
+     Свет живёт внутри хода, поэтому и конус, и пыль клипуются по выработке. */
+  ctx.save();ctx.clip(VP);
+  ctx.globalCompositeOperation="lighter";
   const f=D.face||1;
   const lg=ctx.createLinearGradient(sx,sy,sx+f*170,sy);
   lg.addColorStop(0,"rgba(190,215,235,.13)");
@@ -20163,6 +20292,20 @@ function drawDig(){
   ctx.fillStyle=lg;
   ctx.beginPath();ctx.moveTo(sx,sy-12);ctx.lineTo(sx+f*190,sy-64);
   ctx.lineTo(sx+f*190,sy+52);ctx.closePath();ctx.fill();
+  /* Пятно на полу и отсвет вокруг человека. Пока свет был только конусом,
+     ход оставался чёрным даже под ногами: фонарь светил в воздух. Свет,
+     который никуда не ложится, — не свет, а плёнка на кадре. */
+  const fl=ctx.createRadialGradient(sx+f*26,sy+16,4,sx+f*26,sy+16,130);
+  fl.addColorStop(0,"rgba(214,206,178,.20)");
+  fl.addColorStop(.5,"rgba(180,180,160,.07)");
+  fl.addColorStop(1,"rgba(140,160,180,0)");
+  ctx.fillStyle=fl;
+  ctx.beginPath();ctx.ellipse(sx+f*26,sy+16,130,42,0,0,TAU);ctx.fill();
+  /* близкий отсвет: породу у самого человека видно и без фонаря — отражённым */
+  const am=ctx.createRadialGradient(sx,sy,2,sx,sy,84);
+  am.addColorStop(0,"rgba(150,170,190,.10)");
+  am.addColorStop(1,"rgba(120,150,180,0)");
+  ctx.fillStyle=am;ctx.beginPath();ctx.arc(sx,sy,84,0,TAU);ctx.fill();
   /* пыль в луче: под землёй воздух не бывает чистым */
   for(let i=0;i<24;i++){
     const dx=((i*61.7+G.t*.05)%160)-80, dy=((i*97.3+G.t*.03)%140)-70;

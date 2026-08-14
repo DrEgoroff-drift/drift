@@ -765,10 +765,10 @@ mgrWorkKeep                  src/12c-mgr-core.js:544
 mgrWorkSci                   src/12c-mgr-core.js:675
 midiHz                       src/10-music.js:100
 minedUnit                    src/11-log.js:102
-mineKey                      src/23-mode-dig.js:533
-mineLoad                     src/23-mode-dig.js:534
+mineKey                      src/23-mode-dig.js:676
+mineLoad                     src/23-mode-dig.js:677
 MINERAL                      src/18a-material.js:32
-mineSave                     src/23-mode-dig.js:544
+mineSave                     src/23-mode-dig.js:687
 MIX_KIN                      src/02a-worldmix.js:19
 MIX_TYPES                    src/02-world.js:81
 mixc                         src/03-ships.js:150
@@ -1510,7 +1510,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/22-mode-cave.js · 11 КБ
   · пещера: горизонтальная полость под поверхностью:1
 
-## src/23-mode-dig.js · 29 КБ
+## src/23-mode-dig.js · 38 КБ
   · шахта: спуск вглубь планеты:1
 
 ## src/24a-mode-raid.js · 40 КБ
