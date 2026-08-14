@@ -460,29 +460,79 @@ function drawObelisk(q,r,dark,lite,pal){
   g.addColorStop(1,"rgba(255,244,214,.16)");
   ctx.fillStyle=g;ctx.fillRect(-w*1.2,-q.h-4,w*2.4,q.h+8);
   ctx.restore();
-  /* световая кромка со стороны солнца */
-  ctx.strokeStyle="rgba(238,228,200,.5)";ctx.lineWidth=1.6;
+  /* Световая кромка со стороны солнца. Была в 1.6 px и .5 — на стенде читалась
+     неоновой трубкой, приклеенной к камню. Кромка — это блик на сколе, она
+     тоньше линии контура и не ярче песка под ногами. */
+  ctx.strokeStyle="rgba(238,228,200,.34)";ctx.lineWidth=1.1;
   ctx.beginPath();ctx.moveTo(w,0);ctx.lineTo(w*.72,-q.h+cut);ctx.stroke();
-  /* засечки: ряды коротких врезов, длина и сдвиг из семени — читаются как
-     счёт, а не как орнамент. Их не «зажигаем»: камень не работает. Врез —
-     тёмная канавка со светлой нижней кромкой, иначе на расстоянии его нет. */
+  /* засечки: это счёт, а не орнамент. Первый заход дал ровные ряды ровной
+     штриховки — обои, и это было записано в план как невыправленный изъян.
+     Счёт выглядит иначе: палочки сбиты в пятёрки (четыре и перечёркивающая),
+     ряды идут сверху вниз и книзу редеют — снизу резать неудобно, туда лезли
+     реже, — часть рядов перечёркнута целиком (срок закрыт), а последняя
+     группа недобрана: считать перестали посреди пятёрки.
+     Врез — тёмная канавка со светлой нижней кромкой, иначе на расстоянии
+     его нет. Ничего не «зажигаем»: камень не работает. */
+  let sd=((q.seed^0x9E3779B9)>>>0)||1;
+  const nr=()=>((sd=(sd*1664525+1013904223)>>>0)/4294967296);
+  const cut1=(x0,y0,x1,y1,a)=>{
+    ctx.strokeStyle="rgba(0,0,0,"+a.toFixed(2)+")";
+    ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+    ctx.strokeStyle="rgba(236,226,200,"+(a*.55).toFixed(2)+")";
+    ctx.beginPath();ctx.moveTo(x0,y0+1.2);ctx.lineTo(x1,y1+1.2);ctx.stroke();
+  };
   ctx.lineWidth=1.1;
-  ctx.strokeStyle="rgba(0,0,0,.5)";
-  const rows=7+((q.seed>>>2)%5);
+  const rows=5+((q.seed>>>2)%4);
+  const tick=w*.30;                                  // высота палочки
+  let yy=-q.h*.80;                                   // счёт начинали сверху
   for(let i=0;i<rows;i++){
-    const yy=-q.h*(.12+i*(.78/rows));
-    const n=2+((q.seed>>>(i%12))&3);
-    for(let j=0;j<n;j++){
-      const xx=-w*.5+j*(w*1.0/Math.max(1,n));
-      ctx.strokeStyle="rgba(0,0,0,.5)";
-      ctx.beginPath();ctx.moveTo(xx,yy);ctx.lineTo(xx+w*.18,yy-w*.1);ctx.stroke();
-      ctx.strokeStyle="rgba(236,226,200,.28)";
-      ctx.beginPath();ctx.moveTo(xx,yy+1.2);ctx.lineTo(xx+w*.18,yy-w*.1+1.2);ctx.stroke();
+    const t=i/Math.max(1,rows-1);                    // 0 сверху → 1 внизу
+    /* книзу групп меньше: три наверху, одна у земли */
+    const groups=Math.max(1,Math.round(3-t*2+(nr()<.25?1:0)-(nr()<.2?1:0)));
+    const last=(i===rows-1);
+    /* Грань сужается кверху и заваливается — значит поле счёта на каждой
+       высоте своё. Первый вариант резал по постоянной ширине, и у узких
+       камней верхние ряды вылезали за грань в воздух. */
+    const u=Math.min(1,-yy/q.h);
+    const eR=lerp(w,w*.72+lean,u)*.80, eL=lerp(-w,-w*.62+lean,u)*.80;
+    let x=eL+nr()*w*.08;
+    const x0row=x;
+    for(let g=0;g<groups;g++){
+      /* последняя группа последнего ряда недобрана — счёт оборвался */
+      const full=!(last&&g===groups-1)||nr()<.25;
+      const n=full?4:1+Math.floor(nr()*3);
+      const step=w*(.085+nr()*.02);
+      for(let j=0;j<n;j++){
+        const xx=x+j*step, jt=(nr()-.5)*tick*.22;    // рука дрожит
+        cut1(xx,yy+jt,xx+(nr()-.5)*w*.05,yy-tick+jt,.52);
+      }
+      /* пятая, перечёркивающая — только у добранной группы */
+      if(full&&n===4)
+        cut1(x-w*.03,yy-tick*.18,x+step*3+w*.04,yy-tick*.82,.5);
+      x+=step*(n-1)+w*(.10+nr()*.03);
+      if(x>eR-w*.10)break;
     }
+    /* закрытый срок: ряд перечёркнут одной длинной чертой поверх всего */
+    if(nr()<.22)cut1(x0row-w*.06,yy-tick*.5+(nr()-.5)*3,x+w*.03,yy-tick*.5,.46);
+    yy+=q.h*(.085+nr()*.055);                        // шаг неровный
+    if(yy>-q.h*.10)break;
   }
-  /* у подножия — стёсанная площадка: сюда садились, отсюда резали */
-  ctx.fillStyle="rgba(0,0,0,.35)";
-  ctx.beginPath();ctx.ellipse(0,0,w*2.6,w*.5,0,0,TAU);ctx.fill();
+  /* Тень у подножия. Первый заход дал круглое чёрное пятно — камень выглядел
+     вырезанным из бумаги и наклеенным. У плиты, стоящей в пыли, тень уходит
+     от солнца (оно справа, см. `drawSkyLayer`), она вытянута, мягкая по краю
+     и никогда не чёрная: пыль подсвечена. Плюс юбка наносов у самого камня —
+     то, что нанесло ветром за годы. */
+  const shx=-w*.55, shw=w*2.9, shh=w*.46;
+  ctx.save();ctx.translate(shx,0);ctx.scale(1,shh/shw);
+  const sg=ctx.createRadialGradient(0,0,w*.15,0,0,shw);
+  sg.addColorStop(0,"rgba(14,10,6,.34)");
+  sg.addColorStop(.55,"rgba(18,13,8,.16)");
+  sg.addColorStop(1,"rgba(20,15,9,0)");
+  ctx.fillStyle=sg;
+  ctx.beginPath();ctx.arc(0,0,shw,0,TAU);ctx.fill();ctx.restore();
+  /* наносы: светлее породы, шире с наветренной стороны */
+  ctx.fillStyle="rgba(236,226,200,.07)";
+  ctx.beginPath();ctx.ellipse(w*.18,-w*.03,w*1.5,w*.20,0,0,TAU);ctx.fill();
   ctx.restore();
 }
 /* ── заброшенный завод: башни, трубы, баки; из одной трубы ещё идёт дым ── */
