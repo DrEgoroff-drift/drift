@@ -211,9 +211,19 @@ flora and fauna, a living camera, station modules, weather.
      even; the works has two dirty yellow ones with visible black gaps; the yard's hang on brackets
      and sway; the science hall has five cold narrow ones and no proper cones, because it is a rest
      room and not a bar; the outpost has exactly one, and half the hall is dark.
-   - **still open:** the crowd is the same two figures everywhere — a works hall after a shift
-     should be full and an outpost nearly empty; and the layout never changes (the same counter and
-     the same wall of bottles), where an outpost would have crates and the science hall flasks.
+   - ~~**the same two figures in every hall**~~ — fixed. The crowd is counted, not decorative:
+     nine at the works because the shift has ended, six trading, five at the yard, three at the
+     outpost standing apart, two in the science hall. They clump in pairs rather than lining up,
+     and some stand further back and darker.
+   - ~~**a wall of bottles even on a science station**~~ — fixed. Behind the counter stands what
+     the place actually deals in: bottles at the trade hall and the yard, identical works flasks
+     in two rows at the industrial plant, glass and steel on three even shelves at the science
+     station, and no shelf at all at the outpost — crates stacked one on another with a stencil,
+     because nobody freights furniture out there.
+
+   **Still open:** music (the queue asked for light, crowd and music, and only the first two are
+   done — the generative engine is `10-music`, and the hall could lean it warm or thin); and the
+   counter itself is the same length and shape everywhere.
 4. **New world types:** crystalline, jungle, metallic, ruin. The machinery is already ready to
    take them — `TYPES` (02-world), `PROFILE`, `RELIEF_MIX` (07-planet), `GEO_TPL` (18b),
    `WEATHER_BY_TYPE` (19d), `POI_KINDS.on` (20a), flora and fauna leanings (20-life).

@@ -177,16 +177,16 @@ camOffset                    src/19c-light.js:76
 camStep                      src/19c-light.js:62
 canPay                       src/21a-mode-base.js:43
 CANT_STYLE                   src/27d-ui-cantina.js:15
-cantFigure                   src/27d-ui-cantina.js:251
+cantFigure                   src/27d-ui-cantina.js:301
 cantinaPool                  src/12c-mgr-core.js:258
 cantinaScene                 src/27c-ui-hq.js:125
-cantProps                    src/27d-ui-cantina.js:351
+cantProps                    src/27d-ui-cantina.js:401
 cantRoomBody                 src/27d-ui-cantina.js:45
-cantSeats                    src/27d-ui-cantina.js:243
+cantSeats                    src/27d-ui-cantina.js:293
 cantSel                      src/27c-ui-hq.js:124
 cantStyle                    src/27d-ui-cantina.js:27
-cantTables                   src/27d-ui-cantina.js:439
-cantView                     src/27d-ui-cantina.js:292
+cantTables                   src/27d-ui-cantina.js:489
+cantView                     src/27d-ui-cantina.js:342
 capOf                        src/05-parts.js:101
 capUsed                      src/05-parts.js:203
 CAVE_W                       src/22-mode-cave.js:5
@@ -1548,7 +1548,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/27c-ui-hq.js · 28 КБ
   · ШТАБ и кантина:1
 
-## src/27d-ui-cantina.js · 27 КБ
+## src/27d-ui-cantina.js · 31 КБ
   · кантина: помещение, а не список:1
 
 ## src/27e-ui-home.js · 43 КБ
