@@ -2685,3 +2685,201 @@ proves the function, not the game.**
 nothing shows on the map that this planet has already been read. The obelisk needs exactly that
 layer, so it is built there rather than patched in here.
 
+
+---
+
+# M106–M108 (built) — moved out of the live plan
+
+The three milestones the twelfth pass opened with, kept here in full: the decisions, the faults
+found by looking, and the two original specs the built versions departed from.
+
+## M106 (0.56.0). Obelisks: the map is opened, not scanned
+
+New module `12q-lore.js` (after `12n-planet`, before `13-pirates`), plus a new kind in
+`POI_KINDS.on` (`20a-poi`) and a layer in `18-mode-map`.
+
+- **`LORE` — a closed table of exactly 100 fragments**, generated deterministically from a fixed
+  seed and frozen, exactly like `NODES`/`RARE`. Each `{id, ru, gives, chap, word}`: `gives` is the
+  useful payload, `chap` its place in the account, `word` the pidgin entry it teaches (M109/M116).
+
+**What a hundred forces, and these are decisions, not notes.** Forty fragments could each be a
+separate trip. A hundred cannot: at ten minutes apiece that is a second job, and the last thirty
+would be filler by arithmetic. So the number changes the design in four places:
+
+- **Fragments come in clutches.** A satellite hands over three or four at once, a machine world's
+  log a dozen, the meadow (M117) a whole scene's worth. The unit of travel is a **site**, not a
+  fragment; roughly 25–30 sites hold the hundred. This is what keeps the pace of forty with the
+  density of a hundred.
+- **Eight chapters, and a chapter reads as soon as it is whole.** `chap` groups the hundred into
+  eight accounts of about a dozen each. The player never waits for 100/100 to understand anything:
+  a finished chapter is a finished thought, and the assembled record (M115) is the eight together.
+  A hundred-piece story with one payoff at the end is a hundred-piece story nobody finishes.
+- **Completion is not required, and the guard enforces it.** Every chapter is legible from any
+  two-thirds of its fragments — the missing third repeats what its neighbours already said, from
+  another vantage. A hundred mandatory pieces would make the ending hostage to one unlucky address.
+  The full hundred earns the survey layer's last quarter and nothing else.
+- **The vocabulary is a subset.** Only about 30 of the hundred carry a `word`; the rest pay in
+  addresses, prices and schematics. If every fragment taught a word, the pidgin would be readable
+  long before the story was, and M116's retroactive decoding would fire all at once instead of
+  arriving in waves.
+
+**And it must not become a second `RARE`.** There are already a hundred rarities (M96), and two
+hundreds side by side read as one grind unless they differ in kind. They do, and the difference is
+load-bearing: a rarity is **taken from a place**, one address, and is over. A fragment is **heard
+from a witness** — it can arrive twice from two vantages, it can decode later than it was
+collected (M116), and it is worthless alone and worth a lot in a chapter. Rarities are a
+collection; fragments are testimony. Any edit that makes fragments droppable loot breaks this.
+- **Addressing follows M96's decision**, which is now proven: not a precomputed point but
+  `loreAtPlace(where,key)` over the place key. An obelisk's key is its system key, so the same
+  obelisk always says the same thing and reload-farming can't touch it.
+- **What an obelisk gives is an address, never a fact.** The reveal on the map is one system with a
+  name and one thing actually in it — not a scanned area. And it is always **outside the current
+  jump radius**: an obelisk that reveals a neighbour is a decoration. The layer is `G.loreKnown`
+  (list of ids + revealed system keys, persisted, default `[]`).
+- **The obelisk is a monument**, so it inherits M105 for free: on approach it shows what it already
+  gave you. Its repeat answer is a rarity address (M96), not a second fragment.
+- **The second answer is dated.** Part of what an obelisk holds does not open until a sky event
+  (M107) is standing over it. Then the same monument, in the same place, says a second thing. This
+  is the single hook that makes the calendar a mechanic instead of a light show.
+
+Suite **"the obelisks: every fragment has an address"** — the table holds exactly 100 records, ids
+unique, every fragment reachable by sweeping keys, no fragment obtainable twice, every revealed
+system exists and holds the thing that was promised, no reveal lands inside the current jump
+radius, all eight chapters are non-empty, and no chapter needs more than two-thirds of its own
+fragments to read. The same guard that found 500 unreachable nodes at M91.
+
+### M106 — state on pause (built, green, not finished)
+
+Built and pushed at 1780 green (was 1348), empty console, live scenario walked on the ground:
+approach → inspect → fragment taken → address recorded outside the jump radius → map drawn with
+the mark. New module `12q-lore.js`, new POI kind `obelisk` (`ЗАРУБКА`), `drawLoreMarks` called from
+`18-mode-map`, `G.loreFound`/`G.loreMarks` in the save with safe defaults (`v:4` untouched), suite
+`91p-lore.js` in four parts.
+
+**Decision taken along the way.** The plan wanted a per-witness pool like `RARE_BY_WHERE`. Dropped:
+obelisks are the only witness that exists today, so five of six pools would be unreachable until
+M116–M118 and the guard would have to be weakened to stay green. `loreAtPlace(key)` therefore maps
+any place key over all hundred — every fragment reachable from day one, and later witnesses add
+density instead of unlocking regions.
+
+**Also done:** `20a-poi.js` crossed the 40 KB guard the moment the obelisk was added, so it was cut
+at its natural seam — `20b-poi-find.js` now holds the inspection half (`POI_FIND`, `poiInspect`,
+`poiMemo`); `20a` keeps generation and drawing.
+
+**Faults found by looking at the stand, in words, and only half fixed:**
+
+1. three obelisks on three seeds were indistinguishable — tilt was ±0.04 and width constant.
+   Fixed: width ±35%, real lean, cut angle and fall direction all come from the seed;
+2. the body was drawn near-black and read as a hole cut out of the terrain rather than as stone.
+   Fixed: it fills with the rock colour and takes a side gradient (sun on the right, per
+   `drawSkyLayer`), plus a lit edge and a light lower lip on each notch;
+3. ~~the notches read as wallpaper~~ — **fixed.** They are a tally now: marks grouped in fives
+   (four and a crossing stroke), rows thinning downward because cutting low is awkward, uneven row
+   spacing, about one row in five struck through as a closed count, and the last group of the last
+   row left unfinished — counting stopped mid-five. The field of the tally follows the taper and
+   the lean of the face, so nothing is cut into the air;
+4. ~~the base shadow is a round black blob~~ — **fixed.** It is offset away from the sun, elliptical,
+   soft-edged, never black (dust is lit), with a light drift skirt of what the wind has piled
+   against the stone over the years;
+5. ~~no stand shot and no script~~ — **fixed.** `docs/mkstone.ps1` builds `docs/stone.html`: six
+   stones on six seeds in a row plus a monolith for comparison of the two visual languages, with a
+   ground line so it is visible whether the stone stands or floats. Shot in `docs/shots/stone.png`.
+
+**Fault found by looking at the new stand and fixed in the same pass:** the lit edge on the sun
+side was 1.6 px at .5 alpha and read as a neon tube glued to the stone; it is a highlight on a
+fracture and is now thinner than the contour and no brighter than the sand.
+
+**Known limit of the stand:** it draws with no `POI_MAT`, so the body carries no rock material,
+soot or hairline cracks — the frame is honest about silhouette, tally and contact, and says nothing
+about the skin. Checking the skin needs a stand on a real planet trace.
+
+**Tail closed.** Both remaining items are done:
+
+- **the second, dated answer** turned out to be already built — it went in with M107 and lives in
+  `loreTake` (`12q-lore`): read a notch while the sky is doing what it was dated against
+  (`celEventNow`) and the slab names a second address, the next one in the same chapter. The plan
+  entry was stale, not the code;
+- **the fragment board** — new module `27h-ui-lore.js`, a second window on the journal's frame
+  (`#lorewin`, `ОТЧЁТ` in the menu, hidden until the first piece). Three rules it is built on and
+  the suite guards: it adds nothing the player did not pick up himself; **a gap stays a gap** —
+  a missing piece is an empty numbered line in its place, so the board shows the shape of the hole
+  rather than a percentage; and a chapter's note opens only when the chapter comes together
+  (`loreChapter().read`, two thirds), because eight notes shown from the first piece are somebody
+  else's table of contents handed over in advance. Vocabulary and addresses sit at the bottom.
+  Suite: `отчёт: доска, на которой это читают` in `91p-lore.js`.
+
+**Known limit:** the board is one long scroll — about 110 rows with no way to jump between
+chapters. Fine while the record is short; if it starts being read often it wants chapter anchors.
+
+## M107 (0.56.0). The sky keeps a calendar — DONE
+
+`06a-celest` — eclipse, parade, comet and the day count, all as `celestAt(sys,t)`; nothing enters
+`snapshot()`. Light hooks: `starRGB` loses the directional light, `gradePass` sinks the whole frame
+and drains its colour, `drawSkyLayer` darkens the sky, flora folds in `20-life`. The header names
+the event. `loreTake` gives a second answer when the sky matches.
+
+**Decisions taken while building it:**
+- the calendar runs on a **second, slow clock** (`CEL_DAY` = a minute of play), not on the drawn
+  orbits. The system view is deliberately arcade — a moon laps in six seconds and the rate is
+  clamped against the player's own thrust so the autopilot can catch things. Eclipses every six
+  seconds are weather, not a calendar; the two clocks stay separate on purpose;
+- eclipse depth goes by the moon's **angular size** (`radius / orbit` against `CEL_STAR_ANG`), not
+  by the planet's radius. The first version measured against the world you stand on, so on a large
+  planet every moon was a chip and a total eclipse never happened anywhere;
+- the eclipse is graded **on the whole frame**, not on the sky. Darkening only the sky gave a night
+  sky over a daylight planet — two pictures in one frame;
+- the parade needed a **line**. Three dim 2 px dots in a daylight sky were indistinguishable from
+  dust: the event was named in the header and absent from the frame.
+
+## M107 (0.57.0). The sky keeps a calendar — original spec
+
+New module `06a-celest.js` (after `06-galaxy`, before `07-planet`) — pure arithmetic over the
+orbits M43 already computes honestly. Drawing hooks into `19-mode-landing` (sky), `25-cockpit` and
+`20-life`.
+
+- **Four events, all computed, none rolled:** conjunction (a parade — three or more bodies inside
+  an angular window), eclipse (a moon crosses the star from the surface point you stand on), a
+  comet on a long ellipse, and the nebula the system already sits in read as weather rather than
+  backdrop.
+- **`celestAt(sys, t)` is a function of time, not a state.** Nothing about it enters `snapshot()` —
+  cross-cutting rule. A date is a number the obelisk can name and the player can wait for.
+- **It is light, not UI.** An eclipse drops the key light and lifts ambient blue; the astronaut's
+  shadow shortens and dies; flora that leans on light closes (`20-life`), fauna quiets. A parade is
+  a line of discs in the sky with the loudness budget respected — the sky does not start shouting.
+- **Almost no arithmetic.** The rule from exotic stars stands: the sky never touches prices or
+  yields. Its one mechanical right is opening an obelisk's second answer (M106) — a date is worth
+  travelling to because of what stands there, not because of a bonus.
+
+Suite **"the calendar: the sky is computed"** — the same system and time always give the same
+event; an eclipse only ever occurs where a moon can actually cross; no celestial state persists;
+no event changes a price or a yield.
+
+## M108 (0.57.0). Finds in flight, and half of them are theirs — DONE
+
+`17b-finds` — four kinds in the void, deterministic per system key + a six-hour bucket, taken ones
+remembered in `G.findsSeen`. Rewards reuse `POI_FIND` and `rareTake`; the satellite reuses
+`loreTake`. Closes item 5 of the M55 visual queue.
+
+**Decisions taken while building it:**
+- the satellite always hands over a **bearing** on top of whatever fragment it holds. Without it
+  the find could resolve into a vocabulary line with nowhere to fly, and listening to the void for
+  a line in the journal is not worth the trip;
+- the container had to stop being a **grid rectangle**: at flight scale it read as the satellite's
+  solar panel. Heavy end caps and one strap — a box differs from a sheet by thickness;
+- two systems in five are empty on purpose. A find that is always there is stock, not a find;
+- none of the four pays credits, including the distress capsule: it pays in fuel and in being
+  remembered here.
+
+## M108 (0.58.0). Finds in flight, and half of them are theirs — original spec
+
+Closes item 5 of the visual queue (`M55`) — the space between planets is empty — and pays the
+story's rent at the same time. `17-mode-system`, reusing `POI_FIND` (`20a-poi`) and the M95 wreck
+machinery rather than growing a second one.
+
+- Four kinds: a distress signal, a dead satellite still transmitting, a drifting container, the
+  wreck of a survey ship. All are approached the way a barge wreck already is.
+- **The satellite is the expedition's**: it is the one find that carries a fragment, and what it
+  transmits is a bearing you can fly. The other three pay in the ordinary currency of the game.
+- A find is deterministic per system key + a coarse time bucket, so the space is not a slot machine
+  and cannot be farmed by re-entering.
+
