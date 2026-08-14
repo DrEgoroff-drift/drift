@@ -13,16 +13,16 @@ $add = @'
 setTimeout(function(){
   G.running=false;
   var i=document.getElementById("intro"); if(i)i.style.display="none";
-  var W2=1280,H2=760,dpr=2;
+  var W2=1280,H2=980,dpr=2;
   var cv=document.createElement("canvas");cv.width=W2*dpr;cv.height=H2*dpr;
   cv.style.cssText="position:fixed;left:0;top:0;z-index:99999;width:"+W2+"px;height:"+H2+"px";
   document.body.appendChild(cv);
   var c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);
   c.fillStyle="#080b10";c.fillRect(0,0,W2,H2);
   var old=ctx;ctx=c;
-  function mk(id,seed){
+  function mk(id,seed,tier){
     NPC_SHIPS[id]={name:id,seed:seed>>>0,hcls:"yacht",col:"#9fd8ff",
-      hull:100,cargo:40,fuel:120,thr:1.1,cls:"яхта",tier:"luxe"};
+      hull:100,cargo:40,fuel:120,thr:1.1,cls:"яхта",tier:tier||"luxe"};
     delete HULL_CACHE[id];
   }
   // герой: крупно, носом вправо, с работающими двигателями
@@ -39,12 +39,18 @@ setTimeout(function(){
     drawHull(id,false,false,0,0);c.restore();
     c.strokeStyle="rgba(120,150,175,.10)";c.strokeRect(n*CELL+.5,370.5,CELL-1,200);
   }
-  // третья строка: тот же герой в профиль без факела и в крене — проверка объёма
-  c.save();c.translate(W2*.3,660);c.scale(2.2,2.2);c.rotate(-Math.PI/2);
-  drawHull("yacht_hero",false,false,0,.5);c.restore();
-  c.save();c.translate(W2*.72,660);c.scale(2.2,2.2);c.rotate(-Math.PI/2);
-  drawHull("yacht_1",false,true,0,0);c.restore();
-  c.fillStyle="#7d94a4";c.fillText("крен 2.2×",12,600);
+  // третья строка: та же форма на РЯДОВЫХ тирах — класс обязан читаться
+  // силуэтом и без денег, иначе форма опознаёт цену, а не корабль
+  var tiers=["line","work","rare","legend","proto","luxe"];
+  tiers.forEach(function(t,n){
+    var id="yacht_t"+n; mk(id,n*104729+7,t);
+    c.save();c.translate(n*CELL+CELL/2,780);c.scale(1.5,1.5);c.rotate(-Math.PI/2);
+    drawHull(id,false,false,0,0);c.restore();
+    c.fillStyle="#5d7484";c.font="9px ui-monospace,monospace";c.textAlign="center";
+    c.fillText(t,n*CELL+CELL/2,620);
+  });
+  c.textAlign="left";c.fillStyle="#7d94a4";c.font="11px ui-monospace,monospace";
+  c.fillText("та же форма по тирам",12,612);
   ctx=old;
   try{fetch("/yachts.png",{method:"POST",body:cv.toDataURL("image/png")});}catch(e){}
 },1400);
