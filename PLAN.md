@@ -74,12 +74,30 @@ flora and fauna, a living camera, station modules, weather.
      shaft entirely) in the shaft as well. The ladder is stiles nailed to the wall, four-metre
      lengths with a clamp at the joint and a shadow behind it.
 
-   **Faults still open, by descending payoff:** the rock near the cutting face still has almost no
-   grain — the chips and cutter pocks are there but drown; the far end of a drift reads as flat
-   black, with no falloff along the axis of the working; the ore body glows through the rock as a
-   shapeless blue blob unrelated to the stone around it; long stretches of shaft are monotonous —
-   same ladder, same set, no landings, niches or ventilation; and nothing in a mine says work has
-   happened here — no rails, no tub, no tool left against a wall.
+   **Second pass, same stand, same list:**
+
+   - ~~**the ore body was a shapeless blue blob**~~ — fixed. Ore in rock is disseminated: grains and
+     small lenses tilted along the bed, denser toward the middle of the body, each with a
+     highlight, because underground ore is not a lamp — what gives it away is reflected glint. The
+     body-wide glow that remains is at .07 alpha, just enough to catch the eye;
+   - ~~**the far end of a drift was flat black**~~ — fixed. Black with no gradient is a hole, not
+     depth. A faint haze grows with distance from the man and turns it into air being looked
+     through;
+   - ~~**nothing said work had happened here**~~ — fixed. A track on the drift floor — sleepers and
+     two rails running under the wall, so the working plainly went further — one tub per working
+     placed by seed, and a pick left against the wall at a dead end;
+   - ~~**the shaft was monotonous**~~ — partly fixed: a ventilation pipe runs the wall with a clamp
+     at each joint, and a plank landing every eighth metre;
+   - **the grain at the face** was strengthened (more chips, higher alpha) but is still modest.
+
+   **Fault the second pass introduced and fixed in the same sitting:** the halo of altered rock
+   around an ore body was painted as a filled cell rectangle, and the frame grew exactly the grid
+   this mode exists to avoid — visible squares and crosses across the stone. It is a cornerless
+   blob now, and weaker than the grain: a hint, not a marking.
+
+   **Still open:** the landings in the shaft barely read; a tub sitting in a cell dug below the
+   drift floor looks like a crate in a pit; and a long shaft is still a long shaft — niches and a
+   change of section would do more for it than any amount of texture.
 2. **Ships by class and faction.** Hulls exist (`03-ships`, `hullOf`/`drawHull`), but the
    silhouette doesn't say who you're looking at: ore hauler, frigate, yacht, surveyor. Only
    pirates fly in a system, and they all look alike.
