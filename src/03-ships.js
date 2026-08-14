@@ -469,7 +469,7 @@ function hullOf(id){
   const an=1+Math.floor(r()*3);
   for(let i=0;i<an;i++){
     const ax=lerp(nose*.55,tail*.5,r()), aw=profW(prof,ax);
-    ants.push([ax,-aw*.9,3+r()*6,(r()*.9-.45)]);
+    ants.push([ax,-aw*.9,3+r()*6,(r()*.9-.45),(r()<.45?0:(r()<.5?1:-1))]);
   }
   const ribs=[];
   for(let i=2;i<prof.length-1;i++)if(r()<.55)ribs.push(i);
@@ -1317,13 +1317,23 @@ function drawLuxeDeck(h,L){
   ctx.beginPath();ctx.arc(L.pad.x,0,L.pad.r*.62,0,TAU);ctx.stroke();
   /* прогулочная палуба вдоль борта: ограждение стойками, а не линией —
      по нему и читается, что по борту ходит человек */
+  /* ── ограждение ──
+     Нитка в .45 со стойками пропадала на любом масштабе мельче трёх: игрок
+     видел голый борт там, где должна читаться прогулочная палуба. Ограждение
+     работает не линией, а КОНТРАСТОМ: тёмная тень настила под ним и светлый
+     поручень над — пара, которая на мелком масштабе сливается в одну заметную
+     кромку, а на крупном распадается обратно на стойки и перила. */
   for(const s of [1,-1]){
     const x0=L.rail[0],x1=L.rail[1];
-    ctx.strokeStyle=rgba(h.lite,.42);ctx.lineWidth=.45;
+    ctx.strokeStyle="rgba(10,14,20,.5)";ctx.lineWidth=1.1;
+    ctx.beginPath();
+    for(let x=x0;x>x1;x-=1.2)ctx.lineTo(x,profW(h.prof,x)*.9*s+.5*s);
+    ctx.stroke();
+    ctx.strokeStyle=rgba(mixc(h.lite,[255,255,255],.5),.85);ctx.lineWidth=.6;
     ctx.beginPath();
     for(let x=x0;x>x1;x-=1.2)ctx.lineTo(x,profW(h.prof,x)*.9*s);
     ctx.stroke();
-    ctx.strokeStyle=rgba(h.lite,.2);
+    ctx.strokeStyle=rgba(h.lite,.3);ctx.lineWidth=.4;
     for(let x=x0;x>x1;x-=2.6){
       const y=profW(h.prof,x)*.9*s;
       ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-1.1*s);ctx.stroke();
@@ -2091,8 +2101,10 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.fillStyle="rgba(0,0,0,.32)";ctx.fillRect(p[0]+w*.62,y+.6,.5,hgt-1.2);
   }
   /* ── антенны ── */
+  /* антенна тоже не обязана быть парной: половина мачт стоит с одного борта —
+     последний кусок зеркальности, из-за которого корпус читался гербом */
   ctx.strokeStyle=rgba(h.col,.5);ctx.lineWidth=.5;
-  for(const a of h.ants)for(const s of [1,-1]){
+  for(const a of h.ants)for(const s of (a[4]?[a[4]]:[1,-1])){
     ctx.beginPath();ctx.moveTo(a[0],a[1]*s);
     ctx.lineTo(a[0]-a[2]*Math.sin(a[3]),(a[1]-a[2])*s);ctx.stroke();
   }

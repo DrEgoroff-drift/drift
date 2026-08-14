@@ -139,21 +139,51 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   const cg=c.createLinearGradient(0,cy,0,fy);                       // свет ложится на переднюю панель сверху
   cg.addColorStop(0,"rgba(255,226,180,.07)");cg.addColorStop(1,"rgba(0,0,0,.35)");
   c.fillStyle=cg;c.fillRect(0,cy+1,W2,fy-cy-1);
-  /* ── лампы: полоса и конус на стойку ── */
-  const lamps=3;
-  for(let i=0;i<lamps;i++){
-    const lx=W2*(i+.5)/lamps;
+  /* ── свет ──
+     Пять залов отличались вывеской, окном и оттенком акцента — а светили
+     одинаково: три лампы через равные промежутки, один и тот же конус. Свет
+     и есть главное, чем кабак отличается от кабака: в торговом зале его много
+     и он ровный; на комбинате две грязно-жёлтых лампы на весь зал и длинные
+     провалы между ними; в научной — холодная сплошная полоса без конусов,
+     потому что это не кабак, а комната отдыха; на верфи лампы висят на
+     кронштейнах и качаются; на аванпосте лампа одна, и половина зала в темноте.
+     `LIGHT` — не украшение, а планировка света: сколько, какого тона, какой
+     ширины конус и что творится между лампами. */
+  const LIGHT={
+    trade:  {n:4, tone:[255,226,180], cone:1,   pow:1,   sway:0},
+    indust: {n:2, tone:[255,196,110], cone:1.25,pow:.85, sway:0},
+    yard:   {n:3, tone:[214,238,255], cone:.9,  pow:.8,  sway:1},
+    sci:    {n:5, tone:[228,244,255], cone:.4,  pow:.7,  sway:0},
+    outpost:{n:1, tone:[255,180,120], cone:1.5, pow:.9,  sway:0}
+  };
+  const LT=LIGHT[(G.st&&G.st.stype)||"trade"]||LIGHT.trade;
+  for(let i=0;i<LT.n;i++){
+    const sw=LT.sway?Math.sin(G.t*.021+i*2.1)*3:0;   // на верфи лампы качает
+    const lx=W2*(i+.5)/LT.n+sw;
     c.strokeStyle="rgba(120,132,148,.5)";c.lineWidth=1;
-    c.beginPath();c.moveTo(lx,10);c.lineTo(lx,26);c.stroke();
+    c.beginPath();c.moveTo(W2*(i+.5)/LT.n,10);c.lineTo(lx,26);c.stroke();
     c.fillStyle="rgba(40,46,56,.95)";
     c.beginPath();c.moveTo(lx-11,38);c.lineTo(lx-4,26);c.lineTo(lx+4,26);c.lineTo(lx+11,38);
     c.closePath();c.fill();
-    c.fillStyle=rgba(mixc([255,226,180],acc,.35),.9);c.fillRect(lx-9,37,18,2.5);
+    c.fillStyle=rgba(mixc(LT.tone,acc,.3),.9);c.fillRect(lx-9,37,18,2.5);
     const g=c.createLinearGradient(0,38,0,cy);
-    g.addColorStop(0,rgba(mixc([255,226,180],acc,.3),.16*S.warm));
+    g.addColorStop(0,rgba(mixc(LT.tone,acc,.25),.17*S.warm*LT.pow));
     g.addColorStop(1,"rgba(255,226,180,0)");
     c.fillStyle=g;c.beginPath();
-    c.moveTo(lx-10,38);c.lineTo(lx+10,38);c.lineTo(lx+46,cy);c.lineTo(lx-46,cy);c.closePath();c.fill();
+    const cw=46*LT.cone;
+    c.moveTo(lx-10,38);c.lineTo(lx+10,38);c.lineTo(lx+cw,cy);c.lineTo(lx-cw,cy);
+    c.closePath();c.fill();
+  }
+  /* провал между лампами: там, где их мало, темнота обязана быть видимой —
+     иначе «две лампы» и «пять ламп» отличаются только числом абажуров */
+  if(LT.n<=2){
+    const dk=c.createLinearGradient(0,38,0,cy);
+    dk.addColorStop(0,"rgba(0,0,0,.42)");dk.addColorStop(1,"rgba(0,0,0,.1)");
+    c.fillStyle=dk;
+    for(let i=0;i<=LT.n;i++){
+      const x0=W2*i/LT.n-W2*.14, x1=W2*i/LT.n+W2*.14;
+      c.fillRect(x0,38,x1-x0,cy-38);
+    }
   }
   /* ── что стоит на самой стойке: без этого столешница — пустая доска ── */
   const tapx=bmx-46;
