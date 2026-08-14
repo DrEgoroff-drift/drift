@@ -219,8 +219,9 @@ function hullOf(id){
   const K=HULL_CLASS[hullClassOf(id,S)]||HULL_CLASS.scout;
 
   /* ── продольный профиль: станции от носа к корме ── */
-  const nose=(16+r()*14)*K.len, tail=-(13+r()*13)*K.len, len=nose-tail;
-  const bw=(3.8+r()*4.4)*K.bw;
+  /* не `const`: люксовая яхта переопределяет габариты под свой обвод */
+  let nose=(16+r()*14)*K.len, tail=-(13+r()*13)*K.len, len=nose-tail;
+  let bw=(3.8+r()*4.4)*K.bw;
   const segs=9+Math.floor(r()*5);
   /* у рудовоза корма почти равна миделю — корпус-ящик; у курьера сходит
      на конус. Это и есть первое, что читается силуэтом */
@@ -247,6 +248,40 @@ function hullOf(id){
   const poly=[tip];
   for(const p of prof)poly.push([p[0],-p[1]]);
   for(let i=prof.length-1;i>=0;i--)poly.push([prof[i][0],prof[i][1]]);
+
+  /* ── люксовая яхта: отдельный обвод ──
+     На стенде люксовая яхта была иглой курьера: нос-шило, ровное веретено,
+     и никакой палубы. Яхта — не стрела, а КОРПУС С ПАЛУБОЙ: короткий развал
+     скул у носа, широкий мидель почти сразу за ним, длинный сходящий ют и
+     широкий транец, на котором есть где стоять. Отсюда и весь остальной
+     проход: там, где есть палуба, есть надстройка, ограждение и трап. */
+  const LUX=!!(K.win&&S.tier==="luxe");
+  if(LUX){
+    /* ── проход по форме ──
+       Первая версия обвода была морской яхтой в виде сверху: широкий мидель у
+       носа и тупой транец. Рядом с тем, чем яхта должна быть, это тумба.
+       Дорогая машина в пустоте — это ДЛИННОЕ ТОНКОЕ ТЕЛО: узкий вытянутый
+       вход, мидель за серединой, и хвост, который сходит почти в нить и
+       тянется дальше, чем кажется нужным. Отсюда и разнесённые тонкие крылья
+       ниже: тонкому телу нужен размах, иначе оно читается стержнем. */
+    const q=rng(hashi(S.seed,0x1E,0x5AFE));
+    nose*=1.18; tail*=1.75; len=nose-tail; bw*=.70;
+    const midT=.40+q()*.07;                       // мидель за серединой
+    const nW=bw*(.14+q()*.05), tW=bw*(.17+q()*.07);
+    const N=22;
+    prof.length=0;
+    for(let i=0;i<=N;i++){
+      const t=i/N, x=lerp(nose,tail,t);
+      let w;
+      if(t<midT){const u=t/midT;w=lerp(nW,bw,Math.pow(u,.62));}   // долгий вход
+      else{const u=(t-midT)/(1-midT);w=lerp(bw,tW,Math.pow(u,1.45));}
+      prof.push([x,Math.max(.5,w)]);
+    }
+    tip[0]=nose+len*.10;                       // нос вытянут в тонкое остриё
+    poly.length=0;poly.push(tip);
+    for(const p of prof)poly.push([p[0],-p[1]]);
+    for(let i=prof.length-1;i>=0;i--)poly.push([prof[i][0],prof[i][1]]);
+  }
 
   /* ── крылья: многозвенные, со скосом ── */
   const wingN=K.wing[0]+Math.floor(r()*(K.wing[1]-K.wing[0]+1)), wings=[];
@@ -397,6 +432,93 @@ function hullOf(id){
   mark.num=AZ[Math.floor(r()*AZ.length)]+AZ[Math.floor(r()*AZ.length)]+"-"+
     (10+Math.floor(r()*89));
   if(K.win)mark.win=[nose*(.2+r()*.2),tail*(.2+r()*.3)];
+  /* ── люкс: надстройка ярусами ──
+     Плоский вид сверху даёт высоту только тенью и ярусом. У яхты ярусов три:
+     салон во всю ширину палубы, над ним прогулочная палуба, и рубка владельца
+     впереди — самая маленькая и самая высокая. Ют оставлен пустым: на нём
+     площадка, и пустое место на корме — тоже примета дорогой вещи. */
+  if(LUX){
+    const q=rng(hashi(S.seed,0x2F,0x5AFE));
+    /* дом ужат под новый корпус: тело стало вдвое длиннее и уже, и прежняя
+       надстройка на две трети длины торчала за борт лыжей */
+    const dx0=nose*(.42+q()*.08), dx1=tail*(.30+q()*.10);
+    const dl=dx0-dx1;
+    mark.lux={
+      /* ширины — от ПОЛНОГО бимса (2*bw), а не от полуширины: с первого раза
+         салон вышел планкой в треть палубы, и тик залил оба борта */
+      deck:[
+        {x0:dx1,        x1:dx0,          w:bw*1.02, h:1.1},
+        {x0:dx1+dl*.20, x1:dx0-dl*.14,   w:bw*.70,  h:2.0},
+        {x0:dx0-dl*.40, x1:dx0-dl*.10,   w:bw*.42,  h:2.9}
+      ],
+      /* ── крыло-манта ──
+         Тонкое длинное тело без размаха читается стержнем. Крыло у яхты не
+         несущее — оно РАЗНЕСЁННОЕ: тонкая пластина от миделя к корме, с
+         законцовкой, загнутой назад дальше кормы, и с выносом гондолы на
+         себе. Размах больше длины дома — именно это делает силуэт узнаваемым
+         с любого расстояния. */
+      wing:{x0:nose*(.10+q()*.10), x1:tail*(.50+q()*.16),
+            span:bw*(3.0+q()*1.1), tipBack:len*(.16+q()*.10)},
+      pad:{x:lerp(tail*.85,tail*.4,q()), r:bw*.46},   // площадка на юте
+      rail:[nose*.62,tail*.86],
+      seed:S.seed
+    };
+    /* мусорная навеска яхте не идёт: у дорогой вещи борт чистый */
+    greeb.length=0;ants.length=0;
+    delete mark.num;                                  // у яхты имя, а не номер
+    /* имя на борту латунью. Инвентарный номер трафаретом — то, чем корабль
+       отчитывается перед конторой; имя — то, чем владелец отчитывается перед
+       собой. У яхты не бывает первого */
+    const NAMES=["АВРОРА","ЛАСТОЧКА","ЗАБАВА","СТРЕЛА","ФОРТУНА","ПОЛЫНЬ",
+                 "ВЕЧЕРНЯЯ","БАЛОВЕНЬ","КАПРИЗ","ЗАРЯ","ТИШИНА","ЖЕМЧУГ"];
+    mark.lux.name=NAMES[Math.floor(q()*NAMES.length)];
+    /* тендерный гараж на юте: лацпорт в борту и трап. Поперечная деталь —
+       кадр весь вытянут вдоль, и глазу не за что зацепиться */
+    mark.lux.tender={x:lerp(tail*.5,tail*.8,q()),s:(q()<.5?1:-1)};
+    /* ── три отделки ──
+       Шесть семян в ряд читались одной яхтой: роскошь не варьировалась, потому
+       что варьировались только размеры. Меняться должно то, что покупают:
+       металл канта, настил палубы и тон лака. Три школы, и они не смешиваются:
+       `classic` — тёмный лак, латунь, тик; `pearl` — белый корпус, хром и
+       светлый камень палубы; `noir` — почти чёрный лак, золото, тёмный настил. */
+    mark.lux.style=["classic","pearl","noir"][Math.floor(q()*3)];
+    /* ── три двигателя ──
+       Сопло у всего флота — дырка на корме, и на яхте это читалось грузовиком:
+       три оранжевых языка. Тяга — то, что покупатель слышит и видит первым,
+       поэтому у люкса три школы, и каждая опознаётся и на ходу, и на стоянке:
+       `candle` — одна длинная свеча по оси в раструбе, ход тихий;
+       `pods`   — пара веретён на выносе, кольцевой зев с пояском;
+       `crown`  — венец мелких сопел по транцу, ими же и маневрируют. */
+    /* ── веретёна на крыле ──
+       Гондола, прижатая к борту на кронштейне, — решение тесного корабля.
+       У этого силуэта есть размах, и двигатель обязан стоять НА крыле:
+       веретено на две трети полуразмаха, с иглой вперёд. Игла — то, из-за
+       чего вещь читается быстрой стоя на месте. */
+    delete mark.pylon;
+    nacs.length=0;
+    const wg=mark.lux.wing;
+    /* веретено стоит ВПЕРЕДИ по крылу, а не у кормы: с первого раза игла
+       торчала от миделя вбок и читалась антенной, а не носом двигателя */
+    /* и стоит оно ТАМ, ГДЕ КРЫЛО ЕСТЬ: координата берётся между корневой
+       хордой и законцовкой, а вынос — по ширине пластины в этой точке.
+       Вынесенное «вперёд по борту» веретено висело в пустоте рядом с крылом */
+    const wTip=wg.x1-wg.tipBack;
+    nacs.push({x:lerp(wg.x0,wTip,.42+q()*.12), y:wg.span*(.40+q()*.08),
+               l:len*(.24+q()*.06), r:bw*(.34+q()*.12)});
+    mark.lux.spike=len*(.07+q()*.04);
+    mark.lux.eng=["candle","pods","crown"][Math.floor(q()*3)];
+    eng.length=0;
+    if(mark.lux.eng==="candle"){
+      eng.push({x:tail,y:0,r:Math.max(2.2,tailW*.95)});
+    }else if(mark.lux.eng==="pods"){
+      for(const n of nacs)for(const s of [1,-1])
+        eng.push({x:n.x-n.l*.5,y:n.y*s,r:n.r*.8});
+    }else{
+      const rr=Math.max(1,tailW*.3);
+      for(let i=0;i<4;i++)
+        eng.push({x:tail+Math.abs(i-1.5)*.9,y:(i-1.5)*tailW*.5,r:rr});
+    }
+  }
 
   const canopy={x:lerp(nose,tail,.12+r()*.12),rx:2+r()*3.4,ry:0};
   canopy.ry=Math.min(profW(prof,canopy.x)*.62,canopy.rx*(.6+r()*.5));
@@ -411,7 +533,7 @@ function hullOf(id){
 
   const col=hex2rgb(S.col);
   const h={poly,prof,wings,pods,nacs,eng,greeb,ants,ribs,canopy,stripe,fin,mark,
-    hcls:S.hcls,clsRu:K.ru,tier:S.tier,seed:S.seed,
+    hcls:S.hcls,clsRu:K.ru,tier:S.tier,seed:S.seed,lux:LUX,
     nose,bw,tail,len,tailW,halfW:hw,
     col, lite:mixc(col,[255,255,255],.42), dark:mixc(col,[6,10,17],.82),
     body:mixc(col,[8,13,21],.72), edge:mixc(col,[10,16,26],.35),
@@ -423,7 +545,13 @@ function hullOf(id){
        `foil` — мятая экранная изоляция, тёплая и матовая, ею укрыты баки;
        `radm` — радиатор: почти чёрный, он и должен быть холодным пятном;
        `cer`  — керамика щита: светлая, мёртвая, без блика. */
-    steel:[118,124,132], foil:[176,148,86], radm:[26,29,34], cer:[196,192,182]};
+    steel:[118,124,132], foil:[176,148,86], radm:[26,29,34], cer:[196,192,182],
+    /* ── материалы люксовой яхты ──
+       У всех остальных корпусов материал говорит о работе: голый металл,
+       фольга, радиатор. У яхты материал говорит о деньгах, и он обязан
+       отличаться от всего флота: глубокий лак с металликом вместо крашеных
+       листов, тик на открытой палубе, латунь в канте и жемчуг надстройки. */
+    lac:mixc(col,[4,7,14],.62), gold:[212,176,98], teak:[166,122,72], pearl:[236,238,240]};
   HULL_CACHE[id]=h;return h;
 }
 function tracePoly(pts,sy){
@@ -431,15 +559,23 @@ function tracePoly(pts,sy){
   for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]*(sy||1));
   ctx.closePath();
 }
-/* факел: мягкое зарево + перо + добела раскалённое ядро */
-function drawFlame(x,y,rad,pow){
-  const f=rad*(2.4+Math.random()*1.7)*pow;
+/* факел: мягкое зарево + перо + добела раскалённое ядро.
+   `cool` — люксовая тяга: вдвое короче, бело-голубая и почти без зарева.
+   Оранжевый костёр на корме читается работой и топливом; дорогая вещь
+   уходит тихо, и это видно раньше, чем читается название класса. */
+function drawFlame(x,y,rad,pow,cool){
+  const f=rad*(cool?1.5+Math.random()*.8:2.4+Math.random()*1.7)*pow;
   const gl=ctx.createRadialGradient(x-f*.25,y,0,x-f*.25,y,f*1.15);
-  gl.addColorStop(0,"rgba(255,180,110,.34)");gl.addColorStop(1,"rgba(255,120,60,0)");
+  if(cool){gl.addColorStop(0,"rgba(150,205,255,.2)");gl.addColorStop(1,"rgba(110,170,255,0)");}
+  else{gl.addColorStop(0,"rgba(255,180,110,.34)");gl.addColorStop(1,"rgba(255,120,60,0)");}
   ctx.fillStyle=gl;ctx.beginPath();ctx.arc(x-f*.25,y,f*1.15,0,TAU);ctx.fill();
   const g=ctx.createLinearGradient(x,y,x-f,y);
+  if(cool){
+    g.addColorStop(0,"rgba(255,255,255,.95)");g.addColorStop(.24,"rgba(198,232,255,.8)");
+    g.addColorStop(.62,"rgba(126,178,255,.34)");g.addColorStop(1,"rgba(90,140,240,0)");
+  }else{
   g.addColorStop(0,"rgba(255,246,220,.95)");g.addColorStop(.2,"rgba(255,194,112,.86)");
-  g.addColorStop(.58,"rgba(255,116,62,.42)");g.addColorStop(1,"rgba(255,70,40,0)");
+  g.addColorStop(.58,"rgba(255,116,62,.42)");g.addColorStop(1,"rgba(255,70,40,0)");}
   ctx.fillStyle=g;ctx.beginPath();
   ctx.moveTo(x,y-rad);
   ctx.quadraticCurveTo(x-f*.45,y-rad*.55,x-f,y);
@@ -501,6 +637,9 @@ function drawTierTrim(h){
       ctx.lineTo(ex-ew,ew*.2*s);ctx.closePath();ctx.fill();
     }
   }else if(t==="luxe"){
+    /* у люксовой ЯХТЫ вся отделка своя (drawLuxeSkin/drawLuxeDeck): лента
+       автобусных окон по борту была первым, что выдавало в ней курьера */
+    if(h.lux)return;
     /* лента окон по борту и глянец: яхту опознают по свету изнутри */
     for(const s of [1,-1]){
       const y0=h.nose*.42,y1=h.tail*.5;
@@ -774,12 +913,266 @@ function drawHullMarks(h){
       ctx.moveTo(h.nose+b.l*.62,0);ctx.lineTo(h.nose+b.l*.5,s*b.r*3.6);ctx.stroke();
     }
   }
-  if(M.win){
+  if(M.win&&!h.lux){
     /* лента окон — единственное, что отличает яхту от курьера на расстоянии */
     ctx.fillStyle="rgba(190,240,255,.55)";
     const y=h.bw*.28;
     for(let x=M.win[0];x>M.win[1];x-=3.2)ctx.fillRect(x,-y-.6,1.7,1.2);
   }
+  if(M.lux)drawLuxeDeck(h,M.lux);
+}
+/* ══════════════ люксовая яхта ══════════════
+   Единственный корпус, который покупают не за работу, а за вид, — и до сих пор
+   он был иглой курьера с лентой окон. Проход первый: ФОРМА. Высоту в виде
+   сверху даёт только ярус и тень, поэтому надстройка строится снизу вверх:
+   цоколь темнее палубы, верхняя грань светлее, тень длиннее у того яруса,
+   который выше. Всё остальное (материал, свет, роскошь) — следующими
+   проходами: сначала тело, потом уже отделка. */
+/* ── проход второй: ФАКТУРА ──
+   Первый проход дал яхте тело, но шкура на ней осталась общефлотская: листы
+   разного тона, швы, заклёпки. Клёпаный лист — это про ремонт в поле, а не про
+   деньги. У люкса три фактуры, и ни одной из них нет больше ни у кого:
+   лак (глубокий тон + металлик зерном + одна протяжная блик-полоса),
+   тик открытой палубы (тёплые доски с тёмным швом) и латунь в канте.
+   Рисуется внутри обрезки по корпусу, вместо листов обшивки. */
+/* палитра отделки: три школы, и они не смешиваются */
+function luxPal(h){
+  const st=h.mark.lux&&h.mark.lux.style;
+  if(st==="pearl")return{lac:mixc(h.col,[255,255,255],.62),
+    trim:[206,212,218],trimHi:[252,254,255],deck:[186,182,172]};
+  if(st==="noir")return{lac:mixc(h.col,[0,0,0],.86),
+    trim:[226,186,102],trimHi:[255,242,206],deck:[86,64,42]};
+  return{lac:h.lac,trim:h.gold,trimHi:[255,246,220],deck:h.teak};
+}
+function drawLuxeSkin(h){
+  const P=h.prof,PAL=luxPal(h);
+  /* лак: тон глубже корпусного, к борту уходит в почти чёрное */
+  const lg=ctx.createLinearGradient(0,-h.bw*1.15,0,h.bw*1.15);
+  lg.addColorStop(0,rgba(mixc(PAL.lac,[255,255,255],.30),1));
+  lg.addColorStop(.34,rgba(PAL.lac,1));
+  lg.addColorStop(1,rgba(mixc(PAL.lac,[0,0,0],.55),1));
+  ctx.fillStyle=lg;ctx.fillRect(h.tail-2,-h.bw*1.35,h.len+6,h.bw*2.7);
+  /* металлик: зерно из светлых точек. Оно не читается как точки — оно даёт
+     лаку глубину, которой не даёт ни один градиент */
+  /* зерно мельче и слабее вдвое: на первом заходе точки читались пылью
+     на носу, а не глубиной лака */
+  for(let i=0;i<220;i++){
+    const hh=hashi(i,h.seed,0x9E37);
+    const x=lerp(h.nose,h.tail,((hh>>>3)&255)/255);
+    const w=profW(P,x), y=(((hh>>>11)&255)/255-.5)*w*1.9;
+    ctx.fillStyle="rgba(255,252,240,"+(.025+((hh>>>19)&7)*.006).toFixed(3)+")";
+    ctx.fillRect(x,y,.4,.4);
+  }
+  /* протяжный блик по лаку: одна широкая мягкая полоса вдоль скулы — так
+     выглядит полированная поверхность, и только так */
+  const sg=ctx.createLinearGradient(0,-h.bw*.95,0,-h.bw*.05);
+  sg.addColorStop(0,"rgba(255,255,255,0)");
+  sg.addColorStop(.55,"rgba(255,255,255,.16)");
+  sg.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.fillStyle=sg;ctx.fillRect(h.tail,-h.bw,h.len,h.bw);
+  /* тик: НЕ по всему корпусу.
+     Первый вариант мостил доской всё от носа до кормы, и яхта читалась плотом:
+     дерево там, где под ним салон, — это не роскошь, а паркет. Тик кладётся
+     ровно туда, где ходит человек: бак, ют вокруг площадки и две прогулочные
+     полосы вдоль борта. Всё остальное — лак. */
+  const L=h.mark.lux;
+  const zones=[];
+  if(L){
+    const d0=L.deck[0];
+    zones.push([d0.x1,h.nose*.62,-h.bw*1.3,h.bw*1.3]);          // бак
+    zones.push([h.tail*.98,d0.x0,-h.bw*1.3,h.bw*1.3]);          // ют
+    zones.push([d0.x0,d0.x1,d0.w*.5,h.bw*1.3]);                 // борт правый
+    zones.push([d0.x0,d0.x1,-h.bw*1.3,-d0.w*.5]);               // борт левый
+  }else zones.push([h.tail*.92,h.nose*.72,-h.bw*1.3,h.bw*1.3]);
+  ctx.save();
+  ctx.beginPath();
+  for(let i=1;i<P.length-1;i++)ctx.lineTo(P[i][0],-P[i][1]*.9);
+  for(let i=P.length-2;i>0;i--)ctx.lineTo(P[i][0],P[i][1]*.9);
+  ctx.closePath();ctx.clip();
+  for(const z of zones){
+    const zx=Math.min(z[0],z[1]),zw=Math.abs(z[1]-z[0]),zy=z[2],zh=z[3]-z[2];
+    ctx.fillStyle=rgba(mixc(PAL.deck,[20,16,12],.30),1);
+    ctx.fillRect(zx,zy,zw,zh);
+    ctx.strokeStyle="rgba(28,20,14,.5)";ctx.lineWidth=.3;      // швы между досок
+    for(let y=zy;y<zy+zh;y+=1.05){
+      ctx.beginPath();ctx.moveTo(zx,y);ctx.lineTo(zx+zw,y);ctx.stroke();
+    }
+    /* тёмная окантовка настила: у палубы есть край, и он всегда виден */
+    ctx.strokeStyle="rgba(24,17,11,.6)";ctx.lineWidth=.5;
+    ctx.strokeRect(zx,zy,zw,zh);
+    ctx.fillStyle="rgba(255,236,190,.07)";ctx.fillRect(zx,zy,zw,zh); // лак по тику
+  }
+  /* поперечные стыки досок — вразбежку, иначе палуба читается решёткой */
+  ctx.strokeStyle="rgba(28,20,14,.3)";ctx.lineWidth=.3;
+  for(let i=0;i<26;i++){
+    const hh=hashi(i,h.seed,0x77A1);
+    const x=lerp(h.nose*.8,h.tail*.9,((hh>>>4)&63)/63), y=(((hh>>>12)&31)/31-.5)*h.bw*2.2;
+    ctx.beginPath();ctx.moveTo(x,y-.55);ctx.lineTo(x,y+.55);ctx.stroke();
+  }
+  ctx.restore();
+  /* латунный кант по борту: две нити, широкая тусклая и узкая яркая —
+     полированный металл всегда пара «тело + блик», одной линией он не бывает */
+  /* кант идёт от носа только до миделя: на узком длинном корпусе две нити во
+     всю длину съедали половину ширины, и тело читалось полосатой рейкой */
+  const kEnd=Math.max(2,Math.floor(P.length*.55));
+  for(const s of [1,-1]){
+    ctx.strokeStyle=rgba(mixc(PAL.trim,[40,26,8],.42),1);ctx.lineWidth=.7;
+    ctx.beginPath();
+    for(let i=1;i<kEnd;i++)ctx.lineTo(P[i][0],P[i][1]*.86*s);
+    ctx.stroke();
+    ctx.strokeStyle=rgba(mixc(PAL.trim,[255,240,200],.42),.8);ctx.lineWidth=.3;
+    ctx.beginPath();
+    for(let i=1;i<kEnd;i++)ctx.lineTo(P[i][0],P[i][1]*.86*s-.45);
+    ctx.stroke();
+  }
+}
+function drawLuxeDeck(h,L){
+  const PAL=luxPal(h);
+  /* тени ярусов: длина тени и есть высота. Один свет на весь корабль */
+  for(const d of L.deck)hullShade(h,d.h,()=>{
+    ctx.fillRect(d.x0,-d.w*.5,d.x1-d.x0,d.w);
+  });
+  hullShade(h,.5,()=>{
+    ctx.beginPath();ctx.arc(L.pad.x,0,L.pad.r,0,TAU);ctx.fill();
+  });
+  /* площадка на юте: круг разметки на пустой корме */
+  ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.5;
+  ctx.beginPath();ctx.arc(L.pad.x,0,L.pad.r,0,TAU);ctx.stroke();
+  ctx.strokeStyle=rgba(h.lite,.22);
+  ctx.beginPath();ctx.arc(L.pad.x,0,L.pad.r*.62,0,TAU);ctx.stroke();
+  /* прогулочная палуба вдоль борта: ограждение стойками, а не линией —
+     по нему и читается, что по борту ходит человек */
+  for(const s of [1,-1]){
+    const x0=L.rail[0],x1=L.rail[1];
+    ctx.strokeStyle=rgba(h.lite,.42);ctx.lineWidth=.45;
+    ctx.beginPath();
+    for(let x=x0;x>x1;x-=1.2)ctx.lineTo(x,profW(h.prof,x)*.9*s);
+    ctx.stroke();
+    ctx.strokeStyle=rgba(h.lite,.2);
+    for(let x=x0;x>x1;x-=2.6){
+      const y=profW(h.prof,x)*.9*s;
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-1.1*s);ctx.stroke();
+    }
+  }
+  /* тёплый разлив света от салона на палубу: свет, который ничего не освещает,
+     — это плёнка поверх кадра, а не свет. Ложится ДО ярусов, чтобы уйти под
+     надстройку, а не лечь на неё */
+  {
+    const d=L.deck[0],dl=d.x1-d.x0;
+    for(const s of [1,-1]){
+      const y=d.w*.5*s;
+      const g=ctx.createLinearGradient(0,y,0,y+1.8*s);
+      g.addColorStop(0,"rgba(255,214,150,.16)");
+      g.addColorStop(1,"rgba(255,190,120,0)");
+      ctx.fillStyle=g;
+      ctx.fillRect(d.x0+dl*.08,Math.min(y,y+1.8*s),dl*.84,1.8);
+    }
+  }
+  /* ярусы снизу вверх.
+     Надстройка — ЖЕМЧУГ, а не цвет корпуса: белая надстройка на тёмном лаке
+     и есть тот контраст, по которому яхту опознают за километр. Ярус выше —
+     светлее, и на каждом лежит карбон: тонкая косая сетка, четвёртая фактура
+     кадра и единственная в игре. */
+  for(let i=0;i<L.deck.length;i++){
+    const d=L.deck[i],y0=-d.w*.5,dl=d.x1-d.x0;
+    const base=mixc(h.pearl,h.col,.16-i*.05);
+    const g=ctx.createLinearGradient(0,y0,0,y0+d.w);
+    g.addColorStop(0,rgba(mixc(base,[255,255,255],.22),1));
+    g.addColorStop(.45,rgba(base,1));
+    g.addColorStop(1,rgba(mixc(base,[24,30,40],.52),1));
+    ctx.fillStyle=g;ctx.fillRect(d.x0,y0,dl,d.w);
+    ctx.save();
+    ctx.beginPath();ctx.rect(d.x0,y0,dl,d.w);ctx.clip();
+    /* карбон: сетка мелкая и еле заметная. На первом заходе шаг был крупный,
+       контраст вдвое выше, и надстройка читалась куском марли */
+    ctx.strokeStyle="rgba(20,26,34,.07)";ctx.lineWidth=.3;
+    for(let k=-40;k<40;k++){
+      ctx.beginPath();ctx.moveTo(d.x0+k*1.1,y0);ctx.lineTo(d.x0+k*1.1+d.w,y0+d.w);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(d.x0+k*1.1,y0+d.w);ctx.lineTo(d.x0+k*1.1+d.w,y0);ctx.stroke();
+    }
+    ctx.restore();
+    ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(d.x0,y0+d.w-.6,dl,.6);   // цоколь
+    ctx.fillStyle="rgba(255,255,255,.62)";ctx.fillRect(d.x0,y0,dl,.45);  // верхняя грань
+    /* латунная окантовка яруса — тот же материал, что и кант по борту */
+    ctx.strokeStyle=rgba(mixc(PAL.trim,[40,26,8],.3),.9);ctx.lineWidth=.4;
+    ctx.strokeRect(d.x0+.2,y0+.2,dl-.4,d.w-.4);
+    /* ── панорама ──
+       Двадцать одинаковых окошек по борту — это автобус. У салона стекло
+       СПЛОШНОЕ: тёмная полоса от борта до борта яруса, тёплый свет изнутри
+       и один косой блик по стеклу. Ярус выше — полоса короче. */
+    if(i<2){
+      const gy=d.w*(i?.30:.34), gh=Math.max(.9,d.w*.16);
+      for(const s of [1,-1]){
+        const wy=gy*s-(s>0?0:gh);
+        const wg=ctx.createLinearGradient(d.x0,0,d.x1,0);
+        wg.addColorStop(0,"rgba(12,20,30,.95)");
+        wg.addColorStop(.45,"rgba(255,224,168,.85)");
+        wg.addColorStop(.75,"rgba(255,206,140,.55)");
+        wg.addColorStop(1,"rgba(12,20,30,.95)");
+        ctx.fillStyle=wg;ctx.fillRect(d.x0+dl*.08,wy,dl*.84,gh);
+        ctx.strokeStyle=rgba(mixc(PAL.trim,[60,40,14],.25),.9);ctx.lineWidth=.35;
+        ctx.strokeRect(d.x0+dl*.08,wy,dl*.84,gh);
+        ctx.fillStyle="rgba(255,255,255,.35)";                 // косой блик
+        ctx.fillRect(d.x0+dl*.5,wy,dl*.1,gh*.5);
+      }
+    }else{
+      /* ── купол рубки ──
+         Верхний ярус с карбоновой сеткой читался куском марли в шашечку.
+         На самом верху яхты стоит стеклянный колпак: тёмное стекло, тёплый
+         свет из-под него и один блик — половина овала, а не сетка */
+      const cx=(d.x0+d.x1)*.5,rx=dl*.42,ry=d.w*.42;
+      const dg=ctx.createRadialGradient(cx+rx*.3,-ry*.3,ry*.1,cx,0,rx);
+      dg.addColorStop(0,"rgba(255,236,196,.85)");
+      dg.addColorStop(.55,"rgba(120,150,175,.5)");
+      dg.addColorStop(1,"rgba(14,22,32,.95)");
+      ctx.fillStyle=dg;
+      ctx.beginPath();ctx.ellipse(cx,0,rx,ry,0,0,TAU);ctx.fill();
+      ctx.strokeStyle=rgba(mixc(PAL.trim,[255,244,214],.3),.9);ctx.lineWidth=.4;ctx.stroke();
+      ctx.fillStyle="rgba(255,255,255,.4)";
+      ctx.beginPath();ctx.ellipse(cx+rx*.28,-ry*.34,rx*.3,ry*.22,-.5,0,TAU);ctx.fill();
+    }
+  }
+  /* ── волнорез ── латунная накладка по обводу носа: нос был тёмным капотом
+     с зерном металлика и читался пятном грязи. Металл на носу — то, обо что
+     свет бьётся первым, и он обязан быть самым ярким местом корпуса */
+  for(const s of [1,-1]){
+    ctx.strokeStyle=rgba(mixc(PAL.trim,[255,244,214],.35),.9);ctx.lineWidth=.8;
+    ctx.beginPath();
+    for(let i=0;i<4;i++)ctx.lineTo(h.prof[i][0],h.prof[i][1]*.92*s);
+    ctx.stroke();
+  }
+  /* ── тендерный гараж ── лацпорт в борту с откинутым трапом: единственная
+     поперечная деталь на корпусе, который весь вытянут вдоль */
+  if(L.tender){
+    const T=L.tender, y=profW(h.prof,T.x)*.92*T.s;
+    ctx.fillStyle="rgba(8,12,18,.92)";
+    ctx.fillRect(T.x-2.6,Math.min(y,y-1.5*T.s),5.2,1.5);
+    ctx.strokeStyle=rgba(mixc(PAL.trim,[40,26,8],.3),.9);ctx.lineWidth=.4;
+    ctx.strokeRect(T.x-2.6,Math.min(y,y-1.5*T.s),5.2,1.5);
+    ctx.fillStyle=rgba(mixc(PAL.deck,[255,236,190],.2),1);      // трап тиковый
+    ctx.fillRect(T.x-1.1,y,2.2,3.2*T.s);
+    ctx.strokeStyle="rgba(28,20,14,.5)";ctx.lineWidth=.3;
+    for(let k=1;k<4;k++){
+      const ty=y+3.2*T.s*k/4;
+      ctx.beginPath();ctx.moveTo(T.x-1.1,ty);ctx.lineTo(T.x+1.1,ty);ctx.stroke();
+    }
+  }
+  /* ── имя ── латунью по борту, мелко: имя не кричат, его замечают */
+  if(L.name&&h.bw>2.6){
+    ctx.save();
+    ctx.fillStyle=rgba(mixc(PAL.trim,[255,246,220],.3),.85);
+    ctx.font="2.4px ui-monospace,monospace";
+    ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.translate(lerp(h.nose*.62,h.nose*.3,.5),-h.bw*.62);
+    ctx.rotate(Math.PI/2);
+    ctx.fillText(L.name,0,0);
+    ctx.restore();
+  }
+  /* ── огни палубы ── тёплые точки вдоль ограждения: их не видно днём и
+     они и есть вечерний вид яхты */
+  ctx.fillStyle="rgba(255,222,170,.75)";
+  for(const s of [1,-1])for(let x=L.rail[0];x>L.rail[1];x-=4.5)
+    ctx.fillRect(x,profW(h.prof,x)*.9*s-.3,.6,.6);
 }
 function drawHull(id,thrusting,braking,lvl,bank){
   const h=hullOf(id),blink=Math.sin(G.t*.07);
@@ -794,7 +1187,18 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.restore();
   }
   /* ── факелы ── */
-  if(thrusting)for(const e of h.eng)drawFlame(e.x,e.y,e.r,1+lvl*.22);
+  if(thrusting)for(const e of h.eng)drawFlame(e.x,e.y,e.r,1+lvl*.22,h.lux);
+  else if(h.lux)for(const e of h.eng){
+    /* на стоянке у люкса светится не зев, а КОЛЬЦО среза: холодная нить по
+       ободу и тёмная глубина внутри — сопло видно и выключенным */
+    const PAL=luxPal(h);
+    ctx.fillStyle="rgba(8,12,18,.9)";
+    ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.6,0,TAU);ctx.fill();
+    ctx.strokeStyle=rgba(mixc(PAL.trim,[255,244,214],.3),.9);ctx.lineWidth=.4;
+    ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.6,0,TAU);ctx.stroke();
+    ctx.fillStyle="rgba(170,215,255,"+(.16+Math.random()*.1).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.3,0,TAU);ctx.fill();
+  }
   else for(const e of h.eng){   // холостой ход — только тлеющее сопло
     ctx.fillStyle="rgba(255,140,70,"+(.2+Math.random()*.12).toFixed(2)+")";
     ctx.beginPath();ctx.arc(e.x+e.r*.1,e.y,e.r*.42,0,TAU);ctx.fill();
@@ -849,6 +1253,67 @@ function drawHull(id,thrusting,braking,lvl,bank){
       ctx.beginPath();ctx.moveTo(bx,y);ctx.lineTo(bx+2.4,profW(h.prof,bx)*.9*s);ctx.stroke();
     }
   }
+  /* ── крыло-манта люксовой яхты ── рисуется ДО корпуса: пластина уходит под
+     борт, как и обычное крыло, иначе она читается наклейкой поверх */
+  if(h.lux&&h.mark.lux&&h.mark.lux.wing){
+    const W=h.mark.lux.wing,PAL=luxPal(h);
+    for(const s of [1,-1]){
+      const r0=profW(h.prof,W.x0)*.8*s, r1=profW(h.prof,W.x1)*.9*s;
+      const tipX=W.x1-W.tipBack, tipY=W.span*s;
+      ctx.beginPath();
+      /* наплыв: кромка выходит из борта не прямой, а долгой пологой дугой от
+         самого носа — крыло вырастает из тела, а не приставлено к нему */
+      ctx.moveTo(h.nose*.72,profW(h.prof,h.nose*.72)*.7*s);
+      ctx.quadraticCurveTo(W.x0+(h.nose*.72-W.x0)*.3,W.span*.06*s,W.x0,W.span*.13*s);
+      ctx.bezierCurveTo(W.x0-(W.x0-tipX)*.35,W.span*.34*s,
+                        tipX+W.tipBack*.9,W.span*.80*s, tipX,tipY);   // передняя кромка
+      ctx.lineTo(tipX-W.tipBack*.35,W.span*.94*s);                    // законцовка
+      ctx.bezierCurveTo(W.x1-W.tipBack*.2,W.span*.52*s,
+                        W.x1+(W.x0-W.x1)*.18,W.span*.16*s, W.x1,r1);  // задняя кромка
+      ctx.closePath();
+      const g=ctx.createLinearGradient(0,r0,0,tipY);
+      g.addColorStop(0,rgba(mixc(PAL.lac,[255,255,255],.16),1));
+      g.addColorStop(.45,rgba(PAL.lac,1));
+      g.addColorStop(1,rgba(mixc(PAL.lac,[0,0,0],.62),1));
+      ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle=rgba(mixc(PAL.lac,[0,0,0],.7),1);ctx.lineWidth=.4;ctx.stroke();
+      /* нить металла по передней кромке: тонкое крыло видно только кромкой */
+      ctx.strokeStyle=rgba(mixc(PAL.trim,[255,244,214],.35),.85);ctx.lineWidth=.45;
+      ctx.beginPath();
+      ctx.moveTo(h.nose*.72,profW(h.prof,h.nose*.72)*.7*s);
+      ctx.quadraticCurveTo(W.x0+(h.nose*.72-W.x0)*.3,W.span*.06*s,W.x0,W.span*.13*s);
+      ctx.bezierCurveTo(W.x0-(W.x0-tipX)*.35,W.span*.34*s,
+                        tipX+W.tipBack*.9,W.span*.80*s, tipX,tipY);
+      ctx.stroke();
+      /* один лонжерон: без него пластина плоская */
+      ctx.strokeStyle="rgba(0,0,0,.3)";ctx.lineWidth=.4;
+      ctx.beginPath();ctx.moveTo(W.x0-(W.x0-W.x1)*.3,r0*.9);
+      ctx.lineTo(tipX+W.tipBack*.5,W.span*.82*s);ctx.stroke();
+      /* тень веретена на крыло: единственное, что говорит, что гондола стоит
+         НА пластине, а не нарисована на ней */
+      for(const n of h.nacs){
+        ctx.save();
+        ctx.beginPath();                       // клип по самому крылу
+        ctx.moveTo(h.nose*.72,profW(h.prof,h.nose*.72)*.7*s);
+        ctx.quadraticCurveTo(W.x0+(h.nose*.72-W.x0)*.3,W.span*.06*s,W.x0,W.span*.13*s);
+        ctx.bezierCurveTo(W.x0-(W.x0-tipX)*.35,W.span*.34*s,
+                          tipX+W.tipBack*.9,W.span*.80*s, tipX,tipY);
+        ctx.lineTo(tipX-W.tipBack*.35,W.span*.94*s);
+        ctx.bezierCurveTo(W.x1-W.tipBack*.2,W.span*.52*s,
+                          W.x1+(W.x0-W.x1)*.18,W.span*.16*s, W.x1,r1);
+        ctx.closePath();ctx.clip();
+        ctx.fillStyle="rgba(0,0,0,.34)";
+        ctx.fillRect(n.x-n.l*.5+SH_DX*1.4,n.y*s-n.r+SH_DY*1.4,n.l,n.r*2);
+        /* и тень самого корпуса на крыло: корпус стоит выше пластины, значит
+           на пластину он ложится — без этого крыло и тело в одной плоскости */
+        ctx.translate(SH_DX*2.2,SH_DY*2.2);
+        ctx.fillStyle="rgba(0,0,0,.3)";
+        tracePoly(h.poly);ctx.fill();
+        ctx.restore();
+        break;
+      }
+    }
+  }
   /* ── крылья ── */
   for(const w of h.wings)for(const s of [1,-1]){
     tracePoly(w,s);
@@ -879,6 +1344,50 @@ function drawHull(id,thrusting,braking,lvl,bank){
       ctx.beginPath();
       ctx.moveTo(n.x-n.l*.2,profW(h.prof,n.x)*.8*s);
       ctx.lineTo(n.x-n.l*.1,y-n.r*.6*s);ctx.stroke();
+    }
+    /* ── гондола люксовой яхты ──
+       У всех она — ящик с хомутом, и на яхте это было самое дешёвое место
+       кадра: два серых контейнера по бортам. Здесь она обтекаемая капля,
+       полированная: тёмное тело, узкий зеркальный блик вдоль и латунная нить
+       по разъёму. Форма следует не работе, а деньгам, и это честно. */
+    if(h.lux){
+      const PAL=luxPal(h),x0=n.x-n.l*.5,x1=n.x+n.l*.5;
+      ctx.beginPath();
+      ctx.moveTo(x1,y);
+      ctx.bezierCurveTo(x1-n.l*.18,y-n.r,n.x,y-n.r,x0+n.l*.18,y-n.r*.86);
+      ctx.quadraticCurveTo(x0,y-n.r*.7,x0,y);
+      ctx.quadraticCurveTo(x0,y+n.r*.7,x0+n.l*.18,y+n.r*.86);
+      ctx.bezierCurveTo(n.x,y+n.r,x1-n.l*.18,y+n.r,x1,y);
+      ctx.closePath();
+      const ng=ctx.createLinearGradient(0,y-n.r,0,y+n.r);
+      ng.addColorStop(0,rgba(mixc(PAL.lac,[255,255,255],.42),1));
+      ng.addColorStop(.30,rgba(mixc(PAL.lac,[255,255,255],.10),1));
+      ng.addColorStop(.62,rgba(mixc(PAL.lac,[0,0,0],.35),1));
+      ng.addColorStop(1,rgba(mixc(PAL.lac,[0,0,0],.6),1));
+      ctx.fillStyle=ng;ctx.fill();
+      ctx.strokeStyle=rgba(mixc(PAL.lac,[0,0,0],.72),1);ctx.lineWidth=.45;ctx.stroke();
+      ctx.fillStyle="rgba(255,255,255,.34)";            // зеркальная нить
+      ctx.fillRect(x0+n.l*.2,y-n.r*.72,n.l*.62,.4);
+      ctx.strokeStyle=rgba(mixc(PAL.trim,[60,40,14],.2),.95);ctx.lineWidth=.4;
+      ctx.beginPath();                                  // латунь по разъёму
+      ctx.moveTo(x0+n.l*.28,y-n.r*.9);ctx.lineTo(x0+n.l*.28,y+n.r*.9);ctx.stroke();
+      ctx.fillStyle="rgba(10,14,20,.9)";                // тёмный зев сопла
+      ctx.beginPath();ctx.ellipse(x0+.5,y,n.r*.28,n.r*.72,0,0,TAU);ctx.fill();
+      ctx.strokeStyle=rgba(PAL.trim,.7);ctx.lineWidth=.35;ctx.stroke();
+      /* игла впереди веретена: тонкий штырь с утолщением у основания.
+         Вещь читается быстрой, пока стоит, — за счёт неё одной */
+      const SP=h.mark.lux.spike;
+      if(SP){
+        ctx.strokeStyle=rgba(mixc(PAL.trim,[255,244,214],.4),.9);
+        ctx.lineWidth=.5;
+        ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x1+SP,y);ctx.stroke();
+        ctx.fillStyle=rgba(mixc(PAL.lac,[255,255,255],.3),1);
+        ctx.beginPath();
+        ctx.moveTo(x1,y-n.r*.34);ctx.lineTo(x1+SP*.34,y-.28);
+        ctx.lineTo(x1+SP*.34,y+.28);ctx.lineTo(x1,y+n.r*.34);
+        ctx.closePath();ctx.fill();
+      }
+      continue;
     }
     ctx.beginPath();
     ctx.moveTo(n.x+n.l*.5,y-n.r*.45);
@@ -937,7 +1446,8 @@ function drawHull(id,thrusting,braking,lvl,bank){
      заклёпок по шву и парой люков. Тонкая линия плюс фактура читается
      аккуратнее толстой линии без фактуры. */
   const np=4+((h.seed>>>6)&3);
-  for(let k=0;k<np;k++){
+  if(h.lux)drawLuxeSkin(h);
+  else for(let k=0;k<np;k++){
     const t0=k/np, t1=(k+1)/np;
     const x0=lerp(h.nose,h.tail,t0), x1=lerp(h.nose,h.tail,t1);
     const hh=hashi(k,h.seed,0x5A1E);
@@ -977,7 +1487,7 @@ function drawHull(id,thrusting,braking,lvl,bank){
     }
   }
   /* люки: два прямоугольника со скруглением, всегда на борту, не по оси */
-  for(let k=0;k<2;k++){
+  if(!h.lux)for(let k=0;k<2;k++){
     const hh=hashi(k+11,h.seed,0x40C7);
     const hx=lerp(h.nose*.62,h.tail*.7,((hh>>>3)&15)/15);
     const pw2=profW(P,hx), hs=Math.min(3.2,pw2*.5);

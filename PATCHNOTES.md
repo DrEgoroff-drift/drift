@@ -9,6 +9,32 @@ could ever save.
 
 ---
 
+## 0.58.0 — "The luxe yacht is no longer a courier with bus windows"
+
+**A yacht is the one hull bought for the look of it**, and it was an arrow with a strip of
+identical yellow windows — a courier with a school bus painted on the flank. Ten passes over one
+stand (`docs/mkyacht.ps1` → `docs/shots/yachts.png`), luxe yachts only.
+
+- **Form.** A long thin body: fine drawn-out entry, beam aft of midships, a tail that runs almost
+  to a thread. A **manta wing** grown out of the hull by a strake, thin, with tips swept back past
+  the stern, and the **spindle nacelles standing on the wing** — each with a needle forward, which
+  is what makes the thing read fast while parked.
+- **Materials nobody else in the fleet has**: deep lacquer with metallic grain instead of riveted
+  plates, teak on the open deck only (foredeck, fantail, two side promenades — the first pass
+  planked the whole ship and it read as parquet), brass edging, pearl superstructure with a fine
+  carbon weave.
+- **Three tiers instead of a fighter canopy**: saloon, promenade deck, and the owner's wheelhouse
+  under a glass dome. Continuous panoramic glazing with warm light spilling onto the deck — the
+  band of twenty identical windows was the single thing that gave the courier away.
+- **Three engine schools**: `candle` — one long nozzle on the axis, `pods` — the pair on the wing,
+  `crown` — small nozzles across the transom. Luxe thrust is cool, white-blue and half the length:
+  an orange bonfire astern reads as freight.
+- **Three finishes** (`classic` brass-and-teak · `pearl` white-and-chrome · `noir` near-black with
+  gold) so six seeds are no longer one yacht, plus a name in brass instead of a stencilled
+  inventory number, a tender port with a gangway, a helipad on the fantail and deck lighting.
+
+Suites — 2966 green.
+
 ## 0.57.0 — "Finds in flight, and half of them are theirs"
 
 **The space between planets was empty** — item 5 of the visual queue, open since M55. Minutes of
