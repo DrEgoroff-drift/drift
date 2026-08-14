@@ -81,27 +81,77 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   c.fillStyle=rgba(acc,.85*flick);c.fillText(S.sign,22,33);
   c.shadowColor=rgba(acc,.5*flick);c.shadowBlur=10;c.fillText(S.sign,22,33);c.shadowBlur=0;
   /* ── полка с бутылками за стойкой ── */
+  /* ── что за стойкой ──
+     Стена бутылок стояла всюду, включая научную станцию и аванпост, где ей
+     взяться неоткуда. За стойкой стоит то, чем это место торгует: в торговом
+     зале и на верфи — бутылки, на комбинате — цеховые фляги в два ряда без
+     затей, в научной — колбы и термосы на ровных полках, на аванпосте полки
+     нет вовсе: ящики один на другом, потому что мебель сюда не возят. */
   const shx=16,shw=Math.min(W2*.42,260);
+  const back=(G.st&&G.st.stype)||"trade";
   c.fillStyle="rgba(18,22,30,.9)";c.fillRect(shx,44,shw,cy-52);
-  for(let s=0;s<2;s++){
+  if(back==="outpost"){
+    const RR=rng(seed^0x5C);
+    for(let x=shx+4;x<shx+shw-20;x+=26+RR()*10){
+      const rows=1+((RR()*3)|0);
+      for(let k=0;k<rows;k++){
+        const bw2=20+RR()*6,bh2=15+RR()*4,by=cy-12-k*(bh2+2);
+        c.fillStyle=rgba([64,58,50],.95);c.fillRect(x,by-bh2,bw2,bh2);
+        c.strokeStyle="rgba(0,0,0,.5)";c.lineWidth=1;c.strokeRect(x+.5,by-bh2+.5,bw2-1,bh2-1);
+        c.fillStyle="rgba(255,255,255,.07)";c.fillRect(x,by-bh2,bw2,2);
+        c.fillStyle=rgba(acc,.25);c.fillRect(x+3,by-bh2*.55,bw2-6,2);   // трафарет
+      }
+    }
+  }else for(let s=0;s<(back==="sci"?3:2);s++){
     const sy=58+s*26;
-    c.fillStyle="rgba(52,44,36,.95)";c.fillRect(shx,sy,shw,3);
+    c.fillStyle=back==="sci"?"rgba(70,78,90,.95)":"rgba(52,44,36,.95)";
+    c.fillRect(shx,sy,shw,3);
     const RR=rng(seed+s*77);
-    for(let x=shx+6;x<shx+shw-8;x+=11+RR()*7){
-      const bh=10+RR()*9,hue=[[86,120,96],[130,96,74],[70,96,130],[128,84,110]][(RR()*4)|0];
-      c.fillStyle=rgba(hue,.8);c.fillRect(x,sy-bh,5,bh);
-      c.fillStyle="rgba(255,255,255,.12)";c.fillRect(x,sy-bh,1.4,bh);
-      c.fillStyle="rgba(220,230,240,.25)";c.fillRect(x+1.6,sy-bh-3,1.8,3);
+    for(let x=shx+6;x<shx+shw-8;x+=(back==="indust"?9:11)+RR()*7){
+      const bh=10+RR()*9;
+      if(back==="sci"){                        // колбы и термосы: стекло и сталь
+        c.fillStyle="rgba(150,170,190,.5)";c.fillRect(x,sy-bh,5,bh);
+        c.fillStyle="rgba(190,230,240,.35)";c.fillRect(x,sy-bh*.45,5,bh*.45);
+        c.fillStyle="rgba(230,244,250,.3)";c.fillRect(x,sy-bh,1.3,bh);
+      }else if(back==="indust"){               // фляги: одинаковые, цеховые
+        c.fillStyle="rgba(96,88,70,.9)";c.fillRect(x,sy-bh*.8,6,bh*.8);
+        c.fillStyle="rgba(255,255,255,.1)";c.fillRect(x,sy-bh*.8,1.6,bh*.8);
+        c.fillStyle="rgba(30,26,20,.6)";c.fillRect(x,sy-bh*.8,6,1.6);
+      }else{
+        const hue=[[86,120,96],[130,96,74],[70,96,130],[128,84,110]][(RR()*4)|0];
+        c.fillStyle=rgba(hue,.8);c.fillRect(x,sy-bh,5,bh);
+        c.fillStyle="rgba(255,255,255,.12)";c.fillRect(x,sy-bh,1.4,bh);
+        c.fillStyle="rgba(220,230,240,.25)";c.fillRect(x+1.6,sy-bh-3,1.8,3);
+      }
     }
   }
   /* ── реквизит по типу станции ── */
   cantProps(c,S.props,W2,fy,cy,seed,acc);
-  /* ── посетители на заднем плане: силуэты, чтобы зал не был пустым ── */
-  const back=2+((seed>>3)&1);
-  for(let i=0;i<back;i++){
-    const bx=W2*(.18+i*.26)+((seed>>(i*3))&15);
-    c.globalAlpha=.30;
-    cantFigure(c,bx,cy+16,[54,60,72],G.t*.02+i*2.3,null,0);
+  /* ── толпа ──
+     Во всех пяти залах стояли одни и те же два-три силуэта: зал был «не
+     пустым», но одинаково не пустым везде. Народ — вторая после света примета
+     места, и он считается не для красоты: на комбинате смена кончилась и в
+     зале не протолкнуться, в научной сидят двое и врозь, на аванпосте — трое,
+     и каждый сам по себе. `CROWD` задаёт, сколько их, как плотно они стоят и
+     насколько тесно жмутся друг к другу. */
+  const CROWD={
+    trade:  {n:6, spread:.92, clump:.5},
+    indust: {n:9, spread:.96, clump:.85},
+    yard:   {n:5, spread:.9,  clump:.6},
+    sci:    {n:2, spread:.7,  clump:0},
+    outpost:{n:3, spread:1,   clump:0}
+  };
+  const CR=CROWD[(G.st&&G.st.stype)||"trade"]||CROWD.trade;
+  for(let i=0;i<CR.n;i++){
+    const RR=rng(seed+i*911);
+    /* кучкуются парами, а не выстраиваются по линейке: `clump` сдвигает
+       каждого второго вплотную к соседу — так это и выглядит в кабаке */
+    const base=W2*(.06+(i/Math.max(1,CR.n-1))*CR.spread*.88);
+    const bx=base+((i&1)?-10*CR.clump:0)+RR()*8-4;
+    const far=RR()<.45;                       // кто-то стоит дальше и темнее
+    c.globalAlpha=far?.18:.32;
+    cantFigure(c,bx,cy+16+(far?-4:0),far?[42,48,58]:[54,60,72],
+               G.t*.02+i*2.3,null,0);
     c.globalAlpha=1;
   }
   /* ── бармен и кандидаты рисуются ДО стойки ──
