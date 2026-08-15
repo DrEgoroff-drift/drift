@@ -534,15 +534,15 @@ giantTex                     src/19a-mode-scoop.js:86
 glassOutline                 src/25-cockpit.js:54
 goalCard                     src/13b-occupy.js:168
 goalOwnYacht                 src/13b-occupy.js:161
-gradePass                    src/19c-light.js:133
-groundAt                     src/07-planet.js:145
+gradePass                    src/19c-light.js:140
+groundAt                     src/07-planet.js:157
 groundShadow                 src/19-mode-landing.js:238
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
 hasSave                      src/14-save.js:349
 hazardBand                   src/25-cockpit.js:166
-hazeBand                     src/19c-light.js:96
+hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
 held                         src/08-state.js:115
 hex2rgb                      src/03-ships.js:145
@@ -665,7 +665,7 @@ launch                       src/21-mode-surface.js:253
 launchHold                   src/21-mode-surface.js:198
 layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
-lightShafts                  src/19c-light.js:108
+lightShafts                  src/19c-light.js:115
 litRGB                       src/19c-light.js:46
 loadGame                     src/14-save.js:345
 LOG_MAX                      src/11-log.js:3
@@ -1333,7 +1333,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/06-galaxy.js · 9 КБ
   · галактика:1
 
-## src/07-planet.js · 7 КБ
+## src/07-planet.js · 8 КБ
   · текстуры планет:1
   · рельеф:40
   · рельеф:41
@@ -1461,7 +1461,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/18a-material.js · 17 КБ
   · материал грунта:1
 
-## src/18b-geology.js · 8 КБ
+## src/18b-geology.js · 9 КБ
   · геология:1
 
 ## src/18-mode-map.js · 20 КБ
@@ -1475,7 +1475,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/19b-sky.js · 20 КБ
   · небо:1
 
-## src/19c-light.js · 10 КБ
+## src/19c-light.js · 11 КБ
   · свет и воздух:1
 
 ## src/19d-weather.js · 11 КБ

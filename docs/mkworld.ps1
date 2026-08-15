@@ -29,14 +29,15 @@ setTimeout(function(){
     }
     var t=types[n];
     var p=G.sys.planets.find(function(x){return x.type!=="gas";})||G.sys.planets[0];
-    p.type=t; p.T=TYPES[t]||p.T; p.mix=null;
-    delete p.tex;
+    p.type=t; p.T=TYPES[t]||p.T; p.mix=null; p.mw=null;
+    p.rough=Math.min(1.2,p.T.rough); p.res=worldRes(t,null,null);
+    delete p.tex; delete p.mat; delete p.strata; delete p.geo; delete p.bio; p.seed=(p.seed^0x1000+n*7919)>>>0;
     var tr=genTerrain(p);
     G.land={p:p,tr:tr,x:tr.padX,y:groundAt(tr,tr.padX)};
     enterSurface();
     G.surf.x=tr.W*.5; G.surf.y=groundAt(tr,G.surf.x)-10;
     for(var f=0;f<4;f++)frame(performance.now()+f*16);
-    oc.drawImage(cv,0,0,cv.width,cv.height*0.42,0,n*RH,RW,RH);
+    oc.drawImage(cv,0,cv.height*0.42,cv.width,cv.height*0.58,0,n*RH,RW,RH);
     oc.fillStyle="#9fb3c2";oc.font="12px ui-monospace,monospace";oc.textAlign="left";
     oc.fillText((TYPES[t]&&TYPES[t].ru||t).toUpperCase(),10,n*RH+18);
     n++;
