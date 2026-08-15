@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 104 · символов верхнего уровня: 1272
+Файлов: 109 · символов верхнего уровня: 1272
 
 ## СИМВОЛЫ
 
@@ -78,7 +78,7 @@ autoLandInputs               src/19-mode-landing.js:18
 autosave                     src/14-save.js:341
 b64dec                       src/14-save.js:11
 b64enc                       src/14-save.js:9
-bankTransform                src/03-ships.js:763
+bankTransform                src/03b-hull-paint.js:48
 BARGE_ART                    src/12l-barge.js:376
 BARGE_CAP                    src/12l-barge.js:13
 BARGE_CAPNAMES               src/12l-barge.js:23
@@ -369,21 +369,21 @@ drawExhaust                  src/16a-space.js:133
 drawFactory                  src/20a-poi.js:539
 drawFactRoute                src/13b-occupy.js:238
 drawFindsSystem              src/17b-finds.js:123
-drawFlame                    src/03-ships.js:725
+drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24a-mode-raid.js:638
 drawGlassHUD                 src/24-mode-belt.js:518
 drawGround                   src/19-mode-landing.js:94
 drawHomeBuilding             src/21c-built.js:134
 drawHomeRoom                 src/27e-ui-home.js:42
 drawHqRoom                   src/27f-hq-room.js:22
-drawHull                     src/03-ships.js:1602
-drawHullMarks                src/03-ships.js:888
+drawHull                     src/03e-hull-draw.js:1
+drawHullMarks                src/03b-hull-paint.js:173
 drawLander                   src/19-mode-landing.js:375
 drawLandGear                 src/19-mode-landing.js:349
 drawLanding                  src/19-mode-landing.js:293
 drawLoreMarks                src/12q-lore.js:198
-drawLuxeDeck                 src/03-ships.js:1304
-drawLuxeSkin                 src/03-ships.js:1222
+drawLuxeDeck                 src/03c-hull-luxe.js:109
+drawLuxeSkin                 src/03c-hull-luxe.js:27
 drawMap                      src/18-mode-map.js:51
 drawModule                   src/21aa-base-rooms.js:159
 drawMonolith                 src/20a-poi.js:414
@@ -393,7 +393,7 @@ drawObelisk                  src/20a-poi.js:437
 drawObserv                   src/20a-poi.js:652
 drawPirate                   src/12i-pirate-hull.js:320
 drawPirateBase               src/24a-mode-raid.js:103
-drawPirateSkin               src/03-ships.js:1574
+drawPirateSkin               src/03d-hull-marks.js:99
 drawPlant                    src/20-life.js:315
 drawPlantAlien               src/20-life.js:167
 drawPOI                      src/20a-poi.js:167
@@ -413,7 +413,7 @@ drawStars                    src/16-flight.js:6
 drawStarSingle               src/16a-space.js:201
 drawStation                  src/17-mode-system.js:551
 drawStationMods              src/17a-station-mod.js:178
-drawStencils                 src/03-ships.js:1476
+drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:84
 drawSurface                  src/21-mode-surface.js:334
@@ -421,7 +421,7 @@ drawSurfaceHud               src/21-mode-surface.js:288
 drawSysNebula                src/16a-space.js:65
 drawSystem                   src/17-mode-system.js:272
 drawTemple                   src/20a-poi.js:271
-drawTierTrim                 src/03-ships.js:777
+drawTierTrim                 src/03b-hull-paint.js:62
 drawTrail                    src/16-flight.js:298
 drawWear                     src/12s-wear.js:69
 drawWeather                  src/19d-weather.js:92
@@ -606,8 +606,8 @@ hudWake                      src/28-loop.js:41
 HULL_CACHE                   src/03-ships.js:142
 HULL_CLASS                   src/03-ships.js:174
 hullClassOf                  src/03-ships.js:200
-hullOf                       src/03-ships.js:216
-hullShade                    src/03-ships.js:880
+hullOf                       src/03a-hull-gen.js:1
+hullShade                    src/03b-hull-paint.js:165
 HUNT_NAMES                   src/12o-hunter.js:18
 HUNT_RADIUS                  src/12o-hunter.js:24
 HUNT_TIERS                   src/12o-hunter.js:19
@@ -700,7 +700,7 @@ loreWinOpen                  src/27h-ui-lore.js:17
 loyBar                       src/27c-ui-hq.js:17
 loyWord                      src/27c-ui-hq.js:13
 luckLine                     src/27b-ui-crew.js:16
-luxPal                       src/03-ships.js:1211
+luxPal                       src/03c-hull-luxe.js:16
 MAIN_CTX                     src/08-state.js:4
 makeIR                       src/10-music.js:103
 makePhrase                   src/10-music.js:293
@@ -1089,7 +1089,7 @@ sellDroneYield               src/12-economy.js:35
 setZoom                      src/15-input.js:175
 sfx                          src/09-audio.js:201
 SFX                          src/09-audio.js:85
-SH_DX                        src/03-ships.js:879
+SH_DX                        src/03b-hull-paint.js:164
 shatter                      src/24-mode-belt.js:125
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
@@ -1212,7 +1212,7 @@ toggleLoreBoard              src/27h-ui-lore.js:65
 toggleMenu                   src/15-input.js:125
 totalLoss                    src/21-mode-surface.js:230
 tracePath                    src/25-cockpit.js:159
-tracePoly                    src/03-ships.js:716
+tracePoly                    src/03b-hull-paint.js:1
 TRADE_KEYS                   src/02-world.js:27
 TRAIL                        src/16-flight.js:172
 TRAIL_CHAR                   src/16-flight.js:180
@@ -1297,12 +1297,22 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · ресурсы:1
   · миры:50
 
-## src/03-ships.js · 135 КБ
+## src/03a-hull-gen.js · 34 КБ
+  · схема планера:48
+
+## src/03b-hull-paint.js · 27 КБ
+
+## src/03c-hull-luxe.js · 18 КБ
+  · люксовая яхта:1
+
+## src/03d-hull-marks.js · 6 КБ
+
+## src/03e-hull-draw.js · 34 КБ
+
+## src/03-ships.js · 15 КБ
   · корабли: процедурные корпуса:1
   · лаборатория: сплав двух корпусов:28
   · класс корпуса:162
-  · схема планера:263
-  · люксовая яхта:1196
 
 ## src/04b-fleet.js · 14 КБ
   · флот: сто корпусов и их редкость:1
