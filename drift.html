@@ -4434,18 +4434,45 @@ function ramp(pal,t){
   const a=pal[i],b=pal[Math.min(pal.length-1,i+1)];
   return [lerp(a[0],b[0],f),lerp(a[1],b[1],f),lerp(a[2],b[2],f)];
 }
-function planetTex(p){
-  if(p.tex)return p.tex;
-  const S=clamp(Math.round(p.radius*2.6),72,208);
+/* ══════════════ вращение ══════════════
+   Планета висела в системе неподвижной картинкой: она летела по орбите, но
+   сама не поворачивалась, и от этого выглядела наклейкой на чёрном, а не
+   телом. Считать сферу каждый кадр дорого — поэтому текстура печётся
+   `PLANET_SPIN` раз с разной долготой и потом крутится как перекидной
+   календарь. Кадры лежат на самой планете (`p.spinTex`) и считаются лениво:
+   первый заход платит за один кадр, остальные допекаются по мере поворота.
+   Сутки нарочно длинные — планета должна поворачиваться так, чтобы игрок
+   заметил это, только задержавшись взглядом. */
+/* шестнадцати кадров хватает: при обороте в четыре-пять минут переход между
+   ними глазом не ловится, а память — это 16 текстур на планету, а не 24 */
+const PLANET_SPIN=16;
+function planetSpinFrame(p){
+  /* у каждой планеты свои сутки и своё направление: и то и другое от seed.
+     Газовые крутятся заметно быстрее — у них и в природе сутки короче */
+  const per=(p.type==="gas"?52000:120000)*(.7+((p.seed>>>7)&15)/15*.9);
+  const dir=((p.seed>>>3)&1)?1:-1;
+  const t=(typeof G!=="undefined"&&G.t?G.t*16.7:Date.now());
+  return ((Math.floor(t/per*PLANET_SPIN*dir)%PLANET_SPIN)+PLANET_SPIN)%PLANET_SPIN;
+}
+function planetTex(p,frame){
+  const fr=frame|0;
+  if(!p.spinTex)p.spinTex=[];
+  if(p.spinTex[fr])return p.spinTex[fr];
+  /* сторона кадра вращения ограничена сильнее обычной текстуры: в системе
+     планета редко больше сотни пикселей, а платить за неё приходится
+     шестнадцать раз */
+  const S=clamp(Math.round(p.radius*2.6),72,144);
   const cn=document.createElement("canvas");cn.width=cn.height=S;
   const cx=cn.getContext("2d"),img=cx.createImageData(S,S),d=img.data;
   const pal=p.T.pal,gas=p.type==="gas";
+  const lon0=fr/PLANET_SPIN*TAU;
   for(let py=0;py<S;py++)for(let px=0;px<S;px++){
     const o=(py*S+px)*4;
     const nx=(px+.5)/S*2-1,ny=(py+.5)/S*2-1,r2=nx*nx+ny*ny;
     if(r2>1){d[o+3]=0;continue;}
     const nz=Math.sqrt(1-r2);
-    const lon=Math.atan2(nx,nz),lat=Math.asin(clamp(ny,-1,1));
+    /* долгота крутится, широта нет: поворот вокруг оси, а не кувырок */
+    const lon=Math.atan2(nx,nz)+lon0,lat=Math.asin(clamp(ny,-1,1));
     let v;
     if(gas){
       v=fbm2(lon*.7+9,lat*7+3,p.seed,4);
@@ -4463,7 +4490,7 @@ function planetTex(p){
     d[o+2]=clamp(c[2]*sh+rim*210,0,255);
     d[o+3]=255;
   }
-  cx.putImageData(img,0,0);p.tex=cn;return cn;
+  cx.putImageData(img,0,0);p.spinTex[fr]=cn;p.tex=cn;return cn;
 }
 
 /* ══════════════ рельеф ══════════════ */
@@ -13475,7 +13502,7 @@ function drawSystem(){
         : null;
     }
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,-1);
-    ctx.drawImage(planetTex(p),x-r,y-r,r*2,r*2);
+    ctx.drawImage(planetTex(p,planetSpinFrame(p)),x-r,y-r,r*2,r*2);
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,1);
     if(p.type!=="rocky"&&r>4){ctx.strokeStyle="rgba(150,220,255,.18)";ctx.lineWidth=2;
       ctx.beginPath();ctx.arc(x,y,r+2.5,0,TAU);ctx.stroke();}

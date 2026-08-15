@@ -323,7 +323,7 @@ function drawSystem(){
         : null;
     }
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,-1);
-    ctx.drawImage(planetTex(p),x-r,y-r,r*2,r*2);
+    ctx.drawImage(planetTex(p,planetSpinFrame(p)),x-r,y-r,r*2,r*2);
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,1);
     if(p.type!=="rocky"&&r>4){ctx.strokeStyle="rgba(150,220,255,.18)";ctx.lineWidth=2;
       ctx.beginPath();ctx.arc(x,y,r+2.5,0,TAU);ctx.stroke();}
