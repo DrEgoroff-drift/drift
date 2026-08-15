@@ -19466,10 +19466,16 @@ function drawBase(){
   ctx.restore();
   /* свет с глубиной сходит на нет */
   const dk=clamp((camy+H*.5)/2000,0,.42);
-  ctx.fillStyle="rgba(2,4,9,"+(.12+dk).toFixed(3)+")";ctx.fillRect(0,Math.max(0,gy),W,H);
+  /* порода уводится в почти чёрное: на светлые отсеки она обязана работать
+     фоном, а не спорить с ними за внимание. Раньше грунт был светлее
+     помещений, и база выглядела дырками в земле */
+  ctx.fillStyle="rgba(2,4,9,"+(.34+dk).toFixed(3)+")";ctx.fillRect(0,Math.max(0,gy),W,H);
   ctx.restore();
   /* ── помещения: один путь на всё сооружение ── */
-  const lit=.35+P.eff*.65;
+  /* нижний порог света поднят: даже на голодном пайке в отсеке горит лампа,
+     иначе половина базы читается нежилой. Разница между сытой и голодной
+     базой остаётся, но теперь это «ярко или тускло», а не «видно или нет» */
+  const lit=.55+P.eff*.45;
   const RP=baseRoomPath(B,X,Y,6);
   ctx.save();
   /* ── порода примыкает ──
@@ -19483,7 +19489,17 @@ function drawBase(){
   }
   /* грань выработки: свет сверху, тень снизу — та же фаска, что у проёма кабины */
   ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=9;ctx.stroke(RP);
-  ctx.fillStyle="#05070c";ctx.fill(RP);
+  /* ── свет внутри, темнота снаружи ──
+     Отсеки были темнее породы, и база читалась дырками в земле. У образца,
+     на который равняемся, ровно наоборот: жилые коробки СВЕТЯТСЯ на фоне
+     почти чёрного грунта, и весь экран держится на этом контрасте — глаз
+     сразу видит, где живут, а где просто камень. Заливка выработки теперь не
+     чернее ночи, а тёплый полумрак, поверх которого лягут лампы отсеков;
+     сама порода вокруг притемнена отдельно. */
+  const bgi=ctx.createLinearGradient(0,Y(140),0,Y(150+baseRows(B)*BCELL_H));
+  bgi.addColorStop(0,"rgb("+[26,30,38].join(",")+")");
+  bgi.addColorStop(1,"rgb("+[14,17,23].join(",")+")");
+  ctx.fillStyle=bgi;ctx.fill(RP);
   ctx.strokeStyle="rgba(210,226,240,"+(.10+lit*.10).toFixed(2)+")";ctx.lineWidth=1.4;ctx.stroke(RP);
   ctx.restore();
   /* свет изнутри ложится на породу вокруг отсеков */
@@ -19494,7 +19510,7 @@ function drawBase(){
     if(cx<-260||cx>W+260)continue;
     const gg=ctx.createRadialGradient(cx,cy,4,cx,cy,BCELL_W*.95);
     const warm=cell.k==="reactor"?[140,240,255]:[242,178,92];
-    gg.addColorStop(0,"rgba("+warm.join(",")+","+(.10*lit).toFixed(3)+")");
+    gg.addColorStop(0,"rgba("+warm.join(",")+","+(.20*lit).toFixed(3)+")");
     gg.addColorStop(1,"rgba("+warm.join(",")+",0)");
     ctx.fillStyle=gg;ctx.beginPath();ctx.arc(cx,cy,BCELL_W*.95,0,TAU);ctx.fill();
   }
