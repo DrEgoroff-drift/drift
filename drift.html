@@ -17382,7 +17382,10 @@ function genPlant(r,p,x,gy){
   const bi=planetBiome(p);
   const kind=pickKindByBias(bi.kindBias,r);
   const giant=r()<bi.giantChance;
-  const sizeMul=bi.scale*(giant?(2.4+r()*2.2):(.4+r()*1.3));
+  /* гигант вчетверо выше соседей превращался в салатовый блин во весь
+     распадок: крона такой ширины перестаёт быть растением и читается
+     пятном краски. Втрое — предел, после которого форма ещё видна */
+  const sizeMul=bi.scale*(giant?(1.8+r()*1.4):(.4+r()*1.3));
   /* высота по форме: гриб и зонтик заметно выше травы, иначе силуэт не работает */
   const h=(kind===6?6+r()*10:
           (kind===4?10+r()*16:
@@ -17402,8 +17405,17 @@ function genPlant(r,p,x,gy){
   const pal=p.T.pal;
   const base=pal[Math.min(pal.length-1,2+Math.floor(r()*2))];
   const hue=(r()*.5+bi.hueBias*.5)%1;
-  const leaf=[clamp(base[0]*.5+hue*150,20,255),clamp(base[1]*.6+130+hue*60,30,255),
-              clamp(base[2]*.5+40+hue*90,20,255)];
+  /* ── лист берёт цвет у мира ──
+     Зелень считалась почти независимо от планеты: +130 к зелёному каналу и
+     столько же от оттенка давали чистый салатовый, и на приглушённом мире
+     кроны читались кислотными блинами — самым громким пятном кадра, хотя
+     это фон, а не событие. Лист по-прежнему свой у каждой биосферы, но
+     теперь он ЗАМЕШАН на палитре мира: подмешиваем к нему тон породы, и
+     растение садится в свой пейзаж, оставаясь опознаваемо живым. */
+  const raw=[clamp(base[0]*.5+hue*150,20,255),clamp(base[1]*.6+120+hue*55,30,255),
+             clamp(base[2]*.5+40+hue*90,20,255)];
+  const gr=pal[Math.min(pal.length-1,3)];
+  const leaf=[lerp(raw[0],gr[0],.28),lerp(raw[1],gr[1],.22),lerp(raw[2],gr[2],.28)];
   const stem=[leaf[0]*.5+20,leaf[1]*.45+26,leaf[2]*.45+22];
   return {x,y:gy,h,kind,segs,lean,curl,branches,
     /* параметры новых форм: шляпка, витки спирали, рёбра зонтика, шары */
@@ -20224,10 +20236,26 @@ function enterSurface(){
     deposits.push({x,y:groundAt(tr,x)-6,res:k,left:6+Math.floor(r()*11),prog:0});
   }
   /* флора растёт куртинами, а не поштучно по всей планете */
-  const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.mix==="toxic"||p.mix==="jungle";
+  const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.type==="jungle"||
+              p.mix==="toxic"||p.mix==="jungle";
   const gp=G.opts.gfx.plants;
-  if(flora)for(let c=0;c<Math.round(16*gp);c++){
-    const cx=120+r()*(tr.W-240), n=2+Math.floor(r()*6);
+  /* ── сколько и где ──
+     Куртин было шестнадцать на девять тысяч точек ландшафта, то есть примерно
+     две на экран: обитаемый мир выглядел пустым. Густота теперь своя у типа —
+     в джунглях заросли, на землеподобной рощи, на токсичной пятна, — а место
+     выбирается не как попало: жизнь садится в НИЗИНАХ, где собирается вода и
+     тише ветер. Из трёх случайных точек берётся самая низкая, и куртины сами
+     собираются в распадках, оставляя гребни голыми. Это дешевле любой карты
+     влажности и читается сразу. */
+  const DENS={jungle:3.4,terran:1.9,toxic:1.5,ocean:1.6,ice:.7,ruin:1.1};
+  const dens=DENS[p.mix==="jungle"?"jungle":p.type]||1.2;
+  if(flora)for(let c=0;c<Math.round(16*gp*dens);c++){
+    let cx=120+r()*(tr.W-240);
+    for(let t=0;t<2;t++){
+      const alt=120+r()*(tr.W-240);
+      if(groundAt(tr,alt)>groundAt(tr,cx))cx=alt;      // ниже — значит лучше
+    }
+    const n=2+Math.floor(r()*6);
     for(let i=0;i<n;i++){
       const x=clamp(cx+(r()-.5)*260,60,tr.W-60);
       plants.push(genPlant(r,p,x,groundAt(tr,x)));
