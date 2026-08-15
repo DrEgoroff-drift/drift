@@ -10,10 +10,26 @@ function enterSurface(){
     deposits.push({x,y:groundAt(tr,x)-6,res:k,left:6+Math.floor(r()*11),prog:0});
   }
   /* флора растёт куртинами, а не поштучно по всей планете */
-  const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.mix==="toxic"||p.mix==="jungle";
+  const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.type==="jungle"||
+              p.mix==="toxic"||p.mix==="jungle";
   const gp=G.opts.gfx.plants;
-  if(flora)for(let c=0;c<Math.round(16*gp);c++){
-    const cx=120+r()*(tr.W-240), n=2+Math.floor(r()*6);
+  /* ── сколько и где ──
+     Куртин было шестнадцать на девять тысяч точек ландшафта, то есть примерно
+     две на экран: обитаемый мир выглядел пустым. Густота теперь своя у типа —
+     в джунглях заросли, на землеподобной рощи, на токсичной пятна, — а место
+     выбирается не как попало: жизнь садится в НИЗИНАХ, где собирается вода и
+     тише ветер. Из трёх случайных точек берётся самая низкая, и куртины сами
+     собираются в распадках, оставляя гребни голыми. Это дешевле любой карты
+     влажности и читается сразу. */
+  const DENS={jungle:3.4,terran:1.9,toxic:1.5,ocean:1.6,ice:.7,ruin:1.1};
+  const dens=DENS[p.mix==="jungle"?"jungle":p.type]||1.2;
+  if(flora)for(let c=0;c<Math.round(16*gp*dens);c++){
+    let cx=120+r()*(tr.W-240);
+    for(let t=0;t<2;t++){
+      const alt=120+r()*(tr.W-240);
+      if(groundAt(tr,alt)>groundAt(tr,cx))cx=alt;      // ниже — значит лучше
+    }
+    const n=2+Math.floor(r()*6);
     for(let i=0;i<n;i++){
       const x=clamp(cx+(r()-.5)*260,60,tr.W-60);
       plants.push(genPlant(r,p,x,groundAt(tr,x)));

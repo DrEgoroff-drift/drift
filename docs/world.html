@@ -4434,18 +4434,45 @@ function ramp(pal,t){
   const a=pal[i],b=pal[Math.min(pal.length-1,i+1)];
   return [lerp(a[0],b[0],f),lerp(a[1],b[1],f),lerp(a[2],b[2],f)];
 }
-function planetTex(p){
-  if(p.tex)return p.tex;
-  const S=clamp(Math.round(p.radius*2.6),72,208);
+/* ══════════════ вращение ══════════════
+   Планета висела в системе неподвижной картинкой: она летела по орбите, но
+   сама не поворачивалась, и от этого выглядела наклейкой на чёрном, а не
+   телом. Считать сферу каждый кадр дорого — поэтому текстура печётся
+   `PLANET_SPIN` раз с разной долготой и потом крутится как перекидной
+   календарь. Кадры лежат на самой планете (`p.spinTex`) и считаются лениво:
+   первый заход платит за один кадр, остальные допекаются по мере поворота.
+   Сутки нарочно длинные — планета должна поворачиваться так, чтобы игрок
+   заметил это, только задержавшись взглядом. */
+/* шестнадцати кадров хватает: при обороте в четыре-пять минут переход между
+   ними глазом не ловится, а память — это 16 текстур на планету, а не 24 */
+const PLANET_SPIN=16;
+function planetSpinFrame(p){
+  /* у каждой планеты свои сутки и своё направление: и то и другое от seed.
+     Газовые крутятся заметно быстрее — у них и в природе сутки короче */
+  const per=(p.type==="gas"?52000:120000)*(.7+((p.seed>>>7)&15)/15*.9);
+  const dir=((p.seed>>>3)&1)?1:-1;
+  const t=(typeof G!=="undefined"&&G.t?G.t*16.7:Date.now());
+  return ((Math.floor(t/per*PLANET_SPIN*dir)%PLANET_SPIN)+PLANET_SPIN)%PLANET_SPIN;
+}
+function planetTex(p,frame){
+  const fr=frame|0;
+  if(!p.spinTex)p.spinTex=[];
+  if(p.spinTex[fr])return p.spinTex[fr];
+  /* сторона кадра вращения ограничена сильнее обычной текстуры: в системе
+     планета редко больше сотни пикселей, а платить за неё приходится
+     шестнадцать раз */
+  const S=clamp(Math.round(p.radius*2.6),72,144);
   const cn=document.createElement("canvas");cn.width=cn.height=S;
   const cx=cn.getContext("2d"),img=cx.createImageData(S,S),d=img.data;
   const pal=p.T.pal,gas=p.type==="gas";
+  const lon0=fr/PLANET_SPIN*TAU;
   for(let py=0;py<S;py++)for(let px=0;px<S;px++){
     const o=(py*S+px)*4;
     const nx=(px+.5)/S*2-1,ny=(py+.5)/S*2-1,r2=nx*nx+ny*ny;
     if(r2>1){d[o+3]=0;continue;}
     const nz=Math.sqrt(1-r2);
-    const lon=Math.atan2(nx,nz),lat=Math.asin(clamp(ny,-1,1));
+    /* долгота крутится, широта нет: поворот вокруг оси, а не кувырок */
+    const lon=Math.atan2(nx,nz)+lon0,lat=Math.asin(clamp(ny,-1,1));
     let v;
     if(gas){
       v=fbm2(lon*.7+9,lat*7+3,p.seed,4);
@@ -4463,7 +4490,7 @@ function planetTex(p){
     d[o+2]=clamp(c[2]*sh+rim*210,0,255);
     d[o+3]=255;
   }
-  cx.putImageData(img,0,0);p.tex=cn;return cn;
+  cx.putImageData(img,0,0);p.spinTex[fr]=cn;p.tex=cn;return cn;
 }
 
 /* ══════════════ рельеф ══════════════ */
@@ -13475,7 +13502,7 @@ function drawSystem(){
         : null;
     }
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,-1);
-    ctx.drawImage(planetTex(p),x-r,y-r,r*2,r*2);
+    ctx.drawImage(planetTex(p,planetSpinFrame(p)),x-r,y-r,r*2,r*2);
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,1);
     if(p.type!=="rocky"&&r>4){ctx.strokeStyle="rgba(150,220,255,.18)";ctx.lineWidth=2;
       ctx.beginPath();ctx.arc(x,y,r+2.5,0,TAU);ctx.stroke();}
@@ -17355,7 +17382,10 @@ function genPlant(r,p,x,gy){
   const bi=planetBiome(p);
   const kind=pickKindByBias(bi.kindBias,r);
   const giant=r()<bi.giantChance;
-  const sizeMul=bi.scale*(giant?(2.4+r()*2.2):(.4+r()*1.3));
+  /* гигант вчетверо выше соседей превращался в салатовый блин во весь
+     распадок: крона такой ширины перестаёт быть растением и читается
+     пятном краски. Втрое — предел, после которого форма ещё видна */
+  const sizeMul=bi.scale*(giant?(1.8+r()*1.4):(.4+r()*1.3));
   /* высота по форме: гриб и зонтик заметно выше травы, иначе силуэт не работает */
   const h=(kind===6?6+r()*10:
           (kind===4?10+r()*16:
@@ -17375,8 +17405,17 @@ function genPlant(r,p,x,gy){
   const pal=p.T.pal;
   const base=pal[Math.min(pal.length-1,2+Math.floor(r()*2))];
   const hue=(r()*.5+bi.hueBias*.5)%1;
-  const leaf=[clamp(base[0]*.5+hue*150,20,255),clamp(base[1]*.6+130+hue*60,30,255),
-              clamp(base[2]*.5+40+hue*90,20,255)];
+  /* ── лист берёт цвет у мира ──
+     Зелень считалась почти независимо от планеты: +130 к зелёному каналу и
+     столько же от оттенка давали чистый салатовый, и на приглушённом мире
+     кроны читались кислотными блинами — самым громким пятном кадра, хотя
+     это фон, а не событие. Лист по-прежнему свой у каждой биосферы, но
+     теперь он ЗАМЕШАН на палитре мира: подмешиваем к нему тон породы, и
+     растение садится в свой пейзаж, оставаясь опознаваемо живым. */
+  const raw=[clamp(base[0]*.5+hue*150,20,255),clamp(base[1]*.6+120+hue*55,30,255),
+             clamp(base[2]*.5+40+hue*90,20,255)];
+  const gr=pal[Math.min(pal.length-1,3)];
+  const leaf=[lerp(raw[0],gr[0],.28),lerp(raw[1],gr[1],.22),lerp(raw[2],gr[2],.28)];
   const stem=[leaf[0]*.5+20,leaf[1]*.45+26,leaf[2]*.45+22];
   return {x,y:gy,h,kind,segs,lean,curl,branches,
     /* параметры новых форм: шляпка, витки спирали, рёбра зонтика, шары */
@@ -20197,10 +20236,26 @@ function enterSurface(){
     deposits.push({x,y:groundAt(tr,x)-6,res:k,left:6+Math.floor(r()*11),prog:0});
   }
   /* флора растёт куртинами, а не поштучно по всей планете */
-  const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.mix==="toxic"||p.mix==="jungle";
+  const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.type==="jungle"||
+              p.mix==="toxic"||p.mix==="jungle";
   const gp=G.opts.gfx.plants;
-  if(flora)for(let c=0;c<Math.round(16*gp);c++){
-    const cx=120+r()*(tr.W-240), n=2+Math.floor(r()*6);
+  /* ── сколько и где ──
+     Куртин было шестнадцать на девять тысяч точек ландшафта, то есть примерно
+     две на экран: обитаемый мир выглядел пустым. Густота теперь своя у типа —
+     в джунглях заросли, на землеподобной рощи, на токсичной пятна, — а место
+     выбирается не как попало: жизнь садится в НИЗИНАХ, где собирается вода и
+     тише ветер. Из трёх случайных точек берётся самая низкая, и куртины сами
+     собираются в распадках, оставляя гребни голыми. Это дешевле любой карты
+     влажности и читается сразу. */
+  const DENS={jungle:3.4,terran:1.9,toxic:1.5,ocean:1.6,ice:.7,ruin:1.1};
+  const dens=DENS[p.mix==="jungle"?"jungle":p.type]||1.2;
+  if(flora)for(let c=0;c<Math.round(16*gp*dens);c++){
+    let cx=120+r()*(tr.W-240);
+    for(let t=0;t<2;t++){
+      const alt=120+r()*(tr.W-240);
+      if(groundAt(tr,alt)>groundAt(tr,cx))cx=alt;      // ниже — значит лучше
+    }
+    const n=2+Math.floor(r()*6);
     for(let i=0;i<n;i++){
       const x=clamp(cx+(r()-.5)*260,60,tr.W-60);
       plants.push(genPlant(r,p,x,groundAt(tr,x)));
