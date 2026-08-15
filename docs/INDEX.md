@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 109 · символов верхнего уровня: 1272
+Файлов: 109 · символов верхнего уровня: 1274
 
 ## СИМВОЛЫ
 
@@ -520,7 +520,7 @@ genPart                      src/05-parts.js:64
 genPlant                     src/20-life.js:123
 genPOI                       src/20a-poi.js:28
 genRaid                      src/24a-mode-raid.js:30
-genTerrain                   src/07-planet.js:65
+genTerrain                   src/07-planet.js:92
 genUniqueShip                src/03-ships.js:16
 GEO_KIND                     src/18b-geology.js:13
 GEO_TPL                      src/18b-geology.js:31
@@ -535,7 +535,7 @@ glassOutline                 src/25-cockpit.js:54
 goalCard                     src/13b-occupy.js:168
 goalOwnYacht                 src/13b-occupy.js:161
 gradePass                    src/19c-light.js:140
-groundAt                     src/07-planet.js:157
+groundAt                     src/07-planet.js:184
 groundShadow                 src/19-mode-landing.js:238
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
@@ -908,6 +908,7 @@ PLANET_BARGE                 src/12n-planet.js:17
 PLANET_CAP                   src/12n-planet.js:16
 PLANET_FULL                  src/12n-planet.js:14
 PLANET_RATE                  src/12n-planet.js:15
+PLANET_SPIN                  src/07-planet.js:19
 planetBargeLoad              src/12n-planet.js:108
 planetBargeRow               src/12n-planet.js:145
 planetBiome                  src/20-life.js:105
@@ -919,11 +920,12 @@ planetMat                    src/18a-material.js:59
 planetReady                  src/12n-planet.js:19
 planetRender                 src/12n-planet.js:155
 planetScene                  src/10-music.js:74
+planetSpinFrame              src/07-planet.js:20
 planetStockOf                src/12n-planet.js:55
 planetStockSum               src/12n-planet.js:56
 planetStop                   src/12n-planet.js:92
 planetTakeLoad               src/12n-planet.js:126
-planetTex                    src/07-planet.js:8
+planetTex                    src/07-planet.js:28
 planetTick                   src/12n-planet.js:44
 PLANT_FORM                   src/20-life.js:92
 PLANT_KINDS                  src/20-life.js:104
@@ -1006,7 +1008,7 @@ relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
-RELIEF_MIX                   src/07-planet.js:46
+RELIEF_MIX                   src/07-planet.js:73
 renderBarge                  src/12l-barge.js:611
 renderCantina                src/27c-ui-hq.js:45
 renderLog                    src/11-log.js:37
@@ -1333,10 +1335,11 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/06-galaxy.js · 9 КБ
   · галактика:1
 
-## src/07-planet.js · 8 КБ
+## src/07-planet.js · 11 КБ
   · текстуры планет:1
-  · рельеф:40
-  · рельеф:41
+  · вращение:8
+  · рельеф:67
+  · рельеф:68
 
 ## src/08-state.js · 8 КБ
   · состояние:1
