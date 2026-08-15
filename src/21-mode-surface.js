@@ -22,7 +22,12 @@ function enterSurface(){
      собираются в распадках, оставляя гребни голыми. Это дешевле любой карты
      влажности и читается сразу. */
   const DENS={jungle:3.4,terran:1.9,toxic:1.5,ocean:1.6,ice:.7,ruin:1.1};
-  const dens=DENS[p.mix==="jungle"?"jungle":p.type]||1.2;
+  /* и главное — не только тип мира, а СЫРО ЛИ ЗДЕСЬ: та же влажность, по
+     которой на глобусе нарисовано зелёное пятно. Сел в него — стоишь в
+     зарослях, сел на сухой пояс той же планеты — вокруг пусто. Планета
+     перестала быть однородной по жизни */
+  const wet=(tr.wet==null?.5:tr.wet);
+  const dens=(DENS[p.mix==="jungle"?"jungle":p.type]||1.2)*(.25+wet*1.85);
   if(flora)for(let c=0;c<Math.round(16*gp*dens);c++){
     let cx=120+r()*(tr.W-240);
     for(let t=0;t<2;t++){
