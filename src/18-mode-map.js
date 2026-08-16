@@ -93,6 +93,9 @@ function drawMap(){
   /* засечки «Долгого Хода» (12q-lore) — поверх линий, но под звёздами: адрес,
      до которого сегодня не дотянуться, обязан читаться и за краем листа */
   if(typeof drawLoreMarks==="function")drawLoreMarks(cell);
+  /* съёмка «Долгого Хода» (12w, M115): их значки поверх вашего листа — ровно
+     столько точек, сколько кусков отчёта заработано, и ни одной авансом */
+  if(typeof drawSurvey==="function")drawSurvey(cell);
   let sel=null,cur=null;
   for(const v of vis){
     const{gx,gy,s,x,y}=v;

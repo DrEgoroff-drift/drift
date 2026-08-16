@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 120 · символов верхнего уровня: 1383
+Файлов: 122 · символов верхнего уровня: 1392
 
 ## СИМВОЛЫ
 
@@ -364,6 +364,7 @@ doomMins                     src/12v-doom.js:36
 doomStanding                 src/12v-doom.js:39
 doomTick                     src/12v-doom.js:131
 drawAccel                    src/20aa-poi-shapes.js:143
+drawAccountShelf             src/12w-survey.js:99
 drawAllies                   src/12a-crew.js:551
 drawAnomaly                  src/20aa-poi-shapes.js:168
 drawAstronaut                src/20-life.js:4
@@ -452,6 +453,7 @@ drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:84
 drawSurface                  src/21-mode-surface.js:409
 drawSurfaceHud               src/21-mode-surface.js:363
+drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:65
 drawSystem                   src/17-mode-system.js:272
 drawTemple                   src/20aa-poi-shapes.js:50
@@ -581,6 +583,7 @@ hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
 held                         src/08-state.js:128
 hex2rgb                      src/03-ships.js:145
+hexa                         src/12w-survey.js:91
 hexRGB                       src/24-mode-belt.js:80
 hireMerc                     src/12a-crew.js:148
 hireMgr                      src/12c-mgr-core.js:300
@@ -594,8 +597,8 @@ homeBeacon                   src/12j-home.js:162
 homeBeaconCost               src/12j-home.js:158
 homeCanRebuild               src/12j-home.js:214
 homeCanRevive                src/12j-home.js:134
-homeCrewFigure               src/27e-ui-home.js:673
-homeFigure                   src/27e-ui-home.js:606
+homeCrewFigure               src/27e-ui-home.js:676
+homeFigure                   src/27e-ui-home.js:609
 homeHas                      src/12j-home.js:24
 homeHitAt                    src/27e-ui-home.js:35
 homeInit                     src/12j-home.js:20
@@ -610,8 +613,8 @@ homeRebuild                  src/12j-home.js:215
 homeRevive                   src/12j-home.js:135
 homeRoomBody                 src/27e-ui-home.js:63
 homeRoomW                    src/27e-ui-home.js:21
-homeSceneClick               src/27e-ui-home.js:621
-homeShade                    src/27e-ui-home.js:689
+homeSceneClick               src/27e-ui-home.js:624
+homeShade                    src/27e-ui-home.js:692
 homeShow                     src/12j-home.js:184
 homeShowBonus                src/12j-home.js:205
 homeStore                    src/12j-home.js:177
@@ -677,7 +680,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:329
+jump                         src/18-mode-map.js:332
 jumpToBase                   src/21a-mode-base.js:292
 keplerPos                    src/06-galaxy.js:34
 keyLabel                     src/15-input.js:63
@@ -1284,6 +1287,12 @@ suitFailure                  src/23-mode-dig.js:104
 suitHit                      src/23-mode-dig.js:97
 SUN_DIR                      src/19c-light.js:11
 surfaceHint                  src/21-mode-surface.js:348
+SURV_COL                     src/12w-survey.js:57
+SURV_R                       src/12w-survey.js:19
+surveyColor                  src/12w-survey.js:58
+surveyLegs                   src/12w-survey.js:48
+surveyList                   src/12w-survey.js:37
+surveyPoint                  src/12w-survey.js:20
 svDraw                       src/27-ui-ship.js:7
 svRender                     src/27-ui-ship.js:45
 svReturn                     src/27-ui-ship.js:6
@@ -1550,6 +1559,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12v-doom.js · 11 КБ
   · срок: мир, который кончается по расписанию:1
 
+## src/12w-survey.js · 6 КБ
+  · собранный отчёт: их съёмка поверх вашей карты:1
+
 ## src/13b-occupy.js · 17 КБ
   · пираты берут системы:1
 
@@ -1589,7 +1601,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/18b-geology.js · 9 КБ
   · геология:1
 
-## src/18-mode-map.js · 20 КБ
+## src/18-mode-map.js · 21 КБ
   · карта:1
   · карта: ночное небо, а не схема молекулы:21
 
@@ -1795,6 +1807,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91zb-scrip.js · 5 КБ
 
 ## tests/91zc-doom.js · 5 КБ
+
+## tests/91zd-survey.js · 3 КБ
 
 ## tests/91z-missile.js · 5 КБ
 

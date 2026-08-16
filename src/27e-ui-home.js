@@ -484,6 +484,9 @@ function homeRoomBody(c,W2,H2){
         c.fillStyle="rgba(0,0,0,.14)";c.fillRect(gx,gy,4.6,4.4);         // пятно
       }
     }
+    /* полка отчёта (12w, M115): под музейной стеной, корешками по порядку
+       находки — у каждого прохождения она своя */
+    if(typeof drawAccountShelf==="function")drawAccountShelf(c,x0,fy,wall);
     zone(x0,58,"study","кабинет");
   });
   /* 7. жилая часть: койки в два яруса — сюда возвращаются наёмники */
