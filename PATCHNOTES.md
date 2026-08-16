@@ -9,6 +9,27 @@ could ever save.
 
 ---
 
+## 0.61.0 — "The battery is built, not bought"
+
+**M111** (`21d-battery.js`, `21a-mode-base.js`, `21ab-base-interiors.js`, `13-pirates.js`,
+`20a-poi.js` + `20aa-poi-shapes.js`, `20b-poi-find.js`, suite `91h-base.js`). System defence
+enters the game as a compartment, not a purchase.
+
+- **A room in the base cross-section**, top level only, `-12` power inside the existing balance:
+  defence competes with production, so putting one up is a real decision, not a shopping trip.
+- **It cuts noise and only noise.** `battTarget` takes the stray jackal — no rank, no special
+  role — and can do nothing at all to a baron, a hunter (M98), a renegade (12g) or a rival.
+  Range is around its own planet, not the whole system, and a browned-out base fires slower.
+- **Visible from orbit**: a line from the ground under the ships (`battDraw` inside `drawCombat`),
+  with a kill written to the log by name.
+- **The magazine is drawn**, because from below you see what feeds the gun, not the barrel: the
+  turret ring in the ceiling hatch, the feed hoist, shells standing at hip height, and a firing
+  lamp that lights exactly when the battery is actually shooting.
+- **The expedition built these too.** A dead battery is a new POI on solid worlds
+  (`drawDeadBattery`, stand `docs/shots/poi-battery.png`); walking up to it pays a piece of the
+  report, like a notch, because it is their government property and not someone's monument.
+- `20a-poi.js` was cut along its seam: the shapes moved to `20aa-poi-shapes.js`.
+
 ## 0.60.0 — "They stand between you and the fauna"
 
 **M110** (`12t-settle.js`, `22-mode-cave.js`, `18-mode-map.js`, suite `91y-settle.js`). A

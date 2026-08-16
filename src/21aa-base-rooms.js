@@ -51,7 +51,8 @@ const ROOM_FIN={
   habitat :{wall:"soft", tint:"54,49,46", lamp:"250,220,168", ln:3, floor:"soft", warn:0, work:.60, dress:["personal","personal"], junk:["bag","bottles"]},
   refinery:{wall:"rib",  tint:"48,41,37", lamp:"248,196,130", ln:2, floor:"plate", warn:1, work:.32, dress:["hooks","cable"],     junk:["ingot","ore"]},
   pad     :{wall:"panel",tint:"34,46,56", lamp:"228,244,250", ln:3, floor:"plate", warn:1, work:.50, dress:["hooks","board"],     junk:["spool","drum"]},
-  lab     :{wall:"tile", tint:"42,62,70", lamp:"226,248,252", ln:3, dim:1.15, floor:"clean",warn:0, work:.52, dress:["board","samples"], junk:["bottles","canister"]}
+  lab     :{wall:"tile", tint:"42,62,70", lamp:"226,248,252", ln:3, dim:1.15, floor:"clean",warn:0, work:.52, dress:["board","samples"], junk:["bottles","canister"]},
+  battery :{wall:"rib",  tint:"44,44,50", lamp:"236,206,150", ln:2, dim:.9,  floor:"plate", warn:1, work:.38, dress:["stencil","hooks"],  junk:["canister","spool"]}
 };
 /* ── что стоит у стены ──
    Хлам во всех восьми отсеках был один: ящик да стеллаж. Но у каждой работы

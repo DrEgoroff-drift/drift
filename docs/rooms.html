@@ -658,10 +658,10 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 
 <script>
 "use strict";
-/* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
-   К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.58.0";
-/* ══════════════ математика ══════════════ */
+/* Р’РµСЂСЃРёСЏ РёРіСЂС‹. РћРґРЅР° РЅР° РІСЃС‘: Р·Р°СЃС‚Р°РІРєР°, Р¶СѓСЂРЅР°Р», РїР°С‚С‡РЅРѕСѓС‚С‹ (PATCHNOTES.md).
+   Рљ С„РѕСЂРјР°С‚Сѓ СЃРѕС…СЂР°РЅРµРЅРёСЏ РѕС‚РЅРѕС€РµРЅРёСЏ РЅРµ РёРјРµРµС‚ вЂ” С‚РѕС‚ РЅР°РІСЃРµРіРґР° v:4. */
+const VER="0.60.0";
+/* в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ РјР°С‚РµРјР°С‚РёРєР° в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
 const lerp=(a,b,t)=>a+(b-a)*t;
@@ -684,24 +684,24 @@ function noise2(x,y,s){
 }
 function fbm2(x,y,s,oct){let v=0,a=.5,f=1,n=0;oct=oct||5;
   for(let i=0;i<oct;i++){v+=a*noise2(x*f,y*f,s+i*97);n+=a;a*=.5;f*=2;}return v/n;}
-/* Разница углов, кратчайшей дугой. Прежняя формула — ((a-b+3π)%TAU)-π — верна
-   ровно до тех пор, пока a-b не меньше -3π: остаток в JS берёт знак делимого,
-   и на больших отрицательных разностях ответ уезжает и по знаку, и за пределы
-   полуоборота. Курс корабля нигде не сворачивался и копился оборотами — в живом
-   сохранении он дорос до -500 рад, и доворот вектора скорости к носу принялся
-   разворачивать скорость в противоположную сторону. Корабль дёргался на месте
-   под полной тягой и жёг топливо: ни ошибки, ни просадки кадров. */
+/* Р Р°Р·РЅРёС†Р° СѓРіР»РѕРІ, РєСЂР°С‚С‡Р°Р№С€РµР№ РґСѓРіРѕР№. РџСЂРµР¶РЅСЏСЏ С„РѕСЂРјСѓР»Р° вЂ” ((a-b+3ПЂ)%TAU)-ПЂ вЂ” РІРµСЂРЅР°
+   СЂРѕРІРЅРѕ РґРѕ С‚РµС… РїРѕСЂ, РїРѕРєР° a-b РЅРµ РјРµРЅСЊС€Рµ -3ПЂ: РѕСЃС‚Р°С‚РѕРє РІ JS Р±РµСЂС‘С‚ Р·РЅР°Рє РґРµР»РёРјРѕРіРѕ,
+   Рё РЅР° Р±РѕР»СЊС€РёС… РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹С… СЂР°Р·РЅРѕСЃС‚СЏС… РѕС‚РІРµС‚ СѓРµР·Р¶Р°РµС‚ Рё РїРѕ Р·РЅР°РєСѓ, Рё Р·Р° РїСЂРµРґРµР»С‹
+   РїРѕР»СѓРѕР±РѕСЂРѕС‚Р°. РљСѓСЂСЃ РєРѕСЂР°Р±Р»СЏ РЅРёРіРґРµ РЅРµ СЃРІРѕСЂР°С‡РёРІР°Р»СЃСЏ Рё РєРѕРїРёР»СЃСЏ РѕР±РѕСЂРѕС‚Р°РјРё вЂ” РІ Р¶РёРІРѕРј
+   СЃРѕС…СЂР°РЅРµРЅРёРё РѕРЅ РґРѕСЂРѕСЃ РґРѕ -500 СЂР°Рґ, Рё РґРѕРІРѕСЂРѕС‚ РІРµРєС‚РѕСЂР° СЃРєРѕСЂРѕСЃС‚Рё Рє РЅРѕСЃСѓ РїСЂРёРЅСЏР»СЃСЏ
+   СЂР°Р·РІРѕСЂР°С‡РёРІР°С‚СЊ СЃРєРѕСЂРѕСЃС‚СЊ РІ РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅСѓСЋ СЃС‚РѕСЂРѕРЅСѓ. РљРѕСЂР°Р±Р»СЊ РґС‘СЂРіР°Р»СЃСЏ РЅР° РјРµСЃС‚Рµ
+   РїРѕРґ РїРѕР»РЅРѕР№ С‚СЏРіРѕР№ Рё Р¶С‘Рі С‚РѕРїР»РёРІРѕ: РЅРё РѕС€РёР±РєРё, РЅРё РїСЂРѕСЃР°РґРєРё РєР°РґСЂРѕРІ. */
 const angWrap=x=>{const d=x%TAU;return d>Math.PI?d-TAU:(d<-Math.PI?d+TAU:d);};
 const angDiff=(a,b)=>angWrap(a-b);
 
-/* ══════════════ имена ══════════════ */
-const S1=["ка","зе","вор","ти","мел","сар","ква","ар","ни","кси","лу","дра","он","пи","ха","ци","ур","гал","об","векс","сол","ит","кор","энт","ра","тау","ней","ом"];
-const S2=["нис","тар","он","экс","ур","ал","иос","ат","ин","ора","икс","ун","эш","ара","орн","ил","аде","ий","от","ис","эль","ум"];
+/* в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ РёРјРµРЅР° в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ */
+const S1=["РєР°","Р·Рµ","РІРѕСЂ","С‚Рё","РјРµР»","СЃР°СЂ","РєРІР°","Р°СЂ","РЅРё","РєСЃРё","Р»Сѓ","РґСЂР°","РѕРЅ","РїРё","С…Р°","С†Рё","СѓСЂ","РіР°Р»","РѕР±","РІРµРєСЃ","СЃРѕР»","РёС‚","РєРѕСЂ","СЌРЅС‚","СЂР°","С‚Р°Сѓ","РЅРµР№","РѕРј"];
+const S2=["РЅРёСЃ","С‚Р°СЂ","РѕРЅ","СЌРєСЃ","СѓСЂ","Р°Р»","РёРѕСЃ","Р°С‚","РёРЅ","РѕСЂР°","РёРєСЃ","СѓРЅ","СЌС€","Р°СЂР°","РѕСЂРЅ","РёР»","Р°РґРµ","РёР№","РѕС‚","РёСЃ","СЌР»СЊ","СѓРј"];
 const ROMAN=["I","II","III","IV","V","VI","VII","VIII","IX","X"];
 function genName(r){let s=pick(S1,r);if(r()<.55)s+=pick(S1,r);s+=pick(S2,r);
   return s[0].toUpperCase()+s.slice(1);}
 
-/* ══════════════ удалённость и настрой сектора ══════════════ */
+/* в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ СѓРґР°Р»С‘РЅРЅРѕСЃС‚СЊ Рё РЅР°СЃС‚СЂРѕР№ СЃРµРєС‚РѕСЂР° в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ */
 function sysDanger(sx,sy){return clamp(Math.hypot(sx,sy)/40,0,1);}
 function sysJitter(gx,gy){
   const jr=rng(hashi(gx,gy,55551));
@@ -709,12 +709,12 @@ function sysJitter(gx,gy){
   return [Math.cos(a)*rad,Math.sin(a)*rad];
 }
 const DESC_MOOD=[
-  {w:["тихий","забытый","сонный"],ok:s=>!s.station&&!s.belt},
-  {w:["оживлённый","обжитой","многообещающий"],ok:s=>!!(s.station&&s.belt)},
-  {w:["пограничный","неспокойный","дикий"],ok:s=>sysDanger(s.sx,s.sy)>.55},
-  {w:["разведанный","картографированный"],ok:s=>!!s.station&&sysDanger(s.sx,s.sy)<=.55}
+  {w:["С‚РёС…РёР№","Р·Р°Р±С‹С‚С‹Р№","СЃРѕРЅРЅС‹Р№"],ok:s=>!s.station&&!s.belt},
+  {w:["РѕР¶РёРІР»С‘РЅРЅС‹Р№","РѕР±Р¶РёС‚РѕР№","РјРЅРѕРіРѕРѕР±РµС‰Р°СЋС‰РёР№"],ok:s=>!!(s.station&&s.belt)},
+  {w:["РїРѕРіСЂР°РЅРёС‡РЅС‹Р№","РЅРµСЃРїРѕРєРѕР№РЅС‹Р№","РґРёРєРёР№"],ok:s=>sysDanger(s.sx,s.sy)>.55},
+  {w:["СЂР°Р·РІРµРґР°РЅРЅС‹Р№","РєР°СЂС‚РѕРіСЂР°С„РёСЂРѕРІР°РЅРЅС‹Р№"],ok:s=>!!s.station&&sysDanger(s.sx,s.sy)<=.55}
 ];
-const DESC_TAIL=["сектор","рубеж","участок","угол галактики","карман пространства","закоулок"];
+const DESC_TAIL=["СЃРµРєС‚РѕСЂ","СЂСѓР±РµР¶","СѓС‡Р°СЃС‚РѕРє","СѓРіРѕР» РіР°Р»Р°РєС‚РёРєРё","РєР°СЂРјР°РЅ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІР°","Р·Р°РєРѕСѓР»РѕРє"];
 function genDesc(r,sys){
   const cands=DESC_MOOD.filter(m=>m.ok(sys));
   const pool=cands.length?cands:DESC_MOOD;
@@ -722,11 +722,12 @@ function genDesc(r,sys){
   const tail=pick(DESC_TAIL,r);
   const bits=[mood[0].toUpperCase()+mood.slice(1)+" "+tail];
   const kinds=sys.planets.map(p=>p.T.ru).filter((v,i,a)=>a.indexOf(v)===i);
-  if(kinds.length)bits.push(kinds.length+" тип"+(kinds.length===1?"":(kinds.length<5?"а":"ов"))+" миров: "+kinds.join(", "));
-  if(sys.belt)bits.push("пояс богат "+sys.belt.res.map(k=>RES[k].ru.toLowerCase()).join(", "));
+  if(kinds.length)bits.push(kinds.length+" С‚РёРї"+(kinds.length===1?"":(kinds.length<5?"Р°":"РѕРІ"))+" РјРёСЂРѕРІ: "+kinds.join(", "));
+  if(sys.belt)bits.push("РїРѕСЏСЃ Р±РѕРіР°С‚ "+sys.belt.res.map(k=>RES[k].ru.toLowerCase()).join(", "));
   if(sys.station)bits.push(sys.station.kind.toLowerCase());
-  return bits.join(" · ");
+  return bits.join(" В· ");
 }
+
 
 /* ══════════════ смешанные миры ══════════════ */
 /* Двенадцати истинных типов хватает на двенадцать образов, но не на галактику:
@@ -4733,6 +4734,8 @@ const G={
   occ:{},occT:0,freed:0,occCalm:{},mines:{},quests:[],nodes:{},crowns:{},
   /* планета-узел за полный набор редкостей (12n): null, пока сотни нет */
   pnode:null,
+  /* посёлки (12t): разрежённо по «sx,sy», пусто, пока никого не кормили */
+  settle:{},
   /* личный счёт фракций к вам (12o): пусто, пока не наделали дел */
   hunted:{},
   /* узел, стоящий в держателе рубки (05a-nodes, M101): украшение, не слот */
@@ -10979,6 +10982,349 @@ function drawWear(h,w){
   ctx.restore();
 }
 
+/* ══════════════ посёлок: вы даёте, решают они ══════════════
+   Второй базы быть не должно. У своей базы (21a) игрок — хозяин: он ставит
+   отсеки, он платит, он приказывает. Здесь власти у него нет вовсе. Он может
+   только КОРМИТЬ, а что из этого вырастет, решают живущие: у каждого посёлка
+   своя склонность из зерна, и её перевешивает лишь то, чем его кормили долго.
+   Управление игрока — это рацион, а не меню построек.
+
+   Платят они товаром и по своему настроению: ни жалованья, ни процента, ни
+   ровной строки дохода. Правило наёмника действует без изменений — это ставка,
+   а не источник. Правки, делающие посёлок надёжным заработком, ломают замысел.
+
+   Считается всё лениво, по прошедшему времени, с потолком на офлайн — модель
+   `tickDrones` (12-economy) и рейсов наёмников (12a). Живой симуляции нет.
+
+   Говорят они на стёршемся пиджине экспедиции: строка глифов, из которой игрок
+   понимает ровно те слова, что пришли к нему кусками отчёта (12q-lore). Слово
+   в словаре — это не лор, а интерфейс: понятое слово превращает догадку в
+   просьбу, которую можно высказать. */
+
+const SETTLE_CAP=24*3600*1000;         // потолок офлайна, как у наёмников
+const SETTLE_EAT=.55;                  // сколько посёлок съедает в минуту
+const SETTLE_STEP=120;                 // сколько принятого нужно на одну постройку
+const SETTLE_STOCK=900;                // больше он просто не принимает: амбар не бездонный
+const SETTLE_GIVE=.34;                 // доля запаса, которую отдают в хорошем настроении
+const SETTLE_WAIT=8*60000;             // как часто у них вообще есть что отдать
+/* где вообще есть кому жить: на голом камне и в кислоте посёлка не будет */
+const SETTLE_ON=["terran","ocean","jungle","desert","ice","toxic"];
+/* что посёлок способен поднять. `diet` — чем его надо кормить, чтобы склонность
+   повернулась сюда; `give` — чем он потом платит. Ни одна постройка не выбирается
+   игроком: список нужен, чтобы у роста были разные исходы, а не одна полоска. */
+const SETTLE_BUILD=[
+  {k:"field", ru:"поле",       diet:"organics",give:"organics"},
+  {k:"weir",  ru:"запруда",    diet:"ice",     give:"ice"},
+  {k:"kiln",  ru:"печь",       diet:"iron",    give:"iron"},
+  {k:"cut",   ru:"камнерезка", diet:"silicon", give:"silicon"},
+  {k:"forge", ru:"кузня",      diet:"titan",   give:"titan"},
+  {k:"still", ru:"перегонка",  diet:"volatiles",give:"carbon"}
+];
+const SETTLE_BY_K={};SETTLE_BUILD.forEach(b=>SETTLE_BY_K[b.k]=b);
+/* глифы пиджина: рисуются как знаки, а не как буквы — иначе игрок прочитает
+   чужую речь родными словами и словарь потеряет смысл */
+const SETTLE_GLYPH="ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛟᛞ";
+
+function settleKeyOf(sx,sy){return sx+","+sy;}
+function settleMap(){return (G.settle||(G.settle={}));}
+function settleAt(sx,sy){return settleMap()[settleKeyOf(sx,sy)]||null;}
+function settleHere(){return settleAt(G.sx,G.sy);}
+/* посёлок заводится не кнопкой «основать»: он уже здесь, просто до первого
+   дара это несколько дворов, о которых нечего сказать */
+function settleCanLive(p){
+  return !!(p&&p.type&&SETTLE_ON.indexOf(p.type)>=0);
+}
+/* где именно они живут: одно место на планете, посчитанное из зерна системы, а
+   не «везде, где стоит игрок». Ходить к ним надо ногами, как к пещере. */
+function settleSpotX(p,tr){
+  if(!settleCanLive(p))return null;
+  const r=rng(hashi(G.sx,G.sy,(p&&p.idx|0)+0x50D));
+  const W2=(tr&&tr.W)||4000;                       // место считается в мерах рельефа,
+  return 300+r()*Math.max(200,W2-600);             // а не в отвлечённых координатах
+}
+function settleMake(p){
+  const key=settleKeyOf(G.sx,G.sy);
+  const M=settleMap();
+  if(M[key])return M[key];
+  const seed=hashi(G.sx,G.sy,(p&&p.idx|0)+0x5E77);
+  const r=rng(seed);
+  M[key]={seed,sx:G.sx,sy:G.sy,idx:(p&&p.idx|0),name:(p&&p.name)||"",
+    lean:SETTLE_BUILD[Math.floor(r()*SETTLE_BUILD.length)].k,   // своя склонность
+    stage:1,mood:50,fed:0,stock:{},diet:{},built:[],
+    made:Date.now(),last:Date.now(),asked:0,paid:0,raided:0};
+  return M[key];
+}
+/* ── рост, считаемый лениво ──
+   Ни таймера, ни тика в кадре. Пока в амбаре есть еда, посёлок её ест и копит
+   на постройку; когда еда кончается, настроение падает — и это единственная
+   причина, по которой оно падает само. */
+function settleTick(S){
+  if(!S)return null;
+  const now=Date.now();
+  const mins=Math.min(now-(S.last||now),SETTLE_CAP)/60000;
+  if(mins<=0)return S;
+  S.last=now;
+  let need=mins*SETTLE_EAT, ate=0;
+  for(const k of Object.keys(S.stock)){
+    if(need<=0)break;
+    const take=Math.min(need,S.stock[k]||0);
+    S.stock[k]-=take;need-=take;ate+=take;
+    if(S.stock[k]<=.001)delete S.stock[k];
+  }
+  const hungry=need>0;
+  S.fed+=ate;
+  S.mood=clamp(S.mood+(hungry?-mins*.5:mins*.12),0,100);
+  while(S.fed>=SETTLE_STEP){
+    S.fed-=SETTLE_STEP;
+    settleRaise(S);
+  }
+  return S;
+}
+/* что именно поднимут — считают они. Склонность из зерна плюс то, чем кормили:
+   десять часов руды и десять часов летучих дают разные деревни. */
+function settleRaise(S){
+  const score={};
+  for(const b of SETTLE_BUILD){
+    score[b.k]=(S.diet[b.diet]||0)*1.0+(b.k===S.lean?SETTLE_STEP*.8:0)
+      +(hashi(S.seed,S.built.length*17+3,7)%23)*.6            // своя воля, не считалка
+      -(S.built.filter(x=>x===b.k).length)*SETTLE_STEP*.55;   // второе то же — дороже
+  }
+  let best=SETTLE_BUILD[0].k;
+  for(const k in score)if(score[k]>score[best])best=k;
+  S.built.push(best);
+  S.stage=S.built.length>=5?3:(S.built.length>=3?2:1);
+  S.mood=clamp(S.mood+6,0,100);
+  if(typeof logAdd==="function")
+    logAdd("good","Посёлок "+(S.name||"")+" поднял: "+SETTLE_BY_K[best].ru);
+  return best;
+}
+/* ── дар ──
+   Всё, что игрок отдал, ложится в амбар и записывается в рацион. Отдать можно
+   только то, что лежит в трюме, и только руками: приказать нечего. */
+function settleGive(S,k,n){
+  S=settleTick(S);
+  if(!S||!k)return 0;
+  n=Math.min(n|0,G.cargo[k]|0);
+  const room=Math.max(0,SETTLE_STOCK-settleStockSum(S));
+  n=Math.min(n,Math.floor(room));
+  if(n<=0)return 0;
+  G.cargo[k]-=n;
+  S.stock[k]=(S.stock[k]||0)+n;
+  S.diet[k]=(S.diet[k]||0)+n;
+  S.mood=clamp(S.mood+Math.min(8,n*.25),0,100);
+  if(typeof saveGame==="function")saveGame(true);
+  return n;
+}
+function settleStockSum(S){
+  let s=0;for(const k in S.stock)s+=S.stock[k]||0;
+  return Math.floor(s);
+}
+/* чем они платят: только тем, что научились делать сами. Пустой список — им
+   нечего дать, и это честный ответ, а не ошибка. */
+function settleMakes(S){
+  const out=[];
+  for(const k of S.built){const b=SETTLE_BY_K[k];if(b&&out.indexOf(b.give)<0)out.push(b.give);}
+  return out;
+}
+/* ── попросить ──
+   Не сделка и не цена: игрок спрашивает, а настроение решает, сколько готово.
+   Кредитов посёлок не платит НИКОГДА — только товаром. */
+/* ── словарь как интерфейс ──
+   Слово, пришедшее куском отчёта (12q-lore), — не строчка лора, а рычаг: пока
+   его нет, игрок берёт то, что вынесут; когда есть — он может назвать, чего
+   просит, и они начнут с этого. Всё, чего он назвать не умеет, по-прежнему
+   решают за него. */
+const SETTLE_WORD={"вода":"ice","камень":"silicon","огонь":"carbon",
+  "земля":"organics","дом":"iron","небо":"titan"};
+function settleWords(S){
+  const vocab=(typeof loreVocab==="function")?loreVocab():[];
+  const makes=settleMakes(S);
+  return vocab.filter(w=>SETTLE_WORD[w]&&makes.indexOf(SETTLE_WORD[w])>=0);
+}
+function settleAsk(S,word){
+  S=settleTick(S);
+  if(!S)return 0;
+  const now=Date.now();
+  if(now-(S.asked||0)<SETTLE_WAIT)return 0;
+  let makes=settleMakes(S);
+  if(!makes.length)return 0;
+  if(S.mood<35)return 0;
+  /* названное слово ставит свой товар первым — но не создаёт его из ничего и
+     не отменяет настроения: просьба, а не заказ */
+  if(word&&settleWords(S).indexOf(word)>=0){
+    const k=SETTLE_WORD[word];
+    makes=[k].concat(makes.filter(x=>x!==k));
+  }
+  S.asked=now;
+  const st=stat();
+  let room=Math.max(0,st.cargoMax-held()),got=0;
+  const share=SETTLE_GIVE*(S.mood/100);
+  for(const k of makes){
+    if(room<=0)break;
+    const has=Math.floor((S.stock[k]||0)+S.built.filter(x=>SETTLE_BY_K[x].give===k).length*6);
+    const n=Math.min(room,Math.floor(has*share));
+    if(n<=0)continue;
+    S.stock[k]=Math.max(0,(S.stock[k]||0)-n);
+    if(addRes(k,n)){room-=n;got+=n;}
+  }
+  if(got){S.paid+=got;S.mood=clamp(S.mood-4,0,100);}
+  if(typeof saveGame==="function")saveGame(true);
+  return got;
+}
+/* ── речь ──
+   Строка глифов, постоянная для посёлка и для повода. Понятые слова (те, что
+   пришли кусками отчёта) показываются словом, остальные остаются знаками. */
+function settleLine(S,topic){
+  const r=rng(hashi(S.seed,(topic|0)*131+7,5));
+  const vocab=(typeof loreVocab==="function")?loreVocab():[];
+  const n=3+Math.floor(r()*3),out=[];
+  for(let i=0;i<n;i++){
+    const known=vocab.length&&r()<Math.min(.75,vocab.length/12);
+    if(known)out.push(vocab[Math.floor(r()*vocab.length)]);
+    else{
+      let w="";const len=2+Math.floor(r()*3);
+      for(let j=0;j<len;j++)w+=SETTLE_GLYPH[Math.floor(r()*SETTLE_GLYPH.length)];
+      out.push(w);
+    }
+  }
+  return out.join(" ");
+}
+/* ── как это выглядит с земли ──
+   Место, к которому идут ногами и на котором нечего увидеть, — это ложь той же
+   породы, что перк без кода. Посёлок рисуется здесь же, рядом с моделью, потому
+   что рисовать нечего, кроме того, что модель уже знает: сколько поднято, чем
+   кормили и какое настроение.
+
+   Дворов ровно столько, сколько построек, плюс один жилой — тот, с которого всё
+   начинается. Крыши низкие и разной высоты: посёлок не строили по чертежу.
+   Дым идёт только там, где есть печь или кузня, и гаснет, если настроение упало
+   ниже трети: по нему и видно голод, без единой цифры. Окна при этом не гаснут
+   никогда — в них живут и голодая, а посёлок до первого дара состоит из одних
+   тёмных коробок и без огня в окне не читался на склоне вовсе. */
+function settleDraw(S,tr,camx,camy,p){
+  /* до первого дара записи нет, но люди здесь уже есть: рисуем те же несколько
+     дворов без дыма и без дозорных. Иначе подсказка «здесь живут» показывала бы
+     на пустой холм. */
+  if(!S)S={seed:hashi(G.sx,G.sy,(p&&p.idx|0)+0x5E77),built:[],mood:20,stage:1};
+  const bx=settleSpotX(p,tr);if(bx==null)return;
+  const sx=bx-camx;
+  if(sx<-260||sx>W+260)return;
+  const gy=groundAt(tr,bx)-camy;
+  const r=rng(S.seed^0x2C1);
+  const warm=(S.mood>=34);
+  const n=2+S.built.length;                                // и до первого дара тут живут
+  const pal=p.T.pal;
+  const wall="rgb("+pal[2].map(v=>Math.round(v*.62+18)).join(",")+")";
+  const roof="rgb("+pal[1].map(v=>Math.round(v*.5+10)).join(",")+")";
+  for(let i=0;i<n;i++){
+    const ox=sx+(i-(n-1)/2)*26+(r()-.5)*8;
+    const hh=16+r()*10, ww=17+r()*8;
+    const oy=groundAt(tr,bx+(ox-sx))-camy;
+    ctx.fillStyle="rgba(0,0,0,.34)";                       // контакт с грунтом
+    ctx.beginPath();ctx.ellipse(ox,oy-1,ww*.6,3,0,0,TAU);ctx.fill();
+    ctx.fillStyle=wall;ctx.fillRect(ox-ww/2,oy-hh,ww,hh);
+    ctx.fillStyle=roof;                                    // низкая двускатная крыша
+    ctx.beginPath();
+    ctx.moveTo(ox-ww/2-3,oy-hh);ctx.lineTo(ox,oy-hh-7);ctx.lineTo(ox+ww/2+3,oy-hh);
+    ctx.closePath();ctx.fill();
+    /* обвод по кромке крыши: тёмная коробка на тёмном склоне не читается вовсе,
+       а посёлок до первого дара только из таких коробок и состоит */
+    ctx.strokeStyle="rgba(226,236,240,.30)";ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(ox-ww/2-3,oy-hh+.5);ctx.lineTo(ox,oy-hh-6.5);ctx.lineTo(ox+ww/2+3,oy-hh+.5);
+    ctx.stroke();
+    ctx.fillStyle="rgba(255,206,130,"+(.30+S.mood/260).toFixed(2)+")";   // очаг
+    ctx.fillRect(ox-2.5,oy-hh*.62,5,4.5);
+    /* труба и дым — только у тех дворов, где что-то жгут */
+    const b=SETTLE_BY_K[S.built[i-1]];
+    if(b&&(b.k==="kiln"||b.k==="forge"||b.k==="still")){
+      ctx.fillStyle=roof;ctx.fillRect(ox+ww*.28,oy-hh-11,3.4,6);
+      if(warm)for(let s=0;s<4;s++){
+        const t=((G.t*.6+s*40+i*17)%160)/160;
+        ctx.fillStyle="rgba(210,214,220,"+((1-t)*.16).toFixed(3)+")";
+        ctx.beginPath();
+        ctx.arc(ox+ww*.28+1.7+Math.sin(t*6+i)*5*t,oy-hh-12-t*46,2+t*7,0,TAU);ctx.fill();
+      }
+    }
+  }
+  /* дозорные: не украшение, а то, чем посёлок стоит между игроком и фауной
+     (M110). Их видно ровно со второй ступени — раньше некому стоять. */
+  if(S.stage>=2)for(let i=0;i<2;i++){
+    const ox=sx+(i?1:-1)*(n*14+16), oy=groundAt(tr,bx+(ox-sx))-camy;
+    ctx.fillStyle="rgba(20,24,30,.9)";
+    ctx.fillRect(ox-1.6,oy-13,3.2,13);
+    ctx.beginPath();ctx.arc(ox,oy-15.5,2.6,0,TAU);ctx.fill();
+    ctx.strokeStyle="rgba(20,24,30,.9)";ctx.lineWidth=1.4;   // шест в руке
+    ctx.beginPath();ctx.moveTo(ox+(i?3:-3),oy-19);ctx.lineTo(ox+(i?3:-3),oy);ctx.stroke();
+  }
+  ctx.fillStyle="rgba(226,206,160,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+  ctx.fillText("ПОСЁЛОК",sx,gy-56-n*2);
+}
+/* ══ M110: они стоят между вами и фауной — и платят за это ══
+   Не бонус игроку, а свойство земли: со второй ступени у посёлка есть дозорные,
+   и кусачая тварь в его биоме держится поодаль. Работает это только на своей
+   планете (не «во всей системе») и только пока их кормят: голодной деревне не до
+   дозора. И работает в обе стороны — пират, которого игрок притащил себе на
+   хвосте, садится не на него, а на них. */
+function settleWatch(p){
+  const S=settleTick(settleHere());
+  if(!S||S.stage<2)return 0;
+  if(p&&(p.idx|0)!==(S.idx|0))return 0;
+  if(S.mood<30)return 0;                      // голод снимает дозор раньше всего
+  return clamp((S.stage>=3?1:.65)*(.3+S.mood/100),0,1);
+}
+/* ── расплата за налёт ──
+   Цена берётся не за факт пиратов в системе, а за тех, кто игрока заметил: это
+   его хвост, а не их погода. Настроение падает всегда, постройка теряется лишь
+   при плотном налёте — иначе прикрытие деревней стоило бы дешевле, чем стоит. */
+function settleRaid(S,heat){
+  S=settleTick(S);
+  if(!S||heat<=0)return 0;
+  const hit=Math.min(34,6+heat*7);
+  S.mood=clamp(S.mood-hit,0,100);
+  S.raided=(S.raided|0)+1;
+  let lost=null;
+  if(S.built.length&&(heat>=3||(heat>=2&&S.mood<40))){
+    lost=S.built.splice(Math.floor(rng(hashi(S.seed,S.raided*29,11))()*S.built.length),1)[0];
+    S.stage=S.built.length>=5?3:(S.built.length>=3?2:1);
+  }
+  if(typeof logAdd==="function")
+    logAdd("bad","Налёт на посёлок "+(S.name||"")+(lost?" · сожжено: "+SETTLE_BY_K[lost].ru:" · настроение упало"));
+  return lost?2:1;
+}
+/* вызывается при уходе из системы: расплачивается тот, кого оставили под теми,
+   кого привели. Охотник (12o) считается вдвое — ему всё равно, чья это крыша. */
+function settleLeftBehind(){
+  const S=settleAt(G.sx,G.sy);
+  if(!S)return 0;
+  let heat=0;
+  for(const p of G.pirates||[]){
+    if(!p.aware||p.hull<=0)continue;
+    heat+=(p.hunter?2:1)+(p.rank|0)*.5;
+  }
+  if(heat<1)return 0;
+  return settleRaid(S,heat);
+}
+/* ── глазами фактора ──
+   С третьей ступени посёлок — остановка на карте, к нему идут баржи (12l), как
+   к своей планете (12n). Ниже третьей его не существует для маршрутов вовсе. */
+function settleStop(S){
+  if(!S||S.stage<3)return null;
+  if(!starAt(S.sx,S.sy))return null;
+  const sys=getSystem(S.sx,S.sy);
+  if(!sys||sys.station)return null;
+  const prices={};
+  for(const k of TRADE_KEYS)prices[k]=Math.max(1,RES[k].price);
+  return {key:sys.key,sx:sys.sx,sy:sys.sy,planets:sys.planets,name:sys.name,settle:1,
+    station:{name:"посёлок "+(S.name||sys.name),stype:"trade",kind:"посёлок",
+      orbit:0,ang:0,spd:0,prices,fuelPrice:11,x:0,y:0,vx:0,vy:0}};
+}
+function settleStops(){
+  const out=[];
+  for(const key in settleMap()){const S=settleMap()[key],st=settleStop(S);if(st)out.push(st);}
+  return out;
+}
+
 /* ══════════════ пираты берут системы ══════════════ */
 /* Пираты были погодой: сколько-то их встречается в опасных секторах, и всё.
    Отношения с ними не менялись ни от чего — убил и полетел дальше.
@@ -11432,6 +11778,9 @@ function updateCombat(dt){
     if(gone)G.shots.splice(i,1);
   }
   G.pirates=G.pirates.filter(p=>p.hull>0);
+  /* батарея с грунта (21d): своя система, только мелочь — она сама решает,
+     стрелять ли, и делает это в общем цикле боя, а не своим таймером */
+  if(typeof battTick==="function")battTick(dt);
 }
 function killPirate(p){
   /* ренегат — не пират: за него не дают награды, за него возвращают корпус */
@@ -11466,6 +11815,9 @@ function killPirate(p){
     (dropped?" · контейнер с частью":""));
 }
 function drawCombat(zx,zy,Z){
+  /* линия батареи с грунта (21d) — рисуется до всего остального, чтобы луч
+     уходил под корабли, а не поверх них */
+  if(typeof battDraw==="function")battDraw(zx,zy,Z);
   /* контейнеры: гранёная коробка в цвет категории части, мигает маячком */
   for(const L of G.loot){
     const x=zx(L.x),y=zy(L.y);
@@ -11567,7 +11919,7 @@ function snapshot(){
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,
-    loreFound:G.loreFound,loreMarks:G.loreMarks,
+    loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -11672,6 +12024,30 @@ function applySave(s){
     if(pn.stock&&typeof pn.stock==="object")
       for(const k of N.res)N.stock[k]=clamp(+pn.stock[k]||0,0,PLANET_CAP);
     G.pnode=N;
+  }
+  /* посёлки (12t-settle): решения игрока в них есть — что и сколько он отдавал,
+     поэтому они персистятся целиком. Чинится по месту: постройки сверяются с
+     таблицей, склад и рацион — с ходовыми товарами, ступень пересчитывается по
+     постройкам, а не берётся из записи, чтобы правка таблицы не оставляла
+     посёлок на ступени, которой он больше не соответствует. */
+  G.settle={};
+  if(s.settle&&typeof s.settle==="object")for(const key in s.settle){
+    const v=s.settle[key];
+    if(!v||typeof v!=="object")continue;
+    const built=(Array.isArray(v.built)?v.built:[]).filter(k=>!!SETTLE_BY_K[k]).slice(0,24);
+    const S={seed:v.seed|0,sx:v.sx|0,sy:v.sy|0,idx:v.idx|0,
+      name:typeof v.name==="string"?v.name:"",
+      lean:SETTLE_BY_K[v.lean]?v.lean:SETTLE_BUILD[0].k,
+      stage:built.length>=5?3:(built.length>=3?2:1),
+      mood:clamp(+v.mood||0,0,100),fed:Math.max(0,+v.fed||0),
+      stock:{},diet:{},built,
+      made:+v.made||Date.now(),last:+v.last||Date.now(),
+      asked:+v.asked||0,paid:Math.max(0,v.paid|0),raided:Math.max(0,v.raided|0)};
+    for(const k of RES_KEYS){
+      if(v.stock&&v.stock[k]>0)S.stock[k]=clamp(+v.stock[k],0,SETTLE_STOCK);
+      if(v.diet&&v.diet[k]>0)S.diet[k]=Math.max(0,+v.diet[k]);
+    }
+    G.settle[key]=S;
   }
   /* отчёт «Долгого Хода» (12q-lore): формат сейва не менялся (v:4), старые
      записи просто не имеют этих полей и начинают с пустого */
@@ -14657,6 +15033,9 @@ function drawMap(){
   }
 }
 function jump(cost){
+  /* уходя, платит не только топливо: тех, кто сел вам на хвост, вы оставляете
+     над головами живущих внизу (M110, 12t-settle) */
+  if(typeof settleLeftBehind==="function")settleLeftBehind();
   G.fuel-=cost;G.sx=G.sel.x;G.sy=G.sel.y;G.sys=getSystem(G.sx,G.sy);G.ap=null;
   const a=Math.random()*TAU,r=1500;
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
@@ -14840,13 +15219,56 @@ function drawScoop(){
     for(let i=-1;i<=Math.ceil(W/wid)+1;i++)ctx.drawImage(T,off+i*wid,yTop,wid,hgt);
   }
   ctx.globalAlpha=1;
-  /* глубина: разрежённая тьма сверху, раскалённая муть снизу */
+  /* ── глубина ──
+     Верх и низ кадра выглядели одинаково: две ленты одной текстуры на весь
+     экран, и сцена читалась обоями, а не атмосферой, у которой есть верх и
+     низ. Теперь вверху разрежённая холодная муть с проглядывающей чернотой
+     космоса, внизу — плотная горячая мгла, и в самом низу тёмное дно, куда
+     свет уже не доходит. Это же и говорит игроку, куда падать не надо. */
   const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,"rgba(4,6,12,.92)");
-  g.addColorStop(.22,"rgba(8,10,20,.25)");
-  g.addColorStop(.62,"rgba(0,0,0,0)");
-  g.addColorStop(1,"rgba("+pal[4].join(",")+",.40)");
+  g.addColorStop(0,"rgba(3,5,11,.95)");
+  g.addColorStop(.14,"rgba(8,12,24,.55)");
+  g.addColorStop(.34,"rgba(10,14,26,.10)");
+  g.addColorStop(.58,"rgba(0,0,0,0)");
+  /* дно оказалось самым СВЕТЛЫМ местом кадра: кремовая лента внизу спорила с
+     замыслом, по которому вниз лететь страшно. Тёплый подсвет остаётся узкой
+     полосой, а под ним мгла глушит всё — свет туда уже не доходит */
+  g.addColorStop(.74,"rgba("+pal[4].join(",")+",.26)");
+  g.addColorStop(.86,"rgba("+Math.round(pal[0][0]*.7)+","+Math.round(pal[0][1]*.6)+","
+    +Math.round(pal[0][2]*.7)+",.62)");
+  g.addColorStop(1,"rgba(6,4,10,.93)");
   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  /* ── кромки сдвига ──
+     Текстура растягивается на полтора экрана и мылится: ни одной чёткой
+     границы, глазу не за что зацепиться, и скорость не читается. У настоящих
+     полос гиганта кромка резкая — там, где два потока идут в разные стороны.
+     Кромки рисуем в экранных координатах: волнистая линия, светлая сверху,
+     тёмная снизу, и каждая едет со своей скоростью — вот это и есть скорость. */
+  /* Семь кромок ровной волной через весь кадр читались змеями: одинаковая
+     амплитуда на равных шагах — это узор, а не течение. Их меньше, они гуще
+     книзу (там плотнее газ) и каждая своей длины волны. */
+  for(let e=0;e<5;e++){
+    const re=rng(hashi(p.seed,e*7717,0x3D9));
+    const v=.22+e*e*.036+e*.09+re()*.04, ey=H*v;
+    const dep=v<.5?1-v*1.2:.4+v*.4;                 // ближние (нижние) едут быстрее
+    const amp=6+re()*16, wl=180+re()*260, spd=(3+re()*7)*dep;
+    ctx.beginPath();
+    for(let x=-20;x<=W+20;x+=14){
+      const yy=ey+Math.sin((x+S.x*spd*11)/wl*TAU)*amp
+                 +Math.sin((x*1.7-S.x*spd*6)/(wl*.43)*TAU)*amp*.32;
+      if(x<0)ctx.moveTo(x,yy);else ctx.lineTo(x,yy);
+    }
+    /* Контурная линия поверх мыла — худшее из решений: она читается карандашом
+       по обоям, потому что живёт отдельно от тона. Кромка — это ТЕНЬ под
+       выступающей лентой: широкий мягкий мазок вниз и узкий тёмный по самой
+       границе, без единой светлой обводки. */
+    ctx.save();ctx.lineCap="round";
+    ctx.strokeStyle="rgba(10,6,16,"+(.16+dep*.18).toFixed(2)+")";
+    ctx.lineWidth=14;ctx.globalAlpha=.55;ctx.stroke();
+    ctx.globalAlpha=1;
+    ctx.strokeStyle="rgba(12,8,18,"+(.20+dep*.20).toFixed(2)+")";ctx.lineWidth=2.6;ctx.stroke();
+    ctx.restore();
+  }
   /* набегающий поток: тонкие штрихи по всему кадру, гуще к низу */
   ctx.strokeStyle="rgba(255,255,255,.05)";ctx.lineWidth=1;
   for(let i=0;i<26;i++){
@@ -14868,9 +15290,17 @@ function drawScoop(){
      плотного газа — он светится и в нём висит взвесь, которую и собирают */
   const cg=ctx.createLinearGradient(0,bt,0,bb);
   cg.addColorStop(0,"rgba(127,224,200,0)");
-  cg.addColorStop(.5,"rgba(127,224,200,.13)");
+  cg.addColorStop(.5,"rgba(127,224,200,.22)");
   cg.addColorStop(1,"rgba(127,224,200,0)");
   ctx.fillStyle=cg;ctx.fillRect(0,bt,W,bb-bt);
+  /* Полоса терялась в лиловой каше: слой газа плотнее, но по краям его не
+     видно, а игрок ищет глазами именно границу. Кромка идёт через весь кадр
+     штрихом — линейка это или газ, спор решается в пользу читаемости. */
+  for(const yy of [bt,bb]){
+    ctx.save();ctx.setLineDash([9,7]);ctx.lineDashOffset=-(S.x*7)%16;
+    ctx.strokeStyle="rgba(150,240,214,.30)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(W,yy);ctx.stroke();ctx.restore();
+  }
   ctx.fillStyle="rgba(190,255,238,.5)";
   for(let i=0;i<40;i++){
     const rr3=rng(hashi(p.seed,i*97,0x9AD));
@@ -14895,6 +15325,26 @@ function drawScoop(){
     for(let i=0;i<9;i++){
       const yy=sy-26+i*6.5, l=30+Math.abs(Math.sin(i*1.7+S.x*.05))*70*k;
       ctx.beginPath();ctx.moveTo(sx-14,yy);ctx.lineTo(sx-14-l,yy+ (i-4)*1.6);ctx.stroke();
+    }
+  }
+  /* ── след в газе ──
+     Корабль летел поверх обоев: среда его не замечала. Теперь за ним остаётся
+     разрез — светлая полоса, которую он вспорол, и два завитка по краям, где
+     газ сходится обратно. Это же единственное, по чему видно скорость вблизи. */
+  {
+    const tw=190+Math.abs(S.vy)*4;
+    const tg=ctx.createLinearGradient(sx-14,0,sx-14-tw,0);
+    tg.addColorStop(0,"rgba(236,246,255,.20)");
+    tg.addColorStop(1,"rgba(236,246,255,0)");
+    ctx.fillStyle=tg;ctx.fillRect(sx-14-tw,sy-5,tw,10);
+    ctx.strokeStyle="rgba(236,246,255,.14)";ctx.lineWidth=1.2;
+    for(const s of [-1,1]){
+      ctx.beginPath();ctx.moveTo(sx-16,sy+s*4);
+      for(let i=1;i<=7;i++){
+        const t=i/7;
+        ctx.lineTo(sx-16-t*tw,sy+s*(4+t*16)+Math.sin(t*7+S.x*.4+ (s>0?0:1.7))*4*t);
+      }
+      ctx.stroke();
     }
   }
   ctx.save();ctx.translate(sx,sy);ctx.rotate(S.bank*.5);ctx.scale(1.5,1.5);
@@ -16533,233 +16983,12 @@ function landingDust(L,tr,camx,camy){
   }
 }
 
-/* ══════════════ точки интереса ══════════════ */
-/* Одна огромная вещь на горизонте стоит полусотни мелких украшений: она даёт
-   масштаб (астронавт 20 px против корпуса в 400) и повод идти именно туда.
-   Поэтому на планету приходится 2–4 достопримечательности на 9000 единиц пути,
-   между ними — сознательно пустой рельеф. Пустота здесь работает: без неё
-   находка перестаёт быть находкой.
-
-   Всё детерминировано от p.seed: одна и та же планета всегда встречает тем же.
-   Под каждой достопримечательностью рельеф выравнивается — иначе постройка
-   висит на зубцах и сразу читается как наклейка. */
-const POI_KINDS=[
-  {k:"wreck",   ru:"ОСТОВ КОРАБЛЯ",  on:["rocky","desert","ice","terran","toxic","volcanic","ocean","crystal","jungle","metal","ruin"],w:1.3,h:150,flat:420},
-  {k:"temple",  ru:"ХРАМ",           on:["terran","toxic","desert","ocean","jungle","ruin"],         w:1.0,h:220,flat:360},
-  {k:"elevator",ru:"КОСМИЧЕСКИЙ ЛИФТ",on:["terran","desert","toxic","ice","ocean","jungle","ruin","metal"],w:.7,h:900,flat:260},
-  {k:"crystals",ru:"КРИСТАЛЛЫ",      on:["ice","rocky","toxic","volcanic","desert","crystal","metal"],w:1.2,h:280,flat:300},
-  {k:"ring",    ru:"УСКОРИТЕЛЬ",     on:["rocky","ice","desert","volcanic","metal","ruin"],          w:.8, h:340,flat:520},
-  {k:"anomaly", ru:"АНОМАЛИЯ",       on:["rocky","toxic","volcanic","ice","terran","desert","ocean","crystal","jungle","metal","ruin"],w:.6,h:300,flat:240},
-  {k:"monolith",ru:"МОНОЛИТ",        on:["rocky","ice","desert","terran","ocean","toxic","volcanic","crystal","jungle","metal","ruin"],w:.9,h:260,flat:180},
-  {k:"factory", ru:"ЗАВОД",          on:["volcanic","toxic","desert","rocky","metal","ruin"],        w:1.0,h:250,flat:440},
-  {k:"portal",  ru:"ВРАТА",          on:["terran","toxic","ice","ocean","volcanic","crystal","jungle","ruin"],w:.5,h:230,flat:220},
-  {k:"observ",  ru:"ОБСЕРВАТОРИЯ",   on:["rocky","ice","desert","terran","crystal","metal","ruin"],  w:.9, h:190,flat:300},
-  /* зарубка — не памятник чужих, а межевой знак «Долгого Хода» (12q-lore):
-     режется на любом твёрдом мире, встречается редко (вес мал) и стоит того,
-     чтобы к ней идти, потому что называет адрес, а не отдаёт вещь */
-  {k:"obelisk", ru:"ЗАРУБКА",        on:["rocky","ice","desert","terran","toxic","volcanic","ocean","crystal","jungle","metal","ruin"],w:.45,h:230,flat:260}
-];
-/* сгенерировать и вписать в рельеф; вызывается один раз из startLanding */
-function genPOI(tr,p){
-  if(tr.poi)return tr.poi;
-  tr.poi=[];
-  if(p.type==="gas")return tr.poi;
-  const r=rng(p.seed^0x9E37);
-  /* смешанный мир принимает находки обоих родителей: руины на ледяной планете
-     объясняются именно тем, что она наполовину руинная */
-  const pool=POI_KINDS.filter(k=>k.on.indexOf(p.type)>=0||(p.mix&&k.on.indexOf(p.mix)>=0));
-  if(!pool.length)return tr.poi;
-  const n=2+Math.floor(r()*3);
-  const put=[];
-  for(let i=0;i<n;i++){
-    /* мир делится на n полос, точка ставится внутри своей — так они не
-       слипаются в одну кучу и не оставляют половину планеты пустой */
-    const lo=tr.W*(i+.18)/n, hi=tr.W*(i+.82)/n;
-    let x=lo+r()*(hi-lo);
-    if(Math.abs(x-tr.padX)<700)x+=x<tr.padX?-700:700;          // не на посадочной площадке
-    x=clamp(x,300,tr.W-300);
-    if(put.some(q=>Math.abs(q-x)<900))continue;
-    put.push(x);
-    let tot=0;for(const k of pool)tot+=k.w;
-    let pick=r()*tot,K=pool[0];
-    for(const k of pool){pick-=k.w;if(pick<=0){K=k;break;}}
-    const scale=.8+r()*.55;
-    /* площадка под основание: середина плоская, к краям плавно возвращается
-       к исходному профилю — стыка не видно */
-    const half=Math.round(K.flat*scale/tr.step);
-    const ci=Math.round(x/tr.step);
-    const base=groundAt(tr,x);
-    for(let j=Math.max(0,ci-half*2);j<Math.min(tr.N,ci+half*2);j++){
-      const u=clamp((Math.abs(j-ci)-half*.45)/(half*1.15),0,1);
-      tr.h[j]=lerp(base,tr.h[j],u*u*(3-2*u));
-    }
-    tr.poi.push({k:K.k,ru:K.ru,x,y:base,h:K.h*scale,sc:scale,seed:hashi(p.seed,i,0x50E1)});
-  }
-  /* валуны, попавшие внутрь постройки, убираем: они торчат сквозь стены */
-  if(tr.rocks)for(let i=tr.rocks.length-1;i>=0;i--){
-    const rk=tr.rocks[i];
-    if(tr.poi.some(q=>Math.abs(q.x-rk.x)<q.h*.35))tr.rocks.splice(i,1);
-  }
-  return tr.poi;
-}
-/* мягкое свечение — единственный «пост-эффект», который тут нужен: он и
-   выдаёт источник света, и отделяет постройку от фона на дальнем плане */
-function poiGlow(x,y,rad,col,a){
-  const g=ctx.createRadialGradient(x,y,0,x,y,rad);
-  g.addColorStop(0,"rgba("+col+","+a.toFixed(3)+")");
-  g.addColorStop(.45,"rgba("+col+","+(a*.28).toFixed(3)+")");
-  g.addColorStop(1,"rgba("+col+",0)");
-  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rad,0,TAU);ctx.fill();
-}
-/* Ровная грань в триста пикселей читается фигурой при любом цвете. Древним
-   постройку делает не форма, а то, что с ней случилось: выкрошенная кромка,
-   обвалившийся угол, потёки по стене, занос у основания. Поэтому всё тело
-   строится через poiPoly, а он дробит каждую грань и уводит точки по нормали.
-   Смещение детерминировано от seed — постройка не дрожит между кадрами. */
-let POI_SEED=0, POI_MAT=null, POI_OX=0, POI_OY=0;
-function poiPath(pts,amp){
-  const P=new Path2D();
-  P.moveTo(pts[0][0],pts[0][1]);
-  let n=0;
-  for(let i=1;i<=pts.length;i++){
-    const a=pts[i-1],b=pts[i%pts.length];
-    const ex=b[0]-a[0],ey=b[1]-a[1],el=Math.hypot(ex,ey)||1;
-    /* длинную грань дробим чаще короткой: иначе у крупной постройки скол
-       один на всю стену, а у мелкой — пила */
-    const seg=clamp(Math.round(el/26),2,7);
-    for(let s=1;s<=seg;s++){
-      const u=s/seg;
-      const d=(h01(n++,i,POI_SEED)-.5)*amp*(s===seg?.35:1);
-      P.lineTo(a[0]+ex*u-ey/el*d, a[1]+ey*u+ex/el*d);
-    }
-  }
-  P.closePath();
-  return P;
-}
-function poiPoly(pts,fill,line,amp){
-  const P=poiPath(pts,amp===undefined?2.2:amp);
-  if(fill){ctx.fillStyle=fill;ctx.fill(P);}
-  poiSkin(P);
-  if(line){ctx.strokeStyle=line;ctx.lineWidth=1;ctx.stroke(P);}
-  return P;
-}
-/* порода планеты, копоть сверху вниз и волосяные трещины — то, из-за чего
-   стена перестаёт быть заливкой. Всё внутри клипа по силуэту самой постройки. */
-function poiSkin(P){
-  if(!POI_MAT)return;
-  fillMaterial(POI_MAT,POI_OX,POI_OY,.34,.22,P);
-  ctx.save();ctx.clip(P);
-  /* потёки: вертикальные грязные полосы, шире книзу — так стекает вода и пыль */
-  for(let i=0;i<7;i++){
-    const sx=(h01(i,3,POI_SEED)-.5)*260;
-    const w=2+h01(i,5,POI_SEED)*9;
-    const g=ctx.createLinearGradient(0,-400,0,60);
-    g.addColorStop(0,"rgba(0,0,0,0)");
-    g.addColorStop(1,"rgba(0,0,0,"+(.10+h01(i,9,POI_SEED)*.16).toFixed(3)+")");
-    ctx.fillStyle=g;ctx.fillRect(sx,-400,w,460);
-  }
-  /* трещины по телу: ломаные, а не прямые */
-  ctx.strokeStyle="rgba(0,0,0,.34)";ctx.lineWidth=1;
-  for(let i=0;i<5;i++){
-    let cx=(h01(i,11,POI_SEED)-.5)*240, cy=-h01(i,13,POI_SEED)*300;
-    ctx.beginPath();ctx.moveTo(cx,cy);
-    for(let s=0;s<5;s++){
-      cx+=(h01(i,s+17,POI_SEED)-.5)*26;cy+=8+h01(i,s+23,POI_SEED)*22;
-      ctx.lineTo(cx,cy);
-    }
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-/* осыпь и занос у подножия: без неё постройка приставлена к земле,
-   а не стоит в ней миллион лет */
-function poiDrift(w,pal){
-  const c=pal[1];
-  ctx.fillStyle="rgba("+c.map(v=>Math.round(v*.8)).join(",")+",.55)";
-  ctx.beginPath();ctx.moveTo(-w,4);
-  for(let i=0;i<=14;i++){
-    const u=i/14, xx=-w+2*w*u;
-    const hh=Math.sin(u*Math.PI)*(6+h01(i,29,POI_SEED)*11);
-    ctx.lineTo(xx,4-hh);
-  }
-  ctx.lineTo(w,4);ctx.closePath();ctx.fill();
-  /* отдельные обломки, отвалившиеся от тела */
-  for(let i=0;i<7;i++){
-    const bx=(h01(i,31,POI_SEED)-.5)*w*2.6, s=2+h01(i,37,POI_SEED)*6;
-    ctx.fillStyle="rgba("+pal[2].map(v=>Math.round(v*.55)).join(",")+",.85)";
-    ctx.beginPath();
-    ctx.moveTo(bx-s,2);ctx.lineTo(bx-s*.3,2-s*.9);ctx.lineTo(bx+s*.8,2-s*.3);ctx.lineTo(bx+s*.5,2);
-    ctx.closePath();ctx.fill();
-  }
-}
-/* тело постройки красится градиентом «низ тёмный — верх подсвечен небом»:
-   один этот приём отделяет силуэт от фона убедительнее любого контура */
-function poiBody(hgt,dark,lite){
-  const g=ctx.createLinearGradient(0,-hgt,0,0);
-  g.addColorStop(0,lite);g.addColorStop(1,dark);
-  return g;
-}
-function drawPOI(tr,camx,camy,p){
-  const list=tr.poi;if(!list||!list.length)return;
-  const pal=p.T.pal;
-  /* всё, что ниже линии грунта, срезается: иначе упавший корпус лежит поверх
-     земли, как наклейка, вместо того чтобы уходить в неё. Запас в 6 px оставлен
-     контактным теням — без них постройка висит в воздухе. */
-  /* Тени рисуем ДО клипа. Раньше groundShadow вызывался внутри самих построек,
-     то есть уже под клипом «всё ниже линии грунта срезать» — от эллипса
-     оставался тонкий обрезок сверху, и это читалось как странная полоска под
-     объектом. Заодно пропорция: тень широкая и низкая (ry ≈ rx/7), а не
-     блин на девять пикселей при двухстах в ширину. */
-  for(const q of list){
-    const x=q.x-camx, y=q.y-camy;
-    if(x<-q.h*1.6-200||x>W+q.h*1.6+200)continue;
-    const rx=q.h*(q.k==="wreck"?1.1:(q.k==="ring"?.9:.55));
-    ctx.save();
-    ctx.globalAlpha=.55;
-    groundShadow(x+rx*.12,y+3,rx,Math.max(4,rx*.15));
-    ctx.restore();
-  }
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(0,0,W,H);
-  const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
-  const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
-  ctx.moveTo(i0*tr.step-camx,tr.h[i0]-camy+6);
-  for(let i=i0;i<=i1;i++)ctx.lineTo(i*tr.step-camx,tr.h[i]-camy+6);
-  ctx.lineTo(i1*tr.step-camx,H+10);ctx.lineTo(i0*tr.step-camx,H+10);
-  ctx.closePath();
-  ctx.clip("evenodd");
-  for(const q of list){
-    const x=q.x-camx, y=q.y-camy;
-    /* запас по ширине большой: постройка видна задолго до того, как игрок
-       на неё наступит — в этом весь смысл */
-    if(x<-q.h*1.6-200||x>W+q.h*1.6+200)continue;
-    ctx.save();ctx.translate(x,y);
-    /* всё, что нужно «скину», кладём в общие переменные: тащить пять
-       аргументов через десять функций рисования — только шум */
-    POI_SEED=q.seed;POI_MAT=tr.mat;POI_OX=camx-x;POI_OY=camy-y;
-    const rr=rng(q.seed);
-    /* рукотворное красится своим сплавом, а не палитрой грунта: покрашенная
-       биомом постройка сливается с холмами и перестаёт читаться как постройка.
-       Доля биома оставлена (.22) ради цветовой связки с окружением. */
-    const mix=(a,b)=>Math.round(lerp(a,b,.22));
-    const dark="rgb("+[mix(28,pal[0][0]),mix(30,pal[0][1]),mix(36,pal[0][2])].join(",")+")";
-    const lite="rgb("+[mix(150,pal[3][0]),mix(158,pal[3][1]),mix(168,pal[3][2])].join(",")+")";
-    if(q.k==="wreck")drawWreck(q,rr,dark,lite,pal);
-    else if(q.k==="temple")drawTemple(q,rr,dark,lite,pal);
-    else if(q.k==="elevator")drawElevator(q,rr,dark,lite);
-    else if(q.k==="crystals")drawCrystalForest(q,rr,pal);
-    else if(q.k==="ring")drawAccel(q,rr,dark,lite);
-    else if(q.k==="anomaly")drawAnomaly(q,rr,pal);
-    else if(q.k==="monolith")drawMonolith(q,rr,dark,lite,pal);
-    else if(q.k==="factory")drawFactory(q,rr,dark,lite,pal);
-    else if(q.k==="portal")drawPortal(q,rr,pal);
-    else if(q.k==="observ")drawObserv(q,rr,dark,lite,pal);
-    else if(q.k==="obelisk")drawObelisk(q,rr,dark,lite,pal);
-    ctx.restore();
-  }
-  ctx.restore();
-}
+/* ══════════════ фигуры находок: одна функция на вид ══════════════
+   Отрезано от `20a-poi` по шву: там остались таблица видов, кисти
+   (`poiPoly`/`poiSkin`/`poiDrift`) и кадр `drawPOI`, сюда ушли сами постройки.
+   Файл перешёл 40 КБ на мёртвой батарее (M111) — и это плата по долгу, а не
+   новая базовая отметка в `build.ps1`. Добавить вид — значит дописать функцию
+   сюда и одну строку в развилку `drawPOI`. */
 /* ── разбившийся мегакорабль: корпус вошёл в грунт под углом, хребет переломлен ── */
 function drawWreck(q,r,dark,lite,pal){
   const L=q.h*2.6, tilt=(-.24-r()*.22);
@@ -16969,6 +17198,66 @@ function drawMonolith(q,r,dark,lite,pal){
    грань, зарубка — камень, поставленный руками и в спешке. Отсюда наклон,
    грубый скол вершины и ряды засечек, врезанных не по линейке: это отчёт, а
    не памятник. Всё, что светится, — тонкая полоса на срезе, поймавшая солнце. */
+/* ── мёртвая батарея: казённая вещь, которую бросили заряженной ──
+   Строение читается порядком, а не деталью: земляной бруствер, в нём утопленное
+   основание, на основании погон, из погона — ствол, задранный в небо и сломанный
+   у дульного среза. Всё остальное (кабельная канава, стеллаж, короб подачи) —
+   мелочь, объясняющая, что это работало, а не стояло. Свет справа, как везде. */
+function drawDeadBattery(q,r,dark,lite,pal){
+  const H0=q.h, R=H0*.62;
+  const s1=(q.seed>>>5)&7, s2=(q.seed>>>9)&7;
+  const tilt=-.55-s1*.06;                       // ствол задран: его так и оставили
+  poiDrift(R*1.5,pal);
+  /* бруствер: насыпь вокруг гнезда, из-за неё основание сидит в земле */
+  ctx.fillStyle="rgba("+pal[1].map(v=>Math.round(v*.72)).join(",")+",.9)";
+  ctx.beginPath();ctx.moveTo(-R*1.5,4);
+  ctx.quadraticCurveTo(-R*1.05,-H0*.22,-R*.62,2);
+  ctx.lineTo(R*.62,2);
+  ctx.quadraticCurveTo(R*1.05,-H0*.20,R*1.5,4);
+  ctx.closePath();ctx.fill();
+  /* основание и погон */
+  poiPoly([[-R*.58,2],[R*.58,2],[R*.44,-H0*.26],[-R*.44,-H0*.26]],
+          poiBody(H0*.26,dark,lite),"rgba(0,0,0,.5)",1.6);
+  poiPoly([[-R*.40,-H0*.24],[R*.40,-H0*.24],[R*.30,-H0*.40],[-R*.30,-H0*.40]],
+          poiBody(H0*.4,dark,lite),"rgba(0,0,0,.5)",1.2);
+  /* ствол: длинная труба от погона вверх, срез разорван «лепестками» */
+  ctx.save();
+  ctx.translate(0,-H0*.38);ctx.rotate(tilt);
+  const L=H0*1.05, w=H0*.085;
+  poiPoly([[-w*1.5,w*1.3],[L,w*.62],[L,-w*.62],[-w*1.5,-w*1.3]],
+          poiBody(w*2,dark,lite),"rgba(0,0,0,.5)",1);
+  /* бандажи по стволу — то, чем труба отличается от палки */
+  for(let i=1;i<=3;i++){
+    const u=i/4.2;
+    ctx.fillStyle="rgba(0,0,0,.34)";
+    ctx.fillRect(L*u,-w*.9,Math.max(2,w*.22),w*1.75);
+  }
+  ctx.strokeStyle="rgba(238,228,200,.30)";ctx.lineWidth=1.1;   // блик сверху, солнце справа
+  ctx.beginPath();ctx.moveTo(-w,-w*1.1);ctx.lineTo(L*.98,-w*.6);ctx.stroke();
+  /* разрыв у среза: три лепестка наружу — ствол разорвало, а не отпилило */
+  for(let i=0;i<3;i++){
+    const a=(i-1)*.42+(s2-3.5)*.03;
+    ctx.save();ctx.translate(L,0);ctx.rotate(a);
+    poiPoly([[0,-w*.5],[w*1.5,-w*.9],[w*1.2,w*.2],[0,w*.5]],dark,"rgba(0,0,0,.5)",1.2);
+    ctx.restore();
+  }
+  ctx.restore();
+  /* короб подачи сбоку и вывалившийся стеллаж: видно, что её кормили */
+  poiPoly([[R*.46,2],[R*.92,2],[R*.86,-H0*.20],[R*.5,-H0*.24]],
+          poiBody(H0*.2,dark,lite),"rgba(0,0,0,.45)",1.4);
+  for(let i=0;i<4;i++){
+    const bx=-R*(.7+i*.22), by=2-h01(i,53,POI_SEED)*4;
+    ctx.save();ctx.translate(bx,by);ctx.rotate((h01(i,59,POI_SEED)-.5)*1.5);
+    ctx.fillStyle=dark;ctx.fillRect(-H0*.05,-H0*.03,H0*.1,H0*.06);
+    ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=1;
+    ctx.strokeRect(-H0*.05,-H0*.03,H0*.1,H0*.06);
+    ctx.restore();
+  }
+  /* кабельная канава к гнезду: питание шло откуда-то ещё, и это читается */
+  ctx.strokeStyle="rgba(0,0,0,.42)";ctx.lineWidth=Math.max(1.4,H0*.018);
+  ctx.beginPath();ctx.moveTo(-R*1.5,3);
+  ctx.quadraticCurveTo(-R*.9,-2,-R*.5,1);ctx.stroke();
+}
 function drawObelisk(q,r,dark,lite,pal){
   /* Разброс силуэта — не украшение, а смысл: зарубки резали в разное время
      разные руки и в спешке. Первый заход дал три камня по трём семенам,
@@ -17208,6 +17497,240 @@ function drawObserv(q,r,dark,lite,pal){
   ctx.restore();
 }
 /* ближайшая точка интереса — для навигатора сверху */
+
+/* ══════════════ точки интереса ══════════════ */
+/* Одна огромная вещь на горизонте стоит полусотни мелких украшений: она даёт
+   масштаб (астронавт 20 px против корпуса в 400) и повод идти именно туда.
+   Поэтому на планету приходится 2–4 достопримечательности на 9000 единиц пути,
+   между ними — сознательно пустой рельеф. Пустота здесь работает: без неё
+   находка перестаёт быть находкой.
+
+   Всё детерминировано от p.seed: одна и та же планета всегда встречает тем же.
+   Под каждой достопримечательностью рельеф выравнивается — иначе постройка
+   висит на зубцах и сразу читается как наклейка. */
+const POI_KINDS=[
+  {k:"wreck",   ru:"ОСТОВ КОРАБЛЯ",  on:["rocky","desert","ice","terran","toxic","volcanic","ocean","crystal","jungle","metal","ruin"],w:1.3,h:150,flat:420},
+  {k:"temple",  ru:"ХРАМ",           on:["terran","toxic","desert","ocean","jungle","ruin"],         w:1.0,h:220,flat:360},
+  {k:"elevator",ru:"КОСМИЧЕСКИЙ ЛИФТ",on:["terran","desert","toxic","ice","ocean","jungle","ruin","metal"],w:.7,h:900,flat:260},
+  {k:"crystals",ru:"КРИСТАЛЛЫ",      on:["ice","rocky","toxic","volcanic","desert","crystal","metal"],w:1.2,h:280,flat:300},
+  {k:"ring",    ru:"УСКОРИТЕЛЬ",     on:["rocky","ice","desert","volcanic","metal","ruin"],          w:.8, h:340,flat:520},
+  {k:"anomaly", ru:"АНОМАЛИЯ",       on:["rocky","toxic","volcanic","ice","terran","desert","ocean","crystal","jungle","metal","ruin"],w:.6,h:300,flat:240},
+  {k:"monolith",ru:"МОНОЛИТ",        on:["rocky","ice","desert","terran","ocean","toxic","volcanic","crystal","jungle","metal","ruin"],w:.9,h:260,flat:180},
+  {k:"factory", ru:"ЗАВОД",          on:["volcanic","toxic","desert","rocky","metal","ruin"],        w:1.0,h:250,flat:440},
+  {k:"portal",  ru:"ВРАТА",          on:["terran","toxic","ice","ocean","volcanic","crystal","jungle","ruin"],w:.5,h:230,flat:220},
+  {k:"observ",  ru:"ОБСЕРВАТОРИЯ",   on:["rocky","ice","desert","terran","crystal","metal","ruin"],  w:.9, h:190,flat:300},
+  /* зарубка — не памятник чужих, а межевой знак «Долгого Хода» (12q-lore):
+     режется на любом твёрдом мире, встречается редко (вес мал) и стоит того,
+     чтобы к ней идти, потому что называет адрес, а не отдаёт вещь */
+  {k:"obelisk", ru:"ЗАРУБКА",        on:["rocky","ice","desert","terran","toxic","volcanic","ocean","crystal","jungle","metal","ruin"],w:.45,h:230,flat:260},
+  /* мёртвая батарея (M111): такие же ставил «Долгий Ход», и стоят они там же,
+     где стал бы строить игрок, — на твёрдом мире у обжитой системы. Она тоже
+     отвечает куском отчёта: это не памятник, а брошенная казённая вещь */
+  {k:"battery", ru:"БАТАРЕЯ",        on:["rocky","ice","desert","terran","toxic","volcanic","metal","ruin"],w:.5,h:190,flat:340}
+];
+/* сгенерировать и вписать в рельеф; вызывается один раз из startLanding */
+function genPOI(tr,p){
+  if(tr.poi)return tr.poi;
+  tr.poi=[];
+  if(p.type==="gas")return tr.poi;
+  const r=rng(p.seed^0x9E37);
+  /* смешанный мир принимает находки обоих родителей: руины на ледяной планете
+     объясняются именно тем, что она наполовину руинная */
+  const pool=POI_KINDS.filter(k=>k.on.indexOf(p.type)>=0||(p.mix&&k.on.indexOf(p.mix)>=0));
+  if(!pool.length)return tr.poi;
+  const n=2+Math.floor(r()*3);
+  const put=[];
+  for(let i=0;i<n;i++){
+    /* мир делится на n полос, точка ставится внутри своей — так они не
+       слипаются в одну кучу и не оставляют половину планеты пустой */
+    const lo=tr.W*(i+.18)/n, hi=tr.W*(i+.82)/n;
+    let x=lo+r()*(hi-lo);
+    if(Math.abs(x-tr.padX)<700)x+=x<tr.padX?-700:700;          // не на посадочной площадке
+    x=clamp(x,300,tr.W-300);
+    if(put.some(q=>Math.abs(q-x)<900))continue;
+    put.push(x);
+    let tot=0;for(const k of pool)tot+=k.w;
+    let pick=r()*tot,K=pool[0];
+    for(const k of pool){pick-=k.w;if(pick<=0){K=k;break;}}
+    const scale=.8+r()*.55;
+    /* площадка под основание: середина плоская, к краям плавно возвращается
+       к исходному профилю — стыка не видно */
+    const half=Math.round(K.flat*scale/tr.step);
+    const ci=Math.round(x/tr.step);
+    const base=groundAt(tr,x);
+    for(let j=Math.max(0,ci-half*2);j<Math.min(tr.N,ci+half*2);j++){
+      const u=clamp((Math.abs(j-ci)-half*.45)/(half*1.15),0,1);
+      tr.h[j]=lerp(base,tr.h[j],u*u*(3-2*u));
+    }
+    tr.poi.push({k:K.k,ru:K.ru,x,y:base,h:K.h*scale,sc:scale,seed:hashi(p.seed,i,0x50E1)});
+  }
+  /* валуны, попавшие внутрь постройки, убираем: они торчат сквозь стены */
+  if(tr.rocks)for(let i=tr.rocks.length-1;i>=0;i--){
+    const rk=tr.rocks[i];
+    if(tr.poi.some(q=>Math.abs(q.x-rk.x)<q.h*.35))tr.rocks.splice(i,1);
+  }
+  return tr.poi;
+}
+/* мягкое свечение — единственный «пост-эффект», который тут нужен: он и
+   выдаёт источник света, и отделяет постройку от фона на дальнем плане */
+function poiGlow(x,y,rad,col,a){
+  const g=ctx.createRadialGradient(x,y,0,x,y,rad);
+  g.addColorStop(0,"rgba("+col+","+a.toFixed(3)+")");
+  g.addColorStop(.45,"rgba("+col+","+(a*.28).toFixed(3)+")");
+  g.addColorStop(1,"rgba("+col+",0)");
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,rad,0,TAU);ctx.fill();
+}
+/* Ровная грань в триста пикселей читается фигурой при любом цвете. Древним
+   постройку делает не форма, а то, что с ней случилось: выкрошенная кромка,
+   обвалившийся угол, потёки по стене, занос у основания. Поэтому всё тело
+   строится через poiPoly, а он дробит каждую грань и уводит точки по нормали.
+   Смещение детерминировано от seed — постройка не дрожит между кадрами. */
+let POI_SEED=0, POI_MAT=null, POI_OX=0, POI_OY=0;
+function poiPath(pts,amp){
+  const P=new Path2D();
+  P.moveTo(pts[0][0],pts[0][1]);
+  let n=0;
+  for(let i=1;i<=pts.length;i++){
+    const a=pts[i-1],b=pts[i%pts.length];
+    const ex=b[0]-a[0],ey=b[1]-a[1],el=Math.hypot(ex,ey)||1;
+    /* длинную грань дробим чаще короткой: иначе у крупной постройки скол
+       один на всю стену, а у мелкой — пила */
+    const seg=clamp(Math.round(el/26),2,7);
+    for(let s=1;s<=seg;s++){
+      const u=s/seg;
+      const d=(h01(n++,i,POI_SEED)-.5)*amp*(s===seg?.35:1);
+      P.lineTo(a[0]+ex*u-ey/el*d, a[1]+ey*u+ex/el*d);
+    }
+  }
+  P.closePath();
+  return P;
+}
+function poiPoly(pts,fill,line,amp){
+  const P=poiPath(pts,amp===undefined?2.2:amp);
+  if(fill){ctx.fillStyle=fill;ctx.fill(P);}
+  poiSkin(P);
+  if(line){ctx.strokeStyle=line;ctx.lineWidth=1;ctx.stroke(P);}
+  return P;
+}
+/* порода планеты, копоть сверху вниз и волосяные трещины — то, из-за чего
+   стена перестаёт быть заливкой. Всё внутри клипа по силуэту самой постройки. */
+function poiSkin(P){
+  if(!POI_MAT)return;
+  fillMaterial(POI_MAT,POI_OX,POI_OY,.34,.22,P);
+  ctx.save();ctx.clip(P);
+  /* потёки: вертикальные грязные полосы, шире книзу — так стекает вода и пыль */
+  for(let i=0;i<7;i++){
+    const sx=(h01(i,3,POI_SEED)-.5)*260;
+    const w=2+h01(i,5,POI_SEED)*9;
+    const g=ctx.createLinearGradient(0,-400,0,60);
+    g.addColorStop(0,"rgba(0,0,0,0)");
+    g.addColorStop(1,"rgba(0,0,0,"+(.10+h01(i,9,POI_SEED)*.16).toFixed(3)+")");
+    ctx.fillStyle=g;ctx.fillRect(sx,-400,w,460);
+  }
+  /* трещины по телу: ломаные, а не прямые */
+  ctx.strokeStyle="rgba(0,0,0,.34)";ctx.lineWidth=1;
+  for(let i=0;i<5;i++){
+    let cx=(h01(i,11,POI_SEED)-.5)*240, cy=-h01(i,13,POI_SEED)*300;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    for(let s=0;s<5;s++){
+      cx+=(h01(i,s+17,POI_SEED)-.5)*26;cy+=8+h01(i,s+23,POI_SEED)*22;
+      ctx.lineTo(cx,cy);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+/* осыпь и занос у подножия: без неё постройка приставлена к земле,
+   а не стоит в ней миллион лет */
+function poiDrift(w,pal){
+  const c=pal[1];
+  ctx.fillStyle="rgba("+c.map(v=>Math.round(v*.8)).join(",")+",.55)";
+  ctx.beginPath();ctx.moveTo(-w,4);
+  for(let i=0;i<=14;i++){
+    const u=i/14, xx=-w+2*w*u;
+    const hh=Math.sin(u*Math.PI)*(6+h01(i,29,POI_SEED)*11);
+    ctx.lineTo(xx,4-hh);
+  }
+  ctx.lineTo(w,4);ctx.closePath();ctx.fill();
+  /* отдельные обломки, отвалившиеся от тела */
+  for(let i=0;i<7;i++){
+    const bx=(h01(i,31,POI_SEED)-.5)*w*2.6, s=2+h01(i,37,POI_SEED)*6;
+    ctx.fillStyle="rgba("+pal[2].map(v=>Math.round(v*.55)).join(",")+",.85)";
+    ctx.beginPath();
+    ctx.moveTo(bx-s,2);ctx.lineTo(bx-s*.3,2-s*.9);ctx.lineTo(bx+s*.8,2-s*.3);ctx.lineTo(bx+s*.5,2);
+    ctx.closePath();ctx.fill();
+  }
+}
+/* тело постройки красится градиентом «низ тёмный — верх подсвечен небом»:
+   один этот приём отделяет силуэт от фона убедительнее любого контура */
+function poiBody(hgt,dark,lite){
+  const g=ctx.createLinearGradient(0,-hgt,0,0);
+  g.addColorStop(0,lite);g.addColorStop(1,dark);
+  return g;
+}
+function drawPOI(tr,camx,camy,p){
+  const list=tr.poi;if(!list||!list.length)return;
+  const pal=p.T.pal;
+  /* всё, что ниже линии грунта, срезается: иначе упавший корпус лежит поверх
+     земли, как наклейка, вместо того чтобы уходить в неё. Запас в 6 px оставлен
+     контактным теням — без них постройка висит в воздухе. */
+  /* Тени рисуем ДО клипа. Раньше groundShadow вызывался внутри самих построек,
+     то есть уже под клипом «всё ниже линии грунта срезать» — от эллипса
+     оставался тонкий обрезок сверху, и это читалось как странная полоска под
+     объектом. Заодно пропорция: тень широкая и низкая (ry ≈ rx/7), а не
+     блин на девять пикселей при двухстах в ширину. */
+  for(const q of list){
+    const x=q.x-camx, y=q.y-camy;
+    if(x<-q.h*1.6-200||x>W+q.h*1.6+200)continue;
+    const rx=q.h*(q.k==="wreck"?1.1:(q.k==="ring"?.9:.55));
+    ctx.save();
+    ctx.globalAlpha=.55;
+    groundShadow(x+rx*.12,y+3,rx,Math.max(4,rx*.15));
+    ctx.restore();
+  }
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(0,0,W,H);
+  const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
+  const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
+  ctx.moveTo(i0*tr.step-camx,tr.h[i0]-camy+6);
+  for(let i=i0;i<=i1;i++)ctx.lineTo(i*tr.step-camx,tr.h[i]-camy+6);
+  ctx.lineTo(i1*tr.step-camx,H+10);ctx.lineTo(i0*tr.step-camx,H+10);
+  ctx.closePath();
+  ctx.clip("evenodd");
+  for(const q of list){
+    const x=q.x-camx, y=q.y-camy;
+    /* запас по ширине большой: постройка видна задолго до того, как игрок
+       на неё наступит — в этом весь смысл */
+    if(x<-q.h*1.6-200||x>W+q.h*1.6+200)continue;
+    ctx.save();ctx.translate(x,y);
+    /* всё, что нужно «скину», кладём в общие переменные: тащить пять
+       аргументов через десять функций рисования — только шум */
+    POI_SEED=q.seed;POI_MAT=tr.mat;POI_OX=camx-x;POI_OY=camy-y;
+    const rr=rng(q.seed);
+    /* рукотворное красится своим сплавом, а не палитрой грунта: покрашенная
+       биомом постройка сливается с холмами и перестаёт читаться как постройка.
+       Доля биома оставлена (.22) ради цветовой связки с окружением. */
+    const mix=(a,b)=>Math.round(lerp(a,b,.22));
+    const dark="rgb("+[mix(28,pal[0][0]),mix(30,pal[0][1]),mix(36,pal[0][2])].join(",")+")";
+    const lite="rgb("+[mix(150,pal[3][0]),mix(158,pal[3][1]),mix(168,pal[3][2])].join(",")+")";
+    if(q.k==="wreck")drawWreck(q,rr,dark,lite,pal);
+    else if(q.k==="temple")drawTemple(q,rr,dark,lite,pal);
+    else if(q.k==="elevator")drawElevator(q,rr,dark,lite);
+    else if(q.k==="crystals")drawCrystalForest(q,rr,pal);
+    else if(q.k==="ring")drawAccel(q,rr,dark,lite);
+    else if(q.k==="anomaly")drawAnomaly(q,rr,pal);
+    else if(q.k==="monolith")drawMonolith(q,rr,dark,lite,pal);
+    else if(q.k==="factory")drawFactory(q,rr,dark,lite,pal);
+    else if(q.k==="portal")drawPortal(q,rr,pal);
+    else if(q.k==="observ")drawObserv(q,rr,dark,lite,pal);
+    else if(q.k==="obelisk")drawObelisk(q,rr,dark,lite,pal);
+    else if(q.k==="battery")drawDeadBattery(q,rr,dark,lite,pal);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+/* Сами фигуры — в `20aa-poi-shapes`: развилка выше берёт их по ключу вида. */
 function nearestPOI(tr,x){
   if(!tr.poi||!tr.poi.length)return null;
   let best=null,bd=1e9;
@@ -17299,6 +17822,15 @@ const POI_FIND={
   /* зарубка отдаёт кусок отчёта — и вместе с ним то, чем этот кусок платит
      сегодня: адрес, цены, слово. Ключ места — q.seed, как у редкостей, так что
      одна и та же зарубка всегда говорит одно и то же. */
+  /* мёртвая батарея (M111): такую же строит игрок в разрезе базы, и такие же
+     стояли у «Долгого Хода». Отвечает она тем же, чем зарубка, — куском отчёта,
+     потому что это их казённая вещь, а не чужой памятник. */
+  battery:{ru:"батарея",note:"ствол задран в небо и разорван у среза",
+           give:(r,d,q)=>{
+             const L=(typeof loreTake==="function")&&loreTake(q?q.seed^0xBA77:0);
+             if(L)return "кусок отчёта · "+L.chapRu;
+             const n=2+Math.floor(r()*3+d*2);
+             return addRes("alloy",n)?("сплав со станины ×"+n):"трюм полон";}},
   obelisk:{ru:"зарубка",note:"засечка резана рукой, знавшей, что вернутся не все",
            give:(r,d,q)=>{
              const L=(typeof loreTake==="function")&&loreTake(q?q.seed:0);
@@ -18205,7 +18737,8 @@ const ROOM_FIN={
   habitat :{wall:"soft", tint:"54,49,46", lamp:"250,220,168", ln:3, floor:"soft", warn:0, work:.60, dress:["personal","personal"], junk:["bag","bottles"]},
   refinery:{wall:"rib",  tint:"48,41,37", lamp:"248,196,130", ln:2, floor:"plate", warn:1, work:.32, dress:["hooks","cable"],     junk:["ingot","ore"]},
   pad     :{wall:"panel",tint:"34,46,56", lamp:"228,244,250", ln:3, floor:"plate", warn:1, work:.50, dress:["hooks","board"],     junk:["spool","drum"]},
-  lab     :{wall:"tile", tint:"42,62,70", lamp:"226,248,252", ln:3, dim:1.15, floor:"clean",warn:0, work:.52, dress:["board","samples"], junk:["bottles","canister"]}
+  lab     :{wall:"tile", tint:"42,62,70", lamp:"226,248,252", ln:3, dim:1.15, floor:"clean",warn:0, work:.52, dress:["board","samples"], junk:["bottles","canister"]},
+  battery :{wall:"rib",  tint:"44,44,50", lamp:"236,206,150", ln:2, dim:.9,  floor:"plate", warn:1, work:.38, dress:["stencil","hooks"],  junk:["canister","spool"]}
 };
 /* ── что стоит у стены ──
    Хлам во всех восьми отсеках был один: ящик да стеллаж. Но у каждой работы
@@ -19241,6 +19774,72 @@ lab(x0,y0,w,h,cx,fy,lit,seed,B,P){
   bGlow(ax,fy-36,22,"190,160,255",.12*glow*2);
   bWorker(cx-18,fy,lit,true,G.t*.04+seed);
   bLamp(cx,y0+4,40,fy,"200,232,255",.30+lit*.35);
+},
+/* ── БАТАРЕЯ: снизу видно не ствол, а то, чем его кормят ──
+   Ствол стоит наверху, на грунте, — в разрезе от него видна только тумба,
+   уходящая в потолочный люк. Помещение под ним — погреб: стеллаж выстрелов,
+   подъёмник подачи и пульт с лампой. Лампа зажигается ровно тогда, когда
+   батарея действительно стреляет (21d), а не «для красоты»: если оборона
+   работает, это видно из разреза. */
+battery(x0,y0,w,h,cx,fy,lit,seed,B,P){
+  const R=rng(seed);
+  const fire=(G.battFx&&G.battFx.length)?1:0;
+  const mx=x0+w*.38;
+  /* люк в потолке и тумба погона: то, что уходит на поверхность */
+  bHazard(mx-26,y0,52,4,.85);
+  ctx.fillStyle="rgba(10,14,20,.92)";ctx.fillRect(mx-18,y0,36,5);
+  /* погон: не арка, а плита на катках — сверху к ней приходит тумба ствола,
+     снизу подпирает колонна подачи. Первый заход дал полукруг с зубьями во всю
+     ширину отсека, и он читался входной аркой, а не поворотным кругом. */
+  bBox(mx-20,y0+5,40,7,"rgba(34,40,50,.97)",lit,"rgba(150,170,190,.32)");
+  ctx.strokeStyle="rgba(140,158,176,"+(.28+lit*.32).toFixed(2)+")";ctx.lineWidth=1.2;
+  for(const s of [-1,1]){                                  // катки: по ним она и ходит
+    ctx.beginPath();ctx.arc(mx+s*13,y0+15,4,0,TAU);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(mx+s*13,y0+15);
+    const a=(fire?G.t*.05:G.t*.008)+(s>0?0:1.7);
+    ctx.lineTo(mx+s*13+Math.cos(a)*4,y0+15+Math.sin(a)*4);ctx.stroke();
+  }
+  bBox(mx-16,y0+12,32,7,"rgba(28,36,46,.96)",lit,"rgba(120,140,160,.28)");
+  /* подъёмник подачи: колонна от пола к погону, в ней ползёт лоток */
+  bBox(mx-7,y0+19,14,fy-y0-23,"rgba(26,34,44,.96)",lit,"rgba(120,140,160,.28)");
+  const up=((G.t*(fire?1.6:.35)+seed*13)%100)/100;
+  ctx.fillStyle="rgba("+BM_WARM+","+(.25+lit*.35).toFixed(2)+")";
+  ctx.fillRect(mx-4,fy-8-up*(fy-y0-33),8,7);
+  /* стеллаж выстрелов: они СТОЯТ на полу в раме, а не висят на верхней рейке —
+     первый заход подвесил их за головки, и погреб читался ледником с сосульками */
+  const sx2=x0+w*.60,sw2=w-(sx2-x0)-12;
+  /* мерило — человек: выстрел ему по бедро, иначе погреб выглядит складом
+     торпед. Восемь мест вместо шести: их носят руками, значит они мелкие. */
+  const sn=8,cw2=sw2/sn;
+  for(let i=0;i<sn;i++){
+    const bx=sx2+i*cw2;
+    if(R()<.16)continue;                                   // расстрелянные места пустуют
+    ctx.fillStyle="rgba(76,72,58,"+(.75+lit*.25).toFixed(2)+")";
+    ctx.fillRect(bx+1,fy-20,cw2-4,16);
+    ctx.fillStyle="rgba(214,168,64,"+(.30+lit*.3).toFixed(2)+")";  // поясок
+    ctx.fillRect(bx+1,fy-10,cw2-4,1.8);
+    ctx.fillStyle="rgba(180,196,210,"+(.2+lit*.25).toFixed(2)+")"; // головка
+    ctx.beginPath();ctx.moveTo(bx+1,fy-20);ctx.lineTo(bx+1+(cw2-4)/2,fy-25);
+    ctx.lineTo(bx+cw2-3,fy-20);ctx.closePath();ctx.fill();
+  }
+  /* рама держит их поперёк, на высоте пояса: видно, что это стеллаж */
+  ctx.fillStyle="rgba(44,54,66,"+(.8+lit*.2).toFixed(2)+")";
+  ctx.fillRect(sx2-3,fy-15,sw2+6,2.4);
+  ctx.fillRect(sx2-3,fy-19,3,15);ctx.fillRect(sx2+sw2,fy-19,3,15);
+  /* пульт наводки: экран и лампа «огонь» — единственное, что светится сильно */
+  const px=x0+8,py=fy-34;
+  bBox(px,py,34,34,"rgba(28,36,46,.97)",lit,"rgba(150,170,190,.32)");
+  ctx.fillStyle="rgba(12,18,26,.95)";ctx.fillRect(px+4,py+5,26,18);
+  ctx.strokeStyle="rgba("+BM_COOL+","+(.25+lit*.4).toFixed(2)+")";ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(px+17,py+14,7,0,TAU);ctx.stroke();     // круговой обзор
+  const sa=G.t*.03;
+  ctx.beginPath();ctx.moveTo(px+17,py+14);
+  ctx.lineTo(px+17+Math.cos(sa)*7,py+14+Math.sin(sa)*7);ctx.stroke();
+  ctx.fillStyle=fire?"rgba(255,120,90,.95)":"rgba(70,50,44,.9)";
+  ctx.fillRect(px+13,py+26,8,4);
+  if(fire)bGlow(px+17,py+28,26,"255,140,100",.16);
+  bPipe([[mx+16,y0+18],[x0+w-8,y0+18]],3,"90,104,120",lit);
+  bLamp(cx,y0+4,40,fy,"246,214,160",(.22+lit*.32)*(P.eff<.3?.5:1));
 }
 };
 
@@ -19271,6 +19870,11 @@ const BUILD={
   habitat:{ru:"Жилой отсек",cost:{credits:1200,alloy:3},  power:-4, note:"места для персонала; рядом с реактором людям хуже"},
   refinery:{ru:"Плавильня", cost:{credits:2200,alloy:8},  power:-11,note:"сама переплавляет добытое в сплавы"},
   pad:    {ru:"Площадка",   cost:{credits:2600,alloy:10}, power:-3, note:"причал для переброски между базами"},
+  /* батарея (M111): строится, а не покупается, и стоит в общем балансе мощности —
+     оборона конкурирует с добычей, и это настоящее решение. Только наверху:
+     она бьёт с грунта, и с орбиты видно её линию. */
+  battery:{ru:"Батарея",    cost:{credits:2400,alloy:9},  power:-12,surfaceOnly:true,
+           note:"бьёт по мелочи в своей системе; барона и охотника ей не взять"},
   /* дорогая, прожорливая и мёртвая без жилого отсека рядом: разбирать образцы
      вахтой из скафандра нельзя, а исследователю больше работать негде */
   lab:    {ru:"Лаборатория", cost:{credits:3200,alloy:12},power:-16,needTech:"lab",
@@ -19337,7 +19941,7 @@ function baseNeighbors(B,c,r){
   return out;
 }
 function basePower(B){
-  let prod=0,cons=0,core=0,drills=0,drillEff=0,hab=0,habPenalty=0,store=0,ref=0,pads=0;
+  let prod=0,cons=0,core=0,drills=0,drillEff=0,hab=0,habPenalty=0,store=0,ref=0,pads=0,guns=0;
   const cls=(getSystem(B.sx,B.sy).cls&&getSystem(B.sx,B.sy).cls.lum)||1;
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
     const cell=baseCell(B,c,r);if(!cell||cell.hp<=0)continue;   // разбитый отсек не работает и не ест энергию
@@ -19359,6 +19963,7 @@ function basePower(B){
     if(cell.k==="storage")store+=120;
     if(cell.k==="refinery")ref++;
     if(cell.k==="pad")pads++;
+    if(cell.k==="battery")guns++;
     /* ядро нагрузки — то, ради чего база стоит: остальное можно и притушить */
     if(cell.k==="drill"||cell.k==="lab")core+=use;
     cons+=use;
@@ -19375,7 +19980,7 @@ function basePower(B){
      когда лишний реактор осмысленно ставить нарочно */
   const surplus=Math.max(0,prod-cons);
   return {prod:Math.round(prod*10)/10,cons:Math.round(cons*10)/10,eff,surplus,
-    drills,drillEff,hab,habPenalty,store:180+store,ref,pads};
+    drills,drillEff,hab,habPenalty,store:180+store,ref,pads,guns};
 }
 function basePoolHeld(B){let s=0;for(const k in B.pool)s+=B.pool[k]|0;return s;}
 /* ══════════════ ленивое время базы ══════════════ */
@@ -20808,6 +21413,81 @@ function drawHomeBuilding(b,hgt){
   }
 }
 
+/* ══════════════ батарея: оборона, которую строят ══════════════
+   Не покупка и не перк: отсек в разрезе базы (21a), стоящий в общем балансе
+   мощности. Он ест реактор, поэтому оборона конкурирует с добычей — и в этом
+   вся суть. Батарея на верхнем ярусе, потому что бьёт с грунта: с орбиты видна
+   линия от планеты, и понятно, кто стреляет.
+
+   Она снимает МЕЛОЧЬ и только мелочь. Пираты как содержание в игру не входят:
+   батарея нужна, чтобы игрок перестал летать домой из-за залётного шакала, а не
+   чтобы система стала безопасной. По барону (ранг 3), охотнику (12o), ренегату
+   (12g) и сопернику она не работает вовсе — правки, дающие ей держать систему,
+   ломают замысел. */
+const BATT_RANGE=3000;      // добивает не по всей системе, а вокруг своей планеты
+const BATT_COOL=150;        // кадров между выстрелами при полной мощности
+const BATT_DMG=14;          // за выстрел на одну батарею
+/* сколько стволов в этой системе и с какой мощностью они работают: разбитый
+   отсек не считается (это делает basePower), а обесточенная база бьёт реже */
+function battAt(sx,sy){
+  let n=0,eff=0,p=null;
+  for(const key in G.bases){
+    const B=G.bases[key];
+    if(B.sx!==sx||B.sy!==sy)continue;
+    const P=basePower(B);
+    if(!P.guns)continue;
+    n+=P.guns;eff=Math.max(eff,P.eff);
+    if(!p){
+      const sys=getSystem(sx,sy);
+      p=(sys&&sys.planets&&sys.planets[B.idx|0])||null;
+    }
+  }
+  return n?{n,eff,p}:null;
+}
+/* кого она вообще берёт: залётный шакал без ранга и без особой роли */
+function battTarget(p){
+  return !!p&&!p.rogue&&!p.hunter&&!p.rival&&(p.rank|0)===0&&p.hull>0;
+}
+function battTick(dt){
+  if(!G.battFx)G.battFx=[];
+  for(let i=G.battFx.length-1;i>=0;i--){
+    G.battFx[i].t-=dt;
+    if(G.battFx[i].t<=0)G.battFx.splice(i,1);
+  }
+  const Bt=battAt(G.sx,G.sy);
+  if(!Bt||!Bt.p){G.battCool=0;return;}
+  G.battCool=(G.battCool||0)-dt*Math.max(.2,Bt.eff)*Bt.n;
+  if(G.battCool>0)return;
+  G.battCool=BATT_COOL;
+  let tgt=null,td=1e9;
+  for(const q of G.pirates||[]){
+    if(!battTarget(q))continue;
+    const d=Math.hypot(q.x-Bt.p.x,q.y-Bt.p.y);
+    if(d<BATT_RANGE&&d<td){td=d;tgt=q;}
+  }
+  if(!tgt)return;
+  tgt.hull-=BATT_DMG*Math.max(.2,Bt.eff);
+  tgt.aware=true;                                   // по нему попали — он знает, где он
+  G.battFx.push({x1:Bt.p.x,y1:Bt.p.y,x2:tgt.x,y2:tgt.y,t:14});
+  if(G.mode==="system")sfx("ui",{f:280,to:90,d:.2,v:.22});
+  if(tgt.hull<=0){
+    logAdd("kill","Батарея сбила «"+tgt.name+"»");
+    killPirate(tgt);
+    G.pirates=G.pirates.filter(q=>q.hull>0);
+  }
+}
+/* линия с грунта: рисуется тем же проектором, что и весь бой (13-pirates) */
+function battDraw(zx,zy,Z){
+  for(const f of G.battFx||[]){
+    const a=Math.max(0,f.t/14);
+    ctx.strokeStyle="rgba(150,230,255,"+(a*.85).toFixed(2)+")";
+    ctx.lineWidth=Math.max(1,2.4*a);
+    ctx.beginPath();ctx.moveTo(zx(f.x1),zy(f.y1));ctx.lineTo(zx(f.x2),zy(f.y2));ctx.stroke();
+    ctx.fillStyle="rgba(220,245,255,"+(a*.7).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(zx(f.x2),zy(f.y2),3+6*(1-a),0,TAU);ctx.fill();
+  }
+}
+
 /* ══════════════ поверхность ══════════════ */
 function enterSurface(){
   const L=G.land,tr=L.tr,p=L.p,r=rng(p.seed^0x1234);
@@ -20958,6 +21638,41 @@ function updateSurface(dt){
      нельзя. Осмотр даёт данные и иногда узел — и это единственное место, где
      узлы «из аномалии» вообще выпадают (05a-nodes). Осмотренное помнится:
      второй раз к тому же монолиту идти незачем. */
+  /* ── посёлок (12t) ──
+     Проверяется раньше памятников: жильё стоит там же, где ходят, и разговор с
+     живущими важнее осмотра камня. Приказать здесь нечего — только отдать своё
+     или спросить, готово ли у них что-нибудь. Отдаём самый крупный груз в
+     трюме: выбор из списка сделал бы это меню построек с лишним шагом, а
+     рацион — это то, что игрок ВОЗИТ, а не то, что он галочкой отметил. */
+  else if(settleCanLive(S.p)&&Math.abs(S.x-settleSpotX(S.p,tr))<44){
+    const V=settleTick(settleAt(G.sx,G.sy));
+    let big="",bn=0;
+    for(const k of RES_KEYS)if((G.cargo[k]|0)>bn){bn=G.cargo[k]|0;big=k;}
+    if(big&&bn>0){
+      G.prompt="ДЕЙСТВИЕ — ОТДАТЬ ЖИВУЩИМ · "+RES[big].ru.toUpperCase()+" ×"+Math.min(bn,40)+
+        (V?"\nПОСЁЛОК · СТУПЕНЬ "+V.stage+" · "+settleLine(V,V.built.length):"\nЗДЕСЬ ЖИВУТ");
+      if(actEdge){
+        const S2=V||settleMake(S.p);
+        const n=settleGive(S2,big,Math.min(bn,40));
+        if(n>0)tell("good","Отдано живущим: "+RES[big].ru+" ×"+n,
+          "ОТДАНО\n"+RES[big].ru+" ×"+n+"\n"+settleLine(S2,1));
+        else say("Амбар полон\n"+settleLine(S2,2));
+        return;
+      }
+    }else if(V){
+      /* слово, которое игрок понимает, здесь и превращается в просьбу: он
+         называет его, и с него начинают. Слов нет — берёт что вынесут. */
+      const words=settleWords(V),ask=words.length?words[(G.t/240|0)%words.length]:"";
+      G.prompt="ДЕЙСТВИЕ — "+(ask?("ПРОСИТЬ: "+ask.toUpperCase()):"СПРОСИТЬ")+
+        " · ПОСЁЛОК СТУПЕНЬ "+V.stage+"\n"+settleLine(V,3);
+      if(actEdge){
+        const got=settleAsk(V,ask);
+        if(got>0)tell("good","Посёлок отдал товара ×"+got,"ДАЛИ\n×"+got+"\n"+settleLine(V,4));
+        else say("Сегодня у них ничего нет\n"+settleLine(V,5));
+        return;
+      }
+    }
+  }
   else if(poiNear(S,tr)){
     const q=poiNear(S,tr);
     /* Осмотр идёт единственной дорогой — через `poiInspect` (20a-poi). Здесь
@@ -21195,6 +21910,9 @@ function drawSurface(){
   /* ваши постройки — тем же слоем, что и POI: их видно с земли, заходить
      в меню, чтобы узнать об их существовании, больше не нужно */
   drawBuilt(tr,camx,camy,p);
+  /* посёлок (12t) — тем же слоем, что и постройки: место, к которому игрок идёт
+     ногами, обязано быть видно с горизонта, иначе идти не за чем */
+  if(settleCanLive(p))settleDraw(settleAt(G.sx,G.sy),tr,camx,camy,p);
   drawRocks(tr,camx,camy,p.T.pal);
   /* тень по длине корпуса, а не по прежним 34 px: у нового посадочного силуэта
      она иначе выдаёт игрушку на палочках */
@@ -21720,7 +22438,11 @@ function enterCave(){
     pl.glow=true;pl.bloom=r()<.5;
     plants.push(pl);
   }
-  const nb=2+Math.floor(r()*3);
+  /* дозор посёлка (12t): в его биоме кусачих просто меньше — не потому, что
+     игроку сделали поблажку, а потому, что здесь их гоняют каждый день */
+  const watch=(typeof settleWatch==="function")?settleWatch(p):0;
+  C.watch=watch;
+  const nb=Math.max(1,Math.round((2+Math.floor(r()*3))*(1-watch*.5)));
   for(let i=0;i<nb;i++){
     const x=300+r()*(CAVE_W-600);
     const b=genBeast(r,p,x,caveFloor(C,x));
@@ -21730,7 +22452,8 @@ function enterCave(){
   C.findX=CAVE_W-140;
   caveZones(C);caveDeco(C,p);
   G.cave=C;G.mode="cave";
-  say("Пещера\nищите проход · ДЕЙСТВИЕ у выхода — назад на поверхность");
+  say("Пещера\nищите проход · ДЕЙСТВИЕ у выхода — назад на поверхность"+
+    (watch>0?"\nздесь ходят дозорные посёлка":""));
 }
 function exitCave(){
   G.cave=null;G.mode="surface";
@@ -21783,10 +22506,14 @@ function updateCave(dt){
     const dx=C.x-b.x,d=Math.hypot(dx,C.y-b.y)||1;
     if(b.flee>0){b.flee-=dt;b.x-=dx/d*.9*dt;b.face=dx>0?-1:1;
       if(b.flee<=0){C.fauna.splice(i,1);}continue;}
-    if(d>10){b.x+=dx/d*.5*dt;b.face=dx>0?1:-1;}
+    /* под дозором тварь всё равно идёт на человека, но до черты: дальше её не
+       пускают те, кто здесь живёт, и укусить она не может вовсе */
+    const keep=(C.watch||0)>0?24+46*C.watch:10;
+    if(d>keep){b.x+=dx/d*.5*dt;b.face=dx>0?1:-1;}
+    else if(keep>10&&d<keep-6){b.x-=dx/d*.35*dt;b.face=dx>0?-1:1;}
     b.y=caveFloor(C,b.x);
     if(b.bite>0)b.bite-=dt;
-    if(d<20&&b.bite<=0){b.bite=100;suitHit(3,"Укус");if(G.mode!=="cave")return;}
+    if(d<20&&b.bite<=0&&!(C.watch>0)){b.bite=100;suitHit(3,"Укус");if(G.mode!=="cave")return;}
   }
   const nearBug=C.fauna.find(b=>b.stun>0&&Math.hypot(b.x-C.x,b.y-C.y)<46);
   C.sample=nearBug||null;
@@ -21825,7 +22552,8 @@ function updateCave(dt){
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
   }else if(C.fauna.some(b=>b.stun<=0&&b.flee<=0)){
-    G.prompt="КУСАЧИЕ РЯДОМ · ОГОНЬ (F) — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
+    G.prompt=(C.watch>0?"КУСАЧИЕ ДЕРЖАТСЯ ПООДАЛЬ · ЗДЕСЬ ИХ ГОНЯЮТ\n":"КУСАЧИЕ РЯДОМ · ")+
+      "ОГОНЬ (F) — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
   }else G.prompt="A D — ИДТИ · В ДАЛЬНЕМ КОНЦЕ НАХОДКА · У ВХОДА ДЕЙСТВИЕ — НАРУЖУ";
 }
 function drawCave(){
