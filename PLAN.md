@@ -344,7 +344,28 @@ the draw inside the combat loop (`13-pirates`), suite **"missiles: ammunition is
 **Still open:** missiles exist only in system view — the belt (`24-mode-belt`) has its own combat
 loop and does not know about them; and nothing on the ship silhouette shows the launcher is dry.
 
-## M113 (0.63.0). Local scrip and a rate that moves for reasons
+## M113 (0.63.0) — built. Local scrip and a rate that moves for reasons
+
+Built as **`12u-scrip.js`** (table, rate, exchange and the station tab in one place), hooks in
+`12p-news` (every rumour the world rolls), `13b-occupy` (a system freed) and `12t-settle` (a
+settlement reaching stage 3), persistence in `14-save`, suite **"scrip: the rate has reasons"**.
+
+- **Four houses** in a closed table, `«Ласковый»` among them, so the trading house the spine names
+  is a thing the player deals with daily long before it matters. `houseOf(sys)` is deterministic
+  from the system seed on its own hash stream — no existing generator moved.
+- **`scripMove` is the only door into the rate**, and it refuses a move without a reason. Reason
+  and delta go to `G.scripLog`, and the tab shows that ledger under the price: a rate whose reasons
+  are not readable is a roulette wheel.
+- **Spread 6% each way plus a 40-unit cap per docking**, so a buy-then-sell with no event between
+  is always a loss. The edge is knowing first, and the player causes most of the news himself.
+- Wallet and holding never go negative; on load an unknown house is dropped, a nonsense rate is
+  clamped into range and ledger lines without a reason are thrown away.
+
+**Still open:** the houses own stations but do not yet look different — that is where the faction
+visual language from the graphics queue would land; and nothing in the cantina talks about the
+houses, so the rumours and the rate are read on two different screens.
+
+## The original spec, kept as the standard:
 
 `12-economy` plus the retelling (M99). The riskiest idea in the pass, so the guard rails come first.
 

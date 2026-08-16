@@ -160,6 +160,9 @@ function newsTick(){
     const K=NEWS_KINDS[Math.floor(r()*NEWS_KINDS.length)];
     const out=K.apply(r);
     if(!out)continue;
+    /* курс бон (12u) двигают только настоящие происшествия — вот они, ровно те,
+       что мир уже разыграл. Своего розыгрыша у бон нет и быть не должно. */
+    if(typeof scripOnNews==="function")scripOnNews(K.id,getSystem(out.sx,out.sy));
     newsAll().push({id:K.id,ru:out.ru,sx:out.sx,sy:out.sy,t:now});
     made++;
   }

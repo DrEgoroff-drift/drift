@@ -6,15 +6,15 @@ const SYS_CACHE=new Map();
    тут торговать, чинить и заправляться. Вес зависит от опасности системы:
    в глубине фронтира торговых узлов почти нет, зато аванпосты и заправки — норма. */
 const ST_TYPES=[
-  {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods","crew","cantina","bases"],
+  {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods","crew","cantina","bases","scrip"],
    mkt:1.08, fuel:1,    rep:1,    w:d=>2.6-d*1.9},
-  {id:"indust", ru:"Промышленный комбинат",tabs:["market","smelt","mods","crew","cantina","bases"],
+  {id:"indust", ru:"Промышленный комбинат",tabs:["market","smelt","mods","crew","cantina","bases","scrip"],
    mkt:.99,  fuel:.92,  rep:.5,   w:d=>1.5-d*.4},
-  {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","barter","crew","cantina","bases"],
+  {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","barter","crew","cantina","bases","scrip"],
    mkt:.95,  fuel:1.08, rep:.75,  w:d=>1.2-d*.7},
-  {id:"sci",    ru:"Научная станция",      tabs:["market","lab","fuse","mods","crew","cantina","bases"],
+  {id:"sci",    ru:"Научная станция",      tabs:["market","lab","fuse","mods","crew","cantina","bases","scrip"],
    mkt:.93,  fuel:1.08, rep:1,    w:d=>1.2-d*.8},
-  {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter","crew","cantina","bases"],
+  {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter","crew","cantina","bases","scrip"],
    mkt:.9,   fuel:1.22, rep:1.25, w:d=>.2+d*2.8},
   {id:"fuel",   ru:"Заправочная станция",  tabs:[],
    mkt:1,    fuel:.78,  rep:1.1,  w:d=>1.6+d*1.1}

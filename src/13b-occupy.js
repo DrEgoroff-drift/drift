@@ -124,6 +124,8 @@ function occKill(sx,sy){
     return;
   }
   G.freed=(G.freed|0)+1;
+  /* курс бон дома-хозяина (12u): это настоящее происшествие, и устроил его игрок */
+  if(typeof scripOnFreed==="function")scripOnFreed(sx,sy);
   /* тех, кто снял блокаду, на станции помнят долго */
   if(sys.station&&typeof repAdd==="function")repAdd(2,sys);
   const prize=sys.station?Math.round(2400+sysDanger(sx,sy)*9000):0;
