@@ -98,9 +98,15 @@ flora and fauna, a living camera, station modules, weather.
    lab — so a room is told apart before its machine is read; and the shift now groups at the
    room's work spot instead of standing at even intervals.
 
-   **Still open on the base:** the clutter is still one recipe (the same crates and shelves in
-   eight rooms); nothing on the walls says who works here — no boards, no tools on hooks, no
-   personal marks. `scoop` is untouched.
+   An eleventh pass hung the **shift's traces on the wall** (`bDress`, driven by `dress` in the
+   same table): a shift board with one line picked out, tools on hooks, a stencilled number
+   painted straight onto the rock, a cable run on clips, a shelf of samples in the lab, and a
+   photograph with a tear-off calendar over the bunks — the finish says what the room is, the
+   wall says who works in it. It is drawn before the equipment, so a machine honestly covers it.
+
+   **Still open on the base:** the clutter is one recipe — the same crates and the same shelves
+   in eight rooms; and in the reactor and the smelter the wall is so full of machine that the
+   trace never shows. `scoop` is untouched.
 7. **Factions as a language of shapes** — only after ships and stations, or there is nothing to
    tell apart.
 8. **Redo the clouds.** The current blobs of radial gradients don't satisfy the player. Look at a

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 110 · символов верхнего уровня: 1280
+Файлов: 110 · символов верхнего уровня: 1281
 
 ## СИМВОЛЫ
 
@@ -134,7 +134,8 @@ baseStaff                    src/12a-crew.js:128
 baseStorm                    src/21a-mode-base.js:228
 baseTick                     src/21a-mode-base.js:136
 bBox                         src/21aa-base-rooms.js:23
-bCrate                       src/21aa-base-rooms.js:137
+bCrate                       src/21aa-base-rooms.js:207
+bDress                       src/21aa-base-rooms.js:59
 BEACON_COOL                  src/23-mode-dig.js:70
 beaconCool                   src/23-mode-dig.js:71
 beaconTick                   src/23-mode-dig.js:86
@@ -151,28 +152,28 @@ beltBasis                    src/24-mode-belt.js:151
 beltFwd                      src/24-mode-belt.js:146
 beltIcy                      src/24-mode-belt.js:87
 BG                           src/16-flight.js:3
-bGlow                        src/21aa-base-rooms.js:165
-bHazard                      src/21aa-base-rooms.js:156
-bLamp                        src/21aa-base-rooms.js:146
+bGlow                        src/21aa-base-rooms.js:235
+bHazard                      src/21aa-base-rooms.js:226
+bLamp                        src/21aa-base-rooms.js:216
 BLUEPRINTS                   src/12c-mgr-core.js:654
 BM_WARM                      src/21aa-base-rooms.js:20
 bodyInSystem                 src/16-flight.js:50
 BP_KEYS                      src/12c-mgr-core.js:661
-bPipe                        src/21aa-base-rooms.js:111
+bPipe                        src/21aa-base-rooms.js:181
 bpMul                        src/12c-mgr-core.js:665
 bpRecheck                    src/12c-mgr-core.js:732
 bpState                      src/12c-mgr-core.js:662
 brownBuf                     src/10-music.js:119
 brownNoise                   src/10-music.js:120
-bScreen                      src/21aa-base-rooms.js:123
+bScreen                      src/21aa-base-rooms.js:193
 BUILD                        src/21a-mode-base.js:19
 BUILD_KEYS                   src/21a-mode-base.js:33
 buildAi                      src/12f-mgr-ai.js:29
 builtHere                    src/21c-built.js:18
 builtKey                     src/21c-built.js:16
 builtSpot                    src/21c-built.js:34
-bWall                        src/21aa-base-rooms.js:54
-bWorker                      src/21aa-base-rooms.js:189
+bWall                        src/21aa-base-rooms.js:124
+bWorker                      src/21aa-base-rooms.js:259
 camOffset                    src/19c-light.js:76
 camStep                      src/19c-light.js:62
 canPay                       src/21a-mode-base.js:43
@@ -345,7 +346,7 @@ drawBelt                     src/24-mode-belt.js:318
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17-mode-system.js:481
 drawBeltRocks                src/17-mode-system.js:439
-drawBuildMenu                src/21aa-base-rooms.js:334
+drawBuildMenu                src/21aa-base-rooms.js:415
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
 drawCave                     src/22-mode-cave.js:131
@@ -385,7 +386,7 @@ drawLoreMarks                src/12q-lore.js:198
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
 drawMap                      src/18-mode-map.js:51
-drawModule                   src/21aa-base-rooms.js:241
+drawModule                   src/21aa-base-rooms.js:311
 drawMonolith                 src/20a-poi.js:414
 drawNebula                   src/16-flight.js:39
 drawNodeIcon                 src/05a-nodes.js:264
@@ -463,7 +464,7 @@ fbm1                         src/01-core.js:19
 fbm2                         src/01-core.js:26
 fbm3                         src/24-mode-belt.js:16
 fillMaterial                 src/18a-material.js:205
-FIN_DEF                      src/21aa-base-rooms.js:51
+FIN_DEF                      src/21aa-base-rooms.js:121
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:25
 FIND_KINDS                   src/17b-finds.js:19
@@ -1064,7 +1065,7 @@ roleForce                    src/12a-crew.js:125
 rollCrewEvent                src/12b-crew-events.js:70
 rollWorld                    src/02a-worldmix.js:67
 ROMAN                        src/01-core.js:41
-ROOM_FIN                     src/21aa-base-rooms.js:41
+ROOM_FIN                     src/21aa-base-rooms.js:46
 ROUTE_MAX                    src/12r-route.js:16
 routeHas                     src/12r-route.js:19
 routeInit                    src/12r-route.js:17
@@ -1509,7 +1510,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · флора:88
   · фауна:456
 
-## src/21aa-base-rooms.js · 24 КБ
+## src/21aa-base-rooms.js · 30 КБ
   · база: внутренности отсеков:1
   · внутренности отсеков:5
 
