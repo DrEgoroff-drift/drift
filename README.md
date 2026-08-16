@@ -85,8 +85,8 @@ you aimed at really is a thicket when you get out, and the dry belt of the same 
 <td width="50%" valign="top">
 <img src="docs/shots/cantina.png" alt="Station cantina" width="100%">
 <b>The cantina is a room with people in it.</b> Candidates sit at the counter, drawn with the same
-procedural faces as the manager list, in front of a window that matches the station type. You pick a
-you hire by clicking the person.
+procedural faces as the manager list, in front of a window that matches the station type. You hire by
+clicking the person at the counter.
 </td>
 </tr>
 <tr>
