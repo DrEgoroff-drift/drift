@@ -148,6 +148,37 @@ function updateSurface(dt){
      нельзя. Осмотр даёт данные и иногда узел — и это единственное место, где
      узлы «из аномалии» вообще выпадают (05a-nodes). Осмотренное помнится:
      второй раз к тому же монолиту идти незачем. */
+  /* ── посёлок (12t) ──
+     Проверяется раньше памятников: жильё стоит там же, где ходят, и разговор с
+     живущими важнее осмотра камня. Приказать здесь нечего — только отдать своё
+     или спросить, готово ли у них что-нибудь. Отдаём самый крупный груз в
+     трюме: выбор из списка сделал бы это меню построек с лишним шагом, а
+     рацион — это то, что игрок ВОЗИТ, а не то, что он галочкой отметил. */
+  else if(settleCanLive(S.p)&&Math.abs(S.x-settleSpotX(S.p,tr))<44){
+    const V=settleTick(settleAt(G.sx,G.sy));
+    let big="",bn=0;
+    for(const k of RES_KEYS)if((G.cargo[k]|0)>bn){bn=G.cargo[k]|0;big=k;}
+    if(big&&bn>0){
+      G.prompt="ДЕЙСТВИЕ — ОТДАТЬ ЖИВУЩИМ · "+RES[big].ru.toUpperCase()+" ×"+Math.min(bn,40)+
+        (V?"\nПОСЁЛОК · СТУПЕНЬ "+V.stage+" · "+settleLine(V,V.built.length):"\nЗДЕСЬ ЖИВУТ");
+      if(actEdge){
+        const S2=V||settleMake(S.p);
+        const n=settleGive(S2,big,Math.min(bn,40));
+        if(n>0)tell("good","Отдано живущим: "+RES[big].ru+" ×"+n,
+          "ОТДАНО\n"+RES[big].ru+" ×"+n+"\n"+settleLine(S2,1));
+        else say("Амбар полон\n"+settleLine(S2,2));
+        return;
+      }
+    }else if(V){
+      G.prompt="ДЕЙСТВИЕ — СПРОСИТЬ · ПОСЁЛОК СТУПЕНЬ "+V.stage+"\n"+settleLine(V,3);
+      if(actEdge){
+        const got=settleAsk(V);
+        if(got>0)tell("good","Посёлок отдал товара ×"+got,"ДАЛИ\n×"+got+"\n"+settleLine(V,4));
+        else say("Сегодня у них ничего нет\n"+settleLine(V,5));
+        return;
+      }
+    }
+  }
   else if(poiNear(S,tr)){
     const q=poiNear(S,tr);
     /* Осмотр идёт единственной дорогой — через `poiInspect` (20a-poi). Здесь

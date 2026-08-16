@@ -236,10 +236,20 @@ Full text, the decisions taken along the way, the faults found by looking and th
 specs the built versions departed from are in [`docs/PLAN-archive.md`](docs/PLAN-archive.md) —
 grep it for `M106`.
 
-## M109 (0.59.0). The settlement: you give, they decide
+## M109 (0.59.0) — built. The settlement: you give, they decide
 
-New module `12p-settle.js`. The largest thing in this pass, and the one most at risk of becoming a
-second base system. It must not be.
+Built as **`12t-settle.js`** (the spec said `12p-`, which was already taken by the news module),
+suite `91y-settle.js`, entry point on foot in `21-mode-surface`: the settlement stands at one
+place on the planet, computed from the seed, and you walk to it. The action hands over the largest
+stack in the hold — the diet is what the player actually carries, not a line ticked in a menu —
+and when there is nothing to give, the same button asks.
+
+**Not done from the spec below:** the settlement has no drawing of its own yet (no huts on the
+horizon, no watchers), and the vocabulary only decorates the answer — an unlocked word does not
+yet turn into a request the player can aim. Both are the next slice, and both are honest gaps
+rather than silent ones.
+
+The original spec, kept as the standard the build is measured against:
 
 - **`G.settle["sx,sy"] = {seed, stage, mood, stock, built[], lastTick}`** — persisted, sparse, keyed
   like everything else. Growth is a lazy roll over `Date.now()-lastTick` with the offline cap, the
