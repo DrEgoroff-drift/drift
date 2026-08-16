@@ -7,8 +7,13 @@ function wreck(){
   G.ship.x=Math.cos(a)*1600;G.ship.y=Math.sin(a)*1600;
   G.ship.vx=0;G.ship.vy=0;G.mode="system";G.ap=null;G.belt=null;G.dig=null;G.cave=null;G.surf=null;G.land=null;
   G.pirates=[];G.shots=[];   /* без этого авария у пиратов превращается в петлю */
+  /* люди на борту (M114) гибнут вместе с кораблём, и это записывается отдельной
+     строкой: вывоз — не перевозка ящиков, и цена ошибки должна называться */
+  const pax=G.cargo.folk|0;
+  if(pax&&G.doom)G.doom.lost=((G.doom.lost|0)+pax);
   let lost=0;for(const k of RES_KEYS){lost+=G.cargo[k];G.cargo[k]=0;}
   saveGame(true);
+  if(pax)logAdd("warn","С кораблём погибли вывезенные · "+pax+" человек");
   logAdd("warn","Корабль разбит · аварийный ремонт"+(lost?" · груз потерян ("+lost+" ед)":""));
   say("Аварийный ремонт\n"+(lost?"груз потерян ("+lost+")":"трюм был пуст"));
 }
@@ -244,7 +249,10 @@ function frame(now){
   actEdge=keys.act&&!prevAct;prevAct=keys.act;
   if(G.running){
     G.t+=dt;
-    if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();crewTick();mgrTick();occTick();dealsTick();}
+    if(now-lastDroneTick>3000){lastDroneTick=now;tickDrones();crewTick();mgrTick();occTick();dealsTick();
+      /* срок (12v): считается лениво по часам, тем же редким тактом, что и всё
+         остальное фоновое. Узнают о нём, оказавшись под тем самым небом. */
+      if(G.doom){doomLearn();doomTick();}}
     if(G.msgT>0)G.msgT-=dt;
     if(G.mode==="system")autosave();
     if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")updateSystem(dt);

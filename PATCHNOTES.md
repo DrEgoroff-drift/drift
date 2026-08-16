@@ -9,6 +9,27 @@ could ever save.
 
 ---
 
+## 0.64.0 — "A world that ends on schedule"
+
+**M114** (`12v-doom.js`, `02-world.js`, `21-mode-surface.js`, `12t-settle.js`, `14-save.js`,
+`28-loop.js`, suites `91zc-doom.js`). The chapter the obelisks and the sky calendar were built to
+reach.
+
+- **The date only lands where the player has something to lose**: one deadline per playthrough, on
+  the system where his own settlement reached stage 2. It is learned under that sky, not from a
+  menu, and shows up on the same map layer the rumours use.
+- **Evacuation is the ordinary machinery of the game**: people are a line in the hold (`RES.folk`),
+  so lifting is hold space, trips and time. Not sellable, not giveable, never dumped for overflow —
+  and if the ship is wrecked with people aboard, that is written down as its own line.
+- **Nobody assists.** Hired hands count only if they were already ordered to that sector, and they
+  carry half a hold each: the number lifted is the number the player organised in advance.
+- **Where they land is the outcome.** Any live world in another system with nobody on it: the
+  settlement restarts at a lower stage with half its buildings left behind, but keeps its seed,
+  its name and therefore its vocabulary — the same people, not new ones.
+- **Not lifting them is a permitted ending.** The hour passes, the settlement is gone, the system
+  stays on the map empty and their glyphs have nobody left to answer. No penalty is charged; that
+  is the whole weight of the decision.
+
 ## 0.63.0 — "The rate has reasons"
 
 **M113** (`12u-scrip.js`, `12p-news.js`, `13b-occupy.js`, `12t-settle.js`, `14-save.js`, station

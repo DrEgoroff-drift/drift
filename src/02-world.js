@@ -21,17 +21,24 @@ const RES={
   /* Боеприпас (M112): единственная строка трюма, которую расходуют не на верфи,
      а в бою. Рынок её не берёт и лаборатория не считает её сырьём — она занимает
      место, и в этом весь смысл: вооружиться стоит того же, что возить груз. */
-  missile:  {ru:"Ракеты",     col:"#ff8f6a",price:0,ammo:"сборка в лаборатории"}
+  missile:  {ru:"Ракеты",     col:"#ff8f6a",price:0,ammo:"сборка в лаборатории"},
+  /* Люди (M114): не груз и не товар — но место в трюме они занимают наравне со
+     всем остальным, и в этом весь вывоз. Ни продать, ни отдать, ни выбросить. */
+  folk:     {ru:"Люди",       col:"#f2e6c8",price:0,pax:"эвакуация"}
 };
 const RES_KEYS=Object.keys(RES);
 /* боеприпас — не товар и не сырьё: он не попадает ни в рынок, ни в те списки,
    где редкое сырьё едят (образцы управляющих, дары посёлку, крафт) */
 const AMMO_KEYS=RES_KEYS.filter(k=>!!RES[k].ammo);
+/* люди: та же строка трюма, но её нельзя ни продать, ни отдать, ни высыпать за
+   борт — везде, где перебирается груз, эта строка пропускается особо */
+const PAX_KEYS=RES_KEYS.filter(k=>!!RES[k].pax);
 /* ресурсы, добавленные позже: у них отдельный поток случайных чисел,
    иначе сдвинулась бы генерация уже существующих станций */
 const FAUNA_RES=["carbon","xeno"];
 const RARE_RES=RES_KEYS.filter(k=>!!RES[k].rare);
-const TRADE_KEYS=RES_KEYS.filter(k=>RARE_RES.indexOf(k)<0&&AMMO_KEYS.indexOf(k)<0);
+const TRADE_KEYS=RES_KEYS.filter(k=>RARE_RES.indexOf(k)<0&&AMMO_KEYS.indexOf(k)<0&&
+  PAX_KEYS.indexOf(k)<0);
 const ORE_KEYS=TRADE_KEYS.filter(k=>FAUNA_RES.indexOf(k)<0);
 const PROFILE={
   terran:["iron","silicon","organics","ice"],

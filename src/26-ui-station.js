@@ -137,7 +137,10 @@ function shipRow(id,S){
       const ns=stat();
       G.fuel=Math.min(G.fuel,ns.fuelMax);G.hull=Math.min(G.hull,ns.hullMax);
       let over=held()-ns.cargoMax;
+      /* людей (M114) за борт не высыпают: при пересадке лишним оказывается
+         груз, а не пассажиры — они остаются, даже если трюм стал теснее */
       for(const k of RES_KEYS){if(over<=0)break;
+        if(PAX_KEYS.indexOf(k)>=0)continue;
         const t=Math.min(over,G.cargo[k]);G.cargo[k]-=t;over-=t;}
       say("Приняли «"+S.ru+"»");renderTab();
     };

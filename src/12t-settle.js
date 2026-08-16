@@ -113,6 +113,9 @@ function settleRaise(S){
   /* третья ступень — посёлок вышел на карту фактора и начал торговать; для дома,
      чьи станции рядом, это настоящая перемена, и она двигает курс бон (12u) */
   if(was<3&&S.stage>=3&&typeof scripOnSettle==="function")scripOnSettle(G.sx,G.sy);
+  /* со второй ступени посёлку есть что терять — и только тогда календарь
+     «Долгого Хода» назначает этой земле срок (12v-doom, M114) */
+  if(was<2&&S.stage>=2&&typeof doomArm==="function"&&!S.moved)doomArm(S);
   S.mood=clamp(S.mood+6,0,100);
   if(typeof logAdd==="function")
     logAdd("good","Посёлок "+(S.name||"")+" поднял: "+SETTLE_BY_K[best].ru);

@@ -38,6 +38,7 @@ function snapshot(){
     wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
+    doom:G.doom,doomDead:G.doomDead,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -181,6 +182,19 @@ function applySave(s){
   }
   G.scripLog=(Array.isArray(s.scripLog)?s.scripLog:[])
     .filter(e=>e&&HOUSE_BY_ID[e.id]&&e.why&&e.d).slice(-SCRIP_LOG);
+  /* срок (12v-doom): решение игрока целиком — вывозить или нет, — поэтому
+     персистится вместе с часом. Час хранится абсолютным: игра и так считает всё
+     фоновое от Date.now(), и срок не должен останавливаться, пока не играют. */
+  G.doom=null;
+  if(s.doom&&typeof s.doom==="object"&&s.doom.key){
+    const d=s.doom;
+    G.doom={sx:d.sx|0,sy:d.sy|0,key:String(d.key),at:+d.at||Date.now(),
+      known:!!d.known,folk:Math.max(0,d.folk|0),lifted:Math.max(0,d.lifted|0),
+      landed:Math.max(0,d.landed|0),lost:Math.max(0,d.lost|0),
+      to:(d.to&&typeof d.to==="object")?{sx:d.to.sx|0,sy:d.to.sy|0}:null,
+      over:!!d.over,warned:Array.isArray(d.warned)?d.warned.filter(x=>+x>0):[]};
+  }
+  G.doomDead=(s.doomDead&&typeof s.doomDead==="object")?s.doomDead:{};
   /* отчёт «Долгого Хода» (12q-lore): формат сейва не менялся (v:4), старые
      записи просто не имеют этих полей и начинают с пустого */
   G.loreFound=Array.isArray(s.loreFound)?s.loreFound.filter(x=>typeof x==="string"):[];
