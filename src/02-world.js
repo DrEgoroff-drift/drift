@@ -17,14 +17,21 @@ const RES={
   volatiles:{ru:"Летучие газы",col:"#7fe0c8",price:0,rare:"сбор в атмосфере газового гиганта"},
   icecrys:  {ru:"Кристаллы льда",col:"#bfe8ff",price:0,rare:"пояс на дальней орбите"},
   techcomp: {ru:"Техкомпоненты",col:"#ffb347",price:0,rare:"рейд на пиратскую базу"},
-  alloy:    {ru:"Сплавы",     col:"#d9dde3",price:0,rare:"переплавка на промышленной станции"}
+  alloy:    {ru:"Сплавы",     col:"#d9dde3",price:0,rare:"переплавка на промышленной станции"},
+  /* Боеприпас (M112): единственная строка трюма, которую расходуют не на верфи,
+     а в бою. Рынок её не берёт и лаборатория не считает её сырьём — она занимает
+     место, и в этом весь смысл: вооружиться стоит того же, что возить груз. */
+  missile:  {ru:"Ракеты",     col:"#ff8f6a",price:0,ammo:"сборка в лаборатории"}
 };
 const RES_KEYS=Object.keys(RES);
+/* боеприпас — не товар и не сырьё: он не попадает ни в рынок, ни в те списки,
+   где редкое сырьё едят (образцы управляющих, дары посёлку, крафт) */
+const AMMO_KEYS=RES_KEYS.filter(k=>!!RES[k].ammo);
 /* ресурсы, добавленные позже: у них отдельный поток случайных чисел,
    иначе сдвинулась бы генерация уже существующих станций */
 const FAUNA_RES=["carbon","xeno"];
 const RARE_RES=RES_KEYS.filter(k=>!!RES[k].rare);
-const TRADE_KEYS=RES_KEYS.filter(k=>RARE_RES.indexOf(k)<0);
+const TRADE_KEYS=RES_KEYS.filter(k=>RARE_RES.indexOf(k)<0&&AMMO_KEYS.indexOf(k)<0);
 const ORE_KEYS=TRADE_KEYS.filter(k=>FAUNA_RES.indexOf(k)<0);
 const PROFILE={
   terran:["iron","silicon","organics","ice"],

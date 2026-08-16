@@ -9,6 +9,25 @@ could ever save.
 
 ---
 
+## 0.62.0 — "Ammunition is cargo"
+
+**M112** (`16b-missile.js`, `05-parts.js`, `02-world.js`, `08-state.js`, `13-pirates.js`,
+`26-ui-station.js`, suite `91z-missile.js`). Missiles enter as a second logistics problem, not a
+second gun.
+
+- **A new part kind**, `missile` — the launcher — with its own hardpoint. Every hull gets exactly
+  one, appended **last** so slot indices of existing loadouts do not shift and old saves keep
+  their fits. Two affixes of its own: warhead and guidance.
+- **A missile is a line in the hold.** `RES.missile` takes cargo space like ore, the market does
+  not trade it, managers do not eat it as a sample, and the settlement is never handed it as food.
+  Flying out with a full magazine means flying out with no revenue — that is the whole decision.
+- **Assembled in the lab**, next to part crafting, out of alloy and isotopes; a working lab of your
+  own adds to the batch. A batch that does not fit in the hold is not assembled at all.
+- **It hits everyone** — baron, hunter, renegade — unlike the battery (M111). The price is hold
+  space and the fact that a miss is spent for good: the missile picks its target once, at launch,
+  never re-acquires, and burns out.
+- Own pad and key (`G`), shown only where it can be fired, labelled with what is left in the hold.
+
 ## 0.61.0 — "The battery is built, not bought"
 
 **M111** (`21d-battery.js`, `21a-mode-base.js`, `21ab-base-interiors.js`, `13-pirates.js`,

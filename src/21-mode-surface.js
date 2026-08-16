@@ -157,7 +157,12 @@ function updateSurface(dt){
   else if(settleCanLive(S.p)&&Math.abs(S.x-settleSpotX(S.p,tr))<44){
     const V=settleTick(settleAt(G.sx,G.sy));
     let big="",bn=0;
-    for(const k of RES_KEYS)if((G.cargo[k]|0)>bn){bn=G.cargo[k]|0;big=k;}
+    /* боеприпас (M112) в рацион не идёт: ракета — не то, чем кормят, и
+       случайно отдать её вместо руды нельзя */
+    for(const k of RES_KEYS){
+      if(AMMO_KEYS.indexOf(k)>=0)continue;
+      if((G.cargo[k]|0)>bn){bn=G.cargo[k]|0;big=k;}
+    }
     if(big&&bn>0){
       G.prompt="ДЕЙСТВИЕ — ОТДАТЬ ЖИВУЩИМ · "+RES[big].ru.toUpperCase()+" ×"+Math.min(bn,40)+
         (V?"\nПОСЁЛОК · СТУПЕНЬ "+V.stage+" · "+settleLine(V,V.built.length):"\nЗДЕСЬ ЖИВУТ");

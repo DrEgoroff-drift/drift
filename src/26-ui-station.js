@@ -452,6 +452,9 @@ function renderTab(){
       b.onclick=()=>{craftPart(spec);renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }
+    /* ракеты (M112): та же лаборатория, но выход — не часть, а груз. Сама
+       строка живёт в 16b-missile, рядом с механикой, а не здесь. */
+    ammoRow($body,renderTab);
   }
   else if(tab==="bases"){
     /* ── к чему всё идёт ──

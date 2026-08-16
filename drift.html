@@ -161,6 +161,14 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 .pads button[data-k=fire]::before{border-color:rgba(255,107,87,.5)}
 .pads button[data-k=fire].on::before{border-color:var(--alarm);
   box-shadow:0 0 22px rgba(255,107,87,.34),inset 0 0 16px rgba(255,107,87,.22)}
+/* ракета (M112): та же тревожная семья, что и огонь, но тусклее — это не
+   основное оружие, а расход. Пустой боекомплект гасит кнопку, а не прячет её:
+   игрок должен видеть, что пусковая есть, а везти к ней нечего. */
+.pads button[data-k=msl]{font-size:8px;color:#ff8f6a;letter-spacing:.02em}
+.pads button[data-k=msl]::before{border-color:rgba(255,143,106,.42)}
+.pads button[data-k=msl].on::before{border-color:#ff8f6a;
+  box-shadow:0 0 18px rgba(255,143,106,.3),inset 0 0 14px rgba(255,143,106,.2)}
+.pads button[data-k=msl].empty{opacity:.4}
 #launchbtn{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom) + 100px);
   width:88px;height:44px;border-radius:var(--rad-b);background:var(--glass);
   border:1px solid rgba(242,178,92,.5);color:var(--amber);font-family:inherit;font-size:10px;
@@ -545,7 +553,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 <!-- ══ управление ══ большим пальцем, поэтому по нижним углам ══ -->
 <div class="pads">
   <div><button data-k="pup" class="beltonly">▲</button><button data-k="left">◀</button><button data-k="right">▶</button><button data-k="pdown" class="beltonly">▼</button></div>
-  <div><button data-k="fire" id="firebtn" style="display:none">ОГОНЬ</button><button data-k="brake">ТОРМОЗ</button><button data-k="act">ДЕЙСТВИЕ</button><button data-k="thrust">▲</button></div>
+  <div><button data-k="fire" id="firebtn" style="display:none">ОГОНЬ</button><button data-k="msl" id="mslbtn" style="display:none">РАКЕТА</button><button data-k="brake">ТОРМОЗ</button><button data-k="act">ДЕЙСТВИЕ</button><button data-k="thrust">▲</button></div>
 </div>
 
 <div class="scr" id="station">
@@ -660,7 +668,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Р’РµСЂСЃРёСЏ РёРіСЂС‹. РћРґРЅР° РЅР° РІСЃС‘: Р·Р°СЃС‚Р°РІРєР°, Р¶СѓСЂРЅР°Р», РїР°С‚С‡РЅРѕСѓС‚С‹ (PATCHNOTES.md).
    Рљ С„РѕСЂРјР°С‚Сѓ СЃРѕС…СЂР°РЅРµРЅРёСЏ РѕС‚РЅРѕС€РµРЅРёСЏ РЅРµ РёРјРµРµС‚ вЂ” С‚РѕС‚ РЅР°РІСЃРµРіРґР° v:4. */
-const VER="0.61.0";
+const VER="0.62.0";
 /* в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ РјР°С‚РµРјР°С‚РёРєР° в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -875,14 +883,21 @@ const RES={
   volatiles:{ru:"Летучие газы",col:"#7fe0c8",price:0,rare:"сбор в атмосфере газового гиганта"},
   icecrys:  {ru:"Кристаллы льда",col:"#bfe8ff",price:0,rare:"пояс на дальней орбите"},
   techcomp: {ru:"Техкомпоненты",col:"#ffb347",price:0,rare:"рейд на пиратскую базу"},
-  alloy:    {ru:"Сплавы",     col:"#d9dde3",price:0,rare:"переплавка на промышленной станции"}
+  alloy:    {ru:"Сплавы",     col:"#d9dde3",price:0,rare:"переплавка на промышленной станции"},
+  /* Боеприпас (M112): единственная строка трюма, которую расходуют не на верфи,
+     а в бою. Рынок её не берёт и лаборатория не считает её сырьём — она занимает
+     место, и в этом весь смысл: вооружиться стоит того же, что возить груз. */
+  missile:  {ru:"Ракеты",     col:"#ff8f6a",price:0,ammo:"сборка в лаборатории"}
 };
 const RES_KEYS=Object.keys(RES);
+/* боеприпас — не товар и не сырьё: он не попадает ни в рынок, ни в те списки,
+   где редкое сырьё едят (образцы управляющих, дары посёлку, крафт) */
+const AMMO_KEYS=RES_KEYS.filter(k=>!!RES[k].ammo);
 /* ресурсы, добавленные позже: у них отдельный поток случайных чисел,
    иначе сдвинулась бы генерация уже существующих станций */
 const FAUNA_RES=["carbon","xeno"];
 const RARE_RES=RES_KEYS.filter(k=>!!RES[k].rare);
-const TRADE_KEYS=RES_KEYS.filter(k=>RARE_RES.indexOf(k)<0);
+const TRADE_KEYS=RES_KEYS.filter(k=>RARE_RES.indexOf(k)<0&&AMMO_KEYS.indexOf(k)<0);
 const ORE_KEYS=TRADE_KEYS.filter(k=>FAUNA_RES.indexOf(k)<0);
 const PROFILE={
   terran:["iron","silicon","organics","ice"],
@@ -3803,7 +3818,11 @@ const PART_KINDS={
   engine:{ru:"Двигательный блок",col:"#7fe6d8",note:"тяга и поворот",g:"m",sh:"ДВИГ"},
   hull:  {ru:"Обшивка",          col:"#e0d28a",note:"прочность корпуса",g:"f",sh:"ОБШИВКА"},
   core:  {ru:"Реактор",          col:"#c58ae0",note:"топливо и дальность прыжка",g:"m",sh:"РЕАКТОР"},
-  util:  {ru:"Утилита",          col:"#8fd08a",note:"трюм, бур, обзор",g:"f",sh:"УТИЛИТА"}
+  util:  {ru:"Утилита",          col:"#8fd08a",note:"трюм, бур, обзор",g:"f",sh:"УТИЛИТА"},
+  /* Пусковая (M112): единственная часть, которая без груза в трюме не работает
+     вовсе. Ставится в отдельный подвес — он есть на каждом корпусе и стоит
+     последним, чтобы уже собранные сборки не съехали по номерам слотов. */
+  missile:{ru:"Пусковая установка",col:"#ff8f6a",note:"ракеты; расход из трюма",g:"f",sh:"ПУСК",lead:"mslDmgMul"}
 };
 /* все PART_PRE — мужской род на -ый/-ой/-ий, поэтому хватает подмены окончания */
 function adjTo(adj,g){
@@ -3824,7 +3843,9 @@ const AFFIX=[
   {k:"jumpAdd",  ru:"дальность прыжка", step:.35, kinds:["core"], flat:1,fix:1,unit:" пк"},
   {k:"cargoMul", ru:"трюм",             step:.09, kinds:["util"]},
   {k:"drillMul", ru:"бур",              step:.10, kinds:["util"]},
-  {k:"scanAdd",  ru:"обзор",            step:90,  kinds:["util"], flat:1}
+  {k:"scanAdd",  ru:"обзор",            step:90,  kinds:["util"], flat:1},
+  {k:"mslDmgMul",ru:"боевая часть",     step:.13, kinds:["missile"]},
+  {k:"mslLockMul",ru:"наведение",       step:.11, kinds:["missile"]}
 ];
 /* штрафы: у сильной части есть цена, иначе выбор очевиден и сборка бессмысленна */
 const AFFIX_BAD=["thrMul","turnMul","cargoMul","hullAdd","fuelAdd","rateMul"];
@@ -3881,6 +3902,7 @@ function genPart(seed,tier,kind){
   const bonus={};
   for(const x of aff)bonus[x.k]=(bonus[x.k]||0)+x.v;
   if(kind==="gun")bonus.gun=1;
+  if(kind==="missile")bonus.msl=1;
   return {seed:seed>>>0,tier,kind,gen:PART_GEN,aff,bonus,
     name:adjTo(pick(PART_PRE,r),PART_KINDS[kind].g)+" "+PART_KINDS[kind].ru.toLowerCase()+" "+pick(PART_SUF,r),
     cap:Math.ceil(tier/2)};
@@ -3910,6 +3932,10 @@ function slotsOf(id){
     out.push(got);
     w[got]*=.45;                              // повтор возможен, но реже
   }
+  /* подвес под пусковую (M112) — один на любом корпусе и ВСЕГДА последний.
+     Он не участвует в розыгрыше выше: веса `w` не тронуты, значит у уже
+     собранных сборок номера слотов не съехали и сохранения не рассыпались. */
+  out.push("missile");
   SLOT_CACHE[id]=out;
   return out;
 }
@@ -3921,7 +3947,7 @@ function slotAnchors(id){
   if(ANCHOR_CACHE[id])return ANCHOR_CACHE[id];
   const h=hullOf(id),slots=slotsOf(id);
   const mid=(h.nose+h.tail)*.5;
-  const cand={gun:[],shield:[],engine:[],hull:[],core:[],util:[]};
+  const cand={gun:[],shield:[],engine:[],hull:[],core:[],util:[],missile:[]};
   for(const w of h.wings){const t=w[2];cand.gun.push([t[0],t[1]*.86],[t[0],-t[1]*.86]);}
   const gx=h.nose*.62;
   cand.gun.push([gx,-profW(h.prof,gx)*.95],[gx,profW(h.prof,gx)*.95]);
@@ -3935,6 +3961,11 @@ function slotAnchors(id){
                  [lerp(h.nose,h.tail,.62),-profW(h.prof,lerp(h.nose,h.tail,.62))*.72]);
   cand.core.push([lerp(mid,h.tail,.28),0],[mid,0],[lerp(mid,h.tail,.55),0]);
   cand.shield.push([lerp(h.nose,h.tail,.3),0],[lerp(h.nose,h.tail,.18),0],[mid,0]);
+  /* пусковая висит под крылом ближе к телу, а если крыльев нет — под брюхом:
+     это подвес, и он должен читаться подвешенным, а не встроенным */
+  for(const w of h.wings){const t=w[2];cand.missile.push([t[0]*.72,t[1]*.55]);}
+  const mx2=lerp(h.nose,h.tail,.5);
+  cand.missile.push([mx2,profW(h.prof,mx2)*.45],[mx2,-profW(h.prof,mx2)*.45]);
   const used={},out=[];
   slots.forEach((k,i)=>{
     const list=cand[k].length?cand[k]:[[mid,0]];
@@ -4792,6 +4823,12 @@ function stat(){
     armed:m.weapon>0||!!P.gun,
     dmg:(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1)*(1+rs("dmg")),
     cool:Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1)/(1+rs("cool")))),
+    /* пусковая (M112): она не усиливает бортовой огонь, а даёт отдельное оружие,
+       и без ракет в трюме её числа ничего не значат */
+    launcher:!!P.msl,
+    mslDmg:MSL_DMG*mul("mslDmgMul"),
+    mslTurn:MSL_TURN*mul("mslLockMul"),
+    mslCool:Math.max(24,Math.round(MSL_COOL/mul("mslLockMul"))),
     shieldMax:Math.max(0,Math.round((P.shieldAdd||0)+(cr("veil")?40:0)+rs("shield"))),
     shieldRegen:Math.max(0,P.regenAdd||0),
     see:(((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0)))+rs("see"),
@@ -11781,6 +11818,10 @@ function updateCombat(dt){
   /* батарея с грунта (21d): своя система, только мелочь — она сама решает,
      стрелять ли, и делает это в общем цикле боя, а не своим таймером */
   if(typeof battTick==="function")battTick(dt);
+  /* ракеты (16b): свой пуск, своя перезарядка и свой расход из трюма — но живут
+     они в том же цикле боя, а не отдельным таймером */
+  if(typeof mslTick==="function")mslTick(dt);
+  if(keys.msl&&typeof mslFire==="function"&&(G.mslCool||0)<=0)mslFire();
 }
 function killPirate(p){
   /* ренегат — не пират: за него не дают награды, за него возвращают корпус */
@@ -11818,6 +11859,7 @@ function drawCombat(zx,zy,Z){
   /* линия батареи с грунта (21d) — рисуется до всего остального, чтобы луч
      уходил под корабли, а не поверх них */
   if(typeof battDraw==="function")battDraw(zx,zy,Z);
+  if(typeof mslDraw==="function")mslDraw(zx,zy,Z);
   /* контейнеры: гранёная коробка в цвет категории части, мигает маячком */
   for(const L of G.loot){
     const x=zx(L.x),y=zy(L.y);
@@ -12297,14 +12339,15 @@ addEventListener("mousemove",padsFadeOut);
 document.querySelectorAll("[data-k]").forEach(b=>{
   const k=b.dataset.k;
   const on=e=>{e.preventDefault();keys[k]=true;b.classList.add("on");padsFadeIn();
-    if(k!=="act"&&k!=="fire")G.ap=null;};
+    if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;};
   const off=e=>{e.preventDefault();keys[k]=false;b.classList.remove("on");};
   b.addEventListener("pointerdown",on);b.addEventListener("pointerup",off);
   b.addEventListener("pointercancel",off);b.addEventListener("pointerleave",off);
   b.addEventListener("contextmenu",e=>e.preventDefault());
 });
 const KMAP={KeyA:"left",ArrowLeft:"left",KeyD:"right",ArrowRight:"right",KeyW:"thrust",
-  ArrowUp:"thrust",KeyS:"brake",ArrowDown:"brake",Space:"act",Enter:"act",KeyF:"fire"};
+  ArrowUp:"thrust",KeyS:"brake",ArrowDown:"brake",Space:"act",Enter:"act",KeyF:"fire",
+  KeyG:"msl"};
 /* в поясе раскладка своя: стрелки — это рули, а не «газ/тормоз» */
 const KMAP_BELT={KeyA:"left",ArrowLeft:"left",KeyD:"right",ArrowRight:"right",
   KeyW:"pup",ArrowUp:"pup",KeyS:"pdown",ArrowDown:"pdown",
@@ -12335,7 +12378,7 @@ const keyMap=()=>{
   return G.mode==="belt"?_beltMap:_mainMap;
 };
 const ACTION_RU={left:"влево",right:"вправо",thrust:"тяга / вверх",brake:"тормоз",
-  act:"действие",fire:"огонь / импульс",launch:"взлёт / эвакуация",
+  act:"действие",fire:"огонь / импульс",msl:"пуск ракеты",launch:"взлёт / эвакуация",
   pup:"тангаж вверх",pdown:"тангаж вниз",rollL:"крен влево",rollR:"крен вправо"};
 function keyLabel(code){
   if(!code)return"—";
@@ -12366,7 +12409,7 @@ addEventListener("keydown",e=>{
   }
   if(e.code==="KeyM"){navAction();e.preventDefault();return;}
   const k=keyMap()[e.code];
-  if(k){keys[k]=true;if(k!=="act"&&k!=="fire")G.ap=null;e.preventDefault();}
+  if(k){keys[k]=true;if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;e.preventDefault();}
 });
 /* отпускаем по обеим раскладкам (дефолт+переопределения), иначе клавиша
    залипнет при смене режима или после ребинда */
@@ -12884,6 +12927,169 @@ function drawStarHole(ox,oy,R,st){
     ctx.beginPath();ctx.ellipse(0,0,rr,rr*.32,t*2.4+i,0,1.5);ctx.stroke();
   }
   ctx.restore();
+}
+
+/* ══════════════ ракеты: боеприпас — это груз ══════════════
+   Не вторая пушка, а вторая логистика. Пусковая (05-parts, категория `missile`)
+   ставится в отдельный подвес, но сама по себе не стреляет ничем: каждый пуск
+   съедает одну ракету из трюма, а ракета занимает место наравне с рудой. Значит
+   вооружиться стоит ровно того же, чего стоит везти товар, — и вылет с полным
+   боекомплектом это вылет без выручки. В этом вся мысль: ракета, которая
+   стреляет вечно, — просто пушка побольше.
+
+   Ракету не покупают: её собирают в лаборатории (12h-relic, LAB_AMMO), там же,
+   где собирают части. Рынок боеприпас не берёт вовсе (`ammo` в RES).
+
+   Она бьёт всех, в отличие от батареи (21d): барона, охотника, ренегата. Цена
+   этому — трюм и то, что промахнувшаяся ракета потрачена насовсем. */
+const MSL_DMG=46;        // за попадание при пустой пусковой первого тира
+const MSL_TURN=.052;     // рад/кадр доводки: сильно быстрее корабля, но не мгновенно
+const MSL_COOL=105;      // кадров между пусками
+const MSL_SPEED=3.4;     // стартовая; разгоняется до MSL_VMAX
+const MSL_VMAX=8.6;
+const MSL_LIFE=280;      // кадров до самоликвидации: промах — это потеря
+const MSL_ARM=14;        // первые кадры летит прямо, наведение ещё не включилось
+/* ── откуда они берутся ──
+   Не с прилавка: ракеты собирают там же, где части, из того же редкого сырья
+   (03-ships, CRAFT_TIERS). Своя работающая лаборатория (12h-relic) добавляет к
+   партии — это её единственное вмешательство в бой и повод держать её живой. */
+const AMMO_COST={credits:1400,alloy:4,isotopes:6};
+const AMMO_BATCH=4;
+function ammoBatch(){return AMMO_BATCH+((typeof labWorking==="function"&&labWorking())?2:0);}
+function craftAmmo(){
+  if(!craftAffordable(AMMO_COST))return 0;
+  /* партия, которая не влезает в трюм, не собирается вовсе: место — это и есть
+     цена вопроса, и «собрал, но потерял половину» было бы обманом */
+  if(stat().cargoMax-held()<ammoBatch()){say("В ТРЮМЕ НЕТ МЕСТА ПОД ПАРТИЮ");return 0;}
+  G.credits-=AMMO_COST.credits;
+  for(const k in AMMO_COST)if(k!=="credits")G.cargo[k]-=AMMO_COST[k];
+  const n=addRes("missile",ammoBatch());
+  tell("tech","Собрана партия ракет ×"+n,"Ракеты собраны\n×"+n+"\nони занимают трюм");
+  return n;
+}
+/* строка сборки в лабораторном разделе станции (26-ui-station): живёт здесь,
+   рядом со своей механикой, а не в и без того распухшем экране станции */
+function ammoRow($body,after){
+  $body.appendChild(el("div","sec","БОЕПРИПАС · ЗАНИМАЕТ ТРЮМ"));
+  const r=el("div","row");
+  r.appendChild(el("div","nm","<b>Партия ракет ×"+ammoBatch()+"</b><s>"+
+    Object.keys(AMMO_COST).map(k=>k==="credits"?AMMO_COST[k]+" кр":
+      RES[k].ru.toLowerCase()+" "+AMMO_COST[k]).join(" · ")+
+    " · в трюме "+(G.cargo.missile|0)+
+    (labWorking()?" · своя лаборатория добавляет к партии":"")+"</s>"));
+  const b=el("button","act gold","СОБРАТЬ");
+  b.disabled=!craftAffordable(AMMO_COST);
+  b.onclick=()=>{craftAmmo();if(after)after();};
+  r.appendChild(b);$body.appendChild(r);
+}
+/* цель выбирается один раз, в момент пуска: ракета глупая, она держится за то,
+   во что её нацелили, и не перепрыгивает на удобное. Берём то, что впереди по
+   носу и ближе всех, — так пуск читается как решение игрока, а не как автомат. */
+function mslPick(sh,range){
+  let best=null,bs=-1;
+  for(const p of G.pirates||[]){
+    if(p.hull<=0)continue;
+    const dx=p.x-sh.x,dy=p.y-sh.y,d=Math.hypot(dx,dy)||1;
+    if(d>range)continue;
+    const front=Math.cos(angDiff(Math.atan2(dy,dx),sh.a));
+    if(front<.25)continue;                       // за спину не пускаем
+    const s=front*2-d/range;
+    if(s>bs){bs=s;best=p;}
+  }
+  return best;
+}
+/* можно ли пустить и почему нельзя — одной функцией, чтобы подсказка на панели
+   и сам пуск не разошлись во мнениях */
+function mslCheck(){
+  const st=stat();
+  if(!st.launcher)return {ok:false,why:"пусковая не установлена"};
+  if((G.cargo.missile|0)<=0)return {ok:false,why:"ракет в трюме нет"};
+  if((G.mslCool||0)>0)return {ok:false,why:"перезарядка"};
+  return {ok:true};
+}
+function mslFire(){
+  const c=mslCheck();
+  /* отказ тоже уходит в перезарядку: кнопку держат, а не щёлкают, и без этого
+     «РАКЕТ В ТРЮМЕ НЕТ» писалось бы каждый кадр */
+  if(!c.ok){G.mslCool=30;say(c.why.toUpperCase());return false;}
+  const st=stat(),sh=G.ship;
+  const tgt=mslPick(sh,st.see*1.2);
+  if(!tgt){G.mslCool=30;say("НЕТ ЦЕЛИ ПО НОСУ");return false;}
+  G.cargo.missile--;                              // расход из трюма, а не из счётчика
+  G.mslCool=st.mslCool;
+  if(!G.msl)G.msl=[];
+  G.msl.push({x:sh.x+Math.cos(sh.a)*14,y:sh.y+Math.sin(sh.a)*14,
+    vx:sh.vx+Math.cos(sh.a)*MSL_SPEED,vy:sh.vy+Math.sin(sh.a)*MSL_SPEED,
+    a:sh.a,tgt,dmg:st.mslDmg,turn:st.mslTurn,life:MSL_LIFE,age:0,puff:0});
+  sfx("shot",{f:190,to:110,d:.26,v:.5});
+  return true;
+}
+function mslBoom(m,hit){
+  G.mslFx=G.mslFx||[];
+  G.mslFx.push({x:m.x,y:m.y,t:18});
+  sfx("hit",{f:120,to:60,d:.3,v:.5});
+  if(!hit)return;
+  hit.hull-=m.dmg;
+  hit.aware=true;
+  if(hit.hull<=0){
+    /* строку о сбитом пишет killPirate — второй записи о том же не надо */
+    killPirate(hit);
+    G.pirates=G.pirates.filter(q=>q.hull>0);
+  }
+}
+function mslTick(dt){
+  if(G.mslCool>0)G.mslCool-=dt;
+  if(G.mslFx)for(let i=G.mslFx.length-1;i>=0;i--){
+    G.mslFx[i].t-=dt;if(G.mslFx[i].t<=0)G.mslFx.splice(i,1);
+  }
+  if(!G.msl||!G.msl.length)return;
+  for(let i=G.msl.length-1;i>=0;i--){
+    const m=G.msl[i];
+    m.age+=dt;m.life-=dt;
+    /* цель сбита кем-то другим или ушла — ракета продолжает лететь по прямой и
+       догорает. Никакого перенацеливания: потраченное потрачено. */
+    const t=(m.tgt&&m.tgt.hull>0&&(G.pirates||[]).indexOf(m.tgt)>=0)?m.tgt:null;
+    if(t&&m.age>MSL_ARM){
+      /* упреждение по той же скорости, что уже считает бой: ракета целит туда,
+         где цель будет, иначе она вечно догоняет хвост */
+      const d=Math.hypot(t.x-m.x,t.y-m.y)||1;
+      const lead=Math.min(30,d/MSL_VMAX);
+      const want=Math.atan2(t.y+t.vy*lead-m.y,t.x+t.vx*lead-m.x);
+      m.a+=clamp(angDiff(want,m.a),-m.turn,m.turn)*dt;
+    }
+    const sp=Math.min(MSL_VMAX,Math.hypot(m.vx,m.vy)+.16*dt);
+    m.vx=Math.cos(m.a)*sp;m.vy=Math.sin(m.a)*sp;
+    m.x+=m.vx*dt;m.y+=m.vy*dt;
+    let hit=null;
+    for(const p of G.pirates||[]){
+      if(p.hull<=0)continue;
+      if(Math.hypot(p.x-m.x,p.y-m.y)<26){hit=p;break;}
+    }
+    if(hit||m.life<=0){mslBoom(m,hit);G.msl.splice(i,1);}
+  }
+}
+function mslDraw(zx,zy,Z){
+  for(const m of G.msl||[]){
+    const x=zx(m.x),y=zy(m.y);
+    /* факел длиннее самой ракеты: на масштабе системы корпус — три пикселя,
+       и видно её именно по следу */
+    const bx=x-Math.cos(m.a)*9*Z,by=y-Math.sin(m.a)*9*Z;
+    const g=ctx.createLinearGradient(x,y,bx,by);
+    g.addColorStop(0,"rgba(255,214,150,.9)");
+    g.addColorStop(1,"rgba(255,120,60,0)");
+    ctx.strokeStyle=g;ctx.lineWidth=Math.max(1,2.6*Z);
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(bx,by);ctx.stroke();
+    ctx.fillStyle="#e8ecf2";
+    ctx.beginPath();ctx.arc(x,y,Math.max(1,1.9*Z),0,TAU);ctx.fill();
+  }
+  for(const f of G.mslFx||[]){
+    const a=Math.max(0,f.t/18),r=(1-a)*34*Z+4;
+    ctx.strokeStyle="rgba(255,190,120,"+(a*.8).toFixed(2)+")";
+    ctx.lineWidth=Math.max(1,2.4*a*Z);
+    ctx.beginPath();ctx.arc(zx(f.x),zy(f.y),r,0,TAU);ctx.stroke();
+    ctx.fillStyle="rgba(255,150,90,"+(a*.35).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(zx(f.x),zy(f.y),r*.6,0,TAU);ctx.fill();
+  }
 }
 
 /* ══════════════ фон ══════════════ */
@@ -21647,7 +21853,12 @@ function updateSurface(dt){
   else if(settleCanLive(S.p)&&Math.abs(S.x-settleSpotX(S.p,tr))<44){
     const V=settleTick(settleAt(G.sx,G.sy));
     let big="",bn=0;
-    for(const k of RES_KEYS)if((G.cargo[k]|0)>bn){bn=G.cargo[k]|0;big=k;}
+    /* боеприпас (M112) в рацион не идёт: ракета — не то, чем кормят, и
+       случайно отдать её вместо руды нельзя */
+    for(const k of RES_KEYS){
+      if(AMMO_KEYS.indexOf(k)>=0)continue;
+      if((G.cargo[k]|0)>bn){bn=G.cargo[k]|0;big=k;}
+    }
     if(big&&bn>0){
       G.prompt="ДЕЙСТВИЕ — ОТДАТЬ ЖИВУЩИМ · "+RES[big].ru.toUpperCase()+" ×"+Math.min(bn,40)+
         (V?"\nПОСЁЛОК · СТУПЕНЬ "+V.stage+" · "+settleLine(V,V.built.length):"\nЗДЕСЬ ЖИВУТ");
@@ -26022,6 +26233,9 @@ function renderTab(){
       b.onclick=()=>{craftPart(spec);renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }
+    /* ракеты (M112): та же лаборатория, но выход — не часть, а груз. Сама
+       строка живёт в 16b-missile, рядом с механикой, а не здесь. */
+    ammoRow($body,renderTab);
   }
   else if(tab==="bases"){
     /* ── к чему всё идёт ──
@@ -29618,6 +29832,7 @@ const $place=document.getElementById("place"),$sub=document.getElementById("sub"
 const $msg=document.getElementById("msg"),$prompt=document.getElementById("prompt");
 const $bThr=document.querySelector("[data-k=thrust]"),$bBrk=document.querySelector("[data-k=brake]");
 const $nav=document.getElementById("navbtn"),$fire=document.getElementById("firebtn");
+const $msl=document.getElementById("mslbtn");
 /* ── пробуждение приборов ──
    Сравниваем не значения по одному, а строку показаний: любое изменение
    будит панель на пару секунд. Тревога держит её открытой, пока не пройдёт.
@@ -29752,6 +29967,14 @@ function hud(){
   $fire.style.display=(G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed))?"":"none";
   if(G.mode==="dig")$fire.textContent=(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС";
   else $fire.textContent="ОГОНЬ";
+  /* ракета показывается только там, где ею можно выстрелить, и на кнопке стоит
+     не «готово», а остаток в трюме: боеприпас — это груз, и он тает */
+  if($msl){
+    const on=G.mode==="system"&&st.launcher;
+    $msl.style.display=on?"":"none";
+    if(on)$msl.textContent=(G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0));
+    $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
+  }
   document.body.classList.toggle("inbelt",G.mode==="belt");
 }
 

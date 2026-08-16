@@ -27,6 +27,7 @@ const $place=document.getElementById("place"),$sub=document.getElementById("sub"
 const $msg=document.getElementById("msg"),$prompt=document.getElementById("prompt");
 const $bThr=document.querySelector("[data-k=thrust]"),$bBrk=document.querySelector("[data-k=brake]");
 const $nav=document.getElementById("navbtn"),$fire=document.getElementById("firebtn");
+const $msl=document.getElementById("mslbtn");
 /* ── пробуждение приборов ──
    Сравниваем не значения по одному, а строку показаний: любое изменение
    будит панель на пару секунд. Тревога держит её открытой, пока не пройдёт.
@@ -161,6 +162,14 @@ function hud(){
   $fire.style.display=(G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed))?"":"none";
   if(G.mode==="dig")$fire.textContent=(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС";
   else $fire.textContent="ОГОНЬ";
+  /* ракета показывается только там, где ею можно выстрелить, и на кнопке стоит
+     не «готово», а остаток в трюме: боеприпас — это груз, и он тает */
+  if($msl){
+    const on=G.mode==="system"&&st.launcher;
+    $msl.style.display=on?"":"none";
+    if(on)$msl.textContent=(G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0));
+    $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
+  }
   document.body.classList.toggle("inbelt",G.mode==="belt");
 }
 
