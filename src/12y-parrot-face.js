@@ -365,19 +365,40 @@ function parrotDraw(c,W,H){
   const bg2=g.createLinearGradient(0,-12,0,14);
   bg2.addColorStop(0,PAR_C.beak);bg2.addColorStop(1,PAR_C.beakD);
   g.fillStyle=bg2;
-  g.beginPath();g.moveTo(-8,-11);
-  g.bezierCurveTo(16,-12,27,-4,26,4);      /* спинка надклювья */
-  g.bezierCurveTo(25,10,20,13,15,10);      /* крючок */
-  g.bezierCurveTo(12,6,2,4,-8,4);
+  /* Клюв попугая — не клин, а высокая горбатая надклювная дуга, круто
+     заворачивающая вниз и НАЗАД, под себя. Прежний вариант был длинным и
+     острым: у птицы получался вороний клюв, а порода в референсе тупая и
+     мясистая, и держится она именно на этом изгибе. */
+  g.beginPath();
+  g.moveTo(-9,-13);                        /* восковица у самого лба */
+  g.bezierCurveTo(6,-15,18,-10,22,-2);     /* горб надклювья */
+  g.bezierCurveTo(25,4,23,11,20,15);       /* спуск к острию */
+  g.lineTo(17,17);                         /* само остриё — тупое, но остриё */
+  g.bezierCurveTo(15,12,12,9,9,7);         /* крючок подобран назад, с подрезом */
+  g.bezierCurveTo(4,5,-2,4.5,-9,4.5);
   g.closePath();g.fill();
-  /* подклювье отъезжает, когда птица говорит */
-  g.save();g.translate(0,PAR.beak*4.5);
-  g.fillStyle=PAR_C.beakD;
-  g.beginPath();g.moveTo(-8,4);g.quadraticCurveTo(8,6,16,9);
-  g.quadraticCurveTo(6,12,-8,11);g.closePath();g.fill();
+  /* подрез под крючком: тонкая тень, от которой остриё читается остриём,
+     а не округлым наплывом. Без неё клюв превращается в шишку. */
+  g.strokeStyle="rgba(90,54,16,.45)";g.lineWidth=1.1;
+  g.beginPath();g.moveTo(19,14.5);
+  g.bezierCurveTo(15,11,12,8.5,9,7);g.stroke();
+  /* блик по горбу: без него клюв — плоское пятно, а он гладкий и твёрдый */
+  g.fillStyle="rgba(255,246,226,.5)";
+  g.beginPath();g.moveTo(-4,-10);
+  g.quadraticCurveTo(8,-11,15,-3);
+  g.quadraticCurveTo(7,-6,-4,-6);g.closePath();g.fill();
+  /* подклювье: короткая широкая чаша, отъезжает, когда птица говорит */
+  g.save();g.translate(0,PAR.beak*5);
+  const lg2=g.createLinearGradient(0,4,0,15);
+  lg2.addColorStop(0,PAR_C.beakD);lg2.addColorStop(1,"#a06a2e");
+  g.fillStyle=lg2;
+  g.beginPath();g.moveTo(-9,4);
+  g.bezierCurveTo(2,5,9,7,10,11);
+  g.bezierCurveTo(6,14,-3,14,-9,13);
+  g.closePath();g.fill();
   g.restore();
   g.fillStyle="rgba(60,30,10,.55)";
-  g.beginPath();g.arc(-1,-6,1.5,0,7);g.fill();   /* ноздря */
+  g.beginPath();g.arc(-2,-8,1.6,0,7);g.fill();   /* ноздря */
   g.restore();
   /* 4г. глаз: крупный, круглый, с двумя бликами — от него всё обаяние */
   const bl=1-PAR.blink;
