@@ -3681,3 +3681,65 @@ architecture only, never for plot, character or phrase: a cosmos that is inhabit
 first, where the enormous or the frightening arrives through a domestic detail, and where nobody
 explains anything all the way to the end. Nothing of anyone else's work enters the game: the names,
 places, creatures and lines here are our own.
+
+# M55 — the base and `scoop`, twelve passes (moved out of PLAN.md on 2026-08-16)
+
+Kept as documentation of decisions: what each pass fixed, in what order, and the faults each one
+found by looking. The live plan carries only the debt that is still open.
+
+6. **The `scoop` and `base` modes.** Base: five passes done (`21a-mode-base`, stand
+   `docs/mkbase.ps1`), the last four measured against a Fallout Shelter frame the player supplied.
+   Rock grain and a contact shadow that sits the structure in the ground; the interior lit and the
+   rock darkened, because on the reference the quarters *glow* against near-black earth and the
+   whole screen rests on that contrast; the ground above the base raised into a **hill** with the
+   base cut into it — it used to lie under flat steppe, with the top row of rooms butting straight
+   into the sky and nothing explaining why there is one entrance and everything else below; a
+   second, offset hump so the hill has a shoulder instead of being a perfect dome; and the lift
+   turned from two pale threads into a **lit column** the full height of the works, drawn behind
+   the rooms so it shows in the gaps and binds the levels into one building.
+
+   Four more passes since: a floor slab so the rows read as continuous levels, bulkheads between
+   compartments and a shift of people in every room, doors and a warm lift, boulders in the rock
+   and a gate in the hillside, and light that is a fixture — ceiling lamps with cones, decking and
+   contact shadows. A ninth pass redrew the people themselves close-up (`docs/mkroom.ps1` →
+   `docs/shots/base-rooms.png`): human proportions instead of a third-of-a-body helmet, opaque
+   fills instead of ghosts through the furniture, lamps under the furniture in the draw order.
+
+   A tenth pass gave each kind its **finish** (`ROOM_FIN`): wall, lamp tone and count, floor
+   covering and hazard marking follow the work done there — rock and half the light in the store,
+   ribs and warm lamps in the smelter, a wainscot in the quarters, tile and extra light in the
+   lab — so a room is told apart before its machine is read; and the shift now groups at the
+   room's work spot instead of standing at even intervals.
+
+   An eleventh pass hung the **shift's traces on the wall** (`bDress`, driven by `dress` in the
+   same table): a shift board with one line picked out, tools on hooks, a stencilled number
+   painted straight onto the rock, a cable run on clips, a shelf of samples in the lab, and a
+   photograph with a tear-off calendar over the bunks — the finish says what the room is, the
+   wall says who works in it. It is drawn before the equipment, so a machine honestly covers it.
+
+   A twelfth pass gave the leftovers of the work a home (`bJunk`, `junk` in the same table): ore
+   spilled by the drill, a stack of ingots by the furnace, gas bottles in a rack by the reactor,
+   a cable spool on the pad, a kitbag under the bunks, a crate of glassware in the lab. It is
+   drawn **before** the equipment — laid on top, the spool sat on the reactor console and read as
+   a hole in the panel, and a thing landing on a solid housing is an error, not an object.
+
+   **Still open on the base:** in the tight compartments (reactor, quarters, lab) the machine
+   fills the wall and the floor, so neither the wall trace nor the leftovers show at all — the
+   honest fix is to give those rooms a free strip by their own layout, not to draw things over
+   the equipment.
+
+   **`scoop`, first pass ever** (stand: `docs/mkscoop.ps1` → `docs/shots/scoop.png`, three
+   heights in one column — above the band, in it, near the floor). The scene read as wallpaper:
+   one texture stretched twice, top and bottom alike, the ship flying over it untouched by
+   anything. Now the frame has a **top and a bottom** (thin cold haze with the black of space
+   showing through, dense warm murk below, and a dark floor light no longer reaches — which is
+   also what tells the player not to sink); **shear edges** — wavy shadow lines scrolling at
+   their own speeds, which is the only place the speed reads; the **collection band** carries a
+   dashed edge across the full width instead of two 34 px stubs lost in the haze; and the ship
+   leaves a **wake** — a slit of lighter gas with two curls closing behind it.
+
+   **Still open on `scoop`:** the giant's texture is baked at 512×256 and stretched to one and a
+   half screens, so everything is soft — not a single crisp edge belongs to the cloud itself, and
+   the shear edges are shadows laid on top of that softness rather than the clouds' own borders;
+   the floor is still lighter than the design wants; and nothing in the scene changes with the
+   type of giant beyond its palette.
