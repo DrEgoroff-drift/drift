@@ -946,30 +946,30 @@ padsFadeIn                   src/15-input.js:12
 padsFadeOut                  src/15-input.js:11
 PAR                          src/12y-parrot-face.js:50
 PAR_C                        src/12y-parrot-face.js:37
-PAR_DPR                      src/12y-parrot-face.js:513
-PAR_IDLE                     src/12y-parrot-face.js:470
-PAR_L                        src/12y-parrot-face.js:426
+PAR_DPR                      src/12y-parrot-face.js:534
+PAR_IDLE                     src/12y-parrot-face.js:491
+PAR_L                        src/12y-parrot-face.js:447
 parBead                      src/12y-parrot-face.js:126
 parBodyPath                  src/12y-parrot-face.js:150
 parCoat                      src/12y-parrot-face.js:164
 parFoot                      src/12y-parrot-face.js:215
-parLayer                     src/12y-parrot-face.js:427
+parLayer                     src/12y-parrot-face.js:448
 parPlume                     src/12y-parrot-face.js:71
 parQuill                     src/12y-parrot-face.js:56
 PARROT_NAMES                 src/12x-parrot.js:24
-parrotBtnTick                src/12y-parrot-face.js:507
+parrotBtnTick                src/12y-parrot-face.js:528
 parrotDock                   src/12x-parrot.js:141
 parrotDraw                   src/12y-parrot-face.js:237
 parrotFind                   src/12x-parrot.js:30
-parrotFrame                  src/12y-parrot-face.js:514
+parrotFrame                  src/12y-parrot-face.js:535
 parrotHas                    src/12x-parrot.js:25
 parrotHeardKill              src/13-pirates.js:172
-parrotLine                   src/12y-parrot-face.js:471
-parrotPoke                   src/12y-parrot-face.js:487
+parrotLine                   src/12y-parrot-face.js:492
+parrotPoke                   src/12y-parrot-face.js:508
 parRow                       src/12y-parrot-face.js:136
 parScale                     src/12y-parrot-face.js:102
-parSpring                    src/12y-parrot-face.js:441
-parStep                      src/12y-parrot-face.js:445
+parSpring                    src/12y-parrot-face.js:462
+parStep                      src/12y-parrot-face.js:466
 PART_BONUS                   src/05-parts.js:196
 PART_GEN                     src/05-parts.js:6
 PART_KEYS                    src/05-parts.js:27
@@ -1369,7 +1369,7 @@ tnoise                       src/18a-material.js:16
 toggleLog                    src/11-log.js:89
 toggleLoreBoard              src/27h-ui-lore.js:83
 toggleMenu                   src/15-input.js:126
-toggleParrotWin              src/12y-parrot-face.js:527
+toggleParrotWin              src/12y-parrot-face.js:548
 totalLoss                    src/21-mode-surface.js:305
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03b-hull-paint.js:1
@@ -1605,7 +1605,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12x-parrot.js · 10 КБ
   · трепло: свидетель, который не понимает:1
 
-## src/12y-parrot-face.js · 29 КБ
+## src/12y-parrot-face.js · 31 КБ
   · трепло: жёрдочка:1
 
 ## src/13b-occupy.js · 17 КБ
