@@ -280,15 +280,20 @@ Suite **"the settlement: a gift, not an order"** — no call path lets the playe
 the settlement never pays credits; growth respects the offline cap; a settlement below stage 3 is
 invisible to the barge router; every glyph shown corresponds to an owned fragment.
 
-## M110 (0.60.0). The ones who live here stand between you and the fauna
+## M110 (0.60.0) — built. The ones who live here stand between you and the fauna
 
-Small, and it is what makes M109 felt on foot rather than in a tally.
+`settleWatch(p)` in `12t-settle.js`: the watch is a fact about the ground, not a buff — stage 2,
+the settlement's **own** planet, and only while it is fed (`mood ≥ 30`); a hungry village drops
+its watch first. In a watched biome `enterCave` (`22-mode-cave`) spawns fewer biting beasts and
+they close only to a line — no bite at all, with the prompt saying why. The other way round:
+`settleLeftBehind()` on `jump()` (`18-mode-map`) charges the village for the tail left over its
+heads — per pirate that had **noticed** the player, a hunter (M98) counting double; mood always,
+a building only under a dense raid, and nothing is paid to the settlement for it. `raided` was
+added to the settle whitelist in `applySave`.
 
-- Inside a settlement's biome, hostile fauna (`20-life`) keeps its distance — not a buff on the
-  player but a fact about the ground: their watchers are out there, and you can see them working.
-- It cuts the other way. Pirates you pull in over their heads land on them: a raid in a settled
-  system costs the village `mood` and buildings, and that is the price of using them as cover.
-- The tie into M98: a hunter who follows you here does not care whose roof it is.
+**Still open (with M109's tail):** the settlement has no sound of its own, the walk up to it is
+not marked from the horizon the way the cave is, and the watch is invisible from inside the cave —
+it is read from the prompt, not seen.
 
 ## M111 (0.61.0). System defence: the battery that is built, not bought
 

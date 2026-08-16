@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 112 · символов верхнего уровня: 1311
+Файлов: 112 · символов верхнего уровня: 1314
 
 ## СИМВОЛЫ
 
@@ -350,7 +350,7 @@ drawBeltRocks                src/17-mode-system.js:439
 drawBuildMenu                src/21aa-base-rooms.js:491
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
-drawCave                     src/22-mode-cave.js:131
+drawCave                     src/22-mode-cave.js:141
 drawCaveBack                 src/22a-cave-deco.js:259
 drawCaveDark                 src/22a-cave-deco.js:315
 drawCaveGlow                 src/22a-cave-deco.js:322
@@ -448,7 +448,7 @@ evacuate                     src/21-mode-surface.js:269
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:72
 exitBelt                     src/24-mode-belt.js:162
-exitCave                     src/22-mode-cave.js:35
+exitCave                     src/22-mode-cave.js:40
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
 exportCode                   src/14-save.js:374
@@ -1114,16 +1114,19 @@ settleDraw                   src/12t-settle.js:220
 settleGive                   src/12t-settle.js:120
 settleHere                   src/12t-settle.js:47
 settleKeyOf                  src/12t-settle.js:44
+settleLeftBehind             src/12t-settle.js:313
 settleLine                   src/12t-settle.js:193
 settleMake                   src/12t-settle.js:61
 settleMakes                  src/12t-settle.js:140
 settleMap                    src/12t-settle.js:45
+settleRaid                   src/12t-settle.js:296
 settleRaise                  src/12t-settle.js:101
 settleSpotX                  src/12t-settle.js:55
 settleStockSum               src/12t-settle.js:134
-settleStop                   src/12t-settle.js:282
-settleStops                  src/12t-settle.js:293
+settleStop                   src/12t-settle.js:327
+settleStops                  src/12t-settle.js:338
 settleTick                   src/12t-settle.js:77
+settleWatch                  src/12t-settle.js:285
 settleWords                  src/12t-settle.js:155
 setZoom                      src/15-input.js:175
 sfx                          src/09-audio.js:201
@@ -1271,7 +1274,7 @@ updateAllies                 src/12a-crew.js:517
 updateBarges                 src/12l-barge.js:156
 updateBase                   src/21a-mode-base.js:305
 updateBelt                   src/24-mode-belt.js:172
-updateCave                   src/22-mode-cave.js:39
+updateCave                   src/22-mode-cave.js:44
 updateCaveDeco               src/22a-cave-deco.js:178
 updateCombat                 src/13-pirates.js:76
 updateDig                    src/23-mode-dig.js:113
@@ -1324,10 +1327,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## ФАЙЛЫ И РАЗДЕЛЫ
 
-## src/01-core.js · 5 КБ
-  · математика:5
-  · имена:38
-  · удалённость и настрой сектора:45
+## src/01-core.js · 7 КБ
 
 ## src/02a-worldmix.js · 8 КБ
   · смешанные миры:1
@@ -1469,7 +1469,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12s-wear.js · 9 КБ
   · корабль стареет:1
 
-## src/12t-settle.js · 17 КБ
+## src/12t-settle.js · 20 КБ
   · посёлок: вы даёте, решают они:1
 
 ## src/13b-occupy.js · 17 КБ
@@ -1573,7 +1573,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
 
-## src/22-mode-cave.js · 11 КБ
+## src/22-mode-cave.js · 12 КБ
   · пещера: горизонтальная полость под поверхностью:1
 
 ## src/23-mode-dig.js · 44 КБ
@@ -1702,7 +1702,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91x-finds.js · 3 КБ
   · автотесты: находки в пустоте:1
 
-## tests/91y-settle.js · 7 КБ
+## tests/91y-settle.js · 10 КБ
   · посёлок: дар, а не приказ:1
 
 ## tests/99-run.js · 0 КБ

@@ -67,7 +67,7 @@ function settleMake(p){
   M[key]={seed,sx:G.sx,sy:G.sy,idx:(p&&p.idx|0),name:(p&&p.name)||"",
     lean:SETTLE_BUILD[Math.floor(r()*SETTLE_BUILD.length)].k,   // своя склонность
     stage:1,mood:50,fed:0,stock:{},diet:{},built:[],
-    made:Date.now(),last:Date.now(),asked:0,paid:0};
+    made:Date.now(),last:Date.now(),asked:0,paid:0,raided:0};
   return M[key];
 }
 /* ── рост, считаемый лениво ──
@@ -275,6 +275,51 @@ function settleDraw(S,tr,camx,camy,p){
   }
   ctx.fillStyle="rgba(226,206,160,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
   ctx.fillText("ПОСЁЛОК",sx,gy-56-n*2);
+}
+/* ══ M110: они стоят между вами и фауной — и платят за это ══
+   Не бонус игроку, а свойство земли: со второй ступени у посёлка есть дозорные,
+   и кусачая тварь в его биоме держится поодаль. Работает это только на своей
+   планете (не «во всей системе») и только пока их кормят: голодной деревне не до
+   дозора. И работает в обе стороны — пират, которого игрок притащил себе на
+   хвосте, садится не на него, а на них. */
+function settleWatch(p){
+  const S=settleTick(settleHere());
+  if(!S||S.stage<2)return 0;
+  if(p&&(p.idx|0)!==(S.idx|0))return 0;
+  if(S.mood<30)return 0;                      // голод снимает дозор раньше всего
+  return clamp((S.stage>=3?1:.65)*(.3+S.mood/100),0,1);
+}
+/* ── расплата за налёт ──
+   Цена берётся не за факт пиратов в системе, а за тех, кто игрока заметил: это
+   его хвост, а не их погода. Настроение падает всегда, постройка теряется лишь
+   при плотном налёте — иначе прикрытие деревней стоило бы дешевле, чем стоит. */
+function settleRaid(S,heat){
+  S=settleTick(S);
+  if(!S||heat<=0)return 0;
+  const hit=Math.min(34,6+heat*7);
+  S.mood=clamp(S.mood-hit,0,100);
+  S.raided=(S.raided|0)+1;
+  let lost=null;
+  if(S.built.length&&(heat>=3||(heat>=2&&S.mood<40))){
+    lost=S.built.splice(Math.floor(rng(hashi(S.seed,S.raided*29,11))()*S.built.length),1)[0];
+    S.stage=S.built.length>=5?3:(S.built.length>=3?2:1);
+  }
+  if(typeof logAdd==="function")
+    logAdd("bad","Налёт на посёлок "+(S.name||"")+(lost?" · сожжено: "+SETTLE_BY_K[lost].ru:" · настроение упало"));
+  return lost?2:1;
+}
+/* вызывается при уходе из системы: расплачивается тот, кого оставили под теми,
+   кого привели. Охотник (12o) считается вдвое — ему всё равно, чья это крыша. */
+function settleLeftBehind(){
+  const S=settleAt(G.sx,G.sy);
+  if(!S)return 0;
+  let heat=0;
+  for(const p of G.pirates||[]){
+    if(!p.aware||p.hull<=0)continue;
+    heat+=(p.hunter?2:1)+(p.rank|0)*.5;
+  }
+  if(heat<1)return 0;
+  return settleRaid(S,heat);
 }
 /* ── глазами фактора ──
    С третьей ступени посёлок — остановка на карте, к нему идут баржи (12l), как

@@ -327,6 +327,9 @@ function drawMap(){
   }
 }
 function jump(cost){
+  /* уходя, платит не только топливо: тех, кто сел вам на хвост, вы оставляете
+     над головами живущих внизу (M110, 12t-settle) */
+  if(typeof settleLeftBehind==="function")settleLeftBehind();
   G.fuel-=cost;G.sx=G.sel.x;G.sy=G.sel.y;G.sys=getSystem(G.sx,G.sy);G.ap=null;
   const a=Math.random()*TAU,r=1500;
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
