@@ -18,7 +18,8 @@ setTimeout(function(){
     ["ВЗМАХ",      {t:3.1,flap:.85,hop:11,crest:.5,ruff:.4}],
     ["ХОХОЛ ДЫБОМ",{t:4.4,crest:1,mad:1,ruff:.8,blink:.2}],
     ["ГОЛОВА",     {t:5.7,look:1,ruff:.5,peck:.6}],
-    ["ОСАДКА",     {t:6.9,flap:.15,hop:-3,lean:.3}]
+    ["ОСАДКА",     {t:6.9,flap:.15,hop:-3,lean:.3}],
+    ["ЧИСТКА",     {t:8.2,preen:.85,ruff:.6,crest:.3}]
   ];
   var W2=CW*poses.length,H2=CH+26;
   var cv=document.createElement("canvas");
