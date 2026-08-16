@@ -92,10 +92,15 @@ flora and fauna, a living camera, station modules, weather.
    `docs/shots/base-rooms.png`): human proportions instead of a third-of-a-body helmet, opaque
    fills instead of ghosts through the furniture, lamps under the furniture in the draw order.
 
-   **Still open on the base:** the eight interiors still differ mostly by their machine — the
-   floor, wall and clutter are one recipe everywhere, so the rooms read as one room with props
-   swapped; and the crowd stands evenly spaced instead of grouping at the work. `scoop` is
-   untouched.
+   A tenth pass gave each kind its **finish** (`ROOM_FIN`): wall, lamp tone and count, floor
+   covering and hazard marking follow the work done there — rock and half the light in the store,
+   ribs and warm lamps in the smelter, a wainscot in the quarters, tile and extra light in the
+   lab — so a room is told apart before its machine is read; and the shift now groups at the
+   room's work spot instead of standing at even intervals.
+
+   **Still open on the base:** the clutter is still one recipe (the same crates and shelves in
+   eight rooms); nothing on the walls says who works here — no boards, no tools on hooks, no
+   personal marks. `scoop` is untouched.
 7. **Factions as a language of shapes** — only after ships and stations, or there is nothing to
    tell apart.
 8. **Redo the clouds.** The current blobs of radial gradients don't satisfy the player. Look at a

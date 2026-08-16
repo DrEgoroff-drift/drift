@@ -26,30 +26,85 @@ function bBox(x,y,w,h,fill,lit,edge){
   ctx.fillStyle="rgba(0,0,0,.35)";ctx.fillRect(x,y+h-1,w,1);
   if(edge){ctx.strokeStyle=edge;ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,w-1,h-1);}
 }
-/* задняя стена: обшивка секциями и заклёпки. Без неё за оборудованием чёрная
-   дыра, и отсек читается вырезкой, а не помещением */
-function bWall(x0,y0,w,h,lit,seed){
-  const R=rng(seed);
+/* ── отделка отсека ──
+   Восемь помещений строились по одному рецепту: та же обшивка секциями, те же
+   заклёпки, тот же холодный тон, тот же настил с жёлтой краевой полосой и те же
+   лампы. Отличался только станок посредине — и разворот читался ОДНОЙ комнатой,
+   в которую подставили разный реквизит. У образца наоборот: жильё отделано, цех
+   голый, склад вырублен в породе, и это видно раньше, чем видно оборудование.
+
+   Отделка идёт от работы, а не от вкуса: где горячо — рёбра, тёплая лампа и
+   разметка; где живут — мягкая стена, панель понизу и ковёр; где склад — голая
+   порода и полсвета; в лаборатории — плитка и лишний свет. `work` — доля
+   ширины, у которой в отсеке рабочее место: смена собирается там, а не стоит
+   по помещению через равные шаги. */
+const ROOM_FIN={
+  reactor :{wall:"rib",  tint:"38,50,58", lamp:"206,240,246", ln:2, floor:"plate", warn:1, work:.30},
+  solar   :{wall:"panel",tint:"40,64,74", lamp:"202,238,246", ln:3, floor:"plate", warn:0, work:.66},
+  drill   :{wall:"rock", tint:"46,40,33", lamp:"246,212,148", ln:2, dim:.85, floor:"dirt",warn:1, work:.46},
+  storage :{wall:"rock", tint:"40,46,52", lamp:"198,218,228", ln:2, dim:.60, floor:"dirt",warn:0, work:.40},
+  habitat :{wall:"soft", tint:"54,49,46", lamp:"250,220,168", ln:3, floor:"soft", warn:0, work:.60},
+  refinery:{wall:"rib",  tint:"48,41,37", lamp:"248,196,130", ln:2, floor:"plate", warn:1, work:.32},
+  pad     :{wall:"panel",tint:"34,46,56", lamp:"228,244,250", ln:3, floor:"plate", warn:1, work:.50},
+  lab     :{wall:"tile", tint:"42,62,70", lamp:"226,248,252", ln:3, dim:1.15, floor:"clean",warn:0, work:.52}
+};
+const FIN_DEF=ROOM_FIN.pad;
+/* задняя стена: тон и фактура — от отделки отсека. Без стены за оборудованием
+   чёрная дыра, и отсек читается вырезкой, а не помещением */
+function bWall(x0,y0,w,h,lit,seed,fin){
+  const R=rng(seed),t=fin.tint.split(",").map(Number);
   ctx.save();ctx.beginPath();ctx.rect(x0,y0,w,h);ctx.clip();
   /* ── стена помещения ──
-     Была ровным сине-серым полем в полсилы: помещение выглядело нежилым, и
-     разрез читался чертежом. На образце стена ОСВЕЩЕНА — у потолка светлее,
-     к полу темнее, и весь тон уходит в холодную бирюзу от ламп. Градиент
-     стоит ровно ничего и делает половину впечатления: свет в комнате есть,
-     значит комната работает. */
-  const wg=ctx.createLinearGradient(0,y0,0,y0+h);
-  wg.addColorStop(0,"rgba(44,74,84,"+(.62+lit*.30).toFixed(2)+")");
-  wg.addColorStop(.55,"rgba(30,46,56,"+(.60+lit*.28).toFixed(2)+")");
-  wg.addColorStop(1,"rgba(20,28,36,"+(.66+lit*.24).toFixed(2)+")");
+     Была ровным полем в полсилы: помещение выглядело нежилым, и разрез читался
+     чертежом. На образце стена ОСВЕЩЕНА — у потолка светлее, к полу темнее.
+     Градиент стоит ровно ничего и делает половину впечатления. */
+  const wg=ctx.createLinearGradient(0,y0,0,y0+h),
+        st=(k)=>"rgba("+Math.round(t[0]*k)+","+Math.round(t[1]*k)+","+Math.round(t[2]*k)+",";
+  wg.addColorStop(0,st(1.16)+(.62+lit*.30).toFixed(2)+")");
+  wg.addColorStop(.55,st(.86)+(.60+lit*.28).toFixed(2)+")");
+  wg.addColorStop(1,st(.56)+(.66+lit*.24).toFixed(2)+")");
   ctx.fillStyle=wg;ctx.fillRect(x0,y0,w,h);
-  for(let i=0;i<4;i++){
-    const px=x0+4+i*(w-8)/4;
-    ctx.fillStyle="rgba(255,255,255,"+(.014+R()*.02).toFixed(3)+")";
-    ctx.fillRect(px,y0+6,(w-8)/4-3,h-14);
-    ctx.fillStyle="rgba(0,0,0,.25)";ctx.fillRect(px+(w-8)/4-3,y0+6,1,h-14);
+  if(fin.wall==="rock"){
+    /* порода: склад и буровая не отделаны вовсе — стена осталась забоем, и
+       по ней это видно раньше, чем по содержимому */
+    for(let i=0;i<26;i++){
+      const px=x0+R()*w,py=y0+4+R()*(h-8),rr=2+R()*7;
+      ctx.fillStyle="rgba(0,0,0,"+(.10+R()*.14).toFixed(3)+")";
+      ctx.beginPath();ctx.ellipse(px,py,rr,rr*.62,R()*3,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,"+(.012+R()*.022).toFixed(3)+")";
+      ctx.beginPath();ctx.ellipse(px-rr*.2,py-rr*.28,rr*.6,rr*.34,0,0,TAU);ctx.fill();
+    }
+  }else if(fin.wall==="rib"){
+    /* рёбра жёсткости в горячем цеху: часто и вертикально */
+    for(let px=x0+5;px<x0+w-3;px+=11){
+      ctx.fillStyle="rgba(255,255,255,"+(.026+lit*.03).toFixed(3)+")";ctx.fillRect(px,y0+4,3,h-10);
+      ctx.fillStyle="rgba(0,0,0,.30)";ctx.fillRect(px+3,y0+4,2,h-10);
+    }
+  }else if(fin.wall==="tile"){
+    /* плитка лаборатории: мелкая сетка швов, ничего лишнего */
+    ctx.strokeStyle="rgba(190,220,230,"+(.05+lit*.06).toFixed(3)+")";ctx.lineWidth=1;
+    for(let px=x0+8;px<x0+w;px+=16){ctx.beginPath();ctx.moveTo(px+.5,y0);ctx.lineTo(px+.5,y0+h);ctx.stroke();}
+    for(let py=y0+10;py<y0+h;py+=16){ctx.beginPath();ctx.moveTo(x0,py+.5);ctx.lineTo(x0+w,py+.5);ctx.stroke();}
+  }else if(fin.wall==="soft"){
+    /* жильё: тёплая панель понизу и светлая стена поверху — единственное место
+       базы, где отделка сделана для людей, а не для оборудования */
+    ctx.fillStyle="rgba(96,74,56,"+(.30+lit*.28).toFixed(2)+")";ctx.fillRect(x0,y0+h-20,w,20);
+    ctx.fillStyle="rgba(220,190,150,"+(.06+lit*.10).toFixed(3)+")";ctx.fillRect(x0,y0+h-21,w,1.2);
+    for(let px=x0+6;px<x0+w;px+=14){
+      ctx.fillStyle="rgba(0,0,0,.16)";ctx.fillRect(px,y0+h-19,1,18);
+    }
+  }else{                                                  // обшивка секциями
+    for(let i=0;i<4;i++){
+      const px=x0+4+i*(w-8)/4;
+      ctx.fillStyle="rgba(255,255,255,"+(.014+R()*.02).toFixed(3)+")";
+      ctx.fillRect(px,y0+6,(w-8)/4-3,h-14);
+      ctx.fillStyle="rgba(0,0,0,.25)";ctx.fillRect(px+(w-8)/4-3,y0+6,1,h-14);
+    }
   }
-  ctx.fillStyle="rgba(190,205,220,"+(.06+lit*.08).toFixed(3)+")";
-  for(let i=0;i<5;i++)ctx.fillRect(x0+8+i*(w-16)/4,y0+4,2,2);
+  if(fin.wall==="panel"||fin.wall==="rib"){                // заклёпки только там, где сталь
+    ctx.fillStyle="rgba(190,205,220,"+(.06+lit*.08).toFixed(3)+")";
+    for(let i=0;i<5;i++)ctx.fillRect(x0+8+i*(w-16)/4,y0+4,2,2);
+  }
   ctx.restore();
 }
 /* труба: колено из двух отрезков, блик по верхней кромке */
@@ -190,22 +245,24 @@ function drawModule(k,x,y,lit,c,r,B){
   ctx.save();
   ctx.beginPath();ctx.rect(x0-2,y0-2,w+4,h+4);ctx.clip();   // ничего не вылезает в породу
   /* задняя стена и пол — общие для всех отсеков: сначала помещение, потом мебель */
-  bWall(x0,y0,w,h-8,lit,seed);
+  const fin=ROOM_FIN[k]||FIN_DEF;
+  bWall(x0,y0,w,h-8,lit,seed,fin);
   /* ── лампы под потолком ──
      Свет в отсеке был разлит ниоткуда: помещение светилось, но источника не
-     имело, и потолок оставался пустой полосой. Две-три лампы на потолке с
-     конусом до пола объясняют освещение и заодно делят комнату на зоны —
-     ровно то, чем у образца читается длина помещения. */
+     имело, и потолок оставался пустой полосой. Лампы на потолке с конусом до
+     пола объясняют освещение и заодно делят комнату на зоны — ровно то, чем у
+     образца читается длина помещения. Число, тон и сила — от отделки: на складе
+     горит половина, в лаборатории лишняя, в жилом и горячем цеху свет тёплый. */
   {
-    const ln=w>120?3:2;
+    const ln=Math.min(fin.ln,w>120?3:2),dim=fin.dim||1;
     for(let i=0;i<ln;i++){
       const px=x0+w*(i+.5)/ln;
       ctx.fillStyle="rgba(40,48,58,.95)";ctx.fillRect(px-7,y0+2,14,3);
-      ctx.fillStyle="rgba(206,240,246,"+(.30+lit*.5).toFixed(2)+")";
+      ctx.fillStyle="rgba("+fin.lamp+","+Math.min(1,(.30+lit*.5)*dim).toFixed(2)+")";
       ctx.fillRect(px-6,y0+5,12,1.6);
       const cg=ctx.createLinearGradient(0,y0+6,0,fy);
-      cg.addColorStop(0,"rgba(180,232,240,"+(.09+lit*.11).toFixed(3)+")");
-      cg.addColorStop(1,"rgba(180,232,240,0)");
+      cg.addColorStop(0,"rgba("+fin.lamp+","+((.09+lit*.11)*dim).toFixed(3)+")");
+      cg.addColorStop(1,"rgba("+fin.lamp+",0)");
       ctx.fillStyle=cg;
       ctx.beginPath();
       ctx.moveTo(px-7,y0+6);ctx.lineTo(px+7,y0+6);
@@ -228,7 +285,11 @@ function drawModule(k,x,y,lit,c,r,B){
     const hh=hashi(c+3,r+5,(B&&B.idx|0)+11);
     const room=Math.min(3,Math.round(staff/2)+((hh>>>4)&1));
     for(let i=0;i<room;i++){
-      const px=x0+w*(.22+((hh>>>(i*3+2))&7)/7*.56);
+      /* смена стояла по помещению через равные шаги, как расставленные фигурки.
+         Люди собираются у рабочего места отсека (`work`) и расходятся от него
+         тем дальше, чем дальше по счёту: получается группа при деле, а не ряд */
+      const off=(((hh>>>(i*3+2))&7)/7-.5)*(.18+i*.16);
+      const px=x0+w*Math.max(.10,Math.min(.90,fin.work+off));
       const sit=((hh>>>(i+9))&3)===0;
       /* тень под ногами: без неё человек висит в воздухе над настилом */
       ctx.fillStyle="rgba(0,0,0,.34)";
@@ -236,21 +297,34 @@ function drawModule(k,x,y,lit,c,r,B){
       bWorker(px,fy,lit,sit,G.t*(.028+i*.006)+seed+i*2.1,((hh>>>(i+13))&1)?1:-1);
     }
   }
-  /* пол поверх всего: плита со светом сверху и тень, которой мебель касается */
-  ctx.fillStyle="rgba(120,132,146,"+(.10+lit*.16).toFixed(2)+")";ctx.fillRect(x0,fy-4,w,4);
-  ctx.fillStyle="rgba(150,166,182,"+(.05+lit*.08).toFixed(3)+")";ctx.fillRect(x0,fy-4,w,1);
   /* ── настил ──
      Пол был полосой в четыре пикселя: помещение стояло на черте. У образца
-     настил выложен плитой, и по нему читается размер комнаты. Плиты со швом
-     и жёлтая краевая разметка — ею метят проходы везде, где ходят люди. */
+     настил выложен плитой, и по нему читается размер комнаты. Покрытие тоже от
+     работы: в цеху стальная плита с жёлтой разметкой, на складе и в забое —
+     утоптанная порода без всякой отделки, в жилом отсеке тёплое покрытие, в
+     лаборатории светлый наливной пол. */
+  const FL={plate:"120,132,146",dirt:"92,78,60",soft:"104,80,62",clean:"168,186,196"}[fin.floor]
+           ||"120,132,146";
+  ctx.fillStyle="rgba("+FL+","+(.10+lit*.16).toFixed(2)+")";ctx.fillRect(x0,fy-4,w,4);
+  ctx.fillStyle="rgba(255,255,255,"+(.05+lit*.08).toFixed(3)+")";ctx.fillRect(x0,fy-4,w,1);
   ctx.save();ctx.beginPath();ctx.rect(x0,fy-4,w,4);ctx.clip();
-  ctx.strokeStyle="rgba(10,14,18,.5)";ctx.lineWidth=1;
-  for(let px=x0+9;px<x0+w;px+=18){
-    ctx.beginPath();ctx.moveTo(px,fy-4);ctx.lineTo(px-2,fy);ctx.stroke();
+  if(fin.floor==="dirt"){
+    const R2=rng(seed+31);                                  // щебень, а не швы плит
+    for(let i=0;i<30;i++){
+      ctx.fillStyle="rgba(0,0,0,"+(.12+R2()*.18).toFixed(3)+")";
+      ctx.fillRect(x0+R2()*w,fy-4+R2()*3.4,1+R2()*2.6,1);
+    }
+  }else if(fin.floor!=="clean"){
+    ctx.strokeStyle="rgba(10,14,18,"+(fin.floor==="soft"?".28":".5")+")";ctx.lineWidth=1;
+    for(let px=x0+9;px<x0+w;px+=18){
+      ctx.beginPath();ctx.moveTo(px,fy-4);ctx.lineTo(px-2,fy);ctx.stroke();
+    }
   }
   ctx.restore();
-  ctx.fillStyle="rgba(214,168,64,"+(.14+lit*.18).toFixed(2)+")";
-  ctx.fillRect(x0+3,fy-5.2,w-6,1.1);
+  if(fin.warn){                                             // разметка — только где опасно
+    ctx.fillStyle="rgba(214,168,64,"+(.14+lit*.18).toFixed(2)+")";
+    ctx.fillRect(x0+3,fy-5.2,w-6,1.1);
+  }
   ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x0,fy,w,6);
   ctx.restore();
 }
