@@ -18185,7 +18185,17 @@ function bBox(x,y,w,h,fill,lit,edge){
 function bWall(x0,y0,w,h,lit,seed){
   const R=rng(seed);
   ctx.save();ctx.beginPath();ctx.rect(x0,y0,w,h);ctx.clip();
-  ctx.fillStyle="rgba(26,33,42,"+(.55+lit*.25).toFixed(2)+")";ctx.fillRect(x0,y0,w,h);
+  /* ── стена помещения ──
+     Была ровным сине-серым полем в полсилы: помещение выглядело нежилым, и
+     разрез читался чертежом. На образце стена ОСВЕЩЕНА — у потолка светлее,
+     к полу темнее, и весь тон уходит в холодную бирюзу от ламп. Градиент
+     стоит ровно ничего и делает половину впечатления: свет в комнате есть,
+     значит комната работает. */
+  const wg=ctx.createLinearGradient(0,y0,0,y0+h);
+  wg.addColorStop(0,"rgba(44,74,84,"+(.62+lit*.30).toFixed(2)+")");
+  wg.addColorStop(.55,"rgba(30,46,56,"+(.60+lit*.28).toFixed(2)+")");
+  wg.addColorStop(1,"rgba(20,28,36,"+(.66+lit*.24).toFixed(2)+")");
+  ctx.fillStyle=wg;ctx.fillRect(x0,y0,w,h);
   for(let i=0;i<4;i++){
     const px=x0+4+i*(w-8)/4;
     ctx.fillStyle="rgba(255,255,255,"+(.014+R()*.02).toFixed(3)+")";
@@ -18329,6 +18339,27 @@ function drawModule(k,x,y,lit,c,r,B){
 
      Честность механики важнее картинки: людей ровно столько, сколько на базе
      персонала. Пустая база остаётся пустой — иначе разрез врал бы о штате. */
+  /* ── лампы под потолком ──
+     Свет в отсеке был разлит ниоткуда: помещение светилось, но источника не
+     имело, и потолок оставался пустой полосой. Две-три лампы на потолке с
+     конусом до пола объясняют освещение и заодно делят комнату на зоны —
+     ровно то, чем у образца читается длина помещения. */
+  {
+    const ln=w>120?3:2;
+    for(let i=0;i<ln;i++){
+      const px=x0+w*(i+.5)/ln;
+      ctx.fillStyle="rgba(40,48,58,.95)";ctx.fillRect(px-7,y0+2,14,3);
+      ctx.fillStyle="rgba(206,240,246,"+(.30+lit*.5).toFixed(2)+")";
+      ctx.fillRect(px-6,y0+5,12,1.6);
+      const cg=ctx.createLinearGradient(0,y0+6,0,fy);
+      cg.addColorStop(0,"rgba(180,232,240,"+(.09+lit*.11).toFixed(3)+")");
+      cg.addColorStop(1,"rgba(180,232,240,0)");
+      ctx.fillStyle=cg;
+      ctx.beginPath();
+      ctx.moveTo(px-7,y0+6);ctx.lineTo(px+7,y0+6);
+      ctx.lineTo(px+24,fy);ctx.lineTo(px-24,fy);ctx.closePath();ctx.fill();
+    }
+  }
   const staff=(typeof baseStaff==="function"&&B)?baseStaff(B).length:0;
   if(staff>0){
     const hh=hashi(c+3,r+5,(B&&B.idx|0)+11);
@@ -18336,12 +18367,27 @@ function drawModule(k,x,y,lit,c,r,B){
     for(let i=0;i<room;i++){
       const px=x0+w*(.22+((hh>>>(i*3+2))&7)/7*.56);
       const sit=((hh>>>(i+9))&3)===0;
+      /* тень под ногами: без неё человек висит в воздухе над настилом */
+      ctx.fillStyle="rgba(0,0,0,.34)";
+      ctx.beginPath();ctx.ellipse(px,fy-1,7,2,0,0,TAU);ctx.fill();
       bWorker(px,fy,lit,sit,G.t*(.028+i*.006)+seed+i*2.1,((hh>>>(i+13))&1)?1:-1);
     }
   }
   /* пол поверх всего: плита со светом сверху и тень, которой мебель касается */
   ctx.fillStyle="rgba(120,132,146,"+(.10+lit*.16).toFixed(2)+")";ctx.fillRect(x0,fy-4,w,4);
   ctx.fillStyle="rgba(150,166,182,"+(.05+lit*.08).toFixed(3)+")";ctx.fillRect(x0,fy-4,w,1);
+  /* ── настил ──
+     Пол был полосой в четыре пикселя: помещение стояло на черте. У образца
+     настил выложен плитой, и по нему читается размер комнаты. Плиты со швом
+     и жёлтая краевая разметка — ею метят проходы везде, где ходят люди. */
+  ctx.save();ctx.beginPath();ctx.rect(x0,fy-4,w,4);ctx.clip();
+  ctx.strokeStyle="rgba(10,14,18,.5)";ctx.lineWidth=1;
+  for(let px=x0+9;px<x0+w;px+=18){
+    ctx.beginPath();ctx.moveTo(px,fy-4);ctx.lineTo(px-2,fy);ctx.stroke();
+  }
+  ctx.restore();
+  ctx.fillStyle="rgba(214,168,64,"+(.14+lit*.18).toFixed(2)+")";
+  ctx.fillRect(x0+3,fy-5.2,w-6,1.1);
   ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x0,fy,w,6);
   ctx.restore();
 }
