@@ -189,6 +189,13 @@ function loreTake(key){
          (LORE_CHAP[LORE_CHAP_IX[R.chap]].note)+"\n\nглав прочитано: "+loreChaptersRead()+" из 8");
     logAdd("tech","Сложилась глава «"+R.chapRu+"» · "+loreChaptersRead()+"/8");
   }
+  /* трепло (12x, M116): у камня оно слышит чужую речь и запоминает её дословно,
+     а со словом из этого же куска перечитывает ВСЁ, что помнит. Одно слово
+     оживляет старое — в этом вся механика птицы. */
+  if(typeof parrotHas==="function"&&parrotHas()){
+    heardPidgin(R.seed,G.sx,G.sy);
+    if(R.word)heardReread();
+  }
   if(typeof saveGame==="function")saveGame(true);
   return R;
 }

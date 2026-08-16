@@ -38,7 +38,7 @@ function snapshot(){
     wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
-    doom:G.doom,doomDead:G.doomDead,
+    doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -195,6 +195,21 @@ function applySave(s){
       over:!!d.over,warned:Array.isArray(d.warned)?d.warned.filter(x=>+x>0):[]};
   }
   G.doomDead=(s.doomDead&&typeof s.doomDead==="object")?s.doomDead:{};
+  /* трепло (12x-parrot): сама птица и то, что она помнит. Строки чинятся по
+     месту — вид обязателен, слова обязаны быть номерами: строка без события
+     здесь такая же ложь, как перк без кода, и загрузка её не заводит. */
+  G.parrot=(s.parrot&&typeof s.parrot==="object"&&s.parrot.name)?{
+    seed:s.parrot.seed>>>0,name:String(s.parrot.name).slice(0,24),
+    who:String(s.parrot.who||"").slice(0,48),
+    since:+s.parrot.since||Date.now(),said:Math.max(0,s.parrot.said|0)}:null;
+  G.heard=(Array.isArray(s.heard)?s.heard:[])
+    .filter(h=>h&&(h.kind==="price"||h.kind==="pidgin"||h.kind==="yours"))
+    .map(h=>({t:+h.t||Date.now(),kind:h.kind,sx:h.sx|0,sy:h.sy|0,
+      note:String(h.note||"").slice(0,64),
+      words:Array.isArray(h.words)?h.words.map(x=>x|0):null,
+      read:!!h.read,used:!!h.used}))
+    .filter(h=>h.kind!=="pidgin"||(h.words&&h.words.length))
+    .slice(-HEARD_MAX);
   /* отчёт «Долгого Хода» (12q-lore): формат сейва не менялся (v:4), старые
      записи просто не имеют этих полей и начинают с пустого */
   G.loreFound=Array.isArray(s.loreFound)?s.loreFound.filter(x=>typeof x==="string"):[];

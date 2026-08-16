@@ -47,7 +47,9 @@ function resetWorld(){
   /* боны (12u): курс — состояние мира, и новый мир начинает с общего основания */
   G.scrip={};G.scripRate={};G.scripLog=[];if(typeof scripVisitReset==="function")scripVisitReset();
   /* срок (12v): новый мир — никакого назначенного часа и никаких пустых систем */
-  G.doom=null;G.doomDead={};G.trade=routeInit();G.market={};G.wear={};G.findsSeen={};
+  G.doom=null;G.doomDead={};
+  /* трепло (12x): новая игра — ни птицы, ни услышанного */
+  G.parrot=null;G.heard=[];G.trade=routeInit();G.market={};G.wear={};G.findsSeen={};
   G.mgrs=[];G.blueprints={};G.cantina=null;G.aiRift=null;
   G.orderStamp=0;G.kills=0;G.soldTotal=0;
   G.pirates=[];G.shots=[];G.log=[];G.prompt="";G.msg="";

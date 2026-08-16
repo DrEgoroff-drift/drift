@@ -9,6 +9,28 @@ could ever save.
 
 ---
 
+## 0.66.0 — "It says only what it heard"
+
+**M116** (`12x-parrot.js`, `17b-finds.js`, `12q-lore.js`, `26-ui-station.js`, `13-pirates.js`,
+`27h-ui-lore.js`, suite `91ze-parrot.js`). The first of the five witnesses, and the only thing in
+the game that gets better while you do nothing.
+
+- **Трепло ушастое** — a repeater found once per playthrough in the effects aboard a wrecked
+  scout, with its dead owner named. That is how the player learns there was a dead man, well
+  before he learns who. (The pass spec sources the first bird from the bazaar, M120; the hulk is
+  the same kind of source — someone's property with a known fate — and does not wait for it.)
+- **It never invents.** Every line traces to an event the player was present for: prices heard at
+  a counter, a phrase picked up at a notch, the name of a ship he shot down.
+- **It pays before it is understood**: at a foreign counter it repeats the prices of a station you
+  docked at earlier, opening that market with no flight.
+- **Comprehension is retroactive.** Pidgin lines are stored as word *numbers* and shown as glyphs;
+  a word arriving from a fragment re-reads everything already remembered, and a phrase heard in
+  hour two can start speaking in hour twenty while you sit still. A decoded phrase pays with an
+  address, the same currency a notch pays in.
+- **It testifies against you too.** What it overheard from you it eventually blurts at a counter,
+  and that costs reputation where it was heard. Once per line.
+- Everything it remembers is read on the fragment board — these are depositions, not a new screen.
+
 ## 0.65.0 — "The assembled account"
 
 **M115** (`12w-survey.js`, `18-mode-map.js`, `27e-ui-home.js`, suite `91zd-survey.js`). The last
