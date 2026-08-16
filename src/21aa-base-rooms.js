@@ -120,49 +120,66 @@ function bGlow(cx,cy,r,col,a){
    спиной, шлем со стеклом и бликом, руки и ноги в два звена. Палочный человечек
    рядом с проработанным оборудованием сразу выдаёт макет. Рост 24 px стоя,
    тем же мерилом смеряна вся мебель. */
+/* ── человек ──
+   На крупном плане прежняя фигура разваливалась: шлем в 3.6 радиуса при росте
+   в 24 — это голова в треть тела, полупрозрачность (α .45–.9) делала людей
+   призраками сквозь мебель, а «рука к работе» уходила вбок обрубком. Рядом с
+   проработанным оборудованием это читалось макетом, а не сменой.
+
+   Пропорции взяты человеческие: голова примерно в шестую часть роста, плечи
+   вдвое шире головы, ноги — половина фигуры. Заливки НЕПРОЗРАЧНЫ: человек в
+   освещённом отсеке — самый плотный предмет кадра, сквозь него не видно ни
+   станка, ни стены. Читается он тремя тонами: тёмный комбинезон, светлый
+   шлем, один цветной блик на стекле. */
 function bWorker(x,fy,lit,sit,phase,face){
-  const a=(.45+lit*.45),d=face===-1?-1:1;
-  const bob=Math.sin(phase)*.7, sw=Math.sin(phase*1.6);
-  /* Комбинезон средне-серый, а не белый: белое пятно ростом в 24 px на тёмной
-     стене читается кляксой. Светлые только шлем и кант — глаз собирает фигуру
-     по ним, а не по силуэту. */
-  const body="rgba("+(sit?"126,140,156":"134,148,164")+","+a.toFixed(2)+")";
-  const dark="rgba(56,66,80,"+(a*.95).toFixed(2)+")";
+  const d=face===-1?-1:1;
+  const L=.55+lit*.45;                                  // общая освещённость фигуры
+  const mix=(a,b,t)=>Math.round(a+(b-a)*t);
+  const suit=(k)=>"rgb("+mix(38,96,k*L)+","+mix(46,112,k*L)+","+mix(58,132,k*L)+")";
+  const bob=Math.sin(phase)*.5, sw=Math.sin(phase*1.6);
   ctx.save();ctx.translate(x,fy);ctx.scale(d,1);
-  const hipY=sit?-13:-11, shY=-19+bob, headY=sit?-25+bob:-26+bob;
-  if(sit){                                                  // стул: сиденье, спинка, ножка
-    ctx.fillStyle="rgba(40,48,58,"+(a*.8).toFixed(2)+")";
-    ctx.fillRect(-6,-13,14,2.5);ctx.fillRect(-7,-24,2.5,12);
-    ctx.fillRect(0,-11,2,11);
-    ctx.fillStyle=dark;                                     // бедро и голень
-    ctx.fillRect(0,-13,10,3.4);ctx.fillRect(8,-11,3.4,11);
+  const H=24;                                            // рост стоя, мерило всей мебели
+  const hipY=sit?-10:-11.5, shY=(sit?-17:-19)+bob, headY=(sit?-21.5:-23.5)+bob;
+  if(sit){
+    ctx.fillStyle="rgb(34,41,50)";                       // табурет
+    ctx.fillRect(-5.5,-10,12,2.2);ctx.fillRect(-.8,-8,2,8);
+    ctx.fillStyle=suit(.55);                             // бедро вперёд, голень вниз
+    ctx.fillRect(0,-11,8.5,3.2);
+    ctx.fillStyle=suit(.42);ctx.fillRect(6.5,-8.5,3.2,8.5);
+    ctx.fillStyle="rgb(24,29,36)";ctx.fillRect(6,-1.4,5,1.6);
   }else{
-    /* дальняя нога темнее ближней — иначе две одинаковые полоски слипаются
-       в один столбик и человек читается кеглей */
-    ctx.fillStyle="rgba(40,48,60,"+(a*.95).toFixed(2)+")";
-    ctx.fillRect(-1-sw*1.8,hipY,3.4,11);
-    ctx.fillStyle=dark;ctx.fillRect(-1+sw*1.8,hipY,3.6,11);
-    ctx.fillStyle="rgba(30,38,48,"+a.toFixed(2)+")";        // ботинки
-    ctx.fillRect(-2+sw*1.6,-2,5.4,2);ctx.fillRect(-2-sw*1.6,-2,5.4,2);
+    ctx.fillStyle=suit(.40);                             // дальняя нога темнее ближней
+    ctx.fillRect(-2.6+sw*1.5,hipY,3,11.5);
+    ctx.fillStyle=suit(.58);
+    ctx.fillRect(.2-sw*1.5,hipY,3,11.5);
+    ctx.fillStyle="rgb(22,27,34)";                       // ботинки
+    ctx.fillRect(-3.4+sw*1.4,-1.8,5,1.8);ctx.fillRect(-.4-sw*1.4,-1.8,5,1.8);
   }
-  ctx.fillStyle="rgba(56,66,80,"+a.toFixed(2)+")";          // ранец
-  ctx.fillRect(-6,shY+1,4,10);
-  ctx.fillStyle=body;                                       // корпус трапецией
+  /* корпус: плечи вдвое шире головы, книзу сужается — фигура, а не столбик */
+  ctx.fillStyle=suit(.62);
   ctx.beginPath();
-  ctx.moveTo(-4,shY);ctx.lineTo(4,shY);ctx.lineTo(3.2,hipY+1);ctx.lineTo(-3.2,hipY+1);
-  ctx.closePath();ctx.fill();
-  ctx.strokeStyle="rgba(215,228,240,"+(a*.5).toFixed(2)+")";ctx.lineWidth=.9;ctx.stroke();
-  ctx.fillStyle="rgba(0,0,0,.3)";ctx.fillRect(-3.8,shY+5,7.6,1.4);   // ремень
-  ctx.strokeStyle=body;ctx.lineWidth=2.2;ctx.lineCap="round";        // рука к работе
-  ctx.beginPath();ctx.moveTo(1,shY+2);
-  ctx.lineTo(5,shY+(sit?5:6)+sw*1.4);ctx.lineTo(sit?10:8,shY+(sit?6:9)+sw*2);ctx.stroke();
-  ctx.fillStyle="rgba(96,110,126,"+a.toFixed(2)+")";                 // шлем
-  ctx.beginPath();ctx.arc(0,headY,3.6,0,TAU);ctx.fill();
-  ctx.strokeStyle="rgba(225,236,246,"+(a*.75).toFixed(2)+")";ctx.lineWidth=1;ctx.stroke();
-  ctx.fillStyle="rgba(14,20,30,"+(a*.95).toFixed(2)+")";             // стекло
-  ctx.beginPath();ctx.arc(1,headY,2.5,-1.5,1.5);ctx.fill();
-  ctx.fillStyle="rgba("+BM_COOL+","+(.30+lit*.45).toFixed(2)+")";     // блик
-  ctx.beginPath();ctx.arc(2,headY-1,1,0,TAU);ctx.fill();
+  ctx.moveTo(-4.2,shY);ctx.lineTo(4.2,shY);
+  ctx.lineTo(3.2,hipY+.5);ctx.lineTo(-3.2,hipY+.5);ctx.closePath();ctx.fill();
+  ctx.fillStyle=suit(.34);ctx.fillRect(-4.2,shY,1.6,hipY-shY);   // теневая сторона
+  ctx.fillStyle="rgb(28,34,42)";ctx.fillRect(-4.2,shY+5.4,8.4,1.2);  // ремень
+  ctx.fillStyle=suit(.5);ctx.fillRect(-6,shY+1,2,7.5);               // ранец за спиной
+  /* руки в два звена: ближняя занята делом, дальняя вдоль тела — по ним и
+     видно, что человек работает, а не стоит по стойке */
+  ctx.strokeStyle=suit(.30);ctx.lineWidth=2;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(-2.6,shY+1.4);
+  ctx.lineTo(-3.6,shY+5);ctx.lineTo(-2.8,shY+8.6);ctx.stroke();
+  ctx.strokeStyle=suit(.66);
+  ctx.beginPath();ctx.moveTo(2.6,shY+1.4);
+  ctx.lineTo(5.4,shY+4.4+sw);ctx.lineTo(sit?8.4:7.4,shY+7+sw*1.4);ctx.stroke();
+  /* шлем: голова в шестую часть роста, светлый — по нему глаз и собирает
+     фигуру. Стекло тёмное, повёрнуто по ходу взгляда, блик один */
+  ctx.fillStyle="rgb("+mix(120,206,L)+","+mix(134,222,L)+","+mix(150,236,L)+")";
+  ctx.beginPath();ctx.arc(.2,headY,2.9,0,TAU);ctx.fill();
+  ctx.fillStyle="rgb(16,22,30)";
+  ctx.beginPath();ctx.arc(1.1,headY,2.1,-1.45,1.45);ctx.fill();
+  ctx.fillStyle="rgba("+BM_COOL+","+(.35+lit*.45).toFixed(2)+")";
+  ctx.fillRect(1.6,headY-1.5,1.1,1.1);
+  ctx.fillStyle=suit(.34);ctx.fillRect(-1.4,headY+2.4,3.2,1.8);   // шея-ворот
   ctx.restore();ctx.lineCap="butt";
 }
 
@@ -174,17 +191,6 @@ function drawModule(k,x,y,lit,c,r,B){
   ctx.beginPath();ctx.rect(x0-2,y0-2,w+4,h+4);ctx.clip();   // ничего не вылезает в породу
   /* задняя стена и пол — общие для всех отсеков: сначала помещение, потом мебель */
   bWall(x0,y0,w,h-8,lit,seed);
-  const F=BASE_ROOM[k];
-  if(F)F(x0,y0,w,h,cx,fy,lit,seed,B,P,c,r);
-  /* ── смена в отсеке ──
-     В комнате стоял ровно один работник, и база выглядела законсервированной:
-     у образца, по которому это переделывается, в каждом помещении по три-пять
-     человек, и именно они делают убежище живым — глаз читает не мебель, а
-     людей при мебели. Массовка добавляется поверх «своего» работника отсека,
-     общим приёмом, а не правкой восьми комнат по отдельности.
-
-     Честность механики важнее картинки: людей ровно столько, сколько на базе
-     персонала. Пустая база остаётся пустой — иначе разрез врал бы о штате. */
   /* ── лампы под потолком ──
      Свет в отсеке был разлит ниоткуда: помещение светилось, но источника не
      имело, и потолок оставался пустой полосой. Две-три лампы на потолке с
@@ -206,6 +212,17 @@ function drawModule(k,x,y,lit,c,r,B){
       ctx.lineTo(px+24,fy);ctx.lineTo(px-24,fy);ctx.closePath();ctx.fill();
     }
   }
+  const F=BASE_ROOM[k];
+  if(F)F(x0,y0,w,h,cx,fy,lit,seed,B,P,c,r);
+  /* ── смена в отсеке ──
+     В комнате стоял ровно один работник, и база выглядела законсервированной:
+     у образца, по которому это переделывается, в каждом помещении по три-пять
+     человек, и именно они делают убежище живым — глаз читает не мебель, а
+     людей при мебели. Массовка добавляется поверх «своего» работника отсека,
+     общим приёмом, а не правкой восьми комнат по отдельности.
+
+     Честность механики важнее картинки: людей ровно столько, сколько на базе
+     персонала. Пустая база остаётся пустой — иначе разрез врал бы о штате. */
   const staff=(typeof baseStaff==="function"&&B)?baseStaff(B).length:0;
   if(staff>0){
     const hh=hashi(c+3,r+5,(B&&B.idx|0)+11);
