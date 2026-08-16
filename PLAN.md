@@ -320,15 +320,29 @@ inside the existing power balance), compartment art in `21ab-base-interiors`, th
 **Still open:** the battery has no sound of its own from the system view beyond the shot blip, and
 a base that is out of power gives no notice that its defence has gone quiet.
 
-## M112 (0.62.0). Missiles
+## M112 (0.62.0) — built. Missiles
 
-A new part kind in `05-parts` with its own slot behaviour, not another number on the existing gun.
+Built as **`16b-missile.js`** (mechanic, lab row and drawing in one place), part kind `missile` in
+`05-parts`, `RES.missile` + `AMMO_KEYS` in `02-world`, the stat block in `08-state`, the launch and
+the draw inside the combat loop (`13-pirates`), suite **"missiles: ammunition is cargo"**
+(`91z-missile.js`).
 
-- **Ammunition is cargo.** A missile takes hold space, so arming up is paid for in the same currency
-  as trading — the decision is logistics, not a purchase. That is the whole reason this is
-  interesting; a missile that fires forever is just a bigger gun.
-- Crafting sits with the lab (`12h-relic`) alongside part crafting, so warheads come out of the
-  system that already exists.
+- **The hardpoint is appended last** in `slotsOf`, outside the weighted roll: `w` is untouched, so
+  slot indices of existing loadouts did not move and old saves keep their fits. One per hull.
+- **Ammunition is a line in the hold.** `AMMO_KEYS` is a third category next to trade and rare: the
+  market does not take it, managers do not eat it as a sample, the settlement is never handed it as
+  food. `held()` counts it, so a full magazine is a flight with no revenue.
+- **Assembled, not bought** — `AMMO_COST` in the lab section next to part crafting; a working lab
+  of your own (`labWorking`) adds to the batch, and a batch that would not fit in the hold is not
+  assembled at all rather than assembled and spilled.
+- **It hits everyone**, unlike the battery (M111) — that is what makes the hold space worth paying.
+  The target is chosen once, at launch, from what is ahead of the nose: no re-acquisition, no
+  loitering, and a miss is spent for good.
+- Own pad and key (`G`), shown only in system view with a launcher fitted, labelled with the count
+  left in the hold and dimmed when it is zero.
+
+**Still open:** missiles exist only in system view — the belt (`24-mode-belt`) has its own combat
+loop and does not know about them; and nothing on the ship silhouette shows the launcher is dry.
 
 ## M113 (0.63.0). Local scrip and a rate that moves for reasons
 

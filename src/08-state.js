@@ -104,6 +104,12 @@ function stat(){
     armed:m.weapon>0||!!P.gun,
     dmg:(5+m.weapon*4.5)*(T.has("gunai")?1.35:1)*mul("dmgMul")*(cr("pyre")?1.35:1)*(1+rs("dmg")),
     cool:Math.max(6,Math.round((34-m.weapon*4)/mul("rateMul")/(cr("pyre")?2:1)/(1+rs("cool")))),
+    /* пусковая (M112): она не усиливает бортовой огонь, а даёт отдельное оружие,
+       и без ракет в трюме её числа ничего не значат */
+    launcher:!!P.msl,
+    mslDmg:MSL_DMG*mul("mslDmgMul"),
+    mslTurn:MSL_TURN*mul("mslLockMul"),
+    mslCool:Math.max(24,Math.round(MSL_COOL/mul("mslLockMul"))),
     shieldMax:Math.max(0,Math.round((P.shieldAdd||0)+(cr("veil")?40:0)+rs("shield"))),
     shieldRegen:Math.max(0,P.regenAdd||0),
     see:(((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0)))+rs("see"),

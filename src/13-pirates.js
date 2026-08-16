@@ -162,6 +162,10 @@ function updateCombat(dt){
   /* батарея с грунта (21d): своя система, только мелочь — она сама решает,
      стрелять ли, и делает это в общем цикле боя, а не своим таймером */
   if(typeof battTick==="function")battTick(dt);
+  /* ракеты (16b): свой пуск, своя перезарядка и свой расход из трюма — но живут
+     они в том же цикле боя, а не отдельным таймером */
+  if(typeof mslTick==="function")mslTick(dt);
+  if(keys.msl&&typeof mslFire==="function"&&(G.mslCool||0)<=0)mslFire();
 }
 function killPirate(p){
   /* ренегат — не пират: за него не дают награды, за него возвращают корпус */
@@ -199,6 +203,7 @@ function drawCombat(zx,zy,Z){
   /* линия батареи с грунта (21d) — рисуется до всего остального, чтобы луч
      уходил под корабли, а не поверх них */
   if(typeof battDraw==="function")battDraw(zx,zy,Z);
+  if(typeof mslDraw==="function")mslDraw(zx,zy,Z);
   /* контейнеры: гранёная коробка в цвет категории части, мигает маячком */
   for(const L of G.loot){
     const x=zx(L.x),y=zy(L.y);

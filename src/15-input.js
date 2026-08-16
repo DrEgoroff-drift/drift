@@ -19,14 +19,15 @@ addEventListener("mousemove",padsFadeOut);
 document.querySelectorAll("[data-k]").forEach(b=>{
   const k=b.dataset.k;
   const on=e=>{e.preventDefault();keys[k]=true;b.classList.add("on");padsFadeIn();
-    if(k!=="act"&&k!=="fire")G.ap=null;};
+    if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;};
   const off=e=>{e.preventDefault();keys[k]=false;b.classList.remove("on");};
   b.addEventListener("pointerdown",on);b.addEventListener("pointerup",off);
   b.addEventListener("pointercancel",off);b.addEventListener("pointerleave",off);
   b.addEventListener("contextmenu",e=>e.preventDefault());
 });
 const KMAP={KeyA:"left",ArrowLeft:"left",KeyD:"right",ArrowRight:"right",KeyW:"thrust",
-  ArrowUp:"thrust",KeyS:"brake",ArrowDown:"brake",Space:"act",Enter:"act",KeyF:"fire"};
+  ArrowUp:"thrust",KeyS:"brake",ArrowDown:"brake",Space:"act",Enter:"act",KeyF:"fire",
+  KeyG:"msl"};
 /* в поясе раскладка своя: стрелки — это рули, а не «газ/тормоз» */
 const KMAP_BELT={KeyA:"left",ArrowLeft:"left",KeyD:"right",ArrowRight:"right",
   KeyW:"pup",ArrowUp:"pup",KeyS:"pdown",ArrowDown:"pdown",
@@ -57,7 +58,7 @@ const keyMap=()=>{
   return G.mode==="belt"?_beltMap:_mainMap;
 };
 const ACTION_RU={left:"влево",right:"вправо",thrust:"тяга / вверх",brake:"тормоз",
-  act:"действие",fire:"огонь / импульс",launch:"взлёт / эвакуация",
+  act:"действие",fire:"огонь / импульс",msl:"пуск ракеты",launch:"взлёт / эвакуация",
   pup:"тангаж вверх",pdown:"тангаж вниз",rollL:"крен влево",rollR:"крен вправо"};
 function keyLabel(code){
   if(!code)return"—";
@@ -88,7 +89,7 @@ addEventListener("keydown",e=>{
   }
   if(e.code==="KeyM"){navAction();e.preventDefault();return;}
   const k=keyMap()[e.code];
-  if(k){keys[k]=true;if(k!=="act"&&k!=="fire")G.ap=null;e.preventDefault();}
+  if(k){keys[k]=true;if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;e.preventDefault();}
 });
 /* отпускаем по обеим раскладкам (дефолт+переопределения), иначе клавиша
    залипнет при смене режима или после ребинда */

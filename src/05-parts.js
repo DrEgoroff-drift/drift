@@ -13,7 +13,11 @@ const PART_KINDS={
   engine:{ru:"Двигательный блок",col:"#7fe6d8",note:"тяга и поворот",g:"m",sh:"ДВИГ"},
   hull:  {ru:"Обшивка",          col:"#e0d28a",note:"прочность корпуса",g:"f",sh:"ОБШИВКА"},
   core:  {ru:"Реактор",          col:"#c58ae0",note:"топливо и дальность прыжка",g:"m",sh:"РЕАКТОР"},
-  util:  {ru:"Утилита",          col:"#8fd08a",note:"трюм, бур, обзор",g:"f",sh:"УТИЛИТА"}
+  util:  {ru:"Утилита",          col:"#8fd08a",note:"трюм, бур, обзор",g:"f",sh:"УТИЛИТА"},
+  /* Пусковая (M112): единственная часть, которая без груза в трюме не работает
+     вовсе. Ставится в отдельный подвес — он есть на каждом корпусе и стоит
+     последним, чтобы уже собранные сборки не съехали по номерам слотов. */
+  missile:{ru:"Пусковая установка",col:"#ff8f6a",note:"ракеты; расход из трюма",g:"f",sh:"ПУСК",lead:"mslDmgMul"}
 };
 /* все PART_PRE — мужской род на -ый/-ой/-ий, поэтому хватает подмены окончания */
 function adjTo(adj,g){
@@ -34,7 +38,9 @@ const AFFIX=[
   {k:"jumpAdd",  ru:"дальность прыжка", step:.35, kinds:["core"], flat:1,fix:1,unit:" пк"},
   {k:"cargoMul", ru:"трюм",             step:.09, kinds:["util"]},
   {k:"drillMul", ru:"бур",              step:.10, kinds:["util"]},
-  {k:"scanAdd",  ru:"обзор",            step:90,  kinds:["util"], flat:1}
+  {k:"scanAdd",  ru:"обзор",            step:90,  kinds:["util"], flat:1},
+  {k:"mslDmgMul",ru:"боевая часть",     step:.13, kinds:["missile"]},
+  {k:"mslLockMul",ru:"наведение",       step:.11, kinds:["missile"]}
 ];
 /* штрафы: у сильной части есть цена, иначе выбор очевиден и сборка бессмысленна */
 const AFFIX_BAD=["thrMul","turnMul","cargoMul","hullAdd","fuelAdd","rateMul"];
@@ -91,6 +97,7 @@ function genPart(seed,tier,kind){
   const bonus={};
   for(const x of aff)bonus[x.k]=(bonus[x.k]||0)+x.v;
   if(kind==="gun")bonus.gun=1;
+  if(kind==="missile")bonus.msl=1;
   return {seed:seed>>>0,tier,kind,gen:PART_GEN,aff,bonus,
     name:adjTo(pick(PART_PRE,r),PART_KINDS[kind].g)+" "+PART_KINDS[kind].ru.toLowerCase()+" "+pick(PART_SUF,r),
     cap:Math.ceil(tier/2)};
@@ -120,6 +127,10 @@ function slotsOf(id){
     out.push(got);
     w[got]*=.45;                              // повтор возможен, но реже
   }
+  /* подвес под пусковую (M112) — один на любом корпусе и ВСЕГДА последний.
+     Он не участвует в розыгрыше выше: веса `w` не тронуты, значит у уже
+     собранных сборок номера слотов не съехали и сохранения не рассыпались. */
+  out.push("missile");
   SLOT_CACHE[id]=out;
   return out;
 }
@@ -131,7 +142,7 @@ function slotAnchors(id){
   if(ANCHOR_CACHE[id])return ANCHOR_CACHE[id];
   const h=hullOf(id),slots=slotsOf(id);
   const mid=(h.nose+h.tail)*.5;
-  const cand={gun:[],shield:[],engine:[],hull:[],core:[],util:[]};
+  const cand={gun:[],shield:[],engine:[],hull:[],core:[],util:[],missile:[]};
   for(const w of h.wings){const t=w[2];cand.gun.push([t[0],t[1]*.86],[t[0],-t[1]*.86]);}
   const gx=h.nose*.62;
   cand.gun.push([gx,-profW(h.prof,gx)*.95],[gx,profW(h.prof,gx)*.95]);
@@ -145,6 +156,11 @@ function slotAnchors(id){
                  [lerp(h.nose,h.tail,.62),-profW(h.prof,lerp(h.nose,h.tail,.62))*.72]);
   cand.core.push([lerp(mid,h.tail,.28),0],[mid,0],[lerp(mid,h.tail,.55),0]);
   cand.shield.push([lerp(h.nose,h.tail,.3),0],[lerp(h.nose,h.tail,.18),0],[mid,0]);
+  /* пусковая висит под крылом ближе к телу, а если крыльев нет — под брюхом:
+     это подвес, и он должен читаться подвешенным, а не встроенным */
+  for(const w of h.wings){const t=w[2];cand.missile.push([t[0]*.72,t[1]*.55]);}
+  const mx2=lerp(h.nose,h.tail,.5);
+  cand.missile.push([mx2,profW(h.prof,mx2)*.45],[mx2,-profW(h.prof,mx2)*.45]);
   const used={},out=[];
   slots.forEach((k,i)=>{
     const list=cand[k].length?cand[k]:[[mid,0]];

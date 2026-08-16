@@ -150,6 +150,14 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 .pads button[data-k=fire]::before{border-color:rgba(255,107,87,.5)}
 .pads button[data-k=fire].on::before{border-color:var(--alarm);
   box-shadow:0 0 22px rgba(255,107,87,.34),inset 0 0 16px rgba(255,107,87,.22)}
+/* ракета (M112): та же тревожная семья, что и огонь, но тусклее — это не
+   основное оружие, а расход. Пустой боекомплект гасит кнопку, а не прячет её:
+   игрок должен видеть, что пусковая есть, а везти к ней нечего. */
+.pads button[data-k=msl]{font-size:8px;color:#ff8f6a;letter-spacing:.02em}
+.pads button[data-k=msl]::before{border-color:rgba(255,143,106,.42)}
+.pads button[data-k=msl].on::before{border-color:#ff8f6a;
+  box-shadow:0 0 18px rgba(255,143,106,.3),inset 0 0 14px rgba(255,143,106,.2)}
+.pads button[data-k=msl].empty{opacity:.4}
 #launchbtn{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom) + 100px);
   width:88px;height:44px;border-radius:var(--rad-b);background:var(--glass);
   border:1px solid rgba(242,178,92,.5);color:var(--amber);font-family:inherit;font-size:10px;
