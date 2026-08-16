@@ -29,16 +29,16 @@ all built from the same seed that names the system you are in.
 <tr>
 <td width="50%" valign="top">
 <img src="docs/shots/map.png" alt="Galaxy map" width="100%">
-<b>The galaxy map is a night sky, not a diagram.</b> Stars emit light instead of sitting on the
+<b>The galaxy map is drawn as a night sky.</b> Stars emit light instead of sitting on the
 background — halo, colour and diffraction spikes come from the spectral class. Depth is darkness:
-distant sectors dim, unreachable ones halve. The jump radius is a lit area rather than a hairline
+distant sectors dim, unreachable ones halve. The jump radius is a lit area instead of a hairline
 circle, and lanes are drawn only where they mean something.
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/system.png" alt="Flying through a system" width="100%">
 <b>Flight leaves a wake.</b> The exhaust ribbon lives in system coordinates, so a turn draws the
 trajectory you actually flew. Its colour comes from the hull and its length from engine thrust and
-the fitted engine module — an upgrade is visible in flight, not just in a number.
+the fitted engine module — an upgrade shows in flight.
 </td>
 </tr>
 <tr>
@@ -51,7 +51,7 @@ a lit bevel between them.
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/scoop.png" alt="Skimming a gas giant" width="100%">
-<b>Gas giants are flown, not looked at.</b> Latitude bands are not drawn as shapes — they are
+<b>Gas giants are flown through.</b> Latitude bands are never drawn as shapes — they are
 stripes warped sideways by two scales of noise, with storms bending the same field, so festoons and
 vortices appear on their own. Two parallax echelons give the speed; the collection corridor is a
 glowing layer of denser gas you fly inside.
@@ -86,13 +86,13 @@ you aimed at really is a thicket when you get out, and the dry belt of the same 
 <img src="docs/shots/cantina.png" alt="Station cantina" width="100%">
 <b>The cantina is a room with people in it.</b> Candidates sit at the counter, drawn with the same
 procedural faces as the manager list, in front of a window that matches the station type. You pick a
-hire by clicking the person, not a row in a table.
+you hire by clicking the person.
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
 <img src="docs/shots/lander.png" alt="Lander standing on a planet surface" width="100%">
-<b>The lander is a machine, not a toy on sticks.</b> The flight view is top-down and the landing view
+<b>The lander is a working machine.</b> The flight view is top-down and the landing view
 is side-on, so the lander has a silhouette of its own: three and a half to five human heights long,
 three-point gear with shock struts whose pads each settle on their own patch of ground, an open hatch
 with a lit interior and a ramp whose 10 px steps give you the scale at a glance. Touchdown is a
@@ -101,7 +101,7 @@ movement — legs deploy on approach, struts compress under the impact and sprin
 <td width="50%" valign="top">
 <img src="docs/shots/pirates-fight.png" alt="Pirates closing in" width="100%">
 <b>Pirates weld their ships out of three other people's.</b> Sixty to a hundred and twenty polygons
-instead of a dozen, asymmetry as a rule rather than noise — a pylon on one side, a tank on the other,
+instead of a dozen, asymmetry as a rule — a pylon on one side, a tank on the other,
 a whole foreign section welded to one flank. Damage accumulates with the hull: scorches, then a
 breach with a flame, then a smoke trail. Below half, the ship is baked a second time with its hung
 gear torn off and bites taken out of the plating, so a wreck reads by shape.
@@ -110,7 +110,7 @@ gear torn off and bites taken out of the plating, so a wreck reads by shape.
 <tr>
 <td width="50%" valign="top">
 <img src="docs/shots/home.png" alt="Your home, seen as a room" width="100%">
-<b>Your home is a room, not a list of buildings.</b> It grows on its own out of accumulated
+<b>Your home is a room you walk into.</b> It grows on its own out of accumulated
 turnover — one lamp, a warm wall, and everything you have earned standing on the floor: the mattress
 of the rented corner, the garage with your ship on props, the showcase, the workbench. Each tier adds
 its own stretch left to right, and the picture is exactly as wide as the house is. There is not one
@@ -119,7 +119,7 @@ price on the screen.
 <td width="50%" valign="top">
 <img src="docs/shots/world-ruin.png" alt="Ruined world" width="100%">
 <b>A ruined world is masonry under dust.</b> The ground itself follows a rubble law — rectangular
-blocks along the axes, in patches rather than everywhere, because continuous brickwork reads as graph
+blocks along the axes, in patches, because continuous brickwork reads as graph
 paper. Standing on it are wall fragments with courses, a doorway and fallen column drums.
 </td>
 </tr>
@@ -160,7 +160,7 @@ offscreen canvas from its seed, so a hundred polygons never reach the frame.
 <tr>
 <td colspan="2" valign="top">
 <img src="docs/shots/fleet.png" alt="Part of the hundred-hull catalogue" width="100%">
-<b>A hundred hulls, and the tier is the hull, not a label.</b> Class comes from proportion — the
+<b>A hundred hulls, and the tier is in the hull itself.</b> Class comes from proportion — the
 courier is a needle, the freighter a crate with containers strapped to its flanks, the yacht a
 spindle. Tier comes from finish: a workhorse wears patches and streaks, a rare hull an accent line,
 a legend double piping and a crest emblem, a prototype its guts on the outside. Colour is per-ship,
@@ -176,7 +176,7 @@ The only thing a yacht does is let the crew rest on it between runs — morale, 
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/hq.png" alt="The HQ bridge" width="100%">
-<b>The HQ screen is a room, not a list.</b> Four domain consoles, and at each stands whoever holds
+<b>The HQ screen is a room.</b> Four domain consoles, and at each stands whoever holds
 that domain — pose per role, portrait per person. The screens show real state: crew on assignment,
 drones and bases, the route polyline with a ship crawling along it. An empty domain is a dead
 console under a dust sheet. On the holo table is <i>your</i> system: your star, your planets.
@@ -210,7 +210,25 @@ yourself.
 <img src="docs/shots/foes.png" alt="Boarding party opponents" width="100%">
 <b>Boarders have bodies.</b> Shoulders wider than hips, legs apart in two tones, both hands on the
 weapon, a visor band instead of an eye dot. The heavy braces a bipod; the baron wears a split cloak,
-pauldrons and a crest — rank reads from the shoulders, not from size.
+pauldrons and a crest — rank reads from the shoulders.
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/shots/parrotwin.png" alt="The repeater on its perch" width="100%">
+<b>The repeater sits on a perch you can open at any time.</b> It came out of a dead scout's effects
+and it repeats what it overheard — prices from a station you have already left, a bearing, a phrase
+in the expedition's pidgin you cannot read yet. Poke it and it answers from memory: five zones, five
+reactions, and never a line it did not hear. Everything on it is drawn and animated at runtime —
+breathing, blinking, a wing beat that lifts the whole body, and the beads on the crest lagging half
+a beat behind the head.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/parrot.png" alt="Six animation poses of the repeater" width="100%">
+<b>Poses come from springs, not frames.</b> Rest, wing beat, crest up, head turn, settling, preening
+— every one of them is the same body under different forces, so a poke resolves back to calm on its
+own. The sheet is the tool: each fault in the drawing was found by looking at six poses side by
+side, never at one.
 </td>
 </tr>
 </table>
@@ -223,13 +241,13 @@ pauldrons and a crest — rank reads from the shoulders, not from size.
 ### Worlds
 
 Twelve true world types — terran, ocean, desert, rocky, ice, volcanic, toxic, crystal, jungle, metal,
-ruin and gas giant — and **most planets are a blend of two of them**. A blend is not a recolour: the
+ruin and gas giant — and **most planets are a blend of two of them**. A blend goes deeper than colour: the
 palette, roughness, gravity, sky, relief weights, strata, weather pool, clouds, musical mode and ore
 profile all mix by the same share, and the name comes out as "icy, with volcanoes". Air never mixes:
 you either breathe it or you don't. Kinship is deliberately asymmetric — a volcanic ocean exists, an
 oceanic desert does not.
 
-- **The ground is a material, not a fill.** Every planet bakes one seamless tile holding three scales
+- **The ground is a material.** Every planet bakes one seamless tile holding three scales
   at once (geological patches, sedimentary runs and veins, grain and crystal specks), laid twice at
   different zooms so the repeat never reads.
 - **Late worlds have their own law of form** on top of that noise, because colour alone was not
@@ -244,26 +262,26 @@ oceanic desert does not.
 
 ### Flying
 
-- **Autopilot** — tap any object to approach, close in, and dock automatically. It aims at an intercept point rather than where the target is right now, so it converges instead of chasing a moving body around its orbit. Near a planet or moon it captures a stable co-rotating circular orbit and holds it until you throttle, brake or turn.
-- **Manual control** — thrust, a brake that kills velocity outright, and turning with real angular inertia: the ship carves an arc and banks into it rather than pivoting on the spot. Every key is rebindable (separate layouts for flight and for the belt), and on-screen buttons auto-hide when you are driving from a keyboard.
+- **Autopilot** — tap any object to approach, close in, and dock automatically. It aims at an intercept point, so it converges instead of chasing a moving body around its orbit. Near a planet or moon it captures a stable co-rotating circular orbit and holds it until you throttle, brake or turn.
+- **Manual control** — thrust, a brake that kills velocity outright, and turning with real angular inertia: the ship carves an arc and banks into it instead of pivoting on the spot. Every key is rebindable (separate layouts for flight and for the belt), and on-screen buttons auto-hide when you are driving from a keyboard.
 - **Branching star map** — systems laid out organically with connecting lanes, each with generated flavour text describing its worlds, belt and station. Planets follow elliptical Keplerian orbits; orbital speeds are capped by *tangential* velocity so every body stays catchable even in the starter ship, while distant worlds still move more slowly than close ones.
 - **Gravitic anchor** — drift too far from the star and a gentle pull, plus an on-screen compass to the star, station and current target, brings you back. A one-tap "TO STAR" autopilot works from anywhere.
-- **Stranded restart** — out of fuel with no way to refuel, you can pay for emergency evacuation. Without the credits you wake up at home, take a ship out of the garage and lose the cargo and half your credits; before there is a home to go back to, you get a fresh starter ship at the origin system rather than a dead save.
+- **Stranded restart** — out of fuel with no way to refuel, you can pay for emergency evacuation. Without the credits you wake up at home, take a ship out of the garage and lose the cargo and half your credits; before there is a home to go back to, you get a fresh starter ship at the origin system, never a dead save.
 
 ### Getting materials
 
 - **Surface prospecting** — land on generated terrain (ridges, mesas, dunes, cratered plains, canyons, mixed to suit the world type), mine visible deposits, and scan alien flora and fauna for research data. Click-to-walk works alongside the keyboard; launch lives on its own hold-to-confirm button.
 - **Wildlife** — every planet has a genome biasing its plant and animal forms, sizes and hues, so worlds look distinct — ankle-high moss and crystal druses on one, giant trees and oversized fauna on another. Underground the same stock bites through your suit; an EMP pulse stuns them, and a stunned one can be sampled for carbon and rare xenobiome that no rock will ever yield.
 - **Deep shafts** — sink a mine on bare ground and tunnel through three depth tiers. Ore lives in scattered veins, highlighted through rock when close or from range with the geo-scanner. Deeper rock is roughly 2× and 4× richer, gated behind drilling tech and pressured by suit wear and cave-ins. Damage underground costs your suit, never your ship.
-- **A shaft stays dug.** Come back to a mine you started and you drop into your own tunnel, not fresh rock: only the excavated cells are saved, everything else (ore, hardness, veins) is still derived from the seed.
+- **A shaft stays dug.** Come back to a mine you started and you drop into your own tunnel: only the excavated cells are saved, everything else (ore, hardness, veins) is still derived from the seed.
 - **What you built stands on the ground.** Land where your base or your home is and you see it from the surface — no menu required to learn it exists.
 - **Cave systems** — some planets hide a walkable cave mouth: a winding natural passage lit only by your suit lamp and glowing flora, with hostile fauna and a one-off data find at the far end.
 - **Asteroid belts** — a full 3D flight mode flown from a generated cockpit. Pitch, yaw and roll with inertia, the horizon banking into your turns. Rocks break into drifting debris as you mine or shoot them apart.
-- **Gas skimming** — gas giants can't be landed on, but you can enter their upper atmosphere and collect volatiles. The scene is a narrow altitude corridor: above it the scoop takes nothing, below it hull heat climbs until the ship burns, and turbulence keeps pushing you out of the band. Flying it is the mechanic, not a progress bar.
+- **Gas skimming** — gas giants can't be landed on, but you can enter their upper atmosphere and collect volatiles. The scene is a narrow altitude corridor: above it the scoop takes nothing, below it hull heat climbs until the ship burns, and turbulence keeps pushing you out of the band. Flying it is the mechanic.
 
 ### Rare materials
 
-Ordinary ore is cargo looking for a buyer. Four rare materials are the opposite — **the market refuses them entirely**, so they stay goals rather than expensive rows in the hold, and cannot inflate prices. Each has its own verb:
+Ordinary ore is cargo looking for a buyer. Four rare materials are the opposite — **the market refuses them entirely**, so they stay goals instead of expensive cargo, and cannot inflate prices. Each has its own verb:
 
 | Material | Source |
 |---|---|
@@ -276,7 +294,7 @@ They are spent on the laboratory, base construction and hull fusion. Drones only
 
 ### Stations
 
-Six station types, chosen by system seed and how dangerous the sector is. **The type decides which tabs exist at all**, not just what the place looks like:
+Six station types, chosen by system seed and how dangerous the sector is. **The type decides which tabs exist at all**, as well as how the place looks:
 
 | Type | What it is for |
 |---|---|
@@ -305,19 +323,19 @@ Old hulls sitting in your hangar stop being dead weight: **a hire needs one of y
 
 Mercenaries fly your ships; **managers take a whole domain off your hands** — the crew wing, drones
 and bases, a trade route, or the laboratory. There are exactly four seats, one per domain, and the AI
-core takes one of those four rather than a fifth: the system is about which chore you hand over, not
+core takes one of those four instead of adding a fifth: the system is about which chore you hand over, not
 about growing a headcount.
 
-- **A cut, not a wage.** Each manager draws a salary *and* a percentage of their own domain, taken
+- **A cut of the domain.** Each manager draws a salary *and* a percentage of their own domain, taken
   before the money reaches you and always shown as a line — hidden, it reads as theft. Audit tech and
   one artifact are the only things that shave the cut for everyone.
 - **Loyalty is the whole tension.** Miss payroll and it slides; below fifty a manager quietly starts
   "losing" a slice of the domain in their own favour, and the only trace is a discrepancy line in the
   domain summary. At twenty-five they issue an ultimatum you can pay or refuse.
-- **Leaving is not a log line.** At zero loyalty a manager defects and becomes a renegade in their own
+- **A manager who leaves flies against you.** At zero loyalty a manager defects and becomes a renegade in their own
   sector, flying your flagship with your perks. Beating them does not kill them: they turn up in a
   cantina as an exile, cheaper to re-hire and remembering everything.
-- **Perks are code, not labels.** The whole tree is visible from the start, including what you have
+- **Every perk is wired to something.** The whole tree is visible from the start, including what you have
   not bought, and a test refuses to pass if any perk id in the tree is not read by the game.
 - **Procedural portraits** that gain detail with level and darken as loyalty drops — a sour face is
   visible before any bar is.
@@ -351,7 +369,7 @@ still counts toward something you own.
 The planet stays flat 2D; the volume comes from **a cut through the ground** — sky and surface on top, buried compartments below, a lift shaft down the middle.
 
 - **The grid is the game.** An empty cell is rock you dig out to place one module: reactor, solar array, drill, storage, habitat, refinery, landing pad.
-- **Power is the whole problem.** Running short is not a line in a table — the lights dim across the entire cut and the drill stops turning.
+- **Power is the whole problem.** Run short and you see it at once: the lights dim across the entire cut and the drill stops turning.
 - **Adjacency matters.** A drill wired to a neighbouring reactor loses less; a habitat pressed against one is a worse place to live.
 - **Staff** — crew can be posted to a base instead of a ship, in four roles: driller, engineer, guard, logist. Any role is open to anyone, but working outside your speciality halves your contribution.
 - **Raids** — pirates come for what is stored there, more often the deeper into dangerous space the base sits. An unguarded raid carries off part of the store and sometimes wrecks a compartment, which sits dark and crossed out until an engineer rebuilds it.
@@ -359,7 +377,7 @@ The planet stays flat 2D; the volume comes from **a cut through the ground** —
 
 ### Boarding pirate bases
 
-Dangerous sectors hold pirate stations you can board on foot. The map is a 2D grid — rooms carved out, corridors drawn between them so connectivity holds by construction — but it **draws as polygons** through the same projection and painter sort the asteroid belt uses, so this is reuse rather than a second renderer.
+Dangerous sectors hold pirate stations you can board on foot. The map is a 2D grid — rooms carved out, corridors drawn between them so connectivity holds by construction — but it **draws as polygons** through the same projection and painter sort the asteroid belt uses, so this is reuse, not a second renderer.
 
 - **The gun you fitted to your ship is the gun you carry**, so the build you fly decides how the boarding goes. The suit is your health, the same one the mine models.
 - **Four enemy types** share one AI and differ only in numbers: rushers close to arm's length, heavies hold back and hit hard, and the bridge keeps a boss. Which compartment you are in decides who is waiting.
@@ -369,13 +387,13 @@ Dangerous sectors hold pirate stations you can board on foot. The map is a 2D gr
 
 ### Getting stronger
 
-- **A hundred hulls in six tiers** — eight hand-built ships plus a deterministic catalogue of ninety-two, from workhorses that stand in every dock to legends counted in single units and luxury yachts that never pay for themselves. What a dock actually stocks is a *slice*, keyed to that station's seed and a time bucket: a hundred-line list is a warehouse, not a shipyard. Rarity shows in the finish of the hull itself, and a cheap hull is always available so you can never be stranded.
+- **A hundred hulls in six tiers** — eight hand-built ships plus a deterministic catalogue of ninety-two, from workhorses that stand in every dock to legends counted in single units and luxury yachts that never pay for themselves. What a dock actually stocks is a *slice*, keyed to that station's seed and a time bucket: a hundred-line list would be a warehouse. Rarity shows in the finish of the hull itself, and a cheap hull is always available so you can never be stranded.
 - **A thousand nodes and ten crowns** — named artifact nodes in ten families of a hundred, five grades of rarity. A node does nothing on its own; it is a letter. Complete a family and it forges a **crown** — an effect you cannot obtain any other way, read by `stat()` alongside modules and parts. Nodes are never sold or crafted: they only drop, and rarely, from pirates, deep shafts and boarding actions.
 - **Ships** — one-off generated hulls still turn up at shipyards and rotate over time.
 - **Modules** — seven upgrade tracks (engine, tanks, hold, armour, drill, hyperdrive, gun), four levels each. Buying a level is permanent; fitting it is not.
 - **Parts and rigging capacity** — every hull has a rigging budget that modules *and* parts draw from, so you cannot run everything at once. Parts are generated across six categories with one to three affixes, and the strong ones carry a real drawback — a drill that outpaces your turn rate, a shield that costs you thrust. They drop from pirates as containers you fly through, and stations sell a rotating handful.
 - **Ship screen** — slots are drawn on the hull itself: a gun point on the wingtip, an engine block at the nacelle, a reactor in the belly. Every candidate part states exactly what it would do to your numbers before you commit.
-- **Laboratory** — at science stations, two ships from your hangar plus rare material fuse into a third. Stats blend weighted toward the stronger parent rather than summing, surplus rare stock adds a percentage, and both originals are consumed. Each generation costs 1.8× more and adds a fraction as much, so it is a ladder with a top. The same bench crafts parts from rare material at three tiers.
+- **Laboratory** — at science stations, two ships from your hangar plus rare material fuse into a third. Stats blend weighted toward the stronger parent instead of summing, surplus rare stock adds a percentage, and both originals are consumed. Each generation costs 1.8× more and adds a fraction as much, so it is a ladder with a top. The same bench crafts parts from rare material at three tiers.
 - **Tech tree** — research paid for with survey data, including repeatable tracks that keep scaling.
 - **Return beacon** — researched tech that teleports you back to your lander from anywhere on the planet, on a cooldown.
 
@@ -388,15 +406,15 @@ Dangerous sectors hold pirate stations you can board on foot. The map is a 2D gr
 
 ### Landing
 
-Setting down is its own short flight, not a cutscene. You fly the lander against real gravity for the
+Setting down is its own short flight. You fly the lander against real gravity for the
 world, and touching down too fast, too sideways, tilted, or on a slope costs hull.
 
 - **The lander has its own side-on silhouette** — 90 to 130 px against a 24 px astronaut, because the
-  flight view is top-down and rotating one into the other is not a thing that works. Its hull colour,
+  flight view is top-down and rotating one into the other does not work. Its hull colour,
   livery and class markings still come from the ship you actually fly.
 - **Landing gear behaves.** Legs unfold on approach, each pad settles onto its own patch of terrain,
   shock struts compress under the impact and spring back, and the nose dips with them.
-- **Thrust is vertical**, so three retro nozzles fire from the belly rather than the main engines, and
+- **Thrust is vertical**, so three retro nozzles fire from the belly, never the main engines, and
   the jet raises a low cloud of ground-coloured dust that lingers after touchdown. On an airless world
   the dust is lower and sharper — there is nothing for it to billow in.
 
@@ -406,8 +424,8 @@ Pirates used to be weather — a few of them in dangerous sectors, and nothing y
 Now they hold ground.
 
 - **Occupation spreads from somewhere.** A nest, then its neighbours; never a random flare on the far
-  side of the galaxy, so what you see on the map is a front rather than a rash.
-- **Occupation takes services, not numbers.** Level one puts patrols out and lets the single buyer
+  side of the galaxy, so what you see on the map is a front, not a rash.
+- **Occupation takes services away.** Level one puts patrols out and lets the single buyer
   underpay you. A blockade shuts the dock and the laboratory and stops drones from selling. Under
   full occupation only refuelling is left.
 - **Ranks.** Jackal, veteran, captain, and — only under full occupation — a **baron**, three times
@@ -420,7 +438,7 @@ Now they hold ground.
   yacht of your own, and a galaxy without occupied systems. All three are counted from real state,
   with no quest flags anywhere.
 
-### Business, not errands
+### Work that pays
 
 The cantina seats people with their own business, and none of it is "bring me ten ore". You only ever
 **answer**: buy a captain's debt at a third of face value, vouch for a pilot nobody will hire, take a
@@ -440,19 +458,19 @@ dozen polygons, clean symmetry, tidy panels. Now a pirate **welds his ship out o
 people's**, and that is his language of form.
 
 - Sixty to a hundred and twenty polygons: a dark body mass, a spine of overlapping plates, a nose or
-  a ram, side modules, cargo cages, engines. **Asymmetry is a rule, not noise** — a pylon on one
+  a ram, side modules, cargo cages, engines. **Asymmetry is a rule** — a pylon on one
   flank, a fuel tank on the other, a whole foreign section welded on, and the scrap collects on the
   "busy" side.
 - Hung over that: patches lapped over the seams, spikes, tow hooks, turrets on guy wires, whip
   antennas, rust running from every weld, kill marks by seed.
 - **Damage is visible and cumulative** — scorches, then a breach with a flame, then a smoke trail.
   Below half hull the ship is baked a second time with its hung gear torn off and bites taken out of
-  the plating: a wreck reads by silhouette rather than by a health bar.
+  the plating: a wreck reads by silhouette instead of a health bar.
 - Exhaust is dirty and out of sync, and one engine on every pirate always smokes harder than the rest.
 
 ### Danger is optional
 
-Pirates are absent near home and increasingly common the further out you push. Fighting has its own gun module and bounty tech, but outrunning or jumping away is always cheap and always valid. Bases, boarding and mercenary hunts are opt-in layers on top, not gates.
+Pirates are absent near home and increasingly common the further out you push. Fighting has its own gun module and bounty tech, but outrunning or jumping away is always cheap and always valid. Bases, boarding and mercenary hunts are opt-in layers on top.
 
 ## How it looks and sounds
 
@@ -466,15 +484,15 @@ Pirates are absent near home and increasingly common the further out you push. F
 
 ## Persistence
 
-Local autosave, portable base64 save codes for moving between devices, and optional cloud sync against your own server. The save format is `v4` and stays that way: **every new feature is added with a safe default**, so a save written before crews, bases, alloys or fusion existed still loads — it simply has none of them. Anything derivable from a seed (systems, orbits, belts, station types, pirate bases, base geology) is regenerated rather than stored; only your decisions and what you carried home persist.
+Local autosave, portable base64 save codes for moving between devices, and optional cloud sync against your own server. The save format is `v4` and stays that way: **every new feature is added with a safe default**, so a save written before crews, bases, alloys or fusion existed still loads — it simply has none of them. Anything derivable from a seed (systems, orbits, belts, station types, pirate bases, base geology) is regenerated on load; only your decisions and what you carried home persist.
 
 ## Project structure
 
 | File | Purpose |
 |---|---|
 | [`drift.html`](drift.html) | The entire game in one self-contained file — open it directly to play. **Built from `src/`; don't edit it by hand.** |
-| [`src/`](src) | The sources: `index.html` shell, `style.css`, and 69 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
-| [`tests/`](tests) | The suites, split by topic (`90-harness`, then `91a-flight` … `91n-barge`). They drive the real game state through `resetWorld()` and mock nothing. |
+| [`src/`](src) | The sources: `index.html` shell, `style.css`, and 94 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
+| [`tests/`](tests) | The suites, split by topic (`90-harness`, then `91a-flight` … `91ze-parrot`). They drive the real game state through `resetWorld()` and mock nothing. |
 | [`build.ps1`](build.ps1) | Rebuilds `drift.html` from `src/`. No dependencies — PowerShell, because Node isn't assumed. Pass `-Watch` to rebuild on save. |
 | [`server.js`](server.js) | Optional zero-dependency Node.js server (Node 18+) for self-hosting and persisting cloud saves to a `./saves` folder. |
 | [`worker.js`](worker.js) | Optional Cloudflare Worker alternative, storing saves in a KV namespace. |
@@ -509,4 +527,18 @@ Then point the `CLOUD` config inside `drift.html` at your server's `/save` endpo
 
 ## Status
 
-Actively evolving. The planned milestone queue — celestial mechanics, station types, rare materials, mercenaries, bases, the laboratory, the boarding mode, twelve blended world types and their surface language, the side-on lander, welded pirate hulls and the home that grows on its own — is complete. So is the pass that gave the abstractions a body: trade barges flying the factor's real routes, a barge in distress you can rescue or finish off, and a hundred rarities that sit at fixed addresses rather than on a drop chance. Next in line: a planet of your own, granted only for the full hundred, and the far side of reputation — a named hunter who comes after you. Mechanics, content and balance are still being iterated on. Balance numbers in particular are tuned against measurements rather than long play sessions, so they move.
+Version 0.67.0, and still moving. Everything described above is built and playable.
+
+Three long passes are behind it. The first finished the planned queue: celestial mechanics, station
+types, rare materials, mercenaries, bases, the laboratory, boarding, twelve blended worlds, the
+side-on lander, welded pirate hulls, the home that grows on its own. The second gave the
+abstractions a body — barges flying the factor's real routes, a barge in distress you can rescue or
+finish off, a hundred rarities at fixed addresses instead of on a drop chance. The third scattered
+one story across a hundred fragments you find by the piece: survey marks, a sky calendar, a
+settlement that decides for itself what to build, a repeater bird that only gets better while it
+sits in your hold.
+
+Ahead: a bazaar where every lot has a previous owner, a digger who takes payment in barrels, and the
+regions — six to ten systems on one theme with a procedural edge and a hand-built core.
+
+Balance is tuned against measurements, so the numbers move between versions.
