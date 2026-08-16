@@ -643,6 +643,28 @@ function drawBase(){
     ctx.fillRect(lx-LW,y-3,LW*2,1.2);
   }
 
+  /* ── плита перекрытия ──
+     Ряды разной длины читались набором полок, потому что между ними была
+     только порода: у образца этажи держит толстая плита, и даже короткий ряд
+     на ней выглядит этажом, а не отдельной коробкой. Плита идёт по всей
+     ширине ЗАСТРОЙКИ (от левого занятого столбца до правого во всём
+     сооружении), а не по каждому ряду: перекрытие — вещь общая, его льют
+     сразу на всё здание. Тёмное тело, светлая верхняя грань, тень снизу. */
+  {
+    let gc0=BASE_COLS,gc1=-1;
+    for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++)
+      if(baseCell(B,c,r)){gc0=Math.min(gc0,c);gc1=Math.max(gc1,c);}
+    if(gc1>=0){
+      const x0=X(90+gc0*BCELL_W)-6, x1=X(90+(gc1+1)*BCELL_W)+6;
+      for(let r=1;r<=Math.max(1,deepest);r++){
+        const y=Y(150+r*BCELL_H);
+        ctx.fillStyle="rgba(10,12,16,.92)";ctx.fillRect(x0,y-7,x1-x0,9);
+        ctx.fillStyle="rgba(150,164,180,"+(.10+lit*.14).toFixed(2)+")";
+        ctx.fillRect(x0,y-7,x1-x0,1.4);
+        ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x0,y+1.4,x1-x0,2);
+      }
+    }
+  }
   /* ── модули ── */
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
     const x=X(90+c*BCELL_W),y=Y(150+r*BCELL_H);
