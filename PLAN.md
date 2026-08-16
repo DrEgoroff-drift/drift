@@ -131,7 +131,20 @@ never touches arithmetic; station modules don't unlock services.
 
 ---
 
-# QUEUE: the twelfth pass — the thing that is found in pieces
+# QUEUE: the twelfth pass — the thing that is found in pieces — CLOSED (M106–M115, 0.56.0–0.65.0)
+
+**Every milestone below is built.** The pass is kept here in full rather than archived because it
+is the design standard the next pass is measured against: what a fragment is allowed to be, why
+the rate needs reasons, why the ending is a state of the world and not a screen. When the next
+queue is written, this moves to [`docs/PLAN-archive.md`](docs/PLAN-archive.md) whole.
+
+**What the pass left open**, in one place, so it is not rediscovered by accident: the settlement
+has no sound and is not marked from the horizon (M109/M110); the watch is invisible from inside a
+cave (M110); the battery has no voice of its own and a browned-out base does not report that its
+defence went quiet (M111); missiles exist only in system view and a dry launcher is not visible on
+the ship (M112); the houses own stations but do not look different, and the cantina never mentions
+them (M113); the end of a world is a log line and an empty map cell rather than a changed system,
+and managers cannot be assigned to the lift (M114). The graphics debt above is unchanged.
 
 M94–M105 gave a body to numbers that already existed. This pass gives the galaxy a **reason to be
 crossed**. Today the far corner differs from the near one by a coefficient (`sysDanger`) and
@@ -423,9 +436,26 @@ The original spec, kept as the standard the build is measured against:
 - This is the fork the spine promised: the expedition measured the date and left. You have the same
   date and a ship.
 
-## M115 (0.65.0). The assembled account
+## M115 (0.65.0) — built. The assembled account
 
-The last milestone of the pass, and deliberately cheap in code — everything it needs exists by then.
+Built as **`12w-survey.js`** (the layer, the legs, the colours and the study shelf), one call in
+`drawMap` (18-mode-map) and one in the study step of `27e-ui-home`, suite **"the account:
+assembled, not narrated"** (`91zd-survey.js`). **With it the twelfth pass is closed.**
+
+- **The survey is theirs, not yours.** `surveyPoint(R)` is a pure function of the fragment's seed —
+  a sector within 13 of the origin, on a real star — so the layer is a survey taken long before the
+  player and identical in every session. Their notation is a cut cross with a line under it: chosen
+  so it argues with neither the star, the station, nor the notch ring already on the map.
+- **Exactly what was earned, never a point in advance.** One fragment, one point, in the order this
+  player found them; a different order is a different account.
+- **A read chapter joins its own points** with a dashed leg — before that they are separate marks.
+  So the map turns from scattered notches into a route the way the story does: by being finished.
+- **The study shelf** under the museum wall (M100): one spine per fragment in find order, coloured
+  by chapter, muted into the wall. No text, no screen, nothing to read — the account is a thing on
+  a shelf that is different in every playthrough.
+- **The pass does not depend on M114**: the layer never asks whether anybody was lifted.
+
+The original spec:
 
 - With the fragments in hand, obelisks stop being separate: the map layer joins into **the
   expedition's own survey**, drawn in their notation over yours, including the places they marked

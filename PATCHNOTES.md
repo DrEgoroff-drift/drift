@@ -9,6 +9,22 @@ could ever save.
 
 ---
 
+## 0.65.0 — "The assembled account"
+
+**M115** (`12w-survey.js`, `18-mode-map.js`, `27e-ui-home.js`, suite `91zd-survey.js`). The last
+milestone of the twelfth pass, and with it the pass is closed.
+
+- **The expedition's own survey**, drawn over your map in their notation — a cut cross with a line
+  under it. Each earned fragment puts up exactly one point, including in systems you have never
+  visited; nothing appears in advance.
+- Their points are a pure function of the fragment seed, so the survey is the same in every session
+  and does not follow the player around: it was taken long before him.
+- **A chapter you have read joins its own points** with a dashed leg. Scattered notches become a
+  route only when the account behind them is finished.
+- **The study gains its shelf** under the museum wall: one spine per fragment, in the order this
+  player found them, coloured by chapter. No text and no revelation screen — the ending is the
+  layer, the settlement that lives, and the glyphs you can now read.
+
 ## 0.64.0 — "A world that ends on schedule"
 
 **M114** (`12v-doom.js`, `02-world.js`, `21-mode-surface.js`, `12t-settle.js`, `14-save.js`,
