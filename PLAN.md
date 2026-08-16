@@ -85,10 +85,17 @@ flora and fauna, a living camera, station modules, weather.
    turned from two pale threads into a **lit column** the full height of the works, drawn behind
    the rooms so it shows in the gaps and binds the levels into one building.
 
-   **Still open on the base:** floors are ragged (rows of different length, stepped), where the
-   reference has continuous levels with a thick slab between them; nobody is visible inside the
-   rooms as silhouettes; there are no boulders or debris in the rock; and no gate on the hillside.
-   `scoop` is untouched.
+   Four more passes since: a floor slab so the rows read as continuous levels, bulkheads between
+   compartments and a shift of people in every room, doors and a warm lift, boulders in the rock
+   and a gate in the hillside, and light that is a fixture — ceiling lamps with cones, decking and
+   contact shadows. A ninth pass redrew the people themselves close-up (`docs/mkroom.ps1` →
+   `docs/shots/base-rooms.png`): human proportions instead of a third-of-a-body helmet, opaque
+   fills instead of ghosts through the furniture, lamps under the furniture in the draw order.
+
+   **Still open on the base:** the eight interiors still differ mostly by their machine — the
+   floor, wall and clutter are one recipe everywhere, so the rooms read as one room with props
+   swapped; and the crowd stands evenly spaced instead of grouping at the work. `scoop` is
+   untouched.
 7. **Factions as a language of shapes** — only after ships and stations, or there is nothing to
    tell apart.
 8. **Redo the clouds.** The current blobs of radial gradients don't satisfy the player. Look at a
@@ -98,7 +105,9 @@ flora and fauna, a living camera, station modules, weather.
 9. **The world on foot** — the surface is the longest screen in the game after the cockpit, and it
    has never had a pass of its own. Stand: `docs/mkworld.ps1` → `docs/shots/world-types.png`.
 10. **Split debt.** `23-mode-dig` and `27e-ui-home` have crossed the 40 KB line; `build.ps1` was
-   re-baselined on 2026-08-15 so the guard stays quiet, which is a loan, not a payment.
+   re-baselined on 2026-08-15 so the guard stays quiet, which is a loan, not a payment. The base
+   pass added to it: `21aa-base-rooms` is 55 KB and `21a-mode-base` 52 KB, and the guard is
+   speaking up again — the seam is `BASE_ROOM` (the eight interiors) away from the brushes.
 
 ### What not to do
 

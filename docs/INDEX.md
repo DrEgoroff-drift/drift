@@ -110,7 +110,7 @@ bargeSysAt                   src/12l-barge.js:25
 BARTER                       src/04-mods.js:60
 BASE_COLS                    src/21a-mode-base.js:6
 BASE_ROLES                   src/12a-crew.js:118
-BASE_ROOM                    src/21aa-base-rooms.js:242
+BASE_ROOM                    src/21aa-base-rooms.js:259
 baseAt                       src/21a-mode-base.js:35
 baseCell                     src/21a-mode-base.js:78
 baseCollect                  src/21a-mode-base.js:263
@@ -172,7 +172,7 @@ builtHere                    src/21c-built.js:18
 builtKey                     src/21c-built.js:16
 builtSpot                    src/21c-built.js:34
 bWall                        src/21aa-base-rooms.js:31
-bWorker                      src/21aa-base-rooms.js:123
+bWorker                      src/21aa-base-rooms.js:134
 camOffset                    src/19c-light.js:76
 camStep                      src/19c-light.js:62
 canPay                       src/21a-mode-base.js:43
@@ -345,7 +345,7 @@ drawBelt                     src/24-mode-belt.js:318
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17-mode-system.js:481
 drawBeltRocks                src/17-mode-system.js:439
-drawBuildMenu                src/21aa-base-rooms.js:817
+drawBuildMenu                src/21aa-base-rooms.js:834
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
 drawCave                     src/22-mode-cave.js:131
@@ -385,7 +385,7 @@ drawLoreMarks                src/12q-lore.js:198
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
 drawMap                      src/18-mode-map.js:51
-drawModule                   src/21aa-base-rooms.js:169
+drawModule                   src/21aa-base-rooms.js:186
 drawMonolith                 src/20a-poi.js:414
 drawNebula                   src/16-flight.js:39
 drawNodeIcon                 src/05a-nodes.js:264
@@ -1507,7 +1507,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · флора:88
   · фауна:456
 
-## src/21aa-base-rooms.js · 53 КБ
+## src/21aa-base-rooms.js · 55 КБ
   · база: внутренности отсеков:1
   · внутренности отсеков:5
 
