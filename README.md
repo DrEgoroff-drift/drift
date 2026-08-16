@@ -59,10 +59,12 @@ glowing layer of denser gas you fly inside.
 </tr>
 <tr>
 <td width="50%" valign="top">
-<img src="docs/shots/base.png" alt="Base cross-section" width="100%">
-<b>Bases are a cut through the ground.</b> Compartments are carved out of rock as a single path —
-planet material over drifting strata, light spilling from the reactor onto the stone. Cells you
-never dug are simply not drawn: there is no grid, only rock.
+<img src="docs/shots/base.png" alt="Base cross-section cut into a hillside" width="100%">
+<b>A base is a shelter cut into a hill.</b> The ground above rises into a hill with the works buried
+in it, and a gate in the slope explains how anyone gets in. Inside, rooms glow against near-black
+rock: partitions between compartments, a floor slab per level, a lit lift shaft binding the levels
+into one building, and doors with light under them. Nobody stands there unless you actually posted
+crew — the shift you see is the shift you hired.
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/raid.png" alt="Boarding a pirate base" width="100%">
@@ -73,11 +75,12 @@ your helmet lamp. The gun you fitted to your ship is the gun you carry.
 </tr>
 <tr>
 <td width="50%" valign="top">
-<img src="docs/shots/surface.png" alt="Crystal world surface" width="100%">
-<b>Every world type reads by its own big form.</b> Between the boulder and the landmark sits a
-middle scale: crystal druses, torn hull plates and broken trusses, walls and columns, jungle canopy.
-The ground material already differed per world; now the silhouette does too, with the 24 px
-astronaut as the measure.
+<img src="docs/shots/world-types.png" alt="Six world types on foot" width="100%">
+<b>Where you land is what you saw from orbit.</b> The globe and the ground used to be two different
+noises sharing a name. Now the longitude you approach from — minus the planet's own slow rotation —
+picks the spot, and the terrain takes its low frequency from the same field that prints the texture:
+a bright patch is high ground, a dark one a basin. A second field is moisture, so the green blotch
+you aimed at really is a thicket when you get out, and the dry belt of the same planet is bare.
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/cantina.png" alt="Station cantina" width="100%">
@@ -118,6 +121,25 @@ price on the screen.
 <b>A ruined world is masonry under dust.</b> The ground itself follows a rubble law — rectangular
 blocks along the axes, in patches rather than everywhere, because continuous brickwork reads as graph
 paper. Standing on it are wall fragments with courses, a doorway and fallen column drums.
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/shots/hullzoom.png" alt="Six hull classes up close" width="100%">
+<b>The fleet is painted like industrial hardware.</b> Bone primer instead of the owner's colour —
+that colour survives as one painted panel along the flank. Plating is assembled from sheets with
+seams, tone variation and rivets; engines are graphite barrels that stick out past the outline;
+stencils, hatch numbers on plates, grilles, hazard stripes and a roundel do the rest. A planform is
+chosen per hull — delta, cross, catamaran, slab, disc, trident, swept — so about fifty silhouettes
+share one language. Pirates fly the same hulls with the number painted over.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/yachts.png" alt="Luxe yachts" width="100%">
+<b>A luxe yacht is the one hull bought for its looks.</b> Long thin body, a manta wing grown out of
+the hull by a strake, spindle nacelles standing on the plate with needles forward. Four surfaces no
+other ship has: lacquer with metallic grain, teak laid only where a person walks, brass edging, a
+pearl superstructure under a glass dome. Three engine schools, three finishes, a name in brass
+instead of an inventory number — and thrust that runs cool and quiet.
 </td>
 </tr>
 <tr>
