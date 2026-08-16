@@ -108,7 +108,11 @@ function settleRaise(S){
   let best=SETTLE_BUILD[0].k;
   for(const k in score)if(score[k]>score[best])best=k;
   S.built.push(best);
+  const was=S.stage;
   S.stage=S.built.length>=5?3:(S.built.length>=3?2:1);
+  /* третья ступень — посёлок вышел на карту фактора и начал торговать; для дома,
+     чьи станции рядом, это настоящая перемена, и она двигает курс бон (12u) */
+  if(was<3&&S.stage>=3&&typeof scripOnSettle==="function")scripOnSettle(G.sx,G.sy);
   S.mood=clamp(S.mood+6,0,100);
   if(typeof logAdd==="function")
     logAdd("good","Посёлок "+(S.name||"")+" поднял: "+SETTLE_BY_K[best].ru);

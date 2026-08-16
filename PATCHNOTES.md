@@ -9,6 +9,28 @@ could ever save.
 
 ---
 
+## 0.63.0 — "The rate has reasons"
+
+**M113** (`12u-scrip.js`, `12p-news.js`, `13b-occupy.js`, `12t-settle.js`, `14-save.js`, station
+tab `scrip`, suite `91zb-scrip.js`). Four trading houses, and a scrip you can bet on.
+
+- **A house owns stations**, decided from the system seed on its own hash stream. Its scrip is a
+  claim on that house — bought and sold **only at its own stations**, worth nothing anywhere else.
+  It is not a second wallet: it buys nothing and discounts nothing.
+- **The rate moves only on events that really happened.** `scripMove` is the single door, it
+  refuses a move without a reason, and every move is written to a ledger the player can read on the
+  tab. Sources: a station changing hands, a barge that never arrived, a sector gone quiet, emptied
+  warehouses (all rolled by M99 anyway), plus two of the player's own — a settlement reaching stage
+  3, and a system freed of occupation. No random walk, no drift term.
+- **Round-tripping is a loss**: 6% spread each way and a 40-unit cap per docking. The only edge is
+  knowing first — which the player does, because he causes most of it.
+- Neither the wallet nor the holding can go negative; a save with a nonsense rate is clamped, an
+  unknown house is dropped, and ledger lines without a reason are thrown away on load.
+
+**Repair.** `src/01-core.js` had been saved in the wrong encoding during 0.60.0, which turned the
+name syllables into mojibake — every generated star, station and planet name in the game came out
+as garbage. The file is restored; names read again.
+
 ## 0.62.0 — "Ammunition is cargo"
 
 **M112** (`16b-missile.js`, `05-parts.js`, `02-world.js`, `08-state.js`, `13-pirates.js`,

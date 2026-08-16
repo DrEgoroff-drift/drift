@@ -566,6 +566,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
     <button data-tab="market" class="on">РЫНОК</button>
     <button data-tab="barter">БАРТЕР</button>
     <button data-tab="smelt">ПЕРЕПЛАВКА</button>
+    <button data-tab="scrip">БОНЫ</button>
     <button data-tab="yard">ВЕРФЬ</button>
     <button data-tab="mods">МОДУЛИ</button>
     <button data-tab="fuse">СПЛАВ КОРПУСОВ</button>
@@ -666,10 +667,10 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 
 <script>
 "use strict";
-/* Р’РµСЂСЃРёСЏ РёРіСЂС‹. РћРґРЅР° РЅР° РІСЃС‘: Р·Р°СЃС‚Р°РІРєР°, Р¶СѓСЂРЅР°Р», РїР°С‚С‡РЅРѕСѓС‚С‹ (PATCHNOTES.md).
-   Рљ С„РѕСЂРјР°С‚Сѓ СЃРѕС…СЂР°РЅРµРЅРёСЏ РѕС‚РЅРѕС€РµРЅРёСЏ РЅРµ РёРјРµРµС‚ вЂ” С‚РѕС‚ РЅР°РІСЃРµРіРґР° v:4. */
-const VER="0.62.0";
-/* в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ РјР°С‚РµРјР°С‚РёРєР° в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ */
+/* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
+   К формату сохранения отношения не имеет — тот навсегда v:4. */
+const VER="0.63.0";
+/* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
 const lerp=(a,b,t)=>a+(b-a)*t;
@@ -692,24 +693,24 @@ function noise2(x,y,s){
 }
 function fbm2(x,y,s,oct){let v=0,a=.5,f=1,n=0;oct=oct||5;
   for(let i=0;i<oct;i++){v+=a*noise2(x*f,y*f,s+i*97);n+=a;a*=.5;f*=2;}return v/n;}
-/* Р Р°Р·РЅРёС†Р° СѓРіР»РѕРІ, РєСЂР°С‚С‡Р°Р№С€РµР№ РґСѓРіРѕР№. РџСЂРµР¶РЅСЏСЏ С„РѕСЂРјСѓР»Р° вЂ” ((a-b+3ПЂ)%TAU)-ПЂ вЂ” РІРµСЂРЅР°
-   СЂРѕРІРЅРѕ РґРѕ С‚РµС… РїРѕСЂ, РїРѕРєР° a-b РЅРµ РјРµРЅСЊС€Рµ -3ПЂ: РѕСЃС‚Р°С‚РѕРє РІ JS Р±РµСЂС‘С‚ Р·РЅР°Рє РґРµР»РёРјРѕРіРѕ,
-   Рё РЅР° Р±РѕР»СЊС€РёС… РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹С… СЂР°Р·РЅРѕСЃС‚СЏС… РѕС‚РІРµС‚ СѓРµР·Р¶Р°РµС‚ Рё РїРѕ Р·РЅР°РєСѓ, Рё Р·Р° РїСЂРµРґРµР»С‹
-   РїРѕР»СѓРѕР±РѕСЂРѕС‚Р°. РљСѓСЂСЃ РєРѕСЂР°Р±Р»СЏ РЅРёРіРґРµ РЅРµ СЃРІРѕСЂР°С‡РёРІР°Р»СЃСЏ Рё РєРѕРїРёР»СЃСЏ РѕР±РѕСЂРѕС‚Р°РјРё вЂ” РІ Р¶РёРІРѕРј
-   СЃРѕС…СЂР°РЅРµРЅРёРё РѕРЅ РґРѕСЂРѕСЃ РґРѕ -500 СЂР°Рґ, Рё РґРѕРІРѕСЂРѕС‚ РІРµРєС‚РѕСЂР° СЃРєРѕСЂРѕСЃС‚Рё Рє РЅРѕСЃСѓ РїСЂРёРЅСЏР»СЃСЏ
-   СЂР°Р·РІРѕСЂР°С‡РёРІР°С‚СЊ СЃРєРѕСЂРѕСЃС‚СЊ РІ РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅСѓСЋ СЃС‚РѕСЂРѕРЅСѓ. РљРѕСЂР°Р±Р»СЊ РґС‘СЂРіР°Р»СЃСЏ РЅР° РјРµСЃС‚Рµ
-   РїРѕРґ РїРѕР»РЅРѕР№ С‚СЏРіРѕР№ Рё Р¶С‘Рі С‚РѕРїР»РёРІРѕ: РЅРё РѕС€РёР±РєРё, РЅРё РїСЂРѕСЃР°РґРєРё РєР°РґСЂРѕРІ. */
+/* Разница углов, кратчайшей дугой. Прежняя формула — ((a-b+3π)%TAU)-π — верна
+   ровно до тех пор, пока a-b не меньше -3π: остаток в JS берёт знак делимого,
+   и на больших отрицательных разностях ответ уезжает и по знаку, и за пределы
+   полуоборота. Курс корабля нигде не сворачивался и копился оборотами — в живом
+   сохранении он дорос до -500 рад, и доворот вектора скорости к носу принялся
+   разворачивать скорость в противоположную сторону. Корабль дёргался на месте
+   под полной тягой и жёг топливо: ни ошибки, ни просадки кадров. */
 const angWrap=x=>{const d=x%TAU;return d>Math.PI?d-TAU:(d<-Math.PI?d+TAU:d);};
 const angDiff=(a,b)=>angWrap(a-b);
 
-/* в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ РёРјРµРЅР° в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ */
-const S1=["РєР°","Р·Рµ","РІРѕСЂ","С‚Рё","РјРµР»","СЃР°СЂ","РєРІР°","Р°СЂ","РЅРё","РєСЃРё","Р»Сѓ","РґСЂР°","РѕРЅ","РїРё","С…Р°","С†Рё","СѓСЂ","РіР°Р»","РѕР±","РІРµРєСЃ","СЃРѕР»","РёС‚","РєРѕСЂ","СЌРЅС‚","СЂР°","С‚Р°Сѓ","РЅРµР№","РѕРј"];
-const S2=["РЅРёСЃ","С‚Р°СЂ","РѕРЅ","СЌРєСЃ","СѓСЂ","Р°Р»","РёРѕСЃ","Р°С‚","РёРЅ","РѕСЂР°","РёРєСЃ","СѓРЅ","СЌС€","Р°СЂР°","РѕСЂРЅ","РёР»","Р°РґРµ","РёР№","РѕС‚","РёСЃ","СЌР»СЊ","СѓРј"];
+/* ══════════════ имена ══════════════ */
+const S1=["ка","зе","вор","ти","мел","сар","ква","ар","ни","кси","лу","дра","он","пи","ха","ци","ур","гал","об","векс","сол","ит","кор","энт","ра","тау","ней","ом"];
+const S2=["нис","тар","он","экс","ур","ал","иос","ат","ин","ора","икс","ун","эш","ара","орн","ил","аде","ий","от","ис","эль","ум"];
 const ROMAN=["I","II","III","IV","V","VI","VII","VIII","IX","X"];
 function genName(r){let s=pick(S1,r);if(r()<.55)s+=pick(S1,r);s+=pick(S2,r);
   return s[0].toUpperCase()+s.slice(1);}
 
-/* в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ СѓРґР°Р»С‘РЅРЅРѕСЃС‚СЊ Рё РЅР°СЃС‚СЂРѕР№ СЃРµРєС‚РѕСЂР° в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ */
+/* ══════════════ удалённость и настрой сектора ══════════════ */
 function sysDanger(sx,sy){return clamp(Math.hypot(sx,sy)/40,0,1);}
 function sysJitter(gx,gy){
   const jr=rng(hashi(gx,gy,55551));
@@ -717,12 +718,12 @@ function sysJitter(gx,gy){
   return [Math.cos(a)*rad,Math.sin(a)*rad];
 }
 const DESC_MOOD=[
-  {w:["С‚РёС…РёР№","Р·Р°Р±С‹С‚С‹Р№","СЃРѕРЅРЅС‹Р№"],ok:s=>!s.station&&!s.belt},
-  {w:["РѕР¶РёРІР»С‘РЅРЅС‹Р№","РѕР±Р¶РёС‚РѕР№","РјРЅРѕРіРѕРѕР±РµС‰Р°СЋС‰РёР№"],ok:s=>!!(s.station&&s.belt)},
-  {w:["РїРѕРіСЂР°РЅРёС‡РЅС‹Р№","РЅРµСЃРїРѕРєРѕР№РЅС‹Р№","РґРёРєРёР№"],ok:s=>sysDanger(s.sx,s.sy)>.55},
-  {w:["СЂР°Р·РІРµРґР°РЅРЅС‹Р№","РєР°СЂС‚РѕРіСЂР°С„РёСЂРѕРІР°РЅРЅС‹Р№"],ok:s=>!!s.station&&sysDanger(s.sx,s.sy)<=.55}
+  {w:["тихий","забытый","сонный"],ok:s=>!s.station&&!s.belt},
+  {w:["оживлённый","обжитой","многообещающий"],ok:s=>!!(s.station&&s.belt)},
+  {w:["пограничный","неспокойный","дикий"],ok:s=>sysDanger(s.sx,s.sy)>.55},
+  {w:["разведанный","картографированный"],ok:s=>!!s.station&&sysDanger(s.sx,s.sy)<=.55}
 ];
-const DESC_TAIL=["СЃРµРєС‚РѕСЂ","СЂСѓР±РµР¶","СѓС‡Р°СЃС‚РѕРє","СѓРіРѕР» РіР°Р»Р°РєС‚РёРєРё","РєР°СЂРјР°РЅ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІР°","Р·Р°РєРѕСѓР»РѕРє"];
+const DESC_TAIL=["сектор","рубеж","участок","угол галактики","карман пространства","закоулок"];
 function genDesc(r,sys){
   const cands=DESC_MOOD.filter(m=>m.ok(sys));
   const pool=cands.length?cands:DESC_MOOD;
@@ -730,12 +731,11 @@ function genDesc(r,sys){
   const tail=pick(DESC_TAIL,r);
   const bits=[mood[0].toUpperCase()+mood.slice(1)+" "+tail];
   const kinds=sys.planets.map(p=>p.T.ru).filter((v,i,a)=>a.indexOf(v)===i);
-  if(kinds.length)bits.push(kinds.length+" С‚РёРї"+(kinds.length===1?"":(kinds.length<5?"Р°":"РѕРІ"))+" РјРёСЂРѕРІ: "+kinds.join(", "));
-  if(sys.belt)bits.push("РїРѕСЏСЃ Р±РѕРіР°С‚ "+sys.belt.res.map(k=>RES[k].ru.toLowerCase()).join(", "));
+  if(kinds.length)bits.push(kinds.length+" тип"+(kinds.length===1?"":(kinds.length<5?"а":"ов"))+" миров: "+kinds.join(", "));
+  if(sys.belt)bits.push("пояс богат "+sys.belt.res.map(k=>RES[k].ru.toLowerCase()).join(", "));
   if(sys.station)bits.push(sys.station.kind.toLowerCase());
-  return bits.join(" В· ");
+  return bits.join(" · ");
 }
-
 
 /* ══════════════ смешанные миры ══════════════ */
 /* Двенадцати истинных типов хватает на двенадцать образов, но не на галактику:
@@ -4333,15 +4333,15 @@ const SYS_CACHE=new Map();
    тут торговать, чинить и заправляться. Вес зависит от опасности системы:
    в глубине фронтира торговых узлов почти нет, зато аванпосты и заправки — норма. */
 const ST_TYPES=[
-  {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods","crew","cantina","bases"],
+  {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods","crew","cantina","bases","scrip"],
    mkt:1.08, fuel:1,    rep:1,    w:d=>2.6-d*1.9},
-  {id:"indust", ru:"Промышленный комбинат",tabs:["market","smelt","mods","crew","cantina","bases"],
+  {id:"indust", ru:"Промышленный комбинат",tabs:["market","smelt","mods","crew","cantina","bases","scrip"],
    mkt:.99,  fuel:.92,  rep:.5,   w:d=>1.5-d*.4},
-  {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","barter","crew","cantina","bases"],
+  {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","barter","crew","cantina","bases","scrip"],
    mkt:.95,  fuel:1.08, rep:.75,  w:d=>1.2-d*.7},
-  {id:"sci",    ru:"Научная станция",      tabs:["market","lab","fuse","mods","crew","cantina","bases"],
+  {id:"sci",    ru:"Научная станция",      tabs:["market","lab","fuse","mods","crew","cantina","bases","scrip"],
    mkt:.93,  fuel:1.08, rep:1,    w:d=>1.2-d*.8},
-  {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter","crew","cantina","bases"],
+  {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter","crew","cantina","bases","scrip"],
    mkt:.9,   fuel:1.22, rep:1.25, w:d=>.2+d*2.8},
   {id:"fuel",   ru:"Заправочная станция",  tabs:[],
    mkt:1,    fuel:.78,  rep:1.1,  w:d=>1.6+d*1.1}
@@ -4767,6 +4767,9 @@ const G={
   pnode:null,
   /* посёлки (12t): разрежённо по «sx,sy», пусто, пока никого не кормили */
   settle:{},
+  /* боны домов (12u): запас, курс и журнал причин. Курс без причины не двигается,
+     поэтому журнал — часть механики, а не оформление */
+  scrip:{},scripRate:{},scripLog:[],
   /* личный счёт фракций к вам (12o): пусто, пока не наделали дел */
   hunted:{},
   /* узел, стоящий в держателе рубки (05a-nodes, M101): украшение, не слот */
@@ -10334,6 +10337,9 @@ function newsTick(){
     const K=NEWS_KINDS[Math.floor(r()*NEWS_KINDS.length)];
     const out=K.apply(r);
     if(!out)continue;
+    /* курс бон (12u) двигают только настоящие происшествия — вот они, ровно те,
+       что мир уже разыграл. Своего розыгрыша у бон нет и быть не должно. */
+    if(typeof scripOnNews==="function")scripOnNews(K.id,getSystem(out.sx,out.sy));
     newsAll().push({id:K.id,ru:out.ru,sx:out.sx,sy:out.sy,t:now});
     made++;
   }
@@ -11129,7 +11135,11 @@ function settleRaise(S){
   let best=SETTLE_BUILD[0].k;
   for(const k in score)if(score[k]>score[best])best=k;
   S.built.push(best);
+  const was=S.stage;
   S.stage=S.built.length>=5?3:(S.built.length>=3?2:1);
+  /* третья ступень — посёлок вышел на карту фактора и начал торговать; для дома,
+     чьи станции рядом, это настоящая перемена, и она двигает курс бон (12u) */
+  if(was<3&&S.stage>=3&&typeof scripOnSettle==="function")scripOnSettle(G.sx,G.sy);
   S.mood=clamp(S.mood+6,0,100);
   if(typeof logAdd==="function")
     logAdd("good","Посёлок "+(S.name||"")+" поднял: "+SETTLE_BY_K[best].ru);
@@ -11362,6 +11372,172 @@ function settleStops(){
   return out;
 }
 
+/* ══════════════ боны домов: ставка на чужую судьбу ══════════════
+   Самая опасная вещь этого прохода, поэтому она начинается с ограничителей, а
+   не с возможностей.
+
+   Бон — НЕ второй кошелёк. Это расписка торгового дома, обязательство его
+   станций: купить и продать её можно только там, где этот дом хозяин, и она
+   ничего не даёт, кроме курса. Держать бон — значит поставить на то, что дому
+   повезёт.
+
+   ПРАВИЛА, которые легко сломать:
+   1. Курс двигают ТОЛЬКО настоящие происшествия — те, что мир и так разыграл
+      (12p-news) или что сделал сам игрок. Ни случайного блуждания, ни дрейфа,
+      ни «времени». Если курс можно предсказать по шуму, это бесплатные деньги,
+      а бесплатные деньги убивают тот рынок, который в игре уже есть.
+   2. У каждого движения записана причина (`G.scripLog`), и она показывается
+      игроку. Движение без причины — ошибка, а не мелочь.
+   3. Спред в обе стороны и потолок обмена за один заход делают круговой рейс
+      убыточным. Заработок здесь один: знать раньше других — а игрок знает,
+      потому что большинство этих событий устраивает он сам.
+   4. Кошелёк не уходит в минус, боны не уходят в минус. */
+const HOUSES=[
+  {id:"lask", ru:"«Ласковый»",  col:"#e0d28a", note:"снабжение дальних плеч"},
+  {id:"kova", ru:"«Ковш»",      col:"#7fe6d8", note:"руда и переплавка"},
+  {id:"vest", ru:"«Вестовой»",  col:"#9fd8ff", note:"почта, курьеры, данные"},
+  {id:"kryl", ru:"«Крыло»",     col:"#ff9d7a", note:"верфи и наёмный конвой"}
+];
+const HOUSE_BY_ID={};for(const H of HOUSES)HOUSE_BY_ID[H.id]=H;
+const SCRIP_BASE=100;            // с чего начинают все дома
+const SCRIP_MIN=55,SCRIP_MAX=170;
+const SCRIP_SPREAD=.06;          // в обе стороны: круговой рейс без события — минус 12%
+const SCRIP_VISIT=40;            // потолок обмена за один заход на станцию
+const SCRIP_LOG=14;
+/* чей это дом: детерминированно от seed системы, отдельным потоком (правило 2 —
+   новые вызовы генератора не должны сдвигать уже разыгранное) */
+function houseOf(sys){
+  const s=sys||G.sys;
+  if(!s||!s.station)return null;
+  return HOUSES[Math.abs(hashi(s.seed,0x5C81,11))%HOUSES.length];
+}
+function scripRate(id){
+  const R=G.scripRate||(G.scripRate={});
+  if(R[id]==null)R[id]=SCRIP_BASE;
+  return R[id];
+}
+function scripHeld(id){return (G.scrip&&G.scrip[id])|0;}
+function scripBuyPrice(id){return Math.max(1,Math.round(scripRate(id)*(1+SCRIP_SPREAD)));}
+function scripSellPrice(id){return Math.max(1,Math.round(scripRate(id)*(1-SCRIP_SPREAD)));}
+/* единственная дверь, через которую курс вообще меняется: без причины сюда не
+   входят, и причина уезжает в журнал вместе с движением */
+function scripMove(id,d,why){
+  if(!HOUSE_BY_ID[id]||!d||!why)return 0;
+  const was=scripRate(id);
+  const now=clamp(Math.round(was+d),SCRIP_MIN,SCRIP_MAX);
+  G.scripRate[id]=now;
+  if(now===was)return 0;
+  const L=G.scripLog||(G.scripLog=[]);
+  L.push({id,d:now-was,why,t:Date.now()});
+  while(L.length>SCRIP_LOG)L.shift();
+  return now-was;
+}
+/* ── происшествия, которые двигают курс ──
+   Вызываются из тех мест, где перемена УЖЕ случилась: слухи мира (12p-news) и
+   поступки игрока. Здесь не разыгрывается ничего своего. */
+function scripOnNews(kind,sys){
+  const H=houseOf(sys);
+  if(!H)return;
+  const nm="«"+(sys&&sys.station?sys.station.name:"станция")+"»";
+  if(kind==="owner"){
+    /* станция сменила хозяина: этот дом её потерял, а достаётся она соседу —
+       выбор соседа тоже детерминирован, чтобы слух и курс не разошлись */
+    scripMove(H.id,-7-Math.abs(hashi(sys.seed,3,3))%5,"станцию "+nm+" забрали у дома");
+    const other=HOUSES[Math.abs(hashi(sys.seed,0x0FF,5))%HOUSES.length];
+    if(other.id!==H.id)scripMove(other.id,4,"к дому отошла станция "+nm);
+  }
+  else if(kind==="barge")scripMove(H.id,-4,"баржа не дошла до "+nm);
+  else if(kind==="captain")scripMove(H.id,3,"в секторе "+sys.sx+","+sys.sy+" стало тише");
+  else if(kind==="squeeze")scripMove(H.id,2,"склады "+nm+" опустели, цены пошли вверх");
+}
+/* поступки игрока: посёлок дорос до третьей ступени и стал точкой на карте
+   фактора (M109) — дом, чьи станции рядом, от этого выигрывает */
+function scripOnSettle(sx,sy){
+  const s=getSystem(sx,sy);
+  const H=houseOf(s)||houseOf(nearestStation(sx,sy));
+  if(H)scripMove(H.id,6,"посёлок в секторе "+sx+","+sy+" начал торговать");
+}
+/* система освобождена от занятия: чужой порядок ушёл, дом вернулся к работе */
+function scripOnFreed(sx,sy){
+  const H=houseOf(getSystem(sx,sy));
+  if(H)scripMove(H.id,5,"сектор "+sx+","+sy+" освобождён");
+}
+/* ── обмен ──
+   Только на станции этого дома, только в пределах захода, только на то, что
+   есть в кошельке. */
+let scripVisit=0;                  // обменено за этот заход; в сохранение не идёт
+function scripVisitReset(){scripVisit=0;}
+function scripLeft(){return Math.max(0,SCRIP_VISIT-scripVisit);}
+function scripDone(n){scripVisit+=n;}
+function scripBuy(n){
+  const H=houseOf();if(!H)return 0;
+  n=Math.min(n|0,scripLeft());
+  const p=scripBuyPrice(H.id);
+  n=Math.min(n,Math.floor(G.credits/p));
+  if(n<=0)return 0;
+  G.credits-=n*p;
+  if(!G.scrip)G.scrip={};
+  G.scrip[H.id]=scripHeld(H.id)+n;
+  scripDone(n);
+  logAdd("money","Куплено бон "+H.ru+" ×"+n+" по "+p+" кр");
+  return n;
+}
+function scripSell(n){
+  const H=houseOf();if(!H)return 0;
+  n=Math.min(n|0,scripLeft(),scripHeld(H.id));
+  if(n<=0)return 0;
+  const p=scripSellPrice(H.id);
+  G.scrip[H.id]=scripHeld(H.id)-n;
+  earn(n*p,"scrip");
+  scripDone(n);
+  logAdd("money","Продано бон "+H.ru+" ×"+n+" по "+p+" кр");
+  return n;
+}
+/* ── вкладка на станции ──
+   Живёт здесь, рядом со своей механикой: экран станции (26-ui-station) и так
+   просится на распил. */
+function scripRender(){
+  const H=houseOf();
+  if(!H){$body.appendChild(el("div","sec","ЗДЕСЬ НЕТ ХОЗЯИНА"));return;}
+  $body.appendChild(el("div","sec","ХОЗЯИН СТАНЦИИ · "+H.ru.toUpperCase()+" · "+H.note.toUpperCase()));
+  const rate=scripRate(H.id);
+  $body.appendChild(el("div","row","<div class='nm'><b>Курс "+rate+" кр за бон</b><s>"+
+    "покупка "+scripBuyPrice(H.id)+" · продажа "+scripSellPrice(H.id)+
+    " · у вас "+scripHeld(H.id)+" бон · за заход осталось "+scripLeft()+
+    "<br>бон — расписка этого дома, а не деньги: берут её только на его станциях</s></div>"));
+  const row=el("div","row");
+  for(const n of [1,10,SCRIP_VISIT]){
+    const b=el("button","act","КУПИТЬ "+n);
+    b.disabled=scripLeft()<=0||G.credits<scripBuyPrice(H.id);
+    b.onclick=()=>{scripBuy(n);renderTab();};
+    row.appendChild(b);
+  }
+  for(const n of [10,SCRIP_VISIT]){
+    const b=el("button","act gold","ПРОДАТЬ "+n);
+    b.disabled=scripLeft()<=0||scripHeld(H.id)<=0;
+    b.onclick=()=>{scripSell(n);renderTab();};
+    row.appendChild(b);
+  }
+  $body.appendChild(row);
+  /* чужие дома: видно, где что стоит, но обменять — только у себя дома */
+  $body.appendChild(el("div","sec","ОСТАЛЬНЫЕ ДОМА · ОБМЕН ТОЛЬКО НА ИХ СТАНЦИЯХ"));
+  for(const O of HOUSES){
+    if(O.id===H.id)continue;
+    $body.appendChild(el("div","row","<div class='nm'><b>"+O.ru+" · "+scripRate(O.id)+" кр</b><s>"+
+      O.note+" · у вас "+scripHeld(O.id)+" бон</s></div>"));
+  }
+  /* почему курс такой: без этой колонки боны стали бы рулеткой */
+  const L=(G.scripLog||[]).slice(-6).reverse();
+  $body.appendChild(el("div","sec","ОТЧЕГО ДВИГАЛСЯ КУРС · СЛУЧАЙНО ОН НЕ ДВИГАЕТСЯ"));
+  if(!L.length)$body.appendChild(el("div","row","<div class='nm'><s>пока ничего не случилось</s></div>"));
+  for(const e of L){
+    const mins=Math.max(1,Math.round((Date.now()-e.t)/60000));
+    const Ho=HOUSE_BY_ID[e.id];
+    $body.appendChild(el("div","row","<div class='nm'><b>"+(Ho?Ho.ru:e.id)+" "+
+      (e.d>0?"+":"")+e.d+"</b><s>"+e.why+" · "+mins+" мин назад</s></div>"));
+  }
+}
+
 /* ══════════════ пираты берут системы ══════════════ */
 /* Пираты были погодой: сколько-то их встречается в опасных секторах, и всё.
    Отношения с ними не менялись ни от чего — убил и полетел дальше.
@@ -11488,6 +11664,8 @@ function occKill(sx,sy){
     return;
   }
   G.freed=(G.freed|0)+1;
+  /* курс бон дома-хозяина (12u): это настоящее происшествие, и устроил его игрок */
+  if(typeof scripOnFreed==="function")scripOnFreed(sx,sy);
   /* тех, кто снял блокаду, на станции помнят долго */
   if(sys.station&&typeof repAdd==="function")repAdd(2,sys);
   const prize=sys.station?Math.round(2400+sysDanger(sx,sy)*9000):0;
@@ -11962,6 +12140,7 @@ function snapshot(){
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,
+    scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -12091,6 +12270,20 @@ function applySave(s){
     }
     G.settle[key]=S;
   }
+  /* боны домов (12u-scrip): это ставка игрока и курс, у которого записана
+     причина, — значит, персистятся. Чинится по месту: чужие ключи домов
+     отбрасываются, курс зажимается в свои границы, кошелёк и запас не уходят в
+     минус, а строки журнала без причины выбрасываются — движение без причины
+     здесь ошибка, а не мелочь. */
+  G.scrip={};G.scripRate={};
+  for(const H of HOUSES){
+    const n=(s.scrip&&s.scrip[H.id])|0;
+    if(n>0)G.scrip[H.id]=n;
+    const r=s.scripRate&&+s.scripRate[H.id];
+    G.scripRate[H.id]=r?clamp(Math.round(r),SCRIP_MIN,SCRIP_MAX):SCRIP_BASE;
+  }
+  G.scripLog=(Array.isArray(s.scripLog)?s.scripLog:[])
+    .filter(e=>e&&HOUSE_BY_ID[e.id]&&e.why&&e.d).slice(-SCRIP_LOG);
   /* отчёт «Долгого Хода» (12q-lore): формат сейва не менялся (v:4), старые
      записи просто не имеют этих полей и начинают с пустого */
   G.loreFound=Array.isArray(s.loreFound)?s.loreFound.filter(x=>typeof x==="string"):[];
@@ -25786,6 +25979,7 @@ let fuseSel=[];   // два корпуса, выбранных под сплав
 function openStation(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
+  scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
@@ -25804,7 +25998,7 @@ function openStation(){
    продать, снарядиться, узнать, нанять, распорядиться. Внутри раздела с одной
    вкладкой вторая ступень не показывается — нечего выбирать. */
 const ST_GROUPS=[
-  {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","smelt"]},
+  {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","smelt","scrip"]},
   {id:"ship",  ru:"КОРАБЛЬ",   tabs:["yard","mods","fuse"]},
   {id:"know",  ru:"НАУКА",     tabs:["lab"]},
   {id:"folk",  ru:"ЛЮДИ",      tabs:["crew","cantina"]},
@@ -26413,6 +26607,8 @@ function renderTab(){
     }
   }
   else if(tab==="cantina"){renderCantina();}
+  /* боны дома (M113): вкладка живёт в своём модуле, 12u-scrip */
+  else if(tab==="scrip"){scripRender();}
   else if(tab==="crew"){
     /* одна вкладка на всё: кто уже работает — сверху, кандидаты станции — ниже.
        Отсюда же выдают корабль, дают приказ и рассчитывают. */

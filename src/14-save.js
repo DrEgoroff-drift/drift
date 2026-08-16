@@ -37,6 +37,7 @@ function snapshot(){
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,
+    scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -166,6 +167,20 @@ function applySave(s){
     }
     G.settle[key]=S;
   }
+  /* боны домов (12u-scrip): это ставка игрока и курс, у которого записана
+     причина, — значит, персистятся. Чинится по месту: чужие ключи домов
+     отбрасываются, курс зажимается в свои границы, кошелёк и запас не уходят в
+     минус, а строки журнала без причины выбрасываются — движение без причины
+     здесь ошибка, а не мелочь. */
+  G.scrip={};G.scripRate={};
+  for(const H of HOUSES){
+    const n=(s.scrip&&s.scrip[H.id])|0;
+    if(n>0)G.scrip[H.id]=n;
+    const r=s.scripRate&&+s.scripRate[H.id];
+    G.scripRate[H.id]=r?clamp(Math.round(r),SCRIP_MIN,SCRIP_MAX):SCRIP_BASE;
+  }
+  G.scripLog=(Array.isArray(s.scripLog)?s.scripLog:[])
+    .filter(e=>e&&HOUSE_BY_ID[e.id]&&e.why&&e.d).slice(-SCRIP_LOG);
   /* отчёт «Долгого Хода» (12q-lore): формат сейва не менялся (v:4), старые
      записи просто не имеют этих полей и начинают с пустого */
   G.loreFound=Array.isArray(s.loreFound)?s.loreFound.filter(x=>typeof x==="string"):[];

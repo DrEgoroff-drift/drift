@@ -5,6 +5,7 @@ let fuseSel=[];   // два корпуса, выбранных под сплав
 function openStation(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
+  scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
@@ -23,7 +24,7 @@ function openStation(){
    продать, снарядиться, узнать, нанять, распорядиться. Внутри раздела с одной
    вкладкой вторая ступень не показывается — нечего выбирать. */
 const ST_GROUPS=[
-  {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","smelt"]},
+  {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","smelt","scrip"]},
   {id:"ship",  ru:"КОРАБЛЬ",   tabs:["yard","mods","fuse"]},
   {id:"know",  ru:"НАУКА",     tabs:["lab"]},
   {id:"folk",  ru:"ЛЮДИ",      tabs:["crew","cantina"]},
@@ -632,6 +633,8 @@ function renderTab(){
     }
   }
   else if(tab==="cantina"){renderCantina();}
+  /* боны дома (M113): вкладка живёт в своём модуле, 12u-scrip */
+  else if(tab==="scrip"){scripRender();}
   else if(tab==="crew"){
     /* одна вкладка на всё: кто уже работает — сверху, кандидаты станции — ниже.
        Отсюда же выдают корабль, дают приказ и рассчитывают. */
