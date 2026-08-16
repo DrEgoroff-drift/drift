@@ -57,8 +57,8 @@ Never read whole: `docs/PLAN-archive.md`, `docs/INDEX.md`, `drift.html`, `tests.
 `PLAN.md` passes **60 KB**. It is a reminder, not an error: past that size a file can no longer
 be read whole cheaply, and the next milestone inside it costs more than splitting it would.
 
-The rule looks forward, not back. Four modules are already over the threshold for good reason
-(`21aa-base-rooms`, `12c-mgr-core`, `26-ui-station`, `27f-hq-room`); they are listed in
+The rule looks forward, not back. Three modules are already over the threshold for good reason
+(`12c-mgr-core`, `26-ui-station`, `27f-hq-room`); they are listed in
 `build.ps1` with their measured size and stay silent until they **grow**. A new module crossing
 the line is flagged immediately. When splitting: cut along an existing seam (a section header,
 a family of functions), keep the concatenation order, and never split a `const` table.
@@ -89,7 +89,8 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `17b-finds` | four finds in the void: capsule, satellite, container, hulk — the satellite is theirs |
 | `19a-mode-scoop` | scooping volatiles from a gas giant's atmosphere |
 | `21a-mode-base` | the base in cross-section: cell grid, power balance, base network |
-| `21aa-base-rooms` | base room interiors: the brushes (`bBox`/`bWorker`/…) and `BASE_ROOM` |
+| `21aa-base-rooms` | the brushes (`bBox`/`bWorker`/…), the finish table `ROOM_FIN`, `drawModule` |
+| `21ab-base-interiors` | the eight compartments themselves: `BASE_ROOM`, one function per kind |
 | `24a-mode-raid` | boarding a pirate base: grid + polygons, projected from the belt |
 | `26-ui-station` `27-ui-ship` | station with sections, ship screen with hull slots |
 | `27c-ui-hq` | the HQ and cantina screens: portraits, perk tree, order slots, domain summary |

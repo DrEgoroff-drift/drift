@@ -110,9 +110,11 @@ flora and fauna, a living camera, station modules, weather.
 9. **The world on foot** — the surface is the longest screen in the game after the cockpit, and it
    has never had a pass of its own. Stand: `docs/mkworld.ps1` → `docs/shots/world-types.png`.
 10. **Split debt.** `23-mode-dig` and `27e-ui-home` have crossed the 40 KB line; `build.ps1` was
-   re-baselined on 2026-08-15 so the guard stays quiet, which is a loan, not a payment. The base
-   pass added to it: `21aa-base-rooms` is 55 KB and `21a-mode-base` 52 KB, and the guard is
-   speaking up again — the seam is `BASE_ROOM` (the eight interiors) away from the brushes.
+   re-baselined on 2026-08-15 so the guard stays quiet, which is a loan, not a payment. One
+   payment made on 2026-08-16: `21aa-base-rooms` (60 KB) was cut along its seam into the brushes
+   plus `drawModule` (24 KB) and `21ab-base-interiors`, the eight compartments (37 KB), and left
+   the guard's list instead of being re-baselined inside it. **Next: `21a-mode-base`, 52 KB** —
+   it grew over the base passes and is deliberately left shouting on every build.
 
 ### What not to do
 
