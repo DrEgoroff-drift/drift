@@ -154,6 +154,20 @@ function updateSurface(dt){
      или спросить, готово ли у них что-нибудь. Отдаём самый крупный груз в
      трюме: выбор из списка сделал бы это меню построек с лишним шагом, а
      рацион — это то, что игрок ВОЗИТ, а не то, что он галочкой отметил. */
+  /* ── срок (M114) ──
+     Пока идёт срок, у посёлка есть ровно одно дело: подъём. Рацион и просьбы
+     подождут — с людьми на земле говорить о торговле нечего. */
+  else if(typeof doomIsHere==="function"&&doomIsHere()&&doomGet().known&&doomStanding()>0&&
+          settleCanLive(S.p)&&Math.abs(S.x-settleSpotX(S.p,tr))<44){
+    G.prompt="ДЕЙСТВИЕ — ПОДНЯТЬ ЛЮДЕЙ\n"+doomLine();
+    if(actEdge){doomLift();return;}
+  }
+  /* высадка: другая система, живая земля, никто там ещё не живёт */
+  else if(typeof doomCanLand==="function"&&doomCanLand(S.p)&&(G.cargo.folk|0)>0){
+    G.prompt="ДЕЙСТВИЕ — ВЫСАДИТЬ ЛЮДЕЙ ×"+(G.cargo.folk|0)+
+      "\nОНИ НАЧНУТ ЗАНОВО, НО ЭТО ТЕ ЖЕ ЛЮДИ";
+    if(actEdge){doomLand(S.p);return;}
+  }
   else if(settleCanLive(S.p)&&Math.abs(S.x-settleSpotX(S.p,tr))<44){
     const V=settleTick(settleAt(G.sx,G.sy));
     let big="",bn=0;

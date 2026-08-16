@@ -382,10 +382,35 @@ houses, so the rumours and the rate are read on two different screens.
 Suite **"scrip: the rate has reasons"** — every rate move traces to a recorded world event;
 buy-then-sell without an intervening event is never profitable; the wallet cannot go negative.
 
-## M114 (0.64.0). Evacuation: a world that ends on schedule
+## M114 (0.64.0) — built. Evacuation: a world that ends on schedule
 
-The chapter M106 and M107 are both built to reach, and the point where the story stops being
-background. Only fires for a settlement the player actually raised.
+Built as **`12v-doom.js`**, `RES.folk` + `PAX_KEYS` in `02-world`, two action branches in
+`21-mode-surface` (lift at the settlement, land on new ground), the arming hook in `settleRaise`,
+the lazy hour on the same rare tick as everything else background (`28-loop`), persistence in
+`14-save`, suites **"the hour: they are lifted by hold, not by a button"** and **"only those you
+sent help"**.
+
+- **One deadline per playthrough**, armed when the player's own settlement reaches stage 2 — there
+  has to be something to lose. `DOOM_LEAD` is 90 wall-clock minutes and keeps running while the
+  game is closed, like every other background clock in the game.
+- **Learned under that sky** (`doomLearn` fires in that system, not from a menu), then marked on
+  the rumour layer of the map and counted down in the log at 30, 10 and 2 minutes.
+- **People are a line in the hold.** `PAX_KEYS` is the fourth resource category: not tradeable, not
+  giftable to a settlement, never chosen for overflow dumping on a ship swap — and lost with the
+  ship if it is wrecked, which is logged as its own line.
+- **`doomHelp` counts only hired hands already ordered to that sector**, half a hold each. What is
+  lifted is what the player organised before the hour, not what the game forgave.
+- **Landing is the outcome:** a live world in another system with nobody on it. The settlement
+  restarts at a lower stage with half its buildings left behind, but keeps `seed`, name and lean —
+  the same people, so the vocabulary the player collected still answers.
+- **Not lifting is a permitted ending**, charged nothing: the settlement is deleted, the system is
+  written into `G.doomDead` and stays on the map, empty.
+
+**Still open:** the end of the world is a log line and an empty map cell — the system itself does
+not look changed from `17-mode-system`; and the managers (12c) cannot be assigned to the lift, only
+hired hands can.
+
+The original spec, kept as the standard the build is measured against:
 
 - The obelisks' calendar names a date for a system. When it comes, that world ends — the event is
   the one the expedition was measuring, and it was never mysterious to them, only unavoidable.
