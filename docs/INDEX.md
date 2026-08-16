@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 112 · символов верхнего уровня: 1308
+Файлов: 112 · символов верхнего уровня: 1311
 
 ## СИМВОЛЫ
 
@@ -418,8 +418,8 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:84
-drawSurface                  src/21-mode-surface.js:386
-drawSurfaceHud               src/21-mode-surface.js:340
+drawSurface                  src/21-mode-surface.js:390
+drawSurfaceHud               src/21-mode-surface.js:344
 drawSysNebula                src/16a-space.js:65
 drawSystem                   src/17-mode-system.js:272
 drawTemple                   src/20a-poi.js:271
@@ -444,7 +444,7 @@ enterRaid                    src/24a-mode-raid.js:134
 enterSurface                 src/21-mode-surface.js:2
 env                          src/09-audio.js:47
 eq                           tests/90-harness.js:23
-evacuate                     src/21-mode-surface.js:265
+evacuate                     src/21-mode-surface.js:269
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:72
 exitBelt                     src/24-mode-belt.js:162
@@ -665,8 +665,8 @@ landingDust                  src/19-mode-landing.js:564
 landOnTestPlanet             tests/90-harness.js:55
 last                         src/28-loop.js:224
 lastDroneTick                src/28-loop.js:225
-launch                       src/21-mode-surface.js:305
-launchHold                   src/21-mode-surface.js:250
+launch                       src/21-mode-surface.js:309
+launchHold                   src/21-mode-surface.js:254
 layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:115
@@ -1106,22 +1106,25 @@ SETTLE_ON                    src/12t-settle.js:27
 SETTLE_STEP                  src/12t-settle.js:22
 SETTLE_STOCK                 src/12t-settle.js:23
 SETTLE_WAIT                  src/12t-settle.js:25
-settleAsk                    src/12t-settle.js:148
+SETTLE_WORD                  src/12t-settle.js:153
+settleAsk                    src/12t-settle.js:160
 settleAt                     src/12t-settle.js:46
 settleCanLive                src/12t-settle.js:50
+settleDraw                   src/12t-settle.js:220
 settleGive                   src/12t-settle.js:120
 settleHere                   src/12t-settle.js:47
 settleKeyOf                  src/12t-settle.js:44
-settleLine                   src/12t-settle.js:175
+settleLine                   src/12t-settle.js:193
 settleMake                   src/12t-settle.js:61
 settleMakes                  src/12t-settle.js:140
 settleMap                    src/12t-settle.js:45
 settleRaise                  src/12t-settle.js:101
 settleSpotX                  src/12t-settle.js:55
 settleStockSum               src/12t-settle.js:134
-settleStop                   src/12t-settle.js:193
-settleStops                  src/12t-settle.js:204
+settleStop                   src/12t-settle.js:282
+settleStops                  src/12t-settle.js:293
 settleTick                   src/12t-settle.js:77
+settleWords                  src/12t-settle.js:155
 setZoom                      src/15-input.js:175
 sfx                          src/09-audio.js:201
 SFX                          src/09-audio.js:85
@@ -1208,7 +1211,7 @@ suite                        tests/90-harness.js:12
 suitFailure                  src/23-mode-dig.js:104
 suitHit                      src/23-mode-dig.js:97
 SUN_DIR                      src/19c-light.js:11
-surfaceHint                  src/21-mode-surface.js:325
+surfaceHint                  src/21-mode-surface.js:329
 svDraw                       src/27-ui-ship.js:7
 svRender                     src/27-ui-ship.js:45
 svReturn                     src/27-ui-ship.js:6
@@ -1236,7 +1239,7 @@ TEST                         tests/90-harness.js:10
 TEST_SUITES                  tests/90-harness.js:86
 tfbm                         src/18a-material.js:23
 tickDrones                   src/12-economy.js:80
-tickLaunchHold               src/21-mode-surface.js:251
+tickLaunchHold               src/21-mode-surface.js:255
 TIER_RU                      src/05-parts.js:45
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:60
@@ -1246,7 +1249,7 @@ tnoise                       src/18a-material.js:16
 toggleLog                    src/11-log.js:89
 toggleLoreBoard              src/27h-ui-lore.js:65
 toggleMenu                   src/15-input.js:125
-totalLoss                    src/21-mode-surface.js:282
+totalLoss                    src/21-mode-surface.js:286
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03b-hull-paint.js:1
 TRADE_KEYS                   src/02-world.js:27
@@ -1466,7 +1469,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12s-wear.js · 9 КБ
   · корабль стареет:1
 
-## src/12t-settle.js · 11 КБ
+## src/12t-settle.js · 17 КБ
   · посёлок: вы даёте, решают они:1
 
 ## src/13b-occupy.js · 17 КБ
@@ -1563,9 +1566,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/21c-built.js · 10 КБ
   · ваши постройки видны с земли:1
 
-## src/21-mode-surface.js · 29 КБ
+## src/21-mode-surface.js · 30 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:321
+  · навигатор и подсказки сверху:325
 
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
@@ -1699,7 +1702,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91x-finds.js · 3 КБ
   · автотесты: находки в пустоте:1
 
-## tests/91y-settle.js · 6 КБ
+## tests/91y-settle.js · 7 КБ
   · посёлок: дар, а не приказ:1
 
 ## tests/99-run.js · 0 КБ

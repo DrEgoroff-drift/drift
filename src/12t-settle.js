@@ -145,14 +145,32 @@ function settleMakes(S){
 /* ── попросить ──
    Не сделка и не цена: игрок спрашивает, а настроение решает, сколько готово.
    Кредитов посёлок не платит НИКОГДА — только товаром. */
-function settleAsk(S){
+/* ── словарь как интерфейс ──
+   Слово, пришедшее куском отчёта (12q-lore), — не строчка лора, а рычаг: пока
+   его нет, игрок берёт то, что вынесут; когда есть — он может назвать, чего
+   просит, и они начнут с этого. Всё, чего он назвать не умеет, по-прежнему
+   решают за него. */
+const SETTLE_WORD={"вода":"ice","камень":"silicon","огонь":"carbon",
+  "земля":"organics","дом":"iron","небо":"titan"};
+function settleWords(S){
+  const vocab=(typeof loreVocab==="function")?loreVocab():[];
+  const makes=settleMakes(S);
+  return vocab.filter(w=>SETTLE_WORD[w]&&makes.indexOf(SETTLE_WORD[w])>=0);
+}
+function settleAsk(S,word){
   S=settleTick(S);
   if(!S)return 0;
   const now=Date.now();
   if(now-(S.asked||0)<SETTLE_WAIT)return 0;
-  const makes=settleMakes(S);
+  let makes=settleMakes(S);
   if(!makes.length)return 0;
   if(S.mood<35)return 0;
+  /* названное слово ставит свой товар первым — но не создаёт его из ничего и
+     не отменяет настроения: просьба, а не заказ */
+  if(word&&settleWords(S).indexOf(word)>=0){
+    const k=SETTLE_WORD[word];
+    makes=[k].concat(makes.filter(x=>x!==k));
+  }
   S.asked=now;
   const st=stat();
   let room=Math.max(0,st.cargoMax-held()),got=0;
@@ -186,6 +204,77 @@ function settleLine(S,topic){
     }
   }
   return out.join(" ");
+}
+/* ── как это выглядит с земли ──
+   Место, к которому идут ногами и на котором нечего увидеть, — это ложь той же
+   породы, что перк без кода. Посёлок рисуется здесь же, рядом с моделью, потому
+   что рисовать нечего, кроме того, что модель уже знает: сколько поднято, чем
+   кормили и какое настроение.
+
+   Дворов ровно столько, сколько построек, плюс один жилой — тот, с которого всё
+   начинается. Крыши низкие и разной высоты: посёлок не строили по чертежу.
+   Дым идёт только там, где есть печь или кузня, и гаснет, если настроение упало
+   ниже трети: по нему и видно голод, без единой цифры. Окна при этом не гаснут
+   никогда — в них живут и голодая, а посёлок до первого дара состоит из одних
+   тёмных коробок и без огня в окне не читался на склоне вовсе. */
+function settleDraw(S,tr,camx,camy,p){
+  /* до первого дара записи нет, но люди здесь уже есть: рисуем те же несколько
+     дворов без дыма и без дозорных. Иначе подсказка «здесь живут» показывала бы
+     на пустой холм. */
+  if(!S)S={seed:hashi(G.sx,G.sy,(p&&p.idx|0)+0x5E77),built:[],mood:20,stage:1};
+  const bx=settleSpotX(p,tr);if(bx==null)return;
+  const sx=bx-camx;
+  if(sx<-260||sx>W+260)return;
+  const gy=groundAt(tr,bx)-camy;
+  const r=rng(S.seed^0x2C1);
+  const warm=(S.mood>=34);
+  const n=2+S.built.length;                                // и до первого дара тут живут
+  const pal=p.T.pal;
+  const wall="rgb("+pal[2].map(v=>Math.round(v*.62+18)).join(",")+")";
+  const roof="rgb("+pal[1].map(v=>Math.round(v*.5+10)).join(",")+")";
+  for(let i=0;i<n;i++){
+    const ox=sx+(i-(n-1)/2)*26+(r()-.5)*8;
+    const hh=16+r()*10, ww=17+r()*8;
+    const oy=groundAt(tr,bx+(ox-sx))-camy;
+    ctx.fillStyle="rgba(0,0,0,.34)";                       // контакт с грунтом
+    ctx.beginPath();ctx.ellipse(ox,oy-1,ww*.6,3,0,0,TAU);ctx.fill();
+    ctx.fillStyle=wall;ctx.fillRect(ox-ww/2,oy-hh,ww,hh);
+    ctx.fillStyle=roof;                                    // низкая двускатная крыша
+    ctx.beginPath();
+    ctx.moveTo(ox-ww/2-3,oy-hh);ctx.lineTo(ox,oy-hh-7);ctx.lineTo(ox+ww/2+3,oy-hh);
+    ctx.closePath();ctx.fill();
+    /* обвод по кромке крыши: тёмная коробка на тёмном склоне не читается вовсе,
+       а посёлок до первого дара только из таких коробок и состоит */
+    ctx.strokeStyle="rgba(226,236,240,.30)";ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(ox-ww/2-3,oy-hh+.5);ctx.lineTo(ox,oy-hh-6.5);ctx.lineTo(ox+ww/2+3,oy-hh+.5);
+    ctx.stroke();
+    ctx.fillStyle="rgba(255,206,130,"+(.30+S.mood/260).toFixed(2)+")";   // очаг
+    ctx.fillRect(ox-2.5,oy-hh*.62,5,4.5);
+    /* труба и дым — только у тех дворов, где что-то жгут */
+    const b=SETTLE_BY_K[S.built[i-1]];
+    if(b&&(b.k==="kiln"||b.k==="forge"||b.k==="still")){
+      ctx.fillStyle=roof;ctx.fillRect(ox+ww*.28,oy-hh-11,3.4,6);
+      if(warm)for(let s=0;s<4;s++){
+        const t=((G.t*.6+s*40+i*17)%160)/160;
+        ctx.fillStyle="rgba(210,214,220,"+((1-t)*.16).toFixed(3)+")";
+        ctx.beginPath();
+        ctx.arc(ox+ww*.28+1.7+Math.sin(t*6+i)*5*t,oy-hh-12-t*46,2+t*7,0,TAU);ctx.fill();
+      }
+    }
+  }
+  /* дозорные: не украшение, а то, чем посёлок стоит между игроком и фауной
+     (M110). Их видно ровно со второй ступени — раньше некому стоять. */
+  if(S.stage>=2)for(let i=0;i<2;i++){
+    const ox=sx+(i?1:-1)*(n*14+16), oy=groundAt(tr,bx+(ox-sx))-camy;
+    ctx.fillStyle="rgba(20,24,30,.9)";
+    ctx.fillRect(ox-1.6,oy-13,3.2,13);
+    ctx.beginPath();ctx.arc(ox,oy-15.5,2.6,0,TAU);ctx.fill();
+    ctx.strokeStyle="rgba(20,24,30,.9)";ctx.lineWidth=1.4;   // шест в руке
+    ctx.beginPath();ctx.moveTo(ox+(i?3:-3),oy-19);ctx.lineTo(ox+(i?3:-3),oy);ctx.stroke();
+  }
+  ctx.fillStyle="rgba(226,206,160,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+  ctx.fillText("ПОСЁЛОК",sx,gy-56-n*2);
 }
 /* ── глазами фактора ──
    С третьей ступени посёлок — остановка на карте, к нему идут баржи (12l), как

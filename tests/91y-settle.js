@@ -88,6 +88,28 @@ TEST_SUITES.push(()=>suite("посёлок: до третьей ступени �
   }
 }));
 
+TEST_SUITES.push(()=>suite("посёлок: слово — это рычаг, а не строчка лора",()=>{
+  resetWorld();
+  const p=G.sys.planets.find(x=>SETTLE_ON.indexOf(x.type)>=0)||G.sys.planets[0];
+  const S=settleMake(p);
+  eq(settleWords(S).length,0,"без словаря просить нечего словами");
+  /* даём посёлку научиться делать лёд, а игроку — слово «вода» */
+  S.built=["weir","weir","weir"];S.stage=2;S.stock={ice:200};S.mood=95;
+  const word=Object.keys(SETTLE_WORD).find(w=>SETTLE_WORD[w]==="ice");
+  const R=LORE.find(x=>x.word===word);
+  if(R&&!loreHas(R.id))loreList().push(R.id);
+  if(R){
+    ok(settleWords(S).indexOf(word)>=0,"понятое слово стало просьбой: "+word);
+    S.asked=0;G.cargo.ice=0;
+    const got=settleAsk(S,word);
+    ok(got>0,"названное принесло товар: ×"+got);
+    ok(G.cargo.ice>0,"и это именно то, что просили");
+  }
+  /* слово, которого посёлок не умеет делать, просьбой не становится */
+  ok(settleWords(S).every(w=>settleMakes(S).indexOf(SETTLE_WORD[w])>=0),
+     "просить можно только то, что они умеют");
+}));
+
 TEST_SUITES.push(()=>suite("посёлок: переживает сохранение",()=>{
   resetWorld();
   const p=G.sys.planets.find(x=>SETTLE_ON.indexOf(x.type)>=0)||G.sys.planets[0];

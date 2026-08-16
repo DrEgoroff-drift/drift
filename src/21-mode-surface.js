@@ -170,9 +170,13 @@ function updateSurface(dt){
         return;
       }
     }else if(V){
-      G.prompt="ДЕЙСТВИЕ — СПРОСИТЬ · ПОСЁЛОК СТУПЕНЬ "+V.stage+"\n"+settleLine(V,3);
+      /* слово, которое игрок понимает, здесь и превращается в просьбу: он
+         называет его, и с него начинают. Слов нет — берёт что вынесут. */
+      const words=settleWords(V),ask=words.length?words[(G.t/240|0)%words.length]:"";
+      G.prompt="ДЕЙСТВИЕ — "+(ask?("ПРОСИТЬ: "+ask.toUpperCase()):"СПРОСИТЬ")+
+        " · ПОСЁЛОК СТУПЕНЬ "+V.stage+"\n"+settleLine(V,3);
       if(actEdge){
-        const got=settleAsk(V);
+        const got=settleAsk(V,ask);
         if(got>0)tell("good","Посёлок отдал товара ×"+got,"ДАЛИ\n×"+got+"\n"+settleLine(V,4));
         else say("Сегодня у них ничего нет\n"+settleLine(V,5));
         return;
@@ -416,6 +420,9 @@ function drawSurface(){
   /* ваши постройки — тем же слоем, что и POI: их видно с земли, заходить
      в меню, чтобы узнать об их существовании, больше не нужно */
   drawBuilt(tr,camx,camy,p);
+  /* посёлок (12t) — тем же слоем, что и постройки: место, к которому игрок идёт
+     ногами, обязано быть видно с горизонта, иначе идти не за чем */
+  if(settleCanLive(p))settleDraw(settleAt(G.sx,G.sy),tr,camx,camy,p);
   drawRocks(tr,camx,camy,p.T.pal);
   /* тень по длине корпуса, а не по прежним 34 px: у нового посадочного силуэта
      она иначе выдаёт игрушку на палочках */
