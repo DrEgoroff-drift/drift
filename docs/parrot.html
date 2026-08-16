@@ -12096,7 +12096,8 @@ const PAR_C={
 let parWin=false,parRAF=0,parT0=0;
 /* состояние живёт между кадрами: пружины, а не «текущий кадр анимации» */
 const PAR={t:0,flap:0,flapV:0,crest:0,crestV:0,ruff:0,ruffV:0,lean:0,leanV:0,
-  hop:0,hopV:0,blink:0,blinkAt:2,say:"",sayT:-9,peck:0,look:0,mad:0,beak:0};
+  hop:0,hopV:0,blink:0,blinkAt:2,say:"",sayT:-9,peck:0,look:0,mad:0,beak:0,
+  preen:0,preenT:-9};
 
 /* ── перо ──
    Один примитив на всё: остроконечный лист с рёбрышком и лёгким загибом.
@@ -12232,6 +12233,12 @@ function parCoat(g,T){
   }
   /* грудь не плоская: слева на неё падает тень от крыла, справа по кромке
      идёт свет. Без этого чешуя лежит ковриком, как бы мелко её ни клали. */
+  /* холодная кромка по спине: единственная линия, которая привязывает птицу
+     к свету кабины. Она внутри обвода, поэтому не превращается в контур. */
+  g.strokeStyle="rgba(150,225,255,.34)";g.lineWidth=3.2;
+  g.beginPath();
+  g.moveTo(-30,-52);g.bezierCurveTo(-36,-104,-34,-146,-12,-170);g.stroke();
+
   const cg=g.createLinearGradient(-14,0,42,0);
   cg.addColorStop(0,"rgba(20,34,60,.55)");
   cg.addColorStop(.45,"rgba(20,34,60,0)");
@@ -12267,6 +12274,13 @@ function parFoot(c,x,dir,grip){
   c.beginPath();c.moveTo(1,-44);c.quadraticCurveTo(0,-20,0,-4);c.stroke();
   c.strokeStyle=PAR_C.foot;c.lineWidth=4.4;
   c.beginPath();c.moveTo(1,-42);c.quadraticCurveTo(0,-20,0,-5);c.stroke();
+  /* чешуя цевки: восемь колечек. Гладкая палка выдаёт рисунок сразу — у птицы
+     нога покрыта щитками, и это видно даже в четверть размера */
+  c.strokeStyle="rgba(70,42,18,.45)";c.lineWidth=1;
+  for(let i=0;i<8;i++){
+    const y=-40+i*4.6;
+    c.beginPath();c.moveTo(-2.4,y);c.quadraticCurveTo(0,y+1.6,2.4,y);c.stroke();
+  }
   for(let i=0;i<3;i++){
     const a=(-.85+i*.72)+grip*.14;
     c.strokeStyle=PAR_C.foot;c.lineWidth=4.6;
@@ -12294,11 +12308,24 @@ function parrotDraw(c,W,H){
   /* ── жёрдочка и тень ── без опоры и тени птица висит в пустоте */
   c.fillStyle="rgba(0,0,0,.45)";
   c.beginPath();c.ellipse(-2,1,44-lift*.18,6-lift*.03,0,0,7);c.fill();
+  /* жёрдочка — не труба из каталога, а обрезок ветки: два сучка, волокно
+     вдоль и светлая верхняя кромка. Ровный цилиндр под живой птицей сразу
+     выдаёт, что это интерфейс, а не место, где она живёт. */
   const pg=c.createLinearGradient(0,-4,0,10);
-  pg.addColorStop(0,"#3d4a5c");pg.addColorStop(.45,"#232c39");pg.addColorStop(1,"#121820");
+  pg.addColorStop(0,"#6b5334");pg.addColorStop(.42,"#3d2e1c");pg.addColorStop(1,"#1c1510");
   c.fillStyle=pg;
   c.beginPath();c.roundRect(-92,-3,184,11,5);c.fill();
-  c.strokeStyle="rgba(127,230,216,.24)";c.lineWidth=1;
+  c.strokeStyle="rgba(140,110,70,.35)";c.lineWidth=.8;
+  for(let i=0;i<5;i++){
+    const y=-1+i*1.9;
+    c.beginPath();c.moveTo(-88,y);
+    c.bezierCurveTo(-30,y+(i&1?.9:-.7),30,y+(i&1?-.8:.8),88,y);c.stroke();
+  }
+  for(const kx of [-46,28]){
+    c.fillStyle="rgba(28,20,12,.55)";
+    c.beginPath();c.ellipse(kx,2.6,5,2.6,.2,0,7);c.fill();
+  }
+  c.strokeStyle="rgba(190,240,235,.22)";c.lineWidth=1;
   c.beginPath();c.moveTo(-90,-2.4);c.lineTo(90,-2.4);c.stroke();
 
   c.save();
@@ -12338,6 +12365,10 @@ function parrotDraw(c,W,H){
   }
   g.restore();
 
+  /* подхвостье: короткие кремовые перья у корня хвоста — стык корпуса с
+     хвостом, без которого хвост выглядит вставленным в тело */
+  parRow(g,-18,-70,10,10,1.55,2.30,5,34,13,2.2,.05,PAR_C.cream,PAR_C.creamD,.8);
+
   /* 2. корпус: масса и черепица одним куском, внутри обвода */
   parCoat(g,T);
 
@@ -12359,14 +12390,26 @@ function parrotDraw(c,W,H){
     parPlume(g,104-k*38,a,.30,11-k*3.6,i&1?PAR_C.blue:PAR_C.blueL,PAR_C.blueD,5,1.5);
     g.restore();
   }
+  /* кроющие второго порядка: мелкое синее перо поверх голых оснований маховых.
+     Без них у крыла видно, где перья «воткнуты», и вся кисть теряет корень. */
+  parRow(g,2,-6,9,10,1.30,1.94,7,30,12,1.4,.05,PAR_C.blueL,PAR_C.blueD,.9);
   /* кроющие плеча: короткие янтарные, они же стык крыла с телом */
   parRow(g,4,-10,8,9,1.28,1.92,5,40,15,3.6,.07,PAR_C.amber,PAR_C.amberD,.9);
   g.restore();
 
-  /* 4. ГОЛОВА со всем, что на ней: качается на шее одним куском */
+  /* воротничок: мелкое перо там, где голова садится на грудь. Стык двух
+     оперений — самое заметное место сборки, и он должен быть заткан. */
+  const rf2=Math.abs(PAR.ruff);
+  parRow(g,10,-150,16,13,-2.2,1.3,11,20+rf2*6,10,1.2,.10+rf2*.12,
+    PAR_C.cream,PAR_C.blue,.92);
+
+  /* 4. ГОЛОВА со всем, что на ней: качается на шее одним куском.
+     Чистка перьев (`preen`) — единственное, что птица делает сама: голова
+     ныряет к плечу и возвращается. Без такого «дела» она просто качается. */
   g.save();
-  g.translate(12,-168);
-  const hr=PAR.look*.12+Math.sin(T*.5)*.022+PAR.mad*.05;
+  const pr=PAR.preen;
+  g.translate(12-pr*16,-168+pr*26);
+  const hr=PAR.look*.12+Math.sin(T*.5)*.022+PAR.mad*.05+pr*1.05;
   g.rotate(hr);
 
   /* 4а. хохол: восемь перьев назад-вверх, у каждого своя фаза и бусина.
@@ -12451,6 +12494,10 @@ function parrotDraw(c,W,H){
   /* 4г. глаз: крупный, круглый, с двумя бликами — от него всё обаяние */
   const bl=1-PAR.blink;
   g.save();g.translate(4,-4);
+  /* перьевое кольцо вокруг глаза: тёмная кайма, из-за которой глаз сидит в
+     голове, а не лежит на ней наклейкой */
+  g.fillStyle="rgba(24,38,64,.55)";
+  g.beginPath();g.ellipse(0,0,12.6,12.2,0,0,7);g.fill();
   g.fillStyle="#e9dcc6";
   g.beginPath();g.ellipse(0,0,9.5,9.5*Math.max(.08,bl),0,0,7);g.fill();
   if(bl>.2){
@@ -12519,6 +12566,12 @@ function parStep(dt){
   [PAR.lean,PAR.leanV]=parSpring(PAR.lean,PAR.leanV,70,.88,dt);
   [PAR.hop,PAR.hopV]=parSpring(PAR.hop,PAR.hopV,110,.87,dt);
   PAR.peck*=Math.pow(.85,dt*60);
+  /* чистка перьев: заход на пару секунд, вход и выход по косинусу, и никогда
+     во время взмаха — птица не делает два дела разом */
+  if(PAR.preenT>0){
+    const p=(PAR.t-PAR.preenT)/2.2;
+    PAR.preen=p>=1?(PAR.preenT=-9,0):(1-Math.cos(p*6.283))*.5;
+  }else if(Math.random()<dt*.06&&PAR.flap<.05){PAR.preenT=PAR.t;}
   PAR.beak*=Math.pow(.90,dt*60);
   PAR.look*=Math.pow(.985,dt*60);
   PAR.mad*=Math.pow(.992,dt*60);
@@ -31557,7 +31610,8 @@ setTimeout(function(){
     ["ВЗМАХ",      {t:3.1,flap:.85,hop:11,crest:.5,ruff:.4}],
     ["ХОХОЛ ДЫБОМ",{t:4.4,crest:1,mad:1,ruff:.8,blink:.2}],
     ["ГОЛОВА",     {t:5.7,look:1,ruff:.5,peck:.6}],
-    ["ОСАДКА",     {t:6.9,flap:.15,hop:-3,lean:.3}]
+    ["ОСАДКА",     {t:6.9,flap:.15,hop:-3,lean:.3}],
+    ["ЧИСТКА",     {t:8.2,preen:.85,ruff:.6,crest:.3}]
   ];
   var W2=CW*poses.length,H2=CH+26;
   var cv=document.createElement("canvas");
