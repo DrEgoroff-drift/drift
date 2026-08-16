@@ -37,17 +37,87 @@ function bBox(x,y,w,h,fill,lit,edge){
    разметка; где живут — мягкая стена, панель понизу и ковёр; где склад — голая
    порода и полсвета; в лаборатории — плитка и лишний свет. `work` — доля
    ширины, у которой в отсеке рабочее место: смена собирается там, а не стоит
-   по помещению через равные шаги. */
+   по помещению через равные шаги.
+
+   `dress` — что висит на стене. Отделка сказала, ЧТО это за помещение; след на
+   стене говорит, КТО в нём работает: доска со сменным графиком, инструмент на
+   крюках, трафаретный номер по породе, снимок и календарь над койкой. Вешается
+   на пустую стену до оборудования, поэтому станок её честно перекрывает. */
 const ROOM_FIN={
-  reactor :{wall:"rib",  tint:"38,50,58", lamp:"206,240,246", ln:2, floor:"plate", warn:1, work:.30},
-  solar   :{wall:"panel",tint:"40,64,74", lamp:"202,238,246", ln:3, floor:"plate", warn:0, work:.66},
-  drill   :{wall:"rock", tint:"46,40,33", lamp:"246,212,148", ln:2, dim:.85, floor:"dirt",warn:1, work:.46},
-  storage :{wall:"rock", tint:"40,46,52", lamp:"198,218,228", ln:2, dim:.60, floor:"dirt",warn:0, work:.40},
-  habitat :{wall:"soft", tint:"54,49,46", lamp:"250,220,168", ln:3, floor:"soft", warn:0, work:.60},
-  refinery:{wall:"rib",  tint:"48,41,37", lamp:"248,196,130", ln:2, floor:"plate", warn:1, work:.32},
-  pad     :{wall:"panel",tint:"34,46,56", lamp:"228,244,250", ln:3, floor:"plate", warn:1, work:.50},
-  lab     :{wall:"tile", tint:"42,62,70", lamp:"226,248,252", ln:3, dim:1.15, floor:"clean",warn:0, work:.52}
+  reactor :{wall:"rib",  tint:"38,50,58", lamp:"206,240,246", ln:2, floor:"plate", warn:1, work:.30, dress:["board","cable"]},
+  solar   :{wall:"panel",tint:"40,64,74", lamp:"202,238,246", ln:3, floor:"plate", warn:0, work:.66, dress:["board","stencil"]},
+  drill   :{wall:"rock", tint:"46,40,33", lamp:"246,212,148", ln:2, dim:.85, floor:"dirt",warn:1, work:.46, dress:["hooks","stencil"]},
+  storage :{wall:"rock", tint:"40,46,52", lamp:"198,218,228", ln:2, dim:.60, floor:"dirt",warn:0, work:.40, dress:["stencil","board"]},
+  habitat :{wall:"soft", tint:"54,49,46", lamp:"250,220,168", ln:3, floor:"soft", warn:0, work:.60, dress:["personal","personal"]},
+  refinery:{wall:"rib",  tint:"48,41,37", lamp:"248,196,130", ln:2, floor:"plate", warn:1, work:.32, dress:["hooks","cable"]},
+  pad     :{wall:"panel",tint:"34,46,56", lamp:"228,244,250", ln:3, floor:"plate", warn:1, work:.50, dress:["hooks","board"]},
+  lab     :{wall:"tile", tint:"42,62,70", lamp:"226,248,252", ln:3, dim:1.15, floor:"clean",warn:0, work:.52, dress:["board","samples"]}
 };
+/* след смены на стене: шесть коротких кистей, каждая — предмет, а не узор.
+   Мелко и тускло: это фон, который замечают вторым взглядом, а не деталь,
+   спорящая с оборудованием */
+function bDress(kind,x,y,lit,R){
+  const a=(.5+lit*.5);
+  if(kind==="board"){                                      // доска: сменный график и записка
+    const bw=26,bh=17;
+    bBox(x,y,bw,bh,"rgba(30,38,46,.92)",lit,"rgba(150,168,186,"+(.22*a).toFixed(2)+")");
+    ctx.fillStyle="rgba(215,228,240,"+(.16*a).toFixed(3)+")";
+    for(let i=0;i<4;i++)ctx.fillRect(x+3,y+3+i*3.6,3+R()*(bw-9),1.2);
+    ctx.fillStyle="rgba("+BM_WARM+","+(.34*a).toFixed(2)+")";   // одна строка выделена
+    ctx.fillRect(x+3,y+3+((R()*4)|0)*3.6,4+R()*7,1.2);
+  }else if(kind==="hooks"){                                // планка с инструментом
+    ctx.fillStyle="rgba(130,146,162,"+(.34*a).toFixed(2)+")";ctx.fillRect(x,y,30,1.8);
+    for(let i=0;i<4;i++){
+      const px=x+3+i*8,ln=5+R()*7;
+      ctx.strokeStyle="rgba(170,186,202,"+(.20+.22*a*R()).toFixed(2)+")";
+      ctx.lineWidth=1+(R()<.4?1:0);
+      ctx.beginPath();ctx.moveTo(px,y+1.4);ctx.lineTo(px+(R()-.5)*2,y+1.4+ln);ctx.stroke();
+      if(R()<.45){ctx.fillStyle="rgba(150,166,182,"+(.22*a).toFixed(2)+")";
+        ctx.fillRect(px-1.6,y+1.4+ln-2,3.4,2.4);}
+    }
+  }else if(kind==="stencil"){                              // номер по трафарету прямо по породе
+    /* тонкие штрихи читались парой палок в воздухе. Трафарет красят жирно и
+       по месту: цифра в рост ладони, под ней подчёркивающая полоса — она и
+       сажает номер на стену, а не оставляет висеть */
+    ctx.fillStyle="rgba(226,190,120,"+(.26*a).toFixed(2)+")";
+    const n=2+((R()*2)|0);
+    for(let i=0;i<n;i++){
+      const px=x+i*9;
+      ctx.fillRect(px,y,7,2.2);ctx.fillRect(px,y+9.8,7,2.2);
+      ctx.fillRect(px,y,2.2,12);ctx.fillRect(px+4.8,y,2.2,12);
+    }
+    ctx.fillStyle="rgba(226,190,120,"+(.14*a).toFixed(2)+")";
+    ctx.fillRect(x-1,y+14.5,n*9+1,1.6);
+  }else if(kind==="cable"){                                // жгут по стене на скобах
+    ctx.strokeStyle="rgba(70,58,46,"+(.5*a).toFixed(2)+")";ctx.lineWidth=2.4;
+    ctx.beginPath();ctx.moveTo(x,y);
+    ctx.bezierCurveTo(x+12,y+4,x+22,y-3,x+34,y+2);ctx.stroke();
+    ctx.fillStyle="rgba(150,166,182,"+(.18*a).toFixed(2)+")";
+    for(let i=0;i<3;i++)ctx.fillRect(x+4+i*12,y-1.5+i%2,2,5);
+  }else if(kind==="samples"){                              // полка с образцами: свет в склянках
+    /* полка без кронштейнов и бледные склянки висели в воздухе бледной сыпью.
+       Доска на двух упорах, склянки выше и с ясной жидкостью внизу */
+    ctx.fillStyle="rgba(140,158,172,"+(.30*a).toFixed(2)+")";ctx.fillRect(x-1,y+13,32,2);
+    ctx.fillStyle="rgba(110,126,140,"+(.26*a).toFixed(2)+")";
+    ctx.fillRect(x+2,y+15,2,3.4);ctx.fillRect(x+25,y+15,2,3.4);
+    for(let i=0;i<4;i++){
+      const px=x+3+i*7,hh=7+R()*5;
+      ctx.fillStyle="rgba(200,222,232,"+(.22*a).toFixed(2)+")";ctx.fillRect(px,y+13-hh,4,hh);
+      ctx.fillStyle="rgba("+(R()<.5?BM_COOL:"200,170,255")+","+(.46*a).toFixed(2)+")";
+      ctx.fillRect(px,y+13-hh*.55,4,hh*.55);
+      ctx.fillStyle="rgba(230,244,250,"+(.20*a).toFixed(2)+")";ctx.fillRect(px+.6,y+13-hh,1,hh);
+    }
+  }else{                                                   // личное: снимок и отрывной календарь
+    const pw=11,ph=9;
+    bBox(x,y,pw,ph,"rgba(40,44,52,.9)",lit,"rgba(220,206,180,"+(.25*a).toFixed(2)+")");
+    ctx.fillStyle="rgba(120,160,190,"+(.30*a).toFixed(2)+")";ctx.fillRect(x+1.5,y+1.5,pw-3,ph*.55);
+    ctx.fillStyle="rgba(90,130,90,"+(.30*a).toFixed(2)+")";ctx.fillRect(x+1.5,y+ph*.6,pw-3,ph*.3);
+    ctx.fillStyle="rgba(236,228,206,"+(.30*a).toFixed(2)+")";ctx.fillRect(x+pw+5,y+1,8,10);
+    ctx.fillStyle="rgba(190,90,70,"+(.45*a).toFixed(2)+")";ctx.fillRect(x+pw+5,y+1,8,2.4);
+    ctx.fillStyle="rgba(60,64,72,"+(.5*a).toFixed(2)+")";
+    for(let i=0;i<3;i++)ctx.fillRect(x+pw+6.5,y+5+i*2,5,1);
+  }
+}
 const FIN_DEF=ROOM_FIN.pad;
 /* задняя стена: тон и фактура — от отделки отсека. Без стены за оборудованием
    чёрная дыра, и отсек читается вырезкой, а не помещением */
@@ -247,6 +317,17 @@ function drawModule(k,x,y,lit,c,r,B){
   /* задняя стена и пол — общие для всех отсеков: сначала помещение, потом мебель */
   const fin=ROOM_FIN[k]||FIN_DEF;
   bWall(x0,y0,w,h-8,lit,seed,fin);
+  /* след смены на стене: два предмета по краям, где оборудование не стоит.
+     Середину не занимаем — там станок, и вещь под ним была бы нарисована зря */
+  if(fin.dress){
+    const Rd=rng(seed+53);
+    for(let i=0;i<fin.dress.length;i++){
+      const side=i?1:0,
+            dx=x0+(side?w*.62+Rd()*(w*.24):w*.06+Rd()*(w*.16)),
+            dy=y0+12+Rd()*(h*.30);
+      bDress(fin.dress[i],dx,dy,lit,Rd);
+    }
+  }
   /* ── лампы под потолком ──
      Свет в отсеке был разлит ниоткуда: помещение светилось, но источника не
      имело, и потолок оставался пустой полосой. Лампы на потолке с конусом до
