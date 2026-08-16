@@ -21,6 +21,9 @@ setTimeout(function(){
     if((i*7)%11<8)cells[i]={k:kinds[i%kinds.length],hp:1};
   G.bases[baseKey(G.sx,G.sy,p.idx)]={sx:G.sx,sy:G.sy,idx:p.idx,name:p.name,type:p.type,
     res:p.res.slice(0,3),cells:cells,pool:{},tMs:Date.now(),built:Date.now()};
+  // на стенде нужен штат: людей ровно столько, сколько нанято, и пустая база
+  // остаётся пустой — поэтому для снимка нанимаем смену
+  for(var q=0;q<8;q++){var cw=genMerc(hashi(q*77+13,5,3));cw.order={kind:"base",sx:G.sx,sy:G.sy,idx:p.idx};G.crew.push(cw);}
   enterBase(p);
   setTimeout(function(){
     for(var f=0;f<3;f++)frame(performance.now()+f*16);

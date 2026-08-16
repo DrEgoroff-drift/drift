@@ -18320,6 +18320,25 @@ function drawModule(k,x,y,lit,c,r,B){
   bWall(x0,y0,w,h-8,lit,seed);
   const F=BASE_ROOM[k];
   if(F)F(x0,y0,w,h,cx,fy,lit,seed,B,P,c,r);
+  /* ── смена в отсеке ──
+     В комнате стоял ровно один работник, и база выглядела законсервированной:
+     у образца, по которому это переделывается, в каждом помещении по три-пять
+     человек, и именно они делают убежище живым — глаз читает не мебель, а
+     людей при мебели. Массовка добавляется поверх «своего» работника отсека,
+     общим приёмом, а не правкой восьми комнат по отдельности.
+
+     Честность механики важнее картинки: людей ровно столько, сколько на базе
+     персонала. Пустая база остаётся пустой — иначе разрез врал бы о штате. */
+  const staff=(typeof baseStaff==="function"&&B)?baseStaff(B).length:0;
+  if(staff>0){
+    const hh=hashi(c+3,r+5,(B&&B.idx|0)+11);
+    const room=Math.min(3,Math.round(staff/2)+((hh>>>4)&1));
+    for(let i=0;i<room;i++){
+      const px=x0+w*(.22+((hh>>>(i*3+2))&7)/7*.56);
+      const sit=((hh>>>(i+9))&3)===0;
+      bWorker(px,fy,lit,sit,G.t*(.028+i*.006)+seed+i*2.1,((hh>>>(i+13))&1)?1:-1);
+    }
+  }
   /* пол поверх всего: плита со светом сверху и тень, которой мебель касается */
   ctx.fillStyle="rgba(120,132,146,"+(.10+lit*.16).toFixed(2)+")";ctx.fillRect(x0,fy-4,w,4);
   ctx.fillStyle="rgba(150,166,182,"+(.05+lit*.08).toFixed(3)+")";ctx.fillRect(x0,fy-4,w,1);
@@ -19600,6 +19619,28 @@ function drawBase(){
       ctx.strokeStyle="rgba(255,80,60,.7)";ctx.lineWidth=2;
       ctx.beginPath();ctx.moveTo(x+14,y+14);ctx.lineTo(x+BCELL_W-14,y+BCELL_H-14);ctx.stroke();
       ctx.beginPath();ctx.moveTo(x+BCELL_W-14,y+14);ctx.lineTo(x+14,y+BCELL_H-14);ctx.stroke();
+    }
+  }
+  /* ── переборки ──
+     Отсеки одного яруса стояли встык и сливались в ленту: где кончается склад
+     и начинается жильё, было видно только по мебели. На образце каждая
+     комната отбита толстой стеной, и ряд читается ЧЕРЕДОЙ ПОМЕЩЕНИЙ, а не
+     одним длинным залом. Стена ставится на границе двух занятых клеток и по
+     краям застройки — там, где помещение упирается в породу. */
+  for(let r=0;r<baseRows(B);r++)for(let c=0;c<=BASE_COLS;c++){
+    const a=c>0?baseCell(B,c-1,r):null, b=c<BASE_COLS?baseCell(B,c,r):null;
+    if(!a&&!b)continue;
+    const x=X(90+c*BCELL_W), y0=Y(150+r*BCELL_H), y1=Y(150+(r+1)*BCELL_H);
+    if(x<-20||x>W+20)continue;
+    const wdt=(a&&b)?5:7;                       // внешняя стена толще внутренней
+    ctx.fillStyle="rgba(9,11,15,.95)";
+    ctx.fillRect(x-wdt/2,y0,wdt,y1-y0);
+    ctx.fillStyle="rgba(150,164,180,"+(.08+lit*.12).toFixed(2)+")";
+    ctx.fillRect(x-wdt/2,y0,1,y1-y0);           // блик по кромке, обращённой к свету
+    /* проём между смежными отсеками: люди же как-то ходят */
+    if(a&&b){
+      ctx.fillStyle="rgba(255,206,140,"+(.10+lit*.16).toFixed(2)+")";
+      ctx.fillRect(x-wdt/2,y1-BCELL_H*.30,wdt,BCELL_H*.18);
     }
   }
   /* коридор-стяжка вдоль пола и ствол лифта */
@@ -28819,6 +28860,9 @@ setTimeout(function(){
     if((i*7)%11<8)cells[i]={k:kinds[i%kinds.length],hp:1};
   G.bases[baseKey(G.sx,G.sy,p.idx)]={sx:G.sx,sy:G.sy,idx:p.idx,name:p.name,type:p.type,
     res:p.res.slice(0,3),cells:cells,pool:{},tMs:Date.now(),built:Date.now()};
+  // РЅР° СЃС‚РµРЅРґРµ РЅСѓР¶РµРЅ С€С‚Р°С‚: Р»СЋРґРµР№ СЂРѕРІРЅРѕ СЃС‚РѕР»СЊРєРѕ, СЃРєРѕР»СЊРєРѕ РЅР°РЅСЏС‚Рѕ, Рё РїСѓСЃС‚Р°СЏ Р±Р°Р·Р°
+  // РѕСЃС‚Р°С‘С‚СЃСЏ РїСѓСЃС‚РѕР№ вЂ” РїРѕСЌС‚РѕРјСѓ РґР»СЏ СЃРЅРёРјРєР° РЅР°РЅРёРјР°РµРј СЃРјРµРЅСѓ
+  for(var q=0;q<8;q++){var cw=genMerc(hashi(q*77+13,5,3));cw.order={kind:"base",sx:G.sx,sy:G.sy,idx:p.idx};G.crew.push(cw);}
   enterBase(p);
   setTimeout(function(){
     for(var f=0;f<3;f++)frame(performance.now()+f*16);
