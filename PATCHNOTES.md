@@ -9,6 +9,23 @@ could ever save.
 
 ---
 
+## 0.59.0 — "You give, they decide"
+
+**M109, the settlement** (`12t-settle.js`, suite `91y-settle.js`). Habitable worlds have people
+living on them, and the one thing you cannot do is give them orders. You hand over cargo on foot —
+whatever you happen to be carrying — and they choose what to raise from it: their own leaning from
+the seed, tilted by what you kept bringing. Ten hours of ore and ten hours of volatiles make
+different villages. Growth is a lazy roll over elapsed time with the 24-hour offline cap, never a
+live simulation; while there is food in the barn they eat and build, and when it runs out their
+mood falls. They pay **in goods and on their terms** — you ask, and the mood decides whether
+anything is ready; a settlement never pays credits, and asking twice in a row gets you nothing.
+At stage 3 they become a stop on the factor's map and barges start calling, exactly as your own
+planet does. They answer in the expedition's worn pidgin: a line of glyphs where the only words
+you read are the ones that came to you as fragments of the report.
+
+Also: the graphics queue was rewritten as a **debt list** — one line per fault found by looking —
+and the narrative of twelve base passes and the first `scoop` pass moved to `docs/PLAN-archive.md`.
+
 ## 0.58.0 — "The luxe yacht is no longer a courier with bus windows"
 
 **A yacht is the one hull bought for the look of it**, and it was an arrow with a strip of

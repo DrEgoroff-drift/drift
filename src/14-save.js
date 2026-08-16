@@ -36,7 +36,7 @@ function snapshot(){
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,
-    loreFound:G.loreFound,loreMarks:G.loreMarks,
+    loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -141,6 +141,30 @@ function applySave(s){
     if(pn.stock&&typeof pn.stock==="object")
       for(const k of N.res)N.stock[k]=clamp(+pn.stock[k]||0,0,PLANET_CAP);
     G.pnode=N;
+  }
+  /* посёлки (12t-settle): решения игрока в них есть — что и сколько он отдавал,
+     поэтому они персистятся целиком. Чинится по месту: постройки сверяются с
+     таблицей, склад и рацион — с ходовыми товарами, ступень пересчитывается по
+     постройкам, а не берётся из записи, чтобы правка таблицы не оставляла
+     посёлок на ступени, которой он больше не соответствует. */
+  G.settle={};
+  if(s.settle&&typeof s.settle==="object")for(const key in s.settle){
+    const v=s.settle[key];
+    if(!v||typeof v!=="object")continue;
+    const built=(Array.isArray(v.built)?v.built:[]).filter(k=>!!SETTLE_BY_K[k]).slice(0,24);
+    const S={seed:v.seed|0,sx:v.sx|0,sy:v.sy|0,idx:v.idx|0,
+      name:typeof v.name==="string"?v.name:"",
+      lean:SETTLE_BY_K[v.lean]?v.lean:SETTLE_BUILD[0].k,
+      stage:built.length>=5?3:(built.length>=3?2:1),
+      mood:clamp(+v.mood||0,0,100),fed:Math.max(0,+v.fed||0),
+      stock:{},diet:{},built,
+      made:+v.made||Date.now(),last:+v.last||Date.now(),
+      asked:+v.asked||0,paid:Math.max(0,v.paid|0)};
+    for(const k of RES_KEYS){
+      if(v.stock&&v.stock[k]>0)S.stock[k]=clamp(+v.stock[k],0,SETTLE_STOCK);
+      if(v.diet&&v.diet[k]>0)S.diet[k]=Math.max(0,+v.diet[k]);
+    }
+    G.settle[key]=S;
   }
   /* отчёт «Долгого Хода» (12q-lore): формат сейва не менялся (v:4), старые
      записи просто не имеют этих полей и начинают с пустого */
