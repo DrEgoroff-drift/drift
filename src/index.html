@@ -63,6 +63,7 @@
   <button id="hqbtn" style="display:none"><svg viewBox="0 0 16 16"><path d="M8 1.6 14 5v6l-6 3.4L2 11V5z"/><circle cx="8" cy="8" r="2.2"/></svg><span class="tx"><em>ШТАБ</em><s>управляющие и домены</s></span></button>
   <button id="logbtn"><svg viewBox="0 0 16 16"><path d="M3.5 2.5h9v11h-9z"/><path d="M5.8 5.6h4.4M5.8 8h4.4M5.8 10.4h2.6"/></svg><span class="tx"><em>ЖУРНАЛ</em><s>что происходило</s></span></button>
   <button id="lorebtn" style="display:none"><svg viewBox="0 0 16 16"><path d="M3 2.6h6.5l3.5 3.4v7.4H3z"/><path d="M9.5 2.6V6H13"/><path d="M5.4 8.4h5.2M5.4 10.8h3.4"/></svg><span class="tx"><em>ОТЧЁТ</em><s>то, что собрано по зарубкам</s></span></button>
+  <button id="parrotbtn" style="display:none"><svg viewBox="0 0 16 16"><path d="M9.6 3.4a2.6 2.6 0 1 0-3.4 2.5c-2 .9-3.2 2.9-3.2 5.1h7.4c1.8 0 3.1-1.3 3.1-3"/><path d="M9.9 3.1h2.6"/><path d="M6.4 11v3M9.4 11v3"/></svg><span class="tx"><em>ТРЕПЛО</em><s>то, что живёт на жёрдочке</s></span></button>
   <button id="optbtn"><svg viewBox="0 0 16 16"><path d="M2.5 5h11M2.5 11h11"/><circle cx="6" cy="5" r="1.9"/><circle cx="10.5" cy="11" r="1.9"/></svg><span class="tx"><em>НАСТРОЙКИ</em><s>звук, управление, запись</s></span></button>
 </div>
 
@@ -76,6 +77,13 @@
 <div id="lorewin">
   <b>ОТЧЁТ «ДОЛГОГО ХОДА»<span id="loreclose">×</span></b>
   <div id="lorelist"></div>
+</div>
+
+<div id="parrotwin">
+  <b><i id="parrotname">ТРЕПЛО</i><span id="parrotclose">×</span></b>
+  <canvas id="parrotcv"></canvas>
+  <i id="parrotsay"></i>
+  <s>ткни — отзовётся тем, что слышало</s>
 </div>
 
 <!-- ══ управление ══ большим пальцем, поэтому по нижним углам ══ -->

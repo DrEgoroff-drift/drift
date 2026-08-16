@@ -9,6 +9,28 @@ could ever save.
 
 ---
 
+## 0.67.0 — "The bird has a body"
+
+**M117** (`12y-parrot-face.js` new, `index.html`, `style.css`, `17b-finds.js`, `28-loop.js`,
+stand `docs/mkparrot.ps1`). Closes the open tail left by M116: the repeater was a line on a
+board — no picture, no presence, nothing to touch.
+
+- **A perch window.** Opened from the menu (the button appears only once a bird is aboard), it
+  hangs over the world in any mode and closes with the cross. The bird is property, not an event.
+- **Drawn procedurally, animated on springs.** Cobalt back, cream breast, long layered tail and a
+  crest of thin plumes, each carrying a cold bead on a bare stalk that lags half a beat behind the
+  head. Breathing, blinking, sway, ripple per feather row, and a full-body wing beat.
+- **Five poke zones, five answers** — crest, beak, ruff, tail, body. What it says is only what it
+  heard (12x): unread pidgin still comes out as glyphs. It never invents a line.
+- **The bird now actually exists.** The roll on the hulk find is gone: the first hulk opened hands
+  the bird over, because a pet that reaches half the playthroughs is a lottery, not a mechanic.
+
+Faults found and fixed by eye over five stand passes, in order: the dark mass showing between
+feathers (coat clipped to the body outline), the coat reading as a zebra and then as cobblestone
+(denser tiling, low-contrast scales with one shadow under the edge), wing and tail merging into
+one broom (separate axes), and plumes drawn as stem-plus-strokes reading as fish bones (a filled
+vane along the stem).
+
 ## 0.66.0 — "It says only what it heard"
 
 **M116** (`12x-parrot.js`, `17b-finds.js`, `12q-lore.js`, `26-ui-station.js`, `13-pirates.js`,
