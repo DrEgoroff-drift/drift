@@ -14840,13 +14840,56 @@ function drawScoop(){
     for(let i=-1;i<=Math.ceil(W/wid)+1;i++)ctx.drawImage(T,off+i*wid,yTop,wid,hgt);
   }
   ctx.globalAlpha=1;
-  /* глубина: разрежённая тьма сверху, раскалённая муть снизу */
+  /* ── глубина ──
+     Верх и низ кадра выглядели одинаково: две ленты одной текстуры на весь
+     экран, и сцена читалась обоями, а не атмосферой, у которой есть верх и
+     низ. Теперь вверху разрежённая холодная муть с проглядывающей чернотой
+     космоса, внизу — плотная горячая мгла, и в самом низу тёмное дно, куда
+     свет уже не доходит. Это же и говорит игроку, куда падать не надо. */
   const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,"rgba(4,6,12,.92)");
-  g.addColorStop(.22,"rgba(8,10,20,.25)");
-  g.addColorStop(.62,"rgba(0,0,0,0)");
-  g.addColorStop(1,"rgba("+pal[4].join(",")+",.40)");
+  g.addColorStop(0,"rgba(3,5,11,.95)");
+  g.addColorStop(.14,"rgba(8,12,24,.55)");
+  g.addColorStop(.34,"rgba(10,14,26,.10)");
+  g.addColorStop(.58,"rgba(0,0,0,0)");
+  /* дно оказалось самым СВЕТЛЫМ местом кадра: кремовая лента внизу спорила с
+     замыслом, по которому вниз лететь страшно. Тёплый подсвет остаётся узкой
+     полосой, а под ним мгла глушит всё — свет туда уже не доходит */
+  g.addColorStop(.74,"rgba("+pal[4].join(",")+",.26)");
+  g.addColorStop(.86,"rgba("+Math.round(pal[0][0]*.7)+","+Math.round(pal[0][1]*.6)+","
+    +Math.round(pal[0][2]*.7)+",.62)");
+  g.addColorStop(1,"rgba(6,4,10,.93)");
   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  /* ── кромки сдвига ──
+     Текстура растягивается на полтора экрана и мылится: ни одной чёткой
+     границы, глазу не за что зацепиться, и скорость не читается. У настоящих
+     полос гиганта кромка резкая — там, где два потока идут в разные стороны.
+     Кромки рисуем в экранных координатах: волнистая линия, светлая сверху,
+     тёмная снизу, и каждая едет со своей скоростью — вот это и есть скорость. */
+  /* Семь кромок ровной волной через весь кадр читались змеями: одинаковая
+     амплитуда на равных шагах — это узор, а не течение. Их меньше, они гуще
+     книзу (там плотнее газ) и каждая своей длины волны. */
+  for(let e=0;e<5;e++){
+    const re=rng(hashi(p.seed,e*7717,0x3D9));
+    const v=.22+e*e*.036+e*.09+re()*.04, ey=H*v;
+    const dep=v<.5?1-v*1.2:.4+v*.4;                 // ближние (нижние) едут быстрее
+    const amp=6+re()*16, wl=180+re()*260, spd=(3+re()*7)*dep;
+    ctx.beginPath();
+    for(let x=-20;x<=W+20;x+=14){
+      const yy=ey+Math.sin((x+S.x*spd*11)/wl*TAU)*amp
+                 +Math.sin((x*1.7-S.x*spd*6)/(wl*.43)*TAU)*amp*.32;
+      if(x<0)ctx.moveTo(x,yy);else ctx.lineTo(x,yy);
+    }
+    /* Контурная линия поверх мыла — худшее из решений: она читается карандашом
+       по обоям, потому что живёт отдельно от тона. Кромка — это ТЕНЬ под
+       выступающей лентой: широкий мягкий мазок вниз и узкий тёмный по самой
+       границе, без единой светлой обводки. */
+    ctx.save();ctx.lineCap="round";
+    ctx.strokeStyle="rgba(10,6,16,"+(.16+dep*.18).toFixed(2)+")";
+    ctx.lineWidth=14;ctx.globalAlpha=.55;ctx.stroke();
+    ctx.globalAlpha=1;
+    ctx.strokeStyle="rgba(12,8,18,"+(.20+dep*.20).toFixed(2)+")";ctx.lineWidth=2.6;ctx.stroke();
+    ctx.restore();
+  }
   /* набегающий поток: тонкие штрихи по всему кадру, гуще к низу */
   ctx.strokeStyle="rgba(255,255,255,.05)";ctx.lineWidth=1;
   for(let i=0;i<26;i++){
@@ -14868,9 +14911,17 @@ function drawScoop(){
      плотного газа — он светится и в нём висит взвесь, которую и собирают */
   const cg=ctx.createLinearGradient(0,bt,0,bb);
   cg.addColorStop(0,"rgba(127,224,200,0)");
-  cg.addColorStop(.5,"rgba(127,224,200,.13)");
+  cg.addColorStop(.5,"rgba(127,224,200,.22)");
   cg.addColorStop(1,"rgba(127,224,200,0)");
   ctx.fillStyle=cg;ctx.fillRect(0,bt,W,bb-bt);
+  /* Полоса терялась в лиловой каше: слой газа плотнее, но по краям его не
+     видно, а игрок ищет глазами именно границу. Кромка идёт через весь кадр
+     штрихом — линейка это или газ, спор решается в пользу читаемости. */
+  for(const yy of [bt,bb]){
+    ctx.save();ctx.setLineDash([9,7]);ctx.lineDashOffset=-(S.x*7)%16;
+    ctx.strokeStyle="rgba(150,240,214,.30)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(W,yy);ctx.stroke();ctx.restore();
+  }
   ctx.fillStyle="rgba(190,255,238,.5)";
   for(let i=0;i<40;i++){
     const rr3=rng(hashi(p.seed,i*97,0x9AD));
@@ -14895,6 +14946,26 @@ function drawScoop(){
     for(let i=0;i<9;i++){
       const yy=sy-26+i*6.5, l=30+Math.abs(Math.sin(i*1.7+S.x*.05))*70*k;
       ctx.beginPath();ctx.moveTo(sx-14,yy);ctx.lineTo(sx-14-l,yy+ (i-4)*1.6);ctx.stroke();
+    }
+  }
+  /* ── след в газе ──
+     Корабль летел поверх обоев: среда его не замечала. Теперь за ним остаётся
+     разрез — светлая полоса, которую он вспорол, и два завитка по краям, где
+     газ сходится обратно. Это же единственное, по чему видно скорость вблизи. */
+  {
+    const tw=190+Math.abs(S.vy)*4;
+    const tg=ctx.createLinearGradient(sx-14,0,sx-14-tw,0);
+    tg.addColorStop(0,"rgba(236,246,255,.20)");
+    tg.addColorStop(1,"rgba(236,246,255,0)");
+    ctx.fillStyle=tg;ctx.fillRect(sx-14-tw,sy-5,tw,10);
+    ctx.strokeStyle="rgba(236,246,255,.14)";ctx.lineWidth=1.2;
+    for(const s of [-1,1]){
+      ctx.beginPath();ctx.moveTo(sx-16,sy+s*4);
+      for(let i=1;i<=7;i++){
+        const t=i/7;
+        ctx.lineTo(sx-16-t*tw,sy+s*(4+t*16)+Math.sin(t*7+S.x*.4+ (s>0?0:1.7))*4*t);
+      }
+      ctx.stroke();
     }
   }
   ctx.save();ctx.translate(sx,sy);ctx.rotate(S.bank*.5);ctx.scale(1.5,1.5);

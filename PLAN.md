@@ -113,7 +113,23 @@ flora and fauna, a living camera, station modules, weather.
    **Still open on the base:** in the tight compartments (reactor, quarters, lab) the machine
    fills the wall and the floor, so neither the wall trace nor the leftovers show at all — the
    honest fix is to give those rooms a free strip by their own layout, not to draw things over
-   the equipment. `scoop` is untouched.
+   the equipment.
+
+   **`scoop`, first pass ever** (stand: `docs/mkscoop.ps1` → `docs/shots/scoop.png`, three
+   heights in one column — above the band, in it, near the floor). The scene read as wallpaper:
+   one texture stretched twice, top and bottom alike, the ship flying over it untouched by
+   anything. Now the frame has a **top and a bottom** (thin cold haze with the black of space
+   showing through, dense warm murk below, and a dark floor light no longer reaches — which is
+   also what tells the player not to sink); **shear edges** — wavy shadow lines scrolling at
+   their own speeds, which is the only place the speed reads; the **collection band** carries a
+   dashed edge across the full width instead of two 34 px stubs lost in the haze; and the ship
+   leaves a **wake** — a slit of lighter gas with two curls closing behind it.
+
+   **Still open on `scoop`:** the giant's texture is baked at 512×256 and stretched to one and a
+   half screens, so everything is soft — not a single crisp edge belongs to the cloud itself, and
+   the shear edges are shadows laid on top of that softness rather than the clouds' own borders;
+   the floor is still lighter than the design wants; and nothing in the scene changes with the
+   type of giant beyond its palette.
 7. **Factions as a language of shapes** — only after ships and stations, or there is nothing to
    tell apart.
 8. **Redo the clouds.** The current blobs of radial gradients don't satisfy the player. Look at a
