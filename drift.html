@@ -669,7 +669,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.65.0";
+const VER="0.66.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -4779,6 +4779,8 @@ const G={
   scrip:{},scripRate:{},scripLog:[],
   /* срок и опустевшие системы (12v): null, пока посёлок не поднялся до второй ступени */
   doom:null,doomDead:{},
+  /* трепло и услышанное (12x): птицы нет, пока не найдена в чужих вещах */
+  parrot:null,heard:[],
   /* личный счёт фракций к вам (12o): пусто, пока не наделали дел */
   hunted:{},
   /* узел, стоящий в держателе рубки (05a-nodes, M101): украшение, не слот */
@@ -10574,6 +10576,13 @@ function loreTake(key){
          (LORE_CHAP[LORE_CHAP_IX[R.chap]].note)+"\n\nглав прочитано: "+loreChaptersRead()+" из 8");
     logAdd("tech","Сложилась глава «"+R.chapRu+"» · "+loreChaptersRead()+"/8");
   }
+  /* трепло (12x, M116): у камня оно слышит чужую речь и запоминает её дословно,
+     а со словом из этого же куска перечитывает ВСЁ, что помнит. Одно слово
+     оживляет старое — в этом вся механика птицы. */
+  if(typeof parrotHas==="function"&&parrotHas()){
+    heardPidgin(R.seed,G.sx,G.sy);
+    if(R.word)heardReread();
+  }
   if(typeof saveGame==="function")saveGame(true);
   return R;
 }
@@ -11838,6 +11847,171 @@ function drawAccountShelf(c,x0,fy,wall){
   }
 }
 
+/* ══════════════ трепло ушастое: свидетель, который не понимает ══════════════
+   Первый из пяти свидетелей (см. PLAN.md, «The witnesses»). Он же — единственная
+   вещь в игре, которая становится ЛУЧШЕ, пока лежит: птица повторяет
+   услышанное дословно, а понимается сказанное позже, по мере того как приходят
+   слова из отчёта «Долгого Хода» (12q) и от посёлка (12t). Купленная в первый
+   час фраза заговаривает на двадцатом, и игрок для этого никуда не летит.
+
+   ПРАВИЛА:
+   1. Трепло НЕ ВЫДУМЫВАЕТ. Каждая строка — след настоящего события, при котором
+      игрок присутствовал: стыковка, взятый кусок отчёта, сбитый пират. Строка
+      без события — то же враньё, что перк без кода.
+   2. Оно платит ДО того, как его поняли: цены станции, где вы уже были, — это
+      рынок, открытый без перелёта, а пеленг — метка на карте. Иначе птица была
+      бы лором с перьями.
+   3. Расшифровка — задним числом и волнами. Новое слово перечитывает ВСЁ
+      сохранённое, а не только новое.
+   4. Оно повторяет и за вами — в том числе не вовремя. Свидетель, который может
+      дать показания против вас, — единственный свидетель, которому веришь.
+   5. Первое трепло не ловится в поле: оно достаётся с остова разведчика, из
+      вещей покойника. Так игрок узнаёт, что покойник был. (Спец прохода отдаёт
+      первую птицу блошинцу — его ещё нет, M120; остов той же породы источник:
+      это тоже чужое имущество с известной судьбой.) */
+const HEARD_MAX=24;                 // больше птица не помнит: она птица
+const PARROT_NAMES=["Балабол","Скворец","Шумок","Пискля","Горлан","Кроха"];
+function parrotHas(){return !!G.parrot;}
+function heardAll(){return (G.heard||(G.heard=[]));}
+/* ── как достаётся ──
+   Один раз за прохождение и только из чужих вещей: у птицы есть прежний хозяин,
+   и его имя — часть находки, а не украшение. */
+function parrotFind(seed,who){
+  if(parrotHas())return null;
+  const r=rng(hashi(seed|0,0xB1AD,7));
+  G.parrot={seed:seed>>>0,name:pick(PARROT_NAMES,r),who:who||"неизвестного борта",
+    since:Date.now(),said:0};
+  tell("tech","В вещах нашлось живое: трепло ушастое «"+G.parrot.name+"»",
+    "ТРЕПЛО УШАСТОЕ\n«"+G.parrot.name+"»\nиз вещей "+G.parrot.who+
+    "\nоно повторяет всё, что слышало");
+  return G.parrot;
+}
+/* ── запомнить ──
+   Одна дверь на все виды: без вида и без события строка не заводится. */
+function heardAdd(kind,payload,words){
+  if(!parrotHas()||!kind)return null;
+  const L=heardAll();
+  const rec={t:Date.now(),kind,sx:payload&&payload.sx|0,sy:payload&&payload.sy|0,
+    note:(payload&&payload.note)||"",words:words||null,read:false,used:false};
+  L.push(rec);
+  while(L.length>HEARD_MAX)L.shift();
+  G.parrot.said=(G.parrot.said|0)+1;
+  return rec;
+}
+/* цены станции, у которой стоим: птица слышит их сегодня, а пригодятся они
+   там, где вас нет */
+function heardPrices(sys){
+  if(!parrotHas()||!sys||!sys.station)return null;
+  const L=heardAll();
+  if(L.some(h=>h.kind==="price"&&h.sx===sys.sx&&h.sy===sys.sy))return null;
+  return heardAdd("price",{sx:sys.sx,sy:sys.sy,note:"«"+sys.station.name+"»"});
+}
+/* фраза на пиджине: слова хранятся НОМЕРАМИ, а не текстом — иначе расшифровка
+   задним числом невозможна, и вся механика превращается в отложенный лор */
+function heardPidgin(seed,sx,sy){
+  if(!parrotHas())return null;
+  const r=rng(hashi(seed|0,0x9111,13));
+  const n=2+Math.floor(r()*3);
+  const words=[];
+  for(let i=0;i<n;i++)words.push(Math.floor(r()*LORE_WORDS.length));
+  return heardAdd("pidgin",{sx,sy,note:""},words);
+}
+/* то, что птица подслушала у ВАС: чужое имя, чужой борт, чужая частота */
+function heardYours(note,sx,sy){
+  if(!parrotHas())return null;
+  return heardAdd("yours",{sx,sy,note:note||"чей-то позывной"});
+}
+/* ── как это читается ──
+   Глифы — те же, что у посёлка: один алфавит на весь пиджин, иначе игрок не
+   свяжет одно с другим. */
+function heardGlyph(i){return SETTLE_GLYPH[i%SETTLE_GLYPH.length];}
+function heardWordsRu(h){
+  const vocab=(typeof loreVocab==="function")?loreVocab():[];
+  return (h.words||[]).map(i=>{
+    const w=LORE_WORDS[i%LORE_WORDS.length];
+    return vocab.indexOf(w)>=0?w:heardGlyph(i);
+  });
+}
+function heardCanRead(h){
+  const vocab=(typeof loreVocab==="function")?loreVocab():[];
+  return !!h.words&&h.words.every(i=>vocab.indexOf(LORE_WORDS[i%LORE_WORDS.length])>=0);
+}
+/* перечитывание: вызывается всякий раз, когда словарь мог вырасти. Волной, а не
+   по одной строке: смысл механики в том, что одно слово оживляет старое. */
+function heardReread(){
+  if(!parrotHas())return 0;
+  let n=0;
+  for(const h of heardAll()){
+    if(h.kind!=="pidgin"||h.read||!heardCanRead(h))continue;
+    h.read=true;n++;
+    const ru=heardWordsRu(h).join(" ");
+    logAdd("tech","«"+G.parrot.name+"» вдруг стал понятен: "+ru);
+    /* понятая фраза платит тем же, чем платит зарубка: адресом. Место берётся
+       от самой фразы, поэтому одна и та же строка всегда указывает туда же. */
+    const A=(typeof loreAddr==="function")?loreAddr(hashi(h.t|0,h.words[0]|0,0x9A1)):null;
+    if(A&&typeof loreMarks==="function"){
+      loreMarks().push({sx:A.sx,sy:A.sy,id:"heard:"+h.t});
+      h.sx=A.sx;h.sy=A.sy;
+    }
+  }
+  if(n){
+    say("«"+G.parrot.name+"» заговорил\nпонятно стало строк: "+n);
+    if(typeof saveGame==="function")saveGame(true);
+  }
+  return n;
+}
+/* ── что оно отдаёт сейчас ──
+   Цены станции, где вы были, читаются откуда угодно: это и есть рента птицы. */
+function heardUse(h){
+  if(!h||h.used)return false;
+  if(h.kind==="price"){
+    const s=starAt(h.sx,h.sy)?getSystem(h.sx,h.sy):null;
+    if(!s||!s.station)return false;
+    /* рынок открывается ровно так же, как его открывает зарубка с ценами
+       (12q): одна запись в G.market — и станция видна из другого конца */
+    if(!G.market)G.market={};
+    if(!G.market[s.key])G.market[s.key]={pressure:{},t:G.t};
+    h.used=true;
+    tell("money","«"+G.parrot.name+"» повторил цены "+(h.note||"станции"),
+      "ЦЕНЫ ПОВТОРЕНЫ\n"+(h.note||"")+"\nсектор "+h.sx+", "+h.sy);
+    return true;
+  }
+  if(h.kind==="yours"){
+    /* это не товар: строку против себя нельзя «использовать», её можно только
+       услышать от кого-то другого */
+    return false;
+  }
+  return false;
+}
+/* ── стыковка ──
+   Весь распорядок птицы у прилавка: сперва отдаёт долг — повторяет цены той
+   станции, где вы были раньше (рынок открывается без перелёта), потом слушает
+   эту, а потом иногда выдаёт то, что слышала у вас. */
+function parrotDock(sys){
+  if(!parrotHas()||!sys)return;
+  const old=heardAll().find(h=>h.kind==="price"&&!h.used&&!(h.sx===sys.sx&&h.sy===sys.sy));
+  if(old)heardUse(old);
+  heardPrices(sys);
+  heardBlurt(sys);
+}
+/* ── не вовремя ──
+   При стыковке птица иногда выдаёт то, что слышала от вас. Один раз на строку и
+   только там, где есть кому услышать. */
+function heardBlurt(sys){
+  if(!parrotHas()||!sys||!sys.station)return null;
+  const h=heardAll().find(x=>x.kind==="yours"&&!x.used);
+  if(!h)return null;
+  /* бросок на КАЖДУЮ стыковку, а не на пару «фраза + станция»: детерминированный
+     бросок здесь означал бы, что птица либо молчит у этой станции всегда, либо
+     ляпает при первом же заходе, — а она просто иногда не вовремя */
+  if(Math.random()<.55)return null;
+  h.used=true;
+  if(typeof repAdd==="function")repAdd(-1,sys);
+  tell("warn","«"+G.parrot.name+"» ляпнул лишнее: "+h.note,
+    "ПТИЦА ЛЯПНУЛА\n"+h.note+"\nздесь это слышали");
+  return h;
+}
+
 /* ══════════════ пираты берут системы ══════════════ */
 /* Пираты были погодой: сколько-то их встречается в опасных секторах, и всё.
    Отношения с ними не менялись ни от чего — убил и полетел дальше.
@@ -12301,7 +12475,14 @@ function updateCombat(dt){
   if(typeof mslTick==="function")mslTick(dt);
   if(keys.msl&&typeof mslFire==="function"&&(G.mslCool||0)<=0)mslFire();
 }
+/* трепло (12x, M116) слышит бой: имя сбитого — это то, что потом прозвучит
+   на чужой станции, и уже не как ваша заслуга */
+function parrotHeardKill(p){
+  if(typeof parrotHas==="function"&&parrotHas()&&p&&p.name)
+    heardYours("«"+p.name+"» больше не выйдет на связь",G.sx,G.sy);
+}
 function killPirate(p){
+  parrotHeardKill(p);
   /* ренегат — не пират: за него не дают награды, за него возвращают корпус */
   if(p.rogue){rogueDefeated(p);return;}
   /* охотник — тоже не рядовой пират: его награда разовая и записана навсегда */
@@ -12441,7 +12622,7 @@ function snapshot(){
     wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
-    doom:G.doom,doomDead:G.doomDead,
+    doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -12598,6 +12779,21 @@ function applySave(s){
       over:!!d.over,warned:Array.isArray(d.warned)?d.warned.filter(x=>+x>0):[]};
   }
   G.doomDead=(s.doomDead&&typeof s.doomDead==="object")?s.doomDead:{};
+  /* трепло (12x-parrot): сама птица и то, что она помнит. Строки чинятся по
+     месту — вид обязателен, слова обязаны быть номерами: строка без события
+     здесь такая же ложь, как перк без кода, и загрузка её не заводит. */
+  G.parrot=(s.parrot&&typeof s.parrot==="object"&&s.parrot.name)?{
+    seed:s.parrot.seed>>>0,name:String(s.parrot.name).slice(0,24),
+    who:String(s.parrot.who||"").slice(0,48),
+    since:+s.parrot.since||Date.now(),said:Math.max(0,s.parrot.said|0)}:null;
+  G.heard=(Array.isArray(s.heard)?s.heard:[])
+    .filter(h=>h&&(h.kind==="price"||h.kind==="pidgin"||h.kind==="yours"))
+    .map(h=>({t:+h.t||Date.now(),kind:h.kind,sx:h.sx|0,sy:h.sy|0,
+      note:String(h.note||"").slice(0,64),
+      words:Array.isArray(h.words)?h.words.map(x=>x|0):null,
+      read:!!h.read,used:!!h.used}))
+    .filter(h=>h.kind!=="pidgin"||(h.words&&h.words.length))
+    .slice(-HEARD_MAX);
   /* отчёт «Долгого Хода» (12q-lore): формат сейва не менялся (v:4), старые
      записи просто не имеют этих полей и начинают с пустого */
   G.loreFound=Array.isArray(s.loreFound)?s.loreFound.filter(x=>typeof x==="string"):[];
@@ -14229,6 +14425,12 @@ function findTake(f){
     return addRes(k,n)?(RES[k].ru.toLowerCase()+" ×"+n):"трюм полон — груз остался дрейфовать";
   }
   if(f.k==="hulk"){
+    /* вещи покойника (M116): один раз за прохождение в остове находится живое —
+       так игрок узнаёт, что покойник был, раньше, чем узнаёт, кто он */
+    if(typeof parrotFind==="function"&&!parrotHas()&&r()<.5){
+      const who="борта «"+genName(rng(hashi(f.seed,0xDEAD,3)))+"»";
+      if(parrotFind(hashi(f.seed,0xB13D,5),who))return "в вещах нашлось живое";
+    }
     const F=POI_FIND.wreck;
     const got=F&&typeof F.give==="function"?F.give(r,d):"часть с обломков";
     if(typeof rareTake==="function")rareTake("hulk",hashi(f.seed,0x2A2E,9));
@@ -26311,6 +26513,9 @@ function openStation(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
   scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
+  /* трепло (12x): у прилавка оно слышит цены, а иногда выдаёт то, что слышало
+     у вас. Обе стороны одной птицы, и обе — на стыковке */
+  if(typeof parrotDock==="function")parrotDock(G.sys);
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
@@ -29960,6 +30165,24 @@ function renderLoreBoard(){
   /* адреса: то, ради чего кусок вообще брали. Метки уже нарисованы на карте
      (`drawLoreMarks`), здесь они списком — чтобы было видно, сколько мест
      зарубки успели назвать, и не одно ли и то же место названо дважды. */
+  /* трепло (12x, M116): то, что оно помнит, читается там же, где отчёт, — это
+     показания, а не отдельный экран. Непонятое стоит глифами и ждёт слова. */
+  if(typeof parrotHas==="function"&&parrotHas()){
+    const L=heardAll();
+    loreRow(box,"chap","","ТРЕПЛО «"+G.parrot.name+"» · ИЗ ВЕЩЕЙ "+G.parrot.who.toUpperCase()+
+      " · ПОМНИТ "+L.length);
+    if(!L.length)loreRow(box,"gap","","пока молчит");
+    for(const h of L.slice().reverse()){
+      if(h.kind==="price")
+        loreRow(box,h.used?"":"vocab","","цены "+(h.note||"станции")+" · сектор "+h.sx+":"+h.sy+
+          (h.used?" · уже повторило":" · повторит, где спросят"));
+      else if(h.kind==="yours")
+        loreRow(box,h.used?"":"gap","","ваше: "+h.note+(h.used?" · уже ляпнуло":""));
+      else
+        loreRow(box,h.read?"vocab":"gap","",heardWordsRu(h).join(" ")+
+          (h.read?" · сектор "+h.sx+":"+h.sy:" · пока непонятно"));
+    }
+  }
   const M=loreMarks();
   loreRow(box,"chap","","АДРЕСА · "+M.length);
   if(!M.length)loreRow(box,"gap","","ни одного");

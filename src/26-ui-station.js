@@ -6,6 +6,9 @@ function openStation(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
   scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
+  /* трепло (12x): у прилавка оно слышит цены, а иногда выдаёт то, что слышало
+     у вас. Обе стороны одной птицы, и обе — на стыковке */
+  if(typeof parrotDock==="function")parrotDock(G.sys);
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));

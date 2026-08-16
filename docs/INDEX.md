@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 122 · символов верхнего уровня: 1392
+Файлов: 124 · символов верхнего уровня: 1409
 
 ## СИМВОЛЫ
 
@@ -22,7 +22,7 @@ $menu                        src/15-input.js:125
 $msg                         src/28-loop.js:32
 $msl                         src/28-loop.js:35
 $nav                         src/28-loop.js:34
-$opts                        src/26-ui-station.js:797
+$opts                        src/26-ui-station.js:800
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:31
 $sh                          src/28-loop.js:24
@@ -81,7 +81,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:185
 autoLandInputs               src/19-mode-landing.js:33
-autosave                     src/14-save.js:394
+autosave                     src/14-save.js:409
 b64dec                       src/14-save.js:11
 b64enc                       src/14-save.js:9
 bankTransform                src/03b-hull-paint.js:48
@@ -243,14 +243,14 @@ CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
 closeBarge                   src/12l-barge.js:586
-closeStation                 src/26-ui-station.js:69
+closeStation                 src/26-ui-station.js:72
 CLOUD                        src/14-save.js:3
 CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudPull                    src/14-save.js:416
-cloudPush                    src/14-save.js:408
+cloudPull                    src/14-save.js:431
+cloudPush                    src/14-save.js:423
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
 cockpitPlan                  src/25-cockpit.js:92
@@ -391,7 +391,7 @@ drawCaveWater                src/22a-cave-deco.js:288
 drawCelest                   src/06a-celest.js:141
 drawClouds                   src/19e-clouds.js:169
 drawCockpit                  src/25-cockpit.js:400
-drawCombat                   src/13-pirates.js:202
+drawCombat                   src/13-pirates.js:209
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
@@ -403,7 +403,7 @@ drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:133
 drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:240
-drawFindsSystem              src/17b-finds.js:123
+drawFindsSystem              src/17b-finds.js:129
 drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24a-mode-raid.js:638
 drawGlassHUD                 src/24-mode-belt.js:518
@@ -416,7 +416,7 @@ drawHullMarks                src/03b-hull-paint.js:173
 drawLander                   src/19-mode-landing.js:390
 drawLandGear                 src/19-mode-landing.js:364
 drawLanding                  src/19-mode-landing.js:308
-drawLoreMarks                src/12q-lore.js:198
+drawLoreMarks                src/12q-lore.js:205
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
 drawMap                      src/18-mode-map.js:51
@@ -467,7 +467,7 @@ droneCapacity                src/12-economy.js:66
 DRONES                       src/04-mods.js:57
 droneTarget                  src/12-economy.js:70
 earn                         src/12j-home.js:38
-el                           src/26-ui-station.js:95
+el                           src/26-ui-station.js:98
 endPtr                       src/15-input.js:207
 engineLoop                   src/09-audio.js:209
 enterBase                    src/21a-mode-base.js:65
@@ -485,7 +485,7 @@ exitBelt                     src/24-mode-belt.js:162
 exitCave                     src/22-mode-cave.js:40
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
-exportCode                   src/14-save.js:403
+exportCode                   src/14-save.js:418
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -504,7 +504,7 @@ FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:25
 FIND_KINDS                   src/17b-finds.js:19
 findBucket                   src/17b-finds.js:18
-findInteract                 src/17b-finds.js:101
+findInteract                 src/17b-finds.js:107
 findSeen                     src/17b-finds.js:50
 findsHere                    src/17b-finds.js:49
 findsIn                      src/17b-finds.js:26
@@ -577,11 +577,23 @@ groundShadow                 src/19-mode-landing.js:253
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:402
+hasSave                      src/14-save.js:417
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
-held                         src/08-state.js:128
+HEARD_MAX                    src/12x-parrot.js:23
+heardAdd                     src/12x-parrot.js:42
+heardAll                     src/12x-parrot.js:26
+heardBlurt                   src/12x-parrot.js:151
+heardCanRead                 src/12x-parrot.js:86
+heardGlyph                   src/12x-parrot.js:78
+heardPidgin                  src/12x-parrot.js:62
+heardPrices                  src/12x-parrot.js:54
+heardReread                  src/12x-parrot.js:92
+heardUse                     src/12x-parrot.js:116
+heardWordsRu                 src/12x-parrot.js:79
+heardYours                   src/12x-parrot.js:71
+held                         src/08-state.js:130
 hex2rgb                      src/03-ships.js:145
 hexa                         src/12w-survey.js:91
 hexRGB                       src/24-mode-belt.js:80
@@ -664,7 +676,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:404
+importCode                   src/14-save.js:419
 initAudio                    src/09-audio.js:7
 invalidateKeyMap             src/15-input.js:41
 invalidateParts              src/05-parts.js:197
@@ -687,7 +699,7 @@ keyLabel                     src/15-input.js:63
 keyMap                       src/15-input.js:52
 keyRow                       src/27-ui-ship.js:173
 keys                         src/08-state.js:14
-killPirate                   src/13-pirates.js:170
+killPirate                   src/13-pirates.js:176
 killRock                     src/24-mode-belt.js:140
 KMAP                         src/15-input.js:28
 KMAP_BELT                    src/15-input.js:32
@@ -700,7 +712,7 @@ landerGearTick               src/19-mode-landing.js:353
 landerInk                    tests/91j-art.js:154
 landerLen                    src/19-mode-landing.js:349
 landingDust                  src/19-mode-landing.js:564
-landOnTestPlanet             tests/90-harness.js:59
+landOnTestPlanet             tests/90-harness.js:61
 last                         src/28-loop.js:238
 lastDroneTick                src/28-loop.js:239
 launch                       src/21-mode-surface.js:328
@@ -709,7 +721,7 @@ layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:115
 litRGB                       src/19c-light.js:46
-loadGame                     src/14-save.js:398
+loadGame                     src/14-save.js:413
 LOG_MAX                      src/11-log.js:3
 logAdd                       src/11-log.js:5
 logBtnLabel                  src/11-log.js:24
@@ -932,6 +944,11 @@ packPart                     src/05-parts.js:322
 PAD_SAFE                     src/18-mode-map.js:11
 padsFadeIn                   src/15-input.js:12
 padsFadeOut                  src/15-input.js:11
+PARROT_NAMES                 src/12x-parrot.js:24
+parrotDock                   src/12x-parrot.js:141
+parrotFind                   src/12x-parrot.js:30
+parrotHas                    src/12x-parrot.js:25
+parrotHeardKill              src/13-pirates.js:172
 PART_BONUS                   src/05-parts.js:196
 PART_GEN                     src/05-parts.js:6
 PART_KEYS                    src/05-parts.js:27
@@ -1074,11 +1091,11 @@ renderLog                    src/11-log.js:37
 renderLoreBoard              src/27h-ui-lore.js:31
 renderOpts                   src/27-ui-ship.js:183
 renderRoute                  src/12r-route.js:225
-renderTab                    src/26-ui-station.js:151
+renderTab                    src/26-ui-station.js:154
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
-repairCost                   src/26-ui-station.js:65
+repairCost                   src/26-ui-station.js:68
 repAt                        src/12k-rep.js:27
 repFuelMul                   src/12k-rep.js:52
 repHireMul                   src/12k-rep.js:54
@@ -1090,7 +1107,7 @@ repShipMul                   src/12k-rep.js:69
 repWord                      src/12k-rep.js:31
 RES                          src/02-world.js:2
 RES_KEYS                     src/02-world.js:29
-resetArm                     src/26-ui-station.js:796
+resetArm                     src/26-ui-station.js:799
 resetWorld                   tests/90-harness.js:27
 resize                       src/08-state.js:6
 reticle                      src/17-mode-system.js:414
@@ -1134,12 +1151,12 @@ routeToggle                  src/12r-route.js:23
 routeValue                   src/12r-route.js:120
 routeVisit                   src/12r-route.js:103
 runAutopilot                 src/16-flight.js:74
-runTests                     tests/90-harness.js:69
+runTests                     tests/90-harness.js:71
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:4
-saveGame                     src/14-save.js:388
-say                          src/08-state.js:129
+saveGame                     src/14-save.js:403
+say                          src/08-state.js:131
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
 SCOOP_BAND                   src/19a-mode-scoop.js:7
@@ -1207,9 +1224,9 @@ SH_DX                        src/03b-hull-paint.js:164
 shatter                      src/24-mode-belt.js:125
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:110
+shipRow                      src/26-ui-station.js:113
 SHIPS                        src/03-ships.js:2
-shipThumb                    src/26-ui-station.js:97
+shipThumb                    src/26-ui-station.js:100
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:176
 shipZoneR                    src/19-mode-landing.js:352
@@ -1246,7 +1263,7 @@ SPEC_KEYS                    src/12a-crew.js:17
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
 ST_GOLD                      src/17-mode-system.js:504
-ST_GROUPS                    src/26-ui-station.js:26
+ST_GROUPS                    src/26-ui-station.js:29
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:8
 STAR_CLASS                   src/02-world.js:96
@@ -1256,7 +1273,7 @@ starRGB                      src/19c-light.js:23
 start                        src/15-input.js:307
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
-stat                         src/08-state.js:87
+stat                         src/08-state.js:89
 STAT_SHOW                    src/05-parts.js:280
 stationDeals                 src/27g-deals.js:134
 stationFleet                 src/04b-fleet.js:163
@@ -1270,10 +1287,10 @@ stationViz                   src/17-mode-system.js:498
 statPreview                  src/05-parts.js:271
 stCore                       src/17-mode-system.js:515
 stDel                        src/14-save.js:8
-steps                        tests/90-harness.js:67
+steps                        tests/90-harness.js:69
 stGet                        src/14-save.js:6
-stGroup                      src/26-ui-station.js:34
-stGroupOf                    src/26-ui-station.js:33
+stGroup                      src/26-ui-station.js:37
+stGroupOf                    src/26-ui-station.js:36
 stopEngine                   src/09-audio.js:233
 STORAGE_OK                   src/14-save.js:5
 STORM_WORLDS                 src/21a-mode-base.js:233
@@ -1297,7 +1314,7 @@ svDraw                       src/27-ui-ship.js:7
 svRender                     src/27-ui-ship.js:45
 svReturn                     src/27-ui-ship.js:6
 svSlot                       src/27-ui-ship.js:4
-syncTabs                     src/26-ui-station.js:35
+syncTabs                     src/26-ui-station.js:38
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_EXOTIC                   src/16a-space.js:14
 sysDanger                    src/01-core.js:46
@@ -1317,7 +1334,7 @@ techLv                       src/04-mods.js:45
 tell                         src/11-log.js:13
 TELL_SFX                     src/11-log.js:11
 TEST                         tests/90-harness.js:10
-TEST_SUITES                  tests/90-harness.js:90
+TEST_SUITES                  tests/90-harness.js:92
 tfbm                         src/18a-material.js:23
 tickDrones                   src/12-economy.js:80
 tickLaunchHold               src/21-mode-surface.js:274
@@ -1328,7 +1345,7 @@ tierOf                       src/04b-fleet.js:157
 timeBucket                   src/03-ships.js:103
 tnoise                       src/18a-material.js:16
 toggleLog                    src/11-log.js:89
-toggleLoreBoard              src/27h-ui-lore.js:65
+toggleLoreBoard              src/27h-ui-lore.js:83
 toggleMenu                   src/15-input.js:126
 totalLoss                    src/21-mode-surface.js:305
 tracePath                    src/25-cockpit.js:159
@@ -1541,7 +1558,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12p-news.js · 11 КБ
   · пересказ: мир двигался, пока вас не было:1
 
-## src/12q-lore.js · 15 КБ
+## src/12q-lore.js · 16 КБ
   · отчёт «Долгого Хода»: сто кусков:1
 
 ## src/12r-route.js · 16 КБ
@@ -1562,13 +1579,16 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12w-survey.js · 6 КБ
   · собранный отчёт: их съёмка поверх вашей карты:1
 
+## src/12x-parrot.js · 10 КБ
+  · трепло ушастое: свидетель, который не понимает:1
+
 ## src/13b-occupy.js · 17 КБ
   · пираты берут системы:1
 
 ## src/13-pirates.js · 15 КБ
   · пираты:1
 
-## src/14-save.js · 27 КБ
+## src/14-save.js · 28 КБ
   · сохранение:1
 
 ## src/15-input.js · 16 КБ
@@ -1694,9 +1714,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/25-cockpit.js · 34 КБ
   · кабина: процедурная, статика в offscreen:1
 
-## src/26-ui-station.js · 48 КБ
+## src/26-ui-station.js · 49 КБ
   · станция:1
-  · настройки:795
+  · настройки:798
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -1716,7 +1736,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/27g-deals.js · 14 КБ
   · кантина: дела, а не поручения:1
 
-## src/27h-ui-lore.js · 5 КБ
+## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
 ## src/27-ui-ship.js · 20 КБ
@@ -1809,6 +1829,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91zc-doom.js · 5 КБ
 
 ## tests/91zd-survey.js · 3 КБ
+
+## tests/91ze-parrot.js · 5 КБ
 
 ## tests/91z-missile.js · 5 КБ
 

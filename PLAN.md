@@ -506,7 +506,40 @@ label a spacer would actually use, not a title.
 the first hours. The joke in every one of them is that nothing in space gets a grand name — it gets
 the name the third shift gave it.
 
-## M116 (0.66.0). Трепло: an animal that carries a sentence it does not understand
+## M116 (0.66.0) — built. Трепло: an animal that carries a sentence it does not understand
+
+Built as **`12x-parrot.js`**, hooks in `17b-finds` (the hulk hands it over), `12q-lore` (it hears
+at a notch and re-reads on every new word), `26-ui-station` (`parrotDock`), `13-pirates` (it hears
+the kill), the list on the fragment board (`27h-ui-lore`), persistence in `14-save`, suite
+**"the repeater: it says only what it heard"** (`91ze-parrot.js`).
+
+**One departure from the spec, deliberate:** the first bird comes out of a wrecked scout's effects
+rather than a bazaar lot, because the bazaar is M120 and the milestone should not wait for it. The
+role is unchanged — someone's property with a known fate, and the dead owner is named on the spot.
+
+- `heardAdd` is the only door, and it refuses a line without a kind and without a bird: a line
+  with no event behind it is the same lie as a perk with no code, and the loader throws such lines
+  away.
+- **Pidgin is stored as word numbers**, never as text, which is what makes retroactive reading
+  possible at all; `heardWordsRu` shows a glyph for every word not yet owned, and the test checks
+  that no unowned word leaks through the glyphs.
+- **`heardReread` works in waves** — one new word re-reads the whole memory, and a decoded phrase
+  pays in an address, the currency a notch pays in.
+- **`heardYours` + `heardBlurt`** are the other half: the bird eventually repeats what it heard
+  from you, at a counter, once per line, and it costs reputation there. A witness that can testify
+  against you is the only kind worth having.
+- The roll for blurting is per docking rather than per (phrase, station) pair — a deterministic
+  roll would mean the bird is either silent at that station forever or blurts on the first visit,
+  and what is wanted is "sometimes, at the wrong moment".
+
+**Still open:** the bird is a list on a board — it has no voice, no presence in the cockpit and no
+picture; and it never hears anything on a planet, only in flight and at counters.
+
+**Split debt:** `26-ui-station.js` crossed its 48 KB baseline at M113 (the scrip tab) and is left
+shouting on every build rather than re-baselined. It is now second in the queue after
+`21a-mode-base`.
+
+The original spec:
 
 The single best fit in the whole pass, because it turns a fragment into an object with a lifetime.
 

@@ -167,7 +167,14 @@ function updateCombat(dt){
   if(typeof mslTick==="function")mslTick(dt);
   if(keys.msl&&typeof mslFire==="function"&&(G.mslCool||0)<=0)mslFire();
 }
+/* трепло (12x, M116) слышит бой: имя сбитого — это то, что потом прозвучит
+   на чужой станции, и уже не как ваша заслуга */
+function parrotHeardKill(p){
+  if(typeof parrotHas==="function"&&parrotHas()&&p&&p.name)
+    heardYours("«"+p.name+"» больше не выйдет на связь",G.sx,G.sy);
+}
 function killPirate(p){
+  parrotHeardKill(p);
   /* ренегат — не пират: за него не дают награды, за него возвращают корпус */
   if(p.rogue){rogueDefeated(p);return;}
   /* охотник — тоже не рядовой пират: его награда разовая и записана навсегда */

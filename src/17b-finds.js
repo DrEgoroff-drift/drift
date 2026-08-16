@@ -85,6 +85,12 @@ function findTake(f){
     return addRes(k,n)?(RES[k].ru.toLowerCase()+" ×"+n):"трюм полон — груз остался дрейфовать";
   }
   if(f.k==="hulk"){
+    /* вещи покойника (M116): один раз за прохождение в остове находится живое —
+       так игрок узнаёт, что покойник был, раньше, чем узнаёт, кто он */
+    if(typeof parrotFind==="function"&&!parrotHas()&&r()<.5){
+      const who="борта «"+genName(rng(hashi(f.seed,0xDEAD,3)))+"»";
+      if(parrotFind(hashi(f.seed,0xB13D,5),who))return "в вещах нашлось живое";
+    }
     const F=POI_FIND.wreck;
     const got=F&&typeof F.give==="function"?F.give(r,d):"часть с обломков";
     if(typeof rareTake==="function")rareTake("hulk",hashi(f.seed,0x2A2E,9));

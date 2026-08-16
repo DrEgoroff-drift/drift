@@ -54,6 +54,24 @@ function renderLoreBoard(){
   /* адреса: то, ради чего кусок вообще брали. Метки уже нарисованы на карте
      (`drawLoreMarks`), здесь они списком — чтобы было видно, сколько мест
      зарубки успели назвать, и не одно ли и то же место названо дважды. */
+  /* трепло (12x, M116): то, что оно помнит, читается там же, где отчёт, — это
+     показания, а не отдельный экран. Непонятое стоит глифами и ждёт слова. */
+  if(typeof parrotHas==="function"&&parrotHas()){
+    const L=heardAll();
+    loreRow(box,"chap","","ТРЕПЛО «"+G.parrot.name+"» · ИЗ ВЕЩЕЙ "+G.parrot.who.toUpperCase()+
+      " · ПОМНИТ "+L.length);
+    if(!L.length)loreRow(box,"gap","","пока молчит");
+    for(const h of L.slice().reverse()){
+      if(h.kind==="price")
+        loreRow(box,h.used?"":"vocab","","цены "+(h.note||"станции")+" · сектор "+h.sx+":"+h.sy+
+          (h.used?" · уже повторило":" · повторит, где спросят"));
+      else if(h.kind==="yours")
+        loreRow(box,h.used?"":"gap","","ваше: "+h.note+(h.used?" · уже ляпнуло":""));
+      else
+        loreRow(box,h.read?"vocab":"gap","",heardWordsRu(h).join(" ")+
+          (h.read?" · сектор "+h.sx+":"+h.sy:" · пока непонятно"));
+    }
+  }
   const M=loreMarks();
   loreRow(box,"chap","","АДРЕСА · "+M.length);
   if(!M.length)loreRow(box,"gap","","ни одного");
