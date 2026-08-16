@@ -124,3 +124,44 @@ TEST_SUITES.push(()=>suite("посёлок: переживает сохране�
   eq(Math.round(R.mood),mood,"настроение на месте");
   ok(R.diet.silicon>0,"рацион помнится");
 }));
+
+/* ══ M110: они стоят между вами и фауной, и платят за это ══
+   Дозор — не бонус игроку, а свойство земли: он есть только у сытого посёлка со
+   второй ступени и только на его собственной планете. И он берёт цену: хвост,
+   приведённый в систему, садится на них. */
+TEST_SUITES.push(()=>suite("посёлок: дозор и цена чужого хвоста",()=>{
+  resetWorld();
+  G.settle={};                                 // resetWorld посёлки не чистит
+  const p=G.sys.planets.find(x=>SETTLE_ON.indexOf(x.type)>=0)||G.sys.planets[0];
+  const S=settleMake(p);
+  eq(settleWatch(p),0,"у посёлка первой ступени дозора нет");
+  /* поднимаем его до второй ступени честным путём — едой и временем */
+  G.cargo.iron=900;settleGive(S,"iron",900);
+  S.last=Date.now()-14*3600*1000;settleTick(S);
+  ok(S.stage>=2,"посёлок дорос до второй ступени: "+S.stage);
+  S.mood=80;
+  ok(settleWatch(p)>0,"сытый посёлок со второй ступени держит дозор");
+  const other=G.sys.planets.find(x=>x.idx!==p.idx);
+  if(other)eq(settleWatch(other),0,"на чужой планете дозора нет: сторожат свою землю");
+  S.mood=10;
+  eq(settleWatch(p),0,"голодной деревне не до дозора");
+  S.mood=80;
+  /* цена: считается по тем, кто заметил игрока, а не по погоде в системе */
+  G.pirates=[{aware:false,hull:10,rank:0}];
+  eq(settleLeftBehind(),0,"пират, который вас не видел, посёлку ничего не стоит");
+  const mood0=S.mood,built0=S.built.length;
+  G.pirates=[{aware:true,hull:10,rank:0}];
+  ok(settleLeftBehind()>0,"замеченный хвост посёлку стоит");
+  ok(S.mood<mood0,"настроение упало");
+  eq(S.built.length,built0,"но за одного пирата двор не сгорел");
+  G.pirates=[{aware:true,hull:10,rank:1},{aware:true,hull:10,rank:1},
+             {aware:true,hull:10,rank:0,hunter:1}];
+  const b1=S.built.length;
+  settleLeftBehind();
+  ok(S.built.length<b1,"плотный налёт стоит постройки");
+  eq(S.stage,S.built.length>=5?3:(S.built.length>=3?2:1),"ступень пересчитана по постройкам");
+  ok(S.mood>=0,"настроение не уходит ниже нуля");
+  /* налёт не заработок: он не платит игроку ничем */
+  ok(String(settleRaid).indexOf("earn(")<0&&String(settleRaid).indexOf("addRes(")<0,
+     "налёт ничего игроку не приносит");
+}));

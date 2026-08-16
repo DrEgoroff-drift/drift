@@ -658,10 +658,10 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 
 <script>
 "use strict";
-/* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
-   К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.59.0";
-/* ══════════════ математика ══════════════ */
+/* Р’РµСЂСЃРёСЏ РёРіСЂС‹. РћРґРЅР° РЅР° РІСЃС‘: Р·Р°СЃС‚Р°РІРєР°, Р¶СѓСЂРЅР°Р», РїР°С‚С‡РЅРѕСѓС‚С‹ (PATCHNOTES.md).
+   Рљ С„РѕСЂРјР°С‚Сѓ СЃРѕС…СЂР°РЅРµРЅРёСЏ РѕС‚РЅРѕС€РµРЅРёСЏ РЅРµ РёРјРµРµС‚ вЂ” С‚РѕС‚ РЅР°РІСЃРµРіРґР° v:4. */
+const VER="0.60.0";
+/* в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ РјР°С‚РµРјР°С‚РёРєР° в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
 const lerp=(a,b,t)=>a+(b-a)*t;
@@ -684,24 +684,24 @@ function noise2(x,y,s){
 }
 function fbm2(x,y,s,oct){let v=0,a=.5,f=1,n=0;oct=oct||5;
   for(let i=0;i<oct;i++){v+=a*noise2(x*f,y*f,s+i*97);n+=a;a*=.5;f*=2;}return v/n;}
-/* Разница углов, кратчайшей дугой. Прежняя формула — ((a-b+3π)%TAU)-π — верна
-   ровно до тех пор, пока a-b не меньше -3π: остаток в JS берёт знак делимого,
-   и на больших отрицательных разностях ответ уезжает и по знаку, и за пределы
-   полуоборота. Курс корабля нигде не сворачивался и копился оборотами — в живом
-   сохранении он дорос до -500 рад, и доворот вектора скорости к носу принялся
-   разворачивать скорость в противоположную сторону. Корабль дёргался на месте
-   под полной тягой и жёг топливо: ни ошибки, ни просадки кадров. */
+/* Р Р°Р·РЅРёС†Р° СѓРіР»РѕРІ, РєСЂР°С‚С‡Р°Р№С€РµР№ РґСѓРіРѕР№. РџСЂРµР¶РЅСЏСЏ С„РѕСЂРјСѓР»Р° вЂ” ((a-b+3ПЂ)%TAU)-ПЂ вЂ” РІРµСЂРЅР°
+   СЂРѕРІРЅРѕ РґРѕ С‚РµС… РїРѕСЂ, РїРѕРєР° a-b РЅРµ РјРµРЅСЊС€Рµ -3ПЂ: РѕСЃС‚Р°С‚РѕРє РІ JS Р±РµСЂС‘С‚ Р·РЅР°Рє РґРµР»РёРјРѕРіРѕ,
+   Рё РЅР° Р±РѕР»СЊС€РёС… РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹С… СЂР°Р·РЅРѕСЃС‚СЏС… РѕС‚РІРµС‚ СѓРµР·Р¶Р°РµС‚ Рё РїРѕ Р·РЅР°РєСѓ, Рё Р·Р° РїСЂРµРґРµР»С‹
+   РїРѕР»СѓРѕР±РѕСЂРѕС‚Р°. РљСѓСЂСЃ РєРѕСЂР°Р±Р»СЏ РЅРёРіРґРµ РЅРµ СЃРІРѕСЂР°С‡РёРІР°Р»СЃСЏ Рё РєРѕРїРёР»СЃСЏ РѕР±РѕСЂРѕС‚Р°РјРё вЂ” РІ Р¶РёРІРѕРј
+   СЃРѕС…СЂР°РЅРµРЅРёРё РѕРЅ РґРѕСЂРѕСЃ РґРѕ -500 СЂР°Рґ, Рё РґРѕРІРѕСЂРѕС‚ РІРµРєС‚РѕСЂР° СЃРєРѕСЂРѕСЃС‚Рё Рє РЅРѕСЃСѓ РїСЂРёРЅСЏР»СЃСЏ
+   СЂР°Р·РІРѕСЂР°С‡РёРІР°С‚СЊ СЃРєРѕСЂРѕСЃС‚СЊ РІ РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅСѓСЋ СЃС‚РѕСЂРѕРЅСѓ. РљРѕСЂР°Р±Р»СЊ РґС‘СЂРіР°Р»СЃСЏ РЅР° РјРµСЃС‚Рµ
+   РїРѕРґ РїРѕР»РЅРѕР№ С‚СЏРіРѕР№ Рё Р¶С‘Рі С‚РѕРїР»РёРІРѕ: РЅРё РѕС€РёР±РєРё, РЅРё РїСЂРѕСЃР°РґРєРё РєР°РґСЂРѕРІ. */
 const angWrap=x=>{const d=x%TAU;return d>Math.PI?d-TAU:(d<-Math.PI?d+TAU:d);};
 const angDiff=(a,b)=>angWrap(a-b);
 
-/* ══════════════ имена ══════════════ */
-const S1=["ка","зе","вор","ти","мел","сар","ква","ар","ни","кси","лу","дра","он","пи","ха","ци","ур","гал","об","векс","сол","ит","кор","энт","ра","тау","ней","ом"];
-const S2=["нис","тар","он","экс","ур","ал","иос","ат","ин","ора","икс","ун","эш","ара","орн","ил","аде","ий","от","ис","эль","ум"];
+/* в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ РёРјРµРЅР° в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ */
+const S1=["РєР°","Р·Рµ","РІРѕСЂ","С‚Рё","РјРµР»","СЃР°СЂ","РєРІР°","Р°СЂ","РЅРё","РєСЃРё","Р»Сѓ","РґСЂР°","РѕРЅ","РїРё","С…Р°","С†Рё","СѓСЂ","РіР°Р»","РѕР±","РІРµРєСЃ","СЃРѕР»","РёС‚","РєРѕСЂ","СЌРЅС‚","СЂР°","С‚Р°Сѓ","РЅРµР№","РѕРј"];
+const S2=["РЅРёСЃ","С‚Р°СЂ","РѕРЅ","СЌРєСЃ","СѓСЂ","Р°Р»","РёРѕСЃ","Р°С‚","РёРЅ","РѕСЂР°","РёРєСЃ","СѓРЅ","СЌС€","Р°СЂР°","РѕСЂРЅ","РёР»","Р°РґРµ","РёР№","РѕС‚","РёСЃ","СЌР»СЊ","СѓРј"];
 const ROMAN=["I","II","III","IV","V","VI","VII","VIII","IX","X"];
 function genName(r){let s=pick(S1,r);if(r()<.55)s+=pick(S1,r);s+=pick(S2,r);
   return s[0].toUpperCase()+s.slice(1);}
 
-/* ══════════════ удалённость и настрой сектора ══════════════ */
+/* в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ СѓРґР°Р»С‘РЅРЅРѕСЃС‚СЊ Рё РЅР°СЃС‚СЂРѕР№ СЃРµРєС‚РѕСЂР° в•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђв•ђ */
 function sysDanger(sx,sy){return clamp(Math.hypot(sx,sy)/40,0,1);}
 function sysJitter(gx,gy){
   const jr=rng(hashi(gx,gy,55551));
@@ -709,12 +709,12 @@ function sysJitter(gx,gy){
   return [Math.cos(a)*rad,Math.sin(a)*rad];
 }
 const DESC_MOOD=[
-  {w:["тихий","забытый","сонный"],ok:s=>!s.station&&!s.belt},
-  {w:["оживлённый","обжитой","многообещающий"],ok:s=>!!(s.station&&s.belt)},
-  {w:["пограничный","неспокойный","дикий"],ok:s=>sysDanger(s.sx,s.sy)>.55},
-  {w:["разведанный","картографированный"],ok:s=>!!s.station&&sysDanger(s.sx,s.sy)<=.55}
+  {w:["С‚РёС…РёР№","Р·Р°Р±С‹С‚С‹Р№","СЃРѕРЅРЅС‹Р№"],ok:s=>!s.station&&!s.belt},
+  {w:["РѕР¶РёРІР»С‘РЅРЅС‹Р№","РѕР±Р¶РёС‚РѕР№","РјРЅРѕРіРѕРѕР±РµС‰Р°СЋС‰РёР№"],ok:s=>!!(s.station&&s.belt)},
+  {w:["РїРѕРіСЂР°РЅРёС‡РЅС‹Р№","РЅРµСЃРїРѕРєРѕР№РЅС‹Р№","РґРёРєРёР№"],ok:s=>sysDanger(s.sx,s.sy)>.55},
+  {w:["СЂР°Р·РІРµРґР°РЅРЅС‹Р№","РєР°СЂС‚РѕРіСЂР°С„РёСЂРѕРІР°РЅРЅС‹Р№"],ok:s=>!!s.station&&sysDanger(s.sx,s.sy)<=.55}
 ];
-const DESC_TAIL=["сектор","рубеж","участок","угол галактики","карман пространства","закоулок"];
+const DESC_TAIL=["СЃРµРєС‚РѕСЂ","СЂСѓР±РµР¶","СѓС‡Р°СЃС‚РѕРє","СѓРіРѕР» РіР°Р»Р°РєС‚РёРєРё","РєР°СЂРјР°РЅ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІР°","Р·Р°РєРѕСѓР»РѕРє"];
 function genDesc(r,sys){
   const cands=DESC_MOOD.filter(m=>m.ok(sys));
   const pool=cands.length?cands:DESC_MOOD;
@@ -722,11 +722,12 @@ function genDesc(r,sys){
   const tail=pick(DESC_TAIL,r);
   const bits=[mood[0].toUpperCase()+mood.slice(1)+" "+tail];
   const kinds=sys.planets.map(p=>p.T.ru).filter((v,i,a)=>a.indexOf(v)===i);
-  if(kinds.length)bits.push(kinds.length+" тип"+(kinds.length===1?"":(kinds.length<5?"а":"ов"))+" миров: "+kinds.join(", "));
-  if(sys.belt)bits.push("пояс богат "+sys.belt.res.map(k=>RES[k].ru.toLowerCase()).join(", "));
+  if(kinds.length)bits.push(kinds.length+" С‚РёРї"+(kinds.length===1?"":(kinds.length<5?"Р°":"РѕРІ"))+" РјРёСЂРѕРІ: "+kinds.join(", "));
+  if(sys.belt)bits.push("РїРѕСЏСЃ Р±РѕРіР°С‚ "+sys.belt.res.map(k=>RES[k].ru.toLowerCase()).join(", "));
   if(sys.station)bits.push(sys.station.kind.toLowerCase());
-  return bits.join(" · ");
+  return bits.join(" В· ");
 }
+
 
 /* ══════════════ смешанные миры ══════════════ */
 /* Двенадцати истинных типов хватает на двенадцать образов, но не на галактику:
@@ -11050,7 +11051,7 @@ function settleMake(p){
   M[key]={seed,sx:G.sx,sy:G.sy,idx:(p&&p.idx|0),name:(p&&p.name)||"",
     lean:SETTLE_BUILD[Math.floor(r()*SETTLE_BUILD.length)].k,   // своя склонность
     stage:1,mood:50,fed:0,stock:{},diet:{},built:[],
-    made:Date.now(),last:Date.now(),asked:0,paid:0};
+    made:Date.now(),last:Date.now(),asked:0,paid:0,raided:0};
   return M[key];
 }
 /* ── рост, считаемый лениво ──
@@ -11258,6 +11259,51 @@ function settleDraw(S,tr,camx,camy,p){
   }
   ctx.fillStyle="rgba(226,206,160,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
   ctx.fillText("ПОСЁЛОК",sx,gy-56-n*2);
+}
+/* ══ M110: они стоят между вами и фауной — и платят за это ══
+   Не бонус игроку, а свойство земли: со второй ступени у посёлка есть дозорные,
+   и кусачая тварь в его биоме держится поодаль. Работает это только на своей
+   планете (не «во всей системе») и только пока их кормят: голодной деревне не до
+   дозора. И работает в обе стороны — пират, которого игрок притащил себе на
+   хвосте, садится не на него, а на них. */
+function settleWatch(p){
+  const S=settleTick(settleHere());
+  if(!S||S.stage<2)return 0;
+  if(p&&(p.idx|0)!==(S.idx|0))return 0;
+  if(S.mood<30)return 0;                      // голод снимает дозор раньше всего
+  return clamp((S.stage>=3?1:.65)*(.3+S.mood/100),0,1);
+}
+/* ── расплата за налёт ──
+   Цена берётся не за факт пиратов в системе, а за тех, кто игрока заметил: это
+   его хвост, а не их погода. Настроение падает всегда, постройка теряется лишь
+   при плотном налёте — иначе прикрытие деревней стоило бы дешевле, чем стоит. */
+function settleRaid(S,heat){
+  S=settleTick(S);
+  if(!S||heat<=0)return 0;
+  const hit=Math.min(34,6+heat*7);
+  S.mood=clamp(S.mood-hit,0,100);
+  S.raided=(S.raided|0)+1;
+  let lost=null;
+  if(S.built.length&&(heat>=3||(heat>=2&&S.mood<40))){
+    lost=S.built.splice(Math.floor(rng(hashi(S.seed,S.raided*29,11))()*S.built.length),1)[0];
+    S.stage=S.built.length>=5?3:(S.built.length>=3?2:1);
+  }
+  if(typeof logAdd==="function")
+    logAdd("bad","Налёт на посёлок "+(S.name||"")+(lost?" · сожжено: "+SETTLE_BY_K[lost].ru:" · настроение упало"));
+  return lost?2:1;
+}
+/* вызывается при уходе из системы: расплачивается тот, кого оставили под теми,
+   кого привели. Охотник (12o) считается вдвое — ему всё равно, чья это крыша. */
+function settleLeftBehind(){
+  const S=settleAt(G.sx,G.sy);
+  if(!S)return 0;
+  let heat=0;
+  for(const p of G.pirates||[]){
+    if(!p.aware||p.hull<=0)continue;
+    heat+=(p.hunter?2:1)+(p.rank|0)*.5;
+  }
+  if(heat<1)return 0;
+  return settleRaid(S,heat);
 }
 /* ── глазами фактора ──
    С третьей ступени посёлок — остановка на карте, к нему идут баржи (12l), как
@@ -11990,7 +12036,7 @@ function applySave(s){
       mood:clamp(+v.mood||0,0,100),fed:Math.max(0,+v.fed||0),
       stock:{},diet:{},built,
       made:+v.made||Date.now(),last:+v.last||Date.now(),
-      asked:+v.asked||0,paid:Math.max(0,v.paid|0)};
+      asked:+v.asked||0,paid:Math.max(0,v.paid|0),raided:Math.max(0,v.raided|0)};
     for(const k of RES_KEYS){
       if(v.stock&&v.stock[k]>0)S.stock[k]=clamp(+v.stock[k],0,SETTLE_STOCK);
       if(v.diet&&v.diet[k]>0)S.diet[k]=Math.max(0,+v.diet[k]);
@@ -14981,6 +15027,9 @@ function drawMap(){
   }
 }
 function jump(cost){
+  /* уходя, платит не только топливо: тех, кто сел вам на хвост, вы оставляете
+     над головами живущих внизу (M110, 12t-settle) */
+  if(typeof settleLeftBehind==="function")settleLeftBehind();
   G.fuel-=cost;G.sx=G.sel.x;G.sy=G.sel.y;G.sys=getSystem(G.sx,G.sy);G.ap=null;
   const a=Math.random()*TAU,r=1500;
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
@@ -22153,7 +22202,11 @@ function enterCave(){
     pl.glow=true;pl.bloom=r()<.5;
     plants.push(pl);
   }
-  const nb=2+Math.floor(r()*3);
+  /* дозор посёлка (12t): в его биоме кусачих просто меньше — не потому, что
+     игроку сделали поблажку, а потому, что здесь их гоняют каждый день */
+  const watch=(typeof settleWatch==="function")?settleWatch(p):0;
+  C.watch=watch;
+  const nb=Math.max(1,Math.round((2+Math.floor(r()*3))*(1-watch*.5)));
   for(let i=0;i<nb;i++){
     const x=300+r()*(CAVE_W-600);
     const b=genBeast(r,p,x,caveFloor(C,x));
@@ -22163,7 +22216,8 @@ function enterCave(){
   C.findX=CAVE_W-140;
   caveZones(C);caveDeco(C,p);
   G.cave=C;G.mode="cave";
-  say("Пещера\nищите проход · ДЕЙСТВИЕ у выхода — назад на поверхность");
+  say("Пещера\nищите проход · ДЕЙСТВИЕ у выхода — назад на поверхность"+
+    (watch>0?"\nздесь ходят дозорные посёлка":""));
 }
 function exitCave(){
   G.cave=null;G.mode="surface";
@@ -22216,10 +22270,14 @@ function updateCave(dt){
     const dx=C.x-b.x,d=Math.hypot(dx,C.y-b.y)||1;
     if(b.flee>0){b.flee-=dt;b.x-=dx/d*.9*dt;b.face=dx>0?-1:1;
       if(b.flee<=0){C.fauna.splice(i,1);}continue;}
-    if(d>10){b.x+=dx/d*.5*dt;b.face=dx>0?1:-1;}
+    /* под дозором тварь всё равно идёт на человека, но до черты: дальше её не
+       пускают те, кто здесь живёт, и укусить она не может вовсе */
+    const keep=(C.watch||0)>0?24+46*C.watch:10;
+    if(d>keep){b.x+=dx/d*.5*dt;b.face=dx>0?1:-1;}
+    else if(keep>10&&d<keep-6){b.x-=dx/d*.35*dt;b.face=dx>0?-1:1;}
     b.y=caveFloor(C,b.x);
     if(b.bite>0)b.bite-=dt;
-    if(d<20&&b.bite<=0){b.bite=100;suitHit(3,"Укус");if(G.mode!=="cave")return;}
+    if(d<20&&b.bite<=0&&!(C.watch>0)){b.bite=100;suitHit(3,"Укус");if(G.mode!=="cave")return;}
   }
   const nearBug=C.fauna.find(b=>b.stun>0&&Math.hypot(b.x-C.x,b.y-C.y)<46);
   C.sample=nearBug||null;
@@ -22258,7 +22316,8 @@ function updateCave(dt){
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
   }else if(C.fauna.some(b=>b.stun<=0&&b.flee<=0)){
-    G.prompt="КУСАЧИЕ РЯДОМ · ОГОНЬ (F) — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
+    G.prompt=(C.watch>0?"КУСАЧИЕ ДЕРЖАТСЯ ПООДАЛЬ · ЗДЕСЬ ИХ ГОНЯЮТ\n":"КУСАЧИЕ РЯДОМ · ")+
+      "ОГОНЬ (F) — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
   }else G.prompt="A D — ИДТИ · В ДАЛЬНЕМ КОНЦЕ НАХОДКА · У ВХОДА ДЕЙСТВИЕ — НАРУЖУ";
 }
 function drawCave(){

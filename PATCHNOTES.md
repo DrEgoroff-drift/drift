@@ -9,6 +9,22 @@ could ever save.
 
 ---
 
+## 0.60.0 — "They stand between you and the fauna"
+
+**M110** (`12t-settle.js`, `22-mode-cave.js`, `18-mode-map.js`, suite `91y-settle.js`). A
+settlement is now felt on foot, not only in a tally.
+
+- `settleWatch(p)` — the watchers are a fact about the ground, not a buff on the player: they
+  work from stage 2, only on the settlement's **own** planet, and only while it is fed
+  (`mood ≥ 30`). A hungry village drops its watch first.
+- In a watched biome a cave holds **fewer** biting beasts, and the ones there close only to a
+  line and cannot bite at all. The prompt says why, so the player reads it as their doing.
+- It cuts the other way. `settleLeftBehind()` runs on `jump()`: the tail you leave over their
+  heads lands on them. The price is taken per pirate that had **noticed you** — a hunter (M98)
+  counts double, since he does not care whose roof it is. Mood always; a building only under a
+  dense raid. The settlement is paid nothing for it — cover has a price, not a fee.
+- `raided` added to the manager-style whitelist in `applySave` so the count survives a save.
+
 ## 0.59.0 — "You give, they decide"
 
 **M109, the settlement** (`12t-settle.js`, suite `91y-settle.js`). Habitable worlds have people

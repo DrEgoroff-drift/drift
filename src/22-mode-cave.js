@@ -20,7 +20,11 @@ function enterCave(){
     pl.glow=true;pl.bloom=r()<.5;
     plants.push(pl);
   }
-  const nb=2+Math.floor(r()*3);
+  /* дозор посёлка (12t): в его биоме кусачих просто меньше — не потому, что
+     игроку сделали поблажку, а потому, что здесь их гоняют каждый день */
+  const watch=(typeof settleWatch==="function")?settleWatch(p):0;
+  C.watch=watch;
+  const nb=Math.max(1,Math.round((2+Math.floor(r()*3))*(1-watch*.5)));
   for(let i=0;i<nb;i++){
     const x=300+r()*(CAVE_W-600);
     const b=genBeast(r,p,x,caveFloor(C,x));
@@ -30,7 +34,8 @@ function enterCave(){
   C.findX=CAVE_W-140;
   caveZones(C);caveDeco(C,p);
   G.cave=C;G.mode="cave";
-  say("Пещера\nищите проход · ДЕЙСТВИЕ у выхода — назад на поверхность");
+  say("Пещера\nищите проход · ДЕЙСТВИЕ у выхода — назад на поверхность"+
+    (watch>0?"\nздесь ходят дозорные посёлка":""));
 }
 function exitCave(){
   G.cave=null;G.mode="surface";
@@ -83,10 +88,14 @@ function updateCave(dt){
     const dx=C.x-b.x,d=Math.hypot(dx,C.y-b.y)||1;
     if(b.flee>0){b.flee-=dt;b.x-=dx/d*.9*dt;b.face=dx>0?-1:1;
       if(b.flee<=0){C.fauna.splice(i,1);}continue;}
-    if(d>10){b.x+=dx/d*.5*dt;b.face=dx>0?1:-1;}
+    /* под дозором тварь всё равно идёт на человека, но до черты: дальше её не
+       пускают те, кто здесь живёт, и укусить она не может вовсе */
+    const keep=(C.watch||0)>0?24+46*C.watch:10;
+    if(d>keep){b.x+=dx/d*.5*dt;b.face=dx>0?1:-1;}
+    else if(keep>10&&d<keep-6){b.x-=dx/d*.35*dt;b.face=dx>0?-1:1;}
     b.y=caveFloor(C,b.x);
     if(b.bite>0)b.bite-=dt;
-    if(d<20&&b.bite<=0){b.bite=100;suitHit(3,"Укус");if(G.mode!=="cave")return;}
+    if(d<20&&b.bite<=0&&!(C.watch>0)){b.bite=100;suitHit(3,"Укус");if(G.mode!=="cave")return;}
   }
   const nearBug=C.fauna.find(b=>b.stun>0&&Math.hypot(b.x-C.x,b.y-C.y)<46);
   C.sample=nearBug||null;
@@ -125,7 +134,8 @@ function updateCave(dt){
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
   }else if(C.fauna.some(b=>b.stun<=0&&b.flee<=0)){
-    G.prompt="КУСАЧИЕ РЯДОМ · ОГОНЬ (F) — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
+    G.prompt=(C.watch>0?"КУСАЧИЕ ДЕРЖАТСЯ ПООДАЛЬ · ЗДЕСЬ ИХ ГОНЯЮТ\n":"КУСАЧИЕ РЯДОМ · ")+
+      "ОГОНЬ (F) — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
   }else G.prompt="A D — ИДТИ · В ДАЛЬНЕМ КОНЦЕ НАХОДКА · У ВХОДА ДЕЙСТВИЕ — НАРУЖУ";
 }
 function drawCave(){
