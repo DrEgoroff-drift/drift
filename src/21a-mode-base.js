@@ -25,6 +25,11 @@ const BUILD={
   habitat:{ru:"Жилой отсек",cost:{credits:1200,alloy:3},  power:-4, note:"места для персонала; рядом с реактором людям хуже"},
   refinery:{ru:"Плавильня", cost:{credits:2200,alloy:8},  power:-11,note:"сама переплавляет добытое в сплавы"},
   pad:    {ru:"Площадка",   cost:{credits:2600,alloy:10}, power:-3, note:"причал для переброски между базами"},
+  /* батарея (M111): строится, а не покупается, и стоит в общем балансе мощности —
+     оборона конкурирует с добычей, и это настоящее решение. Только наверху:
+     она бьёт с грунта, и с орбиты видно её линию. */
+  battery:{ru:"Батарея",    cost:{credits:2400,alloy:9},  power:-12,surfaceOnly:true,
+           note:"бьёт по мелочи в своей системе; барона и охотника ей не взять"},
   /* дорогая, прожорливая и мёртвая без жилого отсека рядом: разбирать образцы
      вахтой из скафандра нельзя, а исследователю больше работать негде */
   lab:    {ru:"Лаборатория", cost:{credits:3200,alloy:12},power:-16,needTech:"lab",
@@ -91,7 +96,7 @@ function baseNeighbors(B,c,r){
   return out;
 }
 function basePower(B){
-  let prod=0,cons=0,core=0,drills=0,drillEff=0,hab=0,habPenalty=0,store=0,ref=0,pads=0;
+  let prod=0,cons=0,core=0,drills=0,drillEff=0,hab=0,habPenalty=0,store=0,ref=0,pads=0,guns=0;
   const cls=(getSystem(B.sx,B.sy).cls&&getSystem(B.sx,B.sy).cls.lum)||1;
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
     const cell=baseCell(B,c,r);if(!cell||cell.hp<=0)continue;   // разбитый отсек не работает и не ест энергию
@@ -113,6 +118,7 @@ function basePower(B){
     if(cell.k==="storage")store+=120;
     if(cell.k==="refinery")ref++;
     if(cell.k==="pad")pads++;
+    if(cell.k==="battery")guns++;
     /* ядро нагрузки — то, ради чего база стоит: остальное можно и притушить */
     if(cell.k==="drill"||cell.k==="lab")core+=use;
     cons+=use;
@@ -129,7 +135,7 @@ function basePower(B){
      когда лишний реактор осмысленно ставить нарочно */
   const surplus=Math.max(0,prod-cons);
   return {prod:Math.round(prod*10)/10,cons:Math.round(cons*10)/10,eff,surplus,
-    drills,drillEff,hab,habPenalty,store:180+store,ref,pads};
+    drills,drillEff,hab,habPenalty,store:180+store,ref,pads,guns};
 }
 function basePoolHeld(B){let s=0;for(const k in B.pool)s+=B.pool[k]|0;return s;}
 /* ══════════════ ленивое время базы ══════════════ */

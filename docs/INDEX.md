@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 112 · символов верхнего уровня: 1314
+Файлов: 114 · символов верхнего уровня: 1322
 
 ## СИМВОЛЫ
 
@@ -111,31 +111,38 @@ BARTER                       src/04-mods.js:60
 BASE_COLS                    src/21a-mode-base.js:6
 BASE_ROLES                   src/12a-crew.js:118
 BASE_ROOM                    src/21ab-base-interiors.js:9
-baseAt                       src/21a-mode-base.js:35
-baseCell                     src/21a-mode-base.js:78
-baseCollect                  src/21a-mode-base.js:263
-baseCost                     src/21a-mode-base.js:38
-baseFixTick                  src/21a-mode-base.js:252
+baseAt                       src/21a-mode-base.js:40
+baseCell                     src/21a-mode-base.js:83
+baseCollect                  src/21a-mode-base.js:269
+baseCost                     src/21a-mode-base.js:43
+baseFixTick                  src/21a-mode-base.js:258
 baseGrowCheck                src/21a-mode-base.js:11
-baseJumpCost                 src/21a-mode-base.js:282
-baseKey                      src/21a-mode-base.js:34
-baseList                     src/21a-mode-base.js:276
-baseNeighbors                src/21a-mode-base.js:83
-basePads                     src/21a-mode-base.js:281
-basePoolHeld                 src/21a-mode-base.js:134
-basePower                    src/21a-mode-base.js:93
-baseRaid                     src/21a-mode-base.js:190
+baseJumpCost                 src/21a-mode-base.js:288
+baseKey                      src/21a-mode-base.js:39
+baseList                     src/21a-mode-base.js:282
+baseNeighbors                src/21a-mode-base.js:88
+basePads                     src/21a-mode-base.js:287
+basePoolHeld                 src/21a-mode-base.js:140
+basePower                    src/21a-mode-base.js:98
+baseRaid                     src/21a-mode-base.js:196
 baseRoleForce                src/12a-crew.js:132
-baseRoomPath                 src/21a-mode-base.js:384
+baseRoomPath                 src/21a-mode-base.js:390
 baseRows                     src/21a-mode-base.js:10
-baseSet                      src/21a-mode-base.js:79
+baseSet                      src/21a-mode-base.js:84
 baseSlots                    src/12a-crew.js:127
 baseStaff                    src/12a-crew.js:128
-baseStorm                    src/21a-mode-base.js:228
-baseTick                     src/21a-mode-base.js:136
+baseStorm                    src/21a-mode-base.js:234
+baseTick                     src/21a-mode-base.js:142
+BATT_COOL                    src/21d-battery.js:13
+BATT_DMG                     src/21d-battery.js:14
+BATT_RANGE                   src/21d-battery.js:12
+battAt                       src/21d-battery.js:17
+battDraw                     src/21d-battery.js:65
+battTarget                   src/21d-battery.js:33
+battTick                     src/21d-battery.js:36
 bBox                         src/21aa-base-rooms.js:23
-bCrate                       src/21aa-base-rooms.js:269
-bDress                       src/21aa-base-rooms.js:121
+bCrate                       src/21aa-base-rooms.js:270
+bDress                       src/21aa-base-rooms.js:122
 BEACON_COOL                  src/23-mode-dig.js:70
 beaconCool                   src/23-mode-dig.js:71
 beaconTick                   src/23-mode-dig.js:86
@@ -152,32 +159,32 @@ beltBasis                    src/24-mode-belt.js:151
 beltFwd                      src/24-mode-belt.js:146
 beltIcy                      src/24-mode-belt.js:87
 BG                           src/16-flight.js:3
-bGlow                        src/21aa-base-rooms.js:297
-bHazard                      src/21aa-base-rooms.js:288
-bJunk                        src/21aa-base-rooms.js:61
-bLamp                        src/21aa-base-rooms.js:278
+bGlow                        src/21aa-base-rooms.js:298
+bHazard                      src/21aa-base-rooms.js:289
+bJunk                        src/21aa-base-rooms.js:62
+bLamp                        src/21aa-base-rooms.js:279
 BLUEPRINTS                   src/12c-mgr-core.js:654
 BM_WARM                      src/21aa-base-rooms.js:20
 bodyInSystem                 src/16-flight.js:50
 BP_KEYS                      src/12c-mgr-core.js:661
-bPipe                        src/21aa-base-rooms.js:243
+bPipe                        src/21aa-base-rooms.js:244
 bpMul                        src/12c-mgr-core.js:665
 bpRecheck                    src/12c-mgr-core.js:732
 bpState                      src/12c-mgr-core.js:662
 brownBuf                     src/10-music.js:119
 brownNoise                   src/10-music.js:120
-bScreen                      src/21aa-base-rooms.js:255
+bScreen                      src/21aa-base-rooms.js:256
 BUILD                        src/21a-mode-base.js:19
-BUILD_KEYS                   src/21a-mode-base.js:33
+BUILD_KEYS                   src/21a-mode-base.js:38
 buildAi                      src/12f-mgr-ai.js:29
 builtHere                    src/21c-built.js:18
 builtKey                     src/21c-built.js:16
 builtSpot                    src/21c-built.js:34
-bWall                        src/21aa-base-rooms.js:186
-bWorker                      src/21aa-base-rooms.js:321
+bWall                        src/21aa-base-rooms.js:187
+bWorker                      src/21aa-base-rooms.js:322
 camOffset                    src/19c-light.js:76
 camStep                      src/19c-light.js:62
-canPay                       src/21a-mode-base.js:43
+canPay                       src/21a-mode-base.js:48
 CANT_STYLE                   src/27d-ui-cantina.js:15
 cantFigure                   src/27d-ui-cantina.js:301
 cantinaPool                  src/12c-mgr-core.js:258
@@ -218,8 +225,8 @@ celHere                      src/06a-celest.js:109
 cellCenter                   src/24a-mode-raid.js:83
 celLine                      src/06a-celest.js:124
 celLon                       src/06a-celest.js:33
-cellX                        src/21a-mode-base.js:76
-cellY                        src/21a-mode-base.js:77
+cellX                        src/21a-mode-base.js:81
+cellY                        src/21a-mode-base.js:82
 celMoonPeriod                src/06a-celest.js:38
 celMoonPhase                 src/06a-celest.js:39
 celNow                       src/06a-celest.js:112
@@ -332,14 +339,14 @@ digCell                      src/23-mode-dig.js:29
 digFauna                     src/23-mode-dig.js:213
 digRockPass                  src/23-mode-dig.js:311
 digVoidPath                  src/23-mode-dig.js:356
-drawAccel                    src/20a-poi.js:364
+drawAccel                    src/20aa-poi-shapes.js:143
 drawAllies                   src/12a-crew.js:551
-drawAnomaly                  src/20a-poi.js:389
+drawAnomaly                  src/20aa-poi-shapes.js:168
 drawAstronaut                src/20-life.js:4
 drawBarge                    src/12l-barge.js:494
 drawBarges                   src/12l-barge.js:525
 drawBargesMap                src/12l-barge.js:550
-drawBase                     src/21a-mode-base.js:410
+drawBase                     src/21a-mode-base.js:416
 drawBaseBuilding             src/21c-built.js:99
 drawBeast                    src/20-life.js:697
 drawBeastAlien               src/20-life.js:540
@@ -347,7 +354,7 @@ drawBelt                     src/24-mode-belt.js:318
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17-mode-system.js:481
 drawBeltRocks                src/17-mode-system.js:439
-drawBuildMenu                src/21aa-base-rooms.js:491
+drawBuildMenu                src/21aa-base-rooms.js:492
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
 drawCave                     src/22-mode-cave.js:141
@@ -359,16 +366,17 @@ drawCaveWater                src/22a-cave-deco.js:288
 drawCelest                   src/06a-celest.js:141
 drawClouds                   src/19e-clouds.js:169
 drawCockpit                  src/25-cockpit.js:400
-drawCombat                   src/13-pirates.js:195
+drawCombat                   src/13-pirates.js:198
 drawCrowns                   src/05a-nodes.js:379
-drawCrystalForest            src/20a-poi.js:336
+drawCrystalForest            src/20aa-poi-shapes.js:115
+drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
 drawDig                      src/23-mode-dig.js:376
 drawDigFauna                 src/23-mode-dig.js:287
 drawDustMotes                src/19-mode-landing.js:294
-drawElevator                 src/20a-poi.js:312
+drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:133
-drawFactory                  src/20a-poi.js:539
+drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:238
 drawFindsSystem              src/17b-finds.js:123
 drawFlame                    src/03b-hull-paint.js:10
@@ -387,19 +395,19 @@ drawLoreMarks                src/12q-lore.js:198
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
 drawMap                      src/18-mode-map.js:51
-drawModule                   src/21aa-base-rooms.js:373
-drawMonolith                 src/20a-poi.js:414
+drawModule                   src/21aa-base-rooms.js:374
+drawMonolith                 src/20aa-poi-shapes.js:193
 drawNebula                   src/16-flight.js:39
 drawNodeIcon                 src/05a-nodes.js:264
-drawObelisk                  src/20a-poi.js:437
-drawObserv                   src/20a-poi.js:652
+drawObelisk                  src/20aa-poi-shapes.js:276
+drawObserv                   src/20aa-poi-shapes.js:491
 drawPirate                   src/12i-pirate-hull.js:320
 drawPirateBase               src/24a-mode-raid.js:103
 drawPirateSkin               src/03d-hull-marks.js:99
 drawPlant                    src/20-life.js:327
 drawPlantAlien               src/20-life.js:179
-drawPOI                      src/20a-poi.js:167
-drawPortal                   src/20a-poi.js:625
+drawPOI                      src/20a-poi.js:171
+drawPortal                   src/20aa-poi-shapes.js:464
 drawRaid                     src/24a-mode-raid.js:351
 drawRing                     src/17-mode-system.js:402
 drawRocks                    src/19-mode-landing.js:195
@@ -422,12 +430,12 @@ drawSurface                  src/21-mode-surface.js:390
 drawSurfaceHud               src/21-mode-surface.js:344
 drawSysNebula                src/16a-space.js:65
 drawSystem                   src/17-mode-system.js:272
-drawTemple                   src/20a-poi.js:271
+drawTemple                   src/20aa-poi-shapes.js:50
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTrail                    src/16-flight.js:303
 drawWear                     src/12s-wear.js:69
 drawWeather                  src/19d-weather.js:92
-drawWreck                    src/20a-poi.js:229
+drawWreck                    src/20aa-poi-shapes.js:8
 drawWrecksSystem             src/12l-barge.js:341
 droneCapacity                src/12-economy.js:66
 DRONES                       src/04-mods.js:57
@@ -436,7 +444,7 @@ earn                         src/12j-home.js:38
 el                           src/26-ui-station.js:94
 endPtr                       src/15-input.js:206
 engineLoop                   src/09-audio.js:209
-enterBase                    src/21a-mode-base.js:60
+enterBase                    src/21a-mode-base.js:65
 enterBelt                    src/24-mode-belt.js:88
 enterCave                    src/22-mode-cave.js:10
 enterDig                     src/23-mode-dig.js:50
@@ -446,7 +454,7 @@ env                          src/09-audio.js:47
 eq                           tests/90-harness.js:23
 evacuate                     src/21-mode-surface.js:269
 exileCandidates              src/12g-mgr-rogue.js:123
-exitBase                     src/21a-mode-base.js:72
+exitBase                     src/21a-mode-base.js:77
 exitBelt                     src/24-mode-belt.js:162
 exitCave                     src/22-mode-cave.js:40
 exitDig                      src/23-mode-dig.js:60
@@ -465,7 +473,7 @@ fbm1                         src/01-core.js:19
 fbm2                         src/01-core.js:26
 fbm3                         src/24-mode-belt.js:16
 fillMaterial                 src/18a-material.js:205
-FIN_DEF                      src/21aa-base-rooms.js:183
+FIN_DEF                      src/21aa-base-rooms.js:184
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:25
 FIND_KINDS                   src/17b-finds.js:19
@@ -500,7 +508,7 @@ fleetColor                   src/04b-fleet.js:95
 fleetUniqueName              src/04b-fleet.js:100
 flightCam                    src/16a-space.js:103
 FOE_KINDS                    src/24a-mode-raid.js:17
-foundBase                    src/21a-mode-base.js:45
+foundBase                    src/21a-mode-base.js:50
 frame                        src/28-loop.js:226
 freeVoice                    src/09-audio.js:79
 fuelPriceHere                src/12k-rep.js:63
@@ -521,7 +529,7 @@ genMgr                       src/12c-mgr-core.js:235
 genName                      src/01-core.js:42
 genPart                      src/05-parts.js:64
 genPlant                     src/20-life.js:123
-genPOI                       src/20a-poi.js:28
+genPOI                       src/20a-poi.js:32
 genRaid                      src/24a-mode-raid.js:30
 genTerrain                   src/07-planet.js:148
 genUniqueShip                src/03-ships.js:16
@@ -643,13 +651,13 @@ jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
 jump                         src/18-mode-map.js:329
-jumpToBase                   src/21a-mode-base.js:286
+jumpToBase                   src/21a-mode-base.js:292
 keplerPos                    src/06-galaxy.js:34
 keyLabel                     src/15-input.js:62
 keyMap                       src/15-input.js:51
 keyRow                       src/27-ui-ship.js:173
 keys                         src/08-state.js:14
-killPirate                   src/13-pirates.js:163
+killPirate                   src/13-pirates.js:166
 killRock                     src/24-mode-belt.js:140
 KMAP                         src/15-input.js:28
 KMAP_BELT                    src/15-input.js:31
@@ -802,7 +810,7 @@ musNote                      src/10-music.js:187
 musPerc                      src/10-music.js:244
 navAction                    src/15-input.js:156
 near                         tests/90-harness.js:24
-nearestPOI                   src/20a-poi.js:676
+nearestPOI                   src/20a-poi.js:234
 nearestStation               src/12-economy.js:43
 NEBULA                       src/16-flight.js:22
 nebula                       src/16-flight.js:23
@@ -891,7 +899,7 @@ PART_SUF                     src/05-parts.js:44
 partBonus                    src/05-parts.js:196
 partById                     src/05-parts.js:182
 partSeq                      src/05-parts.js:210
-payCost                      src/21a-mode-base.js:44
+payCost                      src/21a-mode-base.js:49
 pick                         src/01-core.js:17
 pickKindByBias               src/20-life.js:118
 pickStType                   src/06-galaxy.js:25
@@ -940,16 +948,16 @@ PLANT_TRAIT                  src/20-life.js:93
 plate                        src/25-cockpit.js:160
 POI_FIND                     src/20b-poi-find.js:18
 POI_KINDS                    src/20a-poi.js:11
-POI_SEED                     src/20a-poi.js:84
-poiBody                      src/20a-poi.js:162
-poiDrift                     src/20a-poi.js:141
-poiGlow                      src/20a-poi.js:72
-poiInspect                   src/20b-poi-find.js:95
-poiMemo                      src/20b-poi-find.js:90
-poiNear                      src/20a-poi.js:685
-poiPath                      src/20a-poi.js:85
-poiPoly                      src/20a-poi.js:104
-poiSkin                      src/20a-poi.js:113
+POI_SEED                     src/20a-poi.js:88
+poiBody                      src/20a-poi.js:166
+poiDrift                     src/20a-poi.js:145
+poiGlow                      src/20a-poi.js:76
+poiInspect                   src/20b-poi-find.js:104
+poiMemo                      src/20b-poi-find.js:99
+poiNear                      src/20a-poi.js:243
+poiPath                      src/20a-poi.js:89
+poiPoly                      src/20a-poi.js:108
+poiSkin                      src/20a-poi.js:117
 prevAct                      src/08-state.js:16
 prism                        src/21b-surface-deco.js:201
 PROFILE                      src/02-world.js:29
@@ -1204,7 +1212,7 @@ stGroup                      src/26-ui-station.js:33
 stGroupOf                    src/26-ui-station.js:32
 stopEngine                   src/09-audio.js:233
 STORAGE_OK                   src/14-save.js:5
-STORM_WORLDS                 src/21a-mode-base.js:227
+STORM_WORLDS                 src/21a-mode-base.js:233
 stPanels                     src/17-mode-system.js:505
 stRing                       src/17-mode-system.js:531
 stSet                        src/14-save.js:7
@@ -1272,7 +1280,7 @@ unlockAudio                  src/09-audio.js:36
 unpackPart                   src/05-parts.js:307
 updateAllies                 src/12a-crew.js:517
 updateBarges                 src/12l-barge.js:156
-updateBase                   src/21a-mode-base.js:305
+updateBase                   src/21a-mode-base.js:311
 updateBelt                   src/24-mode-belt.js:172
 updateCave                   src/22-mode-cave.js:44
 updateCaveDeco               src/22a-cave-deco.js:178
@@ -1531,12 +1539,15 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/19-mode-landing.js · 33 КБ
   · посадка:1
 
-## src/20a-poi.js · 40 КБ
+## src/20aa-poi-shapes.js · 30 КБ
+  · фигуры находок: одна функция на вид:1
+
+## src/20a-poi.js · 15 КБ
   · точки интереса:1
 
-## src/20b-poi-find.js · 9 КБ
+## src/20b-poi-find.js · 10 КБ
   · осмотр достопримечательности:1
-  · память памятника:83
+  · память памятника:92
 
 ## src/20-life.js · 40 КБ
   · астронавт:1
@@ -1547,24 +1558,27 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · база: внутренности отсеков:1
   · внутренности отсеков:5
 
-## src/21ab-base-interiors.js · 37 КБ
+## src/21ab-base-interiors.js · 42 КБ
   · база: восемь отсеков изнутри:1
 
 ## src/21a-mode-base.js · 52 КБ
   · база на планете: вид в разрезе:1
-  · энергия и соседство:80
-  · ленивое время базы:135
-  · налёты пиратов на базу:186
-  · буря:222
-  · сеть баз:273
-  · обновление сцены:304
-  · рисование разреза:373
+  · энергия и соседство:85
+  · ленивое время базы:141
+  · налёты пиратов на базу:192
+  · буря:228
+  · сеть баз:279
+  · обновление сцены:310
+  · рисование разреза:379
 
 ## src/21b-surface-deco.js · 31 КБ
   · крупная форма на поверхности:1
 
 ## src/21c-built.js · 10 КБ
   · ваши постройки видны с земли:1
+
+## src/21d-battery.js · 4 КБ
+  · батарея: оборона, которую строят:1
 
 ## src/21-mode-surface.js · 30 КБ
   · поверхность:1
@@ -1654,7 +1668,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91g-relic.js · 8 КБ
   · автотесты: лаборатория и артефакты: слот, эффекты, дерево перков без пустот:1
 
-## tests/91h-base.js · 8 КБ
+## tests/91h-base.js · 11 КБ
   · автотесты: база: энергия и стройка, смотритель, буря, перки фактора:1
 
 ## tests/91i-cockpit.js · 3 КБ

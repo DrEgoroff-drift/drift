@@ -155,3 +155,54 @@ TEST_SUITES.push(()=>suite("фактор и командир: остальные
   ok(true,"карта с метками пиратских баз рисуется");
   G.mode="system";
 }));
+
+/* ══ M111: батарея срезает шум, а не держит систему ══
+   Сторож замысла: она строится (а не покупается), стоит в общем балансе
+   мощности, берёт только залётную мелочь и НИЧЕГО не может сделать с бароном,
+   охотником, ренегатом и соперником. */
+TEST_SUITES.push(()=>suite("батарея: срезает шум, а не держит систему",()=>{
+  resetWorld();
+  ok(!!BUILD.battery,"батарея — отсек в разрезе базы, а не покупка");
+  ok(BUILD.battery.power<0,"она ест энергию, а не даёт");
+  ok(BUILD.battery.surfaceOnly,"стоит только наверху: бьёт с грунта");
+  G.credits=500000;G.cargo.alloy=99;
+  const p=G.sys.planets.find(x=>x.type!=="gas");
+  foundBase(p);
+  const B=baseAt(G.sx,G.sy,p.idx);
+  const P0=basePower(B);
+  B.cells[1]={k:"battery",hp:1};
+  const P1=basePower(B);
+  eq(P1.guns,1,"батарея посчитана");
+  ok(P1.cons>P0.cons,"и легла в общий расход: оборона конкурирует с добычей");
+  const Bt=battAt(G.sx,G.sy);
+  ok(!!Bt&&Bt.n===1,"батарея видна из системы");
+  /* кого она берёт и кого не берёт */
+  ok(battTarget({rank:0,hull:5}),"залётный шакал — её работа");
+  ok(!battTarget({rank:3,hull:5}),"барон ей не по зубам");
+  ok(!battTarget({rank:0,hull:5,hunter:1}),"охотник — не её дело");
+  ok(!battTarget({rank:0,hull:5,rogue:1}),"ренегат — не её дело");
+  ok(!battTarget({rank:0,hull:5,rival:1}),"соперник — не её дело");
+  /* мелочь она действительно снимает, барон при этом цел */
+  const pl=Bt.p;
+  const small={x:pl.x+200,y:pl.y,vx:0,vy:0,a:0,hull:40,hullMax:40,rank:0,seed:7,
+               name:"Шакал",cool:0,aware:false};
+  const baron={x:pl.x+220,y:pl.y,vx:0,vy:0,a:0,hull:400,hullMax:400,rank:3,seed:9,
+               name:"Барон",cool:0,aware:false};
+  G.pirates=[small,baron];G.battCool=0;G.battFx=[];
+  for(let i=0;i<4000&&G.pirates.indexOf(small)>=0;i++)battTick(1);
+  ok(G.pirates.indexOf(small)<0,"мелочь сбита");
+  eq(baron.hull,400,"барон не поцарапан: систему батареей не удержать");
+  /* без батареи она не стреляет вовсе */
+  B.cells[1]=null;G.battCool=0;G.battFx=[];
+  const h0=baron.hull;
+  G.pirates=[{x:pl.x+200,y:pl.y,vx:0,vy:0,a:0,hull:40,hullMax:40,rank:0,seed:3,
+              name:"Шакал",cool:0,aware:false}];
+  for(let i=0;i<600;i++)battTick(1);
+  eq(G.pirates.length,1,"без батареи никто не стреляет");
+  eq(baron.hull,h0,"и барона это не касается");
+  /* мёртвая батарея на грунте — место, которое отвечает куском отчёта */
+  ok(POI_KINDS.some(k=>k.k==="battery"),"мёртвая батарея есть среди находок");
+  ok(typeof drawDeadBattery==="function","и её есть чем нарисовать");
+  ok(!!POI_FIND.battery&&typeof POI_FIND.battery.give==="function",
+     "и есть чем ответить подошедшему");
+}));

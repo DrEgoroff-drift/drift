@@ -295,17 +295,30 @@ added to the settle whitelist in `applySave`.
 not marked from the horizon the way the cave is, and the watch is invisible from inside the cave —
 it is read from the prompt, not seen.
 
-## M111 (0.61.0). System defence: the battery that is built, not bought
+## M111 (0.61.0) — built. System defence: the battery that is built, not bought
 
-A building in the base cross-section (`21a-mode-base`), inside the existing power balance — it eats
-reactor output, so defence competes with production and is a real decision.
+Built as **`21d-battery.js`**, room `battery` in `BUILD` (`21a-mode-base`, top level only, `-12`
+inside the existing power balance), compartment art in `21ab-base-interiors`, the shot line inside
+`drawCombat` (`13-pirates`), and suite **"the battery cuts noise, it does not hold a system"** in
+`91h-base.js`.
 
-- It fires at pirates in **its own system**, visible from `17-mode-system` as a line from the ground.
-- **It cuts the small raids only.** Killing pirates as content is not on the table: the battery
-  clears the noise so the player stops flying home for nuisances, and does nothing against a baron
-  or a hunter (M98). Edits that let a battery hold a system break the design.
-- The expedition built these too, and the ruined ones are on the ground already — a dead battery is
-  one of the places `loreAtPlace` answers.
+- `battAt(sx,sy)` counts the guns standing in that system and takes the worst power efficiency:
+  a wrecked room does not count (that is `basePower`), a browned-out base fires slower.
+- `battTarget` is the guard on the design: rank 0, no `hunter`, no `rogue`, no `rival`. The test
+  fires four thousand frames at a baron parked next to a jackal — the jackal dies, the baron is
+  not scratched. Range is `BATT_RANGE=3000` around its own planet, not the system.
+- Seen from orbit as a line from the ground, drawn under the ships; the kill is logged by name.
+- **The magazine, not the barrel.** From the cross-section you see what feeds the gun: turret ring
+  in the ceiling hatch, feed hoist, shells standing at hip height (the man is the measure), and a
+  firing lamp lit only while the battery really shoots.
+- The expedition's own ruined batteries are on the ground: POI kind `battery` on solid worlds
+  (`drawDeadBattery`, `20aa-poi-shapes`, stand shot `docs/shots/poi-battery.png`), answering with a
+  piece of the report through `POI_FIND.battery` — their government property, not a monument.
+- Along the way `20a-poi.js` was cut along its seam into the picker and `20aa-poi-shapes.js`
+  (one payment on the split debt, item 10 above).
+
+**Still open:** the battery has no sound of its own from the system view beyond the shot blip, and
+a base that is out of power gives no notice that its defence has gone quiet.
 
 ## M112 (0.62.0). Missiles
 

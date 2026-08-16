@@ -579,5 +579,71 @@ lab(x0,y0,w,h,cx,fy,lit,seed,B,P){
   bGlow(ax,fy-36,22,"190,160,255",.12*glow*2);
   bWorker(cx-18,fy,lit,true,G.t*.04+seed);
   bLamp(cx,y0+4,40,fy,"200,232,255",.30+lit*.35);
+},
+/* ── БАТАРЕЯ: снизу видно не ствол, а то, чем его кормят ──
+   Ствол стоит наверху, на грунте, — в разрезе от него видна только тумба,
+   уходящая в потолочный люк. Помещение под ним — погреб: стеллаж выстрелов,
+   подъёмник подачи и пульт с лампой. Лампа зажигается ровно тогда, когда
+   батарея действительно стреляет (21d), а не «для красоты»: если оборона
+   работает, это видно из разреза. */
+battery(x0,y0,w,h,cx,fy,lit,seed,B,P){
+  const R=rng(seed);
+  const fire=(G.battFx&&G.battFx.length)?1:0;
+  const mx=x0+w*.38;
+  /* люк в потолке и тумба погона: то, что уходит на поверхность */
+  bHazard(mx-26,y0,52,4,.85);
+  ctx.fillStyle="rgba(10,14,20,.92)";ctx.fillRect(mx-18,y0,36,5);
+  /* погон: не арка, а плита на катках — сверху к ней приходит тумба ствола,
+     снизу подпирает колонна подачи. Первый заход дал полукруг с зубьями во всю
+     ширину отсека, и он читался входной аркой, а не поворотным кругом. */
+  bBox(mx-20,y0+5,40,7,"rgba(34,40,50,.97)",lit,"rgba(150,170,190,.32)");
+  ctx.strokeStyle="rgba(140,158,176,"+(.28+lit*.32).toFixed(2)+")";ctx.lineWidth=1.2;
+  for(const s of [-1,1]){                                  // катки: по ним она и ходит
+    ctx.beginPath();ctx.arc(mx+s*13,y0+15,4,0,TAU);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(mx+s*13,y0+15);
+    const a=(fire?G.t*.05:G.t*.008)+(s>0?0:1.7);
+    ctx.lineTo(mx+s*13+Math.cos(a)*4,y0+15+Math.sin(a)*4);ctx.stroke();
+  }
+  bBox(mx-16,y0+12,32,7,"rgba(28,36,46,.96)",lit,"rgba(120,140,160,.28)");
+  /* подъёмник подачи: колонна от пола к погону, в ней ползёт лоток */
+  bBox(mx-7,y0+19,14,fy-y0-23,"rgba(26,34,44,.96)",lit,"rgba(120,140,160,.28)");
+  const up=((G.t*(fire?1.6:.35)+seed*13)%100)/100;
+  ctx.fillStyle="rgba("+BM_WARM+","+(.25+lit*.35).toFixed(2)+")";
+  ctx.fillRect(mx-4,fy-8-up*(fy-y0-33),8,7);
+  /* стеллаж выстрелов: они СТОЯТ на полу в раме, а не висят на верхней рейке —
+     первый заход подвесил их за головки, и погреб читался ледником с сосульками */
+  const sx2=x0+w*.60,sw2=w-(sx2-x0)-12;
+  /* мерило — человек: выстрел ему по бедро, иначе погреб выглядит складом
+     торпед. Восемь мест вместо шести: их носят руками, значит они мелкие. */
+  const sn=8,cw2=sw2/sn;
+  for(let i=0;i<sn;i++){
+    const bx=sx2+i*cw2;
+    if(R()<.16)continue;                                   // расстрелянные места пустуют
+    ctx.fillStyle="rgba(76,72,58,"+(.75+lit*.25).toFixed(2)+")";
+    ctx.fillRect(bx+1,fy-20,cw2-4,16);
+    ctx.fillStyle="rgba(214,168,64,"+(.30+lit*.3).toFixed(2)+")";  // поясок
+    ctx.fillRect(bx+1,fy-10,cw2-4,1.8);
+    ctx.fillStyle="rgba(180,196,210,"+(.2+lit*.25).toFixed(2)+")"; // головка
+    ctx.beginPath();ctx.moveTo(bx+1,fy-20);ctx.lineTo(bx+1+(cw2-4)/2,fy-25);
+    ctx.lineTo(bx+cw2-3,fy-20);ctx.closePath();ctx.fill();
+  }
+  /* рама держит их поперёк, на высоте пояса: видно, что это стеллаж */
+  ctx.fillStyle="rgba(44,54,66,"+(.8+lit*.2).toFixed(2)+")";
+  ctx.fillRect(sx2-3,fy-15,sw2+6,2.4);
+  ctx.fillRect(sx2-3,fy-19,3,15);ctx.fillRect(sx2+sw2,fy-19,3,15);
+  /* пульт наводки: экран и лампа «огонь» — единственное, что светится сильно */
+  const px=x0+8,py=fy-34;
+  bBox(px,py,34,34,"rgba(28,36,46,.97)",lit,"rgba(150,170,190,.32)");
+  ctx.fillStyle="rgba(12,18,26,.95)";ctx.fillRect(px+4,py+5,26,18);
+  ctx.strokeStyle="rgba("+BM_COOL+","+(.25+lit*.4).toFixed(2)+")";ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(px+17,py+14,7,0,TAU);ctx.stroke();     // круговой обзор
+  const sa=G.t*.03;
+  ctx.beginPath();ctx.moveTo(px+17,py+14);
+  ctx.lineTo(px+17+Math.cos(sa)*7,py+14+Math.sin(sa)*7);ctx.stroke();
+  ctx.fillStyle=fire?"rgba(255,120,90,.95)":"rgba(70,50,44,.9)";
+  ctx.fillRect(px+13,py+26,8,4);
+  if(fire)bGlow(px+17,py+28,26,"255,140,100",.16);
+  bPipe([[mx+16,y0+18],[x0+w-8,y0+18]],3,"90,104,120",lit);
+  bLamp(cx,y0+4,40,fy,"246,214,160",(.22+lit*.32)*(P.eff<.3?.5:1));
 }
 };
