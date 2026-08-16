@@ -558,8 +558,67 @@ function drawBase(){
         ctx.fillRect(px-1,py-1.2,1.6,.7);
       }
     }
+    /* ── валуны и прожилки ──
+       Порода вокруг убежища оставалась ровным полем зерна: масштаба в ней не
+       было, и склон читался фоном, а не камнем, в котором прорубились. На
+       образце в толще лежат крупные глыбы и жилы — по ним и понятно, сколько
+       тут метров. Глыба — тёмное тело со светлой верхней гранью (свет один и
+       тот же на весь кадр, сверху), жила — тонкая наклонная нить. */
+    const BR=rng(hashi(B.idx||1,0x9B0D,3));
+    for(let i=0;i<26;i++){
+      const px=BR()*W, py=gy0+BR()*gh;
+      const rr=4+BR()*BR()*22;
+      ctx.fillStyle="rgba(0,0,0,.30)";
+      ctx.beginPath();ctx.ellipse(px,py,rr,rr*.72,BR()*.6-.3,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(228,212,186,.055)";
+      ctx.beginPath();ctx.ellipse(px-rr*.16,py-rr*.26,rr*.72,rr*.30,BR()*.5-.25,0,TAU);ctx.fill();
+    }
+    ctx.lineWidth=.8;
+    for(let i=0;i<14;i++){
+      const px=BR()*W, py=gy0+BR()*gh, ln=16+BR()*46, an=BR()*.8-.4;
+      ctx.strokeStyle=(i&3)?"rgba(214,196,164,.07)":"rgba(196,146,88,.10)";
+      ctx.beginPath();ctx.moveTo(px,py);
+      ctx.lineTo(px+Math.cos(an)*ln,py+Math.sin(an)*ln);ctx.stroke();
+    }
   }
   ctx.restore();
+  /* ── наземное ставится ПОСЛЕ породы ──
+     Гора рисуется поверх всего, что стояло на поверхности, и мачта с
+     воротами уходили под склон: их не было видно вовсе. Наземное теперь
+     идёт после грунта и садится на ВЫСОТУ СКЛОНА в своей точке, а не на
+     старую плоскую линию земли. */
+  {
+    const _u=clamp((X(cellX(Math.floor(BASE_COLS/2)))-bMidX)/bHalf,-1.6,1.6);
+    const _hump=Math.exp(-_u*_u*1.25)*BCELL_H*1.55+Math.exp(-Math.pow(_u+.72,2)*4.2)*BCELL_H*.55;
+    /* вход у ПОДОШВЫ склона, а не на вершине: ворота — это врез в гору на
+       уровне земли, к ним подъезжают, а не забираются */
+    const gy=Y(150)+6;
+    /* ── ворота в склоне ──
+       Убежище было врезано в гору, но входа в него снаружи не существовало:
+       на поверхности стояла одна мачта, и как люди попадают внутрь, кадр не
+       объяснял. Ворота ставятся над стволом лифта, у подошвы горы: бетонный
+       портал, откатная плита с рёбрами и тёплая щель по краю — свет изнутри.
+       Это же и оправдывает колонну: лифт начинается ровно за ними. */
+    {
+      const gx=X(cellX(Math.floor(BASE_COLS/2))), gwd=52, ghh=30;
+      const gyy=gy-2;
+      ctx.fillStyle="rgba(24,27,33,.98)";
+      ctx.beginPath();
+      ctx.moveTo(gx-gwd/2-7,gyy);ctx.lineTo(gx-gwd/2-3,gyy-ghh-8);
+      ctx.lineTo(gx+gwd/2+3,gyy-ghh-8);ctx.lineTo(gx+gwd/2+7,gyy);
+      ctx.closePath();ctx.fill();                       // портал
+      ctx.fillStyle="rgba(46,52,62,.98)";
+      ctx.fillRect(gx-gwd/2,gyy-ghh,gwd,ghh);           // плита
+      ctx.fillStyle="rgba(18,21,26,.9)";
+      for(let i=0;i<4;i++)ctx.fillRect(gx-gwd/2+4+i*(gwd-8)/4,gyy-ghh+3,3,ghh-6);
+      /* свет считается от энергобаланса напрямую: `lit` объявляется ниже по
+         функции, и обращение к нему отсюда роняло весь кадр */
+      ctx.fillStyle="rgba(255,206,140,"+(.30+basePower(B).eff*.4).toFixed(2)+")";
+      ctx.fillRect(gx-gwd/2,gyy-2.4,gwd,2.4);           // свет из-под плиты
+      ctx.fillStyle="rgba(150,164,180,.35)";
+      ctx.fillRect(gx-gwd/2-3,gyy-ghh-8,gwd+6,2);       // притолока
+    }
+  }
   /* свет с глубиной сходит на нет */
   const dk=clamp((camy+H*.5)/2000,0,.42);
   /* порода уводится в почти чёрное: на светлые отсеки она обязана работать
@@ -627,7 +686,7 @@ function drawBase(){
   const LW=13;
   const sg=ctx.createLinearGradient(lx-LW,0,lx+LW,0);
   sg.addColorStop(0,"rgba(30,26,20,.95)");
-  sg.addColorStop(.5,"rgba(96,72,40,"+(.30+lit*.34).toFixed(2)+")");
+  sg.addColorStop(.5,"rgba(168,116,52,"+(.42+lit*.42).toFixed(2)+")");
   sg.addColorStop(1,"rgba(30,26,20,.95)");
   ctx.fillStyle=sg;ctx.fillRect(lx-LW,shaftT,LW*2,shaftB-shaftT);
   ctx.fillStyle="rgba(255,196,110,"+(.10+lit*.16).toFixed(2)+")";
@@ -695,10 +754,21 @@ function drawBase(){
     ctx.fillRect(x-wdt/2,y0,wdt,y1-y0);
     ctx.fillStyle="rgba(150,164,180,"+(.08+lit*.12).toFixed(2)+")";
     ctx.fillRect(x-wdt/2,y0,1,y1-y0);           // блик по кромке, обращённой к свету
-    /* проём между смежными отсеками: люди же как-то ходят */
+    /* ── дверь ──
+     Проём был жёлтой полоской в толще стены и читался подсветкой, а не
+     дверью. Дверь узнают по трём вещам: тёмный зев, светлый косяк вокруг
+     него и порог понизу. Ставится от пола вверх на рост человека — по ней
+     же становится видно, какого размера отсек. */
     if(a&&b){
-      ctx.fillStyle="rgba(255,206,140,"+(.10+lit*.16).toFixed(2)+")";
-      ctx.fillRect(x-wdt/2,y1-BCELL_H*.30,wdt,BCELL_H*.18);
+      const dh=BCELL_H*.34, dy=y1-BCELL_H*.12-dh;
+      ctx.fillStyle="rgba(6,8,12,.98)";
+      ctx.fillRect(x-wdt/2-1,dy,wdt+2,dh);
+      ctx.fillStyle="rgba(170,186,204,"+(.12+lit*.18).toFixed(2)+")";
+      ctx.fillRect(x-wdt/2-1.6,dy-1.4,wdt+3.2,1.4);      // косяк сверху
+      ctx.fillRect(x-wdt/2-1.6,dy,1.2,dh);
+      ctx.fillRect(x+wdt/2+.4,dy,1.2,dh);
+      ctx.fillStyle="rgba(255,206,140,"+(.20+lit*.26).toFixed(2)+")";
+      ctx.fillRect(x-wdt/2-1,dy+dh-1.6,wdt+2,1.6);       // свет из-под двери
     }
   }
   /* коридор-стяжка вдоль пола и ствол лифта */
