@@ -244,10 +244,17 @@ place on the planet, computed from the seed, and you walk to it. The action hand
 stack in the hold — the diet is what the player actually carries, not a line ticked in a menu —
 and when there is nothing to give, the same button asks.
 
-**Not done from the spec below:** the settlement has no drawing of its own yet (no huts on the
-horizon, no watchers), and the vocabulary only decorates the answer — an unlocked word does not
-yet turn into a request the player can aim. Both are the next slice, and both are honest gaps
-rather than silent ones.
+Both gaps left by the first slice are closed. The settlement is **drawn** (`settleDraw`, stand
+`docs/mksettle.ps1` → `docs/shots/settle.png`, three stages in a column): a row of low huts, one
+per building plus the two that were always there, a hearth burning in every window, smoke only
+over a kiln, a forge or a still — and it stops when the mood falls below a third, which is what
+hunger looks like without a number; watchers step out at stage 2, which is where M110 will pick
+them up. And **the vocabulary is now a lever**: a word that came as a fragment (`SETTLE_WORD`)
+names a good, and naming it puts that good first in what they bring out. It does not conjure what
+they cannot make and does not override the mood — a request, not an order.
+
+**Still open:** the settlement has no sound of its own, and the walk up to it is not marked from
+the horizon the way the cave is.
 
 The original spec, kept as the standard the build is measured against:
 
