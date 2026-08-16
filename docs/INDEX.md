@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 109 · символов верхнего уровня: 1280
+Файлов: 110 · символов верхнего уровня: 1280
 
 ## СИМВОЛЫ
 
@@ -110,7 +110,7 @@ bargeSysAt                   src/12l-barge.js:25
 BARTER                       src/04-mods.js:60
 BASE_COLS                    src/21a-mode-base.js:6
 BASE_ROLES                   src/12a-crew.js:118
-BASE_ROOM                    src/21aa-base-rooms.js:333
+BASE_ROOM                    src/21ab-base-interiors.js:9
 baseAt                       src/21a-mode-base.js:35
 baseCell                     src/21a-mode-base.js:78
 baseCollect                  src/21a-mode-base.js:263
@@ -345,7 +345,7 @@ drawBelt                     src/24-mode-belt.js:318
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17-mode-system.js:481
 drawBeltRocks                src/17-mode-system.js:439
-drawBuildMenu                src/21aa-base-rooms.js:908
+drawBuildMenu                src/21aa-base-rooms.js:334
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
 drawCave                     src/22-mode-cave.js:131
@@ -1509,9 +1509,12 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · флора:88
   · фауна:456
 
-## src/21aa-base-rooms.js · 60 КБ
+## src/21aa-base-rooms.js · 24 КБ
   · база: внутренности отсеков:1
   · внутренности отсеков:5
+
+## src/21ab-base-interiors.js · 37 КБ
+  · база: восемь отсеков изнутри:1
 
 ## src/21a-mode-base.js · 52 КБ
   · база на планете: вид в разрезе:1

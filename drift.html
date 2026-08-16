@@ -18482,8 +18482,35 @@ function drawModule(k,x,y,lit,c,r,B){
   ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x0,fy,w,6);
   ctx.restore();
 }
-/* Каждый отсек — своя функция: так их видно списком и можно править по одному,
-   не разбирая общий `if/else if` на восемь ветвей. */
+/* Сами восемь помещений — в 21ab-base-interiors: `drawModule` берёт их из
+   `BASE_ROOM` по ключу постройки, и добавить отсек — значит дописать функцию
+   туда, а не править этот файл. */
+function drawBuildMenu(S){
+  const w=Math.min(W-40,420),x=W/2-w/2,y=H-150;
+  ctx.fillStyle="rgba(6,10,16,.88)";ctx.fillRect(x,y,w,64);
+  ctx.strokeStyle="rgba(242,178,92,.6)";ctx.lineWidth=1;ctx.strokeRect(x,y,w,64);
+  const n=BUILD_KEYS.length,cw=w/n;
+  for(let i=0;i<n;i++){
+    const k=BUILD_KEYS[i],on=i===S.pick;
+    ctx.fillStyle=on?"rgba(242,178,92,.18)":"rgba(0,0,0,0)";
+    ctx.fillRect(x+i*cw,y+2,cw,60);
+    ctx.fillStyle=on?"rgba(255,230,180,.95)":"rgba(200,210,220,.5)";
+    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText(BUILD[k].ru.toUpperCase().slice(0,9),x+i*cw+cw/2,y+22);
+    const bc=baseCost(k);
+    ctx.fillText(bc.credits+"кр",x+i*cw+cw/2,y+36);
+    if(bc.alloy)ctx.fillText(bc.alloy+"спл",x+i*cw+cw/2,y+48);
+  }
+}
+
+/* ══════════════ база: восемь отсеков изнутри ══════════════ */
+/* Отделено от 21aa по шву: там кисти (`bBox`/`bWall`/`bWorker`), отделка
+   (`ROOM_FIN`) и общий `drawModule`, здесь — только сами восемь помещений.
+   Вместе выходило 60 КБ, и правка одной комнаты стоила чтения всего файла.
+
+   Мерило, язык и порядок слоёв — те же, что в 21aa: читать шапку там.
+   Каждый отсек — своя функция: так их видно списком и можно править по
+   одному, не разбирая общий `if/else if` на восемь ветвей. */
 const BASE_ROOM={
 /* ── РЕАКТОР: гермозона во всю высоту, ядро, теплоноситель, пульт ── */
 reactor(x0,y0,w,h,cx,fy,lit,seed,B,P){
@@ -19059,23 +19086,6 @@ lab(x0,y0,w,h,cx,fy,lit,seed,B,P){
   bLamp(cx,y0+4,40,fy,"200,232,255",.30+lit*.35);
 }
 };
-function drawBuildMenu(S){
-  const w=Math.min(W-40,420),x=W/2-w/2,y=H-150;
-  ctx.fillStyle="rgba(6,10,16,.88)";ctx.fillRect(x,y,w,64);
-  ctx.strokeStyle="rgba(242,178,92,.6)";ctx.lineWidth=1;ctx.strokeRect(x,y,w,64);
-  const n=BUILD_KEYS.length,cw=w/n;
-  for(let i=0;i<n;i++){
-    const k=BUILD_KEYS[i],on=i===S.pick;
-    ctx.fillStyle=on?"rgba(242,178,92,.18)":"rgba(0,0,0,0)";
-    ctx.fillRect(x+i*cw,y+2,cw,60);
-    ctx.fillStyle=on?"rgba(255,230,180,.95)":"rgba(200,210,220,.5)";
-    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText(BUILD[k].ru.toUpperCase().slice(0,9),x+i*cw+cw/2,y+22);
-    const bc=baseCost(k);
-    ctx.fillText(bc.credits+"кр",x+i*cw+cw/2,y+36);
-    if(bc.alloy)ctx.fillText(bc.alloy+"спл",x+i*cw+cw/2,y+48);
-  }
-}
 
 /* ══════════════ база на планете: вид в разрезе ══════════════ */
 /* Планета остаётся плоской 2D, объём даёт разрез: сверху небо и грунт, ниже —
