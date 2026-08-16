@@ -280,6 +280,32 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 #lorelist .li.note span{color:var(--dim);font-style:italic}
 #lorelist .li.head span{color:var(--dim);letter-spacing:.16em}
 
+/* ── жёрдочка (12y) ──
+   Тот же материал, что у журнала и доски: стекло, волосок по кромке, мягкая
+   тень. Окно узкое и правое — птица сидит сбоку и не закрывает приборы; висит
+   в любом режиме и уходит крестиком. Внутри — только канва, строка речи и
+   подсказка: списки живут на доске отчёта, здесь животное. */
+#parrotwin{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom) + 148px);
+  z-index:6;width:min(280px,72vw);background:var(--glass);border:1px solid var(--edge2);
+  border-radius:var(--rad-p);backdrop-filter:blur(18px) saturate(1.2);
+  box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
+  display:none;flex-direction:column;overflow:hidden}
+#parrotwin.open{display:flex;animation:winIn .2s var(--ease)}
+#parrotwin>b{font-weight:400;color:var(--dim);letter-spacing:.18em;font-size:8px;
+  padding:11px 12px;border-bottom:1px solid var(--edge);display:flex;align-items:center}
+#parrotwin>b i{font-style:normal}
+#parrotwin>b span{margin-left:auto;color:var(--phos);font-size:17px;line-height:.7;
+  padding:0 4px;cursor:pointer}
+#parrotcv{display:block;width:100%;height:262px;cursor:pointer;touch-action:manipulation;
+  background:radial-gradient(120% 90% at 50% 22%,rgba(255,214,150,.10),transparent 62%),
+             linear-gradient(180deg,rgba(8,13,22,.5),rgba(4,7,12,.85))}
+#parrotsay{display:block;font-style:normal;color:var(--amber);font-size:11px;
+  padding:9px 12px 2px;min-height:15px;line-height:1.4;
+  border-top:1px solid var(--edge);word-break:break-word}
+#parrotsay.on{animation:winIn .22s var(--ease)}
+#parrotwin>s{text-decoration:none;color:var(--dim);font-size:8px;letter-spacing:.12em;
+  padding:2px 12px 11px}
+
 /* ══════════════ экраны ══════════════
    Один каркас на все: шапка с названием и кошельком, навигация, тело,
    подвал с действиями. Фон непрозрачный — сквозь прежние 96% просвечивали

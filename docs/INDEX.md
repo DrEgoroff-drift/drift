@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 124 · символов верхнего уровня: 1409
+Файлов: 125 · символов верхнего уровня: 1432
 
 ## СИМВОЛЫ
 
@@ -403,7 +403,7 @@ drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:133
 drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:240
-drawFindsSystem              src/17b-finds.js:129
+drawFindsSystem              src/17b-finds.js:132
 drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24a-mode-raid.js:638
 drawGlassHUD                 src/24-mode-belt.js:518
@@ -504,7 +504,7 @@ FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:25
 FIND_KINDS                   src/17b-finds.js:19
 findBucket                   src/17b-finds.js:18
-findInteract                 src/17b-finds.js:107
+findInteract                 src/17b-finds.js:110
 findSeen                     src/17b-finds.js:50
 findsHere                    src/17b-finds.js:49
 findsIn                      src/17b-finds.js:26
@@ -944,11 +944,32 @@ packPart                     src/05-parts.js:322
 PAD_SAFE                     src/18-mode-map.js:11
 padsFadeIn                   src/15-input.js:12
 padsFadeOut                  src/15-input.js:11
+PAR                          src/12y-parrot-face.js:50
+PAR_C                        src/12y-parrot-face.js:37
+PAR_DPR                      src/12y-parrot-face.js:513
+PAR_IDLE                     src/12y-parrot-face.js:470
+PAR_L                        src/12y-parrot-face.js:426
+parBead                      src/12y-parrot-face.js:126
+parBodyPath                  src/12y-parrot-face.js:150
+parCoat                      src/12y-parrot-face.js:164
+parFoot                      src/12y-parrot-face.js:215
+parLayer                     src/12y-parrot-face.js:427
+parPlume                     src/12y-parrot-face.js:71
+parQuill                     src/12y-parrot-face.js:56
 PARROT_NAMES                 src/12x-parrot.js:24
+parrotBtnTick                src/12y-parrot-face.js:507
 parrotDock                   src/12x-parrot.js:141
+parrotDraw                   src/12y-parrot-face.js:237
 parrotFind                   src/12x-parrot.js:30
+parrotFrame                  src/12y-parrot-face.js:514
 parrotHas                    src/12x-parrot.js:25
 parrotHeardKill              src/13-pirates.js:172
+parrotLine                   src/12y-parrot-face.js:471
+parrotPoke                   src/12y-parrot-face.js:487
+parRow                       src/12y-parrot-face.js:136
+parScale                     src/12y-parrot-face.js:102
+parSpring                    src/12y-parrot-face.js:441
+parStep                      src/12y-parrot-face.js:445
 PART_BONUS                   src/05-parts.js:196
 PART_GEN                     src/05-parts.js:6
 PART_KEYS                    src/05-parts.js:27
@@ -959,6 +980,7 @@ PART_SUF                     src/05-parts.js:50
 partBonus                    src/05-parts.js:212
 partById                     src/05-parts.js:198
 partSeq                      src/05-parts.js:226
+parWin                       src/12y-parrot-face.js:48
 PAX_KEYS                     src/02-world.js:35
 payCost                      src/21a-mode-base.js:49
 pick                         src/01-core.js:17
@@ -1347,6 +1369,7 @@ tnoise                       src/18a-material.js:16
 toggleLog                    src/11-log.js:89
 toggleLoreBoard              src/27h-ui-lore.js:83
 toggleMenu                   src/15-input.js:126
+toggleParrotWin              src/12y-parrot-face.js:527
 totalLoss                    src/21-mode-surface.js:305
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03b-hull-paint.js:1
@@ -1580,7 +1603,10 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · собранный отчёт: их съёмка поверх вашей карты:1
 
 ## src/12x-parrot.js · 10 КБ
-  · трепло ушастое: свидетель, который не понимает:1
+  · трепло: свидетель, который не понимает:1
+
+## src/12y-parrot-face.js · 29 КБ
+  · трепло: жёрдочка:1
 
 ## src/13b-occupy.js · 17 КБ
   · пираты берут системы:1
@@ -1609,7 +1635,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/17a-station-mod.js · 10 КБ
   · модули станции:1
 
-## src/17b-finds.js · 12 КБ
+## src/17b-finds.js · 13 КБ
   · находки в полёте:1
 
 ## src/17-mode-system.js · 38 КБ
@@ -1742,7 +1768,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/27-ui-ship.js · 20 КБ
   · экран корабля:1
 
-## src/28-loop.js · 24 КБ
+## src/28-loop.js · 25 КБ
   · авария:1
   · телеметрия:21
   · звук по кадрам:181

@@ -495,7 +495,7 @@ label a spacer would actually use, not a title.
 | an obelisk | **зарубка** (player) · **камушек** (the digger's word) | a survey mark, not a monument |
 | the digger | **Грохотун**, by trade a **копач** | eight limbs, one volume setting |
 | what he takes as payment | **настойка** (barrels of `xeno`) | he calls it medicine, everyone else calls it a problem |
-| the repeater animal | **трепло ушастое** | mock-taxonomic, exactly how a species table reads |
+| the repeater animal | **трепло** | mock-taxonomic, exactly how a species table reads |
 | the flora that replays light | **подглядка зеркальная** | it was watching the whole time |
 | the worked-out machine world | **Жестянка** | what is left when a world is a container |
 | the bazaar station type | **блошинец** | a flea market with a docking clamp |
@@ -532,7 +532,11 @@ role is unchanged — someone's property with a known fate, and the dead owner i
   roll would mean the bird is either silent at that station forever or blurts on the first visit,
   and what is wanted is "sometimes, at the wrong moment".
 
-**Still open:** the bird is a list on a board — it has no voice, no presence in the cockpit and no
+**Closed at M117 (0.67.0):** the bird has a body — `12y-parrot-face.js` gives it a perch window,
+a procedural animated portrait and five poke zones, and the hulk now always hands it over. Its
+name lost the "ушастое": it has no ears and never had.
+
+**Still open:** the bird has no voice in the cockpit and no
 picture; and it never hears anything on a planet, only in flight and at counters.
 
 **Split debt:** `26-ui-station.js` crossed its 48 KB baseline at M113 (the scrip tab) and is left
