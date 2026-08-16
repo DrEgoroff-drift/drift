@@ -44,6 +44,32 @@ setTimeout(function(){
     c.fillStyle="#7fe6d8";c.fillText(P[0],n*CW+CW/2,CH+16);
   });
   fetch("/parrot.png",{method:"POST",body:cv.toDataURL("image/png")});
+  /* второй кадр — птица в самом окне, как её видит игрок: то же стекло,
+     заголовок и строка речи. Лист поз проверяет движение, этот кадр — вид. */
+  var PW=300,PH=372;
+  var w2=document.createElement("canvas");
+  w2.width=PW*dpr;w2.height=PH*dpr;
+  var q=w2.getContext("2d");q.setTransform(dpr,0,0,dpr,0,0);
+  q.fillStyle="#070b12";q.fillRect(0,0,PW,PH);
+  var pg2=q.createLinearGradient(0,0,PW,PH);
+  pg2.addColorStop(0,"rgba(28,44,60,.5)");pg2.addColorStop(1,"rgba(6,10,17,.7)");
+  q.fillStyle=pg2;q.fillRect(0,0,PW,PH);
+  q.strokeStyle="rgba(127,230,216,.34)";q.strokeRect(.5,.5,PW-1,PH-1);
+  q.strokeStyle="rgba(127,230,216,.16)";
+  q.beginPath();q.moveTo(0,34.5);q.lineTo(PW,34.5);q.stroke();
+  q.beginPath();q.moveTo(0,PH-52.5);q.lineTo(PW,PH-52.5);q.stroke();
+  q.font="9px ui-monospace,monospace";q.fillStyle="#5d7382";q.textAlign="left";
+  q.fillText("ТРЕПЛО «БАЛАБОЛ»",12,22);
+  q.fillStyle="#7fe6d8";q.textAlign="right";q.fillText("×",PW-12,23);
+  q.textAlign="left";q.font="11px ui-monospace,monospace";q.fillStyle="#f2b25c";
+  q.fillText("зурта не́ ка ва́лли",12,PH-32);
+  q.font="8px ui-monospace,monospace";q.fillStyle="#5d7382";
+  q.fillText("ТКНИ — ОТЗОВЁТСЯ ТЕМ, ЧТО СЛЫШАЛО",12,PH-14);
+  Object.keys(PAR).forEach(function(k){if(typeof PAR[k]==="number")PAR[k]=0;});
+  PAR.t=2.6;PAR.blinkAt=1e9;PAR.crest=.25;
+  PAR_L=null;
+  q.save();q.translate(0,34);parrotDraw(q,PW,PH-86);q.restore();
+  fetch("/parrotwin.png",{method:"POST",body:w2.toDataURL("image/png")});
 },1400);
 </script>
 '@
