@@ -104,9 +104,16 @@ flora and fauna, a living camera, station modules, weather.
    photograph with a tear-off calendar over the bunks — the finish says what the room is, the
    wall says who works in it. It is drawn before the equipment, so a machine honestly covers it.
 
-   **Still open on the base:** the clutter is one recipe — the same crates and the same shelves
-   in eight rooms; and in the reactor and the smelter the wall is so full of machine that the
-   trace never shows. `scoop` is untouched.
+   A twelfth pass gave the leftovers of the work a home (`bJunk`, `junk` in the same table): ore
+   spilled by the drill, a stack of ingots by the furnace, gas bottles in a rack by the reactor,
+   a cable spool on the pad, a kitbag under the bunks, a crate of glassware in the lab. It is
+   drawn **before** the equipment — laid on top, the spool sat on the reactor console and read as
+   a hole in the panel, and a thing landing on a solid housing is an error, not an object.
+
+   **Still open on the base:** in the tight compartments (reactor, quarters, lab) the machine
+   fills the wall and the floor, so neither the wall trace nor the leftovers show at all — the
+   honest fix is to give those rooms a free strip by their own layout, not to draw things over
+   the equipment. `scoop` is untouched.
 7. **Factions as a language of shapes** — only after ships and stations, or there is nothing to
    tell apart.
 8. **Redo the clouds.** The current blobs of radial gradients don't satisfy the player. Look at a
