@@ -611,6 +611,38 @@ function drawBase(){
     ctx.fillStyle=gg;ctx.beginPath();ctx.arc(cx,cy,BCELL_W*.95,0,TAU);ctx.fill();
   }
   ctx.restore();
+  /* ── ствол лифта ──
+     Ярусы связывала пара бледных ниток в .3 — сооружение рассыпалось на
+     отдельные полки. На образце шахта это ОСВЕЩЁННАЯ КОЛОННА во всю высоту:
+     она и держит композицию, и сразу говорит, что уровни — одно здание.
+     Внутри тёплый свет и площадка на каждом ярусе, снаружи — тёмные щёки
+     обделки, чтобы колонна не сливалась с отсеками. */
+  /* глубина считается здесь же: ствол рисуется раньше стяжки, а глубину знали
+     только там — при переносе колонна осталась бы без длины */
+  let deepest=0;
+  for(let rr=0;rr<baseRows(B);rr++)for(let cc=0;cc<BASE_COLS;cc++)
+    if(baseCell(B,cc,rr))deepest=Math.max(deepest,rr+1);
+  const lx=X(cellX(Math.floor(BASE_COLS/2)));
+  const shaftB=Y(150+Math.max(1,deepest)*BCELL_H), shaftT=Y(150);
+  const LW=13;
+  const sg=ctx.createLinearGradient(lx-LW,0,lx+LW,0);
+  sg.addColorStop(0,"rgba(30,26,20,.95)");
+  sg.addColorStop(.5,"rgba(96,72,40,"+(.30+lit*.34).toFixed(2)+")");
+  sg.addColorStop(1,"rgba(30,26,20,.95)");
+  ctx.fillStyle=sg;ctx.fillRect(lx-LW,shaftT,LW*2,shaftB-shaftT);
+  ctx.fillStyle="rgba(255,196,110,"+(.10+lit*.16).toFixed(2)+")";
+  ctx.fillRect(lx-LW*.45,shaftT,LW*.9,shaftB-shaftT);      // светлая сердцевина
+  ctx.strokeStyle="rgba(8,10,14,.95)";ctx.lineWidth=2.4;
+  ctx.beginPath();ctx.moveTo(lx-LW,shaftT);ctx.lineTo(lx-LW,shaftB);
+  ctx.moveTo(lx+LW,shaftT);ctx.lineTo(lx+LW,shaftB);ctx.stroke();
+  /* площадка на каждом ярусе: по ним видно, что колонна — не труба */
+  for(let r=0;r<=Math.max(1,deepest);r++){
+    const y=Y(150+r*BCELL_H);
+    ctx.fillStyle="rgba(20,18,14,.9)";ctx.fillRect(lx-LW,y-3,LW*2,4);
+    ctx.fillStyle="rgba(255,206,140,"+(.16+lit*.24).toFixed(2)+")";
+    ctx.fillRect(lx-LW,y-3,LW*2,1.2);
+  }
+
   /* ── модули ── */
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
     const x=X(90+c*BCELL_W),y=Y(150+r*BCELL_H);
@@ -630,7 +662,7 @@ function drawBase(){
      ширину базы на каждом ярусе, включая нетронутые, и оранжевые линии висели
      прямо в породе */
   ctx.strokeStyle="rgba(242,178,92,"+(.16+lit*.26).toFixed(2)+")";ctx.lineWidth=2;
-  let deepest=0;
+  /* deepest уже посчитан выше, у ствола */
   for(let r=0;r<baseRows(B);r++){
     let c0=-1,c1=-1;
     for(let c=0;c<BASE_COLS;c++)if(baseCell(B,c,r)){if(c0<0)c0=c;c1=c;}
@@ -639,16 +671,6 @@ function drawBase(){
     const y=Y(150+r*BCELL_H+BCELL_H*.78);
     ctx.beginPath();
     ctx.moveTo(X(96+c0*BCELL_W),y);ctx.lineTo(X(90+(c1+1)*BCELL_W-6),y);ctx.stroke();
-  }
-  const lx=X(cellX(Math.floor(BASE_COLS/2)));
-  ctx.strokeStyle="rgba(150,190,220,.30)";ctx.lineWidth=1;
-  const shaftB=Y(150+Math.max(1,deepest)*BCELL_H);
-  ctx.beginPath();ctx.moveTo(lx-10,Y(150));ctx.lineTo(lx-10,shaftB);
-  ctx.moveTo(lx+10,Y(150));ctx.lineTo(lx+10,shaftB);ctx.stroke();
-  ctx.strokeStyle="rgba(150,190,220,.16)";
-  for(let r=0;r<=Math.max(1,deepest)*2;r++){
-    const y=Y(150+r*BCELL_H*.5);
-    ctx.beginPath();ctx.moveTo(lx-10,y);ctx.lineTo(lx+10,y);ctx.stroke();
   }
   /* астронавт — тот же силуэт, что на поверхности и в шахте */
   ctx.save();ctx.translate(X(S.x),Y(S.y)+26);ctx.scale(.9,.9);

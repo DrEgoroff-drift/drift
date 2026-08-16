@@ -74,10 +74,21 @@ flora and fauna, a living camera, station modules, weather.
    `WEATHER_BY_TYPE` (19d), `POI_KINDS.on` (20a), flora and fauna leanings (20-life).
 5. ~~**Finds in flight:** a distress signal, an abandoned satellite, a drifting container, the
    wreckage of an expedition.~~ — DONE at M108 (`17b-finds`).
-6. **The `scoop` and `base` modes.** Base: first pass done — rock grain and a contact shadow that
-   sits the structure in the ground (`21a-mode-base`, stand `docs/mkbase.ps1`). **Still open:** the
-   rows are joined by nothing but the central lift, the ground line above the base is dead
-   straight, and there is no light source anywhere in the rock. `scoop` is untouched.
+6. **The `scoop` and `base` modes.** Base: five passes done (`21a-mode-base`, stand
+   `docs/mkbase.ps1`), the last four measured against a Fallout Shelter frame the player supplied.
+   Rock grain and a contact shadow that sits the structure in the ground; the interior lit and the
+   rock darkened, because on the reference the quarters *glow* against near-black earth and the
+   whole screen rests on that contrast; the ground above the base raised into a **hill** with the
+   base cut into it — it used to lie under flat steppe, with the top row of rooms butting straight
+   into the sky and nothing explaining why there is one entrance and everything else below; a
+   second, offset hump so the hill has a shoulder instead of being a perfect dome; and the lift
+   turned from two pale threads into a **lit column** the full height of the works, drawn behind
+   the rooms so it shows in the gaps and binds the levels into one building.
+
+   **Still open on the base:** floors are ragged (rows of different length, stepped), where the
+   reference has continuous levels with a thick slab between them; nobody is visible inside the
+   rooms as silhouettes; there are no boulders or debris in the rock; and no gate on the hillside.
+   `scoop` is untouched.
 7. **Factions as a language of shapes** — only after ships and stations, or there is nothing to
    tell apart.
 8. **Redo the clouds.** The current blobs of radial gradients don't satisfy the player. Look at a
