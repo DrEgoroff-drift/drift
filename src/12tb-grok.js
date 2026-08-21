@@ -186,17 +186,27 @@ function grokFace(size){
   /* ── руки ── две рабочие внизу и две мелкие у груди. Первый заход рисовал их
      четырьмя отдельными сосисками: без плеча рука не растёт из тела, а лежит
      рядом с ним. Плечо — комок в основании, кисть — широкая лопата. */
-  const arm=(x1,y1,x2,y2,w,col)=>{
-    c.strokeStyle=col;c.lineWidth=w;c.lineCap="round";
-    c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();
+  const arm=(pts,w,col)=>{
+    c.strokeStyle=col;c.lineWidth=w;c.lineCap="round";c.lineJoin="round";
+    c.beginPath();c.moveTo(pts[0],pts[1]);
+    for(let i=2;i<pts.length;i+=2)c.lineTo(pts[i],pts[i+1]);
+    c.stroke();
     c.fillStyle=col;
-    c.beginPath();c.arc(x1,y1,w*.62,0,TAU);c.fill();          // плечо
+    c.beginPath();c.arc(pts[0],pts[1],w*.62,0,TAU);c.fill();   // плечо
   };
-  arm(S*.28,S*.70,S*.11,S*.93,7.4*u,rgb(hideD));
-  arm(S*.72,S*.70,S*.89,S*.93,7.4*u,rgb(hideD));
+  /* второй заход: прямая рука уходила под корпус, и от неё оставался один локоть.
+     Ломаем её в локте наружу — предплечье целиком идёт вне силуэта тела. */
+  const armPath=k=>[S*(.5+k*.20),S*.645, S*(.5+k*.455),S*.775, S*(.5+k*.395),S*.915];
+  c.strokeStyle="rgba(22,20,14,.55)";c.lineCap="round";c.lineJoin="round";
+  for(const k of[-1,1]){const a=armPath(k);c.lineWidth=8.9*u;
+    c.beginPath();c.moveTo(a[0],a[1]);c.lineTo(a[2],a[3]);c.lineTo(a[4],a[5]);c.stroke();}
+  for(const k of[-1,1])arm(armPath(k),7.4*u,rgb(hideD));
   c.fillStyle=rgb(hideD);                                      // кисти-лопаты
-  c.beginPath();c.ellipse(S*.10,S*.95,S*.075,S*.05,-.5,0,TAU);c.fill();
-  c.beginPath();c.ellipse(S*.90,S*.95,S*.075,S*.05,.5,0,TAU);c.fill();
+  c.beginPath();c.ellipse(S*.105,S*.938,S*.082,S*.052,-.36,0,TAU);c.fill();
+  c.beginPath();c.ellipse(S*.895,S*.938,S*.082,S*.052,.36,0,TAU);c.fill();
+  c.fillStyle="rgba(255,246,214,.10)";                         // блик по верху лопаты
+  c.beginPath();c.ellipse(S*.10,S*.922,S*.055,S*.017,-.36,0,TAU);c.fill();
+  c.beginPath();c.ellipse(S*.90,S*.922,S*.055,S*.017,.36,0,TAU);c.fill();
   /* ── корпус ── трапеция вниз: он приземистый, а не долговязый */
   c.fillStyle=rgb(hide);
   c.beginPath();
@@ -209,6 +219,33 @@ function grokFace(size){
   c.beginPath();
   c.moveTo(S*.20,S*1.02);c.lineTo(S*.29,S*.57);c.lineTo(S*.71,S*.57);c.lineTo(S*.80,S*1.02);
   c.closePath();c.fill();
+  /* шкура не однотонная: пыль стекает по ней полосами, низ протёрт, и на боках
+     старые задиры — на плоском хаки не видно ни объёма, ни того, что он работает */
+  c.save();
+  c.beginPath();
+  c.moveTo(S*.20,S*1.02);c.lineTo(S*.29,S*.57);c.lineTo(S*.71,S*.57);c.lineTo(S*.80,S*1.02);
+  c.closePath();c.clip();
+  /* полосы должны читаться пылью, а не тельняшкой: неровный шаг, разная длина,
+     слабый контраст и мягкий верхний край — они начинаются не от плеча */
+  for(let i=0;i<9;i++){
+    const t=(i*.1123+.07)%1, x=S*(.29+t*.42), w=S*(.008+((i*7)%5)*.006),
+          dx=(t-.5)*S*.10, y0=S*(.60+((i*3)%4)*.05), yb=S*(.80+((i*5)%6)*.04);
+    if(yb<=y0)continue;
+    const gs=c.createLinearGradient(0,y0,0,yb);
+    gs.addColorStop(0,"rgba(40,36,26,0)");
+    gs.addColorStop(.35,i%3?"rgba(40,36,26,.13)":"rgba(196,178,136,.10)");
+    gs.addColorStop(1,"rgba(40,36,26,0)");
+    c.fillStyle=gs;
+    c.beginPath();
+    c.moveTo(x,y0);c.lineTo(x+w,y0);c.lineTo(x+w+dx,yb);c.lineTo(x+dx,yb);
+    c.closePath();c.fill();
+  }
+  c.fillStyle="rgba(196,176,132,.26)";                         // потёртость по низу
+  c.beginPath();c.ellipse(S*.5,S*1.03,S*.30,S*.085,0,0,TAU);c.fill();
+  c.fillStyle="rgba(28,26,18,.30)";                            // пара старых задиров
+  c.beginPath();c.ellipse(S*.39,S*.755,S*.036,S*.011,.45,0,TAU);c.fill();
+  c.beginPath();c.ellipse(S*.63,S*.665,S*.026,S*.009,-.40,0,TAU);c.fill();
+  c.restore();
   /* ремень через плечо и коробка на нём: он рабочий, а не зверь в кадре */
   c.strokeStyle="rgba(38,34,24,.85)";c.lineWidth=4.4*u;
   c.beginPath();c.moveTo(S*.34,S*.60);c.lineTo(S*.66,S*.98);c.stroke();
@@ -216,8 +253,17 @@ function grokFace(size){
   c.strokeStyle="rgba(226,236,240,.22)";c.lineWidth=1;
   c.strokeRect(S*.60+.5,S*.80+.5,S*.13,S*.11);
   /* мелкие руки у груди — они всегда чем-то заняты */
-  arm(S*.36,S*.66,S*.46,S*.78,3.6*u,rgb(hideL));
-  arm(S*.64,S*.66,S*.54,S*.78,3.6*u,rgb(hideL));
+  /* они прижаты к груди и чем-то заняты: короткие, с локтем, и не сходятся
+     крестом в середине — крест поверх ремня читался как связанные руки */
+  const small=[[S*.375,S*.655,S*.325,S*.755,S*.415,S*.805],
+               [S*.625,S*.655,S*.675,S*.745,S*.585,S*.795]];
+  c.strokeStyle="rgba(22,20,14,.5)";c.lineCap="round";c.lineJoin="round";
+  for(const a of small){c.lineWidth=4.8*u;
+    c.beginPath();c.moveTo(a[0],a[1]);c.lineTo(a[2],a[3]);c.lineTo(a[4],a[5]);c.stroke();}
+  for(const a of small)arm(a,3.4*u,rgb(hideD));                // тон корпуса их съедал
+  c.fillStyle=rgb(hideL);                                      // мелкие кисти
+  c.beginPath();c.ellipse(S*.415,S*.807,3.0*u,2.2*u,.4,0,TAU);c.fill();
+  c.beginPath();c.ellipse(S*.585,S*.797,3.0*u,2.2*u,-.4,0,TAU);c.fill();
   /* ── голова ── широкая, без шеи, посажена прямо на плечи */
   const hx=S*.5,hy=S*.38,hw=S*.31,hh=S*.25;
   c.fillStyle=rgb(hide);
@@ -238,12 +284,24 @@ function grokFace(size){
   c.beginPath();c.moveTo(hx-hw*.78,hy-hh*.30);c.lineTo(hx,hy-hh*.46);
   c.lineTo(hx+hw*.78,hy-hh*.30);c.stroke();
   /* три глаза в ряд: чужой — это про счёт, а не про цвет */
+  /* Первый заход ставил три одинаковых пятна вплотную: на 64 пк они сливались в одну
+     тёмную полосу. Разводим шире, средний крупнее и выше, между ними — светлые
+     перемычки шкуры: три глаза читаются тем, что их разделяет. */
+  c.fillStyle=rgb(hideL);
+  for(const k of[-1,1]){
+    c.beginPath();c.ellipse(hx+k*S*.083,hy-S*.014,S*.015,S*.042,k*.22,0,TAU);c.fill();
+  }
   for(let i=0;i<3;i++){
-    const ex=hx+(i-1)*S*.135;
-    c.fillStyle="#0e1210";
-    c.beginPath();c.ellipse(ex,hy-S*.012,S*.046,S*.056,0,0,TAU);c.fill();
-    c.fillStyle="rgba(242,214,140,.92)";
-    c.beginPath();c.arc(ex+S*.013,hy-S*.024,S*.016,0,TAU);c.fill();
+    const mid=i===1, ex=hx+(i-1)*S*.163, ey=hy-S*(mid?.028:.008),
+          rx=S*(mid?.054:.042), ry=S*(mid?.065:.050);
+    c.fillStyle="rgba(50,44,30,.55)";                          // глазница
+    c.beginPath();c.ellipse(ex,ey+S*.006,rx*1.32,ry*1.24,0,0,TAU);c.fill();
+    c.fillStyle="#0b0e0c";
+    c.beginPath();c.ellipse(ex,ey,rx,ry,0,0,TAU);c.fill();
+    c.strokeStyle="rgba(178,168,126,.55)";c.lineWidth=1.1*u;   // светлый ободок
+    c.beginPath();c.ellipse(ex,ey,rx,ry,0,0,TAU);c.stroke();
+    c.fillStyle="rgba(246,220,148,.95)";
+    c.beginPath();c.arc(ex+rx*.30,ey-ry*.34,S*(mid?.019:.015),0,TAU);c.fill();
   }
   /* ── улыбка ── сама пасть, а не дуга с наклейкой зубов под ней: тёмный
      полумесяц, и зубы стоят ВНУТРИ него, по его же кривой */
