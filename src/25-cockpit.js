@@ -433,6 +433,10 @@ function drawCockpit(b,st){
      невязка. Ничего не объявляет — на неё просто смотрят */
   if(typeof instrPanel==="function")instrPanel(P,FS);
 
+  /* самописец левее панели (M123, 25b-tape): бумага, пять перьев, память
+     наблюдения. Подписей на ней нет — толкует игрок */
+  if(typeof tapeStrip==="function")tapeStrip(P,FS);
+
   /* ── лампы на боковых стойках: моргают вразнобой ── */
   for(const s of [-1,1])for(const L of P.leds){
     const x=s<0?P.pw*.42:W-P.pw*.42;

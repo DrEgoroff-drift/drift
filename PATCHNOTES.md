@@ -9,6 +9,28 @@ could ever save.
 
 ---
 
+## 0.74.0 — "Paper, five pens, and the memory of observation"
+
+**M123** (`25b-tape.js` new, `25a-instr.js`, `09-audio.js`, `25-cockpit.js`, `28-loop.js`, stand
+`docs/mktape.ps1`, suite `91zk-tape.js`). The honest answer to "how does a player compare
+something he saw forty hours ago". Not a camera — **the ship writes by itself.**
+
+- **A paper strip recorder** to the left of the panel, on the same ceiling block: five traces,
+  graduations, and **not one label**. What it means is the player's business.
+- **The pen writes change, not the reading.** Each pen carries its own slowly adapting zero, so a
+  flat line means "nothing happened here" and a climbing curve means the world is moving under
+  the ship. On an absolute log scale all five pens drew straight lines — which is exactly how the
+  quiet county (M142) would have become indistinguishable from anywhere else.
+- **The rhythm is the reading.** The pen ticks always; near a region's core it ticks faster,
+  because the interval is set by the misclosure. No beep, no message, no colour change: the
+  player looks up on his own.
+- **Scrollable back** — `[` and `]` walk the tape, `\` returns to what is being written now; new
+  columns do not drag the picture out from under the eye while it is held.
+- Nothing is persisted and nothing is announced: the suite spies on `say`/`tell`/`logAdd` while
+  the tape writes itself, and checks the pen against the needle whose scale it shares.
+
+---
+
 ## 0.73.0 — "Five needles and a misclosure"
 
 **M122** (`06b-region.js` and `25a-instr.js` new, `25-cockpit.js`, stand `docs/mkinstr.ps1`, suite
