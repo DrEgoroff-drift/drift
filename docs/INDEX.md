@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 127 · символов верхнего уровня: 1443
+Файлов: 129 · символов верхнего уровня: 1451
 
 ## СИМВОЛЫ
 
@@ -945,31 +945,39 @@ PAD_SAFE                     src/18-mode-map.js:11
 padsFadeIn                   src/15-input.js:12
 padsFadeOut                  src/15-input.js:11
 PAR                          src/12y-parrot-face.js:50
+PAR_ACT                      src/12z-parrot-acts.js:58
 PAR_C                        src/12y-parrot-face.js:37
-PAR_DPR                      src/12y-parrot-face.js:626
-PAR_IDLE                     src/12y-parrot-face.js:583
-PAR_L                        src/12y-parrot-face.js:522
+PAR_DPR                      src/12y-parrot-face.js:651
+PAR_IDLE                     src/12y-parrot-face.js:608
+PAR_L                        src/12y-parrot-face.js:544
+PAR_LAST                     src/12z-parrot-acts.js:200
+parActs                      src/12z-parrot-acts.js:231
 parBead                      src/12y-parrot-face.js:131
+parBell                      src/12z-parrot-acts.js:34
 parBodyPath                  src/12y-parrot-face.js:155
 parCoat                      src/12y-parrot-face.js:169
 parFoot                      src/12y-parrot-face.js:226
-parLayer                     src/12y-parrot-face.js:523
+parHold                      src/12z-parrot-acts.js:36
+parLayer                     src/12y-parrot-face.js:545
+parMood                      src/12z-parrot-acts.js:201
+parPickAct                   src/12z-parrot-acts.js:206
 parPlume                     src/12y-parrot-face.js:76
 parQuill                     src/12y-parrot-face.js:61
 PARROT_NAMES                 src/12x-parrot.js:24
-parrotBtnTick                src/12y-parrot-face.js:620
+parrotBtnTick                src/12y-parrot-face.js:645
 parrotDock                   src/12x-parrot.js:141
 parrotDraw                   src/12y-parrot-face.js:259
 parrotFind                   src/12x-parrot.js:30
-parrotFrame                  src/12y-parrot-face.js:627
+parrotFrame                  src/12y-parrot-face.js:652
 parrotHas                    src/12x-parrot.js:25
 parrotHeardKill              src/13-pirates.js:172
-parrotLine                   src/12y-parrot-face.js:584
-parrotPoke                   src/12y-parrot-face.js:600
+parrotLine                   src/12y-parrot-face.js:609
+parrotPoke                   src/12y-parrot-face.js:625
 parRow                       src/12y-parrot-face.js:141
+parSay                       src/12z-parrot-acts.js:43
 parScale                     src/12y-parrot-face.js:107
-parSpring                    src/12y-parrot-face.js:537
-parStep                      src/12y-parrot-face.js:541
+parSpring                    src/12y-parrot-face.js:559
+parStep                      src/12y-parrot-face.js:563
 PART_BONUS                   src/05-parts.js:196
 PART_GEN                     src/05-parts.js:6
 PART_KEYS                    src/05-parts.js:27
@@ -1380,7 +1388,7 @@ tnoise                       src/18a-material.js:16
 toggleLog                    src/11-log.js:89
 toggleLoreBoard              src/27h-ui-lore.js:83
 toggleMenu                   src/15-input.js:126
-toggleParrotWin              src/12y-parrot-face.js:640
+toggleParrotWin              src/12y-parrot-face.js:665
 totalLoss                    src/21-mode-surface.js:316
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03b-hull-paint.js:1
@@ -1616,8 +1624,11 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12x-parrot.js · 10 КБ
   · трепло: свидетель, который не понимает:1
 
-## src/12y-parrot-face.js · 38 КБ
+## src/12y-parrot-face.js · 40 КБ
   · трепло: жёрдочка:1
+
+## src/12z-parrot-acts.js · 17 КБ
+  · трепло: репертуар:1
 
 ## src/13b-occupy.js · 17 КБ
   · пираты берут системы:1
@@ -1871,6 +1882,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91zd-survey.js · 3 КБ
 
 ## tests/91ze-parrot.js · 5 КБ
+
+## tests/91zf-parrot-acts.js · 5 КБ
 
 ## tests/91zf-peep.js · 5 КБ
 

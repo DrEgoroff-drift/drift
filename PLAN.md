@@ -538,8 +538,18 @@ role is unchanged — someone's property with a known fate, and the dead owner i
 a procedural animated portrait and five poke zones, and the hulk now always hands it over. Its
 name lost the "ушастое": it has no ears and never had.
 
-**Still open:** the bird has no voice in the cockpit and no
-picture; and it never hears anything on a planet, only in flight and at counters.
+**Closed at M117a (0.69.0):** the perch window is the bird's whole home — open it and it is
+there, close it and it is gone — so it was given a repertoire: 52 behaviours as data over ten
+new degrees of freedom (`12z-parrot-acts.js`), three moods that decide what can happen, and a
+nap that ends on a clock rather than on a dice roll.
+
+**Decided against, and why:** the bird does not ride the astronaut and does not appear in the
+cockpit. The cockpit is drawn from one mode only (the belt), and everything else is top-down,
+where a bird has nowhere to sit; a shoulder pet across the five walking modes would need a
+second, tiny body — eight pixels next to a 26-pixel astronaut — and that is a milestone of its
+own, not a detail of this one.
+
+**Still open:** the bird never hears anything on a planet, only in flight and at counters.
 
 **Split debt:** `26-ui-station.js` crossed its 48 KB baseline at M113 (the scrip tab) and is left
 shouting on every build rather than re-baselined. It is now second in the queue after

@@ -261,7 +261,7 @@ function parrotDraw(c,W,H){
   const breathe=Math.sin(T*1.35)*1.6, sway=Math.sin(T*.62)*2.0;
   const flap=PAR.flap, lift=PAR.hop;
   c.save();
-  c.translate(W/2+4,H-16);
+  c.translate(W/2+4,H-16-PAR.hang*150);
   const s=Math.min(W/230,H/304);
   c.scale(s,s);
 
@@ -294,18 +294,24 @@ function parrotDraw(c,W,H){
   /* вис вниз головой: птица перехватывается лапами и разворачивается вокруг
      самой жёрдочки. Единственная повадка, которая трогает общий поворот, —
      потому и редкая: если её видно часто, она перестаёт быть трюком. */
-  if(PAR.hang>.001)c.rotate(PAR.hang*3.05);
+  /* поворот идёт вокруг ТОЧКИ ХВАТА (низ корпуса, куда входят цевки), а не
+     вокруг жёрдочки: иначе тело уезжает от собственных лап и висит рядом
+     с ними, а не на них */
+  if(PAR.hang>.001){c.translate(0,-44);c.rotate(PAR.hang*2.85);c.translate(0,44);}
   c.rotate(PAR.lean*.05+PAR.bow*.20+Math.sin(T*.62+1)*.012);
   /* лапы держат жёрдочку и НЕ разворачиваются вместе с телом */
-  c.save();c.rotate(-PAR.hang*3.05);
+  c.save();c.translate(0,-44);c.rotate(-PAR.hang*2.85);c.translate(0,44);
   parFoot(c,-15,-1,lift*.06,0);
   parFoot(c,15,1,lift*.06,PAR.footUp);
   c.restore();
   /* разворот боком: тело сжимается по ширине и проходит через ребро. Настоящий
      поворот кругом стоил бы второго набора рисунков; сжатие даёт то же самое
      за одну строку и читается верно, потому что хвост и клюв меняют сторону. */
+  /* Ширина в развороте не падает ниже трети: птица, сжатая в ноль, не
+     «стоит боком», а исчезает. Настоящий вид со спины стоил бы второго
+     набора рисунков, а треть ширины читается разворотом и стоит строки. */
   const tc=Math.cos((PAR.turn||0)*Math.PI);
-  c.scale(tc<0?-Math.max(.14,-tc):Math.max(.14,tc),1);
+  c.scale(tc<0?-Math.max(.34,-tc):Math.max(.34,tc),1);
 
   /* оперение — на своей канве: один свет кладётся на всё разом */
   const L=parLayer(W,H);
@@ -459,7 +465,16 @@ function parrotDraw(c,W,H){
   g.quadraticCurveTo(8,-11,15,-3);
   g.quadraticCurveTo(7,-6,-4,-6);g.closePath();g.fill();
   /* подклювье: короткая широкая чаша, отъезжает, когда птица говорит */
-  g.save();g.translate(0,PAR.beak*5+PAR.yawn*11);g.rotate(PAR.yawn*.30);
+  /* раскрытый клюв — это не «нижняя половина отъехала», а видимый зев: без
+     тёмного проёма между створками зевок читается сломанной челюстью */
+  if(PAR.yawn>.02||PAR.beak>.3){
+    g.fillStyle="rgba(58,20,26,.92)";
+    g.beginPath();g.moveTo(-6,2);
+    g.quadraticCurveTo(9,3,17,7+PAR.yawn*10);
+    g.quadraticCurveTo(4,10+PAR.yawn*16,-6,9+PAR.yawn*12);
+    g.closePath();g.fill();
+  }
+  g.save();g.translate(0,PAR.beak*5+PAR.yawn*17);g.rotate(PAR.yawn*.42);
   const lg2=g.createLinearGradient(0,4,0,15);
   lg2.addColorStop(0,PAR_C.beakD);lg2.addColorStop(1,"#a06a2e");
   g.fillStyle=lg2;
@@ -476,8 +491,10 @@ function parrotDraw(c,W,H){
   g.save();g.translate(4,-4);
   /* перьевое кольцо вокруг глаза: тёмная кайма, из-за которой глаз сидит в
      голове, а не лежит на ней наклейкой */
+  /* кольцо смыкается вместе с глазом: при закрытом глазе полное кольцо
+     оставляло на морде тёмное пятно во весь глаз */
   g.fillStyle="rgba(28,44,74,.42)";
-  g.beginPath();g.ellipse(0,0,11.2,10.8,0,0,7);g.fill();
+  g.beginPath();g.ellipse(0,0,11.2,10.8*Math.max(.24,bl),0,0,7);g.fill();
   g.fillStyle="#e9dcc6";
   g.beginPath();g.ellipse(0,0,9.5,9.5*Math.max(.08,bl),0,0,7);g.fill();
   if(bl>.2){
@@ -491,6 +508,11 @@ function parrotDraw(c,W,H){
   }
   g.strokeStyle="rgba(20,14,26,.75)";g.lineWidth=1.6;
   g.beginPath();g.ellipse(0,0,9.5,9.5*Math.max(.08,bl),0,0,7);g.stroke();
+  /* сомкнутое веко — кремовая дуга в цвет щеки, а не щель */
+  if(bl<.3){
+    g.strokeStyle="rgba(210,190,158,"+(1-bl/.3)+")";g.lineWidth=2.2;
+    g.beginPath();g.moveTo(-9,0);g.quadraticCurveTo(0,2.4,9,0);g.stroke();
+  }
   g.restore();
   g.restore();
 
@@ -554,7 +576,10 @@ function parStep(dt){
   }else if(Math.random()<dt*.06&&PAR.flap<.05){PAR.preenT=PAR.t;}
   PAR.beak*=Math.pow(.90,dt*60);
   PAR.look*=Math.pow(.985,dt*60);
-  PAR.mad*=Math.pow(.992,dt*60);
+  /* злость держится секунд восемь, а не одну: птицу задели — она успевает
+     рассердиться хотя бы на одну повадку. При прежнем затухании взвинченный
+     набор не выпадал ни разу за час наблюдения */
+  PAR.mad*=Math.pow(.9975,dt*60);
   /* подскок идёт от крыла: птица машет всем телом, а не одним крылом */
   if(PAR.flapV>0)PAR.hopV+=PAR.flapV*.10*dt*60;
   if(PAR.blink>0)PAR.blink=Math.max(0,PAR.blink-dt*7);
