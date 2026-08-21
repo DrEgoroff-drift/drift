@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 135 · символов верхнего уровня: 1516
+Файлов: 138 · символов верхнего уровня: 1532
 
 ## СИМВОЛЫ
 
@@ -714,6 +714,12 @@ ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
 importCode                   src/14-save.js:460
 initAudio                    src/09-audio.js:7
+INSTR                        src/25a-instr.js:19
+INSTR_BY_ID                  src/25a-instr.js:55
+INSTR_KEYS                   src/25a-instr.js:54
+instrMisclose                src/25a-instr.js:74
+instrPanel                   src/25a-instr.js:82
+instrRead                    src/25a-instr.js:59
 invalidateKeyMap             src/15-input.js:41
 invalidateParts              src/05-parts.js:197
 isFitted                     src/05-parts.js:243
@@ -865,6 +871,7 @@ mineKey                      src/23-mode-dig.js:782
 mineLoad                     src/23-mode-dig.js:783
 MINERAL                      src/18a-material.js:32
 mineSave                     src/23-mode-dig.js:793
+misclose                     src/06b-region.js:76
 MIX_KIN                      src/02a-worldmix.js:19
 MIX_TYPES                    src/02-world.js:95
 mixc                         src/03-ships.js:150
@@ -1146,6 +1153,15 @@ rareSum                      src/12m-rare.js:140
 rareTake                     src/12m-rare.js:115
 rebinding                    src/15-input.js:81
 refineBank                   src/11-log.js:101
+REGION_A                     src/06b-region.js:22
+REGION_B                     src/06b-region.js:24
+REGION_R                     src/06b-region.js:20
+REGION_SALT                  src/06b-region.js:21
+REGION_SPAN                  src/06b-region.js:19
+regionAt                     src/06b-region.js:51
+regionCore                   src/06b-region.js:33
+regionDepth                  src/06b-region.js:84
+regionKey                    src/06b-region.js:27
 releaseAllKeys               src/15-input.js:112
 RELIC_KEYS                   src/12h-relic.js:64
 relicDeep                    src/12h-relic.js:76
@@ -1574,6 +1590,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/06a-celest.js · 12 КБ
   · небо ведёт календарь:1
 
+## src/06b-region.js · 7 КБ
+  · область: несколько систем на одну тему:1
+
 ## src/06-galaxy.js · 9 КБ
   · галактика:1
 
@@ -1836,6 +1855,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/24-mode-belt.js · 27 КБ
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
+## src/25a-instr.js · 8 КБ
+  · приборы: пять стрелок и невязка:1
+
 ## src/25-cockpit.js · 34 КБ
   · кабина: процедурная, статика в offscreen:1
 
@@ -1966,6 +1988,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91zh-grok.js · 4 КБ
 
 ## tests/91zi-flea.js · 5 КБ
+
+## tests/91zj-instr.js · 6 КБ
 
 ## tests/91z-missile.js · 5 КБ
 
