@@ -9,6 +9,39 @@ could ever save.
 
 ---
 
+## 0.70.0 — "The shift nobody came to end"
+
+**M119** (`12ta-tin.js` new, `21-mode-surface.js`, `18-mode-map.js`, `14-save.js`, `08-state.js`,
+stand `docs/mktin.ps1`, suite `91zg-tin.js`). A world picked clean and abandoned — and the
+owner's machinery still running, with nobody left to run it for.
+
+- **It transmits on a loop.** Jump into the system and you hear the request itself: the same
+  goods, the same count, "the shift continues". A running plant is the only one that goes quiet.
+- **The order is written in units that no longer exist** — barrels, crates, stakes, details,
+  settings. Nobody is coming to fix the paperwork, so the conversion is the player's job: pour
+  goods in and the counter clicks over, and the machine tells you its rate once it has taken
+  its first measure of anything.
+- **It restarts a piece of production.** A closed order runs a shift exactly as long as the
+  feedstock lasts; the plant makes what it was built to make and drops it in the outlet bin.
+  It has no mood, no opinion and no favourites: it gives you everything it made and never a
+  credit. The cheap version of the giving loop, and a place to learn it before a living village
+  is at stake.
+- **The tape is an honest witness.** Machines record everything and understand none of it: three
+  entries, each a date and a bearing and a number where a description should be. The date is
+  read by the sky's calendar (M107); the bearing lands on the map as a mark; and each entry
+  hands over a piece of the report — the third witness the pool has been waiting for.
+- Never where a settlement could live: the shift nobody came to end is about the absence of
+  people.
+
+Faults found on the stand and fixed: every part sat on its own patch of terrain, so on a slope
+the plant fell apart and the outlet bin sank into a pit (one level now, on a slab with an
+embankment under it); the slab itself hung in the air; the conveyor read as a wire; the smoke
+was a column of even circles; and the intake gave no sign of how much of the order was already
+in it.
+
+**A bug fixed on the way:** `addRes` returns how much fitted, not whether it worked. Read as a
+boolean, a full hold would have swallowed a whole bin of output.
+
 ## 0.69.0 — "Fifty-two things to do on a perch"
 
 **M117a** (`12z-parrot-acts.js` new, `12y-parrot-face.js`, stand `docs/mkparrot.ps1`,

@@ -111,6 +111,8 @@ one at a time when a pass is due, and nothing here blocks a milestone.
 - **cantina** — the counter is the same length and shape in every hall.
 - **подглядка** (M118) — the walker's trail dissolves into the mat's glow; the mat is identical
   on every world; an arm at rest merges into the torso; the crate rides near the chin.
+- **Жестянка** (M119) — the plume is three evenly spaced puffs; the plant is the same shape on
+  every world; the drum's hoops do not read as turning.
 - **ships** — no faction language; it comes after stations by the queue above.
 - **clouds** — blobs of radial gradients in `drawSkyLayer` (19-mode-landing); wanted: a value-noise
   field scrolled with a soft threshold.
@@ -611,7 +613,23 @@ the calendar (M107) matter.
 - What it shows is never captioned. A figure, a number of them, what they carried, which way they
   went. The player reads it or he doesn't.
 
-## M119 (0.69.0). Жестянка: machines still on shift
+## M119 (0.70.0) — built. Жестянка: machines still on shift
+
+Built as **`12ta-tin.js`**, hooks in `21-mode-surface` (two places to walk to: the intake and
+the printer), `18-mode-map` (the loop transmission on arrival), `14-save` + `08-state`
+(`G.tin`, repaired on load), stand `docs/mktin.ps1` → `docs/shots/tin.png`, suites
+**"Жестянка: наряд в мерах, которых больше нет"**, **"…смена идёт ровно на то, что засыпали"**
+and **"…лента отдаёт по записи и кончается"** (`91zg-tin.js`).
+
+**Where it landed against the spec.** All three points stand. The unit table is five dead
+measures with non-round rates, so the conversion is real work; the shift runs exactly as long as
+the feedstock, pays only in goods, and has no mood to consult; the tape gives a date and a
+bearing and calls the event by a number. Two places rather than one screen: the machine and its
+memory are different things and are walked to separately.
+
+**Still open:** the plume is three evenly spaced puffs rather than smoke; the plant is the same
+shape on every world, with no leaning to the planet type; and the drum's hoops do not read as
+turning at a glance.
 
 - A world type variant: mined out to nothing, atmosphere sour, and the automation from the previous
   owner still running with nobody to run it for. It transmits (M108's satellite family) on a loop.
@@ -623,7 +641,7 @@ the calendar (M107) matter.
   gives exact times and headings for events it cannot describe. Times feed the calendar; headings
   feed the map.
 
-## M120 (0.70.0). Грохотун: the one partner who does not work for money
+## M120 (0.71.0). Грохотун: the one partner who does not work for money
 
 A recurring figure — loud, many-limbed, delighted to see you, catastrophically indiscreet — who
 digs the expedition's sites for a living and knows what an obelisk **is** while knowing nothing
@@ -640,7 +658,7 @@ about who left it.
   you have been (M98). Sending him somewhere is a real decision, not a free errand.
 - He is also the tutor: the first fragment the player cannot use is explained by him, once.
 
-## M121 (0.71.0). Блошинец: a station type where everything is somebody's
+## M121 (0.72.0). Блошинец: a station type where everything is somebody's
 
 A seventh station type (`26-ui-station`), and the only one whose stock is **used goods**.
 

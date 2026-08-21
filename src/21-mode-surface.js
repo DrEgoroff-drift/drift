@@ -179,6 +179,51 @@ function updateSurface(dt){
       "\nОНИ НАЧНУТ ЗАНОВО, НО ЭТО ТЕ ЖЕ ЛЮДИ";
     if(actEdge){doomLand(S.p);return;}
   }
+  /* ── Жестянка (12z) ──
+     Два места, а не одно меню: у приёмника сыплют и забирают, у печатника
+     снимают ленту. Расстояние между ними — не украшение: машина и её память
+     разные вещи, и ходить к ним надо порознь. */
+  else if(tinCanLive(S.p)&&Math.abs(S.x-(tinSpotX(S.p,tr)+112))<32){
+    const T=tinTick(tinAt(G.sx,G.sy));
+    const left=T?(TIN_LOG-T.read):TIN_LOG;
+    if(!T||!T.run&&!T.read&&!(T.bin>0)){
+      /* мёртвая машина ленту не печатает: печатник ждёт своей смены */
+      G.prompt="ПЕЧАТНИК МОЛЧИТ · ЛЕНТА ИДЁТ, КОГДА ИДЁТ СМЕНА";
+    }else if(left<=0){
+      G.prompt="ЛЕНТА ПУСТА · МАШИНА БОЛЬШЕ НИЧЕГО НЕ ПОМНИТ";
+    }else{
+      G.prompt="ДЕЙСТВИЕ — СНЯТЬ ЛЕНТУ · ОСТАЛОСЬ ЗАПИСЕЙ "+left;
+      if(actEdge){tinStrip(T);return;}
+    }
+  }
+  else if(tinCanLive(S.p)&&Math.abs(S.x-tinSpotX(S.p,tr))<56){
+    const T=tinTick(tinAt(G.sx,G.sy)||tinMake(S.p));
+    const A=tinAskOf(T.seed);
+    if(T.bin>=1){
+      G.prompt="ДЕЙСТВИЕ — ЗАБРАТЬ · "+RES[A.made].ru.toUpperCase()+" ×"+Math.floor(T.bin)+
+        "\n"+tinLine(T);
+      if(actEdge){
+        const n=tinTakeOut(T);
+        if(n>0)tell("good","Из бункера: "+RES[A.made].ru+" ×"+n,
+          "ЗАБРАНО\n"+RES[A.made].ru+" ×"+n+"\n"+tinLine(T));
+        else say("Трюм полон\n"+tinLine(T));
+        return;
+      }
+    }else if(T.run>0){
+      G.prompt="СМЕНА ИДЁТ · БУНКЕР ПУСТ\n"+tinLine(T);
+    }else if((G.cargo[A.k]|0)>0){
+      const give=Math.min(G.cargo[A.k]|0,A.need-T.fed);
+      G.prompt="ДЕЙСТВИЕ — ЗАСЫПАТЬ · "+RES[A.k].ru.toUpperCase()+" ×"+give+"\n"+tinLine(T);
+      if(actEdge){
+        const n=tinFeed(T,give);
+        if(n>0)tell(T.run>0?"good":"tech","Засыпано: "+RES[A.k].ru+" ×"+n,
+          "ЗАСЫПАНО\n"+RES[A.k].ru+" ×"+n+"\n"+tinLine(T));
+        return;
+      }
+    }else{
+      G.prompt="НАРЯД НЕ ЗАКРЫТ · НУЖЕН "+RES[A.k].ru.toUpperCase()+"\n"+tinLine(T);
+    }
+  }
   else if(settleCanLive(S.p)&&Math.abs(S.x-settleSpotX(S.p,tr))<44){
     const V=settleTick(settleAt(G.sx,G.sy));
     let big="",bn=0;
@@ -453,6 +498,9 @@ function drawSurface(){
   /* посёлок (12t) — тем же слоем, что и постройки: место, к которому игрок идёт
      ногами, обязано быть видно с горизонта, иначе идти не за чем */
   if(settleCanLive(p))settleDraw(settleAt(G.sx,G.sy),tr,camx,camy,p);
+  /* Жестянка (12z) — тем же слоем и по тому же правилу: то, к чему игрок идёт
+     ногами, видно с горизонта. Там, где стоит она, посёлка не бывает */
+  if(tinCanLive(p))tinDraw(tinAt(G.sx,G.sy),tr,camx,camy,p);
   drawRocks(tr,camx,camy,p.T.pal);
   /* подглядка стелется по грунту, поэтому ложится до кустов и до валунов
      переднего плана — она часть земли, а не то, что на ней стоит (20c) */

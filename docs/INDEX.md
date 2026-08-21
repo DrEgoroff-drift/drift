@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 129 · символов верхнего уровня: 1451
+Файлов: 131 · символов верхнего уровня: 1480
 
 ## СИМВОЛЫ
 
@@ -81,7 +81,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:185
 autoLandInputs               src/19-mode-landing.js:33
-autosave                     src/14-save.js:409
+autosave                     src/14-save.js:425
 b64dec                       src/14-save.js:11
 b64enc                       src/14-save.js:9
 bankTransform                src/03b-hull-paint.js:48
@@ -249,8 +249,8 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudPull                    src/14-save.js:431
-cloudPush                    src/14-save.js:423
+cloudPull                    src/14-save.js:447
+cloudPush                    src/14-save.js:439
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
 cockpitPlan                  src/25-cockpit.js:92
@@ -451,8 +451,8 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:84
-drawSurface                  src/21-mode-surface.js:420
-drawSurfaceHud               src/21-mode-surface.js:374
+drawSurface                  src/21-mode-surface.js:465
+drawSurfaceHud               src/21-mode-surface.js:419
 drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:65
 drawSystem                   src/17-mode-system.js:272
@@ -478,14 +478,14 @@ enterRaid                    src/24a-mode-raid.js:134
 enterSurface                 src/21-mode-surface.js:2
 env                          src/09-audio.js:47
 eq                           tests/90-harness.js:23
-evacuate                     src/21-mode-surface.js:299
+evacuate                     src/21-mode-surface.js:344
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:77
 exitBelt                     src/24-mode-belt.js:162
 exitCave                     src/22-mode-cave.js:40
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
-exportCode                   src/14-save.js:418
+exportCode                   src/14-save.js:434
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -577,7 +577,7 @@ groundShadow                 src/19-mode-landing.js:253
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:417
+hasSave                      src/14-save.js:433
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
@@ -676,7 +676,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:419
+importCode                   src/14-save.js:435
 initAudio                    src/09-audio.js:7
 invalidateKeyMap             src/15-input.js:41
 invalidateParts              src/05-parts.js:197
@@ -715,13 +715,13 @@ landingDust                  src/19-mode-landing.js:564
 landOnTestPlanet             tests/90-harness.js:61
 last                         src/28-loop.js:238
 lastDroneTick                src/28-loop.js:239
-launch                       src/21-mode-surface.js:339
-launchHold                   src/21-mode-surface.js:284
+launch                       src/21-mode-surface.js:384
+launchHold                   src/21-mode-surface.js:329
 layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:115
 litRGB                       src/19c-light.js:46
-loadGame                     src/14-save.js:413
+loadGame                     src/14-save.js:429
 LOG_MAX                      src/11-log.js:3
 logAdd                       src/11-log.js:5
 logBtnLabel                  src/11-log.js:24
@@ -1196,7 +1196,7 @@ runTests                     tests/90-harness.js:71
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:4
-saveGame                     src/14-save.js:403
+saveGame                     src/14-save.js:419
 say                          src/08-state.js:131
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -1344,7 +1344,7 @@ suite                        tests/90-harness.js:12
 suitFailure                  src/23-mode-dig.js:104
 suitHit                      src/23-mode-dig.js:97
 SUN_DIR                      src/19c-light.js:11
-surfaceHint                  src/21-mode-surface.js:359
+surfaceHint                  src/21-mode-surface.js:404
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -1378,18 +1378,47 @@ TEST                         tests/90-harness.js:10
 TEST_SUITES                  tests/90-harness.js:92
 tfbm                         src/18a-material.js:23
 tickDrones                   src/12-economy.js:80
-tickLaunchHold               src/21-mode-surface.js:285
+tickLaunchHold               src/21-mode-surface.js:330
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
 tierOf                       src/04b-fleet.js:157
 timeBucket                   src/03-ships.js:103
+TIN_BIN                      src/12ta-tin.js:31
+TIN_CAP                      src/12ta-tin.js:28
+TIN_EAT                      src/12ta-tin.js:29
+TIN_FEED                     src/12ta-tin.js:45
+TIN_LOG                      src/12ta-tin.js:32
+TIN_MADE                     src/12ta-tin.js:46
+TIN_MAKE                     src/12ta-tin.js:30
+TIN_ON                       src/12ta-tin.js:35
+TIN_UNIT                     src/12ta-tin.js:38
+tinAskOf                     src/12ta-tin.js:96
+tinAt                        src/12ta-tin.js:58
+tinCanLive                   src/12ta-tin.js:63
+tinDraw                      src/12ta-tin.js:247
+tinEntries                   src/12ta-tin.js:211
+tinFeed                      src/12ta-tin.js:132
+tinHereRec                   src/12ta-tin.js:59
+tinKeyOf                     src/12ta-tin.js:56
+tinLine                      src/12ta-tin.js:222
+tinMake                      src/12ta-tin.js:106
+tinMap                       src/12ta-tin.js:57
+tinMarkOf                    src/12ta-tin.js:168
+tinPl                        src/12ta-tin.js:49
+tinPlanet                    src/12ta-tin.js:69
+tinSignal                    src/12ta-tin.js:232
+tinSkyOf                     src/12ta-tin.js:179
+tinSpotX                     src/12ta-tin.js:79
+tinStrip                     src/12ta-tin.js:190
+tinTakeOut                   src/12ta-tin.js:152
+tinTick                      src/12ta-tin.js:117
 tnoise                       src/18a-material.js:16
 toggleLog                    src/11-log.js:89
 toggleLoreBoard              src/27h-ui-lore.js:83
 toggleMenu                   src/15-input.js:126
 toggleParrotWin              src/12y-parrot-face.js:665
-totalLoss                    src/21-mode-surface.js:316
+totalLoss                    src/21-mode-surface.js:361
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03b-hull-paint.js:1
 TRADE_KEYS                   src/02-world.js:40
@@ -1609,6 +1638,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12s-wear.js · 9 КБ
   · корабль стареет:1
 
+## src/12ta-tin.js · 21 КБ
+  · Жестянка: смена, которую некому снять:1
+
 ## src/12t-settle.js · 21 КБ
   · посёлок: вы даёте, решают они:1
 
@@ -1636,7 +1668,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/13-pirates.js · 15 КБ
   · пираты:1
 
-## src/14-save.js · 28 КБ
+## src/14-save.js · 29 КБ
   · сохранение:1
 
 ## src/15-input.js · 16 КБ
@@ -1736,9 +1768,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21-mode-surface.js · 32 КБ
+## src/21-mode-surface.js · 35 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:355
+  · навигатор и подсказки сверху:400
 
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
@@ -1886,6 +1918,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91zf-parrot-acts.js · 5 КБ
 
 ## tests/91zf-peep.js · 5 КБ
+
+## tests/91zg-tin.js · 7 КБ
 
 ## tests/91z-missile.js · 5 КБ
 

@@ -595,7 +595,7 @@ cross-device saves instead of manual codes. Set `PORT` to use something other th
 
 ## Status
 
-Version 0.68.0. Everything described above is built and playable.
+Version 0.70.0. Everything described above is built and playable.
 
 Three development passes are behind it. The first finished the planned queue: celestial
 mechanics, station types, rare materials, mercenaries, bases, the laboratory, boarding, twelve
@@ -604,8 +604,9 @@ second gave those abstractions a body — barges flying the factor's real routes
 distress you can rescue or finish off, a hundred rarities at fixed addresses instead of on a
 drop chance. The third scattered one story across a hundred fragments found by the piece: survey
 marks, a sky calendar, a settlement that decides for itself what to build, a repeater bird that
-improves while it sits in your hold, and a meadow that replays, during an eclipse and only
-then, the people who once crossed it.
+improves while it sits in your hold, a meadow that replays, during an eclipse and only
+then, the people who once crossed it, and a plant on a dead world still working its shift
+for an owner who never came back.
 
 Ahead: a bazaar where every lot has a previous owner, a digger who takes payment in barrels, and
 the regions — six to ten systems on one theme with a procedural edge and a hand-built core.

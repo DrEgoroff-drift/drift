@@ -36,7 +36,7 @@ function snapshot(){
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
     wrecks:G.wrecks,bargePax:G.bargePax,
-    loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,
+    loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
@@ -167,6 +167,22 @@ function applySave(s){
       if(v.diet&&v.diet[k]>0)S.diet[k]=Math.max(0,+v.diet[k]);
     }
     G.settle[key]=S;
+  }
+  /* Жестянки (12ta-tin): решение игрока в них тоже есть — что он туда ссыпал и
+     сколько лент снял. Чинится по месту: числа зажимаются, снятых записей не
+     бывает больше, чем их есть в ленте, а зерно и место берутся из ключа —
+     наряд и лента считаются из зерна заново и подделке не поддаются. */
+  G.tin={};
+  if(s.tin&&typeof s.tin==="object")for(const key in s.tin){
+    const v=s.tin[key];
+    if(!v||typeof v!=="object")continue;
+    const A=tinAskOf(v.seed|0);
+    G.tin[key]={seed:v.seed|0,sx:v.sx|0,sy:v.sy|0,idx:v.idx|0,
+      name:typeof v.name==="string"?v.name:"",
+      fed:clamp(+v.fed||0,0,A.need),run:clamp(+v.run||0,0,A.need),
+      bin:clamp(+v.bin||0,0,TIN_BIN),seen:v.seen|0,
+      read:clamp(v.read|0,0,TIN_LOG),
+      last:+v.last||Date.now(),made:+v.made||Date.now()};
   }
   /* боны домов (12u-scrip): это ставка игрока и курс, у которого записана
      причина, — значит, персистятся. Чинится по месту: чужие ключи домов
