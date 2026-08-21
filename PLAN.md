@@ -657,9 +657,17 @@ half his returns hand the hunter your current sector; the tutor line fires once 
 nothing. Sites are the union of the report's addresses and their survey points, minus what he
 has already dug.
 
-**Still open:** at 64 px the three eyes merge into a smudge — the face needs one darker accent
-to survive the size it is actually seen at; the hide is one flat khaki with no dust streaks or
-wear on the body; and the two working arms hide behind the torso, so only the elbows show.
+**Portrait pass (2026-08-21).** The three faults above are closed. The eyes are spread wider,
+the middle one is larger and set higher, each sits in a socket with a light rim, and pale ridges
+of hide stand between them — at 64 px three eyes are counted, not one dark band. The hide carries
+soft dust streaks with faded ends, a worn belly and two old scrapes, so it is no longer one flat
+khaki. Both working arms break at the elbow and run **outside** the silhouette, spade hands fully
+in frame; the small chest pair is drawn in the darker tone with a contour, because the body tone
+swallowed it, and no longer crosses in the middle over the belt.
+
+**Still open:** the torso is a plain trapezoid — no shoulder line where the arms leave it; the
+box on the belt floats without a strap holding it down; and at 64 px the small chest arms are a
+blur, readable as movement but not as arms.
 
 A recurring figure — loud, many-limbed, delighted to see you, catastrophically indiscreet — who
 digs the expedition's sites for a living and knows what an obelisk **is** while knowing nothing
