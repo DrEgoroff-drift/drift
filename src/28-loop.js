@@ -286,6 +286,9 @@ function frame(now){
     else if(G.mode==="base"&&G.base)drawBase();
     else if(G.mode==="raid"&&G.raid)drawRaid();
     hud();
+    /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой
+       игрок повернулся. Рисуется последней, но до DOM-строки приборов */
+    if(typeof rackDraw==="function")rackDraw();
   }else{
     ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
     G.t=now*.06;drawNebula(now*.004,0,1);drawStars(now*.004,0,1);

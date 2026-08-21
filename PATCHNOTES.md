@@ -9,6 +9,30 @@ could ever save.
 
 ---
 
+## 0.76.0 — "Eight needles, five pens, one sheet of paper"
+
+**M125** (`25d-instr-rack.js` new, `25c-instr-hud.js`, `28-loop.js`, stand `docs/mkrack.ps1` →
+`docs/shots/rack.png`, suite `91zl-rack.js`). The pod answers "how much, right now" out of the
+corner of an eye. The **rack** is the same equipment opened up, for when the player turns to
+*read* it: press `I`, or tap the pod.
+
+- **Eight instruments in recessed sockets**: cream dials under glass, real major and minor
+  graduations, amber needles with a metal hub and their own shadow, units under the scale,
+  screws in the corners, matte metal with grain. Every scale has its own range — identical
+  scales are the first sign of drawn, rather than measuring, equipment.
+- **Every needle is a real game value**: the five region instruments (25a) plus fuel, hull and
+  hold. Nothing was invented for decoration.
+- **A five-channel strip chart** that reads as one: warm paper with a printed grid, a supply
+  roller on the left and a take-up roll with wound paper on the right, a dashed zero line per
+  band, pen carriages on their rail with the tip touching exactly where its curve ends, feed
+  perforation crawling with the tape, and time marks along the bottom counted in the pen's own
+  time — which runs faster near a region's core.
+- **Deliberate exception, on request:** the channels now carry colour and a name. Colour here
+  separates five pens on one sheet, the way a real recorder does; it is not an alarm and not a
+  hint, and the rack still says nothing — no sound, no message, no log line. The suite watches.
+
+---
+
 ## 0.75.0 — "The instruments where the decisions are made"
 
 **M124, first step** (`25c-instr-hud.js` new, `index.html`, `style.css`, `25b-tape.js`,

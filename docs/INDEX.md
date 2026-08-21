@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 141 · символов верхнего уровня: 1550
+Файлов: 143 · символов верхнего уровня: 1565
 
 ## СИМВОЛЫ
 
@@ -319,7 +319,7 @@ ctx                          src/08-state.js:3
 curTok                       src/09-audio.js:71
 CUT_RANGE                    src/24-mode-belt.js:171
 cvs                          src/08-state.js:2
-dbg                          src/28-loop.js:307
+dbg                          src/28-loop.js:310
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -1127,6 +1127,21 @@ questInit                    src/11a-quests.js:16
 questLeft                    src/11a-quests.js:59
 questOpen                    src/11a-quests.js:18
 questSync                    src/11a-quests.js:68
+RACK                         src/25d-instr-rack.js:54
+RACK_CH                      src/25d-instr-rack.js:27
+RACK_G                       src/25d-instr-rack.js:36
+RACK_PAD                     src/25d-instr-rack.js:25
+rackDial                     src/25d-instr-rack.js:99
+rackDraw                     src/25d-instr-rack.js:316
+rackGeo                      src/25d-instr-rack.js:68
+rackGlass                    src/25d-instr-rack.js:144
+rackGrain                    src/25d-instr-rack.js:88
+rackOpen                     src/25d-instr-rack.js:55
+rackPaperBox                 src/25d-instr-rack.js:277
+rackRoller                   src/25d-instr-rack.js:283
+rackScrew                    src/25d-instr-rack.js:78
+rackTex                      src/25d-instr-rack.js:161
+rackToggle                   src/25d-instr-rack.js:56
 RAID_N                       src/24a-mode-raid.js:6
 RAID_ROOMS                   src/24a-mode-raid.js:7
 raidFloorAt                  src/24a-mode-raid.js:77
@@ -1879,11 +1894,14 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/25b-tape.js · 11 КБ
   · самописец: бумага, пять перьев, память наблюдения:1
 
-## src/25c-instr-hud.js · 4 КБ
+## src/25c-instr-hud.js · 5 КБ
   · приборная колодка: те же приборы, но всегда под рукой:1
 
 ## src/25-cockpit.js · 34 КБ
   · кабина: процедурная, статика в offscreen:1
+
+## src/25d-instr-rack.js · 24 КБ
+  · приборная стойка: настоящие стрелочные приборы и самописец:1
 
 ## src/26-ui-station.js · 49 КБ
   · станция:1
@@ -1918,7 +1936,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · телеметрия:21
   · звук по кадрам:183
   · цикл:239
-  · dbg() — что держит корабль:298
+  · dbg() — что держит корабль:301
 
 ## tests/90-harness.js · 5 КБ
   · автотесты: каркас:1
@@ -2016,6 +2034,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91zj-instr.js · 6 КБ
 
 ## tests/91zk-tape.js · 7 КБ
+
+## tests/91zl-rack.js · 3 КБ
 
 ## tests/91z-missile.js · 5 КБ
 
