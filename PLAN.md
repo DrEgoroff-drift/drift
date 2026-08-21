@@ -890,6 +890,30 @@ socket out is not wired); the recorder itself is not a purchasable unit, only th
 `26-ui-station` crossed 40 KB with this tab and is now shouting on every build; wear from the hull
 (`12s-wear`) and instrument age run on separate clocks that never speak to each other.
 
+## M128 (0.79.0) — built. Speech: a queue of lines, and putting things on the table
+
+Built as **`11b-speech.js`** (the ether, the per-place queue, forms of address, the table, the
+tape as an object) with the table block in the cantina (`27c-ui-hq`), the landing counter in
+`openStation` (`26-ui-station`), persistence in `14-save`, the ether ticked from `frame`
+(`28-loop`), suite **"Речь: очередь, обращение и вещь вместо слов"** (`91zo-speech.js`).
+
+**What was taken from the spec.** The queue (one line spent per landing, tied to the place rather
+than the person, because the world reshuffles people and the place stays), the two everyday
+registers, silence as a first-class entry, the address ladder driven by landings at that place,
+the ether as half the speech in the game, and the table: the player puts a thing down instead of
+choosing words. Tearing the tape (`T`) closes the object debt M123 left — the strip carries its
+sector, misclosure and length, lies on the table, and sells by how much the world moved under it,
+at the price of the record you were keeping.
+
+**Not taken, deliberately:** the rare register — one long line in a whole story — belongs to the
+keeper (M139), the last addressee (M133) and the returnee (M147), and writing it here would spend
+it on nobody. Alien speech is untouched (M116's rule stands).
+
+**Still open:** lines are one flat table for every place, so a bleak outpost and a busy hub speak
+the same way — the per-place colouring belongs with the memory of place (M132); the table accepts
+three kinds of object (strip, hold, rumour) and not yet a name; a strip can be sold and shown but
+not yet given to a cartographer or attached to a parcel.
+
 What it is, in short. M106–M121 gave the arm one long story told in fragments; this pass gives it
 **many short ones**, and a body to fly them in. The unit is a **region**, not a planet: six to ten
 systems on one theme with a hidden gradient, a procedural edge and one hand-built core, so the

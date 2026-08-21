@@ -717,7 +717,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.78.0";
+const VER="0.79.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6027,6 +6027,173 @@ function questSync(){
     }
   }
   return list;
+}
+
+/* ══════════════ речь: очередь реплик и вещь на столе ══════════════
+   M128. Разговоров в игре нет и не будет: диалог требует ветвления, ветвление
+   требует письма на сто часов, а на выходе получается меню. Здесь другое.
+
+   ОЧЕРЕДЬ, А НЕ БЕСЕДА. У каждого места есть короткая очередь реплик, и за одну
+   посадку тратится ОДНА. Вернулся — услышал следующую. Двадцать часов знакомства
+   ценой строковой таблицы.
+
+   ИГРОК НЕ ВЫБИРАЕТ СЛОВА. Он кладёт вещь: ленту самописца, груз, слух, имя.
+   Человек отвечает на предмет. Это вся поверхность ввода — и она же
+   характеристика: что ты положил, то ты и сказал.
+
+   ТРИ РЕГИСТРА. Служебный — эфир: сухо, по позывному. Бытовой — вживую: коротко,
+   ворчливо, нужда упоминается вскользь и никогда не оформляется как заказ.
+   Редкий — одна длинная реплика на всю историю; здесь её нет, она принадлежит
+   хранителю (M139) и возвращенцу (M147).
+
+   МОЛЧАНИЕ — ТОЖЕ РЕПЛИКА. Пауза после твоей ленты, человек посмотрел и ничего
+   не сказал: полноправная строка таблицы, а не отсутствие строки. */
+
+/* ── эфир: половина всей речи в игре ──
+   Безликие голоса, чужой трафик, ругань диспетчера, прогноз. Самая дешёвая
+   жизнь в игре: ни моделей, ни анимации, ни сцен. */
+const ETHER=[
+  "…борт четыре-двенадцать, повторите высоту. Четыре-двенадцать?",
+  "…и он мне говорит: топливо по норме. По какой норме, у него бак сухой…",
+  "…всем в секторе: пылевой фронт с ночной стороны, садиться не советую.",
+  "…шестой, шестой, я стойка. Ты вообще куда ушёл?",
+  "…передайте на верхний ярус, что смена не придёт. Никакая.",
+  "…частота занята. Частота занята. Частота зан…",
+  "…груз принят, борт свободен. Хорошей дороги, кто там у вас.",
+  "…не лезь в тот коридор, там баржи ходят без огней.",
+  "…прогноз: без изменений. Как вчера. Как всегда.",
+  "…кто-то щёлкает в эфире. Слушайте: вот, опять. Нет? Ну ладно.",
+  "…рейс снят. Причина не указана. Да там всегда не указана.",
+  "…если слышите — у нас лампа на площадке горит. Одна. Идите на неё."
+];
+const ETHER_EVERY=5400;                  // кадров между голосами: примерно полторы минуты
+function etherTick(dt){
+  if(!G.running||G.mode!=="system")return;
+  const rate=(typeof hullRole==="function")?hullRole().ether:1;
+  G.etherT=(G.etherT==null?ETHER_EVERY:G.etherT)-dt*rate;
+  if(G.etherT>0)return;
+  G.etherT=ETHER_EVERY*(.7+Math.random()*.8);
+  const r=rng(hashi(G.sx,G.sy,(Date.now()/60000)|0));
+  logAdd("dim",pick(ETHER,r));
+}
+/* ── как к вам обращаются ──
+   «пилот» → позывной → имя. Больше ничего не нужно, чтобы игрок почувствовал
+   себя местным: счётчик посадок на эту станцию и есть вся механика. */
+function visitsAll(){return (G.visits||(G.visits={}));}
+function visitHere(){
+  if(!G.st)return 0;
+  return visitsAll()[G.sys.key]|0;
+}
+function visitMark(){
+  if(!G.st)return;
+  const V=visitsAll();
+  V[G.sys.key]=(V[G.sys.key]|0)+1;
+}
+function addrForm(){
+  const v=visitHere();
+  return v<2?"пилот":v<6?("борт «"+(typeof stat==="function"?stat().S.ru:"—")+"»"):G.name||"капитан";
+}
+/* ── бытовой регистр: очередь на место ──
+   Реплики привязаны к станции, а не к человеку: людей в кантине тасует сам мир,
+   а место остаётся. Нужда упоминается вскользь — это не заказ и не задание. */
+const LOCAL=[
+  "— Опять вы. Ну хоть кто-то возвращается.",
+  "— Клапан бы. Да где его тут возьмёшь.",
+  "— Сидите, сидите. Всё равно очередь до утра.",
+  null,                                   // молчание: посмотрел и ничего не сказал
+  "— Тут раньше два дока было. Теперь полтора.",
+  "— Вы с верхнего яруса? Нет? И правильно.",
+  "— У нас вода по расписанию. Расписание не соблюдается.",
+  "— Скажете там своим: пусть не летят зимой. Хотя какая тут зима.",
+  null,
+  "— Слышал, у вас приборы новые. Покажете как-нибудь.",
+  "— Мне бы такую работу, чтобы никуда не садиться.",
+  "— Здесь всё нормально. Просто скучно, а так нормально."
+];
+function speechAll(){return (G.speech||(G.speech={}));}
+/* одна реплика за посадку: пока не улетишь и не вернёшься, очередь не двигается */
+function speechHere(){
+  if(!G.st)return null;
+  const S=speechAll(), key=G.sys.key;
+  const st=S[key]||(S[key]={i:0,v:-1});
+  const v=visitHere();
+  if(st.v!==v){st.v=v;st.i=(st.i+1)%LOCAL.length;}
+  const line=LOCAL[st.i];
+  return {line,silent:line===null,addr:addrForm()};
+}
+/* ── стол ──
+   Единственная поверхность ввода: игрок кладёт вещь, человек отвечает на вещь.
+   Ответ зависит от предмета и от того, сколько раз вы сюда садились. */
+const TABLE_REPLY={
+  strip:[
+    "— Это что, лента? Дайте гляну… Ага. Ну, бывает такое.",
+    "— Ровная. Скучная у вас дорога, и слава богу.",
+    "— Вот здесь она пляшет. Вы там были? И как оно?",
+    null,
+    "— Такие ленты у нас берут. Не спрашивайте кто."
+  ],
+  cargo:[
+    "— Кладите, кладите. Только я не покупаю, я смотрю.",
+    "— Оно у нас своё есть. Было.",
+    null,
+    "— Знакомая маркировка. Не спрашивайте откуда."
+  ],
+  rumour:[
+    "— Слышал. И не такое слышал.",
+    "— Кто вам это сказал? Ладно, не говорите.",
+    null,
+    "— Вот с этого места подробнее. Хотя нет, не надо."
+  ]
+};
+/* ЛЕНТА КАК ВЕЩЬ (долг M123). Оторванная полоса — это предмет: её кладут на
+   стол, отдают, продают. Хорошая лента продаётся хорошо, и «хорошая» здесь
+   значит одно: на ней видно, что мир под кораблём уходил. */
+const STRIPS_MAX=6;
+function stripsAll(){return (G.strips||(G.strips=[]));}
+function stripValue(s){
+  return Math.round((40+(s.mis||0)*820+(s.span||0)*3)/10)*10;
+}
+function tapeTear(){
+  const T=(typeof tapeInit==="function")?tapeInit():null;
+  if(!T||T.n<24)return null;
+  const s={sx:G.sx,sy:G.sy,
+           mis:+((typeof instrMisclose==="function")?instrMisclose():0).toFixed(3),
+           span:T.n,t:Date.now()};
+  const L=stripsAll();
+  L.unshift(s);
+  while(L.length>STRIPS_MAX)L.pop();
+  /* лента отрывается — значит, кольцо начинается заново: то, что унесли,
+     на бумаге больше не пишется */
+  T.n=0;T.head=0;T.back=0;T.zero=null;
+  tell("tech","Лента оторвана · сектор "+s.sx+":"+s.sy+" · невязка "+s.mis.toFixed(3),
+       "Лента оторвана\nсектор "+s.sx+":"+s.sy);
+  return s;
+}
+addEventListener("keydown",e=>{
+  if(e.code==="KeyT"&&G.running&&!document.querySelector(".scr.open")){
+    tapeTear();e.preventDefault();
+  }
+});
+/* Положить вещь на стол. Возвращает ответ — строку или молчание. Продажа
+   отдельным движением: сначала показывают, потом торгуются. */
+function putOnTable(kind,idx){
+  const pool=TABLE_REPLY[kind];
+  if(!pool)return null;
+  const r=rng(hashi((G.sys?G.sys.key.length:1)+visitHere(),idx|0,kind.length));
+  const line=pick(pool,r);
+  return {line,silent:line===null};
+}
+function stripSell(k){
+  const L=stripsAll(), s=L[k];
+  if(!s)return 0;
+  const price=stripValue(s);
+  L.splice(k,1);
+  /* доход идёт одной воронкой (12j-home): продажа ленты — такая же выручка,
+     как любая другая, и дом должен её видеть */
+  earn(price,"лента");
+  tell("money","Лента продана · +"+price.toLocaleString("ru")+" кр",
+       "Лента продана\n+"+price.toLocaleString("ru")+" кр");
+  return price;
 }
 
 /* ══════════════ бортовой журнал ══════════════ */
@@ -14898,6 +15065,7 @@ function snapshot(){
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
+    speech:G.speech,visits:G.visits,strips:G.strips,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
@@ -15284,6 +15452,11 @@ function applySave(s){
      знает — тогда на корабле стоит казённый набор, как с верфи */
   G.instrKit=(s.instrKit&&typeof s.instrKit==="object")?s.instrKit:null;
   G.instrShelf=Array.isArray(s.instrShelf)?s.instrShelf.slice(0,8):[];
+  /* речь (M128): очередь реплик по местам, счётчик посадок и оторванные ленты —
+     всё это память об игроке, а не о мире, и поэтому персистится */
+  G.speech=(s.speech&&typeof s.speech==="object")?s.speech:{};
+  G.visits=(s.visits&&typeof s.visits==="object")?s.visits:{};
+  G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];
@@ -30108,6 +30281,9 @@ function openStation(){
   /* трепло (12x): у прилавка оно слышит цены, а иногда выдаёт то, что слышало
      у вас. Обе стороны одной птицы, и обе — на стыковке */
   if(typeof parrotDock==="function")parrotDock(G.sys);
+  /* счётчик посадок на это место (11b-speech): от него зависит, как к вам
+     обращаются и какая реплика в очереди станет следующей */
+  if(typeof visitMark==="function")visitMark();
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
@@ -31301,6 +31477,9 @@ function renderCantina(){
      занимает место ровно на одну строку. В экипаж не входит, кресла не
      занимает, кредитов не берёт — платят ему едой. */
   grokBlock();
+  /* стол (M128): вещь вместо слов. Стоит после людей — сначала зал, потом то,
+     что вы на него выкладываете */
+  if(typeof putOnTable==="function")tableBlock();
   $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
 }
 /* ── строка Грохотуна ──
@@ -31698,6 +31877,64 @@ function openHq(){
 document.getElementById("hqbtn").addEventListener("click",openHq);
 document.getElementById("hqClose").addEventListener("click",()=>{
   $hq.classList.remove("open");saveGame(true);});
+
+/* ── стол (M128) ──
+   Единственная поверхность ввода, какая в этой игре есть: игрок не выбирает
+   слова, он кладёт вещь. Лента, груз, слух — человек отвечает на предмет.
+   Молчание в ответ такая же строка, как любая другая. */
+function tableBlock(){
+  const sp=(typeof speechHere==="function")?speechHere():null;
+  if(sp){
+    $body.appendChild(el("div","sec","ЗА СТОЙКОЙ · К ВАМ ОБРАЩАЮТСЯ: "+sp.addr.toUpperCase()));
+    $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
+      (sp.silent?"<i>смотрит и ничего не говорит</i>":sp.line)+
+      "</s><s>следующая реплика — в следующий заход</s></div>"));
+  }
+  $body.appendChild(el("div","sec","СТОЛ · ПОЛОЖИТЕ ВЕЩЬ — ОТВЕТЯТ НА НЕЁ, А НЕ НА СЛОВА"));
+  const say1=(res,r)=>{
+    r.innerHTML="<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
+      (!res?"<i>вещь лежит, на неё не смотрят</i>":
+       res.silent?"<i>посмотрел на это и промолчал</i>":res.line)+"</s></div>";
+  };
+  /* ленты: их можно показать, а можно продать. Хорошая продаётся хорошо */
+  const strips=(typeof stripsAll==="function")?stripsAll():[];
+  if(!strips.length)
+    $body.appendChild(el("div","row","<div class='nm'><s>лент нет. Оторвать полосу — клавиша T "+
+      "в полёте, когда на бумаге уже что-то записано</s></div>"));
+  strips.forEach((s,k)=>{
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b>ЛЕНТА · сектор "+s.sx+":"+s.sy+"</b><s>невязка "+
+      (s.mis||0).toFixed(3)+" · длина записи "+(s.span|0)+"</s>"));
+    const bt=el("button","act sm","НА СТОЛ");
+    const out=el("div","row");
+    bt.onclick=()=>{say1(putOnTable("strip",k),out);};
+    r.appendChild(bt);
+    const bs=el("button","act sm gold",stripValue(s).toLocaleString("ru")+" кр");
+    bs.title="продать ленту";
+    bs.onclick=()=>{stripSell(k);renderTab();};
+    r.appendChild(bs);
+    $body.appendChild(r);$body.appendChild(out);
+  });
+  /* груз и слух: то же движение, другой предмет */
+  const holdKey=RES_KEYS.filter(k=>G.cargo[k]>0)[0];
+  const rr=el("div","row"),out2=el("div","row");
+  rr.appendChild(el("div","nm","<b>ИЗ ТРЮМА</b><s>"+
+    (holdKey?RES[holdKey].ru+" · "+G.cargo[holdKey]+" ед":"трюм пуст")+"</s>"));
+  const b2=el("button","act sm","НА СТОЛ");
+  b2.disabled=!holdKey;
+  b2.onclick=()=>{say1(putOnTable("cargo",RES_KEYS.indexOf(holdKey)),out2);};
+  rr.appendChild(b2);
+  $body.appendChild(rr);$body.appendChild(out2);
+  const news=(typeof newsAll==="function")?newsAll():[];
+  const last=news.length?news[news.length-1]:null;
+  const r3=el("div","row"),out3=el("div","row");
+  r3.appendChild(el("div","nm","<b>СЛУХ</b><s>"+(last?last.ru:"вы ничего не слышали")+"</s>"));
+  const b3=el("button","act sm","НА СТОЛ");
+  b3.disabled=!last;
+  b3.onclick=()=>{say1(putOnTable("rumour",news.length),out3);};
+  r3.appendChild(b3);
+  $body.appendChild(r3);$body.appendChild(out3);
+}
 
 /* ══════════════ кантина: помещение, а не список ══════════════ */
 /* Раньше кантина была строчками с портретами. Теперь это комната, нарисованная
@@ -34540,6 +34777,7 @@ function frame(now){
     if(typeof tapeTick==="function")tapeTick(dt);
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
+    if(typeof etherTick==="function")etherTick(dt);
     beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */

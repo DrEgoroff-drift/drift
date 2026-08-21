@@ -269,6 +269,7 @@ function frame(now){
     if(typeof tapeTick==="function")tapeTick(dt);
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
+    if(typeof etherTick==="function")etherTick(dt);
     beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
