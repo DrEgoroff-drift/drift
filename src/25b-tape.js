@@ -43,7 +43,9 @@ function tapeSample(){
   if(!T.zero){T.zero=[];for(let i=0;i<TAPE_PENS;i++)T.zero[i]=instrTrack(R[i]);}
   for(let i=0;i<TAPE_PENS;i++){
     const v=instrTrack(R[i]), z=T.zero[i];
-    const gain=TAPE_GAIN*((typeof hullRole==="function")?hullRole().instr:1);
+    /* у каждого пера свой размах: он идёт за качеством СВОЕГО прибора (05b) */
+    const gain=TAPE_GAIN*((typeof instrQuality==="function")?instrQuality(INSTR_KEYS[i])
+              :((typeof hullRole==="function")?hullRole().instr:1));
     T.col[o+i]=Math.round(clamp(.5+(v-z)*gain,0,1)*255);
     T.zero[i]=z+(v-z)*TAPE_ADAPT;
   }

@@ -9,6 +9,33 @@ could ever save.
 
 ---
 
+## 0.78.0 — "Instruments are merchandise"
+
+**M127** (`05b-instr-kit.js` new, `26-ui-station.js` + a `ПРИБОРЫ` tab, `06-galaxy.js`,
+`index.html`, `25a-instr.js`, `25b-tape.js`, `25d-instr-rack.js`, `14-save.js`, `28-loop.js`,
+suite `91zn-instr-kit.js`). The five panel instruments stop being a property of the ship and
+become **things**: six works, an age, and a character each.
+
+- **Works, not tiers.** Казённый is the middle of everything; «Горн» reads coarse but survives
+  anything; «Сирин» has a fine scale and a nervous needle; «Веха» is observatory work that holds
+  its zero; артельный is homemade and nearly free; трофейный is somebody else's work with the
+  markings rubbed off. Two «Сирин» are not identical — the seed spreads them inside the works'
+  leaning, exactly like parts.
+- **A bad chronometer is not "−5%".** It *resolves* the deviation worse, so a region that lies
+  with time has to be flown closer to its core before its needle admits anything. The needle's
+  tremor and the pen's line width come from the same instrument, so the rack physically looks
+  different depending on what is bolted into it.
+- **They age from work, not from the calendar**, at roughly the rate the hull wears; a shipyard
+  verifies them for a fraction of the price of a new one. They are never destroyed — they just
+  read ever more bluntly.
+- **A counter at trade, yard and science stations**: two or three offers, derived from the station
+  and a slow clock rather than stored, richer systems carrying the serious work. What you unbolt
+  goes to a four-place shelf instead of vanishing.
+- Kit and shelf are player decisions, so they persist (`v:4` unchanged, old saves get the standard
+  shipyard set).
+
+---
+
 ## 0.77.0 — "A hull is a profession, not a rung"
 
 **M126** (`03f-hull-role.js` new, `25a-instr.js`, `25b-tape.js`, `25d-instr-rack.js`,
