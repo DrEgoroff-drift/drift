@@ -9,6 +9,9 @@ function openStation(){
   /* трепло (12x): у прилавка оно слышит цены, а иногда выдаёт то, что слышало
      у вас. Обе стороны одной птицы, и обе — на стыковке */
   if(typeof parrotDock==="function")parrotDock(G.sys);
+  /* счётчик посадок на это место (11b-speech): от него зависит, как к вам
+     обращаются и какая реплика в очереди станет следующей */
+  if(typeof visitMark==="function")visitMark();
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));

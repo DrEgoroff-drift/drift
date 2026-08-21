@@ -9,6 +9,30 @@ could ever save.
 
 ---
 
+## 0.79.0 — "A queue of lines, and a thing on the table"
+
+**M128** (`11b-speech.js` new, `27c-ui-hq.js` — the table block in the cantina, `26-ui-station.js`,
+`14-save.js`, `28-loop.js`, suite `91zo-speech.js`). No conversations: a branching dialogue costs a
+hundred hours of writing and produces a menu. This is the other thing.
+
+- **A queue, not a conversation.** A place holds a short queue of lines and spends **one per
+  landing**. Come back, hear the next one — twenty hours of acquaintance for the price of a string
+  table. A need is mentioned in passing (*"could do with a valve"*), never as an order.
+- **Silence is a line**, not the absence of one: he looks at your tape and says nothing.
+- **The player never picks words. He puts something down** — a strip of tape, something from the
+  hold, a rumour — and the answer is to the object. That is the whole input surface.
+- **The tape became a thing** (the debt M123 left open): `T` in flight tears off the strip, which
+  carries its sector, its misclosure and its length. It lies on the table, and it sells — a good
+  strip sells well, and "good" means only one thing: you can see on it that the world was moving
+  under the ship. Tearing it resets the paper, so a strip costs you the record you had.
+- **Half of all speech is the ether**: faceless voices, other people's traffic, a dispatcher who
+  has lost somebody, a forecast that says "as always". The cheapest life in the game. A postal
+  runner hears them more often — the receiver is his profession (M126).
+- **They change how they address you**: "пилот" → your ship's callsign → your name, on the count
+  of landings at that place alone.
+
+---
+
 ## 0.78.0 — "Instruments are merchandise"
 
 **M127** (`05b-instr-kit.js` new, `26-ui-station.js` + a `ПРИБОРЫ` tab, `06-galaxy.js`,

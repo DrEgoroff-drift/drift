@@ -121,6 +121,9 @@ function renderCantina(){
      занимает место ровно на одну строку. В экипаж не входит, кресла не
      занимает, кредитов не берёт — платят ему едой. */
   grokBlock();
+  /* стол (M128): вещь вместо слов. Стоит после людей — сначала зал, потом то,
+     что вы на него выкладываете */
+  if(typeof putOnTable==="function")tableBlock();
   $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
 }
 /* ── строка Грохотуна ──
@@ -518,3 +521,61 @@ function openHq(){
 document.getElementById("hqbtn").addEventListener("click",openHq);
 document.getElementById("hqClose").addEventListener("click",()=>{
   $hq.classList.remove("open");saveGame(true);});
+
+/* ── стол (M128) ──
+   Единственная поверхность ввода, какая в этой игре есть: игрок не выбирает
+   слова, он кладёт вещь. Лента, груз, слух — человек отвечает на предмет.
+   Молчание в ответ такая же строка, как любая другая. */
+function tableBlock(){
+  const sp=(typeof speechHere==="function")?speechHere():null;
+  if(sp){
+    $body.appendChild(el("div","sec","ЗА СТОЙКОЙ · К ВАМ ОБРАЩАЮТСЯ: "+sp.addr.toUpperCase()));
+    $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
+      (sp.silent?"<i>смотрит и ничего не говорит</i>":sp.line)+
+      "</s><s>следующая реплика — в следующий заход</s></div>"));
+  }
+  $body.appendChild(el("div","sec","СТОЛ · ПОЛОЖИТЕ ВЕЩЬ — ОТВЕТЯТ НА НЕЁ, А НЕ НА СЛОВА"));
+  const say1=(res,r)=>{
+    r.innerHTML="<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
+      (!res?"<i>вещь лежит, на неё не смотрят</i>":
+       res.silent?"<i>посмотрел на это и промолчал</i>":res.line)+"</s></div>";
+  };
+  /* ленты: их можно показать, а можно продать. Хорошая продаётся хорошо */
+  const strips=(typeof stripsAll==="function")?stripsAll():[];
+  if(!strips.length)
+    $body.appendChild(el("div","row","<div class='nm'><s>лент нет. Оторвать полосу — клавиша T "+
+      "в полёте, когда на бумаге уже что-то записано</s></div>"));
+  strips.forEach((s,k)=>{
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b>ЛЕНТА · сектор "+s.sx+":"+s.sy+"</b><s>невязка "+
+      (s.mis||0).toFixed(3)+" · длина записи "+(s.span|0)+"</s>"));
+    const bt=el("button","act sm","НА СТОЛ");
+    const out=el("div","row");
+    bt.onclick=()=>{say1(putOnTable("strip",k),out);};
+    r.appendChild(bt);
+    const bs=el("button","act sm gold",stripValue(s).toLocaleString("ru")+" кр");
+    bs.title="продать ленту";
+    bs.onclick=()=>{stripSell(k);renderTab();};
+    r.appendChild(bs);
+    $body.appendChild(r);$body.appendChild(out);
+  });
+  /* груз и слух: то же движение, другой предмет */
+  const holdKey=RES_KEYS.filter(k=>G.cargo[k]>0)[0];
+  const rr=el("div","row"),out2=el("div","row");
+  rr.appendChild(el("div","nm","<b>ИЗ ТРЮМА</b><s>"+
+    (holdKey?RES[holdKey].ru+" · "+G.cargo[holdKey]+" ед":"трюм пуст")+"</s>"));
+  const b2=el("button","act sm","НА СТОЛ");
+  b2.disabled=!holdKey;
+  b2.onclick=()=>{say1(putOnTable("cargo",RES_KEYS.indexOf(holdKey)),out2);};
+  rr.appendChild(b2);
+  $body.appendChild(rr);$body.appendChild(out2);
+  const news=(typeof newsAll==="function")?newsAll():[];
+  const last=news.length?news[news.length-1]:null;
+  const r3=el("div","row"),out3=el("div","row");
+  r3.appendChild(el("div","nm","<b>СЛУХ</b><s>"+(last?last.ru:"вы ничего не слышали")+"</s>"));
+  const b3=el("button","act sm","НА СТОЛ");
+  b3.disabled=!last;
+  b3.onclick=()=>{say1(putOnTable("rumour",news.length),out3);};
+  r3.appendChild(b3);
+  $body.appendChild(r3);$body.appendChild(out3);
+}
