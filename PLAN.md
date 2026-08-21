@@ -818,6 +818,31 @@ weighted pile), the physical receiver tuned by hand, "pause is the engine off", 
 of the overlay HUD itself. None of it is blocked by what was built — the pod is where a surface
 goes when there is no cockpit to hang it on.
 
+## M125 (0.76.0) — built. The rack: eight needles, five pens, one sheet of paper
+
+Built as **`25d-instr-rack.js`**, opened with `I` or by tapping the pod (`25c`), drawn from
+`frame` after the mode (`28-loop`), stand `docs/mkrack.ps1` → `docs/shots/rack.png`, suite
+**"Стойка: восемь стрелок и пять перьев на одной бумаге"** (`91zl-rack.js`).
+
+**Why it exists.** The pod is a matchbox: no graduations, no figures, a tape reduced to a strip.
+The rack is the same equipment opened up — 1950s–60s laboratory and aviation hardware, not a
+sci-fi HUD: recessed sockets, screws, matte metal with grain, cream dials under glass with a
+warm glow, amber needles on metal hubs. Eight instruments, each with its own range: the five
+region needles plus fuel, hull and hold. The recorder is a real strip chart — supply roller,
+take-up roll with wound paper, printed grid, per-band zero lines, pen carriages on a rail,
+crawling feed perforation, time marks in the pen's own time.
+
+**The two rules this repeals, deliberately and on request.** 25a's "one colour for the whole
+panel" and M123's "no labels, no colour on the tape": the five channels now carry a muted colour
+and a name. Colour here separates five pens on one sheet the way a real recorder does — it is
+not an alarm and not a hint. What is *not* repealed: no sound, no message, no log line, no
+alarm tint anywhere; the suite spies on `say`/`tell`/`logAdd`/`sfx` while the rack draws.
+
+**Still open:** the rack is an overlay drawn over the world rather than a surface inside the
+cockpit; the heavy sheet is baked per screen size, so a mid-flight resize costs one re-bake;
+CH5 saturates against the bottom of its band when the actinometer swings hard; nothing here is
+persisted, which is correct, but it also means the paper is only ever this session's.
+
 What it is, in short. M106–M121 gave the arm one long story told in fragments; this pass gives it
 **many short ones**, and a body to fly them in. The unit is a **region**, not a planet: six to ten
 systems on one theme with a hidden gradient, a procedural edge and one hand-built core, so the

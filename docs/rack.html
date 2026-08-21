@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
@@ -716,7 +716,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.76.0";
+const VER="0.75.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -34297,5 +34297,31 @@ function dbg(){
 }
 window.dbg=dbg;
 </script>
-</body>
-</html>
+<script>
+setTimeout(function(){
+  var i=document.getElementById("intro"); if(i)i.style.display="none";
+  start(true);
+  var R0=regionAt(G.sx,G.sy);
+  for(var k=0;k<12000;k++){
+    var f=k/12000;
+    if(k%900===0){G.sx=R0.core.sx+Math.round((1-f)*4);G.sy=R0.core.sy+Math.round((1-f)*3);}
+    if(k%700===0)G.cargo.ore=Math.max(0,(G.cargo.ore|0)+(k%1400?2:-1));
+    G.ship.x=600+Math.sin(k*.0012)*520;G.ship.y=Math.cos(k*.0009)*380;
+    G.ship.vx=Math.sin(k*.004)*7+Math.sin(k*.031)*1.5;G.ship.vy=Math.cos(k*.0031)*5;
+    tapeTick(1);
+  }
+  G.fuel*=.62;G.hull*=.81;
+  if(!rackOpen())rackToggle();
+  drawSystem();rackDraw();
+  var cvs=document.querySelector("canvas");
+  var out=document.createElement("canvas");
+  out.width=cvs.width;out.height=Math.round(cvs.height*.76)+28;
+  var c=out.getContext("2d");
+  c.fillStyle="#05070c";c.fillRect(0,0,out.width,out.height);
+  c.drawImage(cvs,0,28);
+  c.fillStyle="#8fa6b4";c.font="14px ui-monospace,monospace";
+  c.fillText("INSTRUMENT RACK В· eight needles, five pens В· misclosure "+
+             instrMisclose().toFixed(3),10,19);
+  try{fetch("/rack.png",{method:"POST",body:out.toDataURL("image/png")});}catch(e){}
+},1800);
+</script></body></html>

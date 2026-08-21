@@ -67,3 +67,14 @@ function instrPodTick(){
   $ipod.style.display=on?"":"none";
   if(on)instrPodDraw();
 }
+/* Колодка — не только показание, но и ручка: по ней открывается стойка (25d),
+   где те же приборы стоят в полный рост. Единственный элемент строки приборов,
+   который ловит палец, — поэтому pointer-events включаются только на нём. */
+if($ipod){
+  $ipod.style.pointerEvents="auto";
+  $ipod.style.cursor="pointer";
+  $ipod.addEventListener("pointerdown",e=>{
+    e.preventDefault();
+    if(typeof rackToggle==="function")rackToggle();
+  });
+}
