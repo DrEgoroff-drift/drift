@@ -113,6 +113,8 @@ one at a time when a pass is due, and nothing here blocks a milestone.
   on every world; an arm at rest merges into the torso; the crate rides near the chin.
 - **Жестянка** (M119) — the plume is three evenly spaced puffs; the plant is the same shape on
   every world; the drum's hoops do not read as turning.
+- **Грохотун** (M120) — at 64 px, the size he is actually seen at, the three eyes merge into a
+  smudge; the hide is flat khaki with no dust streaks; the working arms hide behind the torso.
 - **ships** — no faction language; it comes after stations by the queue above.
 - **clouds** — blobs of radial gradients in `drawSkyLayer` (19-mode-landing); wanted: a value-noise
   field scrolled with a soft threshold.
@@ -641,7 +643,23 @@ turning at a glance.
   gives exact times and headings for events it cannot describe. Times feed the calendar; headings
   feed the map.
 
-## M120 (0.71.0). Грохотун: the one partner who does not work for money
+## M120 (0.71.0) — built. Грохотун: the one partner who does not work for money
+
+Built as **`12tb-grok.js`**, one card of his own in the cantina (`27c-ui-hq`, `grokBlock`),
+persistence in `14-save` + `08-state` (`G.grok`, repaired on load), stand `docs/mkgrok.ps1` →
+`docs/shots/grok.png`, suites **"Грохотун: рейс, а не кресло"** and **"…объясняет один раз"**
+(`91zh-grok.js`).
+
+**Where it landed against the spec.** All four points stand. He is a run with its own lazy clock
+and touches neither `G.crew` nor `G.mgrs` — the suite guards exactly that; payment is food,
+never credits, and the price climbs per closed site; a dig raises occupation where he worked and
+half his returns hand the hunter your current sector; the tutor line fires once and grants
+nothing. Sites are the union of the report's addresses and their survey points, minus what he
+has already dug.
+
+**Still open:** at 64 px the three eyes merge into a smudge — the face needs one darker accent
+to survive the size it is actually seen at; the hide is one flat khaki with no dust streaks or
+wear on the body; and the two working arms hide behind the torso, so only the elbows show.
 
 A recurring figure — loud, many-limbed, delighted to see you, catastrophically indiscreet — who
 digs the expedition's sites for a living and knows what an obelisk **is** while knowing nothing

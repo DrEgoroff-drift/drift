@@ -116,7 +116,64 @@ function renderCantina(){
       $body.appendChild(rr);
     }
   }
+  /* ── Грохотун (12tb) ──
+     Он не в списке зала и не за столиком: он сам по себе, приходит к вам и
+     занимает место ровно на одну строку. В экипаж не входит, кресла не
+     занимает, кредитов не берёт — платят ему едой. */
+  grokBlock();
   $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
+}
+/* ── строка Грохотуна ──
+   Одна карточка со своим состоянием и списком площадок из СВОЕГО слоя карты.
+   Кнопка «отправить» стоит у каждой площадки, а не у него: выбирают место, а не
+   человека — он-то всегда согласен. */
+function grokBlock(){
+  const R=grokTick();
+  const want=grokWant(), price=grokPrice(), have=G.cargo[want]|0;
+  $body.appendChild(el("div","sec","ГРОХОТУН · КОПАЕТ ЗА ЕДУ, НЕ ЗА ДЕНЬГИ"));
+  const r=el("div","row");
+  const w=el("div","face");
+  w.style.cssText="flex:0 0 auto;width:64px;height:64px;line-height:0";
+  w.appendChild(grokFace(64));
+  r.appendChild(w);
+  r.appendChild(el("div","nm","<b style='color:#c9c08a'>Грохотун</b><s>"+
+    "копщик · в экипаж не входит и места в штабе не занимает"+
+    "<br>"+grokLine().toLowerCase()+
+    "<br>в трюме "+RES[want].ru.toLowerCase()+": "+have+" · за площадку "+price+"</s>"));
+  if(R.state==="back"){
+    const b=el("button","act gold","СПРОСИТЬ, ЧТО ВЫНЕС");
+    b.onclick=()=>{grokTake();renderTab();};
+    r.appendChild(b);
+  }
+  $body.appendChild(r);
+  if(grokCanTeach()){
+    const rr=el("div","row");
+    rr.appendChild(el("div","nm","<s>он косится на ваши непрочитанные глифы "+
+      "и явно хочет что-то сказать</s>"));
+    const b=el("button","act sm","СПРОСИТЬ ПРО ГЛИФЫ");
+    b.onclick=()=>{grokTeach();renderTab();};
+    rr.appendChild(b);
+    $body.appendChild(rr);
+  }
+  if(R.state!=="idle")return;
+  const sites=grokSites();
+  if(!sites.length){
+    $body.appendChild(el("div","row","<div class='nm'><s>копать пока нечего: "+
+      "площадки берутся из вашего слоя карты — адресов отчёта и их съёмки. "+
+      "Нет ни одного — значит, вы ещё не собрали ни одного свидетельства.</s></div>"));
+    return;
+  }
+  for(const s of sites.slice(0,6)){
+    const rr=el("div","row");
+    rr.appendChild(el("div","nm","<b>сектор "+s.sx+":"+s.sy+"</b><s>"+s.why+
+      " · копка поднимет там занятость на ступень</s>"));
+    const b=el("button","act"+(have>=price?" gold":""),
+      RES[want].ru.toUpperCase()+" ×"+price);
+    b.disabled=have<price;
+    b.onclick=()=>{if(grokSend(s.sx,s.sy))renderTab();};
+    rr.appendChild(b);
+    $body.appendChild(rr);
+  }
 }
 /* Зал: канва во всю ширину панели, по сидящему тыкают. Перерисовывается своим
    rAF, пока канва жива и вкладка та же, — иначе цикл продолжал бы крутиться

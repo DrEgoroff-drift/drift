@@ -38,7 +38,7 @@ function snapshot(){
     wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
-    doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,
+    doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -183,6 +183,23 @@ function applySave(s){
       bin:clamp(+v.bin||0,0,TIN_BIN),seen:v.seen|0,
       read:clamp(v.read|0,0,TIN_LOG),
       last:+v.last||Date.now(),made:+v.made||Date.now()};
+  }
+  /* Грохотун (12tb-grok): в экипаж он не входит, поэтому и хранится отдельно —
+     что он ест, где копает, сколько площадок закрыл и объяснял ли он уже глифы.
+     Чинится по месту: чужое лакомство отбрасывается, состояние сводится к трём
+     известным, а незакрытая копка без срока считается законченной — висеть
+     вечно она не должна. */
+  G.grok=null;
+  if(s.grok&&typeof s.grok==="object"){
+    const v=s.grok;
+    const st=["idle","out","back"].indexOf(v.state)>=0?v.state:"idle";
+    const dug={};
+    if(v.dug&&typeof v.dug==="object")
+      for(const k in v.dug)if(/^-?\d+,-?\d+$/.test(k))dug[k]=1;
+    G.grok={want:GROK_LIKE.indexOf(v.want)>=0?v.want:null,
+      state:st==="out"&&!(+v.due>Date.now())?"back":st,
+      sx:v.sx|0,sy:v.sy|0,due:+v.due||0,
+      took:Math.max(0,v.took|0),taught:v.taught?1:0,dug};
   }
   /* боны домов (12u-scrip): это ставка игрока и курс, у которого записана
      причина, — значит, персистятся. Чинится по месту: чужие ключи домов
