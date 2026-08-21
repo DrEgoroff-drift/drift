@@ -9,6 +9,32 @@ could ever save.
 
 ---
 
+## 0.71.0 — "He digs for food, not for money"
+
+**M120** (`12tb-grok.js` new, `27c-ui-hq.js`, `14-save.js`, `08-state.js`, stand
+`docs/mkgrok.ps1`, suite `91zh-grok.js`). Грохотун: loud, four-armed, three-eyed, delighted to
+see you and completely unable to keep his mouth shut. He digs the expedition's sites for a
+living, knows what an obelisk **is**, and knows nothing at all about who left it.
+
+- **A run, not a seat.** He shows up in the cantina with one line of his own. He never joins the
+  crew, never takes a domain and never asks for a ship: the four-seat rule does not move. Hand
+  him a site from your own map layer, fly away, come back to a result.
+- **He does not take credits.** He takes food, in quantity, and the quantity grows with every
+  site he closes — the one supply line in the game that exists for a person rather than a
+  profit.
+- **Digging costs more than the hold.** A dig is loud: the sector he worked goes up a step of
+  pirate occupation. And he talks: half the time he comes back, he tells the tables where
+  **you** have been, and that is one of the ways a hunter finds you.
+- **Sites come from your own layer** — the addresses the report named and the points of their
+  survey. Each site is a witness's place: it hands over a piece of the report, plus whatever the
+  spoil heap yields. A closed site is never offered twice.
+- **He is the tutor, once.** The first time you are holding something you cannot read, he
+  explains where words come from — and explains only: not one word lands in the dictionary.
+
+Portrait faults found on the stand and fixed: the dust sat over his head like a floating halo;
+the teeth were a keyboard glued under the smile instead of teeth inside a mouth; the skull was a
+flat oval with no light on it; and four arms grew out of nothing without a shoulder between them.
+
 ## 0.70.0 — "The shift nobody came to end"
 
 **M119** (`12ta-tin.js` new, `21-mode-surface.js`, `18-mode-map.js`, `14-save.js`, `08-state.js`,

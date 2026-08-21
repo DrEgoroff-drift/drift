@@ -1,0 +1,270 @@
+/* ══════════════ Грохотун: единственный, кто работает не за деньги ══════════════
+   Громкий, многорукий, всегда рад вас видеть и совершенно не умеет молчать. Он
+   копает площадки «Долгого Хода» за жизнь, знает, ЧТО такое обелиск, и ничего
+   не знает о том, кто его поставил. Это два разных знания, и второго у него нет.
+
+   ЧЕМ ЭТО НЕ ЯВЛЯЕТСЯ. Он не наёмник и не управляющий: в экипаж не входит, места
+   в штабе не занимает, корабля не просит. Правило четырёх кресел не шевелится.
+   Он — РЕЙС: отдал площадку с карты, улетел, вернулся к результату. Механика та
+   же, что у наёмничьего рейса (12a-crew), но своя и отдельная, потому что человек
+   в списке экипажа — это уже пятое кресло.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Кредитов он не берёт и не отдаёт. Плата — товар, и её много: это
+      единственная в игре линия снабжения, заведённая ради человека, а не ради
+      прибыли. Правило «памятник — не банкомат» с обратной стороны.
+   2. У копки есть цена, и платит её не только трюм. Копают громко: система, куда
+      его послали, поднимается на ступень занятости (13b-occupy). Послать его
+      куда-то — решение, а не бесплатное поручение.
+   3. Он треплется. Вернувшись, он рассказывает за столиками, где вы были, — и
+      это один из способов, которыми на вас выходит охотник (12o-hunter).
+   4. Он же — учитель, ровно один раз: первый кусок, которым игрок не может
+      воспользоваться, объясняет он. Объясняет, а не решает: слово от этого не
+      появляется в словаре.
+   5. Считается лениво, по прошедшему времени, с потолком офлайна — как рейсы. */
+
+const GROK_NAME="Грохотун";
+const GROK_CAP=24*3600*1000;
+const GROK_MIN=18*60000, GROK_MAX=31*60000;    // сколько идёт копка
+const GROK_LIKE=["organics","carbon","ice","volatiles"];
+const GROK_DIRT=["silicon","iron","titan"];    // что он выносит из отвала
+
+function grokRec(){
+  if(!G.grok||typeof G.grok!=="object")
+    G.grok={want:null,state:"idle",sx:0,sy:0,due:0,took:0,taught:0,dug:{}};
+  if(!G.grok.dug)G.grok.dug={};
+  /* ест он одно и то же всегда: линия снабжения — это когда возят ОДНО, а не
+     когда у каждого прохождения своя прихоть */
+  if(!G.grok.want)G.grok.want=GROK_LIKE[hashi(0x6D0C,1,3)%GROK_LIKE.length];
+  return G.grok;
+}
+/* что он ест — см. `grokRec` */
+function grokWant(){
+  const R=grokRec();
+  return R.want;
+}
+/* ── сколько ──
+   Много. И с каждой копкой больше: он не наглеет, он просто ест столько,
+   сколько ест, а копает всё дальше от дома. */
+function grokPrice(){
+  const R=grokRec();
+  return 120+25*Math.min(6,R.took|0);
+}
+/* ── площадки ──
+   Это ваш слой карты и ничей больше: адреса, названные кусками отчёта (12q), и
+   точки их съёмки (12w). Копать наугад он не станет — «там ничего нет» он
+   говорит первым. */
+function grokSites(){
+  const R=grokRec(),out=[],seen={};
+  const add=(sx,sy,why)=>{
+    const k=sx+","+sy;
+    if(seen[k]||R.dug[k])return;
+    if(typeof starAt==="function"&&!starAt(sx,sy))return;
+    seen[k]=1;out.push({sx,sy,why});
+  };
+  if(typeof loreMarks==="function")for(const m of loreMarks())add(m.sx|0,m.sy|0,"адрес из отчёта");
+  if(typeof surveyList==="function")for(const p of surveyList())add(p.sx|0,p.sy|0,"их съёмка");
+  return out;
+}
+function grokBusy(){const R=grokRec();return R.state==="out";}
+function grokLeftMs(){
+  const R=grokRec();
+  if(R.state!=="out")return 0;
+  return Math.max(0,R.due-Date.now());
+}
+/* ── ход ── лениво: копка кончается сама, пока игрока нет рядом */
+function grokTick(){
+  const R=grokRec();
+  if(R.state==="out"&&Date.now()>=R.due)R.state="back";
+  return R;
+}
+/* ── отправить ──
+   Плата вперёд и товаром. Место — из своего слоя карты. */
+function grokSend(sx,sy){
+  const R=grokTick();
+  if(R.state!=="idle")return false;
+  const k=grokWant(), price=grokPrice();
+  if((G.cargo[k]|0)<price)return false;
+  G.cargo[k]-=price;
+  R.state="out";R.sx=sx|0;R.sy=sy|0;
+  R.due=Date.now()+GROK_MIN+Math.floor(rng(hashi(sx,sy,Date.now()&0xffff))()*(GROK_MAX-GROK_MIN));
+  logAdd("",GROK_NAME+" ушёл копать: сектор "+R.sx+":"+R.sy+" · съел "+
+    RES[k].ru.toLowerCase()+" ×"+price);
+  say(GROK_NAME+" УШЁЛ КОПАТЬ\nсектор "+R.sx+":"+R.sy+
+    "\nвернётся сам · копают долго");
+  if(typeof saveGame==="function")saveGame(true);
+  return true;
+}
+/* ── забрать результат ──
+   Кусок отчёта с площадки, отвал в трюм — и две расплаты: занятость там, где
+   копали, и его язык здесь. */
+function grokTake(){
+  const R=grokTick();
+  if(R.state!=="back")return null;
+  const sx=R.sx,sy=R.sy;
+  R.state="idle";R.took=(R.took|0)+1;R.dug[sx+","+sy]=1;
+  const r=rng(hashi(sx,sy,0x6D16));
+  /* отвал: не награда, а то, что осталось от чужой работы */
+  const kind=GROK_DIRT[Math.floor(r()*GROK_DIRT.length)];
+  const n=6+Math.floor(r()*13);
+  const got=Math.max(0,(typeof addRes==="function"?addRes(kind,n):0)|0);
+  /* кусок отчёта: площадка — место свидетеля, как зарубка и как лента */
+  const L=(typeof loreTake==="function")?loreTake("grok:"+sx+":"+sy):null;
+  /* правило 2: копают громко */
+  if(typeof occSet==="function"&&typeof occLvl==="function"){
+    const was=occLvl(sx,sy);
+    occSet(sx,sy,was+1);
+    logAdd("warn","В секторе "+sx+":"+sy+" стало шумно: копка слышна далеко");
+  }
+  /* правило 3: и он треплется — про то, где были ВЫ */
+  let told=0;
+  if(r()<.5&&typeof huntMark==="function"){
+    huntMark({sx:G.sx,sy:G.sy},"болтовню "+GROK_NAME.toLowerCase()+"а");
+    told=1;
+  }
+  tell(L?"tech":"good",GROK_NAME+" вернулся с площадки "+sx+":"+sy,
+    GROK_NAME+" ВЕРНУЛСЯ\nсектор "+sx+":"+sy+
+    (got>0?("\nотвал: "+RES[kind].ru+" ×"+got):"\nотвал ссыпать некуда — трюм полон")+
+    (L?"\n\nи вынес кусок отчёта":"\n\nкуска здесь не было — площадка пустая")+
+    "\n\nтам теперь шумно"+(told?"\nи он уже рассказывает про вас за столиками":""));
+  if(typeof saveGame==="function")saveGame(true);
+  return {sx,sy,kind,got,lore:L,told};
+}
+/* ── учитель, один раз ──
+   Первый кусок, которым игрок не может воспользоваться, объясняет он. Именно
+   объясняет: слово в словаре от этого не появляется, появляется понимание, что
+   слова вообще берутся у свидетелей. */
+function grokCanTeach(){
+  const R=grokRec();
+  if(R.taught)return false;
+  if(typeof heardAll==="function"&&heardAll().some(h=>h&&h.kind==="pidgin"&&!h.read))return true;
+  if(typeof loreList==="function"&&typeof loreVocab==="function")
+    return loreList().length>0&&loreVocab().length===0;
+  return false;
+}
+function grokTeach(){
+  const R=grokRec();
+  if(R.taught||!grokCanTeach())return false;
+  R.taught=1;
+  tell("tech",GROK_NAME+" объясняет глифы — один раз",
+    GROK_NAME+" СМЕЁТСЯ\n\n«Это не узор, это речь. Их речь. Я под неё копаю "+
+    "двадцать лет и знаю четыре слова, и все четыре — про воду.\n\n"+
+    "Слова не выдают. Слова СЛЫШАТ: у зарубки, у птицы, у ленты. Набери свидетелей "+
+    "— и то, что лежит у тебя непрочитанным, прочтётся само.»\n\n"+
+    "Больше он этого не повторит: он и так сказал больше, чем собирался.");
+  logAdd("tech",GROK_NAME+" объяснил, откуда берутся слова");
+  if(typeof saveGame==="function")saveGame(true);
+  return true;
+}
+/* ── строка о состоянии ── */
+function grokLine(){
+  const R=grokTick();
+  if(R.state==="out"){
+    const m=Math.ceil(grokLeftMs()/60000);
+    return "КОПАЕТ · СЕКТОР "+R.sx+":"+R.sy+" · ЕЩЁ ОКОЛО "+m+" МИН";
+  }
+  if(R.state==="back")return "ВЕРНУЛСЯ С ПЛОЩАДКИ "+R.sx+":"+R.sy+" · ЖДЁТ, КОГДА ВЫ СПРОСИТЕ";
+  return "СВОБОДЕН · БЕРЁТ "+RES[grokWant()].ru.toUpperCase()+" ×"+grokPrice()+" ЗА ПЛОЩАДКУ";
+}
+/* ── как он выглядит ──
+   Не человек и не зверь: широкий, приземистый, четыре руки — две рабочие внизу,
+   две мелкие у груди, — и лицо, состоящее в основном из улыбки. Пыль на нём
+   лежит слоями: он в ней живёт. Рисуется как портрет управляющего (12d), тем же
+   способом и в тот же размер, чтобы в кантине он стоял в одном ряду с людьми. */
+function grokFace(size){
+  const S=size||64,cn=document.createElement("canvas");
+  cn.width=S;cn.height=S;
+  const c=cn.getContext("2d");
+  const u=S/64;
+  const hide=[124,118,88], hideD=[68,66,48], hideL=[168,160,118];
+  const rgb=a=>"rgb("+a.map(v=>Math.round(v)).join(",")+")";
+  c.fillStyle="#171b16";c.fillRect(0,0,S,S);
+  /* пыль в воздухе: он её приносит с собой и не замечает */
+  const g0=c.createRadialGradient(S*.5,S*.62,2,S*.5,S*.62,S*.6);
+  g0.addColorStop(0,"rgba(196,168,120,.18)");g0.addColorStop(1,"rgba(196,168,120,0)");
+  c.fillStyle=g0;c.fillRect(0,0,S,S);
+  /* ── руки ── две рабочие внизу и две мелкие у груди. Первый заход рисовал их
+     четырьмя отдельными сосисками: без плеча рука не растёт из тела, а лежит
+     рядом с ним. Плечо — комок в основании, кисть — широкая лопата. */
+  const arm=(x1,y1,x2,y2,w,col)=>{
+    c.strokeStyle=col;c.lineWidth=w;c.lineCap="round";
+    c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();
+    c.fillStyle=col;
+    c.beginPath();c.arc(x1,y1,w*.62,0,TAU);c.fill();          // плечо
+  };
+  arm(S*.28,S*.70,S*.11,S*.93,7.4*u,rgb(hideD));
+  arm(S*.72,S*.70,S*.89,S*.93,7.4*u,rgb(hideD));
+  c.fillStyle=rgb(hideD);                                      // кисти-лопаты
+  c.beginPath();c.ellipse(S*.10,S*.95,S*.075,S*.05,-.5,0,TAU);c.fill();
+  c.beginPath();c.ellipse(S*.90,S*.95,S*.075,S*.05,.5,0,TAU);c.fill();
+  /* ── корпус ── трапеция вниз: он приземистый, а не долговязый */
+  c.fillStyle=rgb(hide);
+  c.beginPath();
+  c.moveTo(S*.20,S*1.02);c.lineTo(S*.29,S*.57);c.lineTo(S*.71,S*.57);c.lineTo(S*.80,S*1.02);
+  c.closePath();c.fill();
+  const bg=c.createLinearGradient(S*.2,0,S*.8,0);              // свет слева
+  bg.addColorStop(0,"rgba(255,246,214,.16)");bg.addColorStop(.55,"rgba(255,255,255,0)");
+  bg.addColorStop(1,"rgba(0,0,0,.28)");
+  c.fillStyle=bg;
+  c.beginPath();
+  c.moveTo(S*.20,S*1.02);c.lineTo(S*.29,S*.57);c.lineTo(S*.71,S*.57);c.lineTo(S*.80,S*1.02);
+  c.closePath();c.fill();
+  /* ремень через плечо и коробка на нём: он рабочий, а не зверь в кадре */
+  c.strokeStyle="rgba(38,34,24,.85)";c.lineWidth=4.4*u;
+  c.beginPath();c.moveTo(S*.34,S*.60);c.lineTo(S*.66,S*.98);c.stroke();
+  c.fillStyle="rgba(58,52,36,.95)";c.fillRect(S*.60,S*.80,S*.13,S*.11);
+  c.strokeStyle="rgba(226,236,240,.22)";c.lineWidth=1;
+  c.strokeRect(S*.60+.5,S*.80+.5,S*.13,S*.11);
+  /* мелкие руки у груди — они всегда чем-то заняты */
+  arm(S*.36,S*.66,S*.46,S*.78,3.6*u,rgb(hideL));
+  arm(S*.64,S*.66,S*.54,S*.78,3.6*u,rgb(hideL));
+  /* ── голова ── широкая, без шеи, посажена прямо на плечи */
+  const hx=S*.5,hy=S*.38,hw=S*.31,hh=S*.25;
+  c.fillStyle=rgb(hide);
+  c.beginPath();c.ellipse(hx,hy,hw,hh,0,0,TAU);c.fill();
+  /* объём: свет слева сверху, тень справа снизу. Плоский овал читался маской */
+  c.save();
+  c.beginPath();c.ellipse(hx,hy,hw,hh,0,0,TAU);c.clip();
+  const hg=c.createLinearGradient(hx-hw,hy-hh,hx+hw,hy+hh);
+  hg.addColorStop(0,"rgba(255,248,220,.22)");hg.addColorStop(.5,"rgba(255,255,255,0)");
+  hg.addColorStop(1,"rgba(0,0,0,.34)");
+  c.fillStyle=hg;c.fillRect(hx-hw,hy-hh,hw*2,hh*2);
+  /* пыль лежит НА черепе, а не парит над ним: полоса по верхней кромке */
+  c.fillStyle="rgba(206,186,140,.42)";
+  c.beginPath();c.ellipse(hx,hy-hh*.92,hw*.92,hh*.30,0,0,TAU);c.fill();
+  c.restore();
+  /* надбровье: одна складка над тремя глазами — она и делает морду мордой */
+  c.strokeStyle="rgba(46,42,30,.7)";c.lineWidth=1.8*u;
+  c.beginPath();c.moveTo(hx-hw*.78,hy-hh*.30);c.lineTo(hx,hy-hh*.46);
+  c.lineTo(hx+hw*.78,hy-hh*.30);c.stroke();
+  /* три глаза в ряд: чужой — это про счёт, а не про цвет */
+  for(let i=0;i<3;i++){
+    const ex=hx+(i-1)*S*.135;
+    c.fillStyle="#0e1210";
+    c.beginPath();c.ellipse(ex,hy-S*.012,S*.046,S*.056,0,0,TAU);c.fill();
+    c.fillStyle="rgba(242,214,140,.92)";
+    c.beginPath();c.arc(ex+S*.013,hy-S*.024,S*.016,0,TAU);c.fill();
+  }
+  /* ── улыбка ── сама пасть, а не дуга с наклейкой зубов под ней: тёмный
+     полумесяц, и зубы стоят ВНУТРИ него, по его же кривой */
+  const my=hy+hh*.30, mw=hw*.72;
+  c.fillStyle="#0d100e";
+  c.beginPath();
+  c.moveTo(hx-mw,my-S*.014);
+  c.quadraticCurveTo(hx,my+S*.115,hx+mw,my-S*.014);
+  c.quadraticCurveTo(hx,my+S*.028,hx-mw,my-S*.014);
+  c.closePath();c.fill();
+  c.save();
+  c.beginPath();
+  c.moveTo(hx-mw,my-S*.014);
+  c.quadraticCurveTo(hx,my+S*.115,hx+mw,my-S*.014);
+  c.quadraticCurveTo(hx,my+S*.028,hx-mw,my-S*.014);
+  c.closePath();c.clip();
+  c.fillStyle="#cfc9ab";                                   // зубы: крупные, редкие
+  for(let i=0;i<6;i++)c.fillRect(hx-mw*.92+i*mw*.31,my-S*.02,mw*.21,S*.08);
+  c.restore();
+  /* пыль на плечах — слоями, как на всём остальном */
+  c.fillStyle="rgba(206,186,140,.42)";
+  c.fillRect(S*.29,S*.565,S*.42,S*.018);
+  return cn;
+}

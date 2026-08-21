@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 131 · символов верхнего уровня: 1480
+Файлов: 133 · символов верхнего уровня: 1499
 
 ## СИМВОЛЫ
 
@@ -81,7 +81,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:185
 autoLandInputs               src/19-mode-landing.js:33
-autosave                     src/14-save.js:425
+autosave                     src/14-save.js:442
 b64dec                       src/14-save.js:11
 b64enc                       src/14-save.js:9
 bankTransform                src/03b-hull-paint.js:48
@@ -194,11 +194,11 @@ canPay                       src/21a-mode-base.js:48
 CANT_STYLE                   src/27d-ui-cantina.js:15
 cantFigure                   src/27d-ui-cantina.js:301
 cantinaPool                  src/12c-mgr-core.js:258
-cantinaScene                 src/27c-ui-hq.js:125
+cantinaScene                 src/27c-ui-hq.js:182
 cantProps                    src/27d-ui-cantina.js:401
 cantRoomBody                 src/27d-ui-cantina.js:45
 cantSeats                    src/27d-ui-cantina.js:293
-cantSel                      src/27c-ui-hq.js:124
+cantSel                      src/27c-ui-hq.js:181
 cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina.js:489
 cantView                     src/27d-ui-cantina.js:342
@@ -249,8 +249,8 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudPull                    src/14-save.js:447
-cloudPush                    src/14-save.js:439
+cloudPull                    src/14-save.js:464
+cloudPush                    src/14-save.js:456
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
 cockpitPlan                  src/25-cockpit.js:92
@@ -485,7 +485,7 @@ exitBelt                     src/24-mode-belt.js:162
 exitCave                     src/22-mode-cave.js:40
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
-exportCode                   src/14-save.js:434
+exportCode                   src/14-save.js:451
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -493,7 +493,7 @@ FACE_SKIN                    src/12d-mgr-face.js:10
 faceEl                       src/27c-ui-hq.js:6
 facePath                     src/12d-mgr-face.js:19
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:416
+factPrices                   src/27c-ui-hq.js:473
 FAUNA_RES                    src/02-world.js:38
 fbm1                         src/01-core.js:19
 fbm2                         src/01-core.js:26
@@ -572,12 +572,31 @@ glassOutline                 src/25-cockpit.js:54
 goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
 gradePass                    src/19c-light.js:140
+GROK_CAP                     src/12tb-grok.js:27
+GROK_DIRT                    src/12tb-grok.js:30
+GROK_LIKE                    src/12tb-grok.js:29
+GROK_MIN                     src/12tb-grok.js:28
+GROK_NAME                    src/12tb-grok.js:26
+grokBlock                    src/27c-ui-hq.js:130
+grokBusy                     src/12tb-grok.js:69
+grokCanTeach                 src/12tb-grok.js:137
+grokFace                     src/12tb-grok.js:174
+grokLeftMs                   src/12tb-grok.js:70
+grokLine                     src/12tb-grok.js:160
+grokPrice                    src/12tb-grok.js:49
+grokRec                      src/12tb-grok.js:32
+grokSend                     src/12tb-grok.js:83
+grokSites                    src/12tb-grok.js:57
+grokTake                     src/12tb-grok.js:101
+grokTeach                    src/12tb-grok.js:145
+grokTick                     src/12tb-grok.js:76
+grokWant                     src/12tb-grok.js:42
 groundAt                     src/07-planet.js:254
 groundShadow                 src/19-mode-landing.js:253
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:433
+hasSave                      src/14-save.js:450
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
@@ -636,14 +655,14 @@ houseOf                      src/12u-scrip.js:35
 HOUSES                       src/12u-scrip.js:21
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
-hqAiOffer                    src/27c-ui-hq.js:314
-hqBtnTick                    src/27c-ui-hq.js:169
+hqAiOffer                    src/27c-ui-hq.js:371
+hqBtnTick                    src/27c-ui-hq.js:226
 hqConsole                    src/27f-hq-room.js:228
 hqFigure                     src/27f-hq-room.js:509
 hqHover                      src/27f-hq-room.js:675
-hqJobCard                    src/27c-ui-hq.js:373
-hqRelicSlot                  src/27c-ui-hq.js:339
-hqRender                     src/27c-ui-hq.js:176
+hqJobCard                    src/27c-ui-hq.js:430
+hqRelicSlot                  src/27c-ui-hq.js:396
+hqRender                     src/27c-ui-hq.js:233
 hqRoomBody                   src/27f-hq-room.js:32
 hqScene                      src/27f-hq-room.js:640
 hqScreenData                 src/27f-hq-room.js:312
@@ -676,7 +695,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:435
+importCode                   src/14-save.js:452
 initAudio                    src/09-audio.js:7
 invalidateKeyMap             src/15-input.js:41
 invalidateParts              src/05-parts.js:197
@@ -721,7 +740,7 @@ layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:115
 litRGB                       src/19c-light.js:46
-loadGame                     src/14-save.js:429
+loadGame                     src/14-save.js:446
 LOG_MAX                      src/11-log.js:3
 logAdd                       src/11-log.js:5
 logBtnLabel                  src/11-log.js:24
@@ -785,7 +804,7 @@ mgrCrewYield                 src/12c-mgr-core.js:202
 mgrCut                       src/12c-mgr-core.js:173
 mgrDefect                    src/12c-mgr-core.js:347
 mgrDomain                    src/12c-mgr-core.js:507
-mgrDomainLine                src/27c-ui-hq.js:435
+mgrDomainLine                src/27c-ui-hq.js:492
 mgrDroneRate                 src/12c-mgr-core.js:218
 mgrFace                      src/12d-mgr-face.js:29
 mgrFee                       src/12c-mgr-core.js:298
@@ -933,7 +952,7 @@ occTick                      src/13b-occupy.js:60
 ok                           tests/90-harness.js:19
 openBarge                    src/12l-barge.js:576
 openCrewView                 src/27b-ui-crew.js:199
-openHq                       src/27c-ui-hq.js:455
+openHq                       src/27c-ui-hq.js:512
 openShipView                 src/27-ui-ship.js:145
 openStation                  src/26-ui-station.js:5
 ORDERS                       src/12a-crew.js:109
@@ -1196,7 +1215,7 @@ runTests                     tests/90-harness.js:71
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:4
-saveGame                     src/14-save.js:419
+saveGame                     src/14-save.js:436
 say                          src/08-state.js:131
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -1641,6 +1660,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12ta-tin.js · 21 КБ
   · Жестянка: смена, которую некому снять:1
 
+## src/12tb-grok.js · 16 КБ
+  · Грохотун: единственный, кто работает не за деньги:1
+
 ## src/12t-settle.js · 21 КБ
   · посёлок: вы даёте, решают они:1
 
@@ -1668,7 +1690,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/13-pirates.js · 15 КБ
   · пираты:1
 
-## src/14-save.js · 29 КБ
+## src/14-save.js · 30 КБ
   · сохранение:1
 
 ## src/15-input.js · 16 КБ
@@ -1804,7 +1826,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
 
-## src/27c-ui-hq.js · 28 КБ
+## src/27c-ui-hq.js · 31 КБ
   · ШТАБ и кантина:1
 
 ## src/27d-ui-cantina.js · 31 КБ
@@ -1920,6 +1942,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91zf-peep.js · 5 КБ
 
 ## tests/91zg-tin.js · 7 КБ
+
+## tests/91zh-grok.js · 4 КБ
 
 ## tests/91z-missile.js · 5 КБ
 
