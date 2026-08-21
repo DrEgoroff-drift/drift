@@ -28,7 +28,7 @@ function openStation(){
    вкладкой вторая ступень не показывается — нечего выбирать. */
 const ST_GROUPS=[
   {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","flea","smelt","scrip"]},
-  {id:"ship",  ru:"КОРАБЛЬ",   tabs:["yard","mods","fuse"]},
+  {id:"ship",  ru:"КОРАБЛЬ",   tabs:["yard","mods","fuse","instr"]},
   {id:"know",  ru:"НАУКА",     tabs:["lab"]},
   {id:"folk",  ru:"ЛЮДИ",      tabs:["crew","cantina"]},
   {id:"hold",  ru:"ВЛАДЕНИЯ",  tabs:["bases"]}
@@ -389,6 +389,62 @@ function renderTab(){
       "<br>бур ×"+s2.drill.toFixed(2)+" · прыжок "+s2.jump.toFixed(1)+" пк"+
       (s2.armed?"<br>урон "+s2.dmg.toFixed(1)+" · откат "+s2.cool:"")+"</s>"));
     $body.appendChild(r);
+  }
+  /* ── приборы (M127) ──
+     Прилавок, гнёзда и полка. Прибор — вещь: у него завод, возраст и характер,
+     и он не «улучшает характеристику», а лучше или хуже различает отклонение.
+     Поэтому в строке пишется не число, а то, что игрок реально почувствует. */
+  else if(tab==="instr"){
+    $body.appendChild(el("div","sec","ПЯТЬ ГНЁЗД ПАНЕЛИ · ПРИБОР РАЗЛИЧАЕТ ОТКЛОНЕНИЕ, А НЕ ДАЁТ ПРОЦЕНТ"));
+    for(const id of INSTR_KEYS){
+      const I=INSTR_BY_ID[id],u=instrUnit(id),T=instrTraits(u);
+      /* в строке описывается САМ прибор: профессия корпуса умножает все пять
+         одинаково, и в лавке ей не место (03f учитывается на панели) */
+      const q=T.res*(1-clamp(u.wear||0,0,1)*.45), fix=instrFixCost(id);
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+I.ru+"</b><s>"+T.ru+" · "+instrWearRu(u.wear||0)+
+        " · "+T.note+"</s><s>различает "+(q>=1.25?"тонко":q>=.95?"как положено":
+        q>=.75?"грубовато":"едва")+" · стрелка "+(T.jit>=1.6?"нервная":T.jit>=1?"живая":"спокойная")+
+        " · перо "+(T.pen>=1.2?"жирное":T.pen>=.95?"обычное":"волосом")+"</s>"));
+      if(fix>0){
+        const b=el("button","act sm gold",fix.toLocaleString("ru")+" кр");
+        b.title="выверить и почистить";
+        b.disabled=G.credits<fix;
+        b.onclick=()=>{if(instrFix(id))renderTab();};
+        r.appendChild(b);
+      }else r.appendChild(el("div","nm","<s>выверен</s>"));
+      $body.appendChild(r);
+    }
+    const offers=instrOffers();
+    $body.appendChild(el("div","sec","ПРИЛАВОК · ТОВАР МЕНЯЕТСЯ РАЗ В НЕСКОЛЬКО ЧАСОВ"));
+    if(!offers.length)$body.appendChild(el("div","row","<div class='nm'><s>сегодня пусто</s></div>"));
+    for(const off of offers){
+      const I=INSTR_BY_ID[off.id],T=instrTraits(off.u),price=instrPrice(off.u);
+      const cu=instrUnit(off.id),ct=instrTraits(cu);
+      const cur=ct.res*(1-clamp(cu.wear||0,0,1)*.45);
+      const would=T.res*(1-clamp(off.u.wear||0,0,1)*.45);
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+I.ru+" · "+T.ru+"</b><s>"+instrWearRu(off.u.wear||0)+
+        " · "+T.note+"</s><s>"+(would>cur*1.08?"различает лучше вашего":
+        would<cur*.92?"различает хуже вашего":"как ваш")+"</s>"));
+      const b=el("button","act gold",price.toLocaleString("ru")+" кр");
+      b.disabled=G.credits<price;
+      b.onclick=()=>{if(instrBuy(off))renderTab();};
+      r.appendChild(b);$body.appendChild(r);
+    }
+    const shelf=instrShelf();
+    if(shelf.length){
+      $body.appendChild(el("div","sec","ПОЛКА · СНЯТОЕ ХРАНИТСЯ ЗДЕСЬ, МЕСТ "+INSTR_SHELF_MAX));
+      shelf.forEach((it,k)=>{
+        const I=INSTR_BY_ID[it.id],T=instrTraits(it.u);
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b>"+I.ru+" · "+T.ru+"</b><s>"+
+          instrWearRu(it.u.wear||0)+" · снят с панели</s>"));
+        const b=el("button","act sm","ПОСТАВИТЬ");
+        b.onclick=()=>{instrFromShelf(k);renderTab();};
+        r.appendChild(b);$body.appendChild(r);
+      });
+    }
   }
   else if(tab==="lab"){
     /* наборы узлов идут первыми: это долгая цель, а наука — текущая работа */

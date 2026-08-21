@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 145 · символов верхнего уровня: 1574
+Файлов: 147 · символов верхнего уровня: 1596
 
 ## СИМВОЛЫ
 
@@ -23,7 +23,7 @@ $menu                        src/15-input.js:125
 $msg                         src/28-loop.js:32
 $msl                         src/28-loop.js:35
 $nav                         src/28-loop.js:34
-$opts                        src/26-ui-station.js:804
+$opts                        src/26-ui-station.js:860
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:31
 $sh                          src/28-loop.js:24
@@ -72,7 +72,7 @@ angWrap                      src/01-core.js:35
 applyCrewEvent               src/12b-crew-events.js:211
 applyPadMode                 src/15-input.js:6
 applyPadSize                 src/15-input.js:5
-applySave                    src/14-save.js:44
+applySave                    src/14-save.js:45
 applyVolumes                 src/09-audio.js:28
 apVel                        src/16-flight.js:73
 arrive                       src/16-flight.js:119
@@ -82,7 +82,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:187
 autoLandInputs               src/19-mode-landing.js:33
-autosave                     src/14-save.js:450
+autosave                     src/14-save.js:455
 b64dec                       src/14-save.js:11
 b64enc                       src/14-save.js:9
 bankTransform                src/03b-hull-paint.js:48
@@ -250,8 +250,8 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudPull                    src/14-save.js:472
-cloudPush                    src/14-save.js:464
+cloudPull                    src/14-save.js:477
+cloudPush                    src/14-save.js:469
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
 cockpitPlan                  src/25-cockpit.js:92
@@ -319,7 +319,7 @@ ctx                          src/08-state.js:3
 curTok                       src/09-audio.js:71
 CUT_RANGE                    src/24-mode-belt.js:171
 cvs                          src/08-state.js:2
-dbg                          src/28-loop.js:311
+dbg                          src/28-loop.js:312
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -486,7 +486,7 @@ exitBelt                     src/24-mode-belt.js:162
 exitCave                     src/22-mode-cave.js:40
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
-exportCode                   src/14-save.js:459
+exportCode                   src/14-save.js:464
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -614,7 +614,7 @@ groundShadow                 src/19-mode-landing.js:253
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:458
+hasSave                      src/14-save.js:463
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
@@ -715,17 +715,39 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:460
+importCode                   src/14-save.js:465
 initAudio                    src/09-audio.js:7
 INSTR                        src/25a-instr.js:19
 INSTR_BY_ID                  src/25a-instr.js:55
 INSTR_KEYS                   src/25a-instr.js:54
-instrMisclose                src/25a-instr.js:84
-instrPanel                   src/25a-instr.js:92
+INSTR_SHELF_MAX              src/05b-instr-kit.js:33
+INSTR_WEAR_RATE              src/05b-instr-kit.js:85
+INSTR_WORK_KEYS              src/05b-instr-kit.js:32
+INSTR_WORKS                  src/05b-instr-kit.js:18
+instrAgeTick                 src/05b-instr-kit.js:86
+instrBuy                     src/05b-instr-kit.js:143
+instrFix                     src/05b-instr-kit.js:153
+instrFixCost                 src/05b-instr-kit.js:104
+instrFromShelf               src/05b-instr-kit.js:162
+instrInstall                 src/05b-instr-kit.js:133
+instrJitter                  src/05b-instr-kit.js:74
+instrKit                     src/05b-instr-kit.js:40
+instrKitInit                 src/05b-instr-kit.js:35
+instrMisclose                src/25a-instr.js:86
+instrOffers                  src/05b-instr-kit.js:112
+instrPanel                   src/25a-instr.js:94
+instrPenWidth                src/05b-instr-kit.js:78
 instrPodDraw                 src/25c-instr-hud.js:19
 instrPodTick                 src/25c-instr-hud.js:64
+instrPrice                   src/05b-instr-kit.js:100
+instrQuality                 src/05b-instr-kit.js:66
 instrRead                    src/25a-instr.js:59
-instrTrack                   src/25a-instr.js:78
+instrShelf                   src/05b-instr-kit.js:44
+instrTrack                   src/25a-instr.js:80
+instrTraits                  src/05b-instr-kit.js:57
+instrUnit                    src/05b-instr-kit.js:48
+instrWearRu                  src/05b-instr-kit.js:94
+instrWorks                   src/05b-instr-kit.js:53
 invalidateKeyMap             src/15-input.js:41
 invalidateParts              src/05-parts.js:197
 ipctx                        src/25c-instr-hud.js:17
@@ -771,7 +793,7 @@ layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:115
 litRGB                       src/19c-light.js:46
-loadGame                     src/14-save.js:454
+loadGame                     src/14-save.js:459
 LOG_MAX                      src/11-log.js:3
 logAdd                       src/11-log.js:5
 logBtnLabel                  src/11-log.js:24
@@ -1224,7 +1246,7 @@ repShipMul                   src/12k-rep.js:69
 repWord                      src/12k-rep.js:31
 RES                          src/02-world.js:2
 RES_KEYS                     src/02-world.js:29
-resetArm                     src/26-ui-station.js:803
+resetArm                     src/26-ui-station.js:859
 resetWorld                   tests/90-harness.js:27
 resize                       src/08-state.js:6
 reticle                      src/17-mode-system.js:414
@@ -1275,7 +1297,7 @@ runTests                     tests/90-harness.js:71
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:4
-saveGame                     src/14-save.js:444
+saveGame                     src/14-save.js:449
 say                          src/08-state.js:133
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -1454,12 +1476,12 @@ TAPE_GAIN                    src/25b-tape.js:25
 TAPE_N                       src/25b-tape.js:22
 TAPE_PENS                    src/25b-tape.js:23
 tapeInit                     src/25b-tape.js:27
-tapePaper                    src/25b-tape.js:94
-tapeRate                     src/25b-tape.js:57
+tapePaper                    src/25b-tape.js:96
+tapeRate                     src/25b-tape.js:59
 tapeSample                   src/25b-tape.js:39
-tapeScroll                   src/25b-tape.js:79
-tapeStrip                    src/25b-tape.js:169
-tapeTick                     src/25b-tape.js:61
+tapeScroll                   src/25b-tape.js:81
+tapeStrip                    src/25b-tape.js:171
+tapeTick                     src/25b-tape.js:63
 targetPos                    src/16-flight.js:62
 TAU                          src/01-core.js:6
 TECH                         src/04-mods.js:11
@@ -1628,6 +1650,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/05a-nodes.js · 26 КБ
   · узлы: тысяча вещей, из которых собирают невозможное:1
   · узел в руках:231
+
+## src/05b-instr-kit.js · 9 КБ
+  · приборы — это товар:1
 
 ## src/05-parts.js · 17 КБ
   · части корабля:1
@@ -1912,12 +1937,12 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/25-cockpit.js · 34 КБ
   · кабина: процедурная, статика в offscreen:1
 
-## src/25d-instr-rack.js · 24 КБ
+## src/25d-instr-rack.js · 25 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
-## src/26-ui-station.js · 49 КБ
+## src/26-ui-station.js · 53 КБ
   · станция:1
-  · настройки:802
+  · настройки:858
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -1948,7 +1973,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · телеметрия:21
   · звук по кадрам:183
   · цикл:239
-  · dbg() — что держит корабль:302
+  · dbg() — что держит корабль:303
 
 ## tests/90-harness.js · 5 КБ
   · автотесты: каркас:1
@@ -2052,5 +2077,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91z-missile.js · 5 КБ
 
 ## tests/91zm-role.js · 4 КБ
+
+## tests/91zn-instr-kit.js · 4 КБ
 
 ## tests/99-run.js · 0 КБ

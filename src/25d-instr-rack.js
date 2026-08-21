@@ -334,7 +334,13 @@ function rackDraw(){
     const g=RACK_G[i], cx=RACK_PAD+cw*(i+.5), cy=RACK_PAD+rr+6;
     let v=g.read(R);
     if(g.id==="hold")g.hi=Math.max(1,stat().cargoMax);
-    const t=clamp((v-g.lo)/(g.hi-g.lo),0,1);
+    let t=clamp((v-g.lo)/(g.hi-g.lo),0,1);
+    /* дрожь: у нервной работы стрелка не стоит, у грубой стоит колом. Это
+       характер экземпляра (05b-instr-kit), а не показание — на число не влияет */
+    if(typeof instrJitter==="function"&&INSTR_BY_ID[g.id]){
+      const j=instrJitter(g.id)*.004;
+      t=clamp(t+Math.sin(G.t*.21+i*1.7)*j+Math.sin(G.t*.83+i)*j*.5,0,1);
+    }
     const a=A0+(A1-A0)*t;
     /* стрелка: янтарная, с противовесом за осью и металлической втулкой */
     ctx.save();
@@ -392,7 +398,8 @@ function rackDraw(){
     for(let i=0;i<TAPE_PENS;i++){
       const top=P.y+th*i+2, hh=th-4;
       ctx.strokeStyle=RACK_CH[i].col;
-      ctx.lineWidth=1.4;ctx.lineJoin="round";ctx.lineCap="round";
+      /* толщина линии — это перо: «Горн» пишет жирно, «Сирин» волосом (05b) */
+      ctx.lineWidth=1.4*((typeof instrPenWidth==="function")?instrPenWidth(INSTR_KEYS[i]):1);ctx.lineJoin="round";ctx.lineCap="round";
       ctx.beginPath();
       let lastY=0;
       for(let k=0;k<=cols;k++){

@@ -866,6 +866,30 @@ still be read as a ladder — the professions sit on top of it rather than repla
 talk is one flat table, not a function of who is aboard (that belongs with the hundred, M129–M131);
 and the postal runner so far only hears deeper, not farther — a rumour's range is unchanged.
 
+## M127 (0.78.0) — built. Instruments are merchandise
+
+Built as **`05b-instr-kit.js`** (six works, per-instance traits from a seed, wear, price, counter,
+socket/shelf) with a `ПРИБОРЫ` tab in `26-ui-station`, offered at trade/yard/science stations
+(`06-galaxy`), read by the panel (`25a`), the tape (`25b`) and the rack (`25d`), aged from
+`frame` (`28-loop`), persisted in `14-save`, suite **"Приборы как товар: завод, возраст,
+характер"** (`91zn-instr-kit.js`).
+
+**The rule this milestone exists to honour.** A bad instrument is never a percentage. It resolves
+the deviation worse — so with артельный курсограф a drift region only admits something near its
+core, while «Веха» shows it from the periphery. Character is visible, not stated: the needle's
+tremor and the pen's line width are read off the same instrument, so a rack full of «Сирин» looks
+nervous and one full of «Горн» looks stubborn.
+
+**What is derived and what is kept.** The counter is derived from station + a 45-minute clock, so
+walking out and back does not reroll it and nothing is stored. The installed kit and the
+four-place shelf are decisions, so they persist with a safe default: an old save simply has the
+standard shipyard set.
+
+**Still open:** instruments cannot be lost yet (the spec's "lost" — a pirate hit knocking a
+socket out is not wired); the recorder itself is not a purchasable unit, only the five needles;
+`26-ui-station` crossed 40 KB with this tab and is now shouting on every build; wear from the hull
+(`12s-wear`) and instrument age run on separate clocks that never speak to each other.
+
 What it is, in short. M106–M121 gave the arm one long story told in fragments; this pass gives it
 **many short ones**, and a body to fly them in. The unit is a **region**, not a planet: six to ten
 systems on one theme with a hidden gradient, a procedural edge and one hand-built core, so the

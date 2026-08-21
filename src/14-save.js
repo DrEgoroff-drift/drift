@@ -32,6 +32,7 @@ function snapshot(){
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
+    instrKit:G.instrKit,instrShelf:G.instrShelf,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
@@ -414,6 +415,10 @@ function applySave(s){
     }
   G.base=null;
   G.fuseGen=Math.max(0,s.fuseGen|0);
+  /* приборы (M127): решение игрока, поэтому персистятся. Старая запись их не
+     знает — тогда на корабле стоит казённый набор, как с верфи */
+  G.instrKit=(s.instrKit&&typeof s.instrKit==="object")?s.instrKit:null;
+  G.instrShelf=Array.isArray(s.instrShelf)?s.instrShelf.slice(0,8):[];
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];
