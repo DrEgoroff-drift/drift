@@ -9,6 +9,27 @@ could ever save.
 
 ---
 
+## 0.73.0 — "Five needles and a misclosure"
+
+**M122** (`06b-region.js` and `25a-instr.js` new, `25-cockpit.js`, stand `docs/mkinstr.ps1`, suite
+`91zj-instr.js`). The instrument set the thirteenth pass stands on. Not a detector: **work first,
+meaning as a by-product.**
+
+- **Five instruments**, each earning its place in ordinary flight: хронометр (deadlines and the
+  length of a local day), курсограф (plotting and drift), масс-детектор (cargo, rocks, bodies),
+  приёмник (the ether's noise floor), актинометр (light arriving). Each reads a real number off
+  the real world.
+- **The region** (`06b-region`) is the new unit: a square of sectors with a core inside it, and
+  **exactly one** instrument that lies there. The lie grows smoothly toward the core across
+  several systems and never in a jump, so after enough hours the panel reads as terrain.
+- **`невязка`** — one small number: how badly the ship's five ways of fixing its own time and
+  place disagree. Near zero in ordinary space.
+- **No beep, no message, no colour change, anywhere.** The player notices, or does not. The suite
+  spies on `say`, `tell`, `logAdd` and `sfx` across eighty sectors to keep it that way.
+- Nothing here is persisted: the region is a function of the sector, like the system itself.
+- The panel lives on the cockpit's ceiling block, where the player raises his eyes — not as an
+  overlay on the world.
+
 ## 0.72.0 — "Everything here is somebody's"
 
 **M121** (`12ua-flea.js` new, `06-galaxy.js`, `17-mode-system.js`, `26-ui-station.js`,

@@ -429,6 +429,10 @@ function drawCockpit(b,st){
 
   ctx.drawImage(C.tex,0,0,W,H);
 
+  /* приборная панель на потолочном блоке (M122, 25a-instr): пять шкал и
+     невязка. Ничего не объявляет — на неё просто смотрят */
+  if(typeof instrPanel==="function")instrPanel(P,FS);
+
   /* ── лампы на боковых стойках: моргают вразнобой ── */
   for(const s of [-1,1])for(const L of P.leds){
     const x=s<0?P.pw*.42:W-P.pw*.42;

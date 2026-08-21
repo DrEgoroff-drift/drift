@@ -745,6 +745,34 @@ provenance names a reachable place; buying the same estate lot twice is impossib
 moved there on 2026-08-15 because thirty milestones of far-future work were being carried in a file
 that is read every session; the pass itself stands, and it is the release (0.72.0 → **1.00.0**).
 
+## M122 (0.73.0) — built. The panel: five needles and a misclosure
+
+Built as **`06b-region.js`** (the region: core, its one needle, the misclosure field) and
+**`25a-instr.js`** (the five instruments and the panel), drawn from `drawCockpit`
+(`25-cockpit`), stand `docs/mkinstr.ps1` → `docs/shots/instr.png`, suites **"Стрелки: невязка —
+это склон, а не порог"** and **"…прибор показывает, а не сообщает"** (`91zj-instr.js`).
+
+**Where it landed against the spec.** Five instruments, each with a working base read off the real
+world (cargo and bodies for mass, danger and a station for the ether, star radius and distance for
+light), and the deviation goes to exactly one of them — the region's own needle. Nothing is
+persisted: the region is a function of the sector, like the system. No beep, no message, no colour
+change anywhere in the file, and the suite spies on `say`/`tell`/`logAdd`/`sfx` while sweeping
+eighty sectors to prove it.
+
+**Two faults found by the suite, both real.** The first pass put a region's core anywhere in the
+cell and gave every region the same slope width: at the border one region's slope was still at
+half height while the neighbour's was at zero, so the misclosure **jumped** by 0.5 between
+adjacent sectors — a threshold, which is exactly what the spec forbids. The slope width is now
+set by how far the core sits from its own region's edge, and steepness is proportional to it, so
+a narrow slope is also a shallow one; the exponent went to 1, because a curve steeper than linear
+makes the last sector before the core a cliff. The second: cores were being placed in empty
+sectors, a slope leading nowhere.
+
+**Still open:** the panel is drawn only in the belt cockpit — the system view has no ceiling block
+to hang it on, and M124 is where that is settled; instrument labels are barely legible on hulls
+with a low brow, and on the boxiest ones the panel does not fit at all; the misclosure figure sits
+on the tray's edge rather than in a window of its own.
+
 What it is, in short. M106–M121 gave the arm one long story told in fragments; this pass gives it
 **many short ones**, and a body to fly them in. The unit is a **region**, not a planet: six to ten
 systems on one theme with a hidden gradient, a procedural edge and one hand-built core, so the
