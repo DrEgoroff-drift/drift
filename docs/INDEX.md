@@ -416,7 +416,7 @@ drawHullMarks                src/03b-hull-paint.js:173
 drawLander                   src/19-mode-landing.js:390
 drawLandGear                 src/19-mode-landing.js:364
 drawLanding                  src/19-mode-landing.js:308
-drawLoreMarks                src/12q-lore.js:205
+drawLoreMarks                src/12q-lore.js:214
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
 drawMap                      src/18-mode-map.js:51
@@ -738,7 +738,7 @@ LORE_SALT                    src/12q-lore.js:70
 LORE_TAIL                    src/12q-lore.js:50
 LORE_WHO                     src/12q-lore.js:45
 LORE_WORDS                   src/12q-lore.js:56
-loreAddr                     src/12q-lore.js:116
+loreAddr                     src/12q-lore.js:125
 loreAtPlace                  src/12q-lore.js:109
 loreBtnTick                  src/27h-ui-lore.js:18
 loreChapter                  src/12q-lore.js:99
@@ -748,7 +748,7 @@ loreHas                      src/12q-lore.js:89
 loreList                     src/12q-lore.js:88
 loreMarks                    src/12q-lore.js:91
 loreRow                      src/27h-ui-lore.js:24
-loreTake                     src/12q-lore.js:134
+loreTake                     src/12q-lore.js:143
 loreVocab                    src/12q-lore.js:93
 loreWinOpen                  src/27h-ui-lore.js:17
 loyBar                       src/27c-ui-hq.js:17
@@ -1820,7 +1820,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91n-barge.js · 9 КБ
   · автотесты: баржи и редкости: настоящий маршрут, остовы, сто адресов:1
 
-## tests/91p-lore.js · 9 КБ
+## tests/91p-lore.js · 10 КБ
   · отчёт «Долгого Хода»: сто кусков:1
 
 ## tests/91q-planet.js · 4 КБ
