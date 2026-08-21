@@ -798,6 +798,26 @@ person, selling it, is M128's table and waits for it; five tracks on a 34-px str
 on a low brow, and on hulls where the panel does not fit the recorder does not either; the tape
 does not survive a save, so "forty hours ago" is really "this session".
 
+## M124 (0.75.0) — first step built. The instruments where the decisions are made
+
+Built as **`25c-instr-hud.js`** (the pod: five needles, the misclosure, a strip of tape), markup
+in `index.html`, glass in `style.css`, ticked from `hud()` (`28-loop`), suite **"Колодка:
+приборы под рукой в любом режиме"** (`91zk-tape.js`). `tapePaper` was lifted out of `tapeStrip`
+so pod and cockpit print one recorder, not two.
+
+**The fork, and how it was decided.** M124 as written removes the overlay HUD everywhere and
+hangs every fact on a physical surface — which in this game means either drawing the system view
+from inside a cockpit (a rewrite of `17-mode-system`, its input and every mobile pad) or stripping
+the interface the UI rules and their suites are built on. Asked; the answer was **a compact pod in
+the top row that carries what is needed, available in every mode, cockpit-specific dressing left
+to differ by place**. That is what was built: the pod shows everywhere except the belt, where the
+real ceiling block is, and disappears under 720 px.
+
+**Still open from the spec:** the table (map as paper, cargo as bills of lading, rumours as a
+weighted pile), the physical receiver tuned by hand, "pause is the engine off", and the removal
+of the overlay HUD itself. None of it is blocked by what was built — the pod is where a surface
+goes when there is no cockpit to hang it on.
+
 What it is, in short. M106–M121 gave the arm one long story told in fragments; this pass gives it
 **many short ones**, and a body to fly them in. The unit is a **region**, not a planet: six to ten
 systems on one theme with a hidden gradient, a procedural edge and one hand-built core, so the

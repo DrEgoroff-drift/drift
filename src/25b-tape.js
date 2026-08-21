@@ -86,83 +86,92 @@ addEventListener("keydown",e=>{
   else if(e.code==="Backslash"){tapeInit().back=0;e.preventDefault();}
 });
 /* ── бумага ──
+   Рисование вынесено из потолочного блока в отдельную функцию: та же бумага
+   висит и в кабине, и узкой полоской в приборной колодке (25c-instr-hud), а
+   двух самописцев в игре быть не может. Контекст передаётся, потому что в
+   колодке это свой маленький canvas. */
+function tapePaper(c,x0,y0,w,h){
+  const T=tapeInit();
+  if(T.n<2||w<24||h<8)return;
+  const x1=x0+w;
+  c.save();
+  /* бумага: слегка тёплая, с продольными краями и следом протяжки */
+  c.fillStyle="rgba(188,182,164,.62)";
+  c.fillRect(x0,y0,w,h);
+  c.fillStyle="rgba(0,0,0,.10)";
+  c.fillRect(x0,y0,w,1.2);c.fillRect(x0,y0+h-1.2,w,1.2);
+  /* слева бумага уходит в щель подачи: без этой тени полоса начинается ниоткуда */
+  const lw=Math.min(9,w*.1);
+  const lg=c.createLinearGradient(x0,0,x0+lw,0);
+  lg.addColorStop(0,"rgba(8,11,15,.45)");
+  lg.addColorStop(1,"rgba(8,11,15,0)");
+  c.fillStyle=lg;c.fillRect(x0,y0,lw,h);
+  /* поперечные деления: время, без единой цифры */
+  const cols=Math.min(T.n-1,Math.floor(w));
+  const sc=w/cols;
+  c.strokeStyle="rgba(60,66,60,.18)";c.lineWidth=1;
+  for(let g=0;g<=6;g++){
+    const gx=Math.round(x0+w*g/6)+.5;
+    c.beginPath();c.moveTo(gx,y0+1);c.lineTo(gx,y0+h-1);c.stroke();
+  }
+  /* пять перьев: каждое на своей дорожке, все одного цвета. Разные цвета
+     сделали бы дорожку легендой, а легенда — это толкование */
+  c.lineWidth=1;
+  const th=h/TAPE_PENS;
+  for(let i=0;i<TAPE_PENS;i++){
+    const top=y0+th*i+1.2, hh=th-2.4;
+    /* нуль дорожки: печатная линия на бумаге. На ней перо стоит там, где
+       ничего не менялось, — и это само по себе показание */
+    c.strokeStyle="rgba(60,66,60,.20)";
+    c.beginPath();
+    c.moveTo(x0,Math.round(top+hh*.5)+.5);c.lineTo(x1,Math.round(top+hh*.5)+.5);
+    c.stroke();
+    c.strokeStyle="rgba(38,44,40,.80)";
+    c.beginPath();
+    for(let k=0;k<=cols;k++){
+      /* столбцы идут слева направо: слева старое, справа то, что пишется */
+      const idx=(T.head-1-T.back-(cols-k)+TAPE_N*2)%TAPE_N;
+      const v=T.col[idx*TAPE_PENS+i]/255;
+      const x=x0+k*sc, yy=top+hh*(1-v);
+      if(k===0)c.moveTo(x,yy);else c.lineTo(x,yy);
+    }
+    c.stroke();
+  }
+  /* валик протяжки у правого края: без него бумага читается плитой, а не
+     полосой, которую тянут с рулона */
+  const rw=Math.min(7,w*.08);
+  const rg=c.createLinearGradient(x1-rw,0,x1,0);
+  rg.addColorStop(0,"rgba(20,26,32,0)");
+  rg.addColorStop(.55,"rgba(20,26,32,.30)");
+  rg.addColorStop(1,"rgba(150,176,190,.20)");
+  c.fillStyle=rg;c.fillRect(x1-rw,y0,rw,h);
+  c.strokeStyle="rgba(150,176,190,.24)";c.lineWidth=1;
+  c.beginPath();c.moveTo(x1-rw+.5,y0);c.lineTo(x1-rw+.5,y0+h);c.stroke();
+  /* перо: короткая чёрточка у правого края, дрожит на щелчке. Ничего не
+     подсвечивает — просто стоит там, где сейчас пишет */
+  if(!T.back){
+    const jitter=T.tick*1.6;
+    c.strokeStyle="rgba(24,28,26,.85)";c.lineWidth=1.2;
+    c.beginPath();
+    c.moveTo(x1-1.5+jitter,y0+1);c.lineTo(x1-1.5+jitter,y0+h-1);
+    c.stroke();
+  }else{
+    /* смотрим назад: бумага чуть в тени вытяжного окна, и всё */
+    c.fillStyle="rgba(10,14,18,.16)";c.fillRect(x0,y0,w,h);
+  }
+  c.restore();
+}
+/* ── бумага в кабине ──
    Лента лежит на том же потолочном блоке, что и панель, левее её. Бумага
    светлее металла — это единственное светлое пятно в рубке, и его видно
    боковым зрением, когда перо частит. */
 function tapeStrip(P,FS){
   const brow=P.brow;
   if(brow<26)return;
-  const T=tapeInit();
-  if(T.n<2)return;
   const pw=Math.min(P.BW*.52,420), px0=(W-pw)/2;
   /* левый край держится за стойку: свесившись за неё, лента вылезала бы на
      угол остекления, где потолочного блока уже нет */
-  const x0=Math.max(P.pw*.5,px0*.16), x1=px0-14, w=x1-x0;
+  const x0=Math.max(P.pw*.5,px0*.16), w=px0-14-x0;
   if(w<70)return;                          // на узком блоке ленты нет места
-  const h=clamp(brow-12,12,38), y0=5;
-  ctx.save();
-  /* бумага: слегка тёплая, с продольными краями и следом протяжки */
-  ctx.fillStyle="rgba(188,182,164,.62)";
-  ctx.fillRect(x0,y0,w,h);
-  ctx.fillStyle="rgba(0,0,0,.10)";
-  ctx.fillRect(x0,y0,w,1.2);ctx.fillRect(x0,y0+h-1.2,w,1.2);
-  /* слева бумага уходит в щель подачи: без этой тени полоса начинается ниоткуда */
-  const lg=ctx.createLinearGradient(x0,0,x0+Math.min(9,w*.1),0);
-  lg.addColorStop(0,"rgba(8,11,15,.45)");
-  lg.addColorStop(1,"rgba(8,11,15,0)");
-  ctx.fillStyle=lg;ctx.fillRect(x0,y0,Math.min(9,w*.1),h);
-  /* поперечные деления: время, без единой цифры */
-  const cols=Math.min(T.n-1,Math.floor(w));
-  const sc=w/cols;
-  ctx.strokeStyle="rgba(60,66,60,.18)";ctx.lineWidth=1;
-  for(let g=0;g<=6;g++){
-    const gx=Math.round(x0+w*g/6)+.5;
-    ctx.beginPath();ctx.moveTo(gx,y0+1);ctx.lineTo(gx,y0+h-1);ctx.stroke();
-  }
-  /* пять перьев: каждое на своей дорожке, все одного цвета. Разные цвета
-     сделали бы дорожку легендой, а легенда — это толкование */
-  ctx.lineWidth=1;
-  const th=h/TAPE_PENS;
-  for(let i=0;i<TAPE_PENS;i++){
-    const top=y0+th*i+1.2, hh=th-2.4;
-    /* нуль дорожки: печатная линия на бумаге. На ней перо стоит там, где
-       ничего не менялось, — и это само по себе показание */
-    ctx.strokeStyle="rgba(60,66,60,.20)";
-    ctx.beginPath();
-    ctx.moveTo(x0,Math.round(top+hh*.5)+.5);ctx.lineTo(x1,Math.round(top+hh*.5)+.5);
-    ctx.stroke();
-    ctx.strokeStyle="rgba(38,44,40,.80)";
-    ctx.beginPath();
-    for(let c=0;c<=cols;c++){
-      /* столбцы идут слева направо: слева старое, справа то, что пишется */
-      const idx=(T.head-1-T.back-(cols-c)+TAPE_N*2)%TAPE_N;
-      const v=T.col[idx*TAPE_PENS+i]/255;
-      const x=x0+c*sc, yy=top+hh*(1-v);
-      if(c===0)ctx.moveTo(x,yy);else ctx.lineTo(x,yy);
-    }
-    ctx.stroke();
-  }
-  /* валик протяжки у правого края: без него бумага читается плитой, а не
-     полосой, которую тянут с рулона */
-  const rw=Math.min(7,w*.08);
-  const rg=ctx.createLinearGradient(x1-rw,0,x1,0);
-  rg.addColorStop(0,"rgba(20,26,32,0)");
-  rg.addColorStop(.55,"rgba(20,26,32,.30)");
-  rg.addColorStop(1,"rgba(150,176,190,.20)");
-  ctx.fillStyle=rg;ctx.fillRect(x1-rw,y0,rw,h);
-  ctx.strokeStyle="rgba(150,176,190,.24)";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(x1-rw+.5,y0);ctx.lineTo(x1-rw+.5,y0+h);ctx.stroke();
-  /* перо: короткая чёрточка у правого края, дрожит на щелчке. Ничего не
-     подсвечивает — просто стоит там, где сейчас пишет */
-  if(!T.back){
-    const jitter=T.tick*1.6;
-    ctx.strokeStyle="rgba(24,28,26,.85)";ctx.lineWidth=1.2;
-    ctx.beginPath();
-    ctx.moveTo(x1-1.5+jitter,y0+1);ctx.lineTo(x1-1.5+jitter,y0+h-1);
-    ctx.stroke();
-  }else{
-    /* смотрим назад: бумага чуть в тени вытяжного окна, и всё */
-    ctx.fillStyle="rgba(10,14,18,.16)";ctx.fillRect(x0,y0,w,h);
-  }
-  ctx.restore();
+  tapePaper(ctx,x0,5,w,clamp(brow-12,12,38));
 }

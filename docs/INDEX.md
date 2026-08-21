@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 140 · символов верхнего уровня: 1544
+Файлов: 141 · символов верхнего уровня: 1550
 
 ## СИМВОЛЫ
 
@@ -18,6 +18,7 @@ $fb                          src/28-loop.js:23
 $fn                          src/28-loop.js:27
 $hq                          src/27c-ui-hq.js:4
 $hudp                        src/28-loop.js:46
+$ipod                        src/25c-instr-hud.js:16
 $menu                        src/15-input.js:125
 $msg                         src/28-loop.js:32
 $msl                         src/28-loop.js:35
@@ -79,7 +80,7 @@ ARTIFACTS                    src/12h-relic.js:48
 assignToBase                 src/12a-crew.js:136
 AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
-audioTick                    src/28-loop.js:185
+audioTick                    src/28-loop.js:187
 autoLandInputs               src/19-mode-landing.js:33
 autosave                     src/14-save.js:450
 b64dec                       src/14-save.js:11
@@ -318,7 +319,7 @@ ctx                          src/08-state.js:3
 curTok                       src/09-audio.js:71
 CUT_RANGE                    src/24-mode-belt.js:171
 cvs                          src/08-state.js:2
-dbg                          src/28-loop.js:305
+dbg                          src/28-loop.js:307
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -552,7 +553,7 @@ fleetUniqueName              src/04b-fleet.js:100
 flightCam                    src/16a-space.js:103
 FOE_KINDS                    src/24a-mode-raid.js:17
 foundBase                    src/21a-mode-base.js:50
-frame                        src/28-loop.js:240
+frame                        src/28-loop.js:242
 freeVoice                    src/09-audio.js:79
 fuelPriceHere                src/12k-rep.js:63
 FUR_TONES                    src/20-life.js:465
@@ -719,10 +720,14 @@ INSTR_BY_ID                  src/25a-instr.js:55
 INSTR_KEYS                   src/25a-instr.js:54
 instrMisclose                src/25a-instr.js:80
 instrPanel                   src/25a-instr.js:88
+instrPodDraw                 src/25c-instr-hud.js:19
+instrPodTick                 src/25c-instr-hud.js:64
 instrRead                    src/25a-instr.js:59
 instrTrack                   src/25a-instr.js:74
 invalidateKeyMap             src/15-input.js:41
 invalidateParts              src/05-parts.js:197
+ipctx                        src/25c-instr-hud.js:17
+IPOD_S                       src/25c-instr-hud.js:18
 isFitted                     src/05-parts.js:243
 jobAccept                    src/12e-mgr-jobs.js:242
 jobChoose                    src/12e-mgr-jobs.js:68
@@ -756,8 +761,8 @@ landerInk                    tests/91j-art.js:154
 landerLen                    src/19-mode-landing.js:349
 landingDust                  src/19-mode-landing.js:564
 landOnTestPlanet             tests/90-harness.js:61
-last                         src/28-loop.js:238
-lastDroneTick                src/28-loop.js:239
+last                         src/28-loop.js:240
+lastDroneTick                src/28-loop.js:241
 launch                       src/21-mode-surface.js:384
 launchHold                   src/21-mode-surface.js:329
 layerLevel                   src/10-music.js:276
@@ -1348,7 +1353,7 @@ slotsOf                      src/05-parts.js:114
 SMELT                        src/02-world.js:58
 snapshot                     src/14-save.js:24
 SND                          src/09-audio.js:4
-sndWalk                      src/28-loop.js:184
+sndWalk                      src/28-loop.js:186
 spareModLv                   src/12a-crew.js:221
 spawnAllies                  src/12a-crew.js:483
 spawnBarges                  src/12l-barge.js:102
@@ -1426,10 +1431,11 @@ TAPE_GAIN                    src/25b-tape.js:25
 TAPE_N                       src/25b-tape.js:22
 TAPE_PENS                    src/25b-tape.js:23
 tapeInit                     src/25b-tape.js:27
+tapePaper                    src/25b-tape.js:93
 tapeRate                     src/25b-tape.js:56
 tapeSample                   src/25b-tape.js:39
 tapeScroll                   src/25b-tape.js:78
-tapeStrip                    src/25b-tape.js:92
+tapeStrip                    src/25b-tape.js:168
 tapeTick                     src/25b-tape.js:60
 targetPos                    src/16-flight.js:62
 TAU                          src/01-core.js:6
@@ -1870,8 +1876,11 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/25a-instr.js · 8 КБ
   · приборы: пять стрелок и невязка:1
 
-## src/25b-tape.js · 10 КБ
+## src/25b-tape.js · 11 КБ
   · самописец: бумага, пять перьев, память наблюдения:1
+
+## src/25c-instr-hud.js · 4 КБ
+  · приборная колодка: те же приборы, но всегда под рукой:1
 
 ## src/25-cockpit.js · 34 КБ
   · кабина: процедурная, статика в offscreen:1
@@ -1907,9 +1916,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/28-loop.js · 25 КБ
   · авария:1
   · телеметрия:21
-  · звук по кадрам:181
-  · цикл:237
-  · dbg() — что держит корабль:296
+  · звук по кадрам:183
+  · цикл:239
+  · dbg() — что держит корабль:298
 
 ## tests/90-harness.js · 5 КБ
   · автотесты: каркас:1
@@ -2006,7 +2015,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## tests/91zj-instr.js · 6 КБ
 
-## tests/91zk-tape.js · 4 КБ
+## tests/91zk-tape.js · 7 КБ
 
 ## tests/91z-missile.js · 5 КБ
 

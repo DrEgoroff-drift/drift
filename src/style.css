@@ -85,6 +85,15 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 .v.crit u,.v.crit b{color:var(--alarm);animation:pulse 1.1s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.35}}
 
+/* приборная колодка (25c): те же стрелки, что на потолочном блоке кабины, но
+   в строке приборов — решения принимаются в системном виде, а не в поясе.
+   Стекло и рамка те же, что у витальных: это один ряд, а не пристройка. */
+.ipod{width:208px;height:70px;background:var(--glass);border:1px solid var(--edge);
+  border-radius:var(--rad-p);backdrop-filter:blur(14px) saturate(1.15);
+  box-shadow:var(--lift),var(--glass-hi)}
+/* на узком экране колодка уходит: «где мы» и кнопки под пальцем важнее */
+@media (max-width:720px){.ipod{display:none !important}}
+
 .locus{margin-left:auto;text-align:right;background:var(--glass);border:1px solid var(--edge);
   border-radius:var(--rad-p);padding:9px 12px;backdrop-filter:blur(14px) saturate(1.15);max-width:46vw;
   box-shadow:var(--lift),var(--glass-hi)}
