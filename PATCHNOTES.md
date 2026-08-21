@@ -9,6 +9,29 @@ could ever save.
 
 ---
 
+## 0.77.0 — "A hull is a profession, not a rung"
+
+**M126** (`03f-hull-role.js` new, `25a-instr.js`, `25b-tape.js`, `25d-instr-rack.js`,
+`12p-news.js`, `12l-barge.js`, `28-loop.js`, suite `91zm-role.js`). The hull ladder used to be
+cheap→expensive: the next one was simply bigger in every number. A **profession** changes which
+stories are open to you, not which numbers are larger.
+
+- **Изыскатель** (Стриж, Игла) — first-class instruments, poor lift: the misclosure shows on his
+  needles long before anyone else's. **Рудовоз** (Вьюк, Мамонт) — hold, mass, blindness.
+  **Почтовик** (Клинок) — the best receiver in the game: the ether keeps almost twice as many
+  rumours. **Буксир** (Обод) — takes other people's trouble on a line, and a rescued barge pays
+  him accordingly. **Вахтовка** (Скат) — the only hull where passengers talk in flight.
+  **Сторож** (Топор) — survives what kills the others.
+- **The world does not change with the hull, the instrument does.** The misclosure of a sector is
+  the same for everybody; what differs is how early it becomes visible on a scale, and how boldly
+  the pens write it. A bad instrument is not "−5%", it simply reads coarser.
+- Unique and fused hulls have no assigned profession, so it is derived from what the shop
+  actually built: a warehouse is an ore carrier, fast-and-empty is a postal runner.
+- The rack now carries a nameplate: whose equipment this is, and why it reads better or worse
+  than the neighbour's.
+
+---
+
 ## 0.76.0 — "Eight needles, five pens, one sheet of paper"
 
 **M125** (`25d-instr-rack.js` new, `25c-instr-hud.js`, `28-loop.js`, stand `docs/mkrack.ps1` →

@@ -716,7 +716,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.76.0";
+const VER="0.77.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -2965,6 +2965,96 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.beginPath();ctx.moveTo(h.tail*.35,-h.bw-lvl*.7);ctx.lineTo(h.tail*.35,h.bw+lvl*.7);ctx.stroke();
   }
   if(banked)ctx.restore();
+}
+
+/* ══════════════ корпус — это профессия, а не ступенька ══════════════
+   M126. Раньше корпуса выстраивались в лестницу «дешёвый → дорогой»: следующий
+   был просто больше по всем числам, и выбор сводился к «накопил — купил». Роль
+   меняет не числа, а ДОСТУПНЫЕ ИСТОРИИ: на почтовике слышно галактику, на
+   изыскателе невязка видна раньше всех, на рудовозе не видно почти ничего,
+   вахтовка — единственный корпус, где пассажиры разговаривают в полёте, а
+   буксир вытаскивает чужую беду и тем живёт.
+
+   ЧЕСТНОСТЬ ПОКАЗАНИЙ. Роль не врёт про мир: невязка (`06b-region`) остаётся
+   тем, что она есть, — меняется РАЗРЕШЕНИЕ прибора, то есть насколько рано
+   отклонение вообще становится видно на шкале. Плохой прибор не «-5% к
+   чему-то», он просто показывает грубее.
+
+   Роль выводится из корпуса и не сохраняется: это свойство железа, а не
+   решение игрока (сквозное правило — не персистить выводимое). */
+
+const HULL_ROLE={
+  survey:{id:"survey",ru:"ИЗЫСКАТЕЛЬ",note:"приборы первого класса, подъём слабый",
+          instr:1.4,  ether:1,   tow:1,   pax:false},
+  post:  {id:"post",  ru:"ПОЧТОВИК",  note:"лучший приёмник в игре, трюм крошечный",
+          instr:1.05, ether:1.7, tow:1,   pax:false},
+  ore:   {id:"ore",   ru:"РУДОВОЗ",   note:"трюм, масса, слепота",
+          instr:.6,   ether:.8,  tow:1.1, pax:false},
+  tug:   {id:"tug",   ru:"БУКСИР",    note:"вытаскивает чужую беду, и его знают на трассе",
+          instr:.85,  ether:1,   tow:1.8, pax:false},
+  shift: {id:"shift", ru:"ВАХТОВКА",  note:"возит людей, и они говорят в полёте",
+          instr:.9,   ether:1.1, tow:1.2, pax:true},
+  guard: {id:"guard", ru:"СТОРОЖ",    note:"переживает то, что убивает остальных",
+          instr:.8,   ether:.9,  tow:1.1, pax:false}
+};
+/* сборные корпуса разложены по профессиям поимённо: это решение о том, какие
+   истории на них доступны, а не следствие их чисел */
+const ROLE_BY_HULL={strizh:"survey",igla:"survey",klinok:"post",vyuk:"ore",
+                    mamont:"ore",obod:"tug",topor:"guard",skat:"shift"};
+/* уникальные и сплавленные корпуса профессии не имеют — её приходится вывести
+   из того, что мастер собрал: что у корпуса выражено сильнее, тем он и живёт */
+function roleFromStats(S){
+  if(!S)return HULL_ROLE.survey;
+  if(S.cargo>=170)return HULL_ROLE.ore;
+  if(S.thr>=1.35&&S.cargo<=60)return HULL_ROLE.post;
+  if(S.hull>=200)return HULL_ROLE.guard;
+  if(S.cargo>=90&&S.hull>=140)return HULL_ROLE.tug;
+  if(S.cargo>=70)return HULL_ROLE.shift;
+  return HULL_ROLE.survey;
+}
+function roleOf(id){
+  const key=ROLE_BY_HULL[id];
+  if(key)return HULL_ROLE[key];
+  return roleFromStats(typeof shipData==="function"?shipData(id):null);
+}
+function hullRole(){return roleOf(G.shipId);}
+/* ── эфир: сколько галактики слышно ──
+   Почтовик помнит вдвое больше слухов, рудовоз — заметно меньше. Это тот же
+   список, что читают в кантине (12p-news), только его глубина зависит от того,
+   на чём вы прилетели. */
+function newsKeepLimit(){
+  return Math.round(NEWS_KEEP*hullRole().ether);
+}
+/* ── пассажиры: единственный корпус, где в полёте говорят ──
+   Вахтовка возит людей, и люди не молчат. Реплики берутся от того, куда и с кем
+   летим, повторяются редко и никогда не требуют ответа: это не диалог, а голоса
+   за спиной. */
+const SHIFT_TALK=[
+  "— Слышь, а там правда день по сорок часов?",
+  "— У меня брат в этом секторе третий год. Не пишет.",
+  "— Ты в первый раз летишь? Сразу видно.",
+  "— Скажите, а на станции душ есть? Просто спрашиваю.",
+  "— Не садись у переборки, там тянет.",
+  "— Мы же вернёмся, да? Ну, когда-нибудь.",
+  "— Он говорил: две смены и домой. Пятая пошла.",
+  "— Тише вы, капитан слушает приборы."
+];
+function shiftTalkTick(dt){
+  const R=hullRole();
+  if(!R.pax||!(G.cargo.folk|0))return;
+  if(G.mode!=="system"&&G.mode!=="belt")return;
+  G.shiftT=(G.shiftT||0)-dt;
+  if(G.shiftT>0)return;
+  /* пауза длинная и случайная: голос за спиной ценен тем, что редок */
+  G.shiftT=1800+Math.random()*2400;
+  const r=rng(hashi(G.sx,G.sy,(G.t|0)));
+  logAdd("talk",pick(SHIFT_TALK,r));
+}
+/* ── буксир: чужая беда — его работа ──
+   Доля груза в благодарность за спасённую баржу считается с оглядкой на то,
+   кто пришёл: буксир умеет взять её на трос, а не просто отогнать пиратов. */
+function towShare(base){
+  return Math.max(1,Math.round(base*hullRole().tow));
 }
 
 /* ══════════════ корабли: процедурные корпуса ══════════════ */
@@ -9385,7 +9475,9 @@ function bargeRescued(b){
   if(b.done)return;b.done=1;b.distress=0;b.rescued=1;
   const dst=bargeSysAt(b.to)||bargeSysAt(b.from);
   if(dst&&typeof repAdd==="function")repAdd(2,dst);
-  const share=3+Math.floor(Math.random()*5);
+  /* буксир берёт баржу на трос, а не просто отгоняет пиратов (03f-hull-role) */
+  const share=(typeof towShare==="function")?towShare(3+Math.floor(Math.random()*5))
+                                            :3+Math.floor(Math.random()*5);
   const got=addRes(b.good,share);
   if(b.escort)bargeEscortEnd(b,true);
   if(b.paxSeed)bargePaxDeliver(b);
@@ -10507,7 +10599,9 @@ function newsTick(){
     newsAll().push({id:K.id,ru:out.ru,sx:out.sx,sy:out.sy,t:now});
     made++;
   }
-  while(newsAll().length>NEWS_KEEP)G.news.shift();
+  /* глубина памяти эфира зависит от приёмника, то есть от корпуса (03f) */
+  const keep=(typeof newsKeepLimit==="function")?newsKeepLimit():NEWS_KEEP;
+  while(newsAll().length>keep)G.news.shift();
   if(made&&typeof saveGame==="function")saveGame(true);
   return made;
 }
@@ -28362,7 +28456,11 @@ function instrRead(sx,sy){
   const R=regionAt(x,y), m=misclose(x,y);
   return INSTR.map(I=>{
     const base=I.base();
-    const dev=I.id===R.needle?m:0;
+    /* разрешение прибора зависит от корпуса (03f-hull-role): на изыскателе
+       отклонение видно раньше, на рудовозе почти не видно. Сам мир при этом
+       не меняется — меняется прибор */
+    const q=(typeof hullRole==="function")?hullRole().instr:1;
+    const dev=I.id===R.needle?m*q:0;
     /* отклонение — доля от собственного показания прибора: у хронометра это
        ход, у актинометра ватты. Одно число на всех сделало бы шкалы игрушечными */
     const val=I.id==="chrono"?base+dev*.22:base*(1+dev*.85);
@@ -28485,7 +28583,8 @@ function tapeSample(){
   if(!T.zero){T.zero=[];for(let i=0;i<TAPE_PENS;i++)T.zero[i]=instrTrack(R[i]);}
   for(let i=0;i<TAPE_PENS;i++){
     const v=instrTrack(R[i]), z=T.zero[i];
-    T.col[o+i]=Math.round(clamp(.5+(v-z)*TAPE_GAIN,0,1)*255);
+    const gain=TAPE_GAIN*((typeof hullRole==="function")?hullRole().instr:1);
+    T.col[o+i]=Math.round(clamp(.5+(v-z)*gain,0,1)*255);
     T.zero[i]=z+(v-z)*TAPE_ADAPT;
   }
   T.head=(T.head+1)%TAPE_N;
@@ -29715,6 +29814,18 @@ function rackDraw(){
     ctx.restore();
   }
   /* ── правый угол: невязка цифрами и лампа питания ── */
+  /* шильдик слева: чья это стойка. Профессия корпуса (03f-hull-role) и есть
+     объяснение, почему приборы читают лучше или хуже соседских */
+  const RL=(typeof hullRole==="function")?hullRole():null;
+  if(RL){
+    ctx.textAlign="left";ctx.textBaseline="alphabetic";
+    ctx.fillStyle="rgba(214,196,150,.72)";
+    ctx.font="600 11px ui-monospace,monospace";
+    ctx.fillText(RL.ru,RACK_PAD,g0.gh+4);
+    ctx.fillStyle="rgba(150,162,166,.5)";
+    ctx.font="9px ui-monospace,monospace";
+    ctx.fillText(RL.note,RACK_PAD,g0.gh+17);
+  }
   ctx.textAlign="right";ctx.textBaseline="alphabetic";
   ctx.fillStyle="rgba(196,206,210,.55)";
   ctx.font="9px ui-monospace,monospace";
@@ -34184,6 +34295,7 @@ function frame(now){
     else if(G.mode==="base"&&G.base)updateBase(dt);
     else if(G.mode==="raid"&&G.raid)updateRaid(dt);
     if(typeof tapeTick==="function")tapeTick(dt);
+    if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */

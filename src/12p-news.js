@@ -166,7 +166,9 @@ function newsTick(){
     newsAll().push({id:K.id,ru:out.ru,sx:out.sx,sy:out.sy,t:now});
     made++;
   }
-  while(newsAll().length>NEWS_KEEP)G.news.shift();
+  /* глубина памяти эфира зависит от приёмника, то есть от корпуса (03f) */
+  const keep=(typeof newsKeepLimit==="function")?newsKeepLimit():NEWS_KEEP;
+  while(newsAll().length>keep)G.news.shift();
   if(made&&typeof saveGame==="function")saveGame(true);
   return made;
 }
