@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 125 · символов верхнего уровня: 1432
+Файлов: 127 · символов верхнего уровня: 1443
 
 ## СИМВОЛЫ
 
@@ -451,8 +451,8 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:84
-drawSurface                  src/21-mode-surface.js:409
-drawSurfaceHud               src/21-mode-surface.js:363
+drawSurface                  src/21-mode-surface.js:420
+drawSurfaceHud               src/21-mode-surface.js:374
 drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:65
 drawSystem                   src/17-mode-system.js:272
@@ -478,7 +478,7 @@ enterRaid                    src/24a-mode-raid.js:134
 enterSurface                 src/21-mode-surface.js:2
 env                          src/09-audio.js:47
 eq                           tests/90-harness.js:23
-evacuate                     src/21-mode-surface.js:288
+evacuate                     src/21-mode-surface.js:299
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:77
 exitBelt                     src/24-mode-belt.js:162
@@ -715,8 +715,8 @@ landingDust                  src/19-mode-landing.js:564
 landOnTestPlanet             tests/90-harness.js:61
 last                         src/28-loop.js:238
 lastDroneTick                src/28-loop.js:239
-launch                       src/21-mode-surface.js:328
-launchHold                   src/21-mode-surface.js:273
+launch                       src/21-mode-surface.js:339
+launchHold                   src/21-mode-surface.js:284
 layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:115
@@ -983,6 +983,17 @@ partSeq                      src/05-parts.js:226
 parWin                       src/12y-parrot-face.js:48
 PAX_KEYS                     src/02-world.js:35
 payCost                      src/21a-mode-base.js:49
+PEEP_LIT                     src/20c-peep.js:28
+PEEP_LOAD                    src/20c-peep.js:27
+PEEP_PASS                    src/20c-peep.js:25
+PEEP_R                       src/20c-peep.js:26
+peepDrawMat                  src/20c-peep.js:87
+peepFigure                   src/20c-peep.js:153
+peepGhosts                   src/20c-peep.js:202
+peepHere                     src/20c-peep.js:33
+peepMake                     src/20c-peep.js:51
+peepScene                    src/20c-peep.js:41
+peepUpdate                   src/20c-peep.js:66
 pick                         src/01-core.js:17
 pickKindByBias               src/20-life.js:118
 pickStType                   src/06-galaxy.js:25
@@ -1325,7 +1336,7 @@ suite                        tests/90-harness.js:12
 suitFailure                  src/23-mode-dig.js:104
 suitHit                      src/23-mode-dig.js:97
 SUN_DIR                      src/19c-light.js:11
-surfaceHint                  src/21-mode-surface.js:348
+surfaceHint                  src/21-mode-surface.js:359
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -1359,7 +1370,7 @@ TEST                         tests/90-harness.js:10
 TEST_SUITES                  tests/90-harness.js:92
 tfbm                         src/18a-material.js:23
 tickDrones                   src/12-economy.js:80
-tickLaunchHold               src/21-mode-surface.js:274
+tickLaunchHold               src/21-mode-surface.js:285
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
@@ -1370,7 +1381,7 @@ toggleLog                    src/11-log.js:89
 toggleLoreBoard              src/27h-ui-lore.js:83
 toggleMenu                   src/15-input.js:126
 toggleParrotWin              src/12y-parrot-face.js:601
-totalLoss                    src/21-mode-surface.js:305
+totalLoss                    src/21-mode-surface.js:316
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03b-hull-paint.js:1
 TRADE_KEYS                   src/02-world.js:40
@@ -1399,7 +1410,7 @@ updateDig                    src/23-mode-dig.js:113
 updateLanding                src/19-mode-landing.js:45
 updateRaid                   src/24a-mode-raid.js:213
 updateScoop                  src/19a-mode-scoop.js:26
-updateSurface                src/21-mode-surface.js:75
+updateSurface                src/21-mode-surface.js:85
 updateSystem                 src/17-mode-system.js:2
 useBeacon                    src/23-mode-dig.js:72
 VER                          src/01-core.js:4
@@ -1680,6 +1691,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · осмотр достопримечательности:1
   · память памятника:92
 
+## src/20c-peep.js · 16 КБ
+  · подглядка: луг, который помнит свет:1
+
 ## src/20-life.js · 40 КБ
   · астронавт:1
   · флора:88
@@ -1711,9 +1725,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21-mode-surface.js · 31 КБ
+## src/21-mode-surface.js · 32 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:344
+  · навигатор и подсказки сверху:355
 
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
@@ -1857,6 +1871,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91zd-survey.js · 3 КБ
 
 ## tests/91ze-parrot.js · 5 КБ
+
+## tests/91zf-peep.js · 5 КБ
 
 ## tests/91z-missile.js · 5 КБ
 

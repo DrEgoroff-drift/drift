@@ -9,6 +9,33 @@ could ever save.
 
 ---
 
+## 0.68.0 — "The meadow that remembers light"
+
+**M118** (`20c-peep.js` new, `21-mode-surface.js`, `12q-lore.js`, stand `docs/mkpeep.ps1`).
+The one place where the expedition is **seen** instead of read about — and the payoff that
+makes the sky's calendar (M107) matter at last.
+
+- **A mat that holds light.** Roughly one solid world in nine that has a moon grows подглядка:
+  flat overlapping plates in three tiers with tufted stalks, labelled where you stand on it and
+  otherwise indistinguishable from ground cover.
+- **It replays only in the dark**, which on a planet means during an eclipse. Figures walk
+  across the mat in cold light — how many, which way, and what they carried. Nothing is
+  captioned, ever: the player reads it or he doesn't.
+- **The scene is fixed per world** (count, load, direction, and the beat where one of them stops
+  and turns back), so the same meadow shows the same crossing every time.
+- **Watching pays.** A full pass, stood through inside the mat, hands over a piece of the report
+  like any other witness. Walking away resets the watch — halves from two eclipses do not add up.
+- **Bug, and an old one:** a place key that was a string (`"sat:7"`) coerced to zero, so every
+  satellite in the galaxy pointed at the same fragment and went silent after the first. Strings
+  now fold into a number of their own; numeric keys are untouched.
+
+Faults found by eye on the stand and fixed: the mat drawn in one row read as a highlighted
+terrain contour rather than a growth; single stalks read as antennas (they grow in tufts now);
+the night glow hung over the meadow as a lens of fog (it lies flat along the ground); the ghosts
+stood a head taller and bulkier than the astronaut beside them; the stride was a pair of
+scissors; and the carried pole ran clean through the leading figure instead of ending in his
+hands.
+
 ## 0.67.0 — "The bird has a body"
 
 **M117** (`12y-parrot-face.js` new, `index.html`, `style.css`, `17b-finds.js`, `28-loop.js`,

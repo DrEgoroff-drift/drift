@@ -109,6 +109,8 @@ one at a time when a pass is due, and nothing here blocks a milestone.
 - **mine** — landings in the shaft barely read; a tub in a cell below the floor looks like a crate
   in a pit; a long shaft is still a long shaft (niches and a change of section beat texture).
 - **cantina** — the counter is the same length and shape in every hall.
+- **подглядка** (M118) — the walker's trail dissolves into the mat's glow; the mat is identical
+  on every world; an arm at rest merges into the torso; the crate rides near the chin.
 - **ships** — no faction language; it comes after stations by the queue above.
 - **clouds** — blobs of radial gradients in `drawSkyLayer` (19-mode-landing); wanted: a value-noise
   field scrolled with a soft threshold.
@@ -514,7 +516,7 @@ the kill), the list on the fragment board (`27h-ui-lore`), persistence in `14-sa
 **"the repeater: it says only what it heard"** (`91ze-parrot.js`).
 
 **One departure from the spec, deliberate:** the first bird comes out of a wrecked scout's effects
-rather than a bazaar lot, because the bazaar is M120 and the milestone should not wait for it. The
+rather than a bazaar lot, because the bazaar is M121 and the milestone should not wait for it. The
 role is unchanged — someone's property with a known fate, and the dead owner is named on the spot.
 
 - `heardAdd` is the only door, and it refuses a line without a kind and without a bird: a line
@@ -549,7 +551,7 @@ The single best fit in the whole pass, because it turns a fragment into an objec
 
 - **A fauna species** (`20-life`) that repeats sound it has heard: prices shouted at a dock, a
   bearing read aloud, a phrase in the expedition's pidgin. It is not caught in the wild first —
-  the first one is **bought at a bazaar (M120) out of a dead man's effects**, which is how the
+  the first one is **bought at a bazaar (M121) out of a dead man's effects**, which is how the
   player learns there was a dead man.
 - **It pays before it is understood.** What it repeats includes things with immediate cash value —
   a station's prices from before you got there, a bearing to a find. That is its rent.
@@ -565,7 +567,27 @@ Suite **"the repeater: it says only what it heard"** — every stored phrase tra
 the player was present for; a phrase is never invented; a decoded phrase matches the vocabulary
 owned at the moment of decoding, not at the moment of hearing.
 
-## M117 (0.67.0). Подглядка: the meadow that remembers light
+## M118 (0.68.0) — built. Подглядка: the meadow that remembers light
+
+Built as **`20c-peep.js`**, hooks in `21-mode-surface` (the mat is placed, cleared of other
+growth, updated and drawn in three layers), `12q-lore` (the witness pays with a fragment), stand
+`docs/mkpeep.ps1` → `docs/shots/peep.png`, suites **"подглядка: луг, который помнит свет"** and
+**"подглядка: платит за досмотренный проход"** (`91zf-peep.js`).
+
+**Where it landed against the spec.** All three points stand: the species is on about one solid
+world in nine that has a moon, it replays only while `celDark()` is up — that is, in an eclipse
+and nowhere else — and nothing it shows is captioned. What was added on top: watching a full
+pass through, standing inside the mat, hands over a piece of the report, because rule 3 of
+`12q-lore` says a witness pays and this is the second witness the pool was waiting for.
+
+**A numbering note.** The bird's body took M117 in the patch notes, so this entry moved from
+M117 to M118 and the three below it moved with it. The thirteenth pass in the archive shifted the
+same one step (M122–M151); its version tags there still read 0.71.0 → 1.00.0, one behind the
+numbers, and the release stays 1.00.0 whatever the count comes to.
+
+**Still open:** the trail behind a walker dissolves into the mat's own glow and barely reads;
+the mat looks the same on every world, with no leaning to the planet's palette; an arm at rest
+merges into the torso; and the carried crate rides high, near the chin.
 
 The one place where the expedition is **seen** rather than read about, and the payoff that makes
 the calendar (M107) matter.
@@ -579,7 +601,7 @@ the calendar (M107) matter.
 - What it shows is never captioned. A figure, a number of them, what they carried, which way they
   went. The player reads it or he doesn't.
 
-## M118 (0.68.0). Жестянка: machines still on shift
+## M119 (0.69.0). Жестянка: machines still on shift
 
 - A world type variant: mined out to nothing, atmosphere sour, and the automation from the previous
   owner still running with nobody to run it for. It transmits (M108's satellite family) on a loop.
@@ -591,7 +613,7 @@ the calendar (M107) matter.
   gives exact times and headings for events it cannot describe. Times feed the calendar; headings
   feed the map.
 
-## M119 (0.69.0). Грохотун: the one partner who does not work for money
+## M120 (0.70.0). Грохотун: the one partner who does not work for money
 
 A recurring figure — loud, many-limbed, delighted to see you, catastrophically indiscreet — who
 digs the expedition's sites for a living and knows what an obelisk **is** while knowing nothing
@@ -608,7 +630,7 @@ about who left it.
   you have been (M98). Sending him somewhere is a real decision, not a free errand.
 - He is also the tutor: the first fragment the player cannot use is explained by him, once.
 
-## M120 (0.70.0). Блошинец: a station type where everything is somebody's
+## M121 (0.71.0). Блошинец: a station type where everything is somebody's
 
 A seventh station type (`26-ui-station`), and the only one whose stock is **used goods**.
 
@@ -645,18 +667,18 @@ provenance names a reachable place; buying the same estate lot twice is impossib
 
 ---
 
-# QUEUE: the thirteenth pass — the galaxy as a book of stories (M121–M150)
+# QUEUE: the thirteenth pass — the galaxy as a book of stories (M122–M151)
 
-**Full text lives in [`docs/PLAN-archive.md`](docs/PLAN-archive.md)** — grep it for `M121`. It was
+**Full text lives in [`docs/PLAN-archive.md`](docs/PLAN-archive.md)** — grep it for `M122`. It was
 moved there on 2026-08-15 because thirty milestones of far-future work were being carried in a file
-that is read every session; the pass itself stands, and it is the release (0.71.0 → **1.00.0**).
+that is read every session; the pass itself stands, and it is the release (0.72.0 → **1.00.0**).
 
-What it is, in short. M106–M120 gave the arm one long story told in fragments; this pass gives it
+What it is, in short. M106–M121 gave the arm one long story told in fragments; this pass gives it
 **many short ones**, and a body to fly them in. The unit is a **region**, not a planet: six to ten
 systems on one theme with a hidden gradient, a procedural edge and one hand-built core, so the
-periphery points at the core without a marker or a quest log. The instruments come first (M121 the
-panel and its misclosure, M122 the paper recorder), then everything the player sees moves into the
-cockpit (M123–M126), speech becomes a queue of lines and putting things on the table (M127), and
+periphery points at the core without a marker or a quest log. The instruments come first (M122 the
+panel and its misclosure, M123 the paper recorder), then everything the player sees moves into the
+cockpit (M124–M127), speech becomes a queue of lines and putting things on the table (M128), and
 **the hundred** — a hundred small human stories on one template — is the load-bearing wall
-(M128–M130). Fifteen regions follow (M131–M145), then rumours, a returnee and the release.
+(M129–M131). Fifteen regions follow (M132–M146), then rumours, a returnee and the release.
 

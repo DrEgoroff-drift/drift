@@ -60,13 +60,23 @@ function enterSurface(){
     for(let i=arr.length-1;i>=0;i--)if(Math.abs(arr[i].x-caveMouth.x)<rad)arr.splice(i,1);
   };
   clearNear(deposits,70);clearNear(plants,50);clearNear(fauna,60);
+  /* подглядка (20c): луг лежит открытым. Куст или валун посреди мата закрывает
+     собой идущих, а показывают здесь именно их */
+  const peep=peepMake(tr,p);
+  if(peep){
+    const wipe=(arr,rad)=>{
+      for(let i=arr.length-1;i>=0;i--)if(Math.abs(arr[i].x-peep.x)<rad)arr.splice(i,1);
+    };
+    wipe(plants,peep.r*.85);wipe(fauna,peep.r*.6);
+    if(tr.deco)wipe(tr.deco,peep.r);
+  }
   /* и крупную форму: стена или друза перед устьем закрывала сам вход, к
      которому ведёт стрелка навигатора */
   if(tr.deco)clearNear(tr.deco,90);
   const offX=L.x+shipZoneR()+26;
   G.surf={p,tr,shipX:L.x,shipY:L.y,x:offX,y:groundAt(tr,offX)-10,t0:G.t,
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,
-    suit:100,warned:false,beacon:0,walkAmp:0,walkPhase:0,cave:caveMouth};
+    suit:100,warned:false,beacon:0,walkAmp:0,walkPhase:0,cave:caveMouth,peep};
   G.mode="surface";
   G.surfTipShown=0;
   logAdd("dim","Посадка на "+p.name+" · залежей: "+deposits.length);
@@ -86,6 +96,7 @@ function updateSurface(dt){
   S.x=clamp(S.x,30,tr.W-30);
   /* амплитуда шага плавно нарастает/спадает, а не переключается щелчком —
      фаза копится только пока реально идём, поэтому ноги не дёргаются на кочках */
+  peepUpdate(dt);                       /* луг помнит свет только пока темно (20c) */
   const walking=S.on&&(keys.left||keys.right||S.walkTarget!=null);
   S.walkAmp=clamp(S.walkAmp+(walking?1:-1)*.12*dt,0,1);
   if(walking)S.walkPhase+=dt*.22;
@@ -443,6 +454,9 @@ function drawSurface(){
      ногами, обязано быть видно с горизонта, иначе идти не за чем */
   if(settleCanLive(p))settleDraw(settleAt(G.sx,G.sy),tr,camx,camy,p);
   drawRocks(tr,camx,camy,p.T.pal);
+  /* подглядка стелется по грунту, поэтому ложится до кустов и до валунов
+     переднего плана — она часть земли, а не то, что на ней стоит (20c) */
+  peepDrawMat(camx,camy);
   /* тень по длине корпуса, а не по прежним 34 px: у нового посадочного силуэта
      она иначе выдаёт игрушку на палочках */
   groundShadow(S.shipX-camx,S.shipY-camy+12,landerLen(G.shipId)*.46,8);
@@ -481,6 +495,8 @@ function drawSurface(){
       ctx.fillText("ИЗУЧЕН",x,b.y-camy-b.r*2.6);
     }
   }
+  /* идущие — позади астронавта и поверх кустов: они на лугу, а не за ним (20c) */
+  peepGhosts(camx,camy);
   for(const d of S.deposits){
     if(d.left<=0)continue;
     const x=d.x-camx;if(x<-50||x>W+50)continue;
