@@ -49,7 +49,11 @@ let parWin=false,parRAF=0,parT0=0;
 /* состояние живёт между кадрами: пружины, а не «текущий кадр анимации» */
 const PAR={t:0,flap:0,flapV:0,crest:0,crestV:0,ruff:0,ruffV:0,lean:0,leanV:0,
   hop:0,hopV:0,blink:0,blinkAt:2,say:"",sayT:-9,peck:0,look:0,mad:0,beak:0,
-  preen:0,preenT:-9};
+  preen:0,preenT:-9,
+  /* степени свободы, которыми распоряжается повадка (12z): пока она идёт,
+     значения выставляются каждый кадр, а без неё сами оседают в ноль */
+  roll:0,tuck:0,step:0,turn:0,stretch:0,footUp:0,fan:0,yawn:0,shiver:0,
+  bow:0,hang:0,act:null,actT:0,actDur:0,actNext:1.5,st:null};
 
 /* ── перо ──
    Один примитив на всё: остроконечный лист с рёбрышком и лёгким загибом.
@@ -219,8 +223,12 @@ function parCoat(g,T){
   g.restore();
 }
 /* ── лапа ── чешуйчатая цевка и три пальца в обхват: птица стоит, а не висит */
-function parFoot(c,x,dir,grip){
-  c.save();c.translate(x,0);c.scale(dir,1);
+function parFoot(c,x,dir,grip,up){
+  /* Поджатая лапа — не спрятанная: птица подтягивает её к брюху и остаётся
+     стоять на второй. Прятать её насовсем нельзя, иначе на поджатии тело
+     теряет опору и повисает. */
+  const U=up||0;
+  c.save();c.translate(x-U*6,-U*26);c.scale(dir,1);c.rotate(-U*.5);
   c.lineCap="round";
   c.strokeStyle=PAR_C.footD;c.lineWidth=6.4;
   c.beginPath();c.moveTo(1,-44);c.quadraticCurveTo(0,-20,0,-4);c.stroke();
@@ -281,9 +289,23 @@ function parrotDraw(c,W,H){
   c.beginPath();c.moveTo(-90,-2.4);c.lineTo(90,-2.4);c.stroke();
 
   c.save();
-  c.translate(sway+PAR.lean*10,-lift);
-  c.rotate(PAR.lean*.05+Math.sin(T*.62+1)*.012);
-  parFoot(c,-15,-1,lift*.06);parFoot(c,15,1,lift*.06);
+
+  c.translate(sway+PAR.lean*10+PAR.step,-lift);
+  /* вис вниз головой: птица перехватывается лапами и разворачивается вокруг
+     самой жёрдочки. Единственная повадка, которая трогает общий поворот, —
+     потому и редкая: если её видно часто, она перестаёт быть трюком. */
+  if(PAR.hang>.001)c.rotate(PAR.hang*3.05);
+  c.rotate(PAR.lean*.05+PAR.bow*.20+Math.sin(T*.62+1)*.012);
+  /* лапы держат жёрдочку и НЕ разворачиваются вместе с телом */
+  c.save();c.rotate(-PAR.hang*3.05);
+  parFoot(c,-15,-1,lift*.06,0);
+  parFoot(c,15,1,lift*.06,PAR.footUp);
+  c.restore();
+  /* разворот боком: тело сжимается по ширине и проходит через ребро. Настоящий
+     поворот кругом стоил бы второго набора рисунков; сжатие даёт то же самое
+     за одну строку и читается верно, потому что хвост и клюв меняют сторону. */
+  const tc=Math.cos((PAR.turn||0)*Math.PI);
+  c.scale(tc<0?-Math.max(.14,-tc):Math.max(.14,tc),1);
 
   /* оперение — на своей канве: один свет кладётся на всё разом */
   const L=parLayer(W,H);
@@ -297,7 +319,7 @@ function parrotDraw(c,W,H){
   g.save();g.translate(-24,-98);g.rotate(Math.sin(T*.7)*.05+flap*.24);
   for(let i=0;i<7;i++){
     const k=i/6;
-    const a=1.82+k*.52;                        /* вниз-назад, узким веером */
+    const a=1.82+k*(.52+PAR.fan*.72);          /* вниз-назад, узким веером */
     const len=(152-k*54)*(1+flap*.06);
     /* каждое перо со своей фазой и своим запаздыванием — хвост качается
        волной от корня к концам, а не доской */
@@ -327,7 +349,10 @@ function parrotDraw(c,W,H){
   /* 3. КРЫЛО: три ряда на одном шарнире у плеча — машет плечо, а не перо.
      Ось у крыла своя, поэтому оно не сливается с хвостом в общую метёлку. */
   g.save();g.translate(-20,-150);
-  g.rotate(-flap*1.35+Math.sin(T*.9)*.03);
+  g.rotate(-flap*1.35-PAR.stretch*.62+Math.sin(T*.9)*.03);
+  /* потягивание: крыло не машет, а вытягивается — длина перьев растёт, взмаха
+     нет. Это разные движения, и путать их нельзя */
+  if(PAR.stretch>.001)g.scale(1+PAR.stretch*.34,1+PAR.stretch*.16);
   /* тёмная подложка крыла: без неё ряды тонут в спине и крыла не видно */
   g.fillStyle="rgba(10,26,58,.85)";
   g.beginPath();g.moveTo(4,-6);g.quadraticCurveTo(-16,34,-6,86);
@@ -351,7 +376,7 @@ function parrotDraw(c,W,H){
 
   /* воротничок: мелкое перо там, где голова садится на грудь. Стык двух
      оперений — самое заметное место сборки, и он должен быть заткан. */
-  const rf2=Math.abs(PAR.ruff);
+  const rf2=Math.abs(PAR.ruff)+PAR.tuck*.85;
   parRow(g,10,-150,16,13,-2.2,1.3,11,20+rf2*6,10,1.2,.10+rf2*.12,
     PAR_C.cream,PAR_C.blue,.92);
 
@@ -360,8 +385,11 @@ function parrotDraw(c,W,H){
      ныряет к плечу и возвращается. Без такого «дела» она просто качается. */
   g.save();
   const pr=PAR.preen;
-  g.translate(12-pr*16,-168+pr*26);
-  const hr=PAR.look*.12+Math.sin(T*.5)*.022+PAR.mad*.05+pr*1.05;
+  /* втягивание в плечи (`tuck`) — не сдвиг головы вниз, а посадка её на тело:
+     вместе с ней поднимается воротник, иначе видно голую шею. */
+  g.translate(12-pr*16-PAR.tuck*5,-168+pr*26+PAR.tuck*13);
+  const hr=PAR.look*.12+Math.sin(T*.5)*.022+PAR.mad*.05+pr*1.05
+    +PAR.roll*.62+PAR.bow*.5;
   g.rotate(hr);
 
   /* 4а. хохол: восемь перьев назад-вверх, у каждого своя фаза и бусина.
@@ -431,7 +459,7 @@ function parrotDraw(c,W,H){
   g.quadraticCurveTo(8,-11,15,-3);
   g.quadraticCurveTo(7,-6,-4,-6);g.closePath();g.fill();
   /* подклювье: короткая широкая чаша, отъезжает, когда птица говорит */
-  g.save();g.translate(0,PAR.beak*5);
+  g.save();g.translate(0,PAR.beak*5+PAR.yawn*11);g.rotate(PAR.yawn*.30);
   const lg2=g.createLinearGradient(0,4,0,15);
   lg2.addColorStop(0,PAR_C.beakD);lg2.addColorStop(1,"#a06a2e");
   g.fillStyle=lg2;
@@ -531,10 +559,21 @@ function parStep(dt){
   if(PAR.flapV>0)PAR.hopV+=PAR.flapV*.10*dt*60;
   if(PAR.blink>0)PAR.blink=Math.max(0,PAR.blink-dt*7);
   if(PAR.t>PAR.blinkAt){PAR.blink=1;PAR.blinkAt=PAR.t+1.6+Math.random()*4.2;}
-  /* сама по себе разминка: ничего статичного, но и не суетливо */
-  if(Math.random()<dt*.09){PAR.flapV+=7+Math.random()*5;PAR.crestV+=2;}
-  if(Math.random()<dt*.20){PAR.ruffV+=(Math.random()-.5)*7;}
-  if(Math.random()<dt*.14){PAR.look=(Math.random()-.5)*2;}
+
+  /* мелкая рябь: она идёт ВСЕГДА, поверх любой повадки, и это разные вещи.
+     Повадка — то, что птица делает; рябь — то, что с ней происходит. */
+  if(Math.random()<dt*.14){PAR.ruffV+=(Math.random()-.5)*5;}
+  if(Math.random()<dt*.10){PAR.look=(Math.random()-.5)*2;}
+  /* дрожь: частая мелкая тряска поверх воротника, живёт только по команде */
+  if(PAR.shiver>.001)PAR.ruff+=Math.sin(PAR.t*47)*PAR.shiver*.32;
+  /* степени свободы повадки сами оседают в ноль: пока повадка идёт, она
+     переписывает их каждый кадр, а кончилась — птица возвращается в покой,
+     и для этого не нужно ни одного кадра «выхода» */
+  const k=Math.pow(.90,dt*60);
+  PAR.roll*=k;PAR.tuck*=k;PAR.stretch*=k;PAR.footUp*=k;PAR.fan*=k;
+  PAR.yawn*=k;PAR.shiver*=k;PAR.bow*=k;PAR.hang*=k;
+  PAR.step*=Math.pow(.995,dt*60);
+  if(typeof parActs==="function")parActs(dt);
 }
 
 /* ══ что оно говорит ══
