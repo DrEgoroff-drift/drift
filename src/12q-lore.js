@@ -107,7 +107,16 @@ function loreChaptersRead(){let n=0;for(const c of LORE_CHAP)if(loreChapter(c.id
    Пул один на все сто (правило 3), поэтому у каждого куска бесконечно много
    ключей: недостижимых нет. */
 function loreAtPlace(key){
-  const h=hashi((key>>>0)||1,LORE_SALT,7);
+  /* Ключ места бывает и строкой («sat:7», «peep:…»): у строки нет числового
+     значения, и `key>>>0` давал ноль — все такие места схлопывались в одно.
+     Значит, все спутники отдавали один и тот же кусок и после него не платили
+     никогда. Строку сворачиваем в число сами. */
+  let k=key;
+  if(typeof k==="string"){
+    let a=0;for(let i=0;i<k.length;i++)a=(Math.imul(a,131)+k.charCodeAt(i))>>>0;
+    k=a;
+  }
+  const h=hashi((k>>>0)||1,LORE_SALT,7);
   return LORE[(h%100+100)%100];
 }
 /* ── адрес вне радиуса прыжка ──
