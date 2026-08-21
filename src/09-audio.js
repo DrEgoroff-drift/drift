@@ -141,6 +141,16 @@ const SFX={
     n.connect(lp);lp.connect(g);g.connect(SND.sfx);
     n.start(t);n.stop(t+.1);freeVoice(n);
   },
+  /* перо самописца (25b-tape): сухой щелчок по бумаге. Тише всего в рубке —
+     это механика прибора, а не сигнал, и заметен в нём только ритм */
+  pen(){
+    const c=SND.ctx,t=c.currentTime;
+    const n=noise(c),g=c.createGain(),bp=c.createBiquadFilter();
+    bp.type="bandpass";bp.frequency.value=2600;bp.Q.value=1.6;
+    env(g,t,.001,.02,.16);
+    n.connect(bp);bp.connect(g);g.connect(SND.sfx);
+    n.start(t);n.stop(t+.05);freeVoice(n);
+  },
   /* интерфейс: чистые тоны, короткие, без хвоста */
   ui(o){
     const c=SND.ctx,t=c.currentTime;

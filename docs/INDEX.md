@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 138 · символов верхнего уровня: 1532
+Файлов: 140 · символов верхнего уровня: 1544
 
 ## СИМВОЛЫ
 
@@ -318,7 +318,7 @@ ctx                          src/08-state.js:3
 curTok                       src/09-audio.js:71
 CUT_RANGE                    src/24-mode-belt.js:171
 cvs                          src/08-state.js:2
-dbg                          src/28-loop.js:304
+dbg                          src/28-loop.js:305
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -469,7 +469,7 @@ droneTarget                  src/12-economy.js:70
 earn                         src/12j-home.js:38
 el                           src/26-ui-station.js:101
 endPtr                       src/15-input.js:207
-engineLoop                   src/09-audio.js:209
+engineLoop                   src/09-audio.js:219
 enterBase                    src/21a-mode-base.js:65
 enterBelt                    src/24-mode-belt.js:88
 enterCave                    src/22-mode-cave.js:10
@@ -717,9 +717,10 @@ initAudio                    src/09-audio.js:7
 INSTR                        src/25a-instr.js:19
 INSTR_BY_ID                  src/25a-instr.js:55
 INSTR_KEYS                   src/25a-instr.js:54
-instrMisclose                src/25a-instr.js:74
-instrPanel                   src/25a-instr.js:82
+instrMisclose                src/25a-instr.js:80
+instrPanel                   src/25a-instr.js:88
 instrRead                    src/25a-instr.js:59
+instrTrack                   src/25a-instr.js:74
 invalidateKeyMap             src/15-input.js:41
 invalidateParts              src/05-parts.js:197
 isFitted                     src/05-parts.js:243
@@ -1311,7 +1312,7 @@ settleTick                   src/12t-settle.js:77
 settleWatch                  src/12t-settle.js:292
 settleWords                  src/12t-settle.js:162
 setZoom                      src/15-input.js:176
-sfx                          src/09-audio.js:201
+sfx                          src/09-audio.js:211
 SFX                          src/09-audio.js:85
 SH_DX                        src/03b-hull-paint.js:164
 shatter                      src/24-mode-belt.js:125
@@ -1384,7 +1385,7 @@ steps                        tests/90-harness.js:69
 stGet                        src/14-save.js:6
 stGroup                      src/26-ui-station.js:37
 stGroupOf                    src/26-ui-station.js:36
-stopEngine                   src/09-audio.js:233
+stopEngine                   src/09-audio.js:243
 STORAGE_OK                   src/14-save.js:5
 STORM_WORLDS                 src/21a-mode-base.js:233
 stPanels                     src/17-mode-system.js:505
@@ -1419,6 +1420,17 @@ tab                          src/26-ui-station.js:3
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
 tap                          src/15-input.js:237
+TAPE_ADAPT                   src/25b-tape.js:26
+TAPE_DT                      src/25b-tape.js:24
+TAPE_GAIN                    src/25b-tape.js:25
+TAPE_N                       src/25b-tape.js:22
+TAPE_PENS                    src/25b-tape.js:23
+tapeInit                     src/25b-tape.js:27
+tapeRate                     src/25b-tape.js:56
+tapeSample                   src/25b-tape.js:39
+tapeScroll                   src/25b-tape.js:78
+tapeStrip                    src/25b-tape.js:92
+tapeTick                     src/25b-tape.js:60
 targetPos                    src/16-flight.js:62
 TAU                          src/01-core.js:6
 TECH                         src/04-mods.js:11
@@ -1858,6 +1870,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/25a-instr.js · 8 КБ
   · приборы: пять стрелок и невязка:1
 
+## src/25b-tape.js · 10 КБ
+  · самописец: бумага, пять перьев, память наблюдения:1
+
 ## src/25-cockpit.js · 34 КБ
   · кабина: процедурная, статика в offscreen:1
 
@@ -1894,7 +1909,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · телеметрия:21
   · звук по кадрам:181
   · цикл:237
-  · dbg() — что держит корабль:295
+  · dbg() — что держит корабль:296
 
 ## tests/90-harness.js · 5 КБ
   · автотесты: каркас:1
@@ -1990,6 +2005,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91zi-flea.js · 5 КБ
 
 ## tests/91zj-instr.js · 6 КБ
+
+## tests/91zk-tape.js · 4 КБ
 
 ## tests/91z-missile.js · 5 КБ
 

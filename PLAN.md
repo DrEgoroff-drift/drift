@@ -773,6 +773,31 @@ to hang it on, and M124 is where that is settled; instrument labels are barely l
 with a low brow, and on the boxiest ones the panel does not fit at all; the misclosure figure sits
 on the tray's edge rather than in a window of its own.
 
+## M123 (0.74.0) — built. The recorder: paper, five pens, and the memory of observation
+
+Built as **`25b-tape.js`**, drawn from `drawCockpit` right after the panel, ticked from `frame`
+(`28-loop`), pen click added to `SFX` (`09-audio`), stand `docs/mktape.ps1` →
+`docs/shots/tape.png`, suite **"Самописец: перо считает время, а не объявляет тревогу"**
+(`91zk-tape.js`).
+
+**Where it landed against the spec.** A paper strip on the same ceiling block, left of the panel:
+five traces, graduations, no labels, no interpretation, scrollable back with `[` `]` and `\`. The
+tape writes in every mode; the pen is heard only in the cockpit. The ring holds about forty
+minutes of flight and nothing is persisted.
+
+**The fault the eye found, and the fix that is the design.** Written first as the absolute
+reading — the same value that moves the needle — the tape printed five straight lines: on a log
+scale the working numbers barely move, so a quiet county (M142) would have looked exactly like
+everywhere else. The pen now carries its **own slowly adapting zero** and writes the departure
+from it, which is how a real recorder's zero-and-range knobs work and what the stories actually
+need: a flat line means nothing happened, a climbing curve means the world is moving under the
+ship. `instrTrack` was lifted out of `instrPanel` so needle and pen cannot drift apart.
+
+**Still open:** the tape is not yet an object — tearing a strip off, putting it in front of a
+person, selling it, is M128's table and waits for it; five tracks on a 34-px strip are hairlines
+on a low brow, and on hulls where the panel does not fit the recorder does not either; the tape
+does not survive a save, so "forty hours ago" is really "this session".
+
 What it is, in short. M106–M121 gave the arm one long story told in fragments; this pass gives it
 **many short ones**, and a body to fly them in. The unit is a **region**, not a planet: six to ten
 systems on one theme with a hidden gradient, a procedural edge and one hand-built core, so the
