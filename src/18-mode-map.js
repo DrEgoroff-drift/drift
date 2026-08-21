@@ -340,6 +340,9 @@ function jump(cost){
   G.mode="system";
   spawnPirates();spawnAllies();
   sfx("jump");
+  /* Жестянка (12z) слышна с порога: она передаёт свою просьбу в пустоту и не
+     знает, что её некому исполнить. Работающая смена молчит */
+  if(typeof tinSignal==="function")tinSignal();
   saveGame(true);
   logAdd("dim","Прыжок в "+G.sys.name+" ("+G.sx+":"+G.sy+") · −"+cost+" топлива"+
     (G.pirates.length?" · чужих сигнатур: "+G.pirates.length:""));

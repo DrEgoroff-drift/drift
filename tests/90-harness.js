@@ -43,7 +43,7 @@ function resetWorld(){
   /* мир заново — значит и шахты нетронуты, и фронт пиратов пуст */
   G.mines={};G.occ={};G.occCalm={};G.occT=0;G.freed=0;G.quests=[];
   G.nodes={};G.crowns={};G.rareFound=[];G.dealsDone={};G.dealsWait=[];G.rep={};G.poiSeen={};
-  G.loreFound=[];G.loreMarks=[];G.settle={};
+  G.loreFound=[];G.loreMarks=[];G.settle={};G.tin={};
   /* боны (12u): курс — состояние мира, и новый мир начинает с общего основания */
   G.scrip={};G.scripRate={};G.scripLog=[];if(typeof scripVisitReset==="function")scripVisitReset();
   /* срок (12v): новый мир — никакого назначенного часа и никаких пустых систем */
