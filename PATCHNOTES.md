@@ -9,6 +9,32 @@ could ever save.
 
 ---
 
+## 0.72.0 — "Everything here is somebody's"
+
+**M121** (`12ua-flea.js` new, `06-galaxy.js`, `17-mode-system.js`, `26-ui-station.js`,
+`index.html`, `14-save.js`, `08-state.js`, stand `docs/mkflea.ps1`, suite `91zi-flea.js`).
+Блошинец: a seventh station type, and the only one whose stock is **used goods**.
+
+- **Nothing here is new, and everything has a previous owner.** Parts off boards nobody scrapped,
+  a live repeater out of a dead captain's effects, addresses written by hand — and information
+  about the player, sold at the same counter as the bolts.
+- **Provenance is the mechanic.** Every lot carries who owned it, why it was sold, and a sector
+  you can fly to; buying it puts that address on the map. The counter does not sell things, it
+  sells places, and the thing comes with them.
+- **Its own money.** Prices are quoted in the house's scrip (M113); credits are taken at a 28%
+  markup, because here your money is the foreign kind.
+- **The lot about you leaves without you.** Undock without taking it and someone else buys it —
+  the hunter gets the sector. Not a punishment for being poor: the price of having been here.
+- Rows are deterministic from the station seed and a slow clock; only what was **bought** is
+  persisted, so a bought lot never returns to the counter.
+- The silhouette is its own: a welded heap of mismatched sections under one outline, short
+  asymmetric awnings, goods hung on lines and a garland of warm lamps.
+
+**M120's portrait faults, closed** (`12tb-grok.js`). The three eyes are spread wide with sockets,
+light rims and ridges of hide between them and now read as three at 64 px; the hide carries dust
+streaks, a worn belly and old scrapes instead of flat khaki; both working arms break at the elbow
+and run outside the silhouette, and the small chest pair no longer disappears into the body tone.
+
 ## 0.71.0 — "He digs for food, not for money"
 
 **M120** (`12tb-grok.js` new, `27c-ui-hq.js`, `14-save.js`, `08-state.js`, stand

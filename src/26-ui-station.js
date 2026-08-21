@@ -27,7 +27,7 @@ function openStation(){
    продать, снарядиться, узнать, нанять, распорядиться. Внутри раздела с одной
    вкладкой вторая ступень не показывается — нечего выбирать. */
 const ST_GROUPS=[
-  {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","smelt","scrip"]},
+  {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","flea","smelt","scrip"]},
   {id:"ship",  ru:"КОРАБЛЬ",   tabs:["yard","mods","fuse"]},
   {id:"know",  ru:"НАУКА",     tabs:["lab"]},
   {id:"folk",  ru:"ЛЮДИ",      tabs:["crew","cantina"]},
@@ -70,6 +70,9 @@ function repairCost(){
   return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep*repRepairMul()));
 }
 function closeStation(){
+  /* блошинец (12ua): то, что про вас записано, вы либо забрали, либо оставили
+     на прилавке — и тогда его покупает кто-то другой */
+  if(typeof fleaLeave==="function")fleaLeave(G.sys);
   $st.classList.remove("open");G.mode="system";
   const S=G.st,dx=G.ship.x-S.x,dy=G.ship.y-S.y,d=Math.hypot(dx,dy)||1;
   G.ship.x=S.x+dx/d*150;G.ship.y=S.y+dy/d*150;
@@ -640,6 +643,7 @@ function renderTab(){
   }
   else if(tab==="cantina"){renderCantina();}
   /* боны дома (M113): вкладка живёт в своём модуле, 12u-scrip */
+  else if(tab==="flea"){fleaRender();}
   else if(tab==="scrip"){scripRender();}
   else if(tab==="crew"){
     /* одна вкладка на всё: кто уже работает — сверху, кандидаты станции — ниже.

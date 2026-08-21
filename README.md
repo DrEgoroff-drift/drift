@@ -284,7 +284,7 @@ they can sell, and pirate wrecks never drop rare stock.
 
 ### Stations
 
-Six station types, chosen by system seed and sector danger. The type decides which tabs exist:
+Seven station types, chosen by system seed and sector danger. The type decides which tabs exist:
 
 | Type | What it is for |
 |---|---|
@@ -294,6 +294,7 @@ Six station types, chosen by system seed and sector danger. The type decides whi
 | Science | tech tree and the fusion laboratory |
 | Frontier outpost | combat crews, weapons, poor prices — common in dangerous space |
 | Fuel depot | no tabs at all: fuel and repair only, but found far out |
+| Bazaar | the flea market: used goods with a provenance, quoted in house scrip |
 
 Each type draws itself procedurally like hulls do — a shared skeleton of core, dock and lights,
 silhouette from the type, details from the system seed: warehouse pods and cargo booms, blast

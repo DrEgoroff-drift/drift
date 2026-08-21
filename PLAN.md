@@ -684,9 +684,27 @@ about who left it.
   you have been (M98). Sending him somewhere is a real decision, not a free errand.
 - He is also the tutor: the first fragment the player cannot use is explained by him, once.
 
-## M121 (0.72.0). Блошинец: a station type where everything is somebody's
+## M121 (0.72.0) — built. Блошинец: a station type where everything is somebody's
 
-A seventh station type (`26-ui-station`), and the only one whose stock is **used goods**.
+Built as **`12ua-flea.js`** (lots, provenance, buying, the tab), the `bazaar` entry in `ST_TYPES`
+(`06-galaxy`), its own silhouette in `drawStation` (`17-mode-system`), the **РЯДЫ** tab wired in
+`26-ui-station` + `index.html`, persistence of bought lots in `14-save`/`08-state`, stand
+`docs/mkflea.ps1` → `docs/shots/flea.png`, suites **"Блошинец: каждый лот откуда-то взялся"** and
+**"…сведения о вас уходят без вас"** (`91zi-flea.js`).
+
+**Where it landed against the spec.** All four points stand. Every lot carries `who`, `why` and a
+sector that passes `starAt`, and the suite guards exactly that; buying puts the address on the map
+via `loreMarks`; the counter quotes in the house's scrip and takes credits at +28%; the lot about
+the player is generated first, and undocking without it calls `huntMark`. Rows are deterministic
+from the station seed and a two-hour clock, and only bought lot ids persist.
+
+**Note on the galaxy.** A seventh weight in `pickStType` re-sorts which type each system's station
+is — the RNG stream is untouched (still one `r()`), but stations already visited may now be of a
+different type. Accepted: the type is derived, never stored.
+
+**Still open:** the bazaar has no sound and no crowd of its own — the cantina there is any other
+cantina; the silhouette's outline still reads as a shell around the sections rather than their
+own edge; and the used part is mechanically a normal part, with wear (`12s-wear`) not touched.
 
 - Parts with previous owners, the odd rarity out of an estate, living creatures, and information
   sold as merchandise — including information about you, which is how the antagonist buys your
