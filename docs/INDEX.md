@@ -6,11 +6,11 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 143 · символов верхнего уровня: 1565
+Файлов: 145 · символов верхнего уровня: 1574
 
 ## СИМВОЛЫ
 
-$bg                          src/12l-barge.js:574
+$bg                          src/12l-barge.js:576
 $bThr                        src/28-loop.js:33
 $cv                          src/27b-ui-crew.js:6
 $f                           src/28-loop.js:22
@@ -86,33 +86,33 @@ autosave                     src/14-save.js:450
 b64dec                       src/14-save.js:11
 b64enc                       src/14-save.js:9
 bankTransform                src/03b-hull-paint.js:48
-BARGE_ART                    src/12l-barge.js:376
+BARGE_ART                    src/12l-barge.js:378
 BARGE_CAP                    src/12l-barge.js:13
 BARGE_CAPNAMES               src/12l-barge.js:23
 BARGE_PERIOD                 src/12l-barge.js:12
-BARGE_SS                     src/12l-barge.js:375
+BARGE_SS                     src/12l-barge.js:377
 BARGE_TEMPER                 src/12l-barge.js:17
 BARGE_TKEYS                  src/12l-barge.js:22
-bargeArtOf                   src/12l-barge.js:377
+bargeArtOf                   src/12l-barge.js:379
 bargeAttackers               src/12l-barge.js:153
 bargeBuyPrice                src/12l-barge.js:94
-bargeCur                     src/12l-barge.js:575
+bargeCur                     src/12l-barge.js:577
 bargeDestPrice               src/12l-barge.js:79
-bargeElRow                   src/12l-barge.js:601
-bargeEscortAccept            src/12l-barge.js:282
-bargeEscortAdvance           src/12l-barge.js:281
-bargeEscortEnd               src/12l-barge.js:297
-bargeEscortLeave             src/12l-barge.js:313
-bargeInteract                src/12l-barge.js:255
+bargeElRow                   src/12l-barge.js:603
+bargeEscortAccept            src/12l-barge.js:284
+bargeEscortAdvance           src/12l-barge.js:283
+bargeEscortEnd               src/12l-barge.js:299
+bargeEscortLeave             src/12l-barge.js:315
+bargeInteract                src/12l-barge.js:257
 bargeLegs                    src/12l-barge.js:43
 bargeMarkup                  src/12l-barge.js:87
 bargeMineHit                 src/12l-barge.js:189
 bargeNearOther               src/12l-barge.js:67
-bargePaxDeliver              src/12l-barge.js:243
-bargeRepNudge                src/12l-barge.js:597
+bargePaxDeliver              src/12l-barge.js:245
+bargeRepNudge                src/12l-barge.js:599
 bargeRescued                 src/12l-barge.js:203
 bargeSellPrice               src/12l-barge.js:91
-bargeSunk                    src/12l-barge.js:219
+bargeSunk                    src/12l-barge.js:221
 bargeSysAt                   src/12l-barge.js:25
 BARTER                       src/04-mods.js:60
 BASE_COLS                    src/21a-mode-base.js:6
@@ -243,7 +243,7 @@ cirrusSprite                 src/19e-clouds.js:126
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
-closeBarge                   src/12l-barge.js:586
+closeBarge                   src/12l-barge.js:588
 closeStation                 src/26-ui-station.js:72
 CLOUD                        src/14-save.js:3
 CLOUD_KEYS                   src/02a-worldmix.js:80
@@ -319,7 +319,7 @@ ctx                          src/08-state.js:3
 curTok                       src/09-audio.js:71
 CUT_RANGE                    src/24-mode-belt.js:171
 cvs                          src/08-state.js:2
-dbg                          src/28-loop.js:310
+dbg                          src/28-loop.js:311
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -369,9 +369,9 @@ drawAccountShelf             src/12w-survey.js:99
 drawAllies                   src/12a-crew.js:551
 drawAnomaly                  src/20aa-poi-shapes.js:168
 drawAstronaut                src/20-life.js:4
-drawBarge                    src/12l-barge.js:494
-drawBarges                   src/12l-barge.js:525
-drawBargesMap                src/12l-barge.js:550
+drawBarge                    src/12l-barge.js:496
+drawBarges                   src/12l-barge.js:527
+drawBargesMap                src/12l-barge.js:552
 drawBase                     src/21a-mode-base.js:416
 drawBaseBuilding             src/21c-built.js:99
 drawBeast                    src/20-life.js:697
@@ -463,7 +463,7 @@ drawTrail                    src/16-flight.js:303
 drawWear                     src/12s-wear.js:69
 drawWeather                  src/19d-weather.js:92
 drawWreck                    src/20aa-poi-shapes.js:8
-drawWrecksSystem             src/12l-barge.js:341
+drawWrecksSystem             src/12l-barge.js:343
 droneCapacity                src/12-economy.js:66
 DRONES                       src/04-mods.js:57
 droneTarget                  src/12-economy.js:70
@@ -695,8 +695,10 @@ HUD_STEP                     src/28-loop.js:44
 hudWake                      src/28-loop.js:47
 HULL_CACHE                   src/03-ships.js:142
 HULL_CLASS                   src/03-ships.js:174
+HULL_ROLE                    src/03f-hull-role.js:17
 hullClassOf                  src/03-ships.js:200
 hullOf                       src/03a-hull-gen.js:1
+hullRole                     src/03f-hull-role.js:51
 hullShade                    src/03b-hull-paint.js:165
 HUNT_NAMES                   src/12o-hunter.js:18
 HUNT_RADIUS                  src/12o-hunter.js:24
@@ -718,12 +720,12 @@ initAudio                    src/09-audio.js:7
 INSTR                        src/25a-instr.js:19
 INSTR_BY_ID                  src/25a-instr.js:55
 INSTR_KEYS                   src/25a-instr.js:54
-instrMisclose                src/25a-instr.js:80
-instrPanel                   src/25a-instr.js:88
+instrMisclose                src/25a-instr.js:84
+instrPanel                   src/25a-instr.js:92
 instrPodDraw                 src/25c-instr-hud.js:19
 instrPodTick                 src/25c-instr-hud.js:64
 instrRead                    src/25a-instr.js:59
-instrTrack                   src/25a-instr.js:74
+instrTrack                   src/25a-instr.js:78
 invalidateKeyMap             src/15-input.js:41
 invalidateParts              src/05-parts.js:197
 ipctx                        src/25c-instr-hud.js:17
@@ -924,10 +926,11 @@ NEWS_KINDS                   src/12p-news.js:89
 NEWS_MAX_ROLL                src/12p-news.js:14
 NEWS_RIVALS                  src/12p-news.js:16
 newsAll                      src/12p-news.js:18
+newsKeepLimit                src/03f-hull-role.js:56
 newsMark                     src/12p-news.js:22
 newsMarkAt                   src/12p-news.js:26
 newsMarks                    src/12p-news.js:19
-newsRender                   src/12p-news.js:176
+newsRender                   src/12p-news.js:178
 newsRivals                   src/12p-news.js:40
 newsSomewhere                src/12p-news.js:28
 newsTick                     src/12p-news.js:150
@@ -980,7 +983,7 @@ occSummary                   src/13b-occupy.js:154
 occSuppress                  src/13b-occupy.js:206
 occTick                      src/13b-occupy.js:60
 ok                           tests/90-harness.js:19
-openBarge                    src/12l-barge.js:576
+openBarge                    src/12l-barge.js:578
 openCrewView                 src/27b-ui-crew.js:199
 openHq                       src/27c-ui-hq.js:512
 openShipView                 src/27-ui-ship.js:145
@@ -1199,7 +1202,7 @@ relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07-planet.js:91
-renderBarge                  src/12l-barge.js:611
+renderBarge                  src/12l-barge.js:613
 renderCantina                src/27c-ui-hq.js:45
 renderLog                    src/11-log.js:37
 renderLoreBoard              src/27h-ui-lore.js:31
@@ -1244,8 +1247,11 @@ rogueHere                    src/12g-mgr-rogue.js:66
 rogueSector                  src/12g-mgr-rogue.js:15
 rogueSpawn                   src/12g-mgr-rogue.js:72
 rogueTakesCrew               src/12g-mgr-rogue.js:25
+ROLE_BY_HULL                 src/03f-hull-role.js:33
 ROLE_KEYS                    src/12a-crew.js:124
 roleForce                    src/12a-crew.js:125
+roleFromStats                src/03f-hull-role.js:37
+roleOf                       src/03f-hull-role.js:46
 rollCrewEvent                src/12b-crew-events.js:70
 rollWorld                    src/02a-worldmix.js:67
 ROMAN                        src/01-core.js:41
@@ -1336,6 +1342,8 @@ sfx                          src/09-audio.js:211
 SFX                          src/09-audio.js:85
 SH_DX                        src/03b-hull-paint.js:164
 shatter                      src/24-mode-belt.js:125
+SHIFT_TALK                   src/03f-hull-role.js:63
+shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
 shipRow                      src/26-ui-station.js:116
@@ -1446,12 +1454,12 @@ TAPE_GAIN                    src/25b-tape.js:25
 TAPE_N                       src/25b-tape.js:22
 TAPE_PENS                    src/25b-tape.js:23
 tapeInit                     src/25b-tape.js:27
-tapePaper                    src/25b-tape.js:93
-tapeRate                     src/25b-tape.js:56
+tapePaper                    src/25b-tape.js:94
+tapeRate                     src/25b-tape.js:57
 tapeSample                   src/25b-tape.js:39
-tapeScroll                   src/25b-tape.js:78
-tapeStrip                    src/25b-tape.js:168
-tapeTick                     src/25b-tape.js:60
+tapeScroll                   src/25b-tape.js:79
+tapeStrip                    src/25b-tape.js:169
+tapeTick                     src/25b-tape.js:61
 targetPos                    src/16-flight.js:62
 TAU                          src/01-core.js:6
 TECH                         src/04-mods.js:11
@@ -1504,6 +1512,7 @@ toggleLoreBoard              src/27h-ui-lore.js:83
 toggleMenu                   src/15-input.js:126
 toggleParrotWin              src/12y-parrot-face.js:665
 totalLoss                    src/21-mode-surface.js:361
+towShare                     src/03f-hull-role.js:87
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03b-hull-paint.js:1
 TRADE_KEYS                   src/02-world.js:40
@@ -1568,8 +1577,8 @@ worldTables                  src/02a-worldmix.js:86
 wrapCenter                   src/18-mode-map.js:2
 wrapLeft                     src/18-mode-map.js:12
 wreck                        src/28-loop.js:2
-wreckInteract                src/12l-barge.js:319
-wrecksHere                   src/12l-barge.js:316
+wreckInteract                src/12l-barge.js:321
+wrecksHere                   src/12l-barge.js:318
 wtab                         src/02a-worldmix.js:85
 yachtMoraleMul               src/12j-home.js:243
 yachtOwned                   src/12j-home.js:236
@@ -1601,6 +1610,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/03d-hull-marks.js · 6 КБ
 
 ## src/03e-hull-draw.js · 34 КБ
+
+## src/03f-hull-role.js · 6 КБ
+  · корпус — это профессия, а не ступенька:1
 
 ## src/03-ships.js · 15 КБ
   · корабли: процедурные корпуса:1
@@ -1700,10 +1712,10 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## src/12l-barge.js · 38 КБ
   · торговые баржи:1
-  · контракт охраны:277
-  · остовы погибших барж:315
-  · корпус баржи:369
-  · торг с баржой:573
+  · контракт охраны:279
+  · остовы погибших барж:317
+  · корпус баржи:371
+  · торг с баржой:575
 
 ## src/12m-rare.js · 13 КБ
   · редкости: сто адресов, а не рулетка:1
@@ -1714,7 +1726,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12o-hunter.js · 7 КБ
   · охотник: тень репутации:1
 
-## src/12p-news.js · 11 КБ
+## src/12p-news.js · 12 КБ
   · пересказ: мир двигался, пока вас не было:1
 
 ## src/12q-lore.js · 16 КБ
@@ -1888,7 +1900,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/24-mode-belt.js · 27 КБ
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
-## src/25a-instr.js · 8 КБ
+## src/25a-instr.js · 9 КБ
   · приборы: пять стрелок и невязка:1
 
 ## src/25b-tape.js · 11 КБ
@@ -1936,7 +1948,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · телеметрия:21
   · звук по кадрам:183
   · цикл:239
-  · dbg() — что держит корабль:301
+  · dbg() — что держит корабль:302
 
 ## tests/90-harness.js · 5 КБ
   · автотесты: каркас:1
@@ -2038,5 +2050,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## tests/91zl-rack.js · 3 КБ
 
 ## tests/91z-missile.js · 5 КБ
+
+## tests/91zm-role.js · 4 КБ
 
 ## tests/99-run.js · 0 КБ

@@ -843,6 +843,29 @@ cockpit; the heavy sheet is baked per screen size, so a mid-flight resize costs 
 CH5 saturates against the bottom of its band when the actinometer swings hard; nothing here is
 persisted, which is correct, but it also means the paper is only ever this session's.
 
+## M126 (0.77.0) — built. A hull is a profession, not a rung
+
+Built as **`03f-hull-role.js`** (six professions, the map from hull to profession, derivation for
+unique and fused hulls), wired into the instruments (`25a`, `25b`), the rack's nameplate (`25d`),
+the ether's memory (`12p-news`), a rescued barge's gratitude (`12l-barge`) and the frame
+(`28-loop`), suite **"Профессии корпусов: не выше, а другое"** (`91zm-role.js`).
+
+**What a profession actually changes.** Изыскатель resolves the misclosure earliest and writes
+the boldest tape; рудовоз is nearly blind; почтовик's receiver keeps ~40 rumours where an ore
+carrier keeps ~19; буксир is paid for taking a barge on a line; вахтовка is the one hull where
+passengers speak in flight (a rare line, never a dialogue, never asking for an answer); сторож
+keeps his hide. `hcls` from `03-ships` is untouched — the profession is a layer over it, derived
+and never persisted.
+
+**The line that must not be crossed, and the suite that guards it:** the misclosure of a sector is
+identical on every hull. The instrument's *resolution* differs, not the world. The suite reads the
+same sector from two hulls and asserts both that the truth is equal and that the needle is not.
+
+**Still open:** the vanilla stat ladder in `SHIPS` (price/thr/cargo) is untouched, so the shop can
+still be read as a ladder — the professions sit on top of it rather than replacing it; passenger
+talk is one flat table, not a function of who is aboard (that belongs with the hundred, M129–M131);
+and the postal runner so far only hears deeper, not farther — a rumour's range is unchanged.
+
 What it is, in short. M106–M121 gave the arm one long story told in fragments; this pass gives it
 **many short ones**, and a body to fly them in. The unit is a **region**, not a planet: six to ten
 systems on one theme with a hidden gradient, a procedural edge and one hand-built core, so the

@@ -61,7 +61,11 @@ function instrRead(sx,sy){
   const R=regionAt(x,y), m=misclose(x,y);
   return INSTR.map(I=>{
     const base=I.base();
-    const dev=I.id===R.needle?m:0;
+    /* разрешение прибора зависит от корпуса (03f-hull-role): на изыскателе
+       отклонение видно раньше, на рудовозе почти не видно. Сам мир при этом
+       не меняется — меняется прибор */
+    const q=(typeof hullRole==="function")?hullRole().instr:1;
+    const dev=I.id===R.needle?m*q:0;
     /* отклонение — доля от собственного показания прибора: у хронометра это
        ход, у актинометра ватты. Одно число на всех сделало бы шкалы игрушечными */
     const val=I.id==="chrono"?base+dev*.22:base*(1+dev*.85);

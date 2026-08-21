@@ -204,7 +204,9 @@ function bargeRescued(b){
   if(b.done)return;b.done=1;b.distress=0;b.rescued=1;
   const dst=bargeSysAt(b.to)||bargeSysAt(b.from);
   if(dst&&typeof repAdd==="function")repAdd(2,dst);
-  const share=3+Math.floor(Math.random()*5);
+  /* буксир берёт баржу на трос, а не просто отгоняет пиратов (03f-hull-role) */
+  const share=(typeof towShare==="function")?towShare(3+Math.floor(Math.random()*5))
+                                            :3+Math.floor(Math.random()*5);
   const got=addRes(b.good,share);
   if(b.escort)bargeEscortEnd(b,true);
   if(b.paxSeed)bargePaxDeliver(b);

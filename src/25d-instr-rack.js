@@ -361,6 +361,18 @@ function rackDraw(){
     ctx.restore();
   }
   /* ── правый угол: невязка цифрами и лампа питания ── */
+  /* шильдик слева: чья это стойка. Профессия корпуса (03f-hull-role) и есть
+     объяснение, почему приборы читают лучше или хуже соседских */
+  const RL=(typeof hullRole==="function")?hullRole():null;
+  if(RL){
+    ctx.textAlign="left";ctx.textBaseline="alphabetic";
+    ctx.fillStyle="rgba(214,196,150,.72)";
+    ctx.font="600 11px ui-monospace,monospace";
+    ctx.fillText(RL.ru,RACK_PAD,g0.gh+4);
+    ctx.fillStyle="rgba(150,162,166,.5)";
+    ctx.font="9px ui-monospace,monospace";
+    ctx.fillText(RL.note,RACK_PAD,g0.gh+17);
+  }
   ctx.textAlign="right";ctx.textBaseline="alphabetic";
   ctx.fillStyle="rgba(196,206,210,.55)";
   ctx.font="9px ui-monospace,monospace";
