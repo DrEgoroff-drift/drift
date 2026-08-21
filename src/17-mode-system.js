@@ -661,6 +661,58 @@ function drawStation(x,y,Z){
     stCore(5,12,false);
     ctx.fillStyle=(Math.sin(G.t*.14)>.3)?"rgba(255,80,60,.95)":"rgba(255,80,60,.15)";
     for(const sx of [-1,1]){ctx.beginPath();ctx.arc(sx*20*V.a,0,2,0,TAU);ctx.fill();}
+  }else if(ty==="bazaar"){
+    /* блошинец: одно тело из чужих кусков. Корпус собран из разномастных секций,
+       по бортам растянуты навесы, под ними на леерах висит товар, и всё это
+       освещено тёплыми лампами с одной стороны — свет тут один на всю станцию */
+    /* тело — груда разномастных секций, сваренных вместе: сначала сами секции
+       со швами, потом ОДИН общий обвод поверх, иначе это куча, а не станция */
+    const SEC=[[-17,-9,15,19],[-4,-14,13,11],[-6,0,17,14],[8,-6,12,16],[-14,4,11,10]];
+    for(let i=0;i<SEC.length;i++){
+      const s=SEC[i];
+      ctx.fillStyle=i%2?"#20242e":"#2a2f3b";
+      ctx.beginPath();ctx.rect(s[0]*V.a,s[1]*V.b,s[2]*V.a,s[3]*V.b);ctx.fill();
+      ctx.strokeStyle="rgba(150,144,126,.5)";ctx.lineWidth=1;ctx.stroke();   // шов
+    }
+    ctx.strokeStyle="rgba(226,176,104,.75)";ctx.lineWidth=1.8;
+    ctx.beginPath();                                     // обвод один на весь ком
+    for(let i=0;i<9;i++){
+      const t=i*TAU/9+V.ph*.3,rr=(i%3?16:20)+((i*5)%4)*1.4;
+      const rx=Math.cos(t)*rr*V.a,ry=Math.sin(t)*rr*.86*V.b;
+      i?ctx.lineTo(rx,ry):ctx.moveTo(rx,ry);
+    }
+    ctx.closePath();ctx.stroke();
+    ctx.save();ctx.clip();
+    const lg=ctx.createLinearGradient(-20,-16,18,16);    // свет слева сверху
+    lg.addColorStop(0,"rgba(255,224,160,.18)");lg.addColorStop(.6,"rgba(255,255,255,0)");
+    lg.addColorStop(1,"rgba(0,0,0,.35)");
+    ctx.fillStyle=lg;ctx.fillRect(-24,-22,48,44);
+    ctx.restore();
+    /* навесы: короткие козырьки над бортами, и разные — симметричная пара
+       читалась крыльями, а блошинец собран несимметрично, как и всё тут */
+    ctx.strokeStyle="rgba(212,150,96,.9)";ctx.lineJoin="round";
+    ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(-6,-11);ctx.lineTo(-19*V.a,-7);ctx.lineTo(-17*V.a,-2);ctx.stroke();
+    ctx.lineWidth=2.6;
+    ctx.beginPath();ctx.moveTo(5,-13);ctx.lineTo(17*V.a,-11);ctx.lineTo(20*V.a,-4);ctx.stroke();
+    /* товар на леерах: короба висят ПОД козырьками, крупно — иначе на дистанции
+       системного вида их просто нет */
+    for(let i=0;i<6;i++){
+      const sx=i%2?1:-1,t=(i*.31+.12)%1;
+      const bx=sx*(9+t*10)*V.a,by=-4+t*12,w=3.6+((i*3)%3)*2.1;
+      ctx.strokeStyle="rgba(176,192,212,.55)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(bx,by-6);ctx.lineTo(bx,by);ctx.stroke();
+      ctx.fillStyle=i%3?"#3b4f68":"#5a4c36";
+      ctx.strokeStyle="rgba(246,198,124,.8)";ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.rect(bx-w/2,by,w,w*.9);ctx.fill();ctx.stroke();
+    }
+    stCore(5,13,false);
+    /* лампы: тёплые, разной яркости — гирлянда, а не сигнальные огни */
+    for(let i=0;i<5;i++){
+      const t=i*TAU/5+.4,a=.35+.55*Math.abs(Math.sin(G.t*.03+i*1.7));
+      ctx.fillStyle="rgba(255,206,132,"+a.toFixed(2)+")";
+      ctx.beginPath();ctx.arc(Math.cos(t)*19*V.a,Math.sin(t)*16*V.b,1.7,0,TAU);ctx.fill();
+    }
   }else{
     /* заправочная: бак с причалом, ничего лишнего */
     ctx.strokeStyle=ST_GOLD;ctx.lineWidth=2;

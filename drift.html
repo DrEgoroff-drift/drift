@@ -599,6 +599,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
   <nav class="tabs" id="stTabs">
     <button data-tab="market" class="on">РЫНОК</button>
     <button data-tab="barter">БАРТЕР</button>
+    <button data-tab="flea">РЯДЫ</button>
     <button data-tab="smelt">ПЕРЕПЛАВКА</button>
     <button data-tab="scrip">БОНЫ</button>
     <button data-tab="yard">ВЕРФЬ</button>
@@ -703,7 +704,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.71.0";
+const VER="0.72.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -4385,7 +4386,12 @@ const ST_TYPES=[
   {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter","crew","cantina","bases","scrip"],
    mkt:.9,   fuel:1.22, rep:1.25, w:d=>.2+d*2.8},
   {id:"fuel",   ru:"Заправочная станция",  tabs:[],
-   mkt:1,    fuel:.78,  rep:1.1,  w:d=>1.6+d*1.1}
+   mkt:1,    fuel:.78,  rep:1.1,  w:d=>1.6+d*1.1},
+  /* Блошинец (M121): рынок тут обычный, а весь смысл — во вкладке рядов, где
+     товар бывший в употреблении (12ua-flea). Стоит на отшибе чаще, чем в центре:
+     чужие вещи скапливаются там, где их некому опознать. */
+  {id:"bazaar", ru:"Блошинец",              tabs:["market","barter","flea","crew","cantina","bases","scrip"],
+   mkt:1.02, fuel:1.02, rep:.85,  w:d=>.35+d*1.5}
 ];
 function stTypeOf(id){return ST_TYPES.find(t=>t.id===id)||ST_TYPES[0];}
 /* один вызов r() — ровно как прежний pick(), поэтому поток случайных чисел
@@ -4808,6 +4814,8 @@ const G={
   pnode:null,
   /* посёлки (12t): разрежённо по «sx,sy», пусто, пока никого не кормили */
   settle:{},tin:{},grok:null,
+  /* блошинец (12ua): помним только КУПЛЕННОЕ — ряды считаются, а не хранятся */
+  flea:{got:[]},
   /* боны домов (12u): запас, курс и журнал причин. Курс без причины не двигается,
      поэтому журнал — часть механики, а не оформление */
   scrip:{},scripRate:{},scripLog:[],
@@ -12137,6 +12145,205 @@ function settleStops(){
   return out;
 }
 
+/* ══════════════ Блошинец: станция, где всё чьё-то ══════════════
+   Седьмой тип станции и единственный, где товар — БЫВШИЙ В УПОТРЕБЛЕНИИ. Ряды
+   под навесом, чужие детали с чужих бортов, живое из вещей покойника и сведения,
+   разложенные на прилавке рядом с гайками.
+
+   ЧЕМ ЭТО НЕ ЯВЛЯЕТСЯ. Не рулетка и не второй рынок: тут не «выпадает» ничего.
+   У каждого лота есть ПРОВЕНАНС — откуда вещь взялась, — и провенанс называет
+   место, до которого можно долететь. Это и есть механика: блошинец не продаёт
+   предметы, он продаёт адреса, а предмет прилагается.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Лота без провенанса не бывает. Провенанс — это `who` и живой сектор
+      (`starAt`), а не строчка настроения.
+   2. Ряды детерминированы: seed станции плюс медленные часы. Ничего из этого
+      не персистится, кроме списка КУПЛЕННОГО, — купленный лот не возвращается.
+   3. Родная валюта прилавка — боны дома (12u-scrip). Кредиты берут, но с
+      наценкой: здесь чужие деньги, а не чужой дом.
+   4. Сведения продают и о ВАС. Лот про ваш маршрут лежит на виду; уйдёте, не
+      забрав, — его купит кто-то другой, и охотник (12o) получит адрес. Это не
+      наказание за бедность, а цена того, что вы тут были.
+   5. Живое — один раз за прохождение и только из чужих вещей: птица уходит
+      через `parrotFind`, у которого свой замок. */
+
+const FLEA_MARKUP=1.28;            // во что обходятся кредиты вместо бон
+const FLEA_ROWS=5;                 // сколько лотов лежит на прилавке разом
+const FLEA_EPOCH=2*3600*1000;      // ряды переставляют раз в два часа
+const FLEA_GOT=90;                 // столько купленных лотов помним
+const FLEA_WHO=["покойного капитана","списанного борта","разорившейся артели",
+  "конторы, закрывшейся в прошлом сезоне","команды, не вернувшейся с рейса",
+  "старьёвщика с окраины"];
+const FLEA_WHY=["распродажа наследства","залог, за которым не пришли",
+  "остатки после описи","сдали за долги","выкуплено у мусорщиков"];
+
+function fleaRec(){
+  if(!G.flea||typeof G.flea!=="object")G.flea={got:[]};
+  if(!Array.isArray(G.flea.got))G.flea.got=[];
+  return G.flea;
+}
+function fleaHere(sys){
+  const S=(sys||G.sys)&&(sys||G.sys).station;
+  return !!S&&S.stype==="bazaar";
+}
+function fleaEpoch(){return Math.floor(Date.now()/FLEA_EPOCH);}
+/* ── провенанс ──
+   Место, а не настроение: идём спиралью от станции, пока не встретим звезду.
+   Правило 1 держится здесь, и суите проверять именно это. */
+function fleaPlace(r,sx,sy){
+  for(let ring=1;ring<=6;ring++){
+    for(let t=0;t<10;t++){
+      const dx=Math.round((r()*2-1)*ring),dy=Math.round((r()*2-1)*ring);
+      if(!dx&&!dy)continue;
+      const x=sx+dx,y=sy+dy;
+      if(starAt(x,y))return {sx:x,sy:y};
+    }
+  }
+  return {sx:0,sy:0};                                   // родная система есть всегда
+}
+/* ── ряды ──
+   Детерминированы от станции и медленных часов; вычисляются, не хранятся. */
+function fleaLots(sys){
+  sys=sys||G.sys;
+  if(!fleaHere(sys))return [];
+  const R=fleaRec(),ep=fleaEpoch(),out=[];
+  const danger=typeof sysDanger==="function"?sysDanger(sys.sx,sys.sy):.4;
+  for(let i=0;i<FLEA_ROWS;i++){
+    const seed=hashi(hashi(sys.sx,sys.sy,0xF1EA),ep*31+i*7717,0xF1EB);
+    const r=rng(seed);
+    const id=sys.sx+":"+sys.sy+":"+ep+":"+i;
+    if(R.got.indexOf(id)>=0)continue;
+    const who=pick(FLEA_WHO,r),why=pick(FLEA_WHY,r);
+    const at=fleaPlace(r,sys.sx,sys.sy);
+    let kind="part";
+    const u=r();
+    if(i===0&&(G.sx!==0||G.sy!==0))kind="you";           // сведения о вас лежат первыми
+    else if(u<.20&&typeof parrotHas==="function"&&!parrotHas())kind="bird";
+    else if(u<.55)kind="word";
+    const tier=clamp(1+Math.floor(r()*(1+danger*3.4)),1,5);
+    const lot={id,kind,seed,who,why,at,tier};
+    if(kind==="part"){
+      lot.part=genPart(hashi(seed,3,0x9A7),tier);
+      lot.ru="«"+lot.part.name+"»";
+      lot.note="с борта, брошенного в секторе "+at.sx+":"+at.sy;
+      lot.price=Math.round((28+tier*34)*(.8+r()*.5));
+    }else if(kind==="bird"){
+      lot.ru="живое: трепло в клетке";
+      lot.note="из вещей "+who+", борт стоял в секторе "+at.sx+":"+at.sy;
+      lot.price=Math.round(120+r()*60);
+    }else if(kind==="word"){
+      lot.ru="адрес, записанный от руки";
+      lot.note="куда ходил тот борт: сектор "+at.sx+":"+at.sy;
+      lot.price=Math.round(46+tier*18);
+    }else{
+      lot.at={sx:G.sx|0,sy:G.sy|0};
+      /* у этого лота своё прошлое: он не из наследства, его записали здесь и
+         вчера — иначе строка читается как «наследство покойного капитана о вас» */
+      lot.who="человека, который слушал у стойки";
+      lot.why="принесли на прошлой неделе";
+      lot.ru="сведения о вас";
+      lot.note="ваш сектор "+lot.at.sx+":"+lot.at.sy+", записан чужой рукой";
+      lot.price=Math.round(70+tier*26);
+    }
+    out.push(lot);
+  }
+  return out;
+}
+function fleaLot(id,sys){return fleaLots(sys).find(l=>l.id===id)||null;}
+function fleaCredits(lot){return Math.max(1,Math.round(lot.price*FLEA_MARKUP));}
+function fleaScrip(lot){return Math.max(1,lot.price);}
+/* ── купить ──
+   `pay` — "scrip" или "cr". Возвращает лот либо null: не хватило, лот уже ушёл
+   или дома у станции нет (бонами тогда не платят). */
+function fleaBuy(id,pay,sys){
+  sys=sys||G.sys;
+  const lot=fleaLot(id,sys);if(!lot)return null;
+  const R=fleaRec();
+  const H=typeof houseOf==="function"?houseOf(sys):null;
+  if(pay==="scrip"){
+    if(!H)return null;
+    const n=fleaScrip(lot);
+    if(scripHeld(H.id)<n)return null;
+    G.scrip[H.id]=scripHeld(H.id)-n;
+    logAdd("money","Блошинец: "+lot.ru+" за боны ×"+n);
+  }else{
+    const n=fleaCredits(lot);
+    if(G.credits<n)return null;
+    G.credits-=n;
+    logAdd("money","Блошинец: "+lot.ru+" за "+n+" кр (чужие деньги дороже)");
+  }
+  R.got.push(lot.id);
+  while(R.got.length>FLEA_GOT)R.got.shift();
+  /* что именно куплено — по виду лота. Вещь всегда идёт вместе с адресом:
+     в этом и смысл ряда. */
+  if(lot.kind==="part"&&typeof addPart==="function"){
+    addPart(lot.part);
+    tell("tech","С блошинца: "+lot.ru+" ("+lot.who+")",
+      lot.ru.toUpperCase()+"\n"+lot.why+"\n"+lot.note+
+      "\n\nу вещи есть прошлое, и оно записано");
+  }else if(lot.kind==="bird"&&typeof parrotFind==="function"){
+    parrotFind(lot.seed,lot.who);
+  }else if(lot.kind==="you"){
+    tell("good","Сведения о вас сняты с прилавка",
+      "СВЕДЕНИЯ О ВАС\n"+lot.note+"\n\nбольше их тут никто не купит");
+  }else{
+    tell("tech","С блошинца: адрес "+lot.at.sx+":"+lot.at.sy,
+      "АДРЕС\n"+lot.why+"\n"+lot.note+"\n\nон лёг на карту");
+  }
+  /* адрес на карту кладут все лоты, кроме сведений о вас: у тех адрес — ваш */
+  if(lot.kind!=="you"&&typeof loreMarks==="function")
+    loreMarks().push({sx:lot.at.sx,sy:lot.at.sy,id:"flea:"+lot.id});
+  if(typeof saveGame==="function")saveGame(true);
+  return lot;
+}
+/* ── правило 4 ──
+   Уходя, вы оставляете на прилавке то, что про вас записано. Его покупают. */
+function fleaLeave(sys){
+  sys=sys||G.sys;
+  if(!fleaHere(sys))return false;
+  const left=fleaLots(sys).find(l=>l.kind==="you");
+  if(!left)return false;
+  if(typeof huntMark==="function")huntMark({sx:left.at.sx,sy:left.at.sy},"лот с блошинца");
+  logAdd("warn","Сведения о вас остались на прилавке блошинца — их купили");
+  return true;
+}
+/* ── вкладка ──
+   Живёт здесь, рядом со своей механикой: 26-ui-station и так просится на распил. */
+function fleaRender(){
+  const sys=G.sys,H=typeof houseOf==="function"?houseOf(sys):null;
+  $body.appendChild(el("div","sec","РЯДЫ · ВСЁ ЗДЕСЬ ЧЬЁ-ТО · "+
+    (H?("СЧЁТ В БОНАХ "+H.ru.toUpperCase()+" · КРЕДИТЫ ДОРОЖЕ НА "+
+        Math.round((FLEA_MARKUP-1)*100)+"%"):"ХОЗЯИНА НЕТ · ТОЛЬКО КРЕДИТЫ")));
+  const lots=fleaLots(sys);
+  if(!lots.length){
+    $body.appendChild(el("div","row","<div class='nm'><b>Ряды разобраны</b>"+
+      "<s>всё, что тут лежало, уже у вас · новый привоз через час-другой</s></div>"));
+    return;
+  }
+  for(const lot of lots){
+    const cr=fleaCredits(lot),bn=fleaScrip(lot);
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b>"+lot.ru+"</b><s>"+lot.why+" · из вещей "+lot.who+
+      "<br>провенанс: "+lot.note+"<br>"+bn+" бон · или "+cr+" кр</s>"));
+    if(H){
+      const b=el("button","act","ЗА БОНЫ "+bn);
+      b.disabled=scripHeld(H.id)<bn;
+      b.onclick=()=>{fleaBuy(lot.id,"scrip",sys);renderTab();};
+      r.appendChild(b);
+    }
+    const b2=el("button","act gold","ЗА "+cr+" КР");
+    b2.disabled=G.credits<cr;
+    b2.onclick=()=>{fleaBuy(lot.id,"cr",sys);renderTab();};
+    r.appendChild(b2);
+    $body.appendChild(r);
+  }
+  $body.appendChild(el("div","sec","ПОЧЕМУ ЗДЕСЬ ДЁШЕВО"));
+  $body.appendChild(el("div","row","<div class='nm'><b>Потому что это уже было чьё-то</b>"+
+    "<s>прилавок торгует не вещами, а адресами: у каждой вещи записано, откуда она,<br>"+
+    "и это место есть на карте · сведения о вас лежат тут же и уйдут без вас</s></div>"));
+}
+
 /* ══════════════ боны домов: ставка на чужую судьбу ══════════════
    Самая опасная вещь этого прохода, поэтому она начинается с ограничителей, а
    не с возможностей.
@@ -14321,7 +14528,7 @@ function snapshot(){
     wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
-    doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,
+    doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -14484,6 +14691,14 @@ function applySave(s){
       sx:v.sx|0,sy:v.sy|0,due:+v.due||0,
       took:Math.max(0,v.took|0),taught:v.taught?1:0,dug};
   }
+  /* блошинец (12ua-flea): ряды считаются от seed станции и часов, поэтому в
+     сохранении живёт только список купленного — иначе купленный лот вернулся бы
+     на прилавок. Чинится по месту: чужие ключи отбрасываются, длина зажимается. */
+  G.flea={got:[]};
+  if(s.flea&&Array.isArray(s.flea.got))
+    for(const id of s.flea.got)
+      if(typeof id==="string"&&/^-?\d+:-?\d+:\d+:\d+$/.test(id)&&G.flea.got.length<FLEA_GOT)
+        G.flea.got.push(id);
   /* боны домов (12u-scrip): это ставка игрока и курс, у которого записана
      причина, — значит, персистятся. Чинится по месту: чужие ключи домов
      отбрасываются, курс зажимается в свои границы, кошелёк и запас не уходят в
@@ -16941,6 +17156,58 @@ function drawStation(x,y,Z){
     stCore(5,12,false);
     ctx.fillStyle=(Math.sin(G.t*.14)>.3)?"rgba(255,80,60,.95)":"rgba(255,80,60,.15)";
     for(const sx of [-1,1]){ctx.beginPath();ctx.arc(sx*20*V.a,0,2,0,TAU);ctx.fill();}
+  }else if(ty==="bazaar"){
+    /* блошинец: одно тело из чужих кусков. Корпус собран из разномастных секций,
+       по бортам растянуты навесы, под ними на леерах висит товар, и всё это
+       освещено тёплыми лампами с одной стороны — свет тут один на всю станцию */
+    /* тело — груда разномастных секций, сваренных вместе: сначала сами секции
+       со швами, потом ОДИН общий обвод поверх, иначе это куча, а не станция */
+    const SEC=[[-17,-9,15,19],[-4,-14,13,11],[-6,0,17,14],[8,-6,12,16],[-14,4,11,10]];
+    for(let i=0;i<SEC.length;i++){
+      const s=SEC[i];
+      ctx.fillStyle=i%2?"#20242e":"#2a2f3b";
+      ctx.beginPath();ctx.rect(s[0]*V.a,s[1]*V.b,s[2]*V.a,s[3]*V.b);ctx.fill();
+      ctx.strokeStyle="rgba(150,144,126,.5)";ctx.lineWidth=1;ctx.stroke();   // шов
+    }
+    ctx.strokeStyle="rgba(226,176,104,.75)";ctx.lineWidth=1.8;
+    ctx.beginPath();                                     // обвод один на весь ком
+    for(let i=0;i<9;i++){
+      const t=i*TAU/9+V.ph*.3,rr=(i%3?16:20)+((i*5)%4)*1.4;
+      const rx=Math.cos(t)*rr*V.a,ry=Math.sin(t)*rr*.86*V.b;
+      i?ctx.lineTo(rx,ry):ctx.moveTo(rx,ry);
+    }
+    ctx.closePath();ctx.stroke();
+    ctx.save();ctx.clip();
+    const lg=ctx.createLinearGradient(-20,-16,18,16);    // свет слева сверху
+    lg.addColorStop(0,"rgba(255,224,160,.18)");lg.addColorStop(.6,"rgba(255,255,255,0)");
+    lg.addColorStop(1,"rgba(0,0,0,.35)");
+    ctx.fillStyle=lg;ctx.fillRect(-24,-22,48,44);
+    ctx.restore();
+    /* навесы: короткие козырьки над бортами, и разные — симметричная пара
+       читалась крыльями, а блошинец собран несимметрично, как и всё тут */
+    ctx.strokeStyle="rgba(212,150,96,.9)";ctx.lineJoin="round";
+    ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(-6,-11);ctx.lineTo(-19*V.a,-7);ctx.lineTo(-17*V.a,-2);ctx.stroke();
+    ctx.lineWidth=2.6;
+    ctx.beginPath();ctx.moveTo(5,-13);ctx.lineTo(17*V.a,-11);ctx.lineTo(20*V.a,-4);ctx.stroke();
+    /* товар на леерах: короба висят ПОД козырьками, крупно — иначе на дистанции
+       системного вида их просто нет */
+    for(let i=0;i<6;i++){
+      const sx=i%2?1:-1,t=(i*.31+.12)%1;
+      const bx=sx*(9+t*10)*V.a,by=-4+t*12,w=3.6+((i*3)%3)*2.1;
+      ctx.strokeStyle="rgba(176,192,212,.55)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(bx,by-6);ctx.lineTo(bx,by);ctx.stroke();
+      ctx.fillStyle=i%3?"#3b4f68":"#5a4c36";
+      ctx.strokeStyle="rgba(246,198,124,.8)";ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.rect(bx-w/2,by,w,w*.9);ctx.fill();ctx.stroke();
+    }
+    stCore(5,13,false);
+    /* лампы: тёплые, разной яркости — гирлянда, а не сигнальные огни */
+    for(let i=0;i<5;i++){
+      const t=i*TAU/5+.4,a=.35+.55*Math.abs(Math.sin(G.t*.03+i*1.7));
+      ctx.fillStyle="rgba(255,206,132,"+a.toFixed(2)+")";
+      ctx.beginPath();ctx.arc(Math.cos(t)*19*V.a,Math.sin(t)*16*V.b,1.7,0,TAU);ctx.fill();
+    }
   }else{
     /* заправочная: бак с причалом, ничего лишнего */
     ctx.strokeStyle=ST_GOLD;ctx.lineWidth=2;
@@ -28595,7 +28862,7 @@ function openStation(){
    продать, снарядиться, узнать, нанять, распорядиться. Внутри раздела с одной
    вкладкой вторая ступень не показывается — нечего выбирать. */
 const ST_GROUPS=[
-  {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","smelt","scrip"]},
+  {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","flea","smelt","scrip"]},
   {id:"ship",  ru:"КОРАБЛЬ",   tabs:["yard","mods","fuse"]},
   {id:"know",  ru:"НАУКА",     tabs:["lab"]},
   {id:"folk",  ru:"ЛЮДИ",      tabs:["crew","cantina"]},
@@ -28638,6 +28905,9 @@ function repairCost(){
   return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep*repRepairMul()));
 }
 function closeStation(){
+  /* блошинец (12ua): то, что про вас записано, вы либо забрали, либо оставили
+     на прилавке — и тогда его покупает кто-то другой */
+  if(typeof fleaLeave==="function")fleaLeave(G.sys);
   $st.classList.remove("open");G.mode="system";
   const S=G.st,dx=G.ship.x-S.x,dy=G.ship.y-S.y,d=Math.hypot(dx,dy)||1;
   G.ship.x=S.x+dx/d*150;G.ship.y=S.y+dy/d*150;
@@ -29208,6 +29478,7 @@ function renderTab(){
   }
   else if(tab==="cantina"){renderCantina();}
   /* боны дома (M113): вкладка живёт в своём модуле, 12u-scrip */
+  else if(tab==="flea"){fleaRender();}
   else if(tab==="scrip"){scripRender();}
   else if(tab==="crew"){
     /* одна вкладка на всё: кто уже работает — сверху, кандидаты станции — ниже.

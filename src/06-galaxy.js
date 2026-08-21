@@ -17,7 +17,12 @@ const ST_TYPES=[
   {id:"outpost",ru:"Пограничный аванпост", tabs:["market","mods","barter","crew","cantina","bases","scrip"],
    mkt:.9,   fuel:1.22, rep:1.25, w:d=>.2+d*2.8},
   {id:"fuel",   ru:"Заправочная станция",  tabs:[],
-   mkt:1,    fuel:.78,  rep:1.1,  w:d=>1.6+d*1.1}
+   mkt:1,    fuel:.78,  rep:1.1,  w:d=>1.6+d*1.1},
+  /* Блошинец (M121): рынок тут обычный, а весь смысл — во вкладке рядов, где
+     товар бывший в употреблении (12ua-flea). Стоит на отшибе чаще, чем в центре:
+     чужие вещи скапливаются там, где их некому опознать. */
+  {id:"bazaar", ru:"Блошинец",              tabs:["market","barter","flea","crew","cantina","bases","scrip"],
+   mkt:1.02, fuel:1.02, rep:.85,  w:d=>.35+d*1.5}
 ];
 function stTypeOf(id){return ST_TYPES.find(t=>t.id===id)||ST_TYPES[0];}
 /* один вызов r() — ровно как прежний pick(), поэтому поток случайных чисел

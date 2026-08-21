@@ -38,7 +38,7 @@ function snapshot(){
     wrecks:G.wrecks,bargePax:G.bargePax,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
-    doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,
+    doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
 }
 function applySave(s){
@@ -201,6 +201,14 @@ function applySave(s){
       sx:v.sx|0,sy:v.sy|0,due:+v.due||0,
       took:Math.max(0,v.took|0),taught:v.taught?1:0,dug};
   }
+  /* блошинец (12ua-flea): ряды считаются от seed станции и часов, поэтому в
+     сохранении живёт только список купленного — иначе купленный лот вернулся бы
+     на прилавок. Чинится по месту: чужие ключи отбрасываются, длина зажимается. */
+  G.flea={got:[]};
+  if(s.flea&&Array.isArray(s.flea.got))
+    for(const id of s.flea.got)
+      if(typeof id==="string"&&/^-?\d+:-?\d+:\d+:\d+$/.test(id)&&G.flea.got.length<FLEA_GOT)
+        G.flea.got.push(id);
   /* боны домов (12u-scrip): это ставка игрока и курс, у которого записана
      причина, — значит, персистятся. Чинится по месту: чужие ключи домов
      отбрасываются, курс зажимается в свои границы, кошелёк и запас не уходят в
