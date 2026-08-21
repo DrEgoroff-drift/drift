@@ -9,6 +9,28 @@ could ever save.
 
 ---
 
+## 0.75.0 — "The instruments where the decisions are made"
+
+**M124, first step** (`25c-instr-hud.js` new, `index.html`, `style.css`, `25b-tape.js`,
+`28-loop.js`, suite `91zk-tape.js`). The panel and the recorder lived on the cockpit's ceiling
+block — which means they were visible only in the belt, while the player flies in the system
+view. An instrument that is absent where decisions are made is not an instrument.
+
+- **One narrow pod in the instrument row**, between the ship's vitals and "where we are": five
+  needles, the misclosure in figures, a strip of tape under them. Same glass, same border, same
+  fade — it is one row, not an annexe.
+- **One recorder, not two.** The drawing was lifted out of the ceiling block into `tapePaper`,
+  so the pod and the cockpit print the same paper from the same ring.
+- **In the belt the pod hides**: there the panel is real and hangs over the glazing. On a narrow
+  screen the pod goes away entirely — 44-px buttons and "where we are" matter more.
+- The paper is quieter in the pod than in the cockpit: over the world hangs only what is needed
+  now.
+
+Not taken from M124's spec: the overlay HUD stays, the table and the physical receiver wait for
+their own pass.
+
+---
+
 ## 0.74.0 — "Paper, five pens, and the memory of observation"
 
 **M123** (`25b-tape.js` new, `25a-instr.js`, `09-audio.js`, `25-cockpit.js`, `28-loop.js`, stand

@@ -70,3 +70,42 @@ TEST_SUITES.push(()=>suite("Самописец: перо считает врем
   tapeScroll(99999);
   ok(T.back<=T.n-4&&T.back>0,"дальше начала ленты не уедешь: "+T.back);
 }));
+
+/* ══ M124: приборы там, где принимаются решения ══
+   Колодка в строке приборов — тот же прибор, а не второй: она читает
+   `instrRead`, рисует ту же ленту и так же ничего не объявляет. */
+TEST_SUITES.push(()=>suite("Колодка: приборы под рукой в любом режиме",()=>{
+  resetWorld();
+  const pod=document.getElementById("ipod");
+  ok(!!pod,"колодка есть в разметке");
+  ok(typeof instrPodDraw==="function"&&typeof instrPodTick==="function",
+     "у неё свой отрисовщик и свой такт");
+  /* одна лента на игру: колодка рисует ту же бумагу, что и потолочный блок */
+  ok(typeof tapePaper==="function","бумага рисуется общей функцией");
+
+  /* ── в поясе прячется: там есть настоящий блок над остеклением ── */
+  const m0=G.mode,run0=G.running;
+  G.running=true;
+  G.mode="system";instrPodTick();
+  eq(pod.style.display,"","в системном виде колодка на месте");
+  G.mode="belt";instrPodTick();
+  eq(pod.style.display,"none","в поясе её нет: там панель настоящая");
+  G.mode="surface";instrPodTick();
+  eq(pod.style.display,"","на поверхности снова на месте");
+
+  /* ── рисует и молчит ── */
+  const spy={say:0,tell:0,log:0,sfx:0};
+  const s0=say,t0=tell,l0=logAdd,f0=sfx;
+  say=function(){spy.say++;return s0.apply(null,arguments);};
+  tell=function(){spy.tell++;return t0.apply(null,arguments);};
+  logAdd=function(){spy.log++;return l0.apply(null,arguments);};
+  sfx=function(){spy.sfx++;return f0.apply(null,arguments);};
+  for(let i=0;i<30;i++)tapeSample();
+  instrPodDraw();
+  say=s0;tell=t0;logAdd=l0;sfx=f0;
+  eq(spy.say+spy.tell+spy.log+spy.sfx,0,"колодка не сказала ни слова");
+  const c=pod.getContext("2d"),d=c.getImageData(0,0,pod.width,pod.height).data;
+  let ink=0;for(let i=3;i<d.length;i+=4)if(d[i]>8)ink++;
+  ok(ink>pod.width*pod.height*.1,"на колодке действительно что-то нарисовано: "+ink+" пикселей");
+  G.mode=m0;G.running=run0;
+}));

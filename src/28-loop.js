@@ -130,6 +130,8 @@ function hud(){
     rbtn.style.display=(ss&&ss.station)||inR?"":"none";
     rbtn.textContent=inR?"ИЗ МАРШРУТА":"В МАРШРУТ";
   }else rbtn.style.display="none";
+  /* приборная колодка (25c): рисуется каждым кадром, гаснет вместе со строкой */
+  if(typeof instrPodTick==="function")instrPodTick();
   $place.textContent=a;$sub.textContent=b;
   $msg.textContent=G.msgT>0?G.msg:"";
   $msg.style.opacity=G.msgT>0?clamp(G.msgT/40,0,1):0;
