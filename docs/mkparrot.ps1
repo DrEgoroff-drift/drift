@@ -12,14 +12,13 @@ $add = @'
 setTimeout(function(){
   G.running=false;
   var i=document.getElementById("intro"); if(i)i.style.display="none";
-  var CW=250,CH=250,dpr=2;
+  var CW=330,CH=330,dpr=2;
   var poses=[
-    ["ПОКОЙ",      {t:2.0}],
-    ["ВЗМАХ",      {t:3.1,flap:.85,hop:11,crest:.5,ruff:.4}],
-    ["ХОХОЛ ДЫБОМ",{t:4.4,crest:1,mad:1,ruff:.8,blink:.2}],
-    ["ГОЛОВА",     {t:5.7,look:1,ruff:.5,peck:.6}],
-    ["ОСАДКА",     {t:6.9,flap:.15,hop:-3,lean:.3}],
-    ["ЧИСТКА",     {t:8.2,preen:.85,ruff:.6,crest:.3}]
+    ["БОКОМ",  {t:10.2,turn:.5,look:-.5}],
+    ["ВИС",    {t:12.4,hang:1,fan:.5,crest:.4}],
+    ["СПРЯТАЛА ГОЛОВУ",{t:9.6,tuck:1,footUp:.9,blink:1}],
+    ["ПОТЯНУЛАСЬ",{t:7.1,stretch:1,fan:.8,footUp:.7,yawn:.5}],
+    ["ЗЕВОК",  {t:9.0,yawn:1,roll:-.25}]
   ];
   var W2=CW*poses.length,H2=CH+26;
   var cv=document.createElement("canvas");

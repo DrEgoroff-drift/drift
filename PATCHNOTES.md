@@ -9,6 +9,37 @@ could ever save.
 
 ---
 
+## 0.69.0 — "Fifty-two things to do on a perch"
+
+**M117a** (`12z-parrot-acts.js` new, `12y-parrot-face.js`, stand `docs/mkparrot.ps1`,
+`docs/parrot-live.html`).
+The bird got a body at M117 and then had nothing to do with it: it breathed, blinked and rocked,
+and after a minute of watching that reads as a loop rather than an animal. The window is the only
+place it is ever seen — open it and it is there, close it and it is gone — so everything the
+player learns about it, they learn from what it is busy with.
+
+- **A repertoire of 52 behaviours, written as data.** Fifty hand-written animations would be
+  fifty pieces of code nobody debugs and half of which nobody sees. Instead the bird gained ten
+  degrees of freedom — head roll, tuck into the shoulders, a step along the perch, a turn through
+  edge-on, a wing stretch that is not a flap, one lifted foot, a tail fan, a yawn, a shiver, a bow
+  and an upside-down hang — and a small sequencer on top of the springs. A behaviour is one line.
+- **A behaviour never switches life off.** It writes only its own degrees of freedom; breathing,
+  rocking, the ripple across the rows and the blinking keep running underneath. The resting pose
+  is every field at zero, so any behaviour settles by itself and none can get stuck on a frame.
+- **Three moods decide what can happen at all.** Drowsiness accumulates while the bird is left
+  alone and is spent by a nap that ends on a clock rather than on a dice roll; a poke makes it
+  cross for a few seconds. Measured, not assumed: the first two models left the bird asleep three
+  quarters of the time and never once cross, and the measurement itself was misread twice because
+  the stand served a cached build — the game page is the honest place to measure.
+- **Rare things stay rare.** Hanging upside down carries the weight of one against fifty.
+- The bird still does not invent: when a behaviour makes it speak, the line comes out of its own
+  memory (12x), glyphs and all.
+
+**A numbering note.** The repertoire took 0.69.0, which the plan had pencilled in for M119
+(Грохотун); that milestone moves down a version, as the bird's body did at M117.
+
+---
+
 ## 0.68.0 — "The meadow that remembers light"
 
 **M118** (`20c-peep.js` new, `21-mode-surface.js`, `12q-lore.js`, stand `docs/mkpeep.ps1`).
