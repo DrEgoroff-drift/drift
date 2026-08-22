@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 150 · символов верхнего уровня: 1671
+Файлов: 150 · символов верхнего уровня: 1672
 
 ## СИМВОЛЫ
 
@@ -335,7 +335,7 @@ ctx                          src/08-state.js:3
 curTok                       src/09-audio.js:71
 CUT_RANGE                    src/24-mode-belt.js:171
 cvs                          src/08-state.js:2
-dbg                          src/28-loop.js:379
+dbg                          src/28-loop.js:419
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -1186,6 +1186,7 @@ poiPoly                      src/20a-poi.js:108
 poiSkin                      src/20a-poi.js:117
 prevAct                      src/08-state.js:23
 prism                        src/21b-surface-deco.js:201
+prof                         src/28-loop.js:382
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:17
@@ -2050,13 +2051,14 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/27-ui-ship.js · 25 КБ
   · экран корабля:1
 
-## src/28-loop.js · 30 КБ
+## src/28-loop.js · 33 КБ
   · авария:1
   · телеметрия:21
   · звук по кадрам:195
   · цикл:251
   · авторазрешение:274
-  · dbg() — что держит корабль:370
+  · prof() — на что уходит кадр:370
+  · dbg() — что держит корабль:410
 
 ## tests/90-harness.js · 5 КБ
   · автотесты: каркас:1
