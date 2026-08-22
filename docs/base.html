@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.100.1";
+const VER="0.100.2";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -27160,7 +27160,9 @@ function drawBase(){
     deepest=r+1;
     const y=Y(BASE_OY+r*BCELL_H+BCELL_H*.78);
     ctx.beginPath();
-    ctx.moveTo(X(96+c0*BCELL_W),y);ctx.lineTo(X(BASE_OX+(c1+1)*BCELL_W-6),y);ctx.stroke();
+    ctx.moveTo(X(BASE_OX+6+c0*BCELL_W),y);ctx.lineTo(X(BASE_OX+(c1+1)*BCELL_W-6),y);ctx.stroke();
+    /* и по полу тоннеля — от ворот до верхнего яруса */
+    if(r===0){ctx.beginPath();ctx.moveTo(X(BASE_GATE_X+70),Y(BASE_GY-6));ctx.lineTo(X(BASE_OX),Y(BASE_GY-6));ctx.stroke();}
   }
   /* астронавт — тот же силуэт, что на поверхности и в шахте */
   ctx.save();ctx.translate(X(S.x),Y(S.y)+26);ctx.scale(.9,.9);
