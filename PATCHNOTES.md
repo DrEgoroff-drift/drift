@@ -8,6 +8,11 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.99.9 — "Tracks" (G12, pass 1)
+
+The walker leaves tracks on the ground — a mark every thirteen pixels of walking, fading over
+a minute — so the foot world remembers where you came from. Nothing is stored.
+
 ## 0.99.8 — "Horizon" (G7)
 
 The sky base layer carries a horizon glow in the star's colour on worlds with air; rain falls

@@ -478,8 +478,8 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:84
-drawSurface                  src/21-mode-surface.js:472
-drawSurfaceHud               src/21-mode-surface.js:426
+drawSurface                  src/21-mode-surface.js:478
+drawSurfaceHud               src/21-mode-surface.js:432
 drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:272
@@ -511,7 +511,7 @@ eq                           tests/90-harness.js:23
 ETHER                        src/11b-speech.js:24
 ETHER_EVERY                  src/11b-speech.js:38
 etherTick                    src/11b-speech.js:39
-evacuate                     src/21-mode-surface.js:351
+evacuate                     src/21-mode-surface.js:357
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:77
 exitBelt                     src/24-mode-belt.js:162
@@ -824,8 +824,8 @@ landingDust                  src/19-mode-landing.js:615
 landOnTestPlanet             tests/90-harness.js:62
 last                         src/28-loop.js:252
 lastDroneTick                src/28-loop.js:253
-launch                       src/21-mode-surface.js:391
-launchHold                   src/21-mode-surface.js:336
+launch                       src/21-mode-surface.js:397
+launchHold                   src/21-mode-surface.js:342
 layerLevel                   src/10-music.js:326
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:115
@@ -1604,7 +1604,7 @@ suite                        tests/90-harness.js:12
 suitFailure                  src/23-mode-dig.js:104
 suitHit                      src/23-mode-dig.js:97
 SUN_DIR                      src/19c-light.js:11
-surfaceHint                  src/21-mode-surface.js:411
+surfaceHint                  src/21-mode-surface.js:417
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -1653,7 +1653,7 @@ TEST                         tests/90-harness.js:10
 TEST_SUITES                  tests/90-harness.js:93
 tfbm                         src/18a-material.js:23
 tickDrones                   src/12-economy.js:80
-tickLaunchHold               src/21-mode-surface.js:337
+tickLaunchHold               src/21-mode-surface.js:343
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
@@ -1693,7 +1693,7 @@ toggleLog                    src/11-log.js:89
 toggleLoreBoard              src/27h-ui-lore.js:85
 toggleMenu                   src/15-input.js:126
 toggleParrotWin              src/12y-parrot-face.js:665
-totalLoss                    src/21-mode-surface.js:368
+totalLoss                    src/21-mode-surface.js:374
 towShare                     src/03f-hull-role.js:87
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03b-hull-paint.js:1
@@ -2098,9 +2098,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21-mode-surface.js · 36 КБ
+## src/21-mode-surface.js · 37 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:407
+  · навигатор и подсказки сверху:413
 
 ## src/22a-cave-deco.js · 21 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1

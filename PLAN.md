@@ -230,6 +230,7 @@ standard; the rest is pulled up to them, not the other way round.
 - **G12 — the foot world gets its pass** (debt above). The longest screen after the cockpit. After
   G1–G2: a POI every 2–3 screens with a silhouette visible from afar, wind in the flora, tracks
   behind the walker, a night with the suit lamp as the only light.
+  **Pass 1 in 0.99.9:** tracks. Still open: POI rhythm, wind in flora, night (needs an hour).
 
 Not in this pass (still the list under "What not to do"): blur, DoF, chromatic aberration,
 motion blur. Depth is done by value and overlap, never by filter.

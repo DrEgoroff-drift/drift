@@ -107,6 +107,12 @@ function updateSurface(dt){
   const walking=S.on&&(keys.left||keys.right||S.walkTarget!=null);
   S.walkAmp=clamp(S.walkAmp+(walking?1:-1)*.12*dt,0,1);
   if(walking)S.walkPhase+=dt*.22;
+  /* следы: мир пешком не помнил, что по нему шли (G12). Пишем точку через
+     каждые тринадцать пикселей пути по земле, храним полторы сотни. */
+  if(walking&&S.on){
+    S.tracks=S.tracks||[];
+    if(S.lastTrackX==null||Math.abs(S.x-S.lastTrackX)>=13){S.tracks.push({x:S.x,t:G.t,f:S.face});S.lastTrackX=S.x;if(S.tracks.length>150)S.tracks.shift();}
+  }
   /* пока стоим на земле — жёстко следуем рельефу, а не догоняем его свободным
      падением: на склоне гравитация отставала от подъёма/спуска на один-два
      кадра, "на земле" мигало туда-обратно, отсюда дрожь ног и мелькание
@@ -579,6 +585,19 @@ function drawSurface(){
   /* астронавт рисуется по своей координате, а не в центре экрана: с инерцией
      и взглядом вперёд центр экрана — уже не он */
   const x=S.x-camx,y=S.y-camy;
+  /* следы гаснут за минуту: пыль оседает, и тропа остаётся только там, где
+     ходили только что — так видно, откуда пришёл */
+  if(S.tracks&&S.tracks.length){
+    for(const tk of S.tracks){
+      const age=G.t-tk.t;if(age>2400)continue;
+      const tx=tk.x-camx;if(tx<-10||tx>W+10)continue;
+      const ty=groundAt(tr,tk.x)-camy;
+      ctx.fillStyle="rgba(0,0,0,"+(.45*(1-age/2400)).toFixed(3)+")";
+      ctx.fillRect(tx-2.6,ty-1.2,5.2,1.6);
+      ctx.fillStyle="rgba(255,255,255,"+(.08*(1-age/2400)).toFixed(3)+")";
+      ctx.fillRect(tx-2.6,ty+.4,5.2,.8);
+    }
+  }
   if(S.on)groundShadow(x,y+1,7,2);
   ctx.save();ctx.translate(x,y-1);
   drawAstronaut({face:S.face,amp:S.walkAmp,phase:S.walkPhase,
