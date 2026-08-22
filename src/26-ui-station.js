@@ -102,6 +102,14 @@ document.getElementById("bRepair").addEventListener("click",()=>{
   G.credits-=can*per;G.hull+=can;renderTab();
 });
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;
+  /* правило 1 оформления: капслок — подписям, а не тексту. Длинный заголовок
+     секции — это фраза, которую читают, и она набирается обычным текстом */
+  if(cls==="sec"&&typeof html==="string"&&(html.length>48||html.indexOf(" — ")>=0)){
+    e.className="sec note";
+    /* исходники набраны капслоком под прежний стиль; фраза переводится в
+       обычный регистр с заглавной в начале предложения */
+    if(!/[а-яёa-z]/.test(html))html=html.toLocaleLowerCase("ru").replace(/(^|[.!?]\s+)([а-яёa-z])/g,(m,a,b)=>a+b.toUpperCase());
+  }
   if(html!=null)e.innerHTML=html;return e;}
 function shipThumb(id,w,h){
   const cn=document.createElement("canvas");cn.width=w;cn.height=h;

@@ -553,3 +553,6 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 .body::-webkit-scrollbar-thumb,#loglist::-webkit-scrollbar-thumb,#lorelist::-webkit-scrollbar-thumb{
   background:rgba(127,230,216,.18);border-radius:3px}
 .body,#loglist,#lorelist{scrollbar-width:thin;scrollbar-color:rgba(127,230,216,.18) transparent}
+/* длинная «секция» — это фраза, а не подпись: обычный регистр, читаемый кегль */
+.sec.note{text-transform:none;letter-spacing:.02em;font-size:11px;line-height:1.6;color:var(--dim)}
+@media (min-width:900px){.sec.note{font-size:12px;max-width:72ch}}
