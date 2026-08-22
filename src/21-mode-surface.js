@@ -80,7 +80,13 @@ function enterSurface(){
   G.mode="surface";
   G.surfTipShown=0;
   logAdd("dim","Посадка на "+p.name+" · залежей: "+deposits.length);
-  say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length);
+  /* посадки на планету считаются так же, как на станцию: условиям историй
+     нужно «который раз здесь» (11c) */
+  if(typeof visitsAll==="function"){const V=visitsAll(),k=G.sys.key+"/"+p.idx;V[k]=(V[k]|0)+1;}
+  /* строка истории к посадке (11c): то, что замечаешь, выйдя из корабля */
+  const sl=(typeof storyGroundLine==="function")?storyGroundLine("land"):null;
+  if(sl)logAdd("dim",sl);
+  say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
 }
 function updateSurface(dt){
   const S=G.surf,tr=S.tr,st=stat();
@@ -201,7 +207,7 @@ function updateSurface(dt){
     const A=tinAskOf(T.seed);
     if(T.bin>=1){
       G.prompt="ДЕЙСТВИЕ — ЗАБРАТЬ · "+RES[A.made].ru.toUpperCase()+" ×"+Math.floor(T.bin)+
-        "\n"+tinLine(T);
+        "\n"+tinLine(T)+storyNote("tin");
       if(actEdge){
         const n=tinTakeOut(T);
         if(n>0)tell("good","Из бункера: "+RES[A.made].ru+" ×"+n,
@@ -235,7 +241,7 @@ function updateSurface(dt){
     }
     if(big&&bn>0){
       G.prompt="ДЕЙСТВИЕ — ОТДАТЬ ЖИВУЩИМ · "+RES[big].ru.toUpperCase()+" ×"+Math.min(bn,40)+
-        (V?"\nПОСЁЛОК · СТУПЕНЬ "+V.stage+" · "+settleLine(V,V.built.length):"\nЗДЕСЬ ЖИВУТ");
+        (V?"\nПОСЁЛОК · СТУПЕНЬ "+V.stage+" · "+settleLine(V,V.built.length):"\nЗДЕСЬ ЖИВУТ")+storyNote("settle");
       if(actEdge){
         const S2=V||settleMake(S.p);
         const n=settleGive(S2,big,Math.min(bn,40));

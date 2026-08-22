@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 153 · символов верхнего уровня: 1710
+Файлов: 154 · символов верхнего уровня: 1714
 
 ## СИМВОЛЫ
 
@@ -210,6 +210,7 @@ capIv                        src/28-loop.js:292
 capOf                        src/05-parts.js:108
 capUsed                      src/05-parts.js:219
 CAST                         src/12k-stories-a.js:19
+CAST_B                       src/12k-stories-b.js:7
 CAVE_W                       src/22-mode-cave.js:5
 CAVE_ZONE                    src/22a-cave-deco.js:17
 CAVE_ZONE_MIX                src/22a-cave-deco.js:26
@@ -400,11 +401,11 @@ drawBeltRocks                src/17-mode-system.js:452
 drawBuildMenu                src/21aa-base-rooms.js:492
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
-drawCave                     src/22-mode-cave.js:178
+drawCave                     src/22-mode-cave.js:180
 drawCaveBack                 src/22a-cave-deco.js:259
 drawCaveDark                 src/22a-cave-deco.js:315
 drawCaveGlow                 src/22a-cave-deco.js:322
-drawCaveRock                 src/22-mode-cave.js:143
+drawCaveRock                 src/22-mode-cave.js:145
 drawCaveSolid                src/22a-cave-deco.js:214
 drawCaveWater                src/22a-cave-deco.js:288
 drawCelest                   src/06a-celest.js:141
@@ -473,8 +474,8 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:84
-drawSurface                  src/21-mode-surface.js:465
-drawSurfaceHud               src/21-mode-surface.js:419
+drawSurface                  src/21-mode-surface.js:471
+drawSurfaceHud               src/21-mode-surface.js:425
 drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:272
@@ -506,11 +507,11 @@ eq                           tests/90-harness.js:23
 ETHER                        src/11b-speech.js:24
 ETHER_EVERY                  src/11b-speech.js:38
 etherTick                    src/11b-speech.js:39
-evacuate                     src/21-mode-surface.js:344
+evacuate                     src/21-mode-surface.js:350
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:77
 exitBelt                     src/24-mode-belt.js:162
-exitCave                     src/22-mode-cave.js:40
+exitCave                     src/22-mode-cave.js:42
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
 exportCode                   src/14-save.js:482
@@ -819,8 +820,8 @@ landingDust                  src/19-mode-landing.js:597
 landOnTestPlanet             tests/90-harness.js:62
 last                         src/28-loop.js:252
 lastDroneTick                src/28-loop.js:253
-launch                       src/21-mode-surface.js:384
-launchHold                   src/21-mode-surface.js:329
+launch                       src/21-mode-surface.js:390
+launchHold                   src/21-mode-surface.js:335
 layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:115
@@ -1500,43 +1501,46 @@ stGroupOf                    src/26-ui-station.js:39
 stopEngine                   src/09-audio.js:243
 STORAGE_OK                   src/14-save.js:7
 STORIES                      src/12k-stories-a.js:42
+STORIES_B                    src/12k-stories-b.js:27
 STORM_WORLDS                 src/21a-mode-base.js:233
 STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
-STORY_FIX                    src/11c-stories.js:51
+STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:233
-STORY_WHEN                   src/11c-stories.js:119
-storyAddrMatch               src/11c-stories.js:66
+STORY_SEAT                   src/11c-stories.js:240
+STORY_WHEN                   src/11c-stories.js:126
+storyAddrMatch               src/11c-stories.js:69
 storyAll                     src/11c-stories.js:32
-storyAnchorRoll              src/11c-stories.js:80
+storyAnchorRoll              src/11c-stories.js:86
 storyById                    src/11c-stories.js:33
-storyCantFigures             src/11c-stories.js:240
-storyCantProps               src/11c-stories.js:249
-storyCantScene               src/11c-stories.js:234
-storyCheckWhen               src/11c-stories.js:143
+storyCantFigures             src/11c-stories.js:247
+storyCantProps               src/11c-stories.js:256
+storyCantScene               src/11c-stories.js:241
+storyCheckWhen               src/11c-stories.js:150
 storyCtx                     src/11c-stories.js:39
 storyDay                     src/11c-stories.js:28
-storyEtherLine               src/11c-stories.js:184
-storyFindLine                src/11c-stories.js:212
-storyFixedAddr               src/11c-stories.js:52
+storyEtherLine               src/11c-stories.js:191
+storyFindLine                src/11c-stories.js:219
+storyFixedAddr               src/11c-stories.js:55
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
+storyGroundLine              src/11c-stories.js:315
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:281
-storyNewsItem                src/11c-stories.js:219
-storyPickOne                 src/11c-stories.js:175
+storyLint                    src/11c-stories.js:288
+storyNewsItem                src/11c-stories.js:226
+storyNote                    src/11c-stories.js:327
+storyPickOne                 src/11c-stories.js:182
 storyPins                    src/11c-stories.js:30
-storyPlace                   src/11c-stories.js:85
-storyProp                    src/11c-stories.js:257
-storyQueueLine               src/11c-stories.js:192
+storyPlace                   src/11c-stories.js:92
+storyProp                    src/11c-stories.js:264
+storyQueueLine               src/11c-stories.js:199
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
-storyShow                    src/11c-stories.js:169
-storyTableLine               src/11c-stories.js:204
-storyTraces                  src/11c-stories.js:152
-storyTurns                   src/11c-stories.js:101
-storyWhen                    src/11c-stories.js:138
+storyShow                    src/11c-stories.js:176
+storyTableLine               src/11c-stories.js:211
+storyTraces                  src/11c-stories.js:159
+storyTurns                   src/11c-stories.js:108
+storyWhen                    src/11c-stories.js:145
 stPanels                     src/17-mode-system.js:529
 stRing                       src/17-mode-system.js:555
 STRIP_CHUNK                  src/07-planet.js:73
@@ -1554,7 +1558,7 @@ suite                        tests/90-harness.js:12
 suitFailure                  src/23-mode-dig.js:104
 suitHit                      src/23-mode-dig.js:97
 SUN_DIR                      src/19c-light.js:11
-surfaceHint                  src/21-mode-surface.js:404
+surfaceHint                  src/21-mode-surface.js:410
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -1603,7 +1607,7 @@ TEST                         tests/90-harness.js:10
 TEST_SUITES                  tests/90-harness.js:93
 tfbm                         src/18a-material.js:23
 tickDrones                   src/12-economy.js:80
-tickLaunchHold               src/21-mode-surface.js:330
+tickLaunchHold               src/21-mode-surface.js:336
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
@@ -1643,7 +1647,7 @@ toggleLog                    src/11-log.js:89
 toggleLoreBoard              src/27h-ui-lore.js:83
 toggleMenu                   src/15-input.js:126
 toggleParrotWin              src/12y-parrot-face.js:665
-totalLoss                    src/21-mode-surface.js:361
+totalLoss                    src/21-mode-surface.js:367
 towShare                     src/03f-hull-role.js:87
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03b-hull-paint.js:1
@@ -1666,14 +1670,14 @@ updateAllies                 src/12a-crew.js:517
 updateBarges                 src/12l-barge.js:156
 updateBase                   src/21a-mode-base.js:311
 updateBelt                   src/24-mode-belt.js:172
-updateCave                   src/22-mode-cave.js:44
+updateCave                   src/22-mode-cave.js:46
 updateCaveDeco               src/22a-cave-deco.js:178
 updateCombat                 src/13-pirates.js:76
 updateDig                    src/23-mode-dig.js:113
 updateLanding                src/19-mode-landing.js:45
 updateRaid                   src/24a-mode-raid.js:213
 updateScoop                  src/19a-mode-scoop.js:26
-updateSurface                src/21-mode-surface.js:85
+updateSurface                src/21-mode-surface.js:91
 updateSystem                 src/17-mode-system.js:2
 useBeacon                    src/23-mode-dig.js:72
 VER                          src/01-core.js:4
@@ -1802,9 +1806,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/11b-speech.js · 11 КБ
   · речь: очередь реплик и вещь на столе:1
 
-## src/11c-stories.js · 16 КБ
+## src/11c-stories.js · 18 КБ
   · истории: следы, а не задания:1
-  · каналы:182
+  · каналы:189
 
 ## src/11-log.js · 5 КБ
   · бортовой журнал:1
@@ -1859,6 +1863,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12k-stories-a.js · 28 КБ
   · истории, часть первая:1
   · длинные — в духе институтской фантастики:222
+
+## src/12k-stories-b.js · 34 КБ
+  · истории, часть вторая:1
 
 ## src/12l-barge.js · 38 КБ
   · торговые баржи:1
@@ -2028,9 +2035,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21-mode-surface.js · 35 КБ
+## src/21-mode-surface.js · 36 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:400
+  · навигатор и подсказки сверху:406
 
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1

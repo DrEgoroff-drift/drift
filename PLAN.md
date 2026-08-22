@@ -891,6 +891,16 @@ socket out is not wired); the recorder itself is not a purchasable unit, only th
 `26-ui-station` crossed 40 KB with this tab and is now shouting on every build; wear from the hull
 (`12s-wear`) and instrument age run on separate clocks that never speak to each other.
 
+## M130 (0.90.0) — built. The ground speaks too
+
+Channels `land`, `cave`, `settle`, `tin`; addresses `planet`, `settle`, `tin`, `world:T`; planet
+stories anchor to system/planet and landings on a planet are counted. `12k-stories-b`: 46
+stories, 72 in all. Lint now also rejects unknown address kinds.
+
+**Open for M131**: links as data (a trace may require a trace of *another* story seen), the parrot
+as carrier (a line heard at A repeated at B), the barge passenger as a channel, +30 stories to
+pass a hundred.
+
 ## M129 (0.89.0) — built. Traces, not tasks
 
 Engine `11c-stories`, data `12k-stories-a` (26 stories, six of them long), suite `91zp-stories`.

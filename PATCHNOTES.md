@@ -8,6 +8,25 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.90.0 — "The ground speaks too" (M130)
+
+**Four more channels, all on the ground**: a line appended to the landing message, a line at the
+mouth of a cave, a tail on the prompt at a settlement and at the Tin. Three more address kinds:
+`planet` (any world you land on), `settle` and `tin` (worlds where those can live), plus
+`world:T`. Planet stories anchor to *system/planet*, not to the system — the first version let a
+story pinned on the desert surface on the crystal world next door. Landings on a planet are
+counted like landings at a station, so "the third time here" works on the ground.
+
+**Forty-six stories** in `12k-stories-b` (72 in all): the four ground stories the design promised
+— who feeds the Tin, the shoal and the hunter, the shell that knows its way home, the last light
+in the settlement — and tracks that go one way, a warm stone, a garden in a crater, a plate with
+seven lines, a beehive, a rust bell, a crystal with a name; at the stations, Nyura who charts a
+sector that does not exist, the Abashev twins, the doctor who only says "yes", Matvey Kuzmich
+listening to every bulletin, a kettle that boils by itself, the lighthouse keeper's poems, skipper
+Oroz who never docks, someone small at the door, two at the window; the busy frequency, the water
+schedule, the dock's echo, half a dock flying away; the six rivals again — the baker bakes,
+Sovenya sold, Efim's voice on a satellite, the baker and Shtof at one table once an eclipse.
+
 ## 0.89.0 — "Traces, not tasks" (M129)
 
 The first of the hundred. A human story in Drift is two to seven **traces** laid across the

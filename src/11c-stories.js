@@ -38,8 +38,11 @@ function storySetFlag(S,f){const F=storyFlags();(F[S.id]||(F[S.id]={}))[f]=story
 /* ── где мы ── всё, что нужно условиям и адресам, в одном объекте */
 function storyCtx(extra){
   const sys=G.sys;
-  const c={sys,key:sys?sys.key:null,st:G.st||null,p:(G.surf&&G.surf.p)||(G.land&&G.land.p)||null,
-    sx:G.sx,sy:G.sy};
+  const p=(G.surf&&G.surf.p)||(G.land&&G.land.p)||null;
+  /* на станции ключ — система; на планете — система/планета: иначе история,
+     прибитая к одному миру, всплывала бы на соседнем в той же системе */
+  const c={sys,st:G.st||null,p,sx:G.sx,sy:G.sy,sysKey:sys?sys.key:null,
+    key:sys?(G.st||!p?sys.key:sys.key+"/"+p.idx):null};
   if(extra)for(const k in extra)c[k]=extra[k];
   return c;
 }
@@ -71,6 +74,9 @@ function storyAddrMatch(S,c){
   if(at.slice(0,6)==="world:")return c.p&&c.p.type===at.slice(6)?c.key:null;
   if(at==="danger:far")return c.sys&&typeof sysDanger==="function"&&sysDanger(c.sys)>=.6&&c.st?c.key:null;
   if(at==="any")return c.st?c.key:null;
+  if(at==="planet")return c.p?c.key:null;         // любой мир, на который сели
+  if(at==="settle")return c.p&&typeof settleCanLive==="function"&&settleCanLive(c.p)?c.key:null;
+  if(at==="tin")return c.p&&typeof tinCanLive==="function"&&tinCanLive(c.p)?c.key:null;
   return null;
 }
 /* Бросок на якорь: плавающая история прибивается не к первому же подходящему
@@ -80,7 +86,8 @@ function storyAddrMatch(S,c){
 function storyAnchorRoll(S,key){
   let h=0;for(let i=0;i<S.id.length;i++)h=(h*31+S.id.charCodeAt(i))>>>0;
   const p=key.split(",");
-  return hashi(h,(+p[0])*73+(+p[1]),0xA11)%3===0;
+  const extra=(p[1]||"").indexOf("/")>=0?parseInt(p[1].split("/")[1])*17:0;
+  return hashi(h,parseInt(p[0])*73+parseInt(p[1])+extra,0xA11)%3===0;
 }
 function storyPlace(S,c){
   const P=storyPins();
@@ -129,7 +136,7 @@ const STORY_WHEN={
   res:(v)=>{for(const k in v)if((G.cargo[k]|0)<v[k])return false;return true;},
   item:(v,S,c)=>c.item===v,
   strip:(v,S,c)=>{const L=G.strips||[];const p=(storyPins()[S.id]||"").split(",");
-    return L.some(s=>v==="here"?(s.sx===+p[0]&&s.sy===+p[1]):true);},
+    return L.some(s=>v==="here"?(s.sx===parseInt(p[0])&&s.sy===parseInt(p[1])):true);},
   occ:(v,S,c)=>!!(G.occ&&G.occ[c.key])===!!v,
   freed:(v)=>(G.freed|0)>=v,
   doomNear:(v)=>!!(G.doomDead&&Object.keys(G.doomDead).length)===!!v,
@@ -221,7 +228,7 @@ function storyNewsItem(r){
   if(!L.length||r()>.5)return null;
   const h=storyPickOne(L);storyShow(h);
   const p=h.key.split(",");
-  return {id:"story",ru:h.t.text,sx:+p[0],sy:+p[1]};
+  return {id:"story",ru:h.t.text,sx:parseInt(p[0]),sy:parseInt(p[1])};
 }
 
 /* ── кантина: фигуры и вещи на стойке ──
@@ -288,13 +295,36 @@ function storyLint(){
     const SURF={queue:"counter",table:"counter"};
     const vias=new Set(S.traces.map(t=>SURF[t.via]||t.via));
     if(vias.size>4)bad.push(S.id+": поверхностей "+vias.size);
-    for(const t of S.traces)if(!["ether","queue","table","find","news","cant"].includes(t.via))bad.push(S.id+"."+t.id+": канал "+t.via);
+    for(const t of S.traces)if(!["ether","queue","table","find","news","cant","land","cave","settle","tin"].includes(t.via))bad.push(S.id+"."+t.id+": канал "+t.via);
     for(const id of (S.cast||[]))if(!CASTT[id])bad.push(S.id+": нет в труппе "+id);
     for(const T of (S.turns||[])){
       const read=S.traces.some(t=>t.when&&(t.when.flag===T.set||t.when.noflag===T.set));
       if(!read)bad.push(S.id+": флаг "+T.set+" никто не читает");
     }
+    const at=S.at||"any";
+    if(!/^(any|planet|settle|tin|danger:far|fixed:\d+|stype:\w+|world:\w+)$/.test(at))bad.push(S.id+": адрес "+at);
     const ids=new Set();for(const t of S.traces){if(ids.has(t.id))bad.push(S.id+": след "+t.id+" дважды");ids.add(t.id);}
   }
   return bad.concat(storyCheckWhen());
+}
+
+/* ── земля: посадка, пещера, посёлок, Жестянка ──
+   Те же следы, но поверхность — планета: строка к сообщению о посадке, к входу
+   в пещеру, к подсказке у посёлка или у машины. Адреса planet и world:T
+   прибиваются к системе, как и станционные. */
+function storyGroundLine(via){
+  if(!G.sys)return null;
+  const c=storyCtx();
+  if(!c.p)return null;
+  const h=storyPickOne(storyTraces(via,c));
+  if(!h)return null;
+  storyShow(h);
+  return h.t.text;
+}
+/* подсказка у посёлка или машины: строка истории хвостом к подсказке.
+   Подсказка ставится каждый кадр, поэтому выбор держится сутки (storyPickOne
+   идёт по дню), а запись виденного — одна. */
+function storyNote(via){
+  const l=storyGroundLine(via);
+  return l?"\n"+l:"";
 }
