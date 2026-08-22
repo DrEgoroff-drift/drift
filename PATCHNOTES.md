@@ -8,6 +8,15 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.100.7 — "Rock behind the plating" (M143)
+
+Raid tails (G4): where the cell behind a bulkhead is solid asteroid on every side, the wall is
+bare rock — three strata, no plinth or seams, loose stones up close; the hangar has its gate in
+the end wall with a cold cone on the floor; pirates at rest lower their weapons and every
+second one leans on the wall until the alarm. Scoop tails (G5): giants come in three structures
+— banded with a few eyes, spotted with a scatter of small storms, and jet-streamed where the
+bands tear into plumes; every band has a steep leading edge and a soft trailing one.
+
 ## 0.100.6 — "Three magnitudes" (M142)
 
 System and belt tails. Stars come in three magnitudes with a dozen saturated orange and blue

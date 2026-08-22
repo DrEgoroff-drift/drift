@@ -447,7 +447,7 @@ drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:240
 drawFindsSystem              src/17b-finds.js:140
 drawFlame                    src/03b-hull-paint.js:10
-drawFoeBody                  src/24a-mode-raid.js:674
+drawFoeBody                  src/24a-mode-raid.js:721
 drawForeground               src/21b-surface-deco.js:577
 drawGlassHUD                 src/24-mode-belt.js:587
 drawGround                   src/19-mode-landing.js:109
@@ -483,7 +483,7 @@ drawRaid                     src/24a-mode-raid.js:351
 drawRing                     src/17-mode-system.js:456
 drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
-drawScoop                    src/19a-mode-scoop.js:151
+drawScoop                    src/19a-mode-scoop.js:161
 drawSkyBase                  src/19c-light.js:180
 drawSkyBodies                src/19b-sky.js:59
 drawSkyLayer                 src/19-mode-landing.js:296
@@ -2064,7 +2064,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · карта:1
   · карта: ночное небо, а не схема молекулы:21
 
-## src/19a-mode-scoop.js · 21 КБ
+## src/19a-mode-scoop.js · 22 КБ
   · сбор летучих газов: заход в атмосферу гиганта:1
   · небо гиганта: полосы, а не лепёшки:69
 
@@ -2145,7 +2145,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/23-mode-dig.js · 52 КБ
   · шахта: спуск вглубь планеты:1
 
-## src/24a-mode-raid.js · 43 КБ
+## src/24a-mode-raid.js · 47 КБ
   · рейд на пиратскую базу: полигональный интерьер:1
   · генерация: комнаты и коридоры со связностью:29
   · вход, выход, наполнение:84

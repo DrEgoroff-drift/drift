@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.100.6";
+const VER="0.100.7";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -21310,9 +21310,14 @@ function giantTex(p){
   const pal=p.T.pal,sd=p.seed|0;
   /* два-три вихря: не рисуются поверх, а вмешиваются в само искажение —
      поэтому полосы вокруг них загибаются, как в настоящем шторме */
+  /* характер гиганта — структура, а не палитра (хвост G5): полосатый с
+     двумя-тремя вихрями, пятнистый с россыпью мелких штормов, и струйный,
+     у которого ленты рвутся восходящими плюмажами */
+  const kind=(sd>>>3)%3;
   const rr=rng(hashi(sd,0x5701,9)),eyes=[];
-  for(let i=0;i<2+Math.floor(rr()*2);i++)
-    eyes.push({x:rr(),y:.18+rr()*.64,r:.06+rr()*.09,s:(rr()<.5?-1:1)*(.5+rr())});
+  const ne=kind===1?6+Math.floor(rr()*4):2+Math.floor(rr()*2);
+  for(let i=0;i<ne;i++)
+    eyes.push({x:rr(),y:.18+rr()*.64,r:kind===1?.025+rr()*.035:.06+rr()*.09,s:(rr()<.5?-1:1)*(.5+rr())});
   /* цвет одной точки ленты. u берётся не только в [0,1): у краёв текстуру
      считают дважды — при u и при u-1 — и сшивают. Так лента замыкается в кольцо
      без шва и без зеркала: зеркало склеивало кромку, но на пол-экрана
@@ -21331,7 +21336,12 @@ function giantTex(p){
       }
     }
     /* широта задаёт полосу, шум — её толщину и рваность */
-    const band=Math.sin(vv*Math.PI*14.0+Math.sin(uu*2.1)*.5)*.5+.5;
+    /* фронт резкий, хвост мягкий: лента — это облачный вал, у него передняя
+       кромка крутая, а задняя расплывается (хвост G5). Синус давал обе
+       кромки одинаково мягкими. У струйного типа ленты ещё и рвёт по v */
+    const phs=vv*7.0+Math.sin(uu*2.1)*.08+(kind===2?(fbm2(uu*5,vv*3,sd^0x31,2)-.5)*.6:0);
+    const fr=phs-Math.floor(phs);
+    const band=fr<.26?fr/.26:1-(fr-.26)/.74;
     const grain=fbm2(uu*9,vv*22,sd^0x1234,3)-.5;
     /* контраст: полосы должны читаться лентами, а не переливом */
     let t=clamp(vv*.42+band*.52+grain*.18,0,1);
@@ -31261,6 +31271,26 @@ function drawRaid(){
     if(!A||!B||!C||!D)return;
     polys.push({p:[A,B,C,D],d:(A.z+B.z+C.z+D.z)/4+(dBias||0),col,li,edge,emis});
   }
+  /* ── скальная стена (хвост G4) ──
+     Там, где за переборкой не отсек, а толща астероида, обшивки нет: база
+     врезана в камень, и камень виден. Низ светлее, верх в тени, по стене
+     три неровных пласта. Ни плинтуса, ни швов — их тут некому ставить */
+  function rockWall(a,b,c,d,li,seed){
+    const lerp3=(p,q,t)=>[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t,p[2]+(q[2]-p[2])*t];
+    quad(a,lerp3(a,b,.55),lerp3(d,c,.55),d,[64,55,46],li*.98,false);
+    quad(lerp3(a,b,.55),b,c,lerp3(d,c,.55),[46,40,36],li*.68,false);
+    for(let i=0;i<3;i++){
+      const t0=.12+i*.28+((seed>>>(i*3))&3)*.03, t1=t0+.05, sk=(((seed>>>(i*2+1))&3)-1.5)*.03;
+      quad(lerp3(a,b,t0),lerp3(a,b,t1),lerp3(d,c,t1+sk),lerp3(d,c,t0+sk),[32,28,26],li*.8,false);
+    }
+    const A=proj(a[0],a[1],a[2]);
+    if(A&&A.z<RCELL*3){                       // вблизи — крупные камни в кладке
+      for(let t=.15;t<.9;t+=.3){
+        const p=lerp3(lerp3(a,b,.22),lerp3(d,c,.22),t),q=lerp3(lerp3(a,b,.34),lerp3(d,c,.34),t+.12);
+        quad(p,[p[0],q[1],p[2]],q,[q[0],p[1],q[2]],[76,66,56],li*.9,false);
+      }
+    }
+  }
   /* Коробка из пяти граней (низ не виден): всё крупное железо в ангаре собрано
      из них — контейнеры, опоры, катер. Ярче светится верх, бока темнее, и
      этого хватает, чтобы предмет стоял в пространстве, а не лежал наклейкой. */
@@ -31309,11 +31339,38 @@ function drawRaid(){
       quad([x0+pp,h+.6,z0+pp],[x1-pp,h+.6,z0+pp],[x1-pp,h+.6,z1-pp],[x0+pp,h+.6,z1-pp],pc,li*1.05,false,0,-.4);
     }
     quad([x0,RAID_H,z1],[x1,RAID_H,z1],[x1,RAID_H,z0],[x0,RAID_H,z0],base,li*.28,false);   // потолок темнее пола: свет идёт сверху вниз
-    /* стены рисуем только там, где соседняя клетка — порода */
-    if(raidSolid(R,c,rr-1))wall([x0,h,z0],[x0,RAID_H,z0],[x1,RAID_H,z0],[x1,h,z0],base,li);
-    if(raidSolid(R,c,rr+1))wall([x1,h,z1],[x1,RAID_H,z1],[x0,RAID_H,z1],[x0,h,z1],base,li);
-    if(raidSolid(R,c-1,rr))wall([x0,h,z1],[x0,RAID_H,z1],[x0,RAID_H,z0],[x0,h,z0],base,li*.92);
-    if(raidSolid(R,c+1,rr))wall([x1,h,z0],[x1,RAID_H,z0],[x1,RAID_H,z1],[x1,h,z1],base,li*.92);
+    /* стены рисуем только там, где соседняя клетка — порода; если за ней ещё
+       порода во все стороны, это толща астероида — стена скальная (G4) */
+    const thick=(cc,r2,dc,dr)=>raidSolid(R,cc+dc,r2+dr)&&raidSolid(R,cc-dr,r2+dc)&&raidSolid(R,cc+dr,r2-dc);
+    const sdw=hashi(c,rr,0x5CA1);
+    if(raidSolid(R,c,rr-1)){
+      if(thick(c,rr-1,0,-1))rockWall([x0,h,z0],[x0,RAID_H,z0],[x1,RAID_H,z0],[x1,h,z0],li,sdw);
+      else wall([x0,h,z0],[x0,RAID_H,z0],[x1,RAID_H,z0],[x1,h,z0],base,li);
+    }
+    if(raidSolid(R,c,rr+1)){
+      if(thick(c,rr+1,0,1))rockWall([x1,h,z1],[x1,RAID_H,z1],[x0,RAID_H,z1],[x0,h,z1],li,sdw^5);
+      else wall([x1,h,z1],[x1,RAID_H,z1],[x0,RAID_H,z1],[x0,h,z1],base,li);
+    }
+    if(raidSolid(R,c-1,rr)){
+      if(thick(c-1,rr,-1,0))rockWall([x0,h,z1],[x0,RAID_H,z1],[x0,RAID_H,z0],[x0,h,z0],li*.92,sdw^9);
+      else wall([x0,h,z1],[x0,RAID_H,z1],[x0,RAID_H,z0],[x0,h,z0],base,li*.92);
+    }
+    if(raidSolid(R,c+1,rr)){
+      if(thick(c+1,rr,1,0))rockWall([x1,h,z0],[x1,RAID_H,z0],[x1,RAID_H,z1],[x1,h,z1],li*.92,sdw^13);
+      else wall([x1,h,z0],[x1,RAID_H,z0],[x1,RAID_H,z1],[x1,h,z1],base,li*.92);
+    }
+    /* ── ворота ангара (хвост G4) ──
+       Ангар — то, куда сели: в его торцевой стене ворота, за ними космос, и
+       от них по полу ложится холодный конус. Один на базу, в середине стены
+       первого отсека */
+    if(K==="hangar"&&R.rooms&&R.rooms[0]){
+      const HG=R.rooms[0];
+      if(rr===HG.r0&&c===Math.floor((HG.c0+HG.c1)/2)&&raidSolid(R,c,rr-1)){
+        quad([x0+8,h,z0+.6],[x0+8,RAID_H-6,z0+.6],[x1-8,RAID_H-6,z0+.6],[x1-8,h,z0+.6],[24,30,40],li,false,0,-.2);
+        quad([x0+12,h+2,z0+.9],[x0+12,RAID_H-10,z0+.9],[x1-12,RAID_H-10,z0+.9],[x1-12,h+2,z0+.9],[140,180,225],1.0,false,1,-.3);
+        quad([x0+12,h+.8,z0+1],[x1-12,h+.8,z0+1],[x1+RCELL*.7,h+.8,z0+RCELL*2.4],[x0-RCELL*.7,h+.8,z0+RCELL*2.4],[110,150,200],.55,false,1,-.25);
+      }
+    }
     /* потолочная лампа: единственный видимый источник света в отсеке. Раньше
        свет был только числом в li — на экране светильников не было вовсе */
     if(K==="corr"||K==="reactor"||K==="hangar"){
@@ -31534,6 +31591,9 @@ function drawFoeBody(f,K){
   const body=rgba(col,.95),dark=rgba(mixc(col,[8,12,18],.6),.96);
   const sc=f.baron?1.35:1;
   ctx.scale(sc,sc);
+  /* поза покоя (хвост G4): пока тревоги нет, каждый второй привалился к
+     стене — фигура скошена; оружие у всех опущено (ниже, у ствола) */
+  if(!f.aware&&(f.seed&1))ctx.transform(1,0,.16,1,0,0);
   const bob=Math.sin((f.bob||0)+G.t*.05)*.8;
   ctx.fillStyle="rgba(0,0,0,.45)";                 // тень под ногами
   ctx.beginPath();ctx.ellipse(0,r*1.5,r*1.1,r*.3,0,0,TAU);ctx.fill();
@@ -31565,7 +31625,10 @@ function drawFoeBody(f,K){
   ctx.fillStyle=sg;ctx.fill();
   ctx.fillStyle="rgba(0,0,0,.3)";                  // ремень
   ctx.fillRect(-r*.6,r*.12,r*1.2,r*.16);
-  /* оружие: у тяжёлого и барона — ствол на сошке, у прочих короткий автомат */
+  /* оружие: у тяжёлого и барона — ствол на сошке, у прочих короткий автомат.
+     В покое — стволом вниз, поворотом всего блока рук вокруг плеча */
+  ctx.save();
+  if(!f.aware)ctx.rotate(.62);
   ctx.strokeStyle=dark;ctx.lineWidth=r*.28;ctx.lineCap="round";
   // обе руки: одна на рукояти, вторая на цевье — раньше ствол торчал из плеча
   ctx.beginPath();ctx.moveTo(r*.6,-r*.5+bob);ctx.lineTo(r*.85,r*.05);ctx.stroke();
@@ -31580,6 +31643,7 @@ function drawFoeBody(f,K){
     ctx.beginPath();ctx.moveTo(r*1.6,r*.1);ctx.lineTo(r*1.4,r*.6);
     ctx.moveTo(r*1.6,r*.1);ctx.lineTo(r*1.9,r*.6);ctx.stroke();
   }
+  ctx.restore();
   ctx.fillStyle=dark;                              // шея
   ctx.fillRect(-r*.16,-r*.95+bob,r*.32,r*.22);
   ctx.fillStyle="#1b2229";                         // шлем: голова была втрое велика

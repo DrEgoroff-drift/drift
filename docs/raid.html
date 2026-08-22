@@ -38945,35 +38945,25 @@ window.dbg=dbg;
 <script>
 setTimeout(function(){
   var i=document.getElementById("intro"); if(i)i.style.display="none";
-  // РЅСѓР¶РµРЅ РіР°Р·РѕРІС‹Р№ РіРёРіР°РЅС‚: РѕРЅ РµСЃС‚СЊ РЅРµ РІ РєР°Р¶РґРѕР№ СЃРёСЃС‚РµРјРµ, РїРѕСЌС‚РѕРјСѓ РёС‰РµРј РїРѕ СЃРµРєС‚РѕСЂСѓ
-  var p=null;
-  for(var dx=-6;dx<=6&&!p;dx++)for(var dy=-6;dy<=6&&!p;dy++){
-    if(!starAt(G.sx+dx,G.sy+dy))continue;
-    var s=getSystem(G.sx+dx,G.sy+dy);
-    for(var q=0;q<s.planets.length;q++)if(s.planets[q].type==="gas"){
-      G.sx+=dx;G.sy+=dy;G.sys=s;p=s.planets[q];break;}
+  G.running=true;
+  G.occ={}; occSet(G.sx,G.sy,3);
+  var PB={orbit:2000,ang:0,x:0,y:0,seed:12345,level:2,name:"Р±Р°Р·Р° РўР°СЂРЅРёСЃ"};
+  enterRaid(PB);
+  // РїРѕСЃС‚Р°РІРёС‚СЊ Р±Р°СЂРѕРЅР° Рё СЃРІРёС‚Сѓ РїСЂСЏРјРѕ РїРµСЂРµРґ РёРіСЂРѕРєРѕРј, С‡С‚РѕР±С‹ РєР°РґСЂ РёС… РїРѕР№РјР°Р»
+  var S=G.raid;
+  S.foes.length=0;
+  var fx=S.x, fz=S.z;
+  S.a=0;
+  function put(kind,dist,side,baron){
+    var K=FOE_KINDS[kind];
+    var dx=Math.cos(S.a)*dist-Math.sin(S.a)*side;
+    var dz=Math.sin(S.a)*dist+Math.cos(S.a)*side;
+    S.foes.push({x:fx+dx,z:fz+dz,a:Math.PI,kind:kind,hp:K.hp*(baron?3:1),
+      hpMax:K.hp*(baron?3:1),boss:kind==="boss",baron:baron,cool:0,aware:true,
+      seed:99,bob:0});
   }
-  if(!p){console.log("РіР°Р·РѕРІС‹Р№ РіРёРіР°РЅС‚ РЅРµ РЅР°Р№РґРµРЅ");return;}
-  startScoop(p);
-  G.running=false;                 // РєР°РґСЂ РёРіСЂРѕРІРѕРіРѕ С†РёРєР»Р° РЅР° РѕСЃС‚Р°РЅРѕРІР»РµРЅРЅРѕР№ РёРіСЂРµ РЅРµ СЂРёСЃСѓРµС‚ СЃС†РµРЅСѓ
-  var S=G.scoop, bt=H*0.50, bb=H*0.63;
-  // РїРѕРґРїРёСЃРё Р»Р°С‚РёРЅРёС†РµР№: СЃС‚СЂР°РЅРёС†Р° СЃС‚РµРЅРґР° РґРѕРїРёСЃС‹РІР°РµС‚СЃСЏ Рє СЃРѕР±СЂР°РЅРЅРѕРјСѓ drift.html, Рё
-  // РєРёСЂРёР»Р»РёС†Р° РёР· СЌС‚РѕРіРѕ СЃРєСЂРёРїС‚Р° РїСЂРёРµР·Р¶Р°РµС‚ РІ РґСЂСѓРіРѕР№ РєРѕРґРёСЂРѕРІРєРµ вЂ” РЅРµ С‚РѕС‚ Р±РѕР№
-  var shots=[["ABOVE THE BAND", H*0.30],["IN THE COLLECTION BAND",(bt+bb)/2],["NEAR THE FLOOR, HOT",H*0.86]];
-  var dpr=2, W2=W, H2=H*shots.length+30*shots.length;
-  var cv=document.createElement("canvas");cv.width=W2*dpr;cv.height=H2*dpr;
-  var c=cv.getContext("2d");c.scale(dpr,dpr);
-  c.fillStyle="#05070c";c.fillRect(0,0,W2,H2);
-  var live=document.getElementById("c");
-  shots.forEach(function(sh,n){
-    S.y=sh[1];S.x=40+n*17;S.heat=n===2?78:(n===1?24:6);
-    drawScoop();
-    var cy=n*(H+30)+24;
-    c.drawImage(live,0,cy,W,H);
-    c.fillStyle="#8fa6b4";c.font="12px ui-monospace,monospace";c.textAlign="left";
-    c.fillText(sh[0],4,cy-8);
-    c.strokeStyle="rgba(120,150,175,.14)";c.strokeRect(.5,cy+.5,W-1,H-1);
-  });
-  try{fetch("/scoop.png",{method:"POST",body:cv.toDataURL("image/png")});}catch(e){}
-},1600);
+  put("boss",230,-130,true);
+  put("heavy",300,-190,false);
+  put("grunt",180,-90,false);
+},1400);
 </script></body></html>
