@@ -8,6 +8,24 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.100.0 — "Under the skin" (M136)
+
+Three things at once, all on foot. **The lander by planform:** the ship on the pad had one
+silhouette for everybody, only the livery changed; now `drawLander` reads `h.form` — a disc
+sits on its legs as a saucer with a dome, a slab is a ribbed brick with a box cabin, a catamaran
+shows its far hull behind the near one, the cross carries its pods, the trident splits at the
+nose, the delta hangs its wing and a tall fin. Gear, ramp, engines and the hatch light stay
+common. Sheet: `docs/mklanders.ps1`. **The jetpack** (`20d-jetpack`): hold W — rise; the pack
+burns out in two and a half seconds, refills in a second and a half on the ground and barely in
+the air; one reserve per outing, shared by the surface and the cave, bar bottom-left. A terrain
+spike is no longer a wall. **The cave as a field** (`22-mode-cave`): a 5 px cell grid carved by
+noise and smoothed twice, with guaranteed passages cut through it — the upper gallery from the
+mouth, two shafts down, a lower gallery back to the find, six blind branches. Pockets off the
+passages are reached by pack. Rock is painted in 2D tiles (`tileStore`/`drawTiles` in `18c`)
+with a marching-squares contour for the chamfer and the wet rim, the planet's material and a
+depth gradient into blue black. The old dressing (22a) still hangs on the upper gallery because
+`caveFloor`/`caveCeil` now scan the grid for it. Daylight falls through the mouth.
+
 ## 0.99.9 — "Tracks" (G12, pass 1)
 
 The walker leaves tracks on the ground — a mark every thirteen pixels of walking, fading over
