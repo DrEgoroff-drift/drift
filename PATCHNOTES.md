@@ -9,6 +9,43 @@ could ever save.
 
 ---
 
+## 0.83.0 — "The planets turn, and the site speaks Russian people actually use"
+
+**The planets were stepping, not turning.** The game bakes sixteen rotation frames per planet and
+switches between them — invisible at a planet the size of a fingernail, a slide show at full
+screen. Sixty frames would be thirty megabytes each. So `site/planets.js` stopped baking rotations
+altogether: it bakes **one surface map** (longitude across, sine of latitude down) and wraps it
+onto the sphere in the frame itself, in vertical strips. The trick that makes it cheap: on a
+sphere seen from outside, a point's height on screen *is* the sine of its latitude, so the map
+needs no vertical stretching — only the longitude of each column has to be worked out, once.
+Rotation is then a shift along the map: continuous, no steps, and **0.12 ms a frame** — cheaper
+than the stepping version it replaced.
+
+Light does not turn with the surface, because the star does not move: shadow and the atmospheric
+rim are baked as separate overlays and land on top of the already-turned globe. The seam where the
+map meets itself is cross-faded, and the day side is brightened by an additive layer, since a
+shadow overlay can only darken and the game's own light multiplier goes above one.
+
+**The texts were written by a designer talking to himself.** Rewritten as one person explaining
+to another: "Открыли страницу — и вы в космосе. Впереди звезда, вокруг неё планеты. Летите
+к любой, садитесь, выходите наружу в скафандре и идёте пешком." The mechanics page lost its
+jargon — sections are now called "Откуда деньги", "Что может пойти не так", "Когда станет тесно"
+— and the navigation shrank to three items, because "Механики" is a word from a design document
+and "Как играть" is a word from a person.
+
+**The parrot moved onto the front page** and sits there in its cage, pokeable, with its own page
+left for taking it home. `site/parrot.js` now carries the bird for both, and the download is a
+genuinely self-contained `treplo.html` built by `build.ps1` — the page it used to hand out linked
+to the site's stylesheet and would have opened empty offline.
+
+**Forgotten passwords can be recovered.** The host's `sendmail` turned out to be available and
+unrestricted, so `forgot`/`reset` send a one-hour, one-use link from `noreply@drift-game.ru`. The
+reply to `forgot` never says whether such an account exists. Resetting signs every other device
+out, which is also how a stolen account is taken back. An address stays optional — without one the
+account simply cannot be recovered, and the form says so plainly.
+
+---
+
 ## 0.82.0 — "Five passes over the site, with the critique written down"
 
 **The favicon was drawn in vector and never looked at.** At 16 pixels its dashed trail became

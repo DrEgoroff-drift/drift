@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070c">
+<title>Новый пароль — ДРЕЙФ</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/icons/fav-32.png" sizes="32x32">
+<link rel="stylesheet" href="/site.css">
+<style>
+.only{min-height:calc(100svh - 56px);display:grid;place-items:center;padding:30px 20px}
+.card{width:100%;max-width:404px;background:var(--deep);
+  border:1px solid rgba(127,230,216,.2);padding:28px 26px 26px}
+.card h1{font-size:15px;font-weight:400;letter-spacing:.06em;color:var(--phos);margin-bottom:8px}
+.card p{font-size:13px;color:var(--dim);margin-bottom:20px;line-height:1.55}
+.card button{width:100%;height:50px;background:rgba(242,178,92,.08);
+  border:1px solid rgba(242,178,92,.5);color:var(--amber);font:inherit;font-size:12px;
+  letter-spacing:.2em;cursor:pointer}
+.card button:hover{background:rgba(242,178,92,.16)}
+.card button[disabled]{opacity:.5;cursor:default}
+.after{margin-top:18px;text-align:center;font-size:12.5px}
+</style>
+</head>
+<body>
+
+<canvas id="sky"></canvas><div class="vig"></div>
+
+<div class="wrap">
+
+<header class="top">
+  <a class="logo" href="/">
+    <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12.5" fill="#143a45"/><path d="M16 3.5A12.5 12.5 0 0 1 16 28.5A3 12.5 0 0 0 16 3.5Z" fill="#7fe6d8"/></svg><span>ДРЕЙФ</span>
+  </a>
+  <nav>
+    <a href="/">Игра</a>
+    <a href="/mechanics.html">Как играть</a>
+    <a href="/play.html" class="cta">Играть</a>
+  </nav>
+</header>
+
+<div class="only">
+  <div class="card">
+    <h1>Новый пароль</h1>
+    <p id="hint">Придумайте новый пароль для записи. Старые входы на всех
+    устройствах после этого слетят — так и задумано.</p>
+    <form id="f">
+      <label for="pw">Новый пароль</label>
+      <input id="pw" type="password" autocomplete="new-password" maxlength="72"
+             placeholder="не короче шести знаков">
+      <button type="submit" id="go">СМЕНИТЬ</button>
+    </form>
+    <div class="note" id="note"></div>
+    <div class="after"><a href="/">← на заглавную</a></div>
+  </div>
+</div>
+
+</div>
+
+<script src="/planets.js"></script>
+<script src="/sky.js"></script>
+<script>
+(function(){
+  const q=new URLSearchParams(location.search);
+  const key=q.get("k")||"", login=(q.get("u")||"").toLowerCase();
+  const note=document.getElementById("note"), go=document.getElementById("go");
+  if(!key||!login){
+    document.getElementById("hint").textContent=
+      "Ссылка неполная. Откройте её из письма целиком — вместе с той частью, что после знака вопроса.";
+    document.getElementById("f").style.display="none";
+  }
+  document.getElementById("f").onsubmit=async e=>{
+    e.preventDefault();
+    const pass=document.getElementById("pw").value;
+    if(pass.length<6){note.className="note bad";note.textContent="пароль короче шести знаков";return}
+    go.disabled=true; note.className="note"; note.textContent="…";
+    try{
+      const r=await fetch("/api.php?a=reset",{method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({login,key,pass})});
+      const d=await r.json();
+      if(d.ok){
+        try{localStorage.setItem("drift_token",d.token);
+            localStorage.setItem("drift_login",d.login);}catch(e){}
+        note.className="note ok";
+        note.textContent="готово — вы вошли, сейчас откроется игра";
+        setTimeout(()=>location.href="/play.html",1200);
+      }else{note.className="note bad";note.textContent=d.error||"не вышло"}
+    }catch(err){note.className="note bad";note.textContent="сервер не ответил"}
+    go.disabled=false;
+  };
+})();
+</script>
+</body>
+</html>

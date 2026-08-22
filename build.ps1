@@ -147,7 +147,42 @@ function Index($files, $tfiles) {
   "INDEX.md: {0} символов" -f $n
 }
 
+# Птица одним файлом. На сайте `parrot.html` тянет стиль и код ссылками — это
+# правильно для сайта и неправильно для «скачайте себе»: скачанная страница
+# офлайн осталась бы пустой. Поэтому самодостаточный `treplo.html` собирается
+# здесь же, из тех же исходников, и на сайте лежит рядом.
+function Bird {
+  $s = Join-Path $root "site"
+  $src = Join-Path $s "parrot.html"
+  if (-not (Test-Path $src)) { return "птицы нет" }
+  $h = [System.IO.File]::ReadAllText($src, $enc)
+
+  foreach ($pair in @(@("/site.css","style"), @("/planets.js","script"),
+                      @("/sky.js","script"), @("/parrot.js","script"))) {
+    $file = Join-Path $s ($pair[0].TrimStart("/"))
+    if (-not (Test-Path $file)) { throw "нет $file — птица не соберётся" }
+    $body = [System.IO.File]::ReadAllText($file, $enc)
+    if ($pair[1] -eq "style") {
+      $h = $h.Replace('<link rel="stylesheet" href="/site.css">', "<style>`n$body`n</style>")
+    } else {
+      $h = $h.Replace('<script src="' + $pair[0] + '"></script>', "<script>`n$body`n</script>")
+    }
+  }
+  # то, что вне файла не работает: манифест, установка, значки с сайта
+  $h = $h -replace '<link rel="manifest"[^>]*>', ''
+  $h = $h -replace '<link rel="(icon|alternate icon|apple-touch-icon)"[^>]*>', ''
+  # ссылки на сайт делаем абсолютными — из файла относительные ведут в никуда
+  $h = $h -replace 'href="/([^"]*)"', 'href="https://drift-game.ru/$1"'
+  $h = $h.Replace('href="https://drift-game.ru/parrot.html" download="treplo.html"',
+                  'href="https://drift-game.ru/treplo.html" download="treplo.html"')
+
+  $out = Join-Path $s "treplo.html"
+  [System.IO.File]::WriteAllText($out, $h, $enc)
+  "treplo.html: {0} КБ" -f [math]::Round((Get-Item $out).Length / 1KB)
+}
+
 Build
+Bird
 
 if ($Watch) {
   "слежу за src/ — Ctrl+C чтобы остановить"

@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070c">
-<title>ДРЕЙФ — космическая разведка в браузере</title>
-<meta name="description" content="Один корабль, полбака топлива и галактика, которой до вас нет дела. Садитесь на планеты, копайте, торгуйте, набирайте людей. Браузер, бесплатно, без установки.">
+<title>ДРЕЙФ — космическая игра в браузере</title>
+<meta name="description" content="Вы один на старом корабле. Летайте к звёздам, садитесь на планеты, копайте, торгуйте, стройте базу. Бесплатно, прямо в браузере, ставить ничего не нужно.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/icons/fav-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/icons/fav-180.png">
 <meta property="og:type" content="website">
-<meta property="og:title" content="ДРЕЙФ — космическая разведка в браузере">
-<meta property="og:description" content="Один корабль, полбака топлива и галактика, которой до вас нет дела.">
+<meta property="og:title" content="ДРЕЙФ — космическая игра в браузере">
+<meta property="og:description" content="Вы один на старом корабле. Летите куда хотите: садитесь на планеты, копайте, торгуйте, обживайтесь.">
 <meta property="og:image" content="https://drift-game.ru/og.jpg">
 <meta property="og:url" content="https://drift-game.ru/">
 <meta name="twitter:card" content="summary_large_image">
@@ -25,7 +25,7 @@
   text-shadow:0 0 30px rgba(127,230,216,.26),0 0 78px rgba(127,230,216,.09)}
 .tag{color:var(--dim);font-size:clamp(11px,2.5vw,12.5px);letter-spacing:.24em;
   text-transform:uppercase}
-.pitch{max-width:33em;font-size:clamp(14px,3vw,16px);line-height:1.66}
+.pitch{max-width:32em;font-size:clamp(14.5px,3vw,16.5px);line-height:1.7}
 .pitch b{color:var(--amber);font-weight:400}
 .hero .btn{height:62px;font-size:15px;letter-spacing:.3em;min-width:250px;flex-direction:column;gap:0}
 .hero .btn s{text-decoration:none;font-size:10px;letter-spacing:.14em;color:var(--dim)}
@@ -36,10 +36,9 @@
 .split{display:grid;gap:34px;grid-template-columns:1fr 1.15fr;align-items:center}
 @media(max-width:860px){.split{grid-template-columns:1fr}}
 .shot{border:1px solid var(--line);background:#03050a;overflow:hidden}
-.shot img{width:100%}
-.shot figcaption{padding:10px 13px;font-size:11px;letter-spacing:.08em;color:var(--dim);
+.shot figcaption{padding:10px 13px;font-size:11px;letter-spacing:.06em;color:var(--dim);
   border-top:1px solid var(--line)}
-.three{display:grid;gap:12px;margin-top:26px}
+.three{display:grid;gap:13px;margin-top:26px}
 .three div{display:flex;gap:13px;align-items:flex-start;font-size:13.5px}
 .three svg{width:19px;height:19px;flex:none;margin-top:2px;stroke:var(--phos);
   stroke-width:1.2;fill:none;opacity:.85}
@@ -47,11 +46,10 @@
 /* ── галерея ── */
 .gal{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
 .gal figure{border:1px solid var(--line);background:#03050a}
-.gal img{width:100%}
-.gal figcaption{padding:13px 15px 15px}
+.gal figcaption{padding:13px 15px 16px}
 .gal h3{font-size:11.5px;letter-spacing:.19em;color:var(--amber);font-weight:400;
-  text-transform:uppercase;margin-bottom:6px}
-.gal p{font-size:13px;color:var(--text);opacity:.84}
+  text-transform:uppercase;margin-bottom:7px}
+.gal p{font-size:13.5px;color:var(--text);opacity:.86}
 
 /* ── цикл ── */
 .loop{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;margin-bottom:30px}
@@ -60,15 +58,29 @@
 .loop .st:last-child{border-right:1px solid var(--line)}
 .loop b{display:block;font-size:11px;letter-spacing:.18em;color:var(--phos);
   font-weight:400;margin-bottom:6px}
-.loop s{text-decoration:none;font-size:12px;color:var(--dim);line-height:1.5}
+.loop s{text-decoration:none;font-size:12.5px;color:var(--dim);line-height:1.5}
 @media(max-width:760px){
   .loop .st{border-right:1px solid var(--line);border-bottom:0}
   .loop .st:last-child{border-bottom:1px solid var(--line)}
 }
 
+/* ── птица на главной ── */
+.bird{display:grid;gap:30px;grid-template-columns:270px 1fr;align-items:center;
+  border:1px solid var(--line);background:rgba(8,13,22,.6);padding:26px 28px}
+@media(max-width:760px){.bird{grid-template-columns:1fr;justify-items:center;text-align:center}}
+.cage{width:100%;max-width:270px;aspect-ratio:230/272;cursor:pointer;position:relative;
+  background:linear-gradient(157deg,rgba(28,44,60,.42),rgba(7,12,20,.5) 62%,rgba(6,10,17,.6));
+  border:1px solid rgba(127,230,216,.24);border-radius:12px;overflow:hidden}
+.cage canvas{width:100%;height:100%;display:block}
+.bird h3{font-size:15px;font-weight:400;color:var(--text);margin-bottom:10px}
+.bird p{font-size:13.5px;color:var(--text);opacity:.86;margin-bottom:10px;max-width:38em}
+.bird .said{min-height:24px;font-size:13.5px;color:var(--phos);margin:12px 0 16px}
+.bird .row{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:760px){.bird .row{justify-content:center}}
+
 /* ── почему ── */
 .why{border:1px solid var(--line);background:rgba(8,13,22,.6);padding:30px 28px}
-.why .big{font-size:clamp(15px,2.6vw,19px);line-height:1.55;max-width:30em;margin-bottom:26px}
+.why .big{font-size:clamp(15px,2.6vw,19px);line-height:1.55;max-width:32em;margin-bottom:26px}
 .why .big em{color:var(--phos);font-style:normal}
 .cols{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
 .cols b{display:block;font-size:11px;letter-spacing:.2em;color:var(--amber);
@@ -80,14 +92,13 @@
 .road div{display:flex;gap:11px;font-size:13px;align-items:baseline}
 .road i{font-style:normal;width:14px;flex:none;text-align:center}
 .road .done i{color:var(--good)}
-.road .now  i{color:var(--amber)}
-.road .now  span{color:var(--text)}
+.road .now i{color:var(--amber)}
+.road .now span{color:var(--text)}
 .road .done span{color:var(--dim)}
-.road .next i{color:var(--dim)}
-.road .next span{color:var(--dim);opacity:.72}
 
 .end{text-align:center;padding-bottom:90px}
-.end h2{margin-bottom:22px}
+.end h2{margin-bottom:10px}
+.end p{color:var(--dim);margin-bottom:24px}
 </style>
 </head>
 <body>
@@ -102,18 +113,18 @@
   </a>
   <nav>
     <a href="/" class="on">Игра</a>
-    <a href="/mechanics.html">Механики</a>
-    <a href="/parrot.html">Птица</a>
+    <a href="/mechanics.html">Как играть</a>
     <a href="/play.html" class="cta">Играть</a>
   </nav>
 </header>
 
 <section class="hero">
-  <div class="tag">браузерная игра · без установки · бесплатно</div>
+  <div class="tag">игра в браузере · бесплатно · ставить ничего не надо</div>
   <h1 class="mark">ДРЕЙФ</h1>
   <p class="pitch">
-    Старый разведчик «Стриж», <b>полбака топлива</b> и галактика, которой до вас нет дела.
-    Куда лететь и чем рисковать — решаете вы: заданий здесь никто не выдаёт.
+    Вы один на старом корабле. Вокруг — космос, которому до вас нет дела,
+    и <b>полбака топлива</b>. Летите куда хотите: садитесь на планеты, копайте,
+    возите товар, обживайтесь. Никто не скажет вам, что делать дальше.
   </p>
   <a class="btn" href="/play.html" id="playBtn">ИГРАТЬ<s></s></a>
   <div class="who" id="who">…</div>
@@ -121,34 +132,38 @@
 </section>
 
 <section id="what">
-  <div class="eyebrow">Что это</div>
+  <div class="eyebrow">Если коротко</div>
   <div class="split">
     <div>
-      <h2>Разведка вручную: <b>долететь, сесть, разобраться</b></h2>
+      <h2>Вы летаете и <b>сами во всём разбираетесь</b></h2>
       <p class="lead">
-        Вы летаете между звёздными системами, садитесь на планеты и ходите по ним пешком:
-        бурите залежи, спускаетесь в пещеры, возите груз между станциями, нанимаете людей.
-        Галактика не нарисована заранее — она вычисляется из координат. Отсюда её размер
-        и её <b>постоянство</b>: та же система через месяц будет ровно такой же.
+        Открыли страницу — и вы в космосе. Впереди звезда, вокруг неё планеты.
+        Летите к любой, садитесь, выходите наружу в скафандре и идёте пешком.
+        Под ногами руда, в скалах пещеры, в небе чужие луны. Что нашли — грузите
+        в трюм и везёте на станцию продавать. На вырученное чините корабль,
+        ставите приборы получше, нанимаете людей. А потом летите дальше, туда,
+        где ещё не были.
       </p>
       <div class="three">
         <div>
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 2.4 2.5 13.6 0 16"/></svg>
-          <span>Каждый мир выводится из своих координат, а не берётся с готовой карты.</span>
+          <span>Планеты никто не рисовал вручную — они получаются из чисел,
+          поэтому их практически бесконечно много.</span>
         </div>
         <div>
           <svg viewBox="0 0 24 24"><path d="M3 20l7-7 4 4 7-9"/><circle cx="10" cy="13" r="1.6"/></svg>
-          <span>Маршрута нет. Есть топливо, трюм и решение, как далеко забраться.</span>
+          <span>И при этом они настоящие: гора, которую вы видели вчера, завтра
+          будет на том же месте.</span>
         </div>
         <div>
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-22 12 12)"/></svg>
-          <span>Что найдёте — следствие того, куда пошли и чем успели обзавестись.</span>
+          <span>Заданий нет совсем. Есть топливо, трюм и ваше любопытство.</span>
         </div>
       </div>
     </div>
     <figure class="shot">
-      <img src="/shots/world.webp" width="1600" height="900" alt="Посадка на чужую планету: скафандр, посадочный модуль, слои породы в разрезе, затмение в небе">
-      <figcaption>Планета «Раэш I» — затмение, залежи под ногами, вход в пещеру в трёх километрах</figcaption>
+      <img src="/shots/world.webp" width="1600" height="900" alt="Человек в скафандре стоит на чужой планете рядом с посадочным модулем, в небе затмение">
+      <figcaption>Вы вышли из корабля. Дальше — пешком.</figcaption>
     </figure>
   </div>
 </section>
@@ -156,60 +171,65 @@
 <section id="gal">
   <div class="eyebrow">Как это выглядит</div>
   <h2>Шесть кадров из игры</h2>
-  <p class="lead">Ничего не дорисовано и не собрано для сайта: это то, что видно на экране.</p>
+  <p class="lead">Всё снято прямо в игре — ничего не дорисовано для сайта.</p>
   <div class="gal">
 
     <figure>
-      <img src="/shots/sys.webp" loading="lazy" width="1600" height="900" alt="Вид системы: корабль, газовый гигант с кольцами, метки до звезды и станции">
+      <img src="/shots/sys.webp" loading="lazy" width="1600" height="900" alt="Вид на звёздную систему сверху: корабль, планета с кольцами, подписи расстояний">
       <figcaption>
-        <h3>Что вы видите</h3>
-        <p>Система сверху: звезда, планеты по орбитам, станция, ваш кораблик.
-        Метки по краям всегда говорят, куда лететь и сколько до этого.</p>
+        <h3>Где вы находитесь</h3>
+        <p>Звёздная система сверху. Маленький кораблик посередине — это вы.
+        Планеты идут по орбитам, а подписи по краям всегда показывают, куда
+        лететь и сколько до этого.</p>
       </figcaption>
     </figure>
 
     <figure>
-      <img src="/shots/map.webp" loading="lazy" width="1600" height="900" alt="Карта галактики: звёзды, связи между ними, карточка системы с описанием">
+      <img src="/shots/map.webp" loading="lazy" width="1600" height="900" alt="Карта галактики: звёзды, линии между ними и карточка с описанием системы">
       <figcaption>
-        <h3>Как исследуете</h3>
-        <p>Карта галактики. Что за звезда, сколько у неё планет, есть ли станция —
-        видно до вылета. Прыжок стоит топлива, поэтому маршрут приходится считать.</p>
+        <h3>Куда лететь дальше</h3>
+        <p>Карта. Каждая точка — звезда со своими планетами, и что там есть,
+        видно ещё до вылета. Но перелёт стоит топлива, поэтому маршрут
+        приходится продумывать.</p>
       </figcaption>
     </figure>
 
     <figure>
-      <img src="/shots/cockpit.webp" loading="lazy" width="1600" height="900" alt="Вид из рубки в поясе астероидов: приборная панель, самописец, захваченная цель">
+      <img src="/shots/cockpit.webp" loading="lazy" width="1600" height="900" alt="Вид из кабины корабля в поясе астероидов, перед пилотом приборы">
       <figcaption>
-        <h3>Как летаете</h3>
-        <p>В поясе астероидов — вид из рубки. Пять стрелок, бумажный самописец и
-        невязка: приборы не показывают истину, они показывают её со своей ошибкой.</p>
+        <h3>Вид из кабины</h3>
+        <p>Так выглядит полёт в поясе астероидов. Приборы перед вами немного
+        врут — у каждого своя погрешность, и чем прибор дороже, тем меньше
+        он ошибается.</p>
       </figcaption>
     </figure>
 
     <figure>
-      <img src="/shots/cave.webp" loading="lazy" width="1600" height="900" alt="Пещера: фонарь скафандра, светящиеся грибы, зверь в темноте">
+      <img src="/shots/cave.webp" loading="lazy" width="1600" height="900" alt="Пещера под поверхностью планеты, светит только фонарь скафандра">
       <figcaption>
         <h3>Что находите</h3>
-        <p>Под поверхностью — своя жизнь, которой наверху не бывает. Фонарь, кислород
-        в скафандре и звери, которые заметили вас первыми.</p>
+        <p>Пещера под поверхностью. Светит только фонарь на скафандре. Внизу
+        растёт то, чего наверху не бывает, — и живёт кто-то, кто заметил вас
+        раньше, чем вы его.</p>
       </figcaption>
     </figure>
 
     <figure>
-      <img src="/shots/base.webp" loading="lazy" width="1600" height="900" alt="База в разрезе: жилой отсек, склад, реактор, лаборатория, люди внутри">
+      <img src="/shots/base.webp" loading="lazy" width="1600" height="900" alt="База в разрезе: несколько отсеков под поверхностью планеты, внутри люди">
       <figcaption>
-        <h3>Как растёте</h3>
-        <p>Своя база в разрезе: реактор, склад, буровая, лаборатория, жилые отсеки.
-        Люди в ней работают и тогда, когда вы улетели.</p>
+        <h3>Как обживаетесь</h3>
+        <p>Своя база, вид в разрезе. Комнаты пристраиваете по одной: реактор,
+        склад, лаборатория, жильё. Нанятые люди работают в ней и тогда,
+        когда вы улетели.</p>
       </figcaption>
     </figure>
 
     <figure>
-      <img src="/shots/land.webp" loading="lazy" width="1600" height="900" alt="Заход на посадку: спускаемый аппарат, дождь, затмение, освещённая площадка внизу">
+      <img src="/shots/land.webp" loading="lazy" width="1600" height="900" alt="Спускаемый аппарат заходит на посадку под дождём, внизу освещённая площадка">
       <figcaption>
         <h3>Чем рискуете</h3>
-        <p>Сесть можно почти везде, а взлёт стоит восемь единиц топлива. Садиться
-        без запаса — единственный настоящий страх в этой игре.</p>
+        <p>Заход на посадку. Сесть можно почти везде, а вот взлёт стоит восемь
+        единиц топлива. Сядете без запаса — останетесь на этой планете надолго.</p>
       </figcaption>
     </figure>
 
@@ -217,57 +237,78 @@
 </section>
 
 <section id="loop">
-  <div class="eyebrow">Как играется</div>
-  <h2>Один круг, и каждый виток шире</h2>
-  <p class="lead">Больше правил в игре нет — всё остальное вырастает отсюда.</p>
+  <div class="eyebrow">Чем вы заняты</div>
+  <h2>Один круг, и каждый следующий шире</h2>
+  <p class="lead">Больше правил тут нет — всё остальное вырастает отсюда само.</p>
   <div class="loop">
-    <div class="st"><b>ЛЕТИТЕ</b><s>выбираете систему по карте и тратите топливо</s></div>
-    <div class="st"><b>НАХОДИТЕ</b><s>садитесь, ищете залежи, жизнь, чужие следы</s></div>
+    <div class="st"><b>ЛЕТИТЕ</b><s>выбираете звезду на карте и тратите топливо</s></div>
+    <div class="st"><b>САДИТЕСЬ</b><s>ищете залежи, жизнь, чужие следы</s></div>
     <div class="st"><b>БЕРЁТЕ</b><s>копаете, собираете образцы, грузите трюм</s></div>
-    <div class="st"><b>ПРОДАЁТЕ</b><s>везёте туда, где за это платят больше</s></div>
-    <div class="st"><b>РАСТЁТЕ</b><s>модули, наука, люди, второй корабль, база</s></div>
-    <div class="st"><b>ИДЁТЕ ДАЛЬШЕ</b><s>дальше опаснее — и там лежит то, чего нет рядом</s></div>
+    <div class="st"><b>ПРОДАЁТЕ</b><s>везёте туда, где за это дают больше</s></div>
+    <div class="st"><b>РАСТЁТЕ</b><s>приборы, наука, люди, второй корабль, база</s></div>
+    <div class="st"><b>ЛЕТИТЕ ДАЛЬШЕ</b><s>там опаснее — и там лежит то, чего нет рядом</s></div>
   </div>
-  <a class="btn ghost sm" href="/mechanics.html">Подробно о механиках →</a>
+  <a class="btn ghost sm" href="/mechanics.html">Подробнее, как всё устроено →</a>
+</section>
+
+<section id="bird">
+  <div class="eyebrow">Мелочь, но приятно</div>
+  <h2>На корабле живёт попугай</h2>
+  <p class="lead">Он подслушивает чужие переговоры и повторяет обрывки: цены, позывные,
+  слова на непонятном языке. Иногда это единственный способ узнать что-то заранее.</p>
+  <div class="bird">
+    <div class="cage" id="cage" title="ткните птицу"><canvas id="parrotcv"></canvas></div>
+    <div>
+      <h3>Заберите его себе</h3>
+      <p>Ткните птицу — она ответит. А если понравится, её можно поставить
+      отдельным окошком на рабочий стол: будет сидеть, чиститься и изредка
+      бормотать. Работает и без интернета.</p>
+      <div class="said" id="said">…</div>
+      <div class="row">
+        <a class="btn ghost sm" href="/parrot.html">Как забрать себе →</a>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section id="why">
-  <div class="eyebrow">Почему «Дрейф»</div>
+  <div class="eyebrow">Почему стоит попробовать</div>
   <div class="why">
     <p class="big">
-      Браузерные игры обычно держат вас счётчиками и таймерами. «Дрейф» держится
-      на <em>любопытстве</em>: единственная причина лететь дальше — вы не знаете, что там.
+      Тут нет ежедневных заданий, энергии и таймеров — вас никто не будет
+      удерживать. Играете, пока <em>интересно</em>, и возвращаетесь, когда
+      захочется. Всё сохранится.
     </p>
     <div class="cols">
-      <div><b>БРАУЗЕР</b><p>Открывается по ссылке. Ничего не ставить, ничего не покупать, рекламы нет.</p></div>
-      <div><b>ПРОЦЕДУРНОСТЬ</b><p>Миры не нарисованы вручную и не повторяются, но и не пересобираются заново при каждом заходе.</p></div>
-      <div><b>СВОБОДА</b><p>Ни заданий по списку, ни стрелки «иди сюда». Хотите — торгуйте, хотите — копайте, хотите — просто смотрите.</p></div>
-      <div><b>ПОСЛЕДСТВИЯ</b><p>Кончилось топливо на планете — это настоящая беда, а не перезагрузка с последней точки.</p></div>
+      <div><b>ПРОСТО ССЫЛКА</b><p>Открывается в браузере на компьютере и на телефоне. Ничего не ставить, ничего не покупать, рекламы нет.</p></div>
+      <div><b>ВСЁ РАЗНОЕ</b><p>Планеты, станции, люди и находки не повторяются — но и не пересобираются заново при каждом заходе.</p></div>
+      <div><b>ВЫ САМИ РЕШАЕТЕ</b><p>Хотите — торгуйте, хотите — копайте, хотите — просто летайте и смотрите. Правильного способа нет.</p></div>
+      <div><b>ОШИБКИ НАСТОЯЩИЕ</b><p>Кончилось топливо на планете — это беда, а не перезагрузка с последней точки. Зато и находки настоящие.</p></div>
     </div>
   </div>
 </section>
 
 <section id="road">
-  <div class="eyebrow">Развитие</div>
-  <h2>Что уже работает, а что в работе</h2>
-  <p class="lead">Игра пишется одним человеком и обновляется часто. Здесь только то,
-  что действительно есть, — обещаний на будущее в этом списке нет.</p>
+  <div class="eyebrow">Что дальше</div>
+  <h2>Игра живая и дописывается</h2>
+  <p class="lead">Её делает один человек, обновления выходят часто. Ниже только то,
+  что уже работает, и то, что пишется прямо сейчас, — обещаний тут нет.</p>
   <div class="road">
-    <div class="done"><i>✓</i><span>Процедурная галактика: звёзды, планеты, орбиты, пояса</span></div>
-    <div class="done"><i>✓</i><span>Посадка, ходьба по поверхности, пещеры и шахты</span></div>
-    <div class="done"><i>✓</i><span>Живой рынок, станции, верфь, модули и наука</span></div>
+    <div class="done"><i>✓</i><span>Звёзды, планеты, орбиты, пояса астероидов</span></div>
+    <div class="done"><i>✓</i><span>Посадка, прогулки по поверхности, пещеры и шахты</span></div>
+    <div class="done"><i>✓</i><span>Станции, живые цены, верфь, приборы и наука</span></div>
     <div class="done"><i>✓</i><span>Экипаж, управляющие, репутация, пираты</span></div>
-    <div class="done"><i>✓</i><span>Своя база, флот, поселения, торговые кольца</span></div>
-    <div class="done"><i>✓</i><span>Приборы, самописец и невязка в рубке</span></div>
-    <div class="done"><i>✓</i><span>Учётная запись и сохранения на сервере</span></div>
-    <div class="now"><i>●</i><span>Области: группы систем с общей темой и собранным вручную ядром</span></div>
-    <div class="now"><i>●</i><span>Сотня коротких человеческих историй по всей галактике</span></div>
-    <div class="now"><i>●</i><span>Слухи: узнать о месте раньше, чем туда попасть</span></div>
+    <div class="done"><i>✓</i><span>Своя база, второй корабль, поселения</span></div>
+    <div class="done"><i>✓</i><span>Учётная запись: играть с любого устройства</span></div>
+    <div class="now"><i>●</i><span>Области: группы систем с общей историей</span></div>
+    <div class="now"><i>●</i><span>Сотня коротких историй про людей по всей галактике</span></div>
+    <div class="now"><i>●</i><span>Слухи: узнать о месте раньше, чем туда долетите</span></div>
   </div>
 </section>
 
 <section class="end">
   <h2>Полбака топлива уже залито</h2>
+  <p>Загрузка занимает пару секунд. Регистрироваться не обязательно.</p>
   <a class="btn" href="/play.html">ИГРАТЬ</a>
 </section>
 
@@ -275,9 +316,9 @@
   <span>ДРЕЙФ</span>
   <span id="ver">—</span>
   <a href="/play.html">играть</a>
-  <a href="/mechanics.html">механики</a>
+  <a href="/mechanics.html">как играть</a>
+  <a href="/parrot.html">птица</a>
   <a href="https://github.com/DrEgoroff-drift/drift">исходники</a>
-  <span>сделано вручную, без движка</span>
 </footer>
 
 </div>
@@ -294,16 +335,23 @@
       <label for="pw">Пароль</label>
       <input id="pw" name="password" type="password" autocomplete="current-password"
              maxlength="72" placeholder="не короче шести знаков">
+      <div id="mailWrap" style="display:none">
+        <label for="ml">Почта <span style="text-transform:none;letter-spacing:0">— если хотите, чтобы пароль можно было вернуть</span></label>
+        <input id="ml" name="email" type="email" autocomplete="email" maxlength="100"
+               placeholder="необязательно">
+      </div>
       <button type="submit" id="goBtn">ВОЙТИ</button>
     </form>
     <div class="note" id="note"></div>
-    <div class="swap"><span class="linkish" id="swap">нет записи — создать</span></div>
+    <div class="swap"><span class="linkish" id="swap">нет записи — создать</span>
+      <span id="forgotWrap"> · <span class="linkish" id="forgot">забыли пароль?</span></span></div>
   </div>
 </div>
 
 <script src="/planets.js"></script>
 <script src="/sky.js"></script>
 <script src="/auth.js"></script>
+<script src="/parrot.js"></script>
 <script>
 /* Версия — из version.json, который пишет выкладка: страница показывает не то,
    что лежит в исходниках, а то, что действительно уехало на сайт. */
