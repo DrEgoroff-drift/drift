@@ -35586,6 +35586,46 @@ function frame(now){
 applyPadMode();applyPadSize();
 requestAnimationFrame(frame);
 
+/* ══════════════ prof() — на что уходит кадр ══════════════
+   Оптимизация 0.87 началась с того, что «тормозит» не имело адреса: по
+   ощущению, а не по функции. Команда прогоняет N кадров текущего режима без
+   rAF (работает и в скрытой вкладке), меряет JS по каждой draw-функции и
+   отдельно время растра — принудительный сброс через getImageData после
+   кадра. Растр в канвасе — это то, чего не видно ни в одном профайлере
+   по функциям, а именно он и стоил 23 кадра на поверхности.
+
+   Звать `prof()` или `prof(60)` в консоли. Возвращает объект; смотреть
+   `js_ms`, `raster_ms` и `top` — кто сколько. Чтобы найти растровую цену
+   одной функции, глушат её и смотрят, насколько упал raster_ms:
+   `prof(30,"drawGround")`. */
+function prof(N,mute){
+  N=N||30;
+  const M={system:[updateSystem,drawSystem],dock:[updateSystem,drawSystem],barge:[updateSystem,drawSystem],
+    map:[()=>{},drawMap],landing:[updateLanding,drawLanding],surface:[updateSurface,drawSurface],
+    dig:[updateDig,drawDig],cave:[updateCave,drawCave],belt:[updateBelt,drawBelt],
+    scoop:[updateScoop,drawScoop],base:[updateBase,drawBase],raid:[updateRaid,drawRaid]}[G.mode];
+  if(!M)return {ошибка:"режим "+G.mode+" не профилируется"};
+  const names=Object.keys(window).filter(k=>typeof window[k]==="function"&&/^(draw[A-Z]|fill[A-Z]|b[A-Z][a-z]|hud$)/.test(k)&&k!=="drawChunks");
+  const T={},orig={};
+  for(const n of names){orig[n]=window[n];
+    window[n]=function(){const t=performance.now();try{return orig[n].apply(this,arguments);}finally{T[n]=(T[n]||0)+performance.now()-t;}};}
+  if(mute&&orig[mute])window[mute]=function(){};
+  let js=0,ras=0;
+  try{
+    for(let i=0;i<N;i++){
+      const t0=performance.now();G.t+=1;M[0](1);M[1]();hud();
+      const t1=performance.now();ctx.getImageData(0,0,1,1);const t2=performance.now();
+      if(i>=3){js+=t1-t0;ras+=t2-t1;}
+    }
+  }finally{for(const n in orig)window[n]=orig[n];}
+  const k=Math.max(1,N-3);
+  const top={};
+  for(const [n,v] of Object.entries(T).sort((a,b)=>b[1]-a[1]).slice(0,16))
+    if(v/k>=.05)top[n]=+(v/k).toFixed(2);
+  return {режим:G.mode,кадров:k,разрешение:W+"×"+H+" @"+DPR,js_ms:+(js/k).toFixed(2),
+    raster_ms:+(ras/k).toFixed(2),заглушено:mute||"—",top};
+}
+
 /* ══════════════ dbg() — что держит корабль ══════════════
    Отладка полёта началась с того, что игрок не мог сдвинуться с места, а
    консоль была пуста и кадры шли ровно шестьдесят. По ошибкам такое не ищется:

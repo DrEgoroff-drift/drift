@@ -9,6 +9,15 @@ half the tokens. The game itself, its UI and its code comments stay Russian.
 
 ## Cross-cutting rules
 
+- **What does not move is painted once.** The frame's cost on canvas is raster, not JS (0.87
+  measurement: logic ≤4 ms in every mode; the surface ran at 23 fps because of fifteen full-screen
+  fills under a 200-vertex clip, every frame). Anything static under a moving camera goes through
+  `18c-chunks`: world-X chunks (`chunkStore`/`drawChunks`) for long strips — ground, cave rock —
+  and `screenLayer(key, paint)` for screen-space constants — the star's glow, the storm veil. Before
+  adding a full-screen gradient, pattern or clipped fill to a draw path, ask whether it changes
+  between frames; if not, it is a layer. `prof()` in the console (28-loop) tells where a frame goes,
+  JS and raster apart; `prof(30,"drawGround")` tells what one function costs in raster.
+
 - **Save format is `v:4`.** `server.js:95` and `worker.js:66` reject anything else. A new
   persistent field goes into `snapshot()` and gets a safe default in `applySave()` (`14-save`).
 - **Never persist the ephemeral.** Whatever derives from a seed is regenerated. Only player
@@ -80,10 +89,7 @@ flora and fauna, a living camera, station modules, weather.
    in [`docs/PLAN-archive.md`](docs/PLAN-archive.md) — grep it for `M55`. Open debt only, below.
 7. **Factions as a language of shapes** — only after ships and stations, or there is nothing to
    tell apart.
-8. **Redo the clouds.** The current blobs of radial gradients don't satisfy the player. Look at a
-   value-noise field computed offscreen once per planet, scrolled with a soft threshold (like
-   `nebula`/`planetMat`), rather than a set of ellipses. They live in `drawSkyLayer`
-   (19-mode-landing).
+8. ~~**Redo the clouds.**~~ — DONE: `19e-clouds` is a density field in perspective, called from `drawSkyLayer`.
 9. **The world on foot** — the surface is the longest screen in the game after the cockpit, and it
    has never had a pass of its own. Stand: `docs/mkworld.ps1` → `docs/shots/world-types.png`.
 10. **Split debt.** `23-mode-dig` and `27e-ui-home` have crossed the 40 KB line; `build.ps1` was
@@ -116,8 +122,6 @@ one at a time when a pass is due, and nothing here blocks a milestone.
 - **Грохотун** (M120) — at 64 px, the size he is actually seen at, the three eyes merge into a
   smudge; the hide is flat khaki with no dust streaks; the working arms hide behind the torso.
 - **ships** — no faction language; it comes after stations by the queue above.
-- **clouds** — blobs of radial gradients in `drawSkyLayer` (19-mode-landing); wanted: a value-noise
-  field scrolled with a soft threshold.
 - **the world on foot** — the longest screen after the cockpit, still without a pass of its own.
 - **four world types** unbuilt: crystalline, jungle, metallic, ruin (the machinery is ready).
 - **split debt** — `21a-mode-base` 52 KB, `23-mode-dig`, `27e-ui-home` (see item 10).
@@ -889,6 +893,27 @@ standard shipyard set.
 socket out is not wired); the recorder itself is not a purchasable unit, only the five needles;
 `26-ui-station` crossed 40 KB with this tab and is now shouting on every build; wear from the hull
 (`12s-wear`) and instrument age run on separate clocks that never speak to each other.
+
+## M128b (0.87.0–0.88.0) — built. The frame has an address, and the screen is a pane
+
+**Performance, measured.** JS time and raster time profiled apart, then a real Chrome on a ×2.5
+display. The ground cross-section, the cave vault and floor, the sky glow and the storm veil were
+static pictures repainted every frame; they are now chunks and layers (`18c-chunks`). Surface
+23 → 52 fps, cave 42 → 57 at ×2; system, belt, mine, base all ≥50. Resolution is a setting
+(`gfx.res`: auto / 1× / 1.5× / 2×) and auto steps down on its own after three slow seconds.
+`prof()` lives next to `dbg()` so the next regression is found in a minute, not a session.
+
+**The site.** `play.html` left the host raw at 2.1 MB — no `mod_deflate`, openresty does not
+compress. The deploy now gzips on the server and `site/.htaccess` serves the `.gz` with the right
+headers: 678 KB on the wire.
+
+**Wide screens.** The interface was a phone layout stretched edge to edge. A `min-width: 900px`
+block makes every screen a centred glass pane up to 1080 px over the visible world, type one step
+larger, rows denser, tabs gathered left; settings got five tabs. Phones untouched.
+
+**Left open:** canvas-drawn labels (map, surface captions) are still sized for a phone — a global
+UI scale for `fillText` would be the next step; the station's market rows still repeat helper
+captions; the yard row prints the series twice.
 
 ## M128 (0.79.0) — built. Speech: a queue of lines, and putting things on the table
 
