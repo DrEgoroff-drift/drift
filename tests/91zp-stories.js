@@ -77,3 +77,28 @@ TEST_SUITES.push(()=>suite("истории: якорь при первой вс�
   ok(storyFlag(storyById("report_nothing"),"event"),"флаг поворота пережил сохранение");
   G.st=null;G.mode="system";
 }));
+
+/* ── M131: связи как данные и птица-переносчик ── */
+TEST_SUITES.push(()=>suite("истории: связи через seenOf и след, который уносит птица",()=>{
+  resetWorld();
+  ok(STORIES.length>=100,"историй не меньше ста (есть "+STORIES.length+")");
+  for(const S of STORIES)for(const t of S.traces)if(t.when&&t.when.seenOf){
+    const p=t.when.seenOf.split(".");const O=storyById(p[0]);
+    ok(!!O&&O.traces.some(x=>x.id===p[1]),S.id+"."+t.id+": seenOf указывает на существующий след "+t.when.seenOf);
+  }
+  G.st=G.sys.station;G.mode="dock";G.visits={};G.visits[G.sys.key]=1;
+  /* без чужого следа связанная история молчит */
+  G.storyPin["carried_callsign"]=G.sys.key;G.parrot={name:"Тест",who:"тест",said:0};G.heard=[];
+  eq(storyTraces("queue",storyCtx()).filter(h=>h.S.id==="carried_callsign").length,0,"без «Второго стакана» птице нечего сказать");
+  storySeen()["second_glass.t1"]=0;
+  eq(storyTraces("queue",storyCtx()).filter(h=>h.S.id==="carried_callsign").length,1,"увидели чужой след — связь открылась");
+  /* переносчик: след с carry попадает в услышанное птицей */
+  G.storyPin["door_found"]=G.sys.key;storySeen()["baker_oven.t4"]=0;
+  const h=storyTraces("queue",storyCtx()).find(x=>x.S.id==="door_found");
+  ok(!!h,"след с carry доступен");
+  storyShow(h);
+  ok(heardAll().some(r=>r.kind==="story"&&/дверц/i.test(r.note)),"птица запомнила строку");
+  const n=heardAll().length;storyShow(h);
+  eq(heardAll().length,n,"повторный показ не дублирует запись");
+  G.parrot=null;G.heard=[];G.st=null;G.mode="system";
+}));

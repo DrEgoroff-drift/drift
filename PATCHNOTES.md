@@ -8,6 +8,29 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.91.0 — "A hundred and two" (M131)
+
+**Links are data now.** A trace may require a trace of *another* story to have been seen —
+`seenOf:"second_glass.t1"` — so the second half of a story can live on a different station, in
+a different kind of place, and the player carries the connection in their head: who watered the
+garden in the crater answers at an outpost; the one who stayed at the window turns up at a trade
+hub; the bell's ringer is known at the outpost below the metal world.
+
+**The parrot is a carrier.** A trace marked `carry` is remembered by the bird when it is first
+shown (`heardAdd`, kind `story`), listed among what it heard with the place's address, and asked
+about elsewhere: a yard mentions the oven door, the bird repeats it, the baker's station reacts.
+
+**Thirty more stories** (`12k-stories-c`, 102 in all), most of them the far ends of earlier
+ones — the callsign the bird brings, the second lamp lit when the first went out, Kim's debt paid
+by someone else, the kettle's cousin mug that cools by itself, half a dock arriving, the
+lighthouse keeper who transferred "to where they listen", the clicking that got an answer and
+then a third — plus a few new: Zoya who only knows things at night, Guram Ilyich whose balance
+never adds up until it does, Samokhina on callsign Forty-two who circles for three years and lands,
+a dog that is not a dog, the fisher without a sea.
+
+The hundred is built. What is left is what the design says is left on purpose: a third of them
+never explained.
+
 ## 0.90.0 — "The ground speaks too" (M130)
 
 **Four more channels, all on the ground**: a line appended to the landing message, a line at the
