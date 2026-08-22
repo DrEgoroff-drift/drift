@@ -34,8 +34,10 @@ function enterCave(){
   C.findX=CAVE_W-140;
   caveZones(C);caveDeco(C,p);
   G.cave=C;G.mode="cave";
+  const cl=(typeof storyGroundLine==="function")?storyGroundLine("cave"):null;
+  if(cl)logAdd("dim",cl);
   say("Пещера\nищите проход · ДЕЙСТВИЕ у выхода — назад на поверхность"+
-    (watch>0?"\nздесь ходят дозорные посёлка":""));
+    (watch>0?"\nздесь ходят дозорные посёлка":"")+(cl?"\n"+cl:""),cl?320:150);
 }
 function exitCave(){
   G.cave=null;G.mode="surface";
