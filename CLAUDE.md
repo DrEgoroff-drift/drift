@@ -92,10 +92,12 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `17b-finds` | four finds in the void: capsule, satellite, container, hulk — the satellite is theirs |
 | `19a-mode-scoop` | scooping volatiles from a gas giant's atmosphere |
 | `21a-mode-base` | the base in cross-section: cell grid, power balance, base network |
+| `21ac-base-draw` | the base frame: mountain, gate, tunnel, rooms path, lights |
 | `21aa-base-rooms` | the brushes (`bBox`/`bWorker`/…), the finish table `ROOM_FIN`, `drawModule` |
 | `21ab-base-interiors` | the eight compartments themselves: `BASE_ROOM`, one function per kind |
 | `24a-mode-raid` | boarding a pirate base: grid + polygons, projected from the belt |
 | `26-ui-station` `27-ui-ship` | station with sections, ship screen with hull slots |
+| `26a-ui-station-home` | the station home tab: goal card, home, bases |
 | `27c-ui-hq` | the HQ and cantina screens: portraits, perk tree, order slots, domain summary |
 | `28-loop` | crash handling, telemetry, `audioTick`, `frame()` |
 
