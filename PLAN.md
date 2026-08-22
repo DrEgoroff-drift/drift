@@ -943,5 +943,5 @@ periphery points at the core without a marker or a quest log. The instruments co
 panel and its misclosure, M123 the paper recorder), then everything the player sees moves into the
 cockpit (M124–M127), speech becomes a queue of lines and putting things on the table (M128), and
 **the hundred** — a hundred small human stories on one template — is the load-bearing wall
-(M129–M131). Fifteen regions follow (M132–M146), then rumours, a returnee and the release.
+(M129–M131). Design: [`docs/DESIGN-stories.md`](docs/DESIGN-stories.md) (2026-08-22, awaiting the author's call on four forks listed at its end). Fifteen regions follow (M132–M146), then rumours, a returnee and the release.
 
