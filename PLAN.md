@@ -1020,6 +1020,13 @@ receiver's own reading (`instrRead` dev on `radio` is already there, but the eth
 stutter); the bearing mark cannot be removed or acknowledged; the mirror's lines do not yet enter
 the parrot's memory.
 
+## M137 (0.100.1) — built. Into the mountain
+
+Base cross-section: mountain profile as a ramp-and-plateau to the top of the frame, gate in
+the left foot, mast on the summit (`21a-mode-base`). **Still open:** the pad lights on the top
+row are buried under the slope; the plateau to the right is a plain wall of rock without a
+second plane.
+
 ## M136 (0.100.0) — built. Under the skin
 
 Lander silhouette by `h.form` (`19-mode-landing`), the jetpack (`20d-jetpack`, surface and cave),

@@ -451,16 +451,7 @@ function drawBase(){
     dg.addColorStop(0,"rgba("+sky[0].join(",")+",0)");
     dg.addColorStop(1,"rgba("+sky[0].join(",")+",.35)");
     ctx.fillStyle=dg;ctx.fillRect(0,Math.max(0,gy-54),W,Math.min(54,gy));
-    /* мачта связи и — если площадка построена — её огни над грунтом:
-       база должна быть видна снаружи, а не только в разрезе */
-    const mx2=X(cellX(1))+10;
-    ctx.strokeStyle="rgba(30,36,44,.85)";ctx.lineWidth=2;
-    ctx.beginPath();ctx.moveTo(mx2,gy);ctx.lineTo(mx2,gy-44);ctx.stroke();
-    ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(mx2-7,gy-4);ctx.lineTo(mx2,gy-18);ctx.lineTo(mx2+7,gy-4);ctx.stroke();
-    const bl=Math.sin(G.t*.06)>0;
-    ctx.fillStyle=bl?"rgba(255,110,90,.9)":"rgba(255,110,90,.25)";
-    ctx.beginPath();ctx.arc(mx2,gy-46,2.2,0,TAU);ctx.fill();
+    /* огни площадки над грунтом (мачта — на вершине горы, ниже по функции) */
     let hasPad=false;
     for(let c2=0;c2<BASE_COLS;c2++){const cc=baseCell(B,c2,0);if(cc&&cc.k==="pad"&&cc.hp>0)hasPad=true;}
     if(hasPad){
@@ -486,16 +477,25 @@ function drawBase(){
      внизу. Гора строится тем же шумом, но с большой амплитудой и горбом ровно
      над базой: середина сооружения — вершина, к краям склон уходит вниз.
      Мелкая рябь остаётся сверху: гора не должна быть гладким куполом. */
+  /* ── не холм, а ГОРА (M137) ──
+     Два горба высотой в полтора отсека давали курган: база читалась вкопанной
+     под степь, а верхний ряд упирался в небо. В образце гора занимает кадр до
+     верха, равнина остаётся слева, и в гору ЗАХОДЯТ сбоку — ворота врезаны в
+     её подошву. Профиль: с равнины склон поднимается к вершине над серединой
+     базы и дальше вправо держится плато. Высота — до самого верха кадра. */
   const bMidX=X(90+BASE_COLS*BCELL_W*.5);          // середина базы на экране
   const bHalf=BCELL_W*BASE_COLS*.62;
+  const bLeft=X(cellX(0))-BCELL_W*.55;
+  const mtnX0=bLeft-110, mtnTop=Math.max(40,gy-22);
+  const humpAt=x=>{
+    const u=clamp((x-mtnX0)/(bHalf*1.15),0,1), s=u*u*(3-2*u);
+    const plateau=clamp((x-bMidX)/(bHalf*2.2),0,1)*14;
+    return s*mtnTop-plateau;
+  };
   const GP=new Path2D();
   GP.moveTo(0,H);GP.lineTo(0,gy);
   for(let x=0;x<=W;x+=6){
-    const u=clamp((x-bMidX)/bHalf,-1.6,1.6);
-    /* два горба со сдвигом: одиночная гауссиана даёт правильный купол, а гора
-       — вещь кривая, у неё есть плечо и вершина не по центру */
-    const hump=Math.exp(-u*u*1.25)*BCELL_H*1.55+
-               Math.exp(-Math.pow(u+.72,2)*4.2)*BCELL_H*.55;
+    const hump=humpAt(x);
     const wob=(fbm2((x+camx)*.008,3.3,B.idx*77+13,3)-.5)*16;
     const fine=(fbm2((x+camx)*.032,7.1,B.idx*77+31,3)-.5)*9*(hump>4?1:.4);
     GP.lineTo(x,gy+wob+fine-hump);
@@ -602,8 +602,17 @@ function drawBase(){
      идёт после грунта и садится на ВЫСОТУ СКЛОНА в своей точке, а не на
      старую плоскую линию земли. */
   {
-    const _u=clamp((X(cellX(Math.floor(BASE_COLS/2)))-bMidX)/bHalf,-1.6,1.6);
-    const _hump=Math.exp(-_u*_u*1.25)*BCELL_H*1.55+Math.exp(-Math.pow(_u+.72,2)*4.2)*BCELL_H*.55;
+    /* мачта связи — на вершине горы, а не на равнине: оттуда её и видно */
+    {
+      const mx2=bMidX+18, my2=Y(150)-humpAt(bMidX+18)+4;
+      ctx.strokeStyle="rgba(30,36,44,.9)";ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(mx2,my2);ctx.lineTo(mx2,my2-48);ctx.stroke();
+      ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(mx2-7,my2-6);ctx.lineTo(mx2,my2-20);ctx.lineTo(mx2+7,my2-6);ctx.stroke();
+      const bl=Math.sin(G.t*.06)>0;
+      ctx.fillStyle=bl?"rgba(255,110,90,.9)":"rgba(255,110,90,.25)";
+      ctx.beginPath();ctx.arc(mx2,my2-50,2.2,0,TAU);ctx.fill();
+    }
     /* вход у ПОДОШВЫ склона, а не на вершине: ворота — это врез в гору на
        уровне земли, к ним подъезжают, а не забираются */
     const gy=Y(150)+6;
@@ -614,7 +623,9 @@ function drawBase(){
        портал, откатная плита с рёбрами и тёплая щель по краю — свет изнутри.
        Это же и оправдывает колонну: лифт начинается ровно за ними. */
     {
-      const gx=X(cellX(Math.floor(BASE_COLS/2))), gwd=52, ghh=30;
+      /* ворота — в ПОДОШВЕ горы слева, там, где в неё заходят с равнины;
+         от них коридор верхнего яруса ведёт к стволу лифта */
+      const gx=bLeft-30, gwd=68, ghh=40;
       const gyy=gy-2;
       ctx.fillStyle="rgba(24,27,33,.98)";
       ctx.beginPath();

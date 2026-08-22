@@ -8,6 +8,14 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.100.1 — "Into the mountain" (M137)
+
+The base read as dug under a plain: two humps a room and a half high over the top row. In
+the reference the mountain fills the frame, the plain stays on the left and you walk INTO the
+slope. The profile is now a ramp from the plain to a summit over the middle of the base and a
+plateau to the right, as high as the frame allows (`humpAt` in `21a-mode-base`); the gate sits
+in the foot of the slope on the left, larger, and the mast stands on the summit.
+
 ## 0.100.0 — "Under the skin" (M136)
 
 Three things at once, all on foot. **The lander by planform:** the ship on the pad had one
