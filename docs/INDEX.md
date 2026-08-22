@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 150 · символов верхнего уровня: 1668
+Файлов: 150 · символов верхнего уровня: 1671
 
 ## СИМВОЛЫ
 
@@ -1046,6 +1046,9 @@ openCrewView                 src/27b-ui-crew.js:199
 openHq                       src/27c-ui-hq.js:515
 openShipView                 src/27-ui-ship.js:145
 openStation                  src/26-ui-station.js:5
+OPT_TABS                     src/27-ui-ship.js:407
+optGroups                    src/27-ui-ship.js:410
+optTab                       src/27-ui-ship.js:409
 ORDERS                       src/12a-crew.js:109
 ORE_KEYS                     src/02-world.js:42
 ORE_NODE_W                   src/23-mode-dig.js:12
@@ -2044,7 +2047,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27-ui-ship.js · 23 КБ
+## src/27-ui-ship.js · 25 КБ
   · экран корабля:1
 
 ## src/28-loop.js · 30 КБ

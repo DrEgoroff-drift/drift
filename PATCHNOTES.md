@@ -8,6 +8,22 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.88.0 — "A screen is a pane of glass, not a wall"
+
+The interface grew on a phone and was stretched edge to edge on a monitor: a price sat a metre
+and a half from its name, nine-pixel captions vanished, a 56-px row showed four goods per screen,
+and four section buttons were spread across the whole width with nothing between them.
+
+**On a wide screen every screen is now a centred pane** — `min-width: 900px` in `style.css` —
+up to 1080 px wide, on glass over the visible world, type one step larger, rows denser, section
+and tab buttons gathered on the left, the footer's actions right-aligned instead of stretched.
+Nothing changes on a phone: the block is additive. The scrollbar inside the pane is a thin
+phosphor line rather than the system widget.
+
+**Settings have five tabs** — Полёт, Клавиши, Звук, Графика, Запись — instead of one scroll
+through twenty sections to reach the sound. The sections and their order are untouched; a tab
+only hides the others (`optGroups`).
+
 ## 0.87.0 — "What does not move is painted once"
 
 Measured, not guessed: the frame was profiled function by function, JS time and raster time

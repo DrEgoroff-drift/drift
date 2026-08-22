@@ -398,4 +398,30 @@ function renderOpts(){
   r2.appendChild(el("div","nm","<s>сборка 4 — вид из кабины, приборная панель, инверсия осей<br>корпус «"+s2.S.ru+"» · "+G.credits.toLocaleString("ru")+
     " кр · "+G.data+" данных<br>открыто тел: "+G.found.size+" · видов: "+G.species.size+"</s>"));
   $optBody.appendChild(r2);
+  optGroups();
+}
+/* ── вкладки настроек ──
+   Экран был одним свитком на двадцать разделов: чтобы дойти до звука, надо
+   было пролистать все клавиши. Разделы теперь собраны в пять вкладок по
+   смыслу; сами разделы и их порядок не тронуты — вкладка лишь прячет чужие. */
+const OPT_TABS=[["ПОЛЁТ",/ПОСАДКА|АВТОПИЛОТ|КАБИНЕ|ОБЗОР/],["КЛАВИШИ",/КЛАВИШИ|ЭКРАННЫЕ/],
+  ["ЗВУК",/ЗВУК/],["ГРАФИКА",/ГРАФИКА/],["ЗАПИСЬ",/СОХРАНЕНИЕ|ХРАНИЛИЩЕ|СВОДКА/]];
+let optTab="ПОЛЁТ";
+function optGroups(){
+  const nav=document.getElementById("optTabs");if(!nav)return;
+  nav.innerHTML="";
+  for(const [name] of OPT_TABS){
+    const b=el("button",name===optTab?"on":"",name);
+    b.onclick=()=>{optTab=name;renderOpts();$optBody.scrollTop=0;};
+    nav.appendChild(b);
+  }
+  let cur=null;
+  for(const n of Array.from($optBody.children)){
+    if(n.classList.contains("sec")){
+      const t=n.textContent;
+      const g=OPT_TABS.find(x=>x[1].test(t));
+      cur=g?g[0]:cur;
+    }
+    n.style.display=(cur===optTab)?"":"none";
+  }
 }
