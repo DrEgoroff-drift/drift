@@ -43,7 +43,9 @@ function etherTick(dt){
   if(G.etherT>0)return;
   G.etherT=ETHER_EVERY*(.7+Math.random()*.8);
   const r=rng(hashi(G.sx,G.sy,(Date.now()/60000)|0));
-  logAdd("dim",pick(ETHER,r));
+  /* строка истории (11c) — не чаще раза из трёх, остальное остаётся безликим шумом */
+  const sl=(typeof storyEtherLine==="function")?storyEtherLine(r):null;
+  logAdd("dim",sl!=null?sl:pick(ETHER,r));
 }
 /* ── как к вам обращаются ──
    «пилот» → позывной → имя. Больше ничего не нужно, чтобы игрок почувствовал
@@ -86,7 +88,10 @@ function speechHere(){
   const S=speechAll(), key=G.sys.key;
   const st=S[key]||(S[key]={i:0,v:-1});
   const v=visitHere();
-  if(st.v!==v){st.v=v;st.i=(st.i+1)%LOCAL.length;}
+  if(st.v!==v){st.v=v;st.i=(st.i+1)%LOCAL.length;st.sq=undefined;}
+  /* реплика истории (11c) вклинивается перед общей; решение держится всю посадку */
+  if(st.sq===undefined)st.sq=(typeof storyQueueLine==="function")?storyQueueLine():null;
+  if(st.sq)return {line:st.sq.line,silent:st.sq.silent,addr:addrForm()};
   const line=LOCAL[st.i];
   return {line,silent:line===null,addr:addrForm()};
 }
@@ -146,6 +151,8 @@ addEventListener("keydown",e=>{
 /* Положить вещь на стол. Возвращает ответ — строку или молчание. Продажа
    отдельным движением: сначала показывают, потом торгуются. */
 function putOnTable(kind,idx){
+  const sr=(typeof storyTableLine==="function")?storyTableLine(kind):null;
+  if(sr)return sr;                       // история отвечает на вещь раньше общей таблицы (11c)
   const pool=TABLE_REPLY[kind];
   if(!pool)return null;
   const r=rng(hashi((G.sys?G.sys.key.length:1)+visitHere(),idx|0,kind.length));

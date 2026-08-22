@@ -120,6 +120,9 @@ function findInteract(sh){
     const got=findTake(near);
     if(got)tell("tech",K.ru[0].toUpperCase()+K.ru.slice(1)+": "+got,
                 K.ru[0].toUpperCase()+K.ru.slice(1)+"\n"+got);
+    /* находка может нести строку чужой истории (11c) */
+    const sl=(typeof storyFindLine==="function")?storyFindLine(near.k):null;
+    if(sl){logAdd("dim",sl);say(sl,260);}
     if(typeof saveGame==="function")saveGame(true);
   }
   return true;

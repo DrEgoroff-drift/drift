@@ -891,6 +891,21 @@ socket out is not wired); the recorder itself is not a purchasable unit, only th
 `26-ui-station` crossed 40 KB with this tab and is now shouting on every build; wear from the hull
 (`12s-wear`) and instrument age run on separate clocks that never speak to each other.
 
+## M129 (0.89.0) — built. Traces, not tasks
+
+Engine `11c-stories`, data `12k-stories-a` (26 stories, six of them long), suite `91zp-stories`.
+Decisions taken with the author on 2026-08-22: **no journal page** — stories leave no trace in
+the interface; **anchoring at first meeting** (deterministic lot per story × place, ≤4 floating
+per place); **a third never explained**; **the six rivals get six stories** (four built: baker,
+Krapiva, Kim, Shtof, Sovenya, Efim — five; the sixth waits for a face). Long stories are written
+in the key of institute fiction — the report on the event that never happens, the null-cabin.
+Channels: ether, counter queue, table, finds, rumours, cantina scene. Lint: closed `when`
+dictionary, every turn flag read, 2–7 traces, ≤4 surfaces (counter + table count as one).
+
+**Open for M130**: the surface, the settlement (glyph), the machine and the animals as channels
+— the four "ground" stories of the design (who feeds the Tin, the shoal, the shell, who turns
+off the light) wait for them; +40 stories. **M131**: links as data, the parrot as carrier, +40.
+
 ## M128b (0.87.0–0.88.0) — built. The frame has an address, and the screen is a pane
 
 **Performance, measured.** JS time and raster time profiled apart, then a real Chrome on a ×2.5

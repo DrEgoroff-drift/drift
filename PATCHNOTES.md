@@ -8,6 +8,39 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.89.0 — "Traces, not tasks" (M129)
+
+The first of the hundred. A human story in Drift is two to seven **traces** laid across the
+world — a line in the ether, a remark at the counter, a figure at a table, a thing on the bar, the
+contents of a capsule, a rumour — met in any order and assembled in the player's head, never in a
+journal. No giver, no reward, no marker, no counter, no page: the game records only which traces
+were seen. Design: `docs/DESIGN-stories.md`.
+
+**The engine** (`11c-stories`) pulls rather than schedules: each channel asks `storyTraces(via)`
+when it needs content; turns — changes that happen without the player — are computed lazily from
+the world's day (`CEL_DAY`) or from the day a trace was first seen. Floating stories ("any trade
+hub") anchor to the first matching place where their deterministic lot falls, at most four per
+place; fixed ones sit at seeded addresses. Conditions are a closed dictionary (`STORY_WHEN`); an
+unknown key fails the autotest, as does a turn flag nobody reads.
+
+**Six channels wired**: the ether (one line in three), the counter queue (an unseen trace
+preempts, a seen one only every third landing), the table (a story answers the thing before the
+common table), finds, rumours (with the anchored place's address), and the cantina — figures at
+corner / far / end / door seats and eleven small things on the bar, drawn with the hall's own
+brushes.
+
+**Twenty-six stories** (`12k-stories-a`): the second glass, the pad lamp, the shift that does not
+come, the baker who never baked, the parrot that carries a callsign, Madame Krapiva who does not
+fly, Efim's stool, the forecast that never changes, two on one orbit, four cups, the old name, Kim's
+debt, the voice of the Rack, the night shift, Shtof's tally, a foreign tape, Sovenya awake, a
+letter read over the ether — and six longer ones in the key of institute fiction: the report on
+the event that never happens, Gedevan's null-cabin, Semyon Palych who walks to the horizon, the
+commission that looks at walls, Ada Lvovna's second shelf, the pump that was not a pump. A third
+are never explained, on purpose.
+
+**Not yet**: the settlement, the machine, the animals and the surface as channels — M130, with
+forty more stories; links and the parrot as carrier — M131.
+
 ## 0.88.0 — "A screen is a pane of glass, not a wall"
 
 The interface grew on a phone and was stretched edge to edge on a monitor: a price sat a metre
