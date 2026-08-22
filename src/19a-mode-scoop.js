@@ -87,7 +87,7 @@ function giantTex(p){
   if(GIANT.key===p.seed)return GIANT.tex;
   const hit=GIANT.cache.find(e=>e.key===p.seed);
   if(hit){GIANT.key=hit.key;GIANT.tex=hit.tex;return hit.tex;}
-  const TW=512,TH=256;
+  const TW=768,TH=384;   // 512×256 тянулось на полтора экрана и мылилось (G5)
   const cn=document.createElement("canvas");cn.width=TW;cn.height=TH;
   const c=cn.getContext("2d"),img=c.createImageData(TW,TH),d=img.data;
   const pal=p.T.pal,sd=p.seed|0;
@@ -159,8 +159,8 @@ function drawScoop(){
      одинаковая лента, наложенная трижды, взаимно усредняется в розовую кашу */
   const layers=[[1.35,.30,1,1],[1.0,.85,.3,.9]];
   for(const L of layers){
-    const hgt=H*L[0], wid=hgt*.62;
-    const off=-((S.x*L[1]*9)%wid);
+    const hgt=H*L[0], wid=hgt*1.25;   // тайл шире: при .62 он повторялся дважды на экран, и волны читались копиями (G5)
+    const off=-((S.x*L[1]*9+(L===layers[1]?wid*.5:0))%wid);
     ctx.globalAlpha=L[2];
     const yTop=H*.5-hgt*.5*L[3];
     for(let i=-1;i<=Math.ceil(W/wid)+1;i++)ctx.drawImage(T,off+i*wid,yTop,wid,hgt);
