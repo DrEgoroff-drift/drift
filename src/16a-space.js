@@ -81,37 +81,91 @@ function sysNebulaTex(sys){
   sys.nebTex=J.cn;NEB_JOB=null;
   return sys.nebTex;
 }
+/* ── туманность в кадре: два прохода складываются заранее ──
+   Туманность рисовалась двумя полноэкранными наложениями: тайл 160×160,
+   растянутый на весь экран, и он же — вдвое крупнее и со сдвигом, чтобы граница
+   тайла не читалась. Оба идут поверх всего, что уже нарисовано, со смешиванием,
+   в КАЖДОЙ системе и КАЖДЫЙ кадр. При холсте в четыре с половиной мегапикселя
+   это девять мегапикселей смешивания ещё до того, как нарисовано хоть что-то, —
+   и вдобавок оба раза с двенадцатикратным увеличением, то есть с самой
+   невыгодной для выборки текстуры кратностью.
+
+   Ключевое наблюдение: параллакса МЕЖДУ слоями нет. Сдвиг у второго слоя
+   отличается от первого на постоянную величину, поэтому при движении камеры они
+   едут вместе, как одна картинка. Значит их можно сложить один раз в общий тайл
+   и дальше двигать его целиком — одно наложение вместо двух, и притом один к
+   одному по пикселям, без увеличения.
+
+   Тайл делается по размеру экрана плюс тот запас, в пределах которого гуляет
+   сдвиг, и пересобирается только при смене системы или размера окна. */
+let NEB_COMP=null;
 function drawSysNebula(sys,cx,cy){
   const N=sysNebulaTex(sys);
   if(!N)return;               // ещё печётся — этот кадр обойдётся без неё
   const ex=W*.24,ey=H*.24;
   const ox=-ex/2+clamp(-cx*.012,-ex/2,ex/2);
   const oy=-ey/2+clamp(-cy*.012,-ey/2,ey/2);
-  ctx.save();
-  ctx.globalCompositeOperation="lighter";
-  ctx.globalAlpha=.5;
-  ctx.drawImage(N,ox,oy,W+ex,H+ey);
-  /* второй проход крупнее и смещённый — граница тайла перестаёт читаться */
-  ctx.globalAlpha=.22;
-  ctx.drawImage(N,ox-W*.3,oy-H*.2,(W+ex)*1.9,(H+ey)*1.9);
-  ctx.restore();
+  const C=NEB_COMP;
+  if(!C||C.src!==N||C.w!==W||C.h!==H||C.dpr!==DPR){
+    const cv=document.createElement("canvas");
+    cv.width=Math.max(1,Math.round((W+ex)*DPR));
+    cv.height=Math.max(1,Math.round((H+ey)*DPR));
+    const c2=cv.getContext("2d");
+    c2.setTransform(DPR,0,0,DPR,0,0);
+    /* тот самый фон, который раньше заливали отдельным проходом */
+    c2.fillStyle="#05070c";c2.fillRect(0,0,W+ex,H+ey);
+    c2.globalCompositeOperation="lighter";
+    c2.globalAlpha=.5;
+    c2.drawImage(N,0,0,W+ex,H+ey);
+    /* второй проход крупнее и смещённый — граница тайла перестаёт читаться */
+    c2.globalAlpha=.22;
+    c2.drawImage(N,-W*.3,-H*.2,(W+ex)*1.9,(H+ey)*1.9);
+    NEB_COMP={cv,src:N,w:W,h:H,dpr:DPR};
+  }
+  ctx.drawImage(NEB_COMP.cv,ox,oy,W+ex,H+ey);
+  return true;
 }
 /* ── пыль между планетами ──
    ближний слой, идущий быстрее звёзд: именно он даёт ощущение скорости, потому
-   что звёзды слишком далеко, чтобы двигаться */
-function drawSpaceDust(cx,cy,Z,dens){
-  const n=Math.round(70*dens*G.opts.gfx.particles);
-  const span=900;
-  ctx.save();
+   что звёзды слишком далеко, чтобы двигаться.
+
+   Пылинок семьдесят, и каждая обходилась дорого не тем, что рисовалась, а тем,
+   что заново ВЫВОДИЛАСЬ: на каждую заводился свой генератор случайных чисел,
+   собиралась строка «rgba(…)», и холст разбирал этот CSS-цвет. Семьдесят раз за
+   кадр, шестьдесят раз в секунду. Между тем ни координата в своём поле, ни
+   размер, ни яркость пылинки не меняются никогда — меняется только сдвиг всего
+   поля вслед за камерой. Поэтому таблица считается один раз на количество, цвет
+   ставится один раз на всё поле, а от пылинки к пылинке меняется только
+   прозрачность, и это число, а не строка.
+
+   Тайлом это делать нельзя: поле почти пустое, и четыре полноэкранных
+   наложения ради семидесяти точек обошлись бы дороже самих точек. */
+const DUST_COL="rgb(198,214,236)";
+let DUST_TAB=null;
+function dustTable(n){
+  if(DUST_TAB&&DUST_TAB.length===n)return DUST_TAB;
+  const t=new Array(n);
   for(let i=0;i<n;i++){
     const r=rng(hashi(i,7,0xD057));
-    const px=((r()*span-cx*.55)%span+span)%span/span*(W+40)-20;
-    const py=((r()*span-cy*.55)%span+span)%span/span*(H+40)-20;
-    const s=.6+r()*1.6;
-    ctx.fillStyle="rgba(198,214,236,"+(.05+r()*.16).toFixed(3)+")";
-    ctx.fillRect(px,py,s,s);
+    t[i]={u:r(),v:r(),s:.6+r()*1.6,a:.05+r()*.16};
   }
-  ctx.restore();
+  return DUST_TAB=t;
+}
+function drawSpaceDust(cx,cy,Z,dens){
+  const n=Math.round(70*dens*G.opts.gfx.particles);
+  if(n<=0)return;
+  const span=900,T=dustTable(n);
+  const sw=W+40,sh=H+40;
+  const a0=ctx.globalAlpha;
+  ctx.fillStyle=DUST_COL;
+  for(let i=0;i<n;i++){
+    const d=T[i];
+    const px=((d.u*span-cx*.55)%span+span)%span/span*sw-20;
+    const py=((d.v*span-cy*.55)%span+span)%span/span*sh-20;
+    ctx.globalAlpha=a0*d.a;
+    ctx.fillRect(px,py,d.s,d.s);
+  }
+  ctx.globalAlpha=a0;
 }
 /* ── ощущение полёта ──
    Корабль двигался как курсор: камера приклеена, тяга ничем не отмечена, кроме
