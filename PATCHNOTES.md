@@ -8,6 +8,15 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.97.0 — "Six worlds, six bodies" (G1)
+
+The planet material (`18a-material`) had a character only for crystal, metal, jungle and ruin;
+the other six types shared one cell texture in six palettes. Now desert is wind ripple with lit
+crests, ice is fracture plates with white seams and blue depth, volcanic is a cooled crust whose
+seams glow where the heat is near, toxic is sodden banks with pools and rims, terran and ocean
+are bedded soil. The light shafts take their count, angle and spread from the planet instead of
+the same five-ray fan everywhere. Passes added: 0 — it is all in the baked tile.
+
 ## 0.96.0 — "The mine has rock in it" (G3)
 
 `fillMaterial` with no clip path called `ctx.clip()` on an empty path and drew nothing — the mine

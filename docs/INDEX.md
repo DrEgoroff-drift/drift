@@ -462,7 +462,7 @@ drawRing                     src/17-mode-system.js:415
 drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:151
-drawSkyBase                  src/19c-light.js:177
+drawSkyBase                  src/19c-light.js:180
 drawSkyBodies                src/19b-sky.js:59
 drawSkyLayer                 src/19-mode-landing.js:296
 drawSpaceDust                src/16a-space.js:154
@@ -529,7 +529,7 @@ FAUNA_RES                    src/02-world.js:38
 fbm1                         src/01-core.js:19
 fbm2                         src/01-core.js:26
 fbm3                         src/24-mode-belt.js:16
-fillMaterial                 src/18a-material.js:205
+fillMaterial                 src/18a-material.js:257
 FIN_DEF                      src/21aa-base-rooms.js:184
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
@@ -623,7 +623,7 @@ glowBlit                     src/16a-space.js:289
 glowSprite                   src/16a-space.js:275
 goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
-gradePass                    src/19c-light.js:140
+gradePass                    src/19c-light.js:143
 GROK_CAP                     src/12tb-grok.js:27
 GROK_DIRT                    src/12tb-grok.js:30
 GROK_LIKE                    src/12tb-grok.js:29
@@ -871,9 +871,9 @@ makeWorld                    src/02a-worldmix.js:47
 MAPBG                        src/18-mode-map.js:31
 mapNebula                    src/18-mode-map.js:32
 marketFor                    src/12-economy.js:2
-MAT_CHAR                     src/18a-material.js:46
+MAT_CHAR                     src/18a-material.js:49
 MAT_S                        src/18a-material.js:34
-matCell                      src/18a-material.js:49
+matCell                      src/18a-material.js:53
 mercFee                      src/12a-crew.js:147
 mergeKeyMap                  src/15-input.js:42
 MGR_CAP                      src/12c-mgr-core.js:8
@@ -1172,7 +1172,7 @@ planetHeightAt               src/07-planet.js:387
 planetHere                   src/12n-planet.js:61
 planetLight                  src/07-planet.js:193
 planetLoadSum                src/12n-planet.js:122
-planetMat                    src/18a-material.js:59
+planetMat                    src/18a-material.js:63
 planetPaint                  src/07-planet.js:246
 planetPeriod                 src/07-planet.js:37
 planetReady                  src/12n-planet.js:19
@@ -2018,7 +2018,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/17-mode-system.js · 43 КБ
   · режим: система:1
 
-## src/18a-material.js · 17 КБ
+## src/18a-material.js · 21 КБ
   · материал грунта:1
 
 ## src/18b-geology.js · 9 КБ

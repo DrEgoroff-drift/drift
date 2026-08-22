@@ -153,6 +153,8 @@ standard; the rest is pulled up to them, not the other way round.
   dunes/ripples for desert, fracture plates and blue depth for ice, cooled crust with glowing
   cracks for volcanic, sodden banks and pools for toxic, root mass and canopy for jungle; relief
   amplitude and strata count from the kit; rays only where the sky gives a reason (dust, mist).
+  **Done in 0.97.0** for the material kit (dune, frost, crust, sludge, soil) and the shafts.
+  Still open: relief amplitude and strata count per kit; flora silhouettes per world.
 - **G2 — no aerial perspective on the surface** (`surface.png`). Far ridges use the near ground's
   texture and value; the ground does not darken with depth; nothing stands in front of the player.
   Fix: three planes — far ridges as flat value silhouettes tinted by the sky (cached

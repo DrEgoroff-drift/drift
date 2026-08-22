@@ -564,6 +564,9 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 .body::-webkit-scrollbar-thumb,#loglist::-webkit-scrollbar-thumb,#lorelist::-webkit-scrollbar-thumb{
   background:rgba(127,230,216,.18);border-radius:3px}
 .body,#loglist,#lorelist{scrollbar-width:thin;scrollbar-color:rgba(127,230,216,.18) transparent}
+/* длинная «секция» — это фраза, а не подпись: обычный регистр, читаемый кегль */
+.sec.note{text-transform:none;letter-spacing:.02em;font-size:11px;line-height:1.6;color:var(--dim)}
+@media (min-width:900px){.sec.note{font-size:12px;max-width:72ch}}
 
 </style>
 </head>
@@ -766,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.88.0";
+const VER="0.96.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -4744,9 +4747,13 @@ function regionAt(sx,sy){
   const core=regionCore(rx,ry,r);
   /* имя есть, но нигде не показывается: оно для журнала и для того, чтобы
      область была вещью, а не индексом */
-  const name=pick(REGION_A,r)+" "+pick(REGION_B,r);
+  let name=pick(REGION_A,r)+" "+pick(REGION_B,r);
   /* правило 4: прибор ровно один, и он от seed области */
-  const needle=INSTR_KEYS[Math.floor(r()*INSTR_KEYS.length)];
+  let needle=INSTR_KEYS[Math.floor(r()*INSTR_KEYS.length)];
+  /* тематическая область (06c) приносит своё имя и свой прибор; у почтового
+     круга прибора нет вовсе — там приборы молчат, и это единственное такое место */
+  const T=(typeof regionThemeAt==="function")?regionThemeAt(rx,ry):null;
+  if(T){name=T.ru;needle=T.needle;}
   /* ── ширина склона ──
      Склон обязан сойти на нет ВНУТРИ области: иначе на границе, где начинается
      чужой склон с чужой крутизной, получается порог. Ширину задаёт само ядро —
@@ -4757,8 +4764,8 @@ function regionAt(sx,sy){
   const R0=Math.min(core.sx-bx,bx+REGION_SPAN-1-core.sx,
                     core.sy-by,by+REGION_SPAN-1-core.sy)+1;
   const slope=clamp(R0,1,REGION_R);
-  const amp=(.45+r()*.45)*(slope/REGION_R);
-  return {key:rx+","+ry,rx,ry,seed,name,core,needle,amp,slope,span:REGION_SPAN};
+  const amp=(T&&!T.needle)?0:(.45+r()*.45)*(slope/REGION_R);
+  return {key:rx+","+ry,rx,ry,seed,name,core,needle,amp,slope,span:REGION_SPAN,theme:T?T.id:null};
 }
 /* ── невязка ──
    Одно маленькое число: насколько расходятся пять способов узнать, где и когда
@@ -4776,6 +4783,97 @@ function regionDepth(sx,sy){
   const d=Math.hypot(sx-R.core.sx,sy-R.core.sy);
   return clamp(1-d/R.slope,0,1);
 }
+
+/* ══════════════ таблица областей: пятнадцать тем на одной решётке ══════════════
+   M132. 06b даёт область каждой клетке решётки: имя, прибор, склон. Здесь поверх
+   решётки кладётся ЗАКРЫТАЯ таблица — пятнадцать областей, у которых есть тема,
+   свой прибор и своё ядро, и которые строятся по одной (M133–M146). Остальные
+   области остаются процедурными: у них есть склон, но нет истории.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Таблица конечна и одна на всю игру, как NODES: расстановка считается от
+      посева и кэшируется, ничего не хранится в сейве.
+   2. Тематическая область не рисует маркер и не подписана: отличие — только в
+      имени (для журнала), приборе и том, что в ней построят потом.
+   3. Два ядра не ближе двух прыжков на стоковом корабле. Иначе области
+      наслаиваются и склон одной ломает склон другой.
+   4. У каждой области есть обычное место: система с станцией, где просто
+      торгуют. Область без такого — это загадка без быта, её не прочесть.
+   5. Почтовый круг (post) — единственная область, где приборы МОЛЧАТ: amp=0.
+      Это должно быть заметно именно потому, что везде они хоть чуть-чуть врут. */
+
+const REGION_TABLE=[
+  {id:"post",   ru:"Почтовый круг",      needle:null,     ring:1},
+  {id:"mirror", ru:"Зеркало",            needle:"radio",  ring:2},
+  {id:"lights", ru:"Три света",          needle:"actino", ring:2},
+  {id:"hours",  ru:"Расхождение времён", needle:"chrono", ring:3},
+  {id:"glow",   ru:"Свет, который помнит",needle:"actino",ring:2},
+  {id:"grove",  ru:"Роща",               needle:"mass",   ring:3},
+  {id:"keepers",ru:"Линия смотрителей",  needle:"course", ring:1},
+  {id:"county", ru:"Большой уезд",       needle:"mass",   ring:1},
+  {id:"charts", ru:"Несогласие карт",    needle:"course", ring:3},
+  {id:"quiet",  ru:"Тихий уезд",         needle:"radio",  ring:2},
+  {id:"slow",   ru:"Медленный",          needle:"chrono", ring:4},
+  {id:"pass",   ru:"Перевал",            needle:"course", ring:4},
+  {id:"grown",  ru:"Другое взросление",  needle:"mass",   ring:3},
+  {id:"plan",   ru:"План",               needle:"radio",  ring:4},
+  {id:"tin",    ru:"Жестяной край",      needle:"radio",  ring:4}
+];
+const REGION_GAP=2;            // минимум областей между двумя тематическими (Чебышёв)
+const REGION_SALT2=0x2E611;
+
+/* ── расстановка ──
+   Кольцо в единицах области (1 — соседи начала, 4 — окраина, где опасность
+   около половины). По кольцу идём с посеянного угла и берём первую область,
+   чьё ядро — система со станцией и которая не ближе REGION_GAP к уже занятым. */
+let REGION_PLACE=null;
+function regionPlace(){
+  if(REGION_PLACE)return REGION_PLACE;
+  const byKey={},byId={},used=[];
+  for(let i=0;i<REGION_TABLE.length;i++){
+    const T=REGION_TABLE[i];
+    const r=rng(hashi(i*31+5,REGION_SALT2,T.ring));
+    const a0=r()*TAU;
+    let found=null;
+    for(let ring=T.ring;ring<=T.ring+2&&!found;ring++){
+      /* клетки кольца в порядке обхода от посеянного угла */
+      const cells=[];
+      for(let x=-ring;x<=ring;x++)for(let y=-ring;y<=ring;y++)
+        if(Math.max(Math.abs(x),Math.abs(y))===ring)cells.push({x,y,a:Math.atan2(y,x)});
+      cells.sort((p,q)=>((p.a-a0+TAU*2)%TAU)-((q.a-a0+TAU*2)%TAU));
+      for(const c of cells){
+        if(byKey[c.x+","+c.y])continue;
+        let near=false;
+        for(const u of used)if(Math.max(Math.abs(u.x-c.x),Math.abs(u.y-c.y))<REGION_GAP){near=true;break;}
+        if(near)continue;
+        const core=regionCore(c.x,c.y,rng(hashi(c.x,c.y,REGION_SALT)));
+        const S=getSystem(core.sx,core.sy);
+        if(!S||!S.station)continue;
+        /* правило 4: обычное место на окраине области */
+        if(!regionPlainSys(c.x,c.y,core))continue;
+        found={rx:c.x,ry:c.y};
+      }
+    }
+    /* не нашлось — область остаётся без места; набор это поймает */
+    if(found){byKey[found.rx+","+found.ry]=T;byId[T.id]=found;used.push({x:found.rx,y:found.ry});}
+  }
+  return REGION_PLACE={byKey,byId};
+}
+/* система области, где просто торгуют: станция, не ядро, опасность невысока */
+function regionPlainSys(rx,ry,core){
+  const bx=rx*REGION_SPAN,by=ry*REGION_SPAN;
+  for(let x=bx;x<bx+REGION_SPAN;x++)for(let y=by;y<by+REGION_SPAN;y++){
+    if(x===core.sx&&y===core.sy)continue;
+    if(!starAt(x,y)||sysDanger(x,y)>.6)continue;
+    const S=getSystem(x,y);
+    if(S&&S.station)return {sx:x,sy:y};
+  }
+  return null;
+}
+/* тема области по её ключу решётки — или null для процедурной */
+function regionThemeAt(rx,ry){return regionPlace().byKey[rx+","+ry]||null;}
+/* где стоит тематическая область: {rx,ry} или null */
+function regionOfTheme(id){return regionPlace().byId[id]||null;}
 
 /* ══════════════ галактика ══════════════ */
 function starAt(sx,sy){return (sx===0&&sy===0)||h01(sx,sy,4242)<.52;}
@@ -6270,7 +6368,10 @@ function questClose(key,state,note){
     (state==="done"?"Дело закрыто: ":"Дело сорвано: ")+q.ru);
   return q;
 }
-function questDone(key,note){return questClose(key,"done",note);}
+function questDone(key,note){
+  if(typeof placeNote==="function")placeNote("care",3);   // привёз, сделал — место помнит (11d)
+  return questClose(key,"done",note);
+}
 function questFail(key,note){return questClose(key,"failed",note);}
 /* ── курс по делу ──
    Ткнули по строке — карта открылась с выбранной системой. Это единственная
@@ -6374,10 +6475,15 @@ function etherTick(dt){
   if(!G.running||G.mode!=="system")return;
   const rate=(typeof hullRole==="function")?hullRole().ether:1;
   G.etherT=(G.etherT==null?ETHER_EVERY:G.etherT)-dt*rate;
+  if(typeof mirrorEchoTick==="function")mirrorEchoTick();
   if(G.etherT>0)return;
   G.etherT=ETHER_EVERY*(.7+Math.random()*.8);
   const r=rng(hashi(G.sx,G.sy,(Date.now()/60000)|0));
-  logAdd("dim",pick(ETHER,r));
+  /* строка истории (11c) — не чаще раза из трёх, остальное остаётся безликим шумом */
+  const sl=(typeof storyEtherLine==="function")?storyEtherLine(r):null;
+  const line=sl!=null?sl:pick(ETHER,r);
+  logAdd("dim",line);
+  if(typeof mirrorEchoArm==="function")mirrorEchoArm(line);   /* зеркало (11f) */
 }
 /* ── как к вам обращаются ──
    «пилот» → позывной → имя. Больше ничего не нужно, чтобы игрок почувствовал
@@ -6420,7 +6526,10 @@ function speechHere(){
   const S=speechAll(), key=G.sys.key;
   const st=S[key]||(S[key]={i:0,v:-1});
   const v=visitHere();
-  if(st.v!==v){st.v=v;st.i=(st.i+1)%LOCAL.length;}
+  if(st.v!==v){st.v=v;st.i=(st.i+1)%LOCAL.length;st.sq=undefined;}
+  /* реплика истории (11c) вклинивается перед общей; решение держится всю посадку */
+  if(st.sq===undefined)st.sq=(typeof storyQueueLine==="function")?storyQueueLine():null;
+  if(st.sq)return {line:st.sq.line,silent:st.sq.silent,addr:addrForm()};
   const line=LOCAL[st.i];
   return {line,silent:line===null,addr:addrForm()};
 }
@@ -6480,6 +6589,8 @@ addEventListener("keydown",e=>{
 /* Положить вещь на стол. Возвращает ответ — строку или молчание. Продажа
    отдельным движением: сначала показывают, потом торгуются. */
 function putOnTable(kind,idx){
+  const sr=(typeof storyTableLine==="function")?storyTableLine(kind):null;
+  if(sr)return sr;                       // история отвечает на вещь раньше общей таблицы (11c)
   const pool=TABLE_REPLY[kind];
   if(!pool)return null;
   const r=rng(hashi((G.sys?G.sys.key.length:1)+visitHere(),idx|0,kind.length));
@@ -6497,6 +6608,633 @@ function stripSell(k){
   tell("money","Лента продана · +"+price.toLocaleString("ru")+" кр",
        "Лента продана\n+"+price.toLocaleString("ru")+" кр");
   return price;
+}
+
+/* ══════════════ истории: следы, а не задания ══════════════
+   M129. Сто маленьких человеческих историй — это не сто квестов. История —
+   два–пять СЛЕДОВ, разложенных по миру: строка в эфире, реплика в очереди
+   места, фигура за столиком, вещь на стойке, содержимое капсулы, слух. Следы
+   встречаются в любом порядке; история складывается в голове игрока, а не в
+   журнале. Замысел целиком — docs/DESIGN-stories.md.
+
+   ТРИ ПРАВИЛА. Мир рассказывает, игроку не рассказывают: текст называет детали,
+   никогда — отношение. Дёшево: строки, адреса, условия, существующие кисти.
+   Одна история — не больше трёх каналов.
+
+   ЧЕГО НЕТ. Заказчика, награды, экрана завершения, маркера, счётчика, страницы
+   в журнале. Игра помнит только, какие следы игрок видел (G.seen) — и ни в каком
+   смысле не считает историю «пройденной».
+
+   ВЫТЯГИВАНИЕ, А НЕ ПЛАНИРОВЩИК. Каналы спрашивают storyTraces(via,ctx), когда
+   им нужно содержимое; повороты (turns) считаются лениво здесь же. В кадре
+   ничего не ходит.
+
+   ЯКОРЬ. Плавающая история («любой торговый узел») при первой встрече
+   прибивается к месту и дальше живёт там: «тот парень» всегда на той же
+   станции, а сто историй не требуют ста расставленных систем. */
+
+const STORY_DAY=CEL_DAY;                 // сутки истории = сутки неба: минута игры
+const STORY_PIN_CAP=4;                   // не больше стольких плавающих историй на одно место
+const STORY_ETHER_SHARE=.34;             // эфир берёт строку истории не чаще раза из трёх
+
+function storyDay(){return Math.floor(G.t/STORY_DAY);}
+function storySeen(){return (G.seen||(G.seen={}));}
+function storyPins(){return (G.storyPin||(G.storyPin={}));}
+function storyFlags(){return (G.storyFlags||(G.storyFlags={}));}
+function storyAll(){return (typeof STORIES!=="undefined")?STORIES:[];}
+function storyById(id){for(const S of storyAll())if(S.id===id)return S;return null;}
+function storyHasSeen(S,tid){return storySeen()[S.id+"."+tid]!=null;}
+function storyFlag(S,f){const F=storyFlags()[S.id];return !!(F&&F[f]!=null);}
+function storySetFlag(S,f){const F=storyFlags();(F[S.id]||(F[S.id]={}))[f]=storyDay();}
+
+/* ── где мы ── всё, что нужно условиям и адресам, в одном объекте */
+function storyCtx(extra){
+  const sys=G.sys;
+  const p=(G.surf&&G.surf.p)||(G.land&&G.land.p)||null;
+  /* на станции ключ — система; на планете — система/планета: иначе история,
+     прибитая к одному миру, всплывала бы на соседнем в той же системе */
+  const c={sys,st:G.st||null,p,sx:G.sx,sy:G.sy,sysKey:sys?sys.key:null,
+    key:sys?(G.st||!p?sys.key:sys.key+"/"+p.idx):null};
+  if(extra)for(const k in extra)c[k]=extra[k];
+  return c;
+}
+
+/* ── фиксированные адреса ──
+   fixed:N — система по посеву, одна на всю галактику: ядро будущего региона.
+   Ищется от начала координат кольцом 3–12 секторов; в системе обязана быть
+   станция — иначе историю негде встретить. */
+const STORY_FIX={};
+function storyFixedAddr(n){
+  if(STORY_FIX[n]!==undefined)return STORY_FIX[n];
+  const r=rng(hashi(n*17+3,0x570,7));
+  let out=null;
+  for(let i=0;i<400&&!out;i++){
+    const a=r()*TAU,d=3+r()*9;
+    const sx=Math.round(Math.cos(a)*d),sy=Math.round(Math.sin(a)*d);
+    if(!starAt(sx,sy))continue;
+    const s=getSystem(sx,sy);
+    if(s&&s.station)out=sx+","+sy;
+  }
+  STORY_FIX[n]=out;return out;
+}
+/* подходит ли место адресу истории. Возвращает ключ места или null. */
+function storyAddrMatch(S,c){
+  const at=S.at||"any";
+  if(!c.key)return null;
+  if(at.slice(0,6)==="fixed:")return storyFixedAddr(+at.slice(6))===c.key?c.key:null;
+  if(at.slice(0,6)==="stype:")return c.st&&c.st.stype===at.slice(6)?c.key:null;
+  if(at.slice(0,6)==="world:")return c.p&&c.p.type===at.slice(6)?c.key:null;
+  if(at==="danger:far")return c.sys&&typeof sysDanger==="function"&&sysDanger(c.sys)>=.6&&c.st?c.key:null;
+  if(at==="any")return c.st?c.key:null;
+  if(at==="planet")return c.p?c.key:null;         // любой мир, на который сели
+  if(at==="settle")return c.p&&typeof settleCanLive==="function"&&settleCanLive(c.p)?c.key:null;
+  if(at==="tin")return c.p&&typeof tinCanLive==="function"&&tinCanLive(c.p)?c.key:null;
+  return null;
+}
+/* Бросок на якорь: плавающая история прибивается не к первому же подходящему
+   месту, а к тому, на котором выпал её жребий, — иначе все «любые торговые
+   узлы» сбились бы в стартовую станцию. Жребий детерминирован парой
+   (история, место): вернулся — выпадет то же. */
+function storyAnchorRoll(S,key){
+  let h=0;for(let i=0;i<S.id.length;i++)h=(h*31+S.id.charCodeAt(i))>>>0;
+  const p=key.split(",");
+  const extra=(p[1]||"").indexOf("/")>=0?parseInt(p[1].split("/")[1])*17:0;
+  return hashi(h,parseInt(p[0])*73+parseInt(p[1])+extra,0xA11)%3===0;
+}
+function storyPlace(S,c){
+  const P=storyPins();
+  if(P[S.id])return P[S.id];
+  const key=storyAddrMatch(S,c);
+  if(!key)return null;
+  const fixed=(S.at||"").slice(0,6)==="fixed:";
+  if(!fixed){
+    if(!storyAnchorRoll(S,key))return null;
+    let n=0;for(const id in P)if(P[id]===key)n++;
+    if(n>=STORY_PIN_CAP)return null;
+  }
+  P[S.id]=key;
+  return key;
+}
+
+/* ── повороты ── перемена мира по часам, без игрока. Считаются лениво. */
+function storyTurns(S){
+  if(!S.turns)return;
+  for(const T of S.turns){
+    if(storyFlag(S,T.set))continue;
+    const d=storyDay();
+    if(T.day!=null){if(d>=T.day)storySetFlag(S,T.set);continue;}
+    if(T.after){
+      const k=T.after.slice(0,5)==="seen:"?T.after.slice(5):null;
+      const from=k?storySeen()[S.id+"."+k]:null;
+      if(from==null)continue;
+      if(d-from>=(T.days|0))storySetFlag(S,T.set);
+    }
+  }
+}
+
+/* ── словарь условий ──
+   Каждый ключ — чистая функция состояния. Неизвестный ключ — ошибка сборки,
+   её ловит автотест (storyCheckWhen), а не тихий пропуск. */
+const STORY_WHEN={
+  visits:(v,S,c)=>((G.visits&&G.visits[c.key])|0)>=v,
+  day:(v)=>storyDay()>=v,
+  flag:(v,S)=>storyFlag(S,v),
+  noflag:(v,S)=>!storyFlag(S,v),
+  seen:(v,S)=>storyHasSeen(S,v),
+  unseen:(v,S)=>!storyHasSeen(S,v),
+  parrot:(v)=>!!G.parrot===!!v,
+  eclipse:(v)=>((typeof celDark==="function"?celDark():0)>.02)===!!v,
+  late:(v)=>((G.t%STORY_DAY)>STORY_DAY*.5)===!!v,     // вторая половина суток
+  res:(v)=>{for(const k in v)if((G.cargo[k]|0)<v[k])return false;return true;},
+  item:(v,S,c)=>c.item===v,
+  strip:(v,S,c)=>{const L=G.strips||[];const p=(storyPins()[S.id]||"").split(",");
+    return L.some(s=>v==="here"?(s.sx===parseInt(p[0])&&s.sy===parseInt(p[1])):true);},
+  occ:(v,S,c)=>!!(G.occ&&G.occ[c.key])===!!v,
+  freed:(v)=>(G.freed|0)>=v,
+  doomNear:(v)=>!!(G.doomDead&&Object.keys(G.doomDead).length)===!!v,
+  mode:(v)=>G.mode===v,
+  /* связь как данные: след чужой истории виден — "story.trace" */
+  seenOf:(v)=>storySeen()[v]!=null,
+  unseenOf:(v)=>storySeen()[v]==null
+};
+function storyWhen(S,t,c){
+  const w=t.when;if(!w)return true;
+  for(const k in w){const f=STORY_WHEN[k];if(!f)return false;if(!f(w[k],S,c))return false;}
+  return true;
+}
+function storyCheckWhen(){
+  const bad=[];
+  for(const S of storyAll())for(const t of S.traces)if(t.when)
+    for(const k in t.when)if(!STORY_WHEN[k])bad.push(S.id+"."+t.id+":"+k);
+  return bad;
+}
+
+/* ── выдача ── все следы канала via, чьи адрес и условия истинны здесь и сейчас.
+   Канал «news» не привязан к месту: слух может прийти о любой прибитой истории. */
+function storyTraces(via,c){
+  c=c||storyCtx();
+  const out=[];
+  for(const S of storyAll()){
+    const key=via==="news"?storyPins()[S.id]:storyPlace(S,c);
+    if(!key)continue;
+    storyTurns(S);
+    const cc=via==="news"?Object.assign({},c,{key}):c;
+    for(const t of S.traces){
+      if(t.via!==via)continue;
+      if(!storyWhen(S,t,cc))continue;
+      out.push({S,t,key});
+    }
+  }
+  return out;
+}
+/* показать след: единственная запись, которую система делает сама */
+function storyShow(h){
+  const k=h.S.id+"."+h.t.id,Z=storySeen();
+  const first=Z[k]==null;
+  if(first)Z[k]=storyDay();
+  /* переносчик: след с carry птица запоминает и повторит там, где спросят
+     (12x, список услышанного). Так история из одного места попадает в другое
+     руками игрока, а не через журнал. */
+  if(first&&h.t.carry&&h.t.text&&typeof heardAdd==="function"&&typeof parrotHas==="function"&&parrotHas()){
+    const p=(h.key||"").split(",");
+    heardAdd("story",{sx:parseInt(p[0])||0,sy:parseInt(p[1])||0,note:h.t.text});
+  }
+  return h.t;
+}
+/* из нескольких подходящих — сперва невиданный, потом по кругу от дня */
+function storyPickOne(L){
+  if(!L.length)return null;
+  const fresh=L.filter(h=>!storyHasSeen(h.S,h.t.id));
+  const pool=fresh.length?fresh:L;
+  return pool[storyDay()%pool.length];
+}
+
+/* ══════════════ каналы ══════════════ */
+/* эфир: строка истории вместо безликой, не чаще раза из трёх */
+function storyEtherLine(r){
+  if(!G.sys)return null;
+  const L=storyTraces("ether",storyCtx());
+  if(!L.length||r()>STORY_ETHER_SHARE)return null;
+  const h=storyPickOne(L);storyShow(h);
+  return h.t.text;
+}
+/* очередь места: реплика истории вклинивается перед общей */
+function storyQueueLine(){
+  if(!G.st)return null;
+  const L=storyTraces("queue",storyCtx());
+  /* невиданный след вклинивается всегда; виданный — лишь каждую третью посадку,
+     остальное время говорит общая очередь: иначе место замолкает о своём */
+  const fresh=L.filter(h=>!storyHasSeen(h.S,h.t.id));
+  const h=fresh.length?storyPickOne(fresh):((visitHere()%3===0)?storyPickOne(L):null);
+  if(!h)return null;
+  storyShow(h);
+  return {line:h.t.text,silent:h.t.text===null};
+}
+/* стол: ответ на вещь раньше общей таблицы */
+function storyTableLine(kind){
+  if(!G.st)return null;
+  const h=storyPickOne(storyTraces("table",storyCtx({item:kind})));
+  if(!h)return null;
+  storyShow(h);
+  return {line:h.t.text,silent:h.t.text===null};
+}
+/* находка: строка истории к содержимому капсулы или контейнера */
+function storyFindLine(kind){
+  const h=storyPickOne(storyTraces("find",storyCtx({item:kind})));
+  if(!h)return null;
+  storyShow(h);
+  return h.t.text;
+}
+/* слух: о прибитой истории, с адресом её места */
+function storyNewsItem(r){
+  const L=storyTraces("news",storyCtx());
+  if(!L.length||r()>.5)return null;
+  const h=storyPickOne(L);storyShow(h);
+  const p=h.key.split(",");
+  return {id:"story",ru:h.t.text,sx:parseInt(p[0]),sy:parseInt(p[1])};
+}
+
+/* ── кантина: фигуры и вещи на стойке ──
+   Канал без текста. Фигура садится на место (corner / far / end), вещь
+   кладётся на столешницу. Кисти — те же, что у зала (cantFigure), плюс
+   десяток мелких форм для вещей. Сцена не выбирает «одну из» — показываются
+   все следы, чьи условия истинны: так пустой стол после поворота виден вместе
+   с оставшимся стаканом. */
+const STORY_SEAT={corner:.10,far:.50,end:.76,door:.26};
+function storyCantScene(){
+  if(!G.st)return [];
+  const out=[];
+  for(const h of storyTraces("cant",storyCtx())){storyShow(h);out.push(h.t.scene||{});}
+  return out;
+}
+function storyCantFigures(c,W2,fy,cy){
+  for(const sc of storyCantScene()){
+    if(!sc.figure)continue;
+    const x=W2*(STORY_SEAT[sc.seat]||.5);
+    c.globalAlpha=sc.dim?.2:.42;
+    cantFigure(c,x,cy+16+(sc.dim?-4:0),sc.col||[70,76,90],G.t*.017+x*.01,null,0);
+    c.globalAlpha=1;
+  }
+}
+function storyCantProps(c,W2,fy,cy){
+  for(const sc of storyCantScene()){
+    if(!sc.props)continue;
+    let x=W2*(STORY_SEAT[sc.seat]||.5)-((sc.props.length-1)*7);
+    for(const p of sc.props){storyProp(c,p,x,cy-7);x+=14;}
+  }
+}
+/* вещи на столешнице: стакан, кружка, кепка, хлеб, палочки мелом, свеча, ключ */
+function storyProp(c,p,x,y){
+  c.save();c.lineWidth=1;
+  if(p==="glass"){c.strokeStyle="rgba(200,230,240,.7)";c.strokeRect(x-3,y-9,6,9);
+    c.fillStyle="rgba(200,230,240,.28)";c.fillRect(x-2.5,y-6,5,5.5);}
+  else if(p==="glass_empty"){c.strokeStyle="rgba(200,230,240,.45)";c.strokeRect(x-3,y-9,6,9);}
+  else if(p==="cup"){c.fillStyle="rgba(210,200,180,.85)";c.fillRect(x-3,y-7,6,7);
+    c.strokeStyle="rgba(210,200,180,.85)";c.beginPath();c.arc(x+4,y-3.5,2,-1.4,1.4);c.stroke();}
+  else if(p==="cap"){c.fillStyle="rgba(70,78,92,.95)";c.beginPath();c.ellipse(x,y-2,6,2.6,0,0,TAU);c.fill();
+    c.fillRect(x-4,y-5,8,3);}
+  else if(p==="bread"){c.fillStyle="rgba(188,140,86,.95)";c.beginPath();c.ellipse(x,y-3,7,3.2,0,0,TAU);c.fill();
+    c.strokeStyle="rgba(120,80,40,.7)";c.beginPath();c.moveTo(x-4,y-4);c.lineTo(x+4,y-4);c.stroke();}
+  else if(p==="tally"){c.strokeStyle="rgba(230,230,220,.8)";c.beginPath();
+    for(let i=0;i<4;i++){c.moveTo(x-5+i*3,y-9);c.lineTo(x-5+i*3,y-2);}c.moveTo(x-6,y-3);c.lineTo(x+5,y-8);c.stroke();}
+  else if(p==="candle"){c.fillStyle="rgba(230,220,190,.9)";c.fillRect(x-1.5,y-8,3,8);
+    c.fillStyle="rgba(255,200,90,.9)";c.beginPath();c.ellipse(x,y-10,1.6,2.6,0,0,TAU);c.fill();}
+  else if(p==="key"){c.strokeStyle="rgba(210,190,120,.9)";c.beginPath();c.arc(x-3,y-3,2.2,0,TAU);c.moveTo(x-1,y-3);c.lineTo(x+5,y-3);c.lineTo(x+5,y-1);c.stroke();}
+  else if(p==="jar"){c.strokeStyle="rgba(180,220,200,.7)";c.strokeRect(x-4,y-9,8,9);c.fillStyle="rgba(120,180,140,.35)";c.fillRect(x-3.5,y-6,7,5.5);}
+  else if(p==="paper"){c.fillStyle="rgba(230,226,210,.9)";c.fillRect(x-5,y-3,10,3);c.strokeStyle="rgba(60,60,60,.5)";c.beginPath();c.moveTo(x-3,y-1.5);c.lineTo(x+3,y-1.5);c.stroke();}
+  else if(p==="stool_empty"){c.strokeStyle="rgba(127,230,216,.25)";c.strokeRect(x-5,y+4,10,3);c.beginPath();c.moveTo(x-4,y+7);c.lineTo(x-4,y+16);c.moveTo(x+4,y+7);c.lineTo(x+4,y+16);c.stroke();}
+  c.restore();
+}
+
+/* ── проверки для автотестов: у каждого флага есть читатель, у каждой истории —
+   от двух до пяти следов и не больше трёх каналов, труппа существует */
+function storyLint(){
+  const bad=[];
+  const CASTT=(typeof CAST!=="undefined")?CAST:{};
+  for(const S of storyAll()){
+    if(!S.id)bad.push("история без id");
+    if(!S.traces||S.traces.length<2||S.traces.length>7)bad.push(S.id+": следов "+(S.traces?S.traces.length:0));
+    /* стойка и стол — одна поверхность (терминал станции); поверхностей не больше четырёх */
+    const SURF={queue:"counter",table:"counter"};
+    const vias=new Set(S.traces.map(t=>SURF[t.via]||t.via));
+    if(vias.size>4)bad.push(S.id+": поверхностей "+vias.size);
+    for(const t of S.traces)if(!["ether","queue","table","find","news","cant","land","cave","settle","tin"].includes(t.via))bad.push(S.id+"."+t.id+": канал "+t.via);
+    for(const id of (S.cast||[]))if(!CASTT[id])bad.push(S.id+": нет в труппе "+id);
+    for(const T of (S.turns||[])){
+      const read=S.traces.some(t=>t.when&&(t.when.flag===T.set||t.when.noflag===T.set));
+      if(!read)bad.push(S.id+": флаг "+T.set+" никто не читает");
+    }
+    const at=S.at||"any";
+    if(!/^(any|planet|settle|tin|danger:far|fixed:\d+|stype:\w+|world:\w+)$/.test(at))bad.push(S.id+": адрес "+at);
+    const ids=new Set();for(const t of S.traces){if(ids.has(t.id))bad.push(S.id+": след "+t.id+" дважды");ids.add(t.id);}
+  }
+  return bad.concat(storyCheckWhen());
+}
+
+/* ── земля: посадка, пещера, посёлок, Жестянка ──
+   Те же следы, но поверхность — планета: строка к сообщению о посадке, к входу
+   в пещеру, к подсказке у посёлка или у машины. Адреса planet и world:T
+   прибиваются к системе, как и станционные. */
+function storyGroundLine(via){
+  if(!G.sys)return null;
+  const c=storyCtx();
+  if(!c.p)return null;
+  const h=storyPickOne(storyTraces(via,c));
+  if(!h)return null;
+  storyShow(h);
+  return h.t.text;
+}
+/* подсказка у посёлка или машины: строка истории хвостом к подсказке.
+   Подсказка ставится каждый кадр, поэтому выбор держится сутки (storyPickOne
+   идёт по дню), а запись виденного — одна. */
+function storyNote(via){
+  const l=storyGroundLine(via);
+  return l?"\n"+l:"";
+}
+
+/* ══════════════ память места: три счётчика и одометр ══════════════
+   M132. Мир помнит, что вы делали в каждом месте, — но не как карму и не как
+   репутацию (12k-rep — про людей и деньги). Здесь три ГРУБЫХ счётчика:
+     take — сколько вырыли и увезли;
+     hurt — сколько стреляли и взрывали;
+     care — сколько чинили, привозили, оставляли.
+   Они нигде не показываются и ни на что не влияют сами по себе: это сырьё для
+   отложенного следствия (M138 роща помнит выстрел, M145 насекомые строят из
+   выброшенного, M128 люди меняют обращение).
+
+   СОЗРЕВАНИЕ — ПО ПУТИ, НЕ ПО ЧАСАМ. Мир не знает, сколько вы просидели в
+   меню; он знает, сколько вы прошли: одометр G.odo считает посадки и прыжки.
+   Возраст памяти места — путь, пройденный с последнего визита (placeAge).
+
+   ПРАВИЛА ФАЙЛА:
+   1. Ключ места — как у историй (11c): система на станции, система/планета
+      на поверхности. Запись создаётся только при ПОСАДКЕ; поступок в месте,
+      где вы не садились, пишется на систему.
+   2. Ничего не возвращается в интерфейс. Функции чтения — для других модулей.
+   3. Формат сейва v:4 не меняется: G.place и G.odo — два объекта с дефолтами. */
+
+const PLACE_KINDS=["take","hurt","care"];
+
+function odo(){return (G.odo||(G.odo={lands:0,jumps:0}));}
+function odoSum(){const o=odo();return (o.lands|0)+(o.jumps|0);}
+function odoAdd(kind){const o=odo();o[kind]=(o[kind]|0)+1;}
+function placeAll(){return (G.place||(G.place={}));}
+function placeKeyHere(){
+  const sys=G.sys;if(!sys)return null;
+  const p=(G.surf&&G.surf.p)||(G.land&&G.land.p)||null;
+  return (G.st||!p)?sys.key:sys.key+"/"+p.idx;
+}
+/* запись места: f — одометр первого визита, l — последнего, n — посадок */
+function placeMem(key){return placeAll()[key]||null;}
+/* посадка: станция, поверхность, база */
+function placeMark(){
+  const k=placeKeyHere();if(!k)return null;
+  odoAdd("lands");
+  const P=placeAll();
+  const rec=P[k]||(P[k]={f:odoSum(),l:0,n:0,take:0,hurt:0,care:0});
+  rec.n++;rec.l=odoSum();
+  return rec;
+}
+/* поступок в текущем месте. Без записи места — на систему, без системы — в никуда */
+function placeNote(kind,n){
+  if(PLACE_KINDS.indexOf(kind)<0||!G.sys)return;
+  const P=placeAll();
+  const k=placeKeyHere();
+  const rec=P[k]||P[G.sys.key]||(P[G.sys.key]={f:odoSum(),l:odoSum(),n:0,take:0,hurt:0,care:0});
+  rec[kind]=Math.max(0,(rec[kind]|0)+(n===undefined?1:n|0));
+}
+/* сколько пути пройдено с последнего визита: 0 — вы здесь, ∞ — вы тут не были */
+function placeAge(key){
+  const rec=placeMem(key);
+  return rec?Math.max(0,odoSum()-rec.l):Infinity;
+}
+/* чем место вас запомнило — одним словом, для тех, кто будет читать память:
+   null, пока ни один счётчик не перевесил остальные заметно */
+function placeMood(key){
+  const rec=placeMem(key);if(!rec)return null;
+  const t=rec.take|0,h=rec.hurt|0,c=rec.care|0,m=Math.max(t,h,c);
+  if(m<3)return null;
+  return m===h?"hurt":m===c?"care":"take";
+}
+
+/* ══════════════ почтовый круг: вещь идёт по рукам десятилетиями ══════════════
+   M133. Первая тематическая область (06c, `post`). Люди, которые передают
+   вещи дальше, потому что так заведено. Посылка — обыкновенный предмет; вы
+   везёте её по шести адресам, и на каждом человек, который когда-то сам её
+   нёс, узнаёт свёрток и говорит ОДНУ СТРОКУ — о себе, никогда о посылке, —
+   и называет, кому дальше.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Ни таймера, ни провала, ни платы. Круг не торопит и не ждёт.
+   2. Никто не говорит о посылке. Строка — про человека: где он был, кем.
+   3. Посылку можно вскрыть. Цепочка продолжается; последний заметит. Не
+      упрекнёт — заметит.
+   4. В почтовом кругу приборы молчат (06c): единственное такое место, и
+      игрок должен это увидеть сам, а не прочесть.
+   5. Адреса считаются от посева и не хранятся; хранится только G.post:
+      сколько звеньев пройдено, вскрыта ли, доставлена ли. */
+
+const POST_SALT=0x9057;
+const POST_WHAT="две фотографии без подписи, лента к счётчику и записка, которую не разобрать";
+const POST_ITEMS=["свёрток в промасленной бумаге, перевязанный шпагатом",
+  "банка с чем-то тёмным, горлышко залито воском",
+  "разводной ключ, обмотанный тряпкой, с биркой без букв"];
+/* шесть звеньев: первые пять — те, кто нёс; шестой — кому. Строка у каждого
+   одна и про себя. «next» — как он называет следующего */
+const POST_LINKS=[
+  {who:"Ряженцев",line:"Мне её отдали в шестьдесят третьем. Я тогда на «Прибое» стоял, вторым механиком.",
+   next:"Дальше — Устинье. Она бухгалтером где-то по руке; свёрток она узнает сама."},
+  {who:"Устинья",line:"Я двенадцать лет держала её в сейфе. Сейф продали, а её нет.",
+   next:"Теперь к Гапону. Где он — не скажу, но он тебя сам найдёт, когда сядешь."},
+  {who:"Гапон",line:"Я нёс её через карантин сорок первого. Меня три недели не выпускали, а её не тронули.",
+   next:"Следующая — Маша Рогова. Была Машей, теперь Мария Карповна, уж как найдёшь."},
+  {who:"Мария Карповна",line:"У меня тут тогда ещё дочь родилась. Теперь у дочери свои.",
+   next:"Передай Сысою. Он буфетчик, такой, с бородой; ты его узнаешь."},
+  {who:"Сысой",line:"Я её на полке за стойкой держал, между солью и накладными. Год, наверное.",
+   next:"Ну, тебе последнему. В самый круг, на ядро. Там спросишь — там знают."},
+  {who:"Арсений Фомич",line:"Я её сорок два года жду.",
+   opened:"Вскрыта. Ну да. Сорок два года — кто бы не вскрыл.\nЯ её сорок два года жду.",
+   next:null}
+];
+
+function postAll(){return (G.post||(G.post={stage:0,opened:0,done:0}));}
+function postItem(){return POST_ITEMS[hashi(1,2,POST_SALT)%POST_ITEMS.length];}
+/* ── адреса ──
+   Звено 0 — обычное место почтового круга (правило 4 из 06c), звено 5 — ядро.
+   Промежуточные — станции по всей руке, 4–14 секторов от начала, каждая своя. */
+let POST_ADDR=null;
+function postAddrs(){
+  if(POST_ADDR)return POST_ADDR;
+  const out=[];
+  const at=(typeof regionOfTheme==="function")?regionOfTheme("post"):null;
+  if(!at)return POST_ADDR=out;
+  const R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);
+  const plain=regionPlainSys(at.rx,at.ry,R.core);
+  const core={sx:R.core.sx,sy:R.core.sy};
+  if(!plain)return POST_ADDR=out;
+  out.push(plain.sx+","+plain.sy);
+  const r=rng(hashi(at.rx,at.ry,POST_SALT));
+  for(let i=1;i<POST_LINKS.length-1;i++){
+    let k=null;
+    for(let t=0;t<600&&!k;t++){
+      const a=r()*TAU,d=4+r()*10;
+      const sx=Math.round(Math.cos(a)*d),sy=Math.round(Math.sin(a)*d);
+      if(!starAt(sx,sy)||regionKey(sx,sy)===R.key)continue;
+      const key=sx+","+sy;if(out.indexOf(key)>=0)continue;
+      const s=getSystem(sx,sy);if(s&&s.station)k=key;
+    }
+    out.push(k);
+  }
+  out.push(core.sx+","+core.sy);
+  return POST_ADDR=out;
+}
+/* какое звено — это место, или -1 */
+function postLinkHere(){
+  if(!G.st||!G.sys)return -1;
+  return postAddrs().indexOf(G.sys.key);
+}
+/* ── движение ──
+   При стыковке: если это следующее звено — человек подходит сам. Возвращает
+   то, что он сказал, или null. Вызывается один раз за посадку. */
+function postDock(){
+  const P=postAll();
+  if(P.done)return null;
+  const i=postLinkHere();
+  if(i<0||i!==P.stage)return null;
+  const mark=r=>{POST_LAST={v:odoSum(),r};return r;};
+  const L=POST_LINKS[i];
+  if(i===POST_LINKS.length-1){
+    P.done=1;
+    const line=(P.opened&&L.opened)?L.opened:L.line;
+    logAdd("good",L.who+": "+line.replace(/\n/g," "));
+    if(typeof placeNote==="function")placeNote("care",3);
+    return mark({who:L.who,line,next:null,last:true});
+  }
+  P.stage=i+1;
+  logAdd("dim",L.who+": "+L.line+(L.next?" — "+L.next:""));
+  return mark({who:L.who,line:L.line,next:L.next,first:i===0});
+}
+/* вскрыть: содержимое обыкновенное, и оно одно на всю игру */
+function postOpen(){
+  const P=postAll();
+  if(!P.stage||P.done||P.opened)return null;
+  P.opened=1;
+  const what=POST_WHAT;
+  logAdd("dim","Посылка вскрыта: "+what);
+  return what;
+}
+function postHolding(){const P=postAll();return !!P.stage&&!P.done;}
+
+/* ── блок в кантине ──
+   Посылка лежит рядом со столом. Что сказал человек на этой посадке — видно
+   здесь же; вскрыть можно где угодно, один раз. */
+let POST_LAST=null;                      // что сказали на этой посадке (не хранится)
+function postBlock(){
+  const P=postAll();
+  const said=POST_LAST&&POST_LAST.v===odoSum()?POST_LAST.r:null;
+  if(!P.stage&&!said)return;
+  if(P.done&&!said)return;
+  $body.appendChild(el("div","sec","ПОСЫЛКА · "+(P.done?"ДОСТАВЛЕНА":"ВЫ ЕЁ ВЕЗЁТЕ")));
+  if(said){
+    $body.appendChild(el("div","row","<div class='nm'><b>"+said.who+"</b><s style='color:#cfe3ea;line-height:1.9'>"+
+      said.line.replace(/\n/g,"<br>")+(said.next?"<br><i>"+said.next+"</i>":"")+"</s></div>"));
+  }
+  if(P.done)return;
+  const r=el("div","row");
+  r.appendChild(el("div","nm","<b>"+postItem()+"</b><s>"+
+    (P.opened?"вскрыта: "+POST_WHAT:"ни адреса, ни имени — только то, что вам сказали")+"</s>"));
+  if(!P.opened){
+    const b=el("button","act sm","ВСКРЫТЬ");
+    b.onclick=()=>{postOpen();renderTab();};
+    r.appendChild(b);
+  }
+  $body.appendChild(r);
+}
+
+/* ══════════════ зеркало: чужой эфир без источника ══════════════
+   M134. Транзитная область (06c, `mirror`), через которую все летают и
+   которую знают только по скверной связи. На окраине — обрывки чужого эфира
+   без источника: строка приходит, и через тридцать семь секунд приходит ещё
+   раз, слово в слово. Диспетчеры отмахиваются: отражение.
+
+   ЯДРО — НЕ ИСТОЧНИК, А ЗЕРКАЛО. Место, где старые отражения лежат друг на
+   друге десятками, со всех курсов и из всех лет. Всегда тридцать семь секунд.
+   Источник — вне сферы, дальше, чем кто-либо летает; наградой — координата,
+   до которой не долететь.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Фраза не выдумывается (M116): отражение — это строка, которая уже есть
+      в эфире (11b) или в быту ядра ниже. Зеркало ничего не сочиняет.
+   2. Содержание бытовое: сигнал времени, фраза без интонации, перекличка.
+      «Их, наверное, давно нет» доходит только через обыкновенное.
+   3. Зеркало — находка семьи 17b: тот же подход, то же действие. Оно не
+      берётся и не кончается: слушать можно сколько угодно, пеленг — один раз.
+   4. Ничего не хранится, кроме факта, что пеленг уже дан (G.mirror). */
+
+const MIRROR_DELAY=37*60;              // кадров: тридцать семь секунд, всегда
+const MIRROR_CORE=[
+  "…сигнал точного времени. Шесть часов. Шесть часов. Шесть часов.",
+  "…второй на месте. Четвёртый на месте. Пятый. Пятый? Пятый на месте.",
+  "…повторяю для ночной смены: повторяю для ночной смены: повторяю для ночной…",
+  "…температура по жилому ярусу девятнадцать. По складу восемь. Конец сводки.",
+  "…дежурный, принял. Дежурный, принял. Дежурный, принял.",
+  "…кто забыл кружку в рубке — заберите. Кто забыл кружку в рубке…"
+];
+function mirrorAll(){return (G.mirror||(G.mirror={bearing:0}));}
+/* на окраине зеркала: в области, но не в её ядре */
+function mirrorDepthHere(){
+  if(typeof regionAt!=="function")return 0;
+  const R=regionAt(G.sx,G.sy);
+  if(R.theme!=="mirror")return 0;
+  return (R.core.sx===G.sx&&R.core.sy===G.sy)?2:(regionDepth(G.sx,G.sy)>0?1:0);
+}
+/* ── окраина: эхо ──
+   etherTick зовёт это после того, как выдал строку. Если мы на окраине зеркала,
+   строка запомнится и вернётся через тридцать семь секунд. Мир не хранит эхо:
+   улетели — не услышали. */
+function mirrorEchoArm(line){
+  if(mirrorDepthHere()!==1||line==null)return;
+  G.mirrorEcho={line,at:G.t+MIRROR_DELAY,key:G.sys?G.sys.key:""};
+}
+function mirrorEchoTick(){
+  const E=G.mirrorEcho;if(!E)return;
+  if(G.mode!=="system"||!G.sys||G.sys.key!==E.key){G.mirrorEcho=null;return;}
+  if(G.t<E.at)return;
+  G.mirrorEcho=null;
+  logAdd("dim",E.line);
+  /* диспетчер отмахивается — изредка, иначе объяснение забьёт само явление */
+  if(Math.random()<.3)logAdd("dim","…это отражение, не отвечайте. Отражение, говорю. Летите себе.");
+}
+/* ── ядро: зеркало как находка ──
+   В ядре всегда есть одна находка вида `echo`. Слушать — значит получить
+   несколько старых отражений разом; они наслаиваются, поэтому строк две-четыре. */
+function mirrorFind(sys){
+  const R=regionAt(sys.sx,sys.sy);
+  if(R.theme!=="mirror"||R.core.sx!==sys.sx||R.core.sy!==sys.sy)return null;
+  const r=rng(hashi(sys.seed|0,0x3E1,0x5E));
+  const a=r()*TAU,rad=900+r()*900;
+  return {i:9,k:"echo",seed:hashi(sys.seed|0,0x3E1,0x5F),x:Math.cos(a)*rad,y:Math.sin(a)*rad,id:sys.key+":echo"};
+}
+function mirrorListen(f){
+  const r=rng(hashi(f.seed,(G.t/MIRROR_DELAY)|0,0x3E2));
+  const pool=MIRROR_CORE.concat(ETHER);
+  const n=2+Math.floor(r()*3),out=[];
+  for(let i=0;i<n;i++){const l=pick(pool,r);if(out.indexOf(l)<0)out.push(l);}
+  for(const l of out)logAdd("dim",l);
+  const M=mirrorAll();
+  let tail="тридцать семь секунд. Всегда тридцать семь.";
+  if(!M.bearing){
+    /* источник вне сферы: координата, до которой не долететь. Дальность
+       считается от радиуса опасности (sysDanger=1 на 40), втрое дальше */
+    const a2=rng(hashi(f.seed,0xBEA5,13))()*TAU,d=120+Math.round(r()*40);
+    const sx=Math.round(Math.cos(a2)*d),sy=Math.round(Math.sin(a2)*d);
+    M.bearing=1;
+    if(typeof loreMarks==="function")loreMarks().push({sx,sy,id:"mirror"});
+    tell("tech","Пеленг источника: сектор "+sx+":"+sy,
+      "Источник вне сферы\nпеленг: сектор "+sx+":"+sy+"\nметка на карте");
+    tail+="\nИсточник — сектор "+sx+":"+sy+". Туда никто не летает.";
+  }
+  return out.join("\n")+"\n"+tail;
 }
 
 /* ══════════════ бортовой журнал ══════════════ */
@@ -6604,6 +7342,7 @@ function minedUnit(k){
   sfx("drill");
   refineBank+=stat().refine;
   const n=Math.floor(refineBank);refineBank-=n;
+  if(n>0&&typeof placeNote==="function")placeNote("take",n);   // место помнит, что вырыли (11d)
   return addRes(k,n);
 }
 
@@ -9909,6 +10648,1018 @@ function fuelPriceHere(){
 function repPartMul(sys){return 1-repAt(sys)*.03;}
 function repShipMul(sys){return 1-repAt(sys)*.02;}
 
+/* ══════════════ истории, часть первая ══════════════
+   Данные для 11c-stories. Формат и правила — docs/DESIGN-stories.md.
+   Названия историй рабочие: игроку не показываются никогда.
+
+   Как читать запись:
+     at      — адрес: fixed:N (система по посеву), stype:X (любая станция
+               типа), any, danger:far. Плавающая прибивается при первой встрече.
+     traces  — следы; via: ether | queue | table | find | news | cant.
+               text:null — молчание (полноправная реплика).
+               scene (cant): {seat:corner|far|end|door, figure:0|1, props:[…]}.
+     when    — условия из словаря STORY_WHEN (11c). Порядок следов свободен.
+     turns   — повороты: {after:"seen:t2",days:N,set:"flag"} или {day:N,set}.
+     form    — главная форма: habit pair after ongoing versions thing place
+               beast ether witness.
+     links   — связи с другими историями; никогда не обязательны.
+
+   Труппа: имя, роль, дом. Один и тот же человек во всех историях, где он назван. */
+
+const CAST={
+  zero7:    {name:"Ноль-семь",        role:"позывной"},
+  corner:   {name:"человек в углу",   role:"без имени"},
+  lamp:     {name:"диспетчер площадки",role:"форпост"},
+  baker:    {name:"Пекарь",           role:"соперник",home:"fixed:7"},
+  sovenya:  {name:"Совеня",           role:"соперник",home:"fixed:8"},
+  efim:     {name:"Тихий Ефим",       role:"соперник"},
+  krapiva:  {name:"Мадам Крапива",    role:"соперник",home:"fixed:9"},
+  kim:      {name:"Долгий Ким",       role:"соперник",home:"fixed:10"},
+  shtof:    {name:"Штоф",             role:"соперник",home:"fixed:11"},
+  forecaster:{name:"голос прогноза",  role:"эфир"},
+  rack:     {name:"Стойка",           role:"диспетчер"},
+  miner:    {name:"ночной",           role:"шахтёр"},
+  pairA:    {name:"Два-девять",       role:"позывной"},
+  pairB:    {name:"Два-девять-бис",   role:"позывной"},
+  semyon:   {name:"Семён Палыч",      role:"наблюдатель",home:"fixed:12"},
+  commission:{name:"комиссия",        role:"трое с бумагой"},
+  nt:       {name:"Гедеван",          role:"монтажник",home:"fixed:13"},
+  letter:   {name:"голос с письмом",  role:"эфир"},
+  librarian:{name:"Ада Львовна",      role:"хранитель полки",home:"fixed:14"},
+  reporter: {name:"дежурный по явлению",role:"научная"}
+};
+
+const STORIES=[
+
+/* ── 1. Второй стакан ── двое · торговый узел, плавающая */
+{id:"second_glass",form:"pair",at:"stype:trade",cast:["zero7","corner"],
+ traces:[
+  {id:"t1",via:"ether",text:"…борт Ноль-семь, как слышно? Ноль-семь? …Повторяю для Ноль-семь."},
+  {id:"t2",via:"cant",when:{visits:2,noflag:"gone"},scene:{seat:"corner",figure:1,props:["glass","glass"]}},
+  {id:"t3",via:"queue",when:{visits:2,noflag:"gone"},text:"— Туда не садитесь. Занято."},
+  {id:"t4",via:"cant",when:{flag:"gone"},scene:{seat:"corner",figure:0,props:["glass"]}},
+  {id:"t5",via:"queue",when:{flag:"gone"},text:"— Дождался, наверное. Или перестал."},
+  {id:"t6",via:"table",item:"strip",when:{item:"strip",flag:"gone"},text:null}
+ ],
+ turns:[{after:"seen:t2",days:6,set:"gone"}],
+ links:["parrot_callsign"]},
+
+/* ── 2. Лампа на площадке ── привычка · форпост, фиксированная */
+{id:"pad_lamp",form:"habit",at:"fixed:1",cast:["lamp"],
+ traces:[
+  {id:"t1",via:"ether",when:{noflag:"off"},text:"…если слышите — у нас лампа на площадке горит. Одна. Идите на неё."},
+  {id:"t2",via:"queue",when:{noflag:"off"},text:"— Зажигаю. В расписании плечо есть — значит, зажигаю. Кто там по расписанию, не спрашивайте."},
+  {id:"t3",via:"queue",when:{visits:3,noflag:"off"},text:"— Лампу? Нет, не помню, кто её первый зажёг. Я её тушить не буду, это точно."},
+  {id:"t4",via:"queue",when:{flag:"off"},text:null},
+  {id:"t5",via:"ether",when:{flag:"off"},text:"…площадка тёмная. Садитесь по приборам, как все."}
+ ],
+ turns:[{after:"seen:t2",days:14,set:"off"}]},
+
+/* ── 3. Смена не придёт ── версии · три типа станций */
+{id:"no_shift",form:"versions",at:"stype:indust",cast:[],
+ traces:[
+  {id:"t1",via:"ether",text:"…передайте на верхний ярус, что смена не придёт. Никакая."},
+  {id:"t2",via:"queue",when:{visits:2},text:"— Верхний ярус? Газ там был. Не сильный, но после такого не ходят."},
+  {id:"t3",via:"queue",when:{visits:3},text:"— Какой газ, кто вам сказал. Свадьба у них была. Вся смена — одна семья, представляете."},
+  {id:"t4",via:"queue",when:{visits:4},text:"— Их просто не взяли на борт. Место кончилось. Вот и вся смена."},
+  {id:"t5",via:"cant",when:{visits:2},scene:{seat:"far",figure:0,props:["cup","cup","cup"]}}
+ ]},
+
+/* ── 4. Пекарь не печёт ── соперник · дом Пекаря */
+{id:"baker_oven",form:"thing",at:"fixed:7",cast:["baker"],
+ traces:[
+  {id:"t1",via:"cant",when:{noflag:"door"},scene:{seat:"end",figure:0,props:["bread","bread"]}},
+  {id:"t2",via:"queue",text:"— Пекарь? Он не пёк никогда. Прозвище — за то, что встаёт рано. Всё остальное люди выдумали."},
+  {id:"t3",via:"queue",when:{visits:2},text:"— Пёк. Ещё как пёк. Потом печь увезли, а он остался. Теперь собирает что попало."},
+  {id:"t4",via:"news",when:{visits:2},text:"Пекарь ищет дверцу от печи. Обожжённую. Платит как за редкость."},
+  {id:"t5",via:"table",item:"cargo",when:{item:"cargo",visits:3},text:"— Не то. Я узнаю, когда будет то."},
+  {id:"t6",via:"cant",when:{flag:"door"},scene:{seat:"end",figure:1,props:[]}}
+ ],
+ turns:[{after:"seen:t4",days:20,set:"door"}]},
+
+/* ── 5. Трепло знает слово ── переносчик · любой торговый узел, с птицей */
+{id:"parrot_callsign",form:"pair",at:"stype:trade",cast:["zero7"],
+ traces:[
+  {id:"t1",via:"queue",when:{parrot:true},text:"— Откуда у вашей птицы этот позывной? Ноль-семь. Нет, не отвечайте."},
+  {id:"t2",via:"queue",when:{parrot:true,visits:3},text:null}
+ ],
+ links:["second_glass"]},
+
+/* ── 6. Мадам Крапива не летает ── привычка · дом Крапивы */
+{id:"krapiva_suitcase",form:"habit",at:"fixed:9",cast:["krapiva"],
+ traces:[
+  {id:"t1",via:"cant",when:{noflag:"ship"},scene:{seat:"door",figure:1,col:[92,70,96],props:["paper"]}},
+  {id:"t2",via:"queue",when:{noflag:"ship"},text:"— Это Крапива. Она не летает. Она сидит с билетом и ждёт баржу, а баржа её не берёт. Уже который год."},
+  {id:"t3",via:"queue",when:{visits:3,noflag:"ship"},text:"— Говорит: я не летаю, я еду. Разницу не объясняет."},
+  {id:"t4",via:"news",when:{flag:"ship"},text:"Мадам Крапива купила корабль. Целиком, с экипажем. Куда — не сказала."},
+  {id:"t5",via:"cant",when:{flag:"ship"},scene:{seat:"door",figure:0,props:["paper"]}}
+ ],
+ turns:[{after:"seen:t2",days:24,set:"ship"}]},
+
+/* ── 7. Ефимово место ── место · везде, где есть стойка */
+{id:"efim_stool",form:"place",at:"any",cast:["efim"],
+ traces:[
+  {id:"t1",via:"cant",scene:{seat:"end",figure:0,props:["stool_empty"]}},
+  {id:"t2",via:"queue",when:{visits:2},text:"— Крайний не занимайте. Ефимово."},
+  {id:"t3",via:"find",when:{visits:1},text:"Капсула. Бирка «Е.», припасы свежие, не старше недели. Кто-то здесь был. Недавно."}
+ ]},
+
+/* ── 8. Прогноз без изменений ── идёт само · научная станция, фиксированная */
+{id:"forecast_same",form:"ongoing",at:"fixed:2",cast:["forecaster"],
+ traces:[
+  {id:"t1",via:"ether",when:{noflag:"fixed"},text:"…прогноз: без изменений. Как вчера. Как всегда."},
+  {id:"t2",via:"queue",when:{noflag:"fixed"},text:"— Прогноз у нас ровный. Прибор на обсерватории лет пять как не смотрит, а прогноз ровный. Удобно."},
+  {id:"t3",via:"table",item:"strip",when:{item:"strip",noflag:"fixed"},text:"— Это с нашей планеты? Дайте. Дайте сюда. Вы понимаете, что тут невязка?"},
+  {id:"t4",via:"ether",when:{flag:"fixed"},text:"…прогноз: пыль с ночной стороны, к утру разойдётся. Повторяю: к утру. Впервые повторяю."},
+  {id:"t5",via:"queue",when:{flag:"fixed"},text:"— Прогноз теперь настоящий. Хуже стало, конечно. Раньше хоть знали, что будет."}
+ ],
+ turns:[{after:"seen:t3",days:2,set:"fixed"}]},
+
+/* ── 9. Двое на одной орбите ── двое · любая станция */
+{id:"two_on_orbit",form:"pair",at:"any",cast:["pairA","pairB"],
+ traces:[
+  {id:"t1",via:"ether",when:{noflag:"one"},text:"…— Два-девять, ты спишь? — Нет. — И я."},
+  {id:"t2",via:"ether",when:{visits:2,noflag:"one"},text:"…— Два-девять, у тебя там свет горит. — Это не свет. — А что? — Не свет."},
+  {id:"t3",via:"ether",when:{flag:"one"},text:"…— Два-девять, ты спишь? …Два-девять?"},
+  {id:"t4",via:"cant",when:{flag:"one"},scene:{seat:"far",figure:1,dim:true,props:["cap"]}}
+ ],
+ turns:[{after:"seen:t1",days:9,set:"one"}]},
+
+/* ── 10. Четыре кружки ── место · форпост, плавающая */
+{id:"four_cups",form:"place",at:"stype:outpost",cast:[],
+ traces:[
+  {id:"t1",via:"cant",when:{freed:0,noflag:"used"},scene:{seat:"end",figure:0,props:["cup","cup","cup","cup"]}},
+  {id:"t2",via:"queue",when:{noflag:"used"},text:"— Ставлю. Придут — уберу. Баржа по плечу ходила, пока там не завелись эти. Всё равно ставлю."},
+  {id:"t3",via:"cant",when:{freed:1},scene:{seat:"end",figure:0,props:["cup","cup"]}},
+  {id:"t4",via:"queue",when:{freed:1},text:"— Две вымыл. Двое пришли. Остальные — ну, остальные."}
+ ]},
+
+/* ── 11. Старое имя ── версии · после конца мира */
+{id:"old_name",form:"versions",at:"any",cast:[],
+ traces:[
+  {id:"t1",via:"ether",when:{doomNear:true},text:"…я Ближняя. Да, по карте не Ближняя. По карте она давно не Ближняя."},
+  {id:"t2",via:"queue",when:{doomNear:true},text:"— Переименовали. В честь тех, что остались там. Кого — не уточняли."},
+  {id:"t3",via:"queue",when:{doomNear:true,visits:2},text:"— Да не в честь. Наоборот, чтобы не вспоминать. Назвали по-другому и не вспоминают."},
+  {id:"t4",via:"queue",when:{doomNear:true,visits:3},text:"— Спутали просто. Картограф перепутал, а потом поздно стало. Вся история."}
+ ]},
+
+/* ── 12. Долгий Ким должен ── деньги · дом Кима */
+{id:"kim_debt",form:"thing",at:"fixed:10",cast:["kim"],
+ traces:[
+  {id:"t1",via:"queue",when:{noflag:"paid"},text:"— Ким? Отдаст. Он всегда отдаёт. Долго, но всегда."},
+  {id:"t2",via:"cant",when:{noflag:"paid"},scene:{seat:"far",figure:0,props:["key","paper"]}},
+  {id:"t3",via:"news",when:{visits:2,noflag:"paid"},text:"Вещи Долгого Кима продаются с барахолки. Сам Ким не против. Сам Ким не здесь."},
+  {id:"t4",via:"queue",when:{flag:"paid"},text:"— Отдал. Говорил же. Ключ только не забрал."},
+  {id:"t5",via:"cant",when:{flag:"paid"},scene:{seat:"far",figure:0,props:["key"]}}
+ ],
+ turns:[{after:"seen:t1",days:30,set:"paid"}]},
+
+/* ── 13. Стойка ── необъяснимое · фиксированная */
+{id:"rack_voice",form:"habit",at:"fixed:3",cast:["rack"],
+ traces:[
+  {id:"t1",via:"ether",text:"…шестой, шестой, я стойка. Ты вообще куда ушёл?"},
+  {id:"t2",via:"queue",when:{visits:1},text:"— Стойка — это я. Шестого нет. Шестого давно нет, а я всё его зову, привычка."},
+  {id:"t3",via:"queue",when:{visits:3},text:"— Я стойка. Шестой… Нет, ничего."},
+  {id:"t4",via:"queue",when:{visits:5},text:null},
+  {id:"t5",via:"queue",when:{visits:6},text:"— Стойка — это я. Шестого нет. Шестого давно нет, а я всё его зову, привычка."}
+ ]},
+
+/* ── 14. Ночная смена ест одна ── привычка · комбинат, плавающая */
+{id:"night_shift",form:"habit",at:"stype:indust",cast:["miner"],
+ traces:[
+  {id:"t1",via:"cant",when:{late:true},scene:{seat:"far",figure:1,dim:true,props:["candle"]}},
+  {id:"t2",via:"queue",when:{visits:2},text:"— Шахту закрыли. А он всё равно по ночам. Ест, сидит, уходит. Куда — не знаю, шахта закрыта."},
+  {id:"t3",via:"cant",when:{late:false},scene:{seat:"far",figure:0,props:["candle"]}}
+ ]},
+
+/* ── 15. Штоф считает ── небо · дом Штофа */
+{id:"shtof_tally",form:"ongoing",at:"fixed:11",cast:["shtof"],
+ traces:[
+  {id:"t1",via:"cant",scene:{seat:"end",figure:0,props:["tally"]}},
+  {id:"t2",via:"news",when:{eclipse:true},text:"Штоф объявил, что это было восьмое. Чего — не объявил."},
+  {id:"t3",via:"queue",when:{eclipse:true},text:"— Сегодня он ставит палочку. Не подходите, он считает."},
+  {id:"t4",via:"queue",when:{eclipse:false,visits:2},text:"— Палочки? Это Штоф. Не спрашивайте, что он считает, он сам не уверен."}
+ ]},
+
+/* ── 16. Чужой самописец ── вещь · контейнер, потом станция */
+{id:"foreign_tape",form:"thing",at:"any",cast:[],
+ traces:[
+  {id:"t1",via:"find",when:{item:"cont"},text:"В контейнере лента самописца. Не ваша. Сектор и невязка читаются, остальное — нет."},
+  {id:"t2",via:"queue",when:{noflag:"thanked"},text:"— Ждали борт. Не дождались. Ладно, садитесь."},
+  {id:"t3",via:"table",item:"strip",when:{item:"strip",seen:"t1",noflag:"thanked"},text:null},
+  {id:"t4",via:"queue",when:{flag:"thanked"},text:"— Спасибо, что привезли. Больше ничего не скажу."}
+ ],
+ turns:[{after:"seen:t3",days:1,set:"thanked"}]},
+
+/* ── 17. Совеня не спит ── соперник · дом Совени */
+{id:"sovenya_awake",form:"habit",at:"fixed:8",cast:["sovenya"],
+ traces:[
+  {id:"t1",via:"cant",when:{late:true},scene:{seat:"corner",figure:1,col:[86,92,70],props:["glass_empty","paper"]}},
+  {id:"t2",via:"queue",when:{late:true},text:"— Совеня ночью покупает. Днём спит. Редкости любят ночь, говорит. Не знаю, что любят редкости."},
+  {id:"t3",via:"queue",when:{late:false},text:"— Совеня? Спит. Приходите ночью, если хотите с ним говорить. Он не захочет."},
+  {id:"t4",via:"news",text:"Совеня приобрёл нечто и не спит третьи сутки. Связь между этим не установлена."}
+ ]},
+
+/* ── 18. Письмо по эфиру ── эфир · любая станция */
+{id:"ether_letter",form:"ether",at:"any",cast:["letter"],
+ traces:[
+  {id:"t1",via:"ether",text:"…«Дорогой… нет, это зачеркну. Здравствуй. Пишу тебе с Ближней, а передаю голосом, потому что почты нет»."},
+  {id:"t2",via:"ether",when:{seen:"t1"},text:"…«У нас всё так же. Насос чинили. Чинили неделю, потом выяснилось, что не насос. Смеялись»."},
+  {id:"t3",via:"ether",when:{seen:"t2"},text:"…«Ты спрашивала, видно ли отсюда ваше солнце. Видно. Я проверял. Маленькое, но видно»."},
+  {id:"t4",via:"ether",when:{seen:"t3"},text:"…«Если слышишь — ответь. Нет? Ну ладно. Я ещё буду передавать, мне нетрудно»."}
+ ]},
+
+/* ══════════════ длинные — в духе институтской фантастики ══════════════ */
+
+/* ── 19. Отчёт о непроисшедшем ── научная станция, фиксированная.
+   Дежурный по явлению шесть лет ежедневно докладывает, что явления не было. */
+{id:"report_nothing",form:"ongoing",at:"fixed:4",cast:["reporter"],
+ traces:[
+  {id:"t1",via:"ether",when:{noflag:"event"},text:"…станция Дальняя-2, сводка за сутки: явление не наблюдалось. Приборы в норме. Дежурный — тот же."},
+  {id:"t2",via:"queue",when:{noflag:"event"},text:"— Явление? Его здесь ждут. Шестой год. Каждый день пишут отчёт, что его не было. Архив отчётов уже больше станции."},
+  {id:"t3",via:"queue",when:{visits:2,noflag:"event"},text:"— Дежурный говорит: если перестать ждать, оно и произойдёт. Поэтому ждут. Логика у него железная, мы проверяли."},
+  {id:"t4",via:"cant",when:{noflag:"event"},scene:{seat:"far",figure:1,col:[78,86,96],props:["paper","paper","paper"]}},
+  {id:"t5",via:"table",item:"strip",when:{item:"strip",noflag:"event"},text:"— Что это? Лента? С невязкой? …Простите. Мне надо сесть. Мне надо это зарегистрировать. Вы понимаете, что вы привезли?"},
+  {id:"t6",via:"ether",when:{flag:"event"},text:"…станция Дальняя-2. Явление… зарегистрировано. Повторяю. Зарегистрировано. Дежурный просит сменить дежурного."},
+  {id:"t7",via:"queue",when:{flag:"event"},text:"— Отчётность прекращена. Ждать больше нечего, и он не знает, что теперь делать по утрам. Мы тоже не знаем."}
+ ],
+ turns:[{after:"seen:t5",days:3,set:"event"}]},
+
+/* ── 20. Нуль-кабина ── верфь, фиксированная.
+   Монтажник Гедеван собирает в углу верфи кабину для мгновенного переноса.
+   Из чего — из того, что дают. */
+{id:"null_cabin",form:"thing",at:"fixed:13",cast:["nt"],
+ traces:[
+  {id:"t1",via:"queue",when:{noflag:"gone"},text:"— В углу? Это Гедеван. Кабину собирает. Для переноса. Куда — туда, говорит, где нас нет. Не мешайте, он после смены."},
+  {id:"t2",via:"cant",when:{noflag:"gone"},scene:{seat:"corner",figure:1,col:[96,84,70],props:["key","jar"]}},
+  {id:"t3",via:"find",when:{item:"cont"},text:"Контейнер. Прибор без маркировки, три лампы, рукописная бирка: «НТ-3, не трясти». Кому-то это нужно."},
+  {id:"t4",via:"table",item:"cargo",when:{item:"cargo",noflag:"gone"},text:"— Это он возьмёт. Он всё берёт. Вы не думайте, он отдаёт потом. Говорит, отдам оттуда."},
+  {id:"t5",via:"queue",when:{visits:3,noflag:"gone"},text:"— Спросили его: а вернуться? Он говорит: а зачем. Вот и весь разговор, мы больше не спрашивали."},
+  {id:"t6",via:"news",when:{flag:"gone"},text:"На верфи ночью был свет. Утром угол пуст, кабины нет, Гедевана нет. Сварка в углу тёплая."},
+  {id:"t7",via:"cant",when:{flag:"gone"},scene:{seat:"corner",figure:0,props:["key"]}}
+ ],
+ turns:[{after:"seen:t2",days:18,set:"gone"}]},
+
+/* ── 21. Семён Палыч ходит смотреть ── форпост, фиксированная.
+   Наблюдатель каждый день уходит к горизонту и возвращается. Пока возвращается. */
+{id:"semyon_walk",form:"habit",at:"fixed:12",cast:["semyon"],
+ traces:[
+  {id:"t1",via:"ether",when:{noflag:"stayed"},text:"…Семён Палыч, вернитесь на площадку. Семён Палыч. Он не слышит, он никогда не слышит, просто порядок такой."},
+  {id:"t2",via:"queue",when:{noflag:"stayed"},text:"— Ходит. Каждый день к горизонту и обратно. Смотреть. Что там смотреть — не говорит, говорит: вы бы сами сходили."},
+  {id:"t3",via:"cant",when:{noflag:"stayed",late:false},scene:{seat:"door",figure:1,col:[80,80,76],props:["jar"]}},
+  {id:"t4",via:"queue",when:{visits:3,noflag:"stayed"},text:"— Семён Палыч говорит, там горизонт ближе, чем по приборам. Приборы мы проверили. Он тоже проверил. Ходит."},
+  {id:"t5",via:"ether",when:{flag:"stayed"},text:"…Семён Палыч просил передать, что он теперь там. Что «там» — не уточнил. Передаю как есть."},
+  {id:"t6",via:"cant",when:{flag:"stayed"},scene:{seat:"door",figure:0,props:["jar"]}},
+  {id:"t7",via:"queue",when:{flag:"stayed"},text:"— Ушёл и не вернулся. Нет, не пропал. Передал, что там. Вы бы сами сходили, он всегда так говорил."}
+ ],
+ turns:[{after:"seen:t2",days:16,set:"stayed"}]},
+
+/* ── 22. Комиссия ── комбинат, плавающая.
+   Трое с бумагой третий день что-то проверяют. Что — не говорят. */
+{id:"commission",form:"witness",at:"stype:indust",cast:["commission"],
+ traces:[
+  {id:"t1",via:"cant",when:{noflag:"left"},scene:{seat:"far",figure:1,col:[60,64,74],props:["paper","paper","glass_empty"]}},
+  {id:"t2",via:"queue",when:{noflag:"left"},text:"— Комиссия. Третий день. Что проверяют — не говорят. Мы на всякий случай всё покрасили."},
+  {id:"t3",via:"queue",when:{visits:2,noflag:"left"},text:"— Они смотрят на стену и записывают. Потом на другую стену. Мы уже сами начали на стены смотреть."},
+  {id:"t4",via:"news",when:{flag:"left"},text:"Комиссия, направленная на комбинат, к месту назначения не прибыла. Комбинат отвечает, что комиссия была и уехала."},
+  {id:"t5",via:"cant",when:{flag:"left"},scene:{seat:"far",figure:0,props:["paper"]}},
+  {id:"t6",via:"queue",when:{flag:"left"},text:"— Уехали. Бумагу оставили. В бумаге — ничего, одни линии. Ровные такие. Мы её не выбрасываем."}
+ ],
+ turns:[{after:"seen:t1",days:7,set:"left"}]},
+
+/* ── 23. Вторая полка ── научная станция, фиксированная.
+   Ада Львовна выдаёт книги и требует вернуть. Не ей — полке. */
+{id:"second_shelf",form:"place",at:"fixed:14",cast:["librarian"],
+ traces:[
+  {id:"t1",via:"cant",scene:{seat:"end",figure:1,col:[90,78,84],props:["paper","paper"]}},
+  {id:"t2",via:"queue",text:"— Ада Львовна. Полка у неё. Вторая. Даёт читать, если попросить, и не даёт, если попросить неправильно."},
+  {id:"t3",via:"table",item:"rumour",when:{item:"rumour"},text:"— Это не слух. Это из книги. Вторая полка, третья слева. Верните, когда дочитаете. Не мне — полке."},
+  {id:"t4",via:"queue",when:{visits:3},text:"— Она говорит, на полке должно стоять столько же, сколько стояло. Сколько стояло — никто не помнит, кроме неё."},
+  {id:"t5",via:"queue",when:{visits:5},text:null}
+ ]},
+
+/* ── 24. Насос, который не насос ── любая станция · связано с письмом */
+{id:"pump_not_pump",form:"versions",at:"any",cast:[],
+ traces:[
+  {id:"t1",via:"queue",text:"— Насос чинили. Неделю. Потом оказалось, не насос. Что — не скажу, стыдно."},
+  {id:"t2",via:"queue",when:{visits:2},text:"— Насос? Это у них на Ближней. У нас своё. У нас не насос, у нас вентилятор, и тоже не он."},
+  {id:"t3",via:"ether",when:{seen:"t1"},text:"…и он мне говорит: насос в норме. По какой норме, он три дня как не насос…"}
+ ],
+ links:["ether_letter"]},
+
+/* ── 25. Позывной, который отвечает ── эфир · далёкие системы */
+{id:"answering_callsign",form:"ether",at:"danger:far",cast:[],
+ traces:[
+  {id:"t1",via:"ether",text:"…здесь Крайняя. Слышу вас. Слышу вас хорошо. Вы первые за долго."},
+  {id:"t2",via:"ether",when:{seen:"t1"},text:"…здесь Крайняя. Не улетайте пока. Нет, ничего не нужно. Просто не улетайте пока."},
+  {id:"t3",via:"queue",when:{visits:2},text:"— Крайняя? Нет тут такой. Позывной старый, кто-то пользуется. Кто — не знаем, мы не спрашиваем."}
+ ]},
+
+/* ── 26. Свеча на середине ── необъяснимое · любая станция */
+{id:"candle_middle",form:"place",at:"any",cast:[],
+ traces:[
+  {id:"t1",via:"cant",scene:{seat:"far",figure:0,props:["candle"]}},
+  {id:"t2",via:"queue",when:{visits:2},text:"— Свечу не трогайте. Она не наша. Она тут была, когда мы пришли."},
+  {id:"t3",via:"queue",when:{visits:4},text:"— Горит. Ну да, всё время. Мы её не меняем. Вы спросите кого-нибудь другого, я не знаю."}
+ ]}
+];
+
+/* ══════════════ истории, часть вторая ══════════════
+   M130. Земля вошла в число каналов: land (строка к посадке), cave (вход в
+   пещеру), settle и tin (хвост подсказки у посёлка и у Жестянки); адреса
+   planet и world:T. Формат — как в первой части, правила — docs/DESIGN-stories.md.
+   Труппа дополняется, не переписывается: CAST_B вливается в CAST при сборке. */
+
+const CAST_B={
+  tinkeeper:{name:"те, кто носит",   role:"посёлок"},
+  hunter:   {name:"охотник",         role:"приезжий"},
+  shellman: {name:"человек с ракушкой",role:"барахолка"},
+  lamp_hut: {name:"крайняя хижина",  role:"посёлок"},
+  cartog:   {name:"Нюра-картограф",  role:"картограф",home:"fixed:15"},
+  twins:    {name:"близнецы Абашевы",role:"верфь",home:"fixed:16"},
+  doc:      {name:"доктор Ушаков",   role:"врач",home:"fixed:17"},
+  oldpilot: {name:"Матвей Кузьмич",  role:"списанный пилот",home:"fixed:18"},
+  kettle:   {name:"чайник",          role:"вещь"},
+  watchman: {name:"сторож маяка",    role:"эфир"},
+  bargeman: {name:"шкипер Ороз",     role:"баржа"},
+  child:    {name:"кто-то маленький",role:"без имени"},
+  beekeeper:{name:"Сильва",          role:"держит улей",home:"fixed:19"},
+  quiet:    {name:"двое у окна",     role:"без имён"},
+  glasses:  {name:"человек в очках", role:"научная"},
+  cook:     {name:"повар Балаш",     role:"комбинат",home:"fixed:20"}
+};
+for(const k in CAST_B)CAST[k]=CAST_B[k];
+
+const STORIES_B=[
+
+/* ══ земля ══ */
+
+/* ── 27. Кто кормит Жестянку ── зверь · мир с машиной и посёлком */
+{id:"tin_feeders",form:"beast",at:"tin",cast:["tinkeeper"],
+ traces:[
+  {id:"t1",via:"land",text:"От посёлка к машине натоптана дорожка. Не ваша."},
+  {id:"t2",via:"tin",when:{noflag:"stalled"},text:"у бункера кучка, свежая. Кто-то носит сюда. Не вы."},
+  {id:"t3",via:"settle",when:{noflag:"stalled"},text:"в сторону машины они показывают так же, как на еду"},
+  {id:"t4",via:"tin",when:{flag:"stalled"},text:"кучек больше нет. Дорожка зарастает."},
+  {id:"t5",via:"settle",when:{flag:"stalled"},text:"в сторону машины больше не показывают"}
+ ],
+ turns:[{after:"seen:t2",days:22,set:"stalled"}]},
+
+/* ── 28. Косяк ── зверь · океанический мир */
+{id:"shoal",form:"beast",at:"world:ocean",cast:["hunter"],
+ traces:[
+  {id:"t1",via:"land",when:{noflag:"hunted"},text:"Вдоль берега идёт стая. Каждые сутки в одно время, по словам тех, кто тут живёт."},
+  {id:"t2",via:"settle",when:{noflag:"hunted"},text:"на берег они показывают и ждут. Стая для них — часы."},
+  {id:"t3",via:"news",when:{noflag:"hunted"},text:"Охотник спрашивает, где ходят стаи по берегу. Платит за точное время."},
+  {id:"t4",via:"land",when:{flag:"hunted"},text:"Стая идёт. Меньше, чем была. Кто-то здесь уже побывал."},
+  {id:"t5",via:"settle",when:{flag:"hunted"},text:"на берег больше не показывают"}
+ ],
+ turns:[{after:"seen:t3",days:12,set:"hunted"}]},
+
+/* ── 29. Ракушка ── вещь · барахолка, потом океанический мир */
+{id:"shell",form:"thing",at:"world:ocean",cast:["shellman"],
+ traces:[
+  {id:"t1",via:"find",when:{item:"cont"},text:"Среди груза — ракушка. На ней процарапан знак, похожий на те, что рисуют у посёлков."},
+  {id:"t2",via:"settle",when:{seen:"t1"},text:"тот же знак, что на ракушке. Они видят её у вас и замолкают."},
+  {id:"t3",via:"settle",when:{seen:"t2",visits:2},text:"они положили что-то рядом с вами и отошли. Обмен состоялся, хотя вы ничего не отдавали."}
+ ]},
+
+/* ── 30. Кто выключает свет ── необъяснимое · мир с посёлком и пещерой */
+{id:"last_light",form:"place",at:"settle",cast:["lamp_hut"],
+ traces:[
+  {id:"t1",via:"land",when:{late:true},text:"В посёлке темно, кроме крайней хижины. Там свет."},
+  {id:"t2",via:"settle",when:{late:true},text:"на крайнюю хижину они не показывают никогда"},
+  {id:"t3",via:"cave",text:"У ниши в стене светится одно растение. Ниша — по форме человека. Росло бы где угодно, а растёт здесь."}
+ ]},
+
+/* ── 31. Следы в одну сторону ── после · ледяной мир */
+{id:"one_way_tracks",form:"after",at:"world:ice",cast:[],
+ traces:[
+  {id:"t1",via:"land",text:"Следы по снегу от площадки к хребту. Обратных нет."},
+  {id:"t2",via:"cave",text:"В пещере сухо и кто-то сидел: примято. Давно. Следы снаружи новее, чем это."},
+  {id:"t3",via:"land",when:{visits:2},text:"Следы те же. Снег их не берёт. Снег здесь вообще ничего не берёт."}
+ ]},
+
+/* ── 32. Тёплый камень ── необъяснимое · вулканический мир */
+{id:"warm_stone",form:"place",at:"world:volcanic",cast:[],
+ traces:[
+  {id:"t1",via:"land",text:"Один камень у площадки тёплый. Остальные — как все."},
+  {id:"t2",via:"land",when:{visits:3},text:"Камень тёплый. Кто-то его выложил кругом мелкими. Не вы."},
+  {id:"t3",via:"settle",text:"на тёплый камень они показывают так же, как на небо"}
+ ]},
+
+/* ── 33. Сад в кратере ── после · пустынный мир */
+{id:"crater_garden",form:"after",at:"world:desert",cast:[],
+ traces:[
+  {id:"t1",via:"land",text:"В кратере за площадкой — грядки. Ровные. Сухие. Кто-то поливал их, пока мог."},
+  {id:"t2",via:"cave",text:"Бочки. Пустые, аккуратно в ряд. Последняя — с надписью «хватит до весны». Весны здесь нет."},
+  {id:"t3",via:"land",when:{visits:2},text:"На одной грядке что-то взошло. Сухое, но взошло."}
+ ]},
+
+/* ── 34. Плита с именами ── после · руинный мир */
+{id:"ruin_plate",form:"versions",at:"world:ruin",cast:[],
+ traces:[
+  {id:"t1",via:"land",text:"У входа в руины — плита. На ней семь строк. Шесть стёрты, седьмая нет."},
+  {id:"t2",via:"queue",when:{seen:"t1"},text:"— Плита? Это список смены. Шесть ушли, седьмой остался сторожить. Так говорят."},
+  {id:"t3",via:"queue",when:{seen:"t1",visits:2},text:"— Список? Да это меню было. Столовая там стояла. Стёрли, потому что не завезли."},
+  {id:"t4",via:"cave",when:{seen:"t1"},text:"Та же седьмая строка, нацарапана здесь, глубоко внутри. Тем же почерком."}
+ ]},
+
+/* ── 35. Улей ── привычка · мир джунглей, фиксированная система */
+{id:"beehive",form:"habit",at:"world:jungle",cast:["beekeeper"],
+ traces:[
+  {id:"t1",via:"land",text:"За площадкой гудит. Не машина. Улей, обложенный камнями, и рядом табурет."},
+  {id:"t2",via:"land",when:{visits:2},text:"На табурете сидят. Не оборачиваются. Гудит ровнее, чем в прошлый раз."},
+  {id:"t3",via:"settle",text:"на гудящее они показывают с уважением и держатся поодаль"},
+  {id:"t4",via:"queue",when:{seen:"t1"},text:"— Сильва? Она с ульем живёт. Мы её не трогаем, она нас тоже. Мёд не продаёт. Мёд — это не для продажи, говорит."}
+ ]},
+
+/* ── 36. Ржавый колокол ── место · металлический мир */
+{id:"rust_bell",form:"place",at:"world:metal",cast:[],
+ traces:[
+  {id:"t1",via:"land",text:"На гребне висит лист металла, и к нему привязана кость. Ветер бьёт костью в лист. Звенит."},
+  {id:"t2",via:"cave",text:"В пещере тот же звон, только глуше. Кто-то провёл сюда трубу, чтобы слышать."},
+  {id:"t3",via:"settle",text:"когда звенит, они замирают. Потом продолжают."}
+ ]},
+
+/* ── 37. Кристалл с именем ── вещь · кристаллический мир */
+{id:"named_crystal",form:"thing",at:"world:crystal",cast:[],
+ traces:[
+  {id:"t1",via:"land",text:"Один кристалл у площадки обточен. На грани — имя. Не здешнее, буквы ваши."},
+  {id:"t2",via:"table",item:"cargo",when:{item:"cargo",seen:"t1"},text:"— Кристалл? С именем? Не показывайте никому. Нет, не опасно. Просто не показывайте."},
+  {id:"t3",via:"news",when:{seen:"t1"},text:"Кто-то спрашивает в эфире, не видел ли кто кристалл с именем. Называет имя. Имя то же."}
+ ]},
+
+/* ── 38. Дозорный, который не сменяется ── привычка · токсичный мир */
+{id:"lone_watch",form:"habit",at:"world:toxic",cast:[],
+ traces:[
+  {id:"t1",via:"cave",text:"У входа стоит дозорный посёлка. Всегда один и тот же, по отметине на плече."},
+  {id:"t2",via:"cave",when:{visits:3},text:"Тот же дозорный. Другие сменяются, этот нет. Он тут не по очереди."},
+  {id:"t3",via:"settle",text:"на пещеру они показывают, а на дозорного — нет. Как будто его там нет."}
+ ]},
+
+/* ══ станции ══ */
+
+/* ── 39. Нюра чертит ── привычка · научная, фиксированная */
+{id:"cartographer",form:"habit",at:"fixed:15",cast:["cartog"],
+ traces:[
+  {id:"t1",via:"cant",scene:{seat:"far",figure:1,col:[84,92,104],props:["paper","paper","paper","glass_empty"]}},
+  {id:"t2",via:"queue",text:"— Нюра чертит. Карту. Сектора, которого нет. Говорит: будет — пригодится."},
+  {id:"t3",via:"table",item:"strip",when:{item:"strip"},text:"— Ленту? Мне? …Это отсюда на полтора сектора. У меня там белое пятно. Было."},
+  {id:"t4",via:"queue",when:{visits:4},text:"— Нюра говорит, у неё осталось одно белое пятно. И что она его не закроет. Нарочно."}
+ ]},
+
+/* ── 40. Близнецы Абашевы ── двое · верфь, фиксированная */
+{id:"twins",form:"pair",at:"fixed:16",cast:["twins"],
+ traces:[
+  {id:"t1",via:"cant",when:{noflag:"one"},scene:{seat:"far",figure:1,col:[88,76,62],props:["cup","cup"]}},
+  {id:"t2",via:"queue",when:{noflag:"one"},text:"— Абашевы. Двое. Никто не знает, который из них который, и они сами, кажется, не знают."},
+  {id:"t3",via:"queue",when:{flag:"one"},text:"— Абашев. Один. Спросите, который, — не скажет. Сам не решил."},
+  {id:"t4",via:"cant",when:{flag:"one"},scene:{seat:"far",figure:1,dim:true,col:[88,76,62],props:["cup"]}}
+ ],
+ turns:[{after:"seen:t2",days:28,set:"one"}]},
+
+/* ── 41. Доктор, который не лечит ── место · комбинат, фиксированная */
+{id:"doctor",form:"place",at:"fixed:17",cast:["doc"],
+ traces:[
+  {id:"t1",via:"queue",text:"— Ушаков? Он доктор. Не лечит. Слушает. К нему ходят с чем угодно, он слушает и говорит «да». Помогает."},
+  {id:"t2",via:"cant",scene:{seat:"door",figure:1,col:[100,100,110],props:["jar","paper"]}},
+  {id:"t3",via:"table",item:"rumour",when:{item:"rumour"},text:"— Да."},
+  {id:"t4",via:"table",item:"cargo",when:{item:"cargo"},text:"— Да."},
+  {id:"t5",via:"queue",when:{visits:4},text:"— Ушаков один раз сказал «нет». Кому и на что — не знает никто. С тех пор к нему очередь."}
+ ]},
+
+/* ── 42. Матвей Кузьмич слушает ── привычка · форпост, фиксированная */
+{id:"old_pilot",form:"habit",at:"fixed:18",cast:["oldpilot"],
+ traces:[
+  {id:"t1",via:"cant",scene:{seat:"corner",figure:1,col:[90,88,80],props:["glass_empty"]}},
+  {id:"t2",via:"ether",text:"…Матвей Кузьмич, вы на приёме? Мы знаем, что на приёме. Просто скажите что-нибудь."},
+  {id:"t3",via:"queue",text:"— Кузьмич списан. Двадцать лет назад. Сидит с приёмником и слушает сводки. Все. Каждую."},
+  {id:"t4",via:"queue",when:{visits:3},text:"— Кузьмич говорит, в сводке за четверг была ошибка. Двенадцать лет назад. Он помнит, какая."}
+ ]},
+
+/* ── 43. Чайник ── вещь · любая станция */
+{id:"kettle",form:"thing",at:"any",cast:["kettle"],
+ traces:[
+  {id:"t1",via:"cant",scene:{seat:"end",figure:0,props:["cup","key"]}},
+  {id:"t2",via:"queue",text:"— Чайник не трогайте. Он не наш. Его оставили, чтобы вернуться. Мы его не убираем, чтобы было куда."},
+  {id:"t3",via:"queue",when:{visits:3},text:"— Чайник? Он кипит сам. Нет, не подключён. Мы проверяли. Кипит."}
+ ]},
+
+/* ── 44. Сторож маяка ── эфир · далёкие системы */
+{id:"lighthouse",form:"ether",at:"danger:far",cast:["watchman"],
+ traces:[
+  {id:"t1",via:"ether",text:"…маяк Семнадцатый, читаю по памяти: «и всё-таки она вертится». Конец стиха. Следующий завтра."},
+  {id:"t2",via:"ether",when:{seen:"t1"},text:"…маяк Семнадцатый. Сегодня без стиха. Сегодня просто: маяк на месте, свет на месте, я на месте."},
+  {id:"t3",via:"ether",when:{seen:"t2"},text:"…маяк Семнадцатый. Если кто-то это слушает — спасибо. Если никто — тоже ничего, я привык."}
+ ]},
+
+/* ── 45. Шкипер Ороз не заходит ── дорога · форпост, плавающая */
+{id:"skipper",form:"habit",at:"stype:outpost",cast:["bargeman"],
+ traces:[
+  {id:"t1",via:"ether",text:"…баржа Ороза проходит мимо. Ороз, зайдёшь? …Нет. Ороз никогда не заходит, но мы спрашиваем."},
+  {id:"t2",via:"queue",text:"— Ороз? Ходит мимо тридцать лет. Ни разу не зашёл. Мы ему каждый раз машем. Он отвечает."},
+  {id:"t3",via:"news",when:{visits:2},text:"Шкипер Ороз впервые зашёл на форпост. Пробыл час. Что делал — не знает никто, он ни с кем не говорил."},
+  {id:"t4",via:"queue",when:{seen:"t3"},text:"— Заходил. Сел, посидел, ушёл. Мы не спрашивали. Тридцать лет не спрашивали, чего сейчас начинать."}
+ ]},
+
+/* ── 46. Кто-то маленький ── двое · торговый узел */
+{id:"small_one",form:"pair",at:"stype:trade",cast:["child"],
+ traces:[
+  {id:"t1",via:"cant",scene:{seat:"door",figure:1,dim:true,col:[70,80,90],props:[]}},
+  {id:"t2",via:"queue",when:{visits:2},text:"— У двери? Маленький? Он чей-то. Все думают, что чей-то другой. Накормлен, это главное."},
+  {id:"t3",via:"queue",when:{visits:4},text:"— Маленький говорит, что ждёт. Кого — показывает на дверь. Мы тоже на неё смотрим теперь."}
+ ]},
+
+/* ── 47. Двое у окна ── двое · научная, плавающая */
+{id:"two_window",form:"pair",at:"stype:sci",cast:["quiet"],
+ traces:[
+  {id:"t1",via:"cant",when:{noflag:"apart"},scene:{seat:"far",figure:1,col:[80,90,100],props:["glass","glass"]}},
+  {id:"t2",via:"queue",when:{noflag:"apart"},text:"— Эти двое молчат. Давно. Не в ссоре — просто всё уже сказали. Сидят рядом, смотрят наружу."},
+  {id:"t3",via:"cant",when:{flag:"apart"},scene:{seat:"far",figure:1,col:[80,90,100],props:["glass"]}},
+  {id:"t4",via:"queue",when:{flag:"apart"},text:"— Один улетел. Второй сидит. Смотрит наружу. Сказать им друг другу было нечего, а вот смотреть вместе — было что."}
+ ],
+ turns:[{after:"seen:t1",days:20,set:"apart"}]},
+
+/* ── 48. Человек в очках считает ── привычка · научная, плавающая */
+{id:"glasses_counts",form:"habit",at:"stype:sci",cast:["glasses"],
+ traces:[
+  {id:"t1",via:"cant",scene:{seat:"end",figure:1,col:[96,96,90],props:["paper","tally"]}},
+  {id:"t2",via:"queue",text:"— Считает прилёты. Ваш тоже посчитал. Зачем — ему спокойнее, когда посчитано."},
+  {id:"t3",via:"queue",when:{visits:5},text:"— Он сказал, что вы — сороковой. Не знаю, что это значит. Он выглядел довольным."}
+ ]},
+
+/* ── 49. Повар Балаш ── место · комбинат, фиксированная */
+{id:"cook",form:"place",at:"fixed:20",cast:["cook"],
+ traces:[
+  {id:"t1",via:"cant",scene:{seat:"end",figure:1,col:[110,90,70],props:["bread","cup","cup"]}},
+  {id:"t2",via:"queue",text:"— Балаш кормит всех. Кто заплатил, кто нет — всех. Комбинат платит ему за смену, он кормит всех. Арифметика не сходится, он знает."},
+  {id:"t3",via:"table",item:"cargo",when:{item:"cargo"},text:"— Это? Это я возьму. Нет, не куплю. Возьму и приготовлю, а ты поешь."},
+  {id:"t4",via:"news",when:{visits:2},text:"На комбинате третью неделю не платят, а столовая работает. Балаш говорит: столовая — не комбинат."}
+ ]},
+
+/* ── 50. Лестница никуда ── место · верфь, плавающая */
+{id:"stairs_nowhere",form:"place",at:"stype:yard",cast:[],
+ traces:[
+  {id:"t1",via:"queue",text:"— Лестница за доком? Ведёт в переборку. Её приварили после того, как убрали ярус. Лестницу оставили. По ней ходят."},
+  {id:"t2",via:"queue",when:{visits:3},text:"— По лестнице ходят до переборки, стоят и спускаются. Вы бы тоже сходили. Там хорошо стоять."},
+  {id:"t3",via:"cant",scene:{seat:"corner",figure:0,props:["candle"]}}
+ ]},
+
+/* ── 51. Рейс снят ── эфир · любая станция */
+{id:"flight_cancelled",form:"ether",at:"any",cast:[],
+ traces:[
+  {id:"t1",via:"ether",text:"…рейс снят. Причина не указана. Да там всегда не указана."},
+  {id:"t2",via:"ether",when:{seen:"t1"},text:"…рейс восстановлен. Причина снятия не указана. Причина восстановления тоже."},
+  {id:"t3",via:"queue",when:{seen:"t2"},text:"— Рейс? Он снимается каждый четверг и восстанавливается в пятницу. Кто-то так шутит. Много лет."}
+ ]},
+
+/* ── 52. Щёлкает ── необъяснимое · эфир */
+{id:"clicking",form:"ether",at:"any",cast:[],
+ traces:[
+  {id:"t1",via:"ether",text:"…кто-то щёлкает в эфире. Слушайте: вот, опять. Нет? Ну ладно."},
+  {id:"t2",via:"ether",when:{seen:"t1"},text:"…щёлкает. Три и два. Три и два. Если это кто-то — ответьте три и два."},
+  {id:"t3",via:"queue",when:{seen:"t1",visits:2},text:"— Щёлканье? Это не у нас. У нас тихо. Это у вас в приёмнике. У всех в приёмнике."}
+ ]},
+
+/* ── 53. Коридор без огней ── версии · форпост */
+{id:"dark_corridor",form:"versions",at:"stype:outpost",cast:[],
+ traces:[
+  {id:"t1",via:"ether",text:"…не лезь в тот коридор, там баржи ходят без огней."},
+  {id:"t2",via:"queue",text:"— Без огней ходят, потому что огни у них вымерли. Лампы. Все разом."},
+  {id:"t3",via:"queue",when:{visits:2},text:"— Без огней — потому что так дешевле. Огни стоят денег, коридор не стоит ничего."},
+  {id:"t4",via:"queue",when:{visits:3},text:"— Без огней, чтобы не видно было, что на барже. Я не знаю, что на барже. Никто не знает, поэтому и без огней."}
+ ]},
+
+/* ── 54. Занятая частота ── идёт само · любая станция */
+{id:"busy_freq",form:"ongoing",at:"any",cast:[],
+ traces:[
+  {id:"t1",via:"ether",when:{noflag:"free"},text:"…частота занята. Частота занята. Частота зан…"},
+  {id:"t2",via:"queue",when:{noflag:"free"},text:"— Частота занята двенадцатый год. Кем — не знаем. Но занята честно, без перерывов."},
+  {id:"t3",via:"ether",when:{flag:"free"},text:"…частота свободна. …Свободна. Кто-нибудь, скажите что-нибудь, непривычно."}
+ ],
+ turns:[{after:"seen:t1",days:40,set:"free"}]},
+
+/* ── 55. Вода по расписанию ── место · комбинат */
+{id:"water_schedule",form:"place",at:"stype:indust",cast:[],
+ traces:[
+  {id:"t1",via:"queue",text:"— У нас вода по расписанию. Расписание не соблюдается. Зато оно есть, и его повесили в рамке."},
+  {id:"t2",via:"cant",scene:{seat:"door",figure:0,props:["paper","cup"]}},
+  {id:"t3",via:"queue",when:{visits:3},text:"— Рамку с расписанием украли. Воду теперь дают когда попало. Никто не заметил разницы, кроме рамки."}
+ ]},
+
+/* ── 56. Эхо в доке ── необъяснимое · верфь */
+{id:"dock_echo",form:"place",at:"stype:yard",cast:[],
+ traces:[
+  {id:"t1",via:"queue",text:"— В третьем доке эхо отвечает позже, чем положено. На полсекунды. Мы мерили. Никто не знает, куда оно уходит."},
+  {id:"t2",via:"queue",when:{visits:3},text:"— Эхо. Кто-то сказал в третьем доке «привет», и оно ответило «пока». Может, послышалось. Мы больше туда не говорим."}
+ ]},
+
+/* ── 57. Половина дока ── после · верфь */
+{id:"half_dock",form:"after",at:"stype:yard",cast:[],
+ traces:[
+  {id:"t1",via:"queue",text:"— Тут раньше два дока было. Теперь полтора. Половину увезли. Кто увозит половину дока?"},
+  {id:"t2",via:"news",when:{visits:2},text:"В соседнем секторе видели половину дока. Летит сама. Медленно, но в одну сторону."},
+  {id:"t3",via:"queue",when:{seen:"t2"},text:"— Летит, говорите? Ну пусть летит. Она всегда хотела."}
+ ]},
+
+/* ── 58. Долг без имени ── деньги · любая станция с бонами */
+{id:"nameless_debt",form:"thing",at:"any",cast:[],
+ traces:[
+  {id:"t1",via:"queue",text:"— В книге долг без имени. Большой. Кто-то его гасит. Понемногу, каждый месяц. Кто — не пишет."},
+  {id:"t2",via:"queue",when:{visits:4},text:"— Долг без имени погашен. В книге пусто. Мы не знаем, кого благодарить, и благодарим всех."}
+ ]},
+
+/* ── 59. Монета на стойке ── вещь · торговый узел */
+{id:"coin_counter",form:"thing",at:"stype:trade",cast:[],
+ traces:[
+  {id:"t1",via:"cant",scene:{seat:"corner",figure:0,props:["key"]}},
+  {id:"t2",via:"queue",text:"— Монета на стойке лежит с открытия. Не наша, не здешняя. Её не берут. Примета: возьмёшь — станция закроется."},
+  {id:"t3",via:"queue",when:{visits:5},text:"— Монету кто-то взял. Станция не закрылась. Теперь мы не знаем, во что верить, и это хуже."}
+ ]},
+
+/* ── 60. Соперники за одним столом ── шестеро · торговый узел */
+{id:"rivals_table",form:"witness",at:"stype:trade",cast:["baker","shtof"],
+ traces:[
+  {id:"t1",via:"cant",when:{eclipse:true},scene:{seat:"far",figure:1,col:[96,84,70],props:["glass","glass","tally"]}},
+  {id:"t2",via:"queue",when:{eclipse:true},text:"— Пекарь и Штоф за одним столом. Раз в затмение. О чём говорят — никто не слышал, они молчат."},
+  {id:"t3",via:"news",when:{eclipse:false,seen:"t1"},text:"Пекарь и Штоф снова не видятся. До следующего затмения. Как всегда."}
+ ]},
+
+/* ── 61. Парад, который ждут ── небо · научная */
+{id:"parade_wait",form:"ongoing",at:"stype:sci",cast:[],
+ traces:[
+  {id:"t1",via:"queue",text:"— Парад планет у нас через раз. Когда он — все наверх. Когда не он — тоже наверх, на всякий случай."},
+  {id:"t2",via:"cant",scene:{seat:"far",figure:0,props:["paper","glass_empty","glass_empty"]}},
+  {id:"t3",via:"ether",when:{visits:2},text:"…всем, кто наверху: сегодня не парад. Спускайтесь. Нет? Ладно, стойте."}
+ ]},
+
+/* ── 62. Тот, кто машет ── привычка · любая станция */
+{id:"waver",form:"habit",at:"any",cast:[],
+ traces:[
+  {id:"t1",via:"ether",text:"…борт на подходе, вам машут с верхней площадки. Да, вам. Он всем машет."},
+  {id:"t2",via:"queue",when:{visits:2},text:"— С площадки машет наш. Он не встречает, он провожает. Всех. И прилетающих тоже — заранее."},
+  {id:"t3",via:"queue",when:{visits:6},text:null}
+ ]},
+
+/* ── 63. Письмо нашло адресата ── эфир · связано с письмом */
+{id:"letter_answer",form:"ether",at:"stype:outpost",cast:["letter"],
+ traces:[
+  {id:"t1",via:"ether",when:{visits:2},text:"…«Слышу. Слышу тебя. Солнце видно. Отвечай и дальше, я дома до зимы»."},
+  {id:"t2",via:"queue",when:{seen:"t1"},text:"— Она отвечала. Один раз. Мы все слышали и сделали вид, что нет."}
+ ],
+ links:["ether_letter"]},
+
+/* ── 64. Печь вернулась ── шестеро · дом Пекаря, после дверцы */
+{id:"baker_bakes",form:"after",at:"fixed:7",cast:["baker"],
+ traces:[
+  {id:"t1",via:"queue",when:{seen:"t0"},text:"— Пахнет. Слышите? Пекарь печёт. Первый раз за всё время. Мы не заходим, боимся спугнуть."},
+  {id:"t2",via:"cant",when:{seen:"t0"},scene:{seat:"end",figure:1,col:[110,90,70],props:["bread","bread","bread"]}},
+  {id:"t0",via:"news",text:"Пекарь нашёл дверцу. Или дверца нашла его. Печь собрана."}
+ ],
+ links:["baker_oven"]},
+
+/* ── 65. Совеня продал ── шестеро · дом Совени */
+{id:"sovenya_sold",form:"versions",at:"fixed:8",cast:["sovenya"],
+ traces:[
+  {id:"t1",via:"news",text:"Совеня продал редкость. Впервые. Купивший не назван. Совеня не спит от горя — или от радости, по его лицу не понять."},
+  {id:"t2",via:"queue",when:{seen:"t1"},text:"— Продал, потому что долг. — Продал, потому что надоела. — Продал, потому что она сама попросила. Выбирайте."}
+ ]},
+
+/* ── 66. Ефим оставил записку ── шестеро · далёкие системы */
+{id:"efim_note",form:"thing",at:"danger:far",cast:["efim"],
+ traces:[
+  {id:"t1",via:"find",when:{item:"sat"},text:"В записи спутника — голос. Тихий. «Если это ты — не ищи. Если не ты — тем более». Подписано «Е.»"},
+  {id:"t2",via:"queue",when:{seen:"t1"},text:"— Голос Ефима? Вы его слышали? Никто его не слышал. Вы первый. Не рассказывайте."}
+ ],
+ links:["efim_stool"]},
+
+/* ══ ещё земля и дорога ══ */
+
+/* ── 67. Посадочный огонь ── свидетель · любой мир */
+{id:"landing_fire",form:"witness",at:"planet",cast:[],
+ traces:[
+  {id:"t1",via:"land",when:{late:true},text:"У хребта горит огонь. Костёр. Кто-то сидит к нему спиной — к вам лицом."},
+  {id:"t2",via:"land",when:{late:false},text:"У хребта кострище. Тёплое. Камни сложены кольцом, как везде."},
+  {id:"t3",via:"cave",when:{seen:"t1"},text:"На стене копотью нарисована площадка и на ней корабль. Ваш силуэт. Или похожий."}
+ ]},
+
+/* ── 68. Баржа в тумане ── дорога · любой мир с атмосферой */
+{id:"fog_barge",form:"witness",at:"planet",cast:[],
+ traces:[
+  {id:"t1",via:"land",text:"Над хребтом прошла баржа. Низко. Без огней. На посадку не пошла."},
+  {id:"t2",via:"queue",when:{seen:"t1"},text:"— Баржа низко над планетой? Это Ороз. Он так здоровается с теми, кто внизу."}
+ ],
+ links:["skipper"]},
+
+/* ── 69. Растение, которое считают ── зверь · мир с посёлком */
+{id:"counted_plant",form:"beast",at:"settle",cast:[],
+ traces:[
+  {id:"t1",via:"settle",text:"одно растение у посёлка обложено камнями и к нему ходят по одному"},
+  {id:"t2",via:"land",when:{visits:2},text:"Растение в кольце камней выросло на ладонь. Камней добавили ровно на ладонь."},
+  {id:"t3",via:"settle",when:{visits:3},text:"на растение они показывают так же, как на вас: «прибыл»"}
+ ]},
+
+/* ── 70. Пустая площадка ── после · любой мир */
+{id:"empty_pad",form:"after",at:"planet",cast:[],
+ traces:[
+  {id:"t1",via:"land",text:"Рядом с вашей площадкой — вторая. Старая, ровная, никем не занятая. Её расчистили для кого-то."},
+  {id:"t2",via:"land",when:{visits:3},text:"Вторая площадка расчищена снова. Кто-то всё ещё ждёт, что сюда сядут."}
+ ]},
+
+/* ── 71. Голос из шахты ── необъяснимое · комбинат + мир */
+{id:"mine_voice",form:"place",at:"stype:indust",cast:[],
+ traces:[
+  {id:"t1",via:"queue",text:"— В шахте поёт. Не кто — что. На нижнем горизонте. Мы туда не спускаемся по пятницам, там поёт громче."},
+  {id:"t2",via:"ether",when:{visits:2},text:"…нижний горизонт, вы там? Нижний горизонт… Поёт. Записываю: поёт."},
+  {id:"t3",via:"cant",scene:{seat:"far",figure:0,props:["candle","paper"]}}
+ ]},
+
+/* ── 72. Кому машет Ороз ── дорога · связано */
+{id:"oroz_waves",form:"pair",at:"stype:trade",cast:["bargeman"],
+ traces:[
+  {id:"t1",via:"ether",text:"…Ороз проходит мимо. Машет. Нет, не нам. Он всегда машет кому-то одному, а мы делаем вид, что нам."},
+  {id:"t2",via:"queue",when:{visits:3},text:"— Кому машет Ороз? Тому, кого здесь давно нет. Он знает. Машет всё равно."}
+ ],
+ links:["skipper"]}
+];
+for(const S of STORIES_B)STORIES.push(S);
+
+/* ══════════════ истории, часть третья ══════════════
+   M131. Связи как данные: условие seenOf:"история.след" — след чужой истории
+   уже виден. Переносчик: след с carry:true птица запоминает (12x) и показывает
+   в списке услышанного с адресом места; в другом месте его спрашивают.
+   Формат — как в первых двух частях, правила — docs/DESIGN-stories.md. */
+
+const CAST_C={
+  gardener: {name:"та, что поливала",role:"без имени"},
+  anchorman:{name:"якорный",         role:"верфь"},
+  nightnurse:{name:"Зоя",            role:"ночная смена",home:"fixed:21"},
+  bellman:  {name:"звонарь",         role:"металлический мир"},
+  accountant:{name:"Гурам Ильич",    role:"учётчик",home:"fixed:22"},
+  radioman: {name:"дежурный Седьмого",role:"эфир"},
+  fisher:   {name:"рыбак без моря",  role:"пустынный мир"},
+  keeper:   {name:"смотритель",      role:"руины"},
+  painter:  {name:"тот, кто красит", role:"комбинат"},
+  teacher:  {name:"Фаина",           role:"учит счёту",home:"fixed:23"},
+  pilotess: {name:"пилот Самохина",  role:"позывной Сорок-два"},
+  dog:      {name:"собака",          role:"не собака"}
+};
+for(const k in CAST_C)CAST[k]=CAST_C[k];
+
+const STORIES_C=[
+
+/* ── 73. Птица принесла позывной ── переносчик · из «Второго стакана» */
+{id:"carried_callsign",form:"pair",at:"stype:trade",cast:["zero7"],
+ traces:[
+  {id:"t1",via:"queue",when:{parrot:true,seenOf:"second_glass.t1"},text:"— Ваша птица сказала «Ноль-семь». Где вы это слышали? …Понятно. Не говорите ей больше ничего."},
+  {id:"t2",via:"queue",when:{parrot:true,seenOf:"second_glass.t5"},text:"— «Дождался». Это птица сказала. Она не знает, что это значит. Вы, кажется, знаете."}
+ ],
+ links:["second_glass"]},
+
+/* ── 74. Кто поливал ── после · связано с садом в кратере */
+{id:"who_watered",form:"after",at:"stype:outpost",cast:["gardener"],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"crater_garden.t1"},text:"— Грядки в кратере? Это её. Она улетела сюда, чтобы заработать на воду. Зарабатывает. Воду туда никто не возит."},
+  {id:"t2",via:"cant",when:{seenOf:"crater_garden.t1"},scene:{seat:"door",figure:1,col:[96,88,72],props:["jar"]}},
+  {id:"t3",via:"queue",when:{seenOf:"crater_garden.t3"},text:"— Взошло? Правда? Не говорите ей. Она решит, что можно не возвращаться, и останется здесь насовсем."}
+ ],
+ links:["crater_garden"]},
+
+/* ── 75. Якорный ── привычка · верфь */
+{id:"anchorman",form:"habit",at:"stype:yard",cast:["anchorman"],
+ traces:[
+  {id:"t1",via:"queue",text:"— Якорный. Держит якорь. Какой якорь у станции — не спрашивайте; он держит, и она на месте."},
+  {id:"t2",via:"cant",scene:{seat:"corner",figure:1,col:[70,74,84],props:["key","key"]}},
+  {id:"t3",via:"queue",when:{visits:4},text:"— Якорный заболел на день. Станцию не унесло. Он говорит: это потому, что он держал из каюты."}
+ ]},
+
+/* ── 76. Ночная Зоя ── привычка · комбинат, фиксированная */
+{id:"night_zoya",form:"habit",at:"fixed:21",cast:["nightnurse"],
+ traces:[
+  {id:"t1",via:"cant",when:{late:true},scene:{seat:"end",figure:1,col:[104,96,100],props:["cup","paper"]}},
+  {id:"t2",via:"queue",when:{late:true},text:"— Зоя. Ночная. Она дежурит там, где дежурить уже не надо. Ей так спокойнее, и нам тоже."},
+  {id:"t3",via:"queue",when:{late:false},text:"— Зоя? Спит. Ночью приходите. Днём её как будто нет, и в этом что-то есть."},
+  {id:"t4",via:"table",item:"rumour",when:{item:"rumour",late:true},text:"— Знаю. Я ночью всё знаю. Днём забываю, это правило."}
+ ]},
+
+/* ── 77. Звонарь ── связано с колоколом · металлический мир */
+{id:"bell_ringer",form:"pair",at:"stype:outpost",cast:["bellman"],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"rust_bell.t1"},text:"— Лист с костью на гребне? Это он повесил. Говорит: чтобы планета звучала. Она и звучит."},
+  {id:"t2",via:"ether",when:{seenOf:"rust_bell.t1"},text:"…слышите? Это не помехи. Это он. Ветер и кость. Я записываю по ночам."}
+ ],
+ links:["rust_bell"]},
+
+/* ── 78. Гурам Ильич сводит ── деньги · торговый узел, фиксированная */
+{id:"accountant",form:"place",at:"fixed:22",cast:["accountant"],
+ traces:[
+  {id:"t1",via:"cant",scene:{seat:"far",figure:1,col:[88,84,78],props:["paper","paper","tally","glass_empty"]}},
+  {id:"t2",via:"queue",text:"— Гурам Ильич сводит. Баланс станции. Он не сходится двадцать лет, и Гурам Ильич каждый вечер находит, где."},
+  {id:"t3",via:"queue",when:{visits:3},text:"— Баланс сошёлся. Гурам Ильич не рад. Он говорит, что теперь не знает, что делать по вечерам."},
+  {id:"t4",via:"queue",when:{visits:5},text:"— Баланс снова не сходится. Гурам Ильич спокоен. Мы подозреваем, что это он сам, но не спрашиваем."}
+ ]},
+
+/* ── 79. Дежурный Седьмого ── эфир */
+{id:"seventh_duty",form:"ether",at:"any",cast:["radioman"],
+ traces:[
+  {id:"t1",via:"ether",text:"…Седьмой, дежурный. Докладываю: всё то же. Конец связи. …Нет, не конец. Ещё постою."},
+  {id:"t2",via:"ether",when:{seen:"t1"},text:"…Седьмой, дежурный. Сегодня прошёл мимо кто-то с огнями. Не наш. Не ответил. Я не обиделся."},
+  {id:"t3",via:"ether",when:{seen:"t2"},text:"…Седьмой. Дежурного сменили. Я новый. Старый велел говорить «всё то же». Всё то же."}
+ ]},
+
+/* ── 80. Рыбак без моря ── привычка · пустынный мир */
+{id:"dry_fisher",form:"habit",at:"world:desert",cast:["fisher"],
+ traces:[
+  {id:"t1",via:"land",text:"На краю площадки сидит человек с удочкой. Леска уходит в песок."},
+  {id:"t2",via:"land",when:{visits:2},text:"Удочка на месте. Рядом ведро. В ведре — песок. Он доволен."},
+  {id:"t3",via:"queue",when:{seen:"t1"},text:"— С удочкой? Он ловит. Что — не говорит. Один раз вытащил что-то, мы не видели что, а он с тех пор спокойный."}
+ ]},
+
+/* ── 81. Смотритель руин ── привычка · руинный мир */
+{id:"ruin_keeper",form:"habit",at:"world:ruin",cast:["keeper"],
+ traces:[
+  {id:"t1",via:"land",text:"У руин подметено. Кто-то метёт ступени, которые никуда не ведут."},
+  {id:"t2",via:"cave",text:"Внизу тоже чисто. Метла стоит у стены. Рядом — вторая, на случай гостей."},
+  {id:"t3",via:"land",when:{visits:3},text:"Ступени подметены. На верхней — кружка, ещё тёплая. Вас ждали к этому часу."}
+ ]},
+
+/* ── 82. Тот, кто красит ── привычка · комбинат, связано с комиссией */
+{id:"painter",form:"habit",at:"stype:indust",cast:["painter"],
+ traces:[
+  {id:"t1",via:"queue",text:"— Красит. Всё. Стены, трубы, людей, если стоят. Комиссия уехала, а он не остановился."},
+  {id:"t2",via:"queue",when:{seenOf:"commission.t6",visits:2},text:"— Бумагу с линиями тоже покрасил. Теперь там ровные линии поверх ровных линий. Комиссия бы одобрила."},
+  {id:"t3",via:"cant",scene:{seat:"door",figure:1,col:[120,100,80],props:["jar","jar"]}}
+ ],
+ links:["commission"]},
+
+/* ── 83. Фаина учит счёту ── место · научная, фиксированная */
+{id:"teacher",form:"place",at:"fixed:23",cast:["teacher"],
+ traces:[
+  {id:"t1",via:"cant",scene:{seat:"far",figure:1,col:[96,90,100],props:["tally","paper"]}},
+  {id:"t2",via:"queue",text:"— Фаина учит счёту. Всех. Кто умеет — тоже. Говорит, счёт забывается, если не учить заново."},
+  {id:"t3",via:"queue",when:{seenOf:"glasses_counts.t1"},text:"— Тот, в очках, который считает прилёты? Её ученик. Лучший. Она им гордится и просит не считать вслух."},
+  {id:"t4",via:"table",item:"cargo",when:{item:"cargo"},text:"— Сколько? Не говорите. Я сама. …Столько. Верно? Вот видите, считать надо заново."}
+ ],
+ links:["glasses_counts"]},
+
+/* ── 84. Сорок-два ── эфир · двое */
+{id:"forty_two",form:"pair",at:"any",cast:["pilotess"],
+ traces:[
+  {id:"t1",via:"ether",when:{noflag:"landed"},text:"…Сорок-два, заходите. Сорок-два? …Она не заходит. Третий год кружит и не заходит."},
+  {id:"t2",via:"queue",when:{noflag:"landed"},text:"— Самохина. Позывной Сорок-два. Кружит над нами, садиться не хочет. Мы ей свет оставляем."},
+  {id:"t3",via:"ether",when:{flag:"landed"},text:"…Сорок-два села. Повторяю для тех, кто не верит: села."},
+  {id:"t4",via:"cant",when:{flag:"landed"},scene:{seat:"door",figure:1,col:[90,96,110],props:["cap","glass"]}},
+  {id:"t5",via:"queue",when:{flag:"landed"},text:"— Села. Сидит у двери, молчит. Мы тоже молчим. Три года готовились, что сказать, — и молчим."}
+ ],
+ turns:[{after:"seen:t2",days:26,set:"landed"}]},
+
+/* ── 85. Собака, которая не собака ── зверь · любая станция */
+{id:"not_dog",form:"beast",at:"any",cast:["dog"],
+ traces:[
+  {id:"t1",via:"queue",text:"— Собака? Это не собака. Но мы зовём собакой, и она отзывается. Откуда — не знаем. Живёт."},
+  {id:"t2",via:"cant",scene:{seat:"door",figure:0,props:["cup"]}},
+  {id:"t3",via:"queue",when:{visits:3},text:"— Собака ушла с кем-то. Вернулась через неделю. Одна. Того, с кем ушла, мы больше не видели, а она не рассказывает."}
+ ]},
+
+/* ── 86. Стакан на Крайней ── связано с позывным */
+{id:"edge_glass",form:"after",at:"danger:far",cast:[],
+ traces:[
+  {id:"t1",via:"cant",when:{seenOf:"answering_callsign.t1"},scene:{seat:"corner",figure:0,props:["glass","paper"]}},
+  {id:"t2",via:"queue",when:{seenOf:"answering_callsign.t1"},text:"— Угловой стол? Там сидят, когда кто-то отвечает на старый позывной. Вы отвечали? Тогда сядьте."}
+ ],
+ links:["answering_callsign"]},
+
+/* ── 87. Дверца нашлась ── вещь · связка Пекаря, переносчик */
+{id:"door_found",form:"thing",at:"stype:yard",cast:["baker"],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"baker_oven.t4"},carry:true,text:"— Дверца от печи? Обожжённая? Была. Увезли на прошлой неделе. Куда — в сторону Пекаря, кажется."},
+  {id:"t2",via:"queue",when:{seenOf:"baker_oven.t4",visits:2},text:"— Вы про дверцу спрашивали. Ещё одна нашлась. Не та. Но обожжённая. Возьмёте?"}
+ ],
+ links:["baker_oven"]},
+
+/* ── 88. Вторая лампа ── связано с площадкой */
+{id:"second_lamp",form:"after",at:"stype:outpost",cast:["lamp"],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"pad_lamp.t4"},text:"— У нас тоже лампа. Мы её зажгли, когда у них погасла. Кто-то же должен."},
+  {id:"t2",via:"ether",when:{seenOf:"pad_lamp.t4"},text:"…площадка с одной лампой. Это теперь мы. Идите на неё, если что."}
+ ],
+ links:["pad_lamp"]},
+
+/* ── 89. Тень на парад ── небо · научная */
+{id:"parade_shadow",form:"ongoing",at:"stype:sci",cast:[],
+ traces:[
+  {id:"t1",via:"queue",when:{eclipse:true},text:"— Сегодня темно. У нас по этому поводу не работают. Не по правилу — просто все наверху."},
+  {id:"t2",via:"cant",when:{eclipse:true},scene:{seat:"far",figure:0,props:["glass_empty","glass_empty","glass_empty"]}},
+  {id:"t3",via:"queue",when:{eclipse:false,seen:"t1"},text:"— Вы были в темноту? Тогда вы наш. У нас так считается."}
+ ]},
+
+/* ── 90. Долг Кима закрыл кто-то другой ── связка */
+{id:"kim_paid_by",form:"versions",at:"stype:trade",cast:["kim"],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"kim_debt.t4"},text:"— Ким отдал? Не Ким. За него отдали. Кто — мы знаем, но Ким не знает, и пусть."},
+  {id:"t2",via:"news",when:{seenOf:"kim_debt.t4"},text:"Долг Долгого Кима закрыт. Ким говорит, что сам. Книга говорит иначе, но книгу не спрашивают."}
+ ],
+ links:["kim_debt"]},
+
+/* ── 91. Прогноз пришёл на Стойку ── связка */
+{id:"forecast_rack",form:"ongoing",at:"fixed:3",cast:["rack"],
+ traces:[
+  {id:"t1",via:"ether",when:{seenOf:"forecast_same.t4"},text:"…стойка. Прогноз слышали? Настоящий. Шестой, ты бы удивился. …Шестой?"}
+ ,{id:"t2",via:"queue",when:{seenOf:"forecast_same.t4"},text:"— Прогноз настоящий теперь. Стойка говорит, шестой бы порадовался. Мы не спрашиваем, кто такой шестой."}
+ ],
+ links:["forecast_same","rack_voice"]},
+
+/* ── 92. Кто сидел у окна ── связка двоих у окна */
+{id:"window_one",form:"pair",at:"stype:trade",cast:["quiet"],
+ traces:[
+  {id:"t1",via:"cant",when:{seenOf:"two_window.t4"},scene:{seat:"far",figure:1,col:[80,90,100],props:["glass"]}},
+  {id:"t2",via:"queue",when:{seenOf:"two_window.t4"},text:"— Этот? Прилетел с научной. Сидит, смотрит наружу. Говорит, там ему было с кем смотреть. Здесь учится смотреть одному."}
+ ],
+ links:["two_window"]},
+
+/* ── 93. Чайник закипел у других ── вещь · связка */
+{id:"kettle_moved",form:"thing",at:"stype:outpost",cast:["kettle"],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"kettle.t3"},text:"— Чайник, который сам кипит? Слышали. У нас такого нет. У нас есть кружка, которая сама остывает. Другой коленкор."},
+  {id:"t2",via:"cant",when:{seenOf:"kettle.t3"},scene:{seat:"end",figure:0,props:["cup"]}}
+ ],
+ links:["kettle"]},
+
+/* ── 94. Половина дока долетела ── после · связка */
+{id:"half_dock_arrived",form:"after",at:"stype:yard",cast:[],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"half_dock.t2"},text:"— Половина дока? Прилетела. Встала рядом с нашим. Мы не спрашивали, чья. Теперь у нас полтора."},
+  {id:"t2",via:"news",when:{seenOf:"half_dock.t2"},text:"Половина дока пристыковалась к чужой верфи. Верфь не возражает. Докам виднее."}
+ ],
+ links:["half_dock"]},
+
+/* ── 95. Сторож маяка замолчал ── эфир · связка */
+{id:"lighthouse_silent",form:"ether",at:"danger:far",cast:["watchman"],
+ traces:[
+  {id:"t1",via:"ether",when:{seenOf:"lighthouse.t3"},text:"…маяк Семнадцатый. Говорит автомат. Сторож просил передавать: «свет на месте». Передаю."},
+  {id:"t2",via:"queue",when:{seenOf:"lighthouse.t3"},text:"— Сторож с Семнадцатого? Перевёлся. Куда — где слушают. Он так и написал в заявлении: «где слушают»."}
+ ],
+ links:["lighthouse"]},
+
+/* ── 96. Свеча везде ── необъяснимое · связка */
+{id:"candle_everywhere",form:"place",at:"stype:sci",cast:[],
+ traces:[
+  {id:"t1",via:"cant",when:{seenOf:"candle_middle.t1"},scene:{seat:"far",figure:0,props:["candle"]}},
+  {id:"t2",via:"queue",when:{seenOf:"candle_middle.t2"},text:"— Свеча? Да, и у нас. Мы думали, только у нас. Вы третий, кто спрашивает. Значит, не только."}
+ ],
+ links:["candle_middle"]},
+
+/* ── 97. Щёлканье ответило ── эфир · связка */
+{id:"clicking_answer",form:"ether",at:"danger:far",cast:[],
+ traces:[
+  {id:"t1",via:"ether",when:{seenOf:"clicking.t2"},text:"…три и два. Три и два. Кто-то ответил. Я ответил. Теперь мы щёлкаем вдвоём, и мне не страшно."}
+ ,{id:"t2",via:"ether",when:{seen:"t1"},text:"…три и два. …Два и три. Это не я. Нас трое."}
+ ],
+ links:["clicking"]},
+
+/* ── 98. Собака узнала Ороза ── зверь · связка */
+{id:"dog_oroz",form:"beast",at:"stype:outpost",cast:["dog","bargeman"],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"skipper.t3"},text:"— Когда Ороз заходил, собака его узнала. Она никого не узнаёт. Его — узнала. Мы не спрашиваем, откуда."}
+ ,{id:"t2",via:"cant",when:{seenOf:"skipper.t3"},scene:{seat:"door",figure:0,props:["cup","cap"]}}
+ ],
+ links:["skipper","not_dog"]},
+
+/* ── 99. Улей переехал ── привычка · связка */
+{id:"hive_moved",form:"habit",at:"stype:trade",cast:["beekeeper"],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"beehive.t1"},text:"— Сильва прилетала. С ульем. Сидела в кантине, гудело. Улетела обратно: здесь, говорит, не тот воздух для них."},
+  {id:"t2",via:"cant",when:{seenOf:"beehive.t1"},scene:{seat:"corner",figure:0,props:["jar","jar"]}}
+ ],
+ links:["beehive"]},
+
+/* ── 100. Второй стакан — эпилог ── связка, переносчик */
+{id:"second_glass_far",form:"after",at:"danger:far",cast:["zero7"],
+ traces:[
+  {id:"t1",via:"find",when:{item:"hulk",seenOf:"second_glass.t4"},carry:true,text:"В остове на стене — два стакана, закреплённые, чтобы не улетели. Один пустой. Бирка борта: Ноль-семь."},
+  {id:"t2",via:"queue",when:{seen:"t1"},text:null}
+ ],
+ links:["second_glass"]},
+
+/* ── 101. Чужая площадка занята ── после · связка */
+{id:"pad_taken",form:"after",at:"planet",cast:[],
+ traces:[
+  {id:"t1",via:"land",when:{seenOf:"empty_pad.t2"},text:"Вторая площадка занята. Чужой борт, без огней. Дождались."},
+  {id:"t2",via:"cave",when:{seenOf:"empty_pad.t2"},text:"В пещере двое спали. Недавно. Два места, примято одинаково."}
+ ],
+ links:["empty_pad"]},
+
+/* ── 102. Имя на кристалле ── связка */
+{id:"crystal_name_owner",form:"thing",at:"stype:sci",cast:[],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"named_crystal.t1"},text:"— Кристалл с именем? Это её имя. Она здесь работала. Улетела на кристаллический и не вернулась — не пропала, а не вернулась. Разница есть."},
+  {id:"t2",via:"cant",when:{seenOf:"named_crystal.t1"},scene:{seat:"end",figure:0,props:["paper","glass_empty"]}}
+ ],
+ links:["named_crystal"]}
+];
+for(const S of STORIES_C)STORIES.push(S);
+
 /* ══════════════ торговые баржи ══════════════
    У торгового фактора (12c-mgr, 12-economy) был маршрут, но у маршрута не было
    тела: игрок видел спред строкой на карте и не более. Баржа — это тот же
@@ -11239,6 +12990,9 @@ function newsTick(){
     newsAll().push({id:K.id,ru:out.ru,sx:out.sx,sy:out.sy,t:now});
     made++;
   }
+  /* слух об истории (11c): о прибитом месте, с его адресом */
+  const si=(typeof storyNewsItem==="function")?storyNewsItem(r):null;
+  if(si){newsAll().push(Object.assign(si,{t:now}));made++;}
   /* глубина памяти эфира зависит от приёмника, то есть от корпуса (03f) */
   const keep=(typeof newsKeepLimit==="function")?newsKeepLimit():NEWS_KEEP;
   while(newsAll().length>keep)G.news.shift();
@@ -15156,6 +16910,7 @@ function updateCombat(dt){
   if(fireCool>0)fireCool-=dt;
   if(keys.fire&&st.armed&&fireCool<=0){
     fireShot(sh.x,sh.y,sh.a,9,st.dmg,true);
+    if(typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
     fireCool=st.cool;
   }
   for(let i=G.pirates.length-1;i>=0;i--){
@@ -15371,6 +17126,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
+    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
@@ -15761,6 +17517,21 @@ function applySave(s){
      всё это память об игроке, а не о мире, и поэтому персистится */
   G.speech=(s.speech&&typeof s.speech==="object")?s.speech:{};
   G.visits=(s.visits&&typeof s.visits==="object")?s.visits:{};
+  /* истории (11c): только то, что игрок видел, якоря и повороты */
+  G.seen=(s.seen&&typeof s.seen==="object")?s.seen:{};
+  G.storyPin=(s.storyPin&&typeof s.storyPin==="object")?s.storyPin:{};
+  G.storyFlags=(s.storyFlags&&typeof s.storyFlags==="object")?s.storyFlags:{};
+  /* память места и одометр (11d): объекты с дефолтами, формат v:4 не менялся */
+  G.place={};
+  if(s.place&&typeof s.place==="object")for(const k in s.place){
+    const p=s.place[k];if(!p||typeof p!=="object")continue;
+    G.place[k]={f:Math.max(0,p.f|0),l:Math.max(0,p.l|0),n:Math.max(0,p.n|0),
+      take:Math.max(0,p.take|0),hurt:Math.max(0,p.hurt|0),care:Math.max(0,p.care|0)};
+  }
+  G.odo={lands:Math.max(0,(s.odo&&s.odo.lands)|0),jumps:Math.max(0,(s.odo&&s.odo.jumps)|0)};
+  G.mirror={bearing:(s.mirror&&s.mirror.bearing)?1:0};   /* зеркало (11f) */
+  /* почтовый круг (11e): три числа */
+  G.post={stage:clamp((s.post&&s.post.stage)|0,0,POST_LINKS.length-1),opened:(s.post&&s.post.opened)?1:0,done:(s.post&&s.post.done)?1:0};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
@@ -17358,7 +19129,8 @@ const FIND_KINDS={
   sos: {ru:"сигнал бедствия",  col:"#ff6b57",act:"ПРИНЯТЬ СИГНАЛ"},
   sat: {ru:"спутник",          col:"#f2b25c",act:"СНЯТЬ ЗАПИСЬ"},
   cont:{ru:"контейнер",        col:"#7fe6d8",act:"ЗАБРАТЬ ГРУЗ"},
-  hulk:{ru:"остов разведчика", col:"#a8b4c0",act:"ОБЫСКАТЬ"}
+  hulk:{ru:"остов разведчика", col:"#a8b4c0",act:"ОБЫСКАТЬ"},
+  echo:{ru:"отражение",        col:"#9fb7ff",act:"СЛУШАТЬ"}    /* зеркало, 11f */
 };
 const FIND_CACHE={};
 function findsIn(sys){
@@ -17381,6 +19153,9 @@ function findsIn(sys){
       x:Math.cos(a)*rad,y:Math.sin(a)*rad,
       id:sys.key+":"+findBucket()+":"+i});
   }
+  /* зеркало (11f): в ядре области лежит само зеркало, вне барабана */
+  const mf=(typeof mirrorFind==="function")?mirrorFind(sys):null;
+  if(mf)list.push(mf);
   FIND_CACHE.key=key;FIND_CACHE.list=list;
   return list;
 }
@@ -17390,6 +19165,7 @@ function findSeen(f){return !!(G.findsSeen&&G.findsSeen[f.id]);}
    Три обычные платят той же монетой, что и весь остальной мир: часть, сырьё,
    топливо, редкость. Спутник платит куском отчёта и пеленгом. */
 function findTake(f){
+  if(f.k==="echo")return mirrorListen(f);     /* зеркало не берётся (11f) */
   if(!G.findsSeen)G.findsSeen={};
   G.findsSeen[f.id]=1;
   const r=rng(hashi(f.seed,0x7A1,3)),d=sysDanger(G.sx,G.sy);
@@ -17458,6 +19234,9 @@ function findInteract(sh){
     const got=findTake(near);
     if(got)tell("tech",K.ru[0].toUpperCase()+K.ru.slice(1)+": "+got,
                 K.ru[0].toUpperCase()+K.ru.slice(1)+"\n"+got);
+    /* находка может нести строку чужой истории (11c) */
+    const sl=(typeof storyFindLine==="function")?storyFindLine(near.k):null;
+    if(sl){logAdd("dim",sl);say(sl,260);}
     if(typeof saveGame==="function")saveGame(true);
   }
   return true;
@@ -17513,6 +19292,13 @@ function drawFindsSystem(zx,zy,Z){
       ctx.strokeRect(-17,-10,5,20);ctx.strokeRect(12,-10,5,20);
       ctx.strokeStyle="rgba(96,110,126,.65)";ctx.lineWidth=1.4;
       ctx.beginPath();ctx.moveTo(-12,-2);ctx.lineTo(12,-2);ctx.stroke();
+    }else if(f.k==="echo"){
+      /* зеркало (11f): тонкая пластина ребром, почти ничего — поверхность, а не
+         предмет. Блик один, и он не горит, а скользит */
+      ctx.beginPath();ctx.ellipse(0,0,26,3.2,0,0,TAU);ctx.fill();ctx.stroke();
+      ctx.strokeStyle="rgba(159,183,255,.55)";ctx.lineWidth=.8;
+      const gl=((G.t*.01)%1)*52-26;
+      ctx.beginPath();ctx.moveTo(gl-6,-1.2);ctx.lineTo(gl+6,-1.2);ctx.stroke();
     }else{
       /* остов разведчика: тот же язык, что у остова баржи, но мельче и с
          отломанным крылом */
@@ -18350,7 +20136,11 @@ const MAT_S=256;
    `plate` — крупные плиты с тёмным швом, потёками окисла и резким бликом.
    `moss`  — пятнистый полог: свет падает кляксами, трещин почти нет.
    `rubble`— прямоугольные блоки по осям: рукотворная кладка под пылью. */
-const MAT_CHAR={crystal:"facet",metal:"plate",jungle:"moss",ruin:"rubble"};
+/* У каждого типа мира — своя макроформа породы, не только палитра: дюнная рябь,
+   плиты льда, корка лавы с тлеющими швами, раскисшие берега, слоистая почва.
+   Шесть миров одной клеточной фактурой в шести цветах и были «одним телом» (G1). */
+const MAT_CHAR={crystal:"facet",metal:"plate",jungle:"moss",ruin:"rubble",
+  desert:"dune",ice:"frost",volcanic:"crust",toxic:"sludge",terran:"soil",ocean:"soil"};
 /* ячейка с рваной кромкой, бесшовная по тайлу: сетка берётся по модулю N,
    границы размыты тем же шумом, что и всё остальное */
 function matCell(u,v,N,sd,warp){
@@ -18384,7 +20174,12 @@ function planetMat(p){
   else if(ch==="plate"){crackK*=.5;wear*=.6;veinK*=.18;}
   else if(ch==="moss"){crackK*=.25;veinK*=.4;}
   else if(ch==="rubble"){crackK*=.7;}
-  const cellN=ch==="facet"?9:(ch==="plate"?4:(ch==="rubble"?7:6));
+  else if(ch==="dune"){crackK*=.12;veinK*=.1;wear*=.5;grainK*=1.3;}
+  else if(ch==="frost"){crackK*=.3;veinK*=.15;wear*=.4;grainK*=.5;}
+  else if(ch==="crust"){crackK*=.4;veinK*=.05;wear*=.7;}
+  else if(ch==="sludge"){crackK*=.15;veinK*=.2;wear*=.8;grainK*=.7;}
+  else if(ch==="soil"){crackK*=.35;veinK*=.3;}
+  const cellN=ch==="facet"?9:(ch==="plate"?4:(ch==="rubble"?7:(ch==="frost"?5:(ch==="crust"?6:6))));
   for(let y=0;y<S;y++)for(let x=0;x<S;x++){
     const o=(y*S+x)*4,u=x/S,v=y/S;
     /* макро: крупные поля породы */
@@ -18447,6 +20242,46 @@ function planetMat(p){
         /* корни расползаются по земле — тёмные, а не светлые, как жилы */
         const root=ridged(tfbm(u,v,6,sd+123,4),22);
         if(root>.02)darkK=1-clamp(root,0,.5)*.5;
+      }else if(ch==="dune"){
+        /* Рябь: волны по горизонтали, гребень светлый, подветренная сторона
+           в тени; волны гнёт крупный шум, чтобы не было линейки. Песок без
+           трещин и жил — его форма и есть его фактура. */
+        const bend=tfbm(u*.8,v*.8,3,sd+401,3)*3.2;
+        const ph=(v*26+bend+(tfbm(u,v,7,sd+409,2)-.5)*.6)*TAU;
+        const rip=.5+.5*Math.sin(ph);
+        const crest=Math.pow(rip,3.2);
+        t=clamp(t*.42+.30+rip*.22+crest*.12,0,1);
+        /* наветренная сторона чуть темнее — рябь читается рельефом, а не полосами */
+        if(Math.cos(ph)<0)darkK=.94;
+      }else if(ch==="frost"){
+        /* Плиты льда: трещины светлые (лёд в изломе белый), внутри плита
+           уходит в синеву, и чем крупнее плита, тем глубже. */
+        const C2=matCell(u,v,cellN*2,sd+77,warp*.7);
+        const CC=tfbm(u,v,3,sd+151,2)>.5?C:C2;
+        t=clamp(t*.30+.46+CC.tone*.36,0,1);
+        seam=-Math.pow(clamp(1-CC.edge*9,0,1),2.2);   // минус: шов светлый, не тёмный
+        edgeHi=Math.pow(clamp(1-Math.min(CC.du,CC.dv)*14,0,1),2.2)*.35;
+      }else if(ch==="crust"){
+        /* Остывшая корка: тёмные плиты, между ними швы; где жар ближе к
+           поверхности — швы тлеют. Это единственный светлый штрих на
+           вулканическом мире, и потому он читается издалека. */
+        t=clamp(t*.5+.18+C.tone*.22,0,1);
+        seam=Math.pow(clamp(1-C.edge*8,0,1),2.4);
+        const heat=clamp((tfbm(u,v,2,sd+511,3)-.5)*3,0,1);
+        if(seam>.05&&heat>.02)edgeLo=-seam*heat;   // минус: метка «тлеет», см. ниже
+      }else if(ch==="sludge"){
+        /* Раскисшие берега: мягкие лужи светлее, ил между ними темнее и с
+           ободком у кромки; ни граней, ни трещин — всё оплыло. */
+        const pool=tfbm(u,v,5,sd+601,3);
+        const rim=Math.pow(clamp(1-Math.abs(pool-.5)*9,0,1),2);
+        t=clamp(t*.4+.28+(pool>.5?.22:0)+(pool-.5)*.3,0,1);
+        darkK=1-rim*.28;
+      }else if(ch==="soil"){
+        /* Почва: слоистость — тонкие горизонтальные прослои, гнутые, и чаще
+           крошка. Сдержанно: это фон для флоры, а не сама достопримечательность. */
+        const bend=tfbm(u*.6,v*.6,3,sd+701,3)*2.4;
+        const bed=.5+.5*Math.sin((v*38+bend)*TAU);
+        t=clamp(t*.6+.2+Math.pow(bed,4)*.16,0,1);
       }
     }
     const c0=ramp(pal,ch==="facet"?(.10+t*.86):(.26+t*.5));
@@ -18485,6 +20320,9 @@ function planetMat(p){
     if(darkK<1){R*=darkK;Gc*=darkK;B*=darkK;}
     if(edgeLo>.01){const k3=1-edgeLo*.55;R*=k3;Gc*=k3;B*=k3;}
     if(seam>.01){const k2=1-seam*.62;R*=k2;Gc*=k2;B*=k2;}
+    /* лёд: шов светлый и холодный; лава: тлеющий шов */
+    if(seam<-.01){const w3=-seam*.6;R=lerp(R,226,w3);Gc=lerp(Gc,240,w3);B=lerp(B,255,w3);}
+    if(edgeLo<-.01){const w4=clamp(-edgeLo*1.4,0,1);R=lerp(R,255,w4);Gc=lerp(Gc,118,w4);B=lerp(B,34,w4);}
     if(ch==="plate"){
       /* потёки окисла вниз по плите: без них металл читается пластиком */
       /* Узкие вертикальные потёки, а не широкие ленты: первый заход красил
@@ -18514,7 +20352,7 @@ function fillMaterial(mat,camx,camy,a1,a2,P,bnd){
   const bx=bnd?bnd.x:-4, by=bnd?bnd.y:-4;
   const bw=bnd?bnd.w:W+8, bh=bnd?bnd.h:H+8;
   ctx.save();
-  if(P)ctx.clip(P);else ctx.clip();
+  if(P)ctx.clip(P);   // без пути клипа нет: ctx.clip() по пустому пути вырезал всё (G3)
   ctx.globalAlpha=a1;
   ctx.translate(-camx,-camy);
   ctx.fillStyle=mat;
@@ -18524,7 +20362,7 @@ function fillMaterial(mat,camx,camy,a1,a2,P,bnd){
      светлые и тёмные поля масштабом с полэкрана, из-за которых сетка 256
      перестаёт читаться, но цвет породы не уезжает */
   ctx.save();
-  if(P)ctx.clip(P);else ctx.clip();
+  if(P)ctx.clip(P);   // без пути клипа нет: ctx.clip() по пустому пути вырезал всё (G3)
   ctx.globalCompositeOperation="overlay";
   ctx.globalAlpha=a2;
   const K=3.7, PH=91;
@@ -19107,6 +20945,7 @@ function jump(cost){
      над головами живущих внизу (M110, 12t-settle) */
   if(typeof settleLeftBehind==="function")settleLeftBehind();
   G.fuel-=cost;G.sx=G.sel.x;G.sy=G.sel.y;G.sys=getSystem(G.sx,G.sy);G.ap=null;
+  if(typeof odoAdd==="function")odoAdd("jumps");   // путь, по которому зреет память (11d)
   const a=Math.random()*TAU,r=1500;
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
   G.ship.vx=-Math.cos(a)*.7;G.ship.vy=-Math.sin(a)*.7;G.ship.a=a+Math.PI;
@@ -19298,6 +21137,7 @@ function drawScoop(){
      низ. Теперь вверху разрежённая холодная муть с проглядывающей чернотой
      космоса, внизу — плотная горячая мгла, и в самом низу тёмное дно, куда
      свет уже не доходит. Это же и говорит игроку, куда падать не надо. */
+  ctx.drawImage(screenLayer("scoopdepth|"+p.seed,()=>{
   const g=ctx.createLinearGradient(0,0,0,H);
   g.addColorStop(0,"rgba(3,5,11,.95)");
   g.addColorStop(.14,"rgba(8,12,24,.55)");
@@ -19311,6 +21151,7 @@ function drawScoop(){
     +Math.round(pal[0][2]*.7)+",.62)");
   g.addColorStop(1,"rgba(6,4,10,.93)");
   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  }),0,0,W,H);   // градиент глубины неизменен — слой, а не 10 мс на кадр (G0)
   /* ── кромки сдвига ──
      Текстура растягивается на полтора экрана и мылится: ни одной чёткой
      границы, глазу не за что зацепиться, и скорость не читается. У настоящих
@@ -19976,10 +21817,13 @@ function lightShafts(p){
   if(p.T.atm==="отсутствует")return;
   const sx=W*.78,sy=H*.16;
   const sun=starRGB();
+  /* один и тот же веер из пяти лучей под одним углом стоял на каждом мире
+     штампом (G1): число, раскрытие и наклон — от планеты */
+  const hs=hashi(p.seed,0x5AF7,1), nS=2+(hs&3), a0=.92+((hs>>>4)&15)/15*.4, spr=.12+((hs>>>8)&7)/7*.14;
   ctx.save();
   ctx.globalCompositeOperation="lighter";
-  for(let i=0;i<5;i++){
-    const a=1.05+i*.19+Math.sin(G.t*.0016+i)*.035;
+  for(let i=0;i<nS;i++){
+    const a=a0+i*spr+Math.sin(G.t*.0016+i)*.035;
     const wdt=.030+((i*7)%3)*.012;
     const len=H*1.25;
     const al=(.020+((i*5)%3)*.010)*(1+Math.sin(G.t*.0021+i*2)*.35);
@@ -20012,19 +21856,33 @@ function gradePass(p){
     ctx.fillStyle="rgba(128,128,128,"+(.5*DK).toFixed(3)+")";
     ctx.fillRect(0,0,W,H);ctx.restore();
   }
-  const g=ctx.createRadialGradient(W*.5,H*.46,Math.min(W,H)*.30,W*.5,H*.46,Math.max(W,H)*.78);
-  g.addColorStop(0,"rgba(0,0,0,0)");
-  g.addColorStop(1,"rgba(0,0,0,.34)");
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  /* холодная тень внизу, тёплый свет сверху — сдвиг маленький, но именно он
-     не даёт кадру рассыпаться на «фон + фигуры» */
+  /* ── виньетка и тон — один слой ──
+     Два полноэкранных градиента на кадр стоили ~25 мс на ×2 (G0, 0.94):
+     в canvas 2D единица цены — полноэкранный проход, а градиент дороже
+     заливки в пять раз. Картинка при этом не меняется от кадра к кадру —
+     печётся один раз на планету и размер и кладётся одним drawImage (18c). */
   const sun=starRGB(),amb=ambRGB(p);
-  const t=ctx.createLinearGradient(0,0,0,H);
-  t.addColorStop(0,"rgba("+sun.join(",")+",.055)");
-  t.addColorStop(.5,"rgba(0,0,0,0)");
-  t.addColorStop(1,"rgba("+amb.join(",")+",.075)");
-  ctx.save();ctx.globalCompositeOperation="lighter";
-  ctx.fillStyle=t;ctx.fillRect(0,0,W,H);ctx.restore();
+  ctx.drawImage(screenLayer("grade|"+sun.join(",")+"|"+amb.join(","),()=>{
+    const g=ctx.createRadialGradient(W*.5,H*.46,Math.min(W,H)*.30,W*.5,H*.46,Math.max(W,H)*.78);
+    g.addColorStop(0,"rgba(0,0,0,0)");
+    g.addColorStop(1,"rgba(0,0,0,.34)");
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    /* холодная тень внизу, тёплый свет сверху — сдвиг маленький, но именно он
+       не даёт кадру рассыпаться на «фон + фигуры». Раньше шёл в lighter;
+       при альфе .06 обычное наложение неотличимо, а в слое оно честнее. */
+    const t=ctx.createLinearGradient(0,0,0,H);
+    t.addColorStop(0,"rgba("+sun.join(",")+",.07)");
+    t.addColorStop(.5,"rgba(0,0,0,0)");
+    t.addColorStop(1,"rgba("+amb.join(",")+",.09)");
+    ctx.fillStyle=t;ctx.fillRect(0,0,W,H);
+  }),0,0,W,H);
+}
+/* небо-подложка: вертикальный градиент на весь экран, один раз на планету */
+function drawSkyBase(p){
+  const s=p.T.sky;
+  ctx.drawImage(screenLayer("skybg|"+s[0].join(",")+"|"+s[1].join(","),()=>{
+    ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
+  }),0,0,W,H);
 }
 
 /* ══════════════ погода ══════════════ */
@@ -20593,7 +22451,9 @@ function drawGround(tr,camx,camy,fill,line,pal){
     tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR,top,ch);
     drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>{
       GROUND_BAKING=true;
-      try{drawGround(tr,wx0,wy0,fill,line,pal);}finally{GROUND_BAKING=false;}
+      /* валуны неподвижны и сложены из той же породы (два прохода материала
+         на каждый) — им место в ломте, а не в кадре: 6–9 мс на ×2 (G0) */
+      try{drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);}finally{GROUND_BAKING=false;}
     });
     drawGroundGrass(tr,camx,camy);
     return;
@@ -20694,6 +22554,8 @@ function drawGroundGrass(tr,camx,camy){
 /* валуны и осыпь на профиле */
 function drawRocks(tr,camx,camy,pal){
   if(!tr.rocks)return;
+  /* с материалом валуны уже лежат в ломтях грунта — в кадре их не повторяем */
+  if(tr.chunks&&!GROUND_BAKING)return;
   for(const k of tr.rocks){
     const x=k.x-camx;
     if(x<-k.rad-20||x>W+k.rad+20)continue;
@@ -20813,7 +22675,7 @@ function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
   tr.mat=planetMat(p);tr.p=p;
   WIND=windOf(p);
-  ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
+  drawSkyBase(p);
   if(p.T.atm==="отсутствует")drawStars(L.x*.1,0,1);
   drawSkyLayer(p,L.x,L.y);
   const camx=L.x-W/2,camy=clamp(L.y-H*.42,-400,1e5);
@@ -25937,9 +27799,16 @@ function enterSurface(){
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,
     suit:100,warned:false,beacon:0,walkAmp:0,walkPhase:0,cave:caveMouth,peep};
   G.mode="surface";
+  if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
   G.surfTipShown=0;
   logAdd("dim","Посадка на "+p.name+" · залежей: "+deposits.length);
-  say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length);
+  /* посадки на планету считаются так же, как на станцию: условиям историй
+     нужно «который раз здесь» (11c) */
+  if(typeof visitsAll==="function"){const V=visitsAll(),k=G.sys.key+"/"+p.idx;V[k]=(V[k]|0)+1;}
+  /* строка истории к посадке (11c): то, что замечаешь, выйдя из корабля */
+  const sl=(typeof storyGroundLine==="function")?storyGroundLine("land"):null;
+  if(sl)logAdd("dim",sl);
+  say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
 }
 function updateSurface(dt){
   const S=G.surf,tr=S.tr,st=stat();
@@ -26060,7 +27929,7 @@ function updateSurface(dt){
     const A=tinAskOf(T.seed);
     if(T.bin>=1){
       G.prompt="ДЕЙСТВИЕ — ЗАБРАТЬ · "+RES[A.made].ru.toUpperCase()+" ×"+Math.floor(T.bin)+
-        "\n"+tinLine(T);
+        "\n"+tinLine(T)+storyNote("tin");
       if(actEdge){
         const n=tinTakeOut(T);
         if(n>0)tell("good","Из бункера: "+RES[A.made].ru+" ×"+n,
@@ -26094,7 +27963,7 @@ function updateSurface(dt){
     }
     if(big&&bn>0){
       G.prompt="ДЕЙСТВИЕ — ОТДАТЬ ЖИВУЩИМ · "+RES[big].ru.toUpperCase()+" ×"+Math.min(bn,40)+
-        (V?"\nПОСЁЛОК · СТУПЕНЬ "+V.stage+" · "+settleLine(V,V.built.length):"\nЗДЕСЬ ЖИВУТ");
+        (V?"\nПОСЁЛОК · СТУПЕНЬ "+V.stage+" · "+settleLine(V,V.built.length):"\nЗДЕСЬ ЖИВУТ")+storyNote("settle");
       if(actEdge){
         const S2=V||settleMake(S.p);
         const n=settleGive(S2,big,Math.min(bn,40));
@@ -26324,7 +28193,7 @@ function drawSurfaceHud(camx,camy){
 function drawSurface(){
   const S=G.surf,tr=S.tr,p=S.p;
   tr.mat=planetMat(p);tr.p=p;
-  ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
+  drawSkyBase(p);
   /* звёзды — до небесных тел: нарисованные после, они просвечивают сквозь
      диск гиганта и убивают его объём */
   if(p.T.atm==="отсутствует"||p.type==="ice")drawStars(S.x*.1,0,1);
@@ -26766,11 +28635,24 @@ function drawCaveWater(C,camx,camy){
 /* темнота: всё, что дальше фонаря, гаснет. Это и есть главный эффект пещеры —
    до него порода читалась как декорация, после него как стены */
 function drawCaveDark(C,px,py){
-  const g=ctx.createRadialGradient(px,py-14,40,px,py-14,Math.max(W,H)*.52);
-  g.addColorStop(0,"rgba(0,0,0,0)");
-  g.addColorStop(.45,"rgba(2,5,10,.30)");
-  g.addColorStop(1,"rgba(1,4,10,.76)");
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  /* темнота — спрайт, а не градиент на кадр: полноэкранный радиальный
+     градиент стоил ~15 мс на ×2 (G0). Круг света кладётся одним drawImage,
+     углы за ним добираются четырьмя плоскими заливками. */
+  const R=Math.max(W,H)*.52,cx=px,cy=py-14;
+  const SP=glowSprite("cavedark",()=>{
+    const g=ctx.createRadialGradient(0,0,40/R,0,0,1);
+    g.addColorStop(0,"rgba(0,0,0,0)");
+    g.addColorStop(.45,"rgba(2,5,10,.30)");
+    g.addColorStop(1,"rgba(1,4,10,.76)");
+    ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
+  });
+  glowBlit(SP,cx,cy,R);
+  ctx.fillStyle="rgba(1,4,10,.76)";
+  const x0=cx-R,x1=cx+R,y0=cy-R,y1=cy+R;
+  if(x0>0)ctx.fillRect(0,0,x0,H);
+  if(x1<W)ctx.fillRect(x1,0,W-x1,H);
+  if(y0>0)ctx.fillRect(Math.max(0,x0),0,Math.min(W,x1)-Math.max(0,x0),y0);
+  if(y1<H)ctx.fillRect(Math.max(0,x0),y1,Math.min(W,x1)-Math.max(0,x0),H-y1);
 }
 function drawCaveGlow(C,camx,camy,px,py){
   const D=C.deco;if(!D)return;
@@ -26904,8 +28786,10 @@ function enterCave(){
   C.findX=CAVE_W-140;
   caveZones(C);caveDeco(C,p);
   G.cave=C;G.mode="cave";
+  const cl=(typeof storyGroundLine==="function")?storyGroundLine("cave"):null;
+  if(cl)logAdd("dim",cl);
   say("Пещера\nищите проход · ДЕЙСТВИЕ у выхода — назад на поверхность"+
-    (watch>0?"\nздесь ходят дозорные посёлка":""));
+    (watch>0?"\nздесь ходят дозорные посёлка":"")+(cl?"\n"+cl:""),cl?320:150);
 }
 function exitCave(){
   G.cave=null;G.mode="surface";
@@ -27415,6 +29299,14 @@ function digRockPass(D,p,camx,camy){
     ctx.fillStyle="rgb("+L.col.join(",")+")";
     ctx.fill(P);
     ctx.strokeStyle="rgba(0,0,0,.34)";ctx.lineWidth=1.4;ctx.stroke(P);
+    /* контакт пластов: под кровлей каждого — полоса тени, по самой кромке —
+       волосок света. Без этого пласты — полосы заливки с линией между ними,
+       а не породы, лежащие одна на другой (G3). Клип по пласту: тень только
+       внутрь, вверх она не лезет. */
+    ctx.save();ctx.clip(P);
+    ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=18;ctx.stroke(P);
+    ctx.strokeStyle="rgba(255,255,255,.07)";ctx.lineWidth=2.6;ctx.stroke(P);
+    ctx.restore();
     /* жилы минерала внутри пласта — те же штрихи, что в срезе: короткие,
        наклонные, от координаты, поэтому не мигают при движении */
     if(L.vein>.05){
@@ -27664,14 +29556,28 @@ function drawDig(){
       ctx.fillRect(x-4,fy+3.6,DIG_CELL+8,1.3);
       /* вагонетка: одна на выработку, место выбирает семя */
       if(((hashi(col,row,0x7ADD)>>>4)&31)===0){
-        ctx.fillStyle="rgba(58,52,46,.95)";
-        ctx.fillRect(x+4,fy-11,DIG_CELL-9,10);
-        ctx.fillStyle="rgba(96,88,76,.9)";
-        ctx.fillRect(x+4,fy-11,DIG_CELL-9,2);
-        ctx.fillStyle="rgba(20,18,16,.9)";
-        for(const wx of [x+7,x+DIG_CELL-8]){
-          ctx.beginPath();ctx.arc(wx,fy,2.2,0,TAU);ctx.fill();
+        /* Вагонетка читалась ящиком в яме: прямоугольник на колёсах. Кузов —
+           корыто, шире кверху, с отбортовкой, и в нём горка породы (G3). */
+        const bx=x+4,bw=DIG_CELL-9,by=fy-12;
+        ctx.fillStyle="rgba(0,0,0,.35)";ctx.fillRect(bx-1,fy-1,bw+2,2);   // тень под кузовом
+        ctx.fillStyle="rgba(62,56,50,.96)";
+        ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+bw,by);
+        ctx.lineTo(bx+bw-3,fy-2);ctx.lineTo(bx+3,fy-2);ctx.closePath();ctx.fill();
+        ctx.fillStyle="rgba(38,34,30,.9)";ctx.fillRect(bx+3,by+5,bw-6,1.2);   // ребро жёсткости
+        ctx.fillStyle="rgba(112,104,92,.95)";ctx.fillRect(bx-1,by-1.6,bw+2,2.2); // отбортовка
+        ctx.fillStyle="rgba(170,160,144,.35)";ctx.fillRect(bx-1,by-1.6,bw+2,.8);
+        /* горка породы в кузове — тем она и вагонетка, а не ящик */
+        ctx.fillStyle="rgba(92,84,72,.95)";
+        ctx.beginPath();ctx.moveTo(bx+1,by-1);ctx.lineTo(bx+bw*.3,by-6);ctx.lineTo(bx+bw*.55,by-4);
+        ctx.lineTo(bx+bw*.75,by-7);ctx.lineTo(bx+bw-1,by-1);ctx.closePath();ctx.fill();
+        ctx.fillStyle="rgba(150,140,120,.3)";
+        ctx.fillRect(bx+bw*.3-1,by-6,2,1.4);ctx.fillRect(bx+bw*.75-1,by-7,2,1.4);
+        ctx.fillStyle="rgba(20,18,16,.95)";
+        for(const wx of [bx+4,bx+bw-4]){
+          ctx.beginPath();ctx.arc(wx,fy,2.4,0,TAU);ctx.fill();
         }
+        ctx.fillStyle="rgba(120,120,124,.5)";
+        for(const wx of [bx+4,bx+bw-4]){ctx.beginPath();ctx.arc(wx,fy,.9,0,TAU);ctx.fill();}
       }
       /* инструмент у стены в тупике: там, где ход кончился */
       else if(!dg(col-1,row)||!dg(col+1,row)){
@@ -27694,11 +29600,32 @@ function drawDig(){
         ctx.fillStyle="rgba(96,104,110,.9)";
         ctx.fillRect(x+DIG_CELL-8.4,y+DIG_CELL*.3,7.2,2.6);
       }
-      if(row%8===0&&floor===false){        // площадка: доска поперёк ствола
-        ctx.fillStyle="rgba(120,92,58,.85)";
-        ctx.fillRect(x-3,y+DIG_CELL-7,DIG_CELL*.5,3);
-        ctx.fillStyle="rgba(0,0,0,.4)";
-        ctx.fillRect(x-3,y+DIG_CELL-4,DIG_CELL*.5,1.6);
+      if(row%8===0&&floor===false){
+        /* Площадка была доской в полствола и не читалась вовсе (G3). Теперь
+           это полок: балка через весь ствол на двух кронштейнах, лампа на
+           стене с табличкой глубины, на каждой второй — ящик. Лампа светит
+           по-настоящему — её свет ложится после темноты (D._lamps). */
+        const by=y+DIG_CELL-7,h=hashi(row,0x7A1F,5);
+        ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(x-4,by+3,DIG_CELL+8,3);      // тень под балкой
+        ctx.fillStyle="rgba(118,90,56,.92)";ctx.fillRect(x-4,by,DIG_CELL+8,3.4);  // балка
+        ctx.fillStyle="rgba(200,168,118,.22)";ctx.fillRect(x-4,by,DIG_CELL+8,1);
+        ctx.fillStyle="rgba(96,104,112,.9)";                                      // кронштейны
+        for(const s of [-1,1]){const kx=s<0?x-3:x+DIG_CELL+3;
+          ctx.beginPath();ctx.moveTo(kx,by+3);ctx.lineTo(kx+s*-6,by+3);ctx.lineTo(kx,by+9);ctx.closePath();ctx.fill();}
+        if(h&1){                                                                   // ящик
+          ctx.fillStyle="rgba(70,64,54,.95)";ctx.fillRect(x+2,by-9,11,9);
+          ctx.fillStyle="rgba(120,110,92,.6)";ctx.fillRect(x+2,by-9,11,1.2);
+          ctx.fillStyle="rgba(0,0,0,.35)";ctx.fillRect(x+7,by-9,1,9);
+        }
+        /* лампа на левой стене: кожух, плафон; свет — после темноты */
+        const lx=x-1,ly=y+6;
+        ctx.fillStyle="rgba(60,66,72,.95)";ctx.fillRect(lx-2,ly-3,5,7);
+        ctx.fillStyle="rgba(255,228,170,.95)";ctx.fillRect(lx-1,ly-1,3,3);
+        (D._lamps||(D._lamps=[])).push([lx+.5,ly+.5]);
+        /* табличка глубины — тем площадка и запоминается */
+        ctx.fillStyle="rgba(30,32,36,.95)";ctx.fillRect(x+DIG_CELL-14,y+4,12,6);
+        ctx.fillStyle="rgba(255,228,170,.75)";ctx.font="5px ui-monospace,monospace";ctx.textAlign="center";
+        ctx.fillText("−"+(row*3),x+DIG_CELL-8,y+9);
       }
     }
   }
@@ -27820,6 +29747,19 @@ function drawDig(){
     g.addColorStop(.45,"rgba(1,3,7,.34)");
     g.addColorStop(1,"rgba(0,1,4,.80)");
     ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  }
+  /* лампы площадок: тёплые круги поверх темноты, внутри выработки */
+  if(D._lamps&&D._lamps.length){
+    const LS=glowSprite("minelamp",()=>{
+      const g=ctx.createRadialGradient(0,0,0,0,0,1);
+      g.addColorStop(0,"rgba(255,214,150,.55)");g.addColorStop(.25,"rgba(255,200,130,.18)");
+      g.addColorStop(1,"rgba(255,180,110,0)");
+      ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
+    });
+    ctx.save();ctx.clip(VP);ctx.globalCompositeOperation="lighter";
+    for(const [lx,ly] of D._lamps)glowBlit(LS,lx,ly,64);
+    ctx.restore();
+    D._lamps.length=0;
   }
   /* Фонарь светил СКВОЗЬ породу: конус уходил за кромку выработки и подсвечивал
      пласты на полэкрана — под землёй это ложь в самом заметном месте кадра.
@@ -30927,6 +32867,9 @@ function openStation(){
   /* счётчик посадок на это место (11b-speech): от него зависит, как к вам
      обращаются и какая реплика в очереди станет следующей */
   if(typeof visitMark==="function")visitMark();
+  if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
+  /* почтовый круг (11e): если это следующее звено, человек подходит сам */
+  if(typeof postDock==="function"){const pr=postDock();if(pr)say(pr.who+":\n"+pr.line);}
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
@@ -31015,8 +32958,17 @@ document.getElementById("bRepair").addEventListener("click",()=>{
   const per=repairCost(),can=Math.min(need,Math.floor(G.credits/per));
   if(can<=0){say("Не хватает кредитов");return;}
   G.credits-=can*per;G.hull+=can;renderTab();
+  if(typeof placeNote==="function")placeNote("care",1);   // починка здесь — забота о месте (11d)
 });
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;
+  /* правило 1 оформления: капслок — подписям, а не тексту. Длинный заголовок
+     секции — это фраза, которую читают, и она набирается обычным текстом */
+  if(cls==="sec"&&typeof html==="string"&&(html.length>48||html.indexOf(" — ")>=0)){
+    e.className="sec note";
+    /* исходники набраны капслоком под прежний стиль; фраза переводится в
+       обычный регистр с заглавной в начале предложения */
+    if(!/[а-яёa-z]/.test(html))html=html.toLocaleLowerCase("ru").replace(/(^|[.!?]\s+)([а-яёa-z])/g,(m,a,b)=>a+b.toUpperCase());
+  }
   if(html!=null)e.innerHTML=html;return e;}
 function shipThumb(id,w,h){
   const cn=document.createElement("canvas");cn.width=w;cn.height=h;
@@ -32122,6 +34074,8 @@ function renderCantina(){
   grokBlock();
   /* стол (M128): вещь вместо слов. Стоит после людей — сначала зал, потом то,
      что вы на него выкладываете */
+  /* посылка почтового круга (M133, 11e): лежит рядом со столом, пока вы её везёте */
+  if(typeof postBlock==="function")postBlock();
   if(typeof putOnTable==="function")tableBlock();
   $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
 }
@@ -32756,9 +34710,11 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
     cantFigure(c,x,fy-40,hex2rgb(R2.col),G.t*.028+i*1.7,mgrFace(m,34),m.ai?1:0);
     hits.push({id:m.id,x:x-26,y:cy-78,w:52,h:86});
   });
+  if(typeof storyCantFigures==="function")storyCantFigures(c,W2,fy,cy);   // люди историй — за стойкой, как все (11c)
   /* ── стойка ── */
   c.fillStyle="rgba(24,28,36,.98)";c.fillRect(0,cy,W2,fy-cy);
   c.fillStyle="rgba(58,46,36,.98)";c.fillRect(0,cy-7,W2,8);        // столешница
+  if(typeof storyCantProps==="function")storyCantProps(c,W2,fy,cy);       // их вещи — на столешнице
   c.fillStyle="rgba(210,190,160,.16)";c.fillRect(0,cy-7,W2,1.6);   // блик по кромке
   c.fillStyle="rgba(0,0,0,.35)";c.fillRect(0,cy+1,W2,2);
   for(let i=0;i<Math.ceil(W2/48);i++){                              // филёнки
@@ -34768,6 +36724,8 @@ function renderLoreBoard(){
           (h.used?" · уже повторило":" · повторит, где спросят"));
       else if(h.kind==="yours")
         loreRow(box,h.used?"":"gap","","ваше: "+h.note+(h.used?" · уже ляпнуло":""));
+      else if(h.kind==="story")   /* подслушанное (11c): птица повторяет чужую строку как свою */
+        loreRow(box,"vocab","","услышало: «"+h.note+"» · сектор "+h.sx+":"+h.sy);
       else
         loreRow(box,h.read?"vocab":"gap","",heardWordsRu(h).join(" ")+
           (h.read?" · сектор "+h.sx+":"+h.sy:" · пока непонятно"));

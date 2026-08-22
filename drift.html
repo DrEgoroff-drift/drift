@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.96.0";
+const VER="0.97.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -20136,7 +20136,11 @@ const MAT_S=256;
    `plate` — крупные плиты с тёмным швом, потёками окисла и резким бликом.
    `moss`  — пятнистый полог: свет падает кляксами, трещин почти нет.
    `rubble`— прямоугольные блоки по осям: рукотворная кладка под пылью. */
-const MAT_CHAR={crystal:"facet",metal:"plate",jungle:"moss",ruin:"rubble"};
+/* У каждого типа мира — своя макроформа породы, не только палитра: дюнная рябь,
+   плиты льда, корка лавы с тлеющими швами, раскисшие берега, слоистая почва.
+   Шесть миров одной клеточной фактурой в шести цветах и были «одним телом» (G1). */
+const MAT_CHAR={crystal:"facet",metal:"plate",jungle:"moss",ruin:"rubble",
+  desert:"dune",ice:"frost",volcanic:"crust",toxic:"sludge",terran:"soil",ocean:"soil"};
 /* ячейка с рваной кромкой, бесшовная по тайлу: сетка берётся по модулю N,
    границы размыты тем же шумом, что и всё остальное */
 function matCell(u,v,N,sd,warp){
@@ -20170,7 +20174,12 @@ function planetMat(p){
   else if(ch==="plate"){crackK*=.5;wear*=.6;veinK*=.18;}
   else if(ch==="moss"){crackK*=.25;veinK*=.4;}
   else if(ch==="rubble"){crackK*=.7;}
-  const cellN=ch==="facet"?9:(ch==="plate"?4:(ch==="rubble"?7:6));
+  else if(ch==="dune"){crackK*=.12;veinK*=.1;wear*=.5;grainK*=1.3;}
+  else if(ch==="frost"){crackK*=.3;veinK*=.15;wear*=.4;grainK*=.5;}
+  else if(ch==="crust"){crackK*=.4;veinK*=.05;wear*=.7;}
+  else if(ch==="sludge"){crackK*=.15;veinK*=.2;wear*=.8;grainK*=.7;}
+  else if(ch==="soil"){crackK*=.35;veinK*=.3;}
+  const cellN=ch==="facet"?9:(ch==="plate"?4:(ch==="rubble"?7:(ch==="frost"?5:(ch==="crust"?6:6))));
   for(let y=0;y<S;y++)for(let x=0;x<S;x++){
     const o=(y*S+x)*4,u=x/S,v=y/S;
     /* макро: крупные поля породы */
@@ -20233,6 +20242,46 @@ function planetMat(p){
         /* корни расползаются по земле — тёмные, а не светлые, как жилы */
         const root=ridged(tfbm(u,v,6,sd+123,4),22);
         if(root>.02)darkK=1-clamp(root,0,.5)*.5;
+      }else if(ch==="dune"){
+        /* Рябь: волны по горизонтали, гребень светлый, подветренная сторона
+           в тени; волны гнёт крупный шум, чтобы не было линейки. Песок без
+           трещин и жил — его форма и есть его фактура. */
+        const bend=tfbm(u*.8,v*.8,3,sd+401,3)*3.2;
+        const ph=(v*26+bend+(tfbm(u,v,7,sd+409,2)-.5)*.6)*TAU;
+        const rip=.5+.5*Math.sin(ph);
+        const crest=Math.pow(rip,3.2);
+        t=clamp(t*.42+.30+rip*.22+crest*.12,0,1);
+        /* наветренная сторона чуть темнее — рябь читается рельефом, а не полосами */
+        if(Math.cos(ph)<0)darkK=.94;
+      }else if(ch==="frost"){
+        /* Плиты льда: трещины светлые (лёд в изломе белый), внутри плита
+           уходит в синеву, и чем крупнее плита, тем глубже. */
+        const C2=matCell(u,v,cellN*2,sd+77,warp*.7);
+        const CC=tfbm(u,v,3,sd+151,2)>.5?C:C2;
+        t=clamp(t*.30+.46+CC.tone*.36,0,1);
+        seam=-Math.pow(clamp(1-CC.edge*9,0,1),2.2);   // минус: шов светлый, не тёмный
+        edgeHi=Math.pow(clamp(1-Math.min(CC.du,CC.dv)*14,0,1),2.2)*.35;
+      }else if(ch==="crust"){
+        /* Остывшая корка: тёмные плиты, между ними швы; где жар ближе к
+           поверхности — швы тлеют. Это единственный светлый штрих на
+           вулканическом мире, и потому он читается издалека. */
+        t=clamp(t*.5+.18+C.tone*.22,0,1);
+        seam=Math.pow(clamp(1-C.edge*8,0,1),2.4);
+        const heat=clamp((tfbm(u,v,2,sd+511,3)-.42)*3.2,0,1);
+        if(seam>.05&&heat>.02)edgeLo=-seam*heat*1.6;   // минус: метка «тлеет», см. ниже
+      }else if(ch==="sludge"){
+        /* Раскисшие берега: мягкие лужи светлее, ил между ними темнее и с
+           ободком у кромки; ни граней, ни трещин — всё оплыло. */
+        const pool=tfbm(u,v,5,sd+601,3);
+        const rim=Math.pow(clamp(1-Math.abs(pool-.5)*9,0,1),2);
+        t=clamp(t*.4+.28+(pool>.5?.22:0)+(pool-.5)*.3,0,1);
+        darkK=1-rim*.28;
+      }else if(ch==="soil"){
+        /* Почва: слоистость — тонкие горизонтальные прослои, гнутые, и чаще
+           крошка. Сдержанно: это фон для флоры, а не сама достопримечательность. */
+        const bend=tfbm(u*.6,v*.6,3,sd+701,3)*2.4;
+        const bed=.5+.5*Math.sin((v*38+bend)*TAU);
+        t=clamp(t*.6+.2+Math.pow(bed,4)*.16,0,1);
       }
     }
     const c0=ramp(pal,ch==="facet"?(.10+t*.86):(.26+t*.5));
@@ -20271,6 +20320,9 @@ function planetMat(p){
     if(darkK<1){R*=darkK;Gc*=darkK;B*=darkK;}
     if(edgeLo>.01){const k3=1-edgeLo*.55;R*=k3;Gc*=k3;B*=k3;}
     if(seam>.01){const k2=1-seam*.62;R*=k2;Gc*=k2;B*=k2;}
+    /* лёд: шов светлый и холодный; лава: тлеющий шов */
+    if(seam<-.01){const w3=-seam*.6;R=lerp(R,226,w3);Gc=lerp(Gc,240,w3);B=lerp(B,255,w3);}
+    if(edgeLo<-.01){const w4=clamp(-edgeLo*1.4,0,1);R=lerp(R,255,w4);Gc=lerp(Gc,118,w4);B=lerp(B,34,w4);}
     if(ch==="plate"){
       /* потёки окисла вниз по плите: без них металл читается пластиком */
       /* Узкие вертикальные потёки, а не широкие ленты: первый заход красил
@@ -21765,10 +21817,13 @@ function lightShafts(p){
   if(p.T.atm==="отсутствует")return;
   const sx=W*.78,sy=H*.16;
   const sun=starRGB();
+  /* один и тот же веер из пяти лучей под одним углом стоял на каждом мире
+     штампом (G1): число, раскрытие и наклон — от планеты */
+  const hs=hashi(p.seed,0x5AF7,1), nS=2+(hs&3), a0=.92+((hs>>>4)&15)/15*.4, spr=.12+((hs>>>8)&7)/7*.14;
   ctx.save();
   ctx.globalCompositeOperation="lighter";
-  for(let i=0;i<5;i++){
-    const a=1.05+i*.19+Math.sin(G.t*.0016+i)*.035;
+  for(let i=0;i<nS;i++){
+    const a=a0+i*spr+Math.sin(G.t*.0016+i)*.035;
     const wdt=.030+((i*7)%3)*.012;
     const len=H*1.25;
     const al=(.020+((i*5)%3)*.010)*(1+Math.sin(G.t*.0021+i*2)*.35);

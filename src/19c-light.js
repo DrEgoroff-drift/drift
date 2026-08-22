@@ -116,10 +116,13 @@ function lightShafts(p){
   if(p.T.atm==="отсутствует")return;
   const sx=W*.78,sy=H*.16;
   const sun=starRGB();
+  /* один и тот же веер из пяти лучей под одним углом стоял на каждом мире
+     штампом (G1): число, раскрытие и наклон — от планеты */
+  const hs=hashi(p.seed,0x5AF7,1), nS=2+(hs&3), a0=.92+((hs>>>4)&15)/15*.4, spr=.12+((hs>>>8)&7)/7*.14;
   ctx.save();
   ctx.globalCompositeOperation="lighter";
-  for(let i=0;i<5;i++){
-    const a=1.05+i*.19+Math.sin(G.t*.0016+i)*.035;
+  for(let i=0;i<nS;i++){
+    const a=a0+i*spr+Math.sin(G.t*.0016+i)*.035;
     const wdt=.030+((i*7)%3)*.012;
     const len=H*1.25;
     const al=(.020+((i*5)%3)*.010)*(1+Math.sin(G.t*.0021+i*2)*.35);
