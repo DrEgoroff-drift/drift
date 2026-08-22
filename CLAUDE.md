@@ -86,6 +86,7 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `12s-wear` | the hull ages by hours flown: the look of it, −12% to the hands, service at the yard or at home |
 | `12t-settle` | the settlement: you feed it, they decide what to raise; pays in goods, speaks in glyphs |
 | `15-input` `16-flight` | keys/pads/mouse, starfield, autopilot, trail |
+| `18c-chunks` | raster cache: world-x chunks for ground and cave rock, full-screen layers for sky glow and weather veil |
 | `17`–`25` `mode-*` | modes: system, map, landing, surface, cave, mine, belt, cockpit; `20-life` — astronaut, flora, fauna |
 | `17b-finds` | four finds in the void: capsule, satellite, container, hulk — the satellite is theirs |
 | `19a-mode-scoop` | scooping volatiles from a gas giant's atmosphere |

@@ -283,6 +283,19 @@ function renderOpts(){
   const bfp=el("button","act gold",FLV[j0][1]);
   bfp.onclick=()=>{G.opts.gfx.fps=FLV[(j0+1)%FLV.length][0];renderOpts();};
   rfp.appendChild(bfp);$optBody.appendChild(rfp);
+  /* Разрешение канвы: самая тяжёлая статья на ретине — вчетверо больше
+     пикселей за те же кадры. «Авто» начинает с полного и само спускается,
+     если кадр не держится; вручную — когда хочется либо чёткости любой
+     ценой, либо тишины вентилятора. */
+  const RLV=[[0,"АВТО"],[1,"1×"],[1.5,"1.5×"],[2,"2× (ЧЁТКО)"]];
+  const rres=el("div","row");
+  const rNote=(G.opts.gfx.res?"":"сейчас ×"+DPR+" · ")+"экран ×"+(window.devicePixelRatio||1).toFixed(1)+
+    "; меньше пикселей — быстрее кадр, на логику не влияет";
+  rres.appendChild(el("div","nm","<b>Разрешение</b><s>"+rNote+"</s>"));
+  const jr=Math.max(0,RLV.findIndex(g=>g[0]===G.opts.gfx.res));
+  const bres=el("button","act gold",RLV[jr][1]);
+  bres.onclick=()=>{G.opts.gfx.res=RLV[(jr+1)%RLV.length][0];RES_AUTO=2;resize();renderOpts();};
+  rres.appendChild(bres);$optBody.appendChild(rres);
   const rpr=el("div","row");
   rpr.appendChild(el("div","nm","<b>Пресет</b><s>выставить всё сразу</s>"));
   const bpr=el("button","act","НИЗКИЕ / СРЕДНИЕ / ВЫСОКИЕ / МАКС");

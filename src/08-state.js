@@ -4,11 +4,18 @@ let ctx=cvs.getContext("2d");
 const MAIN_CTX=ctx;
 let W=0,H=0,DPR=1;
 function resize(){
-  DPR=Math.min(2,window.devicePixelRatio||1);
+  /* Разрешение канвы (12aa): ретина рисует вчетверо больше пикселей, и на
+     поверхности это было 23 кадра вместо шестидесяти. Игрок выбирает сам
+     (gfx.res), а «авто» стартует с полного и само спускается, когда кадр
+     не укладывается — см. resAuto() в 28-loop. */
+  let want=0;try{want=(G.opts.gfx.res)||0;}catch(e){}   // первый вызов идёт до объявления G
+  DPR=want?Math.min(want,window.devicePixelRatio||1):Math.min(RES_AUTO,window.devicePixelRatio||1);
   W=window.innerWidth;H=window.innerHeight;
   cvs.width=Math.round(W*DPR);cvs.height=Math.round(H*DPR);
   ctx.setTransform(DPR,0,0,DPR,0,0);
 }
+/* текущий потолок автоматического режима: полный, пока кадр держится */
+let RES_AUTO=2;
 addEventListener("resize",resize);resize();
 
 const keys={left:false,right:false,thrust:false,brake:false,act:false,fire:false,
@@ -32,7 +39,7 @@ const G={
   land:null,surf:null,st:null,belt:null,dig:null,cave:null,
   opts:{easyLand:true,autoDock:true,invX:false,invY:false,invYaw:false,lookSens:1,
     keys:{main:{},belt:{}},pads:"auto",padSize:1,
-    gfx:{draw:1,detail:1,particles:1,plants:1,fps:0},
+    gfx:{draw:1,detail:1,particles:1,plants:1,fps:0,res:0},
     audio:{on:true,music:.6,sfx:.6,engine:.4}},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,

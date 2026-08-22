@@ -101,12 +101,16 @@ function drawWeather(p,camx,camy){
   ctx.save();
   /* общая пелена: она делает бурю бурей сильнее, чем сами частицы */
   if(k>.12){
-    const c=W0.col;
-    const g=ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,"rgba("+c.join(",")+","+(W0.tint*k*.5).toFixed(3)+")");
-    g.addColorStop(.55,"rgba("+c.join(",")+","+(W0.tint*k).toFixed(3)+")");
-    g.addColorStop(1,"rgba("+c.join(",")+","+(W0.tint*k*.7).toFixed(3)+")");
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    const c=W0.col,kq=Math.round(k*40)/40;
+    /* пелена — слой (18c): сила бури квантуется до 1/40, чтобы слоёв было
+       штук десять за всю бурю, а не по одному на кадр */
+    ctx.drawImage(screenLayer("veil|"+w.kind+"|"+kq,()=>{
+      const g=ctx.createLinearGradient(0,0,0,H);
+      g.addColorStop(0,"rgba("+c.join(",")+","+(W0.tint*kq*.5).toFixed(3)+")");
+      g.addColorStop(.55,"rgba("+c.join(",")+","+(W0.tint*kq).toFixed(3)+")");
+      g.addColorStop(1,"rgba("+c.join(",")+","+(W0.tint*kq*.7).toFixed(3)+")");
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    }),0,0,W,H);
   }
   const c=W0.col;
   const t=G.t;
