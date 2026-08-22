@@ -103,7 +103,7 @@ jobs:
           done
           echo "в исходниках $want, на сайте $got"
           [ "$want" = "$got" ] || { echo "версии разошлись"; exit 1; }
-          gz=$(curl -s --max-time 60 -H 'Accept-Encoding: gzip' -o /dev/null -w '%{size_download}' https://drift-game.ru/play.html || echo 0)
+          gz=$(curl -s --max-time 60 -H 'Accept-Encoding: gzip' -o /dev/null -w '%{size_download}' https://drift-game.ru/play.html || true); gz=$((gz+0))
           echo "play.html со сжатием: $gz байт"
           [ "$gz" -gt 0 ] && [ "$gz" -ge 1200000 ] && echo "::warning::play.html уходит без сжатия ($gz байт) — проверьте .htaccess"
           [ "$(hc https://drift-game.ru/)" = "200" ] || { echo "заглавная не отвечает"; exit 1; }
