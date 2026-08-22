@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.98.0";
+const VER="0.99.2";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6167,8 +6167,22 @@ function musicSetScene(key,scene){
   /* своя фраза на локацию: seed из ключа сцены, поэтому одна и та же планета
      всегда встречает одной и той же мелодией */
   let ks=0;for(let i=0;i<key.length;i++)ks=(ks*31+key.charCodeAt(i))|0;
-  MUS.phrase=makePhrase(hashi(ks,scene.bpm,SCALE_KEYS.indexOf(scene.scale)+1),
-                        SCALES[scene.scale]||SCALES.minor);
+  const stp=SCALES[scene.scale]||SCALES.minor;
+  MUS.phrase=makePhrase(hashi(ks,scene.bpm,SCALE_KEYS.indexOf(scene.scale)+1),stp);
+  /* ── ответ, круг, рисунок ──
+     Одна фраза на локацию приедалась за две минуты: к ней теперь есть
+     вторая — тот же seed, но контур зеркален, и они идут попеременно, как
+     вопрос и ответ. Гармония ходила по одной тонике всё время — дрон и бас
+     теперь идут по кругу из четырёх ступеней, по такту на каждую; круг свой
+     у каждой сцены. Ударные были «удар через шаг» — стали рисунком на восемь
+     шагов с акцентами и редким призрачным ударом. */
+  const rr=rng(hashi(ks,0xB0B,scene.bpm));
+  MUS.phraseB=MUS.phrase.map(n=>n&&{...n,deg:stp.length-1-n.deg,chord:n.chord?0:(rr()<.25?4:0)});   // та же длина — зеркальный контур
+  const cyc=[[0,5,3,4],[0,3,4,0],[0,2,5,4],[0,4,5,3],[0,5,0,4]][Math.floor(rr()*5)];
+  MUS.prog=cyc.map(i=>stp[Math.min(i,stp.length-1)]||0);
+  MUS.percPat=[];for(let i=0;i<8;i++)MUS.percPat.push(i===0?1.1:(i===4?.9:(rr()<.35?.55:0)));
+  MUS.restAt=rr()<.5?56:-1;           // у половины сцен в конце круга — тишина на восемь шагов
+  MUS.bar=-1;
   MUS.pi=0;MUS.shift=0;
   if(!MUS.ready)return;
   const c=SND.ctx,t=c.currentTime;
@@ -6235,17 +6249,41 @@ function musicTick(){
   const beat=60/sc.bpm;
   const grid=beat*(2-MUS.intensity*.9);
   if(MUS.next<c.currentTime)MUS.next=c.currentTime+.05;
+  /* ── дыхание ──
+     Уровни слоёв были константами сцены: музыка не становилась ни тише, ни
+     гуще. Медленная волна в полторы-две минуты водит мелодию и воздух на
+     треть — этого хватает, чтобы возвращение фразы было слышно как возвращение. */
+  const br=.72+.28*Math.sin(c.currentTime/(75+(sc.bpm%17)*4)*TAU);
+  if(MUS.layers.motif){
+    MUS.layers.motif.gain.setTargetAtTime(layerLevel("motif",sc)*br,c.currentTime,2.5);
+    MUS.layers.air.gain.setTargetAtTime(layerLevel("air",sc)*(1.3-br*.5),c.currentTime,2.5);
+  }
   while(MUS.next<c.currentTime+3.2){
     const t=MUS.next,s=MUS.step;
     const r=rng(hashi(s,MUS.key.length*31,777));
-    /* бас — редкая очень длинная педаль под всем остальным */
+    /* гармонический круг: такт — 16 шагов, дрон и бас переходят на ступень круга */
+    const bar=Math.floor(s/16)%4, hroot=sc.root+((MUS.prog&&MUS.prog[bar])||0);
+    if(bar!==MUS.bar&&MUS.pad){
+      MUS.bar=bar;
+      const f0=midiHz(hroot);
+      MUS.pad.oscs.forEach((o,i)=>{
+        const iv=[0,steps[4]||7,12][i];
+        o.frequency.setTargetAtTime(f0*Math.pow(2,iv/12)*(1+(i-1)*.004),t,1.6);
+      });
+    }
+    /* бас — редкая очень длинная педаль под всем остальным, на ступени круга */
     if(sc.bass>0&&s%4===0)
-      musNote("bass",midiHz(sc.root-12),t,Math.min(grid*3.6,11),"triangle",.34,220);
+      musNote("bass",midiHz(hroot-12),t,Math.min(grid*3.6,11),"triangle",.34,220);
+    /* тишина: в конце круга у половины сцен мелодия молчит восемь шагов */
+    const rest=MUS.restAt>=0&&s>=MUS.restAt;
     /* мелодия идёт по фразе, а не наугад; каждый проход фраза может сместиться
-       на ступень — так она не приедается, оставаясь узнаваемой */
-    if(sc.motif>0&&MUS.phrase&&MUS.phrase.length){
-      const note=MUS.phrase[MUS.pi%MUS.phrase.length];
-      if(MUS.pi>0&&MUS.pi%MUS.phrase.length===0)
+       на ступень — так она не приедается, оставаясь узнаваемой. Фразы две:
+       вопрос и ответ чередуются проходами. */
+    if(sc.motif>0&&MUS.phrase&&MUS.phrase.length&&!rest){
+      const L=MUS.phrase.length;
+      const ph=(Math.floor(MUS.pi/L)%2===1&&MUS.phraseB&&MUS.phraseB.length===L)?MUS.phraseB:MUS.phrase;
+      const note=ph[MUS.pi%L];
+      if(MUS.pi>0&&MUS.pi%L===0)
         MUS.shift=(r()<.45)?[0,2,-2,4][Math.floor(r()*4)]:0;
       MUS.pi++;
       if(note){
@@ -6272,8 +6310,11 @@ function musicTick(){
       musBeacon("beacon",midiHz(sc.root+deg+12+oct),t+r()*grid,
                 4.5+r()*5.5,.34+r()*.2);
     }
-    if((sc.perc>0||MUS.intensity>.25)&&s%2===0)
-      musPerc(t,.5+MUS.intensity*.4);
+    if(sc.perc>0||MUS.intensity>.25){
+      const pp=MUS.percPat?MUS.percPat[s%8]:(s%2===0?1:0);
+      if(pp>0)musPerc(t,(.5+MUS.intensity*.4)*pp);
+      else if(MUS.intensity>.25&&s%2===0)musPerc(t,.4+MUS.intensity*.4);   // в бою сетка плотнее
+    }
     if(sc.air>0&&r()<.16){
       const deg=steps[Math.floor(r()*steps.length)];
       musNote("air",midiHz(sc.root+deg+24),t,3.5+r()*3.5,"sine",.24,2600);
@@ -21052,7 +21093,7 @@ function giantTex(p){
   if(GIANT.key===p.seed)return GIANT.tex;
   const hit=GIANT.cache.find(e=>e.key===p.seed);
   if(hit){GIANT.key=hit.key;GIANT.tex=hit.tex;return hit.tex;}
-  const TW=512,TH=256;
+  const TW=768,TH=384;   // 512×256 тянулось на полтора экрана и мылилось (G5)
   const cn=document.createElement("canvas");cn.width=TW;cn.height=TH;
   const c=cn.getContext("2d"),img=c.createImageData(TW,TH),d=img.data;
   const pal=p.T.pal,sd=p.seed|0;
@@ -21124,8 +21165,8 @@ function drawScoop(){
      одинаковая лента, наложенная трижды, взаимно усредняется в розовую кашу */
   const layers=[[1.35,.30,1,1],[1.0,.85,.3,.9]];
   for(const L of layers){
-    const hgt=H*L[0], wid=hgt*.62;
-    const off=-((S.x*L[1]*9)%wid);
+    const hgt=H*L[0], wid=hgt*1.25;   // тайл шире: при .62 он повторялся дважды на экран, и волны читались копиями (G5)
+    const off=-((S.x*L[1]*9+(L===layers[1]?wid*.5:0))%wid);
     ctx.globalAlpha=L[2];
     const yTop=H*.5-hgt*.5*L[3];
     for(let i=-1;i<=Math.ceil(W/wid)+1;i++)ctx.drawImage(T,off+i*wid,yTop,wid,hgt);
@@ -26581,8 +26622,11 @@ function drawBase(){
      землёй читаются как трава и небо (так и вышло с первого раза). Берём тот же
      цвет, но уведённый в тёмное и обесцвеченный — узнаваемо и при этом подземно */
   const rc=i=>mixc(pal[Math.min(i,pal.length-1)],[26,19,14],.66);
-  const rock=ctx.createLinearGradient(0,gy,0,Y(150+baseRows(B)*BCELL_H+120));
-  rock.addColorStop(0,rgba(rc(1),1));
+  const rock=ctx.createLinearGradient(0,gy-BCELL_H*2.1,0,Y(150+baseRows(B)*BCELL_H+120));
+  /* холм начинается выше грунта и освещён небом: одной тёмной заливкой он
+     читался дырой в небе, а не горой (G9) */
+  rock.addColorStop(0,rgba(mixc(rc(0),sky[0],.35),1));
+  rock.addColorStop(.3,rgba(rc(1),1));
   rock.addColorStop(.55,rgba(rc(3),1));
   rock.addColorStop(1,rgba(rc(4),1));
   ctx.fillStyle=rock;ctx.fill(GP);
@@ -26596,7 +26640,7 @@ function drawBase(){
     ctx.fillStyle=r%2?"rgba(0,0,0,.30)":"rgba(255,255,255,.055)";ctx.fill();
   }
   const mat=pl?planetMat(pl):null;
-  if(mat)fillMaterial(mat,camx,camy,.34,.26,GP,{x:0,y:Math.max(0,gy),w:W,h:H});
+  if(mat)fillMaterial(mat,camx,camy,.34,.26,GP,{x:0,y:0,w:W,h:H});   // и холму тоже — раньше материал шёл только от грунта вниз (G9)
   /* Материал планеты — это её ПОВЕРХНОСТЬ: во всю силу под землёй он читается
      мхом и травой. Умножением уводим всё в бурое: фактура остаётся, зелень
      уходит, и разрез начинает выглядеть разрезом */
@@ -26606,6 +26650,11 @@ function drawBase(){
   /* верхний слой почвы: без него кромка грунта — просто линия среза */
   ctx.save();ctx.clip(GP);
   ctx.fillStyle="rgba(20,14,9,.45)";ctx.fillRect(0,Math.max(0,gy),W,16);
+  ctx.restore();
+  /* кромка холма ловит небо: полоса света внутрь от силуэта и волосок по краю */
+  ctx.save();ctx.clip(GP);
+  ctx.strokeStyle=rgba(sky[0],.16);ctx.lineWidth=14;ctx.stroke(GP);
+  ctx.strokeStyle=rgba(mixc(sky[0],[255,255,255],.3),.30);ctx.lineWidth=2.4;ctx.stroke(GP);
   ctx.restore();
   /* ── зерно породы ──
      Пласты у базы были, а зерна не было, и разрез читался полосатым матрасом:
@@ -31234,7 +31283,7 @@ function drawBelt(){
     }
     const vein=p.ore>.57;
     const base=vein?p.oreCol:p.rock;
-    const k=.24+p.li*(vein?1.30:.98);
+    const k=.15+Math.pow(p.li,1.3)*(vein?1.42:1.10);   // терминатор резче: при .24+li камень читался плоским (G6)
     const fog=clamp(1-p.d/2600,.1,1);
     /* три составляющих вместо одной: свет звезды своего цвета, холодный
        подсвет от туманности в тенях и кромочный блик. Одна давала камень
@@ -34636,7 +34685,7 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   const cy=fy-52;
   /* ── стена и потолок ── */
   const wg=c.createLinearGradient(0,0,0,fy);
-  wg.addColorStop(0,rgba(mixc(S.wall,[6,8,12],.55),1));
+  wg.addColorStop(0,rgba(mixc(S.wall,[6,8,12],.40),1));
   wg.addColorStop(1,rgba(S.wall,1));
   c.fillStyle=wg;c.fillRect(0,0,W2,fy);
   /* обшивка секциями: вертикальные швы и заклёпки — та же стена, что в отсеках */
@@ -34734,8 +34783,8 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
     const base=W2*(.06+(i/Math.max(1,CR.n-1))*CR.spread*.88);
     const bx=base+((i&1)?-10*CR.clump:0)+RR()*8-4;
     const far=RR()<.45;                       // кто-то стоит дальше и темнее
-    c.globalAlpha=far?.18:.32;
-    cantFigure(c,bx,cy+16+(far?-4:0),far?[42,48,58]:[54,60,72],
+    c.globalAlpha=far?.30:.52;   // толпа была тенями по .18–.32 и не читалась вовсе (кантина, проход 2)
+    cantFigure(c,bx,cy+16+(far?-4:0),far?[46,52,62]:[[96,88,70],[70,84,96],[92,72,74],[76,92,78]][i%4],
                G.t*.02+i*2.3,null,0);
     c.globalAlpha=1;
   }
@@ -34762,6 +34811,10 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   });
   if(typeof storyCantFigures==="function")storyCantFigures(c,W2,fy,cy);   // люди историй — за стойкой, как все (11c)
   /* ── стойка ── */
+  /* пол перед стойкой: светлее стены, иначе низ кадра — та же темнота */
+  c.fillStyle=rgba(mixc(S.wall,[96,90,82],.45),1);c.fillRect(0,fy,W2,H2-fy);
+  c.fillStyle="rgba(0,0,0,.35)";c.fillRect(0,fy,W2,2);
+  for(let x=0;x<W2;x+=72){c.fillStyle="rgba(0,0,0,.18)";c.fillRect(x+70,fy+2,2,H2-fy-2);}
   cantCounter(c,W2,fy,cy,back,acc,seed);
   if(typeof storyCantProps==="function")storyCantProps(c,W2,fy,cy);       // их вещи — на столешнице
   /* ── свет ──
@@ -34791,6 +34844,8 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
     c.beginPath();c.moveTo(lx-11,38);c.lineTo(lx-4,26);c.lineTo(lx+4,26);c.lineTo(lx+11,38);
     c.closePath();c.fill();
     c.fillStyle=rgba(mixc(LT.tone,acc,.3),.9);c.fillRect(lx-9,37,18,2.5);
+    c.fillStyle=rgba(mixc(LT.tone,acc,.3),.11*LT.pow);                       // пятно света на полу
+    c.beginPath();c.ellipse(lx,fy+9,52*LT.cone,6,0,0,TAU);c.fill();
     const g=c.createLinearGradient(0,38,0,cy);
     g.addColorStop(0,rgba(mixc(LT.tone,acc,.25),.17*S.warm*LT.pow));
     g.addColorStop(1,"rgba(255,226,180,0)");
@@ -34858,7 +34913,7 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   }
   c.restore();
   const vg=c.createRadialGradient(W2/2,H2/2,H2*.35,W2/2,H2/2,H2*1.05);
-  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.55)");
+  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.36)");   // виньетка в .55 топила зал
   c.fillStyle=vg;c.fillRect(0,0,W2,H2);
   return hits;
 }

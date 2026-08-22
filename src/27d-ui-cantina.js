@@ -51,7 +51,7 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   const cy=fy-52;
   /* ── стена и потолок ── */
   const wg=c.createLinearGradient(0,0,0,fy);
-  wg.addColorStop(0,rgba(mixc(S.wall,[6,8,12],.55),1));
+  wg.addColorStop(0,rgba(mixc(S.wall,[6,8,12],.40),1));
   wg.addColorStop(1,rgba(S.wall,1));
   c.fillStyle=wg;c.fillRect(0,0,W2,fy);
   /* обшивка секциями: вертикальные швы и заклёпки — та же стена, что в отсеках */
@@ -149,8 +149,8 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
     const base=W2*(.06+(i/Math.max(1,CR.n-1))*CR.spread*.88);
     const bx=base+((i&1)?-10*CR.clump:0)+RR()*8-4;
     const far=RR()<.45;                       // кто-то стоит дальше и темнее
-    c.globalAlpha=far?.18:.32;
-    cantFigure(c,bx,cy+16+(far?-4:0),far?[42,48,58]:[54,60,72],
+    c.globalAlpha=far?.30:.52;   // толпа была тенями по .18–.32 и не читалась вовсе (кантина, проход 2)
+    cantFigure(c,bx,cy+16+(far?-4:0),far?[46,52,62]:[[96,88,70],[70,84,96],[92,72,74],[76,92,78]][i%4],
                G.t*.02+i*2.3,null,0);
     c.globalAlpha=1;
   }
@@ -177,6 +177,10 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   });
   if(typeof storyCantFigures==="function")storyCantFigures(c,W2,fy,cy);   // люди историй — за стойкой, как все (11c)
   /* ── стойка ── */
+  /* пол перед стойкой: светлее стены, иначе низ кадра — та же темнота */
+  c.fillStyle=rgba(mixc(S.wall,[96,90,82],.45),1);c.fillRect(0,fy,W2,H2-fy);
+  c.fillStyle="rgba(0,0,0,.35)";c.fillRect(0,fy,W2,2);
+  for(let x=0;x<W2;x+=72){c.fillStyle="rgba(0,0,0,.18)";c.fillRect(x+70,fy+2,2,H2-fy-2);}
   cantCounter(c,W2,fy,cy,back,acc,seed);
   if(typeof storyCantProps==="function")storyCantProps(c,W2,fy,cy);       // их вещи — на столешнице
   /* ── свет ──
@@ -206,6 +210,8 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
     c.beginPath();c.moveTo(lx-11,38);c.lineTo(lx-4,26);c.lineTo(lx+4,26);c.lineTo(lx+11,38);
     c.closePath();c.fill();
     c.fillStyle=rgba(mixc(LT.tone,acc,.3),.9);c.fillRect(lx-9,37,18,2.5);
+    c.fillStyle=rgba(mixc(LT.tone,acc,.3),.11*LT.pow);                       // пятно света на полу
+    c.beginPath();c.ellipse(lx,fy+9,52*LT.cone,6,0,0,TAU);c.fill();
     const g=c.createLinearGradient(0,38,0,cy);
     g.addColorStop(0,rgba(mixc(LT.tone,acc,.25),.17*S.warm*LT.pow));
     g.addColorStop(1,"rgba(255,226,180,0)");
@@ -273,7 +279,7 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   }
   c.restore();
   const vg=c.createRadialGradient(W2/2,H2/2,H2*.35,W2/2,H2/2,H2*1.05);
-  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.55)");
+  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.36)");   // виньетка в .55 топила зал
   c.fillStyle=vg;c.fillRect(0,0,W2,H2);
   return hits;
 }

@@ -113,8 +113,8 @@ one at a time when a pass is due, and nothing here blocks a milestone.
 - **mine** — landings in the shaft barely read; a tub in a cell below the floor looks like a crate
   in a pit; a long shaft is still a long shaft (niches and a change of section beat texture).
 - **cantina** — ~~the counter is the same length and shape in every hall~~ done in 0.99.0
-  (`cantCounter`). Next passes: the hall is too dark overall; crowd silhouettes barely read;
-  the floor in front of the counter is never seen.
+  (`cantCounter`). Pass 2 (0.99.3): hall lifted, crowd in colour, floor with light pools. Next: a barkeep
+  who moves; glasses and bottles on the counter per type; a second window plane.
 - **подглядка** (M118) — the walker's trail dissolves into the mat's glow; the mat is identical
   on every world; an arm at rest merges into the torso; the crate rides near the chin.
 - **Жестянка** (M119) — the plume is three evenly spaced puffs; the plant is the same shape on

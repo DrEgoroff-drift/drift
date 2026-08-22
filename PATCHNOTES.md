@@ -8,6 +8,12 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.99.3 — "Lights on in the cantina" (cantina, pass 2)
+
+The hall was drowning: crowd at .18–.32 alpha in grey, a .55 vignette, no floor. The crowd is
+now in coloured jumpsuits at .30–.52, the vignette is .36, the wall is lifted, there is a
+floor strip in front of the counter with a pool of light under every lamp.
+
 ## 0.99.2 — "A hill, not a hole" (G5, G6, G9)
 
 The hill over the base starts its rock gradient above ground and lit by the sky, takes the
