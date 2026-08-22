@@ -252,39 +252,6 @@ function drawCaveSolid(C,camx,camy){
   }
   ctx.restore();
 }
-/* дальняя стена: тот же профиль, но на скорости .62 и чуть светлее. Без неё
-   пещера — плоские кулисы: свод, пол и между ними пустота, в которой нечему
-   уходить вдаль. Со стеной у прохода появляется вторая стенка и глубина,
-   а ближние натёки получают, на чём читаться силуэтом. */
-function drawCaveBack(C,camx,camy){
-  const D=C.deco;if(!D)return;
-  const k=.62, bx=camx*k;
-  ctx.save();
-  /* по вертикали камеру не делим: пол под ногами и так ведёт кадр вверх-вниз,
-     а разъезд по высоте на длинном ходу копится и выдаёт подделку. Достаточно
-     горизонтальной скорости и своего профиля */
-  const P=new Path2D();
-  P.moveTo(0,0);
-  for(let sx=0;sx<=W;sx+=18){const wx=bx+sx;P.lineTo(sx,caveCeil(C,wx)+18-camy);}
-  P.lineTo(W,0);P.closePath();
-  const P2=new Path2D();
-  P2.moveTo(0,H);
-  for(let sx=0;sx<=W;sx+=18){const wx=bx+sx;P2.lineTo(sx,caveFloor(C,wx)-16-camy);}
-  P2.lineTo(W,H);P2.closePath();
-  ctx.fillStyle="rgba(18,26,34,.55)";
-  ctx.fill(P);ctx.fill(P2);
-  /* дальние натёки — те же зубцы, вдвое мельче и без блика */
-  ctx.fillStyle="rgba(12,18,26,.75)";
-  for(const t of D.tips){
-    if(!t.up||t.col)continue;
-    const sx=t.x-bx;if(sx<-30||sx>W+30)continue;
-    const sy=caveCeil(C,t.x)+18-camy;
-    ctx.beginPath();
-    ctx.moveTo(sx-t.w*.6,sy);ctx.lineTo(sx+t.lean*t.L*.5,sy+t.L*.6);ctx.lineTo(sx+t.w*.6,sy);
-    ctx.closePath();ctx.fill();
-  }
-  ctx.restore();
-}
 function drawCaveWater(C,camx,camy){
   const Z=caveZones(C);
   for(const z of Z){

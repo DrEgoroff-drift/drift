@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.99.9";
+const VER="0.100.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -20695,6 +20695,35 @@ function screenLayer(key,paint){
   return cn;
 }
 
+/* ── тайлы в двух измерениях ──
+   Ломоть по X годится для полосы; пещера (22) тянется и вниз, и тайл у неё
+   квадратный. Тот же договор: paint(g,wx0,wy0) красит мир в квадрате
+   [wx0,wx0+TILE)×[wy0,wy0+TILE) в координатах тайла. Держим столько, чтобы
+   хватило на экран 1920 с запасом; старые вытесняются по порядку. */
+const TILE=512, TILE_KEEP=20;
+function tileStore(store,key){
+  if(!store||store.key!==key)store={key,map:new Map(),order:[]};
+  return store;
+}
+function tileAt(store,kx,ky,paint){
+  const k=kx+","+ky;
+  let cn=store.map.get(k);
+  if(cn)return cn;
+  cn=mkCanvas(TILE,TILE);
+  withCtx(cn,TILE,TILE,kx*TILE,ky*TILE,paint);
+  store.map.set(k,cn);store.order.push(k);
+  while(store.order.length>TILE_KEEP)store.map.delete(store.order.shift());
+  return cn;
+}
+function drawTiles(store,camx,camy,paint){
+  const kx0=Math.floor(camx/TILE),kx1=Math.floor((camx+W)/TILE);
+  const ky0=Math.floor(camy/TILE),ky1=Math.floor((camy+H)/TILE);
+  for(let ky=ky0;ky<=ky1;ky++)for(let kx=kx0;kx<=kx1;kx++){
+    const cn=tileAt(store,kx,ky,paint);
+    ctx.drawImage(cn,kx*TILE-camx,ky*TILE-camy,TILE,TILE);
+  }
+}
+
 /* ══════════════ карта ══════════════ */
 function wrapCenter(text,x,y,maxW,lh){
   const words=text.split(" ");let line="",ly=y;
@@ -22880,27 +22909,70 @@ function drawLander(broken,fire,opt){
     drawLandGear(h,len,bY-bodyH*.12,lg[0],gy(lg[0]),gear,sq);
   }
   ctx.globalAlpha=1;
-  /* ── корпус: горизонтальный, с кабиной впереди и сужением к корме ── */
+  /* ── корпус по схеме планера ──
+     Силуэт был один на всех: лежачее веретено с кабиной, менялись только
+     ливрея и длина. В полёте же корабль — дельта, крест, катамаран, плита,
+     диск, трезубец (03a), и на площадке садится именно он. Схема берётся у
+     того же корпуса (`h.form`), общее остаётся общим: стойки, трап, сопла. */
   const box=!!M.cont;                   // рудовоз и здесь ящик, курьер — конус
-  /* нос тупой и короткий: длинный конус превращал корабль в дирижабль */
-  const P=[[half,bY-bodyH*.62],[half,bY-bodyH*.30],[half*.80,bY],[-half*.74,bY],
-    [-half*.94,bY-bodyH*.22],[-half*.94,tY+bodyH*(box?.06:.30)],
-    [-half*.30,tY],[half*.30,tY],[half*.86,tY+bodyH*.28]];
-  ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);
-  for(let i=1;i<P.length;i++)ctx.lineTo(P[i][0],P[i][1]);
-  ctx.closePath();
-  const g=ctx.createLinearGradient(0,tY,0,bY);
-  g.addColorStop(0,rgba(h.lite,.95));g.addColorStop(.45,rgba(h.col,1));
-  g.addColorStop(1,rgba(h.dark,1));
-  ctx.fillStyle=g;ctx.fill();
+  const form=h.form||"swept";
+  const flat=form==="slab"||form==="boxed", disc=form==="disc", twin=form==="twin";
+  const cY=(tY+bY)*.5;
+  /* полигон тела: веретено, плита или диск; катамаран — два веретена */
+  const hullPath=(dx,dy,k)=>{
+    const hf=half*k, bh=bodyH*k, b=bY+dy, t=b-bh;
+    ctx.beginPath();
+    if(disc){ctx.ellipse(dx,cY+dy,hf*1.04,bh*.52,0,0,TAU);ctx.closePath();return;}
+    let P;
+    if(flat)P=[[hf+dx,t+bh*.18],[hf+dx,b-bh*.12],[hf*.94+dx,b],[-hf*.96+dx,b],
+      [-hf+dx,b-bh*.14],[-hf+dx,t+bh*.08],[-hf*.9+dx,t],[hf*.84+dx,t]];
+    else P=[[hf+dx,b-bh*.62],[hf+dx,b-bh*.30],[hf*.80+dx,b],[-hf*.74+dx,b],
+      [-hf*.94+dx,b-bh*.22],[-hf*.94+dx,t+bh*(box?.06:.30)],
+      [-hf*.30+dx,t],[hf*.30+dx,t],[hf*.86+dx,t+bh*.28]];
+    ctx.moveTo(P[0][0],P[0][1]);
+    for(let i=1;i<P.length;i++)ctx.lineTo(P[i][0],P[i][1]);
+    ctx.closePath();
+  };
+  const bodyFill=(t,b,a)=>{
+    const g=ctx.createLinearGradient(0,t,0,b);
+    g.addColorStop(0,rgba(h.lite,.95*a));g.addColorStop(.45,rgba(h.col,a));
+    g.addColorStop(1,rgba(h.dark,a));
+    return g;
+  };
+  /* дальний корпус катамарана: выше, чуть назад и темнее — он за ближним */
+  if(twin){
+    hullPath(-len*.05,-bodyH*.62,.9);
+    ctx.fillStyle=bodyFill(tY-bodyH*.62,bY-bodyH*.62,1);ctx.fill();
+    ctx.fillStyle="rgba(0,0,0,.34)";ctx.fill();
+    ctx.strokeStyle=rgba(h.edge,.9);ctx.lineWidth=1.2;ctx.stroke();
+    /* мостик между корпусами */
+    ctx.fillStyle=rgba(h.body,1);ctx.strokeStyle=rgba(h.edge,1);ctx.lineWidth=1;
+    ctx.beginPath();ctx.rect(-half*.45,tY-bodyH*.5,half*.7,bodyH*.5);ctx.fill();ctx.stroke();
+  }
+  /* крыло дельты: видно снизу, как тёмный клин от миделя к корме — от
+     взгляда сбоку крыло толщиной в линию, и схема терялась */
+  if(form==="delta"){
+    ctx.fillStyle=rgba(h.dark,1);ctx.strokeStyle=rgba(h.edge,1);ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(half*.3,bY-bodyH*.3);ctx.lineTo(-half*.95,bY-bodyH*.3);
+    ctx.lineTo(-half*1.12,bY+bodyH*.28);ctx.lineTo(-half*.2,bY+bodyH*.12);ctx.closePath();
+    ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(255,120,90,.9)";
+    ctx.beginPath();ctx.arc(-half*1.08,bY+bodyH*.24,1.6,0,TAU);ctx.fill();
+  }
+  /* нижняя гондола креста — под брюхом, до корпуса */
+  if(form==="xwing"){
+    ctx.fillStyle=rgba(h.body,1);ctx.strokeStyle=rgba(h.edge,1);ctx.lineWidth=1;
+    ctx.beginPath();ctx.ellipse(-half*.12,bY+bodyH*.1,half*.36,bodyH*.2,0,0,TAU);ctx.fill();ctx.stroke();
+  }
+  hullPath(0,0,1);
+  ctx.fillStyle=bodyFill(tY,bY,1);ctx.fill();
   ctx.strokeStyle=rgba(h.edge,1);ctx.lineWidth=1.4;ctx.stroke();
   ctx.save();ctx.clip();
-  /* линии панелей и ливрея — та же обшивка, что в полёте */
   /* линий панелей немного и они слабые: частая гребёнка делала из корпуса
      гофрированную трубу, то есть дирижабль */
   ctx.strokeStyle="rgba(0,0,0,.14)";ctx.lineWidth=1;
   for(let x=-half*.6;x<half*.7;x+=len*.22){
-    ctx.beginPath();ctx.moveTo(x,tY);ctx.lineTo(x+len*.03,bY);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x,tY);ctx.lineTo(x+len*(flat?0:.03),bY);ctx.stroke();
   }
   ctx.fillStyle=rgba(h.lite,.30);
   ctx.fillRect(-half,tY+bodyH*h.stripe.a,len,bodyH*.13);
@@ -22914,40 +22986,85 @@ function drawLander(broken,fire,opt){
   for(let x=-half*.8;x<half*.8;x+=len*.055){
     ctx.beginPath();ctx.arc(x,bY-bodyH*.36,.9,0,TAU);ctx.fill();
   }
-  /* контейнеры вдоль хребта у грузовых корпусов */
-  if(box)for(let i=0;i<3;i++){
-    ctx.fillStyle=rgba(h.dark,.9);ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=.9;
-    ctx.beginPath();ctx.rect(-half*.6+i*len*.2,tY-bodyH*.16,len*.16,bodyH*.2);
-    ctx.fill();ctx.stroke();
+  /* плита: рёбра шпангоутов поперёк — иначе прямоугольник читается вагоном */
+  if(flat){
+    ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=1.6;
+    for(let x=-half*.85;x<half*.8;x+=len*.11){ctx.beginPath();ctx.moveTo(x,tY);ctx.lineTo(x,bY);ctx.stroke();}
+  }
+  /* диск: кольцевые швы, светлый верх и тёмный низ тарелки */
+  if(disc){
+    ctx.strokeStyle="rgba(0,0,0,.18)";ctx.lineWidth=1;
+    for(let k=.82;k>.3;k-=.26){ctx.beginPath();ctx.ellipse(0,cY,half*1.04*k,bodyH*.52*k,0,0,TAU);ctx.stroke();}
+    ctx.fillStyle="rgba(0,0,0,.22)";ctx.fillRect(-half*1.1,cY+bodyH*.08,len*1.2,bodyH);
   }
   ctx.restore();
-  /* кабина: стёкла впереди, изнутри свет */
+  /* боковая гондола креста — поверх корпуса, на своём свету */
+  if(form==="xwing"){
+    for(const [px,py,k] of [[-half*.12,tY-bodyH*.18,1],[-half*.12,cY,.9]]){
+      ctx.fillStyle=bodyFill(py-bodyH*.22,py+bodyH*.22,1);ctx.strokeStyle=rgba(h.edge,1);ctx.lineWidth=1;
+      ctx.beginPath();ctx.ellipse(px,py,half*.38*k,bodyH*.22*k,0,0,TAU);ctx.fill();ctx.stroke();
+      ctx.fillStyle=rgba(h.dark,.9);
+      ctx.beginPath();ctx.ellipse(px-half*.3*k,py,bodyH*.1,bodyH*.16*k,0,0,TAU);ctx.fill();
+    }
+  }
+  /* трезубец: нос расходится на три зуба, сбоку видны верхний и нижний */
+  if(form==="trident"){
+    ctx.fillStyle=rgba(h.body,1);ctx.strokeStyle=rgba(h.edge,1);ctx.lineWidth=1;
+    for(const dy of [-bodyH*.46,bodyH*.04]){
+      ctx.beginPath();ctx.moveTo(half*.5,cY+dy-bodyH*.14);ctx.lineTo(half*1.16,cY+dy-bodyH*.06);
+      ctx.lineTo(half*1.16,cY+dy+bodyH*.06);ctx.lineTo(half*.5,cY+dy+bodyH*.16);ctx.closePath();
+      ctx.fill();ctx.stroke();
+    }
+  }
+  /* ящики: у контейнеровоза — стопка вдоль хребта, у плиты — два ряда */
+  if(box||form==="boxed"||form==="slab"){
+    const rows=form==="boxed"?2:1;
+    for(let rw=0;rw<rows;rw++)for(let i=0;i<3;i++){
+      ctx.fillStyle=rgba(h.dark,.9);ctx.strokeStyle=rgba(h.col,.6);ctx.lineWidth=.9;
+      ctx.beginPath();ctx.rect(-half*.6+i*len*.2,tY-bodyH*.16-rw*bodyH*.22,len*.16,bodyH*.2);
+      ctx.fill();ctx.stroke();
+    }
+  }
+  /* кабина: у диска — купол сверху, у плиты — рубка-ящик на носу, у
+     остальных — остекление впереди; изнутри свет */
   ctx.fillStyle="rgba(150,225,255,.55)";
   ctx.beginPath();
-  ctx.moveTo(half*.72,tY+bodyH*.16);ctx.lineTo(half*.34,tY+bodyH*.08);
-  ctx.lineTo(half*.34,tY+bodyH*.36);ctx.lineTo(half*.68,tY+bodyH*.40);
-  ctx.closePath();ctx.fill();
+  if(disc){ctx.ellipse(half*.08,cY-bodyH*.46,half*.3,bodyH*.34,0,Math.PI,TAU);ctx.closePath();}
+  else if(flat){ctx.rect(half*.46,tY-bodyH*.28,half*.38,bodyH*.4);}
+  else{
+    ctx.moveTo(half*.72,tY+bodyH*.16);ctx.lineTo(half*.34,tY+bodyH*.08);
+    ctx.lineTo(half*.34,tY+bodyH*.36);ctx.lineTo(half*.68,tY+bodyH*.40);
+    ctx.closePath();
+  }
+  ctx.fill();
   ctx.strokeStyle=rgba(h.dark,1);ctx.lineWidth=1.1;ctx.stroke();
   if(M.drill){                          // бур в носу — как в полёте
     ctx.fillStyle=rgba(h.lite,.85);
     ctx.beginPath();ctx.moveTo(half+len*.06,bY-bodyH*.34);
     ctx.lineTo(half,bY-bodyH*.48);ctx.lineTo(half,bY-bodyH*.20);ctx.closePath();ctx.fill();
   }
-  /* киль на корме: без него силуэт с круглым хвостом читается дирижаблем */
-  ctx.fillStyle=rgba(h.body,1);
-  ctx.beginPath();
-  ctx.moveTo(-half*.62,tY+bodyH*.1);ctx.lineTo(-half*.86,tY-bodyH*.55);
-  ctx.lineTo(-half*.98,tY-bodyH*.5);ctx.lineTo(-half*.9,tY+bodyH*.12);
-  ctx.closePath();ctx.fill();
-  ctx.strokeStyle=rgba(h.edge,1);ctx.lineWidth=1;ctx.stroke();
+  /* киль на корме: без него силуэт с круглым хвостом читается дирижаблем.
+     У диска киля нет, у плиты — короткий, у дельты — высокий */
+  if(!disc){
+    const fk=form==="delta"?1.5:(flat?.55:1);
+    ctx.fillStyle=rgba(h.body,1);
+    ctx.beginPath();
+    ctx.moveTo(-half*.62,tY+bodyH*.1);ctx.lineTo(-half*.86,tY-bodyH*.55*fk);
+    ctx.lineTo(-half*.98,tY-bodyH*.5*fk);ctx.lineTo(-half*.9,tY+bodyH*.12);
+    ctx.closePath();ctx.fill();
+    ctx.strokeStyle=rgba(h.edge,1);ctx.lineWidth=1;ctx.stroke();
+  }
   /* антенна и радиатор — развёрнуты и стоят на корпусе, а не висят рядом */
   ctx.strokeStyle=rgba(h.lite,.8);ctx.lineWidth=1.4;
-  ctx.beginPath();ctx.moveTo(-half*.1,tY);ctx.lineTo(-half*.1,tY-len*.10);ctx.stroke();
-  ctx.beginPath();ctx.arc(-half*.1,tY-len*.10,2.8,Math.PI*1.15,TAU*.99);ctx.stroke();
-  ctx.fillStyle=rgba(h.dark,.9);ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.8;
-  ctx.beginPath();ctx.rect(half*.02,tY-len*.035,len*.22,len*.032);ctx.fill();ctx.stroke();
-  ctx.beginPath();ctx.moveTo(half*.10,tY-len*.003);ctx.lineTo(half*.10,tY);
-  ctx.moveTo(half*.20,tY-len*.003);ctx.lineTo(half*.20,tY);ctx.stroke();
+  const aX=disc?-half*.4:-half*.1, aY=disc?cY-bodyH*.4:tY;
+  ctx.beginPath();ctx.moveTo(aX,aY);ctx.lineTo(aX,aY-len*.10);ctx.stroke();
+  ctx.beginPath();ctx.arc(aX,aY-len*.10,2.8,Math.PI*1.15,TAU*.99);ctx.stroke();
+  if(!disc){
+    ctx.fillStyle=rgba(h.dark,.9);ctx.strokeStyle=rgba(h.lite,.5);ctx.lineWidth=.8;
+    ctx.beginPath();ctx.rect(half*.02,tY-len*.035,len*.22,len*.032);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(half*.10,tY-len*.003);ctx.lineTo(half*.10,tY);
+    ctx.moveTo(half*.20,tY-len*.003);ctx.lineTo(half*.20,tY);ctx.stroke();
+  }
   /* ── трап: по нему и читается масштаб быстрее всего ── */
   if(gear>.9&&opt.landed){
     const hx=-half*.06, hw=len*.17, hb=bY-bodyH*.30, ht=tY+bodyH*.18;
@@ -24221,6 +24338,44 @@ function peepGhosts(camx,camy){
   /* ношу в одиночку несёт только первый: ящик у каждого — это уже склад на ходу */
   for(const q of pos)peepFigure(q.x,q.y,q.face,q.ph,q.a,q.i===0?solo:"");
   ctx.restore();
+}
+
+/* ══════════════ реактивный ранец ══════════════ */
+/* Прыжок был единственным способом оторваться от земли: пик рельефа или
+   уступ в пещере становились стеной. Ранец — стандартная механика: держишь
+   тягу — летишь вверх, запас горит за две с половиной секунды, на земле
+   набирается за полторы, в воздухе еле-еле. Запас один на выход (лежит на
+   G.surf рядом со скафандром), телом может быть и астронавт на поверхности,
+   и он же в пещере: функция получает объект со скоростью и тяготение. */
+const JET_BURN=1/150, JET_REGEN_GROUND=1/90, JET_REGEN_AIR=1/1100, JET_VMAX=-2.1;
+function jetFuel(){const S=G.surf;if(!S)return 1;if(S.jet==null)S.jet=1;return S.jet;}
+function jetCanLift(){return jetFuel()>.05;}
+/* air — тело в воздухе: тогда тяга жжёт запас и толкает тело; на земле запас
+   копится. Возвращает true, пока ранец горит — по этому рисуется факел */
+function jetTick(body,g,dt,air){
+  const S=G.surf;if(!S)return false;
+  if(S.jet==null)S.jet=1;
+  let fire=false;
+  if(air&&keys.thrust&&S.jet>0){
+    S.jet=Math.max(0,S.jet-JET_BURN*dt);
+    /* тяга — вдвое с лишним сильнее тяготения планеты, иначе на тяжёлом
+       мире ранец только замедляет падение */
+    body.vy=Math.max(JET_VMAX,body.vy-g*2.3*dt);
+    fire=true;
+    S.jetSfx=(S.jetSfx||0)-dt;
+    if(S.jetSfx<=0){S.jetSfx=9;sfx("ui",{f:140+Math.random()*40,to:90,d:.16,v:.05});}
+  }else S.jet=Math.min(1,S.jet+(air?JET_REGEN_AIR:JET_REGEN_GROUND)*dt);
+  body.jetOn=fire;
+  return fire;
+}
+/* полоска запаса: на поверхности и в пещере одна и та же, слева внизу */
+function drawJetBar(x,y){
+  const f=jetFuel(),w=74;
+  ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
+  ctx.fillStyle="rgba(93,115,130,.9)";ctx.fillText("РАНЕЦ",x,y);
+  ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x+40,y-7,w,5);
+  ctx.fillStyle=f<.2?"#ff6b57":(G.surf&&G.surf.jetOn?"#ffd27a":"#7fe6d8");
+  ctx.fillRect(x+40,y-7,w*f,5);
 }
 
 /* ══════════════ астронавт ══════════════ */
@@ -28011,16 +28166,21 @@ function updateSurface(dt){
      подсказки (ДЕЙСТВ у шахты то есть, то нет). Свободное падение — только
      пока реально в прыжке. */
   const gy=groundAt(tr,S.x)-10;
+  /* ранец (20d): на земле тяга — толчок вверх, в воздухе — полёт, пока есть
+     запас; запас копится на земле. Пик рельефа больше не стена. */
   if(S.on){
-    S.y=gy;S.vy=0;
-    if(keys.thrust){S.vy=-2.4;S.on=false;}
+    S.y=gy;S.vy=0;S.jetOn=false;
+    jetTick(S,S.g,dt,false);
+    if(keys.thrust&&jetCanLift()){S.vy=-1.6;S.on=false;S.jetOn=true;}
   }else{
-    S.vy+=S.g*dt;S.y+=S.vy*dt;
+    S.vy+=S.g*dt;
+    jetTick(S,S.g,dt,true);
+    S.y+=S.vy*dt;
     if(S.vy>=0&&S.y>=gy){
       /* удар о грунт: тряска пропорциональна скорости падения. Без неё прыжок
          с обрыва ничем не отличается от шага, и вес у мира пропадает. */
       if(S.vy>1.1)S.shake=Math.min(11,S.vy*2.6);
-      S.y=gy;S.vy=0;S.on=true;
+      S.y=gy;S.vy=0;S.on=true;S.jetOn=false;
     }
   }
   camStep(S,dt,walking);
@@ -28366,6 +28526,7 @@ function drawSurfaceHud(camx,camy){
       ctx.fillText(m.ru,sx,y+16);
     }
   }
+  drawJetBar(12,H-16);
 }
 function drawSurface(){
   const S=G.surf,tr=S.tr,p=S.p;
@@ -28493,7 +28654,7 @@ function drawSurface(){
   if(S.on)groundShadow(x,y+1,7,2);
   ctx.save();ctx.translate(x,y-1);
   drawAstronaut({face:S.face,amp:S.walkAmp,phase:S.walkPhase,
-    air:!S.on,jet:!S.on&&S.vy<0,mining:!!S.mining,suitLow:S.suit<25});
+    air:!S.on,jet:!!S.jetOn,mining:!!S.mining,suitLow:S.suit<25});
   ctx.restore();
   if(S.mining){
     ctx.strokeStyle="rgba(242,178,92,.7)";ctx.lineWidth=1.5;
@@ -28765,39 +28926,6 @@ function drawCaveSolid(C,camx,camy){
   }
   ctx.restore();
 }
-/* дальняя стена: тот же профиль, но на скорости .62 и чуть светлее. Без неё
-   пещера — плоские кулисы: свод, пол и между ними пустота, в которой нечему
-   уходить вдаль. Со стеной у прохода появляется вторая стенка и глубина,
-   а ближние натёки получают, на чём читаться силуэтом. */
-function drawCaveBack(C,camx,camy){
-  const D=C.deco;if(!D)return;
-  const k=.62, bx=camx*k;
-  ctx.save();
-  /* по вертикали камеру не делим: пол под ногами и так ведёт кадр вверх-вниз,
-     а разъезд по высоте на длинном ходу копится и выдаёт подделку. Достаточно
-     горизонтальной скорости и своего профиля */
-  const P=new Path2D();
-  P.moveTo(0,0);
-  for(let sx=0;sx<=W;sx+=18){const wx=bx+sx;P.lineTo(sx,caveCeil(C,wx)+18-camy);}
-  P.lineTo(W,0);P.closePath();
-  const P2=new Path2D();
-  P2.moveTo(0,H);
-  for(let sx=0;sx<=W;sx+=18){const wx=bx+sx;P2.lineTo(sx,caveFloor(C,wx)-16-camy);}
-  P2.lineTo(W,H);P2.closePath();
-  ctx.fillStyle="rgba(18,26,34,.55)";
-  ctx.fill(P);ctx.fill(P2);
-  /* дальние натёки — те же зубцы, вдвое мельче и без блика */
-  ctx.fillStyle="rgba(12,18,26,.75)";
-  for(const t of D.tips){
-    if(!t.up||t.col)continue;
-    const sx=t.x-bx;if(sx<-30||sx>W+30)continue;
-    const sy=caveCeil(C,t.x)+18-camy;
-    ctx.beginPath();
-    ctx.moveTo(sx-t.w*.6,sy);ctx.lineTo(sx+t.lean*t.L*.5,sy+t.L*.6);ctx.lineTo(sx+t.w*.6,sy);
-    ctx.closePath();ctx.fill();
-  }
-  ctx.restore();
-}
 function drawCaveWater(C,camx,camy){
   const Z=caveZones(C);
   for(const z of Z){
@@ -28941,25 +29069,151 @@ function drawCaveGlow(C,camx,camy,px,py){
   ctx.restore();
 }
 
-/* ══════════════ пещера: горизонтальная полость под поверхностью ══════════════ */
-/* не шахта — тут не бурят, а идут по уже готовой пустоте; свод и пол волнистые
-   по шуму, зазор никогда не схлопывается, так что застрять нельзя. Светящаяся
-   флора, кусачая фауна (как в шахте) и одна находка в дальнем конце. */
-const CAVE_W=2200;
-function caveFloor(C,x){return fbm1(x*C.freq+11,C.seed,4)*C.amp;}
-/* свод: базовый зазор плюс подъём зала. caveVault только поднимает — зазор
-   от него может стать шире, но не уже, поэтому схлопнуться ход не может */
-function caveCeil(C,x){return caveFloor(C,x)-92-fbm1(x*C.freq*1.4+5,C.seed+91,3)*46-caveVault(C,x);}
+/* ══════════════ пещера: поле породы в двух измерениях ══════════════ */
+/* Была щелью: свод и пол по шуму, между ними две тысячи пикселей хода.
+   Теперь пещера — ПОЛЕ: сетка клеток по 5 px, порода или пустота, вырезанная
+   шумом, а сквозь неё прорублены ходы, которые гарантируют проход: верхняя
+   галерея от устья вправо, две шахты вниз, нижняя галерея обратно влево к
+   находке. Карманы и залы вокруг — от шума, часть из них достижима только
+   ранцем (20d). Свет, темнота, натёки, озёра и жилы (22a) держатся за
+   верхнюю галерею, как и раньше: caveFloor/caveCeil ищут её пол и свод в
+   сетке, поэтому убранство не узнало, что пещера стала объёмной.
+   Порода красится тайлами (18c): в кадре остаётся drawImage. */
+const CAVE_W=2200, CAVE_CS=5, CAVE_Y0=-160, CAVE_Y1=1340;
+const CAVE_NX=Math.ceil(CAVE_W/CAVE_CS), CAVE_NY=Math.ceil((CAVE_Y1-CAVE_Y0)/CAVE_CS);
+/* ось верхней галереи: тот же шум, что и прежний пол, так что залы (22a)
+   легли туда же, куда ложились */
+function caveGalY(C,x){return fbm1(x*C.freq+11,C.seed,4)*C.amp-46-caveVault(C,x)*.3;}
+function caveGalR(C,x){return 44+caveVault(C,x)*.45;}
+/* нижняя галерея: глубже на шесть сотен, идёт справа налево */
+function caveLowY(C,x){return 640+fbm1(x*.003+5,C.seed+7,3)*160-80;}
+function caveSolidAt(C,x,y){
+  const cx=(x/CAVE_CS)|0, cy=((y-CAVE_Y0)/CAVE_CS)|0;
+  if(cx<0||cx>=CAVE_NX||cy<0||cy>=CAVE_NY)return true;
+  return C.g[cy*CAVE_NX+cx]===1;
+}
+/* первая порода вниз/вверх от точки: верх клетки для пола, низ — для свода */
+function caveScanDown(C,x,y){
+  const cx=clamp((x/CAVE_CS)|0,0,CAVE_NX-1);
+  let cy=clamp(((y-CAVE_Y0)/CAVE_CS)|0,0,CAVE_NY-1);
+  for(;cy<CAVE_NY;cy++)if(C.g[cy*CAVE_NX+cx])return cy*CAVE_CS+CAVE_Y0;
+  return CAVE_Y1;
+}
+function caveScanUp(C,x,y){
+  const cx=clamp((x/CAVE_CS)|0,0,CAVE_NX-1);
+  let cy=clamp(((y-CAVE_Y0)/CAVE_CS)|0,0,CAVE_NY-1);
+  for(;cy>=0;cy--)if(C.g[cy*CAVE_NX+cx])return (cy+1)*CAVE_CS+CAVE_Y0;
+  return CAVE_Y0;
+}
+function caveFloor(C,x){
+  const cx=clamp((x/CAVE_CS)|0,0,CAVE_NX-1);
+  let v=C.flo[cx];
+  if(v!==v){v=caveScanDown(C,cx*CAVE_CS+2,caveGalY(C,x));C.flo[cx]=v;}
+  return v;
+}
+function caveCeil(C,x){
+  const cx=clamp((x/CAVE_CS)|0,0,CAVE_NX-1);
+  let v=C.cei[cx];
+  if(v!==v){v=caveScanUp(C,cx*CAVE_CS+2,caveGalY(C,x));C.cei[cx]=v;}
+  return v;
+}
+/* ── генерация поля ── */
+function caveStamp(C,x,y,r){
+  const g=C.g,CS=CAVE_CS;
+  const cx0=Math.max(0,((x-r)/CS)|0),cx1=Math.min(CAVE_NX-1,((x+r)/CS)|0);
+  const cy0=Math.max(0,((y-r-CAVE_Y0)/CS)|0),cy1=Math.min(CAVE_NY-1,((y+r-CAVE_Y0)/CS)|0);
+  const r2=r*r;
+  for(let cy=cy0;cy<=cy1;cy++){
+    const dy=cy*CS+CS*.5+CAVE_Y0-y;
+    for(let cx=cx0;cx<=cx1;cx++){
+      const dx=cx*CS+CS*.5-x;
+      if(dx*dx+dy*dy<r2)g[cy*CAVE_NX+cx]=0;
+    }
+  }
+}
+function caveBuild(C){
+  const NX=CAVE_NX,NY=CAVE_NY,CS=CAVE_CS;
+  let g=new Uint8Array(NX*NY);
+  /* порода от шума: порог плывёт с глубиной — у поверхности массив плотный,
+     в середине рыхлый, у дна снова глухой. Из рыхлого и выходят залы */
+  for(let cy=0;cy<NY;cy++){
+    const y=cy*CS+CAVE_Y0;
+    const depth=clamp((y-40)/1100,0,1);
+    const thr=.47+.09*Math.sin(Math.PI*depth);
+    for(let cx=0;cx<NX;cx++){
+      const x=cx*CS;
+      const n=fbm2(x*.0052,y*.0052,C.seed^0xC4,4);
+      g[cy*NX+cx]=(n>thr||y<20||y>CAVE_Y1-60)?1:0;
+    }
+  }
+  /* сглаживание большинством: одиночные клетки и щели в одну клетку уходят */
+  for(let it=0;it<2;it++){
+    const h=new Uint8Array(NX*NY);
+    for(let cy=0;cy<NY;cy++)for(let cx=0;cx<NX;cx++){
+      let s=0;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+        const ax=cx+dx,ay=cy+dy;
+        s+=(ax<0||ax>=NX||ay<0||ay>=NY)?1:g[ay*NX+ax];
+      }
+      h[cy*NX+cx]=s>=5?1:0;
+    }
+    g=h;
+  }
+  C.g=g;
+  /* ходы: верхняя галерея, две шахты, нижняя галерея. Они прорублены после
+     сглаживания, поэтому проход гарантирован при любом шуме */
+  for(let x=0;x<=CAVE_W;x+=4)caveStamp(C,x,caveGalY(C,x),caveGalR(C,x));
+  for(let x=300;x<=CAVE_W-120;x+=4)caveStamp(C,x,caveLowY(C,x),36+fbm1(x*.01,C.seed+3,2)*22);
+  C.shafts=[CAVE_W*.42,CAVE_W*.88].map((sx,i)=>{
+    const y0=caveGalY(C,sx),y1=caveLowY(C,sx);
+    const pts=[];
+    for(let y=y0;y<=y1;y+=4){
+      const x=sx+(fbm1(y*.01,C.seed+21+i,3)-.5)*90;
+      caveStamp(C,x,y,22+fbm1(y*.02,C.seed+9,2)*8);
+      pts.push([x,y]);
+    }
+    return {x:sx,pts};
+  });
+  /* ответвления: от галерей в стороны, тупиковые — ради них и летают. Куда
+     ведёт ход, заранее не видно, это и делает пещеру пещерой */
+  const br=rng(C.seed^0xB4A);
+  for(let i=0;i<6;i++){
+    const fromLow=br()<.4;
+    let x=fromLow?400+br()*(CAVE_W-700):200+br()*(CAVE_W-500);
+    let y=fromLow?caveLowY(C,x):caveGalY(C,x);
+    let a=(br()<.5?1:-1)*(Math.PI/2)+(br()-.5)*1.2;
+    const len=160+br()*300;
+    for(let t=0;t<len;t+=4){
+      a+=(fbm1(t*.02,C.seed+40+i,2)-.5)*.3;
+      x+=Math.cos(a)*4;y+=Math.sin(a)*4;
+      if(y<30||y>CAVE_Y1-80)break;
+      caveStamp(C,x,y,16+fbm1(t*.03,C.seed+50+i,2)*10);
+    }
+  }
+  /* устье: столб пустоты к поверхности, по нему и выходят; стенки гуляют,
+     иначе он читается коробом */
+  for(let y=CAVE_Y0;y<caveGalY(C,60);y+=4)caveStamp(C,60+(fbm1(y*.015,C.seed+77,2)-.5)*20,y,22+fbm1(y*.02,C.seed+78,2)*10);
+  /* край поля — глухая порода: дальше мира нет */
+  for(let cy=0;cy<NY;cy++){g[cy*NX]=1;g[cy*NX+1]=1;g[cy*NX+NX-1]=1;g[cy*NX+NX-2]=1;}
+  C.flo=new Float32Array(NX).fill(NaN);C.cei=new Float32Array(NX).fill(NaN);
+}
 function enterCave(){
   const S=G.surf,p=S.p,r=rng(p.seed^0xCA5E);
   const plants=[],fauna=[];
   const seed=hashi(p.seed,7,0xCA5E);
-  const C={seed,freq:.0026,amp:34,x:60,y:0,face:1,found:false,
+  const C={seed,freq:.0026,amp:34,x:60,y:0,vy:0,on:false,face:1,found:false,
     plants,fauna,walkAmp:0,walkPhase:0,walkTarget:null};
-  const n=8+Math.floor(r()*6);
+  caveZones(C);
+  caveBuild(C);
+  C.y=caveFloor(C,60);C.cy=C.y;
+  /* флора — на полу обеих галерей: нижняя без неё была бы просто тёмной */
+  const n=10+Math.floor(r()*6);
   for(let i=0;i<n;i++){
-    const x=200+r()*(CAVE_W-400);
-    const pl=genPlant(r,p,x,caveFloor(C,x));
+    const low=r()<.45;
+    const x=low?340+r()*(CAVE_W-520):200+r()*(CAVE_W-400);
+    const y=low?caveScanDown(C,x,caveLowY(C,x)):caveFloor(C,x);
+    if(y>=CAVE_Y1)continue;
+    const pl=genPlant(r,p,x,y);
     pl.glow=true;pl.bloom=r()<.5;
     plants.push(pl);
   }
@@ -28974,38 +29228,84 @@ function enterCave(){
     b.hostile=true;b.stun=0;b.bite=0;b.flee=0;
     fauna.push(b);
   }
-  C.findX=CAVE_W-140;
-  caveZones(C);caveDeco(C,p);
+  /* находка — в дальнем конце НИЖНЕЙ галереи: туда спускаются шахтой, а
+     обратно поднимаются ранцем */
+  C.findX=340;C.findY=caveScanDown(C,340,caveLowY(C,340));
+  caveDeco(C,p);
   G.cave=C;G.mode="cave";
   const cl=(typeof storyGroundLine==="function")?storyGroundLine("cave"):null;
   if(cl)logAdd("dim",cl);
-  say("Пещера\nищите проход · ДЕЙСТВИЕ у выхода — назад на поверхность"+
-    (watch>0?"\nздесь ходят дозорные посёлка":"")+(cl?"\n"+cl:""),cl?320:150);
+  say("Пещера\nищите проход · шахты ведут вниз · W — ранец\nДЕЙСТВИЕ у выхода — назад на поверхность"+
+    (watch>0?"\nздесь ходят дозорные посёлка":"")+(cl?"\n"+cl:""),cl?320:190);
 }
 function exitCave(){
   G.cave=null;G.mode="surface";
   say("Выход из пещеры\nв трюме: "+held());
 }
+/* ── тело в поле: ящик 8×21 над точкой опоры ── */
+function caveBoxFree(C,x,y){
+  for(let sy=y-21;sy<=y-1;sy+=5)
+    if(caveSolidAt(C,x-4,sy)||caveSolidAt(C,x+4,sy))return false;
+  return !(caveSolidAt(C,x-4,y-1)||caveSolidAt(C,x+4,y-1));
+}
+/* шаг по X с подъёмом на уступ до 14 px: склон проходится без прыжка */
+function caveMoveX(C,dx){
+  const nx=clamp(C.x+dx,12,CAVE_W-12);
+  if(caveBoxFree(C,nx,C.y)){C.x=nx;return true;}
+  for(let s=1;s<=14;s++)if(caveBoxFree(C,nx,C.y-s)){C.x=nx;C.y-=s;return true;}
+  return false;
+}
 function updateCave(dt){
-  const C=G.cave,S=G.surf,st=stat();
+  const C=G.cave,S=G.surf,st=stat(),g=S.g;
   document.getElementById("dronebtn").style.display="none";
   /* по колено в воде идут медленнее — это единственное, чем озеро вмешивается
      в механику, и этого хватает, чтобы оно не было картинкой */
   const wet=caveWet(C,C.x);
   const mv=.62*dt*(wet?.66:1);
   if(keys.left||keys.right)C.walkTarget=null;
-  if(keys.left){C.x-=mv;C.face=-1;}
-  if(keys.right){C.x+=mv;C.face=1;}
+  let moved=false;
+  if(keys.left){moved=caveMoveX(C,-mv)||moved;C.face=-1;}
+  if(keys.right){moved=caveMoveX(C,mv)||moved;C.face=1;}
   else if(C.walkTarget!=null){
     const d=C.walkTarget-C.x;
-    if(Math.abs(d)<mv){C.x=C.walkTarget;C.walkTarget=null;}
-    else{C.x+=Math.sign(d)*mv;C.face=Math.sign(d);}
+    if(Math.abs(d)<mv){C.walkTarget=null;}
+    else{moved=caveMoveX(C,Math.sign(d)*mv);C.face=Math.sign(d);if(!moved)C.walkTarget=null;}
   }
-  C.x=clamp(C.x,30,CAVE_W-30);
-  C.y=caveFloor(C,C.x);
-  const walking=keys.left||keys.right||C.walkTarget!=null;
+  /* ── вертикаль: тяготение планеты, ранец, опора ── */
+  const wasOn=C.on;
+  if(C.on){
+    C.vy=0;C.jetOn=false;
+    jetTick(C,g,dt,false);
+    if(keys.thrust&&jetCanLift()){C.vy=-1.6;C.on=false;C.jetOn=true;}
+    else{
+      /* под уклон — держимся пола, а не падаем по ступеньке за шаг */
+      let s=1;for(;s<=6;s++)if(!caveBoxFree(C,C.x,C.y+s))break;
+      C.y+=s-1;
+      if(s>6)C.on=false;
+    }
+  }
+  if(!C.on){
+    C.vy+=g*dt;
+    jetTick(C,g,dt,true);
+    C.vy=Math.min(C.vy,3.2);
+    let rem=C.vy*dt;
+    while(Math.abs(rem)>1e-3){
+      const step=clamp(rem,-4,4);
+      if(caveBoxFree(C,C.x,C.y+step)){C.y+=step;rem-=step;}
+      else{
+        if(step>0){if(C.vy>1.1)S.shake=Math.min(11,C.vy*2.6);C.on=true;C.jetOn=false;}
+        C.vy=0;rem=0;
+        /* подтягиваемся к породе по пикселю, чтобы не висеть в зазоре */
+        const sg=Math.sign(step);
+        for(let k=0;k<4;k++){if(caveBoxFree(C,C.x,C.y+sg))C.y+=sg;else break;}
+      }
+    }
+  }
+  C.y=clamp(C.y,CAVE_Y0+30,CAVE_Y1-10);
+  const walking=C.on&&moved;
   C.walkAmp=clamp(C.walkAmp+(walking?1:-1)*.12*dt,0,1);
   if(walking)C.walkPhase+=dt*(wet?.16:.22);
+  C.cy=lerp(C.cy==null?C.y:C.cy,C.y,Math.min(1,.16*dt));
   updateCaveDeco(C,dt);
   /* смена зала — единственное событие на длинном ходу, и назвать его стоит:
      иначе игрок проходит грот и не замечает, что грот был */
@@ -29036,8 +29336,11 @@ function updateCave(dt){
     /* под дозором тварь всё равно идёт на человека, но до черты: дальше её не
        пускают те, кто здесь живёт, и укусить она не может вовсе */
     const keep=(C.watch||0)>0?24+46*C.watch:10;
-    if(d>keep){b.x+=dx/d*.5*dt;b.face=dx>0?1:-1;}
+    /* тварь ходит по верхней галерее: игрока на нижней она слышит, но не
+       достаёт — и это правильно, внизу свои опасности */
+    if(d>keep&&Math.abs(C.y-b.y)<120){b.x+=dx/d*.5*dt;b.face=dx>0?1:-1;}
     else if(keep>10&&d<keep-6){b.x-=dx/d*.35*dt;b.face=dx>0?-1:1;}
+    b.x=clamp(b.x,40,CAVE_W-40);
     b.y=caveFloor(C,b.x);
     if(b.bite>0)b.bite-=dt;
     if(d<20&&b.bite<=0&&!(C.watch>0)){b.bite=100;suitHit(3,"Укус");if(G.mode!=="cave")return;}
@@ -29054,15 +29357,16 @@ function updateCave(dt){
       "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+"\n+6 данных");
   }
   let plant=null;
-  for(const pl of C.plants)if(!pl.scanned&&Math.abs(pl.x-C.x)<30)plant=pl;
+  for(const pl of C.plants)if(!pl.scanned&&Math.abs(pl.x-C.x)<30&&Math.abs(pl.y-C.y)<40)plant=pl;
   S.suit=Math.max(0,S.suit-.001*st.suitWear*dt);
   if(S.suit<=0){G.cave=null;G.mode="surface";S.suit=0;
     say("СКАФАНДР РАЗРУШЕН\nаварийный возврат к кораблю");
     S.x=S.shipX;S.y=groundAt(S.tr,S.shipX)-10;S.vy=0;return;}
-  if(C.x<70){
+  const atMouth=C.x<70&&C.y<caveGalY(C,60)+70;
+  if(atMouth){
     G.prompt="ДЕЙСТВИЕ — НАЗАД НА ПОВЕРХНОСТЬ";
     if(actEdge){exitCave();return;}
-  }else if(!C.found&&C.x>C.findX-40){
+  }else if(!C.found&&Math.hypot(C.x-C.findX,C.y-C.findY)<44){
     G.prompt="ДЕЙСТВИЕ — ОСМОТРЕТЬ НАХОДКУ";
     if(actEdge){
       C.found=true;G.data+=20;
@@ -29078,91 +29382,144 @@ function updateCave(dt){
       plant.scanned=true;G.species.add(plant.name);G.data+=9;G.bio=(G.bio|0)+1;
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
-  }else if(C.fauna.some(b=>b.stun<=0&&b.flee<=0)){
+  }else if(C.fauna.some(b=>b.stun<=0&&b.flee<=0&&Math.abs(b.y-C.y)<120)){
     G.prompt=(C.watch>0?"КУСАЧИЕ ДЕРЖАТСЯ ПООДАЛЬ · ЗДЕСЬ ИХ ГОНЯЮТ\n":"КУСАЧИЕ РЯДОМ · ")+
       "ОГОНЬ (F) — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
-  }else G.prompt="A D — ИДТИ · В ДАЛЬНЕМ КОНЦЕ НАХОДКА · У ВХОДА ДЕЙСТВИЕ — НАРУЖУ";
+  }else if(jetFuel()<.2&&!C.on)G.prompt="РАНЕЦ НА ИСХОДЕ · СЯДЬТЕ, ЗАПАС НАБЕРЁТСЯ";
+  else if(C.y>caveGalY(C,C.x)+260)G.prompt="A D — ИДТИ · W — РАНЕЦ · НАХОДКА В ЛЕВОМ КОНЦЕ НИЖНЕЙ ГАЛЕРЕИ";
+  else G.prompt="A D — ИДТИ · W — РАНЕЦ · ШАХТЫ ВЕДУТ ВНИЗ · У УСТЬЯ ДЕЙСТВИЕ — НАРУЖУ";
 }
-/* порода пещеры в один ломоть: свод и пол, материал планеты, темнота,
-   градиент к краям и влажный блик. wx0/wy0 — мировое начало ломтя */
-function drawCaveRock(C,cp,camx,camy){
-  ctx.fillStyle="#0c1016";
-  const CP=new Path2D();
-  CP.moveTo(-20,-20);
-  for(let sx=-16;sx<=W+16;sx+=16){const wx=camx+sx;CP.lineTo(sx,caveCeil(C,wx)-camy);}
-  CP.lineTo(W+20,-20);CP.closePath();
-  const FP=new Path2D();
-  FP.moveTo(-20,H+20);
-  for(let sx=-16;sx<=W+16;sx+=16){const wx=camx+sx;FP.lineTo(sx,caveFloor(C,wx)-camy);}
-  FP.lineTo(W+20,H+20);FP.closePath();
-  ctx.fill(CP);ctx.fill(FP);
-  /* порода той же планеты и на своде, и на полу: без неё пещера — два чёрных
-     силуэта, и по ним не понять, в чьих недрах игрок находится */
+/* ── порода тайлом: клетки поля в прямоугольники, контур по «марширующим
+   квадратам» для скоса углов и мокрого блика, материал планеты, темнота к
+   глубине. wx0/wy0 — мировое начало тайла ── */
+function caveContour(C,wx0,wy0){
+  const CS=CAVE_CS,NX=CAVE_NX,NY=CAVE_NY,g=C.g;
+  const P=new Path2D();
+  const cx0=Math.floor(wx0/CS)-1,cx1=Math.floor((wx0+TILE)/CS);
+  const cy0=Math.floor((wy0-CAVE_Y0)/CS)-1,cy1=Math.floor((wy0+TILE-CAVE_Y0)/CS);
+  const at=(cx,cy)=>(cx<0||cx>=NX||cy<0||cy>=NY)?1:g[cy*NX+cx];
+  for(let cy=cy0;cy<=cy1;cy++)for(let cx=cx0;cx<=cx1;cx++){
+    const k=(at(cx,cy)<<3)|(at(cx+1,cy)<<2)|(at(cx+1,cy+1)<<1)|at(cx,cy+1);
+    if(k===0||k===15)continue;
+    const X=(cx+.5)*CS-wx0,Y=(cy+.5)*CS+CAVE_Y0-wy0,h=CS*.5;
+    const T=[X+h,Y],R=[X+CS,Y+h],B=[X+h,Y+CS],L=[X,Y+h];
+    const seg=(a,b)=>{P.moveTo(a[0],a[1]);P.lineTo(b[0],b[1]);};
+    switch(k){
+      case 1:case 14:seg(L,B);break;
+      case 2:case 13:seg(B,R);break;
+      case 3:case 12:seg(L,R);break;
+      case 4:case 11:seg(T,R);break;
+      case 5:seg(T,L);seg(B,R);break;
+      case 6:case 9:seg(T,B);break;
+      case 7:case 8:seg(T,L);break;
+      case 10:seg(T,R);seg(L,B);break;
+    }
+  }
+  return P;
+}
+function drawCaveRock(C,cp,wx0,wy0){
+  const CS=CAVE_CS,NX=CAVE_NX,NY=CAVE_NY,g=C.g;
+  const P=new Path2D();
+  const cx0=Math.floor(wx0/CS),cx1=Math.floor((wx0+TILE-1)/CS);
+  const cy0=Math.floor((wy0-CAVE_Y0)/CS),cy1=Math.floor((wy0+TILE-1-CAVE_Y0)/CS);
+  for(let cy=cy0;cy<=cy1;cy++){
+    let run=null;
+    for(let cx=cx0;cx<=cx1+1;cx++){
+      const s=cx<=cx1&&((cx<0||cx>=NX||cy<0||cy>=NY)?1:g[cy*NX+cx]);
+      if(s&&run===null)run=cx;
+      if(!s&&run!==null){P.rect(run*CS-wx0,cy*CS+CAVE_Y0-wy0,(cx-run)*CS,CS);run=null;}
+    }
+  }
+  const K=caveContour(C,wx0,wy0);
+  ctx.lineJoin="round";ctx.lineCap="round";
+  ctx.fillStyle="#0c1016";ctx.fill(P);
+  ctx.strokeStyle="#0c1016";ctx.lineWidth=CS;ctx.stroke(K);
+  /* порода той же планеты: без неё пещера — чёрные силуэты, и по ним не
+     понять, в чьих недрах игрок находится */
   if(cp){
     const mat=planetMat(cp);
-    fillMaterial(mat,camx,camy,.30,.18,CP);
-    fillMaterial(mat,camx,camy,.30,.18,FP);
+    fillMaterial(mat,wx0,wy0,.30,.18,P);
     /* и сразу гасим: тайл рассчитан на освещённую поверхность, под землёй он
        светит как днём и убивает единственное, что есть у пещеры — темноту */
-    ctx.fillStyle="rgba(2,4,9,.44)";
-    ctx.fill(CP);ctx.fill(FP);
-    /* и уводим в черноту к краям кадра: у самой кромки порода ещё читается
-       зерном, в глубине массива её нет вовсе. Плоской заливки не остаётся
-       нигде — то, что кажется чёрным, на деле градиент по зерну */
-    const dg=ctx.createLinearGradient(0,0,0,H);
-    dg.addColorStop(0,"rgba(0,1,5,.72)");
-    dg.addColorStop(.42,"rgba(0,1,5,0)");
-    dg.addColorStop(.62,"rgba(0,1,5,0)");
-    dg.addColorStop(1,"rgba(0,1,5,.80)");
-    ctx.fillStyle=dg;ctx.fill(CP);ctx.fill(FP);
-    /* влажный блик по кромке свода — единственный источник формы в темноте */
-    ctx.strokeStyle="rgba(150,200,230,.14)";ctx.lineWidth=1.6;
-    ctx.stroke(CP);ctx.stroke(FP);
+    ctx.fillStyle="rgba(2,4,9,.30)";ctx.fill(P);
+    ctx.strokeStyle="rgba(2,4,9,.30)";ctx.lineWidth=CS;ctx.stroke(K);
   }
+  /* с глубиной порода уходит в синюю черноту: по ней видно, насколько ты
+     ниже устья, без всяких цифр */
+  const dg=ctx.createLinearGradient(0,-wy0,0,CAVE_Y1-wy0);
+  dg.addColorStop(0,"rgba(0,1,5,0)");dg.addColorStop(.5,"rgba(0,1,5,.26)");
+  dg.addColorStop(1,"rgba(0,1,5,.6)");
+  ctx.fillStyle=dg;ctx.fill(P);ctx.strokeStyle=dg;ctx.lineWidth=CS;ctx.stroke(K);
+  /* влажный блик по кромке — единственный источник формы в темноте */
+  ctx.strokeStyle="rgba(150,200,230,.15)";ctx.lineWidth=1.6;ctx.stroke(K);
+}
+/* дальняя стена: пустота пещеры не чёрная — за проходом вторая стенка, темнее
+   и без блика. Слой на весь экран, пятна от шума */
+function drawCaveFar(C,camx,camy){
+  const L=screenLayer("cavefar|"+(C.seed&0xff),()=>{
+    const g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,"#090d13");g.addColorStop(1,"#030408");
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle="rgba(14,20,28,.45)";
+    for(let i=0;i<40;i++){
+      const x=((i*173)%W),y=((i*251)%H),r=40+(i*37)%90;
+      ctx.beginPath();ctx.ellipse(x,y,r,r*.55,(i%7)*.4,0,TAU);ctx.fill();
+    }
+  });
+  ctx.drawImage(L,0,0,W,H);
 }
 function drawCave(){
   const C=G.cave;
-  const camx=C.x-W/2;
-  ctx.fillStyle="#03040a";ctx.fillRect(0,0,W,H);
-  /* свод и пол — сплошная порода, между ними тёмный проход. Порода с
-     материалом, затемнением и бликом кромки — самое дорогое в кадре (20 мс
-     из 28 по замеру 0.87) и при этом неподвижное: рисуется ломтями (18c),
-     в кадре остаётся drawImage. Ломоть хранится при пещере. */
+  if(C.cy==null)C.cy=C.y;
+  const camx=C.x-W/2, camy=C.cy-H*.56;
+  drawCaveFar(C,camx,camy);
   const cp=G.surf&&G.surf.p;
-  C.chunks=chunkStore(C.chunks,C.seed+"|"+(cp?cp.seed:0)+"|"+H+"|"+DPR,C.y-H*.56,H);
-  drawChunks(C.chunks,camx,C.y-H*.56,(g,wx0,wy0)=>drawCaveRock(C,cp,wx0,wy0));
+  C.chunks=tileStore(C.chunks,C.seed+"|"+(cp?cp.seed:0)+"|"+DPR);
+  drawTiles(C.chunks,camx,camy,(g,wx0,wy0)=>drawCaveRock(C,cp,wx0,wy0));
+  /* положение астронавта на экране: камера догоняет, поэтому он не в центре */
+  const px=C.x-camx, py=C.y-11-camy;
   /* убранство: строение раньше материала — натёки уже вылеплены породой выше,
      тут только их силуэт и вода, а свет пойдёт после темноты */
-  const camy=C.y-H*.56;
-  drawCaveBack(C,camx,camy);
   drawCaveSolid(C,camx,camy);
   drawCaveWater(C,camx,camy);
-  drawCaveDark(C,W/2,H*.56);
-  drawCaveGlow(C,camx,camy,W/2,H*.56);
+  drawCaveDark(C,px,py);
+  /* дневной свет в устье: единственный холодный свет сверху, по нему видно,
+     где выход, даже отвернувшись */
+  const mx=60-camx, my=caveGalY(C,60)-camy;
+  if(mx>-200&&mx<W+200&&my>-300&&my<H+100){
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const lg=ctx.createLinearGradient(0,my-220,0,my+60);
+    lg.addColorStop(0,"rgba(150,190,230,.16)");lg.addColorStop(1,"rgba(150,190,230,0)");
+    ctx.fillStyle=lg;
+    ctx.beginPath();ctx.moveTo(mx-26,my-240);ctx.lineTo(mx+26,my-240);ctx.lineTo(mx+70,my+60);ctx.lineTo(mx-70,my+60);ctx.closePath();ctx.fill();
+    ctx.restore();
+  }
+  drawCaveGlow(C,camx,camy,px,py);
   for(const pl of C.plants){
-    const x=pl.x-camx;if(x<-70||x>W+70)continue;
-    drawPlant(pl,x,pl.y-C.y+H*.56);
+    const x=pl.x-camx,y=pl.y-camy;if(x<-70||x>W+70||y<-120||y>H+40)continue;
+    drawPlant(pl,x,y);
   }
   for(const b of C.fauna){
-    const x=b.x-camx;if(x<-50||x>W+50)continue;
-    drawBeast(b,x,b.y-C.y+H*.56+b.r*.9,true,b.stun);
+    const x=b.x-camx,y=b.y-camy;if(x<-50||x>W+50||y<-60||y>H+60)continue;
+    drawBeast(b,x,y+b.r*.9,true,b.stun);
   }
   if(!C.found){
-    const x=C.findX-camx;
-    if(x>-40&&x<W+40){
+    const x=C.findX-camx,y=C.findY-camy;
+    if(x>-40&&x<W+40&&y>-40&&y<H+40){
       ctx.fillStyle=Math.sin(G.t*.08)>0?"rgba(255,225,140,.9)":"rgba(255,225,140,.4)";
-      ctx.beginPath();ctx.arc(x,caveFloor(C,C.findX)-C.y+H*.56-6,4,0,TAU);ctx.fill();
+      ctx.beginPath();ctx.arc(x,y-6,4,0,TAU);ctx.fill();
     }
   }
-  const px=W/2,py=H*.56;
   ctx.save();ctx.translate(px,py);
-  drawAstronaut({face:C.face,amp:C.walkAmp,phase:C.walkPhase,air:false,
+  drawAstronaut({face:C.face,amp:C.walkAmp,phase:C.walkPhase,air:!C.on,jet:!!C.jetOn,
     mining:false,suitLow:G.surf.suit<25,lamp:true});
   ctx.restore();
   ctx.fillStyle="rgba(127,230,216,.85)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText(caveZoneAt(C,C.x).Z.ru.toUpperCase()+" · "+Math.round(C.x)+"/"+CAVE_W,12,H-30);
+  ctx.fillText(caveZoneAt(C,C.x).Z.ru.toUpperCase()+" · "+Math.round(C.x)+"/"+CAVE_W+
+    " · ГЛУБИНА "+Math.max(0,Math.round(C.y)),12,H-30);
   ctx.fillStyle=G.surf.suit>25?"rgba(93,115,130,.9)":"#ff6b57";
   ctx.fillText("СКАФАНДР "+Math.round(G.surf.suit)+"%",12,H-16);
+  drawJetBar(12,H-44);
 }
 
 /* ══════════════ шахта: спуск вглубь планеты ══════════════ */
@@ -37978,24 +38335,24 @@ window.dbg=dbg;
 setTimeout(function(){
   var i=document.getElementById("intro"); if(i)i.style.display="none";
   G.running=true;
-  // Р±Р°Р·Р° СЃ РїРѕР»РЅС‹Рј РЅР°Р±РѕСЂРѕРј РѕС‚СЃРµРєРѕРІ: РїСѓСЃС‚Р°СЏ СЃРµС‚РєР° РЅРёС‡РµРіРѕ РЅРµ РіРѕРІРѕСЂРёС‚ Рѕ РіСЂР°С„РёРєРµ.
-  // РљР»СЋС‡ Рё С„РѕСЂРјР°С‚ РєР»РµС‚РѕРє вЂ” РєР°Рє РІ 21a-mode-base: РїР»РѕСЃРєРёР№ РјР°СЃСЃРёРІ BASE_COLS*ROWS
-  var p=G.sys.planets.find(function(x){return x.type!=="gas";})||G.sys.planets[0];
-  var kinds=Object.keys(BUILD);
-  var cells=[];
-  for(var i=0;i<BASE_COLS*BASE_ROWS;i++)cells.push(null);
-  for(var i=0;i<cells.length;i++)
-    if((i*7)%11<8)cells[i]={k:kinds[i%kinds.length],hp:1};
-  G.bases[baseKey(G.sx,G.sy,p.idx)]={sx:G.sx,sy:G.sy,idx:p.idx,name:p.name,type:p.type,
-    res:p.res.slice(0,3),cells:cells,pool:{},tMs:Date.now(),built:Date.now()};
-  // РЅР° СЃС‚РµРЅРґРµ РЅСѓР¶РµРЅ С€С‚Р°С‚: Р»СЋРґРµР№ СЂРѕРІРЅРѕ СЃС‚РѕР»СЊРєРѕ, СЃРєРѕР»СЊРєРѕ РЅР°РЅСЏС‚Рѕ, Рё РїСѓСЃС‚Р°СЏ Р±Р°Р·Р°
-  // РѕСЃС‚Р°С‘С‚СЃСЏ РїСѓСЃС‚РѕР№ вЂ” РїРѕСЌС‚РѕРјСѓ РґР»СЏ СЃРЅРёРјРєР° РЅР°РЅРёРјР°РµРј СЃРјРµРЅСѓ
-  for(var q=0;q<8;q++){var cw=genMerc(hashi(q*77+13,5,3));cw.order={kind:"base",sx:G.sx,sy:G.sy,idx:p.idx};G.crew.push(cw);}
-  enterBase(p);
+  var q=location.search.match(/p=(\d+)/),pi=q?+q[1]:0;
+  var ps=G.sys.planets.filter(function(x){return x.type!=="gas";});
+  var p=ps[pi%ps.length]||G.sys.planets[0];
+  var sh=location.search.match(/ship=(\w+)/);if(sh)G.shipId=sh[1];
+  startLanding(p);
+  G.land.x=G.land.tr.padX;G.land.y=groundAt(G.land.tr,G.land.x)-11;G.land.ok=true;
+  enterSurface();
+  G.surf.x=G.surf.shipX+90;G.surf.y=groundAt(G.surf.tr,G.surf.x)-10;
+  var cv=document.getElementById("c");
+  function shot(n){try{fetch("/"+n+".png",{method:"POST",body:cv.toDataURL("image/png")});}catch(e){}}
   setTimeout(function(){
-    for(var f=0;f<3;f++)frame(performance.now()+f*16);
-    var cv=document.getElementById("c");
-    try{fetch("/base.png",{method:"POST",body:cv.toDataURL("image/png")});}catch(e){}
-  },1200);
-},1500);
+    for(var f=0;f<6;f++)frame(performance.now()+f*16);
+    shot("surf");
+    if(location.search.indexOf("cave")>=0){
+      enterCave();G.cave.x=400;
+      for(var f=0;f<6;f++)frame(performance.now()+f*16);
+      shot("cave");
+    }
+  },900);
+},1200);
 </script></body></html>

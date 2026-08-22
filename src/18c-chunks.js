@@ -72,3 +72,32 @@ function screenLayer(key,paint){
   if(SCREEN_LAYERS.size>12)SCREEN_LAYERS.delete(SCREEN_LAYERS.keys().next().value);
   return cn;
 }
+
+/* ── тайлы в двух измерениях ──
+   Ломоть по X годится для полосы; пещера (22) тянется и вниз, и тайл у неё
+   квадратный. Тот же договор: paint(g,wx0,wy0) красит мир в квадрате
+   [wx0,wx0+TILE)×[wy0,wy0+TILE) в координатах тайла. Держим столько, чтобы
+   хватило на экран 1920 с запасом; старые вытесняются по порядку. */
+const TILE=512, TILE_KEEP=20;
+function tileStore(store,key){
+  if(!store||store.key!==key)store={key,map:new Map(),order:[]};
+  return store;
+}
+function tileAt(store,kx,ky,paint){
+  const k=kx+","+ky;
+  let cn=store.map.get(k);
+  if(cn)return cn;
+  cn=mkCanvas(TILE,TILE);
+  withCtx(cn,TILE,TILE,kx*TILE,ky*TILE,paint);
+  store.map.set(k,cn);store.order.push(k);
+  while(store.order.length>TILE_KEEP)store.map.delete(store.order.shift());
+  return cn;
+}
+function drawTiles(store,camx,camy,paint){
+  const kx0=Math.floor(camx/TILE),kx1=Math.floor((camx+W)/TILE);
+  const ky0=Math.floor(camy/TILE),ky1=Math.floor((camy+H)/TILE);
+  for(let ky=ky0;ky<=ky1;ky++)for(let kx=kx0;kx<=kx1;kx++){
+    const cn=tileAt(store,kx,ky,paint);
+    ctx.drawImage(cn,kx*TILE-camx,ky*TILE-camy,TILE,TILE);
+  }
+}

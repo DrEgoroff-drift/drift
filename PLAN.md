@@ -1020,6 +1020,16 @@ receiver's own reading (`instrRead` dev on `radio` is already there, but the eth
 stutter); the bearing mark cannot be removed or acknowledged; the mirror's lines do not yet enter
 the parrot's memory.
 
+## M136 (0.100.0) — built. Under the skin
+
+Lander silhouette by `h.form` (`19-mode-landing`), the jetpack (`20d-jetpack`, surface and cave),
+and the cave rebuilt as a 2D rock field with carved passages and 2D raster tiles
+(`22-mode-cave`, `18c`). Stands: `docs/mklanders.ps1`, `docs/mkcave.ps1`. **Still open:** the
+lower gallery has no dressing of its own (water, crystals and veins hang on the upper one only);
+beasts walk the upper gallery and never descend; the rock fringe of the contour stroke carries
+no material; the base was asked to look like a Fallout-Shelter cross-section and already is one
+— what exactly differs is a question for the author.
+
 ## M133 (0.93.0) — built. The postal round
 
 `11e-post`: the first themed region. Six links — five who once carried the thing and the last

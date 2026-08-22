@@ -119,16 +119,21 @@ function updateSurface(dt){
      подсказки (ДЕЙСТВ у шахты то есть, то нет). Свободное падение — только
      пока реально в прыжке. */
   const gy=groundAt(tr,S.x)-10;
+  /* ранец (20d): на земле тяга — толчок вверх, в воздухе — полёт, пока есть
+     запас; запас копится на земле. Пик рельефа больше не стена. */
   if(S.on){
-    S.y=gy;S.vy=0;
-    if(keys.thrust){S.vy=-2.4;S.on=false;}
+    S.y=gy;S.vy=0;S.jetOn=false;
+    jetTick(S,S.g,dt,false);
+    if(keys.thrust&&jetCanLift()){S.vy=-1.6;S.on=false;S.jetOn=true;}
   }else{
-    S.vy+=S.g*dt;S.y+=S.vy*dt;
+    S.vy+=S.g*dt;
+    jetTick(S,S.g,dt,true);
+    S.y+=S.vy*dt;
     if(S.vy>=0&&S.y>=gy){
       /* удар о грунт: тряска пропорциональна скорости падения. Без неё прыжок
          с обрыва ничем не отличается от шага, и вес у мира пропадает. */
       if(S.vy>1.1)S.shake=Math.min(11,S.vy*2.6);
-      S.y=gy;S.vy=0;S.on=true;
+      S.y=gy;S.vy=0;S.on=true;S.jetOn=false;
     }
   }
   camStep(S,dt,walking);
@@ -474,6 +479,7 @@ function drawSurfaceHud(camx,camy){
       ctx.fillText(m.ru,sx,y+16);
     }
   }
+  drawJetBar(12,H-16);
 }
 function drawSurface(){
   const S=G.surf,tr=S.tr,p=S.p;
@@ -601,7 +607,7 @@ function drawSurface(){
   if(S.on)groundShadow(x,y+1,7,2);
   ctx.save();ctx.translate(x,y-1);
   drawAstronaut({face:S.face,amp:S.walkAmp,phase:S.walkPhase,
-    air:!S.on,jet:!S.on&&S.vy<0,mining:!!S.mining,suitLow:S.suit<25});
+    air:!S.on,jet:!!S.jetOn,mining:!!S.mining,suitLow:S.suit<25});
   ctx.restore();
   if(S.mining){
     ctx.strokeStyle="rgba(242,178,92,.7)";ctx.lineWidth=1.5;
