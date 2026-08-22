@@ -8,6 +8,15 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.100.4 — "The shaft changes section" (M140)
+
+Mine tails (G3): rock is now baked in 512×512 tiles by world-x and world-y (`tileStore` in
+`23-mode-dig`) — strata, veins and material once per tile, not per frame; along a long shaft the
+section changes — every eleventh row the shaft widens into a two-row chamber with a lamp on each
+wall and a barrel, and elsewhere an occasional niche is cut in the wall with a shelf holding a
+crate or a lantern that lights. The landings and the tub were already closed in 0.96.0 and are
+struck from the list.
+
 ## 0.100.3 — "Loose ends, one" (M139)
 
 The first of the tail-closing passes. Base: `21a-mode-base` split along its seam (logic stays,

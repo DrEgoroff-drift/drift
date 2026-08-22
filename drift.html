@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.100.3";
+const VER="0.100.4";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -30095,6 +30095,27 @@ function digVoidPath(D,camx,camy){
        камер. С запасом они сливаются в один коридор с рваной кромкой */
     if(P.roundRect)P.roundRect(x-4,y-4,DIG_CELL+8,DIG_CELL+8,rad);
     else P.rect(x-4,y-4,DIG_CELL+8,DIG_CELL+8);
+    /* ── сечение ствола меняется (хвост G3) ──
+       Длинный ствол был длинным стволом: одна ширина сверху донизу. В
+       настоящей шахте ствол то расширяется в камеру (разминовка, склад), то
+       держит в стенах ниши под инструмент. Раз в одиннадцать рядов — камера
+       на два ряда, на прочих пустых отрезках изредка карман в стене. Всё от
+       координаты: не дрожит и не требует памяти */
+    if(col===0){
+      const up=D.cells["0,"+(row-1)];
+      const sd=(D.cells["-1,"+row]||{}).dug||(D.cells["1,"+row]||{}).dug;
+      if(up&&up.dug&&!sd){
+        const m=row%11;
+        if(m===5||m===6)P.rect(x-15,y-3,DIG_CELL+30,DIG_CELL+6);
+        else{
+          const hn=hashi(row,0x4E1C,1);
+          if((hn&7)===0){
+            const s=((hn>>>3)&1)?1:-1, nx=s<0?x-13:x+DIG_CELL+1;
+            P.rect(nx,y+7,12,17);
+          }
+        }
+      }
+    }
   }
   return P;
 }
@@ -30103,7 +30124,11 @@ function drawDig(){
   const px=D.col*DIG_CELL,py=D.row*DIG_CELL;
   const camx=px-W/2,camy=py-H*.5;
   const scanAll=G.tech.has("survey");
-  digRockPass(D,p,camx,camy);
+  /* порода ломтями по world-x И world-y (хвост G3, правило G11): пласты, жилы
+     и материал пекутся один раз на тайл 512×512, кадр только кладёт картинки.
+     digRockPass рисует через W/H, которые withCtx подменяет на размер тайла */
+  D.tiles=tileStore(D.tiles,p.seed+"|"+DPR);
+  drawTiles(D.tiles,camx,camy,(g,wx0,wy0)=>digRockPass(D,p,wx0,wy0));
   /* ── рудное тело ──
      Светилось радиальным пятном на клетку и читалось бесформенной кляксой,
      ни при чём к камню вокруг. Руда в породе выглядит иначе: это вкрапления —
@@ -30367,6 +30392,44 @@ function drawDig(){
         ctx.fillStyle="rgba(30,32,36,.95)";ctx.fillRect(x+DIG_CELL-14,y+4,12,6);
         ctx.fillStyle="rgba(255,228,170,.75)";ctx.font="5px ui-monospace,monospace";ctx.textAlign="center";
         ctx.fillText("−"+(row*3),x+DIG_CELL-8,y+9);
+      }
+      /* камера и ниша получают убранство, иначе они — дырки в стене.
+         Камера: лампа на каждой стене и бочка у одной. Ниша: полка, на ней
+         ящик или фонарь, который тоже светит (D._lamps) */
+      const sd=dg(col-1,row)||dg(col+1,row);
+      if(!sd){
+        const m=row%11;
+        if(m===5){
+          for(const s of [-1,1]){
+            const lx=s<0?x-12:x+DIG_CELL+12, ly=y+8;
+            ctx.fillStyle="rgba(60,66,72,.95)";ctx.fillRect(lx-2,ly-3,5,7);
+            ctx.fillStyle="rgba(255,228,170,.95)";ctx.fillRect(lx-1,ly-1,3,3);
+            (D._lamps||(D._lamps=[])).push([lx+.5,ly+.5]);
+          }
+        }else if(m===6){
+          /* бочка у стены камеры: тело, два обруча, тень под ней */
+          const bx=x-13, bw=9, by=y+DIG_CELL-14;
+          ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillRect(bx-1,by+13,bw+2,2);
+          ctx.fillStyle="rgba(72,66,58,.96)";ctx.fillRect(bx,by,bw,14);
+          ctx.fillStyle="rgba(150,140,120,.35)";ctx.fillRect(bx,by,1.2,14);
+          ctx.fillStyle="rgba(120,124,130,.85)";ctx.fillRect(bx-.6,by+3,bw+1.2,1.4);ctx.fillRect(bx-.6,by+9.5,bw+1.2,1.4);
+        }else{
+          const hn=hashi(row,0x4E1C,1);
+          if((hn&7)===0){
+            const s=((hn>>>3)&1)?1:-1, nx=s<0?x-13:x+DIG_CELL+1;
+            ctx.fillStyle="rgba(118,90,56,.92)";ctx.fillRect(nx,y+22,12,2);        // полка
+            ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillRect(nx,y+24,12,1.4);
+            if((hn>>>4)&1){
+              ctx.fillStyle="rgba(70,64,54,.95)";ctx.fillRect(nx+2,y+14,8,8);     // ящик
+              ctx.fillStyle="rgba(120,110,92,.6)";ctx.fillRect(nx+2,y+14,8,1);
+            }else{
+              const lx=nx+6, ly=y+17;
+              ctx.fillStyle="rgba(60,66,72,.95)";ctx.fillRect(lx-2,ly-3,5,7);       // фонарь
+              ctx.fillStyle="rgba(255,228,170,.95)";ctx.fillRect(lx-1,ly-1,3,3);
+              (D._lamps||(D._lamps=[])).push([lx+.5,ly+.5]);
+            }
+          }
+        }
       }
     }
   }

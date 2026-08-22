@@ -436,7 +436,7 @@ drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
-drawDig                      src/23-mode-dig.js:384
+drawDig                      src/23-mode-dig.js:405
 drawDigFauna                 src/23-mode-dig.js:287
 drawDustMotes                src/19-mode-landing.js:331
 drawElevator                 src/20aa-poi-shapes.js:91
@@ -958,10 +958,10 @@ mgrWorkKeep                  src/12c-mgr-core.js:544
 mgrWorkSci                   src/12c-mgr-core.js:675
 midiHz                       src/10-music.js:106
 minedUnit                    src/11-log.js:102
-mineKey                      src/23-mode-dig.js:838
-mineLoad                     src/23-mode-dig.js:839
+mineKey                      src/23-mode-dig.js:901
+mineLoad                     src/23-mode-dig.js:902
 MINERAL                      src/18a-material.js:32
-mineSave                     src/23-mode-dig.js:849
+mineSave                     src/23-mode-dig.js:912
 MIRROR_CORE                  src/11f-mirror.js:22
 MIRROR_DELAY                 src/11f-mirror.js:21
 mirrorAll                    src/11f-mirror.js:30
@@ -2139,7 +2139,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/22-mode-cave.js · 26 КБ
   · пещера: поле породы в двух измерениях:1
 
-## src/23-mode-dig.js · 48 КБ
+## src/23-mode-dig.js · 52 КБ
   · шахта: спуск вглубь планеты:1
 
 ## src/24a-mode-raid.js · 43 КБ
