@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.99.1";
+const VER="0.99.2";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -26622,8 +26622,11 @@ function drawBase(){
      землёй читаются как трава и небо (так и вышло с первого раза). Берём тот же
      цвет, но уведённый в тёмное и обесцвеченный — узнаваемо и при этом подземно */
   const rc=i=>mixc(pal[Math.min(i,pal.length-1)],[26,19,14],.66);
-  const rock=ctx.createLinearGradient(0,gy,0,Y(150+baseRows(B)*BCELL_H+120));
-  rock.addColorStop(0,rgba(rc(1),1));
+  const rock=ctx.createLinearGradient(0,gy-BCELL_H*2.1,0,Y(150+baseRows(B)*BCELL_H+120));
+  /* холм начинается выше грунта и освещён небом: одной тёмной заливкой он
+     читался дырой в небе, а не горой (G9) */
+  rock.addColorStop(0,rgba(mixc(rc(0),sky[0],.35),1));
+  rock.addColorStop(.3,rgba(rc(1),1));
   rock.addColorStop(.55,rgba(rc(3),1));
   rock.addColorStop(1,rgba(rc(4),1));
   ctx.fillStyle=rock;ctx.fill(GP);
@@ -26637,7 +26640,7 @@ function drawBase(){
     ctx.fillStyle=r%2?"rgba(0,0,0,.30)":"rgba(255,255,255,.055)";ctx.fill();
   }
   const mat=pl?planetMat(pl):null;
-  if(mat)fillMaterial(mat,camx,camy,.34,.26,GP,{x:0,y:Math.max(0,gy),w:W,h:H});
+  if(mat)fillMaterial(mat,camx,camy,.34,.26,GP,{x:0,y:0,w:W,h:H});   // и холму тоже — раньше материал шёл только от грунта вниз (G9)
   /* Материал планеты — это её ПОВЕРХНОСТЬ: во всю силу под землёй он читается
      мхом и травой. Умножением уводим всё в бурое: фактура остаётся, зелень
      уходит, и разрез начинает выглядеть разрезом */
@@ -26647,6 +26650,11 @@ function drawBase(){
   /* верхний слой почвы: без него кромка грунта — просто линия среза */
   ctx.save();ctx.clip(GP);
   ctx.fillStyle="rgba(20,14,9,.45)";ctx.fillRect(0,Math.max(0,gy),W,16);
+  ctx.restore();
+  /* кромка холма ловит небо: полоса света внутрь от силуэта и волосок по краю */
+  ctx.save();ctx.clip(GP);
+  ctx.strokeStyle=rgba(sky[0],.16);ctx.lineWidth=14;ctx.stroke(GP);
+  ctx.strokeStyle=rgba(mixc(sky[0],[255,255,255],.3),.30);ctx.lineWidth=2.4;ctx.stroke(GP);
   ctx.restore();
   /* ── зерно породы ──
      Пласты у базы были, а зерна не было, и разрез читался полосатым матрасом:

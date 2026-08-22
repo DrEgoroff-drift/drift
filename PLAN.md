@@ -184,11 +184,14 @@ standard; the rest is pulled up to them, not the other way round.
   non-tiling domain warp (fbm on fbm), bands as fronts with sharp leading edges and soft trailing
   ones; the floor darker than the band; per-type structure (spots, vortices, plumes), not
   palette.
+  **Partly done in 0.99.2** (768×384, wider tile). Still open: per-type structure, sharp fronts.
 - **G6 — the belt is unlit** (`cockpit1.png`). Asteroids are flat polyhedra with no light
   direction; the void behind is a gradient; nothing gives distance. Fix: one star direction per
   belt, faces shaded by normal against it (computed once per rock, cached), a rim on the lit
   edge, three depth planes with dust motes drifting in the near one, the far rocks smaller and
   greyer. The frame and rack stay.
+  **Note (0.99.2):** the faces were already lit by normal against the star with a rim; the
+  fault was contrast — terminator sharpened. Still open: depth planes, near dust motes.
 - **G7 — the sky is a band.** On every world the sky is a vertical gradient; the landing screen
   draws clouds as puffs on haze and rain as uniform streaks; the ringed body is drawn through its
   ring. Fix: sky from `19b` as a cached `screenLayer` per (world, hour, weather): horizon glow,
@@ -202,6 +205,8 @@ standard; the rest is pulled up to them, not the other way round.
   modules is one brown. Fix: strata through the soil with the surface's micro grain (chunked),
   a few buried stones, the shaft's spoil heap on top, the hill silhouette with a lit edge from the
   sky. The rooms stay.
+  **Done in 0.99.2** for the hill (lit gradient, material, sky rim). Still open: spoil heap,
+  buried stones that read.
 - **G10 — system view composes nothing** (`system.png`). Nebula blobs, even stars, the star and
   planets off-frame: the screen looks like a loading state. Fix: stars in three magnitudes with a
   few coloured ones, the primary's glow bleeding into the frame from its direction even

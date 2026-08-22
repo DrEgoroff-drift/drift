@@ -8,6 +8,14 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.99.2 — "A hill, not a hole" (G5, G6, G9)
+
+The hill over the base starts its rock gradient above ground and lit by the sky, takes the
+planet material like the soil below, and carries a rim of sky light along its silhouette — it
+was one flat dark fill before. The gas giant is baked at 768×384 with a tile 1.25 screens wide
+(the old .62 tile repeated twice per screen); the asteroid terminator is sharper
+(`.15+li^1.3` instead of `.24+li`).
+
 ## 0.99.1 — "Question, answer, circle" (music, pass 1)
 
 Self-review of `10-music` by structure: the drone and the bass sat on the tonic forever, layer
