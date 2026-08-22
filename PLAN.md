@@ -891,6 +891,22 @@ socket out is not wired); the recorder itself is not a purchasable unit, only th
 `26-ui-station` crossed 40 KB with this tab and is now shouting on every build; wear from the hull
 (`12s-wear`) and instrument age run on separate clocks that never speak to each other.
 
+## M133 (0.93.0) — built. The postal round
+
+`11e-post`: the first themed region. Six links — five who once carried the thing and the last
+addressee — hand-written, each with one line about himself and a word about who comes next, never
+about the parcel. Addresses are seeded and not stored: link 0 is the post region's plain trading
+system, link 5 its core, links 1–4 are stations 4–14 sectors out, outside the region. The parcel
+is an ordinary object (a bundle, a jar, a wrench with a blank tag). On docking at the next link
+the man comes to you himself (`postDock`, once per landing, toast + journal); the cantina shows the
+parcel next to the table with one button, **open**. Opened, the chain goes on; the last man says
+one extra sentence and does not reproach. Nothing is paid; the core counts as `care` in the memory
+of place. State is three numbers in `G.post`; suite `91zr-post`.
+
+**Still open:** the links are met only in passing — nothing points at them (rumours, M148, are the
+natural pointer); the post region itself has no edge colouring yet beyond silent instruments; the
+parcel is not yet a thing one can put on the table (M128) or show to the bird.
+
 ## M132 (0.92.0) — built. Regions: the table, and the memory of place
 
 `06c-regions`: a closed table of fifteen themed regions (post, mirror, lights, hours, glow, grove,

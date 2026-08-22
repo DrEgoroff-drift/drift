@@ -8,6 +8,13 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.93.0 — "The postal round" (M133)
+
+In the one region where the instruments are simply right, someone hands you a wrapped bundle. Five
+people across the arm recognise it when you happen to land where they are, say one sentence about
+themselves, and name the next. It can be opened. The last man has been waiting forty-two years;
+nothing is paid.
+
 ## 0.92.0 — "Fifteen regions, and the place remembers" (M132)
 
 **The region table.** Fifteen themed regions (`06c-regions`) are now placed on the sector grid,
