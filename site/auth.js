@@ -117,8 +117,39 @@
     if(sub)sub.textContent="продолжить полёт";
     try{                                   /* токен мог истечь за девяносто дней */
       const d=await call("me",{},true);
-      if(!d.ok){setAcc("","");paint();}
+      if(!d.ok){setAcc("","");paint();return;}
+      /* Записи без почты восстановить нечем. Предлагаем добавить её здесь же —
+         иначе человек узнает об этом ровно в тот день, когда забудет пароль. */
+      if(!d.mail){
+        const add=document.createElement("span");
+        add.innerHTML=' · <span class="linkish" id="addml">добавить почту</span>';
+        w.appendChild(add);
+        const el=add.querySelector("#addml");
+        actionable(el);
+        el.onclick=()=>askMail(w);
+      }
     }catch(e){}
+  }
+
+  /* Почта спрашивается там же, где стоит ссылка: отдельное окно ради одного
+     поля — это больше церемонии, чем дела. */
+  function askMail(w){
+    w.innerHTML='почта для восстановления: <input id="qm" type="email" '+
+      'placeholder="вам@почта.ру" maxlength="100" style="width:190px;height:34px;'+
+      'margin:0 6px 0 0;display:inline-block;vertical-align:middle;font-size:12.5px">'+
+      '<span class="linkish" id="qs">сохранить</span>';
+    const inp=w.querySelector("#qm"), save=w.querySelector("#qs");
+    actionable(save); inp.focus();
+    const go=async()=>{
+      const mail=inp.value.trim();
+      if(!mail){paint();return;}
+      const d=await call("setmail",{mail},true).catch(()=>null);
+      w.textContent=d&&d.ok?"почта сохранена — пароль теперь можно вернуть"
+                           :((d&&d.error)||"не вышло сохранить");
+      setTimeout(paint,2200);
+    };
+    save.onclick=go;
+    inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();go();}};
   }
   paint();
 })();
