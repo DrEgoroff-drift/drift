@@ -86,7 +86,7 @@ function postDock(){
   const L=POST_LINKS[i];
   if(i===POST_LINKS.length-1){
     P.done=1;
-    const line=(P.opened&&L.opened)?L.opened:L.line;
+    const line=((P.opened&&L.opened)?L.opened:L.line)+(P.strip?"\nА лента — ваша? Оставлю. Пусть лежит с ней.":"");
     logAdd("good",L.who+": "+line.replace(/\n/g," "));
     if(typeof placeNote==="function")placeNote("care",3);
     return mark({who:L.who,line,next:null,last:true});
@@ -116,6 +116,15 @@ function postBlock(){
   if(!P.stage&&!said)return;
   if(P.done&&!said)return;
   $body.appendChild(el("div","sec","ПОСЫЛКА · "+(P.done?"ДОСТАВЛЕНА":"ВЫ ЕЁ ВЕЗЁТЕ")));
+  /* к посылке можно приложить ленту (хвост M133): полоса уходит из ваших,
+     последний её заметит — и только */
+  if(!P.done&&P.stage&&!P.strip&&typeof stripsAll==="function"&&stripsAll().length){
+    const rs=el("div","row");
+    rs.appendChild(el("div","nm","<b>Приложить ленту</b><s>одна из ваших полос пойдёт с посылкой по рукам</s>"));
+    const bs=el("button","act sm","ПРИЛОЖИТЬ");
+    bs.onclick=()=>{stripsAll().shift();P.strip=1;logAdd("dim","К свёртку приложена лента");renderTab();};
+    rs.appendChild(bs);$body.appendChild(rs);
+  }
   if(said){
     $body.appendChild(el("div","row","<div class='nm'><b>"+said.who+"</b><s style='color:#cfe3ea;line-height:1.9'>"+
       said.line.replace(/\n/g,"<br>")+(said.next?"<br><i>"+said.next+"</i>":"")+"</s></div>"));

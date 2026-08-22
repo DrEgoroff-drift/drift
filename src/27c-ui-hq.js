@@ -538,6 +538,7 @@ function tableBlock(){
   }
   $body.appendChild(el("div","sec","СТОЛ · ПОЛОЖИТЕ ВЕЩЬ — ОТВЕТЯТ НА НЕЁ, А НЕ НА СЛОВА"));
   const say1=(res,r)=>{
+    if(res&&typeof placeNote==="function")placeNote("care",1);   // вещь на столе — место помнит (хвост M132)
     r.innerHTML="<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
       (!res?"<i>вещь лежит, на неё не смотрят</i>":
        res.silent?"<i>посмотрел на это и промолчал</i>":res.line)+"</s></div>";
@@ -580,4 +581,19 @@ function tableBlock(){
   b3.onclick=()=>{say1(putOnTable("rumour",news.length),out3);};
   r3.appendChild(b3);
   $body.appendChild(r3);$body.appendChild(out3);
+  /* имя (хвост M128): то же движение, предмет — вы сами */
+  const r4=el("div","row"),out4=el("div","row");
+  r4.appendChild(el("div","nm","<b>ВАШЕ ИМЯ</b><s>"+(G.name||"капитан")+"</s>"));
+  const b4=el("button","act sm","НАЗВАТЬ");
+  b4.onclick=()=>{say1(putOnTable("name",visitHere()),out4);};
+  r4.appendChild(b4);
+  $body.appendChild(r4);$body.appendChild(out4);
+  /* пеленг зеркала (хвост M134): отметку можно снять с карты */
+  if(typeof mirrorAll==="function"&&mirrorAll().bearing===1){
+    const r5=el("div","row");
+    r5.appendChild(el("div","nm","<b>ПЕЛЕНГ ИСТОЧНИКА</b><s>отметка на карте · до неё не долететь</s>"));
+    const b5=el("button","act sm","СНЯТЬ");
+    b5.onclick=()=>{mirrorAck();renderTab();};
+    r5.appendChild(b5);$body.appendChild(r5);
+  }
 }

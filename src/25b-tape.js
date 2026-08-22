@@ -29,6 +29,21 @@ function tapeInit(){
   return G.tape={v:1,col:new Uint8Array(TAPE_N*TAPE_PENS),zero:null,
                  n:0,head:0,acc:0,back:0,tick:0};
 }
+/* лента переживает сохранение (хвост M123): кольцо уходит в base64 одной
+   строкой, остальное — как есть. «Сорок часов назад» теперь и правда назад */
+function tapePack(){
+  const T=G.tape;if(!T||T.v!==1)return null;
+  let s="";for(let i=0;i<T.col.length;i++)s+=String.fromCharCode(T.col[i]);
+  return {v:1,col:btoa(s),zero:T.zero?Array.from(T.zero):null,n:T.n|0,head:T.head|0,acc:T.acc||0,back:T.back||0,tick:0};
+}
+function tapeUnpack(o){
+  if(!o||o.v!==1||typeof o.col!=="string")return null;
+  try{
+    const s=atob(o.col),col=new Uint8Array(TAPE_N*TAPE_PENS);
+    for(let i=0;i<Math.min(s.length,col.length);i++)col[i]=s.charCodeAt(i);
+    return {v:1,col,zero:Array.isArray(o.zero)?o.zero.slice():null,n:o.n|0,head:o.head|0,acc:o.acc||0,back:o.back||0,tick:0};
+  }catch(e){return null;}
+}
 /* ЧТО ИМЕННО ПИШЕТ ПЕРО. Не показание, а его уход от собственного нуля. Так
    устроены настоящие самописцы (нуль и диапазон — две ручки), и так же устроен
    смысл ленты: панель отвечает на «сколько сейчас», лента — на «менялось ли».
@@ -58,7 +73,7 @@ function tapeSample(){
 /* такт: чем ближе к ядру, тем чаще перо. Ничего, кроме частоты, не меняется */
 function tapeRate(){
   const m=(typeof instrMisclose==="function")?instrMisclose():0;
-  return TAPE_DT/(1+clamp(m,0,1)*1.35);
+  return TAPE_DT/(1+clamp(m,0,1)*1.35)*(G.tapeLong?2:1);   // второй барабан (хвост M127): лента вдвое длиннее
 }
 function tapeTick(dt){
   const T=tapeInit();

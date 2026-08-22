@@ -154,6 +154,7 @@ function updateCombat(dt){
           sfx("hit",{v:.55});
           G.hull=Math.max(0,G.hull-d);
           if(G.hull<=0){wreck();return;}
+          if(typeof instrKnock==="function")instrKnock();   // попадание может выбить гнездо прибора (хвост M127)
         }
       }
     }

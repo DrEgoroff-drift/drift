@@ -47,7 +47,15 @@ function etherTick(dt){
   /* строка истории (11c) — не чаще раза из трёх, остальное остаётся безликим шумом */
   const sl=(typeof storyEtherLine==="function")?storyEtherLine(r):null;
   const line=sl!=null?sl:pick(ETHER,r);
-  logAdd("dim",line);
+  /* окраина почтового круга (хвост M133): связь скверная — строка рвётся,
+     слова выпадают. Это и есть цвет области, кроме молчащих приборов */
+  let out=line;
+  if(out&&typeof regionAt==="function"){
+    const R=regionAt(G.sx,G.sy);
+    if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&Math.random()<.6)
+      out=out.replace(/[а-яёa-z]{3,}/gi,w=>Math.random()<.22?"…":w);
+  }
+  logAdd("dim",out);
   if(typeof mirrorEchoArm==="function")mirrorEchoArm(line);   /* зеркало (11f) */
 }
 /* ── как к вам обращаются ──
@@ -95,7 +103,23 @@ function speechHere(){
   /* реплика истории (11c) вклинивается перед общей; решение держится всю посадку */
   if(st.sq===undefined)st.sq=(typeof storyQueueLine==="function")?storyQueueLine():null;
   if(st.sq)return {line:st.sq.line,silent:st.sq.silent,addr:addrForm()};
-  const line=LOCAL[st.i];
+  let line=LOCAL[st.i];
+  /* дом и характер места (хвосты M113, M128): каждая четвёртая реплика — про
+     дом, которому принадлежит станция, и его боны; каждая вторая из
+     оставшихся — в тоне места: глухой аванпост и людный узел говорят по-разному */
+  const Hh=(typeof houseOf==="function")?houseOf(G.sys):null;
+  if(Hh&&st.i%4===3&&line!==null){
+    const rt=(typeof scripRate==="function")?scripRate(Hh.id):100;
+    line="— Тут всё "+Hh.ru+": "+Hh.note+". Боны их нынче по "+rt+(rt>115?". Дорого, да.":rt<85?". Дешевеют.":".");
+  }else if(st.i%4===1&&line!==null){
+    const back=(typeof cantStyle==="function")?(cantStyle().back||""):"";
+    const PL={outpost:["— Тихо у нас. Вот и хорошо.","— Рейс раз в неделю, если повезёт."],
+      trade:["— Не стойте в проходе, тут ходят.","— Сегодня четыре борта, завтра восемь."],
+      indust:["— Смена кончилась, а гул нет.","— Руду вчера не вывезли. И позавчера."],
+      yard:["— Стапель занят до среды. Какой сегодня?","— Сварщика нет. Сварщик есть, трезвого нет."],
+      sci:["— Не трогайте приборы. Вообще ничего не трогайте.","— У нас тут тихий час. Круглые сутки."]}[back];
+    if(PL)line=PL[st.i%PL.length];
+  }
   return {line,silent:line===null,addr:addrForm()};
 }
 /* ── стол ──
@@ -120,6 +144,15 @@ const TABLE_REPLY={
     "— Кто вам это сказал? Ладно, не говорите.",
     null,
     "— Вот с этого места подробнее. Хотя нет, не надо."
+  ]
+  ,
+  /* имя (хвост M128): стол принимает и его — ответ на человека, не на вещь */
+  name:[
+    "— Слышал. Нет, не слышал. Но теперь буду.",
+    "— Ну и что. Тут у каждого имя.",
+    null,
+    "— А. Так это вы. Мне говорили, вы выше.",
+    "— Запомню. Я не запомню, но скажу, что запомню."
   ]
 };
 /* ЛЕНТА КАК ВЕЩЬ (долг M123). Оторванная полоса — это предмет: её кладут на

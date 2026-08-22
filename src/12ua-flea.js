@@ -164,6 +164,14 @@ function fleaLeave(sys){
 /* ── вкладка ──
    Живёт здесь, рядом со своей механикой: 26-ui-station и так просится на распил. */
 function fleaRender(){
+  /* толпа и шум (хвост M121): толкучка — единственное людное место станции.
+     При первом заходе за посадку — гул голосов, в шапке — сколько народу */
+  if(G.sys&&G._fleaHum!==G.sys.key+":"+visitHere()){
+    G._fleaHum=G.sys.key+":"+visitHere();
+    for(let i=0;i<3;i++)sfx("ui",{f:220+Math.random()*160,to:180,d:.25,v:.08});
+  }
+  if(G.sys)$body.appendChild(el("div","sec","ТОЛКУЧКА · У ЛОТКОВ ЧЕЛОВЕК "+
+    (8+Math.abs(hashi(G.sys.seed|0,fleaEpoch(),0xF1EA))%14)+" · ГОВОР, ТОЛКОТНЯ, КТО-ТО СПОРИТ О ЦЕНЕ"));
   const sys=G.sys,H=typeof houseOf==="function"?houseOf(sys):null;
   $body.appendChild(el("div","sec","РЯДЫ · ВСЁ ЗДЕСЬ ЧЬЁ-ТО · "+
     (H?("СЧЁТ В БОНАХ "+H.ru.toUpperCase()+" · КРЕДИТЫ ДОРОЖЕ НА "+

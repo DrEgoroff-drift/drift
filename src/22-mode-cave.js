@@ -344,6 +344,7 @@ function updateCave(dt){
     G.prompt="ДЕЙСТВИЕ — ОСМОТРЕТЬ НАХОДКУ";
     if(actEdge){
       C.found=true;G.data+=20;
+      if(typeof heardAdd==="function")heardAdd("ground",{sx:G.sx,sy:G.sy,note:"находка в пещере"},null);
       tell("tech","Находка в пещере · +20 данных","Находка в пещере\n+20 данных");
       /* в глубине пещеры лежит не только запись данных (05a-nodes) */
       nodeDrop("в пещере",.5+sysDanger(G.sx,G.sy)*.5,hashi(C.findX|0,0xCA7,3));
@@ -354,6 +355,7 @@ function updateCave(dt){
     G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
     if(actEdge){
       plant.scanned=true;G.species.add(plant.name);G.data+=9;G.bio=(G.bio|0)+1;
+      if(typeof heardAdd==="function")heardAdd("ground",{sx:G.sx,sy:G.sy,note:"в пещере: "+plant.name},null);   // птица слышит и на планете (хвост M117)
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
   }else if(C.fauna.some(b=>b.stun<=0&&b.flee<=0&&Math.abs(b.y-C.y)<120)){

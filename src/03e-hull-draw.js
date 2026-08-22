@@ -535,6 +535,23 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.stroke();
   }
   }
+  /* ── свет сверху и не-зеркальность (хвост M55, корабли) ──
+     Корпус был симметричен и плоско освещён. Поверх обвода — градиент
+     (свет слева-сверху, тень к правому борту) клипом по силуэту; и одна
+     деталь по одному борту — штанга датчика с головкой, от семени, чтобы
+     левый борт не был копией правого */
+  {
+    ctx.save();tracePoly(h.poly);ctx.clip();
+    const lg=ctx.createLinearGradient(0,-h.bw,0,h.bw);
+    lg.addColorStop(0,"rgba(255,248,230,.10)");lg.addColorStop(.5,"rgba(255,255,255,0)");lg.addColorStop(1,"rgba(0,0,10,.16)");
+    ctx.fillStyle=lg;ctx.fillRect(h.tail-4,-h.bw-4,h.nose-h.tail+8,h.bw*2+8);
+    ctx.restore();
+    const hs=hashi(typeof id==="string"?id.length*31+id.charCodeAt(0):(id|0),0xA5,3), side=(hs&1)?1:-1;
+    const bx=h.tail+(h.nose-h.tail)*(.35+((hs>>>1)&3)*.1), by=profW(h.prof,bx)*.9*side;
+    ctx.strokeStyle=rgba(h.dark,.9);ctx.lineWidth=.7;
+    ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx-2,by+side*3.2);ctx.stroke();
+    ctx.fillStyle=rgba(h.lite,.8);ctx.beginPath();ctx.arc(bx-2,by+side*3.2,.7,0,TAU);ctx.fill();
+  }
   /* ── бортовые огни ── */
   /* Огни ставились по законцовке первого крыла, а при её отсутствии — по
      ±bw*1.6, то есть заведомо ЗА бортом: у рудовоза и яхты две точки висели

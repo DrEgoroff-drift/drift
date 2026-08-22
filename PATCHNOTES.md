@@ -8,6 +8,25 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.100.8 — "Loose ends, station side" (M144)
+
+The counter length follows the hall seed (M55); every fourth counter line is about the house
+that owns the station and its scrip rate, and every other one speaks in the tone of the place —
+outpost, hub, works, yard, lab (M113, M128 archive tail). The flea market has a crowd count in
+its header and a murmur on the first visit (M121). The bird hears on a planet: cave species and
+the cave find go into its memory (M117); mirror lines and echoes go there too (M134). The tape
+survives a save — the ring is packed to base64 (M123); the recorder is merchandise: a second
+drum that makes the tape run half speed and remember twice as long (M127); a pirate hit can
+knock out a socket, leaving one instrument a dead scale (M127); instruments age faster on a
+worn hull — one clock (M127). The misclosure sits in a window of its own beside the panel
+(M122). The table accepts a name (M128); a strip can be attached to the parcel and the last
+link notices (M133); while the parcel is aboard a third of empty rumours point at who waits
+for it (M133); a thing on the table counts as care, a missile hit counts as hurt (M132); the
+mirror bearing can be struck from the map (M134); the postal runner hears farther, not only
+deeper (M126); the ether tears on the post region's edge (M133). Hulls get a top light and one
+sensor boom on one side, so the two boards are no longer mirror copies (M55). `26-ui-station`
+split along the home tab into `26a-ui-station-home` — the guard is quiet on it again.
+
 ## 0.100.7 — "Rock behind the plating" (M143)
 
 Raid tails (G4): where the cell behind a bulkhead is solid asteroid on every side, the wall is

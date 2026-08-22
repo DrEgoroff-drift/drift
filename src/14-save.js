@@ -37,6 +37,7 @@ function snapshot(){
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,
+    tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
@@ -423,6 +424,8 @@ function applySave(s){
      знает — тогда на корабле стоит казённый набор, как с верфи */
   G.instrKit=(s.instrKit&&typeof s.instrKit==="object")?s.instrKit:null;
   G.instrShelf=Array.isArray(s.instrShelf)?s.instrShelf.slice(0,8):[];
+  G.tape=(typeof tapeUnpack==="function")?tapeUnpack(s.tape):null;
+  G.tapeLong=s.tapeLong|0;
   /* речь (M128): очередь реплик по местам, счётчик посадок и оторванные ленты —
      всё это память об игроке, а не о мире, и поэтому персистится */
   G.speech=(s.speech&&typeof s.speech==="object")?s.speech:{};

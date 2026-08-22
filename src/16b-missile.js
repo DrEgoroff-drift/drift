@@ -99,6 +99,7 @@ function mslBoom(m,hit){
   sfx("hit",{f:120,to:60,d:.3,v:.5});
   if(!hit)return;
   hit.hull-=m.dmg;
+  if(typeof placeNote==="function")placeNote("hurt",2);   // место помнит попадание, не пуск (хвост M132)
   hit.aware=true;
   if(hit.hull<=0){
     /* строку о сбитом пишет killPirate — второй записи о том же не надо */

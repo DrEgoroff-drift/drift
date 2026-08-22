@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.100.7";
+const VER="0.100.8";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -2994,6 +2994,23 @@ function drawHull(id,thrusting,braking,lvl,bank){
     ctx.stroke();
   }
   }
+  /* ── свет сверху и не-зеркальность (хвост M55, корабли) ──
+     Корпус был симметричен и плоско освещён. Поверх обвода — градиент
+     (свет слева-сверху, тень к правому борту) клипом по силуэту; и одна
+     деталь по одному борту — штанга датчика с головкой, от семени, чтобы
+     левый борт не был копией правого */
+  {
+    ctx.save();tracePoly(h.poly);ctx.clip();
+    const lg=ctx.createLinearGradient(0,-h.bw,0,h.bw);
+    lg.addColorStop(0,"rgba(255,248,230,.10)");lg.addColorStop(.5,"rgba(255,255,255,0)");lg.addColorStop(1,"rgba(0,0,10,.16)");
+    ctx.fillStyle=lg;ctx.fillRect(h.tail-4,-h.bw-4,h.nose-h.tail+8,h.bw*2+8);
+    ctx.restore();
+    const hs=hashi(typeof id==="string"?id.length*31+id.charCodeAt(0):(id|0),0xA5,3), side=(hs&1)?1:-1;
+    const bx=h.tail+(h.nose-h.tail)*(.35+((hs>>>1)&3)*.1), by=profW(h.prof,bx)*.9*side;
+    ctx.strokeStyle=rgba(h.dark,.9);ctx.lineWidth=.7;
+    ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx-2,by+side*3.2);ctx.stroke();
+    ctx.fillStyle=rgba(h.lite,.8);ctx.beginPath();ctx.arc(bx-2,by+side*3.2,.7,0,TAU);ctx.fill();
+  }
   /* ── бортовые огни ── */
   /* Огни ставились по законцовке первого крыла, а при её отсутствии — по
      ±bw*1.6, то есть заведомо ЗА бортом: у рудовоза и яхты две точки висели
@@ -4090,10 +4107,25 @@ function instrAgeTick(dt){
   const K=instrKit();
   for(const id in K){
     const T=instrTraits(K[id]);
-    K[id].wear=clamp((K[id].wear||0)+dt*INSTR_WEAR_RATE*T.age,0,1);
+    /* часы одни (хвост M127): на изношенном корпусе приборы стареют быстрее —
+       вибрация и люфт крепления, wearMul из 12s даёт ту же шкалу */
+    const hk=(typeof wearMul==="function")?1+(1-clamp(wearMul(),0,1))*2.5:1;
+    K[id].wear=clamp((K[id].wear||0)+dt*INSTR_WEAR_RATE*T.age*hk,0,1);
   }
 }
 function instrWearRu(w){
+/* прибор можно потерять (хвост M127): попадание по корпусу изредка выбивает
+   гнездо — экземпляр разбит до мёртвой шкалы, и панель это покажет сама */
+function instrKnock(){
+  if(!G.running||Math.random()>.06)return null;
+  const K=instrKit(),ids=Object.keys(K).filter(id=>(K[id].wear||0)<.85);
+  if(!ids.length)return null;
+  const id=ids[Math.floor(Math.random()*ids.length)];
+  K[id].wear=1;
+  const I=(typeof INSTR_BY_ID!=="undefined"&&INSTR_BY_ID[id])?INSTR_BY_ID[id].ru:id;
+  tell("warn","Попадание: выбито гнездо — "+I,"Прибор разбит\n"+I+"\nпанель слепа по этому каналу");
+  return id;
+}
   return w<.12?"новый":w<.35?"обношенный":w<.6?"с люфтом":w<.85?"разбитый":"мёртвая шкала";
 }
 /* ── цена ──
@@ -6581,7 +6613,15 @@ function etherTick(dt){
   /* строка истории (11c) — не чаще раза из трёх, остальное остаётся безликим шумом */
   const sl=(typeof storyEtherLine==="function")?storyEtherLine(r):null;
   const line=sl!=null?sl:pick(ETHER,r);
-  logAdd("dim",line);
+  /* окраина почтового круга (хвост M133): связь скверная — строка рвётся,
+     слова выпадают. Это и есть цвет области, кроме молчащих приборов */
+  let out=line;
+  if(out&&typeof regionAt==="function"){
+    const R=regionAt(G.sx,G.sy);
+    if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&Math.random()<.6)
+      out=out.replace(/[а-яёa-z]{3,}/gi,w=>Math.random()<.22?"…":w);
+  }
+  logAdd("dim",out);
   if(typeof mirrorEchoArm==="function")mirrorEchoArm(line);   /* зеркало (11f) */
 }
 /* ── как к вам обращаются ──
@@ -6629,7 +6669,23 @@ function speechHere(){
   /* реплика истории (11c) вклинивается перед общей; решение держится всю посадку */
   if(st.sq===undefined)st.sq=(typeof storyQueueLine==="function")?storyQueueLine():null;
   if(st.sq)return {line:st.sq.line,silent:st.sq.silent,addr:addrForm()};
-  const line=LOCAL[st.i];
+  let line=LOCAL[st.i];
+  /* дом и характер места (хвосты M113, M128): каждая четвёртая реплика — про
+     дом, которому принадлежит станция, и его боны; каждая вторая из
+     оставшихся — в тоне места: глухой аванпост и людный узел говорят по-разному */
+  const Hh=(typeof houseOf==="function")?houseOf(G.sys):null;
+  if(Hh&&st.i%4===3&&line!==null){
+    const rt=(typeof scripRate==="function")?scripRate(Hh.id):100;
+    line="— Тут всё "+Hh.ru+": "+Hh.note+". Боны их нынче по "+rt+(rt>115?". Дорого, да.":rt<85?". Дешевеют.":".");
+  }else if(st.i%4===1&&line!==null){
+    const back=(typeof cantStyle==="function")?(cantStyle().back||""):"";
+    const PL={outpost:["— Тихо у нас. Вот и хорошо.","— Рейс раз в неделю, если повезёт."],
+      trade:["— Не стойте в проходе, тут ходят.","— Сегодня четыре борта, завтра восемь."],
+      indust:["— Смена кончилась, а гул нет.","— Руду вчера не вывезли. И позавчера."],
+      yard:["— Стапель занят до среды. Какой сегодня?","— Сварщика нет. Сварщик есть, трезвого нет."],
+      sci:["— Не трогайте приборы. Вообще ничего не трогайте.","— У нас тут тихий час. Круглые сутки."]}[back];
+    if(PL)line=PL[st.i%PL.length];
+  }
   return {line,silent:line===null,addr:addrForm()};
 }
 /* ── стол ──
@@ -6654,6 +6710,15 @@ const TABLE_REPLY={
     "— Кто вам это сказал? Ладно, не говорите.",
     null,
     "— Вот с этого места подробнее. Хотя нет, не надо."
+  ]
+  ,
+  /* имя (хвост M128): стол принимает и его — ответ на человека, не на вещь */
+  name:[
+    "— Слышал. Нет, не слышал. Но теперь буду.",
+    "— Ну и что. Тут у каждого имя.",
+    null,
+    "— А. Так это вы. Мне говорили, вы выше.",
+    "— Запомню. Я не запомню, но скажу, что запомню."
   ]
 };
 /* ЛЕНТА КАК ВЕЩЬ (долг M123). Оторванная полоса — это предмет: её кладут на
@@ -6947,7 +7012,18 @@ function storyFindLine(kind){
 /* слух: о прибитой истории, с адресом её места */
 function storyNewsItem(r){
   const L=storyTraces("news",storyCtx());
-  if(!L.length||r()>.5)return null;
+  if(!L.length||r()>.5){
+    /* слух указывает на звено почтового круга (хвост M133): пока свёрток у
+       вас, треть пустых слухов — о том, кто его ждёт и где */
+    if(typeof postHolding==="function"&&postHolding()&&r()<.35){
+      const P=postAll(),A=postAddrs(),k=A[P.stage];
+      if(k&&P.stage<POST_LINKS.length){
+        const q=k.split(",");
+        return {id:"post",ru:"Говорят, свёрток опять пошёл по рукам. Ждёт его "+POST_LINKS[P.stage].who+".",sx:parseInt(q[0]),sy:parseInt(q[1])};
+      }
+    }
+    return null;
+  }
   const h=storyPickOne(L);storyShow(h);
   const p=h.key.split(",");
   return {id:"story",ru:h.t.text,sx:parseInt(p[0]),sy:parseInt(p[1])};
@@ -7204,7 +7280,7 @@ function postDock(){
   const L=POST_LINKS[i];
   if(i===POST_LINKS.length-1){
     P.done=1;
-    const line=(P.opened&&L.opened)?L.opened:L.line;
+    const line=((P.opened&&L.opened)?L.opened:L.line)+(P.strip?"\nА лента — ваша? Оставлю. Пусть лежит с ней.":"");
     logAdd("good",L.who+": "+line.replace(/\n/g," "));
     if(typeof placeNote==="function")placeNote("care",3);
     return mark({who:L.who,line,next:null,last:true});
@@ -7234,6 +7310,15 @@ function postBlock(){
   if(!P.stage&&!said)return;
   if(P.done&&!said)return;
   $body.appendChild(el("div","sec","ПОСЫЛКА · "+(P.done?"ДОСТАВЛЕНА":"ВЫ ЕЁ ВЕЗЁТЕ")));
+  /* к посылке можно приложить ленту (хвост M133): полоса уходит из ваших,
+     последний её заметит — и только */
+  if(!P.done&&P.stage&&!P.strip&&typeof stripsAll==="function"&&stripsAll().length){
+    const rs=el("div","row");
+    rs.appendChild(el("div","nm","<b>Приложить ленту</b><s>одна из ваших полос пойдёт с посылкой по рукам</s>"));
+    const bs=el("button","act sm","ПРИЛОЖИТЬ");
+    bs.onclick=()=>{stripsAll().shift();P.strip=1;logAdd("dim","К свёртку приложена лента");renderTab();};
+    rs.appendChild(bs);$body.appendChild(rs);
+  }
   if(said){
     $body.appendChild(el("div","row","<div class='nm'><b>"+said.who+"</b><s style='color:#cfe3ea;line-height:1.9'>"+
       said.line.replace(/\n/g,"<br>")+(said.next?"<br><i>"+said.next+"</i>":"")+"</s></div>"));
@@ -7280,6 +7365,16 @@ const MIRROR_CORE=[
   "…кто забыл кружку в рубке — заберите. Кто забыл кружку в рубке…"
 ];
 function mirrorAll(){return (G.mirror||(G.mirror={bearing:0}));}
+/* пеленг можно снять (хвост M134): отметка уходит с карты, факт остаётся —
+   второй раз зеркало её не даст. bearing: 0 нет, 1 на карте, 2 снята */
+function mirrorAck(){
+  const M=mirrorAll();
+  if(M.bearing!==1)return false;
+  M.bearing=2;
+  if(typeof loreMarks==="function"){const L=loreMarks();for(let i=L.length-1;i>=0;i--)if(L[i].id==="mirror")L.splice(i,1);}
+  logAdd("dim","Пеленг источника снят с карты. Тридцать семь секунд никуда не делись.");
+  return true;
+}
 /* на окраине зеркала: в области, но не в её ядре */
 function mirrorDepthHere(){
   if(typeof regionAt!=="function")return 0;
@@ -7301,6 +7396,7 @@ function mirrorEchoTick(){
   if(G.t<E.at)return;
   G.mirrorEcho=null;
   logAdd("dim",E.line);
+  if(typeof heardAdd==="function")heardAdd("ether",{sx:G.sx,sy:G.sy,note:E.line},null);
   /* диспетчер отмахивается — изредка, иначе объяснение забьёт само явление */
   if(Math.random()<.3)logAdd("dim","…это отражение, не отвечайте. Отражение, говорю. Летите себе.");
 }
@@ -7320,6 +7416,7 @@ function mirrorListen(f){
   const n=2+Math.floor(r()*3),out=[];
   for(let i=0;i<n;i++){const l=pick(pool,r);if(out.indexOf(l)<0)out.push(l);}
   for(const l of out)logAdd("dim",l);
+  if(typeof heardAdd==="function")for(const l of out)heardAdd("ether",{sx:G.sx,sy:G.sy,note:l},null);   // и в память птицы (хвост M134)
   const M=mirrorAll();
   let tail="тридцать семь секунд. Всегда тридцать семь.";
   if(!M.bearing){
@@ -12950,7 +13047,10 @@ function newsMarkAt(sx,sy){const m=G.newsMarks;return m?m[sx+","+sy]||null:null;
 /* случайный сектор со станцией неподалёку: у слуха должен быть адрес */
 function newsSomewhere(r){
   for(let i=0;i<24;i++){
-    const sx=G.sx+Math.floor((r()-.5)*14),sy=G.sy+Math.floor((r()-.5)*14);
+    /* почтовик слышит дальше, а не только глубже (хвост M126): радиус слуха
+       растёт с тем же `ether`, что и глубина памяти */
+    const rr=14*((typeof hullRole==="function")?Math.max(.6,hullRole().ether):1);
+    const sx=G.sx+Math.floor((r()-.5)*rr),sy=G.sy+Math.floor((r()-.5)*rr);
     if(!starAt(sx,sy))continue;
     const s=getSystem(sx,sy);
     if(s&&s.station)return s;
@@ -15062,6 +15162,14 @@ function fleaLeave(sys){
 /* ── вкладка ──
    Живёт здесь, рядом со своей механикой: 26-ui-station и так просится на распил. */
 function fleaRender(){
+  /* толпа и шум (хвост M121): толкучка — единственное людное место станции.
+     При первом заходе за посадку — гул голосов, в шапке — сколько народу */
+  if(G.sys&&G._fleaHum!==G.sys.key+":"+visitHere()){
+    G._fleaHum=G.sys.key+":"+visitHere();
+    for(let i=0;i<3;i++)sfx("ui",{f:220+Math.random()*160,to:180,d:.25,v:.08});
+  }
+  if(G.sys)$body.appendChild(el("div","sec","ТОЛКУЧКА · У ЛОТКОВ ЧЕЛОВЕК "+
+    (8+Math.abs(hashi(G.sys.seed|0,fleaEpoch(),0xF1EA))%14)+" · ГОВОР, ТОЛКОТНЯ, КТО-ТО СПОРИТ О ЦЕНЕ"));
   const sys=G.sys,H=typeof houseOf==="function"?houseOf(sys):null;
   $body.appendChild(el("div","sec","РЯДЫ · ВСЁ ЗДЕСЬ ЧЬЁ-ТО · "+
     (H?("СЧЁТ В БОНАХ "+H.ru.toUpperCase()+" · КРЕДИТЫ ДОРОЖЕ НА "+
@@ -17126,6 +17234,7 @@ function updateCombat(dt){
           sfx("hit",{v:.55});
           G.hull=Math.max(0,G.hull-d);
           if(G.hull<=0){wreck();return;}
+          if(typeof instrKnock==="function")instrKnock();   // попадание может выбить гнездо прибора (хвост M127)
         }
       }
     }
@@ -17286,6 +17395,7 @@ function snapshot(){
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,
+    tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
@@ -17672,6 +17782,8 @@ function applySave(s){
      знает — тогда на корабле стоит казённый набор, как с верфи */
   G.instrKit=(s.instrKit&&typeof s.instrKit==="object")?s.instrKit:null;
   G.instrShelf=Array.isArray(s.instrShelf)?s.instrShelf.slice(0,8):[];
+  G.tape=(typeof tapeUnpack==="function")?tapeUnpack(s.tape):null;
+  G.tapeLong=s.tapeLong|0;
   /* речь (M128): очередь реплик по местам, счётчик посадок и оторванные ленты —
      всё это память об игроке, а не о мире, и поэтому персистится */
   G.speech=(s.speech&&typeof s.speech==="object")?s.speech:{};
@@ -18649,6 +18761,7 @@ function mslBoom(m,hit){
   sfx("hit",{f:120,to:60,d:.3,v:.5});
   if(!hit)return;
   hit.hull-=m.dmg;
+  if(typeof placeNote==="function")placeNote("hurt",2);   // место помнит попадание, не пуск (хвост M132)
   hit.aware=true;
   if(hit.hull<=0){
     /* строку о сбитом пишет killPirate — второй записи о том же не надо */
@@ -29771,6 +29884,7 @@ function updateCave(dt){
     G.prompt="ДЕЙСТВИЕ — ОСМОТРЕТЬ НАХОДКУ";
     if(actEdge){
       C.found=true;G.data+=20;
+      if(typeof heardAdd==="function")heardAdd("ground",{sx:G.sx,sy:G.sy,note:"находка в пещере"},null);
       tell("tech","Находка в пещере · +20 данных","Находка в пещере\n+20 данных");
       /* в глубине пещеры лежит не только запись данных (05a-nodes) */
       nodeDrop("в пещере",.5+sysDanger(G.sx,G.sy)*.5,hashi(C.findX|0,0xCA7,3));
@@ -29781,6 +29895,7 @@ function updateCave(dt){
     G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
     if(actEdge){
       plant.scanned=true;G.species.add(plant.name);G.data+=9;G.bio=(G.bio|0)+1;
+      if(typeof heardAdd==="function")heardAdd("ground",{sx:G.sx,sy:G.sy,note:"в пещере: "+plant.name},null);   // птица слышит и на планете (хвост M117)
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
   }else if(C.fauna.some(b=>b.stun<=0&&b.flee<=0&&Math.abs(b.y-C.y)<120)){
@@ -32657,11 +32772,17 @@ function instrPanel(P,FS){
     ctx.font=Math.round(6*FS)+"px ui-monospace,monospace";
     ctx.fillText(r.ru,cx,y+h*1.6);
   }
-  /* невязка: цифры на краю панели, без подписи «внимание» и без рамки */
-  ctx.textAlign="right";
-  ctx.fillStyle=col+".5)";
-  ctx.font=Math.round(7*FS)+"px ui-monospace,monospace";
-  ctx.fillText("НЕВЯЗКА "+instrMisclose().toFixed(3),x0+w+4,y-h+2);
+  /* невязка — в своём окне (хвост M122): утопленная рамка правее корытца,
+     цифры внутри. Без подписи «внимание» и без цвета — как и было */
+  {
+    const mt="НЕВЯЗКА "+instrMisclose().toFixed(3);
+    ctx.font=Math.round(7*FS)+"px ui-monospace,monospace";
+    const mw=Math.ceil(ctx.measureText(mt).width)+14, mx=x0+w+14, my=y-h-2, mh=h+8;
+    ctx.fillStyle="rgba(6,9,13,.55)";ctx.fillRect(mx,my,mw,mh);
+    ctx.strokeStyle=col+".18)";ctx.lineWidth=1;ctx.strokeRect(mx+.5,my+.5,mw-1,mh-1);
+    ctx.textAlign="center";ctx.fillStyle=col+".55)";
+    ctx.fillText(mt,mx+mw/2,my+mh/2+2.5);
+  }
   ctx.restore();
 }
 
@@ -32696,6 +32817,21 @@ function tapeInit(){
   return G.tape={v:1,col:new Uint8Array(TAPE_N*TAPE_PENS),zero:null,
                  n:0,head:0,acc:0,back:0,tick:0};
 }
+/* лента переживает сохранение (хвост M123): кольцо уходит в base64 одной
+   строкой, остальное — как есть. «Сорок часов назад» теперь и правда назад */
+function tapePack(){
+  const T=G.tape;if(!T||T.v!==1)return null;
+  let s="";for(let i=0;i<T.col.length;i++)s+=String.fromCharCode(T.col[i]);
+  return {v:1,col:btoa(s),zero:T.zero?Array.from(T.zero):null,n:T.n|0,head:T.head|0,acc:T.acc||0,back:T.back||0,tick:0};
+}
+function tapeUnpack(o){
+  if(!o||o.v!==1||typeof o.col!=="string")return null;
+  try{
+    const s=atob(o.col),col=new Uint8Array(TAPE_N*TAPE_PENS);
+    for(let i=0;i<Math.min(s.length,col.length);i++)col[i]=s.charCodeAt(i);
+    return {v:1,col,zero:Array.isArray(o.zero)?o.zero.slice():null,n:o.n|0,head:o.head|0,acc:o.acc||0,back:o.back||0,tick:0};
+  }catch(e){return null;}
+}
 /* ЧТО ИМЕННО ПИШЕТ ПЕРО. Не показание, а его уход от собственного нуля. Так
    устроены настоящие самописцы (нуль и диапазон — две ручки), и так же устроен
    смысл ленты: панель отвечает на «сколько сейчас», лента — на «менялось ли».
@@ -32725,7 +32861,7 @@ function tapeSample(){
 /* такт: чем ближе к ядру, тем чаще перо. Ничего, кроме частоты, не меняется */
 function tapeRate(){
   const m=(typeof instrMisclose==="function")?instrMisclose():0;
-  return TAPE_DT/(1+clamp(m,0,1)*1.35);
+  return TAPE_DT/(1+clamp(m,0,1)*1.35)*(G.tapeLong?2:1);   // второй барабан (хвост M127): лента вдвое длиннее
 }
 function tapeTick(dt){
   const T=tapeInit();
@@ -34048,6 +34184,185 @@ function rackDraw(){
   ctx.restore();
 }
 
+/* ══════════════ станция: вкладка «дом и базы» ══════════════ */
+/* Отпилено от 26-ui-station по шву вкладки (2026-08-23): renderTab зовёт
+   renderBasesTab(st), всё остальное — те же $body/el/renderTab. */
+function renderBasesTab(st){
+    /* ── к чему всё идёт ──
+       У игры не было названной цели: дом рос сам, яхта была одним из корпусов,
+       пиратов сбивали без счёта. Три строки называют это вслух — и каждая
+       считается по настоящему состоянию, а не по флажку «квест выполнен». */
+    goalCard();
+    /* ── дом первой строкой ──
+       До настоящего экрана-помещения (следующий проход M83) дом должен быть
+       хотя бы видим: игрок не обязан догадываться, что у него что-то растёт.
+       Здесь нет ни одной цены — дом не покупается, и вместо ценника стоит
+       строка «до следующей ступени столько-то оборота». */
+    if(G.home&&G.home.tier){
+      const pr=homeProgress();
+      $body.appendChild(el("div","sec","ВАШ ДОМ · СЕКТОР "+G.home.sx+","+G.home.sy+
+        " · ОБОРОТ "+G.home.turn.toLocaleString("ru")+" КР"));
+      /* дом — помещение, а не список: комната растёт слева направо, и в ней
+         видно нажитое (27e-ui-home). Кадр рисуется один раз при открытии:
+         своего цикла у экрана станции нет и заводить его незачем */
+      /* картинка ровно такой ширины, какой сам дом: он растёт — растёт и она.
+         Растянутая на всю панель комната из двух ступеней теряла масштаб, а
+         вписанная в высоту жалась к левому краю */
+      const hcv=document.createElement("canvas");
+      const dpr=window.devicePixelRatio||1, upx=1.5;
+      const roomW=homeRoomW();
+      hcv.width=Math.round(roomW*upx*dpr);
+      hcv.height=Math.round(HOME_ROOM_H*upx*dpr);
+      hcv.style.cssText="display:block;border-radius:8px;margin:6px 0;max-width:100%;"+
+        "width:"+Math.round(roomW*upx)+"px";
+      $body.appendChild(hcv);
+      drawHomeRoom(hcv);
+      /* ── по вещам можно ткнуть ──
+         Кнопки ниже остаются, но перестают быть единственным входом: гараж
+         ставит корабль, витрина выносит редкое, кабинет и жилая часть
+         рассказывают, что там есть. Зоны считает сам рисунок (27e-ui-home),
+         второго описания геометрии нет. */
+      hcv.addEventListener("click",(e)=>{if(homeSceneClick(hcv,e))renderTab();});
+      const rooms=HOME_TIERS.slice(0,G.home.tier).map(t=>t.ru).join(" · ");
+      const hr=el("div","row");
+      /* строку «до ступени» не повторяем: она уже нарисована в самой комнате */
+      hr.appendChild(el("div","nm","<b>"+rooms+"</b><s>"+
+        "здесь вас не найдут пираты, и сюда вы вернётесь, потеряв корабль</s>"));
+      const hb=document.createElement("button");
+      const hc=homeBeaconCost();
+      hb.textContent="МАЯК ДОМОЙ · "+hc.toLocaleString("ru")+" КР";
+      hb.disabled=G.credits<hc||(G.sx===G.home.sx&&G.sy===G.home.sy);
+      hb.addEventListener("click",()=>{if(homeBeacon()){closeStation();renderTab();}});
+      hr.appendChild(hb);
+      $body.appendChild(hr);
+      /* ── что дом умеет: по одной строке на ступень, и только на ту, что есть.
+         Раньше поставить корабль в гараж или вынести редкое на витрину можно
+         было только из кода, то есть нельзя. ── */
+      /* домочадец: раз на ступень и ни разом больше (12j) */
+      if(typeof homeMateKind==="function"&&homeMateKind()){
+        const mr=el("div","row");
+        mr.appendChild(el("div","nm","<b>"+homeMateName()+"</b><s>"+
+          "живёт тут же и хочет что-то сказать · один раз на ступень</s>"));
+        const mb=document.createElement("button");
+        mb.textContent="ПОГОВОРИТЬ";
+        mb.addEventListener("click",()=>{homeMateTake();renderTab();});
+        mr.appendChild(mb);
+        $body.appendChild(mr);
+      }
+      /* стена-музей: доска прогресса живёт в кабинете, а не на отдельном экране */
+      if(homeHas("study")&&typeof rareCount==="function"){
+        $body.appendChild(el("div","sec","СТЕНА В КАБИНЕТЕ · "+rareCount()+" / 100 · "+
+          "ЧТО УНЕСЕНО И ОТКУДА"));
+        const have=rareList().map(id=>RARE_BY_ID[id]).filter(Boolean).slice(-5).reverse();
+        if(!have.length)$body.appendChild(el("div","row",
+          "<div class='nm'><s>гвозди вбиты, рамки пусты: пока не принесено ничего</s></div>"));
+        for(const R of have)
+          $body.appendChild(el("div","row","<div class='nm'><b>«"+R.ru+"»</b><s>"+
+            R.grade+" · "+R.whereRu+" · "+R.note+"</s></div>"));
+        const rv=Object.keys(G.rivals||{}).length;
+        if(rv)$body.appendChild(el("div","row","<div class='nm'><b>у соперников: "+rv+
+          "</b><s>их адреса — в кантине: унесённое не потеряно, оно переехало</s></div>"));
+      }
+      if(homeHas("garage")){
+        const free=Object.keys(G.owned).filter(id=>
+          id!==G.shipId&&!G.home.garage.includes(id)&&shipData(id));
+        const gr=el("div","row");
+        gr.appendChild(el("div","nm","<b>Гараж</b><s>"+
+          (G.home.garage.length
+            ?"стоят: "+G.home.garage.map(id=>"«"+shipData(id).ru+"»").join(", ")
+            :"пуст — потеряв корабль, вы вернётесь домой пешком")+
+          "<br>отсюда поднимается корабль, если ваш погиб</s>"));
+        if(free.length){
+          const gb=document.createElement("button");
+          gb.textContent="ПОСТАВИТЬ «"+shipData(free[0]).ru.toUpperCase()+"»";
+          gb.addEventListener("click",()=>{homeStore(free[0]);renderTab();});
+          gr.appendChild(gb);
+        }
+        $body.appendChild(gr);
+      }
+      if(homeHas("case")){
+        const have=RARE_RES.filter(k=>(G.cargo[k]|0)>0);
+        const shown=Object.keys(G.home.showcase||{});
+        const cr=el("div","row");
+        cr.appendChild(el("div","nm","<b>Витрина</b><s>"+
+          (shown.length?shown.map(k=>RES[k].ru.toLowerCase()+" ×"+G.home.showcase[k]).join(", ")
+            :"пуста")+
+          "<br>надбавка доменам +"+Math.round(homeShowBonus()*100)+
+          "% · выставленное не продаётся</s>"));
+        if(have.length){
+          const cb=document.createElement("button");
+          const k=have[0],q=Math.min(3,G.cargo[k]|0);
+          cb.textContent="ВЫСТАВИТЬ "+RES[k].ru.toUpperCase()+" ×"+q;
+          cb.addEventListener("click",()=>{homeShow(k,q);renderTab();});
+          cr.appendChild(cb);
+        }
+        $body.appendChild(cr);
+      }
+      if(homeCanRebuild()){
+        $body.appendChild(el("div","sec",
+          "МАСТЕРСКАЯ · ПЕРЕБОРКА ВЫДАЁТ НОВЫЕ СВОЙСТВА, НО СТУПЕНЬЮ НИЖЕ"));
+        const free=G.inv.filter(p=>!Object.values(G.fit[G.shipId]||{}).includes(p.id));
+        if(!free.length)$body.appendChild(el("div","row",
+          "<div class='nm'><s>перебирать нечего: все части стоят на корабле</s></div>"));
+        for(const p of free.slice(0,6)){
+          const pr2=el("div","row");
+          pr2.appendChild(el("div","nm","<b>"+p.name+"</b> <span style='color:var(--dim)'>"+
+            TIER_RU[p.tier]+"</span><s>"+p.aff.map(affLabel).join(" · ")+"</s>"));
+          const pb=document.createElement("button");
+          pb.textContent=p.tier>1?"ПЕРЕБРАТЬ":"ПЕРЕБРАТЬ · УЖЕ НИЖЕ НЕКУДА";
+          pb.addEventListener("click",()=>{homeRebuild(p.id);renderTab();});
+          pr2.appendChild(pb);
+          $body.appendChild(pr2);
+        }
+      }
+    }
+    /* сеть баз одним экраном: где, что копают, сколько накопили, чем больны */
+    baseTick();
+    const list=baseList();
+    $body.appendChild(el("div","sec","ВАШИ БАЗЫ "+list.length+
+      " · НАКОПЛЕННОЕ ЖДЁТ НА МЕСТЕ · ПЛОЩАДКА ПОЗВОЛЯЕТ ПЕРЕБРОСКУ"));
+    if(!list.length)$body.appendChild(el("div","sec",
+      "БАЗ НЕТ — САДИТЕСЬ НА ПЛАНЕТУ И ЗАКЛАДЫВАЙТЕ (2500 КР + 10 СПЛАВОВ)"));
+    for(const B of list){
+      const P=basePower(B),hold=basePoolHeld(B);
+      const here=B.sx===G.sx&&B.sy===G.sy;
+      const warn=[];
+      if(P.eff<.99)warn.push("энергии не хватает — всё замедлено");
+      if(!P.drills)warn.push("нет буровой — база ничего не добывает");
+      if(hold>=P.store*.98)warn.push("склад полон — добыча встала");
+      if(P.habPenalty)warn.push("жилой отсек прижат к реактору");
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+B.name+"</b> <span style='color:var(--dim)'>сектор "+
+        B.sx+","+B.sy+(here?" · вы здесь":"")+"</span><s>"+
+        "энергия "+P.prod+"/"+P.cons+" · отдача "+Math.round(P.eff*100)+"% · буров "+P.drills+
+        "<br>склад "+hold+"/"+P.store+
+        (hold?" · "+Object.keys(B.pool).filter(k=>B.pool[k]>0)
+          .map(k=>RES[k].ru.toLowerCase()+" "+B.pool[k]).join(", "):"")+
+        (warn.length?"<br><b style='color:#ff6b57'>"+warn.join(" · ")+"</b>":"")+"</s>"));
+      const staff=baseStaff(B);
+      if(staff.length||baseSlots(B))
+        r.firstChild.innerHTML+="<s>персонал "+staff.length+"/"+baseSlots(B)+
+          (staff.length?" · "+staff.map(c=>c.name+" — "+BASE_ROLES[c.role].ru+
+            (roleForce(c)<1?" (не по профилю)":"")).join(", "):"")+"</s>";
+      r.appendChild(el("div","qt",P.pads?"площадка":"—"));
+      /* логист на месте — груз можно забрать отсюда, не прилетая (M38) */
+      if(baseRoleForce(B,"logist")>0&&hold>0){
+        const b=el("button","act","ЗАБРАТЬ");
+        b.onclick=()=>{baseCollect(B);renderTab();};
+        r.appendChild(b);
+      }
+      if(P.pads&&!here){
+        const c=baseJumpCost(B);
+        const b=el("button","act gold",c.credits+" кр");
+        b.disabled=G.credits<c.credits||G.fuel<c.fuel;
+        b.title="переброска: "+c.credits+" кр и "+c.fuel+" топлива";
+        b.onclick=()=>{if(jumpToBase(B))closeStation();};
+        r.appendChild(b);
+      }
+      $body.appendChild(r);
+    }
+}
+
 /* ══════════════ станция ══════════════ */
 const $st=document.getElementById("station"),$body=document.getElementById("stBody");
 let tab="market";
@@ -34460,6 +34775,21 @@ function renderTab(){
      и он не «улучшает характеристику», а лучше или хуже различает отклонение.
      Поэтому в строке пишется не число, а то, что игрок реально почувствует. */
   else if(tab==="instr"){
+    /* самописец — товар (хвост M127): второй барабан, лента вдвое длиннее */
+    {
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>Самописец · второй барабан</b><s>"+
+        (G.tapeLong?"стоит: лента идёт вдвое медленнее и помнит вдвое дольше":
+         "лента идёт вдвое медленнее и помнит вдвое дольше")+"</s>"));
+      if(!G.tapeLong){
+        const b=el("button","act sm gold","2 400 кр");
+        b.disabled=G.credits<2400;
+        b.onclick=()=>{G.credits-=2400;G.tapeLong=1;
+          tell("tech","Самописец: второй барабан установлен","Второй барабан\nлента помнит вдвое дольше");renderTab();};
+        r.appendChild(b);
+      }else r.appendChild(el("div","nm","<s>установлен</s>"));
+      $body.appendChild(r);
+    }
     $body.appendChild(el("div","sec","ПЯТЬ ГНЁЗД ПАНЕЛИ · ПРИБОР РАЗЛИЧАЕТ ОТКЛОНЕНИЕ, А НЕ ДАЁТ ПРОЦЕНТ"));
     for(const id of INSTR_KEYS){
       const I=INSTR_BY_ID[id],u=instrUnit(id),T=instrTraits(u);
@@ -34588,179 +34918,7 @@ function renderTab(){
     ammoRow($body,renderTab);
   }
   else if(tab==="bases"){
-    /* ── к чему всё идёт ──
-       У игры не было названной цели: дом рос сам, яхта была одним из корпусов,
-       пиратов сбивали без счёта. Три строки называют это вслух — и каждая
-       считается по настоящему состоянию, а не по флажку «квест выполнен». */
-    goalCard();
-    /* ── дом первой строкой ──
-       До настоящего экрана-помещения (следующий проход M83) дом должен быть
-       хотя бы видим: игрок не обязан догадываться, что у него что-то растёт.
-       Здесь нет ни одной цены — дом не покупается, и вместо ценника стоит
-       строка «до следующей ступени столько-то оборота». */
-    if(G.home&&G.home.tier){
-      const pr=homeProgress();
-      $body.appendChild(el("div","sec","ВАШ ДОМ · СЕКТОР "+G.home.sx+","+G.home.sy+
-        " · ОБОРОТ "+G.home.turn.toLocaleString("ru")+" КР"));
-      /* дом — помещение, а не список: комната растёт слева направо, и в ней
-         видно нажитое (27e-ui-home). Кадр рисуется один раз при открытии:
-         своего цикла у экрана станции нет и заводить его незачем */
-      /* картинка ровно такой ширины, какой сам дом: он растёт — растёт и она.
-         Растянутая на всю панель комната из двух ступеней теряла масштаб, а
-         вписанная в высоту жалась к левому краю */
-      const hcv=document.createElement("canvas");
-      const dpr=window.devicePixelRatio||1, upx=1.5;
-      const roomW=homeRoomW();
-      hcv.width=Math.round(roomW*upx*dpr);
-      hcv.height=Math.round(HOME_ROOM_H*upx*dpr);
-      hcv.style.cssText="display:block;border-radius:8px;margin:6px 0;max-width:100%;"+
-        "width:"+Math.round(roomW*upx)+"px";
-      $body.appendChild(hcv);
-      drawHomeRoom(hcv);
-      /* ── по вещам можно ткнуть ──
-         Кнопки ниже остаются, но перестают быть единственным входом: гараж
-         ставит корабль, витрина выносит редкое, кабинет и жилая часть
-         рассказывают, что там есть. Зоны считает сам рисунок (27e-ui-home),
-         второго описания геометрии нет. */
-      hcv.addEventListener("click",(e)=>{if(homeSceneClick(hcv,e))renderTab();});
-      const rooms=HOME_TIERS.slice(0,G.home.tier).map(t=>t.ru).join(" · ");
-      const hr=el("div","row");
-      /* строку «до ступени» не повторяем: она уже нарисована в самой комнате */
-      hr.appendChild(el("div","nm","<b>"+rooms+"</b><s>"+
-        "здесь вас не найдут пираты, и сюда вы вернётесь, потеряв корабль</s>"));
-      const hb=document.createElement("button");
-      const hc=homeBeaconCost();
-      hb.textContent="МАЯК ДОМОЙ · "+hc.toLocaleString("ru")+" КР";
-      hb.disabled=G.credits<hc||(G.sx===G.home.sx&&G.sy===G.home.sy);
-      hb.addEventListener("click",()=>{if(homeBeacon()){closeStation();renderTab();}});
-      hr.appendChild(hb);
-      $body.appendChild(hr);
-      /* ── что дом умеет: по одной строке на ступень, и только на ту, что есть.
-         Раньше поставить корабль в гараж или вынести редкое на витрину можно
-         было только из кода, то есть нельзя. ── */
-      /* домочадец: раз на ступень и ни разом больше (12j) */
-      if(typeof homeMateKind==="function"&&homeMateKind()){
-        const mr=el("div","row");
-        mr.appendChild(el("div","nm","<b>"+homeMateName()+"</b><s>"+
-          "живёт тут же и хочет что-то сказать · один раз на ступень</s>"));
-        const mb=document.createElement("button");
-        mb.textContent="ПОГОВОРИТЬ";
-        mb.addEventListener("click",()=>{homeMateTake();renderTab();});
-        mr.appendChild(mb);
-        $body.appendChild(mr);
-      }
-      /* стена-музей: доска прогресса живёт в кабинете, а не на отдельном экране */
-      if(homeHas("study")&&typeof rareCount==="function"){
-        $body.appendChild(el("div","sec","СТЕНА В КАБИНЕТЕ · "+rareCount()+" / 100 · "+
-          "ЧТО УНЕСЕНО И ОТКУДА"));
-        const have=rareList().map(id=>RARE_BY_ID[id]).filter(Boolean).slice(-5).reverse();
-        if(!have.length)$body.appendChild(el("div","row",
-          "<div class='nm'><s>гвозди вбиты, рамки пусты: пока не принесено ничего</s></div>"));
-        for(const R of have)
-          $body.appendChild(el("div","row","<div class='nm'><b>«"+R.ru+"»</b><s>"+
-            R.grade+" · "+R.whereRu+" · "+R.note+"</s></div>"));
-        const rv=Object.keys(G.rivals||{}).length;
-        if(rv)$body.appendChild(el("div","row","<div class='nm'><b>у соперников: "+rv+
-          "</b><s>их адреса — в кантине: унесённое не потеряно, оно переехало</s></div>"));
-      }
-      if(homeHas("garage")){
-        const free=Object.keys(G.owned).filter(id=>
-          id!==G.shipId&&!G.home.garage.includes(id)&&shipData(id));
-        const gr=el("div","row");
-        gr.appendChild(el("div","nm","<b>Гараж</b><s>"+
-          (G.home.garage.length
-            ?"стоят: "+G.home.garage.map(id=>"«"+shipData(id).ru+"»").join(", ")
-            :"пуст — потеряв корабль, вы вернётесь домой пешком")+
-          "<br>отсюда поднимается корабль, если ваш погиб</s>"));
-        if(free.length){
-          const gb=document.createElement("button");
-          gb.textContent="ПОСТАВИТЬ «"+shipData(free[0]).ru.toUpperCase()+"»";
-          gb.addEventListener("click",()=>{homeStore(free[0]);renderTab();});
-          gr.appendChild(gb);
-        }
-        $body.appendChild(gr);
-      }
-      if(homeHas("case")){
-        const have=RARE_RES.filter(k=>(G.cargo[k]|0)>0);
-        const shown=Object.keys(G.home.showcase||{});
-        const cr=el("div","row");
-        cr.appendChild(el("div","nm","<b>Витрина</b><s>"+
-          (shown.length?shown.map(k=>RES[k].ru.toLowerCase()+" ×"+G.home.showcase[k]).join(", ")
-            :"пуста")+
-          "<br>надбавка доменам +"+Math.round(homeShowBonus()*100)+
-          "% · выставленное не продаётся</s>"));
-        if(have.length){
-          const cb=document.createElement("button");
-          const k=have[0],q=Math.min(3,G.cargo[k]|0);
-          cb.textContent="ВЫСТАВИТЬ "+RES[k].ru.toUpperCase()+" ×"+q;
-          cb.addEventListener("click",()=>{homeShow(k,q);renderTab();});
-          cr.appendChild(cb);
-        }
-        $body.appendChild(cr);
-      }
-      if(homeCanRebuild()){
-        $body.appendChild(el("div","sec",
-          "МАСТЕРСКАЯ · ПЕРЕБОРКА ВЫДАЁТ НОВЫЕ СВОЙСТВА, НО СТУПЕНЬЮ НИЖЕ"));
-        const free=G.inv.filter(p=>!Object.values(G.fit[G.shipId]||{}).includes(p.id));
-        if(!free.length)$body.appendChild(el("div","row",
-          "<div class='nm'><s>перебирать нечего: все части стоят на корабле</s></div>"));
-        for(const p of free.slice(0,6)){
-          const pr2=el("div","row");
-          pr2.appendChild(el("div","nm","<b>"+p.name+"</b> <span style='color:var(--dim)'>"+
-            TIER_RU[p.tier]+"</span><s>"+p.aff.map(affLabel).join(" · ")+"</s>"));
-          const pb=document.createElement("button");
-          pb.textContent=p.tier>1?"ПЕРЕБРАТЬ":"ПЕРЕБРАТЬ · УЖЕ НИЖЕ НЕКУДА";
-          pb.addEventListener("click",()=>{homeRebuild(p.id);renderTab();});
-          pr2.appendChild(pb);
-          $body.appendChild(pr2);
-        }
-      }
-    }
-    /* сеть баз одним экраном: где, что копают, сколько накопили, чем больны */
-    baseTick();
-    const list=baseList();
-    $body.appendChild(el("div","sec","ВАШИ БАЗЫ "+list.length+
-      " · НАКОПЛЕННОЕ ЖДЁТ НА МЕСТЕ · ПЛОЩАДКА ПОЗВОЛЯЕТ ПЕРЕБРОСКУ"));
-    if(!list.length)$body.appendChild(el("div","sec",
-      "БАЗ НЕТ — САДИТЕСЬ НА ПЛАНЕТУ И ЗАКЛАДЫВАЙТЕ (2500 КР + 10 СПЛАВОВ)"));
-    for(const B of list){
-      const P=basePower(B),hold=basePoolHeld(B);
-      const here=B.sx===G.sx&&B.sy===G.sy;
-      const warn=[];
-      if(P.eff<.99)warn.push("энергии не хватает — всё замедлено");
-      if(!P.drills)warn.push("нет буровой — база ничего не добывает");
-      if(hold>=P.store*.98)warn.push("склад полон — добыча встала");
-      if(P.habPenalty)warn.push("жилой отсек прижат к реактору");
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b>"+B.name+"</b> <span style='color:var(--dim)'>сектор "+
-        B.sx+","+B.sy+(here?" · вы здесь":"")+"</span><s>"+
-        "энергия "+P.prod+"/"+P.cons+" · отдача "+Math.round(P.eff*100)+"% · буров "+P.drills+
-        "<br>склад "+hold+"/"+P.store+
-        (hold?" · "+Object.keys(B.pool).filter(k=>B.pool[k]>0)
-          .map(k=>RES[k].ru.toLowerCase()+" "+B.pool[k]).join(", "):"")+
-        (warn.length?"<br><b style='color:#ff6b57'>"+warn.join(" · ")+"</b>":"")+"</s>"));
-      const staff=baseStaff(B);
-      if(staff.length||baseSlots(B))
-        r.firstChild.innerHTML+="<s>персонал "+staff.length+"/"+baseSlots(B)+
-          (staff.length?" · "+staff.map(c=>c.name+" — "+BASE_ROLES[c.role].ru+
-            (roleForce(c)<1?" (не по профилю)":"")).join(", "):"")+"</s>";
-      r.appendChild(el("div","qt",P.pads?"площадка":"—"));
-      /* логист на месте — груз можно забрать отсюда, не прилетая (M38) */
-      if(baseRoleForce(B,"logist")>0&&hold>0){
-        const b=el("button","act","ЗАБРАТЬ");
-        b.onclick=()=>{baseCollect(B);renderTab();};
-        r.appendChild(b);
-      }
-      if(P.pads&&!here){
-        const c=baseJumpCost(B);
-        const b=el("button","act gold",c.credits+" кр");
-        b.disabled=G.credits<c.credits||G.fuel<c.fuel;
-        b.title="переброска: "+c.credits+" кр и "+c.fuel+" топлива";
-        b.onclick=()=>{if(jumpToBase(B))closeStation();};
-        r.appendChild(b);
-      }
-      $body.appendChild(r);
-    }
+    renderBasesTab(st);
   }
   else if(tab==="cantina"){renderCantina();}
   /* боны дома (M113): вкладка живёт в своём модуле, 12u-scrip */
@@ -35684,6 +35842,7 @@ function tableBlock(){
   }
   $body.appendChild(el("div","sec","СТОЛ · ПОЛОЖИТЕ ВЕЩЬ — ОТВЕТЯТ НА НЕЁ, А НЕ НА СЛОВА"));
   const say1=(res,r)=>{
+    if(res&&typeof placeNote==="function")placeNote("care",1);   // вещь на столе — место помнит (хвост M132)
     r.innerHTML="<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
       (!res?"<i>вещь лежит, на неё не смотрят</i>":
        res.silent?"<i>посмотрел на это и промолчал</i>":res.line)+"</s></div>";
@@ -35726,6 +35885,21 @@ function tableBlock(){
   b3.onclick=()=>{say1(putOnTable("rumour",news.length),out3);};
   r3.appendChild(b3);
   $body.appendChild(r3);$body.appendChild(out3);
+  /* имя (хвост M128): то же движение, предмет — вы сами */
+  const r4=el("div","row"),out4=el("div","row");
+  r4.appendChild(el("div","nm","<b>ВАШЕ ИМЯ</b><s>"+(G.name||"капитан")+"</s>"));
+  const b4=el("button","act sm","НАЗВАТЬ");
+  b4.onclick=()=>{say1(putOnTable("name",visitHere()),out4);};
+  r4.appendChild(b4);
+  $body.appendChild(r4);$body.appendChild(out4);
+  /* пеленг зеркала (хвост M134): отметку можно снять с карты */
+  if(typeof mirrorAll==="function"&&mirrorAll().bearing===1){
+    const r5=el("div","row");
+    r5.appendChild(el("div","nm","<b>ПЕЛЕНГ ИСТОЧНИКА</b><s>отметка на карте · до неё не долететь</s>"));
+    const b5=el("button","act sm","СНЯТЬ");
+    b5.onclick=()=>{mirrorAck();renderTab();};
+    r5.appendChild(b5);$body.appendChild(r5);
+  }
 }
 
 /* ══════════════ кантина: помещение, а не список ══════════════ */
@@ -36283,6 +36457,9 @@ function cantCounter(c,W2,fy,cy,back,acc,seed){
   let x0=0,x1=W2;
   if(back==="indust"){x0=54;}
   if(back==="outpost"){x0=36;x1=W2-30;}
+  /* длина стойки — от семени зала (хвост M55): в одном зале она во всю
+     стену, в другом на две трети, и конец её отступает от окна */
+  {const cut=Math.floor(R()*3)*36;if(back==="trade"||back==="sci")x1-=cut;else x0+=Math.round(cut*.5);}
   /* корпус */
   const body={trade:"rgba(24,28,36,.98)",indust:"rgba(44,48,54,.98)",yard:"rgba(40,36,30,.98)",
     sci:"rgba(18,26,36,.98)",outpost:"rgba(20,18,16,.98)"}[back]||"rgba(24,28,36,.98)";

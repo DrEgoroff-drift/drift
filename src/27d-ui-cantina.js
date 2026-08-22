@@ -553,6 +553,9 @@ function cantCounter(c,W2,fy,cy,back,acc,seed){
   let x0=0,x1=W2;
   if(back==="indust"){x0=54;}
   if(back==="outpost"){x0=36;x1=W2-30;}
+  /* длина стойки — от семени зала (хвост M55): в одном зале она во всю
+     стену, в другом на две трети, и конец её отступает от окна */
+  {const cut=Math.floor(R()*3)*36;if(back==="trade"||back==="sci")x1-=cut;else x0+=Math.round(cut*.5);}
   /* корпус */
   const body={trade:"rgba(24,28,36,.98)",indust:"rgba(44,48,54,.98)",yard:"rgba(40,36,30,.98)",
     sci:"rgba(18,26,36,.98)",outpost:"rgba(20,18,16,.98)"}[back]||"rgba(24,28,36,.98)";

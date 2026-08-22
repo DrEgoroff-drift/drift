@@ -28,6 +28,16 @@ const MIRROR_CORE=[
   "…кто забыл кружку в рубке — заберите. Кто забыл кружку в рубке…"
 ];
 function mirrorAll(){return (G.mirror||(G.mirror={bearing:0}));}
+/* пеленг можно снять (хвост M134): отметка уходит с карты, факт остаётся —
+   второй раз зеркало её не даст. bearing: 0 нет, 1 на карте, 2 снята */
+function mirrorAck(){
+  const M=mirrorAll();
+  if(M.bearing!==1)return false;
+  M.bearing=2;
+  if(typeof loreMarks==="function"){const L=loreMarks();for(let i=L.length-1;i>=0;i--)if(L[i].id==="mirror")L.splice(i,1);}
+  logAdd("dim","Пеленг источника снят с карты. Тридцать семь секунд никуда не делись.");
+  return true;
+}
 /* на окраине зеркала: в области, но не в её ядре */
 function mirrorDepthHere(){
   if(typeof regionAt!=="function")return 0;
@@ -49,6 +59,7 @@ function mirrorEchoTick(){
   if(G.t<E.at)return;
   G.mirrorEcho=null;
   logAdd("dim",E.line);
+  if(typeof heardAdd==="function")heardAdd("ether",{sx:G.sx,sy:G.sy,note:E.line},null);
   /* диспетчер отмахивается — изредка, иначе объяснение забьёт само явление */
   if(Math.random()<.3)logAdd("dim","…это отражение, не отвечайте. Отражение, говорю. Летите себе.");
 }
@@ -68,6 +79,7 @@ function mirrorListen(f){
   const n=2+Math.floor(r()*3),out=[];
   for(let i=0;i<n;i++){const l=pick(pool,r);if(out.indexOf(l)<0)out.push(l);}
   for(const l of out)logAdd("dim",l);
+  if(typeof heardAdd==="function")for(const l of out)heardAdd("ether",{sx:G.sx,sy:G.sy,note:l},null);   // и в память птицы (хвост M134)
   const M=mirrorAll();
   let tail="тридцать семь секунд. Всегда тридцать семь.";
   if(!M.bearing){

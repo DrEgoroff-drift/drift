@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 164 · символов верхнего уровня: 1791
+Файлов: 165 · символов верхнего уровня: 1796
 
 ## СИМВОЛЫ
 
@@ -23,7 +23,7 @@ $menu                        src/15-input.js:125
 $msg                         src/28-loop.js:32
 $msl                         src/28-loop.js:35
 $nav                         src/28-loop.js:34
-$opts                        src/26-ui-station.js:875
+$opts                        src/26-ui-station.js:718
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:31
 $sh                          src/28-loop.js:24
@@ -40,7 +40,7 @@ actionKey                    src/15-input.js:75
 addPart                      src/05-parts.js:227
 addPath                      src/25-cockpit.js:154
 addRes                       src/11-log.js:96
-addrForm                     src/11b-speech.js:66
+addrForm                     src/11b-speech.js:74
 adjTo                        src/05-parts.js:23
 AFFIX                        src/05-parts.js:29
 AFFIX_BAD                    src/05-parts.js:46
@@ -73,7 +73,7 @@ angWrap                      src/01-core.js:35
 applyCrewEvent               src/12b-crew-events.js:211
 applyPadMode                 src/15-input.js:6
 applyPadSize                 src/15-input.js:5
-applySave                    src/14-save.js:49
+applySave                    src/14-save.js:50
 applyVolumes                 src/09-audio.js:28
 apVel                        src/16-flight.js:108
 arrive                       src/16-flight.js:154
@@ -83,7 +83,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:199
 autoLandInputs               src/19-mode-landing.js:33
-autosave                     src/14-save.js:484
+autosave                     src/14-save.js:487
 b64dec                       src/14-save.js:13
 b64enc                       src/14-save.js:11
 bankTransform                src/03b-hull-paint.js:48
@@ -224,7 +224,7 @@ caveBuild                    src/22-mode-cave.js:81
 caveCeil                     src/22-mode-cave.js:43
 caveCeilLow                  src/22-mode-cave.js:58
 caveCeilOf                   src/22-mode-cave.js:66
-caveContour                  src/22-mode-cave.js:369
+caveContour                  src/22-mode-cave.js:371
 caveDeco                     src/22a-cave-deco.js:94
 caveFloor                    src/22-mode-cave.js:37
 caveFloorLow                 src/22-mode-cave.js:51
@@ -281,18 +281,18 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudBoot                    src/14-save.js:541
-cloudBusy                    src/14-save.js:511
-cloudCall                    src/14-save.js:504
-cloudForget                  src/14-save.js:509
-cloudHere                    src/14-save.js:502
-cloudName                    src/14-save.js:501
-cloudOn                      src/14-save.js:503
-cloudPull                    src/14-save.js:528
-cloudPush                    src/14-save.js:514
+cloudBoot                    src/14-save.js:544
+cloudBusy                    src/14-save.js:514
+cloudCall                    src/14-save.js:507
+cloudForget                  src/14-save.js:512
+cloudHere                    src/14-save.js:505
+cloudName                    src/14-save.js:504
+cloudOn                      src/14-save.js:506
+cloudPull                    src/14-save.js:531
+cloudPush                    src/14-save.js:517
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
-cloudTok                     src/14-save.js:500
+cloudTok                     src/14-save.js:503
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
@@ -422,18 +422,18 @@ drawBeltRocks                src/17-mode-system.js:493
 drawBuildMenu                src/21aa-base-rooms.js:492
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
-drawCave                     src/22-mode-cave.js:455
+drawCave                     src/22-mode-cave.js:457
 drawCaveDark                 src/22a-cave-deco.js:288
-drawCaveFar                  src/22-mode-cave.js:442
+drawCaveFar                  src/22-mode-cave.js:444
 drawCaveGlow                 src/22a-cave-deco.js:308
-drawCaveRock                 src/22-mode-cave.js:394
+drawCaveRock                 src/22-mode-cave.js:396
 drawCaveSolid                src/22a-cave-deco.js:220
 drawCaveWater                src/22a-cave-deco.js:261
 drawCelest                   src/06a-celest.js:160
 drawChunks                   src/18c-chunks.js:55
 drawClouds                   src/19e-clouds.js:169
 drawCockpit                  src/25-cockpit.js:400
-drawCombat                   src/13-pirates.js:210
+drawCombat                   src/13-pirates.js:211
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
@@ -539,7 +539,7 @@ exitBelt                     src/24-mode-belt.js:171
 exitCave                     src/22-mode-cave.js:199
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
-exportCode                   src/14-save.js:493
+exportCode                   src/14-save.js:496
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -672,7 +672,7 @@ groundShadow                 src/19-mode-landing.js:286
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:492
+hasSave                      src/14-save.js:495
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
@@ -773,7 +773,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:494
+importCode                   src/14-save.js:497
 initAudio                    src/09-audio.js:7
 INSTR                        src/25a-instr.js:19
 INSTR_BY_ID                  src/25a-instr.js:55
@@ -783,28 +783,29 @@ INSTR_WEAR_RATE              src/05b-instr-kit.js:85
 INSTR_WORK_KEYS              src/05b-instr-kit.js:32
 INSTR_WORKS                  src/05b-instr-kit.js:18
 instrAgeTick                 src/05b-instr-kit.js:86
-instrBuy                     src/05b-instr-kit.js:143
-instrFix                     src/05b-instr-kit.js:153
-instrFixCost                 src/05b-instr-kit.js:104
-instrFromShelf               src/05b-instr-kit.js:162
-instrInstall                 src/05b-instr-kit.js:133
+instrBuy                     src/05b-instr-kit.js:158
+instrFix                     src/05b-instr-kit.js:168
+instrFixCost                 src/05b-instr-kit.js:119
+instrFromShelf               src/05b-instr-kit.js:177
+instrInstall                 src/05b-instr-kit.js:148
 instrJitter                  src/05b-instr-kit.js:74
 instrKit                     src/05b-instr-kit.js:40
 instrKitInit                 src/05b-instr-kit.js:35
+instrKnock                   src/05b-instr-kit.js:100
 instrMisclose                src/25a-instr.js:86
-instrOffers                  src/05b-instr-kit.js:112
+instrOffers                  src/05b-instr-kit.js:127
 instrPanel                   src/25a-instr.js:94
 instrPenWidth                src/05b-instr-kit.js:78
 instrPodDraw                 src/25c-instr-hud.js:19
 instrPodTick                 src/25c-instr-hud.js:64
-instrPrice                   src/05b-instr-kit.js:100
+instrPrice                   src/05b-instr-kit.js:115
 instrQuality                 src/05b-instr-kit.js:66
 instrRead                    src/25a-instr.js:59
 instrShelf                   src/05b-instr-kit.js:44
 instrTrack                   src/25a-instr.js:80
 instrTraits                  src/05b-instr-kit.js:57
 instrUnit                    src/05b-instr-kit.js:48
-instrWearRu                  src/05b-instr-kit.js:94
+instrWearRu                  src/05b-instr-kit.js:97
 instrWorks                   src/05b-instr-kit.js:53
 invalidateKeyMap             src/15-input.js:41
 invalidateParts              src/05-parts.js:197
@@ -833,7 +834,7 @@ keyLabel                     src/15-input.js:63
 keyMap                       src/15-input.js:52
 keyRow                       src/27-ui-ship.js:173
 keys                         src/08-state.js:21
-killPirate                   src/13-pirates.js:177
+killPirate                   src/13-pirates.js:178
 killRock                     src/24-mode-belt.js:149
 KMAP                         src/15-input.js:28
 KMAP_BELT                    src/15-input.js:32
@@ -855,8 +856,8 @@ layerLevel                   src/10-music.js:326
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:115
 litRGB                       src/19c-light.js:46
-loadGame                     src/14-save.js:488
-LOCAL                        src/11b-speech.js:73
+loadGame                     src/14-save.js:491
+LOCAL                        src/11b-speech.js:81
 LOG_MAX                      src/11-log.js:3
 logAdd                       src/11-log.js:5
 logBtnLabel                  src/11-log.js:24
@@ -966,12 +967,13 @@ MINERAL                      src/18a-material.js:32
 mineSave                     src/23-mode-dig.js:912
 MIRROR_CORE                  src/11f-mirror.js:22
 MIRROR_DELAY                 src/11f-mirror.js:21
+mirrorAck                    src/11f-mirror.js:33
 mirrorAll                    src/11f-mirror.js:30
-mirrorDepthHere              src/11f-mirror.js:32
-mirrorEchoArm                src/11f-mirror.js:42
-mirrorEchoTick               src/11f-mirror.js:46
-mirrorFind                   src/11f-mirror.js:58
-mirrorListen                 src/11f-mirror.js:65
+mirrorDepthHere              src/11f-mirror.js:42
+mirrorEchoArm                src/11f-mirror.js:52
+mirrorEchoTick               src/11f-mirror.js:56
+mirrorFind                   src/11f-mirror.js:69
+mirrorListen                 src/11f-mirror.js:76
 misclose                     src/06b-region.js:80
 MIX_KIN                      src/02a-worldmix.js:19
 MIX_TYPES                    src/02-world.js:95
@@ -992,10 +994,10 @@ MSL_TURN                     src/16b-missile.js:15
 MSL_VMAX                     src/16b-missile.js:18
 mslBoom                      src/16b-missile.js:96
 mslCheck                     src/16b-missile.js:72
-mslDraw                      src/16b-missile.js:140
+mslDraw                      src/16b-missile.js:141
 mslFire                      src/16b-missile.js:79
 mslPick                      src/16b-missile.js:57
-mslTick                      src/16b-missile.js:109
+mslTick                      src/16b-missile.js:110
 MUS                          src/10-music.js:100
 MUS_LAYERS                   src/10-music.js:102
 MUS_WET                      src/10-music.js:105
@@ -1019,7 +1021,7 @@ NEBULA                       src/16-flight.js:50
 nebula                       src/16-flight.js:51
 NEWS_EVERY                   src/12p-news.js:13
 NEWS_KEEP                    src/12p-news.js:15
-NEWS_KINDS                   src/12p-news.js:89
+NEWS_KINDS                   src/12p-news.js:92
 NEWS_MAX_ROLL                src/12p-news.js:14
 NEWS_RIVALS                  src/12p-news.js:16
 newsAll                      src/12p-news.js:18
@@ -1027,10 +1029,10 @@ newsKeepLimit                src/03f-hull-role.js:56
 newsMark                     src/12p-news.js:22
 newsMarkAt                   src/12p-news.js:26
 newsMarks                    src/12p-news.js:19
-newsRender                   src/12p-news.js:181
-newsRivals                   src/12p-news.js:40
+newsRender                   src/12p-news.js:184
+newsRivals                   src/12p-news.js:43
 newsSomewhere                src/12p-news.js:28
-newsTick                     src/12p-news.js:150
+newsTick                     src/12p-news.js:153
 NODE_A                       src/05a-nodes.js:51
 NODE_B                       src/05a-nodes.js:54
 NODE_BY_ID                   src/05a-nodes.js:71
@@ -1125,7 +1127,7 @@ parrotDraw                   src/12y-parrot-face.js:259
 parrotFind                   src/12x-parrot.js:30
 parrotFrame                  src/12y-parrot-face.js:652
 parrotHas                    src/12x-parrot.js:25
-parrotHeardKill              src/13-pirates.js:173
+parrotHeardKill              src/13-pirates.js:174
 parrotLine                   src/12y-parrot-face.js:609
 parrotPoke                   src/12y-parrot-face.js:625
 parRow                       src/12y-parrot-face.js:141
@@ -1255,7 +1257,7 @@ PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:17
 ptr                          src/15-input.js:180
-putOnTable                   src/11b-speech.js:156
+putOnTable                   src/11b-speech.js:189
 QUEST_MAX                    src/11a-quests.js:15
 questAdd                     src/11a-quests.js:22
 questAll                     src/11a-quests.js:17
@@ -1349,6 +1351,7 @@ relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07-planet.js:338
 renderBarge                  src/12l-barge.js:613
+renderBasesTab               src/26a-ui-station-home.js:4
 renderCantina                src/27c-ui-hq.js:45
 renderLog                    src/11-log.js:37
 renderLoreBoard              src/27h-ui-lore.js:31
@@ -1373,18 +1376,18 @@ RES_AUTO                     src/08-state.js:18
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:281
 resEma                       src/28-loop.js:280
-resetArm                     src/26-ui-station.js:874
+resetArm                     src/26-ui-station.js:717
 resetWorld                   tests/90-harness.js:27
 resize                       src/08-state.js:6
 reticle                      src/17-mode-system.js:468
 rgba                         src/03-ships.js:149
 ridged                       src/18a-material.js:30
-rivalDefeated                src/12p-news.js:81
-rivalHere                    src/12p-news.js:63
-rivalHolds                   src/12p-news.js:42
-rivalOf                      src/12p-news.js:41
-rivalSpawn                   src/12p-news.js:71
-rivalYield                   src/12p-news.js:44
+rivalDefeated                src/12p-news.js:84
+rivalHere                    src/12p-news.js:66
+rivalHolds                   src/12p-news.js:45
+rivalOf                      src/12p-news.js:44
+rivalSpawn                   src/12p-news.js:74
+rivalYield                   src/12p-news.js:47
 rivetLine                    src/25-cockpit.js:179
 rng                          src/01-core.js:15
 ROCK_CELL                    src/17-mode-system.js:492
@@ -1424,7 +1427,7 @@ runTests                     tests/90-harness.js:72
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:6
-saveGame                     src/14-save.js:478
+saveGame                     src/14-save.js:481
 say                          src/08-state.js:140
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -1535,8 +1538,8 @@ spawnAllies                  src/12a-crew.js:483
 spawnBarges                  src/12l-barge.js:102
 spawnPirates                 src/13-pirates.js:25
 SPEC_KEYS                    src/12a-crew.js:17
-speechAll                    src/11b-speech.js:87
-speechHere                   src/11b-speech.js:89
+speechAll                    src/11b-speech.js:95
+speechHere                   src/11b-speech.js:97
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
 ST_GOLD                      src/17-mode-system.js:569
@@ -1578,15 +1581,15 @@ STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:251
+STORY_SEAT                   src/11c-stories.js:262
 STORY_WHEN                   src/11c-stories.js:126
 storyAddrMatch               src/11c-stories.js:69
 storyAll                     src/11c-stories.js:32
 storyAnchorRoll              src/11c-stories.js:86
 storyById                    src/11c-stories.js:33
-storyCantFigures             src/11c-stories.js:258
-storyCantProps               src/11c-stories.js:267
-storyCantScene               src/11c-stories.js:252
+storyCantFigures             src/11c-stories.js:269
+storyCantProps               src/11c-stories.js:278
+storyCantScene               src/11c-stories.js:263
 storyCheckWhen               src/11c-stories.js:153
 storyCtx                     src/11c-stories.js:39
 storyDay                     src/11c-stories.js:28
@@ -1595,15 +1598,15 @@ storyFindLine                src/11c-stories.js:230
 storyFixedAddr               src/11c-stories.js:55
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:326
+storyGroundLine              src/11c-stories.js:337
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:299
+storyLint                    src/11c-stories.js:310
 storyNewsItem                src/11c-stories.js:237
-storyNote                    src/11c-stories.js:338
+storyNote                    src/11c-stories.js:349
 storyPickOne                 src/11c-stories.js:193
 storyPins                    src/11c-stories.js:30
 storyPlace                   src/11c-stories.js:92
-storyProp                    src/11c-stories.js:275
+storyProp                    src/11c-stories.js:286
 storyQueueLine               src/11c-stories.js:210
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
@@ -1618,10 +1621,10 @@ STRIP_CHUNK                  src/07-planet.js:73
 STRIP_JOB                    src/07-planet.js:76
 STRIP_MS                     src/07-planet.js:72
 STRIP_PEND                   src/07-planet.js:78
-STRIPS_MAX                   src/11b-speech.js:128
-stripsAll                    src/11b-speech.js:129
-stripSell                    src/11b-speech.js:165
-stripValue                   src/11b-speech.js:130
+STRIPS_MAX                   src/11b-speech.js:161
+stripsAll                    src/11b-speech.js:162
+stripSell                    src/11b-speech.js:198
+stripValue                   src/11b-speech.js:163
 stSet                        src/14-save.js:9
 stTypeOf                     src/06-galaxy.js:27
 subdivide                    src/24-mode-belt.js:34
@@ -1650,7 +1653,7 @@ sysNebulaTex                 src/16a-space.js:53
 sysPirateBase                src/24a-mode-raid.js:98
 sysStyle                     src/16a-space.js:21
 tab                          src/26-ui-station.js:3
-TABLE_REPLY                  src/11b-speech.js:104
+TABLE_REPLY                  src/11b-speech.js:128
 tableBlock                   src/27c-ui-hq.js:531
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
@@ -1661,13 +1664,15 @@ TAPE_GAIN                    src/25b-tape.js:25
 TAPE_N                       src/25b-tape.js:22
 TAPE_PENS                    src/25b-tape.js:23
 tapeInit                     src/25b-tape.js:27
-tapePaper                    src/25b-tape.js:96
-tapeRate                     src/25b-tape.js:59
-tapeSample                   src/25b-tape.js:39
-tapeScroll                   src/25b-tape.js:81
-tapeStrip                    src/25b-tape.js:171
-tapeTear                     src/11b-speech.js:133
-tapeTick                     src/25b-tape.js:63
+tapePack                     src/25b-tape.js:34
+tapePaper                    src/25b-tape.js:111
+tapeRate                     src/25b-tape.js:74
+tapeSample                   src/25b-tape.js:54
+tapeScroll                   src/25b-tape.js:96
+tapeStrip                    src/25b-tape.js:186
+tapeTear                     src/11b-speech.js:166
+tapeTick                     src/25b-tape.js:78
+tapeUnpack                   src/25b-tape.js:39
 targetPos                    src/16-flight.js:97
 TAU                          src/01-core.js:6
 TECH                         src/04-mods.js:11
@@ -1756,9 +1761,9 @@ updateSurface                src/21-mode-surface.js:92
 updateSystem                 src/17-mode-system.js:2
 useBeacon                    src/23-mode-dig.js:72
 VER                          src/01-core.js:4
-visitHere                    src/11b-speech.js:57
-visitMark                    src/11b-speech.js:61
-visitsAll                    src/11b-speech.js:56
+visitHere                    src/11b-speech.js:65
+visitMark                    src/11b-speech.js:69
+visitsAll                    src/11b-speech.js:64
 voice                        src/09-audio.js:72
 VOICE_KEYS                   src/02a-worldmix.js:81
 VOICE_MAX                    src/09-audio.js:5
@@ -1826,7 +1831,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## src/03d-hull-marks.js · 6 КБ
 
-## src/03e-hull-draw.js · 34 КБ
+## src/03e-hull-draw.js · 36 КБ
 
 ## src/03f-hull-role.js · 6 КБ
   · корпус — это профессия, а не ступенька:1
@@ -1846,7 +1851,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · узлы: тысяча вещей, из которых собирают невозможное:1
   · узел в руках:231
 
-## src/05b-instr-kit.js · 9 КБ
+## src/05b-instr-kit.js · 10 КБ
   · приборы — это товар:1
 
 ## src/05-parts.js · 17 КБ
@@ -1883,7 +1888,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/11a-quests.js · 6 КБ
   · журнал дел:1
 
-## src/11b-speech.js · 11 КБ
+## src/11b-speech.js · 13 КБ
   · речь: очередь реплик и вещь на столе:1
 
 ## src/11c-stories.js · 19 КБ
@@ -1893,10 +1898,10 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/11d-place.js · 4 КБ
   · память места: три счётчика и одометр:1
 
-## src/11e-post.js · 8 КБ
+## src/11e-post.js · 9 КБ
   · почтовый круг: вещь идёт по рукам десятилетиями:1
 
-## src/11f-mirror.js · 6 КБ
+## src/11f-mirror.js · 7 КБ
   · зеркало: чужой эфир без источника:1
 
 ## src/11-log.js · 5 КБ
@@ -1996,7 +2001,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12t-settle.js · 22 КБ
   · посёлок: вы даёте, решают они:1
 
-## src/12ua-flea.js · 11 КБ
+## src/12ua-flea.js · 12 КБ
   · Блошинец: станция, где всё чьё-то:1
 
 ## src/12u-scrip.js · 10 КБ
@@ -2025,7 +2030,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## src/14-save.js · 36 КБ
   · сохранение:1
-  · облако:497
+  · облако:500
 
 ## src/15-input.js · 16 КБ
   · экранные кнопки: авто-скрытие и размер:1
@@ -2161,7 +2166,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/25a-instr.js · 9 КБ
   · приборы: пять стрелок и невязка:1
 
-## src/25b-tape.js · 11 КБ
+## src/25b-tape.js · 12 КБ
   · самописец: бумага, пять перьев, память наблюдения:1
 
 ## src/25c-instr-hud.js · 5 КБ
@@ -2173,17 +2178,20 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/25d-instr-rack.js · 25 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
-## src/26-ui-station.js · 54 КБ
+## src/26a-ui-station-home.js · 12 КБ
+  · станция: вкладка «дом и базы»:1
+
+## src/26-ui-station.js · 44 КБ
   · станция:1
-  · настройки:873
+  · настройки:716
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
 
-## src/27c-ui-hq.js · 35 КБ
+## src/27c-ui-hq.js · 36 КБ
   · ШТАБ и кантина:1
 
-## src/27d-ui-cantina.js · 36 КБ
+## src/27d-ui-cantina.js · 37 КБ
   · кантина: помещение, а не список:1
 
 ## src/27e-ui-home.js · 43 КБ

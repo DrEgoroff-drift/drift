@@ -137,10 +137,16 @@ function instrPanel(P,FS){
     ctx.font=Math.round(6*FS)+"px ui-monospace,monospace";
     ctx.fillText(r.ru,cx,y+h*1.6);
   }
-  /* невязка: цифры на краю панели, без подписи «внимание» и без рамки */
-  ctx.textAlign="right";
-  ctx.fillStyle=col+".5)";
-  ctx.font=Math.round(7*FS)+"px ui-monospace,monospace";
-  ctx.fillText("НЕВЯЗКА "+instrMisclose().toFixed(3),x0+w+4,y-h+2);
+  /* невязка — в своём окне (хвост M122): утопленная рамка правее корытца,
+     цифры внутри. Без подписи «внимание» и без цвета — как и было */
+  {
+    const mt="НЕВЯЗКА "+instrMisclose().toFixed(3);
+    ctx.font=Math.round(7*FS)+"px ui-monospace,monospace";
+    const mw=Math.ceil(ctx.measureText(mt).width)+14, mx=x0+w+14, my=y-h-2, mh=h+8;
+    ctx.fillStyle="rgba(6,9,13,.55)";ctx.fillRect(mx,my,mw,mh);
+    ctx.strokeStyle=col+".18)";ctx.lineWidth=1;ctx.strokeRect(mx+.5,my+.5,mw-1,mh-1);
+    ctx.textAlign="center";ctx.fillStyle=col+".55)";
+    ctx.fillText(mt,mx+mw/2,my+mh/2+2.5);
+  }
   ctx.restore();
 }

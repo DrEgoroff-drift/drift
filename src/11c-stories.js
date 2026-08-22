@@ -236,7 +236,18 @@ function storyFindLine(kind){
 /* слух: о прибитой истории, с адресом её места */
 function storyNewsItem(r){
   const L=storyTraces("news",storyCtx());
-  if(!L.length||r()>.5)return null;
+  if(!L.length||r()>.5){
+    /* слух указывает на звено почтового круга (хвост M133): пока свёрток у
+       вас, треть пустых слухов — о том, кто его ждёт и где */
+    if(typeof postHolding==="function"&&postHolding()&&r()<.35){
+      const P=postAll(),A=postAddrs(),k=A[P.stage];
+      if(k&&P.stage<POST_LINKS.length){
+        const q=k.split(",");
+        return {id:"post",ru:"Говорят, свёрток опять пошёл по рукам. Ждёт его "+POST_LINKS[P.stage].who+".",sx:parseInt(q[0]),sy:parseInt(q[1])};
+      }
+    }
+    return null;
+  }
   const h=storyPickOne(L);storyShow(h);
   const p=h.key.split(",");
   return {id:"story",ru:h.t.text,sx:parseInt(p[0]),sy:parseInt(p[1])};

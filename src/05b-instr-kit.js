@@ -88,10 +88,25 @@ function instrAgeTick(dt){
   const K=instrKit();
   for(const id in K){
     const T=instrTraits(K[id]);
-    K[id].wear=clamp((K[id].wear||0)+dt*INSTR_WEAR_RATE*T.age,0,1);
+    /* часы одни (хвост M127): на изношенном корпусе приборы стареют быстрее —
+       вибрация и люфт крепления, wearMul из 12s даёт ту же шкалу */
+    const hk=(typeof wearMul==="function")?1+(1-clamp(wearMul(),0,1))*2.5:1;
+    K[id].wear=clamp((K[id].wear||0)+dt*INSTR_WEAR_RATE*T.age*hk,0,1);
   }
 }
 function instrWearRu(w){
+/* прибор можно потерять (хвост M127): попадание по корпусу изредка выбивает
+   гнездо — экземпляр разбит до мёртвой шкалы, и панель это покажет сама */
+function instrKnock(){
+  if(!G.running||Math.random()>.06)return null;
+  const K=instrKit(),ids=Object.keys(K).filter(id=>(K[id].wear||0)<.85);
+  if(!ids.length)return null;
+  const id=ids[Math.floor(Math.random()*ids.length)];
+  K[id].wear=1;
+  const I=(typeof INSTR_BY_ID!=="undefined"&&INSTR_BY_ID[id])?INSTR_BY_ID[id].ru:id;
+  tell("warn","Попадание: выбито гнездо — "+I,"Прибор разбит\n"+I+"\nпанель слепа по этому каналу");
+  return id;
+}
   return w<.12?"новый":w<.35?"обношенный":w<.6?"с люфтом":w<.85?"разбитый":"мёртвая шкала";
 }
 /* ── цена ──

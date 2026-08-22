@@ -27,7 +27,10 @@ function newsMarkAt(sx,sy){const m=G.newsMarks;return m?m[sx+","+sy]||null:null;
 /* случайный сектор со станцией неподалёку: у слуха должен быть адрес */
 function newsSomewhere(r){
   for(let i=0;i<24;i++){
-    const sx=G.sx+Math.floor((r()-.5)*14),sy=G.sy+Math.floor((r()-.5)*14);
+    /* почтовик слышит дальше, а не только глубже (хвост M126): радиус слуха
+       растёт с тем же `ether`, что и глубина памяти */
+    const rr=14*((typeof hullRole==="function")?Math.max(.6,hullRole().ether):1);
+    const sx=G.sx+Math.floor((r()-.5)*rr),sy=G.sy+Math.floor((r()-.5)*rr);
     if(!starAt(sx,sy))continue;
     const s=getSystem(sx,sy);
     if(s&&s.station)return s;
