@@ -24,15 +24,34 @@
   let mode="login";
   function open(m){
     mode=m; $("#veil").classList.add("on");
-    $("#boxTitle").textContent=m==="login"?"Вход":"Новая запись";
-    $("#boxHint").textContent=m==="login"
-      ?"Чтобы продолжить полёт с любого устройства."
-      :"Имя и пароль, почта не нужна. Восстановить пароль будет нечем — запишите его.";
-    $("#goBtn").textContent=m==="login"?"ВОЙТИ":"СОЗДАТЬ";
-    $("#pw").autocomplete=m==="login"?"current-password":"new-password";
-    $("#swap").textContent=m==="login"?"нет записи — создать":"уже есть запись — войти";
+    const reg=m==="register";
+    $("#boxTitle").textContent=reg?"Новая запись":"Вход";
+    $("#boxHint").textContent=reg
+      ?"Придумайте имя и пароль. Почта необязательна — она нужна только на случай, если пароль забудется."
+      :"Чтобы продолжить полёт с любого устройства.";
+    $("#goBtn").textContent=reg?"СОЗДАТЬ":"ВОЙТИ";
+    $("#pw").autocomplete=reg?"new-password":"current-password";
+    $("#swap").textContent=reg?"уже есть запись — войти":"нет записи — создать";
+    const mw=$("#mailWrap"), fw=$("#forgotWrap");
+    if(mw)mw.style.display=reg?"":"none";
+    if(fw)fw.style.display=reg?"none":"";
     $("#note").textContent=""; $("#note").className="note";
     setTimeout(()=>$("#lg").focus(),50);
+  }
+
+  /* Забытый пароль. Ответ сервера всегда одинаковый — есть такая запись или
+     нет, письмо ушло или нет, — иначе форма превратится в способ узнать,
+     кто у нас зарегистрирован. */
+  async function forgot(){
+    const note=$("#note"), login=$("#lg").value.trim();
+    if(!login){note.className="note bad";
+      note.textContent="сначала впишите имя — на него и пошлём письмо";$("#lg").focus();return}
+    note.className="note"; note.textContent="…";
+    try{
+      await call("forgot",{login});
+      note.className="note ok";
+      note.textContent="если у этой записи есть почта, письмо уже летит. Ссылка живёт час.";
+    }catch(e){note.className="note bad";note.textContent="сервер не ответил"}
   }
   const close=()=>$("#veil").classList.remove("on");
   window.driftAuth={open,close,tok,name};
@@ -51,6 +70,7 @@
   document.querySelectorAll(".linkish,.x").forEach(actionable);
 
   $("#swap").onclick=()=>open(mode==="login"?"register":"login");
+  if($("#forgot"))$("#forgot").onclick=forgot;
   $("#veilX").onclick=close;
   $("#veilX").setAttribute("aria-label","закрыть");
   $("#veil").onclick=e=>{if(e.target===$("#veil"))close()};
@@ -60,10 +80,11 @@
     e.preventDefault();
     const note=$("#note"), btn=$("#goBtn");
     const login=$("#lg").value.trim(), pass=$("#pw").value;
-    if(!login||!pass){note.className="note bad";note.textContent="заполните оба поля";return}
+    const mailEl=$("#ml"), mail=mailEl?mailEl.value.trim():"";
+    if(!login||!pass){note.className="note bad";note.textContent="заполните имя и пароль";return}
     btn.disabled=true; note.className="note"; note.textContent="…";
     try{
-      const d=await call(mode,{login,pass});
+      const d=await call(mode,mode==="register"?{login,pass,mail}:{login,pass});
       if(d.ok){
         setAcc(d.token,d.login);
         note.className="note ok";

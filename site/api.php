@@ -22,6 +22,11 @@
  *   logout   (token)           -> {ok}
  */
 
+/* Заметки и предупреждения PHP не должны попадать в ответ: они ломают JSON
+   на стороне игры. Пишем их в лог сервера, а наружу отдаём только наш ответ. */
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
+
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
@@ -70,6 +75,28 @@ function writeJson($file, $data) {
 function cleanLogin($s) {
   $s = strtolower(trim((string)$s));
   return preg_match('/^[a-z0-9_-]{3,20}$/', $s) ? $s : null;
+}
+/* Почта необязательна и нужна ровно для одного — вернуть забытый пароль.
+   Поэтому проверка простая: адрес либо похож на адрес, либо его нет. */
+function cleanMail($s) {
+  $s = trim((string)$s);
+  if ($s === '') return '';
+  $s = mb_strtolower($s);
+  return (strlen($s) <= 100 && filter_var($s, FILTER_VALIDATE_EMAIL)) ? $s : null;
+}
+
+/* ── письмо ──
+   Отправляем через sendmail самого хостинга: своего почтового ящика заводить
+   не нужно, а обратный адрес на своём домене проходит проверку у получателя. */
+function sendMail($to, $subj, $text) {
+  $from = 'noreply@drift-game.ru';
+  $head = "From: =?UTF-8?B?" . base64_encode('Дрейф') . "?= <$from>\r\n"
+        . "Reply-To: $from\r\n"
+        . "Content-Type: text/plain; charset=UTF-8\r\n"
+        . "Content-Transfer-Encoding: 8bit\r\n"
+        . "X-Mailer: drift\r\n";
+  $s = "=?UTF-8?B?" . base64_encode($subj) . "?=";
+  return @mail($to, $s, $text, $head, "-f$from");
 }
 
 /* ── ограничение попыток ──
@@ -139,12 +166,15 @@ if ($a === 'register') {
   $b     = body();
   $login = cleanLogin($b['login'] ?? '');
   $pass  = (string)($b['pass'] ?? '');
+  $mail  = cleanMail($b['mail'] ?? '');
   if (!$login) fail('имя: 3–20 знаков, латиница, цифры, дефис или подчёркивание');
   if (strlen($pass) < 6) fail('пароль короче шести знаков');
+  if (($b['mail'] ?? '') !== '' && !$mail) fail('почта выглядит неправильно');
   if (is_file(userFile($login))) fail('такое имя уже занято');
   $user = [
     'login'   => $login,
     'hash'    => password_hash($pass, PASSWORD_DEFAULT),
+    'mail'    => $mail,
     'created' => time(),
     'tokens'  => []
   ];
@@ -171,7 +201,8 @@ if ($a === 'login') {
 if ($a === 'me') {
   $u = need();
   $s = readJson(saveFile($u['login']));
-  out(['ok' => true, 'login' => $u['login'], 'ts' => $s['ts'] ?? 0]);
+  out(['ok' => true, 'login' => $u['login'], 'ts' => $s['ts'] ?? 0,
+       'mail' => !empty($u['mail'])]);
 }
 
 if ($a === 'logout') {
@@ -182,6 +213,62 @@ if ($a === 'logout') {
     writeJson(userFile($u['login']), $u);
   }
   out(['ok' => true]);
+}
+
+/* ── забытый пароль ──
+   Ответ всегда одинаковый и всегда бодрый: иначе форма превращается в способ
+   узнать, у кого из игроков какая почта. Ссылка живёт час и сгорает после
+   первого использования. */
+if ($a === 'forgot') {
+  if (!rateHit('forgot')) fail('слишком много попыток, подождите четверть часа', 429);
+  $b     = body();
+  $login = cleanLogin($b['login'] ?? '');
+  $user  = $login ? readJson(userFile($login)) : null;
+  if ($user && !empty($user['mail'])) {
+    $key = bin2hex(random_bytes(16));
+    $user['reset'] = ['h' => hash('sha256', $key), 'exp' => time() + 3600];
+    writeJson(userFile($login), $user);
+    $link = 'https://drift-game.ru/reset.html?k=' . $key . '&u=' . rawurlencode($login);
+    sendMail($user['mail'], 'Дрейф — новый пароль',
+      "Кто-то (надеемся, вы) попросил сменить пароль для записи «{$login}».\n\n" .
+      "Ссылка на смену — она работает один час и один раз:\n$link\n\n" .
+      "Если это были не вы, просто удалите письмо: пока по ссылке не перешли,\n" .
+      "старый пароль работает как работал.\n\n— Дрейф, drift-game.ru");
+  }
+  out(['ok' => true, 'sent' => true]);
+}
+
+if ($a === 'reset') {
+  if (!rateHit('reset')) fail('слишком много попыток, подождите четверть часа', 429);
+  $b     = body();
+  $login = cleanLogin($b['login'] ?? '');
+  $key   = (string)($b['key'] ?? '');
+  $pass  = (string)($b['pass'] ?? '');
+  $user  = $login ? readJson(userFile($login)) : null;
+  if (strlen($pass) < 6) fail('пароль короче шести знаков');
+  if (!$user || empty($user['reset'])) fail('ссылка уже не работает');
+  if (($user['reset']['exp'] ?? 0) < time()) fail('ссылка просрочена — попросите новую');
+  if (!hash_equals($user['reset']['h'], hash('sha256', $key))) fail('ссылка не подходит');
+  $user['hash'] = password_hash($pass, PASSWORD_DEFAULT);
+  unset($user['reset']);
+  /* Меняя пароль, разлогиниваем все устройства: если запись увели, этим
+     ходом её и возвращают. */
+  foreach (($user['tokens'] ?? []) as $h => $e) @unlink(tokenFile($h));
+  $user['tokens'] = [];
+  $tok = tokenNew($user);
+  writeJson(userFile($login), $user);
+  out(['ok' => true, 'token' => $tok, 'login' => $login]);
+}
+
+/* Почту можно добавить и позже — из игры или с сайта, уже войдя. */
+if ($a === 'setmail') {
+  $u    = need();
+  $b    = body();
+  $mail = cleanMail($b['mail'] ?? '');
+  if ($mail === null) fail('почта выглядит неправильно');
+  $u['mail'] = $mail;
+  writeJson(userFile($u['login']), $u);
+  out(['ok' => true, 'mail' => $mail]);
 }
 
 if ($a === 'pull') {

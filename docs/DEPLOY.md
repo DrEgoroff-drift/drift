@@ -1,13 +1,21 @@
 # Deploying to drift-game.ru
 
-The site is three files. Keeping them separate is what lets the front page survive every build:
-the game changes on every push, the landing page almost never, and the backend is its own thing.
+The site and the game are separate files, which is what lets the front page survive every build:
+the game changes on every push, the pages around it almost never, and the backend is its own thing.
 
 | URL | file in repo | what it is |
 |---|---|---|
-| `/` | `site/index.html` | landing page: the pitch, the FAQ, sign-in, the animated background |
+| `/` | `site/index.html` | landing page: pitch, screenshots, the loop, the parrot, sign-in |
+| `/mechanics.html` | `site/mechanics.html` | how to play, in plain language |
+| `/parrot.html` | `site/parrot.html` | the bird as an installable app |
+| `/treplo.html` | built by `build.ps1` | the same bird as one self-contained offline file |
+| `/reset.html` | `site/reset.html` | where a password-recovery link lands |
 | `/play.html` | `drift.html` (built from `src/`) | the game itself, one self-contained file |
-| `/api.php` | `site/api.php` | accounts and cloud saves |
+| `/api.php` | `site/api.php` | accounts, cloud saves, password recovery |
+
+Everything under `site/` is copied to the web root as it stands, so a new page or picture needs no
+change to the deploy — only `treplo.html` is generated, by `build.ps1`, because a downloadable
+bird has to carry its own stylesheet and code instead of linking to the site's.
 
 ## Where things are
 
@@ -82,6 +90,14 @@ Protocol: `POST /api.php?a=<action>`, JSON in, JSON out. The session token trave
 | `pull` | yes | the stored snapshot |
 | `push` | yes | store a snapshot; refuses to overwrite a **newer** one |
 | `logout` | yes | drops that one token |
+| `forgot` | — | `{login}` → mails a one-hour, one-use link, if that account left an address. The reply is identical either way, so the form cannot be used to find out who is registered |
+| `reset` | — | `{login,key,pass}` → new password; every other device is signed out, which is also how a stolen account is taken back |
+| `setmail` | yes | add or change the address afterwards |
+
+Recovery mail goes out through the host's own `sendmail` (`mail()` is available and unrestricted
+here), from `noreply@drift-game.ru` — no mailbox needs to exist for sending, but the address being
+on the domain is what gets the message past the recipient's checks. An address is optional at
+registration: without one the account simply cannot be recovered, and the form says so.
 
 On disk, under `~/drift-data/`: `u/<login>.json` (login, password hash, live token hashes),
 `s/<login>.json` (the snapshot as the game writes it), `t/<sha256>.json` (token → login, so

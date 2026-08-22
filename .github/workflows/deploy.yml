@@ -91,8 +91,9 @@ jobs:
           code=$(curl -s --max-time 20 -o /dev/null -w '%{http_code}' -X POST 'https://drift-game.ru/api.php?a=me')
           [ "$code" = "401" ] || { echo "api.php отвечает $code вместо 401"; exit 1; }
           # страницы и их ассеты: битая картинка на заглавной — тоже поломка выкладки
-          for u in mechanics.html parrot.html site.css sky.js auth.js favicon.svg og.jpg \
-                   shots/world.webp shots/cockpit.webp icons/parrot-512.png parrot.webmanifest; do
+          for u in mechanics.html parrot.html reset.html treplo.html site.css sky.js planets.js \
+                   auth.js parrot.js favicon.svg og.jpg shots/world.webp shots/land.webp \
+                   icons/parrot-512.png icons/fav-32.png parrot.webmanifest; do
             c=$(curl -s --max-time 20 -o /dev/null -w '%{http_code}' "https://drift-game.ru/$u")
             [ "$c" = "200" ] || { echo "/$u отвечает $c"; exit 1; }
           done
