@@ -826,7 +826,7 @@ last                         src/28-loop.js:252
 lastDroneTick                src/28-loop.js:253
 launch                       src/21-mode-surface.js:391
 launchHold                   src/21-mode-surface.js:336
-layerLevel                   src/10-music.js:276
+layerLevel                   src/10-music.js:290
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:115
 litRGB                       src/19c-light.js:46
@@ -867,7 +867,7 @@ luckLine                     src/27b-ui-crew.js:16
 luxPal                       src/03c-hull-luxe.js:16
 MAIN_CTX                     src/08-state.js:4
 makeIR                       src/10-music.js:103
-makePhrase                   src/10-music.js:293
+makePhrase                   src/10-music.js:307
 makeRock                     src/24-mode-belt.js:53
 makeWorld                    src/02a-worldmix.js:47
 MAPBG                        src/18-mode-map.js:31
@@ -977,10 +977,10 @@ MUS_WET                      src/10-music.js:99
 musBeacon                    src/10-music.js:218
 MUSIC_SCENES                 src/10-music.js:27
 musicInit                    src/10-music.js:136
-musicSceneNow                src/10-music.js:375
+musicSceneNow                src/10-music.js:416
 musicSetScene                src/10-music.js:254
-musicStop                    src/10-music.js:411
-musicTick                    src/10-music.js:319
+musicStop                    src/10-music.js:452
+musicTick                    src/10-music.js:333
 musNote                      src/10-music.js:187
 musPerc                      src/10-music.js:244
 navAction                    src/15-input.js:157
@@ -1846,7 +1846,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/09-audio.js · 11 КБ
   · звук: чистый синтез, ни одного файла:1
 
-## src/10-music.js · 24 КБ
+## src/10-music.js · 27 КБ
   · музыка: слои, а не треки:1
 
 ## src/11a-quests.js · 6 КБ

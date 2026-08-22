@@ -8,6 +8,16 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.99.1 — "Question, answer, circle" (music, pass 1)
+
+Self-review of `10-music` by structure: the drone and the bass sat on the tonic forever, layer
+levels were constants, one phrase per place, percussion was a hit every other step. Now a
+harmonic circle of four scale degrees (one per 16-step bar, seeded per scene) moves the drone
+and the bass; a slow breath of 75–140 s sways the melody and the air by a third; every phrase
+has an answer — the same notes with a mirrored contour, alternating with it; half the scenes
+fall silent for the last eight steps of the circle; percussion is an eight-step pattern with
+accents and ghost hits. Nothing is stored; the save format is untouched.
+
 ## 0.99.0 — "Five counters" (cantina, pass 1)
 
 The counter is no longer the same panelled plank in every hall (`cantCounter`, 27d): wood with

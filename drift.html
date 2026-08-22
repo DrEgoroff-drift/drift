@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.99.0";
+const VER="0.99.1";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6167,8 +6167,22 @@ function musicSetScene(key,scene){
   /* своя фраза на локацию: seed из ключа сцены, поэтому одна и та же планета
      всегда встречает одной и той же мелодией */
   let ks=0;for(let i=0;i<key.length;i++)ks=(ks*31+key.charCodeAt(i))|0;
-  MUS.phrase=makePhrase(hashi(ks,scene.bpm,SCALE_KEYS.indexOf(scene.scale)+1),
-                        SCALES[scene.scale]||SCALES.minor);
+  const stp=SCALES[scene.scale]||SCALES.minor;
+  MUS.phrase=makePhrase(hashi(ks,scene.bpm,SCALE_KEYS.indexOf(scene.scale)+1),stp);
+  /* ── ответ, круг, рисунок ──
+     Одна фраза на локацию приедалась за две минуты: к ней теперь есть
+     вторая — тот же seed, но контур зеркален, и они идут попеременно, как
+     вопрос и ответ. Гармония ходила по одной тонике всё время — дрон и бас
+     теперь идут по кругу из четырёх ступеней, по такту на каждую; круг свой
+     у каждой сцены. Ударные были «удар через шаг» — стали рисунком на восемь
+     шагов с акцентами и редким призрачным ударом. */
+  const rr=rng(hashi(ks,0xB0B,scene.bpm));
+  MUS.phraseB=MUS.phrase.map(n=>n&&{...n,deg:stp.length-1-n.deg,chord:n.chord?0:(rr()<.25?4:0)});   // та же длина — зеркальный контур
+  const cyc=[[0,5,3,4],[0,3,4,0],[0,2,5,4],[0,4,5,3],[0,5,0,4]][Math.floor(rr()*5)];
+  MUS.prog=cyc.map(i=>stp[Math.min(i,stp.length-1)]||0);
+  MUS.percPat=[];for(let i=0;i<8;i++)MUS.percPat.push(i===0?1.1:(i===4?.9:(rr()<.35?.55:0)));
+  MUS.restAt=rr()<.5?56:-1;           // у половины сцен в конце круга — тишина на восемь шагов
+  MUS.bar=-1;
   MUS.pi=0;MUS.shift=0;
   if(!MUS.ready)return;
   const c=SND.ctx,t=c.currentTime;
@@ -6235,17 +6249,41 @@ function musicTick(){
   const beat=60/sc.bpm;
   const grid=beat*(2-MUS.intensity*.9);
   if(MUS.next<c.currentTime)MUS.next=c.currentTime+.05;
+  /* ── дыхание ──
+     Уровни слоёв были константами сцены: музыка не становилась ни тише, ни
+     гуще. Медленная волна в полторы-две минуты водит мелодию и воздух на
+     треть — этого хватает, чтобы возвращение фразы было слышно как возвращение. */
+  const br=.72+.28*Math.sin(c.currentTime/(75+(sc.bpm%17)*4)*TAU);
+  if(MUS.layers.motif){
+    MUS.layers.motif.gain.setTargetAtTime(layerLevel("motif",sc)*br,c.currentTime,2.5);
+    MUS.layers.air.gain.setTargetAtTime(layerLevel("air",sc)*(1.3-br*.5),c.currentTime,2.5);
+  }
   while(MUS.next<c.currentTime+3.2){
     const t=MUS.next,s=MUS.step;
     const r=rng(hashi(s,MUS.key.length*31,777));
-    /* бас — редкая очень длинная педаль под всем остальным */
+    /* гармонический круг: такт — 16 шагов, дрон и бас переходят на ступень круга */
+    const bar=Math.floor(s/16)%4, hroot=sc.root+((MUS.prog&&MUS.prog[bar])||0);
+    if(bar!==MUS.bar&&MUS.pad){
+      MUS.bar=bar;
+      const f0=midiHz(hroot);
+      MUS.pad.oscs.forEach((o,i)=>{
+        const iv=[0,steps[4]||7,12][i];
+        o.frequency.setTargetAtTime(f0*Math.pow(2,iv/12)*(1+(i-1)*.004),t,1.6);
+      });
+    }
+    /* бас — редкая очень длинная педаль под всем остальным, на ступени круга */
     if(sc.bass>0&&s%4===0)
-      musNote("bass",midiHz(sc.root-12),t,Math.min(grid*3.6,11),"triangle",.34,220);
+      musNote("bass",midiHz(hroot-12),t,Math.min(grid*3.6,11),"triangle",.34,220);
+    /* тишина: в конце круга у половины сцен мелодия молчит восемь шагов */
+    const rest=MUS.restAt>=0&&s>=MUS.restAt;
     /* мелодия идёт по фразе, а не наугад; каждый проход фраза может сместиться
-       на ступень — так она не приедается, оставаясь узнаваемой */
-    if(sc.motif>0&&MUS.phrase&&MUS.phrase.length){
-      const note=MUS.phrase[MUS.pi%MUS.phrase.length];
-      if(MUS.pi>0&&MUS.pi%MUS.phrase.length===0)
+       на ступень — так она не приедается, оставаясь узнаваемой. Фразы две:
+       вопрос и ответ чередуются проходами. */
+    if(sc.motif>0&&MUS.phrase&&MUS.phrase.length&&!rest){
+      const L=MUS.phrase.length;
+      const ph=(Math.floor(MUS.pi/L)%2===1&&MUS.phraseB&&MUS.phraseB.length===L)?MUS.phraseB:MUS.phrase;
+      const note=ph[MUS.pi%L];
+      if(MUS.pi>0&&MUS.pi%L===0)
         MUS.shift=(r()<.45)?[0,2,-2,4][Math.floor(r()*4)]:0;
       MUS.pi++;
       if(note){
@@ -6272,8 +6310,11 @@ function musicTick(){
       musBeacon("beacon",midiHz(sc.root+deg+12+oct),t+r()*grid,
                 4.5+r()*5.5,.34+r()*.2);
     }
-    if((sc.perc>0||MUS.intensity>.25)&&s%2===0)
-      musPerc(t,.5+MUS.intensity*.4);
+    if(sc.perc>0||MUS.intensity>.25){
+      const pp=MUS.percPat?MUS.percPat[s%8]:(s%2===0?1:0);
+      if(pp>0)musPerc(t,(.5+MUS.intensity*.4)*pp);
+      else if(MUS.intensity>.25&&s%2===0)musPerc(t,.4+MUS.intensity*.4);   // в бою сетка плотнее
+    }
     if(sc.air>0&&r()<.16){
       const deg=steps[Math.floor(r()*steps.length)];
       musNote("air",midiHz(sc.root+deg+24),t,3.5+r()*3.5,"sine",.24,2600);
