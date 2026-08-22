@@ -8,6 +8,20 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.100.3 — "Loose ends, one" (M139)
+
+The first of the tail-closing passes. Base: `21a-mode-base` split along its seam (logic stays,
+the frame moved to `21ac-base-draw`); the gate is a door (jambs, threshold, two leaves, a lamp
+with a cone on the step); three lamps light the tunnel; the pad sits on a shelf cut into the
+plateau instead of under the slope; the plateau has a terrace, so the right half is two planes,
+not a wall; a spoil heap lies on the plain by the gate (G9). A base with a battery and no power
+writes once that its defence has gone quiet, and the battery is silent until power returns; the
+shot from the ground is a heavier sound than a ship gun (M111 tails). Cave: the lower gallery has
+its own dripstone, veins and crystal clumps; beasts live on both galleries and one that hears you
+on the other gallery drops from the ceiling after a wait; the contour fringe carries the
+planet material instead of flat paint (M136 tails). Two stand-only crashes at W=0 guarded
+(`drawCaveDark`, `rackDial`) — the test page is green again.
+
 ## 0.100.2 — "The tunnel" (M138)
 
 The block of rooms sits inside the mountain now, not under the plain: the grid starts two

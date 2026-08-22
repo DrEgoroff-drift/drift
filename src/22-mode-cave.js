@@ -46,6 +46,24 @@ function caveCeil(C,x){
   if(v!==v){v=caveScanUp(C,cx*CAVE_CS+2,caveGalY(C,x));C.cei[cx]=v;}
   return v;
 }
+/* пол и свод НИЖНЕЙ галереи — та же развёртка от её оси. До этого всё
+   убранство и все твари знали только верхнюю (хвост M136) */
+function caveFloorLow(C,x){
+  const cx=clamp((x/CAVE_CS)|0,0,CAVE_NX-1);
+  if(!C.floL)C.floL=new Float32Array(CAVE_NX).fill(NaN);
+  let v=C.floL[cx];
+  if(v!==v){v=caveScanDown(C,cx*CAVE_CS+2,caveLowY(C,x));C.floL[cx]=v;}
+  return v;
+}
+function caveCeilLow(C,x){
+  const cx=clamp((x/CAVE_CS)|0,0,CAVE_NX-1);
+  if(!C.ceiL)C.ceiL=new Float32Array(CAVE_NX).fill(NaN);
+  let v=C.ceiL[cx];
+  if(v!==v){v=caveScanUp(C,cx*CAVE_CS+2,caveLowY(C,x));C.ceiL[cx]=v;}
+  return v;
+}
+function caveFloorOf(C,x,low){return low?caveFloorLow(C,x):caveFloor(C,x);}
+function caveCeilOf(C,x,low){return low?caveCeilLow(C,x):caveCeil(C,x);}
 /* ── генерация поля ── */
 function caveStamp(C,x,y,r){
   const g=C.g,CS=CAVE_CS;
@@ -155,6 +173,17 @@ function enterCave(){
     const x=300+r()*(CAVE_W-600);
     const b=genBeast(r,p,x,caveFloor(C,x));
     b.hostile=true;b.stun=0;b.bite=0;b.flee=0;
+    fauna.push(b);
+  }
+  /* и на нижней галерее свои: раньше внизу было безопасно, потому что туда
+     никто не спускался, а не потому, что там пусто */
+  const nbl=Math.max(0,Math.round((1+Math.floor(r()*2))*(1-watch*.5)));
+  for(let i=0;i<nbl;i++){
+    const x=420+r()*(CAVE_W-760);
+    const y=caveFloorLow(C,x);
+    if(y>=CAVE_Y1-10)continue;
+    const b=genBeast(r,p,x,y);
+    b.hostile=true;b.stun=0;b.bite=0;b.flee=0;b.low=true;
     fauna.push(b);
   }
   /* находка — в дальнем конце НИЖНЕЙ галереи: туда спускаются шахтой, а
@@ -267,10 +296,26 @@ function updateCave(dt){
     const keep=(C.watch||0)>0?24+46*C.watch:10;
     /* тварь ходит по верхней галерее: игрока на нижней она слышит, но не
        достаёт — и это правильно, внизу свои опасности */
-    if(d>keep&&Math.abs(C.y-b.y)<120){b.x+=dx/d*.5*dt;b.face=dx>0?1:-1;}
+    const same=Math.abs(C.y-b.y)<120;
+    if(d>keep&&same){b.x+=dx/d*.5*dt;b.face=dx>0?1:-1;b.lost=0;}
     else if(keep>10&&d<keep-6){b.x-=dx/d*.35*dt;b.face=dx>0?-1:1;}
+    /* тварь спускается (хвост M136): человека на другой галерее она слышит
+       и, выждав, срывается к нему со свода — не сразу, чтобы уйти вниз ещё
+       можно было, и только если он недалеко по горизонтали */
+    const pLow=C.y>caveGalY(C,C.x)+260;
+    if(!same&&!b.fall&&Math.abs(dx)<240&&!(C.watch>0)){
+      b.lost=(b.lost||0)+dt;
+      if(b.lost>260){
+        b.lost=0;
+        if(caveFloorOf(C,b.x,pLow)<CAVE_Y1-10){b.low=pLow;b.fall=true;b.y=caveCeilOf(C,b.x,pLow)+4;}
+      }
+    }
     b.x=clamp(b.x,40,CAVE_W-40);
-    b.y=caveFloor(C,b.x);
+    if(b.fall){
+      b.y+=2.6*dt;
+      const fl=caveFloorOf(C,b.x,!!b.low);
+      if(b.y>=fl){b.y=fl;b.fall=false;if(Math.abs(dx)<W*.5)S.shake=Math.max(S.shake||0,3);}
+    }else b.y=caveFloorOf(C,b.x,!!b.low);
     if(b.bite>0)b.bite-=dt;
     if(d<20&&b.bite<=0&&!(C.watch>0)){b.bite=100;suitHit(3,"Укус");if(G.mode!=="cave")return;}
   }
@@ -368,6 +413,16 @@ function drawCaveRock(C,cp,wx0,wy0){
   if(cp){
     const mat=planetMat(cp);
     fillMaterial(mat,wx0,wy0,.30,.18,P);
+    /* кромка тоже порода (хвост M136): полоса контура шириной в клетку шла
+       плоской краской поверх материала, и у каждой стены был нарисованный
+       обвод. Тот же тайл кладётся штрихом по контуру, в мировых координатах,
+       чтобы не ехал относительно заливки */
+    {
+      const KW=new Path2D();KW.addPath(K,new DOMMatrix().translate(wx0,wy0));
+      ctx.save();ctx.translate(-wx0,-wy0);
+      ctx.strokeStyle=mat;ctx.lineWidth=CS;ctx.globalAlpha=.30;ctx.stroke(KW);
+      ctx.restore();
+    }
     /* и сразу гасим: тайл рассчитан на освещённую поверхность, под землёй он
        светит как днём и убивает единственное, что есть у пещеры — темноту */
     ctx.fillStyle="rgba(2,4,9,.30)";ctx.fill(P);

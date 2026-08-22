@@ -103,18 +103,24 @@ function caveDeco(C,p){
   /* натёки: шаг по всей длине, зал решает густоту. Сталактит и сталагмит растут
      навстречу и изредка смыкаются колонной — колонна и есть то, ради чего
      натёчный зал вообще нужен */
-  for(let x=44;x<CAVE_W-44;x+=11){
-    const z=caveZoneAt(C,x), h=hashi(Math.round(x),C.seed,0x51AC);
+  /* обе галереи: нижняя была голым ходом, и весь страх кончался на лестнице
+     вниз (хвост M136). Сольность та же, зал — по x, соль семени своя */
+  for(let x=44;x<2*CAVE_W-44;x+=11){
+    const low=x>=CAVE_W;
+    if(low&&(x-CAVE_W<360||x-CAVE_W>CAVE_W-200))continue;
+    const wx=low?x-CAVE_W:x;
+    const z=caveZoneAt(C,wx), h=hashi(Math.round(wx),C.seed,low?0x10A0:0x51AC);
     const roll=(h&1023)/1023;
     if(roll>z.Z.drip*.62)continue;
-    const ceil=caveCeil(C,x), flo=caveFloor(C,x), gap=flo-ceil;
+    const ceil=caveCeilOf(C,wx,low), flo=caveFloorOf(C,wx,low), gap=flo-ceil;
+    if(flo>=CAVE_Y1-10||gap<12)continue;
     const up=((h>>>10)&1)===0;
     const len=(9+((h>>>11)&31)*1.5)*(up?1:.72)*(z.Z.drip>.8?1.4:1);
     const w=2.4+((h>>>16)&7)*.7;
     const L=Math.min(len,gap*(up?.5:.34));
     if(L<5)continue;
     const col=up&&((h>>>19)&7)===0&&L>gap*.46;
-    D.tips.push({x,up,L:col?gap:L,w:w*(col?1.15:1),col,y0:up?ceil:flo,
+    D.tips.push({x:wx,up,L:col?gap:L,w:w*(col?1.15:1),col,y0:up?ceil:flo,low,
       lean:(((h>>>20)&15)/15-.5)*.9,seed:h});
   }
   /* натёчные завесы: широкая складка вдоль свода, только в натёчных залах */
@@ -134,7 +140,7 @@ function caveDeco(C,p){
     const mn=MINERAL[(z.seed>>>5)%MINERAL.length];
     const n=Math.round((z.x1-z.x0)/300*(1+z.Z.vein*3));
     for(let i=0;i<n;i++){
-      const up=r()<.6;
+      const up=r()<.6, low=i%3===2&&z.x0>380;       // каждая третья жила — в нижней галерее
       let x=z.x0+r()*(z.x1-z.x0-120);
       const pts=[],seg=6+Math.floor(r()*7);
       /* жила идёт в породе, а не по воздуху: у свода она выше кромки, у пола —
@@ -146,7 +152,7 @@ function caveDeco(C,p){
         off+=(r()-.5)*22;
         off=clamp(off,up?-52:4,up?-4:52);
       }
-      D.veins.push({up,pts,col:mn,w:.8+r()*1.2,ph:r()*TAU,
+      D.veins.push({up,low,pts,col:mn,w:.8+r()*1.2,ph:r()*TAU,
         a:(.10+r()*.16)*(.4+z.Z.vein)});
     }
   }
@@ -159,13 +165,13 @@ function caveDeco(C,p){
     const n=Math.round((z.x1-z.x0)/210*z.Z.cryst)+1;
     for(let i=0;i<n;i++){
       const x=z.x0+30+r()*Math.max(20,(z.x1-z.x0-60));
-      const up=r()<.75;
+      const up=r()<.75, low=i%2===1&&x>380&&x<CAVE_W-200;   // половина кустов — внизу
       const spikes=[];
       const k=3+Math.floor(r()*4);
       for(let j=0;j<k;j++)
         spikes.push({dx:(j-(k-1)/2)*(5+r()*7),h:(14+r()*34)*(up?1:.8),
           w:2.4+r()*3.4,lean:(r()-.5)*.7});
-      D.crystals.push({x,up,spikes,col:mn,ph:r()*TAU,rad:46+r()*44});
+      D.crystals.push({x,up,low,spikes,col:mn,ph:r()*TAU,rad:46+r()*44});
     }
   }
   C.deco=D;
@@ -195,7 +201,7 @@ function updateCaveDeco(C,dt){
     for(const t of D.tips)if(t.up&&!t.col&&Math.abs(t.x-C.x)<W*.6)cand.push(t);
     if(cand.length){
       const t=cand[Math.floor(Math.random()*cand.length)];
-      drops.push({x:t.x+t.lean*t.L,y:t.y0+t.L,vy:.02,fy:caveFloor(C,t.x)});
+      drops.push({x:t.x+t.lean*t.L,y:t.y0+t.L,vy:.02,fy:caveFloorOf(C,t.x,t.low)});
     }
   }
 }
@@ -285,7 +291,7 @@ function drawCaveDark(C,px,py){
      углы за ним добираются четырьмя плоскими заливками. */
   const R=Math.max(W,H)*.52,cx=px,cy=py-14;
   const SP=glowSprite("cavedark",()=>{
-    const g=ctx.createRadialGradient(0,0,40/R,0,0,1);
+    const g=ctx.createRadialGradient(0,0,R>0?Math.min(.5,40/R):.06,0,0,1);   // при W=0 (стенд) R=0 — не делить
     g.addColorStop(0,"rgba(0,0,0,0)");
     g.addColorStop(.45,"rgba(2,5,10,.30)");
     g.addColorStop(1,"rgba(1,4,10,.76)");
@@ -305,7 +311,8 @@ function drawCaveGlow(C,camx,camy,px,py){
   ctx.globalCompositeOperation="lighter";
   for(const c of D.crystals){
     const sx=c.x-camx;if(sx<-c.rad||sx>W+c.rad)continue;
-    const sy=(c.up?caveFloor(C,c.x):caveCeil(C,c.x))-camy;
+    const sy=(c.up?caveFloorOf(C,c.x,c.low):caveCeilOf(C,c.x,c.low))-camy;
+    if(c.low&&sy+camy>=CAVE_Y1-10)continue;
     const puls=.55+.45*Math.sin(G.t*.014+c.ph);
     /* тело: две грани на иглу, светлая и тёмная, и ребро между ними. Одной
        заливкой игла читается соломиной; гранью — камнем, который ловит свет.
@@ -337,7 +344,7 @@ function drawCaveGlow(C,camx,camy,px,py){
     ctx.beginPath();
     for(let i=0;i<v.pts.length;i++){
       const wx=v.pts[i][0];
-      const y=(v.up?caveCeil(C,wx)+v.pts[i][1]:caveFloor(C,wx)+v.pts[i][1])-camy;
+      const y=(v.up?caveCeilOf(C,wx,v.low)+v.pts[i][1]:caveFloorOf(C,wx,v.low)+v.pts[i][1])-camy;
       if(i)ctx.lineTo(wx-camx,y);else ctx.moveTo(wx-camx,y);
     }
     ctx.lineCap="round";

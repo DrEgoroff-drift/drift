@@ -20,7 +20,7 @@ function battAt(sx,sy){
     const B=G.bases[key];
     if(B.sx!==sx||B.sy!==sy)continue;
     const P=basePower(B);
-    if(!P.guns)continue;
+    if(!P.guns||P.eff<=0)continue;              // обесточенная батарея молчит (21a пишет об этом в журнал)
     n+=P.guns;eff=Math.max(eff,P.eff);
     if(!p){
       const sys=getSystem(sx,sy);
@@ -54,7 +54,9 @@ function battTick(dt){
   tgt.hull-=BATT_DMG*Math.max(.2,Bt.eff);
   tgt.aware=true;                                   // по нему попали — он знает, где он
   G.battFx.push({x1:Bt.p.x,y1:Bt.p.y,x2:tgt.x,y2:tgt.y,t:14});
-  if(G.mode==="system")sfx("ui",{f:280,to:90,d:.2,v:.22});
+  /* голос батареи: тяжёлый низкий выстрел с грунта плюс прежний блип —
+     с орбиты слышно, что стреляет не корабль (хвост M111) */
+  if(G.mode==="system"){sfx("shot",{f:150,v:.3});sfx("ui",{f:280,to:90,d:.2,v:.16});}
   if(tgt.hull<=0){
     logAdd("kill","Батарея сбила «"+tgt.name+"»");
     killPirate(tgt);

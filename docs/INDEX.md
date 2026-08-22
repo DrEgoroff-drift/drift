@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 163 · символов верхнего уровня: 1784
+Файлов: 164 · символов верхнего уровня: 1788
 
 ## СИМВОЛЫ
 
@@ -122,31 +122,31 @@ BASE_ROLES                   src/12a-crew.js:118
 BASE_ROOM                    src/21ab-base-interiors.js:9
 baseAt                       src/21a-mode-base.js:43
 baseCell                     src/21a-mode-base.js:86
-baseCollect                  src/21a-mode-base.js:272
+baseCollect                  src/21a-mode-base.js:280
 baseCost                     src/21a-mode-base.js:46
-baseFixTick                  src/21a-mode-base.js:261
+baseFixTick                  src/21a-mode-base.js:269
 baseGrowCheck                src/21a-mode-base.js:14
-baseJumpCost                 src/21a-mode-base.js:291
+baseJumpCost                 src/21a-mode-base.js:299
 baseKey                      src/21a-mode-base.js:42
-baseList                     src/21a-mode-base.js:285
+baseList                     src/21a-mode-base.js:293
 baseNeighbors                src/21a-mode-base.js:91
-basePads                     src/21a-mode-base.js:290
+basePads                     src/21a-mode-base.js:298
 basePoolHeld                 src/21a-mode-base.js:143
 basePower                    src/21a-mode-base.js:101
-baseRaid                     src/21a-mode-base.js:199
+baseRaid                     src/21a-mode-base.js:207
 baseRoleForce                src/12a-crew.js:132
-baseRoomPath                 src/21a-mode-base.js:393
+baseRoomPath                 src/21ac-base-draw.js:14
 baseRows                     src/21a-mode-base.js:13
 baseSet                      src/21a-mode-base.js:87
 baseSlots                    src/12a-crew.js:127
 baseStaff                    src/12a-crew.js:128
-baseStorm                    src/21a-mode-base.js:237
+baseStorm                    src/21a-mode-base.js:245
 baseTick                     src/21a-mode-base.js:145
 BATT_COOL                    src/21d-battery.js:13
 BATT_DMG                     src/21d-battery.js:14
 BATT_RANGE                   src/21d-battery.js:12
 battAt                       src/21d-battery.js:17
-battDraw                     src/21d-battery.js:65
+battDraw                     src/21d-battery.js:67
 battTarget                   src/21d-battery.js:33
 battTick                     src/21d-battery.js:36
 bBox                         src/21aa-base-rooms.js:23
@@ -218,22 +218,26 @@ CAVE_NX                      src/22-mode-cave.js:12
 CAVE_W                       src/22-mode-cave.js:11
 CAVE_ZONE                    src/22a-cave-deco.js:17
 CAVE_ZONE_MIX                src/22a-cave-deco.js:26
-caveBoxFree                  src/22-mode-cave.js:175
-caveBuild                    src/22-mode-cave.js:63
+caveBoxFree                  src/22-mode-cave.js:204
+caveBuild                    src/22-mode-cave.js:81
 caveCeil                     src/22-mode-cave.js:43
-caveContour                  src/22-mode-cave.js:324
+caveCeilLow                  src/22-mode-cave.js:58
+caveCeilOf                   src/22-mode-cave.js:66
+caveContour                  src/22-mode-cave.js:369
 caveDeco                     src/22a-cave-deco.js:94
 caveFloor                    src/22-mode-cave.js:37
+caveFloorLow                 src/22-mode-cave.js:51
+caveFloorOf                  src/22-mode-cave.js:65
 caveGalR                     src/22-mode-cave.js:16
 caveGalY                     src/22-mode-cave.js:15
 caveLowY                     src/22-mode-cave.js:18
-caveMoveX                    src/22-mode-cave.js:181
+caveMoveX                    src/22-mode-cave.js:210
 cavePool                     src/22a-cave-deco.js:76
 caveScanDown                 src/22-mode-cave.js:25
 caveScanUp                   src/22-mode-cave.js:31
 caveSolidAt                  src/22-mode-cave.js:19
-caveStamp                    src/22-mode-cave.js:50
-caveTip                      src/22a-cave-deco.js:206
+caveStamp                    src/22-mode-cave.js:68
+caveTip                      src/22a-cave-deco.js:212
 caveVault                    src/22a-cave-deco.js:64
 caveWet                      src/22a-cave-deco.js:88
 caveZoneAt                   src/22a-cave-deco.js:57
@@ -405,7 +409,7 @@ drawAstronaut                src/20-life.js:4
 drawBarge                    src/12l-barge.js:496
 drawBarges                   src/12l-barge.js:527
 drawBargesMap                src/12l-barge.js:552
-drawBase                     src/21a-mode-base.js:422
+drawBase                     src/21ac-base-draw.js:43
 drawBaseBuilding             src/21c-built.js:99
 drawBeast                    src/20-life.js:697
 drawBeastAlien               src/20-life.js:540
@@ -416,13 +420,13 @@ drawBeltRocks                src/17-mode-system.js:461
 drawBuildMenu                src/21aa-base-rooms.js:492
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
-drawCave                     src/22-mode-cave.js:400
-drawCaveDark                 src/22a-cave-deco.js:282
-drawCaveFar                  src/22-mode-cave.js:387
-drawCaveGlow                 src/22a-cave-deco.js:302
-drawCaveRock                 src/22-mode-cave.js:349
-drawCaveSolid                src/22a-cave-deco.js:214
-drawCaveWater                src/22a-cave-deco.js:255
+drawCave                     src/22-mode-cave.js:455
+drawCaveDark                 src/22a-cave-deco.js:288
+drawCaveFar                  src/22-mode-cave.js:442
+drawCaveGlow                 src/22a-cave-deco.js:308
+drawCaveRock                 src/22-mode-cave.js:394
+drawCaveSolid                src/22a-cave-deco.js:220
+drawCaveWater                src/22a-cave-deco.js:261
 drawCelest                   src/06a-celest.js:141
 drawChunks                   src/18c-chunks.js:55
 drawClouds                   src/19e-clouds.js:169
@@ -517,7 +521,7 @@ endPtr                       src/15-input.js:207
 engineLoop                   src/09-audio.js:219
 enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:88
-enterCave                    src/22-mode-cave.js:129
+enterCave                    src/22-mode-cave.js:147
 enterDig                     src/23-mode-dig.js:50
 enterRaid                    src/24a-mode-raid.js:134
 enterSurface                 src/21-mode-surface.js:2
@@ -530,7 +534,7 @@ evacuate                     src/21-mode-surface.js:362
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:80
 exitBelt                     src/24-mode-belt.js:162
-exitCave                     src/22-mode-cave.js:170
+exitCave                     src/22-mode-cave.js:199
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
 exportCode                   src/14-save.js:493
@@ -821,7 +825,7 @@ jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
 jump                         src/18-mode-map.js:332
-jumpToBase                   src/21a-mode-base.js:295
+jumpToBase                   src/21a-mode-base.js:303
 keplerPos                    src/06-galaxy.js:39
 keyLabel                     src/15-input.js:63
 keyMap                       src/15-input.js:52
@@ -1267,15 +1271,15 @@ RACK_CH                      src/25d-instr-rack.js:27
 RACK_G                       src/25d-instr-rack.js:36
 RACK_PAD                     src/25d-instr-rack.js:25
 rackDial                     src/25d-instr-rack.js:99
-rackDraw                     src/25d-instr-rack.js:316
+rackDraw                     src/25d-instr-rack.js:317
 rackGeo                      src/25d-instr-rack.js:68
-rackGlass                    src/25d-instr-rack.js:144
+rackGlass                    src/25d-instr-rack.js:145
 rackGrain                    src/25d-instr-rack.js:88
 rackOpen                     src/25d-instr-rack.js:55
-rackPaperBox                 src/25d-instr-rack.js:277
-rackRoller                   src/25d-instr-rack.js:283
+rackPaperBox                 src/25d-instr-rack.js:278
+rackRoller                   src/25d-instr-rack.js:284
 rackScrew                    src/25d-instr-rack.js:78
-rackTex                      src/25d-instr-rack.js:161
+rackTex                      src/25d-instr-rack.js:162
 rackToggle                   src/25d-instr-rack.js:56
 RAID_N                       src/24a-mode-raid.js:6
 RAID_ROOMS                   src/24a-mode-raid.js:7
@@ -1567,7 +1571,7 @@ STORAGE_OK                   src/14-save.js:7
 STORIES                      src/12k-stories-a.js:42
 STORIES_B                    src/12k-stories-b.js:27
 STORIES_C                    src/12k-stories-c.js:23
-STORM_WORLDS                 src/21a-mode-base.js:236
+STORM_WORLDS                 src/21a-mode-base.js:244
 STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
@@ -1736,10 +1740,10 @@ unlockAudio                  src/09-audio.js:36
 unpackPart                   src/05-parts.js:323
 updateAllies                 src/12a-crew.js:517
 updateBarges                 src/12l-barge.js:156
-updateBase                   src/21a-mode-base.js:314
+updateBase                   src/21a-mode-base.js:322
 updateBelt                   src/24-mode-belt.js:172
-updateCave                   src/22-mode-cave.js:187
-updateCaveDeco               src/22a-cave-deco.js:178
+updateCave                   src/22-mode-cave.js:216
+updateCaveDeco               src/22a-cave-deco.js:184
 updateCombat                 src/13-pirates.js:76
 updateDig                    src/23-mode-dig.js:113
 updateLanding                src/19-mode-landing.js:45
@@ -2104,15 +2108,17 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/21ab-base-interiors.js · 42 КБ
   · база: восемь отсеков изнутри:1
 
-## src/21a-mode-base.js · 55 КБ
+## src/21ac-base-draw.js · 38 КБ
+  · база: рисование разреза:1
+
+## src/21a-mode-base.js · 23 КБ
   · база на планете: вид в разрезе:1
   · энергия и соседство:88
   · ленивое время базы:144
-  · налёты пиратов на базу:195
-  · буря:231
-  · сеть баз:282
-  · обновление сцены:313
-  · рисование разреза:382
+  · налёты пиратов на базу:203
+  · буря:239
+  · сеть баз:290
+  · обновление сцены:321
 
 ## src/21b-surface-deco.js · 34 КБ
   · крупная форма на поверхности:1
@@ -2127,10 +2133,10 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · поверхность:1
   · навигатор и подсказки сверху:418
 
-## src/22a-cave-deco.js · 19 КБ
+## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
 
-## src/22-mode-cave.js · 23 КБ
+## src/22-mode-cave.js · 26 КБ
   · пещера: поле породы в двух измерениях:1
 
 ## src/23-mode-dig.js · 48 КБ
