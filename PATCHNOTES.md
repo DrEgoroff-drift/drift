@@ -8,6 +8,14 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.99.5 — "Plated" (G4)
+
+The boarding deck spoke a different language: one-tone walls with an outline, flat crates, a
+floor from wall to wall. Now every wall carries a plinth, a sheet seam with rivets (near only)
+and a cable run under the ceiling; the floor is plates with a gap at the edge and a pool of
+light under each lamp; every box has a lid rim and a contact shadow. All of it is quads in the
+same projection — no new full-screen pass.
+
 ## 0.99.4 — "A voice per world" (music, pass 2)
 
 The melody voice gets a vibrato that arrives on the second third of the note and a detune

@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.99.4";
+const VER="0.99.5";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -30346,19 +30346,45 @@ function drawRaid(){
     const m0=[a[0],(a[1]+b[1])/2,a[2]], m1=[d[0],(c[1]+d[1])/2,d[2]];
     quad(a,m0,m1,d,col,li*1.08,true);
     quad(m0,b,c,m1,col,li*.72,true);
+    /* ── обшивка ──
+       Стена была одним тоном с контуром и читалась бумагой (G4). Теперь на ней
+       то, что есть на стене любого отсека базы: плинтус у пола, шов между
+       листами на трети высоты и кабель-канал под потолком — три тонких
+       четырёхугольника в той же проекции, без единого нового прохода. */
+    const lerp3=(p,q,t)=>[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t,p[2]+(q[2]-p[2])*t];
+    const dark=[col[0]*.55|0,col[1]*.55|0,col[2]*.6|0];
+    quad(a,lerp3(a,b,.06),lerp3(d,c,.06),d,dark,li,false);                       // плинтус
+    quad(lerp3(a,b,.36),lerp3(a,b,.385),lerp3(d,c,.385),lerp3(d,c,.36),dark,li*.9,false);   // шов
+    quad(lerp3(a,b,.80),lerp3(a,b,.86),lerp3(d,c,.86),lerp3(d,c,.80),[col[0]+26,col[1]+22,col[2]+14],li*.95,false); // кабель-канал
+    /* заклёпки по шву — только вблизи, иначе это шум */
+    const A=proj(a[0],a[1],a[2]);
+    if(A&&A.z<RCELL*3.5){
+      for(let t=.12;t<.95;t+=.2){
+        const p=lerp3(lerp3(a,b,.40),lerp3(d,c,.40),t),q=lerp3(lerp3(a,b,.43),lerp3(d,c,.43),t+.018);
+        quad(p,[p[0],q[1],p[2]],q,[q[0],p[1],q[2]],[col[0]+40,col[1]+40,col[2]+40],li,false);
+      }
+    }
   }
-  function quad(a,b,c,d,col,li,edge,emis){
+  function quad(a,b,c,d,col,li,edge,emis,dBias){
     const A=proj(a[0],a[1],a[2]),B=proj(b[0],b[1],b[2]),
           C=proj(c[0],c[1],c[2]),D=proj(d[0],d[1],d[2]);
     if(!A||!B||!C||!D)return;
-    polys.push({p:[A,B,C,D],d:(A.z+B.z+C.z+D.z)/4,col,li,edge,emis});
+    polys.push({p:[A,B,C,D],d:(A.z+B.z+C.z+D.z)/4+(dBias||0),col,li,edge,emis});
   }
   /* Коробка из пяти граней (низ не виден): всё крупное железо в ангаре собрано
      из них — контейнеры, опоры, катер. Ярче светится верх, бока темнее, и
      этого хватает, чтобы предмет стоял в пространстве, а не лежал наклейкой. */
   function box(bx,by,bz,bw,bh,bd,col,li){
     const x0=bx-bw/2,x1=bx+bw/2,z0=bz-bd/2,z1=bz+bd/2,y1=by+bh;
+    /* контактная тень на полу: без неё коробка висит над плитой (G4) */
+    quad([x0-4,by+.5,z0-4],[x1+4,by+.5,z0-4],[x1+4,by+.5,z1+4],[x0-4,by+.5,z1+4],[6,8,12],li*.5,false,0,6);
     quad([x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1],col,li*1.15,true);   // верх
+    /* кант крышки: тёмная полоса под верхом по всем четырём бокам — ящик, а не куб */
+    const rim=[col[0]*.5|0,col[1]*.5|0,col[2]*.55|0],ry=y1-Math.min(3,bh*.18);
+    quad([x0,ry,z0],[x0,y1,z0],[x1,y1,z0],[x1,ry,z0],rim,li,false,0,-.5);
+    quad([x1,ry,z1],[x1,y1,z1],[x0,y1,z1],[x0,ry,z1],rim,li,false,0,-.5);
+    quad([x0,ry,z1],[x0,y1,z1],[x0,y1,z0],[x0,ry,z0],rim,li,false,0,-.5);
+    quad([x1,ry,z0],[x1,y1,z0],[x1,y1,z1],[x1,ry,z1],rim,li,false,0,-.5);
     quad([x0,by,z0],[x0,y1,z0],[x1,y1,z0],[x1,by,z0],col,li*.95,true);
     quad([x1,by,z1],[x1,y1,z1],[x0,y1,z1],[x0,by,z1],col,li*.72,true);
     quad([x0,by,z1],[x0,y1,z1],[x0,y1,z0],[x0,by,z0],col,li*.82,true);
@@ -30382,6 +30408,16 @@ function drawRaid(){
     const torch=clamp((1-ang/1.1),0,1)*clamp(1-dd/620,0,1)*.5;
     const li=clamp(.95-dd/(RCELL*9)+torch+lamp,.1,1.15);
     quad([x0,h,z0],[x1,h,z0],[x1,h,z1],[x0,h,z1],base,li*.9,false);
+    /* плита пола с зазором по кромке и пятно света под лампой: пол был
+       одной заливкой от стены до стены (G4) */
+    const gp=RCELL*.05;
+    quad([x0+gp,h+.3,z0+gp],[x1-gp,h+.3,z0+gp],[x1-gp,h+.3,z1-gp],[x0+gp,h+.3,z1-gp],
+         [base[0]+6,base[1]+6,base[2]+6],li*.93,false,0,-.2);
+    if(K==="corr"||K==="reactor"||K==="hangar"){
+      const pc=K==="reactor"?[base[0]+10,base[1]+34,base[2]+34]:[base[0]+30,base[1]+26,base[2]+14];
+      const pp=RCELL*.24;
+      quad([x0+pp,h+.6,z0+pp],[x1-pp,h+.6,z0+pp],[x1-pp,h+.6,z1-pp],[x0+pp,h+.6,z1-pp],pc,li*1.05,false,0,-.4);
+    }
     quad([x0,RAID_H,z1],[x1,RAID_H,z1],[x1,RAID_H,z0],[x0,RAID_H,z0],base,li*.28,false);   // потолок темнее пола: свет идёт сверху вниз
     /* стены рисуем только там, где соседняя клетка — порода */
     if(raidSolid(R,c,rr-1))wall([x0,h,z0],[x0,RAID_H,z0],[x1,RAID_H,z0],[x1,h,z0],base,li);

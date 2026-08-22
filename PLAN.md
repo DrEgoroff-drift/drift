@@ -179,6 +179,8 @@ standard; the rest is pulled up to them, not the other way round.
   recognise as the same game. Fix: keep the projection, repaint with the base's brushes —
   plated walls with rivets (`bDress`), real crates, pirates drawn as bodies (M74 rules), a floor
   with grating and cable runs, one light cone from the hangar door, dust.
+  **Done in 0.99.5** for plating, floor plates, light pools, crate rims. Still open: pirates
+  at rest (poses), the hangar door cone, a rock wall where the base meets the asteroid.
 - **G5 — the scoop giant tiles visibly** (`scoop.png`). The band's waves repeat at one screen
   width and the baked 512×256 is stretched to ×3. Fix: bake at 1024×512 per giant type with a
   non-tiling domain warp (fbm on fbm), bands as fronts with sharp leading edges and soft trailing

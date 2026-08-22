@@ -428,7 +428,7 @@ drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:240
 drawFindsSystem              src/17b-finds.js:140
 drawFlame                    src/03b-hull-paint.js:10
-drawFoeBody                  src/24a-mode-raid.js:638
+drawFoeBody                  src/24a-mode-raid.js:674
 drawForeground               src/21b-surface-deco.js:577
 drawGlassHUD                 src/24-mode-belt.js:518
 drawGround                   src/19-mode-landing.js:109
@@ -2111,7 +2111,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/23-mode-dig.js · 48 КБ
   · шахта: спуск вглубь планеты:1
 
-## src/24a-mode-raid.js · 40 КБ
+## src/24a-mode-raid.js · 43 КБ
   · рейд на пиратскую базу: полигональный интерьер:1
   · генерация: комнаты и коридоры со связностью:29
   · вход, выход, наполнение:84
