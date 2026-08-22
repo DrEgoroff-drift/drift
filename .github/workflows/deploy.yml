@@ -74,10 +74,12 @@ jobs:
           # что лежит в исходниках, а то, что действительно уехало на сайт.
           ver=$(grep -o 'VER="[0-9.]*"' src/01-core.js | head -1 | grep -o '[0-9.]*')
           printf '{"ver":"%s","date":"%s"}\n' "$ver" "$(date -u +%d.%m.%Y)" > version.json
-          scp drift.html        drift:drift-game.ru/docs/play.html
-          scp site/index.html   drift:drift-game.ru/docs/index.html
-          scp site/api.php      drift:drift-game.ru/docs/api.php
+          # сайт уезжает целиком: страниц и картинок больше одной, и перечислять
+          # их по именам — способ однажды забыть новую
+          ssh drift "mkdir -p drift-game.ru/docs/shots drift-game.ru/docs/icons"
+          scp -r site/*         drift:drift-game.ru/docs/
           scp version.json      drift:drift-game.ru/docs/version.json
+          scp drift.html        drift:drift-game.ru/docs/play.html
 
       - name: Убедиться, что на сайте то, что собрали
         run: |
@@ -88,3 +90,9 @@ jobs:
           curl -sf --max-time 20 -o /dev/null https://drift-game.ru/ || { echo "заглавная не отвечает"; exit 1; }
           code=$(curl -s --max-time 20 -o /dev/null -w '%{http_code}' -X POST 'https://drift-game.ru/api.php?a=me')
           [ "$code" = "401" ] || { echo "api.php отвечает $code вместо 401"; exit 1; }
+          # страницы и их ассеты: битая картинка на заглавной — тоже поломка выкладки
+          for u in mechanics.html parrot.html site.css sky.js auth.js favicon.svg og.jpg \
+                   shots/world.webp shots/cockpit.webp icons/parrot-512.png parrot.webmanifest; do
+            c=$(curl -s --max-time 20 -o /dev/null -w '%{http_code}' "https://drift-game.ru/$u")
+            [ "$c" = "200" ] || { echo "/$u отвечает $c"; exit 1; }
+          done

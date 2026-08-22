@@ -1,0 +1,16 @@
+{
+  "name": "Трепло — птица «Дрейфа»",
+  "short_name": "Трепло",
+  "description": "Попугай с борта «Стриж-7»: живёт в окне, дёргается, чистит перо и повторяет за эфиром.",
+  "start_url": "/parrot.html?pet=1",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#05070c",
+  "theme_color": "#05070c",
+  "icons": [
+    { "src": "/icons/parrot-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/parrot-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/parrot-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
