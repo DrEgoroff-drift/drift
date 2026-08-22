@@ -78,8 +78,12 @@ jobs:
           # их по именам — способ однажды забыть новую
           ssh drift "mkdir -p drift-game.ru/docs/shots drift-game.ru/docs/icons"
           scp -r site/*         drift:drift-game.ru/docs/
+          # glob не берёт точечные файлы, а .htaccess — сжатие и кэш (см. DEPLOY.md)
+          scp site/.htaccess    drift:drift-game.ru/docs/.htaccess
           scp version.json      drift:drift-game.ru/docs/version.json
           scp drift.html        drift:drift-game.ru/docs/play.html
+          # mod_deflate на хосте нет: рядом кладётся play.html.gz, .htaccess отдаёт его
+          ssh drift "cd drift-game.ru/docs && gzip -kf9 play.html"
 
       - name: Убедиться, что на сайте то, что собрали
         run: |
@@ -87,6 +91,9 @@ jobs:
           got=$(curl -sf --max-time 30 https://drift-game.ru/play.html | grep -o 'VER="[0-9.]*"' | head -1)
           echo "в исходниках $want, на сайте $got"
           [ "$want" = "$got" ] || { echo "версии разошлись"; exit 1; }
+          gz=$(curl -s --max-time 30 -H 'Accept-Encoding: gzip' -o /dev/null -w '%{size_download}' https://drift-game.ru/play.html)
+          echo "play.html со сжатием: $gz байт"
+          [ "$gz" -lt 1200000 ] || echo "::warning::play.html уходит без сжатия ($gz байт) — проверьте .htaccess"
           curl -sf --max-time 20 -o /dev/null https://drift-game.ru/ || { echo "заглавная не отвечает"; exit 1; }
           code=$(curl -s --max-time 20 -o /dev/null -w '%{http_code}' -X POST 'https://drift-game.ru/api.php?a=me')
           [ "$code" = "401" ] || { echo "api.php отвечает $code вместо 401"; exit 1; }

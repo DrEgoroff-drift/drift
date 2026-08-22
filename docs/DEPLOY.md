@@ -136,3 +136,13 @@ only when it is genuinely newer than the local one.
 ```bash
 ssh drift "cp ~/drift-game.ru/docs/_hoster-stub.html ~/drift-game.ru/docs/index.html"
 ```
+
+## Compression (added 2026-08-22)
+
+The host has no `mod_deflate` and the openresty in front does not gzip either: `play.html` went
+out as 2.1 MB raw. `site/.htaccess` (copied explicitly — `scp -r site/*` skips dotfiles) rewrites
+a request for `play.html` to `play.html.gz` when the browser accepts gzip and sets
+`Content-Encoding` via `mod_headers`; the `.gz` is produced on the server right after the upload
+(`gzip -kf9 play.html`, in both `deploy.yml` and `deploy.ps1`). The workflow prints the
+compressed size and warns — does not fail — if it still sees the raw one. `Cache-Control` is a
+minute for pages and scripts, a week for images.

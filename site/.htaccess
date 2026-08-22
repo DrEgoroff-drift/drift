@@ -1,0 +1,43 @@
+# drift-game.ru — сжатие и кэш. Игра — один HTML на 2 МБ; без deflate он так
+# и уходил игроку целиком (проверено 2026-08-22: Content-Encoding не было).
+# Всё под IfModule: если модуля нет, файл молчит, а не отвечает 500.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml application/manifest+json
+</IfModule>
+<IfModule mod_headers.c>
+  # play.html меняется с каждой выкладкой — не кэшировать дольше минуты;
+  # картинки и шрифты — неделю
+  <FilesMatch "\.(html|js|css|json|php)$">
+    Header set Cache-Control "max-age=60, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(png|jpg|webp|svg|ico|woff2?)$">
+    Header set Cache-Control "max-age=604800"
+  </FilesMatch>
+</IfModule>
+
+# mod_deflate на хосте нет, openresty впереди тоже не жмёт — поэтому рядом с
+# play.html лежит заранее сжатый play.html.gz (его кладёт выкладка), и
+# браузеру, который понимает gzip, отдаётся он под видом HTML.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP:Accept-Encoding} gzip
+  RewriteCond %{REQUEST_FILENAME}\.gz -f
+  RewriteRule ^(.+)\.(html|js|css)$ $1.$2.gz [L]
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "\.html\.gz$">
+    ForceType text/html
+    Header set Content-Encoding gzip
+    Header append Vary Accept-Encoding
+  </FilesMatch>
+  <FilesMatch "\.js\.gz$">
+    ForceType text/javascript
+    Header set Content-Encoding gzip
+    Header append Vary Accept-Encoding
+  </FilesMatch>
+  <FilesMatch "\.css\.gz$">
+    ForceType text/css
+    Header set Content-Encoding gzip
+    Header append Vary Accept-Encoding
+  </FilesMatch>
+</IfModule>

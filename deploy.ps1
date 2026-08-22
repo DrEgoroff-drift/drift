@@ -48,7 +48,9 @@ if ($LASTEXITCODE -ne 0) { throw "не удалось подготовить п�
 scp -r (Join-Path $root "site\*") "$web/"
 if ($LASTEXITCODE -ne 0) { throw "scp site вернул $LASTEXITCODE — выкладка не состоялась" }
 Put $vj "version.json"
+Put (Join-Path $root "site\.htaccess") ".htaccess"   # glob scp точечные файлы не берёт
 if (-not $SiteOnly) { Put $file "play.html" }
+if (-not $SiteOnly) { ssh drift "cd drift-game.ru/docs && gzip -kf9 play.html" }   # mod_deflate нет, см. DEPLOY.md
 
 # Проверка, а не надежда: спрашиваем у сервера, что там теперь лежит.
 $kb  = [math]::Round((Get-Item $file).Length / 1KB)
