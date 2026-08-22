@@ -8,6 +8,12 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.99.6 — "It stands on the ground" (G8)
+
+The landed ship gets a contact shadow that grows with the gear, and the light from the hatch
+lays a warm pool on the ground at the foot of the ramp. The ring note in G7 was stale — rings
+were already split behind and in front of the disc.
+
 ## 0.99.5 — "Plated" (G4)
 
 The boarding deck spoke a different language: one-tone walls with an outline, flat crates, a

@@ -199,10 +199,14 @@ standard; the rest is pulled up to them, not the other way round.
   ring. Fix: sky from `19b` as a cached `screenLayer` per (world, hour, weather): horizon glow,
   a gradient bent by the star's altitude, a few cloud fronts from `19e` with a lit and a shadow
   side; rain in two speeds; ring split into back/front halves around the disc.
+  **Note (0.99.6):** the sky base is a cached layer since 0.95.0 and rings were already split;
+  still open: horizon glow bent by the star altitude, cloud fronts with a lit and a shadow
+  side, rain in two speeds.
 - **G8 — the ship on the ground is a postage stamp.** On the surface the landed ship is ~40 px
   with no shadow, no landing gear dust, no hatch light. Fix: contact shadow, a pool of light
   under the hatch at night, the hull at the same scale as the base's people (the human is the
   rule).
+  **Done in 0.99.6** (shadow, hatch pool). Still open: the scale check against the base people.
 - **G9 — base surroundings** (`base.png`). The hill is one flat dark mass; the soil around the
   modules is one brown. Fix: strata through the soil with the surface's micro grain (chunked),
   a few buried stones, the shaft's spoil heap on top, the hill silhouette with a lit edge from the

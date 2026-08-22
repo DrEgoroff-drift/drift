@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.99.5";
+const VER="0.99.6";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -22845,6 +22845,13 @@ function drawLander(broken,fire,opt){
   ctx.rotate(-.05+sq*.12);
   /* ── стойки: три точки, разнос 0.84 длины; средняя — дальнего борта ── */
   const legs=[[-half*.42,1],[-half*.10,.62],[half*.42,1]];
+  /* контактная тень: без неё корабль на земле — марка, приклеенная к грунту,
+     а не масса, которая на нём стоит (G8). Растёт с выпуском стоек. */
+  if(gear>.5&&opt.tr){
+    ctx.save();ctx.globalAlpha=(gear-.5)*2*.85;
+    groundShadow(half*.05,LAND_GY+gy(half*.05)+2,half*1.05,Math.max(3.5,len*.055));
+    ctx.restore();
+  }
   for(const lg of legs){
     ctx.globalAlpha=lg[1];
     drawLandGear(h,len,bY-bodyH*.12,lg[0],gy(lg[0]),gear,sq);
@@ -22942,6 +22949,13 @@ function drawLander(broken,fire,opt){
       const t=i/stepN, sx=lerp(hx+hw*.5,rx,t), sy=lerp(hb,ry,t);
       ctx.beginPath();ctx.moveTo(sx-2.5,sy-2.5);ctx.lineTo(sx+2.5,sy+1);ctx.stroke();
     }
+    /* свет из люка ложится на грунт у трапа — тёплое пятно, по которому
+       корабль виден ночью раньше корпуса (G8) */
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const pg=ctx.createRadialGradient(rx-6,ry+1,2,rx-6,ry+1,len*.28);
+    pg.addColorStop(0,"rgba(255,200,130,.28)");pg.addColorStop(1,"rgba(255,170,90,0)");
+    ctx.fillStyle=pg;ctx.beginPath();ctx.ellipse(rx-6,ry+1,len*.28,len*.07,0,0,TAU);ctx.fill();
+    ctx.restore();
   }
   /* ── сопла снизу-сзади: после посадки ещё горячие ── */
   const ex=-half*.80, ey=bY+bodyH*.02, er=bodyH*.24;

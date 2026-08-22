@@ -820,7 +820,7 @@ LAND_GY                      src/19-mode-landing.js:385
 landerGearTick               src/19-mode-landing.js:390
 landerInk                    tests/91j-art.js:154
 landerLen                    src/19-mode-landing.js:386
-landingDust                  src/19-mode-landing.js:601
+landingDust                  src/19-mode-landing.js:615
 landOnTestPlanet             tests/90-harness.js:62
 last                         src/28-loop.js:252
 lastDroneTick                src/28-loop.js:253
@@ -2051,7 +2051,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/19e-clouds.js · 13 КБ
   · облака:1
 
-## src/19-mode-landing.js · 35 КБ
+## src/19-mode-landing.js · 36 КБ
   · посадка:1
 
 ## src/20aa-poi-shapes.js · 30 КБ
