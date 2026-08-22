@@ -12,6 +12,7 @@ function openStation(){
   /* счётчик посадок на это место (11b-speech): от него зависит, как к вам
      обращаются и какая реплика в очереди станет следующей */
   if(typeof visitMark==="function")visitMark();
+  if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
@@ -100,6 +101,7 @@ document.getElementById("bRepair").addEventListener("click",()=>{
   const per=repairCost(),can=Math.min(need,Math.floor(G.credits/per));
   if(can<=0){say("Не хватает кредитов");return;}
   G.credits-=can*per;G.hull+=can;renderTab();
+  if(typeof placeNote==="function")placeNote("care",1);   // починка здесь — забота о месте (11d)
 });
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;
   /* правило 1 оформления: капслок — подписям, а не тексту. Длинный заголовок

@@ -41,7 +41,10 @@ function questClose(key,state,note){
     (state==="done"?"Дело закрыто: ":"Дело сорвано: ")+q.ru);
   return q;
 }
-function questDone(key,note){return questClose(key,"done",note);}
+function questDone(key,note){
+  if(typeof placeNote==="function")placeNote("care",3);   // привёз, сделал — место помнит (11d)
+  return questClose(key,"done",note);
+}
 function questFail(key,note){return questClose(key,"failed",note);}
 /* ── курс по делу ──
    Ткнули по строке — карта открылась с выбранной системой. Это единственная

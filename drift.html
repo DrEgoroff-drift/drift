@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.91.0";
+const VER="0.92.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -4747,9 +4747,13 @@ function regionAt(sx,sy){
   const core=regionCore(rx,ry,r);
   /* имя есть, но нигде не показывается: оно для журнала и для того, чтобы
      область была вещью, а не индексом */
-  const name=pick(REGION_A,r)+" "+pick(REGION_B,r);
+  let name=pick(REGION_A,r)+" "+pick(REGION_B,r);
   /* правило 4: прибор ровно один, и он от seed области */
-  const needle=INSTR_KEYS[Math.floor(r()*INSTR_KEYS.length)];
+  let needle=INSTR_KEYS[Math.floor(r()*INSTR_KEYS.length)];
+  /* тематическая область (06c) приносит своё имя и свой прибор; у почтового
+     круга прибора нет вовсе — там приборы молчат, и это единственное такое место */
+  const T=(typeof regionThemeAt==="function")?regionThemeAt(rx,ry):null;
+  if(T){name=T.ru;needle=T.needle;}
   /* ── ширина склона ──
      Склон обязан сойти на нет ВНУТРИ области: иначе на границе, где начинается
      чужой склон с чужой крутизной, получается порог. Ширину задаёт само ядро —
@@ -4760,8 +4764,8 @@ function regionAt(sx,sy){
   const R0=Math.min(core.sx-bx,bx+REGION_SPAN-1-core.sx,
                     core.sy-by,by+REGION_SPAN-1-core.sy)+1;
   const slope=clamp(R0,1,REGION_R);
-  const amp=(.45+r()*.45)*(slope/REGION_R);
-  return {key:rx+","+ry,rx,ry,seed,name,core,needle,amp,slope,span:REGION_SPAN};
+  const amp=(T&&!T.needle)?0:(.45+r()*.45)*(slope/REGION_R);
+  return {key:rx+","+ry,rx,ry,seed,name,core,needle,amp,slope,span:REGION_SPAN,theme:T?T.id:null};
 }
 /* ── невязка ──
    Одно маленькое число: насколько расходятся пять способов узнать, где и когда
@@ -4779,6 +4783,97 @@ function regionDepth(sx,sy){
   const d=Math.hypot(sx-R.core.sx,sy-R.core.sy);
   return clamp(1-d/R.slope,0,1);
 }
+
+/* ══════════════ таблица областей: пятнадцать тем на одной решётке ══════════════
+   M132. 06b даёт область каждой клетке решётки: имя, прибор, склон. Здесь поверх
+   решётки кладётся ЗАКРЫТАЯ таблица — пятнадцать областей, у которых есть тема,
+   свой прибор и своё ядро, и которые строятся по одной (M133–M146). Остальные
+   области остаются процедурными: у них есть склон, но нет истории.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Таблица конечна и одна на всю игру, как NODES: расстановка считается от
+      посева и кэшируется, ничего не хранится в сейве.
+   2. Тематическая область не рисует маркер и не подписана: отличие — только в
+      имени (для журнала), приборе и том, что в ней построят потом.
+   3. Два ядра не ближе двух прыжков на стоковом корабле. Иначе области
+      наслаиваются и склон одной ломает склон другой.
+   4. У каждой области есть обычное место: система с станцией, где просто
+      торгуют. Область без такого — это загадка без быта, её не прочесть.
+   5. Почтовый круг (post) — единственная область, где приборы МОЛЧАТ: amp=0.
+      Это должно быть заметно именно потому, что везде они хоть чуть-чуть врут. */
+
+const REGION_TABLE=[
+  {id:"post",   ru:"Почтовый круг",      needle:null,     ring:1},
+  {id:"mirror", ru:"Зеркало",            needle:"radio",  ring:2},
+  {id:"lights", ru:"Три света",          needle:"actino", ring:2},
+  {id:"hours",  ru:"Расхождение времён", needle:"chrono", ring:3},
+  {id:"glow",   ru:"Свет, который помнит",needle:"actino",ring:2},
+  {id:"grove",  ru:"Роща",               needle:"mass",   ring:3},
+  {id:"keepers",ru:"Линия смотрителей",  needle:"course", ring:1},
+  {id:"county", ru:"Большой уезд",       needle:"mass",   ring:1},
+  {id:"charts", ru:"Несогласие карт",    needle:"course", ring:3},
+  {id:"quiet",  ru:"Тихий уезд",         needle:"radio",  ring:2},
+  {id:"slow",   ru:"Медленный",          needle:"chrono", ring:4},
+  {id:"pass",   ru:"Перевал",            needle:"course", ring:4},
+  {id:"grown",  ru:"Другое взросление",  needle:"mass",   ring:3},
+  {id:"plan",   ru:"План",               needle:"radio",  ring:4},
+  {id:"tin",    ru:"Жестяной край",      needle:"radio",  ring:4}
+];
+const REGION_GAP=2;            // минимум областей между двумя тематическими (Чебышёв)
+const REGION_SALT2=0x2E611;
+
+/* ── расстановка ──
+   Кольцо в единицах области (1 — соседи начала, 4 — окраина, где опасность
+   около половины). По кольцу идём с посеянного угла и берём первую область,
+   чьё ядро — система со станцией и которая не ближе REGION_GAP к уже занятым. */
+let REGION_PLACE=null;
+function regionPlace(){
+  if(REGION_PLACE)return REGION_PLACE;
+  const byKey={},byId={},used=[];
+  for(let i=0;i<REGION_TABLE.length;i++){
+    const T=REGION_TABLE[i];
+    const r=rng(hashi(i*31+5,REGION_SALT2,T.ring));
+    const a0=r()*TAU;
+    let found=null;
+    for(let ring=T.ring;ring<=T.ring+2&&!found;ring++){
+      /* клетки кольца в порядке обхода от посеянного угла */
+      const cells=[];
+      for(let x=-ring;x<=ring;x++)for(let y=-ring;y<=ring;y++)
+        if(Math.max(Math.abs(x),Math.abs(y))===ring)cells.push({x,y,a:Math.atan2(y,x)});
+      cells.sort((p,q)=>((p.a-a0+TAU*2)%TAU)-((q.a-a0+TAU*2)%TAU));
+      for(const c of cells){
+        if(byKey[c.x+","+c.y])continue;
+        let near=false;
+        for(const u of used)if(Math.max(Math.abs(u.x-c.x),Math.abs(u.y-c.y))<REGION_GAP){near=true;break;}
+        if(near)continue;
+        const core=regionCore(c.x,c.y,rng(hashi(c.x,c.y,REGION_SALT)));
+        const S=getSystem(core.sx,core.sy);
+        if(!S||!S.station)continue;
+        /* правило 4: обычное место на окраине области */
+        if(!regionPlainSys(c.x,c.y,core))continue;
+        found={rx:c.x,ry:c.y};
+      }
+    }
+    /* не нашлось — область остаётся без места; набор это поймает */
+    if(found){byKey[found.rx+","+found.ry]=T;byId[T.id]=found;used.push({x:found.rx,y:found.ry});}
+  }
+  return REGION_PLACE={byKey,byId};
+}
+/* система области, где просто торгуют: станция, не ядро, опасность невысока */
+function regionPlainSys(rx,ry,core){
+  const bx=rx*REGION_SPAN,by=ry*REGION_SPAN;
+  for(let x=bx;x<bx+REGION_SPAN;x++)for(let y=by;y<by+REGION_SPAN;y++){
+    if(x===core.sx&&y===core.sy)continue;
+    if(!starAt(x,y)||sysDanger(x,y)>.6)continue;
+    const S=getSystem(x,y);
+    if(S&&S.station)return {sx:x,sy:y};
+  }
+  return null;
+}
+/* тема области по её ключу решётки — или null для процедурной */
+function regionThemeAt(rx,ry){return regionPlace().byKey[rx+","+ry]||null;}
+/* где стоит тематическая область: {rx,ry} или null */
+function regionOfTheme(id){return regionPlace().byId[id]||null;}
 
 /* ══════════════ галактика ══════════════ */
 function starAt(sx,sy){return (sx===0&&sy===0)||h01(sx,sy,4242)<.52;}
@@ -6273,7 +6368,10 @@ function questClose(key,state,note){
     (state==="done"?"Дело закрыто: ":"Дело сорвано: ")+q.ru);
   return q;
 }
-function questDone(key,note){return questClose(key,"done",note);}
+function questDone(key,note){
+  if(typeof placeNote==="function")placeNote("care",3);   // привёз, сделал — место помнит (11d)
+  return questClose(key,"done",note);
+}
 function questFail(key,note){return questClose(key,"failed",note);}
 /* ── курс по делу ──
    Ткнули по строке — карта открылась с выбранной системой. Это единственная
@@ -6851,6 +6949,71 @@ function storyNote(via){
   return l?"\n"+l:"";
 }
 
+/* ══════════════ память места: три счётчика и одометр ══════════════
+   M132. Мир помнит, что вы делали в каждом месте, — но не как карму и не как
+   репутацию (12k-rep — про людей и деньги). Здесь три ГРУБЫХ счётчика:
+     take — сколько вырыли и увезли;
+     hurt — сколько стреляли и взрывали;
+     care — сколько чинили, привозили, оставляли.
+   Они нигде не показываются и ни на что не влияют сами по себе: это сырьё для
+   отложенного следствия (M138 роща помнит выстрел, M145 насекомые строят из
+   выброшенного, M128 люди меняют обращение).
+
+   СОЗРЕВАНИЕ — ПО ПУТИ, НЕ ПО ЧАСАМ. Мир не знает, сколько вы просидели в
+   меню; он знает, сколько вы прошли: одометр G.odo считает посадки и прыжки.
+   Возраст памяти места — путь, пройденный с последнего визита (placeAge).
+
+   ПРАВИЛА ФАЙЛА:
+   1. Ключ места — как у историй (11c): система на станции, система/планета
+      на поверхности. Запись создаётся только при ПОСАДКЕ; поступок в месте,
+      где вы не садились, пишется на систему.
+   2. Ничего не возвращается в интерфейс. Функции чтения — для других модулей.
+   3. Формат сейва v:4 не меняется: G.place и G.odo — два объекта с дефолтами. */
+
+const PLACE_KINDS=["take","hurt","care"];
+
+function odo(){return (G.odo||(G.odo={lands:0,jumps:0}));}
+function odoSum(){const o=odo();return (o.lands|0)+(o.jumps|0);}
+function odoAdd(kind){const o=odo();o[kind]=(o[kind]|0)+1;}
+function placeAll(){return (G.place||(G.place={}));}
+function placeKeyHere(){
+  const sys=G.sys;if(!sys)return null;
+  const p=(G.surf&&G.surf.p)||(G.land&&G.land.p)||null;
+  return (G.st||!p)?sys.key:sys.key+"/"+p.idx;
+}
+/* запись места: f — одометр первого визита, l — последнего, n — посадок */
+function placeMem(key){return placeAll()[key]||null;}
+/* посадка: станция, поверхность, база */
+function placeMark(){
+  const k=placeKeyHere();if(!k)return null;
+  odoAdd("lands");
+  const P=placeAll();
+  const rec=P[k]||(P[k]={f:odoSum(),l:0,n:0,take:0,hurt:0,care:0});
+  rec.n++;rec.l=odoSum();
+  return rec;
+}
+/* поступок в текущем месте. Без записи места — на систему, без системы — в никуда */
+function placeNote(kind,n){
+  if(PLACE_KINDS.indexOf(kind)<0||!G.sys)return;
+  const P=placeAll();
+  const k=placeKeyHere();
+  const rec=P[k]||P[G.sys.key]||(P[G.sys.key]={f:odoSum(),l:odoSum(),n:0,take:0,hurt:0,care:0});
+  rec[kind]=Math.max(0,(rec[kind]|0)+(n===undefined?1:n|0));
+}
+/* сколько пути пройдено с последнего визита: 0 — вы здесь, ∞ — вы тут не были */
+function placeAge(key){
+  const rec=placeMem(key);
+  return rec?Math.max(0,odoSum()-rec.l):Infinity;
+}
+/* чем место вас запомнило — одним словом, для тех, кто будет читать память:
+   null, пока ни один счётчик не перевесил остальные заметно */
+function placeMood(key){
+  const rec=placeMem(key);if(!rec)return null;
+  const t=rec.take|0,h=rec.hurt|0,c=rec.care|0,m=Math.max(t,h,c);
+  if(m<3)return null;
+  return m===h?"hurt":m===c?"care":"take";
+}
+
 /* ══════════════ бортовой журнал ══════════════ */
 /* сообщения по центру экрана живут пару секунд, журнал помнит их между сеансами */
 const LOG_MAX=90;
@@ -6956,6 +7119,7 @@ function minedUnit(k){
   sfx("drill");
   refineBank+=stat().refine;
   const n=Math.floor(refineBank);refineBank-=n;
+  if(n>0&&typeof placeNote==="function")placeNote("take",n);   // место помнит, что вырыли (11d)
   return addRes(k,n);
 }
 
@@ -16523,6 +16687,7 @@ function updateCombat(dt){
   if(fireCool>0)fireCool-=dt;
   if(keys.fire&&st.armed&&fireCool<=0){
     fireShot(sh.x,sh.y,sh.a,9,st.dmg,true);
+    if(typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
     fireCool=st.cool;
   }
   for(let i=G.pirates.length-1;i>=0;i--){
@@ -16738,7 +16903,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
-    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,
+    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
@@ -17133,6 +17298,14 @@ function applySave(s){
   G.seen=(s.seen&&typeof s.seen==="object")?s.seen:{};
   G.storyPin=(s.storyPin&&typeof s.storyPin==="object")?s.storyPin:{};
   G.storyFlags=(s.storyFlags&&typeof s.storyFlags==="object")?s.storyFlags:{};
+  /* память места и одометр (11d): объекты с дефолтами, формат v:4 не менялся */
+  G.place={};
+  if(s.place&&typeof s.place==="object")for(const k in s.place){
+    const p=s.place[k];if(!p||typeof p!=="object")continue;
+    G.place[k]={f:Math.max(0,p.f|0),l:Math.max(0,p.l|0),n:Math.max(0,p.n|0),
+      take:Math.max(0,p.take|0),hurt:Math.max(0,p.hurt|0),care:Math.max(0,p.care|0)};
+  }
+  G.odo={lands:Math.max(0,(s.odo&&s.odo.lands)|0),jumps:Math.max(0,(s.odo&&s.odo.jumps)|0)};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
@@ -20482,6 +20655,7 @@ function jump(cost){
      над головами живущих внизу (M110, 12t-settle) */
   if(typeof settleLeftBehind==="function")settleLeftBehind();
   G.fuel-=cost;G.sx=G.sel.x;G.sy=G.sel.y;G.sys=getSystem(G.sx,G.sy);G.ap=null;
+  if(typeof odoAdd==="function")odoAdd("jumps");   // путь, по которому зреет память (11d)
   const a=Math.random()*TAU,r=1500;
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
   G.ship.vx=-Math.cos(a)*.7;G.ship.vy=-Math.sin(a)*.7;G.ship.a=a+Math.PI;
@@ -27312,6 +27486,7 @@ function enterSurface(){
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,
     suit:100,warned:false,beacon:0,walkAmp:0,walkPhase:0,cave:caveMouth,peep};
   G.mode="surface";
+  if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
   G.surfTipShown=0;
   logAdd("dim","Посадка на "+p.name+" · залежей: "+deposits.length);
   /* посадки на планету считаются так же, как на станцию: условиям историй
@@ -32310,6 +32485,7 @@ function openStation(){
   /* счётчик посадок на это место (11b-speech): от него зависит, как к вам
      обращаются и какая реплика в очереди станет следующей */
   if(typeof visitMark==="function")visitMark();
+  if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
@@ -32398,6 +32574,7 @@ document.getElementById("bRepair").addEventListener("click",()=>{
   const per=repairCost(),can=Math.min(need,Math.floor(G.credits/per));
   if(can<=0){say("Не хватает кредитов");return;}
   G.credits-=can*per;G.hull+=can;renderTab();
+  if(typeof placeNote==="function")placeNote("care",1);   // починка здесь — забота о месте (11d)
 });
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;
   /* правило 1 оформления: капслок — подписям, а не тексту. Длинный заголовок

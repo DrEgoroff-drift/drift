@@ -97,6 +97,7 @@ function updateCombat(dt){
   if(fireCool>0)fireCool-=dt;
   if(keys.fire&&st.armed&&fireCool<=0){
     fireShot(sh.x,sh.y,sh.a,9,st.dmg,true);
+    if(typeof placeNote==="function")placeNote("hurt",1);   // место помнит выстрел (11d)
     fireCool=st.cool;
   }
   for(let i=G.pirates.length-1;i>=0;i--){

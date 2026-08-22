@@ -78,6 +78,7 @@ function enterSurface(){
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,
     suit:100,warned:false,beacon:0,walkAmp:0,walkPhase:0,cave:caveMouth,peep};
   G.mode="surface";
+  if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
   G.surfTipShown=0;
   logAdd("dim","Посадка на "+p.name+" · залежей: "+deposits.length);
   /* посадки на планету считаются так же, как на станцию: условиям историй

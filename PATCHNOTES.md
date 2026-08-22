@@ -8,6 +8,19 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.92.0 — "Fifteen regions, and the place remembers" (M132)
+
+**The region table.** Fifteen themed regions (`06c-regions`) are now placed on the sector grid,
+seeded and swept: every core is a system with a station, every region has an ordinary trading
+system on its edge, and no two cores lie within two stock jumps. Each brings its own name and its
+own lying instrument; the postal round brings none — there the instruments are simply right, and
+that is meant to be noticed. Nothing is marked on the map.
+
+**Memory of place.** Every place you land at now remembers how many times you came, and three
+coarse things: how much you dug out, how much you shot, how much you repaired or delivered. None
+of it is shown anywhere. It ages by the road you travel — landings elsewhere and jumps — never by
+the clock.
+
 ## 0.91.0 — "A hundred and two" (M131)
 
 **Links are data now.** A trace may require a trace of *another* story to have been seen —

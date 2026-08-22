@@ -15,7 +15,9 @@ TEST_SUITES.push(()=>suite("Стрелки: невязка — это склон
   for(let x=-12;x<=12;x+=REGION_SPAN)for(let y=-12;y<=12;y+=REGION_SPAN){
     const R=regionAt(x,y);
     regions++;
-    ok(INSTR_KEYS.indexOf(R.needle)>=0,"прибор области известен: "+R.needle);
+    /* почтовый круг (06c) — единственная область без прибора: там они молчат */
+    if(R.theme==="post")eq(R.needle,null,"почтовый круг: прибора нет");
+    else ok(INSTR_KEYS.indexOf(R.needle)>=0,"прибор области известен: "+R.needle);
     seen[R.needle]=(seen[R.needle]|0)+1;
     /* ядро — живая система, а не пустота: склон должен вести куда-то */
     let anyStar=false;

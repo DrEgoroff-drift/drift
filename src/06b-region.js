@@ -54,9 +54,13 @@ function regionAt(sx,sy){
   const core=regionCore(rx,ry,r);
   /* имя есть, но нигде не показывается: оно для журнала и для того, чтобы
      область была вещью, а не индексом */
-  const name=pick(REGION_A,r)+" "+pick(REGION_B,r);
+  let name=pick(REGION_A,r)+" "+pick(REGION_B,r);
   /* правило 4: прибор ровно один, и он от seed области */
-  const needle=INSTR_KEYS[Math.floor(r()*INSTR_KEYS.length)];
+  let needle=INSTR_KEYS[Math.floor(r()*INSTR_KEYS.length)];
+  /* тематическая область (06c) приносит своё имя и свой прибор; у почтового
+     круга прибора нет вовсе — там приборы молчат, и это единственное такое место */
+  const T=(typeof regionThemeAt==="function")?regionThemeAt(rx,ry):null;
+  if(T){name=T.ru;needle=T.needle;}
   /* ── ширина склона ──
      Склон обязан сойти на нет ВНУТРИ области: иначе на границе, где начинается
      чужой склон с чужой крутизной, получается порог. Ширину задаёт само ядро —
@@ -67,8 +71,8 @@ function regionAt(sx,sy){
   const R0=Math.min(core.sx-bx,bx+REGION_SPAN-1-core.sx,
                     core.sy-by,by+REGION_SPAN-1-core.sy)+1;
   const slope=clamp(R0,1,REGION_R);
-  const amp=(.45+r()*.45)*(slope/REGION_R);
-  return {key:rx+","+ry,rx,ry,seed,name,core,needle,amp,slope,span:REGION_SPAN};
+  const amp=(T&&!T.needle)?0:(.45+r()*.45)*(slope/REGION_R);
+  return {key:rx+","+ry,rx,ry,seed,name,core,needle,amp,slope,span:REGION_SPAN,theme:T?T.id:null};
 }
 /* ── невязка ──
    Одно маленькое число: насколько расходятся пять способов узнать, где и когда

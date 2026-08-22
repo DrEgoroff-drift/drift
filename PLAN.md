@@ -891,6 +891,29 @@ socket out is not wired); the recorder itself is not a purchasable unit, only th
 `26-ui-station` crossed 40 KB with this tab and is now shouting on every build; wear from the hull
 (`12s-wear`) and instrument age run on separate clocks that never speak to each other.
 
+## M132 (0.92.0) — built. Regions: the table, and the memory of place
+
+`06c-regions`: a closed table of fifteen themed regions (post, mirror, lights, hours, glow, grove,
+keepers, county, charts, quiet, slow, pass, grown, plan, tin) laid over the M122 grid. Placement
+is seeded and cached (`regionPlace`): ring by theme, first cell whose core is a station system,
+which has a plain trading system on its edge, and which keeps one empty region between itself and
+any other theme — cores end up 3–23 sectors out, never closer than two stock jumps. `regionAt`
+now carries `theme`, the theme's name and its needle; **the postal round has no needle and
+`amp=0`** — the one region where the instruments say nothing. Plain regions are untouched.
+
+`11d-place`: memory of place, persisted in `v:4` as `G.place` + `G.odo`. Per place (same key as
+stories: system, or system/planet): first and last odometer, landings, and three coarse counters —
+`take` (mined units), `hurt` (player shots), `care` (repairs, closed quests). **Maturation is path,
+not time**: `G.odo` counts landings and jumps; `placeAge(key)` is path since the last visit. Nothing
+is shown; `placeMood` returns the counter that won, for the grove (M138) and the insects (M145).
+Suite `91zq-regions` (placement, monotone misclosure, silence in the post round, core spacing, BFS
+reachability from origin on a stock tank, memory counters, save round-trip).
+
+**Still open:** the edge generator (parameters over world types per theme) and the hand-built core
+are left to each region's own milestone — the table only reserves the place; surface layer masks
+(presence/revelation, never switching in sight) wait for the first region that needs one (M135);
+`care` does not yet count the table (M128) or things left behind; `hurt` counts shots, not hits.
+
 ## M131 (0.91.0) — built. A hundred and two
 
 `seenOf`/`unseenOf` conditions (a trace of another story seen), `carry` on a trace (the parrot

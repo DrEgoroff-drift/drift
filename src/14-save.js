@@ -36,7 +36,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
-    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,
+    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
@@ -431,6 +431,14 @@ function applySave(s){
   G.seen=(s.seen&&typeof s.seen==="object")?s.seen:{};
   G.storyPin=(s.storyPin&&typeof s.storyPin==="object")?s.storyPin:{};
   G.storyFlags=(s.storyFlags&&typeof s.storyFlags==="object")?s.storyFlags:{};
+  /* память места и одометр (11d): объекты с дефолтами, формат v:4 не менялся */
+  G.place={};
+  if(s.place&&typeof s.place==="object")for(const k in s.place){
+    const p=s.place[k];if(!p||typeof p!=="object")continue;
+    G.place[k]={f:Math.max(0,p.f|0),l:Math.max(0,p.l|0),n:Math.max(0,p.n|0),
+      take:Math.max(0,p.take|0),hurt:Math.max(0,p.hurt|0),care:Math.max(0,p.care|0)};
+  }
+  G.odo={lands:Math.max(0,(s.odo&&s.odo.lands)|0),jumps:Math.max(0,(s.odo&&s.odo.jumps)|0)};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))

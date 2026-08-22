@@ -103,5 +103,6 @@ function minedUnit(k){
   sfx("drill");
   refineBank+=stat().refine;
   const n=Math.floor(refineBank);refineBank-=n;
+  if(n>0&&typeof placeNote==="function")placeNote("take",n);   // место помнит, что вырыли (11d)
   return addRes(k,n);
 }
