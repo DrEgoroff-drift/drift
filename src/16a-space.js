@@ -40,30 +40,50 @@ function sysStyle(sys){
   return sys.style;
 }
 /* ── туманность системы ──
-   тайл считается один раз на систему и живёт на её объекте: систем в кэше
-   немного, а перерисовывать шум каждый кадр canvas 2D не может */
+   Тайл считается один раз на систему и живёт на её объекте: систем в кэше
+   немного, а перерисовывать шум каждый кадр canvas 2D не может.
+
+   Считается он ПО КАДРАМ. Разом это семьдесят миллисекунд — ровно тот рывок,
+   которым встречала каждая новая система: три слоя шума на двадцать пять тысяч
+   точек. Пока тайл не готов, туманности просто нет; она проступает через
+   полсекунды, и заметить это трудно — она и так подмешивается вполсилы поверх
+   звёзд, а вот замерший на кадр корабль замечают всегда. */
+const NEB_MS=2;              // миллисекунд кадра на фоновую выпечку
+let NEB_JOB=null;
 function sysNebulaTex(sys){
   if(sys.nebTex)return sys.nebTex;
-  const st=sysStyle(sys);
-  const S=160,cn=document.createElement("canvas");cn.width=cn.height=S;
-  const c=cn.getContext("2d"),img=c.createImageData(S,S),d=img.data;
-  const sd=st.nseed>>>0,c1=st.neb[0],c2=st.neb[1];
-  for(let y=0;y<S;y++)for(let x=0;x<S;x++){
-    const o=(y*S+x)*4,u=x/S,v=y/S;
-    const a=clamp((tfbm(u,v,3,sd,5)-.45)*2.7,0,1);
-    const b=clamp((tfbm(u,v,6,sd+91,4)-.48)*2.5,0,1);
-    /* волокна: третий слой с высокой частотой и узкой маской — без них
-       туманность выглядит размытым пятном, а не облаком газа */
-    const f=ridged(tfbm(u,v,9,sd+53,3),9);
-    d[o]  =clamp(c1[0]*a+c2[0]*b*.8+f*90,0,255);
-    d[o+1]=clamp(c1[1]*a+c2[1]*b*.8+f*70,0,255);
-    d[o+2]=clamp(c1[2]*a+c2[2]*b*.9+f*120,0,255);
-    d[o+3]=clamp((Math.pow(a,1.8)*.5+Math.pow(b,2.1)*.34+f*.16)*255,0,255);
+  if(!NEB_JOB||NEB_JOB.sys!==sys){
+    const st=sysStyle(sys),S=160;
+    const cn=document.createElement("canvas");cn.width=cn.height=S;
+    const c=cn.getContext("2d");
+    NEB_JOB={sys,S,cn,c,img:c.createImageData(S,S),y:0,
+      sd:st.nseed>>>0,c1:st.neb[0],c2:st.neb[1]};
   }
-  c.putImageData(img,0,0);sys.nebTex=cn;return cn;
+  const J=NEB_JOB,S=J.S,d=J.img.data,sd=J.sd,c1=J.c1,c2=J.c2;
+  const t0=performance.now();
+  while(J.y<S){
+    const y=J.y++;
+    for(let x=0;x<S;x++){
+      const o=(y*S+x)*4,u=x/S,v=y/S;
+      const a=clamp((tfbm(u,v,3,sd,5)-.45)*2.7,0,1);
+      const b=clamp((tfbm(u,v,6,sd+91,4)-.48)*2.5,0,1);
+      /* волокна: третий слой с высокой частотой и узкой маской — без них
+         туманность выглядит размытым пятном, а не облаком газа */
+      const f=ridged(tfbm(u,v,9,sd+53,3),9);
+      d[o]  =clamp(c1[0]*a+c2[0]*b*.8+f*90,0,255);
+      d[o+1]=clamp(c1[1]*a+c2[1]*b*.8+f*70,0,255);
+      d[o+2]=clamp(c1[2]*a+c2[2]*b*.9+f*120,0,255);
+      d[o+3]=clamp((Math.pow(a,1.8)*.5+Math.pow(b,2.1)*.34+f*.16)*255,0,255);
+    }
+    if(performance.now()-t0>NEB_MS)return null;
+  }
+  J.c.putImageData(J.img,0,0);
+  sys.nebTex=J.cn;NEB_JOB=null;
+  return sys.nebTex;
 }
 function drawSysNebula(sys,cx,cy){
   const N=sysNebulaTex(sys);
+  if(!N)return;               // ещё печётся — этот кадр обойдётся без неё
   const ex=W*.24,ey=H*.24;
   const ox=-ex/2+clamp(-cx*.012,-ex/2,ex/2);
   const oy=-ey/2+clamp(-cy*.012,-ey/2,ey/2);

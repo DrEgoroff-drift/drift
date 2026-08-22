@@ -301,16 +301,25 @@ function drawSystem(){
      редко чёрная дыра (16a-space). Освещение и опасность по-прежнему считаются
      от sys.cls — экзотика меняет только вид. */
   drawStarBody(ox,oy,R,sys);
-
-  /* эллиптическая орбита — тонкий контур по формуле Кеплера, не окружность */
+  /* эллиптическая орбита — тонкий контур по формуле Кеплера, не окружность.
+     Сорок девять точек эллипса не меняются никогда: орбита, эксцентриситет и
+     наклон большой оси заданы при рождении системы. Считать их заново каждый
+     кадр — двести вызовов Кеплера в секунду на четыре планеты; поэтому кольцо
+     считается один раз и лежит на самой планете, а в кадре остаётся только
+     перевод в экранные координаты. */
   ctx.strokeStyle="rgba(120,190,210,.08)";ctx.lineWidth=1;
   for(const p of sys.planets){
-    ctx.beginPath();
-    for(let k=0;k<=48;k++){
-      const pos=keplerPos(p.orbit,p.ecc,k/48*TAU,p.argp);
-      const px=zx(pos.x),py=zy(pos.y);
-      if(k===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+    let O=p._orbPath;
+    if(!O){
+      O=p._orbPath=new Float64Array(98);
+      for(let k=0;k<=48;k++){
+        const pos=keplerPos(p.orbit,p.ecc,k/48*TAU,p.argp);
+        O[k*2]=pos.x;O[k*2+1]=pos.y;
+      }
     }
+    ctx.beginPath();
+    ctx.moveTo(zx(O[0]),zy(O[1]));
+    for(let k=1;k<=48;k++)ctx.lineTo(zx(O[k*2]),zy(O[k*2+1]));
     ctx.stroke();
   }
   for(const p of sys.planets){
@@ -323,7 +332,7 @@ function drawSystem(){
         : null;
     }
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,-1);
-    ctx.drawImage(planetTex(p,planetSpinFrame(p)),x-r,y-r,r*2,r*2);
+    planetDraw(p,x,y,r);
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,1);
     if(p.type!=="rocky"&&r>4){ctx.strokeStyle="rgba(150,220,255,.18)";ctx.lineWidth=2;
       ctx.beginPath();ctx.arc(x,y,r+2.5,0,TAU);ctx.stroke();}

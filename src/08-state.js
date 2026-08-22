@@ -32,7 +32,7 @@ const G={
   land:null,surf:null,st:null,belt:null,dig:null,cave:null,
   opts:{easyLand:true,autoDock:true,invX:false,invY:false,invYaw:false,lookSens:1,
     keys:{main:{},belt:{}},pads:"auto",padSize:1,
-    gfx:{draw:1,detail:1,particles:1,plants:1},
+    gfx:{draw:1,detail:1,particles:1,plants:1,fps:0},
     audio:{on:true,music:.6,sfx:.6,engine:.4}},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,

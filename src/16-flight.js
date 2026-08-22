@@ -2,21 +2,33 @@
 const STAR_COLS=[[255,206,158],[255,232,196],[228,240,252],[255,255,255],[176,206,255],[205,190,255]];
 const BG=[];
 for(let i=0;i<340;i++)BG.push({x:Math.random(),y:Math.random(),z:.2+Math.random()*.8,
-  ph:Math.random()*TAU, c:STAR_COLS[Math.floor(Math.random()*STAR_COLS.length)]});
+  ph:Math.random()*TAU, ci:Math.floor(Math.random()*STAR_COLS.length)});
+/* Звёзды сгруппированы по цвету раз и навсегда. Мерцание — это прозрачность,
+   а не цвет, поэтому оно уходит в `globalAlpha`: число, а не строка. Раньше
+   каждая звезда собирала «rgba(…)» и заставляла холст разбирать CSS-цвет
+   заново — триста сорок разборов за кадр, шестьдесят раз в секунду, целая
+   миллисекунда на один фон. Теперь разборов шесть, по числу цветов. */
+const BG_GROUP=STAR_COLS.map((c,i)=>({css:"rgb("+c[0]+","+c[1]+","+c[2]+")",
+  list:BG.filter(s=>s.ci===i)}));
 function drawStars(cx,cy,par){
-  for(const s of BG){
-    const px=((s.x*1600-cx*par*s.z)%1600+1600)%1600/1600*W;
-    const py=((s.y*1200-cy*par*s.z)%1200+1200)%1200/1200*H;
-    const tw=.76+.24*Math.sin(G.t*.045*(.4+s.z)+s.ph);
-    const a=(.11+s.z*.55)*tw, c=s.c;
-    ctx.fillStyle="rgba("+c[0]+","+c[1]+","+c[2]+","+a.toFixed(2)+")";
-    const sz=s.z>.72?1.7:1;
-    ctx.fillRect(px,py,sz,sz);
-    if(s.z>.9){   // самые яркие получают крестик-ореол
-      ctx.fillStyle="rgba("+c[0]+","+c[1]+","+c[2]+","+(a*.3).toFixed(2)+")";
-      ctx.fillRect(px-2.4,py+.35,5.8,.8);ctx.fillRect(px+.35,py-2.4,.8,5.8);
+  const a0=ctx.globalAlpha;
+  for(const g of BG_GROUP){
+    ctx.fillStyle=g.css;
+    for(const s of g.list){
+      const px=((s.x*1600-cx*par*s.z)%1600+1600)%1600/1600*W;
+      const py=((s.y*1200-cy*par*s.z)%1200+1200)%1200/1200*H;
+      const tw=.76+.24*Math.sin(G.t*.045*(.4+s.z)+s.ph);
+      const a=(.11+s.z*.55)*tw;
+      ctx.globalAlpha=a0*a;
+      const sz=s.z>.72?1.7:1;
+      ctx.fillRect(px,py,sz,sz);
+      if(s.z>.9){   // самые яркие получают крестик-ореол
+        ctx.globalAlpha=a0*a*.3;
+        ctx.fillRect(px-2.4,py+.35,5.8,.8);ctx.fillRect(px+.35,py-2.4,.8,5.8);
+      }
     }
   }
+  ctx.globalAlpha=a0;
 }
 /* ── туманность: считается один раз в offscreen, дальше только растягивается ── */
 let NEBULA=null;

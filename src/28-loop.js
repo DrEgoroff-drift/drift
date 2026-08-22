@@ -54,19 +54,31 @@ function hudWake(vals,alarm){
   const live=alarm||now-HUD_T<2400;
   if($hudp)$hudp.classList.toggle("live",live);
 }
+/* ── запись в DOM только при изменении ──
+   Приборы пересчитываются каждый кадр, но меняются они редко: топливо стоит
+   на месте, пока не жмёшь тягу, а название системы — пока не прыгнешь. Раньше
+   кадр всё равно клал в DOM сорок значений, и браузер сорок раз проверял,
+   не поехала ли от этого вёрстка.
+   Сверяемся с САМИМ узлом, а не с запомненным рядом значением. Разница не
+   косметическая: экраны и автотесты меняют стиль напрямую, мимо `hud()`, и
+   память о «том, что мы писали в прошлый раз» после этого врёт — кнопка
+   остаётся видимой там, где кадр обязан был её убрать. Чтение inline-стиля
+   и текста узла вёрстку не пересчитывает и стоит копейки. */
+function setTx(el,v){if(el&&el.textContent!==v)el.textContent=v;}
+function setSt(el,k,v){v=""+v;if(el&&el.style[k]!==v)el.style[k]=v;}
 function hud(){
   const st=stat();
   const fr=G.fuel/st.fuelMax, hr=G.hull/st.hullMax, cr=held()/st.cargoMax;
-  $f.style.width=clamp(fr*100,0,100).toFixed(1)+"%";
-  $h.style.width=clamp(hr*100,0,100).toFixed(1)+"%";
-  $cg.style.width=clamp(cr*100,0,100).toFixed(1)+"%";
-  $fn.textContent=Math.round(G.fuel)+"/"+Math.round(st.fuelMax);
-  $hn.textContent=Math.round(G.hull)+"/"+Math.round(st.hullMax);
-  $cn.textContent=held()+"/"+st.cargoMax;
-  $sg.style.display=st.shieldMax>0?"":"none";
+  setSt($f,"width",clamp(fr*100,0,100).toFixed(1)+"%");
+  setSt($h,"width",clamp(hr*100,0,100).toFixed(1)+"%");
+  setSt($cg,"width",clamp(cr*100,0,100).toFixed(1)+"%");
+  setTx($fn,Math.round(G.fuel)+"/"+Math.round(st.fuelMax));
+  setTx($hn,Math.round(G.hull)+"/"+Math.round(st.hullMax));
+  setTx($cn,held()+"/"+st.cargoMax);
+  setSt($sg,"display",st.shieldMax>0?"":"none");
   if(st.shieldMax>0){
-    $sh.style.width=clamp(G.shield/st.shieldMax*100,0,100).toFixed(1)+"%";
-    $sn.textContent=Math.round(G.shield)+"/"+Math.round(st.shieldMax);
+    setSt($sh,"width",clamp(G.shield/st.shieldMax*100,0,100).toFixed(1)+"%");
+    setTx($sn,Math.round(G.shield)+"/"+Math.round(st.shieldMax));
   }
   $fb.classList.toggle("low",fr<.2);
   $hb.classList.toggle("low",hr<.3);
@@ -75,7 +87,7 @@ function hud(){
   $vf.classList.toggle("low",fr<.2);$vf.classList.toggle("crit",fr<.08);
   $vh.classList.toggle("low",hr<.3);$vh.classList.toggle("crit",hr<.15);
   $vc.classList.toggle("low",cr>=1);
-  $purse.textContent=Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан";
+  setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан");
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
      Повод — изменившееся показание, тревога или открытый режим, где приборы
      и есть содержание кадра. Панель, которая горит всегда, перестаёт читаться
@@ -121,22 +133,22 @@ function hud(){
      затмение читается как «что-то с картинкой» (06a-celest) */
   if(typeof celLine==="function"){const cl=celLine();if(cl)b+=" · "+cl;}
   const sbtn=document.getElementById("starbtn");
-  sbtn.style.display=(G.mode==="system"&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none";
+  setSt(sbtn,"display",(G.mode==="system"&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none");
   /* кнопка плеча: только на карте и только у выбранной системы со станцией —
      иначе она обещает действие, которого нет */
   const rbtn=document.getElementById("routebtn");
   if(G.mode==="map"&&typeof routeHas==="function"){
     const ss=getSystem(G.sel.x,G.sel.y),inR=routeHas(G.sel.x,G.sel.y);
-    rbtn.style.display=(ss&&ss.station)||inR?"":"none";
-    rbtn.textContent=inR?"ИЗ МАРШРУТА":"В МАРШРУТ";
-  }else rbtn.style.display="none";
+    setSt(rbtn,"display",(ss&&ss.station)||inR?"":"none");
+    setTx(rbtn,inR?"ИЗ МАРШРУТА":"В МАРШРУТ");
+  }else setSt(rbtn,"display","none");
   /* приборная колодка (25c): рисуется каждым кадром, гаснет вместе со строкой */
   if(typeof instrPodTick==="function")instrPodTick();
-  $place.textContent=a;$sub.textContent=b;
-  $msg.textContent=G.msgT>0?G.msg:"";
-  $msg.style.opacity=G.msgT>0?clamp(G.msgT/40,0,1):0;
-  $prompt.textContent=G.mode==="dock"?"":G.prompt;
-  $bThr.textContent=G.mode==="surface"?"ПРЫЖОК":(G.mode==="dig"?"ВВЕРХ":"▲");
+  setTx($place,a);setTx($sub,b);
+  setTx($msg,G.msgT>0?G.msg:"");
+  setSt($msg,"opacity",G.msgT>0?clamp(G.msgT/40,0,1):0);
+  setTx($prompt,G.mode==="dock"?"":G.prompt);
+  setTx($bThr,G.mode==="surface"?"ПРЫЖОК":(G.mode==="dig"?"ВВЕРХ":"▲"));
   /* Кнопка называет то, что сделает, а не то, как она называется. «ДЕЙСТВИЕ»
      не отвечает ни на один вопрос игрока; «СТЫКОВКА» отвечает на все.
      Глагол уже есть в подсказке — берём оттуда, чтобы не заводить второй
@@ -152,29 +164,29 @@ function hud(){
       if(v.length<=14)actLbl=v;
     }
   }
-  $act.textContent=actLbl;
+  setTx($act,actLbl);
   /* подсвечиваем, когда действие вообще есть: иначе кнопка выглядит живой всегда */
   $act.classList.toggle("ready",actLbl!=="ДЕЙСТВИЕ");
   if(G.mode==="dig"){
     /* «вниз» уже висит на большой кнопке — второй такой же рядом только путает.
        Клавиша S при этом продолжает работать, раскладка WASD не рвётся. */
-    $bBrk.style.display="none";
+    setSt($bBrk,"display","none");
   }else{
-    $bBrk.style.display="";
-    $bBrk.textContent="ТОРМОЗ";
-    $bBrk.style.opacity=G.mode==="surface"?".3":"1";
+    setSt($bBrk,"display","");
+    setTx($bBrk,"ТОРМОЗ");
+    setSt($bBrk,"opacity",G.mode==="surface"?".3":"1");
   }
-  $nav.textContent=(G.mode==="belt"||G.mode==="scoop")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА");
+  setTx($nav,(G.mode==="belt"||G.mode==="scoop")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
   /* под землёй ОГОНЬ — это импульсный разрядник, он есть всегда */
-  $fire.style.display=(G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed))?"":"none";
-  if(G.mode==="dig")$fire.textContent=(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС";
-  else $fire.textContent="ОГОНЬ";
+  setSt($fire,"display",(G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed))?"":"none");
+  if(G.mode==="dig")setTx($fire,(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС");
+  else setTx($fire,"ОГОНЬ");
   /* ракета показывается только там, где ею можно выстрелить, и на кнопке стоит
      не «готово», а остаток в трюме: боеприпас — это груз, и он тает */
   if($msl){
     const on=G.mode==="system"&&st.launcher;
-    $msl.style.display=on?"":"none";
-    if(on)$msl.textContent=(G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0));
+    setSt($msl,"display",on?"":"none");
+    if(on)setTx($msl,(G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0)));
     $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");
@@ -239,7 +251,42 @@ function audioTick(dt){
 /* ══════════════ цикл ══════════════ */
 let last=performance.now();
 let lastDroneTick=0;
+/* ── потолок кадров ──
+   Единственный рычаг, который снимает нагрузку с ВИДЕОКАРТЫ, ничего не упрощая
+   в картинке: тридцать кадров рисуют ровно вдвое меньше пикселей, чем
+   шестьдесят, а «Дрейф» — не аркада, где решают миллисекунды. На встроенной
+   графике это разница между вентилятором на взлёте и тишиной.
+
+   Считаем НЕ по времени, а по кадрам развёртки. Порог по времени кажется
+   очевидным решением и врёт: развёртка выдаёт кадры через равные промежутки,
+   и порог, попавший между двумя, округляется вниз до ближнего — потолок в 45
+   на шестидесятигерцовом экране превращается в 30, а не в 45. Пропуск по счёту
+   кадров даёт ровно то, что обещано, и без дрожания.
+
+   Шаг округляется ВВЕРХ, потому что это потолок: лучше отдать 48 кадров под
+   обещание «не выше шестидесяти», чем 72. Частота развёртки измеряется сама —
+   по самому короткому промежутку за последние кадры: этот промежуток и есть
+   период экрана, всё, что длиннее, — просадка.
+
+   Пропускается весь такт целиком, вместе с расчётом: `dt` считается по
+   настоящим часам, и на тридцати кадрах он просто вдвое крупнее — движение
+   остаётся тем же, замедления не возникает. */
+let capIv=16.667, capPrev=0, capN=0;
 function frame(now){
+  if(capPrev){
+    const d=now-capPrev;
+    /* «самый короткий за последнее время»: медленно отпускаем оценку вверх,
+       чтобы смена монитора или переезд окна на другой экран не остались
+       незамеченными навсегда */
+    if(d>1&&d<capIv)capIv=capIv*.7+d*.3; else capIv=Math.min(capIv*1.002,50);
+  }
+  capPrev=now;
+  const cap=G.opts.gfx.fps;
+  if(cap){
+    const stride=Math.max(1,Math.ceil(1000/cap/capIv-.15));
+    if(++capN%stride){requestAnimationFrame(frame);return;}
+    capN=0;
+  }else capN=0;
   const dt=clamp((now-last)/16.667,0,3);last=now;
   /* второй рубеж против залипших клавиш: событие blur приходит не всегда —
      фокус, ушедший в DevTools того же окна, его может не поднять. Пока страница
