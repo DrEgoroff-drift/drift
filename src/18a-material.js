@@ -207,7 +207,7 @@ function fillMaterial(mat,camx,camy,a1,a2,P,bnd){
   const bx=bnd?bnd.x:-4, by=bnd?bnd.y:-4;
   const bw=bnd?bnd.w:W+8, bh=bnd?bnd.h:H+8;
   ctx.save();
-  if(P)ctx.clip(P);else ctx.clip();
+  if(P)ctx.clip(P);   // без пути клипа нет: ctx.clip() по пустому пути вырезал всё (G3)
   ctx.globalAlpha=a1;
   ctx.translate(-camx,-camy);
   ctx.fillStyle=mat;
@@ -217,7 +217,7 @@ function fillMaterial(mat,camx,camy,a1,a2,P,bnd){
      светлые и тёмные поля масштабом с полэкрана, из-за которых сетка 256
      перестаёт читаться, но цвет породы не уезжает */
   ctx.save();
-  if(P)ctx.clip(P);else ctx.clip();
+  if(P)ctx.clip(P);   // без пути клипа нет: ctx.clip() по пустому пути вырезал всё (G3)
   ctx.globalCompositeOperation="overlay";
   ctx.globalAlpha=a2;
   const K=3.7, PH=91;

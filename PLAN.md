@@ -165,6 +165,9 @@ standard; the rest is pulled up to them, not the other way round.
   with their own micro grain, landings as real rooms (beam, lamp, crate stack, a man-height mark),
   changes of section along the shaft, dust in the lamp cone. This is the weakest screen in the
   game and the first painting job.
+  **Done in 0.96.0** (rock was invisible by a clip bug; contacts, landings, lamps, hoppers).
+  Still open: niches and a change of section along a long shaft; rock chunks by world-y.
+  Passes added: 0 (lamps are sprites inside the void clip).
 - **G4 — the raid is in a different language** (`raid.png`). A projected corridor of flat fills,
   wireframe crates, an enemy as a pink capsule. It is the only screen the player would not
   recognise as the same game. Fix: keep the projection, repaint with the base's brushes —

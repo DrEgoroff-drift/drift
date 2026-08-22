@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.95.0";
+const VER="0.96.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -20300,7 +20300,7 @@ function fillMaterial(mat,camx,camy,a1,a2,P,bnd){
   const bx=bnd?bnd.x:-4, by=bnd?bnd.y:-4;
   const bw=bnd?bnd.w:W+8, bh=bnd?bnd.h:H+8;
   ctx.save();
-  if(P)ctx.clip(P);else ctx.clip();
+  if(P)ctx.clip(P);   // без пути клипа нет: ctx.clip() по пустому пути вырезал всё (G3)
   ctx.globalAlpha=a1;
   ctx.translate(-camx,-camy);
   ctx.fillStyle=mat;
@@ -20310,7 +20310,7 @@ function fillMaterial(mat,camx,camy,a1,a2,P,bnd){
      светлые и тёмные поля масштабом с полэкрана, из-за которых сетка 256
      перестаёт читаться, но цвет породы не уезжает */
   ctx.save();
-  if(P)ctx.clip(P);else ctx.clip();
+  if(P)ctx.clip(P);   // без пути клипа нет: ctx.clip() по пустому пути вырезал всё (G3)
   ctx.globalCompositeOperation="overlay";
   ctx.globalAlpha=a2;
   const K=3.7, PH=91;
@@ -29244,6 +29244,14 @@ function digRockPass(D,p,camx,camy){
     ctx.fillStyle="rgb("+L.col.join(",")+")";
     ctx.fill(P);
     ctx.strokeStyle="rgba(0,0,0,.34)";ctx.lineWidth=1.4;ctx.stroke(P);
+    /* контакт пластов: под кровлей каждого — полоса тени, по самой кромке —
+       волосок света. Без этого пласты — полосы заливки с линией между ними,
+       а не породы, лежащие одна на другой (G3). Клип по пласту: тень только
+       внутрь, вверх она не лезет. */
+    ctx.save();ctx.clip(P);
+    ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=18;ctx.stroke(P);
+    ctx.strokeStyle="rgba(255,255,255,.07)";ctx.lineWidth=2.6;ctx.stroke(P);
+    ctx.restore();
     /* жилы минерала внутри пласта — те же штрихи, что в срезе: короткие,
        наклонные, от координаты, поэтому не мигают при движении */
     if(L.vein>.05){
@@ -29493,14 +29501,28 @@ function drawDig(){
       ctx.fillRect(x-4,fy+3.6,DIG_CELL+8,1.3);
       /* вагонетка: одна на выработку, место выбирает семя */
       if(((hashi(col,row,0x7ADD)>>>4)&31)===0){
-        ctx.fillStyle="rgba(58,52,46,.95)";
-        ctx.fillRect(x+4,fy-11,DIG_CELL-9,10);
-        ctx.fillStyle="rgba(96,88,76,.9)";
-        ctx.fillRect(x+4,fy-11,DIG_CELL-9,2);
-        ctx.fillStyle="rgba(20,18,16,.9)";
-        for(const wx of [x+7,x+DIG_CELL-8]){
-          ctx.beginPath();ctx.arc(wx,fy,2.2,0,TAU);ctx.fill();
+        /* Вагонетка читалась ящиком в яме: прямоугольник на колёсах. Кузов —
+           корыто, шире кверху, с отбортовкой, и в нём горка породы (G3). */
+        const bx=x+4,bw=DIG_CELL-9,by=fy-12;
+        ctx.fillStyle="rgba(0,0,0,.35)";ctx.fillRect(bx-1,fy-1,bw+2,2);   // тень под кузовом
+        ctx.fillStyle="rgba(62,56,50,.96)";
+        ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+bw,by);
+        ctx.lineTo(bx+bw-3,fy-2);ctx.lineTo(bx+3,fy-2);ctx.closePath();ctx.fill();
+        ctx.fillStyle="rgba(38,34,30,.9)";ctx.fillRect(bx+3,by+5,bw-6,1.2);   // ребро жёсткости
+        ctx.fillStyle="rgba(112,104,92,.95)";ctx.fillRect(bx-1,by-1.6,bw+2,2.2); // отбортовка
+        ctx.fillStyle="rgba(170,160,144,.35)";ctx.fillRect(bx-1,by-1.6,bw+2,.8);
+        /* горка породы в кузове — тем она и вагонетка, а не ящик */
+        ctx.fillStyle="rgba(92,84,72,.95)";
+        ctx.beginPath();ctx.moveTo(bx+1,by-1);ctx.lineTo(bx+bw*.3,by-6);ctx.lineTo(bx+bw*.55,by-4);
+        ctx.lineTo(bx+bw*.75,by-7);ctx.lineTo(bx+bw-1,by-1);ctx.closePath();ctx.fill();
+        ctx.fillStyle="rgba(150,140,120,.3)";
+        ctx.fillRect(bx+bw*.3-1,by-6,2,1.4);ctx.fillRect(bx+bw*.75-1,by-7,2,1.4);
+        ctx.fillStyle="rgba(20,18,16,.95)";
+        for(const wx of [bx+4,bx+bw-4]){
+          ctx.beginPath();ctx.arc(wx,fy,2.4,0,TAU);ctx.fill();
         }
+        ctx.fillStyle="rgba(120,120,124,.5)";
+        for(const wx of [bx+4,bx+bw-4]){ctx.beginPath();ctx.arc(wx,fy,.9,0,TAU);ctx.fill();}
       }
       /* инструмент у стены в тупике: там, где ход кончился */
       else if(!dg(col-1,row)||!dg(col+1,row)){
@@ -29523,11 +29545,32 @@ function drawDig(){
         ctx.fillStyle="rgba(96,104,110,.9)";
         ctx.fillRect(x+DIG_CELL-8.4,y+DIG_CELL*.3,7.2,2.6);
       }
-      if(row%8===0&&floor===false){        // площадка: доска поперёк ствола
-        ctx.fillStyle="rgba(120,92,58,.85)";
-        ctx.fillRect(x-3,y+DIG_CELL-7,DIG_CELL*.5,3);
-        ctx.fillStyle="rgba(0,0,0,.4)";
-        ctx.fillRect(x-3,y+DIG_CELL-4,DIG_CELL*.5,1.6);
+      if(row%8===0&&floor===false){
+        /* Площадка была доской в полствола и не читалась вовсе (G3). Теперь
+           это полок: балка через весь ствол на двух кронштейнах, лампа на
+           стене с табличкой глубины, на каждой второй — ящик. Лампа светит
+           по-настоящему — её свет ложится после темноты (D._lamps). */
+        const by=y+DIG_CELL-7,h=hashi(row,0x7A1F,5);
+        ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(x-4,by+3,DIG_CELL+8,3);      // тень под балкой
+        ctx.fillStyle="rgba(118,90,56,.92)";ctx.fillRect(x-4,by,DIG_CELL+8,3.4);  // балка
+        ctx.fillStyle="rgba(200,168,118,.22)";ctx.fillRect(x-4,by,DIG_CELL+8,1);
+        ctx.fillStyle="rgba(96,104,112,.9)";                                      // кронштейны
+        for(const s of [-1,1]){const kx=s<0?x-3:x+DIG_CELL+3;
+          ctx.beginPath();ctx.moveTo(kx,by+3);ctx.lineTo(kx+s*-6,by+3);ctx.lineTo(kx,by+9);ctx.closePath();ctx.fill();}
+        if(h&1){                                                                   // ящик
+          ctx.fillStyle="rgba(70,64,54,.95)";ctx.fillRect(x+2,by-9,11,9);
+          ctx.fillStyle="rgba(120,110,92,.6)";ctx.fillRect(x+2,by-9,11,1.2);
+          ctx.fillStyle="rgba(0,0,0,.35)";ctx.fillRect(x+7,by-9,1,9);
+        }
+        /* лампа на левой стене: кожух, плафон; свет — после темноты */
+        const lx=x-1,ly=y+6;
+        ctx.fillStyle="rgba(60,66,72,.95)";ctx.fillRect(lx-2,ly-3,5,7);
+        ctx.fillStyle="rgba(255,228,170,.95)";ctx.fillRect(lx-1,ly-1,3,3);
+        (D._lamps||(D._lamps=[])).push([lx+.5,ly+.5]);
+        /* табличка глубины — тем площадка и запоминается */
+        ctx.fillStyle="rgba(30,32,36,.95)";ctx.fillRect(x+DIG_CELL-14,y+4,12,6);
+        ctx.fillStyle="rgba(255,228,170,.75)";ctx.font="5px ui-monospace,monospace";ctx.textAlign="center";
+        ctx.fillText("−"+(row*3),x+DIG_CELL-8,y+9);
       }
     }
   }
@@ -29649,6 +29692,19 @@ function drawDig(){
     g.addColorStop(.45,"rgba(1,3,7,.34)");
     g.addColorStop(1,"rgba(0,1,4,.80)");
     ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  }
+  /* лампы площадок: тёплые круги поверх темноты, внутри выработки */
+  if(D._lamps&&D._lamps.length){
+    const LS=glowSprite("minelamp",()=>{
+      const g=ctx.createRadialGradient(0,0,0,0,0,1);
+      g.addColorStop(0,"rgba(255,214,150,.55)");g.addColorStop(.25,"rgba(255,200,130,.18)");
+      g.addColorStop(1,"rgba(255,180,110,0)");
+      ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
+    });
+    ctx.save();ctx.clip(VP);ctx.globalCompositeOperation="lighter";
+    for(const [lx,ly] of D._lamps)glowBlit(LS,lx,ly,64);
+    ctx.restore();
+    D._lamps.length=0;
   }
   /* Фонарь светил СКВОЗЬ породу: конус уходил за кромку выработки и подсвечивал
      пласты на полэкрана — под землёй это ложь в самом заметном месте кадра.

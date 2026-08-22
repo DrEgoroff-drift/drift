@@ -8,6 +8,15 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.96.0 — "The mine has rock in it" (G3)
+
+`fillMaterial` with no clip path called `ctx.clip()` on an empty path and drew nothing — the mine
+never showed its planet's rock, which is why its strata read as flat fills. Fixed, and the strata
+got a contact shadow under each roof and a hairline of light along the edge. Landings are a
+beam across the whole shaft on brackets with a wall lamp (lit after the darkness pass), a depth
+plate and a crate on every second one; the tub is a hopper with a heap of rock in it. Still
+open: niches and a change of section along a long shaft; rock chunks by world-y.
+
 ## 0.95.0 — "Passes, not objects" (G0, G11-a)
 
 The graphics pass opens with a measurement: the frame is fill-rate bound, one full-screen pass
