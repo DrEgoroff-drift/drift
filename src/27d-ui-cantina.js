@@ -177,20 +177,8 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   });
   if(typeof storyCantFigures==="function")storyCantFigures(c,W2,fy,cy);   // люди историй — за стойкой, как все (11c)
   /* ── стойка ── */
-  c.fillStyle="rgba(24,28,36,.98)";c.fillRect(0,cy,W2,fy-cy);
-  c.fillStyle="rgba(58,46,36,.98)";c.fillRect(0,cy-7,W2,8);        // столешница
+  cantCounter(c,W2,fy,cy,back,acc,seed);
   if(typeof storyCantProps==="function")storyCantProps(c,W2,fy,cy);       // их вещи — на столешнице
-  c.fillStyle="rgba(210,190,160,.16)";c.fillRect(0,cy-7,W2,1.6);   // блик по кромке
-  c.fillStyle="rgba(0,0,0,.35)";c.fillRect(0,cy+1,W2,2);
-  for(let i=0;i<Math.ceil(W2/48);i++){                              // филёнки
-    c.fillStyle="rgba(255,255,255,.035)";c.fillRect(i*48+6,cy+8,36,fy-cy-20);
-    c.fillStyle="rgba(0,0,0,.22)";c.fillRect(i*48+42,cy+8,2,fy-cy-20);
-  }
-  c.fillStyle=rgba(mixc([180,196,210],acc,.3),.22);                 // подножка
-  c.fillRect(0,fy-9,W2,3);
-  const cg=c.createLinearGradient(0,cy,0,fy);                       // свет ложится на переднюю панель сверху
-  cg.addColorStop(0,"rgba(255,226,180,.07)");cg.addColorStop(1,"rgba(0,0,0,.35)");
-  c.fillStyle=cg;c.fillRect(0,cy+1,W2,fy-cy-1);
   /* ── свет ──
      Пять залов отличались вывеской, окном и оттенком акцента — а светили
      одинаково: три лампы через равные промежутки, один и тот же конус. Свет
@@ -543,4 +531,90 @@ function cantTables(c,W2,fy,cy,deals,sel,hover,acc,seed){
     hits.push({id,x:x-30,y:y-60,w:60,h:62});
   }
   return hits;
+}
+
+/* ── стойка по типу станции ──
+   Одна и та же филёнчатая стойка во всю ширину стояла в пяти залах (долг
+   «cantina» в PLAN). Стойка — это то, на что человек опирается локтем, и по
+   ней зал опознаётся не хуже вывески: в торговом зале дерево с латунным
+   поручнем и закруглённым торцом; на комбинате стальной лист с заклёпками и
+   рифлёнкой, короче зала — слева стоит бочка; на верфи верстак с ящиками и
+   тисками на торце; в научной — стекло с холодной подсветкой и тонкая
+   столешница; на аванпосте доски на двух бочках, с просветами. */
+function cantCounter(c,W2,fy,cy,back,acc,seed){
+  const R=rng(seed^0xC0A7);
+  const h=fy-cy;
+  let x0=0,x1=W2;
+  if(back==="indust"){x0=54;}
+  if(back==="outpost"){x0=36;x1=W2-30;}
+  /* корпус */
+  const body={trade:"rgba(24,28,36,.98)",indust:"rgba(44,48,54,.98)",yard:"rgba(40,36,30,.98)",
+    sci:"rgba(18,26,36,.98)",outpost:"rgba(20,18,16,.98)"}[back]||"rgba(24,28,36,.98)";
+  c.fillStyle=body;
+  if(back==="trade"){
+    c.beginPath();c.moveTo(x0,cy);c.lineTo(x1-26,cy);c.quadraticCurveTo(x1,cy,x1,cy+26);
+    c.lineTo(x1,fy);c.lineTo(x0,fy);c.closePath();c.fill();
+  }else if(back==="outpost"){
+    /* две бочки и настил сверху */
+    for(const bx of [x0+30,x1-60]){
+      c.fillStyle="rgba(58,52,44,.98)";c.fillRect(bx,cy+6,34,h-6);
+      c.fillStyle="rgba(0,0,0,.35)";c.fillRect(bx,cy+6,34,2);c.fillRect(bx,cy+h*.55,34,2);
+      c.fillStyle="rgba(140,130,110,.25)";c.fillRect(bx+3,cy+6,2,h-6);
+    }
+    c.fillStyle=body;c.fillRect(x0,cy,x1-x0,9);
+  }else c.fillRect(x0,cy,x1-x0,h);
+  /* столешница */
+  const top={trade:"rgba(58,46,36,.98)",indust:"rgba(86,90,96,.98)",yard:"rgba(96,80,58,.98)",
+    sci:"rgba(150,176,196,.55)",outpost:"rgba(84,70,50,.98)"}[back]||"rgba(58,46,36,.98)";
+  c.fillStyle=top;c.fillRect(x0,cy-7,x1-x0,8);
+  c.fillStyle="rgba(230,220,200,.18)";c.fillRect(x0,cy-7,x1-x0,1.6);      // блик по кромке
+  c.fillStyle="rgba(0,0,0,.35)";c.fillRect(x0,cy+1,x1-x0,2);
+  if(back==="trade"){
+    for(let i=0;i<Math.ceil((x1-x0)/48);i++){                                // филёнки
+      c.fillStyle="rgba(255,255,255,.035)";c.fillRect(x0+i*48+6,cy+8,36,h-20);
+      c.fillStyle="rgba(0,0,0,.22)";c.fillRect(x0+i*48+42,cy+8,2,h-20);
+    }
+    c.fillStyle="rgba(214,176,96,.55)";c.fillRect(x0,cy-11,x1-x0-30,2.2);   // латунный поручень
+    c.fillStyle="rgba(255,236,180,.25)";c.fillRect(x0,cy-11,x1-x0-30,.8);
+    for(let x=x0+40;x<x1-40;x+=120){c.fillStyle="rgba(214,176,96,.6)";c.fillRect(x,cy-11,2,5);}
+  }else if(back==="indust"){
+    for(let y=cy+10;y<fy-12;y+=7)for(let x=x0+4;x<x1-4;x+=7){              // рифлёнка
+      c.fillStyle="rgba(255,255,255,.045)";c.fillRect(x+((y/7|0)%2)*3,y,2.4,1.2);}
+    c.fillStyle="rgba(180,190,200,.35)";
+    for(let x=x0+8;x<x1-6;x+=22){c.fillRect(x,cy+6,2,2);c.fillRect(x,fy-16,2,2);}   // заклёпки
+    c.fillStyle="rgba(0,0,0,.4)";c.fillRect(x0,cy,2,h);
+    /* бочка слева, где стойки нет */
+    c.fillStyle="rgba(70,62,52,.98)";c.fillRect(8,cy+4,38,h-4);
+    c.fillStyle="rgba(0,0,0,.35)";c.fillRect(8,cy+4,38,2);c.fillRect(8,cy+h*.5,38,2);
+    c.fillStyle=rgba(acc,.3);c.fillRect(12,cy+h*.3,30,3);
+  }else if(back==="yard"){
+    for(let x=x0+10;x<x1-70;x+=56){                                        // ящики верстака
+      c.fillStyle="rgba(52,46,38,.98)";c.fillRect(x,cy+10,46,h*.36);c.fillRect(x,cy+12+h*.36,46,h*.36);
+      c.fillStyle="rgba(180,170,150,.4)";c.fillRect(x+17,cy+10+h*.18,12,2);c.fillRect(x+17,cy+12+h*.54,12,2);
+      c.fillStyle="rgba(0,0,0,.3)";c.fillRect(x,cy+10,46,1.2);
+    }
+    /* тиски на торце */
+    c.fillStyle="rgba(120,126,134,.95)";c.fillRect(x1-40,cy-16,22,10);c.fillRect(x1-34,cy-22,4,6);
+    c.fillStyle="rgba(0,0,0,.4)";c.fillRect(x1-40,cy-8,22,2);
+    c.fillStyle="rgba(200,206,214,.4)";c.fillRect(x1-40,cy-16,22,1.2);
+  }else if(back==="sci"){
+    const g=c.createLinearGradient(0,cy+4,0,fy);                           // стекло с подсветкой
+    g.addColorStop(0,rgba(mixc([150,200,240],acc,.4),.26));g.addColorStop(1,"rgba(60,90,120,.05)");
+    c.fillStyle=g;c.fillRect(x0,cy+4,x1-x0,h-12);
+    c.fillStyle="rgba(200,230,250,.12)";
+    for(let x=x0;x<x1;x+=90)c.fillRect(x,cy+4,1,h-12);
+    c.fillStyle="rgba(20,28,40,.98)";c.fillRect(x0,cy-7,x1-x0,3);       // тонкая столешница
+  }else if(back==="outpost"){
+    for(let x=x0;x<x1;x+=34){                                              // доски настила с просветами
+      c.fillStyle="rgba("+(80+R()*20|0)+","+(66+R()*16|0)+",46,.98)";c.fillRect(x,cy-7,30,9);
+      c.fillStyle="rgba(0,0,0,.45)";c.fillRect(x+30,cy-7,4,9);
+    }
+  }
+  /* подножка и свет сверху на переднюю панель — у всех, кроме аванпоста */
+  if(back!=="outpost"){
+    c.fillStyle=rgba(mixc([180,196,210],acc,.3),.22);c.fillRect(x0,fy-9,x1-x0,3);
+    const cg=c.createLinearGradient(0,cy,0,fy);
+    cg.addColorStop(0,"rgba(255,226,180,.07)");cg.addColorStop(1,"rgba(0,0,0,.35)");
+    c.fillStyle=cg;c.fillRect(x0,cy+1,x1-x0,h-1);
+  }
 }

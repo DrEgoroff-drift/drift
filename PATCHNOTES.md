@@ -8,6 +8,13 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.99.0 — "Five counters" (cantina, pass 1)
+
+The counter is no longer the same panelled plank in every hall (`cantCounter`, 27d): wood with
+a brass rail and a rounded end in the trading hall; a riveted steel plate with tread, shorter
+than the room, a barrel where it ends, at the works; a workbench with drawers and a vice at the
+yard; lit glass under a thin top in the science hall; planks on two barrels at the outpost.
+
 ## 0.98.0 — "Something in front" (G2)
 
 The surface gets a foreground: sparse boulder and grass silhouettes at 1.24× parallax, cut by

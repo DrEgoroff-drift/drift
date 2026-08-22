@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 162 · символов верхнего уровня: 1759
+Файлов: 162 · символов верхнего уровня: 1760
 
 ## СИМВОЛЫ
 
@@ -196,16 +196,17 @@ camOffset                    src/19c-light.js:76
 camStep                      src/19c-light.js:62
 canPay                       src/21a-mode-base.js:48
 CANT_STYLE                   src/27d-ui-cantina.js:15
-cantFigure                   src/27d-ui-cantina.js:303
+cantCounter                  src/27d-ui-cantina.js:544
+cantFigure                   src/27d-ui-cantina.js:291
 cantinaPool                  src/12c-mgr-core.js:258
 cantinaScene                 src/27c-ui-hq.js:187
-cantProps                    src/27d-ui-cantina.js:403
+cantProps                    src/27d-ui-cantina.js:391
 cantRoomBody                 src/27d-ui-cantina.js:45
-cantSeats                    src/27d-ui-cantina.js:295
+cantSeats                    src/27d-ui-cantina.js:283
 cantSel                      src/27c-ui-hq.js:186
 cantStyle                    src/27d-ui-cantina.js:27
-cantTables                   src/27d-ui-cantina.js:491
-cantView                     src/27d-ui-cantina.js:344
+cantTables                   src/27d-ui-cantina.js:479
+cantView                     src/27d-ui-cantina.js:332
 capIv                        src/28-loop.js:292
 capOf                        src/05-parts.js:108
 capUsed                      src/05-parts.js:219
@@ -2146,7 +2147,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/27c-ui-hq.js · 35 КБ
   · ШТАБ и кантина:1
 
-## src/27d-ui-cantina.js · 31 КБ
+## src/27d-ui-cantina.js · 36 КБ
   · кантина: помещение, а не список:1
 
 ## src/27e-ui-home.js · 43 КБ
