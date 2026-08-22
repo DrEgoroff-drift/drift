@@ -7,6 +7,8 @@
 <title>Механики «Дрейфа» — как устроена игра</title>
 <meta name="description" content="Подробно: топливо и полёт, планеты и посадка, процедурная генерация, ресурсы и торговля, оборудование, приборы и невязка, люди, опасности, развитие, сохранения.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/icons/fav-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/fav-180.png">
 <link rel="stylesheet" href="/site.css">
 <style>
 .page{max-width:1180px;margin:0 auto;padding:34px 22px 90px;
@@ -14,7 +16,8 @@
 .side{position:sticky;top:74px}
 .side .ttl{font-size:10px;letter-spacing:.26em;color:var(--dim);text-transform:uppercase;
   margin-bottom:12px}
-.side a{display:block;padding:7px 11px;font-size:12.5px;color:var(--dim);
+.side a{display:flex;align-items:center;min-height:40px;padding:6px 11px;
+  font-size:12.5px;color:var(--dim);
   border-left:1px solid var(--line);transition:color .18s,border-color .18s,background .18s}
 .side a:hover{color:var(--text);background:rgba(127,230,216,.03)}
 .side a.on{color:var(--phos);border-left-color:var(--phos);background:rgba(127,230,216,.05)}
@@ -48,7 +51,7 @@ kbd{display:inline-block;min-width:25px;padding:2px 7px;text-align:center;
   .page{grid-template-columns:1fr;gap:20px}
   .side{position:static;display:flex;flex-wrap:wrap;gap:5px}
   .side .ttl{width:100%;margin-bottom:4px}
-  .side a{border-left:0;border:1px solid var(--line);padding:6px 10px;font-size:11.5px}
+  .side a{border-left:0;border:1px solid var(--line);min-height:44px;padding:0 11px;font-size:11.5px}
   .side .back{width:100%}
 }
 </style>
@@ -61,15 +64,12 @@ kbd{display:inline-block;min-width:25px;padding:2px 7px;text-align:center;
 
 <header class="top">
   <a class="logo" href="/">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">
-      <circle cx="15" cy="9" r="5"/><path d="M2 21c3.6-4.2 7-7.6 10.5-10.5" stroke-dasharray="2.6 2.4"/>
-    </svg><span>ДРЕЙФ</span>
+    <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12.5" fill="#143a45"/><path d="M16 3.5A12.5 12.5 0 0 1 16 28.5A3 12.5 0 0 0 16 3.5Z" fill="#7fe6d8"/></svg><span>ДРЕЙФ</span>
   </a>
   <nav>
     <a href="/">Игра</a>
     <a href="/mechanics.html" class="on">Механики</a>
-    <a href="/#gal">Скриншоты</a>
-    <a href="/#road">Развитие</a>
+    <a href="/parrot.html">Птица</a>
     <a href="/play.html" class="cta">Играть</a>
   </nav>
 </header>
@@ -103,8 +103,8 @@ kbd{display:inline-block;min-width:25px;padding:2px 7px;text-align:center;
     <section class="m" id="fly">
       <h2><i>основа</i>Полёт и топливо</h2>
       <p>
-        Вы летаете в двух масштабах. <b>Система</b> — вид сверху: звезда, планеты по орбитам,
-        станция, пояс астероидов. <b>Карта галактики</b> — звёзды и переходы между ними.
+        Вы летаете в двух масштабах. <b>Система</b> — то, что вокруг звезды: планеты идут
+        по орбитам, станция висит на своей, дальше кольцо астероидов. <b>Карта галактики</b> — звёзды и переходы между ними.
         Корабль летит по инерции: тяга разгоняет, а остановиться нужно отдельным
         усилием — в пустоте вас ничто не тормозит.
       </p>
@@ -312,6 +312,7 @@ kbd{display:inline-block;min-width:25px;padding:2px 7px;text-align:center;
 
 </div>
 
+<script src="/planets.js"></script>
 <script src="/sky.js"></script>
 <script>
 /* Подсветка раздела, в котором сейчас читатель. IntersectionObserver, а не

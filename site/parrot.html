@@ -7,6 +7,8 @@
 <title>Трепло — птица с борта «Дрейфа»</title>
 <meta name="description" content="Попугай из игры «Дрейф» отдельной птицей: живёт в окне, дёргается, чистит перо и повторяет за эфиром. Ставится на рабочий стол Mac и Windows.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/icons/fav-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/fav-180.png">
 <link rel="manifest" href="/parrot.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Трепло">
@@ -56,9 +58,7 @@ body.pet .said{position:fixed;left:0;right:0;bottom:14px;margin:0}
 
 <header class="top">
   <a class="logo" href="/">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">
-      <circle cx="15" cy="9" r="5"/><path d="M2 21c3.6-4.2 7-7.6 10.5-10.5" stroke-dasharray="2.6 2.4"/>
-    </svg><span>ДРЕЙФ</span>
+    <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12.5" fill="#143a45"/><path d="M16 3.5A12.5 12.5 0 0 1 16 28.5A3 12.5 0 0 0 16 3.5Z" fill="#7fe6d8"/></svg><span>ДРЕЙФ</span>
   </a>
   <nav>
     <a href="/">Игра</a>
@@ -1156,6 +1156,7 @@ function parActs(dt){
     navigator.serviceWorker.register("/parrot-sw.js").catch(()=>{});
 })();
 </script>
+<script src="/planets.js"></script>
 <script src="/sky.js"></script>
 </body>
 </html>

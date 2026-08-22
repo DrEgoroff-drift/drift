@@ -37,8 +37,22 @@
   const close=()=>$("#veil").classList.remove("on");
   window.driftAuth={open,close,tok,name};
 
+  /* Кликабельные спаны сами по себе недоступны с клавиатуры: браузер не даёт им
+     ни фокуса, ни срабатывания по Enter. Делаем их кнопками по сути, не трогая
+     вид, — иначе половина окна входа работает только мышью. */
+  function actionable(el){
+    if(!el)return;
+    el.setAttribute("role","button");
+    el.setAttribute("tabindex","0");
+    el.addEventListener("keydown",e=>{
+      if(e.key==="Enter"||e.key===" "){e.preventDefault();el.click();}
+    });
+  }
+  document.querySelectorAll(".linkish,.x").forEach(actionable);
+
   $("#swap").onclick=()=>open(mode==="login"?"register":"login");
   $("#veilX").onclick=close;
+  $("#veilX").setAttribute("aria-label","закрыть");
   $("#veil").onclick=e=>{if(e.target===$("#veil"))close()};
   document.addEventListener("keydown",e=>{if(e.key==="Escape")close()});
 
@@ -68,13 +82,14 @@
       w.innerHTML='сохранение только в этом браузере · '+
         '<span class="linkish" data-a="login">войти</span> или '+
         '<span class="linkish" data-a="register">создать запись</span>';
-      w.querySelectorAll("[data-a]").forEach(el=>el.onclick=()=>open(el.dataset.a));
+      w.querySelectorAll("[data-a]").forEach(el=>{el.onclick=()=>open(el.dataset.a);actionable(el);});
       if(sub)sub.textContent="";
       return;
     }
     w.innerHTML='вы вошли как <b style="color:var(--good);font-weight:400">'+name()+
       '</b> · <span class="linkish" data-a="out">выйти</span>';
-    w.querySelector("[data-a=out]").onclick=async()=>{
+    const outBtn=w.querySelector("[data-a=out]"); actionable(outBtn);
+    outBtn.onclick=async()=>{
       try{await call("logout",{},true)}catch(e){}
       setAcc("",""); paint();
     };
