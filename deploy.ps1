@@ -33,12 +33,20 @@ function Put($local, $remote) {
   if ($LASTEXITCODE -ne 0) { throw "scp $remote вернул $LASTEXITCODE — выкладка не состоялась" }
 }
 
+$ver = (Select-String -Path (Join-Path $root "src\01-core.js") -Pattern 'VER="([0-9.]+)"').Matches[0].Groups[1].Value
+
+# version.json пишет тот, кто выкладывает: заглавная показывает не то, что лежит
+# в исходниках, а то, что действительно уехало на сайт.
+$vj = Join-Path $root "version.json"
+'{{"ver":"{0}","date":"{1}"}}' -f $ver, (Get-Date -Format "dd.MM.yyyy") |
+  Set-Content -Path $vj -Encoding utf8 -NoNewline
+
 Put (Join-Path $root "site\index.html") "index.html"
 Put (Join-Path $root "site\api.php")    "api.php"
+Put $vj                                 "version.json"
 if (-not $SiteOnly) { Put $file "play.html" }
 
 # Проверка, а не надежда: спрашиваем у сервера, что там теперь лежит.
-$ver = (Select-String -Path (Join-Path $root "src\01-core.js") -Pattern 'VER="([0-9.]+)"').Matches[0].Groups[1].Value
 $kb  = [math]::Round((Get-Item $file).Length / 1KB)
 $onServer = ssh drift "grep -o 'VER=\`"[0-9.]*\`"' drift-game.ru/docs/play.html | head -1"
 "{0}  выложено {1} КБ · на сервере {2} · https://drift-game.ru" -f (Get-Date -Format "HH:mm:ss"), $kb, $onServer

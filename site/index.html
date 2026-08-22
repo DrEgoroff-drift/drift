@@ -593,11 +593,14 @@ paintWho();
   requestAnimationFrame(slow?still:frame);
 })();
 
-/* версия игры — чтобы с заглавной было видно, что выложено */
-fetch("/play.html",{method:"HEAD"}).then(r=>{
-  const d=r.headers.get("last-modified");
-  if(d)document.getElementById("ver").textContent=
-    "обновлено "+new Date(d).toLocaleDateString("ru-RU");
+/* Версия выложенного — из version.json, который пишет выкладка. Читать её из
+   заголовков самой игры не выходит: хостер не отдаёт Last-Modified, а тянуть
+   ради даты два мегабайта страницы — плата не по товару. */
+fetch("/version.json",{cache:"no-store"}).then(r=>r.json()).then(d=>{
+  const bits=[];
+  if(d.ver)bits.push("версия "+d.ver);
+  if(d.date)bits.push("обновлено "+d.date);
+  if(bits.length)document.getElementById("ver").textContent=bits.join(" · ");
 }).catch(()=>{});
 </script>
 </body>
