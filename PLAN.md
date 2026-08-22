@@ -123,6 +123,86 @@ one at a time when a pass is due, and nothing here blocks a milestone.
 - **the world on foot** — the longest screen after the cockpit, still without a pass of its own.
 - **split debt** — `21a-mode-base` 52 KB, `23-mode-dig`, `27e-ui-home` (see item 10).
 
+### The graphics & performance pass (G1–G12) — written 2026-08-22 from the shots, not from memory
+
+Self-review of every screen against the art direction (M54 rules). Each line is a **fault seen in a
+frame**, then the fix. Order is by how much of play time the screen takes; G0 comes first because
+the rest of the pass is measured against it.
+
+**What is already right and must not be touched:** base cross-section, cantina bar, HQ room,
+nav map, cockpit frame and rack, crystalline surface mosaic, the hundred portraits. These set the
+standard; the rest is pulled up to them, not the other way round.
+
+- **G0 — measure before painting.** One `prof()` table per mode at ×2 (surface, cave, mine,
+  base, belt/cockpit, system, scoop, raid), JS and raster separately, written into this section.
+  Without it every "optimisation" below is a guess. Known from 0.87: raster, not JS, is the cost.
+- **G1 — six worlds, one body** (`world-types.png`). Earthlike, desert, ice, volcanic, toxic and
+  jungle differ by palette only: the same cell-outline macro texture on rock, sand and ice, the
+  same relief amplitude, the same god-ray stamp at the same angle on every world, the same three
+  strata. Violates "material in three scales" and "one screenshot says where you are". Fix per
+  world type, not per colour: a **material kit** (`18a-material`) with its own macro form —
+  dunes/ripples for desert, fracture plates and blue depth for ice, cooled crust with glowing
+  cracks for volcanic, sodden banks and pools for toxic, root mass and canopy for jungle; relief
+  amplitude and strata count from the kit; rays only where the sky gives a reason (dust, mist).
+- **G2 — no aerial perspective on the surface** (`surface.png`). Far ridges use the near ground's
+  texture and value; the ground does not darken with depth; nothing stands in front of the player.
+  Fix: three planes — far ridges as flat value silhouettes tinted by the sky (cached
+  `screenLayer` per world), mid ground as now, a sparse **foreground** band (boulders, grass,
+  drift) at 1.15× parallax drawn last and blurred by value, not by filter. Depth gradient on the
+  ground: the lowest third goes to the sky's shadow colour.
+- **G3 — the mine is an empty frame** (`mine.png`). Shaft on a blank plane: strata are flat fills
+  with one outline, no texture, no niches, no scale; a tub reads as a crate in a pit (debt above).
+  Fix: rock from the same material kit as the surface (chunked by world-x, as cave rock), strata
+  with their own micro grain, landings as real rooms (beam, lamp, crate stack, a man-height mark),
+  changes of section along the shaft, dust in the lamp cone. This is the weakest screen in the
+  game and the first painting job.
+- **G4 — the raid is in a different language** (`raid.png`). A projected corridor of flat fills,
+  wireframe crates, an enemy as a pink capsule. It is the only screen the player would not
+  recognise as the same game. Fix: keep the projection, repaint with the base's brushes —
+  plated walls with rivets (`bDress`), real crates, pirates drawn as bodies (M74 rules), a floor
+  with grating and cable runs, one light cone from the hangar door, dust.
+- **G5 — the scoop giant tiles visibly** (`scoop.png`). The band's waves repeat at one screen
+  width and the baked 512×256 is stretched to ×3. Fix: bake at 1024×512 per giant type with a
+  non-tiling domain warp (fbm on fbm), bands as fronts with sharp leading edges and soft trailing
+  ones; the floor darker than the band; per-type structure (spots, vortices, plumes), not
+  palette.
+- **G6 — the belt is unlit** (`cockpit1.png`). Asteroids are flat polyhedra with no light
+  direction; the void behind is a gradient; nothing gives distance. Fix: one star direction per
+  belt, faces shaded by normal against it (computed once per rock, cached), a rim on the lit
+  edge, three depth planes with dust motes drifting in the near one, the far rocks smaller and
+  greyer. The frame and rack stay.
+- **G7 — the sky is a band.** On every world the sky is a vertical gradient; the landing screen
+  draws clouds as puffs on haze and rain as uniform streaks; the ringed body is drawn through its
+  ring. Fix: sky from `19b` as a cached `screenLayer` per (world, hour, weather): horizon glow,
+  a gradient bent by the star's altitude, a few cloud fronts from `19e` with a lit and a shadow
+  side; rain in two speeds; ring split into back/front halves around the disc.
+- **G8 — the ship on the ground is a postage stamp.** On the surface the landed ship is ~40 px
+  with no shadow, no landing gear dust, no hatch light. Fix: contact shadow, a pool of light
+  under the hatch at night, the hull at the same scale as the base's people (the human is the
+  rule).
+- **G9 — base surroundings** (`base.png`). The hill is one flat dark mass; the soil around the
+  modules is one brown. Fix: strata through the soil with the surface's micro grain (chunked),
+  a few buried stones, the shaft's spoil heap on top, the hill silhouette with a lit edge from the
+  sky. The rooms stay.
+- **G10 — system view composes nothing** (`system.png`). Nebula blobs, even stars, the star and
+  planets off-frame: the screen looks like a loading state. Fix: stars in three magnitudes with a
+  few coloured ones, the primary's glow bleeding into the frame from its direction even
+  off-screen, orbit lines fading with distance, nebula as two layers with parallax.
+- **G11 — raster budget, by rule.** After G0: anything static under a moving camera goes
+  through `18c-chunks` (today only landing and weather call `screenLayer`/`chunkAt` — the
+  surface ground, cave and mine rock, base soil and the sky should all go through it); per-frame
+  `createRadialGradient` in `20-life` (11 sites: astronaut lamp, flora caps, fauna glows) is
+  replaced by sprites baked once per (kind, size) and `drawImage`d; the full-screen veil and
+  vignette are one cached layer; `globalCompositeOperation` switches are grouped so the layer
+  stack flushes once. Target: every mode ≥ 55 fps at ×2 on the dev machine, with `resAuto`
+  never firing in normal play.
+- **G12 — the foot world gets its pass** (debt above). The longest screen after the cockpit. After
+  G1–G2: a POI every 2–3 screens with a silhouette visible from afar, wind in the flora, tracks
+  behind the walker, a night with the suit lamp as the only light.
+
+Not in this pass (still the list under "What not to do"): blur, DoF, chromatic aberration,
+motion blur. Depth is done by value and overlap, never by filter.
+
 ### What not to do
 
 Depth of field, chromatic aberration, motion blur, lens dirt. In canvas 2D these either don't
