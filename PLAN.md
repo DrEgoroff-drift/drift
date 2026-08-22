@@ -161,6 +161,8 @@ standard; the rest is pulled up to them, not the other way round.
   `screenLayer` per world), mid ground as now, a sparse **foreground** band (boulders, grass,
   drift) at 1.15× parallax drawn last and blurred by value, not by filter. Depth gradient on the
   ground: the lowest third goes to the sky's shadow colour.
+  **Done in 0.98.0** for the foreground band (`drawForeground`, 21b). Still open: far ridges as
+  a cached sky-tinted layer; a deeper value gradient on the near ground.
 - **G3 — the mine is an empty frame** (`mine.png`). Shaft on a blank plane: strata are flat fills
   with one outline, no texture, no niches, no scale; a tub reads as a crate in a pit (debt above).
   Fix: rock from the same material kit as the surface (chunked by world-x, as cave rock), strata

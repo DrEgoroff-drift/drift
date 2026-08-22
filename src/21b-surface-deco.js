@@ -567,3 +567,52 @@ function decoFrond(A){
   ctx.fillStyle=dcol(pal,0,1,.5);
   ctx.beginPath();ctx.ellipse(0,3,w*.5,Math.max(2,w*.12),0,0,TAU);ctx.fill();
 }
+
+/* ── передний план ──
+   Между игроком и стеклом ничего не стояло: дальний хребет, грунт, человек —
+   и всё на одной глубине (G2). Глубина в 2D делается перекрытием: редкие
+   тёмные силуэты у самого края кадра, идущие быстрее камеры, и без деталей —
+   вблизи глаз не фокусируется, и силуэт работает значением, не фактурой.
+   Цвет — тень неба этой планеты, поэтому он принадлежит кадру, а не наклейке. */
+function drawForeground(tr,camx,camy,p){
+  const K=1.24, SLOT=560;
+  const amb=ambRGB(p);
+  const c="rgba("+Math.round(amb[0]*.30)+","+Math.round(amb[1]*.32)+","+Math.round(amb[2]*.38)+",";
+  const fx=camx*K;
+  const s0=Math.floor((fx-300)/SLOT), s1=Math.floor((fx+W+300)/SLOT);
+  const hasAir=p.T.atm!=="отсутствует";
+  for(let s=s0;s<=s1;s++){
+    const h=hashi(s,p.seed,0xF06E);
+    if((h&3)!==0)continue;                       // один силуэт на два экрана
+    const wx=s*SLOT+((h>>>2)&511), sx=wx-fx;
+    const gy=groundAt(tr,clamp(sx+camx,0,tr.W-1))-camy;
+    const kind=(h>>>11)&3, r=48+((h>>>13)&63);
+    const y=Math.max(gy+r*.8+40,H-r*.5);   // ближе — ниже в кадре: у самой кромки, срезан ею
+    if(y-r>H+10||sx+r<-20||sx-r>W+20)continue;
+    if(kind<2||!hasAir){
+      /* валун: рваный круг, верх чуть светлее — ловит небо */
+      ctx.fillStyle=c+".88)";
+      ctx.beginPath();
+      for(let i=0;i<11;i++){
+        const a=i/11*TAU, rr=r*(.78+((hashi(s,i,0xB0D)>>>4)&15)/15*.3);
+        const px=sx+Math.cos(a)*rr*1.25, py=y+Math.sin(a)*rr*.8;
+        if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py);
+      }
+      ctx.closePath();ctx.fill();
+      ctx.fillStyle="rgba("+amb.join(",")+",.10)";
+      ctx.beginPath();ctx.ellipse(sx-r*.2,y-r*.55,r*.7,r*.16,-.2,0,TAU);ctx.fill();
+    }else{
+      /* куст/трава: пучок лезвий, кланяется ветру */
+      ctx.strokeStyle=c+".92)";ctx.lineCap="round";
+      const n=6+((h>>>19)&5), bow=(WIND||0)*6+Math.sin(G.t*.02+s)*3;
+      for(let i=0;i<n;i++){
+        const hh=hashi(s,i*7,0x6A55), bx=sx+((hh&63)-32)*1.2, len=r*(.8+((hh>>>6)&15)/15*.8);
+        const lean=((hh>>>10)&15)/15-.5;
+        ctx.lineWidth=2.2+((hh>>>14)&3);
+        ctx.beginPath();ctx.moveTo(bx,y+10);
+        ctx.quadraticCurveTo(bx+lean*len*.4,y-len*.55,bx+lean*len+bow,y-len);
+        ctx.stroke();
+      }
+    }
+  }
+}

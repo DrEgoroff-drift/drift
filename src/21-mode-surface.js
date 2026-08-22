@@ -593,6 +593,7 @@ function drawSurface(){
      должны остаться читаемыми, их виньетка касаться не должна */
   /* погода поверх мира, но под лучами и свёрткой: осадки идут перед игроком,
      а свет и цветокоррекция ложатся уже на всё вместе */
+  drawForeground(tr,camx,camy,p);
   drawWeather(p,camx,camy);
   lightShafts(p);
   gradePass(p);

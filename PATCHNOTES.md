@@ -8,6 +8,12 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.98.0 — "Something in front" (G2)
+
+The surface gets a foreground: sparse boulder and grass silhouettes at 1.24× parallax, cut by
+the bottom edge of the frame, in the planet's own shadow colour and without detail — depth by
+overlap and value, not by blur. One silhouette per two screens. Passes added: 0.
+
 ## 0.97.0 — "Six worlds, six bodies" (G1)
 
 The planet material (`18a-material`) had a character only for crystal, metal, jungle and ruin;

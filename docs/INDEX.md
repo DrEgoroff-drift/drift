@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 162 · символов верхнего уровня: 1758
+Файлов: 162 · символов верхнего уровня: 1759
 
 ## СИМВОЛЫ
 
@@ -428,6 +428,7 @@ drawFactRoute                src/13b-occupy.js:240
 drawFindsSystem              src/17b-finds.js:140
 drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24a-mode-raid.js:638
+drawForeground               src/21b-surface-deco.js:577
 drawGlassHUD                 src/24-mode-belt.js:518
 drawGround                   src/19-mode-landing.js:109
 drawGroundCrumbs             src/19-mode-landing.js:196
@@ -2085,7 +2086,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · обновление сцены:310
   · рисование разреза:379
 
-## src/21b-surface-deco.js · 31 КБ
+## src/21b-surface-deco.js · 34 КБ
   · крупная форма на поверхности:1
 
 ## src/21c-built.js · 10 КБ
