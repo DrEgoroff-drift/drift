@@ -152,17 +152,31 @@ function gradePass(p){
     ctx.fillStyle="rgba(128,128,128,"+(.5*DK).toFixed(3)+")";
     ctx.fillRect(0,0,W,H);ctx.restore();
   }
-  const g=ctx.createRadialGradient(W*.5,H*.46,Math.min(W,H)*.30,W*.5,H*.46,Math.max(W,H)*.78);
-  g.addColorStop(0,"rgba(0,0,0,0)");
-  g.addColorStop(1,"rgba(0,0,0,.34)");
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  /* холодная тень внизу, тёплый свет сверху — сдвиг маленький, но именно он
-     не даёт кадру рассыпаться на «фон + фигуры» */
+  /* ── виньетка и тон — один слой ──
+     Два полноэкранных градиента на кадр стоили ~25 мс на ×2 (G0, 0.94):
+     в canvas 2D единица цены — полноэкранный проход, а градиент дороже
+     заливки в пять раз. Картинка при этом не меняется от кадра к кадру —
+     печётся один раз на планету и размер и кладётся одним drawImage (18c). */
   const sun=starRGB(),amb=ambRGB(p);
-  const t=ctx.createLinearGradient(0,0,0,H);
-  t.addColorStop(0,"rgba("+sun.join(",")+",.055)");
-  t.addColorStop(.5,"rgba(0,0,0,0)");
-  t.addColorStop(1,"rgba("+amb.join(",")+",.075)");
-  ctx.save();ctx.globalCompositeOperation="lighter";
-  ctx.fillStyle=t;ctx.fillRect(0,0,W,H);ctx.restore();
+  ctx.drawImage(screenLayer("grade|"+sun.join(",")+"|"+amb.join(","),()=>{
+    const g=ctx.createRadialGradient(W*.5,H*.46,Math.min(W,H)*.30,W*.5,H*.46,Math.max(W,H)*.78);
+    g.addColorStop(0,"rgba(0,0,0,0)");
+    g.addColorStop(1,"rgba(0,0,0,.34)");
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    /* холодная тень внизу, тёплый свет сверху — сдвиг маленький, но именно он
+       не даёт кадру рассыпаться на «фон + фигуры». Раньше шёл в lighter;
+       при альфе .06 обычное наложение неотличимо, а в слое оно честнее. */
+    const t=ctx.createLinearGradient(0,0,0,H);
+    t.addColorStop(0,"rgba("+sun.join(",")+",.07)");
+    t.addColorStop(.5,"rgba(0,0,0,0)");
+    t.addColorStop(1,"rgba("+amb.join(",")+",.09)");
+    ctx.fillStyle=t;ctx.fillRect(0,0,W,H);
+  }),0,0,W,H);
+}
+/* небо-подложка: вертикальный градиент на весь экран, один раз на планету */
+function drawSkyBase(p){
+  const s=p.T.sky;
+  ctx.drawImage(screenLayer("skybg|"+s[0].join(",")+"|"+s[1].join(","),()=>{
+    ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
+  }),0,0,W,H);
 }

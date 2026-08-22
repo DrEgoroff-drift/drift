@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 162 · символов верхнего уровня: 1757
+Файлов: 162 · символов верхнего уровня: 1758
 
 ## СИМВОЛЫ
 
@@ -405,7 +405,7 @@ drawCantinaRoom              src/27d-ui-cantina.js:32
 drawCave                     src/22-mode-cave.js:180
 drawCaveBack                 src/22a-cave-deco.js:259
 drawCaveDark                 src/22a-cave-deco.js:315
-drawCaveGlow                 src/22a-cave-deco.js:322
+drawCaveGlow                 src/22a-cave-deco.js:335
 drawCaveRock                 src/22-mode-cave.js:145
 drawCaveSolid                src/22a-cave-deco.js:214
 drawCaveWater                src/22a-cave-deco.js:288
@@ -420,7 +420,7 @@ drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
 drawDig                      src/23-mode-dig.js:376
 drawDigFauna                 src/23-mode-dig.js:287
-drawDustMotes                src/19-mode-landing.js:327
+drawDustMotes                src/19-mode-landing.js:331
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:207
 drawFactory                  src/20aa-poi-shapes.js:378
@@ -430,16 +430,16 @@ drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24a-mode-raid.js:638
 drawGlassHUD                 src/24-mode-belt.js:518
 drawGround                   src/19-mode-landing.js:109
-drawGroundCrumbs             src/19-mode-landing.js:194
-drawGroundGrass              src/19-mode-landing.js:207
+drawGroundCrumbs             src/19-mode-landing.js:196
+drawGroundGrass              src/19-mode-landing.js:209
 drawHomeBuilding             src/21c-built.js:134
 drawHomeRoom                 src/27e-ui-home.js:42
 drawHqRoom                   src/27f-hq-room.js:22
 drawHull                     src/03e-hull-draw.js:1
 drawHullMarks                src/03b-hull-paint.js:173
-drawLander                   src/19-mode-landing.js:423
-drawLandGear                 src/19-mode-landing.js:397
-drawLanding                  src/19-mode-landing.js:341
+drawLander                   src/19-mode-landing.js:427
+drawLandGear                 src/19-mode-landing.js:401
+drawLanding                  src/19-mode-landing.js:345
 drawLoreMarks                src/12q-lore.js:214
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
@@ -459,11 +459,12 @@ drawPOI                      src/20a-poi.js:171
 drawPortal                   src/20aa-poi-shapes.js:464
 drawRaid                     src/24a-mode-raid.js:351
 drawRing                     src/17-mode-system.js:415
-drawRocks                    src/19-mode-landing.js:224
+drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:151
+drawSkyBase                  src/19c-light.js:177
 drawSkyBodies                src/19b-sky.js:59
-drawSkyLayer                 src/19-mode-landing.js:292
+drawSkyLayer                 src/19-mode-landing.js:296
 drawSpaceDust                src/16a-space.js:154
 drawStarBody                 src/16a-space.js:293
 drawStarHole                 src/16a-space.js:396
@@ -642,9 +643,9 @@ grokTake                     src/12tb-grok.js:101
 grokTeach                    src/12tb-grok.js:145
 grokTick                     src/12tb-grok.js:76
 grokWant                     src/12tb-grok.js:42
-GROUND_BAKING                src/19-mode-landing.js:192
+GROUND_BAKING                src/19-mode-landing.js:194
 groundAt                     src/07-planet.js:501
-groundShadow                 src/19-mode-landing.js:282
+groundShadow                 src/19-mode-landing.js:286
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
@@ -813,11 +814,11 @@ labCount                     src/12h-relic.js:16
 labStaffed                   src/12h-relic.js:27
 labWorking                   src/12h-relic.js:32
 LAND_ARC                     src/07-planet.js:371
-LAND_GY                      src/19-mode-landing.js:381
-landerGearTick               src/19-mode-landing.js:386
+LAND_GY                      src/19-mode-landing.js:385
+landerGearTick               src/19-mode-landing.js:390
 landerInk                    tests/91j-art.js:154
-landerLen                    src/19-mode-landing.js:382
-landingDust                  src/19-mode-landing.js:597
+landerLen                    src/19-mode-landing.js:386
+landingDust                  src/19-mode-landing.js:601
 landOnTestPlanet             tests/90-harness.js:62
 last                         src/28-loop.js:252
 lastDroneTick                src/28-loop.js:253
@@ -1476,7 +1477,7 @@ SHIPS                        src/03-ships.js:2
 shipThumb                    src/26-ui-station.js:118
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:188
-shipZoneR                    src/19-mode-landing.js:385
+shipZoneR                    src/19-mode-landing.js:389
 SKY_LOUD                     src/19b-sky.js:13
 SKY_QUIET                    src/19b-sky.js:14
 SKY_WORLD_KINDS              src/19b-sky.js:91
@@ -1485,7 +1486,7 @@ skyComet                     src/19b-sky.js:348
 skyField                     src/19b-sky.js:391
 skyGalaxy                    src/19b-sky.js:242
 skyGiant                     src/19b-sky.js:177
-skyGrad                      src/19-mode-landing.js:273
+skyGrad                      src/19-mode-landing.js:277
 skyHole                      src/19b-sky.js:265
 skyMoon                      src/19b-sky.js:317
 skyNeb                       src/19b-sky.js:338
@@ -2037,7 +2038,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/19b-sky.js · 20 КБ
   · небо:1
 
-## src/19c-light.js · 11 КБ
+## src/19c-light.js · 12 КБ
   · свет и воздух:1
 
 ## src/19d-weather.js · 12 КБ
@@ -2097,7 +2098,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · поверхность:1
   · навигатор и подсказки сверху:407
 
-## src/22a-cave-deco.js · 20 КБ
+## src/22a-cave-deco.js · 21 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
 
 ## src/22-mode-cave.js · 12 КБ

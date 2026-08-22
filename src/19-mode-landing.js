@@ -122,7 +122,9 @@ function drawGround(tr,camx,camy,fill,line,pal){
     tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR,top,ch);
     drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>{
       GROUND_BAKING=true;
-      try{drawGround(tr,wx0,wy0,fill,line,pal);}finally{GROUND_BAKING=false;}
+      /* валуны неподвижны и сложены из той же породы (два прохода материала
+         на каждый) — им место в ломте, а не в кадре: 6–9 мс на ×2 (G0) */
+      try{drawGround(tr,wx0,wy0,fill,line,pal);drawRocks(tr,wx0,wy0,pal);}finally{GROUND_BAKING=false;}
     });
     drawGroundGrass(tr,camx,camy);
     return;
@@ -223,6 +225,8 @@ function drawGroundGrass(tr,camx,camy){
 /* валуны и осыпь на профиле */
 function drawRocks(tr,camx,camy,pal){
   if(!tr.rocks)return;
+  /* с материалом валуны уже лежат в ломтях грунта — в кадре их не повторяем */
+  if(tr.chunks&&!GROUND_BAKING)return;
   for(const k of tr.rocks){
     const x=k.x-camx;
     if(x<-k.rad-20||x>W+k.rad+20)continue;
@@ -342,7 +346,7 @@ function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
   tr.mat=planetMat(p);tr.p=p;
   WIND=windOf(p);
-  ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
+  drawSkyBase(p);
   if(p.T.atm==="отсутствует")drawStars(L.x*.1,0,1);
   drawSkyLayer(p,L.x,L.y);
   const camx=L.x-W/2,camy=clamp(L.y-H*.42,-400,1e5);

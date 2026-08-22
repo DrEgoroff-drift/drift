@@ -472,7 +472,7 @@ function drawSurfaceHud(camx,camy){
 function drawSurface(){
   const S=G.surf,tr=S.tr,p=S.p;
   tr.mat=planetMat(p);tr.p=p;
-  ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
+  drawSkyBase(p);
   /* звёзды — до небесных тел: нарисованные после, они просвечивают сквозь
      диск гиганта и убивают его объём */
   if(p.T.atm==="отсутствует"||p.type==="ice")drawStars(S.x*.1,0,1);

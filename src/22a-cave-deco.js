@@ -313,11 +313,24 @@ function drawCaveWater(C,camx,camy){
 /* темнота: всё, что дальше фонаря, гаснет. Это и есть главный эффект пещеры —
    до него порода читалась как декорация, после него как стены */
 function drawCaveDark(C,px,py){
-  const g=ctx.createRadialGradient(px,py-14,40,px,py-14,Math.max(W,H)*.52);
-  g.addColorStop(0,"rgba(0,0,0,0)");
-  g.addColorStop(.45,"rgba(2,5,10,.30)");
-  g.addColorStop(1,"rgba(1,4,10,.76)");
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  /* темнота — спрайт, а не градиент на кадр: полноэкранный радиальный
+     градиент стоил ~15 мс на ×2 (G0). Круг света кладётся одним drawImage,
+     углы за ним добираются четырьмя плоскими заливками. */
+  const R=Math.max(W,H)*.52,cx=px,cy=py-14;
+  const SP=glowSprite("cavedark",()=>{
+    const g=ctx.createRadialGradient(0,0,40/R,0,0,1);
+    g.addColorStop(0,"rgba(0,0,0,0)");
+    g.addColorStop(.45,"rgba(2,5,10,.30)");
+    g.addColorStop(1,"rgba(1,4,10,.76)");
+    ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
+  });
+  glowBlit(SP,cx,cy,R);
+  ctx.fillStyle="rgba(1,4,10,.76)";
+  const x0=cx-R,x1=cx+R,y0=cy-R,y1=cy+R;
+  if(x0>0)ctx.fillRect(0,0,x0,H);
+  if(x1<W)ctx.fillRect(x1,0,W-x1,H);
+  if(y0>0)ctx.fillRect(Math.max(0,x0),0,Math.min(W,x1)-Math.max(0,x0),y0);
+  if(y1<H)ctx.fillRect(Math.max(0,x0),y1,Math.min(W,x1)-Math.max(0,x0),H-y1);
 }
 function drawCaveGlow(C,camx,camy,px,py){
   const D=C.deco;if(!D)return;

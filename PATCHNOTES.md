@@ -8,6 +8,14 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.95.0 — "Passes, not objects" (G0, G11-a)
+
+The graphics pass opens with a measurement: the frame is fill-rate bound, one full-screen pass
+costs ~4–5 ms at ×2 on an integrated GPU, JS is under 3 ms everywhere. First cuts: the grade
+(vignette + tone) and the sky base are cached layers, the cave darkness is a sprite, the giant's
+depth gradient is a layer, boulders are baked into the ground chunks. Surface 40→45 fps at ×2,
+mine 39→44, cave 55→59, scoop 51→55. Full table and the pass budget rule: PLAN.md, G0.
+
 ## 0.94.0 — "The mirror" (M134)
 
 A transit region with bad comms: in it, whatever the ether says comes back thirty-seven seconds

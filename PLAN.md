@@ -133,9 +133,18 @@ the rest of the pass is measured against it.
 nav map, cockpit frame and rack, crystalline surface mosaic, the hundred portraits. These set the
 standard; the rest is pulled up to them, not the other way round.
 
-- **G0 — measure before painting.** One `prof()` table per mode at ×2 (surface, cave, mine,
-  base, belt/cockpit, system, scoop, raid), JS and raster separately, written into this section.
-  Without it every "optimisation" below is a guess. Known from 0.87: raster, not JS, is the cost.
+- **G0 — measured (2026-08-22, 0.95.0), visible Chrome tab, AMD iGPU, window 1536×735 CSS.**
+  fps by mode at ×2 (3072×1470), before → after the first cache pass: surface 40→45, mine 39→44,
+  cave 55→59, scoop 51→55, landing 53→55, system 53, map 61. Same surface at ×1.5: 58, at ×1: 60.
+  The frame is **fill-rate bound**: one full-screen pass (a blit, a fill, a gradient) costs
+  ~4–5 ms at ×2 on this GPU, JS is ≤3 ms in every mode. So the budget is counted in
+  **full-screen passes per frame**, not in objects: about six fit at ×2, twelve at ×1.5.
+  The hidden-tab `prof()` numbers are not comparable with these (readback inflates everything
+  ×3 and gradients ×8) — rank with them, never quote them. Rules that follow: (1) a gradient
+  or a composite that does not change frame to frame is a `screenLayer`, never a per-frame
+  fill; (2) anything static under the camera is a chunk; (3) every new painting pass below
+  states how many passes it adds and pays for them somewhere else; (4) `resAuto` stays the
+  safety net, ×1.5 is the honest default on integrated GPUs.
 - **G1 — six worlds, one body** (`world-types.png`). Earthlike, desert, ice, volcanic, toxic and
   jungle differ by palette only: the same cell-outline macro texture on rock, sand and ice, the
   same relief amplitude, the same god-ray stamp at the same angle on every world, the same three
