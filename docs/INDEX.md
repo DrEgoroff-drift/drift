@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 149 · символов верхнего уровня: 1614
+Файлов: 149 · символов верхнего уровня: 1622
 
 ## СИМВОЛЫ
 
@@ -73,7 +73,7 @@ angWrap                      src/01-core.js:35
 applyCrewEvent               src/12b-crew-events.js:211
 applyPadMode                 src/15-input.js:6
 applyPadSize                 src/15-input.js:5
-applySave                    src/14-save.js:46
+applySave                    src/14-save.js:48
 applyVolumes                 src/09-audio.js:28
 apVel                        src/16-flight.js:73
 arrive                       src/16-flight.js:119
@@ -83,9 +83,9 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:187
 autoLandInputs               src/19-mode-landing.js:33
-autosave                     src/14-save.js:461
-b64dec                       src/14-save.js:11
-b64enc                       src/14-save.js:9
+autosave                     src/14-save.js:463
+b64dec                       src/14-save.js:13
+b64enc                       src/14-save.js:11
 bankTransform                src/03b-hull-paint.js:48
 BARGE_ART                    src/12l-barge.js:378
 BARGE_CAP                    src/12l-barge.js:13
@@ -246,15 +246,23 @@ CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
 closeBarge                   src/12l-barge.js:588
 closeStation                 src/26-ui-station.js:75
-CLOUD                        src/14-save.js:3
+CLOUD                        src/14-save.js:5
 CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudPull                    src/14-save.js:483
-cloudPush                    src/14-save.js:475
+cloudBoot                    src/14-save.js:520
+cloudBusy                    src/14-save.js:490
+cloudCall                    src/14-save.js:483
+cloudForget                  src/14-save.js:488
+cloudHere                    src/14-save.js:481
+cloudName                    src/14-save.js:480
+cloudOn                      src/14-save.js:482
+cloudPull                    src/14-save.js:507
+cloudPush                    src/14-save.js:493
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
+cloudTok                     src/14-save.js:479
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
@@ -490,7 +498,7 @@ exitBelt                     src/24-mode-belt.js:162
 exitCave                     src/22-mode-cave.js:40
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
-exportCode                   src/14-save.js:470
+exportCode                   src/14-save.js:472
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -618,7 +626,7 @@ groundShadow                 src/19-mode-landing.js:253
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:469
+hasSave                      src/14-save.js:471
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
@@ -719,7 +727,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:471
+importCode                   src/14-save.js:473
 initAudio                    src/09-audio.js:7
 INSTR                        src/25a-instr.js:19
 INSTR_BY_ID                  src/25a-instr.js:55
@@ -797,7 +805,7 @@ layerLevel                   src/10-music.js:276
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:115
 litRGB                       src/19c-light.js:46
-loadGame                     src/14-save.js:465
+loadGame                     src/14-save.js:467
 LOCAL                        src/11b-speech.js:68
 LOG_MAX                      src/11-log.js:3
 logAdd                       src/11-log.js:5
@@ -1143,7 +1151,7 @@ prevAct                      src/08-state.js:16
 prism                        src/21b-surface-deco.js:201
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
-prunePartsBought             src/14-save.js:15
+prunePartsBought             src/14-save.js:17
 ptr                          src/15-input.js:180
 putOnTable                   src/11b-speech.js:148
 QUEST_MAX                    src/11a-quests.js:15
@@ -1302,8 +1310,8 @@ runAutopilot                 src/16-flight.js:74
 runTests                     tests/90-harness.js:71
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
-SAVE_KEY                     src/14-save.js:4
-saveGame                     src/14-save.js:455
+SAVE_KEY                     src/14-save.js:6
+saveGame                     src/14-save.js:457
 say                          src/08-state.js:133
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -1402,7 +1410,7 @@ SLOT_CACHE                   src/05-parts.js:113
 slotAnchors                  src/05-parts.js:141
 slotsOf                      src/05-parts.js:114
 SMELT                        src/02-world.js:58
-snapshot                     src/14-save.js:24
+snapshot                     src/14-save.js:26
 SND                          src/09-audio.js:4
 sndWalk                      src/28-loop.js:186
 spareModLv                   src/12a-crew.js:221
@@ -1422,7 +1430,7 @@ STAR_CLASS                   src/02-world.js:96
 STAR_COLS                    src/16-flight.js:2
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:23
-start                        src/15-input.js:307
+start                        src/15-input.js:315
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
 stat                         src/08-state.js:91
@@ -1438,13 +1446,13 @@ stationUniqueOffer           src/03-ships.js:107
 stationViz                   src/17-mode-system.js:498
 statPreview                  src/05-parts.js:271
 stCore                       src/17-mode-system.js:515
-stDel                        src/14-save.js:8
+stDel                        src/14-save.js:10
 steps                        tests/90-harness.js:69
-stGet                        src/14-save.js:6
+stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:40
 stGroupOf                    src/26-ui-station.js:39
 stopEngine                   src/09-audio.js:243
-STORAGE_OK                   src/14-save.js:5
+STORAGE_OK                   src/14-save.js:7
 STORM_WORLDS                 src/21a-mode-base.js:233
 stPanels                     src/17-mode-system.js:505
 stRing                       src/17-mode-system.js:531
@@ -1452,7 +1460,7 @@ STRIPS_MAX                   src/11b-speech.js:120
 stripsAll                    src/11b-speech.js:121
 stripSell                    src/11b-speech.js:155
 stripValue                   src/11b-speech.js:122
-stSet                        src/14-save.js:7
+stSet                        src/14-save.js:9
 stTypeOf                     src/06-galaxy.js:27
 subdivide                    src/24-mode-belt.js:34
 suite                        tests/90-harness.js:12
@@ -1820,8 +1828,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/13-pirates.js · 15 КБ
   · пираты:1
 
-## src/14-save.js · 32 КБ
+## src/14-save.js · 34 КБ
   · сохранение:1
+  · облако:476
 
 ## src/15-input.js · 16 КБ
   · экранные кнопки: авто-скрытие и размер:1

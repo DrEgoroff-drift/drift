@@ -1,0 +1,85 @@
+# Каждый push в main пересобирает игру и выкладывает её на drift-game.ru.
+#
+# Сборка идёт тем же build.ps1, что и на машине разработчика: на ubuntu-раннере
+# уже стоит PowerShell Core, а скрипт не использует ничего windows-специфичного.
+# Двух разных сборщиков быть не должно — иначе однажды они разойдутся, и
+# выяснится это на сайте.
+#
+# Заглавная страница переживает выкладку: игра лежит отдельным файлом play.html,
+# а index.html меняется только когда меняется сам site/index.html.
+#
+# Нужен один секрет репозитория:
+#   DRIFT_SSH_KEY — содержимое приватного ключа ~/.ssh/drift (весь файл целиком,
+#                   вместе со строками BEGIN и END)
+
+name: deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'site/**'
+      - 'tests/**'
+      - 'build.ps1'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Собрать drift.html
+        shell: pwsh
+        run: ./build.ps1
+
+      - name: Проверить, что сборка не пустая
+        run: |
+          test -s drift.html || { echo "drift.html пуст"; exit 1; }
+          size=$(stat -c%s drift.html)
+          echo "сборка: $size байт"
+          # порог грубый, но ловит главное — склейку, потерявшую половину модулей
+          [ "$size" -gt 1000000 ] || { echo "сборка подозрительно мала"; exit 1; }
+
+      - name: Ключ для выкладки
+        env:
+          KEY: ${{ secrets.DRIFT_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/drift
+          chmod 600 ~/.ssh/drift
+          # Хост отдаёт только старый ssh-rsa ключ — современный OpenSSH
+          # отказывается с ним говорить, пока его об этом не попросят явно.
+          cat >> ~/.ssh/config <<'EOF'
+          Host drift
+              HostName ssh.dri7887661.nichost.ru
+              User dri7887661
+              IdentityFile ~/.ssh/drift
+              IdentitiesOnly yes
+              HostKeyAlgorithms +ssh-rsa
+              PubkeyAcceptedAlgorithms +ssh-rsa
+              StrictHostKeyChecking accept-new
+          EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Выложить
+        run: |
+          scp drift.html        drift:drift-game.ru/docs/play.html
+          scp site/index.html   drift:drift-game.ru/docs/index.html
+          scp site/api.php      drift:drift-game.ru/docs/api.php
+
+      - name: Убедиться, что на сайте то, что собрали
+        run: |
+          want=$(grep -o 'VER="[0-9.]*"' src/01-core.js | head -1)
+          got=$(curl -sf --max-time 30 https://drift-game.ru/play.html | grep -o 'VER="[0-9.]*"' | head -1)
+          echo "в исходниках $want, на сайте $got"
+          [ "$want" = "$got" ] || { echo "версии разошлись"; exit 1; }
+          curl -sf --max-time 20 -o /dev/null https://drift-game.ru/ || { echo "заглавная не отвечает"; exit 1; }
+          code=$(curl -s --max-time 20 -o /dev/null -w '%{http_code}' -X POST 'https://drift-game.ru/api.php?a=me')
+          [ "$code" = "401" ] || { echo "api.php отвечает $code вместо 401"; exit 1; }

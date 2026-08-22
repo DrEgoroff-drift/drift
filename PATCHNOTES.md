@@ -9,6 +9,32 @@ could ever save.
 
 ---
 
+## 0.80.0 — "A front door, and a name to fly under"
+
+**The site is three files now.** `/` is a landing page (`site/index.html`), `/play.html` is the
+game, `/api.php` is the backend. The game moving off the root is what lets the front page stay put
+while every build republishes the game underneath it. The page carries the pitch, an FAQ of the
+mechanics, and a background drawn on the same canvas the game uses — baked nebula, three parallax
+star layers, planets on sprites, one visitor crossing the frame at a time.
+
+**Accounts.** Login and password, no email — `site/api.php`, PHP because this host offers no Node
+application mode (the reasoning is in `docs/DEPLOY.md`). Passwords go through `password_hash`,
+tokens are stored as their sha256, and everything lives in `~/drift-data`, outside the web root.
+Twelve login attempts per IP per quarter hour.
+
+**Saves follow the player.** `src/14-save.js` no longer needs configuring: it reads the token the
+landing page left in `localStorage` on the same origin. Pushes are silent and throttled to one per
+twenty seconds; on boot the game pulls and adopts the cloud snapshot only when it is genuinely
+newer. A snapshot never overwrites a newer one — the server refuses. Opened from disk (`file://`)
+the game stays entirely local and never mentions the cloud.
+
+**Publishing is automatic.** `.github/workflows/deploy.yml` rebuilds on every push to `main` with
+the same `build.ps1`, copies the three files, then asks the live site whether its `VER` matches the
+source and fails if it does not. `server.js` and `worker.js` were removed: neither ever ran, and
+two competing answers to "where do saves live" is one too many.
+
+---
+
 ## 0.79.0 — "A queue of lines, and a thing on the table"
 
 **M128** (`11b-speech.js` new, `27c-ui-hq.js` — the table block in the cantina, `26-ui-station.js`,

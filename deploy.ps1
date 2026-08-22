@@ -1,36 +1,47 @@
 ﻿# Публикация «Дрейфа» на drift-game.ru.
 #
-# Игра — один самодостаточный файл, поэтому вся выкладка это сборка плюс одна
-# копия в корень сайта. Ключ и адрес живут в ~/.ssh/config под именем `drift`,
-# пароль не нужен и здесь не хранится.
+# На сайте три файла и у каждого своя судьба:
+#   index.html  — заглавная (site/index.html), меняется редко
+#   play.html   — сама игра (drift.html), меняется каждую сборку
+#   api.php     — учётные записи и облачные сохранения (site/api.php)
+#
+# Ключ и адрес живут в ~/.ssh/config под именем `drift`, пароль не нужен и здесь
+# не хранится. Ровно то же самое делает GitHub Actions на каждый push в main —
+# этот скрипт нужен для выкладки вручную, когда ждать сборку неохота.
 #
 #   powershell -ExecutionPolicy Bypass -File deploy.ps1
 #   powershell -ExecutionPolicy Bypass -File deploy.ps1 -SkipBuild
+#   powershell -ExecutionPolicy Bypass -File deploy.ps1 -SiteOnly   # только заглавная и api
 #
-# Откат на заглушку хостера: ssh drift "cp ~/drift-game.ru/docs/_hoster-stub.html ~/drift-game.ru/docs/index.html"
+# Откат на заглушку хостера:
+#   ssh drift "cp ~/drift-game.ru/docs/_hoster-stub.html ~/drift-game.ru/docs/index.html"
 
-param([switch]$SkipBuild)
+param([switch]$SkipBuild, [switch]$SiteOnly)
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $file = Join-Path $root "drift.html"
-$dest = "drift:drift-game.ru/docs/index.html"
+$web  = "drift:drift-game.ru/docs"
 
-if (-not $SkipBuild) {
+if (-not $SkipBuild -and -not $SiteOnly) {
   & powershell -ExecutionPolicy Bypass -File (Join-Path $root "build.ps1")
 }
-if (-not (Test-Path $file)) { throw "нет drift.html — сборка не прошла" }
 
-# версия берётся из самой сборки: то, что уедет на сайт, и есть источник правды
+function Put($local, $remote) {
+  if (-not (Test-Path $local)) { throw "нет файла $local" }
+  scp $local "$web/$remote"
+  if ($LASTEXITCODE -ne 0) { throw "scp $remote вернул $LASTEXITCODE — выкладка не состоялась" }
+}
+
+Put (Join-Path $root "site\index.html") "index.html"
+Put (Join-Path $root "site\api.php")    "api.php"
+if (-not $SiteOnly) { Put $file "play.html" }
+
+# Проверка, а не надежда: спрашиваем у сервера, что там теперь лежит.
 $ver = (Select-String -Path (Join-Path $root "src\01-core.js") -Pattern 'VER="([0-9.]+)"').Matches[0].Groups[1].Value
 $kb  = [math]::Round((Get-Item $file).Length / 1KB)
-
-scp $file $dest
-if ($LASTEXITCODE -ne 0) { throw "scp вернул $LASTEXITCODE — выкладка не состоялась" }
-
-# проверка, а не надежда: спрашиваем у сервера, что там теперь лежит
-$onServer = ssh drift "grep -o 'VER=\`"[0-9.]*\`"' drift-game.ru/docs/index.html | head -1"
+$onServer = ssh drift "grep -o 'VER=\`"[0-9.]*\`"' drift-game.ru/docs/play.html | head -1"
 "{0}  выложено {1} КБ · на сервере {2} · https://drift-game.ru" -f (Get-Date -Format "HH:mm:ss"), $kb, $onServer
-if ($onServer -notmatch [regex]::Escape($ver)) {
+if (-not $SiteOnly -and $onServer -notmatch [regex]::Escape($ver)) {
   Write-Warning "на сайте не та версия, что в src/01-core.js ($ver) — проверьте вручную"
 }

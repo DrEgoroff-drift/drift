@@ -293,8 +293,16 @@ document.getElementById("startEasy").addEventListener("click",()=>start(true));
 document.getElementById("startHard").addEventListener("click",()=>start(false));
 (function(){
   const b=document.getElementById("startCont");
-  if(hasSave()){
-    b.style.display="";
+  /* Кнопка «продолжить» может появиться дважды: сразу — если запись лежит в этом
+     браузере, и чуть позже — если облако принесло более свежую с другого устройства.
+     Ждать сеть перед показом заставки нельзя: без сети игра обязана открыться сразу. */
+  const showCont=()=>{b.style.display="";};
+  if(hasSave())showCont();
+  cloudBoot(fresh=>{
+    if(hasSave())showCont();
+    if(fresh)say("Полёт с другого устройства\nзабран из облака");
+  });
+  {
     b.addEventListener("click",()=>{
       if(loadGame()){
         document.getElementById("intro").style.display="none";

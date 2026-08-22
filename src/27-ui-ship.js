@@ -334,12 +334,22 @@ function renderOpts(){
   };
   rcd.appendChild(bex);rcd.appendChild(bim);$optBody.appendChild(rcd);
 
-  if(CLOUD.url){
+  /* Облако показывается только когда игра открыта с сайта: у игры с диска
+     сервера рядом нет, и обещать ему нечего. */
+  if(cloudHere()){
     const rcl=el("div","row");
-    rcl.appendChild(el("div","nm","<b>Облако</b><s>идентификатор: "+(CLOUD.id||"не задан")+"</s>"));
-    const b1=el("button","act","ВЫГРУЗИТЬ");b1.onclick=()=>{cloudPush();say("Отправлено");};
-    const b2=el("button","act gold","ЗАБРАТЬ");b2.onclick=()=>{cloudPull();renderOpts();};
-    rcl.appendChild(b1);rcl.appendChild(b2);$optBody.appendChild(rcl);
+    rcl.appendChild(el("div","nm",cloudOn()
+      ? "<b>Облако</b><s>учётная запись: "+cloudName()+"<br>полёт уезжает на сервер сам</s>"
+      : "<b>Облако</b><s>вы не вошли — запись живёт только в этом браузере<br>вход на заглавной странице</s>"));
+    if(cloudOn()){
+      const b1=el("button","act","ВЫГРУЗИТЬ");b1.onclick=()=>cloudPush(true);
+      const b2=el("button","act gold","ЗАБРАТЬ");b2.onclick=()=>{cloudPull();renderOpts();};
+      rcl.appendChild(b1);rcl.appendChild(b2);
+    }else{
+      const b3=el("button","act gold","ВОЙТИ");b3.onclick=()=>{location.href="/";};
+      rcl.appendChild(b3);
+    }
+    $optBody.appendChild(rcl);
   }
 
   const rrs=el("div","row");
