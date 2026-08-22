@@ -445,8 +445,11 @@ function applySave(s){
   if(!G.opts.keys||typeof G.opts.keys!=="object")G.opts.keys={main:{},belt:{}};
   if(!G.opts.keys.main)G.opts.keys.main={};if(!G.opts.keys.belt)G.opts.keys.belt={};
   if(!G.opts.pads)G.opts.pads="auto";if(!G.opts.padSize)G.opts.padSize=1;
-  if(!G.opts.gfx||typeof G.opts.gfx!=="object")G.opts.gfx={draw:1,detail:1,particles:1,plants:1};
+  if(!G.opts.gfx||typeof G.opts.gfx!=="object")G.opts.gfx={draw:1,detail:1,particles:1,plants:1,fps:0};
   for(const k of["draw","detail","particles","plants"])if(!G.opts.gfx[k])G.opts.gfx[k]=1;
+  /* потолок кадров: 0 — без потолка. Ноль тут законное значение, поэтому
+     проверка на «пусто» ему не годится, нужна проверка на «не из списка». */
+  if(![0,30,60].includes(G.opts.gfx.fps))G.opts.gfx.fps=0;
   if(!G.opts.audio||typeof G.opts.audio!=="object")G.opts.audio={on:true,music:.6,sfx:.6,engine:.4};
   if(typeof G.opts.audio.music!=="number")G.opts.audio.music=.6;
   if(typeof G.opts.audio.sfx!=="number")G.opts.audio.sfx=.6;

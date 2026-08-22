@@ -9,6 +9,73 @@ could ever save.
 
 ---
 
+## 0.84.0 — "The planets turn in the game too, and nothing is baked in one go"
+
+Reported as "everything is slow." Measured before touching anything: a system-view frame cost
+**4.9 ms of CPU**, and that number did not move between 1280×720 and 3840×2160. A cost that
+ignores resolution is not on the CPU; the pixels are paid for on the GPU. That ruled out the
+obvious suspects and sent the search somewhere else — to what the game computes *once*, at the
+moments it stutters.
+
+**The planets were a flip-book.** Sixteen rotation frames were baked per planet and switched
+between by the clock. On a planet the size of a fingernail nobody sees it; at full screen it is a
+slide show. Worse, the frame was capped at 72–144 pixels a side — it had to be, since it was paid
+for sixteen times — and then stretched across half the screen, which is where the mush and the
+stair-stepped limb came from.
+
+The site solved this in 0.83.0 and the game now does the same: **one surface map** (longitude
+across, sine of latitude down) wrapped onto the sphere in the frame itself, in vertical strips.
+On a sphere seen from outside a point's height on screen *is* the sine of its latitude, so the map
+needs no vertical stretching — only each column's longitude, worked out once per size. Rotation
+becomes a shift along the map: continuous, no steps. Light does not rotate, so it is two overlays
+baked once, and the limb is anti-aliased by alpha instead of being cut off square.
+
+**Nothing is baked in one go any more.** This is the part that was actually costing whole frames.
+`fbm2` runs about two microseconds a call, so any surface worth looking at is a hundred thousand
+calls — a quarter of a second with the frame stopped. The old code hid this by being low
+resolution, which is exactly why it looked bad. So the bakes were made interruptible:
+
+- The surface map is baked **by pixel, not by row** — one row of a detailed map already costs more
+  than a whole frame's budget. 2.5 ms a frame, three levels of detail, one level at a time.
+- Until anything is ready a planet is drawn as a smooth lit sphere of its own colour: a body, not
+  a hole in the starfield. Detail arrives within half a second and sharpens as you approach.
+- The queue is fair and prefers whoever is furthest behind, so **every** planet gets a rough
+  surface before any planet gets a detailed one. Without that rule the first planet in the list
+  took the oven and the other three stayed blank.
+- The system nebula got the same treatment: 160×160 across three layers of noise, ~70 ms, which
+  was the jolt that met every new system. It now bakes at 2 ms a frame and simply isn't drawn
+  until ready — it is a half-strength overlay above the stars, and nobody notices its absence for
+  half a second, while a ship frozen for a frame is noticed every time.
+
+Entering a system: worst frame **95 → 34 ms**, and the steady frame came down as well.
+
+**A ceiling on frames** (Settings → Graphics). The one lever that unloads the *GPU* without
+simplifying anything: thirty frames rasterize half the pixels sixty do. It counts refresh
+intervals rather than milliseconds — a millisecond threshold falling between two refreshes rounds
+down to the nearer one, which is why a "45" ceiling on a 60 Hz screen silently delivers 30, and
+why the offered steps are 60 and 30. The stride rounds **up**, because a ceiling that overshoots
+is not a ceiling: under "no more than 60", a 144 Hz screen gets 48. `dt` still comes from the real
+clock, so motion is unchanged.
+
+**The starfield stopped re-parsing its colours.** 340 stars each built an `rgba(…)` string and made
+the canvas parse a CSS colour, every frame. Stars are now grouped by colour once and twinkle
+through `globalAlpha`, which is a number. Six parses a frame instead of 340. **1.17 → 0.73 ms.**
+
+**The instruments stopped writing what was already there.** `hud()` put forty values into the DOM
+every frame and almost none had changed. Each write now compares against the node itself —
+deliberately *not* against a remembered copy, because screens and autotests set styles directly
+past `hud()`, and a remembered copy goes stale and leaves a button visible where the frame was
+supposed to hide it. **0.55 → 0.37 ms.**
+
+**Orbits are computed once.** The forty-nine Kepler points of an ellipse never change — orbit,
+eccentricity and argument of periapsis are fixed when the system is born. They were solved 204
+times a frame; now once, cached on the planet, with only the mapping to screen left in the frame.
+
+Hull gradients were suspected next and measured innocent — 0.18 ms a frame for 28 of them — so
+`drawHull` was left alone instead of being refactored on a hunch.
+
+---
+
 ## 0.83.0 — "The planets turn, and the site speaks Russian people actually use"
 
 **The planets were stepping, not turning.** The game bakes sixteen rotation frames per planet and

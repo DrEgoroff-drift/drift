@@ -717,7 +717,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.83.0";
+const VER="0.84.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -4877,78 +4877,283 @@ function ramp(pal,t){
 /* ══════════════ вращение ══════════════
    Планета висела в системе неподвижной картинкой: она летела по орбите, но
    сама не поворачивалась, и от этого выглядела наклейкой на чёрном, а не
-   телом. Считать сферу каждый кадр дорого — поэтому текстура печётся
-   `PLANET_SPIN` раз с разной долготой и потом крутится как перекидной
-   календарь. Кадры лежат на самой планете (`p.spinTex`) и считаются лениво:
-   первый заход платит за один кадр, остальные допекаются по мере поворота.
-   Сутки нарочно длинные — планета должна поворачиваться так, чтобы игрок
+   телом.
+
+   Первый заход решал это перекидным календарём: текстура пеклась шестнадцать
+   раз с разной долготой, и кадры сменялись по часам. На планете размером с
+   ноготь этого не видно, а на весь экран — это слайд-шоу, и заодно мыло:
+   сторона кадра была зажата в 144 пикселя, потому что платить за неё
+   приходилось шестнадцать раз, а растягивалась она на пол-экрана. Край диска
+   при таком растяжении шёл лесенкой.
+
+   Теперь печётся ОДНА развёртка поверхности — долгота поперёк, синус широты
+   вдоль, — и наматывается на шар прямо в кадре, вертикальными полосками.
+   Суть приёма: у шара, видимого снаружи, высота точки на экране И ЕСТЬ синус
+   её широты, поэтому по вертикали развёртку тянуть не надо — достаточно
+   посчитать долготу каждой полоски, один раз на размер. Вращение после этого
+   становится сдвигом вдоль развёртки: непрерывным, без ступеней.
+
+   Платим один раз вместо шестнадцати — и на сэкономленное берём развёртку
+   вчетверо шире, отчего планета вблизи наконец перестаёт быть мыльной.
+
+   Сутки нарочно длинные: планета должна поворачиваться так, чтобы игрок
    заметил это, только задержавшись взглядом. */
-/* шестнадцати кадров хватает: при обороте в четыре-пять минут переход между
-   ними глазом не ловится, а память — это 16 текстур на планету, а не 24 */
 const PLANET_SPIN=16;
-function planetSpinFrame(p){
+/* Два уровня подробности. Мелкой планете в системном виде хватает узкой
+   развёртки, и печь ей широкую — значит подарить игроку задержку на ровном
+   месте; та, к которой он подлетел вплотную, наоборот, обязана быть резкой.
+   Уровень выбирается по экранному радиусу и только повышается. */
+function planetPeriod(p){
   /* у каждой планеты свои сутки и своё направление: и то и другое от seed.
      Газовые крутятся заметно быстрее — у них и в природе сутки короче */
-  const per=(p.type==="gas"?52000:120000)*(.7+((p.seed>>>7)&15)/15*.9);
-  const dir=((p.seed>>>3)&1)?1:-1;
-  const t=(typeof G!=="undefined"&&G.t?G.t*16.7:Date.now());
-  return ((Math.floor(t/per*PLANET_SPIN*dir)%PLANET_SPIN)+PLANET_SPIN)%PLANET_SPIN;
+  return (p.type==="gas"?52000:120000)*(.7+((p.seed>>>7)&15)/15*.9);
 }
-function planetTex(p,frame){
-  const fr=frame|0;
-  if(!p.spinTex)p.spinTex=[];
-  if(p.spinTex[fr])return p.spinTex[fr];
-  /* сторона кадра вращения ограничена сильнее обычной текстуры: в системе
-     планета редко больше сотни пикселей, а платить за неё приходится
-     шестнадцать раз */
-  const S=clamp(Math.round(p.radius*2.6),72,144);
-  const cn=document.createElement("canvas");cn.width=cn.height=S;
-  const cx=cn.getContext("2d"),img=cx.createImageData(S,S),d=img.data;
+/* угол поворота в радианах — непрерывный */
+function planetSpin(p){
+  const per=planetPeriod(p),dir=((p.seed>>>3)&1)?1:-1;
+  const t=(typeof G!=="undefined"&&G.t?G.t*16.7:Date.now());
+  return t/per*TAU*dir;
+}
+/* прежний номер кадра остаётся ради тех, кто просил у планеты именно его
+   (посадка берёт отсюда угол) — считается из того же непрерывного поворота */
+function planetSpinFrame(p){
+  return ((Math.floor(planetSpin(p)/TAU*PLANET_SPIN)%PLANET_SPIN)+PLANET_SPIN)%PLANET_SPIN;
+}
+/* ── развёртка поверхности ──
+   Горизонталь — долгота на полный оборот, вертикаль — синус широты (именно
+   синус: так строка развёртки совпадает со строкой экрана и растягивать по
+   вертикали ничего не нужно). Света здесь нет: он не вращается.
+
+   Считается она НЕ ЦЕЛИКОМ ЗА РАЗ. Причина простая и неустранимая: `fbm2`
+   стоит около двух микросекунд, у обитаемой планеты к нему добавляется
+   влажность, а подробная развёртка — это сотня тысяч точек. Разом это кадр,
+   застывший на четверть секунды. Раньше беды не было только потому, что
+   текстура была крошечной — 72–144 пикселя на весь диск, отчего планета вблизи
+   и выглядела мылом с рваным краем.
+
+   Поэтому уровней три, и выпечка прерывается ПО ПИКСЕЛЯМ, а не по строкам:
+   одна строка подробной развёртки сама по себе дороже всего кадрового бюджета,
+   так что резать надо мельче. Пока не готов ни один уровень, планета рисуется
+   гладким шаром своего цвета — со светом и ободком, то есть уже телом, а не
+   дыркой; детали проступают за доли секунды. Дальше уровень поднимается по
+   мере приближения, и старая развёртка работает, пока не готова новая. */
+const PLANET_RES=[64,128,256];
+const STRIP_MS=2.5;          // сколько миллисекунд кадра отдаём фоновой выпечке
+const STRIP_CHUNK=192;       // через сколько точек сверяться с часами
+/* Одна очередь на всех: две планеты, допекающиеся одновременно, съедят вдвое
+   больше кадра, а увидит игрок всё равно только ту, к которой летит. */
+let STRIP_JOB=null;
+/* планеты, которым нужна развёртка получше */
+let STRIP_PEND=[];
+function planetStripStart(p,lvl){
+  const R=PLANET_RES[lvl],SW=R*2,SH=R;
+  const cn=document.createElement("canvas");cn.width=SW;cn.height=SH;
+  const cx=cn.getContext("2d");
   const pal=p.T.pal,gas=p.type==="gas";
-  const lon0=fr/PLANET_SPIN*TAU;
+  const life=!gas&&planetHasLife(p);
+  const bi=life?planetBiome(p):null, hb=bi?bi.hueBias:0;
+  return {p,lvl,cn,cx,img:cx.createImageData(SW,SH),SW,SH,x:0,y:-1,
+    pal,gas,life,np:pal.length-1,sd:p.seed,rough:p.rough,
+    lf0:40+hb*90, lf1:96+hb*70, lf2:46+hb*60,
+    lat:0,polar:0,gasLat:0,gasY1:0,gasY2:0,rockY:0};
+}
+/* строка меняет только то, что зависит от широты */
+function planetStripSeekRow(J,y){
+  const sv=(y+.5)/J.SH*2-1, lat=Math.asin(clamp(sv,-1,1));
+  J.y=y;J.x=0;J.lat=lat;
+  J.polar=Math.pow(Math.abs(lat)/1.5708,3.2)*.55;   // шапки: от широты, не от долготы
+  J.gasLat=lat*9;J.gasY1=lat*7+3;J.gasY2=lat*3;J.rockY=lat*2.4+11;
+}
+/* кусок строки: от J.x и не дальше конца — возвращает, сколько точек посчитал */
+function planetStripChunk(J,n){
+  const d=J.img.data,SW=J.SW,p=J.p,pal=J.pal,np=J.np,gas=J.gas,life=J.life;
+  const sd=J.sd,rough=J.rough,lat=J.lat,polar=J.polar;
+  const BLEND=.14;
+  const end=Math.min(SW,J.x+n);
+  for(let x=J.x;x<end;x++){
+    const f=(x+.5)/SW, o=(J.y*SW+x)*4;
+    /* Шум по долготе не периодичен, поэтому левый и правый край развёртки не
+       сходятся — на шаре это читается вертикальным швом посреди диска. Лечим
+       перекрёстным затуханием: у правого края считаем точку второй раз, взяв
+       поле оборотом раньше, и к самому краю остаётся только оно. */
+    const blend=f>1-BLEND, w=blend?(f-(1-BLEND))/BLEND:0, s=blend?w*w*(3-2*w):0;
+    let cr=0,cg=0,cb=0;
+    for(let pass=0;pass<(blend?2:1);pass++){
+      const lon=(f-pass)*TAU;
+      let v;
+      if(gas){
+        v=fbm2(lon*.7+9,J.gasY1,sd,4);
+        v=clamp(v*.6+.5*(.5+.5*Math.sin(J.gasLat+fbm2(lon*1.6,J.gasY2,sd+5,3)*4)),0,1);
+      }else{
+        v=fbm2(lon*2.4+11,J.rockY,sd,5);
+        v=clamp((v-.5)*(1+rough*.9)+.5,0,1);
+        v=clamp(v+polar,0,1);
+      }
+      const t=clamp(v,0,.9999)*np,i=t|0,ft=t-i;
+      const a=pal[i],b=pal[i<np?i+1:np];
+      let r=a[0]+(b[0]-a[0])*ft, g=a[1]+(b[1]-a[1])*ft, bl=a[2]+(b[2]-a[2])*ft;
+      /* ── биом виден с орбиты ──
+         Планета с жизнью красилась ровно так же, как мёртвая: тот же градиент
+         палитры по высоте. Зелень существовала только под ногами, и глобус о
+         ней не знал. Теперь там, где влажно и не слишком высоко, поверхность
+         уходит в цвет местной листвы, а на гребнях и в сухих поясах остаётся
+         камень. Это то самое пятно, в которое игрок целится при заходе. */
+      if(life){
+        const wet=planetWetAt(p,lon,lat);
+        const lush=clamp((wet-.42)*2.4,0,1)*clamp(1-(v-.55)*2.6,0,1);
+        if(lush>.01){
+          const k=lush*.72;
+          r+=(J.lf0-r)*k; g+=(J.lf1-g)*k; bl+=(J.lf2-bl)*k;
+        }
+      }
+      if(pass===0){cr=r;cg=g;cb=bl;}
+      else{cr+=(r-cr)*s;cg+=(g-cg)*s;cb+=(bl-cb)*s;}
+    }
+    d[o]=cr;d[o+1]=cg;d[o+2]=cb;d[o+3]=255;
+  }
+  const did=end-J.x;J.x=end;
+  return did;
+}
+/* допекаем по кадрам — зовётся из planetDraw, ест не больше STRIP_MS.
+   Очередь честная и с приоритетом «кто отстал сильнее»: сначала ВСЕ планеты
+   получают грубую развёртку, и только потом кто-то — подробную. Без этого
+   правила первая же планета в списке забирала пекарню себе и дорезалась до
+   максимума, пока остальные три висели гладкими шарами. Уровень растёт по
+   одному за раз — планета на глазах делается резче, а не прыгает через ступень. */
+function planetStripTick(){
+  if(!STRIP_JOB){
+    let best=null;
+    for(const q of STRIP_PEND)
+      if(q.stripLvl<(q.stripWant|0)&&(!best||q.stripLvl<best.stripLvl))best=q;
+    if(STRIP_PEND.length)STRIP_PEND=STRIP_PEND.filter(q=>q.stripLvl<(q.stripWant|0));
+    if(!best)return;
+    STRIP_JOB=planetStripStart(best,Math.min(best.stripWant|0,best.stripLvl+1));
+  }
+  const J=STRIP_JOB;
+  const t0=performance.now();
+  for(;;){
+    if(J.y<0||J.x>=J.SW){
+      if(J.y+1>=J.SH)break;
+      planetStripSeekRow(J,J.y+1);
+    }
+    planetStripChunk(J,STRIP_CHUNK);
+    if(performance.now()-t0>STRIP_MS)return;
+  }
+  J.cx.putImageData(J.img,0,0);
+  J.p.strip=J.cn;J.p.stripLvl=J.lvl;
+  STRIP_JOB=null;
+}
+/* Возвращает лучшее из готового — или null, если пока нет ничего: планета в
+   этом случае рисуется гладким шаром, а не пропадает. Заказ на уровень
+   получше просто встаёт в очередь и кадру ничего не стоит. */
+function planetStrip(p,lvl){
+  if(p.stripLvl==null)p.stripLvl=-1;
+  if(p.stripLvl<lvl){
+    if((p.stripWant|0)<lvl)p.stripWant=lvl;
+    if(STRIP_PEND.indexOf(p)<0)STRIP_PEND.push(p);
+  }
+  return p.strip||null;
+}
+/* ── свет: две накладки поверх шара ──
+   Тень — чёрный с переменной прозрачностью, ободок — добавляемое свечение по
+   краю. Формула та же, что была в текстуре; разница в том, что накладки не
+   вращаются, поэтому пекутся один раз на планету. Край диска сглаживается по
+   альфе — прежняя резкая обрезка и давала ту самую лесенку на большой планете. */
+function planetLight(p,lvl){
+  if(p.lite&&p.liteLvl>=lvl)return p.lite;
+  const S=PLANET_RES[lvl];
+  const sh=document.createElement("canvas");sh.width=sh.height=S;
+  const rim=document.createElement("canvas");rim.width=rim.height=S;
+  const gs=sh.getContext("2d"),gr=rim.getContext("2d");
+  const is=gs.createImageData(S,S),ir=gr.createImageData(S,S);
+  const ds=is.data,dr=ir.data,gas=p.type==="gas";
   for(let py=0;py<S;py++)for(let px=0;px<S;px++){
     const o=(py*S+px)*4;
     const nx=(px+.5)/S*2-1,ny=(py+.5)/S*2-1,r2=nx*nx+ny*ny;
-    if(r2>1){d[o+3]=0;continue;}
+    if(r2>1){ds[o+3]=0;dr[o+3]=0;continue;}
     const nz=Math.sqrt(1-r2);
-    /* долгота крутится, широта нет: поворот вокруг оси, а не кувырок */
-    const lon=Math.atan2(nx,nz)+lon0,lat=Math.asin(clamp(ny,-1,1));
-    let v;
-    if(gas){
-      v=fbm2(lon*.7+9,lat*7+3,p.seed,4);
-      v=clamp(v*.6+.5*(.5+.5*Math.sin(lat*9+fbm2(lon*1.6,lat*3,p.seed+5,3)*4)),0,1);
-    }else{
-      v=fbm2(lon*2.4+11,lat*2.4+11,p.seed,5);
-      v=clamp((v-.5)*(1+p.rough*.9)+.5,0,1);
-      v=clamp(v+Math.pow(Math.abs(lat)/1.5708,3.2)*.55,0,1);
-    }
-    let c=ramp(pal,v);
-    /* ── биом виден с орбиты ──
-       Планета с жизнью красилась ровно так же, как мёртвая: тот же градиент
-       палитры по высоте. Зелень существовала только под ногами, и глобус о ней
-       не знал. Теперь там, где влажно и не слишком высоко, поверхность уходит
-       в цвет местной листвы (`planetBiome` даёт свой оттенок каждому миру), а
-       на гребнях и в сухих поясах остаётся камень. Это то самое пятно, в
-       которое игрок целится при заходе. */
-    if(!gas&&planetHasLife(p)){
-      const wet=planetWetAt(p,lon,lat);
-      const lush=clamp((wet-.42)*2.4,0,1)*clamp(1-(v-.55)*2.6,0,1);
-      if(lush>.01){
-        const bi=planetBiome(p);
-        const hb=bi.hueBias;
-        const leaf=[40+hb*90, 96+hb*70, 46+hb*60];
-        c=[lerp(c[0],leaf[0],lush*.72),lerp(c[1],leaf[1],lush*.72),
-           lerp(c[2],leaf[2],lush*.72)];
+    const light=clamp(nx*-.52+ny*-.42+nz*.74,0,1);
+    const k=.16+1.02*Math.pow(light,.85);
+    ds[o]=0;ds[o+1]=0;ds[o+2]=0;
+    ds[o+3]=clamp((1-k)*255,0,255);
+    /* множитель яркости доходит до 1.18 — то есть свет ещё и подсвечивает.
+       Накладка тенью так не умеет, поэтому избыток уходит в добавляемый слой,
+       иначе дневная сторона выходит бледнее, чем была */
+    const up=clamp(k-1,0,1)*.9;
+    const r=Math.pow(1-nz,4)*(gas?.5:.34);
+    dr[o]=clamp(130*r+235*up,0,255);
+    dr[o+1]=clamp(180*r+240*up,0,255);
+    dr[o+2]=clamp(210*r+245*up,0,255);
+    dr[o+3]=255*clamp(r+up,0,1);
+    const edge=clamp((1-Math.sqrt(r2))*S*.5,0,1);
+    ds[o+3]*=edge;dr[o+3]*=edge;
+  }
+  gs.putImageData(is,0,0);gr.putImageData(ir,0,0);
+  p.lite={sh,rim};p.liteLvl=lvl;return p.lite;
+}
+/* ── полоски ──
+   Долгота левого края полоски и её ширина в пикселях развёртки зависят только
+   от экранного радиуса, поэтому таблица считается один раз на размер. Радиус
+   округляется: при плавном зуме иначе она пересчитывалась бы каждый кадр. */
+function planetCols(r,sw){
+  const key=Math.max(2,Math.round(r));
+  if(planetCols.key===key&&planetCols.sw===sw)return planetCols.v;
+  const step=r>150?3:2,cols=[];
+  for(let sx=-r;sx<r;sx+=step){
+    const w=Math.min(step,r-sx);
+    const n1=clamp(sx/r,-1,1),n2=clamp((sx+w)/r,-1,1);
+    const l1=Math.asin(n1),l2=Math.asin(n2);
+    cols.push({dx:sx,dw:w,u:l1/TAU,su:Math.max(1,(l2-l1)/TAU*sw)});
+  }
+  planetCols.key=key;planetCols.sw=sw;planetCols.v=cols;return cols;
+}
+/* ── планета в кадре ── */
+function planetDraw(p,x,y,r){
+  /* Уровень — по экранному размеру: развёртка должна быть хотя бы вдвое шире
+     видимого полушария, иначе диск мылится. Свет считается отдельно и дёшево
+     (в нём нет шума), поэтому его берём сразу нужной подробности — именно он
+     рисует край диска, и его лесенку видно первой. */
+  const lvl=r>150?2:(r>60?1:0);
+  const S=planetStrip(p,lvl);
+  /* Свет привязан к тому уровню, который РЕАЛЬНО рисуется, а не к желаемому:
+     иначе первый же кадр у большой планеты печёт накладку 256×256 ради шара,
+     на котором ещё нет ни одной детали. Подробный свет приходит вместе с
+     подробной развёрткой, одним кадром. */
+  const L=planetLight(p,S?Math.min(lvl,p.stripLvl):0);
+  planetStripTick();
+  const d=r*2;
+  if(S){
+    const sw=S.width,sh=S.height;
+    const turn=planetSpin(p)/TAU;
+    ctx.save();
+    ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.clip();
+    const cols=planetCols(r,sw);
+    for(let i=0;i<cols.length;i++){
+      const c=cols[i];
+      const u=((c.u+turn)%1+1)%1*sw;
+      /* полоска может перейти через шов развёртки — тогда рисуем в два приёма */
+      const over=u+c.su-sw;
+      if(over>0){
+        const part=(c.su-over)/c.su;
+        ctx.drawImage(S,u,0,c.su-over,sh, x+c.dx,y-r,c.dw*part,d);
+        ctx.drawImage(S,0,0,over,sh, x+c.dx+c.dw*part,y-r,c.dw*(1-part),d);
+      }else{
+        ctx.drawImage(S,u,0,c.su,sh, x+c.dx,y-r,c.dw,d);
       }
     }
-    const light=clamp(nx*-.52+ny*-.42+nz*.74,0,1);
-    const sh=.16+1.02*Math.pow(light,.85), rim=Math.pow(1-nz,4)*(gas?.5:.34);
-    d[o]=clamp(c[0]*sh+rim*130,0,255);
-    d[o+1]=clamp(c[1]*sh+rim*180,0,255);
-    d[o+2]=clamp(c[2]*sh+rim*210,0,255);
-    d[o+3]=255;
+    ctx.restore();
+  }else{
+    /* развёртка ещё печётся — планета всё равно обязана быть телом, а не
+       дыркой в звёздах: гладкий шар своего цвета, поверх тот же свет */
+    const pal=p.T.pal,c=pal[Math.min(pal.length-1,pal.length>>1)];
+    ctx.fillStyle="rgb("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+")";
+    ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
   }
-  cx.putImageData(img,0,0);p.spinTex[fr]=cn;p.tex=cn;return cn;
+  ctx.drawImage(L.sh,x-r,y-r,d,d);
+  const op=ctx.globalCompositeOperation;
+  ctx.globalCompositeOperation="lighter";
+  ctx.drawImage(L.rim,x-r,y-r,d,d);
+  ctx.globalCompositeOperation=op;
 }
 
 /* ══════════════ рельеф ══════════════ */
@@ -5007,7 +5212,7 @@ function planetHasLife(p){
                   p.mix==="toxic"||p.mix==="jungle"));
 }
 function planetHeightAt(p,lon,lat){
-  /* та же формула, что печатает текстуру (`planetTex`), — иначе связь
+  /* та же формула, что печатает развёртку (`planetStrip`), — иначе связь
      держалась бы на честном слове, а не на общем поле */
   let v=fbm2(lon*2.4+11,lat*2.4+11,p.seed,5);
   v=clamp((v-.5)*(1+p.rough*.9)+.5,0,1);
@@ -5159,7 +5364,7 @@ const G={
   land:null,surf:null,st:null,belt:null,dig:null,cave:null,
   opts:{easyLand:true,autoDock:true,invX:false,invY:false,invYaw:false,lookSens:1,
     keys:{main:{},belt:{}},pads:"auto",padSize:1,
-    gfx:{draw:1,detail:1,particles:1,plants:1},
+    gfx:{draw:1,detail:1,particles:1,plants:1,fps:0},
     audio:{on:true,music:.6,sfx:.6,engine:.4}},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,
@@ -15477,8 +15682,11 @@ function applySave(s){
   if(!G.opts.keys||typeof G.opts.keys!=="object")G.opts.keys={main:{},belt:{}};
   if(!G.opts.keys.main)G.opts.keys.main={};if(!G.opts.keys.belt)G.opts.keys.belt={};
   if(!G.opts.pads)G.opts.pads="auto";if(!G.opts.padSize)G.opts.padSize=1;
-  if(!G.opts.gfx||typeof G.opts.gfx!=="object")G.opts.gfx={draw:1,detail:1,particles:1,plants:1};
+  if(!G.opts.gfx||typeof G.opts.gfx!=="object")G.opts.gfx={draw:1,detail:1,particles:1,plants:1,fps:0};
   for(const k of["draw","detail","particles","plants"])if(!G.opts.gfx[k])G.opts.gfx[k]=1;
+  /* потолок кадров: 0 — без потолка. Ноль тут законное значение, поэтому
+     проверка на «пусто» ему не годится, нужна проверка на «не из списка». */
+  if(![0,30,60].includes(G.opts.gfx.fps))G.opts.gfx.fps=0;
   if(!G.opts.audio||typeof G.opts.audio!=="object")G.opts.audio={on:true,music:.6,sfx:.6,engine:.4};
   if(typeof G.opts.audio.music!=="number")G.opts.audio.music=.6;
   if(typeof G.opts.audio.sfx!=="number")G.opts.audio.sfx=.6;
@@ -15925,30 +16133,50 @@ function sysStyle(sys){
   return sys.style;
 }
 /* ── туманность системы ──
-   тайл считается один раз на систему и живёт на её объекте: систем в кэше
-   немного, а перерисовывать шум каждый кадр canvas 2D не может */
+   Тайл считается один раз на систему и живёт на её объекте: систем в кэше
+   немного, а перерисовывать шум каждый кадр canvas 2D не может.
+
+   Считается он ПО КАДРАМ. Разом это семьдесят миллисекунд — ровно тот рывок,
+   которым встречала каждая новая система: три слоя шума на двадцать пять тысяч
+   точек. Пока тайл не готов, туманности просто нет; она проступает через
+   полсекунды, и заметить это трудно — она и так подмешивается вполсилы поверх
+   звёзд, а вот замерший на кадр корабль замечают всегда. */
+const NEB_MS=2;              // миллисекунд кадра на фоновую выпечку
+let NEB_JOB=null;
 function sysNebulaTex(sys){
   if(sys.nebTex)return sys.nebTex;
-  const st=sysStyle(sys);
-  const S=160,cn=document.createElement("canvas");cn.width=cn.height=S;
-  const c=cn.getContext("2d"),img=c.createImageData(S,S),d=img.data;
-  const sd=st.nseed>>>0,c1=st.neb[0],c2=st.neb[1];
-  for(let y=0;y<S;y++)for(let x=0;x<S;x++){
-    const o=(y*S+x)*4,u=x/S,v=y/S;
-    const a=clamp((tfbm(u,v,3,sd,5)-.45)*2.7,0,1);
-    const b=clamp((tfbm(u,v,6,sd+91,4)-.48)*2.5,0,1);
-    /* волокна: третий слой с высокой частотой и узкой маской — без них
-       туманность выглядит размытым пятном, а не облаком газа */
-    const f=ridged(tfbm(u,v,9,sd+53,3),9);
-    d[o]  =clamp(c1[0]*a+c2[0]*b*.8+f*90,0,255);
-    d[o+1]=clamp(c1[1]*a+c2[1]*b*.8+f*70,0,255);
-    d[o+2]=clamp(c1[2]*a+c2[2]*b*.9+f*120,0,255);
-    d[o+3]=clamp((Math.pow(a,1.8)*.5+Math.pow(b,2.1)*.34+f*.16)*255,0,255);
+  if(!NEB_JOB||NEB_JOB.sys!==sys){
+    const st=sysStyle(sys),S=160;
+    const cn=document.createElement("canvas");cn.width=cn.height=S;
+    const c=cn.getContext("2d");
+    NEB_JOB={sys,S,cn,c,img:c.createImageData(S,S),y:0,
+      sd:st.nseed>>>0,c1:st.neb[0],c2:st.neb[1]};
   }
-  c.putImageData(img,0,0);sys.nebTex=cn;return cn;
+  const J=NEB_JOB,S=J.S,d=J.img.data,sd=J.sd,c1=J.c1,c2=J.c2;
+  const t0=performance.now();
+  while(J.y<S){
+    const y=J.y++;
+    for(let x=0;x<S;x++){
+      const o=(y*S+x)*4,u=x/S,v=y/S;
+      const a=clamp((tfbm(u,v,3,sd,5)-.45)*2.7,0,1);
+      const b=clamp((tfbm(u,v,6,sd+91,4)-.48)*2.5,0,1);
+      /* волокна: третий слой с высокой частотой и узкой маской — без них
+         туманность выглядит размытым пятном, а не облаком газа */
+      const f=ridged(tfbm(u,v,9,sd+53,3),9);
+      d[o]  =clamp(c1[0]*a+c2[0]*b*.8+f*90,0,255);
+      d[o+1]=clamp(c1[1]*a+c2[1]*b*.8+f*70,0,255);
+      d[o+2]=clamp(c1[2]*a+c2[2]*b*.9+f*120,0,255);
+      d[o+3]=clamp((Math.pow(a,1.8)*.5+Math.pow(b,2.1)*.34+f*.16)*255,0,255);
+    }
+    if(performance.now()-t0>NEB_MS)return null;
+  }
+  J.c.putImageData(J.img,0,0);
+  sys.nebTex=J.cn;NEB_JOB=null;
+  return sys.nebTex;
 }
 function drawSysNebula(sys,cx,cy){
   const N=sysNebulaTex(sys);
+  if(!N)return;               // ещё печётся — этот кадр обойдётся без неё
   const ex=W*.24,ey=H*.24;
   const ox=-ex/2+clamp(-cx*.012,-ex/2,ex/2);
   const oy=-ey/2+clamp(-cy*.012,-ey/2,ey/2);
@@ -16348,21 +16576,33 @@ function mslDraw(zx,zy,Z){
 const STAR_COLS=[[255,206,158],[255,232,196],[228,240,252],[255,255,255],[176,206,255],[205,190,255]];
 const BG=[];
 for(let i=0;i<340;i++)BG.push({x:Math.random(),y:Math.random(),z:.2+Math.random()*.8,
-  ph:Math.random()*TAU, c:STAR_COLS[Math.floor(Math.random()*STAR_COLS.length)]});
+  ph:Math.random()*TAU, ci:Math.floor(Math.random()*STAR_COLS.length)});
+/* Звёзды сгруппированы по цвету раз и навсегда. Мерцание — это прозрачность,
+   а не цвет, поэтому оно уходит в `globalAlpha`: число, а не строка. Раньше
+   каждая звезда собирала «rgba(…)» и заставляла холст разбирать CSS-цвет
+   заново — триста сорок разборов за кадр, шестьдесят раз в секунду, целая
+   миллисекунда на один фон. Теперь разборов шесть, по числу цветов. */
+const BG_GROUP=STAR_COLS.map((c,i)=>({css:"rgb("+c[0]+","+c[1]+","+c[2]+")",
+  list:BG.filter(s=>s.ci===i)}));
 function drawStars(cx,cy,par){
-  for(const s of BG){
-    const px=((s.x*1600-cx*par*s.z)%1600+1600)%1600/1600*W;
-    const py=((s.y*1200-cy*par*s.z)%1200+1200)%1200/1200*H;
-    const tw=.76+.24*Math.sin(G.t*.045*(.4+s.z)+s.ph);
-    const a=(.11+s.z*.55)*tw, c=s.c;
-    ctx.fillStyle="rgba("+c[0]+","+c[1]+","+c[2]+","+a.toFixed(2)+")";
-    const sz=s.z>.72?1.7:1;
-    ctx.fillRect(px,py,sz,sz);
-    if(s.z>.9){   // самые яркие получают крестик-ореол
-      ctx.fillStyle="rgba("+c[0]+","+c[1]+","+c[2]+","+(a*.3).toFixed(2)+")";
-      ctx.fillRect(px-2.4,py+.35,5.8,.8);ctx.fillRect(px+.35,py-2.4,.8,5.8);
+  const a0=ctx.globalAlpha;
+  for(const g of BG_GROUP){
+    ctx.fillStyle=g.css;
+    for(const s of g.list){
+      const px=((s.x*1600-cx*par*s.z)%1600+1600)%1600/1600*W;
+      const py=((s.y*1200-cy*par*s.z)%1200+1200)%1200/1200*H;
+      const tw=.76+.24*Math.sin(G.t*.045*(.4+s.z)+s.ph);
+      const a=(.11+s.z*.55)*tw;
+      ctx.globalAlpha=a0*a;
+      const sz=s.z>.72?1.7:1;
+      ctx.fillRect(px,py,sz,sz);
+      if(s.z>.9){   // самые яркие получают крестик-ореол
+        ctx.globalAlpha=a0*a*.3;
+        ctx.fillRect(px-2.4,py+.35,5.8,.8);ctx.fillRect(px+.35,py-2.4,.8,5.8);
+      }
     }
   }
+  ctx.globalAlpha=a0;
 }
 /* ── туманность: считается один раз в offscreen, дальше только растягивается ── */
 let NEBULA=null;
@@ -17398,16 +17638,25 @@ function drawSystem(){
      редко чёрная дыра (16a-space). Освещение и опасность по-прежнему считаются
      от sys.cls — экзотика меняет только вид. */
   drawStarBody(ox,oy,R,sys);
-
-  /* эллиптическая орбита — тонкий контур по формуле Кеплера, не окружность */
+  /* эллиптическая орбита — тонкий контур по формуле Кеплера, не окружность.
+     Сорок девять точек эллипса не меняются никогда: орбита, эксцентриситет и
+     наклон большой оси заданы при рождении системы. Считать их заново каждый
+     кадр — двести вызовов Кеплера в секунду на четыре планеты; поэтому кольцо
+     считается один раз и лежит на самой планете, а в кадре остаётся только
+     перевод в экранные координаты. */
   ctx.strokeStyle="rgba(120,190,210,.08)";ctx.lineWidth=1;
   for(const p of sys.planets){
-    ctx.beginPath();
-    for(let k=0;k<=48;k++){
-      const pos=keplerPos(p.orbit,p.ecc,k/48*TAU,p.argp);
-      const px=zx(pos.x),py=zy(pos.y);
-      if(k===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+    let O=p._orbPath;
+    if(!O){
+      O=p._orbPath=new Float64Array(98);
+      for(let k=0;k<=48;k++){
+        const pos=keplerPos(p.orbit,p.ecc,k/48*TAU,p.argp);
+        O[k*2]=pos.x;O[k*2+1]=pos.y;
+      }
     }
+    ctx.beginPath();
+    ctx.moveTo(zx(O[0]),zy(O[1]));
+    for(let k=1;k<=48;k++)ctx.lineTo(zx(O[k*2]),zy(O[k*2+1]));
     ctx.stroke();
   }
   for(const p of sys.planets){
@@ -17420,7 +17669,7 @@ function drawSystem(){
         : null;
     }
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,-1);
-    ctx.drawImage(planetTex(p,planetSpinFrame(p)),x-r,y-r,r*2,r*2);
+    planetDraw(p,x,y,r);
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,1);
     if(p.type!=="rocky"&&r>4){ctx.strokeStyle="rgba(150,220,255,.18)";ctx.lineWidth=2;
       ctx.beginPath();ctx.arc(x,y,r+2.5,0,TAU);ctx.stroke();}
@@ -34463,6 +34712,23 @@ function renderOpts(){
   gfxRow("Детализация моделей","дистанция, на которой астероиды остаются подробными","detail");
   gfxRow("Плотность частиц","шлейф двигателя, пыль, обломки","particles");
   gfxRow("Растительность","количество растений и живности на планетах — влияет на новые посадки","plants");
+  /* Потолок кадров стоит отдельно от четырёх ползунков качества: те убирают
+     из мира предметы, а этот не убирает ничего — он только реже рисует то же
+     самое. На слабой или встроенной видеокарте помогает сильнее всех
+     остальных вместе взятых, и картинка при этом не беднеет. */
+  /* Ступени выбраны так, чтобы каждая была ДОСТИЖИМА. Развёртка выдаёт кадры
+     через равные промежутки, и потолок между двумя её ступенями округляется
+     вниз до ближней: 45 на шестидесятигерцовом экране молча превращается в 30,
+     и пункт меню начинает врать. Остаются 60 и 30 — на обычном экране это
+     «как было» и «вдвое реже», а на скоростном (120 и выше) шестьдесят сами
+     по себе снимают половину нагрузки, которую игра до сих пор жгла впустую. */
+  const FLV=[[0,"БЕЗ ПОТОЛКА"],[60,"60 КАДРОВ"],[30,"30 КАДРОВ"]];
+  const rfp=el("div","row");
+  rfp.appendChild(el("div","nm","<b>Потолок кадров</b><s>не выше указанного: реже рисовать — тише вентилятор и холоднее видеокарта, на скорость движения не влияет</s>"));
+  const j0=Math.max(0,FLV.findIndex(g=>g[0]===G.opts.gfx.fps));
+  const bfp=el("button","act gold",FLV[j0][1]);
+  bfp.onclick=()=>{G.opts.gfx.fps=FLV[(j0+1)%FLV.length][0];renderOpts();};
+  rfp.appendChild(bfp);$optBody.appendChild(rfp);
   const rpr=el("div","row");
   rpr.appendChild(el("div","nm","<b>Пресет</b><s>выставить всё сразу</s>"));
   const bpr=el("button","act","НИЗКИЕ / СРЕДНИЕ / ВЫСОКИЕ / МАКС");
@@ -34470,7 +34736,9 @@ function renderOpts(){
     const cur=G.opts.gfx.draw;
     const i0=GLV.findIndex(g=>g[0]===cur);
     const nv=GLV[((i0<0?1:i0)+1)%GLV.length][0];
-    G.opts.gfx={draw:nv,detail:nv,particles:nv,plants:nv};
+    /* потолок кадров пресетом не трогается: это отдельное решение игрока
+       про железо, а не про то, насколько подробен мир */
+    G.opts.gfx={draw:nv,detail:nv,particles:nv,plants:nv,fps:G.opts.gfx.fps};
     renderOpts();
   };
   rpr.appendChild(bpr);$optBody.appendChild(rpr);
@@ -34621,19 +34889,31 @@ function hudWake(vals,alarm){
   const live=alarm||now-HUD_T<2400;
   if($hudp)$hudp.classList.toggle("live",live);
 }
+/* ── запись в DOM только при изменении ──
+   Приборы пересчитываются каждый кадр, но меняются они редко: топливо стоит
+   на месте, пока не жмёшь тягу, а название системы — пока не прыгнешь. Раньше
+   кадр всё равно клал в DOM сорок значений, и браузер сорок раз проверял,
+   не поехала ли от этого вёрстка.
+   Сверяемся с САМИМ узлом, а не с запомненным рядом значением. Разница не
+   косметическая: экраны и автотесты меняют стиль напрямую, мимо `hud()`, и
+   память о «том, что мы писали в прошлый раз» после этого врёт — кнопка
+   остаётся видимой там, где кадр обязан был её убрать. Чтение inline-стиля
+   и текста узла вёрстку не пересчитывает и стоит копейки. */
+function setTx(el,v){if(el&&el.textContent!==v)el.textContent=v;}
+function setSt(el,k,v){v=""+v;if(el&&el.style[k]!==v)el.style[k]=v;}
 function hud(){
   const st=stat();
   const fr=G.fuel/st.fuelMax, hr=G.hull/st.hullMax, cr=held()/st.cargoMax;
-  $f.style.width=clamp(fr*100,0,100).toFixed(1)+"%";
-  $h.style.width=clamp(hr*100,0,100).toFixed(1)+"%";
-  $cg.style.width=clamp(cr*100,0,100).toFixed(1)+"%";
-  $fn.textContent=Math.round(G.fuel)+"/"+Math.round(st.fuelMax);
-  $hn.textContent=Math.round(G.hull)+"/"+Math.round(st.hullMax);
-  $cn.textContent=held()+"/"+st.cargoMax;
-  $sg.style.display=st.shieldMax>0?"":"none";
+  setSt($f,"width",clamp(fr*100,0,100).toFixed(1)+"%");
+  setSt($h,"width",clamp(hr*100,0,100).toFixed(1)+"%");
+  setSt($cg,"width",clamp(cr*100,0,100).toFixed(1)+"%");
+  setTx($fn,Math.round(G.fuel)+"/"+Math.round(st.fuelMax));
+  setTx($hn,Math.round(G.hull)+"/"+Math.round(st.hullMax));
+  setTx($cn,held()+"/"+st.cargoMax);
+  setSt($sg,"display",st.shieldMax>0?"":"none");
   if(st.shieldMax>0){
-    $sh.style.width=clamp(G.shield/st.shieldMax*100,0,100).toFixed(1)+"%";
-    $sn.textContent=Math.round(G.shield)+"/"+Math.round(st.shieldMax);
+    setSt($sh,"width",clamp(G.shield/st.shieldMax*100,0,100).toFixed(1)+"%");
+    setTx($sn,Math.round(G.shield)+"/"+Math.round(st.shieldMax));
   }
   $fb.classList.toggle("low",fr<.2);
   $hb.classList.toggle("low",hr<.3);
@@ -34642,7 +34922,7 @@ function hud(){
   $vf.classList.toggle("low",fr<.2);$vf.classList.toggle("crit",fr<.08);
   $vh.classList.toggle("low",hr<.3);$vh.classList.toggle("crit",hr<.15);
   $vc.classList.toggle("low",cr>=1);
-  $purse.textContent=Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан";
+  setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан");
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
      Повод — изменившееся показание, тревога или открытый режим, где приборы
      и есть содержание кадра. Панель, которая горит всегда, перестаёт читаться
@@ -34688,22 +34968,22 @@ function hud(){
      затмение читается как «что-то с картинкой» (06a-celest) */
   if(typeof celLine==="function"){const cl=celLine();if(cl)b+=" · "+cl;}
   const sbtn=document.getElementById("starbtn");
-  sbtn.style.display=(G.mode==="system"&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none";
+  setSt(sbtn,"display",(G.mode==="system"&&Math.hypot(G.ship.x,G.ship.y)>1400)?"":"none");
   /* кнопка плеча: только на карте и только у выбранной системы со станцией —
      иначе она обещает действие, которого нет */
   const rbtn=document.getElementById("routebtn");
   if(G.mode==="map"&&typeof routeHas==="function"){
     const ss=getSystem(G.sel.x,G.sel.y),inR=routeHas(G.sel.x,G.sel.y);
-    rbtn.style.display=(ss&&ss.station)||inR?"":"none";
-    rbtn.textContent=inR?"ИЗ МАРШРУТА":"В МАРШРУТ";
-  }else rbtn.style.display="none";
+    setSt(rbtn,"display",(ss&&ss.station)||inR?"":"none");
+    setTx(rbtn,inR?"ИЗ МАРШРУТА":"В МАРШРУТ");
+  }else setSt(rbtn,"display","none");
   /* приборная колодка (25c): рисуется каждым кадром, гаснет вместе со строкой */
   if(typeof instrPodTick==="function")instrPodTick();
-  $place.textContent=a;$sub.textContent=b;
-  $msg.textContent=G.msgT>0?G.msg:"";
-  $msg.style.opacity=G.msgT>0?clamp(G.msgT/40,0,1):0;
-  $prompt.textContent=G.mode==="dock"?"":G.prompt;
-  $bThr.textContent=G.mode==="surface"?"ПРЫЖОК":(G.mode==="dig"?"ВВЕРХ":"▲");
+  setTx($place,a);setTx($sub,b);
+  setTx($msg,G.msgT>0?G.msg:"");
+  setSt($msg,"opacity",G.msgT>0?clamp(G.msgT/40,0,1):0);
+  setTx($prompt,G.mode==="dock"?"":G.prompt);
+  setTx($bThr,G.mode==="surface"?"ПРЫЖОК":(G.mode==="dig"?"ВВЕРХ":"▲"));
   /* Кнопка называет то, что сделает, а не то, как она называется. «ДЕЙСТВИЕ»
      не отвечает ни на один вопрос игрока; «СТЫКОВКА» отвечает на все.
      Глагол уже есть в подсказке — берём оттуда, чтобы не заводить второй
@@ -34719,29 +34999,29 @@ function hud(){
       if(v.length<=14)actLbl=v;
     }
   }
-  $act.textContent=actLbl;
+  setTx($act,actLbl);
   /* подсвечиваем, когда действие вообще есть: иначе кнопка выглядит живой всегда */
   $act.classList.toggle("ready",actLbl!=="ДЕЙСТВИЕ");
   if(G.mode==="dig"){
     /* «вниз» уже висит на большой кнопке — второй такой же рядом только путает.
        Клавиша S при этом продолжает работать, раскладка WASD не рвётся. */
-    $bBrk.style.display="none";
+    setSt($bBrk,"display","none");
   }else{
-    $bBrk.style.display="";
-    $bBrk.textContent="ТОРМОЗ";
-    $bBrk.style.opacity=G.mode==="surface"?".3":"1";
+    setSt($bBrk,"display","");
+    setTx($bBrk,"ТОРМОЗ");
+    setSt($bBrk,"opacity",G.mode==="surface"?".3":"1");
   }
-  $nav.textContent=(G.mode==="belt"||G.mode==="scoop")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА");
+  setTx($nav,(G.mode==="belt"||G.mode==="scoop")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
   /* под землёй ОГОНЬ — это импульсный разрядник, он есть всегда */
-  $fire.style.display=(G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed))?"":"none";
-  if(G.mode==="dig")$fire.textContent=(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС";
-  else $fire.textContent="ОГОНЬ";
+  setSt($fire,"display",(G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed))?"":"none");
+  if(G.mode==="dig")setTx($fire,(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС");
+  else setTx($fire,"ОГОНЬ");
   /* ракета показывается только там, где ею можно выстрелить, и на кнопке стоит
      не «готово», а остаток в трюме: боеприпас — это груз, и он тает */
   if($msl){
     const on=G.mode==="system"&&st.launcher;
-    $msl.style.display=on?"":"none";
-    if(on)$msl.textContent=(G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0));
+    setSt($msl,"display",on?"":"none");
+    if(on)setTx($msl,(G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0)));
     $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");
@@ -34806,7 +35086,42 @@ function audioTick(dt){
 /* ══════════════ цикл ══════════════ */
 let last=performance.now();
 let lastDroneTick=0;
+/* ── потолок кадров ──
+   Единственный рычаг, который снимает нагрузку с ВИДЕОКАРТЫ, ничего не упрощая
+   в картинке: тридцать кадров рисуют ровно вдвое меньше пикселей, чем
+   шестьдесят, а «Дрейф» — не аркада, где решают миллисекунды. На встроенной
+   графике это разница между вентилятором на взлёте и тишиной.
+
+   Считаем НЕ по времени, а по кадрам развёртки. Порог по времени кажется
+   очевидным решением и врёт: развёртка выдаёт кадры через равные промежутки,
+   и порог, попавший между двумя, округляется вниз до ближнего — потолок в 45
+   на шестидесятигерцовом экране превращается в 30, а не в 45. Пропуск по счёту
+   кадров даёт ровно то, что обещано, и без дрожания.
+
+   Шаг округляется ВВЕРХ, потому что это потолок: лучше отдать 48 кадров под
+   обещание «не выше шестидесяти», чем 72. Частота развёртки измеряется сама —
+   по самому короткому промежутку за последние кадры: этот промежуток и есть
+   период экрана, всё, что длиннее, — просадка.
+
+   Пропускается весь такт целиком, вместе с расчётом: `dt` считается по
+   настоящим часам, и на тридцати кадрах он просто вдвое крупнее — движение
+   остаётся тем же, замедления не возникает. */
+let capIv=16.667, capPrev=0, capN=0;
 function frame(now){
+  if(capPrev){
+    const d=now-capPrev;
+    /* «самый короткий за последнее время»: медленно отпускаем оценку вверх,
+       чтобы смена монитора или переезд окна на другой экран не остались
+       незамеченными навсегда */
+    if(d>1&&d<capIv)capIv=capIv*.7+d*.3; else capIv=Math.min(capIv*1.002,50);
+  }
+  capPrev=now;
+  const cap=G.opts.gfx.fps;
+  if(cap){
+    const stride=Math.max(1,Math.ceil(1000/cap/capIv-.15));
+    if(++capN%stride){requestAnimationFrame(frame);return;}
+    capN=0;
+  }else capN=0;
   const dt=clamp((now-last)/16.667,0,3);last=now;
   /* второй рубеж против залипших клавиш: событие blur приходит не всегда —
      фокус, ушедший в DevTools того же окна, его может не поднять. Пока страница
@@ -34949,6 +35264,7 @@ function dbg(){
   });
 }
 window.dbg=dbg;
+
 </script>
 </body>
 </html>
