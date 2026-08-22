@@ -7,6 +7,8 @@
 <title>ДРЕЙФ — космическая разведка в браузере</title>
 <meta name="description" content="Один корабль, полбака топлива и галактика, которой до вас нет дела. Садитесь на планеты, копайте, торгуйте, набирайте людей. Браузер, бесплатно, без установки.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/icons/fav-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/fav-180.png">
 <meta property="og:type" content="website">
 <meta property="og:title" content="ДРЕЙФ — космическая разведка в браузере">
 <meta property="og:description" content="Один корабль, полбака топлива и галактика, которой до вас нет дела.">
@@ -21,21 +23,21 @@
 .mark{font-size:clamp(40px,12vw,104px);letter-spacing:.34em;text-indent:.34em;
   color:var(--phos);font-weight:400;line-height:1;
   text-shadow:0 0 30px rgba(127,230,216,.26),0 0 78px rgba(127,230,216,.09)}
-.tag{color:var(--dim);font-size:clamp(10px,2.5vw,12.5px);letter-spacing:.26em;
+.tag{color:var(--dim);font-size:clamp(11px,2.5vw,12.5px);letter-spacing:.24em;
   text-transform:uppercase}
 .pitch{max-width:33em;font-size:clamp(14px,3vw,16px);line-height:1.66}
 .pitch b{color:var(--amber);font-weight:400}
 .hero .btn{height:62px;font-size:15px;letter-spacing:.3em;min-width:250px;flex-direction:column;gap:0}
-.hero .btn s{text-decoration:none;font-size:9px;letter-spacing:.14em;color:var(--dim)}
+.hero .btn s{text-decoration:none;font-size:10px;letter-spacing:.14em;color:var(--dim)}
 .who{min-height:20px;font-size:11.5px;color:var(--dim)}
-.down{margin-top:10px;font-size:10px;letter-spacing:.2em;color:var(--dim);opacity:.65}
+.down{margin-top:10px;font-size:11px;letter-spacing:.18em;color:var(--dim);opacity:.65}
 
 /* ── что это ── */
 .split{display:grid;gap:34px;grid-template-columns:1fr 1.15fr;align-items:center}
 @media(max-width:860px){.split{grid-template-columns:1fr}}
 .shot{border:1px solid var(--line);background:#03050a;overflow:hidden}
 .shot img{width:100%}
-.shot figcaption{padding:9px 12px;font-size:10.5px;letter-spacing:.08em;color:var(--dim);
+.shot figcaption{padding:10px 13px;font-size:11px;letter-spacing:.08em;color:var(--dim);
   border-top:1px solid var(--line)}
 .three{display:grid;gap:12px;margin-top:26px}
 .three div{display:flex;gap:13px;align-items:flex-start;font-size:13.5px}
@@ -47,7 +49,7 @@
 .gal figure{border:1px solid var(--line);background:#03050a}
 .gal img{width:100%}
 .gal figcaption{padding:13px 15px 15px}
-.gal h3{font-size:11px;letter-spacing:.19em;color:var(--amber);font-weight:400;
+.gal h3{font-size:11.5px;letter-spacing:.19em;color:var(--amber);font-weight:400;
   text-transform:uppercase;margin-bottom:6px}
 .gal p{font-size:13px;color:var(--text);opacity:.84}
 
@@ -69,7 +71,7 @@
 .why .big{font-size:clamp(15px,2.6vw,19px);line-height:1.55;max-width:30em;margin-bottom:26px}
 .why .big em{color:var(--phos);font-style:normal}
 .cols{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
-.cols b{display:block;font-size:10.5px;letter-spacing:.2em;color:var(--amber);
+.cols b{display:block;font-size:11px;letter-spacing:.2em;color:var(--amber);
   font-weight:400;margin-bottom:7px}
 .cols p{font-size:12.5px;color:var(--dim)}
 
@@ -96,15 +98,12 @@
 
 <header class="top">
   <a class="logo" href="/">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">
-      <circle cx="15" cy="9" r="5"/><path d="M2 21c3.6-4.2 7-7.6 10.5-10.5" stroke-dasharray="2.6 2.4"/>
-    </svg><span>ДРЕЙФ</span>
+    <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="12.5" fill="#143a45"/><path d="M16 3.5A12.5 12.5 0 0 1 16 28.5A3 12.5 0 0 0 16 3.5Z" fill="#7fe6d8"/></svg><span>ДРЕЙФ</span>
   </a>
   <nav>
     <a href="/" class="on">Игра</a>
     <a href="/mechanics.html">Механики</a>
-    <a href="#gal">Скриншоты</a>
-    <a href="#road">Развитие</a>
+    <a href="/parrot.html">Птица</a>
     <a href="/play.html" class="cta">Играть</a>
   </nav>
 </header>
@@ -114,8 +113,7 @@
   <h1 class="mark">ДРЕЙФ</h1>
   <p class="pitch">
     Старый разведчик «Стриж», <b>полбака топлива</b> и галактика, которой до вас нет дела.
-    Никто не выдаёт заданий и не ведёт за руку: куда лететь и чем рискнуть — решаете вы,
-    а мир только честно отвечает на последствия.
+    Куда лететь и чем рисковать — решаете вы: заданий здесь никто не выдаёт.
   </p>
   <a class="btn" href="/play.html" id="playBtn">ИГРАТЬ<s></s></a>
   <div class="who" id="who">…</div>
@@ -126,25 +124,25 @@
   <div class="eyebrow">Что это</div>
   <div class="split">
     <div>
-      <h2>Игра про <b>любопытство</b>, а не про гринд</h2>
+      <h2>Разведка вручную: <b>долететь, сесть, разобраться</b></h2>
       <p class="lead">
-        Вы летаете между звёздными системами, садитесь на планеты и ходите по ним пешком,
-        копаете руду, спускаетесь в пещеры, возите груз между станциями и нанимаете людей.
-        Галактика не нарисована заранее — она вычисляется из координат, поэтому она огромная,
-        но при этом <b>постоянная</b>: та же система через месяц будет ровно такой же.
+        Вы летаете между звёздными системами, садитесь на планеты и ходите по ним пешком:
+        бурите залежи, спускаетесь в пещеры, возите груз между станциями, нанимаете людей.
+        Галактика не нарисована заранее — она вычисляется из координат. Отсюда её размер
+        и её <b>постоянство</b>: та же система через месяц будет ровно такой же.
       </p>
       <div class="three">
         <div>
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 2.4 2.5 13.6 0 16"/></svg>
-          <span>Каждый мир собирается на лету — из своего места в космосе, а не из готовой карты.</span>
+          <span>Каждый мир выводится из своих координат, а не берётся с готовой карты.</span>
         </div>
         <div>
           <svg viewBox="0 0 24 24"><path d="M3 20l7-7 4 4 7-9"/><circle cx="10" cy="13" r="1.6"/></svg>
-          <span>Маршрута нет. Есть топливо, трюм и решение, насколько далеко забраться.</span>
+          <span>Маршрута нет. Есть топливо, трюм и решение, как далеко забраться.</span>
         </div>
         <div>
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-22 12 12)"/></svg>
-          <span>Что вы найдёте, зависит от того, куда пошли и чем успели обзавестись.</span>
+          <span>Что найдёте — следствие того, куда пошли и чем успели обзавестись.</span>
         </div>
       </div>
     </div>
@@ -157,8 +155,8 @@
 
 <section id="gal">
   <div class="eyebrow">Как это выглядит</div>
-  <h2>Шесть кадров — и понятно, во что вы играете</h2>
-  <p class="lead">Всё ниже снято в игре, а не нарисовано для сайта.</p>
+  <h2>Шесть кадров из игры</h2>
+  <p class="lead">Ничего не дорисовано и не собрано для сайта: это то, что видно на экране.</p>
   <div class="gal">
 
     <figure>
@@ -207,11 +205,11 @@
     </figure>
 
     <figure>
-      <img src="/shots/world.webp" loading="lazy" width="1600" height="900" alt="Поверхность планеты: посадочный модуль, скафандр, геологические слои">
+      <img src="/shots/land.webp" loading="lazy" width="1600" height="900" alt="Заход на посадку: спускаемый аппарат, дождь, затмение, освещённая площадка внизу">
       <figcaption>
         <h3>Чем рискуете</h3>
-        <p>Взлёт стоит восемь единиц топлива. Сесть можно почти везде — подняться
-        только имея запас. Это единственный настоящий страх в игре.</p>
+        <p>Сесть можно почти везде, а взлёт стоит восемь единиц топлива. Садиться
+        без запаса — единственный настоящий страх в этой игре.</p>
       </figcaption>
     </figure>
 
@@ -220,8 +218,8 @@
 
 <section id="loop">
   <div class="eyebrow">Как играется</div>
-  <h2>Круг, который затягивает</h2>
-  <p class="lead">Одна петля, и каждый её виток чуть шире предыдущего.</p>
+  <h2>Один круг, и каждый виток шире</h2>
+  <p class="lead">Больше правил в игре нет — всё остальное вырастает отсюда.</p>
   <div class="loop">
     <div class="st"><b>ЛЕТИТЕ</b><s>выбираете систему по карте и тратите топливо</s></div>
     <div class="st"><b>НАХОДИТЕ</b><s>садитесь, ищете залежи, жизнь, чужие следы</s></div>
@@ -237,9 +235,8 @@
   <div class="eyebrow">Почему «Дрейф»</div>
   <div class="why">
     <p class="big">
-      Большинство браузерных игр удерживают вас счётчиками и таймерами.
-      «Дрейф» держится на другом — на <em>любопытстве</em>: единственная причина
-      лететь дальше та, что вы не знаете, что там.
+      Браузерные игры обычно держат вас счётчиками и таймерами. «Дрейф» держится
+      на <em>любопытстве</em>: единственная причина лететь дальше — вы не знаете, что там.
     </p>
     <div class="cols">
       <div><b>БРАУЗЕР</b><p>Открывается по ссылке. Ничего не ставить, ничего не покупать, рекламы нет.</p></div>
@@ -304,6 +301,7 @@
   </div>
 </div>
 
+<script src="/planets.js"></script>
 <script src="/sky.js"></script>
 <script src="/auth.js"></script>
 <script>

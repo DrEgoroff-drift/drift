@@ -4,7 +4,9 @@
 :root{
   --void:#05070c; --deep:#080d16; --panel:rgba(8,13,22,.72);
   --phos:#7fe6d8; --amber:#f2b25c; --rare:#c58ae0; --good:#8fd08a; --alarm:#ff6b57;
-  --dim:#5d7382;  --text:#cfe3ea;
+  /* был #5d7382 — 4.07 к фону, ниже порога читаемости, а им набрана треть
+     страницы. #6d8494 даёт 5.16 на пустоте и 4.77 на панелях, настроение то же. */
+  --dim:#6d8494;  --text:#cfe3ea;
   --line:rgba(127,230,216,.12);
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
@@ -12,7 +14,10 @@
 html{scroll-behavior:smooth}
 body{background:var(--void);color:var(--text);min-height:100vh;font-family:var(--mono);
   font-size:14px;line-height:1.62;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-img{max-width:100%;display:block}
+/* height:auto обязателен: у картинок проставлены width/height атрибутами — они
+   держат место до загрузки и не дают странице прыгать, но без этой строки
+   высота остаётся абсолютной, и кадр 1600×900 растягивается в столб. */
+img{max-width:100%;height:auto;display:block}
 a{color:var(--phos);text-decoration:none}
 
 /* Фон живёт под всем и не перехватывает касаний; виньетка гасит края,
@@ -29,24 +34,28 @@ a{color:var(--phos);text-decoration:none}
   background:linear-gradient(180deg,rgba(5,7,12,.92),rgba(5,7,12,.55));
   border-bottom:1px solid var(--line)}
 .top .logo{display:flex;align-items:center;gap:9px;color:var(--phos);
-  letter-spacing:.28em;font-size:12px;margin-right:auto}
-.top .logo svg{width:17px;height:17px;flex:none}
-.top nav{display:flex;gap:4px;align-items:center}
-.top nav a{color:var(--dim);font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;
-  padding:8px 11px;border:1px solid transparent;transition:color .18s,border-color .18s}
+  letter-spacing:.28em;font-size:12px;margin-right:auto;
+  min-height:44px;padding-right:6px}   /* на телефоне подпись прячется — цель осталась бы 17px */
+.top .logo svg{width:18px;height:18px;flex:none}
+.top nav{display:flex;gap:4px;align-items:center;height:100%}
+/* 44 пикселя — правило самой игры для всего, во что тыкают пальцем.
+   Раньше пункты меню были 31–35 и нарушали его на самом видном месте. */
+.top nav a{display:inline-flex;align-items:center;min-height:44px;
+  color:var(--dim);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  padding:0 12px;border:1px solid transparent;transition:color .18s,border-color .18s}
 .top nav a:hover{color:var(--text)}
 .top nav a.on{color:var(--phos);border-color:var(--line)}
 .top nav a.cta{color:var(--amber);border-color:rgba(242,178,92,.45)}
 .top nav a.cta:hover{background:rgba(242,178,92,.1)}
 @media(max-width:720px){
-  .top{gap:8px;padding:0 12px;height:50px}
-  .top nav a{padding:7px 7px;font-size:9.5px;letter-spacing:.1em}
+  .top{gap:6px;padding:0 12px;height:52px}
+  .top nav a{padding:0 9px;font-size:10.5px;letter-spacing:.1em}
   .top .logo span{display:none}
 }
 
 /* ── общая типографика разделов ── */
 section{max-width:1120px;margin:0 auto;padding:76px 22px}
-.eyebrow{font-size:10px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase;
+.eyebrow{font-size:11px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase;
   margin-bottom:12px}
 h2{font-size:clamp(19px,3.6vw,27px);letter-spacing:.03em;color:var(--text);
   font-weight:400;margin-bottom:14px;line-height:1.28}
@@ -66,9 +75,11 @@ h2 b{color:var(--phos);font-weight:400}
   background:rgba(127,230,216,.05)}
 .btn.sm{height:44px;padding:0 20px;font-size:11px;letter-spacing:.16em}
 
-footer{max-width:1120px;margin:0 auto;padding:44px 22px 80px;color:var(--dim);
-  font-size:11px;letter-spacing:.06em;border-top:1px solid var(--line);
-  display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center}
+footer{max-width:1120px;margin:0 auto;padding:30px 22px 74px;color:var(--dim);
+  font-size:11.5px;letter-spacing:.06em;border-top:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:0 18px;align-items:center}
+/* ссылки подвала тоже цели под палец, а были 18 пикселей высотой */
+footer a,footer span{display:inline-flex;align-items:center;min-height:44px}
 footer a{color:var(--dim)}
 footer a:hover{color:var(--phos)}
 
@@ -81,18 +92,26 @@ footer a:hover{color:var(--phos)}
 .box h3{font-size:13px;letter-spacing:.22em;color:var(--phos);font-weight:400;
   text-transform:uppercase;margin-bottom:6px}
 .box .hint{font-size:11.5px;color:var(--dim);margin-bottom:20px;line-height:1.5}
-label{display:block;font-size:10px;letter-spacing:.16em;color:var(--dim);
+label{display:block;font-size:11px;letter-spacing:.14em;color:var(--dim);
   text-transform:uppercase;margin:0 0 6px}
 input{width:100%;height:46px;padding:0 14px;margin-bottom:16px;background:rgba(5,7,12,.9);
   border:1px solid rgba(127,230,216,.18);color:var(--text);font:inherit;font-size:14px}
 input:focus{outline:none;border-color:rgba(127,230,216,.5)}
+
+/* Клавиатура: раньше фокус был снят с полей и не нарисован нигде — по сайту
+   нельзя было пройти табом, не потеряв курсор из виду. */
+:focus-visible{outline:2px solid var(--phos);outline-offset:3px}
+input:focus-visible{outline-offset:0}
 .box button{width:100%;height:50px;background:rgba(242,178,92,.08);
   border:1px solid rgba(242,178,92,.5);color:var(--amber);font:inherit;font-size:12px;
   letter-spacing:.2em;cursor:pointer}
 .box button:hover{background:rgba(242,178,92,.16)}
 .box button[disabled]{opacity:.5;cursor:default}
 .swap{margin-top:16px;font-size:11.5px;color:var(--dim);text-align:center}
-.linkish{color:var(--phos);cursor:pointer;border-bottom:1px dotted rgba(127,230,216,.4)}
+/* Ссылка внутри фразы не может быть 44 пикселя высотой — она разорвёт строку.
+   Поэтому область нажатия растёт полями, а вид остаётся прежним. */
+.linkish{color:var(--phos);cursor:pointer;border-bottom:1px dotted rgba(127,230,216,.4);
+  display:inline-block;padding:11px 3px;margin:-11px 0}
 .note{min-height:20px;margin-top:12px;font-size:11.5px;line-height:1.45}
 .note.bad{color:#ff8f6a}
 .note.ok{color:var(--good)}

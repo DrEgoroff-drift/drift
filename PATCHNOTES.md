@@ -9,6 +9,44 @@ could ever save.
 
 ---
 
+## 0.82.0 — "Five passes over the site, with the critique written down"
+
+**The favicon was drawn in vector and never looked at.** At 16 pixels its dashed trail became
+grit, its 1.2-unit stroke fell below half a pixel, and three nested circles merged into a grey
+blob on a black tile that would have shown as a black square in a light tab. Five candidates were
+rendered and inspected at 16/32/48 on both light and dark: the crescent read best but is the
+dark-mode icon of every weather app, the ringed planet is the most generic space mark there is,
+and the disc-with-trail turns into a magnifying glass. What shipped is a sphere lit from the side —
+the game's own signature, two solid shapes, no background tile. The header logo now carries the
+same mark.
+
+**The planets on the site are the game's planets.** They were a gradient with stripes: a picture
+of a planet rather than a planet, and next to the real thing it showed. `site/planets.js` ports
+`src/07-planet.js` — the same fractal noise, the same spherical mapping, the palettes copied from
+the world table untouched. Frames bake one at a time in the browser's idle gaps so the page still
+opens in ~110 ms, and the texture is capped at 360 px because a full-size first frame cost 51 ms
+on a desktop, which is a visible hitch on a phone. The background now costs 0.46 ms a frame.
+
+**A real bug, found by looking:** gallery images were stretched into columns. `width`/`height`
+attributes hold the layout before load, but without `height:auto` the height stays absolute while
+the width goes to 100%.
+
+**Geometry.** Nav items were 31–35 px tall and footer links 18 — the game's own rule is 44 for
+anything poked with a finger, broken in the most visible place on the site. The top bar also mixed
+in-page anchors with page links; navigation now lists places (Игра · Механики · Птица · Играть),
+and the bird finally has a link.
+
+**Contrast.** `--dim` measured 4.07:1 against the void — under the readable threshold, and a third
+of the page is set in it. Now `#6d8494`: 5.16 on the void, 4.77 on panels, same mood. Focus was
+removed from inputs and drawn nowhere, so a keyboard user lost the cursor; there is a focus ring
+now, and the clickable spans in the sign-in box became real buttons for the keyboard.
+
+**Texts.** The hero said the world "отвечает на последствия", which is not Russian. "Любопытство
+против гринда" was making the same point twice on one page, and `world.webp` appeared twice —
+the sixth card now shows a real descent through rain under an eclipse.
+
+---
+
 ## 0.81.0 — "The front door, rebuilt"
 
 **The landing page stopped being documentation.** It was twelve description cards under a hero —
