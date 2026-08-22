@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.96.0";
+const VER="0.99.7";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -5999,8 +5999,14 @@ function planetScene(p){
     perc:V.perc*(.8+r()*.4),
     air:V.air*(.85+r()*.3),
     beacon:V.beacon*(.7+r()*.6),
-    timbre:V.timbre};
+    timbre:V.timbre,
+    vib:(WORLD_VIB[p.type]==null?.3:WORLD_VIB[p.type])*(.8+r()*.4),
+    spread:WORLD_SPREAD[p.type]==null?6:WORLD_SPREAD[p.type]};
 }
+/* вибрато и расстройка голоса по типу мира: лёд и кристалл — чистые, токсичный плывёт,
+   вулканический и металлический — шершавые */
+const WORLD_VIB={terran:.5,ocean:.4,desert:.7,rocky:.2,ice:0,volcanic:.3,toxic:1,crystal:0,jungle:.8,metal:.2,ruin:.4,gas:.3};
+const WORLD_SPREAD={ice:2,crystal:2,volcanic:14,metal:12,toxic:10,ruin:8};
 const MUS={ready:false,key:null,sc:null,layers:{},pad:null,timer:null,
   next:0,step:0,intensity:0,iTarget:0,phrase:null,pi:0,shift:0};
 const MUS_LAYERS=["pad","bass","motif","perc","air","beacon"];
@@ -6109,11 +6115,26 @@ function musNote(layer,hz,when,dur,type,peak,cut){
   const stop=when+dur+tail+.1;
   /* два генератора: основной тембр и тихая октава сверху — она даёт ноте
      блеск, по которому её слышно поверх дрона, не поднимая громкость */
+  /* ── голос мира ──
+     Все планеты пели одним и тем же ровным тоном. Теперь у сцены есть
+     вибрато (приходит не сразу, а на второй трети ноты — как у живого
+     голоса) и расстройка пары генераторов: у льда и кристалла голос чистый,
+     у вулканического и металлического — шершавый, у токсичного — плывёт. */
+  const sc=MUS.sc||{}, vib=layer==="motif"?(sc.vib||0):0, spread=sc.spread==null?6:sc.spread;
+  let lfo=null,lg=null;
+  if(vib>0){
+    lfo=c.createOscillator();lg=c.createGain();
+    lfo.type="sine";lfo.frequency.value=4.6+vib*1.4;
+    lg.gain.setValueAtTime(0,when);
+    lg.gain.linearRampToValueAtTime(vib*14,when+atk+dur*.3);
+    lfo.connect(lg);lfo.start(when);lfo.stop(stop);
+  }
   for(let i=0;i<2;i++){
     const o=c.createOscillator(),og=c.createGain();
     o.type=i?"sine":(type||"triangle");
     o.frequency.setValueAtTime(hz*(i?2:1),when);
-    o.detune.setValueAtTime(i?6:-6,when);
+    o.detune.setValueAtTime(i?spread:-spread,when);
+    if(lg)lg.connect(o.detune);
     og.gain.value=i?.16:1;
     o.connect(og);og.connect(f);
     o.start(when);o.stop(stop);
@@ -6153,13 +6174,28 @@ function musBeacon(layer,hz,when,dur,peak){
 }
 function musPerc(when,peak){
   const c=SND.ctx;
-  const n=noise(c),g=c.createGain(),bp=c.createBiquadFilter();
-  bp.type="bandpass";bp.Q.value=1.4;bp.frequency.value=180;
-  g.gain.setValueAtTime(.0001,when);
-  g.gain.exponentialRampToValueAtTime(peak,when+.006);
-  g.gain.exponentialRampToValueAtTime(.0001,when+.16);
-  n.connect(bp);bp.connect(g);g.connect(MUS.layers.perc);
-  n.start(when);n.stop(when+.2);
+  /* два голоса: низкий толчок на сильной доле и сухой щелчок — на призрачном
+     ударе щелчок один, на акценте оба. Одним толчком ритм читался метрономом. */
+  const thump=peak>=.45, tick=peak<.45||peak>=.9;
+  if(thump){
+    const n=noise(c),g=c.createGain(),bp=c.createBiquadFilter();
+    bp.type="bandpass";bp.Q.value=1.4;bp.frequency.value=180;
+    g.gain.setValueAtTime(.0001,when);
+    g.gain.exponentialRampToValueAtTime(peak,when+.006);
+    g.gain.exponentialRampToValueAtTime(.0001,when+.16);
+    n.connect(bp);bp.connect(g);g.connect(MUS.layers.perc);
+    n.start(when);n.stop(when+.2);
+  }
+  if(tick){
+    const n=noise(c),g=c.createGain(),bp=c.createBiquadFilter();
+    bp.type="bandpass";bp.Q.value=6;bp.frequency.value=1500+(MUS.sc&&MUS.sc.bpm||50)*8;
+    const pk=Math.max(.05,Math.min(peak,.6)*.5);
+    g.gain.setValueAtTime(.0001,when+.004);
+    g.gain.exponentialRampToValueAtTime(pk,when+.008);
+    g.gain.exponentialRampToValueAtTime(.0001,when+.06);
+    n.connect(bp);bp.connect(g);g.connect(MUS.layers.perc);
+    n.start(when);n.stop(when+.08);
+  }
 }
 function musicSetScene(key,scene){
   if(MUS.key===key)return;
@@ -6167,8 +6203,22 @@ function musicSetScene(key,scene){
   /* своя фраза на локацию: seed из ключа сцены, поэтому одна и та же планета
      всегда встречает одной и той же мелодией */
   let ks=0;for(let i=0;i<key.length;i++)ks=(ks*31+key.charCodeAt(i))|0;
-  MUS.phrase=makePhrase(hashi(ks,scene.bpm,SCALE_KEYS.indexOf(scene.scale)+1),
-                        SCALES[scene.scale]||SCALES.minor);
+  const stp=SCALES[scene.scale]||SCALES.minor;
+  MUS.phrase=makePhrase(hashi(ks,scene.bpm,SCALE_KEYS.indexOf(scene.scale)+1),stp);
+  /* ── ответ, круг, рисунок ──
+     Одна фраза на локацию приедалась за две минуты: к ней теперь есть
+     вторая — тот же seed, но контур зеркален, и они идут попеременно, как
+     вопрос и ответ. Гармония ходила по одной тонике всё время — дрон и бас
+     теперь идут по кругу из четырёх ступеней, по такту на каждую; круг свой
+     у каждой сцены. Ударные были «удар через шаг» — стали рисунком на восемь
+     шагов с акцентами и редким призрачным ударом. */
+  const rr=rng(hashi(ks,0xB0B,scene.bpm));
+  MUS.phraseB=MUS.phrase.map(n=>n&&{...n,deg:stp.length-1-n.deg,chord:n.chord?0:(rr()<.25?4:0)});   // та же длина — зеркальный контур
+  const cyc=[[0,5,3,4],[0,3,4,0],[0,2,5,4],[0,4,5,3],[0,5,0,4]][Math.floor(rr()*5)];
+  MUS.prog=cyc.map(i=>stp[Math.min(i,stp.length-1)]||0);
+  MUS.percPat=[];for(let i=0;i<8;i++)MUS.percPat.push(i===0?1.1:(i===4?.9:(rr()<.35?.55:0)));
+  MUS.restAt=rr()<.5?56:-1;           // у половины сцен в конце круга — тишина на восемь шагов
+  MUS.bar=-1;
   MUS.pi=0;MUS.shift=0;
   if(!MUS.ready)return;
   const c=SND.ctx,t=c.currentTime;
@@ -6235,17 +6285,41 @@ function musicTick(){
   const beat=60/sc.bpm;
   const grid=beat*(2-MUS.intensity*.9);
   if(MUS.next<c.currentTime)MUS.next=c.currentTime+.05;
+  /* ── дыхание ──
+     Уровни слоёв были константами сцены: музыка не становилась ни тише, ни
+     гуще. Медленная волна в полторы-две минуты водит мелодию и воздух на
+     треть — этого хватает, чтобы возвращение фразы было слышно как возвращение. */
+  const br=.72+.28*Math.sin(c.currentTime/(75+(sc.bpm%17)*4)*TAU);
+  if(MUS.layers.motif){
+    MUS.layers.motif.gain.setTargetAtTime(layerLevel("motif",sc)*br,c.currentTime,2.5);
+    MUS.layers.air.gain.setTargetAtTime(layerLevel("air",sc)*(1.3-br*.5),c.currentTime,2.5);
+  }
   while(MUS.next<c.currentTime+3.2){
     const t=MUS.next,s=MUS.step;
     const r=rng(hashi(s,MUS.key.length*31,777));
-    /* бас — редкая очень длинная педаль под всем остальным */
+    /* гармонический круг: такт — 16 шагов, дрон и бас переходят на ступень круга */
+    const bar=Math.floor(s/16)%4, hroot=sc.root+((MUS.prog&&MUS.prog[bar])||0);
+    if(bar!==MUS.bar&&MUS.pad){
+      MUS.bar=bar;
+      const f0=midiHz(hroot);
+      MUS.pad.oscs.forEach((o,i)=>{
+        const iv=[0,steps[4]||7,12][i];
+        o.frequency.setTargetAtTime(f0*Math.pow(2,iv/12)*(1+(i-1)*.004),t,1.6);
+      });
+    }
+    /* бас — редкая очень длинная педаль под всем остальным, на ступени круга */
     if(sc.bass>0&&s%4===0)
-      musNote("bass",midiHz(sc.root-12),t,Math.min(grid*3.6,11),"triangle",.34,220);
+      musNote("bass",midiHz(hroot-12),t,Math.min(grid*3.6,11),"triangle",.34,220);
+    /* тишина: в конце круга у половины сцен мелодия молчит восемь шагов */
+    const rest=MUS.restAt>=0&&s>=MUS.restAt;
     /* мелодия идёт по фразе, а не наугад; каждый проход фраза может сместиться
-       на ступень — так она не приедается, оставаясь узнаваемой */
-    if(sc.motif>0&&MUS.phrase&&MUS.phrase.length){
-      const note=MUS.phrase[MUS.pi%MUS.phrase.length];
-      if(MUS.pi>0&&MUS.pi%MUS.phrase.length===0)
+       на ступень — так она не приедается, оставаясь узнаваемой. Фразы две:
+       вопрос и ответ чередуются проходами. */
+    if(sc.motif>0&&MUS.phrase&&MUS.phrase.length&&!rest){
+      const L=MUS.phrase.length;
+      const ph=(Math.floor(MUS.pi/L)%2===1&&MUS.phraseB&&MUS.phraseB.length===L)?MUS.phraseB:MUS.phrase;
+      const note=ph[MUS.pi%L];
+      if(MUS.pi>0&&MUS.pi%L===0)
         MUS.shift=(r()<.45)?[0,2,-2,4][Math.floor(r()*4)]:0;
       MUS.pi++;
       if(note){
@@ -6272,8 +6346,11 @@ function musicTick(){
       musBeacon("beacon",midiHz(sc.root+deg+12+oct),t+r()*grid,
                 4.5+r()*5.5,.34+r()*.2);
     }
-    if((sc.perc>0||MUS.intensity>.25)&&s%2===0)
-      musPerc(t,.5+MUS.intensity*.4);
+    if(sc.perc>0||MUS.intensity>.25){
+      const pp=MUS.percPat?MUS.percPat[s%8]:(s%2===0?1:0);
+      if(pp>0)musPerc(t,(.5+MUS.intensity*.4)*pp);
+      else if(MUS.intensity>.25&&s%2===0)musPerc(t,.4+MUS.intensity*.4);   // в бою сетка плотнее
+    }
     if(sc.air>0&&r()<.16){
       const deg=steps[Math.floor(r()*steps.length)];
       musNote("air",midiHz(sc.root+deg+24),t,3.5+r()*3.5,"sine",.24,2600);
@@ -19627,8 +19704,9 @@ function drawSystem(){
   drawStars(cx0*.06*Z,cy0*.06*Z,1);
   drawSpaceDust(cx0*Z,cy0*Z,Z,sysStyle(sys).dust);
   const ox=zx(0),oy=zy(0);
-  ctx.strokeStyle="rgba(120,190,210,.10)";ctx.lineWidth=1;
-  for(const p of sys.planets){ctx.beginPath();ctx.arc(ox,oy,p.orbit*Z,0,TAU);ctx.stroke();}
+  ctx.lineWidth=1;
+  /* орбиты гаснут с расстоянием: ровные кольца одной яркости делали систему чертежом (G10) */
+  for(const p of sys.planets){ctx.strokeStyle="rgba(120,190,210,"+(.17*clamp(1-p.orbit*Z/(W*1.6),.3,1)).toFixed(3)+")";ctx.beginPath();ctx.arc(ox,oy,p.orbit*Z,0,TAU);ctx.stroke();}
   if(sys.station){ctx.strokeStyle="rgba(242,178,92,.13)";
     ctx.beginPath();ctx.arc(ox,oy,sys.station.orbit*Z,0,TAU);ctx.stroke();}
   if(sys.belt)drawBeltRing(ox,oy,sys.belt,Z);
@@ -19637,6 +19715,14 @@ function drawSystem(){
      редко чёрная дыра (16a-space). Освещение и опасность по-прежнему считаются
      от sys.cls — экзотика меняет только вид. */
   drawStarBody(ox,oy,R,sys);
+  /* светило за кадром: его зарево всё равно входит в кадр со своей стороны —
+     иначе системный вид без звезды выглядел экраном загрузки (G10) */
+  {const dx=ox<0?-ox:(ox>W?ox-W:0), dy=oy<0?-oy:(oy>H?oy-H:0), dd=Math.hypot(dx,dy);
+   if(dd>0){const col=sys.cls.col,c=hex2rgb(col);
+     const BL=glowSprite("bleed|"+col,()=>{const g=ctx.createRadialGradient(0,0,0,0,0,1);
+       g.addColorStop(0,"rgba("+c.join(",")+",.34)");g.addColorStop(.5,"rgba("+c.join(",")+",.10)");g.addColorStop(1,"rgba(0,0,0,0)");
+       ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);});
+     ctx.save();ctx.globalCompositeOperation="lighter";glowBlit(BL,ox,oy,dd+Math.max(W,H)*.55);ctx.restore();}}
   /* эллиптическая орбита — тонкий контур по формуле Кеплера, не окружность.
      Сорок девять точек эллипса не меняются никогда: орбита, эксцентриситет и
      наклон большой оси заданы при рождении системы. Считать их заново каждый
@@ -20267,8 +20353,8 @@ function planetMat(p){
            вулканическом мире, и потому он читается издалека. */
         t=clamp(t*.5+.18+C.tone*.22,0,1);
         seam=Math.pow(clamp(1-C.edge*8,0,1),2.4);
-        const heat=clamp((tfbm(u,v,2,sd+511,3)-.5)*3,0,1);
-        if(seam>.05&&heat>.02)edgeLo=-seam*heat;   // минус: метка «тлеет», см. ниже
+        const heat=clamp((tfbm(u,v,2,sd+511,3)-.42)*3.2,0,1);
+        if(seam>.05&&heat>.02)edgeLo=-seam*heat*1.6;   // минус: метка «тлеет», см. ниже
       }else if(ch==="sludge"){
         /* Раскисшие берега: мягкие лужи светлее, ил между ними темнее и с
            ободком у кромки; ни граней, ни трещин — всё оплыло. */
@@ -21052,7 +21138,7 @@ function giantTex(p){
   if(GIANT.key===p.seed)return GIANT.tex;
   const hit=GIANT.cache.find(e=>e.key===p.seed);
   if(hit){GIANT.key=hit.key;GIANT.tex=hit.tex;return hit.tex;}
-  const TW=512,TH=256;
+  const TW=768,TH=384;   // 512×256 тянулось на полтора экрана и мылилось (G5)
   const cn=document.createElement("canvas");cn.width=TW;cn.height=TH;
   const c=cn.getContext("2d"),img=c.createImageData(TW,TH),d=img.data;
   const pal=p.T.pal,sd=p.seed|0;
@@ -21124,8 +21210,8 @@ function drawScoop(){
      одинаковая лента, наложенная трижды, взаимно усредняется в розовую кашу */
   const layers=[[1.35,.30,1,1],[1.0,.85,.3,.9]];
   for(const L of layers){
-    const hgt=H*L[0], wid=hgt*.62;
-    const off=-((S.x*L[1]*9)%wid);
+    const hgt=H*L[0], wid=hgt*1.25;   // тайл шире: при .62 он повторялся дважды на экран, и волны читались копиями (G5)
+    const off=-((S.x*L[1]*9+(L===layers[1]?wid*.5:0))%wid);
     ctx.globalAlpha=L[2];
     const yTop=H*.5-hgt*.5*L[3];
     for(let i=-1;i<=Math.ceil(W/wid)+1;i++)ctx.drawImage(T,off+i*wid,yTop,wid,hgt);
@@ -21879,9 +21965,19 @@ function gradePass(p){
 }
 /* небо-подложка: вертикальный градиент на весь экран, один раз на планету */
 function drawSkyBase(p){
-  const s=p.T.sky;
-  ctx.drawImage(screenLayer("skybg|"+s[0].join(",")+"|"+s[1].join(","),()=>{
+  const s=p.T.sky, sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a", hasAir=p.T.atm!=="отсутствует";
+  ctx.drawImage(screenLayer("skybg|"+s[0].join(",")+"|"+s[1].join(",")+"|"+sc+"|"+hasAir,()=>{
     ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
+    /* зарево у горизонта цветом звезды: воздух рассеивает её свет сильнее
+       всего там, где путь луча длиннее. Без атмосферы — нет и зарева (G7). */
+    if(hasAir){
+      const c=hex2rgb(sc);
+      const g=ctx.createLinearGradient(0,H*.42,0,H*.78);
+      g.addColorStop(0,"rgba("+c.join(",")+",0)");
+      g.addColorStop(.7,"rgba("+c.join(",")+",.14)");
+      g.addColorStop(1,"rgba("+c.join(",")+",.22)");
+      ctx.fillStyle=g;ctx.fillRect(0,H*.42,W,H*.36);
+    }
   }),0,0,W,H);
 }
 
@@ -22021,7 +22117,10 @@ function drawWeather(p,camx,camy){
   ctx.lineCap="round";
   for(let i=0;i<n;i++){
     const r1=h01(i,1,0x5E7), r2=h01(i,2,0x5E7), r3=h01(i,3,0x5E7);
-    const spd=W0.spd*(.55+r2*.9);
+    /* две глубины: ближние капли крупнее, быстрее и ярче, дальние — тонкая
+       сетка. Одним слоем дождь читался помехами на стекле (G7) */
+    const near=r2>.74;
+    const spd=W0.spd*(near?1.75:.55+r2*.6);
     /* вертикаль всегда сверху вниз, горизонталь — от ветра; и то и другое
        заворачивается по экрану, поэтому частиц ровно столько, сколько видно */
     const fall=(r1*1400+t*spd)%(H+80);
@@ -22034,10 +22133,11 @@ function drawWeather(p,camx,camy){
          у пыли почти горизонтальный */
       const dr=W0.dir||0;
       const sgn=wind<0?-1:1;
-      const vx=sgn*W0.len*(dr*3.4+Math.abs(wind)*.4);
-      const vy=W0.len*(1-dr*.82);
-      ctx.strokeStyle="rgba("+c.join(",")+","+a.toFixed(3)+")";
-      ctx.lineWidth=w.kind==="rain"?1:1.4;
+      const lk=near?1.6:.8;
+      const vx=sgn*W0.len*lk*(dr*3.4+Math.abs(wind)*.4);
+      const vy=W0.len*lk*(1-dr*.82);
+      ctx.strokeStyle="rgba("+c.join(",")+","+(a*(near?1.25:.85)).toFixed(3)+")";
+      ctx.lineWidth=(w.kind==="rain"?1:1.4)*(near?1.8:.9);
       ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+vx,y+vy);ctx.stroke();
     }else{
       /* снег и пепел планируют: своя фаза покачивания у каждой частицы */
@@ -22768,6 +22868,13 @@ function drawLander(broken,fire,opt){
   ctx.rotate(-.05+sq*.12);
   /* ── стойки: три точки, разнос 0.84 длины; средняя — дальнего борта ── */
   const legs=[[-half*.42,1],[-half*.10,.62],[half*.42,1]];
+  /* контактная тень: без неё корабль на земле — марка, приклеенная к грунту,
+     а не масса, которая на нём стоит (G8). Растёт с выпуском стоек. */
+  if(gear>.5&&opt.tr){
+    ctx.save();ctx.globalAlpha=(gear-.5)*2*.85;
+    groundShadow(half*.05,LAND_GY+gy(half*.05)+2,half*1.05,Math.max(3.5,len*.055));
+    ctx.restore();
+  }
   for(const lg of legs){
     ctx.globalAlpha=lg[1];
     drawLandGear(h,len,bY-bodyH*.12,lg[0],gy(lg[0]),gear,sq);
@@ -22865,6 +22972,13 @@ function drawLander(broken,fire,opt){
       const t=i/stepN, sx=lerp(hx+hw*.5,rx,t), sy=lerp(hb,ry,t);
       ctx.beginPath();ctx.moveTo(sx-2.5,sy-2.5);ctx.lineTo(sx+2.5,sy+1);ctx.stroke();
     }
+    /* свет из люка ложится на грунт у трапа — тёплое пятно, по которому
+       корабль виден ночью раньше корпуса (G8) */
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const pg=ctx.createRadialGradient(rx-6,ry+1,2,rx-6,ry+1,len*.28);
+    pg.addColorStop(0,"rgba(255,200,130,.28)");pg.addColorStop(1,"rgba(255,170,90,0)");
+    ctx.fillStyle=pg;ctx.beginPath();ctx.ellipse(rx-6,ry+1,len*.28,len*.07,0,0,TAU);ctx.fill();
+    ctx.restore();
   }
   /* ── сопла снизу-сзади: после посадки ещё горячие ── */
   const ex=-half*.80, ey=bY+bodyH*.02, er=bodyH*.24;
@@ -26581,8 +26695,11 @@ function drawBase(){
      землёй читаются как трава и небо (так и вышло с первого раза). Берём тот же
      цвет, но уведённый в тёмное и обесцвеченный — узнаваемо и при этом подземно */
   const rc=i=>mixc(pal[Math.min(i,pal.length-1)],[26,19,14],.66);
-  const rock=ctx.createLinearGradient(0,gy,0,Y(150+baseRows(B)*BCELL_H+120));
-  rock.addColorStop(0,rgba(rc(1),1));
+  const rock=ctx.createLinearGradient(0,gy-BCELL_H*2.1,0,Y(150+baseRows(B)*BCELL_H+120));
+  /* холм начинается выше грунта и освещён небом: одной тёмной заливкой он
+     читался дырой в небе, а не горой (G9) */
+  rock.addColorStop(0,rgba(mixc(rc(0),sky[0],.35),1));
+  rock.addColorStop(.3,rgba(rc(1),1));
   rock.addColorStop(.55,rgba(rc(3),1));
   rock.addColorStop(1,rgba(rc(4),1));
   ctx.fillStyle=rock;ctx.fill(GP);
@@ -26596,7 +26713,7 @@ function drawBase(){
     ctx.fillStyle=r%2?"rgba(0,0,0,.30)":"rgba(255,255,255,.055)";ctx.fill();
   }
   const mat=pl?planetMat(pl):null;
-  if(mat)fillMaterial(mat,camx,camy,.34,.26,GP,{x:0,y:Math.max(0,gy),w:W,h:H});
+  if(mat)fillMaterial(mat,camx,camy,.34,.26,GP,{x:0,y:0,w:W,h:H});   // и холму тоже — раньше материал шёл только от грунта вниз (G9)
   /* Материал планеты — это её ПОВЕРХНОСТЬ: во всю силу под землёй он читается
      мхом и травой. Умножением уводим всё в бурое: фактура остаётся, зелень
      уходит, и разрез начинает выглядеть разрезом */
@@ -26606,6 +26723,11 @@ function drawBase(){
   /* верхний слой почвы: без него кромка грунта — просто линия среза */
   ctx.save();ctx.clip(GP);
   ctx.fillStyle="rgba(20,14,9,.45)";ctx.fillRect(0,Math.max(0,gy),W,16);
+  ctx.restore();
+  /* кромка холма ловит небо: полоса света внутрь от силуэта и волосок по краю */
+  ctx.save();ctx.clip(GP);
+  ctx.strokeStyle=rgba(sky[0],.16);ctx.lineWidth=14;ctx.stroke(GP);
+  ctx.strokeStyle=rgba(mixc(sky[0],[255,255,255],.3),.30);ctx.lineWidth=2.4;ctx.stroke(GP);
   ctx.restore();
   /* ── зерно породы ──
      Пласты у базы были, а зерна не было, и разрез читался полосатым матрасом:
@@ -27473,6 +27595,55 @@ function decoFrond(A){
   ctx.beginPath();ctx.ellipse(0,3,w*.5,Math.max(2,w*.12),0,0,TAU);ctx.fill();
 }
 
+/* ── передний план ──
+   Между игроком и стеклом ничего не стояло: дальний хребет, грунт, человек —
+   и всё на одной глубине (G2). Глубина в 2D делается перекрытием: редкие
+   тёмные силуэты у самого края кадра, идущие быстрее камеры, и без деталей —
+   вблизи глаз не фокусируется, и силуэт работает значением, не фактурой.
+   Цвет — тень неба этой планеты, поэтому он принадлежит кадру, а не наклейке. */
+function drawForeground(tr,camx,camy,p){
+  const K=1.24, SLOT=560;
+  const amb=ambRGB(p);
+  const c="rgba("+Math.round(amb[0]*.30)+","+Math.round(amb[1]*.32)+","+Math.round(amb[2]*.38)+",";
+  const fx=camx*K;
+  const s0=Math.floor((fx-300)/SLOT), s1=Math.floor((fx+W+300)/SLOT);
+  const hasAir=p.T.atm!=="отсутствует";
+  for(let s=s0;s<=s1;s++){
+    const h=hashi(s,p.seed,0xF06E);
+    if((h&3)!==0)continue;                       // один силуэт на два экрана
+    const wx=s*SLOT+((h>>>2)&511), sx=wx-fx;
+    const gy=groundAt(tr,clamp(sx+camx,0,tr.W-1))-camy;
+    const kind=(h>>>11)&3, r=48+((h>>>13)&63);
+    const y=Math.max(gy+r*.8+40,H-r*.5);   // ближе — ниже в кадре: у самой кромки, срезан ею
+    if(y-r>H+10||sx+r<-20||sx-r>W+20)continue;
+    if(kind<2||!hasAir){
+      /* валун: рваный круг, верх чуть светлее — ловит небо */
+      ctx.fillStyle=c+".88)";
+      ctx.beginPath();
+      for(let i=0;i<11;i++){
+        const a=i/11*TAU, rr=r*(.78+((hashi(s,i,0xB0D)>>>4)&15)/15*.3);
+        const px=sx+Math.cos(a)*rr*1.25, py=y+Math.sin(a)*rr*.8;
+        if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py);
+      }
+      ctx.closePath();ctx.fill();
+      ctx.fillStyle="rgba("+amb.join(",")+",.10)";
+      ctx.beginPath();ctx.ellipse(sx-r*.2,y-r*.55,r*.7,r*.16,-.2,0,TAU);ctx.fill();
+    }else{
+      /* куст/трава: пучок лезвий, кланяется ветру */
+      ctx.strokeStyle=c+".92)";ctx.lineCap="round";
+      const n=6+((h>>>19)&5), bow=(WIND||0)*6+Math.sin(G.t*.02+s)*3;
+      for(let i=0;i<n;i++){
+        const hh=hashi(s,i*7,0x6A55), bx=sx+((hh&63)-32)*1.2, len=r*(.8+((hh>>>6)&15)/15*.8);
+        const lean=((hh>>>10)&15)/15-.5;
+        ctx.lineWidth=2.2+((hh>>>14)&3);
+        ctx.beginPath();ctx.moveTo(bx,y+10);
+        ctx.quadraticCurveTo(bx+lean*len*.4,y-len*.55,bx+lean*len+bow,y-len);
+        ctx.stroke();
+      }
+    }
+  }
+}
+
 /* ══════════════ ваши постройки видны с земли ══════════════ */
 /* База и дом существовали строчками в меню: чтобы понять, что они у вас есть,
    нужно было зайти в раздел. Сели на планету, где стоит ваша база, — на горизонте
@@ -28314,6 +28485,7 @@ function drawSurface(){
      должны остаться читаемыми, их виньетка касаться не должна */
   /* погода поверх мира, но под лучами и свёрткой: осадки идут перед игроком,
      а свет и цветокоррекция ложатся уже на всё вместе */
+  drawForeground(tr,camx,camy,p);
   drawWeather(p,camx,camy);
   lightShafts(p);
   gradePass(p);
@@ -30211,19 +30383,45 @@ function drawRaid(){
     const m0=[a[0],(a[1]+b[1])/2,a[2]], m1=[d[0],(c[1]+d[1])/2,d[2]];
     quad(a,m0,m1,d,col,li*1.08,true);
     quad(m0,b,c,m1,col,li*.72,true);
+    /* ── обшивка ──
+       Стена была одним тоном с контуром и читалась бумагой (G4). Теперь на ней
+       то, что есть на стене любого отсека базы: плинтус у пола, шов между
+       листами на трети высоты и кабель-канал под потолком — три тонких
+       четырёхугольника в той же проекции, без единого нового прохода. */
+    const lerp3=(p,q,t)=>[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t,p[2]+(q[2]-p[2])*t];
+    const dark=[col[0]*.55|0,col[1]*.55|0,col[2]*.6|0];
+    quad(a,lerp3(a,b,.06),lerp3(d,c,.06),d,dark,li,false);                       // плинтус
+    quad(lerp3(a,b,.36),lerp3(a,b,.385),lerp3(d,c,.385),lerp3(d,c,.36),dark,li*.9,false);   // шов
+    quad(lerp3(a,b,.80),lerp3(a,b,.86),lerp3(d,c,.86),lerp3(d,c,.80),[col[0]+26,col[1]+22,col[2]+14],li*.95,false); // кабель-канал
+    /* заклёпки по шву — только вблизи, иначе это шум */
+    const A=proj(a[0],a[1],a[2]);
+    if(A&&A.z<RCELL*3.5){
+      for(let t=.12;t<.95;t+=.2){
+        const p=lerp3(lerp3(a,b,.40),lerp3(d,c,.40),t),q=lerp3(lerp3(a,b,.43),lerp3(d,c,.43),t+.018);
+        quad(p,[p[0],q[1],p[2]],q,[q[0],p[1],q[2]],[col[0]+40,col[1]+40,col[2]+40],li,false);
+      }
+    }
   }
-  function quad(a,b,c,d,col,li,edge,emis){
+  function quad(a,b,c,d,col,li,edge,emis,dBias){
     const A=proj(a[0],a[1],a[2]),B=proj(b[0],b[1],b[2]),
           C=proj(c[0],c[1],c[2]),D=proj(d[0],d[1],d[2]);
     if(!A||!B||!C||!D)return;
-    polys.push({p:[A,B,C,D],d:(A.z+B.z+C.z+D.z)/4,col,li,edge,emis});
+    polys.push({p:[A,B,C,D],d:(A.z+B.z+C.z+D.z)/4+(dBias||0),col,li,edge,emis});
   }
   /* Коробка из пяти граней (низ не виден): всё крупное железо в ангаре собрано
      из них — контейнеры, опоры, катер. Ярче светится верх, бока темнее, и
      этого хватает, чтобы предмет стоял в пространстве, а не лежал наклейкой. */
   function box(bx,by,bz,bw,bh,bd,col,li){
     const x0=bx-bw/2,x1=bx+bw/2,z0=bz-bd/2,z1=bz+bd/2,y1=by+bh;
+    /* контактная тень на полу: без неё коробка висит над плитой (G4) */
+    quad([x0-4,by+.5,z0-4],[x1+4,by+.5,z0-4],[x1+4,by+.5,z1+4],[x0-4,by+.5,z1+4],[6,8,12],li*.5,false,0,6);
     quad([x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1],col,li*1.15,true);   // верх
+    /* кант крышки: тёмная полоса под верхом по всем четырём бокам — ящик, а не куб */
+    const rim=[col[0]*.5|0,col[1]*.5|0,col[2]*.55|0],ry=y1-Math.min(3,bh*.18);
+    quad([x0,ry,z0],[x0,y1,z0],[x1,y1,z0],[x1,ry,z0],rim,li,false,0,-.5);
+    quad([x1,ry,z1],[x1,y1,z1],[x0,y1,z1],[x0,ry,z1],rim,li,false,0,-.5);
+    quad([x0,ry,z1],[x0,y1,z1],[x0,y1,z0],[x0,ry,z0],rim,li,false,0,-.5);
+    quad([x1,ry,z0],[x1,y1,z0],[x1,y1,z1],[x1,ry,z1],rim,li,false,0,-.5);
     quad([x0,by,z0],[x0,y1,z0],[x1,y1,z0],[x1,by,z0],col,li*.95,true);
     quad([x1,by,z1],[x1,y1,z1],[x0,y1,z1],[x0,by,z1],col,li*.72,true);
     quad([x0,by,z1],[x0,y1,z1],[x0,y1,z0],[x0,by,z0],col,li*.82,true);
@@ -30247,6 +30445,16 @@ function drawRaid(){
     const torch=clamp((1-ang/1.1),0,1)*clamp(1-dd/620,0,1)*.5;
     const li=clamp(.95-dd/(RCELL*9)+torch+lamp,.1,1.15);
     quad([x0,h,z0],[x1,h,z0],[x1,h,z1],[x0,h,z1],base,li*.9,false);
+    /* плита пола с зазором по кромке и пятно света под лампой: пол был
+       одной заливкой от стены до стены (G4) */
+    const gp=RCELL*.05;
+    quad([x0+gp,h+.3,z0+gp],[x1-gp,h+.3,z0+gp],[x1-gp,h+.3,z1-gp],[x0+gp,h+.3,z1-gp],
+         [base[0]+6,base[1]+6,base[2]+6],li*.93,false,0,-.2);
+    if(K==="corr"||K==="reactor"||K==="hangar"){
+      const pc=K==="reactor"?[base[0]+10,base[1]+34,base[2]+34]:[base[0]+30,base[1]+26,base[2]+14];
+      const pp=RCELL*.24;
+      quad([x0+pp,h+.6,z0+pp],[x1-pp,h+.6,z0+pp],[x1-pp,h+.6,z1-pp],[x0+pp,h+.6,z1-pp],pc,li*1.05,false,0,-.4);
+    }
     quad([x0,RAID_H,z1],[x1,RAID_H,z1],[x1,RAID_H,z0],[x0,RAID_H,z0],base,li*.28,false);   // потолок темнее пола: свет идёт сверху вниз
     /* стены рисуем только там, где соседняя клетка — порода */
     if(raidSolid(R,c,rr-1))wall([x0,h,z0],[x0,RAID_H,z0],[x1,RAID_H,z0],[x1,h,z0],base,li);
@@ -31184,7 +31392,7 @@ function drawBelt(){
     }
     const vein=p.ore>.57;
     const base=vein?p.oreCol:p.rock;
-    const k=.24+p.li*(vein?1.30:.98);
+    const k=.15+Math.pow(p.li,1.3)*(vein?1.42:1.10);   // терминатор резче: при .24+li камень читался плоским (G6)
     const fog=clamp(1-p.d/2600,.1,1);
     /* три составляющих вместо одной: свет звезды своего цвета, холодный
        подсвет от туманности в тенях и кромочный блик. Одна давала камень
@@ -34586,7 +34794,7 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   const cy=fy-52;
   /* ── стена и потолок ── */
   const wg=c.createLinearGradient(0,0,0,fy);
-  wg.addColorStop(0,rgba(mixc(S.wall,[6,8,12],.55),1));
+  wg.addColorStop(0,rgba(mixc(S.wall,[6,8,12],.40),1));
   wg.addColorStop(1,rgba(S.wall,1));
   c.fillStyle=wg;c.fillRect(0,0,W2,fy);
   /* обшивка секциями: вертикальные швы и заклёпки — та же стена, что в отсеках */
@@ -34684,8 +34892,8 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
     const base=W2*(.06+(i/Math.max(1,CR.n-1))*CR.spread*.88);
     const bx=base+((i&1)?-10*CR.clump:0)+RR()*8-4;
     const far=RR()<.45;                       // кто-то стоит дальше и темнее
-    c.globalAlpha=far?.18:.32;
-    cantFigure(c,bx,cy+16+(far?-4:0),far?[42,48,58]:[54,60,72],
+    c.globalAlpha=far?.30:.52;   // толпа была тенями по .18–.32 и не читалась вовсе (кантина, проход 2)
+    cantFigure(c,bx,cy+16+(far?-4:0),far?[46,52,62]:[[96,88,70],[70,84,96],[92,72,74],[76,92,78]][i%4],
                G.t*.02+i*2.3,null,0);
     c.globalAlpha=1;
   }
@@ -34712,20 +34920,12 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   });
   if(typeof storyCantFigures==="function")storyCantFigures(c,W2,fy,cy);   // люди историй — за стойкой, как все (11c)
   /* ── стойка ── */
-  c.fillStyle="rgba(24,28,36,.98)";c.fillRect(0,cy,W2,fy-cy);
-  c.fillStyle="rgba(58,46,36,.98)";c.fillRect(0,cy-7,W2,8);        // столешница
+  /* пол перед стойкой: светлее стены, иначе низ кадра — та же темнота */
+  c.fillStyle=rgba(mixc(S.wall,[96,90,82],.45),1);c.fillRect(0,fy,W2,H2-fy);
+  c.fillStyle="rgba(0,0,0,.35)";c.fillRect(0,fy,W2,2);
+  for(let x=0;x<W2;x+=72){c.fillStyle="rgba(0,0,0,.18)";c.fillRect(x+70,fy+2,2,H2-fy-2);}
+  cantCounter(c,W2,fy,cy,back,acc,seed);
   if(typeof storyCantProps==="function")storyCantProps(c,W2,fy,cy);       // их вещи — на столешнице
-  c.fillStyle="rgba(210,190,160,.16)";c.fillRect(0,cy-7,W2,1.6);   // блик по кромке
-  c.fillStyle="rgba(0,0,0,.35)";c.fillRect(0,cy+1,W2,2);
-  for(let i=0;i<Math.ceil(W2/48);i++){                              // филёнки
-    c.fillStyle="rgba(255,255,255,.035)";c.fillRect(i*48+6,cy+8,36,fy-cy-20);
-    c.fillStyle="rgba(0,0,0,.22)";c.fillRect(i*48+42,cy+8,2,fy-cy-20);
-  }
-  c.fillStyle=rgba(mixc([180,196,210],acc,.3),.22);                 // подножка
-  c.fillRect(0,fy-9,W2,3);
-  const cg=c.createLinearGradient(0,cy,0,fy);                       // свет ложится на переднюю панель сверху
-  cg.addColorStop(0,"rgba(255,226,180,.07)");cg.addColorStop(1,"rgba(0,0,0,.35)");
-  c.fillStyle=cg;c.fillRect(0,cy+1,W2,fy-cy-1);
   /* ── свет ──
      Пять залов отличались вывеской, окном и оттенком акцента — а светили
      одинаково: три лампы через равные промежутки, один и тот же конус. Свет
@@ -34753,6 +34953,8 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
     c.beginPath();c.moveTo(lx-11,38);c.lineTo(lx-4,26);c.lineTo(lx+4,26);c.lineTo(lx+11,38);
     c.closePath();c.fill();
     c.fillStyle=rgba(mixc(LT.tone,acc,.3),.9);c.fillRect(lx-9,37,18,2.5);
+    c.fillStyle=rgba(mixc(LT.tone,acc,.3),.11*LT.pow);                       // пятно света на полу
+    c.beginPath();c.ellipse(lx,fy+9,52*LT.cone,6,0,0,TAU);c.fill();
     const g=c.createLinearGradient(0,38,0,cy);
     g.addColorStop(0,rgba(mixc(LT.tone,acc,.25),.17*S.warm*LT.pow));
     g.addColorStop(1,"rgba(255,226,180,0)");
@@ -34820,7 +35022,7 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   }
   c.restore();
   const vg=c.createRadialGradient(W2/2,H2/2,H2*.35,W2/2,H2/2,H2*1.05);
-  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.55)");
+  vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.36)");   // виньетка в .55 топила зал
   c.fillStyle=vg;c.fillRect(0,0,W2,H2);
   return hits;
 }
@@ -35078,6 +35280,92 @@ function cantTables(c,W2,fy,cy,deals,sel,hover,acc,seed){
     hits.push({id,x:x-30,y:y-60,w:60,h:62});
   }
   return hits;
+}
+
+/* ── стойка по типу станции ──
+   Одна и та же филёнчатая стойка во всю ширину стояла в пяти залах (долг
+   «cantina» в PLAN). Стойка — это то, на что человек опирается локтем, и по
+   ней зал опознаётся не хуже вывески: в торговом зале дерево с латунным
+   поручнем и закруглённым торцом; на комбинате стальной лист с заклёпками и
+   рифлёнкой, короче зала — слева стоит бочка; на верфи верстак с ящиками и
+   тисками на торце; в научной — стекло с холодной подсветкой и тонкая
+   столешница; на аванпосте доски на двух бочках, с просветами. */
+function cantCounter(c,W2,fy,cy,back,acc,seed){
+  const R=rng(seed^0xC0A7);
+  const h=fy-cy;
+  let x0=0,x1=W2;
+  if(back==="indust"){x0=54;}
+  if(back==="outpost"){x0=36;x1=W2-30;}
+  /* корпус */
+  const body={trade:"rgba(24,28,36,.98)",indust:"rgba(44,48,54,.98)",yard:"rgba(40,36,30,.98)",
+    sci:"rgba(18,26,36,.98)",outpost:"rgba(20,18,16,.98)"}[back]||"rgba(24,28,36,.98)";
+  c.fillStyle=body;
+  if(back==="trade"){
+    c.beginPath();c.moveTo(x0,cy);c.lineTo(x1-26,cy);c.quadraticCurveTo(x1,cy,x1,cy+26);
+    c.lineTo(x1,fy);c.lineTo(x0,fy);c.closePath();c.fill();
+  }else if(back==="outpost"){
+    /* две бочки и настил сверху */
+    for(const bx of [x0+30,x1-60]){
+      c.fillStyle="rgba(58,52,44,.98)";c.fillRect(bx,cy+6,34,h-6);
+      c.fillStyle="rgba(0,0,0,.35)";c.fillRect(bx,cy+6,34,2);c.fillRect(bx,cy+h*.55,34,2);
+      c.fillStyle="rgba(140,130,110,.25)";c.fillRect(bx+3,cy+6,2,h-6);
+    }
+    c.fillStyle=body;c.fillRect(x0,cy,x1-x0,9);
+  }else c.fillRect(x0,cy,x1-x0,h);
+  /* столешница */
+  const top={trade:"rgba(58,46,36,.98)",indust:"rgba(86,90,96,.98)",yard:"rgba(96,80,58,.98)",
+    sci:"rgba(150,176,196,.55)",outpost:"rgba(84,70,50,.98)"}[back]||"rgba(58,46,36,.98)";
+  c.fillStyle=top;c.fillRect(x0,cy-7,x1-x0,8);
+  c.fillStyle="rgba(230,220,200,.18)";c.fillRect(x0,cy-7,x1-x0,1.6);      // блик по кромке
+  c.fillStyle="rgba(0,0,0,.35)";c.fillRect(x0,cy+1,x1-x0,2);
+  if(back==="trade"){
+    for(let i=0;i<Math.ceil((x1-x0)/48);i++){                                // филёнки
+      c.fillStyle="rgba(255,255,255,.035)";c.fillRect(x0+i*48+6,cy+8,36,h-20);
+      c.fillStyle="rgba(0,0,0,.22)";c.fillRect(x0+i*48+42,cy+8,2,h-20);
+    }
+    c.fillStyle="rgba(214,176,96,.55)";c.fillRect(x0,cy-11,x1-x0-30,2.2);   // латунный поручень
+    c.fillStyle="rgba(255,236,180,.25)";c.fillRect(x0,cy-11,x1-x0-30,.8);
+    for(let x=x0+40;x<x1-40;x+=120){c.fillStyle="rgba(214,176,96,.6)";c.fillRect(x,cy-11,2,5);}
+  }else if(back==="indust"){
+    for(let y=cy+10;y<fy-12;y+=7)for(let x=x0+4;x<x1-4;x+=7){              // рифлёнка
+      c.fillStyle="rgba(255,255,255,.045)";c.fillRect(x+((y/7|0)%2)*3,y,2.4,1.2);}
+    c.fillStyle="rgba(180,190,200,.35)";
+    for(let x=x0+8;x<x1-6;x+=22){c.fillRect(x,cy+6,2,2);c.fillRect(x,fy-16,2,2);}   // заклёпки
+    c.fillStyle="rgba(0,0,0,.4)";c.fillRect(x0,cy,2,h);
+    /* бочка слева, где стойки нет */
+    c.fillStyle="rgba(70,62,52,.98)";c.fillRect(8,cy+4,38,h-4);
+    c.fillStyle="rgba(0,0,0,.35)";c.fillRect(8,cy+4,38,2);c.fillRect(8,cy+h*.5,38,2);
+    c.fillStyle=rgba(acc,.3);c.fillRect(12,cy+h*.3,30,3);
+  }else if(back==="yard"){
+    for(let x=x0+10;x<x1-70;x+=56){                                        // ящики верстака
+      c.fillStyle="rgba(52,46,38,.98)";c.fillRect(x,cy+10,46,h*.36);c.fillRect(x,cy+12+h*.36,46,h*.36);
+      c.fillStyle="rgba(180,170,150,.4)";c.fillRect(x+17,cy+10+h*.18,12,2);c.fillRect(x+17,cy+12+h*.54,12,2);
+      c.fillStyle="rgba(0,0,0,.3)";c.fillRect(x,cy+10,46,1.2);
+    }
+    /* тиски на торце */
+    c.fillStyle="rgba(120,126,134,.95)";c.fillRect(x1-40,cy-16,22,10);c.fillRect(x1-34,cy-22,4,6);
+    c.fillStyle="rgba(0,0,0,.4)";c.fillRect(x1-40,cy-8,22,2);
+    c.fillStyle="rgba(200,206,214,.4)";c.fillRect(x1-40,cy-16,22,1.2);
+  }else if(back==="sci"){
+    const g=c.createLinearGradient(0,cy+4,0,fy);                           // стекло с подсветкой
+    g.addColorStop(0,rgba(mixc([150,200,240],acc,.4),.26));g.addColorStop(1,"rgba(60,90,120,.05)");
+    c.fillStyle=g;c.fillRect(x0,cy+4,x1-x0,h-12);
+    c.fillStyle="rgba(200,230,250,.12)";
+    for(let x=x0;x<x1;x+=90)c.fillRect(x,cy+4,1,h-12);
+    c.fillStyle="rgba(20,28,40,.98)";c.fillRect(x0,cy-7,x1-x0,3);       // тонкая столешница
+  }else if(back==="outpost"){
+    for(let x=x0;x<x1;x+=34){                                              // доски настила с просветами
+      c.fillStyle="rgba("+(80+R()*20|0)+","+(66+R()*16|0)+",46,.98)";c.fillRect(x,cy-7,30,9);
+      c.fillStyle="rgba(0,0,0,.45)";c.fillRect(x+30,cy-7,4,9);
+    }
+  }
+  /* подножка и свет сверху на переднюю панель — у всех, кроме аванпоста */
+  if(back!=="outpost"){
+    c.fillStyle=rgba(mixc([180,196,210],acc,.3),.22);c.fillRect(x0,fy-9,x1-x0,3);
+    const cg=c.createLinearGradient(0,cy,0,fy);
+    cg.addColorStop(0,"rgba(255,226,180,.07)");cg.addColorStop(1,"rgba(0,0,0,.35)");
+    c.fillStyle=cg;c.fillRect(x0,cy+1,x1-x0,h-1);
+  }
 }
 
 /* ══════════════ дом: помещение, а не список ══════════════

@@ -178,8 +178,18 @@ function gradePass(p){
 }
 /* небо-подложка: вертикальный градиент на весь экран, один раз на планету */
 function drawSkyBase(p){
-  const s=p.T.sky;
-  ctx.drawImage(screenLayer("skybg|"+s[0].join(",")+"|"+s[1].join(","),()=>{
+  const s=p.T.sky, sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a", hasAir=p.T.atm!=="отсутствует";
+  ctx.drawImage(screenLayer("skybg|"+s[0].join(",")+"|"+s[1].join(",")+"|"+sc+"|"+hasAir,()=>{
     ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
+    /* зарево у горизонта цветом звезды: воздух рассеивает её свет сильнее
+       всего там, где путь луча длиннее. Без атмосферы — нет и зарева (G7). */
+    if(hasAir){
+      const c=hex2rgb(sc);
+      const g=ctx.createLinearGradient(0,H*.42,0,H*.78);
+      g.addColorStop(0,"rgba("+c.join(",")+",0)");
+      g.addColorStop(.7,"rgba("+c.join(",")+",.14)");
+      g.addColorStop(1,"rgba("+c.join(",")+",.22)");
+      ctx.fillStyle=g;ctx.fillRect(0,H*.42,W,H*.36);
+    }
   }),0,0,W,H);
 }

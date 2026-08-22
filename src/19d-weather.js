@@ -134,7 +134,10 @@ function drawWeather(p,camx,camy){
   ctx.lineCap="round";
   for(let i=0;i<n;i++){
     const r1=h01(i,1,0x5E7), r2=h01(i,2,0x5E7), r3=h01(i,3,0x5E7);
-    const spd=W0.spd*(.55+r2*.9);
+    /* две глубины: ближние капли крупнее, быстрее и ярче, дальние — тонкая
+       сетка. Одним слоем дождь читался помехами на стекле (G7) */
+    const near=r2>.74;
+    const spd=W0.spd*(near?1.75:.55+r2*.6);
     /* вертикаль всегда сверху вниз, горизонталь — от ветра; и то и другое
        заворачивается по экрану, поэтому частиц ровно столько, сколько видно */
     const fall=(r1*1400+t*spd)%(H+80);
@@ -147,10 +150,11 @@ function drawWeather(p,camx,camy){
          у пыли почти горизонтальный */
       const dr=W0.dir||0;
       const sgn=wind<0?-1:1;
-      const vx=sgn*W0.len*(dr*3.4+Math.abs(wind)*.4);
-      const vy=W0.len*(1-dr*.82);
-      ctx.strokeStyle="rgba("+c.join(",")+","+a.toFixed(3)+")";
-      ctx.lineWidth=w.kind==="rain"?1:1.4;
+      const lk=near?1.6:.8;
+      const vx=sgn*W0.len*lk*(dr*3.4+Math.abs(wind)*.4);
+      const vy=W0.len*lk*(1-dr*.82);
+      ctx.strokeStyle="rgba("+c.join(",")+","+(a*(near?1.25:.85)).toFixed(3)+")";
+      ctx.lineWidth=(w.kind==="rain"?1:1.4)*(near?1.8:.9);
       ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+vx,y+vy);ctx.stroke();
     }else{
       /* снег и пепел планируют: своя фаза покачивания у каждой частицы */

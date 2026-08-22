@@ -2042,7 +2042,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/19b-sky.js · 20 КБ
   · небо:1
 
-## src/19c-light.js · 12 КБ
+## src/19c-light.js · 13 КБ
   · свет и воздух:1
 
 ## src/19d-weather.js · 12 КБ

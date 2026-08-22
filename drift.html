@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.99.7";
+const VER="0.99.8";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -21965,9 +21965,19 @@ function gradePass(p){
 }
 /* небо-подложка: вертикальный градиент на весь экран, один раз на планету */
 function drawSkyBase(p){
-  const s=p.T.sky;
-  ctx.drawImage(screenLayer("skybg|"+s[0].join(",")+"|"+s[1].join(","),()=>{
+  const s=p.T.sky, sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a", hasAir=p.T.atm!=="отсутствует";
+  ctx.drawImage(screenLayer("skybg|"+s[0].join(",")+"|"+s[1].join(",")+"|"+sc+"|"+hasAir,()=>{
     ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
+    /* зарево у горизонта цветом звезды: воздух рассеивает её свет сильнее
+       всего там, где путь луча длиннее. Без атмосферы — нет и зарева (G7). */
+    if(hasAir){
+      const c=hex2rgb(sc);
+      const g=ctx.createLinearGradient(0,H*.42,0,H*.78);
+      g.addColorStop(0,"rgba("+c.join(",")+",0)");
+      g.addColorStop(.7,"rgba("+c.join(",")+",.14)");
+      g.addColorStop(1,"rgba("+c.join(",")+",.22)");
+      ctx.fillStyle=g;ctx.fillRect(0,H*.42,W,H*.36);
+    }
   }),0,0,W,H);
 }
 
@@ -22107,7 +22117,10 @@ function drawWeather(p,camx,camy){
   ctx.lineCap="round";
   for(let i=0;i<n;i++){
     const r1=h01(i,1,0x5E7), r2=h01(i,2,0x5E7), r3=h01(i,3,0x5E7);
-    const spd=W0.spd*(.55+r2*.9);
+    /* две глубины: ближние капли крупнее, быстрее и ярче, дальние — тонкая
+       сетка. Одним слоем дождь читался помехами на стекле (G7) */
+    const near=r2>.74;
+    const spd=W0.spd*(near?1.75:.55+r2*.6);
     /* вертикаль всегда сверху вниз, горизонталь — от ветра; и то и другое
        заворачивается по экрану, поэтому частиц ровно столько, сколько видно */
     const fall=(r1*1400+t*spd)%(H+80);
@@ -22120,10 +22133,11 @@ function drawWeather(p,camx,camy){
          у пыли почти горизонтальный */
       const dr=W0.dir||0;
       const sgn=wind<0?-1:1;
-      const vx=sgn*W0.len*(dr*3.4+Math.abs(wind)*.4);
-      const vy=W0.len*(1-dr*.82);
-      ctx.strokeStyle="rgba("+c.join(",")+","+a.toFixed(3)+")";
-      ctx.lineWidth=w.kind==="rain"?1:1.4;
+      const lk=near?1.6:.8;
+      const vx=sgn*W0.len*lk*(dr*3.4+Math.abs(wind)*.4);
+      const vy=W0.len*lk*(1-dr*.82);
+      ctx.strokeStyle="rgba("+c.join(",")+","+(a*(near?1.25:.85)).toFixed(3)+")";
+      ctx.lineWidth=(w.kind==="rain"?1:1.4)*(near?1.8:.9);
       ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+vx,y+vy);ctx.stroke();
     }else{
       /* снег и пепел планируют: своя фаза покачивания у каждой частицы */
@@ -27593,7 +27607,7 @@ function drawForeground(tr,camx,camy,p){
   const c="rgba("+Math.round(amb[0]*.30)+","+Math.round(amb[1]*.32)+","+Math.round(amb[2]*.38)+",";
   const fx=camx*K;
   const s0=Math.floor((fx-300)/SLOT), s1=Math.floor((fx+W+300)/SLOT);
-  const hasAir=p.T.atm!=="отсутствует";
+  const hasAir=p.T.atm!=="отсутствует"&&["terran","ocean","jungle","toxic"].includes(p.type);   // трава — только где есть флора: на льду пучок читался чёрными палками
   for(let s=s0;s<=s1;s++){
     const h=hashi(s,p.seed,0xF06E);
     if((h&3)!==0)continue;                       // один силуэт на два экрана

@@ -200,8 +200,8 @@ standard; the rest is pulled up to them, not the other way round.
   a gradient bent by the star's altitude, a few cloud fronts from `19e` with a lit and a shadow
   side; rain in two speeds; ring split into back/front halves around the disc.
   **Note (0.99.6):** the sky base is a cached layer since 0.95.0 and rings were already split;
-  still open: horizon glow bent by the star altitude, cloud fronts with a lit and a shadow
-  side, rain in two speeds.
+  0.99.8: horizon glow in the star colour, rain in two depths; clouds already had
+  lit/shadow sides. Still open: glow bent by the star altitude (needs the hour from 06a).
 - **G8 — the ship on the ground is a postage stamp.** On the surface the landed ship is ~40 px
   with no shadow, no landing gear dust, no hatch light. Fix: contact shadow, a pool of light
   under the hatch at night, the hull at the same scale as the base's people (the human is the

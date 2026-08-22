@@ -580,7 +580,7 @@ function drawForeground(tr,camx,camy,p){
   const c="rgba("+Math.round(amb[0]*.30)+","+Math.round(amb[1]*.32)+","+Math.round(amb[2]*.38)+",";
   const fx=camx*K;
   const s0=Math.floor((fx-300)/SLOT), s1=Math.floor((fx+W+300)/SLOT);
-  const hasAir=p.T.atm!=="отсутствует";
+  const hasAir=p.T.atm!=="отсутствует"&&["terran","ocean","jungle","toxic"].includes(p.type);   // трава — только где есть флора: на льду пучок читался чёрными палками
   for(let s=s0;s<=s1;s++){
     const h=hashi(s,p.seed,0xF06E);
     if((h&3)!==0)continue;                       // один силуэт на два экрана

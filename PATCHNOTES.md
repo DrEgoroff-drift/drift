@@ -8,6 +8,13 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.99.8 — "Horizon" (G7)
+
+The sky base layer carries a horizon glow in the star's colour on worlds with air; rain falls
+in two depths — near drops thick, fast and bright, far ones a thin net. The cloud note in G7
+was stale: sprites already had a lit side, a shadow side and a rim. Foreground grass tufts now
+appear only on worlds with flora (on ice they read as black sticks).
+
 ## 0.99.7 — "The star is over there" (G10)
 
 In system view the primary's glow now bleeds into the frame from its side even when the star
