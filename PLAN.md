@@ -217,6 +217,8 @@ standard; the rest is pulled up to them, not the other way round.
   planets off-frame: the screen looks like a loading state. Fix: stars in three magnitudes with a
   few coloured ones, the primary's glow bleeding into the frame from its direction even
   off-screen, orbit lines fading with distance, nebula as two layers with parallax.
+  **Done in 0.99.7** for the off-screen bleed and orbit fade. Still open: three star
+  magnitudes with a few coloured ones; nebula parallax.
 - **G11 — raster budget, by rule.** After G0: anything static under a moving camera goes
   through `18c-chunks` (today only landing and weather call `screenLayer`/`chunkAt` — the
   surface ground, cave and mine rock, base soil and the sky should all go through it); per-frame

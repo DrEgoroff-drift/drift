@@ -164,7 +164,7 @@ BELT_HALF                    src/24-mode-belt.js:84
 BELT_POI                     src/24b-belt-poi.js:13
 BELT_RES                     src/02-world.js:62
 beltBasis                    src/24-mode-belt.js:151
-beltDots                     src/17-mode-system.js:499
+beltDots                     src/17-mode-system.js:508
 beltFwd                      src/24-mode-belt.js:146
 beltIcy                      src/24-mode-belt.js:87
 BG                           src/16-flight.js:3
@@ -398,8 +398,8 @@ drawBeast                    src/20-life.js:697
 drawBeastAlien               src/20-life.js:540
 drawBelt                     src/24-mode-belt.js:318
 drawBeltPOISprite            src/24b-belt-poi.js:50
-drawBeltRing                 src/17-mode-system.js:505
-drawBeltRocks                src/17-mode-system.js:452
+drawBeltRing                 src/17-mode-system.js:514
+drawBeltRocks                src/17-mode-system.js:461
 drawBuildMenu                src/21aa-base-rooms.js:492
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
@@ -460,7 +460,7 @@ drawPlantAlien               src/20-life.js:179
 drawPOI                      src/20a-poi.js:171
 drawPortal                   src/20aa-poi-shapes.js:464
 drawRaid                     src/24a-mode-raid.js:351
-drawRing                     src/17-mode-system.js:415
+drawRing                     src/17-mode-system.js:424
 drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:151
@@ -473,7 +473,7 @@ drawStarHole                 src/16a-space.js:396
 drawStarNeutron              src/16a-space.js:369
 drawStars                    src/16-flight.js:13
 drawStarSingle               src/16a-space.js:310
-drawStation                  src/17-mode-system.js:575
+drawStation                  src/17-mode-system.js:584
 drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
@@ -1351,7 +1351,7 @@ resEma                       src/28-loop.js:280
 resetArm                     src/26-ui-station.js:874
 resetWorld                   tests/90-harness.js:27
 resize                       src/08-state.js:6
-reticle                      src/17-mode-system.js:427
+reticle                      src/17-mode-system.js:436
 rgba                         src/03-ships.js:149
 ridged                       src/18a-material.js:30
 rivalDefeated                src/12p-news.js:81
@@ -1362,8 +1362,8 @@ rivalSpawn                   src/12p-news.js:71
 rivalYield                   src/12p-news.js:44
 rivetLine                    src/25-cockpit.js:179
 rng                          src/01-core.js:15
-ROCK_CELL                    src/17-mode-system.js:451
-ROCK_SHAPES                  src/17-mode-system.js:437
+ROCK_CELL                    src/17-mode-system.js:460
+ROCK_SHAPES                  src/17-mode-system.js:446
 ROGUE_CAP                    src/12g-mgr-rogue.js:11
 rogueDefeated                src/12g-mgr-rogue.js:91
 rogueFrom                    src/12g-mgr-rogue.js:38
@@ -1514,7 +1514,7 @@ speechAll                    src/11b-speech.js:87
 speechHere                   src/11b-speech.js:89
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
-ST_GOLD                      src/17-mode-system.js:528
+ST_GOLD                      src/17-mode-system.js:537
 ST_GROUPS                    src/26-ui-station.js:35
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:8
@@ -1535,9 +1535,9 @@ stationMods                  src/17a-station-mod.js:30
 stationModsLine              src/17a-station-mod.js:59
 stationParts                 src/03-ships.js:116
 stationUniqueOffer           src/03-ships.js:107
-stationViz                   src/17-mode-system.js:522
+stationViz                   src/17-mode-system.js:531
 statPreview                  src/05-parts.js:271
-stCore                       src/17-mode-system.js:539
+stCore                       src/17-mode-system.js:548
 stDel                        src/14-save.js:10
 steps                        tests/90-harness.js:70
 stGet                        src/14-save.js:8
@@ -1587,8 +1587,8 @@ storyTableLine               src/11c-stories.js:222
 storyTraces                  src/11c-stories.js:162
 storyTurns                   src/11c-stories.js:108
 storyWhen                    src/11c-stories.js:148
-stPanels                     src/17-mode-system.js:529
-stRing                       src/17-mode-system.js:555
+stPanels                     src/17-mode-system.js:538
+stRing                       src/17-mode-system.js:564
 STRIP_CHUNK                  src/07-planet.js:73
 STRIP_JOB                    src/07-planet.js:76
 STRIP_MS                     src/07-planet.js:72
@@ -2019,7 +2019,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/17b-finds.js · 14 КБ
   · находки в полёте:1
 
-## src/17-mode-system.js · 43 КБ
+## src/17-mode-system.js · 44 КБ
   · режим: система:1
 
 ## src/18a-material.js · 21 КБ

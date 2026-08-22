@@ -8,6 +8,13 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.99.7 — "The star is over there" (G10)
+
+In system view the primary's glow now bleeds into the frame from its side even when the star
+itself is off-screen (one sprite blit, lighter), and orbit rings fade with radius instead of
+being one brightness — the screen no longer reads as a loading state when the star is out of
+view.
+
 ## 0.99.6 — "It stands on the ground" (G8)
 
 The landed ship gets a contact shadow that grows with the gear, and the light from the hatch

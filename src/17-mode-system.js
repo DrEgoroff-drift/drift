@@ -295,8 +295,9 @@ function drawSystem(){
   drawStars(cx0*.06*Z,cy0*.06*Z,1);
   drawSpaceDust(cx0*Z,cy0*Z,Z,sysStyle(sys).dust);
   const ox=zx(0),oy=zy(0);
-  ctx.strokeStyle="rgba(120,190,210,.10)";ctx.lineWidth=1;
-  for(const p of sys.planets){ctx.beginPath();ctx.arc(ox,oy,p.orbit*Z,0,TAU);ctx.stroke();}
+  ctx.lineWidth=1;
+  /* орбиты гаснут с расстоянием: ровные кольца одной яркости делали систему чертежом (G10) */
+  for(const p of sys.planets){ctx.strokeStyle="rgba(120,190,210,"+(.17*clamp(1-p.orbit*Z/(W*1.6),.3,1)).toFixed(3)+")";ctx.beginPath();ctx.arc(ox,oy,p.orbit*Z,0,TAU);ctx.stroke();}
   if(sys.station){ctx.strokeStyle="rgba(242,178,92,.13)";
     ctx.beginPath();ctx.arc(ox,oy,sys.station.orbit*Z,0,TAU);ctx.stroke();}
   if(sys.belt)drawBeltRing(ox,oy,sys.belt,Z);
@@ -305,6 +306,14 @@ function drawSystem(){
      редко чёрная дыра (16a-space). Освещение и опасность по-прежнему считаются
      от sys.cls — экзотика меняет только вид. */
   drawStarBody(ox,oy,R,sys);
+  /* светило за кадром: его зарево всё равно входит в кадр со своей стороны —
+     иначе системный вид без звезды выглядел экраном загрузки (G10) */
+  {const dx=ox<0?-ox:(ox>W?ox-W:0), dy=oy<0?-oy:(oy>H?oy-H:0), dd=Math.hypot(dx,dy);
+   if(dd>0){const col=sys.cls.col,c=hex2rgb(col);
+     const BL=glowSprite("bleed|"+col,()=>{const g=ctx.createRadialGradient(0,0,0,0,0,1);
+       g.addColorStop(0,"rgba("+c.join(",")+",.34)");g.addColorStop(.5,"rgba("+c.join(",")+",.10)");g.addColorStop(1,"rgba(0,0,0,0)");
+       ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);});
+     ctx.save();ctx.globalCompositeOperation="lighter";glowBlit(BL,ox,oy,dd+Math.max(W,H)*.55);ctx.restore();}}
   /* эллиптическая орбита — тонкий контур по формуле Кеплера, не окружность.
      Сорок девять точек эллипса не меняются никогда: орбита, эксцентриситет и
      наклон большой оси заданы при рождении системы. Считать их заново каждый
