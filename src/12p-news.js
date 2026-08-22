@@ -166,6 +166,9 @@ function newsTick(){
     newsAll().push({id:K.id,ru:out.ru,sx:out.sx,sy:out.sy,t:now});
     made++;
   }
+  /* слух об истории (11c): о прибитом месте, с его адресом */
+  const si=(typeof storyNewsItem==="function")?storyNewsItem(r):null;
+  if(si){newsAll().push(Object.assign(si,{t:now}));made++;}
   /* глубина памяти эфира зависит от приёмника, то есть от корпуса (03f) */
   const keep=(typeof newsKeepLimit==="function")?newsKeepLimit():NEWS_KEEP;
   while(newsAll().length>keep)G.news.shift();

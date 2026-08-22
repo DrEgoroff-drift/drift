@@ -175,9 +175,11 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
     cantFigure(c,x,fy-40,hex2rgb(R2.col),G.t*.028+i*1.7,mgrFace(m,34),m.ai?1:0);
     hits.push({id:m.id,x:x-26,y:cy-78,w:52,h:86});
   });
+  if(typeof storyCantFigures==="function")storyCantFigures(c,W2,fy,cy);   // люди историй — за стойкой, как все (11c)
   /* ── стойка ── */
   c.fillStyle="rgba(24,28,36,.98)";c.fillRect(0,cy,W2,fy-cy);
   c.fillStyle="rgba(58,46,36,.98)";c.fillRect(0,cy-7,W2,8);        // столешница
+  if(typeof storyCantProps==="function")storyCantProps(c,W2,fy,cy);       // их вещи — на столешнице
   c.fillStyle="rgba(210,190,160,.16)";c.fillRect(0,cy-7,W2,1.6);   // блик по кромке
   c.fillStyle="rgba(0,0,0,.35)";c.fillRect(0,cy+1,W2,2);
   for(let i=0;i<Math.ceil(W2/48);i++){                              // филёнки

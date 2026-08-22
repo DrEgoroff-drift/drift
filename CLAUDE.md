@@ -74,6 +74,7 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `08-state` `14-save` | the `G` object, `snapshot()`/`applySave()` |
 | `09-audio` `10-music` | sound synthesis, generative music |
 | `11-log` `12-economy` `13-pirates` | journal, live market and drones, pirates |
+| `11c-stories` `12k-stories-*` | the hundred: traces pulled by channels (ether, counter, table, finds, rumours, cantina), lazy turns, anchoring; data in `12k-*` |
 | `12a-crew` | hired hands: traits, orders, runs, hidden luck, wages, roles on a base |
 | `12b-crew-events` | run event table, benders, capture and ransom |
 | `12c-mgr-core` | managers: four domains, cut, traits, perks, standing orders, loyalty, blueprints |

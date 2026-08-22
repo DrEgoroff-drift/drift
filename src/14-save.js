@@ -36,6 +36,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
+    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
@@ -426,6 +427,10 @@ function applySave(s){
      всё это память об игроке, а не о мире, и поэтому персистится */
   G.speech=(s.speech&&typeof s.speech==="object")?s.speech:{};
   G.visits=(s.visits&&typeof s.visits==="object")?s.visits:{};
+  /* истории (11c): только то, что игрок видел, якоря и повороты */
+  G.seen=(s.seen&&typeof s.seen==="object")?s.seen:{};
+  G.storyPin=(s.storyPin&&typeof s.storyPin==="object")?s.storyPin:{};
+  G.storyFlags=(s.storyFlags&&typeof s.storyFlags==="object")?s.storyFlags:{};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
