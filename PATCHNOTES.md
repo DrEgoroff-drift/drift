@@ -9,6 +9,38 @@ could ever save.
 
 ---
 
+## 0.81.0 — "The front door, rebuilt"
+
+**The landing page stopped being documentation.** It was twelve description cards under a hero —
+good text in the wrong place, which turned a landing into a manual. Now the home page sells the
+game in one pass (hero → what it is → six screenshots → the loop → why → what works today) and
+every detailed explanation moved to **`/mechanics.html`**, a proper page with a sticky sidebar and
+eleven sections. The rule behind the split: the home page makes you understand, the mechanics page
+makes you knowledgeable.
+
+**Six real screenshots, captured from the current build.** The 52 shots in `docs/shots` predate the
+cockpit instruments, so they were not reused. `docs/stand.ps1` is new: it serves the repo over http
+(the game needs a server, `file://` breaks parts of it) **and accepts frames** — the page hands over
+its own canvas and the server writes it to disk, which is how these were taken with no screen
+capture available. System, map, cockpit, cave, base, surface: 313 KB for all six as webp.
+
+**The background got a body.** Planets now really rotate — body, cloud bands and terminator are
+baked separately, and the bands ride inside a circular mask, so a revolution costs five drawImage
+calls instead of a redrawn texture. Different speeds, different directions, orbital drift, parallax
+on mouse movement, and still only one visitor crossing the frame at a time: twenty moving things at
+once is a cheap sci-fi template, and the point here is emptiness with something living in it.
+
+**The parrot moved out.** `/parrot.html` carries the real bird — the same `12x`–`12z` code — as an
+installable app: a manifest, a service worker, and a `?pet=1` mode with no page chrome, so it lives
+in its own window on Mac and Windows and survives losing the network. For anyone who would rather
+not install, the same page downloads as one self-contained file.
+
+Also: an SVG favicon (a disc that left its trajectory), an OG image cut from a real frame, and the
+deploy now copies `site/` whole rather than by filename — the CI checks every page and asset
+answers 200, because a broken image on the front page is a failed deploy too.
+
+---
+
 ## 0.80.0 — "A front door, and a name to fly under"
 
 **The site is three files now.** `/` is a landing page (`site/index.html`), `/play.html` is the

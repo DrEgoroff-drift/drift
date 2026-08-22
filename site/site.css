@@ -1,0 +1,101 @@
+/* ДРЕЙФ — общий стиль сайта.
+   Палитра и шрифт взяты у игры дословно: заглавная не должна выглядеть рекламой
+   чего-то другого. Тот же фосфор на пустоте, те же рамки в один пиксель. */
+:root{
+  --void:#05070c; --deep:#080d16; --panel:rgba(8,13,22,.72);
+  --phos:#7fe6d8; --amber:#f2b25c; --rare:#c58ae0; --good:#8fd08a; --alarm:#ff6b57;
+  --dim:#5d7382;  --text:#cfe3ea;
+  --line:rgba(127,230,216,.12);
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--void);color:var(--text);min-height:100vh;font-family:var(--mono);
+  font-size:14px;line-height:1.62;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:var(--phos);text-decoration:none}
+
+/* Фон живёт под всем и не перехватывает касаний; виньетка гасит края,
+   иначе текст поверх звёзд читается тяжело. */
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.vig{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 120% 85% at 50% 38%,transparent 30%,
+    rgba(5,7,12,.5) 72%,rgba(5,7,12,.92) 100%)}
+.wrap{position:relative;z-index:2}
+
+/* ── верхняя панель ── */
+.top{position:sticky;top:0;z-index:12;display:flex;align-items:center;gap:18px;
+  padding:0 22px;height:56px;backdrop-filter:blur(9px);
+  background:linear-gradient(180deg,rgba(5,7,12,.92),rgba(5,7,12,.55));
+  border-bottom:1px solid var(--line)}
+.top .logo{display:flex;align-items:center;gap:9px;color:var(--phos);
+  letter-spacing:.28em;font-size:12px;margin-right:auto}
+.top .logo svg{width:17px;height:17px;flex:none}
+.top nav{display:flex;gap:4px;align-items:center}
+.top nav a{color:var(--dim);font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;
+  padding:8px 11px;border:1px solid transparent;transition:color .18s,border-color .18s}
+.top nav a:hover{color:var(--text)}
+.top nav a.on{color:var(--phos);border-color:var(--line)}
+.top nav a.cta{color:var(--amber);border-color:rgba(242,178,92,.45)}
+.top nav a.cta:hover{background:rgba(242,178,92,.1)}
+@media(max-width:720px){
+  .top{gap:8px;padding:0 12px;height:50px}
+  .top nav a{padding:7px 7px;font-size:9.5px;letter-spacing:.1em}
+  .top .logo span{display:none}
+}
+
+/* ── общая типографика разделов ── */
+section{max-width:1120px;margin:0 auto;padding:76px 22px}
+.eyebrow{font-size:10px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase;
+  margin-bottom:12px}
+h2{font-size:clamp(19px,3.6vw,27px);letter-spacing:.03em;color:var(--text);
+  font-weight:400;margin-bottom:14px;line-height:1.28}
+h2 b{color:var(--phos);font-weight:400}
+.lead{color:var(--dim);max-width:46em;font-size:14px;margin-bottom:38px}
+.lead b{color:var(--text);font-weight:400}
+
+/* ── кнопки ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  padding:0 34px;height:56px;background:rgba(242,178,92,.06);
+  border:1px solid rgba(242,178,92,.5);color:var(--amber);font:inherit;font-size:13px;
+  letter-spacing:.22em;cursor:pointer;transition:background .2s,box-shadow .2s,border-color .2s}
+.btn:hover{background:rgba(242,178,92,.14);border-color:var(--amber);
+  box-shadow:0 0 32px rgba(242,178,92,.2)}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--phos)}
+.btn.ghost:hover{border-color:rgba(127,230,216,.45);box-shadow:none;
+  background:rgba(127,230,216,.05)}
+.btn.sm{height:44px;padding:0 20px;font-size:11px;letter-spacing:.16em}
+
+footer{max-width:1120px;margin:0 auto;padding:44px 22px 80px;color:var(--dim);
+  font-size:11px;letter-spacing:.06em;border-top:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:10px 24px;align-items:center}
+footer a{color:var(--dim)}
+footer a:hover{color:var(--phos)}
+
+/* ── окно входа ── */
+.veil{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;
+  padding:20px;background:rgba(3,5,9,.88);backdrop-filter:blur(6px)}
+.veil.on{display:flex}
+.box{width:100%;max-width:404px;background:var(--deep);
+  border:1px solid rgba(127,230,216,.2);padding:28px 26px 24px}
+.box h3{font-size:13px;letter-spacing:.22em;color:var(--phos);font-weight:400;
+  text-transform:uppercase;margin-bottom:6px}
+.box .hint{font-size:11.5px;color:var(--dim);margin-bottom:20px;line-height:1.5}
+label{display:block;font-size:10px;letter-spacing:.16em;color:var(--dim);
+  text-transform:uppercase;margin:0 0 6px}
+input{width:100%;height:46px;padding:0 14px;margin-bottom:16px;background:rgba(5,7,12,.9);
+  border:1px solid rgba(127,230,216,.18);color:var(--text);font:inherit;font-size:14px}
+input:focus{outline:none;border-color:rgba(127,230,216,.5)}
+.box button{width:100%;height:50px;background:rgba(242,178,92,.08);
+  border:1px solid rgba(242,178,92,.5);color:var(--amber);font:inherit;font-size:12px;
+  letter-spacing:.2em;cursor:pointer}
+.box button:hover{background:rgba(242,178,92,.16)}
+.box button[disabled]{opacity:.5;cursor:default}
+.swap{margin-top:16px;font-size:11.5px;color:var(--dim);text-align:center}
+.linkish{color:var(--phos);cursor:pointer;border-bottom:1px dotted rgba(127,230,216,.4)}
+.note{min-height:20px;margin-top:12px;font-size:11.5px;line-height:1.45}
+.note.bad{color:#ff8f6a}
+.note.ok{color:var(--good)}
+.x{float:right;color:var(--dim);cursor:pointer;font-size:16px;line-height:1;margin:-4px -4px 0 0}
+
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

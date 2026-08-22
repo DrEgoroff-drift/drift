@@ -41,9 +41,13 @@ $vj = Join-Path $root "version.json"
 '{{"ver":"{0}","date":"{1}"}}' -f $ver, (Get-Date -Format "dd.MM.yyyy") |
   Set-Content -Path $vj -Encoding utf8 -NoNewline
 
-Put (Join-Path $root "site\index.html") "index.html"
-Put (Join-Path $root "site\api.php")    "api.php"
-Put $vj                                 "version.json"
+# Сайт уезжает целиком: страниц и картинок стало больше одной, и перечислять их
+# по именам — способ однажды забыть новую.
+ssh drift "mkdir -p drift-game.ru/docs/shots drift-game.ru/docs/icons"
+if ($LASTEXITCODE -ne 0) { throw "не удалось подготовить папки на сервере" }
+scp -r (Join-Path $root "site\*") "$web/"
+if ($LASTEXITCODE -ne 0) { throw "scp site вернул $LASTEXITCODE — выкладка не состоялась" }
+Put $vj "version.json"
 if (-not $SiteOnly) { Put $file "play.html" }
 
 # Проверка, а не надежда: спрашиваем у сервера, что там теперь лежит.
