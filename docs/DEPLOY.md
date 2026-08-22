@@ -16,14 +16,29 @@ web root. No build step runs on the server, no dependencies are installed there.
 ## Publishing a new build
 
 ```bash
-powershell -ExecutionPolicy Bypass -File build.ps1
-scp -o HostKeyAlgorithms=+ssh-rsa drift.html dri7887661@ssh.dri7887661.nichost.ru:drift-game.ru/docs/index.html
+powershell -ExecutionPolicy Bypass -File deploy.ps1
 ```
 
-The host offers only an `ssh-rsa` host key, which current OpenSSH refuses by default — hence
-`-o HostKeyAlgorithms=+ssh-rsa` on every `ssh`/`scp` call. Authentication is by password; there is
-no key installed for this account yet. Installing one (`ssh-copy-id`, or the hosting panel) would
-make deploys non-interactive and is worth doing before automating anything.
+That builds `drift.html`, copies it to the site root and then **asks the server which version now
+lies there**, warning if it disagrees with `VER` in `src/01-core.js`. `-SkipBuild` publishes the
+existing build without rebuilding.
+
+By hand it is one line, because the host lives in `~/.ssh/config` as `drift`:
+
+```bash
+scp drift.html drift:drift-game.ru/docs/index.html
+```
+
+## Access
+
+Key authentication, no password: `~/.ssh/drift` (ed25519, comment `drift-deploy`, no passphrase —
+it is a deploy key) is installed in the account's `~/.ssh/authorized_keys`. The `drift` alias in
+`~/.ssh/config` carries the one flag this host needs: it offers only an `ssh-rsa` host key, which
+current OpenSSH refuses by default, hence `HostKeyAlgorithms +ssh-rsa`.
+
+Neither the key nor any password lives in this repository. To move the setup to another machine,
+copy `~/.ssh/drift*` and the config block; to revoke it, drop the line from `authorized_keys` on
+the server.
 
 To put the placeholder back: `cp _hoster-stub.html index.html` in `docs/`.
 
