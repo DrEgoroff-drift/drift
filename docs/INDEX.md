@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 154 · символов верхнего уровня: 1714
+Файлов: 155 · символов верхнего уровня: 1716
 
 ## СИМВОЛЫ
 
@@ -211,6 +211,7 @@ capOf                        src/05-parts.js:108
 capUsed                      src/05-parts.js:219
 CAST                         src/12k-stories-a.js:19
 CAST_B                       src/12k-stories-b.js:7
+CAST_C                       src/12k-stories-c.js:7
 CAVE_W                       src/22-mode-cave.js:5
 CAVE_ZONE                    src/22a-cave-deco.js:17
 CAVE_ZONE_MIX                src/22a-cave-deco.js:26
@@ -1502,45 +1503,46 @@ stopEngine                   src/09-audio.js:243
 STORAGE_OK                   src/14-save.js:7
 STORIES                      src/12k-stories-a.js:42
 STORIES_B                    src/12k-stories-b.js:27
+STORIES_C                    src/12k-stories-c.js:23
 STORM_WORLDS                 src/21a-mode-base.js:233
 STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:240
+STORY_SEAT                   src/11c-stories.js:251
 STORY_WHEN                   src/11c-stories.js:126
 storyAddrMatch               src/11c-stories.js:69
 storyAll                     src/11c-stories.js:32
 storyAnchorRoll              src/11c-stories.js:86
 storyById                    src/11c-stories.js:33
-storyCantFigures             src/11c-stories.js:247
-storyCantProps               src/11c-stories.js:256
-storyCantScene               src/11c-stories.js:241
-storyCheckWhen               src/11c-stories.js:150
+storyCantFigures             src/11c-stories.js:258
+storyCantProps               src/11c-stories.js:267
+storyCantScene               src/11c-stories.js:252
+storyCheckWhen               src/11c-stories.js:153
 storyCtx                     src/11c-stories.js:39
 storyDay                     src/11c-stories.js:28
-storyEtherLine               src/11c-stories.js:191
-storyFindLine                src/11c-stories.js:219
+storyEtherLine               src/11c-stories.js:202
+storyFindLine                src/11c-stories.js:230
 storyFixedAddr               src/11c-stories.js:55
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:315
+storyGroundLine              src/11c-stories.js:326
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:288
-storyNewsItem                src/11c-stories.js:226
-storyNote                    src/11c-stories.js:327
-storyPickOne                 src/11c-stories.js:182
+storyLint                    src/11c-stories.js:299
+storyNewsItem                src/11c-stories.js:237
+storyNote                    src/11c-stories.js:338
+storyPickOne                 src/11c-stories.js:193
 storyPins                    src/11c-stories.js:30
 storyPlace                   src/11c-stories.js:92
-storyProp                    src/11c-stories.js:264
-storyQueueLine               src/11c-stories.js:199
+storyProp                    src/11c-stories.js:275
+storyQueueLine               src/11c-stories.js:210
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
-storyShow                    src/11c-stories.js:176
-storyTableLine               src/11c-stories.js:211
-storyTraces                  src/11c-stories.js:159
+storyShow                    src/11c-stories.js:179
+storyTableLine               src/11c-stories.js:222
+storyTraces                  src/11c-stories.js:162
 storyTurns                   src/11c-stories.js:108
-storyWhen                    src/11c-stories.js:145
+storyWhen                    src/11c-stories.js:148
 stPanels                     src/17-mode-system.js:529
 stRing                       src/17-mode-system.js:555
 STRIP_CHUNK                  src/07-planet.js:73
@@ -1644,7 +1646,7 @@ tinTakeOut                   src/12ta-tin.js:152
 tinTick                      src/12ta-tin.js:117
 tnoise                       src/18a-material.js:16
 toggleLog                    src/11-log.js:89
-toggleLoreBoard              src/27h-ui-lore.js:83
+toggleLoreBoard              src/27h-ui-lore.js:85
 toggleMenu                   src/15-input.js:126
 toggleParrotWin              src/12y-parrot-face.js:665
 totalLoss                    src/21-mode-surface.js:367
@@ -1806,9 +1808,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/11b-speech.js · 11 КБ
   · речь: очередь реплик и вещь на столе:1
 
-## src/11c-stories.js · 18 КБ
+## src/11c-stories.js · 19 КБ
   · истории: следы, а не задания:1
-  · каналы:189
+  · каналы:200
 
 ## src/11-log.js · 5 КБ
   · бортовой журнал:1
@@ -1866,6 +1868,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## src/12k-stories-b.js · 34 КБ
   · истории, часть вторая:1
+
+## src/12k-stories-c.js · 21 КБ
+  · истории, часть третья:1
 
 ## src/12l-barge.js · 38 КБ
   · торговые баржи:1
@@ -2220,7 +2225,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## tests/91zo-speech.js · 3 КБ
 
-## tests/91zp-stories.js · 5 КБ
+## tests/91zp-stories.js · 7 КБ
   · истории: следы, якорь, повороты, каналы:1
 
 ## tests/99-run.js · 0 КБ

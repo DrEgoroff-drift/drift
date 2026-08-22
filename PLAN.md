@@ -891,6 +891,16 @@ socket out is not wired); the recorder itself is not a purchasable unit, only th
 `26-ui-station` crossed 40 KB with this tab and is now shouting on every build; wear from the hull
 (`12s-wear`) and instrument age run on separate clocks that never speak to each other.
 
+## M131 (0.91.0) — built. A hundred and two
+
+`seenOf`/`unseenOf` conditions (a trace of another story seen), `carry` on a trace (the parrot
+remembers it as `heard` kind `story` and lists it with the place's address), `12k-stories-c`
+with 30 stories, 102 in all across the three data files (each under the 40 KB guard). Suite
+checks every `seenOf` target exists and that the bird records a carried line once.
+
+**The hundred is closed.** Left open, deliberately, in the design: the barge passenger as a
+channel, settlement glyph overrides, per-region colouring once regions (M132+) exist.
+
 ## M130 (0.90.0) — built. The ground speaks too
 
 Channels `land`, `cave`, `settle`, `tin`; addresses `planet`, `settle`, `tin`, `world:T`; planet

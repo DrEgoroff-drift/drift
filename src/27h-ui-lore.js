@@ -67,6 +67,8 @@ function renderLoreBoard(){
           (h.used?" · уже повторило":" · повторит, где спросят"));
       else if(h.kind==="yours")
         loreRow(box,h.used?"":"gap","","ваше: "+h.note+(h.used?" · уже ляпнуло":""));
+      else if(h.kind==="story")   /* подслушанное (11c): птица повторяет чужую строку как свою */
+        loreRow(box,"vocab","","услышало: «"+h.note+"» · сектор "+h.sx+":"+h.sy);
       else
         loreRow(box,h.read?"vocab":"gap","",heardWordsRu(h).join(" ")+
           (h.read?" · сектор "+h.sx+":"+h.sy:" · пока непонятно"));

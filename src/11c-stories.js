@@ -140,7 +140,10 @@ const STORY_WHEN={
   occ:(v,S,c)=>!!(G.occ&&G.occ[c.key])===!!v,
   freed:(v)=>(G.freed|0)>=v,
   doomNear:(v)=>!!(G.doomDead&&Object.keys(G.doomDead).length)===!!v,
-  mode:(v)=>G.mode===v
+  mode:(v)=>G.mode===v,
+  /* связь как данные: след чужой истории виден — "story.trace" */
+  seenOf:(v)=>storySeen()[v]!=null,
+  unseenOf:(v)=>storySeen()[v]==null
 };
 function storyWhen(S,t,c){
   const w=t.when;if(!w)return true;
@@ -175,7 +178,15 @@ function storyTraces(via,c){
 /* показать след: единственная запись, которую система делает сама */
 function storyShow(h){
   const k=h.S.id+"."+h.t.id,Z=storySeen();
-  if(Z[k]==null)Z[k]=storyDay();
+  const first=Z[k]==null;
+  if(first)Z[k]=storyDay();
+  /* переносчик: след с carry птица запоминает и повторит там, где спросят
+     (12x, список услышанного). Так история из одного места попадает в другое
+     руками игрока, а не через журнал. */
+  if(first&&h.t.carry&&h.t.text&&typeof heardAdd==="function"&&typeof parrotHas==="function"&&parrotHas()){
+    const p=(h.key||"").split(",");
+    heardAdd("story",{sx:parseInt(p[0])||0,sy:parseInt(p[1])||0,note:h.t.text});
+  }
   return h.t;
 }
 /* из нескольких подходящих — сперва невиданный, потом по кругу от дня */
