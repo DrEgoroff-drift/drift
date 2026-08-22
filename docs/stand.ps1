@@ -51,8 +51,10 @@ while ($listener.IsListening) {
     }
 
     # ── приём кадра ──
-    if ($req.Url.AbsolutePath -eq "/shot" -and $req.HttpMethod -eq "POST") {
-      $name = ($req.QueryString["n"] -replace '[^a-zA-Z0-9_-]', '')
+    # старые стенды (docs/mk*.ps1) шлют POST /имя.png — принимаем и их
+    $legacy = $req.HttpMethod -eq "POST" -and $req.Url.AbsolutePath -match "^/([a-zA-Z0-9_-]+).(png|webp|jpg)$"
+    if (($req.Url.AbsolutePath -eq "/shot" -or $legacy) -and $req.HttpMethod -eq "POST") {
+      $name = if ($legacy) { $matches[1] } else { ($req.QueryString["n"] -replace '[^a-zA-Z0-9_-]', '') }
       if (-not $name) { $name = "shot" }
       $reader = New-Object System.IO.StreamReader($req.InputStream, [Text.Encoding]::UTF8)
       $body = $reader.ReadToEnd(); $reader.Close()

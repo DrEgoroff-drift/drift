@@ -78,9 +78,7 @@ flora and fauna, a living camera, station modules, weather.
    happens between them), the crowd is counted per station type, what stands behind the counter is
    what the place deals in, and the music leans by type. **Still open:** the counter is the same
    length and shape in every hall.
-4. **New world types:** crystalline, jungle, metallic, ruin. The machinery is already ready to
-   take them — `TYPES` (02-world), `PROFILE`, `RELIEF_MIX` (07-planet), `GEO_TPL` (18b),
-   `WEATHER_BY_TYPE` (19d), `POI_KINDS.on` (20a), flora and fauna leanings (20-life).
+4. ~~**New world types:** crystalline, jungle, metallic, ruin.~~ — DONE: all four are in `TYPES` (02-world) with profiles, relief and geology.
 5. ~~**Finds in flight:** a distress signal, an abandoned satellite, a drifting container, the
    wreckage of an expedition.~~ — DONE at M108 (`17b-finds`).
 6. **`base` and `scoop`** — twelve passes on the base (`21a-mode-base`, `21aa-base-rooms`,
@@ -123,7 +121,6 @@ one at a time when a pass is due, and nothing here blocks a milestone.
   smudge; the hide is flat khaki with no dust streaks; the working arms hide behind the torso.
 - **ships** — no faction language; it comes after stations by the queue above.
 - **the world on foot** — the longest screen after the cockpit, still without a pass of its own.
-- **four world types** unbuilt: crystalline, jungle, metallic, ruin (the machinery is ready).
 - **split debt** — `21a-mode-base` 52 KB, `23-mode-dig`, `27e-ui-home` (see item 10).
 
 ### What not to do

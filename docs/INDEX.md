@@ -23,7 +23,7 @@ $menu                        src/15-input.js:125
 $msg                         src/28-loop.js:32
 $msl                         src/28-loop.js:35
 $nav                         src/28-loop.js:34
-$opts                        src/26-ui-station.js:863
+$opts                        src/26-ui-station.js:871
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:31
 $sh                          src/28-loop.js:24
@@ -1282,7 +1282,7 @@ renderLog                    src/11-log.js:37
 renderLoreBoard              src/27h-ui-lore.js:31
 renderOpts                   src/27-ui-ship.js:183
 renderRoute                  src/12r-route.js:225
-renderTab                    src/26-ui-station.js:160
+renderTab                    src/26-ui-station.js:168
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -1301,7 +1301,7 @@ RES_AUTO                     src/08-state.js:18
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:281
 resEma                       src/28-loop.js:280
-resetArm                     src/26-ui-station.js:862
+resetArm                     src/26-ui-station.js:870
 resetWorld                   tests/90-harness.js:27
 resize                       src/08-state.js:6
 reticle                      src/17-mode-system.js:427
@@ -1427,9 +1427,9 @@ SHIFT_TALK                   src/03f-hull-role.js:63
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:119
+shipRow                      src/26-ui-station.js:127
 SHIPS                        src/03-ships.js:2
-shipThumb                    src/26-ui-station.js:106
+shipThumb                    src/26-ui-station.js:114
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:188
 shipZoneR                    src/19-mode-landing.js:385
@@ -2023,9 +2023,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/25d-instr-rack.js · 25 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
-## src/26-ui-station.js · 53 КБ
+## src/26-ui-station.js · 54 КБ
   · станция:1
-  · настройки:861
+  · настройки:869
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1

@@ -24,6 +24,10 @@ phosphor line rather than the system widget.
 through twenty sections to reach the sound. The sections and their order are untouched; a tab
 only hides the others (`optGroups`).
 
+**Long section captions are sentences again.** Half the `.sec` headers were not labels but
+helper sentences set in spaced capitals — against the first rule of the style sheet. `el()` now
+turns any caption longer than a label into a `.sec.note`: ordinary case, readable size.
+
 ## 0.87.0 — "What does not move is painted once"
 
 Measured, not guessed: the frame was profiled function by function, JS time and raster time
