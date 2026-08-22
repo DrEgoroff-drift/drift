@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070c">
+<title>ДРЕЙФ — процедурная разведка</title>
+<meta name="description" content="Одинокий разведчик в процедурной галактике: топливо, трюм, посадки на планеты, пояс астероидов, станции и люди, которые тебя запоминают.">
+<style>
+/* Палитра и типографика взяты у игры дословно — заглавная не должна выглядеть
+   рекламой чего-то другого. Тот же моноширинный шрифт, тот же фосфор на пустоте. */
+:root{
+  --void:#05070c; --deep:#080d16;
+  --phos:#7fe6d8; --amber:#f2b25c; --rare:#c58ae0; --good:#8fd08a;
+  --dim:#5d7382;  --text:#cfe3ea;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--void); color:var(--text); min-height:100vh;
+  font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  font-size:14px; line-height:1.6; overflow-x:hidden;
+}
+/* Фон живёт под всем и не перехватывает ни одного касания. */
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+/* Виньетка: к краям темнее, иначе текст на звёздах читается тяжело. */
+#sky+.vig{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse 120% 80% at 50% 40%,transparent 35%,rgba(5,7,12,.55) 75%,rgba(5,7,12,.9) 100%)}
+.wrap{position:relative;z-index:2}
+
+/* ── первый экран ── */
+.hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:24px 20px 40px;gap:22px}
+.mark{font-size:clamp(38px,11vw,92px);letter-spacing:.34em;text-indent:.34em;
+  color:var(--phos);font-weight:400;
+  text-shadow:0 0 28px rgba(127,230,216,.28),0 0 70px rgba(127,230,216,.1)}
+.sub{color:var(--dim);font-size:clamp(11px,2.6vw,13px);letter-spacing:.24em;text-transform:uppercase}
+.pitch{max-width:34em;color:var(--text);opacity:.88;font-size:clamp(13px,3vw,15px)}
+.pitch b{color:var(--amber);font-weight:400}
+
+/* Кнопка ИГРАТЬ — рамка в один пиксель, как всё действенное в игре. */
+.play{display:inline-flex;align-items:center;justify-content:center;gap:12px;
+  margin-top:6px;padding:0 42px;height:62px;min-width:250px;
+  background:rgba(242,178,92,.06);border:1px solid rgba(242,178,92,.55);
+  color:var(--amber);font:inherit;font-size:16px;letter-spacing:.3em;text-indent:.3em;
+  text-decoration:none;cursor:pointer;transition:background .2s,box-shadow .2s,border-color .2s}
+.play:hover{background:rgba(242,178,92,.13);border-color:var(--amber);
+  box-shadow:0 0 34px rgba(242,178,92,.22),inset 0 0 22px rgba(242,178,92,.06)}
+.play:active{transform:translateY(1px)}
+.play s{text-decoration:none;font-size:9px;letter-spacing:.16em;color:var(--dim);
+  text-indent:0;display:block;margin-top:2px}
+.who{min-height:22px;font-size:11px;letter-spacing:.1em;color:var(--dim)}
+.who a,.linkish{color:var(--phos);cursor:pointer;text-decoration:none;
+  border-bottom:1px dotted rgba(127,230,216,.4)}
+.who a:hover,.linkish:hover{color:#a8f2e7}
+.who em{color:var(--good);font-style:normal}
+.scrollhint{margin-top:14px;font-size:10px;letter-spacing:.22em;color:var(--dim);opacity:.7}
+
+/* ── разделы ── */
+section{max-width:1080px;margin:0 auto;padding:70px 20px}
+h2{font-size:clamp(15px,3.4vw,19px);letter-spacing:.26em;color:var(--phos);
+  font-weight:400;text-transform:uppercase;margin-bottom:8px}
+.lead{color:var(--dim);max-width:44em;margin-bottom:34px;font-size:13px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.card{background:rgba(8,13,22,.72);border:1px solid rgba(127,230,216,.1);
+  padding:20px 20px 22px;backdrop-filter:blur(3px);transition:border-color .2s,transform .2s}
+.card:hover{border-color:rgba(127,230,216,.28);transform:translateY(-2px)}
+.card h3{font-size:12px;letter-spacing:.2em;color:var(--amber);font-weight:400;
+  text-transform:uppercase;margin-bottom:10px}
+.card p{font-size:13px;color:var(--text);opacity:.86}
+.card p+p{margin-top:9px}
+.card .k{color:var(--phos)}
+.card.rare h3{color:var(--rare)}
+.card.good h3{color:var(--good)}
+
+/* Ключи управления. */
+.keys{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-top:8px}
+.keys div{display:flex;gap:12px;align-items:baseline;font-size:12.5px;color:var(--text);opacity:.86}
+kbd{display:inline-block;min-width:26px;padding:2px 7px;text-align:center;
+  border:1px solid rgba(127,230,216,.28);color:var(--phos);font:inherit;font-size:11px;
+  background:rgba(127,230,216,.05)}
+
+footer{max-width:1080px;margin:0 auto;padding:40px 20px 70px;color:var(--dim);
+  font-size:11px;letter-spacing:.08em;display:flex;flex-wrap:wrap;gap:8px 22px;
+  border-top:1px solid rgba(127,230,216,.08)}
+footer a{color:var(--dim)}
+
+/* ── окно входа ── */
+.veil{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;
+  padding:20px;background:rgba(3,5,9,.86);backdrop-filter:blur(5px)}
+.veil.on{display:flex}
+.box{width:100%;max-width:400px;background:var(--deep);
+  border:1px solid rgba(127,230,216,.2);padding:28px 26px 24px}
+.box h3{font-size:13px;letter-spacing:.24em;color:var(--phos);font-weight:400;
+  text-transform:uppercase;margin-bottom:6px}
+.box .hint{font-size:11.5px;color:var(--dim);margin-bottom:20px;line-height:1.5}
+label{display:block;font-size:10px;letter-spacing:.16em;color:var(--dim);
+  text-transform:uppercase;margin:0 0 6px}
+input{width:100%;height:46px;padding:0 14px;margin-bottom:16px;background:rgba(5,7,12,.9);
+  border:1px solid rgba(127,230,216,.18);color:var(--text);font:inherit;font-size:14px}
+input:focus{outline:none;border-color:rgba(127,230,216,.5)}
+.box button{width:100%;height:50px;background:rgba(242,178,92,.08);
+  border:1px solid rgba(242,178,92,.5);color:var(--amber);font:inherit;font-size:12px;
+  letter-spacing:.2em;cursor:pointer;transition:background .2s}
+.box button:hover{background:rgba(242,178,92,.16)}
+.box button[disabled]{opacity:.5;cursor:default}
+.swap{margin-top:16px;font-size:11.5px;color:var(--dim);text-align:center}
+.note{min-height:20px;margin-top:12px;font-size:11.5px;line-height:1.45}
+.note.bad{color:#ff8f6a}
+.note.ok{color:var(--good)}
+.x{float:right;color:var(--dim);cursor:pointer;font-size:16px;line-height:1;margin:-4px -4px 0 0}
+
+@media (max-width:640px){
+  section{padding:52px 16px}
+  .hero{gap:18px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<canvas id="sky"></canvas><div class="vig"></div>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="sub">процедурная разведка · одна вкладка · без установки</div>
+  <h1 class="mark">ДРЕЙФ</h1>
+  <p class="pitch">
+    Галактика, которой до тебя нет дела. Ты один: старый «Стриж», <b>полбака топлива</b>
+    и трюм, который надо чем-то наполнить. Каждая система собирается на лету и остаётся
+    такой навсегда — не потому что записана, а потому что выведена из своих координат.
+  </p>
+  <a class="play" href="/play.html" id="playBtn">ИГРАТЬ<s></s></a>
+  <div class="who" id="who">…</div>
+  <div class="scrollhint">↓ что там вообще происходит</div>
+</header>
+
+<section id="faq">
+  <h2>Что происходит</h2>
+  <p class="lead">
+    Здесь нет уровней и нет линии сюжета, которую надо пройти. Есть корабль, расход и
+    выбор, куда потратить следующий бак. Всё остальное — следствие.
+  </p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Топливо решает всё</h3>
+      <p>Прыжок между системами, манёвр, посадка и <span class="k">взлёт</span> — за топливо.
+      Сесть можно почти везде, а вот подняться — только имея восемь единиц в баке.</p>
+      <p>Отсюда единственный настоящий страх в игре: не смерть, а посадка без обратного билета.
+      Лёд топится в топливо, если освоен синтез, — но лёд ещё надо найти.</p>
+    </div>
+
+    <div class="card">
+      <h3>Трюм и разница цен</h3>
+      <p>Деньги берутся из перепада: руда, лёд, органика, редкости стоят на разных станциях
+      по-разному, и разница не выдумана — она следует из того, что рядом добывают.</p>
+      <p>Трюм конечен, поэтому торговля — это всегда вопрос, <span class="k">что выбросить</span>,
+      а не что взять.</p>
+    </div>
+
+    <div class="card">
+      <h3>Планеты, на которые садишься</h3>
+      <p>С орбиты видно тип мира, погоду и облака. Сев, ходишь пешком: залежи под буром,
+      растения, животные, пещеры с тем, чего наверху не бывает.</p>
+      <p>Мир не декорация — у него есть свет, время суток и характер, и одно и то же место
+      в бурю и в штиль ведёт себя по-разному.</p>
+    </div>
+
+    <div class="card">
+      <h3>Пояс астероидов</h3>
+      <p>Отдельный режим и отдельная манера полёта: тесно, инерционно, всё вращается.
+      Там добывают быстро и там же быстрее всего теряют корпус.</p>
+      <p>Заходить в пояс на последнем корпусе — способ остаться без корабля.</p>
+    </div>
+
+    <div class="card">
+      <h3>Станции и люди</h3>
+      <p>Станция — это ремонт, топливо, рынок, верфь и кантина. В кантине сидят те, кого
+      можно нанять, и те, кто просто говорит.</p>
+      <p>Речь выдаётся порциями и привязана к <span class="k">месту</span>, а не к человеку:
+      возвращаясь, ты каждый раз узнаёшь чуть больше, и к тебе постепенно начинают
+      обращаться иначе.</p>
+    </div>
+
+    <div class="card good">
+      <h3>Экипаж и управляющие</h3>
+      <p>Люди устают, ссорятся, увольняются и растут в деле. У каждого своя история и свой
+      предел терпения.</p>
+      <p>Когда дел становится больше, чем рук, назначаешь управляющего — и часть работы идёт
+      без тебя, ровно настолько хорошо, насколько ты угадал с человеком.</p>
+    </div>
+
+    <div class="card rare">
+      <h3>Приборы и невязка</h3>
+      <p>Пять стрелок в рубке и бумажный самописец. Прибор не показывает истину: он показывает
+      её со своей ошибкой, и <span class="k">невязка</span> — это честная мера того,
+      насколько ты сейчас заблуждаешься.</p>
+      <p>Дешёвый курсограф разрешает область только у самого ядра, дорогой — с окраины.
+      Характер прибора виден по дрожи стрелки, а не написан в описании.</p>
+    </div>
+
+    <div class="card">
+      <h3>Области, а не планеты</h3>
+      <p>Единица мира — область: шесть-десять систем на одну тему, со скрытым уклоном,
+      процедурной окраиной и одним собранным вручную ядром.</p>
+      <p>Поэтому окраина всегда указывает на середину — без маркера, без журнала заданий.
+      Читать надо местность, а не подсказку.</p>
+    </div>
+
+    <div class="card">
+      <h3>Пираты и потери</h3>
+      <p>Тебя грабят всерьёз: теряется груз, ломаются модули, корабль можно потерять целиком.</p>
+      <p>Но не всё: изученные технологии, открытые миры и журнал остаются с тобой. Начинаешь
+      заново не с нуля, а с опытом — и это ощутимая разница.</p>
+    </div>
+
+    <div class="card">
+      <h3>Дом, флот, поселения</h3>
+      <p>Разбогатев, перестаёшь быть одиночкой: своя база, второй корабль, баржа, люди,
+      которые живут там, пока тебя нет.</p>
+      <p>Игра не заканчивается — она меняет масштаб: сначала выжить, потом заработать,
+      потом обустроить кусок галактики под себя.</p>
+    </div>
+
+    <div class="card">
+      <h3>Сохранение</h3>
+      <p>Игра пишется сама. Без входа — только в этот браузер: другое устройство её не увидит,
+      а очистка данных сотрёт.</p>
+      <p>С учётной записью снимок уезжает на сервер: открыл на телефоне — продолжил с того же
+      места. Более свежая запись никогда не затирается более старой.</p>
+    </div>
+
+    <div class="card">
+      <h3>Сколько это стоит</h3>
+      <p>Нисколько. Ни рекламы, ни покупок, ни счётчиков слежки. На сервере лежит только твой
+      логин, хеш пароля и снимок игры.</p>
+      <p>Работает в браузере на компьютере и на телефоне, ставить ничего не нужно.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Управление</h2>
+  <p class="lead">На телефоне — экранные кнопки, они появляются сами. Клавиши переназначаются
+  в настройках, отдельно для полёта и отдельно для пояса.</p>
+  <div class="keys">
+    <div><kbd>W</kbd><span>тяга вперёд</span></div>
+    <div><kbd>A</kbd><kbd>D</kbd><span>поворот</span></div>
+    <div><kbd>S</kbd><span>торможение</span></div>
+    <div><kbd>E</kbd><span>действие: посадка, бурение, разговор</span></div>
+    <div><kbd>M</kbd><span>карта галактики</span></div>
+    <div><kbd>F</kbd><span>огонь</span></div>
+    <div><kbd>Esc</kbd><span>меню</span></div>
+    <div><kbd>T</kbd><span>оторвать ленту самописца</span></div>
+  </div>
+</section>
+
+<footer>
+  <span>ДРЕЙФ</span>
+  <span id="ver">—</span>
+  <a href="/play.html">играть</a>
+  <a href="#faq">механики</a>
+  <span>сделано вручную, без движка</span>
+</footer>
+
+</div>
+
+<!-- ── вход и регистрация ── -->
+<div class="veil" id="veil">
+  <div class="box">
+    <span class="x" id="veilX">×</span>
+    <h3 id="boxTitle">Вход</h3>
+    <p class="hint" id="boxHint">Чтобы играть с любого устройства.</p>
+    <form id="authForm" autocomplete="on">
+      <label for="lg">Имя</label>
+      <input id="lg" name="username" autocomplete="username" autocapitalize="none"
+             spellcheck="false" maxlength="20" placeholder="латиница, цифры, 3–20 знаков">
+      <label for="pw">Пароль</label>
+      <input id="pw" name="password" type="password" autocomplete="current-password"
+             maxlength="72" placeholder="не короче шести знаков">
+      <button type="submit" id="goBtn">ВОЙТИ</button>
+    </form>
+    <div class="note" id="note"></div>
+    <div class="swap"><span class="linkish" id="swap">нет записи — создать</span></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════ учётная запись ══════════════
+   Токен лежит в localStorage того же домена, что и игра, поэтому игра просто
+   подхватывает его сама — передавать ничего не нужно. */
+const API="/api.php", TKEY="drift_token", LKEY="drift_login";
+const $=s=>document.querySelector(s);
+const tok=()=>{try{return localStorage.getItem(TKEY)||""}catch(e){return""}};
+const setAcc=(t,l)=>{try{t?(localStorage.setItem(TKEY,t),localStorage.setItem(LKEY,l))
+  :(localStorage.removeItem(TKEY),localStorage.removeItem(LKEY))}catch(e){}};
+
+async function call(action,payload,withTok){
+  const h={"Content-Type":"application/json"};
+  if(withTok)h["X-Drift-Token"]=tok();
+  const r=await fetch(API+"?a="+action,{method:"POST",headers:h,
+    body:JSON.stringify(payload||{})});
+  return r.json();
+}
+
+let mode="login";
+function openBox(m){
+  mode=m; $("#veil").classList.add("on");
+  $("#boxTitle").textContent=m==="login"?"Вход":"Новая запись";
+  $("#boxHint").textContent=m==="login"
+    ?"Чтобы продолжить полёт с любого устройства."
+    :"Имя и пароль — почта не нужна. Пароль восстановить будет нечем, так что запиши его.";
+  $("#goBtn").textContent=m==="login"?"ВОЙТИ":"СОЗДАТЬ";
+  $("#pw").autocomplete=m==="login"?"current-password":"new-password";
+  $("#swap").textContent=m==="login"?"нет записи — создать":"уже есть запись — войти";
+  $("#note").textContent=""; $("#note").className="note";
+  setTimeout(()=>$("#lg").focus(),50);
+}
+function closeBox(){$("#veil").classList.remove("on")}
+
+$("#swap").onclick=()=>openBox(mode==="login"?"register":"login");
+$("#veilX").onclick=closeBox;
+$("#veil").onclick=e=>{if(e.target===$("#veil"))closeBox()};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeBox()});
+
+$("#authForm").onsubmit=async e=>{
+  e.preventDefault();
+  const note=$("#note"), btn=$("#goBtn");
+  const login=$("#lg").value.trim(), pass=$("#pw").value;
+  if(!login||!pass){note.className="note bad";note.textContent="заполни оба поля";return}
+  btn.disabled=true; note.className="note"; note.textContent="…";
+  try{
+    const d=await call(mode,{login,pass});
+    if(d.ok){
+      setAcc(d.token,d.login);
+      note.className="note ok";
+      note.textContent=mode==="login"?"вошли, полёт подтянется сам":"запись создана";
+      paintWho(); setTimeout(closeBox,700);
+    }else{note.className="note bad";note.textContent=d.error||"не вышло"}
+  }catch(err){note.className="note bad";note.textContent="сервер не ответил"}
+  btn.disabled=false;
+};
+
+async function paintWho(){
+  const w=$("#who");
+  if(!tok()){
+    w.innerHTML='сохранение только в этом браузере · '+
+      '<a id="a1">войти</a> или <a id="a2">создать запись</a>';
+    w.querySelector("#a1").onclick=()=>openBox("login");
+    w.querySelector("#a2").onclick=()=>openBox("register");
+    $("#playBtn").querySelector("s").textContent="";
+    return;
+  }
+  let name="";
+  try{name=localStorage.getItem(LKEY)||""}catch(e){}
+  w.innerHTML='вы вошли как <em>'+name+'</em> · <a id="a3">выйти</a>';
+  w.querySelector("#a3").onclick=async()=>{
+    try{await call("logout",{},true)}catch(e){}
+    setAcc("",""); paintWho();
+  };
+  $("#playBtn").querySelector("s").textContent="продолжить полёт";
+  /* тихая проверка: токен мог истечь за девяносто дней */
+  try{
+    const d=await call("me",{},true);
+    if(!d.ok){setAcc("","");paintWho();}
+  }catch(e){}
+}
+paintWho();
+
+/* ══════════════ фон: наш мир ══════════════
+   Четыре слоя с разной скоростью — глубина читается параллаксом, а не размытием.
+   Туманность печётся один раз, звёзды рисуются простыми прямоугольниками,
+   планеты — заранее испечёнными спрайтами. В кадре не создаётся ни одного
+   градиента, поэтому на телефоне это стоит десятые доли миллисекунды. */
+(function(){
+  const cv=document.getElementById("sky"), ctx=cv.getContext("2d",{alpha:false});
+  const slow=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let W=0,H=0,DPR=1,neb=null,stars=[],planets=[],guest=null,guestAt=6,t=0,scroll=0;
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+
+  /* ── туманность ──
+     Десяток крупных мягких пятен, наложенных «lighter», плюс редкие тёмные
+     провалы: без них края слишком ровные и видно, что это градиенты. */
+  function bakeNebula(w,h){
+    const c=document.createElement("canvas"), s=.5;   // печём в половину — всё равно размыто
+    c.width=Math.max(2,w*s|0); c.height=Math.max(2,h*s|0);
+    const g=c.getContext("2d");
+    g.fillStyle="#05070c"; g.fillRect(0,0,c.width,c.height);
+    g.globalCompositeOperation="lighter";
+    const hues=[[70,150,190],[120,90,180],[60,190,170],[150,80,130]];
+    for(let i=0;i<16;i++){
+      const x=rnd(-.1,1.1)*c.width, y=rnd(-.1,1.1)*c.height,
+            r=rnd(.18,.5)*Math.max(c.width,c.height), col=hues[i%hues.length],
+            a=rnd(.035,.085);
+      const rg=g.createRadialGradient(x,y,0,x,y,r);
+      rg.addColorStop(0,"rgba("+col[0]+","+col[1]+","+col[2]+","+a+")");
+      rg.addColorStop(.55,"rgba("+col[0]+","+col[1]+","+col[2]+","+(a*.35)+")");
+      rg.addColorStop(1,"rgba(0,0,0,0)");
+      g.fillStyle=rg; g.beginPath(); g.arc(x,y,r,0,7); g.fill();
+    }
+    g.globalCompositeOperation="source-over";
+    for(let i=0;i<8;i++){        // провалы — «пыль» перед туманностью
+      const x=rnd(0,1)*c.width, y=rnd(0,1)*c.height, r=rnd(.06,.2)*c.width;
+      const rg=g.createRadialGradient(x,y,0,x,y,r);
+      rg.addColorStop(0,"rgba(5,7,12,.5)"); rg.addColorStop(1,"rgba(5,7,12,0)");
+      g.fillStyle=rg; g.beginPath(); g.arc(x,y,r,0,7); g.fill();
+    }
+    return c;
+  }
+
+  /* ── планета ──
+     Тело, полосы, терминатор мягким краем и тонкий ободок атмосферы по лимбу.
+     Печётся один раз; вращение делается сдвигом полос внутри маски. */
+  function bakePlanet(r,col,ring){
+    const p=Math.ceil(r*1.9), c=document.createElement("canvas");
+    c.width=c.height=p*2; const g=c.getContext("2d"), cx=p, cy=p;
+
+    if(ring){                                  // кольца уходят за диск — рисуем заднюю дугу первой
+      g.save(); g.translate(cx,cy); g.scale(1,.26); g.rotate(-.18);
+      g.strokeStyle="rgba(200,190,215,.16)"; g.lineWidth=r*.30;
+      g.beginPath(); g.arc(0,0,r*1.55,Math.PI,2*Math.PI); g.stroke(); g.restore();
+    }
+
+    g.save(); g.beginPath(); g.arc(cx,cy,r,0,7); g.clip();
+    const body=g.createLinearGradient(cx-r,cy-r,cx+r,cy+r);
+    body.addColorStop(0,col[0]); body.addColorStop(1,col[1]);
+    g.fillStyle=body; g.fillRect(cx-r,cy-r,r*2,r*2);
+    for(let i=0;i<9;i++){                      // полосы облаков: широкие, разной прозрачности
+      const y=cy-r+ (i+rnd(-.25,.25))*(r*2/9), hgt=r*rnd(.05,.16);
+      g.fillStyle="rgba(255,255,255,"+rnd(.015,.05)+")";
+      g.beginPath(); g.ellipse(cx,y,r*1.05,hgt,0,0,7); g.fill();
+    }
+    const term=g.createRadialGradient(cx-r*.42,cy-r*.42,r*.1,cx,cy,r*1.42);
+    term.addColorStop(0,"rgba(255,255,255,.10)");
+    term.addColorStop(.42,"rgba(0,0,0,0)");
+    term.addColorStop(1,"rgba(2,4,8,.92)");    // ночная сторона, край мягкий
+    g.fillStyle=term; g.fillRect(cx-r,cy-r,r*2,r*2);
+    g.restore();
+
+    g.strokeStyle=col[2]; g.lineWidth=Math.max(1,r*.022);
+    g.shadowColor=col[2]; g.shadowBlur=r*.30;  // ободок атмосферы
+    g.beginPath(); g.arc(cx,cy,r-g.lineWidth/2,0,7); g.stroke();
+    g.shadowBlur=0;
+
+    if(ring){
+      g.save(); g.translate(cx,cy); g.scale(1,.26); g.rotate(-.18);
+      g.strokeStyle="rgba(215,205,230,.3)"; g.lineWidth=r*.30;
+      g.beginPath(); g.arc(0,0,r*1.55,0,Math.PI); g.stroke(); g.restore();
+    }
+    return c;
+  }
+
+  function build(){
+    const mob=innerWidth<760;
+    neb=bakeNebula(W,H);
+    stars=[];
+    const n=mob?260:520;                       // на телефоне вдвое реже — и незаметно
+    for(let i=0;i<n;i++){
+      const d=i%3;                             // три пласта: 1 : 2 : 4 по скорости
+      stars.push({x:Math.random()*W,y:Math.random()*H,
+        s:[.7,1,1.5][d]*(Math.random()<.06?2.1:1),
+        v:[.0018,.005,.013][d],
+        a:[.30,.55,.85][d]*rnd(.7,1),
+        f:Math.random()*7});
+    }
+    const big=Math.min(W,H);
+    planets=[
+      {img:bakePlanet(big*(mob?.42:.34),["#2b4a63","#101d2c","rgba(140,205,225,.55)"],false),
+       x:W*.80,y:H*1.02,vx:-.0035,vy:-.0016,band:0,bs:.00016},
+      {img:bakePlanet(big*(mob?.13:.11),["#5a3b52","#20141f","rgba(197,138,224,.5)"],true),
+       x:W*.18,y:H*.30,vx:.0055,vy:.0022,band:0,bs:.00031}
+    ];
+    if(!mob)planets.push(
+      {img:bakePlanet(big*.05,["#4d5a3a","#191d13","rgba(143,208,138,.45)"],false),
+       x:W*.52,y:H*.14,vx:.009,vy:.004,band:0,bs:.0005});
+  }
+
+  function resize(){
+    DPR=Math.min(devicePixelRatio||1,2);
+    W=innerWidth; H=innerHeight;
+    /* Вкладка может открыться скрытой — тогда размеры нулевые, и печь нечего.
+       Ждём настоящего размера по таймеру, а не по кадру: в скрытой вкладке кадры
+       не идут вовсе, и на rAF инициализация зависла бы до первого показа. */
+    if(W<2||H<2){setTimeout(resize,120);return;}
+    cv.width=W*DPR|0; cv.height=H*DPR|0;
+    cv.style.width=W+"px"; cv.style.height=H+"px";
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    build();
+  }
+
+  /* ── гость ──
+     Раз в 15–30 секунд поперёк кадра проходит один силуэт. Именно один:
+     двое одновременно — это уже парад, а нам нужна пустота. */
+  function newGuest(){
+    const kind=Math.random()<.45?"barge":"scout", dir=Math.random()<.5?1:-1;
+    return{kind,dir,x:dir>0?-90:W+90,y:rnd(H*.12,H*.8),
+      v:dir*(kind==="barge"?rnd(14,22):rnd(46,72)),
+      sc:kind==="barge"?rnd(1,1.5):rnd(.6,.9),trail:[]};
+  }
+  function drawGuest(g,dt){
+    g.x+=g.v*dt;
+    g.trail.push(g.x,g.y);
+    if(g.trail.length>34)g.trail.splice(0,2);
+    const s=g.sc;
+    if(g.kind==="scout"){                      // след двигателя гаснет градиентом
+      for(let i=0;i<g.trail.length-2;i+=2){
+        const a=(i/g.trail.length)*.28;
+        ctx.fillStyle="rgba(242,178,92,"+a+")";
+        ctx.fillRect(g.trail[i],g.trail[i+1]-.5,2,1.4*s);
+      }
+    }
+    ctx.save(); ctx.translate(g.x,g.y); ctx.scale(g.dir*s,s);
+    if(g.kind==="scout"){
+      ctx.fillStyle="rgba(190,215,225,.62)";
+      ctx.beginPath(); ctx.moveTo(9,0); ctx.lineTo(-5,3.4); ctx.lineTo(-3,0);
+      ctx.lineTo(-5,-3.4); ctx.closePath(); ctx.fill();
+      ctx.fillStyle="rgba(242,178,92,.85)"; ctx.fillRect(-6,-.7,2.4,1.4);
+    }else{
+      ctx.fillStyle="rgba(120,140,155,.45)";  // баржа: длинный тупой корпус
+      ctx.fillRect(-13,-3,26,6);
+      ctx.fillStyle="rgba(150,170,185,.5)"; ctx.fillRect(9,-4.4,5,8.8);
+      ctx.fillStyle="rgba(127,230,216,.75)"; ctx.fillRect(-2,-4.6,1.6,1.6);
+      ctx.fillStyle="rgba(255,120,90,.7)";   ctx.fillRect(-13.5,-1,1.6,2);
+    }
+    ctx.restore();
+    return g.x>-140&&g.x<W+140;
+  }
+
+  let last=0, slowFrames=0, dead=false;
+  function frame(now){
+    if(dead)return;
+    if(!neb){requestAnimationFrame(frame);return;}   // печь ещё не готова
+    const dt=Math.min(.05,(now-last)/1000)||0; last=now; t+=dt;
+
+    /* Сторож производительности: если машина не тянет две секунды подряд,
+       движение выключается и остаётся статичный кадр. Красивый, но неподвижный —
+       это честнее, чем дёргающийся. */
+    if(dt>.055)slowFrames++; else slowFrames=Math.max(0,slowFrames-1);
+    if(slowFrames>110)dead=true;
+
+    const dim=Math.min(.55,scroll/(H*1.2)*.55);   // при скролле фон уходит в тень
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.fillStyle="#05070c"; ctx.fillRect(0,0,W,H);
+
+    ctx.globalAlpha=(.85+Math.sin(t*.31)*.09)*(1-dim);   // туманность дышит
+    ctx.drawImage(neb,0,-scroll*.02,W,H);
+    ctx.globalAlpha=1;
+
+    for(const s of stars){                       // мерцание размером, не яркостью
+      s.x-=s.v*W*dt*60*.016;
+      if(s.x<-2)s.x=W+2;
+      const tw=1+Math.sin(t*1.7+s.f)*.22, y=s.y-scroll*s.v*9;
+      ctx.globalAlpha=s.a*(1-dim*.8);
+      ctx.fillStyle="#dfeef5";
+      ctx.fillRect(s.x,((y%H)+H)%H,s.s*tw,s.s*tw);
+    }
+    ctx.globalAlpha=1-dim;
+
+    for(const p of planets){
+      p.x+=p.vx*dt*60; p.y+=p.vy*dt*60; p.band+=p.bs;
+      const w=p.img.width, h=p.img.height;
+      if(p.x<-w)p.x=W+w; if(p.x>W+w)p.x=-w;
+      if(p.y<-h)p.y=H+h; if(p.y>H+h)p.y=-h;
+      ctx.drawImage(p.img,p.x-w/2,p.y-h/2-scroll*.05);
+    }
+
+    guestAt-=dt;
+    if(!guest&&guestAt<=0)guest=newGuest();
+    if(guest&&!drawGuest(guest,dt)){guest=null;guestAt=rnd(15,30)}
+    ctx.globalAlpha=1;
+
+    requestAnimationFrame(frame);
+  }
+
+  addEventListener("resize",()=>{clearTimeout(window._rt);
+    window._rt=setTimeout(resize,180)},{passive:true});
+  addEventListener("scroll",()=>{scroll=scrollY||0},{passive:true});
+
+  /* «меньше движения» — рисуем один кадр и уходим; но только когда печь готова */
+  function still(){
+    if(!neb){requestAnimationFrame(still);return;}
+    ctx.fillStyle="#05070c"; ctx.fillRect(0,0,W,H);
+    ctx.drawImage(neb,0,0,W,H);
+    for(const s of stars){ctx.globalAlpha=s.a;ctx.fillStyle="#dfeef5";
+      ctx.fillRect(s.x,s.y,s.s,s.s)}
+    ctx.globalAlpha=1;
+    for(const p of planets)ctx.drawImage(p.img,p.x-p.img.width/2,p.y-p.img.height/2);
+  }
+
+  resize();
+  requestAnimationFrame(slow?still:frame);
+})();
+
+/* версия игры — чтобы с заглавной было видно, что выложено */
+fetch("/play.html",{method:"HEAD"}).then(r=>{
+  const d=r.headers.get("last-modified");
+  if(d)document.getElementById("ver").textContent=
+    "обновлено "+new Date(d).toLocaleDateString("ru-RU");
+}).catch(()=>{});
+</script>
+</body>
+</html>

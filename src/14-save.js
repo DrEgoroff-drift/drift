@@ -1,6 +1,8 @@
 /* ══════════════ сохранение ══════════════ */
-/* Облако включается заполнением этих полей. Пусто — работает только локально. */
-const CLOUD={url:"",id:""};
+/* Облако включается не настройкой, а входом: заглавная страница кладёт токен в
+   localStorage того же домена, игра его просто видит. Открытая с диска игра
+   (file://) остаётся полностью локальной — сервера рядом нет и быть не должно. */
+const CLOUD={api:"/api.php",tkey:"drift_token",lkey:"drift_login"};
 const SAVE_KEY="drift_save_v4";
 let STORAGE_OK=true, lastSave=0;
 function stGet(k){try{return localStorage.getItem(k);}catch(e){STORAGE_OK=false;return null;}}
@@ -455,7 +457,7 @@ function applySave(s){
 function saveGame(quiet){
   const ok=stSet(SAVE_KEY,JSON.stringify(snapshot()));
   if(!quiet)say(ok?"Полёт записан":"Хранилище недоступно\nвоспользуйтесь кодом");
-  if(ok&&CLOUD.url)cloudPush();
+  if(ok)cloudPush(false);
   return ok;
 }
 function autosave(){
@@ -471,20 +473,59 @@ function exportCode(){return b64enc(JSON.stringify(snapshot()));}
 function importCode(c){
   try{return applySave(JSON.parse(b64dec(c)));}catch(e){return false;}
 }
-/* облако: два запроса, любой бэкенд с GET/POST по этому адресу подойдёт */
-function cloudPush(){
-  if(!CLOUD.url)return;
-  try{
-    fetch(CLOUD.url+"?id="+encodeURIComponent(CLOUD.id),
-      {method:"POST",headers:{"Content-Type":"application/json"},
-       body:JSON.stringify(snapshot())}).catch(()=>{});
-  }catch(e){}
+/* ══════════════ облако ══════════════
+   Три состояния, и путать их нельзя: игра с диска (облака нет вовсе), игра на
+   сайте без входа (есть, но не наше) и игра с учётной записью. */
+function cloudTok(){return stGet(CLOUD.tkey)||"";}
+function cloudName(){return stGet(CLOUD.lkey)||"";}
+function cloudHere(){return location.protocol==="http:"||location.protocol==="https:";}
+function cloudOn(){return cloudHere()&&!!cloudTok();}
+function cloudCall(a,body){
+  return fetch(CLOUD.api+"?a="+a,{method:"POST",
+    headers:{"Content-Type":"application/json","X-Drift-Token":cloudTok()},
+    body:JSON.stringify(body||{})}).then(r=>r.json());
+}
+function cloudForget(){stDel(CLOUD.tkey);stDel(CLOUD.lkey);}
+
+let cloudBusy=0,cloudLastTs=0;
+/* Отправка идёт молча и не чаще раза в двадцать секунд: сохранение случается
+   часто, а сеть — единственное в игре, что умеет тормозить кадр. */
+function cloudPush(loud){
+  if(!cloudOn()){if(loud)say("Вы не вошли в учётную запись");return;}
+  const now=Date.now();
+  if(!loud&&now-cloudBusy<20000)return;
+  cloudBusy=now;
+  const snap=snapshot();
+  cloudCall("push",{save:snap})
+    .then(d=>{
+      if(d&&d.ok){cloudLastTs=d.ts;if(loud)say("Отправлено в облако");}
+      else if(d&&d.reason){if(loud)say("В облаке запись новее\nсначала заберите её");}
+      else if(d&&d.error==="нужен вход"){cloudForget();if(loud)say("Вход устарел\nвойдите заново");}
+    })
+    .catch(()=>{if(loud)say("Облако недоступно");});
 }
 function cloudPull(){
-  if(!CLOUD.url){say("Облако не настроено");return;}
-  fetch(CLOUD.url+"?id="+encodeURIComponent(CLOUD.id))
-    .then(r=>r.json())
-    .then(d=>{if(applySave(d)){saveGame(true);say("Загружено из облака");}
-      else say("В облаке нет записи");})
+  if(!cloudOn()){say("Вы не вошли в учётную запись");return;}
+  cloudCall("pull")
+    .then(d=>{
+      if(!d||!d.ok){say("В облаке нет записи");return;}
+      if(applySave(d.save)){stSet(SAVE_KEY,JSON.stringify(d.save));say("Загружено из облака");}
+      else say("Запись из облака не подошла");
+    })
     .catch(()=>say("Облако недоступно"));
+}
+/* На запуске облако не спрашивает игрока и ничего не перетирает молча: оно лишь
+   кладёт в локальное хранилище ту запись, которая новее, — а продолжать полёт
+   или начинать заново, по-прежнему решает кнопка на заставке. */
+function cloudBoot(then){
+  if(!cloudOn()){then&&then(false);return;}
+  cloudCall("pull")
+    .then(d=>{
+      if(!d||!d.ok||!d.save){then&&then(false);return;}
+      let mine=0;
+      try{mine=(JSON.parse(stGet(SAVE_KEY))||{}).ts||0;}catch(e){}
+      if((d.save.ts||0)>mine){stSet(SAVE_KEY,JSON.stringify(d.save));then&&then(true);}
+      else then&&then(false);
+    })
+    .catch(()=>{then&&then(false);});
 }
