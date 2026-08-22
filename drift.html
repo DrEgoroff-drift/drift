@@ -717,7 +717,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.86.0";
+const VER="0.87.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -5378,11 +5378,18 @@ let ctx=cvs.getContext("2d");
 const MAIN_CTX=ctx;
 let W=0,H=0,DPR=1;
 function resize(){
-  DPR=Math.min(2,window.devicePixelRatio||1);
+  /* Разрешение канвы (12aa): ретина рисует вчетверо больше пикселей, и на
+     поверхности это было 23 кадра вместо шестидесяти. Игрок выбирает сам
+     (gfx.res), а «авто» стартует с полного и само спускается, когда кадр
+     не укладывается — см. resAuto() в 28-loop. */
+  let want=0;try{want=(G.opts.gfx.res)||0;}catch(e){}   // первый вызов идёт до объявления G
+  DPR=want?Math.min(want,window.devicePixelRatio||1):Math.min(RES_AUTO,window.devicePixelRatio||1);
   W=window.innerWidth;H=window.innerHeight;
   cvs.width=Math.round(W*DPR);cvs.height=Math.round(H*DPR);
   ctx.setTransform(DPR,0,0,DPR,0,0);
 }
+/* текущий потолок автоматического режима: полный, пока кадр держится */
+let RES_AUTO=2;
 addEventListener("resize",resize);resize();
 
 const keys={left:false,right:false,thrust:false,brake:false,act:false,fire:false,
@@ -5406,7 +5413,7 @@ const G={
   land:null,surf:null,st:null,belt:null,dig:null,cave:null,
   opts:{easyLand:true,autoDock:true,invX:false,invY:false,invYaw:false,lookSens:1,
     keys:{main:{},belt:{}},pads:"auto",padSize:1,
-    gfx:{draw:1,detail:1,particles:1,plants:1,fps:0},
+    gfx:{draw:1,detail:1,particles:1,plants:1,fps:0,res:0},
     audio:{on:true,music:.6,sfx:.6,engine:.4}},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
   market:{},uniqueShips:{},drones:[],droneInventory:0,
@@ -15729,6 +15736,8 @@ function applySave(s){
   /* потолок кадров: 0 — без потолка. Ноль тут законное значение, поэтому
      проверка на «пусто» ему не годится, нужна проверка на «не из списка». */
   if(![0,30,60].includes(G.opts.gfx.fps))G.opts.gfx.fps=0;
+  if(![0,1,1.5,2].includes(G.opts.gfx.res))G.opts.gfx.res=0;
+  resize();
   if(!G.opts.audio||typeof G.opts.audio!=="object")G.opts.audio={on:true,music:.6,sfx:.6,engine:.4};
   if(typeof G.opts.audio.music!=="number")G.opts.audio.music=.6;
   if(typeof G.opts.audio.sfx!=="number")G.opts.audio.sfx=.6;
@@ -18638,6 +18647,81 @@ function drawStrata(tr,camx,camy,p,P){
   ctx.restore();
 }
 
+/* ══════════════ кэш статичного: чанки и слои ══════════════
+   Замер 0.87 показал, где уходит кадр на поверхности: не в логике (≤4 мс),
+   а в растре — полноэкранные заливки паттерном и градиентом под clip-путём
+   из двухсот вершин, по десятку за кадр, и всё это на ретине вчетверо.
+   При этом разрез грунта от кадра к кадру не меняется: камера его только
+   двигает. То, что не меняется, рисуется один раз в offscreen и дальше
+   кладётся одним drawImage.
+
+   Два вида кэша:
+   · chunkAt(store,k,...) — ломоть мира по X шириной CW, для длинных полос
+     (грунт, свод пещеры); живёт, пока игрок рядом, старые вытесняются;
+   · screenLayer(key,paint) — слой во весь экран, для того, что сидит в
+     экранных координатах (зарево звезды, пелена погоды).
+
+   Рисовальщик получает тот же глобальный ctx, W и H, что и обычный кадр —
+   на время покраски они подменяются (withCtx), поэтому существующие
+   функции рисуют в чанк, не зная об этом. */
+
+const CHUNK_W=512;        // ширина ломтя в мировых пикселях
+const CHUNK_KEEP=7;       // сколько ломтей держать (W/CW+2 на экран плюс запас)
+
+/* подмена холста: fn рисует так, будто экран размером w×h и начало — в
+   мировой точке (ox,oy) */
+function withCtx(cn,w,h,ox,oy,fn){
+  const pc=ctx,pW=W,pH=H;
+  const g=cn.getContext("2d");
+  ctx=g;W=w;H=h;
+  g.setTransform(DPR,0,0,DPR,0,0);
+  g.clearRect(0,0,w,h);
+  try{fn(g,ox,oy);}finally{ctx=pc;W=pW;H=pH;}
+}
+function mkCanvas(w,h){
+  const cn=document.createElement("canvas");
+  cn.width=Math.max(1,Math.round(w*DPR));cn.height=Math.max(1,Math.round(h*DPR));
+  return cn;
+}
+/* хранилище ломтей: {key, top, ch, map:Map<k,canvas>, order:[k...]}.
+   key — от чего зависит картинка (планета, DPR, высота); сменился — всё вон */
+function chunkStore(store,key,top,ch){
+  if(!store||store.key!==key||store.ch!==ch||store.top!==top)
+    store={key,top,ch,map:new Map(),order:[]};
+  return store;
+}
+function chunkAt(store,k,paint){
+  let cn=store.map.get(k);
+  if(cn)return cn;
+  cn=mkCanvas(CHUNK_W,store.ch);
+  withCtx(cn,CHUNK_W,store.ch,k*CHUNK_W,store.top,paint);
+  store.map.set(k,cn);store.order.push(k);
+  while(store.order.length>CHUNK_KEEP)store.map.delete(store.order.shift());
+  return cn;
+}
+/* выложить ломти под камеру: paint(g,wx0,wy0) красит мир в диапазоне
+   [wx0,wx0+CW)×[wy0,wy0+ch) в координатах экрана-ломтя */
+function drawChunks(store,camx,camy,paint){
+  const k0=Math.floor(camx/CHUNK_W),k1=Math.floor((camx+W)/CHUNK_W);
+  for(let k=k0;k<=k1;k++){
+    const cn=chunkAt(store,k,paint);
+    ctx.drawImage(cn,k*CHUNK_W-camx,store.top-camy,CHUNK_W,store.ch);
+  }
+}
+
+/* слои во весь экран: ключ описывает всё, от чего зависит картинка */
+const SCREEN_LAYERS=new Map();
+function screenLayer(key,paint){
+  const full=key+"|"+W+"x"+H+"@"+DPR;
+  let cn=SCREEN_LAYERS.get(full);
+  if(cn)return cn;
+  cn=mkCanvas(W,H);
+  withCtx(cn,W,H,0,0,paint);
+  SCREEN_LAYERS.set(full,cn);
+  if(SCREEN_LAYERS.size>12)SCREEN_LAYERS.delete(SCREEN_LAYERS.keys().next().value);
+  return cn;
+}
+
 /* ══════════════ карта ══════════════ */
 function wrapCenter(text,x,y,maxW,lh){
   const words=text.split(" ");let line="",ly=y;
@@ -19997,12 +20081,16 @@ function drawWeather(p,camx,camy){
   ctx.save();
   /* общая пелена: она делает бурю бурей сильнее, чем сами частицы */
   if(k>.12){
-    const c=W0.col;
-    const g=ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,"rgba("+c.join(",")+","+(W0.tint*k*.5).toFixed(3)+")");
-    g.addColorStop(.55,"rgba("+c.join(",")+","+(W0.tint*k).toFixed(3)+")");
-    g.addColorStop(1,"rgba("+c.join(",")+","+(W0.tint*k*.7).toFixed(3)+")");
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    const c=W0.col,kq=Math.round(k*40)/40;
+    /* пелена — слой (18c): сила бури квантуется до 1/40, чтобы слоёв было
+       штук десять за всю бурю, а не по одному на кадр */
+    ctx.drawImage(screenLayer("veil|"+w.kind+"|"+kq,()=>{
+      const g=ctx.createLinearGradient(0,0,0,H);
+      g.addColorStop(0,"rgba("+c.join(",")+","+(W0.tint*kq*.5).toFixed(3)+")");
+      g.addColorStop(.55,"rgba("+c.join(",")+","+(W0.tint*kq).toFixed(3)+")");
+      g.addColorStop(1,"rgba("+c.join(",")+","+(W0.tint*kq*.7).toFixed(3)+")");
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    }),0,0,W,H);
   }
   const c=W0.col;
   const t=G.t;
@@ -20445,6 +20533,22 @@ function drawGround(tr,camx,camy,fill,line,pal){
      текущем пути контекста, и первый же beginPath в цикле склонов его затирал:
      дальше clip для пластов и обводка кромки применялись к последней
      шестипиксельной полоске, то есть пласты породы не рисовались вовсе. */
+  /* ── ближний слой идёт через кэш ломтей (18c) ──
+     Разрез с пластами, материалом и глубиной — самое дорогое в кадре и при
+     этом неизменное: камера его только двигает. Ломоть красится этой же
+     функцией (GROUND_BAKING), а в кадре остаётся drawImage да трава —
+     она одна здесь живая, потому что кланяется ветру. */
+  if(pal&&tr.mat&&!GROUND_BAKING){
+    if(tr.hMin==null){let a=1e9,b=-1e9;for(let i=0;i<tr.N;i++){if(tr.h[i]<a)a=tr.h[i];if(tr.h[i]>b)b=tr.h[i];}tr.hMin=a;tr.hMax=b;}
+    const top=Math.floor(tr.hMin-90),ch=Math.ceil(tr.hMax-tr.hMin+H+120);
+    tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR,top,ch);
+    drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>{
+      GROUND_BAKING=true;
+      try{drawGround(tr,wx0,wy0,fill,line,pal);}finally{GROUND_BAKING=false;}
+    });
+    drawGroundGrass(tr,camx,camy);
+    return;
+  }
   const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
   const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
   const P=new Path2D();
@@ -20479,34 +20583,16 @@ function drawGround(tr,camx,camy,fill,line,pal){
       ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+stripD);ctx.lineTo(x0,y0+stripD);
       ctx.closePath();ctx.fill();
     }
-    /* мелкая крошка/пучки на самой кромке — деш;во и оживляет силуэт вблизи */
-    const dstep=Math.max(1,Math.round(14/tr.step));
-    for(let i=i0;i<i1;i+=dstep){
-      const wx=i*tr.step,x=wx-camx;if(x<-6||x>W+6)continue;
-      const y=tr.h[i]-camy;
-      const hh=hashi(Math.floor(wx/14),tr.sseed,0x6E55);
-      if((hh&7)===0)continue;
-      const grass=(hh&3)!==0;
-      ctx.strokeStyle=grass?"rgba(255,255,255,.14)":"rgba(0,0,0,.22)";
-      ctx.lineWidth=1;
-      if(grass){
-        const th=2+((hh>>>4)&3);
-        /* трава кланяется ветру: каждая пучка со своей фазой от координаты,
-           иначе весь склон качается одним куском */
-        const sw=WIND*(1.6+th*.5)*(.7+.3*Math.sin(G.t*.045+wx*.07));
-        ctx.beginPath();ctx.moveTo(x,y);
-        ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);ctx.stroke();
-      }else{
-        ctx.fillStyle=ctx.strokeStyle;
-        ctx.beginPath();ctx.arc(x,y-1,1+((hh>>>6)&1),0,TAU);ctx.fill();
-      }
-    }
+    /* крошка на кромке — неподвижна, ложится в ломоть; трава живая и идёт
+       отдельно (drawGroundGrass), в кадре поверх ломтей */
+    drawGroundCrumbs(tr,camx,camy,i0,i1);
+    if(!tr.mat)drawGroundGrass(tr,camx,camy);
   }
   /* глубина: тело породы гаснет вниз. Без этого низ экрана — ровное пятно
      той же светлоты, что и освещённая поверхность, и грунт читается плоским. */
   if(tr.mat){
     ctx.save();ctx.clip(P);
-    const dg=ctx.createLinearGradient(0,Math.max(0,tr.h[i0]-camy-40),0,H);
+    const dg=ctx.createLinearGradient(0,Math.max(0,(GROUND_BAKING?tr.hMin:tr.h[i0])-camy-40),0,H);
     dg.addColorStop(0,"rgba(0,0,0,0)");
     dg.addColorStop(.45,"rgba(0,0,0,.42)");
     dg.addColorStop(1,"rgba(0,0,0,.88)");
@@ -20524,6 +20610,37 @@ function drawGround(tr,camx,camy,fill,line,pal){
     ctx.stroke();
     ctx.restore();
   }
+}
+let GROUND_BAKING=false;
+/* мелкая крошка на самой кромке — дёшево и оживляет силуэт вблизи */
+function drawGroundCrumbs(tr,camx,camy,i0,i1){
+  const dstep=Math.max(1,Math.round(14/tr.step));
+  ctx.lineWidth=1;
+  for(let i=i0;i<i1;i+=dstep){
+    const wx=i*tr.step,x=wx-camx;if(x<-6||x>W+6)continue;
+    const hh=hashi(Math.floor(wx/14),tr.sseed,0x6E55);
+    if((hh&7)===0||(hh&3)!==0)continue;
+    ctx.fillStyle="rgba(0,0,0,.22)";
+    ctx.beginPath();ctx.arc(x,tr.h[i]-camy-1,1+((hh>>>6)&1),0,TAU);ctx.fill();
+  }
+}
+/* трава кланяется ветру: каждая пучка со своей фазой от координаты,
+   иначе весь склон качается одним куском. Единственное живое на кромке */
+function drawGroundGrass(tr,camx,camy){
+  const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
+  const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
+  const dstep=Math.max(1,Math.round(14/tr.step));
+  ctx.strokeStyle="rgba(255,255,255,.14)";ctx.lineWidth=1;
+  ctx.beginPath();
+  for(let i=i0;i<i1;i+=dstep){
+    const wx=i*tr.step,x=wx-camx;if(x<-6||x>W+6)continue;
+    const hh=hashi(Math.floor(wx/14),tr.sseed,0x6E55);
+    if((hh&7)===0||(hh&3)===0)continue;
+    const y=tr.h[i]-camy,th=2+((hh>>>4)&3);
+    const sw=WIND*(1.6+th*.5)*(.7+.3*Math.sin(G.t*.045+wx*.07));
+    ctx.moveTo(x,y);ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);
+  }
+  ctx.stroke();
 }
 /* валуны и осыпь на профиле */
 function drawRocks(tr,camx,camy,pal){
@@ -20607,11 +20724,15 @@ function drawSkyLayer(p,camx,camy){
   }
   const sunX=W*.78,sunY=H*.16;
   const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a";
-  const g=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,W*.5);
-  g.addColorStop(0,rgba(hex2rgb(sc),.55));
-  g.addColorStop(.12,rgba(hex2rgb(sc),.16));
-  g.addColorStop(1,"rgba(0,0,0,0)");
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  /* зарево — полноэкранный радиальный градиент, 5 мс растра на кадр при
+     неизменной картинке; живёт слоем (18c) и кладётся одним drawImage */
+  ctx.drawImage(screenLayer("glow|"+sc,()=>{
+    const g=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,W*.5);
+    g.addColorStop(0,rgba(hex2rgb(sc),.55));
+    g.addColorStop(.12,rgba(hex2rgb(sc),.16));
+    g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  }),0,0,W,H);
   /* небесные тела идут между заревом звезды и облаками: за облаками, но
      перед общим градиентом — так они и оказываются «в небе», а не поверх него */
   drawSkyBodies(p,camx,camy);
@@ -26838,28 +26959,25 @@ function updateCave(dt){
       "ОГОНЬ (F) — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
   }else G.prompt="A D — ИДТИ · В ДАЛЬНЕМ КОНЦЕ НАХОДКА · У ВХОДА ДЕЙСТВИЕ — НАРУЖУ";
 }
-function drawCave(){
-  const C=G.cave;
-  const camx=C.x-W/2;
-  ctx.fillStyle="#03040a";ctx.fillRect(0,0,W,H);
-  /* свод и пол — сплошная порода, между ними тёмный проход */
+/* порода пещеры в один ломоть: свод и пол, материал планеты, темнота,
+   градиент к краям и влажный блик. wx0/wy0 — мировое начало ломтя */
+function drawCaveRock(C,cp,camx,camy){
   ctx.fillStyle="#0c1016";
   const CP=new Path2D();
-  CP.moveTo(0,0);
-  for(let sx=0;sx<=W;sx+=16){const wx=camx+sx;CP.lineTo(sx,caveCeil(C,wx)-C.y+H*.56);}
-  CP.lineTo(W,0);CP.closePath();
+  CP.moveTo(-20,-20);
+  for(let sx=-16;sx<=W+16;sx+=16){const wx=camx+sx;CP.lineTo(sx,caveCeil(C,wx)-camy);}
+  CP.lineTo(W+20,-20);CP.closePath();
   const FP=new Path2D();
-  FP.moveTo(0,H);
-  for(let sx=0;sx<=W;sx+=16){const wx=camx+sx;FP.lineTo(sx,caveFloor(C,wx)-C.y+H*.56);}
-  FP.lineTo(W,H);FP.closePath();
+  FP.moveTo(-20,H+20);
+  for(let sx=-16;sx<=W+16;sx+=16){const wx=camx+sx;FP.lineTo(sx,caveFloor(C,wx)-camy);}
+  FP.lineTo(W+20,H+20);FP.closePath();
   ctx.fill(CP);ctx.fill(FP);
   /* порода той же планеты и на своде, и на полу: без неё пещера — два чёрных
      силуэта, и по ним не понять, в чьих недрах игрок находится */
-  const cp=G.surf&&G.surf.p;
   if(cp){
     const mat=planetMat(cp);
-    fillMaterial(mat,camx,C.y-H*.56,.30,.18,CP);
-    fillMaterial(mat,camx,C.y-H*.56,.30,.18,FP);
+    fillMaterial(mat,camx,camy,.30,.18,CP);
+    fillMaterial(mat,camx,camy,.30,.18,FP);
     /* и сразу гасим: тайл рассчитан на освещённую поверхность, под землёй он
        светит как днём и убивает единственное, что есть у пещеры — темноту */
     ctx.fillStyle="rgba(2,4,9,.44)";
@@ -26877,6 +26995,18 @@ function drawCave(){
     ctx.strokeStyle="rgba(150,200,230,.14)";ctx.lineWidth=1.6;
     ctx.stroke(CP);ctx.stroke(FP);
   }
+}
+function drawCave(){
+  const C=G.cave;
+  const camx=C.x-W/2;
+  ctx.fillStyle="#03040a";ctx.fillRect(0,0,W,H);
+  /* свод и пол — сплошная порода, между ними тёмный проход. Порода с
+     материалом, затемнением и бликом кромки — самое дорогое в кадре (20 мс
+     из 28 по замеру 0.87) и при этом неподвижное: рисуется ломтями (18c),
+     в кадре остаётся drawImage. Ломоть хранится при пещере. */
+  const cp=G.surf&&G.surf.p;
+  C.chunks=chunkStore(C.chunks,C.seed+"|"+(cp?cp.seed:0)+"|"+H+"|"+DPR,C.y-H*.56,H);
+  drawChunks(C.chunks,camx,C.y-H*.56,(g,wx0,wy0)=>drawCaveRock(C,cp,wx0,wy0));
   /* убранство: строение раньше материала — натёки уже вылеплены породой выше,
      тут только их силуэт и вода, а свет пойдёт после темноты */
   const camy=C.y-H*.56;
@@ -34895,6 +35025,19 @@ function renderOpts(){
   const bfp=el("button","act gold",FLV[j0][1]);
   bfp.onclick=()=>{G.opts.gfx.fps=FLV[(j0+1)%FLV.length][0];renderOpts();};
   rfp.appendChild(bfp);$optBody.appendChild(rfp);
+  /* Разрешение канвы: самая тяжёлая статья на ретине — вчетверо больше
+     пикселей за те же кадры. «Авто» начинает с полного и само спускается,
+     если кадр не держится; вручную — когда хочется либо чёткости любой
+     ценой, либо тишины вентилятора. */
+  const RLV=[[0,"АВТО"],[1,"1×"],[1.5,"1.5×"],[2,"2× (ЧЁТКО)"]];
+  const rres=el("div","row");
+  const rNote=(G.opts.gfx.res?"":"сейчас ×"+DPR+" · ")+"экран ×"+(window.devicePixelRatio||1).toFixed(1)+
+    "; меньше пикселей — быстрее кадр, на логику не влияет";
+  rres.appendChild(el("div","nm","<b>Разрешение</b><s>"+rNote+"</s>"));
+  const jr=Math.max(0,RLV.findIndex(g=>g[0]===G.opts.gfx.res));
+  const bres=el("button","act gold",RLV[jr][1]);
+  bres.onclick=()=>{G.opts.gfx.res=RLV[(jr+1)%RLV.length][0];RES_AUTO=2;resize();renderOpts();};
+  rres.appendChild(bres);$optBody.appendChild(rres);
   const rpr=el("div","row");
   rpr.appendChild(el("div","nm","<b>Пресет</b><s>выставить всё сразу</s>"));
   const bpr=el("button","act","НИЗКИЕ / СРЕДНИЕ / ВЫСОКИЕ / МАКС");
@@ -35272,6 +35415,24 @@ let lastDroneTick=0;
    Пропускается весь такт целиком, вместе с расчётом: `dt` считается по
    настоящим часам, и на тридцати кадрах он просто вдвое крупнее — движение
    остаётся тем же, замедления не возникает. */
+/* ══════════════ авторазрешение ══════════════
+   Замер 0.87: на экране ×2.5 поверхность шла в 23 кадра, при ×1 — в 49, и
+   дело было не в логике (≤4 мс), а в растре. Пока игрок не выбрал разрешение
+   сам, игра начинает с полного и спускается на полступени, если кадр
+   по сглаженной оценке не укладывается в 24 мс три секунды подряд. Вверх
+   сама не идёт: дрожание «чётко — мыльно — чётко» хуже ровной картинки. */
+let resEma=16,resBad=0;
+function resAuto(d){
+  if(!G.running||d<=0||d>250)return;
+  resEma=resEma*.9+d*.1;
+  if(G.opts.gfx.res||RES_AUTO<=1||document.hidden){resBad=0;return;}
+  if(resEma>24)resBad+=d;else resBad=Math.max(0,resBad-d*.5);
+  if(resBad>3000){
+    resBad=0;resEma=16;
+    RES_AUTO=RES_AUTO>1.5?1.5:1;
+    if(DPR>RES_AUTO){resize();say("Разрешение снижено до ×"+RES_AUTO+"\nвернуть — в настройках, «Графика»");}
+  }
+}
 let capIv=16.667, capPrev=0, capN=0;
 function frame(now){
   if(capPrev){
@@ -35288,6 +35449,7 @@ function frame(now){
     if(++capN%stride){requestAnimationFrame(frame);return;}
     capN=0;
   }else capN=0;
+  resAuto(now-last);
   const dt=clamp((now-last)/16.667,0,3);last=now;
   /* второй рубеж против залипших клавиш: событие blur приходит не всегда —
      фокус, ушедший в DevTools того же окна, его может не поднять. Пока страница

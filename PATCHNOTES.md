@@ -8,6 +8,33 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.87.0 — "What does not move is painted once"
+
+Measured, not guessed: the frame was profiled function by function, JS time and raster time
+separately, then in a real Chrome on a ×2.5 display. The logic costs ≤4 ms everywhere. The raster
+did not: the surface ran at **23 fps**, the cave at 42, and removing one thing — the near ground —
+brought the surface to 61.
+
+**The ground cross-section is now a row of chunks.** Silhouette, six strata with their contacts
+and veins, the rock material in two passes, the depth gradient and the crust line were fifteen
+full-screen fills under a 200-vertex clip path, every frame, on a 4.5-megapixel canvas — for a
+picture that never changes: the camera only moves it. `18c-chunks` paints it once into 512-px
+slices of world X (the same `drawGround`, with `W`/`H`/`ctx` swapped underneath it), keeps seven,
+and the frame is four `drawImage` calls. The gradient's top is the terrain's global minimum rather
+than the slice's, so there is no seam in the darkness. Only the grass stays live — it bows to the
+wind. The cave's vault and floor go the same way (20 of its 28 ms were the material alone).
+Surface **23 → 52 fps**, cave **42 → 57**, at the same ×2 resolution.
+
+**The star's glow and the storm veil are layers.** A full-screen radial gradient (5 ms) and a
+full-screen linear one (3 ms) that depend on nothing that changes within a second are cached as
+screen-sized canvases keyed by what they depend on.
+
+**Resolution is a setting, and "auto" steps down on its own.** On a retina display the canvas
+drew four times the pixels for the same frames. `Графика → Разрешение`: auto / 1× / 1.5× / 2×.
+Auto starts at full and drops half a step when the smoothed frame stays above 24 ms for three
+seconds; it never climbs back by itself, because "sharp — soft — sharp" reads worse than a steady
+picture. The choice is saved; old saves get auto.
+
 ## 0.86.0 — "Two full-screen passes become one, and nobody re-rolls the same dice"
 
 Continuing down the same list, in order of pixels painted rather than lines of code.

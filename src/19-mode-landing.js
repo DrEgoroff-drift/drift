@@ -111,6 +111,22 @@ function drawGround(tr,camx,camy,fill,line,pal){
      текущем пути контекста, и первый же beginPath в цикле склонов его затирал:
      дальше clip для пластов и обводка кромки применялись к последней
      шестипиксельной полоске, то есть пласты породы не рисовались вовсе. */
+  /* ── ближний слой идёт через кэш ломтей (18c) ──
+     Разрез с пластами, материалом и глубиной — самое дорогое в кадре и при
+     этом неизменное: камера его только двигает. Ломоть красится этой же
+     функцией (GROUND_BAKING), а в кадре остаётся drawImage да трава —
+     она одна здесь живая, потому что кланяется ветру. */
+  if(pal&&tr.mat&&!GROUND_BAKING){
+    if(tr.hMin==null){let a=1e9,b=-1e9;for(let i=0;i<tr.N;i++){if(tr.h[i]<a)a=tr.h[i];if(tr.h[i]>b)b=tr.h[i];}tr.hMin=a;tr.hMax=b;}
+    const top=Math.floor(tr.hMin-90),ch=Math.ceil(tr.hMax-tr.hMin+H+120);
+    tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR,top,ch);
+    drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>{
+      GROUND_BAKING=true;
+      try{drawGround(tr,wx0,wy0,fill,line,pal);}finally{GROUND_BAKING=false;}
+    });
+    drawGroundGrass(tr,camx,camy);
+    return;
+  }
   const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
   const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
   const P=new Path2D();
@@ -145,34 +161,16 @@ function drawGround(tr,camx,camy,fill,line,pal){
       ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+stripD);ctx.lineTo(x0,y0+stripD);
       ctx.closePath();ctx.fill();
     }
-    /* мелкая крошка/пучки на самой кромке — деш;во и оживляет силуэт вблизи */
-    const dstep=Math.max(1,Math.round(14/tr.step));
-    for(let i=i0;i<i1;i+=dstep){
-      const wx=i*tr.step,x=wx-camx;if(x<-6||x>W+6)continue;
-      const y=tr.h[i]-camy;
-      const hh=hashi(Math.floor(wx/14),tr.sseed,0x6E55);
-      if((hh&7)===0)continue;
-      const grass=(hh&3)!==0;
-      ctx.strokeStyle=grass?"rgba(255,255,255,.14)":"rgba(0,0,0,.22)";
-      ctx.lineWidth=1;
-      if(grass){
-        const th=2+((hh>>>4)&3);
-        /* трава кланяется ветру: каждая пучка со своей фазой от координаты,
-           иначе весь склон качается одним куском */
-        const sw=WIND*(1.6+th*.5)*(.7+.3*Math.sin(G.t*.045+wx*.07));
-        ctx.beginPath();ctx.moveTo(x,y);
-        ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);ctx.stroke();
-      }else{
-        ctx.fillStyle=ctx.strokeStyle;
-        ctx.beginPath();ctx.arc(x,y-1,1+((hh>>>6)&1),0,TAU);ctx.fill();
-      }
-    }
+    /* крошка на кромке — неподвижна, ложится в ломоть; трава живая и идёт
+       отдельно (drawGroundGrass), в кадре поверх ломтей */
+    drawGroundCrumbs(tr,camx,camy,i0,i1);
+    if(!tr.mat)drawGroundGrass(tr,camx,camy);
   }
   /* глубина: тело породы гаснет вниз. Без этого низ экрана — ровное пятно
      той же светлоты, что и освещённая поверхность, и грунт читается плоским. */
   if(tr.mat){
     ctx.save();ctx.clip(P);
-    const dg=ctx.createLinearGradient(0,Math.max(0,tr.h[i0]-camy-40),0,H);
+    const dg=ctx.createLinearGradient(0,Math.max(0,(GROUND_BAKING?tr.hMin:tr.h[i0])-camy-40),0,H);
     dg.addColorStop(0,"rgba(0,0,0,0)");
     dg.addColorStop(.45,"rgba(0,0,0,.42)");
     dg.addColorStop(1,"rgba(0,0,0,.88)");
@@ -190,6 +188,37 @@ function drawGround(tr,camx,camy,fill,line,pal){
     ctx.stroke();
     ctx.restore();
   }
+}
+let GROUND_BAKING=false;
+/* мелкая крошка на самой кромке — дёшево и оживляет силуэт вблизи */
+function drawGroundCrumbs(tr,camx,camy,i0,i1){
+  const dstep=Math.max(1,Math.round(14/tr.step));
+  ctx.lineWidth=1;
+  for(let i=i0;i<i1;i+=dstep){
+    const wx=i*tr.step,x=wx-camx;if(x<-6||x>W+6)continue;
+    const hh=hashi(Math.floor(wx/14),tr.sseed,0x6E55);
+    if((hh&7)===0||(hh&3)!==0)continue;
+    ctx.fillStyle="rgba(0,0,0,.22)";
+    ctx.beginPath();ctx.arc(x,tr.h[i]-camy-1,1+((hh>>>6)&1),0,TAU);ctx.fill();
+  }
+}
+/* трава кланяется ветру: каждая пучка со своей фазой от координаты,
+   иначе весь склон качается одним куском. Единственное живое на кромке */
+function drawGroundGrass(tr,camx,camy){
+  const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
+  const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
+  const dstep=Math.max(1,Math.round(14/tr.step));
+  ctx.strokeStyle="rgba(255,255,255,.14)";ctx.lineWidth=1;
+  ctx.beginPath();
+  for(let i=i0;i<i1;i+=dstep){
+    const wx=i*tr.step,x=wx-camx;if(x<-6||x>W+6)continue;
+    const hh=hashi(Math.floor(wx/14),tr.sseed,0x6E55);
+    if((hh&7)===0||(hh&3)===0)continue;
+    const y=tr.h[i]-camy,th=2+((hh>>>4)&3);
+    const sw=WIND*(1.6+th*.5)*(.7+.3*Math.sin(G.t*.045+wx*.07));
+    ctx.moveTo(x,y);ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);
+  }
+  ctx.stroke();
 }
 /* валуны и осыпь на профиле */
 function drawRocks(tr,camx,camy,pal){
@@ -273,11 +302,15 @@ function drawSkyLayer(p,camx,camy){
   }
   const sunX=W*.78,sunY=H*.16;
   const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a";
-  const g=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,W*.5);
-  g.addColorStop(0,rgba(hex2rgb(sc),.55));
-  g.addColorStop(.12,rgba(hex2rgb(sc),.16));
-  g.addColorStop(1,"rgba(0,0,0,0)");
-  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  /* зарево — полноэкранный радиальный градиент, 5 мс растра на кадр при
+     неизменной картинке; живёт слоем (18c) и кладётся одним drawImage */
+  ctx.drawImage(screenLayer("glow|"+sc,()=>{
+    const g=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,W*.5);
+    g.addColorStop(0,rgba(hex2rgb(sc),.55));
+    g.addColorStop(.12,rgba(hex2rgb(sc),.16));
+    g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  }),0,0,W,H);
   /* небесные тела идут между заревом звезды и облаками: за облаками, но
      перед общим градиентом — так они и оказываются «в небе», а не поверх него */
   drawSkyBodies(p,camx,camy);

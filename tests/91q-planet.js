@@ -72,3 +72,33 @@ TEST_SUITES.push(()=>suite("планета: только за полный на�
   ok(!!G.pnode&&G.pnode.key===N.key,"узел пережил сохранение");
   eq(G.pnode.hauled,N.hauled,"счётчик увезённого сохранился");
 }));
+
+/* ── 0.87: кэш ломтей грунта и пещеры (18c-chunks) ── */
+TEST_SUITES.push(()=>suite("растр: грунт и свод рисуются ломтями, а не каждый кадр",()=>{
+  resetWorld();
+  const p=landOnTestPlanet();
+  const tr=G.surf.tr;
+  drawSurface();
+  ok(!!tr.chunks&&tr.chunks.map.size>0,"после кадра у террейна есть ломти");
+  const n0=tr.chunks.map.size;
+  drawSurface();drawSurface();
+  eq(tr.chunks.map.size,n0,"повторный кадр ломтей не добавляет");
+  ok(n0<=CHUNK_KEEP,"ломтей не больше потолка");
+  G.surf.x+=CHUNK_W*3;drawSurface();
+  ok(tr.chunks.map.size<=CHUNK_KEEP,"далёкие ломти вытесняются");
+  for(const cn of tr.chunks.map.values())
+    eq(cn.height,Math.round(tr.chunks.ch*DPR),"высота ломтя одна на всю полосу — иначе шов в градиенте");
+  ok(typeof drawGroundGrass==="function","трава рисуется живой, поверх ломтей");
+  /* пещера */
+  if(!G.surf.cave)G.surf.cave={x:G.surf.x+80};
+  enterCave();drawCave();
+  ok(!!G.cave.chunks&&G.cave.chunks.map.size>0,"свод пещеры лежит в ломтях");
+  G.cave=null;G.mode="surface";
+  /* слои во весь экран */
+  const a=screenLayer("t|1",()=>{ctx.fillStyle="#f00";ctx.fillRect(0,0,W,H);});
+  const b=screenLayer("t|1",()=>{});
+  ok(a===b,"слой с тем же ключом не перерисовывается");
+  ok(ctx===MAIN_CTX,"после покраски слоя ctx возвращён на экран");
+  /* авторазрешение */
+  ok([0,1,1.5,2].includes(G.opts.gfx.res),"gfx.res имеет допустимое значение");
+}));

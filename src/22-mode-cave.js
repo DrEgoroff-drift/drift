@@ -138,28 +138,25 @@ function updateCave(dt){
       "ОГОНЬ (F) — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
   }else G.prompt="A D — ИДТИ · В ДАЛЬНЕМ КОНЦЕ НАХОДКА · У ВХОДА ДЕЙСТВИЕ — НАРУЖУ";
 }
-function drawCave(){
-  const C=G.cave;
-  const camx=C.x-W/2;
-  ctx.fillStyle="#03040a";ctx.fillRect(0,0,W,H);
-  /* свод и пол — сплошная порода, между ними тёмный проход */
+/* порода пещеры в один ломоть: свод и пол, материал планеты, темнота,
+   градиент к краям и влажный блик. wx0/wy0 — мировое начало ломтя */
+function drawCaveRock(C,cp,camx,camy){
   ctx.fillStyle="#0c1016";
   const CP=new Path2D();
-  CP.moveTo(0,0);
-  for(let sx=0;sx<=W;sx+=16){const wx=camx+sx;CP.lineTo(sx,caveCeil(C,wx)-C.y+H*.56);}
-  CP.lineTo(W,0);CP.closePath();
+  CP.moveTo(-20,-20);
+  for(let sx=-16;sx<=W+16;sx+=16){const wx=camx+sx;CP.lineTo(sx,caveCeil(C,wx)-camy);}
+  CP.lineTo(W+20,-20);CP.closePath();
   const FP=new Path2D();
-  FP.moveTo(0,H);
-  for(let sx=0;sx<=W;sx+=16){const wx=camx+sx;FP.lineTo(sx,caveFloor(C,wx)-C.y+H*.56);}
-  FP.lineTo(W,H);FP.closePath();
+  FP.moveTo(-20,H+20);
+  for(let sx=-16;sx<=W+16;sx+=16){const wx=camx+sx;FP.lineTo(sx,caveFloor(C,wx)-camy);}
+  FP.lineTo(W+20,H+20);FP.closePath();
   ctx.fill(CP);ctx.fill(FP);
   /* порода той же планеты и на своде, и на полу: без неё пещера — два чёрных
      силуэта, и по ним не понять, в чьих недрах игрок находится */
-  const cp=G.surf&&G.surf.p;
   if(cp){
     const mat=planetMat(cp);
-    fillMaterial(mat,camx,C.y-H*.56,.30,.18,CP);
-    fillMaterial(mat,camx,C.y-H*.56,.30,.18,FP);
+    fillMaterial(mat,camx,camy,.30,.18,CP);
+    fillMaterial(mat,camx,camy,.30,.18,FP);
     /* и сразу гасим: тайл рассчитан на освещённую поверхность, под землёй он
        светит как днём и убивает единственное, что есть у пещеры — темноту */
     ctx.fillStyle="rgba(2,4,9,.44)";
@@ -177,6 +174,18 @@ function drawCave(){
     ctx.strokeStyle="rgba(150,200,230,.14)";ctx.lineWidth=1.6;
     ctx.stroke(CP);ctx.stroke(FP);
   }
+}
+function drawCave(){
+  const C=G.cave;
+  const camx=C.x-W/2;
+  ctx.fillStyle="#03040a";ctx.fillRect(0,0,W,H);
+  /* свод и пол — сплошная порода, между ними тёмный проход. Порода с
+     материалом, затемнением и бликом кромки — самое дорогое в кадре (20 мс
+     из 28 по замеру 0.87) и при этом неподвижное: рисуется ломтями (18c),
+     в кадре остаётся drawImage. Ломоть хранится при пещере. */
+  const cp=G.surf&&G.surf.p;
+  C.chunks=chunkStore(C.chunks,C.seed+"|"+(cp?cp.seed:0)+"|"+H+"|"+DPR,C.y-H*.56,H);
+  drawChunks(C.chunks,camx,C.y-H*.56,(g,wx0,wy0)=>drawCaveRock(C,cp,wx0,wy0));
   /* убранство: строение раньше материала — натёки уже вылеплены породой выше,
      тут только их силуэт и вода, а свет пойдёт после темноты */
   const camy=C.y-H*.56;

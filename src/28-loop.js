@@ -271,6 +271,24 @@ let lastDroneTick=0;
    Пропускается весь такт целиком, вместе с расчётом: `dt` считается по
    настоящим часам, и на тридцати кадрах он просто вдвое крупнее — движение
    остаётся тем же, замедления не возникает. */
+/* ══════════════ авторазрешение ══════════════
+   Замер 0.87: на экране ×2.5 поверхность шла в 23 кадра, при ×1 — в 49, и
+   дело было не в логике (≤4 мс), а в растре. Пока игрок не выбрал разрешение
+   сам, игра начинает с полного и спускается на полступени, если кадр
+   по сглаженной оценке не укладывается в 24 мс три секунды подряд. Вверх
+   сама не идёт: дрожание «чётко — мыльно — чётко» хуже ровной картинки. */
+let resEma=16,resBad=0;
+function resAuto(d){
+  if(!G.running||d<=0||d>250)return;
+  resEma=resEma*.9+d*.1;
+  if(G.opts.gfx.res||RES_AUTO<=1||document.hidden){resBad=0;return;}
+  if(resEma>24)resBad+=d;else resBad=Math.max(0,resBad-d*.5);
+  if(resBad>3000){
+    resBad=0;resEma=16;
+    RES_AUTO=RES_AUTO>1.5?1.5:1;
+    if(DPR>RES_AUTO){resize();say("Разрешение снижено до ×"+RES_AUTO+"\nвернуть — в настройках, «Графика»");}
+  }
+}
 let capIv=16.667, capPrev=0, capN=0;
 function frame(now){
   if(capPrev){
@@ -287,6 +305,7 @@ function frame(now){
     if(++capN%stride){requestAnimationFrame(frame);return;}
     capN=0;
   }else capN=0;
+  resAuto(now-last);
   const dt=clamp((now-last)/16.667,0,3);last=now;
   /* второй рубеж против залипших клавиш: событие blur приходит не всегда —
      фокус, ушедший в DevTools того же окна, его может не поднять. Пока страница
