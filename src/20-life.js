@@ -111,6 +111,12 @@ function planetBiome(p){
   /* у безвоздушных и вулканических миров крупных форм почти нет: нечем дышать
      и нечему расти большим — это читается как характер места, а не как правило */
   const harsh=p.T.atm==="отсутствует"||p.type==="volcanic"||p.type==="crystal"||p.type==="metal";
+  /* силуэт флоры по миру, а не только по случаю (хвост G1): пустыня и лёд —
+     низкие и колючие формы, джунгли — высокие кроны, токсичный — шары и
+     ленты. Случайная доминанта остаётся: два мира одного типа не близнецы */
+  const TF={desert:[4,6,11],ice:[4,10,6],crystal:[10,4],metal:[6,4],volcanic:[6,11],
+            jungle:[7,8,9],terran:[7,9,1],ocean:[8,11],toxic:[11,10,9],ruin:[4,1],rocky:[6,4]};
+  for(const k of TF[p.type]||[])bias[k]+=1.1;
   p.biome={kindBias:bias,scale:(harsh?.5:.7)+r()*(harsh?.5:.9),
     giantChance:harsh?r()*.03:r()*.14,hueBias:r()};
   return p.biome;

@@ -400,7 +400,10 @@ function genTerrain(p,lon0){
   const L0=(lon0==null)?((p.seed%628)/100):lon0;
   const LAT=((p.seed>>>9)%100)/100*0.7-0.35;   // широта полосы: не всегда экватор
   const M=wtab(p).relief||RELIEF_MIX[p.type]||RELIEF_MIX.terran;
-  const amp=60+p.rough*300;
+  /* амплитуда по набору породы (хвост G1): дюны и раскисшие берега ниже,
+     ледяные плиты и лавовая корка выше — рельеф принадлежит материалу */
+  const AK={dune:.72,sludge:.6,frost:1.15,crust:1.3,facet:1.2,plate:1.1,rubble:.9};
+  const amp=(60+p.rough*300)*(AK[(typeof MAT_CHAR!=="undefined"&&MAT_CHAR[p.type])||""]||1);
   /* каждой форме — свой множитель, чтобы планеты одного типа не повторялись */
   const w={
     hill:M.hill*(.6+r()*.7), ridge:M.ridge*(.4+r()*1.1),

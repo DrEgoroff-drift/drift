@@ -282,6 +282,25 @@ function settleDraw(S,tr,camx,camy,p){
   }
   ctx.fillStyle="rgba(226,206,160,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
   ctx.fillText("ПОСЁЛОК",sx,gy-56-n*2);
+  /* ── виден с горизонта (хвост M109) ──
+     Дворы в полтора десятка пикселей тонут в склоне за экран. Посёлок
+     отмечает себя сам: шест с вымпелом выше любой крыши и столб дыма от
+     общего очага, который тянется на сотню пикселей вверх и кренится по
+     ветру. Шест рисуется вместе с дворами; дым — только у живого посёлка */
+  {
+    const px=sx+n*13+30, py=groundAt(tr,bx+(px-sx))-camy;
+    ctx.strokeStyle="rgba(40,34,26,.95)";ctx.lineWidth=1.6;
+    ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py-62);ctx.stroke();
+    const fl=Math.sin(G.t*.05)*3;
+    ctx.fillStyle="rgba(226,120,70,.9)";
+    ctx.beginPath();ctx.moveTo(px,py-62);ctx.lineTo(px+14+(WIND||0)*4,py-58+fl);ctx.lineTo(px,py-53);ctx.closePath();ctx.fill();
+    if(warm)for(let s=0;s<7;s++){
+      const t=((G.t*.5+s*40)%280)/280, rr=3+t*14;
+      ctx.fillStyle="rgba(210,214,220,"+((1-t)*(1-t)*.16).toFixed(3)+")";
+      ctx.beginPath();
+      ctx.ellipse(sx+(WIND||0)*t*40+Math.sin(t*5+s)*4,gy-34-n*2-t*120,rr*1.3,rr*.8,t*.4,0,TAU);ctx.fill();
+    }
+  }
 }
 /* ══ M110: они стоят между вами и фауной — и платят за это ══
    Не бонус игроку, а свойство земли: со второй ступени у посёлка есть дозорные,

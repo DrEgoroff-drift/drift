@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 164 · символов верхнего уровня: 1788
+Файлов: 164 · символов верхнего уровня: 1790
 
 ## СИМВОЛЫ
 
@@ -155,11 +155,11 @@ bDress                       src/21aa-base-rooms.js:122
 BEACON_COOL                  src/23-mode-dig.js:70
 beaconCool                   src/23-mode-dig.js:71
 beaconTick                   src/23-mode-dig.js:86
-BEAST_ALIEN                  src/20-life.js:490
-BEAST_FORM                   src/20-life.js:460
-BEAST_SHAPES                 src/20-life.js:482
-BEAST_TRAIT                  src/20-life.js:461
-beastBias                    src/20-life.js:491
+BEAST_ALIEN                  src/20-life.js:496
+BEAST_FORM                   src/20-life.js:466
+BEAST_SHAPES                 src/20-life.js:488
+BEAST_TRAIT                  src/20-life.js:467
+beastBias                    src/20-life.js:497
 BELT_AVLIM                   src/24-mode-belt.js:86
 BELT_HALF                    src/24-mode-belt.js:84
 BELT_POI                     src/24b-belt-poi.js:13
@@ -245,24 +245,25 @@ caveZones                    src/22a-cave-deco.js:28
 CEL_CONJ_W                   src/06a-celest.js:22
 CEL_DAY                      src/06a-celest.js:21
 CEL_STAR_ANG                 src/06a-celest.js:27
-celComet                     src/06a-celest.js:90
-celConj                      src/06a-celest.js:71
-celDark                      src/06a-celest.js:116
+celComet                     src/06a-celest.js:109
+celConj                      src/06a-celest.js:90
+celDark                      src/06a-celest.js:135
 celDay                       src/06a-celest.js:28
 celDayF                      src/06a-celest.js:29
-celEclipse                   src/06a-celest.js:47
-celestAt                     src/06a-celest.js:104
-celEventNow                  src/06a-celest.js:133
-celHere                      src/06a-celest.js:109
+celEclipse                   src/06a-celest.js:66
+celestAt                     src/06a-celest.js:123
+celEventNow                  src/06a-celest.js:152
+celHere                      src/06a-celest.js:128
 cellCenter                   src/24a-mode-raid.js:83
-celLine                      src/06a-celest.js:124
-celLon                       src/06a-celest.js:33
+celLine                      src/06a-celest.js:143
+celLon                       src/06a-celest.js:52
 cellX                        src/21a-mode-base.js:84
 cellY                        src/21a-mode-base.js:85
-celMoonPeriod                src/06a-celest.js:38
-celMoonPhase                 src/06a-celest.js:39
-celNow                       src/06a-celest.js:112
-celPeriod                    src/06a-celest.js:32
+celMoonPeriod                src/06a-celest.js:57
+celMoonPhase                 src/06a-celest.js:58
+celNow                       src/06a-celest.js:131
+celPeriod                    src/06a-celest.js:51
+celSun                       src/06a-celest.js:36
 celTestPlanet                tests/91w-celest.js:3
 CHUNK_KEEP                   src/18c-chunks.js:20
 CHUNK_W                      src/18c-chunks.js:19
@@ -411,8 +412,8 @@ drawBarges                   src/12l-barge.js:527
 drawBargesMap                src/12l-barge.js:552
 drawBase                     src/21ac-base-draw.js:43
 drawBaseBuilding             src/21c-built.js:99
-drawBeast                    src/20-life.js:697
-drawBeastAlien               src/20-life.js:540
+drawBeast                    src/20-life.js:703
+drawBeastAlien               src/20-life.js:546
 drawBelt                     src/24-mode-belt.js:318
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17-mode-system.js:514
@@ -427,7 +428,7 @@ drawCaveGlow                 src/22a-cave-deco.js:308
 drawCaveRock                 src/22-mode-cave.js:394
 drawCaveSolid                src/22a-cave-deco.js:220
 drawCaveWater                src/22a-cave-deco.js:261
-drawCelest                   src/06a-celest.js:141
+drawCelest                   src/06a-celest.js:160
 drawChunks                   src/18c-chunks.js:55
 drawClouds                   src/19e-clouds.js:169
 drawCockpit                  src/25-cockpit.js:400
@@ -473,9 +474,9 @@ drawObserv                   src/20aa-poi-shapes.js:491
 drawPirate                   src/12i-pirate-hull.js:320
 drawPirateBase               src/24a-mode-raid.js:103
 drawPirateSkin               src/03d-hull-marks.js:99
-drawPlant                    src/20-life.js:327
-drawPlantAlien               src/20-life.js:179
-drawPOI                      src/20a-poi.js:171
+drawPlant                    src/20-life.js:333
+drawPlantAlien               src/20-life.js:185
+drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
 drawRaid                     src/24a-mode-raid.js:351
 drawRing                     src/17-mode-system.js:424
@@ -496,8 +497,8 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:84
-drawSurface                  src/21-mode-surface.js:484
-drawSurfaceHud               src/21-mode-surface.js:437
+drawSurface                  src/21-mode-surface.js:498
+drawSurfaceHud               src/21-mode-surface.js:451
 drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:272
@@ -530,7 +531,7 @@ eq                           tests/90-harness.js:23
 ETHER                        src/11b-speech.js:24
 ETHER_EVERY                  src/11b-speech.js:38
 etherTick                    src/11b-speech.js:39
-evacuate                     src/21-mode-surface.js:362
+evacuate                     src/21-mode-surface.js:376
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:80
 exitBelt                     src/24-mode-belt.js:162
@@ -607,15 +608,15 @@ foundBase                    src/21a-mode-base.js:53
 frame                        src/28-loop.js:293
 freeVoice                    src/09-audio.js:79
 fuelPriceHere                src/12k-rep.js:63
-FUR_TONES                    src/20-life.js:465
-furColor                     src/20-life.js:470
+FUR_TONES                    src/20-life.js:471
+furColor                     src/20-life.js:476
 fuseAffordable               src/03-ships.js:38
 fuseCost                     src/03-ships.js:33
 fuseGen                      src/03-ships.js:32
 fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
 G                            src/08-state.js:25
-genBeast                     src/20-life.js:500
+genBeast                     src/20-life.js:506
 genBeltPOI                   src/24b-belt-poi.js:20
 genDeco                      src/21b-surface-deco.js:37
 genDesc                      src/01-core.js:59
@@ -623,7 +624,7 @@ genMerc                      src/12a-crew.js:59
 genMgr                       src/12c-mgr-core.js:235
 genName                      src/01-core.js:42
 genPart                      src/05-parts.js:70
-genPlant                     src/20-life.js:123
+genPlant                     src/20-life.js:129
 genPOI                       src/20a-poi.js:32
 genRaid                      src/24a-mode-raid.js:30
 genTerrain                   src/07-planet.js:395
@@ -665,7 +666,7 @@ grokTeach                    src/12tb-grok.js:145
 grokTick                     src/12tb-grok.js:76
 grokWant                     src/12tb-grok.js:42
 GROUND_BAKING                src/19-mode-landing.js:194
-groundAt                     src/07-planet.js:501
+groundAt                     src/07-planet.js:504
 groundShadow                 src/19-mode-landing.js:286
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
@@ -847,8 +848,8 @@ landingDust                  src/19-mode-landing.js:703
 landOnTestPlanet             tests/90-harness.js:62
 last                         src/28-loop.js:252
 lastDroneTick                src/28-loop.js:253
-launch                       src/21-mode-surface.js:402
-launchHold                   src/21-mode-surface.js:347
+launch                       src/21-mode-surface.js:416
+launchHold                   src/21-mode-surface.js:361
 layerLevel                   src/10-music.js:326
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:115
@@ -1008,7 +1009,7 @@ musNote                      src/10-music.js:193
 musPerc                      src/10-music.js:265
 navAction                    src/15-input.js:157
 near                         tests/90-harness.js:24
-nearestPOI                   src/20a-poi.js:234
+nearestPOI                   src/20a-poi.js:236
 nearestStation               src/12-economy.js:43
 NEB_COMP                     src/16a-space.js:101
 NEB_JOB                      src/16a-space.js:52
@@ -1149,14 +1150,14 @@ PEEP_LOAD                    src/20c-peep.js:27
 PEEP_PASS                    src/20c-peep.js:25
 PEEP_R                       src/20c-peep.js:26
 peepDrawMat                  src/20c-peep.js:87
-peepFigure                   src/20c-peep.js:153
-peepGhosts                   src/20c-peep.js:202
+peepFigure                   src/20c-peep.js:154
+peepGhosts                   src/20c-peep.js:205
 peepHere                     src/20c-peep.js:33
 peepMake                     src/20c-peep.js:51
 peepScene                    src/20c-peep.js:41
 peepUpdate                   src/20c-peep.js:66
 pick                         src/01-core.js:17
-pickKindByBias               src/20-life.js:118
+pickKindByBias               src/20-life.js:124
 pickStType                   src/06-galaxy.js:30
 PICKUPS                      src/24a-mode-raid.js:24
 pinch0                       src/15-input.js:181
@@ -1222,16 +1223,16 @@ PLANT_TRAIT                  src/20-life.js:93
 plate                        src/25-cockpit.js:160
 POI_FIND                     src/20b-poi-find.js:18
 POI_KINDS                    src/20a-poi.js:11
-POI_SEED                     src/20a-poi.js:88
-poiBody                      src/20a-poi.js:166
-poiDrift                     src/20a-poi.js:145
-poiGlow                      src/20a-poi.js:76
+POI_SEED                     src/20a-poi.js:90
+poiBody                      src/20a-poi.js:168
+poiDrift                     src/20a-poi.js:147
+poiGlow                      src/20a-poi.js:78
 poiInspect                   src/20b-poi-find.js:104
 poiMemo                      src/20b-poi-find.js:99
-poiNear                      src/20a-poi.js:243
-poiPath                      src/20a-poi.js:89
-poiPoly                      src/20a-poi.js:108
-poiSkin                      src/20a-poi.js:117
+poiNear                      src/20a-poi.js:245
+poiPath                      src/20a-poi.js:91
+poiPoly                      src/20a-poi.js:110
+poiSkin                      src/20a-poi.js:119
 POST_ADDR                    src/11e-post.js:46
 POST_ITEMS                   src/11e-post.js:20
 POST_LAST                    src/11e-post.js:112
@@ -1473,19 +1474,19 @@ settleDraw                   src/12t-settle.js:227
 settleGive                   src/12t-settle.js:127
 settleHere                   src/12t-settle.js:47
 settleKeyOf                  src/12t-settle.js:44
-settleLeftBehind             src/12t-settle.js:320
+settleLeftBehind             src/12t-settle.js:339
 settleLine                   src/12t-settle.js:200
 settleMake                   src/12t-settle.js:61
 settleMakes                  src/12t-settle.js:147
 settleMap                    src/12t-settle.js:45
-settleRaid                   src/12t-settle.js:303
+settleRaid                   src/12t-settle.js:322
 settleRaise                  src/12t-settle.js:101
 settleSpotX                  src/12t-settle.js:55
 settleStockSum               src/12t-settle.js:141
-settleStop                   src/12t-settle.js:334
-settleStops                  src/12t-settle.js:345
+settleStop                   src/12t-settle.js:353
+settleStops                  src/12t-settle.js:364
 settleTick                   src/12t-settle.js:77
-settleWatch                  src/12t-settle.js:292
+settleWatch                  src/12t-settle.js:311
 settleWords                  src/12t-settle.js:162
 setTx                        src/28-loop.js:67
 setZoom                      src/15-input.js:176
@@ -1627,7 +1628,8 @@ suite                        tests/90-harness.js:12
 suitFailure                  src/23-mode-dig.js:104
 suitHit                      src/23-mode-dig.js:97
 SUN_DIR                      src/19c-light.js:11
-surfaceHint                  src/21-mode-surface.js:422
+surfaceHint                  src/21-mode-surface.js:436
+surfNight                    src/06a-celest.js:43
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -1676,7 +1678,7 @@ TEST                         tests/90-harness.js:10
 TEST_SUITES                  tests/90-harness.js:93
 tfbm                         src/18a-material.js:23
 tickDrones                   src/12-economy.js:80
-tickLaunchHold               src/21-mode-surface.js:348
+tickLaunchHold               src/21-mode-surface.js:362
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
@@ -1719,7 +1721,7 @@ toggleLog                    src/11-log.js:89
 toggleLoreBoard              src/27h-ui-lore.js:85
 toggleMenu                   src/15-input.js:126
 toggleParrotWin              src/12y-parrot-face.js:665
-totalLoss                    src/21-mode-surface.js:379
+totalLoss                    src/21-mode-surface.js:393
 towShare                     src/03f-hull-role.js:87
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03b-hull-paint.js:1
@@ -1849,7 +1851,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/05-parts.js · 17 КБ
   · части корабля:1
 
-## src/06a-celest.js · 12 КБ
+## src/06a-celest.js · 13 КБ
   · небо ведёт календарь:1
 
 ## src/06b-region.js · 7 КБ
@@ -1861,7 +1863,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/06-galaxy.js · 9 КБ
   · галактика:1
 
-## src/07-planet.js · 32 КБ
+## src/07-planet.js · 33 КБ
   · текстуры планет:1
   · вращение:8
   · рельеф:332
@@ -1984,13 +1986,13 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12s-wear.js · 9 КБ
   · корабль стареет:1
 
-## src/12ta-tin.js · 21 КБ
+## src/12ta-tin.js · 22 КБ
   · Жестянка: смена, которую некому снять:1
 
-## src/12tb-grok.js · 20 КБ
+## src/12tb-grok.js · 22 КБ
   · Грохотун: единственный, кто работает не за деньги:1
 
-## src/12t-settle.js · 21 КБ
+## src/12t-settle.js · 22 КБ
   · посёлок: вы даёте, решают они:1
 
 ## src/12ua-flea.js · 11 КБ
@@ -2068,7 +2070,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/19b-sky.js · 20 КБ
   · небо:1
 
-## src/19c-light.js · 13 КБ
+## src/19c-light.js · 14 КБ
   · свет и воздух:1
 
 ## src/19d-weather.js · 12 КБ
@@ -2083,14 +2085,14 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/20aa-poi-shapes.js · 30 КБ
   · фигуры находок: одна функция на вид:1
 
-## src/20a-poi.js · 15 КБ
+## src/20a-poi.js · 16 КБ
   · точки интереса:1
 
 ## src/20b-poi-find.js · 10 КБ
   · осмотр достопримечательности:1
   · память памятника:92
 
-## src/20c-peep.js · 16 КБ
+## src/20c-peep.js · 17 КБ
   · подглядка: луг, который помнит свет:1
 
 ## src/20d-jetpack.js · 2 КБ
@@ -2099,7 +2101,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/20-life.js · 40 КБ
   · астронавт:1
   · флора:88
-  · фауна:456
+  · фауна:462
 
 ## src/21aa-base-rooms.js · 35 КБ
   · база: внутренности отсеков:1
@@ -2129,14 +2131,14 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21-mode-surface.js · 37 КБ
+## src/21-mode-surface.js · 40 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:418
+  · навигатор и подсказки сверху:432
 
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
 
-## src/22-mode-cave.js · 26 КБ
+## src/22-mode-cave.js · 27 КБ
   · пещера: поле породы в двух измерениях:1
 
 ## src/23-mode-dig.js · 52 КБ

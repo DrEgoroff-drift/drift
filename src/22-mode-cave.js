@@ -479,6 +479,19 @@ function drawCave(){
     ctx.restore();
   }
   drawCaveGlow(C,camx,camy,px,py);
+  /* дозорные посёлка у устья (хвост M110): их видно, а не только читается
+     в подсказке. Те же силуэты с шестом, что на поверхности, и факел */
+  if(C.watch>0)for(let i=0;i<2;i++){
+    const wxw=118+i*26, wx=wxw-camx, wy=caveFloor(C,wxw)-camy;
+    if(wx<-30||wx>W+30||wy<-40||wy>H+40)continue;
+    poiGlow(wx+(i?3:-3),wy-20,28,"255,190,110",.16);
+    ctx.fillStyle="rgba(20,24,30,.95)";
+    ctx.fillRect(wx-1.6,wy-13,3.2,13);
+    ctx.beginPath();ctx.arc(wx,wy-15.5,2.6,0,TAU);ctx.fill();
+    ctx.strokeStyle="rgba(20,24,30,.95)";ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(wx+(i?3:-3),wy-19);ctx.lineTo(wx+(i?3:-3),wy);ctx.stroke();
+    ctx.fillStyle="rgba(255,206,130,.9)";ctx.fillRect(wx+(i?2:-4),wy-21,2,2.4);
+  }
   for(const pl of C.plants){
     const x=pl.x-camx,y=pl.y-camy;if(x<-70||x>W+70||y<-120||y>H+40)continue;
     drawPlant(pl,x,y);

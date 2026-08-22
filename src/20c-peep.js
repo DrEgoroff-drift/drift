@@ -90,7 +90,8 @@ function peepDrawMat(camx,camy){
   const tr=S.tr,dk=P.dk||0;
   if(P.x+P.r-camx<-40||P.x-P.r-camx>W+40)return;
   const r=rng(hashi(Math.round(P.x),0x11A7,5));  /* один и тот же узор каждый кадр */
-  const base=[104,120,108],lip=[188,204,186];
+  /* мат в тон мира (хвост M118): та же трава, но замешана на породе планеты */
+  const base=mixc([104,120,108],S.p.T.pal[2],.4),lip=mixc([188,204,186],S.p.T.pal[1],.25);
   ctx.save();
   /* Первый заход клал пластинки в одну строчку по линии грунта, и мат читался
      подсветкой рельефа, а не зарослью. Пластинки лежат внахлёст в три яруса:
@@ -178,11 +179,12 @@ function peepFigure(x,y,face,ph,a,load){
   ctx.lineWidth=2.2;
   if(load==="ящик"){
     /* ношу видно раньше человека: она и есть то, что игрок читает */
-    ctx.beginPath();ctx.moveTo(2.6,-17);ctx.lineTo(6.4,-13.6);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(-2.6,-17);ctx.lineTo(5.4,-13.6);ctx.stroke();
-    ctx.fillRect(5,-16.4,8.4,7.6);
+    /* ящик на уровне пояса, а не у подбородка (хвост M118): руки вниз и вперёд */
+    ctx.beginPath();ctx.moveTo(2.6,-17);ctx.lineTo(6.4,-10.6);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-2.6,-17);ctx.lineTo(5.4,-10.6);ctx.stroke();
+    ctx.fillRect(5,-13.4,8.4,7.6);
     ctx.strokeStyle=rgba(PEEP_LIT,Math.min(1,a*1.6));ctx.lineWidth=1;
-    ctx.strokeRect(5,-16.4,8.4,7.6);
+    ctx.strokeRect(5,-13.4,8.4,7.6);
     ctx.strokeStyle=c;
   }else if(load==="бочка"){
     ctx.beginPath();ctx.moveTo(-2.6,-17);ctx.lineTo(-4.6,-20.6);ctx.stroke();
@@ -190,8 +192,9 @@ function peepFigure(x,y,face,ph,a,load){
     ctx.beginPath();ctx.moveTo(2.6,-17);ctx.lineTo(3.8,-10.6+sw*1.6);ctx.stroke();
   }else{
     /* руки идут в противофазе ногам — иначе строй шагает как заводной */
-    ctx.beginPath();ctx.moveTo(3.2,-17.2);ctx.lineTo(sw2*3+1.8,-9.6);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(-3.2,-17.2);ctx.lineTo(sw*3-1.8,-9.6);ctx.stroke();
+    /* рука в покое висит СНАРУЖИ торса, а не по его кромке (хвост M118) */
+    ctx.beginPath();ctx.moveTo(4.4,-17.2);ctx.lineTo(sw2*3+5.2,-9.2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-4.4,-17.2);ctx.lineTo(sw*3-5.2,-9.2);ctx.stroke();
   }
   ctx.restore();
 }
@@ -227,11 +230,12 @@ function peepGhosts(camx,camy){
   /* след: свет остывает позади идущего */
   for(const q of pos){
     /* след — полоса, а не цепочка пятен: пятна читались как брошенные предметы */
-    const g=ctx.createLinearGradient(q.x,0,q.x-sc.dir*74,0);
-    g.addColorStop(0,rgba(PEEP_LIT,q.a*.34));
-    g.addColorStop(1,rgba(PEEP_LIT,0));
+    /* след теплее и ярче мата (хвост M118): иначе тонет в его же свечении */
+    const g=ctx.createLinearGradient(q.x,0,q.x-sc.dir*90,0);
+    g.addColorStop(0,"rgba(255,238,196,"+(q.a*.62).toFixed(3)+")");
+    g.addColorStop(1,"rgba(255,238,196,0)");
     ctx.fillStyle=g;
-    ctx.beginPath();ctx.ellipse(q.x-sc.dir*36,q.y+.5,38,2.6,0,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.ellipse(q.x-sc.dir*44,q.y+.5,46,2.2,0,0,TAU);ctx.fill();
   }
   /* ношу на двоих рисуем между первыми двумя: шест по плечам, носилки по поясу */
   if(pos.length>1&&(sc.load==="шест"||sc.load==="носилки")){

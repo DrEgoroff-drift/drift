@@ -31,13 +31,13 @@ const GEO_KIND={
 const GEO_TPL={
   terran:  [["soil"],["sed"],["sandst","sed"],["rock"],["metal","crystal"],["bedrock"]],
   ocean:   [["silt"],["sed"],["salt","sed"],["rock"],["crystal","metal"],["bedrock"]],
-  desert:  [["sand"],["sandst"],["sed"],["sandst","rock"],["salt","metal"],["bedrock"]],
+  desert:  [["sand"],["sandst"],["sandst","rock"],["salt","metal"],["bedrock"]],
   rocky:   [["ash","soil"],["rock"],["rock","basalt"],["metal"],["crystal","metal"],["bedrock"]],
-  ice:     [["snow"],["ice"],["ice","sed"],["rock"],["crystal"],["bedrock"]],
+  ice:     [["snow"],["ice"],["rock"],["crystal"],["bedrock"]],
   volcanic:[["ash"],["basalt"],["basalt","rock"],["metal"],["magma"],["bedrock"]],
-  toxic:   [["silt","soil"],["sed"],["crystal","sed"],["rock"],["metal"],["bedrock"]],
+  toxic:   [["silt","soil"],["sed"],["crystal","sed"],["metal"],["bedrock"]],
   crystal: [["sand","ash"],["crystal"],["crystal","rock"],["rock"],["crystal","metal"],["bedrock"]],
-  jungle:  [["soil"],["soil","silt"],["sed"],["sandst","rock"],["metal","crystal"],["bedrock"]],
+  jungle:  [["soil"],["soil","silt"],["sed"],["sed","sandst"],["sandst","rock"],["metal","crystal"],["bedrock"]],
   metal:   [["ash"],["metal"],["metal","rock"],["basalt"],["metal","crystal"],["bedrock"]],
   ruin:    [["sand","ash"],["sed"],["rock","sandst"],["metal","rock"],["crystal","metal"],["bedrock"]],
   gas:     [["ash"],["bedrock"]]

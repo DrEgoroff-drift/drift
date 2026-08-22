@@ -104,6 +104,20 @@ function updateSurface(dt){
   /* амплитуда шага плавно нарастает/спадает, а не переключается щелчком —
      фаза копится только пока реально идём, поэтому ноги не дёргаются на кочках */
   peepUpdate(dt);                       /* луг помнит свет только пока темно (20c) */
+  /* посёлок слышно раньше, чем видно (хвост M109): редкий стук и голос,
+     громкость по расстоянию. Не музыка и не петля — одиночные звуки */
+  if(settleCanLive(S.p)){
+    const d=Math.abs(S.x-settleSpotX(S.p,tr));
+    if(d<520){
+      S.setSnd=(S.setSnd||0)-dt;
+      if(S.setSnd<=0){
+        S.setSnd=120+Math.random()*160;
+        const v=.12*(1-d/520);
+        if(Math.random()<.6)sfx("ui",{f:180+Math.random()*60,to:90,d:.09,v});
+        else sfx("ui",{f:300+Math.random()*120,to:240,d:.18,v:v*.7});
+      }
+    }
+  }
   const walking=S.on&&(keys.left||keys.right||S.walkTarget!=null);
   S.walkAmp=clamp(S.walkAmp+(walking?1:-1)*.12*dt,0,1);
   if(walking)S.walkPhase+=dt*.22;
@@ -502,11 +516,24 @@ function drawSurface(){
   /* дальний хребет не гасится прозрачностью, а выцветает в цвет неба: именно
      этим глаз мерит расстояние (19c-light). Двух слоёв достаточно, третий уже
      не читается, а стоит столько же. */
-  drawGround({h:tr.h,N:tr.N,step:tr.step*3.6},camx*.22,camy*.42+130,hazeFar(p,.58),null);
-  drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.35,camy*.5+80,hazeFar(p,.32),null);
+  /* дальние гряды — кэшем по тайлам (хвост G2, правило G11): силуэт в цвет
+     воздуха печётся раз на 512×512 в координатах своего параллакса, кадр
+     кладёт картинки. drawGround рисует через W/H, которые withCtx подменяет */
+  S.farA=tileStore(S.farA,"farA|"+p.seed+"|"+DPR);
+  drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.h,N:tr.N,step:tr.step*3.6},wx0,wy0,hazeFar(p,.58),null));
+  S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR);
+  drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},wx0,wy0,hazeFar(p,.32),null));
   hazeBand(p,H*.52,H*.22);
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
     "rgba(200,240,246,.4)",p.T.pal);
+  /* нижняя треть уходит в тень неба: ближний грунт темнее дальнего, и по
+     этому глаз мерит глубину (хвост G2) */
+  {
+    const sh=p.T.sky[1];
+    const dg=ctx.createLinearGradient(0,H*.62,0,H);
+    dg.addColorStop(0,"rgba("+sh.join(",")+",0)");dg.addColorStop(1,"rgba("+sh.join(",")+",.30)");
+    ctx.fillStyle=dg;ctx.fillRect(0,H*.62,W,H*.38);
+  }
   drawPOI(tr,camx,camy,p);
   /* средний масштаб между валуном и постройкой — тем же светом и той же
      породой, что грунт под ним (21b-surface-deco) */
@@ -620,6 +647,24 @@ function drawSurface(){
      а свет и цветокоррекция ложатся уже на всё вместе */
   drawForeground(tr,camx,camy,p);
   drawWeather(p,camx,camy);
+  /* ── ночь (хвост G12) ──
+     Кадр уходит в тень неба, и единственный свет — фонарь скафандра: спрайт
+     один на игру, кладётся одним drawImage, чуть впереди по взгляду */
+  {
+    const nite=surfNight(p);
+    if(nite>.02){
+      ctx.fillStyle="rgba(4,6,14,"+(nite*.72).toFixed(3)+")";ctx.fillRect(0,0,W,H);
+      const LS=glowSprite("suitlamp",()=>{
+        const g=ctx.createRadialGradient(0,0,0,0,0,1);
+        g.addColorStop(0,"rgba(255,236,200,.55)");g.addColorStop(.35,"rgba(255,236,200,.22)");
+        g.addColorStop(1,"rgba(255,236,200,0)");
+        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
+      });
+      ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=nite*1.3;
+      glowBlit(LS,x+S.face*36,y-6,150);
+      ctx.restore();
+    }
+  }
   lightShafts(p);
   gradePass(p);
   drawSurfaceHud(camx,camy);

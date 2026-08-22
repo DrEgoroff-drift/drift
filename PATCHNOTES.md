@@ -8,6 +8,23 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.100.5 — "An hour on the surface" (M141)
+
+The surface gets an hour: `celSun(p)` in `06a-celest` turns the planet in six to nine calendar
+days (about six to nine minutes), nothing stored. The sky layer is baked per 48th of the day;
+the horizon glow sits on the star's side and is strongest when it is low (G7); at night the frame
+goes into the sky's shadow and the suit lamp is the only light, a baked sprite (G12). Far ridges
+are tile-cached per parallax layer and the lowest third of the frame darkens toward the sky's
+shadow (G2). Relief amplitude follows the material kit and strata count differs per kit (G1);
+flora leans by world type (G1); three to four POIs per strip instead of two to four (G12). The
+settlement is heard before it is seen — knocks and voices by distance — and marks itself from
+afar with a pennant pole and a smoke column (M109); the watch stands at the cave mouth (M110).
+Figures: the meadow mat takes the planet's tone, arms at rest hang outside the torso, the crate
+rides at the waist, the trail is warmer than the mat (M118); the tin plant varies by planet and
+its hoops read as turning (M119); the grok has a shoulder line, a strap over the belt box and a
+rim on the chest arms (M120). Scale check (G8): the lander is 90–130 px against a 26 px walker,
+five to one — right for a ten-metre hull.
+
 ## 0.100.4 — "The shaft changes section" (M140)
 
 Mine tails (G3): rock is now baked in 512×512 tiles by world-x and world-y (`tileStore` in

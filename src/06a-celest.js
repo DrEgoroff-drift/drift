@@ -27,6 +27,25 @@ const CEL_CONJ_W=.21;               /* окно парада, радиан */
 const CEL_STAR_ANG=.03;
 function celDay(t){return Math.floor((t===undefined?G.t:t)/CEL_DAY);}
 function celDayF(t){return (t===undefined?G.t:t)/CEL_DAY;}
+/* ── час суток на поверхности (хвосты G7/G12) ──
+   Сутки календаря — минута, и для неба над головой это слишком быстро: ночь
+   наступала бы каждые полминуты. У планеты своё вращение — шесть-десять
+   календарных суток, фаза от семени. alt — высота звезды (1 полдень,
+   −1 полночь), az — где она над горизонтом (−1 восток … 1 запад). Ничего не
+   хранится: всё от G.t и семени, как и остальной календарь. */
+function celSun(p,t){
+  const seed=(p&&p.seed)|0;
+  const period=CEL_DAY*(6+((seed>>>7)&3));
+  const ph=(((t===undefined?G.t:t)/period)+(seed%100)/100)%1;
+  return {ph,alt:Math.sin(ph*TAU),az:Math.cos(ph*TAU)};
+}
+/* сколько ночи в кадре: 0 днём, до .62 в полночь. Без воздуха ночь резче */
+function surfNight(p){
+  if(!p)return 0;
+  const s=celSun(p);
+  const k=p.T&&p.T.atm==="отсутствует"?1.9:1.5;
+  return clamp(-s.alt*k+.15,0,.62);
+}
 /* Период обращения в сутках: Кеплер по радиусу орбиты, приведённый к масштабу,
    в котором ближняя планета обходит звезду примерно за две недели. */
 function celPeriod(p){return 9+22*Math.pow(Math.max(80,p.orbit)/900,1.5);}

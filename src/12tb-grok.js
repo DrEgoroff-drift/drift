@@ -246,12 +246,27 @@ function grokFace(size){
   c.beginPath();c.ellipse(S*.39,S*.755,S*.036,S*.011,.45,0,TAU);c.fill();
   c.beginPath();c.ellipse(S*.63,S*.665,S*.026,S*.009,-.40,0,TAU);c.fill();
   c.restore();
+  /* плечевая линия (хвост M120): там, где из корпуса выходят рабочие руки,
+     складка шкуры — тёмная дуга и светлый валик над ней. Без неё рука
+     начиналась из плоской трапеции */
+  for(const k of[-1,1]){
+    const ax=S*(.5+k*.20), ay=S*.645;
+    c.strokeStyle="rgba(40,36,26,.55)";c.lineWidth=2.2*u;c.lineCap="round";
+    c.beginPath();c.arc(ax,ay-S*.02,S*.075,k<0?Math.PI*.55:Math.PI*.05,k<0?Math.PI*.95:Math.PI*.45);c.stroke();
+    c.strokeStyle="rgba(255,246,214,.16)";c.lineWidth=1.4*u;
+    c.beginPath();c.arc(ax,ay-S*.035,S*.075,k<0?Math.PI*.6:Math.PI*.1,k<0?Math.PI*.9:Math.PI*.4);c.stroke();
+  }
   /* ремень через плечо и коробка на нём: он рабочий, а не зверь в кадре */
   c.strokeStyle="rgba(38,34,24,.85)";c.lineWidth=4.4*u;
   c.beginPath();c.moveTo(S*.34,S*.60);c.lineTo(S*.66,S*.98);c.stroke();
   c.fillStyle="rgba(58,52,36,.95)";c.fillRect(S*.60,S*.80,S*.13,S*.11);
   c.strokeStyle="rgba(226,236,240,.22)";c.lineWidth=1;
   c.strokeRect(S*.60+.5,S*.80+.5,S*.13,S*.11);
+  /* коробка пристёгнута (хвост M120): лямка поверх неё от ремня и пряжка —
+     иначе она висела на боку сама по себе */
+  c.strokeStyle="rgba(38,34,24,.9)";c.lineWidth=1.8*u;
+  c.beginPath();c.moveTo(S*.585,S*.835);c.lineTo(S*.745,S*.855);c.stroke();
+  c.fillStyle="rgba(196,176,132,.8)";c.fillRect(S*.655,S*.828,S*.022,S*.02);
   /* мелкие руки у груди — они всегда чем-то заняты */
   /* они прижаты к груди и чем-то заняты: короткие, с локтем, и не сходятся
      крестом в середине — крест поверх ремня читался как связанные руки */
@@ -260,7 +275,11 @@ function grokFace(size){
   c.strokeStyle="rgba(22,20,14,.5)";c.lineCap="round";c.lineJoin="round";
   for(const a of small){c.lineWidth=4.8*u;
     c.beginPath();c.moveTo(a[0],a[1]);c.lineTo(a[2],a[3]);c.lineTo(a[4],a[5]);c.stroke();}
-  for(const a of small)arm(a,3.4*u,rgb(hideD));                // тон корпуса их съедал
+  for(const a of small)arm(a,4.0*u,rgb(hideD));                // тон корпуса их съедал
+  /* светлый кант по предплечью (хвост M120): на 64 px две тёмные руки на
+     тёмной груди читались пятном, кант отделяет их от корпуса */
+  c.strokeStyle="rgba(255,246,214,.20)";c.lineWidth=1.2*u;c.lineCap="round";
+  for(const a of small){c.beginPath();c.moveTo(a[2],a[3]);c.lineTo(a[4],a[5]);c.stroke();}
   c.fillStyle=rgb(hideL);                                      // мелкие кисти
   c.beginPath();c.ellipse(S*.415,S*.807,3.0*u,2.2*u,.4,0,TAU);c.fill();
   c.beginPath();c.ellipse(S*.585,S*.797,3.0*u,2.2*u,-.4,0,TAU);c.fill();

@@ -302,19 +302,34 @@ function tinDraw(T,tr,camx,camy,p){
   ctx.fillStyle="rgba(242,178,92,.5)";
   for(let i=0;i<4;i++)ctx.fillRect(hx-20+i*11,y0-53,5,3);
   /* ── барабан ── лежачий цилиндр с обручами; когда идёт смена, обручи ползут */
+  /* завод не один на все миры (хвост M119): длина барабана, высота трубы и
+     число обручей — от семени планеты. Форма та же, пропорции свои */
+  const tv=hashi(p.seed,0x71A,2), dw=64+((tv>>>3)&3)*12, ch=34+((tv>>>1)&3)*9, nh=3+((tv>>>5)&3);
   const dxm=sx-4;
-  box(dxm-40,y0-62,80,34,iron);
-  ctx.strokeStyle="rgba(0,0,0,.4)";ctx.lineWidth=2.4;
-  for(let i=0;i<4;i++){
-    const a=run?((G.t*.9+i*90)%360)/360:i/4;
-    const px=dxm-40+((a*80)%80);
+  box(dxm-dw/2,y0-62,dw,34,iron);
+  /* обручи крутятся: кроме тёмного ребра у каждого — светлый блик сверху и
+     заклёпка, которая ползёт вместе с ним. Ребро одно не читалось вращением */
+  for(let i=0;i<nh;i++){
+    const a=run?((G.t*.9+i*360/nh)%360)/360:i/nh;
+    const px=dxm-dw/2+((a*dw)%dw);
+    ctx.strokeStyle="rgba(0,0,0,.4)";ctx.lineWidth=2.4;
     ctx.beginPath();ctx.moveTo(px,y0-62);ctx.lineTo(px-5,y0-28);ctx.stroke();
+    ctx.strokeStyle="rgba(226,236,240,.22)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(px+1.8,y0-62);ctx.lineTo(px-3.2,y0-28);ctx.stroke();
+    ctx.fillStyle="rgba(226,236,240,.35)";ctx.fillRect(px-1.4,y0-49,2.2,2.2);
   }
-  ctx.fillStyle=lite;ctx.fillRect(dxm-40,y0-64,80,3);
-  box(dxm-46,y0-28,92,16,dark);                            // станина
+  if(run){                                                 // и шов по телу ползёт
+    ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=1;
+    for(let i=0;i<3;i++){
+      const a=((G.t*.9+i*120)%360)/360, px=dxm-dw/2+((a*dw)%dw);
+      ctx.beginPath();ctx.moveTo(px+8,y0-58);ctx.lineTo(px+2,y0-32);ctx.stroke();
+    }
+  }
+  ctx.fillStyle=lite;ctx.fillRect(dxm-dw/2,y0-64,dw,3);
+  box(dxm-dw/2-6,y0-28,dw+12,16,dark);                     // станина
   /* ── труба ── дым только когда идёт смена: остывшая труба ничего не выдаёт */
-  box(dxm+22,y0-104,12,44,iron);
-  ctx.fillStyle=dark;ctx.fillRect(dxm+19,y0-108,18,5);
+  box(dxm+22,y0-60-ch,12,ch,iron);
+  ctx.fillStyle=dark;ctx.fillRect(dxm+19,y0-64-ch,18,5);
   /* Дым — рваный, а не цепочка кругов: ровные шарики в столбик читались
      пузырями. Клуб растёт, кренится по ветру и расплывается по горизонтали */
   if(run)for(let s=0;s<4;s++){
@@ -322,7 +337,7 @@ function tinDraw(T,tr,camx,camy,p){
     const rr=4+t*16;
     ctx.fillStyle="rgba(200,208,214,"+((1-t)*(1-t)*.22).toFixed(3)+")";
     ctx.beginPath();
-    ctx.ellipse(dxm+28+(WIND||0)*t*22+Math.sin(t*4+s)*5,y0-110-t*58,
+    ctx.ellipse(dxm+28+(WIND||0)*t*22+Math.sin(t*4+s)*5,y0-66-ch-t*58,
                 rr*1.35,rr*.8,t*.5,0,TAU);
     ctx.fill();
   }

@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.100.4";
+const VER="0.100.5";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -4527,6 +4527,25 @@ const CEL_CONJ_W=.21;               /* окно парада, радиан */
 const CEL_STAR_ANG=.03;
 function celDay(t){return Math.floor((t===undefined?G.t:t)/CEL_DAY);}
 function celDayF(t){return (t===undefined?G.t:t)/CEL_DAY;}
+/* ── час суток на поверхности (хвосты G7/G12) ──
+   Сутки календаря — минута, и для неба над головой это слишком быстро: ночь
+   наступала бы каждые полминуты. У планеты своё вращение — шесть-десять
+   календарных суток, фаза от семени. alt — высота звезды (1 полдень,
+   −1 полночь), az — где она над горизонтом (−1 восток … 1 запад). Ничего не
+   хранится: всё от G.t и семени, как и остальной календарь. */
+function celSun(p,t){
+  const seed=(p&&p.seed)|0;
+  const period=CEL_DAY*(6+((seed>>>7)&3));
+  const ph=(((t===undefined?G.t:t)/period)+(seed%100)/100)%1;
+  return {ph,alt:Math.sin(ph*TAU),az:Math.cos(ph*TAU)};
+}
+/* сколько ночи в кадре: 0 днём, до .62 в полночь. Без воздуха ночь резче */
+function surfNight(p){
+  if(!p)return 0;
+  const s=celSun(p);
+  const k=p.T&&p.T.atm==="отсутствует"?1.9:1.5;
+  return clamp(-s.alt*k+.15,0,.62);
+}
 /* Период обращения в сутках: Кеплер по радиусу орбиты, приведённый к масштабу,
    в котором ближняя планета обходит звезду примерно за две недели. */
 function celPeriod(p){return 9+22*Math.pow(Math.max(80,p.orbit)/900,1.5);}
@@ -5416,7 +5435,10 @@ function genTerrain(p,lon0){
   const L0=(lon0==null)?((p.seed%628)/100):lon0;
   const LAT=((p.seed>>>9)%100)/100*0.7-0.35;   // широта полосы: не всегда экватор
   const M=wtab(p).relief||RELIEF_MIX[p.type]||RELIEF_MIX.terran;
-  const amp=60+p.rough*300;
+  /* амплитуда по набору породы (хвост G1): дюны и раскисшие берега ниже,
+     ледяные плиты и лавовая корка выше — рельеф принадлежит материалу */
+  const AK={dune:.72,sludge:.6,frost:1.15,crust:1.3,facet:1.2,plate:1.1,rubble:.9};
+  const amp=(60+p.rough*300)*(AK[(typeof MAT_CHAR!=="undefined"&&MAT_CHAR[p.type])||""]||1);
   /* каждой форме — свой множитель, чтобы планеты одного типа не повторялись */
   const w={
     hill:M.hill*(.6+r()*.7), ridge:M.ridge*(.4+r()*1.1),
@@ -14074,19 +14096,34 @@ function tinDraw(T,tr,camx,camy,p){
   ctx.fillStyle="rgba(242,178,92,.5)";
   for(let i=0;i<4;i++)ctx.fillRect(hx-20+i*11,y0-53,5,3);
   /* ── барабан ── лежачий цилиндр с обручами; когда идёт смена, обручи ползут */
+  /* завод не один на все миры (хвост M119): длина барабана, высота трубы и
+     число обручей — от семени планеты. Форма та же, пропорции свои */
+  const tv=hashi(p.seed,0x71A,2), dw=64+((tv>>>3)&3)*12, ch=34+((tv>>>1)&3)*9, nh=3+((tv>>>5)&3);
   const dxm=sx-4;
-  box(dxm-40,y0-62,80,34,iron);
-  ctx.strokeStyle="rgba(0,0,0,.4)";ctx.lineWidth=2.4;
-  for(let i=0;i<4;i++){
-    const a=run?((G.t*.9+i*90)%360)/360:i/4;
-    const px=dxm-40+((a*80)%80);
+  box(dxm-dw/2,y0-62,dw,34,iron);
+  /* обручи крутятся: кроме тёмного ребра у каждого — светлый блик сверху и
+     заклёпка, которая ползёт вместе с ним. Ребро одно не читалось вращением */
+  for(let i=0;i<nh;i++){
+    const a=run?((G.t*.9+i*360/nh)%360)/360:i/nh;
+    const px=dxm-dw/2+((a*dw)%dw);
+    ctx.strokeStyle="rgba(0,0,0,.4)";ctx.lineWidth=2.4;
     ctx.beginPath();ctx.moveTo(px,y0-62);ctx.lineTo(px-5,y0-28);ctx.stroke();
+    ctx.strokeStyle="rgba(226,236,240,.22)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(px+1.8,y0-62);ctx.lineTo(px-3.2,y0-28);ctx.stroke();
+    ctx.fillStyle="rgba(226,236,240,.35)";ctx.fillRect(px-1.4,y0-49,2.2,2.2);
   }
-  ctx.fillStyle=lite;ctx.fillRect(dxm-40,y0-64,80,3);
-  box(dxm-46,y0-28,92,16,dark);                            // станина
+  if(run){                                                 // и шов по телу ползёт
+    ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=1;
+    for(let i=0;i<3;i++){
+      const a=((G.t*.9+i*120)%360)/360, px=dxm-dw/2+((a*dw)%dw);
+      ctx.beginPath();ctx.moveTo(px+8,y0-58);ctx.lineTo(px+2,y0-32);ctx.stroke();
+    }
+  }
+  ctx.fillStyle=lite;ctx.fillRect(dxm-dw/2,y0-64,dw,3);
+  box(dxm-dw/2-6,y0-28,dw+12,16,dark);                     // станина
   /* ── труба ── дым только когда идёт смена: остывшая труба ничего не выдаёт */
-  box(dxm+22,y0-104,12,44,iron);
-  ctx.fillStyle=dark;ctx.fillRect(dxm+19,y0-108,18,5);
+  box(dxm+22,y0-60-ch,12,ch,iron);
+  ctx.fillStyle=dark;ctx.fillRect(dxm+19,y0-64-ch,18,5);
   /* Дым — рваный, а не цепочка кругов: ровные шарики в столбик читались
      пузырями. Клуб растёт, кренится по ветру и расплывается по горизонтали */
   if(run)for(let s=0;s<4;s++){
@@ -14094,7 +14131,7 @@ function tinDraw(T,tr,camx,camy,p){
     const rr=4+t*16;
     ctx.fillStyle="rgba(200,208,214,"+((1-t)*(1-t)*.22).toFixed(3)+")";
     ctx.beginPath();
-    ctx.ellipse(dxm+28+(WIND||0)*t*22+Math.sin(t*4+s)*5,y0-110-t*58,
+    ctx.ellipse(dxm+28+(WIND||0)*t*22+Math.sin(t*4+s)*5,y0-66-ch-t*58,
                 rr*1.35,rr*.8,t*.5,0,TAU);
     ctx.fill();
   }
@@ -14390,12 +14427,27 @@ function grokFace(size){
   c.beginPath();c.ellipse(S*.39,S*.755,S*.036,S*.011,.45,0,TAU);c.fill();
   c.beginPath();c.ellipse(S*.63,S*.665,S*.026,S*.009,-.40,0,TAU);c.fill();
   c.restore();
+  /* плечевая линия (хвост M120): там, где из корпуса выходят рабочие руки,
+     складка шкуры — тёмная дуга и светлый валик над ней. Без неё рука
+     начиналась из плоской трапеции */
+  for(const k of[-1,1]){
+    const ax=S*(.5+k*.20), ay=S*.645;
+    c.strokeStyle="rgba(40,36,26,.55)";c.lineWidth=2.2*u;c.lineCap="round";
+    c.beginPath();c.arc(ax,ay-S*.02,S*.075,k<0?Math.PI*.55:Math.PI*.05,k<0?Math.PI*.95:Math.PI*.45);c.stroke();
+    c.strokeStyle="rgba(255,246,214,.16)";c.lineWidth=1.4*u;
+    c.beginPath();c.arc(ax,ay-S*.035,S*.075,k<0?Math.PI*.6:Math.PI*.1,k<0?Math.PI*.9:Math.PI*.4);c.stroke();
+  }
   /* ремень через плечо и коробка на нём: он рабочий, а не зверь в кадре */
   c.strokeStyle="rgba(38,34,24,.85)";c.lineWidth=4.4*u;
   c.beginPath();c.moveTo(S*.34,S*.60);c.lineTo(S*.66,S*.98);c.stroke();
   c.fillStyle="rgba(58,52,36,.95)";c.fillRect(S*.60,S*.80,S*.13,S*.11);
   c.strokeStyle="rgba(226,236,240,.22)";c.lineWidth=1;
   c.strokeRect(S*.60+.5,S*.80+.5,S*.13,S*.11);
+  /* коробка пристёгнута (хвост M120): лямка поверх неё от ремня и пряжка —
+     иначе она висела на боку сама по себе */
+  c.strokeStyle="rgba(38,34,24,.9)";c.lineWidth=1.8*u;
+  c.beginPath();c.moveTo(S*.585,S*.835);c.lineTo(S*.745,S*.855);c.stroke();
+  c.fillStyle="rgba(196,176,132,.8)";c.fillRect(S*.655,S*.828,S*.022,S*.02);
   /* мелкие руки у груди — они всегда чем-то заняты */
   /* они прижаты к груди и чем-то заняты: короткие, с локтем, и не сходятся
      крестом в середине — крест поверх ремня читался как связанные руки */
@@ -14404,7 +14456,11 @@ function grokFace(size){
   c.strokeStyle="rgba(22,20,14,.5)";c.lineCap="round";c.lineJoin="round";
   for(const a of small){c.lineWidth=4.8*u;
     c.beginPath();c.moveTo(a[0],a[1]);c.lineTo(a[2],a[3]);c.lineTo(a[4],a[5]);c.stroke();}
-  for(const a of small)arm(a,3.4*u,rgb(hideD));                // тон корпуса их съедал
+  for(const a of small)arm(a,4.0*u,rgb(hideD));                // тон корпуса их съедал
+  /* светлый кант по предплечью (хвост M120): на 64 px две тёмные руки на
+     тёмной груди читались пятном, кант отделяет их от корпуса */
+  c.strokeStyle="rgba(255,246,214,.20)";c.lineWidth=1.2*u;c.lineCap="round";
+  for(const a of small){c.beginPath();c.moveTo(a[2],a[3]);c.lineTo(a[4],a[5]);c.stroke();}
   c.fillStyle=rgb(hideL);                                      // мелкие кисти
   c.beginPath();c.ellipse(S*.415,S*.807,3.0*u,2.2*u,.4,0,TAU);c.fill();
   c.beginPath();c.ellipse(S*.585,S*.797,3.0*u,2.2*u,-.4,0,TAU);c.fill();
@@ -14755,6 +14811,25 @@ function settleDraw(S,tr,camx,camy,p){
   }
   ctx.fillStyle="rgba(226,206,160,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
   ctx.fillText("ПОСЁЛОК",sx,gy-56-n*2);
+  /* ── виден с горизонта (хвост M109) ──
+     Дворы в полтора десятка пикселей тонут в склоне за экран. Посёлок
+     отмечает себя сам: шест с вымпелом выше любой крыши и столб дыма от
+     общего очага, который тянется на сотню пикселей вверх и кренится по
+     ветру. Шест рисуется вместе с дворами; дым — только у живого посёлка */
+  {
+    const px=sx+n*13+30, py=groundAt(tr,bx+(px-sx))-camy;
+    ctx.strokeStyle="rgba(40,34,26,.95)";ctx.lineWidth=1.6;
+    ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py-62);ctx.stroke();
+    const fl=Math.sin(G.t*.05)*3;
+    ctx.fillStyle="rgba(226,120,70,.9)";
+    ctx.beginPath();ctx.moveTo(px,py-62);ctx.lineTo(px+14+(WIND||0)*4,py-58+fl);ctx.lineTo(px,py-53);ctx.closePath();ctx.fill();
+    if(warm)for(let s=0;s<7;s++){
+      const t=((G.t*.5+s*40)%280)/280, rr=3+t*14;
+      ctx.fillStyle="rgba(210,214,220,"+((1-t)*(1-t)*.16).toFixed(3)+")";
+      ctx.beginPath();
+      ctx.ellipse(sx+(WIND||0)*t*40+Math.sin(t*5+s)*4,gy-34-n*2-t*120,rr*1.3,rr*.8,t*.4,0,TAU);ctx.fill();
+    }
+  }
 }
 /* ══ M110: они стоят между вами и фауной — и платят за это ══
    Не бонус игроку, а свойство земли: со второй ступени у посёлка есть дозорные,
@@ -20497,13 +20572,13 @@ const GEO_KIND={
 const GEO_TPL={
   terran:  [["soil"],["sed"],["sandst","sed"],["rock"],["metal","crystal"],["bedrock"]],
   ocean:   [["silt"],["sed"],["salt","sed"],["rock"],["crystal","metal"],["bedrock"]],
-  desert:  [["sand"],["sandst"],["sed"],["sandst","rock"],["salt","metal"],["bedrock"]],
+  desert:  [["sand"],["sandst"],["sandst","rock"],["salt","metal"],["bedrock"]],
   rocky:   [["ash","soil"],["rock"],["rock","basalt"],["metal"],["crystal","metal"],["bedrock"]],
-  ice:     [["snow"],["ice"],["ice","sed"],["rock"],["crystal"],["bedrock"]],
+  ice:     [["snow"],["ice"],["rock"],["crystal"],["bedrock"]],
   volcanic:[["ash"],["basalt"],["basalt","rock"],["metal"],["magma"],["bedrock"]],
-  toxic:   [["silt","soil"],["sed"],["crystal","sed"],["rock"],["metal"],["bedrock"]],
+  toxic:   [["silt","soil"],["sed"],["crystal","sed"],["metal"],["bedrock"]],
   crystal: [["sand","ash"],["crystal"],["crystal","rock"],["rock"],["crystal","metal"],["bedrock"]],
-  jungle:  [["soil"],["soil","silt"],["sed"],["sandst","rock"],["metal","crystal"],["bedrock"]],
+  jungle:  [["soil"],["soil","silt"],["sed"],["sed","sandst"],["sandst","rock"],["metal","crystal"],["bedrock"]],
   metal:   [["ash"],["metal"],["metal","rock"],["basalt"],["metal","crystal"],["bedrock"]],
   ruin:    [["sand","ash"],["sed"],["rock","sandst"],["metal","rock"],["crystal","metal"],["bedrock"]],
   gas:     [["ash"],["bedrock"]]
@@ -21995,18 +22070,32 @@ function gradePass(p){
 /* небо-подложка: вертикальный градиент на весь экран, один раз на планету */
 function drawSkyBase(p){
   const s=p.T.sky, sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a", hasAir=p.T.atm!=="отсутствует";
-  ctx.drawImage(screenLayer("skybg|"+s[0].join(",")+"|"+s[1].join(",")+"|"+sc+"|"+hasAir,()=>{
+  /* час суток (06a): слой печётся на 48 делений дня — небо темнеет к ночи, а
+     зарево гнётся за звездой: сидит на горизонте с её стороны и тем ярче,
+     чем она ниже (хвост G7). Ночью зарева нет — нечему рассеиваться */
+  const sun=celSun(p), hb=Math.round(sun.ph*48)%48, nite=surfNight(p);
+  ctx.drawImage(screenLayer("skybg|"+s[0].join(",")+"|"+s[1].join(",")+"|"+sc+"|"+hasAir+"|"+hb,()=>{
     ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
-    /* зарево у горизонта цветом звезды: воздух рассеивает её свет сильнее
-       всего там, где путь луча длиннее. Без атмосферы — нет и зарева (G7). */
     if(hasAir){
-      const c=hex2rgb(sc);
+      const c=hex2rgb(sc), day=clamp(1+sun.alt*2.2,0,1);
       const g=ctx.createLinearGradient(0,H*.42,0,H*.78);
       g.addColorStop(0,"rgba("+c.join(",")+",0)");
-      g.addColorStop(.7,"rgba("+c.join(",")+",.14)");
-      g.addColorStop(1,"rgba("+c.join(",")+",.22)");
+      g.addColorStop(.7,"rgba("+c.join(",")+","+(.10*day).toFixed(3)+")");
+      g.addColorStop(1,"rgba("+c.join(",")+","+(.16*day).toFixed(3)+")");
       ctx.fillStyle=g;ctx.fillRect(0,H*.42,W,H*.36);
+      /* наклонное зарево: пятно у горизонта там, где звезда, сильнее всего
+         на восходе и закате — это и есть «гнётся по высоте» */
+      const low=clamp(1-Math.abs(sun.alt)*1.4,0,1)*day;
+      if(low>.02){
+        const gx=W*(.5+sun.az*.42), gy=H*.74;
+        const rg=ctx.createRadialGradient(gx,gy,8,gx,gy,W*.55);
+        rg.addColorStop(0,"rgba("+c.join(",")+","+(.30*low).toFixed(3)+")");
+        rg.addColorStop(.5,"rgba("+c.join(",")+","+(.10*low).toFixed(3)+")");
+        rg.addColorStop(1,"rgba("+c.join(",")+",0)");
+        ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
+      }
     }
+    if(nite>0){ctx.fillStyle="rgba(4,6,14,"+(nite*.9).toFixed(3)+")";ctx.fillRect(0,0,W,H);}
   }),0,0,W,H);
 }
 
@@ -23741,7 +23830,9 @@ function genPOI(tr,p){
      объясняются именно тем, что она наполовину руинная */
   const pool=POI_KINDS.filter(k=>k.on.indexOf(p.type)>=0||(p.mix&&k.on.indexOf(p.mix)>=0));
   if(!pool.length)return tr.poi;
-  const n=2+Math.floor(r()*3);
+  /* ритм: три-четыре на полосу, то есть примерно каждые два-три экрана,
+     и не ближе девяти сотен друг к другу (хвост G12) */
+  const n=3+Math.floor(r()*2);
   const put=[];
   for(let i=0;i<n;i++){
     /* мир делится на n полос, точка ставится внутри своей — так они не
@@ -24173,7 +24264,8 @@ function peepDrawMat(camx,camy){
   const tr=S.tr,dk=P.dk||0;
   if(P.x+P.r-camx<-40||P.x-P.r-camx>W+40)return;
   const r=rng(hashi(Math.round(P.x),0x11A7,5));  /* один и тот же узор каждый кадр */
-  const base=[104,120,108],lip=[188,204,186];
+  /* мат в тон мира (хвост M118): та же трава, но замешана на породе планеты */
+  const base=mixc([104,120,108],S.p.T.pal[2],.4),lip=mixc([188,204,186],S.p.T.pal[1],.25);
   ctx.save();
   /* Первый заход клал пластинки в одну строчку по линии грунта, и мат читался
      подсветкой рельефа, а не зарослью. Пластинки лежат внахлёст в три яруса:
@@ -24261,11 +24353,12 @@ function peepFigure(x,y,face,ph,a,load){
   ctx.lineWidth=2.2;
   if(load==="ящик"){
     /* ношу видно раньше человека: она и есть то, что игрок читает */
-    ctx.beginPath();ctx.moveTo(2.6,-17);ctx.lineTo(6.4,-13.6);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(-2.6,-17);ctx.lineTo(5.4,-13.6);ctx.stroke();
-    ctx.fillRect(5,-16.4,8.4,7.6);
+    /* ящик на уровне пояса, а не у подбородка (хвост M118): руки вниз и вперёд */
+    ctx.beginPath();ctx.moveTo(2.6,-17);ctx.lineTo(6.4,-10.6);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-2.6,-17);ctx.lineTo(5.4,-10.6);ctx.stroke();
+    ctx.fillRect(5,-13.4,8.4,7.6);
     ctx.strokeStyle=rgba(PEEP_LIT,Math.min(1,a*1.6));ctx.lineWidth=1;
-    ctx.strokeRect(5,-16.4,8.4,7.6);
+    ctx.strokeRect(5,-13.4,8.4,7.6);
     ctx.strokeStyle=c;
   }else if(load==="бочка"){
     ctx.beginPath();ctx.moveTo(-2.6,-17);ctx.lineTo(-4.6,-20.6);ctx.stroke();
@@ -24273,8 +24366,9 @@ function peepFigure(x,y,face,ph,a,load){
     ctx.beginPath();ctx.moveTo(2.6,-17);ctx.lineTo(3.8,-10.6+sw*1.6);ctx.stroke();
   }else{
     /* руки идут в противофазе ногам — иначе строй шагает как заводной */
-    ctx.beginPath();ctx.moveTo(3.2,-17.2);ctx.lineTo(sw2*3+1.8,-9.6);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(-3.2,-17.2);ctx.lineTo(sw*3-1.8,-9.6);ctx.stroke();
+    /* рука в покое висит СНАРУЖИ торса, а не по его кромке (хвост M118) */
+    ctx.beginPath();ctx.moveTo(4.4,-17.2);ctx.lineTo(sw2*3+5.2,-9.2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-4.4,-17.2);ctx.lineTo(sw*3-5.2,-9.2);ctx.stroke();
   }
   ctx.restore();
 }
@@ -24310,11 +24404,12 @@ function peepGhosts(camx,camy){
   /* след: свет остывает позади идущего */
   for(const q of pos){
     /* след — полоса, а не цепочка пятен: пятна читались как брошенные предметы */
-    const g=ctx.createLinearGradient(q.x,0,q.x-sc.dir*74,0);
-    g.addColorStop(0,rgba(PEEP_LIT,q.a*.34));
-    g.addColorStop(1,rgba(PEEP_LIT,0));
+    /* след теплее и ярче мата (хвост M118): иначе тонет в его же свечении */
+    const g=ctx.createLinearGradient(q.x,0,q.x-sc.dir*90,0);
+    g.addColorStop(0,"rgba(255,238,196,"+(q.a*.62).toFixed(3)+")");
+    g.addColorStop(1,"rgba(255,238,196,0)");
     ctx.fillStyle=g;
-    ctx.beginPath();ctx.ellipse(q.x-sc.dir*36,q.y+.5,38,2.6,0,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.ellipse(q.x-sc.dir*44,q.y+.5,46,2.2,0,0,TAU);ctx.fill();
   }
   /* ношу на двоих рисуем между первыми двумя: шест по плечам, носилки по поясу */
   if(pos.length>1&&(sc.load==="шест"||sc.load==="носилки")){
@@ -24491,6 +24586,12 @@ function planetBiome(p){
   /* у безвоздушных и вулканических миров крупных форм почти нет: нечем дышать
      и нечему расти большим — это читается как характер места, а не как правило */
   const harsh=p.T.atm==="отсутствует"||p.type==="volcanic"||p.type==="crystal"||p.type==="metal";
+  /* силуэт флоры по миру, а не только по случаю (хвост G1): пустыня и лёд —
+     низкие и колючие формы, джунгли — высокие кроны, токсичный — шары и
+     ленты. Случайная доминанта остаётся: два мира одного типа не близнецы */
+  const TF={desert:[4,6,11],ice:[4,10,6],crystal:[10,4],metal:[6,4],volcanic:[6,11],
+            jungle:[7,8,9],terran:[7,9,1],ocean:[8,11],toxic:[11,10,9],ruin:[4,1],rocky:[6,4]};
+  for(const k of TF[p.type]||[])bias[k]+=1.1;
   p.biome={kindBias:bias,scale:(harsh?.5:.7)+r()*(harsh?.5:.9),
     giantChance:harsh?r()*.03:r()*.14,hueBias:r()};
   return p.biome;
@@ -28282,6 +28383,20 @@ function updateSurface(dt){
   /* амплитуда шага плавно нарастает/спадает, а не переключается щелчком —
      фаза копится только пока реально идём, поэтому ноги не дёргаются на кочках */
   peepUpdate(dt);                       /* луг помнит свет только пока темно (20c) */
+  /* посёлок слышно раньше, чем видно (хвост M109): редкий стук и голос,
+     громкость по расстоянию. Не музыка и не петля — одиночные звуки */
+  if(settleCanLive(S.p)){
+    const d=Math.abs(S.x-settleSpotX(S.p,tr));
+    if(d<520){
+      S.setSnd=(S.setSnd||0)-dt;
+      if(S.setSnd<=0){
+        S.setSnd=120+Math.random()*160;
+        const v=.12*(1-d/520);
+        if(Math.random()<.6)sfx("ui",{f:180+Math.random()*60,to:90,d:.09,v});
+        else sfx("ui",{f:300+Math.random()*120,to:240,d:.18,v:v*.7});
+      }
+    }
+  }
   const walking=S.on&&(keys.left||keys.right||S.walkTarget!=null);
   S.walkAmp=clamp(S.walkAmp+(walking?1:-1)*.12*dt,0,1);
   if(walking)S.walkPhase+=dt*.22;
@@ -28680,11 +28795,24 @@ function drawSurface(){
   /* дальний хребет не гасится прозрачностью, а выцветает в цвет неба: именно
      этим глаз мерит расстояние (19c-light). Двух слоёв достаточно, третий уже
      не читается, а стоит столько же. */
-  drawGround({h:tr.h,N:tr.N,step:tr.step*3.6},camx*.22,camy*.42+130,hazeFar(p,.58),null);
-  drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.35,camy*.5+80,hazeFar(p,.32),null);
+  /* дальние гряды — кэшем по тайлам (хвост G2, правило G11): силуэт в цвет
+     воздуха печётся раз на 512×512 в координатах своего параллакса, кадр
+     кладёт картинки. drawGround рисует через W/H, которые withCtx подменяет */
+  S.farA=tileStore(S.farA,"farA|"+p.seed+"|"+DPR);
+  drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.h,N:tr.N,step:tr.step*3.6},wx0,wy0,hazeFar(p,.58),null));
+  S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR);
+  drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},wx0,wy0,hazeFar(p,.32),null));
   hazeBand(p,H*.52,H*.22);
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
     "rgba(200,240,246,.4)",p.T.pal);
+  /* нижняя треть уходит в тень неба: ближний грунт темнее дальнего, и по
+     этому глаз мерит глубину (хвост G2) */
+  {
+    const sh=p.T.sky[1];
+    const dg=ctx.createLinearGradient(0,H*.62,0,H);
+    dg.addColorStop(0,"rgba("+sh.join(",")+",0)");dg.addColorStop(1,"rgba("+sh.join(",")+",.30)");
+    ctx.fillStyle=dg;ctx.fillRect(0,H*.62,W,H*.38);
+  }
   drawPOI(tr,camx,camy,p);
   /* средний масштаб между валуном и постройкой — тем же светом и той же
      породой, что грунт под ним (21b-surface-deco) */
@@ -28798,6 +28926,24 @@ function drawSurface(){
      а свет и цветокоррекция ложатся уже на всё вместе */
   drawForeground(tr,camx,camy,p);
   drawWeather(p,camx,camy);
+  /* ── ночь (хвост G12) ──
+     Кадр уходит в тень неба, и единственный свет — фонарь скафандра: спрайт
+     один на игру, кладётся одним drawImage, чуть впереди по взгляду */
+  {
+    const nite=surfNight(p);
+    if(nite>.02){
+      ctx.fillStyle="rgba(4,6,14,"+(nite*.72).toFixed(3)+")";ctx.fillRect(0,0,W,H);
+      const LS=glowSprite("suitlamp",()=>{
+        const g=ctx.createRadialGradient(0,0,0,0,0,1);
+        g.addColorStop(0,"rgba(255,236,200,.55)");g.addColorStop(.35,"rgba(255,236,200,.22)");
+        g.addColorStop(1,"rgba(255,236,200,0)");
+        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
+      });
+      ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=nite*1.3;
+      glowBlit(LS,x+S.face*36,y-6,150);
+      ctx.restore();
+    }
+  }
   lightShafts(p);
   gradePass(p);
   drawSurfaceHud(camx,camy);
@@ -29688,6 +29834,19 @@ function drawCave(){
     ctx.restore();
   }
   drawCaveGlow(C,camx,camy,px,py);
+  /* дозорные посёлка у устья (хвост M110): их видно, а не только читается
+     в подсказке. Те же силуэты с шестом, что на поверхности, и факел */
+  if(C.watch>0)for(let i=0;i<2;i++){
+    const wxw=118+i*26, wx=wxw-camx, wy=caveFloor(C,wxw)-camy;
+    if(wx<-30||wx>W+30||wy<-40||wy>H+40)continue;
+    poiGlow(wx+(i?3:-3),wy-20,28,"255,190,110",.16);
+    ctx.fillStyle="rgba(20,24,30,.95)";
+    ctx.fillRect(wx-1.6,wy-13,3.2,13);
+    ctx.beginPath();ctx.arc(wx,wy-15.5,2.6,0,TAU);ctx.fill();
+    ctx.strokeStyle="rgba(20,24,30,.95)";ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(wx+(i?3:-3),wy-19);ctx.lineTo(wx+(i?3:-3),wy);ctx.stroke();
+    ctx.fillStyle="rgba(255,206,130,.9)";ctx.fillRect(wx+(i?2:-4),wy-21,2,2.4);
+  }
   for(const pl of C.plants){
     const x=pl.x-camx,y=pl.y-camy;if(x<-70||x>W+70||y<-120||y>H+40)continue;
     drawPlant(pl,x,y);

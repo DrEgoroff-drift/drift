@@ -38,7 +38,9 @@ function genPOI(tr,p){
      объясняются именно тем, что она наполовину руинная */
   const pool=POI_KINDS.filter(k=>k.on.indexOf(p.type)>=0||(p.mix&&k.on.indexOf(p.mix)>=0));
   if(!pool.length)return tr.poi;
-  const n=2+Math.floor(r()*3);
+  /* ритм: три-четыре на полосу, то есть примерно каждые два-три экрана,
+     и не ближе девяти сотен друг к другу (хвост G12) */
+  const n=3+Math.floor(r()*2);
   const put=[];
   for(let i=0;i<n;i++){
     /* мир делится на n полос, точка ставится внутри своей — так они не
