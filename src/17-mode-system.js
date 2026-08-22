@@ -284,10 +284,14 @@ function drawSystem(){
   const zx=x=>W/2+(x-cx0)*Z, zy=y=>H/2+(y-cy0)*Z;
   /* ввод пересчитывает тычок через ту же камеру */
   G.viewCX=cx0;G.viewCY=cy0;
-  ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
-  /* туманность и пыль — свои у каждой системы (16a-space). Одна туманность на
-     всю игру означала, что все сорок систем выглядят одним местом. */
-  drawSysNebula(sys,cx0*.06*Z,cy0*.06*Z);
+  /* Тёмный фон запечён внутрь тайла туманности: тайл по построению кроет весь
+     экран, поэтому отдельная заливка под ним была лишним полноэкранным
+     проходом, а само наложение из складывающего стало непрозрачным — это
+     дешевле, потому что не надо читать то, что уже лежит на экране. Пока
+     туманность не доспела, заливка нужна, и её делает эта же строка. */
+  if(!drawSysNebula(sys,cx0*.06*Z,cy0*.06*Z)){
+    ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
+  }
   drawStars(cx0*.06*Z,cy0*.06*Z,1);
   drawSpaceDust(cx0*Z,cy0*Z,Z,sysStyle(sys).dust);
   const ox=zx(0),oy=zy(0);
@@ -487,11 +491,22 @@ function drawBeltRocks(ox,oy,B,Z,shx,shy){
     ctx.restore();
   }
 }
+/* Крошка пояса неподвижна: угол и радиус каждого камешка заданы seed-ом пояса
+   и не меняются никогда. Пересчитывать их генератором на каждом кадре — то же
+   самое, что заново выводить одно и то же число сто девяносто раз в секунду
+   шестьдесят раз. Таблица считается один раз и живёт на самом поясе, а он
+   живёт ровно столько, сколько система в кэше. */
+function beltDots(B){
+  if(B.dots)return B.dots;
+  const r=rng(B.seed),t=new Float64Array(380);
+  for(let i=0;i<190;i++){t[i*2]=r()*TAU;t[i*2+1]=(r()-.5)*130;}
+  return B.dots=t;
+}
 function drawBeltRing(ox,oy,B,Z){
-  const r=rng(B.seed);
+  const t=beltDots(B);
   ctx.fillStyle="rgba(170,180,190,.5)";
   for(let i=0;i<190;i++){
-    const a=r()*TAU, rr=(B.orbit+(r()-.5)*130)*Z;
+    const a=t[i*2], rr=(B.orbit+t[i*2+1])*Z;
     const x=ox+Math.cos(a)*rr, y=oy+Math.sin(a)*rr;
     if(x<0||x>W||y<0||y>H)continue;
     ctx.fillRect(x,y,1.4,1.4);

@@ -8,6 +8,46 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.86.0 — "Two full-screen passes become one, and nobody re-rolls the same dice"
+
+Continuing down the same list, in order of pixels painted rather than lines of code.
+
+**The nebula was two full-screen blends; it is now one, and it is opaque.** A 160×160 tile was
+stretched over the whole screen, then stretched again 1.9× larger and offset so its seam would not
+read — both additive, in every system, every frame. On a 4.5-megapixel canvas that is nine
+megapixels of blending before anything else is drawn, and both passes at twelve-times
+magnification, the least cache-friendly ratio a texture sampler can be given.
+
+The two layers do not move relative to each other: the second one's offset differs from the
+first's by a constant, so under a moving camera they travel as one picture. That means they can be
+added together once into a tile and moved as a unit — and since that tile covers the screen by
+construction, the dark background can be baked into it too, which removes the separate clearing
+pass and turns the remaining blend into an opaque copy that need not read what is already there.
+Three full-screen passes became one. Checked pixel by pixel against the old pair at three camera
+positions, including both extremes of the parallax clamp: **0 of 255 difference**.
+
+**Nobody re-rolls dice that have not changed.** Interplanetary dust built a fresh random-number
+generator per mote and assembled an `rgba(…)` string for it — seventy generators and seventy CSS
+colour parses a frame, for seventy specks whose position in their own field, size and brightness
+never change; only the field's offset does. Asteroid-belt gravel did the same, 190 draws a frame
+for grit whose angle and radius are fixed by the belt's seed. Both now compute their table once
+and vary only `globalAlpha`, which is a number rather than a string the canvas must parse. Dust
+compared against the old formula at two camera positions: worst channel difference **1 of 255**
+(alpha rounding), mean 0.0001.
+
+**Why the ship was left alone.** It is the largest remaining consumer — 338 canvas commands a
+frame — and the obvious move is to bake it into a sprite. It is also the one object where that
+would cost real quality: the ship rotates continuously, and a rotated raster blit is resampled
+every frame, where vector paths are drawn exactly. Baking a sprite per heading would fix that at
+the price of a thousand sprites, and baking a handful of bank phases — the usual suggestion —
+quantizes the roll, which is the same trade that made the planets step before 0.84.0. The saving
+is about a millisecond of CPU in a frame whose stalls come from pixels, so it is not worth the
+softening. If it is ever done, the split has to be: banked belly and exhaust stay live (they carry
+the only per-frame randomness), everything from the engine barrels onward is cached, and braking
+frames bypass the cache entirely, because the brake jets are drawn in the middle of the body.
+
+---
+
 ## 0.85.0 — "Stop repainting what has not changed"
 
 Reported precisely: it stutters when you fly past the star, and clears up as you leave. That
