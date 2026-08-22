@@ -89,8 +89,14 @@ function planetScene(p){
     perc:V.perc*(.8+r()*.4),
     air:V.air*(.85+r()*.3),
     beacon:V.beacon*(.7+r()*.6),
-    timbre:V.timbre};
+    timbre:V.timbre,
+    vib:(WORLD_VIB[p.type]==null?.3:WORLD_VIB[p.type])*(.8+r()*.4),
+    spread:WORLD_SPREAD[p.type]==null?6:WORLD_SPREAD[p.type]};
 }
+/* вибрато и расстройка голоса по типу мира: лёд и кристалл — чистые, токсичный плывёт,
+   вулканический и металлический — шершавые */
+const WORLD_VIB={terran:.5,ocean:.4,desert:.7,rocky:.2,ice:0,volcanic:.3,toxic:1,crystal:0,jungle:.8,metal:.2,ruin:.4,gas:.3};
+const WORLD_SPREAD={ice:2,crystal:2,volcanic:14,metal:12,toxic:10,ruin:8};
 const MUS={ready:false,key:null,sc:null,layers:{},pad:null,timer:null,
   next:0,step:0,intensity:0,iTarget:0,phrase:null,pi:0,shift:0};
 const MUS_LAYERS=["pad","bass","motif","perc","air","beacon"];
@@ -199,11 +205,26 @@ function musNote(layer,hz,when,dur,type,peak,cut){
   const stop=when+dur+tail+.1;
   /* два генератора: основной тембр и тихая октава сверху — она даёт ноте
      блеск, по которому её слышно поверх дрона, не поднимая громкость */
+  /* ── голос мира ──
+     Все планеты пели одним и тем же ровным тоном. Теперь у сцены есть
+     вибрато (приходит не сразу, а на второй трети ноты — как у живого
+     голоса) и расстройка пары генераторов: у льда и кристалла голос чистый,
+     у вулканического и металлического — шершавый, у токсичного — плывёт. */
+  const sc=MUS.sc||{}, vib=layer==="motif"?(sc.vib||0):0, spread=sc.spread==null?6:sc.spread;
+  let lfo=null,lg=null;
+  if(vib>0){
+    lfo=c.createOscillator();lg=c.createGain();
+    lfo.type="sine";lfo.frequency.value=4.6+vib*1.4;
+    lg.gain.setValueAtTime(0,when);
+    lg.gain.linearRampToValueAtTime(vib*14,when+atk+dur*.3);
+    lfo.connect(lg);lfo.start(when);lfo.stop(stop);
+  }
   for(let i=0;i<2;i++){
     const o=c.createOscillator(),og=c.createGain();
     o.type=i?"sine":(type||"triangle");
     o.frequency.setValueAtTime(hz*(i?2:1),when);
-    o.detune.setValueAtTime(i?6:-6,when);
+    o.detune.setValueAtTime(i?spread:-spread,when);
+    if(lg)lg.connect(o.detune);
     og.gain.value=i?.16:1;
     o.connect(og);og.connect(f);
     o.start(when);o.stop(stop);
@@ -243,13 +264,28 @@ function musBeacon(layer,hz,when,dur,peak){
 }
 function musPerc(when,peak){
   const c=SND.ctx;
-  const n=noise(c),g=c.createGain(),bp=c.createBiquadFilter();
-  bp.type="bandpass";bp.Q.value=1.4;bp.frequency.value=180;
-  g.gain.setValueAtTime(.0001,when);
-  g.gain.exponentialRampToValueAtTime(peak,when+.006);
-  g.gain.exponentialRampToValueAtTime(.0001,when+.16);
-  n.connect(bp);bp.connect(g);g.connect(MUS.layers.perc);
-  n.start(when);n.stop(when+.2);
+  /* два голоса: низкий толчок на сильной доле и сухой щелчок — на призрачном
+     ударе щелчок один, на акценте оба. Одним толчком ритм читался метрономом. */
+  const thump=peak>=.45, tick=peak<.45||peak>=.9;
+  if(thump){
+    const n=noise(c),g=c.createGain(),bp=c.createBiquadFilter();
+    bp.type="bandpass";bp.Q.value=1.4;bp.frequency.value=180;
+    g.gain.setValueAtTime(.0001,when);
+    g.gain.exponentialRampToValueAtTime(peak,when+.006);
+    g.gain.exponentialRampToValueAtTime(.0001,when+.16);
+    n.connect(bp);bp.connect(g);g.connect(MUS.layers.perc);
+    n.start(when);n.stop(when+.2);
+  }
+  if(tick){
+    const n=noise(c),g=c.createGain(),bp=c.createBiquadFilter();
+    bp.type="bandpass";bp.Q.value=6;bp.frequency.value=1500+(MUS.sc&&MUS.sc.bpm||50)*8;
+    const pk=Math.max(.05,Math.min(peak,.6)*.5);
+    g.gain.setValueAtTime(.0001,when+.004);
+    g.gain.exponentialRampToValueAtTime(pk,when+.008);
+    g.gain.exponentialRampToValueAtTime(.0001,when+.06);
+    n.connect(bp);bp.connect(g);g.connect(MUS.layers.perc);
+    n.start(when);n.stop(when+.08);
+  }
 }
 function musicSetScene(key,scene){
   if(MUS.key===key)return;

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 162 · символов верхнего уровня: 1760
+Файлов: 162 · символов верхнего уровня: 1762
 
 ## СИМВОЛЫ
 
@@ -181,8 +181,8 @@ bPipe                        src/21aa-base-rooms.js:244
 bpMul                        src/12c-mgr-core.js:665
 bpRecheck                    src/12c-mgr-core.js:732
 bpState                      src/12c-mgr-core.js:662
-brownBuf                     src/10-music.js:119
-brownNoise                   src/10-music.js:120
+brownBuf                     src/10-music.js:125
+brownNoise                   src/10-music.js:126
 bScreen                      src/21aa-base-rooms.js:256
 BUILD                        src/21a-mode-base.js:19
 BUILD_KEYS                   src/21a-mode-base.js:38
@@ -826,7 +826,7 @@ last                         src/28-loop.js:252
 lastDroneTick                src/28-loop.js:253
 launch                       src/21-mode-surface.js:391
 launchHold                   src/21-mode-surface.js:336
-layerLevel                   src/10-music.js:290
+layerLevel                   src/10-music.js:326
 lerp                         src/01-core.js:8
 lightShafts                  src/19c-light.js:115
 litRGB                       src/19c-light.js:46
@@ -866,8 +866,8 @@ loyWord                      src/27c-ui-hq.js:13
 luckLine                     src/27b-ui-crew.js:16
 luxPal                       src/03c-hull-luxe.js:16
 MAIN_CTX                     src/08-state.js:4
-makeIR                       src/10-music.js:103
-makePhrase                   src/10-music.js:307
+makeIR                       src/10-music.js:109
+makePhrase                   src/10-music.js:343
 makeRock                     src/24-mode-belt.js:53
 makeWorld                    src/02a-worldmix.js:47
 MAPBG                        src/18-mode-map.js:31
@@ -933,7 +933,7 @@ mgrWorkCmd                   src/12c-mgr-core.js:520
 mgrWorkFact                  src/12c-mgr-core.js:598
 mgrWorkKeep                  src/12c-mgr-core.js:544
 mgrWorkSci                   src/12c-mgr-core.js:675
-midiHz                       src/10-music.js:100
+midiHz                       src/10-music.js:106
 minedUnit                    src/11-log.js:102
 mineKey                      src/23-mode-dig.js:838
 mineLoad                     src/23-mode-dig.js:839
@@ -971,18 +971,18 @@ mslDraw                      src/16b-missile.js:140
 mslFire                      src/16b-missile.js:79
 mslPick                      src/16b-missile.js:57
 mslTick                      src/16b-missile.js:109
-MUS                          src/10-music.js:94
-MUS_LAYERS                   src/10-music.js:96
-MUS_WET                      src/10-music.js:99
-musBeacon                    src/10-music.js:218
+MUS                          src/10-music.js:100
+MUS_LAYERS                   src/10-music.js:102
+MUS_WET                      src/10-music.js:105
+musBeacon                    src/10-music.js:239
 MUSIC_SCENES                 src/10-music.js:27
-musicInit                    src/10-music.js:136
-musicSceneNow                src/10-music.js:416
-musicSetScene                src/10-music.js:254
-musicStop                    src/10-music.js:452
-musicTick                    src/10-music.js:333
-musNote                      src/10-music.js:187
-musPerc                      src/10-music.js:244
+musicInit                    src/10-music.js:142
+musicSceneNow                src/10-music.js:452
+musicSetScene                src/10-music.js:290
+musicStop                    src/10-music.js:488
+musicTick                    src/10-music.js:369
+musNote                      src/10-music.js:193
+musPerc                      src/10-music.js:265
 navAction                    src/15-input.js:157
 near                         tests/90-harness.js:24
 nearestPOI                   src/20a-poi.js:234
@@ -1757,6 +1757,8 @@ WIND                         src/19c-light.js:15
 windOf                       src/19c-light.js:16
 withCtx                      src/18c-chunks.js:24
 WORLD_MOOD                   src/10-music.js:39
+WORLD_SPREAD                 src/10-music.js:99
+WORLD_VIB                    src/10-music.js:98
 WORLD_VOICE                  src/10-music.js:57
 worldRes                     src/02a-worldmix.js:119
 worldTables                  src/02a-worldmix.js:86
@@ -1846,7 +1848,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/09-audio.js · 11 КБ
   · звук: чистый синтез, ни одного файла:1
 
-## src/10-music.js · 27 КБ
+## src/10-music.js · 30 КБ
   · музыка: слои, а не треки:1
 
 ## src/11a-quests.js · 6 КБ

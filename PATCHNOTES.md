@@ -8,6 +8,13 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.99.4 — "A voice per world" (music, pass 2)
+
+The melody voice gets a vibrato that arrives on the second third of the note and a detune
+spread, both by world type: ice and crystal sing clean, volcanic and metal are rough, toxic
+drifts. Percussion is two voices — a low thump on the strong beat and a dry tick on ghost hits
+and accents — instead of one thump that read as a metronome.
+
 ## 0.99.3 — "Lights on in the cantina" (cantina, pass 2)
 
 The hall was drowning: crowd at .18–.32 alpha in grey, a .55 vignette, no floor. The crowd is
