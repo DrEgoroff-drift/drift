@@ -20,7 +20,8 @@ const FIND_KINDS={
   sos: {ru:"сигнал бедствия",  col:"#ff6b57",act:"ПРИНЯТЬ СИГНАЛ"},
   sat: {ru:"спутник",          col:"#f2b25c",act:"СНЯТЬ ЗАПИСЬ"},
   cont:{ru:"контейнер",        col:"#7fe6d8",act:"ЗАБРАТЬ ГРУЗ"},
-  hulk:{ru:"остов разведчика", col:"#a8b4c0",act:"ОБЫСКАТЬ"}
+  hulk:{ru:"остов разведчика", col:"#a8b4c0",act:"ОБЫСКАТЬ"},
+  echo:{ru:"отражение",        col:"#9fb7ff",act:"СЛУШАТЬ"}    /* зеркало, 11f */
 };
 const FIND_CACHE={};
 function findsIn(sys){
@@ -43,6 +44,9 @@ function findsIn(sys){
       x:Math.cos(a)*rad,y:Math.sin(a)*rad,
       id:sys.key+":"+findBucket()+":"+i});
   }
+  /* зеркало (11f): в ядре области лежит само зеркало, вне барабана */
+  const mf=(typeof mirrorFind==="function")?mirrorFind(sys):null;
+  if(mf)list.push(mf);
   FIND_CACHE.key=key;FIND_CACHE.list=list;
   return list;
 }
@@ -52,6 +56,7 @@ function findSeen(f){return !!(G.findsSeen&&G.findsSeen[f.id]);}
    Три обычные платят той же монетой, что и весь остальной мир: часть, сырьё,
    топливо, редкость. Спутник платит куском отчёта и пеленгом. */
 function findTake(f){
+  if(f.k==="echo")return mirrorListen(f);     /* зеркало не берётся (11f) */
   if(!G.findsSeen)G.findsSeen={};
   G.findsSeen[f.id]=1;
   const r=rng(hashi(f.seed,0x7A1,3)),d=sysDanger(G.sx,G.sy);
@@ -178,6 +183,13 @@ function drawFindsSystem(zx,zy,Z){
       ctx.strokeRect(-17,-10,5,20);ctx.strokeRect(12,-10,5,20);
       ctx.strokeStyle="rgba(96,110,126,.65)";ctx.lineWidth=1.4;
       ctx.beginPath();ctx.moveTo(-12,-2);ctx.lineTo(12,-2);ctx.stroke();
+    }else if(f.k==="echo"){
+      /* зеркало (11f): тонкая пластина ребром, почти ничего — поверхность, а не
+         предмет. Блик один, и он не горит, а скользит */
+      ctx.beginPath();ctx.ellipse(0,0,26,3.2,0,0,TAU);ctx.fill();ctx.stroke();
+      ctx.strokeStyle="rgba(159,183,255,.55)";ctx.lineWidth=.8;
+      const gl=((G.t*.01)%1)*52-26;
+      ctx.beginPath();ctx.moveTo(gl-6,-1.2);ctx.lineTo(gl+6,-1.2);ctx.stroke();
     }else{
       /* остов разведчика: тот же язык, что у остова баржи, но мельче и с
          отломанным крылом */

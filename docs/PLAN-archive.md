@@ -3743,3 +3743,49 @@ found by looking. The live plan carries only the debt that is still open.
    the shear edges are shadows laid on top of that softness rather than the clouds' own borders;
    the floor is still lighter than the design wants; and nothing in the scene changes with the
    type of giant beyond its palette.
+
+## M128b (0.87.0–0.88.0) — built. The frame has an address, and the screen is a pane
+
+**Performance, measured.** JS time and raster time profiled apart, then a real Chrome on a ×2.5
+display. The ground cross-section, the cave vault and floor, the sky glow and the storm veil were
+static pictures repainted every frame; they are now chunks and layers (`18c-chunks`). Surface
+23 → 52 fps, cave 42 → 57 at ×2; system, belt, mine, base all ≥50. Resolution is a setting
+(`gfx.res`: auto / 1× / 1.5× / 2×) and auto steps down on its own after three slow seconds.
+`prof()` lives next to `dbg()` so the next regression is found in a minute, not a session.
+
+**The site.** `play.html` left the host raw at 2.1 MB — no `mod_deflate`, openresty does not
+compress. The deploy now gzips on the server and `site/.htaccess` serves the `.gz` with the right
+headers: 678 KB on the wire.
+
+**Wide screens.** The interface was a phone layout stretched edge to edge. A `min-width: 900px`
+block makes every screen a centred glass pane up to 1080 px over the visible world, type one step
+larger, rows denser, tabs gathered left; settings got five tabs. Phones untouched.
+
+**Left open:** canvas-drawn labels (map, surface captions) are still sized for a phone — a global
+UI scale for `fillText` would be the next step; the station's market rows still repeat helper
+captions; the yard row prints the series twice.
+
+## M128 (0.79.0) — built. Speech: a queue of lines, and putting things on the table
+
+Built as **`11b-speech.js`** (the ether, the per-place queue, forms of address, the table, the
+tape as an object) with the table block in the cantina (`27c-ui-hq`), the landing counter in
+`openStation` (`26-ui-station`), persistence in `14-save`, the ether ticked from `frame`
+(`28-loop`), suite **"Речь: очередь, обращение и вещь вместо слов"** (`91zo-speech.js`).
+
+**What was taken from the spec.** The queue (one line spent per landing, tied to the place rather
+than the person, because the world reshuffles people and the place stays), the two everyday
+registers, silence as a first-class entry, the address ladder driven by landings at that place,
+the ether as half the speech in the game, and the table: the player puts a thing down instead of
+choosing words. Tearing the tape (`T`) closes the object debt M123 left — the strip carries its
+sector, misclosure and length, lies on the table, and sells by how much the world moved under it,
+at the price of the record you were keeping.
+
+**Not taken, deliberately:** the rare register — one long line in a whole story — belongs to the
+keeper (M139), the last addressee (M133) and the returnee (M147), and writing it here would spend
+it on nobody. Alien speech is untouched (M116's rule stands).
+
+**Still open:** lines are one flat table for every place, so a bleak outpost and a busy hub speak
+the same way — the per-place colouring belongs with the memory of place (M132); the table accepts
+three kinds of object (strip, hold, rumour) and not yet a name; a strip can be sold and shown but
+not yet given to a cartographer or attached to a parcel.
+

@@ -891,6 +891,23 @@ socket out is not wired); the recorder itself is not a purchasable unit, only th
 `26-ui-station` crossed 40 KB with this tab and is now shouting on every build; wear from the hull
 (`12s-wear`) and instrument age run on separate clocks that never speak to each other.
 
+## M134 (0.94.0) — built. The mirror
+
+`11f-mirror`: the transit region (`mirror`, needle `radio`). **Edge:** whatever the ether says
+inside the slope comes back thirty-seven seconds later, word for word (`mirrorEchoArm` from
+`etherTick`, `mirrorEchoTick` in the same tick); leave the system and the echo is gone; a
+dispatcher waves it off one time in three. **Core:** a fifth find kind, `echo`, always present at
+the core and never taken — a thin plate edge-on with one sliding glint. Listening lays two to four
+old reflections over each other: domestic lines (`MIRROR_CORE` — a time signal, a roll-call, a
+forgotten mug) mixed with the ordinary ether, none invented (M116). The first listen gives the
+bearing: a map mark 120–160 sectors out, where nobody flies. `G.mirror` is one bit. Suite
+`91zs-mirror`.
+
+**Still open:** the edge has only the echo — the "atrocious comms" could also degrade the
+receiver's own reading (`instrRead` dev on `radio` is already there, but the ether itself does not
+stutter); the bearing mark cannot be removed or acknowledged; the mirror's lines do not yet enter
+the parrot's memory.
+
 ## M133 (0.93.0) — built. The postal round
 
 `11e-post`: the first themed region. Six links — five who once carried the thing and the last
@@ -965,50 +982,7 @@ dictionary, every turn flag read, 2–7 traces, ≤4 surfaces (counter + table c
 — the four "ground" stories of the design (who feeds the Tin, the shoal, the shell, who turns
 off the light) wait for them; +40 stories. **M131**: links as data, the parrot as carrier, +40.
 
-## M128b (0.87.0–0.88.0) — built. The frame has an address, and the screen is a pane
-
-**Performance, measured.** JS time and raster time profiled apart, then a real Chrome on a ×2.5
-display. The ground cross-section, the cave vault and floor, the sky glow and the storm veil were
-static pictures repainted every frame; they are now chunks and layers (`18c-chunks`). Surface
-23 → 52 fps, cave 42 → 57 at ×2; system, belt, mine, base all ≥50. Resolution is a setting
-(`gfx.res`: auto / 1× / 1.5× / 2×) and auto steps down on its own after three slow seconds.
-`prof()` lives next to `dbg()` so the next regression is found in a minute, not a session.
-
-**The site.** `play.html` left the host raw at 2.1 MB — no `mod_deflate`, openresty does not
-compress. The deploy now gzips on the server and `site/.htaccess` serves the `.gz` with the right
-headers: 678 KB on the wire.
-
-**Wide screens.** The interface was a phone layout stretched edge to edge. A `min-width: 900px`
-block makes every screen a centred glass pane up to 1080 px over the visible world, type one step
-larger, rows denser, tabs gathered left; settings got five tabs. Phones untouched.
-
-**Left open:** canvas-drawn labels (map, surface captions) are still sized for a phone — a global
-UI scale for `fillText` would be the next step; the station's market rows still repeat helper
-captions; the yard row prints the series twice.
-
-## M128 (0.79.0) — built. Speech: a queue of lines, and putting things on the table
-
-Built as **`11b-speech.js`** (the ether, the per-place queue, forms of address, the table, the
-tape as an object) with the table block in the cantina (`27c-ui-hq`), the landing counter in
-`openStation` (`26-ui-station`), persistence in `14-save`, the ether ticked from `frame`
-(`28-loop`), suite **"Речь: очередь, обращение и вещь вместо слов"** (`91zo-speech.js`).
-
-**What was taken from the spec.** The queue (one line spent per landing, tied to the place rather
-than the person, because the world reshuffles people and the place stays), the two everyday
-registers, silence as a first-class entry, the address ladder driven by landings at that place,
-the ether as half the speech in the game, and the table: the player puts a thing down instead of
-choosing words. Tearing the tape (`T`) closes the object debt M123 left — the strip carries its
-sector, misclosure and length, lies on the table, and sells by how much the world moved under it,
-at the price of the record you were keeping.
-
-**Not taken, deliberately:** the rare register — one long line in a whole story — belongs to the
-keeper (M139), the last addressee (M133) and the returnee (M147), and writing it here would spend
-it on nobody. Alien speech is untouched (M116's rule stands).
-
-**Still open:** lines are one flat table for every place, so a bleak outpost and a busy hub speak
-the same way — the per-place colouring belongs with the memory of place (M132); the table accepts
-three kinds of object (strip, hold, rumour) and not yet a name; a strip can be sold and shown but
-not yet given to a cartographer or attached to a parcel.
+M128 and M128b (speech queue, the table, the tape as an object; the frame's address, the performance pass and the wide-screen pane) are in `docs/PLAN-archive.md` — grep `M128`.
 
 What it is, in short. M106–M121 gave the arm one long story told in fragments; this pass gives it
 **many short ones**, and a body to fly them in. The unit is a **region**, not a planet: six to ten

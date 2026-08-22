@@ -8,6 +8,13 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.94.0 — "The mirror" (M134)
+
+A transit region with bad comms: in it, whatever the ether says comes back thirty-seven seconds
+later, word for word. At the core lies the mirror itself — not a source, a surface where old
+reflections have piled up: a time signal, a roll-call, someone's forgotten mug. Listening gives a
+bearing to where it all came from, far beyond anywhere anyone flies.
+
 ## 0.93.0 — "The postal round" (M133)
 
 In the one region where the instruments are simply right, someone hands you a wrapped bundle. Five

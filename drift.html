@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.93.0";
+const VER="0.94.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6475,12 +6475,15 @@ function etherTick(dt){
   if(!G.running||G.mode!=="system")return;
   const rate=(typeof hullRole==="function")?hullRole().ether:1;
   G.etherT=(G.etherT==null?ETHER_EVERY:G.etherT)-dt*rate;
+  if(typeof mirrorEchoTick==="function")mirrorEchoTick();
   if(G.etherT>0)return;
   G.etherT=ETHER_EVERY*(.7+Math.random()*.8);
   const r=rng(hashi(G.sx,G.sy,(Date.now()/60000)|0));
   /* строка истории (11c) — не чаще раза из трёх, остальное остаётся безликим шумом */
   const sl=(typeof storyEtherLine==="function")?storyEtherLine(r):null;
-  logAdd("dim",sl!=null?sl:pick(ETHER,r));
+  const line=sl!=null?sl:pick(ETHER,r);
+  logAdd("dim",line);
+  if(typeof mirrorEchoArm==="function")mirrorEchoArm(line);   /* зеркало (11f) */
 }
 /* ── как к вам обращаются ──
    «пилот» → позывной → имя. Больше ничего не нужно, чтобы игрок почувствовал
@@ -7146,6 +7149,92 @@ function postBlock(){
     r.appendChild(b);
   }
   $body.appendChild(r);
+}
+
+/* ══════════════ зеркало: чужой эфир без источника ══════════════
+   M134. Транзитная область (06c, `mirror`), через которую все летают и
+   которую знают только по скверной связи. На окраине — обрывки чужого эфира
+   без источника: строка приходит, и через тридцать семь секунд приходит ещё
+   раз, слово в слово. Диспетчеры отмахиваются: отражение.
+
+   ЯДРО — НЕ ИСТОЧНИК, А ЗЕРКАЛО. Место, где старые отражения лежат друг на
+   друге десятками, со всех курсов и из всех лет. Всегда тридцать семь секунд.
+   Источник — вне сферы, дальше, чем кто-либо летает; наградой — координата,
+   до которой не долететь.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Фраза не выдумывается (M116): отражение — это строка, которая уже есть
+      в эфире (11b) или в быту ядра ниже. Зеркало ничего не сочиняет.
+   2. Содержание бытовое: сигнал времени, фраза без интонации, перекличка.
+      «Их, наверное, давно нет» доходит только через обыкновенное.
+   3. Зеркало — находка семьи 17b: тот же подход, то же действие. Оно не
+      берётся и не кончается: слушать можно сколько угодно, пеленг — один раз.
+   4. Ничего не хранится, кроме факта, что пеленг уже дан (G.mirror). */
+
+const MIRROR_DELAY=37*60;              // кадров: тридцать семь секунд, всегда
+const MIRROR_CORE=[
+  "…сигнал точного времени. Шесть часов. Шесть часов. Шесть часов.",
+  "…второй на месте. Четвёртый на месте. Пятый. Пятый? Пятый на месте.",
+  "…повторяю для ночной смены: повторяю для ночной смены: повторяю для ночной…",
+  "…температура по жилому ярусу девятнадцать. По складу восемь. Конец сводки.",
+  "…дежурный, принял. Дежурный, принял. Дежурный, принял.",
+  "…кто забыл кружку в рубке — заберите. Кто забыл кружку в рубке…"
+];
+function mirrorAll(){return (G.mirror||(G.mirror={bearing:0}));}
+/* на окраине зеркала: в области, но не в её ядре */
+function mirrorDepthHere(){
+  if(typeof regionAt!=="function")return 0;
+  const R=regionAt(G.sx,G.sy);
+  if(R.theme!=="mirror")return 0;
+  return (R.core.sx===G.sx&&R.core.sy===G.sy)?2:(regionDepth(G.sx,G.sy)>0?1:0);
+}
+/* ── окраина: эхо ──
+   etherTick зовёт это после того, как выдал строку. Если мы на окраине зеркала,
+   строка запомнится и вернётся через тридцать семь секунд. Мир не хранит эхо:
+   улетели — не услышали. */
+function mirrorEchoArm(line){
+  if(mirrorDepthHere()!==1||line==null)return;
+  G.mirrorEcho={line,at:G.t+MIRROR_DELAY,key:G.sys?G.sys.key:""};
+}
+function mirrorEchoTick(){
+  const E=G.mirrorEcho;if(!E)return;
+  if(G.mode!=="system"||!G.sys||G.sys.key!==E.key){G.mirrorEcho=null;return;}
+  if(G.t<E.at)return;
+  G.mirrorEcho=null;
+  logAdd("dim",E.line);
+  /* диспетчер отмахивается — изредка, иначе объяснение забьёт само явление */
+  if(Math.random()<.3)logAdd("dim","…это отражение, не отвечайте. Отражение, говорю. Летите себе.");
+}
+/* ── ядро: зеркало как находка ──
+   В ядре всегда есть одна находка вида `echo`. Слушать — значит получить
+   несколько старых отражений разом; они наслаиваются, поэтому строк две-четыре. */
+function mirrorFind(sys){
+  const R=regionAt(sys.sx,sys.sy);
+  if(R.theme!=="mirror"||R.core.sx!==sys.sx||R.core.sy!==sys.sy)return null;
+  const r=rng(hashi(sys.seed|0,0x3E1,0x5E));
+  const a=r()*TAU,rad=900+r()*900;
+  return {i:9,k:"echo",seed:hashi(sys.seed|0,0x3E1,0x5F),x:Math.cos(a)*rad,y:Math.sin(a)*rad,id:sys.key+":echo"};
+}
+function mirrorListen(f){
+  const r=rng(hashi(f.seed,(G.t/MIRROR_DELAY)|0,0x3E2));
+  const pool=MIRROR_CORE.concat(ETHER);
+  const n=2+Math.floor(r()*3),out=[];
+  for(let i=0;i<n;i++){const l=pick(pool,r);if(out.indexOf(l)<0)out.push(l);}
+  for(const l of out)logAdd("dim",l);
+  const M=mirrorAll();
+  let tail="тридцать семь секунд. Всегда тридцать семь.";
+  if(!M.bearing){
+    /* источник вне сферы: координата, до которой не долететь. Дальность
+       считается от радиуса опасности (sysDanger=1 на 40), втрое дальше */
+    const a2=rng(hashi(f.seed,0xBEA5,13))()*TAU,d=120+Math.round(r()*40);
+    const sx=Math.round(Math.cos(a2)*d),sy=Math.round(Math.sin(a2)*d);
+    M.bearing=1;
+    if(typeof loreMarks==="function")loreMarks().push({sx,sy,id:"mirror"});
+    tell("tech","Пеленг источника: сектор "+sx+":"+sy,
+      "Источник вне сферы\nпеленг: сектор "+sx+":"+sy+"\nметка на карте");
+    tail+="\nИсточник — сектор "+sx+":"+sy+". Туда никто не летает.";
+  }
+  return out.join("\n")+"\n"+tail;
 }
 
 /* ══════════════ бортовой журнал ══════════════ */
@@ -17037,7 +17126,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
-    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,
+    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
@@ -17440,6 +17529,7 @@ function applySave(s){
       take:Math.max(0,p.take|0),hurt:Math.max(0,p.hurt|0),care:Math.max(0,p.care|0)};
   }
   G.odo={lands:Math.max(0,(s.odo&&s.odo.lands)|0),jumps:Math.max(0,(s.odo&&s.odo.jumps)|0)};
+  G.mirror={bearing:(s.mirror&&s.mirror.bearing)?1:0};   /* зеркало (11f) */
   /* почтовый круг (11e): три числа */
   G.post={stage:clamp((s.post&&s.post.stage)|0,0,POST_LINKS.length-1),opened:(s.post&&s.post.opened)?1:0,done:(s.post&&s.post.done)?1:0};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
@@ -19039,7 +19129,8 @@ const FIND_KINDS={
   sos: {ru:"сигнал бедствия",  col:"#ff6b57",act:"ПРИНЯТЬ СИГНАЛ"},
   sat: {ru:"спутник",          col:"#f2b25c",act:"СНЯТЬ ЗАПИСЬ"},
   cont:{ru:"контейнер",        col:"#7fe6d8",act:"ЗАБРАТЬ ГРУЗ"},
-  hulk:{ru:"остов разведчика", col:"#a8b4c0",act:"ОБЫСКАТЬ"}
+  hulk:{ru:"остов разведчика", col:"#a8b4c0",act:"ОБЫСКАТЬ"},
+  echo:{ru:"отражение",        col:"#9fb7ff",act:"СЛУШАТЬ"}    /* зеркало, 11f */
 };
 const FIND_CACHE={};
 function findsIn(sys){
@@ -19062,6 +19153,9 @@ function findsIn(sys){
       x:Math.cos(a)*rad,y:Math.sin(a)*rad,
       id:sys.key+":"+findBucket()+":"+i});
   }
+  /* зеркало (11f): в ядре области лежит само зеркало, вне барабана */
+  const mf=(typeof mirrorFind==="function")?mirrorFind(sys):null;
+  if(mf)list.push(mf);
   FIND_CACHE.key=key;FIND_CACHE.list=list;
   return list;
 }
@@ -19071,6 +19165,7 @@ function findSeen(f){return !!(G.findsSeen&&G.findsSeen[f.id]);}
    Три обычные платят той же монетой, что и весь остальной мир: часть, сырьё,
    топливо, редкость. Спутник платит куском отчёта и пеленгом. */
 function findTake(f){
+  if(f.k==="echo")return mirrorListen(f);     /* зеркало не берётся (11f) */
   if(!G.findsSeen)G.findsSeen={};
   G.findsSeen[f.id]=1;
   const r=rng(hashi(f.seed,0x7A1,3)),d=sysDanger(G.sx,G.sy);
@@ -19197,6 +19292,13 @@ function drawFindsSystem(zx,zy,Z){
       ctx.strokeRect(-17,-10,5,20);ctx.strokeRect(12,-10,5,20);
       ctx.strokeStyle="rgba(96,110,126,.65)";ctx.lineWidth=1.4;
       ctx.beginPath();ctx.moveTo(-12,-2);ctx.lineTo(12,-2);ctx.stroke();
+    }else if(f.k==="echo"){
+      /* зеркало (11f): тонкая пластина ребром, почти ничего — поверхность, а не
+         предмет. Блик один, и он не горит, а скользит */
+      ctx.beginPath();ctx.ellipse(0,0,26,3.2,0,0,TAU);ctx.fill();ctx.stroke();
+      ctx.strokeStyle="rgba(159,183,255,.55)";ctx.lineWidth=.8;
+      const gl=((G.t*.01)%1)*52-26;
+      ctx.beginPath();ctx.moveTo(gl-6,-1.2);ctx.lineTo(gl+6,-1.2);ctx.stroke();
     }else{
       /* остов разведчика: тот же язык, что у остова баржи, но мельче и с
          отломанным крылом */

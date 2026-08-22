@@ -40,12 +40,15 @@ function etherTick(dt){
   if(!G.running||G.mode!=="system")return;
   const rate=(typeof hullRole==="function")?hullRole().ether:1;
   G.etherT=(G.etherT==null?ETHER_EVERY:G.etherT)-dt*rate;
+  if(typeof mirrorEchoTick==="function")mirrorEchoTick();
   if(G.etherT>0)return;
   G.etherT=ETHER_EVERY*(.7+Math.random()*.8);
   const r=rng(hashi(G.sx,G.sy,(Date.now()/60000)|0));
   /* строка истории (11c) — не чаще раза из трёх, остальное остаётся безликим шумом */
   const sl=(typeof storyEtherLine==="function")?storyEtherLine(r):null;
-  logAdd("dim",sl!=null?sl:pick(ETHER,r));
+  const line=sl!=null?sl:pick(ETHER,r);
+  logAdd("dim",line);
+  if(typeof mirrorEchoArm==="function")mirrorEchoArm(line);   /* зеркало (11f) */
 }
 /* ── как к вам обращаются ──
    «пилот» → позывной → имя. Больше ничего не нужно, чтобы игрок почувствовал
