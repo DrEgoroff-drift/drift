@@ -189,17 +189,29 @@
       });
     }
 
-    P.draw=function(ctx,x,y,turn){
+    /* ── собранный шар кэшируется целиком ──
+       Намотка развёртки на шар стоит по одному `drawImage` на вертикальную
+       полоску — на большой планете это под две сотни вызовов, и до сих пор они
+       повторялись каждый кадр, хотя рисовали одно и то же. А поворот здесь
+       медленный: даже у самой быстрой планеты на фоне один пиксель развёртки
+       проходит мимо края за шестнадцатую долю секунды, у крупной — за треть.
+       Поэтому шар собирается в свой холст и пересобирается, только когда
+       поворот сдвинулся хотя бы на три четверти пикселя текстуры. В кадре
+       остаётся один `drawImage`. Вращение при этом не становится ступенчатым:
+       шаг мельче пикселя, увидеть его нечем. */
+    const rs=P.ring?P.ring.width:size;
+    const box=Math.ceil(rs)+2;
+    let disc=null,discCx=null,discTurn=null;
+    const turnStep=.75/P.strip.width;
+
+    function paint(ctx,x,y,turn){
       const S=P.size, sw=P.strip.width, sh=P.strip.height;
-      if(P.ring){
-        const rs=P.ring.width;
-        ctx.drawImage(P.ring,x-rs/2,y-rs/2);   // задняя дуга колец — до диска
-      }
+      if(P.ring)ctx.drawImage(P.ring,x-rs/2,y-rs/2);   // задняя дуга колец — до диска
       ctx.save();
       ctx.beginPath(); ctx.arc(x,y,half,0,TAU); ctx.clip();
       for(let i=0;i<cols.length;i++){
         const c=cols[i];
-        let u=((c.u+turn)%1+1)%1*sw;
+        const u=((c.u+turn)%1+1)%1*sw;
         /* полоска может перейти через шов развёртки — тогда рисуем в два приёма */
         const over=u+c.su-sw;
         if(over>0){
@@ -217,12 +229,27 @@
       ctx.drawImage(P.rim,x-half,y-half,S,S);  // ободок атмосферы
       ctx.globalCompositeOperation=op;
       if(P.ring){
-        const rs=P.ring.width;
         ctx.save();
         ctx.beginPath(); ctx.rect(x-rs/2,y,rs,rs/2); ctx.clip();
         ctx.drawImage(P.ring,x-rs/2,y-rs/2);   // передняя дуга — поверх диска
         ctx.restore();
       }
+    }
+
+    P.draw=function(ctx,x,y,turn){
+      if(!disc){
+        disc=document.createElement("canvas");
+        disc.width=disc.height=box;
+        discCx=disc.getContext("2d");
+      }
+      if(discTurn===null||Math.abs(turn-discTurn)>=turnStep){
+        discCx.clearRect(0,0,box,box);
+        paint(discCx,box/2,box/2,turn);
+        discTurn=turn;
+      }
+      /* по целым пикселям: доля пикселя заставила бы пересэмплировать весь диск
+         и мылила бы кромку, а полпикселя на плывущем фоне не разглядеть */
+      ctx.drawImage(disc,Math.round(x-box/2),Math.round(y-box/2));
     };
     return P;
   };

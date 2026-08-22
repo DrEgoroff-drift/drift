@@ -173,13 +173,17 @@
     ctx.drawImage(neb,px*6,-scroll*.02+py*5,W,H);
     ctx.globalAlpha=1;
 
+    /* Цвет у всех звёзд один и тот же, а присваивался он пятьсот раз за кадр:
+       холст на каждое присваивание разбирает строку CSS-цвета заново. Выносим
+       наружу — внутри остаётся только прозрачность, а это число. */
+    ctx.fillStyle="#dfeef5";
+    const dimK=1-dim*.8;
     for(const s of stars){                        // мерцание размером, не яркостью
       s.x-=s.v*W*dt*.96;
       if(s.x<-2)s.x=W+2;
       const tw=1+Math.sin(t*1.6+s.f)*.2;
       const y=((s.y-scroll*s.v*9)%H+H)%H;
-      ctx.globalAlpha=s.a*(1-dim*.8);
-      ctx.fillStyle="#dfeef5";
+      ctx.globalAlpha=s.a*dimK;
       ctx.fillRect(s.x+px*(4+s.d*7),y+py*(3+s.d*5),s.s*tw,s.s*tw);
     }
 

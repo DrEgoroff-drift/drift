@@ -717,7 +717,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.84.0";
+const VER="0.85.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -5107,24 +5107,15 @@ function planetCols(r,sw){
   }
   planetCols.key=key;planetCols.sw=sw;planetCols.v=cols;return cols;
 }
-/* ── планета в кадре ── */
-function planetDraw(p,x,y,r){
-  /* Уровень — по экранному размеру: развёртка должна быть хотя бы вдвое шире
-     видимого полушария, иначе диск мылится. Свет считается отдельно и дёшево
-     (в нём нет шума), поэтому его берём сразу нужной подробности — именно он
-     рисует край диска, и его лесенку видно первой. */
-  const lvl=r>150?2:(r>60?1:0);
-  const S=planetStrip(p,lvl);
-  /* Свет привязан к тому уровню, который РЕАЛЬНО рисуется, а не к желаемому:
-     иначе первый же кадр у большой планеты печёт накладку 256×256 ради шара,
-     на котором ещё нет ни одной детали. Подробный свет приходит вместе с
-     подробной развёрткой, одним кадром. */
-  const L=planetLight(p,S?Math.min(lvl,p.stripLvl):0);
-  planetStripTick();
+/* ── шар в кадре ──
+   Полоски — единственный известный способ намотать развёртку на шар в canvas
+   2D, но их много: до двух сотен `drawImage` на планету. Само по себе это
+   работает, и всё же это пересборка одной и той же картинки шестьдесят раз в
+   секунду. */
+function planetPaint(p,x,y,r,S,L,turn){
   const d=r*2;
   if(S){
     const sw=S.width,sh=S.height;
-    const turn=planetSpin(p)/TAU;
     ctx.save();
     ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.clip();
     const cols=planetCols(r,sw);
@@ -5149,11 +5140,62 @@ function planetDraw(p,x,y,r){
     ctx.fillStyle="rgb("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+")";
     ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
   }
-  ctx.drawImage(L.sh,x-r,y-r,d,d);
+  ctx.drawImage(L.sh,x-r,y-r,d,d);   // тень
   const op=ctx.globalCompositeOperation;
   ctx.globalCompositeOperation="lighter";
-  ctx.drawImage(L.rim,x-r,y-r,d,d);
+  ctx.drawImage(L.rim,x-r,y-r,d,d);  // ободок атмосферы
   ctx.globalCompositeOperation=op;
+}
+/* ── планета в кадре ──
+   Собранный шар кладётся в свой холст и дальше только КЛАДЁТСЯ на экран — один
+   вызов вместо двух сотен. Пересобирать его надо гораздо реже, чем кажется, и
+   вот почему:
+
+   · экранный радиус планеты равен мировому, умноженному на зум, и от того,
+     подлетает игрок или нет, не зависит вовсе — в системном виде камера
+     смотрит сверху. Зум же меняется только от руки: кнопки, колесо, щипок.
+     Между этими нажатиями радиус постоянен;
+   · поворот непрерывен, но медленен: сутки здесь 52–120 секунд, то есть один
+     пиксель развёртки проходит мимо края за 100–230 мс. Пересобирать шар чаще,
+     чем сдвинулся хотя бы один пиксель текстуры, — значит рисовать ровно ту же
+     картинку заново.
+
+   Отсюда правило: пересобираем, когда поворот сдвинулся на три четверти
+   пикселя развёртки, когда сменился радиус или когда доспела подробная
+   развёртка. На практике это раз в десяток кадров вместо каждого. Вращение при
+   этом остаётся непрерывным — шаг мельче пикселя, его нечем увидеть. */
+function planetDraw(p,x,y,r){
+  /* Уровень — по экранному размеру: развёртка должна быть хотя бы вдвое шире
+     видимого полушария, иначе диск мылится. Свет считается отдельно и дёшево
+     (в нём нет шума), поэтому его берём под тот уровень, который реально
+     рисуется, — он и вычерчивает край диска. */
+  const lvl=r>150?2:(r>60?1:0);
+  const S=planetStrip(p,lvl);
+  planetStripTick();
+  const L=planetLight(p,S?Math.min(lvl,p.stripLvl):0);
+  const turn=planetSpin(p)/TAU;
+  const rr=Math.ceil(r)+1, side=rr*2;
+  /* очень мелкую планету кэшировать незачем: холст на неё стоит дороже, чем
+     сама отрисовка, а таких в системе большинство */
+  if(r<14){planetPaint(p,x,y,r,S,L,turn);return;}
+  const step=S?.75/S.width:1;         // три четверти пикселя развёртки, в долях оборота
+  if(!p.disc||p.discSide!==side){
+    p.disc=document.createElement("canvas");
+    p.disc.width=p.disc.height=side;
+    p.discCx=p.disc.getContext("2d");
+    p.discTurn=null;p.discSide=side;
+  }
+  if(p.discTurn===null||p.discLvl!==p.stripLvl||Math.abs(turn-p.discTurn)>=step){
+    p.discCx.clearRect(0,0,side,side);
+    const prev=ctx;ctx=p.discCx;
+    planetPaint(p,rr,rr,r,S,L,turn);
+    ctx=prev;
+    p.discTurn=turn;p.discLvl=p.stripLvl;
+  }
+  /* кладём по целым пикселям: доля пикселя заставила бы холст пересэмплировать
+     весь диск заново и мылила бы кромку — а так это точная копия. Полпикселя
+     смещения на теле, которое и так плывёт по орбите, увидеть нечем. */
+  ctx.drawImage(p.disc,Math.round(x-rr),Math.round(y-rr));
 }
 
 /* ══════════════ рельеф ══════════════ */
@@ -16291,6 +16333,41 @@ function drawExhaust(zx,zy,Z,thr){
   }
   ctx.restore();
 }
+/* ── дальнее свечение звезды: печём один раз, дальше растягиваем ──
+   Корона — это девять десятых всей краски, которую звезда кладёт на экран.
+   Считаем по площадям в звёздных радиусах: корона (диск 7R) — 154 R², гало —
+   12, ядро — 2, лучи и протуберанцы вместе — около 5. То есть при близком
+   пролёте радиальным градиентом заливался ВЕСЬ экран, заново каждый кадр, а
+   градиент в canvas 2D считается для каждого пикселя отдельно. Стоит отлететь —
+   светило уходит за край, растеризатор его отсекает, и всё снова летает. Ровно
+   этот симптом и был описан.
+
+   Форма короны не меняется никогда: она зависит только от цвета и накала.
+   Поэтому она печётся один раз в спрайт единичного радиуса и дальше только
+   растягивается — картинка та же, но вместо расчёта градиента на каждый пиксель
+   остаётся выборка из готового изображения, а это работа другого порядка.
+   Растягивание тут ничего не портит: корона — гладкий градиент, а бильинейная
+   выборка гладкую функцию и восстанавливает.
+
+   Всё остальное — ядро, протуберанцы, лучи — рисуется как рисовалось: оно
+   мелкое, шевелится и стоит копейки. */
+const GLOW_SP=512;
+const GLOW_CACHE={};
+function glowSprite(key,build){
+  let cv=GLOW_CACHE[key];
+  if(cv)return cv;
+  cv=document.createElement("canvas");cv.width=cv.height=GLOW_SP;
+  const cx=cv.getContext("2d");
+  /* рисуем в единичных координатах: центр в середине, радиус 1 — у края.
+     Дальше спрайт кладётся на любой размер одним drawImage. */
+  const prev=ctx;ctx=cx;
+  ctx.translate(GLOW_SP/2,GLOW_SP/2);ctx.scale(GLOW_SP/2,GLOW_SP/2);
+  build();
+  ctx=prev;
+  GLOW_CACHE[key]=cv;return cv;
+}
+/* положить спрайт кругом радиуса r с центром в (x,y) */
+function glowBlit(sp,x,y,r){ctx.drawImage(sp,x-r,y-r,r*2,r*2);}
 /* ── светило ──
    один и тот же шар для карлика и для гиганта — потеря почти бесплатного
    разнообразия: класс звезды уже лежит в данных, его надо только показать */
@@ -16325,11 +16402,15 @@ function drawStarSingle(ox,oy,R,col,heat){
     ctx.closePath();ctx.fill();
   }
   ctx.restore();
-  const g=ctx.createRadialGradient(ox,oy,0,ox,oy,R*7);
-  g.addColorStop(0,col);g.addColorStop(.09,col);
-  g.addColorStop(.3,"rgba("+c.join(",")+","+(.16*heat).toFixed(3)+")");
-  g.addColorStop(1,"rgba(0,0,0,0)");
-  ctx.fillStyle=g;ctx.beginPath();ctx.arc(ox,oy,R*7,0,TAU);ctx.fill();
+  /* корона — в спрайт: рисунок один и тот же всегда, а красит весь экран */
+  const CO=glowSprite("cor|"+col+"|"+heat,()=>{
+    const g=ctx.createRadialGradient(0,0,0,0,0,1);
+    g.addColorStop(0,col);g.addColorStop(.09,col);
+    g.addColorStop(.3,"rgba("+c.join(",")+","+(.16*heat).toFixed(3)+")");
+    g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,1,0,TAU);ctx.fill();
+  });
+  glowBlit(CO,ox,oy,R*7);
   const core=ctx.createRadialGradient(ox,oy,0,ox,oy,R*.85);
   core.addColorStop(0,"rgba(255,253,247,"+(.82+.07*Math.sin(G.t*.04)).toFixed(2)+")");
   core.addColorStop(.5,"rgba("+[0,1,2].map(i=>Math.round(lerp(c[i],255,.6))).join(",")+",.42)");
@@ -16353,9 +16434,16 @@ function drawStarSingle(ox,oy,R,col,heat){
     ctx.closePath();ctx.fill();
   }
   /* ореол вокруг ядра: тонкое кольцо читалось резкой окружностью, поэтому оно
-     широкое и почти прозрачное — так это гало, а не обруч */
-  ctx.strokeStyle="rgba("+c.join(",")+",.028)";ctx.lineWidth=R*.85;
-  ctx.beginPath();ctx.arc(0,0,R*2.3,0,TAU);ctx.stroke();
+     широкое и почти прозрачное — так это гало, а не обруч.
+     Рисунок его постоянен, а полоса шириной в 0.85R по окружности радиуса 2.3R
+     закрашивает добрый десяток квадратных звёздных радиусов, поэтому кольцо
+     тоже уходит в спрайт. Спрайт складывается тем же «lighter», что и раньше,
+     только один раз при выпечке, а не на каждый пиксель каждого кадра. */
+  const HA=glowSprite("halo|"+col,()=>{
+    ctx.strokeStyle="rgba("+c.join(",")+",.028)";ctx.lineWidth=.85/2.725;
+    ctx.beginPath();ctx.arc(0,0,2.3/2.725,0,TAU);ctx.stroke();
+  });
+  ctx.drawImage(HA,-R*2.725,-R*2.725,R*5.45,R*5.45);
   ctx.restore();
 }
 /* нейтронная: крошечная, зато с двумя лучами и кольцом сброшенного вещества */
@@ -16372,23 +16460,32 @@ function drawStarNeutron(ox,oy,R,st){
   g.addColorStop(1,"rgba(150,200,255,0)");
   ctx.fillStyle=g;ctx.fillRect(-R*.22,-L,R*.44,L*2);
   ctx.restore();
-  const cg=ctx.createRadialGradient(ox,oy,0,ox,oy,R*2.6);
-  cg.addColorStop(0,"rgba(255,255,255,.95)");
-  cg.addColorStop(.18,"rgba(190,225,255,.5)");
-  cg.addColorStop(1,"rgba(120,180,255,0)");
-  ctx.fillStyle=cg;ctx.beginPath();ctx.arc(ox,oy,R*2.6,0,TAU);ctx.fill();
+  /* ореол нейтронной — тоже постоянный рисунок, тоже в спрайт */
+  const NC=glowSprite("neutron",()=>{
+    const cg=ctx.createRadialGradient(0,0,0,0,0,1);
+    cg.addColorStop(0,"rgba(255,255,255,.95)");
+    cg.addColorStop(.18,"rgba(190,225,255,.5)");
+    cg.addColorStop(1,"rgba(120,180,255,0)");
+    ctx.fillStyle=cg;ctx.beginPath();ctx.arc(0,0,1,0,TAU);ctx.fill();
+  });
+  glowBlit(NC,ox,oy,R*2.6);
   ctx.strokeStyle="rgba(170,210,255,.16)";ctx.lineWidth=R*.18;
   ctx.beginPath();ctx.ellipse(ox,oy,R*3.4,R*1.1,.4,0,TAU);ctx.stroke();
 }
 /* чёрная дыра в середине системы: тот же приём, что в небе планет, но крупнее
    и с втягивающимся газом */
 function drawStarHole(ox,oy,R,st){
-  const lg=ctx.createRadialGradient(ox,oy,R*.8,ox,oy,R*6);
-  lg.addColorStop(0,"rgba(0,0,0,.96)");
-  lg.addColorStop(.22,"rgba(6,4,12,.6)");
-  lg.addColorStop(.55,"rgba(160,150,255,.06)");
-  lg.addColorStop(1,"rgba(0,0,0,0)");
-  ctx.fillStyle=lg;ctx.beginPath();ctx.arc(ox,oy,R*6,0,TAU);ctx.fill();
+  /* линза вокруг дыры — тот же приём, что с короной: рисунок постоянный,
+     а диск шестикратного радиуса при близком пролёте кроет весь экран */
+  const HL=glowSprite("hole",()=>{
+    const lg=ctx.createRadialGradient(0,0,.1333,0,0,1);
+    lg.addColorStop(0,"rgba(0,0,0,.96)");
+    lg.addColorStop(.22,"rgba(6,4,12,.6)");
+    lg.addColorStop(.55,"rgba(160,150,255,.06)");
+    lg.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=lg;ctx.beginPath();ctx.arc(0,0,1,0,TAU);ctx.fill();
+  });
+  glowBlit(HL,ox,oy,R*6);
   ctx.fillStyle="#000";ctx.beginPath();ctx.arc(ox,oy,R*.8,0,TAU);ctx.fill();
   ctx.save();ctx.translate(ox,oy);ctx.rotate(-.25);
   ctx.globalCompositeOperation="lighter";

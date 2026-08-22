@@ -8,6 +8,46 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.85.0 — "Stop repainting what has not changed"
+
+Reported precisely: it stutters when you fly past the star, and clears up as you leave. That
+symptom names its own cause. A star's screen size depends on zoom, not on distance, so flying
+away does not shrink it — it moves it off the edge, where the rasterizer discards it. Whatever
+costs the frame is therefore something the star paints across the whole screen.
+
+It was the corona. Measured by area, in units of the star's own radius squared: corona 154,
+halo 12, core 2, flares and prominences about 5 between them. The corona is a disc of radius 7R
+filled with a **radial gradient**, and a gradient is evaluated per pixel — at a close pass that is
+the entire 4.5-megapixel canvas, recomputed sixty times a second. Its shape never changes; it
+depends only on colour and heat. So it is now baked once into a unit-radius sprite and stretched:
+same picture, but a texture sample instead of a per-pixel gradient. Checked against the old path
+pixel by pixel over a 980-px radius — worst channel difference **2 of 255**, average 0.28, which
+is gradient dithering noise. The halo ring got the same treatment, as did the black hole's lens
+and the neutron star's aureole.
+
+**Planets are assembled once, not sixty times a second.** Wrapping the surface map onto a sphere
+costs one `drawImage` per vertical strip — up to two hundred per planet — and it was rebuilding an
+identical picture every frame. Two facts make that unnecessary: a planet's screen radius is its
+world radius times zoom and has nothing to do with the ship's approach, and zoom only changes when
+the player changes it; and rotation is slow — a day here is 52 to 120 seconds, so one texel of the
+map takes 100–230 ms to pass the limb. The assembled disc is now kept in its own canvas and
+rebuilt only when rotation has advanced three quarters of a texel, when the radius changes, or when
+a sharper map finishes baking. In the frame there is one blit, placed on whole pixels so the disc
+is copied rather than resampled. Rotation stays continuous — the step is smaller than a pixel.
+
+System view, per frame: **`drawImage` 200+ → 5**.
+
+The same disc cache went into the site's background, where three planets were re-projected every
+frame. And its starfield stopped assigning the same colour five hundred times a frame — the colour
+is identical for every star, only the alpha varies, and alpha is a number rather than a string the
+canvas must parse. Site background per frame: **CPU 1.37 → 0.40 ms, `drawImage` 232 → 21,
+`fillStyle` assignments 501 → 2**.
+
+Nothing was made simpler to look at: no resolution was lowered, no layer dropped, no effect
+disabled.
+
+---
+
 
 ## 0.84.0 — "The planets turn in the game too, and nothing is baked in one go"
 
