@@ -8,6 +8,13 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.100.2 — "The tunnel" (M138)
+
+The block of rooms sits inside the mountain now, not under the plain: the grid starts two
+cells to the right of the gate and one level above the ground line, so rock lies over the top
+row. From the gate at the foot of the slope a tunnel at plain level runs to the floor of the
+top row, with the corridor tie along it. Floor ties start at the rooms, not in the rock.
+
 ## 0.100.1 — "Into the mountain" (M137)
 
 The base read as dug under a plain: two humps a room and a half high over the top row. In

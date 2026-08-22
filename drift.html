@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.100.1";
+const VER="0.100.2";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -26349,6 +26349,9 @@ battery(x0,y0,w,h,cx,fy,lit,seed,B,P){
    бур уходит в породу, в жилом горит свет. Ходьба, свет и камера — те же, что
    в пещере, поэтому сцена стоит дёшево. */
 const BASE_COLS=5, BASE_ROWS=4, BASE_ROWS_DEEP=5, BCELL_W=150, BCELL_H=104;
+/* Начало сетки отсеков (M138): блок сидит В ГОРЕ — правее ворот на две ячейки
+   и на ярус выше уровня равнины (150). От ворот к нему ведёт тоннель */
+const BASE_OX=390, BASE_OY=46, BASE_GY=150, BASE_GATE_X=105;
 /* «Второй ярус» смотрителя: базе разрешён ещё ряд вниз. Однажды вскрытый ярус
    остаётся у базы навсегда — иначе расчёт со смотрителем стирал бы построенное
    вместе с ним. Поэтому число рядов живёт на самой базе, а перк только его даёт. */
@@ -26423,8 +26426,8 @@ function exitBase(){
   G.base=null;G.mode="surface";
   say("Выход на поверхность");
 }
-function cellX(c){return 90+c*BCELL_W+BCELL_W/2;}
-function cellY(r){return 150+r*BCELL_H+BCELL_H/2;}
+function cellX(c){return BASE_OX+c*BCELL_W+BCELL_W/2;}
+function cellY(r){return BASE_OY+r*BCELL_H+BCELL_H/2;}
 function baseCell(B,c,r){return B.cells[r*BASE_COLS+c];}
 function baseSet(B,c,r,v){B.cells[r*BASE_COLS+c]=v;}
 /* ══════════════ энергия и соседство ══════════════ */
@@ -26743,7 +26746,7 @@ function baseRoomPath(B,X,Y,pad){
       const has=c<BASE_COLS&&!!baseCell(B,c,r);
       if(has&&run<0)run=c;
       if(!has&&run>=0){
-        P.rect(X(90+run*BCELL_W)+pad,Y(150+r*BCELL_H)+pad,
+        P.rect(X(BASE_OX+run*BCELL_W)+pad,Y(BASE_OY+r*BCELL_H)+pad,
                (c-run)*BCELL_W-pad*2,BCELL_H-pad*2);
         run=-1;
       }
@@ -26755,12 +26758,15 @@ function baseRoomPath(B,X,Y,pad){
   let deep=1;
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++)if(baseCell(B,c,r))deep=Math.max(deep,r+1);
   const lx=X(cellX(Math.floor(BASE_COLS/2)));
-  P.rect(lx-13,Y(150),26,deep*BCELL_H);
+  P.rect(lx-13,Y(BASE_OY),26,deep*BCELL_H);
+  /* тоннель от ворот на равнине к верхнему ярусу: ворота — на уровне земли,
+     пол верхнего яруса — тоже, между ними прорублен ход */
+  P.rect(X(BASE_GATE_X),Y(BASE_GY-40),BASE_OX-BASE_GATE_X,40);
   return P;
 }
 function drawBase(){
   const S=G.base,B=S.B,P=basePower(B);
-  const camx=clamp(S.x-W/2,-40,BASE_COLS*BCELL_W+180-W);
+  const camx=clamp(S.x-W/2,-40,BASE_OX+BASE_COLS*BCELL_W+90-W);
   const camy=clamp(S.y-H/2,-120,baseRows(B)*BCELL_H+260-H);
   const X=x=>x-camx, Y=y=>y-camy;
   const pl=G.sys.planets[B.idx];
@@ -26828,12 +26834,12 @@ function drawBase(){
      верха, равнина остаётся слева, и в гору ЗАХОДЯТ сбоку — ворота врезаны в
      её подошву. Профиль: с равнины склон поднимается к вершине над серединой
      базы и дальше вправо держится плато. Высота — до самого верха кадра. */
-  const bMidX=X(90+BASE_COLS*BCELL_W*.5);          // середина базы на экране
+  const bMidX=X(BASE_OX+BASE_COLS*BCELL_W*.5);          // середина базы на экране
   const bHalf=BCELL_W*BASE_COLS*.62;
   const bLeft=X(cellX(0))-BCELL_W*.55;
-  const mtnX0=bLeft-110, mtnTop=Math.max(40,gy-22);
+  const mtnX0=X(BASE_GATE_X)-95, mtnTop=Math.max(40,gy-22);
   const humpAt=x=>{
-    const u=clamp((x-mtnX0)/(bHalf*1.15),0,1), s=u*u*(3-2*u);
+    const u=clamp((x-mtnX0)/(bHalf*.95),0,1), s=u*u*(3-2*u);
     const plateau=clamp((x-bMidX)/(bHalf*2.2),0,1)*14;
     return s*mtnTop-plateau;
   };
@@ -26850,7 +26856,7 @@ function drawBase(){
      землёй читаются как трава и небо (так и вышло с первого раза). Берём тот же
      цвет, но уведённый в тёмное и обесцвеченный — узнаваемо и при этом подземно */
   const rc=i=>mixc(pal[Math.min(i,pal.length-1)],[26,19,14],.66);
-  const rock=ctx.createLinearGradient(0,gy-BCELL_H*2.1,0,Y(150+baseRows(B)*BCELL_H+120));
+  const rock=ctx.createLinearGradient(0,gy-BCELL_H*2.1,0,Y(BASE_OY+baseRows(B)*BCELL_H+120));
   /* холм начинается выше грунта и освещён небом: одной тёмной заливкой он
      читался дырой в небе, а не горой (G9) */
   rock.addColorStop(0,rgba(mixc(rc(0),sky[0],.35),1));
@@ -26970,7 +26976,7 @@ function drawBase(){
     {
       /* ворота — в ПОДОШВЕ горы слева, там, где в неё заходят с равнины;
          от них коридор верхнего яруса ведёт к стволу лифта */
-      const gx=bLeft-30, gwd=68, ghh=40;
+      const gx=X(BASE_GATE_X)+34, gwd=68, ghh=40;
       const gyy=gy-2;
       ctx.fillStyle="rgba(24,27,33,.98)";
       ctx.beginPath();
@@ -27021,7 +27027,7 @@ function drawBase(){
      сразу видит, где живут, а где просто камень. Заливка выработки теперь не
      чернее ночи, а тёплый полумрак, поверх которого лягут лампы отсеков;
      сама порода вокруг притемнена отдельно. */
-  const bgi=ctx.createLinearGradient(0,Y(140),0,Y(150+baseRows(B)*BCELL_H));
+  const bgi=ctx.createLinearGradient(0,Y(BASE_OY-10),0,Y(BASE_OY+baseRows(B)*BCELL_H));
   bgi.addColorStop(0,"rgb("+[26,30,38].join(",")+")");
   bgi.addColorStop(1,"rgb("+[14,17,23].join(",")+")");
   ctx.fillStyle=bgi;ctx.fill(RP);
@@ -27052,7 +27058,7 @@ function drawBase(){
   for(let rr=0;rr<baseRows(B);rr++)for(let cc=0;cc<BASE_COLS;cc++)
     if(baseCell(B,cc,rr))deepest=Math.max(deepest,rr+1);
   const lx=X(cellX(Math.floor(BASE_COLS/2)));
-  const shaftB=Y(150+Math.max(1,deepest)*BCELL_H), shaftT=Y(150);
+  const shaftB=Y(BASE_OY+Math.max(1,deepest)*BCELL_H), shaftT=Y(BASE_OY);
   const LW=13;
   const sg=ctx.createLinearGradient(lx-LW,0,lx+LW,0);
   sg.addColorStop(0,"rgba(30,26,20,.95)");
@@ -27066,7 +27072,7 @@ function drawBase(){
   ctx.moveTo(lx+LW,shaftT);ctx.lineTo(lx+LW,shaftB);ctx.stroke();
   /* площадка на каждом ярусе: по ним видно, что колонна — не труба */
   for(let r=0;r<=Math.max(1,deepest);r++){
-    const y=Y(150+r*BCELL_H);
+    const y=Y(BASE_OY+r*BCELL_H);
     ctx.fillStyle="rgba(20,18,14,.9)";ctx.fillRect(lx-LW,y-3,LW*2,4);
     ctx.fillStyle="rgba(255,206,140,"+(.16+lit*.24).toFixed(2)+")";
     ctx.fillRect(lx-LW,y-3,LW*2,1.2);
@@ -27084,9 +27090,9 @@ function drawBase(){
     for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++)
       if(baseCell(B,c,r)){gc0=Math.min(gc0,c);gc1=Math.max(gc1,c);}
     if(gc1>=0){
-      const x0=X(90+gc0*BCELL_W)-6, x1=X(90+(gc1+1)*BCELL_W)+6;
+      const x0=X(BASE_OX+gc0*BCELL_W)-6, x1=X(BASE_OX+(gc1+1)*BCELL_W)+6;
       for(let r=1;r<=Math.max(1,deepest);r++){
-        const y=Y(150+r*BCELL_H);
+        const y=Y(BASE_OY+r*BCELL_H);
         ctx.fillStyle="rgba(10,12,16,.92)";ctx.fillRect(x0,y-7,x1-x0,9);
         ctx.fillStyle="rgba(150,164,180,"+(.10+lit*.14).toFixed(2)+")";
         ctx.fillRect(x0,y-7,x1-x0,1.4);
@@ -27096,7 +27102,7 @@ function drawBase(){
   }
   /* ── модули ── */
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
-    const x=X(90+c*BCELL_W),y=Y(150+r*BCELL_H);
+    const x=X(BASE_OX+c*BCELL_W),y=Y(BASE_OY+r*BCELL_H);
     if(x>W+40||x+BCELL_W<-40)continue;
     const cell=baseCell(B,c,r);
     if(!cell)continue;                       // пустая клетка — просто порода
@@ -27117,7 +27123,7 @@ function drawBase(){
   for(let r=0;r<baseRows(B);r++)for(let c=0;c<=BASE_COLS;c++){
     const a=c>0?baseCell(B,c-1,r):null, b=c<BASE_COLS?baseCell(B,c,r):null;
     if(!a&&!b)continue;
-    const x=X(90+c*BCELL_W), y0=Y(150+r*BCELL_H), y1=Y(150+(r+1)*BCELL_H);
+    const x=X(BASE_OX+c*BCELL_W), y0=Y(BASE_OY+r*BCELL_H), y1=Y(BASE_OY+(r+1)*BCELL_H);
     if(x<-20||x>W+20)continue;
     const wdt=(a&&b)?5:7;                       // внешняя стена толще внутренней
     ctx.fillStyle="rgba(9,11,15,.95)";
@@ -27152,16 +27158,18 @@ function drawBase(){
     for(let c=0;c<BASE_COLS;c++)if(baseCell(B,c,r)){if(c0<0)c0=c;c1=c;}
     if(c0<0)continue;
     deepest=r+1;
-    const y=Y(150+r*BCELL_H+BCELL_H*.78);
+    const y=Y(BASE_OY+r*BCELL_H+BCELL_H*.78);
     ctx.beginPath();
-    ctx.moveTo(X(96+c0*BCELL_W),y);ctx.lineTo(X(90+(c1+1)*BCELL_W-6),y);ctx.stroke();
+    ctx.moveTo(X(BASE_OX+6+c0*BCELL_W),y);ctx.lineTo(X(BASE_OX+(c1+1)*BCELL_W-6),y);ctx.stroke();
+    /* и по полу тоннеля — от ворот до верхнего яруса */
+    if(r===0){ctx.beginPath();ctx.moveTo(X(BASE_GATE_X+70),Y(BASE_GY-6));ctx.lineTo(X(BASE_OX),Y(BASE_GY-6));ctx.stroke();}
   }
   /* астронавт — тот же силуэт, что на поверхности и в шахте */
   ctx.save();ctx.translate(X(S.x),Y(S.y)+26);ctx.scale(.9,.9);
   drawAstronaut({phase:S.walkPhase,amp:Math.abs(cellX(S.cur)-S.x)>2?1:0,walk:false,air:false});
   ctx.restore();
   /* место под застройку: не рамка на каждой клетке, а метка только на выбранной */
-  const sx=X(90+S.cur*BCELL_W),sy=Y(150+S.row*BCELL_H);
+  const sx=X(BASE_OX+S.cur*BCELL_W),sy=Y(BASE_OY+S.row*BCELL_H);
   const on=Math.sin(G.t*.12)>0;
   ctx.strokeStyle=on?"rgba(127,230,216,.95)":"rgba(127,230,216,.4)";
   ctx.lineWidth=2;

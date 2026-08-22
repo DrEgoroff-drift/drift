@@ -1020,6 +1020,13 @@ receiver's own reading (`instrRead` dev on `radio` is already there, but the eth
 stutter); the bearing mark cannot be removed or acknowledged; the mirror's lines do not yet enter
 the parrot's memory.
 
+## M138 (0.100.2) — built. The tunnel
+
+The cell grid moved into the mountain (`BASE_OX`/`BASE_OY` in `21a-mode-base`: two cells to the
+right of the gate, one level above the plain) and a 40 px tunnel from the gate at plain level
+runs to the floor of the top row; `BASE_GY` is the plain, `BASE_GATE_X` the gate. **Still open:**
+the gate reads as part of the tunnel, not as a door; the tunnel has no light of its own.
+
 ## M137 (0.100.1) — built. Into the mountain
 
 Base cross-section: mountain profile as a ramp-and-plateau to the top of the frame, gate in
