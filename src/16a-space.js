@@ -198,6 +198,41 @@ function drawExhaust(zx,zy,Z,thr){
   }
   ctx.restore();
 }
+/* ── дальнее свечение звезды: печём один раз, дальше растягиваем ──
+   Корона — это девять десятых всей краски, которую звезда кладёт на экран.
+   Считаем по площадям в звёздных радиусах: корона (диск 7R) — 154 R², гало —
+   12, ядро — 2, лучи и протуберанцы вместе — около 5. То есть при близком
+   пролёте радиальным градиентом заливался ВЕСЬ экран, заново каждый кадр, а
+   градиент в canvas 2D считается для каждого пикселя отдельно. Стоит отлететь —
+   светило уходит за край, растеризатор его отсекает, и всё снова летает. Ровно
+   этот симптом и был описан.
+
+   Форма короны не меняется никогда: она зависит только от цвета и накала.
+   Поэтому она печётся один раз в спрайт единичного радиуса и дальше только
+   растягивается — картинка та же, но вместо расчёта градиента на каждый пиксель
+   остаётся выборка из готового изображения, а это работа другого порядка.
+   Растягивание тут ничего не портит: корона — гладкий градиент, а бильинейная
+   выборка гладкую функцию и восстанавливает.
+
+   Всё остальное — ядро, протуберанцы, лучи — рисуется как рисовалось: оно
+   мелкое, шевелится и стоит копейки. */
+const GLOW_SP=512;
+const GLOW_CACHE={};
+function glowSprite(key,build){
+  let cv=GLOW_CACHE[key];
+  if(cv)return cv;
+  cv=document.createElement("canvas");cv.width=cv.height=GLOW_SP;
+  const cx=cv.getContext("2d");
+  /* рисуем в единичных координатах: центр в середине, радиус 1 — у края.
+     Дальше спрайт кладётся на любой размер одним drawImage. */
+  const prev=ctx;ctx=cx;
+  ctx.translate(GLOW_SP/2,GLOW_SP/2);ctx.scale(GLOW_SP/2,GLOW_SP/2);
+  build();
+  ctx=prev;
+  GLOW_CACHE[key]=cv;return cv;
+}
+/* положить спрайт кругом радиуса r с центром в (x,y) */
+function glowBlit(sp,x,y,r){ctx.drawImage(sp,x-r,y-r,r*2,r*2);}
 /* ── светило ──
    один и тот же шар для карлика и для гиганта — потеря почти бесплатного
    разнообразия: класс звезды уже лежит в данных, его надо только показать */
@@ -232,11 +267,15 @@ function drawStarSingle(ox,oy,R,col,heat){
     ctx.closePath();ctx.fill();
   }
   ctx.restore();
-  const g=ctx.createRadialGradient(ox,oy,0,ox,oy,R*7);
-  g.addColorStop(0,col);g.addColorStop(.09,col);
-  g.addColorStop(.3,"rgba("+c.join(",")+","+(.16*heat).toFixed(3)+")");
-  g.addColorStop(1,"rgba(0,0,0,0)");
-  ctx.fillStyle=g;ctx.beginPath();ctx.arc(ox,oy,R*7,0,TAU);ctx.fill();
+  /* корона — в спрайт: рисунок один и тот же всегда, а красит весь экран */
+  const CO=glowSprite("cor|"+col+"|"+heat,()=>{
+    const g=ctx.createRadialGradient(0,0,0,0,0,1);
+    g.addColorStop(0,col);g.addColorStop(.09,col);
+    g.addColorStop(.3,"rgba("+c.join(",")+","+(.16*heat).toFixed(3)+")");
+    g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,1,0,TAU);ctx.fill();
+  });
+  glowBlit(CO,ox,oy,R*7);
   const core=ctx.createRadialGradient(ox,oy,0,ox,oy,R*.85);
   core.addColorStop(0,"rgba(255,253,247,"+(.82+.07*Math.sin(G.t*.04)).toFixed(2)+")");
   core.addColorStop(.5,"rgba("+[0,1,2].map(i=>Math.round(lerp(c[i],255,.6))).join(",")+",.42)");
@@ -260,9 +299,16 @@ function drawStarSingle(ox,oy,R,col,heat){
     ctx.closePath();ctx.fill();
   }
   /* ореол вокруг ядра: тонкое кольцо читалось резкой окружностью, поэтому оно
-     широкое и почти прозрачное — так это гало, а не обруч */
-  ctx.strokeStyle="rgba("+c.join(",")+",.028)";ctx.lineWidth=R*.85;
-  ctx.beginPath();ctx.arc(0,0,R*2.3,0,TAU);ctx.stroke();
+     широкое и почти прозрачное — так это гало, а не обруч.
+     Рисунок его постоянен, а полоса шириной в 0.85R по окружности радиуса 2.3R
+     закрашивает добрый десяток квадратных звёздных радиусов, поэтому кольцо
+     тоже уходит в спрайт. Спрайт складывается тем же «lighter», что и раньше,
+     только один раз при выпечке, а не на каждый пиксель каждого кадра. */
+  const HA=glowSprite("halo|"+col,()=>{
+    ctx.strokeStyle="rgba("+c.join(",")+",.028)";ctx.lineWidth=.85/2.725;
+    ctx.beginPath();ctx.arc(0,0,2.3/2.725,0,TAU);ctx.stroke();
+  });
+  ctx.drawImage(HA,-R*2.725,-R*2.725,R*5.45,R*5.45);
   ctx.restore();
 }
 /* нейтронная: крошечная, зато с двумя лучами и кольцом сброшенного вещества */
@@ -279,23 +325,32 @@ function drawStarNeutron(ox,oy,R,st){
   g.addColorStop(1,"rgba(150,200,255,0)");
   ctx.fillStyle=g;ctx.fillRect(-R*.22,-L,R*.44,L*2);
   ctx.restore();
-  const cg=ctx.createRadialGradient(ox,oy,0,ox,oy,R*2.6);
-  cg.addColorStop(0,"rgba(255,255,255,.95)");
-  cg.addColorStop(.18,"rgba(190,225,255,.5)");
-  cg.addColorStop(1,"rgba(120,180,255,0)");
-  ctx.fillStyle=cg;ctx.beginPath();ctx.arc(ox,oy,R*2.6,0,TAU);ctx.fill();
+  /* ореол нейтронной — тоже постоянный рисунок, тоже в спрайт */
+  const NC=glowSprite("neutron",()=>{
+    const cg=ctx.createRadialGradient(0,0,0,0,0,1);
+    cg.addColorStop(0,"rgba(255,255,255,.95)");
+    cg.addColorStop(.18,"rgba(190,225,255,.5)");
+    cg.addColorStop(1,"rgba(120,180,255,0)");
+    ctx.fillStyle=cg;ctx.beginPath();ctx.arc(0,0,1,0,TAU);ctx.fill();
+  });
+  glowBlit(NC,ox,oy,R*2.6);
   ctx.strokeStyle="rgba(170,210,255,.16)";ctx.lineWidth=R*.18;
   ctx.beginPath();ctx.ellipse(ox,oy,R*3.4,R*1.1,.4,0,TAU);ctx.stroke();
 }
 /* чёрная дыра в середине системы: тот же приём, что в небе планет, но крупнее
    и с втягивающимся газом */
 function drawStarHole(ox,oy,R,st){
-  const lg=ctx.createRadialGradient(ox,oy,R*.8,ox,oy,R*6);
-  lg.addColorStop(0,"rgba(0,0,0,.96)");
-  lg.addColorStop(.22,"rgba(6,4,12,.6)");
-  lg.addColorStop(.55,"rgba(160,150,255,.06)");
-  lg.addColorStop(1,"rgba(0,0,0,0)");
-  ctx.fillStyle=lg;ctx.beginPath();ctx.arc(ox,oy,R*6,0,TAU);ctx.fill();
+  /* линза вокруг дыры — тот же приём, что с короной: рисунок постоянный,
+     а диск шестикратного радиуса при близком пролёте кроет весь экран */
+  const HL=glowSprite("hole",()=>{
+    const lg=ctx.createRadialGradient(0,0,.1333,0,0,1);
+    lg.addColorStop(0,"rgba(0,0,0,.96)");
+    lg.addColorStop(.22,"rgba(6,4,12,.6)");
+    lg.addColorStop(.55,"rgba(160,150,255,.06)");
+    lg.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=lg;ctx.beginPath();ctx.arc(0,0,1,0,TAU);ctx.fill();
+  });
+  glowBlit(HL,ox,oy,R*6);
   ctx.fillStyle="#000";ctx.beginPath();ctx.arc(ox,oy,R*.8,0,TAU);ctx.fill();
   ctx.save();ctx.translate(ox,oy);ctx.rotate(-.25);
   ctx.globalCompositeOperation="lighter";

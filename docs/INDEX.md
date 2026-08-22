@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 149 · символов верхнего уровня: 1642
+Файлов: 149 · символов верхнего уровня: 1647
 
 ## СИМВОЛЫ
 
@@ -453,11 +453,11 @@ drawScoop                    src/19a-mode-scoop.js:151
 drawSkyBodies                src/19b-sky.js:59
 drawSkyLayer                 src/19-mode-landing.js:263
 drawSpaceDust                src/16a-space.js:102
-drawStarBody                 src/16a-space.js:204
-drawStarHole                 src/16a-space.js:292
-drawStarNeutron              src/16a-space.js:269
+drawStarBody                 src/16a-space.js:239
+drawStarHole                 src/16a-space.js:342
+drawStarNeutron              src/16a-space.js:315
 drawStars                    src/16-flight.js:13
-drawStarSingle               src/16a-space.js:221
+drawStarSingle               src/16a-space.js:256
 drawStation                  src/17-mode-system.js:560
 drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
@@ -589,7 +589,7 @@ genPart                      src/05-parts.js:70
 genPlant                     src/20-life.js:123
 genPOI                       src/20a-poi.js:32
 genRaid                      src/24a-mode-raid.js:30
-genTerrain                   src/07-planet.js:353
+genTerrain                   src/07-planet.js:395
 genUniqueShip                src/03-ships.js:16
 GEO_KIND                     src/18b-geology.js:13
 GEO_TPL                      src/18b-geology.js:31
@@ -601,6 +601,10 @@ GIANT                        src/19a-mode-scoop.js:84
 GIANT_KEEP                   src/19a-mode-scoop.js:85
 giantTex                     src/19a-mode-scoop.js:86
 glassOutline                 src/25-cockpit.js:54
+GLOW_CACHE                   src/16a-space.js:220
+GLOW_SP                      src/16a-space.js:219
+glowBlit                     src/16a-space.js:235
+glowSprite                   src/16a-space.js:221
 goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
 gradePass                    src/19c-light.js:140
@@ -623,7 +627,7 @@ grokTake                     src/12tb-grok.js:101
 grokTeach                    src/12tb-grok.js:145
 grokTick                     src/12tb-grok.js:76
 grokWant                     src/12tb-grok.js:42
-groundAt                     src/07-planet.js:459
+groundAt                     src/07-planet.js:501
 groundShadow                 src/19-mode-landing.js:253
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
@@ -792,7 +796,7 @@ KMAP_BELT                    src/15-input.js:32
 labCount                     src/12h-relic.js:16
 labStaffed                   src/12h-relic.js:27
 labWorking                   src/12h-relic.js:32
-LAND_ARC                     src/07-planet.js:329
+LAND_ARC                     src/07-planet.js:371
 LAND_GY                      src/19-mode-landing.js:348
 landerGearTick               src/19-mode-landing.js:353
 landerInk                    tests/91j-art.js:154
@@ -1119,15 +1123,16 @@ planetBargeLoad              src/12n-planet.js:108
 planetBargeRow               src/12n-planet.js:145
 planetBiome                  src/20-life.js:105
 planetCols                   src/07-planet.js:229
-planetDraw                   src/07-planet.js:242
+planetDraw                   src/07-planet.js:298
 planetGrant                  src/12n-planet.js:25
-planetHasLife                src/07-planet.js:341
+planetHasLife                src/07-planet.js:383
 planetHaul                   src/12n-planet.js:67
-planetHeightAt               src/07-planet.js:345
+planetHeightAt               src/07-planet.js:387
 planetHere                   src/12n-planet.js:61
 planetLight                  src/07-planet.js:193
 planetLoadSum                src/12n-planet.js:122
 planetMat                    src/18a-material.js:59
+planetPaint                  src/07-planet.js:246
 planetPeriod                 src/07-planet.js:37
 planetReady                  src/12n-planet.js:19
 planetRender                 src/12n-planet.js:155
@@ -1144,7 +1149,7 @@ planetStripStart             src/07-planet.js:79
 planetStripTick              src/07-planet.js:154
 planetTakeLoad               src/12n-planet.js:126
 planetTick                   src/12n-planet.js:44
-planetWetAt                  src/07-planet.js:336
+planetWetAt                  src/07-planet.js:378
 PLANT_FORM                   src/20-life.js:92
 PLANT_KINDS                  src/20-life.js:104
 PLANT_TRAIT                  src/20-life.js:93
@@ -1251,7 +1256,7 @@ relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
-RELIEF_MIX                   src/07-planet.js:296
+RELIEF_MIX                   src/07-planet.js:338
 renderBarge                  src/12l-barge.js:613
 renderCantina                src/27c-ui-hq.js:45
 renderLog                    src/11-log.js:37
@@ -1712,12 +1717,12 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/06-galaxy.js · 9 КБ
   · галактика:1
 
-## src/07-planet.js · 29 КБ
+## src/07-planet.js · 32 КБ
   · текстуры планет:1
   · вращение:8
-  · рельеф:290
-  · рельеф:291
-  · где сел — то и видел:315
+  · рельеф:332
+  · рельеф:333
+  · где сел — то и видел:357
 
 ## src/08-state.js · 9 КБ
   · состояние:1
@@ -1856,7 +1861,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · экранные кнопки: авто-скрытие и размер:1
   · ввод:18
 
-## src/16a-space.js · 18 КБ
+## src/16a-space.js · 22 КБ
   · облик системы:1
 
 ## src/16b-missile.js · 9 КБ
