@@ -347,6 +347,25 @@ function drawSystem(){
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,-1);
     planetDraw(p,x,y,r);
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,1);
+    /* конец света виден с орбиты (хвост M114): у обречённой планеты рыжий
+       ореол, а когда срок вышел — серая пелена поверх диска и потухший цвет.
+       Планета та, на которой стоял посёлок */
+    if(typeof doomGet==="function"&&doomGet()&&doomGet().sx===G.sx&&doomGet().sy===G.sy){
+      const D=doomGet(), SS=(typeof settleAt==="function")?settleAt(D.sx,D.sy):null;
+      if(SS&&SS.idx!==undefined&&(SS.idx|0)===(p.idx|0)){
+        if(!D.over){
+          const pu=.5+.5*Math.sin(G.t*.05);
+          const g=ctx.createRadialGradient(x,y,r,x,y,r*2.4+6);
+          g.addColorStop(0,"rgba(255,150,80,"+(.22+pu*.14).toFixed(3)+")");
+          g.addColorStop(1,"rgba(255,150,80,0)");
+          ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*2.4+6,0,TAU);ctx.fill();
+        }else{
+          ctx.fillStyle="rgba(120,116,110,.62)";ctx.beginPath();ctx.arc(x,y,r+1,0,TAU);ctx.fill();
+          ctx.strokeStyle="rgba(190,186,178,.35)";ctx.lineWidth=1;
+          for(let k=0;k<3;k++){ctx.beginPath();ctx.ellipse(x,y,r*(1.25+k*.28),r*(.32+k*.08),.4,0,TAU);ctx.stroke();}
+        }
+      }
+    }
     if(p.type!=="rocky"&&r>4){ctx.strokeStyle="rgba(150,220,255,.18)";ctx.lineWidth=2;
       ctx.beginPath();ctx.arc(x,y,r+2.5,0,TAU);ctx.stroke();}
     for(const m of p.moons){
@@ -383,6 +402,19 @@ function drawSystem(){
   ctx.save();ctx.translate(zx(sh.x),zy(sh.y));ctx.rotate(sh.a);
   ctx.scale(clamp(Z,.55,1.6),clamp(Z,.55,1.6));
   drawHull(G.shipId,keys.thrust&&G.fuel>0||(G.ap&&G.fuel>0),keys.brake&&G.fuel>0,G.mods.engine,sh.bank);
+  /* пусковая видна на силуэте (хвост M112): подвес под корпусом — заряженный
+     сплошной, сухой — только обвод с красной меткой. По нему и без панели
+     ясно, что стрелять нечем */
+  {
+    const stl=stat();
+    if(stl.launcher){
+      const dry=(G.cargo.missile|0)<=0;
+      ctx.fillStyle=dry?"rgba(0,0,0,0)":"rgba(210,220,232,.9)";
+      ctx.strokeStyle=dry?"rgba(255,110,90,.9)":"rgba(40,46,54,.9)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.rect(-5,6.5,9,3);if(!dry)ctx.fill();ctx.stroke();
+      if(dry&&Math.sin(G.t*.2)>0){ctx.fillStyle="rgba(255,110,90,.9)";ctx.fillRect(-1.5,7.3,2,1.6);}
+    }
+  }
   ctx.restore();
   /* при наблюдении в центре не свой корабль — подписываем, за кем смотрим,
      и куда нажать, чтобы вернуться */

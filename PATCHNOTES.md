@@ -8,6 +8,18 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.100.6 — "Three magnitudes" (M142)
+
+System and belt tails. Stars come in three magnitudes with a dozen saturated orange and blue
+ones on top; the nebula is two layers at different parallax (G10). The belt has three depth
+planes: far rocks as grey dots on world coordinates with real parallax, the asteroids, and
+near dust that grows and streaks by the glass (G6). Missiles work in the belt: same hold, same
+launcher, fired at the locked rock, which they split whole (M112); the launcher is drawn on the
+ship silhouette in system view — solid when loaded, an outline with a red tick when dry (M112).
+The doomed planet shows from orbit: an orange pulsing halo while the clock runs, a grey veil
+and dust rings once it is over (M114); the wing commander and the factor add lift capacity to
+the evacuation by level (M114).
+
 ## 0.100.5 — "An hour on the surface" (M141)
 
 The surface gets an hour: `celSun(p)` in `06a-celest` turns the planet in six to nine calendar

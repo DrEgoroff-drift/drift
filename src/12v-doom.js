@@ -65,6 +65,13 @@ function doomHelp(){
     if(typeof crewBusy==="function"&&crewBusy(c))continue;
     n+=Math.round(crewCargoMax(c)*.5);      // половина трюма: остальное — их работа
   }
+  /* управляющие тоже вывозят (хвост M114): командир звена ставит под подъём
+     свои борта, фактор снимает с маршрута место под людей. Не отдельный приказ,
+     а то, что домен и так делает, — считается по уровню */
+  if(typeof mgrOf==="function"){
+    const cmd=mgrOf("cmd");if(cmd&&!cmd.stalled)n+=4+mgrLevel(cmd)*3;
+    const fac=mgrOf("fact");if(fac&&!fac.stalled)n+=2+mgrLevel(fac)*2;
+  }
   return n;
 }
 /* ── подъём ──

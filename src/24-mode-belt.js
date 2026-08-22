@@ -108,10 +108,19 @@ function enterBelt(){
   const dust=[];
   for(let i=0;i<240;i++)
     dust.push({x:(r()-.5)*2*DUST_HALF,y:(r()-.5)*2*DUST_HALF,z:(r()-.5)*2*DUST_HALF});
+  /* дальний план (хвост G6): камни пояса за пределами рабочей зоны — серые
+     точки на мировых координатах, с настоящим параллаксом, меньше и бледнее
+     ближних. Три плана: эти, астероиды, пыль у стекла */
+  const far=[];
+  for(let i=0;i<110;i++){
+    const x=(r()-.5)*13000,y=(r()-.5)*4000,z=(r()-.5)*13000;
+    if(Math.hypot(x,y,z)<2800)continue;
+    far.push({x,y,z,s:1+r()*1.6});
+  }
   /* ориентиры (24b-belt-poi) считаются до старта: они расчищают под собой
      камни, иначе скала торчит сквозь конструкцию */
   const poi=genBeltPOI(B,ast);
-  G.belt={B,ast,dust,poi,chunks:[],shots:[],x:0,y:0,z:0,vx:0,vy:0,vz:0,
+  G.belt={B,ast,dust,far,poi,chunks:[],shots:[],msl:[],x:0,y:0,z:0,vx:0,vy:0,vz:0,
     yaw:0,pitch:0,roll:0,avYaw:0,avPitch:0,avRoll:0,prevYaw:0,
     lock:null,prog:0,hit:0,near:9999,beam:0,cool:0,flash:0};
   G.mode="belt";G.ap=null;
@@ -256,6 +265,40 @@ function updateBelt(dt){
       vx:b.vx+fwd[0]*24,vy:b.vy+fwd[1]*24,vz:b.vz+fwd[2]*24,life:90});
     b.cool=st.cool;b.flash=6;
   }
+  /* ── ракета в поясе (хвост M112) ──
+     Тот же трюм, та же пусковая, та же проверка (16b): ракета идёт на
+     захваченный камень, доворачивая, и раскалывает его целиком — это и есть
+     способ взять крупную глыбу, не пиля её резаком четверть часа */
+  if(b.mslCool>0)b.mslCool-=dt;
+  if(keys.msl&&(b.mslCool||0)<=0){
+    const c=mslCheck();
+    if(!c.ok){b.mslCool=30;say(c.why.toUpperCase());}
+    else if(!b.lock){b.mslCool=30;say("НЕТ ЦЕЛИ В ПРИЦЕЛЕ");}
+    else{
+      G.cargo.missile--;b.mslCool=st.mslCool;b.flash=6;
+      if(!b.msl)b.msl=[];
+      b.msl.push({x:b.x+fwd[0]*12,y:b.y+fwd[1]*12,z:b.z+fwd[2]*12,
+        vx:b.vx+fwd[0]*6,vy:b.vy+fwd[1]*6,vz:b.vz+fwd[2]*6,tgt:b.lock,life:MSL_LIFE});
+      sfx("shot",{f:190,to:110,d:.26,v:.5});
+    }
+  }
+  for(let i=(b.msl||[]).length-1;i>=0;i--){
+    const m=b.msl[i];
+    const t=m.tgt;
+    if(t&&b.ast.indexOf(t)>=0){
+      const dx=t.x-m.x,dy=t.y-m.y,dz=t.z-m.z,d=Math.hypot(dx,dy,dz)||1;
+      const sp=Math.min(MSL_VMAX*2.2,Math.hypot(m.vx,m.vy,m.vz)+.5*dt);
+      m.vx=lerp(m.vx,dx/d*sp,.12*dt);m.vy=lerp(m.vy,dy/d*sp,.12*dt);m.vz=lerp(m.vz,dz/d*sp,.12*dt);
+      if(d<t.r+6){
+        killRock(b,t,3.2);
+        for(let k=0;k<3;k++)shatter(b,t,4,1.6,m.x,m.y,m.z);
+        sfx("hit",{f:120,to:60,d:.3,v:.5});
+        b.msl.splice(i,1);continue;
+      }
+    }
+    m.x+=m.vx*dt;m.y+=m.vy*dt;m.z+=m.vz*dt;m.life-=dt;
+    if(m.life<=0)b.msl.splice(i,1);
+  }
   for(let i=b.shots.length-1;i>=0;i--){
     const s=b.shots[i];
     s.x+=s.vx*dt;s.y+=s.vy*dt;s.z+=s.vz*dt;s.life-=dt;
@@ -382,14 +425,31 @@ function drawBelt(){
                  b.z+Math.cos(ph)*Math.cos(th)*9000);
     if(p)ctx.fillRect(p.x,p.y,1.3,1.3);
   }
-  /* пыль — даёт ощущение скорости */
+  /* дальний план: камни за рабочей зоной — мельче и серее, чем дальше (G6) */
+  for(const f of b.far||[]){
+    const p=proj(f.x,f.y,f.z);
+    if(!p||p.z<2400)continue;
+    const al=clamp(1-p.z/11000,.08,.5);
+    ctx.fillStyle="rgba(150,158,170,"+al.toFixed(2)+")";
+    const sz=clamp(f.s*2600/p.z,.8,3);
+    ctx.fillRect(p.x,p.y,sz,sz);
+  }
+  /* пыль — даёт ощущение скорости; ближняя крупнее и тянется штрихом по
+     ходу, так читается, что она У СТЕКЛА, а не ещё один слой точек (G6) */
+  const spd=Math.hypot(b.vx,b.vy,b.vz);
   for(const d of b.dust){
     const p=proj(d.x,d.y,d.z);
     if(!p)continue;
-    const al=clamp(1-p.z/DUST_HALF,0,1)*.5;
+    const k=clamp(1-p.z/DUST_HALF,0,1), al=k*.5;
     if(al<.03)continue;
     ctx.fillStyle="rgba(200,215,230,"+al.toFixed(2)+")";
-    ctx.fillRect(p.x,p.y,1.2,1.2);
+    const sz=1+k*k*2.2;
+    if(k>.5&&spd>.6){
+      const q=proj(d.x-b.vx*3,d.y-b.vy*3,d.z-b.vz*3);
+      if(q){ctx.strokeStyle="rgba(200,215,230,"+(al*.7).toFixed(2)+")";ctx.lineWidth=sz*.8;
+        ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();continue;}
+    }
+    ctx.fillRect(p.x,p.y,sz,sz);
   }
   /* астероиды и обломки — общий буфер граней, чтобы сортировать по глубине вместе */
   const polys=[];
@@ -479,6 +539,15 @@ function drawBelt(){
     if(p.alpha<1)ctx.globalAlpha=1;
   }
   /* трассеры */
+  for(const m of b.msl||[]){
+    const p=proj(m.x,m.y,m.z), q=proj(m.x-m.vx*4,m.y-m.vy*4,m.z-m.vz*4);
+    if(!p||!q)continue;
+    const g=ctx.createLinearGradient(p.x,p.y,q.x,q.y);
+    g.addColorStop(0,"rgba(255,214,150,.95)");g.addColorStop(1,"rgba(255,120,60,0)");
+    ctx.strokeStyle=g;ctx.lineWidth=clamp(420/p.z,1.2,5);
+    ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
+    ctx.fillStyle="#e8ecf2";ctx.beginPath();ctx.arc(p.x,p.y,clamp(300/p.z,1,3.2),0,TAU);ctx.fill();
+  }
   for(const s of b.shots){
     const p=proj(s.x,s.y,s.z), q=proj(s.x-s.vx*2.2,s.y-s.vy*2.2,s.z-s.vz*2.2);
     if(!p||!q)continue;

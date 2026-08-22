@@ -10,6 +10,13 @@ for(let i=0;i<340;i++)BG.push({x:Math.random(),y:Math.random(),z:.2+Math.random(
    миллисекунда на один фон. Теперь разборов шесть, по числу цветов. */
 const BG_GROUP=STAR_COLS.map((c,i)=>({css:"rgb("+c[0]+","+c[1]+","+c[2]+")",
   list:BG.filter(s=>s.ci===i)}));
+/* три величины и несколько цветных (хвост G10): основная масса — точки в
+   одну, средние — в полторы, яркие — в две с крестиком; поверх них дюжина
+   насыщенных — оранжевые гиганты и голубые горячие, по ним небо и перестаёт
+   быть ровной крупой */
+const BG_BRIGHT=[];
+for(let i=0;i<14;i++)BG_BRIGHT.push({x:Math.random(),y:Math.random(),z:.86+Math.random()*.14,
+  ph:Math.random()*TAU,css:i%3?"rgb(255,150,92)":"rgb(130,176,255)"});
 function drawStars(cx,cy,par){
   const a0=ctx.globalAlpha;
   for(const g of BG_GROUP){
@@ -20,13 +27,22 @@ function drawStars(cx,cy,par){
       const tw=.76+.24*Math.sin(G.t*.045*(.4+s.z)+s.ph);
       const a=(.11+s.z*.55)*tw;
       ctx.globalAlpha=a0*a;
-      const sz=s.z>.72?1.7:1;
+      const sz=s.z>.85?2.1:(s.z>.5?1.4:1);
       ctx.fillRect(px,py,sz,sz);
       if(s.z>.9){   // самые яркие получают крестик-ореол
         ctx.globalAlpha=a0*a*.3;
         ctx.fillRect(px-2.4,py+.35,5.8,.8);ctx.fillRect(px+.35,py-2.4,.8,5.8);
       }
     }
+  }
+  for(const s of BG_BRIGHT){
+    const px=((s.x*1600-cx*par*s.z)%1600+1600)%1600/1600*W;
+    const py=((s.y*1200-cy*par*s.z)%1200+1200)%1200/1200*H;
+    const a=(.55+.25*Math.sin(G.t*.03+s.ph));
+    ctx.fillStyle=s.css;ctx.globalAlpha=a0*a;
+    ctx.fillRect(px-1.2,py-1.2,2.6,2.6);
+    ctx.globalAlpha=a0*a*.35;
+    ctx.fillRect(px-3.4,py+.1,7.6,1);ctx.fillRect(px+.1,py-3.4,1,7.6);
   }
   ctx.globalAlpha=a0;
 }
@@ -52,7 +68,14 @@ function drawNebula(cx,cy,par){
   const N=nebula(),ex=W*.2,ey=H*.2;
   const ox=-ex/2+clamp(-cx*par*.01,-ex/2,ex/2);
   const oy=-ey/2+clamp(-cy*par*.01,-ey/2,ey/2);
-  ctx.globalAlpha=.6;ctx.drawImage(N,ox,oy,W+ex,H+ey);ctx.globalAlpha=1;
+  ctx.globalAlpha=.6;ctx.drawImage(N,ox,oy,W+ex,H+ey);
+  /* второй слой ближе и крупнее, ходит втрое быстрее (хвост G10): две
+     туманности на разной глубине — и по их расхождению глаз видит объём */
+  const ex2=W*.5,ey2=H*.5;
+  const ox2=-ex2/2+clamp(-cx*par*.03,-ex2/2,ex2/2)+W*.18;
+  const oy2=-ey2/2+clamp(-cy*par*.03,-ey2/2,ey2/2)-H*.12;
+  ctx.globalAlpha=.26;ctx.drawImage(N,ox2,oy2,W+ex2,H+ey2);
+  ctx.globalAlpha=1;
 }
 
 /* Тело из текущей системы или из прежней? Сектор проверяется первым — он ловит

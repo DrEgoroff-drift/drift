@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 164 · символов верхнего уровня: 1790
+Файлов: 164 · символов верхнего уровня: 1791
 
 ## СИМВОЛЫ
 
@@ -75,8 +75,8 @@ applyPadMode                 src/15-input.js:6
 applyPadSize                 src/15-input.js:5
 applySave                    src/14-save.js:49
 applyVolumes                 src/09-audio.js:28
-apVel                        src/16-flight.js:85
-arrive                       src/16-flight.js:131
+apVel                        src/16-flight.js:108
+arrive                       src/16-flight.js:154
 ARTIFACTS                    src/12h-relic.js:48
 assignToBase                 src/12a-crew.js:136
 AST_N                        src/24-mode-belt.js:85
@@ -164,11 +164,12 @@ BELT_AVLIM                   src/24-mode-belt.js:86
 BELT_HALF                    src/24-mode-belt.js:84
 BELT_POI                     src/24b-belt-poi.js:13
 BELT_RES                     src/02-world.js:62
-beltBasis                    src/24-mode-belt.js:151
-beltDots                     src/17-mode-system.js:508
-beltFwd                      src/24-mode-belt.js:146
+beltBasis                    src/24-mode-belt.js:160
+beltDots                     src/17-mode-system.js:540
+beltFwd                      src/24-mode-belt.js:155
 beltIcy                      src/24-mode-belt.js:87
 BG                           src/16-flight.js:3
+BG_BRIGHT                    src/16-flight.js:17
 BG_GROUP                     src/16-flight.js:11
 bGlow                        src/21aa-base-rooms.js:298
 bHazard                      src/21aa-base-rooms.js:289
@@ -176,7 +177,7 @@ bJunk                        src/21aa-base-rooms.js:62
 bLamp                        src/21aa-base-rooms.js:279
 BLUEPRINTS                   src/12c-mgr-core.js:654
 BM_WARM                      src/21aa-base-rooms.js:20
-bodyInSystem                 src/16-flight.js:62
+bodyInSystem                 src/16-flight.js:85
 BP_KEYS                      src/12c-mgr-core.js:661
 bPipe                        src/21aa-base-rooms.js:244
 bpMul                        src/12c-mgr-core.js:665
@@ -355,7 +356,7 @@ crownReady                   src/05a-nodes.js:158
 CSW                          src/19e-clouds.js:53
 ctx                          src/08-state.js:3
 curTok                       src/09-audio.js:71
-CUT_RANGE                    src/24-mode-belt.js:171
+CUT_RANGE                    src/24-mode-belt.js:180
 cvs                          src/08-state.js:2
 dbg                          src/28-loop.js:419
 dcol                         src/21b-surface-deco.js:136
@@ -389,19 +390,19 @@ DOOM_FOLK                    src/12v-doom.js:23
 DOOM_LEAD                    src/12v-doom.js:21
 DOOM_WARN                    src/12v-doom.js:22
 doomArm                      src/12v-doom.js:28
-doomCanLand                  src/12v-doom.js:92
+doomCanLand                  src/12v-doom.js:99
 doomGet                      src/12v-doom.js:24
 doomHelp                     src/12v-doom.js:58
 doomHereKey                  src/12v-doom.js:25
 doomIsHere                   src/12v-doom.js:37
-doomLand                     src/12v-doom.js:100
+doomLand                     src/12v-doom.js:107
 doomLearn                    src/12v-doom.js:43
 doomLeft                     src/12v-doom.js:35
-doomLift                     src/12v-doom.js:73
-doomLine                     src/12v-doom.js:164
+doomLift                     src/12v-doom.js:80
+doomLine                     src/12v-doom.js:171
 doomMins                     src/12v-doom.js:36
 doomStanding                 src/12v-doom.js:39
-doomTick                     src/12v-doom.js:131
+doomTick                     src/12v-doom.js:138
 drawAccel                    src/20aa-poi-shapes.js:143
 drawAccountShelf             src/12w-survey.js:99
 drawAllies                   src/12a-crew.js:551
@@ -414,10 +415,10 @@ drawBase                     src/21ac-base-draw.js:43
 drawBaseBuilding             src/21c-built.js:99
 drawBeast                    src/20-life.js:703
 drawBeastAlien               src/20-life.js:546
-drawBelt                     src/24-mode-belt.js:318
+drawBelt                     src/24-mode-belt.js:361
 drawBeltPOISprite            src/24b-belt-poi.js:50
-drawBeltRing                 src/17-mode-system.js:514
-drawBeltRocks                src/17-mode-system.js:461
+drawBeltRing                 src/17-mode-system.js:546
+drawBeltRocks                src/17-mode-system.js:493
 drawBuildMenu                src/21aa-base-rooms.js:492
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
@@ -448,7 +449,7 @@ drawFindsSystem              src/17b-finds.js:140
 drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24a-mode-raid.js:674
 drawForeground               src/21b-surface-deco.js:577
-drawGlassHUD                 src/24-mode-belt.js:518
+drawGlassHUD                 src/24-mode-belt.js:587
 drawGround                   src/19-mode-landing.js:109
 drawGroundCrumbs             src/19-mode-landing.js:196
 drawGroundGrass              src/19-mode-landing.js:209
@@ -467,7 +468,7 @@ drawLuxeSkin                 src/03c-hull-luxe.js:27
 drawMap                      src/18-mode-map.js:51
 drawModule                   src/21aa-base-rooms.js:374
 drawMonolith                 src/20aa-poi-shapes.js:193
-drawNebula                   src/16-flight.js:51
+drawNebula                   src/16-flight.js:67
 drawNodeIcon                 src/05a-nodes.js:264
 drawObelisk                  src/20aa-poi-shapes.js:276
 drawObserv                   src/20aa-poi-shapes.js:491
@@ -479,7 +480,7 @@ drawPlantAlien               src/20-life.js:185
 drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
 drawRaid                     src/24a-mode-raid.js:351
-drawRing                     src/17-mode-system.js:424
+drawRing                     src/17-mode-system.js:456
 drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:151
@@ -490,9 +491,9 @@ drawSpaceDust                src/16a-space.js:154
 drawStarBody                 src/16a-space.js:293
 drawStarHole                 src/16a-space.js:396
 drawStarNeutron              src/16a-space.js:369
-drawStars                    src/16-flight.js:13
+drawStars                    src/16-flight.js:20
 drawStarSingle               src/16a-space.js:310
-drawStation                  src/17-mode-system.js:584
+drawStation                  src/17-mode-system.js:616
 drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
@@ -505,7 +506,7 @@ drawSystem                   src/17-mode-system.js:272
 drawTemple                   src/20aa-poi-shapes.js:50
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
-drawTrail                    src/16-flight.js:315
+drawTrail                    src/16-flight.js:338
 drawWear                     src/12s-wear.js:69
 drawWeather                  src/19d-weather.js:92
 drawWreck                    src/20aa-poi-shapes.js:8
@@ -534,7 +535,7 @@ etherTick                    src/11b-speech.js:39
 evacuate                     src/21-mode-surface.js:376
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:80
-exitBelt                     src/24-mode-belt.js:162
+exitBelt                     src/24-mode-belt.js:171
 exitCave                     src/22-mode-cave.js:199
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
@@ -833,7 +834,7 @@ keyMap                       src/15-input.js:52
 keyRow                       src/27-ui-ship.js:173
 keys                         src/08-state.js:21
 killPirate                   src/13-pirates.js:177
-killRock                     src/24-mode-belt.js:140
+killRock                     src/24-mode-belt.js:149
 KMAP                         src/15-input.js:28
 KMAP_BELT                    src/15-input.js:32
 labCount                     src/12h-relic.js:16
@@ -1014,8 +1015,8 @@ nearestStation               src/12-economy.js:43
 NEB_COMP                     src/16a-space.js:101
 NEB_JOB                      src/16a-space.js:52
 NEB_MS                       src/16a-space.js:51
-NEBULA                       src/16-flight.js:34
-nebula                       src/16-flight.js:35
+NEBULA                       src/16-flight.js:50
+nebula                       src/16-flight.js:51
 NEWS_EVERY                   src/12p-news.js:13
 NEWS_KEEP                    src/12p-news.js:15
 NEWS_KINDS                   src/12p-news.js:89
@@ -1375,7 +1376,7 @@ resEma                       src/28-loop.js:280
 resetArm                     src/26-ui-station.js:874
 resetWorld                   tests/90-harness.js:27
 resize                       src/08-state.js:6
-reticle                      src/17-mode-system.js:436
+reticle                      src/17-mode-system.js:468
 rgba                         src/03-ships.js:149
 ridged                       src/18a-material.js:30
 rivalDefeated                src/12p-news.js:81
@@ -1386,8 +1387,8 @@ rivalSpawn                   src/12p-news.js:71
 rivalYield                   src/12p-news.js:44
 rivetLine                    src/25-cockpit.js:179
 rng                          src/01-core.js:15
-ROCK_CELL                    src/17-mode-system.js:460
-ROCK_SHAPES                  src/17-mode-system.js:446
+ROCK_CELL                    src/17-mode-system.js:492
+ROCK_SHAPES                  src/17-mode-system.js:478
 ROGUE_CAP                    src/12g-mgr-rogue.js:11
 rogueDefeated                src/12g-mgr-rogue.js:91
 rogueFrom                    src/12g-mgr-rogue.js:38
@@ -1418,7 +1419,7 @@ routeToFactor                src/12r-route.js:143
 routeToggle                  src/12r-route.js:23
 routeValue                   src/12r-route.js:120
 routeVisit                   src/12r-route.js:103
-runAutopilot                 src/16-flight.js:86
+runAutopilot                 src/16-flight.js:109
 runTests                     tests/90-harness.js:72
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
@@ -1493,7 +1494,7 @@ setZoom                      src/15-input.js:176
 sfx                          src/09-audio.js:211
 SFX                          src/09-audio.js:85
 SH_DX                        src/03b-hull-paint.js:164
-shatter                      src/24-mode-belt.js:125
+shatter                      src/24-mode-belt.js:134
 SHIFT_TALK                   src/03f-hull-role.js:63
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
@@ -1502,7 +1503,7 @@ shipRow                      src/26-ui-station.js:131
 SHIPS                        src/03-ships.js:2
 shipThumb                    src/26-ui-station.js:118
 shipTier                     src/04b-fleet.js:156
-shipZ                        src/16-flight.js:188
+shipZ                        src/16-flight.js:211
 shipZoneR                    src/19-mode-landing.js:389
 SKY_LOUD                     src/19b-sky.js:13
 SKY_QUIET                    src/19b-sky.js:14
@@ -1538,7 +1539,7 @@ speechAll                    src/11b-speech.js:87
 speechHere                   src/11b-speech.js:89
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
-ST_GOLD                      src/17-mode-system.js:537
+ST_GOLD                      src/17-mode-system.js:569
 ST_GROUPS                    src/26-ui-station.js:35
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:8
@@ -1559,9 +1560,9 @@ stationMods                  src/17a-station-mod.js:30
 stationModsLine              src/17a-station-mod.js:59
 stationParts                 src/03-ships.js:116
 stationUniqueOffer           src/03-ships.js:107
-stationViz                   src/17-mode-system.js:531
+stationViz                   src/17-mode-system.js:563
 statPreview                  src/05-parts.js:271
-stCore                       src/17-mode-system.js:548
+stCore                       src/17-mode-system.js:580
 stDel                        src/14-save.js:10
 steps                        tests/90-harness.js:70
 stGet                        src/14-save.js:8
@@ -1611,8 +1612,8 @@ storyTableLine               src/11c-stories.js:222
 storyTraces                  src/11c-stories.js:162
 storyTurns                   src/11c-stories.js:108
 storyWhen                    src/11c-stories.js:148
-stPanels                     src/17-mode-system.js:538
-stRing                       src/17-mode-system.js:564
+stPanels                     src/17-mode-system.js:570
+stRing                       src/17-mode-system.js:596
 STRIP_CHUNK                  src/07-planet.js:73
 STRIP_JOB                    src/07-planet.js:76
 STRIP_MS                     src/07-planet.js:72
@@ -1667,7 +1668,7 @@ tapeScroll                   src/25b-tape.js:81
 tapeStrip                    src/25b-tape.js:171
 tapeTear                     src/11b-speech.js:133
 tapeTick                     src/25b-tape.js:63
-targetPos                    src/16-flight.js:74
+targetPos                    src/16-flight.js:97
 TAU                          src/01-core.js:6
 TECH                         src/04-mods.js:11
 techCost                     src/04-mods.js:46
@@ -1726,13 +1727,13 @@ towShare                     src/03f-hull-role.js:87
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03b-hull-paint.js:1
 TRADE_KEYS                   src/02-world.js:40
-TRAIL                        src/16-flight.js:189
-TRAIL_CHAR                   src/16-flight.js:197
-TRAIL_TINT                   src/16-flight.js:206
-trailBurst                   src/16-flight.js:190
-trailChar                    src/16-flight.js:205
-trailStep                    src/16-flight.js:224
-trailTint                    src/16-flight.js:211
+TRAIL                        src/16-flight.js:212
+TRAIL_CHAR                   src/16-flight.js:220
+TRAIL_TINT                   src/16-flight.js:229
+trailBurst                   src/16-flight.js:213
+trailChar                    src/16-flight.js:228
+trailStep                    src/16-flight.js:247
+trailTint                    src/16-flight.js:234
 traitOf                      src/12a-crew.js:28
 TYPES                        src/02-world.js:70
 unfitPart                    src/05-parts.js:247
@@ -1743,7 +1744,7 @@ unpackPart                   src/05-parts.js:323
 updateAllies                 src/12a-crew.js:517
 updateBarges                 src/12l-barge.js:156
 updateBase                   src/21a-mode-base.js:322
-updateBelt                   src/24-mode-belt.js:172
+updateBelt                   src/24-mode-belt.js:181
 updateCave                   src/22-mode-cave.js:216
 updateCaveDeco               src/22a-cave-deco.js:184
 updateCombat                 src/13-pirates.js:76
@@ -2036,10 +2037,10 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/16b-missile.js · 9 КБ
   · ракеты: боеприпас — это груз:1
 
-## src/16-flight.js · 25 КБ
+## src/16-flight.js · 27 КБ
   · фон:1
-  · автопилот:73
-  · шлейф двигателей и струи ориентации:171
+  · автопилот:96
+  · шлейф двигателей и струи ориентации:194
 
 ## src/17a-station-mod.js · 10 КБ
   · модули станции:1
@@ -2047,7 +2048,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/17b-finds.js · 14 КБ
   · находки в полёте:1
 
-## src/17-mode-system.js · 44 КБ
+## src/17-mode-system.js · 46 КБ
   · режим: система:1
 
 ## src/18a-material.js · 21 КБ
@@ -2154,7 +2155,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/24b-belt-poi.js · 9 КБ
   · ориентиры в поясе:1
 
-## src/24-mode-belt.js · 27 КБ
+## src/24-mode-belt.js · 31 КБ
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
 ## src/25a-instr.js · 9 КБ
