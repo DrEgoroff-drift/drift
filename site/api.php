@@ -86,17 +86,109 @@ function cleanMail($s) {
 }
 
 /* ── письмо ──
-   Отправляем через sendmail самого хостинга: своего почтового ящика заводить
-   не нужно, а обратный адрес на своём домене проходит проверку у получателя. */
+   Отправляем не через sendmail хостинга, а по SMTP с авторизацией на почтовом
+   сервере домена. Причина простая: SPF домена разрешает только серверы nicmail,
+   веб-хостинг в этот список не входит, и письмо от noreply@drift-game.ru,
+   ушедшее с веб-сервера, у Gmail не проходит проверку и тихо пропадает.
+   Отправленное же через свой ящик письмо подписывается DKIM самим сервером.
+
+   Пароль ящика лежит в ~/drift-data/mail.json — вне веб-корня и вне репозитория:
+   {"host":"smtp.nicmail.ru","port":465,"user":"noreply@drift-game.ru","pass":"…"}
+   Файла нет — откатываемся на mail(), чтобы восстановление не отваливалось совсем. */
+function mailCfg() {
+  static $c = null;
+  if ($c === null) $c = readJson(root() . '/mail.json') ?: [];
+  return $c;
+}
+/* Отправку логируем: без этого «письмо не пришло» неотличимо от «письма не было». */
+function mailLog($line) {
+  @file_put_contents(root() . '/mail.log', gmdate('Y-m-d H:i:s') . ' ' . $line . "\n",
+                     FILE_APPEND | LOCK_EX);
+}
+
+/* Одна реплика диалога. Ответ сервера бывает многострочным: продолжение помечено
+   дефисом на четвёртом знаке, и читать надо до строки без него. */
+function smtpTalk($fp, $cmd, $expect, &$err) {
+  if ($cmd !== null && fwrite($fp, $cmd . "\r\n") === false) { $err = 'обрыв при отправке'; return false; }
+  do {
+    $line = fgets($fp, 2048);
+    if ($line === false) { $err = 'сервер молчит'; return false; }
+  } while (isset($line[3]) && $line[3] === '-');
+  if (strncmp($line, $expect, strlen($expect)) !== 0) { $err = trim($line); return false; }
+  return true;
+}
+
+function smtpSend($cfg, $to, $subj, $text, &$err) {
+  $host = $cfg['host'] ?? 'smtp.nicmail.ru';
+  $port = (int)($cfg['port'] ?? 465);
+  $user = (string)($cfg['user'] ?? '');
+  $pass = (string)($cfg['pass'] ?? '');
+  $from = (string)($cfg['from'] ?? $user);
+
+  $fp = @stream_socket_client(($port === 465 ? 'ssl://' : 'tcp://') . "$host:$port",
+                              $en, $es, 20, STREAM_CLIENT_CONNECT);
+  if (!$fp) { $err = "нет связи с $host:$port ($es)"; return false; }
+  stream_set_timeout($fp, 20);
+
+  $ok = smtpTalk($fp, null, '220', $err)
+     && smtpTalk($fp, 'EHLO drift-game.ru', '250', $err);
+  /* 587 — открытый порт с последующим переходом на шифрование; 465 шифрован сразу */
+  if ($ok && $port !== 465) {
+    $ok = smtpTalk($fp, 'STARTTLS', '220', $err)
+       && @stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)
+       && smtpTalk($fp, 'EHLO drift-game.ru', '250', $err);
+    if (!$ok && $err === '') $err = 'не удалось включить шифрование';
+  }
+  $ok = $ok
+     && smtpTalk($fp, 'AUTH LOGIN', '334', $err)
+     && smtpTalk($fp, base64_encode($user), '334', $err)
+     && smtpTalk($fp, base64_encode($pass), '235', $err)
+     && smtpTalk($fp, "MAIL FROM:<$from>", '250', $err)
+     && smtpTalk($fp, "RCPT TO:<$to>", '250', $err)
+     && smtpTalk($fp, 'DATA', '354', $err);
+
+  if ($ok) {
+    $head = "Date: " . date('r') . "\r\n"
+          . "From: =?UTF-8?B?" . base64_encode('Дрейф') . "?= <$from>\r\n"
+          . "To: <$to>\r\n"
+          . "Subject: =?UTF-8?B?" . base64_encode($subj) . "?=\r\n"
+          . "Message-ID: <" . bin2hex(random_bytes(12)) . "@drift-game.ru>\r\n"
+          . "MIME-Version: 1.0\r\n"
+          . "Content-Type: text/plain; charset=UTF-8\r\n"
+          . "Content-Transfer-Encoding: 8bit\r\n"
+          . "X-Mailer: drift\r\n";
+    /* Точка в начале строки означала бы конец письма — по правилам SMTP её удваивают. */
+    $body = str_replace("\n", "\r\n", str_replace("\r\n", "\n", $text));
+    $body = preg_replace("/^\./m", '..', $body);
+    fwrite($fp, $head . "\r\n" . $body . "\r\n.\r\n");
+    $ok = smtpTalk($fp, null, '250', $err);
+  }
+  @fwrite($fp, "QUIT\r\n");
+  @fclose($fp);
+  return $ok;
+}
+
 function sendMail($to, $subj, $text) {
+  $cfg = mailCfg();
+  if (!empty($cfg['user']) && !empty($cfg['pass'])) {
+    $err = '';
+    $ok  = smtpSend($cfg, $to, $subj, $text, $err);
+    mailLog(($ok ? 'ok   smtp ' : 'FAIL smtp ') . $to . ($ok ? '' : ' — ' . $err));
+    if ($ok) return true;
+    /* Если почтовый сервер не принял письмо, пробовать sendmail бессмысленно:
+       именно от него письма и пропадали. Честнее вернуть неудачу. */
+    return false;
+  }
   $from = 'noreply@drift-game.ru';
   $head = "From: =?UTF-8?B?" . base64_encode('Дрейф') . "?= <$from>\r\n"
         . "Reply-To: $from\r\n"
         . "Content-Type: text/plain; charset=UTF-8\r\n"
         . "Content-Transfer-Encoding: 8bit\r\n"
         . "X-Mailer: drift\r\n";
-  $s = "=?UTF-8?B?" . base64_encode($subj) . "?=";
-  return @mail($to, $s, $text, $head, "-f$from");
+  $s  = "=?UTF-8?B?" . base64_encode($subj) . "?=";
+  $ok = @mail($to, $s, $text, $head, "-f$from");
+  mailLog(($ok ? 'ok   mail() ' : 'FAIL mail() ') . $to . ' — нет mail.json, отправка через sendmail');
+  return $ok;
 }
 
 /* ── ограничение попыток ──
@@ -234,6 +326,8 @@ if ($a === 'forgot') {
       "Ссылка на смену — она работает один час и один раз:\n$link\n\n" .
       "Если это были не вы, просто удалите письмо: пока по ссылке не перешли,\n" .
       "старый пароль работает как работал.\n\n— Дрейф, drift-game.ru");
+  } else {
+    mailLog('skip forgot — у записи «' . ($login ?: '?') . '» нет почты или её вовсе нет');
   }
   out(['ok' => true, 'sent' => true]);
 }

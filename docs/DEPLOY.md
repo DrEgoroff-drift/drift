@@ -94,10 +94,28 @@ Protocol: `POST /api.php?a=<action>`, JSON in, JSON out. The session token trave
 | `reset` | — | `{login,key,pass}` → new password; every other device is signed out, which is also how a stolen account is taken back |
 | `setmail` | yes | add or change the address afterwards |
 
-Recovery mail goes out through the host's own `sendmail` (`mail()` is available and unrestricted
-here), from `noreply@drift-game.ru` — no mailbox needs to exist for sending, but the address being
-on the domain is what gets the message past the recipient's checks. An address is optional at
-registration: without one the account simply cannot be recovered, and the form says so.
+Recovery mail goes out over authenticated SMTP to the domain's own mail server, from the real
+`noreply@drift-game.ru` mailbox. The host's `sendmail` is not used: the domain's SPF record
+authorises only `dc1/dc2.nicmail.ru`, so a message sent from the web server fails the recipient's
+check and Gmail drops it silently — which is exactly how the first recovery letters went missing.
+Sent through the mailbox instead, the message is DKIM-signed by the mail server and passes.
+
+The mailbox password lives in `~/drift-data/mail.json`, outside the web root and outside this
+repository:
+
+```json
+{ "host": "smtp.nicmail.ru", "port": 465, "user": "noreply@drift-game.ru", "pass": "…" }
+```
+
+Port 465 talks TLS from the first byte; 587 is also supported and switches to TLS with `STARTTLS`.
+Without the file the code falls back to `mail()`, so recovery keeps working after a fashion rather
+than breaking outright. Every attempt is appended to `~/drift-data/mail.log` with its outcome —
+sent, refused (with the server's own words), or skipped because the account has no address. That
+log is the first place to look when someone reports a letter that never came.
+
+An address is optional at registration: without one the account simply cannot be recovered. The
+form says so and asks for a second click before creating such an account, and the signed-in player
+is offered a place to add an address later.
 
 On disk, under `~/drift-data/`: `u/<login>.json` (login, password hash, live token hashes),
 `s/<login>.json` (the snapshot as the game writes it), `t/<sha256>.json` (token → login, so

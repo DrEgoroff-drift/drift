@@ -21,9 +21,9 @@
       body:JSON.stringify(payload||{})}).then(r=>r.json());
   }
 
-  let mode="login";
+  let mode="login", noMailOk=false;
   function open(m){
-    mode=m; $("#veil").classList.add("on");
+    mode=m; noMailOk=false; $("#veil").classList.add("on");
     const reg=m==="register";
     $("#boxTitle").textContent=reg?"Новая запись":"Вход";
     $("#boxHint").textContent=reg
@@ -50,7 +50,7 @@
     try{
       await call("forgot",{login});
       note.className="note ok";
-      note.textContent="если у этой записи есть почта, письмо уже летит. Ссылка живёт час.";
+      note.textContent="если у этой записи есть почта, письмо уже летит (проверьте и спам) — ссылка живёт час. Почту не указывали при создании? тогда возвращать нечем: напишите на info@drift-game.ru";
     }catch(e){note.className="note bad";note.textContent="сервер не ответил"}
   }
   const close=()=>$("#veil").classList.remove("on");
@@ -82,6 +82,13 @@
     const login=$("#lg").value.trim(), pass=$("#pw").value;
     const mailEl=$("#ml"), mail=mailEl?mailEl.value.trim():"";
     if(!login||!pass){note.className="note bad";note.textContent="заполните имя и пароль";return}
+    /* Запись без почты восстановить нечем — человек узнаёт об этом в худший
+       момент. Поэтому пустое поле не запрещаем, но просим подтвердить. */
+    if(mode==="register"&&!mail&&!noMailOk){
+      noMailOk=true; note.className="note bad";
+      note.textContent="без почты забытый пароль вернуть будет нечем. Нажмите «СОЗДАТЬ» ещё раз, если так и надо";
+      return;
+    }
     btn.disabled=true; note.className="note"; note.textContent="…";
     try{
       const d=await call(mode,mode==="register"?{login,pass,mail}:{login,pass});
