@@ -88,7 +88,14 @@ jobs:
       - name: Убедиться, что на сайте то, что собрали
         run: |
           want=$(grep -o 'VER="[0-9.]*"' src/01-core.js | head -1)
-          got=$(curl -sf --max-time 30 https://drift-game.ru/play.html | grep -o 'VER="[0-9.]*"' | head -1)
+          # хост отдаёт файл не мгновенно: сразу после scp он ещё может быть старым
+          # или не долететь за таймаут — поэтому несколько попыток, а не одна
+          got=""
+          for i in 1 2 3 4 5 6; do
+            got=$(curl -s --max-time 90 -H 'Cache-Control: no-cache' "https://drift-game.ru/play.html?v=$RANDOM" | grep -o 'VER="[0-9.]*"' | head -1)
+            [ "$want" = "$got" ] && break
+            echo "попытка $i: на сайте ${got:-ничего}, ждём..."; sleep 15
+          done
           echo "в исходниках $want, на сайте $got"
           [ "$want" = "$got" ] || { echo "версии разошлись"; exit 1; }
           gz=$(curl -s --max-time 30 -H 'Accept-Encoding: gzip' -o /dev/null -w '%{size_download}' https://drift-game.ru/play.html)
