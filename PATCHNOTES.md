@@ -7,6 +7,19 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.122.0 — "The record book" (M161)
+
+`11aa-record`: the player's biography, written by others. `recordAdd(author, text)` is called by
+the stations (a need met, an order closed, a rationalisation), the institute (a tape or a find
+handed in), the people (a letter delivered, a traveller brought), Vega («дома не бывает», later
+«скучный. Это хорошо»), the sixth («рекомендация: считает. Не объясняет. Годится.»). One page on
+the table (КНИЖКА): service length in years of the sky, entries newest first — and a test guards
+that none is in the first person. A station with three entries puts the pilot's name on its
+board of honour — the only award in the game. After twelve years a medical commission at the
+core of the hours county grounds the pilot: «к полётам не допущен» — the quiet ending, a pension
+at home, with Vega and two parrots if it came to that; the last entry is the parrot's. Suite
+`91zzp`. **The second act (M154–M161) is built.**
+---
 ## 0.121.0 — "The Island" (M160)
 
 `11y-island`: the pirates as those who left — Efremov's Island of Oblivion, pitied rather than

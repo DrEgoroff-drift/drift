@@ -659,6 +659,7 @@ body.table #console{display:none}
     <button data-tab="strips">ЛЕНТЫ</button>
     <button data-tab="things">ВЕЩИ</button>
     <button data-tab="prices">ЦЕНЫ</button>
+    <button data-tab="record">КНИЖКА</button>
     <button data-tab="lore" style="display:none">ОТЧЁТ</button>
   </nav>
   <div class="body" id="tableBody"><div id="loglist"></div><div id="lorelist" style="display:none"></div></div>
@@ -796,7 +797,7 @@ body.table #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.121.0";
+const VER="0.122.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6486,6 +6487,101 @@ function musicStop(){
   MUS.key=null;
 }
 
+/* ══════════════ трудовая книжка: биография, написанная другими ══════════════
+   M161. У вещей есть паспорта (M150), у игрока не было ничего. Трудовая
+   книжка — одна страница на столе (закладка КНИЖКА): записи делают ДРУГИЕ —
+   станция «благодарность за наряд», институт «сдана лента», посёлок
+   «бывает редко», Вега «дома не бывает», шестая — «рекомендация». Стаж — в
+   годах неба. Доска почёта: на станции, где записей от неё три и больше,
+   появляется ваше имя — единственная награда в игре.
+
+   СТАРЕНИЕ И КОМИССИЯ. Через N лет (12) медкомиссия на стойке ядра снимает с
+   полётов: «к полётам не допущен». Вторая концовка, тихая, в ключе
+   «Стажёров»: пенсия дома — с Вегой и двумя попугаями, если так сложилось.
+   Последнюю запись в книжке делает попугай.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Игрок сам в книжку не пишет. Ни одной записи от первого лица.
+   2. Хранится G.record: {e:[{a,s,d}], t0, grounded}. Не больше 120 записей. */
+const RECORD_YEARS=12;
+function recordAll(){
+  if(!G.record||typeof G.record!=="object")G.record={e:[],t0:celDay(),grounded:0};
+  return G.record;
+}
+function recordAdd(author,text){
+  if(!author||!text)return null;
+  const R=recordAll();
+  const e={a:String(author),s:String(text),d:celDay()};
+  /* одна и та же запись в один день не дублируется */
+  if(R.e.some(x=>x.a===e.a&&x.s===e.s&&x.d===e.d))return null;
+  R.e.push(e);while(R.e.length>120)R.e.shift();
+  if(typeof tableIsOpen==="function"&&tableIsOpen())tableRender();else logBtnLabel();
+  return e;
+}
+function recordYears(){const R=recordAll();return Math.floor((celDay()-R.t0)/365);}
+function recordByAuthor(a){return recordAll().e.filter(x=>x.a===a);}
+/* доска почёта: станции с тремя и больше записями */
+function recordHonour(){
+  const by={};for(const x of recordAll().e)by[x.a]=(by[x.a]|0)+1;
+  return Object.keys(by).filter(a=>by[a]>=3);
+}
+function recordPilot(){return (G.shipId&&shipData(G.shipId))?"пилот «"+shipData(G.shipId).ru+"»":"пилот";}
+/* ежедневно: чужие записи, которые зависят от состояния */
+function recordTick(){
+  const R=recordAll();const d=celDay();
+  if(R.lastDay===d)return;R.lastDay=d;
+  if(typeof sixthGone==="function"&&sixthGone()&&!R.sixth){R.sixth=1;recordAdd("Варламова З.","рекомендация: считает. Не объясняет. Годится.");}
+  const V=G.vega;
+  if(V&&V.stage>=2&&V.away>=8&&!R.vega){R.vega=1;recordAdd("Вега","характеристика: дома не бывает.");}
+  if(V&&V.stage===4&&!R.vega2){R.vega2=1;recordAdd("Вега","характеристика: скучный. Это хорошо.");}
+  if(V&&V.parrot2&&R.grounded&&!R.last){R.last=1;recordAdd("попугай","пр-р-р. дома. дома. не уходи.");}
+}
+/* комиссия: на стойке ядра, после N лет */
+function recordBoardHere(){
+  const R=recordAll();
+  if(R.grounded||recordYears()<RECORD_YEARS)return false;
+  return !!(G.st&&typeof hoursDepthAt==="function"&&hoursDepthAt(G.sx,G.sy)===2);
+}
+function recordGround(){
+  const R=recordAll();if(R.grounded)return false;
+  R.grounded=1;
+  recordAdd("медкомиссия","к полётам не допущен. Стаж "+recordYears()+" лет. Пенсия.");
+  thingAdd("record","Заключение комиссии","«к полётам не допущен» · стаж "+recordYears()+" лет · флот летает без вас · вы дома"+(G.vega&&G.vega.stage===4?" · с Вегой и двумя попугаями":""));
+  logAdd("warn","Медкомиссия: к полётам не допущен. Пенсия.");
+  say("МЕДКОМИССИЯ\nк полётам не допущен\n\nпенсия",400);
+  if(G.vega&&G.vega.parrot2)recordAdd("попугай","пр-р-р. дома. дома. не уходи.");
+  return true;
+}
+function recordBlock(){
+  /* доска почёта этой станции */
+  if(G.st&&recordByAuthor(G.st.name).length>=3){
+    $body.appendChild(el("div","sec","ДОСКА ПОЧЁТА"));
+    $body.appendChild(el("div","row","<div class='nm'><b>"+recordPilot()+"</b><s>"+recordByAuthor(G.st.name).map(x=>x.s).slice(-3).join(" · ")+"</s></div>"));
+  }
+  if(recordBoardHere()){
+    $body.appendChild(el("div","sec","МЕДКОМИССИЯ · СТАЖ "+recordYears()+" ЛЕТ"));
+    const r=el("div","row","<div class='nm'><b>К полётам не допущен</b><s>трое с бумагой · флот летает без вас · домой</s></div>");
+    const b=el("button","act sm","ПРИНЯТЬ");b.onclick=()=>{recordGround();renderTab();};
+    r.appendChild(b);$body.appendChild(r);
+  }
+}
+/* страница на столе */
+function renderRecord(box){
+  box.textContent="";
+  const R=recordAll();
+  tableRow(box,"head","","ТРУДОВАЯ КНИЖКА · "+recordPilot().toUpperCase()+" · СТАЖ "+recordYears()+" "+(recordYears()===1?"ГОД":(recordYears()>=2&&recordYears()<=4?"ГОДА":"ЛЕТ"))+(R.grounded?" · ПЕНСИЯ":""));
+  const H=recordHonour();
+  if(H.length)tableRow(box,"sec","","НА ДОСКЕ ПОЧЁТА: "+H.join(", "));
+  if(!R.e.length){tableRow(box,"dim","","записей нет: их делают другие — станции, институт, люди");return;}
+  for(let i=R.e.length-1;i>=0;i--){
+    const x=R.e[i];
+    const row=document.createElement("div");row.className="li talk";
+    const em=document.createElement("em");em.textContent="день "+x.d;
+    const sp=document.createElement("span");sp.innerHTML="<b>"+x.a+"</b> — "+x.s;
+    row.appendChild(em);row.appendChild(sp);box.appendChild(row);
+  }
+}
+
 /* ══════════════ журнал дел ══════════════ */
 /* Игра говорила о взятых обещаниях всплывающей строкой и записью в ленте:
    «принял» было видно секунду, а потом приходилось помнить самому — что взял,
@@ -10099,6 +10195,7 @@ function needClose(sys,k){
   const N=needOf(sys);
   if(!N||N.k!==k)return false;
   needAll()[sys.key]={win:N.win,k,t:Date.now()};
+  if(typeof recordAdd==="function")recordAdd(sys.station.name,"благодарность: привёз "+N.ru+", когда не было");
   if(typeof repAdd==="function")repAdd(2,sys);
   if(typeof peopleLine==="function")peopleLine("привезли "+N.ru+", когда "+(RES[k].ru.endsWith("ы")?"их":"её")+" не было. Это помнят.",sys.station.name,true);
   sfx("ok",{v:.4});
@@ -20734,7 +20831,7 @@ function snapshot(){
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
-    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,   /* M154, M156, M158, M160 */
+    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,   /* M154, M156, M158, M160, M161 */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -21174,6 +21271,7 @@ function applySave(s){
   G.exp=(s.exp&&typeof s.exp==="object")?Object.assign({phase:0,day0:0,coll:{},gone:[],gave:0,pax:null},s.exp):null;
   G.letters=(s.letters&&typeof s.letters==="object")?s.letters:{};
   G.island=(s.island&&typeof s.island==="object"&&s.island.letters)?s.island:{letters:{}};
+  G.record=(s.record&&typeof s.record==="object"&&Array.isArray(s.record.e))?s.record:null;
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];
@@ -38198,6 +38296,7 @@ function renderTab(){
     if(typeof lettersBlock==="function")lettersBlock();     /* письма с содержанием (M158) */
     if(typeof expOfferBlock==="function")expOfferBlock();   /* есть место (M159) */
     if(typeof islandBlock==="function")islandBlock();       /* письмо на Остров (M160) */
+    if(typeof recordBlock==="function")recordBlock();       /* доска почёта, комиссия (M161) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
@@ -41955,7 +42054,7 @@ function tableRender(){
   const sub=document.getElementById("tableSub"),cr=document.getElementById("tableCr"),wh=document.getElementById("tableWhere");
   const SUB={ether:"эфир · что было услышано",bort:"борт · техника и деньги",folk:"люди · что вам сказали",
              deeds:"дела · что вы должны",strips:"ленты · оторванные полосы самописца",things:"вещи · письма, находки, бумаги",
-             prices:"цены · как их видели, по станциям",lore:"отчёт «Долгого хода»"};
+             prices:"цены · как их видели, по станциям",record:"трудовая книжка · записи чужими руками",lore:"отчёт «Долгого хода»"};
   if(sub)sub.textContent=SUB[tableTab]||"";
   if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
   if(wh)wh.textContent=(G.sys&&G.sys.name?G.sys.name:"—")+" · "+(G.mode||"");
@@ -41966,7 +42065,9 @@ function tableRender(){
   else if(tableTab==="strips")renderStrips(box);
   else if(tableTab==="things")renderThings(box);
   else if(tableTab==="prices"&&typeof renderPrices==="function")renderPrices(box);
+  else if(tableTab==="record"&&typeof renderRecord==="function")renderRecord(box);
   else if(tableTab==="prices"&&typeof renderPrices==="function")renderPrices(box);
+  else if(tableTab==="record"&&typeof renderRecord==="function")renderRecord(box);
   else if(tableTab==="lore"&&typeof renderLoreBoard==="function")renderLoreBoard();
 }
 function tableRow(box,cls,em,text){
@@ -42932,7 +43033,7 @@ function frame(now){
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
     if(typeof etherTick==="function")etherTick(dt);
-    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();wearTick(dt);
+    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){

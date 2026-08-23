@@ -226,6 +226,7 @@ function renderTab(){
     if(typeof lettersBlock==="function")lettersBlock();     /* письма с содержанием (M158) */
     if(typeof expOfferBlock==="function")expOfferBlock();   /* есть место (M159) */
     if(typeof islandBlock==="function")islandBlock();       /* письмо на Остров (M160) */
+    if(typeof recordBlock==="function")recordBlock();       /* доска почёта, комиссия (M161) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */

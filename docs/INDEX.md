@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 226 · символов верхнего уровня: 2197
+Файлов: 228 · символов верхнего уровня: 2209
 
 ## СИМВОЛЫ
 
@@ -23,7 +23,7 @@ $menu                        src/15-input.js:125
 $msg                         src/28-loop.js:32
 $msl                         src/28-loop.js:35
 $nav                         src/28-loop.js:34
-$opts                        src/26-ui-station.js:777
+$opts                        src/26-ui-station.js:778
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:31
 $sh                          src/28-loop.js:24
@@ -83,7 +83,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:199
 autoLandInputs               src/19-mode-landing.js:33
-autosave                     src/14-save.js:520
+autosave                     src/14-save.js:521
 b64dec                       src/14-save.js:13
 b64enc                       src/14-save.js:11
 bankTransform                src/03b-hull-paint.js:48
@@ -292,18 +292,18 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudBoot                    src/14-save.js:577
-cloudBusy                    src/14-save.js:547
-cloudCall                    src/14-save.js:540
-cloudForget                  src/14-save.js:545
-cloudHere                    src/14-save.js:538
-cloudName                    src/14-save.js:537
-cloudOn                      src/14-save.js:539
-cloudPull                    src/14-save.js:564
-cloudPush                    src/14-save.js:550
+cloudBoot                    src/14-save.js:578
+cloudBusy                    src/14-save.js:548
+cloudCall                    src/14-save.js:541
+cloudForget                  src/14-save.js:546
+cloudHere                    src/14-save.js:539
+cloudName                    src/14-save.js:538
+cloudOn                      src/14-save.js:540
+cloudPull                    src/14-save.js:565
+cloudPush                    src/14-save.js:551
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
-cloudTok                     src/14-save.js:536
+cloudTok                     src/14-save.js:537
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
@@ -534,7 +534,7 @@ drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:274
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:168
+drawThingIcon                src/27i-ui-table.js:170
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
 drawTrail                    src/16-flight.js:338
@@ -591,7 +591,7 @@ expNearStation               src/11x-expedition.js:58
 expOfferBlock                src/11x-expedition.js:231
 expOfferHere                 src/11x-expedition.js:213
 expOn                        src/11x-expedition.js:22
-exportCode                   src/14-save.js:529
+exportCode                   src/14-save.js:530
 expPaxDock                   src/11x-expedition.js:137
 expPaxDraw                   src/11x-expedition.js:146
 expPaxJump                   src/11x-expedition.js:132
@@ -621,7 +621,7 @@ FIND_CACHE                   src/17b-finds.js:26
 FIND_KINDS                   src/17b-finds.js:19
 findBucket                   src/17b-finds.js:18
 findInteract                 src/17b-finds.js:124
-findsBlock                   src/12aa-need.js:158
+findsBlock                   src/12aa-need.js:159
 findSeen                     src/17b-finds.js:54
 findsHere                    src/17b-finds.js:53
 findsIn                      src/17b-finds.js:27
@@ -770,7 +770,7 @@ grownOnGive                  src/11q-grown.js:54
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:528
+hasSave                      src/14-save.js:529
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
@@ -890,7 +890,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:530
+importCode                   src/14-save.js:531
 initAudio                    src/09-audio.js:7
 INSTR                        src/25a-instr.js:19
 INSTR_BY_ID                  src/25a-instr.js:55
@@ -1057,7 +1057,7 @@ lightsShut                   src/11g-lights.js:73
 lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:46
-loadGame                     src/14-save.js:524
+loadGame                     src/14-save.js:525
 LOCAL                        src/11b-speech.js:99
 LOG_MAX                      src/11-log.js:11
 LOG_PAGE                     src/11-log.js:12
@@ -1243,11 +1243,11 @@ NEBULA                       src/16-flight.js:50
 nebula                       src/16-flight.js:51
 NEED_WIN                     src/12aa-need.js:19
 needAll                      src/12aa-need.js:21
-needBlock                    src/12aa-need.js:128
+needBlock                    src/12aa-need.js:129
 needClose                    src/12aa-need.js:35
-needEtherLine                src/12aa-need.js:57
+needEtherLine                src/12aa-need.js:58
 needOf                       src/12aa-need.js:22
-needsNear                    src/12aa-need.js:45
+needsNear                    src/12aa-need.js:46
 needWin                      src/12aa-need.js:20
 NEWS_EVERY                   src/12p-news.js:13
 NEWS_KEEP                    src/12p-news.js:15
@@ -1323,14 +1323,14 @@ openStation                  src/26-ui-station.js:5
 OPT_TABS                     src/27-ui-ship.js:408
 optGroups                    src/27-ui-ship.js:411
 optTab                       src/27-ui-ship.js:410
-ORDER_WIN                    src/12aa-need.js:68
-orderDeliver                 src/12aa-need.js:107
-orderHere                    src/12aa-need.js:103
-orderOf                      src/12aa-need.js:70
+ORDER_WIN                    src/12aa-need.js:69
+orderDeliver                 src/12aa-need.js:108
+orderHere                    src/12aa-need.js:104
+orderOf                      src/12aa-need.js:71
 ORDERS                       src/12a-crew.js:109
-orderTake                    src/12aa-need.js:94
-orderTick                    src/12aa-need.js:120
-orderWin                     src/12aa-need.js:69
+orderTake                    src/12aa-need.js:95
+orderTick                    src/12aa-need.js:121
+orderWin                     src/12aa-need.js:70
 ORE_KEYS                     src/02-world.js:42
 ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13
@@ -1520,7 +1520,7 @@ postItem                     src/11e-post.js:42
 postLinkHere                 src/11e-post.js:73
 postOpen                     src/11e-post.js:99
 prevAct                      src/08-state.js:23
-pricesSeen                   src/12aa-need.js:187
+pricesSeen                   src/12aa-need.js:188
 prism                        src/21b-surface-deco.js:201
 prof                         src/28-loop.js:382
 PROFILE                      src/02-world.js:43
@@ -1601,6 +1601,17 @@ rareRender                   src/12m-rare.js:151
 rareSum                      src/12m-rare.js:140
 rareTake                     src/12m-rare.js:115
 rebinding                    src/15-input.js:81
+RECORD_YEARS                 src/11aa-record.js:17
+recordAdd                    src/11aa-record.js:22
+recordAll                    src/11aa-record.js:18
+recordBlock                  src/11aa-record.js:66
+recordBoardHere              src/11aa-record.js:51
+recordByAuthor               src/11aa-record.js:33
+recordGround                 src/11aa-record.js:56
+recordHonour                 src/11aa-record.js:35
+recordPilot                  src/11aa-record.js:39
+recordTick                   src/11aa-record.js:41
+recordYears                  src/11aa-record.js:32
 refineBank                   src/11-log.js:135
 REGION_A                     src/06b-region.js:22
 REGION_B                     src/06b-region.js:24
@@ -1642,11 +1653,12 @@ renderDeeds                  src/11-log.js:92
 renderLog                    src/11-log.js:71
 renderLoreBoard              src/27h-ui-lore.js:26
 renderOpts                   src/27-ui-ship.js:184
-renderPrices                 src/12aa-need.js:195
+renderPrices                 src/12aa-need.js:196
+renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
-renderStrips                 src/27i-ui-table.js:112
+renderStrips                 src/27i-ui-table.js:114
 renderTab                    src/26-ui-station.js:184
-renderThings                 src/27i-ui-table.js:143
+renderThings                 src/27i-ui-table.js:145
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -1665,7 +1677,7 @@ RES_AUTO                     src/08-state.js:18
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:281
 resEma                       src/28-loop.js:280
-resetArm                     src/26-ui-station.js:776
+resetArm                     src/26-ui-station.js:777
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:24
@@ -1748,7 +1760,7 @@ rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:6
-saveGame                     src/14-save.js:514
+saveGame                     src/14-save.js:515
 say                          src/08-state.js:140
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -2001,7 +2013,7 @@ tableBlock                   src/27c-ui-hq.js:535
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewThings               src/27i-ui-table.js:36
 tableRender                  src/27i-ui-table.js:80
-tableRow                     src/27i-ui-table.js:104
+tableRow                     src/27i-ui-table.js:106
 tableSetTab                  src/27i-ui-table.js:50
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:37
@@ -2286,6 +2298,9 @@ ZAP_COOL                     src/23-mode-dig.js:213
 ## src/10-music.js · 30 КБ
   · музыка: слои, а не треки:1
 
+## src/11aa-record.js · 6 КБ
+  · трудовая книжка: биография, написанная другими:1
+
 ## src/11a-quests.js · 6 КБ
   · журнал дел:1
 
@@ -2510,7 +2525,7 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## src/14-save.js · 40 КБ
   · сохранение:1
-  · облако:533
+  · облако:534
 
 ## src/15-input.js · 16 КБ
   · экранные кнопки: авто-скрытие и размер:1
@@ -2684,7 +2699,7 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## src/26-ui-station.js · 49 КБ
   · станция:1
-  · настройки:775
+  · настройки:776
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -2915,6 +2930,9 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## tests/91zzo-island.js · 1 КБ
   · автотесты: Остров Забвения (M160):1
+
+## tests/91zzp-record.js · 3 КБ
+  · автотесты: трудовая книжка (M161):1
 
 ## tests/91zzv-table.js · 7 КБ
   · автотесты: пульт и стол (M151a):1

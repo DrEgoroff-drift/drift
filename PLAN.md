@@ -355,7 +355,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   unsigned tape a year later; `91zzn`.
 - **M160 the Island** — **built (0.121.0)**: pirates as those who left; landing with a letter as the second door;
   three names return; `91zzo`.
-- **M161 record book** — the player's biography written by others, boards of honour, ageing
+- **M161 record book** — **built (0.122.0)**: the player's biography written by others, boards of honour, ageing
   and the medical board as the quiet ending; `11aa-record`, `91zzp`.
 - **M162 institute** — topics, labs, forms, the voucher to the sanatorium planet; `11ab-institute`, `91zzq`.
 - **M163 trainee** — the stowaway boy on the right seat, learns, gets a diploma, leaves; `11ac-trainee`, `91zzr`.
