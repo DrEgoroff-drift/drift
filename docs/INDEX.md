@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 241 · символов верхнего уровня: 2303
+Файлов: 242 · символов верхнего уровня: 2304
 
 ## СИМВОЛЫ
 
@@ -693,6 +693,7 @@ fuseGen                      src/03-ships.js:32
 fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
 G                            src/08-state.js:25
+g11Fps                       src/28z-fps-probe.js:7
 genBeast                     src/20-life.js:508
 genBeltPOI                   src/24b-belt-poi.js:20
 genDeco                      src/21b-surface-deco.js:37
@@ -2851,6 +2852,9 @@ zooTick                      src/11ad-zoo.js:41
   · авторазрешение:276
   · prof() — на что уходит кадр:372
   · dbg() — что держит корабль:412
+
+## src/28z-fps-probe.js · 3 КБ
+  · пробник G11: ?g11:1
 
 ## tests/90-harness.js · 6 КБ
   · автотесты: каркас:1
