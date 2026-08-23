@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 201 · символов верхнего уровня: 1997
+Файлов: 203 · символов верхнего уровня: 2001
 
 ## СИМВОЛЫ
 
@@ -201,11 +201,11 @@ CANT_STYLE                   src/27d-ui-cantina.js:15
 cantCounter                  src/27d-ui-cantina.js:550
 cantFigure                   src/27d-ui-cantina.js:297
 cantinaPool                  src/12c-mgr-core.js:258
-cantinaScene                 src/27c-ui-hq.js:193
+cantinaScene                 src/27c-ui-hq.js:194
 cantProps                    src/27d-ui-cantina.js:397
 cantRoomBody                 src/27d-ui-cantina.js:45
 cantSeats                    src/27d-ui-cantina.js:289
-cantSel                      src/27c-ui-hq.js:192
+cantSel                      src/27c-ui-hq.js:193
 cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina.js:485
 cantView                     src/27d-ui-cantina.js:338
@@ -571,7 +571,7 @@ FACE_SKIN                    src/12d-mgr-face.js:10
 faceEl                       src/27c-ui-hq.js:6
 facePath                     src/12d-mgr-face.js:19
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:484
+factPrices                   src/27c-ui-hq.js:485
 FAUNA_RES                    src/02-world.js:38
 fbm1                         src/01-core.js:19
 fbm2                         src/01-core.js:26
@@ -690,7 +690,7 @@ GROK_DIRT                    src/12tb-grok.js:30
 GROK_LIKE                    src/12tb-grok.js:29
 GROK_MIN                     src/12tb-grok.js:28
 GROK_NAME                    src/12tb-grok.js:26
-grokBlock                    src/27c-ui-hq.js:141
+grokBlock                    src/27c-ui-hq.js:142
 grokBusy                     src/12tb-grok.js:69
 grokCanTeach                 src/12tb-grok.js:137
 grokFace                     src/12tb-grok.js:174
@@ -809,14 +809,14 @@ HOUSES                       src/12u-scrip.js:21
 houseWallMark                src/17d-house-shapes.js:38
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
-hqAiOffer                    src/27c-ui-hq.js:382
-hqBtnTick                    src/27c-ui-hq.js:237
+hqAiOffer                    src/27c-ui-hq.js:383
+hqBtnTick                    src/27c-ui-hq.js:238
 hqConsole                    src/27f-hq-room.js:228
 hqFigure                     src/27f-hq-room.js:509
 hqHover                      src/27f-hq-room.js:675
-hqJobCard                    src/27c-ui-hq.js:441
-hqRelicSlot                  src/27c-ui-hq.js:407
-hqRender                     src/27c-ui-hq.js:244
+hqJobCard                    src/27c-ui-hq.js:442
+hqRelicSlot                  src/27c-ui-hq.js:408
+hqRender                     src/27c-ui-hq.js:245
 hqRoomBody                   src/27f-hq-room.js:32
 hqScene                      src/27f-hq-room.js:640
 hqScreenData                 src/27f-hq-room.js:312
@@ -1035,7 +1035,7 @@ mgrCrewYield                 src/12c-mgr-core.js:202
 mgrCut                       src/12c-mgr-core.js:173
 mgrDefect                    src/12c-mgr-core.js:347
 mgrDomain                    src/12c-mgr-core.js:507
-mgrDomainLine                src/27c-ui-hq.js:503
+mgrDomainLine                src/27c-ui-hq.js:504
 mgrDroneRate                 src/12c-mgr-core.js:218
 mgrFace                      src/12d-mgr-face.js:29
 mgrFee                       src/12c-mgr-core.js:298
@@ -1211,7 +1211,7 @@ odoSum                       src/11d-place.js:25
 ok                           tests/90-harness.js:23
 openBarge                    src/12l-barge.js:578
 openCrewView                 src/27b-ui-crew.js:199
-openHq                       src/27c-ui-hq.js:523
+openHq                       src/27c-ui-hq.js:524
 openShipView                 src/27-ui-ship.js:145
 openStation                  src/26-ui-station.js:5
 OPT_TABS                     src/27-ui-ship.js:407
@@ -1451,6 +1451,10 @@ rackRoller                   src/25d-instr-rack.js:284
 rackScrew                    src/25d-instr-rack.js:78
 rackTex                      src/25d-instr-rack.js:162
 rackToggle                   src/25d-instr-rack.js:56
+RADIO_BANDS                  src/25e-receiver.js:13
+radioBand                    src/25e-receiver.js:19
+radioBlock                   src/25e-receiver.js:47
+radioTune                    src/25e-receiver.js:24
 RAID_N                       src/24a-mode-raid.js:6
 RAID_ROOMS                   src/24a-mode-raid.js:7
 raidFloorAt                  src/24a-mode-raid.js:77
@@ -1854,7 +1858,7 @@ sysPirateBase                src/24a-mode-raid.js:98
 sysStyle                     src/16a-space.js:21
 tab                          src/26-ui-station.js:3
 TABLE_REPLY                  src/11b-speech.js:141
-tableBlock                   src/27c-ui-hq.js:537
+tableBlock                   src/27c-ui-hq.js:538
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
 tap                          src/15-input.js:237
@@ -2445,6 +2449,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/25d-instr-rack.js · 25 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
+## src/25e-receiver.js · 4 КБ
+  · приёмник: частота крутится рукой:1
+
 ## src/26a-ui-station-home.js · 12 КБ
   · станция: вкладка «дом и базы»:1
 
@@ -2645,5 +2652,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## tests/91zzg-houses.js · 1 КБ
   · дома как язык форм: знак на станции и в посёлке, вымпел цветом дома:1
+
+## tests/91zzh-receiver.js · 1 КБ
+  · приёмник: диапазоны на одном месте, между ними шум, на краю слова выпадают:1
 
 ## tests/99-run.js · 0 КБ

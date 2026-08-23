@@ -129,6 +129,7 @@ function renderCantina(){
   if(typeof chartsBlock==="function")chartsBlock();     /* их карта (11m) */
   if(typeof quietBlock==="function")quietBlock();       /* открытая дверь (11n) */
   if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
+  if(typeof radioBlock==="function")radioBlock();       /* приёмник (25e): слухи, цены, погода — настройкой */
   if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
   if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
   if(typeof putOnTable==="function")tableBlock();

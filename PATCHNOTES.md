@@ -8,6 +8,16 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.110.0 — "The receiver has a knob" (M124 remainder)
+
+`25e-receiver`: a hand-tuned receiver in the cantina. Four bands that never move — rumours,
+prices, weather, ether — with noise between them and words dropping out toward a band's edge.
+It invents nothing: the rumours are 11t, the prices the nearest station's market, the weather
+the system's solid worlds, the ether 11b. The knob remembers its position (`G.radioF`). Of the
+M124 remainder, "pause is the engine off" needs nothing — the game has no pause menu; the table
+as paper and the removal of the overlay HUD are left as the release design on purpose (see
+PLAN.md).
+
 ## 0.109.0 — "Houses as a language of shapes" (tails M55 #2/#7, M113)
 
 The four houses of `12u-scrip` used to differ by name and scrip colour only. Each now has a form

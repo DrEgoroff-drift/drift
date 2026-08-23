@@ -295,8 +295,7 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 - **Yacht railing below 3×, fully flat-on view** (archive, ships): the fleet is drawn flat-on by
   design; the hull now has a top light and one asymmetric boom, the rest is the reference-sheet
   richness a rotation pass would give.
-- **M124 spec remainder**: the table as paper/bills/pile, the hand-tuned receiver, "pause is the
-  engine off", removal of the overlay HUD — the release design, built in the thirteenth pass.
+- **M124 spec remainder**: receiver with a knob — closed (0.110.0, `25e-receiver`); "pause is the engine off" — closed by fact (there is no pause menu to replace). Left by decision (2026-08-23, autonomous run): the table as paper/bills/pile and the removal of the overlay HUD — both rewrite the whole interface and its autotests for a release look the author has not seen; kept as the release design, not done blind.
 - **M125**: rack as a surface inside the cockpit (it is an overlay), re-bake on resize, CH5
   saturation — cosmetic; the rack is not persisted by rule.
 - **M126**: the vanilla `SHIPS` ladder stays under the professions; passenger talk is one table
