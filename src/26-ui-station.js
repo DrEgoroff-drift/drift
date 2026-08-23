@@ -15,6 +15,7 @@ function openStation(){
   if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
   /* почтовый круг (11e): если это следующее звено, человек подходит сам */
   if(typeof postDock==="function"){const pr=postDock();if(pr)say(pr.who+":\n"+pr.line);}
+  if(typeof keepersDock==="function"){const kr=keepersDock();if(kr&&kr.line)say("Смотритель:\n"+kr.line);}   /* линия смотрителей (11k) */
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));

@@ -79,9 +79,11 @@ const PAR_ACT=[
 {ru:"потянуться целиком",w:4,d:3.0,m:"",f:(p,S)=>{
   PAR.stretch=parHold(p,.3,.3);PAR.fan=parHold(p,.3,.3)*.8;
   PAR.footUp=parHold(p,.35,.35)*.7;PAR.yawn=parBell(p)*.5;}},
-{ru:"почесать голову",w:5,d:2.8,m:"",f:(p,S)=>{
-  PAR.footUp=parHold(p,.22,.22);PAR.roll=parHold(p,.25,.25)*-.55;
-  PAR.shiver=parHold(p,.3,.3)*.5;PAR.tuck=parHold(p)*.3;}},
+{ru:"почесать голову",w:5,d:3.0,m:"",f:(p,S)=>{
+  /* лапа к щеке, голова — навстречу лапе, и мелкая тряска, пока чешет */
+  const h=parHold(p,.25,.25);
+  PAR.footUp=h;PAR.scratch=h;PAR.tuck=h*.55;PAR.roll=h*.25;
+  PAR.shiver=h*.6+Math.sin(p*40)*h*.3;}},
 {ru:"чистить грудь",w:7,d:3.2,m:"",f:(p,S)=>{
   PAR.bow=parHold(p,.2,.2)*.7;PAR.roll=Math.sin(p*15.7)*.18;
   if(Math.random()<.14)PAR.peck=.6;}},

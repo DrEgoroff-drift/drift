@@ -315,7 +315,7 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 - **G11**: `20-life` radial gradients as baked sprites, veil/vignette as one layer — the raster
   budget pass, measured not guessed (see `drift-perf-method`).
 - **M112**: nothing else — belt missiles and the hull mark closed it.
-- **M135 "three lights"**: built (0.101.0). **M136-hours**: built (0.102.0). **M137-glow**: built (0.103.0). **M138-grove**: built (0.104.0). Next: M139-keepers.
+- **M135 "three lights"**: built (0.101.0). **M136-hours**: built (0.102.0). **M137-glow**: built (0.103.0). **M138-grove**: built (0.104.0). **M139-keepers**: built (0.105.0). Next: M140-county.
 
 ---
 
@@ -324,6 +324,14 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 **Full text lives in [`docs/PLAN-archive.md`](docs/PLAN-archive.md)** â grep it for `M122`. It was
 moved there on 2026-08-15 because thirty milestones of far-future work were being carried in a file
 that is read every session; the pass itself stands, and it is the release (0.72.0 â **1.00.0**).
+
+## M139-keepers (0.105.0) — built. The line of keepers
+
+`11k-keepers`: `keepersDock` from `openStation` (habit table by `visitHere`, ration taken every
+third visit, gone at visit 10), `keepersBlock` in the cantina (roster, sign, feed), `keepersDark`
+(gone && !signed, or signed && jumps−fed>12), effects `keepersCourseDrift` (25a), `keepersJumpK`
+(18 map cost ×1.5), `keepersEtherLine`; rhyme at the `pass` core (`keepersRhymeHere`). Persisted
+`G.keepers={gone,signed,fed,given}`. Suite `91zx-keepers`.
 
 ## M138-grove (0.104.0) — built. The grove
 

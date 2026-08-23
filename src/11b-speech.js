@@ -54,6 +54,7 @@ function etherTick(dt){
   /* расхождение времён (11h): на окраине уезда диспетчер извиняется за часы */
   if(typeof hoursEtherLine==="function"){const h=hoursEtherLine(r);if(h)out=h;}
   if(typeof groveEtherLine==="function"){const h=groveEtherLine(r);if(h)out=h;}   /* роща (11j) */
+  if(typeof keepersEtherLine==="function"){const h=keepersEtherLine(r);if(h)out=h;}   /* погасший рукав (11k) */
   if(out&&typeof regionAt==="function"){
     const R=regionAt(G.sx,G.sy);
     if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&Math.random()<.6)

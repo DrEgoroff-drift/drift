@@ -9,7 +9,11 @@
    моки, а не игра. */
 const TEST={pass:0,fail:0,lines:[],failed:[]};
 let _suite="";
+/* ?only=текст — гонять только наборы, в имени которых есть текст (быстрая итерация;
+   test.ps1 -Only делает то же самое) */
+const TEST_ONLY=(()=>{try{return new URLSearchParams(location.search).get("only")||"";}catch(e){return "";}})();
 function suite(name,fn){
+  if(TEST_ONLY&&!name.includes(TEST_ONLY))return;
   _suite=name;
   TEST.lines.push("── "+name);
   try{fn();}
@@ -49,7 +53,7 @@ function resetWorld(){
   /* срок (12v): новый мир — никакого назначенного часа и никаких пустых систем */
   G.doom=null;G.doomDead={};
   /* трепло (12x): новая игра — ни птицы, ни услышанного */
-  G.seen={};G.storyPin={};G.storyFlags={};G.place={};G.odo={lands:0,jumps:0};G.post={stage:0,opened:0,done:0};G.mirror={bearing:0};G.mirrorEcho=null;G.lights={t0:-1,seen:0};G.hours={man:0};G.grove={turn:0,shot:0,cut:0};
+  G.seen={};G.storyPin={};G.storyFlags={};G.place={};G.odo={lands:0,jumps:0};G.post={stage:0,opened:0,done:0};G.mirror={bearing:0};G.mirrorEcho=null;G.lights={t0:-1,seen:0};G.hours={man:0};G.grove={turn:0,shot:0,cut:0};G.keepers={gone:0,signed:0,fed:0,given:0};
   G.parrot=null;G.heard=[];G.trade=routeInit();G.market={};G.wear={};G.findsSeen={};
   G.mgrs=[];G.blueprints={};G.cantina=null;G.aiRift=null;
   G.orderStamp=0;G.kills=0;G.soldTotal=0;

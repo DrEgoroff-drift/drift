@@ -8,6 +8,20 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.105.0 — "The line of keepers" (M139-keepers)
+
+The `keepers` region (06c, needle `course`) is built in `11k-keepers`: a lane everyone navigates
+by, and at its core a station with one man on it. Habit over visits (`visitHere`): weather talk,
+then a silent handover, then he knows what you need, a second mug, the crate already out; every
+third call he takes one ration from the hold himself. On the tenth call he is gone — mug washed
+and turned over, bunk made — and the lane goes dark: the course needle wanders across the
+region, a jump plotted there costs half again, the ether carries lost strangers and a convoy
+turning back. In the cantina the bulkhead roster: twelve names struck through, a blank line you
+can sign. Signing is hauling one ration to the crate by the door at least every twelve jumps,
+unpaid, forever; miss it and the lane darkens again. Far away, at the core of the pass, a second
+such man — alive — greets a signed pilot as one of his own. Persisted `G.keepers`. Suite
+`91zx-keepers`.
+
 ## 0.104.0 — "The grove" (M138-grove)
 
 The `grove` region (06c, needle `mass`) is built in `11j-grove`, in the belt. Growths are belt

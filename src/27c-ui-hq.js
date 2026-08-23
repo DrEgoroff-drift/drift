@@ -125,6 +125,7 @@ function renderCantina(){
      что вы на него выкладываете */
   /* посылка почтового круга (M133, 11e): лежит рядом со столом, пока вы её везёте */
   if(typeof postBlock==="function")postBlock();
+  if(typeof keepersBlock==="function")keepersBlock();   /* смотритель и список на переборке (11k) */
   if(typeof putOnTable==="function")tableBlock();
   $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
 }
