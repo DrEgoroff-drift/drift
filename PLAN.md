@@ -316,7 +316,7 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 
 # QUEUE: the fourteenth pass — the kit, the lodger, the expedition (M152–M166)
 
-Designs (2026-08-23): [`docs/DESIGN-ui.md`](docs/DESIGN-ui.md), [`docs/DESIGN-suit.md`](docs/DESIGN-suit.md),
+Designs (2026-08-23): [`docs/DESIGN-ui.md`](docs/DESIGN-ui.md), [`docs/DESIGN-economy.md`](docs/DESIGN-economy.md), [`docs/DESIGN-suit.md`](docs/DESIGN-suit.md),
 [`docs/DESIGN-vega.md`](docs/DESIGN-vega.md), [`docs/DESIGN-act2.md`](docs/DESIGN-act2.md),
 [`docs/DESIGN-after.md`](docs/DESIGN-after.md). Order as listed; each is a version with tests and
 a commit. The joys (M164–M166) may be slotted between big milestones as breathers.
@@ -328,6 +328,14 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   clippings); the station gets **ДОСКА** as its first group; the menu shrinks to five; `logwin`,
   `lorewin`, `parrotwin` removed; `say()` only for prompts and emergencies, `etherLine()` /
   `peopleLine()` for voices; `29-ui-table`, `29a-console`, `91f-ui` rewritten once; `91zzv`.
+- **M152e the economy without a debt** — after M151a, before M152: per
+  [`docs/DESIGN-economy.md`](docs/DESIGN-economy.md). Measure first (`91zzw-economy`, 60 minutes
+  under three profiles, cr/min per source and drain); then: no manager salary — the cut only,
+  hires paid per run; station need (×2 for one delivery, heard and posted); one order per
+  station on ДОСКА; the first «Вьюк» by allocation at 3 000 turnover; tails on the table and in
+  the home case; a find handed to the institute for 25%; the rationalisation premium; prices on
+  the charts; slower market fill. Target: mod at 10 min, «Вьюк» at 20, hire at 1 h, manager at
+  2–3 h, garage by hour 5–6.
 - **M152 the kit** — the suit as six places with trade-offs, pieces with models/class/wear/mods,
   issued/found/given, the workshop tier repairs and modernises; `12x-suit`, `11y-kit`, `91zzg`.
 - **M153 Vega** — the lodger who cannot be evicted: the one-shot device on the flea, three acts,
