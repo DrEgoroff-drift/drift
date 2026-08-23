@@ -1,0 +1,17 @@
+{
+  "id": "/play.html",
+  "name": "Дрейф — процедурная разведка",
+  "short_name": "Дрейф",
+  "description": "Один на старом корабле, полбака топлива и космос, которому до вас нет дела.",
+  "start_url": "/play.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#05070c",
+  "theme_color": "#05070c",
+  "icons": [
+    { "src": "/icons/fav-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/icons/fav-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/fav-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

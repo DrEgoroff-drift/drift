@@ -231,17 +231,19 @@ function parFoot(c,x,dir,grip,up){
   const U=up||0, Sc=up?(PAR.scratch||0):0;
   /* чесание: лапа идёт вдоль бока вверх, к щеке; верх цевки прячется под
      корпусом, как бедро под пером, — видны только пальцы у головы */
-  c.save();c.translate(x-U*6+Sc*14,-U*26-Sc*92);c.scale(dir,1);c.rotate(-U*.5-Sc*2.4);
+  c.save();c.translate(x-U*6+Sc*6,-U*26-Sc*84);c.scale(dir,1);c.rotate(-U*.5-Sc*2.3);
   c.lineCap="round";
   c.strokeStyle=PAR_C.footD;c.lineWidth=6.4;
-  c.beginPath();c.moveTo(1,-38);c.quadraticCurveTo(0,-20,0,-4);c.stroke();
+  /* при чесании цевка длиннее: видна вся нога от бока до щеки, корень уходит под крыло */
+  const tl=38+Sc*26;
+  c.beginPath();c.moveTo(1,-tl);c.quadraticCurveTo(0,-20,0,-4);c.stroke();
   c.strokeStyle=PAR_C.foot;c.lineWidth=4.4;
-  c.beginPath();c.moveTo(1,-36);c.quadraticCurveTo(0,-20,0,-5);c.stroke();
+  c.beginPath();c.moveTo(1,2-tl);c.quadraticCurveTo(0,-20,0,-5);c.stroke();
   /* чешуя цевки: восемь колечек. Гладкая палка выдаёт рисунок сразу — у птицы
      нога покрыта щитками, и это видно даже в четверть размера */
   c.strokeStyle="rgba(70,42,18,.45)";c.lineWidth=1;
-  for(let i=0;i<7;i++){
-    const y=-33+i*4.4;
+  for(let i=0;i<7+Sc*6;i++){
+    const y=-33-Sc*26+i*4.4;
     c.beginPath();c.moveTo(-2.4,y);c.quadraticCurveTo(0,y+1.6,2.4,y);c.stroke();
   }
   for(let i=0;i<3;i++){
@@ -395,7 +397,7 @@ function parrotDraw(c,W,H){
      бы над ней брыжами. Стык двух
      оперений — самое заметное место сборки, и он должен быть заткан. */
   const rf2=Math.abs(PAR.ruff)+PAR.tuck*.85;
-  parRow(g,10+(hx-12)*.6,-150+(hy+168)*.7,16,13,-2.5,.45,11,16+rf2*6,10,1.2,.10+rf2*.12,
+  parRow(g,10+(hx-12)*.85,-150+(hy+168)*.9,16,13,-2.5,.45,11,16+rf2*6,10,1.2,.10+rf2*.12,
     PAR_C.cream,PAR_C.blue,.92);
 
   /* 4. ГОЛОВА со всем, что на ней: качается на шее одним куском.

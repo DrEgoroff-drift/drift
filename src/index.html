@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ДРЕЙФ — процедурная разведка</title>
+<link rel="manifest" href="/drift.webmanifest">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/fav-180.png">
 <style>
 /*{{STYLE}}*/
 </style>
@@ -209,6 +212,11 @@
 
 <script>
 //{{SCRIPT}}
+</script>
+<script>
+/* игру можно поставить как приложение — как и птицу; из файла и по http это просто молчит */
+if("serviceWorker" in navigator&&location.protocol==="https:")
+  navigator.serviceWorker.register("/drift-sw.js").catch(()=>{});
 </script>
 </body>
 </html>

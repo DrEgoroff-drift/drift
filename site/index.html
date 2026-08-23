@@ -9,6 +9,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/icons/fav-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/icons/fav-180.png">
+<link rel="manifest" href="/drift.webmanifest">
 <meta property="og:type" content="website">
 <meta property="og:title" content="ДРЕЙФ — космическая игра в браузере">
 <meta property="og:description" content="Вы один на старом корабле. Летите куда хотите: садитесь на планеты, копайте, торгуйте, обживайтесь.">
@@ -99,6 +100,14 @@
 .end{text-align:center;padding-bottom:90px}
 .end h2{margin-bottom:10px}
 .end p{color:var(--dim);margin-bottom:24px}
+.get{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:26px}
+.get>div{border:1px solid var(--line);background:rgba(8,13,22,.62);padding:20px 20px 22px}
+.get h3{font-size:11.5px;letter-spacing:.19em;color:var(--amber);font-weight:400;text-transform:uppercase;margin-bottom:10px}
+.get p{font-size:13.5px;color:var(--text);opacity:.86;margin-bottom:12px}
+.get ol{margin:12px 0 0 18px;font-size:13px;color:var(--dim)}
+.get li{margin-bottom:7px}
+.get li b{color:var(--text);font-weight:400}
+#installBtn{display:none}
 </style>
 </head>
 <body>
@@ -119,12 +128,13 @@
 </header>
 
 <section class="hero">
-  <div class="tag">игра в браузере · бесплатно · ставить ничего не надо</div>
+  <div class="tag">бесплатно · в браузере или как приложение · регистрация не нужна</div>
   <h1 class="mark">ДРЕЙФ</h1>
   <p class="pitch">
     Вы один на старом корабле. Вокруг — космос, которому до вас нет дела,
     и <b>полбака топлива</b>. Летите куда хотите: садитесь на планеты, копайте,
-    возите товар, обживайтесь. Никто не скажет вам, что делать дальше.
+    возите товар, обживайтесь. Никто не скажет, что делать дальше, —
+    и никто не помешает.
   </p>
   <a class="btn" href="/play.html" id="playBtn">ИГРАТЬ<s></s></a>
   <div class="who" id="who">…</div>
@@ -137,8 +147,8 @@
     <div>
       <h2>Вы летаете и <b>сами во всём разбираетесь</b></h2>
       <p class="lead">
-        Открыли страницу — и вы в космосе. Впереди звезда, вокруг неё планеты.
-        Летите к любой, садитесь, выходите наружу в скафандре и идёте пешком.
+        Открыли страницу — и вы уже в космосе. Впереди звезда, вокруг неё планеты.
+        Летите к любой, садитесь, выходите в скафандре и идёте пешком.
         Под ногами руда, в скалах пещеры, в небе чужие луны. Что нашли — грузите
         в трюм и везёте на станцию продавать. На вырученное чините корабль,
         ставите приборы получше, нанимаете людей. А потом летите дальше, туда,
@@ -239,7 +249,7 @@
 <section id="loop">
   <div class="eyebrow">Чем вы заняты</div>
   <h2>Один круг, и каждый следующий шире</h2>
-  <p class="lead">Больше правил тут нет — всё остальное вырастает отсюда само.</p>
+  <p class="lead">Других правил нет. Всё остальное — экипаж, база, враги, истории — вырастает отсюда само.</p>
   <div class="loop">
     <div class="st"><b>ЛЕТИТЕ</b><s>выбираете звезду на карте и тратите топливо</s></div>
     <div class="st"><b>САДИТЕСЬ</b><s>ищете залежи, жизнь, чужие следы</s></div>
@@ -249,6 +259,31 @@
     <div class="st"><b>ЛЕТИТЕ ДАЛЬШЕ</b><s>там опаснее — и там лежит то, чего нет рядом</s></div>
   </div>
   <a class="btn ghost sm" href="/mechanics.html">Подробнее, как всё устроено →</a>
+</section>
+
+<section id="get">
+  <div class="eyebrow">Если без вкладок</div>
+  <h2>Ставится как приложение</h2>
+  <p class="lead">Своё окно без адресной строки и значок на рабочем столе или на экране
+  телефона. Качать нечего: это та же страница, просто браузер запоминает её как программу.
+  Открывается и без сети — а с сетью сама подхватывает обновления.</p>
+  <div class="get">
+    <div>
+      <h3>Одной кнопкой</h3>
+      <p>Если ваш браузер умеет ставить страницы как приложения, кнопка появится сама.</p>
+      <button class="btn ghost sm" id="installBtn">УСТАНОВИТЬ</button>
+      <p>Не появилась — значит, в этом браузере это делается через меню, см. справа.</p>
+    </div>
+    <div>
+      <h3>Через меню браузера</h3>
+      <ol>
+        <li><b>Windows, Chrome или Edge:</b> в адресной строке значок монитора со стрелкой → «Установить», либо меню «⋮» → «Приложения».</li>
+        <li><b>Mac, Chrome:</b> тот же значок справа в адресной строке.</li>
+        <li><b>Mac, Safari:</b> меню «Файл» → «Добавить в Dock».</li>
+        <li><b>Телефон:</b> «Поделиться» → «На экран Домой».</li>
+      </ol>
+    </div>
+  </div>
 </section>
 
 <section id="bird">
@@ -280,7 +315,7 @@
       захочется. Всё сохранится.
     </p>
     <div class="cols">
-      <div><b>ПРОСТО ССЫЛКА</b><p>Открывается в браузере на компьютере и на телефоне. Ничего не ставить, ничего не покупать, рекламы нет.</p></div>
+      <div><b>ПРОСТО ССЫЛКА</b><p>Открывается в браузере на компьютере и на телефоне, а захотите — встанет отдельным приложением. Ничего не покупать, рекламы нет.</p></div>
       <div><b>ВСЁ РАЗНОЕ</b><p>Планеты, станции, люди и находки не повторяются — но и не пересобираются заново при каждом заходе.</p></div>
       <div><b>ВЫ САМИ РЕШАЕТЕ</b><p>Хотите — торгуйте, хотите — копайте, хотите — просто летайте и смотрите. Правильного способа нет.</p></div>
       <div><b>ОШИБКИ НАСТОЯЩИЕ</b><p>Кончилось топливо на планете — это беда, а не перезагрузка с последней точки. Зато и находки настоящие.</p></div>
@@ -299,9 +334,10 @@
     <div class="done"><i>✓</i><span>Станции, живые цены, верфь, приборы и наука</span></div>
     <div class="done"><i>✓</i><span>Экипаж, управляющие, репутация, пираты</span></div>
     <div class="done"><i>✓</i><span>Своя база, второй корабль, поселения</span></div>
-    <div class="done"><i>✓</i><span>Учётная запись: играть с любого устройства</span></div>
+    <div class="done"><i>✓</i><span>Учётная запись: играть с любого устройства, пароль восстанавливается по почте</span></div>
+    <div class="done"><i>✓</i><span>Сотня коротких историй про людей по всей галактике</span></div>
+    <div class="done"><i>✓</i><span>Игра ставится как приложение и открывается без сети</span></div>
     <div class="now"><i>●</i><span>Области: группы систем с общей историей</span></div>
-    <div class="now"><i>●</i><span>Сотня коротких историй про людей по всей галактике</span></div>
     <div class="now"><i>●</i><span>Слухи: узнать о месте раньше, чем туда долетите</span></div>
   </div>
 </section>
@@ -317,6 +353,7 @@
   <span id="ver">—</span>
   <a href="/play.html">играть</a>
   <a href="/mechanics.html">как играть</a>
+  <a href="#get">установить</a>
   <a href="/parrot.html">птица</a>
   <a href="https://github.com/DrEgoroff-drift/drift">исходники</a>
 </footer>
@@ -353,6 +390,20 @@
 <script src="/auth.js"></script>
 <script src="/parrot.js"></script>
 <script>
+/* ÑÑÑÐ°Ð½Ð¾Ð²ÐºÐ°: Ð±ÑÐ°ÑÐ·ÐµÑ Ð¿ÑÐµÐ´Ð»Ð°Ð³Ð°ÐµÑ â Ð¼Ñ Ð¿Ð¾ÐºÐ°Ð·ÑÐ²Ð°ÐµÐ¼ ÐºÐ½Ð¾Ð¿ÐºÑ; Ð½ÐµÑ â Ð¾ÑÑÐ°ÑÑÑÑ Ð¼ÐµÐ½Ñ */
+(function(){
+  let deferred=null;
+  const btn=document.getElementById("installBtn");
+  addEventListener("beforeinstallprompt",e=>{
+    e.preventDefault();deferred=e;
+    if(btn)btn.style.display="inline-flex";
+  });
+  if(btn)btn.onclick=async()=>{
+    if(!deferred)return;
+    deferred.prompt();await deferred.userChoice;deferred=null;
+    btn.style.display="none";
+  };
+})();
 /* Версия — из version.json, который пишет выкладка: страница показывает не то,
    что лежит в исходниках, а то, что действительно уехало на сайт. */
 fetch("/version.json",{cache:"no-store"}).then(r=>r.json()).then(d=>{

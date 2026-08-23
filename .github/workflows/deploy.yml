@@ -112,7 +112,8 @@ jobs:
           # страницы и их ассеты: битая картинка на заглавной — тоже поломка выкладки
           for u in mechanics.html parrot.html reset.html treplo.html site.css sky.js planets.js \
                    auth.js parrot.js favicon.svg og.jpg shots/world.webp shots/land.webp \
-                   icons/parrot-512.png icons/fav-32.png parrot.webmanifest; do
+                   icons/parrot-512.png icons/fav-32.png parrot.webmanifest \
+                   drift.webmanifest drift-sw.js; do
             c=$(hc "https://drift-game.ru/$u")
             [ "$c" = "200" ] || { echo "/$u отвечает $c"; exit 1; }
           done
