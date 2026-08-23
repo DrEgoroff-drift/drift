@@ -105,15 +105,9 @@ function hoursDrawPeople(S,tr,camx,camy,p,sx,n,r){
   if(!hoursIsCore(p))return;
   const nite=(typeof surfNight==="function")?surfNight(p):0;
   const dark=(typeof celDark==="function")?celDark():0;
-  /* ночь: окна горят, за ними тени — посёлок ночной смены */
-  if(nite>.15){
-    for(let i=0;i<n;i++){
-      const ox=sx+(i-(n-1)/2)*26, oy=groundAt(tr,ox+camx)-camy;
-      const a=clamp((nite-.15)*2.5,0,1)*.8;
-      ctx.fillStyle="rgba(255,214,150,"+a.toFixed(2)+")";ctx.fillRect(ox+3,oy-12,5,4.5);
-      if(Math.sin(G.t*.01+i*2.1)>.3){ctx.fillStyle="rgba(30,24,18,"+(a*.9).toFixed(2)+")";ctx.fillRect(ox+4.5,oy-12,2,4.5);}
-    }
-  }
+  /* ночные окна и тени за ними рисует сам двор (12tb, M169): здесь они висели
+     по старой сетке в двадцать шесть пикселей и после перепланировки оказались
+     бы в воздухе */
   /* затмение: человек, один раз */
   const H0=hoursAll();
   if(dark>.3&&!H0.man&&G.surf){

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 242 · символов верхнего уровня: 2304
+Файлов: 243 · символов верхнего уровня: 2334
 
 ## СИМВОЛЫ
 
@@ -1853,6 +1853,34 @@ scripSell                    src/12u-scrip.js:111
 scripSellPrice               src/12u-scrip.js:47
 scripVisit                   src/12u-scrip.js:94
 scripVisitReset              src/12u-scrip.js:95
+SD_KIND                      src/12tb-settle-draw.js:33
+SD_MAN                       src/12tb-settle-draw.js:31
+sdBody                       src/12tb-settle-draw.js:203
+sdCast                       src/12tb-settle-draw.js:903
+sdCut                        src/12tb-settle-draw.js:632
+sdDoor                       src/12tb-settle-draw.js:363
+sdDwell                      src/12tb-settle-draw.js:402
+sdFarPal                     src/12tb-settle-draw.js:72
+sdFence                      src/12tb-settle-draw.js:811
+sdField                      src/12tb-settle-draw.js:498
+sdForge                      src/12tb-settle-draw.js:659
+sdKiln                       src/12tb-settle-draw.js:595
+sdMat                        src/12tb-settle-draw.js:40
+sdMix                        src/12tb-settle-draw.js:50
+sdPal                        src/12tb-settle-draw.js:53
+sdPerson                     src/12tb-settle-draw.js:844
+sdProps                      src/12tb-settle-draw.js:756
+sdRGB                        src/12tb-settle-draw.js:49
+sdRoof                       src/12tb-settle-draw.js:260
+sdShadow                     src/12tb-settle-draw.js:215
+sdSmoke                      src/12tb-settle-draw.js:879
+sdStill                      src/12tb-settle-draw.js:714
+sdTerrace                    src/12tb-settle-draw.js:131
+sdWallTex                    src/12tb-settle-draw.js:224
+sdWeir                       src/12tb-settle-draw.js:537
+sdWindow                     src/12tb-settle-draw.js:325
+sdWoodpile                   src/12tb-settle-draw.js:382
+sdYard                       src/12tb-settle-draw.js:1041
 sellCargo                    src/12-economy.js:26
 sellDroneYield               src/12-economy.js:37
 setSt                        src/28-loop.js:68
@@ -1871,22 +1899,24 @@ settleAsk                    src/12t-settle.js:168
 settleAt                     src/12t-settle.js:46
 settleCanLive                src/12t-settle.js:50
 settleDraw                   src/12t-settle.js:228
+settleDrawBody               src/12tb-settle-draw.js:914
 settleGive                   src/12t-settle.js:127
 settleHere                   src/12t-settle.js:47
 settleKeyOf                  src/12t-settle.js:44
-settleLeftBehind             src/12t-settle.js:346
+settleLeftBehind             src/12t-settle.js:316
 settleLine                   src/12t-settle.js:201
 settleMake                   src/12t-settle.js:61
 settleMakes                  src/12t-settle.js:148
 settleMap                    src/12t-settle.js:45
-settleRaid                   src/12t-settle.js:329
+settlePlan                   src/12tb-settle-draw.js:83
+settleRaid                   src/12t-settle.js:299
 settleRaise                  src/12t-settle.js:101
 settleSpotX                  src/12t-settle.js:55
 settleStockSum               src/12t-settle.js:142
-settleStop                   src/12t-settle.js:360
-settleStops                  src/12t-settle.js:371
+settleStop                   src/12t-settle.js:330
+settleStops                  src/12t-settle.js:341
 settleTick                   src/12t-settle.js:77
-settleWatch                  src/12t-settle.js:318
+settleWatch                  src/12t-settle.js:288
 settleWords                  src/12t-settle.js:163
 setTx                        src/28-loop.js:67
 setZoom                      src/15-input.js:176
@@ -2600,7 +2630,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12tb-grok.js · 22 КБ
   · Грохотун: единственный, кто работает не за деньги:1
 
-## src/12t-settle.js · 23 КБ
+## src/12tb-settle-draw.js · 57 КБ
+  · посёлок с земли:1
+
+## src/12t-settle.js · 21 КБ
   · посёлок: вы даёте, решают они:1
 
 ## src/12ua-flea.js · 12 КБ

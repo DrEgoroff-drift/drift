@@ -394,6 +394,15 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   road is a unit of ice, 40 a day; `27k-road`, `91zzy`.
 - **Release look** — after M161: the table as paper, removal of the overlay HUD.
 
+# QUEUE: after the graphics campaign
+
+- **M170 the home as a place** (author, 2026-08-24) — the home stops being a screen of cards and
+  becomes a house standing on its planet: you land, you walk to it on foot, you go in, you walk
+  its rooms and look at what is in them, and the people who live there are drawn living in it —
+  Vega sits, gets up, walks, works. "Полноценный Симс" in the author's words. Ten passes, the
+  last of them performance. Depends on: the surface pass (M169+), `27e-ui-home`/`21ac-base-draw`
+  for the room language, `11ac-trainee`/`11w-vega` for who is inside.
+
 # QUEUE: the thirteenth pass â the galaxy as a book of stories (M122âM151)
 
 **Full text lives in [`docs/PLAN-archive.md`](docs/PLAN-archive.md)** â grep it for `M122`. It was

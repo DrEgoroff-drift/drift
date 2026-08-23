@@ -236,49 +236,22 @@ function settleDraw(S,tr,camx,camy,p){
   const gy=groundAt(tr,bx)-camy;
   const r=rng(S.seed^0x2C1);
   const warm=(S.mood>=34);
-  const n=2+S.built.length+((typeof grownExtra==="function")?grownExtra(p):0);   // и до первого дара тут живут; ступень уезда (11q)
-  const pal=p.T.pal;
-  const wall="rgb("+pal[2].map(v=>Math.round(v*.62+18)).join(",")+")";
-  const roof="rgb("+pal[1].map(v=>Math.round(v*.5+10)).join(",")+")";
-  for(let i=0;i<n;i++){
-    const ox=sx+(i-(n-1)/2)*26+(r()-.5)*8;
-    const hk=(typeof countyHouseK==="function")?countyHouseK(p):1;   /* большой уезд (11l): дворы под гостя */
-    const hh=(16+r()*10)*hk, ww=(17+r()*8)*hk;
-    const oy=groundAt(tr,bx+(ox-sx))-camy;
-    ctx.fillStyle="rgba(0,0,0,.34)";                       // контакт с грунтом
-    ctx.beginPath();ctx.ellipse(ox,oy-1,ww*.6,3,0,0,TAU);ctx.fill();
-    ctx.fillStyle=wall;ctx.fillRect(ox-ww/2,oy-hh,ww,hh);
-    if(i===0&&typeof houseWallMark==="function"&&typeof houseOf==="function")houseWallMark(houseOf(G.sys),ox-ww/2,oy,ww,hh);   /* знак дома на стене (17d) */
-    ctx.fillStyle=roof;                                    // низкая двускатная крыша
-    ctx.beginPath();
-    ctx.moveTo(ox-ww/2-3,oy-hh);ctx.lineTo(ox,oy-hh-7);ctx.lineTo(ox+ww/2+3,oy-hh);
-    ctx.closePath();ctx.fill();
-    /* обвод по кромке крыши: тёмная коробка на тёмном склоне не читается вовсе,
-       а посёлок до первого дара только из таких коробок и состоит */
-    ctx.strokeStyle="rgba(226,236,240,.30)";ctx.lineWidth=1;
-    ctx.beginPath();
-    ctx.moveTo(ox-ww/2-3,oy-hh+.5);ctx.lineTo(ox,oy-hh-6.5);ctx.lineTo(ox+ww/2+3,oy-hh+.5);
-    ctx.stroke();
-    ctx.fillStyle="rgba(255,206,130,"+(.30+S.mood/260).toFixed(2)+")";   // очаг
-    ctx.fillRect(ox-2.5,oy-hh*.62,5,4.5);
-    if(typeof lightsShutters==="function")lightsShutters(ox,oy,ww,hh);   // ставни области трёх светов (11g)
-    /* труба и дым — только у тех дворов, где что-то жгут */
-    const b=SETTLE_BY_K[S.built[i-1]];
-    if(b&&(b.k==="kiln"||b.k==="forge"||b.k==="still")){
-      ctx.fillStyle=roof;ctx.fillRect(ox+ww*.28,oy-hh-11,3.4,6);
-      if(warm)for(let s=0;s<4;s++){
-        const t=((G.t*.6+s*40+i*17)%160)/160;
-        ctx.fillStyle="rgba(210,214,220,"+((1-t)*.16).toFixed(3)+")";
-        ctx.beginPath();
-        ctx.arc(ox+ww*.28+1.7+Math.sin(t*6+i)*5*t,oy-hh-12-t*46,2+t*7,0,TAU);ctx.fill();
-      }
-    }
+  const P=settlePlan(S,tr,p);
+  const n=(P?P.yards.length:2+S.built.length);
+  /* тела дворов, терраса, улица и быт — в 12tb (M169). Здесь остаётся то, что
+     принадлежит посёлку как месту в мире: дозорные, знак дома, вымпел, дым */
+  settleDrawBody(S,tr,camx,camy,p);
+  if(typeof houseWallMark==="function"&&typeof houseOf==="function"&&P&&P.yards[0]){
+    const v=P.yards[0],ox=v.wx-camx,oy=P.baseY-camy-v.lift;
+    houseWallMark(houseOf(G.sys),ox-v.w/2,oy,v.w,v.h*.66);          /* знак дома на стене (17d) */
   }
+  if(typeof lightsShutters==="function"&&P)for(const v of P.yards)
+    if(v.kind==="dwell")lightsShutters(v.wx-camx,P.baseY-camy-v.lift,v.w,v.h*.66);   /* ставни (11g) */
   /* дозорные: не украшение, а то, чем посёлок стоит между игроком и фауной
      (M110). Их видно ровно со второй ступени — раньше некому стоять. */
   const nobody=(typeof hoursNobody==="function")&&hoursNobody(p);   // уезд часов (11h): днём никого
   if(S.stage>=2&&!nobody)for(let i=0;i<2;i++){
-    const ox=sx+(i?1:-1)*(n*14+16), oy=groundAt(tr,bx+(ox-sx))-camy;
+    const ox=(P?(i?P.x1+18:P.x0-18):sx+(i?1:-1)*40)-camx, oy=(P?P.baseY:groundAt(tr,bx))-camy;
     ctx.fillStyle="rgba(20,24,30,.9)";
     ctx.fillRect(ox-1.6,oy-13,3.2,13);
     ctx.beginPath();ctx.arc(ox,oy-15.5,2.6,0,TAU);ctx.fill();
@@ -287,26 +260,23 @@ function settleDraw(S,tr,camx,camy,p){
   }
   if(typeof hoursDrawPeople==="function")hoursDrawPeople(S,tr,camx,camy,p,sx,n,r);   // люди в слоях (11h)
   if(typeof countyDrawTown==="function")countyDrawTown(S,tr,camx,camy,p,sx,n);      // город без кнопок (11l)
-  ctx.fillStyle="rgba(226,206,160,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText("ПОСЁЛОК",sx,gy-56-n*2);
   /* ── виден с горизонта (хвост M109) ──
-     Дворы в полтора десятка пикселей тонут в склоне за экран. Посёлок
-     отмечает себя сам: шест с вымпелом выше любой крыши и столб дыма от
-     общего очага, который тянется на сотню пикселей вверх и кренится по
-     ветру. Шест рисуется вместе с дворами; дым — только у живого посёлка */
+     Дворы тонут в склоне за экран. Посёлок отмечает себя сам: шест с вымпелом
+     выше любой крыши и столб дыма от общего очага, который тянется на сотню
+     пикселей вверх и кренится по ветру. Подпись словом убрана (M169): место,
+     которое надо подписывать, нарисовано плохо. */
   {
-    const px=sx+n*13+30, py=groundAt(tr,bx+(px-sx))-camy;
+    const py=(P?P.baseY:groundAt(tr,bx))-camy;
+    const px=(P?P.x1+30:sx+60)-camx;
     ctx.strokeStyle="rgba(40,34,26,.95)";ctx.lineWidth=1.6;
     ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py-62);ctx.stroke();
     const fl=Math.sin(G.t*.05)*3;
     ctx.fillStyle=(typeof housePennant==="function")?housePennant():"rgba(226,120,70,.9)";   /* цвет дома (17d) */
     ctx.beginPath();ctx.moveTo(px,py-62);ctx.lineTo(px+14+(WIND||0)*4,py-58+fl);ctx.lineTo(px,py-53);ctx.closePath();ctx.fill();
-    if(warm)for(let s=0;s<7;s++){
-      const t=((G.t*.5+s*40)%280)/280, rr=3+t*14;
-      ctx.fillStyle="rgba(210,214,220,"+((1-t)*(1-t)*.16).toFixed(3)+")";
-      ctx.beginPath();
-      ctx.ellipse(sx+(WIND||0)*t*40+Math.sin(t*5+s)*4,gy-34-n*2-t*120,rr*1.3,rr*.8,t*.4,0,TAU);ctx.fill();
-    }
+    /* столб общего очага — тем же дымом, что у труб (12tb): здесь он был
+       цепочкой крупных овалов и читался мыльными пузырями в небе (M169) */
+    if(warm&&typeof sdSmoke==="function")
+      sdSmoke((P?P.bx:bx)-camx,py-10,(WIND||0)*2,1.35,7,14);
   }
 }
 /* ══ M110: они стоят между вами и фауной — и платят за это ══
