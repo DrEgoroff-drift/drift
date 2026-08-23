@@ -88,7 +88,8 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `12t-settle` | the settlement: you feed it, they decide what to raise; pays in goods, speaks in glyphs |
 | `15-input` `16-flight` | keys/pads/mouse, starfield, autopilot, trail |
 | `18c-chunks` | raster cache: world-x chunks for ground and cave rock, full-screen layers for sky glow and weather veil |
-| `17`–`25` `mode-*` | modes: system, map, landing, surface, cave, mine, belt, cockpit; `20-life` — astronaut, flora, fauna |
+| `17`–`25` `mode-*` | modes: system, map, landing, surface, cave, mine, belt, cockpit; `20-life` — astronaut, flora, fauna. Draw halves split off on 0.108.x: `17c-system-draw`, `19f-lander`, `21e-surface-draw`, `23a-dig-draw`, `24aa-raid-draw` |
+| `11g`–`11v` | the thirteenth pass, one module per region: lights, hours, glow, grove, keepers, county, charts, quiet, slow, pass, grown, plan, returners; rumours, names, places; rules in `docs/PASSPORTS.md` |
 | `17b-finds` | four finds in the void: capsule, satellite, container, hulk — the satellite is theirs |
 | `19a-mode-scoop` | scooping volatiles from a gas giant's atmosphere |
 | `21a-mode-base` | the base in cross-section: cell grid, power balance, base network |
