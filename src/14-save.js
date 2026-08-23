@@ -484,7 +484,7 @@ function applySave(s){
   G.trainee=(s.trainee&&typeof s.trainee==="object"&&s.trainee.name)?s.trainee:null;
   G.zoo=(s.zoo&&typeof s.zoo==="object"&&Array.isArray(s.zoo.pen))?s.zoo:null;
   G.concert=(s.concert&&typeof s.concert==="object")?s.concert:null;
-  G.road=(s.road&&typeof s.road==="object")?s.road:null;
+  G.road=(s.road&&typeof s.road==="object")?s.road:null;if(G.road&&G.road.cr===undefined)G.road.cr=0;
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];

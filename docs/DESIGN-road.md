@@ -73,3 +73,22 @@ microphone equalizer along the bottom (synthetic pulse when denied). Sensors sta
 РАЗРЕШИТЬ ДАТЧИКИ button (iOS gesture rule); GPS speed comes from `watchPosition` (falls back
 to haversine between fixes); Wake Lock keeps the screen on and the entry line says the battery
 is the price. Suite `91zzy`.
+
+## Second pass (M168b, 0.130.0) — credits, combo, acceleration, the wave
+
+Author's corrections. **Credits instead of ice**: two credits a real kilometre, a live ticking
+counter on screen; **combo** grows with uninterrupted driving to ×3 over twenty minutes and
+burns after two minutes standing; the daily cap is soft (1500) — «взломают и хрен с ним, сами
+дураки» is the author's recorded call, so speed sanity (3–300 km/h) is the only guard.
+**Acceleration and braking** reach the hull: the speed derivative smooths into a pitch (nose up
+on throttle, a forward dip on brake), the flame grows with acceleration and the nose thrusters
+fire on braking (the fleet's own `drawHull` braking flames). **The wave** replaces the equalizer
+after a self-critique pass (linear bins mostly dead, boxy bars alien to the art language, no
+temporal smoothing, one deaf colour): a smooth glowing curve of log-spaced smoothed bins breathes
+along the bottom, and the **nebulae change colour with the music's mood** — energy (RMS with
+fast attack, slow release) × brightness (spectral centroid) pick the hue from violet-cyan (calm)
+to magenta-amber (energetic), blended 28% with the player's own hull colour, the way Яндекс
+«Моя волна» blends the track's colour with the listener's. Loud beats spawn stars along the
+path; touching the screen makes a white pulse, like the Волна does. Composite «lighter», small
+blobs in the upper two thirds — the first draft washed the whole sky flat green and the critique
+pass caught it.

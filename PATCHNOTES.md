@@ -7,6 +7,20 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.130.0 — "The road pays and the music breathes" (M168b)
+
+The road companion, second pass by the author's notes. **Credits, not ice**: 2 cr a real
+kilometre with a live ticking counter, and a **combo** — drive without stopping and it climbs
+to ×3 over twenty minutes, stand two minutes and it burns; the day cap is a soft 1500 («взломают
+— сами дураки»). **Acceleration and braking play**: the GPS speed derivative pitches the hull —
+nose up and a fatter flame on throttle, a forward dip and the fleet's own nose thrusters on
+brake. **The equalizer is gone** after an honest self-critique (linear bins, boxy winamp bars,
+jitter, deaf colour): in its place a smooth glowing **wave** of log-spaced, time-smoothed bins,
+and **nebulae that change colour with the music's mood** — energy × spectral brightness choose
+the hue (violet-cyan calm → magenta-amber loud), blended with the colour of your own hull, the
+way «Моя волна» blends the track's colour with yours. Loud beats spawn stars on the path;
+touching the screen rings a white pulse. Suite `91zzy` rewritten for credits and mood.
+---
 ## 0.129.0 — "The road companion" (M168)
 
 `27k-road`, from the author's voice note: when the player actually travels — a car, a bus, a
