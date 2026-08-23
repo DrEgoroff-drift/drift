@@ -64,6 +64,7 @@ function renderBasesTab(st){
         $body.appendChild(mr);
       }
       if(typeof vegaHomeBlock==="function")vegaHomeBlock();   /* жиличка (M153) */
+      if(typeof zooHomeBlock==="function")zooHomeBlock();     /* живой угол (M164) */
       /* стена-музей: доска прогресса живёт в кабинете, а не на отдельном экране */
       if(homeHas("study")&&typeof rareCount==="function"){
         $body.appendChild(el("div","sec","СТЕНА В КАБИНЕТЕ · "+rareCount()+" / 100 · "+

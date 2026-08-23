@@ -368,6 +368,11 @@ function updateSurface(dt){
       beast.scanned=true;G.species.add(beast.name);G.data+=14;G.bio=(G.bio|0)+1;
       tell("","Новый вид: "+beast.name+" · +14 данных","Новый вид\n"+beast.name+"\n+14 данных");
     }
+  }else if((S.fauna||[]).some(b=>b.scanned&&!b.caught&&Math.abs(b.x-S.x)<30)){
+    /* космозоо (M164): отсканированного можно поймать — клетка занимает слот трюма */
+    const cb=(S.fauna||[]).find(b=>b.scanned&&!b.caught&&Math.abs(b.x-S.x)<30);
+    G.prompt="ДЕЙСТВИЕ — ПОЙМАТЬ\n"+cb.name.toUpperCase()+" · КЛЕТКА: −1 СЛОТ ТРЮМА";
+    if(actEdge){zooCatch(cb);return;}
   }else if(plant){
     G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
     if(actEdge){

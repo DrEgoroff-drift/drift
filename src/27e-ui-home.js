@@ -527,6 +527,7 @@ function homeRoomBody(c,W2,H2){
       homeCrewFigure(c,x0+10+i*15,fy,clamp(cr.morale===undefined?1:cr.morale,0,1));
     }
     if(typeof vegaHomeFigure==="function")vegaHomeFigure(c,x0+42,fy);   /* жиличка (M153) */
+    if(typeof zooDrawPen==="function")zooDrawPen(c,x0+2,fy);           /* живой угол (M164) */
     zone(x0,56,"living","жилая часть");
   });
   /* 8. причал с маяком: окно в док и живой огонь маяка */

@@ -230,6 +230,7 @@ function renderTab(){
     if(typeof recordBlock==="function")recordBlock();       /* доска почёта, комиссия (M161) */
     if(typeof instBlock==="function")instBlock();           /* институт: темы и отчёты (M162) */
     if(typeof traineeBlock==="function")traineeBlock();     /* диплом стажёру (M163) */
+    if(typeof zooBlock==="function")zooBlock();             /* зоостанция (M164) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */

@@ -797,7 +797,7 @@ body.table #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.124.0";
+const VER="0.125.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -5717,7 +5717,7 @@ function stat(){
     thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1)*(1+rs("thr"))*wearMul(),
     turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn"))*wearMul(),
     fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel"))),
-    cargoMax:Math.max(8,-(typeof vegaAboard==="function"&&vegaAboard()?1:0)+Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
+    cargoMax:Math.max(8,-(typeof vegaAboard==="function"&&vegaAboard()?1:0)-(typeof zooCargoSlots==="function"?zooCargoSlots():0)+Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
     hullMax:Math.max(20,Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0))),
     drill:(cr("cair")?1.3:1)*(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88)*(1+rs("drill")),
     synthRatio:B.has("isosynth")?8:4,
@@ -6802,6 +6802,116 @@ function traineeBlock(){
     const b=el("button","act sm gold","ВЫДАТЬ ДИПЛОМ");b.onclick=()=>{traineeDiploma();renderTab();};
     r.appendChild(b);$body.appendChild(r);
   }
+}
+
+/* ══════════════ космозоо: зверь едет домой ══════════════
+   M164. Булычёвский ключ: попугай — Говорун, а фауна (20-life) уже сканируется
+   и рисуется. Продолжение: ОТСКАНИРОВАННОГО зверя можно поймать — он занимает
+   слот трюма и ворчит, — а дома, в жилой части, для него ставится ЖИВОЙ УГОЛ.
+   Звери требуют корм (органика из трюма), переговариваются, иногда сбегают и
+   находятся в кабинете. Вега против. Зоостанция — стойка ядра области «Роща»:
+   принимает зверей как груз, платит и пишет в книжку — «Тайна третьей планеты»
+   целиком.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Зверь — запись {ru, seed, from, fed}: рисуется тем же генератором по
+      посеву, ничего нового не выдумано.
+   2. Не ферма: угол держит троих, кормится органикой, дохода не даёт. */
+const ZOO_PEN_CAP=3;
+function zooAll(){if(!G.zoo||typeof G.zoo!=="object")G.zoo={carry:[],pen:[]};return G.zoo;}
+function zooCarry(){return zooAll().carry;}
+function zooPen(){return zooAll().pen;}
+/* поймать: только отсканированного, рядом, не хищного */
+function zooCatch(b){
+  const Z=zooAll();
+  if(!b||!b.scanned||Z.carry.length>=2)return false;
+  Z.carry.push({ru:b.name,seed:b.seed|0,from:(G.surf&&G.surf.p&&G.surf.p.name)||"",fed:celDay()});
+  b.caught=1;
+  tell("tech","Пойман: "+b.name+" · клетка в трюме (−1 слот)","ПОЙМАН\n"+b.name);
+  peopleLine("вяк. Вяк-вяк. (недовольно)",b.name);
+  if(typeof vegaAboard==="function"&&vegaAboard())peopleLine("Это ЧТО. Оно будет ЖИТЬ У НАС? Оно на меня смотрело!","Вега",true);
+  if(typeof recordAdd==="function")recordAdd("биослужба","взят зверь: "+b.name);
+  return true;
+}
+/* клетки занимают трюм: читается в stat() */
+function zooCargoSlots(){return zooCarry().length;}
+/* дома: пересадить в угол */
+function zooSettle(){
+  const Z=zooAll();
+  if(!Z.carry.length||Z.pen.length>=ZOO_PEN_CAP)return false;
+  const b=Z.carry.shift();Z.pen.push(b);
+  logAdd("good",b.ru+" переехал в живой угол.");
+  return true;
+}
+/* день: кормёжка из органики, разговоры, побег в кабинет */
+function zooTick(){
+  const Z=zooAll();if(!Z.pen.length)return;
+  const d=celDay();if(Z.lastDay===d)return;Z.lastDay=d;
+  const r=rng(hashi(d,Z.pen.length,0x200));
+  for(const b of Z.pen){
+    if(d-b.fed>=2){
+      if((G.cargo.organics|0)>0){G.cargo.organics--;b.fed=d;b.hungry=0;}
+      else if(!b.hungry){b.hungry=1;logAdd("warn",b.ru+" в углу голоден: нужна органика в трюме");}
+    }else b.hungry=0;
+  }
+  if(Z.pen.length>=2&&r()<.3)logAdd("dim","В живом углу переговариваются: "+Z.pen[0].ru.split(" ")[1]+" и "+Z.pen[1].ru.split(" ")[1]+". О чём — неясно.");
+  if(!Z.escaped&&r()<.08){Z.escaped=Z.pen[Math.floor(r()*Z.pen.length)].ru;logAdd("warn",Z.escaped+" сбежал из угла. Ищите в кабинете.");}
+  else if(Z.escaped&&r()<.5){logAdd("dim",Z.escaped+" нашёлся в кабинете, сидел на книжке. Водворён.");Z.escaped=null;}
+}
+/* зоостанция: стойка ядра области «Роща» */
+function zooStationHere(){
+  if(!G.st||typeof regionAt!=="function")return false;
+  const R=regionAt(G.sx,G.sy);
+  return !!(R&&R.theme==="grove"&&typeof regionDepth==="function"&&regionDepth(G.sx,G.sy)>=.99);
+}
+function zooSell(i){
+  const Z=zooAll();const b=Z.carry[i];if(!b||!zooStationHere())return false;
+  Z.carry.splice(i,1);
+  const pay=Math.round((300+(b.seed%400))/10)*10;
+  earn(pay,"zoo");
+  tell("money","Зоостанция приняла: "+b.ru+" · "+pay+" кр","ЗООСТАНЦИЯ\n+"+pay+" кр");
+  peopleLine("хороший экземпляр. Кормили? Видно, что кормили. В вольер его.","зоостанция",true);
+  if(typeof recordAdd==="function")recordAdd("зоостанция","сдан зверь: "+b.ru);
+  return true;
+}
+/* доска: зоостанция принимает */
+function zooBlock(){
+  const Z=zooAll();
+  if(zooStationHere()&&Z.carry.length){
+    $body.appendChild(el("div","sec","ЗООСТАНЦИЯ · ПРИНИМАЕМ ЗВЕРЕЙ"));
+    Z.carry.forEach((b,i)=>{
+      const r=el("div","row","<div class='nm'><b>"+b.ru+"</b><s>с планеты "+(b.from||"—")+"</s></div>");
+      const bt=el("button","act sm gold","СДАТЬ");bt.onclick=()=>{zooSell(i);renderTab();};
+      r.appendChild(bt);$body.appendChild(r);
+    });
+  }
+}
+/* дом: угол и пересадка */
+function zooHomeBlock(){
+  const Z=zooAll();
+  if(!Z.carry.length&&!Z.pen.length)return;
+  $body.appendChild(el("div","sec","ЖИВОЙ УГОЛ · "+Z.pen.length+" / "+ZOO_PEN_CAP+(Z.escaped?" · "+Z.escaped.toUpperCase()+" СБЕЖАЛ":"")));
+  if(Z.pen.length)$body.appendChild(el("div","row","<div class='nm'><s>"+Z.pen.map(b=>b.ru+(b.hungry?" (голоден)":"")).join(" · ")+"<br>кормятся органикой из трюма · раз в два дня</s></div>"));
+  if(Z.carry.length&&homeHas("living")){
+    const r=el("div","row","<div class='nm'><b>В клетке: "+Z.carry[0].ru+"</b><s>пересадить в угол — клетка освободит слот трюма</s></div>");
+    const b=el("button","act sm","В УГОЛ");b.disabled=Z.pen.length>=ZOO_PEN_CAP;
+    b.onclick=()=>{zooSettle();renderTab();};
+    r.appendChild(b);$body.appendChild(r);
+  }
+}
+/* угол в жилой части: клетка и силуэты по посеву зверя */
+function zooDrawPen(c,x0,fy){
+  const Z=zooAll();if(!Z.pen.length)return;
+  c.strokeStyle="rgba(180,170,150,.6)";c.lineWidth=1.2;
+  c.strokeRect(x0,fy-18,22,18);
+  for(let i=1;i<4;i++){c.beginPath();c.moveTo(x0+i*5.5,fy-18);c.lineTo(x0+i*5.5,fy);c.stroke();}
+  Z.pen.slice(0,3).forEach((b,i)=>{
+    const r=rng(b.seed^0x200);
+    c.fillStyle="rgba("+(120+Math.floor(r()*80))+","+(100+Math.floor(r()*60))+","+(80+Math.floor(r()*40))+",.9)";
+    const bx=x0+4+i*6,by=fy-4;
+    c.beginPath();c.ellipse(bx,by,2.6,1.8+r()*1.2,0,0,TAU);c.fill();
+    c.beginPath();c.arc(bx+2,by-2,1.2,0,TAU);c.fill();
+  });
 }
 
 /* ══════════════ журнал дел ══════════════ */
@@ -21054,7 +21164,7 @@ function snapshot(){
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
-    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,   /* M154–M163 */
+    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,   /* M154–M164 */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -21497,6 +21607,7 @@ function applySave(s){
   G.record=(s.record&&typeof s.record==="object"&&Array.isArray(s.record.e))?s.record:null;
   G.inst=(s.inst&&typeof s.inst==="object"&&s.inst.t)?s.inst:null;
   G.trainee=(s.trainee&&typeof s.trainee==="object"&&s.trainee.name)?s.trainee:null;
+  G.zoo=(s.zoo&&typeof s.zoo==="object"&&Array.isArray(s.zoo.pen))?s.zoo:null;
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];
@@ -32873,6 +32984,11 @@ function updateSurface(dt){
       beast.scanned=true;G.species.add(beast.name);G.data+=14;G.bio=(G.bio|0)+1;
       tell("","Новый вид: "+beast.name+" · +14 данных","Новый вид\n"+beast.name+"\n+14 данных");
     }
+  }else if((S.fauna||[]).some(b=>b.scanned&&!b.caught&&Math.abs(b.x-S.x)<30)){
+    /* космозоо (M164): отсканированного можно поймать — клетка занимает слот трюма */
+    const cb=(S.fauna||[]).find(b=>b.scanned&&!b.caught&&Math.abs(b.x-S.x)<30);
+    G.prompt="ДЕЙСТВИЕ — ПОЙМАТЬ\n"+cb.name.toUpperCase()+" · КЛЕТКА: −1 СЛОТ ТРЮМА";
+    if(actEdge){zooCatch(cb);return;}
   }else if(plant){
     G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
     if(actEdge){
@@ -38184,6 +38300,7 @@ function renderBasesTab(st){
         $body.appendChild(mr);
       }
       if(typeof vegaHomeBlock==="function")vegaHomeBlock();   /* жиличка (M153) */
+      if(typeof zooHomeBlock==="function")zooHomeBlock();     /* живой угол (M164) */
       /* стена-музей: доска прогресса живёт в кабинете, а не на отдельном экране */
       if(homeHas("study")&&typeof rareCount==="function"){
         $body.appendChild(el("div","sec","СТЕНА В КАБИНЕТЕ · "+rareCount()+" / 100 · "+
@@ -38531,6 +38648,7 @@ function renderTab(){
     if(typeof recordBlock==="function")recordBlock();       /* доска почёта, комиссия (M161) */
     if(typeof instBlock==="function")instBlock();           /* институт: темы и отчёты (M162) */
     if(typeof traineeBlock==="function")traineeBlock();     /* диплом стажёру (M163) */
+    if(typeof zooBlock==="function")zooBlock();             /* зоостанция (M164) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
@@ -41065,6 +41183,7 @@ function homeRoomBody(c,W2,H2){
       homeCrewFigure(c,x0+10+i*15,fy,clamp(cr.morale===undefined?1:cr.morale,0,1));
     }
     if(typeof vegaHomeFigure==="function")vegaHomeFigure(c,x0+42,fy);   /* жиличка (M153) */
+    if(typeof zooDrawPen==="function")zooDrawPen(c,x0+2,fy);           /* живой угол (M164) */
     zone(x0,56,"living","жилая часть");
   });
   /* 8. причал с маяком: окно в док и живой огонь маяка */
@@ -43267,7 +43386,7 @@ function frame(now){
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
     if(typeof etherTick==="function")etherTick(dt);
-    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof traineeTick==="function")traineeTick();wearTick(dt);
+    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof traineeTick==="function")traineeTick();if(typeof zooTick==="function")zooTick();wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){

@@ -7,6 +7,17 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.125.0 — "The space zoo" (M164)
+
+`11ad-zoo`: the Bulychev key made whole — the parrot was Govorun, now the beasts travel. A
+scanned beast can be caught on the surface (a cage takes one hold slot; it grumbles; Vega is
+loudly against), carried home and settled into the «живой угол» of the living part (three pens,
+drawn in the room with silhouettes from each beast's seed). They eat organics from the hold every
+other day, mutter to each other, and occasionally escape into the study, where they are found
+sitting on the record book. The counter at the core of the Grove region is a **zoo station**: it
+takes beasts as cargo, pays, and writes to the record book. Not a farm: the pen holds three and
+earns nothing. Suite `91zzs`.
+---
 ## 0.124.0 — "The trainee" (M163)
 
 `11ac-trainee`: the opposite of Vega — a stowaway boy found in the hold after a bazaar, who

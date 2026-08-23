@@ -369,7 +369,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   and the medical board as the quiet ending; `11aa-record`, `91zzp`.
 - **M162 institute** — **built (0.123.0)**: topics, labs, forms, the voucher to the sanatorium planet; `11ab-institute`, `91zzq`.
 - **M163 trainee** — **built (0.124.0)**: the stowaway boy on the right seat, learns, gets a diploma, leaves; `11ac-trainee`, `91zzr`.
-- **M164 zoo** (joy) — beasts brought home, pens, the zoo station; `11ad-zoo`, `91zzs`.
+- **M164 zoo** (joy) — **built (0.125.0)**: beasts brought home, pens, the zoo station; `11ad-zoo`, `91zzs`.
 - **M165 wall paper & concert** (joy) — the wall newspaper on the counter, the request concert
   on the receiver; `11ae-concert`, `91zzt`.
 - **M166 dominoes** (joy) — dominoes at the table with crew, rivals, Vega; `11af-domino`, `91zzu`.
