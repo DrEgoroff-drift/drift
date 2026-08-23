@@ -138,7 +138,8 @@ function renderThings(box){
   L.forEach(t=>{
     const row=document.createElement("div");row.className="thing"+(t.seen?"":" new");
     const cv=document.createElement("canvas");cv.width=128;cv.height=80;
-    drawThingIcon(cv.getContext("2d"),t.k,128,80);
+    if(t.k==="tape"&&t.ring&&typeof drawRingTape==="function")drawRingTape(cv.getContext("2d"),t,128,80);
+    else drawThingIcon(cv.getContext("2d"),t.k,128,80);
     const nm=document.createElement("div");nm.className="nm";
     nm.innerHTML="<b>"+t.ru+"</b><s>"+(t.note||"")+(t.sx!=null?" · "+t.sx+":"+t.sy:"")+"</s>";
     row.appendChild(cv);row.appendChild(nm);

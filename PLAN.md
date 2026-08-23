@@ -341,7 +341,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
 - **M153 Vega** — **built (0.114.0)**: the lodger who cannot be evicted: the one-shot device on the flea, three acts,
   the mirror, flying with her (right seat, HUD line, help/hinder/quarrel/gift/outings), the
   seven-day ending; `11w-vega`, `12k-vega`, `91zzh`.
-- **M154 the Ring** — a structured signal from outside on the receiver, recorded on tape, never
+- **M154 the Ring** — **built (0.115.0)**: a structured signal from outside on the receiver, recorded on tape, never
   explained; `11x-ring`, `91zzi`.
 - **M155 misclosure** — the region where the counts diverge; tapes together draw a figure on
   the table; `11z-misclosure`, `91zzj`.

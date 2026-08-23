@@ -7,6 +7,17 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.115.0 — "The Ring" (M154)
+
+`11x-ring`: a structured signal from outside. After forty jumps (then every 25–40) the
+receiver's own wave carries a pulse in groups for one minute — «…не позывной. Не наш.» The
+console shows the pulse instead of the bands and offers ЗАПИСАТЬ once: the tape (direction,
+strength, sector, day) lies on the table drawn as pulses and can be handed at any counter —
+«приняли. Отправим в институт. Что там — не скажут.» One source far beyond the edge
+(`RING_SRC`): every region hears it from its own side and with its own strength, the same
+geometry as the panel's misclosure. Rumours pick it up («говорят, опять поймали»). Nothing
+explains it, and a test guards that no line ever does. Suite `91zzi`.
+---
 ## 0.114.0 — "Vega" (M153)
 
 `11w-vega`, `12k-vega`: the lodger who cannot be evicted — a comedy of one wish in the key of

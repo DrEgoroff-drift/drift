@@ -35,7 +35,10 @@ function consoleTick(dt){
   const rx=document.getElementById("rx"),knob=document.getElementById("rxKnob"),
         line=document.getElementById("rxLine"),band=document.getElementById("rxBand");
   /* приёмник: если свежей строки нет — показываем то, что ловится на частоте */
-  if(conFresh<=0&&line&&typeof radioTune==="function"){
+  const RN=(typeof ringLine==="function")?ringLine():null;   /* Кольцо (M154): пока звучит — только оно */
+  const rec=document.getElementById("rxRec");if(rec)rec.style.display=(RN&&G.ringNow&&!G.ringNow.rec)?"":"none";
+  if(RN&&line){band.textContent=RN.ru;line.textContent=RN.text;con.classList.remove("quiet");}
+  else if(conFresh<=0&&line&&typeof radioTune==="function"){
     const f=(G.radioF==null?.05:G.radioF);
     if(knob&&document.activeElement!==knob)knob.value=f;
     const R=radioTune(f);
