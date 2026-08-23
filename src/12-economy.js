@@ -19,7 +19,7 @@ function marketFor(sys){
   const N=(typeof needOf==="function")?needOf(sys):null;   /* нужда (M152e): ×2 на один привоз */
   for(const k of TRADE_KEYS)
     /* занятая система: скупщик один, и он знает, что деваться некуда */
-    prices[k]=Math.max(1,Math.round(base[k]*mul*boost*(N&&N.k===k?NEED_MUL:1)*occPriceMul(sys.sx,sys.sy)*
+    prices[k]=Math.max(1,Math.round(base[k]*mul*boost*(N&&N.k===k?NEED_MUL:1)*(typeof expPriceMul==="function"?expPriceMul(k):1)*occPriceMul(sys.sx,sys.sy)*
                                     clamp(1+(m.pressure[k]||0),.4,1.8)));
   return prices;
 }

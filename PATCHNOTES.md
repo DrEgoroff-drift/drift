@@ -7,6 +7,19 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.117.0 — "The circular" (M156)
+
+`11x-expedition`: once the Ring has been heard twice and a tape handed in, the ether carries the
+circular — «Готовится экспедиция за край. Всем станциям — по плану» — and for sixty days the
+world works for it through the channels it already has. Every station's ДОСКА collects one good
+(isotopes, titan, organics, silicon or cartridges) at one and a half times the price, with a
+record-book line; prices creep — expedition goods ×1.25, iron and ice ×0.85; barges and
+settlements give people and it is heard; half the ether is about the expedition; a hire asks
+«возьмите меня туда» and can be released from ДОСКА (the others take heart). The barge passenger
+becomes a channel: a fellow traveller to a named station takes the seat on the console and says
+one line per jump, then gets off — the M131 tail closed. No quest log: the demand is the world's
+face for sixty days. Suite `91zzk`.
+---
 ## 0.116.0 — "The misclosure" (M155)
 
 `11z-misclosure`, on top of the hours region (11h): in the county where the hours drift, the

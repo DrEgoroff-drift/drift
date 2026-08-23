@@ -345,7 +345,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   explained; `11x-ring`, `91zzi`.
 - **M155 misclosure** — **built (0.116.0)**: the region where the counts diverge; tapes together draw a figure on
   the table; `11z-misclosure`, `91zzj`.
-- **M156 circular** — the expedition demand through queues, prices, barges, settlements, crew,
+- **M156 circular** — **built (0.117.0)**: the expedition demand through queues, prices, barges, settlements, crew,
   rumours for sixty days; barge passenger as a channel; `11x-expedition`, `G.exp`, `91zzk`.
 - **M157 the sixth** — five rival traces as links drawing one route to the sixth, who gets a
   face and goes with the expedition; `12k-stories-d`, `91zzl`.

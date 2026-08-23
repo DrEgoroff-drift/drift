@@ -24,6 +24,7 @@ function openStation(){
   if(typeof pricesSeen==="function")pricesSeen(G.sys);
   if(typeof vegaHomeArrive==="function"&&vegaAtHome())vegaHomeArrive();   /* «я прибралась» (M153) */
   if(typeof vegaLanded==="function")vegaLanded();
+  if(typeof expPaxDock==="function")expPaxDock();   /* попутчик сошёл (M156) */
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
   document.getElementById("stName").textContent=G.st.name.toUpperCase();
@@ -221,6 +222,7 @@ function renderTab(){
     if(typeof vegaFleaBlock==="function")vegaFleaBlock();   /* дед с лотка (M153) */
     if(typeof ringBlock==="function")ringBlock();           /* ленты Кольца (M154) */
     if(typeof misBlock==="function")misBlock();             /* часы станции против неба (M155) */
+    if(typeof expBlock==="function")expBlock();             /* экспедиция: собираем, отпустить, попутчик (M156) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */

@@ -65,6 +65,7 @@ function etherTick(dt){
   if(typeof needEtherLine==="function"){const h=needEtherLine(r);if(h)out=h;}        /* нужда поблизости (M152e) */
   if(typeof ringEtherLine==="function"){const h=ringEtherLine(r);if(h)out=h;}        /* о том, что ловили (M154) */
   if(typeof misEtherLine==="function"){const h=misEtherLine(r);if(h)out=h;}          /* стойки спорят о времени (M155) */
+  if(typeof expEtherLine==="function"){const h=expEtherLine(r);if(h)out=h;}          /* циркуляр: половина эфира (M156) */
   if(typeof namesEtherLine==="function"){const h=namesEtherLine();if(h)out=h;}       /* ваше слово у диспетчера (11u) */
   if(out&&typeof regionAt==="function"){
     const R=regionAt(G.sx,G.sy);

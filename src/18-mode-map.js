@@ -341,6 +341,7 @@ function jump(cost){
   if(typeof odoAdd==="function")odoAdd("jumps");   // путь, по которому зреет память (11d)
   if(typeof vegaJump==="function")vegaJump();        // укачивает (M153)
   if(typeof ringJump==="function")ringJump();        // Кольцо считает прыжки (M154)
+  if(typeof expPaxJump==="function")expPaxJump();    // попутчик говорит по фразе за прыжок (M156)
   const a=Math.random()*TAU,r=1500;
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
   G.ship.vx=-Math.cos(a)*.7;G.ship.vy=-Math.sin(a)*.7;G.ship.a=a+Math.PI;
