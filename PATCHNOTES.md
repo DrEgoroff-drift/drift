@@ -7,6 +7,18 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.123.0 — "The institute" (M162)
+
+`11ab-institute`: the plan was numbers; the institute is people with topics. Six topics with
+leads in the Strugatsky key («тема 7-Б · плывущие часы · Привалов», «тема 12 · сигнал вне
+диапазона · Ойра-Ойра», «тема 4-А · ответная лента · Выбегалло» — which duplicates 7-Б, and
+that is their business) are offered as letters at science counters; a report is handed as a
+tape, a foreign piece of the kit, a closed need or a handed-in find. Three outcomes: closed
+(a voucher), «зайдите через неделю» (and then maybe «не в тот отдел» — a month later it
+surfaces with a reprimand in the record book), or «закрыта за неактуальностью» the morning you
+deliver. The voucher: land on any ocean world and rest three days by the ship — the crew's
+morale is full, Vega will not leave the water, the parrot has a tan line. Suite `91zzq`.
+---
 ## 0.122.0 — "The record book" (M161)
 
 `11aa-record`: the player's biography, written by others. `recordAdd(author, text)` is called by

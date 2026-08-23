@@ -200,6 +200,11 @@ function updateSurface(dt){
     G.prompt="ДЕЙСТВИЕ — ВОЙТИ В ПЕЩЕРУ";
     if(actEdge){enterCave();return;}
   }
+  /* путёвка (M162): океанический мир и путёвка на столе — три дня отдыха у корабля */
+  if(typeof instRestHere==="function"&&instRestHere()&&dShip<shipZoneR()){
+    G.prompt="САНАТОРИЙ · ДЕЙСТВИЕ — ОТДОХНУТЬ ТРИ ДНЯ";
+    if(actEdge){instRest();return;}
+  }
   /* вход под третьим светом (11g): есть только в соединение и только на планете ядра */
   if(typeof lightsOpen==="function"&&lightsOpen(S.p)&&Math.abs(lightsEntryX(tr,S.p)-S.x)<34){
     G.prompt="ДЕЙСТВИЕ — ВОЙТИ ПОД ТРЕТЬИМ СВЕТОМ";

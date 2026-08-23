@@ -357,7 +357,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   three names return; `91zzo`.
 - **M161 record book** — **built (0.122.0)**: the player's biography written by others, boards of honour, ageing
   and the medical board as the quiet ending; `11aa-record`, `91zzp`.
-- **M162 institute** — topics, labs, forms, the voucher to the sanatorium planet; `11ab-institute`, `91zzq`.
+- **M162 institute** — **built (0.123.0)**: topics, labs, forms, the voucher to the sanatorium planet; `11ab-institute`, `91zzq`.
 - **M163 trainee** — the stowaway boy on the right seat, learns, gets a diploma, leaves; `11ac-trainee`, `91zzr`.
 - **M164 zoo** (joy) — beasts brought home, pens, the zoo station; `11ad-zoo`, `91zzs`.
 - **M165 wall paper & concert** (joy) — the wall newspaper on the counter, the request concert

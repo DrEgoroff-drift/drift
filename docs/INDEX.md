@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 228 · символов верхнего уровня: 2209
+Файлов: 230 · символов верхнего уровня: 2222
 
 ## СИМВОЛЫ
 
@@ -23,7 +23,7 @@ $menu                        src/15-input.js:125
 $msg                         src/28-loop.js:32
 $msl                         src/28-loop.js:35
 $nav                         src/28-loop.js:34
-$opts                        src/26-ui-station.js:778
+$opts                        src/26-ui-station.js:779
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:31
 $sh                          src/28-loop.js:24
@@ -83,7 +83,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:199
 autoLandInputs               src/19-mode-landing.js:33
-autosave                     src/14-save.js:521
+autosave                     src/14-save.js:522
 b64dec                       src/14-save.js:13
 b64enc                       src/14-save.js:11
 bankTransform                src/03b-hull-paint.js:48
@@ -292,18 +292,18 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudBoot                    src/14-save.js:578
-cloudBusy                    src/14-save.js:548
-cloudCall                    src/14-save.js:541
-cloudForget                  src/14-save.js:546
-cloudHere                    src/14-save.js:539
-cloudName                    src/14-save.js:538
-cloudOn                      src/14-save.js:540
-cloudPull                    src/14-save.js:565
-cloudPush                    src/14-save.js:551
+cloudBoot                    src/14-save.js:579
+cloudBusy                    src/14-save.js:549
+cloudCall                    src/14-save.js:542
+cloudForget                  src/14-save.js:547
+cloudHere                    src/14-save.js:540
+cloudName                    src/14-save.js:539
+cloudOn                      src/14-save.js:541
+cloudPull                    src/14-save.js:566
+cloudPush                    src/14-save.js:552
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
-cloudTok                     src/14-save.js:537
+cloudTok                     src/14-save.js:538
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
@@ -566,7 +566,7 @@ ETHER                        src/11b-speech.js:24
 ETHER_EVERY                  src/11b-speech.js:38
 etherLine                    src/11-log.js:29
 etherTick                    src/11b-speech.js:39
-evacuate                     src/21-mode-surface.js:416
+evacuate                     src/21-mode-surface.js:421
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:81
 exitBelt                     src/24-mode-belt.js:174
@@ -591,7 +591,7 @@ expNearStation               src/11x-expedition.js:58
 expOfferBlock                src/11x-expedition.js:231
 expOfferHere                 src/11x-expedition.js:213
 expOn                        src/11x-expedition.js:22
-exportCode                   src/14-save.js:530
+exportCode                   src/14-save.js:531
 expPaxDock                   src/11x-expedition.js:137
 expPaxDraw                   src/11x-expedition.js:146
 expPaxJump                   src/11x-expedition.js:132
@@ -770,7 +770,7 @@ grownOnGive                  src/11q-grown.js:54
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:529
+hasSave                      src/14-save.js:530
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
@@ -890,8 +890,14 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:531
+importCode                   src/14-save.js:532
 initAudio                    src/09-audio.js:7
+INST_TOPICS                  src/11ab-institute.js:17
+instAll                      src/11ab-institute.js:25
+instBlock                    src/11ab-institute.js:112
+instCanReport                src/11ab-institute.js:43
+instClose                    src/11ab-institute.js:71
+instOfferHere                src/11ab-institute.js:27
 INSTR                        src/25a-instr.js:19
 INSTR_BY_ID                  src/25a-instr.js:55
 INSTR_KEYS                   src/25a-instr.js:54
@@ -901,6 +907,9 @@ INSTR_WORK_KEYS              src/05b-instr-kit.js:32
 INSTR_WORKS                  src/05b-instr-kit.js:18
 instrAgeTick                 src/05b-instr-kit.js:86
 instrBuy                     src/05b-instr-kit.js:158
+instReport                   src/11ab-institute.js:51
+instRest                     src/11ab-institute.js:100
+instRestHere                 src/11ab-institute.js:96
 instrFix                     src/05b-instr-kit.js:168
 instrFixCost                 src/05b-instr-kit.js:119
 instrFromShelf               src/05b-instr-kit.js:177
@@ -924,6 +933,10 @@ instrTraits                  src/05b-instr-kit.js:57
 instrUnit                    src/05b-instr-kit.js:48
 instrWearRu                  src/05b-instr-kit.js:97
 instrWorks                   src/05b-instr-kit.js:53
+instState                    src/11ab-institute.js:26
+instTake                     src/11ab-institute.js:34
+instTestSci                  tests/91zzq-institute.js:2
+instTick                     src/11ab-institute.js:80
 invalidateKeyMap             src/15-input.js:41
 invalidateParts              src/05-parts.js:197
 ipctx                        src/25c-instr-hud.js:17
@@ -1024,8 +1037,8 @@ LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:253
 lastRunDay                   src/12k-letters.js:44
 lastRunTick                  src/12k-letters.js:46
-launch                       src/21-mode-surface.js:456
-launchHold                   src/21-mode-surface.js:401
+launch                       src/21-mode-surface.js:461
+launchHold                   src/21-mode-surface.js:406
 layerLevel                   src/10-music.js:326
 lerp                         src/01-core.js:8
 letterAddresseeHere          src/12k-letters.js:78
@@ -1057,7 +1070,7 @@ lightsShut                   src/11g-lights.js:73
 lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:46
-loadGame                     src/14-save.js:525
+loadGame                     src/14-save.js:526
 LOCAL                        src/11b-speech.js:99
 LOG_MAX                      src/11-log.js:11
 LOG_PAGE                     src/11-log.js:12
@@ -1677,7 +1690,7 @@ RES_AUTO                     src/08-state.js:18
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:281
 resEma                       src/28-loop.js:280
-resetArm                     src/26-ui-station.js:777
+resetArm                     src/26-ui-station.js:778
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:24
@@ -1760,7 +1773,7 @@ rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:6
-saveGame                     src/14-save.js:515
+saveGame                     src/14-save.js:516
 say                          src/08-state.js:140
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -2049,7 +2062,7 @@ tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:28
 thingsAll                    src/27i-ui-table.js:27
 tickDrones                   src/12-economy.js:82
-tickLaunchHold               src/21-mode-surface.js:402
+tickLaunchHold               src/21-mode-surface.js:407
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
@@ -2093,7 +2106,7 @@ toggleLog                    src/11-log.js:124
 toggleLoreBoard              src/27h-ui-lore.js:81
 toggleMenu                   src/15-input.js:126
 toggleParrotWin              src/12y-parrot-face.js:693
-totalLoss                    src/21-mode-surface.js:433
+totalLoss                    src/21-mode-surface.js:438
 towShare                     src/03f-hull-role.js:87
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03b-hull-paint.js:1
@@ -2300,6 +2313,9 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## src/11aa-record.js · 6 КБ
   · трудовая книжка: биография, написанная другими:1
+
+## src/11ab-institute.js · 9 КБ
+  · институт как живой заказчик:1
 
 ## src/11a-quests.js · 6 КБ
   · журнал дел:1
@@ -2525,7 +2541,7 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## src/14-save.js · 40 КБ
   · сохранение:1
-  · облако:534
+  · облако:535
 
 ## src/15-input.js · 16 КБ
   · экранные кнопки: авто-скрытие и размер:1
@@ -2646,7 +2662,7 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## src/21-mode-surface.js · 30 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:472
+  · навигатор и подсказки сверху:477
 
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
@@ -2699,7 +2715,7 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## src/26-ui-station.js · 49 КБ
   · станция:1
-  · настройки:776
+  · настройки:777
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -2933,6 +2949,9 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## tests/91zzp-record.js · 3 КБ
   · автотесты: трудовая книжка (M161):1
+
+## tests/91zzq-institute.js · 3 КБ
+  · автотесты: институт (M162):1
 
 ## tests/91zzv-table.js · 7 КБ
   · автотесты: пульт и стол (M151a):1
