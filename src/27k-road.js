@@ -311,6 +311,32 @@ function drawRoad(ts){
     }
     c.restore();
   }
+  /* пилоты рядом (M168f): кто сейчас едет по этому же сектору — далёкие
+     попутные корабли: искра с выхлопом, своя глубина и свой дрейф. Рисунок
+     детерминирован сектором, у всех в клетке одна картина; появляются и
+     тают плавно, чтобы смена счёта не мигала. */
+  RD.matesShow=(RD.matesShow||0)+(Math.min(RD.mates||0,5)-(RD.matesShow||0))*.02;
+  if(RD.matesShow>.05&&RD.sys){
+    c.save();c.globalCompositeOperation="lighter";
+    const pr=rng(hashi(RD.sys.cx,RD.sys.cy,0x9110));
+    const n=Math.ceil(RD.matesShow);
+    for(let i=0;i<n;i++){
+      const depth=.35+pr()*.45,bx=W*(.1+pr()*.8),ph=pr()*TAU,spdK=.004+pr()*.006;
+      const fr=(ph/TAU+t*spdK*(1.2-depth))%1;
+      const x=bx+Math.sin(t*.13+ph)*W*.05*depth;
+      const y=H*(.12+.6*fr);
+      const vis=Math.sin(Math.PI*fr)*clamp(RD.matesShow-i,0,1);
+      if(vis<=0)continue;
+      const s=.9+depth*1.4;
+      c.globalAlpha=vis*.85;
+      c.fillStyle="hsla("+hue+",60%,88%,1)";
+      c.fillRect(x-1.1*s,y-2.6*s,2.2*s,5.2*s);
+      const tg=c.createLinearGradient(x,y+2*s,x,y+2*s+16*s);
+      tg.addColorStop(0,"hsla("+hue+",80%,70%,.5)");tg.addColorStop(1,"hsla("+hue+",80%,70%,0)");
+      c.fillStyle=tg;c.fillRect(x-.8*s,y+2*s,1.6*s,16*s);
+    }
+    c.globalAlpha=1;c.restore();
+  }
   if(RD.beat>.6&&RD.sparks.length<24)
     RD.sparks.push({x:W*(.1+Math.random()*.8),y:-20,v:2+Math.random()*3+fast*6,life:1,big:Math.random()<.2});
   for(let i=RD.sparks.length-1;i>=0;i--){

@@ -7,6 +7,13 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.134.0 — "Company on the road" (M168f)
+
+Pilots riding the same real-world sector are no longer just a count: they fly alongside as
+distant fellow ships — a spark with an exhaust, each at its own depth with its own drift,
+slowly overtaken. The picture is deterministic per sector, so everyone in the cell sees the
+same companions; counts fade in and out instead of blinking.
+---
 ## 0.133.0 — "Measured, not guessed" (G11 closed, M168e)
 
 G11 closed by an honest measurement: the game carries its own probe now — `?g11` tours the

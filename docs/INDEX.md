@@ -2838,7 +2838,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27j-console.js · 7 КБ
   · пульт: приёмник, подсказка, кресло:1
 
-## src/27k-road.js · 28 КБ
+## src/27k-road.js · 29 КБ
   · дорожный спутник:1
 
 ## src/27-ui-ship.js · 26 КБ
