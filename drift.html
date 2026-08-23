@@ -796,7 +796,7 @@ body.table #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.120.0";
+const VER="0.121.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -9053,6 +9053,7 @@ function retBlock(){
   $body.appendChild(el("div","sec","ТАБЛО ПРИБЫТИЙ"));
   let rows=RET_BOARD.map(([nm,late])=>"<s"+(late?" style='color:#c9a45a'":"")+">"+nm+" · "+(late?"задерживается · "+late+" лет":"прибыл")+"</s>").join("<br>");
   if(typeof expDeparted==="function"&&expDeparted()&&G.exp.said)rows+="<br><s style='color:#6f7b86'> — · ушли · не ждут</s>";   /* строка без имени (M159) */
+  if(typeof islandReturned==="function")for(const w of islandReturned())rows+="<br><s style='color:#8fd08a'>"+w+" · вернулся с Острова</s>";   /* M160 */
   if(typeof sixthGone==="function"&&sixthGone())rows+="<br><s style='color:#8a94a0'>Варламова З. · убыла · не ждут</s>";   /* шестая (M157) */
   $body.appendChild(el("div","row","<div class='nm'>"+rows+"</div>"));
 }
@@ -9903,6 +9904,73 @@ function drawRingTape(c,t,W,H){
   for(let i=0;i<40&&x<W-4;i++){const p=pat[i%12];if(p){c.fillRect(x,H/2-4*t.q*p,3*p,8*t.q*p);}x+=p?4*p+4:6;}
   c.strokeStyle="#8a2d2d";c.lineWidth=1.2;
   c.beginPath();c.moveTo(W-18,H-10);c.lineTo(W-18+Math.cos(t.dir)*10,H-10+Math.sin(t.dir)*10);c.stroke();
+}
+
+/* ══════════════ Остров Забвения: пираты как ушедшие ══════════════
+   M160. У Ефремова те, кто не хочет общей работы, уходят на Остров Забвения —
+   их не бьют, их жалеют. Пиратские базы (M35) и ушедшие управляющие (12g)
+   получают второе чтение: пиратский сектор — это МЕСТО, КУДА УШЛИ. Бывший
+   наёмник, соперник без дома, сестра тётки Усти.
+
+   ВТОРАЯ ДВЕРЬ. Абордаж остаётся. Но если на столе лежит письмо на Остров,
+   подойти к базе БЕЗ ОРУЖИЯ (или не доставая его) — значит сесть с письмом:
+   без боя, без добычи. Человек, кому оно, через неделю появляется на табло
+   прибытий. Три письма — три имени.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Ничего не отнимает у боевого контура: письмо — другой вход, не обход.
+   2. Хранится G.island: {letters:{id:{taken,done,day}}}. Тексты — здесь. */
+const ISLAND_LETTERS=[
+  {id:"i1",who:"бывший наёмник Гриша",from:"командир звена",
+   text:"Гриш. Никто тебя не судит. Звено помнит, что ты снял с «Обода» в тот раз. Долг списан. Возвращайся — место есть, оклад тот же. Или не возвращайся, но знай."},
+  {id:"i2",who:"Тихий Ефим",from:"Пекарь",
+   text:"Ефим. Табуретка твоя стоит. Никто не сел. Совеня говорит — сходится, а я говорю — без тебя не сходится. Прилетай. Дверцу я сдал, мне больше ничего не надо."},
+  {id:"i3",who:"сестра тётки Усти",from:"тётка Устя",
+   text:"Нюра. Я у него живу, у пилота, ты знаешь. Там теперь Вега — хорошая, хоть и с приветом. Я к тебе поеду, если ты ко мне не поедешь. Но лучше ты. У нас свет не гасят."}
+];
+function islandAll(){if(!G.island||typeof G.island!=="object")G.island={letters:{}};return G.island;}
+function islandState(id){const I=islandAll();return I.letters[id]||(I.letters[id]={taken:0,done:0,day:0});}
+/* письмо на Остров предлагают у стойки после ухода экспедиции (или в сборе) */
+function islandOfferHere(){
+  const E=G.exp;if(!E||!E.phase||!G.sys||!G.sys.station)return null;
+  const r=rng(hashi(G.sys.sx,G.sys.sy,0x15A+Math.floor(celDay()/3)));
+  const L=ISLAND_LETTERS.filter(l=>!islandState(l.id).taken);
+  if(!L.length||r()>.5)return null;
+  return L[Math.floor(r()*L.length)];
+}
+function islandTake(l){
+  const S=islandState(l.id);if(S.taken)return false;
+  S.taken=1;
+  thingAdd("letter","Письмо на Остров · "+l.from+" → "+l.who,"конверт · туда, куда ушли · подойти к базе без оружия — сесть с письмом",{island:l.id});
+  peopleLine("это туда. К ним. Вы поняли. Без оружия подойдёте — примут.",G.st?G.st.name:"Стойка",true);
+  return true;
+}
+function islandHeld(){return ISLAND_LETTERS.filter(l=>islandState(l.id).taken&&!islandState(l.id).done);}
+/* подход к базе с письмом: не абордаж */
+function islandLand(PB){
+  const held=islandHeld();if(!held.length)return false;
+  const l=held[0],S=islandState(l.id);
+  S.done=1;S.day=celDay();
+  const th=thingsAll().find(t=>t.island===l.id);
+  if(th){th.ru="Письмо на Остров · "+l.from+" → "+l.who+" · отдано";th.note=l.text;th.k="paper";}
+  peopleLine(l.text,l.who,true);
+  peopleLine("прочитал. Неделю подумаю. Летите, вас не тронут.",l.who);
+  logAdd("good","Сели на «"+PB.name+"» с письмом. "+l.who+" прочитал. Через неделю — табло.");
+  if(typeof repAdd==="function")repAdd(1,G.sys);
+  if(typeof recordAdd==="function")recordAdd(l.who,"доставлено письмо на Остров");
+  sfx("ok",{v:.5});
+  return true;
+}
+/* табло: вернувшиеся с Острова — через неделю после письма */
+function islandReturned(){
+  return ISLAND_LETTERS.filter(l=>{const S=islandState(l.id);return S.done&&celDay()-S.day>=7;}).map(l=>l.who);
+}
+function islandBlock(){
+  const O=islandOfferHere();if(!O)return;
+  $body.appendChild(el("div","sec","ПИСЬМО НА ОСТРОВ · ТУДА, КУДА УШЛИ"));
+  const r=el("div","row","<div class='nm'><b>"+O.from+" → "+O.who+"</b><s>отдать — у пиратской базы, подойдя без оружия · через неделю он на табло</s></div>");
+  const b=el("button","act sm","ВЗЯТЬ");b.onclick=()=>{islandTake(O);renderTab();};
+  r.appendChild(b);$body.appendChild(r);
 }
 
 /* ══════════════ невязка: уезд, где счёт неба и счёт людей расходятся ══════════════
@@ -20666,7 +20734,7 @@ function snapshot(){
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
-    ring:G.ring,exp:G.exp,letters:G.letters,   /* Кольцо (M154), экспедиция (M156), письма (M158) */
+    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,   /* M154, M156, M158, M160 */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -21105,6 +21173,7 @@ function applySave(s){
   G.ring=(s.ring&&typeof s.ring==="object")?Object.assign({heard:0,tapes:[],left:RING_FIRST,jumps:0},s.ring):null;G.ringNow=null;
   G.exp=(s.exp&&typeof s.exp==="object")?Object.assign({phase:0,day0:0,coll:{},gone:[],gave:0,pax:null},s.exp):null;
   G.letters=(s.letters&&typeof s.letters==="object")?s.letters:{};
+  G.island=(s.island&&typeof s.island==="object"&&s.island.letters)?s.island:{letters:{}};
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];
@@ -23556,9 +23625,11 @@ function updateSystem(dt){
     if(PB){
       const d=Math.hypot(sh.x-PB.x,sh.y-PB.y);
       if(d<160){
+        /* письмо на Остров (M160): с письмом подходят без боя — вторая дверь */
+        const withLetter=typeof islandHeld==="function"&&islandHeld().length>0;
         G.prompt="ПИРАТСКАЯ БАЗА · "+PB.name.toUpperCase()+
-          "\nДЕЙСТВИЕ — АБОРДАЖ"+(st.armed?"":" (ОРУЖИЯ НЕТ)");
-        if(actEdge){enterRaid(PB);return;}
+          (withLetter?"\nДЕЙСТВИЕ — СЕСТЬ С ПИСЬМОМ · без оружия":"\nДЕЙСТВИЕ — АБОРДАЖ"+(st.armed?"":" (ОРУЖИЯ НЕТ)"));
+        if(actEdge){if(withLetter)islandLand(PB);else enterRaid(PB);return;}
       }
     }
   }
@@ -38126,6 +38197,7 @@ function renderTab(){
     if(typeof expBlock==="function")expBlock();             /* экспедиция: собираем, отпустить, попутчик (M156) */
     if(typeof lettersBlock==="function")lettersBlock();     /* письма с содержанием (M158) */
     if(typeof expOfferBlock==="function")expOfferBlock();   /* есть место (M159) */
+    if(typeof islandBlock==="function")islandBlock();       /* письмо на Остров (M160) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */

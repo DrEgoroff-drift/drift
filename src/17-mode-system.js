@@ -215,9 +215,11 @@ function updateSystem(dt){
     if(PB){
       const d=Math.hypot(sh.x-PB.x,sh.y-PB.y);
       if(d<160){
+        /* письмо на Остров (M160): с письмом подходят без боя — вторая дверь */
+        const withLetter=typeof islandHeld==="function"&&islandHeld().length>0;
         G.prompt="ПИРАТСКАЯ БАЗА · "+PB.name.toUpperCase()+
-          "\nДЕЙСТВИЕ — АБОРДАЖ"+(st.armed?"":" (ОРУЖИЯ НЕТ)");
-        if(actEdge){enterRaid(PB);return;}
+          (withLetter?"\nДЕЙСТВИЕ — СЕСТЬ С ПИСЬМОМ · без оружия":"\nДЕЙСТВИЕ — АБОРДАЖ"+(st.armed?"":" (ОРУЖИЯ НЕТ)"));
+        if(actEdge){if(withLetter)islandLand(PB);else enterRaid(PB);return;}
       }
     }
   }

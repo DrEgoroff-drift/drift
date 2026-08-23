@@ -39,7 +39,7 @@ function snapshot(){
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
-    ring:G.ring,exp:G.exp,letters:G.letters,   /* Кольцо (M154), экспедиция (M156), письма (M158) */
+    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,   /* M154, M156, M158, M160 */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -478,6 +478,7 @@ function applySave(s){
   G.ring=(s.ring&&typeof s.ring==="object")?Object.assign({heard:0,tapes:[],left:RING_FIRST,jumps:0},s.ring):null;G.ringNow=null;
   G.exp=(s.exp&&typeof s.exp==="object")?Object.assign({phase:0,day0:0,coll:{},gone:[],gave:0,pax:null},s.exp):null;
   G.letters=(s.letters&&typeof s.letters==="object")?s.letters:{};
+  G.island=(s.island&&typeof s.island==="object"&&s.island.letters)?s.island:{letters:{}};
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];

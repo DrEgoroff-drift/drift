@@ -7,6 +7,15 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.121.0 — "The Island" (M160)
+
+`11y-island`: the pirates as those who left — Efremov's Island of Oblivion, pitied rather than
+fought. Three letters to the Island (a former hire, Quiet Efim, Aunt Ustya's sister) are offered
+at counters once the circular is out; with one on the table, the pirate base's prompt changes
+from АБОРДАЖ to СЕСТЬ С ПИСЬМОМ — no fight, no loot, the addressee reads the letter aloud and a
+week later appears on the board of returners («вернулся с Острова»). The boarding game stays;
+this is the second door. Suite `91zzo`.
+---
 ## 0.120.0 — "The departure" (M159)
 
 On the sixtieth day of the circular the ether and the music go quiet for a minute, then one
