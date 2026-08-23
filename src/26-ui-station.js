@@ -214,6 +214,7 @@ function renderTab(){
     }
     if(typeof needBlock==="function")needBlock();         /* нужда и наряд (M152e) */
     if(typeof findsBlock==="function")findsBlock();       /* находки: институту или с рук (M152e) */
+    if(typeof kitDepotBlock==="function")kitDepotBlock();   /* склад института: комплект (M152) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */

@@ -112,6 +112,7 @@ function renderBasesTab(st){
         }
         $body.appendChild(cr);
       }
+      if(homeHas("shop")&&typeof kitShopBlock==="function")kitShopBlock();   /* скафандр: починка и заплаты (M152) */
       if(homeCanRebuild()){
         $body.appendChild(el("div","sec",
           "МАСТЕРСКАЯ · ПЕРЕБОРКА ВЫДАЁТ НОВЫЕ СВОЙСТВА, НО СТУПЕНЬЮ НИЖЕ"));

@@ -130,7 +130,7 @@ function stat(){
     shieldRegen:Math.max(0,P.regenAdd||0),
     see:(((cr("echo")?2:1))*(T.has("cloak")?520:1040)+(P.scanAdd||0)+(bpState("longeye")>0?180:(bpState("longeye")<0?-120:0)))+rs("see"),
     digTier:T.has("deepcore")?2:((T.has("deepdrill")||m.drill>=2)?1:0),
-    suitWear:1/(1+techLv("suit")*.55),
+    suitWear:1/(1+techLv("suit")*.55)*(typeof kitStat==="function"?kitStat().wear:1),   /* комплект (M152) */
     refine:1+techLv("refine")*.18,
     droneRate:(1+techLv("hauler")*.22)*mgrDroneRate()*(cr("loom")?1.33:1)*(1+rs("drone")),
     bountyMul:(1+techLv("bounty")*.3)*(1+rs("bounty"))

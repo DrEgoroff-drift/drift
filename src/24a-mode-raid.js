@@ -178,8 +178,8 @@ function enterRaid(PB){
     const [px,pz]=cellCenter(pc,pr);
     picks.push({x:px,z:pz,kind:pk,taken:false});
   }
-  G.raid={PB,R,foes,loot,picks,x:sx0,z:sz0,y:0,a:0,vx:0,vz:0,suit:100,cool:0,
-    ammo:60,armor:0,bag:{parts:[],tech:0,data:0},
+  G.raid={PB,R,foes,loot,picks,x:sx0,z:sz0,y:0,a:0,vx:0,vz:0,suit:suitMax(),cool:0,
+    ammo:60,armor:(typeof kitStat==="function"?kitStat().armor:0),bag:{parts:[],tech:0,data:0},
     walkPhase:0,hurt:0,flash:0,shots:[],exit:[sx0,sz0],level:PB.level};
   G.mode="raid";G.ap=null;
   for(const k in keys)keys[k]=false;
@@ -266,7 +266,7 @@ function updateRaid(dt){
   for(const P of S.picks){
     if(P.taken||Math.hypot(P.x-S.x,P.z-S.z)>52)continue;
     P.taken=true;sfx("ui",{f:640,to:960,d:.14,v:.3});
-    if(P.kind==="medkit"){S.suit=Math.min(100,S.suit+34);say("Аптечка\nскафандр "+Math.round(S.suit)+"%");}
+    if(P.kind==="medkit"){S.suit=Math.min(suitMax(),S.suit+34);say("Аптечка\nскафандр "+Math.round(S.suit)+"%");}
     else if(P.kind==="armor"){S.armor=Math.min(.5,S.armor+.18);say("Бронепластина\nурон −"+Math.round(S.armor*100)+"%");}
     else{S.ammo+=30;say("Боезапас +30\nвсего "+S.ammo);}
   }

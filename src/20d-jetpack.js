@@ -14,15 +14,17 @@ function jetTick(body,g,dt,air){
   const S=G.surf;if(!S)return false;
   if(S.jet==null)S.jet=1;
   let fire=false;
+  const KS=(typeof kitStat==="function")?kitStat():null;   /* ранец комплекта (M152): запас, восстановление, тяга, вес */
+  const burn=JET_BURN*(KS?KS.jetBurn/KS.jetFuel:1),regenMul=KS?KS.jetRegen:1,vmax=JET_VMAX*(KS?KS.jetThrust:1);
   if(air&&keys.thrust&&S.jet>0){
-    S.jet=Math.max(0,S.jet-JET_BURN*dt);
+    S.jet=Math.max(0,S.jet-burn*dt);
     /* тяга — вдвое с лишним сильнее тяготения планеты, иначе на тяжёлом
        мире ранец только замедляет падение */
-    body.vy=Math.max(JET_VMAX,body.vy-g*2.3*dt);
+    body.vy=Math.max(vmax,body.vy-g*2.3*dt);
     fire=true;
     S.jetSfx=(S.jetSfx||0)-dt;
     if(S.jetSfx<=0){S.jetSfx=9;sfx("ui",{f:140+Math.random()*40,to:90,d:.16,v:.05});}
-  }else S.jet=Math.min(1,S.jet+(air?JET_REGEN_AIR:JET_REGEN_GROUND)*dt);
+  }else S.jet=Math.min(1,S.jet+(air?JET_REGEN_AIR:JET_REGEN_GROUND)*regenMul*dt);
   body.jetOn=fire;
   return fire;
 }

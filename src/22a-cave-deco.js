@@ -289,7 +289,7 @@ function drawCaveDark(C,px,py){
   /* темнота — спрайт, а не градиент на кадр: полноэкранный радиальный
      градиент стоил ~15 мс на ×2 (G0). Круг света кладётся одним drawImage,
      углы за ним добираются четырьмя плоскими заливками. */
-  const R=Math.max(W,H)*.52,cx=px,cy=py-14;
+  const R=Math.max(W,H)*.52*kitStat().lamp,cx=px,cy=py-14;   /* фонарь комплекта (M152) */
   const SP=glowSprite("cavedark",()=>{
     const g=ctx.createRadialGradient(0,0,R>0?Math.min(.5,40/R):.06,0,0,1);   // при W=0 (стенд) R=0 — не делить
     g.addColorStop(0,"rgba(0,0,0,0)");
@@ -373,7 +373,7 @@ function drawCaveGlow(C,camx,camy,px,py){
   const f=C.face;
   for(let i=0;i<3;i++){
     const k=1-i*.3, sp=1+i*.55;
-    const lg=ctx.createLinearGradient(px,py,px+f*230*k,py-20);
+    const lg=ctx.createLinearGradient(px,py,px+f*230*k*kitStat().lamp,py-20);
     lg.addColorStop(0,"rgba(190,215,235,"+(.07*k).toFixed(3)+")");
     lg.addColorStop(.55,"rgba(170,200,225,"+(.03*k).toFixed(3)+")");
     lg.addColorStop(1,"rgba(150,190,220,0)");

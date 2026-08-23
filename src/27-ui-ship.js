@@ -141,6 +141,7 @@ function svRender(){
     r.appendChild(box);
     $svBody.appendChild(r);
   }
+  if(typeof kitBlock==="function")kitBlock($svBody);   /* скафандр как комплект (M152) */
 }
 function openShipView(){
   for(const k in keys)keys[k]=false;

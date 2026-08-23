@@ -7,6 +7,22 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.113.0 — "The suit as a kit" (M152)
+
+`12x-suit`: the suit is six places — helmet, torso, gloves, boots, pack, lamp — each a piece
+with a model in the Soviet key («Кречет-3», «Орлан-Д», «Гагара-М», «Буревестник»…), a class
+I–III, a wear layer (new / worn / patched / foreign) and two mod slots (heated liner, reinforced
+seam, breathing cartridge, spare glass, stitched knee, reflector, strap). Nothing is a plain +1:
+weight is the common currency — it slows the walk and feeds the jet burn. `kitStat()` routes
+everything through the knobs that already existed: `st.suitWear`, raid armour, jet burn/regen/
+thrust, walking speed, scan reach, beast shyness, drill speed, the cave lamp's radius and cone,
+charge drain on ice. Charge capacity replaces the hard-coded 100 (`suitMax()`). Where pieces come
+from: a class-I set is issued to all; the institute depot on ДОСКА of science and industrial
+stations issues a piece per four days by the home's turnover (II from the hall, III from the
+garage); a hulk gives a foreign piece; the home workshop repairs worn pieces and fits mods. The
+КОРАБЛЬ screen shows the figure with six places, the passport line and the shelf (wear anywhere).
+Suite `91zzg`.
+---
 ## 0.112.0 — "The economy without a debt" (M152e)
 
 Measured first (`91zzw-economy` prints cr/min per source): a hand-flown leg on «Стриж» with

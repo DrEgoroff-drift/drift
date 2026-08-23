@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 208 · символов верхнего уровня: 2043
+Файлов: 210 · символов верхнего уровня: 2073
 
 ## СИМВОЛЫ
 
@@ -23,7 +23,7 @@ $menu                        src/15-input.js:125
 $msg                         src/28-loop.js:32
 $msl                         src/28-loop.js:35
 $nav                         src/28-loop.js:34
-$opts                        src/26-ui-station.js:765
+$opts                        src/26-ui-station.js:766
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:31
 $sh                          src/28-loop.js:24
@@ -73,7 +73,7 @@ angWrap                      src/01-core.js:35
 applyCrewEvent               src/12b-crew-events.js:214
 applyPadMode                 src/15-input.js:6
 applyPadSize                 src/15-input.js:5
-applySave                    src/14-save.js:51
+applySave                    src/14-save.js:52
 applyVolumes                 src/09-audio.js:28
 apVel                        src/16-flight.js:108
 arrive                       src/16-flight.js:154
@@ -83,7 +83,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:199
 autoLandInputs               src/19-mode-landing.js:33
-autosave                     src/14-save.js:508
+autosave                     src/14-save.js:513
 b64dec                       src/14-save.js:13
 b64enc                       src/14-save.js:11
 bankTransform                src/03b-hull-paint.js:48
@@ -292,18 +292,18 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudBoot                    src/14-save.js:565
-cloudBusy                    src/14-save.js:535
-cloudCall                    src/14-save.js:528
-cloudForget                  src/14-save.js:533
-cloudHere                    src/14-save.js:526
-cloudName                    src/14-save.js:525
-cloudOn                      src/14-save.js:527
-cloudPull                    src/14-save.js:552
-cloudPush                    src/14-save.js:538
+cloudBoot                    src/14-save.js:570
+cloudBusy                    src/14-save.js:540
+cloudCall                    src/14-save.js:533
+cloudForget                  src/14-save.js:538
+cloudHere                    src/14-save.js:531
+cloudName                    src/14-save.js:530
+cloudOn                      src/14-save.js:532
+cloudPull                    src/14-save.js:557
+cloudPush                    src/14-save.js:543
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
-cloudTok                     src/14-save.js:524
+cloudTok                     src/14-save.js:529
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
@@ -472,7 +472,7 @@ drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:207
 drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:240
-drawFindsSystem              src/17b-finds.js:148
+drawFindsSystem              src/17b-finds.js:149
 drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24aa-raid-draw.js:375
 drawForeground               src/21b-surface-deco.js:577
@@ -485,7 +485,8 @@ drawHomeRoom                 src/27e-ui-home.js:42
 drawHqRoom                   src/27f-hq-room.js:22
 drawHull                     src/03e-hull-draw.js:1
 drawHullMarks                src/03b-hull-paint.js:173
-drawJetBar                   src/20d-jetpack.js:30
+drawJetBar                   src/20d-jetpack.js:32
+drawKitFigure                src/12x-suit.js:158
 drawLander                   src/19f-lander.js:52
 drawLandGear                 src/19f-lander.js:26
 drawLanding                  src/19-mode-landing.js:355
@@ -570,7 +571,7 @@ exitBelt                     src/24-mode-belt.js:174
 exitCave                     src/22-mode-cave.js:201
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
-exportCode                   src/14-save.js:517
+exportCode                   src/14-save.js:522
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -589,7 +590,7 @@ FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
 FIND_KINDS                   src/17b-finds.js:19
 findBucket                   src/17b-finds.js:18
-findInteract                 src/17b-finds.js:123
+findInteract                 src/17b-finds.js:124
 findsBlock                   src/12aa-need.js:158
 findSeen                     src/17b-finds.js:54
 findsHere                    src/17b-finds.js:53
@@ -739,7 +740,7 @@ grownOnGive                  src/11q-grown.js:54
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:516
+hasSave                      src/14-save.js:521
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
@@ -859,7 +860,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:518
+importCode                   src/14-save.js:523
 initAudio                    src/09-audio.js:7
 INSTR                        src/25a-instr.js:19
 INSTR_BY_ID                  src/25a-instr.js:55
@@ -935,10 +936,38 @@ keepersSign                  src/11k-keepers.js:114
 keplerPos                    src/06-galaxy.js:39
 keyLabel                     src/15-input.js:63
 keyMap                       src/15-input.js:52
-keyRow                       src/27-ui-ship.js:173
+keyRow                       src/27-ui-ship.js:174
 keys                         src/08-state.js:21
 killPirate                   src/13-pirates.js:179
 killRock                     src/24-mode-belt.js:150
+KIT_MODELS                   src/12x-suit.js:24
+KIT_MODS                     src/12x-suit.js:34
+KIT_PLACES                   src/12x-suit.js:21
+KIT_RU                       src/12x-suit.js:22
+KIT_WEAR                     src/12x-suit.js:32
+kitAddMod                    src/12x-suit.js:148
+kitAll                       src/12x-suit.js:47
+kitBlock                     src/12x-suit.js:217
+kitCanMod                    src/12x-suit.js:141
+kitDepotBlock                src/12x-suit.js:278
+kitDepotOf                   src/12x-suit.js:97
+kitDepotTake                 src/12x-suit.js:111
+kitFromHulk                  src/12x-suit.js:118
+kitGive                      src/12x-suit.js:87
+kitHasMod                    src/12x-suit.js:58
+kitHeatMul                   src/12x-suit.js:208
+kitLine                      src/12x-suit.js:80
+kitName                      src/12x-suit.js:54
+kitPiece                     src/12x-suit.js:43
+kitRepair                    src/12x-suit.js:134
+kitRepairCost                src/12x-suit.js:133
+kitRoman                     src/12x-suit.js:55
+kitSel                       src/12x-suit.js:216
+kitShelf                     src/12x-suit.js:53
+kitShopBlock                 src/12x-suit.js:254
+kitStat                      src/12x-suit.js:59
+kitWearMul                   src/12x-suit.js:57
+kitWearPiece                 src/12x-suit.js:126
 KMAP                         src/15-input.js:28
 KMAP_BELT                    src/15-input.js:32
 labCount                     src/12h-relic.js:16
@@ -978,7 +1007,7 @@ lightsShut                   src/11g-lights.js:73
 lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:46
-loadGame                     src/14-save.js:512
+loadGame                     src/14-save.js:517
 LOCAL                        src/11b-speech.js:95
 LOG_MAX                      src/11-log.js:11
 LOG_PAGE                     src/11-log.js:12
@@ -1230,11 +1259,11 @@ ok                           tests/90-harness.js:23
 openBarge                    src/12l-barge.js:578
 openCrewView                 src/27b-ui-crew.js:199
 openHq                       src/27c-ui-hq.js:520
-openShipView                 src/27-ui-ship.js:145
+openShipView                 src/27-ui-ship.js:146
 openStation                  src/26-ui-station.js:5
-OPT_TABS                     src/27-ui-ship.js:407
-optGroups                    src/27-ui-ship.js:410
-optTab                       src/27-ui-ship.js:409
+OPT_TABS                     src/27-ui-ship.js:408
+optGroups                    src/27-ui-ship.js:411
+optTab                       src/27-ui-ship.js:410
 ORDER_WIN                    src/12aa-need.js:68
 orderDeliver                 src/12aa-need.js:107
 orderHere                    src/12aa-need.js:103
@@ -1553,7 +1582,7 @@ renderCantina                src/27c-ui-hq.js:45
 renderDeeds                  src/11-log.js:92
 renderLog                    src/11-log.js:71
 renderLoreBoard              src/27h-ui-lore.js:26
-renderOpts                   src/27-ui-ship.js:183
+renderOpts                   src/27-ui-ship.js:184
 renderPrices                 src/12aa-need.js:195
 renderRoute                  src/12r-route.js:225
 renderStrips                 src/27i-ui-table.js:112
@@ -1577,7 +1606,7 @@ RES_AUTO                     src/08-state.js:18
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:281
 resEma                       src/28-loop.js:280
-resetArm                     src/26-ui-station.js:764
+resetArm                     src/26-ui-station.js:765
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:24
@@ -1645,7 +1674,7 @@ runTests                     tests/90-harness.js:77
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:6
-saveGame                     src/14-save.js:502
+saveGame                     src/14-save.js:507
 say                          src/08-state.js:140
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -1867,6 +1896,7 @@ subdivide                    src/24-mode-belt.js:34
 suite                        tests/90-harness.js:15
 suitFailure                  src/23-mode-dig.js:104
 suitHit                      src/23-mode-dig.js:97
+suitMax                      src/12x-suit.js:78
 SUN_DIR                      src/19c-light.js:11
 surfaceHint                  src/21e-surface-draw.js:4
 surfNight                    src/06a-celest.js:43
@@ -2314,6 +2344,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12x-parrot.js · 10 КБ
   · трепло: свидетель, который не понимает:1
 
+## src/12x-suit.js · 17 КБ
+  · скафандр как комплект:1
+
 ## src/12y-parrot-face.js · 42 КБ
   · трепло: жёрдочка:1
 
@@ -2326,9 +2359,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/13-pirates.js · 15 КБ
   · пираты:1
 
-## src/14-save.js · 39 КБ
+## src/14-save.js · 40 КБ
   · сохранение:1
-  · облако:521
+  · облако:526
 
 ## src/15-input.js · 16 КБ
   · экранные кнопки: авто-скрытие и размер:1
@@ -2408,7 +2441,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/20c-peep.js · 17 КБ
   · подглядка: луг, который помнит свет:1
 
-## src/20d-jetpack.js · 2 КБ
+## src/20d-jetpack.js · 3 КБ
   · реактивный ранец:1
 
 ## src/20-life.js · 40 КБ
@@ -2454,7 +2487,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
 
-## src/22-mode-cave.js · 27 КБ
+## src/22-mode-cave.js · 28 КБ
   · пещера: поле породы в двух измерениях:1
 
 ## src/23a-dig-draw.js · 38 КБ
@@ -2502,7 +2535,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## src/26-ui-station.js · 48 КБ
   · станция:1
-  · настройки:763
+  · настройки:764
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -2703,6 +2736,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## tests/91zzg-houses.js · 1 КБ
   · дома как язык форм: знак на станции и в посёлке, вымпел цветом дома:1
+
+## tests/91zzg-kit.js · 7 КБ
+  · автотесты: скафандр как комплект (M152):1
 
 ## tests/91zzh-receiver.js · 1 КБ
   · приёмник: диапазоны на одном месте, между ними шум, на краю слова выпадают:1

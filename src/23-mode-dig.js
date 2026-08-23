@@ -114,7 +114,7 @@ function updateDig(dt){
   const D=G.dig,S=G.surf,st=stat();
   document.getElementById("dronebtn").style.display="none";
   /* износ растёт с глубиной; на нуле — аварийный возврат, без урона кораблю */
-  S.suit=Math.max(0,S.suit-(.0025+D.row*.0006)*st.suitWear*dt);
+  S.suit=Math.max(0,S.suit-(.0025+D.row*.0006)*st.suitWear*kitHeatMul()*dt);
   if(S.suit<=25&&!S.warned){S.warned=true;say("СКАФАНДР НА ИСХОДЕ\n▲ наверх, к кораблю");}
   if(S.suit<=0){suitFailure();return;}
   /* фауна живёт независимо от того, бурим мы сейчас или стоим */
@@ -170,7 +170,7 @@ function updateDig(dt){
   /* проходка вдвое медленнее прежней: шахта должна быть работой, а не прокруткой
      экрана. Ускоряется за деньги — модуль БУРОВАЯ УСТАНОВКА на станции даёт
      st.drill, он же множитель здесь. */
-  cell.prog+=.019*st.drill*dt;
+  cell.prog+=.019*st.drill*kitStat().drill*dt;   /* перчатки (M152) */
   G.prompt=head+"\nПРОХОДКА "+Math.round(clamp(cell.prog/cell.hard,0,1)*100)+"%"+
     (cell.res?" · ЖИЛА: "+RES[cell.res].ru.toUpperCase():"")+
     (st.drill<1.3?"\nБЫСТРЕЕ — МОДУЛЬ «БУРОВАЯ УСТАНОВКА» НА СТАНЦИИ":"");

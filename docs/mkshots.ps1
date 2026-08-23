@@ -57,6 +57,10 @@ setTimeout(function(){
       var S=getSystem(R.core.sx,R.core.sy);goTo(S);var p=hoursCorePlanet(S);
       surf(p);G.surf.x=settleSpotX(p,G.surf.tr)-60;G.surf.cam=null;
     },
+    kit:function(){
+      var S=sysWhere(function(S){return S.station;});goTo(S);
+      kitAll().torso=kitPiece("torso",3,1,1);kitAll().lamp=kitPiece("lamp",2,3,2);kitGive(kitPiece("boots",2,0,3),"\u0442");openShipView();
+    },
     table:function(){
       var S=sysWhere(function(S){return S.station;});goTo(S);
       etherLine("\u2026\u0431\u043e\u0440\u0442 \u0447\u0435\u0442\u044b\u0440\u0435-\u0434\u0432\u0435\u043d\u0430\u0434\u0446\u0430\u0442\u044c, \u043f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u0435 \u0432\u044b\u0441\u043e\u0442\u0443. \u0427\u0435\u0442\u044b\u0440\u0435-\u0434\u0432\u0435\u043d\u0430\u0434\u0446\u0430\u0442\u044c?");

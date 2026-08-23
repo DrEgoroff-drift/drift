@@ -336,7 +336,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   the home case; a find handed to the institute for 25%; the rationalisation premium; prices on
   the charts; slower market fill. Target: mod at 10 min, «Вьюк» at 20, hire at 1 h, manager at
   2–3 h, garage by hour 5–6.
-- **M152 the kit** — the suit as six places with trade-offs, pieces with models/class/wear/mods,
+- **M152 the kit** — **built (0.113.0)**: the suit as six places with trade-offs, pieces with models/class/wear/mods,
   issued/found/given, the workshop tier repairs and modernises; `12x-suit`, `11y-kit`, `91zzg`.
 - **M153 Vega** — the lodger who cannot be evicted: the one-shot device on the flea, three acts,
   the mirror, flying with her (right seat, HUD line, help/hinder/quarrel/gift/outings), the

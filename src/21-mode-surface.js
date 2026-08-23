@@ -79,7 +79,7 @@ function enterSurface(){
   const offX=L.x+shipZoneR()+26;
   G.surf={p,tr,shipX:L.x,shipY:L.y,x:offX,y:groundAt(tr,offX)-10,t0:G.t,
     vy:0,on:false,face:1,g:.052+p.T.grav*.05,deposits,plants,fauna,mining:null,
-    suit:100,warned:false,beacon:0,walkAmp:0,walkPhase:0,cave:caveMouth,peep};
+    suit:suitMax(),warned:false,beacon:0,walkAmp:0,walkPhase:0,cave:caveMouth,peep};
   G.mode="surface";
   if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
   G.surfTipShown=0;
@@ -104,7 +104,7 @@ function enterSurface(){
 }
 function updateSurface(dt){
   const S=G.surf,tr=S.tr,st=stat();
-  const mv=.62*dt;
+  const mv=.62*dt*(typeof kitStat==="function"?kitStat().walk:1);   /* ботинки и вес (M152) */
   if(keys.left||keys.right)S.walkTarget=null;
   if(keys.left){S.x-=mv;S.face=-1;}
   if(keys.right){S.x+=mv;S.face=1;}
@@ -175,7 +175,7 @@ function updateSurface(dt){
   /* зверьё бродит и слегка сторонится игрока, но не убегает насовсем */
   for(const b of S.fauna||[]){
     const away=S.x-b.x;
-    if(Math.abs(away)<70){b.shy=Math.min(1,b.shy+.02*dt);b.vx=-Math.sign(away)*.16*b.shy;}
+    if(Math.abs(away)<70*kitStat().noise){b.shy=Math.min(1,b.shy+.02*dt);b.vx=-Math.sign(away)*.16*b.shy;}
     else{b.shy=Math.max(0,b.shy-.01*dt);
       if(Math.random()<.004*dt)b.vx=(Math.random()<.5?-1:1)*(.06+Math.random()*.12);}
     b.x=clamp(b.x+b.vx*dt,40,tr.W-40);
@@ -183,9 +183,9 @@ function updateSurface(dt){
     if(b.vx)b.face=b.vx>0?1:-1;
   }
   let plant=null;
-  for(const pl of S.plants)if(!pl.scanned&&Math.abs(pl.x-S.x)<30)plant=pl;
+  for(const pl of S.plants)if(!pl.scanned&&Math.abs(pl.x-S.x)<30*kitStat().scan)plant=pl;
   let beast=null;
-  for(const b of S.fauna||[])if(!b.scanned&&Math.abs(b.x-S.x)<34)beast=b;
+  for(const b of S.fauna||[])if(!b.scanned&&Math.abs(b.x-S.x)<34*kitStat().scan)beast=b;
   S.mining=null;
   const dbtn=document.getElementById("dronebtn");
   if(dep&&G.droneInventory>0){droneTarget=dep.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[dep.res].ru.toUpperCase();}
@@ -193,7 +193,7 @@ function updateSurface(dt){
   /* у корабля скафандр перезаряжается — сюда и возвращаются между заходами;
      взлёт теперь отдельная кнопка с удержанием (см. tickLaunchHold), а не ДЕЙСТВ,
      чтобы добыча ресурса рядом с посадочной площадкой не отправляла в полёт случайно */
-  if(dShip<shipZoneR()&&S.suit<100){S.suit=Math.min(100,S.suit+.5*dt);S.warned=false;}
+  if(dShip<shipZoneR()&&S.suit<suitMax()){S.suit=Math.min(suitMax(),S.suit+.5*dt);S.warned=false;}
   /* вход в пещеру проверяется раньше залежей и организмов: он редкий и разовый,
      а бурить и сканировать можно где угодно ещё */
   if(S.cave&&Math.abs(S.cave.x-S.x)<34){
@@ -382,7 +382,7 @@ function updateSurface(dt){
     if(actEdge){enterDig();return;}
   }else if(dShip<shipZoneR()){
     G.prompt=(G.fuel<8?"НЕТ ТОПЛИВА · КНОПКА ВЗЛЁТА — ЭВАКУАЦИЯ":"КНОПКА ВЗЛЁТА — УДЕРЖАТЬ")+
-      "\nТРЮМ "+held()+"/"+st.cargoMax+" · СКАФАНДР "+Math.round(S.suit)+"%"+(S.suit<100?" · ЗАРЯДКА":" · ГОТОВ");
+      "\nТРЮМ "+held()+"/"+st.cargoMax+" · СКАФАНДР "+Math.round(S.suit)+"/"+suitMax()+(S.suit<suitMax()?" · ЗАРЯДКА":" · ГОТОВ");
   }else G.prompt="▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
   /* синтез топлива изо льда доступен и на поверхности, не только в полёте */
   if(dShip<shipZoneR()&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax&&keys.act&&!S.mining){

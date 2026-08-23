@@ -110,6 +110,7 @@ function findTake(f){
     const F=POI_FIND.wreck;
     const got=F&&typeof F.give==="function"?F.give(r,d):"часть с обломков";
     if(typeof rareTake==="function")rareTake("hulk",hashi(f.seed,0x2A2E,9));
+    if(typeof kitFromHulk==="function")kitFromHulk(f.seed);   /* чужая вещь комплекта (M152) */
     return got;
   }
   /* сигнал бедствия: живой человек, а не склад. Платит тем, что у него есть, —

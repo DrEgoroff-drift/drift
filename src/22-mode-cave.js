@@ -335,7 +335,7 @@ function updateCave(dt){
   }
   let plant=null;
   for(const pl of C.plants)if(!pl.scanned&&Math.abs(pl.x-C.x)<30&&Math.abs(pl.y-C.y)<40)plant=pl;
-  S.suit=Math.max(0,S.suit-.001*st.suitWear*dt);
+  S.suit=Math.max(0,S.suit-.001*st.suitWear*kitHeatMul()*kitStat().lampDrain*dt);   /* фонарь ест заряд, подогрев держит (M152) */
   if(S.suit<=0){G.cave=null;G.mode="surface";S.suit=0;
     say("СКАФАНДР РАЗРУШЕН\nаварийный возврат к кораблю");
     S.x=S.shipX;S.y=groundAt(S.tr,S.shipX)-10;S.vy=0;return;}
