@@ -93,7 +93,7 @@ function cleanMail($s) {
    Отправленное же через свой ящик письмо подписывается DKIM самим сервером.
 
    Пароль ящика лежит в ~/drift-data/mail.json — вне веб-корня и вне репозитория:
-   {"host":"smtp.nicmail.ru","port":465,"user":"noreply@drift-game.ru","pass":"…"}
+   {"host":"mail.nic.ru","port":465,"user":"noreply@drift-game.ru","pass":"…"}
    Файла нет — откатываемся на mail(), чтобы восстановление не отваливалось совсем. */
 function mailCfg() {
   static $c = null;
@@ -119,7 +119,7 @@ function smtpTalk($fp, $cmd, $expect, &$err) {
 }
 
 function smtpSend($cfg, $to, $subj, $text, &$err) {
-  $host = $cfg['host'] ?? 'smtp.nicmail.ru';
+  $host = $cfg['host'] ?? 'mail.nic.ru';
   $port = (int)($cfg['port'] ?? 465);
   $user = (string)($cfg['user'] ?? '');
   $pass = (string)($cfg['pass'] ?? '');
