@@ -849,7 +849,7 @@ body.table #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.131.0";
+const VER="0.132.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -43134,6 +43134,8 @@ function roadOnShake(e){
   const a=e.accelerationIncludingGravity;
   const m=Math.abs(Math.hypot(a.x||0,a.y||0,a.z||0)-9.81);
   RD.shake=Math.min(1,RD.shake*.9+m*.05);
+  /* боковое усилие поворота (портрет: ось x поперёк хода) — корабль шарахнется */
+  RD.latT=clamp((a.x||0)/5,-1,1);
 }
 function roadOnPos(p){
   if(!RD)return;
@@ -43277,26 +43279,27 @@ function drawRoad(ts){
     c.fillStyle=ng;c.fillRect(bx-rad,by-rad,rad*2,rad*2);
   }
   c.restore();
-  /* звёзды текут навстречу; на экспрессе тянутся вдвое, бит рождает новые */
+  /* корабль летит ВВЕРХ (портретный экран — дорога впереди): звёзды текут
+     вниз; на экспрессе тянутся вдвое, бит рождает новые */
   const r=rng(0x50AD);
   const streak=tier===2?2.2:tier===3?4:1;
   for(let i=0;i<90;i++){
-    const depth=.25+r()*.75,y=r()*H;
-    const x=(r()*W-t*(20+Math.min(spd,300)*3)*depth)%W;
+    const depth=.25+r()*.75,x=r()*W;
+    const y=(r()*H+t*(20+Math.min(spd,300)*3)*depth)%H;
     c.globalAlpha=.25+depth*.6;
     c.fillStyle=depth>.8?"#cfe3ea":"#7d8fa0";
-    c.fillRect(((x%W)+W)%W,y,1+fast*14*depth*streak,depth>.8?1.6:1);
+    c.fillRect(x,((y%H)+H)%H,depth>.8?1.6:1,1+fast*14*depth*streak);
   }
   c.globalAlpha=1;
   /* гипердрайв (самолёт): звёздный тоннель — росчерки сходятся в точку по
-     курсу, и корпус идёт в световом коконе */
+     курсу (над кораблём), и корпус идёт в световом коконе */
   if(tier===3){
-    const vx=W*.78,vy=H*.42;
+    const vx=W*.5,vy=H*.2;
     c.save();c.globalCompositeOperation="lighter";
     const wr=rng(0x3A9F);
     for(let i=0;i<46;i++){
-      const a2=wr()*TAU,rr0=(60+wr()*Math.max(W,H))* (1+((t*1.6+wr())%1));
-      const x0=vx+Math.cos(a2)*rr0,y0=vy+Math.sin(a2)*rr0*.7;
+      const a2=wr()*TAU,rr0=(60+wr()*Math.max(W,H))*(1+((t*1.6+wr())%1));
+      const x0=vx+Math.cos(a2)*rr0*.8,y0=vy+Math.sin(a2)*rr0;
       const k2=.72;
       c.strokeStyle="hsla("+hue+",70%,80%,"+(.05+fast*.12).toFixed(3)+")";
       c.lineWidth=1+wr()*1.4;
@@ -43305,18 +43308,18 @@ function drawRoad(ts){
     c.restore();
   }
   if(RD.beat>.6&&RD.sparks.length<24)
-    RD.sparks.push({x:W+20,y:H*(.15+Math.random()*.5),v:2+Math.random()*3+fast*6,life:1,big:Math.random()<.2});
+    RD.sparks.push({x:W*(.1+Math.random()*.8),y:-20,v:2+Math.random()*3+fast*6,life:1,big:Math.random()<.2});
   for(let i=RD.sparks.length-1;i>=0;i--){
     const s=RD.sparks[i];
-    s.x-=s.v*(W/390);s.life-=.004;
-    if(s.x<-30||s.life<=0){RD.sparks.splice(i,1);continue;}
+    s.y+=s.v*(H/700);s.life-=.004;
+    if(s.y>H+30||s.life<=0){RD.sparks.splice(i,1);continue;}
     c.globalAlpha=s.life*.9;
     c.fillStyle="hsla("+hue+",80%,80%,1)";
     if(s.big){
       c.save();c.translate(s.x,s.y);
       for(let k=0;k<4;k++){c.rotate(Math.PI/4);c.fillRect(-5,-.8,10,1.6);}
       c.restore();
-    }else c.fillRect(s.x,s.y,4+s.v,1.4);
+    }else c.fillRect(s.x,s.y,1.4,4+s.v);
   }
   c.globalAlpha=1;
   /* белые импульсы касания — как у «Волны» */
@@ -43335,20 +43338,40 @@ function drawRoad(ts){
   const bob=Math.sin(RD.phase*1.7)*H*.006*(1+RD.shake*2);
   const jx=(Math.random()-.5)*RD.shake*6,jy=(Math.random()-.5)*RD.shake*6;
   const id=G.shipId,h=hullOf(id);
-  const sc=Math.min(W/(h.len*1.9),H/(h.bw*5.2));
+  const sc=Math.min(W/(h.bw*5.2),H/(h.len*2.4));
+  /* шараханье в повороте: боковое усилие и наклон гонят корпус от центра,
+     потом он ПОСТЕПЕННО центрируется — быстро в сторону, медленно домой */
+  const shove=clamp((RD.latT||0)+(RD.bankT||0)*.8,-1,1);
+  RD.latT=(RD.latT||0)*.97;
+  const want2=shove*W*.22,x0=RD.xOff||0;
+  RD.xOff=x0+(want2-x0)*(Math.abs(shove)>.12?.08:.015);
   const old=ctx;ctx=c;
   c.save();
-  c.translate(W*.44+jx+RD.acc*W*.03,H*.46+bob+jy);
+  c.translate(W*.5+RD.xOff+jx,H*.5+bob+jy-RD.acc*H*.02);
   /* световой кокон гипердрайва — под корпусом, одним светом */
   if(tier===3){
     c.save();c.globalCompositeOperation="lighter";
     const cg=c.createRadialGradient(0,0,h.len*sc*.1,0,0,h.len*sc*.75);
     cg.addColorStop(0,"hsla("+hue+",80%,70%,.14)");cg.addColorStop(1,"hsla("+hue+",80%,70%,0)");
-    c.fillStyle=cg;c.beginPath();c.ellipse(0,0,h.len*sc*.75,h.bw*sc*1.6,0,0,TAU);c.fill();
+    c.fillStyle=cg;c.beginPath();c.ellipse(0,0,h.bw*sc*1.6,h.len*sc*.75,0,0,TAU);c.fill();
     c.restore();
   }
+  /* нос вверх: портретный экран — дорога впереди. Шлейф от сопел — полоской,
+     тем же цветом, что в полёте (trailTint), под корпусом */
+  c.rotate(-Math.PI/2+RD.bank*.22-RD.acc*.06);
   c.scale(sc,sc);
-  c.rotate(RD.bank*.22-RD.acc*.08);
+  if(spd>ROAD_VMIN){
+    const T=trailTint(id,G.mods.engine|0);
+    const L=30+fast*170;
+    c.save();c.globalCompositeOperation="lighter";
+    for(const e of h.eng){
+      const tg=c.createLinearGradient(e.x,0,e.x-L,0);
+      tg.addColorStop(0,rgba(T.core,.5));tg.addColorStop(.3,rgba(T.mid,.28));tg.addColorStop(1,rgba(T.edge,0));
+      c.fillStyle=tg;
+      c.fillRect(e.x-L,e.y-e.r*.55,L,e.r*1.1);
+    }
+    c.restore();
+  }
   drawHull(id,spd>ROAD_VMIN||RD.acc>.2,RD.acc<-.25,Math.min(3,fast*3+Math.max(0,RD.acc)*2+(tier===3?1:0)),RD.bank);
   c.restore();
   ctx=old;

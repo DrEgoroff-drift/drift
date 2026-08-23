@@ -522,7 +522,7 @@ drawPortal                   src/20aa-poi-shapes.js:464
 drawRaid                     src/24aa-raid-draw.js:5
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:108
-drawRoad                     src/27k-road.js:214
+drawRoad                     src/27k-road.js:216
 drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:161
@@ -1755,21 +1755,21 @@ ROAD_CR_KM                   src/27k-road.js:27
 ROAD_TIERS                   src/27k-road.js:25
 ROAD_VMIN                    src/27k-road.js:24
 roadAll                      src/27k-road.js:29
-roadAudio                    src/27k-road.js:139
-roadClose                    src/27k-road.js:196
+roadAudio                    src/27k-road.js:141
+roadClose                    src/27k-road.js:198
 roadCombo                    src/27k-road.js:47
 roadCosmic                   src/27k-road.js:44
 roadDayReset                 src/27k-road.js:30
 roadEarnKm                   src/27k-road.js:49
 roadFinish                   src/27k-road.js:61
-roadFrame                    src/27k-road.js:209
+roadFrame                    src/27k-road.js:211
 roadLightFrac                src/27k-road.js:43
-roadMoodHue                  src/27k-road.js:167
-roadOnPos                    src/27k-road.js:105
+roadMoodHue                  src/27k-road.js:169
+roadOnPos                    src/27k-road.js:107
 roadOnShake                  src/27k-road.js:99
 roadOnTilt                   src/27k-road.js:95
-roadOpen                     src/27k-road.js:183
-roadRgbHue                   src/27k-road.js:175
+roadOpen                     src/27k-road.js:185
+roadRgbHue                   src/27k-road.js:177
 roadSensorsOn                src/27k-road.js:69
 roadSpeedOk                  src/27k-road.js:35
 roadTier                     src/27k-road.js:37
@@ -2834,7 +2834,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27j-console.js · 7 КБ
   · пульт: приёмник, подсказка, кресло:1
 
-## src/27k-road.js · 21 КБ
+## src/27k-road.js · 22 КБ
   · дорожный спутник:1
 
 ## src/27-ui-ship.js · 26 КБ

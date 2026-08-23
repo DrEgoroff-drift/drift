@@ -7,6 +7,15 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.132.0 — "Nose up" (M168d)
+
+The author's first real ride fixed the geometry: the road companion now flies **nose up** — on
+a portrait phone the road is ahead, stars stream downward, the hyperdrive tunnel converges above
+the ship, beat stars fall from the top. The nozzles pull **trail stripes** in the same colours
+as the in-flight trail (`trailTint` core/mid/edge). In a real turn the hull **darts off centre**
+(lateral acceleration + tilt, up to a fifth of the screen) and then recentres slowly — quick to
+the side, gentle home. Suite `91zzy` follows the new centre.
+---
 ## 0.131.0 — "Gradations" (M168c)
 
 The author caught the 3–300 km/h window pretending to be common sense. Three tiers now, with a

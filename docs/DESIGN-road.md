@@ -102,3 +102,13 @@ star streaks stretch double), **ГИПЕРДРАЙВ** 400–1000 (a plane: a st
 the course, a light cocoon around the hull, the flame a step up — and the figure switches to
 fractions of light, because 850 km/h × 1 000 000 is honestly **0.79 световой**). Above 1000 —
 not believed. Pay rate is the same everywhere; the cap does the balancing.
+
+## Fourth pass (M168d, 0.132.0) — nose up, the trail, the dart
+
+From the author's first real phone run («Заебись! только летит вверх а не в бок»). The ship now
+flies **nose up** — portrait screen, the road is ahead: stars stream downward, the warp tunnel
+converges above, the beat stars fall from the top. From the nozzles — the **trail stripes** in
+the very colours the game's flight trail uses (`trailTint`: core/mid/edge of your hull's
+accent). In a real turn the hull **darts sideways** from the centre — lateral g from the
+accelerometer plus the tilt — up to a fifth of the screen, then eases back home slowly (fast
+out, slow return). A NaN on the first frame of the dart was caught by the suite.
