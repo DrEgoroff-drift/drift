@@ -1,12 +1,43 @@
-/* ══════════════ бортовой журнал ══════════════ */
-/* сообщения по центру экрана живут пару секунд, журнал помнит их между сеансами */
-const LOG_MAX=90;
-let logOpen=false;
+/* ══════════════ бортовой журнал ══════════════
+   M151a: журнал — не окно, а тетрадь на столе (27i-ui-table) с тремя
+   закладками. Здесь только запись и маршрутизация: какой голос — на какую
+   страницу. Правило: у каждого голоса своё место.
+     ЭФИР  — всё, что было услышано: приёмник, диспетчер, слухи, звонки;
+     ЛЮДИ  — всё, что сказал человек: стойка, стол, истории, письма, записки;
+     БОРТ  — техника и деньги: tech, money, warn, kill, good, dim.
+   Сообщение по центру (`say`) — только подсказка и авария; реплика человека
+   идёт через `peopleLine`, услышанное — через `etherLine`, и стекло лишь
+   показывает их мельком, а владеет ими тетрадь. */
+const LOG_MAX=160;
+const LOG_PAGE={ether:"ether",talk:"folk",bad:"bort",dim:"bort",good:"bort",kill:"bort",money:"bort",tech:"bort",warn:"bort"};
+function logPageOf(kind){return LOG_PAGE[kind]||"bort";}
+let logOpen=false;   /* совместимость: «журнал открыт» = стол открыт на тетради */
 function logAdd(kind,text){
   if(typeof quietMute==="function"&&quietMute())return;   /* тихий уезд (11n): журнал не пишет */
   G.log.push({t:Date.now(),k:kind,s:text});
   if(G.log.length>LOG_MAX)G.log.splice(0,G.log.length-LOG_MAX);
-  if(logOpen)renderLog(); else{G.logNew=(G.logNew|0)+1;logBtnLabel();}
+  const open=typeof tableIsOpen==="function"&&tableIsOpen();
+  if(open&&typeof tableRender==="function")tableRender();
+  else{
+    G.logNew=(G.logNew|0)+1;
+    const p=logPageOf(kind);
+    G.logNewBy=G.logNewBy||{};G.logNewBy[p]=(G.logNewBy[p]|0)+1;
+    logBtnLabel();
+  }
+}
+/* услышанное: приёмник на пульте показывает строку, тетрадь её помнит */
+function etherLine(text,who){
+  if(!text)return;
+  const s=who?who+": "+text:text;
+  logAdd("ether",s);
+  if(typeof consoleHeard==="function")consoleHeard(text,who);
+}
+/* сказанное человеком: в ЛЮДИ всегда, на стекло — если попросили */
+function peopleLine(text,who,flash){
+  if(!text)return;
+  const s=who?who+" — "+text:text;
+  logAdd("talk",s);
+  if(flash)say(who?who+"\n"+text:text,flash===true?150:flash);
 }
 /* сказать и записать одним движением */
 const TELL_SFX={money:{f:660,to:990,d:.13,v:.3},tech:{f:520,to:1180,d:.2,v:.3},
@@ -20,78 +51,80 @@ function logTime(ms){
   const d=new Date(ms);
   return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);
 }
-/* Счётчик непрочитанного — значок внутри пункта меню, а не переписанная
+/* Счётчик непрочитанного — значок внутри пункта меню СТОЛ, а не переписанная
    подпись: у пункта есть ещё и вторая строка, и затирать её нельзя. */
 function logBtnLabel(){
-  const b=document.getElementById("logbtn");if(!b)return;
+  const b=document.getElementById("tablebtn");if(!b)return;
   const em=b.querySelector("em")||b;
-  em.textContent="ЖУРНАЛ";
-  if(G.logNew){
+  em.textContent="СТОЛ";
+  const n=(G.logNew|0)+(typeof tableNewThings==="function"?tableNewThings():0);
+  if(n){
     const i=document.createElement("i");
-    i.textContent=G.logNew>99?"99+":G.logNew;
+    i.textContent=n>99?"99+":n;
     em.appendChild(i);
   }
-  /* точка на кнопке МЕНЮ: ящик закрыт, а внутри что-то новое */
+  /* точка на кнопке МЕНЮ: ящик закрыт, а на столе что-то новое */
   const mb=document.getElementById("menubtn");
-  if(mb)mb.classList.toggle("on",!!G.logNew);
+  if(mb)mb.classList.toggle("on",!!n);
 }
-function renderLog(){
-  const box=document.getElementById("loglist");
+/* страница тетради: строки выбранной закладки, новые — сверху */
+function renderLog(page){
+  const box=document.getElementById("loglist");if(!box)return;
   box.textContent="";
-  /* ── дела впереди ленты ──
-     Лента отвечает на вопрос «что было», журнал — «что я должен». Второе важнее,
-     поэтому оно сверху, и по строке можно ткнуть: курс ляжет на карту. */
-  if(typeof questSync==="function"){
-    questSync();
-    const open=questOpen();
-    if(open.length){
-      const head=document.createElement("div");
-      head.className="li dim";
-      const hs=document.createElement("span");
-      hs.textContent="ДЕЛА · "+open.length+" · ТКНИТЕ ПО СТРОКЕ — КУРС НА КАРТЕ";
-      head.appendChild(hs);box.appendChild(head);
-      for(const q of open){
-        const row=document.createElement("div");
-        row.className="li quest"+(q.sx!==null?" go":"");
-        const em=document.createElement("em");
-        em.textContent=q.sx!==null?(q.sx+":"+q.sy):"—";
-        const sp=document.createElement("span");
-        const left=questLeft(q);
-        sp.innerHTML="<b>"+q.ru+"</b>"+(q.from?" <i>· "+q.from+"</i>":"")+
-          (left?" <b style='color:#f2b25c'>· "+left+"</b>":"")+
-          (q.note?"<br><i>"+q.note+"</i>":"")+
-          (q.reward?"<br><i style='color:#8fd08a'>награда: "+q.reward+"</i>":"");
-        row.appendChild(em);row.appendChild(sp);
-        if(q.sx!==null){
-          row.style.cursor="pointer";
-          row.onclick=()=>{questGoto(q);};
-        }
-        box.appendChild(row);
-      }
-      const sep=document.createElement("div");
-      sep.className="li dim";
-      const ss=document.createElement("span");ss.textContent="ЛЕНТА СОБЫТИЙ";
-      sep.appendChild(ss);box.appendChild(sep);
-    }
-  }
-  if(!G.log.length){
+  page=page||"ether";
+  const rows=G.log.filter(it=>logPageOf(it.k)===page);
+  if(!rows.length){
     const e=document.createElement("div");e.className="li dim";
-    const s=document.createElement("span");s.textContent="пока пусто";
+    const s=document.createElement("span");
+    s.textContent=page==="ether"?"эфир пуст: крутите ручку приёмника на пульте":
+                  page==="folk"?"никто ещё ничего не сказал":"пока пусто";
     e.appendChild(s);box.appendChild(e);return;
   }
-  for(let i=G.log.length-1;i>=0;i--){
-    const it=G.log[i];
+  for(let i=rows.length-1;i>=0;i--){
+    const it=rows[i];
     const row=document.createElement("div");row.className="li "+(it.k||"");
     const em=document.createElement("em");em.textContent=logTime(it.t);
     const sp=document.createElement("span");sp.textContent=it.s;
     row.appendChild(em);row.appendChild(sp);box.appendChild(row);
   }
 }
+/* дела: «что я должен» — своя закладка, по строке можно ткнуть: курс на карту */
+function renderDeeds(){
+  const box=document.getElementById("loglist");if(!box)return;
+  box.textContent="";
+  if(typeof questSync!=="function"){return;}
+  questSync();
+  const open=questOpen();
+  if(!open.length){
+    const e=document.createElement("div");e.className="li dim";
+    const s=document.createElement("span");s.textContent="дел нет";
+    e.appendChild(s);box.appendChild(e);return;
+  }
+  const head=document.createElement("div");head.className="li head";
+  const hs=document.createElement("span");hs.textContent="ДЕЛА · "+open.length+" · ТКНИТЕ ПО СТРОКЕ — КУРС НА КАРТЕ";
+  head.appendChild(hs);box.appendChild(head);
+  for(const q of open){
+    const row=document.createElement("div");
+    row.className="li quest"+(q.sx!==null?" go":"");
+    const em=document.createElement("em");
+    em.textContent=q.sx!==null?(q.sx+":"+q.sy):"—";
+    const sp=document.createElement("span");
+    const left=questLeft(q);
+    sp.innerHTML="<b>"+q.ru+"</b>"+(q.from?" <i>· "+q.from+"</i>":"")+
+      (left?" <b style='color:#f2b25c'>· "+left+"</b>":"")+
+      (q.note?"<br><i>"+q.note+"</i>":"")+
+      (q.reward?"<br><i style='color:#8fd08a'>награда: "+q.reward+"</i>":"");
+    row.appendChild(em);row.appendChild(sp);
+    if(q.sx!==null){row.style.cursor="pointer";row.onclick=()=>{questGoto(q);};}
+    box.appendChild(row);
+  }
+}
+/* совместимость со старыми вызовами: toggleLog(false) закрывало журнал перед
+   экраном — теперь закрывает стол; toggleLog() открывает стол на тетради */
 function toggleLog(open){
-  logOpen=open===undefined?!logOpen:open;
-  document.getElementById("logwin").classList.toggle("open",logOpen);
-  if(logOpen){G.logNew=0;renderLog();}
-  logBtnLabel();
+  if(typeof tableToggle!=="function")return;
+  if(open===false){tableToggle(false);return;}
+  tableToggle(open===undefined?undefined:true);
 }
 function modCost(k,lvl){return Math.round(MODS[k].base*Math.pow(lvl+1,1.55));}
 function addRes(k,n){

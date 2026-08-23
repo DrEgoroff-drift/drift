@@ -241,80 +241,7 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 #menu button i{font-style:normal;color:var(--void);background:var(--amber);
   padding:1px 5px;border-radius:8px;font-size:9px;margin-left:6px}
 
-/* ══════════════ журнал ══════════════ */
-#logwin{position:fixed;left:12px;top:calc(env(safe-area-inset-top) + 12px);z-index:6;
-  width:min(360px,78vw);max-height:52vh;background:var(--glass);border:1px solid var(--edge2);
-  border-radius:var(--rad-p);backdrop-filter:blur(18px) saturate(1.2);
-  box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
-  display:none;flex-direction:column;font-size:10px;overflow:hidden}
-#logwin.open{display:flex;animation:winIn .2s var(--ease)}
-#logwin>b{font-weight:400;color:var(--dim);letter-spacing:.18em;font-size:8px;
-  padding:11px 12px;border-bottom:1px solid var(--edge);display:flex;align-items:center}
-#logwin>b span{margin-left:auto;color:var(--phos);font-size:17px;line-height:.7;padding:0 4px;cursor:pointer}
-#loglist{overflow-y:auto;-webkit-overflow-scrolling:touch}
-#loglist .li{display:flex;gap:9px;padding:9px 12px;line-height:1.65;
-  border-bottom:1px solid rgba(127,230,216,.07)}
-#loglist .li em{font-style:normal;color:var(--dim);font-size:9px;flex:0 0 auto;padding-top:1px;
-  font-variant-numeric:tabular-nums}
-#loglist .li span{flex:1;min-width:0;color:var(--text)}
-#loglist .li.money span{color:var(--amber)}
-#loglist .li.kill span{color:var(--alarm)}
-#loglist .li.warn span{color:var(--alarm)}
-#loglist .li.tech span{color:var(--rare)}
-#loglist .li.dim span{color:var(--dim)}
-
-/* ── доска отчёта ── тот же каркас, что у журнала: это второе окно, а не
-   второй язык. Отличие одно — оно шире и выше, потому что читают его подолгу,
-   а не проглядывают. Собранное горит, пропуски остаются пропусками: по доске
-   видно не «сколько процентов», а какой формы дыра. */
-#lorewin{position:fixed;left:12px;top:calc(env(safe-area-inset-top) + 12px);z-index:6;
-  width:min(420px,86vw);max-height:66vh;background:var(--glass);border:1px solid var(--edge2);
-  border-radius:var(--rad-p);backdrop-filter:blur(18px) saturate(1.2);
-  box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
-  display:none;flex-direction:column;font-size:10px;overflow:hidden}
-#lorewin.open{display:flex;animation:winIn .2s var(--ease)}
-#lorewin>b{font-weight:400;color:var(--dim);letter-spacing:.18em;font-size:8px;
-  padding:11px 12px;border-bottom:1px solid var(--edge);display:flex;align-items:center}
-#lorewin>b span{margin-left:auto;color:var(--phos);font-size:17px;line-height:.7;padding:0 4px;cursor:pointer}
-#lorelist{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px}
-#lorelist .li{display:flex;gap:9px;padding:7px 12px;line-height:1.6;
-  border-bottom:1px solid rgba(127,230,216,.06)}
-#lorelist .li em{font-style:normal;color:var(--dim);font-size:9px;flex:0 0 22px;
-  font-variant-numeric:tabular-nums}
-#lorelist .li span{flex:1;min-width:0;color:var(--text)}
-#lorelist .li.gap span{color:#33424c}                 /* пропуск: виден, но не читается */
-#lorelist .li.chap{border-top:1px solid var(--edge);margin-top:6px;padding-top:10px}
-#lorelist .li.chap span{color:var(--phos);letter-spacing:.14em}
-#lorelist .li.chap.read span{color:var(--amber)}
-#lorelist .li.note span{color:var(--dim);font-style:italic}
-#lorelist .li.head span{color:var(--dim);letter-spacing:.16em}
-
-/* ── жёрдочка (12y) ──
-   Тот же материал, что у журнала и доски: стекло, волосок по кромке, мягкая
-   тень. Окно узкое и правое — птица сидит сбоку и не закрывает приборы; висит
-   в любом режиме и уходит крестиком. Внутри — только канва, строка речи и
-   подсказка: списки живут на доске отчёта, здесь животное. */
-#parrotwin{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom) + 148px);
-  z-index:6;width:min(280px,72vw);background:var(--glass);border:1px solid var(--edge2);
-  border-radius:var(--rad-p);backdrop-filter:blur(18px) saturate(1.2);
-  box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
-  display:none;flex-direction:column;overflow:hidden}
-#parrotwin.open{display:flex;animation:winIn .2s var(--ease)}
-#parrotwin>b{font-weight:400;color:var(--dim);letter-spacing:.18em;font-size:8px;
-  padding:11px 12px;border-bottom:1px solid var(--edge);display:flex;align-items:center}
-#parrotwin>b i{font-style:normal}
-#parrotwin>b span{margin-left:auto;color:var(--phos);font-size:17px;line-height:.7;
-  padding:0 4px;cursor:pointer}
-#parrotcv{display:block;width:100%;height:262px;cursor:pointer;touch-action:manipulation;
-  background:radial-gradient(120% 90% at 50% 22%,rgba(255,214,150,.10),transparent 62%),
-             linear-gradient(180deg,rgba(8,13,22,.5),rgba(4,7,12,.85))}
-#parrotsay{display:block;font-style:normal;color:var(--amber);font-size:11px;
-  padding:9px 12px 2px;min-height:15px;line-height:1.4;
-  border-top:1px solid var(--edge);word-break:break-word}
-#parrotsay.on{animation:winIn .22s var(--ease)}
-#parrotwin>s{text-decoration:none;color:var(--dim);font-size:8px;letter-spacing:.12em;
-  padding:2px 12px 11px}
-
+/* журнал и отчёт переехали на стол (M151a): см. #tablewin ниже */
 /* ══════════════ экраны ══════════════
    Один каркас на все: шапка с названием и кошельком, навигация, тело,
    подвал с действиями. Фон непрозрачный — сквозь прежние 96% просвечивали
@@ -545,7 +472,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
   .v u{font-size:11px}
   .locus u{font-size:14px}.locus s{font-size:10px}.locus em{font-size:12px}
   #menu button em{font-size:12px}#menu button s{font-size:10px}
-  #loglist,#lorelist,#logwin,#lorewin{font-size:11px}
+  #loglist,#lorelist{font-size:11px}
   .rail button{font-size:11px}
 }
 /* системный скроллбар внутри стекла читался чужим — тонкая полоска в цвет */
@@ -556,3 +483,79 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 /* длинная «секция» — это фраза, а не подпись: обычный регистр, читаемый кегль */
 .sec.note{text-transform:none;letter-spacing:.02em;font-size:11px;line-height:1.6;color:var(--dim)}
 @media (min-width:900px){.sec.note{font-size:12px;max-width:72ch}}
+
+/* ══════════════ пульт (M151a) ══════════════
+   Полоса по низу между пэдами: слева приёмник, справа кресло и жёрдочка.
+   Это приборы, а не окно: проявляется, когда есть что слышать, и гаснет,
+   когда ровно. Подсказка действия (#prompt) стоит над ней. */
+#console{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 18px);transform:translateX(-50%);
+  z-index:5;display:flex;align-items:flex-end;gap:10px;max-width:min(560px,calc(100vw - 400px));
+  pointer-events:none;transition:opacity .25s}
+#console.quiet{opacity:.45}
+body.screen #console{opacity:1}
+#rx{display:flex;flex-direction:column;gap:5px;min-width:0;width:min(360px,44vw);pointer-events:auto;
+  background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);padding:8px 11px 9px;
+  backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
+#rxOut{display:flex;flex-direction:column;min-width:0}
+#rxOut b{font-weight:400;color:var(--dim);font-size:8px;letter-spacing:.18em}
+#rxOut s{text-decoration:none;color:#cfe3ea;font-size:10px;line-height:1.5;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+#rx.fresh #rxOut s{color:var(--phos)}
+#rxKnob{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;margin:0;cursor:pointer}
+#rxKnob::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,transparent 0 12%,rgba(127,230,216,.35) 12% 30%,transparent 30% 40%,rgba(242,178,92,.35) 40% 58%,transparent 58% 66%,rgba(143,208,138,.35) 66% 80%,transparent 80% 88%,rgba(207,227,234,.4) 88% 100%)}
+#rxKnob::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:22px;margin-top:-10px;border-radius:3px;
+  background:linear-gradient(180deg,#cfe3ea,#6f8891);box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 10px rgba(127,230,216,.35)}
+#rxRec{-webkit-appearance:none;align-self:flex-start;background:none;border:1px solid rgba(242,178,92,.5);color:var(--amber);
+  border-radius:8px;font:inherit;font-size:9px;letter-spacing:.14em;min-height:44px;padding:0 14px;cursor:pointer}
+#seat{display:flex;align-items:center;gap:8px;pointer-events:auto;cursor:pointer;
+  background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);padding:6px 12px 6px 6px;
+  backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi);min-height:44px}
+#seat canvas{width:56px;height:56px}
+#seatOut b{display:block;font-weight:400;color:var(--amber);font-size:10px;letter-spacing:.12em}
+#seatOut s{display:block;text-decoration:none;color:var(--dim);font-size:9px;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#perch{-webkit-appearance:none;pointer-events:auto;background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);
+  width:52px;height:52px;padding:4px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
+#perch canvas{width:44px;height:44px}
+@media (max-width:760px){#console{max-width:calc(100vw - 28px);bottom:auto;top:calc(env(safe-area-inset-top) + 112px)}}
+
+/* ══════════════ стол (M151a) ══════════════ */
+#tablewin{z-index:22;background:#0a0806}
+#tablecv{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+#tablewin>header,#tablewin>nav,#tablewin>.body,#tablewin>footer{position:relative;z-index:1}
+#tablewin>.body{padding:0 var(--pad) 10px}
+#loglist,#lorelist{max-width:760px;margin:0 auto;background:rgba(244,236,214,.06);border:1px solid rgba(244,236,214,.12);
+  border-radius:6px;padding:6px 0;font-size:10px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#loglist .li{display:flex;gap:9px;padding:9px 12px;line-height:1.65;border-bottom:1px solid rgba(244,236,214,.06)}
+#loglist .li em{font-style:normal;color:var(--dim);font-size:9px;flex:0 0 auto;padding-top:1px;font-variant-numeric:tabular-nums}
+#loglist .li span{flex:1;min-width:0;color:var(--text)}
+#loglist .li.money span{color:var(--amber)}
+#loglist .li.kill span,#loglist .li.warn span{color:var(--alarm)}
+#loglist .li.tech span{color:var(--rare)}
+#loglist .li.ether span{color:#cfe3ea}
+#loglist .li.talk span{color:#f2e6c8}
+#loglist .li.dim span{color:var(--dim)}
+#loglist .li.head span,#loglist .li.sec span{color:var(--dim);letter-spacing:.16em;font-size:8px}
+#loglist .li.quest.go{cursor:pointer}
+#loglist .thing{display:flex;gap:12px;align-items:center;padding:10px 12px;border-bottom:1px solid rgba(244,236,214,.06)}
+#loglist .thing canvas{width:64px;height:40px;flex:0 0 auto}
+#loglist .thing .nm{flex:1;min-width:0}
+#loglist .thing .nm b{display:block;font-weight:400;color:var(--text);font-size:11px}
+#loglist .thing .nm s{display:block;text-decoration:none;color:var(--dim);font-size:9px;line-height:1.6}
+#loglist .thing.new{box-shadow:inset 3px 0 0 var(--phos)}
+#lorelist .li{display:flex;gap:9px;padding:7px 12px;line-height:1.6;
+  border-bottom:1px solid rgba(127,230,216,.06)}
+#lorelist .li em{font-style:normal;color:var(--dim);font-size:9px;flex:0 0 22px;
+  font-variant-numeric:tabular-nums}
+#lorelist .li span{flex:1;min-width:0;color:var(--text)}
+#lorelist .li.gap span{color:#33424c}                 /* пропуск: виден, но не читается */
+#lorelist .li.chap{border-top:1px solid var(--edge);margin-top:6px;padding-top:10px}
+#lorelist .li.chap span{color:var(--phos);letter-spacing:.14em}
+#lorelist .li.chap.read span{color:var(--amber)}
+#lorelist .li.note span{color:var(--dim);font-style:italic}
+#lorelist .li.head span{color:var(--dim);letter-spacing:.16em}
+#rxScale{position:relative;height:9px;margin-top:-4px}
+#rxScale i{position:absolute;transform:translateX(-50%);font-style:normal;font-size:7px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+/* на экранах станции и прочих пульт не прячется, а поднимается в шапку:
+   эфир слышно и у стойки. На столе он не нужен — стол и есть его память */
+body.screen #console{top:6px;bottom:auto;z-index:21;transform:translateX(-50%) scale(.82);transform-origin:top center;opacity:.92}
+body.table #console{display:none}

@@ -68,7 +68,7 @@ function etherTick(dt){
     if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&Math.random()<.6)
       out=out.replace(/[а-яёa-z]{3,}/gi,w=>Math.random()<.22?"…":w);
   }
-  logAdd("dim",out);
+  etherLine(out);   /* на пульт и в ЭФИР (M151a) */
   if(typeof mirrorEchoArm==="function")mirrorEchoArm(line);   /* зеркало (11f) */
 }
 /* ── как к вам обращаются ──

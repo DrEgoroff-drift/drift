@@ -37,6 +37,7 @@ function openStation(){
    продать, снарядиться, узнать, нанять, распорядиться. Внутри раздела с одной
    вкладкой вторая ступень не показывается — нечего выбирать. */
 const ST_GROUPS=[
+  {id:"board", ru:"ДОСКА",     tabs:["board"]},   /* M151a: всё, что мир говорит о себе, на одной стене */
   {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","flea","smelt","scrip"]},
   {id:"ship",  ru:"КОРАБЛЬ",   tabs:["yard","mods","fuse","instr"]},
   {id:"know",  ru:"НАУКА",     tabs:["lab"]},
@@ -45,8 +46,9 @@ const ST_GROUPS=[
 ];
 function stGroupOf(t){const g=ST_GROUPS.find(G0=>G0.tabs.indexOf(t)>=0);return g?g.id:ST_GROUPS[0].id;}
 let stGroup="trade";
+function stTabsHere(){return ["board"].concat(stTypeOf(G.st.stype).tabs);}   /* доска есть у всех (M151a) */
 function syncTabs(){
-  const has=stTypeOf(G.st.stype).tabs;
+  const has=stTabsHere();
   /* раздел живёт, только если у него есть хоть одна вкладка на этой станции */
   const live=ST_GROUPS.filter(g=>g.tabs.some(t=>has.indexOf(t)>=0));
   if(has.indexOf(tab)<0)tab=(live[0]&&live[0].tabs.filter(t=>has.indexOf(t)>=0)[0])||"none";
@@ -184,6 +186,34 @@ function renderTab(){
     $body.appendChild(el("div","row","<div class='nm'><b>Только заправка и ремонт</b>"+
       "<s>перевалочный узел на отшибе: ни рынка, ни верфи, ни лаборатории —<br>"+
       "зато баки полны и корпус залатан</s></div>"));
+    return;
+  }
+  if(tab==="board"){
+    /* ДОСКА (M151a): всё, что мир говорит о себе, на одной стене — очередь у
+       стойки, дела здесь, табло прибытий, слухи, имя системы. Сюда же лягут
+       наряды (M152e), циркуляр (M156), стенгазета (M165), доска почёта (M161). */
+    if(stTypeOf(G.st.stype).tabs.length===0)
+      $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
+    const sp=(typeof speechHere==="function")?speechHere():null;
+    if(sp){
+      $body.appendChild(el("div","sec","ОЧЕРЕДЬ У СТОЙКИ · "+sp.addr.toUpperCase()));
+      $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
+        (sp.silent?"<i>смотрит и ничего не говорит</i>":sp.line)+"</s><s>следующая реплика — в следующий заход</s></div>"));
+      const tag=G.sys.key+"#"+visitHere();
+      if(G.spLogged!==tag&&!sp.silent){G.spLogged=tag;peopleLine(sp.line,G.st.name);}
+    }
+    if(typeof questOpen==="function"){
+      const here=questOpen().filter(q=>q.sx===G.sx&&q.sy===G.sy);
+      if(here.length){
+        $body.appendChild(el("div","sec","ДЕЛА ЗДЕСЬ"));
+        for(const q of here)$body.appendChild(el("div","row","<div class='nm'><b>"+q.ru+"</b><s>"+(q.note||"")+
+          (q.reward?" · награда: "+q.reward:"")+"</s></div>"));
+      }
+    }
+    if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
+    if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
+    if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
+    $body.appendChild(el("div","sec","ПРИЁМНИК — НА ПУЛЬТЕ ВНИЗУ · У СТОЙКИ ЛОВИТ ЛУЧШЕ"));
     return;
   }
   if(tab==="market"){

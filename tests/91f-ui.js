@@ -106,7 +106,7 @@ TEST_SUITES.push(()=>suite("станция: разделы вместо деся
   ok(groups.length>0,"разделы построены");
   ok(groups.length<ST_GROUPS.length+1,"их не больше, чем заведено");
   /* раздел показывается, только если у него есть вкладка на этой станции */
-  const has=stTypeOf(G.st.stype).tabs;
+  const has=stTabsHere();   /* доска у всех (M151a) */
   const liveNames=ST_GROUPS.filter(g=>g.tabs.some(t=>has.indexOf(t)>=0)).map(g=>g.ru);
   eq(groups.map(b=>b.textContent).join(","),liveNames.join(","),
      "мёртвых разделов в шапке нет");
@@ -120,7 +120,8 @@ TEST_SUITES.push(()=>suite("станция: разделы вместо деся
   /* переключение раздела переносит и вкладку */
   if(groups.length>1){
     const before=tab;
-    groups[1].click();
+    /* раздел не тот, что открыт сейчас: открытый — ДОСКА или ТОРГОВЛЯ (M151a) */
+    groups.find(b=>!b.classList.contains("on")).click();
     ok(tab!==before,"выбор раздела переключил вкладку");
     ok(has.indexOf(tab)>=0,"на ту, что здесь вообще есть");
   }

@@ -255,80 +255,7 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 #menu button i{font-style:normal;color:var(--void);background:var(--amber);
   padding:1px 5px;border-radius:8px;font-size:9px;margin-left:6px}
 
-/* ══════════════ журнал ══════════════ */
-#logwin{position:fixed;left:12px;top:calc(env(safe-area-inset-top) + 12px);z-index:6;
-  width:min(360px,78vw);max-height:52vh;background:var(--glass);border:1px solid var(--edge2);
-  border-radius:var(--rad-p);backdrop-filter:blur(18px) saturate(1.2);
-  box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
-  display:none;flex-direction:column;font-size:10px;overflow:hidden}
-#logwin.open{display:flex;animation:winIn .2s var(--ease)}
-#logwin>b{font-weight:400;color:var(--dim);letter-spacing:.18em;font-size:8px;
-  padding:11px 12px;border-bottom:1px solid var(--edge);display:flex;align-items:center}
-#logwin>b span{margin-left:auto;color:var(--phos);font-size:17px;line-height:.7;padding:0 4px;cursor:pointer}
-#loglist{overflow-y:auto;-webkit-overflow-scrolling:touch}
-#loglist .li{display:flex;gap:9px;padding:9px 12px;line-height:1.65;
-  border-bottom:1px solid rgba(127,230,216,.07)}
-#loglist .li em{font-style:normal;color:var(--dim);font-size:9px;flex:0 0 auto;padding-top:1px;
-  font-variant-numeric:tabular-nums}
-#loglist .li span{flex:1;min-width:0;color:var(--text)}
-#loglist .li.money span{color:var(--amber)}
-#loglist .li.kill span{color:var(--alarm)}
-#loglist .li.warn span{color:var(--alarm)}
-#loglist .li.tech span{color:var(--rare)}
-#loglist .li.dim span{color:var(--dim)}
-
-/* ── доска отчёта ── тот же каркас, что у журнала: это второе окно, а не
-   второй язык. Отличие одно — оно шире и выше, потому что читают его подолгу,
-   а не проглядывают. Собранное горит, пропуски остаются пропусками: по доске
-   видно не «сколько процентов», а какой формы дыра. */
-#lorewin{position:fixed;left:12px;top:calc(env(safe-area-inset-top) + 12px);z-index:6;
-  width:min(420px,86vw);max-height:66vh;background:var(--glass);border:1px solid var(--edge2);
-  border-radius:var(--rad-p);backdrop-filter:blur(18px) saturate(1.2);
-  box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
-  display:none;flex-direction:column;font-size:10px;overflow:hidden}
-#lorewin.open{display:flex;animation:winIn .2s var(--ease)}
-#lorewin>b{font-weight:400;color:var(--dim);letter-spacing:.18em;font-size:8px;
-  padding:11px 12px;border-bottom:1px solid var(--edge);display:flex;align-items:center}
-#lorewin>b span{margin-left:auto;color:var(--phos);font-size:17px;line-height:.7;padding:0 4px;cursor:pointer}
-#lorelist{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:8px}
-#lorelist .li{display:flex;gap:9px;padding:7px 12px;line-height:1.6;
-  border-bottom:1px solid rgba(127,230,216,.06)}
-#lorelist .li em{font-style:normal;color:var(--dim);font-size:9px;flex:0 0 22px;
-  font-variant-numeric:tabular-nums}
-#lorelist .li span{flex:1;min-width:0;color:var(--text)}
-#lorelist .li.gap span{color:#33424c}                 /* пропуск: виден, но не читается */
-#lorelist .li.chap{border-top:1px solid var(--edge);margin-top:6px;padding-top:10px}
-#lorelist .li.chap span{color:var(--phos);letter-spacing:.14em}
-#lorelist .li.chap.read span{color:var(--amber)}
-#lorelist .li.note span{color:var(--dim);font-style:italic}
-#lorelist .li.head span{color:var(--dim);letter-spacing:.16em}
-
-/* ── жёрдочка (12y) ──
-   Тот же материал, что у журнала и доски: стекло, волосок по кромке, мягкая
-   тень. Окно узкое и правое — птица сидит сбоку и не закрывает приборы; висит
-   в любом режиме и уходит крестиком. Внутри — только канва, строка речи и
-   подсказка: списки живут на доске отчёта, здесь животное. */
-#parrotwin{position:fixed;right:12px;bottom:calc(env(safe-area-inset-bottom) + 148px);
-  z-index:6;width:min(280px,72vw);background:var(--glass);border:1px solid var(--edge2);
-  border-radius:var(--rad-p);backdrop-filter:blur(18px) saturate(1.2);
-  box-shadow:0 18px 54px rgba(0,0,0,.62),var(--glass-hi);
-  display:none;flex-direction:column;overflow:hidden}
-#parrotwin.open{display:flex;animation:winIn .2s var(--ease)}
-#parrotwin>b{font-weight:400;color:var(--dim);letter-spacing:.18em;font-size:8px;
-  padding:11px 12px;border-bottom:1px solid var(--edge);display:flex;align-items:center}
-#parrotwin>b i{font-style:normal}
-#parrotwin>b span{margin-left:auto;color:var(--phos);font-size:17px;line-height:.7;
-  padding:0 4px;cursor:pointer}
-#parrotcv{display:block;width:100%;height:262px;cursor:pointer;touch-action:manipulation;
-  background:radial-gradient(120% 90% at 50% 22%,rgba(255,214,150,.10),transparent 62%),
-             linear-gradient(180deg,rgba(8,13,22,.5),rgba(4,7,12,.85))}
-#parrotsay{display:block;font-style:normal;color:var(--amber);font-size:11px;
-  padding:9px 12px 2px;min-height:15px;line-height:1.4;
-  border-top:1px solid var(--edge);word-break:break-word}
-#parrotsay.on{animation:winIn .22s var(--ease)}
-#parrotwin>s{text-decoration:none;color:var(--dim);font-size:8px;letter-spacing:.12em;
-  padding:2px 12px 11px}
-
+/* журнал и отчёт переехали на стол (M151a): см. #tablewin ниже */
 /* ══════════════ экраны ══════════════
    Один каркас на все: шапка с названием и кошельком, навигация, тело,
    подвал с действиями. Фон непрозрачный — сквозь прежние 96% просвечивали
@@ -559,7 +486,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
   .v u{font-size:11px}
   .locus u{font-size:14px}.locus s{font-size:10px}.locus em{font-size:12px}
   #menu button em{font-size:12px}#menu button s{font-size:10px}
-  #loglist,#lorelist,#logwin,#lorewin{font-size:11px}
+  #loglist,#lorelist{font-size:11px}
   .rail button{font-size:11px}
 }
 /* системный скроллбар внутри стекла читался чужим — тонкая полоска в цвет */
@@ -570,6 +497,82 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 /* длинная «секция» — это фраза, а не подпись: обычный регистр, читаемый кегль */
 .sec.note{text-transform:none;letter-spacing:.02em;font-size:11px;line-height:1.6;color:var(--dim)}
 @media (min-width:900px){.sec.note{font-size:12px;max-width:72ch}}
+
+/* ══════════════ пульт (M151a) ══════════════
+   Полоса по низу между пэдами: слева приёмник, справа кресло и жёрдочка.
+   Это приборы, а не окно: проявляется, когда есть что слышать, и гаснет,
+   когда ровно. Подсказка действия (#prompt) стоит над ней. */
+#console{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 18px);transform:translateX(-50%);
+  z-index:5;display:flex;align-items:flex-end;gap:10px;max-width:min(560px,calc(100vw - 400px));
+  pointer-events:none;transition:opacity .25s}
+#console.quiet{opacity:.45}
+body.screen #console{opacity:1}
+#rx{display:flex;flex-direction:column;gap:5px;min-width:0;width:min(360px,44vw);pointer-events:auto;
+  background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);padding:8px 11px 9px;
+  backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
+#rxOut{display:flex;flex-direction:column;min-width:0}
+#rxOut b{font-weight:400;color:var(--dim);font-size:8px;letter-spacing:.18em}
+#rxOut s{text-decoration:none;color:#cfe3ea;font-size:10px;line-height:1.5;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+#rx.fresh #rxOut s{color:var(--phos)}
+#rxKnob{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;margin:0;cursor:pointer}
+#rxKnob::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,transparent 0 12%,rgba(127,230,216,.35) 12% 30%,transparent 30% 40%,rgba(242,178,92,.35) 40% 58%,transparent 58% 66%,rgba(143,208,138,.35) 66% 80%,transparent 80% 88%,rgba(207,227,234,.4) 88% 100%)}
+#rxKnob::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:22px;margin-top:-10px;border-radius:3px;
+  background:linear-gradient(180deg,#cfe3ea,#6f8891);box-shadow:0 0 0 1px rgba(0,0,0,.5),0 0 10px rgba(127,230,216,.35)}
+#rxRec{-webkit-appearance:none;align-self:flex-start;background:none;border:1px solid rgba(242,178,92,.5);color:var(--amber);
+  border-radius:8px;font:inherit;font-size:9px;letter-spacing:.14em;min-height:44px;padding:0 14px;cursor:pointer}
+#seat{display:flex;align-items:center;gap:8px;pointer-events:auto;cursor:pointer;
+  background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);padding:6px 12px 6px 6px;
+  backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi);min-height:44px}
+#seat canvas{width:56px;height:56px}
+#seatOut b{display:block;font-weight:400;color:var(--amber);font-size:10px;letter-spacing:.12em}
+#seatOut s{display:block;text-decoration:none;color:var(--dim);font-size:9px;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#perch{-webkit-appearance:none;pointer-events:auto;background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);
+  width:52px;height:52px;padding:4px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
+#perch canvas{width:44px;height:44px}
+@media (max-width:760px){#console{max-width:calc(100vw - 28px);bottom:auto;top:calc(env(safe-area-inset-top) + 112px)}}
+
+/* ══════════════ стол (M151a) ══════════════ */
+#tablewin{z-index:22;background:#0a0806}
+#tablecv{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+#tablewin>header,#tablewin>nav,#tablewin>.body,#tablewin>footer{position:relative;z-index:1}
+#tablewin>.body{padding:0 var(--pad) 10px}
+#loglist,#lorelist{max-width:760px;margin:0 auto;background:rgba(244,236,214,.06);border:1px solid rgba(244,236,214,.12);
+  border-radius:6px;padding:6px 0;font-size:10px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#loglist .li{display:flex;gap:9px;padding:9px 12px;line-height:1.65;border-bottom:1px solid rgba(244,236,214,.06)}
+#loglist .li em{font-style:normal;color:var(--dim);font-size:9px;flex:0 0 auto;padding-top:1px;font-variant-numeric:tabular-nums}
+#loglist .li span{flex:1;min-width:0;color:var(--text)}
+#loglist .li.money span{color:var(--amber)}
+#loglist .li.kill span,#loglist .li.warn span{color:var(--alarm)}
+#loglist .li.tech span{color:var(--rare)}
+#loglist .li.ether span{color:#cfe3ea}
+#loglist .li.talk span{color:#f2e6c8}
+#loglist .li.dim span{color:var(--dim)}
+#loglist .li.head span,#loglist .li.sec span{color:var(--dim);letter-spacing:.16em;font-size:8px}
+#loglist .li.quest.go{cursor:pointer}
+#loglist .thing{display:flex;gap:12px;align-items:center;padding:10px 12px;border-bottom:1px solid rgba(244,236,214,.06)}
+#loglist .thing canvas{width:64px;height:40px;flex:0 0 auto}
+#loglist .thing .nm{flex:1;min-width:0}
+#loglist .thing .nm b{display:block;font-weight:400;color:var(--text);font-size:11px}
+#loglist .thing .nm s{display:block;text-decoration:none;color:var(--dim);font-size:9px;line-height:1.6}
+#loglist .thing.new{box-shadow:inset 3px 0 0 var(--phos)}
+#lorelist .li{display:flex;gap:9px;padding:7px 12px;line-height:1.6;
+  border-bottom:1px solid rgba(127,230,216,.06)}
+#lorelist .li em{font-style:normal;color:var(--dim);font-size:9px;flex:0 0 22px;
+  font-variant-numeric:tabular-nums}
+#lorelist .li span{flex:1;min-width:0;color:var(--text)}
+#lorelist .li.gap span{color:#33424c}                 /* пропуск: виден, но не читается */
+#lorelist .li.chap{border-top:1px solid var(--edge);margin-top:6px;padding-top:10px}
+#lorelist .li.chap span{color:var(--phos);letter-spacing:.14em}
+#lorelist .li.chap.read span{color:var(--amber)}
+#lorelist .li.note span{color:var(--dim);font-style:italic}
+#lorelist .li.head span{color:var(--dim);letter-spacing:.16em}
+#rxScale{position:relative;height:9px;margin-top:-4px}
+#rxScale i{position:absolute;transform:translateX(-50%);font-style:normal;font-size:7px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+/* на экранах станции и прочих пульт не прячется, а поднимается в шапку:
+   эфир слышно и у стойки. На столе он не нужен — стол и есть его память */
+body.screen #console{top:6px;bottom:auto;z-index:21;transform:translateX(-50%) scale(.82);transform-origin:top center;opacity:.92}
+body.table #console{display:none}
 
 </style>
 </head>
@@ -599,6 +602,15 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 <div id="msg"></div>
 <div id="prompt"></div>
 
+<!-- ══ пульт (M151a) ══ три вещи, по одной на голос: приёмник — что слышно,
+     середина — подсказка действия (#prompt выше), кресло — кто летит с вами.
+     Живёт на каждом экране; гаснет, когда всё ровно. -->
+<div id="console">
+  <div id="rx"><input id="rxKnob" type="range" min="0" max="1" step="0.005" aria-label="приёмник"><div id="rxScale"><i style="left:21%">слухи</i><i style="left:49%">цены</i><i style="left:73%">погода</i><i style="left:94%">эфир</i></div><div id="rxOut"><b id="rxBand">ШУМ</b><s id="rxLine">…шшш…</s></div><button id="rxRec" style="display:none">ЗАПИСАТЬ</button></div>
+  <div id="seat" style="display:none"><canvas id="seatcv" width="56" height="56"></canvas><div id="seatOut"><b id="seatName">—</b><s id="seatLine"></s></div></div>
+  <button id="perch" style="display:none" aria-label="трепло"><canvas id="perchcv" width="44" height="44"></canvas></button>
+</div>
+
 <!-- ══ правый борт ══
      Всегда видны только две кнопки и масштаб. Всё остальное живёт в меню
      или появляется само, когда для него есть повод. -->
@@ -625,22 +637,32 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
   <button id="shipbtn"><svg viewBox="0 0 16 16"><path d="M8 1.5 11 8l-3 6.5L5 8z"/><path d="M5 9.5 2.5 12M11 9.5 13.5 12"/></svg><span class="tx"><em>КОРАБЛЬ</em><s>корпус, слоты, части</s></span></button>
   <button id="crewbtn" style="display:none"><svg viewBox="0 0 16 16"><circle cx="6" cy="5.5" r="2.4"/><path d="M1.8 13.5c0-2.4 1.9-4 4.2-4s4.2 1.6 4.2 4"/><path d="M11 4.2a2.4 2.4 0 0 1 0 4.6M12 13.5c0-1.7-.6-3-1.6-3.8"/></svg><span class="tx"><em>ЭКИПАЖ</em><s>наёмники и их рейсы</s></span></button>
   <button id="hqbtn" style="display:none"><svg viewBox="0 0 16 16"><path d="M8 1.6 14 5v6l-6 3.4L2 11V5z"/><circle cx="8" cy="8" r="2.2"/></svg><span class="tx"><em>ШТАБ</em><s>управляющие и домены</s></span></button>
-  <button id="logbtn"><svg viewBox="0 0 16 16"><path d="M3.5 2.5h9v11h-9z"/><path d="M5.8 5.6h4.4M5.8 8h4.4M5.8 10.4h2.6"/></svg><span class="tx"><em>ЖУРНАЛ</em><s>что происходило</s></span></button>
-  <button id="lorebtn" style="display:none"><svg viewBox="0 0 16 16"><path d="M3 2.6h6.5l3.5 3.4v7.4H3z"/><path d="M9.5 2.6V6H13"/><path d="M5.4 8.4h5.2M5.4 10.8h3.4"/></svg><span class="tx"><em>ОТЧЁТ</em><s>то, что собрано по зарубкам</s></span></button>
-  <button id="parrotbtn" style="display:none"><svg viewBox="0 0 16 16"><path d="M9.6 3.4a2.6 2.6 0 1 0-3.4 2.5c-2 .9-3.2 2.9-3.2 5.1h7.4c1.8 0 3.1-1.3 3.1-3"/><path d="M9.9 3.1h2.6"/><path d="M6.4 11v3M9.4 11v3"/></svg><span class="tx"><em>ТРЕПЛО</em><s>то, что живёт на жёрдочке</s></span></button>
+  <button id="tablebtn"><svg viewBox="0 0 16 16"><path d="M2 6h12M3 6v7M13 6v7"/><path d="M5 3.5h6l1 2.5H4z"/></svg><span class="tx"><em>СТОЛ</em><s>тетрадь, ленты, письма, вещи</s></span></button>
   <button id="optbtn"><svg viewBox="0 0 16 16"><path d="M2.5 5h11M2.5 11h11"/><circle cx="6" cy="5" r="1.9"/><circle cx="10.5" cy="11" r="1.9"/></svg><span class="tx"><em>НАСТРОЙКИ</em><s>звук, управление, запись</s></span></button>
 </div>
 
 <button data-k="launch" id="launchbtn" style="display:none"><i id="launchbar"></i><span>ВЗЛЁТ</span></button>
 
-<div id="logwin">
-  <b>БОРТОВОЙ ЖУРНАЛ<span id="logclose">×</span></b>
-  <div id="loglist"></div>
+<!-- ══ стол (M151a) ══ одно место для всего, что читают: тетрадь (ЭФИР·БОРТ·ЛЮДИ),
+     дела, ленты, отчёт, вещи. Открывается поверх любого режима и возвращает туда же. -->
+<div class="scr" id="tablewin">
+  <canvas id="tablecv"></canvas>
+  <header>
+    <div class="ttl"><b>СТОЛ</b><s id="tableSub">тетрадь · что слышали, что было, что сказали</s></div>
+    <div class="wallet"><em id="tableCr">0 кр</em><i id="tableWhere">—</i></div>
+  </header>
+  <nav class="tabs" id="tableTabs">
+    <button data-tab="ether" class="on">ЭФИР</button>
+    <button data-tab="bort">БОРТ</button>
+    <button data-tab="folk">ЛЮДИ</button>
+    <button data-tab="deeds">ДЕЛА</button>
+    <button data-tab="strips">ЛЕНТЫ</button>
+    <button data-tab="things">ВЕЩИ</button>
+    <button data-tab="lore" style="display:none">ОТЧЁТ</button>
+  </nav>
+  <div class="body" id="tableBody"><div id="loglist"></div><div id="lorelist" style="display:none"></div></div>
+  <footer><button class="act gold" id="tableClose">ЗАКРЫТЬ</button></footer>
 </div>
-
-<div id="lorewin">
-  <b>ОТЧЁТ «ДОЛГОГО ХОДА»<span id="loreclose">×</span></b>
-  <div id="lorelist"></div>
 </div>
 
 <div id="parrotwin">
@@ -663,6 +685,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
   </header>
   <nav class="groups" id="stGroups"></nav>
   <nav class="tabs" id="stTabs">
+    <button data-tab="board">ДОСКА</button>
     <button data-tab="market" class="on">РЫНОК</button>
     <button data-tab="barter">БАРТЕР</button>
     <button data-tab="flea">РЯДЫ</button>
@@ -772,7 +795,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.110.0";
+const VER="0.111.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6639,7 +6662,7 @@ function etherTick(dt){
     if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&Math.random()<.6)
       out=out.replace(/[а-яёa-z]{3,}/gi,w=>Math.random()<.22?"…":w);
   }
-  logAdd("dim",out);
+  etherLine(out);   /* на пульт и в ЭФИР (M151a) */
   if(typeof mirrorEchoArm==="function")mirrorEchoArm(line);   /* зеркало (11f) */
 }
 /* ── как к вам обращаются ──
@@ -8305,15 +8328,46 @@ function countyAnswerLine(){
   return "…(низкий гул. Три такта. Как гудок, только ниже. Потом тишина.)";
 }
 
-/* ══════════════ бортовой журнал ══════════════ */
-/* сообщения по центру экрана живут пару секунд, журнал помнит их между сеансами */
-const LOG_MAX=90;
-let logOpen=false;
+/* ══════════════ бортовой журнал ══════════════
+   M151a: журнал — не окно, а тетрадь на столе (27i-ui-table) с тремя
+   закладками. Здесь только запись и маршрутизация: какой голос — на какую
+   страницу. Правило: у каждого голоса своё место.
+     ЭФИР  — всё, что было услышано: приёмник, диспетчер, слухи, звонки;
+     ЛЮДИ  — всё, что сказал человек: стойка, стол, истории, письма, записки;
+     БОРТ  — техника и деньги: tech, money, warn, kill, good, dim.
+   Сообщение по центру (`say`) — только подсказка и авария; реплика человека
+   идёт через `peopleLine`, услышанное — через `etherLine`, и стекло лишь
+   показывает их мельком, а владеет ими тетрадь. */
+const LOG_MAX=160;
+const LOG_PAGE={ether:"ether",talk:"folk",bad:"bort",dim:"bort",good:"bort",kill:"bort",money:"bort",tech:"bort",warn:"bort"};
+function logPageOf(kind){return LOG_PAGE[kind]||"bort";}
+let logOpen=false;   /* совместимость: «журнал открыт» = стол открыт на тетради */
 function logAdd(kind,text){
   if(typeof quietMute==="function"&&quietMute())return;   /* тихий уезд (11n): журнал не пишет */
   G.log.push({t:Date.now(),k:kind,s:text});
   if(G.log.length>LOG_MAX)G.log.splice(0,G.log.length-LOG_MAX);
-  if(logOpen)renderLog(); else{G.logNew=(G.logNew|0)+1;logBtnLabel();}
+  const open=typeof tableIsOpen==="function"&&tableIsOpen();
+  if(open&&typeof tableRender==="function")tableRender();
+  else{
+    G.logNew=(G.logNew|0)+1;
+    const p=logPageOf(kind);
+    G.logNewBy=G.logNewBy||{};G.logNewBy[p]=(G.logNewBy[p]|0)+1;
+    logBtnLabel();
+  }
+}
+/* услышанное: приёмник на пульте показывает строку, тетрадь её помнит */
+function etherLine(text,who){
+  if(!text)return;
+  const s=who?who+": "+text:text;
+  logAdd("ether",s);
+  if(typeof consoleHeard==="function")consoleHeard(text,who);
+}
+/* сказанное человеком: в ЛЮДИ всегда, на стекло — если попросили */
+function peopleLine(text,who,flash){
+  if(!text)return;
+  const s=who?who+" — "+text:text;
+  logAdd("talk",s);
+  if(flash)say(who?who+"\n"+text:text,flash===true?150:flash);
 }
 /* сказать и записать одним движением */
 const TELL_SFX={money:{f:660,to:990,d:.13,v:.3},tech:{f:520,to:1180,d:.2,v:.3},
@@ -8327,78 +8381,80 @@ function logTime(ms){
   const d=new Date(ms);
   return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);
 }
-/* Счётчик непрочитанного — значок внутри пункта меню, а не переписанная
+/* Счётчик непрочитанного — значок внутри пункта меню СТОЛ, а не переписанная
    подпись: у пункта есть ещё и вторая строка, и затирать её нельзя. */
 function logBtnLabel(){
-  const b=document.getElementById("logbtn");if(!b)return;
+  const b=document.getElementById("tablebtn");if(!b)return;
   const em=b.querySelector("em")||b;
-  em.textContent="ЖУРНАЛ";
-  if(G.logNew){
+  em.textContent="СТОЛ";
+  const n=(G.logNew|0)+(typeof tableNewThings==="function"?tableNewThings():0);
+  if(n){
     const i=document.createElement("i");
-    i.textContent=G.logNew>99?"99+":G.logNew;
+    i.textContent=n>99?"99+":n;
     em.appendChild(i);
   }
-  /* точка на кнопке МЕНЮ: ящик закрыт, а внутри что-то новое */
+  /* точка на кнопке МЕНЮ: ящик закрыт, а на столе что-то новое */
   const mb=document.getElementById("menubtn");
-  if(mb)mb.classList.toggle("on",!!G.logNew);
+  if(mb)mb.classList.toggle("on",!!n);
 }
-function renderLog(){
-  const box=document.getElementById("loglist");
+/* страница тетради: строки выбранной закладки, новые — сверху */
+function renderLog(page){
+  const box=document.getElementById("loglist");if(!box)return;
   box.textContent="";
-  /* ── дела впереди ленты ──
-     Лента отвечает на вопрос «что было», журнал — «что я должен». Второе важнее,
-     поэтому оно сверху, и по строке можно ткнуть: курс ляжет на карту. */
-  if(typeof questSync==="function"){
-    questSync();
-    const open=questOpen();
-    if(open.length){
-      const head=document.createElement("div");
-      head.className="li dim";
-      const hs=document.createElement("span");
-      hs.textContent="ДЕЛА · "+open.length+" · ТКНИТЕ ПО СТРОКЕ — КУРС НА КАРТЕ";
-      head.appendChild(hs);box.appendChild(head);
-      for(const q of open){
-        const row=document.createElement("div");
-        row.className="li quest"+(q.sx!==null?" go":"");
-        const em=document.createElement("em");
-        em.textContent=q.sx!==null?(q.sx+":"+q.sy):"—";
-        const sp=document.createElement("span");
-        const left=questLeft(q);
-        sp.innerHTML="<b>"+q.ru+"</b>"+(q.from?" <i>· "+q.from+"</i>":"")+
-          (left?" <b style='color:#f2b25c'>· "+left+"</b>":"")+
-          (q.note?"<br><i>"+q.note+"</i>":"")+
-          (q.reward?"<br><i style='color:#8fd08a'>награда: "+q.reward+"</i>":"");
-        row.appendChild(em);row.appendChild(sp);
-        if(q.sx!==null){
-          row.style.cursor="pointer";
-          row.onclick=()=>{questGoto(q);};
-        }
-        box.appendChild(row);
-      }
-      const sep=document.createElement("div");
-      sep.className="li dim";
-      const ss=document.createElement("span");ss.textContent="ЛЕНТА СОБЫТИЙ";
-      sep.appendChild(ss);box.appendChild(sep);
-    }
-  }
-  if(!G.log.length){
+  page=page||"ether";
+  const rows=G.log.filter(it=>logPageOf(it.k)===page);
+  if(!rows.length){
     const e=document.createElement("div");e.className="li dim";
-    const s=document.createElement("span");s.textContent="пока пусто";
+    const s=document.createElement("span");
+    s.textContent=page==="ether"?"эфир пуст: крутите ручку приёмника на пульте":
+                  page==="folk"?"никто ещё ничего не сказал":"пока пусто";
     e.appendChild(s);box.appendChild(e);return;
   }
-  for(let i=G.log.length-1;i>=0;i--){
-    const it=G.log[i];
+  for(let i=rows.length-1;i>=0;i--){
+    const it=rows[i];
     const row=document.createElement("div");row.className="li "+(it.k||"");
     const em=document.createElement("em");em.textContent=logTime(it.t);
     const sp=document.createElement("span");sp.textContent=it.s;
     row.appendChild(em);row.appendChild(sp);box.appendChild(row);
   }
 }
+/* дела: «что я должен» — своя закладка, по строке можно ткнуть: курс на карту */
+function renderDeeds(){
+  const box=document.getElementById("loglist");if(!box)return;
+  box.textContent="";
+  if(typeof questSync!=="function"){return;}
+  questSync();
+  const open=questOpen();
+  if(!open.length){
+    const e=document.createElement("div");e.className="li dim";
+    const s=document.createElement("span");s.textContent="дел нет";
+    e.appendChild(s);box.appendChild(e);return;
+  }
+  const head=document.createElement("div");head.className="li head";
+  const hs=document.createElement("span");hs.textContent="ДЕЛА · "+open.length+" · ТКНИТЕ ПО СТРОКЕ — КУРС НА КАРТЕ";
+  head.appendChild(hs);box.appendChild(head);
+  for(const q of open){
+    const row=document.createElement("div");
+    row.className="li quest"+(q.sx!==null?" go":"");
+    const em=document.createElement("em");
+    em.textContent=q.sx!==null?(q.sx+":"+q.sy):"—";
+    const sp=document.createElement("span");
+    const left=questLeft(q);
+    sp.innerHTML="<b>"+q.ru+"</b>"+(q.from?" <i>· "+q.from+"</i>":"")+
+      (left?" <b style='color:#f2b25c'>· "+left+"</b>":"")+
+      (q.note?"<br><i>"+q.note+"</i>":"")+
+      (q.reward?"<br><i style='color:#8fd08a'>награда: "+q.reward+"</i>":"");
+    row.appendChild(em);row.appendChild(sp);
+    if(q.sx!==null){row.style.cursor="pointer";row.onclick=()=>{questGoto(q);};}
+    box.appendChild(row);
+  }
+}
+/* совместимость со старыми вызовами: toggleLog(false) закрывало журнал перед
+   экраном — теперь закрывает стол; toggleLog() открывает стол на тетради */
 function toggleLog(open){
-  logOpen=open===undefined?!logOpen:open;
-  document.getElementById("logwin").classList.toggle("open",logOpen);
-  if(logOpen){G.logNew=0;renderLog();}
-  logBtnLabel();
+  if(typeof tableToggle!=="function")return;
+  if(open===false){tableToggle(false);return;}
+  tableToggle(open===undefined?undefined:true);
 }
 function modCost(k,lvl){return Math.round(MODS[k].base*Math.pow(lvl+1,1.55));}
 function addRes(k,n){
@@ -18153,9 +18209,9 @@ function parrotPoke(x,y){
 
 /* ══ окно ══ */
 function parrotBtnTick(){
-  const b=document.getElementById("parrotbtn");if(!b)return;
+  /* кнопки в меню нет (M151a): птица сидит на жёрдочке пульта (27j). Окно
+     закрывается само, если птицы не стало */
   const has=typeof parrotHas==="function"&&parrotHas();
-  b.style.display=has?"":"none";
   if(!has&&parWin)toggleParrotWin(false);
 }
 const PAR_DPR=Math.min(2,window.devicePixelRatio||1);
@@ -19748,7 +19804,7 @@ addEventListener("pointerdown",e=>{
      e.target.id!=="menubtn")toggleMenu(false);
 },true);
 
-document.getElementById("logbtn").addEventListener("click",()=>toggleLog());
+/* СТОЛ (M151a) подключён в 27i-ui-table */
 /* клавиши на заставке спрятаны за кнопкой: таблица была первым, что видит
    игрок, и первым же, чего он не читает */
 (function(){
@@ -19758,7 +19814,7 @@ document.getElementById("logbtn").addEventListener("click",()=>toggleLog());
     b.textContent=on?"СВЕРНУТЬ":"УПРАВЛЕНИЕ";
   });
 })();
-document.getElementById("logclose").addEventListener("click",()=>toggleLog(false));
+
 document.getElementById("navbtn").addEventListener("click",navAction);
 document.getElementById("starbtn").addEventListener("click",()=>{
   if(G.mode!=="system")return;
@@ -36316,6 +36372,7 @@ function openStation(){
    продать, снарядиться, узнать, нанять, распорядиться. Внутри раздела с одной
    вкладкой вторая ступень не показывается — нечего выбирать. */
 const ST_GROUPS=[
+  {id:"board", ru:"ДОСКА",     tabs:["board"]},   /* M151a: всё, что мир говорит о себе, на одной стене */
   {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","flea","smelt","scrip"]},
   {id:"ship",  ru:"КОРАБЛЬ",   tabs:["yard","mods","fuse","instr"]},
   {id:"know",  ru:"НАУКА",     tabs:["lab"]},
@@ -36324,8 +36381,9 @@ const ST_GROUPS=[
 ];
 function stGroupOf(t){const g=ST_GROUPS.find(G0=>G0.tabs.indexOf(t)>=0);return g?g.id:ST_GROUPS[0].id;}
 let stGroup="trade";
+function stTabsHere(){return ["board"].concat(stTypeOf(G.st.stype).tabs);}   /* доска есть у всех (M151a) */
 function syncTabs(){
-  const has=stTypeOf(G.st.stype).tabs;
+  const has=stTabsHere();
   /* раздел живёт, только если у него есть хоть одна вкладка на этой станции */
   const live=ST_GROUPS.filter(g=>g.tabs.some(t=>has.indexOf(t)>=0));
   if(has.indexOf(tab)<0)tab=(live[0]&&live[0].tabs.filter(t=>has.indexOf(t)>=0)[0])||"none";
@@ -36463,6 +36521,34 @@ function renderTab(){
     $body.appendChild(el("div","row","<div class='nm'><b>Только заправка и ремонт</b>"+
       "<s>перевалочный узел на отшибе: ни рынка, ни верфи, ни лаборатории —<br>"+
       "зато баки полны и корпус залатан</s></div>"));
+    return;
+  }
+  if(tab==="board"){
+    /* ДОСКА (M151a): всё, что мир говорит о себе, на одной стене — очередь у
+       стойки, дела здесь, табло прибытий, слухи, имя системы. Сюда же лягут
+       наряды (M152e), циркуляр (M156), стенгазета (M165), доска почёта (M161). */
+    if(stTypeOf(G.st.stype).tabs.length===0)
+      $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
+    const sp=(typeof speechHere==="function")?speechHere():null;
+    if(sp){
+      $body.appendChild(el("div","sec","ОЧЕРЕДЬ У СТОЙКИ · "+sp.addr.toUpperCase()));
+      $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
+        (sp.silent?"<i>смотрит и ничего не говорит</i>":sp.line)+"</s><s>следующая реплика — в следующий заход</s></div>"));
+      const tag=G.sys.key+"#"+visitHere();
+      if(G.spLogged!==tag&&!sp.silent){G.spLogged=tag;peopleLine(sp.line,G.st.name);}
+    }
+    if(typeof questOpen==="function"){
+      const here=questOpen().filter(q=>q.sx===G.sx&&q.sy===G.sy);
+      if(here.length){
+        $body.appendChild(el("div","sec","ДЕЛА ЗДЕСЬ"));
+        for(const q of here)$body.appendChild(el("div","row","<div class='nm'><b>"+q.ru+"</b><s>"+(q.note||"")+
+          (q.reward?" · награда: "+q.reward:"")+"</s></div>"));
+      }
+    }
+    if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
+    if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
+    if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
+    $body.appendChild(el("div","sec","ПРИЁМНИК — НА ПУЛЬТЕ ВНИЗУ · У СТОЙКИ ЛОВИТ ЛУЧШЕ"));
     return;
   }
   if(tab==="market"){
@@ -37350,10 +37436,6 @@ function renderCantina(){
   if(typeof keepersBlock==="function")keepersBlock();   /* смотритель и список на переборке (11k) */
   if(typeof chartsBlock==="function")chartsBlock();     /* их карта (11m) */
   if(typeof quietBlock==="function")quietBlock();       /* открытая дверь (11n) */
-  if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
-  if(typeof radioBlock==="function")radioBlock();       /* приёмник (25e): слухи, цены, погода — настройкой */
-  if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
-  if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
   if(typeof putOnTable==="function")tableBlock();
   $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
 }
@@ -37768,6 +37850,7 @@ function tableBlock(){
   $body.appendChild(el("div","sec","СТОЛ · ПОЛОЖИТЕ ВЕЩЬ — ОТВЕТЯТ НА НЕЁ, А НЕ НА СЛОВА"));
   const say1=(res,r)=>{
     if(res&&typeof placeNote==="function")placeNote("care",1);   // вещь на столе — место помнит (хвост M132)
+    if(res&&!res.silent&&typeof peopleLine==="function")peopleLine(res.line,G.st?G.st.name:"");   /* в ЛЮДИ (M151a) */
     r.innerHTML="<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
       (!res?"<i>вещь лежит, на неё не смотрят</i>":
        res.silent?"<i>посмотрел на это и промолчал</i>":res.line)+"</s></div>";
@@ -40049,12 +40132,7 @@ function dealsTick(){
       вперёд. Глава складывается с двух третей (`loreChapter`) — тогда и
       появляется строка о том, про что она была. */
 let loreWinOpen=false;
-function loreBtnTick(){
-  const b=document.getElementById("lorebtn");if(!b)return;
-  /* кнопки нет, пока нет ни куска: пустая читальня объявляет о существовании
-     истории раньше, чем игрок наткнулся на первую зарубку */
-  b.style.display=(typeof loreCount==="function"&&loreCount()&&G.mode!=="dock")?"":"none";
-}
+function loreBtnTick(){ /* кнопки больше нет: ОТЧЁТ — закладка стола, показывается с первого куска */ }
 function loreRow(box,cls,num,text){
   const row=document.createElement("div");row.className="li "+(cls||"");
   const em=document.createElement("em");em.textContent=num||"";
@@ -40116,13 +40194,287 @@ function renderLoreBoard(){
     loreRow(box,"","","сектор "+m.sx+":"+m.sy+(R?" · "+R.chapRu:""));
   }
 }
+/* доска отчёта лежит на столе (M151a): открыть — значит открыть стол на ОТЧЁТЕ */
 function toggleLoreBoard(open){
   loreWinOpen=open===undefined?!loreWinOpen:open;
-  document.getElementById("lorewin").classList.toggle("open",loreWinOpen);
-  if(loreWinOpen)renderLoreBoard();
+  if(typeof tableToggle==="function")tableToggle(loreWinOpen,loreWinOpen?"lore":undefined);
 }
-document.getElementById("lorebtn").addEventListener("click",()=>toggleLoreBoard(true));
-document.getElementById("loreclose").addEventListener("click",()=>toggleLoreBoard(false));
+
+/* ══════════════ стол: одно место для всего, что читают ══════════════
+   M151a. Раньше читать было негде: сообщение мелькало по центру, журнал
+   складывал восемь видов записей в одну ленту, отчёт и трепло жили в своих
+   окошках, а приёмник — во вкладке кантины. Стол — ответ на «где посмотреть»:
+   один экран, открывается ПОВЕРХ ЛЮБОГО РЕЖИМА (полёт, карта, станция,
+   поверхность, пещера, копь, пояс, рейд, база, баржа) и возвращает ровно туда,
+   где игрок был. Режим он не меняет и ничего не останавливает.
+
+   На столе лежат:
+     тетрадь — ЭФИР · БОРТ · ЛЮДИ (11-log маршрутизирует по виду записи);
+     ДЕЛА    — «что я должен» (11a), по строке — курс на карту;
+     ЛЕНТЫ   — оторванные полосы самописца (11b/25b), вещь, а не число;
+     ВЕЩИ    — то, что игроку досталось и что читают: письма, находки, бумаги
+               (`G.things`, общая полка для M152e/M153/M158/M161);
+     ОТЧЁТ   — доска «Долгого хода» (27h), пока есть хоть один кусок.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Стол ничего не сочиняет: все строки приходят из G.log, G.strips,
+      G.things, квестов и лора. Сам он хранит только «видел» (seenThings).
+   2. Фон — нарисованная столешница, печётся раз на размер; поверх — обычные
+      списки того же каркаса, что у всех экранов. */
+let tableTab="ether",tableOpenNow=false,tableBaked=null;
+function tableIsOpen(){return tableOpenNow;}
+/* ── вещи: общая полка ──
+   {k:вид, ru:имя, note:строка, t:время, seen:0/1, sx,sy:откуда}. Кладут
+   вехи; стол показывает. Новое светится, пока стол не открыли на ВЕЩАХ. */
+function thingsAll(){return (G.things||(G.things=[]));}
+function thingAdd(k,ru,note,extra){
+  const L=thingsAll();
+  const th=Object.assign({k,ru,note:note||"",t:Date.now(),seen:0,sx:G.sx,sy:G.sy},extra||{});
+  L.unshift(th);
+  while(L.length>40)L.pop();
+  if(tableOpenNow&&tableTab==="things")tableRender();else logBtnLabel();
+  return th;
+}
+function tableNewThings(){return thingsAll().filter(t=>!t.seen).length;}
+function tableToggle(open,tab){
+  const w=document.getElementById("tablewin");if(!w)return;
+  tableOpenNow=open===undefined?!tableOpenNow:!!open;
+  if(tab)tableTab=tab;
+  w.classList.toggle("open",tableOpenNow);
+  document.body.classList.toggle("table",tableOpenNow);
+  logOpen=tableOpenNow;
+  if(tableOpenNow){
+    G.logNew=0;G.logNewBy={};
+    tableBake();tableRender();
+  }
+  logBtnLabel();
+}
+function tableSetTab(t){tableTab=t;tableRender();}
+/* столешница: дерево, лампа сверху, лист бумаги под списком. Статика — печём. */
+function tableBake(){
+  const cv=document.getElementById("tablecv");if(!cv)return;
+  const W=cv.clientWidth||innerWidth,H=cv.clientHeight||innerHeight;
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  if(tableBaked&&tableBaked.W===W&&tableBaked.H===H)return;
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  const c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);
+  /* доски: четыре полосы с лёгкой разницей тона и стыками */
+  const base=c.createLinearGradient(0,0,0,H);
+  base.addColorStop(0,"#1a120b");base.addColorStop(.5,"#241810");base.addColorStop(1,"#150e08");
+  c.fillStyle=base;c.fillRect(0,0,W,H);
+  const r=rng(0x7AB1E);
+  const n=Math.max(4,Math.round(W/190));
+  for(let i=0;i<n;i++){
+    const x0=i*W/n,w=W/n;
+    c.fillStyle="rgba(255,210,150,"+(.025+r()*.035).toFixed(3)+")";c.fillRect(x0,0,w,H);
+    /* волокна */
+    c.strokeStyle="rgba(0,0,0,.18)";c.lineWidth=1;
+    for(let k=0;k<14;k++){const y=r()*H;c.beginPath();c.moveTo(x0+2,y);
+      c.bezierCurveTo(x0+w*.3,y+(r()-.5)*30,x0+w*.7,y+(r()-.5)*30,x0+w-2,y+(r()-.5)*12);c.stroke();}
+    c.fillStyle="rgba(0,0,0,.35)";c.fillRect(x0+w-1.5,0,1.5,H);
+  }
+  /* свет лампы сверху — тёплое пятно, края уходят в тень */
+  const g=c.createRadialGradient(W*.5,-H*.1,20,W*.5,H*.25,Math.max(W,H)*.9);
+  g.addColorStop(0,"rgba(255,214,150,.22)");g.addColorStop(.45,"rgba(255,190,120,.06)");g.addColorStop(1,"rgba(0,0,0,.55)");
+  c.fillStyle=g;c.fillRect(0,0,W,H);
+  tableBaked={W,H};
+}
+function tableRender(){
+  const box=document.getElementById("loglist"),lore=document.getElementById("lorelist");
+  if(!box)return;
+  document.querySelectorAll("#tableTabs button").forEach(b=>{
+    b.classList.toggle("on",b.dataset.tab===tableTab);
+    if(b.dataset.tab==="lore")b.style.display=(typeof loreCount==="function"&&loreCount())?"":"none";
+  });
+  const sub=document.getElementById("tableSub"),cr=document.getElementById("tableCr"),wh=document.getElementById("tableWhere");
+  const SUB={ether:"эфир · что было услышано",bort:"борт · техника и деньги",folk:"люди · что вам сказали",
+             deeds:"дела · что вы должны",strips:"ленты · оторванные полосы самописца",things:"вещи · письма, находки, бумаги",
+             lore:"отчёт «Долгого хода»"};
+  if(sub)sub.textContent=SUB[tableTab]||"";
+  if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
+  if(wh)wh.textContent=(G.sys&&G.sys.name?G.sys.name:"—")+" · "+(G.mode||"");
+  box.style.display=tableTab==="lore"?"none":"";
+  if(lore)lore.style.display=tableTab==="lore"?"":"none";
+  if(tableTab==="ether"||tableTab==="bort"||tableTab==="folk")renderLog(tableTab);
+  else if(tableTab==="deeds")renderDeeds();
+  else if(tableTab==="strips")renderStrips(box);
+  else if(tableTab==="things")renderThings(box);
+  else if(tableTab==="lore"&&typeof renderLoreBoard==="function")renderLoreBoard();
+}
+function tableRow(box,cls,em,text){
+  const row=document.createElement("div");row.className="li "+(cls||"");
+  const e=document.createElement("em");e.textContent=em||"";
+  const s=document.createElement("span");s.textContent=text;
+  row.appendChild(e);row.appendChild(s);box.appendChild(row);return row;
+}
+/* лента как вещь: полоса с кривой невязки. Три и больше — лежат рядом (M155
+   сложит из них фигуру; здесь они просто видны вместе) */
+function renderStrips(box){
+  box.textContent="";
+  const L=(typeof stripsAll==="function")?stripsAll():[];
+  if(!L.length){tableRow(box,"dim","","лент нет. Оторвать полосу — клавиша T в полёте, когда на бумаге уже что-то записано");return;}
+  tableRow(box,"head","","ЛЕНТ "+L.length+(L.length>=3?" · ТРИ И БОЛЬШЕ ЛЕЖАТ РЯДОМ":""));
+  L.forEach((s,k)=>{
+    const row=document.createElement("div");row.className="thing";
+    const cv=document.createElement("canvas");cv.width=128;cv.height=80;
+    const c=cv.getContext("2d");
+    c.fillStyle="#e9e2cc";c.fillRect(0,0,128,80);
+    c.strokeStyle="rgba(120,90,60,.35)";c.lineWidth=1;
+    for(let x=8;x<128;x+=12){c.beginPath();c.moveTo(x,0);c.lineTo(x,80);c.stroke();}
+    const r=rng(hashi(s.sx,s.sy,s.span|0));
+    c.strokeStyle="#2b3a8a";c.lineWidth=2;c.beginPath();
+    for(let x=0;x<=128;x+=4){const y=40+Math.sin(x/18+r()*.4)*10*(s.mis*6+.4)+(r()-.5)*4;x?c.lineTo(x,y):c.moveTo(x,y);}
+    c.stroke();
+    const nm=document.createElement("div");nm.className="nm";
+    nm.innerHTML="<b>Лента · сектор "+s.sx+":"+s.sy+"</b><s>невязка "+(+s.mis).toFixed(3)+" · "+s.span+" делений · "+
+      (typeof stripValue==="function"?stripValue(s)+" кр на стойке":"")+"</s>";
+    row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
+  });
+}
+function renderThings(box){
+  box.textContent="";
+  const L=thingsAll();
+  if(!L.length){tableRow(box,"dim","","на столе пусто: письма, находки и бумаги лягут сюда");return;}
+  L.forEach(t=>{
+    const row=document.createElement("div");row.className="thing"+(t.seen?"":" new");
+    const cv=document.createElement("canvas");cv.width=128;cv.height=80;
+    drawThingIcon(cv.getContext("2d"),t.k,128,80);
+    const nm=document.createElement("div");nm.className="nm";
+    nm.innerHTML="<b>"+t.ru+"</b><s>"+(t.note||"")+(t.sx!=null?" · "+t.sx+":"+t.sy:"")+"</s>";
+    row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
+    t.seen=1;
+  });
+  logBtnLabel();
+}
+/* значок вещи: конверт, бумага, предмет — три формы, остальное цветом */
+function drawThingIcon(c,k,W,H){
+  c.clearRect(0,0,W,H);
+  c.save();c.translate(W/2,H/2);
+  if(k==="letter"){
+    c.fillStyle="#e6dcc2";c.fillRect(-40,-22,80,44);
+    c.strokeStyle="rgba(90,70,40,.6)";c.lineWidth=1.5;c.strokeRect(-40,-22,80,44);
+    c.beginPath();c.moveTo(-40,-22);c.lineTo(0,6);c.lineTo(40,-22);c.stroke();
+  }else if(k==="paper"||k==="record"||k==="voucher"){
+    c.fillStyle="#ece6d2";c.fillRect(-28,-34,56,68);
+    c.strokeStyle="rgba(90,70,40,.35)";c.lineWidth=1;
+    for(let y=-22;y<30;y+=8){c.beginPath();c.moveTo(-20,y);c.lineTo(20,y);c.stroke();}
+    if(k==="record"){c.fillStyle="#8a2d2d";c.fillRect(-28,-34,56,10);}
+  }else{
+    c.fillStyle="#6f7b86";c.beginPath();c.roundRect(-30,-18,60,36,6);c.fill();
+    c.fillStyle="rgba(255,255,255,.12)";c.fillRect(-30,-18,60,8);
+    c.strokeStyle="rgba(0,0,0,.5)";c.lineWidth=1.5;c.beginPath();c.roundRect(-30,-18,60,36,6);c.stroke();
+  }
+  c.restore();
+}
+(function tableWire(){
+  const b=document.getElementById("tablebtn"),x=document.getElementById("tableClose");
+  if(b)b.addEventListener("click",()=>tableToggle(true));
+  if(x)x.addEventListener("click",()=>tableToggle(false));
+  document.querySelectorAll("#tableTabs button").forEach(bt=>bt.addEventListener("click",()=>tableSetTab(bt.dataset.tab)));
+  addEventListener("resize",()=>{if(tableOpenNow){tableBaked=null;tableBake();}});
+  addEventListener("keydown",e=>{
+    if(e.code==="Escape"&&tableOpenNow){tableToggle(false);e.preventDefault();}
+  });
+})();
+
+/* ══════════════ пульт: приёмник, подсказка, кресло ══════════════
+   M151a. Полоса по низу КАЖДОГО экрана — три вещи, по одной на голос.
+
+   ПРИЁМНИК. Ручка (25e) переехала сюда из кантины: то, что слышно, — прибор
+   кабины, а не вкладка. Голоса приходят с щелчком: диспетчер (11b), слухи
+   (11t), истории, звонки (M153), циркуляр (M156), пульс Кольца (M154).
+   Игрок крутит ручку и находит голоса сам — игра не толкает.
+   Строка живёт тут, тетрадь ЭФИР (11-log) её помнит.
+
+   КРЕСЛО. Кто летит с вами: `G.seat` — {name, line, draw(c,W,H), act()}.
+   Пусто — кресла не видно. Заполняют вехи (Вега M153, стажёр M163,
+   пассажир баржи M156).
+
+   ЖЁРДОЧКА. Трепло сидит на пульте, а не в меню: клик по птице — её окно.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Пульт ничего не сочиняет и не хранит, кроме частоты (G.radioF).
+   2. DOM обновляется раз в секунду с небольшим, не каждый кадр: это текст. */
+let conT=0,conLast="",conFresh=0,conHeld=null,conDwell=0,perchT=0;
+function consoleHeard(text,who){
+  const line=document.getElementById("rxLine"),band=document.getElementById("rxBand"),rx=document.getElementById("rx");
+  if(!line)return;
+  line.textContent=(who?who+": ":"")+text;
+  if(band)band.textContent="ЭФИР · ПРИНЯТО";
+  conFresh=8;conLast=text;
+  if(rx)rx.classList.add("fresh");
+  sfx("ui",{f:1400,to:900,d:.05,v:.18});
+}
+function consoleTick(dt){
+  conT-=dt;
+  if(conFresh>0){conFresh-=dt/60;if(conFresh<=0){const rx=document.getElementById("rx");if(rx)rx.classList.remove("fresh");}}
+  if(conT>0)return;
+  conT=70;  /* ~секунда с небольшим при 60 к/с */
+  const con=document.getElementById("console");if(!con)return;
+  const rx=document.getElementById("rx"),knob=document.getElementById("rxKnob"),
+        line=document.getElementById("rxLine"),band=document.getElementById("rxBand");
+  /* приёмник: если свежей строки нет — показываем то, что ловится на частоте */
+  if(conFresh<=0&&line&&typeof radioTune==="function"){
+    const f=(G.radioF==null?.05:G.radioF);
+    if(knob&&document.activeElement!==knob)knob.value=f;
+    const R=radioTune(f);
+    /* у стойки ловит лучше: слова не выпадают */
+    if(G.mode==="dock"&&R.q>0&&R.q<.55)R.text=radioTune(Math.min(1,f+.001)).text;
+    band.textContent=R.ru||"ШУМ";
+    line.textContent=R.text;
+    /* задержался на волне — тетрадь запомнит строку, один раз на строку */
+    if(R.q>.55&&R.text!==conHeld){conDwell+=1;if(conDwell>=3){conHeld=R.text;conDwell=0;logAdd("ether",R.ru+" · "+R.text);}}
+    else if(R.q<=.55)conDwell=0;
+    con.classList.toggle("quiet",R.q<=0&&conFresh<=0&&!G.seat);
+  }else con.classList.remove("quiet");
+  /* кресло */
+  const seat=document.getElementById("seat");
+  if(seat){
+    const S=G.seat;
+    seat.style.display=S?"":"none";
+    if(S){
+      document.getElementById("seatName").textContent=S.name||"—";
+      document.getElementById("seatLine").textContent=S.line||"";
+      const cv=document.getElementById("seatcv");
+      if(cv&&typeof S.draw==="function"){const c=cv.getContext("2d");c.clearRect(0,0,cv.width,cv.height);S.draw(c,cv.width,cv.height);}
+    }
+  }
+  /* жёрдочка: птица есть — сидит на пульте */
+  const perch=document.getElementById("perch");
+  if(perch){
+    const has=typeof parrotHas==="function"&&parrotHas();
+    perch.style.display=has?"":"none";
+    if(has&&typeof parrotDraw==="function"){
+      const cv=document.getElementById("perchcv");
+      if(cv){const c=cv.getContext("2d");c.clearRect(0,0,cv.width,cv.height);
+        if(typeof parStep==="function")parStep(1.1);
+        parrotDraw(c,cv.width,cv.height);}
+    }
+  }
+}
+(function consoleWire(){
+  const knob=document.getElementById("rxKnob");
+  if(knob){
+    const tune=()=>{
+      if(typeof radioTune!=="function")return;
+      const R=radioTune(+knob.value);
+      conFresh=0;conDwell=0;
+      const rx=document.getElementById("rx");if(rx)rx.classList.remove("fresh");
+      document.getElementById("rxBand").textContent=R.ru||"ШУМ";
+      document.getElementById("rxLine").textContent=R.text;
+      const con=document.getElementById("console");if(con)con.classList.remove("quiet");
+    };
+    knob.addEventListener("input",tune);
+    /* колесо на ручке — тоже ручка */
+    knob.addEventListener("wheel",e=>{knob.value=clamp(+knob.value-Math.sign(e.deltaY)*.01,0,1);tune();e.preventDefault();},{passive:false});
+  }
+  const seat=document.getElementById("seat");
+  if(seat)seat.addEventListener("click",()=>{if(G.seat&&typeof G.seat.act==="function")G.seat.act();});
+  const perch=document.getElementById("perch");
+  if(perch)perch.addEventListener("click",()=>{if(typeof toggleParrotWin==="function")toggleParrotWin(true);});
+  const rec=document.getElementById("rxRec");
+  if(rec)rec.addEventListener("click",()=>{if(typeof rxRecord==="function")rxRecord();});
+})();
 
 /* ══════════════ экран корабля ══════════════ */
 const $sv=document.getElementById("shipview"),$svBody=document.getElementById("svBody");
@@ -40890,7 +41242,7 @@ function frame(now){
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
     if(typeof etherTick==="function")etherTick(dt);
-    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();wearTick(dt);
+    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){

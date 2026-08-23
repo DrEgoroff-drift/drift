@@ -128,10 +128,6 @@ function renderCantina(){
   if(typeof keepersBlock==="function")keepersBlock();   /* смотритель и список на переборке (11k) */
   if(typeof chartsBlock==="function")chartsBlock();     /* их карта (11m) */
   if(typeof quietBlock==="function")quietBlock();       /* открытая дверь (11n) */
-  if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
-  if(typeof radioBlock==="function")radioBlock();       /* приёмник (25e): слухи, цены, погода — настройкой */
-  if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
-  if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
   if(typeof putOnTable==="function")tableBlock();
   $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
 }
@@ -546,6 +542,7 @@ function tableBlock(){
   $body.appendChild(el("div","sec","СТОЛ · ПОЛОЖИТЕ ВЕЩЬ — ОТВЕТЯТ НА НЕЁ, А НЕ НА СЛОВА"));
   const say1=(res,r)=>{
     if(res&&typeof placeNote==="function")placeNote("care",1);   // вещь на столе — место помнит (хвост M132)
+    if(res&&!res.silent&&typeof peopleLine==="function")peopleLine(res.line,G.st?G.st.name:"");   /* в ЛЮДИ (M151a) */
     r.innerHTML="<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
       (!res?"<i>вещь лежит, на неё не смотрят</i>":
        res.silent?"<i>посмотрел на это и промолчал</i>":res.line)+"</s></div>";

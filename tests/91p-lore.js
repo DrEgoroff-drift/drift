@@ -148,8 +148,10 @@ TEST_SUITES.push(()=>suite("отчёт: доска, на которой это �
   /* словарь и адреса считаются по факту, а не по обещаниям */
   eq(loreVocab().length,new Set(loreList().map(x=>LORE_BY_ID[x]&&LORE_BY_ID[x].word)
      .filter(Boolean)).size,"словарь на доске равен собранному");
+  /* доска лежит на столе (M151a) */
   toggleLoreBoard(true);
-  ok(document.getElementById("lorewin").classList.contains("open"),"доска открывается");
+  ok(document.getElementById("tablewin").classList.contains("open"),"доска открывается (стол на ОТЧЁТЕ)");
+  eq(tableTab,"lore","на закладке ОТЧЁТ");
   toggleLoreBoard(false);
-  ok(!document.getElementById("lorewin").classList.contains("open"),"и закрывается");
+  ok(!document.getElementById("tablewin").classList.contains("open"),"и закрывается");
 }));

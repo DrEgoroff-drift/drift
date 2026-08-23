@@ -137,7 +137,7 @@ addEventListener("pointerdown",e=>{
      e.target.id!=="menubtn")toggleMenu(false);
 },true);
 
-document.getElementById("logbtn").addEventListener("click",()=>toggleLog());
+/* СТОЛ (M151a) подключён в 27i-ui-table */
 /* клавиши на заставке спрятаны за кнопкой: таблица была первым, что видит
    игрок, и первым же, чего он не читает */
 (function(){
@@ -147,7 +147,7 @@ document.getElementById("logbtn").addEventListener("click",()=>toggleLog());
     b.textContent=on?"СВЕРНУТЬ":"УПРАВЛЕНИЕ";
   });
 })();
-document.getElementById("logclose").addEventListener("click",()=>toggleLog(false));
+
 document.getElementById("navbtn").addEventListener("click",navAction);
 document.getElementById("starbtn").addEventListener("click",()=>{
   if(G.mode!=="system")return;

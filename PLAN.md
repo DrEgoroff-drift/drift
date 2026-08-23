@@ -321,7 +321,7 @@ Designs (2026-08-23): [`docs/DESIGN-ui.md`](docs/DESIGN-ui.md), [`docs/DESIGN-ec
 [`docs/DESIGN-after.md`](docs/DESIGN-after.md). Order as listed; each is a version with tests and
 a commit. The joys (M164–M166) may be slotted between big milestones as breathers.
 
-- **M151a the console and the table** — first, before M152: the release look per
+- **M151a the console and the table** — **built (0.111.0)**: the release look per
   [`docs/DESIGN-ui.md`](docs/DESIGN-ui.md). A bottom console on every screen (receiver moved out
   of the cantina · action prompt · the seat of whoever flies with you); one full-screen **СТОЛ**
   reachable from any mode (logbook with ЭФИР/БОРТ/ЛЮДИ, tapes, letters, things, record book,

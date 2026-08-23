@@ -671,9 +671,9 @@ function parrotPoke(x,y){
 
 /* ══ окно ══ */
 function parrotBtnTick(){
-  const b=document.getElementById("parrotbtn");if(!b)return;
+  /* кнопки в меню нет (M151a): птица сидит на жёрдочке пульта (27j). Окно
+     закрывается само, если птицы не стало */
   const has=typeof parrotHas==="function"&&parrotHas();
-  b.style.display=has?"":"none";
   if(!has&&parWin)toggleParrotWin(false);
 }
 const PAR_DPR=Math.min(2,window.devicePixelRatio||1);

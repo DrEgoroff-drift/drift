@@ -6,6 +6,23 @@ The game version is shown on the title screen. It has nothing to do with the sav
 Entries from 0.45.0 onward are written in English (docs are English, the game stays Russian);
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
+---
+## 0.111.0 — "The console and the table" (M151a)
+
+The release look, built before the kit and the lodger so that every new voice lands in a ready
+place. **The console** (`27j-console`): a strip along the bottom of every screen — the receiver
+knob moved out of the cantina (four bands with labels; voices arrive with a click and stay
+fresh for a while; a line a player dwells on is remembered once), the action prompt above it,
+the seat of whoever flies with you (`G.seat`, empty until M153) and the parrot's perch (click —
+its window). On station screens the console rises into the header; on the table it hides.
+**The table** (`27i-ui-table`): one screen for everything read, opened over any mode and
+returning to it — the notebook with ЭФИР · БОРТ · ЛЮДИ, ДЕЛА, ЛЕНТЫ (each strip drawn), ВЕЩИ
+(`G.things`, the shared shelf for letters, finds and papers; new ones glow), ОТЧЁТ (the lore
+board). `11-log` routes by kind (`etherLine`, `peopleLine`); the ether voices of 11b, the counter
+queue and the counter table replies now go to the notebook instead of a dim line. The station
+gets **ДОСКА** as its first group (queue, deeds here, arrivals, rumours, the system's name). The
+menu is five doors; ЖУРНАЛ, ОТЧЁТ and ТРЕПЛО windows are gone. Suite `91zzv`; `91f-ui` and
+`91p-lore` follow.
 
 ---
 ## 0.110.0 — "The receiver has a knob" (M124 remainder)

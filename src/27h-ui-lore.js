@@ -15,12 +15,7 @@
       вперёд. Глава складывается с двух третей (`loreChapter`) — тогда и
       появляется строка о том, про что она была. */
 let loreWinOpen=false;
-function loreBtnTick(){
-  const b=document.getElementById("lorebtn");if(!b)return;
-  /* кнопки нет, пока нет ни куска: пустая читальня объявляет о существовании
-     истории раньше, чем игрок наткнулся на первую зарубку */
-  b.style.display=(typeof loreCount==="function"&&loreCount()&&G.mode!=="dock")?"":"none";
-}
+function loreBtnTick(){ /* кнопки больше нет: ОТЧЁТ — закладка стола, показывается с первого куска */ }
 function loreRow(box,cls,num,text){
   const row=document.createElement("div");row.className="li "+(cls||"");
   const em=document.createElement("em");em.textContent=num||"";
@@ -82,10 +77,8 @@ function renderLoreBoard(){
     loreRow(box,"","","сектор "+m.sx+":"+m.sy+(R?" · "+R.chapRu:""));
   }
 }
+/* доска отчёта лежит на столе (M151a): открыть — значит открыть стол на ОТЧЁТЕ */
 function toggleLoreBoard(open){
   loreWinOpen=open===undefined?!loreWinOpen:open;
-  document.getElementById("lorewin").classList.toggle("open",loreWinOpen);
-  if(loreWinOpen)renderLoreBoard();
+  if(typeof tableToggle==="function")tableToggle(loreWinOpen,loreWinOpen?"lore":undefined);
 }
-document.getElementById("lorebtn").addEventListener("click",()=>toggleLoreBoard(true));
-document.getElementById("loreclose").addEventListener("click",()=>toggleLoreBoard(false));
