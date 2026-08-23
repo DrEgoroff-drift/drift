@@ -91,6 +91,8 @@ function roadSensorsOn(){
   }
   if(navigator.wakeLock&&!RD.lock)navigator.wakeLock.request("screen").then(l=>{if(RD)RD.lock=l;}).catch(()=>{});
   RD.asked=1;
+  /* спрошено — кнопка своё отслужила */
+  const b=document.getElementById("roadSense");if(b)b.style.display="none";
 }
 function roadOnTilt(e){
   if(!RD)return;
@@ -190,6 +192,8 @@ function roadOpen(){
       sparks:[],pulses:[],crShow:0};
   roadDayReset();
   document.getElementById("roadwin").classList.add("open");
+  document.body.classList.add("road");
+  const sb=document.getElementById("roadSense");if(sb)sb.style.display="";
   const cv=document.getElementById("roadcv");
   cv.width=cv.clientWidth*Math.min(2,devicePixelRatio||1);
   cv.height=cv.clientHeight*Math.min(2,devicePixelRatio||1);
@@ -206,6 +210,7 @@ function roadClose(){
   roadFinish();
   RD=null;
   document.getElementById("roadwin").classList.remove("open");
+  document.body.classList.remove("road");
   if(typeof saveGame==="function")saveGame(true);
 }
 function roadFrame(ts){
@@ -382,30 +387,32 @@ function drawRoad(ts){
   ctx=old;
   /* волна по нижней кромке: гладкая светящаяся кривая из лог-частот,
      цвет настроения, дыхание энергией. Никаких столбиков. */
-  const wh=H*.16*(0.6+en*.9);
+  /* нижняя кромка волны — над футером с кнопками, иначе половина дыхания
+     пряталась за ними */
+  const wb=H*.9,wh=H*.16*(0.6+en*.9);
   c.save();
-  const wg=c.createLinearGradient(0,H-wh,0,H);
+  const wg=c.createLinearGradient(0,wb-wh,0,wb);
   wg.addColorStop(0,"hsla("+hue+",75%,62%,.34)");
   wg.addColorStop(1,"hsla("+hue+",75%,45%,.05)");
   c.fillStyle=wg;
-  c.beginPath();c.moveTo(0,H);
+  c.beginPath();c.moveTo(0,wb);
   for(let i=0;i<28;i++){
     const x=i/27*W;
-    const y=H-8-RD.wave[i]*wh;
+    const y=wb-8-RD.wave[i]*wh;
     if(i===0)c.lineTo(x,y);
     else{
-      const px=(i-1)/27*W,py=H-8-RD.wave[i-1]*wh;
+      const px=(i-1)/27*W,py=wb-8-RD.wave[i-1]*wh;
       c.quadraticCurveTo(px,py,(px+x)/2,(py+y)/2);
     }
   }
-  c.lineTo(W,H);c.closePath();c.fill();
+  c.lineTo(W,wb);c.closePath();c.fill();
   c.strokeStyle="hsla("+hue+",85%,72%,"+(.35+en*.4).toFixed(2)+")";
   c.lineWidth=1.6;
   c.beginPath();
   for(let i=0;i<28;i++){
-    const x=i/27*W,y=H-8-RD.wave[i]*wh;
+    const x=i/27*W,y=wb-8-RD.wave[i]*wh;
     if(i===0)c.moveTo(x,y);
-    else{const px=(i-1)/27*W,py=H-8-RD.wave[i-1]*wh;c.quadraticCurveTo(px,py,(px+x)/2,(py+y)/2);}
+    else{const px=(i-1)/27*W,py=wb-8-RD.wave[i-1]*wh;c.quadraticCurveTo(px,py,(px+x)/2,(py+y)/2);}
   }
   c.stroke();
   c.restore();

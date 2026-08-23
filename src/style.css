@@ -559,6 +559,8 @@ body.screen #console{opacity:1}
    эфир слышно и у стойки. На столе он не нужен — стол и есть его память */
 body.screen #console{top:6px;bottom:auto;z-index:21;transform:translateX(-50%) scale(.82);transform-origin:top center;opacity:.92}
 body.table #console{display:none}
+/* в дороге эфира нет: экран — заставка, любой чужой прибор ломает её */
+body.road #console{display:none}
 
 /* ══════════════ телефон (M167) ══════════════
    Всё взаимодействие — в нижней четверти, под большим пальцем. Приёмник —
