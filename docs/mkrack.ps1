@@ -24,7 +24,7 @@ setTimeout(function(){
   G.fuel*=.62;G.hull*=.81;
   if(!rackOpen())rackToggle();
   drawSystem();rackDraw();
-  var cvs=document.querySelector("canvas");
+  var cvs=document.getElementById("c");
   var out=document.createElement("canvas");
   out.width=cvs.width;out.height=Math.round(cvs.height*.76)+28;
   var c=out.getContext("2d");

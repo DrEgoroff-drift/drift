@@ -26,7 +26,7 @@ setTimeout(function(){
       {dug:true,res:null,amount:0,prog:0,hard:0,tint:.5};});
   D.row=19;D.col=2;D.target=digCell(D,3,19);
   drawDig();
-  var cv=document.querySelector("canvas");
+  var cv=document.getElementById("c");
   try{fetch("/mine.png",{method:"POST",body:cv.toDataURL("image/png")});}catch(e){}
 },1400);
 </script>

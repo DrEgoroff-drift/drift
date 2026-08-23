@@ -35,15 +35,27 @@ if (-not $chrome) { throw "no headless browser found" }
 $url  = "http://localhost:8777/docs/$Name.html"
 $argv = @("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1280,800",
           "--virtual-time-budget=$($WaitSec * 1000)", "--dump-dom", $url)
-$null = Start-Process -FilePath $chrome -ArgumentList $argv -NoNewWindow -PassThru `
+# Браузер обязательно убить за собой: страница стенда держит rAF, и с
+# --dump-dom процесс не выходит сам. Двадцать забытых headless-хромов съедали
+# машину так, что сборка шла четыре минуты вместо двух секунд (M169).
+$proc = Start-Process -FilePath $chrome -ArgumentList $argv -NoNewWindow -PassThru `
         -RedirectStandardOutput (Join-Path $env:TEMP "drift-shot-dom.html") `
         -RedirectStandardError  (Join-Path $env:TEMP "drift-shot-err.txt")
 
+function Stop-Shot {
+  param($p)
+  if ($p -and -not $p.HasExited) { try { Stop-Process -Id $p.Id -Force -ErrorAction Stop } catch {} }
+  Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" |
+    Where-Object { $_.CommandLine -like "*--headless*" -and $_.CommandLine -like "*localhost:8777*" } |
+    ForEach-Object { try { Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop } catch {} }
+}
+
 $t0 = Get-Date
 while (((Get-Date) - $t0).TotalSeconds -lt $WaitSec) {
-  if (Test-Path $shot) { Write-Output $shot; exit 0 }
-  if (Test-Path $webp) { Write-Output $webp; exit 0 }
+  if (Test-Path $shot) { Stop-Shot $proc; Write-Output $shot; exit 0 }
+  if (Test-Path $webp) { Stop-Shot $proc; Write-Output $webp; exit 0 }
   Start-Sleep -Milliseconds 500
 }
+Stop-Shot $proc
 Write-Output "нет кадра: стенд не ответил за $WaitSec с (поднят ли docs\stand.ps1?)"
 exit 1
