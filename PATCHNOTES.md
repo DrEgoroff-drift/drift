@@ -8,6 +8,24 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.102.0 — "The drift of hours" (M136)
+
+The `hours` region (06c, needle `chrono`) is built in `11h-hours`. The offset is a function of
+one distance, like the misclosure: minutes anywhere in the region, an hour in orbit over the core,
+up to four hours walking toward the core settlement — and the ship's chronometer shows it
+(`hoursDrift` is added to the chrono needle in `instrRead`, so the tape keeps the hump). On the
+edge the ether sometimes carries the dispatcher apologising for the clocks, a shift ten minutes
+early, a hooter instead of a time check. The core settlement works with nobody in it: no
+watchmen by day, smoke still rising, a vending machine at the yard that takes 7 cr and gives one
+ration and correct change. By night the windows light and shadows move behind them; during an
+eclipse one man walks past, stops beside you for a second, and goes — once, `G.hours.man`
+remembers. The edge of this region is the whole region, not just the slope: the core landed at
+the region's rim and the slope there is one cell wide. Suite `91zu-hours`.
+
+Fixed: the star seen from the ground was painted in the dark sky tone, so every star read as an
+eclipse with a corona — it is now a disc in the star's own colour, white at the centre. The
+README surface shots are retaken.
+
 ## 0.101.0 — "Three lights" (M135)
 
 The `lights` region (06c, needle `actino`) is built in `11g-lights`. On the edge the night never

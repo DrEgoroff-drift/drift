@@ -52,6 +52,11 @@ setTimeout(function(){
     station:function(){openStation();},
     cantina:function(){openStation();tab="cantina";renderTab();},
     hq:function(){G.mgrs=[];["cmd","keep","fact"].forEach(function(r,n){var m=genMgr(1000+n*7717,[r]);m.tMs=Date.now();m.xp=140;G.mgrs.push(m);});openHq();},
+    hours:function(){
+      var at=regionOfTheme("hours"),R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);
+      var S=getSystem(R.core.sx,R.core.sy);goTo(S);var p=hoursCorePlanet(S);
+      surf(p);G.surf.x=settleSpotX(p,G.surf.tr)-60;G.surf.cam=null;
+    },
     lights:function(){
       var at=regionOfTheme("lights"),R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);
       var S=getSystem(R.core.sx,R.core.sy);goTo(S);
@@ -70,11 +75,11 @@ $out=$head+$add+"</body></html>"
 Write-Output "docs/shots.html собран"
 if($Shoot){
   $chrome="C:\Program Files\Google\Chrome\Application\chrome.exe"
-  $scenes=@("system","map","belt","belt2","scoop","landing","surface","surface2","cave","mine","base","raid","pirates","station","cantina","hq","lights")
+  $scenes=@("system","map","belt","belt2","scoop","landing","surface","surface2","cave","mine","base","raid","station","cantina","hq","hours","lights")
   $dir=Join-Path $root "docs\shots"
   foreach($s in $scenes){
     $png=Join-Path $dir "$s.png"
-    & $chrome --headless=new --no-first-run --no-default-browser-check --disable-extensions --disable-gpu --hide-scrollbars --window-size=1280,720 --virtual-time-budget=9000 "--user-data-dir=$env:TEMPdrift-shots" "--screenshot=$png" "http://localhost:8777/docs/shots.html?scene=$s&v=$(Get-Random)" 2>$null | Out-Null
+    & $chrome --headless=new --no-first-run --no-default-browser-check --disable-extensions --disable-gpu --hide-scrollbars --window-size=1280,720 --virtual-time-budget=9000 "--user-data-dir=$($env:TEMP)\drift-shots" "--screenshot=$png" "http://localhost:8777/docs/shots.html?scene=$s&v=$(Get-Random)" 2>$null | Out-Null
     Write-Output "$s → $((Get-Item $png).Length) байт"
   }
 }

@@ -318,8 +318,16 @@ function drawSkyLayer(p,camx,camy){
   /* небесные тела идут между заревом звезды и облаками: за облаками, но
      перед общим градиентом — так они и оказываются «в небе», а не поверх него */
   drawSkyBodies(p,camx,camy);
-  ctx.fillStyle="rgb("+p.T.sky[1].join(",")+")";
-  ctx.beginPath();ctx.arc(sunX,sunY,H*.045,0,TAU);ctx.globalAlpha=.85;ctx.fill();ctx.globalAlpha=1;
+  /* диск — цветом звезды, к центру белее: раньше он брался тоном неба (sky[1],
+     тёмным), и с грунта любая звезда читалась как затмение с короной */
+  {
+    const c=hex2rgb(sc),sr=H*.045;
+    const dg=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,sr);
+    dg.addColorStop(0,"rgba(255,252,240,.95)");
+    dg.addColorStop(.55,rgba(c,.92));
+    dg.addColorStop(1,rgba(c,.55));
+    ctx.fillStyle=dg;ctx.beginPath();ctx.arc(sunX,sunY,sr,0,TAU);ctx.fill();
+  }
   /* календарь неба поверх звезды: диск спутника наезжает на неё, комета и парад
      идут своим чередом (06a-celest). Ниже облаков — они всё равно главнее */
   if(typeof drawCelest==="function")drawCelest(p,sunX,sunY,H*.045);

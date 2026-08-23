@@ -69,10 +69,10 @@ lander of 90–130.
 </tr>
 <tr>
 <td width="50%" valign="top">
-<img src="docs/shots/surface2.png" alt="Ice world under an eclipse" width="100%">
-<b>The sky keeps a calendar.</b> Eclipses, planet parades and comets are computed from time,
-never rolled — the same day in the same system always gives the same sky, so a meeting can be
-set by it.
+<img src="docs/shots/surface2.png" alt="Ice world" width="100%">
+<b>Ice world.</b> Strata, relief amplitude and flora follow the world type; the sky keeps a
+calendar — eclipses, parades and comets are computed from time, never rolled, so a meeting can be
+set by them.
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/lights.png" alt="Three lights in conjunction over the core planet" width="100%">

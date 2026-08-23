@@ -273,7 +273,8 @@ function settleDraw(S,tr,camx,camy,p){
   }
   /* дозорные: не украшение, а то, чем посёлок стоит между игроком и фауной
      (M110). Их видно ровно со второй ступени — раньше некому стоять. */
-  if(S.stage>=2)for(let i=0;i<2;i++){
+  const nobody=(typeof hoursNobody==="function")&&hoursNobody(p);   // уезд часов (11h): днём никого
+  if(S.stage>=2&&!nobody)for(let i=0;i<2;i++){
     const ox=sx+(i?1:-1)*(n*14+16), oy=groundAt(tr,bx+(ox-sx))-camy;
     ctx.fillStyle="rgba(20,24,30,.9)";
     ctx.fillRect(ox-1.6,oy-13,3.2,13);
@@ -281,6 +282,7 @@ function settleDraw(S,tr,camx,camy,p){
     ctx.strokeStyle="rgba(20,24,30,.9)";ctx.lineWidth=1.4;   // шест в руке
     ctx.beginPath();ctx.moveTo(ox+(i?3:-3),oy-19);ctx.lineTo(ox+(i?3:-3),oy);ctx.stroke();
   }
+  if(typeof hoursDrawPeople==="function")hoursDrawPeople(S,tr,camx,camy,p,sx,n,r);   // люди в слоях (11h)
   ctx.fillStyle="rgba(226,206,160,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
   ctx.fillText("ПОСЁЛОК",sx,gy-56-n*2);
   /* ── виден с горизонта (хвост M109) ──

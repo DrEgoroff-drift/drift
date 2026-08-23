@@ -88,6 +88,7 @@ function enterSurface(){
   let sl=(typeof storyGroundLine==="function")?storyGroundLine("land"):null;
   /* три света (11g): календарь заводится первым приходом, ставни — единственный знак */
   if(typeof lightsArrive==="function"){lightsArrive();if(!sl)sl=lightsGroundLine();}
+  if(!sl&&typeof hoursGroundLine==="function")sl=hoursGroundLine();   // уезд часов (11h)
   if(sl)logAdd("dim",sl);
   say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
 }
@@ -234,6 +235,11 @@ function updateSurface(dt){
       G.prompt="ДЕЙСТВИЕ — СНЯТЬ ЛЕНТУ · ОСТАЛОСЬ ЗАПИСЕЙ "+left;
       if(actEdge){tinStrip(T);return;}
     }
+  }
+  /* автомат уезда часов (11h): монета — паёк — верная сдача */
+  else if(typeof hoursMachineHere==="function"&&hoursMachineHere(S)){
+    G.prompt="ДЕЙСТВИЕ — АВТОМАТ · "+HOURS_COIN+" КР · ПАЁК\nникого нет, а он работает";
+    if(actEdge){hoursMachine();return;}
   }
   else if(tinCanLive(S.p)&&Math.abs(S.x-tinSpotX(S.p,tr))<56){
     const T=tinTick(tinAt(G.sx,G.sy)||tinMake(S.p));

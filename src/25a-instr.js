@@ -67,7 +67,9 @@ function instrRead(sx,sy){
        меняется: меняется прибор */
     const q=(typeof instrQuality==="function")?instrQuality(I.id)
            :((typeof hullRole==="function")?hullRole().instr:1);
-    const dev=I.id===R.needle?m*q:0;
+    let dev=I.id===R.needle?m*q:0;
+    /* расхождение времён (11h): хронометр уходит по смещению уезда, поверх невязки */
+    if(I.id==="chrono"&&typeof hoursDrift==="function")dev+=hoursDrift()*q;
     /* отклонение — доля от собственного показания прибора: у хронометра это
        ход, у актинометра ватты. Одно число на всех сделало бы шкалы игрушечными */
     const val=I.id==="chrono"?base+dev*.22:base*(1+dev*.85);

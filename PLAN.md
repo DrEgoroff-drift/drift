@@ -311,11 +311,11 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 - **Split debt**: `23-mode-dig` (52 KB), `24a-mode-raid` (47), `17-mode-system` (46),
   `21ab-base-interiors` (42), `19-mode-landing` (41) — the guard still shouts; `21a` and `26` are
   paid. Cut them on their next milestone, along a seam, never a `const` table.
-- **Star disc on the surface** (question for the author): `drawSkyLayer` paints the star as a disc in `p.T.sky[1]` — the dark sky tone — so from the ground every star reads as an eclipse with a corona (since before the module split). Intentional visor look or a leftover? Seen plainly on the 0.101.0 README shots.
+- **Star disc on the surface**: closed (0.102.0) — was the dark sky tone since before the split; now the star colour.
 - **G11**: `20-life` radial gradients as baked sprites, veil/vignette as one layer — the raster
   budget pass, measured not guessed (see `drift-perf-method`).
 - **M112**: nothing else — belt missiles and the hull mark closed it.
-- **M135 "three lights"**: built (0.101.0) — see the queue below. Next region: M136 "the drift of hours".
+- **M135 "three lights"**: built (0.101.0). **M136 "the drift of hours"**: built (0.102.0). Next region: M137 "the light that remembers" (around Подглядка, M117).
 
 ---
 
@@ -324,6 +324,22 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 **Full text lives in [`docs/PLAN-archive.md`](docs/PLAN-archive.md)** â grep it for `M122`. It was
 moved there on 2026-08-15 because thirty milestones of far-future work were being carried in a file
 that is read every session; the pass itself stands, and it is the release (0.72.0 â **1.00.0**).
+
+## M136-hours (0.102.0) — built. The drift of hours
+
+(The number M136 was reused by 0.100.0 "Under the skin" in the tails sweep; region milestones keep the
+archive numbers with a suffix from here on: `M136-hours`, `M137-glow`, …)
+
+`11h-hours`: the `hours` region (needle `chrono`). `hoursOffset()` in minutes — region 3–10, core
+orbit 60, core surface up to 240 toward `settleSpotX`; `hoursDrift()` adds to the chrono needle in
+`instrRead` (25a), the tape follows. `hoursEtherLine` (35% of edge ether), `hoursGroundLine`,
+`hoursNobody` hides the watchmen, `hoursDrawPeople` (windows by night, the one man during an
+eclipse), `hoursMachine` (7 cr → 1 organics). Edge = whole region minus core (rim placement).
+Persisted: `G.hours={man}`. Suite `91zu-hours`.
+
+**Open by design:** "automation feeds the stock" is shown only by smoke and the machine — the
+settlement's own stock is not auto-fed (would touch 12t economics); the night shadows are a pass
+of their own if the region ever gets a core interior.
 
 ## M135 (0.101.0) — built. Three lights
 

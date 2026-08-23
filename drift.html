@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.101.0";
+const VER="0.102.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6619,6 +6619,8 @@ function etherTick(dt){
   /* окраина почтового круга (хвост M133): связь скверная — строка рвётся,
      слова выпадают. Это и есть цвет области, кроме молчащих приборов */
   let out=line;
+  /* расхождение времён (11h): на окраине уезда диспетчер извиняется за часы */
+  if(typeof hoursEtherLine==="function"){const h=hoursEtherLine(r);if(h)out=h;}
   if(out&&typeof regionAt==="function"){
     const R=regionAt(G.sx,G.sy);
     if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&Math.random()<.6)
@@ -7621,6 +7623,139 @@ function lightsCaveFind(C){
   const id=(typeof relicRoll==="function")?relicRoll(hashi(G.sx,G.sy,0x7E1),.7):null;
   if(id)relicFind(id,"под третьим светом");
   tell("tech","Под третьим светом · +120 данных","Под третьим светом\nкладка старше дорог\n+120 данных");
+}
+
+/* ══════════════ расхождение времён: уезд, где часам не верят ══════════════
+   M136. Старый горняцкий уезд (06c, `hours`, игла `chrono`), живущий сменами
+   и гудками — потому расползающееся расписание видно именно здесь. На окраине
+   диспетчер извиняется за часы, смена выходит на десять минут раньше, деревня
+   живёт по гудку. В ядре — работающий посёлок, в котором никого нет: автоматика
+   кормит склад, в столовой горячее, автомат даёт верную сдачу.
+
+   СМЕЩЕНИЕ РАСТЁТ К ЦЕНТРУ: минуты на окраине, часы у реактора. Хронометр
+   корабля уходит по мере того, как идёшь вглубь — прибор и есть улика, лента
+   хранит горб.
+
+   ЛЮДИ ЗДЕСЬ, КАЖДЫЙ В СВОЁМ СЛОЕ. Днём — никого. Ночью — свет в окнах и
+   тени за ними. В затмение один раз проходит человек, останавливается, видит
+   вас секунду и идёт дальше. Больше это не повторяется.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Не хоррор: ни скримера, ни записки, ни тела. Только быт, который идёт
+      без людей, и стрелка, которая уходит.
+   2. Смещение — функция одного расстояния (как невязка в 06b): глубина области,
+      а на планете ядра ещё и расстояние до посёлка. Ничего не хранится.
+   3. Хранится только факт, что человек уже прошёл (G.hours.man). */
+
+const HOURS_ETHER=[
+  "…диспетчер. За часы извините. По гудку работаем, по гудку.",
+  "…вторая смена, вы рано. Рано, говорю. У вас десять минут лишних.",
+  "…сверка времени: не проводится. Повторяю: не проводится. Слушайте гудок.",
+  "…столовая, обед по гудку, не по часам. Кто по часам пришёл — ждите.",
+  "…реактор, доложите смену. Реактор? …по гудку доложите.",
+  "…часы на площадке снять, они людей путают. Снять, я сказал."
+];
+function hoursAll(){return (G.hours||(G.hours={man:0}));}
+/* 0 вне области, 1 окраина, 2 ядро */
+function hoursDepthAt(sx,sy){
+  if(typeof regionAt!=="function")return 0;
+  const R=regionAt(sx,sy);
+  if(R.theme!=="hours")return 0;
+  /* окраина — вся область, не только склон: ядро может сесть у края, и тогда
+     склон шириной в клетку, а уезд без гудков и диспетчера — не уезд */
+  return (R.core.sx===sx&&R.core.sy===sy)?2:1;
+}
+function hoursDepthHere(){return hoursDepthAt(G.sx,G.sy);}
+/* планета ядра: первая, где может жить посёлок (12t) */
+function hoursCorePlanet(sys){
+  if(!sys||hoursDepthAt(sys.sx,sys.sy)!==2)return null;
+  for(const p of sys.planets||[])if(typeof settleCanLive==="function"&&settleCanLive(p))return p;
+  return null;
+}
+function hoursIsCore(p){const c=hoursCorePlanet(G.sys);return !!(c&&p&&c.idx===p.idx);}
+/* ── смещение ──
+   В минутах. Окраина: до десяти по глубине склона. Ядро: час на орбите, и по
+   мере ходьбы к посёлку — до четырёх часов у самого реактора. */
+function hoursOffset(){
+  const d=hoursDepthHere();
+  if(!d)return 0;
+  if(d===1)return 10*Math.max(.3,regionDepth(G.sx,G.sy));
+  let m=60;
+  const S=G.surf;
+  if(S&&hoursIsCore(S.p)&&typeof settleSpotX==="function"){
+    const cx=settleSpotX(S.p,S.tr);
+    if(cx!=null){const k=clamp(1-Math.abs(S.x-cx)/2600,0,1);m+=180*k;}
+  }
+  return m;
+}
+/* добавка к отклонению хронометра (25a-instr): ход в секундах на сутки
+   от смещения — стрелка уходит, лента хранит горб */
+function hoursDrift(){
+  const m=hoursOffset();
+  return m?m*.012:0;
+}
+/* окраина: строка эфира — изредка вместо обычной (11b) */
+function hoursEtherLine(r){
+  if(hoursDepthHere()!==1||r()>.35)return null;
+  return pick(HOURS_ETHER,r);
+}
+/* в ядре людей не видно днём: дозорные не стоят, дым идёт */
+function hoursNobody(p){return hoursIsCore(p);}
+/* строка к посадке */
+function hoursGroundLine(){
+  const d=hoursDepthHere();
+  if(!d)return null;
+  if(d===1)return "Гудок. Часов на площадке нет — сняли.";
+  return "Посёлок работает. Людей нет. Из столовой идёт пар.";
+}
+/* ── автомат ──
+   Одно действие у посёлка ядра: монета — паёк — верная сдача. Ничего
+   большего он не умеет, и это самое странное, что здесь есть. */
+const HOURS_COIN=7;
+function hoursMachineHere(S){
+  return !!(S&&hoursIsCore(S.p)&&typeof settleSpotX==="function"&&Math.abs(S.x-(settleSpotX(S.p,S.tr)+70))<30);
+}
+function hoursMachine(){
+  if(G.credits<HOURS_COIN){say("Автомат\nмонеты нет");return false;}
+  G.credits-=HOURS_COIN;
+  const k="organics";                                   // паёк: то же, чем кормят посёлок (12t)
+  G.cargo[k]=(G.cargo[k]||0)+1;
+  tell("good","Автомат: паёк ×1 · сдача верная","Автомат\nпаёк ×1\nсдача: до монеты");
+  if(typeof heardAdd==="function")heardAdd("ground",{sx:G.sx,sy:G.sy,note:"автомат дал сдачу"},null);
+  return true;
+}
+/* ── люди в слоях ──
+   Зовётся из settleDraw после дворов. Ночью — окна и тени за ними. В затмение
+   — один раз человек: идёт мимо, у игрока останавливается на секунду, смотрит
+   и уходит. hoursAll().man=1 — и больше никогда. */
+function hoursDrawPeople(S,tr,camx,camy,p,sx,n,r){
+  if(!hoursIsCore(p))return;
+  const nite=(typeof surfNight==="function")?surfNight(p):0;
+  const dark=(typeof celDark==="function")?celDark():0;
+  /* ночь: окна горят, за ними тени — посёлок ночной смены */
+  if(nite>.15){
+    for(let i=0;i<n;i++){
+      const ox=sx+(i-(n-1)/2)*26, oy=groundAt(tr,ox+camx)-camy;
+      const a=clamp((nite-.15)*2.5,0,1)*.8;
+      ctx.fillStyle="rgba(255,214,150,"+a.toFixed(2)+")";ctx.fillRect(ox+3,oy-12,5,4.5);
+      if(Math.sin(G.t*.01+i*2.1)>.3){ctx.fillStyle="rgba(30,24,18,"+(a*.9).toFixed(2)+")";ctx.fillRect(ox+4.5,oy-12,2,4.5);}
+    }
+  }
+  /* затмение: человек, один раз */
+  const H0=hoursAll();
+  if(dark>.3&&!H0.man&&G.surf){
+    const px=G.surf.x;
+    if(H0.walk==null){H0.walk=px-260;H0.stop=0;}
+    const wx=H0.walk, d=Math.abs(wx-px);
+    if(d<26&&H0.stop<60){H0.stop++;}
+    else H0.walk+=.9;
+    const ox=wx-camx, oy=groundAt(tr,wx)-camy;
+    ctx.fillStyle="rgba(20,24,30,.92)";
+    ctx.fillRect(ox-1.8,oy-14,3.6,14);
+    ctx.beginPath();ctx.arc(ox,oy-16.5,2.8,0,TAU);ctx.fill();
+    if(d<26&&H0.stop>0&&H0.stop<60){ctx.fillStyle="rgba(226,236,240,.8)";ctx.fillRect(ox+(wx<px?1:-2),oy-17,1.2,1.2);}   /* смотрит */
+    if(wx>px+320){H0.man=1;delete H0.walk;delete H0.stop;logAdd("dim","Прошёл мимо. Посмотрел. Больше никого.");}
+  }else if(dark<=.3&&H0.walk!=null){delete H0.walk;delete H0.stop;}   /* затмение кончилось раньше — не судьба */
 }
 
 /* ══════════════ бортовой журнал ══════════════ */
@@ -15092,7 +15227,8 @@ function settleDraw(S,tr,camx,camy,p){
   }
   /* дозорные: не украшение, а то, чем посёлок стоит между игроком и фауной
      (M110). Их видно ровно со второй ступени — раньше некому стоять. */
-  if(S.stage>=2)for(let i=0;i<2;i++){
+  const nobody=(typeof hoursNobody==="function")&&hoursNobody(p);   // уезд часов (11h): днём никого
+  if(S.stage>=2&&!nobody)for(let i=0;i<2;i++){
     const ox=sx+(i?1:-1)*(n*14+16), oy=groundAt(tr,bx+(ox-sx))-camy;
     ctx.fillStyle="rgba(20,24,30,.9)";
     ctx.fillRect(ox-1.6,oy-13,3.2,13);
@@ -15100,6 +15236,7 @@ function settleDraw(S,tr,camx,camy,p){
     ctx.strokeStyle="rgba(20,24,30,.9)";ctx.lineWidth=1.4;   // шест в руке
     ctx.beginPath();ctx.moveTo(ox+(i?3:-3),oy-19);ctx.lineTo(ox+(i?3:-3),oy);ctx.stroke();
   }
+  if(typeof hoursDrawPeople==="function")hoursDrawPeople(S,tr,camx,camy,p,sx,n,r);   // люди в слоях (11h)
   ctx.fillStyle="rgba(226,206,160,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
   ctx.fillText("ПОСЁЛОК",sx,gy-56-n*2);
   /* ── виден с горизонта (хвост M109) ──
@@ -17585,7 +17722,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
-    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,
+    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
@@ -17994,6 +18131,7 @@ function applySave(s){
   G.mirror={bearing:(s.mirror&&s.mirror.bearing)?1:0};   /* зеркало (11f) */
   /* три света (11g): день первого прихода в ядро и были ли внутри */
   G.lights={t0:(s.lights&&s.lights.t0!=null)?Math.max(-1,s.lights.t0|0):-1,seen:clamp((s.lights&&s.lights.seen)|0,0,2)};
+  G.hours={man:(s.hours&&s.hours.man)?1:0};   /* уезд часов (11h): человек прошёл один раз */
   /* почтовый круг (11e): три числа */
   G.post={stage:clamp((s.post&&s.post.stage)|0,0,POST_LINKS.length-1),opened:(s.post&&s.post.opened)?1:0,done:(s.post&&s.post.done)?1:0};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
@@ -23243,8 +23381,16 @@ function drawSkyLayer(p,camx,camy){
   /* небесные тела идут между заревом звезды и облаками: за облаками, но
      перед общим градиентом — так они и оказываются «в небе», а не поверх него */
   drawSkyBodies(p,camx,camy);
-  ctx.fillStyle="rgb("+p.T.sky[1].join(",")+")";
-  ctx.beginPath();ctx.arc(sunX,sunY,H*.045,0,TAU);ctx.globalAlpha=.85;ctx.fill();ctx.globalAlpha=1;
+  /* диск — цветом звезды, к центру белее: раньше он брался тоном неба (sky[1],
+     тёмным), и с грунта любая звезда читалась как затмение с короной */
+  {
+    const c=hex2rgb(sc),sr=H*.045;
+    const dg=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,sr);
+    dg.addColorStop(0,"rgba(255,252,240,.95)");
+    dg.addColorStop(.55,rgba(c,.92));
+    dg.addColorStop(1,rgba(c,.55));
+    ctx.fillStyle=dg;ctx.beginPath();ctx.arc(sunX,sunY,sr,0,TAU);ctx.fill();
+  }
   /* календарь неба поверх звезды: диск спутника наезжает на неё, комета и парад
      идут своим чередом (06a-celest). Ниже облаков — они всё равно главнее */
   if(typeof drawCelest==="function")drawCelest(p,sunX,sunY,H*.045);
@@ -28747,6 +28893,7 @@ function enterSurface(){
   let sl=(typeof storyGroundLine==="function")?storyGroundLine("land"):null;
   /* три света (11g): календарь заводится первым приходом, ставни — единственный знак */
   if(typeof lightsArrive==="function"){lightsArrive();if(!sl)sl=lightsGroundLine();}
+  if(!sl&&typeof hoursGroundLine==="function")sl=hoursGroundLine();   // уезд часов (11h)
   if(sl)logAdd("dim",sl);
   say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
 }
@@ -28893,6 +29040,11 @@ function updateSurface(dt){
       G.prompt="ДЕЙСТВИЕ — СНЯТЬ ЛЕНТУ · ОСТАЛОСЬ ЗАПИСЕЙ "+left;
       if(actEdge){tinStrip(T);return;}
     }
+  }
+  /* автомат уезда часов (11h): монета — паёк — верная сдача */
+  else if(typeof hoursMachineHere==="function"&&hoursMachineHere(S)){
+    G.prompt="ДЕЙСТВИЕ — АВТОМАТ · "+HOURS_COIN+" КР · ПАЁК\nникого нет, а он работает";
+    if(actEdge){hoursMachine();return;}
   }
   else if(tinCanLive(S.p)&&Math.abs(S.x-tinSpotX(S.p,tr))<56){
     const T=tinTick(tinAt(G.sx,G.sy)||tinMake(S.p));
@@ -32912,7 +33064,9 @@ function instrRead(sx,sy){
        меняется: меняется прибор */
     const q=(typeof instrQuality==="function")?instrQuality(I.id)
            :((typeof hullRole==="function")?hullRole().instr:1);
-    const dev=I.id===R.needle?m*q:0;
+    let dev=I.id===R.needle?m*q:0;
+    /* расхождение времён (11h): хронометр уходит по смещению уезда, поверх невязки */
+    if(I.id==="chrono"&&typeof hoursDrift==="function")dev+=hoursDrift()*q;
     /* отклонение — доля от собственного показания прибора: у хронометра это
        ход, у актинометра ватты. Одно число на всех сделало бы шкалы игрушечными */
     const val=I.id==="chrono"?base+dev*.22:base*(1+dev*.85);

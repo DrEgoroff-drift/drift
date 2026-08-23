@@ -51,6 +51,8 @@ function etherTick(dt){
   /* окраина почтового круга (хвост M133): связь скверная — строка рвётся,
      слова выпадают. Это и есть цвет области, кроме молчащих приборов */
   let out=line;
+  /* расхождение времён (11h): на окраине уезда диспетчер извиняется за часы */
+  if(typeof hoursEtherLine==="function"){const h=hoursEtherLine(r);if(h)out=h;}
   if(out&&typeof regionAt==="function"){
     const R=regionAt(G.sx,G.sy);
     if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&Math.random()<.6)
