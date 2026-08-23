@@ -122,6 +122,8 @@ function renderCantina(){
      занимает, кредитов не берёт — платят ему едой. */
   grokBlock();
   if(typeof vegaCantinaBlock==="function")vegaCantinaBlock();   /* Вега за столиком (M153) */
+  /* домино (M166): в кантине — со случайным из зала или соперником */
+  if(typeof dominoBlock==="function"){const RIV=["Пекарь","Совеня","Долгий Ким","Штоф"];dominoBlock((typeof vegaAboard==="function"&&vegaAboard())?"Вега":RIV[Math.abs(hashi(G.sx,G.sy,celDay()))%RIV.length]);}
   /* стол (M128): вещь вместо слов. Стоит после людей — сначала зал, потом то,
      что вы на него выкладываете */
   /* посылка почтового круга (M133, 11e): лежит рядом со столом, пока вы её везёте */

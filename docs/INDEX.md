@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 236 · символов верхнего уровня: 2257
+Файлов: 238 · символов верхнего уровня: 2265
 
 ## СИМВОЛЫ
 
@@ -201,11 +201,11 @@ CANT_STYLE                   src/27d-ui-cantina.js:15
 cantCounter                  src/27d-ui-cantina.js:550
 cantFigure                   src/27d-ui-cantina.js:297
 cantinaPool                  src/12c-mgr-core.js:259
-cantinaScene                 src/27c-ui-hq.js:191
+cantinaScene                 src/27c-ui-hq.js:193
 cantProps                    src/27d-ui-cantina.js:397
 cantRoomBody                 src/27d-ui-cantina.js:45
 cantSeats                    src/27d-ui-cantina.js:289
-cantSel                      src/27c-ui-hq.js:190
+cantSel                      src/27c-ui-hq.js:192
 cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina.js:485
 cantView                     src/27d-ui-cantina.js:338
@@ -416,6 +416,14 @@ digCell                      src/23-mode-dig.js:29
 digFauna                     src/23-mode-dig.js:214
 digRockPass                  src/23a-dig-draw.js:18
 digVoidPath                  src/23a-dig-draw.js:71
+DOM_GAME                     src/11af-domino.js:12
+dominoBlock                  src/11af-domino.js:58
+dominoEnd                    src/11af-domino.js:23
+dominoFits                   src/11af-domino.js:22
+dominoMove                   src/11af-domino.js:25
+dominoSettle                 src/11af-domino.js:40
+dominoStart                  src/11af-domino.js:14
+dominoTile                   src/11af-domino.js:13
 DOOM_FOLK                    src/12v-doom.js:23
 DOOM_LEAD                    src/12v-doom.js:21
 DOOM_WARN                    src/12v-doom.js:22
@@ -613,7 +621,7 @@ FACE_SKIN                    src/12d-mgr-face.js:10
 faceEl                       src/27c-ui-hq.js:6
 facePath                     src/12d-mgr-face.js:19
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:482
+factPrices                   src/27c-ui-hq.js:484
 FAUNA_RES                    src/02-world.js:38
 fbm1                         src/01-core.js:19
 fbm2                         src/01-core.js:26
@@ -733,7 +741,7 @@ GROK_DIRT                    src/12tb-grok.js:30
 GROK_LIKE                    src/12tb-grok.js:29
 GROK_MIN                     src/12tb-grok.js:28
 GROK_NAME                    src/12tb-grok.js:26
-grokBlock                    src/27c-ui-hq.js:139
+grokBlock                    src/27c-ui-hq.js:141
 grokBusy                     src/12tb-grok.js:69
 grokCanTeach                 src/12tb-grok.js:137
 grokFace                     src/12tb-grok.js:174
@@ -852,14 +860,14 @@ HOUSES                       src/12u-scrip.js:21
 houseWallMark                src/17d-house-shapes.js:38
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
-hqAiOffer                    src/27c-ui-hq.js:380
-hqBtnTick                    src/27c-ui-hq.js:235
+hqAiOffer                    src/27c-ui-hq.js:382
+hqBtnTick                    src/27c-ui-hq.js:237
 hqConsole                    src/27f-hq-room.js:228
 hqFigure                     src/27f-hq-room.js:509
 hqHover                      src/27f-hq-room.js:675
-hqJobCard                    src/27c-ui-hq.js:439
-hqRelicSlot                  src/27c-ui-hq.js:405
-hqRender                     src/27c-ui-hq.js:242
+hqJobCard                    src/27c-ui-hq.js:441
+hqRelicSlot                  src/27c-ui-hq.js:407
+hqRender                     src/27c-ui-hq.js:244
 hqRoomBody                   src/27f-hq-room.js:32
 hqScene                      src/27f-hq-room.js:640
 hqScreenData                 src/27f-hq-room.js:312
@@ -1141,7 +1149,7 @@ mgrCrewYield                 src/12c-mgr-core.js:203
 mgrCut                       src/12c-mgr-core.js:173
 mgrDefect                    src/12c-mgr-core.js:348
 mgrDomain                    src/12c-mgr-core.js:515
-mgrDomainLine                src/27c-ui-hq.js:501
+mgrDomainLine                src/27c-ui-hq.js:503
 mgrDroneRate                 src/12c-mgr-core.js:219
 mgrFace                      src/12d-mgr-face.js:29
 mgrFee                       src/12c-mgr-core.js:299
@@ -1334,7 +1342,7 @@ odoSum                       src/11d-place.js:25
 ok                           tests/90-harness.js:23
 openBarge                    src/12l-barge.js:578
 openCrewView                 src/27b-ui-crew.js:199
-openHq                       src/27c-ui-hq.js:521
+openHq                       src/27c-ui-hq.js:523
 openShipView                 src/27-ui-ship.js:146
 openStation                  src/26-ui-station.js:5
 OPT_TABS                     src/27-ui-ship.js:408
@@ -2026,7 +2034,7 @@ sysStyle                     src/16a-space.js:21
 tab                          src/26-ui-station.js:3
 TABLE_REPLY                  src/11b-speech.js:146
 tableBake                    src/27i-ui-table.js:52
-tableBlock                   src/27c-ui-hq.js:535
+tableBlock                   src/27c-ui-hq.js:537
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewThings               src/27i-ui-table.js:36
 tableRender                  src/27i-ui-table.js:80
@@ -2360,6 +2368,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/11ae-concert.js · 9 КБ
   · стенгазета и концерт по заявкам:1
+
+## src/11af-domino.js · 5 КБ
+  · домино за столом:1
 
 ## src/11a-quests.js · 6 КБ
   · журнал дел:1
@@ -3005,6 +3016,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzt-wall.js · 2 КБ
   · автотесты: стенгазета и концерт (M165):1
+
+## tests/91zzu-domino.js · 2 КБ
+  · автотесты: домино (M166):1
 
 ## tests/91zzv-table.js · 7 КБ
   · автотесты: пульт и стол (M151a):1

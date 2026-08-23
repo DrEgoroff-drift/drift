@@ -7,6 +7,17 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.127.0 — "Dominoes" (M166)
+
+`11af-domino`: dominoes at the table — three turns, a chain, a hand of three tiles seeded by the
+day and the place (reopening the screen does not redeal), «стучу» when nothing fits. In the
+cantina the opponent is a rival (or Vega when she flies with you); at home, Vega or the mate. The
+stake is never money: a win pays a rumour or a spare part, a loss costs a quip. With Vega any
+outcome is a quarrel — «Ты ПОДДАВАЛСЯ» or «Я выиграла. Ты расстроился.» — those are her rules.
+Beside the table stands a chess board; only Varlamova played it, and after she leaves nobody
+sits down. Suite `91zzu`. **The joys (M164–M166) are built; the fourteenth pass's play queue is
+done — M167 (mobile) and the release look remain.**
+---
 ## 0.126.0 — "The wall newspaper and the request concert" (M165)
 
 `11ae-concert`: the station's folk layer. On ДОСКА hangs a drawn sheet — «СТЕННАЯ ГАЗЕТА» with

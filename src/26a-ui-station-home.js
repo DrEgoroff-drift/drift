@@ -65,6 +65,8 @@ function renderBasesTab(st){
       }
       if(typeof vegaHomeBlock==="function")vegaHomeBlock();   /* жиличка (M153) */
       if(typeof zooHomeBlock==="function")zooHomeBlock();     /* живой угол (M164) */
+      /* домино дома (M166): с Вегой или домочадцем */
+      if(typeof dominoBlock==="function"&&homeHas("living"))dominoBlock((typeof vegaHas==="function"&&vegaHas()&&!G.vega.aboard)?"Вега":homeMateName());
       /* стена-музей: доска прогресса живёт в кабинете, а не на отдельном экране */
       if(homeHas("study")&&typeof rareCount==="function"){
         $body.appendChild(el("div","sec","СТЕНА В КАБИНЕТЕ · "+rareCount()+" / 100 · "+
