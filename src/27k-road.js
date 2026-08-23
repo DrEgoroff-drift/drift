@@ -237,9 +237,9 @@ function drawRoad(ts){
   for(let i=0;i<3;i++){
     const bx=W*(.16+.34*i)+Math.sin(t*.05+i*2.1)*W*.06;
     const by=H*(.16+.14*Math.sin(t*.04+i*1.7))+i*H*.12;
-    const rad=(H*.13+H*.05*Math.sin(t*.09+i))*(1+en*.7);
+    const rad=(H*.16+H*.06*Math.sin(t*.09+i))*(1+en*.9);
     const ng=c.createRadialGradient(bx,by,0,bx,by,rad);
-    const a=(.025+en*.09)*(1-i*.18);
+    const a=(.07+en*.2)*(1-i*.18);
     ng.addColorStop(0,"hsla("+((hue+i*42)%360)+",75%,"+(40+RD.bright*20)+"%,"+a.toFixed(3)+")");
     ng.addColorStop(.6,"hsla("+((hue+i*42)%360)+",75%,34%,"+(a*.4).toFixed(3)+")");
     ng.addColorStop(1,"hsla("+((hue+i*42)%360)+",75%,30%,0)");
@@ -305,16 +305,19 @@ function drawRoad(ts){
   const bob=Math.sin(RD.phase*1.7)*H*.006*(1+RD.shake*2);
   const jx=(Math.random()-.5)*RD.shake*6,jy=(Math.random()-.5)*RD.shake*6;
   const id=G.shipId,h=hullOf(id);
-  const sc=Math.min(W/(h.bw*5.2),H/(h.len*2.4));
+  const sc=Math.min(W/(h.bw*5.2),H/(h.len*2.4))*.6;
   /* шараханье в повороте: боковое усилие и наклон гонят корпус от центра,
      потом он ПОСТЕПЕННО центрируется — быстро в сторону, медленно домой */
   const shove=clamp((RD.latT||0)+(RD.bankT||0)*.8,-1,1);
   RD.latT=(RD.latT||0)*.97;
-  const want2=shove*W*.22,x0=RD.xOff||0;
-  RD.xOff=x0+(want2-x0)*(Math.abs(shove)>.12?.08:.015);
+  const want2=shove*W*.35,x0=RD.xOff||0;
+  RD.xOff=x0+(want2-x0)*(Math.abs(shove)>.12?.12:.015);
+  /* разгон подтягивает корпус к верху экрана, тормоз — к низу */
+  const wantY=-clamp(RD.acc,-1,1)*H*.1,y0=RD.yOff||0;
+  RD.yOff=y0+(wantY-y0)*.06;
   const old=ctx;ctx=c;
   c.save();
-  c.translate(W*.5+RD.xOff+jx,H*.5+bob+jy-RD.acc*H*.02);
+  c.translate(W*.5+RD.xOff+jx,H*.5+bob+jy+RD.yOff);
   /* световой кокон гипердрайва — под корпусом, одним светом */
   if(tier===3){
     c.save();c.globalCompositeOperation="lighter";
