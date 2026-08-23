@@ -77,6 +77,7 @@ function storyAddrMatch(S,c){
   if(at==="planet")return c.p?c.key:null;         // любой мир, на который сели
   if(at==="settle")return c.p&&typeof settleCanLive==="function"&&settleCanLive(c.p)?c.key:null;
   if(at==="tin")return c.p&&typeof tinCanLive==="function"&&tinCanLive(c.p)?c.key:null;
+  if(at==="hours:core")return c.sys&&c.st&&typeof hoursDepthAt==="function"&&hoursDepthAt(c.sys.sx,c.sys.sy)===2?c.key:null;   /* ядро уезда (M157) */
   return null;
 }
 /* Бросок на якорь: плавающая история прибивается не к первому же подходящему
@@ -324,7 +325,7 @@ function storyLint(){
       if(!read)bad.push(S.id+": флаг "+T.set+" никто не читает");
     }
     const at=S.at||"any";
-    if(!/^(any|planet|settle|tin|danger:far|fixed:\d+|stype:\w+|world:\w+)$/.test(at))bad.push(S.id+": адрес "+at);
+    if(!/^(any|planet|settle|tin|hours:core|danger:far|fixed:\d+|stype:\w+|world:\w+)$/.test(at))bad.push(S.id+": адрес "+at);
     const ids=new Set();for(const t of S.traces){if(ids.has(t.id))bad.push(S.id+": след "+t.id+" дважды");ids.add(t.id);}
   }
   return bad.concat(storyCheckWhen());

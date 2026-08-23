@@ -347,7 +347,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   the table; `11z-misclosure`, `91zzj`.
 - **M156 circular** — **built (0.117.0)**: the expedition demand through queues, prices, barges, settlements, crew,
   rumours for sixty days; barge passenger as a channel; `11x-expedition`, `G.exp`, `91zzk`.
-- **M157 the sixth** — five rival traces as links drawing one route to the sixth, who gets a
+- **M157 the sixth** — **built (0.118.0)**: five rival traces as links drawing one route to the sixth, who gets a
   face and goes with the expedition; `12k-stories-d`, `91zzl`.
 - **M158 last run** — the Tin closes; one person per region; ten letters with content read
   aloud by the addressee; `12k-letters`, `91zzm`.

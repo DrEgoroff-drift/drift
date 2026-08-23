@@ -53,6 +53,7 @@ function retDock(){
 function retBlock(){
   if(retDepthHere()!==2)return;
   $body.appendChild(el("div","sec","ТАБЛО ПРИБЫТИЙ"));
-  const rows=RET_BOARD.map(([nm,late])=>"<s"+(late?" style='color:#c9a45a'":"")+">"+nm+" · "+(late?"задерживается · "+late+" лет":"прибыл")+"</s>").join("<br>");
+  let rows=RET_BOARD.map(([nm,late])=>"<s"+(late?" style='color:#c9a45a'":"")+">"+nm+" · "+(late?"задерживается · "+late+" лет":"прибыл")+"</s>").join("<br>");
+  if(typeof sixthGone==="function"&&sixthGone())rows+="<br><s style='color:#8a94a0'>Варламова З. · убыла · не ждут</s>";   /* шестая (M157) */
   $body.appendChild(el("div","row","<div class='nm'>"+rows+"</div>"));
 }

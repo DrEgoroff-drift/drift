@@ -796,7 +796,7 @@ body.table #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.117.0";
+const VER="0.118.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6901,6 +6901,7 @@ function storyAddrMatch(S,c){
   if(at==="planet")return c.p?c.key:null;         // любой мир, на который сели
   if(at==="settle")return c.p&&typeof settleCanLive==="function"&&settleCanLive(c.p)?c.key:null;
   if(at==="tin")return c.p&&typeof tinCanLive==="function"&&tinCanLive(c.p)?c.key:null;
+  if(at==="hours:core")return c.sys&&c.st&&typeof hoursDepthAt==="function"&&hoursDepthAt(c.sys.sx,c.sys.sy)===2?c.key:null;   /* ядро уезда (M157) */
   return null;
 }
 /* Бросок на якорь: плавающая история прибивается не к первому же подходящему
@@ -7148,7 +7149,7 @@ function storyLint(){
       if(!read)bad.push(S.id+": флаг "+T.set+" никто не читает");
     }
     const at=S.at||"any";
-    if(!/^(any|planet|settle|tin|danger:far|fixed:\d+|stype:\w+|world:\w+)$/.test(at))bad.push(S.id+": адрес "+at);
+    if(!/^(any|planet|settle|tin|hours:core|danger:far|fixed:\d+|stype:\w+|world:\w+)$/.test(at))bad.push(S.id+": адрес "+at);
     const ids=new Set();for(const t of S.traces){if(ids.has(t.id))bad.push(S.id+": след "+t.id+" дважды");ids.add(t.id);}
   }
   return bad.concat(storyCheckWhen());
@@ -9048,7 +9049,8 @@ function retDock(){
 function retBlock(){
   if(retDepthHere()!==2)return;
   $body.appendChild(el("div","sec","ТАБЛО ПРИБЫТИЙ"));
-  const rows=RET_BOARD.map(([nm,late])=>"<s"+(late?" style='color:#c9a45a'":"")+">"+nm+" · "+(late?"задерживается · "+late+" лет":"прибыл")+"</s>").join("<br>");
+  let rows=RET_BOARD.map(([nm,late])=>"<s"+(late?" style='color:#c9a45a'":"")+">"+nm+" · "+(late?"задерживается · "+late+" лет":"прибыл")+"</s>").join("<br>");
+  if(typeof sixthGone==="function"&&sixthGone())rows+="<br><s style='color:#8a94a0'>Варламова З. · убыла · не ждут</s>";   /* шестая (M157) */
   $body.appendChild(el("div","row","<div class='nm'>"+rows+"</div>"));
 }
 
@@ -14477,6 +14479,82 @@ const STORIES_C=[
  links:["named_crystal"]}
 ];
 for(const S of STORIES_C)STORIES.push(S);
+
+/* ══════════════ истории: шестой ══════════════
+   M157. У пяти соперников есть истории; шестой «ждал лица». Советский ключ:
+   соперник — не враг, а тот, кто делает то же дело иначе. ЭСТАФЕТА: каждый из
+   пяти оставляет след в чужом месте — на станции не своего типа, — и след
+   называет следующего. Пять следов — связи как данные (seenOf), вместе они
+   рисуют один маршрут, и маршрут кончается в ядре уезда, где часы не сходятся:
+   там шестая. Зоя Варламова, хронометрист института. Она уходит с экспедицией.
+
+   Длинная история — в ключе институтской прозы: отчёт о человеке, который
+   выбрал уйти. Ни слова о том, куда и зачем: это знают все, и никто не говорит.
+
+   ПРАВИЛА ФАЙЛА: те же, что у сотни (12k-stories-a). Адрес hours:core — новый
+   вид (11c): ядро области «Расхождение времён». */
+CAST.sixth={name:"Зоя Варламова",role:"хронометрист",home:"hours:core"};
+const STORIES_D=[
+
+/* ── 101. Пекарь на научной ── эстафета 1 · любая научная станция */
+{id:"relay_baker",form:"relay",at:"stype:sci",cast:["baker"],
+ traces:[
+  {id:"t1",via:"queue",text:"— Пекарь тут был. Сдал дверцу. Обожжённую. Сказал: «не моя, но ей туда». Спрашивал, где теперь Крапива. Ей на комбинат, я сказал."},
+  {id:"t2",via:"news",when:{seen:"t1"},text:"Пекарь сдал в институт дверцу от печи. Ничего не просил взамен. Это на него не похоже."},
+  {id:"t3",via:"cant",when:{seen:"t1"},scene:{seat:"end",figure:0,props:["paper"]}}
+ ],
+ links:["relay_krapiva"]},
+
+/* ── 102. Крапива на комбинате ── эстафета 2 · промышленный комбинат */
+{id:"relay_krapiva",form:"relay",at:"stype:indust",cast:["krapiva"],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"relay_baker.t1"},text:"— Мадам Крапива? Прилетала. Сама. Без чемодана. Отдала чемодан Долгому Киму — на верфь, сказала, ему нужнее."},
+  {id:"t2",via:"queue",when:{seenOf:"relay_baker.t1",visits:2},text:"— Она не летает. Все знают. Прилетела. Значит, дело такое."},
+  {id:"t3",via:"table",item:"strip",when:{item:"strip",seenOf:"relay_baker.t1"},text:"— Лента? Крапива тоже ленту оставила. Для хронометриста. Зоя, что ли. Я не знаю."}
+ ],
+ links:["relay_kim"]},
+
+/* ── 103. Ким на верфи ── эстафета 3 · верфь */
+{id:"relay_kim",form:"relay",at:"stype:yard",cast:["kim"],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"relay_krapiva.t1"},text:"— Долгий Ким закрыл долг. Весь. Чемоданом Крапивы. И ушёл на аванпост — Штофу, говорит, счёт вести некому будет."},
+  {id:"t2",via:"news",when:{seenOf:"relay_krapiva.t1"},text:"Долгий Ким расплатился. В книге долг без имени погашен. Кто — не пишет."},
+  {id:"t3",via:"cant",when:{seenOf:"relay_krapiva.t1"},scene:{seat:"mid",figure:1,col:[88,96,110],props:["paper","jar"]}}
+ ],
+ links:["relay_shtof"]},
+
+/* ── 104. Штоф на аванпосте ── эстафета 4 · пограничный аванпост */
+{id:"relay_shtof",form:"relay",at:"stype:outpost",cast:["shtof"],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"relay_kim.t1"},text:"— Штоф? Вёл счёт. Потом перестал. Сказал: считать будет Совеня, на торговом. Она ночами не спит, ей всё равно."},
+  {id:"t2",via:"ether",when:{seenOf:"relay_kim.t1"},text:"…Штоф, это стойка. Ваш счёт передан. Да, ей. Да, на торговый. Конец связи."},
+  {id:"t3",via:"queue",when:{seenOf:"relay_kim.t1",visits:2},text:"— Он тут сидел до последнего борта. Потом встал и сел на него."}
+ ],
+ links:["relay_sovenya"]},
+
+/* ── 105. Совеня на торговом ── эстафета 5 · торговый узел */
+{id:"relay_sovenya",form:"relay",at:"stype:trade",cast:["sovenya"],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"relay_shtof.t1"},text:"— Совеня сидела всю ночь. Считала. Утром сказала: «сходится». И назвала уезд, где часы не сходятся. Ядро. Там хронометрист. Зоя."},
+  {id:"t2",via:"cant",when:{seenOf:"relay_shtof.t1"},scene:{seat:"end",figure:1,col:[110,90,70],props:["paper","paper"]}},
+  {id:"t3",via:"news",when:{seen:"t1"},text:"Пятеро передали друг другу одно дело. Шестая его взяла. Так говорят."}
+ ],
+ links:["sixth_report"]},
+
+/* ── 106. Отчёт о хронометристе ── длинная · ядро уезда, где часы не сходятся */
+{id:"sixth_report",form:"report",at:"hours:core",cast:["sixth"],
+ traces:[
+  {id:"t1",via:"queue",when:{seenOf:"relay_sovenya.t1"},text:"— Варламова. Зоя. Хронометрист. Да, она здесь. Пока. Ленты принимала она — все, что сдавали. Сказала: «сходится». Больше ничего не сказала."},
+  {id:"t2",via:"cant",when:{seenOf:"relay_sovenya.t1"},scene:{seat:"door",figure:1,col:[70,78,96],props:["paper","key"]}},
+  {id:"t3",via:"table",item:"strip",when:{item:"strip",seenOf:"relay_sovenya.t1"},text:"— Ваша? Положите к остальным. Нет, я не объясню. Я сама не объясняю. Я считаю. ОТЧЁТ. Хронометрист В. в течение 412 суток принимала ленты со всех постов уезда. Расхождение между постами не устранено. Расхождение между небом и людьми не устранено. Причина не установлена. Хронометрист В. подала заявление. Заявление удовлетворено. Приборы сданы по описи. Часы на стойке идут."},
+  {id:"t4",via:"queue",when:{seen:"t3"},text:"— Она записалась. Туда. Не спрашивайте, я не скажу, где это. Все знают, где это. Часы на стойке идут — она завела перед уходом."},
+  {id:"t5",via:"ether",when:{seen:"t4"},text:"…стойка ядра: хронометрист убыла. Ленты принимает автомат. Автомат сходится всегда."}
+ ],
+ links:["relay_sovenya"]}
+];
+for(const S of STORIES_D)STORIES.push(S);
+/* шестая названа: табло прибытий (11s) и книжка (M161) узнают имя */
+function sixthGone(){return !!(typeof storySeen==="function"&&storySeen()["sixth_report.t4"]!=null);}
 
 /* ══════════════ Вега: реплики ══════════════
    M153. Слова жилички — отдельной таблицей, как у сотни (12k-*): логика в

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 219 · символов верхнего уровня: 2167
+Файлов: 221 · символов верхнего уровня: 2169
 
 ## СИМВОЛЫ
 
@@ -1802,6 +1802,7 @@ shipThumb                    src/26-ui-station.js:130
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:211
 shipZoneR                    src/19f-lander.js:14
+sixthGone                    src/12k-stories-d.js:75
 SKY_LOUD                     src/19b-sky.js:13
 SKY_QUIET                    src/19b-sky.js:14
 SKY_WORLD_KINDS              src/19b-sky.js:91
@@ -1887,45 +1888,46 @@ STORAGE_OK                   src/14-save.js:7
 STORIES                      src/12k-stories-a.js:42
 STORIES_B                    src/12k-stories-b.js:27
 STORIES_C                    src/12k-stories-c.js:23
+STORIES_D                    src/12k-stories-d.js:15
 STORM_WORLDS                 src/21a-mode-base.js:245
 STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:262
-STORY_WHEN                   src/11c-stories.js:126
+STORY_SEAT                   src/11c-stories.js:263
+STORY_WHEN                   src/11c-stories.js:127
 storyAddrMatch               src/11c-stories.js:69
 storyAll                     src/11c-stories.js:32
-storyAnchorRoll              src/11c-stories.js:86
+storyAnchorRoll              src/11c-stories.js:87
 storyById                    src/11c-stories.js:33
-storyCantFigures             src/11c-stories.js:269
-storyCantProps               src/11c-stories.js:278
-storyCantScene               src/11c-stories.js:263
-storyCheckWhen               src/11c-stories.js:153
+storyCantFigures             src/11c-stories.js:270
+storyCantProps               src/11c-stories.js:279
+storyCantScene               src/11c-stories.js:264
+storyCheckWhen               src/11c-stories.js:154
 storyCtx                     src/11c-stories.js:39
 storyDay                     src/11c-stories.js:28
-storyEtherLine               src/11c-stories.js:202
-storyFindLine                src/11c-stories.js:230
+storyEtherLine               src/11c-stories.js:203
+storyFindLine                src/11c-stories.js:231
 storyFixedAddr               src/11c-stories.js:55
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:337
+storyGroundLine              src/11c-stories.js:338
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:310
-storyNewsItem                src/11c-stories.js:237
-storyNote                    src/11c-stories.js:349
-storyPickOne                 src/11c-stories.js:193
+storyLint                    src/11c-stories.js:311
+storyNewsItem                src/11c-stories.js:238
+storyNote                    src/11c-stories.js:350
+storyPickOne                 src/11c-stories.js:194
 storyPins                    src/11c-stories.js:30
-storyPlace                   src/11c-stories.js:92
-storyProp                    src/11c-stories.js:286
-storyQueueLine               src/11c-stories.js:210
+storyPlace                   src/11c-stories.js:93
+storyProp                    src/11c-stories.js:287
+storyQueueLine               src/11c-stories.js:211
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
-storyShow                    src/11c-stories.js:179
-storyTableLine               src/11c-stories.js:222
-storyTraces                  src/11c-stories.js:162
-storyTurns                   src/11c-stories.js:108
-storyWhen                    src/11c-stories.js:148
+storyShow                    src/11c-stories.js:180
+storyTableLine               src/11c-stories.js:223
+storyTraces                  src/11c-stories.js:163
+storyTurns                   src/11c-stories.js:109
+storyWhen                    src/11c-stories.js:149
 stPanels                     src/17c-system-draw.js:118
 stRing                       src/17c-system-draw.js:144
 STRIP_CHUNK                  src/07-planet.js:73
@@ -2264,7 +2266,7 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## src/11c-stories.js · 19 КБ
   · истории: следы, а не задания:1
-  · каналы:200
+  · каналы:201
 
 ## src/11d-place.js · 4 КБ
   · память места: три счётчика и одометр:1
@@ -2397,6 +2399,9 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## src/12k-stories-c.js · 21 КБ
   · истории, часть третья:1
+
+## src/12k-stories-d.js · 8 КБ
+  · истории: шестой:1
 
 ## src/12k-vega.js · 7 КБ
   · Вега: реплики:1
@@ -2863,6 +2868,9 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## tests/91zzk-expedition.js · 3 КБ
   · автотесты: циркуляр (M156):1
+
+## tests/91zzl-sixth.js · 2 КБ
+  · автотесты: шестой (M157):1
 
 ## tests/91zzv-table.js · 7 КБ
   · автотесты: пульт и стол (M151a):1

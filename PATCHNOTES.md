@@ -7,6 +7,18 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.118.0 — "The sixth" (M157)
+
+`12k-stories-d`: the rivals as colleagues. Each of the five leaves a trace on a station not
+their own — the Baker hands in the oven door at a science station, Krapiva flies (she never
+flies) to a plant and gives her suitcase to Kim, Kim pays the nameless debt at a yard and goes to
+the outpost, Shtof hands his count to Sovenya at a trade hub, Sovenya counts all night and names
+the county where the clocks disagree. Five traces are links as data (`seenOf`), and together they
+draw one route to the sixth: **Зоя Варламова**, the institute's chronometrist at the core of the
+hours county (new address kind `hours:core`). Her story is a report in the institute key — 412
+days of tapes, «расхождение не устранено», «заявление удовлетворено» — and she goes with the
+expedition; the board of returners gets her line: «убыла · не ждут». Suite `91zzl`.
+---
 ## 0.117.0 — "The circular" (M156)
 
 `11x-expedition`: once the Ring has been heard twice and a tape handed in, the ether carries the
