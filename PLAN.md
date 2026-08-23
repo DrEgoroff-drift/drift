@@ -314,22 +314,41 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 
 ---
 
-# QUEUE: the fourteenth pass — the kit, the lodger, the expedition (M152–M158)
+# QUEUE: the fourteenth pass — the kit, the lodger, the expedition (M152–M166)
 
 Designs (2026-08-23): [`docs/DESIGN-suit.md`](docs/DESIGN-suit.md),
-[`docs/DESIGN-vega.md`](docs/DESIGN-vega.md), [`docs/DESIGN-act2.md`](docs/DESIGN-act2.md).
-Order: M152 → M153 → M154…M158. Each is a version with tests and a commit.
+[`docs/DESIGN-vega.md`](docs/DESIGN-vega.md), [`docs/DESIGN-act2.md`](docs/DESIGN-act2.md),
+[`docs/DESIGN-after.md`](docs/DESIGN-after.md). Order as listed; each is a version with tests and
+a commit. The joys (M164–M166) may be slotted between big milestones as breathers.
 
 - **M152 the kit** — the suit as six places with trade-offs, pieces with models/class/wear/mods,
   issued/found/given, the workshop tier repairs and modernises; `12x-suit`, `11y-kit`, `91zzg`.
 - **M153 Vega** — the lodger who cannot be evicted: the one-shot device on the flea, three acts,
   the mirror, flying with her (right seat, HUD line, help/hinder/quarrel/gift/outings), the
   seven-day ending; `11w-vega`, `12k-vega`, `91zzh`.
-- **M154 circular** — the expedition demand through the world; `11x-expedition`, `G.exp`.
-- **M155 the sixth** — the rival route as links; the sixth rival gets a face and a story.
-- **M156 misclosure** — the region where the counts diverge; tapes as a figure on the table.
-- **M157 last run** — the Tin closes; ten letters with content.
-- **M158 departure** — the board line, the optional ending, the unsigned tape a year later.
+- **M154 the Ring** — a structured signal from outside on the receiver, recorded on tape, never
+  explained; `11x-ring`, `91zzi`.
+- **M155 misclosure** — the region where the counts diverge; tapes together draw a figure on
+  the table; `11z-misclosure`, `91zzj`.
+- **M156 circular** — the expedition demand through queues, prices, barges, settlements, crew,
+  rumours for sixty days; barge passenger as a channel; `11x-expedition`, `G.exp`, `91zzk`.
+- **M157 the sixth** — five rival traces as links drawing one route to the sixth, who gets a
+  face and goes with the expedition; `12k-stories-d`, `91zzl`.
+- **M158 last run** — the Tin closes; one person per region; ten letters with content read
+  aloud by the addressee; `12k-letters`, `91zzm`.
+- **M159 departure** — the quiet minute, the nameless board line, the once-offered ending, the
+  unsigned tape a year later; `91zzn`.
+- **M160 the Island** — pirates as those who left; landing with a letter as the second door;
+  three names return; `91zzo`.
+- **M161 record book** — the player's biography written by others, boards of honour, ageing
+  and the medical board as the quiet ending; `11aa-record`, `91zzp`.
+- **M162 institute** — topics, labs, forms, the voucher to the sanatorium planet; `11ab-institute`, `91zzq`.
+- **M163 trainee** — the stowaway boy on the right seat, learns, gets a diploma, leaves; `11ac-trainee`, `91zzr`.
+- **M164 zoo** (joy) — beasts brought home, pens, the zoo station; `11ad-zoo`, `91zzs`.
+- **M165 wall paper & concert** (joy) — the wall newspaper on the counter, the request concert
+  on the receiver; `11ae-concert`, `91zzt`.
+- **M166 dominoes** (joy) — dominoes at the table with crew, rivals, Vega; `11af-domino`, `91zzu`.
+- **Release look** — after M161: the table as paper, removal of the overlay HUD.
 
 # QUEUE: the thirteenth pass â the galaxy as a book of stories (M122âM151)
 
