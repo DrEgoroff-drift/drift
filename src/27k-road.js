@@ -308,16 +308,64 @@ function drawRoad(ts){
   const sc=Math.min(W/(h.bw*5.2),H/(h.len*2.4))*.6;
   /* шараханье в повороте: боковое усилие и наклон гонят корпус от центра,
      потом он ПОСТЕПЕННО центрируется — быстро в сторону, медленно домой */
-  const shove=clamp((RD.latT||0)+(RD.bankT||0)*.8,-1,1);
+  /* знак минус: телефон кренится в поворот, а корпус на экране уходит наружу */
+  const shove=-clamp((RD.latT||0)+(RD.bankT||0)*.8,-1,1);
   RD.latT=(RD.latT||0)*.97;
   const want2=shove*W*.35,x0=RD.xOff||0;
   RD.xOff=x0+(want2-x0)*(Math.abs(shove)>.12?.12:.015);
   /* разгон подтягивает корпус к верху экрана, тормоз — к низу */
   const wantY=-clamp(RD.acc,-1,1)*H*.1,y0=RD.yOff||0;
   RD.yOff=y0+(wantY-y0)*.06;
+  /* шлейф из сопел — та же лента, что в полёте (16-flight): газ остаётся,
+     где выброшен, и стекает вниз вместе с потоком звёзд; корабль шарахается —
+     лента изгибается. Цвет — trailTint, ядро добела, к хвосту в акцент корпуса */
+  const rot=-Math.PI/2+RD.bank*.22-RD.acc*.06;
+  const cx=W*.5+RD.xOff+jx,cy=H*.5+bob+jy+RD.yOff;
+  if(!RD.trail){RD.trail=[];RD.burst=0;}
+  const thrust=spd>ROAD_VMIN||RD.acc>.2;
+  if(thrust&&!RD.thrOn)RD.burst++;
+  RD.thrOn=thrust;
+  const flow=60+fast*H*1.4;
+  for(let i=RD.trail.length-1;i>=0;i--){
+    const p=RD.trail[i];p.y+=flow*.016;p.life-=.016;
+    if(p.life<=0||p.y>H+40)RD.trail.splice(i,1);
+  }
+  if(thrust&&RD.trail.length<260){
+    const co=Math.cos(rot),si=Math.sin(rot);
+    const span=(.5+fast*.9)*(1+Math.max(0,RD.acc)*.8);
+    for(let i=0;i<h.eng.length;i++){
+      const e=h.eng[i];
+      const ex=cx+(e.x*co-e.y*si)*sc,ey=cy+(e.x*si+e.y*co)*sc;
+      RD.trail.push({x:ex+(Math.random()-.5)*1.5,y:ey,e:i,b:RD.burst,
+        r:e.r*sc*(.54+Math.random()*.08),max:span,life:span});
+    }
+  }
+  {
+    const T=trailTint(id,G.mods.engine|0);
+    c.save();c.globalCompositeOperation="lighter";c.lineCap="butt";c.lineJoin="round";
+    const lanes={};
+    for(const p of RD.trail){const k=p.e+"/"+p.b;(lanes[k]||(lanes[k]=[])).push(p);}
+    for(const k in lanes){
+      const arr=lanes[k];
+      for(let i=1;i<arr.length;i++){
+        const a=arr[i-1],b2=arr[i];
+        const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1);
+        const col=u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
+        c.strokeStyle=rgba(col,(u*u*.3+u*u*u*u*.5).toFixed(3));
+        c.lineWidth=Math.max(1,b2.r*(2.4-u*1.3)*1.35);
+        c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b2.x,b2.y);c.stroke();
+      }
+      const f=arr[arr.length-1];
+      if(f&&f.life>f.max-.05){
+        c.fillStyle=rgba(T.core,.62);
+        c.beginPath();c.arc(f.x,f.y,Math.max(.8,f.r*1.3),0,TAU);c.fill();
+      }
+    }
+    c.restore();
+  }
   const old=ctx;ctx=c;
   c.save();
-  c.translate(W*.5+RD.xOff+jx,H*.5+bob+jy+RD.yOff);
+  c.translate(cx,cy);
   /* световой кокон гипердрайва — под корпусом, одним светом */
   if(tier===3){
     c.save();c.globalCompositeOperation="lighter";
@@ -326,22 +374,9 @@ function drawRoad(ts){
     c.fillStyle=cg;c.beginPath();c.ellipse(0,0,h.bw*sc*1.6,h.len*sc*.75,0,0,TAU);c.fill();
     c.restore();
   }
-  /* нос вверх: портретный экран — дорога впереди. Шлейф от сопел — полоской,
-     тем же цветом, что в полёте (trailTint), под корпусом */
-  c.rotate(-Math.PI/2+RD.bank*.22-RD.acc*.06);
+  /* нос вверх: портретный экран — дорога впереди; шлейф уже лёг лентой ниже */
+  c.rotate(rot);
   c.scale(sc,sc);
-  if(spd>ROAD_VMIN){
-    const T=trailTint(id,G.mods.engine|0);
-    const L=30+fast*170;
-    c.save();c.globalCompositeOperation="lighter";
-    for(const e of h.eng){
-      const tg=c.createLinearGradient(e.x,0,e.x-L,0);
-      tg.addColorStop(0,rgba(T.core,.5));tg.addColorStop(.3,rgba(T.mid,.28));tg.addColorStop(1,rgba(T.edge,0));
-      c.fillStyle=tg;
-      c.fillRect(e.x-L,e.y-e.r*.55,L,e.r*1.1);
-    }
-    c.restore();
-  }
   drawHull(id,spd>ROAD_VMIN||RD.acc>.2,RD.acc<-.25,Math.min(3,fast*3+Math.max(0,RD.acc)*2+(tier===3?1:0)),RD.bank);
   c.restore();
   ctx=old;
