@@ -7,6 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.112.0 — "The economy without a debt" (M152e)
+
+Measured first (`91zzw-economy` prints cr/min per source): a hand-flown leg on «Стриж» with
+600 cr is ~640 cr per 3 min; a drone 25 cr/min for 2 200; a hire bets −2 cr/min in flight; and
+the managers were the only drain per minute — 240+ cr/min from the player's purse. Then nine
+changes. **Managers live on the cut**: the wage is settled from the domain's own share
+(`m.pool`), never from the player; an empty domain leaves him "on bare percent" — a grumble and a
+slow loyalty thaw, a third of the old rate. **Station need** (`12aa-need`): every three days a
+station may run out of one good — ×2 for one delivery, then closed for the window; heard on the
+receiver (15% wrong, like rumours), posted on ДОСКА, remembered by the station and the notebook.
+**One order per station** («наряд»): carry N of a good to a named station by a day for a stated
+sum; one on hand at a time, expired ones simply vanish. **The first hull by allocation**: at
+3 000 turnover the plan issues a used «Вьюк». **Tails on display**: a hire's captured hull goes
+to the home case and the table. **A find handed to the institute for a quarter** or sold on the
+bazaar whole. **The rationalisation premium** for the first alloy of a kind. **Prices on paper**:
+a ЦЕНЫ tab on the table with what was last seen per station. **The market fills slower**: price
+pressure half-life 3 h instead of 30 min. The mirror's echo now repeats what was actually heard.
+---
 ## 0.111.0 — "The console and the table" (M151a)
 
 The release look, built before the kit and the lodger so that every new voice lands in a ready

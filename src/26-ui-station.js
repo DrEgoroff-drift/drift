@@ -20,6 +20,8 @@ function openStation(){
   if(typeof quietDock==="function"){const qr=quietDock();if(qr)say("Колония:\n"+qr.line);}     /* тихий уезд (11n) */
   if(typeof retDock==="function"){const rr=retDock();if(rr)say("Вернувшиеся:\n"+rr.line);}     /* возвращение (11s) */
   logAdd("dim","Стыковка с «"+G.st.name+"»");
+  /* цены на бумагу (M152e): что видели здесь — лежит на столе, закладка ЦЕНЫ */
+  if(typeof pricesSeen==="function")pricesSeen(G.sys);
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
   document.getElementById("stName").textContent=G.st.name.toUpperCase();
@@ -210,6 +212,8 @@ function renderTab(){
           (q.reward?" · награда: "+q.reward:"")+"</s></div>"));
       }
     }
+    if(typeof needBlock==="function")needBlock();         /* нужда и наряд (M152e) */
+    if(typeof findsBlock==="function")findsBlock();       /* находки: институту или с рук (M152e) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
@@ -720,6 +724,15 @@ function renderTab(){
         for(const [k,q] of R.in)G.cargo[k]-=q*n;
         G.credits-=R.fee*n;G.cargo.alloy+=n;
         tell("money","Переплавка на «"+G.st.name+"»: сплавы ×"+n,"Переплавка\nсплавы ×"+n);
+        /* рацпредложение (M152e): первая плавка этого рецепта платит один раз и честно */
+        G.ratios=G.ratios||{};
+        if(!G.ratios[R.ru]){
+          G.ratios[R.ru]=1;const prem=Math.round((R.fee*6+400)/10)*10;
+          earn(prem,"ratio");
+          tell("money","Рацпредложение принято: «"+R.ru+"» · премия "+prem+" кр","РАЦПРЕДЛОЖЕНИЕ\n+"+prem+" кр");
+          if(typeof thingAdd==="function")thingAdd("paper","Рацпредложение · "+R.ru,"принято на «"+G.st.name+"» · премия "+prem+" кр · повторы — просто сплав");
+          if(typeof recordAdd==="function")recordAdd(G.st.name,"рацпредложение: "+R.ru);
+        }
         renderTab();
       };
       r.appendChild(b);$body.appendChild(r);

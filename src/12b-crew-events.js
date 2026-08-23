@@ -204,6 +204,9 @@ const CREW_EVENTS=[
   {id:"capture",cat:"jack",when:()=>Object.keys(SHIPS).some(id=>!G.owned[id]),run:(c,r,gross)=>{
     const free=Object.keys(SHIPS).filter(id=>!G.owned[id]);
     const id=pick(free,r);G.owned[id]=true;
+    /* хвост — на витрину (M152e): ставка видна, а не строка dim */
+    if(G.home){(G.home.trophies||(G.home.trophies=[])).push({k:"hull",id,who:c.name,t:Date.now()});}
+    if(typeof thingAdd==="function")thingAdd("trophy",c.name+" пригнал корпус «"+SHIPS[id].ru+"»","трофей с рейса · корпус в ангаре · витрина дома помнит");
     return {tone:"tech",ru:"пригнал трофейный корпус «"+SHIPS[id].ru+"» — он в ангаре"};
   }}
 ];

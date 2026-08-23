@@ -36,6 +36,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
+    need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -343,7 +344,7 @@ function applySave(s){
        Список полей здесь белый, поэтому новое поле надо вносить явно,
        иначе оно молча теряется при каждой загрузке. */
     relic:(m.relic&&ARTIFACTS[m.relic])?m.relic:null,
-    cutBonus:+m.cutBonus||0,ultCount:Math.max(0,m.ultCount|0),
+    cutBonus:+m.cutBonus||0,ultCount:Math.max(0,m.ultCount|0),pool:Math.max(0,+m.pool||0),
     jobPast:(Array.isArray(m.jobPast)?m.jobPast:[]).filter(x=>jobDef(x)).slice(0,20),
     /* поручение переживает загрузку, но срок идёт заново: счётчики-маркеры
        (убитые пираты, выручка, вмешательства в приказы) живут только в сессии */
@@ -376,7 +377,7 @@ function applySave(s){
     const h=homeInit();
     h.turn=Math.max(0,+s.home.turn||0);
     h.tier=clamp(s.home.tier|0,0,HOME_TIERS.length);
-    h.sx=s.home.sx|0;h.sy=s.home.sy|0;h.made=+s.home.made||0;
+    h.sx=s.home.sx|0;h.sy=s.home.sy|0;h.made=+s.home.made||0;h.alloc=s.home.alloc|0;
     h.garage=Array.isArray(s.home.garage)?s.home.garage.filter(id=>!!shipData(id)):[];
     if(s.home.showcase&&typeof s.home.showcase==="object")
       for(const k of RES_KEYS)if(s.home.showcase[k]>0)h.showcase[k]=+s.home.showcase[k];
@@ -461,6 +462,11 @@ function applySave(s){
   /* почтовый круг (11e): три числа */
   G.post={stage:clamp((s.post&&s.post.stage)|0,0,POST_LINKS.length-1),opened:(s.post&&s.post.opened)?1:0,done:(s.post&&s.post.done)?1:0};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
+  G.need=(s.need&&typeof s.need==="object")?s.need:{};
+  G.order=(s.order&&typeof s.order==="object"&&s.order.to)?s.order:null;
+  G.things=Array.isArray(s.things)?s.things.slice(0,40):[];
+  G.ratios=(s.ratios&&typeof s.ratios==="object")?s.ratios:{};
+  G.seenPrices=(s.seenPrices&&typeof s.seenPrices==="object")?s.seenPrices:{};
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];

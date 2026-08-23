@@ -87,7 +87,7 @@ function tableRender(){
   const sub=document.getElementById("tableSub"),cr=document.getElementById("tableCr"),wh=document.getElementById("tableWhere");
   const SUB={ether:"эфир · что было услышано",bort:"борт · техника и деньги",folk:"люди · что вам сказали",
              deeds:"дела · что вы должны",strips:"ленты · оторванные полосы самописца",things:"вещи · письма, находки, бумаги",
-             lore:"отчёт «Долгого хода»"};
+             prices:"цены · как их видели, по станциям",lore:"отчёт «Долгого хода»"};
   if(sub)sub.textContent=SUB[tableTab]||"";
   if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
   if(wh)wh.textContent=(G.sys&&G.sys.name?G.sys.name:"—")+" · "+(G.mode||"");
@@ -97,6 +97,8 @@ function tableRender(){
   else if(tableTab==="deeds")renderDeeds();
   else if(tableTab==="strips")renderStrips(box);
   else if(tableTab==="things")renderThings(box);
+  else if(tableTab==="prices"&&typeof renderPrices==="function")renderPrices(box);
+  else if(tableTab==="prices"&&typeof renderPrices==="function")renderPrices(box);
   else if(tableTab==="lore"&&typeof renderLoreBoard==="function")renderLoreBoard();
 }
 function tableRow(box,cls,em,text){

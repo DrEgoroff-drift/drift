@@ -5,7 +5,7 @@ function marketFor(sys){
   if(!m){m={pressure:{},t:G.t};G.market[sys.key]=m;}
   const secs=Math.max(0,(G.t-m.t)/60);
   if(secs>0){
-    const decay=Math.pow(.5,secs/1800);
+    const decay=Math.pow(.5,secs/10800);   /* давление держится часами, а не полчаса (M152e): дальше лететь выгоднее, чем туда-сюда */
     for(const k of TRADE_KEYS)m.pressure[k]=(m.pressure[k]||0)*decay;
     m.t=G.t;
   }
@@ -16,9 +16,10 @@ function marketFor(sys){
   const F=typeof mgrOf==="function"?mgrOf("fact"):null;
   const onRoute=F&&!F.stalled&&mgrPerk(F,"mono")&&F.route.indexOf(sys.sx+","+sys.sy)>=0;
   const boost=onRoute?1.18:1;
+  const N=(typeof needOf==="function")?needOf(sys):null;   /* нужда (M152e): ×2 на один привоз */
   for(const k of TRADE_KEYS)
     /* занятая система: скупщик один, и он знает, что деваться некуда */
-    prices[k]=Math.max(1,Math.round(base[k]*mul*boost*occPriceMul(sys.sx,sys.sy)*
+    prices[k]=Math.max(1,Math.round(base[k]*mul*boost*(N&&N.k===k?NEED_MUL:1)*occPriceMul(sys.sx,sys.sy)*
                                     clamp(1+(m.pressure[k]||0),.4,1.8)));
   return prices;
 }
@@ -27,6 +28,7 @@ function sellCargo(sys,k,qty){
   if(qty<=0)return 0;
   const price=marketFor(sys)[k],revenue=qty*price;
   earn(revenue,"trade");G.cargo[k]-=qty;
+  if(typeof needClose==="function")needClose(sys,k);   /* нужда закрыта этим привозом (M152e) */
   G.soldTotal=(G.soldTotal|0)+revenue;   // «пузырь» смотрит на выручку, а не на штуки
   const m=G.market[sys.key];
   m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);

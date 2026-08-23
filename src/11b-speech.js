@@ -62,6 +62,7 @@ function etherTick(dt){
   if(typeof planEtherLine==="function"){const h=planEtherLine(r);if(h)out=h;}        /* накладные (11r) */
   if(typeof retEtherLine==="function"){const h=retEtherLine(r);if(h)out=h;}          /* кого ждут (11s) */
   if(typeof rumourEtherLine==="function"){const h=rumourEtherLine(r);if(h)out=h;}    /* слух на приёмнике (11t) */
+  if(typeof needEtherLine==="function"){const h=needEtherLine(r);if(h)out=h;}        /* нужда поблизости (M152e) */
   if(typeof namesEtherLine==="function"){const h=namesEtherLine();if(h)out=h;}       /* ваше слово у диспетчера (11u) */
   if(out&&typeof regionAt==="function"){
     const R=regionAt(G.sx,G.sy);
@@ -69,7 +70,7 @@ function etherTick(dt){
       out=out.replace(/[а-яёa-z]{3,}/gi,w=>Math.random()<.22?"…":w);
   }
   etherLine(out);   /* на пульт и в ЭФИР (M151a) */
-  if(typeof mirrorEchoArm==="function")mirrorEchoArm(line);   /* зеркало (11f) */
+  if(typeof mirrorEchoArm==="function")mirrorEchoArm(out);    /* зеркало (11f): эхо повторяет то, что было слышно, а не исходник */
 }
 /* ── как к вам обращаются ──
    «пилот» → позывной → имя. Больше ничего не нужно, чтобы игрок почувствовал

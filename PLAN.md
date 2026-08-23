@@ -328,7 +328,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   clippings); the station gets **ДОСКА** as its first group; the menu shrinks to five; `logwin`,
   `lorewin`, `parrotwin` removed; `say()` only for prompts and emergencies, `etherLine()` /
   `peopleLine()` for voices; `29-ui-table`, `29a-console`, `91f-ui` rewritten once; `91zzv`.
-- **M152e the economy without a debt** — after M151a, before M152: per
+- **M152e the economy without a debt** — **built (0.112.0)**: per
   [`docs/DESIGN-economy.md`](docs/DESIGN-economy.md). Measure first (`91zzw-economy`, 60 minutes
   under three profiles, cr/min per source and drain); then: no manager salary — the cut only,
   hires paid per run; station need (×2 for one delivery, heard and posted); one order per

@@ -190,6 +190,7 @@ function mgrLeak(m){
 function mgrTake(m,gross){
   if(gross<=0)return 0;
   const cut=Math.round(gross*mgrCut(m));
+  m.pool=(m.pool||0)+cut;              /* из доли платится его оклад (M152e) */
   const steal=Math.round(gross*(mgrTraitAdd(m,"steal")*(m.loy<50?1.6:1)+mgrLeak(m)));
   m.tookCr=(m.tookCr||0)+cut+steal;
   if(steal>0)m.stole=(m.stole||0)+steal;
@@ -473,11 +474,18 @@ function mgrTick(){
    и убыточного домена, и на нуле он забирает флагман: единственный источник
    по-настоящему сильного противника поздней игры, которого игрок вырастил сам. */
 function mgrPayroll(m,min){
-  /* округляем здесь: жалованье считается от дробных минут, и без этого
-     на счету игрока накапливался хвост вида 295577.3657999 */
+  /* M152e: оклад управляющего — из его же доли, а не из вашей кассы.
+     Домен приносит → доля копится в m.pool (mgrTake), и оклад гасится оттуда.
+     Домен пуст → он «на голом проценте»: не разоряет вас, а ворчит и медленно
+     теряет веру — втрое мягче прежнего невыплаченного жалованья. Так снимается
+     единственная причина гриндить: расход в минуту против дохода за действие.
+     Машина (ai) по-прежнему берёт обслуживание: это её цена, а не оклад.
+     Округляем здесь: жалованье считается от дробных минут. */
   const due=Math.round(mgrPay(m)*min);
-  const pay=Math.min(G.credits,due);
-  G.credits-=pay;m.spent=(m.spent||0)+pay;
+  let pay;
+  if(m.ai){pay=Math.min(G.credits,due);G.credits-=pay;}
+  else{pay=Math.min(m.pool||0,due);m.pool=(m.pool||0)-pay;}
+  m.spent=(m.spent||0)+pay;
   const short=due-pay;
   const drop=mgrTraitMul(m,"loyDrop");
   /* Машине нечего обижаться: недоплата не роняет лояльность, а разгоняет дрейф.
@@ -492,10 +500,10 @@ function mgrPayroll(m,min){
   /* вторая строка «Пустого контракта»: деньгами его больше не обидеть */
   if(short>0&&relicDeep("blank")){m.warnPay=0;return;}
   if(short>0){
-    m.loy=Math.max(0,m.loy-min*1.6*drop);
+    m.loy=Math.max(0,m.loy-min*.5*drop);
     if(!m.warnPay&&m.loy<45){
-      m.warnPay=1;mgrSay(m,"Жалованье не приходит. Я это помню.","warn");
-      logAdd("warn",m.name+" не получает жалованья — лояльность падает");
+      m.warnPay=1;mgrSay(m,"Домен пустой — сижу на голом проценте. Я это помню.","warn");
+      logAdd("warn",m.name+" на голом проценте: домен ничего не принёс — лояльность подтаивает");
     }
   }else{
     m.warnPay=0;

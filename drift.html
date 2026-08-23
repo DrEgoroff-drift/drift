@@ -658,6 +658,7 @@ body.table #console{display:none}
     <button data-tab="deeds">ДЕЛА</button>
     <button data-tab="strips">ЛЕНТЫ</button>
     <button data-tab="things">ВЕЩИ</button>
+    <button data-tab="prices">ЦЕНЫ</button>
     <button data-tab="lore" style="display:none">ОТЧЁТ</button>
   </nav>
   <div class="body" id="tableBody"><div id="loglist"></div><div id="lorelist" style="display:none"></div></div>
@@ -795,7 +796,7 @@ body.table #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.111.0";
+const VER="0.112.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6656,6 +6657,7 @@ function etherTick(dt){
   if(typeof planEtherLine==="function"){const h=planEtherLine(r);if(h)out=h;}        /* накладные (11r) */
   if(typeof retEtherLine==="function"){const h=retEtherLine(r);if(h)out=h;}          /* кого ждут (11s) */
   if(typeof rumourEtherLine==="function"){const h=rumourEtherLine(r);if(h)out=h;}    /* слух на приёмнике (11t) */
+  if(typeof needEtherLine==="function"){const h=needEtherLine(r);if(h)out=h;}        /* нужда поблизости (M152e) */
   if(typeof namesEtherLine==="function"){const h=namesEtherLine();if(h)out=h;}       /* ваше слово у диспетчера (11u) */
   if(out&&typeof regionAt==="function"){
     const R=regionAt(G.sx,G.sy);
@@ -6663,7 +6665,7 @@ function etherTick(dt){
       out=out.replace(/[а-яёa-z]{3,}/gi,w=>Math.random()<.22?"…":w);
   }
   etherLine(out);   /* на пульт и в ЭФИР (M151a) */
-  if(typeof mirrorEchoArm==="function")mirrorEchoArm(line);   /* зеркало (11f) */
+  if(typeof mirrorEchoArm==="function")mirrorEchoArm(out);    /* зеркало (11f): эхо повторяет то, что было слышно, а не исходник */
 }
 /* ── как к вам обращаются ──
    «пилот» → позывной → имя. Больше ничего не нужно, чтобы игрок почувствовал
@@ -9238,6 +9240,218 @@ function placeDraw(tr,camx,camy,p){
   }
 }
 
+/* ══════════════ нужда станции и наряд ══════════════
+   M152e. Два ответа на «где заработать», которые читаются, а не фармятся.
+
+   НУЖДА — советский дефицит. Раз в окно (три дня) у станции может кончиться
+   один товар: цена на него ×2 — НА ОДИН ПРИВОЗ. Привёз — нужда закрыта до
+   конца окна, второй рейс оплачивается обычно. Слышно по приёмнику, видно
+   на ДОСКЕ; станция помнит (12k-rep), тетрадь ЛЮДИ получает строку.
+   Нужда — расчёт от посева и окна, хранится только её закрытие (G.need).
+
+   НАРЯД — один на станцию и один на руках: «отвезти N товара на такую-то
+   станцию до такого-то дня · столько-то кр». Взял — второй не дадут, пока не
+   закрыл; опоздал — наряд просто снят. Пишет план региона (11r) через посев
+   и окно в два дня; во втором акте — циркуляр. Хранится только взятый (G.order).
+
+   ПРАВИЛА ФАЙЛА:
+   1. Ничего не сочиняется: товар — из цен станции, получатель — соседняя
+      станция, цена — от рынка. Детерминизм по посеву: перезаход не перебирает.
+   2. Никаких списков: одна нужда и один наряд на станцию, один наряд на руках. */
+const NEED_WIN=3,NEED_P=.3,NEED_MUL=2;   /* замер 91zzw: при .42 нужда была у 44% станций — слишком буднично */
+function needWin(){return Math.floor(celDay()/NEED_WIN);}
+function needAll(){return (G.need||(G.need={}));}
+function needOf(sys){
+  if(!sys||!sys.station||!sys.station.prices)return null;
+  const win=needWin();
+  const r=rng(hashi(sys.sx,sys.sy,0x4EED+win));
+  if(r()>=NEED_P)return null;
+  const keys=TRADE_KEYS.filter(k=>sys.station.prices[k]);
+  if(!keys.length)return null;
+  const k=keys[Math.floor(r()*keys.length)];
+  const closed=needAll()[sys.key];
+  if(closed&&closed.win===win)return null;
+  return {k,win,ru:RES[k].ru.toLowerCase()};
+}
+/* продажа закрывает нужду: одна строка в ЛЮДИ, станция помнит */
+function needClose(sys,k){
+  const N=needOf(sys);
+  if(!N||N.k!==k)return false;
+  needAll()[sys.key]={win:N.win,k,t:Date.now()};
+  if(typeof repAdd==="function")repAdd(2,sys);
+  if(typeof peopleLine==="function")peopleLine("привезли "+N.ru+", когда "+(RES[k].ru.endsWith("ы")?"их":"её")+" не было. Это помнят.",sys.station.name,true);
+  sfx("ok",{v:.4});
+  return true;
+}
+/* станции с нуждой в радиусе — для доски и эфира */
+function needsNear(rad){
+  rad=rad||7;const out=[];
+  for(let x=G.sx-rad;x<=G.sx+rad;x++)for(let y=G.sy-rad;y<=G.sy+rad;y++){
+    if(!starAt(x,y))continue;
+    const S=getSystem(x,y);if(!S||!S.station)continue;
+    const N=needOf(S);if(N)out.push({sys:S,need:N,d:Math.max(Math.abs(x-G.sx),Math.abs(y-G.sy))});
+  }
+  out.sort((a,b)=>a.d-b.d);
+  return out;
+}
+/* строка в эфир (11b): раз из нескольких — о нужде поблизости, иногда с ошибкой,
+   как и слухи (11t): 15% — не тот товар */
+function needEtherLine(r){
+  if(r()>.3)return null;
+  const L=needsNear(6);if(!L.length)return null;
+  const n=L[Math.floor(r()*L.length)];
+  let ru=n.need.ru;
+  if(r()<.15){const k=pick(TRADE_KEYS,r);ru=RES[k].ru.toLowerCase();}
+  return pick(["…"+n.sys.station.name+": кончилось — "+ru+". Кто привезёт — берут вдвое.",
+               "…передайте по цепочке: на "+n.sys.station.name+" нет "+ru+".",
+               "…"+n.sys.station.name+" просит "+ru+". Срочно, говорят."],r);
+}
+/* ── наряд ── */
+const ORDER_WIN=2;
+function orderWin(){return Math.floor(celDay()/ORDER_WIN);}
+function orderOf(sys){
+  if(!sys||!sys.station||!sys.station.prices)return null;
+  const win=orderWin();
+  const r=rng(hashi(sys.sx,sys.sy,0x0A9D+win));
+  if(r()>.6)return null;
+  /* получатель — станция в радиусе 2–8, не эта */
+  let to=null;
+  for(let i=0;i<24&&!to;i++){
+    const dx=Math.round((r()-.5)*16),dy=Math.round((r()-.5)*16);
+    if(Math.max(Math.abs(dx),Math.abs(dy))<2)continue;
+    const x=sys.sx+dx,y=sys.sy+dy;
+    if(!starAt(x,y))continue;
+    const S=getSystem(x,y);if(S&&S.station&&S.station.prices)to=S;
+  }
+  if(!to)return null;
+  const keys=TRADE_KEYS.filter(k=>sys.station.prices[k]&&to.station.prices[k]);
+  if(!keys.length)return null;
+  const k=keys[Math.floor(r()*keys.length)];
+  const qty=10+Math.floor(r()*5)*5;                    /* 10–30 */
+  const d=Math.max(Math.abs(to.sx-sys.sx),Math.abs(to.sy-sys.sy));
+  const pay=Math.round((qty*RES[k].price*1.5+d*120)/10)*10;
+  const due=(win+1)*ORDER_WIN+2;                        /* до конца окна плюс два дня */
+  return {key:sys.key,from:sys.station.name,k,ru:RES[k].ru.toLowerCase(),qty,to:{sx:to.sx,sy:to.sy,name:to.station.name},pay,due,win};
+}
+function orderTake(sys){
+  if(G.order)return false;
+  const O=orderOf(sys);if(!O)return false;
+  G.order=O;
+  tell("tech","Наряд взят: "+O.qty+" "+O.ru+" → "+O.to.name+" до "+O.due+"-го · "+O.pay+" кр",
+       "НАРЯД\n"+O.qty+" "+O.ru+" → "+O.to.name);
+  if(typeof thingAdd==="function")thingAdd("paper","Наряд · "+O.from,O.qty+" "+O.ru+" → "+O.to.name+" до "+O.due+"-го · "+O.pay+" кр");
+  return true;
+}
+function orderHere(){
+  const O=G.order;if(!O||!G.sys)return null;
+  return (G.sys.sx===O.to.sx&&G.sys.sy===O.to.sy)?O:null;
+}
+function orderDeliver(){
+  const O=orderHere();if(!O)return false;
+  if((G.cargo[O.k]||0)<O.qty)return false;
+  G.cargo[O.k]-=O.qty;
+  earn(O.pay,"order");
+  G.order=null;
+  tell("money","Наряд закрыт: "+O.pay+" кр · "+O.to.name,"НАРЯД ЗАКРЫТ\n+"+O.pay+" кр");
+  if(typeof repAdd==="function")repAdd(1,G.sys);
+  if(typeof peopleLine==="function")peopleLine("наряд принят, "+O.qty+" "+O.ru+". Спасибо, что в срок.",O.to.name);
+  if(typeof recordAdd==="function")recordAdd(O.to.name,"благодарность за наряд");
+  return true;
+}
+/* срок вышел — наряд снимается без штрафа, просто строкой */
+function orderTick(){
+  const O=G.order;if(!O)return;
+  if(celDay()>O.due){
+    G.order=null;
+    logAdd("warn","Наряд "+O.from+" снят: срок вышел");
+  }
+}
+/* блок доски (26): нужда здесь и рядом, наряд здесь */
+function needBlock(){
+  if(!G.sys||!G.sys.station)return;
+  const N=needOf(G.sys);
+  const near=needsNear(7).filter(n=>n.sys!==G.sys).slice(0,3);
+  if(N||near.length){
+    $body.appendChild(el("div","sec","НУЖДА · ПРИВОЗ ВДВОЕ, ОДИН РАЗ"));
+    if(N)$body.appendChild(el("div","row","<div class='nm'><b>Здесь кончилось: "+N.ru+"</b><s>берут "+marketFor(G.sys)[N.k]+" кр за единицу — пока не привезут</s></div>"));
+    for(const n of near)$body.appendChild(el("div","row","<div class='nm'><b>"+n.sys.station.name+" · "+n.need.ru+"</b><s>"+n.d+" прыжк"+(n.d===1?"а":"ов")+" · сектор "+n.sys.sx+":"+n.sys.sy+"</s></div>"));
+  }
+  const O=orderOf(G.sys),H=orderHere();
+  if(H){
+    const can=(G.cargo[H.k]||0)>=H.qty;
+    const r=el("div","row","<div class='nm'><b>Сдать наряд: "+H.qty+" "+H.ru+"</b><s>в трюме "+(G.cargo[H.k]||0)+" · "+H.pay+" кр</s></div>");
+    const b=el("button","act sm gold","СДАТЬ · "+H.pay+" кр");b.disabled=!can;
+    b.onclick=()=>{if(orderDeliver())renderTab();};
+    r.appendChild(b);$body.appendChild(el("div","sec","НАРЯД · ПРИЁМ"));$body.appendChild(r);
+  }
+  if(O){
+    $body.appendChild(el("div","sec","НАРЯД · ОДИН НА СТАНЦИЮ"));
+    const r=el("div","row","<div class='nm'><b>"+O.qty+" "+O.ru+" → "+O.to.name+"</b><s>сектор "+O.to.sx+":"+O.to.sy+" · до "+O.due+"-го дня · "+O.pay+" кр"+
+      (G.order?"<br>на руках уже есть наряд — сначала закройте его":"")+"</s></div>");
+    const b=el("button","act sm","ВЗЯТЬ");b.disabled=!!G.order;
+    b.onclick=()=>{if(orderTake(G.sys))renderTab();};
+    r.appendChild(b);$body.appendChild(r);
+  }else if(G.order){
+    $body.appendChild(el("div","sec","НАРЯД НА РУКАХ"));
+    $body.appendChild(el("div","row","<div class='nm'><b>"+G.order.qty+" "+G.order.ru+" → "+G.order.to.name+"</b><s>до "+G.order.due+"-го дня · "+G.order.pay+" кр</s></div>"));
+  }
+}
+/* ── находки на доске: сдать институту за четверть или продать с рук ── */
+function findsBlock(){
+  const L=(typeof thingsAll==="function")?thingsAll().filter(t=>t.k==="find"&&!t.gone):[];
+  if(!L.length||!G.st)return;
+  const bazaar=G.st.stype==="bazaar";
+  $body.appendChild(el("div","sec","НАХОДКИ · ИНСТИТУТУ — ЧЕТВЕРТЬ И ЗАПИСЬ · С РУК — ВСЁ, НО ЧУЖОЕ"));
+  L.forEach(t=>{
+    const r=el("div","row","<div class='nm'><b>"+t.ru+"</b><s>"+t.note+"</s></div>");
+    const b1=el("button","act sm","СДАТЬ · "+Math.round(t.val/4)+" кр");
+    b1.onclick=()=>{
+      t.gone=1;earn(Math.round(t.val/4),"handin");
+      tell("money","Находка сдана институту: "+t.ru+" · "+Math.round(t.val/4)+" кр","СДАНО ИНСТИТУТУ\n+"+Math.round(t.val/4)+" кр");
+      if(typeof repAdd==="function")repAdd(1,G.sys);
+      if(typeof recordAdd==="function")recordAdd("институт","сдана находка: "+t.ru.toLowerCase());
+      thingsAll().splice(thingsAll().indexOf(t),1);renderTab();
+    };
+    r.appendChild(b1);
+    if(bazaar){
+      const b2=el("button","act sm gold","С РУК · "+t.val+" кр");
+      b2.onclick=()=>{
+        t.gone=1;earn(t.val,"flea");
+        tell("money","Продано с рук: "+t.ru+" · "+t.val+" кр","С РУК\n+"+t.val+" кр");
+        thingsAll().splice(thingsAll().indexOf(t),1);renderTab();
+      };
+      r.appendChild(b2);
+    }
+    $body.appendChild(r);
+  });
+}
+/* ── цены на бумаге: последнее виденное по станциям, на столе (ЦЕНЫ) ── */
+function pricesSeen(sys){
+  if(!sys||!sys.station||!sys.station.prices)return;
+  G.seenPrices=G.seenPrices||{};
+  const P=marketFor(sys),N=needOf(sys);
+  G.seenPrices[sys.key]={name:sys.station.name,sx:sys.sx,sy:sys.sy,day:celDay(),p:Object.assign({},P),need:N?N.k:null};
+  const keys=Object.keys(G.seenPrices);
+  if(keys.length>24){keys.sort((a,b)=>G.seenPrices[a].day-G.seenPrices[b].day);delete G.seenPrices[keys[0]];}
+}
+function renderPrices(box){
+  box.textContent="";
+  const S=G.seenPrices||{};
+  const L=Object.keys(S).map(k=>S[k]).sort((a,b)=>b.day-a.day);
+  if(!L.length){tableRow(box,"dim","","цен ещё не видели: они записываются при каждой стыковке");return;}
+  tableRow(box,"head","","ЦЕНЫ, КАК ИХ ВИДЕЛИ · ДЕНЬ "+celDay()+" · ЖИРНЫМ — ЛУЧШАЯ ПО ТОВАРУ");
+  const best={};
+  for(const k of TRADE_KEYS){let b=null;for(const s of L)if(s.p[k]&&(!b||s.p[k]>b.p[k]))b=s;if(b)best[k]=b;}
+  for(const s of L){
+    const row=document.createElement("div");row.className="li";
+    const em=document.createElement("em");em.textContent=s.sx+":"+s.sy;
+    const sp=document.createElement("span");
+    const cells=TRADE_KEYS.filter(k=>s.p[k]).map(k=>(best[k]===s?"<b>":"")+RES[k].ru.toLowerCase()+" "+s.p[k]+(best[k]===s?"</b>":""));
+    sp.innerHTML="<b>"+s.name+"</b> · день "+s.day+(s.need?" · <b style='color:#f2b25c'>нужда: "+RES[s.need].ru.toLowerCase()+"</b>":"")+"<br>"+cells.join(" · ");
+    row.appendChild(em);row.appendChild(sp);box.appendChild(row);
+  }
+}
+
 /* ══════════════ наёмники: флот, которым не управляешь напрямую ══════════════ */
 /* Старые корпуса из G.owned перестают быть мусором: нанятому нужен корабль, и
    это главное решение игрока. Летающих в фоне NPC нет — как и у дронов, всё
@@ -10007,6 +10221,9 @@ const CREW_EVENTS=[
   {id:"capture",cat:"jack",when:()=>Object.keys(SHIPS).some(id=>!G.owned[id]),run:(c,r,gross)=>{
     const free=Object.keys(SHIPS).filter(id=>!G.owned[id]);
     const id=pick(free,r);G.owned[id]=true;
+    /* хвост — на витрину (M152e): ставка видна, а не строка dim */
+    if(G.home){(G.home.trophies||(G.home.trophies=[])).push({k:"hull",id,who:c.name,t:Date.now()});}
+    if(typeof thingAdd==="function")thingAdd("trophy",c.name+" пригнал корпус «"+SHIPS[id].ru+"»","трофей с рейса · корпус в ангаре · витрина дома помнит");
     return {tone:"tech",ru:"пригнал трофейный корпус «"+SHIPS[id].ru+"» — он в ангаре"};
   }}
 ];
@@ -10250,6 +10467,7 @@ function mgrLeak(m){
 function mgrTake(m,gross){
   if(gross<=0)return 0;
   const cut=Math.round(gross*mgrCut(m));
+  m.pool=(m.pool||0)+cut;              /* из доли платится его оклад (M152e) */
   const steal=Math.round(gross*(mgrTraitAdd(m,"steal")*(m.loy<50?1.6:1)+mgrLeak(m)));
   m.tookCr=(m.tookCr||0)+cut+steal;
   if(steal>0)m.stole=(m.stole||0)+steal;
@@ -10533,11 +10751,18 @@ function mgrTick(){
    и убыточного домена, и на нуле он забирает флагман: единственный источник
    по-настоящему сильного противника поздней игры, которого игрок вырастил сам. */
 function mgrPayroll(m,min){
-  /* округляем здесь: жалованье считается от дробных минут, и без этого
-     на счету игрока накапливался хвост вида 295577.3657999 */
+  /* M152e: оклад управляющего — из его же доли, а не из вашей кассы.
+     Домен приносит → доля копится в m.pool (mgrTake), и оклад гасится оттуда.
+     Домен пуст → он «на голом проценте»: не разоряет вас, а ворчит и медленно
+     теряет веру — втрое мягче прежнего невыплаченного жалованья. Так снимается
+     единственная причина гриндить: расход в минуту против дохода за действие.
+     Машина (ai) по-прежнему берёт обслуживание: это её цена, а не оклад.
+     Округляем здесь: жалованье считается от дробных минут. */
   const due=Math.round(mgrPay(m)*min);
-  const pay=Math.min(G.credits,due);
-  G.credits-=pay;m.spent=(m.spent||0)+pay;
+  let pay;
+  if(m.ai){pay=Math.min(G.credits,due);G.credits-=pay;}
+  else{pay=Math.min(m.pool||0,due);m.pool=(m.pool||0)-pay;}
+  m.spent=(m.spent||0)+pay;
   const short=due-pay;
   const drop=mgrTraitMul(m,"loyDrop");
   /* Машине нечего обижаться: недоплата не роняет лояльность, а разгоняет дрейф.
@@ -10552,10 +10777,10 @@ function mgrPayroll(m,min){
   /* вторая строка «Пустого контракта»: деньгами его больше не обидеть */
   if(short>0&&relicDeep("blank")){m.warnPay=0;return;}
   if(short>0){
-    m.loy=Math.max(0,m.loy-min*1.6*drop);
+    m.loy=Math.max(0,m.loy-min*.5*drop);
     if(!m.warnPay&&m.loy<45){
-      m.warnPay=1;mgrSay(m,"Жалованье не приходит. Я это помню.","warn");
-      logAdd("warn",m.name+" не получает жалованья — лояльность падает");
+      m.warnPay=1;mgrSay(m,"Домен пустой — сижу на голом проценте. Я это помню.","warn");
+      logAdd("warn",m.name+" на голом проценте: домен ничего не принёс — лояльность подтаивает");
     }
   }else{
     m.warnPay=0;
@@ -11056,7 +11281,7 @@ function marketFor(sys){
   if(!m){m={pressure:{},t:G.t};G.market[sys.key]=m;}
   const secs=Math.max(0,(G.t-m.t)/60);
   if(secs>0){
-    const decay=Math.pow(.5,secs/1800);
+    const decay=Math.pow(.5,secs/10800);   /* давление держится часами, а не полчаса (M152e): дальше лететь выгоднее, чем туда-сюда */
     for(const k of TRADE_KEYS)m.pressure[k]=(m.pressure[k]||0)*decay;
     m.t=G.t;
   }
@@ -11067,9 +11292,10 @@ function marketFor(sys){
   const F=typeof mgrOf==="function"?mgrOf("fact"):null;
   const onRoute=F&&!F.stalled&&mgrPerk(F,"mono")&&F.route.indexOf(sys.sx+","+sys.sy)>=0;
   const boost=onRoute?1.18:1;
+  const N=(typeof needOf==="function")?needOf(sys):null;   /* нужда (M152e): ×2 на один привоз */
   for(const k of TRADE_KEYS)
     /* занятая система: скупщик один, и он знает, что деваться некуда */
-    prices[k]=Math.max(1,Math.round(base[k]*mul*boost*occPriceMul(sys.sx,sys.sy)*
+    prices[k]=Math.max(1,Math.round(base[k]*mul*boost*(N&&N.k===k?NEED_MUL:1)*occPriceMul(sys.sx,sys.sy)*
                                     clamp(1+(m.pressure[k]||0),.4,1.8)));
   return prices;
 }
@@ -11078,6 +11304,7 @@ function sellCargo(sys,k,qty){
   if(qty<=0)return 0;
   const price=marketFor(sys)[k],revenue=qty*price;
   earn(revenue,"trade");G.cargo[k]-=qty;
+  if(typeof needClose==="function")needClose(sys,k);   /* нужда закрыта этим привозом (M152e) */
   G.soldTotal=(G.soldTotal|0)+revenue;   // «пузырь» смотрит на выручку, а не на штуки
   const m=G.market[sys.key];
   m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
@@ -12280,6 +12507,17 @@ function homeTurn(sum,why){
     logAdd("good","Дом: "+T.say+" · оборот "+H.turn.toLocaleString("ru")+" кр");
     say("ДОМ\n"+T.say);
     sfx("ok",{v:.5});
+  }
+  /* разнарядка (M152e): один раз, на обороте 3 000, план выделяет «Вьюк» —
+     б/у, с чужим износом. Самая скучная полоса старта (полсотни рейсов на
+     трюме 40) схлопывается; дальше всё покупается как прежде. */
+  if(!H.alloc&&H.turn>=3000&&!G.owned.vyuk){
+    H.alloc=1;G.owned.vyuk=true;
+    if(typeof wearAll==="function")wearAll().vyuk=Math.round(WEAR_FULL*.55);
+    logAdd("good","Разнарядка: план выделил вам «Вьюк» — б/у, потёртый, трюм 150 · переключение на экране КОРАБЛЬ");
+    say("РАЗНАРЯДКА\n«Вьюк» выделен планом",220);
+    sfx("ok",{v:.6});
+    if(typeof thingAdd==="function")thingAdd("paper","Разнарядка на «Вьюк»","выделен планом по обороту · б/у, с чужим износом · переключение — экран КОРАБЛЬ");
   }
 }
 /* ══════════════ домочадец ══════════════
@@ -19132,6 +19370,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
+    need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -19439,7 +19678,7 @@ function applySave(s){
        Список полей здесь белый, поэтому новое поле надо вносить явно,
        иначе оно молча теряется при каждой загрузке. */
     relic:(m.relic&&ARTIFACTS[m.relic])?m.relic:null,
-    cutBonus:+m.cutBonus||0,ultCount:Math.max(0,m.ultCount|0),
+    cutBonus:+m.cutBonus||0,ultCount:Math.max(0,m.ultCount|0),pool:Math.max(0,+m.pool||0),
     jobPast:(Array.isArray(m.jobPast)?m.jobPast:[]).filter(x=>jobDef(x)).slice(0,20),
     /* поручение переживает загрузку, но срок идёт заново: счётчики-маркеры
        (убитые пираты, выручка, вмешательства в приказы) живут только в сессии */
@@ -19472,7 +19711,7 @@ function applySave(s){
     const h=homeInit();
     h.turn=Math.max(0,+s.home.turn||0);
     h.tier=clamp(s.home.tier|0,0,HOME_TIERS.length);
-    h.sx=s.home.sx|0;h.sy=s.home.sy|0;h.made=+s.home.made||0;
+    h.sx=s.home.sx|0;h.sy=s.home.sy|0;h.made=+s.home.made||0;h.alloc=s.home.alloc|0;
     h.garage=Array.isArray(s.home.garage)?s.home.garage.filter(id=>!!shipData(id)):[];
     if(s.home.showcase&&typeof s.home.showcase==="object")
       for(const k of RES_KEYS)if(s.home.showcase[k]>0)h.showcase[k]=+s.home.showcase[k];
@@ -19557,6 +19796,11 @@ function applySave(s){
   /* почтовый круг (11e): три числа */
   G.post={stage:clamp((s.post&&s.post.stage)|0,0,POST_LINKS.length-1),opened:(s.post&&s.post.opened)?1:0,done:(s.post&&s.post.done)?1:0};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
+  G.need=(s.need&&typeof s.need==="object")?s.need:{};
+  G.order=(s.order&&typeof s.order==="object"&&s.order.to)?s.order:null;
+  G.things=Array.isArray(s.things)?s.things.slice(0,40):[];
+  G.ratios=(s.ratios&&typeof s.ratios==="object")?s.ratios:{};
+  G.seenPrices=(s.seenPrices&&typeof s.seenPrices==="object")?s.seenPrices:{};
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];
@@ -21217,6 +21461,14 @@ function findTake(f){
   if(!G.findsSeen)G.findsSeen={};
   G.findsSeen[f.id]=1;
   const r=rng(hashi(f.seed,0x7A1,3)),d=sysDanger(G.sx,G.sy);
+  /* паспорт находки (M152e): сама вещь уходит в трюм, как прежде, а её бумага —
+     на стол. Бумагу можно сдать институту за четверть (запись в книжку) или
+     продать с рук на блошинце за всю цену — две дороги с одной находки */
+  if((f.k==="sat"||f.k==="cont"||f.k==="hulk")&&typeof thingAdd==="function"){
+    const val=Math.round((f.k==="hulk"?900:f.k==="sat"?700:420)*(1+d*.8)/10)*10;
+    const ru=f.k==="hulk"?"Хулк":f.k==="sat"?"Спутник":"Контейнер";
+    thingAdd("find",ru+" · сектор "+G.sx+":"+G.sy,"находка · сдать институту за "+Math.round(val/4)+" кр или продать с рук на блошинце за "+val+" кр",{val,find:f.k});
+  }
   if(f.k==="sat"){
     /* спутник «Долгого Хода»: место у зарубки своё, поэтому кусок берётся по
        адресу этой находки, а не по планетному POI */
@@ -36355,6 +36607,8 @@ function openStation(){
   if(typeof quietDock==="function"){const qr=quietDock();if(qr)say("Колония:\n"+qr.line);}     /* тихий уезд (11n) */
   if(typeof retDock==="function"){const rr=retDock();if(rr)say("Вернувшиеся:\n"+rr.line);}     /* возвращение (11s) */
   logAdd("dim","Стыковка с «"+G.st.name+"»");
+  /* цены на бумагу (M152e): что видели здесь — лежит на столе, закладка ЦЕНЫ */
+  if(typeof pricesSeen==="function")pricesSeen(G.sys);
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
   document.getElementById("stName").textContent=G.st.name.toUpperCase();
@@ -36545,6 +36799,8 @@ function renderTab(){
           (q.reward?" · награда: "+q.reward:"")+"</s></div>"));
       }
     }
+    if(typeof needBlock==="function")needBlock();         /* нужда и наряд (M152e) */
+    if(typeof findsBlock==="function")findsBlock();       /* находки: институту или с рук (M152e) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
@@ -37055,6 +37311,15 @@ function renderTab(){
         for(const [k,q] of R.in)G.cargo[k]-=q*n;
         G.credits-=R.fee*n;G.cargo.alloy+=n;
         tell("money","Переплавка на «"+G.st.name+"»: сплавы ×"+n,"Переплавка\nсплавы ×"+n);
+        /* рацпредложение (M152e): первая плавка этого рецепта платит один раз и честно */
+        G.ratios=G.ratios||{};
+        if(!G.ratios[R.ru]){
+          G.ratios[R.ru]=1;const prem=Math.round((R.fee*6+400)/10)*10;
+          earn(prem,"ratio");
+          tell("money","Рацпредложение принято: «"+R.ru+"» · премия "+prem+" кр","РАЦПРЕДЛОЖЕНИЕ\n+"+prem+" кр");
+          if(typeof thingAdd==="function")thingAdd("paper","Рацпредложение · "+R.ru,"принято на «"+G.st.name+"» · премия "+prem+" кр · повторы — просто сплав");
+          if(typeof recordAdd==="function")recordAdd(G.st.name,"рацпредложение: "+R.ru);
+        }
         renderTab();
       };
       r.appendChild(b);$body.appendChild(r);
@@ -37343,7 +37608,7 @@ function mgrHead(m){
   }
   return "<b style='color:"+R.col+"'>"+m.name+"</b><s>"+R.ru.toLowerCase()+" · уровень "+lv+
     (nx?" · до следующего "+Math.max(0,Math.round(nx-(m.xp||0)))+" оп":" · потолок")+
-    "<br>"+loyBar(m)+" · доля "+(mgrCut(m)*100).toFixed(1)+"% · оклад "+mgrPay(m)+" кр/мин"+
+    "<br>"+loyBar(m)+" · доля "+(mgrCut(m)*100).toFixed(1)+"% · оклад "+mgrPay(m)+" кр/мин из доли"+
     "<br>"+m.traits.map(t=>mgrTrait(t).ru).join(" · ")+"</s>";
 }
 /* ── кантина ──
@@ -37552,7 +37817,7 @@ function hqRender(){
   document.getElementById("hqCap").textContent=G.mgrs.length+" / "+MGR_CAP+" мест";
   let upkeep=0;for(const m of G.mgrs)upkeep+=mgrPay(m);
   document.getElementById("hqSub").textContent=G.mgrs.length
-    ? "содержание "+upkeep+" кр/мин · доля снимается с домена сверх этого"
+    ? "оклады "+upkeep+" кр/мин — из долей доменов, не из вашей кассы"
     : "домены пусты — управляющих нанимают в кантине станции";
   $hqBody.textContent="";
   if(!G.mgrs.length){
@@ -40289,7 +40554,7 @@ function tableRender(){
   const sub=document.getElementById("tableSub"),cr=document.getElementById("tableCr"),wh=document.getElementById("tableWhere");
   const SUB={ether:"эфир · что было услышано",bort:"борт · техника и деньги",folk:"люди · что вам сказали",
              deeds:"дела · что вы должны",strips:"ленты · оторванные полосы самописца",things:"вещи · письма, находки, бумаги",
-             lore:"отчёт «Долгого хода»"};
+             prices:"цены · как их видели, по станциям",lore:"отчёт «Долгого хода»"};
   if(sub)sub.textContent=SUB[tableTab]||"";
   if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
   if(wh)wh.textContent=(G.sys&&G.sys.name?G.sys.name:"—")+" · "+(G.mode||"");
@@ -40299,6 +40564,8 @@ function tableRender(){
   else if(tableTab==="deeds")renderDeeds();
   else if(tableTab==="strips")renderStrips(box);
   else if(tableTab==="things")renderThings(box);
+  else if(tableTab==="prices"&&typeof renderPrices==="function")renderPrices(box);
+  else if(tableTab==="prices"&&typeof renderPrices==="function")renderPrices(box);
   else if(tableTab==="lore"&&typeof renderLoreBoard==="function")renderLoreBoard();
 }
 function tableRow(box,cls,em,text){
@@ -41242,7 +41509,7 @@ function frame(now){
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
     if(typeof etherTick==="function")etherTick(dt);
-    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);wearTick(dt);
+    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){

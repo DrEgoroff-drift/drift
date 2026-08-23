@@ -35,7 +35,7 @@ function mgrHead(m){
   }
   return "<b style='color:"+R.col+"'>"+m.name+"</b><s>"+R.ru.toLowerCase()+" · уровень "+lv+
     (nx?" · до следующего "+Math.max(0,Math.round(nx-(m.xp||0)))+" оп":" · потолок")+
-    "<br>"+loyBar(m)+" · доля "+(mgrCut(m)*100).toFixed(1)+"% · оклад "+mgrPay(m)+" кр/мин"+
+    "<br>"+loyBar(m)+" · доля "+(mgrCut(m)*100).toFixed(1)+"% · оклад "+mgrPay(m)+" кр/мин из доли"+
     "<br>"+m.traits.map(t=>mgrTrait(t).ru).join(" · ")+"</s>";
 }
 /* ── кантина ──
@@ -244,7 +244,7 @@ function hqRender(){
   document.getElementById("hqCap").textContent=G.mgrs.length+" / "+MGR_CAP+" мест";
   let upkeep=0;for(const m of G.mgrs)upkeep+=mgrPay(m);
   document.getElementById("hqSub").textContent=G.mgrs.length
-    ? "содержание "+upkeep+" кр/мин · доля снимается с домена сверх этого"
+    ? "оклады "+upkeep+" кр/мин — из долей доменов, не из вашей кассы"
     : "домены пусты — управляющих нанимают в кантине станции";
   $hqBody.textContent="";
   if(!G.mgrs.length){

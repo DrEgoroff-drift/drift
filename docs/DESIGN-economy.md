@@ -77,3 +77,13 @@ the guard that the curve does not drift in later milestones.
 case), `17b-finds` (hand-in), `12h-relic`/lab (rationalisation), `11k-charts` (prices). Persisted:
 `G.need` (sparse by `"sx,sy"`), `G.order`, `G.alloc`, `G.ratios`. Suites `91zzw` (simulation),
 plus cases in the suites the mechanics belong to.
+
+## Measured (0.112.0, `91zzw-economy`, seed world, radius 7 → 68 stations)
+
+- hands, «Стриж», 600 cr, no need: best leg 642 cr / 3.1 min ≈ 207 cr/min → first mod in ~6 min;
+- hands, «Вьюк» 150, no capital cap: best pair 20 770 cr a leg (a tail, not the norm);
+- need: with `NEED_P=.42` 30 of 68 stations had one — too ordinary, set to `.3`; best one-off
+  delivery of 40 units 10 800 cr;
+- orders: 39 of 68 stations, average pay 2 118 cr for goods worth ~945 cr;
+- drone 25 cr/min for 2 200 cr (pays off in ~90 min); hire −2 cr/min in flight;
+- managers: 52–70 cr/min wage each, now paid from the cut; drain from the player: 0.
