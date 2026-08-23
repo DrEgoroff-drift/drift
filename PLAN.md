@@ -351,7 +351,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   face and goes with the expedition; `12k-stories-d`, `91zzl`.
 - **M158 last run** — **built (0.119.0)**: the Tin closes; one person per region; ten letters with content read
   aloud by the addressee; `12k-letters`, `91zzm`.
-- **M159 departure** — the quiet minute, the nameless board line, the once-offered ending, the
+- **M159 departure** — **built (0.120.0)**: the quiet minute, the nameless board line, the once-offered ending, the
   unsigned tape a year later; `91zzn`.
 - **M160 the Island** — pirates as those who left; landing with a letter as the second door;
   three names return; `91zzo`.

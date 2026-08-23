@@ -175,3 +175,64 @@ function expBlock(){
   }
   if(E.gone.length)$body.appendChild(el("div","row","<div class='nm'><s>ушли с экспедицией: "+E.gone.join(", ")+"</s></div>"));
 }
+/* ══════════════ уход (M159) ══════════════
+   На шестидесятый день эфир замолкает на минуту — ни музыки, ни строк, —
+   потом одна строка: «Ушли». Табло прибытий получает строку БЕЗ ИМЕНИ.
+   Если вы в эти дни на стойке ядра уезда — один раз предлагают место. Уйти —
+   концовка: журнал закрывается на этой строке, запись помечена, на заставке —
+   безымянная строка табло. Не уйти — игра продолжается.
+   Не возвращаются. Через год (365 суток) на стол дома приходит лента без
+   подписи; на столе она рисует фигуру невязки — полностью. Больше ничего. */
+const EXP_QUIET=3600;
+function expQuiet(){const E=G.exp;return !!(E&&E.quietUntil&&G.t<E.quietUntil);}
+function expDeparted(){const E=G.exp;return !!(E&&E.phase>=2);}
+function expDepartTick(){
+  const E=expAll();
+  if(E.phase===1&&expDay()>=EXP_DAYS){
+    E.phase=2;E.depDay=celDay();E.quietUntil=G.t+EXP_QUIET;E.said=0;
+    say("…",EXP_QUIET);
+    logAdd("warn","Эфир замолчал.");
+    return;
+  }
+  if(E.phase===2&&!E.said&&E.quietUntil&&G.t>=E.quietUntil){
+    E.said=1;
+    etherLine("Ушли.");
+    if(typeof consoleHeard==="function")consoleHeard("Ушли.");
+    logAdd("warn","Табло прибытий: строка без имени.");
+    thingAdd("paper","Строка без имени","табло прибытий · « — · ушли · не ждут» · день "+E.depDay);
+    if(typeof recordAdd==="function")recordAdd("табло","строка без имени · день "+E.depDay);
+  }
+  /* лента через год */
+  if(E.phase===2&&!E.tapeBack&&E.depDay!=null&&celDay()-E.depDay>=365){
+    E.tapeBack=1;
+    thingAdd("tape","Лента без подписи","пришла на стол дома · без имени, без сектора · на ней — вся фигура",{fig:1,full:1,ring:0});
+    logAdd("warn","На столе дома — лента без подписи.");
+  }
+}
+/* предложение: один раз, на стойке ядра уезда, в день ухода и назавтра */
+function expOfferHere(){
+  const E=G.exp;if(!E||E.phase!==2||E.offered||E.ended)return false;
+  if(!G.sys||!G.st||typeof hoursDepthAt!=="function"||hoursDepthAt(G.sx,G.sy)!==2)return false;
+  return celDay()-E.depDay<=1;
+}
+function expEnd(){
+  const E=expAll();if(E.ended)return false;
+  E.ended=1;E.offered=1;
+  logAdd("warn","Есть место. Вы сели.");
+  peopleLine("есть место. Садитесь. Журнал оставьте — его допишут.","стойка ядра",true);
+  if(typeof recordAdd==="function")recordAdd("стойка ядра","убыл с экспедицией · запись последняя");
+  thingAdd("paper","Последняя запись","«убыл с экспедицией» · журнал закрыт на этой строке");
+  const v=document.getElementById("ver");if(v)v.textContent+=" · — · ушли · не ждут";
+  if(typeof saveGame==="function")saveGame(true);
+  say("ЕСТЬ МЕСТО\nвы сели\n\n — · ушли · не ждут",600);
+  G.exp.quietUntil=G.t+EXP_QUIET*2;
+  return true;
+}
+function expOfferBlock(){
+  if(!expOfferHere())return;
+  $body.appendChild(el("div","sec","ЕСТЬ МЕСТО"));
+  const r=el("div","row","<div class='nm'><b>Одно место. Предлагают один раз.</b><s>уйти — журнал закроется на этой строке · остаться — всё продолжится</s></div>");
+  const b=el("button","act sm gold","УЙТИ С НИМИ");b.onclick=()=>{expEnd();renderTab();};
+  const b2=el("button","act sm","ОСТАТЬСЯ");b2.onclick=()=>{G.exp.offered=1;peopleLine("как знаете. Место займут.","стойка ядра",true);renderTab();};
+  r.appendChild(b);r.appendChild(b2);$body.appendChild(r);
+}

@@ -38,6 +38,7 @@ const ETHER=[
 const ETHER_EVERY=5400;                  // кадров между голосами: примерно полторы минуты
 function etherTick(dt){
   if(!G.running||G.mode!=="system")return;
+  if(typeof expQuiet==="function"&&expQuiet())return;   /* минута тишины (M159) */
   const rate=(typeof hullRole==="function")?hullRole().ether:1;
   G.etherT=(G.etherT==null?ETHER_EVERY:G.etherT)-dt*rate;
   if(typeof mirrorEchoTick==="function")mirrorEchoTick();

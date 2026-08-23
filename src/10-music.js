@@ -325,6 +325,7 @@ function musicSetScene(key,scene){
 }
 function layerLevel(k,scene){
   const w=scene[k]||0;
+  if(typeof expQuiet==="function"&&expQuiet())return 0;   /* минута тишины (M159) */
   /* перкуссия и плотность мотива подчиняются напряжению: в бою музыка
      собирается сама, а после — расходится, без отдельного «боевого трека» */
   if(k==="perc")return (w+MUS.intensity*.5)*.2;

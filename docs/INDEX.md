@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 223 · символов верхнего уровня: 2181
+Файлов: 224 · символов верхнего уровня: 2188
 
 ## СИМВОЛЫ
 
@@ -23,7 +23,7 @@ $menu                        src/15-input.js:125
 $msg                         src/28-loop.js:32
 $msl                         src/28-loop.js:35
 $nav                         src/28-loop.js:34
-$opts                        src/26-ui-station.js:775
+$opts                        src/26-ui-station.js:776
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:31
 $sh                          src/28-loop.js:24
@@ -40,7 +40,7 @@ actionKey                    src/15-input.js:75
 addPart                      src/05-parts.js:227
 addPath                      src/25-cockpit.js:154
 addRes                       src/11-log.js:130
-addrForm                     src/11b-speech.js:91
+addrForm                     src/11b-speech.js:92
 adjTo                        src/05-parts.js:23
 AFFIX                        src/05-parts.js:29
 AFFIX_BAD                    src/05-parts.js:46
@@ -534,7 +534,7 @@ drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:272
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:167
+drawThingIcon                src/27i-ui-table.js:168
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
 drawTrail                    src/16-flight.js:338
@@ -576,14 +576,20 @@ exitScoop                    src/19a-mode-scoop.js:17
 EXP_DAYS                     src/11x-expedition.js:19
 EXP_GOODS                    src/11x-expedition.js:20
 EXP_PAX_LINES                src/11x-expedition.js:112
+EXP_QUIET                    src/11x-expedition.js:186
 expAll                       src/11x-expedition.js:21
 expBlock                     src/11x-expedition.js:154
 expDay                       src/11x-expedition.js:23
 expDayTick                   src/11x-expedition.js:39
 expDemandOf                  src/11x-expedition.js:66
+expDeparted                  src/11x-expedition.js:188
+expDepartTick                src/11x-expedition.js:189
+expEnd                       src/11x-expedition.js:218
 expEtherLine                 src/11x-expedition.js:91
 expGive                      src/11x-expedition.js:72
 expNearStation               src/11x-expedition.js:58
+expOfferBlock                src/11x-expedition.js:231
+expOfferHere                 src/11x-expedition.js:213
 expOn                        src/11x-expedition.js:22
 exportCode                   src/14-save.js:528
 expPaxDock                   src/11x-expedition.js:137
@@ -592,6 +598,7 @@ expPaxJump                   src/11x-expedition.js:132
 expPaxOffer                  src/11x-expedition.js:114
 expPaxTake                   src/11x-expedition.js:125
 expPriceMul                  src/11x-expedition.js:84
+expQuiet                     src/11x-expedition.js:187
 expReady                     src/11x-expedition.js:25
 expRelease                   src/11x-expedition.js:101
 expStart                     src/11x-expedition.js:29
@@ -1042,7 +1049,7 @@ lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:46
 loadGame                     src/14-save.js:523
-LOCAL                        src/11b-speech.js:98
+LOCAL                        src/11b-speech.js:99
 LOG_MAX                      src/11-log.js:11
 LOG_PAGE                     src/11-log.js:12
 logAdd                       src/11-log.js:15
@@ -1080,7 +1087,7 @@ luckLine                     src/27b-ui-crew.js:16
 luxPal                       src/03c-hull-luxe.js:16
 MAIN_CTX                     src/08-state.js:4
 makeIR                       src/10-music.js:109
-makePhrase                   src/10-music.js:343
+makePhrase                   src/10-music.js:344
 makeRock                     src/24-mode-belt.js:53
 makeWorld                    src/02a-worldmix.js:47
 MAPBG                        src/18-mode-map.js:31
@@ -1200,10 +1207,10 @@ MUS_WET                      src/10-music.js:105
 musBeacon                    src/10-music.js:239
 MUSIC_SCENES                 src/10-music.js:27
 musicInit                    src/10-music.js:142
-musicSceneNow                src/10-music.js:452
+musicSceneNow                src/10-music.js:453
 musicSetScene                src/10-music.js:290
-musicStop                    src/10-music.js:488
-musicTick                    src/10-music.js:369
+musicStop                    src/10-music.js:489
+musicTick                    src/10-music.js:370
 musNote                      src/10-music.js:193
 musPerc                      src/10-music.js:265
 NAME_MAX                     src/11u-names.js:14
@@ -1511,7 +1518,7 @@ PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:17
 ptr                          src/15-input.js:180
-putOnTable                   src/11b-speech.js:207
+putOnTable                   src/11b-speech.js:208
 QUEST_MAX                    src/11a-quests.js:15
 questAdd                     src/11a-quests.js:22
 questAll                     src/11a-quests.js:17
@@ -1649,7 +1656,7 @@ RES_AUTO                     src/08-state.js:18
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:281
 resEma                       src/28-loop.js:280
-resetArm                     src/26-ui-station.js:774
+resetArm                     src/26-ui-station.js:775
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:24
@@ -1861,8 +1868,8 @@ spawnAllies                  src/12a-crew.js:483
 spawnBarges                  src/12l-barge.js:102
 spawnPirates                 src/13-pirates.js:25
 SPEC_KEYS                    src/12a-crew.js:17
-speechAll                    src/11b-speech.js:112
-speechHere                   src/11b-speech.js:114
+speechAll                    src/11b-speech.js:113
+speechHere                   src/11b-speech.js:115
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
 ST_GOLD                      src/17c-system-draw.js:117
@@ -1945,10 +1952,10 @@ STRIP_CHUNK                  src/07-planet.js:73
 STRIP_JOB                    src/07-planet.js:76
 STRIP_MS                     src/07-planet.js:72
 STRIP_PEND                   src/07-planet.js:78
-STRIPS_MAX                   src/11b-speech.js:178
-stripsAll                    src/11b-speech.js:179
-stripSell                    src/11b-speech.js:217
-stripValue                   src/11b-speech.js:180
+STRIPS_MAX                   src/11b-speech.js:179
+stripsAll                    src/11b-speech.js:180
+stripSell                    src/11b-speech.js:218
+stripValue                   src/11b-speech.js:181
 stSet                        src/14-save.js:9
 stTabsHere                   src/26-ui-station.js:54
 stTypeOf                     src/06-galaxy.js:27
@@ -1979,7 +1986,7 @@ sysNebulaTex                 src/16a-space.js:53
 sysPirateBase                src/24a-mode-raid.js:98
 sysStyle                     src/16a-space.js:21
 tab                          src/26-ui-station.js:3
-TABLE_REPLY                  src/11b-speech.js:145
+TABLE_REPLY                  src/11b-speech.js:146
 tableBake                    src/27i-ui-table.js:52
 tableBlock                   src/27c-ui-hq.js:535
 tableIsOpen                  src/27i-ui-table.js:23
@@ -2004,7 +2011,7 @@ tapeRate                     src/25b-tape.js:75
 tapeSample                   src/25b-tape.js:54
 tapeScroll                   src/25b-tape.js:97
 tapeStrip                    src/25b-tape.js:187
-tapeTear                     src/11b-speech.js:183
+tapeTear                     src/11b-speech.js:184
 tapeTick                     src/25b-tape.js:79
 tapeUnpack                   src/25b-tape.js:39
 targetPos                    src/16-flight.js:97
@@ -2146,9 +2153,9 @@ vegaTestHome                 tests/91zzh-vega.js:2
 vegaTick                     src/11w-vega.js:178
 vegaWish                     src/11w-vega.js:42
 VER                          src/01-core.js:4
-visitHere                    src/11b-speech.js:82
-visitMark                    src/11b-speech.js:86
-visitsAll                    src/11b-speech.js:81
+visitHere                    src/11b-speech.js:83
+visitMark                    src/11b-speech.js:87
+visitsAll                    src/11b-speech.js:82
 voice                        src/09-audio.js:72
 VOICE_KEYS                   src/02a-worldmix.js:81
 VOICE_MAX                    src/09-audio.js:5
@@ -2343,8 +2350,9 @@ ZAP_COOL                     src/23-mode-dig.js:213
 ## src/11w-vega.js · 18 КБ
   · Вега: жиличка, которую нельзя выгнать:1
 
-## src/11x-expedition.js · 11 КБ
+## src/11x-expedition.js · 15 КБ
   · циркуляр: мир работает на экспедицию:1
+  · уход (M159):178
 
 ## src/11x-ring.js · 8 КБ
   · Кольцо: сигнал извне:1
@@ -2664,7 +2672,7 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## src/26-ui-station.js · 49 КБ
   · станция:1
-  · настройки:773
+  · настройки:774
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -2889,6 +2897,9 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## tests/91zzm-letters.js · 3 КБ
   · автотесты: последний рейс и письма (M158):1
+
+## tests/91zzn-departure.js · 3 КБ
+  · автотесты: уход (M159):1
 
 ## tests/91zzv-table.js · 7 КБ
   · автотесты: пульт и стол (M151a):1

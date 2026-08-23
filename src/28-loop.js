@@ -336,7 +336,7 @@ function frame(now){
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
     if(typeof etherTick==="function")etherTick(dt);
-    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof lastRunTick==="function")lastRunTick();wearTick(dt);
+    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){

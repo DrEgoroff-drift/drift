@@ -7,6 +7,16 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.120.0 — "The departure" (M159)
+
+On the sixtieth day of the circular the ether and the music go quiet for a minute, then one
+line: «Ушли.» The board of returners gets a line without a name (« — · ушли · не ждут»), the
+table a paper, the record book an entry. If the player is at the counter of the hours county's
+core that day or the next, one offer, once: «Есть место» — going is an ending (the last entry,
+the save marked, the title screen carries the nameless line); staying is the game going on. They
+do not return: a year later an unsigned tape arrives on the home table, and on it the whole
+figure of the misclosure. Nothing else. Suite `91zzn`.
+---
 ## 0.119.0 — "The last run" (M158)
 
 `12k-letters`: the Tin closes. On the fortieth day of the circular the ether announces the last
