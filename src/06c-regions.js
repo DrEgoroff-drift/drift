@@ -31,7 +31,7 @@ const REGION_TABLE=[
   {id:"pass",   ru:"Перевал",            needle:"course", ring:4},
   {id:"grown",  ru:"Другое взросление",  needle:"mass",   ring:3},
   {id:"plan",   ru:"План",               needle:"radio",  ring:4},
-  {id:"tin",    ru:"Жестяной край",      needle:"radio",  ring:4}
+  {id:"tin",    ru:"Возвращение",        needle:"chrono", ring:4}   /* M147-returners: слот Жестяного края — Жестянка живёт в `plan` */
 ];
 const REGION_GAP=2;            // минимум областей между двумя тематическими (Чебышёв)
 const REGION_SALT2=0x2E611;

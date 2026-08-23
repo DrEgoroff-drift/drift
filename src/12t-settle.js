@@ -135,6 +135,7 @@ function settleGive(S,k,n){
   S.stock[k]=(S.stock[k]||0)+n;
   S.diet[k]=(S.diet[k]||0)+n;
   S.mood=clamp(S.mood+Math.min(8,n*.25),0,100);
+  if(typeof grownOnGive==="function")grownOnGive(S,k,n,G.surf&&G.surf.p);   /* взаимность (11q) */
   if(typeof saveGame==="function")saveGame(true);
   return n;
 }
@@ -235,7 +236,7 @@ function settleDraw(S,tr,camx,camy,p){
   const gy=groundAt(tr,bx)-camy;
   const r=rng(S.seed^0x2C1);
   const warm=(S.mood>=34);
-  const n=2+S.built.length;                                // и до первого дара тут живут
+  const n=2+S.built.length+((typeof grownExtra==="function")?grownExtra(p):0);   // и до первого дара тут живут; ступень уезда (11q)
   const pal=p.T.pal;
   const wall="rgb("+pal[2].map(v=>Math.round(v*.62+18)).join(",")+")";
   const roof="rgb("+pal[1].map(v=>Math.round(v*.5+10)).join(",")+")";

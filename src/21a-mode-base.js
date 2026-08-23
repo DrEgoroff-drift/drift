@@ -68,6 +68,7 @@ function foundBase(p){
 function enterBase(p){
   const B=baseAt(G.sx,G.sy,p.idx);if(!B)return;
   baseTick();
+  if(typeof planDeliver==="function")planDeliver(B);   /* изделие комбината — в запас базы (11r) */
   /* ярус проверяем и на входе: иначе вскрытый нижний ряд появлялся бы только
      после следующего тика, и игрок не понимал бы, что уже можно строить ниже */
   baseGrowCheck(B);

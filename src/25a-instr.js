@@ -70,6 +70,8 @@ function instrRead(sx,sy){
     let dev=I.id===R.needle?m*q:0;
     /* расхождение времён (11h): хронометр уходит по смещению уезда, поверх невязки */
     if(I.id==="chrono"&&typeof hoursDrift==="function")dev+=hoursDrift()*q;
+    if(I.id==="chrono"&&typeof slowDrift==="function")dev+=slowDrift()*q;   /* долина ответила (11o) */
+    if(I.id==="chrono"&&typeof retDrift==="function")dev+=retDrift()*q;     /* обман ровно один раз (11s) */
     /* линия смотрителей (11k): погасший рукав — курсограф гуляет */
     if(I.id==="course"&&typeof keepersCourseDrift==="function")dev+=keepersCourseDrift()*q;
     /* отклонение — доля от собственного показания прибора: у хронометра это

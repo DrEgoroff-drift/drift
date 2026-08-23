@@ -128,6 +128,9 @@ function renderCantina(){
   if(typeof keepersBlock==="function")keepersBlock();   /* смотритель и список на переборке (11k) */
   if(typeof chartsBlock==="function")chartsBlock();     /* их карта (11m) */
   if(typeof quietBlock==="function")quietBlock();       /* открытая дверь (11n) */
+  if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
+  if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
+  if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
   if(typeof putOnTable==="function")tableBlock();
   $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
 }

@@ -94,6 +94,11 @@ function enterSurface(){
   if(!sl&&typeof hoursGroundLine==="function")sl=hoursGroundLine();   // уезд часов (11h)
   if(!sl&&typeof glowGroundLine==="function")sl=glowGroundLine();      // уезд света (11i)
   if(!sl&&typeof countyGroundLine==="function")sl=countyGroundLine();  // большой уезд (11l)
+  if(!sl&&typeof slowGroundLine==="function")sl=slowGroundLine();      // медленный (11o)
+  if(!sl&&typeof passGroundLine==="function")sl=passGroundLine();      // перевал (11p)
+  if(!sl&&typeof grownGroundLine==="function")sl=grownGroundLine();    // другое взросление (11q)
+  if(!sl&&typeof planGroundLine==="function")sl=planGroundLine();      // план (11r)
+  if(!sl&&typeof retGroundLine==="function")sl=retGroundLine();        // возвращение (11s)
   if(sl)logAdd("dim",sl);
   say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
 }
@@ -241,6 +246,21 @@ function updateSurface(dt){
       G.prompt="ДЕЙСТВИЕ — СНЯТЬ ЛЕНТУ · ОСТАЛОСЬ ЗАПИСЕЙ "+left;
       if(actEdge){tinStrip(T);return;}
     }
+  }
+  /* долина медленного (11o): выложить, прочесть ответ */
+  else if(typeof slowHere==="function"&&slowHere(S)){
+    if(slowReady()){G.prompt="ДЕЙСТВИЕ — ПРОЧЕСТЬ ОТВЕТ";if(actEdge){slowRead();return;}}
+    else if(slowAll().fig){G.prompt="ВЫЛОЖЕНО · ОТВЕТ ЗРЕЕТ · У НЕЁ ДРУГОЕ ВРЕМЯ";}
+    else{G.prompt="ДЕЙСТВИЕ — ВЫЛОЖИТЬ ФИГУРУ ИЗ ТРЮМА";if(actEdge){slowLay();return;}}
+  }
+  /* корабль перевала (11p): свет, потом развилка */
+  else if(typeof passAtShip==="function"&&passAtShip(S)){
+    if(!passAll().lit){G.prompt="ДЕЙСТВИЕ — ВКЛЮЧИТЬ СВЕТ";if(actEdge){passLight();return;}}
+    else G.prompt="ВНУТРИ ВСЁ ЦЕЛО · ВАМ ПОНЯТНО · ИМ — НЕТ";
+  }
+  else if(typeof passAtVillage==="function"&&passAtVillage(S)&&passAll().lit&&!passAll().told){
+    G.prompt="ДЕЙСТВИЕ — ОБЪЯСНИТЬ ИМ\nили уйти. Правильного ответа нет";
+    if(actEdge){passTell();return;}
   }
   /* автомат уезда часов (11h): монета — паёк — верная сдача */
   else if(typeof hoursMachineHere==="function"&&hoursMachineHere(S)){
@@ -574,6 +594,9 @@ function drawSurface(){
   peepDrawMat(camx,camy);
   /* уезд света (11i): пятна по формам и освещённая площадка — тем же слоем, что мат */
   if(typeof glowDrawPatches==="function"){glowDrawPatches(tr,camx,camy,p);glowDrawPad(S,camx,camy);}
+  if(typeof slowDraw==="function")slowDraw(tr,camx,camy,p);   /* выкладка долины (11o) */
+  if(typeof passDraw==="function")passDraw(tr,camx,camy,p);   /* корабль перевала (11p) */
+  if(typeof placeDraw==="function")placeDraw(tr,camx,camy,p); /* единичные места (11v) */
   /* тень по длине корпуса, а не по прежним 34 px: у нового посадочного силуэта
      она иначе выдаёт игрушку на палочках */
   groundShadow(S.shipX-camx,S.shipY-camy+12,landerLen(G.shipId)*.46,8);

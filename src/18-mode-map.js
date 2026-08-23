@@ -289,7 +289,7 @@ function drawMap(){
     ctx.strokeStyle="rgba(127,230,216,.18)";ctx.strokeRect(cx+.5,cy+.5,cw,104);
     ctx.textAlign="left";
     ctx.fillStyle="#f2b25c";ctx.font="13px ui-monospace,monospace";
-    ctx.fillText(s.name.toUpperCase(),cx+12,cy+22);
+    ctx.fillText(((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),cx+12,cy+22);   /* ваше имя (11u) */
     ctx.fillStyle="rgba(127,230,216,.65)";ctx.font="9px ui-monospace,monospace";
     ctx.fillText(s.cls.ru+" · "+s.planets.length+" планет"+(s.station?" · СТАНЦИЯ":"")+(s.belt?" · ПОЯС":""),cx+12,cy+38);
     ctx.fillStyle="rgba(160,182,192,.62)";

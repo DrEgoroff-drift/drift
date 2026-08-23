@@ -58,6 +58,11 @@ function etherTick(dt){
   if(typeof groveEtherLine==="function"){const h=groveEtherLine(r);if(h)out=h;}   /* роща (11j) */
   if(typeof keepersEtherLine==="function"){const h=keepersEtherLine(r);if(h)out=h;}   /* погасший рукав (11k) */
   if(typeof countyAnswerLine==="function"){const h=countyAnswerLine();if(h)out=h;}    /* город ответил (11l) */
+  if(typeof slowEtherLine==="function"){const h=slowEtherLine(r);if(h)out=h;}        /* биостанции (11o) */
+  if(typeof planEtherLine==="function"){const h=planEtherLine(r);if(h)out=h;}        /* накладные (11r) */
+  if(typeof retEtherLine==="function"){const h=retEtherLine(r);if(h)out=h;}          /* кого ждут (11s) */
+  if(typeof rumourEtherLine==="function"){const h=rumourEtherLine(r);if(h)out=h;}    /* слух на приёмнике (11t) */
+  if(typeof namesEtherLine==="function"){const h=namesEtherLine();if(h)out=h;}       /* ваше слово у диспетчера (11u) */
   if(out&&typeof regionAt==="function"){
     const R=regionAt(G.sx,G.sy);
     if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&Math.random()<.6)

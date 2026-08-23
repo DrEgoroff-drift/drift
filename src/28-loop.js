@@ -105,7 +105,7 @@ function hud(){
   document.body.classList.toggle("screen",!!document.querySelector(".scr.open"));
   let a="—",b="—";
   /* кошелёк вынесен отдельной строкой ниже — здесь он был бы вторым разом */
-  if(G.mode==="system"){a=G.sys.name.toUpperCase();b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;}
+  if(G.mode==="system"){a=((typeof nameOf==="function")?nameOf(G.sys):G.sys.name).toUpperCase();b="«"+st.S.ru+"» · сектор "+G.sx+":"+G.sy;}
   else if(G.mode==="map"){a="НАВИГАЦИЯ";b="радиус "+st.jump.toFixed(1)+" пк";}
   else if(G.mode==="landing"){a=G.land.p.name.toUpperCase();
     b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;}

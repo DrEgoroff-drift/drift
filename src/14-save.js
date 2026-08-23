@@ -36,7 +36,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
-    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,
+    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
@@ -451,6 +451,13 @@ function applySave(s){
   {const c=s.county||{};G.county={called:c.called?1:0,at:Math.max(0,c.at|0),answered:c.answered?1:0,saw:c.saw?1:0};}   /* большой уезд (11l) */
   {const c=s.charts||{};G.charts={have:c.have?1:0,lost:(c.lost==null?-1:c.lost|0)};}   /* несогласие карт (11m) */
   G.quiet={stay:(s.quiet&&s.quiet.stay)?1:0};   /* тихий уезд (11n) */
+  {const c=s.slow||{};G.slow={fig:Array.isArray(c.fig)?c.fig.filter(k=>RES[k]).slice(0,4):null,at:(c.at==null?-1:c.at|0),round:Math.max(0,c.round|0)};if(!G.slow.fig)G.slow.fig=null;}   /* медленный (11o) */
+  {const c=s.pass||{};G.pass={lit:c.lit?1:0,told:c.told?1:0};}   /* перевал (11p) */
+  G.grown={recip:Math.max(0,(s.grown&&s.grown.recip)|0)};   /* другое взросление (11q) */
+  {const c=s.plan||{};G.plan={took:Math.max(0,c.took|0),hauled:Math.max(0,c.hauled|0)};}   /* план (11r) */
+  G.ret={seen:(s.ret&&s.ret.seen)?1:0};   /* возвращение (11s) */
+  G.names={};if(s.names&&typeof s.names==="object")for(const k in s.names)if(typeof s.names[k]==="string")G.names[k]=s.names[k].slice(0,18);   /* имена (11u) */
+  G.namesTold={};if(s.namesTold&&typeof s.namesTold==="object")for(const k in s.namesTold)G.namesTold[k]=s.namesTold[k]|0;
   /* почтовый круг (11e): три числа */
   G.post={stage:clamp((s.post&&s.post.stage)|0,0,POST_LINKS.length-1),opened:(s.post&&s.post.opened)?1:0,done:(s.post&&s.post.done)?1:0};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];

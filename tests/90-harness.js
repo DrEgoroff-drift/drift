@@ -54,7 +54,7 @@ function resetWorld(){
   /* срок (12v): новый мир — никакого назначенного часа и никаких пустых систем */
   G.doom=null;G.doomDead={};
   /* трепло (12x): новая игра — ни птицы, ни услышанного */
-  G.seen={};G.storyPin={};G.storyFlags={};G.place={};G.odo={lands:0,jumps:0};G.post={stage:0,opened:0,done:0};G.mirror={bearing:0};G.mirrorEcho=null;G.lights={t0:-1,seen:0};G.hours={man:0};G.grove={turn:0,shot:0,cut:0};G.keepers={gone:0,signed:0,fed:0,given:0};G.county={called:0,at:0,answered:0,saw:0};G.charts={have:0,lost:-1};G.quiet={stay:0};G.quietGone=0;
+  G.seen={};G.storyPin={};G.storyFlags={};G.place={};G.odo={lands:0,jumps:0};G.post={stage:0,opened:0,done:0};G.mirror={bearing:0};G.mirrorEcho=null;G.lights={t0:-1,seen:0};G.hours={man:0};G.grove={turn:0,shot:0,cut:0};G.keepers={gone:0,signed:0,fed:0,given:0};G.county={called:0,at:0,answered:0,saw:0};G.charts={have:0,lost:-1};G.quiet={stay:0};G.quietGone=0;G.slow={fig:null,at:-1,round:0};G.pass={lit:0,told:0};G.grown={recip:0};G.plan={took:0,hauled:0};G.ret={seen:0};G.names={};G.namesTold={};
   G.parrot=null;G.heard=[];G.trade=routeInit();G.market={};G.wear={};G.findsSeen={};
   G.mgrs=[];G.blueprints={};G.cantina=null;G.aiRift=null;
   G.orderStamp=0;G.kills=0;G.soldTotal=0;

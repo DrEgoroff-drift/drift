@@ -8,6 +8,46 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.108.0 — "The pass closes" (M147-returners, M148 rumours, M149 names, M150 passports, M151 places)
+
+**The returners** (`11s-returners`, the table's `tin` slot, needle `chrono`): yards and long
+contracts on the edge — rooms kept ready, ships waited for by the third generation; at the core a
+station of people younger than their grandchildren, who play dominoes and complain about supply.
+An arrivals board in the cantina with half its lines years overdue and nobody clearing it. The
+chronometer drifts there until the first docking and never again: it misleads exactly once.
+
+**Rumours** (`11t-rumours`): two per station per three days, each an area of three to five
+systems around a region core — an image, a human detail, a source — and about fifteen per cent
+simply wrong. In the cantina and, rarely, on the receiver. No markers anywhere.
+
+**The names travel** (`11u-names`): a system can be renamed in the cantina (18 characters, no
+suggestion ever offered); the map, the HUD and the arrival line show your word. Tell it in the
+bar and fifteen jumps later a dispatcher repeats it, one letter short; rumours about that core
+use it too.
+
+**Design passports** (M150): `docs/PASSPORTS.md` — the provenance rule extended to props, the
+instrument, label, palette, wear, type and sound rules, and the pass's standing rules, as the
+checklist every new object is read against.
+
+**And what was that, exactly** (`11v-places`): three hand-placed, unique places at fixed
+addresses — a tower, a bowl, a stair into nothing — on the first solid planet of the nearest
+star. Nothing logged, nothing rewarded; only the name you give them travels.
+
+## 0.107.0 — "Four counties" (M143-slow, M144-pass, M145-grown, M146-plan)
+
+**The slow one** (`11o-slow`, needle `chrono`): lay a figure from the hold at the valley's peg,
+leave, come back five days later — a copy; then a continuation (read plainly, "are you alive?");
+then a meaningful mistake that adds what you did not lay. Nothing visible: the chronometer humps
+at the peg when the reply has matured, and the tape keeps it. Leave for two hundred hours and
+the reply is still there. **The pass** (`11p-pass`, needle `course`): a hulk behind the village,
+pilgrims at the ramp, a liturgy that used to be a manual. You can switch the lights on — the
+largest thing there in a century — and then explain, or not; no reward either way. **The other
+growing-up** (`11q-grown`, needle `mass`): the same people at different stages across the
+region; at the core every gift comes back cleverer than you gave it. **The plan** (`11r-plan`,
+needle `radio`): the ether full of delivery notes, a combine on the core planet that never stops
+and needs no order; take the article, bring it to your own base, and two hundred years of work
+are for the first time not wasted.
+
 ## 0.106.0 — "Three counties" (M140-county, M141-charts, M142-quiet)
 
 **The large county** (`11l-county`, needle `mass`): masonry in the region is half again as

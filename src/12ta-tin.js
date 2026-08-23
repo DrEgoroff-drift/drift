@@ -63,6 +63,7 @@ function tinHereRec(){return tinAt(G.sx,G.sy);}
 function tinCanLive(p){
   if(!p||!p.type||TIN_ON.indexOf(p.type)<0)return false;
   if(typeof settleCanLive==="function"&&settleCanLive(p))return false;
+  if(typeof planIsCore==="function"&&planIsCore(p))return true;   /* комбинат (11r) */
   return hashi(hashi(G.sx,G.sy,(p.idx|0)+0x71D),p.seed|0,11)%7===0;
 }
 /* планета системы, на которой стоит железо (одна на систему) */
@@ -116,6 +117,7 @@ function tinMake(p){
    Работает, пока в бункере есть сырьё. Кончилось — встала и снова просит. */
 function tinTick(T){
   if(!T)return null;
+  if(typeof planEndless==="function")planEndless(T);   /* комбинат не останавливается (11r) */
   const now=Date.now();
   const mins=Math.min(now-(T.last||now),TIN_CAP)/60000;
   T.last=now;
@@ -159,6 +161,7 @@ function tinTakeOut(T){
      лежать в бункере — машине спешить некуда */
   const got=Math.max(0,addRes(A.made,n)|0);
   if(got>0)T.bin-=got;
+  if(typeof planTook==="function")planTook(T,got);   /* изделие комбината (11r) */
   if(typeof saveGame==="function")saveGame(true);
   return got;
 }
