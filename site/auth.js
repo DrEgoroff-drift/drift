@@ -48,10 +48,13 @@
       note.textContent="сначала впишите имя — на него и пошлём письмо";$("#lg").focus();return}
     note.className="note"; note.textContent="…";
     try{
-      await call("forgot",{login});
+      /* «письмо летит» — только когда сервер согласился: отказ и рейт-лимит
+         раньше рисовали ту же зелёную строку, и человек ждал письма зря */
+      const d=await call("forgot",{login});
+      if(!d||!d.ok)throw new Error(d&&d.error||"");
       note.className="note ok";
       note.textContent="если у этой записи есть почта, письмо уже летит (проверьте и спам) — ссылка живёт час. Почту не указывали при создании? тогда возвращать нечем: напишите на info@drift-game.ru";
-    }catch(e){note.className="note bad";note.textContent="сервер не ответил"}
+    }catch(e){note.className="note bad";note.textContent=(e&&e.message)||"сервер не ответил"}
   }
   const close=()=>$("#veil").classList.remove("on");
   window.driftAuth={open,close,tok,name};
