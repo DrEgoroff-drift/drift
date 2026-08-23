@@ -316,11 +316,18 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 
 # QUEUE: the fourteenth pass — the kit, the lodger, the expedition (M152–M166)
 
-Designs (2026-08-23): [`docs/DESIGN-suit.md`](docs/DESIGN-suit.md),
+Designs (2026-08-23): [`docs/DESIGN-ui.md`](docs/DESIGN-ui.md), [`docs/DESIGN-suit.md`](docs/DESIGN-suit.md),
 [`docs/DESIGN-vega.md`](docs/DESIGN-vega.md), [`docs/DESIGN-act2.md`](docs/DESIGN-act2.md),
 [`docs/DESIGN-after.md`](docs/DESIGN-after.md). Order as listed; each is a version with tests and
 a commit. The joys (M164–M166) may be slotted between big milestones as breathers.
 
+- **M151a the console and the table** — first, before M152: the release look per
+  [`docs/DESIGN-ui.md`](docs/DESIGN-ui.md). A bottom console on every screen (receiver moved out
+  of the cantina · action prompt · the seat of whoever flies with you); one full-screen **СТОЛ**
+  reachable from any mode (logbook with ЭФИР/БОРТ/ЛЮДИ, tapes, letters, things, record book,
+  clippings); the station gets **ДОСКА** as its first group; the menu shrinks to five; `logwin`,
+  `lorewin`, `parrotwin` removed; `say()` only for prompts and emergencies, `etherLine()` /
+  `peopleLine()` for voices; `29-ui-table`, `29a-console`, `91f-ui` rewritten once; `91zzv`.
 - **M152 the kit** — the suit as six places with trade-offs, pieces with models/class/wear/mods,
   issued/found/given, the workshop tier repairs and modernises; `12x-suit`, `11y-kit`, `91zzg`.
 - **M153 Vega** — the lodger who cannot be evicted: the one-shot device on the flea, three acts,
