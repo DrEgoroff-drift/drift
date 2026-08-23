@@ -78,7 +78,8 @@ TEST_SUITES.push(()=>suite("меню: пять дверей, журнал/отч
   const ids=[...document.querySelectorAll("#menu button")].map(b=>b.id);
   ok(ids.indexOf("tablebtn")>=0,"СТОЛ в меню");
   ok(ids.indexOf("logbtn")<0&&ids.indexOf("lorebtn")<0&&ids.indexOf("parrotbtn")<0,"ЖУРНАЛ, ОТЧЁТ и ТРЕПЛО из меню убраны");
-  eq(ids.length,5,"в меню ровно пять пунктов");
+  eq(ids.length,6,"в меню шесть дверей — прибавилась дорога (M168)");
+  ok(ids.indexOf("roadbtn")>=0,"В ДОРОГУ на месте");
   ok(!document.getElementById("logwin")&&!document.getElementById("lorewin"),"старых окон нет");
   ok(!!document.getElementById("perch"),"жёрдочка для трепла на пульте");
 }));

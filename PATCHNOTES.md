@@ -7,6 +7,20 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.129.0 — "The road companion" (M168)
+
+`27k-road`, from the author's voice note: when the player actually travels — a car, a bus, a
+train — the game becomes a living screensaver. The МЕНЮ door «В ДОРОГУ» opens a full-screen
+mode: your own hull, large, flying — banked by the phone's gyroscope in real turns, shaken by
+road vibration, flames growing with speed; stars stream past; the bottom edge is a microphone
+equalizer, so if music plays in the car the ship flies to it (a synthetic pulse when the mic is
+denied). The numbers are real and fantastic at once: GPS speed ×1 000 000 (90 km/h reads
+«25 000 км/с»), the trip in millions of km. The road pays **ice** — a unit per real kilometre,
+40 a day at most, granted into the hold on exit with a record-book line: a pleasantry, not an
+economy source; speeds under 3 and over 300 km/h do not count. Sensors start from one button
+(iOS gesture rule), Wake Lock keeps the screen on, and the entry line admits the battery is the
+price. Suite `91zzy`.
+---
 ## 0.128.0 — "The phone edition" (M167)
 
 The six faults from the author's phone review, in order. **The receiver is a ticker**: on

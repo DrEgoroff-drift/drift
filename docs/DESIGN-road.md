@@ -54,3 +54,22 @@ All of it is reachable from the existing single-file web game on a phone browser
 1. What exactly is the reward resource, and its daily cap?
 2. Is this a mode inside drift.html (a fourth screen) or a separate small page on the site?
 3. Does the companion need the save loaded, or only the account (which ship you own)?
+
+## Built (M168, 0.129.0) — decisions taken on the autonomous run (reversible)
+
+1. **Reward: ice** («воду» taken literally) — one unit per real kilometre, capped 40 a day
+   (≤ ~280 cr: a pleasantry, the economy rules stand). Granted into the hold on leaving the
+   mode; a record-book line «привезён лёд с дороги».
+2. **A mode inside drift.html** (`27k-road`, screen `#roadwin`, the МЕНЮ door «В ДОРОГУ»):
+   the phone already plays drift-game.ru, so the companion shares the save natively — no
+   separate page, no account round-trip, nothing for anti-cheat to sign.
+3. **Speed sanity as the anti-cheat**: 3–300 km/h counts (standing and planes do not), the
+   daily cap does the rest.
+
+What the screen does: the player's own hull large (same `drawHull`, banked by the gyroscope,
+shaken by the road, flames by speed), stars streaming by speed, the cosmic figure
+(90 km/h × 1 000 000 → «25 000 км/с»), the trip in millions of km, the ice counter, a
+microphone equalizer along the bottom (synthetic pulse when denied). Sensors start from the
+РАЗРЕШИТЬ ДАТЧИКИ button (iOS gesture rule); GPS speed comes from `watchPosition` (falls back
+to haversine between fixes); Wake Lock keeps the screen on and the entry line says the battery
+is the price. Suite `91zzy`.

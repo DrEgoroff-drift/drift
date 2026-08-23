@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 239 · символов верхнего уровня: 2274
+Файлов: 241 · символов верхнего уровня: 2292
 
 ## СИМВОЛЫ
 
@@ -83,7 +83,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:201
 autoLandInputs               src/19-mode-landing.js:33
-autosave                     src/14-save.js:525
+autosave                     src/14-save.js:526
 b64dec                       src/14-save.js:13
 b64enc                       src/14-save.js:11
 bankTransform                src/03b-hull-paint.js:48
@@ -292,18 +292,18 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudBoot                    src/14-save.js:582
-cloudBusy                    src/14-save.js:552
-cloudCall                    src/14-save.js:545
-cloudForget                  src/14-save.js:550
-cloudHere                    src/14-save.js:543
-cloudName                    src/14-save.js:542
-cloudOn                      src/14-save.js:544
-cloudPull                    src/14-save.js:569
-cloudPush                    src/14-save.js:555
+cloudBoot                    src/14-save.js:583
+cloudBusy                    src/14-save.js:553
+cloudCall                    src/14-save.js:546
+cloudForget                  src/14-save.js:551
+cloudHere                    src/14-save.js:544
+cloudName                    src/14-save.js:543
+cloudOn                      src/14-save.js:545
+cloudPull                    src/14-save.js:570
+cloudPush                    src/14-save.js:556
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
-cloudTok                     src/14-save.js:541
+cloudTok                     src/14-save.js:542
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
@@ -522,6 +522,7 @@ drawPortal                   src/20aa-poi-shapes.js:464
 drawRaid                     src/24aa-raid-draw.js:5
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:108
+drawRoad                     src/27k-road.js:151
 drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:161
@@ -603,7 +604,7 @@ expNearStation               src/11x-expedition.js:58
 expOfferBlock                src/11x-expedition.js:231
 expOfferHere                 src/11x-expedition.js:213
 expOn                        src/11x-expedition.js:22
-exportCode                   src/14-save.js:534
+exportCode                   src/14-save.js:535
 expPaxDock                   src/11x-expedition.js:137
 expPaxDraw                   src/11x-expedition.js:146
 expPaxJump                   src/11x-expedition.js:132
@@ -782,7 +783,7 @@ grownOnGive                  src/11q-grown.js:54
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:533
+hasSave                      src/14-save.js:534
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
@@ -902,7 +903,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:535
+importCode                   src/14-save.js:536
 initAudio                    src/09-audio.js:7
 INST_TOPICS                  src/11ab-institute.js:17
 instAll                      src/11ab-institute.js:25
@@ -1089,7 +1090,7 @@ lightsShut                   src/11g-lights.js:73
 lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:46
-loadGame                     src/14-save.js:529
+loadGame                     src/14-save.js:530
 LOCAL                        src/11b-speech.js:99
 LOG_MAX                      src/11-log.js:11
 LOG_PAGE                     src/11-log.js:12
@@ -1633,6 +1634,7 @@ rareList                     src/12m-rare.js:103
 rareRender                   src/12m-rare.js:151
 rareSum                      src/12m-rare.js:140
 rareTake                     src/12m-rare.js:115
+RD                           src/27k-road.js:25
 rebinding                    src/15-input.js:81
 RECORD_YEARS                 src/11aa-record.js:17
 recordAdd                    src/11aa-record.js:22
@@ -1748,6 +1750,22 @@ rivalSpawn                   src/12p-news.js:74
 rivalYield                   src/12p-news.js:47
 rivetLine                    src/25-cockpit.js:179
 rng                          src/01-core.js:15
+ROAD_ICE_CAP                 src/27k-road.js:24
+roadAdvance                  src/27k-road.js:37
+roadAll                      src/27k-road.js:26
+roadClose                    src/27k-road.js:133
+roadCollect                  src/27k-road.js:46
+roadCosmic                   src/27k-road.js:34
+roadDayReset                 src/27k-road.js:27
+roadFrame                    src/27k-road.js:146
+roadOnPos                    src/27k-road.js:100
+roadOnShake                  src/27k-road.js:94
+roadOnTilt                   src/27k-road.js:88
+roadOpen                     src/27k-road.js:123
+roadPending                  src/27k-road.js:42
+roadSensorsOn                src/27k-road.js:58
+roadSpeedOk                  src/27k-road.js:32
+roadTripRu                   src/27k-road.js:35
 ROCK_CELL                    src/17c-system-draw.js:40
 ROCK_SHAPES                  src/17c-system-draw.js:26
 ROGUE_CAP                    src/12g-mgr-rogue.js:11
@@ -1793,7 +1811,7 @@ rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:6
-saveGame                     src/14-save.js:519
+saveGame                     src/14-save.js:520
 say                          src/08-state.js:140
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -2605,7 +2623,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/14-save.js · 41 КБ
   · сохранение:1
-  · облако:538
+  · облако:539
 
 ## src/15-input.js · 16 КБ
   · экранные кнопки: авто-скрытие и размер:1
@@ -2807,6 +2825,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/27j-console.js · 7 КБ
   · пульт: приёмник, подсказка, кресло:1
+
+## src/27k-road.js · 11 КБ
+  · дорожный спутник:1
 
 ## src/27-ui-ship.js · 26 КБ
   · экран корабля:1
@@ -3037,5 +3058,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzx-mobile.js · 2 КБ
   · автотесты: телефонный вид (M167):1
+
+## tests/91zzy-road.js · 3 КБ
+  · автотесты: дорожный спутник (M168):1
 
 ## tests/99-run.js · 0 КБ
