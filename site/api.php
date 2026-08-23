@@ -118,7 +118,7 @@ function smtpTalk($fp, $cmd, $expect, &$err) {
   return true;
 }
 
-function smtpSend($cfg, $to, $subj, $text, &$err) {
+function smtpSend($cfg, $to, $subj, $text, &$err, $html = null) {
   $host = $cfg['host'] ?? 'mail.nic.ru';
   $port = (int)($cfg['port'] ?? 465);
   $user = (string)($cfg['user'] ?? '');
@@ -154,11 +154,10 @@ function smtpSend($cfg, $to, $subj, $text, &$err) {
           . "Subject: =?UTF-8?B?" . base64_encode($subj) . "?=\r\n"
           . "Message-ID: <" . bin2hex(random_bytes(12)) . "@drift-game.ru>\r\n"
           . "MIME-Version: 1.0\r\n"
-          . "Content-Type: text/plain; charset=UTF-8\r\n"
-          . "Content-Transfer-Encoding: 8bit\r\n"
           . "X-Mailer: drift\r\n";
+    list($ct, $body) = mailBody($text, $html);
+    $head .= $ct;
     /* Точка в начале строки означала бы конец письма — по правилам SMTP её удваивают. */
-    $body = str_replace("\n", "\r\n", str_replace("\r\n", "\n", $text));
     $body = preg_replace("/^\./m", '..', $body);
     fwrite($fp, $head . "\r\n" . $body . "\r\n.\r\n");
     $ok = smtpTalk($fp, null, '250', $err);
@@ -168,11 +167,57 @@ function smtpSend($cfg, $to, $subj, $text, &$err) {
   return $ok;
 }
 
-function sendMail($to, $subj, $text) {
+/* Тело письма: текст всегда, HTML — если дали. Две части в multipart/alternative,
+   почтовик сам выберет, что показать; кто читает в терминале, получит текст. */
+function mailBody($text, $html) {
+  $nl = function ($t) { return str_replace("\n", "\r\n", str_replace("\r\n", "\n", $t)); };
+  if ($html === null)
+    return ["Content-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n", $nl($text)];
+  $b = 'drift-' . bin2hex(random_bytes(8));
+  $body = "--$b\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n"
+        . $nl($text) . "\r\n--$b\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n"
+        . $nl($html) . "\r\n--$b--";
+  return ["Content-Type: multipart/alternative; boundary=\"$b\"\r\n", $body];
+}
+
+/* Вёрстка письма в духе сайта: ночь, фосфор, моноширинный. Всё инлайном —
+   стили из <head> и внешние файлы почтовики режут; таблица — потому что у
+   Outlook до сих пор движок Word. $paras — абзацы, $btn — [надпись, ссылка]. */
+function mailHtml($title, $paras, $btn = null) {
+  $e = function ($t) { return htmlspecialchars($t, ENT_QUOTES, 'UTF-8'); };
+  $mono = 'ui-monospace,Menlo,Consolas,monospace';
+  $h = '';
+  foreach ($paras as $p)
+    $h .= '<p style="margin:0 0 14px;font:14px/1.65 ' . $mono . ';color:#cfe3ea">' . nl2br($e($p)) . '</p>';
+  if ($btn) {
+    $h .= '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px 0 24px"><tr>'
+        . '<td style="border:1px solid #7fe6d8;border-radius:3px;background:#0c1a1f">'
+        . '<a href="' . $e($btn[1]) . '" style="display:block;padding:13px 24px;font:bold 13px/1 ' . $mono
+        . ';letter-spacing:.16em;text-transform:uppercase;color:#7fe6d8;text-decoration:none">' . $e($btn[0]) . '</a>'
+        . '</td></tr></table>'
+        . '<p style="margin:0 0 14px;font:12px/1.6 ' . $mono . ';color:#6d8494">Если кнопка не работает, ссылка целиком:<br>'
+        . '<a href="' . $e($btn[1]) . '" style="color:#7fe6d8;word-break:break-all">' . $e($btn[1]) . '</a></p>';
+  }
+  return '<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">'
+       . '<title>' . $e($title) . '</title></head>'
+       . '<body style="margin:0;padding:0;background:#05070c">'
+       . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#05070c"><tr>'
+       . '<td align="center" style="padding:36px 16px">'
+       . '<table role="presentation" width="520" cellpadding="0" cellspacing="0" style="max-width:520px;width:100%">'
+       . '<tr><td style="padding:0 0 22px;font:bold 12px/1 ' . $mono . ';letter-spacing:.28em;text-transform:uppercase;color:#7fe6d8">&#9670; Дрейф</td></tr>'
+       . '<tr><td style="padding:26px 28px;background:#080d16;border:1px solid #1a3a3c;border-radius:4px">'
+       . '<h1 style="margin:0 0 18px;font:bold 19px/1.3 ' . $mono . ';letter-spacing:.03em;color:#cfe3ea">' . $e($title) . '</h1>'
+       . $h . '</td></tr>'
+       . '<tr><td style="padding:18px 4px 0;font:11px/1.6 ' . $mono . ';letter-spacing:.12em;text-transform:uppercase;color:#6d8494">'
+       . 'Письмо отправлено само собой — отвечать некому.<br><a href="https://drift-game.ru" style="color:#6d8494">drift-game.ru</a></td></tr>'
+       . '</table></td></tr></table></body></html>';
+}
+
+function sendMail($to, $subj, $text, $html = null) {
   $cfg = mailCfg();
   if (!empty($cfg['user']) && !empty($cfg['pass'])) {
     $err = '';
-    $ok  = smtpSend($cfg, $to, $subj, $text, $err);
+    $ok  = smtpSend($cfg, $to, $subj, $text, $err, $html);
     mailLog(($ok ? 'ok   smtp ' : 'FAIL smtp ') . $to . ($ok ? '' : ' — ' . $err));
     if ($ok) return true;
     /* Если почтовый сервер не принял письмо, пробовать sendmail бессмысленно:
@@ -182,11 +227,11 @@ function sendMail($to, $subj, $text) {
   $from = 'noreply@drift-game.ru';
   $head = "From: =?UTF-8?B?" . base64_encode('Дрейф') . "?= <$from>\r\n"
         . "Reply-To: $from\r\n"
-        . "Content-Type: text/plain; charset=UTF-8\r\n"
-        . "Content-Transfer-Encoding: 8bit\r\n"
+        . "MIME-Version: 1.0\r\n"
         . "X-Mailer: drift\r\n";
+  list($ct, $body) = mailBody($text, $html);
   $s  = "=?UTF-8?B?" . base64_encode($subj) . "?=";
-  $ok = @mail($to, $s, $text, $head, "-f$from");
+  $ok = @mail($to, $s, $body, $head . rtrim($ct, "\r\n"), "-f$from");
   mailLog(($ok ? 'ok   mail() ' : 'FAIL mail() ') . $to . ' — нет mail.json, отправка через sendmail');
   return $ok;
 }
@@ -321,11 +366,12 @@ if ($a === 'forgot') {
     $user['reset'] = ['h' => hash('sha256', $key), 'exp' => time() + 3600];
     writeJson(userFile($login), $user);
     $link = 'https://drift-game.ru/reset.html?k=' . $key . '&u=' . rawurlencode($login);
+    $p1 = "Кто-то (надеемся, вы) попросил сменить пароль для записи «{$login}».";
+    $p2 = "Ссылка работает один час и один раз.";
+    $p3 = "Если это были не вы, просто удалите письмо: пока по ссылке не перешли, старый пароль работает как работал.";
     sendMail($user['mail'], 'Дрейф — новый пароль',
-      "Кто-то (надеемся, вы) попросил сменить пароль для записи «{$login}».\n\n" .
-      "Ссылка на смену — она работает один час и один раз:\n$link\n\n" .
-      "Если это были не вы, просто удалите письмо: пока по ссылке не перешли,\n" .
-      "старый пароль работает как работал.\n\n— Дрейф, drift-game.ru");
+      "$p1\n\n$p2\n$link\n\n$p3\n\n— Дрейф, drift-game.ru",
+      mailHtml('Новый пароль', [$p1, $p2, $p3], ['Сменить пароль', $link]));
   } else {
     mailLog('skip forgot — у записи «' . ($login ?: '?') . '» нет почты или её вовсе нет');
   }
