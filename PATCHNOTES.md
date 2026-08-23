@@ -7,6 +7,15 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.124.0 — "The trainee" (M163)
+
+`11ac-trainee`: the opposite of Vega — a stowaway boy found in the hold after a bazaar, who
+wants to be a cosmonaut. He takes the seat on the console (Vega stays home and says so; she will
+not board while «мальчишка в кресле»), touches the instruments for the first five jumps, reads
+the charts after (the nearest need, once a day), asks to be sent on a run after fifteen, and gets
+his diploma «пилот 3-го класса» at a science counter — then leaves on his own hull. A year later
+his voice is on the ether with your call sign. Suite `91zzr`.
+---
 ## 0.123.0 — "The institute" (M162)
 
 `11ab-institute`: the plan was numbers; the institute is people with topics. Six topics with

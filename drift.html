@@ -797,7 +797,7 @@ body.table #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.123.0";
+const VER="0.124.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6712,6 +6712,98 @@ function instBlock(){
   }
 }
 
+/* ══════════════ стажёр: заяц в трюме ══════════════
+   M163. Противоположность Веге: мальчишка, найденный в трюме после блошинца,
+   хочет в космонавты. Та же инфраструктура (правое кресло, строка на пульте,
+   ЛЮДИ) — вдвоём с Вегой на борту не бывает: она остаётся дома и говорит об
+   этом. Учится по ступеням: трогает приборы (строка на панели), читает карты
+   (как Вега — ближайшая нужда раз в день), просится в рейс, получает диплом
+   института и уходит на своём борту. Через год его голос в эфире — с вашим
+   позывным.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Хранится G.trainee: {st, name, day, jumps, gone}. Тексты — здесь.
+   2. Не наёмник и не пассажир: не стоит денег, не возит груз, не воюет. */
+const TRAINEE_NAMES=["Алёшка","Петька","Сашка","Юрка","Гришка"];
+const TRAINEE_LINES={
+  1:["А это что? А это? Не трогаю, не трогаю.","Я тихо сидел. Три дня. Сухари были.","Вы меня не высадите? Я полезный. Буду."],
+  2:["Я карту прочитал. Сам. Там нужда рядом — я видел.","Стрелка дёргается, когда вы так поворачиваете. Я записал.","Можно я за ручку? Я знаю, где эфир."],
+  3:["Отправьте меня в рейс. Я готов. Честно.","Командир звена сказал — молод. А вы что скажете?","Я всё выучил. Диплом дадут — уйду. Не обижайтесь."]
+};
+function traineeAll(){return G.trainee||null;}
+function traineeAboard(){const T=G.trainee;return !!(T&&T.st>=1&&T.st<=3&&!T.gone);}
+/* найден в трюме после блошинца: раз за прохождение */
+function traineeFind(){
+  if(G.trainee||!G.sys||!G.st||G.st.stype!=="bazaar")return false;
+  const r=rng(hashi(G.sys.sx,G.sys.sy,0x7A1E));
+  if(r()>.35)return false;
+  const name=pick(TRAINEE_NAMES,r);
+  G.trainee={st:1,name,day:celDay(),jumps:0,gone:0,said:0};
+  if(typeof vegaAboard==="function"&&vegaAboard()){vegaBoard(false);peopleLine("Заяц? В трюме? Ладно. Я дома посижу. Пока он тут.","Вега",true);}
+  traineeSeat();
+  peopleLine("я в трюме сидел. Три дня. Я в космонавты хочу. Не высаживайте.",name,true);
+  logAdd("good","В трюме нашёлся заяц: "+name+". Хочет в космонавты.");
+  recordAdd(name,"взят стажёром · сам залез");
+  return true;
+}
+function traineeSeat(){
+  const T=G.trainee;if(!T||!traineeAboard())return;
+  G.seat={name:"СТАЖЁР "+T.name.toUpperCase(),line:["","трогает приборы","читает карты","просится в рейс"][T.st],draw:traineeDraw,act:traineeAct};
+}
+function traineeAct(){
+  const T=G.trainee;if(!T||!traineeAboard())return;
+  peopleLine(TRAINEE_LINES[T.st][T.said++%3],T.name,true);
+}
+function traineeDraw(c,W,H){
+  c.save();c.translate(W/2,H);const s=Math.min(W,H)/56;c.scale(s,s);
+  c.fillStyle="#5a6e8a";c.beginPath();c.roundRect(-9,-26,18,24,5);c.fill();
+  c.fillStyle="#e6c9a8";c.beginPath();c.arc(0,-33,7,0,7);c.fill();
+  c.fillStyle="#8a6a3a";c.fillRect(-7,-41,14,4);
+  c.fillStyle="#b8323a";c.fillRect(-3,-28,6,3);   /* галстук */
+  c.restore();
+}
+/* прыжок: первая ступень трогает приборы, дальше — растёт */
+function traineeJump(){
+  const T=G.trainee;if(!T||!traineeAboard())return;
+  T.jumps++;
+  if(T.st===1&&T.jumps%3===0){logAdd("warn",T.name+" тронул прибор: стрелка дёрнулась. «Я не хотел».");}
+  if(T.st===1&&T.jumps>=5){T.st=2;peopleLine("я карты выучил. Все листы. Можно я буду говорить, где что?",T.name,true);traineeSeat();}
+  if(T.st===2&&T.jumps>=15){T.st=3;peopleLine("отправьте меня в рейс. Я готов. Или диплом — и я сам.",T.name,true);traineeSeat();}
+}
+/* день: на второй ступени читает карты */
+function traineeTick(){
+  const T=G.trainee;if(!T)return;
+  const d=celDay();if(T.lastDay===d)return;T.lastDay=d;
+  if(traineeAboard()&&!G.seat)traineeSeat();
+  if(T.st===2&&typeof needsNear==="function"){const L=needsNear(6);if(L.length)peopleLine("на "+L[0].sys.station.name+" нет "+L[0].need.ru+". Я по карте.",T.name);}
+  if(T.gone&&!T.voice&&d-(T.goneDay|0)>=365){
+    T.voice=1;
+    const hull=(G.shipId&&shipData(G.shipId))?"«"+shipData(G.shipId).ru+"»":"борт";
+    etherLine("…борт «Стриж-бис», позывной как у "+hull+". Это я, "+T.name+". Слышите? Я дошёл.");
+    recordAdd(T.name,"вышел в эфир через год · своим бортом · вашим позывным");
+  }
+}
+/* диплом: на стойке научной станции, с третьей ступени */
+function traineeDiplomaHere(){const T=G.trainee;return !!(T&&T.st===3&&!T.gone&&G.st&&G.st.stype==="sci");}
+function traineeDiploma(){
+  const T=G.trainee;if(!traineeDiplomaHere())return false;
+  T.st=4;T.gone=1;T.goneDay=celDay();
+  if(G.seat&&G.seat.name.indexOf("СТАЖЁР")===0)G.seat=null;
+  peopleLine("диплом. Настоящий. Я пошёл. У меня свой борт — маленький, но свой. Спасибо, что не высадили.",T.name,true);
+  thingAdd("paper","Диплом · "+T.name,"выдан институтом · «пилот 3-го класса» · он ушёл своим бортом");
+  recordAdd("институт","стажёр "+T.name+" выпущен · рекомендация пилота учтена");
+  logAdd("good",T.name+" получил диплом и ушёл на своём борту.");
+  return true;
+}
+function traineeBlock(){
+  if(traineeDiplomaHere()){
+    $body.appendChild(el("div","sec","ИНСТИТУТ · ДИПЛОМ СТАЖЁРУ"));
+    const r=el("div","row","<div class='nm'><b>"+G.trainee.name+" сдал</b><s>диплом «пилот 3-го класса» · он уйдёт на своём борту</s></div>");
+    const b=el("button","act sm gold","ВЫДАТЬ ДИПЛОМ");b.onclick=()=>{traineeDiploma();renderTab();};
+    r.appendChild(b);$body.appendChild(r);
+  }
+}
+
 /* ══════════════ журнал дел ══════════════ */
 /* Игра говорила о взятых обещаниях всплывающей строкой и записью в ленте:
    «принял» было видно секунду, а потом приходилось помнить самому — что взял,
@@ -9614,6 +9706,7 @@ function vegaOffend(why){
 /* ── на борту ── */
 function vegaBoard(on){
   const V=G.vega;if(!V||!V.stage||V.stage===4)return false;
+  if(on&&typeof traineeAboard==="function"&&traineeAboard()){peopleLine("Там мальчишка в кресле. Я дома посижу. Я не ревную. Я дома посижу.","Вега",true);return false;}
   V.aboard=on?1:0;
   if(on){
     G.seat={name:"ВЕГА",line:"на борту",draw:vegaSeatDraw,act:vegaSeatAct};
@@ -20961,7 +21054,7 @@ function snapshot(){
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
-    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,   /* M154–M162 */
+    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,   /* M154–M163 */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -21403,6 +21496,7 @@ function applySave(s){
   G.island=(s.island&&typeof s.island==="object"&&s.island.letters)?s.island:{letters:{}};
   G.record=(s.record&&typeof s.record==="object"&&Array.isArray(s.record.e))?s.record:null;
   G.inst=(s.inst&&typeof s.inst==="object"&&s.inst.t)?s.inst:null;
+  G.trainee=(s.trainee&&typeof s.trainee==="object"&&s.trainee.name)?s.trainee:null;
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];
@@ -24986,6 +25080,7 @@ function jump(cost){
   if(typeof vegaJump==="function")vegaJump();        // укачивает (M153)
   if(typeof ringJump==="function")ringJump();        // Кольцо считает прыжки (M154)
   if(typeof expPaxJump==="function")expPaxJump();    // попутчик говорит по фразе за прыжок (M156)
+  if(typeof traineeJump==="function")traineeJump();  // стажёр растёт по прыжкам (M163)
   const a=Math.random()*TAU,r=1500;
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
   G.ship.vx=-Math.cos(a)*.7;G.ship.vy=-Math.sin(a)*.7;G.ship.a=a+Math.PI;
@@ -38297,6 +38392,7 @@ function closeStation(){
   /* блошинец (12ua): то, что про вас записано, вы либо забрали, либо оставили
      на прилавке — и тогда его покупает кто-то другой */
   if(typeof fleaLeave==="function")fleaLeave(G.sys);
+  if(typeof traineeFind==="function")traineeFind();   /* заяц в трюме после блошинца (M163) */
   $st.classList.remove("open");G.mode="system";
   const S=G.st,dx=G.ship.x-S.x,dy=G.ship.y-S.y,d=Math.hypot(dx,dy)||1;
   G.ship.x=S.x+dx/d*150;G.ship.y=S.y+dy/d*150;
@@ -38434,6 +38530,7 @@ function renderTab(){
     if(typeof islandBlock==="function")islandBlock();       /* письмо на Остров (M160) */
     if(typeof recordBlock==="function")recordBlock();       /* доска почёта, комиссия (M161) */
     if(typeof instBlock==="function")instBlock();           /* институт: темы и отчёты (M162) */
+    if(typeof traineeBlock==="function")traineeBlock();     /* диплом стажёру (M163) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
@@ -43170,7 +43267,7 @@ function frame(now){
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
     if(typeof etherTick==="function")etherTick(dt);
-    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();wearTick(dt);
+    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof traineeTick==="function")traineeTick();wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){

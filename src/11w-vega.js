@@ -135,6 +135,7 @@ function vegaOffend(why){
 /* ── на борту ── */
 function vegaBoard(on){
   const V=G.vega;if(!V||!V.stage||V.stage===4)return false;
+  if(on&&typeof traineeAboard==="function"&&traineeAboard()){peopleLine("Там мальчишка в кресле. Я дома посижу. Я не ревную. Я дома посижу.","Вега",true);return false;}
   V.aboard=on?1:0;
   if(on){
     G.seat={name:"ВЕГА",line:"на борту",draw:vegaSeatDraw,act:vegaSeatAct};

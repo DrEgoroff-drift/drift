@@ -91,6 +91,7 @@ function closeStation(){
   /* блошинец (12ua): то, что про вас записано, вы либо забрали, либо оставили
      на прилавке — и тогда его покупает кто-то другой */
   if(typeof fleaLeave==="function")fleaLeave(G.sys);
+  if(typeof traineeFind==="function")traineeFind();   /* заяц в трюме после блошинца (M163) */
   $st.classList.remove("open");G.mode="system";
   const S=G.st,dx=G.ship.x-S.x,dy=G.ship.y-S.y,d=Math.hypot(dx,dy)||1;
   G.ship.x=S.x+dx/d*150;G.ship.y=S.y+dy/d*150;
@@ -228,6 +229,7 @@ function renderTab(){
     if(typeof islandBlock==="function")islandBlock();       /* письмо на Остров (M160) */
     if(typeof recordBlock==="function")recordBlock();       /* доска почёта, комиссия (M161) */
     if(typeof instBlock==="function")instBlock();           /* институт: темы и отчёты (M162) */
+    if(typeof traineeBlock==="function")traineeBlock();     /* диплом стажёру (M163) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
