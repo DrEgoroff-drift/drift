@@ -7,6 +7,15 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.131.0 — "Gradations" (M168c)
+
+The author caught the 3–300 km/h window pretending to be common sense. Three tiers now, with a
+four-second hysteresis: **ДОРОГА** to 200 (car), **ЭКСПРЕСС** 200–400 (a train — star streaks
+stretch double), **ГИПЕРДРАЙВ** 400–1000 (a plane — a converging star tunnel, a light cocoon
+around the hull, the flame a step up, and the big figure switches to fractions of light:
+850 km/h × 1 000 000 reads **«0.79 световой»**). Above 1000 km/h the road is not believed. The
+sub-line trims itself on narrow screens. Suite `91zzy` knows the tiers.
+---
 ## 0.130.0 — "The road pays and the music breathes" (M168b)
 
 The road companion, second pass by the author's notes. **Credits, not ice**: 2 cr a real

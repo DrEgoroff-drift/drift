@@ -379,7 +379,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   КОРАБЛЬ | СКАФАНДР with row/clipping fixes; the suit as an RPG paperdoll composited from the
   six equipped pieces (one outline, one light) — the same composite walks the surface; one hint
   slot above the console; distance markers as edge arrow chips; mechanics.html mobile CSS.
-- **M168 road companion** — **built (0.129.0, 0.130.0)**: the living screensaver for real travel — credits by the kilometre with a ×3 combo, acceleration and braking on the hull, the mood wave — per
+- **M168 road companion** — **built (0.129.0–0.131.0)**: the living screensaver for real travel — credits by the kilometre with a ×3 combo, acceleration and braking on the hull, the mood wave — per
   [`docs/DESIGN-road.md`](docs/DESIGN-road.md) — the player's hull flies by GPS, banks by the
   gyroscope, shakes with the road, an equalizer breathes by the microphone; a kilometre of
   road is a unit of ice, 40 a day; `27k-road`, `91zzy`.

@@ -849,7 +849,7 @@ body.table #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.130.0";
+const VER="0.131.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -43054,7 +43054,9 @@ function consoleTick(dt){
       микрофона — волна дышит сама.
    2. Хранится G.road={day,km,cr}. Комбо и настроение — эфемерны.
    3. Wake Lock, и о батарее сказано прямо. */
-const ROAD_VMIN=3,ROAD_VMAX=300;
+const ROAD_VMIN=3,ROAD_VMAX=1000;
+const ROAD_TIERS=[{v:200,ru:"ДОРОГА"},{v:400,ru:"ЭКСПРЕСС"},{v:1000,ru:"ГИПЕРДРАЙВ"}];
+const ROAD_C=299792;                      /* км/с: на гипердрайве счёт идёт в долях света */
 const ROAD_CR_KM=2,ROAD_CR_CAP=1500,ROAD_COMBO_MAX=3,ROAD_COMBO_T=1200,ROAD_STOP_T=120;
 let RD=null;
 function roadAll(){if(!G.road||typeof G.road!=="object")G.road={day:-1,km:0,cr:0};return G.road;}
@@ -43064,6 +43066,14 @@ function roadDayReset(){
   return R;
 }
 function roadSpeedOk(kmh){return kmh>=ROAD_VMIN&&kmh<=ROAD_VMAX;}
+/* ярус по скорости: 1 дорога (машина), 2 экспресс (поезд), 3 гипердрайв (самолёт) */
+function roadTier(kmh){
+  if(!roadSpeedOk(kmh))return 0;
+  for(let i=0;i<ROAD_TIERS.length;i++)if(kmh<=ROAD_TIERS[i].v)return i+1;
+  return 0;
+}
+/* доля скорости света после ×1 000 000: 850 км/ч → 0.79 c */
+function roadLightFrac(kmh){return kmh/3.6*1000/ROAD_C;}
 function roadCosmic(kmh){return Math.round(kmh/3.6*1000);}
 function roadTripRu(km){return km<.001?"0":(km).toFixed(km<10?2:0)+" млн км";}
 /* комбо: секунды непрерывного хода → множитель до ×3; простой дольше двух минут сжигает */
@@ -43237,7 +43247,14 @@ function roadFrame(ts){
 function drawRoad(ts){
   const cv=document.getElementById("roadcv"),c=cv.getContext("2d");
   const W=cv.width,H=cv.height,t=ts/1000;
-  const spd=RD.kmh||0,fast=clamp(spd/120,0,1);
+  const spd=RD.kmh||0;
+  /* ярус с гистерезисом: машина не мигает в «экспресс» на обгоне — новый ярус
+     должен продержаться четыре секунды */
+  const want=roadTier(spd)||1;
+  if(want!==(RD.tier||1)){RD.tierT=(RD.tierT||0)+.016;if(RD.tierT>4)RD.tier=want;}
+  else RD.tierT=0;
+  const tier=RD.tier||1;
+  const fast=clamp(spd/(tier===3?900:tier===2?330:120),0,1);
   roadAudio(t);
   const hue=roadMoodHue(),en=RD.energy;
   /* небо */
@@ -43260,16 +43277,33 @@ function drawRoad(ts){
     c.fillStyle=ng;c.fillRect(bx-rad,by-rad,rad*2,rad*2);
   }
   c.restore();
-  /* звёзды текут навстречу; бит рождает новые на пути */
+  /* звёзды текут навстречу; на экспрессе тянутся вдвое, бит рождает новые */
   const r=rng(0x50AD);
+  const streak=tier===2?2.2:tier===3?4:1;
   for(let i=0;i<90;i++){
     const depth=.25+r()*.75,y=r()*H;
-    const x=(r()*W-t*(20+spd*3)*depth)%W;
+    const x=(r()*W-t*(20+Math.min(spd,300)*3)*depth)%W;
     c.globalAlpha=.25+depth*.6;
     c.fillStyle=depth>.8?"#cfe3ea":"#7d8fa0";
-    c.fillRect(((x%W)+W)%W,y,1+fast*14*depth,depth>.8?1.6:1);
+    c.fillRect(((x%W)+W)%W,y,1+fast*14*depth*streak,depth>.8?1.6:1);
   }
   c.globalAlpha=1;
+  /* гипердрайв (самолёт): звёздный тоннель — росчерки сходятся в точку по
+     курсу, и корпус идёт в световом коконе */
+  if(tier===3){
+    const vx=W*.78,vy=H*.42;
+    c.save();c.globalCompositeOperation="lighter";
+    const wr=rng(0x3A9F);
+    for(let i=0;i<46;i++){
+      const a2=wr()*TAU,rr0=(60+wr()*Math.max(W,H))* (1+((t*1.6+wr())%1));
+      const x0=vx+Math.cos(a2)*rr0,y0=vy+Math.sin(a2)*rr0*.7;
+      const k2=.72;
+      c.strokeStyle="hsla("+hue+",70%,80%,"+(.05+fast*.12).toFixed(3)+")";
+      c.lineWidth=1+wr()*1.4;
+      c.beginPath();c.moveTo(x0,y0);c.lineTo(vx+(x0-vx)*k2,vy+(y0-vy)*k2);c.stroke();
+    }
+    c.restore();
+  }
   if(RD.beat>.6&&RD.sparks.length<24)
     RD.sparks.push({x:W+20,y:H*(.15+Math.random()*.5),v:2+Math.random()*3+fast*6,life:1,big:Math.random()<.2});
   for(let i=RD.sparks.length-1;i>=0;i--){
@@ -43305,9 +43339,17 @@ function drawRoad(ts){
   const old=ctx;ctx=c;
   c.save();
   c.translate(W*.44+jx+RD.acc*W*.03,H*.46+bob+jy);
+  /* световой кокон гипердрайва — под корпусом, одним светом */
+  if(tier===3){
+    c.save();c.globalCompositeOperation="lighter";
+    const cg=c.createRadialGradient(0,0,h.len*sc*.1,0,0,h.len*sc*.75);
+    cg.addColorStop(0,"hsla("+hue+",80%,70%,.14)");cg.addColorStop(1,"hsla("+hue+",80%,70%,0)");
+    c.fillStyle=cg;c.beginPath();c.ellipse(0,0,h.len*sc*.75,h.bw*sc*1.6,0,0,TAU);c.fill();
+    c.restore();
+  }
   c.scale(sc,sc);
   c.rotate(RD.bank*.22-RD.acc*.08);
-  drawHull(id,spd>ROAD_VMIN||RD.acc>.2,RD.acc<-.25,Math.min(3,fast*3+Math.max(0,RD.acc)*2),RD.bank);
+  drawHull(id,spd>ROAD_VMIN||RD.acc>.2,RD.acc<-.25,Math.min(3,fast*3+Math.max(0,RD.acc)*2+(tier===3?1:0)),RD.bank);
   c.restore();
   ctx=old;
   /* волна по нижней кромке: гладкая светящаяся кривая из лог-частот,
@@ -43345,12 +43387,18 @@ function drawRoad(ts){
   const combo=roadCombo(RD.moveT);
   const px2=Math.round(W*.05),base=Math.round(H*.1);
   c.textAlign="left";
-  c.fillStyle="rgba(190,235,240,.95)";
+  c.fillStyle=tier===3?"hsla("+hue+",70%,80%,.95)":"rgba(190,235,240,.95)";
   c.font=Math.round(H*.052)+"px ui-monospace,monospace";
-  c.fillText(spd>=ROAD_VMIN?roadCosmic(spd).toLocaleString("ru")+" км/с":"—",px2,base);
+  /* на гипердрайве счёт — в долях света: 850 км/ч после ×1 000 000 — 0.79 c */
+  c.fillText(spd<ROAD_VMIN?"—":tier===3?roadLightFrac(spd).toFixed(2)+" световой":roadCosmic(spd).toLocaleString("ru")+" км/с",px2,base);
   c.fillStyle="rgba(127,230,216,.6)";
   c.font=Math.round(H*.017)+"px ui-monospace,monospace";
-  c.fillText(spd>=ROAD_VMIN?"скорость · настоящая, ×1 000 000":"стоим · дорога сама начнёт считать",px2,base+Math.round(H*.028));
+  let sub=spd<ROAD_VMIN?"стоим · дорога сама начнёт считать":
+    tier===1?"ДОРОГА · скорость настоящая, ×1 000 000":
+    tier===2?"ЭКСПРЕСС · судя по ходу — поезд · ×1 000 000":
+    "ГИПЕРДРАЙВ · судя по ходу — самолёт · "+roadCosmic(spd).toLocaleString("ru")+" км/с";
+  while(sub.length>8&&c.measureText(sub).width>W-px2*2)sub=sub.replace(/ · [^·]*$/,"");
+  c.fillText(sub,px2,base+Math.round(H*.028));
   c.fillText("за поездку "+roadTripRu(R.km),px2,base+Math.round(H*.052));
   /* счётчик: крупно, жёлтым; комбо — фишкой, светится, когда растёт */
   c.fillStyle="rgba(242,178,92,.95)";

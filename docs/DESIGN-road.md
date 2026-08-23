@@ -92,3 +92,13 @@ to magenta-amber (energetic), blended 28% with the player's own hull colour, the
 path; touching the screen makes a white pulse, like the Волна does. Composite «lighter», small
 blobs in the upper two thirds — the first draft washed the whole sky flat green and the critique
 pass caught it.
+
+## Third pass (M168c, 0.131.0) — gradations
+
+The author on the 3–300 window: «нихрена себе у тебя здравый смысл» — a car tops at ~200. Now
+three tiers with a four-second hysteresis so an overtake does not flicker the label:
+**ДОРОГА** 3–200 (car/bus, as before), **ЭКСПРЕСС** 200–400 (a train, if GPS catches it —
+star streaks stretch double), **ГИПЕРДРАЙВ** 400–1000 (a plane: a star tunnel converging on
+the course, a light cocoon around the hull, the flame a step up — and the figure switches to
+fractions of light, because 850 km/h × 1 000 000 is honestly **0.79 световой**). Above 1000 —
+not believed. Pay rate is the same everywhere; the cap does the balancing.

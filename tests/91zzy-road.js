@@ -3,7 +3,15 @@ TEST_SUITES.push(()=>suite("дорога: километры — в кредит
   resetWorld();
   G.road=null;G.credits=600;
   RD={crFrac:0};
-  ok(!roadSpeedOk(1)&&roadSpeedOk(90)&&roadSpeedOk(299)&&!roadSpeedOk(600),"скорость фильтруется: 3–300 км/ч");
+  ok(!roadSpeedOk(1)&&roadSpeedOk(90)&&roadSpeedOk(299)&&roadSpeedOk(850)&&!roadSpeedOk(1200),"скорость фильтруется: 3–1000 км/ч");
+  /* градации: машина, поезд, самолёт */
+  eq(roadTier(90),1,"90 км/ч — ДОРОГА");
+  eq(roadTier(199),1,"199 — ещё машина");
+  eq(roadTier(250),2,"250 — ЭКСПРЕСС: поезд");
+  eq(roadTier(400),2,"400 — всё ещё поезд");
+  eq(roadTier(850),3,"850 — ГИПЕРДРАЙВ: самолёт");
+  eq(roadTier(1200),0,"1200 — не верим");
+  ok(Math.abs(roadLightFrac(850)-.787)<.01,"850 км/ч после ×1e6 — 0.79 световой: "+roadLightFrac(850).toFixed(2));
   eq(roadCosmic(90),25000,"90 км/ч ×1 000 000 → 25 000 км/с");
   /* комбо: старт ×1, двадцать минут хода — ×3, дальше не растёт */
   eq(roadCombo(0),1,"комбо со старта ×1");
