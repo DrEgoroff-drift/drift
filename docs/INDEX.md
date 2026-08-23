@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 234 · символов верхнего уровня: 2248
+Файлов: 236 · символов верхнего уровня: 2257
 
 ## СИМВОЛЫ
 
@@ -23,7 +23,7 @@ $menu                        src/15-input.js:125
 $msg                         src/28-loop.js:32
 $msl                         src/28-loop.js:35
 $nav                         src/28-loop.js:34
-$opts                        src/26-ui-station.js:782
+$opts                        src/26-ui-station.js:783
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:31
 $sh                          src/28-loop.js:24
@@ -83,7 +83,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:199
 autoLandInputs               src/19-mode-landing.js:33
-autosave                     src/14-save.js:524
+autosave                     src/14-save.js:525
 b64dec                       src/14-save.js:13
 b64enc                       src/14-save.js:11
 bankTransform                src/03b-hull-paint.js:48
@@ -292,21 +292,24 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudBoot                    src/14-save.js:581
-cloudBusy                    src/14-save.js:551
-cloudCall                    src/14-save.js:544
-cloudForget                  src/14-save.js:549
-cloudHere                    src/14-save.js:542
-cloudName                    src/14-save.js:541
-cloudOn                      src/14-save.js:543
-cloudPull                    src/14-save.js:568
-cloudPush                    src/14-save.js:554
+cloudBoot                    src/14-save.js:582
+cloudBusy                    src/14-save.js:552
+cloudCall                    src/14-save.js:545
+cloudForget                  src/14-save.js:550
+cloudHere                    src/14-save.js:543
+cloudName                    src/14-save.js:542
+cloudOn                      src/14-save.js:544
+cloudPull                    src/14-save.js:569
+cloudPush                    src/14-save.js:555
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
-cloudTok                     src/14-save.js:540
+cloudTok                     src/14-save.js:541
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
+concertAll                   src/11ae-concert.js:22
+concertNotes                 src/11ae-concert.js:82
+concertSend                  src/11ae-concert.js:87
 consoleHeard                 src/27j-console.js:20
 consoleTick                  src/27j-console.js:29
 conT                         src/27j-console.js:19
@@ -538,6 +541,7 @@ drawThingIcon                src/27i-ui-table.js:170
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
 drawTrail                    src/16-flight.js:338
+drawWallPaper                src/11ae-concert.js:39
 drawWear                     src/12s-wear.js:70
 drawWeather                  src/19d-weather.js:92
 drawWreck                    src/20aa-poi-shapes.js:8
@@ -591,7 +595,7 @@ expNearStation               src/11x-expedition.js:58
 expOfferBlock                src/11x-expedition.js:231
 expOfferHere                 src/11x-expedition.js:213
 expOn                        src/11x-expedition.js:22
-exportCode                   src/14-save.js:533
+exportCode                   src/14-save.js:534
 expPaxDock                   src/11x-expedition.js:137
 expPaxDraw                   src/11x-expedition.js:146
 expPaxJump                   src/11x-expedition.js:132
@@ -770,7 +774,7 @@ grownOnGive                  src/11q-grown.js:54
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:532
+hasSave                      src/14-save.js:533
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
@@ -890,7 +894,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:534
+importCode                   src/14-save.js:535
 initAudio                    src/09-audio.js:7
 INST_TOPICS                  src/11ab-institute.js:17
 instAll                      src/11ab-institute.js:25
@@ -1070,7 +1074,7 @@ lightsShut                   src/11g-lights.js:73
 lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:46
-loadGame                     src/14-save.js:528
+loadGame                     src/14-save.js:529
 LOCAL                        src/11b-speech.js:99
 LOG_MAX                      src/11-log.js:11
 LOG_PAGE                     src/11-log.js:12
@@ -1690,7 +1694,7 @@ RES_AUTO                     src/08-state.js:18
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:281
 resEma                       src/28-loop.js:280
-resetArm                     src/26-ui-station.js:781
+resetArm                     src/26-ui-station.js:782
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:24
@@ -1773,7 +1777,7 @@ rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:6
-saveGame                     src/14-save.js:518
+saveGame                     src/14-save.js:519
 say                          src/08-state.js:140
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -2207,6 +2211,11 @@ voice                        src/09-audio.js:72
 VOICE_KEYS                   src/02a-worldmix.js:81
 VOICE_MAX                    src/09-audio.js:5
 W                            src/08-state.js:5
+WALL_POEMS                   src/11ae-concert.js:16
+wallBlock                    src/11ae-concert.js:106
+wallFlash                    src/11ae-concert.js:31
+wallHero                     src/11ae-concert.js:24
+wallWrap                     src/11ae-concert.js:72
 wasBlurred                   src/15-input.js:111
 watchCrew                    src/27b-ui-crew.js:35
 WEAR_FULL                    src/12s-wear.js:16
@@ -2348,6 +2357,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/11ad-zoo.js · 7 КБ
   · космозоо: зверь едет домой:1
+
+## src/11ae-concert.js · 9 КБ
+  · стенгазета и концерт по заявкам:1
 
 ## src/11a-quests.js · 6 КБ
   · журнал дел:1
@@ -2573,7 +2585,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/14-save.js · 41 КБ
   · сохранение:1
-  · облако:537
+  · облако:538
 
 ## src/15-input.js · 16 КБ
   · экранные кнопки: авто-скрытие и размер:1
@@ -2747,7 +2759,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/26-ui-station.js · 50 КБ
   · станция:1
-  · настройки:780
+  · настройки:781
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -2990,6 +3002,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzs-zoo.js · 3 КБ
   · автотесты: космозоо (M164):1
+
+## tests/91zzt-wall.js · 2 КБ
+  · автотесты: стенгазета и концерт (M165):1
 
 ## tests/91zzv-table.js · 7 КБ
   · автотесты: пульт и стол (M151a):1

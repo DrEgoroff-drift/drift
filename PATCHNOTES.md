@@ -7,6 +7,17 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.126.0 — "The wall newspaper and the request concert" (M165)
+
+`11ae-concert`: the station's folk layer. On ДОСКА hangs a drawn sheet — «СТЕННАЯ ГАЗЕТА» with
+three cells: a caricature (a barge that was late; with a bad reputation here, it is you, leaning
+forward in a hurry), a «МОЛНИЯ» about the plan (fed by the expedition collection and closed
+needs), and a keeper's four-line poem, changing weekly. Below it the **request concert**: once a
+day, for 10 cr, a greeting to a named station — its three-note call sign (seeded, stable) plays,
+the line goes to the ether, the record book notes it, Vega demands one too («нет, не сейчас — я
+обижусь, что по заказу»), and sometimes a rival answers with a greeting «борту, который передаёт
+приветы». Suite `91zzt`.
+---
 ## 0.125.0 — "The space zoo" (M164)
 
 `11ad-zoo`: the Bulychev key made whole — the parrot was Govorun, now the beasts travel. A
