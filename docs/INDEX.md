@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 241 · символов верхнего уровня: 2301
+Файлов: 241 · символов верхнего уровня: 2303
 
 ## СИМВОЛЫ
 
@@ -522,7 +522,7 @@ drawPortal                   src/20aa-poi-shapes.js:464
 drawRaid                     src/24aa-raid-draw.js:5
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:108
-drawRoad                     src/27k-road.js:235
+drawRoad                     src/27k-road.js:253
 drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:161
@@ -1755,21 +1755,23 @@ ROAD_CR_KM                   src/27k-road.js:27
 ROAD_TIERS                   src/27k-road.js:25
 ROAD_VMIN                    src/27k-road.js:24
 roadAll                      src/27k-road.js:29
-roadAudio                    src/27k-road.js:157
-roadClose                    src/27k-road.js:216
+roadAudio                    src/27k-road.js:173
+roadClose                    src/27k-road.js:233
 roadCombo                    src/27k-road.js:47
 roadCosmic                   src/27k-road.js:44
 roadDayReset                 src/27k-road.js:30
 roadEarnKm                   src/27k-road.js:49
 roadFinish                   src/27k-road.js:61
-roadFrame                    src/27k-road.js:230
+roadFrame                    src/27k-road.js:248
 roadLightFrac                src/27k-road.js:43
-roadMoodHue                  src/27k-road.js:185
-roadOnPos                    src/27k-road.js:118
+roadMoodHue                  src/27k-road.js:201
+roadOnPos                    src/27k-road.js:133
 roadOnShake                  src/27k-road.js:101
 roadOnTilt                   src/27k-road.js:97
-roadOpen                     src/27k-road.js:201
-roadRgbHue                   src/27k-road.js:193
+roadOpen                     src/27k-road.js:217
+roadPilotRu                  src/27k-road.js:132
+roadPing                     src/27k-road.js:122
+roadRgbHue                   src/27k-road.js:209
 roadSensorsOn                src/27k-road.js:69
 roadSpeedOk                  src/27k-road.js:35
 roadSys                      src/27k-road.js:114
@@ -2835,7 +2837,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27j-console.js · 7 КБ
   · пульт: приёмник, подсказка, кресло:1
 
-## src/27k-road.js · 27 КБ
+## src/27k-road.js · 28 КБ
   · дорожный спутник:1
 
 ## src/27-ui-ship.js · 26 КБ

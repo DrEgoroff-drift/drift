@@ -437,4 +437,30 @@ if ($a === 'push') {
   out(['ok' => true, 'ts' => $ts]);
 }
 
+/* ── дорога: кто ещё в этом секторе (M168c) ──
+   Пилот раз в полминуты шлёт номер сектора (~клетка 2.8 км, не координаты)
+   и анонимную метку. Ответ — сколько других отметилось там за три минуты.
+   Аккаунт не нужен: метка случайная, восстановить по ней человека нельзя.
+   Файл на сектор, чистится сам; редкая метла сметает отлежавшиеся файлы. */
+if ($a === 'road') {
+  $b   = body();
+  $sec = (string)($b['sec'] ?? '');
+  $id  = (string)($b['id'] ?? '');
+  if (!preg_match('/^-?\d{1,7}:-?\d{1,7}$/', $sec)) fail('сектор не читается');
+  if (!preg_match('/^[a-f0-9]{8,32}$/', $id)) fail('нет метки пилота');
+  $dir = root() . '/road';
+  if (!is_dir($dir)) @mkdir($dir, 0700, true);
+  $f   = $dir . '/' . str_replace(['-', ':'], ['m', '_'], $sec) . '.json';
+  $now = time();
+  $p   = readJson($f);
+  if (!is_array($p)) $p = [];
+  foreach ($p as $k => $ts) if (!is_int($ts) || $now - $ts > 180) unset($p[$k]);
+  $p[$id] = $now;
+  if (count($p) > 200) $p = array_slice($p, -200, null, true);
+  writeJson($f, $p);
+  if (mt_rand(1, 50) === 1)
+    foreach (glob("$dir/*.json") as $g) if ($now - (int)@filemtime($g) > 600) @unlink($g);
+  out(['ok' => true, 'n' => count($p) - 1]);
+}
+
 fail('неизвестное действие', 404);

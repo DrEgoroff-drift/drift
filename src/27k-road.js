@@ -115,13 +115,29 @@ function roadSys(lat,lon){
   const cx=Math.round(lon/.03),cy=Math.round(-lat/.03);
   return {cx,cy,name:genName(rng(hashi(cx,cy,0xD0A0)))};
 }
+/* ── пилоты рядом ──
+   Раз в полминуты и при смене сектора наружу уходит ТОЛЬКО номер клетки
+   ~2.8 км и случайная метка (localStorage) — ни координат, ни аккаунта.
+   Оффлайн и file:// молчат: строки про пилотов просто нет. */
+function roadPing(){
+  if(!RD||!RD.sys||location.protocol.indexOf("http")!==0)return;
+  let id="";
+  try{
+    id=localStorage.drift_pilot||"";
+    if(!id){id=Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,"0")).join("");localStorage.drift_pilot=id;}
+  }catch(e){return;}
+  fetch(CLOUD.api+"?a=road",{method:"POST",body:JSON.stringify({sec:RD.sys.cx+":"+RD.sys.cy,id})})
+    .then(r=>r.json()).then(j=>{if(RD&&j&&j.ok)RD.mates=j.n|0;}).catch(()=>{});
+}
+const roadPilotRu=n=>{const d=n%10,h=n%100;return h>=11&&h<=14?"пилотов":d===1?"пилот":d>=2&&d<=4?"пилота":"пилотов";};
 function roadOnPos(p){
   if(!RD)return;
   const c=p.coords,t=p.timestamp;
   const S=roadSys(c.latitude,c.longitude);
   if(!RD.sys||RD.sys.cx!==S.cx||RD.sys.cy!==S.cy){
     if(RD.sys)RD.sysFlash=3;          /* въехали в новую — объявить */
-    RD.sys=S;
+    RD.sys=S;RD.mates=0;
+    roadPing();
   }
   let kmh=null;
   if(c.speed!=null&&isFinite(c.speed))kmh=c.speed*3.6;
@@ -208,6 +224,7 @@ function roadOpen(){
   document.getElementById("roadwin").classList.add("open");
   document.body.classList.add("road");
   const sb=document.getElementById("roadSense");if(sb)sb.style.display="";
+  RD.pingIv=setInterval(roadPing,30000);
   const cv=document.getElementById("roadcv");
   cv.width=cv.clientWidth*Math.min(2,devicePixelRatio||1);
   cv.height=cv.clientHeight*Math.min(2,devicePixelRatio||1);
@@ -221,6 +238,7 @@ function roadClose(){
   removeEventListener("deviceorientation",roadOnTilt);
   removeEventListener("devicemotion",roadOnShake);
   if(RD.raf)cancelAnimationFrame(RD.raf);
+  if(RD.pingIv)clearInterval(RD.pingIv);
   roadFinish();
   RD=null;
   document.getElementById("roadwin").classList.remove("open");
@@ -442,6 +460,10 @@ function drawRoad(ts){
     yy+=Math.round(H*.024);
     c.fillStyle="hsla("+hue+",60%,72%,.75)";
     c.fillText("система "+RD.sys.name.toUpperCase()+" · сектор "+RD.sys.cx+":"+RD.sys.cy,px2,yy);
+    if(RD.mates>0){
+      yy+=Math.round(H*.022);
+      c.fillText("во вселенной ещё "+RD.mates+" "+roadPilotRu(RD.mates),px2,yy);
+    }
     c.fillStyle="rgba(127,230,216,.6)";
   }
   if(R.km>=.01){yy+=Math.round(H*.024);c.fillText("за поездку "+roadTripRu(R.km),px2,yy);}
