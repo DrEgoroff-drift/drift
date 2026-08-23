@@ -63,6 +63,9 @@ function enterSurface(){
   /* подглядка (20c): луг лежит открытым. Куст или валун посреди мата закрывает
      собой идущих, а показывают здесь именно их */
   const peep=peepMake(tr,p);
+  /* уезд света (11i): флора светится; на планете ядра устье — там, куда бежит тихий */
+  if(typeof glowDressFlora==="function")glowDressFlora(plants);
+  if(peep&&typeof glowCaveX==="function"){const gx=glowCaveX(peep,p);if(gx!=null){caveMouth.x=clamp(gx,150,tr.W-150);clearNear(deposits,70);clearNear(plants,50);clearNear(fauna,60);}}
   if(peep){
     const wipe=(arr,rad)=>{
       for(let i=arr.length-1;i>=0;i--)if(Math.abs(arr[i].x-peep.x)<rad)arr.splice(i,1);
@@ -89,6 +92,7 @@ function enterSurface(){
   /* три света (11g): календарь заводится первым приходом, ставни — единственный знак */
   if(typeof lightsArrive==="function"){lightsArrive();if(!sl)sl=lightsGroundLine();}
   if(!sl&&typeof hoursGroundLine==="function")sl=hoursGroundLine();   // уезд часов (11h)
+  if(!sl&&typeof glowGroundLine==="function")sl=glowGroundLine();      // уезд света (11i)
   if(sl)logAdd("dim",sl);
   say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
 }
@@ -341,6 +345,7 @@ function updateSurface(dt){
     G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
     if(actEdge){
       plant.scanned=true;G.species.add(plant.name);G.data+=9;G.bio=(G.bio|0)+1;
+      if(typeof glowScan==="function")glowScan(plant);   /* светящийся мох — товар (11i) */
       tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
   }else if(dShip<shipZoneR()&&baseAt(G.sx,G.sy,S.p.idx)){
@@ -565,6 +570,8 @@ function drawSurface(){
   /* подглядка стелется по грунту, поэтому ложится до кустов и до валунов
      переднего плана — она часть земли, а не то, что на ней стоит (20c) */
   peepDrawMat(camx,camy);
+  /* уезд света (11i): пятна по формам и освещённая площадка — тем же слоем, что мат */
+  if(typeof glowDrawPatches==="function"){glowDrawPatches(tr,camx,camy,p);glowDrawPad(S,camx,camy);}
   /* тень по длине корпуса, а не по прежним 34 px: у нового посадочного силуэта
      она иначе выдаёт игрушку на палочках */
   groundShadow(S.shipX-camx,S.shipY-camy+12,landerLen(G.shipId)*.46,8);

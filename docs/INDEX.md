@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 169 · символов верхнего уровня: 1830
+Файлов: 171 · символов верхнего уровня: 1844
 
 ## СИМВОЛЫ
 
@@ -498,8 +498,8 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:84
-drawSurface                  src/21-mode-surface.js:512
-drawSurfaceHud               src/21-mode-surface.js:464
+drawSurface                  src/21-mode-surface.js:517
+drawSurfaceHud               src/21-mode-surface.js:469
 drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:272
@@ -532,7 +532,7 @@ eq                           tests/90-harness.js:23
 ETHER                        src/11b-speech.js:24
 ETHER_EVERY                  src/11b-speech.js:38
 etherTick                    src/11b-speech.js:39
-evacuate                     src/21-mode-surface.js:389
+evacuate                     src/21-mode-surface.js:394
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:80
 exitBelt                     src/24-mode-belt.js:171
@@ -642,8 +642,22 @@ giantTex                     src/19a-mode-scoop.js:86
 glassOutline                 src/25-cockpit.js:54
 GLOW_CACHE                   src/16a-space.js:274
 GLOW_SP                      src/16a-space.js:273
+GLOW_TIERS                   src/11i-glow.js:121
 glowBlit                     src/16a-space.js:289
+glowCaveX                    src/11i-glow.js:139
+glowCorePlanet               src/11i-glow.js:33
+glowDepthAt                  src/11i-glow.js:24
+glowDepthHere                src/11i-glow.js:30
+glowDrawPad                  src/11i-glow.js:47
+glowDrawPatches              src/11i-glow.js:83
+glowDressFlora               src/11i-glow.js:42
+glowFlash                    src/11i-glow.js:130
+glowGroundLine               src/11i-glow.js:110
+glowIsCore                   src/11i-glow.js:38
+glowPatches                  src/11i-glow.js:73
+glowScan                     src/11i-glow.js:64
 glowSprite                   src/16a-space.js:275
+glowTier                     src/11i-glow.js:122
 goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
 gradePass                    src/19c-light.js:143
@@ -865,8 +879,8 @@ landingDust                  src/19-mode-landing.js:713
 landOnTestPlanet             tests/90-harness.js:62
 last                         src/28-loop.js:252
 lastDroneTick                src/28-loop.js:253
-launch                       src/21-mode-surface.js:429
-launchHold                   src/21-mode-surface.js:374
+launch                       src/21-mode-surface.js:434
+launchHold                   src/21-mode-surface.js:379
 layerLevel                   src/10-music.js:326
 lerp                         src/01-core.js:8
 LIGHTS_SOON                  src/11g-lights.js:23
@@ -1186,13 +1200,13 @@ PEEP_LIT                     src/20c-peep.js:28
 PEEP_LOAD                    src/20c-peep.js:27
 PEEP_PASS                    src/20c-peep.js:25
 PEEP_R                       src/20c-peep.js:26
-peepDrawMat                  src/20c-peep.js:87
-peepFigure                   src/20c-peep.js:154
-peepGhosts                   src/20c-peep.js:205
+peepDrawMat                  src/20c-peep.js:88
+peepFigure                   src/20c-peep.js:155
+peepGhosts                   src/20c-peep.js:206
 peepHere                     src/20c-peep.js:33
-peepMake                     src/20c-peep.js:51
-peepScene                    src/20c-peep.js:41
-peepUpdate                   src/20c-peep.js:66
+peepMake                     src/20c-peep.js:52
+peepScene                    src/20c-peep.js:42
+peepUpdate                   src/20c-peep.js:67
 pick                         src/01-core.js:17
 pickKindByBias               src/20-life.js:124
 pickStType                   src/06-galaxy.js:30
@@ -1666,7 +1680,7 @@ suite                        tests/90-harness.js:12
 suitFailure                  src/23-mode-dig.js:104
 suitHit                      src/23-mode-dig.js:97
 SUN_DIR                      src/19c-light.js:11
-surfaceHint                  src/21-mode-surface.js:449
+surfaceHint                  src/21-mode-surface.js:454
 surfNight                    src/06a-celest.js:43
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
@@ -1718,7 +1732,7 @@ TEST                         tests/90-harness.js:10
 TEST_SUITES                  tests/90-harness.js:93
 tfbm                         src/18a-material.js:23
 tickDrones                   src/12-economy.js:80
-tickLaunchHold               src/21-mode-surface.js:375
+tickLaunchHold               src/21-mode-surface.js:380
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
@@ -1761,7 +1775,7 @@ toggleLog                    src/11-log.js:89
 toggleLoreBoard              src/27h-ui-lore.js:85
 toggleMenu                   src/15-input.js:126
 toggleParrotWin              src/12y-parrot-face.js:665
-totalLoss                    src/21-mode-surface.js:406
+totalLoss                    src/21-mode-surface.js:411
 towShare                     src/03f-hull-role.js:87
 tracePath                    src/25-cockpit.js:159
 tracePoly                    src/03b-hull-paint.js:1
@@ -1791,7 +1805,7 @@ updateDig                    src/23-mode-dig.js:113
 updateLanding                src/19-mode-landing.js:45
 updateRaid                   src/24a-mode-raid.js:213
 updateScoop                  src/19a-mode-scoop.js:26
-updateSurface                src/21-mode-surface.js:95
+updateSurface                src/21-mode-surface.js:99
 updateSystem                 src/17-mode-system.js:2
 useBeacon                    src/23-mode-dig.js:72
 VER                          src/01-core.js:4
@@ -1943,6 +1957,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## src/11h-hours.js · 8 КБ
   · расхождение времён: уезд, где часам не верят:1
+
+## src/11i-glow.js · 9 КБ
+  · свет, который помнит: уезд вокруг Подглядки:1
 
 ## src/11-log.js · 5 КБ
   · бортовой журнал:1
@@ -2177,9 +2194,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21-mode-surface.js · 41 КБ
+## src/21-mode-surface.js · 42 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:445
+  · навигатор и подсказки сверху:450
 
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
@@ -2382,5 +2399,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## tests/91zu-hours.js · 4 КБ
   · расхождение времён: смещение к центру, никого днём, автомат, человек один раз:1
+
+## tests/91zv-glow.js · 3 КБ
+  · свет, который помнит: флора-товар, пятна, сцены по громкости:1
 
 ## tests/99-run.js · 0 КБ

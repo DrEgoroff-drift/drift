@@ -8,6 +8,18 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.103.0 — "The light that remembers" (M137-glow)
+
+The `glow` region around the meadow (06c, needle `actino`) is built in `11i-glow`. On the edge
+every plant glows at night and the landing pad is ringed with the same light; scanning a glowing
+plant there puts one xenobiome in the hold — the moss is a trade good. On the core planet the
+light lies in patches that repeat shapes — a wheel rut, a machine, a foundation — drawn at night
+only, in the meadow's own light. The core planet always has the meadow (`peepHere`), and its
+scenes replay in order of brightness: the first pass of an eclipse is loud (×1.4, a floodlight
+column at the start), the second ordinary, the third quiet — one running figure at a third of
+the light, visible only within 150 px, heading for the cave mouth, which on the core planet
+stands exactly where he runs. Nothing persisted. Suite `91zv-glow`.
+
 ## 0.102.0 — "The drift of hours" (M136)
 
 The `hours` region (06c, needle `chrono`) is built in `11h-hours`. The offset is a function of

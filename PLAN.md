@@ -315,7 +315,7 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 - **G11**: `20-life` radial gradients as baked sprites, veil/vignette as one layer — the raster
   budget pass, measured not guessed (see `drift-perf-method`).
 - **M112**: nothing else — belt missiles and the hull mark closed it.
-- **M135 "three lights"**: built (0.101.0). **M136 "the drift of hours"**: built (0.102.0). Next region: M137 "the light that remembers" (around Подглядка, M117).
+- **M135 "three lights"**: built (0.101.0). **M136-hours**: built (0.102.0). **M137-glow**: built (0.103.0). Next: M138-grove.
 
 ---
 
@@ -324,6 +324,14 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 **Full text lives in [`docs/PLAN-archive.md`](docs/PLAN-archive.md)** â grep it for `M122`. It was
 moved there on 2026-08-15 because thirty milestones of far-future work were being carried in a file
 that is read every session; the pass itself stands, and it is the release (0.72.0 â **1.00.0**).
+
+## M137-glow (0.103.0) — built. The light that remembers
+
+`11i-glow`: edge = region minus core. `glowDressFlora` (all plants glow), `glowDrawPad`,
+`glowScan` (+1 xeno), `glowPatches`/`glowDrawPatches` (rut, machine, foundation; night only),
+`glowGroundLine`. Core: `peepHere` forced, `P.pass` counts passes per eclipse (20c), `glowTier`
+gives ×1.4+flash / ×.9 / ×.34 near-only runner; `glowCaveX` puts the cave mouth at the mat's edge
+in the runner's direction. Suite `91zv-glow`.
 
 ## M136-hours (0.102.0) — built. The drift of hours
 

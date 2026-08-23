@@ -32,6 +32,7 @@ const PEEP_LIT=[150,235,225];         /* холодный свет памяти 
    не украшение, а правило 2. */
 function peepHere(p){
   if(!p||p.type==="gas")return false;
+  if(typeof glowIsCore==="function"&&glowIsCore(p))return true;   /* ядро уезда (11i): луг есть всегда */
   if(!p.moons||!p.moons.length)return false;
   return hashi(p.seed,0x9EE9,3)%9===0;
 }
@@ -68,9 +69,9 @@ function peepUpdate(dt){
   if(!P)return;
   const dk=typeof celDark==="function"?celDark():0;
   P.dk=dk;
-  if(dk<.22){P.ph=0;P.watch=0;return;}
+  if(dk<.22){P.ph=0;P.watch=0;P.pass=0;return;}
   P.ph+=dt;
-  if(P.ph>PEEP_PASS+120)P.ph=0;                 /* пауза между проходами */
+  if(P.ph>PEEP_PASS+120){P.ph=0;P.pass=(P.pass|0)+1;}   /* пауза между проходами; номер прохода — ярус громкости (11i) */
   if(Math.abs(S.x-P.x)<P.r)P.watch+=dt; else P.watch=0;
   if(P.watch>=PEEP_PASS&&!P.paid){
     P.paid=1;
@@ -205,8 +206,11 @@ function peepFigure(x,y,face,ph,a,load){
 function peepGhosts(camx,camy){
   const S=G.surf,P=S&&S.peep;
   if(!P||(P.dk||0)<.22||P.ph<=0)return;
-  const sc=P.scene,tr=S.tr,dk=P.dk;
-  const u=P.ph/PEEP_PASS;
+  /* ярус громкости (11i): в ядре уезда сцены идут от громкой к тихой */
+  const GL=(typeof glowTier==="function")?glowTier(P,S.p):null;
+  const sc=GL?GL.scene:P.scene,tr=S.tr,dk=P.dk,gk=GL?GL.k:1;
+  const u=P.ph/PEEP_PASS*(sc.fast||1);
+  if(GL&&GL.flash)glowFlash(P,camx,camy,u);
   const pos=[];
   for(let i=0;i<sc.n;i++){
     let uu=u-i*sc.lag;
@@ -222,7 +226,9 @@ function peepGhosts(camx,camy){
     if(uu<0||uu>1)continue;
     const wx=P.x-sc.dir*P.r+sc.dir*uu*P.r*2;
     const wy=groundAt(tr,wx);
-    const a=dk*.62*clamp(Math.min(uu,1-uu)*7,0,1);
+    let a=dk*.62*clamp(Math.min(uu,1-uu)*7,0,1)*gk;
+    /* тихий ярус виден только вплотную: дальше — ничего, и это не баг */
+    if(GL&&GL.near&&Math.abs(wx-S.x)>GL.near)continue;
     pos.push({x:wx-camx,y:wy-camy,face,a,ph:uu*P.r*2*.14,i});
   }
   if(!pos.length)return;
