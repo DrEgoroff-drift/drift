@@ -705,7 +705,7 @@ genPart                      src/05-parts.js:70
 genPlant                     src/20-life.js:131
 genPOI                       src/20a-poi.js:32
 genRaid                      src/24a-mode-raid.js:30
-genTerrain                   src/07-planet.js:395
+genTerrain                   src/07-planet.js:401
 genUniqueShip                src/03-ships.js:16
 GEO_KIND                     src/18b-geology.js:13
 GEO_TPL                      src/18b-geology.js:31
@@ -758,7 +758,7 @@ grokTeach                    src/12tb-grok.js:145
 grokTick                     src/12tb-grok.js:76
 grokWant                     src/12tb-grok.js:42
 GROUND_BAKING                src/19-mode-landing.js:194
-groundAt                     src/07-planet.js:504
+groundAt                     src/07-planet.js:510
 groundShadow                 src/19-mode-landing.js:286
 GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
@@ -1046,7 +1046,7 @@ KMAP_BELT                    src/15-input.js:32
 labCount                     src/12h-relic.js:16
 labStaffed                   src/12h-relic.js:27
 labWorking                   src/12h-relic.js:32
-LAND_ARC                     src/07-planet.js:371
+LAND_ARC                     src/07-planet.js:377
 LAND_GY                      src/19f-lander.js:10
 landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:154
@@ -1494,9 +1494,9 @@ planetBiome                  src/20-life.js:107
 planetCols                   src/07-planet.js:229
 planetDraw                   src/07-planet.js:298
 planetGrant                  src/12n-planet.js:25
-planetHasLife                src/07-planet.js:383
+planetHasLife                src/07-planet.js:389
 planetHaul                   src/12n-planet.js:67
-planetHeightAt               src/07-planet.js:387
+planetHeightAt               src/07-planet.js:393
 planetHere                   src/12n-planet.js:61
 planEtherLine                src/11r-plan.js:43
 planetLight                  src/07-planet.js:193
@@ -1519,7 +1519,7 @@ planetStripStart             src/07-planet.js:79
 planetStripTick              src/07-planet.js:154
 planetTakeLoad               src/12n-planet.js:126
 planetTick                   src/12n-planet.js:44
-planetWetAt                  src/07-planet.js:378
+planetWetAt                  src/07-planet.js:384
 planGroundLine               src/11r-plan.js:47
 planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
@@ -1681,7 +1681,7 @@ relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
-RELIEF_MIX                   src/07-planet.js:338
+RELIEF_MIX                   src/07-planet.js:344
 renderBarge                  src/12l-barge.js:613
 renderBasesTab               src/26a-ui-station-home.js:4
 renderCantina                src/27c-ui-hq.js:45
@@ -2380,9 +2380,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/07-planet.js · 33 КБ
   · текстуры планет:1
   · вращение:8
-  · рельеф:332
-  · рельеф:333
-  · где сел — то и видел:357
+  · рельеф:338
+  · рельеф:339
+  · где сел — то и видел:363
 
 ## src/08-state.js · 10 КБ
   · состояние:1
