@@ -35,7 +35,7 @@ grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared → file:li
 grep -rn "rareTake(" src                # who calls it
 ```
 
-Then read only the part you need (`Read` with an offset), not an 80 KB file. That way a fresh
+Then read only the part you need (`Read` with an offset), not a 110 KB file. That way a fresh
 session reaches the code in two cheap calls instead of reading half of `src/`.
 
 Documents work the same way — in parts, not whole:
@@ -43,7 +43,7 @@ Documents work the same way — in parts, not whole:
 | What you need | Where to go |
 |---|---|
 | what to do next | `PLAN.md` (~33 KB) — live queue only, safe to read whole |
-| why something was done this way | `docs/PLAN-archive.md` (~210 KB) — **grep by milestone only** |
+| why something was done this way | `docs/PLAN-archive.md` (~370 KB) — **grep by milestone only** |
 | what changed in a version | `PATCHNOTES.md` — newest first, the first 40 lines usually suffice |
 | where a symbol is declared | `docs/INDEX.md` — grep only |
 
@@ -139,18 +139,29 @@ a family of functions), keep the concatenation order, and never split a `const` 
 
 ## How to verify
 
-**Autotests first.** `build.ps1` also builds `tests.html` — the same game plus `tests/*.js` at
-the end. Open it in a browser: the report is printed to the page, to the console and to
-`window.TEST` (`TEST.summary`, `TEST.failed`). Tests drive the real `G` through `resetWorld()`
-and mock nothing.
+**Autotests first, headless.** `build.ps1` also builds `tests.html` — the same game plus
+`tests/*.js` at the end. Run it without the browser pane:
+
+```bash
+powershell -ExecutionPolicy Bypass -File test.ps1
+```
+
+It builds, runs `tests.html` in headless Chrome at 1280×800 and prints one head line plus the
+failures block (exit 1 on failure) — ~30 tokens instead of a 5 500-line page. `-Only текст`
+runs only suites whose name contains the text, `-NoBuild` skips the build. **Never read the
+test page through the browser pane** — it is the single most expensive call in the project;
+the pane is for pixels and manual looks. (In the pane the report is also in `window.TEST` —
+`TEST.summary`, `TEST.failed` — and `tests.html?only=текст` works there too. Chrome's default
+800×600 window makes the UI-overlap suite `91f-ui` fail for real, hence the fixed size.)
+Tests drive the real `G` through `resetWorld()` and mock nothing.
 
 Suites are split by topic: `tests/91a-flight` … `91n-barge` (harness in `90-harness`). New
 mechanics go into the suite they belong to, not at the end of a file; if there is no fitting
 topic, add `91x-name.js` (concatenation is alphabetical, but suites are independent — each
 starts with `resetWorld()`).
 
-The preview pane caches `file://` — after a rebuild open `tests.html?v=N` with a fresh `N`, or
-you'll be reading the previous run.
+If you do open it in the pane: it caches `file://` — after a rebuild open `tests.html?v=N` with
+a fresh `N`, or you'll be reading the previous run. Headless has no such cache.
 
 ```bash
 powershell -ExecutionPolicy Bypass -File build.ps1

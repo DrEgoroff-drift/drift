@@ -24,8 +24,9 @@ function ok(cond,msg){
   if(cond){TEST.pass++;TEST.lines.push("  ✓ "+msg);}
   else{TEST.fail++;TEST.failed.push(_suite+" · "+msg);TEST.lines.push("  ✗ "+msg);}
 }
-function eq(a,b,msg){ok(a===b,msg+" (получено "+JSON.stringify(a)+", ждали "+JSON.stringify(b)+")");}
-function near(a,b,tol,msg){ok(Math.abs(a-b)<=tol,msg+" (получено "+a+", ждали ≈"+b+"±"+tol+")");}
+/* «получено/ждали» — только на провале: зелёные строки никто не читает, а страница от них втрое толще */
+function eq(a,b,msg){const h=a===b;ok(h,h?msg:msg+" (получено "+JSON.stringify(a)+", ждали "+JSON.stringify(b)+")");}
+function near(a,b,tol,msg){const h=Math.abs(a-b)<=tol;ok(h,h?msg:msg+" (получено "+a+", ждали ≈"+b+"±"+tol+")");}
 
 /* полный сброс мира: то же, что «начать заново», но без перезагрузки страницы */
 function resetWorld(){
@@ -53,7 +54,7 @@ function resetWorld(){
   /* срок (12v): новый мир — никакого назначенного часа и никаких пустых систем */
   G.doom=null;G.doomDead={};
   /* трепло (12x): новая игра — ни птицы, ни услышанного */
-  G.seen={};G.storyPin={};G.storyFlags={};G.place={};G.odo={lands:0,jumps:0};G.post={stage:0,opened:0,done:0};G.mirror={bearing:0};G.mirrorEcho=null;G.lights={t0:-1,seen:0};G.hours={man:0};G.grove={turn:0,shot:0,cut:0};G.keepers={gone:0,signed:0,fed:0,given:0};
+  G.seen={};G.storyPin={};G.storyFlags={};G.place={};G.odo={lands:0,jumps:0};G.post={stage:0,opened:0,done:0};G.mirror={bearing:0};G.mirrorEcho=null;G.lights={t0:-1,seen:0};G.hours={man:0};G.grove={turn:0,shot:0,cut:0};G.keepers={gone:0,signed:0,fed:0,given:0};G.county={called:0,at:0,answered:0,saw:0};G.charts={have:0,lost:-1};G.quiet={stay:0};G.quietGone=0;
   G.parrot=null;G.heard=[];G.trade=routeInit();G.market={};G.wear={};G.findsSeen={};
   G.mgrs=[];G.blueprints={};G.cantina=null;G.aiRift=null;
   G.orderStamp=0;G.kills=0;G.soldTotal=0;

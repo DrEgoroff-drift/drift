@@ -1,4 +1,4 @@
-# Headless run of tests.html — the cheap way to verify.
+﻿# Headless run of tests.html — the cheap way to verify.
 #
 #   powershell -ExecutionPolicy Bypass -File test.ps1            # build + run, print verdict
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -NoBuild   # run the existing tests.html
@@ -28,7 +28,7 @@ Start-Process -FilePath $chrome -ArgumentList $argv -NoNewWindow -Wait `
   -RedirectStandardOutput $dom -RedirectStandardError $err | Out-Null
 $html = [System.IO.File]::ReadAllText($dom, [System.Text.Encoding]::UTF8)
 
-$m = [regex]::Match($html, 'id="testout"[^>]*>([\s\S]*?)</pre>')
+$m = [regex]::Match($html, '<pre id="testout"[^>]*>([\s\S]*?)</pre>')
 if (-not $m.Success) {
   Write-Host "no test report in DOM: the page crashed before runTests (open tests.html in a browser)"
   exit 2
@@ -38,9 +38,9 @@ $lines = $text -split "`n"
 $lines[0]
 # Head is "FAILED N · passed P" or "ALL GREEN · passed P": a digit before the first dot means failures.
 # The failures block follows the head after one blank line and ends at the next blank line.
-if (($lines[0] -split " · ")[0] -match "\d") {
+if ($lines[0] -match '^\S+ \d+ ') {
   $j = 2
-  while ($j -lt $lines.Count -and $lines[$j] -ne "") { $lines[$j]; $j++ }
+  while ($j -lt $lines.Count -and $lines[$j] -notmatch '^\s*$') { $lines[$j].TrimEnd(); $j++ }
   exit 1
 }
 exit 0
