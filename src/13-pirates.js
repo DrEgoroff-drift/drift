@@ -28,7 +28,8 @@ function spawnPirates(){
   const danger=sysDanger(G.sx,G.sy);
   const r=rng(hashi(G.sx,G.sy,Math.floor(Date.now()/900000)));
   /* под пиратами система держит патруль сверх обычного случайного налёта */
-  const n=(r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0)+occExtraPirates(G.sx,G.sy);
+  let n=(r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0)+occExtraPirates(G.sx,G.sy);
+  if(typeof quietNoPirates==="function"&&quietNoPirates())n=0;   /* тихий уезд (11n): никто не грабит */
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;
     const seed=hashi(G.sx,G.sy,i*977);

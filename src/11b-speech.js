@@ -42,6 +42,8 @@ function etherTick(dt){
   G.etherT=(G.etherT==null?ETHER_EVERY:G.etherT)-dt*rate;
   if(typeof mirrorEchoTick==="function")mirrorEchoTick();
   if(typeof lightsArrive==="function")lightsArrive();   /* три света (11g): первый приход в ядро */
+  if(typeof chartsTick==="function")chartsTick();       /* карта возвращается (11m) */
+  if(typeof quietAfterLeave==="function")quietAfterLeave();   /* счёт суток после тихого уезда (11n) */
   if(G.etherT>0)return;
   G.etherT=ETHER_EVERY*(.7+Math.random()*.8);
   const r=rng(hashi(G.sx,G.sy,(Date.now()/60000)|0));
@@ -55,6 +57,7 @@ function etherTick(dt){
   if(typeof hoursEtherLine==="function"){const h=hoursEtherLine(r);if(h)out=h;}
   if(typeof groveEtherLine==="function"){const h=groveEtherLine(r);if(h)out=h;}   /* роща (11j) */
   if(typeof keepersEtherLine==="function"){const h=keepersEtherLine(r);if(h)out=h;}   /* погасший рукав (11k) */
+  if(typeof countyAnswerLine==="function"){const h=countyAnswerLine();if(h)out=h;}    /* город ответил (11l) */
   if(out&&typeof regionAt==="function"){
     const R=regionAt(G.sx,G.sy);
     if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&Math.random()<.6)

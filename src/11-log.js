@@ -3,6 +3,7 @@
 const LOG_MAX=90;
 let logOpen=false;
 function logAdd(kind,text){
+  if(typeof quietMute==="function"&&quietMute())return;   /* тихий уезд (11n): журнал не пишет */
   G.log.push({t:Date.now(),k:kind,s:text});
   if(G.log.length>LOG_MAX)G.log.splice(0,G.log.length-LOG_MAX);
   if(logOpen)renderLog(); else{G.logNew=(G.logNew|0)+1;logBtnLabel();}

@@ -26,6 +26,7 @@ function wearOf(id){
 function wearTick(dt){
   const r=WEAR_RATE[G.mode];
   if(!r)return;
+  if(typeof quietNoWear==="function"&&quietNoWear())return;   /* тихий уезд (11n): машины не ломаются */
   const W=wearAll(),id=G.shipId;
   W[id]=(W[id]||0)+dt*r;
 }

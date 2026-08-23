@@ -315,7 +315,7 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 - **G11**: `20-life` radial gradients as baked sprites, veil/vignette as one layer — the raster
   budget pass, measured not guessed (see `drift-perf-method`).
 - **M112**: nothing else — belt missiles and the hull mark closed it.
-- **M135 "three lights"**: built (0.101.0). **M136-hours**: built (0.102.0). **M137-glow**: built (0.103.0). **M138-grove**: built (0.104.0). **M139-keepers**: built (0.105.0). Next: M140-county.
+- **M135 "three lights"**: built (0.101.0). **M136-hours**: built (0.102.0). **M137-glow**: built (0.103.0). **M138-grove**: built (0.104.0). **M139-keepers**: built (0.105.0). **M140–M142**: built (0.106.0). Next: M143-slow, M144-pass, M145-grown, M146-plan.
 
 ---
 
@@ -324,6 +324,18 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 **Full text lives in [`docs/PLAN-archive.md`](docs/PLAN-archive.md)** â grep it for `M122`. It was
 moved there on 2026-08-15 because thirty milestones of far-future work were being carried in a file
 that is read every session; the pass itself stands, and it is the release (0.72.0 â **1.00.0**).
+
+## M140-county, M141-charts, M142-quiet (0.106.0) — built
+
+`11l-county`: `countyPoiK` (20a scale), `countyHouseK` + `countyDrawTown` (12t), `countyNoiseTick`
+from `updateSurface` (levels 30/70/120/160), `countyAnswerLine` in the ether ≥20 jumps later.
+`11m-charts`: `chartsHidden`/`chartsJitter` in the map star loop, `chartsDock`, buy/drop/return
+(`chartsTick` from the ether tick), cantina block. `11n-quiet`: `quietNoPirates` (13),
+`quietNoWear` (12s), `quietMute` in `logAdd` and `tapeSample`, `quietLeave` in `jump`,
+`quietAfterLeave`, dock line and the open door block. Persisted `G.county`, `G.charts`, `G.quiet`.
+
+**Open by design:** level prices on the quiet edge (no single price function to hook; the market
+is per-station tables) — left.
 
 ## M139-keepers (0.105.0) — built. The line of keepers
 

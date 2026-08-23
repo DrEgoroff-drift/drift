@@ -93,6 +93,7 @@ function enterSurface(){
   if(typeof lightsArrive==="function"){lightsArrive();if(!sl)sl=lightsGroundLine();}
   if(!sl&&typeof hoursGroundLine==="function")sl=hoursGroundLine();   // уезд часов (11h)
   if(!sl&&typeof glowGroundLine==="function")sl=glowGroundLine();      // уезд света (11i)
+  if(!sl&&typeof countyGroundLine==="function")sl=countyGroundLine();  // большой уезд (11l)
   if(sl)logAdd("dim",sl);
   say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
 }
@@ -111,6 +112,7 @@ function updateSurface(dt){
   /* амплитуда шага плавно нарастает/спадает, а не переключается щелчком —
      фаза копится только пока реально идём, поэтому ноги не дёргаются на кочках */
   peepUpdate(dt);                       /* луг помнит свет только пока темно (20c) */
+  if(typeof countyNoiseTick==="function")countyNoiseTick(S,dt);   /* город слушает (11l) */
   /* посёлок слышно раньше, чем видно (хвост M109): редкий стук и голос,
      громкость по расстоянию. Не музыка и не петля — одиночные звуки */
   if(settleCanLive(S.p)){

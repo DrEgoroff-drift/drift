@@ -8,6 +8,26 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.106.0 — "Three counties" (M140-county, M141-charts, M142-quiet)
+
+**The large county** (`11l-county`, needle `mass`): masonry in the region is half again as
+large, twice at the core; the core settlement is built for a guest — yards at 2.3×, a four-metre
+door on the largest. The town has no buttons: jetpack, drill and a hard landing are loudness, and
+the door opens, the windows light and the lift rises by level; at the top, a nursery with cots
+at our size. Keep shouting and the town hears you; twenty jumps later, somewhere else, the ether
+carries three low beats and nothing more — once.
+
+**The charts disagree** (`11m-charts`, needle `course`): every star on the region's edge sits a
+little off on the map, every fifth is simply not drawn though it is there to jump to. At the core
+the locals compare instruments and find you fine — you have arrived from nowhere. Their chart can
+be traded for (300 cr); while it is in the hold the navigator does not show the home system,
+silently. Throw it out and five jumps later it is back in the hold.
+
+**The quiet county** (`11n-quiet`, needle `radio`): no pirates spawn in the region and the hull
+does not wear. At the core the log stops writing and the tape draws a flat line; on departure
+three to seven days have passed and 15% of the fuel is gone — nothing taken. The colony hides
+nothing and offers to let you stay; the offer is never withdrawn. Suites `91zy`, `91zz`, `91zza`.
+
 ## 0.105.0 — "The line of keepers" (M139-keepers)
 
 The `keepers` region (06c, needle `course`) is built in `11k-keepers`: a lane everyone navigates

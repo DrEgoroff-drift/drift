@@ -241,7 +241,8 @@ function settleDraw(S,tr,camx,camy,p){
   const roof="rgb("+pal[1].map(v=>Math.round(v*.5+10)).join(",")+")";
   for(let i=0;i<n;i++){
     const ox=sx+(i-(n-1)/2)*26+(r()-.5)*8;
-    const hh=16+r()*10, ww=17+r()*8;
+    const hk=(typeof countyHouseK==="function")?countyHouseK(p):1;   /* большой уезд (11l): дворы под гостя */
+    const hh=(16+r()*10)*hk, ww=(17+r()*8)*hk;
     const oy=groundAt(tr,bx+(ox-sx))-camy;
     ctx.fillStyle="rgba(0,0,0,.34)";                       // контакт с грунтом
     ctx.beginPath();ctx.ellipse(ox,oy-1,ww*.6,3,0,0,TAU);ctx.fill();
@@ -283,6 +284,7 @@ function settleDraw(S,tr,camx,camy,p){
     ctx.beginPath();ctx.moveTo(ox+(i?3:-3),oy-19);ctx.lineTo(ox+(i?3:-3),oy);ctx.stroke();
   }
   if(typeof hoursDrawPeople==="function")hoursDrawPeople(S,tr,camx,camy,p,sx,n,r);   // люди в слоях (11h)
+  if(typeof countyDrawTown==="function")countyDrawTown(S,tr,camx,camy,p,sx,n);      // город без кнопок (11l)
   ctx.fillStyle="rgba(226,206,160,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
   ctx.fillText("ПОСЁЛОК",sx,gy-56-n*2);
   /* ── виден с горизонта (хвост M109) ──

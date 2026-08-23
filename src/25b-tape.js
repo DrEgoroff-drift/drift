@@ -57,7 +57,8 @@ function tapeSample(){
   const o=T.head*TAPE_PENS;
   if(!T.zero){T.zero=[];for(let i=0;i<TAPE_PENS;i++)T.zero[i]=instrTrack(R[i]);}
   for(let i=0;i<TAPE_PENS;i++){
-    const v=instrTrack(R[i]), z=T.zero[i];
+    const z=T.zero[i];
+    const v=(typeof quietMute==="function"&&quietMute())?z:instrTrack(R[i]);   /* тихий уезд (11n): ровная линия */
     /* у каждого пера свой размах: он идёт за качеством СВОЕГО прибора (05b) */
     const gain=TAPE_GAIN*((typeof instrQuality==="function")?instrQuality(INSTR_KEYS[i])
               :((typeof hullRole==="function")?hullRole().instr:1));

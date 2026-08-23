@@ -16,6 +16,8 @@ function openStation(){
   /* почтовый круг (11e): если это следующее звено, человек подходит сам */
   if(typeof postDock==="function"){const pr=postDock();if(pr)say(pr.who+":\n"+pr.line);}
   if(typeof keepersDock==="function"){const kr=keepersDock();if(kr&&kr.line)say("Смотритель:\n"+kr.line);}   /* линия смотрителей (11k) */
+  if(typeof chartsDock==="function"){const cr=chartsDock();if(cr)say("Местные:\n"+cr.line);}   /* несогласие карт (11m) */
+  if(typeof quietDock==="function"){const qr=quietDock();if(qr)say("Колония:\n"+qr.line);}     /* тихий уезд (11n) */
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));

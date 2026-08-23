@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.105.0";
+const VER="0.106.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6610,6 +6610,8 @@ function etherTick(dt){
   G.etherT=(G.etherT==null?ETHER_EVERY:G.etherT)-dt*rate;
   if(typeof mirrorEchoTick==="function")mirrorEchoTick();
   if(typeof lightsArrive==="function")lightsArrive();   /* три света (11g): первый приход в ядро */
+  if(typeof chartsTick==="function")chartsTick();       /* карта возвращается (11m) */
+  if(typeof quietAfterLeave==="function")quietAfterLeave();   /* счёт суток после тихого уезда (11n) */
   if(G.etherT>0)return;
   G.etherT=ETHER_EVERY*(.7+Math.random()*.8);
   const r=rng(hashi(G.sx,G.sy,(Date.now()/60000)|0));
@@ -6623,6 +6625,7 @@ function etherTick(dt){
   if(typeof hoursEtherLine==="function"){const h=hoursEtherLine(r);if(h)out=h;}
   if(typeof groveEtherLine==="function"){const h=groveEtherLine(r);if(h)out=h;}   /* роща (11j) */
   if(typeof keepersEtherLine==="function"){const h=keepersEtherLine(r);if(h)out=h;}   /* погасший рукав (11k) */
+  if(typeof countyAnswerLine==="function"){const h=countyAnswerLine();if(h)out=h;}    /* город ответил (11l) */
   if(out&&typeof regionAt==="function"){
     const R=regionAt(G.sx,G.sy);
     if(R&&R.theme==="post"&&regionDepth(G.sx,G.sy)<.5&&Math.random()<.6)
@@ -8198,11 +8201,108 @@ function keepersBlock(){
   }
 }
 
+/* ══════════════ большой уезд: город без кнопок ══════════════
+   M140-county. Край археологов и мародёров (06c, `county`, игла масс-детектора):
+   копают, возят, подделывают и продают «древности». На окраине — тяжёлую
+   кладку берут на строительный камень; ближе — четырёхметровые двери и
+   двенадцатитонные подъёмники уже приспособлены под склады.
+
+   ЯДРО — ЦЕЛЫЙ ГОРОД БЕЗ ЕДИНОЙ КНОПКИ: всё отвечает на ЗВУК. Интерфейс — шум:
+   ранец, бур, удар о грунт. Игрок учится говорить громкостью.
+   ПОВОРОТ: детская маленькая. Жители были нашего роста. Значит, масштаб был
+   никогда не для жителей — ДЛЯ ГОСТЯ.
+   Город всё ещё слушает. Шуметь можно сколько угодно. Когда-нибудь — не здесь
+   и не скоро — что-то ответит.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Шум не хранится: громкость — счётчик на этой высадке. Хранится только,
+      что город вас услышал и ответил ли (G.county).
+   2. Ответ приходит один раз, далеко отсюда, не раньше двадцати прыжков,
+      и он не объясняется. */
+
+const COUNTY_LVL=[30,70,120,160];           // двери · свет · подъёмник · услышали
+function countyAll(){return (G.county||(G.county={called:0,at:0,answered:0,saw:0}));}
+function countyDepthAt(sx,sy){
+  if(typeof regionAt!=="function")return 0;
+  const R=regionAt(sx,sy);
+  if(R.theme!=="county")return 0;
+  return (R.core.sx===sx&&R.core.sy===sy)?2:1;
+}
+function countyDepthHere(){return countyDepthAt(G.sx,G.sy);}
+function countyCorePlanet(sys){
+  if(!sys||countyDepthAt(sys.sx,sys.sy)!==2)return null;
+  for(const p of sys.planets||[])if(typeof settleCanLive==="function"&&settleCanLive(p))return p;
+  return null;
+}
+function countyIsCore(p){const c=countyCorePlanet(G.sys);return !!(c&&p&&c.idx===p.idx);}
+/* кладка в уезде крупнее: окраина в полтора раза, ядро вдвое (20a genPOI) */
+function countyPoiK(){const d=countyDepthHere();return d===2?2:(d===1?1.5:1);}
+/* дворы города — под гостя, не под жителей (12t settleDraw) */
+function countyHouseK(p){return countyIsCore(p)?2.3:1;}
+function countyGroundLine(){
+  const d=countyDepthHere();
+  if(!d)return null;
+  return d===1?"Кладку разбирают на камень. Блоки — в рост человека.":"Двери в четыре метра. Кнопок нет нигде.";
+}
+/* ── шум ──
+   Зовётся из updateSurface каждый кадр на планете ядра. Ранец, бур и удар
+   о грунт — громкость; тишина — спад. Уровни открывают город по очереди. */
+function countyNoiseTick(S,dt){
+  if(!countyIsCore(S.p))return;
+  let n=S.noise||0;
+  if(S.jetOn)n+=.9*dt;
+  if(S.mining)n+=.6*dt;
+  if(S.shake>4)n+=6;
+  n=Math.max(0,n-.12*dt);
+  S.noise=n;
+  const lvl=countyLevel(S);
+  if(lvl>=3&&!countyAll().saw){countyAll().saw=1;logAdd("dim","Подъёмник пошёл. Наверху — детская. Кроватки по нашему росту.");}
+  if(lvl>=4&&!countyAll().called){const C=countyAll();C.called=1;C.at=(G.odo&&G.odo.jumps)|0;logAdd("dim","Город услышал. Что-то — не здесь и не скоро.");}
+}
+function countyLevel(S){
+  const n=(S&&S.noise)||0;
+  let l=0;for(const t of COUNTY_LVL)if(n>=t)l++;
+  return l;
+}
+/* ── вид ──
+   Зовётся из settleDraw после дворов: у самого крупного двора — дверь в
+   четыре метра, открывается по уровню; на втором уровне свет в окнах; на
+   третьем — подъёмник с детской наверху. */
+function countyDrawTown(S,tr,camx,camy,p,sx,n){
+  if(!countyIsCore(p)||!G.surf)return;
+  const lvl=countyLevel(G.surf);
+  const ox=sx+(n-1)/2*26*1.2, oy=groundAt(tr,ox+camx)-camy;
+  const H4=96,Wd=34;
+  /* дверь: проём и створка, уходящая в стену по уровню */
+  ctx.fillStyle="rgba(14,16,20,.9)";ctx.fillRect(ox-Wd/2,oy-H4,Wd,H4);
+  const open=lvl>=1?clamp(((G.surf.noise||0)-COUNTY_LVL[0])/40,0,1):0;
+  ctx.fillStyle="rgba(72,66,58,.95)";ctx.fillRect(ox-Wd/2+Wd*open,oy-H4,Wd*(1-open),H4);
+  ctx.strokeStyle="rgba(226,236,240,.25)";ctx.lineWidth=1;ctx.strokeRect(ox-Wd/2-.5,oy-H4-.5,Wd+1,H4+1);
+  if(lvl>=2){ctx.fillStyle="rgba(255,214,150,.7)";for(let i=0;i<3;i++)ctx.fillRect(ox-Wd/2-30-i*22,oy-H4*.6,6,6);}
+  if(lvl>=3){
+    /* подъёмник: платформа на уровне детской, в ней четыре кроватки по нашему росту */
+    const ly=oy-H4-24;
+    ctx.fillStyle="rgba(40,44,50,.95)";ctx.fillRect(ox+Wd/2+6,ly,56,18);
+    ctx.strokeStyle="rgba(210,220,226,.5)";ctx.beginPath();ctx.moveTo(ox+Wd/2+8,ly);ctx.lineTo(ox+Wd/2+8,oy);ctx.stroke();
+    ctx.fillStyle="rgba(226,206,160,.8)";for(let i=0;i<4;i++)ctx.fillRect(ox+Wd/2+12+i*12,ly+10,8,3);
+  }
+}
+/* ── ответ ──
+   Один раз, далеко, не раньше двадцати прыжков: строка в эфире без пояснений. */
+function countyAnswerLine(){
+  const C=countyAll();
+  if(!C.called||C.answered||countyDepthHere())return null;
+  if((((G.odo&&G.odo.jumps)|0)-C.at)<20)return null;
+  C.answered=1;
+  return "…(низкий гул. Три такта. Как гудок, только ниже. Потом тишина.)";
+}
+
 /* ══════════════ бортовой журнал ══════════════ */
 /* сообщения по центру экрана живут пару секунд, журнал помнит их между сеансами */
 const LOG_MAX=90;
 let logOpen=false;
 function logAdd(kind,text){
+  if(typeof quietMute==="function"&&quietMute())return;   /* тихий уезд (11n): журнал не пишет */
   G.log.push({t:Date.now(),k:kind,s:text});
   if(G.log.length>LOG_MAX)G.log.splice(0,G.log.length-LOG_MAX);
   if(logOpen)renderLog(); else{G.logNew=(G.logNew|0)+1;logBtnLabel();}
@@ -8305,6 +8405,160 @@ function minedUnit(k){
   const n=Math.floor(refineBank);refineBank-=n;
   if(n>0&&typeof placeNote==="function")placeNote("take",n);   // место помнит, что вырыли (11d)
   return addRes(k,n);
+}
+
+/* ══════════════ несогласие карт: планета, которой нет ни в одной записи ══════════════
+   M141-charts. Пограничный край с дурной лоцией (06c, `charts`, игла курсографа),
+   живущий контрабандой и серой навигацией. Здесь врут профессионально, и это
+   важно: игрок должен сначала решить, что его обманывают.
+
+   ОКРАИНА: мелкие расхождения, списанные на старые данные. Потом система,
+   которой нет в новой базе — на карте её не видно, а она есть.
+   ЯДРО: обыкновенная обитаемая планета, которой нет ни в одной записи. НИКАКОГО
+   МЕХАНИЗМА: ни разлома, ни радиации. Только несогласие. Местные вежливы и
+   слегка вам сочувствуют: предлагают сверить приборы, сверяют и мягко замечают,
+   что у вас всё в порядке — вы просто прилетели ниоткуда.
+   ИХ КАРТУ МОЖНО ВЫМЕНЯТЬ. Пока она в трюме, навигатор не показывает ваш дом.
+   Тихо, без сообщения. Выбросить — она возвращается.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Намёков на причину нет нигде. Ни строки.
+   2. Хранится G.charts={have,lost}: карта в трюме и когда выброшена. */
+
+const CHARTS_PRICE=300;
+function chartsAll(){return (G.charts||(G.charts={have:0,lost:-1}));}
+function chartsDepthAt(sx,sy){
+  if(typeof regionAt!=="function")return 0;
+  const R=regionAt(sx,sy);
+  if(R.theme!=="charts")return 0;
+  return (R.core.sx===sx&&R.core.sy===sy)?2:1;
+}
+function chartsDepthHere(){return chartsDepthAt(G.sx,G.sy);}
+/* чего нет на карте: каждая пятая система окраины (кроме ядра) — и ваш дом,
+   пока их карта в трюме. Система при этом существует и доступна прыжком. */
+function chartsHidden(sx,sy){
+  const C=chartsAll();
+  if(C.have&&sx===0&&sy===0)return true;
+  const d=chartsDepthAt(sx,sy);
+  if(d!==1)return false;
+  return hashi(sx,sy,0xC4A)%5===0;
+}
+/* окраина: карта дрожит — расхождение, списанное на старые данные */
+function chartsJitter(sx,sy){
+  if(chartsDepthAt(sx,sy)!==1)return [0,0];
+  const r=rng(hashi(sx,sy,0xC4B));
+  return [(r()-.5)*.18,(r()-.5)*.18];
+}
+/* стыковка в ядре: одна строка, и она про вас, не про планету */
+function chartsDock(){
+  if(chartsDepthHere()!==2)return null;
+  const line=chartsAll().have?"Карту вы уже взяли. Дом найдёте — вы же его помните.":"Сверим приборы? Вот, сверили. У вас всё в порядке. Вы просто прилетели ниоткуда.";
+  logAdd("dim","Местные: "+line);
+  return {line};
+}
+function chartsBuy(){
+  const C=chartsAll();
+  if(C.have||G.credits<CHARTS_PRICE)return false;
+  G.credits-=CHARTS_PRICE;C.have=1;C.lost=-1;
+  logAdd("dim","Их карта в трюме. На ней всё есть.");
+  return true;
+}
+function chartsDrop(){
+  const C=chartsAll();
+  if(!C.have)return false;
+  C.have=0;C.lost=(G.odo&&G.odo.jumps)|0;
+  logAdd("dim","Карту выбросили.");
+  return true;
+}
+/* возвращается: через пять прыжков она снова в трюме, без объяснений */
+function chartsTick(){
+  const C=chartsAll();
+  if(C.have||C.lost<0)return;
+  if((((G.odo&&G.odo.jumps)|0)-C.lost)>=5){C.have=1;C.lost=-1;logAdd("dim","Карта снова в трюме.");}
+}
+/* блок в кантине ядра */
+function chartsBlock(){
+  if(chartsDepthHere()!==2)return;
+  const C=chartsAll();
+  $body.appendChild(el("div","sec","ИХ КАРТА"));
+  const r=el("div","row");
+  if(!C.have){
+    r.appendChild(el("div","nm","<b>Карта местных</b><s>на ней есть всё. "+CHARTS_PRICE+" кр</s>"));
+    const b=el("button","act sm","ВЫМЕНЯТЬ");b.disabled=G.credits<CHARTS_PRICE;b.onclick=()=>{chartsBuy();renderTab();};r.appendChild(b);
+  }else{
+    r.appendChild(el("div","nm","<b>Карта местных</b><s>в трюме</s>"));
+    const b=el("button","act sm","ВЫБРОСИТЬ");b.onclick=()=>{chartsDrop();renderTab();};r.appendChild(b);
+  }
+  $body.appendChild(r);
+}
+
+/* ══════════════ тихий уезд: где время не копится ══════════════
+   M142-quiet. Зажиточный, ухоженный сельский уезд (06c, `quiet`, игла приёмника).
+   По-настоящему приятный; первые часы там — отдых. Пилоты советуют его друг
+   другу. На окраине никто не грабит, машины не ломаются, бумаг не спрашивают.
+
+   ЯДРО — КОЛОНИЯ, КОТОРАЯ НИЧЕГО НЕ СКРЫВАЕТ. «Да, никто из нас не помнит,
+   зачем прилетел. Перестало быть важным». Ни гипноза, ни секты, ни злодея:
+   детектив отвергнут намеренно — «идеальное = зловещее» игрок решает за две
+   минуты и дальше ждёт развязки.
+   ЦЕНА МЕХАНИЧЕСКАЯ. Там бортжурнал перестаёт писать, самописец чертит ровную
+   линию, а на отлёте прошло заметно больше суток, чем вы прожили: топливо
+   ушло, урожай в других местах созрел. Ничего не отняли. Время там просто
+   не копится.
+   ПРЕДЛОЖЕНИЕ ОСТАТЬСЯ искренне и НЕ ОТЗЫВАЕТСЯ НИКОГДА. Открытая дверь и есть
+   содержание; другой концовки нет.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Ни угрозы, ни разгадки. Только быт и счёт суток.
+   2. Хранится G.quiet={stay}: сказали ли вы «да». Всё прочее — от координат. */
+
+function quietAll(){return (G.quiet||(G.quiet={stay:0}));}
+function quietDepthAt(sx,sy){
+  if(typeof regionAt!=="function")return 0;
+  const R=regionAt(sx,sy);
+  if(R.theme!=="quiet")return 0;
+  return (R.core.sx===sx&&R.core.sy===sy)?2:1;
+}
+function quietDepthHere(){return quietDepthAt(G.sx,G.sy);}
+/* окраина: пиратов нет, машины не ломаются */
+function quietNoPirates(){return quietDepthHere()>0;}
+function quietNoWear(){return quietDepthHere()>0;}
+/* ядро: журнал молчит и самописец ровный — пока вы там, в любом режиме */
+function quietMute(){return quietDepthHere()===2;}
+function quietDock(){
+  if(quietDepthHere()!==2)return null;
+  const line=quietAll().stay?"С возвращением. Дверь открыта.":"Да, никто из нас не помнит, зачем прилетел. Перестало быть важным. Оставайтесь, если хотите.";
+  return {line};
+}
+function quietStay(){
+  const Q=quietAll();
+  if(Q.stay)return false;
+  Q.stay=1;
+  return true;
+}
+/* отлёт из ядра: прошло больше, чем прожито. Зовётся из jump() до смены сектора */
+function quietLeave(){
+  if(quietDepthHere()!==2)return 0;
+  const days=3+hashi(G.sx,G.sy,((G.odo&&G.odo.jumps)|0))%5;
+  G.t+=CEL_DAY*days;
+  G.fuel=Math.max(0,G.fuel-Math.round(G.fuel*.15));
+  G.quietGone=days;                           /* строка пишется уже снаружи, журнал там не пишет */
+  return days;
+}
+function quietAfterLeave(){
+  if(!G.quietGone)return;
+  logAdd("dim","Прошло "+G.quietGone+" суток. Топлива меньше, чем помнится. Ничего не отняли.");
+  G.quietGone=0;
+}
+/* блок в кантине ядра: открытая дверь — и она не закрывается */
+function quietBlock(){
+  if(quietDepthHere()!==2)return;
+  const Q=quietAll();
+  $body.appendChild(el("div","sec","КОЛОНИЯ"));
+  const r=el("div","row");
+  r.appendChild(el("div","nm","<b>Остаться</b><s>"+(Q.stay?"вы сказали «да». Дверь открыта, и она не закроется.":"предложение искреннее. Его не отзовут — ни сейчас, ни после.")+"</s>"));
+  if(!Q.stay){const b=el("button","act sm","ОСТАТЬСЯ");b.onclick=()=>{quietStay();renderTab();};r.appendChild(b);}
+  $body.appendChild(r);
 }
 
 /* ══════════════ наёмники: флот, которым не управляешь напрямую ══════════════ */
@@ -14546,6 +14800,7 @@ function wearOf(id){
 function wearTick(dt){
   const r=WEAR_RATE[G.mode];
   if(!r)return;
+  if(typeof quietNoWear==="function"&&quietNoWear())return;   /* тихий уезд (11n): машины не ломаются */
   const W=wearAll(),id=G.shipId;
   W[id]=(W[id]||0)+dt*r;
 }
@@ -15635,7 +15890,8 @@ function settleDraw(S,tr,camx,camy,p){
   const roof="rgb("+pal[1].map(v=>Math.round(v*.5+10)).join(",")+")";
   for(let i=0;i<n;i++){
     const ox=sx+(i-(n-1)/2)*26+(r()-.5)*8;
-    const hh=16+r()*10, ww=17+r()*8;
+    const hk=(typeof countyHouseK==="function")?countyHouseK(p):1;   /* большой уезд (11l): дворы под гостя */
+    const hh=(16+r()*10)*hk, ww=(17+r()*8)*hk;
     const oy=groundAt(tr,bx+(ox-sx))-camy;
     ctx.fillStyle="rgba(0,0,0,.34)";                       // контакт с грунтом
     ctx.beginPath();ctx.ellipse(ox,oy-1,ww*.6,3,0,0,TAU);ctx.fill();
@@ -15677,6 +15933,7 @@ function settleDraw(S,tr,camx,camy,p){
     ctx.beginPath();ctx.moveTo(ox+(i?3:-3),oy-19);ctx.lineTo(ox+(i?3:-3),oy);ctx.stroke();
   }
   if(typeof hoursDrawPeople==="function")hoursDrawPeople(S,tr,camx,camy,p,sx,n,r);   // люди в слоях (11h)
+  if(typeof countyDrawTown==="function")countyDrawTown(S,tr,camx,camy,p,sx,n);      // город без кнопок (11l)
   ctx.fillStyle="rgba(226,206,160,.75)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
   ctx.fillText("ПОСЁЛОК",sx,gy-56-n*2);
   /* ── виден с горизонта (хвост M109) ──
@@ -16651,7 +16908,7 @@ const PAR={t:0,flap:0,flapV:0,crest:0,crestV:0,ruff:0,ruffV:0,lean:0,leanV:0,
   preen:0,preenT:-9,
   /* степени свободы, которыми распоряжается повадка (12z): пока она идёт,
      значения выставляются каждый кадр, а без неё сами оседают в ноль */
-  roll:0,tuck:0,step:0,turn:0,stretch:0,footUp:0,fan:0,yawn:0,shiver:0,
+  roll:0,tuck:0,step:0,turn:0,stretch:0,footUp:0,scratch:0,fan:0,yawn:0,shiver:0,
   bow:0,hang:0,act:null,actT:0,actDur:0,actNext:1.5,st:null};
 
 /* ── перо ──
@@ -16815,7 +17072,7 @@ function parCoat(g,T){
   /* янтарь на плече: единственное тёплое пятно на корпусе, оно же метка
      породы. Без него синее с кремовым — форменная рубашка, а не животное. */
   for(let i=0;i<5;i++){
-    g.save();g.translate(-16+i*6,-138+i*7);g.rotate(1.25);
+    g.save();g.translate(-27+i*5,-140+i*6);g.rotate(1.25);
     parQuill(g,22,12,.26,PAR_C.amber,PAR_C.amberD);
     g.restore();
   }
@@ -16826,13 +17083,15 @@ function parFoot(c,x,dir,grip,up){
   /* Поджатая лапа — не спрятанная: птица подтягивает её к брюху и остаётся
      стоять на второй. Прятать её насовсем нельзя, иначе на поджатии тело
      теряет опору и повисает. */
-  const U=up||0;
-  c.save();c.translate(x-U*6,-U*26);c.scale(dir,1);c.rotate(-U*.5);
+  const U=up||0, Sc=up?(PAR.scratch||0):0;
+  /* чесание: лапа идёт вдоль бока вверх, к щеке; верх цевки прячется под
+     корпусом, как бедро под пером, — видны только пальцы у головы */
+  c.save();c.translate(x-U*6+Sc*14,-U*26-Sc*92);c.scale(dir,1);c.rotate(-U*.5-Sc*2.4);
   c.lineCap="round";
   c.strokeStyle=PAR_C.footD;c.lineWidth=6.4;
-  c.beginPath();c.moveTo(1,-44);c.quadraticCurveTo(0,-20,0,-4);c.stroke();
+  c.beginPath();c.moveTo(1,-46);c.quadraticCurveTo(0,-20,0,-4);c.stroke();
   c.strokeStyle=PAR_C.foot;c.lineWidth=4.4;
-  c.beginPath();c.moveTo(1,-42);c.quadraticCurveTo(0,-20,0,-5);c.stroke();
+  c.beginPath();c.moveTo(1,-44);c.quadraticCurveTo(0,-20,0,-5);c.stroke();
   /* чешуя цевки: восемь колечек. Гладкая палка выдаёт рисунок сразу — у птицы
      нога покрыта щитками, и это видно даже в четверть размера */
   c.strokeStyle="rgba(70,42,18,.45)";c.lineWidth=1;
@@ -16909,11 +17168,15 @@ function parrotDraw(c,W,H){
   /* Ширина в развороте не падает ниже трети: птица, сжатая в ноль, не
      «стоит боком», а исчезает. Настоящий вид со спины стоил бы второго
      набора рисунков, а треть ширины читается разворотом и стоит строки. */
+  /* плотность растра слоя — по фактическому масштабу канвы: иначе оперение
+     считается в одну точку на единицу и в большом окне расплывается в мыло */
+  const mt=c.getTransform();
+  const kpx=Math.min(6,Math.max(1,Math.hypot(mt.a,mt.b)));
   const tc=Math.cos((PAR.turn||0)*Math.PI);
   c.scale(tc<0?-Math.max(.34,-tc):Math.max(.34,tc),1);
 
   /* оперение — на своей канве: один свет кладётся на всё разом */
-  const L=parLayer(W,H);
+  const L=parLayer(W,H,kpx);
   const g=L.g;
   const beads=[];                      /* огни собираем и зажигаем после света */
   g.save();g.translate(L.ox,L.oy);
@@ -16950,6 +17213,20 @@ function parrotDraw(c,W,H){
 
   /* 2. корпус: масса и черепица одним куском, внутри обвода */
   parCoat(g,T);
+  /* «штаны»: пух бедра закрывает верх цевки. Голая нога от брюха до жёрдочки —
+     ходули; у птицы бедро и голень спрятаны в пере, наружу торчит только цевка */
+  for(const fx of [-14,14]){
+    g.save();g.translate(fx,-43);
+    g.beginPath();g.ellipse(0,0,15,12,fx*.01,0,7);g.clip();
+    const tg=g.createLinearGradient(0,-12,0,12);
+    tg.addColorStop(0,PAR_C.cream);tg.addColorStop(1,PAR_C.creamD);
+    g.fillStyle=tg;g.fillRect(-16,-13,32,26);
+    for(let r=0;r<4;r++)for(let i=0;i<4;i++){
+      const x=-13+i*8+((r&1)?4:0), y=8-r*5.5;
+      parScale(g,x,y,9,7.5,PAR_C.cream,PAR_C.creamD);
+    }
+    g.restore();
+  }
 
   /* 3. КРЫЛО: три ряда на одном шарнире у плеча — машет плечо, а не перо.
      Ось у крыла своя, поэтому оно не сливается с хвостом в общую метёлку. */
@@ -16960,7 +17237,7 @@ function parrotDraw(c,W,H){
   if(PAR.stretch>.001)g.scale(1+PAR.stretch*.34,1+PAR.stretch*.16);
   /* тёмная подложка крыла: без неё ряды тонут в спине и крыла не видно */
   g.fillStyle="rgba(10,26,58,.85)";
-  g.beginPath();g.moveTo(4,-6);g.quadraticCurveTo(-16,34,-6,86);
+  g.beginPath();g.moveTo(4,6);g.quadraticCurveTo(-16,34,-6,86);
   g.quadraticCurveTo(14,44,18,2);g.closePath();g.fill();
   /* маховые: длинные гнутые перья вдоль бока, как в референсе, — не веер
      лопаток, а слоёная кисть с укорочением к плечу */
@@ -16976,25 +17253,34 @@ function parrotDraw(c,W,H){
      Без них у крыла видно, где перья «воткнуты», и вся кисть теряет корень. */
   parRow(g,2,-6,9,10,1.30,1.94,7,30,12,1.4,.05,PAR_C.blueL,PAR_C.blueD,.9);
   /* кроющие плеча: короткие янтарные, они же стык крыла с телом */
-  parRow(g,4,-10,8,9,1.28,1.92,5,40,15,3.6,.07,PAR_C.amber,PAR_C.amberD,.9);
+  parRow(g,4,-10,8,9,1.30,1.90,5,28,11,3.6,.05,PAR_C.amber,PAR_C.amberD,.9);
   g.restore();
 
   /* воротничок: мелкое перо там, где голова садится на грудь. Стык двух
      оперений — самое заметное место сборки, и он должен быть заткан. */
   const rf2=Math.abs(PAR.ruff)+PAR.tuck*.85;
-  parRow(g,10,-150,16,13,-2.2,1.3,11,20+rf2*6,10,1.2,.10+rf2*.12,
+  parRow(g,10,-150,16,13,-2.5,.45,11,16+rf2*6,10,1.2,.10+rf2*.12,
     PAR_C.cream,PAR_C.blue,.92);
 
   /* 4. ГОЛОВА со всем, что на ней: качается на шее одним куском.
      Чистка перьев (`preen`) — единственное, что птица делает сама: голова
      ныряет к плечу и возвращается. Без такого «дела» она просто качается. */
+  const pr=PAR.preen, sc=PAR.scratch||0;
+  /* шея: пятно в цвет головы между корпусом и черепом, идёт за головой на
+     полпути. Голова — не диск, положенный на грудь; при наклоне и чистке
+     между ними иначе открывается тёмный зазор */
+  g.save();g.translate(12-pr*8-PAR.tuck*2.5+sc*2,-158+pr*13+PAR.tuck*6+sc*10);
+  const ng=g.createLinearGradient(-18,0,18,0);
+  ng.addColorStop(0,PAR_C.blue);ng.addColorStop(.5,"#a9c4de");ng.addColorStop(1,PAR_C.cream);
+  g.fillStyle=ng;g.beginPath();g.ellipse(-3,0,21,16,-.15,0,7);g.fill();
+  g.restore();
   g.save();
-  const pr=PAR.preen;
   /* втягивание в плечи (`tuck`) — не сдвиг головы вниз, а посадка её на тело:
      вместе с ней поднимается воротник, иначе видно голую шею. */
-  g.translate(12-pr*16-PAR.tuck*5,-168+pr*26+PAR.tuck*13);
+  const hx=12-pr*16-PAR.tuck*5+sc*4, hy=-168+pr*26+PAR.tuck*13+sc*20;
+  g.translate(hx,hy);
   const hr=PAR.look*.12+Math.sin(T*.5)*.022+PAR.mad*.05+pr*1.05
-    +PAR.roll*.62+PAR.bow*.5;
+    +PAR.roll*.62+PAR.bow*.5+sc*.4;
   g.rotate(hr);
 
   /* 4а. хохол: восемь перьев назад-вверх, у каждого своя фаза и бусина.
@@ -17003,16 +17289,17 @@ function parrotDraw(c,W,H){
   for(let i=0;i<9;i++){
     const k=i/8;
     const a=-2.62+k*1.22-cr*.34;
-    const len=(56+Math.sin(k*3.1)*22)*(1+cr*.30);
+    const len=(46+Math.sin(k*3.1)*30+Math.sin(i*2.3)*5)*(1+cr*.30);
     const w=Math.sin(T*1.6+i*.8)*.075;
     const col=i%3===0?PAR_C.amber:(i%3===1?PAR_C.blue:PAR_C.viol);
     const colD=i%3===0?PAR_C.amberD:(i%3===1?PAR_C.blueD:"#4a2f9c");
     g.save();g.rotate(w);
-    const P=parPlume(g,len,a,.86,5.4-k*1.5,col,colD,4,1.0);
+    const P=parPlume(g,len,a,.86,6.2-k*1.6,col,colD,4,1.1);
     /* голый стебель за опушкой: бусина висит НА нём, а не приклеена к перу —
        это и даёт антенну, а не блёстку на кончике */
-    const sx=P[0]+Math.cos(a+.30)*13, sy=P[1]+Math.sin(a+.30)*13;
-    g.strokeStyle="rgba(150,200,235,.55)";g.lineWidth=1.15;
+    const st=6+Math.sin(i*1.7)*2;
+    const sx=P[0]+Math.cos(a+.30)*st, sy=P[1]+Math.sin(a+.30)*st;
+    g.strokeStyle="rgba(150,200,235,.6)";g.lineWidth=1.6;
     g.beginPath();g.moveTo(P[0],P[1]);g.lineTo(sx,sy);g.stroke();
     P[0]=sx;P[1]=sy;
     g.restore();
@@ -17021,7 +17308,7 @@ function parrotDraw(c,W,H){
     const ca=Math.cos(hr),sa=Math.sin(hr);
     const bx=P[0]*ca-P[1]*sa, by=P[0]*sa+P[1]*ca;
     const lag=Math.sin(T*1.6+i*.8-.9)*3.5;
-    beads.push([12+bx+lag*.6,-168+by+lag,2.2+k*.5,
+    beads.push([hx+bx+lag*.6,hy+by+lag,1.8+k*.4,
       .72+.28*Math.sin(T*2.2+i*1.1)]);
   }
   /* 4б. череп: кремовая маска, синий затылок */
@@ -17141,13 +17428,14 @@ function parrotDraw(c,W,H){
 }
 /* канва оперения кэшируется на модуле: дорогое считается один раз */
 let PAR_L=null;
-function parLayer(W,H){
-  if(!PAR_L||PAR_L.w!==W||PAR_L.h!==H){
+function parLayer(W,H,k){
+  k=k||1;
+  if(!PAR_L||PAR_L.w!==W||PAR_L.h!==H||PAR_L.k!==k){
     const cv=document.createElement("canvas");
-    cv.width=W;cv.height=H;
-    PAR_L={cv,g:cv.getContext("2d"),w:W,h:H,ox:W*.5,oy:H*.94};
+    cv.width=Math.ceil(W*k);cv.height=Math.ceil(H*k);
+    PAR_L={cv,g:cv.getContext("2d"),w:W,h:H,k,ox:W*.5,oy:H*.94};
   }
-  PAR_L.g.setTransform(1,0,0,1,0,0);
+  PAR_L.g.setTransform(k,0,0,k,0,0);
   PAR_L.g.clearRect(0,0,PAR_L.w,PAR_L.h);
   return PAR_L;
 }
@@ -17194,7 +17482,7 @@ function parStep(dt){
      переписывает их каждый кадр, а кончилась — птица возвращается в покой,
      и для этого не нужно ни одного кадра «выхода» */
   const k=Math.pow(.90,dt*60);
-  PAR.roll*=k;PAR.tuck*=k;PAR.stretch*=k;PAR.footUp*=k;PAR.fan*=k;
+  PAR.roll*=k;PAR.tuck*=k;PAR.stretch*=k;PAR.footUp*=k;PAR.scratch*=k;PAR.fan*=k;
   PAR.yawn*=k;PAR.shiver*=k;PAR.bow*=k;PAR.hang*=k;
   PAR.step*=Math.pow(.995,dt*60);
   if(typeof parActs==="function")parActs(dt);
@@ -17370,9 +17658,11 @@ const PAR_ACT=[
 {ru:"потянуться целиком",w:4,d:3.0,m:"",f:(p,S)=>{
   PAR.stretch=parHold(p,.3,.3);PAR.fan=parHold(p,.3,.3)*.8;
   PAR.footUp=parHold(p,.35,.35)*.7;PAR.yawn=parBell(p)*.5;}},
-{ru:"почесать голову",w:5,d:2.8,m:"",f:(p,S)=>{
-  PAR.footUp=parHold(p,.22,.22);PAR.roll=parHold(p,.25,.25)*-.55;
-  PAR.shiver=parHold(p,.3,.3)*.5;PAR.tuck=parHold(p)*.3;}},
+{ru:"почесать голову",w:5,d:3.0,m:"",f:(p,S)=>{
+  /* лапа к щеке, голова — навстречу лапе, и мелкая тряска, пока чешет */
+  const h=parHold(p,.25,.25);
+  PAR.footUp=h;PAR.scratch=h;PAR.tuck=h*.55;PAR.roll=h*.25;
+  PAR.shiver=h*.6+Math.sin(p*40)*h*.3;}},
 {ru:"чистить грудь",w:7,d:3.2,m:"",f:(p,S)=>{
   PAR.bow=parHold(p,.2,.2)*.7;PAR.roll=Math.sin(p*15.7)*.18;
   if(Math.random()<.14)PAR.peck=.6;}},
@@ -17876,7 +18166,8 @@ function spawnPirates(){
   const danger=sysDanger(G.sx,G.sy);
   const r=rng(hashi(G.sx,G.sy,Math.floor(Date.now()/900000)));
   /* под пиратами система держит патруль сверх обычного случайного налёта */
-  const n=(r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0)+occExtraPirates(G.sx,G.sy);
+  let n=(r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0)+occExtraPirates(G.sx,G.sy);
+  if(typeof quietNoPirates==="function"&&quietNoPirates())n=0;   /* тихий уезд (11n): никто не грабит */
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;
     const seed=hashi(G.sx,G.sy,i*977);
@@ -18162,7 +18453,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
-    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,
+    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
@@ -18574,6 +18865,9 @@ function applySave(s){
   G.hours={man:(s.hours&&s.hours.man)?1:0};   /* уезд часов (11h): человек прошёл один раз */
   G.grove={turn:Math.max(0,(s.grove&&s.grove.turn)|0),shot:(s.grove&&s.grove.shot)?1:0,cut:(s.grove&&s.grove.cut)?1:0};   /* роща (11j) */
   {const k=s.keepers||{};G.keepers={gone:k.gone?1:0,signed:k.signed?1:0,fed:Math.max(0,k.fed|0),given:Math.max(0,k.given|0)};}   /* смотрители (11k) */
+  {const c=s.county||{};G.county={called:c.called?1:0,at:Math.max(0,c.at|0),answered:c.answered?1:0,saw:c.saw?1:0};}   /* большой уезд (11l) */
+  {const c=s.charts||{};G.charts={have:c.have?1:0,lost:(c.lost==null?-1:c.lost|0)};}   /* несогласие карт (11m) */
+  G.quiet={stay:(s.quiet&&s.quiet.stay)?1:0};   /* тихий уезд (11n) */
   /* почтовый круг (11e): три числа */
   G.post={stage:clamp((s.post&&s.post.stage)|0,0,POST_LINKS.length-1),opened:(s.post&&s.post.opened)?1:0,done:(s.post&&s.post.done)?1:0};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
@@ -21820,7 +22114,9 @@ function drawMap(){
   const vis=[];
   for(let gy=G.sy-R;gy<=G.sy+R;gy++)for(let gx=G.sx-R;gx<=G.sx+R;gx++){
     if(!starAt(gx,gy))continue;
-    const [jx,jy]=sysJitter(gx,gy);
+    if(typeof chartsHidden==="function"&&chartsHidden(gx,gy))continue;   /* несогласие карт (11m) */
+    let [jx,jy]=sysJitter(gx,gy);
+    if(typeof chartsJitter==="function"){const cj=chartsJitter(gx,gy);jx+=cj[0];jy+=cj[1];}
     const d=Math.hypot(gx-G.sx+jx,gy-G.sy+jy);
     vis.push({gx,gy,s:getSystem(gx,gy),x:W/2+(gx-G.sx+jx)*cell,y:H/2+(gy-G.sy+jy)*cell,
       d, near:d<=st.jump+.02});
@@ -22083,6 +22379,7 @@ function jump(cost){
   /* уходя, платит не только топливо: тех, кто сел вам на хвост, вы оставляете
      над головами живущих внизу (M110, 12t-settle) */
   if(typeof settleLeftBehind==="function")settleLeftBehind();
+  if(typeof quietLeave==="function")quietLeave();   /* тихий уезд (11n): прошло больше, чем прожито */
   G.fuel-=cost;G.sx=G.sel.x;G.sy=G.sel.y;G.sys=getSystem(G.sx,G.sy);G.ap=null;
   if(typeof odoAdd==="function")odoAdd("jumps");   // путь, по которому зреет память (11d)
   const a=Math.random()*TAU,r=1500;
@@ -24815,7 +25112,7 @@ function genPOI(tr,p){
     let tot=0;for(const k of pool)tot+=k.w;
     let pick=r()*tot,K=pool[0];
     for(const k of pool){pick-=k.w;if(pick<=0){K=k;break;}}
-    const scale=.8+r()*.55;
+    const scale=(.8+r()*.55)*((typeof countyPoiK==="function")?countyPoiK():1);   /* большой уезд (11l): кладка крупнее */
     /* площадка под основание: середина плоская, к краям плавно возвращается
        к исходному профилю — стыка не видно */
     const half=Math.round(K.flat*scale/tr.step);
@@ -29347,6 +29644,7 @@ function enterSurface(){
   if(typeof lightsArrive==="function"){lightsArrive();if(!sl)sl=lightsGroundLine();}
   if(!sl&&typeof hoursGroundLine==="function")sl=hoursGroundLine();   // уезд часов (11h)
   if(!sl&&typeof glowGroundLine==="function")sl=glowGroundLine();      // уезд света (11i)
+  if(!sl&&typeof countyGroundLine==="function")sl=countyGroundLine();  // большой уезд (11l)
   if(sl)logAdd("dim",sl);
   say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
 }
@@ -29365,6 +29663,7 @@ function updateSurface(dt){
   /* амплитуда шага плавно нарастает/спадает, а не переключается щелчком —
      фаза копится только пока реально идём, поэтому ноги не дёргаются на кочках */
   peepUpdate(dt);                       /* луг помнит свет только пока темно (20c) */
+  if(typeof countyNoiseTick==="function")countyNoiseTick(S,dt);   /* город слушает (11l) */
   /* посёлок слышно раньше, чем видно (хвост M109): редкий стук и голос,
      громкость по расстоянию. Не музыка и не петля — одиночные звуки */
   if(settleCanLive(S.p)){
@@ -33673,7 +33972,8 @@ function tapeSample(){
   const o=T.head*TAPE_PENS;
   if(!T.zero){T.zero=[];for(let i=0;i<TAPE_PENS;i++)T.zero[i]=instrTrack(R[i]);}
   for(let i=0;i<TAPE_PENS;i++){
-    const v=instrTrack(R[i]), z=T.zero[i];
+    const z=T.zero[i];
+    const v=(typeof quietMute==="function"&&quietMute())?z:instrTrack(R[i]);   /* тихий уезд (11n): ровная линия */
     /* у каждого пера свой размах: он идёт за качеством СВОЕГО прибора (05b) */
     const gain=TAPE_GAIN*((typeof instrQuality==="function")?instrQuality(INSTR_KEYS[i])
               :((typeof hullRole==="function")?hullRole().instr:1));
@@ -35209,6 +35509,8 @@ function openStation(){
   /* почтовый круг (11e): если это следующее звено, человек подходит сам */
   if(typeof postDock==="function"){const pr=postDock();if(pr)say(pr.who+":\n"+pr.line);}
   if(typeof keepersDock==="function"){const kr=keepersDock();if(kr&&kr.line)say("Смотритель:\n"+kr.line);}   /* линия смотрителей (11k) */
+  if(typeof chartsDock==="function"){const cr=chartsDock();if(cr)say("Местные:\n"+cr.line);}   /* несогласие карт (11m) */
+  if(typeof quietDock==="function"){const qr=quietDock();if(qr)say("Колония:\n"+qr.line);}     /* тихий уезд (11n) */
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
@@ -36259,6 +36561,8 @@ function renderCantina(){
   /* посылка почтового круга (M133, 11e): лежит рядом со столом, пока вы её везёте */
   if(typeof postBlock==="function")postBlock();
   if(typeof keepersBlock==="function")keepersBlock();   /* смотритель и список на переборке (11k) */
+  if(typeof chartsBlock==="function")chartsBlock();     /* их карта (11m) */
+  if(typeof quietBlock==="function")quietBlock();       /* открытая дверь (11n) */
   if(typeof putOnTable==="function")tableBlock();
   $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
 }

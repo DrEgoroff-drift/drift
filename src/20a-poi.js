@@ -54,7 +54,7 @@ function genPOI(tr,p){
     let tot=0;for(const k of pool)tot+=k.w;
     let pick=r()*tot,K=pool[0];
     for(const k of pool){pick-=k.w;if(pick<=0){K=k;break;}}
-    const scale=.8+r()*.55;
+    const scale=(.8+r()*.55)*((typeof countyPoiK==="function")?countyPoiK():1);   /* большой уезд (11l): кладка крупнее */
     /* площадка под основание: середина плоская, к краям плавно возвращается
        к исходному профилю — стыка не видно */
     const half=Math.round(K.flat*scale/tr.step);

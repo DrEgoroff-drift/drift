@@ -71,7 +71,9 @@ function drawMap(){
   const vis=[];
   for(let gy=G.sy-R;gy<=G.sy+R;gy++)for(let gx=G.sx-R;gx<=G.sx+R;gx++){
     if(!starAt(gx,gy))continue;
-    const [jx,jy]=sysJitter(gx,gy);
+    if(typeof chartsHidden==="function"&&chartsHidden(gx,gy))continue;   /* несогласие карт (11m) */
+    let [jx,jy]=sysJitter(gx,gy);
+    if(typeof chartsJitter==="function"){const cj=chartsJitter(gx,gy);jx+=cj[0];jy+=cj[1];}
     const d=Math.hypot(gx-G.sx+jx,gy-G.sy+jy);
     vis.push({gx,gy,s:getSystem(gx,gy),x:W/2+(gx-G.sx+jx)*cell,y:H/2+(gy-G.sy+jy)*cell,
       d, near:d<=st.jump+.02});
@@ -334,6 +336,7 @@ function jump(cost){
   /* уходя, платит не только топливо: тех, кто сел вам на хвост, вы оставляете
      над головами живущих внизу (M110, 12t-settle) */
   if(typeof settleLeftBehind==="function")settleLeftBehind();
+  if(typeof quietLeave==="function")quietLeave();   /* тихий уезд (11n): прошло больше, чем прожито */
   G.fuel-=cost;G.sx=G.sel.x;G.sy=G.sel.y;G.sys=getSystem(G.sx,G.sy);G.ap=null;
   if(typeof odoAdd==="function")odoAdd("jumps");   // путь, по которому зреет память (11d)
   const a=Math.random()*TAU,r=1500;

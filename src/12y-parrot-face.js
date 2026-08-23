@@ -154,12 +154,13 @@ function parRow(c,ax,ay,r1,r2,a0,a1,n,len,wid,ph,amp,cTip,cBase,spread){
    читается кляксой без направления. Первая версия была шаром — и была шаром. */
 function parBodyPath(c){
   c.beginPath();
-  c.moveTo(4,-42);                                  /* низ, над лапами */
-  c.bezierCurveTo(-20,-46,-34,-70,-35,-106);        /* спина от хвоста */
+  c.moveTo(-8,-30);                                 /* низ: широкое брюхо над лапами, бедро внутри */
+  c.bezierCurveTo(-28,-32,-36,-70,-35,-106);        /* спина от хвоста */
   c.bezierCurveTo(-36,-142,-18,-168,4,-175);        /* к затылку */
   c.bezierCurveTo(22,-180,37,-168,37,-150);         /* шея спереди */
   c.bezierCurveTo(37,-130,30,-118,29,-102);         /* горло */
-  c.bezierCurveTo(28,-80,24,-54,4,-42);
+  c.bezierCurveTo(28,-80,32,-48,18,-33);           /* брюхо */
+  c.bezierCurveTo(10,-28,0,-28,-8,-30);
   c.closePath();
 }
 /* ── оперение корпуса ──
@@ -171,12 +172,12 @@ function parCoat(g,T){
   const bg=g.createLinearGradient(-40,0,42,0);
   bg.addColorStop(0,PAR_C.blueD);
   bg.addColorStop(.52,"#42566c");bg.addColorStop(1,PAR_C.creamD);
-  g.fillStyle=bg;g.fillRect(-60,-190,120,160);
+  g.fillStyle=bg;g.fillRect(-60,-190,120,170);
   /* грудь — не перья остриём вниз, а мягкая чешуя: округлые пластинки внахлёст
      снизу вверх. Остроконечные перья в лоб дали плетёнку-вафлю: две встречные
      штриховки на одном пятне читаются тканью, а не птицей. */
-  for(let r=0;r<20;r++){
-    const y=-44-r*6;
+  for(let r=0;r<22;r++){
+    const y=-32-r*6;
     for(let i=0;i<6;i++){
       /* сетка без сбоя читается сотами: размер и место каждой пластинки
          сдвинуты своим числом, а не общим шагом */
@@ -199,7 +200,7 @@ function parCoat(g,T){
   cg.addColorStop(0,"rgba(20,34,60,.55)");
   cg.addColorStop(.45,"rgba(20,34,60,0)");
   cg.addColorStop(1,"rgba(255,240,210,.28)");
-  g.fillStyle=cg;g.fillRect(-14,-190,60,160);
+  g.fillStyle=cg;g.fillRect(-14,-190,60,170);
   /* спина — крупное синее перо остриём вниз, крупнее груди: два разных
      оперения на одном теле, а не один узор на всю птицу */
   for(let r=0;r<9;r++){
@@ -216,7 +217,7 @@ function parCoat(g,T){
   /* янтарь на плече: единственное тёплое пятно на корпусе, оно же метка
      породы. Без него синее с кремовым — форменная рубашка, а не животное. */
   for(let i=0;i<5;i++){
-    g.save();g.translate(-16+i*6,-138+i*7);g.rotate(1.25);
+    g.save();g.translate(-27+i*5,-140+i*6);g.rotate(1.25);
     parQuill(g,22,12,.26,PAR_C.amber,PAR_C.amberD);
     g.restore();
   }
@@ -227,20 +228,20 @@ function parFoot(c,x,dir,grip,up){
   /* Поджатая лапа — не спрятанная: птица подтягивает её к брюху и остаётся
      стоять на второй. Прятать её насовсем нельзя, иначе на поджатии тело
      теряет опору и повисает. */
-  const U=up||0, Sc=PAR.scratch||0;
+  const U=up||0, Sc=up?(PAR.scratch||0):0;
   /* чесание: лапа идёт вдоль бока вверх, к щеке; верх цевки прячется под
      корпусом, как бедро под пером, — видны только пальцы у головы */
-  c.save();c.translate(x-U*6+Sc*5,-U*26-Sc*80);c.scale(dir,1);c.rotate(-U*.5-Sc*2.3);
+  c.save();c.translate(x-U*6+Sc*14,-U*26-Sc*92);c.scale(dir,1);c.rotate(-U*.5-Sc*2.4);
   c.lineCap="round";
   c.strokeStyle=PAR_C.footD;c.lineWidth=6.4;
-  c.beginPath();c.moveTo(1,-46);c.quadraticCurveTo(0,-20,0,-4);c.stroke();
+  c.beginPath();c.moveTo(1,-38);c.quadraticCurveTo(0,-20,0,-4);c.stroke();
   c.strokeStyle=PAR_C.foot;c.lineWidth=4.4;
-  c.beginPath();c.moveTo(1,-44);c.quadraticCurveTo(0,-20,0,-5);c.stroke();
+  c.beginPath();c.moveTo(1,-36);c.quadraticCurveTo(0,-20,0,-5);c.stroke();
   /* чешуя цевки: восемь колечек. Гладкая палка выдаёт рисунок сразу — у птицы
      нога покрыта щитками, и это видно даже в четверть размера */
   c.strokeStyle="rgba(70,42,18,.45)";c.lineWidth=1;
-  for(let i=0;i<8;i++){
-    const y=-40+i*4.6;
+  for(let i=0;i<7;i++){
+    const y=-33+i*4.4;
     c.beginPath();c.moveTo(-2.4,y);c.quadraticCurveTo(0,y+1.6,2.4,y);c.stroke();
   }
   for(let i=0;i<3;i++){
@@ -304,7 +305,8 @@ function parrotDraw(c,W,H){
   /* лапы держат жёрдочку и НЕ разворачиваются вместе с телом */
   c.save();c.translate(0,-44);c.rotate(-PAR.hang*2.85);c.translate(0,44);
   parFoot(c,-15,-1,lift*.06,0);
-  parFoot(c,15,1,lift*.06,PAR.footUp);
+  /* чешущая лапа идёт к щеке ПОВЕРХ оперения — её рисуем после слоя */
+  if(!(PAR.scratch>.02))parFoot(c,15,1,lift*.06,PAR.footUp);
   c.restore();
   /* разворот боком: тело сжимается по ширине и проходит через ребро. Настоящий
      поворот кругом стоил бы второго набора рисунков; сжатие даёт то же самое
@@ -357,12 +359,6 @@ function parrotDraw(c,W,H){
 
   /* 2. корпус: масса и черепица одним куском, внутри обвода */
   parCoat(g,T);
-  /* «штаны»: пух бедра закрывает верх цевки. Голая нога от брюха до жёрдочки —
-     ходули; у птицы бедро и голень спрятаны в пере, наружу торчит только цевка */
-  for(const fx of [-15,15]){
-    parRow(g,fx,-50,7,5,.55,2.6,6,20,10,fx*.1,.05,PAR_C.cream,PAR_C.creamD,.85);
-    parRow(g,fx,-44,5,4,.75,2.4,4,15,9,fx*.1+1,.05,PAR_C.cream,PAR_C.creamD,.9);
-  }
 
   /* 3. КРЫЛО: три ряда на одном шарнире у плеча — машет плечо, а не перо.
      Ось у крыла своя, поэтому оно не сливается с хвостом в общую метёлку. */
@@ -373,7 +369,7 @@ function parrotDraw(c,W,H){
   if(PAR.stretch>.001)g.scale(1+PAR.stretch*.34,1+PAR.stretch*.16);
   /* тёмная подложка крыла: без неё ряды тонут в спине и крыла не видно */
   g.fillStyle="rgba(10,26,58,.85)";
-  g.beginPath();g.moveTo(4,-6);g.quadraticCurveTo(-16,34,-6,86);
+  g.beginPath();g.moveTo(4,6);g.quadraticCurveTo(-16,34,-6,86);
   g.quadraticCurveTo(14,44,18,2);g.closePath();g.fill();
   /* маховые: длинные гнутые перья вдоль бока, как в референсе, — не веер
      лопаток, а слоёная кисть с укорочением к плечу */
@@ -392,33 +388,33 @@ function parrotDraw(c,W,H){
   parRow(g,4,-10,8,9,1.30,1.90,5,28,11,3.6,.05,PAR_C.amber,PAR_C.amberD,.9);
   g.restore();
 
-  /* воротничок: мелкое перо там, где голова садится на грудь. Стык двух
+  const pr=PAR.preen, sc=PAR.scratch||0;
+  const hx=12-pr*16-PAR.tuck*5+sc*4, hy=-168+pr*26+PAR.tuck*13+sc*20;
+  /* воротничок: мелкое перо там, где голова садится на грудь. Идёт за
+     головой на две трети: осталась бы на месте — при втянутой голове торчал
+     бы над ней брыжами. Стык двух
      оперений — самое заметное место сборки, и он должен быть заткан. */
   const rf2=Math.abs(PAR.ruff)+PAR.tuck*.85;
-  parRow(g,10,-150,16,13,-2.5,.75,11,18+rf2*6,10,1.2,.10+rf2*.12,
+  parRow(g,10+(hx-12)*.6,-150+(hy+168)*.7,16,13,-2.5,.45,11,16+rf2*6,10,1.2,.10+rf2*.12,
     PAR_C.cream,PAR_C.blue,.92);
-  /* затылок: синее перо от головы к плечу. Без него между хохлом и крылом
-     просвечивает тёмная подложка — дыра, которой у птицы нет */
-  parRow(g,-2,-166,10,8,1.9,2.9,6,26,12,2.4,.05,PAR_C.blue,PAR_C.blueD,.85);
 
   /* 4. ГОЛОВА со всем, что на ней: качается на шее одним куском.
      Чистка перьев (`preen`) — единственное, что птица делает сама: голова
      ныряет к плечу и возвращается. Без такого «дела» она просто качается. */
-  const pr=PAR.preen, sc=PAR.scratch||0;
   /* шея: пятно в цвет головы между корпусом и черепом, идёт за головой на
      полпути. Голова — не диск, положенный на грудь; при наклоне и чистке
      между ними иначе открывается тёмный зазор */
-  g.save();g.translate(12-pr*8-PAR.tuck*2.5+sc*2,-158+pr*13+PAR.tuck*6+sc*10);
+  g.save();g.translate(12+(hx-12)*.5,-158+(hy+168)*.5);
   const ng=g.createLinearGradient(-18,0,18,0);
   ng.addColorStop(0,PAR_C.blue);ng.addColorStop(.5,"#a9c4de");ng.addColorStop(1,PAR_C.cream);
-  g.fillStyle=ng;g.beginPath();g.ellipse(0,0,17,15,-.1,0,7);g.fill();
+  g.fillStyle=ng;g.beginPath();g.ellipse(-6,0,24,17,-.15,0,7);g.fill();
   g.restore();
   g.save();
   /* втягивание в плечи (`tuck`) — не сдвиг головы вниз, а посадка её на тело:
      вместе с ней поднимается воротник, иначе видно голую шею. */
-  g.translate(12-pr*16-PAR.tuck*5+sc*4,-168+pr*26+PAR.tuck*13+sc*20);
+  g.translate(hx,hy);
   const hr=PAR.look*.12+Math.sin(T*.5)*.022+PAR.mad*.05+pr*1.05
-    +PAR.roll*.62+PAR.bow*.5+sc*.55;
+    +PAR.roll*.62+PAR.bow*.5+sc*.4;
   g.rotate(hr);
 
   /* 4а. хохол: восемь перьев назад-вверх, у каждого своя фаза и бусина.
@@ -435,7 +431,7 @@ function parrotDraw(c,W,H){
     const P=parPlume(g,len,a,.86,6.2-k*1.6,col,colD,4,1.1);
     /* голый стебель за опушкой: бусина висит НА нём, а не приклеена к перу —
        это и даёт антенну, а не блёстку на кончике */
-    const st=9+Math.sin(i*1.7)*4;
+    const st=6+Math.sin(i*1.7)*2;
     const sx=P[0]+Math.cos(a+.30)*st, sy=P[1]+Math.sin(a+.30)*st;
     g.strokeStyle="rgba(150,200,235,.6)";g.lineWidth=1.6;
     g.beginPath();g.moveTo(P[0],P[1]);g.lineTo(sx,sy);g.stroke();
@@ -446,7 +442,7 @@ function parrotDraw(c,W,H){
     const ca=Math.cos(hr),sa=Math.sin(hr);
     const bx=P[0]*ca-P[1]*sa, by=P[0]*sa+P[1]*ca;
     const lag=Math.sin(T*1.6+i*.8-.9)*3.5;
-    beads.push([12+bx+lag*.6,-168+by+lag,2.2+k*.5,
+    beads.push([hx+bx+lag*.6,hy+by+lag,1.8+k*.4,
       .72+.28*Math.sin(T*2.2+i*1.1)]);
   }
   /* 4б. череп: кремовая маска, синий затылок */
@@ -561,6 +557,11 @@ function parrotDraw(c,W,H){
   g.restore();
 
   c.drawImage(L.cv,-L.ox,-L.oy,L.w,L.h);
+  if(PAR.scratch>.02){
+    c.save();c.translate(0,-44);c.rotate(-PAR.hang*2.85);c.translate(0,44);
+    parFoot(c,15,1,lift*.06,PAR.footUp);
+    c.restore();
+  }
   c.restore();
   c.restore();
 }
