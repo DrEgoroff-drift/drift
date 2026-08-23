@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 215 · символов верхнего уровня: 2136
+Файлов: 217 · символов верхнего уровня: 2146
 
 ## СИМВОЛЫ
 
@@ -23,7 +23,7 @@ $menu                        src/15-input.js:125
 $msg                         src/28-loop.js:32
 $msl                         src/28-loop.js:35
 $nav                         src/28-loop.js:34
-$opts                        src/26-ui-station.js:771
+$opts                        src/26-ui-station.js:772
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:31
 $sh                          src/28-loop.js:24
@@ -40,7 +40,7 @@ actionKey                    src/15-input.js:75
 addPart                      src/05-parts.js:227
 addPath                      src/25-cockpit.js:154
 addRes                       src/11-log.js:130
-addrForm                     src/11b-speech.js:89
+addrForm                     src/11b-speech.js:90
 adjTo                        src/05-parts.js:23
 AFFIX                        src/05-parts.js:29
 AFFIX_BAD                    src/05-parts.js:46
@@ -494,6 +494,7 @@ drawLoreMarks                src/12q-lore.js:214
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
 drawMap                      src/18-mode-map.js:51
+drawMisFigure                src/11z-misclosure.js:63
 drawModule                   src/21aa-base-rooms.js:374
 drawMonolith                 src/20aa-poi-shapes.js:193
 drawNebula                   src/16-flight.js:67
@@ -533,7 +534,7 @@ drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:272
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:158
+drawThingIcon                src/27i-ui-table.js:167
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
 drawTrail                    src/16-flight.js:338
@@ -1009,7 +1010,7 @@ lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:46
 loadGame                     src/14-save.js:521
-LOCAL                        src/11b-speech.js:96
+LOCAL                        src/11b-speech.js:97
 LOG_MAX                      src/11-log.js:11
 LOG_PAGE                     src/11-log.js:12
 logAdd                       src/11-log.js:15
@@ -1128,7 +1129,16 @@ mirrorEchoArm                src/11f-mirror.js:52
 mirrorEchoTick               src/11f-mirror.js:56
 mirrorFind                   src/11f-mirror.js:69
 mirrorListen                 src/11f-mirror.js:76
+misBlock                     src/11z-misclosure.js:55
+misClockLine                 src/11z-misclosure.js:26
 misclose                     src/06b-region.js:80
+misEtherLine                 src/11z-misclosure.js:42
+misFigureStrips              src/11z-misclosure.js:40
+misInRegion                  src/11z-misclosure.js:17
+misMarkStrip                 src/11z-misclosure.js:35
+misStationOffset             src/11z-misclosure.js:19
+misTableReply                src/11z-misclosure.js:50
+misTestRegion                tests/91zzj-misclosure.js:2
 MIX_KIN                      src/02a-worldmix.js:19
 MIX_TYPES                    src/02-world.js:95
 mixc                         src/03-ships.js:150
@@ -1469,7 +1479,7 @@ PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:17
 ptr                          src/15-input.js:180
-putOnTable                   src/11b-speech.js:204
+putOnTable                   src/11b-speech.js:206
 QUEST_MAX                    src/11a-quests.js:15
 questAdd                     src/11a-quests.js:22
 questAll                     src/11a-quests.js:17
@@ -1588,7 +1598,7 @@ renderPrices                 src/12aa-need.js:195
 renderRoute                  src/12r-route.js:225
 renderStrips                 src/27i-ui-table.js:112
 renderTab                    src/26-ui-station.js:183
-renderThings                 src/27i-ui-table.js:134
+renderThings                 src/27i-ui-table.js:143
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -1607,7 +1617,7 @@ RES_AUTO                     src/08-state.js:18
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:281
 resEma                       src/28-loop.js:280
-resetArm                     src/26-ui-station.js:770
+resetArm                     src/26-ui-station.js:771
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:24
@@ -1818,8 +1828,8 @@ spawnAllies                  src/12a-crew.js:483
 spawnBarges                  src/12l-barge.js:102
 spawnPirates                 src/13-pirates.js:25
 SPEC_KEYS                    src/12a-crew.js:17
-speechAll                    src/11b-speech.js:110
-speechHere                   src/11b-speech.js:112
+speechAll                    src/11b-speech.js:111
+speechHere                   src/11b-speech.js:113
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
 ST_GOLD                      src/17c-system-draw.js:117
@@ -1901,10 +1911,10 @@ STRIP_CHUNK                  src/07-planet.js:73
 STRIP_JOB                    src/07-planet.js:76
 STRIP_MS                     src/07-planet.js:72
 STRIP_PEND                   src/07-planet.js:78
-STRIPS_MAX                   src/11b-speech.js:176
-stripsAll                    src/11b-speech.js:177
-stripSell                    src/11b-speech.js:213
-stripValue                   src/11b-speech.js:178
+STRIPS_MAX                   src/11b-speech.js:177
+stripsAll                    src/11b-speech.js:178
+stripSell                    src/11b-speech.js:216
+stripValue                   src/11b-speech.js:179
 stSet                        src/14-save.js:9
 stTabsHere                   src/26-ui-station.js:53
 stTypeOf                     src/06-galaxy.js:27
@@ -1935,7 +1945,7 @@ sysNebulaTex                 src/16a-space.js:53
 sysPirateBase                src/24a-mode-raid.js:98
 sysStyle                     src/16a-space.js:21
 tab                          src/26-ui-station.js:3
-TABLE_REPLY                  src/11b-speech.js:143
+TABLE_REPLY                  src/11b-speech.js:144
 tableBake                    src/27i-ui-table.js:52
 tableBlock                   src/27c-ui-hq.js:535
 tableIsOpen                  src/27i-ui-table.js:23
@@ -1960,7 +1970,7 @@ tapeRate                     src/25b-tape.js:75
 tapeSample                   src/25b-tape.js:54
 tapeScroll                   src/25b-tape.js:97
 tapeStrip                    src/25b-tape.js:187
-tapeTear                     src/11b-speech.js:181
+tapeTear                     src/11b-speech.js:182
 tapeTick                     src/25b-tape.js:79
 tapeUnpack                   src/25b-tape.js:39
 targetPos                    src/16-flight.js:97
@@ -2101,9 +2111,9 @@ vegaTestHome                 tests/91zzh-vega.js:2
 vegaTick                     src/11w-vega.js:178
 vegaWish                     src/11w-vega.js:42
 VER                          src/01-core.js:4
-visitHere                    src/11b-speech.js:80
-visitMark                    src/11b-speech.js:84
-visitsAll                    src/11b-speech.js:79
+visitHere                    src/11b-speech.js:81
+visitMark                    src/11b-speech.js:85
+visitsAll                    src/11b-speech.js:80
 voice                        src/09-audio.js:72
 VOICE_KEYS                   src/02a-worldmix.js:81
 VOICE_MAX                    src/09-audio.js:5
@@ -2228,7 +2238,7 @@ ZAP_COOL                     src/23-mode-dig.js:213
 ## src/11a-quests.js · 6 КБ
   · журнал дел:1
 
-## src/11b-speech.js · 15 КБ
+## src/11b-speech.js · 16 КБ
   · речь: очередь реплик и вещь на столе:1
 
 ## src/11c-stories.js · 19 КБ
@@ -2300,6 +2310,9 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## src/11x-ring.js · 8 КБ
   · Кольцо: сигнал извне:1
+
+## src/11z-misclosure.js · 6 КБ
+  · невязка: уезд, где счёт неба и счёт людей расходятся:1
 
 ## src/12aa-need.js · 12 КБ
   · нужда станции и наряд:1
@@ -2607,7 +2620,7 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## src/26-ui-station.js · 48 КБ
   · станция:1
-  · настройки:769
+  · настройки:770
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -2630,7 +2643,7 @@ ZAP_COOL                     src/23-mode-dig.js:213
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27i-ui-table.js · 11 КБ
+## src/27i-ui-table.js · 12 КБ
   · стол: одно место для всего, что читают:1
 
 ## src/27j-console.js · 6 КБ
@@ -2820,6 +2833,9 @@ ZAP_COOL                     src/23-mode-dig.js:213
 
 ## tests/91zzi-ring.js · 3 КБ
   · автотесты: Кольцо (M154):1
+
+## tests/91zzj-misclosure.js · 3 КБ
+  · автотесты: невязка (M155):1
 
 ## tests/91zzv-table.js · 7 КБ
   · автотесты: пульт и стол (M151a):1

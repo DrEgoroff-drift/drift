@@ -7,6 +7,17 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.116.0 — "The misclosure" (M155)
+
+`11z-misclosure`, on top of the hours region (11h): in the county where the hours drift, the
+station recorders disagree with the sky — each station's clock is ±3…9 minutes off, and ДОСКА
+shows it («ЧАСЫ СТАНЦИИ 12:40 · ПО НЕБУ 12:33»). The institute refuses it: a strip laid on the
+counter there gets «Прибор неисправен. Замените ленту. — Это ответ института, не мой.»; the
+ether carries two counters arguing about the time. A recorder strip torn in the county carries a
+mark and an angle; three or more such strips on the table draw one figure — the curves lie along
+an arc whose axis points where the Ring signal comes from. Nobody says so; a test guards that the
+table never does. Suite `91zzj`.
+---
 ## 0.115.0 — "The Ring" (M154)
 
 `11x-ring`: a structured signal from outside. After forty jumps (then every 25–40) the

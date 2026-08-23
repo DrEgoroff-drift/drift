@@ -64,6 +64,7 @@ function etherTick(dt){
   if(typeof rumourEtherLine==="function"){const h=rumourEtherLine(r);if(h)out=h;}    /* слух на приёмнике (11t) */
   if(typeof needEtherLine==="function"){const h=needEtherLine(r);if(h)out=h;}        /* нужда поблизости (M152e) */
   if(typeof ringEtherLine==="function"){const h=ringEtherLine(r);if(h)out=h;}        /* о том, что ловили (M154) */
+  if(typeof misEtherLine==="function"){const h=misEtherLine(r);if(h)out=h;}          /* стойки спорят о времени (M155) */
   if(typeof namesEtherLine==="function"){const h=namesEtherLine();if(h)out=h;}       /* ваше слово у диспетчера (11u) */
   if(out&&typeof regionAt==="function"){
     const R=regionAt(G.sx,G.sy);
@@ -184,6 +185,7 @@ function tapeTear(){
   const s={sx:G.sx,sy:G.sy,
            mis:+((typeof instrMisclose==="function")?instrMisclose():0).toFixed(3),
            span:T.n,t:Date.now()};
+  if(typeof misMarkStrip==="function")misMarkStrip(s);   /* лента из уезда несёт метку (M155) */
   const L=stripsAll();
   L.unshift(s);
   while(L.length>STRIPS_MAX)L.pop();
@@ -202,6 +204,7 @@ addEventListener("keydown",e=>{
 /* Положить вещь на стол. Возвращает ответ — строку или молчание. Продажа
    отдельным движением: сначала показывают, потом торгуются. */
 function putOnTable(kind,idx){
+  if(kind==="strip"&&typeof misTableReply==="function"){const m=misTableReply();if(m)return m;}   /* уезд невязки (M155) */
   const sr=(typeof storyTableLine==="function")?storyTableLine(kind):null;
   if(sr)return sr;                       // история отвечает на вещь раньше общей таблицы (11c)
   const pool=TABLE_REPLY[kind];

@@ -114,6 +114,15 @@ function renderStrips(box){
   const L=(typeof stripsAll==="function")?stripsAll():[];
   if(!L.length){tableRow(box,"dim","","лент нет. Оторвать полосу — клавиша T в полёте, когда на бумаге уже что-то записано");return;}
   tableRow(box,"head","","ЛЕНТ "+L.length+(L.length>=3?" · ТРИ И БОЛЬШЕ ЛЕЖАТ РЯДОМ":""));
+  /* фигура (M155): три и больше лент уезда — одна форма, без подписи */
+  const F=(typeof misFigureStrips==="function")?misFigureStrips():[];
+  if(F.length>=3&&typeof drawMisFigure==="function"){
+    const row=document.createElement("div");row.className="thing";
+    const cv=document.createElement("canvas");cv.width=520;cv.height=180;cv.style.cssText="width:260px;height:90px";
+    drawMisFigure(cv.getContext("2d"),520,180);
+    const nm=document.createElement("div");nm.className="nm";nm.innerHTML="<b>"+F.length+" ленты легли рядом</b><s></s>";
+    row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
+  }
   L.forEach((s,k)=>{
     const row=document.createElement("div");row.className="thing";
     const cv=document.createElement("canvas");cv.width=128;cv.height=80;

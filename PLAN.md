@@ -343,7 +343,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   seven-day ending; `11w-vega`, `12k-vega`, `91zzh`.
 - **M154 the Ring** — **built (0.115.0)**: a structured signal from outside on the receiver, recorded on tape, never
   explained; `11x-ring`, `91zzi`.
-- **M155 misclosure** — the region where the counts diverge; tapes together draw a figure on
+- **M155 misclosure** — **built (0.116.0)**: the region where the counts diverge; tapes together draw a figure on
   the table; `11z-misclosure`, `91zzj`.
 - **M156 circular** — the expedition demand through queues, prices, barges, settlements, crew,
   rumours for sixty days; barge passenger as a channel; `11x-expedition`, `G.exp`, `91zzk`.

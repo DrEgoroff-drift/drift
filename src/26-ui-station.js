@@ -220,6 +220,7 @@ function renderTab(){
     if(typeof kitDepotBlock==="function")kitDepotBlock();   /* склад института: комплект (M152) */
     if(typeof vegaFleaBlock==="function")vegaFleaBlock();   /* дед с лотка (M153) */
     if(typeof ringBlock==="function")ringBlock();           /* ленты Кольца (M154) */
+    if(typeof misBlock==="function")misBlock();             /* часы станции против неба (M155) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
