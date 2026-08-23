@@ -57,6 +57,10 @@ setTimeout(function(){
       var S=getSystem(R.core.sx,R.core.sy);goTo(S);var p=hoursCorePlanet(S);
       surf(p);G.surf.x=settleSpotX(p,G.surf.tr)-60;G.surf.cam=null;
     },
+    vega:function(){
+      var S=sysWhere(function(S){return S.station;});goTo(S);
+      G.home=homeInit();G.home.tier=7;G.home.turn=1200000;G.home.sx=G.sx;G.home.sy=G.sy;G.wishDevice=1;vegaWish("love");vegaBoard(true);G.parrot={name:"\u0413\u043e\u0432\u043e\u0440\u0443\u043d",who:"x"};conT=0;consoleTick(1000);
+    },
     kit:function(){
       var S=sysWhere(function(S){return S.station;});goTo(S);
       kitAll().torso=kitPiece("torso",3,1,1);kitAll().lamp=kitPiece("lamp",2,3,2);kitGive(kitPiece("boots",2,0,3),"\u0442");openShipView();

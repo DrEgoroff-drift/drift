@@ -141,7 +141,14 @@ function renderThings(box){
     drawThingIcon(cv.getContext("2d"),t.k,128,80);
     const nm=document.createElement("div");nm.className="nm";
     nm.innerHTML="<b>"+t.ru+"</b><s>"+(t.note||"")+(t.sx!=null?" · "+t.sx+":"+t.sy:"")+"</s>";
-    row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
+    row.appendChild(cv);row.appendChild(nm);
+    /* «Желание-1» (M153): три желания, и все три — она */
+    if(t.k==="wish"&&G.wishDevice===1&&typeof vegaWish==="function"){
+      const bb=document.createElement("div");bb.style.cssText="display:flex;flex-direction:column;gap:6px";
+      for(const W of VEGA_WISHES){const b=document.createElement("button");b.className="act sm gold";b.textContent=W.ru.toUpperCase();b.onclick=()=>{vegaWish(W.id);tableRender();};bb.appendChild(b);}
+      row.appendChild(bb);
+    }
+    box.appendChild(row);
     t.seen=1;
   });
   logBtnLabel();

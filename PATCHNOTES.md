@@ -7,6 +7,28 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.114.0 — "Vega" (M153)
+
+`11w-vega`, `12k-vega`: the lodger who cannot be evicted — a comedy of one wish in the key of
+Soviet communal comedy, after the author's retelling of "Obsession" without the killings. An old
+man on the bazaar sells «Желание-1» (once the home has a living part); it lies on the table and
+offers three wishes, and all three end in Vega, the radio operator from the station nearest home
+— the device "understood in its own way", and the player pressed it himself. Act 1: she moves in,
+morale is higher than the mate's, Aunt Ustya «уехала к сестре». Act 2: she counts the days you
+are away — calls on the receiver (turning the knob to the ether band counts as answering), other
+voices relay her words, and from the eighth day things at home get broken (a crack on the case
+glass stays). Every eviction attempt is +1 attachment and one of thirty replies, none repeating.
+Act 3: the old man is gone, the institute says «возврат не предусмотрен». The mirror: on the
+tenth day a second device, already pressed, and launching from home is delayed once a day —
+«вы обещали остаться». Flying with her: the seat on the console, her mood line, a suitcase in
+the hold, a click for a word or a gift (rarities please, ore quarrels), she darns the suit by
+the ship, reads the charts for the nearest need, hates caves, gets space-sick after three jumps,
+shouts at beasts, takes offence at raids and deep digs for a day; outings — the cantina for
+30 cr, the flea (a useless thing comes home), an eclipse, the Tin. The ending without a death:
+seven days at home with the engine off — «ты какой-то скучный стал» — she goes back to her
+shift, keeps living with you as a flatmate, calls once a week, and gets a parrot of her own.
+Suite `91zzh`.
+---
 ## 0.113.0 — "The suit as a kit" (M152)
 
 `12x-suit`: the suit is six places — helmet, torso, gloves, boots, pack, lamp — each a piece

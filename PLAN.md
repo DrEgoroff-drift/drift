@@ -338,7 +338,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   2–3 h, garage by hour 5–6.
 - **M152 the kit** — **built (0.113.0)**: the suit as six places with trade-offs, pieces with models/class/wear/mods,
   issued/found/given, the workshop tier repairs and modernises; `12x-suit`, `11y-kit`, `91zzg`.
-- **M153 Vega** — the lodger who cannot be evicted: the one-shot device on the flea, three acts,
+- **M153 Vega** — **built (0.114.0)**: the lodger who cannot be evicted: the one-shot device on the flea, three acts,
   the mirror, flying with her (right seat, HUD line, help/hinder/quarrel/gift/outings), the
   seven-day ending; `11w-vega`, `12k-vega`, `91zzh`.
 - **M154 the Ring** — a structured signal from outside on the receiver, recorded on tape, never

@@ -85,6 +85,7 @@ function homeMateName(){
    иначе перезаход в экран перебирал бы подарки */
 function homeMateKind(){
   const H=G.home;if(!H||!H.tier)return null;
+  if(typeof vegaHas==="function"&&vegaHas()&&G.vega.stage<4)return null;   /* Устя уехала к сестре (M153) */
   if((H.mateTier|0)>=H.tier)return null;             /* на этой ступени уже говорили */
   return ["tip","part","rumour"][H.tier%3];
 }
@@ -209,7 +210,7 @@ function homeShow(res,qty){
 function homeOrderBonus(){return homeHas("study")?1:0;}
 /* ЖИЛАЯ ЧАСТЬ: наёмник между рейсами живёт в доме, а не в кабине, и мораль
    восстанавливается вдвое быстрее. Читается в `crewTick`. */
-function homeMoraleMul(){return homeHas("living")?2:1;}
+function homeMoraleMul(){return (homeHas("living")?2:1)*(typeof vegaMoraleMul==="function"?vegaMoraleMul():1);}   /* Вега (M153) */
 /* ВИТРИНА: выставленное редкое сырьё — не склад, а репутация. Домен приносит
    надбавку тем большую, чем богаче витрина, но не больше десятой части.
    Читается в `mgrDomain`. */

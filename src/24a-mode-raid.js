@@ -132,6 +132,7 @@ function drawPirateBase(zx,zy,Z){
   ctx.fillText(((HL?huntLairName(G.sx,G.sy):PB.name)||PB.name).toUpperCase(),x,y+34);
 }
 function enterRaid(PB){
+  if(typeof vegaOffend==="function"&&vegaAboard())vegaOffend("рейд, а она просила не лезть");   /* M153 */
   /* В занятой системе база — логово: уровень выше на занятость, поэтому и
      отсеки крупнее, и охраны больше. Отдельный режим под «данж» не нужен —
      абордаж уже умеет всё, чего это требует. */

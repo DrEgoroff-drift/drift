@@ -22,6 +22,8 @@ function openStation(){
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   /* цены на бумагу (M152e): что видели здесь — лежит на столе, закладка ЦЕНЫ */
   if(typeof pricesSeen==="function")pricesSeen(G.sys);
+  if(typeof vegaHomeArrive==="function"&&vegaAtHome())vegaHomeArrive();   /* «я прибралась» (M153) */
+  if(typeof vegaLanded==="function")vegaLanded();
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
   document.getElementById("stName").textContent=G.st.name.toUpperCase();
@@ -84,6 +86,7 @@ function repairCost(){
   return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep*repRepairMul()));
 }
 function closeStation(){
+  if(typeof vegaLaunchHold==="function"&&vegaLaunchHold())return;   /* зеркало (M153): раз в день — «вы обещали остаться» */
   /* блошинец (12ua): то, что про вас записано, вы либо забрали, либо оставили
      на прилавке — и тогда его покупает кто-то другой */
   if(typeof fleaLeave==="function")fleaLeave(G.sys);
@@ -215,6 +218,7 @@ function renderTab(){
     if(typeof needBlock==="function")needBlock();         /* нужда и наряд (M152e) */
     if(typeof findsBlock==="function")findsBlock();       /* находки: институту или с рук (M152e) */
     if(typeof kitDepotBlock==="function")kitDepotBlock();   /* склад института: комплект (M152) */
+    if(typeof vegaFleaBlock==="function")vegaFleaBlock();   /* дед с лотка (M153) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */

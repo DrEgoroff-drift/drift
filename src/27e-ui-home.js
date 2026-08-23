@@ -383,6 +383,8 @@ function homeRoomBody(c,W2,H2){
         }
       }
     }
+    /* трещина (M153): Вега била — витрина помнит */
+    if(typeof vegaBroken==="function"&&vegaBroken("стекло витрины")){c.strokeStyle="rgba(255,255,255,.35)";c.lineWidth=1;c.beginPath();c.moveTo(x0+20,fy-50);c.lineTo(x0+27,fy-36);c.lineTo(x0+22,fy-28);c.moveTo(x0+27,fy-36);c.lineTo(x0+36,fy-30);c.stroke();}
     /* блик по стеклу — иначе витрина читается нишей */
     c.fillStyle="rgba(255,255,255,.06)";
     c.beginPath();c.moveTo(x0+8,fy-2);c.lineTo(x0+30,fy-60);c.lineTo(x0+38,fy-60);
@@ -524,6 +526,7 @@ function homeRoomBody(c,W2,H2){
       const cr=home[i];
       homeCrewFigure(c,x0+10+i*15,fy,clamp(cr.morale===undefined?1:cr.morale,0,1));
     }
+    if(typeof vegaHomeFigure==="function")vegaHomeFigure(c,x0+42,fy);   /* жиличка (M153) */
     zone(x0,56,"living","жилая часть");
   });
   /* 8. причал с маяком: окно в док и живой огонь маяка */

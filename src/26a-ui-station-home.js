@@ -63,6 +63,7 @@ function renderBasesTab(st){
         mr.appendChild(mb);
         $body.appendChild(mr);
       }
+      if(typeof vegaHomeBlock==="function")vegaHomeBlock();   /* жиличка (M153) */
       /* стена-музей: доска прогресса живёт в кабинете, а не на отдельном экране */
       if(homeHas("study")&&typeof rareCount==="function"){
         $body.appendChild(el("div","sec","СТЕНА В КАБИНЕТЕ · "+rareCount()+" / 100 · "+

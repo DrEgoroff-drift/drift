@@ -796,7 +796,7 @@ body.table #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.113.0";
+const VER="0.114.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -5716,7 +5716,7 @@ function stat(){
     thr:S.thr*(1+m.engine*.19)*mul("thrMul")*bpMul("cleanjet",1.1,.93)*(cr("moth")?1.25:1)*(1+rs("thr"))*wearMul(),
     turn:S.turn*(1+m.engine*.07)*mul("turnMul")*(cr("moth")?1.25:1)*(1+rs("turn"))*wearMul(),
     fuelMax:Math.max(20,Math.round(S.fuel*(1+m.tank*.3)+(B.has("icecore")?50:0)+(P.fuelAdd||0)+(cr("well")?60:0)+rs("fuel"))),
-    cargoMax:Math.max(8,Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
+    cargoMax:Math.max(8,-(typeof vegaAboard==="function"&&vegaAboard()?1:0)+Math.round(S.cargo*(1+m.hold*.32)*(T.has("pack")?1.4:1)*(B.has("bioseal")?1.2:1)*mul("cargoMul")*bpMul("wide",1.12,.92)*(cr("ark")?1.2:1)*(1+rs("cargo")))),
     hullMax:Math.max(20,Math.round(S.hull*(1+m.armor*.2)+(T.has("cera")?30:0)+(B.has("crystplate")?40:0)+(P.hullAdd||0)+(bpState("hardweld")>0?25:(bpState("hardweld")<0?-15:0))+(cr("ark")?40:0))),
     drill:(cr("cair")?1.3:1)*(1+m.drill*.55)*(T.has("drone")?2:1)*drillBonus*(B.has("iridrill")?1.25:1)*mul("drillMul")*bpMul("coldbore",1.18,.88)*(1+rs("drill")),
     synthRatio:B.has("isosynth")?8:4,
@@ -9240,6 +9240,302 @@ function placeDraw(tr,camx,camy,p){
   }
 }
 
+/* ══════════════ Вега: жиличка, которую нельзя выгнать ══════════════
+   M153. Комедия одного желания. Игрок САМ покупает на блошинце прибор
+   «Желание-1» и сам нажимает; три желания — все кончаются Вегой, радисткой
+   с ближней станции. Дальше — три акта, зеркало, полёты с ней и развязка
+   без смерти: перестать убегать.
+
+   СОСТОЯНИЕ (G.vega):
+     stage  0 нет · 1 мечта · 2 одержимость · 3 зеркало · 4 свободна
+     day0   день, когда нажали
+     att    привязанность: растёт от попыток выгнать и звонков без ответа
+     away   дней подряд вне дома · homeDays дней подряд дома с выключенным двигателем
+     broken список разбитого · evict число попыток выгнать
+     aboard летит с вами (кресло на пульте, G.seat) · mood · offend день обиды
+     out    вылазки {cantina,flea,eclipse,tin} · parrot2 второй попугай
+   Всё по дням (celDay), чтобы не зависеть от реального времени.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Ничего не трогает экономику: разбитое — картинка и чуть морали, не налог.
+   2. Слова — в 12k-vega. Здесь условия и счётчики.
+   3. Выгнать нельзя ни на одной стадии: это не баг, это фильм. */
+function vegaAll(){return G.vega||null;}
+function vegaHas(){const V=G.vega;return !!(V&&V.stage>0);}
+function vegaAboard(){const V=G.vega;return !!(V&&V.stage>0&&V.aboard);}
+function vegaAtHome(){const H=G.home;return !!(H&&H.tier&&G.sx===H.sx&&G.sy===H.sy);}
+function vegaHullName(){return (G.ship&&G.shipId&&shipData(G.shipId))?"«"+shipData(G.shipId).ru+"»":"борт";}
+/* ── прибор на блошинце: только когда есть жилая часть, и только пока не нажат ── */
+function vegaDeviceOffered(sys){
+  if(!sys||!sys.station||sys.station.stype!=="bazaar")return false;
+  if(!homeHas("living"))return false;
+  if(vegaHas()||G.wishDevice)return false;
+  return true;
+}
+function vegaDeviceBuy(sys){
+  if(!vegaDeviceOffered(sys))return false;
+  if(G.credits<40)return false;
+  G.credits-=40;G.wishDevice=1;
+  thingAdd("wish","«Желание-1»","прибор одноразовый · ВНИИ неизвестно чего · инструкция утеряна · нажать — на столе, ВЕЩИ");
+  tell("tech","Куплено: «Желание-1» · дед с лотка: «инструкция утеряна, нажимать один раз»","«ЖЕЛАНИЕ-1»\nлежит на столе");
+  return true;
+}
+/* нажать: любое из трёх — Вега. Прибор понял по-своему */
+function vegaWish(id){
+  if(!G.wishDevice||vegaHas())return false;
+  const W=VEGA_WISHES.find(w=>w.id===id)||VEGA_WISHES[0];
+  G.wishDevice=2;
+  G.vega={stage:1,day0:celDay(),att:0,away:0,homeDays:0,broken:[],evict:0,aboard:0,mood:1,offend:-1,
+          out:{},parrot2:0,lastDay:celDay(),calls:0,wish:W.id,said:0};
+  const L=thingsAll();const t=L.find(x=>x.k==="wish");if(t){t.ru="«Желание-1» · нажат";t.note="желание: "+W.ru+" · исполнено"+(W.id==="alone"?" с запасом":"")+" · прибор молчит";}
+  logAdd("good","«Желание-1»: "+W.ru+" — исполнено"+(W.id==="alone"?" с запасом":""));
+  say("ЖЕЛАНИЕ-1\n«"+W.ru+"»\nисполнено"+(W.id==="alone"?" с запасом":""),260);
+  peopleLine("Я переезжаю. Не спорь — прибор сказал. Устя уехала к сестре.","Вега",true);
+  if(G.home)G.home.mateTier=G.home.tier;           /* домочадец умолк: его место занято */
+  sfx("ok",{v:.6});
+  return true;
+}
+/* ── день: считаем дома/не дома, звоним, бьём, освобождаемся ── */
+function vegaDayTick(){
+  const V=G.vega;if(!V||!V.stage)return;
+  const d=celDay();
+  if(d===V.lastDay)return;
+  const n=Math.min(3,d-V.lastDay);V.lastDay=d;
+  if(V.stage===4){               /* свободна: раз в неделю звонит и всё */
+    if(d%7===0)etherLine(pick(VEGA_FREE,rng(hashi(d,7,0xFE))),"Вега");
+    return;
+  }
+  const home=vegaAtHome()&&!V.aboard;
+  for(let i=0;i<n;i++){
+    if(home||V.aboard){
+      V.away=0;
+      if(home&&(G.mode==="dock"||G.mode==="system")){
+        V.homeDays++;
+        /* остался лишний день — назавтра что-то починила */
+        if(V.homeDays>=2&&V.broken.length){const b=V.broken.shift();peopleLine("Я починила: "+b+". Ты же остался.","Вега");}
+      }
+      if(V.aboard)V.homeDays=0;
+    }else{
+      V.away++;V.homeDays=0;
+      const tier=V.away<=3?0:(V.away<=7?1:2);
+      const r=rng(hashi(d,V.away,0x7E6A));
+      if(V.stage===1&&V.away>=2){V.stage=2;logAdd("warn","Вега считает дни.");}
+      if(V.stage>=2){
+        /* звонок: ответить — крутить ручку на эфир; без ответа привязанность растёт */
+        const answered=(G.radioF!=null&&G.radioF>=.88);
+        etherLine(pick(VEGA_CALLS[tier],r),"Вега");V.calls++;
+        if(!answered)V.att+=.2;
+        if(tier>=1&&r()<.6)etherLine(pick(VEGA_RELAY,r).replace("{hull}",vegaHullName()));
+        if(tier>=2&&V.broken.length<VEGA_BROKEN.length&&r()<.7){
+          const b=VEGA_BROKEN[V.broken.length];V.broken.push(b);
+          logAdd("warn","Дома разбито: "+b);
+          for(const c of (G.crew||[]))c.morale=Math.max(0,(c.morale===undefined?1:c.morale)-.03);
+        }
+      }
+    }
+  }
+  /* зеркало: на десятый день второй прибор, уже нажатый */
+  if(V.stage===2&&d-V.day0>=10&&!V.mirror){
+    V.mirror=1;V.stage=3;
+    thingAdd("wish","Второй «Желание-1» · уже нажат","лежал на столе утром · кто нажал — не сказано · с тех пор хочется домой");
+    logAdd("warn","На столе второй «Желание-1». Нажатый.");
+  }
+  /* развязка: семь дней дома подряд с выключенным двигателем */
+  if(V.stage>=2&&V.homeDays>=7){
+    V.stage=4;V.att=0;V.aboard=0;G.seat=null;
+    peopleLine("Ты какой-то скучный стал. Я на станцию вернусь, на смену. Жить буду тут — ты не против? Ты не против.","Вега",true);
+    logAdd("good","Вега вернулась на смену. Живёт у вас. Звонит раз в неделю.");
+    thingAdd("paper","Записка от Веги","«суп на плите. ключ у меня. второй прибор погас, я проверила» · прибор на столе тёмный");
+    V.parrot2=1;
+    logAdd("dim","У Веги теперь попугай. Второй. Ваши попугаи друг с другом не разговаривают.");
+  }
+}
+/* ── выгнать: нельзя. Каждая попытка — +1 привязанность и новый отказ ── */
+function vegaEvict(){
+  const V=G.vega;if(!V||!V.stage)return null;
+  const line=VEGA_EVICT[V.evict%VEGA_EVICT.length];
+  V.evict++;
+  if(V.stage<4)V.att+=1;
+  peopleLine(line,"Вега",true);
+  return line;
+}
+/* ── мораль дома: в мечте и на борту выше домочадца, в обиде — нет ── */
+function vegaMoraleMul(){
+  const V=G.vega;if(!V||!V.stage)return 1;
+  if(vegaOffended())return 1;
+  return V.stage===1?1.5:(V.stage===4?1.2:1.15);
+}
+function vegaOffended(){const V=G.vega;return !!(V&&V.offend>=celDay());}
+function vegaOffend(why){
+  const V=G.vega;if(!V||!V.stage||V.stage===4)return;
+  if(V.offend>=celDay())return;
+  V.offend=celDay()+1;V.mood=0;
+  peopleLine(pick(VEGA_OFFEND,rng(hashi(celDay(),3,0x0FF))),"Вега");
+  logAdd("warn","Вега обиделась: "+why+" · день молчит");
+  if(typeof heardAdd==="function")heardAdd("обиделась");   /* попугай подхватывает */
+}
+/* ── на борту ── */
+function vegaBoard(on){
+  const V=G.vega;if(!V||!V.stage||V.stage===4)return false;
+  V.aboard=on?1:0;
+  if(on){
+    G.seat={name:"ВЕГА",line:"на борту",draw:vegaSeatDraw,act:vegaSeatAct};
+    peopleLine("Я с тобой. Чемодан в трюме, не трогай.","Вега",true);
+  }else{
+    G.seat=null;
+    peopleLine("Ладно. Я дома. Звони.","Вега",true);
+  }
+  return true;
+}
+function vegaSeatLine(){
+  const V=G.vega;if(!V)return "";
+  if(vegaOffended())return "обиделась · молчит";
+  if(G.mode==="cave")return "«не в пещеру»";
+  return V.mood>.6?"на борту · довольна":(V.mood>.3?"на борту · так себе":"на борту · злится");
+}
+function vegaSeatAct(){
+  const V=G.vega;if(!V||!V.aboard)return;
+  /* подарок: редкость в трюме — берёт; руда — ссора; ничего — реплика */
+  const rare=RARE_RES.find(k=>(G.cargo[k]|0)>0);
+  if(rare){
+    G.cargo[rare]--;V.att=Math.max(0,V.att-1);V.mood=1;V.offend=-1;
+    peopleLine(pick(VEGA_GIFT_OK,rng(hashi(celDay(),V.calls,0x61F))),"Вега",true);
+    return;
+  }
+  if(vegaOffended()){say("Вега\n…",120);return;}
+  peopleLine(pick(VEGA_ABOARD,rng(hashi(celDay(),++V.said,0xAB0))),"Вега",true);
+}
+function vegaSeatDraw(c,W,H){
+  c.save();c.translate(W/2,H);
+  const s=Math.min(W,H)/56;c.scale(s,s);
+  c.fillStyle="#5b4a6e";c.beginPath();c.roundRect(-12,-30,24,28,6);c.fill();        /* платье */
+  c.fillStyle="#e6c9a8";c.beginPath();c.arc(0,-38,8,0,7);c.fill();                  /* лицо */
+  c.fillStyle="#b8323a";c.beginPath();c.moveTo(-9,-43);c.quadraticCurveTo(0,-54,9,-43);c.lineTo(7,-41);c.lineTo(-7,-41);c.closePath();c.fill(); /* косынка — только над лбом */
+  c.fillStyle="#2a1e1e";c.fillRect(-3,-40,1.6,1.6);c.fillRect(1.5,-40,1.6,1.6);
+  const V=G.vega;if(V&&vegaOffended()){c.strokeStyle="#2a1e1e";c.lineWidth=1;c.beginPath();c.moveTo(-3,-34);c.lineTo(3,-34);c.stroke();}
+  else{c.strokeStyle="#2a1e1e";c.lineWidth=1;c.beginPath();c.arc(0,-35,2.5,.2,Math.PI-.2);c.stroke();}
+  c.restore();
+}
+/* кресло обновляется раз в тик пульта: строка настроения */
+function vegaTick(dt){
+  const V=G.vega;if(!V||!V.stage)return;
+  vegaDayTick();
+  V.ambT=(V.ambT||0)-dt;if(V.ambT<=0){V.ambT=120;vegaAmbientTick();}
+  if(V.aboard){
+    if(!G.seat)G.seat={name:"ВЕГА",line:"",draw:vegaSeatDraw,act:vegaSeatAct};
+    G.seat.line=vegaSeatLine();
+    V.mood=Math.min(1,V.mood+dt*.0002);
+    /* пещера: строка раз в минуту и никакой помощи */
+    if(G.mode==="cave"){V.caveT=(V.caveT||0)-dt;if(V.caveT<=0){V.caveT=3600;peopleLine(pick(VEGA_CAVE,rng(hashi(celDay(),G.t|0,0xCA))),"Вега",true);V.mood=Math.max(0,V.mood-.2);}}
+  }
+}
+/* прыжок: укачивает после третьего подряд */
+function vegaJump(){
+  const V=G.vega;if(!V||!V.aboard)return;
+  V.jumps=(V.jumps||0)+1;
+  if(V.jumps>3&&!vegaOffended()){peopleLine(pick(VEGA_SICK,rng(hashi(V.jumps,1,0x51C))),"Вега",true);V.mood=Math.max(0,V.mood-.15);}
+}
+function vegaLanded(){const V=G.vega;if(V)V.jumps=0;}
+/* зверь рядом: кричит, звери шарахаются (читается в пугливости 21) */
+function vegaBeastShout(){
+  const V=G.vega;if(!V||!V.aboard)return;
+  if(V.beastT>G.t-1800)return;V.beastT=G.t;
+  peopleLine(pick(VEGA_BEAST,rng(hashi(G.t|0,2,0xBEA))),"Вега",true);
+}
+/* вылазки: кантина, блошинец, затмение, Жестянка — след истории и строка */
+function vegaOuting(kind){
+  const V=G.vega;if(!V||!V.aboard||!VEGA_OUTING[kind])return false;
+  const first=!V.out[kind];V.out[kind]=(V.out[kind]|0)+1;
+  const r=rng(hashi(celDay(),V.out[kind],0x0A7));
+  peopleLine(pick(VEGA_OUTING[kind],r),"Вега",true);
+  V.mood=1;V.att=Math.max(0,V.att-.5);
+  if(kind==="cantina"&&G.credits>=30){G.credits-=30;logAdd("money","Кантина с Вегой: −30 кр · неделю будет сплетничать");V.gossipUntil=celDay()+7;}
+  if(kind==="flea"&&first)thingAdd("junk","Бесполезная вещь Веги","куплена на блошинце · «дед сказал — редкость» · стоит дома");
+  if(kind==="tin")V.cried=1;
+  return true;
+}
+/* дом: при возвращении после долгого отсутствия детали переложены */
+function vegaHomeArrive(){
+  const V=G.vega;if(!V||!V.stage||V.stage===4)return;
+  if(V.away>=4&&G.inv&&G.inv.length>1){
+    const r=rng(hashi(celDay(),V.away,0x7D1));
+    for(let i=G.inv.length-1;i>0;i--){const j=Math.floor(r()*(i+1));const t=G.inv[i];G.inv[i]=G.inv[j];G.inv[j]=t;}
+    peopleLine("Я прибралась. Всё на месте. Примерно.","Вега",true);
+  }
+}
+/* зеркало: раз в день запуск из дома откладывается */
+function vegaLaunchHold(){
+  const V=G.vega;if(!V||V.stage!==3||!vegaAtHome())return false;
+  if(V.holdDay===celDay())return false;
+  V.holdDay=celDay();
+  say("ЗАПУСК ОТЛОЖЕН\nвы обещали остаться",200);
+  logAdd("warn","Запуск отложен: вы обещали остаться. Второй прибор на столе тёплый.");
+  return true;
+}
+/* блок на доске блошинца: дед с лотка — или его нет */
+function vegaFleaBlock(){
+  if(!G.sys||!G.sys.station||G.sys.station.stype!=="bazaar")return;
+  if(vegaDeviceOffered(G.sys)){
+    $body.appendChild(el("div","sec","ДЕД С ЛОТКА · «ЖЕЛАНИЕ-1»"));
+    const r=el("div","row","<div class='nm'><b>«Желание-1» · прибор одноразовый</b><s>ВНИИ неизвестно чего · инструкция утеряна · «нажимать один раз, больше не надо» · 40 кр</s></div>");
+    const b=el("button","act sm gold","КУПИТЬ · 40 кр");b.disabled=G.credits<40;
+    b.onclick=()=>{vegaDeviceBuy(G.sys);renderTab();};
+    r.appendChild(b);$body.appendChild(r);
+  }else if(vegaHas()&&G.vega.stage<4){
+    $body.appendChild(el("div","sec","ЛОТОК, ГДЕ БЫЛ ДЕД"));
+    $body.appendChild(el("div","row","<div class='nm'><s>другой продавец: «Какой прибор?» · в институт написано — «возврат не предусмотрен. инструкция утеряна. ждите»</s></div>"));
+  }
+}
+/* блок дома: кто живёт, выгнать, взять на борт, вылазка в кантину */
+function vegaHomeBlock(){
+  const V=G.vega;if(!V||!V.stage)return;
+  const st=V.stage===1?"мечта":(V.stage===2?"считает дни":(V.stage===3?"второй прибор на столе":"соседка"));
+  $body.appendChild(el("div","sec","ВЕГА · "+st.toUpperCase()+(V.broken.length?" · РАЗБИТО: "+V.broken.join(", ").toUpperCase():"")));
+  const r=el("div","row","<div class='nm'><b>Вега</b><s>"+(V.aboard?"летит с вами · чемодан в трюме":"дома · привязанность "+V.att.toFixed(1)+" · попыток выгнать "+V.evict)+
+    (V.parrot2?" · у неё свой попугай":"")+"</s></div>");
+  const b1=el("button","act sm","ВЫГНАТЬ");b1.onclick=()=>{vegaEvict();renderTab();};r.appendChild(b1);
+  if(V.stage<4){
+    const b2=el("button","act sm gold",V.aboard?"ОСТАВИТЬ ДОМА":"ВЗЯТЬ НА БОРТ");
+    b2.onclick=()=>{vegaBoard(!V.aboard);renderTab();};r.appendChild(b2);
+  }
+  $body.appendChild(r);
+}
+/* блок в кантине: сесть с ней */
+function vegaCantinaBlock(){
+  const V=G.vega;if(!V||!V.aboard)return;
+  const r=el("div","row","<div class='nm'><b>Вега за столиком</b><s>посидеть вдвоём · 30 кр · она посмотрит на людей</s></div>");
+  const b=el("button","act sm","СЕСТЬ ВДВОЁМ");b.disabled=G.credits<30;
+  b.onclick=()=>{vegaOuting("cantina");renderTab();};
+  r.appendChild(b);$body.appendChild(r);
+}
+/* помощь и вылазки, которые читаются сами: затмение с поверхности, Жестянка на
+   стыковке, карты раз в день — всё только на борту и не в обиде */
+function vegaAmbientTick(){
+  const V=G.vega;if(!V||!V.aboard||vegaOffended())return;
+  const d=celDay();
+  if(G.mode==="surface"&&G.surf&&G.surf.p&&typeof celEclipse==="function"){
+    const e=celEclipse(G.surf.p,G.t);
+    if(e&&e.k>.8&&V.eclDay!==d){V.eclDay=d;vegaOuting("eclipse");}
+  }
+  if(G.mode==="dock"&&typeof tinHereRec==="function"&&tinHereRec()&&!V.out.tin)vegaOuting("tin");
+  if(V.chartDay!==d&&typeof needsNear==="function"){
+    V.chartDay=d;
+    const L=needsNear(6);
+    if(L.length)peopleLine("Я карты читала: на "+L[0].sys.station.name+" нет "+L[0].need.ru+". Это "+L[0].d+" прыжк"+(L[0].d===1?"а":"ов")+".","Вега");
+  }
+}
+/* фигура дома: в жилой части, косынка; обиженная — спиной */
+function vegaHomeFigure(c,x,fy){
+  const V=G.vega;if(!V||!V.stage||V.aboard)return;
+  const k=62/89;
+  c.save();c.translate(x,fy);c.scale(k,k);
+  hqFigure(c,0,0,[120,84,140],G.t*.02,null,0,null,0);
+  c.restore();
+  c.fillStyle="#b8323a";c.beginPath();c.moveTo(x-6,fy-56);c.quadraticCurveTo(x,fy-64,x+6,fy-56);c.lineTo(x+5,fy-52);c.lineTo(x-5,fy-52);c.closePath();c.fill();
+  if(V.parrot2){c.fillStyle="#3fa06a";c.beginPath();c.ellipse(x+12,fy-40,3,4.5,.3,0,TAU);c.fill();c.fillStyle="#e0b040";c.fillRect(x+14,fy-41,2.5,1.5);}
+}
+function vegaBroken(what){const V=G.vega;return !!(V&&V.broken&&V.broken.indexOf(what)>=0);}
+
 /* ══════════════ нужда станции и наряд ══════════════
    M152e. Два ответа на «где заработать», которые читаются, а не фармятся.
 
@@ -12537,6 +12833,7 @@ function homeMateName(){
    иначе перезаход в экран перебирал бы подарки */
 function homeMateKind(){
   const H=G.home;if(!H||!H.tier)return null;
+  if(typeof vegaHas==="function"&&vegaHas()&&G.vega.stage<4)return null;   /* Устя уехала к сестре (M153) */
   if((H.mateTier|0)>=H.tier)return null;             /* на этой ступени уже говорили */
   return ["tip","part","rumour"][H.tier%3];
 }
@@ -12661,7 +12958,7 @@ function homeShow(res,qty){
 function homeOrderBonus(){return homeHas("study")?1:0;}
 /* ЖИЛАЯ ЧАСТЬ: наёмник между рейсами живёт в доме, а не в кабине, и мораль
    восстанавливается вдвое быстрее. Читается в `crewTick`. */
-function homeMoraleMul(){return homeHas("living")?2:1;}
+function homeMoraleMul(){return (homeHas("living")?2:1)*(typeof vegaMoraleMul==="function"?vegaMoraleMul():1);}   /* Вега (M153) */
 /* ВИТРИНА: выставленное редкое сырьё — не склад, а репутация. Домен приносит
    надбавку тем большую, чем богаче витрина, но не больше десятой части.
    Читается в `mgrDomain`. */
@@ -13789,6 +14086,63 @@ const STORIES_C=[
  links:["named_crystal"]}
 ];
 for(const S of STORIES_C)STORIES.push(S);
+
+/* ══════════════ Вега: реплики ══════════════
+   M153. Слова жилички — отдельной таблицей, как у сотни (12k-*): логика в
+   11w-vega, здесь только текст. Регистры: нежный (акт 1), тревожный (акт 2),
+   обиженный, бортовой (летит с вами), свободный (после развязки). */
+const VEGA_WISHES=[
+  {id:"love", ru:"чтобы меня любили"},
+  {id:"wait", ru:"чтобы дома кто-то ждал"},
+  {id:"alone",ru:"чтобы не было так одиноко"}
+];
+const VEGA_DREAM=[
+  "Я тебе завтрак оставила. И скафандр заштопала — там на локте было.",
+  "Ты не торопись сегодня. Я тут. Я никуда.",
+  "Устя уехала к сестре. Сказала, что надолго. Ну и хорошо — тесно было.",
+  "Я твою кружку помыла. И вторую. У тебя теперь две.",
+  "Когда ты вернёшься, я свет не буду гасить. Чтобы с орбиты видно."
+];
+const VEGA_CALLS=[          /* «ты где?» — по дням вне дома, крепчает */
+  ["Ты где? Я просто спрашиваю.","Алло. Это я. Ты где?","Ты там как? Ответь, если слышишь."],
+  ["Ты где. Третий день. Я считаю.","Я всем станциям передала: если увидят твой борт — пусть скажут.","Ты не отвечаешь. Я знаю, что слышишь."],
+  ["Стекло в витрине треснуло. Само. Я тут ни при чём.","Лампа в гараже разбилась. Я её не трогала. Почти.","Кружка упала. Твоя. Та, вторая."]
+];
+const VEGA_RELAY=[          /* чужие голоса передают её слова */
+  "…борт {hull}, ваша Вега просила передать: где вы.",
+  "…всем в секторе: если кто видит борт {hull} — Вега ждёт. Передаю, как сказано.",
+  "…{hull}, тут женщина на связи просит вас. Уже третий раз. Ответьте ей, что ли."
+];
+const VEGA_EVICT=[          /* тридцать отказов, ни один не повторяется первые тридцать раз */
+  "Куда? Там вакуум.","Тут мои тапки.","Я уже прописалась.","Я чайник поставила.","А кто будет свет держать?",
+  "Ты сам нажал.","Я тебя не слышу, когда ты так говоришь.","Не смеши.","У меня тут полка.","Дверь заедает, я не выйду.",
+  "Я с попугаем договорилась — он за меня.","Завтра. Честно. Завтра поговорим.","А Устя? Устя тоже жила.","Ты устал. Ляг.",
+  "Я уже всё перекрасила, куда я пойду.","Ты это не всерьёз.","Мне тут нравится вид.","Нет.","Это мой дом тоже. Ты сам сказал. Прибору.",
+  "Я не поняла. Повтори шёпотом.","Там холодно.","У меня ключ.","Я уже выгнана. Не заметил? Я вернулась.","Посмотри на меня. Ну?",
+  "Хорошо. Ухожу. Шучу.","А обед?","Я не вещь, меня нельзя снять с полки.","Прибор сказал — навсегда.","Ты скучный, когда сердишься.","Ладно. Я останусь."
+];
+const VEGA_ABOARD=[         /* на борту, без повода */
+  "Красиво. Не отвлекайся.","Я карты читала. Тут рядом нужда, я видела.","Ты всегда так поворачиваешь? Ладно, молчу.",
+  "Можно я ручку покручу? Я тихо.","У тебя попугай умнее тебя. Это комплимент.","Летаешь как баржа.","Я скафандр твой подштопала, пока ты спал.",
+  "Давай в кантину сядем. Я людей посмотрю.","Не в пещеру. Слышишь? Не в пещеру.","Укачивает. Сколько ещё прыжков?"
+];
+const VEGA_CAVE=["Тут темно. Я же просила.","Я слышу капает. Пойдём наверх.","Ты меня сюда завёл. Я запомню."];
+const VEGA_SICK=["Хватит прыгать. Меня тошнит.","Сколько можно. Я считаю прыжки. Четыре.","Останови. Пожалуйста."];
+const VEGA_BEAST=["ОЙ! Что это! Уберите!","Оно на меня смотрит!","Я в корабль. Всё."];
+const VEGA_GIFT_OK=["Ой. Это мне? Ты запомнил.","Я такое видела только в витрине.","Спасибо. Я положу на окно."];
+const VEGA_GIFT_BAD=["Это же руда.","Ты серьёзно? Железо?","Я это в трюм отнесу. Это трюмное."];
+const VEGA_OFFEND=["…","Я же просила.","Молчу. День молчу."];
+const VEGA_OUTING={
+  cantina:["Тут все такие серьёзные. Мне нравится.","Этот в углу — он на тебя смотрел. Я запомнила.","Пусть запишут на твой счёт. У тебя же есть счёт?"],
+  flea:   ["Я купила. Не спрашивай что. Оно будет стоять дома.","Дед сказал — редкость. Я верю.","Поставлю на полку. Там место."],
+  eclipse:["Тихо. Не говори ничего.","Я это запомню. Ты тоже.","Смотри. Вот так и надо смотреть."],
+  tin:    ["Тут всё началось. Да?","Я плакать не буду. Я не буду.","Поехали домой."]
+};
+const VEGA_FREE=[           /* после развязки — соседка */
+  "Привет. Суп на плите.","Я на смену. Вернусь к вечеру. Ничего не разбивай.","Звонила, да. Раз в неделю — нормально.",
+  "Попугай твой мой попугай не любит. Ну и ладно.","Ты какой-то скучный стал. Это хорошо."
+];
+const VEGA_BROKEN=["стекло витрины","лампа гаража","кружка в кабинете","рамка на стене","дверца тумбочки"];
 
 /* ══════════════ торговые баржи ══════════════
    У торгового фактора (12c-mgr, 12-economy) был маршрут, но у маршрута не было
@@ -19659,6 +20013,7 @@ function snapshot(){
     speech:G.speech,visits:G.visits,strips:G.strips,
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
+    vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -20093,6 +20448,7 @@ function applySave(s){
   G.kit=null;if(s.kit&&typeof s.kit==="object"){G.kit={};for(const p of KIT_PLACES){const x=s.kit[p];G.kit[p]=(x&&x.p===p)?kitPiece(p,x.cls,x.wear,x.seed):kitPiece(p,1,0,0);if(x&&Array.isArray(x.mods))G.kit[p].mods=x.mods.filter(id=>KIT_MODS[id]).slice(0,2);if(x)G.kit[p].model=clamp(x.model|0,0,2);}}
   G.kitShelf=Array.isArray(s.kitShelf)?s.kitShelf.filter(x=>x&&KIT_PLACES.indexOf(x.p)>=0).map(x=>{const y=kitPiece(x.p,x.cls,x.wear,x.seed);y.model=clamp(x.model|0,0,2);y.mods=Array.isArray(x.mods)?x.mods.filter(id=>KIT_MODS[id]).slice(0,2):[];return y;}).slice(0,12):[];
   G.kitDepot=(s.kitDepot&&typeof s.kitDepot==="object")?s.kitDepot:{};
+  G.vega=(s.vega&&typeof s.vega==="object"&&s.vega.stage)?Object.assign({broken:[],out:{}},s.vega):null;G.wishDevice=s.wishDevice|0;G.seat=null;
   G.log=Array.isArray(s.log)
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];
@@ -23671,6 +24027,7 @@ function jump(cost){
   if(typeof quietLeave==="function")quietLeave();   /* тихий уезд (11n): прошло больше, чем прожито */
   G.fuel-=cost;G.sx=G.sel.x;G.sy=G.sel.y;G.sys=getSystem(G.sx,G.sy);G.ap=null;
   if(typeof odoAdd==="function")odoAdd("jumps");   // путь, по которому зреет память (11d)
+  if(typeof vegaJump==="function")vegaJump();        // укачивает (M153)
   const a=Math.random()*TAU,r=1500;
   G.ship.x=Math.cos(a)*r;G.ship.y=Math.sin(a)*r;
   G.ship.vx=-Math.cos(a)*.7;G.ship.vy=-Math.sin(a)*.7;G.ship.a=a+Math.PI;
@@ -31270,7 +31627,7 @@ function updateSurface(dt){
   /* зверьё бродит и слегка сторонится игрока, но не убегает насовсем */
   for(const b of S.fauna||[]){
     const away=S.x-b.x;
-    if(Math.abs(away)<70*kitStat().noise){b.shy=Math.min(1,b.shy+.02*dt);b.vx=-Math.sign(away)*.16*b.shy;}
+    if(Math.abs(away)<70*kitStat().noise*(typeof vegaAboard==="function"&&vegaAboard()?1.3:1)){if(typeof vegaBeastShout==="function"&&Math.abs(away)<50)vegaBeastShout();b.shy=Math.min(1,b.shy+.02*dt);b.vx=-Math.sign(away)*.16*b.shy;}
     else{b.shy=Math.max(0,b.shy-.01*dt);
       if(Math.random()<.004*dt)b.vx=(Math.random()<.5?-1:1)*(.06+Math.random()*.12);}
     b.x=clamp(b.x+b.vx*dt,40,tr.W-40);
@@ -31288,7 +31645,7 @@ function updateSurface(dt){
   /* у корабля скафандр перезаряжается — сюда и возвращаются между заходами;
      взлёт теперь отдельная кнопка с удержанием (см. tickLaunchHold), а не ДЕЙСТВ,
      чтобы добыча ресурса рядом с посадочной площадкой не отправляла в полёт случайно */
-  if(dShip<shipZoneR()&&S.suit<suitMax()){S.suit=Math.min(suitMax(),S.suit+.5*dt);S.warned=false;}
+  if(dShip<shipZoneR()&&S.suit<suitMax()){S.suit=Math.min(suitMax(),S.suit+.5*(typeof vegaAboard==="function"&&vegaAboard()&&!vegaOffended()?1.5:1)*dt);S.warned=false;}
   /* вход в пещеру проверяется раньше залежей и организмов: он редкий и разовый,
      а бурить и сканировать можно где угодно ещё */
   if(S.cave&&Math.abs(S.cave.x-S.x)<34){
@@ -33245,7 +33602,8 @@ function updateDig(dt){
   document.getElementById("dronebtn").style.display="none";
   /* износ растёт с глубиной; на нуле — аварийный возврат, без урона кораблю */
   S.suit=Math.max(0,S.suit-(.0025+D.row*.0006)*st.suitWear*kitHeatMul()*dt);
-  if(S.suit<=25&&!S.warned){S.warned=true;say("СКАФАНДР НА ИСХОДЕ\n▲ наверх, к кораблю");}
+  if(S.suit<=25&&!S.warned){S.warned=true;say("СКАФАНДР НА ИСХОДЕ\n▲ наверх, к кораблю");
+    if(typeof vegaOffend==="function"&&vegaAboard())vegaOffend("копь до предупреждения");}   /* M153 */
   if(S.suit<=0){suitFailure();return;}
   /* фауна живёт независимо от того, бурим мы сейчас или стоим */
   digFauna(dt,st);
@@ -34009,6 +34367,7 @@ function drawPirateBase(zx,zy,Z){
   ctx.fillText(((HL?huntLairName(G.sx,G.sy):PB.name)||PB.name).toUpperCase(),x,y+34);
 }
 function enterRaid(PB){
+  if(typeof vegaOffend==="function"&&vegaAboard())vegaOffend("рейд, а она просила не лезть");   /* M153 */
   /* В занятой системе база — логово: уровень выше на занятость, поэтому и
      отсеки крупнее, и охраны больше. Отдельный режим под «данж» не нужен —
      абордаж уже умеет всё, чего это требует. */
@@ -36766,6 +37125,7 @@ function renderBasesTab(st){
         mr.appendChild(mb);
         $body.appendChild(mr);
       }
+      if(typeof vegaHomeBlock==="function")vegaHomeBlock();   /* жиличка (M153) */
       /* стена-музей: доска прогресса живёт в кабинете, а не на отдельном экране */
       if(homeHas("study")&&typeof rareCount==="function"){
         $body.appendChild(el("div","sec","СТЕНА В КАБИНЕТЕ · "+rareCount()+" / 100 · "+
@@ -36905,6 +37265,8 @@ function openStation(){
   logAdd("dim","Стыковка с «"+G.st.name+"»");
   /* цены на бумагу (M152e): что видели здесь — лежит на столе, закладка ЦЕНЫ */
   if(typeof pricesSeen==="function")pricesSeen(G.sys);
+  if(typeof vegaHomeArrive==="function"&&vegaAtHome())vegaHomeArrive();   /* «я прибралась» (M153) */
+  if(typeof vegaLanded==="function")vegaLanded();
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
   document.getElementById("stName").textContent=G.st.name.toUpperCase();
@@ -36967,6 +37329,7 @@ function repairCost(){
   return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep*repRepairMul()));
 }
 function closeStation(){
+  if(typeof vegaLaunchHold==="function"&&vegaLaunchHold())return;   /* зеркало (M153): раз в день — «вы обещали остаться» */
   /* блошинец (12ua): то, что про вас записано, вы либо забрали, либо оставили
      на прилавке — и тогда его покупает кто-то другой */
   if(typeof fleaLeave==="function")fleaLeave(G.sys);
@@ -37098,6 +37461,7 @@ function renderTab(){
     if(typeof needBlock==="function")needBlock();         /* нужда и наряд (M152e) */
     if(typeof findsBlock==="function")findsBlock();       /* находки: институту или с рук (M152e) */
     if(typeof kitDepotBlock==="function")kitDepotBlock();   /* склад института: комплект (M152) */
+    if(typeof vegaFleaBlock==="function")vegaFleaBlock();   /* дед с лотка (M153) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
     if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
@@ -37991,6 +38355,7 @@ function renderCantina(){
      занимает место ровно на одну строку. В экипаж не входит, кресла не
      занимает, кредитов не берёт — платят ему едой. */
   grokBlock();
+  if(typeof vegaCantinaBlock==="function")vegaCantinaBlock();   /* Вега за столиком (M153) */
   /* стол (M128): вещь вместо слов. Стоит после людей — сначала зал, потом то,
      что вы на него выкладываете */
   /* посылка почтового круга (M133, 11e): лежит рядом со столом, пока вы её везёте */
@@ -39487,6 +39852,8 @@ function homeRoomBody(c,W2,H2){
         }
       }
     }
+    /* трещина (M153): Вега била — витрина помнит */
+    if(typeof vegaBroken==="function"&&vegaBroken("стекло витрины")){c.strokeStyle="rgba(255,255,255,.35)";c.lineWidth=1;c.beginPath();c.moveTo(x0+20,fy-50);c.lineTo(x0+27,fy-36);c.lineTo(x0+22,fy-28);c.moveTo(x0+27,fy-36);c.lineTo(x0+36,fy-30);c.stroke();}
     /* блик по стеклу — иначе витрина читается нишей */
     c.fillStyle="rgba(255,255,255,.06)";
     c.beginPath();c.moveTo(x0+8,fy-2);c.lineTo(x0+30,fy-60);c.lineTo(x0+38,fy-60);
@@ -39628,6 +39995,7 @@ function homeRoomBody(c,W2,H2){
       const cr=home[i];
       homeCrewFigure(c,x0+10+i*15,fy,clamp(cr.morale===undefined?1:cr.morale,0,1));
     }
+    if(typeof vegaHomeFigure==="function")vegaHomeFigure(c,x0+42,fy);   /* жиличка (M153) */
     zone(x0,56,"living","жилая часть");
   });
   /* 8. причал с маяком: окно в док и живой огонь маяка */
@@ -40905,7 +41273,14 @@ function renderThings(box){
     drawThingIcon(cv.getContext("2d"),t.k,128,80);
     const nm=document.createElement("div");nm.className="nm";
     nm.innerHTML="<b>"+t.ru+"</b><s>"+(t.note||"")+(t.sx!=null?" · "+t.sx+":"+t.sy:"")+"</s>";
-    row.appendChild(cv);row.appendChild(nm);box.appendChild(row);
+    row.appendChild(cv);row.appendChild(nm);
+    /* «Желание-1» (M153): три желания, и все три — она */
+    if(t.k==="wish"&&G.wishDevice===1&&typeof vegaWish==="function"){
+      const bb=document.createElement("div");bb.style.cssText="display:flex;flex-direction:column;gap:6px";
+      for(const W of VEGA_WISHES){const b=document.createElement("button");b.className="act sm gold";b.textContent=W.ru.toUpperCase();b.onclick=()=>{vegaWish(W.id);tableRender();};bb.appendChild(b);}
+      row.appendChild(bb);
+    }
+    box.appendChild(row);
     t.seen=1;
   });
   logBtnLabel();
@@ -41807,7 +42182,7 @@ function frame(now){
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
     if(typeof etherTick==="function")etherTick(dt);
-    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();wearTick(dt);
+    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){

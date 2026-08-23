@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 210 · символов верхнего уровня: 2073
+Файлов: 213 · символов верхнего уровня: 2120
 
 ## СИМВОЛЫ
 
@@ -23,7 +23,7 @@ $menu                        src/15-input.js:125
 $msg                         src/28-loop.js:32
 $msl                         src/28-loop.js:35
 $nav                         src/28-loop.js:34
-$opts                        src/26-ui-station.js:766
+$opts                        src/26-ui-station.js:770
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:31
 $sh                          src/28-loop.js:24
@@ -73,7 +73,7 @@ angWrap                      src/01-core.js:35
 applyCrewEvent               src/12b-crew-events.js:214
 applyPadMode                 src/15-input.js:6
 applyPadSize                 src/15-input.js:5
-applySave                    src/14-save.js:52
+applySave                    src/14-save.js:53
 applyVolumes                 src/09-audio.js:28
 apVel                        src/16-flight.js:108
 arrive                       src/16-flight.js:154
@@ -83,7 +83,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:199
 autoLandInputs               src/19-mode-landing.js:33
-autosave                     src/14-save.js:513
+autosave                     src/14-save.js:515
 b64dec                       src/14-save.js:13
 b64enc                       src/14-save.js:11
 bankTransform                src/03b-hull-paint.js:48
@@ -201,11 +201,11 @@ CANT_STYLE                   src/27d-ui-cantina.js:15
 cantCounter                  src/27d-ui-cantina.js:550
 cantFigure                   src/27d-ui-cantina.js:297
 cantinaPool                  src/12c-mgr-core.js:259
-cantinaScene                 src/27c-ui-hq.js:190
+cantinaScene                 src/27c-ui-hq.js:191
 cantProps                    src/27d-ui-cantina.js:397
 cantRoomBody                 src/27d-ui-cantina.js:45
 cantSeats                    src/27d-ui-cantina.js:289
-cantSel                      src/27c-ui-hq.js:189
+cantSel                      src/27c-ui-hq.js:190
 cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina.js:485
 cantView                     src/27d-ui-cantina.js:338
@@ -286,24 +286,24 @@ CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
 closeBarge                   src/12l-barge.js:588
-closeStation                 src/26-ui-station.js:86
+closeStation                 src/26-ui-station.js:88
 CLOUD                        src/14-save.js:5
 CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudBoot                    src/14-save.js:570
-cloudBusy                    src/14-save.js:540
-cloudCall                    src/14-save.js:533
-cloudForget                  src/14-save.js:538
-cloudHere                    src/14-save.js:531
-cloudName                    src/14-save.js:530
-cloudOn                      src/14-save.js:532
-cloudPull                    src/14-save.js:557
-cloudPush                    src/14-save.js:543
+cloudBoot                    src/14-save.js:572
+cloudBusy                    src/14-save.js:542
+cloudCall                    src/14-save.js:535
+cloudForget                  src/14-save.js:540
+cloudHere                    src/14-save.js:533
+cloudName                    src/14-save.js:532
+cloudOn                      src/14-save.js:534
+cloudPull                    src/14-save.js:559
+cloudPush                    src/14-save.js:545
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
-cloudTok                     src/14-save.js:529
+cloudTok                     src/14-save.js:531
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
@@ -410,7 +410,7 @@ dgy                          src/21b-surface-deco.js:131
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
 digCell                      src/23-mode-dig.js:29
-digFauna                     src/23-mode-dig.js:213
+digFauna                     src/23-mode-dig.js:214
 digRockPass                  src/23a-dig-draw.js:18
 digVoidPath                  src/23a-dig-draw.js:71
 DOOM_FOLK                    src/12v-doom.js:23
@@ -466,7 +466,7 @@ drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
 drawDig                      src/23a-dig-draw.js:112
-drawDigFauna                 src/23-mode-dig.js:287
+drawDigFauna                 src/23-mode-dig.js:288
 drawDustMotes                src/19-mode-landing.js:341
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:207
@@ -532,7 +532,7 @@ drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:272
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:150
+drawThingIcon                src/27i-ui-table.js:157
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
 drawTrail                    src/16-flight.js:338
@@ -549,7 +549,7 @@ dustTable                    src/16a-space.js:145
 earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
-el                           src/26-ui-station.js:116
+el                           src/26-ui-station.js:119
 endPtr                       src/15-input.js:207
 engineLoop                   src/09-audio.js:219
 enterBase                    src/21a-mode-base.js:68
@@ -571,7 +571,7 @@ exitBelt                     src/24-mode-belt.js:174
 exitCave                     src/22-mode-cave.js:201
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
-exportCode                   src/14-save.js:522
+exportCode                   src/14-save.js:524
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -579,7 +579,7 @@ FACE_SKIN                    src/12d-mgr-face.js:10
 faceEl                       src/27c-ui-hq.js:6
 facePath                     src/12d-mgr-face.js:19
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:481
+factPrices                   src/27c-ui-hq.js:482
 FAUNA_RES                    src/02-world.js:38
 fbm1                         src/01-core.js:19
 fbm2                         src/01-core.js:26
@@ -699,7 +699,7 @@ GROK_DIRT                    src/12tb-grok.js:30
 GROK_LIKE                    src/12tb-grok.js:29
 GROK_MIN                     src/12tb-grok.js:28
 GROK_NAME                    src/12tb-grok.js:26
-grokBlock                    src/27c-ui-hq.js:138
+grokBlock                    src/27c-ui-hq.js:139
 grokBusy                     src/12tb-grok.js:69
 grokCanTeach                 src/12tb-grok.js:137
 grokFace                     src/12tb-grok.js:174
@@ -740,7 +740,7 @@ grownOnGive                  src/11q-grown.js:54
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:521
+hasSave                      src/14-save.js:523
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
@@ -768,31 +768,31 @@ HOME_ROOM_H                  src/27e-ui-home.js:14
 HOME_STEP_W                  src/27e-ui-home.js:20
 HOME_TIERS                   src/12j-home.js:10
 HOME_VIEW                    src/27e-ui-home.js:34
-homeBeacon                   src/12j-home.js:173
-homeBeaconCost               src/12j-home.js:169
-homeCanRebuild               src/12j-home.js:225
-homeCanRevive                src/12j-home.js:145
-homeCrewFigure               src/27e-ui-home.js:676
-homeFigure                   src/27e-ui-home.js:609
+homeBeacon                   src/12j-home.js:174
+homeBeaconCost               src/12j-home.js:170
+homeCanRebuild               src/12j-home.js:226
+homeCanRevive                src/12j-home.js:146
+homeCrewFigure               src/27e-ui-home.js:679
+homeFigure                   src/27e-ui-home.js:612
 homeHas                      src/12j-home.js:24
 homeHitAt                    src/27e-ui-home.js:35
 homeInit                     src/12j-home.js:20
 homeMateKind                 src/12j-home.js:86
 homeMateName                 src/12j-home.js:80
-homeMateTake                 src/12j-home.js:91
-homeMoraleMul                src/12j-home.js:212
+homeMateTake                 src/12j-home.js:92
+homeMoraleMul                src/12j-home.js:213
 homeNext                     src/12j-home.js:29
-homeOrderBonus               src/12j-home.js:209
-homeProgress                 src/12j-home.js:131
-homeRebuild                  src/12j-home.js:226
-homeRevive                   src/12j-home.js:146
+homeOrderBonus               src/12j-home.js:210
+homeProgress                 src/12j-home.js:132
+homeRebuild                  src/12j-home.js:227
+homeRevive                   src/12j-home.js:147
 homeRoomBody                 src/27e-ui-home.js:63
 homeRoomW                    src/27e-ui-home.js:21
-homeSceneClick               src/27e-ui-home.js:624
-homeShade                    src/27e-ui-home.js:692
-homeShow                     src/12j-home.js:195
-homeShowBonus                src/12j-home.js:216
-homeStore                    src/12j-home.js:188
+homeSceneClick               src/27e-ui-home.js:627
+homeShade                    src/27e-ui-home.js:695
+homeShow                     src/12j-home.js:196
+homeShowBonus                src/12j-home.js:217
+homeStore                    src/12j-home.js:189
 homeTurn                     src/12j-home.js:45
 HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23
@@ -818,14 +818,14 @@ HOUSES                       src/12u-scrip.js:21
 houseWallMark                src/17d-house-shapes.js:38
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
-hqAiOffer                    src/27c-ui-hq.js:379
-hqBtnTick                    src/27c-ui-hq.js:234
+hqAiOffer                    src/27c-ui-hq.js:380
+hqBtnTick                    src/27c-ui-hq.js:235
 hqConsole                    src/27f-hq-room.js:228
 hqFigure                     src/27f-hq-room.js:509
 hqHover                      src/27f-hq-room.js:675
-hqJobCard                    src/27c-ui-hq.js:438
-hqRelicSlot                  src/27c-ui-hq.js:404
-hqRender                     src/27c-ui-hq.js:241
+hqJobCard                    src/27c-ui-hq.js:439
+hqRelicSlot                  src/27c-ui-hq.js:405
+hqRender                     src/27c-ui-hq.js:242
 hqRoomBody                   src/27f-hq-room.js:32
 hqScene                      src/27f-hq-room.js:640
 hqScreenData                 src/27f-hq-room.js:312
@@ -860,7 +860,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:523
+importCode                   src/14-save.js:525
 initAudio                    src/09-audio.js:7
 INSTR                        src/25a-instr.js:19
 INSTR_BY_ID                  src/25a-instr.js:55
@@ -1007,7 +1007,7 @@ lightsShut                   src/11g-lights.js:73
 lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:46
-loadGame                     src/14-save.js:517
+loadGame                     src/14-save.js:519
 LOCAL                        src/11b-speech.js:95
 LOG_MAX                      src/11-log.js:11
 LOG_PAGE                     src/11-log.js:12
@@ -1074,7 +1074,7 @@ mgrCrewYield                 src/12c-mgr-core.js:203
 mgrCut                       src/12c-mgr-core.js:173
 mgrDefect                    src/12c-mgr-core.js:348
 mgrDomain                    src/12c-mgr-core.js:515
-mgrDomainLine                src/27c-ui-hq.js:500
+mgrDomainLine                src/27c-ui-hq.js:501
 mgrDroneRate                 src/12c-mgr-core.js:219
 mgrFace                      src/12d-mgr-face.js:29
 mgrFee                       src/12c-mgr-core.js:299
@@ -1258,7 +1258,7 @@ odoSum                       src/11d-place.js:25
 ok                           tests/90-harness.js:23
 openBarge                    src/12l-barge.js:578
 openCrewView                 src/27b-ui-crew.js:199
-openHq                       src/27c-ui-hq.js:520
+openHq                       src/27c-ui-hq.js:521
 openShipView                 src/27-ui-ship.js:146
 openStation                  src/26-ui-station.js:5
 OPT_TABS                     src/27-ui-ship.js:408
@@ -1516,8 +1516,8 @@ RAID_ROOMS                   src/24a-mode-raid.js:7
 raidFloorAt                  src/24a-mode-raid.js:77
 raidFloorH                   src/24a-mode-raid.js:73
 raidIdx                      src/24a-mode-raid.js:14
-raidLeave                    src/24a-mode-raid.js:188
-raidLineOfSight              src/24a-mode-raid.js:342
+raidLeave                    src/24a-mode-raid.js:189
+raidLineOfSight              src/24a-mode-raid.js:343
 raidSolid                    src/24a-mode-raid.js:78
 raidSolidAt                  src/24a-mode-raid.js:82
 ramp                         src/07-planet.js:2
@@ -1586,12 +1586,12 @@ renderOpts                   src/27-ui-ship.js:184
 renderPrices                 src/12aa-need.js:195
 renderRoute                  src/12r-route.js:225
 renderStrips                 src/27i-ui-table.js:112
-renderTab                    src/26-ui-station.js:180
+renderTab                    src/26-ui-station.js:183
 renderThings                 src/27i-ui-table.js:134
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
-repairCost                   src/26-ui-station.js:82
+repairCost                   src/26-ui-station.js:84
 repAt                        src/12k-rep.js:27
 repFuelMul                   src/12k-rep.js:52
 repHireMul                   src/12k-rep.js:54
@@ -1606,7 +1606,7 @@ RES_AUTO                     src/08-state.js:18
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:281
 resEma                       src/28-loop.js:280
-resetArm                     src/26-ui-station.js:765
+resetArm                     src/26-ui-station.js:769
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:24
@@ -1674,7 +1674,7 @@ runTests                     tests/90-harness.js:77
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:6
-saveGame                     src/14-save.js:507
+saveGame                     src/14-save.js:509
 say                          src/08-state.js:140
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -1749,9 +1749,9 @@ SHIFT_TALK                   src/03f-hull-role.js:63
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:139
+shipRow                      src/26-ui-station.js:142
 SHIPS                        src/03-ships.js:2
-shipThumb                    src/26-ui-station.js:126
+shipThumb                    src/26-ui-station.js:129
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:211
 shipZoneR                    src/19f-lander.js:14
@@ -1807,7 +1807,7 @@ speechHere                   src/11b-speech.js:111
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
 ST_GOLD                      src/17c-system-draw.js:117
-ST_GROUPS                    src/26-ui-station.js:41
+ST_GROUPS                    src/26-ui-station.js:43
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:8
 STAR_CLASS                   src/02-world.js:96
@@ -1833,8 +1833,8 @@ stCore                       src/17c-system-draw.js:128
 stDel                        src/14-save.js:10
 steps                        tests/90-harness.js:75
 stGet                        src/14-save.js:8
-stGroup                      src/26-ui-station.js:50
-stGroupOf                    src/26-ui-station.js:49
+stGroup                      src/26-ui-station.js:52
+stGroupOf                    src/26-ui-station.js:51
 stopEngine                   src/09-audio.js:243
 STORAGE_OK                   src/14-save.js:7
 STORIES                      src/12k-stories-a.js:42
@@ -1890,7 +1890,7 @@ stripsAll                    src/11b-speech.js:176
 stripSell                    src/11b-speech.js:212
 stripValue                   src/11b-speech.js:177
 stSet                        src/14-save.js:9
-stTabsHere                   src/26-ui-station.js:51
+stTabsHere                   src/26-ui-station.js:53
 stTypeOf                     src/06-galaxy.js:27
 subdivide                    src/24-mode-belt.js:34
 suite                        tests/90-harness.js:15
@@ -1910,7 +1910,7 @@ svDraw                       src/27-ui-ship.js:7
 svRender                     src/27-ui-ship.js:45
 svReturn                     src/27-ui-ship.js:6
 svSlot                       src/27-ui-ship.js:4
-syncTabs                     src/26-ui-station.js:52
+syncTabs                     src/26-ui-station.js:54
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_EXOTIC                   src/16a-space.js:14
 sysDanger                    src/01-core.js:46
@@ -1921,7 +1921,7 @@ sysStyle                     src/16a-space.js:21
 tab                          src/26-ui-station.js:3
 TABLE_REPLY                  src/11b-speech.js:142
 tableBake                    src/27i-ui-table.js:52
-tableBlock                   src/27c-ui-hq.js:534
+tableBlock                   src/27c-ui-hq.js:535
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewThings               src/27i-ui-table.js:36
 tableRender                  src/27i-ui-table.js:80
@@ -2032,11 +2032,58 @@ updateCaveDeco               src/22a-cave-deco.js:184
 updateCombat                 src/13-pirates.js:77
 updateDig                    src/23-mode-dig.js:113
 updateLanding                src/19-mode-landing.js:45
-updateRaid                   src/24a-mode-raid.js:213
+updateRaid                   src/24a-mode-raid.js:214
 updateScoop                  src/19a-mode-scoop.js:26
 updateSurface                src/21-mode-surface.js:105
 updateSystem                 src/17-mode-system.js:2
 useBeacon                    src/23-mode-dig.js:72
+VEGA_ABOARD                  src/12k-vega.js:35
+VEGA_BEAST                   src/12k-vega.js:42
+VEGA_BROKEN                  src/12k-vega.js:56
+VEGA_CALLS                   src/12k-vega.js:17
+VEGA_CAVE                    src/12k-vega.js:40
+VEGA_DREAM                   src/12k-vega.js:10
+VEGA_EVICT                   src/12k-vega.js:27
+VEGA_FREE                    src/12k-vega.js:52
+VEGA_GIFT_BAD                src/12k-vega.js:44
+VEGA_GIFT_OK                 src/12k-vega.js:43
+VEGA_OFFEND                  src/12k-vega.js:45
+VEGA_OUTING                  src/12k-vega.js:46
+VEGA_RELAY                   src/12k-vega.js:22
+VEGA_SICK                    src/12k-vega.js:41
+VEGA_WISHES                  src/12k-vega.js:5
+vegaAboard                   src/11w-vega.js:23
+vegaAll                      src/11w-vega.js:21
+vegaAmbientTick              src/11w-vega.js:271
+vegaAtHome                   src/11w-vega.js:24
+vegaBeastShout               src/11w-vega.js:198
+vegaBoard                    src/11w-vega.js:136
+vegaBroken                   src/11w-vega.js:295
+vegaCantinaBlock             src/11w-vega.js:262
+vegaDayTick                  src/11w-vega.js:57
+vegaDeviceBuy                src/11w-vega.js:33
+vegaDeviceOffered            src/11w-vega.js:27
+vegaEvict                    src/11w-vega.js:112
+vegaFleaBlock                src/11w-vega.js:234
+vegaHas                      src/11w-vega.js:22
+vegaHomeArrive               src/11w-vega.js:216
+vegaHomeBlock                src/11w-vega.js:248
+vegaHomeFigure               src/11w-vega.js:286
+vegaHullName                 src/11w-vega.js:25
+vegaJump                     src/11w-vega.js:191
+vegaLanded                   src/11w-vega.js:196
+vegaLaunchHold               src/11w-vega.js:225
+vegaMoraleMul                src/11w-vega.js:121
+vegaOffend                   src/11w-vega.js:127
+vegaOffended                 src/11w-vega.js:126
+vegaOuting                   src/11w-vega.js:204
+vegaSeatAct                  src/11w-vega.js:154
+vegaSeatDraw                 src/11w-vega.js:166
+vegaSeatLine                 src/11w-vega.js:148
+vegaTestBazaar               tests/91zzh-vega.js:7
+vegaTestHome                 tests/91zzh-vega.js:2
+vegaTick                     src/11w-vega.js:178
+vegaWish                     src/11w-vega.js:42
 VER                          src/01-core.js:4
 visitHere                    src/11b-speech.js:79
 visitMark                    src/11b-speech.js:83
@@ -2079,10 +2126,10 @@ wreck                        src/28-loop.js:2
 wreckInteract                src/12l-barge.js:321
 wrecksHere                   src/12l-barge.js:318
 wtab                         src/02a-worldmix.js:85
-yachtMoraleMul               src/12j-home.js:254
-yachtOwned                   src/12j-home.js:247
+yachtMoraleMul               src/12j-home.js:255
+yachtOwned                   src/12j-home.js:248
 YARD_CHANCE                  src/04b-fleet.js:162
-ZAP_COOL                     src/23-mode-dig.js:212
+ZAP_COOL                     src/23-mode-dig.js:213
 
 ## ФАЙЛЫ И РАЗДЕЛЫ
 
@@ -2232,6 +2279,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/11v-places.js · 3 КБ
   · и что это, собственно, было:1
 
+## src/11w-vega.js · 18 КБ
+  · Вега: жиличка, которую нельзя выгнать:1
+
 ## src/12aa-need.js · 12 КБ
   · нужда станции и наряд:1
 
@@ -2277,7 +2327,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/12j-home.js · 15 КБ
   · дом:1
   · домочадец:71
-  · что ступени дают:203
+  · что ступени дают:204
 
 ## src/12k-rep.js · 4 КБ
   · репутация: вас помнят там, где вы бывали:1
@@ -2291,6 +2341,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## src/12k-stories-c.js · 21 КБ
   · истории, часть третья:1
+
+## src/12k-vega.js · 7 КБ
+  · Вега: реплики:1
 
 ## src/12l-barge.js · 38 КБ
   · торговые баржи:1
@@ -2361,7 +2414,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## src/14-save.js · 40 КБ
   · сохранение:1
-  · облако:526
+  · облако:528
 
 ## src/15-input.js · 16 КБ
   · экранные кнопки: авто-скрытие и размер:1
@@ -2504,7 +2557,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
   · рейд на пиратскую базу: полигональный интерьер:1
   · генерация: комнаты и коридоры со связностью:29
   · вход, выход, наполнение:84
-  · обновление:212
+  · обновление:213
 
 ## src/24b-belt-poi.js · 9 КБ
   · ориентиры в поясе:1
@@ -2535,7 +2588,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## src/26-ui-station.js · 48 КБ
   · станция:1
-  · настройки:764
+  · настройки:768
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -2546,7 +2599,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/27d-ui-cantina.js · 37 КБ
   · кантина: помещение, а не список:1
 
-## src/27e-ui-home.js · 43 КБ
+## src/27e-ui-home.js · 44 КБ
   · дом: помещение, а не список:1
 
 ## src/27f-hq-room.js · 40 КБ
@@ -2742,6 +2795,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## tests/91zzh-receiver.js · 1 КБ
   · приёмник: диапазоны на одном месте, между ними шум, на краю слова выпадают:1
+
+## tests/91zzh-vega.js · 7 КБ
+  · автотесты: Вега (M153):1
 
 ## tests/91zzv-table.js · 7 КБ
   · автотесты: пульт и стол (M151a):1

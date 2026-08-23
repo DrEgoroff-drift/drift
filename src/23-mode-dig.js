@@ -115,7 +115,8 @@ function updateDig(dt){
   document.getElementById("dronebtn").style.display="none";
   /* износ растёт с глубиной; на нуле — аварийный возврат, без урона кораблю */
   S.suit=Math.max(0,S.suit-(.0025+D.row*.0006)*st.suitWear*kitHeatMul()*dt);
-  if(S.suit<=25&&!S.warned){S.warned=true;say("СКАФАНДР НА ИСХОДЕ\n▲ наверх, к кораблю");}
+  if(S.suit<=25&&!S.warned){S.warned=true;say("СКАФАНДР НА ИСХОДЕ\n▲ наверх, к кораблю");
+    if(typeof vegaOffend==="function"&&vegaAboard())vegaOffend("копь до предупреждения");}   /* M153 */
   if(S.suit<=0){suitFailure();return;}
   /* фауна живёт независимо от того, бурим мы сейчас или стоим */
   digFauna(dt,st);

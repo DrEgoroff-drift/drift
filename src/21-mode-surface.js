@@ -175,7 +175,7 @@ function updateSurface(dt){
   /* зверьё бродит и слегка сторонится игрока, но не убегает насовсем */
   for(const b of S.fauna||[]){
     const away=S.x-b.x;
-    if(Math.abs(away)<70*kitStat().noise){b.shy=Math.min(1,b.shy+.02*dt);b.vx=-Math.sign(away)*.16*b.shy;}
+    if(Math.abs(away)<70*kitStat().noise*(typeof vegaAboard==="function"&&vegaAboard()?1.3:1)){if(typeof vegaBeastShout==="function"&&Math.abs(away)<50)vegaBeastShout();b.shy=Math.min(1,b.shy+.02*dt);b.vx=-Math.sign(away)*.16*b.shy;}
     else{b.shy=Math.max(0,b.shy-.01*dt);
       if(Math.random()<.004*dt)b.vx=(Math.random()<.5?-1:1)*(.06+Math.random()*.12);}
     b.x=clamp(b.x+b.vx*dt,40,tr.W-40);
@@ -193,7 +193,7 @@ function updateSurface(dt){
   /* у корабля скафандр перезаряжается — сюда и возвращаются между заходами;
      взлёт теперь отдельная кнопка с удержанием (см. tickLaunchHold), а не ДЕЙСТВ,
      чтобы добыча ресурса рядом с посадочной площадкой не отправляла в полёт случайно */
-  if(dShip<shipZoneR()&&S.suit<suitMax()){S.suit=Math.min(suitMax(),S.suit+.5*dt);S.warned=false;}
+  if(dShip<shipZoneR()&&S.suit<suitMax()){S.suit=Math.min(suitMax(),S.suit+.5*(typeof vegaAboard==="function"&&vegaAboard()&&!vegaOffended()?1.5:1)*dt);S.warned=false;}
   /* вход в пещеру проверяется раньше залежей и организмов: он редкий и разовый,
      а бурить и сканировать можно где угодно ещё */
   if(S.cave&&Math.abs(S.cave.x-S.x)<34){
