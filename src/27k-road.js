@@ -330,14 +330,16 @@ function drawRoad(ts){
   const thrust=spd>ROAD_VMIN||RD.acc>.2;
   if(thrust&&!RD.thrOn)RD.burst++;
   RD.thrOn=thrust;
-  const flow=60+fast*H*1.4;
+  /* поток привязан к экрану: и на шаге, и на трассе лента тянется на добрую
+     его половину, а не обрубком у кормы */
+  const flow=H*(.22+fast*1.2);
   for(let i=RD.trail.length-1;i>=0;i--){
     const p=RD.trail[i];p.y+=flow*.016;p.life-=.016;
     if(p.life<=0||p.y>H+40)RD.trail.splice(i,1);
   }
-  if(thrust&&RD.trail.length<260){
+  if(thrust&&RD.trail.length<540){
     const co=Math.cos(rot),si=Math.sin(rot);
-    const span=(.5+fast*.9)*(1+Math.max(0,RD.acc)*.8);
+    const span=(1.5+fast*1.3)*(1+Math.max(0,RD.acc)*.8);
     for(let i=0;i<h.eng.length;i++){
       const e=h.eng[i];
       const ex=cx+(e.x*co-e.y*si)*sc,ey=cy+(e.x*si+e.y*co)*sc;
@@ -356,14 +358,20 @@ function drawRoad(ts){
         const a=arr[i-1],b2=arr[i];
         const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1);
         const col=u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
-        c.strokeStyle=rgba(col,(u*u*.3+u*u*u*u*.5).toFixed(3));
-        c.lineWidth=Math.max(1,b2.r*(2.4-u*1.3)*1.35);
+        /* гаснет мягче, чем в полёте: заставку смотрят, а не пролетают */
+        c.strokeStyle=rgba(col,(u*.4+u*u*.35).toFixed(3));
+        c.lineWidth=Math.max(1.5,b2.r*(3.2-u*1.6)*1.6);
         c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b2.x,b2.y);c.stroke();
       }
+      /* выход из сопла: раскалённое ядро с ореолом, вдвое крупнее прежнего */
       const f=arr[arr.length-1];
       if(f&&f.life>f.max-.05){
-        c.fillStyle=rgba(T.core,.62);
-        c.beginPath();c.arc(f.x,f.y,Math.max(.8,f.r*1.3),0,TAU);c.fill();
+        const rr=Math.max(2,f.r*2);
+        const hg=c.createRadialGradient(f.x,f.y,0,f.x,f.y,rr*3);
+        hg.addColorStop(0,rgba(T.core,.8));hg.addColorStop(.35,rgba(T.mid,.3));hg.addColorStop(1,rgba(T.edge,0));
+        c.fillStyle=hg;c.beginPath();c.arc(f.x,f.y,rr*3,0,TAU);c.fill();
+        c.fillStyle=rgba(T.core,.9);
+        c.beginPath();c.arc(f.x,f.y,rr,0,TAU);c.fill();
       }
     }
     c.restore();
