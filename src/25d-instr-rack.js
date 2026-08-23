@@ -198,7 +198,7 @@ function rackTex(){
     for(const [sx,sy] of [[bx+5,by+5],[bx+bw-5,by+5],[bx+5,by+bh-5],[bx+bw-5,by+bh-5]])
       rackScrew(c,sx,sy,2.6);
     rackDial(c,cx,cy,r,g);
-    rackGlass(c,cx,cy,r);
+    rackGlass(c,cx,cy,Math.max(1,r));   // стенд с нулевым полотном: rackDial уже зажат, стекло — тоже
     /* подпись прибора под гнездом: то, что опознают, а не читают */
     c.fillStyle="rgba(196,206,210,.72)";
     c.font=Math.round(Math.min(11,cw*.115))+"px ui-monospace,monospace";
@@ -329,7 +329,7 @@ function rackDraw(){
 
   /* ── стрелки ── */
   const n=RACK_G.length, cw=(g0.w-RACK_PAD*2)/n;
-  const rr=Math.min(cw*.36,(g0.gh-40)*.5);
+  const rr=Math.max(1,Math.min(cw*.36,(g0.gh-40)*.5));   // на нулевом полотне (стенд) радиус уходил в минус
   const A0=Math.PI*.78, A1=Math.PI*2.22;
   for(let i=0;i<n;i++){
     const g=RACK_G[i], cx=RACK_PAD+cw*(i+.5), cy=RACK_PAD+rr+6;

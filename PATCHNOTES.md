@@ -8,6 +8,21 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.101.0 — "Three lights" (M135)
+
+The `lights` region (06c, needle `actino`) is built in `11g-lights`. On the edge the night never
+arrives — dusk is capped at a fraction of a normal night — and one extra sun hangs beside the
+star; in the core there is no night at all and two of them. Every settlement yard in the region
+has a window with shutters: open and warm, or boarded the day before a conjunction and through
+it — nobody explains. The conjunction calendar starts with the first arrival at the core, set so
+that the last one was *yesterday* — the player misses it the first time, always — and never moves
+again; there is no countdown anywhere, the shutters and the converging lights are the only sign.
+During the conjunction the third light reveals a dashed road, foundations and an arch on the core
+planet (a nav mark "ВХОД" appears), and the arch is a real cave: a second seed, no beasts, the
+find pays 120 data and rolls an artifact. `G.lights` persists the first-arrival day and whether
+the player has been inside; the harness resets it. Rack glass and needle radii are clamped on a
+zero-size canvas (test stand).
+
 ## 0.100.8 — "Loose ends, station side" (M144)
 
 The counter length follows the hall seed (M55); every fourth counter line is about the house

@@ -85,7 +85,9 @@ function enterSurface(){
      нужно «который раз здесь» (11c) */
   if(typeof visitsAll==="function"){const V=visitsAll(),k=G.sys.key+"/"+p.idx;V[k]=(V[k]|0)+1;}
   /* строка истории к посадке (11c): то, что замечаешь, выйдя из корабля */
-  const sl=(typeof storyGroundLine==="function")?storyGroundLine("land"):null;
+  let sl=(typeof storyGroundLine==="function")?storyGroundLine("land"):null;
+  /* три света (11g): календарь заводится первым приходом, ставни — единственный знак */
+  if(typeof lightsArrive==="function"){lightsArrive();if(!sl)sl=lightsGroundLine();}
   if(sl)logAdd("dim",sl);
   say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
 }
@@ -185,6 +187,11 @@ function updateSurface(dt){
   if(S.cave&&Math.abs(S.cave.x-S.x)<34){
     G.prompt="ДЕЙСТВИЕ — ВОЙТИ В ПЕЩЕРУ";
     if(actEdge){enterCave();return;}
+  }
+  /* вход под третьим светом (11g): есть только в соединение и только на планете ядра */
+  if(typeof lightsOpen==="function"&&lightsOpen(S.p)&&Math.abs(lightsEntryX(tr,S.p)-S.x)<34){
+    G.prompt="ДЕЙСТВИЕ — ВОЙТИ ПОД ТРЕТЬИМ СВЕТОМ";
+    if(actEdge){lightsEnter();return;}
   }
   /* ── памятники и аномалии ──
      Они стояли на горизонте чистой декорацией: подойти было можно, сделать
@@ -469,6 +476,7 @@ function drawSurfaceHud(camx,camy){
   const marks=[];
   marks.push({x:S.shipX,ru:"КОРАБЛЬ",col:"rgba(242,178,92,.9)"});
   if(S.cave)marks.push({x:S.cave.x,ru:"ПЕЩЕРА",col:"rgba(150,225,255,.9)"});
+  if(typeof lightsOpen==="function"&&lightsOpen(S.p))marks.push({x:lightsEntryX(S.tr,S.p),ru:"ВХОД",col:"rgba(255,236,190,.9)"});
   /* достопримечательность ведут отдельно от пещеры: до неё далеко, и без
      маркера игрок пройдёт мимо ровно того, ради чего стоило садиться */
   const poi=nearestPOI(S.tr,S.x);
@@ -560,6 +568,8 @@ function drawSurface(){
     hot:Math.max(0,1-(G.t-(S.t0||0))/700)});
   ctx.restore();
   drawDustMotes(camx,camy,p);
+  /* три света (11g): дороги, фундаменты и вход — видны только в соединение */
+  if(typeof lightsDrawReveal==="function")lightsDrawReveal(tr,camx,camy,p);
   if(S.cave){
     const cx=S.cave.x-camx;
     if(cx>-60&&cx<W+60){

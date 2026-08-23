@@ -769,7 +769,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.100.8";
+const VER="0.101.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -4576,7 +4576,9 @@ function surfNight(p){
   if(!p)return 0;
   const s=celSun(p);
   const k=p.T&&p.T.atm==="отсутствует"?1.9:1.5;
-  return clamp(-s.alt*k+.15,0,.62);
+  const n=clamp(-s.alt*k+.15,0,.62);
+  /* три света (11g): на окраине области ночь не доходит до ночи, в ядре её нет */
+  return (typeof lightsNight==="function")?lightsNight(n):n;
 }
 /* Период обращения в сутках: Кеплер по радиусу орбиты, приведённый к масштабу,
    в котором ближняя планета обходит звезду примерно за две недели. */
@@ -6607,6 +6609,7 @@ function etherTick(dt){
   const rate=(typeof hullRole==="function")?hullRole().ether:1;
   G.etherT=(G.etherT==null?ETHER_EVERY:G.etherT)-dt*rate;
   if(typeof mirrorEchoTick==="function")mirrorEchoTick();
+  if(typeof lightsArrive==="function")lightsArrive();   /* три света (11g): первый приход в ядро */
   if(G.etherT>0)return;
   G.etherT=ETHER_EVERY*(.7+Math.random()*.8);
   const r=rng(hashi(G.sx,G.sy,(Date.now()/60000)|0));
@@ -7431,6 +7434,193 @@ function mirrorListen(f){
     tail+="\nИсточник — сектор "+sx+":"+sy+". Туда никто не летает.";
   }
   return out.join("\n")+"\n"+tail;
+}
+
+/* ══════════════ три света: область без ночи ══════════════
+   M135. Область кратных звёзд (06c, `lights`, игла `actino`). На окраине —
+   бесконечные сумерки: ночь не доходит до ночи, колонии спят по свету, а не
+   по часам, и у каждого двора ставни, которых никто не объясняет. В ядре —
+   мир, где ночи нет вовсе.
+
+   СОЕДИНЕНИЕ. Раз в несколько недель три света сходятся в один. За сутки до
+   него жители закрывают всё и сидят внутри — это и есть знак, по которому
+   событие можно предвидеть. В само соединение третий свет ПОКАЗЫВАЕТ: дороги,
+   фундаменты и один вход в породу, которого при обычном свете нет.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Игрок пропускает первый раз. Всегда. Календарь заводится с первого
+      прихода в ядро так, что соединение было ВЧЕРА; дальше он не сдвигается
+      ни под чей прилёт: сдвинуть событие под прибытие значит сделать мир
+      декорацией. Второй визит — его собственный расчёт и его намерение.
+   2. Ничего не объявляется: ни отсчёта в рубке, ни строки «через N суток».
+      Предвидеть можно только по ставням и по тому, как ходят три света.
+   3. Вход физический: та же пещера (22), тем же действием, но с другим зерном
+      и без кусачих — и найти его в обычном свете нельзя.
+   4. Хранится только день первого прихода и факт, что внутри были (G.lights). */
+
+const LIGHTS_SOON=1;                       // суток до соединения, когда закрывают ставни
+function lightsAll(){return (G.lights||(G.lights={t0:-1,seen:0}));}
+/* 0 вне области, 1 окраина (внутри склона), 2 ядро */
+function lightsDepthAt(sx,sy){
+  if(typeof regionAt!=="function")return 0;
+  const R=regionAt(sx,sy);
+  if(R.theme!=="lights")return 0;
+  return (R.core.sx===sx&&R.core.sy===sy)?2:(regionDepth(sx,sy)>0?1:0);
+}
+function lightsDepthHere(){return lightsDepthAt(G.sx,G.sy);}
+/* период соединения — от зерна области: недели, не дни */
+function lightsPeriod(){
+  const at=(typeof regionOfTheme==="function")?regionOfTheme("lights"):null;
+  if(!at)return 28;
+  return 24+(hashi(at.rx,at.ry,0x7E1)>>>3)%12;
+}
+/* планета ядра: первый твёрдый мир системы ядра, на него и садятся */
+function lightsCorePlanet(sys){
+  if(!sys||lightsDepthAt(sys.sx,sys.sy)!==2)return null;
+  for(const p of sys.planets||[])if(p.type!=="gas")return p;
+  return null;
+}
+function lightsIsCore(p){
+  const c=lightsCorePlanet(G.sys);
+  return !!(c&&p&&c.idx===p.idx);
+}
+/* ── календарь ──
+   Заводится первым приходом в ядро (правило 1): t0 — тот день, а соединение
+   было в день t0−1. Дальше — строго через период. До первого прихода
+   календаря нет: соединений, которые никто не видел, не существует. */
+function lightsArrive(){
+  const L=lightsAll();
+  if(L.t0<0&&lightsDepthHere()===2)L.t0=celDay();
+}
+function lightsConj(t){
+  const L=lightsAll();
+  if(L.t0<0)return {k:0,left:-1,soon:false};
+  const P=lightsPeriod();
+  const ph=(((celDayF(t)-(L.t0-1))%P)+P)%P;        /* 0…P суток с последнего соединения */
+  const k=ph<1?Math.sin(ph*Math.PI):0;             /* соединение длится сутки, пик в середине */
+  const left=ph<1?0:P-ph;
+  return {k,left,soon:!k&&left<=LIGHTS_SOON};
+}
+/* ── сумерки ──
+   Окраина: ночь не доходит до ночи. Ядро: ночи нет. Зовётся из surfNight. */
+function lightsNight(k){
+  const d=lightsDepthHere();
+  return d===2?0:(d===1?Math.min(k,.22):k);
+}
+/* ставни закрыты? Одно на всю область: за сутки до соединения и в него */
+function lightsShut(){
+  if(!lightsDepthHere())return false;
+  const C=lightsConj();
+  return C.soon||C.k>0;
+}
+/* третий свет показывает — только на планете ядра и только в соединение */
+function lightsOpen(p){
+  return lightsIsCore(p)&&lightsConj().k>.12;
+}
+/* где на планете ядра вход: подальше от устья обычной пещеры */
+function lightsEntryX(tr,p){
+  const r=rng(hashi(p.seed|0,0x7E1,0x11));
+  let x=clamp(tr.W*(.25+r()*.5),400,tr.W-400);
+  if(G.surf&&G.surf.cave&&Math.abs(G.surf.cave.x-x)<500)x+=x<G.surf.cave.x?-520:520;
+  return clamp(x,300,tr.W-300);
+}
+/* строка к посадке: ставни — единственное объяснение, и оно не объясняет */
+function lightsGroundLine(){
+  const d=lightsDepthHere();
+  if(!d)return null;
+  const C=lightsConj();
+  if(C.soon)return "Ставни закрыты. Все до одной. Внутри кто-то есть — слышно.";
+  if(C.k>0)return d===2?"Третий свет встал над грядой. Тени легли в одну сторону.":"Три света сошлись в один. Ставни закрыты.";
+  return d===2?"Ночи здесь не бывает: три света по очереди.":"Сумерки, которые не кончаются. На каждом дворе — ставни.";
+}
+/* ── три света на небе ──
+   Рисуется после диска главной звезды (19-mode-landing). Окраина — один
+   тусклый спутник, ядро — два; к соединению они сходятся к главному, и
+   третий свет даёт белёсый ореол. Громкость неба не растёт: это три диска. */
+function lightsSuns(p,sunX,sunY,sunR){
+  const d=lightsDepthHere();if(!d)return;
+  const C=lightsConj(),k=C.k;
+  const n=d===2?2:1;
+  for(let i=0;i<n;i++){
+    const ox=(i?-1:1)*W*(.11+i*.05)*(1-k), oy=H*(.05+i*.03)*(1-k);
+    const x=sunX+ox,y=sunY+oy,r=sunR*(.55-i*.12+k*.3);
+    ctx.fillStyle=i?"rgba(255,214,170,.75)":"rgba(226,236,255,.8)";
+    ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
+  }
+  if(k>0){
+    const g=ctx.createRadialGradient(sunX,sunY,sunR,sunX,sunY,sunR*3.2);
+    g.addColorStop(0,"rgba(255,250,236,"+(.34*k).toFixed(3)+")");
+    g.addColorStop(1,"rgba(255,250,236,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(sunX,sunY,sunR*3.2,0,TAU);ctx.fill();
+  }
+}
+/* ── ставни на дворах посёлка (12t) ──
+   Обычная архитектура области: окно со ставнями на каждом дворе. Закрыты —
+   доска поперёк; открыты — тёплый свет изнутри. Вне области ничего. */
+function lightsShutters(ox,oy,ww,hh){
+  if(!lightsDepthHere())return;
+  const x=ox+ww*.22,y=oy-hh*.62,w=4.5,h=4.5;
+  if(lightsShut()){
+    ctx.fillStyle="rgba(40,32,24,.95)";ctx.fillRect(x-.5,y-.5,w+1,h+1);
+    ctx.strokeStyle="rgba(210,190,160,.5)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x,y+h*.5);ctx.lineTo(x+w,y+h*.5);ctx.stroke();
+  }else{
+    ctx.fillStyle="rgba(255,222,160,.6)";ctx.fillRect(x,y,w,h);
+  }
+}
+/* ── явление ──
+   Дороги и фундаменты — не открытка: бледные линии по грунту, которые при
+   обычном свете совпадают с грунтом. Вход — арка в породе с кромкой света.
+   Всё стоит на своём месте всегда; свет лишь делает его видимым. */
+function lightsDrawReveal(tr,camx,camy,p){
+  if(!lightsOpen(p))return;
+  const k=lightsConj().k,ex=lightsEntryX(tr,p);
+  const a=clamp((k-.12)/.5,0,1);
+  const r=rng(hashi(p.seed|0,0x7E1,0x12));
+  /* дорога: пунктир по грунту на полтора экрана в обе стороны */
+  ctx.strokeStyle="rgba(255,240,206,"+(.42*a).toFixed(3)+")";ctx.lineWidth=1.2;
+  ctx.setLineDash([9,7]);ctx.beginPath();
+  let pen=false;
+  for(let wx=ex-1400;wx<=ex+1400;wx+=12){
+    const sx=wx-camx;if(sx<-20||sx>W+20){pen=false;continue;}
+    const sy=groundAt(tr,wx)-camy-1.5;
+    pen?ctx.lineTo(sx,sy):ctx.moveTo(sx,sy);pen=true;
+  }
+  ctx.stroke();ctx.setLineDash([]);
+  /* фундаменты: прямоугольники, вросшие в склон, по нескольку в обе стороны */
+  ctx.strokeStyle="rgba(255,236,196,"+(.55*a).toFixed(3)+")";ctx.lineWidth=1;
+  for(let i=0;i<6;i++){
+    const wx=ex+(i-2.5)*(260+r()*160),w=40+r()*70,h=6+r()*10;
+    const sx=wx-camx;if(sx<-120||sx>W+120)continue;
+    const sy=groundAt(tr,wx)-camy;
+    ctx.strokeRect(sx-w/2,sy-h,w,h);
+    ctx.beginPath();ctx.moveTo(sx-w/2,sy-h*.5);ctx.lineTo(sx+w/2,sy-h*.5);ctx.stroke();
+  }
+  /* вход: арка */
+  const cx=ex-camx;
+  if(cx>-60&&cx<W+60){
+    const cy=groundAt(tr,ex)-camy;
+    ctx.fillStyle="#060709";
+    ctx.beginPath();ctx.ellipse(cx,cy-2,18,22,0,0,Math.PI,true);ctx.fill();
+    ctx.strokeStyle="rgba(255,244,214,"+(.8*a).toFixed(3)+")";ctx.lineWidth=1.6;
+    ctx.beginPath();ctx.ellipse(cx,cy-2,19,23,0,0,Math.PI,true);ctx.stroke();
+  }
+}
+/* вход под третьим светом: та же пещера, другое зерно, без кусачих (22) */
+function lightsEnter(){
+  G.surf.ancient=true;
+  lightsAll().seen=Math.max(lightsAll().seen|0,1);
+  logAdd("dim","Вход, которого днём нет. Свод холодный.");
+  enterCave();
+}
+/* что внутри: данные, артефакт с хорошим шансом, память птицы */
+function lightsCaveFind(C){
+  G.data+=120;
+  lightsAll().seen=2;
+  if(typeof heardAdd==="function")heardAdd("ground",{sx:G.sx,sy:G.sy,note:"вход под третьим светом"},null);
+  const id=(typeof relicRoll==="function")?relicRoll(hashi(G.sx,G.sy,0x7E1),.7):null;
+  if(id)relicFind(id,"под третьим светом");
+  tell("tech","Под третьим светом · +120 данных","Под третьим светом\nкладка старше дорог\n+120 данных");
 }
 
 /* ══════════════ бортовой журнал ══════════════ */
@@ -14887,6 +15077,7 @@ function settleDraw(S,tr,camx,camy,p){
     ctx.stroke();
     ctx.fillStyle="rgba(255,206,130,"+(.30+S.mood/260).toFixed(2)+")";   // очаг
     ctx.fillRect(ox-2.5,oy-hh*.62,5,4.5);
+    if(typeof lightsShutters==="function")lightsShutters(ox,oy,ww,hh);   // ставни области трёх светов (11g)
     /* труба и дым — только у тех дворов, где что-то жгут */
     const b=SETTLE_BY_K[S.built[i-1]];
     if(b&&(b.k==="kiln"||b.k==="forge"||b.k==="still")){
@@ -17394,7 +17585,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
-    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,
+    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
@@ -17801,6 +17992,8 @@ function applySave(s){
   }
   G.odo={lands:Math.max(0,(s.odo&&s.odo.lands)|0),jumps:Math.max(0,(s.odo&&s.odo.jumps)|0)};
   G.mirror={bearing:(s.mirror&&s.mirror.bearing)?1:0};   /* зеркало (11f) */
+  /* три света (11g): день первого прихода в ядро и были ли внутри */
+  G.lights={t0:(s.lights&&s.lights.t0!=null)?Math.max(-1,s.lights.t0|0):-1,seen:clamp((s.lights&&s.lights.seen)|0,0,2)};
   /* почтовый круг (11e): три числа */
   G.post={stage:clamp((s.post&&s.post.stage)|0,0,POST_LINKS.length-1),opened:(s.post&&s.post.opened)?1:0,done:(s.post&&s.post.done)?1:0};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
@@ -23055,6 +23248,8 @@ function drawSkyLayer(p,camx,camy){
   /* календарь неба поверх звезды: диск спутника наезжает на неё, комета и парад
      идут своим чередом (06a-celest). Ниже облаков — они всё равно главнее */
   if(typeof drawCelest==="function")drawCelest(p,sunX,sunY,H*.045);
+  /* три света (11g): спутники главной звезды, сходящиеся к соединению */
+  if(typeof lightsSuns==="function")lightsSuns(p,sunX,sunY,H*.045);
   if(!hasAtm)return;
   /* облака живут в 19e: поле плотности в перспективе, а не гроздь эллипсов */
   drawClouds(p,camx,camy);
@@ -28549,7 +28744,9 @@ function enterSurface(){
      нужно «который раз здесь» (11c) */
   if(typeof visitsAll==="function"){const V=visitsAll(),k=G.sys.key+"/"+p.idx;V[k]=(V[k]|0)+1;}
   /* строка истории к посадке (11c): то, что замечаешь, выйдя из корабля */
-  const sl=(typeof storyGroundLine==="function")?storyGroundLine("land"):null;
+  let sl=(typeof storyGroundLine==="function")?storyGroundLine("land"):null;
+  /* три света (11g): календарь заводится первым приходом, ставни — единственный знак */
+  if(typeof lightsArrive==="function"){lightsArrive();if(!sl)sl=lightsGroundLine();}
   if(sl)logAdd("dim",sl);
   say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
 }
@@ -28649,6 +28846,11 @@ function updateSurface(dt){
   if(S.cave&&Math.abs(S.cave.x-S.x)<34){
     G.prompt="ДЕЙСТВИЕ — ВОЙТИ В ПЕЩЕРУ";
     if(actEdge){enterCave();return;}
+  }
+  /* вход под третьим светом (11g): есть только в соединение и только на планете ядра */
+  if(typeof lightsOpen==="function"&&lightsOpen(S.p)&&Math.abs(lightsEntryX(tr,S.p)-S.x)<34){
+    G.prompt="ДЕЙСТВИЕ — ВОЙТИ ПОД ТРЕТЬИМ СВЕТОМ";
+    if(actEdge){lightsEnter();return;}
   }
   /* ── памятники и аномалии ──
      Они стояли на горизонте чистой декорацией: подойти было можно, сделать
@@ -28933,6 +29135,7 @@ function drawSurfaceHud(camx,camy){
   const marks=[];
   marks.push({x:S.shipX,ru:"КОРАБЛЬ",col:"rgba(242,178,92,.9)"});
   if(S.cave)marks.push({x:S.cave.x,ru:"ПЕЩЕРА",col:"rgba(150,225,255,.9)"});
+  if(typeof lightsOpen==="function"&&lightsOpen(S.p))marks.push({x:lightsEntryX(S.tr,S.p),ru:"ВХОД",col:"rgba(255,236,190,.9)"});
   /* достопримечательность ведут отдельно от пещеры: до неё далеко, и без
      маркера игрок пройдёт мимо ровно того, ради чего стоило садиться */
   const poi=nearestPOI(S.tr,S.x);
@@ -29024,6 +29227,8 @@ function drawSurface(){
     hot:Math.max(0,1-(G.t-(S.t0||0))/700)});
   ctx.restore();
   drawDustMotes(camx,camy,p);
+  /* три света (11g): дороги, фундаменты и вход — видны только в соединение */
+  if(typeof lightsDrawReveal==="function")lightsDrawReveal(tr,camx,camy,p);
   if(S.cave){
     const cx=S.cave.x-camx;
     if(cx>-60&&cx<W+60){
@@ -29687,9 +29892,11 @@ function caveBuild(C){
 function enterCave(){
   const S=G.surf,p=S.p,r=rng(p.seed^0xCA5E);
   const plants=[],fauna=[];
-  const seed=hashi(p.seed,7,0xCA5E);
+  /* вход под третьим светом (11g): та же пещера с другим зерном, без кусачих */
+  const ancient=!!S.ancient;
+  const seed=hashi(p.seed,ancient?9:7,0xCA5E);
   const C={seed,freq:.0026,amp:34,x:60,y:0,vy:0,on:false,face:1,found:false,
-    plants,fauna,walkAmp:0,walkPhase:0,walkTarget:null};
+    plants,fauna,walkAmp:0,walkPhase:0,walkTarget:null,ancient};
   caveZones(C);
   caveBuild(C);
   C.y=caveFloor(C,60);C.cy=C.y;
@@ -29708,7 +29915,7 @@ function enterCave(){
      игроку сделали поблажку, а потому, что здесь их гоняют каждый день */
   const watch=(typeof settleWatch==="function")?settleWatch(p):0;
   C.watch=watch;
-  const nb=Math.max(1,Math.round((2+Math.floor(r()*3))*(1-watch*.5)));
+  const nb=ancient?0:Math.max(1,Math.round((2+Math.floor(r()*3))*(1-watch*.5)));
   for(let i=0;i<nb;i++){
     const x=300+r()*(CAVE_W-600);
     const b=genBeast(r,p,x,caveFloor(C,x));
@@ -29717,7 +29924,7 @@ function enterCave(){
   }
   /* и на нижней галерее свои: раньше внизу было безопасно, потому что туда
      никто не спускался, а не потому, что там пусто */
-  const nbl=Math.max(0,Math.round((1+Math.floor(r()*2))*(1-watch*.5)));
+  const nbl=ancient?0:Math.max(0,Math.round((1+Math.floor(r()*2))*(1-watch*.5)));
   for(let i=0;i<nbl;i++){
     const x=420+r()*(CAVE_W-760);
     const y=caveFloorLow(C,x);
@@ -29738,6 +29945,7 @@ function enterCave(){
 }
 function exitCave(){
   G.cave=null;G.mode="surface";
+  if(G.surf)G.surf.ancient=false;
   say("Выход из пещеры\nв трюме: "+held());
 }
 /* ── тело в поле: ящик 8×21 над точкой опоры ── */
@@ -29883,7 +30091,9 @@ function updateCave(dt){
   }else if(!C.found&&Math.hypot(C.x-C.findX,C.y-C.findY)<44){
     G.prompt="ДЕЙСТВИЕ — ОСМОТРЕТЬ НАХОДКУ";
     if(actEdge){
-      C.found=true;G.data+=20;
+      C.found=true;
+      if(C.ancient&&typeof lightsCaveFind==="function"){lightsCaveFind(C);return;}
+      G.data+=20;
       if(typeof heardAdd==="function")heardAdd("ground",{sx:G.sx,sy:G.sy,note:"находка в пещере"},null);
       tell("tech","Находка в пещере · +20 данных","Находка в пещере\n+20 данных");
       /* в глубине пещеры лежит не только запись данных (05a-nodes) */
@@ -33916,7 +34126,7 @@ function rackTex(){
     for(const [sx,sy] of [[bx+5,by+5],[bx+bw-5,by+5],[bx+5,by+bh-5],[bx+bw-5,by+bh-5]])
       rackScrew(c,sx,sy,2.6);
     rackDial(c,cx,cy,r,g);
-    rackGlass(c,cx,cy,r);
+    rackGlass(c,cx,cy,Math.max(1,r));   // стенд с нулевым полотном: rackDial уже зажат, стекло — тоже
     /* подпись прибора под гнездом: то, что опознают, а не читают */
     c.fillStyle="rgba(196,206,210,.72)";
     c.font=Math.round(Math.min(11,cw*.115))+"px ui-monospace,monospace";
@@ -34047,7 +34257,7 @@ function rackDraw(){
 
   /* ── стрелки ── */
   const n=RACK_G.length, cw=(g0.w-RACK_PAD*2)/n;
-  const rr=Math.min(cw*.36,(g0.gh-40)*.5);
+  const rr=Math.max(1,Math.min(cw*.36,(g0.gh-40)*.5));   // на нулевом полотне (стенд) радиус уходил в минус
   const A0=Math.PI*.78, A1=Math.PI*2.22;
   for(let i=0;i<n;i++){
     const g=RACK_G[i], cx=RACK_PAD+cw*(i+.5), cy=RACK_PAD+rr+6;

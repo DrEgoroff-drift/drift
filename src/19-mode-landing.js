@@ -323,6 +323,8 @@ function drawSkyLayer(p,camx,camy){
   /* календарь неба поверх звезды: диск спутника наезжает на неё, комета и парад
      идут своим чередом (06a-celest). Ниже облаков — они всё равно главнее */
   if(typeof drawCelest==="function")drawCelest(p,sunX,sunY,H*.045);
+  /* три света (11g): спутники главной звезды, сходящиеся к соединению */
+  if(typeof lightsSuns==="function")lightsSuns(p,sunX,sunY,H*.045);
   if(!hasAtm)return;
   /* облака живут в 19e: поле плотности в перспективе, а не гроздь эллипсов */
   drawClouds(p,camx,camy);

@@ -258,6 +258,7 @@ function settleDraw(S,tr,camx,camy,p){
     ctx.stroke();
     ctx.fillStyle="rgba(255,206,130,"+(.30+S.mood/260).toFixed(2)+")";   // очаг
     ctx.fillRect(ox-2.5,oy-hh*.62,5,4.5);
+    if(typeof lightsShutters==="function")lightsShutters(ox,oy,ww,hh);   // ставни области трёх светов (11g)
     /* труба и дым — только у тех дворов, где что-то жгут */
     const b=SETTLE_BY_K[S.built[i-1]];
     if(b&&(b.k==="kiln"||b.k==="forge"||b.k==="still")){

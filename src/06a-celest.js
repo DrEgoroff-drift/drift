@@ -44,7 +44,9 @@ function surfNight(p){
   if(!p)return 0;
   const s=celSun(p);
   const k=p.T&&p.T.atm==="отсутствует"?1.9:1.5;
-  return clamp(-s.alt*k+.15,0,.62);
+  const n=clamp(-s.alt*k+.15,0,.62);
+  /* три света (11g): на окраине области ночь не доходит до ночи, в ядре её нет */
+  return (typeof lightsNight==="function")?lightsNight(n):n;
 }
 /* Период обращения в сутках: Кеплер по радиусу орбиты, приведённый к масштабу,
    в котором ближняя планета обходит звезду примерно за две недели. */

@@ -7,7 +7,7 @@
 No build step to play, no dependencies, no frameworks, no asset files. Every image and every
 sound is generated at runtime from seeds.
 
-<img src="docs/shots/cockpit1.png" alt="Mining ship cockpit in an asteroid belt" width="100%">
+<img src="docs/shots/belt.png" alt="Mining ship cockpit in an asteroid belt" width="100%">
 
 </div>
 
@@ -23,179 +23,95 @@ board pirate stations on foot.
 ## Screenshots
 
 Nothing below is hand-drawn. Hulls, cockpits, terrain, interiors and star fields are all built
-from the seed of the system you are in.
+from the seed of the system you are in. Shots are taken by `docs/mkshots.ps1` straight from the
+build, one scene per run.
 
 <table>
 <tr>
 <td width="50%" valign="top">
 <img src="docs/shots/map.png" alt="Galaxy map" width="100%">
 <b>Galaxy map.</b> Stars are light sources — halo, colour and diffraction spikes follow the
-spectral class. Distance is rendered as darkness, the jump radius as a lit area.
+spectral class. Distance is rendered as darkness, the jump radius as a lit area; lanes are the
+branching structure the galaxy was generated with.
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/system.png" alt="Flying through a system" width="100%">
-<b>System flight.</b> The exhaust ribbon is stored in system coordinates, so it records the
-trajectory actually flown. Colour comes from the hull, length from thrust and the engine module.
+<b>System flight.</b> Orbits, nebula and a five-needle instrument panel in the corner: every
+region of the galaxy bends exactly one of those needles, and the misclosure grows toward the
+region's core.
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<img src="docs/shots/cockpit2.png" alt="Research ship cockpit" width="100%">
+<img src="docs/shots/belt2.png" alt="Survey ship cockpit in an asteroid belt" width="100%">
 <b>Cockpits are generated per hull class.</b> A survey ship gets a thin frame and clean
-plastics; the miner at the top of this page gets heavy pillars, rivets, grime and hazard
-stripes. The canopy opening has thickness — outer and inner contour with a lit bevel between.
+plastics; the miner at the top of this page gets heavy pillars, rivets and hazard stripes. The
+canopy opening has thickness — outer and inner contour with a lit bevel between.
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/scoop.png" alt="Skimming a gas giant" width="100%">
-<b>Gas giants are flown, not landed on.</b> Latitude bands are stripes warped by two scales of
-noise, with storms bending the same field. The collection corridor is a denser layer of gas you
-have to stay inside.
+<b>Skimming a gas giant.</b> Bands are a noise field in perspective, fronts are sharp where
+the contrast stretch crosses a palette stop. Hull heat climbs the deeper you dip.
 </td>
 </tr>
 <tr>
+<td width="50%" valign="top">
+<img src="docs/shots/landing.png" alt="Lander descending through rain" width="100%">
+<b>Landing.</b> The lander silhouette is derived from the hull; weather is capped per world
+type so a crystal planet is never washed flat white by fog.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/surface.png" alt="Jungle world on foot" width="100%">
+<b>On foot.</b> Flora and fauna come from the planet's genome; the ground is one baked
+material tile holding three scales at once. The astronaut is the unit of scale: 26 px against a
+lander of 90–130.
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/shots/surface2.png" alt="Ice world under an eclipse" width="100%">
+<b>The sky keeps a calendar.</b> Eclipses, planet parades and comets are computed from time,
+never rolled — the same day in the same system always gives the same sky, so a meeting can be
+set by it.
+</td>
+<td width="50%" valign="top">
+<img src="docs/shots/lights.png" alt="Three lights in conjunction over the core planet" width="100%">
+<b>Three lights.</b> A region with no night. Once in a few weeks its three suns converge, and
+the third light shows a road, foundations and an entrance that ordinary light does not. The
+shutters in every yard close the day before; nobody explains them.
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/shots/cave.png" alt="Cave under a planet surface" width="100%">
+<b>Caves.</b> Two galleries, the lower one reached by shafts and left by jetpack; the suit lamp
+is the only light unless the flora glows.
+</td>
 <td width="50%" valign="top">
 <img src="docs/shots/base.png" alt="Base cross-section cut into a hillside" width="100%">
-<b>A base is drawn as a cut through a hill.</b> Sky and surface on top, compartments below, a
-lit lift shaft joining the levels, doors with light under them. Crew appear only where you
-actually posted them.
-</td>
-<td width="50%" valign="top">
-<img src="docs/shots/raid.png" alt="Boarding a pirate base" width="100%">
-<b>Pirate stations are boarded on foot.</b> Same projection and painter sort as the asteroid
-belt: walls shaded top to bottom, distance haze, ceiling lamps, dust in the helmet lamp beam.
-The gun fitted to your ship is the gun you carry.
+<b>Base cross-section.</b> Rooms are generated from a grid; each of the eight kinds has its own
+interior, workers walk between them, power runs along the yellow lines.
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
-<img src="docs/shots/world-types.png" alt="Six world types on foot" width="100%">
-<b>The surface matches the globe you saw from orbit.</b> The longitude you approach from picks
-the landing spot, and the terrain takes its low frequency from the field that prints the planet
-texture: a bright patch is high ground, a dark one a basin. A second field is moisture, so a
-green blotch really is a thicket on foot.
+<img src="docs/shots/raid.png" alt="Boarding a pirate base" width="100%">
+<b>Boarding a pirate base.</b> Corridors are projected from the belt's own polygons; the base
+you fight through is the one you saw from outside.
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/cantina.png" alt="Station cantina" width="100%">
-<b>The cantina is a room.</b> Candidates sit at the counter with the same procedural faces used
-for managers, in front of a window matching the station type. You hire by clicking a person.
+<b>Station cantina.</b> The hall, its bottles and the people at the counter are procedural;
+who sits there depends on the station's kind. Managers are hired here, one per domain.
 </td>
 </tr>
 <tr>
-<td width="50%" valign="top">
-<img src="docs/shots/lander.png" alt="Lander standing on a planet surface" width="100%">
-<b>The lander has its own side-on silhouette</b> — three and a half to five human heights,
-three-point gear, an open hatch with a lit interior and a ramp whose 10 px steps give the
-scale. Legs deploy on approach, struts compress on impact and spring back.
-</td>
-<td width="50%" valign="top">
-<img src="docs/shots/pirates-fight.png" alt="Pirates closing in" width="100%">
-<b>Pirate hulls are welded out of other ships.</b> Sixty to a hundred and twenty polygons,
-asymmetry by rule — a pylon on one side, a tank on the other. Damage accumulates: scorches,
-then a breach with flame, then a smoke trail. Below half hull the ship is rebaked with gear
-torn off.
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-<img src="docs/shots/home.png" alt="Your home, seen as a room" width="100%">
-<b>Home is a room you walk into.</b> It grows out of accumulated turnover rather than purchases:
-the mattress of a rented corner, the garage with your ship on props, the showcase, the
-workbench. Each tier extends the room to the right. No prices anywhere on the screen.
-</td>
-<td width="50%" valign="top">
-<img src="docs/shots/world-ruin.png" alt="Ruined world" width="100%">
-<b>A ruined world is masonry under dust.</b> The ground follows a rubble law — axis-aligned
-blocks in patches, since continuous brickwork reads as graph paper. Wall fragments with
-courses, a doorway, fallen column drums.
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-<img src="docs/shots/hullzoom.png" alt="Six hull classes up close" width="100%">
-<b>Hulls are painted like industrial hardware.</b> Bone primer with the owner's colour surviving
-as one painted panel. Plating is assembled from sheets with seams, tone variation and rivets;
-engines are graphite barrels past the outline; stencils, hatch numbers, grilles and a roundel do
-the rest. One planform per hull — delta, cross, catamaran, slab, disc, trident, swept.
-</td>
-<td width="50%" valign="top">
-<img src="docs/shots/yachts.png" alt="Luxury yachts" width="100%">
-<b>Yachts are the one hull bought for looks.</b> Long thin body, a manta wing grown from the
-hull by a strake, spindle nacelles. Four surfaces no other ship has: lacquer with metallic
-grain, teak where a person walks, brass edging, a pearl superstructure under glass. They never
-pay for themselves — the only mechanical effect is crew morale.
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-<img src="docs/shots/world-jungle.png" alt="Jungle world" width="100%">
-<b>Under a canopy it is dark.</b> Mostly deep shade with light in patches, ground litter and
-dark roots. Canopy trees are tiered masses with branches to the trunk and vines that sway on
-the world's wind.
-</td>
-<td width="50%" valign="top">
-<img src="docs/shots/pirate-classes.png" alt="The four pirate classes" width="100%">
-<b>Four pirate classes.</b> The interceptor is small and narrow, the raider carries cargo cages,
-the heavy leads with a ram and armour, and the renegade's flagship is your own hull with scrap
-welded over it. Each is baked once into an offscreen canvas, so the polygons never reach the
-frame.
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-<img src="docs/shots/fleet.png" alt="Part of the hundred-hull catalogue" width="100%">
-<b>A hundred hulls; tier is visible in the hull.</b> Class comes from proportion — the courier
-is a needle, the freighter a crate with containers strapped on. Tier comes from finish: patches
-and streaks on a workhorse, an accent line on a rare hull, double piping and a crest on a
-legend, exposed guts on a prototype. Colour is per ship, not per tier.
-</td>
 <td width="50%" valign="top">
 <img src="docs/shots/hq.png" alt="The HQ bridge" width="100%">
-<b>The HQ screen is a room.</b> Four domain consoles with whoever holds that domain standing at
-each — pose per role, portrait per person. Screens show real state: crew on assignment, drones
-and bases, the route polyline with a ship moving along it. An empty domain is a console under a
-dust sheet. The holo table shows your own system.
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-<img src="docs/shots/built.png" alt="Your home on a planet surface" width="100%">
-<b>What you own stands on the ground.</b> Land on the planet holding your base or home and it is
-on the horizon. The spot is chosen by searching for level ground. Windows count completed home
-tiers; the eighth lights the mooring beacon.
+<b>The HQ bridge.</b> Each manager stands at his own board; portraits grow with level and
+darken with loyalty. An empty seat is drawn as an empty seat.
 </td>
 <td width="50%" valign="top">
-<img src="docs/shots/occupation.png" alt="The pirate front on the map" width="100%">
-<b>The pirate front is visible on the map.</b> Occupied systems wear a toothed cordon that does
-not dim with distance. A blockade closes the dock and stops drones selling; full occupation
-leaves only refuelling.
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-<img src="docs/shots/route.png" alt="A trade route on the map" width="100%">
-<b>Your factor's trade route is drawn on the map.</b> Dashes between legs, diamonds on stations,
-a ship moving along the line, and on the best leg the deal itself: goods, buy price, sell price,
-margin. You can fly that spread yourself.
-</td>
-<td width="50%" valign="top">
-<img src="docs/shots/foes.png" alt="Boarding party opponents" width="100%">
-<b>Boarders have bodies.</b> Shoulders wider than hips, legs apart in two tones, both hands on
-the weapon, a visor band instead of an eye dot. The heavy braces a bipod; the baron wears a
-split cloak, pauldrons and a crest — rank reads from the shoulders.
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-<img src="docs/shots/parrotwin.png" alt="The repeater on its perch" width="100%">
-<b>The repeater.</b> A bird from a dead scout's effects that repeats what it overheard — prices
-from a station you left, a bearing, a phrase in the expedition's pidgin. Five zones, five
-reactions, and never a line it did not hear. Drawn and animated at runtime: breathing, blinking,
-a wing beat, crest beads lagging half a beat behind the head.
-</td>
-<td width="50%" valign="top">
-<img src="docs/shots/parrot.png" alt="Six animation poses of the repeater" width="100%">
-<b>Poses come from springs, not frames.</b> Rest, wing beat, crest up, head turn, settling,
-preening — one body under different forces, so a poke resolves back to calm on its own.
 </td>
 </tr>
 </table>

@@ -311,10 +311,11 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 - **Split debt**: `23-mode-dig` (52 KB), `24a-mode-raid` (47), `17-mode-system` (46),
   `21ab-base-interiors` (42), `19-mode-landing` (41) — the guard still shouts; `21a` and `26` are
   paid. Cut them on their next milestone, along a seam, never a `const` table.
+- **Star disc on the surface** (question for the author): `drawSkyLayer` paints the star as a disc in `p.T.sky[1]` — the dark sky tone — so from the ground every star reads as an eclipse with a corona (since before the module split). Intentional visor look or a leftover? Seen plainly on the 0.101.0 README shots.
 - **G11**: `20-life` radial gradients as baked sprites, veil/vignette as one layer — the raster
   budget pass, measured not guessed (see `drift-perf-method`).
 - **M112**: nothing else — belt missiles and the hull mark closed it.
-- **M135 "three lights"**: next in the queue, after this sweep.
+- **M135 "three lights"**: built (0.101.0) — see the queue below. Next region: M136 "the drift of hours".
 
 ---
 
@@ -323,6 +324,23 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 **Full text lives in [`docs/PLAN-archive.md`](docs/PLAN-archive.md)** â grep it for `M122`. It was
 moved there on 2026-08-15 because thirty milestones of far-future work were being carried in a file
 that is read every session; the pass itself stands, and it is the release (0.72.0 â **1.00.0**).
+
+## M135 (0.101.0) — built. Three lights
+
+`11g-lights`: the `lights` region (needle `actino`). **Edge:** night capped at dusk (`lightsNight` in
+`surfNight`), one companion sun (`lightsSuns` after the star disc in `drawSkyLayer`), shutters on
+every settlement yard (`lightsShutters` from `settleDraw`). **Core:** no night, two companions.
+**Calendar:** `lightsConj(t)` — period 24–35 days from the region seed, a one-day window with a
+sine peak; anchored by `lightsArrive()` (ether tick and landing) at the first arrival so the last
+conjunction was yesterday, then fixed for good. No countdown is shown anywhere; `lightsGroundLine`
+speaks only of shutters and lights. **Reveal:** `lightsDrawReveal` draws road, foundations and
+arch on the core planet only while `lightsOpen(p)`; `lightsEnter` runs `enterCave` with `ancient`
+(seed 9, no fauna) and the find goes through `lightsCaveFind` (120 data, `relicRoll` .7).
+Persisted: `G.lights={t0,seen}`. Suite `91zt-lights`.
+
+**Open by design:** region talk ("colonies sleep by light" in cantina/counter lines) and a
+settlement glyph for the shutters wait for the factions pass; the edge generator per world type is
+still the table's reservation (M132 tail).
 
 ## M134 (0.94.0) â built. The mirror
 

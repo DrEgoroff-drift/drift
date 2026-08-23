@@ -147,9 +147,11 @@ function caveBuild(C){
 function enterCave(){
   const S=G.surf,p=S.p,r=rng(p.seed^0xCA5E);
   const plants=[],fauna=[];
-  const seed=hashi(p.seed,7,0xCA5E);
+  /* вход под третьим светом (11g): та же пещера с другим зерном, без кусачих */
+  const ancient=!!S.ancient;
+  const seed=hashi(p.seed,ancient?9:7,0xCA5E);
   const C={seed,freq:.0026,amp:34,x:60,y:0,vy:0,on:false,face:1,found:false,
-    plants,fauna,walkAmp:0,walkPhase:0,walkTarget:null};
+    plants,fauna,walkAmp:0,walkPhase:0,walkTarget:null,ancient};
   caveZones(C);
   caveBuild(C);
   C.y=caveFloor(C,60);C.cy=C.y;
@@ -168,7 +170,7 @@ function enterCave(){
      игроку сделали поблажку, а потому, что здесь их гоняют каждый день */
   const watch=(typeof settleWatch==="function")?settleWatch(p):0;
   C.watch=watch;
-  const nb=Math.max(1,Math.round((2+Math.floor(r()*3))*(1-watch*.5)));
+  const nb=ancient?0:Math.max(1,Math.round((2+Math.floor(r()*3))*(1-watch*.5)));
   for(let i=0;i<nb;i++){
     const x=300+r()*(CAVE_W-600);
     const b=genBeast(r,p,x,caveFloor(C,x));
@@ -177,7 +179,7 @@ function enterCave(){
   }
   /* и на нижней галерее свои: раньше внизу было безопасно, потому что туда
      никто не спускался, а не потому, что там пусто */
-  const nbl=Math.max(0,Math.round((1+Math.floor(r()*2))*(1-watch*.5)));
+  const nbl=ancient?0:Math.max(0,Math.round((1+Math.floor(r()*2))*(1-watch*.5)));
   for(let i=0;i<nbl;i++){
     const x=420+r()*(CAVE_W-760);
     const y=caveFloorLow(C,x);
@@ -198,6 +200,7 @@ function enterCave(){
 }
 function exitCave(){
   G.cave=null;G.mode="surface";
+  if(G.surf)G.surf.ancient=false;
   say("Выход из пещеры\nв трюме: "+held());
 }
 /* ── тело в поле: ящик 8×21 над точкой опоры ── */
@@ -343,7 +346,9 @@ function updateCave(dt){
   }else if(!C.found&&Math.hypot(C.x-C.findX,C.y-C.findY)<44){
     G.prompt="ДЕЙСТВИЕ — ОСМОТРЕТЬ НАХОДКУ";
     if(actEdge){
-      C.found=true;G.data+=20;
+      C.found=true;
+      if(C.ancient&&typeof lightsCaveFind==="function"){lightsCaveFind(C);return;}
+      G.data+=20;
       if(typeof heardAdd==="function")heardAdd("ground",{sx:G.sx,sy:G.sy,note:"находка в пещере"},null);
       tell("tech","Находка в пещере · +20 данных","Находка в пещере\n+20 данных");
       /* в глубине пещеры лежит не только запись данных (05a-nodes) */
