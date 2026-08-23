@@ -530,7 +530,7 @@ body.screen #console{opacity:1}
 #perch{-webkit-appearance:none;pointer-events:auto;background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);
   width:52px;height:52px;padding:4px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
 #perch canvas{width:44px;height:44px}
-@media (max-width:760px){#console{max-width:calc(100vw - 28px);bottom:auto;top:calc(env(safe-area-inset-top) + 112px)}}
+
 
 /* ══════════════ стол (M151a) ══════════════ */
 #tablewin{z-index:22;background:#0a0806}
@@ -573,6 +573,44 @@ body.screen #console{opacity:1}
    эфир слышно и у стойки. На столе он не нужен — стол и есть его память */
 body.screen #console{top:6px;bottom:auto;z-index:21;transform:translateX(-50%) scale(.82);transform-origin:top center;opacity:.92}
 body.table #console{display:none}
+
+/* ══════════════ телефон (M167) ══════════════
+   Всё взаимодействие — в нижней четверти, под большим пальцем. Приёмник —
+   тикер в одну строку (тап открывает ручку на пару секунд), кнопки зума
+   удалены (жест — щипок), призрачных кнопок нет: кнопка либо работает,
+   либо отсутствует. Подсказка и сообщение — один слот над пультом. */
+@media (max-width:760px){
+  #console{left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom) + 96px);transform:none;max-width:none;gap:6px}
+  #rx{flex:1;min-width:0;width:auto;flex-direction:row;align-items:center;gap:8px;padding:6px 10px}
+  #rx #rxKnob,#rx #rxScale{display:none}
+  #rx.sheet{flex-direction:column;align-items:stretch}
+  #rx.sheet #rxKnob{display:block}
+  #rx.sheet #rxScale{display:block}
+  #rxOut{flex:1;min-width:0;flex-direction:row;align-items:baseline;gap:8px}
+  #rxOut b{flex:0 0 auto;white-space:nowrap}
+  #rxOut s{flex:1}
+  #rxRec{min-height:36px;padding:0 10px}
+  #seat{padding:2px 8px 2px 2px;min-height:40px}
+  #seat canvas{width:36px;height:36px}
+  #seatOut s{max-width:70px}
+  #perch{width:40px;height:40px;padding:2px}
+  #perch canvas{width:34px;height:34px}
+  /* зона большого пальца: КАРТА и МЕНЮ спускаются к правому краю снизу */
+  .rail{top:auto;bottom:calc(env(safe-area-inset-bottom) + 158px)}
+  #zin,#zout{display:none!important}   /* зум — щипком */
+  /* один слот: сообщение и подсказка над пультом, в одну строку */
+  #msg{top:auto;bottom:calc(env(safe-area-inset-bottom) + 158px);white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;max-width:calc(100vw - 120px);font-size:11px;line-height:1.4}
+  #prompt{bottom:calc(env(safe-area-inset-bottom) + 138px);white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;max-width:calc(100vw - 24px);line-height:1.4}
+  /* призрачных кнопок нет: ДЕЙСТВИЕ без действия отсутствует */
+  body.mobile .pads button[data-k=act]:not(.ready){display:none}
+}
+/* фишки комплекта (M167): класс — фишкой, новое — точкой; ничего не переносится */
+.kitchip{font-style:normal;color:var(--void);background:var(--dim);border-radius:6px;
+  padding:0 5px;font-size:8px;letter-spacing:.08em;vertical-align:1px;white-space:nowrap}
+.kitnew{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--phos);
+  box-shadow:0 0 6px rgba(127,230,216,.7);vertical-align:1px}
 
 </style>
 </head>
@@ -726,6 +764,10 @@ body.table #console{display:none}
     <div class="ttl"><b id="svName">—</b><s id="svSub">—</s></div>
     <div class="wallet"><em id="svCap">—</em><i id="svSlots">—</i></div>
   </header>
+  <nav class="tabs" id="svTabs">
+    <button data-tab="ship" class="on">КОРАБЛЬ</button>
+    <button data-tab="suit">СКАФАНДР</button>
+  </nav>
   <div id="svstage"><canvas id="svcan"></canvas><div id="svhint">выберите слот на корпусе</div></div>
   <nav class="tabs" id="svfilter"></nav>
   <div class="body" id="svBody"></div>
@@ -797,7 +839,7 @@ body.table #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.127.0";
+const VER="0.128.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -19650,54 +19692,132 @@ function kitAddMod(x,id){
   logAdd("tech","Заплата: "+KIT_MODS[id].ru+" на "+KIT_RU[x.p]+" «"+kitName(x)+"»");
   return true;
 }
-/* ── рисунок: фигура в скафандре с шестью местами, по классам и слоям ── */
-function drawKitFigure(c,W,H,hit){
-  const K=kitAll();
-  c.save();c.clearRect(0,0,W,H);
-  const s=Math.min(W/120,H/200);
-  c.translate(W/2,H/2);c.scale(s,s);
-  const cls=p=>K[p].cls,wearCol=p=>["#d9dde3","#aeb4ba","#c9b59a","#8a7f9a"][K[p].wear];
-  /* тень и опора */
-  c.fillStyle="rgba(0,0,0,.4)";c.beginPath();c.ellipse(0,92,34,6,0,0,7);c.fill();
-  /* ботинки */
-  c.fillStyle=wearCol("boots");
-  c.beginPath();c.roundRect(-24,72,20,18+cls("boots")*2,4);c.fill();
-  c.beginPath();c.roundRect(4,72,20,18+cls("boots")*2,4);c.fill();
-  /* ноги */
-  c.fillStyle="#7d8793";c.fillRect(-20,30,14,44);c.fillRect(6,30,14,44);
-  /* корпус: класс — толщина и пластины */
-  c.fillStyle=wearCol("torso");
-  c.beginPath();c.roundRect(-26-cls("torso")*2,-26,52+cls("torso")*4,60,10);c.fill();
-  c.fillStyle="rgba(0,0,0,.18)";
-  for(let i=0;i<cls("torso");i++){c.fillRect(-20,-20+i*14,40,3);}
-  /* ранец: за спиной, ширина по классу */
-  c.fillStyle="#5e6670";c.beginPath();c.roundRect(-34-cls("pack")*3,-22,12+cls("pack")*3,46,4);c.fill();
-  /* руки и перчатки */
-  c.fillStyle="#7d8793";c.fillRect(-40,-18,12,44);c.fillRect(28,-18,12,44);
-  c.fillStyle=wearCol("gloves");
-  c.beginPath();c.roundRect(-42,24,16,12+cls("gloves")*2,4);c.fill();
-  c.beginPath();c.roundRect(26,24,16,12+cls("gloves")*2,4);c.fill();
-  /* шлем: класс — стекло шире */
-  c.fillStyle=wearCol("helmet");c.beginPath();c.arc(0,-48,22+cls("helmet")*1.5,0,7);c.fill();
-  c.fillStyle="#1d2a36";c.beginPath();c.ellipse(2,-48,12+cls("helmet")*2,13,0,0,7);c.fill();
-  c.fillStyle="rgba(255,255,255,.25)";c.beginPath();c.ellipse(-3,-53,5,3,-.5,0,7);c.fill();
-  /* фонарь на шлеме: пятно света по классу */
-  const L=cls("lamp");
-  const g=c.createRadialGradient(20,-52,0,20,-52,18+L*10);
-  g.addColorStop(0,"rgba(255,240,200,.7)");g.addColorStop(1,"rgba(255,240,200,0)");
-  c.fillStyle=g;c.beginPath();c.arc(20,-52,18+L*10,0,7);c.fill();
-  c.fillStyle="#e8e0c0";c.beginPath();c.arc(16,-56,3,0,7);c.fill();
+/* ── палитры семейств: три семейства на место, по модели ──
+   I — выдача: брезент, серо-голубой; II — институт: белый с цианом;
+   III — редкая: олива с латунью. Чужая вещь уводится в лиловый серый,
+   ношеная — глушится. Кукла и ходок на поверхности собираются из ЭТИХ
+   цветов: «Стриж-2» на «Кречете-3» виден смесью, а не подписью. */
+const KIT_FAM=[
+  {main:"#b9c2c9",dark:"#7d8793",acc:"#f2b25c"},
+  {main:"#dde4ea",dark:"#9fb0bb",acc:"#7fe6d8"},
+  {main:"#b7ae8f",dark:"#7e775e",acc:"#e0885a"}
+];
+function kitColOf(x){
+  const F=KIT_FAM[clamp(x.model|0,0,2)];
+  let main=F.main,dark=F.dark;
+  if(x.wear===1){main=mixHex(main,"#6f6f6f",.35);dark=mixHex(dark,"#4a4a4a",.35);}
+  if(x.wear===3){main=mixHex(main,"#a89ab8",.45);dark=mixHex(dark,"#6a5f7a",.45);}
+  return {main,dark,acc:F.acc};
+}
+function mixHex(a,b,k){
+  const pa=hex2rgb(a),pb=hex2rgb(b);
+  return "rgb("+pa.map((v,i)=>Math.round(v+(pb[i]-v)*k)).join(",")+")";
+}
+function kitPalette(){
+  const K=kitAll(),out={};
+  for(const p of KIT_PLACES)out[p]=kitColOf(K[p]);
+  return out;
+}
+/* ── кукла: RPG-манекен, собранный из надетых вещей ──
+   Правило процедурных сборок: слои (ранец → ботинки → корпус → перчатки →
+   шлем → фонарь), ОДИН обвод по всему телу, ОДИН свет. Износ читается на
+   кукле: потёртости штрихами, мутное забрало. Кукла дышит (t), фонарь чуть
+   качается. Рисует и экран, и — теми же цветами — ходока на поверхности. */
+function drawKitFigure(c,W,H,hit,t){
+  const K=kitAll(),P=kitPalette();
+  t=t===undefined?G.t*.03:t;
+  const br=Math.sin(t)*1.4;                       /* дыхание */
+  const off=drawKitFigure._off||(drawKitFigure._off=document.createElement("canvas"));
+  off.width=120;off.height=200;
+  const d=off.getContext("2d");
+  d.clearRect(0,0,120,200);
+  d.save();d.translate(60,104+br*.3);
+  const cls=p=>K[p].cls;
+  /* слой 1: ранец за спиной — ширина по классу, лямки */
+  d.fillStyle=P.pack.dark;
+  d.beginPath();d.roundRect(-40-cls("pack")*4,-34+br,18+cls("pack")*4,58,6);d.fill();
+  d.fillStyle=P.pack.main;
+  d.beginPath();d.roundRect(-37-cls("pack")*4,-30+br,12+cls("pack")*3,20,4);d.fill();
+  /* слой 2: ноги и ботинки */
+  d.strokeStyle=P.torso.dark;d.lineWidth=13;d.lineCap="round";
+  d.beginPath();d.moveTo(-11,26);d.lineTo(-13,66);d.stroke();
+  d.beginPath();d.moveTo(11,26);d.lineTo(13,66);d.stroke();
+  d.fillStyle=P.boots.main;
+  d.beginPath();d.roundRect(-22,64,18,14+cls("boots")*2.5,4);d.fill();
+  d.beginPath();d.roundRect(4,64,18,14+cls("boots")*2.5,4);d.fill();
+  d.fillStyle=P.boots.dark;d.fillRect(-22,74+cls("boots")*2.5,18,4);d.fillRect(4,74+cls("boots")*2.5,18,4);
+  /* слой 3: корпус — трапеция, пластины по классу, поясной кант, нагрудный блок */
+  const tb=P.torso;
+  const g=d.createLinearGradient(-24,-30,24,30);
+  g.addColorStop(0,tb.main);g.addColorStop(1,tb.dark);
+  d.fillStyle=g;
+  d.beginPath();
+  d.moveTo(-24-cls("torso")*2,-30+br);d.lineTo(24+cls("torso")*2,-30+br);
+  d.lineTo(20,30);d.lineTo(-20,30);d.closePath();d.fill();
+  d.fillStyle="rgba(0,0,0,.16)";
+  for(let i=0;i<cls("torso");i++)d.fillRect(-16,-20+br+i*13,32,3);
+  d.fillStyle=tb.acc;d.fillRect(-20,8,40,5);                                  /* кант */
+  d.fillStyle="#1b2735";d.fillRect(6,-22+br,14,11);                           /* нагрудный блок */
+  d.fillStyle=P.lamp.acc;d.fillRect(9,-19+br,5,4);
+  /* слой 4: руки и перчатки */
+  d.strokeStyle=tb.main;d.lineWidth=11;
+  d.beginPath();d.moveTo(-22,-22+br);d.lineTo(-32,4);d.stroke();
+  d.beginPath();d.moveTo(22,-22+br);d.lineTo(32,4);d.stroke();
+  d.fillStyle=P.gloves.main;
+  d.beginPath();d.roundRect(-40,2,15,12+cls("gloves")*2,4);d.fill();
+  d.beginPath();d.roundRect(25,2,15,12+cls("gloves")*2,4);d.fill();
+  /* слой 5: шлем — купол, забрало (мутное у ношеного), блик */
+  const hy=-46+br;
+  d.fillStyle=P.helmet.main;
+  d.beginPath();d.arc(0,hy,19+cls("helmet")*1.5,0,TAU);d.fill();
+  d.fillStyle="#0a1a26";
+  d.beginPath();d.ellipse(2,hy,11+cls("helmet")*2,11,-.08,0,TAU);d.fill();
+  const dull=K.helmet.wear===1?.3:1;
+  const vg=d.createLinearGradient(-8,hy-12,10,hy+4);
+  vg.addColorStop(0,"rgba(160,235,255,"+(.6*dull).toFixed(2)+")");vg.addColorStop(1,"rgba(120,200,230,0)");
+  d.fillStyle=vg;
+  d.beginPath();d.ellipse(2,hy,11+cls("helmet")*2,11,-.08,0,TAU);d.fill();
+  /* слой 6: фонарь на шлеме, качается */
+  const sw=Math.sin(t*.7)*1.2;
+  d.fillStyle=P.lamp.dark;d.fillRect(13+sw*.3,hy-14,6,5);
+  d.fillStyle=P.lamp.acc;d.beginPath();d.arc(16+sw*.3,hy-11,2.2,0,TAU);d.fill();
+  const lg=d.createRadialGradient(16+sw,hy-11,1,16+sw,hy-11,16+cls("lamp")*7);
+  lg.addColorStop(0,"rgba(255,240,200,.5)");lg.addColorStop(1,"rgba(255,240,200,0)");
+  d.fillStyle=lg;d.beginPath();d.arc(16+sw,hy-11,16+cls("lamp")*7,0,TAU);d.fill();
+  /* износ: потёртости штрихами на местах со слоем «ношеный» и «латаный» */
+  d.strokeStyle="rgba(30,30,30,.28)";d.lineWidth=1;
+  const scuff=(x0,y0)=>{for(let i=0;i<4;i++){d.beginPath();d.moveTo(x0+i*3,y0+i);d.lineTo(x0+i*3+4,y0+i+3);d.stroke();}};
+  if(K.torso.wear===1||K.torso.wear===2)scuff(-14,14);
+  if(K.boots.wear===1||K.boots.wear===2)scuff(-18,68);
+  if(K.pack.wear===1||K.pack.wear===2)scuff(-36,-6);
+  d.restore();
+  /* один свет на всю сборку */
+  d.globalCompositeOperation="source-atop";
+  const light=d.createLinearGradient(0,0,120,200);
+  light.addColorStop(0,"rgba(255,255,255,.16)");light.addColorStop(.5,"rgba(255,255,255,0)");light.addColorStop(1,"rgba(0,10,20,.22)");
+  d.fillStyle=light;d.fillRect(0,0,120,200);
+  d.globalCompositeOperation="source-over";
+  /* один обвод: силуэт тёмным, четыре сдвига под куклой */
+  const sil=drawKitFigure._sil||(drawKitFigure._sil=document.createElement("canvas"));
+  sil.width=120;sil.height=200;
+  const s2=sil.getContext("2d");
+  s2.clearRect(0,0,120,200);s2.drawImage(off,0,0);
+  s2.globalCompositeOperation="source-in";s2.fillStyle="#10161e";s2.fillRect(0,0,120,200);
+  s2.globalCompositeOperation="source-over";
+  /* на целевой канве */
+  c.clearRect(0,0,W,H);
+  const k=Math.min(W/132,H/212),ox=(W-120*k)/2,oy=(H-200*k)/2;
+  c.save();c.translate(ox,oy);c.scale(k,k);
+  for(const [dx,dy] of [[-1.5,0],[1.5,0],[0,-1.5],[0,1.5]])c.drawImage(sil,dx,dy);
+  c.drawImage(off,0,0);
+  /* тень-опора */
+  c.fillStyle="rgba(0,0,0,.35)";c.beginPath();c.ellipse(60,196,34,5,0,0,TAU);c.fill();
   c.restore();
-  /* места для клика: в экранных координатах */
   if(hit){
     hit.length=0;
-    const k=s,cx=W/2,cy=H/2;
-    hit.push({p:"helmet",x:cx-24*k,y:cy-72*k,w:48*k,h:48*k});
-    hit.push({p:"torso",x:cx-28*k,y:cy-26*k,w:56*k,h:60*k});
-    hit.push({p:"gloves",x:cx-44*k,y:cy+22*k,w:30*k,h:20*k});
-    hit.push({p:"boots",x:cx-26*k,y:cy+70*k,w:52*k,h:26*k});
-    hit.push({p:"pack",x:cx-48*k,y:cy-24*k,w:16*k,h:50*k});
-    hit.push({p:"lamp",x:cx+8*k,y:cy-66*k,w:26*k,h:24*k});
+    const zone=(p,x,y,w,h)=>hit.push({p,x:ox+x*k,y:oy+y*k,w:Math.max(44,w*k),h:Math.max(44,h*k)});
+    zone("helmet",36,34,48,44);zone("torso",34,72,52,60);zone("gloves",16,102,26,26);
+    zone("boots",36,164,48,28);zone("pack",8,66,26,56);zone("lamp",72,36,26,24);
   }
 }
 /* расход заряда на льду: подогрев держит; в остальных мирах — единица */
@@ -19710,35 +19830,40 @@ function kitHeatMul(){
    Живёт в экране КОРАБЛЬ (снять/надеть — где угодно); чинить и латать —
    дома, в мастерской (kitShopBlock). */
 let kitSel=null;
+let kitDollHit=[];
 function kitBlock(body){
   const K=kitAll();
   body.appendChild(el("div","sec","СКАФАНДР · "+kitLine()));
   const r=el("div","row");r.style.alignItems="flex-start";
-  const cv=document.createElement("canvas");cv.width=150;cv.height=240;cv.style.cssText="width:150px;height:240px;flex:0 0 auto;cursor:pointer";
-  const hit=[];drawKitFigure(cv.getContext("2d"),150,240,hit);
+  const cv=document.createElement("canvas");cv.id="kitDoll";cv.width=180;cv.height=280;cv.style.cssText="width:180px;height:280px;flex:0 0 auto;cursor:pointer";
+  kitDollHit=[];drawKitFigure(cv.getContext("2d"),180,280,kitDollHit);
   cv.addEventListener("click",e=>{
-    const rc=cv.getBoundingClientRect(),mx=e.clientX-rc.left,my=e.clientY-rc.top;
-    const h=hit.find(h=>mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h);
+    const rc=cv.getBoundingClientRect(),mx=(e.clientX-rc.left)*(cv.width/rc.width),my=(e.clientY-rc.top)*(cv.height/rc.height);
+    const h=kitDollHit.find(h=>mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h);
     kitSel=h?h.p:null;
     if(typeof svRender==="function"&&document.getElementById("shipview").classList.contains("open"))svRender();
     else if(typeof renderTab==="function")renderTab();
   });
   r.appendChild(cv);
-  const list=el("div","nm");
+  /* места: имя · класс фишкой · слой — в одну строку, «I класса» не переносится */
+  const list=el("div","nm");list.style.minWidth="0";
   let html="";
   for(const p of KIT_PLACES){
     const x=K[p];
-    html+="<b"+(kitSel===p?" style='color:var(--phos)'":"")+">"+KIT_RU[p]+" · «"+kitName(x)+"» "+kitRoman(x.cls)+" класса</b><s>"+
+    html+="<b"+(kitSel===p?" style='color:var(--phos)'":"")+" style='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block'>"+
+      KIT_RU[p]+" · «"+kitName(x)+"» <i class='kitchip'>"+kitRoman(x.cls)+"</i></b><s>"+
       KIT_WEAR[x.wear]+(x.mods.length?" · "+x.mods.map(id=>KIT_MODS[id].ru).join(", "):"")+"</s>";
   }
   list.innerHTML=html;
   r.appendChild(list);body.appendChild(r);
-  /* полка: надеть — сразу, это не магазин */
+  /* полка: надеть — сразу, это не магазин; новое — точкой */
   const shelf=kitShelf();
   if(shelf.length){
     body.appendChild(el("div","sec","ПОЛКА · НАДЕТЬ — ПРЕЖНЯЯ ВЕЩЬ ЛЯЖЕТ НА ПОЛКУ"));
     shelf.forEach((x,i)=>{
-      const rr=el("div","row","<div class='nm'><b>"+KIT_RU[x.p]+" · «"+kitName(x)+"» "+kitRoman(x.cls)+" класса</b><s>"+KIT_WEAR[x.wear]+
+      const isNew=!x.seen;x.seen=1;
+      const rr=el("div","row","<div class='nm'><b style='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block'>"+
+        KIT_RU[x.p]+" · «"+kitName(x)+"» <i class='kitchip'>"+kitRoman(x.cls)+"</i>"+(isNew?" <i class='kitnew'></i>":"")+"</b><s>"+KIT_WEAR[x.wear]+
         (x.mods.length?" · "+x.mods.map(id=>KIT_MODS[id].ru).join(", "):"")+(x.wear===3?" · заплат не берёт":"")+"</s></div>");
       const b=el("button","act sm","НАДЕТЬ");
       b.onclick=()=>{kitWearPiece(i);if(typeof svRender==="function"&&document.getElementById("shipview").classList.contains("open"))svRender();else if(typeof renderTab==="function")renderTab();};
@@ -24502,17 +24627,41 @@ function drawSystem(){
   const marks=[{x:0,y:0,c:"#f2b25c",l:"ЗВЕЗДА"}];
   if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",l:sys.station.name.toUpperCase()});
   if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6b57",l:"ЦЕЛЬ"});}
+  /* фишки у кромки (M167): раньше метки стояли на круге и на телефоне висели
+     посреди сцены, наезжая друг на друга и на солнце. Теперь метка — плашка,
+     прижатая к краю прямоугольника кадра (с отступами под приборы и пульт),
+     а наложение снимается сдвигом вдоль кромки. */
+  const inset={x0:10,x1:W-10,y0:76,y1:H-(innerWidth<=760?150:120)};
+  const placed=[];
+  ctx.font="8px ui-monospace,monospace";
   for(const m of marks){
     const x=zx(m.x),y=zy(m.y);
     if(x>-20&&x<W+20&&y>-20&&y<H+20)continue;
-    const ang=Math.atan2(y-H/2,x-W/2);
-    const cx=W/2+Math.cos(ang)*(Math.min(W,H)/2-30),cy=H/2+Math.sin(ang)*(Math.min(W,H)/2-30);
-    ctx.save();ctx.translate(cx,cy);ctx.rotate(ang);
-    ctx.fillStyle=m.c;ctx.globalAlpha=.85;
-    ctx.beginPath();ctx.moveTo(9,0);ctx.lineTo(-6,6);ctx.lineTo(-6,-6);ctx.closePath();ctx.fill();
+    const ang=Math.atan2(y-H/2,x-W/2),dx=Math.cos(ang),dy=Math.sin(ang);
+    /* пересечение луча из центра с прямоугольником кромки */
+    let t=1e9;
+    if(dx>1e-6)t=Math.min(t,(inset.x1-W/2)/dx);if(dx<-1e-6)t=Math.min(t,(inset.x0-W/2)/dx);
+    if(dy>1e-6)t=Math.min(t,(inset.y1-H/2)/dy);if(dy<-1e-6)t=Math.min(t,(inset.y0-H/2)/dy);
+    let cx=W/2+dx*t,cy=H/2+dy*t;
+    const label=m.l+" · "+Math.round(Math.hypot(m.x-sh.x,m.y-sh.y));
+    const tw=ctx.measureText(label).width,cw=tw+26,ch=16;
+    const onSide=Math.abs(cx-inset.x0)<1||Math.abs(cx-inset.x1)<1;   // боковая кромка → двигаем по y
+    let rx=clamp(cx-(cx>W/2?cw-6:6),inset.x0,inset.x1-cw),ry=clamp(cy-ch/2,inset.y0,inset.y1-ch);
+    /* авторазвод: пока пересекается с уже поставленной — шаг вдоль кромки */
+    for(let g=0;g<12;g++){
+      const hit=placed.find(p=>!(rx+cw<=p.x||p.x+p.w<=rx||ry+ch<=p.y||p.y+p.h<=ry));
+      if(!hit)break;
+      if(onSide)ry=ry+ch+4<=inset.y1-ch?ry+ch+4:inset.y0;else rx=rx+cw+4<=inset.x1-cw?rx+cw+4:inset.x0;
+    }
+    placed.push({x:rx,y:ry,w:cw,h:ch});
+    ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
+    ctx.strokeStyle=m.c;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=1;
+    ctx.save();ctx.translate(cx>W/2?rx+cw-8:rx+8,ry+ch/2);ctx.rotate(ang);
+    ctx.fillStyle=m.c;ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(-4,4);ctx.lineTo(-4,-4);ctx.closePath();ctx.fill();
     ctx.restore();
-    ctx.globalAlpha=1;ctx.fillStyle=m.c;ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText(m.l+" · "+Math.round(Math.hypot(m.x-sh.x,m.y-sh.y)),cx,cy+(ang>0?16:-10));
+    ctx.fillStyle=m.c;ctx.textAlign=cx>W/2?"right":"left";
+    ctx.fillText(label,cx>W/2?rx+cw-18:rx+18,ry+12);
+    ctx.textAlign="center";
   }
 }
 /* кольцо: half=-1 — дальняя дуга под планетой, half=1 — ближняя поверх неё */
@@ -28789,7 +28938,9 @@ function drawAstronaut(o){
   const walk=Math.sin(o.phase)*amp;
   const walk2=Math.sin(o.phase+Math.PI)*amp;
   const air=o.air;
-  const suit="#dfe7ec", suitD="#9fb0bb", dark="#121a24";
+  /* комплект (M167): ходок собран из цветов надетых вещей — та же кукла, что на экране */
+  const KP=(typeof kitPalette==="function")?kitPalette():null;
+  const suit=KP?KP.torso.main:"#dfe7ec", suitD=KP?KP.torso.dark:"#9fb0bb", dark=KP?KP.boots.dark:"#121a24";
   ctx.save();
   ctx.scale(o.face||1,1);
   if(o.jet){   // ранцевый импульс при прыжке
@@ -28811,7 +28962,7 @@ function drawAstronaut(o){
     ctx.strokeStyle=suitD;ctx.lineWidth=2.6;
   }
   /* ранец */
-  ctx.fillStyle="#2b3846";
+  ctx.fillStyle=KP?KP.pack.dark:"#2b3846";
   ctx.beginPath();ctx.roundRect?ctx.roundRect(-5.4,-4.2,4.2,7.6,1.4):ctx.rect(-5.4,-4.2,4.2,7.6);
   ctx.fill();
   ctx.strokeStyle=rgba(acc,.75);ctx.lineWidth=.9;ctx.stroke();
@@ -28839,7 +28990,7 @@ function drawAstronaut(o){
   else { ctx.beginPath();ctx.moveTo(2.4,-3);ctx.lineTo(3.6+armSw*.4,-.4);
          ctx.lineTo(3.2-armSw*.5,2.2);ctx.stroke(); }
   /* шлем */
-  ctx.fillStyle=suit;
+  ctx.fillStyle=KP?KP.helmet.main:suit;
   ctx.beginPath();ctx.arc(.2,-6.6,4.1,0,TAU);ctx.fill();
   ctx.strokeStyle="rgba(20,30,40,.5)";ctx.lineWidth=.9;ctx.stroke();
   ctx.fillStyle="#0a1a26";
@@ -28848,7 +28999,7 @@ function drawAstronaut(o){
   vg.addColorStop(0,"rgba(160,235,255,.75)");vg.addColorStop(1,"rgba(120,200,230,0)");
   ctx.fillStyle=vg;
   ctx.beginPath();ctx.ellipse(.9,-6.7,3,2.5,-.12,0,TAU);ctx.fill();
-  ctx.fillStyle=rgba(acc,.9);
+  ctx.fillStyle=KP?KP.lamp.acc:rgba(acc,.9);
   ctx.beginPath();ctx.arc(-2.9,-7.6,1.1,0,TAU);ctx.fill();                      // фонарь
   ctx.restore();
   /* луч фонаря — только под землёй */
@@ -32611,12 +32762,16 @@ function drawSurfaceHud(camx,camy){
   const hint=surfaceHint();
   if(hint){
     ctx.font="10px ui-monospace,monospace";
-    const w=Math.min(W-RIGHT_PAD-20,ctx.measureText(hint).width+22);
+    /* длинная подсказка не вылезает за плашку — ужимается с многоточием (M167) */
+    let ht=hint;
+    const maxW=W-RIGHT_PAD-34;
+    while(ht.length>4&&ctx.measureText(ht).width>maxW)ht=ht.slice(0,-4)+"…";
+    const w=Math.min(W-RIGHT_PAD-20,ctx.measureText(ht).width+22);
     const cx=(W-RIGHT_PAD)/2;
     ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(cx-w/2,TOP,w,20);
     ctx.strokeStyle="rgba(127,230,216,.28)";ctx.lineWidth=1;
     ctx.strokeRect(cx-w/2+.5,TOP+.5,w-1,19);
-    ctx.fillStyle="rgba(190,235,240,.92)";ctx.fillText(hint,cx,TOP+14);
+    ctx.fillStyle="rgba(190,235,240,.92)";ctx.fillText(ht,cx,TOP+14);
   }
   /* навигатор: маркеры цели у верхней кромки — корабль и пещера */
   const marks=[];
@@ -32627,24 +32782,37 @@ function drawSurfaceHud(camx,camy){
      маркера игрок пройдёт мимо ровно того, ради чего стоило садиться */
   const poi=nearestPOI(S.tr,S.x);
   if(poi)marks.push({x:poi.x,ru:poi.ru,col:"rgba(212,180,255,.9)"});
+  /* фишки у кромки (M167): далёкая цель — плашка у левого или правого края,
+     по стороне, где она; фишки одной стороны стоят столбиком и не наезжают
+     ни друг на друга, ни на солнце в небе. Ближняя цель — засечка на месте. */
   ctx.font="9px ui-monospace,monospace";
+  let leftY=(hint?TOP+34:TOP+6),rightY=leftY,rowY=leftY;
   for(let mi=0;mi<marks.length;mi++){
     const m=marks[mi];
     const d=m.x-S.x, ad=Math.abs(d);
-    const sx=clamp(m.x-camx,64,W-RIGHT_PAD-14);   // запас под подпись по центру
-    /* маркеры разводим по строкам: две цели рядом давали кашу из наложенных
-       подписей, и не читалась ни одна */
-    const y=(hint?TOP+34:TOP+6)+mi*13;
     ctx.fillStyle=m.col;
-    if(ad>W*.45){                       // цель за краем — рисуем стрелку направления
+    if(ad>W*.45){                       // цель за краем — фишка у своей кромки
       const dir=Math.sign(d);
+      const label=m.ru+" "+Math.round(ad)+" м";
+      const tw=ctx.measureText(label).width,cw=tw+24,ch=15;
+      const rx=dir>0?W-RIGHT_PAD-8-cw:8;
+      const ry=dir>0?(rightY+=0,rightY):(leftY+=0,leftY);
+      if(dir>0)rightY+=ch+4;else leftY+=ch+4;
+      ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
+      ctx.strokeStyle=m.col;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=1;
+      ctx.fillStyle=m.col;
+      const ax=dir>0?rx+cw-7:rx+7;
       ctx.beginPath();
-      ctx.moveTo(sx+dir*8,y);ctx.lineTo(sx-dir*4,y-5);ctx.lineTo(sx-dir*4,y+5);
+      ctx.moveTo(ax+dir*4,ry+ch/2);ctx.lineTo(ax-dir*3,ry+ch/2-4);ctx.lineTo(ax-dir*3,ry+ch/2+4);
       ctx.closePath();ctx.fill();
-      ctx.fillText(m.ru+" "+Math.round(ad)+" м",sx,y+16);
+      const old=ctx.textAlign;ctx.textAlign=dir>0?"right":"left";
+      ctx.fillText(label,dir>0?rx+cw-14:rx+14,ry+11);
+      ctx.textAlign=old;
     }else{
-      ctx.fillRect(sx-1,y-5,2,10);
-      ctx.fillText(m.ru,sx,y+16);
+      const sx=clamp(m.x-camx,64,W-RIGHT_PAD-14);
+      rowY+=13;
+      ctx.fillRect(sx-1,rowY-5,2,10);
+      ctx.fillText(m.ru,sx,rowY+16);
     }
   }
   drawJetBar(12,H-16);
@@ -42818,6 +42986,9 @@ function consoleTick(dt){
   }
 }
 (function consoleWire(){
+  /* класс mobile — сразу и на каждый resize, не дожидаясь кадра (M167) */
+  const setMob=()=>document.body.classList.toggle("mobile",innerWidth<=760);
+  setMob();addEventListener("resize",setMob);
   const knob=document.getElementById("rxKnob");
   if(knob){
     const tune=()=>{
@@ -42830,6 +43001,14 @@ function consoleTick(dt){
       const con=document.getElementById("console");if(con)con.classList.remove("quiet");
     };
     knob.addEventListener("input",tune);
+    /* телефон (M167): тикер открывает ручку по тапу и прячет через пару секунд */
+    const rx=document.getElementById("rx");let sheetT=0;
+    const sheetHide=()=>{if(rx)rx.classList.remove("sheet");};
+    if(rx)rx.addEventListener("click",e=>{
+      if(!document.body.classList.contains("mobile")||e.target===knob)return;
+      rx.classList.toggle("sheet");clearTimeout(sheetT);sheetT=setTimeout(sheetHide,2500);
+    });
+    knob.addEventListener("input",()=>{clearTimeout(sheetT);sheetT=setTimeout(sheetHide,2000);});
     /* колесо на ручке — тоже ручка */
     knob.addEventListener("wheel",e=>{knob.value=clamp(+knob.value-Math.sign(e.deltaY)*.01,0,1);tune();e.preventDefault();},{passive:false});
   }
@@ -42885,7 +43064,21 @@ function svDraw(){
     }
   });
 }
+let svMode="ship";
 function svRender(){
+  document.querySelectorAll("#svTabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===svMode));
+  /* разрез экрана (M167): КОРАБЛЬ и СКАФАНДР — два инструмента, не один */
+  const stage=document.getElementById("svstage"),filt=document.getElementById("svfilter");
+  if(svMode==="suit"){
+    stage.style.display="none";filt.style.display="none";
+    document.getElementById("svhint").textContent="";
+    $svBody.textContent="";
+    if(typeof kitBlock==="function")kitBlock($svBody);
+    kitAnimStart();
+    return;
+  }
+  stage.style.display="";filt.style.display="";
+  kitAnimStop();
   const id=G.shipId,S=shipData(id),slots=slotsOf(id),fm=G.fit[id]||{};
   const cap=capOf(id),used=capUsed();
   document.getElementById("svName").textContent="«"+S.ru+"»";
@@ -42984,7 +43177,7 @@ function svRender(){
     r.appendChild(box);
     $svBody.appendChild(r);
   }
-  if(typeof kitBlock==="function")kitBlock($svBody);   /* скафандр как комплект (M152) */
+  /* скафандр — своя вкладка СКАФАНДР (M167) */
 }
 function openShipView(){
   for(const k in keys)keys[k]=false;
@@ -43269,6 +43462,21 @@ function optGroups(){
     n.style.display=(cur===optTab)?"":"none";
   }
 }
+/* ── СКАФАНДР: вкладка и дыхание куклы (M167) ── */
+let kitAnimRAF=0,kitAnimT=0;
+function kitAnimStart(){
+  if(kitAnimRAF)return;
+  const step=ts=>{
+    if(!$sv.classList.contains("open")||svMode!=="suit"){kitAnimRAF=0;return;}
+    kitAnimT=ts/500;
+    const cv=document.getElementById("kitDoll");
+    if(cv){const hit=kitDollHit;drawKitFigure(cv.getContext("2d"),cv.width,cv.height,hit,kitAnimT);}
+    kitAnimRAF=requestAnimationFrame(step);
+  };
+  kitAnimRAF=requestAnimationFrame(step);
+}
+function kitAnimStop(){if(kitAnimRAF){cancelAnimationFrame(kitAnimRAF);kitAnimRAF=0;}}
+document.querySelectorAll("#svTabs button").forEach(b=>b.addEventListener("click",()=>{svMode=b.dataset.tab;svRender();}));
 
 /* ══════════════ авария ══════════════ */
 function wreck(){
@@ -43444,9 +43652,10 @@ function hud(){
        Клавиша S при этом продолжает работать, раскладка WASD не рвётся. */
     setSt($bBrk,"display","none");
   }else{
-    setSt($bBrk,"display","");
+    /* призрачных кнопок нет (M167): на поверхности тормоза не бывает — кнопка отсутствует */
+    setSt($bBrk,"display",G.mode==="surface"?"none":"");
     setTx($bBrk,"ТОРМОЗ");
-    setSt($bBrk,"opacity",G.mode==="surface"?".3":"1");
+    setSt($bBrk,"opacity","1");
   }
   setTx($nav,(G.mode==="belt"||G.mode==="scoop")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
   /* под землёй ОГОНЬ — это импульсный разрядник, он есть всегда */
@@ -43462,6 +43671,7 @@ function hud(){
     $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");
+  document.body.classList.toggle("mobile",innerWidth<=760);   /* телефон (M167) */
 }
 
 /* ══════════════ звук по кадрам ══════════════ */

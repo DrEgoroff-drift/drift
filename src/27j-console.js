@@ -77,6 +77,9 @@ function consoleTick(dt){
   }
 }
 (function consoleWire(){
+  /* класс mobile — сразу и на каждый resize, не дожидаясь кадра (M167) */
+  const setMob=()=>document.body.classList.toggle("mobile",innerWidth<=760);
+  setMob();addEventListener("resize",setMob);
   const knob=document.getElementById("rxKnob");
   if(knob){
     const tune=()=>{
@@ -89,6 +92,14 @@ function consoleTick(dt){
       const con=document.getElementById("console");if(con)con.classList.remove("quiet");
     };
     knob.addEventListener("input",tune);
+    /* телефон (M167): тикер открывает ручку по тапу и прячет через пару секунд */
+    const rx=document.getElementById("rx");let sheetT=0;
+    const sheetHide=()=>{if(rx)rx.classList.remove("sheet");};
+    if(rx)rx.addEventListener("click",e=>{
+      if(!document.body.classList.contains("mobile")||e.target===knob)return;
+      rx.classList.toggle("sheet");clearTimeout(sheetT);sheetT=setTimeout(sheetHide,2500);
+    });
+    knob.addEventListener("input",()=>{clearTimeout(sheetT);sheetT=setTimeout(sheetHide,2000);});
     /* колесо на ручке — тоже ручка */
     knob.addEventListener("wheel",e=>{knob.value=clamp(+knob.value-Math.sign(e.deltaY)*.01,0,1);tune();e.preventDefault();},{passive:false});
   }

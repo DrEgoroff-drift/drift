@@ -26,12 +26,16 @@ function drawSurfaceHud(camx,camy){
   const hint=surfaceHint();
   if(hint){
     ctx.font="10px ui-monospace,monospace";
-    const w=Math.min(W-RIGHT_PAD-20,ctx.measureText(hint).width+22);
+    /* длинная подсказка не вылезает за плашку — ужимается с многоточием (M167) */
+    let ht=hint;
+    const maxW=W-RIGHT_PAD-34;
+    while(ht.length>4&&ctx.measureText(ht).width>maxW)ht=ht.slice(0,-4)+"…";
+    const w=Math.min(W-RIGHT_PAD-20,ctx.measureText(ht).width+22);
     const cx=(W-RIGHT_PAD)/2;
     ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(cx-w/2,TOP,w,20);
     ctx.strokeStyle="rgba(127,230,216,.28)";ctx.lineWidth=1;
     ctx.strokeRect(cx-w/2+.5,TOP+.5,w-1,19);
-    ctx.fillStyle="rgba(190,235,240,.92)";ctx.fillText(hint,cx,TOP+14);
+    ctx.fillStyle="rgba(190,235,240,.92)";ctx.fillText(ht,cx,TOP+14);
   }
   /* навигатор: маркеры цели у верхней кромки — корабль и пещера */
   const marks=[];
@@ -42,24 +46,37 @@ function drawSurfaceHud(camx,camy){
      маркера игрок пройдёт мимо ровно того, ради чего стоило садиться */
   const poi=nearestPOI(S.tr,S.x);
   if(poi)marks.push({x:poi.x,ru:poi.ru,col:"rgba(212,180,255,.9)"});
+  /* фишки у кромки (M167): далёкая цель — плашка у левого или правого края,
+     по стороне, где она; фишки одной стороны стоят столбиком и не наезжают
+     ни друг на друга, ни на солнце в небе. Ближняя цель — засечка на месте. */
   ctx.font="9px ui-monospace,monospace";
+  let leftY=(hint?TOP+34:TOP+6),rightY=leftY,rowY=leftY;
   for(let mi=0;mi<marks.length;mi++){
     const m=marks[mi];
     const d=m.x-S.x, ad=Math.abs(d);
-    const sx=clamp(m.x-camx,64,W-RIGHT_PAD-14);   // запас под подпись по центру
-    /* маркеры разводим по строкам: две цели рядом давали кашу из наложенных
-       подписей, и не читалась ни одна */
-    const y=(hint?TOP+34:TOP+6)+mi*13;
     ctx.fillStyle=m.col;
-    if(ad>W*.45){                       // цель за краем — рисуем стрелку направления
+    if(ad>W*.45){                       // цель за краем — фишка у своей кромки
       const dir=Math.sign(d);
+      const label=m.ru+" "+Math.round(ad)+" м";
+      const tw=ctx.measureText(label).width,cw=tw+24,ch=15;
+      const rx=dir>0?W-RIGHT_PAD-8-cw:8;
+      const ry=dir>0?(rightY+=0,rightY):(leftY+=0,leftY);
+      if(dir>0)rightY+=ch+4;else leftY+=ch+4;
+      ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
+      ctx.strokeStyle=m.col;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=1;
+      ctx.fillStyle=m.col;
+      const ax=dir>0?rx+cw-7:rx+7;
       ctx.beginPath();
-      ctx.moveTo(sx+dir*8,y);ctx.lineTo(sx-dir*4,y-5);ctx.lineTo(sx-dir*4,y+5);
+      ctx.moveTo(ax+dir*4,ry+ch/2);ctx.lineTo(ax-dir*3,ry+ch/2-4);ctx.lineTo(ax-dir*3,ry+ch/2+4);
       ctx.closePath();ctx.fill();
-      ctx.fillText(m.ru+" "+Math.round(ad)+" м",sx,y+16);
+      const old=ctx.textAlign;ctx.textAlign=dir>0?"right":"left";
+      ctx.fillText(label,dir>0?rx+cw-14:rx+14,ry+11);
+      ctx.textAlign=old;
     }else{
-      ctx.fillRect(sx-1,y-5,2,10);
-      ctx.fillText(m.ru,sx,y+16);
+      const sx=clamp(m.x-camx,64,W-RIGHT_PAD-14);
+      rowY+=13;
+      ctx.fillRect(sx-1,rowY-5,2,10);
+      ctx.fillText(m.ru,sx,rowY+16);
     }
   }
   drawJetBar(12,H-16);

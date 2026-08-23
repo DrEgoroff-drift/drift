@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 238 · символов верхнего уровня: 2265
+Файлов: 239 · символов верхнего уровня: 2274
 
 ## СИМВОЛЫ
 
@@ -81,7 +81,7 @@ ARTIFACTS                    src/12h-relic.js:48
 assignToBase                 src/12a-crew.js:136
 AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
-audioTick                    src/28-loop.js:199
+audioTick                    src/28-loop.js:201
 autoLandInputs               src/19-mode-landing.js:33
 autosave                     src/14-save.js:525
 b64dec                       src/14-save.js:13
@@ -155,11 +155,11 @@ bDress                       src/21aa-base-rooms.js:122
 BEACON_COOL                  src/23-mode-dig.js:70
 beaconCool                   src/23-mode-dig.js:71
 beaconTick                   src/23-mode-dig.js:86
-BEAST_ALIEN                  src/20-life.js:496
-BEAST_FORM                   src/20-life.js:466
-BEAST_SHAPES                 src/20-life.js:488
-BEAST_TRAIT                  src/20-life.js:467
-beastBias                    src/20-life.js:497
+BEAST_ALIEN                  src/20-life.js:498
+BEAST_FORM                   src/20-life.js:468
+BEAST_SHAPES                 src/20-life.js:490
+BEAST_TRAIT                  src/20-life.js:469
+beastBias                    src/20-life.js:499
 BELT_AVLIM                   src/24-mode-belt.js:86
 BELT_HALF                    src/24-mode-belt.js:84
 BELT_POI                     src/24b-belt-poi.js:13
@@ -209,7 +209,7 @@ cantSel                      src/27c-ui-hq.js:192
 cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina.js:485
 cantView                     src/27d-ui-cantina.js:338
-capIv                        src/28-loop.js:292
+capIv                        src/28-loop.js:294
 capOf                        src/05-parts.js:108
 capUsed                      src/05-parts.js:219
 CAST                         src/12k-stories-a.js:19
@@ -388,7 +388,7 @@ ctx                          src/08-state.js:3
 curTok                       src/09-audio.js:71
 CUT_RANGE                    src/24-mode-belt.js:183
 cvs                          src/08-state.js:2
-dbg                          src/28-loop.js:419
+dbg                          src/28-loop.js:421
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -451,8 +451,8 @@ drawBarges                   src/12l-barge.js:527
 drawBargesMap                src/12l-barge.js:552
 drawBase                     src/21ac-base-draw.js:43
 drawBaseBuilding             src/21c-built.js:99
-drawBeast                    src/20-life.js:703
-drawBeastAlien               src/20-life.js:546
+drawBeast                    src/20-life.js:705
+drawBeastAlien               src/20-life.js:548
 drawBelt                     src/24-mode-belt.js:366
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17c-system-draw.js:94
@@ -497,7 +497,7 @@ drawHqRoom                   src/27f-hq-room.js:22
 drawHull                     src/03e-hull-draw.js:1
 drawHullMarks                src/03b-hull-paint.js:173
 drawJetBar                   src/20d-jetpack.js:32
-drawKitFigure                src/12x-suit.js:158
+drawKitFigure                src/12x-suit.js:188
 drawLander                   src/19f-lander.js:52
 drawLandGear                 src/19f-lander.js:26
 drawLanding                  src/19-mode-landing.js:355
@@ -515,8 +515,8 @@ drawObserv                   src/20aa-poi-shapes.js:491
 drawPirate                   src/12i-pirate-hull.js:320
 drawPirateBase               src/24a-mode-raid.js:103
 drawPirateSkin               src/03d-hull-marks.js:99
-drawPlant                    src/20-life.js:333
-drawPlantAlien               src/20-life.js:185
+drawPlant                    src/20-life.js:335
+drawPlantAlien               src/20-life.js:187
 drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
 drawRaid                     src/24aa-raid-draw.js:5
@@ -539,7 +539,7 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:84
-drawSurface                  src/21e-surface-draw.js:67
+drawSurface                  src/21e-surface-draw.js:84
 drawSurfaceHud               src/21e-surface-draw.js:19
 drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
@@ -681,18 +681,18 @@ fleetUniqueName              src/04b-fleet.js:100
 flightCam                    src/16a-space.js:177
 FOE_KINDS                    src/24a-mode-raid.js:17
 foundBase                    src/21a-mode-base.js:53
-frame                        src/28-loop.js:293
+frame                        src/28-loop.js:295
 freeVoice                    src/09-audio.js:79
 fuelPriceHere                src/12k-rep.js:63
-FUR_TONES                    src/20-life.js:471
-furColor                     src/20-life.js:476
+FUR_TONES                    src/20-life.js:473
+furColor                     src/20-life.js:478
 fuseAffordable               src/03-ships.js:38
 fuseCost                     src/03-ships.js:33
 fuseGen                      src/03-ships.js:32
 fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
 G                            src/08-state.js:25
-genBeast                     src/20-life.js:506
+genBeast                     src/20-life.js:508
 genBeltPOI                   src/24b-belt-poi.js:20
 genDeco                      src/21b-surface-deco.js:37
 genDesc                      src/01-core.js:59
@@ -700,7 +700,7 @@ genMerc                      src/12a-crew.js:59
 genMgr                       src/12c-mgr-core.js:236
 genName                      src/01-core.js:42
 genPart                      src/05-parts.js:70
-genPlant                     src/20-life.js:129
+genPlant                     src/20-life.js:131
 genPOI                       src/20a-poi.js:32
 genRaid                      src/24a-mode-raid.js:30
 genTerrain                   src/07-planet.js:395
@@ -1000,10 +1000,11 @@ keepersSign                  src/11k-keepers.js:114
 keplerPos                    src/06-galaxy.js:39
 keyLabel                     src/15-input.js:63
 keyMap                       src/15-input.js:52
-keyRow                       src/27-ui-ship.js:174
+keyRow                       src/27-ui-ship.js:188
 keys                         src/08-state.js:21
 killPirate                   src/13-pirates.js:179
 killRock                     src/24-mode-belt.js:150
+KIT_FAM                      src/12x-suit.js:162
 KIT_MODELS                   src/12x-suit.js:24
 KIT_MODS                     src/12x-suit.js:34
 KIT_PLACES                   src/12x-suit.js:21
@@ -1011,24 +1012,30 @@ KIT_RU                       src/12x-suit.js:22
 KIT_WEAR                     src/12x-suit.js:32
 kitAddMod                    src/12x-suit.js:148
 kitAll                       src/12x-suit.js:47
-kitBlock                     src/12x-suit.js:217
+kitAnimRAF                   src/27-ui-ship.js:444
+kitAnimStart                 src/27-ui-ship.js:445
+kitAnimStop                  src/27-ui-ship.js:456
+kitBlock                     src/12x-suit.js:296
 kitCanMod                    src/12x-suit.js:141
-kitDepotBlock                src/12x-suit.js:278
+kitColOf                     src/12x-suit.js:167
+kitDepotBlock                src/12x-suit.js:361
 kitDepotOf                   src/12x-suit.js:97
 kitDepotTake                 src/12x-suit.js:111
+kitDollHit                   src/12x-suit.js:295
 kitFromHulk                  src/12x-suit.js:118
 kitGive                      src/12x-suit.js:87
 kitHasMod                    src/12x-suit.js:58
-kitHeatMul                   src/12x-suit.js:208
+kitHeatMul                   src/12x-suit.js:286
 kitLine                      src/12x-suit.js:80
 kitName                      src/12x-suit.js:54
+kitPalette                   src/12x-suit.js:178
 kitPiece                     src/12x-suit.js:43
 kitRepair                    src/12x-suit.js:134
 kitRepairCost                src/12x-suit.js:133
 kitRoman                     src/12x-suit.js:55
-kitSel                       src/12x-suit.js:216
+kitSel                       src/12x-suit.js:294
 kitShelf                     src/12x-suit.js:53
-kitShopBlock                 src/12x-suit.js:254
+kitShopBlock                 src/12x-suit.js:337
 kitStat                      src/12x-suit.js:59
 kitWearMul                   src/12x-suit.js:57
 kitWearPiece                 src/12x-suit.js:126
@@ -1044,9 +1051,9 @@ landerInk                    tests/91j-art.js:154
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:328
 landOnTestPlanet             tests/90-harness.js:67
-last                         src/28-loop.js:252
+last                         src/28-loop.js:254
 LAST_RUN_DAY                 src/12k-letters.js:40
-lastDroneTick                src/28-loop.js:253
+lastDroneTick                src/28-loop.js:255
 lastRunDay                   src/12k-letters.js:44
 lastRunTick                  src/12k-letters.js:46
 launch                       src/21-mode-surface.js:466
@@ -1215,6 +1222,7 @@ misTestRegion                tests/91zzj-misclosure.js:2
 MIX_KIN                      src/02a-worldmix.js:19
 MIX_TYPES                    src/02-world.js:95
 mixc                         src/03-ships.js:150
+mixHex                       src/12x-suit.js:174
 mixNum                       src/02a-worldmix.js:43
 mixPal                       src/02a-worldmix.js:34
 mkCanvas                     src/18c-chunks.js:32
@@ -1343,11 +1351,11 @@ ok                           tests/90-harness.js:23
 openBarge                    src/12l-barge.js:578
 openCrewView                 src/27b-ui-crew.js:199
 openHq                       src/27c-ui-hq.js:523
-openShipView                 src/27-ui-ship.js:146
+openShipView                 src/27-ui-ship.js:160
 openStation                  src/26-ui-station.js:5
-OPT_TABS                     src/27-ui-ship.js:408
-optGroups                    src/27-ui-ship.js:411
-optTab                       src/27-ui-ship.js:410
+OPT_TABS                     src/27-ui-ship.js:422
+optGroups                    src/27-ui-ship.js:425
+optTab                       src/27-ui-ship.js:424
 ORDER_WIN                    src/12aa-need.js:69
 orderDeliver                 src/12aa-need.js:108
 orderHere                    src/12aa-need.js:104
@@ -1435,7 +1443,7 @@ peepScene                    src/20c-peep.js:42
 peepUpdate                   src/20c-peep.js:67
 peopleLine                   src/11-log.js:36
 pick                         src/01-core.js:17
-pickKindByBias               src/20-life.js:124
+pickKindByBias               src/20-life.js:126
 pickStType                   src/06-galaxy.js:30
 PICKUPS                      src/24a-mode-raid.js:24
 pinch0                       src/15-input.js:181
@@ -1480,7 +1488,7 @@ PLANET_RES                   src/07-planet.js:71
 PLANET_SPIN                  src/07-planet.js:32
 planetBargeLoad              src/12n-planet.js:108
 planetBargeRow               src/12n-planet.js:145
-planetBiome                  src/20-life.js:105
+planetBiome                  src/20-life.js:107
 planetCols                   src/07-planet.js:229
 planetDraw                   src/07-planet.js:298
 planetGrant                  src/12n-planet.js:25
@@ -1513,9 +1521,9 @@ planetWetAt                  src/07-planet.js:378
 planGroundLine               src/11r-plan.js:47
 planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
-PLANT_FORM                   src/20-life.js:92
-PLANT_KINDS                  src/20-life.js:104
-PLANT_TRAIT                  src/20-life.js:93
+PLANT_FORM                   src/20-life.js:94
+PLANT_KINDS                  src/20-life.js:106
+PLANT_TRAIT                  src/20-life.js:95
 planTook                     src/11r-plan.js:59
 plate                        src/25-cockpit.js:160
 POI_FIND                     src/20b-poi-find.js:18
@@ -1547,7 +1555,7 @@ postOpen                     src/11e-post.js:99
 prevAct                      src/08-state.js:23
 pricesSeen                   src/12aa-need.js:188
 prism                        src/21b-surface-deco.js:201
-prof                         src/28-loop.js:382
+prof                         src/28-loop.js:384
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:17
@@ -1677,7 +1685,7 @@ renderCantina                src/27c-ui-hq.js:45
 renderDeeds                  src/11-log.js:92
 renderLog                    src/11-log.js:71
 renderLoreBoard              src/27h-ui-lore.js:26
-renderOpts                   src/27-ui-ship.js:184
+renderOpts                   src/27-ui-ship.js:198
 renderPrices                 src/12aa-need.js:196
 renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
@@ -1700,8 +1708,8 @@ repWord                      src/12k-rep.js:31
 RES                          src/02-world.js:2
 RES_AUTO                     src/08-state.js:18
 RES_KEYS                     src/02-world.js:29
-resAuto                      src/28-loop.js:281
-resEma                       src/28-loop.js:280
+resAuto                      src/28-loop.js:283
+resEma                       src/28-loop.js:282
 resetArm                     src/26-ui-station.js:782
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
@@ -1908,7 +1916,7 @@ slowSpotX                    src/11o-slow.js:44
 SMELT                        src/02-world.js:58
 snapshot                     src/14-save.js:26
 SND                          src/09-audio.js:4
-sndWalk                      src/28-loop.js:198
+sndWalk                      src/28-loop.js:200
 spareModLv                   src/12a-crew.js:221
 spawnAllies                  src/12a-crew.js:483
 spawnBarges                  src/12l-barge.js:102
@@ -2020,7 +2028,8 @@ surveyLegs                   src/12w-survey.js:48
 surveyList                   src/12w-survey.js:37
 surveyPoint                  src/12w-survey.js:20
 svDraw                       src/27-ui-ship.js:7
-svRender                     src/27-ui-ship.js:45
+svMode                       src/27-ui-ship.js:45
+svRender                     src/27-ui-ship.js:46
 svReturn                     src/27-ui-ship.js:6
 svSlot                       src/27-ui-ship.js:4
 syncTabs                     src/26-ui-station.js:55
@@ -2579,7 +2588,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12x-parrot.js · 10 КБ
   · трепло: свидетель, который не понимает:1
 
-## src/12x-suit.js · 17 КБ
+## src/12x-suit.js · 22 КБ
   · скафандр как комплект:1
 
 ## src/12y-parrot-face.js · 42 КБ
@@ -2625,7 +2634,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17d-house-shapes.js · 4 КБ
   · дома как язык форм:1
 
-## src/17-mode-system.js · 28 КБ
+## src/17-mode-system.js · 30 КБ
   · режим: система:1
 
 ## src/18a-material.js · 21 КБ
@@ -2679,10 +2688,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/20d-jetpack.js · 3 КБ
   · реактивный ранец:1
 
-## src/20-life.js · 40 КБ
+## src/20-life.js · 41 КБ
   · астронавт:1
-  · флора:88
-  · фауна:462
+  · флора:90
+  · фауна:464
 
 ## src/21aa-base-rooms.js · 35 КБ
   · база: внутренности отсеков:1
@@ -2712,7 +2721,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 15 КБ
+## src/21e-surface-draw.js · 16 КБ
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21-mode-surface.js · 31 КБ
@@ -2796,20 +2805,20 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27i-ui-table.js · 12 КБ
   · стол: одно место для всего, что читают:1
 
-## src/27j-console.js · 6 КБ
+## src/27j-console.js · 7 КБ
   · пульт: приёмник, подсказка, кресло:1
 
-## src/27-ui-ship.js · 25 КБ
+## src/27-ui-ship.js · 26 КБ
   · экран корабля:1
 
 ## src/28-loop.js · 34 КБ
   · авария:1
   · телеметрия:21
-  · звук по кадрам:195
-  · цикл:251
-  · авторазрешение:274
-  · prof() — на что уходит кадр:370
-  · dbg() — что держит корабль:410
+  · звук по кадрам:197
+  · цикл:253
+  · авторазрешение:276
+  · prof() — на что уходит кадр:372
+  · dbg() — что держит корабль:412
 
 ## tests/90-harness.js · 6 КБ
   · автотесты: каркас:1
@@ -3025,5 +3034,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzw-economy.js · 10 КБ
   · автотесты: экономика без долга (M152e):1
+
+## tests/91zzx-mobile.js · 2 КБ
+  · автотесты: телефонный вид (M167):1
 
 ## tests/99-run.js · 0 КБ

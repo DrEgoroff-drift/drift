@@ -441,17 +441,41 @@ function drawSystem(){
   const marks=[{x:0,y:0,c:"#f2b25c",l:"ЗВЕЗДА"}];
   if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",l:sys.station.name.toUpperCase()});
   if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6b57",l:"ЦЕЛЬ"});}
+  /* фишки у кромки (M167): раньше метки стояли на круге и на телефоне висели
+     посреди сцены, наезжая друг на друга и на солнце. Теперь метка — плашка,
+     прижатая к краю прямоугольника кадра (с отступами под приборы и пульт),
+     а наложение снимается сдвигом вдоль кромки. */
+  const inset={x0:10,x1:W-10,y0:76,y1:H-(innerWidth<=760?150:120)};
+  const placed=[];
+  ctx.font="8px ui-monospace,monospace";
   for(const m of marks){
     const x=zx(m.x),y=zy(m.y);
     if(x>-20&&x<W+20&&y>-20&&y<H+20)continue;
-    const ang=Math.atan2(y-H/2,x-W/2);
-    const cx=W/2+Math.cos(ang)*(Math.min(W,H)/2-30),cy=H/2+Math.sin(ang)*(Math.min(W,H)/2-30);
-    ctx.save();ctx.translate(cx,cy);ctx.rotate(ang);
-    ctx.fillStyle=m.c;ctx.globalAlpha=.85;
-    ctx.beginPath();ctx.moveTo(9,0);ctx.lineTo(-6,6);ctx.lineTo(-6,-6);ctx.closePath();ctx.fill();
+    const ang=Math.atan2(y-H/2,x-W/2),dx=Math.cos(ang),dy=Math.sin(ang);
+    /* пересечение луча из центра с прямоугольником кромки */
+    let t=1e9;
+    if(dx>1e-6)t=Math.min(t,(inset.x1-W/2)/dx);if(dx<-1e-6)t=Math.min(t,(inset.x0-W/2)/dx);
+    if(dy>1e-6)t=Math.min(t,(inset.y1-H/2)/dy);if(dy<-1e-6)t=Math.min(t,(inset.y0-H/2)/dy);
+    let cx=W/2+dx*t,cy=H/2+dy*t;
+    const label=m.l+" · "+Math.round(Math.hypot(m.x-sh.x,m.y-sh.y));
+    const tw=ctx.measureText(label).width,cw=tw+26,ch=16;
+    const onSide=Math.abs(cx-inset.x0)<1||Math.abs(cx-inset.x1)<1;   // боковая кромка → двигаем по y
+    let rx=clamp(cx-(cx>W/2?cw-6:6),inset.x0,inset.x1-cw),ry=clamp(cy-ch/2,inset.y0,inset.y1-ch);
+    /* авторазвод: пока пересекается с уже поставленной — шаг вдоль кромки */
+    for(let g=0;g<12;g++){
+      const hit=placed.find(p=>!(rx+cw<=p.x||p.x+p.w<=rx||ry+ch<=p.y||p.y+p.h<=ry));
+      if(!hit)break;
+      if(onSide)ry=ry+ch+4<=inset.y1-ch?ry+ch+4:inset.y0;else rx=rx+cw+4<=inset.x1-cw?rx+cw+4:inset.x0;
+    }
+    placed.push({x:rx,y:ry,w:cw,h:ch});
+    ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
+    ctx.strokeStyle=m.c;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=1;
+    ctx.save();ctx.translate(cx>W/2?rx+cw-8:rx+8,ry+ch/2);ctx.rotate(ang);
+    ctx.fillStyle=m.c;ctx.beginPath();ctx.moveTo(6,0);ctx.lineTo(-4,4);ctx.lineTo(-4,-4);ctx.closePath();ctx.fill();
     ctx.restore();
-    ctx.globalAlpha=1;ctx.fillStyle=m.c;ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText(m.l+" · "+Math.round(Math.hypot(m.x-sh.x,m.y-sh.y)),cx,cy+(ang>0?16:-10));
+    ctx.fillStyle=m.c;ctx.textAlign=cx>W/2?"right":"left";
+    ctx.fillText(label,cx>W/2?rx+cw-18:rx+18,ry+12);
+    ctx.textAlign="center";
   }
 }
 /* кольцо: half=-1 — дальняя дуга под планетой, half=1 — ближняя поверх неё */

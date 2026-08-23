@@ -9,7 +9,9 @@ function drawAstronaut(o){
   const walk=Math.sin(o.phase)*amp;
   const walk2=Math.sin(o.phase+Math.PI)*amp;
   const air=o.air;
-  const suit="#dfe7ec", suitD="#9fb0bb", dark="#121a24";
+  /* комплект (M167): ходок собран из цветов надетых вещей — та же кукла, что на экране */
+  const KP=(typeof kitPalette==="function")?kitPalette():null;
+  const suit=KP?KP.torso.main:"#dfe7ec", suitD=KP?KP.torso.dark:"#9fb0bb", dark=KP?KP.boots.dark:"#121a24";
   ctx.save();
   ctx.scale(o.face||1,1);
   if(o.jet){   // ранцевый импульс при прыжке
@@ -31,7 +33,7 @@ function drawAstronaut(o){
     ctx.strokeStyle=suitD;ctx.lineWidth=2.6;
   }
   /* ранец */
-  ctx.fillStyle="#2b3846";
+  ctx.fillStyle=KP?KP.pack.dark:"#2b3846";
   ctx.beginPath();ctx.roundRect?ctx.roundRect(-5.4,-4.2,4.2,7.6,1.4):ctx.rect(-5.4,-4.2,4.2,7.6);
   ctx.fill();
   ctx.strokeStyle=rgba(acc,.75);ctx.lineWidth=.9;ctx.stroke();
@@ -59,7 +61,7 @@ function drawAstronaut(o){
   else { ctx.beginPath();ctx.moveTo(2.4,-3);ctx.lineTo(3.6+armSw*.4,-.4);
          ctx.lineTo(3.2-armSw*.5,2.2);ctx.stroke(); }
   /* шлем */
-  ctx.fillStyle=suit;
+  ctx.fillStyle=KP?KP.helmet.main:suit;
   ctx.beginPath();ctx.arc(.2,-6.6,4.1,0,TAU);ctx.fill();
   ctx.strokeStyle="rgba(20,30,40,.5)";ctx.lineWidth=.9;ctx.stroke();
   ctx.fillStyle="#0a1a26";
@@ -68,7 +70,7 @@ function drawAstronaut(o){
   vg.addColorStop(0,"rgba(160,235,255,.75)");vg.addColorStop(1,"rgba(120,200,230,0)");
   ctx.fillStyle=vg;
   ctx.beginPath();ctx.ellipse(.9,-6.7,3,2.5,-.12,0,TAU);ctx.fill();
-  ctx.fillStyle=rgba(acc,.9);
+  ctx.fillStyle=KP?KP.lamp.acc:rgba(acc,.9);
   ctx.beginPath();ctx.arc(-2.9,-7.6,1.1,0,TAU);ctx.fill();                      // фонарь
   ctx.restore();
   /* луч фонаря — только под землёй */

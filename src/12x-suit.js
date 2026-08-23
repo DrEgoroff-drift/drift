@@ -154,54 +154,132 @@ function kitAddMod(x,id){
   logAdd("tech","Заплата: "+KIT_MODS[id].ru+" на "+KIT_RU[x.p]+" «"+kitName(x)+"»");
   return true;
 }
-/* ── рисунок: фигура в скафандре с шестью местами, по классам и слоям ── */
-function drawKitFigure(c,W,H,hit){
-  const K=kitAll();
-  c.save();c.clearRect(0,0,W,H);
-  const s=Math.min(W/120,H/200);
-  c.translate(W/2,H/2);c.scale(s,s);
-  const cls=p=>K[p].cls,wearCol=p=>["#d9dde3","#aeb4ba","#c9b59a","#8a7f9a"][K[p].wear];
-  /* тень и опора */
-  c.fillStyle="rgba(0,0,0,.4)";c.beginPath();c.ellipse(0,92,34,6,0,0,7);c.fill();
-  /* ботинки */
-  c.fillStyle=wearCol("boots");
-  c.beginPath();c.roundRect(-24,72,20,18+cls("boots")*2,4);c.fill();
-  c.beginPath();c.roundRect(4,72,20,18+cls("boots")*2,4);c.fill();
-  /* ноги */
-  c.fillStyle="#7d8793";c.fillRect(-20,30,14,44);c.fillRect(6,30,14,44);
-  /* корпус: класс — толщина и пластины */
-  c.fillStyle=wearCol("torso");
-  c.beginPath();c.roundRect(-26-cls("torso")*2,-26,52+cls("torso")*4,60,10);c.fill();
-  c.fillStyle="rgba(0,0,0,.18)";
-  for(let i=0;i<cls("torso");i++){c.fillRect(-20,-20+i*14,40,3);}
-  /* ранец: за спиной, ширина по классу */
-  c.fillStyle="#5e6670";c.beginPath();c.roundRect(-34-cls("pack")*3,-22,12+cls("pack")*3,46,4);c.fill();
-  /* руки и перчатки */
-  c.fillStyle="#7d8793";c.fillRect(-40,-18,12,44);c.fillRect(28,-18,12,44);
-  c.fillStyle=wearCol("gloves");
-  c.beginPath();c.roundRect(-42,24,16,12+cls("gloves")*2,4);c.fill();
-  c.beginPath();c.roundRect(26,24,16,12+cls("gloves")*2,4);c.fill();
-  /* шлем: класс — стекло шире */
-  c.fillStyle=wearCol("helmet");c.beginPath();c.arc(0,-48,22+cls("helmet")*1.5,0,7);c.fill();
-  c.fillStyle="#1d2a36";c.beginPath();c.ellipse(2,-48,12+cls("helmet")*2,13,0,0,7);c.fill();
-  c.fillStyle="rgba(255,255,255,.25)";c.beginPath();c.ellipse(-3,-53,5,3,-.5,0,7);c.fill();
-  /* фонарь на шлеме: пятно света по классу */
-  const L=cls("lamp");
-  const g=c.createRadialGradient(20,-52,0,20,-52,18+L*10);
-  g.addColorStop(0,"rgba(255,240,200,.7)");g.addColorStop(1,"rgba(255,240,200,0)");
-  c.fillStyle=g;c.beginPath();c.arc(20,-52,18+L*10,0,7);c.fill();
-  c.fillStyle="#e8e0c0";c.beginPath();c.arc(16,-56,3,0,7);c.fill();
+/* ── палитры семейств: три семейства на место, по модели ──
+   I — выдача: брезент, серо-голубой; II — институт: белый с цианом;
+   III — редкая: олива с латунью. Чужая вещь уводится в лиловый серый,
+   ношеная — глушится. Кукла и ходок на поверхности собираются из ЭТИХ
+   цветов: «Стриж-2» на «Кречете-3» виден смесью, а не подписью. */
+const KIT_FAM=[
+  {main:"#b9c2c9",dark:"#7d8793",acc:"#f2b25c"},
+  {main:"#dde4ea",dark:"#9fb0bb",acc:"#7fe6d8"},
+  {main:"#b7ae8f",dark:"#7e775e",acc:"#e0885a"}
+];
+function kitColOf(x){
+  const F=KIT_FAM[clamp(x.model|0,0,2)];
+  let main=F.main,dark=F.dark;
+  if(x.wear===1){main=mixHex(main,"#6f6f6f",.35);dark=mixHex(dark,"#4a4a4a",.35);}
+  if(x.wear===3){main=mixHex(main,"#a89ab8",.45);dark=mixHex(dark,"#6a5f7a",.45);}
+  return {main,dark,acc:F.acc};
+}
+function mixHex(a,b,k){
+  const pa=hex2rgb(a),pb=hex2rgb(b);
+  return "rgb("+pa.map((v,i)=>Math.round(v+(pb[i]-v)*k)).join(",")+")";
+}
+function kitPalette(){
+  const K=kitAll(),out={};
+  for(const p of KIT_PLACES)out[p]=kitColOf(K[p]);
+  return out;
+}
+/* ── кукла: RPG-манекен, собранный из надетых вещей ──
+   Правило процедурных сборок: слои (ранец → ботинки → корпус → перчатки →
+   шлем → фонарь), ОДИН обвод по всему телу, ОДИН свет. Износ читается на
+   кукле: потёртости штрихами, мутное забрало. Кукла дышит (t), фонарь чуть
+   качается. Рисует и экран, и — теми же цветами — ходока на поверхности. */
+function drawKitFigure(c,W,H,hit,t){
+  const K=kitAll(),P=kitPalette();
+  t=t===undefined?G.t*.03:t;
+  const br=Math.sin(t)*1.4;                       /* дыхание */
+  const off=drawKitFigure._off||(drawKitFigure._off=document.createElement("canvas"));
+  off.width=120;off.height=200;
+  const d=off.getContext("2d");
+  d.clearRect(0,0,120,200);
+  d.save();d.translate(60,104+br*.3);
+  const cls=p=>K[p].cls;
+  /* слой 1: ранец за спиной — ширина по классу, лямки */
+  d.fillStyle=P.pack.dark;
+  d.beginPath();d.roundRect(-40-cls("pack")*4,-34+br,18+cls("pack")*4,58,6);d.fill();
+  d.fillStyle=P.pack.main;
+  d.beginPath();d.roundRect(-37-cls("pack")*4,-30+br,12+cls("pack")*3,20,4);d.fill();
+  /* слой 2: ноги и ботинки */
+  d.strokeStyle=P.torso.dark;d.lineWidth=13;d.lineCap="round";
+  d.beginPath();d.moveTo(-11,26);d.lineTo(-13,66);d.stroke();
+  d.beginPath();d.moveTo(11,26);d.lineTo(13,66);d.stroke();
+  d.fillStyle=P.boots.main;
+  d.beginPath();d.roundRect(-22,64,18,14+cls("boots")*2.5,4);d.fill();
+  d.beginPath();d.roundRect(4,64,18,14+cls("boots")*2.5,4);d.fill();
+  d.fillStyle=P.boots.dark;d.fillRect(-22,74+cls("boots")*2.5,18,4);d.fillRect(4,74+cls("boots")*2.5,18,4);
+  /* слой 3: корпус — трапеция, пластины по классу, поясной кант, нагрудный блок */
+  const tb=P.torso;
+  const g=d.createLinearGradient(-24,-30,24,30);
+  g.addColorStop(0,tb.main);g.addColorStop(1,tb.dark);
+  d.fillStyle=g;
+  d.beginPath();
+  d.moveTo(-24-cls("torso")*2,-30+br);d.lineTo(24+cls("torso")*2,-30+br);
+  d.lineTo(20,30);d.lineTo(-20,30);d.closePath();d.fill();
+  d.fillStyle="rgba(0,0,0,.16)";
+  for(let i=0;i<cls("torso");i++)d.fillRect(-16,-20+br+i*13,32,3);
+  d.fillStyle=tb.acc;d.fillRect(-20,8,40,5);                                  /* кант */
+  d.fillStyle="#1b2735";d.fillRect(6,-22+br,14,11);                           /* нагрудный блок */
+  d.fillStyle=P.lamp.acc;d.fillRect(9,-19+br,5,4);
+  /* слой 4: руки и перчатки */
+  d.strokeStyle=tb.main;d.lineWidth=11;
+  d.beginPath();d.moveTo(-22,-22+br);d.lineTo(-32,4);d.stroke();
+  d.beginPath();d.moveTo(22,-22+br);d.lineTo(32,4);d.stroke();
+  d.fillStyle=P.gloves.main;
+  d.beginPath();d.roundRect(-40,2,15,12+cls("gloves")*2,4);d.fill();
+  d.beginPath();d.roundRect(25,2,15,12+cls("gloves")*2,4);d.fill();
+  /* слой 5: шлем — купол, забрало (мутное у ношеного), блик */
+  const hy=-46+br;
+  d.fillStyle=P.helmet.main;
+  d.beginPath();d.arc(0,hy,19+cls("helmet")*1.5,0,TAU);d.fill();
+  d.fillStyle="#0a1a26";
+  d.beginPath();d.ellipse(2,hy,11+cls("helmet")*2,11,-.08,0,TAU);d.fill();
+  const dull=K.helmet.wear===1?.3:1;
+  const vg=d.createLinearGradient(-8,hy-12,10,hy+4);
+  vg.addColorStop(0,"rgba(160,235,255,"+(.6*dull).toFixed(2)+")");vg.addColorStop(1,"rgba(120,200,230,0)");
+  d.fillStyle=vg;
+  d.beginPath();d.ellipse(2,hy,11+cls("helmet")*2,11,-.08,0,TAU);d.fill();
+  /* слой 6: фонарь на шлеме, качается */
+  const sw=Math.sin(t*.7)*1.2;
+  d.fillStyle=P.lamp.dark;d.fillRect(13+sw*.3,hy-14,6,5);
+  d.fillStyle=P.lamp.acc;d.beginPath();d.arc(16+sw*.3,hy-11,2.2,0,TAU);d.fill();
+  const lg=d.createRadialGradient(16+sw,hy-11,1,16+sw,hy-11,16+cls("lamp")*7);
+  lg.addColorStop(0,"rgba(255,240,200,.5)");lg.addColorStop(1,"rgba(255,240,200,0)");
+  d.fillStyle=lg;d.beginPath();d.arc(16+sw,hy-11,16+cls("lamp")*7,0,TAU);d.fill();
+  /* износ: потёртости штрихами на местах со слоем «ношеный» и «латаный» */
+  d.strokeStyle="rgba(30,30,30,.28)";d.lineWidth=1;
+  const scuff=(x0,y0)=>{for(let i=0;i<4;i++){d.beginPath();d.moveTo(x0+i*3,y0+i);d.lineTo(x0+i*3+4,y0+i+3);d.stroke();}};
+  if(K.torso.wear===1||K.torso.wear===2)scuff(-14,14);
+  if(K.boots.wear===1||K.boots.wear===2)scuff(-18,68);
+  if(K.pack.wear===1||K.pack.wear===2)scuff(-36,-6);
+  d.restore();
+  /* один свет на всю сборку */
+  d.globalCompositeOperation="source-atop";
+  const light=d.createLinearGradient(0,0,120,200);
+  light.addColorStop(0,"rgba(255,255,255,.16)");light.addColorStop(.5,"rgba(255,255,255,0)");light.addColorStop(1,"rgba(0,10,20,.22)");
+  d.fillStyle=light;d.fillRect(0,0,120,200);
+  d.globalCompositeOperation="source-over";
+  /* один обвод: силуэт тёмным, четыре сдвига под куклой */
+  const sil=drawKitFigure._sil||(drawKitFigure._sil=document.createElement("canvas"));
+  sil.width=120;sil.height=200;
+  const s2=sil.getContext("2d");
+  s2.clearRect(0,0,120,200);s2.drawImage(off,0,0);
+  s2.globalCompositeOperation="source-in";s2.fillStyle="#10161e";s2.fillRect(0,0,120,200);
+  s2.globalCompositeOperation="source-over";
+  /* на целевой канве */
+  c.clearRect(0,0,W,H);
+  const k=Math.min(W/132,H/212),ox=(W-120*k)/2,oy=(H-200*k)/2;
+  c.save();c.translate(ox,oy);c.scale(k,k);
+  for(const [dx,dy] of [[-1.5,0],[1.5,0],[0,-1.5],[0,1.5]])c.drawImage(sil,dx,dy);
+  c.drawImage(off,0,0);
+  /* тень-опора */
+  c.fillStyle="rgba(0,0,0,.35)";c.beginPath();c.ellipse(60,196,34,5,0,0,TAU);c.fill();
   c.restore();
-  /* места для клика: в экранных координатах */
   if(hit){
     hit.length=0;
-    const k=s,cx=W/2,cy=H/2;
-    hit.push({p:"helmet",x:cx-24*k,y:cy-72*k,w:48*k,h:48*k});
-    hit.push({p:"torso",x:cx-28*k,y:cy-26*k,w:56*k,h:60*k});
-    hit.push({p:"gloves",x:cx-44*k,y:cy+22*k,w:30*k,h:20*k});
-    hit.push({p:"boots",x:cx-26*k,y:cy+70*k,w:52*k,h:26*k});
-    hit.push({p:"pack",x:cx-48*k,y:cy-24*k,w:16*k,h:50*k});
-    hit.push({p:"lamp",x:cx+8*k,y:cy-66*k,w:26*k,h:24*k});
+    const zone=(p,x,y,w,h)=>hit.push({p,x:ox+x*k,y:oy+y*k,w:Math.max(44,w*k),h:Math.max(44,h*k)});
+    zone("helmet",36,34,48,44);zone("torso",34,72,52,60);zone("gloves",16,102,26,26);
+    zone("boots",36,164,48,28);zone("pack",8,66,26,56);zone("lamp",72,36,26,24);
   }
 }
 /* расход заряда на льду: подогрев держит; в остальных мирах — единица */
@@ -214,35 +292,40 @@ function kitHeatMul(){
    Живёт в экране КОРАБЛЬ (снять/надеть — где угодно); чинить и латать —
    дома, в мастерской (kitShopBlock). */
 let kitSel=null;
+let kitDollHit=[];
 function kitBlock(body){
   const K=kitAll();
   body.appendChild(el("div","sec","СКАФАНДР · "+kitLine()));
   const r=el("div","row");r.style.alignItems="flex-start";
-  const cv=document.createElement("canvas");cv.width=150;cv.height=240;cv.style.cssText="width:150px;height:240px;flex:0 0 auto;cursor:pointer";
-  const hit=[];drawKitFigure(cv.getContext("2d"),150,240,hit);
+  const cv=document.createElement("canvas");cv.id="kitDoll";cv.width=180;cv.height=280;cv.style.cssText="width:180px;height:280px;flex:0 0 auto;cursor:pointer";
+  kitDollHit=[];drawKitFigure(cv.getContext("2d"),180,280,kitDollHit);
   cv.addEventListener("click",e=>{
-    const rc=cv.getBoundingClientRect(),mx=e.clientX-rc.left,my=e.clientY-rc.top;
-    const h=hit.find(h=>mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h);
+    const rc=cv.getBoundingClientRect(),mx=(e.clientX-rc.left)*(cv.width/rc.width),my=(e.clientY-rc.top)*(cv.height/rc.height);
+    const h=kitDollHit.find(h=>mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h);
     kitSel=h?h.p:null;
     if(typeof svRender==="function"&&document.getElementById("shipview").classList.contains("open"))svRender();
     else if(typeof renderTab==="function")renderTab();
   });
   r.appendChild(cv);
-  const list=el("div","nm");
+  /* места: имя · класс фишкой · слой — в одну строку, «I класса» не переносится */
+  const list=el("div","nm");list.style.minWidth="0";
   let html="";
   for(const p of KIT_PLACES){
     const x=K[p];
-    html+="<b"+(kitSel===p?" style='color:var(--phos)'":"")+">"+KIT_RU[p]+" · «"+kitName(x)+"» "+kitRoman(x.cls)+" класса</b><s>"+
+    html+="<b"+(kitSel===p?" style='color:var(--phos)'":"")+" style='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block'>"+
+      KIT_RU[p]+" · «"+kitName(x)+"» <i class='kitchip'>"+kitRoman(x.cls)+"</i></b><s>"+
       KIT_WEAR[x.wear]+(x.mods.length?" · "+x.mods.map(id=>KIT_MODS[id].ru).join(", "):"")+"</s>";
   }
   list.innerHTML=html;
   r.appendChild(list);body.appendChild(r);
-  /* полка: надеть — сразу, это не магазин */
+  /* полка: надеть — сразу, это не магазин; новое — точкой */
   const shelf=kitShelf();
   if(shelf.length){
     body.appendChild(el("div","sec","ПОЛКА · НАДЕТЬ — ПРЕЖНЯЯ ВЕЩЬ ЛЯЖЕТ НА ПОЛКУ"));
     shelf.forEach((x,i)=>{
-      const rr=el("div","row","<div class='nm'><b>"+KIT_RU[x.p]+" · «"+kitName(x)+"» "+kitRoman(x.cls)+" класса</b><s>"+KIT_WEAR[x.wear]+
+      const isNew=!x.seen;x.seen=1;
+      const rr=el("div","row","<div class='nm'><b style='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block'>"+
+        KIT_RU[x.p]+" · «"+kitName(x)+"» <i class='kitchip'>"+kitRoman(x.cls)+"</i>"+(isNew?" <i class='kitnew'></i>":"")+"</b><s>"+KIT_WEAR[x.wear]+
         (x.mods.length?" · "+x.mods.map(id=>KIT_MODS[id].ru).join(", "):"")+(x.wear===3?" · заплат не берёт":"")+"</s></div>");
       const b=el("button","act sm","НАДЕТЬ");
       b.onclick=()=>{kitWearPiece(i);if(typeof svRender==="function"&&document.getElementById("shipview").classList.contains("open"))svRender();else if(typeof renderTab==="function")renderTab();};

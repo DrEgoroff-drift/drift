@@ -373,7 +373,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
 - **M165 wall paper & concert** (joy) — **built (0.126.0)**: the wall newspaper on the counter, the request concert
   on the receiver; `11ae-concert`, `91zzt`.
 - **M166 dominoes** (joy) — **built (0.127.0)**: dominoes at the table with rivals, the mate and Vega; `11af-domino`, `91zzu`.
-- **M167 mobile** — the phone edition of the console look, per the Mobile section of
+- **M167 mobile** — **built (0.128.0)**: the phone edition of the console look, per the Mobile section of
   [`docs/DESIGN-ui.md`](docs/DESIGN-ui.md): receiver → one-line ticker in the console (no
   floating window); buttons into thumb zones, zoom = pinch, no ghost buttons; fit screen split
   КОРАБЛЬ | СКАФАНДР with row/clipping fixes; the suit as an RPG paperdoll composited from the

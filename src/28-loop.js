@@ -172,9 +172,10 @@ function hud(){
        Клавиша S при этом продолжает работать, раскладка WASD не рвётся. */
     setSt($bBrk,"display","none");
   }else{
-    setSt($bBrk,"display","");
+    /* призрачных кнопок нет (M167): на поверхности тормоза не бывает — кнопка отсутствует */
+    setSt($bBrk,"display",G.mode==="surface"?"none":"");
     setTx($bBrk,"ТОРМОЗ");
-    setSt($bBrk,"opacity",G.mode==="surface"?".3":"1");
+    setSt($bBrk,"opacity","1");
   }
   setTx($nav,(G.mode==="belt"||G.mode==="scoop")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
   /* под землёй ОГОНЬ — это импульсный разрядник, он есть всегда */
@@ -190,6 +191,7 @@ function hud(){
     $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");
+  document.body.classList.toggle("mobile",innerWidth<=760);   /* телефон (M167) */
 }
 
 /* ══════════════ звук по кадрам ══════════════ */

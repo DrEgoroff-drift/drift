@@ -42,7 +42,21 @@ function svDraw(){
     }
   });
 }
+let svMode="ship";
 function svRender(){
+  document.querySelectorAll("#svTabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===svMode));
+  /* разрез экрана (M167): КОРАБЛЬ и СКАФАНДР — два инструмента, не один */
+  const stage=document.getElementById("svstage"),filt=document.getElementById("svfilter");
+  if(svMode==="suit"){
+    stage.style.display="none";filt.style.display="none";
+    document.getElementById("svhint").textContent="";
+    $svBody.textContent="";
+    if(typeof kitBlock==="function")kitBlock($svBody);
+    kitAnimStart();
+    return;
+  }
+  stage.style.display="";filt.style.display="";
+  kitAnimStop();
   const id=G.shipId,S=shipData(id),slots=slotsOf(id),fm=G.fit[id]||{};
   const cap=capOf(id),used=capUsed();
   document.getElementById("svName").textContent="«"+S.ru+"»";
@@ -141,7 +155,7 @@ function svRender(){
     r.appendChild(box);
     $svBody.appendChild(r);
   }
-  if(typeof kitBlock==="function")kitBlock($svBody);   /* скафандр как комплект (M152) */
+  /* скафандр — своя вкладка СКАФАНДР (M167) */
 }
 function openShipView(){
   for(const k in keys)keys[k]=false;
@@ -426,3 +440,18 @@ function optGroups(){
     n.style.display=(cur===optTab)?"":"none";
   }
 }
+/* ── СКАФАНДР: вкладка и дыхание куклы (M167) ── */
+let kitAnimRAF=0,kitAnimT=0;
+function kitAnimStart(){
+  if(kitAnimRAF)return;
+  const step=ts=>{
+    if(!$sv.classList.contains("open")||svMode!=="suit"){kitAnimRAF=0;return;}
+    kitAnimT=ts/500;
+    const cv=document.getElementById("kitDoll");
+    if(cv){const hit=kitDollHit;drawKitFigure(cv.getContext("2d"),cv.width,cv.height,hit,kitAnimT);}
+    kitAnimRAF=requestAnimationFrame(step);
+  };
+  kitAnimRAF=requestAnimationFrame(step);
+}
+function kitAnimStop(){if(kitAnimRAF){cancelAnimationFrame(kitAnimRAF);kitAnimRAF=0;}}
+document.querySelectorAll("#svTabs button").forEach(b=>b.addEventListener("click",()=>{svMode=b.dataset.tab;svRender();}));

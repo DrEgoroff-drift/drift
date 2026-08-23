@@ -7,6 +7,25 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.128.0 — "The phone edition" (M167)
+
+The six faults from the author's phone review, in order. **The receiver is a ticker**: on
+narrow screens the console strip spans the bottom in one line — band chip and running text; a
+tap opens the knob sheet for two seconds, then it hides; no floating window. **Thumb zones**:
+КАРТА and МЕНЮ drop to the lower right, the zoom buttons are gone — pinch is the gesture (it
+already worked). **No ghost buttons**: ТОРМОЗ is absent on the surface instead of faded, and on
+phones ДЕЙСТВИЕ without an action is absent too. **One hint slot**: the message and the prompt
+are single lines above the console; the surface hint ellipsizes instead of running off the
+plate. **Edge chips**: off-screen targets in system and surface views are plates pinned to the
+frame's edge — arrow, name, distance — stacked overlap-free instead of floating over the sun.
+**The fit screen is split** into КОРАБЛЬ | СКАФАНДР tabs; kit rows keep name, a class chip and
+a "new" dot on one line. **The suit doll**: the white block-robot is replaced by a layered
+paperdoll composited from the equipped pieces — three families of palette per place (issue
+canvas, institute white, expedition olive), layers pack → boots → torso → gloves → helmet →
+lamp, one outline, one light; wear reads as scuffs and a dull visor; the doll breathes and the
+lamp sways; **the same palette walks the surface** (`drawAstronaut` now dresses from the kit).
+mechanics.html gets a one-column phone layout. Suite `91zzx`.
+---
 ## 0.127.0 — "Dominoes" (M166)
 
 `11af-domino`: dominoes at the table — three turns, a chain, a hand of three tiles seeded by the
