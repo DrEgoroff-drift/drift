@@ -7,6 +7,22 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.133.0 — "Measured, not guessed" (G11 closed, M168e)
+
+G11 closed by an honest measurement: the game carries its own probe now — `?g11` tours the
+modes and reads rAF fps in a visible tab, `?g11=deep` mutes draw passes one at a time. Warm
+cruise at ×2: system 56, belt 60, surface 55, mine/cave 60; the scary 44s were cold starts
+while chunks bake. No pass dominates, nothing to bake blind. Two faults the author found by
+playing: the corona now pushes with a force that grows from the rim inward, so a hull hovering
+at the overheat line no longer vibrates across it; and the scoop's prompts finally call the
+exit button by its on-screen name — «ВЫХОД», not the nonexistent «НАЗАД» (leaving a gas giant
+was impossible to find, not impossible to do). The road companion (M168e): music is a
+breathing gradient from the bottom edge, the hull is 40 % smaller and sways outward in turns,
+acceleration pulls it up and braking down, the nozzles drag the real flight ribbon, HUD text
+stacks without gaps, and the land is mapped onto the universe — a ~2.8 km GPS cell is a named
+system, with other pilots in the same cell counted through the site (`api.php?a=road`,
+anonymous tag, no coordinates leave the phone).
+---
 ## 0.132.0 — "Nose up" (M168d)
 
 The author's first real ride fixed the geometry: the road companion now flies **nose up** — on

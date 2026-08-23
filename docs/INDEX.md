@@ -525,7 +525,7 @@ drawRingTape                 src/11x-ring.js:108
 drawRoad                     src/27k-road.js:253
 drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
-drawScoop                    src/19a-mode-scoop.js:161
+drawScoop                    src/19a-mode-scoop.js:163
 drawSkyBase                  src/19c-light.js:180
 drawSkyBodies                src/19b-sky.js:59
 drawSkyLayer                 src/19-mode-landing.js:296
@@ -544,7 +544,7 @@ drawSurface                  src/21e-surface-draw.js:84
 drawSurfaceHud               src/21e-surface-draw.js:19
 drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
-drawSystem                   src/17-mode-system.js:274
+drawSystem                   src/17-mode-system.js:278
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:170
 drawTierTrim                 src/03b-hull-paint.js:62
@@ -585,7 +585,7 @@ exitBase                     src/21a-mode-base.js:81
 exitBelt                     src/24-mode-belt.js:174
 exitCave                     src/22-mode-cave.js:201
 exitDig                      src/23-mode-dig.js:60
-exitScoop                    src/19a-mode-scoop.js:17
+exitScoop                    src/19a-mode-scoop.js:19
 EXP_DAYS                     src/11x-expedition.js:19
 EXP_GOODS                    src/11x-expedition.js:20
 EXP_PAX_LINES                src/11x-expedition.js:112
@@ -713,9 +713,9 @@ geoAt                        src/18b-geology.js:73
 geologyOf                    src/18b-geology.js:45
 geoWob                       src/18b-geology.js:80
 getSystem                    src/06-galaxy.js:46
-GIANT                        src/19a-mode-scoop.js:84
-GIANT_KEEP                   src/19a-mode-scoop.js:85
-giantTex                     src/19a-mode-scoop.js:86
+GIANT                        src/19a-mode-scoop.js:86
+GIANT_KEEP                   src/19a-mode-scoop.js:87
+giantTex                     src/19a-mode-scoop.js:88
 glassOutline                 src/25-cockpit.js:54
 GLOW_CACHE                   src/16a-space.js:274
 GLOW_SP                      src/16a-space.js:273
@@ -2199,7 +2199,7 @@ updateCombat                 src/13-pirates.js:77
 updateDig                    src/23-mode-dig.js:113
 updateLanding                src/19-mode-landing.js:45
 updateRaid                   src/24a-mode-raid.js:214
-updateScoop                  src/19a-mode-scoop.js:26
+updateScoop                  src/19a-mode-scoop.js:28
 updateSurface                src/21-mode-surface.js:105
 updateSystem                 src/17-mode-system.js:2
 useBeacon                    src/23-mode-dig.js:72
@@ -2682,7 +2682,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/19a-mode-scoop.js · 22 КБ
   · сбор летучих газов: заход в атмосферу гиганта:1
-  · небо гиганта: полосы, а не лепёшки:69
+  · небо гиганта: полосы, а не лепёшки:71
 
 ## src/19b-sky.js · 20 КБ
   · небо:1
@@ -2853,7 +2853,7 @@ zooTick                      src/11ad-zoo.js:41
   · prof() — на что уходит кадр:372
   · dbg() — что держит корабль:412
 
-## src/28z-fps-probe.js · 3 КБ
+## src/28z-fps-probe.js · 6 КБ
   · пробник G11: ?g11:1
 
 ## tests/90-harness.js · 6 КБ

@@ -12,7 +12,9 @@ function startScoop(p){
   G.mode="scoop";G.ap=null;G.orbit=null;
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
-  say("Заход в атмосферу\n"+p.name+"\n▲ ▼ — высота · держитесь в полосе сбора\nНАЗАД — уход на орбиту");
+  /* кнопка справа в этом режиме подписана ВЫХОД (28-loop) — подсказка обязана
+     звать её тем же словом: «НАЗАД» на экране нет, и взлёт было не найти */
+  say("Заход в атмосферу\n"+p.name+"\n▲ ▼ — высота · держитесь в полосе сбора\nВЫХОД — уход на орбиту");
 }
 function exitScoop(msg){
   const S=G.scoop,p=S.p;
@@ -60,7 +62,7 @@ function updateScoop(dt){
   if(keys.left)S.vy-=.006*dt;      // мелкая доводка рулями, чтобы удержание было точнее
   if(keys.right)S.vy+=.006*dt;
   const heat=Math.round(S.heat);
-  G.prompt=(full?"ТРЮМ ПОЛОН · НАЗАД — УХОД":
+  G.prompt=(full?"ТРЮМ ПОЛОН · ВЫХОД — УХОД НА ОРБИТУ":
       inBand?"СБОР ИДЁТ · ДЕРЖИТЕ ВЫСОТУ":
       S.y<bt?"ВЫШЕ КОРИДОРА · СБОРНИК ХВАТАЕТ ПУСТОТУ":"НИЖЕ КОРИДОРА · НАГРЕВ РАСТЁТ")+
     "\nНАГРЕВ "+heat+"% · ГАЗЫ "+G.cargo.volatiles+" · ТРЮМ "+held()+"/"+st.cargoMax;

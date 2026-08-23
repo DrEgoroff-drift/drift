@@ -851,7 +851,7 @@ body.road #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.132.0";
+const VER="0.133.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -24375,7 +24375,11 @@ function updateSystem(dt){
     /* вторая ловушка: корона отталкивает, а не засасывает. Со знаком «минус»
        это была воронка вчетверо сильнее двигателя — влетев к звезде, выбраться
        было нельзя, оставалось смотреть, как горит корпус. */
-    sh.vx+=sh.x/d0*.22*dt;sh.vy+=sh.y/d0*.22*dt;
+    /* сила растёт от кромки внутрь, на самой кромке — ноль: постоянный толчок
+       обрывался на границе, и корпус, зависший около неё, вибрировал поперёк —
+       «дёргается у звезды» */
+    const corona=.22*clamp((sys.radius+30-d0)/40,0,1);
+    sh.vx+=sh.x/d0*corona*dt;sh.vy+=sh.y/d0*corona*dt;
     G.prompt="ПЕРЕГРЕВ КОРПУСА";
     if(G.hull<=0)wreck();
     return;
@@ -25602,7 +25606,9 @@ function startScoop(p){
   G.mode="scoop";G.ap=null;G.orbit=null;
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
-  say("Заход в атмосферу\n"+p.name+"\n▲ ▼ — высота · держитесь в полосе сбора\nНАЗАД — уход на орбиту");
+  /* кнопка справа в этом режиме подписана ВЫХОД (28-loop) — подсказка обязана
+     звать её тем же словом: «НАЗАД» на экране нет, и взлёт было не найти */
+  say("Заход в атмосферу\n"+p.name+"\n▲ ▼ — высота · держитесь в полосе сбора\nВЫХОД — уход на орбиту");
 }
 function exitScoop(msg){
   const S=G.scoop,p=S.p;
@@ -25650,7 +25656,7 @@ function updateScoop(dt){
   if(keys.left)S.vy-=.006*dt;      // мелкая доводка рулями, чтобы удержание было точнее
   if(keys.right)S.vy+=.006*dt;
   const heat=Math.round(S.heat);
-  G.prompt=(full?"ТРЮМ ПОЛОН · НАЗАД — УХОД":
+  G.prompt=(full?"ТРЮМ ПОЛОН · ВЫХОД — УХОД НА ОРБИТУ":
       inBand?"СБОР ИДЁТ · ДЕРЖИТЕ ВЫСОТУ":
       S.y<bt?"ВЫШЕ КОРИДОРА · СБОРНИК ХВАТАЕТ ПУСТОТУ":"НИЖЕ КОРИДОРА · НАГРЕВ РАСТЁТ")+
     "\nНАГРЕВ "+heat+"% · ГАЗЫ "+G.cargo.volatiles+" · ТРЮМ "+held()+"/"+st.cargoMax;
@@ -44568,7 +44574,7 @@ async function g11Run(){
   for(const st of steps){
     try{
       st[1]();
-      await sleep(1600);                 /* кэши пекутся — меряем крейсер, не старт */
+      await sleep(4000);                 /* кэши пекутся — меряем крейсер, не старт */
       out[st[0]]=await g11Fps(2.5);
       put(st[0]+" "+out[st[0]]);
     }catch(e){err.push(st[0]+": "+(e&&e.message||e));put(st[0]+" СБОЙ");}
@@ -44578,7 +44584,64 @@ async function g11Run(){
   try{await fetch("/shot?n=g11",{method:"POST",
     body:btoa(unescape(encodeURIComponent(JSON.stringify({dpr:devicePixelRatio,fps:out,err,ua:navigator.userAgent.slice(0,80)}))))});}catch(e){}
 }
-if(location.search.indexOf("g11")>=0)addEventListener("load",()=>setTimeout(g11Run,1200));
+/* ── глубокий разбор: ?g11=deep ──
+   Меряет базу, затем глушит рисующие проходы ПО ОДНОМУ (function-объявления —
+   свойства window, их можно подменять) и меряет дельту: чей noop поднимает
+   fps — тот и ест кадр. Растровая цена так видна честно, в отличие от prof(). */
+async function g11Deep(list){
+  /* пара «база — глушение» вокруг КАЖДОЙ функции: fps дрейфует вверх, пока
+     пекутся кэши, и одна общая база в начале красила поздние замеры в героев */
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const res={};
+  for(const nm of list){
+    const fn=window[nm];
+    if(typeof fn!=="function")continue;
+    const b=await g11Fps(1.2);
+    window[nm]=()=>{};
+    await sleep(150);
+    const v=await g11Fps(1.2);
+    window[nm]=fn;
+    res[nm]=(v-b);                       /* +N — проход ест N кадров */
+  }
+  return res;
+}
+async function g11RunDeep(){
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  const el=document.getElementById("startEasy");if(el)el.click();
+  await sleep(1800);
+  const find=pred=>{
+    for(let r0=0;r0<16;r0++)for(let x=-r0;x<=r0;x++)for(let y=-r0;y<=r0;y++){
+      if(Math.max(Math.abs(x),Math.abs(y))!==r0)continue;
+      const s=getSystem(x,y);if(pred(s))return s;
+    }
+    return null;
+  };
+  const out={},err=[];
+  try{
+    G.mode="system";G.ap=null;
+    await sleep(5000);                   /* прогрев: меряем крейсер, не пекарню */
+    out.system=await g11Deep(["drawSysNebula","drawStars","drawSpaceDust","drawStarBody",
+      "drawBeltRing","planetDraw","drawRing","drawTrail","drawBarges","drawFinds"]);
+    const s=find(s=>s.planets.some(p=>p.type==="jungle"))||find(s=>s.planets.some(p=>p.type!=="gas"));
+    G.sx=s.sx;G.sy=s.sy;G.sys=s;G.ap=null;
+    const p=s.planets.find(p=>p.type==="jungle")||s.planets.find(p=>p.type!=="gas");
+    const tr=genTerrain(p);
+    G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};
+    enterSurface();
+    await sleep(5000);
+    out.surface=await g11Deep(["drawSkyBase","drawSkyLayer","drawStars","drawTiles","drawGround",
+      "drawPOI","drawDeco","drawBuilt","drawRocks","glowDrawPatches","drawDustMotes",
+      "drawPlant","drawBeast","drawLander","drawForeground","drawWeather"]);
+  }catch(e){err.push(""+(e&&e.message||e));}
+  const box=document.createElement("div");
+  box.style.cssText="position:fixed;left:8px;top:8px;z-index:99;color:#7fe6d8;font:11px ui-monospace,monospace;background:rgba(0,0,0,.7);padding:8px;white-space:pre";
+  box.textContent=JSON.stringify(out,null,1);
+  document.body.appendChild(box);
+  try{await fetch("/shot?n=g11deep",{method:"POST",
+    body:btoa(unescape(encodeURIComponent(JSON.stringify({dpr:devicePixelRatio,out,err}))))});}catch(e){}
+}
+if(location.search.indexOf("g11=deep")>=0)addEventListener("load",()=>setTimeout(g11RunDeep,1200));
+else if(location.search.indexOf("g11")>=0)addEventListener("load",()=>setTimeout(g11Run,1200));
 
 </script>
 <script>

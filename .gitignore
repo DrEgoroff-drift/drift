@@ -7,3 +7,4 @@ treplo.html
 
 # стенды docs/*.html собираются docs/mk*.ps1 из drift.html — по два мегабайта каждый, в репозитории им не место
 docs/*.html
+shot

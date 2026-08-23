@@ -318,7 +318,16 @@ author or to a later pass, and it is carried here on purpose rather than silentl
   open in the hundred's design.
 - **Split debt**: paid (0.108.1) — `17c-system-draw`, `19f-lander`, `21e-surface-draw`, `23a-dig-draw`, `24aa-raid-draw`. Left: `21ab-base-interiors` (one `const` table, 42 KB) and `12y-parrot-face` (42 KB) — flagged, not cut.
 - **Star disc on the surface**: closed (0.102.0) — was the dark sky tone since before the split; now the star colour.
-- **G11**: measured 2026-08-23 in real Chrome (jungle surface, 1536×791 @2): JS 7–9 ms/frame after the first frame; `drawClouds` costs ~17 ms **once** (the field bakes, then 0.5 ms); `drawPlant`/`drawBeast` 0.5–0.9 ms JS — the 20-life gradients are not where the budget goes. `prof()`'s raster figure (~70 ms) is the `getImageData` readback on a 4.8 MP canvas, not frame raster; a true fps needs a visible tab with rAF, which the tool could not give (background tab, rAF paused). Left open: bake sprites only if a visible-tab fps read shows <50 — the numbers above do not justify it blind.
+- **G11**: **closed by measurement (2026-08-24, 0.133.0).** The game now carries its own probe:
+  `?g11` runs the mode tour and measures rAF fps in a visible tab (`28z-fps-probe`), `?g11=deep`
+  noops draw passes one at a time with paired baselines. Clean run (single fresh-profile Chrome,
+  `--force-device-scale-factor=2`, anti-throttling flags, dpr 2, warm cruise after 4 s settle):
+  system 56, belt 60, surface(jungle) 55, dig 60, cave 60, landing 52, scoop 47–60 across runs.
+  No mode is solidly <50, so the 20-life sprite bake is not justified — matching the earlier JS
+  read. The scary first read (system 46, surface 44) was the **cold start while chunks bake**,
+  not cruise. Deep pass: no single pass dominates (paired deltas ≤+2, only `drawBuilt` +8 ≈ 2 ms).
+  Measurement discipline learned: leftover probe windows with anti-throttling flags keep rendering
+  when occluded and sink every later run to ~22 fps flat — kill them before measuring.
 - **M112**: nothing else — belt missiles and the hull mark closed it.
 - **M135 "three lights"**: built (0.101.0). **M136-hours**: built (0.102.0). **M137-glow**: built (0.103.0). **M138-grove**: built (0.104.0). **M139-keepers**: built (0.105.0). **M140–M142**: built (0.106.0). **M143–M151**: built (0.107.0–0.108.0) — the thirteenth pass is closed. Next: the tails ledger (factions as a language of shapes; M124 remainder), then the split debt, then G11.
 
