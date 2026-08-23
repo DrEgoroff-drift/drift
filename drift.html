@@ -772,7 +772,7 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.108.0";
+const VER="0.109.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -16521,6 +16521,7 @@ function settleDraw(S,tr,camx,camy,p){
     ctx.fillStyle="rgba(0,0,0,.34)";                       // контакт с грунтом
     ctx.beginPath();ctx.ellipse(ox,oy-1,ww*.6,3,0,0,TAU);ctx.fill();
     ctx.fillStyle=wall;ctx.fillRect(ox-ww/2,oy-hh,ww,hh);
+    if(i===0&&typeof houseWallMark==="function"&&typeof houseOf==="function")houseWallMark(houseOf(G.sys),ox-ww/2,oy,ww,hh);   /* знак дома на стене (17d) */
     ctx.fillStyle=roof;                                    // низкая двускатная крыша
     ctx.beginPath();
     ctx.moveTo(ox-ww/2-3,oy-hh);ctx.lineTo(ox,oy-hh-7);ctx.lineTo(ox+ww/2+3,oy-hh);
@@ -16571,7 +16572,7 @@ function settleDraw(S,tr,camx,camy,p){
     ctx.strokeStyle="rgba(40,34,26,.95)";ctx.lineWidth=1.6;
     ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py-62);ctx.stroke();
     const fl=Math.sin(G.t*.05)*3;
-    ctx.fillStyle="rgba(226,120,70,.9)";
+    ctx.fillStyle=(typeof housePennant==="function")?housePennant():"rgba(226,120,70,.9)";   /* цвет дома (17d) */
     ctx.beginPath();ctx.moveTo(px,py-62);ctx.lineTo(px+14+(WIND||0)*4,py-58+fl);ctx.lineTo(px,py-53);ctx.closePath();ctx.fill();
     if(warm)for(let s=0;s<7;s++){
       const t=((G.t*.5+s*40)%280)/280, rr=3+t*14;
@@ -21666,9 +21667,63 @@ function drawStation(x,y,Z){
     }
     stCore(4,12,false);
   }
+  if(typeof houseMark==="function"&&typeof houseOf==="function")houseMark(houseOf(G.sys),V);   /* знак дома (17d) */
   ctx.restore();
   ctx.fillStyle="rgba(242,178,92,.6)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
   ctx.fillText(S.name.toUpperCase(),x,y+40);
+}
+
+/* ══════════════ дома как язык форм ══════════════
+   Хвост M55 #2/#7 и M113: четыре дома (12u) различались только именем и цветом
+   бонов, а станции и посёлки под ними выглядели одинаково. Теперь у дома есть
+   ФОРМА, и она одна на всё, что ему принадлежит: на станции — знак на корпусе,
+   в посёлке — цвет вымпела и тот же знак на стене.
+
+   «Ласковый» (снабжение) — мягкое: два круглых бака, тёплый жёлтый.
+   «Ковш» (руда) — угловатое: открытый ковш-кронштейн, бирюза.
+   «Вестовой» (почта) — тонкое: мачта с тарелкой, голубой.
+   «Крыло» (верфи) — размах: два скошенных лонжерона, рыжий.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Знак не подписывается: дом узнают по форме, как флаг, а не по тексту.
+   2. Формы не меняют геометрию станции и посёлка — они навешаны поверх. */
+
+function houseRGB(H){return hex2rgb(H.col);}
+/* на станции: после корпуса типа, в тех же координатах (масштаб уже стоит) */
+function houseMark(H,V){
+  if(!H)return;
+  const c=H.col;
+  ctx.save();ctx.lineWidth=1.6;ctx.strokeStyle=c;ctx.fillStyle=rgba(houseRGB(H),.18);
+  if(H.id==="lask"){
+    for(const sx of [-1,1]){ctx.beginPath();ctx.arc(sx*27*V.a,22,5.5,0,TAU);ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.moveTo(sx*27*V.a-5.5,22);ctx.lineTo(sx*27*V.a+5.5,22);ctx.stroke();}
+  }else if(H.id==="kova"){
+    ctx.beginPath();ctx.moveTo(-30*V.a,-26);ctx.lineTo(-26*V.a,-14);ctx.lineTo(-14,-14);ctx.lineTo(-12,-26);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-26*V.a,-14);ctx.lineTo(-26*V.a,-8);ctx.lineTo(-14,-8);ctx.lineTo(-14,-14);ctx.closePath();ctx.fill();ctx.stroke();
+  }else if(H.id==="vest"){
+    ctx.beginPath();ctx.moveTo(0,-28);ctx.lineTo(0,-46);ctx.stroke();
+    ctx.beginPath();ctx.arc(0,-48,4.5,Math.PI*.15,Math.PI*.85,true);ctx.stroke();
+    ctx.fillStyle=(Math.sin(G.t*.07)>0)?c:rgba(houseRGB(H),.25);ctx.beginPath();ctx.arc(0,-46,1.4,0,TAU);ctx.fill();
+  }else if(H.id==="kryl"){
+    for(const sx of [-1,1]){ctx.beginPath();ctx.moveTo(sx*8,14);ctx.lineTo(sx*34*V.a,26);ctx.lineTo(sx*30*V.a,30);ctx.lineTo(sx*8,19);ctx.closePath();ctx.fill();ctx.stroke();}
+  }
+  ctx.restore();
+}
+/* в посёлке: тот же знак на стене самого крупного двора, в его масштабе */
+function houseWallMark(H,x,y,w,h){
+  if(!H)return;
+  ctx.save();ctx.strokeStyle=rgba(houseRGB(H),.85);ctx.fillStyle=rgba(houseRGB(H),.25);ctx.lineWidth=1;
+  const cx=x+w*.72,cy=y-h*.55,s=Math.min(w,h)*.18;
+  if(H.id==="lask"){ctx.beginPath();ctx.arc(cx-s*.6,cy,s*.55,0,TAU);ctx.arc(cx+s*.6,cy,s*.55,0,TAU);ctx.fill();ctx.stroke();}
+  else if(H.id==="kova"){ctx.beginPath();ctx.moveTo(cx-s,cy-s*.6);ctx.lineTo(cx-s*.6,cy+s*.6);ctx.lineTo(cx+s*.6,cy+s*.6);ctx.lineTo(cx+s,cy-s*.6);ctx.stroke();}
+  else if(H.id==="vest"){ctx.beginPath();ctx.moveTo(cx,cy+s);ctx.lineTo(cx,cy-s);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy-s,s*.6,Math.PI*.2,Math.PI*.8,true);ctx.stroke();}
+  else if(H.id==="kryl"){ctx.beginPath();ctx.moveTo(cx-s,cy);ctx.lineTo(cx,cy-s*.5);ctx.lineTo(cx+s,cy);ctx.lineTo(cx,cy+s*.2);ctx.closePath();ctx.fill();ctx.stroke();}
+  ctx.restore();
+}
+/* цвет вымпела посёлка: дом станции этой системы, если она есть */
+function housePennant(){
+  const H=(typeof houseOf==="function")?houseOf(G.sys):null;
+  return H?rgba(houseRGB(H),.9):"rgba(226,120,70,.9)";
 }
 
 /* ══════════════ режим: система ══════════════ */

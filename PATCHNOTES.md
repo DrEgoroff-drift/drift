@@ -8,6 +8,15 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.109.0 — "Houses as a language of shapes" (tails M55 #2/#7, M113)
+
+The four houses of `12u-scrip` used to differ by name and scrip colour only. Each now has a form
+(`17d-house-shapes`) carried by everything it owns: on the station a mark over the hull — two
+round tanks for «Ласковый», an open scoop bracket for «Ковш», a mast with a dish for «Вестовой»,
+two swept spars for «Крыло» — and in a settlement the pennant in the house's colour and the same
+mark on the wall of the first yard. Nothing is labelled: a house is read like a flag. Modules over
+40 KB were cut along their draw seams in 0.108.1 (`17c`, `19f`, `21e`, `23a`, `24aa`).
+
 ## 0.108.0 — "The pass closes" (M147-returners, M148 rumours, M149 names, M150 passports, M151 places)
 
 **The returners** (`11s-returners`, the table's `tin` slot, needle `chrono`): yards and long

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 199 · символов верхнего уровня: 1993
+Файлов: 201 · символов верхнего уровня: 1997
 
 ## СИМВОЛЫ
 
@@ -801,8 +801,12 @@ hoursMachineHere             src/11h-hours.js:88
 hoursNobody                  src/11h-hours.js:76
 hoursOffset                  src/11h-hours.js:52
 HOUSE_BY_ID                  src/12u-scrip.js:27
+houseMark                    src/17d-house-shapes.js:18
 houseOf                      src/12u-scrip.js:35
+housePennant                 src/17d-house-shapes.js:49
+houseRGB                     src/17d-house-shapes.js:16
 HOUSES                       src/12u-scrip.js:21
+houseWallMark                src/17d-house-shapes.js:38
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
 hqAiOffer                    src/27c-ui-hq.js:382
@@ -1657,19 +1661,19 @@ settleDraw                   src/12t-settle.js:228
 settleGive                   src/12t-settle.js:127
 settleHere                   src/12t-settle.js:47
 settleKeyOf                  src/12t-settle.js:44
-settleLeftBehind             src/12t-settle.js:345
+settleLeftBehind             src/12t-settle.js:346
 settleLine                   src/12t-settle.js:201
 settleMake                   src/12t-settle.js:61
 settleMakes                  src/12t-settle.js:148
 settleMap                    src/12t-settle.js:45
-settleRaid                   src/12t-settle.js:328
+settleRaid                   src/12t-settle.js:329
 settleRaise                  src/12t-settle.js:101
 settleSpotX                  src/12t-settle.js:55
 settleStockSum               src/12t-settle.js:142
-settleStop                   src/12t-settle.js:359
-settleStops                  src/12t-settle.js:370
+settleStop                   src/12t-settle.js:360
+settleStops                  src/12t-settle.js:371
 settleTick                   src/12t-settle.js:77
-settleWatch                  src/12t-settle.js:317
+settleWatch                  src/12t-settle.js:318
 settleWords                  src/12t-settle.js:163
 setTx                        src/28-loop.js:67
 setZoom                      src/15-input.js:176
@@ -2301,6 +2305,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/17c-system-draw.js · 18 КБ
   · система: кольца, пояс и станция в кадре:1
 
+## src/17d-house-shapes.js · 4 КБ
+  · дома как язык форм:1
+
 ## src/17-mode-system.js · 28 КБ
   · режим: система:1
 
@@ -2635,5 +2642,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## tests/91zzf-last.js · 5 КБ
   · возвращение, слухи, имена, единичные места:1
+
+## tests/91zzg-houses.js · 1 КБ
+  · дома как язык форм: знак на станции и в посёлке, вымпел цветом дома:1
 
 ## tests/99-run.js · 0 КБ

@@ -248,6 +248,7 @@ function settleDraw(S,tr,camx,camy,p){
     ctx.fillStyle="rgba(0,0,0,.34)";                       // контакт с грунтом
     ctx.beginPath();ctx.ellipse(ox,oy-1,ww*.6,3,0,0,TAU);ctx.fill();
     ctx.fillStyle=wall;ctx.fillRect(ox-ww/2,oy-hh,ww,hh);
+    if(i===0&&typeof houseWallMark==="function"&&typeof houseOf==="function")houseWallMark(houseOf(G.sys),ox-ww/2,oy,ww,hh);   /* знак дома на стене (17d) */
     ctx.fillStyle=roof;                                    // низкая двускатная крыша
     ctx.beginPath();
     ctx.moveTo(ox-ww/2-3,oy-hh);ctx.lineTo(ox,oy-hh-7);ctx.lineTo(ox+ww/2+3,oy-hh);
@@ -298,7 +299,7 @@ function settleDraw(S,tr,camx,camy,p){
     ctx.strokeStyle="rgba(40,34,26,.95)";ctx.lineWidth=1.6;
     ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py-62);ctx.stroke();
     const fl=Math.sin(G.t*.05)*3;
-    ctx.fillStyle="rgba(226,120,70,.9)";
+    ctx.fillStyle=(typeof housePennant==="function")?housePennant():"rgba(226,120,70,.9)";   /* цвет дома (17d) */
     ctx.beginPath();ctx.moveTo(px,py-62);ctx.lineTo(px+14+(WIND||0)*4,py-58+fl);ctx.lineTo(px,py-53);ctx.closePath();ctx.fill();
     if(warm)for(let s=0;s<7;s++){
       const t=((G.t*.5+s*40)%280)/280, rr=3+t*14;

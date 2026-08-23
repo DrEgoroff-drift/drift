@@ -343,6 +343,7 @@ function drawStation(x,y,Z){
     }
     stCore(4,12,false);
   }
+  if(typeof houseMark==="function"&&typeof houseOf==="function")houseMark(houseOf(G.sys),V);   /* знак дома (17d) */
   ctx.restore();
   ctx.fillStyle="rgba(242,178,92,.6)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
   ctx.fillText(S.name.toUpperCase(),x,y+40);

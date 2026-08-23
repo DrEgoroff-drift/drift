@@ -290,8 +290,7 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 
 ## Open by design (not defects; each needs the author or a pass of its own)
 
-- **Factions as a language of shapes** (M55 #2/#7, M113 houses look alike): queued after
-  stations; a visual language for four houses is a pass, not a tail.
+- **Factions as a language of shapes**: closed (0.109.0) — `17d-house-shapes`: a mark per house on the station and the settlement wall, pennant in the house colour.
 - **Base "like Fallout Shelter"**: it is one; what differs is a question for the author.
 - **Yacht railing below 3×, fully flat-on view** (archive, ships): the fleet is drawn flat-on by
   design; the hull now has a top light and one asymmetric boom, the rest is the reference-sheet
@@ -308,9 +307,7 @@ author or to a later pass, and it is carried here on purpose rather than silentl
   own milestone (M135+).
 - **M131**: barge passenger as a channel, settlement glyph overrides, per-region colouring — left
   open in the hundred's design.
-- **Split debt**: `23-mode-dig` (52 KB), `24a-mode-raid` (47), `17-mode-system` (46),
-  `21ab-base-interiors` (42), `19-mode-landing` (41) — the guard still shouts; `21a` and `26` are
-  paid. Cut them on their next milestone, along a seam, never a `const` table.
+- **Split debt**: paid (0.108.1) — `17c-system-draw`, `19f-lander`, `21e-surface-draw`, `23a-dig-draw`, `24aa-raid-draw`. Left: `21ab-base-interiors` (one `const` table, 42 KB) and `12y-parrot-face` (42 KB) — flagged, not cut.
 - **Star disc on the surface**: closed (0.102.0) — was the dark sky tone since before the split; now the star colour.
 - **G11**: `20-life` radial gradients as baked sprites, veil/vignette as one layer — the raster
   budget pass, measured not guessed (see `drift-perf-method`).
