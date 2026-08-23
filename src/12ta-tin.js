@@ -132,6 +132,7 @@ function tinTick(T){
    Игрок отдаёт то, что просят, из трюма. Машина принимает по одной своей мере:
    недосыпанное лежит в приёмнике и ждёт следующего рейса. */
 function tinFeed(T,n){
+  if(typeof tinClosed==="function"&&tinClosed())return 0;   /* закрыта (M158) */
   T=tinTick(T);
   if(!T)return 0;
   const A=tinAskOf(T.seed);
@@ -223,6 +224,7 @@ function tinEntries(T){
 }
 /* ── строка о состоянии ── одна, короткая, без уговоров */
 function tinLine(T){
+  if(typeof tinClosed==="function"&&tinClosed())return "ЗАКРЫТА · ПОСЛЕДНИЙ РЕЙС УШЁЛ · ЖЕЛЕЗО ВСТАЛО";
   const A=tinAskOf(T.seed);
   if(T.run>0)return "СМЕНА ИДЁТ · В БУНКЕРЕ "+Math.floor(T.bin)+" "+RES[A.made].ru.toUpperCase();
   const got=Math.floor((T.fed||0)/A.per);
@@ -235,6 +237,7 @@ function tinLine(T){
 function tinSignal(){
   const p=tinPlanet(G.sys);
   if(!p)return;
+  if(typeof tinClosed==="function"&&tinClosed())return;   /* закрыта (M158): железо молчит */
   const T=tinAt(G.sx,G.sy);
   if(T&&T.run>0)return;                  // работающая смена не просит
   const A=tinAskOf(hashi(G.sx,G.sy,(p.idx|0)+0x71DE));

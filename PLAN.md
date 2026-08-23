@@ -349,7 +349,7 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   rumours for sixty days; barge passenger as a channel; `11x-expedition`, `G.exp`, `91zzk`.
 - **M157 the sixth** — **built (0.118.0)**: five rival traces as links drawing one route to the sixth, who gets a
   face and goes with the expedition; `12k-stories-d`, `91zzl`.
-- **M158 last run** — the Tin closes; one person per region; ten letters with content read
+- **M158 last run** — **built (0.119.0)**: the Tin closes; one person per region; ten letters with content read
   aloud by the addressee; `12k-letters`, `91zzm`.
 - **M159 departure** — the quiet minute, the nameless board line, the once-offered ending, the
   unsigned tape a year later; `91zzn`.

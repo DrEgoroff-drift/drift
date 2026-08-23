@@ -7,6 +7,18 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.119.0 — "The last run" (M158)
+
+`12k-letters`: the Tin closes. On the fortieth day of the circular the ether announces the last
+run with a date; after it the Tin's iron stands («ЗАКРЫТА · ПОСЛЕДНИЙ РЕЙС УШЁЛ»), it neither
+asks nor takes, and the record book notes whether you made it. **Letters with content**: ten
+letters — the Baker to Krapiva, Kim to Shtof, the chronometrist to the reactor keeper, Vega to
+the old man on the bazaar, the commission to the duty observer… — offered at counters during
+the expedition, carried as sealed envelopes on the table and never read by the player; the
+addressee reads the paragraph aloud at the counter (it goes to ЛЮДИ and the envelope unfolds on
+the table). Three are addressed to people on the Tin: too late, and «адресат выбыл» stays in the
+hold. Suite `91zzm`.
+---
 ## 0.118.0 — "The sixth" (M157)
 
 `12k-stories-d`: the rivals as colleagues. Each of the five leaves a trace on a station not
