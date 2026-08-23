@@ -290,6 +290,11 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 
 ## Open by design (not defects; each needs the author or a pass of its own)
 
+- **The road companion** (author, 2026-08-23): phone mode where a real car trip flies your ship —
+  GPS speed extrapolated to cosmic, accelerometer banks the hull, mic-driven equalizer, real
+  distance → a capped in-game bonus synced through the site accounts. Captured in
+  [`docs/DESIGN-road.md`](docs/DESIGN-road.md); needs its own pass and the author's answers
+  (reward resource, cap, in-game vs separate page).
 - **Factions as a language of shapes**: closed (0.109.0) — `17d-house-shapes`: a mark per house on the station and the settlement wall, pennant in the house colour.
 - **Base "like Fallout Shelter"**: it is one; what differs is a question for the author.
 - **Yacht railing below 3×, fully flat-on view** (archive, ships): the fleet is drawn flat-on by
