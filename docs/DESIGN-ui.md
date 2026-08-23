@@ -111,3 +111,43 @@ book (M161), the living part Vega's kitchen (M153). The table at home is the sam
 | my life | СТОЛ → record book | entries in other people's hands |
 | the suit | home → workshop | the figure with six places |
 | from a cave, a dig, a raid | СТОЛ (same button, same table) | the same table, the cave behind the window |
+
+## Mobile (M167, from the author's phone screenshots, 2026-08-23)
+
+Reviewed on a real phone (portrait, drift-game.ru/play.html). Six faults, in priority order:
+
+1. **The receiver floats mid-screen in every mode**, occluding the scene and labels
+   (covered «ГАЗОВЫЙ ГИГАНТ +6 ДАННЫХ» in system view). It becomes a one-line ticker in
+   the bottom console: channel icon + running text; tap opens the knob sheet for two
+   seconds, then it hides. No floating window.
+2. **Thumb zones.** All interaction lives in the bottom ~25% left/right. КОРАБЛЬ/КАРТА/МЕНЮ
+   and zoom sit in the upper right — unreachable one-handed. Buttons move down; **zoom
+   buttons are deleted — pinch** is the gesture. Top corners are info only.
+3. **No ghost buttons.** ТОРМОЗ/ОГОНЬ/ДЕЙСТВИЕ show up faded-inactive. A button either
+   works or is absent; context actions swap in one slot.
+4. **One slot for hints.** Yellow multi-line caps float mid-scene («ДЕЙСТВИЕ — ЗАЛОЖИТЬ
+   ШАХТУ · …»). One line above the console, always the same place; detail by tap. Type
+   scale: numbers large, labels small — today everything weighs the same.
+5. **Distance markers** («ПЕЩЕРА 1767 м», «ОСТОВ КОРАБЛЯ 989 м») overlap each other and
+   the sun. Edge-of-screen arrow chips with overlap-free auto-layout.
+6. **Fit screen**: ship slots and suit are two tools glued together — split into
+   КОРАБЛЬ | СКАФАНДР top tabs. The suit stats line is clipped under the filter tabs (bug).
+   List rows: name · class chip · "new" dot badge on one line; «I класса» must not wrap.
+   Slot dots need ≥44 px tap targets; tap slot → bottom sheet of compatible pieces only.
+
+**The suit doll.** The white block-robot is a placeholder outside the game's language.
+Replace with an RPG paperdoll: the figure centre, six slots around it (helmet, torso,
+gloves, boots, pack, lamp — the M152 kit) anchored by lines to body parts. The figure is
+**composited from the equipped pieces** — each piece is a draw layer with its family's
+silhouette and palette, so a «Стриж-2» helmet on a «Кречет-3» torso visibly mixes, and the
+same composite walks on the surface. Draw by the procedural-assembly rule: layers
+(pack → boots → torso → gloves → helmet → lamp), **one outline over the whole, one light**.
+Wear reads on the doll (scuffs, dull visor); the doll idles (breathing, lamp sway).
+
+**Site**: mechanics.html body text overflows the right edge on phones — max-width,
+padding, clamp() on font size.
+
+Order of work: receiver ticker → button column down + pinch + no ghosts → fit screen
+split and row fixes → the doll → hint slot + edge markers → site CSS. Each step re-runs
+the design loop from the cross-cutting rule: draft, then critique passes, with the raster
+budget checked before shipping.

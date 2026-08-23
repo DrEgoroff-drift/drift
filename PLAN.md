@@ -31,6 +31,11 @@ half the tokens. The game itself, its UI and its code comments stay Russian.
   real-time simulation â the model is `tickDrones()` (`12-economy`).
 - **After every milestone:** parse check, empty console, a manual scenario, loading an old save.
   Canvas screenshots are not trusted.
+- **Design in passes, not in one shot** (author, 2026-08-23). Any design — a screen, a
+  component, a drawn thing — gets a draft and then several self-critique passes along the way:
+  look at the result as a user/with the art direction, name what is wrong, redo, repeat until a
+  pass finds nothing. Optimisation is part of every pass, not an afterthought — check the
+  raster/JS budget (`prof()`, the "painted once" rule) before calling a pass clean.
 
 ## Done
 
@@ -368,6 +373,12 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
 - **M165 wall paper & concert** (joy) — the wall newspaper on the counter, the request concert
   on the receiver; `11ae-concert`, `91zzt`.
 - **M166 dominoes** (joy) — dominoes at the table with crew, rivals, Vega; `11af-domino`, `91zzu`.
+- **M167 mobile** — the phone edition of the console look, per the Mobile section of
+  [`docs/DESIGN-ui.md`](docs/DESIGN-ui.md): receiver → one-line ticker in the console (no
+  floating window); buttons into thumb zones, zoom = pinch, no ghost buttons; fit screen split
+  КОРАБЛЬ | СКАФАНДР with row/clipping fixes; the suit as an RPG paperdoll composited from the
+  six equipped pieces (one outline, one light) — the same composite walks the surface; one hint
+  slot above the console; distance markers as edge arrow chips; mechanics.html mobile CSS.
 - **Release look** — after M161: the table as paper, removal of the overlay HUD.
 
 # QUEUE: the thirteenth pass â the galaxy as a book of stories (M122âM151)
