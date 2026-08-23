@@ -11,8 +11,8 @@ sound is generated at runtime from seeds.
 
 </div>
 
-Download [`drift.html`](drift.html) and open it. That is the whole game: one file, offline, no
-server. The interface is in Russian.
+Play it at [drift-game.ru](https://drift-game.ru) — or download [`drift.html`](drift.html) and
+open it. That is the whole game: one file, offline, no server. The interface is in Russian.
 
 You fly a survey ship through a generated galaxy — prospect planets, dig mines, mine asteroid
 belts, skim gas giants, trade, build bases, hire crew that keeps working while you are away,
@@ -427,6 +427,17 @@ Pirates are absent near home and increasingly common the further out you push. F
 own gun module and bounty tech, but outrunning or jumping away is always cheap and always valid.
 Bases, boarding and mercenary hunts are opt-in layers on top.
 
+### The road companion
+
+On a phone, «В ДОРОГУ» turns a real trip into flight: GPS speed ×1 000 000 becomes cosmic
+(a highway reads as hundreds of km/s, a plane as a fraction of lightspeed), the accelerometer
+banks and sways the hull through real turns, acceleration pulls it up the screen and braking
+down, and the microphone drives the scene — nebulae change colour with the music's mood, a
+beat births falling stars, the bottom of the screen glows with the track. Real land is mapped
+onto the universe: every ~2.8 km cell is a named star system, and the site counts other pilots
+riding the same sector (an anonymous tag and a cell number are all that leave the phone).
+Kilometres earn capped in-game credits, with a combo for riding without stopping.
+
 ## Graphics and sound
 
 - Every hull is generated from its seed: multi-station fuselage profile, swept wings, nacelles,
@@ -512,9 +523,10 @@ cross-device saves instead of manual codes. Set `PORT` to use something other th
 
 ## Status
 
-Version 0.71.0. Everything described above is built and playable.
+Version 0.133.0. Everything described above is built and playable, online at
+[drift-game.ru](https://drift-game.ru) with accounts and cloud saves, or offline from this file.
 
-Three development passes are behind it. The first finished the planned queue: celestial
+Four development passes are behind it. The first finished the planned queue: celestial
 mechanics, station types, rare materials, mercenaries, bases, the laboratory, boarding, twelve
 blended worlds, the side-on lander, welded pirate hulls, the home that grows on its own. The
 second gave those abstractions a body — barges flying the factor's real routes, a barge in
@@ -524,9 +536,11 @@ marks, a sky calendar, a settlement that decides for itself what to build, a rep
 improves while it sits in your hold, a meadow that replays, during an eclipse and only
 then, the people who once crossed it, a plant on a dead world still working its shift for an
 owner who never came back, and a four-armed digger paid in food who repeats at the tables
-everything he has seen.
+everything he has seen. The fourth gave the galaxy its regions — thirteen edges, each with its
+own law, its rumours and its returners — and the game its release face: a bottom console with a
+tunable receiver on every screen, one table that holds everything you read, and the road
+companion that flies your ship along your real commute.
 
-Ahead: a bazaar where every lot has a previous owner, and the regions — six to ten systems on
-one theme with a procedural edge and a hand-built core.
+In progress: the fourteenth pass — the kit, the lodger on board, the expedition.
 
 Balance is tuned against measurements, so the numbers move between versions.
