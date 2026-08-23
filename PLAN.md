@@ -314,6 +314,23 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 
 ---
 
+# QUEUE: the fourteenth pass — the kit, the lodger, the expedition (M152–M158)
+
+Designs (2026-08-23): [`docs/DESIGN-suit.md`](docs/DESIGN-suit.md),
+[`docs/DESIGN-vega.md`](docs/DESIGN-vega.md), [`docs/DESIGN-act2.md`](docs/DESIGN-act2.md).
+Order: M152 → M153 → M154…M158. Each is a version with tests and a commit.
+
+- **M152 the kit** — the suit as six places with trade-offs, pieces with models/class/wear/mods,
+  issued/found/given, the workshop tier repairs and modernises; `12x-suit`, `11y-kit`, `91zzg`.
+- **M153 Vega** — the lodger who cannot be evicted: the one-shot device on the flea, three acts,
+  the mirror, flying with her (right seat, HUD line, help/hinder/quarrel/gift/outings), the
+  seven-day ending; `11w-vega`, `12k-vega`, `91zzh`.
+- **M154 circular** — the expedition demand through the world; `11x-expedition`, `G.exp`.
+- **M155 the sixth** — the rival route as links; the sixth rival gets a face and a story.
+- **M156 misclosure** — the region where the counts diverge; tapes as a figure on the table.
+- **M157 last run** — the Tin closes; ten letters with content.
+- **M158 departure** — the board line, the optional ending, the unsigned tape a year later.
+
 # QUEUE: the thirteenth pass â the galaxy as a book of stories (M122âM151)
 
 **Full text lives in [`docs/PLAN-archive.md`](docs/PLAN-archive.md)** â grep it for `M122`. It was
