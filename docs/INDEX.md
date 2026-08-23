@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 171 · символов верхнего уровня: 1844
+Файлов: 173 · символов верхнего уровня: 1857
 
 ## СИМВОЛЫ
 
@@ -40,7 +40,7 @@ actionKey                    src/15-input.js:75
 addPart                      src/05-parts.js:227
 addPath                      src/25-cockpit.js:154
 addRes                       src/11-log.js:96
-addrForm                     src/11b-speech.js:77
+addrForm                     src/11b-speech.js:78
 adjTo                        src/05-parts.js:23
 AFFIX                        src/05-parts.js:29
 AFFIX_BAD                    src/05-parts.js:46
@@ -83,7 +83,7 @@ AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
 audioTick                    src/28-loop.js:199
 autoLandInputs               src/19-mode-landing.js:33
-autosave                     src/14-save.js:490
+autosave                     src/14-save.js:491
 b64dec                       src/14-save.js:13
 b64enc                       src/14-save.js:11
 bankTransform                src/03b-hull-paint.js:48
@@ -164,9 +164,9 @@ BELT_AVLIM                   src/24-mode-belt.js:86
 BELT_HALF                    src/24-mode-belt.js:84
 BELT_POI                     src/24b-belt-poi.js:13
 BELT_RES                     src/02-world.js:62
-beltBasis                    src/24-mode-belt.js:160
+beltBasis                    src/24-mode-belt.js:163
 beltDots                     src/17-mode-system.js:540
-beltFwd                      src/24-mode-belt.js:155
+beltFwd                      src/24-mode-belt.js:158
 beltIcy                      src/24-mode-belt.js:87
 BG                           src/16-flight.js:3
 BG_BRIGHT                    src/16-flight.js:17
@@ -281,18 +281,18 @@ CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_TIER                   src/19e-clouds.js:161
-cloudBoot                    src/14-save.js:547
-cloudBusy                    src/14-save.js:517
-cloudCall                    src/14-save.js:510
-cloudForget                  src/14-save.js:515
-cloudHere                    src/14-save.js:508
-cloudName                    src/14-save.js:507
-cloudOn                      src/14-save.js:509
-cloudPull                    src/14-save.js:534
-cloudPush                    src/14-save.js:520
+cloudBoot                    src/14-save.js:548
+cloudBusy                    src/14-save.js:518
+cloudCall                    src/14-save.js:511
+cloudForget                  src/14-save.js:516
+cloudHere                    src/14-save.js:509
+cloudName                    src/14-save.js:508
+cloudOn                      src/14-save.js:510
+cloudPull                    src/14-save.js:535
+cloudPush                    src/14-save.js:521
 cloudsOf                     src/19e-clouds.js:147
 cloudSprite                  src/19e-clouds.js:60
-cloudTok                     src/14-save.js:506
+cloudTok                     src/14-save.js:507
 cockpitPlan                  src/25-cockpit.js:92
 cockpitStyleKey              src/25-cockpit.js:46
 cockpitTex                   src/25-cockpit.js:187
@@ -356,7 +356,7 @@ crownReady                   src/05a-nodes.js:158
 CSW                          src/19e-clouds.js:53
 ctx                          src/08-state.js:3
 curTok                       src/09-audio.js:71
-CUT_RANGE                    src/24-mode-belt.js:180
+CUT_RANGE                    src/24-mode-belt.js:183
 cvs                          src/08-state.js:2
 dbg                          src/28-loop.js:419
 dcol                         src/21b-surface-deco.js:136
@@ -415,7 +415,7 @@ drawBase                     src/21ac-base-draw.js:43
 drawBaseBuilding             src/21c-built.js:99
 drawBeast                    src/20-life.js:703
 drawBeastAlien               src/20-life.js:546
-drawBelt                     src/24-mode-belt.js:361
+drawBelt                     src/24-mode-belt.js:366
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17-mode-system.js:546
 drawBeltRocks                src/17-mode-system.js:493
@@ -449,7 +449,7 @@ drawFindsSystem              src/17b-finds.js:140
 drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24a-mode-raid.js:721
 drawForeground               src/21b-surface-deco.js:577
-drawGlassHUD                 src/24-mode-belt.js:587
+drawGlassHUD                 src/24-mode-belt.js:593
 drawGround                   src/19-mode-landing.js:109
 drawGroundCrumbs             src/19-mode-landing.js:196
 drawGroundGrass              src/19-mode-landing.js:209
@@ -535,11 +535,11 @@ etherTick                    src/11b-speech.js:39
 evacuate                     src/21-mode-surface.js:394
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:80
-exitBelt                     src/24-mode-belt.js:171
+exitBelt                     src/24-mode-belt.js:174
 exitCave                     src/22-mode-cave.js:201
 exitDig                      src/23-mode-dig.js:60
 exitScoop                    src/19a-mode-scoop.js:17
-exportCode                   src/14-save.js:499
+exportCode                   src/14-save.js:500
 FACE_EYE                     src/12d-mgr-face.js:14
 FACE_HAIR                    src/12d-mgr-face.js:12
 FACE_ROLE_BG                 src/12d-mgr-face.js:15
@@ -683,10 +683,23 @@ grokWant                     src/12tb-grok.js:42
 GROUND_BAKING                src/19-mode-landing.js:194
 groundAt                     src/07-planet.js:504
 groundShadow                 src/19-mode-landing.js:286
+GROVE_ETHER                  src/11j-grove.js:23
+groveAll                     src/11j-grove.js:29
+groveDepthAt                 src/11j-grove.js:30
+groveDepthHere               src/11j-grove.js:37
+groveDraw                    src/11j-grove.js:124
+groveDress                   src/11j-grove.js:60
+groveEtherLine               src/11j-grove.js:52
+groveMark                    src/11j-grove.js:77
+groveOnKill                  src/11j-grove.js:107
+groveSoft                    src/11j-grove.js:103
+groveSys                     src/11j-grove.js:39
+groveTick                    src/11j-grove.js:85
+groveVisit                   src/11j-grove.js:118
 h01                          src/01-core.js:14
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
-hasSave                      src/14-save.js:498
+hasSave                      src/14-save.js:499
 hazardBand                   src/25-cockpit.js:166
 hazeBand                     src/19c-light.js:103
 hazeFar                      src/19c-light.js:88
@@ -802,7 +815,7 @@ huntSpawn                    src/12o-hunter.js:90
 huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
-importCode                   src/14-save.js:500
+importCode                   src/14-save.js:501
 initAudio                    src/09-audio.js:7
 INSTR                        src/25a-instr.js:19
 INSTR_BY_ID                  src/25a-instr.js:55
@@ -864,7 +877,7 @@ keyMap                       src/15-input.js:52
 keyRow                       src/27-ui-ship.js:173
 keys                         src/08-state.js:21
 killPirate                   src/13-pirates.js:178
-killRock                     src/24-mode-belt.js:149
+killRock                     src/24-mode-belt.js:150
 KMAP                         src/15-input.js:28
 KMAP_BELT                    src/15-input.js:32
 labCount                     src/12h-relic.js:16
@@ -904,8 +917,8 @@ lightsShut                   src/11g-lights.js:73
 lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:46
-loadGame                     src/14-save.js:494
-LOCAL                        src/11b-speech.js:84
+loadGame                     src/14-save.js:495
+LOCAL                        src/11b-speech.js:85
 LOG_MAX                      src/11-log.js:3
 logAdd                       src/11-log.js:5
 logBtnLabel                  src/11-log.js:24
@@ -1305,7 +1318,7 @@ PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:17
 ptr                          src/15-input.js:180
-putOnTable                   src/11b-speech.js:192
+putOnTable                   src/11b-speech.js:193
 QUEST_MAX                    src/11a-quests.js:15
 questAdd                     src/11a-quests.js:22
 questAll                     src/11a-quests.js:17
@@ -1475,7 +1488,7 @@ runTests                     tests/90-harness.js:72
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:6
-saveGame                     src/14-save.js:484
+saveGame                     src/14-save.js:485
 say                          src/08-state.js:140
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -1545,7 +1558,7 @@ setZoom                      src/15-input.js:176
 sfx                          src/09-audio.js:211
 SFX                          src/09-audio.js:85
 SH_DX                        src/03b-hull-paint.js:164
-shatter                      src/24-mode-belt.js:134
+shatter                      src/24-mode-belt.js:135
 SHIFT_TALK                   src/03f-hull-role.js:63
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
@@ -1586,8 +1599,8 @@ spawnAllies                  src/12a-crew.js:483
 spawnBarges                  src/12l-barge.js:102
 spawnPirates                 src/13-pirates.js:25
 SPEC_KEYS                    src/12a-crew.js:17
-speechAll                    src/11b-speech.js:98
-speechHere                   src/11b-speech.js:100
+speechAll                    src/11b-speech.js:99
+speechHere                   src/11b-speech.js:101
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
 ST_GOLD                      src/17-mode-system.js:569
@@ -1669,10 +1682,10 @@ STRIP_CHUNK                  src/07-planet.js:73
 STRIP_JOB                    src/07-planet.js:76
 STRIP_MS                     src/07-planet.js:72
 STRIP_PEND                   src/07-planet.js:78
-STRIPS_MAX                   src/11b-speech.js:164
-stripsAll                    src/11b-speech.js:165
-stripSell                    src/11b-speech.js:201
-stripValue                   src/11b-speech.js:166
+STRIPS_MAX                   src/11b-speech.js:165
+stripsAll                    src/11b-speech.js:166
+stripSell                    src/11b-speech.js:202
+stripValue                   src/11b-speech.js:167
 stSet                        src/14-save.js:9
 stTypeOf                     src/06-galaxy.js:27
 subdivide                    src/24-mode-belt.js:34
@@ -1701,7 +1714,7 @@ sysNebulaTex                 src/16a-space.js:53
 sysPirateBase                src/24a-mode-raid.js:98
 sysStyle                     src/16a-space.js:21
 tab                          src/26-ui-station.js:3
-TABLE_REPLY                  src/11b-speech.js:131
+TABLE_REPLY                  src/11b-speech.js:132
 tableBlock                   src/27c-ui-hq.js:531
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
@@ -1718,7 +1731,7 @@ tapeRate                     src/25b-tape.js:74
 tapeSample                   src/25b-tape.js:54
 tapeScroll                   src/25b-tape.js:96
 tapeStrip                    src/25b-tape.js:186
-tapeTear                     src/11b-speech.js:169
+tapeTear                     src/11b-speech.js:170
 tapeTick                     src/25b-tape.js:78
 tapeUnpack                   src/25b-tape.js:39
 targetPos                    src/16-flight.js:97
@@ -1797,7 +1810,7 @@ unpackPart                   src/05-parts.js:323
 updateAllies                 src/12a-crew.js:517
 updateBarges                 src/12l-barge.js:156
 updateBase                   src/21a-mode-base.js:322
-updateBelt                   src/24-mode-belt.js:181
+updateBelt                   src/24-mode-belt.js:184
 updateCave                   src/22-mode-cave.js:219
 updateCaveDeco               src/22a-cave-deco.js:184
 updateCombat                 src/13-pirates.js:76
@@ -1809,9 +1822,9 @@ updateSurface                src/21-mode-surface.js:99
 updateSystem                 src/17-mode-system.js:2
 useBeacon                    src/23-mode-dig.js:72
 VER                          src/01-core.js:4
-visitHere                    src/11b-speech.js:68
-visitMark                    src/11b-speech.js:72
-visitsAll                    src/11b-speech.js:67
+visitHere                    src/11b-speech.js:69
+visitMark                    src/11b-speech.js:73
+visitsAll                    src/11b-speech.js:68
 voice                        src/09-audio.js:72
 VOICE_KEYS                   src/02a-worldmix.js:81
 VOICE_MAX                    src/09-audio.js:5
@@ -1961,6 +1974,9 @@ ZAP_COOL                     src/23-mode-dig.js:212
 ## src/11i-glow.js · 9 КБ
   · свет, который помнит: уезд вокруг Подглядки:1
 
+## src/11j-grove.js · 8 КБ
+  · роща: пояс, который отвечает на тягу:1
+
 ## src/11-log.js · 5 КБ
   · бортовой журнал:1
 
@@ -2087,7 +2103,7 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## src/14-save.js · 37 КБ
   · сохранение:1
-  · облако:503
+  · облако:504
 
 ## src/15-input.js · 16 КБ
   · экранные кнопки: авто-скрытие и размер:1
@@ -2402,5 +2418,8 @@ ZAP_COOL                     src/23-mode-dig.js:212
 
 ## tests/91zv-glow.js · 3 КБ
   · свет, который помнит: флора-товар, пятна, сцены по громкости:1
+
+## tests/91zw-grove.js · 4 КБ
+  · роща: сходится без тяги, отпрядывает от тяги, помнит корпус, не бьёт:1
 
 ## tests/99-run.js · 0 КБ

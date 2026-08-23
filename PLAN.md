@@ -315,7 +315,7 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 - **G11**: `20-life` radial gradients as baked sprites, veil/vignette as one layer — the raster
   budget pass, measured not guessed (see `drift-perf-method`).
 - **M112**: nothing else — belt missiles and the hull mark closed it.
-- **M135 "three lights"**: built (0.101.0). **M136-hours**: built (0.102.0). **M137-glow**: built (0.103.0). Next: M138-grove.
+- **M135 "three lights"**: built (0.101.0). **M136-hours**: built (0.102.0). **M137-glow**: built (0.103.0). **M138-grove**: built (0.104.0). Next: M139-keepers.
 
 ---
 
@@ -324,6 +324,14 @@ author or to a later pass, and it is carried here on purpose rather than silentl
 **Full text lives in [`docs/PLAN-archive.md`](docs/PLAN-archive.md)** â grep it for `M122`. It was
 moved there on 2026-08-15 because thirty milestones of far-future work were being carried in a file
 that is read every session; the pass itself stands, and it is the release (0.72.0 â **1.00.0**).
+
+## M138-grove (0.104.0) — built. The grove
+
+`11j-grove`: `groveSys` (core if it has a belt, else the region's first belt system), `groveDress`
+from `enterBelt` (edge 3 / core 22 marked rocks, res xeno), `groveTick` before thrust in
+`updateBelt` (close / flinch / part / close-for-good, min 150 or 90), collision exemption in the
+rock loop, `groveOnKill` from `killRock` (power≥3 shot, else cut +6 xeno), `groveDraw` halos after
+the rocks, `groveEtherLine`. Persisted `G.grove={turn,shot,cut}`. Suite `91zw-grove`.
 
 ## M137-glow (0.103.0) — built. The light that remembers
 

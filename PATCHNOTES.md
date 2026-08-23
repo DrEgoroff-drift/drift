@@ -8,6 +8,18 @@ older entries below are left as they were written — translating history would 
 could ever save.
 
 ---
+## 0.104.0 — "The grove" (M138-grove)
+
+The `grove` region (06c, needle `mass`) is built in `11j-grove`, in the belt. Growths are belt
+rocks with a mark: on the edge three lone ones that cut like ore and pay xenobiome; in the grove
+system (the core, or the first belt system of the region) twenty-two of them in one thicket off to
+the side. Thrust is the language: engine off and the grove closes in slowly, never nearer than
+150; thrust and it flinches back; its rocks never damage the hull — a soft shove instead. It
+remembers the hull (`G.grove`): every visit it turns sooner; one shot and it parts and never
+approaches again; one cut for cargo (six xenobiome) and it closes for good, thrust or not. A
+green halo on each growth, brighter while it comes toward you. The edge ether swears at the
+thickets. Suite `91zw-grove`.
+
 ## 0.103.0 — "The light that remembers" (M137-glow)
 
 The `glow` region around the meadow (06c, needle `actino`) is built in `11i-glow`. On the edge

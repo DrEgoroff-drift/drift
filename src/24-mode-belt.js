@@ -124,6 +124,7 @@ function enterBelt(){
     yaw:0,pitch:0,roll:0,avYaw:0,avPitch:0,avRoll:0,prevYaw:0,
     lock:null,prog:0,hit:0,near:9999,beam:0,cool:0,flash:0};
   G.mode="belt";G.ap=null;
+  if(typeof groveDress==="function"){groveDress(G.belt);groveVisit();}   /* роща (11j) */
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(bb=>bb.classList.remove("on"));
   say("Вход в "+B.name+"\nруда: "+B.res.map(k=>RES[k].ru).join(", ")+
@@ -147,6 +148,8 @@ function shatter(b,a,n,power,px,py,pz){
   if(b.chunks.length>150)b.chunks.splice(0,b.chunks.length-150);
 }
 function killRock(b,a,power){
+  if(typeof groveOnKill==="function")groveOnKill(a,power);   /* роща помнит (11j) */
+  if(b.grove&&a.grove){const gi=b.grove.indexOf(a);if(gi>=0)b.grove.splice(gi,1);}
   shatter(b,a,9+Math.floor(Math.random()*6),power);
   const i=b.ast.indexOf(a);
   if(i>=0)b.ast.splice(i,1);       // выработанный камень не должен остаться невидимым препятствием
@@ -208,6 +211,7 @@ function updateBelt(dt){
   }
   b.prevYaw=b.yaw;
 
+  if(typeof groveTick==="function")groveTick(b,dt);   /* роща отвечает на тягу (11j) */
   /* ── тяга ── */
   const fwd=beltFwd(b);
   if(keys.thrust&&G.fuel>0){
@@ -233,6 +237,7 @@ function updateBelt(dt){
     const dx=a.x-b.x,dy=a.y-b.y,dz=a.z-b.z,d=Math.hypot(dx,dy,dz);
     const clear=d-a.r;
     if(clear<b.near)b.near=clear;
+    if(d<a.r+12&&d>0&&a.grove){b.vx+=dx/d*.3;b.vy+=dy/d*.3;b.vz+=dz/d*.3;continue;}   /* роща не бьёт (11j) */
     if(d<a.r+12&&d>0){
       const dmg=Math.min(26,sp2*5+2);
       G.hull=Math.max(0,G.hull-dmg*dt*.5);
@@ -538,6 +543,7 @@ function drawBelt(){
     }
     if(p.alpha<1)ctx.globalAlpha=1;
   }
+  if(typeof groveDraw==="function")groveDraw(b,proj);   /* ореолы рощи (11j) */
   /* трассеры */
   for(const m of b.msl||[]){
     const p=proj(m.x,m.y,m.z), q=proj(m.x-m.vx*4,m.y-m.vy*4,m.z-m.vz*4);
