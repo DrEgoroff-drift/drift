@@ -118,10 +118,41 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
         c.fillStyle="rgba(255,255,255,.1)";c.fillRect(x,sy-bh*.8,1.6,bh*.8);
         c.fillStyle="rgba(30,26,20,.6)";c.fillRect(x,sy-bh*.8,6,1.6);
       }else{
-        const hue=[[86,120,96],[130,96,74],[70,96,130],[128,84,110]][(RR()*4)|0];
-        c.fillStyle=rgba(hue,.8);c.fillRect(x,sy-bh,5,bh);
-        c.fillStyle="rgba(255,255,255,.12)";c.fillRect(x,sy-bh,1.4,bh);
-        c.fillStyle="rgba(220,230,240,.25)";c.fillRect(x+1.6,sy-bh-3,1.8,3);
+        /* Бутылки были одним прямоугольником в пять пикселей, повторённым сорок
+           раз: полка читалась штрихкодом (самокритика M169). Теперь три формы —
+           штоф с плечом, пузатая, плоская фляга, — у каждой своё горло, пробка,
+           этикетка и блик; и пара стаканов между ними. */
+        const hue=[[86,120,96],[130,96,74],[70,96,130],[128,84,110],[150,132,80]][(RR()*5)|0];
+        const kind=(RR()*3)|0, bw3=kind===1?7:kind===2?8:5.4;
+        c.fillStyle=rgba(hue,.82);
+        c.beginPath();
+        if(kind===0){                              /* штоф: плечо и высокое горло */
+          c.moveTo(x,sy);c.lineTo(x,sy-bh*.62);
+          c.lineTo(x+bw3*.3,sy-bh*.78);c.lineTo(x+bw3*.3,sy-bh);
+          c.lineTo(x+bw3*.7,sy-bh);c.lineTo(x+bw3*.7,sy-bh*.78);
+          c.lineTo(x+bw3,sy-bh*.62);c.lineTo(x+bw3,sy);
+        }else if(kind===1){                        /* пузатая */
+          c.moveTo(x,sy);
+          c.quadraticCurveTo(x-1.4,sy-bh*.5,x+bw3*.32,sy-bh*.72);
+          c.lineTo(x+bw3*.32,sy-bh);c.lineTo(x+bw3*.68,sy-bh);
+          c.lineTo(x+bw3*.68,sy-bh*.72);
+          c.quadraticCurveTo(x+bw3+1.4,sy-bh*.5,x+bw3,sy);
+        }else{                                     /* плоская фляга */
+          c.moveTo(x,sy);c.lineTo(x,sy-bh*.8);
+          c.lineTo(x+bw3*.36,sy-bh*.94);c.lineTo(x+bw3*.64,sy-bh*.94);
+          c.lineTo(x+bw3,sy-bh*.8);c.lineTo(x+bw3,sy);
+        }
+        c.closePath();c.fill();
+        c.fillStyle="rgba(255,255,255,.14)";c.fillRect(x+.6,sy-bh*.6,1.2,bh*.55);
+        c.fillStyle="rgba(226,214,180,.5)";                            /* этикетка */
+        if(bh>13)c.fillRect(x+.8,sy-bh*.42,bw3-1.6,bh*.2);
+        c.fillStyle="rgba(30,26,22,.75)";                              /* пробка */
+        c.fillRect(x+bw3*.3,sy-bh-2.2,bw3*.4,2.4);
+        if(RR()<.16){                                                  /* стакан рядом */
+          c.fillStyle="rgba(198,214,222,.35)";
+          c.fillRect(x+bw3+2,sy-5,3.6,5);
+          c.fillStyle="rgba(226,196,120,.4)";c.fillRect(x+bw3+2,sy-2.4,3.6,2.4);
+        }
       }
     }
   }
@@ -151,15 +182,28 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
     const far=RR()<.45;                       // кто-то стоит дальше и темнее
     c.globalAlpha=far?.30:.52;   // толпа была тенями по .18–.32 и не читалась вовсе (кантина, проход 2)
     cantFigure(c,bx,cy+16+(far?-4:0),far?[46,52,62]:[[96,88,70],[70,84,96],[92,72,74],[76,92,78]][i%4],
-               G.t*.02+i*2.3,null,0);
+               G.t*.02+i*2.3,null,0,false,(hashi(seed,i,0x9051)>>>3)&3);
     c.globalAlpha=1;
   }
   /* ── бармен и кандидаты рисуются ДО стойки ──
      Порядок здесь и есть вся сцена: стойка закрывает сидящим низ, и люди
      оказываются ЗА ней. Пока фигуры рисовались поверх, ноги и табуреты висели
      на передней панели, и зал читался аппликацией. */
-  const bmx=W2-Math.min(W2*.16,88);
-  cantFigure(c,bmx,cy+16,[96,104,118],G.t*.03,null,0,true);
+  /* Бармен стоит у ПОЛКИ, а не в дальнем углу под окном: там его съедала
+     темнота задней стены, и хозяина зала было не найти (самокритика M169) */
+  /* Место бармена — САМЫЙ ШИРОКИЙ ПРОСВЕТ у стойки, а не точка на глазок:
+     иначе его загораживает то кандидат, то вывеска столика (самокритика M169) */
+  let bmx=Math.max(70,W2*.235);
+  {
+    const st=cantSeats(list.length,W2).concat([W2*.10]).sort((a,b)=>a-b);
+    let best=-1;
+    for(let i=0;i<=st.length;i++){
+      const a=i===0?36:st[i-1], b=i===st.length?W2-40:st[i];
+      if(b-a>best){best=b-a;bmx=(a+b)/2;}
+    }
+    bmx=clamp(bmx,60,W2-60);
+  }
+  cantBarkeep(c,bmx,cy,fy,acc,seed,back);
   const seats=cantSeats(list.length,W2);
   const hits=[];
   list.forEach((m,i)=>{
@@ -172,7 +216,10 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
       g2.addColorStop(0,rgba(acc,on?.34:.18));g2.addColorStop(1,rgba(acc,0));
       c.fillStyle=g2;c.beginPath();c.arc(x,cy-46,44,0,TAU);c.fill();
     }
-    cantFigure(c,x,fy-40,hex2rgb(R2.col),G.t*.028+i*1.7,mgrFace(m,34),m.ai?1:0);
+    /* кандидату поза достаётся от его зерна: один и тот же человек сидит
+       одинаково, пока сидит в этом зале */
+    cantFigure(c,x,fy-40,hex2rgb(R2.col),G.t*.028+i*1.7,mgrFace(m,34),m.ai?1:0,
+               false,(m.seed>>>5)&1?1:0);
     hits.push({id:m.id,x:x-26,y:cy-78,w:52,h:86});
   });
   if(typeof storyCantFigures==="function")storyCantFigures(c,W2,fy,cy);   // люди историй — за стойкой, как все (11c)
@@ -294,10 +341,18 @@ function cantSeats(n,W2){
 /* Сидящий человек. Голова — настоящий портрет управляющего: рисовать второе
    лицо значило бы, что в зале и в списке разные люди. Тело — комбинезон цвета
    его домена: роль читается силуэтом раньше подписи. */
-function cantFigure(c,x,fy,col,phase,face,ai,stand){
+function cantFigure(c,x,fy,col,phase,face,ai,stand,pose){
   const bob=Math.sin(phase)*1.2, sw=Math.sin(phase*1.4);
   const body=rgba(col,.92), dark=rgba(mixc(col,[10,14,20],.55),.95);
   c.save();c.translate(x,fy);
+  /* Поза (M169). Все посетители сидели анфас с рукой на стойке — зал читался
+     шеренгой. Поза наклоняет корпус и разворачивает фигуру: облокотился,
+     ссутулился над стаканом, повернулся к соседу. Мелочь в три пикселя,
+     но именно она отличает зал от строя. */
+  const P=pose|0;
+  if(P===1)c.transform(1,0,-.16,1,0,0);          /* облокотился на стойку */
+  else if(P===2)c.transform(1,0,.10,1,0,0);      /* откинулся назад */
+  else if(P===3)c.scale(-1,1);                    /* повернулся к соседу */
   if(!stand){                                   // ноги сидящего: бедро и голень
     c.fillStyle=dark;
     c.fillRect(-2,-4,12,5);c.fillRect(7,-1,5,20);
@@ -333,6 +388,79 @@ function cantFigure(c,x,fy,col,phase,face,ai,stand){
     c.beginPath();c.arc(0,-44+bob,7,0,TAU);c.fill();
   }
   c.restore();
+}
+/* ── бармен ──
+   Долг из гроссбуха: «бармен, который двигается». До M169 за стойкой стояла
+   та же безликая фигура, что в толпе, и зал был помещением без хозяина.
+   Теперь у него есть дело, и дело меняется: протирает стойку, наливает,
+   отворачивается к полке, стоит облокотившись. Цикл идёт от G.t и от зерна
+   зала — в двух кантинах он занят разным в одну и ту же секунду.
+   Он рисуется ДО стойки, поэтому виден по грудь: так и стоят за стойкой. */
+function cantBarkeep(c,x,cy,fy,acc,seed,back){
+  const R=rng((seed^0xBA12)>>>0);
+  const skin=[[186,152,120],[142,108,84],[206,178,148],[112,86,68]][Math.floor(R()*4)];
+  /* одежда светлее толпы: хозяин зала обязан читаться первым, а не тонуть
+     в общей темноте (самокритика M169) */
+  const cloth=mixc([124,132,144],acc,.30);
+  /* фаза: четыре дела по восемь секунд, порядок свой у каждого зала */
+  const T=(G.t*.016+R()*40)%32, act=Math.floor(T/8), t=(T%8)/8;
+  const lean=act===3?1.4:0;
+  const turn=act===2;                                  /* отвернулся к полке */
+  c.save();c.translate(x,cy+10);                       /* за стойкой стоят на помосте */
+  /* корпус: плечи шире таза, фартук поверх */
+  c.fillStyle=rgba(cloth,.96);
+  c.beginPath();
+  c.moveTo(-13+lean,-34);c.quadraticCurveTo(0+lean,-40,13+lean,-34);
+  c.lineTo(10,-2);c.lineTo(-10,-2);c.closePath();c.fill();
+  c.strokeStyle="rgba(230,240,250,.18)";c.lineWidth=1;c.stroke();
+  c.fillStyle="rgba(226,222,208,.22)";                 /* фартук */
+  c.beginPath();
+  c.moveTo(-8+lean*.6,-26);c.lineTo(8+lean*.6,-26);c.lineTo(9,-2);c.lineTo(-9,-2);c.closePath();c.fill();
+  c.fillStyle="rgba(0,0,0,.22)";c.fillRect(-9+lean*.6,-16,18,2);
+  /* голова: затылок, если отвернулся */
+  const hy=-48;
+  c.fillStyle=rgba(turn?mixc(skin,[20,22,26],.55):skin,1);
+  c.beginPath();c.arc(lean*1.2,hy,7.4,0,TAU);c.fill();
+  c.fillStyle="rgba(24,20,18,.85)";                    /* волосы */
+  c.beginPath();c.arc(lean*1.2,hy-1.6,7.4,Math.PI*(turn?0:1.05),Math.PI*(turn?2:1.95));c.fill();
+  if(!turn){
+    c.fillStyle="rgba(20,18,16,.8)";
+    c.fillRect(lean*1.2-3.2,hy-1,1.4,1.4);c.fillRect(lean*1.2+1.8,hy-1,1.4,1.4);
+  }
+  /* руки — по делу */
+  c.strokeStyle=rgba(cloth,1);c.lineWidth=4.6;c.lineCap="round";
+  if(act===0){                                          /* протирает стойку */
+    const sw=Math.sin(t*TAU*3)*11;
+    c.beginPath();c.moveTo(7,-30);c.lineTo(10+sw,-14);c.stroke();
+    c.beginPath();c.moveTo(-7,-30);c.lineTo(-9,-18);c.stroke();
+    c.fillStyle="rgba(214,216,206,.9)";                  /* тряпка */
+    c.fillRect(6+sw,-16,9,4);
+  }else if(act===1){                                    /* наливает */
+    c.beginPath();c.moveTo(7,-30);c.lineTo(14,-24);c.stroke();
+    c.beginPath();c.moveTo(-7,-30);c.lineTo(-12,-20);c.stroke();
+    c.save();c.translate(15,-26);c.rotate(-.9-t*.5);
+    c.fillStyle="rgba(96,132,96,.95)";c.fillRect(0,-3,13,6);
+    c.fillStyle="rgba(200,220,200,.5)";c.fillRect(11,-1.4,4,2.4);
+    c.restore();
+    c.fillStyle="rgba(226,236,240,.55)";                 /* струя */
+    c.fillRect(19,-22,1.4,7+t*4);
+  }else if(act===2){                                    /* тянется к полке */
+    c.beginPath();c.moveTo(6,-32);c.lineTo(9,-46+Math.sin(t*TAU)*3);c.stroke();
+    c.beginPath();c.moveTo(-6,-32);c.lineTo(-8,-22);c.stroke();
+  }else{                                                /* облокотился, слушает */
+    c.beginPath();c.moveTo(7+lean,-30);c.lineTo(15,-16);c.stroke();
+    c.beginPath();c.moveTo(-7+lean,-30);c.lineTo(-14,-16);c.stroke();
+  }
+  c.lineCap="butt";
+  c.restore();
+  /* на аванпосте бармен и есть хозяин: у него под рукой ружьё у стены */
+  if(back==="outpost"){
+    c.save();c.translate(x+26,cy+16);
+    c.strokeStyle="rgba(60,54,46,.9)";c.lineWidth=2.4;
+    c.beginPath();c.moveTo(0,-2);c.lineTo(-4,-34);c.stroke();
+    c.fillStyle="rgba(40,36,32,.95)";c.fillRect(-6,-38,5,8);
+    c.restore();
+  }
 }
 /* что видно в окне — своё на каждый тип станции */
 function cantView(c,kind,x,y,w,h,seed,acc){
