@@ -81,8 +81,28 @@ function geoWob(L,wx){
   return (fbm1(wx*.0016,L.seed,3)-.5)*L.th*.75+(fbm1(wx*.011,L.seed+7,2)-.5)*7;
 }
 /* ── разрез в срезе грунта ── */
+/* ── сброс (M169) ──
+   Пласты шли ровными параллельными волнами через весь мир: разрез читался
+   слоёным пирогом, одинаковым куда ни иди. В настоящей земле блоки разорваны
+   сбросами — по трещине один блок опущен относительно соседнего, и вся пачка
+   слоёв на нём уезжает вниз или вверх. Это самое читаемое, что вообще есть в
+   разрезе, и стоит оно одной функции: смещение блока по его номеру.
+   Смещение НЕ накапливается — иначе к краю мира пласты уехали бы за экран. */
+const GEO_FAULT=1900;                              /* примерно раз в полтора экрана */
+function geoFaultAt(wx,seed){
+  const k=Math.floor(wx/GEO_FAULT);
+  const h=hashi(k,seed|0,0x7A17);
+  if((h&3)===0)return 0;                           /* не каждый блок сдвинут */
+  return (((h>>>2)&63)/63-.5)*84;
+}
+/* граница блока со своим наклоном: у сброса плоскость не вертикальна */
+function geoFaultX(k,seed){
+  const h=hashi(k,seed|0,0x7A18);
+  return k*GEO_FAULT+((h>>>4)&255)-128;
+}
 function drawStrata(tr,camx,camy,p,P){
   const G0=geologyOf(p);
+  const fseed=(p.seed^0x5F17)>>>0;
   const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
   const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
   ctx.save();ctx.clip(P);
@@ -92,7 +112,7 @@ function drawStrata(tr,camx,camy,p,P){
     let started=false;
     for(let i=i0;i<=i1;i++){
       const wx=i*tr.step;
-      const y=tr.h[i]+L.d0+geoWob(L,wx)-camy;
+      const y=tr.h[i]+L.d0+geoWob(L,wx)+geoFaultAt(wx,fseed)-camy;
       if(!started){LP.moveTo(wx-camx,y);started=true;}
       else LP.lineTo(wx-camx,y);
     }
@@ -149,6 +169,47 @@ function drawStrata(tr,camx,camy,p,P){
       gg.addColorStop(1,"rgba(255,60,10,.10)");
       ctx.fillStyle=gg;ctx.fillRect(0,0,W,H);
       ctx.restore();
+    }
+    /* ── линзы ──
+       Внутри пласта — вложения другой породы: галечник в песке, ледяная линза,
+       рудное тело. Без них слой остаётся ровной заливкой между двумя линиями,
+       даже когда линии хороши (самокритика M169). */
+    if(k>0&&L.th>26){
+      const stepL=340, x0=Math.floor((camx-stepL)/stepL)*stepL;
+      for(let wx=x0;wx<camx+W+stepL;wx+=stepL){
+        const hh=hashi(Math.floor(wx/stepL),L.seed,0x1E45);
+        if((hh&7)>2)continue;
+        const cx2=wx+((hh>>>3)&255)-128;
+        const cy2=groundAt(tr,cx2)+L.d0+geoWob(L,cx2)+geoFaultAt(cx2,fseed)+L.th*(.3+((hh>>>11)&7)/7*.4)-camy;
+        const rw=18+((hh>>>14)&31), rh=6+((hh>>>19)&7);
+        ctx.save();ctx.clip(LP);
+        ctx.fillStyle="rgba(0,0,0,.22)";
+        ctx.beginPath();ctx.ellipse(cx2-camx,cy2+1.5,rw,rh,0,0,TAU);ctx.fill();
+        const lc=L.col.map((v,i2)=>clamp(v*(i2===2?1.22:1.12)+18,0,255)|0);
+        ctx.fillStyle="rgb("+lc.join(",")+")";
+        ctx.beginPath();ctx.ellipse(cx2-camx,cy2,rw,rh,0,0,TAU);ctx.fill();
+        ctx.fillStyle="rgba(255,250,236,.10)";
+        ctx.beginPath();ctx.ellipse(cx2-camx,cy2-rh*.35,rw*.7,rh*.4,0,0,TAU);ctx.fill();
+        ctx.restore();
+      }
+    }
+  }
+  /* плоскости сбросов: тёмный шов от кромки вниз, со светлой губой на
+     поднятой стороне — по нему сразу видно, что земля разорвана */
+  {
+    const k0=Math.floor((camx-GEO_FAULT)/GEO_FAULT), k1=Math.floor((camx+W)/GEO_FAULT)+1;
+    for(let k=k0;k<=k1;k++){
+      const fx=geoFaultX(k,fseed);
+      const dy=geoFaultAt(fx+2,fseed)-geoFaultAt(fx-2,fseed);
+      if(!dy)continue;
+      const sx=fx-camx;
+      if(sx<-40||sx>W+40)continue;
+      const top=groundAt(tr,fx)-camy;
+      const tilt=((hashi(k,fseed,0x7A19)>>>3)&15)/15*26-13;
+      ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=2.2;
+      ctx.beginPath();ctx.moveTo(sx,top);ctx.lineTo(sx+tilt,H+20);ctx.stroke();
+      ctx.strokeStyle="rgba(255,246,226,.12)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(sx+(dy>0?2:-2),top);ctx.lineTo(sx+tilt+(dy>0?2:-2),H+20);ctx.stroke();
     }
   }
   ctx.restore();

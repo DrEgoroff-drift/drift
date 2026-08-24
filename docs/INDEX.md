@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 243 · символов верхнего уровня: 2338
+Файлов: 243 · символов верхнего уровня: 2341
 
 ## СИМВОЛЫ
 
@@ -543,7 +543,7 @@ drawStation                  src/17c-system-draw.js:164
 drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
-drawStrata                   src/18b-geology.js:84
+drawStrata                   src/18b-geology.js:103
 drawSurface                  src/21e-surface-draw.js:84
 drawSurfaceHud               src/21e-surface-draw.js:19
 drawSurvey                   src/12w-survey.js:63
@@ -711,9 +711,12 @@ genPOI                       src/20a-poi.js:32
 genRaid                      src/24a-mode-raid.js:30
 genTerrain                   src/07-planet.js:401
 genUniqueShip                src/03-ships.js:16
+GEO_FAULT                    src/18b-geology.js:91
 GEO_KIND                     src/18b-geology.js:13
 GEO_TPL                      src/18b-geology.js:31
 geoAt                        src/18b-geology.js:73
+geoFaultAt                   src/18b-geology.js:92
+geoFaultX                    src/18b-geology.js:99
 geologyOf                    src/18b-geology.js:45
 geoWob                       src/18b-geology.js:80
 getSystem                    src/06-galaxy.js:46
@@ -2707,7 +2710,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18a-material.js · 21 КБ
   · материал грунта:1
 
-## src/18b-geology.js · 9 КБ
+## src/18b-geology.js · 13 КБ
   · геология:1
 
 ## src/18c-chunks.js · 5 КБ
