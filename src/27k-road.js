@@ -128,19 +128,50 @@ function roadSensorsOn(){
       тот, через который играет сама игра.
    4. Выбор помнится в G.road.mic — но кнопка на экране всегда показывает, что
       сейчас, и гасится одним нажатием прямо на ходу. */
+/* ── какой микрофон брать (M168i) ──
+   Захват с БЛЮТУС-микрофона — отдельная беда поверх Android Auto: гарнитурный
+   профиль (HFP/SCO) НЕ умеет играть музыку, и как только система переводит
+   гарнитуру в него ради нашего захвата, A2DP-музыка глохнет у всех в машине.
+   Голова к тому же показывает это как звонок. Поэтому из списка устройств
+   выбираем ВСТРОЕННЫЙ микрофон телефона и просим его exact — телефонного
+   капсюля для настроения волны хватает с запасом, музыку из колонок он
+   слышит. Чистая функция — её гоняют автотесты. */
+function roadMicPick(list,curLabel){
+  const bad=/bluetooth|car|auto|hands|sco|headset|airpods|buds|гарнитур|автомоб|блютус/i;
+  if(curLabel&&!bad.test(curLabel))return null;      /* уже не гарнитура — не трогаем */
+  const c=(list||[]).filter(d=>d.kind==="audioinput"&&d.deviceId&&
+    d.deviceId!=="default"&&d.deviceId!=="communications"&&!bad.test(d.label||""));
+  return c.length?c[0].deviceId:null;
+}
 function roadMicOn(){
   if(!RD||RD.an||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)return;
   RD.mic=null;
-  navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,
-    autoGainControl:false,channelCount:1}}).then(st=>{
+  const RAW={echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1};
+  const wire=st=>{
     if(!RD){st.getTracks().forEach(t=>t.stop());return;}
     RD.stream=st;
+    /* подсказка маршрутизации: это музыка, не речь — меньше поводов уводить
+       поток на голосовой тракт */
+    const tr=st.getAudioTracks()[0];
+    if(tr&&"contentHint" in tr)tr.contentHint="music";
     RD.actx=new (window.AudioContext||window.webkitAudioContext)();
     RD.an=RD.actx.createAnalyser();RD.an.fftSize=256;RD.an.smoothingTimeConstant=.5;
     RD.actx.createMediaStreamSource(st).connect(RD.an);
     RD.eq=new Uint8Array(RD.an.frequencyBinCount);
     roadAll().mic=1;
     roadSenseBtn();
+  };
+  navigator.mediaDevices.getUserMedia({audio:RAW}).then(st=>{
+    if(!RD){st.getTracks().forEach(t=>t.stop());return;}
+    const tr=st.getAudioTracks()[0];
+    navigator.mediaDevices.enumerateDevices().then(list=>{
+      const want=roadMicPick(list,tr&&tr.label);
+      if(!want)return wire(st);
+      const c2=Object.assign({deviceId:{exact:want}},RAW);
+      navigator.mediaDevices.getUserMedia({audio:c2})
+        .then(st2=>{st.getTracks().forEach(t=>t.stop());wire(st2);})
+        .catch(()=>wire(st));
+    }).catch(()=>wire(st));
   }).catch(()=>{if(RD){RD.mic="микрофон не дали — волна дышит сама";roadSenseBtn();}});
 }
 function roadMicOff(){
@@ -290,6 +321,7 @@ function roadOnPos(p){
       RD.moveT=(RD.moveT||0)+dt;RD.stopT=0;
       roadEarnKm(kmh*dt/3600,RD.moveT);
       RD.kmh=kmh;RD.gps=null;
+      if(kmh>(RD.vmax||0))RD.vmax=kmh;          /* рекорд поездки — в строку итога */
     }else{
       if(dt>0&&kmh<ROAD_VMIN){RD.stopT=(RD.stopT||0)+dt;if(RD.stopT>ROAD_STOP_T)RD.moveT=0;}
       RD.kmh=roadSpeedOk(kmh)?kmh:0;
@@ -310,14 +342,23 @@ function roadAudio(t){
     for(let i=0;i<N;i++){const v=RD.eq[i]/255;sum+=v*v;wsum+=v*i;}
     const rms=Math.sqrt(sum/N);
     const cen=sum>0?wsum/(N*Math.sqrt(sum*N)):0;
-    RD.energy+=(rms-RD.energy)*(rms>RD.energy?.25:.03);
+    /* программное автоусиление (M168i). Захват сырой — AGC у системы выключен
+       нарочно, ради Android Auto, — и с телефонного микрофона музыка из
+       колонок приходит тихой: rms 0.05–0.15. На абсолютной шкале туманности
+       еле дышали, бит не пробивал порог. Нормируем СВОИМ пиком с медленным
+       спадом (полминуты): громкий кусок трека — единица, тихий — своя доля,
+       динамика трека остаётся, а абсолютный уровень уходит из уравнения.
+       Яркость (центроид) от усиления не зависит — её не трогаем. */
+    RD.pk=Math.max((RD.pk||0)*.9997,rms,.02);
+    const lvl=clamp(rms/RD.pk,0,1);
+    RD.energy+=(lvl*.9-RD.energy)*(lvl*.9>RD.energy?.25:.03);
     RD.bright+=(clamp(cen*2.2,0,1)-RD.bright)*.05;
-    RD.avg=RD.avg*.985+rms*.015;
-    if(rms>RD.avg*1.5&&rms>.22&&t-RD.beatT>.28){RD.beat=1;RD.beatT=t;}
-    /* волна: 28 точек по лог-частотам, каждая сглажена */
+    RD.avg=RD.avg*.985+lvl*.015;
+    if(lvl>RD.avg*1.45&&lvl>.3&&t-RD.beatT>.28){RD.beat=1;RD.beatT=t;}
+    /* волна: 28 точек по лог-частотам, каждая сглажена, в той же нормировке */
     for(let i=0;i<28;i++){
       const bin=Math.min(N-1,Math.floor(Math.pow(N,i/27)));
-      const v=RD.eq[bin]/255;
+      const v=clamp(RD.eq[bin]/255/RD.pk*.7,0,1);
       RD.wave[i]+=(v-RD.wave[i])*(v>RD.wave[i]?.4:.12);
     }
   }else{

@@ -208,3 +208,45 @@ the nebulae still live. So:
    motorway.
 
 Remembered in `G.road.mic`.
+
+## Seventh pass (M168i, 0.136.3) — the quiet microphone, the invisible engines
+
+From a second filmed drive, with the microphone on.
+
+### Software gain
+
+Raw capture (the Android Auto rule) means no AGC, and music from car speakers lands
+on a phone microphone at RMS 0.05–0.15. Absolute thresholds are therefore wrong by
+construction. The analyser normalises against its own peak with a slow decay
+(`RD.pk`, τ ≈ 30 s): energy and the beat both work on `rms/pk`. The spectral
+centroid (brightness) is scale-invariant and stays as it was. Rule: **never put an
+absolute audio threshold in this file** — the input level is unknowable.
+
+### Which microphone
+
+Capturing from a Bluetooth microphone flips the headset into the hands-free profile
+(HFP/SCO), which cannot carry A2DP music — the music dies for the whole car, and the
+head unit shows a call on top. After permission is granted the device list is
+re-checked: if the active capture is a bluetooth/hands-free/headset device,
+`roadMicPick` (pure, tested) chooses the phone's built-in microphone and the capture
+is reopened with `deviceId: {exact}`. The track is marked `contentHint="music"`.
+What this does NOT fix: a head unit that flags any open capture as a call — that is
+its own guess, and declining it from the wheel is harmless now.
+
+### Manoeuvring jets
+
+At road scale the hull's drawn thrusters are invisible, so the road draws its own,
+in screen space, before the hull (nozzle cut hidden under the plating):
+
+- **brake** — two cold cones forward from the shoulders (`h.nose*.66`,
+  `±h.bw*.42`), splayed ±0.16 rad so they never merge into one central spear,
+  pulsing out of phase;
+- **turn** — one short lateral puff from the nose on the side opposite the swerve,
+  gated by the same speed gate as the swerve itself;
+- both in the cold jet palette (`205,232,246`), never the warm main-engine tint.
+
+### Stars
+
+Brightness floor `.30+depth*.62`, bright palette (`#eef7fc`/`#a8bccb`), per-star
+twinkle phase; a large near star gets a cross-glint **only near standstill** — on a
+moving streak the cross reads as a pinned "T".

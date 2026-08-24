@@ -15,7 +15,7 @@
 function roadOpen(){
   for(const k in keys)keys[k]=false;
   RD={kmh:0,bank:0,bankT:0,shake:0,kick:0,acc:0,accT:0,phase:0,wob:0,watch:null,an:null,eq:null,
-      g0:null,g0T:0,side:0,blind:false,turn:0,turnT:0,xOff:0,yOff:0,emit:0,cxPrev:null,
+      g0:null,g0T:0,side:0,blind:false,turn:0,turnT:0,xOff:0,yOff:0,emit:0,cxPrev:null,vmax:0,
       lastPos:null,lastT:0,lastFrame:0,t0:Date.now(),asked:0,raf:0,moveT:0,stopT:0,crFrac:0,
       energy:.2,bright:.5,avg:.1,beat:0,beatT:0,wave:new Array(28).fill(.2),
       sparks:[],pulses:[],crShow:0};
@@ -103,7 +103,7 @@ function drawRoad(ts){
     const by=H*(.16+.14*Math.sin(t*.04+i*1.7))+i*H*.12;
     const rad=(H*.16+H*.06*Math.sin(t*.09+i))*(1+en*.9);
     const ng=c.createRadialGradient(bx,by,0,bx,by,rad);
-    const a=(.12+en*.24)*(1-i*.16);
+    const a=(.13+en*.36)*(1-i*.16);
     ng.addColorStop(0,"hsla("+((hue+i*42)%360)+",75%,"+(40+RD.bright*20)+"%,"+a.toFixed(3)+")");
     ng.addColorStop(.6,"hsla("+((hue+i*42)%360)+",75%,34%,"+(a*.4).toFixed(3)+")");
     ng.addColorStop(1,"hsla("+((hue+i*42)%360)+",75%,30%,0)");
@@ -124,8 +124,10 @@ function drawRoad(ts){
     const own=.5+r()*1.3;
     const warm=r()<.125;
     const y=(r()*H+t*(20+Math.min(spd,300)*3)*depth)%H;
-    c.globalAlpha=clamp((.18+depth*.55)*(.6+sz*.22),0,.95);
-    c.fillStyle=warm?"hsla("+hue+",55%,84%,1)":depth>.8?"#cfe3ea":"#7d8fa0";
+    c.globalAlpha=clamp((.30+depth*.62)*(.62+sz*.30)*(.82+.18*Math.sin(t*2.3+i*1.7)),0,1);
+    c.fillStyle=warm?"hsla("+hue+",60%,86%,1)":depth>.8?"#eef7fc":"#a8bccb";
+    /* крупная звезда получает крестик-блик: без него и яркая точка тонет */
+    if(sz>2.3&&depth>.7&&fast<.25){const yv=((y%H)+H)%H;c.fillRect(x-sz,yv+sz*.5-.5,sz*3,1);}
     c.fillRect(x,((y%H)+H)%H,sz,sz+fast*14*depth*streak*own);
   }
   /* дальняя пыль: почти неподвижна — от неё берётся глубина, а не скорость */
@@ -337,6 +339,54 @@ function drawRoad(ts){
   const mg=c.createLinearGradient(0,H*(1-ROAD_MASK),0,H);
   mg.addColorStop(0,"rgba(6,10,18,0)");mg.addColorStop(1,"rgba(6,10,18,1)");
   c.fillStyle=mg;c.fillRect(0,H*(1-ROAD_MASK),W,H*ROAD_MASK);
+  /* ── маневровые крупным планом (M168i) ──
+     Штатные носовые сопла из drawHull на этом масштабе — три пикселя, и на
+     видео тормоза просто не видно. Рисуем свои факелы в экранных координатах,
+     ДО корпуса, чтобы срез сопла прятался под обшивкой: тормоз — два холодных
+     конуса вперёд от носа (газ бьёт по ходу), сильный поворот — короткий
+     боковой выдох от носа в сторону, ПРОТИВОПОЛОЖНУЮ сносу: корпус уходит
+     вправо — струя ушла влево. Цвет холодный, голубоватый, как у маневровых
+     в полёте — чтобы не спутать с маршевым факелом. */
+  const co2=Math.cos(rot),si2=Math.sin(rot);
+  const jet=(lx,ly,dx,dy,L,w0,a0)=>{
+    const x=cx+(lx*co2-ly*si2)*sc,y=cy+(lx*si2+ly*co2)*sc;
+    const g2=c.createLinearGradient(x,y,x+dx*L,y+dy*L);
+    g2.addColorStop(0,"rgba(235,248,255,"+(a0*.95).toFixed(3)+")");
+    g2.addColorStop(.35,"rgba(205,232,246,"+(a0*.5).toFixed(3)+")");
+    g2.addColorStop(1,"rgba(205,232,246,0)");
+    c.fillStyle=g2;
+    c.beginPath();
+    c.moveTo(x-dy*w0,y+dx*w0);c.lineTo(x+dy*w0,y-dx*w0);
+    c.lineTo(x+dx*L+dy*w0*.45,y+dy*L-dx*w0*.45);
+    c.lineTo(x+dx*L-dy*w0*.45,y+dy*L+dx*w0*.45);
+    c.closePath();c.fill();
+    c.fillStyle="rgba(240,250,255,"+(a0*.9).toFixed(3)+")";
+    c.beginPath();c.arc(x,y,w0*.8,0,TAU);c.fill();
+  };
+  const brk=clamp(-RD.acc*1.6,0,1);
+  if(brk>.2){
+    c.save();c.globalCompositeOperation="lighter";
+    for(const sg of [-1,1]){
+      /* пульс у бортов свой: сопла дышат вразнобой, как настоящие;
+         лёгкий развал наружу — иначе две струи сливаются в одно копьё */
+      const fl=.8+.25*Math.sin(RD.wob*43+sg*2.1);
+      const aj=rot+sg*.16,dj=[Math.cos(aj),Math.sin(aj)];
+      jet(h.nose*.66,sg*h.bw*.42,dj[0],dj[1],H*(.05+.09*brk)*fl,
+          Math.max(3,h.bw*sc*.20),.45+.5*brk);
+    }
+    c.restore();
+  }
+  /* боковой выдох: только на живом повороте, у носа — струя видна и объясняет,
+     кто разворачивает корпус. Локальная ось +y на экране смотрит вправо. */
+  const tv=clamp((Math.abs(RD.turn)-.3)*1.6,0,1)*gate;
+  if(tv>.1){
+    const sg=RD.turn>0?-1:1;                 /* корпус вправо → выдох влево */
+    c.save();c.globalCompositeOperation="lighter";
+    const fl=.8+.25*Math.sin(RD.wob*37);
+    jet(h.nose*.55,sg*h.bw*.72,-si2*sg,co2*sg,
+        H*(.025+.055*tv)*fl,Math.max(2.5,h.bw*sc*.16),.35+.4*tv);
+    c.restore();
+  }
   const old=ctx;ctx=c;
   c.save();
   c.translate(cx,cy);
@@ -351,7 +401,7 @@ function drawRoad(ts){
   /* нос вверх: портретный экран — дорога впереди; шлейф уже лёг лентой ниже */
   c.rotate(rot);
   c.scale(sc,sc);
-  drawHull(id,spd>ROAD_VMIN||RD.acc>.2,RD.acc<-.25,Math.min(3,fast*3+Math.max(0,RD.acc)*2+(tier===3?1:0)),RD.bank);
+  drawHull(id,spd>ROAD_VMIN||RD.acc>.2,RD.acc<-.25,Math.min(3,fast*3+Math.max(0,RD.acc)*2+(tier===3?1:0)+RD.beat*.8),RD.bank);
   c.restore();
   ctx=old;
   /* волна по нижней кромке: гладкая светящаяся кривая из лог-частот,
@@ -359,10 +409,10 @@ function drawRoad(ts){
   /* музыка — свечение от самого низа экрана, под кнопками: градиент цвета
      настроения, высота и яркость дышат энергией, бит вспыхивает. Кривая-полоса
      над футером спорила с кнопками (решение автора, M168c) */
-  const gh=H*(.16+en*.26);
+  const gh=H*(.15+en*.32);
   const wg=c.createLinearGradient(0,H-gh,0,H);
   wg.addColorStop(0,"hsla("+hue+",75%,55%,0)");
-  wg.addColorStop(1,"hsla("+hue+",78%,58%,"+(.18+en*.32+RD.beat*.15).toFixed(3)+")");
+  wg.addColorStop(1,"hsla("+hue+",78%,58%,"+(.20+en*.40+RD.beat*.22).toFixed(3)+")");
   c.fillStyle=wg;c.fillRect(0,H-gh,W,gh);
   /* числа. Строки складываются курсором: чего нет — того нет, дыр не остаётся.
      На стоянке ни «—», ни «+0 кр» не висят (проход самокритики M168c) */
@@ -395,7 +445,11 @@ function drawRoad(ts){
     }
     c.fillStyle="rgba(127,230,216,.6)";
   }
-  if(R.km>=.01){yy+=Math.round(H*.024);c.fillText("за поездку "+roadTripRu(R.km),px2,yy);}
+  if(R.km>=.01){yy+=Math.round(H*.024);
+    let tl="за поездку "+roadTripRu(R.km);
+    if((RD.vmax||0)>ROAD_VMIN)tl+=" · макс "+roadCosmic(RD.vmax).toLocaleString("ru")+" км/с";
+    while(tl.length>8&&c.measureText(tl).width>W-px2*2)tl=tl.replace(/ · [^·]*$/,"");
+    c.fillText(tl,px2,yy);}
   /* счётчик: крупно, жёлтым, только когда деньги пошли; комбо — фишкой с ×1.2 */
   if(R.cr>0||RD.crShow>.5){
     yy+=Math.round(H*.04);

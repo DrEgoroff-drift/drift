@@ -7,6 +7,45 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.136.3 — the road hears the music and shows its engines (M168i)
+
+A second evening drive on video. Three complaints, all confirmed by the frames.
+
+**The music barely showed.** The capture is deliberately raw (AGC off, for Android
+Auto), and from a phone microphone the car speakers arrive at an RMS of 0.05–0.15 —
+on an absolute scale the nebulae hardly breathed and a beat never crossed the
+threshold. The analyser now normalises against **its own slow-decaying peak**
+(half a minute): the loud passage of a track is one, a quiet verse is its share of
+one, so the track's dynamics survive while the absolute level drops out of the
+equation. Beat detection went relative for the same reason. The nebulae, the bottom
+glow and the engine flare (which now pulses on the beat) all got brighter to spend
+the signal they finally receive.
+
+**The stars were invisible.** Brightness floor lifted, palette brightened two
+steps, each star twinkles on its own phase, and a large near star at standstill
+earns a cross-glint — which fades out in motion, where it read as a "T" pinned to
+the streak.
+
+**Braking showed nothing.** The hull's own nose thrusters are three pixels at this
+scale. The road now draws its manoeuvring jets in screen space, under the hull:
+braking fires two cold splayed cones forward from the shoulders, pulsing out of
+phase; a hard turn fires a short lateral puff from the nose on the side opposite
+the swerve — the jet that explains who is pushing the hull. Cold blue-white, so
+they never read as the main engine.
+
+**Bluetooth microphone = dead music for everyone.** On top of the Android Auto
+call-detection problem: if the capture lands on the car's Bluetooth microphone, the
+headset is switched to the hands-free profile, which cannot play A2DP music at all.
+The road now enumerates devices after permission and re-opens the capture on the
+phone's **built-in** microphone whenever the default turned out to be a
+bluetooth/hands-free/headset device (a pure function, `roadMicPick`, covered by
+tests), and marks the track `contentHint="music"`. A car may still show a phantom
+call — that part is the head unit's own guess and no web API can veto it — but
+declining it from the wheel no longer kills the capture or the music.
+
+Also: the trip line now carries the trip's top speed — "за поездку 2.10 млн км ·
+макс 26 389 км/с".
+
 ## 0.136.2 — the microphone is a separate yes (M168h)
 
 Plug in Android Auto and the head unit sees an open audio capture, decides a call is in

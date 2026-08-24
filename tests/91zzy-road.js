@@ -168,3 +168,52 @@ TEST_SUITES.push(()=>suite("дорога: микрофон отдельным с
   roadClose();
   G.road=null;
 }));
+
+TEST_SUITES.push(()=>suite("дорога: тихий сырой микрофон нормируется, гарнитуру не берём, тормоз видно",()=>{
+  resetWorld();
+  G.road=null;
+  /* ── программное автоусиление: сырой захват тихий, но музыка должна дышать ──
+     эмулируем анализатор: тихий фон 14/255, каждый тридцатый кадр — всплеск ×3 */
+  RD={energy:.1,bright:.5,avg:.1,beat:0,beatT:0,pk:0,wave:new Array(28).fill(.2),
+      sparks:[],pulses:[],kmh:60,eq:new Uint8Array(128),an:null};
+  let n=0;
+  RD.an={getByteFrequencyData:a=>{n++;const v=n%30===0?46:14;for(let i=0;i<a.length;i++)a[i]=v;}};
+  for(let i=0;i<600;i++)roadAudio(i/60);
+  ok(RD.energy>.35,"тихий микрофон, а энергия дышит: "+RD.energy.toFixed(2));
+  ok(RD.beatT>0,"бит пробился сквозь тихий уровень");
+  /* ── выбор микрофона: гарнитура Bluetooth глушит музыку всей машине ── */
+  const list=[
+    {kind:"audioinput",deviceId:"default",label:"По умолчанию — Car Bluetooth Handsfree"},
+    {kind:"audioinput",deviceId:"bt1",label:"Car Multimedia Bluetooth hands-free"},
+    {kind:"audioinput",deviceId:"ph1",label:"Микрофон телефона (нижний)"},
+    {kind:"videoinput",deviceId:"cam",label:"Камера"}];
+  eq(roadMicPick(list,"Car Multimedia Bluetooth hands-free"),"ph1","с гарнитуры уходим на телефонный");
+  eq(roadMicPick(list,"Микрофон телефона (нижний)"),null,"телефонный не трогаем");
+  eq(roadMicPick([{kind:"audioinput",deviceId:"bt1",label:"BT headset"}],"BT headset"),null,
+     "если кроме гарнитуры ничего нет — остаёмся на ней");
+  /* ── тормоз видно: два холодных факела от носа ── */
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  roadOpen();
+  if(RD.raf)cancelAnimationFrame(RD.raf);RD.raf=0;
+  RD.kmh=0;RD.shake=0;
+  const cv=document.getElementById("roadcv"),cc=cv.getContext("2d");
+  const hh=hullOf(G.shipId),scK=Math.min(cv.width/(hh.bw*5.2),cv.height/(hh.len*2.4))*.46;
+  const probe=()=>{
+    const y0=Math.max(0,Math.floor(cv.height*.5-hh.nose*scK-cv.height*.12)),
+          y1=Math.floor(cv.height*.5-hh.nose*scK*.45);
+    const d=cc.getImageData(Math.floor(cv.width*.5)-70,y0,140,Math.max(4,y1-y0)).data;
+    let lit=0;for(let i=0;i<d.length;i+=4)if(d[i]+d[i+1]+d[i+2]>150)lit++;
+    return lit;
+  };
+  RD.acc=0;RD.accT=0;drawRoad(5000);drawRoad(5000.02);
+  const base=probe();
+  RD.acc=-1;RD.accT=-1;drawRoad(5000.04);
+  const braked=probe();
+  ok(braked>base+30,"тормозные факелы у носа зажглись: "+base+" → "+braked);
+  /* рекорд поездки пишется из GPS */
+  roadOnPos({coords:{latitude:55.7,longitude:37.6,speed:16.7,accuracy:5},timestamp:1000});
+  roadOnPos({coords:{latitude:55.701,longitude:37.6,speed:25,accuracy:5},timestamp:6000});
+  ok(RD.vmax>80,"макс скорость поездки записана: "+Math.round(RD.vmax)+" км/ч");
+  roadClose();
+  G.road=null;
+}));
