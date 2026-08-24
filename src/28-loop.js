@@ -194,6 +194,15 @@ function hud(){
     $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");
+  /* ── на ногах (релизный вид, проход 1) ──
+     Приборы корабля висели над КАЖДЫМ экраном. Правило стиля говорит «над
+     миром — только то, что нужно сейчас», и на поверхности, в пещере, в
+     шахте, на базе и дома топливо, корпус и щит нужны не больше, чем
+     спидометр пешеходу: до корабля ещё дойти. Трюм остаётся — на ногах как
+     раз он и наполняется, — а топливо возвращается само, если стало
+     критическим (класс .crit): тогда это и есть «нужно сейчас». */
+  document.body.classList.toggle("afoot",
+    G.mode==="surface"||G.mode==="cave"||G.mode==="dig"||G.mode==="base"||G.mode==="homein"||G.mode==="raid");
   document.body.classList.toggle("mobile",innerWidth<=760);   /* телефон (M167) */
 }
 

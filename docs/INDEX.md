@@ -81,7 +81,7 @@ ARTIFACTS                    src/12h-relic.js:48
 assignToBase                 src/12a-crew.js:136
 AST_N                        src/24-mode-belt.js:85
 audioOn                      src/09-audio.js:6
-audioTick                    src/28-loop.js:204
+audioTick                    src/28-loop.js:213
 autoLandInputs               src/19-mode-landing.js:33
 autosave                     src/14-save.js:530
 b64dec                       src/14-save.js:13
@@ -210,7 +210,7 @@ cantSel                      src/27c-ui-hq.js:192
 cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina.js:613
 cantView                     src/27d-ui-cantina.js:466
-capIv                        src/28-loop.js:297
+capIv                        src/28-loop.js:306
 capOf                        src/05-parts.js:108
 capUsed                      src/05-parts.js:219
 CAST                         src/12k-stories-a.js:19
@@ -389,7 +389,7 @@ ctx                          src/08-state.js:3
 curTok                       src/09-audio.js:71
 CUT_RANGE                    src/24-mode-belt.js:183
 cvs                          src/08-state.js:2
-dbg                          src/28-loop.js:440
+dbg                          src/28-loop.js:449
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -690,7 +690,7 @@ fleetUniqueName              src/04b-fleet.js:100
 flightCam                    src/16a-space.js:177
 FOE_KINDS                    src/24a-mode-raid.js:17
 foundBase                    src/21a-mode-base.js:53
-frame                        src/28-loop.js:303
+frame                        src/28-loop.js:312
 freeVoice                    src/09-audio.js:79
 fuelPriceHere                src/12k-rep.js:63
 FUR_TONES                    src/20-life.js:488
@@ -1087,9 +1087,9 @@ landerInk                    tests/91j-art.js:154
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:328
 landOnTestPlanet             tests/90-harness.js:67
-last                         src/28-loop.js:257
+last                         src/28-loop.js:266
 LAST_RUN_DAY                 src/12k-letters.js:40
-lastDroneTick                src/28-loop.js:258
+lastDroneTick                src/28-loop.js:267
 lastRunDay                   src/12k-letters.js:44
 lastRunTick                  src/12k-letters.js:46
 launch                       src/21-mode-surface.js:529
@@ -1134,7 +1134,7 @@ logBtnLabel                  src/11-log.js:56
 logOpen                      src/11-log.js:14
 logPageOf                    src/11-log.js:13
 logTime                      src/11-log.js:50
-LOOP_OFF                     src/28-loop.js:302
+LOOP_OFF                     src/28-loop.js:311
 LORE                         src/12q-lore.js:67
 LORE_ACT                     src/12q-lore.js:47
 LORE_BY_CHAP                 src/12q-lore.js:69
@@ -1592,7 +1592,7 @@ postOpen                     src/11e-post.js:99
 prevAct                      src/08-state.js:40
 pricesSeen                   src/12aa-need.js:188
 prism                        src/21b-surface-deco.js:201
-prof                         src/28-loop.js:403
+prof                         src/28-loop.js:412
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:17
@@ -1746,8 +1746,8 @@ repWord                      src/12k-rep.js:31
 RES                          src/02-world.js:2
 RES_AUTO                     src/08-state.js:35
 RES_KEYS                     src/02-world.js:29
-resAuto                      src/28-loop.js:286
-resEma                       src/28-loop.js:285
+resAuto                      src/28-loop.js:295
+resEma                       src/28-loop.js:294
 resetArm                     src/26-ui-station.js:782
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
@@ -2033,7 +2033,7 @@ slowSpotX                    src/11o-slow.js:44
 SMELT                        src/02-world.js:58
 snapshot                     src/14-save.js:26
 SND                          src/09-audio.js:4
-sndWalk                      src/28-loop.js:203
+sndWalk                      src/28-loop.js:212
 spareModLv                   src/12a-crew.js:221
 spawnAllies                  src/12a-crew.js:483
 spawnBarges                  src/12l-barge.js:102
@@ -2974,11 +2974,11 @@ zooTick                      src/11ad-zoo.js:41
 ## src/28-loop.js · 36 КБ
   · авария:1
   · телеметрия:21
-  · звук по кадрам:200
-  · цикл:256
-  · авторазрешение:279
-  · prof() — на что уходит кадр:391
-  · dbg() — что держит корабль:431
+  · звук по кадрам:209
+  · цикл:265
+  · авторазрешение:288
+  · prof() — на что уходит кадр:400
+  · dbg() — что держит корабль:440
 
 ## src/28z-fps-probe.js · 7 КБ
   · пробник G11: ?g11:1

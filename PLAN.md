@@ -150,12 +150,16 @@ order, and struck out as they close. This is the live queue — new finds go at 
    ground it stopped being an object and read as a tear in the render. **The rule is wider than
    one rock: any silhouette in this game must carry an edge that caught the sky** — without one
    the eye reads "nothing was drawn here", not "a dark thing".
-2. ~~**"The plants are ugly, and they clump"**~~ — done. Cluster centres were chosen as the best
-   of three throws across the whole strip, lowest ground wins; a strip has one hollow, so every
-   cluster walked into it — half the screen a wall of foliage, the other half bare. The strip is
-   now divided into as many stretches as there are clusters and each looks for its own low spot
-   inside its own stretch. Plants inside a cluster are spaced instead of thrown, and each one
-   carries a depth: the far ones smaller and fading into the air, the near ones full.
+2. **"The plants are ugly, and they clump"** — **half done, and the half that is left is the
+   harder one.** *Clumping: fixed.* Cluster centres were chosen as the best of three throws
+   across the whole strip, lowest ground wins; a strip has one hollow, so every cluster walked
+   into it — half the screen a wall of foliage, the other half bare. The strip is now divided
+   into as many stretches as there are clusters and each looks for its own low spot inside its
+   own stretch; plants inside a cluster are spaced instead of thrown, and each carries a depth —
+   far ones smaller and fading into the air, near ones full.
+   *Ugly: not addressed.* The forms themselves (`drawPlant`, 20-life) are flat cut-outs in one
+   acid green: no shading across a leaf, no value difference between stem and crown, the same
+   hue whatever the world. That is a pass of its own on the plant body, not on where it stands.
 3. ~~**"This is rubbish too" — the ringed planet in the sky**~~ — done (`skyGiant`, 19b). Three
    causes: the body took the colour of the planet *underfoot* (dark world → black disc, plus a
    .86 terminator — a hole again); the light always came from the right regardless of the star;
@@ -177,9 +181,25 @@ order, and struck out as they close. This is the live queue — new finds go at 
    really brightens (added over the rock, so the material still shows), falling off with distance.
    The airborne beam stayed but faint and narrow — as much as dust actually scatters — and only
    where there is an atmosphere to scatter in.
-6. **A second storey for the living part** — not started (the original M170 ask).
-7. **The world heard** — not started: room tone per screen, the house audible from inside,
+6. ~~**"Look at it from the dev stand, don't raise a local one"**~~ — done: `dev.ps1` publishes
+   this build to `/dev.html` and the sheets to `/dev/`, and the four recurring tooling errors are
+   fixed and written into `CLAUDE.md` (ssh noise, `.ps1` BOM, parameter shadowing, probe flags).
+7. **Release look, pass 1: the instruments stop hanging over every screen** — **done, on dev,
+   awaiting the author's eye.** On foot (surface, cave, dig, base, home, raid) fuel, hull and
+   shield are hidden — they are the ship's, and the ship is somewhere else; the hold stays,
+   because on foot it is exactly what fills up, and fuel comes back by itself when it goes
+   critical. The rest of the release look (the table as paper, the remaining overlay) is passes
+   2+; the author took it "in passes" on 2026-08-24.
+8. **The plant body itself** — see item 2: flat cut-outs, one hue, no shading.
+9. **A second storey for the living part** — not started (the original M170 ask).
+10. **The world heard** — not started: room tone per screen, the house audible from inside,
    weather heard before it is seen. `09-audio`/`10-music` are about music, not about place.
+11. **Save format v:5** — the author said break it (2026-08-24). Then measured: all 119 persisted
+   fields are still read, there is exactly one legacy branch (`modsOwned` falling back to
+   `mods`), and the 71 "defensive defaults" are validation of untrusted input — a save comes from
+   localStorage and from the cloud — so they stay at any version. Breaking now costs every
+   existing save and buys almost nothing. **Held until the release look actually changes what is
+   persisted**, then broken once, together with the cleanup. The author has the call.
 
 ### Graphics debt (open faults, one line each)
 

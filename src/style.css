@@ -599,3 +599,15 @@ body.road #console{display:none}
   padding:0 5px;font-size:8px;letter-spacing:.08em;vertical-align:1px;white-space:nowrap}
 .kitnew{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--phos);
   box-shadow:0 0 6px rgba(127,230,216,.7);vertical-align:1px}
+
+/* ── на ногах приборы корабля не показываются (релизный вид, проход 1) ──
+   Правило стиля «над миром — только то, что нужно сейчас» до сих пор
+   соблюдалось наполовину: панель гасла до трети непрозрачности, но висела
+   всегда и везде. На поверхности, в пещере, в шахте, на базе и дома топливо,
+   корпус и щит — не про этот экран. Трюм остаётся: на ногах как раз он и
+   наполняется. Критическое топливо возвращает свою шкалу само — тогда это
+   и есть «нужно сейчас». */
+body.afoot #vFuel:not(.crit),
+body.afoot #vHull:not(.crit),
+body.afoot #sgauge,
+body.afoot .ipod{display:none}
