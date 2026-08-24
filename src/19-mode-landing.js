@@ -304,23 +304,37 @@ function drawSkyLayer(p,camx,camy){
     ctx.fillStyle="rgba(8,12,26,"+(.34*DK).toFixed(3)+")";
     ctx.fillRect(0,0,W,H);
   }
-  const sunX=W*.78,sunY=H*.16;
+  /* звезда ходит по небу (M172, sunSpot в 19c): зарево, диск, календарь и
+     облака берут одну точку, поэтому полдень, закат и ночь — разные кадры,
+     а не одна картинка разной яркости */
+  const SS=sunSpot(p);
+  const sunX=SS.x,sunY=SS.y;
   const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a";
-  /* зарево — полноэкранный радиальный градиент, 5 мс растра на кадр при
-     неизменной картинке; живёт слоем (18c) и кладётся одним drawImage */
-  ctx.drawImage(screenLayer("glow|"+sc,()=>{
-    const g=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,W*.5);
-    g.addColorStop(0,rgba(hex2rgb(sc),.55));
-    g.addColorStop(.12,rgba(hex2rgb(sc),.16));
-    g.addColorStop(1,"rgba(0,0,0,0)");
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  }),0,0,W,H);
+  /* зарево печётся спрайтом в единичных координатах и кладётся одним
+     drawImage: полноэкранный слой (18c) пришлось бы перепекать на каждый шаг
+     светила, а спрайт ездит бесплатно. Под горизонтом остаётся зарево заката */
+  {
+    const under=clamp((SS.alt+.42)/.5,0,1);        /* 0 — глубокая ночь */
+    const a=SS.up?1:under*.7;
+    if(a>.02){
+      const GS=glowSprite("sunglow|"+sc,()=>{
+        const g=ctx.createRadialGradient(0,0,0,0,0,1);
+        g.addColorStop(0,rgba(hex2rgb(sc),.55));
+        g.addColorStop(.12,rgba(hex2rgb(sc),.16));
+        g.addColorStop(1,"rgba(0,0,0,0)");
+        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
+      });
+      ctx.save();ctx.globalAlpha=a;
+      glowBlit(GS,sunX,sunY,W*.5);
+      ctx.restore();
+    }
+  }
   /* небесные тела идут между заревом звезды и облаками: за облаками, но
      перед общим градиентом — так они и оказываются «в небе», а не поверх него */
   drawSkyBodies(p,camx,camy);
   /* диск — цветом звезды, к центру белее: раньше он брался тоном неба (sky[1],
      тёмным), и с грунта любая звезда читалась как затмение с короной */
-  {
+  if(SS.up){
     const c=hex2rgb(sc),sr=H*.045;
     const dg=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,sr);
     dg.addColorStop(0,"rgba(255,252,240,.95)");

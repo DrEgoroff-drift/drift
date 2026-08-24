@@ -170,8 +170,8 @@ function drawClouds(p,camx,camy){
   if(p.T.atm==="отсутствует")return;
   const C=cloudsOf(p), K=C.K;
   const wp=weatherPower(p);
-  const yH=H*.58-camy*.03;            // горизонт облачного слоя
-  const sunX=W*.78, sunY=H*.16;
+  const yH=H*SURF_HOR-camy*.03;            // горизонт облачного слоя
+  const SS=sunSpot(p), sunX=SS.x, sunY=SS.y;   /* облака освещаются с той стороны, где звезда (M172) */
   ctx.save();
   /* перистые выше всех и первыми: они фон для кучевых */
   const cir=C.cirrus;

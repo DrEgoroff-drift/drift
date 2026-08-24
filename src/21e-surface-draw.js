@@ -101,7 +101,7 @@ function drawSurface(){
      персонажу, чтобы не было рывка от нуля. */
   if(!S.cam)S.cam={x:S.x,y:S.y};
   const co=camOffset(S);
-  const camx=S.cam.x-W/2+co.x, camy=clamp(S.cam.y-H*.58,-300,1e5)+co.y;
+  const camx=S.cam.x-W/2+co.x, camy=clamp(S.cam.y-H*SURF_HOR,-300,1e5)+co.y;
   /* единственный источник правды о камере на кадр: по нему же ввод пересчитывает
      тычок в мировую координату (15-input) */
   G.viewX=camx;G.viewY=camy;
@@ -111,20 +111,32 @@ function drawSurface(){
   /* дальние гряды — кэшем по тайлам (хвост G2, правило G11): силуэт в цвет
      воздуха печётся раз на 512×512 в координатах своего параллакса, кадр
      кладёт картинки. drawGround рисует через W/H, которые withCtx подменяет */
+  /* ── у дальнего плана свой профиль (M172) ──
+     Оба дальних слоя брали ТУ ЖЕ высоту, что и грунт под ногами, растянув её
+     по горизонтали в 3.6 и 2.4 раза. На ширину экрана от рельефа оставалась
+     почти прямая: горизонт читался ровной полосой дымки, приклеенной к небу,
+     и глазу нечем было мерить расстояние. Даём им собственную амплитуду —
+     чем дальше, тем выше и крупнее гряда, — и печём её один раз на планету. */
+  if(!tr.farH){
+    let s=0;for(let i=0;i<tr.N;i++)s+=tr.h[i];
+    const mid=s/tr.N;
+    const mk=k=>{const a=new Float32Array(tr.N);for(let i=0;i<tr.N;i++)a[i]=mid+(tr.h[i]-mid)*k;return a;};
+    tr.farH=[mk(2.3),mk(1.6)];
+  }
   S.farA=tileStore(S.farA,"farA|"+p.seed+"|"+DPR);
-  drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.h,N:tr.N,step:tr.step*3.6},wx0,wy0,hazeFar(p,.58),null));
+  drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.farH[0],N:tr.N,step:tr.step*3.6},wx0,wy0,hazeFar(p,.58),null));
   S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR);
-  drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},wx0,wy0,hazeFar(p,.32),null));
-  hazeBand(p,H*.52,H*.22);
+  drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.farH[1],N:tr.N,step:tr.step*2.4},wx0,wy0,hazeFar(p,.32),null));
+  hazeBand(p,H*(SURF_HOR-.06),H*.22);
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
     "rgba(200,240,246,.4)",p.T.pal);
   /* нижняя треть уходит в тень неба: ближний грунт темнее дальнего, и по
      этому глаз мерит глубину (хвост G2) */
   {
     const sh=p.T.sky[1];
-    const dg=ctx.createLinearGradient(0,H*.62,0,H);
+    const dg=ctx.createLinearGradient(0,H*(SURF_HOR+.04),0,H);
     dg.addColorStop(0,"rgba("+sh.join(",")+",0)");dg.addColorStop(1,"rgba("+sh.join(",")+",.30)");
-    ctx.fillStyle=dg;ctx.fillRect(0,H*.62,W,H*.38);
+    ctx.fillStyle=dg;ctx.fillRect(0,H*(SURF_HOR+.04),W,H*(.96-SURF_HOR));
   }
   drawPOI(tr,camx,camy,p);
   /* средний масштаб между валуном и постройкой — тем же светом и той же
@@ -233,7 +245,10 @@ function drawSurface(){
   }
   if(S.on)groundShadow(x,y+1,7,2);
   ctx.save();ctx.translate(x,y-1);
-  drawAstronaut({face:S.face,amp:S.walkAmp,phase:S.walkPhase,
+  /* ободок берётся из положения звезды: слева она или справа и высоко ли (M172) */
+  const SR=sunSpot(p);
+  const rim=SR.up?clamp((SR.x-x)/(W*.4),-1,1)*clamp(.35+SR.alt,0,1):0;
+  drawAstronaut({face:S.face,amp:S.walkAmp,phase:S.walkPhase,sun:rim,
     air:!S.on,jet:!!S.jetOn,mining:!!S.mining,suitLow:S.suit<25});
   ctx.restore();
   if(S.mining){
@@ -253,15 +268,60 @@ function drawSurface(){
   {
     const nite=surfNight(p);
     if(nite>.02){
-      ctx.fillStyle="rgba(4,6,14,"+(nite*.72).toFixed(3)+")";ctx.fillRect(0,0,W,H);
+      /* ── ночь как СТРОЙ ЗНАЧЕНИЙ, а не заливка (M172) ──
+         Прежде на весь кадр клали один прямоугольник: небо и земля темнели
+         одинаково, силуэт хребта пропадал, и ночь читалась туманом. Небо
+         ночью само по себе светлее земли — на этом и держится вся ночная
+         картинка: гасим низ сильно, верх слабо, и горизонт остаётся линией. */
+      const ng=ctx.createLinearGradient(0,0,0,H);
+      ng.addColorStop(0,"rgba(4,7,20,"+(nite*.40).toFixed(3)+")");
+      ng.addColorStop(.5,"rgba(4,7,18,"+(nite*.52).toFixed(3)+")");
+      ng.addColorStop(.66,"rgba(3,5,14,"+(nite*.74).toFixed(3)+")");
+      ng.addColorStop(1,"rgba(2,3,10,"+(nite*.90).toFixed(3)+")");
+      ctx.fillStyle=ng;ctx.fillRect(0,0,W,H);
+      /* след севшей звезды у горизонта с её стороны: полоса, по которой видно,
+         куда именно она ушла, — иначе ночь одинакова во все стороны */
+      const SS=sunSpot(p);
+      if(!SS.up&&SS.alt>-.55){
+        const k=clamp((SS.alt+.55)/.47,0,1);
+        const gg=ctx.createRadialGradient(SS.x,H*.60,0,SS.x,H*.60,W*.42);
+        const sc2=hex2rgb((G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a");
+        gg.addColorStop(0,rgba(sc2,.20*k));gg.addColorStop(1,"rgba(0,0,0,0)");
+        ctx.save();ctx.globalCompositeOperation="lighter";
+        ctx.fillStyle=gg;ctx.fillRect(0,H*.30,W,H*.45);ctx.restore();
+      }
+      /* ── фонарь стал фонарём ──
+         Был симметричный шар в 150 px вокруг головы: человек светился сам.
+         Теперь это налобник — узкий конус вперёд по взгляду, горячее пятно
+         там, куда он упёрся в землю, и слабый ореол у самого шлема. */
+      const f=S.face||1, hx=x+f*2, hy=y-8;
+      const reach=132, drop=(groundAt(tr,S.x+f*reach)-camy)-hy;
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      ctx.globalAlpha=clamp(nite*1.25,0,1);
+      const cone=ctx.createLinearGradient(hx,hy,hx+f*reach,hy+drop*.6);
+      cone.addColorStop(0,"rgba(255,238,205,.42)");
+      cone.addColorStop(.45,"rgba(255,232,190,.16)");
+      cone.addColorStop(1,"rgba(255,226,175,0)");
+      ctx.fillStyle=cone;
+      ctx.beginPath();
+      ctx.moveTo(hx,hy-2.5);ctx.lineTo(hx,hy+3);
+      ctx.lineTo(hx+f*reach,hy+drop*.5+34);
+      ctx.lineTo(hx+f*reach,hy+drop*.5-30);
+      ctx.closePath();ctx.fill();
+      /* пятно на грунте: без него конус висит в воздухе */
+      const px2=S.x+f*reach*.72, py2=groundAt(tr,px2)-camy;
+      const pool=ctx.createRadialGradient(px2-camx,py2,0,px2-camx,py2,46);
+      pool.addColorStop(0,"rgba(255,240,210,.30)");pool.addColorStop(1,"rgba(255,236,200,0)");
+      ctx.fillStyle=pool;
+      ctx.beginPath();ctx.ellipse(px2-camx,py2,46,13,0,0,TAU);ctx.fill();
       const LS=glowSprite("suitlamp",()=>{
         const g=ctx.createRadialGradient(0,0,0,0,0,1);
         g.addColorStop(0,"rgba(255,236,200,.55)");g.addColorStop(.35,"rgba(255,236,200,.22)");
         g.addColorStop(1,"rgba(255,236,200,0)");
         ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
       });
-      ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=nite*1.3;
-      glowBlit(LS,x+S.face*36,y-6,150);
+      ctx.globalAlpha=clamp(nite*.8,0,1);
+      glowBlit(LS,hx+f*6,hy,34);
       ctx.restore();
     }
   }

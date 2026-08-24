@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 250 · символов верхнего уровня: 2415
+Файлов: 250 · символов верхнего уровня: 2417
 
 ## СИМВОЛЫ
 
@@ -155,11 +155,11 @@ bDress                       src/21aa-base-rooms.js:122
 BEACON_COOL                  src/23-mode-dig.js:70
 beaconCool                   src/23-mode-dig.js:71
 beaconTick                   src/23-mode-dig.js:86
-BEAST_ALIEN                  src/20-life.js:498
-BEAST_FORM                   src/20-life.js:468
-BEAST_SHAPES                 src/20-life.js:490
-BEAST_TRAIT                  src/20-life.js:469
-beastBias                    src/20-life.js:499
+BEAST_ALIEN                  src/20-life.js:513
+BEAST_FORM                   src/20-life.js:483
+BEAST_SHAPES                 src/20-life.js:505
+BEAST_TRAIT                  src/20-life.js:484
+beastBias                    src/20-life.js:514
 BELT_AVLIM                   src/24-mode-belt.js:86
 BELT_HALF                    src/24-mode-belt.js:84
 BELT_POI                     src/24b-belt-poi.js:13
@@ -454,8 +454,8 @@ drawBarges                   src/12l-barge.js:527
 drawBargesMap                src/12l-barge.js:552
 drawBase                     src/21ac-base-draw.js:43
 drawBaseBuilding             src/21c-built.js:99
-drawBeast                    src/20-life.js:705
-drawBeastAlien               src/20-life.js:548
+drawBeast                    src/20-life.js:720
+drawBeastAlien               src/20-life.js:563
 drawBelt                     src/24-mode-belt.js:366
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17c-system-draw.js:94
@@ -482,7 +482,7 @@ drawDeco                     src/21b-surface-deco.js:147
 drawDeposit                  src/21b-surface-deco.js:641
 drawDig                      src/23a-dig-draw.js:318
 drawDigFauna                 src/23-mode-dig.js:288
-drawDustMotes                src/19-mode-landing.js:341
+drawDustMotes                src/19-mode-landing.js:355
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:207
 drawFactory                  src/20aa-poi-shapes.js:378
@@ -506,7 +506,7 @@ drawJetBar                   src/20d-jetpack.js:32
 drawKitFigure                src/12x-suit.js:188
 drawLander                   src/19f-lander.js:52
 drawLandGear                 src/19f-lander.js:26
-drawLanding                  src/19-mode-landing.js:355
+drawLanding                  src/19-mode-landing.js:369
 drawLoreMarks                src/12q-lore.js:214
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
@@ -521,8 +521,8 @@ drawObserv                   src/20aa-poi-shapes.js:491
 drawPirate                   src/12i-pirate-hull.js:320
 drawPirateBase               src/24a-mode-raid.js:103
 drawPirateSkin               src/03d-hull-marks.js:99
-drawPlant                    src/20-life.js:335
-drawPlantAlien               src/20-life.js:187
+drawPlant                    src/20-life.js:350
+drawPlantAlien               src/20-life.js:202
 drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
 drawRaid                     src/24aa-raid-draw.js:5
@@ -532,7 +532,7 @@ drawRoad                     src/27l-road-draw.js:74
 drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:163
-drawSkyBase                  src/19c-light.js:180
+drawSkyBase                  src/19c-light.js:202
 drawSkyBodies                src/19b-sky.js:59
 drawSkyLayer                 src/19-mode-landing.js:296
 drawSpaceDust                src/16a-space.js:154
@@ -693,8 +693,8 @@ foundBase                    src/21a-mode-base.js:53
 frame                        src/28-loop.js:303
 freeVoice                    src/09-audio.js:79
 fuelPriceHere                src/12k-rep.js:63
-FUR_TONES                    src/20-life.js:473
-furColor                     src/20-life.js:478
+FUR_TONES                    src/20-life.js:488
+furColor                     src/20-life.js:493
 fuseAffordable               src/03-ships.js:38
 fuseCost                     src/03-ships.js:33
 fuseGen                      src/03-ships.js:32
@@ -702,7 +702,7 @@ fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
 G                            src/08-state.js:42
 g11Fps                       src/28z-fps-probe.js:7
-genBeast                     src/20-life.js:508
+genBeast                     src/20-life.js:523
 genBeltPOI                   src/24b-belt-poi.js:20
 genDeco                      src/21b-surface-deco.js:37
 genDesc                      src/01-core.js:59
@@ -710,7 +710,7 @@ genMerc                      src/12a-crew.js:59
 genMgr                       src/12c-mgr-core.js:236
 genName                      src/01-core.js:42
 genPart                      src/05-parts.js:70
-genPlant                     src/20-life.js:131
+genPlant                     src/20-life.js:146
 genPOI                       src/20a-poi.js:32
 genRaid                      src/24a-mode-raid.js:30
 genTerrain                   src/07-planet.js:401
@@ -748,7 +748,7 @@ glowSprite                   src/16a-space.js:275
 glowTier                     src/11i-glow.js:122
 goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
-gradePass                    src/19c-light.js:143
+gradePass                    src/19c-light.js:165
 GROK_CAP                     src/12tb-grok.js:27
 GROK_DIRT                    src/12tb-grok.js:30
 GROK_LIKE                    src/12tb-grok.js:29
@@ -1115,7 +1115,7 @@ lightsDrawReveal             src/11g-lights.js:137
 lightsEnter                  src/11g-lights.js:172
 lightsEntryX                 src/11g-lights.js:83
 lightsGroundLine             src/11g-lights.js:90
-lightShafts                  src/19c-light.js:115
+lightShafts                  src/19c-light.js:135
 lightsIsCore                 src/11g-lights.js:45
 lightsNight                  src/11g-lights.js:68
 lightsOpen                   src/11g-lights.js:79
@@ -1479,7 +1479,7 @@ peepScene                    src/20c-peep.js:42
 peepUpdate                   src/20c-peep.js:67
 peopleLine                   src/11-log.js:36
 pick                         src/01-core.js:17
-pickKindByBias               src/20-life.js:126
+pickKindByBias               src/20-life.js:141
 pickStType                   src/06-galaxy.js:30
 PICKUPS                      src/24a-mode-raid.js:24
 pinch0                       src/15-input.js:182
@@ -1524,7 +1524,7 @@ PLANET_RES                   src/07-planet.js:71
 PLANET_SPIN                  src/07-planet.js:32
 planetBargeLoad              src/12n-planet.js:108
 planetBargeRow               src/12n-planet.js:145
-planetBiome                  src/20-life.js:107
+planetBiome                  src/20-life.js:122
 planetCols                   src/07-planet.js:229
 planetDraw                   src/07-planet.js:298
 planetGrant                  src/12n-planet.js:25
@@ -1557,9 +1557,9 @@ planetWetAt                  src/07-planet.js:384
 planGroundLine               src/11r-plan.js:47
 planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
-PLANT_FORM                   src/20-life.js:94
-PLANT_KINDS                  src/20-life.js:106
-PLANT_TRAIT                  src/20-life.js:95
+PLANT_FORM                   src/20-life.js:109
+PLANT_KINDS                  src/20-life.js:121
+PLANT_TRAIT                  src/20-life.js:110
 planTook                     src/11r-plan.js:59
 plate                        src/25-cockpit.js:160
 POI_FIND                     src/20b-poi-find.js:18
@@ -2135,6 +2135,8 @@ suitFailure                  src/23-mode-dig.js:104
 suitHit                      src/23-mode-dig.js:97
 suitMax                      src/12x-suit.js:78
 SUN_DIR                      src/19c-light.js:11
+sunSpot                      src/19c-light.js:125
+SURF_HOR                     src/19c-light.js:124
 surfaceHint                  src/21e-surface-draw.js:4
 surfNight                    src/06a-celest.js:43
 SURV_COL                     src/12w-survey.js:57
@@ -2804,7 +2806,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19b-sky.js · 20 КБ
   · небо:1
 
-## src/19c-light.js · 14 КБ
+## src/19c-light.js · 16 КБ
   · свет и воздух:1
 
 ## src/19d-weather.js · 12 КБ
@@ -2816,7 +2818,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19f-lander.js · 21 КБ
   · посадочный корабль:1
 
-## src/19-mode-landing.js · 21 КБ
+## src/19-mode-landing.js · 22 КБ
   · посадка:1
 
 ## src/20aa-poi-shapes.js · 30 КБ
@@ -2835,10 +2837,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/20d-jetpack.js · 3 КБ
   · реактивный ранец:1
 
-## src/20-life.js · 41 КБ
+## src/20-life.js · 42 КБ
   · астронавт:1
-  · флора:90
-  · фауна:464
+  · флора:105
+  · фауна:479
 
 ## src/21aa-base-rooms.js · 35 КБ
   · база: внутренности отсеков:1
@@ -2869,7 +2871,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 17 КБ
+## src/21e-surface-draw.js · 21 КБ
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21f-home-out.js · 13 КБ

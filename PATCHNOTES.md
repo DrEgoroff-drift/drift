@@ -7,6 +7,55 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.138.0 — the light gets a direction (M172, the world on foot)
+
+The walking screen is the longest one after the cockpit and the last one still
+without a pass of its own. Looked at whole — full frames, no crop, noon and
+midnight side by side (`docs/mkfoot.ps1`) — and four faults were plain.
+
+**The light had an hour but no direction.** `celSun` has told the game what time
+it is since 0.102.0, but the star itself was nailed to `W*.78, H*.16`: the hour
+changed only how dark the frame was. Noon and dusk were the same picture at
+different brightness, and the star never set. Now `sunSpot(p)` (19c-light) is the
+one place that says where it is — east on the left, west on the right, overhead
+at noon, below the horizon at night — and the glow, the disc, the sky calendar,
+the clouds' lit side, the shafts and the rim on the suit all take it from there.
+The bloom moved from a full-screen baked layer to a sprite blit, because a layer
+would have to be re-baked at every step of the sun. Two signs disagreed and one
+was wrong: the sky's horizon glow sat on the *opposite* side from the star.
+
+**Night was a flat wash.** One `fillRect` over the whole frame darkened sky and
+ground alike, the ridge silhouette dissolved, and midnight read as fog. Night is
+now a gradient with a value structure: the sky keeps most of its light, the
+ground goes deep, the horizon survives as a line, and when the star has just set
+its afterglow stays on its own side of the sky.
+
+**The lamp was a glowing man.** A 150 px symmetric ball around the helmet. It is
+a headlamp now: a narrow cone forward along the look, a hot pool where the cone
+meets the ground, a small halo at the helmet.
+
+**The far ridges were a straight line.** Both distant layers used the terrain of
+the ground underfoot stretched 3.6× and 2.4× sideways with the same amplitude —
+across one screen almost nothing was left of the relief, and the horizon read as
+a band of haze glued to the sky. They have their own amplitude now (×2.3 and
+×1.6, baked once per planet), so there is something to measure distance by.
+
+Two more: the horizon sits at `SURF_HOR` (.64 instead of .58, one constant
+instead of three magic numbers), because 42% of every frame used to be the
+cross-section of dirt under the player's feet — the largest and emptiest area of
+the picture; and the walker gets a rim light on the star's side, because at 26 px
+he was the same value as the ground and had to be *looked for* on the screen
+where the player spends most of his time.
+
+Measured on the same machine, same window, against the 0.137.0 build immediately
+before: surface 48→48, belt 60→60, dig 60→60, cave 60→60, landing 55→57,
+system 47→46, scoop 42→37 (scoop has no code from this pass in it and has
+swung 42–60 between runs before). New tool: `docs/g11.ps1` runs the built-in
+`?g11` probe headless and prints the numbers — **never** with
+`--virtual-time-budget`, which fast-forwards timers and measures the
+fast-forward instead of the frame.
+
+---
 ## 0.137.0 — somebody was here before you (M171)
 
 The first thing in the game left by another living player, and it arrives

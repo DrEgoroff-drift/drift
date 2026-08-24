@@ -93,8 +93,8 @@ flora and fauna, a living camera, station modules, weather.
 7. **Factions as a language of shapes** â only after ships and stations, or there is nothing to
    tell apart.
 8. ~~**Redo the clouds.**~~ â DONE: `19e-clouds` is a density field in perspective, called from `drawSkyLayer`.
-9. **The world on foot** â the surface is the longest screen in the game after the cockpit, and it
-   has never had a pass of its own. Stand: `docs/mkworld.ps1` â `docs/shots/world-types.png`.
+9. ~~**The world on foot**~~ — DONE at M172 (0.138.0): `sunSpot`, night as a value structure, the
+   lamp as a cone, far ridges with their own amplitude, `SURF_HOR`. Stand: `docs/mkfoot.ps1`.
 10. **Split debt.** `23-mode-dig` and `27e-ui-home` have crossed the 40 KB line; `build.ps1` was
    re-baselined on 2026-08-15 so the guard stays quiet, which is a loan, not a payment. One
    payment made on 2026-08-16: `21aa-base-rooms` (60 KB) was cut along its seam into the brushes
@@ -164,7 +164,11 @@ one at a time when a pass is due, and nothing here blocks a milestone.
 - **ÐÑÐ¾ÑÐ¾ÑÑÐ½** (M120) â at 64 px, the size he is actually seen at, the three eyes merge into a
   smudge; the hide is flat khaki with no dust streaks; the working arms hide behind the torso.
 - **ships** â no faction language; it comes after stations by the queue above.
-- **the world on foot** â the longest screen after the cockpit, still without a pass of its own.
+- ~~**the world on foot**~~ — **closed in 0.138.0 (M172)**: the star got a place in the sky (`sunSpot`, one
+  source for glow/disc/clouds/shafts/rim), night became a value structure instead of a flat wash,
+  the suit lamp became a cone with a pool on the ground, the far ridges got their own amplitude,
+  the horizon moved to `SURF_HOR`. Stand `docs/mkfoot.ps1`. Left open: the day palette itself —
+  noon still reads overcast on every world, and that is art direction, not a fault.
 - **split debt** â `21a-mode-base` 52 KB, `23-mode-dig`, `27e-ui-home` (see item 10).
 
 ### The graphics & performance pass (G1âG12) â written 2026-08-22 from the shots, not from memory

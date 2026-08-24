@@ -72,6 +72,21 @@ function drawAstronaut(o){
   ctx.beginPath();ctx.ellipse(.9,-6.7,3,2.5,-.12,0,TAU);ctx.fill();
   ctx.fillStyle=KP?KP.lamp.acc:rgba(acc,.9);
   ctx.beginPath();ctx.arc(-2.9,-7.6,1.1,0,TAU);ctx.fill();                      // фонарь
+  /* ── ободок со стороны звезды (M172) ──
+     Ходок в 26 px тонул в грунте: он и земля были одного значения, и на экране,
+     где игрок проводит больше всего времени после кокпита, человека приходилось
+     ИСКАТЬ. Одна светлая линия по освещённому краю шлема и плеча ставит его
+     перед миром — дешевле любого увеличения размера. o.sun: −1 звезда слева,
+     1 справа, 0 — нет её (под землёй, ночью). */
+  if(o.sun){
+    const sd=o.sun*(o.face||1)>0?1:-1;      /* в системе координат фигуры */
+    ctx.save();
+    ctx.strokeStyle="rgba(255,247,226,"+(.5*Math.min(1,Math.abs(o.sun))).toFixed(2)+")";
+    ctx.lineWidth=1;ctx.lineCap="round";
+    ctx.beginPath();ctx.arc(.2,-6.6,4.1,sd>0?-1.5:1.6,sd>0?.6:3.7);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(sd*3.3,-3.6);ctx.lineTo(sd*3.7,1.8);ctx.stroke();
+    ctx.restore();
+  }
   ctx.restore();
   /* луч фонаря — только под землёй */
   if(o.lamp){
