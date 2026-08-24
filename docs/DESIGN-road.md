@@ -112,3 +112,77 @@ the very colours the game's flight trail uses (`trailTint`: core/mid/edge of you
 accent). In a real turn the hull **darts sideways** from the centre — lateral g from the
 accelerometer plus the tilt — up to a fifth of the screen, then eases back home slowly (fast
 out, slow return). A NaN on the first frame of the dart was caught by the suite.
+
+## Fifth pass (M168g, 0.136.1) — measuring the road through a crooked cradle
+
+Watched four and a half minutes of real driving, frame by frame. Three faults.
+
+### How a turn is measured now
+
+A cradle is never level. Gravity leaking into the lateral axis at a tilt of φ is
+`9.81·sin φ`:
+
+| tilt | on the lateral axis | reads as |
+|---|---|---|
+| 5° | 0.85 m/s² | 0.09 g |
+| 10° | 1.70 | 0.17 g |
+| 15° | 2.54 | 0.26 g |
+| 20° | 3.35 | 0.34 g |
+| 30° | 4.90 | 0.50 g |
+
+against what a car actually pulls sideways:
+
+| manoeuvre | lateral |
+|---|---|
+| unhurried city corner | 0.10–0.20 g |
+| roundabout, motorway exit | 0.25–0.40 g |
+| brisk corner | 0.45–0.60 g |
+| grip limit, dry tarmac | 0.8–0.9 g |
+
+A cradle 10° out of true therefore lies harder than a real gentle corner is worth, and
+no amount of dividing fixes it — the divisor flattens both. Three rules instead:
+
+1. **Auto-zero.** A slow mean of `accelerationIncludingGravity` (τ = 20 s, first 3 s
+   grabbed at τ = 0.6 s) is the cradle's resting gravity vector. It learns **only on the
+   straight** (residual < 0.08 g and yaw < 4 °/s) — otherwise a long curve would be
+   absorbed into the baseline and the corner would vanish.
+2. **A frame built from gravity, not from the screen.** "Right" is the screen X axis with
+   its component along gravity removed, renormalised. Any static tilt of the cradle is
+   then subtracted on both axes at once. The measure only fails when the screen's X axis
+   itself approaches vertical (`|x̂·ĝ| > 0.75`, about 49°) — the app says so rather than
+   inventing a turn.
+3. **The turn is yaw rate about the vertical** — `rotationRate` projected on gravity —
+   which is indifferent to how the phone is mounted. Converted to lateral acceleration by
+   `a = v·ω`, so both sensors share one scale in m/s². Agreeing, the larger wins;
+   contradicting (opposite signs, both above the dead zone), the smaller does.
+
+Scales: full swerve at **0.30 g**, ceiling 0.60 g, dead zone 0.04 g, raw gyro clamped at
+60 °/s. Below 8 km/h the swerve is gated off and fades in by 20 km/h — a car park and a
+phone picked up out of the cradle must not fling the ship. The *bank* is not gated, so
+tilting the phone in your hand still rolls the ship while parked.
+
+`gamma` from `deviceorientation` is not used at all: a cradle stands the phone nearly
+upright, next to the singularity of the Z-X'-Y'' decomposition (`beta = ±90°`), where
+`gamma` swings on any nudge.
+
+### The trail
+
+One filled body per nozzle with a lengthwise gradient — never a chain of strokes under
+`lighter`, which piles up at every joint and turns gas into masonry. Falloff quadratic
+(`u²·.30 + u⁴·.5`), as in flight. Lifetime is derived from flow so the ribbon is always
+`ROAD_TRAIL_LEN` of the screen and burns out inside the frame; the bottom `ROAD_MASK`
+fades to background so the footer is never crossed. Points are laid at a fixed step along
+the path, which makes density identical at 30, 60 and 120 Hz.
+
+### Rules that came out of this pass
+
+- Time comes from the real frame `dt`. A hard-coded 1/60 doubles trail density and halves
+  every timeout on a 120 Hz screen.
+- The road day is the **calendar** day. The game day is sixty seconds long, and on it the
+  trip counter reset mid-drive.
+- Shake is read from acceleration with the cradle's tilt already removed, dead zone
+  0.35 m/s², full scale 2.5; the visible tremble is a smooth two-tone wobble plus a kick
+  on a real pothole. Per-frame `Math.random()` reads as twitching, not vibration.
+- The swerve limit is the hull's **measured** half-width (`roadHullHalf`), not `h.bw`:
+  pods and pylons run about 2.3× wider than the body, and the old guard cut the ship at
+  the edge.

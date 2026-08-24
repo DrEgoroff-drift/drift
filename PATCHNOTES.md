@@ -7,6 +7,57 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.136.1 — the road companion measures the road, not the cradle (M168g)
+
+Four minutes of real driving on a phone, watched frame by frame, turned up two faults
+that had nothing to do with each other and one that explained the rest.
+
+**The exhaust was a stack of bricks.** The ribbon was drawn as a hundred separate
+strokes composited with `lighter`; the overlap at every joint piled up, the width grew
+in steps, and the result was two rigid pale columns running from the engines straight
+off the bottom of the screen — across the НАЗАД button. It is now **one body per
+nozzle**: a single filled shape with a lengthwise gradient, quadratic falloff (the fix
+the flight trail already carried), and a lifetime tuned so the ribbon is always the same
+length on screen and always burns out inside the frame. The bottom fifth of the sky
+fades to background, so the footer stays clean whatever the ship is doing. Points are
+laid at a fixed step along the path rather than once per frame, so the ribbon has the
+same density at 30, 60 and 120 Hz.
+
+**The trip counter reset every minute.** `roadDayReset` compared against the *game* day,
+and a game day is sixty seconds of real time — so "за поездку" and the credit tally were
+wiped mid-drive, over and over, and the daily cap never applied to anything. The road day
+is now the calendar day.
+
+**A cradle is never level, and that was being read as a permanent turn.** A mount tilted
+by 10° adds 1.70 m/s² to the lateral axis — 0.17 g, more than an unhurried city corner is
+worth — so the ship lived pinned to one edge. Dividing by a larger number cannot fix that:
+it flattens the real corner along with the tilt. The measurement was rebuilt instead:
+
+- an **auto-zero** learns the resting gravity vector of the cradle, and learns it only on
+  the straight, so a corner cannot be absorbed into the baseline;
+- the lateral axis is taken in a **frame built from gravity**, not from the screen, which
+  removes any static tilt on both axes at once — it only gives up when the screen's own
+  X axis stands near vertical, and then it says so instead of inventing a turn;
+- the **turn itself is the yaw rate about the vertical**, projected out of `rotationRate`,
+  which does not care how the phone is mounted. It is converted to lateral acceleration by
+  a = v·ω so both sensors share one scale in m/s²: agree and the larger wins, contradict
+  and the smaller does.
+
+`gamma` from `deviceorientation` is gone. A cradle stands the phone nearly upright, which
+is next to the singularity of the Z-X'-Y'' decomposition, where `gamma` jumps at any
+nudge — that was half of the twitching. The other half was `Math.random()` per frame
+driving the shake: it is now a smooth two-tone wobble with a kick on a real pothole, and
+the shake level is read from acceleration with the cradle's tilt already subtracted, so a
+smooth road no longer holds it at the ceiling.
+
+**And the frame has air in it.** The ship is a fifth of the screen instead of a quarter,
+the swerve reaches further out — clamped by the hull's measured half-width, so it can ride
+the very edge without ever being cut — every star has its own size, length and brightness
+with a near-static dust layer behind them, and the nebulae are bright enough that standing
+at a light is no longer a black screen.
+
+The screen half of `27k-road.js` moved to `27l-road-draw.js`; the file had passed 40 KB.
+
 ## 0.136.0 — "Home" (M170)
 
 The home stops being a panel and becomes a house. It stands on its own planet in

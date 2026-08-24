@@ -851,7 +851,7 @@ body.road #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.136.0";
+const VER="0.136.1";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -44941,10 +44941,11 @@ function consoleTick(dt){
 })();
 
 /* ══════════════ дорожный спутник ══════════════
-   M168/M168b, из docs/DESIGN-road.md. Едете по-настоящему — корабль летит по
-   экрану, и дорога его кормит. GPS даёт скорость (×1 000 000 — космическая),
-   гироскоп кренит в настоящий поворот, тряска дрожит корпусом, РАЗГОН
-   прибавляет факел и задирает нос, ТОРМОЖЕНИЕ бьёт носовыми соплами.
+   M168/M168b/M168g, из docs/DESIGN-road.md. Едете по-настоящему — корабль
+   летит по экрану, и дорога его кормит. GPS даёт скорость (×1 000 000 —
+   космическая), поворот машины кренит корпус и шарахает его к краю, тряска
+   дрожит корпусом, РАЗГОН прибавляет факел и задирает нос, ТОРМОЖЕНИЕ бьёт
+   носовыми соплами.
 
    ДЕНЬГИ И КОМБО (M168b). Километр дороги — кредиты, счётчик тикает живьём.
    Едешь без остановки — комбо растёт до ×3 (двадцать минут хода); встал
@@ -44960,17 +44961,46 @@ function consoleTick(dt){
 
    ПРАВИЛА ФАЙЛА:
    1. Датчики — по кнопке, каждый деградирует: без GPS — холостые, без
-      микрофона — волна дышит сама.
+      микрофона — волна дышит сама, без гироскопа — поворот по ускорению.
    2. Хранится G.road={day,km,cr}. Комбо и настроение — эфемерны.
-   3. Wake Lock, и о батарее сказано прямо. */
+   3. День здесь КАЛЕНДАРНЫЙ, а не игровой: игровые сутки идут минуту, и на
+      них счётчик поездки обнулялся прямо посреди дороги.
+   4. Время везде считается по настоящему dt кадра, а не по зашитой
+      шестнадцатой: на экране в 120 Гц зашитый шаг вдвое сгущал шлейф и вдвое
+      укорачивал выдержки.
+   5. Wake Lock, и о батарее сказано прямо.
+   6. Экран и кадр живут в 27l-road-draw: здесь меры, деньги и датчики. */
 const ROAD_VMIN=3,ROAD_VMAX=1000;
 const ROAD_TIERS=[{v:200,ru:"ДОРОГА"},{v:400,ru:"ЭКСПРЕСС"},{v:1000,ru:"ГИПЕРДРАЙВ"}];
 const ROAD_C=299792;                      /* км/с: на гипердрайве счёт идёт в долях света */
 const ROAD_CR_KM=2,ROAD_CR_CAP=1500,ROAD_COMBO_MAX=3,ROAD_COMBO_T=1200,ROAD_STOP_T=120;
+/* ── меры движения (M168g) ──
+   Все поперечные величины считаются в м/с², в одной шкале: поворот, снятый
+   гироскопом, переводится в поперечное ускорение по a=v·ω, поэтому у двух
+   датчиков одна мера и один потолок, а не две подогнанные шкалы. */
+const ROAD_G=9.80665;
+const ROAD_LAT_FULL=.30*ROAD_G;           /* полный отброс к краю: 0.30 g — бодрый городской поворот */
+const ROAD_LAT_MAX=.60*ROAD_G;            /* выше уже не считаем: держимся своей шкалы */
+const ROAD_LAT_DEAD=.04*ROAD_G;           /* мёртвая зона: подруливание и швы асфальта */
+const ROAD_YAW_MAX=60;                    /* °/с: быстрее крутится только телефон в руках */
+const ROAD_ZERO_TAU=20,ROAD_ZERO_FAST=.6,ROAD_ZERO_GRAB=3;  /* с: автоноль медленный, первые секунды — быстрый */
+const ROAD_ZERO_HOLD_A=.08*ROAD_G,ROAD_ZERO_HOLD_W=4;       /* база учится только на прямой */
+const ROAD_SIDE_MAX=.75;                  /* |x̂·ĝ|: дальше экранная ось X слишком близко к вертикали */
+const ROAD_SHAKE_DEAD=.35,ROAD_SHAKE_FULL=2.5,ROAD_SHAKE_KICK=3.5;   /* м/с²: тряска и удар о яму */
+const ROAD_MOVE_GATE=8,ROAD_MOVE_FULL=20; /* км/ч: ниже — корабль не швыряет (двор, парковка, телефон в руках) */
+const ROAD_TURN_ATK=.30,ROAD_TURN_REL=.80;/* с: в сторону быстро, обратно медленно */
+const ROAD_XOFF_OUT=.28,ROAD_XOFF_HOME=1.4;
+const ROAD_SWERVE=.46;                    /* доля полуширины экрана, на которую шарахает */
+const ROAD_TURN_SIGN=-1;                  /* корпус уходит НАРУЖУ поворота; знак проверяется на стенде одной правкой */
+const ROAD_TRAIL_LEN=.40,ROAD_TRAIL_STEP=.012,ROAD_TRAIL_MAX=300;  /* лента: длина на экране, шаг точек, потолок */
+const ROAD_MASK=.24;                      /* нижняя доля экрана гаснет в фон: подвал с кнопкой должен быть чистым */
 let RD=null;
 function roadAll(){if(!G.road||typeof G.road!=="object")G.road={day:-1,km:0,cr:0};return G.road;}
+/* день — календарный: игровые сутки идут 60 секунд, и на них «за поездку»
+   обнулялось раз в минуту прямо посреди дороги (M168g) */
+function roadToday(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
 function roadDayReset(){
-  const R=roadAll(),d=celDay();
+  const R=roadAll(),d=roadToday();
   if(R.day!==d){R.day=d;R.km=0;R.cr=0;}
   return R;
 }
@@ -45010,12 +45040,11 @@ function roadFinish(){
 /* ── датчики ── */
 function roadSensorsOn(){
   if(!RD)return;
-  const wire=()=>{
-    addEventListener("deviceorientation",roadOnTilt);
-    addEventListener("devicemotion",roadOnShake);
-  };
-  if(typeof DeviceOrientationEvent!=="undefined"&&DeviceOrientationEvent.requestPermission)
-    DeviceOrientationEvent.requestPermission().then(s=>{if(s==="granted")wire();}).catch(()=>{});
+  /* нужен ровно один датчик движения: акселерометр с гироскопом. Ориентацию
+     (deviceorientation) больше не слушаем — см. разбор в roadOnShake */
+  const wire=()=>{addEventListener("devicemotion",roadOnShake);};
+  if(typeof DeviceMotionEvent!=="undefined"&&DeviceMotionEvent.requestPermission)
+    DeviceMotionEvent.requestPermission().then(s=>{if(s==="granted")wire();}).catch(()=>{});
   else wire();
   if(navigator.geolocation&&RD.watch==null){
     RD.watch=navigator.geolocation.watchPosition(roadOnPos,()=>{RD.gps="нет GPS — летим на холостых";},
@@ -45036,17 +45065,80 @@ function roadSensorsOn(){
   /* спрошено — кнопка своё отслужила */
   const b=document.getElementById("roadSense");if(b)b.style.display="none";
 }
-function roadOnTilt(e){
-  if(!RD)return;
-  RD.bankT=clamp((e.gamma||0)/45,-1,1)*.7;
-}
+/* ── движение машины: автоноль, рамка от тяжести, рыскание (M168g) ──
+   Телефон в машине никогда не стоит ровно: держатель скошен на пять-двадцать
+   градусов, присоска смотрит вбок. Перекос в 10° подмешивает в поперечную ось
+   9.81·sin10° = 1.70 м/с², то есть 0.17 g — БОЛЬШЕ, чем стоит спокойный
+   городской поворот (0.10–0.20 g). Поэтому «поделить на большее число» кривизну
+   не лечит: вместе с перекосом задавится и сам поворот. Меряем иначе.
+
+   1. АВТОНОЛЬ. Медленное среднее ускорения — это вектор тяжести g0, то есть
+      покой держателя. Учится ТОЛЬКО на прямой (иначе база съест сам поворот),
+      а первые три секунды — быстрым захватом, чтобы не ждать полминуты.
+   2. РАМКА ОТ ТЯЖЕСТИ, а не от экрана: «право» — экранная ось X без своей доли
+      вдоль g0. Она горизонтальна при любом крене держателя, поэтому статический
+      перекос вычтен по обеим осям сразу. Мера слепнет только когда сама ось X
+      встаёт к вертикали (|x̂·ĝ| > 0.75, это около 49°) — «поперёк» тогда не
+      определено, и мы честно молчим, а не выдумываем.
+   3. ПОВОРОТ — скорость рыскания вокруг вертикали: rotationRate,
+      спроецированный на g0. Ей вообще всё равно, как воткнут телефон.
+      Переводим её в поперечное ускорение по a=v·ω — тогда у обоих датчиков
+      ОДНА шкала в м/с², а не две подогнанные. Совпали знаком — берём большее
+      (поворот подтверждён дважды), разошлись — меньшее (лучше недодать).
+
+   gamma из deviceorientation не берём вовсе: держатель ставит телефон почти
+   вертикально, а это рядом с особой точкой раскладки Z-X'-Y'' (beta = ±90°),
+   где gamma скачет от любого шевеления. Это и была половина дёрганья. */
 function roadOnShake(e){
-  if(!RD||!e.accelerationIncludingGravity)return;
+  if(!RD)return;
   const a=e.accelerationIncludingGravity;
-  const m=Math.abs(Math.hypot(a.x||0,a.y||0,a.z||0)-9.81);
-  RD.shake=Math.min(1,RD.shake*.9+m*.05);
-  /* боковое усилие поворота (портрет: ось x поперёк хода) — корабль шарахнется */
-  RD.latT=clamp((a.x||0)/5,-1,1);
+  if(!a||a.x==null)return;
+  const dt=clamp((e.interval||16)/1000,.004,.2);
+  const v=[a.x||0,a.y||0,a.z||0];
+  if(!RD.g0){RD.g0=v.slice();RD.g0T=0;}
+  RD.g0T+=dt;
+  const gl=Math.hypot(RD.g0[0],RD.g0[1],RD.g0[2])||ROAD_G;
+  /* рыскание вокруг вертикали: вектор вращения (beta,gamma,alpha) на ĝ0 */
+  const rr=e.rotationRate;
+  let yaw=null;
+  if(rr&&(rr.alpha!=null||rr.beta!=null||rr.gamma!=null))
+    yaw=clamp(((rr.beta||0)*RD.g0[0]+(rr.gamma||0)*RD.g0[1]+(rr.alpha||0)*RD.g0[2])/gl,-ROAD_YAW_MAX,ROAD_YAW_MAX);
+  const lin=[v[0]-RD.g0[0],v[1]-RD.g0[1],v[2]-RD.g0[2]];
+  const mag=Math.hypot(lin[0],lin[1],lin[2]);
+  if(RD.g0T<ROAD_ZERO_GRAB||(mag<ROAD_ZERO_HOLD_A&&(yaw==null||Math.abs(yaw)<ROAD_ZERO_HOLD_W))){
+    const k=1-Math.exp(-dt/(RD.g0T<ROAD_ZERO_GRAB?ROAD_ZERO_FAST:ROAD_ZERO_TAU));
+    for(let i=0;i<3;i++)RD.g0[i]+=(v[i]-RD.g0[i])*k;
+  }
+  /* поперечное по горизонтали: x̂ минус доля вдоль тяжести, потом нормировка */
+  const dxg=RD.g0[0]/gl;
+  RD.side=Math.abs(dxg);
+  let lat=null;
+  const den=Math.sqrt(Math.max(1e-6,1-dxg*dxg));
+  if(RD.side<ROAD_SIDE_MAX)
+    lat=(lin[0]*(1-dxg*dxg)-lin[1]*dxg*RD.g0[1]/gl-lin[2]*dxg*RD.g0[2]/gl)/den;
+  /* рыскание → поперечное ускорение: та же мера, что и у акселерометра.
+     Знак минус: центростремительное смотрит ВНУТРЬ поворота, как и lat */
+  const aYaw=yaw==null?null:-(RD.kmh||0)/3.6*yaw*Math.PI/180;
+  let s=null;
+  /* два измерения одной величины. Совпали — берём большее (поворот подтверждён
+     дважды); ПРОТИВОРЕЧАТ (разные знаки, и оба выше мёртвой зоны) — берём
+     меньшее: лучше недодать, чем швырнуть корпус не в ту сторону */
+  if(aYaw!=null&&lat!=null){
+    const opp=aYaw*lat<0&&Math.min(Math.abs(aYaw),Math.abs(lat))>ROAD_LAT_DEAD;
+    s=opp?(Math.abs(aYaw)<Math.abs(lat)?aYaw:lat)
+         :(Math.abs(aYaw)>Math.abs(lat)?aYaw:lat);
+  }
+  else s=aYaw!=null?aYaw:lat;
+  RD.blind=lat==null&&aYaw==null;
+  if(s!=null){
+    const m=Math.abs(s)<ROAD_LAT_DEAD?0:Math.sign(s)*Math.min(Math.abs(s)-ROAD_LAT_DEAD,ROAD_LAT_MAX-ROAD_LAT_DEAD);
+    RD.turnT=clamp(ROAD_TURN_SIGN*m/(ROAD_LAT_FULL-ROAD_LAT_DEAD),-1,1);
+  }
+  /* тряска — от того же очищенного ускорения, поэтому кривой держатель её
+     больше не держит в полке; атака мягкая, спад долгий, яма даёт удар */
+  const sm=clamp((mag-ROAD_SHAKE_DEAD)/(ROAD_SHAKE_FULL-ROAD_SHAKE_DEAD),0,1);
+  RD.shake+=(sm-(RD.shake||0))*(1-Math.exp(-dt/(sm>(RD.shake||0)?.25:1.2)));
+  if(mag>ROAD_SHAKE_KICK&&(RD.kick||0)<.3)RD.kick=Math.min(1,.5+(mag-ROAD_SHAKE_KICK)/4);
 }
 /* ── реальная местность размечена на вселенную (M168c) ──
    Клетка ~2.8 км по земле — одна «система» со своим именем из genName.
@@ -45094,8 +45186,12 @@ function roadOnPos(p){
   }
   const dt=RD.lastT?(t-RD.lastT)/1000:0;
   if(kmh!=null){
-    /* разгон и тормоз: производная скорости, сглаженная */
-    if(dt>0){const a=(kmh-(RD.kmh||0))/dt/8;RD.accT=clamp(a,-1,1);}
+    /* разгон и тормоз: производная скорости, сглаженная. Выборку с плохой
+       точностью не берём, и мелочь до 1.5 км/ч между отсчётами считаем шумом —
+       иначе корпус клюёт носом на каждом обновлении GPS (M168g) */
+    const dirty=c.accuracy!=null&&c.accuracy>25;
+    const dv=kmh-(RD.kmh||0);
+    if(dt>0&&!dirty&&Math.abs(dv)>1.5)RD.accT=clamp(dv/dt/8,-1,1);
     if(roadSpeedOk(kmh)&&dt>0&&dt<30){
       RD.moveT=(RD.moveT||0)+dt;RD.stopT=0;
       roadEarnKm(kmh*dt/3600,RD.moveT);
@@ -45155,11 +45251,26 @@ function roadRgbHue(c){
   let h=mx===r?((g-b)/d+(g<b?6:0)):mx===g?((b-r)/d+2):((r-g)/d+4);
   return h*60;
 }
+
+/* ══════════════ дорожный спутник: экран ══════════════
+   Вторая половина 27k-road: сам экран и кадр. Меры движения, деньги и датчики
+   остались там; сюда переехало всё, что рисует, — файл перевалил за 40 КБ,
+   и шов прошёл по готовой границе «── экран ──».
+
+   ЧТО ВАЖНО ЗНАТЬ ПРО КАДР (M168g):
+   1. Время — из настоящего dt, а не из зашитой шестнадцатой. Иначе на экране
+      в 120 Гц лента вдвое гуще, а все выдержки вдвое короче.
+   2. Шлейф — ОДНО тело на сопло: заливка с продольным градиентом. Сотня
+      отрезков со сложением света давала на стыках пересвет, и газ выглядел
+      стопкой кирпичей до самого низа экрана.
+   3. Лента живёт ровно столько, чтобы всегда быть одной длины на экране и
+      погаснуть В КАДРЕ, а низ экрана гаснет в фон: под ним подвал с кнопкой. */
 /* ── экран ── */
 function roadOpen(){
   for(const k in keys)keys[k]=false;
-  RD={kmh:0,bank:0,bankT:0,shake:0,acc:0,accT:0,phase:0,watch:null,an:null,eq:null,
-      lastPos:null,lastT:0,t0:Date.now(),asked:0,raf:0,moveT:0,stopT:0,crFrac:0,
+  RD={kmh:0,bank:0,bankT:0,shake:0,kick:0,acc:0,accT:0,phase:0,wob:0,watch:null,an:null,eq:null,
+      g0:null,g0T:0,side:0,blind:false,turn:0,turnT:0,xOff:0,yOff:0,emit:0,cxPrev:null,
+      lastPos:null,lastT:0,lastFrame:0,t0:Date.now(),asked:0,raf:0,moveT:0,stopT:0,crFrac:0,
       energy:.2,bright:.5,avg:.1,beat:0,beatT:0,wave:new Array(28).fill(.2),
       sparks:[],pulses:[],crShow:0};
   roadDayReset();
@@ -45177,7 +45288,6 @@ function roadClose(){
   if(RD.watch!=null&&navigator.geolocation)navigator.geolocation.clearWatch(RD.watch);
   if(RD.stream)RD.stream.getTracks().forEach(t=>t.stop());
   if(RD.lock)RD.lock.release().catch(()=>{});
-  removeEventListener("deviceorientation",roadOnTilt);
   removeEventListener("devicemotion",roadOnShake);
   if(RD.raf)cancelAnimationFrame(RD.raf);
   if(RD.pingIv)clearInterval(RD.pingIv);
@@ -45192,14 +45302,40 @@ function roadFrame(ts){
   drawRoad(ts);
   RD.raf=requestAnimationFrame(roadFrame);
 }
+/* ── полуразмах корпуса на экране (M168g) ──
+   h.bw — ширина ТЕЛА, а по бортам ещё пилоны, баки и крылья: у «Стрижа» размах
+   вдвое больше bw. Чтобы шараханье могло уходить к самому краю и при этом не
+   срезать корпус, размах меряем честно — один раз рисованием, с запасом хранения
+   по id корпуса, в единицах корпуса (умножается на sc уже на месте). */
+const ROAD_HALF={};
+function roadHullHalf(id){
+  if(ROAD_HALF[id]!=null)return ROAD_HALF[id];
+  const h=hullOf(id),K=8;
+  const o=document.createElement("canvas");
+  o.width=Math.max(32,Math.ceil(h.bw*K*6));o.height=Math.max(32,Math.ceil(h.len*K*2));
+  const oc=o.getContext("2d"),old=ctx;ctx=oc;
+  oc.save();oc.translate(o.width/2,o.height/2);oc.rotate(-Math.PI/2);oc.scale(K,K);
+  drawHull(id,false,false,0,0);
+  oc.restore();ctx=old;
+  const d=oc.getImageData(0,0,o.width,o.height).data;
+  let lo=o.width,hi=-1;
+  for(let y=0;y<o.height;y++)for(let x=0;x<o.width;x++)
+    if(d[(y*o.width+x)*4+3]>20){if(x<lo)lo=x;if(x>hi)hi=x;}
+  return ROAD_HALF[id]=hi<0?h.bw:Math.max(o.width/2-lo,hi-o.width/2)/K;
+}
 function drawRoad(ts){
   const cv=document.getElementById("roadcv"),c=cv.getContext("2d");
   const W=cv.width,H=cv.height,t=ts/1000;
+  /* настоящий шаг кадра: зашитая шестнадцатая врала вдвое на экране в 120 Гц —
+     лента сгущалась, гистерезис яруса и объявление системы вдвое укорачивались */
+  const dt=RD.lastFrame?clamp(t-RD.lastFrame,.001,.1):1/60;
+  RD.lastFrame=t;
+  const ease=tau=>1-Math.exp(-dt/tau);
   const spd=RD.kmh||0;
   /* ярус с гистерезисом: машина не мигает в «экспресс» на обгоне — новый ярус
      должен продержаться четыре секунды */
   const want=roadTier(spd)||1;
-  if(want!==(RD.tier||1)){RD.tierT=(RD.tierT||0)+.016;if(RD.tierT>4)RD.tier=want;}
+  if(want!==(RD.tier||1)){RD.tierT=(RD.tierT||0)+dt;if(RD.tierT>4)RD.tier=want;}
   else RD.tierT=0;
   const tier=RD.tier||1;
   const fast=clamp(spd/(tier===3?900:tier===2?330:120),0,1);
@@ -45211,14 +45347,15 @@ function drawRoad(ts){
   c.fillStyle=g;c.fillRect(0,0,W,H);
   /* туманности: три мягких пятна, дышат энергией, цвет — настроение музыки.
      Складываются светом (lighter) и сидят некрупно в верхних двух третях —
-     ровная заливка на весь экран убивала космос (проход самокритики M168b) */
+     ровная заливка на весь экран убивала космос (проход самокритики M168b).
+     Подняты (M168g): на прежних .07 кадр был пустой чернотой, особенно на стоянке */
   c.save();c.globalCompositeOperation="lighter";
   for(let i=0;i<3;i++){
     const bx=W*(.16+.34*i)+Math.sin(t*.05+i*2.1)*W*.06;
     const by=H*(.16+.14*Math.sin(t*.04+i*1.7))+i*H*.12;
     const rad=(H*.16+H*.06*Math.sin(t*.09+i))*(1+en*.9);
     const ng=c.createRadialGradient(bx,by,0,bx,by,rad);
-    const a=(.07+en*.2)*(1-i*.18);
+    const a=(.12+en*.24)*(1-i*.16);
     ng.addColorStop(0,"hsla("+((hue+i*42)%360)+",75%,"+(40+RD.bright*20)+"%,"+a.toFixed(3)+")");
     ng.addColorStop(.6,"hsla("+((hue+i*42)%360)+",75%,34%,"+(a*.4).toFixed(3)+")");
     ng.addColorStop(1,"hsla("+((hue+i*42)%360)+",75%,30%,0)");
@@ -45226,15 +45363,30 @@ function drawRoad(ts){
   }
   c.restore();
   /* корабль летит ВВЕРХ (портретный экран — дорога впереди): звёзды текут
-     вниз; на экспрессе тянутся вдвое, бит рождает новые */
+     вниз; на экспрессе тянутся вдвое, бит рождает новые.
+     У каждой звезды СВОИ размер, длина и яркость (M168g): прежде все были
+     одинаковы — поток читался ровным дождём. Мелких много, жирных единицы
+     (куб от ровного), одна из восьми — тёплая или в цвет настроения. */
   const r=rng(0x50AD);
   const streak=tier===2?2.2:tier===3?4:1;
-  for(let i=0;i<90;i++){
+  const nst=tier===3?190:tier===2?150:110;
+  for(let i=0;i<nst;i++){
     const depth=.25+r()*.75,x=r()*W;
+    const q=r(),sz=.7+q*q*q*2.2;
+    const own=.5+r()*1.3;
+    const warm=r()<.125;
     const y=(r()*H+t*(20+Math.min(spd,300)*3)*depth)%H;
-    c.globalAlpha=.25+depth*.6;
-    c.fillStyle=depth>.8?"#cfe3ea":"#7d8fa0";
-    c.fillRect(x,((y%H)+H)%H,depth>.8?1.6:1,1+fast*14*depth*streak);
+    c.globalAlpha=clamp((.18+depth*.55)*(.6+sz*.22),0,.95);
+    c.fillStyle=warm?"hsla("+hue+",55%,84%,1)":depth>.8?"#cfe3ea":"#7d8fa0";
+    c.fillRect(x,((y%H)+H)%H,sz,sz+fast*14*depth*streak*own);
+  }
+  /* дальняя пыль: почти неподвижна — от неё берётся глубина, а не скорость */
+  for(let i=0;i<60;i++){
+    const depth=.05+r()*.15,x=r()*W;
+    const y=(r()*H+t*(6+Math.min(spd,300)*.5)*depth)%H;
+    c.globalAlpha=.10+depth*.5;
+    c.fillStyle="#5c6b7a";
+    c.fillRect(x,((y%H)+H)%H,1,1);
   }
   c.globalAlpha=1;
   /* гипердрайв (самолёт): звёздный тоннель — росчерки сходятся в точку по
@@ -45257,7 +45409,7 @@ function drawRoad(ts){
      попутные корабли: искра с выхлопом, своя глубина и свой дрейф. Рисунок
      детерминирован сектором, у всех в клетке одна картина; появляются и
      тают плавно, чтобы смена счёта не мигала. */
-  RD.matesShow=(RD.matesShow||0)+(Math.min(RD.mates||0,5)-(RD.matesShow||0))*.02;
+  RD.matesShow=(RD.matesShow||0)+(Math.min(RD.mates||0,5)-(RD.matesShow||0))*ease(.83);
   if(RD.matesShow>.05&&RD.sys){
     c.save();c.globalCompositeOperation="lighter";
     const pr=rng(hashi(RD.sys.cx,RD.sys.cy,0x9110));
@@ -45283,7 +45435,7 @@ function drawRoad(ts){
     RD.sparks.push({x:W*(.1+Math.random()*.8),y:-20,v:2+Math.random()*3+fast*6,life:1,big:Math.random()<.2});
   for(let i=RD.sparks.length-1;i>=0;i--){
     const s=RD.sparks[i];
-    s.y+=s.v*(H/700);s.life-=.004;
+    s.y+=s.v*(H/700)*60*dt;s.life-=.24*dt;
     if(s.y>H+30||s.life<=0){RD.sparks.splice(i,1);continue;}
     c.globalAlpha=s.life*.9;
     c.fillStyle="hsla("+hue+",80%,80%,1)";
@@ -45296,86 +45448,147 @@ function drawRoad(ts){
   c.globalAlpha=1;
   /* белые импульсы касания — как у «Волны» */
   for(let i=RD.pulses.length-1;i>=0;i--){
-    const p=RD.pulses[i];p.r+=W*.012;p.a*=.94;
+    const p=RD.pulses[i];p.r+=W*.012*60*dt;p.a*=Math.exp(-dt/.27);
     if(p.a<.02){RD.pulses.splice(i,1);continue;}
     c.strokeStyle="rgba(255,255,255,"+p.a.toFixed(3)+")";c.lineWidth=2;
     c.beginPath();c.arc(p.x,p.y,p.r,0,TAU);c.stroke();
   }
-  /* корабль: крен — гироскоп; разгон задирает нос и раздувает факел,
-     тормоз бьёт носовыми соплами и клюёт вперёд */
-  RD.bank+=(RD.bankT-RD.bank)*.06;
-  RD.acc+=(RD.accT-RD.acc)*.08;RD.accT*=.995;
-  RD.shake*=.985;
-  RD.phase+=.016*(1+fast);
-  const bob=Math.sin(RD.phase*1.7)*H*.006*(1+RD.shake*2);
-  const jx=(Math.random()-.5)*RD.shake*6,jy=(Math.random()-.5)*RD.shake*6;
+  /* ── корпус на экране ──
+     Поворот машины кренит корпус и уводит его наружу; разгон задирает нос и
+     раздувает факел, тормоз бьёт носовыми соплами и клюёт вперёд. */
   const id=G.shipId,h=hullOf(id);
-  const sc=Math.min(W/(h.bw*5.2),H/(h.len*2.4))*.6;
-  /* шараханье в повороте: боковое усилие и наклон гонят корпус от центра,
-     потом он ПОСТЕПЕННО центрируется — быстро в сторону, медленно домой */
-  /* знак минус: телефон кренится в поворот, а корпус на экране уходит наружу */
-  const shove=-clamp((RD.latT||0)+(RD.bankT||0)*.8,-1,1);
-  RD.latT=(RD.latT||0)*.97;
-  const want2=shove*W*.35,x0=RD.xOff||0;
-  RD.xOff=x0+(want2-x0)*(Math.abs(shove)>.12?.12:.015);
+  /* корабль мельче (было ×.6): пятая экрана вместо четверти — кадру нужен
+     воздух, а ленте место, чтобы кончиться до подвала (M168g) */
+  const sc=Math.min(W/(h.bw*5.2),H/(h.len*2.4))*.46;
+  /* поворот: в сторону быстро, обратно медленно — иначе снос не читается */
+  const tauT=Math.abs(RD.turnT||0)>Math.abs(RD.turn||0)?ROAD_TURN_ATK:ROAD_TURN_REL;
+  RD.turn=(RD.turn||0)+((RD.turnT||0)-(RD.turn||0))*ease(tauT);
+  RD.bankT=clamp(RD.turn*.7,-1,1);
+  RD.bank+=(RD.bankT-RD.bank)*ease(.27);
+  RD.acc+=(RD.accT-RD.acc)*ease(.2);RD.accT*=Math.exp(-dt/3.3);
+  /* тряску ведёт roadOnShake; здесь она сама гаснет, если датчик замолчал */
+  RD.shake=(RD.shake||0)*Math.exp(-dt/2.5);
+  RD.kick=(RD.kick||0)*Math.exp(-dt/.12);
+  RD.phase+=dt*(1+fast);
+  const bob=Math.sin(RD.phase*1.7)*H*.006*(1+RD.shake*1.2);
+  /* дрожь — ГЛАДКАЯ, два несоизмеримых колебания около пяти герц. Прежде это
+     был покадровый Math.random(): на 60 Гц он читается не вибрацией, а
+     дёрганьем, и на видео стробит (M168g) */
+  RD.wob=(RD.wob||0)+dt;
+  const wA=H*.0028*RD.shake;
+  const jx=(Math.sin(RD.wob*32.0)*.6+Math.sin(RD.wob*52.1+1.7)*.4)*wA;
+  const jy=(Math.sin(RD.wob*42.1+2.4)*.55+Math.sin(RD.wob*27.0+.9)*.45)*wA*.85+RD.kick*H*.012;
+  /* шараханье в повороте: корпус уходит НАРУЖУ и потом ПОСТЕПЕННО центрируется.
+     Ворота по скорости: во дворе и с телефоном в руках не швыряет, но крен от
+     наклона телефона остаётся — экран живой и на стоянке */
+  const gate=clamp((spd-ROAD_MOVE_GATE)/(ROAD_MOVE_FULL-ROAD_MOVE_GATE),0,1);
+  const shove=clamp(RD.turn*gate,-1,1);
+  const maxOff=Math.max(0,Math.min(W*ROAD_SWERVE,W*.5-roadHullHalf(id)*sc-W*.02));
+  const want2=shove*maxOff;
+  const kOff=ease(Math.abs(want2)>Math.abs(RD.xOff||0)?ROAD_XOFF_OUT:ROAD_XOFF_HOME);
+  const lim=W*1.2*dt;                     /* и ничего не может прыгнуть за кадр */
+  RD.xOff=(RD.xOff||0)+clamp((want2-(RD.xOff||0))*kOff,-lim,lim);
   /* разгон подтягивает корпус к верху экрана, тормоз — к низу */
-  const wantY=-clamp(RD.acc,-1,1)*H*.1,y0=RD.yOff||0;
-  RD.yOff=y0+(wantY-y0)*.06;
-  /* шлейф из сопел — та же лента, что в полёте (16-flight): газ остаётся,
-     где выброшен, и стекает вниз вместе с потоком звёзд; корабль шарахается —
-     лента изгибается. Цвет — trailTint, ядро добела, к хвосту в акцент корпуса */
+  const wantY=-clamp(RD.acc,-1,1)*H*.1;
+  RD.yOff=(RD.yOff||0)+(wantY-(RD.yOff||0))*ease(.27);
   const rot=-Math.PI/2+RD.bank*.22-RD.acc*.06;
   const cx=W*.5+RD.xOff+jx,cy=H*.5+bob+jy+RD.yOff;
+  /* ── шлейф ──
+     Газ остаётся, где выброшен, и стекает вниз вместе с потоком звёзд; корабль
+     шарахается — лента изгибается. Точки кладутся через равный ШАГ ПО ПУТИ, а не
+     раз в кадр: тогда лента одинаково плотная и на 60, и на 120 Гц, и на любой
+     скорости. Срок жизни подобран так, чтобы лента ВСЕГДА была одной длины на
+     экране и успевала погаснуть в кадре — прежде она была длиной в 1.7 экрана,
+     и её обрубала нижняя кромка прямо по кнопке НАЗАД (M168g). */
   if(!RD.trail){RD.trail=[];RD.burst=0;}
   const thrust=spd>ROAD_VMIN||RD.acc>.2;
   if(thrust&&!RD.thrOn)RD.burst++;
   RD.thrOn=thrust;
-  /* поток привязан к экрану: и на шаге, и на трассе лента тянется на добрую
-     его половину, а не обрубком у кормы */
   const flow=H*(.22+fast*1.2);
+  const span=ROAD_TRAIL_LEN*H/flow;
   for(let i=RD.trail.length-1;i>=0;i--){
-    const p=RD.trail[i];p.y+=flow*.016;p.life-=.016;
+    const p=RD.trail[i];
+    p.y+=flow*dt;p.x+=p.vx*dt;p.life-=dt;
     if(p.life<=0||p.y>H+40)RD.trail.splice(i,1);
   }
-  if(thrust&&RD.trail.length<540){
+  if(thrust){
+    const step=H*ROAD_TRAIL_STEP;
+    RD.emit=(RD.emit||0)+flow*dt;
+    const n=Math.min(6,Math.floor(RD.emit/step));
+    RD.emit-=n*step;
     const co=Math.cos(rot),si=Math.sin(rot);
-    const span=(1.5+fast*1.3)*(1+Math.max(0,RD.acc)*.8);
-    for(let i=0;i<h.eng.length;i++){
-      const e=h.eng[i];
-      const ex=cx+(e.x*co-e.y*si)*sc,ey=cy+(e.x*si+e.y*co)*sc;
-      RD.trail.push({x:ex+(Math.random()-.5)*1.5,y:ey,e:i,b:RD.burst,
-        r:e.r*sc*(.54+Math.random()*.08),max:span,life:span});
+    const px=RD.cxPrev==null?cx:RD.cxPrev,py=RD.cyPrev==null?cy:RD.cyPrev;
+    for(let k=n;k>0&&RD.trail.length<ROAD_TRAIL_MAX;k--){
+      const back=(k-1)*step+RD.emit;                       /* сколько точка уже проехала вниз */
+      const fr=clamp(1-back/Math.max(1e-3,flow*dt),0,1);   /* и где в это время был корабль */
+      const bx=px+(cx-px)*fr,by=py+(cy-py)*fr;
+      for(let i=0;i<h.eng.length;i++){
+        const e=h.eng[i];
+        RD.trail.push({x:bx+(e.x*co-e.y*si)*sc,y:by+(e.x*si+e.y*co)*sc+back,e:i,b:RD.burst,
+          vx:(Math.sin(t*2.3+i*2.1)*.7+(Math.random()-.5)*.6)*W*.045,
+          r:e.r*sc*(.6+Math.random()*.06),max:span,life:Math.max(.02,span-back/flow)});
+      }
     }
   }
+  RD.cxPrev=cx;RD.cyPrev=cy;
   {
     const T=trailTint(id,G.mods.engine|0);
-    c.save();c.globalCompositeOperation="lighter";c.lineCap="butt";c.lineJoin="round";
+    c.save();c.globalCompositeOperation="lighter";
     const lanes={};
     for(const p of RD.trail){const k=p.e+"/"+p.b;(lanes[k]||(lanes[k]=[])).push(p);}
     for(const k in lanes){
       const arr=lanes[k];
-      for(let i=1;i<arr.length;i++){
-        const a=arr[i-1],b2=arr[i];
-        const u=clamp((a.life/a.max+b2.life/b2.max)*.5,0,1);
-        const col=u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
-        /* гаснет мягче, чем в полёте: заставку смотрят, а не пролетают */
-        c.strokeStyle=rgba(col,(u*.4+u*u*.35).toFixed(3));
-        c.lineWidth=Math.max(1.5,b2.r*(3.2-u*1.6)*1.6);
-        c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b2.x,b2.y);c.stroke();
+      if(arr.length<2)continue;
+      /* ОДНО тело на сопло: кромка туда, кромка обратно, одна заливка с
+         продольным градиентом. Прежде лента рисовалась сотней отрезков со
+         сложением света — на стыках копился пересвет, ширина росла ступеньками,
+         и газ превращался в стопку кирпичей (разбор M168g) */
+      const nrm=i=>{
+        const q=arr[Math.min(arr.length-1,i+1)],o=arr[Math.max(0,i-1)];
+        const tx=q.x-o.x,ty=q.y-o.y,tl=Math.hypot(tx,ty)||1;
+        const p=arr[i],u=clamp(p.life/p.max,0,1),w=p.r*(1.4+(1-u)*2.6);
+        return [-ty/tl*w,tx/tl*w];
+      };
+      c.beginPath();
+      for(let i=0;i<arr.length;i++){
+        const p=arr[i],nn=nrm(i);
+        if(i===0)c.moveTo(p.x+nn[0],p.y+nn[1]);else c.lineTo(p.x+nn[0],p.y+nn[1]);
       }
-      /* выход из сопла: раскалённое ядро с ореолом, вдвое крупнее прежнего */
-      const f=arr[arr.length-1];
-      if(f&&f.life>f.max-.05){
-        const rr=Math.max(2,f.r*2);
-        const hg=c.createRadialGradient(f.x,f.y,0,f.x,f.y,rr*3);
-        hg.addColorStop(0,rgba(T.core,.8));hg.addColorStop(.35,rgba(T.mid,.3));hg.addColorStop(1,rgba(T.edge,0));
-        c.fillStyle=hg;c.beginPath();c.arc(f.x,f.y,rr*3,0,TAU);c.fill();
-        c.fillStyle=rgba(T.core,.9);
-        c.beginPath();c.arc(f.x,f.y,rr,0,TAU);c.fill();
+      for(let i=arr.length-1;i>=0;i--){
+        const p=arr[i],nn=nrm(i);
+        c.lineTo(p.x-nn[0],p.y-nn[1]);
+      }
+      c.closePath();
+      const a0=arr[0],a1=arr[arr.length-1];
+      const u0=clamp(a0.life/a0.max,0,1),u1=clamp(a1.life/a1.max,0,1);
+      const col=u=>u>.78?mixc(T.mid,T.core,(u-.78)/.22):mixc(T.edge,T.mid,u/.78);
+      /* спад квадратичный, как в полёте: с линейным хвост держал яркость почти
+         до конца и выглядел начерченной линией, а не рассеянным газом */
+      const alp=u=>(u*u*.30+u*u*u*u*.5).toFixed(3);
+      if(Math.hypot(a1.x-a0.x,a1.y-a0.y)<1)c.fillStyle=rgba(col(u1),alp(u1));
+      else{
+        const gr=c.createLinearGradient(a1.x,a1.y,a0.x,a0.y);
+        for(let j=0;j<=4;j++){const s=j/4,u=u1+(u0-u1)*s;gr.addColorStop(s,rgba(col(u),alp(u)));}
+        c.fillStyle=gr;
+      }
+      c.fill();
+      /* выход из сопла: раскалённое ядро с ореолом */
+      if(a1.life>a1.max-.06){
+        const rr2=Math.max(2,a1.r*1.7);
+        const hg=c.createRadialGradient(a1.x,a1.y,0,a1.x,a1.y,rr2*3);
+        hg.addColorStop(0,rgba(T.core,.75));hg.addColorStop(.35,rgba(T.mid,.28));hg.addColorStop(1,rgba(T.edge,0));
+        c.fillStyle=hg;c.beginPath();c.arc(a1.x,a1.y,rr2*3,0,TAU);c.fill();
+        c.fillStyle=rgba(T.core,.85);
+        c.beginPath();c.arc(a1.x,a1.y,rr2,0,TAU);c.fill();
       }
     }
     c.restore();
   }
+  /* нижняя кромка гаснет в фон: под ней подвал с кнопкой НАЗАД, и лента любой
+     длины не должна её резать (M168g) */
+  const mg=c.createLinearGradient(0,H*(1-ROAD_MASK),0,H);
+  mg.addColorStop(0,"rgba(6,10,18,0)");mg.addColorStop(1,"rgba(6,10,18,1)");
+  c.fillStyle=mg;c.fillRect(0,H*(1-ROAD_MASK),W,H*ROAD_MASK);
   const old=ctx;ctx=c;
   c.save();
   c.translate(cx,cy);
@@ -45401,12 +45614,12 @@ function drawRoad(ts){
   const gh=H*(.16+en*.26);
   const wg=c.createLinearGradient(0,H-gh,0,H);
   wg.addColorStop(0,"hsla("+hue+",75%,55%,0)");
-  wg.addColorStop(1,"hsla("+hue+",78%,58%,"+(.14+en*.32+RD.beat*.15).toFixed(3)+")");
+  wg.addColorStop(1,"hsla("+hue+",78%,58%,"+(.18+en*.32+RD.beat*.15).toFixed(3)+")");
   c.fillStyle=wg;c.fillRect(0,H-gh,W,gh);
   /* числа. Строки складываются курсором: чего нет — того нет, дыр не остаётся.
      На стоянке ни «—», ни «+0 кр» не висят (проход самокритики M168c) */
   const R=roadAll();
-  RD.crShow+=(R.cr-RD.crShow)*.12;                     /* счётчик тикает, не прыгает */
+  RD.crShow+=(R.cr-RD.crShow)*ease(.13);               /* счётчик тикает, не прыгает */
   const combo=roadCombo(RD.moveT);
   const px2=Math.round(W*.05),base=Math.round(H*.1),stand=spd<ROAD_VMIN;
   c.textAlign="left";
@@ -45453,8 +45666,10 @@ function drawRoad(ts){
   c.font=Math.round(H*.015)+"px ui-monospace,monospace";
   if(R.cr>=ROAD_CR_CAP){yy+=Math.round(H*.026);
     c.fillText("дневной потолок собран — дальше просто красиво",px2,yy);}
-  if(RD.gps||RD.mic){yy+=Math.round(H*.022);
-    c.fillText([RD.gps,RD.mic].filter(Boolean).join(" · "),px2,yy);}
+  /* телефон лёг набок: экранная ось X встала к вертикали, «поперёк» не
+     определено, а гироскопа нет — честно молчим, а не выдумываем поворот */
+  const hints=[RD.gps,RD.mic,RD.blind?"телефон лежит боком — повороты не читаю":null].filter(Boolean);
+  if(hints.length){yy+=Math.round(H*.022);c.fillText(hints.join(" · "),px2,yy);}
   if(!RD.asked){
     c.fillStyle="rgba(242,178,92,.85)";
     c.font=Math.round(H*.017)+"px ui-monospace,monospace";
@@ -45464,7 +45679,7 @@ function drawRoad(ts){
   }
   /* въезд в новую систему — объявление по центру, гаснет за пару секунд */
   if(RD.sysFlash>0&&RD.sys){
-    RD.sysFlash-=.016;
+    RD.sysFlash-=dt;
     const a2=clamp(Math.min(1,RD.sysFlash),0,1);
     c.textAlign="center";
     c.fillStyle="hsla("+hue+",70%,80%,"+(a2*.9).toFixed(2)+")";

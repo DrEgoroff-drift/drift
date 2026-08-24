@@ -30,8 +30,8 @@ TEST_SUITES.push(()=>suite("дорога: километры — в кредит
   eq(roadAll().cr,ROAD_CR_CAP,"дневной потолок: "+ROAD_CR_CAP);
   const c1=G.credits;roadEarnKm(50,0);
   eq(G.credits,c1,"выше потолка не капает");
-  /* назавтра заново */
-  G.t+=CEL_DAY;roadEarnKm(1,0);
+  /* назавтра заново: день календарный, поэтому двигаем отметку дня, а не G.t */
+  roadAll().day=-1;roadEarnKm(1,0);
   eq(roadAll().cr,2,"новый день — новый счёт");
   /* сохранение */
   const s=snapshot();G.road=null;applySave(JSON.parse(JSON.stringify(s)));
@@ -80,4 +80,61 @@ TEST_SUITES.push(()=>suite("дорога: экран, разгон и тормо
   eq(RD,null,"датчики отпущены");
   ok(recordAll().e.some(x=>x.a==="дорога"&&/командировочные/.test(x.s)),"итог — командировочными в книжку");
   G.road=null;
+}));
+
+TEST_SUITES.push(()=>suite("дорога: кривой держатель снят автонулём, поворот меряется рысканием",()=>{
+  resetWorld();
+  G.road=null;
+  const G0=9.80665;
+  /* лента синтетических событий датчика: держатель стоит как задано, машина
+     едет как задано. Пятьдесят миллисекунд на событие — двадцать герц */
+  const feed=(n,v,rot)=>{for(let i=0;i<n;i++)roadOnShake({interval:50,
+    accelerationIncludingGravity:{x:v[0],y:v[1],z:v[2]},rotationRate:rot||null});};
+  const mount=deg=>{const a=deg*Math.PI/180;return [-G0*Math.sin(a),G0*Math.cos(a),0];};
+  const push=(base,deg,acc)=>{const a=deg*Math.PI/180;return [base[0]+acc*Math.cos(a),base[1]+acc*Math.sin(a),base[2]];};
+  const start=kmh=>{RD={kmh,shake:0,kick:0,turn:0,turnT:0,g0:null,g0T:0};};
+  /* ── ровный держатель, прямая дорога ── */
+  start(60);feed(120,mount(0));
+  ok(Math.abs(RD.turnT)<.03,"ровно и прямо — поворота нет: "+RD.turnT.toFixed(3));
+  /* ── скошенный на 15°: 9.81·sin15° = 2.54 м/с², это 0.26 g — БОЛЬШЕ, чем
+     стоит спокойный городской поворот. Без автонуля корпус висел бы у края ── */
+  start(60);feed(120,mount(15));
+  ok(Math.abs(RD.turnT)<.06,"перекос 15° снят автонулём: "+RD.turnT.toFixed(3));
+  start(60);feed(120,mount(-25));
+  ok(Math.abs(RD.turnT)<.06,"перекос -25° снят автонулём: "+RD.turnT.toFixed(3));
+  /* ── и на этом же кривом держателе настоящий поворот виден целиком ──
+     левый поворот: поперечное смотрит влево, корпус уходит НАПРАВО */
+  start(60);feed(120,mount(15));
+  feed(20,push(mount(15),15,-.30*G0));
+  ok(RD.turnT>.9,"поворот 0.30 g на кривом держателе — полный отброс: "+RD.turnT.toFixed(2));
+  feed(20,push(mount(15),15,+.30*G0));
+  ok(RD.turnT<-.9,"в другую сторону — симметрично: "+RD.turnT.toFixed(2));
+  /* ── база не учится в повороте: полминуты дуги не должны её «съесть» ── */
+  start(60);feed(120,mount(0));
+  feed(600,push(mount(0),0,-.30*G0));
+  ok(RD.turnT>.9,"тридцать секунд дуги — поворот не съеден базой: "+RD.turnT.toFixed(2));
+  /* ── одно рыскание, без поперечного: гироскоп считает по a=v·ω ──
+     100 км/ч и 4°/с — дуга шоссе: 27.8·0.0698 = 1.94 м/с², две трети шкалы */
+  start(100);feed(120,mount(0));
+  feed(20,mount(0),{alpha:0,beta:0,gamma:4});
+  ok(RD.turnT>.5&&RD.turnT<.95,"дуга шоссе по гироскопу — корпус вправо: "+RD.turnT.toFixed(2));
+  /* ── мёртвая зона: подруливание и швы асфальта корпус не двигают ── */
+  start(60);feed(120,mount(0));
+  feed(20,push(mount(0),0,.03*G0));
+  eq(RD.turnT,0,"0.03 g — мёртвая зона, корпус стоит");
+  /* ── телефон лёг набок: экранная ось X у вертикали, гироскопа нет —
+     честно молчим, а не выдумываем поворот ── */
+  start(60);feed(120,[G0*.9,0,0]);
+  ok(RD.blind,"ось X у вертикали и без гироскопа — поворот не читается");
+  /* ── а с гироскопом та же поза читается: рысканию всё равно, как воткнут ── */
+  start(60);feed(120,[G0*.9,0,0],{alpha:0,beta:0,gamma:0});
+  feed(20,[G0*.9,0,0],{alpha:0,beta:20,gamma:0});
+  ok(!RD.blind&&Math.abs(RD.turnT)>.3,"лежащий набок телефон: поворот берётся с гироскопа: "+RD.turnT.toFixed(2));
+  /* ── тряска: ровный асфальт не держит её в полке, яма даёт удар ── */
+  start(60);feed(120,mount(0));
+  for(let i=0;i<60;i++)feed(1,[Math.sin(i)*.25,G0+Math.cos(i*1.7)*.25,0]);
+  ok(RD.shake<.2,"ровный ход — тряска почти ноль: "+RD.shake.toFixed(2));
+  feed(3,[0,G0+5,0]);
+  ok(RD.kick>0,"яма даёт удар: "+RD.kick.toFixed(2));
+  RD=null;G.road=null;
 }));

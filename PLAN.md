@@ -130,6 +130,14 @@ bake per-plant sprites and shear them for the wind rather than redrawing paths p
 Tooling from this campaign: `docs/shot.ps1` (headless capture of any stand, kills its browser
 after), stands rewritten to compare — `mksettle` (three stages plus night plus a ×3.2 close-up),
 `mkcant` (all five hall types in one sheet).
+- **road companion (M168g, 0.136.1)** — closed by looking at four minutes of real driving: the exhaust
+  was a stack of bricks composited to opacity, the trip counter reset every game-minute, and a
+  crooked cradle was read as a permanent turn. Measurement rebuilt (auto-zero, gravity frame, yaw
+  rate), ribbon is one body per nozzle, footer no longer crossed. See docs/DESIGN-road.md, fifth
+  pass. Left open: the hull reads as grey mass at this size — plates all one value, white hairline
+  on every edge, and the ТП-68 plate is the brightest thing in the optical centre. Art direction,
+  needs the author.
+
 
 ### Graphics debt (open faults, one line each)
 
