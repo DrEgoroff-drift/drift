@@ -17,6 +17,7 @@ setTimeout(function(){
      resetWorld живёт только в тестовой сборке — стенд строится из игры */
   G.home=homeInit();G.home.tier=8;G.home.sx=G.sx;G.home.sy=G.sy;
   G.home.trophies=[{k:"a"},{k:"b"},{k:"c"},{k:"d"}];
+  G.owned=G.owned||{};G.owned["skat"]=1;G.home.garage=["skat"];
   /* жильцы: Вега на борту, домочадец и пара из экипажа — иначе дом пустой */
   G.vega={stage:2,aboard:1,att:0,mood:1,offend:-1,calls:0,said:0};
   G.crew=[{name:genName(rng(11)),role:"pilot"},{name:genName(rng(22)),role:"tech"}];
@@ -45,7 +46,7 @@ setTimeout(function(){
       G.home.tier=row[1]===3?2:8;
       enterHomeIn();
       /* хозяин встаёт там, где живут: иначе камера снимает пустые комнаты */
-      var st=hinRooms().find(function(v){return v.key==="hall";});
+      var st=hinRooms().find(function(v){return v.key==="garage";});
       G.hin.x=row[1]===3?90:(st?st.x+st.w*.5:hinWidth()*.5);
       for(var f=0;f<40;f++){hinFolkTick(1);}
       /* камера доезжает сама: сглаживание в drawHomeIn, поэтому кадров надо

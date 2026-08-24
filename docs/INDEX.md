@@ -821,7 +821,7 @@ HIN_MAN                      src/29c-home-in.js:20
 HIN_ROOM_H                   src/29c-home-in.js:22
 HIN_ROOM_W                   src/29c-home-in.js:25
 HIN_THINGS                   src/29c-home-in.js:152
-hinFigure                    src/29d-home-draw.js:379
+hinFigure                    src/29d-home-draw.js:421
 hinFolkMake                  src/29c-home-in.js:60
 hinFolkTick                  src/29c-home-in.js:81
 hinNear                      src/29c-home-in.js:169
@@ -2931,7 +2931,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29c-home-in.js · 11 КБ
   · дом изнутри: по нему ходят:1
 
-## src/29d-home-draw.js · 24 КБ
+## src/29d-home-draw.js · 27 КБ
   · дом изнутри: кадр:1
 
 ## tests/90-harness.js · 7 КБ

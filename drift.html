@@ -47039,15 +47039,57 @@ function hinRoomStuff(r,fy,ceil,P){
     ctx.strokeStyle="rgb(112,120,128)";ctx.lineWidth=1.2;
     ctx.beginPath();ctx.arc(at(.55),fy-M*.28,M*.13,Math.PI,TAU);ctx.stroke();
   }else if(r.key==="garage"){
-    ctx.fillStyle="rgba(120,126,132,.9)";
-    ctx.beginPath();
-    ctx.moveTo(at(.30)-M*1.5,fy);ctx.lineTo(at(.30)-M*1.2,fy-M*.86);
-    ctx.lineTo(at(.30)+M*1.1,fy-M*.94);ctx.lineTo(at(.30)+M*1.5,fy);
-    ctx.closePath();ctx.fill();
-    ctx.fillStyle="rgba(255,255,255,.08)";
-    ctx.beginPath();
-    ctx.moveTo(at(.30)-M*1.2,fy-M*.86);ctx.lineTo(at(.30)+M*1.1,fy-M*.94);
-    ctx.lineTo(at(.30)+M*.2,fy-M*.6);ctx.closePath();ctx.fill();
+    /* В гараже стоит НАСТОЯЩИЙ второй корабль, если он там есть (homeStore):
+       чехол поверх корпуса, стойки, лужа масла. Пустой гараж — пустой, и это
+       честно: обобщённый «катер под чехлом» врал о владении (проход M170). */
+    const kept=(G.home&&G.home.garage&&G.home.garage[0])||null;
+    const gx2=at(.30);
+    ctx.fillStyle="rgba(0,0,0,.3)";
+    ctx.beginPath();ctx.ellipse(gx2,fy-2,M*1.5,M*.16,0,0,TAU);ctx.fill();
+    if(kept&&typeof drawHull==="function"&&typeof hullOf==="function"){
+      /* drawHull рисует корпус примерно в 2.4 длины и 5.2 полуширины (те же
+         множители, что в дорожном экране 27k): считать масштаб по «голым»
+         len/bw — значит поставить в гараж корабль во всю комнату (M170) */
+      const h2=hullOf(kept);
+      const sc2=Math.min(M*2.3/(2.4*(h2.len||40)),M*1.0/(5.2*(h2.bw||12)));
+      ctx.save();
+      /* корпус лежит носом вправо, как на экране корабля: drawHull рисует в
+         своих единицах вокруг нуля */
+      ctx.translate(gx2,fy-M*.52);ctx.scale(sc2,sc2);
+      drawHull(kept,false,false,0,0);
+      ctx.restore();
+      /* Чехол укрывает НИЗ корпуса, а не весь корабль: под глухой трапецией
+         не видно, что там вообще стоит (самокритика M170). Складки по краю и
+         растяжки к полу — по ним видно, что он привязан и стоит давно. */
+      ctx.fillStyle="rgba(146,152,158,.72)";
+      ctx.beginPath();
+      ctx.moveTo(gx2-M*1.25,fy-M*.06);
+      ctx.quadraticCurveTo(gx2-M*.9,fy-M*.52,gx2-M*.2,fy-M*.5);
+      ctx.quadraticCurveTo(gx2+M*.5,fy-M*.48,gx2+M*1.1,fy-M*.06);
+      ctx.closePath();ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,.09)";
+      ctx.beginPath();
+      ctx.moveTo(gx2-M*.9,fy-M*.4);ctx.quadraticCurveTo(gx2-M*.2,fy-M*.56,gx2+M*.5,fy-M*.4);
+      ctx.lineTo(gx2+M*.4,fy-M*.3);ctx.quadraticCurveTo(gx2-M*.2,fy-M*.44,gx2-M*.85,fy-M*.3);
+      ctx.closePath();ctx.fill();
+      ctx.strokeStyle="rgba(60,56,52,.7)";ctx.lineWidth=1.2;
+      for(const s of [-.9,-.2,.6]){
+        ctx.beginPath();
+        ctx.moveTo(gx2+M*s,fy-M*.42);ctx.lineTo(gx2+M*s+M*.16,fy);ctx.stroke();
+      }
+    }else{
+      /* пустой гараж: козлы, канистры и пятно на полу — место ЖДЁТ корабль */
+      ctx.strokeStyle="rgb("+P.wood.map(v=>v*.6|0).join(",")+")";ctx.lineWidth=2.4;
+      for(const s of [-1,1]){
+        ctx.beginPath();
+        ctx.moveTo(gx2+s*M*.8-M*.2,fy);ctx.lineTo(gx2+s*M*.8,fy-M*.42);
+        ctx.lineTo(gx2+s*M*.8+M*.2,fy);ctx.stroke();
+      }
+      ctx.fillStyle="rgb("+P.wood.map(v=>v*.5|0).join(",")+")";
+      ctx.fillRect(gx2-M*1.0,fy-M*.46,M*2.0,M*.06);
+      ctx.fillStyle="rgb(96,104,90)";
+      for(let i=0;i<3;i++)ctx.fillRect(gx2-M*1.35+i*M*.28,fy-M*.3,M*.2,M*.3);
+    }
     ctx.strokeStyle="rgba(0,0,0,.3)";ctx.lineWidth=1;
     for(let i=0;i<5;i++){
       const xx=at(.30)-M*1.3+i*M*.62;
