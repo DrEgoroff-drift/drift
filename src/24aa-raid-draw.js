@@ -357,13 +357,9 @@ function drawRaid(){
     ctx.fillStyle="rgba(255,50,40,"+(S.hurt/10*.28).toFixed(2)+")";ctx.fillRect(0,0,W,H);
   }
   /* приборы: скафандр — он же здоровье */
-  const bw=Math.min(W-40,260),bx=20,by=H-40;
-  ctx.fillStyle="rgba(6,10,16,.72)";ctx.fillRect(bx-6,by-6,bw+12,18);
-  ctx.fillStyle=S.suit>40?"rgba(127,230,216,.85)":"rgba(255,90,70,.9)";
-  ctx.fillRect(bx,by,bw*clamp(S.suit/100,0,1),8);
-  ctx.fillStyle="rgba(242,178,92,.8)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText("СКАФАНДР "+Math.round(S.suit)+"% · ЗАРЯДОВ "+S.ammo+
-    (S.armor>0?" · БРОНЯ "+Math.round(S.armor*100)+"%":""),bx,by+18);
+  /* полоса скафандра и заряды ушли из угла канвы: скафандр — в строке
+     состояния, заряды и броня — в строке места (hud(), M178). Пэды больше
+     ничего не перекрывают. */
 }
 /* ── тело противника ──
    Абордаж — единственное место игры, где враг стоит на ногах в полный рост,

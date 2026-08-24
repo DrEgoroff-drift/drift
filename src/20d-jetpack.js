@@ -28,12 +28,8 @@ function jetTick(body,g,dt,air){
   body.jetOn=fire;
   return fire;
 }
-/* полоска запаса: на поверхности и в пещере одна и та же, слева внизу */
-function drawJetBar(x,y){
-  const f=jetFuel(),w=74;
-  ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillStyle="rgba(93,115,130,.9)";ctx.fillText("РАНЕЦ",x,y);
-  ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x+40,y-7,w,5);
-  ctx.fillStyle=f<.2?"#ff6b57":(G.surf&&G.surf.jetOn?"#ffd27a":"#7fe6d8");
-  ctx.fillRect(x+40,y-7,w*f,5);
-}
+/* Полоска запаса ЖИЛА НА КАНВЕ слева внизу — ровно под DOM-пэдами, и на
+   телефоне «РАНЕЦ» просвечивал сквозь кнопки ◀ ▶ (автор ткнул в это на
+   скрине, M178). Канва не знает, где стоят DOM-панели, и никогда не узнает —
+   поэтому показание переехало в строку состояния (28-loop, hud()), где
+   стоят все остальные шкалы. Здесь остался только расчёт. */

@@ -30,6 +30,8 @@ const $vf=document.getElementById("vFuel"),$vh=document.getElementById("vHull");
 const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse");
 const $vs=document.getElementById("vSuit"),$ub=document.querySelector("#ubar i");
 const $un=document.getElementById("unum");
+const $vj=document.getElementById("vJet"),$jb=document.querySelector("#jbar i");
+const $jn=document.getElementById("jnum");
 const $place=document.getElementById("place"),$sub=document.getElementById("sub");
 const $msg=document.getElementById("msg"),$prompt=document.getElementById("prompt");
 const $bThr=document.querySelector("[data-k=thrust]"),$bBrk=document.querySelector("[data-k=brake]");
@@ -95,13 +97,29 @@ function hud(){
      дома и на базе он не течёт — там шкале нечего показывать.
      Расстояние до корабля сюда не дублируем: его несёт фишка у кромки кадра,
      и она про мир, а не про интерфейс. */
-  const suitOn=G.surf&&(G.mode==="surface"||G.mode==="cave"||G.mode==="dig"||G.mode==="raid");
+  /* на абордаже скафандр свой (G.raid.suit): рейд входится из пояса, и G.surf
+     там может не быть вовсе */
+  const suitSrc=(G.mode==="raid"&&G.raid)?G.raid
+    :(G.surf&&(G.mode==="surface"||G.mode==="cave"||G.mode==="dig")?G.surf:null);
+  const suitOn=!!suitSrc;
   setSt($vs,"display",suitOn?"":"none");
   if(suitOn){
-    const su=clamp(G.surf.suit,0,100);
+    const su=clamp(suitSrc.suit,0,100);
     setSt($ub,"width",su.toFixed(1)+"%");
     setTx($un,Math.round(su)+"%");
     $vs.classList.toggle("low",su<35);$vs.classList.toggle("crit",su<18);
+  }
+  /* ранец — там же, где остальные шкалы. Прежде он рисовался на канве в левом
+     нижнем углу, ровно под DOM-пэдами, и «РАНЕЦ» просвечивал сквозь кнопки
+     (автор ткнул в это на скрине, M178). Показывается на ногах и только на
+     экранах, где ранцем пользуются. */
+  const jetOn=G.surf&&(G.mode==="surface"||G.mode==="cave");
+  setSt($vj,"display",jetOn?"":"none");
+  if(jetOn){
+    const jf=clamp(jetFuel(),0,1);
+    setSt($jb,"width",(jf*100).toFixed(1)+"%");
+    setTx($jn,Math.round(jf*100)+"%");
+    $vj.classList.toggle("low",jf<.2);
   }
   setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан");
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
@@ -113,7 +131,7 @@ function hud(){
      несколько секунд вспыхивала и гасла — сверху экрана шло мигание, которое
      ничего не сообщало. Плавный расход теперь молчит, а удар по корпусу,
      монета и груз — целые единицы, они панель будят. */
-  const suit=G.surf?G.surf.suit:100;
+  const suit=suitSrc?suitSrc.suit:100;
   hudWake([G.fuel,G.hull,held(),G.credits,suit],
     fr<.2||hr<.3||cr>=1||suit<25);
   /* пока открыт любой экран, приборы и кнопки полёта не нужны: они просвечивали
@@ -136,9 +154,9 @@ function hud(){
     const wn=weatherName(G.surf.p);
     if(wn)b+=" · "+wn;}
   else if(G.mode==="dig"){a="ШАХТА · "+(G.dig?G.dig.p.name.toUpperCase():"");
-    b=(G.dig?G.dig.row*3:0)+" м под грунтом";}
+    b=(G.dig?(G.dig.row*3)+" м · "+geoAt(G.dig.p,G.dig.row*DIG_CELL*DIG_GEO_K).ru:"");}
   else if(G.mode==="cave"){a="ПЕЩЕРА · "+G.surf.p.name.toUpperCase();
-    b=G.surf.p.T.ru;}
+    b=(G.cave?caveZoneAt(G.cave,G.cave.x).Z.ru+" · глубина "+Math.max(0,Math.round(G.cave.y)):G.surf.p.T.ru);}
   else if(G.mode==="belt"){a=(G.belt?G.belt.B.name:"ПОЯС").toUpperCase();
     b=(G.belt&&G.belt.B&&G.belt.B.res&&G.belt.B.res.length)
       ?("руда: "+G.belt.B.res.map(k=>(RES[k]&&RES[k].ru)||k).join(", "))
@@ -151,7 +169,8 @@ function hud(){
     b=(G.home&&HOME_TIERS[G.home.tier-1]?HOME_TIERS[G.home.tier-1].ru:"угол")+" · "+
       ((G.hin&&G.hin.folk.length)?"дома "+G.hin.folk.length:"никого нет");}
   else if(G.mode==="raid"){a=(G.raid?G.raid.PB.name:"АБОРДАЖ").toUpperCase();
-    b="пиратская база · "+(G.raid?G.raid.foes.filter(f=>f.hp>0).length+" живых":"");}
+    b="пиратская база · "+(G.raid?G.raid.foes.filter(f=>f.hp>0).length+" живых · зарядов "+G.raid.ammo+
+      (G.raid.armor>0?" · броня "+Math.round(G.raid.armor*100)+"%":""):"");}
   else if(G.mode==="dock"){a=G.st.name.toUpperCase();b=G.st.kind;}
   if(G.drones.length>0)b+=" · дронов работает: "+G.drones.length;
   /* небо говорит само за себя, но событие обязано быть НАЗВАНО: без имени

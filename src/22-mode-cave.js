@@ -517,10 +517,7 @@ function drawCave(){
   drawAstronaut({face:C.face,amp:C.walkAmp,phase:C.walkPhase,air:!C.on,jet:!!C.jetOn,
     mining:false,suitLow:G.surf.suit<25,lamp:true});
   ctx.restore();
-  ctx.fillStyle="rgba(127,230,216,.85)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText(caveZoneAt(C,C.x).Z.ru.toUpperCase()+" · "+Math.round(C.x)+"/"+CAVE_W+
-    " · ГЛУБИНА "+Math.max(0,Math.round(C.y)),12,H-30);
-  ctx.fillStyle=G.surf.suit>25?"rgba(93,115,130,.9)":"#ff6b57";
-  ctx.fillText("СКАФАНДР "+Math.round(G.surf.suit)+"%",12,H-16);
-  drawJetBar(12,H-44);
+  /* Показания больше не рисуются на канве в левом нижнем углу: там стоят
+     DOM-пэды, и текст просвечивал сквозь кнопки (M178). Скафандр и ранец
+     живут в строке состояния, галерея и глубина — в строке места (hud()). */
 }

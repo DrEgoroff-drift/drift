@@ -190,8 +190,20 @@ function skyGiant(p,e,x,y,dim,ringy){
   const c1=skyTint(p,3),c2=skyTint(p,1);
   const st=hex2rgb((G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a");
   /* тело подмешивает свет звезды: планета в небе освещена ею, а не собой */
-  const lit=c1.map((v,i)=>clamp(v*.55+st[i]*.42+26,0,255)|0);
-  const shd=c2.map((v,i)=>clamp(v*.34+st[i]*.06+10,0,255)|0);
+  let lit=c1.map((v,i)=>clamp(v*.55+st[i]*.42+26,0,255)|0);
+  let shd=c2.map((v,i)=>clamp(v*.34+st[i]*.06+10,0,255)|0);
+  /* ── ПЯТАЯ переделка: пол по небу (автор ткнул в «дырку» снова, M178) ──
+     Четвёртая чинила цвет тела, но не проверяла его ПРОТИВ НЕБА: на сумрачном
+     мире тело выходило темнее воздуха за ним и снова читалось проломом. Тело в
+     атмосфере не бывает темнее неба — воздух между глазом и планетой подсвечен
+     тем же светом. Пол считается от ТЕКУЩЕГО тона воздуха: днём это светлый
+     sky[0], ночью тёмный sky[1], между ними — час (surfNight). Считать от
+     ночного тона всегда было бы той же ошибкой на один шаг позже: днём пол
+     оказывался ниже неба, и дырка возвращалась. */
+  const nite=(typeof surfNight==="function")?surfNight(p):0;
+  const airF=[0,1,2].map(i=>lerp(p.T.sky[0][i],p.T.sky[1][i],nite)|0);
+  lit=lit.map((v,i)=>clamp(Math.max(v,airF[i]+42),0,255)|0);
+  shd=shd.map((v,i)=>clamp(Math.max(v,airF[i]+12),0,255)|0);
   const SS=(typeof sunSpot==="function")?sunSpot(p):{x:x-R,y:y-R};
   let ux=SS.x-x, uy=SS.y-y;
   const ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;
@@ -251,10 +263,24 @@ function skyGiant(p,e,x,y,dim,ringy){
   /* терминатор: ночная сторона гасится, а не рисуется отдельной фигурой.
      Идёт от звезды и НЕ до черноты: тело в небе не бывает провалом — ночную
      сторону подсвечивает и звезда через атмосферу, и свет собственных колец */
+  /* терминатор гасит НЕ чёрным, а тоном воздуха: чёрный при любой плотности
+     возвращал дырку, которую пол выше только что закрыл */
   const tg=ctx.createLinearGradient(x+ux*R*.05,y+uy*R*.05,x-ux*R*1.1,y-uy*R*1.1);
-  tg.addColorStop(0,"rgba(0,0,0,0)");tg.addColorStop(1,"rgba(0,0,0,.62)");
+  tg.addColorStop(0,"rgba("+airF.join(",")+",0)");
+  tg.addColorStop(1,"rgba("+airF.join(",")+",.58)");
   ctx.fillStyle=tg;ctx.fillRect(x-R,y-R,R*2,R*2);
   ctx.restore();
+  /* дымка вокруг тела: далёкая планета стоит В ВОЗДУХЕ, и он её размывает по
+     кромке — без этого диск вырезан из неба ножницами. Тон — текущий воздух:
+     первый заход брал ночной sky[1] и днём рисовал тёмный нимб, то есть
+     обратное задуманному */
+  if(p.T.atm!=="отсутствует"){
+    const hg=ctx.createRadialGradient(x,y,R*.94,x,y,R*1.3);
+    hg.addColorStop(0,"rgba("+airF.join(",")+","+(.20*dim).toFixed(3)+")");
+    hg.addColorStop(1,"rgba("+airF.join(",")+",0)");
+    ctx.fillStyle=hg;
+    ctx.beginPath();ctx.arc(x,y,R*1.3,0,TAU);ctx.fill();
+  }
   /* кромочный свет со стороны звезды — дуга вокруг направления на неё */
   ctx.strokeStyle="rgba(255,240,215,"+(.34*dim).toFixed(2)+")";
   ctx.lineWidth=1.8;
@@ -297,17 +323,31 @@ function skyGalaxy(p,e,x,y,dim){
 /* ── чёрная дыра: диск, аккреционное кольцо, слабое искривление вокруг ── */
 function skyHole(p,e,x,y,dim){
   const R=H*.075*e.s;
-  ctx.save();ctx.globalAlpha=dim;
-  /* линзирование подделываем двумя дугами и гашением фона — считать настоящее
-     отклонение лучей тут незачем, глаз читает именно это */
-  const lg=ctx.createRadialGradient(x,y,R*.9,x,y,R*3.4);
-  lg.addColorStop(0,"rgba(0,0,0,.9)");
-  lg.addColorStop(.28,"rgba(4,2,10,.5)");
-  lg.addColorStop(.62,"rgba(150,170,255,.07)");
-  lg.addColorStop(1,"rgba(0,0,0,0)");
-  ctx.fillStyle=lg;ctx.beginPath();ctx.arc(x,y,R*3.4,0,TAU);ctx.fill();
-  ctx.fillStyle="#000";ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.fill();
+  /* ── дыру ГАСИТ дневное небо, а не прозрачность (M178) ──
+     Дыра рисовалась одинаково всюду, только бледнее через globalAlpha. Сквозь
+     дневную атмосферу от неё оставалось большое ТЁМНОЕ пятно с еле видимым
+     обручем — тот самый «чёрный полигон в небе», в который ткнул автор.
+     Физика здесь на стороне картинки: днём рассеянный свет неба ярче всего
+     тёмного, и видно только то, что ЯРЧЕ неба — аккреционный диск, бледный,
+     как дневная луна. Чернота линзы — ночное зрелище: она приходит с темнотой
+     (surfNight) и в полную силу — только в вакууме. */
+  const atm=p.T.atm!=="отсутствует";
+  const nite=(typeof surfNight==="function")?surfNight(p):0;
+  const dark=atm?nite*.85:1;                 /* сколько черноты пропускает небо */
+  const glow=atm?(.35+nite*.5):1;            /* диск виден и днём, но бледно */
+  ctx.save();
+  if(dark>.03){
+    ctx.globalAlpha=dark;
+    const lg=ctx.createRadialGradient(x,y,R*.9,x,y,R*3.4);
+    lg.addColorStop(0,"rgba(0,0,0,.9)");
+    lg.addColorStop(.28,"rgba(4,2,10,.5)");
+    lg.addColorStop(.62,"rgba(150,170,255,.07)");
+    lg.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=lg;ctx.beginPath();ctx.arc(x,y,R*3.4,0,TAU);ctx.fill();
+    ctx.fillStyle="#000";ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.fill();
+  }
   /* аккреционный диск: перед и за горизонтом, поэтому две дуги разной яркости */
+  ctx.globalAlpha=glow;
   ctx.save();ctx.translate(x,y);ctx.rotate(-.22);
   ctx.strokeStyle="rgba(255,214,150,.75)";ctx.lineWidth=R*.16;
   ctx.beginPath();ctx.ellipse(0,0,R*1.9,R*.42,0,0,Math.PI);ctx.stroke();

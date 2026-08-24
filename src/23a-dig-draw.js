@@ -192,8 +192,28 @@ function digRockMass(p,camx,camy){
       ctx.lineTo(sx-aw*.46+aw*.92*t,sy+ah*.5-((hh&7)/7)*4);
     }
     ctx.closePath();
-    ctx.fillStyle="rgba(14,15,17,.92)";ctx.fill();
-    ctx.strokeStyle="rgba(226,222,206,.12)";ctx.lineWidth=1;ctx.stroke();
+    /* нутро не чёрное: сверху чуть теплее (пыль ловит свет фонарей), вглубь
+       гаснет — плоская заливка .92 черноты читалась дырой без кромки, и автор
+       ткнул в неё на скрине (M178, то же правило, что у валуна и устья) */
+    const vg=ctx.createLinearGradient(sx,sy-ah,sx,sy+ah*.5);
+    vg.addColorStop(0,"rgba(34,32,30,.94)");
+    vg.addColorStop(.5,"rgba(18,18,19,.94)");
+    vg.addColorStop(1,"rgba(10,11,13,.94)");
+    ctx.fillStyle=vg;ctx.fill();
+    /* кромка, поймавшая свет: верхняя дуга заметно светлее нижней */
+    ctx.save();ctx.clip();
+    ctx.strokeStyle="rgba(226,222,206,.30)";ctx.lineWidth=2.2;
+    ctx.beginPath();
+    for(let i=0;i<=N;i++){
+      const t=i/N, a=Math.PI*(1+t);
+      const hh=hashi(k*23+i,9,0x0C0C);
+      const rj=1+((hh&15)/15-.5)*.34;
+      const px2=sx+Math.cos(a)*aw*.5*rj, py2=sy+Math.sin(a)*ah*.9*rj+1.4;
+      i?ctx.lineTo(px2,py2):ctx.moveTo(px2,py2);
+    }
+    ctx.stroke();
+    ctx.restore();
+    ctx.strokeStyle="rgba(226,222,206,.10)";ctx.lineWidth=1;ctx.stroke();
     ctx.clip();
     /* обрушение из кровли: конус светлее полости, иначе его нет */
     ctx.fillStyle="rgba(58,54,48,.95)";
@@ -802,10 +822,9 @@ function drawDig(){
   drawAstronaut({face:D.face||1,amp:D.walkAmp,phase:D.walkPhase,air:false,
     mining:!!D.target,suitLow:suit<25,lamp:true});
   ctx.restore();
-  ctx.fillStyle="rgba(127,230,216,.85)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText("ГЛУБИНА "+(D.row*3)+" м · "+geoAt(p,D.row*DIG_CELL*DIG_GEO_K).ru.toUpperCase(),12,H-30);
-  ctx.fillStyle=suit>25?"rgba(93,115,130,.9)":"#ff6b57";
-  ctx.fillText("СКАФАНДР "+Math.round(suit)+"%",12,H-16);
+  /* показания ушли из левого нижнего угла: там DOM-пэды, и текст просвечивал
+     сквозь кнопки (M178). Скафандр — в строке состояния, глубина и порода —
+     в строке места (hud()). */
 }
 /* ── шахта остаётся выкопанной ──
    Ствол осыпался, стоило подняться на поверхность: спустился второй раз — снова

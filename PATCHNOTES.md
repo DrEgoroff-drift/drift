@@ -7,6 +7,39 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.147.0 — the postcard pass, 1: what the author circled (M178)
+
+The author cropped four places out of his own screenshots and said «поправь, чтобы смотрелось как
+открытка». Each crop turned out to be a real defect with a name:
+
+- **The "ringed planet" was a black hole, killed by the atmosphere.** `skyHole` drew the same
+  picture everywhere, only paler (`globalAlpha=dim`): through a day sky the bright accretion arcs
+  faded to nothing while the huge dark lens still landed at a third of its strength — a black
+  smudge with a barely-visible hoop. Day light does not work like that: what you see through a
+  bright sky is only what is *brighter* than it. Now the darkness comes with the dark
+  (`surfNight`, full only in vacuum) and the disc stays visible by day as a pale ghost — the way
+  a daytime moon does. At night the lens returns in force.
+- **The sky giant got a floor against the CURRENT air**, not the night tone: on a dim world its
+  body could still sink below the sky and read as a hole. Both sides are now clamped above
+  `lerp(sky[0],sky[1],night)`, the terminator quenches toward air instead of black, and a soft
+  halo of the same air sits round the limb — the body hangs in the atmosphere instead of being
+  cut out of it.
+- **The black polygons in the ground got their edges.** The cave mouth on the surface was a flat
+  `#050708` half-ellipse — the same "hole in the render" the author had already circled once on
+  the boulder. It now has a lip that caught the sky, an interior that darkens with depth, and
+  stones at the threshold. The mine's abandoned workings (flat `.92` black) got an interior
+  gradient and a lit upper rim.
+- **«РАНЕЦ» glowed through the thumb pads.** The jetpack bar — and the suit line in the cave, the
+  depth line in the mine, the suit/ammo strip in the raid — were painted on the canvas in the
+  bottom-left corner, exactly under the DOM pads. The canvas cannot know where DOM panels stand.
+  All of them moved into the state row (`РАНЕЦ` is a proper hairline next to СКАФАНДР, shown where
+  the jetpack is used) and the place line (cave gallery and depth, mine depth and stratum, raid
+  ammo and armour).
+- **On the phone the action prompt sat under the console glass** (the author's sixth crop). The
+  bottom storeys are restacked with real heights — pads, console, state, prompt — and the prompt
+  no longer reaches under the right rail either. `test.ps1 -Mobile` guards the stack.
+
+---
 ## 0.146.0 — the world heard: room tone (M178-10)
 
 The game had music, steps and events — and no *places*: between the notes every planet carried the

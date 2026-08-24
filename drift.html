@@ -114,6 +114,7 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 .bar.hold i{background:var(--rare)}
 .bar.shld i{background:#9fd8ff}
 .bar.suit i{background:#cfe3ea}
+.bar.jet i{background:#ffd27a}
 .bar.low i{background:var(--alarm)}
 .v.low u{color:var(--alarm)}
 /* тревога мигает, а не просто краснеет: периферийное зрение ловит движение */
@@ -716,7 +717,11 @@ body.road #console{display:none}
      шкалами съедают полосу, которой там и так нет. Остаются числа в одну
      строку над пультом, между зонами больших пальцев: слева состояние,
      справа место. Ни под пэды, ни под правый борт она не заходит. */
-  .hud{bottom:calc(env(safe-area-inset-bottom) + 166px);padding:0 10px;
+  /* Этажи снизу вверх: пэды (0–86) → пульт (96, до ~80 высоты) → строка
+     состояния (184) → подсказка (204). На скрине автора (M178) подсказка
+     стояла на 142 и уходила ПОД пульт: приёмник с диапазоном выше 46 px,
+     и этаж, посчитанный впритык, оказался внутри соседнего. */
+  .hud{bottom:calc(env(safe-area-inset-bottom) + 184px);padding:0 10px;
     right:auto;width:calc(100vw - 128px);align-items:center}
   .vitals{flex-direction:row;gap:10px}
   .v{grid-template-columns:auto auto;gap:5px;height:12px}
@@ -726,7 +731,7 @@ body.road #console{display:none}
   .locus u{font-size:10px}
   .locus s,.locus em{display:none}
   /* зона большого пальца: КАРТА и МЕНЮ спускаются к правому краю снизу */
-  .rail{top:auto;bottom:calc(env(safe-area-inset-bottom) + 158px)}
+  .rail{top:auto;bottom:calc(env(safe-area-inset-bottom) + 184px)}
   #zin,#zout{display:none!important}   /* зум — щипком */
   /* Сообщение вернулось наверх (A2). Его спустили вниз в M167, когда верх был
      занят приборами и место там стоило дорого; теперь приборы внизу, наверху
@@ -735,8 +740,10 @@ body.road #console{display:none}
      оно не панель, оно проходит. */
   #msg{top:20%;bottom:auto;white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis;max-width:calc(100vw - 24px);font-size:11px;line-height:1.4}
-  #prompt{bottom:calc(env(safe-area-inset-bottom) + 142px);white-space:nowrap;overflow:hidden;
-    text-overflow:ellipsis;max-width:calc(100vw - 24px);line-height:1.4}
+  /* подсказка не заходит под правый борт: та же зона, что у строки состояния */
+  #prompt{bottom:calc(env(safe-area-inset-bottom) + 204px);white-space:nowrap;overflow:hidden;
+    left:10px;right:128px;transform:none;
+    text-overflow:ellipsis;max-width:none;line-height:1.4}
   /* призрачных кнопок нет: ДЕЙСТВИЕ без действия отсутствует */
   body.mobile .pads button[data-k=act]:not(.ready){display:none}
 }
@@ -773,6 +780,7 @@ body.afoot .ipod{display:none}
     <div class="v" id="vHull"><b>КОРПУС</b><div class="bar hull" id="hbar"><i></i></div><u id="hnum">—</u></div>
     <div class="v" id="sgauge" style="display:none"><b>ЩИТ</b><div class="bar shld" id="sbar"><i></i></div><u id="snum">—</u></div>
     <div class="v" id="vSuit" style="display:none"><b>СКАФАНДР</b><div class="bar suit" id="ubar"><i></i></div><u id="unum">—</u></div>
+    <div class="v" id="vJet" style="display:none"><b>РАНЕЦ</b><div class="bar jet" id="jbar"><i></i></div><u id="jnum">—</u></div>
     <div class="v" id="vHold"><b>ТРЮМ</b><div class="bar hold" id="cbar"><i></i></div><u id="cnum">—</u></div>
   </div>
   <!-- приборы области (M122-M124): пять стрелок, невязка и полоска ленты.
@@ -997,7 +1005,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.146.0";
+const VER="0.147.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -27820,8 +27828,20 @@ function skyGiant(p,e,x,y,dim,ringy){
   const c1=skyTint(p,3),c2=skyTint(p,1);
   const st=hex2rgb((G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a");
   /* тело подмешивает свет звезды: планета в небе освещена ею, а не собой */
-  const lit=c1.map((v,i)=>clamp(v*.55+st[i]*.42+26,0,255)|0);
-  const shd=c2.map((v,i)=>clamp(v*.34+st[i]*.06+10,0,255)|0);
+  let lit=c1.map((v,i)=>clamp(v*.55+st[i]*.42+26,0,255)|0);
+  let shd=c2.map((v,i)=>clamp(v*.34+st[i]*.06+10,0,255)|0);
+  /* ── ПЯТАЯ переделка: пол по небу (автор ткнул в «дырку» снова, M178) ──
+     Четвёртая чинила цвет тела, но не проверяла его ПРОТИВ НЕБА: на сумрачном
+     мире тело выходило темнее воздуха за ним и снова читалось проломом. Тело в
+     атмосфере не бывает темнее неба — воздух между глазом и планетой подсвечен
+     тем же светом. Пол считается от ТЕКУЩЕГО тона воздуха: днём это светлый
+     sky[0], ночью тёмный sky[1], между ними — час (surfNight). Считать от
+     ночного тона всегда было бы той же ошибкой на один шаг позже: днём пол
+     оказывался ниже неба, и дырка возвращалась. */
+  const nite=(typeof surfNight==="function")?surfNight(p):0;
+  const airF=[0,1,2].map(i=>lerp(p.T.sky[0][i],p.T.sky[1][i],nite)|0);
+  lit=lit.map((v,i)=>clamp(Math.max(v,airF[i]+42),0,255)|0);
+  shd=shd.map((v,i)=>clamp(Math.max(v,airF[i]+12),0,255)|0);
   const SS=(typeof sunSpot==="function")?sunSpot(p):{x:x-R,y:y-R};
   let ux=SS.x-x, uy=SS.y-y;
   const ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;
@@ -27881,10 +27901,24 @@ function skyGiant(p,e,x,y,dim,ringy){
   /* терминатор: ночная сторона гасится, а не рисуется отдельной фигурой.
      Идёт от звезды и НЕ до черноты: тело в небе не бывает провалом — ночную
      сторону подсвечивает и звезда через атмосферу, и свет собственных колец */
+  /* терминатор гасит НЕ чёрным, а тоном воздуха: чёрный при любой плотности
+     возвращал дырку, которую пол выше только что закрыл */
   const tg=ctx.createLinearGradient(x+ux*R*.05,y+uy*R*.05,x-ux*R*1.1,y-uy*R*1.1);
-  tg.addColorStop(0,"rgba(0,0,0,0)");tg.addColorStop(1,"rgba(0,0,0,.62)");
+  tg.addColorStop(0,"rgba("+airF.join(",")+",0)");
+  tg.addColorStop(1,"rgba("+airF.join(",")+",.58)");
   ctx.fillStyle=tg;ctx.fillRect(x-R,y-R,R*2,R*2);
   ctx.restore();
+  /* дымка вокруг тела: далёкая планета стоит В ВОЗДУХЕ, и он её размывает по
+     кромке — без этого диск вырезан из неба ножницами. Тон — текущий воздух:
+     первый заход брал ночной sky[1] и днём рисовал тёмный нимб, то есть
+     обратное задуманному */
+  if(p.T.atm!=="отсутствует"){
+    const hg=ctx.createRadialGradient(x,y,R*.94,x,y,R*1.3);
+    hg.addColorStop(0,"rgba("+airF.join(",")+","+(.20*dim).toFixed(3)+")");
+    hg.addColorStop(1,"rgba("+airF.join(",")+",0)");
+    ctx.fillStyle=hg;
+    ctx.beginPath();ctx.arc(x,y,R*1.3,0,TAU);ctx.fill();
+  }
   /* кромочный свет со стороны звезды — дуга вокруг направления на неё */
   ctx.strokeStyle="rgba(255,240,215,"+(.34*dim).toFixed(2)+")";
   ctx.lineWidth=1.8;
@@ -27927,17 +27961,31 @@ function skyGalaxy(p,e,x,y,dim){
 /* ── чёрная дыра: диск, аккреционное кольцо, слабое искривление вокруг ── */
 function skyHole(p,e,x,y,dim){
   const R=H*.075*e.s;
-  ctx.save();ctx.globalAlpha=dim;
-  /* линзирование подделываем двумя дугами и гашением фона — считать настоящее
-     отклонение лучей тут незачем, глаз читает именно это */
-  const lg=ctx.createRadialGradient(x,y,R*.9,x,y,R*3.4);
-  lg.addColorStop(0,"rgba(0,0,0,.9)");
-  lg.addColorStop(.28,"rgba(4,2,10,.5)");
-  lg.addColorStop(.62,"rgba(150,170,255,.07)");
-  lg.addColorStop(1,"rgba(0,0,0,0)");
-  ctx.fillStyle=lg;ctx.beginPath();ctx.arc(x,y,R*3.4,0,TAU);ctx.fill();
-  ctx.fillStyle="#000";ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.fill();
+  /* ── дыру ГАСИТ дневное небо, а не прозрачность (M178) ──
+     Дыра рисовалась одинаково всюду, только бледнее через globalAlpha. Сквозь
+     дневную атмосферу от неё оставалось большое ТЁМНОЕ пятно с еле видимым
+     обручем — тот самый «чёрный полигон в небе», в который ткнул автор.
+     Физика здесь на стороне картинки: днём рассеянный свет неба ярче всего
+     тёмного, и видно только то, что ЯРЧЕ неба — аккреционный диск, бледный,
+     как дневная луна. Чернота линзы — ночное зрелище: она приходит с темнотой
+     (surfNight) и в полную силу — только в вакууме. */
+  const atm=p.T.atm!=="отсутствует";
+  const nite=(typeof surfNight==="function")?surfNight(p):0;
+  const dark=atm?nite*.85:1;                 /* сколько черноты пропускает небо */
+  const glow=atm?(.35+nite*.5):1;            /* диск виден и днём, но бледно */
+  ctx.save();
+  if(dark>.03){
+    ctx.globalAlpha=dark;
+    const lg=ctx.createRadialGradient(x,y,R*.9,x,y,R*3.4);
+    lg.addColorStop(0,"rgba(0,0,0,.9)");
+    lg.addColorStop(.28,"rgba(4,2,10,.5)");
+    lg.addColorStop(.62,"rgba(150,170,255,.07)");
+    lg.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=lg;ctx.beginPath();ctx.arc(x,y,R*3.4,0,TAU);ctx.fill();
+    ctx.fillStyle="#000";ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.fill();
+  }
   /* аккреционный диск: перед и за горизонтом, поэтому две дуги разной яркости */
+  ctx.globalAlpha=glow;
   ctx.save();ctx.translate(x,y);ctx.rotate(-.22);
   ctx.strokeStyle="rgba(255,214,150,.75)";ctx.lineWidth=R*.16;
   ctx.beginPath();ctx.ellipse(0,0,R*1.9,R*.42,0,0,Math.PI);ctx.stroke();
@@ -30699,15 +30747,11 @@ function jetTick(body,g,dt,air){
   body.jetOn=fire;
   return fire;
 }
-/* полоска запаса: на поверхности и в пещере одна и та же, слева внизу */
-function drawJetBar(x,y){
-  const f=jetFuel(),w=74;
-  ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillStyle="rgba(93,115,130,.9)";ctx.fillText("РАНЕЦ",x,y);
-  ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x+40,y-7,w,5);
-  ctx.fillStyle=f<.2?"#ff6b57":(G.surf&&G.surf.jetOn?"#ffd27a":"#7fe6d8");
-  ctx.fillRect(x+40,y-7,w*f,5);
-}
+/* Полоска запаса ЖИЛА НА КАНВЕ слева внизу — ровно под DOM-пэдами, и на
+   телефоне «РАНЕЦ» просвечивал сквозь кнопки ◀ ▶ (автор ткнул в это на
+   скрине, M178). Канва не знает, где стоят DOM-панели, и никогда не узнает —
+   поэтому показание переехало в строку состояния (28-loop, hud()), где
+   стоят все остальные шкалы. Здесь остался только расчёт. */
 
 /* ══════════════ ВИД КАК ВЕЩЬ (M174) ══════════════
    Игра вела реестр видов, которых не существует. «Вид» был именем, а не
@@ -35189,7 +35233,6 @@ function drawSurfaceHud(camx,camy){
       ctx.fillText(m.ru,sx,rowY+16);
     }
   }
-  drawJetBar(12,H-16);
 }
 function drawSurface(){
   const S=G.surf,tr=S.tr,p=S.p;
@@ -35285,10 +35328,34 @@ function drawSurface(){
     const cx=S.cave.x-camx;
     if(cx>-60&&cx<W+60){
       const cy=groundAt(tr,S.cave.x)-camy;
-      ctx.fillStyle="#050708";
+      /* ── вход, а не наклейка (M178) ──
+         Устье было плоским чёрным полуэллипсом — ровно тот «чёрный полигон
+         без кромки», в который автор уже тыкал на валуне. Правило то же:
+         у любого силуэта должна быть кромка, поймавшая небо, а у дыры — ещё
+         и глубина. Здесь: губа проёма светлее грунта (её лизнуло небо),
+         внутри не чернота, а уходящий вглубь тон породы, и пара камней у
+         порога, чтобы вход стоял в земле, а не лежал на ней. */
+      const amb=ambRGB(p);
+      /* нутро: сверху ещё чуть подсвечено, вглубь гаснет */
+      const ig=ctx.createLinearGradient(cx,cy-16,cx,cy+2);
+      ig.addColorStop(0,"rgba("+(amb[0]*.30|0)+","+(amb[1]*.32|0)+","+(amb[2]*.36|0)+",1)");
+      ig.addColorStop(.55,"rgba(8,10,13,1)");
+      ig.addColorStop(1,"rgba(4,5,7,1)");
+      ctx.fillStyle=ig;
       ctx.beginPath();ctx.ellipse(cx,cy-2,20,14,0,0,Math.PI,true);ctx.fill();
+      /* губа проёма: светлая дуга по верхнему краю */
+      ctx.strokeStyle="rgba("+(amb[0]*1.1+34|0)+","+(amb[1]*1.1+36|0)+","+(amb[2]*1.15+42|0)+",.6)";
+      ctx.lineWidth=1.8;
+      ctx.beginPath();ctx.ellipse(cx,cy-2,20,14,0,Math.PI*1.08,Math.PI*1.92);ctx.stroke();
+      /* камни у порога */
+      ctx.fillStyle="rgba("+(amb[0]*.5|0)+","+(amb[1]*.5|0)+","+(amb[2]*.55|0)+",.9)";
+      ctx.beginPath();ctx.ellipse(cx-16,cy-1,5,3.4,-.3,0,TAU);ctx.fill();
+      ctx.beginPath();ctx.ellipse(cx+14,cy,6,3.8,.2,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,.10)";
+      ctx.beginPath();ctx.ellipse(cx-17,cy-2.4,3.4,1.2,-.3,0,TAU);ctx.fill();
+      ctx.beginPath();ctx.ellipse(cx+12,cy-1.6,4,1.4,.2,0,TAU);ctx.fill();
       ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText("ПЕЩЕРА",cx,cy-22);
+      ctx.fillText("ПЕЩЕРА",cx,cy-24);
     }
   }
   for(const pl of S.plants){
@@ -37219,12 +37286,9 @@ function drawCave(){
   drawAstronaut({face:C.face,amp:C.walkAmp,phase:C.walkPhase,air:!C.on,jet:!!C.jetOn,
     mining:false,suitLow:G.surf.suit<25,lamp:true});
   ctx.restore();
-  ctx.fillStyle="rgba(127,230,216,.85)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText(caveZoneAt(C,C.x).Z.ru.toUpperCase()+" · "+Math.round(C.x)+"/"+CAVE_W+
-    " · ГЛУБИНА "+Math.max(0,Math.round(C.y)),12,H-30);
-  ctx.fillStyle=G.surf.suit>25?"rgba(93,115,130,.9)":"#ff6b57";
-  ctx.fillText("СКАФАНДР "+Math.round(G.surf.suit)+"%",12,H-16);
-  drawJetBar(12,H-44);
+  /* Показания больше не рисуются на канве в левом нижнем углу: там стоят
+     DOM-пэды, и текст просвечивал сквозь кнопки (M178). Скафандр и ранец
+     живут в строке состояния, галерея и глубина — в строке места (hud()). */
 }
 
 /* ══════════════ шахта: отрисовка ══════════════
@@ -37421,8 +37485,28 @@ function digRockMass(p,camx,camy){
       ctx.lineTo(sx-aw*.46+aw*.92*t,sy+ah*.5-((hh&7)/7)*4);
     }
     ctx.closePath();
-    ctx.fillStyle="rgba(14,15,17,.92)";ctx.fill();
-    ctx.strokeStyle="rgba(226,222,206,.12)";ctx.lineWidth=1;ctx.stroke();
+    /* нутро не чёрное: сверху чуть теплее (пыль ловит свет фонарей), вглубь
+       гаснет — плоская заливка .92 черноты читалась дырой без кромки, и автор
+       ткнул в неё на скрине (M178, то же правило, что у валуна и устья) */
+    const vg=ctx.createLinearGradient(sx,sy-ah,sx,sy+ah*.5);
+    vg.addColorStop(0,"rgba(34,32,30,.94)");
+    vg.addColorStop(.5,"rgba(18,18,19,.94)");
+    vg.addColorStop(1,"rgba(10,11,13,.94)");
+    ctx.fillStyle=vg;ctx.fill();
+    /* кромка, поймавшая свет: верхняя дуга заметно светлее нижней */
+    ctx.save();ctx.clip();
+    ctx.strokeStyle="rgba(226,222,206,.30)";ctx.lineWidth=2.2;
+    ctx.beginPath();
+    for(let i=0;i<=N;i++){
+      const t=i/N, a=Math.PI*(1+t);
+      const hh=hashi(k*23+i,9,0x0C0C);
+      const rj=1+((hh&15)/15-.5)*.34;
+      const px2=sx+Math.cos(a)*aw*.5*rj, py2=sy+Math.sin(a)*ah*.9*rj+1.4;
+      i?ctx.lineTo(px2,py2):ctx.moveTo(px2,py2);
+    }
+    ctx.stroke();
+    ctx.restore();
+    ctx.strokeStyle="rgba(226,222,206,.10)";ctx.lineWidth=1;ctx.stroke();
     ctx.clip();
     /* обрушение из кровли: конус светлее полости, иначе его нет */
     ctx.fillStyle="rgba(58,54,48,.95)";
@@ -38031,10 +38115,9 @@ function drawDig(){
   drawAstronaut({face:D.face||1,amp:D.walkAmp,phase:D.walkPhase,air:false,
     mining:!!D.target,suitLow:suit<25,lamp:true});
   ctx.restore();
-  ctx.fillStyle="rgba(127,230,216,.85)";ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText("ГЛУБИНА "+(D.row*3)+" м · "+geoAt(p,D.row*DIG_CELL*DIG_GEO_K).ru.toUpperCase(),12,H-30);
-  ctx.fillStyle=suit>25?"rgba(93,115,130,.9)":"#ff6b57";
-  ctx.fillText("СКАФАНДР "+Math.round(suit)+"%",12,H-16);
+  /* показания ушли из левого нижнего угла: там DOM-пэды, и текст просвечивал
+     сквозь кнопки (M178). Скафандр — в строке состояния, глубина и порода —
+     в строке места (hud()). */
 }
 /* ── шахта остаётся выкопанной ──
    Ствол осыпался, стоило подняться на поверхность: спустился второй раз — снова
@@ -38719,13 +38802,9 @@ function drawRaid(){
     ctx.fillStyle="rgba(255,50,40,"+(S.hurt/10*.28).toFixed(2)+")";ctx.fillRect(0,0,W,H);
   }
   /* приборы: скафандр — он же здоровье */
-  const bw=Math.min(W-40,260),bx=20,by=H-40;
-  ctx.fillStyle="rgba(6,10,16,.72)";ctx.fillRect(bx-6,by-6,bw+12,18);
-  ctx.fillStyle=S.suit>40?"rgba(127,230,216,.85)":"rgba(255,90,70,.9)";
-  ctx.fillRect(bx,by,bw*clamp(S.suit/100,0,1),8);
-  ctx.fillStyle="rgba(242,178,92,.8)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText("СКАФАНДР "+Math.round(S.suit)+"% · ЗАРЯДОВ "+S.ammo+
-    (S.armor>0?" · БРОНЯ "+Math.round(S.armor*100)+"%":""),bx,by+18);
+  /* полоса скафандра и заряды ушли из угла канвы: скафандр — в строке
+     состояния, заряды и броня — в строке места (hud(), M178). Пэды больше
+     ничего не перекрывают. */
 }
 /* ── тело противника ──
    Абордаж — единственное место игры, где враг стоит на ногах в полный рост,
@@ -47638,6 +47717,8 @@ const $vf=document.getElementById("vFuel"),$vh=document.getElementById("vHull");
 const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse");
 const $vs=document.getElementById("vSuit"),$ub=document.querySelector("#ubar i");
 const $un=document.getElementById("unum");
+const $vj=document.getElementById("vJet"),$jb=document.querySelector("#jbar i");
+const $jn=document.getElementById("jnum");
 const $place=document.getElementById("place"),$sub=document.getElementById("sub");
 const $msg=document.getElementById("msg"),$prompt=document.getElementById("prompt");
 const $bThr=document.querySelector("[data-k=thrust]"),$bBrk=document.querySelector("[data-k=brake]");
@@ -47703,13 +47784,29 @@ function hud(){
      дома и на базе он не течёт — там шкале нечего показывать.
      Расстояние до корабля сюда не дублируем: его несёт фишка у кромки кадра,
      и она про мир, а не про интерфейс. */
-  const suitOn=G.surf&&(G.mode==="surface"||G.mode==="cave"||G.mode==="dig"||G.mode==="raid");
+  /* на абордаже скафандр свой (G.raid.suit): рейд входится из пояса, и G.surf
+     там может не быть вовсе */
+  const suitSrc=(G.mode==="raid"&&G.raid)?G.raid
+    :(G.surf&&(G.mode==="surface"||G.mode==="cave"||G.mode==="dig")?G.surf:null);
+  const suitOn=!!suitSrc;
   setSt($vs,"display",suitOn?"":"none");
   if(suitOn){
-    const su=clamp(G.surf.suit,0,100);
+    const su=clamp(suitSrc.suit,0,100);
     setSt($ub,"width",su.toFixed(1)+"%");
     setTx($un,Math.round(su)+"%");
     $vs.classList.toggle("low",su<35);$vs.classList.toggle("crit",su<18);
+  }
+  /* ранец — там же, где остальные шкалы. Прежде он рисовался на канве в левом
+     нижнем углу, ровно под DOM-пэдами, и «РАНЕЦ» просвечивал сквозь кнопки
+     (автор ткнул в это на скрине, M178). Показывается на ногах и только на
+     экранах, где ранцем пользуются. */
+  const jetOn=G.surf&&(G.mode==="surface"||G.mode==="cave");
+  setSt($vj,"display",jetOn?"":"none");
+  if(jetOn){
+    const jf=clamp(jetFuel(),0,1);
+    setSt($jb,"width",(jf*100).toFixed(1)+"%");
+    setTx($jn,Math.round(jf*100)+"%");
+    $vj.classList.toggle("low",jf<.2);
   }
   setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан");
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
@@ -47721,7 +47818,7 @@ function hud(){
      несколько секунд вспыхивала и гасла — сверху экрана шло мигание, которое
      ничего не сообщало. Плавный расход теперь молчит, а удар по корпусу,
      монета и груз — целые единицы, они панель будят. */
-  const suit=G.surf?G.surf.suit:100;
+  const suit=suitSrc?suitSrc.suit:100;
   hudWake([G.fuel,G.hull,held(),G.credits,suit],
     fr<.2||hr<.3||cr>=1||suit<25);
   /* пока открыт любой экран, приборы и кнопки полёта не нужны: они просвечивали
@@ -47744,9 +47841,9 @@ function hud(){
     const wn=weatherName(G.surf.p);
     if(wn)b+=" · "+wn;}
   else if(G.mode==="dig"){a="ШАХТА · "+(G.dig?G.dig.p.name.toUpperCase():"");
-    b=(G.dig?G.dig.row*3:0)+" м под грунтом";}
+    b=(G.dig?(G.dig.row*3)+" м · "+geoAt(G.dig.p,G.dig.row*DIG_CELL*DIG_GEO_K).ru:"");}
   else if(G.mode==="cave"){a="ПЕЩЕРА · "+G.surf.p.name.toUpperCase();
-    b=G.surf.p.T.ru;}
+    b=(G.cave?caveZoneAt(G.cave,G.cave.x).Z.ru+" · глубина "+Math.max(0,Math.round(G.cave.y)):G.surf.p.T.ru);}
   else if(G.mode==="belt"){a=(G.belt?G.belt.B.name:"ПОЯС").toUpperCase();
     b=(G.belt&&G.belt.B&&G.belt.B.res&&G.belt.B.res.length)
       ?("руда: "+G.belt.B.res.map(k=>(RES[k]&&RES[k].ru)||k).join(", "))
@@ -47759,7 +47856,8 @@ function hud(){
     b=(G.home&&HOME_TIERS[G.home.tier-1]?HOME_TIERS[G.home.tier-1].ru:"угол")+" · "+
       ((G.hin&&G.hin.folk.length)?"дома "+G.hin.folk.length:"никого нет");}
   else if(G.mode==="raid"){a=(G.raid?G.raid.PB.name:"АБОРДАЖ").toUpperCase();
-    b="пиратская база · "+(G.raid?G.raid.foes.filter(f=>f.hp>0).length+" живых":"");}
+    b="пиратская база · "+(G.raid?G.raid.foes.filter(f=>f.hp>0).length+" живых · зарядов "+G.raid.ammo+
+      (G.raid.armor>0?" · броня "+Math.round(G.raid.armor*100)+"%":""):"");}
   else if(G.mode==="dock"){a=G.st.name.toUpperCase();b=G.st.kind;}
   if(G.drones.length>0)b+=" · дронов работает: "+G.drones.length;
   /* небо говорит само за себя, но событие обязано быть НАЗВАНО: без имени

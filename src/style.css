@@ -100,6 +100,7 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 .bar.hold i{background:var(--rare)}
 .bar.shld i{background:#9fd8ff}
 .bar.suit i{background:#cfe3ea}
+.bar.jet i{background:#ffd27a}
 .bar.low i{background:var(--alarm)}
 .v.low u{color:var(--alarm)}
 /* тревога мигает, а не просто краснеет: периферийное зрение ловит движение */
@@ -702,7 +703,11 @@ body.road #console{display:none}
      шкалами съедают полосу, которой там и так нет. Остаются числа в одну
      строку над пультом, между зонами больших пальцев: слева состояние,
      справа место. Ни под пэды, ни под правый борт она не заходит. */
-  .hud{bottom:calc(env(safe-area-inset-bottom) + 166px);padding:0 10px;
+  /* Этажи снизу вверх: пэды (0–86) → пульт (96, до ~80 высоты) → строка
+     состояния (184) → подсказка (204). На скрине автора (M178) подсказка
+     стояла на 142 и уходила ПОД пульт: приёмник с диапазоном выше 46 px,
+     и этаж, посчитанный впритык, оказался внутри соседнего. */
+  .hud{bottom:calc(env(safe-area-inset-bottom) + 184px);padding:0 10px;
     right:auto;width:calc(100vw - 128px);align-items:center}
   .vitals{flex-direction:row;gap:10px}
   .v{grid-template-columns:auto auto;gap:5px;height:12px}
@@ -712,7 +717,7 @@ body.road #console{display:none}
   .locus u{font-size:10px}
   .locus s,.locus em{display:none}
   /* зона большого пальца: КАРТА и МЕНЮ спускаются к правому краю снизу */
-  .rail{top:auto;bottom:calc(env(safe-area-inset-bottom) + 158px)}
+  .rail{top:auto;bottom:calc(env(safe-area-inset-bottom) + 184px)}
   #zin,#zout{display:none!important}   /* зум — щипком */
   /* Сообщение вернулось наверх (A2). Его спустили вниз в M167, когда верх был
      занят приборами и место там стоило дорого; теперь приборы внизу, наверху
@@ -721,8 +726,10 @@ body.road #console{display:none}
      оно не панель, оно проходит. */
   #msg{top:20%;bottom:auto;white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis;max-width:calc(100vw - 24px);font-size:11px;line-height:1.4}
-  #prompt{bottom:calc(env(safe-area-inset-bottom) + 142px);white-space:nowrap;overflow:hidden;
-    text-overflow:ellipsis;max-width:calc(100vw - 24px);line-height:1.4}
+  /* подсказка не заходит под правый борт: та же зона, что у строки состояния */
+  #prompt{bottom:calc(env(safe-area-inset-bottom) + 204px);white-space:nowrap;overflow:hidden;
+    left:10px;right:128px;transform:none;
+    text-overflow:ellipsis;max-width:none;line-height:1.4}
   /* призрачных кнопок нет: ДЕЙСТВИЕ без действия отсутствует */
   body.mobile .pads button[data-k=act]:not(.ready){display:none}
 }

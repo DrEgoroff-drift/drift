@@ -85,7 +85,6 @@ function drawSurfaceHud(camx,camy){
       ctx.fillText(m.ru,sx,rowY+16);
     }
   }
-  drawJetBar(12,H-16);
 }
 function drawSurface(){
   const S=G.surf,tr=S.tr,p=S.p;
@@ -181,10 +180,34 @@ function drawSurface(){
     const cx=S.cave.x-camx;
     if(cx>-60&&cx<W+60){
       const cy=groundAt(tr,S.cave.x)-camy;
-      ctx.fillStyle="#050708";
+      /* ── вход, а не наклейка (M178) ──
+         Устье было плоским чёрным полуэллипсом — ровно тот «чёрный полигон
+         без кромки», в который автор уже тыкал на валуне. Правило то же:
+         у любого силуэта должна быть кромка, поймавшая небо, а у дыры — ещё
+         и глубина. Здесь: губа проёма светлее грунта (её лизнуло небо),
+         внутри не чернота, а уходящий вглубь тон породы, и пара камней у
+         порога, чтобы вход стоял в земле, а не лежал на ней. */
+      const amb=ambRGB(p);
+      /* нутро: сверху ещё чуть подсвечено, вглубь гаснет */
+      const ig=ctx.createLinearGradient(cx,cy-16,cx,cy+2);
+      ig.addColorStop(0,"rgba("+(amb[0]*.30|0)+","+(amb[1]*.32|0)+","+(amb[2]*.36|0)+",1)");
+      ig.addColorStop(.55,"rgba(8,10,13,1)");
+      ig.addColorStop(1,"rgba(4,5,7,1)");
+      ctx.fillStyle=ig;
       ctx.beginPath();ctx.ellipse(cx,cy-2,20,14,0,0,Math.PI,true);ctx.fill();
+      /* губа проёма: светлая дуга по верхнему краю */
+      ctx.strokeStyle="rgba("+(amb[0]*1.1+34|0)+","+(amb[1]*1.1+36|0)+","+(amb[2]*1.15+42|0)+",.6)";
+      ctx.lineWidth=1.8;
+      ctx.beginPath();ctx.ellipse(cx,cy-2,20,14,0,Math.PI*1.08,Math.PI*1.92);ctx.stroke();
+      /* камни у порога */
+      ctx.fillStyle="rgba("+(amb[0]*.5|0)+","+(amb[1]*.5|0)+","+(amb[2]*.55|0)+",.9)";
+      ctx.beginPath();ctx.ellipse(cx-16,cy-1,5,3.4,-.3,0,TAU);ctx.fill();
+      ctx.beginPath();ctx.ellipse(cx+14,cy,6,3.8,.2,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,.10)";
+      ctx.beginPath();ctx.ellipse(cx-17,cy-2.4,3.4,1.2,-.3,0,TAU);ctx.fill();
+      ctx.beginPath();ctx.ellipse(cx+12,cy-1.6,4,1.4,.2,0,TAU);ctx.fill();
       ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText("ПЕЩЕРА",cx,cy-22);
+      ctx.fillText("ПЕЩЕРА",cx,cy-24);
     }
   }
   for(const pl of S.plants){

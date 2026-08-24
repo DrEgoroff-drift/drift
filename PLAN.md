@@ -679,12 +679,12 @@ Written from the author's own crops of the screenshots in this session, plus two
 Each milestone is a version with tests and a commit; each is done in several passes with
 self-criticism, per the cross-cutting rule.
 
-- **M178 — the frame as a postcard.** Faults the author circled, in his order:
-  the ringed body in the sky is a black disc with a dull hoop; a black polygon lies on the ground
-  with no edge (the same fault as M173 #1, still standing somewhere else); the jetpack gauge
-  («РАНЕЦ» and its bar) is painted on the canvas underneath the DOM pads and shows through them;
-  the far ridge is one flat silhouette and the rain is one uniform speed; the state hairlines read
-  as plain lines rather than instruments.
+- **M178 — the frame as a postcard.** Pass 1 **done (0.147.0)**: the "ringed body" was `skyHole`
+  through a day sky — dark lens now comes with the night, the disc stays as a pale day ghost; the
+  sky giant floored against the current air with a halo; the cave mouth and the mine's abandoned
+  workings got lips, depth and lit rims; РАНЕЦ and every other canvas-corner gauge moved into the
+  state and place rows; the phone prompt no longer sits under the console. **Still open for later
+  passes:** the far ridge is one flat silhouette; the rain is one uniform speed everywhere.
 - **M179 — the inventory as a tray, the paper as a paper.** The author's reference is The Forest's
   inventory: every thing laid out as an object on a surface, not a row in a list. The table keeps
   the paper — «стол как бумага оставь, очень хорошо получилось» — and the split is by kind:
