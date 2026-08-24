@@ -75,6 +75,14 @@ setTimeout(function(){
       G.hin.cam=G.hin.x;
     }
     for(var f3=0;f3<4;f3++){G.t+=.01;updateHomeIn(1);drawHomeIn();}
+  }else if(scene==="hold"){
+    G.mode="system";
+    for(var f4=0;f4<2;f4++){G.t+=.02;drawSystem();}
+    /* трюм с настоящим разнобоем: много, мало, одна штука */
+    G.cargo.ice=14;G.cargo.iron=7;G.cargo.silicon=3;G.cargo.crystal=2;
+    G.cargo.organics=5;G.cargo.isotopes=1;G.cargo.volatiles=4;G.cargo.missile=3;
+    G.cargo.folk=2;G.cargo.alloy=6;
+    tableToggle(true,"hold");
   }else if(scene==="table"||scene==="things"||scene==="strips"){
     G.mode="system";
     for(var f2=0;f2<2;f2++){G.t+=.02;drawSystem();}

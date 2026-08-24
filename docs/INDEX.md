@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 256 · символов верхнего уровня: 2458
+Файлов: 257 · символов верхнего уровня: 2462
 
 ## СИМВОЛЫ
 
@@ -560,7 +560,7 @@ drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:278
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:179
+drawThingIcon                src/27i-ui-table.js:181
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
 drawTrail                    src/16-flight.js:338
@@ -857,6 +857,9 @@ hinUpWindow                  src/29e-home-up.js:356
 hinWidth                     src/29c-home-in.js:51
 hireMerc                     src/12a-crew.js:148
 hireMgr                      src/12c-mgr-core.js:301
+holdDrawPile                 src/27j-ui-hold.js:151
+holdPiece                    src/27j-ui-hold.js:26
+holdPileN                    src/27j-ui-hold.js:22
 HOME_HIT                     src/27e-ui-home.js:33
 HOME_MAN                     src/21f-home-out.js:48
 HOME_MATE                    src/12j-home.js:79
@@ -1753,15 +1756,16 @@ renderBarge                  src/12l-barge.js:613
 renderBasesTab               src/26a-ui-station-home.js:4
 renderCantina                src/27c-ui-hq.js:45
 renderDeeds                  src/11-log.js:92
+renderHold                   src/27j-ui-hold.js:176
 renderLog                    src/11-log.js:71
 renderLoreBoard              src/27h-ui-lore.js:26
 renderOpts                   src/27-ui-ship.js:198
 renderPrices                 src/12aa-need.js:196
 renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
-renderStrips                 src/27i-ui-table.js:119
+renderStrips                 src/27i-ui-table.js:121
 renderTab                    src/26-ui-station.js:185
-renderThings                 src/27i-ui-table.js:150
+renderThings                 src/27i-ui-table.js:152
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -2206,7 +2210,7 @@ tableBlock                   src/27c-ui-hq.js:537
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewThings               src/27i-ui-table.js:36
 tableRender                  src/27i-ui-table.js:80
-tableRow                     src/27i-ui-table.js:111
+tableRow                     src/27i-ui-table.js:113
 tableSetTab                  src/27i-ui-table.js:50
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:37
@@ -3004,11 +3008,14 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27i-ui-table.js · 14 КБ
+## src/27i-ui-table.js · 15 КБ
   · стол: одно место для всего, что читают:1
 
 ## src/27j-console.js · 7 КБ
   · пульт: приёмник, подсказка, кресло:1
+
+## src/27j-ui-hold.js · 9 КБ
+  · трюм как раскладка (M179):1
 
 ## src/27k-road.js · 27 КБ
   · дорожный спутник:1
@@ -3250,7 +3257,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzu-domino.js · 2 КБ
   · автотесты: домино (M166):1
 
-## tests/91zzv-table.js · 9 КБ
+## tests/91zzv-table.js · 11 КБ
   · автотесты: пульт и стол (M151a):1
 
 ## tests/91zzw-economy.js · 10 КБ

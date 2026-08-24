@@ -152,3 +152,30 @@ TEST_SUITES.push(()=>suite("стол: бумага, а не окно списк�
   tableToggle(false);
   ok(!document.body.classList.contains("table"),"и стол закрывается");
 }));
+
+/* Трюм как раскладка (M179): кучи вместо строк. Проверяем устройство:
+   куча растёт с числом единиц, пустые ресурсы не рисуются, вкладка лежит
+   на дереве (desk), и у каждой карточки есть канва с кучей и подпись. */
+TEST_SUITES.push(()=>suite("стол: трюм разложен кучами",()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  ok(holdPileN(1)===1,"одна единица — один предмет");
+  ok(holdPileN(14)>holdPileN(3),"куча растёт с числом");
+  ok(holdPileN(500)<=16,"и не превращается в кашу");
+  G.cargo.ice=9;G.cargo.crystal=2;G.cargo.missile=3;
+  tableToggle(true,"hold");
+  const box=document.getElementById("loglist");
+  ok(box.classList.contains("desk"),"трюм лежит на дереве");
+  const cards=box.querySelectorAll(".thing");
+  eq(cards.length,3,"карточка на каждый ненулевой ресурс");
+  let okAll=true;
+  cards.forEach(cd=>{
+    if(!cd.querySelector("canvas")||!cd.querySelector(".nm b"))okAll=false;
+  });
+  ok(okAll,"в каждой карточке куча и подпись");
+  ok([...cards].some(cd=>/Лёд × 9/.test(cd.textContent)),"число единиц в подписи");
+  G.cargo.ice=0;G.cargo.crystal=0;G.cargo.missile=0;
+  tableRender();
+  eq(box.querySelectorAll(".thing").length,0,"пустой трюм — пустой стол");
+  tableToggle(false);
+}));

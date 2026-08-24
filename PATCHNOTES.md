@@ -7,6 +7,26 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.148.0 — the hold laid out in piles (M179)
+
+The author's reference was The Forest's inventory: everything you carry laid out as objects on a
+surface, so one glance says what is plentiful, what is scarce and what is missing. In Drift the
+hold was rows of «Кремний ×12» on the ship screen — a table.
+
+The СТОЛ gets a ТРЮМ tab on the desk lane (`27j-ui-hold`): every resource is its own **pile**, and
+the pile answers both questions without numbers. *What*: ice in split shards, iron in rusty
+ingots, silicon in polished boules, organics in cross-tied bales, crystals as a druse, isotopes in
+a marked drum, volatiles in standing cylinders, tech components as a board, missiles side-on with
+their fins — and people sitting on the edge of the frame, the one kind of cargo that looks back.
+*How much*: the pile grows with the count (a power curve capped at sixteen pieces, so a hundred
+does not turn to mush); the number stays as a small caption — a reference, not the channel.
+
+Layout is deterministic from the resource key, so the spread never jumps between openings; the
+paper stays paper — the split the author asked for («мою просто под инвентарь, а бумагу под
+новости») is exactly the desk/sheet split of 0.144.0, and the hold joins things and tapes on the
+wood. Checks in `91zzv-table`.
+
+---
 ## 0.147.0 — the postcard pass, 1: what the author circled (M178)
 
 The author cropped four places out of his own screenshots and said «поправь, чтобы смотрелось как

@@ -685,11 +685,10 @@ self-criticism, per the cross-cutting rule.
   workings got lips, depth and lit rims; РАНЕЦ and every other canvas-corner gauge moved into the
   state and place rows; the phone prompt no longer sits under the console. **Still open for later
   passes:** the far ridge is one flat silhouette; the rain is one uniform speed everywhere.
-- **M179 — the inventory as a tray, the paper as a paper.** The author's reference is The Forest's
-  inventory: every thing laid out as an object on a surface, not a row in a list. The table keeps
-  the paper — «стол как бумага оставь, очень хорошо получилось» — and the split is by kind:
-  **paper** carries what is read (ether, board, people, deeds, prices, record book), a **tray**
-  carries what is held (things, tapes, cargo, kit). One screen, two surfaces.
+- **M179 — the inventory as a tray** — **done (0.148.0)**: `27j-ui-hold`, the ТРЮМ tab on the
+  desk lane — every resource a pile whose size answers "how much" without numbers, a form per
+  material, people sitting on the edge. Paper stays for what is read. **Left open:** the suit kit
+  as objects on the same desk (it lives in the ship screen's paperdoll today).
 - **M180 — the pirate base.** «Пиратская база говно, там чё-то сверху всё, скафандр, человечки».
   The raid screen is the only one that never got the frame's own language: several passes.
 - **M181–M185 — five interface passes**, each with a named question:
