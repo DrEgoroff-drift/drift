@@ -221,9 +221,27 @@ function hinRoomStuff(r,fy,ceil,P){
       ctx.moveTo(hx-M*.14,fy-M*1.44);ctx.lineTo(hx+M*.14,fy-M*1.44);
       ctx.lineTo(hx+M*.18,fy-M*.6);ctx.lineTo(hx-M*.18,fy-M*.6);ctx.closePath();ctx.fill();
     }
-    ctx.fillStyle="rgb(58,50,44)";
-    ctx.fillRect(at(.75)-M*.3,fy-M*.26,M*.26,M*.26);
-    ctx.fillRect(at(.75)+M*.02,fy-M*.24,M*.26,M*.24);
+    /* сапоги: голенище и подошва, а не два кубика; рядом коврик и ведро —
+       по прихожей видно, что в дом заходят с улицы (проход M170) */
+    for(const s of [-1,1]){
+      const bx2=at(.75)+s*M*.16;
+      ctx.fillStyle="rgb(52,44,38)";
+      ctx.fillRect(bx2-M*.09,fy-M*.30,M*.18,M*.24);
+      ctx.fillStyle="rgb(38,32,28)";
+      ctx.fillRect(bx2-M*.12,fy-M*.07,M*.28,M*.07);
+      ctx.fillStyle="rgba(255,255,255,.08)";
+      ctx.fillRect(bx2-M*.09,fy-M*.30,M*.06,M*.24);
+    }
+    ctx.fillStyle="rgba(96,70,58,.6)";                /* коврик у двери */
+    ctx.fillRect(at(.75)-M*.55,fy+1,M*.5,M*.12);
+    ctx.fillStyle="rgba(0,0,0,.25)";
+    for(let i=0;i<4;i++)ctx.fillRect(at(.75)-M*.5+i*M*.12,fy+2,M*.05,M*.1);
+    ctx.fillStyle="rgb(84,90,96)";                    /* ведро */
+    ctx.beginPath();
+    ctx.moveTo(at(.55)-M*.13,fy-M*.28);ctx.lineTo(at(.55)+M*.13,fy-M*.28);
+    ctx.lineTo(at(.55)+M*.1,fy);ctx.lineTo(at(.55)-M*.1,fy);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="rgb(112,120,128)";ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.arc(at(.55),fy-M*.28,M*.13,Math.PI,TAU);ctx.stroke();
   }else if(r.key==="garage"){
     ctx.fillStyle="rgba(120,126,132,.9)";
     ctx.beginPath();
@@ -329,11 +347,28 @@ function hinRoomStuff(r,fy,ceil,P){
     for(let i=0;i<4;i++)ctx.fillRect(at(.40)-M*.34+i*M*.2,fy-M*.72,M*.12,M*.06);
     ctx.fillStyle="rgba(255,150,90,"+(.4+.5*Math.abs(Math.sin(G.t*.05))).toFixed(2)+")";
     ctx.beginPath();ctx.arc(at(.40)+M*.3,fy-M*.98,3,0,TAU);ctx.fill();
-    ctx.fillStyle=metal;
+    /* причальные захваты: клешни на станинах, между ними трос и кнехт —
+       две палки с перекладиной ни на что не были похожи (проход M170) */
     for(let i=0;i<2;i++){
-      ctx.fillRect(at(.80)-M*.4+i*M*.5,fy-M*.5,M*.16,M*.5);
-      ctx.fillRect(at(.80)-M*.5+i*M*.5,fy-M*.6,M*.36,M*.14);
+      const px=at(.78)+i*M*.62;
+      ctx.fillStyle="rgb(58,64,70)";
+      ctx.fillRect(px-M*.16,fy-M*.16,M*.32,M*.16);
+      ctx.fillStyle=metal;
+      ctx.fillRect(px-M*.07,fy-M*.66,M*.14,M*.5);
+      ctx.beginPath();                                  /* клешня */
+      ctx.moveTo(px-M*.22,fy-M*.66);ctx.lineTo(px-M*.05,fy-M*.72);
+      ctx.lineTo(px-M*.05,fy-M*.86);ctx.lineTo(px-M*.3,fy-M*.78);ctx.closePath();ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(px+M*.22,fy-M*.66);ctx.lineTo(px+M*.05,fy-M*.72);
+      ctx.lineTo(px+M*.05,fy-M*.86);ctx.lineTo(px+M*.3,fy-M*.78);ctx.closePath();ctx.fill();
+      ctx.fillStyle="rgba(226,178,92,.5)";
+      ctx.fillRect(px-M*.05,fy-M*.5,M*.1,M*.06);
     }
+    ctx.strokeStyle="rgba(90,80,70,.9)";ctx.lineWidth=2.2;   /* трос между ними */
+    ctx.beginPath();
+    ctx.moveTo(at(.78),fy-M*.62);
+    ctx.quadraticCurveTo(at(.78)+M*.31,fy-M*.34,at(.78)+M*.62,fy-M*.62);
+    ctx.stroke();
   }
   ctx.restore();
   void ceil;

@@ -820,16 +820,16 @@ HIN_FLOOR                    src/29c-home-in.js:21
 HIN_MAN                      src/29c-home-in.js:20
 HIN_ROOM_H                   src/29c-home-in.js:22
 HIN_ROOM_W                   src/29c-home-in.js:25
-HIN_THINGS                   src/29c-home-in.js:145
-hinFigure                    src/29d-home-draw.js:344
+HIN_THINGS                   src/29c-home-in.js:152
+hinFigure                    src/29d-home-draw.js:379
 hinFolkMake                  src/29c-home-in.js:60
 hinFolkTick                  src/29c-home-in.js:81
-hinNear                      src/29c-home-in.js:162
+hinNear                      src/29c-home-in.js:169
 hinPal                       src/29d-home-draw.js:6
 hinRoomAt                    src/29c-home-in.js:37
 hinRooms                     src/29c-home-in.js:26
 hinRoomStuff                 src/29d-home-draw.js:176
-hinTalk                      src/29c-home-in.js:171
+hinTalk                      src/29c-home-in.js:178
 hinWidth                     src/29c-home-in.js:36
 hireMerc                     src/12a-crew.js:148
 hireMgr                      src/12c-mgr-core.js:301
@@ -2261,7 +2261,7 @@ updateCave                   src/22-mode-cave.js:219
 updateCaveDeco               src/22a-cave-deco.js:184
 updateCombat                 src/13-pirates.js:77
 updateDig                    src/23-mode-dig.js:113
-updateHomeIn                 src/29c-home-in.js:115
+updateHomeIn                 src/29c-home-in.js:122
 updateLanding                src/19-mode-landing.js:45
 updateRaid                   src/24a-mode-raid.js:214
 updateScoop                  src/19a-mode-scoop.js:28
@@ -2931,7 +2931,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29c-home-in.js · 11 КБ
   · дом изнутри: по нему ходят:1
 
-## src/29d-home-draw.js · 22 КБ
+## src/29d-home-draw.js · 24 КБ
   · дом изнутри: кадр:1
 
 ## tests/90-harness.js · 7 КБ
