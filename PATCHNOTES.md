@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.140.0 — a plant gets a body, not a fill
+
+Half of the author's «растения всратые» was fixed in 0.139.0 — where they stand. This is the
+other half: what they are made of. Every one of the twelve forms was painted in a single flat
+colour: no light across a leaf, no difference between stem and crown, no difference between
+neighbours. On a frame that reads as an appliqué of coloured paper, and no amount of placement
+cures it.
+
+It is fixed in one place. `stemC` and `leafC` stopped being colour strings and became gradients
+in the plant's own coordinates (origin at the root, up is negative), so every `ctx.fillStyle=leafC`
+in all twelve forms gets light and shade for free. The light comes from where the star actually
+stands (`sunSpot`, 0.138.0), and the tone wanders ±12% between neighbours from a hash of the
+place — so a thicket stops being one patch of paint. The hash matters: an extra `r()` call would
+shift the generation of the whole strip, which is how 0.139.0 broke the Tin suite.
+
+One trap found by the tests, worth writing down: a form that builds its own radial gradient was
+passing `leafC` into `addColorStop`, which now receives a gradient instead of a colour. Inside
+another gradient you need a colour, not a fill.
+
+**What this does not fix** is that there is no biology behind the picture — see the queue written
+for the next session at the end of `PLAN.md`: neither flora nor fauna has a species, only
+per-specimen dice, and the game keeps a register of species that do not exist.
+
+---
 ## 0.139.0 — five things the author pointed at (M173)
 
 The dev stand went up (`dev.ps1` → `/dev.html` and `/dev/`), the author played the build and

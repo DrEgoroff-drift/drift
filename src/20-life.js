@@ -314,7 +314,9 @@ function drawPlantAlien(pl,x,y,stemC,leafC,sc){
       ctx.quadraticCurveTo(bx*.7,by*.4,bx,by+br);ctx.stroke();
       const g=ctx.createRadialGradient(bx-br*.3,by-br*.35,br*.1,bx,by,br);
       g.addColorStop(0,"rgba(255,255,255,.35)");
-      g.addColorStop(.5,leafC);
+      /* внутри чужого градиента нужен ЦВЕТ, а не заливка: leafC с 0.140.0 —
+         градиент тела растения, и addColorStop его не принимает */
+      g.addColorStop(.5,sc?"rgba(127,230,216,.55)":"rgb("+(pl.leaf[0]|0)+","+(pl.leaf[1]|0)+","+(pl.leaf[2]|0)+")");
       g.addColorStop(1,"rgba(0,0,0,.25)");
       ctx.fillStyle=g;
       ctx.beginPath();ctx.ellipse(bx,by,br,br*1.12,0,0,TAU);ctx.fill();
@@ -347,10 +349,35 @@ function drawPlantAlien(pl,x,y,stemC,leafC,sc){
   }
   ctx.restore();
 }
+/* ── у растения есть тело, а не заливка (автор: «растения всратые», 24.08.2026) ──
+   Каждая форма красилась ОДНИМ плоским цветом на весь куст: ни светотени по
+   листу, ни разницы между стеблем и кроной, ни различия между соседями. На
+   кадре это читается аппликацией из цветной бумаги, и никакая расстановка
+   этого не лечит.
+   Правится в одной точке: stemC и leafC перестают быть строкой и становятся
+   градиентом в координатах самого растения (начало — у корня, минус — вверх).
+   Все ctx.fillStyle=leafC во всех двенадцати формах получают светотень даром.
+   Свет берётся оттуда же, где стоит звезда (sunSpot, M172), а лёгкий разброс
+   тона по кусту — из хэша координаты, а НЕ из общего потока r(): лишний вызов
+   сдвигает генерацию всей полосы (на этом уже обожглись в 0.139.0). */
+function plantGrad(col,h,ux,k0,k1){
+  const g=ctx.createLinearGradient(-ux*h*.55,-h*1.05,ux*h*.55,h*.05);
+  g.addColorStop(0,"rgb("+col.map(v=>clamp(v*k1+16,0,255)|0).join(",")+")");
+  g.addColorStop(.55,"rgb("+col.map(v=>clamp(v,0,255)|0).join(",")+")");
+  g.addColorStop(1,"rgb("+col.map(v=>clamp(v*k0,0,255)|0).join(",")+")");
+  return g;
+}
 function drawPlant(pl,x,y){
   const sc=pl.scanned;
-  const stemC=sc?"rgba(127,230,216,.85)":"rgb("+(pl.stem[0]|0)+","+(pl.stem[1]|0)+","+(pl.stem[2]|0)+")";
-  const leafC=sc?"rgba(127,230,216,.55)":"rgb("+(pl.leaf[0]|0)+","+(pl.leaf[1]|0)+","+(pl.leaf[2]|0)+")";
+  /* сосед не близнец: тон гуляет на ±12% по хэшу места, куртина перестаёт
+     быть одним пятном краски */
+  const jt=(((hashi(Math.round(pl.x),Math.round(pl.h),0x9E11)>>>9)&255)/255-.5)*.24;
+  const tone=c=>[c[0]*(1+jt),c[1]*(1+jt*.8),c[2]*(1+jt*1.2)];
+  const SP=(typeof sunSpot==="function"&&G.surf&&G.surf.p)?sunSpot(G.surf.p):null;
+  const ux=SP?clamp((SP.x-(W*.5))/(W*.5),-1,1)||.6:.6;
+  const H0=Math.max(8,pl.h||20);
+  const stemC=sc?"rgba(127,230,216,.85)":plantGrad(tone(pl.stem),H0,ux,.58,1.10);
+  const leafC=sc?"rgba(127,230,216,.55)":plantGrad(tone(pl.leaf),H0,ux,.52,1.16);
   /* друза — без ствола: гроздь гранёных кристаллов, растёт прямо из грунта */
   if(pl.kind===4){
     ctx.save();ctx.translate(x,y);

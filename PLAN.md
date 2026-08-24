@@ -190,7 +190,11 @@ order, and struck out as they close. This is the live queue — new finds go at 
    because on foot it is exactly what fills up, and fuel comes back by itself when it goes
    critical. The rest of the release look (the table as paper, the remaining overlay) is passes
    2+; the author took it "in passes" on 2026-08-24.
-8. **The plant body itself** — see item 2: flat cut-outs, one hue, no shading.
+8. ~~**The plant body itself**~~ — done in 0.140.0, but only the skin. `stemC`/`leafC` stopped
+   being flat colour strings and became gradients in the plant's own coordinates, so all twelve
+   forms got light and shade in one edit, lit from where the star actually is (`sunSpot`); tone
+   varies ±12% between neighbours from a hash of the place, so a thicket is no longer one patch
+   of paint. What this does **not** fix is item 12.
 9. **A second storey for the living part** — not started (the original M170 ask).
 10. **The world heard** — not started: room tone per screen, the house audible from inside,
    weather heard before it is seen. `09-audio`/`10-music` are about music, not about place.
@@ -744,3 +748,89 @@ cockpit (M124âM127), speech becomes a queue of lines and putting things on 
 **the hundred** â a hundred small human stories on one template â is the load-bearing wall
 (M129âM131). Design: [`docs/DESIGN-stories.md`](docs/DESIGN-stories.md) (2026-08-22, awaiting the author's call on four forks listed at its end). Fifteen regions follow (M132âM146), then rumours, a returnee and the release.
 
+
+---
+
+# QUEUE: written 2026-08-25 for the next session — verified findings, in order
+
+Everything below was **read in the code, not remembered**. Line numbers are omitted on purpose;
+the function names are the address.
+
+## 12. Biology: neither flora nor fauna has a species (author: «там нет биологии»)
+
+The game keeps a species *record* — `G.species`, `+9 данных` for a plant, `+14` for a beast,
+the `G.bio` counter, the line «Новый вид: …» — but there is no species *entity*. Verified in
+`20-life`:
+
+- **`genPlant`**: every trait is an independent `r()` roll per specimen — `cap`, `turns`, `ribs`,
+  `balls`, `ribbons`, `pods`, `facets`, `blobs`, `glow`, `bloom`, leaf colour, height. Two plants
+  "of one species" share nothing. `genBeast` is the same: `shape=Math.floor(r()*BEAST_SHAPES.length)`,
+  fur colour and size rolled per animal.
+- **Eight of the twelve plant forms have no branching at all** — `nb` is 0 for `kind>=4`. They are
+  a stem plus a hardcoded ornament.
+- **No age.** `sizeMul` is a random multiplier: a small plant is not a young plant, it is the same
+  plant scaled. No seedlings, no old specimens, no dead matter.
+- **No light.** `lean=(r()-.5)*.5` is random, although since 0.138.0 the game knows where the star
+  stands (`sunSpot`).
+- **No ground.** `tr.wet` drives only how many plants there are, never what one plant is like: the
+  same specimen in a wet hollow and on a dry ridge.
+- **The name lies to the player.** `PLANT_FORM` has six words for twelve drawn forms, and the word
+  is chosen by `pick(PLANT_FORM,r)` independently of what is actually drawn; the trait word
+  «светящийся» is rolled independently of the `glow` flag. That name is then shown as a discovery
+  and stored in `G.species` for good. **The game keeps a register of species that do not exist**,
+  and that is not cosmetics.
+
+**The pass**, in order: (a) a species becomes a property of the planet next to `planetBiome(p)` —
+three to five per world, each with fixed proportions, colour, growth range, branching, name; a
+specimen is species + age + place, and the name is derived from the real form and the real flags,
+so it cannot lie by construction; a second specimen of a known species is no longer a discovery.
+(b) age: a seedling has fewer segments and no fruit, an old one a wider crown and dead branches.
+(c) the specimen answers the world: leaning toward the star, taller and lusher in a wet hollow,
+stunted and harder on a dry ridge, litter and deadwood at the foot.
+
+## 13. Planets in the system view are lit from a constant, not from the star
+
+`planetLight` (`07-planet`) bakes the shading layer with a hardcoded vector:
+
+```
+const light = clamp(nx*-.52 + ny*-.42 + nz*.74, 0, 1);
+```
+
+So **every planet is lit from the upper left whatever the star does** — a planet to the left of
+the star and one to its right are shaded identically. This is exactly the fault M172 fixed on the
+surface ("the light had an hour but no direction"), still standing on the screen the player looks
+at most after the cockpit.
+
+The fix is cheap and exact: the terminator seen from above is a straight line through the disc
+centre, perpendicular to the direction to the star — so the baked light layer stays baked once and
+is **rotated** by the planet's angle to the star at draw time. No extra bake, no cache explosion.
+How hard the terminator should be (a soft light as now, or a true half-phase) is art direction and
+belongs to the author.
+
+## 14. Release look, passes A2 and A3 (the design, agreed with the author 2026-08-24)
+
+Pass 1 is done (on foot, the ship's instruments are hidden). What the rest means, decided after
+the author pushed back on "nothing at the top" — the goal is not an empty top, it is **the top of
+the frame is the world**:
+
+- **A2. The state moves down.** The top glass panel goes; fuel/hull/hold live as hairline bars
+  with a number to the left of the console, place and purse to the right. It fades to a third and
+  wakes for two seconds on change, staying open while an alarm holds — `hudWake` already does
+  this, it only moves. **The composition changes per screen**: on foot the ship's fuel and hull
+  decide nothing, so it is the suit, the hold and the distance to the ship; the region instrument
+  pod (`ipod`) is a cockpit instrument and shows in flight only. The edge navigation chips stay —
+  they are about the world, not about the interface.
+  **On a phone**: hairline bars are unreadable at that size, so it is one line of numbers only,
+  above the console, between the thumb zones, colliding with neither the pads nor the buttons.
+- **A3. The table becomes paper**: `29-ui-table` stops being a dark window of lists — a sheet,
+  bills in a pile, letters as envelopes, tapes as reels, clippings. Full screen on a phone, tabs
+  no smaller than 44 px.
+
+The overlap guard `91f-ui` measures `.vitals`, `.locus`, `.rail` and both `.pads` groups against
+each other and against the screen edge — it will have to be re-pointed, not disabled.
+
+## Order proposed for the next session
+
+12 (biology) → 13 (planet light — small and visible) → 14 A2 → 14 A3 → 9 (second storey) →
+10 (world heard) → graphics debt one at a time → split debt. Biology first: it is in every frame
+on the surface, and the interface is lying about species until it is done.

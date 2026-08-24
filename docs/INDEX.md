@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 250 · символов верхнего уровня: 2418
+Файлов: 250 · символов верхнего уровня: 2419
 
 ## СИМВОЛЫ
 
@@ -155,11 +155,11 @@ bDress                       src/21aa-base-rooms.js:122
 BEACON_COOL                  src/23-mode-dig.js:70
 beaconCool                   src/23-mode-dig.js:71
 beaconTick                   src/23-mode-dig.js:86
-BEAST_ALIEN                  src/20-life.js:513
-BEAST_FORM                   src/20-life.js:483
-BEAST_SHAPES                 src/20-life.js:505
-BEAST_TRAIT                  src/20-life.js:484
-beastBias                    src/20-life.js:514
+BEAST_ALIEN                  src/20-life.js:540
+BEAST_FORM                   src/20-life.js:510
+BEAST_SHAPES                 src/20-life.js:532
+BEAST_TRAIT                  src/20-life.js:511
+beastBias                    src/20-life.js:541
 BELT_AVLIM                   src/24-mode-belt.js:86
 BELT_HALF                    src/24-mode-belt.js:84
 BELT_POI                     src/24b-belt-poi.js:13
@@ -454,8 +454,8 @@ drawBarges                   src/12l-barge.js:527
 drawBargesMap                src/12l-barge.js:552
 drawBase                     src/21ac-base-draw.js:43
 drawBaseBuilding             src/21c-built.js:99
-drawBeast                    src/20-life.js:720
-drawBeastAlien               src/20-life.js:563
+drawBeast                    src/20-life.js:747
+drawBeastAlien               src/20-life.js:590
 drawBelt                     src/24-mode-belt.js:366
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17c-system-draw.js:94
@@ -521,7 +521,7 @@ drawObserv                   src/20aa-poi-shapes.js:491
 drawPirate                   src/12i-pirate-hull.js:320
 drawPirateBase               src/24a-mode-raid.js:103
 drawPirateSkin               src/03d-hull-marks.js:99
-drawPlant                    src/20-life.js:350
+drawPlant                    src/20-life.js:370
 drawPlantAlien               src/20-life.js:202
 drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
@@ -693,8 +693,8 @@ foundBase                    src/21a-mode-base.js:53
 frame                        src/28-loop.js:312
 freeVoice                    src/09-audio.js:79
 fuelPriceHere                src/12k-rep.js:63
-FUR_TONES                    src/20-life.js:488
-furColor                     src/20-life.js:493
+FUR_TONES                    src/20-life.js:515
+furColor                     src/20-life.js:520
 fuseAffordable               src/03-ships.js:38
 fuseCost                     src/03-ships.js:33
 fuseGen                      src/03-ships.js:32
@@ -702,7 +702,7 @@ fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
 G                            src/08-state.js:42
 g11Fps                       src/28z-fps-probe.js:7
-genBeast                     src/20-life.js:523
+genBeast                     src/20-life.js:550
 genBeltPOI                   src/24b-belt-poi.js:20
 genDeco                      src/21b-surface-deco.js:37
 genDesc                      src/01-core.js:59
@@ -1561,6 +1561,7 @@ planIsCoreT                  src/11r-plan.js:42
 PLANT_FORM                   src/20-life.js:109
 PLANT_KINDS                  src/20-life.js:121
 PLANT_TRAIT                  src/20-life.js:110
+plantGrad                    src/20-life.js:363
 planTook                     src/11r-plan.js:59
 plate                        src/25-cockpit.js:160
 POI_FIND                     src/20b-poi-find.js:18
@@ -2838,10 +2839,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/20d-jetpack.js · 3 КБ
   · реактивный ранец:1
 
-## src/20-life.js · 42 КБ
+## src/20-life.js · 44 КБ
   · астронавт:1
   · флора:105
-  · фауна:479
+  · фауна:506
 
 ## src/21aa-base-rooms.js · 35 КБ
   · база: внутренности отсеков:1
