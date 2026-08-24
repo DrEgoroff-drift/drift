@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.146.0 — the world heard: room tone (M178-10)
+
+The game had music, steps and events — and no *places*: between the notes every planet carried the
+same dead digital silence. `09a-roomtone` gives each screen its own steady floor of sound, built
+from two looping noise chains whose filters and gains are steered every frame — nothing is created
+on a mode switch:
+
+- **the surface is wind**, and its strength follows `weatherPower` — so a storm is *heard before
+  it is seen*: the sound rises while the power is still under the visual threshold, and the sky
+  is clear;
+- **the cave and the mine are rock**: a low blind rumble, deeper — lower;
+- **the house is warmth**: a quiet low floor, rare wood creaks (a new `creak` voice), and the
+  weather outside heard *through the wall* — low frequencies only, quieter than outdoors but never
+  silent;
+- **the base is ventilation**, the raid a thin duct hiss, the scoop the stream against the hull;
+- **vacuum is nothing at all** — the absolute silence of an airless world stays, as character.
+
+The loudness budget holds: the tone is a floor, not a soloist — its levels sit well under any
+event. Verified live on the dev stand by measuring the node output with an AnalyserNode (never the
+AudioParam): wind RMS 0.008 on a temperate surface, zero after the atmosphere is taken away.
+Suite `91zzzd-roomtone`: per-place requests, vacuum silence, storm-before-sight, the wall filter,
+and no node churn.
+
+---
 ## 0.145.0 — the house gets an upstairs, and a shell (M178-9)
 
 The last unpaid item of the original M170 ask («полноценный Симс»): the living part now has a

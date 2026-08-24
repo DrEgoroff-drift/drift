@@ -198,8 +198,10 @@ order, and struck out as they close. This is the live queue — new finds go at 
 9. ~~**A second storey for the living part**~~ — done (0.145.0, M178-9): `29e-home-up`, two rooms
    over study and living, a real stair, the house drawn as a cross-section (roof, attic, joists),
    Vega at the loft window. Suite `91zzzc-home-up`.
-10. **The world heard** — not started: room tone per screen, the house audible from inside,
-   weather heard before it is seen. `09-audio`/`10-music` are about music, not about place.
+10. ~~**The world heard**~~ — done (0.146.0, M178-10): `09a-roomtone` — wind by weatherPower
+   (storm heard before seen), rock by depth, the house warm with creaks and the weather through
+   the wall, ventilation on the base, absolute silence in vacuum. Suite `91zzzd-roomtone`,
+   verified live by AnalyserNode RMS.
 11. **Save format v:5** — the author said break it (2026-08-24). Then measured: all 119 persisted
    fields are still read, there is exactly one legacy branch (`modsOwned` falling back to
    `mods`), and the 71 "defensive defaults" are validation of untrusted input — a save comes from

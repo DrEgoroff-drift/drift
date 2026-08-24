@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 254 · символов верхнего уровня: 2453
+Файлов: 256 · символов верхнего уровня: 2457
 
 ## СИМВОЛЫ
 
@@ -216,7 +216,7 @@ cantSel                      src/27c-ui-hq.js:192
 cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina.js:613
 cantView                     src/27d-ui-cantina.js:466
-capIv                        src/28-loop.js:339
+capIv                        src/28-loop.js:341
 capOf                        src/05-parts.js:108
 capUsed                      src/05-parts.js:219
 CAST                         src/12k-stories-a.js:19
@@ -396,7 +396,7 @@ ctx                          src/08-state.js:3
 curTok                       src/09-audio.js:71
 CUT_RANGE                    src/24-mode-belt.js:183
 cvs                          src/08-state.js:2
-dbg                          src/28-loop.js:482
+dbg                          src/28-loop.js:484
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -579,7 +579,7 @@ ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
 el                           src/26-ui-station.js:121
 endPtr                       src/15-input.js:208
-engineLoop                   src/09-audio.js:219
+engineLoop                   src/09-audio.js:233
 enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:88
 enterCave                    src/22-mode-cave.js:147
@@ -699,7 +699,7 @@ flightCam                    src/16a-space.js:177
 floraOf                      src/20e-species.js:91
 FOE_KINDS                    src/24a-mode-raid.js:17
 foundBase                    src/21a-mode-base.js:53
-frame                        src/28-loop.js:345
+frame                        src/28-loop.js:347
 freeVoice                    src/09-audio.js:79
 fuelPriceHere                src/12k-rep.js:63
 FUR_TONES                    src/20-life.js:538
@@ -1110,9 +1110,9 @@ landerInk                    tests/91j-art.js:154
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:328
 landOnTestPlanet             tests/90-harness.js:67
-last                         src/28-loop.js:299
+last                         src/28-loop.js:301
 LAST_RUN_DAY                 src/12k-letters.js:40
-lastDroneTick                src/28-loop.js:300
+lastDroneTick                src/28-loop.js:302
 lastRunDay                   src/12k-letters.js:44
 lastRunTick                  src/12k-letters.js:46
 launch                       src/21-mode-surface.js:554
@@ -1157,7 +1157,7 @@ logBtnLabel                  src/11-log.js:56
 logOpen                      src/11-log.js:14
 logPageOf                    src/11-log.js:13
 logTime                      src/11-log.js:50
-LOOP_OFF                     src/28-loop.js:344
+LOOP_OFF                     src/28-loop.js:346
 LORE                         src/12q-lore.js:67
 LORE_ACT                     src/12q-lore.js:47
 LORE_BY_CHAP                 src/12q-lore.js:69
@@ -1623,7 +1623,7 @@ postOpen                     src/11e-post.js:99
 prevAct                      src/08-state.js:40
 pricesSeen                   src/12aa-need.js:188
 prism                        src/21b-surface-deco.js:201
-prof                         src/28-loop.js:445
+prof                         src/28-loop.js:447
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:17
@@ -1777,8 +1777,8 @@ repWord                      src/12k-rep.js:31
 RES                          src/02-world.js:2
 RES_AUTO                     src/08-state.js:35
 RES_KEYS                     src/02-world.js:29
-resAuto                      src/28-loop.js:328
-resEma                       src/28-loop.js:327
+resAuto                      src/28-loop.js:330
+resEma                       src/28-loop.js:329
 resetArm                     src/26-ui-station.js:782
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
@@ -1884,6 +1884,7 @@ rollCrewEvent                src/12b-crew-events.js:70
 rollWorld                    src/02a-worldmix.js:67
 ROMAN                        src/01-core.js:41
 ROOM_FIN                     src/21aa-base-rooms.js:46
+roomToneTick                 src/09a-roomtone.js:69
 ROUTE_MAX                    src/12r-route.js:16
 routeHas                     src/12r-route.js:19
 routeInit                    src/12r-route.js:17
@@ -1898,6 +1899,9 @@ routeToFactor                src/12r-route.js:143
 routeToggle                  src/12r-route.js:23
 routeValue                   src/12r-route.js:120
 routeVisit                   src/12r-route.js:103
+rtInit                       src/09a-roomtone.js:23
+RTONE                        src/09a-roomtone.js:22
+rtWant                       src/09a-roomtone.js:42
 RUMOUR_DETAIL                src/11t-rumours.js:28
 RUMOUR_IMG                   src/11t-rumours.js:18
 RUMOUR_SRC                   src/11t-rumours.js:31
@@ -2008,7 +2012,7 @@ settleWatch                  src/12t-settle.js:288
 settleWords                  src/12t-settle.js:163
 setTx                        src/28-loop.js:69
 setZoom                      src/15-input.js:177
-sfx                          src/09-audio.js:211
+sfx                          src/09-audio.js:225
 SFX                          src/09-audio.js:85
 SH_DX                        src/03b-hull-paint.js:164
 shatter                      src/24-mode-belt.js:135
@@ -2107,7 +2111,7 @@ steps                        tests/90-harness.js:75
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:53
 stGroupOf                    src/26-ui-station.js:52
-stopEngine                   src/09-audio.js:243
+stopEngine                   src/09-audio.js:257
 STORAGE_OK                   src/14-save.js:7
 STORIES                      src/12k-stories-a.js:42
 STORIES_B                    src/12k-stories-b.js:27
@@ -2536,7 +2540,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/08-state.js · 12 КБ
   · состояние:1
 
-## src/09-audio.js · 11 КБ
+## src/09a-roomtone.js · 5 КБ
+  · мир слышен: тон места (M178-10):1
+
+## src/09-audio.js · 12 КБ
   · звук: чистый синтез, ни одного файла:1
 
 ## src/10-music.js · 30 КБ
@@ -3015,10 +3022,10 @@ zooTick                      src/11ad-zoo.js:41
   · авария:1
   · телеметрия:21
   · звук по кадрам:242
-  · цикл:298
-  · авторазрешение:321
-  · prof() — на что уходит кадр:433
-  · dbg() — что держит корабль:473
+  · цикл:300
+  · авторазрешение:323
+  · prof() — на что уходит кадр:435
+  · dbg() — что держит корабль:475
 
 ## src/28z-fps-probe.js · 7 КБ
   · пробник G11: ?g11:1
@@ -3259,6 +3266,8 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzb-bio.js · 13 КБ
 
 ## tests/91zzzc-home-up.js · 4 КБ
+
+## tests/91zzzd-roomtone.js · 5 КБ
 
 ## tests/91zzz-home-in.js · 5 КБ
 

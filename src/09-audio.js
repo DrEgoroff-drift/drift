@@ -141,6 +141,20 @@ const SFX={
     n.connect(lp);lp.connect(g);g.connect(SND.sfx);
     n.start(t);n.stop(t+.1);freeVoice(n);
   },
+  /* скрип дерева (M178-10): дом слышен изнутри. Очень тихий нисходящий тон
+     сквозь узкий фильтр — не событие, а свойство стен; зовёт его roomToneTick
+     раз в десятки секунд */
+  creak(){
+    const c=SND.ctx,t=c.currentTime;
+    const osc=c.createOscillator(),g=c.createGain(),bp=c.createBiquadFilter();
+    osc.type="sawtooth";
+    osc.frequency.setValueAtTime(170+Math.random()*90,t);
+    osc.frequency.exponentialRampToValueAtTime(80+Math.random()*40,t+.34);
+    bp.type="bandpass";bp.frequency.value=340;bp.Q.value=4.5;
+    env(g,t,.05,.34,.10);
+    osc.connect(bp);bp.connect(g);g.connect(SND.sfx);
+    osc.start(t);osc.stop(t+.44);freeVoice(osc);
+  },
   /* перо самописца (25b-tape): сухой щелчок по бумаге. Тише всего в рубке —
      это механика прибора, а не сигнал, и заметен в нём только ритм */
   pen(){

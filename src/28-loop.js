@@ -276,6 +276,8 @@ function audioTick(dt){
   }else if(G.mode==="landing"&&G.land){
     if(keys.thrust)engineLoop(1,.5);else stopEngine();
   }else stopEngine();
+  /* тон места (09a): ветер по погоде, порода в глубине, дом изнутри */
+  if(typeof roomToneTick==="function")roomToneTick(dt);
   /* шаги: в такт уже существующей фазе ходьбы, а не по своему таймеру */
   let ph=null,ground=420;
   if(G.mode==="surface"&&G.surf&&G.surf.on){ph=G.surf.walkPhase;ground=520;}
