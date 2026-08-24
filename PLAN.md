@@ -139,6 +139,48 @@ after), stands rewritten to compare — `mksettle` (three stages plus night plus
   needs the author.
 
 
+### M173 — the author's own walkthrough, 2026-08-24 (live queue)
+
+The author played the dev build and pointed at things one at a time. Each line is a fault **he
+saw on his own screen**, in the order he found them; they are worked through in passes, in this
+order, and struck out as they close. This is the live queue — new finds go at the bottom.
+
+1. ~~**A black polygon in the ground, "what is this at all"**~~ — done. It was the near-plane
+   boulder of `drawForeground` (21b), filled at `amb×.30` with no contour and no material. On dark
+   ground it stopped being an object and read as a tear in the render. **The rule is wider than
+   one rock: any silhouette in this game must carry an edge that caught the sky** — without one
+   the eye reads "nothing was drawn here", not "a dark thing".
+2. ~~**"The plants are ugly, and they clump"**~~ — done. Cluster centres were chosen as the best
+   of three throws across the whole strip, lowest ground wins; a strip has one hollow, so every
+   cluster walked into it — half the screen a wall of foliage, the other half bare. The strip is
+   now divided into as many stretches as there are clusters and each looks for its own low spot
+   inside its own stretch. Plants inside a cluster are spaced instead of thrown, and each one
+   carries a depth: the far ones smaller and fading into the air, the near ones full.
+3. ~~**"This is rubbish too" — the ringed planet in the sky**~~ — done (`skyGiant`, 19b). Three
+   causes: the body took the colour of the planet *underfoot* (dark world → black disc, plus a
+   .86 terminator — a hole again); the light always came from the right regardless of the star;
+   and the ring was two thin arcs of equal brightness front and back, no planet shadow on them,
+   no divisions — that is exactly what makes a hoop. Now the body is lit from where the star
+   actually is (`sunSpot`), mixes the star's colour so it can never go black, and the rings are
+   five bands of different width and brightness with the planet's shadow across them, the far
+   half dimmer, and the near half half-transparent over the disc.
+4. ~~**The home reads as a warehouse**~~ — done. The wall was bare from waist to ceiling and the
+   eye measures height by things, not by paint: a dado, a skirting and a beam give it three
+   horizontals. The ceiling came down from 2.6 man-heights to 2.3. Every room got one object
+   **in front of** the walker, cropped by the bottom edge, so the room has a front and a back
+   instead of one flat plane. Residents got depth and elbow room — five of them used to stand on
+   one line, shoulder to shoulder, reading as a row of identical cut-outs.
+5. ~~**"The lamp just doesn't light anything"**~~ — done, and it was the M172 cone's own fault.
+   A milky wedge was laid over the world — over the sky as well — and nothing under it got
+   brighter. Light does not work that way: what you see is not the beam, it is **the lit thing**.
+   The work moved to the ground: a strip along the terrain profile in front of the walker now
+   really brightens (added over the rock, so the material still shows), falling off with distance.
+   The airborne beam stayed but faint and narrow — as much as dust actually scatters — and only
+   where there is an atmosphere to scatter in.
+6. **A second storey for the living part** — not started (the original M170 ask).
+7. **The world heard** — not started: room tone per screen, the house audible from inside,
+   weather heard before it is seen. `09-audio`/`10-music` are about music, not about place.
+
 ### Graphics debt (open faults, one line each)
 
 Written down on 2026-08-16 so the picture stops being an open-ended errand: everything below is a

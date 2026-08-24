@@ -7,6 +7,49 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.139.0 — five things the author pointed at (M173)
+
+The dev stand went up (`dev.ps1` → `/dev.html` and `/dev/`), the author played the build and
+pointed at things one at a time. Every line below is a fault **he saw on his own screen**.
+
+**"What is this at all?"** — a black polygon in the ground. It was the near-plane boulder of
+`drawForeground`: filled at `amb×.30` with no contour and no material, so on dark ground it
+stopped being an object and read as a tear in the render. It now has a body that darkens
+downward, two chips, and — the point of the fix — **a lit edge along its top**. The rule is wider
+than one rock: any silhouette in this game must carry an edge that caught the sky, or the eye
+reads "nothing was drawn here" instead of "a dark thing".
+
+**"The plants are ugly, and they clump."** Cluster centres were picked as the best of three
+throws across the whole strip, lowest ground wins — and a strip has one hollow, so every cluster
+walked into it: half the screen a wall of foliage, the other half bare. The strip is now divided
+into as many stretches as there are clusters, and each looks for its low spot inside its own
+stretch. Plants within a cluster are spaced instead of thrown, and each carries a depth — far
+ones smaller and fading into the air, near ones full. (First attempt drew that depth from the
+shared RNG and shifted the whole strip's generation, which failed the Tin suite; it comes from
+its own hash now.)
+
+**"This is rubbish too"** — the ringed planet in the sky, a black disc with a hoop. Three causes:
+the body took the palette of the planet *underfoot*, so a dark world gave a dark disc and a .86
+terminator finished it into a hole; the light always came from the right whatever the star did;
+and the ring was two thin arcs of equal brightness front and back, with no planet shadow and no
+divisions. The body is now lit from where the star actually is, mixes the star's colour so it can
+never go black, and the rings are five bands of different width and brightness with the planet's
+shadow lying across them, the far half dimmer and the near half half-transparent over the disc.
+
+**"The lamp just doesn't light anything"** — and that was 0.138.0's own cone: a milky wedge laid
+over the world, over the sky as well, with nothing under it getting brighter. What you see at
+night is not the beam, it is **the lit ground**. A strip along the terrain profile in front of the
+walker now genuinely brightens, added over the rock so the material still shows, falling off with
+distance; the airborne beam stayed, faint and narrow, and only where there is atmosphere.
+
+**The home read as a warehouse.** The wall was bare from waist to ceiling, and the eye measures
+height by things, not by paint: a dado, a skirting and a beam give it three horizontals, and the
+ceiling came down from 2.6 man-heights to 2.3. Every room got one object **in front of** the
+walker, cropped by the bottom edge, so a room has a front and a back instead of one flat plane.
+Residents got depth and elbow room — five of them used to stand on one line, shoulder to
+shoulder, reading as a row of identical cut-outs.
+
+---
 ## 0.138.0 — the light gets a direction (M172, the world on foot)
 
 The walking screen is the longest one after the cockpit and the last one still

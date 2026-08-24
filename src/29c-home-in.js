@@ -19,7 +19,9 @@
 
 const HIN_MAN=46;                       /* рост хозяина в единицах комнаты */
 const HIN_FLOOR=0;                      /* пол — ноль по вертикали, всё вверх — минус */
-const HIN_ROOM_H=HIN_MAN*2.6;           /* высота комнаты: два с половиной роста */
+const HIN_ROOM_H=HIN_MAN*2.3;           /* высота комнаты: чуть выше двух ростов.
+                                           2.6 читалось цехом: дом — не ангар,
+                                           и потолок в нём слышно головой (M173) */
 const HIN_DOORW=HIN_MAN*1.1;
 /* ширина комнаты по ступеням: угол тесный, гараж и жилая часть широкие */
 const HIN_ROOM_W=[190,150,290,170,240,210,260,230];
@@ -75,7 +77,10 @@ function hinFolkMake(){
   /* экипаж, что сейчас не в рейсе, отдыхает дома — но не больше двоих в кадре */
   const crew=(G.crew||[]).filter(c=>!c.run).slice(0,2);
   crew.forEach((c,i)=>out.push({who:"crew",name:(c.name||"").toUpperCase(),col:[176,164,150],
-    x:roomX("hall")+i*40,tx:roomX("hall")+i*40,pose:i?"stand":"sit",t:0,face:i?-1:1,home:"hall"}));
+    x:roomX("hall")+(i?52:-52),tx:roomX("hall")+(i?52:-52),pose:i?"stand":"sit",t:0,face:i?-1:1,home:"hall"}));
+  /* у каждого своя глубина в комнате (M173): без неё пятеро жильцов стояли
+     на одной линии и читались рядом одинаковых вырезок, а не компанией */
+  out.forEach((f,i)=>{f.z=((i*7)%5)/5*.8;});
   return out;
 }
 function hinFolkTick(dt){
@@ -109,7 +114,7 @@ function hinFolkTick(dt){
     for(const o of S.folk){
       if(o===f)continue;
       const d2=f.x-o.x;
-      if(Math.abs(d2)<14)f.x+=(d2>=0?1:-1)*.5*dt;
+      if(Math.abs(d2)<26)f.x+=(d2>=0?1:-1)*.5*dt;   /* 14 было треть роста: жильцы всё равно слипались (M173) */
     }
     if(f.pose==="walk"){
       const d=f.tx-f.x;

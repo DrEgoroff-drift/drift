@@ -577,7 +577,15 @@ function decoFrond(A){
 function drawForeground(tr,camx,camy,p){
   const K=1.24, SLOT=560;
   const amb=ambRGB(p);
-  const c="rgba("+Math.round(amb[0]*.30)+","+Math.round(amb[1]*.32)+","+Math.round(amb[2]*.38)+",";
+  /* ── силуэт без освещённой кромки читается ДЫРОЙ (автор, 24.08.2026) ──
+     Валун переднего плана был залит почти чёрным (amb×.30) без контура и без
+     материала. На тёмном грунте он переставал быть предметом и выглядел
+     прорехой в отрисовке — автор ткнул в него и спросил «а что это вообще».
+     Правило шире одного камня: у ЛЮБОГО силуэта в этой игре обязана быть
+     кромка, поймавшая небо. Иначе глаз читает не «чёрный предмет», а
+     «здесь ничего не нарисовалось». */
+  const c="rgba("+Math.round(amb[0]*.42)+","+Math.round(amb[1]*.44)+","+Math.round(amb[2]*.50)+",";
+  const rim="rgba("+Math.round(amb[0]*1.15+30)+","+Math.round(amb[1]*1.15+34)+","+Math.round(amb[2]*1.2+40)+",";
   const fx=camx*K;
   const s0=Math.floor((fx-300)/SLOT), s1=Math.floor((fx+W+300)/SLOT);
   const hasAir=p.T.atm!=="отсутствует"&&["terran","ocean","jungle","toxic"].includes(p.type);   // трава — только где есть флора: на льду пучок читался чёрными палками
@@ -591,14 +599,41 @@ function drawForeground(tr,camx,camy,p){
     if(y-r>H+10||sx+r<-20||sx-r>W+20)continue;
     if(kind<2||!hasAir){
       /* валун: рваный круг, верх чуть светлее — ловит небо */
-      ctx.fillStyle=c+".88)";
-      ctx.beginPath();
+      const pts=[];
       for(let i=0;i<11;i++){
         const a=i/11*TAU, rr=r*(.78+((hashi(s,i,0xB0D)>>>4)&15)/15*.3);
-        const px=sx+Math.cos(a)*rr*1.25, py=y+Math.sin(a)*rr*.8;
-        if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py);
+        pts.push([sx+Math.cos(a)*rr*1.25, y+Math.sin(a)*rr*.8]);
       }
-      ctx.closePath();ctx.fill();
+      const BP=new Path2D();
+      BP.moveTo(pts[0][0],pts[0][1]);
+      for(let i=1;i<pts.length;i++)BP.lineTo(pts[i][0],pts[i][1]);
+      BP.closePath();
+      ctx.fillStyle=c+".94)";ctx.fill(BP);
+      /* тело не плоское: книзу глуше — тем и отличается камень от вырезанной дыры */
+      ctx.save();ctx.clip(BP);
+      const bg2=ctx.createLinearGradient(0,y-r*.8,0,y+r*.9);
+      bg2.addColorStop(0,"rgba("+amb.join(",")+",.14)");
+      bg2.addColorStop(1,"rgba(0,0,0,.30)");
+      ctx.fillStyle=bg2;ctx.fillRect(sx-r*1.4,y-r*.9,r*2.8,r*2);
+      /* пара сколов: без них крупное пятно остаётся пятном */
+      ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=1.6;
+      for(let i=0;i<2;i++){
+        const hj=hashi(s,i,0x5C0E);
+        const ax=sx+((hj&63)-32)*.9, ay=y-r*.5+((hj>>>6)&31)*.4;
+        ctx.beginPath();ctx.moveTo(ax,ay);
+        ctx.lineTo(ax+((hj>>>11)&15)-7,ay+r*.55);ctx.stroke();
+      }
+      ctx.restore();
+      /* КРОМКА: светлая дуга по верхнему краю силуэта. Ради неё и переделано */
+      ctx.strokeStyle=rim+".55)";ctx.lineWidth=1.8;ctx.lineJoin="round";
+      ctx.beginPath();
+      let started=false;
+      for(let i=0;i<pts.length;i++){
+        const q=pts[i];
+        if(q[1]<=y-r*.18){ if(started)ctx.lineTo(q[0],q[1]); else {ctx.moveTo(q[0],q[1]);started=true;} }
+        else started=false;
+      }
+      ctx.stroke();
       ctx.fillStyle="rgba("+amb.join(",")+",.10)";
       ctx.beginPath();ctx.ellipse(sx-r*.2,y-r*.55,r*.7,r*.16,-.2,0,TAU);ctx.fill();
     }else{

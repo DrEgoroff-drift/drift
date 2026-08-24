@@ -851,7 +851,7 @@ body.road #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.138.0";
+const VER="0.139.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -27520,27 +27520,58 @@ function skyWorld(p,e,x,y,dim){
 function skyGiant(p,e,x,y,dim,ringy){
   const R=H*.17*e.s*(ringy?.8:1);
   const r=rng(e.seed);
+  /* ── ЧЕТВЁРТАЯ ПЕРЕДЕЛКА, по прямому указанию автора (24.08.2026) ──
+     Гигант в небе читался «дыркой с обручем», и на то было три причины.
+     1. Тело бралось палитрой ПЛАНЕТЫ ПОД НОГАМИ (skyTint 3 и 1). На тёмном
+        мире оба цвета тёмные, сверху ложился терминатор в .86 черноты — и
+        оставался чёрный круг. То же правило, что у валуна переднего плана:
+        силуэт без света глаз читает не как предмет, а как прореху.
+     2. Свет падал ВСЕГДА СПРАВА, независимо от звезды. Теперь тело освещено
+        оттуда, где звезда действительно стоит (sunSpot, 19c-light, M172).
+     3. Кольцо было двумя тонкими дугами одной яркости спереди и сзади, без
+        тени планеты на них и без деления. Это и давало обруч. */
   const c1=skyTint(p,3),c2=skyTint(p,1);
+  const st=hex2rgb((G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a");
+  /* тело подмешивает свет звезды: планета в небе освещена ею, а не собой */
+  const lit=c1.map((v,i)=>clamp(v*.55+st[i]*.42+26,0,255)|0);
+  const shd=c2.map((v,i)=>clamp(v*.34+st[i]*.06+10,0,255)|0);
+  const SS=(typeof sunSpot==="function")?sunSpot(p):{x:x-R,y:y-R};
+  let ux=SS.x-x, uy=SS.y-y;
+  const ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;
+  const ua=Math.atan2(uy,ux);
   ctx.save();
   ctx.globalAlpha=dim*.95;
-  /* кольца за диском */
   const hasRing=ringy||r()<.45;
   const tilt=-.28-r()*.4;
-  if(hasRing){
+  /* ── кольца за диском ──
+     Дальняя половина видна НА ПРОСВЕТ и потому глуше, а ещё её частично
+     съедает тень планеты. Делений три, разной ширины и яркости: одинаковые
+     полосы читаются обручем, разные — системой колец. */
+  const RING=[[1.28,.055,.34],[1.40,.028,.16],[1.50,.075,.46],[1.66,.036,.26],[1.78,.020,.13]];
+  const ringPass=(front)=>{
     ctx.save();ctx.translate(x,y);ctx.rotate(tilt);
-    ctx.strokeStyle="rgba("+c1.join(",")+",.30)";
-    for(let i=0;i<5;i++){
-      ctx.lineWidth=R*(.03+i*.012);
-      ctx.beginPath();ctx.ellipse(0,0,R*(1.35+i*.16),R*(.30+i*.05),0,Math.PI,TAU);ctx.stroke();
+    for(const [rr,wd,al] of RING){
+      const a=al*(front?1:.52);
+      const grd=ctx.createLinearGradient(-R*rr,0,R*rr,0);
+      /* тень планеты падает на кольцо с той стороны, куда не достаёт звезда */
+      const sunSide=Math.cos(ua-tilt)>=0?1:-1;
+      grd.addColorStop(0,"rgba("+(sunSide<0?lit:shd).join(",")+","+(a*(sunSide<0?1:.35)).toFixed(3)+")");
+      grd.addColorStop(.5,"rgba("+lit.join(",")+","+(a*.9).toFixed(3)+")");
+      grd.addColorStop(1,"rgba("+(sunSide>0?lit:shd).join(",")+","+(a*(sunSide>0?1:.35)).toFixed(3)+")");
+      ctx.strokeStyle=grd;ctx.lineWidth=R*wd;
+      ctx.beginPath();
+      ctx.ellipse(0,0,R*rr,R*rr*.26,0,front?0:Math.PI,front?Math.PI:TAU);
+      ctx.stroke();
     }
     ctx.restore();
-  }
+  };
+  if(hasRing)ringPass(false);
   /* диск с полосами */
   ctx.save();
   ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.clip();
-  const g=ctx.createLinearGradient(x-R,y-R,x+R*.6,y+R);
-  g.addColorStop(0,"rgb("+c1.map(v=>Math.round(v*.95+20)).join(",")+")");
-  g.addColorStop(1,"rgb("+c2.map(v=>Math.round(v*.35)).join(",")+")");
+  const g=ctx.createLinearGradient(x+ux*R,y+uy*R,x-ux*R,y-uy*R);
+  g.addColorStop(0,"rgb("+lit.join(",")+")");
+  g.addColorStop(1,"rgb("+shd.join(",")+")");
   ctx.fillStyle=g;ctx.fillRect(x-R,y-R,R*2,R*2);
   /* полосы: вытянутые эллипсы разной светлоты, чуть смещённые — читается
      как вращающаяся атмосфера, а не как штрихи */
@@ -27560,23 +27591,25 @@ function skyGiant(p,e,x,y,dim,ringy){
     sg.addColorStop(1,"rgba(255,190,150,0)");
     ctx.fillStyle=sg;ctx.beginPath();ctx.ellipse(sx,sy,R*.26,R*.15,0,0,TAU);ctx.fill();
   }
-  /* терминатор: ночная сторона гасится, а не рисуется отдельной фигурой */
-  const tg=ctx.createLinearGradient(x+R*.15,y,x+R*1.05,y);
-  tg.addColorStop(0,"rgba(0,0,0,0)");tg.addColorStop(1,"rgba(0,0,0,.86)");
+  /* терминатор: ночная сторона гасится, а не рисуется отдельной фигурой.
+     Идёт от звезды и НЕ до черноты: тело в небе не бывает провалом — ночную
+     сторону подсвечивает и звезда через атмосферу, и свет собственных колец */
+  const tg=ctx.createLinearGradient(x+ux*R*.05,y+uy*R*.05,x-ux*R*1.1,y-uy*R*1.1);
+  tg.addColorStop(0,"rgba(0,0,0,0)");tg.addColorStop(1,"rgba(0,0,0,.62)");
   ctx.fillStyle=tg;ctx.fillRect(x-R,y-R,R*2,R*2);
   ctx.restore();
-  /* кромочный свет со стороны звезды */
-  ctx.strokeStyle="rgba(255,240,215,"+(.30*dim).toFixed(2)+")";
-  ctx.lineWidth=1.6;
-  ctx.beginPath();ctx.arc(x,y,R,Math.PI*.62,Math.PI*1.42);ctx.stroke();
-  /* кольца перед диском */
+  /* кромочный свет со стороны звезды — дуга вокруг направления на неё */
+  ctx.strokeStyle="rgba(255,240,215,"+(.34*dim).toFixed(2)+")";
+  ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.arc(x,y,R,ua-1.05,ua+1.05);ctx.stroke();
+  /* кольца перед диском: ярче задних, и на самом диске чуть прозрачнее —
+     сквозь кольцо видно тело, поэтому оно и не читается обручем */
   if(hasRing){
-    ctx.save();ctx.translate(x,y);ctx.rotate(tilt);
-    ctx.strokeStyle="rgba("+c1.join(",")+",.42)";
-    for(let i=0;i<5;i++){
-      ctx.lineWidth=R*(.03+i*.012);
-      ctx.beginPath();ctx.ellipse(0,0,R*(1.35+i*.16),R*(.30+i*.05),0,0,Math.PI);ctx.stroke();
-    }
+    ringPass(true);
+    ctx.save();
+    ctx.beginPath();ctx.arc(x,y,R*.99,0,TAU);ctx.clip();
+    ctx.globalAlpha=dim*.45;
+    ringPass(true);
     ctx.restore();
   }
   ctx.restore();
@@ -33923,7 +33956,15 @@ function decoFrond(A){
 function drawForeground(tr,camx,camy,p){
   const K=1.24, SLOT=560;
   const amb=ambRGB(p);
-  const c="rgba("+Math.round(amb[0]*.30)+","+Math.round(amb[1]*.32)+","+Math.round(amb[2]*.38)+",";
+  /* ── силуэт без освещённой кромки читается ДЫРОЙ (автор, 24.08.2026) ──
+     Валун переднего плана был залит почти чёрным (amb×.30) без контура и без
+     материала. На тёмном грунте он переставал быть предметом и выглядел
+     прорехой в отрисовке — автор ткнул в него и спросил «а что это вообще».
+     Правило шире одного камня: у ЛЮБОГО силуэта в этой игре обязана быть
+     кромка, поймавшая небо. Иначе глаз читает не «чёрный предмет», а
+     «здесь ничего не нарисовалось». */
+  const c="rgba("+Math.round(amb[0]*.42)+","+Math.round(amb[1]*.44)+","+Math.round(amb[2]*.50)+",";
+  const rim="rgba("+Math.round(amb[0]*1.15+30)+","+Math.round(amb[1]*1.15+34)+","+Math.round(amb[2]*1.2+40)+",";
   const fx=camx*K;
   const s0=Math.floor((fx-300)/SLOT), s1=Math.floor((fx+W+300)/SLOT);
   const hasAir=p.T.atm!=="отсутствует"&&["terran","ocean","jungle","toxic"].includes(p.type);   // трава — только где есть флора: на льду пучок читался чёрными палками
@@ -33937,14 +33978,41 @@ function drawForeground(tr,camx,camy,p){
     if(y-r>H+10||sx+r<-20||sx-r>W+20)continue;
     if(kind<2||!hasAir){
       /* валун: рваный круг, верх чуть светлее — ловит небо */
-      ctx.fillStyle=c+".88)";
-      ctx.beginPath();
+      const pts=[];
       for(let i=0;i<11;i++){
         const a=i/11*TAU, rr=r*(.78+((hashi(s,i,0xB0D)>>>4)&15)/15*.3);
-        const px=sx+Math.cos(a)*rr*1.25, py=y+Math.sin(a)*rr*.8;
-        if(i)ctx.lineTo(px,py);else ctx.moveTo(px,py);
+        pts.push([sx+Math.cos(a)*rr*1.25, y+Math.sin(a)*rr*.8]);
       }
-      ctx.closePath();ctx.fill();
+      const BP=new Path2D();
+      BP.moveTo(pts[0][0],pts[0][1]);
+      for(let i=1;i<pts.length;i++)BP.lineTo(pts[i][0],pts[i][1]);
+      BP.closePath();
+      ctx.fillStyle=c+".94)";ctx.fill(BP);
+      /* тело не плоское: книзу глуше — тем и отличается камень от вырезанной дыры */
+      ctx.save();ctx.clip(BP);
+      const bg2=ctx.createLinearGradient(0,y-r*.8,0,y+r*.9);
+      bg2.addColorStop(0,"rgba("+amb.join(",")+",.14)");
+      bg2.addColorStop(1,"rgba(0,0,0,.30)");
+      ctx.fillStyle=bg2;ctx.fillRect(sx-r*1.4,y-r*.9,r*2.8,r*2);
+      /* пара сколов: без них крупное пятно остаётся пятном */
+      ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=1.6;
+      for(let i=0;i<2;i++){
+        const hj=hashi(s,i,0x5C0E);
+        const ax=sx+((hj&63)-32)*.9, ay=y-r*.5+((hj>>>6)&31)*.4;
+        ctx.beginPath();ctx.moveTo(ax,ay);
+        ctx.lineTo(ax+((hj>>>11)&15)-7,ay+r*.55);ctx.stroke();
+      }
+      ctx.restore();
+      /* КРОМКА: светлая дуга по верхнему краю силуэта. Ради неё и переделано */
+      ctx.strokeStyle=rim+".55)";ctx.lineWidth=1.8;ctx.lineJoin="round";
+      ctx.beginPath();
+      let started=false;
+      for(let i=0;i<pts.length;i++){
+        const q=pts[i];
+        if(q[1]<=y-r*.18){ if(started)ctx.lineTo(q[0],q[1]); else {ctx.moveTo(q[0],q[1]);started=true;} }
+        else started=false;
+      }
+      ctx.stroke();
       ctx.fillStyle="rgba("+amb.join(",")+",.10)";
       ctx.beginPath();ctx.ellipse(sx-r*.2,y-r*.55,r*.7,r*.16,-.2,0,TAU);ctx.fill();
     }else{
@@ -34583,7 +34651,12 @@ function drawSurface(){
     /* растение кланяется от основания: высокое сильнее низкого, у каждого своя
        фаза от координаты — иначе куртина качается одним куском */
     const sw=WIND*.055*(.6+pl.h/90)*(.75+.25*Math.sin(G.t*.028+pl.x*.05));
+    const z=pl.z||0;
     ctx.save();ctx.translate(x,pl.y-camy);ctx.rotate(sw);
+    /* глубина куртины (автор, 24.08.2026): дальние мельче, ближние крупнее.
+       Одного размера мало — дальнее ещё и выцветает в воздух, поэтому сверху
+       ложится вуаль цвета неба. Без неё заросли остаются плоской аппликацией */
+    if(z){ctx.scale(1-z*.22,1-z*.22);ctx.globalAlpha=1-z*.30;}
     drawPlant(pl,0,0);
     ctx.restore();
   }
@@ -34684,26 +34757,53 @@ function drawSurface(){
          Был симметричный шар в 150 px вокруг головы: человек светился сам.
          Теперь это налобник — узкий конус вперёд по взгляду, горячее пятно
          там, куда он упёрся в землю, и слабый ореол у самого шлема. */
+      /* ── СВЕТИТ ЗЕМЛЯ, А НЕ ВОЗДУХ (автор, 24.08.2026) ──
+         Первый заход клал молочный клин поверх мира — и поверх неба заодно.
+         Свет так не работает: видно не луч, а ОСВЕЩЁННОЕ. Поэтому теперь
+         основная работа идёт по грунту: полоса вдоль профиля рельефа перед
+         человеком светлеет по-настоящему (сложение поверх породы, материал
+         остаётся виден), с затуханием по дальности и мягким краем. Луч в
+         воздухе остался, но еле заметный и узкий — столько, сколько
+         рассеивает пыль. */
       const f=S.face||1, hx=x+f*2, hy=y-8;
-      const reach=132, drop=(groundAt(tr,S.x+f*reach)-camy)-hy;
+      const reach=170;
       ctx.save();ctx.globalCompositeOperation="lighter";
-      ctx.globalAlpha=clamp(nite*1.25,0,1);
-      const cone=ctx.createLinearGradient(hx,hy,hx+f*reach,hy+drop*.6);
-      cone.addColorStop(0,"rgba(255,238,205,.42)");
-      cone.addColorStop(.45,"rgba(255,232,190,.16)");
-      cone.addColorStop(1,"rgba(255,226,175,0)");
-      ctx.fillStyle=cone;
-      ctx.beginPath();
-      ctx.moveTo(hx,hy-2.5);ctx.lineTo(hx,hy+3);
-      ctx.lineTo(hx+f*reach,hy+drop*.5+34);
-      ctx.lineTo(hx+f*reach,hy+drop*.5-30);
-      ctx.closePath();ctx.fill();
-      /* пятно на грунте: без него конус висит в воздухе */
-      const px2=S.x+f*reach*.72, py2=groundAt(tr,px2)-camy;
-      const pool=ctx.createRadialGradient(px2-camx,py2,0,px2-camx,py2,46);
-      pool.addColorStop(0,"rgba(255,240,210,.30)");pool.addColorStop(1,"rgba(255,236,200,0)");
-      ctx.fillStyle=pool;
-      ctx.beginPath();ctx.ellipse(px2-camx,py2,46,13,0,0,TAU);ctx.fill();
+      /* 1. освещённый грунт */
+      {
+        const x0=S.x, x1=S.x+f*reach;
+        const lo=Math.min(x0,x1), hi=Math.max(x0,x1), stp=Math.max(4,(hi-lo)/26);
+        const GP=new Path2D();
+        GP.moveTo(lo-camx,groundAt(tr,lo)-camy);
+        for(let wx=lo;wx<=hi;wx+=stp)GP.lineTo(wx-camx,groundAt(tr,wx)-camy);
+        GP.lineTo(hi-camx,groundAt(tr,hi)-camy);
+        GP.lineTo(hi-camx,H);GP.lineTo(lo-camx,H);GP.closePath();
+        ctx.save();ctx.clip(GP);
+        /* затухание по дальности от ног, а не от края экрана */
+        const gl=ctx.createLinearGradient(x,y,x+f*reach,y+40);
+        gl.addColorStop(0,"rgba(255,238,206,"+(.30*clamp(nite*1.3,0,1)).toFixed(3)+")");
+        gl.addColorStop(.30,"rgba(255,234,196,"+(.44*clamp(nite*1.3,0,1)).toFixed(3)+")");
+        gl.addColorStop(.72,"rgba(255,228,182,"+(.16*clamp(nite*1.3,0,1)).toFixed(3)+")");
+        gl.addColorStop(1,"rgba(255,224,170,0)");
+        ctx.fillStyle=gl;
+        ctx.fillRect(Math.min(x,x+f*reach)-6,y-70,reach+12,H);
+        ctx.restore();
+      }
+      /* 2. луч в воздухе: узкий, слабый и только там, где есть чем рассеивать */
+      if(p.T.atm!=="отсутствует"){
+        ctx.globalAlpha=clamp(nite*1.25,0,1);
+        const drop=(groundAt(tr,S.x+f*reach)-camy)-hy;
+        const cone=ctx.createLinearGradient(hx,hy,hx+f*reach,hy+drop*.6);
+        cone.addColorStop(0,"rgba(255,238,205,.13)");
+        cone.addColorStop(.5,"rgba(255,232,190,.05)");
+        cone.addColorStop(1,"rgba(255,226,175,0)");
+        ctx.fillStyle=cone;
+        ctx.beginPath();
+        ctx.moveTo(hx,hy-2);ctx.lineTo(hx,hy+2.5);
+        ctx.lineTo(hx+f*reach,hy+drop*.5+20);
+        ctx.lineTo(hx+f*reach,hy+drop*.5-16);
+        ctx.closePath();ctx.fill();
+        ctx.globalAlpha=1;
+      }
       const LS=glowSprite("suitlamp",()=>{
         const g=ctx.createRadialGradient(0,0,0,0,0,1);
         g.addColorStop(0,"rgba(255,236,200,.55)");g.addColorStop(.35,"rgba(255,236,200,.22)");
@@ -34986,18 +35086,43 @@ function enterSurface(){
      перестала быть однородной по жизни */
   const wet=(tr.wet==null?.5:tr.wet);
   const dens=(DENS[p.mix==="jungle"?"jungle":p.type]||1.2)*(.25+wet*1.85);
-  if(flora)for(let c=0;c<Math.round(16*gp*dens);c++){
-    let cx=120+r()*(tr.W-240);
+  /* ── куртины по всей полосе, а не в одной ложбине (автор, 24.08.2026) ──
+     Центр куртины выбирался «лучшим из трёх бросков по всей ширине, ниже —
+     значит лучше». Низина в полосе одна, и все куртины сходились в неё: на
+     кадре половина экрана превращалась в сплошную стену листвы, а вторая
+     половина стояла голой. Теперь полоса делится на столько участков, сколько
+     куртин, и каждая ищет своё низкое место ВНУТРИ СВОЕГО участка. Группировка
+     сохранилась — пропала свалка.
+     И внутри куртины растения расставлены с шагом, а не брошены случайно:
+     чисто случайные точки на отрезке слипаются парами, и куртина читалась
+     кустом-многоножкой. */
+  const nC=Math.max(1,Math.round(16*gp*dens));
+  const span=(tr.W-240)/nC;
+  if(flora)for(let c=0;c<nC;c++){
+    const lo=120+c*span;
+    let cx=lo+r()*span;
     for(let t=0;t<2;t++){
-      const alt=120+r()*(tr.W-240);
+      const alt=lo+r()*span;
       if(groundAt(tr,alt)>groundAt(tr,cx))cx=alt;      // ниже — значит лучше
     }
     const n=2+Math.floor(r()*6);
+    const wide=Math.min(260,span*.9), step=wide/n;
     for(let i=0;i<n;i++){
-      const x=clamp(cx+(r()-.5)*260,60,tr.W-60);
-      plants.push(genPlant(r,p,x,groundAt(tr,x)));
+      const x=clamp(cx-wide*.5+step*(i+.5)+(r()-.5)*step*.55,60,tr.W-60);
+      const pl=genPlant(r,p,x,groundAt(tr,x));
+      /* глубина: у куртины есть перед и зад. Дальние мельче и глуше, ближние
+         крупнее и темнее — без этого все растения стоят на одной линии в один
+         кислотный тон и читаются наклейками */
+      /* ОТДЕЛЬНЫЙ поток: лишний вызов общего r() сдвигает всю последующую
+         генерацию полосы — фауну, залежи, всё. Правило старое, а наступил на
+         него всё равно: первый заход брал глубину из r() и уронил суite про
+         комбинат, потому что мир под тестом стал другим. */
+      pl.z=((hashi(Math.round(x),p.seed,0x2E5A)>>>7)&255)/255;
+      plants.push(pl);
     }
   }
+  /* дальние — первыми: иначе глубина не работает, чем бы её ни красили */
+  plants.sort((a,b)=>(b.z||0)-(a.z||0));
   /* высаживаемся за пределами зоны взлёта (`shipZoneR`), иначе первое же ДЕЙСТВ
      отправляет обратно на орбиту вместо бурения */
   /* зверьё водится там же, где флора: ему есть что есть */
@@ -47427,7 +47552,9 @@ else if(location.search.indexOf("g11")>=0)addEventListener("load",()=>setTimeout
 
 const HIN_MAN=46;                       /* рост хозяина в единицах комнаты */
 const HIN_FLOOR=0;                      /* пол — ноль по вертикали, всё вверх — минус */
-const HIN_ROOM_H=HIN_MAN*2.6;           /* высота комнаты: два с половиной роста */
+const HIN_ROOM_H=HIN_MAN*2.3;           /* высота комнаты: чуть выше двух ростов.
+                                           2.6 читалось цехом: дом — не ангар,
+                                           и потолок в нём слышно головой (M173) */
 const HIN_DOORW=HIN_MAN*1.1;
 /* ширина комнаты по ступеням: угол тесный, гараж и жилая часть широкие */
 const HIN_ROOM_W=[190,150,290,170,240,210,260,230];
@@ -47483,7 +47610,10 @@ function hinFolkMake(){
   /* экипаж, что сейчас не в рейсе, отдыхает дома — но не больше двоих в кадре */
   const crew=(G.crew||[]).filter(c=>!c.run).slice(0,2);
   crew.forEach((c,i)=>out.push({who:"crew",name:(c.name||"").toUpperCase(),col:[176,164,150],
-    x:roomX("hall")+i*40,tx:roomX("hall")+i*40,pose:i?"stand":"sit",t:0,face:i?-1:1,home:"hall"}));
+    x:roomX("hall")+(i?52:-52),tx:roomX("hall")+(i?52:-52),pose:i?"stand":"sit",t:0,face:i?-1:1,home:"hall"}));
+  /* у каждого своя глубина в комнате (M173): без неё пятеро жильцов стояли
+     на одной линии и читались рядом одинаковых вырезок, а не компанией */
+  out.forEach((f,i)=>{f.z=((i*7)%5)/5*.8;});
   return out;
 }
 function hinFolkTick(dt){
@@ -47517,7 +47647,7 @@ function hinFolkTick(dt){
     for(const o of S.folk){
       if(o===f)continue;
       const d2=f.x-o.x;
-      if(Math.abs(d2)<14)f.x+=(d2>=0?1:-1)*.5*dt;
+      if(Math.abs(d2)<26)f.x+=(d2>=0?1:-1)*.5*dt;   /* 14 было треть роста: жильцы всё равно слипались (M173) */
     }
     if(f.pose==="walk"){
       const d=f.tx-f.x;
@@ -47643,6 +47773,30 @@ function drawHomeIn(){
   }
   ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(camx-40,ceil,vw+80,7);
   ctx.fillStyle="rgba(255,255,255,.05)";ctx.fillRect(camx-40,ceil+7,vw+80,1.2);
+  /* ── членение стены по высоте (M173) ──
+     Комнаты читались складом, и дело было не в числе: потолок в два с
+     половиной роста нормален для дома. Стена была ГОЛОЙ от пояса до потолка,
+     а высоту глаз меряет по вещам, а не по краске. Панель по пояс, полка её
+     карниза и балка под потолком дают три горизонтали — и комната сразу
+     становится комнатой, ничего больше не двигая. */
+  {
+    const dad=fy-HIN_MAN*.62;                       /* верх панели: по пояс */
+    ctx.fillStyle="rgba(0,0,0,.16)";
+    ctx.fillRect(camx-40,dad,vw+80,fy-dad);
+    ctx.fillStyle="rgb("+P.wood.map(v=>v*.5|0).join(",")+")";
+    ctx.fillRect(camx-40,dad-2.4,vw+80,3.4);
+    ctx.fillStyle="rgba(255,236,200,.10)";
+    ctx.fillRect(camx-40,dad-2.4,vw+80,1);
+    /* плинтус: без него панель висит, а пол и стена сливаются в один тон */
+    ctx.fillStyle="rgb("+P.wood.map(v=>v*.42|0).join(",")+")";
+    ctx.fillRect(camx-40,fy-HIN_MAN*.07,vw+80,HIN_MAN*.07);
+    /* балка под потолком — на неё же садится тень от лампы */
+    const bm=ceil+HIN_MAN*.30;
+    ctx.fillStyle="rgb("+P.wood.map(v=>v*.44|0).join(",")+")";
+    ctx.fillRect(camx-40,bm,vw+80,HIN_MAN*.11);
+    ctx.fillStyle="rgba(0,0,0,.3)";ctx.fillRect(camx-40,bm+HIN_MAN*.11,vw+80,2.6);
+    ctx.fillStyle="rgba(255,236,200,.07)";ctx.fillRect(camx-40,bm,vw+80,1.2);
+  }
   /* ── пол ── */
   const fg=ctx.createLinearGradient(0,fy-2,0,fy+HIN_MAN*.8);
   fg.addColorStop(0,"rgb("+P.floor.map(v=>Math.min(255,v*1.15)|0).join(",")+")");
@@ -47724,11 +47878,28 @@ function drawHomeIn(){
       for(let xx=x+((((yy-ceil)/9)|0)%2?6:0);xx<x+80;xx+=18)ctx.strokeRect(xx+.5,yy+.5,16,8);
   }
   /* ── жильцы и хозяин ── */
+  /* У каждого своя глубина (M173): раньше все стояли на одной линии, и пятеро
+     в комнате читались рядом одинаковых вырезок. Кто дальше — выше, мельче и
+     глуше; разница маленькая, но именно она превращает ряд в компанию. */
   for(const f of S.folk){
     if(f.x<camx-40||f.x>camx+vw+40)continue;
-    hinFigure(f.x,fy,f.col,f.face,f.pose,f.walk||0,f.name,f.look);
+    const z=f.z||0;
+    ctx.save();
+    ctx.translate(f.x,fy-z*HIN_MAN*.13);ctx.scale(1-z*.10,1-z*.10);
+    ctx.globalAlpha=1-z*.22;
+    hinFigure(0,0,f.col,f.face,f.pose,f.walk||0,f.name,f.look);
+    ctx.restore();
   }
   hinFigure(S.x,fy,[214,222,228],S.face,(keys.left||keys.right)?"walk":"stand",S.walk,null);
+  /* ── передний план (M173) ──
+     Комната была одной плоскостью: стена, вещи у стены, человек — и всё на
+     одной глубине. Пара предметов БЛИЖЕ человека, обрезанных нижней кромкой
+     кадра, дают комнате перед и зад одним движением. Рисуются после людей —
+     иначе они не спереди. */
+  for(const r of R){
+    if(r.x+r.w<camx-80||r.x>camx+vw+80)continue;
+    hinFrontStuff(r,fy,P);
+  }
   /* ── свет: по лампе на комнату ── */
   ctx.save();ctx.globalCompositeOperation="lighter";
   for(const r of R){
@@ -47774,6 +47945,45 @@ function drawHomeIn(){
     ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
     ctx.fillText(room.ru.toUpperCase(),12,26);
   }
+}
+/* ── передний план комнаты (M173) ──
+   Одна-две вещи БЛИЖЕ человека, срезанные нижней кромкой. Их задача не быть
+   разглядёнными, а закрыть край кадра и дать глазу первый план: без него
+   комната — плоская декорация с фигурой, наклеенной поверх. Поэтому они
+   крупнее, темнее и без мелких деталей. */
+function hinFrontStuff(r,fy,P){
+  const M=HIN_MAN, at=t=>r.x+r.w*t;
+  const y0=fy+M*.30;                        /* стоят ближе — значит ниже */
+  const dk=k=>"rgb("+P.wood.map(v=>v*k|0).join(",")+")";
+  const mk=k=>"rgb("+P.metal.map(v=>v*k|0).join(",")+")";
+  ctx.save();
+  if(r.key==="hall"||r.key==="living"||r.key==="corner"){
+    /* спинка стула: узнаётся силуэтом и не спорит с тем, что у стены */
+    const x=at(r.key==="living"?.24:.18), w=M*.52, h=M*.82;
+    ctx.fillStyle=dk(.34);
+    ctx.fillRect(x-w*.5,y0-h,w,h*.42);
+    ctx.fillRect(x-w*.5,y0-h*.42,w*.13,h*.42);
+    ctx.fillRect(x+w*.5-w*.13,y0-h*.42,w*.13,h*.42);
+    ctx.fillStyle="rgba(255,236,200,.07)";ctx.fillRect(x-w*.5,y0-h,w,2);
+  }
+  if(r.key==="shop"||r.key==="garage"||r.key==="dock"){
+    /* торец верстака: горизонталь во всю ширину переднего плана */
+    const x=at(.62), w=M*1.5, h=M*.66;
+    ctx.fillStyle=mk(.34);
+    ctx.fillRect(x-w*.5,y0-h,w,h*.30);
+    ctx.fillStyle=mk(.24);
+    ctx.fillRect(x-w*.5+3,y0-h*.70,w*.09,h*.70);
+    ctx.fillRect(x+w*.5-3-w*.09,y0-h*.70,w*.09,h*.70);
+    ctx.fillStyle="rgba(226,236,240,.06)";ctx.fillRect(x-w*.5,y0-h,w,1.8);
+  }
+  if(r.key==="study"||r.key==="hold"){
+    /* угол ящика: простой параллелепипед, но он и нужен только силуэтом */
+    const x=at(.80), w=M*.9, h=M*.55;
+    ctx.fillStyle=dk(.30);ctx.fillRect(x-w*.5,y0-h,w,h);
+    ctx.fillStyle="rgba(0,0,0,.28)";ctx.fillRect(x-w*.5,y0-h,w,3);
+    ctx.fillStyle="rgba(255,236,200,.05)";ctx.fillRect(x-w*.5,y0-h+3,w,1.4);
+  }
+  ctx.restore();
 }
 /* ── обстановка комнаты ──
    Каждая ступень — свои вещи на своих местах; координаты те же, что у зон

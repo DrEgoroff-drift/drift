@@ -177,27 +177,58 @@ function skyWorld(p,e,x,y,dim){
 function skyGiant(p,e,x,y,dim,ringy){
   const R=H*.17*e.s*(ringy?.8:1);
   const r=rng(e.seed);
+  /* ── ЧЕТВЁРТАЯ ПЕРЕДЕЛКА, по прямому указанию автора (24.08.2026) ──
+     Гигант в небе читался «дыркой с обручем», и на то было три причины.
+     1. Тело бралось палитрой ПЛАНЕТЫ ПОД НОГАМИ (skyTint 3 и 1). На тёмном
+        мире оба цвета тёмные, сверху ложился терминатор в .86 черноты — и
+        оставался чёрный круг. То же правило, что у валуна переднего плана:
+        силуэт без света глаз читает не как предмет, а как прореху.
+     2. Свет падал ВСЕГДА СПРАВА, независимо от звезды. Теперь тело освещено
+        оттуда, где звезда действительно стоит (sunSpot, 19c-light, M172).
+     3. Кольцо было двумя тонкими дугами одной яркости спереди и сзади, без
+        тени планеты на них и без деления. Это и давало обруч. */
   const c1=skyTint(p,3),c2=skyTint(p,1);
+  const st=hex2rgb((G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a");
+  /* тело подмешивает свет звезды: планета в небе освещена ею, а не собой */
+  const lit=c1.map((v,i)=>clamp(v*.55+st[i]*.42+26,0,255)|0);
+  const shd=c2.map((v,i)=>clamp(v*.34+st[i]*.06+10,0,255)|0);
+  const SS=(typeof sunSpot==="function")?sunSpot(p):{x:x-R,y:y-R};
+  let ux=SS.x-x, uy=SS.y-y;
+  const ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;
+  const ua=Math.atan2(uy,ux);
   ctx.save();
   ctx.globalAlpha=dim*.95;
-  /* кольца за диском */
   const hasRing=ringy||r()<.45;
   const tilt=-.28-r()*.4;
-  if(hasRing){
+  /* ── кольца за диском ──
+     Дальняя половина видна НА ПРОСВЕТ и потому глуше, а ещё её частично
+     съедает тень планеты. Делений три, разной ширины и яркости: одинаковые
+     полосы читаются обручем, разные — системой колец. */
+  const RING=[[1.28,.055,.34],[1.40,.028,.16],[1.50,.075,.46],[1.66,.036,.26],[1.78,.020,.13]];
+  const ringPass=(front)=>{
     ctx.save();ctx.translate(x,y);ctx.rotate(tilt);
-    ctx.strokeStyle="rgba("+c1.join(",")+",.30)";
-    for(let i=0;i<5;i++){
-      ctx.lineWidth=R*(.03+i*.012);
-      ctx.beginPath();ctx.ellipse(0,0,R*(1.35+i*.16),R*(.30+i*.05),0,Math.PI,TAU);ctx.stroke();
+    for(const [rr,wd,al] of RING){
+      const a=al*(front?1:.52);
+      const grd=ctx.createLinearGradient(-R*rr,0,R*rr,0);
+      /* тень планеты падает на кольцо с той стороны, куда не достаёт звезда */
+      const sunSide=Math.cos(ua-tilt)>=0?1:-1;
+      grd.addColorStop(0,"rgba("+(sunSide<0?lit:shd).join(",")+","+(a*(sunSide<0?1:.35)).toFixed(3)+")");
+      grd.addColorStop(.5,"rgba("+lit.join(",")+","+(a*.9).toFixed(3)+")");
+      grd.addColorStop(1,"rgba("+(sunSide>0?lit:shd).join(",")+","+(a*(sunSide>0?1:.35)).toFixed(3)+")");
+      ctx.strokeStyle=grd;ctx.lineWidth=R*wd;
+      ctx.beginPath();
+      ctx.ellipse(0,0,R*rr,R*rr*.26,0,front?0:Math.PI,front?Math.PI:TAU);
+      ctx.stroke();
     }
     ctx.restore();
-  }
+  };
+  if(hasRing)ringPass(false);
   /* диск с полосами */
   ctx.save();
   ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.clip();
-  const g=ctx.createLinearGradient(x-R,y-R,x+R*.6,y+R);
-  g.addColorStop(0,"rgb("+c1.map(v=>Math.round(v*.95+20)).join(",")+")");
-  g.addColorStop(1,"rgb("+c2.map(v=>Math.round(v*.35)).join(",")+")");
+  const g=ctx.createLinearGradient(x+ux*R,y+uy*R,x-ux*R,y-uy*R);
+  g.addColorStop(0,"rgb("+lit.join(",")+")");
+  g.addColorStop(1,"rgb("+shd.join(",")+")");
   ctx.fillStyle=g;ctx.fillRect(x-R,y-R,R*2,R*2);
   /* полосы: вытянутые эллипсы разной светлоты, чуть смещённые — читается
      как вращающаяся атмосфера, а не как штрихи */
@@ -217,23 +248,25 @@ function skyGiant(p,e,x,y,dim,ringy){
     sg.addColorStop(1,"rgba(255,190,150,0)");
     ctx.fillStyle=sg;ctx.beginPath();ctx.ellipse(sx,sy,R*.26,R*.15,0,0,TAU);ctx.fill();
   }
-  /* терминатор: ночная сторона гасится, а не рисуется отдельной фигурой */
-  const tg=ctx.createLinearGradient(x+R*.15,y,x+R*1.05,y);
-  tg.addColorStop(0,"rgba(0,0,0,0)");tg.addColorStop(1,"rgba(0,0,0,.86)");
+  /* терминатор: ночная сторона гасится, а не рисуется отдельной фигурой.
+     Идёт от звезды и НЕ до черноты: тело в небе не бывает провалом — ночную
+     сторону подсвечивает и звезда через атмосферу, и свет собственных колец */
+  const tg=ctx.createLinearGradient(x+ux*R*.05,y+uy*R*.05,x-ux*R*1.1,y-uy*R*1.1);
+  tg.addColorStop(0,"rgba(0,0,0,0)");tg.addColorStop(1,"rgba(0,0,0,.62)");
   ctx.fillStyle=tg;ctx.fillRect(x-R,y-R,R*2,R*2);
   ctx.restore();
-  /* кромочный свет со стороны звезды */
-  ctx.strokeStyle="rgba(255,240,215,"+(.30*dim).toFixed(2)+")";
-  ctx.lineWidth=1.6;
-  ctx.beginPath();ctx.arc(x,y,R,Math.PI*.62,Math.PI*1.42);ctx.stroke();
-  /* кольца перед диском */
+  /* кромочный свет со стороны звезды — дуга вокруг направления на неё */
+  ctx.strokeStyle="rgba(255,240,215,"+(.34*dim).toFixed(2)+")";
+  ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.arc(x,y,R,ua-1.05,ua+1.05);ctx.stroke();
+  /* кольца перед диском: ярче задних, и на самом диске чуть прозрачнее —
+     сквозь кольцо видно тело, поэтому оно и не читается обручем */
   if(hasRing){
-    ctx.save();ctx.translate(x,y);ctx.rotate(tilt);
-    ctx.strokeStyle="rgba("+c1.join(",")+",.42)";
-    for(let i=0;i<5;i++){
-      ctx.lineWidth=R*(.03+i*.012);
-      ctx.beginPath();ctx.ellipse(0,0,R*(1.35+i*.16),R*(.30+i*.05),0,0,Math.PI);ctx.stroke();
-    }
+    ringPass(true);
+    ctx.save();
+    ctx.beginPath();ctx.arc(x,y,R*.99,0,TAU);ctx.clip();
+    ctx.globalAlpha=dim*.45;
+    ringPass(true);
     ctx.restore();
   }
   ctx.restore();

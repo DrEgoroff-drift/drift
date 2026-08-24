@@ -193,7 +193,12 @@ function drawSurface(){
     /* растение кланяется от основания: высокое сильнее низкого, у каждого своя
        фаза от координаты — иначе куртина качается одним куском */
     const sw=WIND*.055*(.6+pl.h/90)*(.75+.25*Math.sin(G.t*.028+pl.x*.05));
+    const z=pl.z||0;
     ctx.save();ctx.translate(x,pl.y-camy);ctx.rotate(sw);
+    /* глубина куртины (автор, 24.08.2026): дальние мельче, ближние крупнее.
+       Одного размера мало — дальнее ещё и выцветает в воздух, поэтому сверху
+       ложится вуаль цвета неба. Без неё заросли остаются плоской аппликацией */
+    if(z){ctx.scale(1-z*.22,1-z*.22);ctx.globalAlpha=1-z*.30;}
     drawPlant(pl,0,0);
     ctx.restore();
   }
@@ -294,26 +299,53 @@ function drawSurface(){
          Был симметричный шар в 150 px вокруг головы: человек светился сам.
          Теперь это налобник — узкий конус вперёд по взгляду, горячее пятно
          там, куда он упёрся в землю, и слабый ореол у самого шлема. */
+      /* ── СВЕТИТ ЗЕМЛЯ, А НЕ ВОЗДУХ (автор, 24.08.2026) ──
+         Первый заход клал молочный клин поверх мира — и поверх неба заодно.
+         Свет так не работает: видно не луч, а ОСВЕЩЁННОЕ. Поэтому теперь
+         основная работа идёт по грунту: полоса вдоль профиля рельефа перед
+         человеком светлеет по-настоящему (сложение поверх породы, материал
+         остаётся виден), с затуханием по дальности и мягким краем. Луч в
+         воздухе остался, но еле заметный и узкий — столько, сколько
+         рассеивает пыль. */
       const f=S.face||1, hx=x+f*2, hy=y-8;
-      const reach=132, drop=(groundAt(tr,S.x+f*reach)-camy)-hy;
+      const reach=170;
       ctx.save();ctx.globalCompositeOperation="lighter";
-      ctx.globalAlpha=clamp(nite*1.25,0,1);
-      const cone=ctx.createLinearGradient(hx,hy,hx+f*reach,hy+drop*.6);
-      cone.addColorStop(0,"rgba(255,238,205,.42)");
-      cone.addColorStop(.45,"rgba(255,232,190,.16)");
-      cone.addColorStop(1,"rgba(255,226,175,0)");
-      ctx.fillStyle=cone;
-      ctx.beginPath();
-      ctx.moveTo(hx,hy-2.5);ctx.lineTo(hx,hy+3);
-      ctx.lineTo(hx+f*reach,hy+drop*.5+34);
-      ctx.lineTo(hx+f*reach,hy+drop*.5-30);
-      ctx.closePath();ctx.fill();
-      /* пятно на грунте: без него конус висит в воздухе */
-      const px2=S.x+f*reach*.72, py2=groundAt(tr,px2)-camy;
-      const pool=ctx.createRadialGradient(px2-camx,py2,0,px2-camx,py2,46);
-      pool.addColorStop(0,"rgba(255,240,210,.30)");pool.addColorStop(1,"rgba(255,236,200,0)");
-      ctx.fillStyle=pool;
-      ctx.beginPath();ctx.ellipse(px2-camx,py2,46,13,0,0,TAU);ctx.fill();
+      /* 1. освещённый грунт */
+      {
+        const x0=S.x, x1=S.x+f*reach;
+        const lo=Math.min(x0,x1), hi=Math.max(x0,x1), stp=Math.max(4,(hi-lo)/26);
+        const GP=new Path2D();
+        GP.moveTo(lo-camx,groundAt(tr,lo)-camy);
+        for(let wx=lo;wx<=hi;wx+=stp)GP.lineTo(wx-camx,groundAt(tr,wx)-camy);
+        GP.lineTo(hi-camx,groundAt(tr,hi)-camy);
+        GP.lineTo(hi-camx,H);GP.lineTo(lo-camx,H);GP.closePath();
+        ctx.save();ctx.clip(GP);
+        /* затухание по дальности от ног, а не от края экрана */
+        const gl=ctx.createLinearGradient(x,y,x+f*reach,y+40);
+        gl.addColorStop(0,"rgba(255,238,206,"+(.30*clamp(nite*1.3,0,1)).toFixed(3)+")");
+        gl.addColorStop(.30,"rgba(255,234,196,"+(.44*clamp(nite*1.3,0,1)).toFixed(3)+")");
+        gl.addColorStop(.72,"rgba(255,228,182,"+(.16*clamp(nite*1.3,0,1)).toFixed(3)+")");
+        gl.addColorStop(1,"rgba(255,224,170,0)");
+        ctx.fillStyle=gl;
+        ctx.fillRect(Math.min(x,x+f*reach)-6,y-70,reach+12,H);
+        ctx.restore();
+      }
+      /* 2. луч в воздухе: узкий, слабый и только там, где есть чем рассеивать */
+      if(p.T.atm!=="отсутствует"){
+        ctx.globalAlpha=clamp(nite*1.25,0,1);
+        const drop=(groundAt(tr,S.x+f*reach)-camy)-hy;
+        const cone=ctx.createLinearGradient(hx,hy,hx+f*reach,hy+drop*.6);
+        cone.addColorStop(0,"rgba(255,238,205,.13)");
+        cone.addColorStop(.5,"rgba(255,232,190,.05)");
+        cone.addColorStop(1,"rgba(255,226,175,0)");
+        ctx.fillStyle=cone;
+        ctx.beginPath();
+        ctx.moveTo(hx,hy-2);ctx.lineTo(hx,hy+2.5);
+        ctx.lineTo(hx+f*reach,hy+drop*.5+20);
+        ctx.lineTo(hx+f*reach,hy+drop*.5-16);
+        ctx.closePath();ctx.fill();
+        ctx.globalAlpha=1;
+      }
       const LS=glowSprite("suitlamp",()=>{
         const g=ctx.createRadialGradient(0,0,0,0,0,1);
         g.addColorStop(0,"rgba(255,236,200,.55)");g.addColorStop(.35,"rgba(255,236,200,.22)");

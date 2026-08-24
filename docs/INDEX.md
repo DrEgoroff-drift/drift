@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 250 · символов верхнего уровня: 2417
+Файлов: 250 · символов верхнего уровня: 2418
 
 ## СИМВОЛЫ
 
@@ -406,7 +406,7 @@ decoSlab                     src/21b-surface-deco.js:282
 decoTruss                    src/21b-surface-deco.js:330
 decoWall                     src/21b-surface-deco.js:376
 deltaHtml                    src/05-parts.js:293
-depKind                      src/21b-surface-deco.js:631
+depKind                      src/21b-surface-deco.js:666
 deployDrone                  src/12-economy.js:73
 DEPTH_TIERS                  src/04-mods.js:51
 DESC_MOOD                    src/01-core.js:52
@@ -479,7 +479,7 @@ drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
-drawDeposit                  src/21b-surface-deco.js:641
+drawDeposit                  src/21b-surface-deco.js:676
 drawDig                      src/23a-dig-draw.js:318
 drawDigFauna                 src/23-mode-dig.js:288
 drawDustMotes                src/19-mode-landing.js:355
@@ -577,7 +577,7 @@ enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:88
 enterCave                    src/22-mode-cave.js:147
 enterDig                     src/23-mode-dig.js:50
-enterHomeIn                  src/29c-home-in.js:42
+enterHomeIn                  src/29c-home-in.js:44
 enterRaid                    src/24a-mode-raid.js:134
 enterSurface                 src/21-mode-surface.js:2
 env                          src/09-audio.js:47
@@ -586,13 +586,13 @@ ETHER                        src/11b-speech.js:24
 ETHER_EVERY                  src/11b-speech.js:38
 etherLine                    src/11-log.js:29
 etherTick                    src/11b-speech.js:39
-evacuate                     src/21-mode-surface.js:464
+evacuate                     src/21-mode-surface.js:489
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:81
 exitBelt                     src/24-mode-belt.js:174
 exitCave                     src/22-mode-cave.js:201
 exitDig                      src/23-mode-dig.js:60
-exitHomeIn                   src/29c-home-in.js:50
+exitHomeIn                   src/29c-home-in.js:52
 exitScoop                    src/19a-mode-scoop.js:19
 EXP_DAYS                     src/11x-expedition.js:19
 EXP_GOODS                    src/11x-expedition.js:20
@@ -815,22 +815,23 @@ held                         src/08-state.js:156
 hex2rgb                      src/03-ships.js:145
 hexa                         src/12w-survey.js:91
 hexRGB                       src/24-mode-belt.js:80
-HIN_DOORW                    src/29c-home-in.js:23
+HIN_DOORW                    src/29c-home-in.js:25
 HIN_FLOOR                    src/29c-home-in.js:21
 HIN_MAN                      src/29c-home-in.js:20
 HIN_ROOM_H                   src/29c-home-in.js:22
-HIN_ROOM_W                   src/29c-home-in.js:25
-HIN_THINGS                   src/29c-home-in.js:152
-hinFigure                    src/29d-home-draw.js:421
-hinFolkMake                  src/29c-home-in.js:60
-hinFolkTick                  src/29c-home-in.js:81
-hinNear                      src/29c-home-in.js:169
+HIN_ROOM_W                   src/29c-home-in.js:27
+HIN_THINGS                   src/29c-home-in.js:157
+hinFigure                    src/29d-home-draw.js:501
+hinFolkMake                  src/29c-home-in.js:62
+hinFolkTick                  src/29c-home-in.js:86
+hinFrontStuff                src/29d-home-draw.js:219
+hinNear                      src/29c-home-in.js:174
 hinPal                       src/29d-home-draw.js:6
-hinRoomAt                    src/29c-home-in.js:37
-hinRooms                     src/29c-home-in.js:26
-hinRoomStuff                 src/29d-home-draw.js:176
-hinTalk                      src/29c-home-in.js:178
-hinWidth                     src/29c-home-in.js:36
+hinRoomAt                    src/29c-home-in.js:39
+hinRooms                     src/29c-home-in.js:28
+hinRoomStuff                 src/29d-home-draw.js:256
+hinTalk                      src/29c-home-in.js:183
+hinWidth                     src/29c-home-in.js:38
 hireMerc                     src/12a-crew.js:148
 hireMgr                      src/12c-mgr-core.js:301
 HOME_HIT                     src/27e-ui-home.js:33
@@ -1091,8 +1092,8 @@ LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:258
 lastRunDay                   src/12k-letters.js:44
 lastRunTick                  src/12k-letters.js:46
-launch                       src/21-mode-surface.js:504
-launchHold                   src/21-mode-surface.js:449
+launch                       src/21-mode-surface.js:529
+launchHold                   src/21-mode-surface.js:474
 layerLevel                   src/10-music.js:326
 lerp                         src/01-core.js:8
 letterAddresseeHere          src/12k-letters.js:78
@@ -1994,17 +1995,17 @@ sixthGone                    src/12k-stories-d.js:75
 SKY_LOUD                     src/19b-sky.js:13
 SKY_QUIET                    src/19b-sky.js:14
 SKY_WORLD_KINDS              src/19b-sky.js:91
-skyAurora                    src/19b-sky.js:291
-skyComet                     src/19b-sky.js:348
-skyField                     src/19b-sky.js:391
-skyGalaxy                    src/19b-sky.js:242
+skyAurora                    src/19b-sky.js:324
+skyComet                     src/19b-sky.js:381
+skyField                     src/19b-sky.js:424
+skyGalaxy                    src/19b-sky.js:275
 skyGiant                     src/19b-sky.js:177
 skyGrad                      src/19-mode-landing.js:277
-skyHole                      src/19b-sky.js:265
-skyMoon                      src/19b-sky.js:317
-skyNeb                       src/19b-sky.js:338
+skyHole                      src/19b-sky.js:298
+skyMoon                      src/19b-sky.js:350
+skyNeb                       src/19b-sky.js:371
 skyNebula                    src/19b-sky.js:42
-skyPulsar                    src/19b-sky.js:369
+skyPulsar                    src/19b-sky.js:402
 skyScene                     src/19b-sky.js:15
 skyTint                      src/19b-sky.js:37
 skyWorld                     src/19b-sky.js:146
@@ -2201,7 +2202,7 @@ tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:28
 thingsAll                    src/27i-ui-table.js:27
 tickDrones                   src/12-economy.js:82
-tickLaunchHold               src/21-mode-surface.js:450
+tickLaunchHold               src/21-mode-surface.js:475
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
@@ -2245,7 +2246,7 @@ toggleLog                    src/11-log.js:124
 toggleLoreBoard              src/27h-ui-lore.js:81
 toggleMenu                   src/15-input.js:126
 toggleParrotWin              src/12y-parrot-face.js:693
-totalLoss                    src/21-mode-surface.js:481
+totalLoss                    src/21-mode-surface.js:506
 towShare                     src/03f-hull-role.js:87
 TRACE_CAP_DAY                src/11ag-trace.js:45
 TRACE_MARK                   src/11ag-trace.js:31
@@ -2309,11 +2310,11 @@ updateCave                   src/22-mode-cave.js:219
 updateCaveDeco               src/22a-cave-deco.js:184
 updateCombat                 src/13-pirates.js:77
 updateDig                    src/23-mode-dig.js:113
-updateHomeIn                 src/29c-home-in.js:122
+updateHomeIn                 src/29c-home-in.js:127
 updateLanding                src/19-mode-landing.js:45
 updateRaid                   src/24a-mode-raid.js:214
 updateScoop                  src/19a-mode-scoop.js:28
-updateSurface                src/21-mode-surface.js:117
+updateSurface                src/21-mode-surface.js:142
 updateSystem                 src/17-mode-system.js:2
 useBeacon                    src/23-mode-dig.js:72
 VEGA_ABOARD                  src/12k-vega.js:35
@@ -2803,7 +2804,7 @@ zooTick                      src/11ad-zoo.js:41
   · сбор летучих газов: заход в атмосферу гиганта:1
   · небо гиганта: полосы, а не лепёшки:71
 
-## src/19b-sky.js · 20 КБ
+## src/19b-sky.js · 23 КБ
   · небо:1
 
 ## src/19c-light.js · 16 КБ
@@ -2861,9 +2862,9 @@ zooTick                      src/11ad-zoo.js:41
   · сеть баз:291
   · обновление сцены:322
 
-## src/21b-surface-deco.js · 44 КБ
+## src/21b-surface-deco.js · 46 КБ
   · крупная форма на поверхности:1
-  · залежь как выход породы (M169):620
+  · залежь как выход породы (M169):655
 
 ## src/21c-built.js · 10 КБ
   · ваши постройки видны с земли:1
@@ -2871,15 +2872,15 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 21 КБ
+## src/21e-surface-draw.js · 23 КБ
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21f-home-out.js · 13 КБ
   · дом снаружи:1
 
-## src/21-mode-surface.js · 33 КБ
+## src/21-mode-surface.js · 35 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:520
+  · навигатор и подсказки сверху:545
 
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
@@ -2982,10 +2983,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/28z-fps-probe.js · 7 КБ
   · пробник G11: ?g11:1
 
-## src/29c-home-in.js · 11 КБ
+## src/29c-home-in.js · 12 КБ
   · дом изнутри: по нему ходят:1
 
-## src/29d-home-draw.js · 27 КБ
+## src/29d-home-draw.js · 32 КБ
   · дом изнутри: кадр:1
 
 ## tests/90-harness.js · 7 КБ

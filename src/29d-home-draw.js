@@ -38,6 +38,30 @@ function drawHomeIn(){
   }
   ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(camx-40,ceil,vw+80,7);
   ctx.fillStyle="rgba(255,255,255,.05)";ctx.fillRect(camx-40,ceil+7,vw+80,1.2);
+  /* ── членение стены по высоте (M173) ──
+     Комнаты читались складом, и дело было не в числе: потолок в два с
+     половиной роста нормален для дома. Стена была ГОЛОЙ от пояса до потолка,
+     а высоту глаз меряет по вещам, а не по краске. Панель по пояс, полка её
+     карниза и балка под потолком дают три горизонтали — и комната сразу
+     становится комнатой, ничего больше не двигая. */
+  {
+    const dad=fy-HIN_MAN*.62;                       /* верх панели: по пояс */
+    ctx.fillStyle="rgba(0,0,0,.16)";
+    ctx.fillRect(camx-40,dad,vw+80,fy-dad);
+    ctx.fillStyle="rgb("+P.wood.map(v=>v*.5|0).join(",")+")";
+    ctx.fillRect(camx-40,dad-2.4,vw+80,3.4);
+    ctx.fillStyle="rgba(255,236,200,.10)";
+    ctx.fillRect(camx-40,dad-2.4,vw+80,1);
+    /* плинтус: без него панель висит, а пол и стена сливаются в один тон */
+    ctx.fillStyle="rgb("+P.wood.map(v=>v*.42|0).join(",")+")";
+    ctx.fillRect(camx-40,fy-HIN_MAN*.07,vw+80,HIN_MAN*.07);
+    /* балка под потолком — на неё же садится тень от лампы */
+    const bm=ceil+HIN_MAN*.30;
+    ctx.fillStyle="rgb("+P.wood.map(v=>v*.44|0).join(",")+")";
+    ctx.fillRect(camx-40,bm,vw+80,HIN_MAN*.11);
+    ctx.fillStyle="rgba(0,0,0,.3)";ctx.fillRect(camx-40,bm+HIN_MAN*.11,vw+80,2.6);
+    ctx.fillStyle="rgba(255,236,200,.07)";ctx.fillRect(camx-40,bm,vw+80,1.2);
+  }
   /* ── пол ── */
   const fg=ctx.createLinearGradient(0,fy-2,0,fy+HIN_MAN*.8);
   fg.addColorStop(0,"rgb("+P.floor.map(v=>Math.min(255,v*1.15)|0).join(",")+")");
@@ -119,11 +143,28 @@ function drawHomeIn(){
       for(let xx=x+((((yy-ceil)/9)|0)%2?6:0);xx<x+80;xx+=18)ctx.strokeRect(xx+.5,yy+.5,16,8);
   }
   /* ── жильцы и хозяин ── */
+  /* У каждого своя глубина (M173): раньше все стояли на одной линии, и пятеро
+     в комнате читались рядом одинаковых вырезок. Кто дальше — выше, мельче и
+     глуше; разница маленькая, но именно она превращает ряд в компанию. */
   for(const f of S.folk){
     if(f.x<camx-40||f.x>camx+vw+40)continue;
-    hinFigure(f.x,fy,f.col,f.face,f.pose,f.walk||0,f.name,f.look);
+    const z=f.z||0;
+    ctx.save();
+    ctx.translate(f.x,fy-z*HIN_MAN*.13);ctx.scale(1-z*.10,1-z*.10);
+    ctx.globalAlpha=1-z*.22;
+    hinFigure(0,0,f.col,f.face,f.pose,f.walk||0,f.name,f.look);
+    ctx.restore();
   }
   hinFigure(S.x,fy,[214,222,228],S.face,(keys.left||keys.right)?"walk":"stand",S.walk,null);
+  /* ── передний план (M173) ──
+     Комната была одной плоскостью: стена, вещи у стены, человек — и всё на
+     одной глубине. Пара предметов БЛИЖЕ человека, обрезанных нижней кромкой
+     кадра, дают комнате перед и зад одним движением. Рисуются после людей —
+     иначе они не спереди. */
+  for(const r of R){
+    if(r.x+r.w<camx-80||r.x>camx+vw+80)continue;
+    hinFrontStuff(r,fy,P);
+  }
   /* ── свет: по лампе на комнату ── */
   ctx.save();ctx.globalCompositeOperation="lighter";
   for(const r of R){
@@ -169,6 +210,45 @@ function drawHomeIn(){
     ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
     ctx.fillText(room.ru.toUpperCase(),12,26);
   }
+}
+/* ── передний план комнаты (M173) ──
+   Одна-две вещи БЛИЖЕ человека, срезанные нижней кромкой. Их задача не быть
+   разглядёнными, а закрыть край кадра и дать глазу первый план: без него
+   комната — плоская декорация с фигурой, наклеенной поверх. Поэтому они
+   крупнее, темнее и без мелких деталей. */
+function hinFrontStuff(r,fy,P){
+  const M=HIN_MAN, at=t=>r.x+r.w*t;
+  const y0=fy+M*.30;                        /* стоят ближе — значит ниже */
+  const dk=k=>"rgb("+P.wood.map(v=>v*k|0).join(",")+")";
+  const mk=k=>"rgb("+P.metal.map(v=>v*k|0).join(",")+")";
+  ctx.save();
+  if(r.key==="hall"||r.key==="living"||r.key==="corner"){
+    /* спинка стула: узнаётся силуэтом и не спорит с тем, что у стены */
+    const x=at(r.key==="living"?.24:.18), w=M*.52, h=M*.82;
+    ctx.fillStyle=dk(.34);
+    ctx.fillRect(x-w*.5,y0-h,w,h*.42);
+    ctx.fillRect(x-w*.5,y0-h*.42,w*.13,h*.42);
+    ctx.fillRect(x+w*.5-w*.13,y0-h*.42,w*.13,h*.42);
+    ctx.fillStyle="rgba(255,236,200,.07)";ctx.fillRect(x-w*.5,y0-h,w,2);
+  }
+  if(r.key==="shop"||r.key==="garage"||r.key==="dock"){
+    /* торец верстака: горизонталь во всю ширину переднего плана */
+    const x=at(.62), w=M*1.5, h=M*.66;
+    ctx.fillStyle=mk(.34);
+    ctx.fillRect(x-w*.5,y0-h,w,h*.30);
+    ctx.fillStyle=mk(.24);
+    ctx.fillRect(x-w*.5+3,y0-h*.70,w*.09,h*.70);
+    ctx.fillRect(x+w*.5-3-w*.09,y0-h*.70,w*.09,h*.70);
+    ctx.fillStyle="rgba(226,236,240,.06)";ctx.fillRect(x-w*.5,y0-h,w,1.8);
+  }
+  if(r.key==="study"||r.key==="hold"){
+    /* угол ящика: простой параллелепипед, но он и нужен только силуэтом */
+    const x=at(.80), w=M*.9, h=M*.55;
+    ctx.fillStyle=dk(.30);ctx.fillRect(x-w*.5,y0-h,w,h);
+    ctx.fillStyle="rgba(0,0,0,.28)";ctx.fillRect(x-w*.5,y0-h,w,3);
+    ctx.fillStyle="rgba(255,236,200,.05)";ctx.fillRect(x-w*.5,y0-h+3,w,1.4);
+  }
+  ctx.restore();
 }
 /* ── обстановка комнаты ──
    Каждая ступень — свои вещи на своих местах; координаты те же, что у зон
