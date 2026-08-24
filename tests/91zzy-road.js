@@ -138,3 +138,33 @@ TEST_SUITES.push(()=>suite("дорога: кривой держатель сня
   ok(RD.kick>0,"яма даёт удар: "+RD.kick.toFixed(2));
   RD=null;G.road=null;
 }));
+
+TEST_SUITES.push(()=>suite("дорога: микрофон отдельным согласием — иначе Android Auto глушит музыку",()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  G.road=null;
+  const b=document.getElementById("roadSense");
+  roadOpen();
+  eq(b.textContent,"РАЗРЕШИТЬ ДАТЧИКИ","до согласия кнопка просит датчики");
+  /* датчики берут GPS, движение и Wake Lock — и НЕ трогают микрофон: голова
+     машины видит открытый захват и решает, что идёт разговор */
+  roadSensorsOn();
+  eq(RD.an,null,"датчики микрофон не открывают");
+  eq(RD.stream,undefined,"и потока нет");
+  eq(b.textContent,"СЛУШАТЬ МУЗЫКУ","кнопка называет следующее действие");
+  ok(!roadAll().mic,"по умолчанию микрофона нет");
+  /* включённым он помнится и гасится одним нажатием прямо на ходу */
+  RD.an={};RD.stream=null;roadAll().mic=1;roadSenseBtn();
+  eq(b.textContent,"ВЫКЛЮЧИТЬ МИКРОФОН","когда слушает — кнопка гасит");
+  roadMicOff();
+  eq(RD.an,null,"погашен");
+  eq(roadAll().mic,0,"и выбор запомнен");
+  eq(b.textContent,"СЛУШАТЬ МУЗЫКУ","кнопка вернулась к предложению");
+  /* выбор переживает сохранение вместе с остальной дорогой */
+  roadAll().mic=1;
+  const s=snapshot();G.road=null;applySave(JSON.parse(JSON.stringify(s)));
+  eq(roadAll().mic,1,"выбор про микрофон пережил сохранение");
+  roadAll().mic=0;
+  roadClose();
+  G.road=null;
+}));

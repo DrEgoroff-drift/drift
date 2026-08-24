@@ -108,20 +108,56 @@ function roadSensorsOn(){
     RD.watch=navigator.geolocation.watchPosition(roadOnPos,()=>{RD.gps="нет GPS — летим на холостых";},
       {enableHighAccuracy:true,maximumAge:2000,timeout:12000});
   }
-  if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&!RD.an){
-    navigator.mediaDevices.getUserMedia({audio:true}).then(st=>{
-      if(!RD){st.getTracks().forEach(t=>t.stop());return;}
-      RD.stream=st;
-      const C=SND&&SND.ctx?SND.ctx:new (window.AudioContext||window.webkitAudioContext)();
-      RD.an=C.createAnalyser();RD.an.fftSize=256;RD.an.smoothingTimeConstant=.5;
-      C.createMediaStreamSource(st).connect(RD.an);
-      RD.eq=new Uint8Array(RD.an.frequencyBinCount);
-    }).catch(()=>{RD.mic="без микрофона — волна дышит сама";});
-  }
   if(navigator.wakeLock&&!RD.lock)navigator.wakeLock.request("screen").then(l=>{if(RD)RD.lock=l;}).catch(()=>{});
   RD.asked=1;
-  /* спрошено — кнопка своё отслужила */
-  const b=document.getElementById("roadSense");if(b)b.style.display="none";
+  roadSenseBtn();
+}
+/* ── микрофон отдельной кнопкой (M168h) ──
+   Микрофон нужен ТОЛЬКО настроению волны, а платят за него дорого: подключён
+   Android Auto — голова машины видит открытый захват и решает, что идёт
+   разговор: музыка приглушается или глохнет совсем. Поэтому:
+
+   1. Датчики и микрофон разведены. По кнопке включается то, ради чего экран и
+      сделан, — GPS и движение. Микрофон — вторым, осознанным нажатием, и по
+      умолчанию его нет: без него волна дышит сама, а туманности живут.
+   2. Захват — БЕЗ обработки: эхоподавление, шумодав и автоусиление выключены.
+      Именно эхоподавление переводит поток в «голосовой» режим, и уже по нему
+      голова опознаёт звонок. Сырой захват она чаще принимает за запись.
+   3. Свой AudioContext, а не игровой: если система всё же переключит контекст
+      в разговорный режим, пусть это будет пустой контекст анализатора, а не
+      тот, через который играет сама игра.
+   4. Выбор помнится в G.road.mic — но кнопка на экране всегда показывает, что
+      сейчас, и гасится одним нажатием прямо на ходу. */
+function roadMicOn(){
+  if(!RD||RD.an||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)return;
+  RD.mic=null;
+  navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,
+    autoGainControl:false,channelCount:1}}).then(st=>{
+    if(!RD){st.getTracks().forEach(t=>t.stop());return;}
+    RD.stream=st;
+    RD.actx=new (window.AudioContext||window.webkitAudioContext)();
+    RD.an=RD.actx.createAnalyser();RD.an.fftSize=256;RD.an.smoothingTimeConstant=.5;
+    RD.actx.createMediaStreamSource(st).connect(RD.an);
+    RD.eq=new Uint8Array(RD.an.frequencyBinCount);
+    roadAll().mic=1;
+    roadSenseBtn();
+  }).catch(()=>{if(RD){RD.mic="микрофон не дали — волна дышит сама";roadSenseBtn();}});
+}
+function roadMicOff(){
+  if(!RD)return;
+  if(RD.stream){RD.stream.getTracks().forEach(t=>t.stop());RD.stream=null;}
+  if(RD.actx){RD.actx.close().catch(()=>{});RD.actx=null;}
+  RD.an=null;RD.eq=null;RD.mic=null;
+  roadAll().mic=0;
+  roadSenseBtn();
+}
+/* кнопка называет действие, а не состояние — правило интерфейса */
+function roadSenseBtn(){
+  const b=document.getElementById("roadSense");
+  if(!b)return;
+  if(!RD){b.style.display="";b.textContent="РАЗРЕШИТЬ ДАТЧИКИ";return;}
+  b.style.display="";
+  b.textContent=!RD.asked?"РАЗРЕШИТЬ ДАТЧИКИ":RD.an?"ВЫКЛЮЧИТЬ МИКРОФОН":"СЛУШАТЬ МУЗЫКУ";
 }
 /* ── движение машины: автоноль, рамка от тяжести, рыскание (M168g) ──
    Телефон в машине никогда не стоит ровно: держатель скошен на пять-двадцать

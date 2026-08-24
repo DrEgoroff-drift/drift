@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 248 · символов верхнего уровня: 2387
+Файлов: 248 · символов верхнего уровня: 2390
 
 ## СИМВОЛЫ
 
@@ -528,7 +528,7 @@ drawPortal                   src/20aa-poi-shapes.js:464
 drawRaid                     src/24aa-raid-draw.js:5
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:108
-drawRoad                     src/27l-road-draw.js:72
+drawRoad                     src/27l-road-draw.js:74
 drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:163
@@ -1788,7 +1788,7 @@ rng                          src/01-core.js:15
 ROAD_C                       src/27k-road.js:33
 ROAD_CR_KM                   src/27k-road.js:34
 ROAD_G                       src/27k-road.js:39
-ROAD_HALF                    src/27l-road-draw.js:56
+ROAD_HALF                    src/27l-road-draw.js:58
 ROAD_LAT_DEAD                src/27k-road.js:42
 ROAD_LAT_FULL                src/27k-road.js:40
 ROAD_LAT_MAX                 src/27k-road.js:41
@@ -1807,26 +1807,29 @@ ROAD_YAW_MAX                 src/27k-road.js:43
 ROAD_ZERO_HOLD_A             src/27k-road.js:45
 ROAD_ZERO_TAU                src/27k-road.js:44
 roadAll                      src/27k-road.js:56
-roadAudio                    src/27k-road.js:269
-roadClose                    src/27l-road-draw.js:32
+roadAudio                    src/27k-road.js:305
+roadClose                    src/27l-road-draw.js:33
 roadCombo                    src/27k-road.js:77
 roadCosmic                   src/27k-road.js:74
 roadDayReset                 src/27k-road.js:60
 roadEarnKm                   src/27k-road.js:79
 roadFinish                   src/27k-road.js:91
-roadFrame                    src/27l-road-draw.js:46
-roadHullHalf                 src/27l-road-draw.js:57
+roadFrame                    src/27l-road-draw.js:48
+roadHullHalf                 src/27l-road-draw.js:59
 roadLightFrac                src/27k-road.js:73
-roadMoodHue                  src/27k-road.js:297
-roadOnPos                    src/27k-road.js:225
-roadOnShake                  src/27k-road.js:150
+roadMicOff                   src/27k-road.js:146
+roadMicOn                    src/27k-road.js:131
+roadMoodHue                  src/27k-road.js:333
+roadOnPos                    src/27k-road.js:261
+roadOnShake                  src/27k-road.js:186
 roadOpen                     src/27l-road-draw.js:15
-roadPilotRu                  src/27k-road.js:224
-roadPing                     src/27k-road.js:214
-roadRgbHue                   src/27k-road.js:305
+roadPilotRu                  src/27k-road.js:260
+roadPing                     src/27k-road.js:250
+roadRgbHue                   src/27k-road.js:341
+roadSenseBtn                 src/27k-road.js:155
 roadSensorsOn                src/27k-road.js:99
 roadSpeedOk                  src/27k-road.js:65
-roadSys                      src/27k-road.js:206
+roadSys                      src/27k-road.js:242
 roadTier                     src/27k-road.js:67
 roadToday                    src/27k-road.js:59
 roadTripRu                   src/27k-road.js:75
@@ -2928,10 +2931,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27j-console.js · 7 КБ
   · пульт: приёмник, подсказка, кресло:1
 
-## src/27k-road.js · 21 КБ
+## src/27k-road.js · 23 КБ
   · дорожный спутник:1
 
-## src/27l-road-draw.js · 26 КБ
+## src/27l-road-draw.js · 27 КБ
   · дорожный спутник: экран:1
 
 ## src/27-ui-ship.js · 26 КБ
@@ -3173,7 +3176,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzx-mobile.js · 2 КБ
   · автотесты: телефонный вид (M167):1
 
-## tests/91zzy-road.js · 10 КБ
+## tests/91zzy-road.js · 12 КБ
   · автотесты: дорожный спутник (M168, M168b):1
 
 ## tests/91zzz-home-in.js · 5 КБ

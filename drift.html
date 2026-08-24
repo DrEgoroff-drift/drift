@@ -851,7 +851,7 @@ body.road #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.136.1";
+const VER="0.136.2";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -45050,20 +45050,56 @@ function roadSensorsOn(){
     RD.watch=navigator.geolocation.watchPosition(roadOnPos,()=>{RD.gps="нет GPS — летим на холостых";},
       {enableHighAccuracy:true,maximumAge:2000,timeout:12000});
   }
-  if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&!RD.an){
-    navigator.mediaDevices.getUserMedia({audio:true}).then(st=>{
-      if(!RD){st.getTracks().forEach(t=>t.stop());return;}
-      RD.stream=st;
-      const C=SND&&SND.ctx?SND.ctx:new (window.AudioContext||window.webkitAudioContext)();
-      RD.an=C.createAnalyser();RD.an.fftSize=256;RD.an.smoothingTimeConstant=.5;
-      C.createMediaStreamSource(st).connect(RD.an);
-      RD.eq=new Uint8Array(RD.an.frequencyBinCount);
-    }).catch(()=>{RD.mic="без микрофона — волна дышит сама";});
-  }
   if(navigator.wakeLock&&!RD.lock)navigator.wakeLock.request("screen").then(l=>{if(RD)RD.lock=l;}).catch(()=>{});
   RD.asked=1;
-  /* спрошено — кнопка своё отслужила */
-  const b=document.getElementById("roadSense");if(b)b.style.display="none";
+  roadSenseBtn();
+}
+/* ── микрофон отдельной кнопкой (M168h) ──
+   Микрофон нужен ТОЛЬКО настроению волны, а платят за него дорого: подключён
+   Android Auto — голова машины видит открытый захват и решает, что идёт
+   разговор: музыка приглушается или глохнет совсем. Поэтому:
+
+   1. Датчики и микрофон разведены. По кнопке включается то, ради чего экран и
+      сделан, — GPS и движение. Микрофон — вторым, осознанным нажатием, и по
+      умолчанию его нет: без него волна дышит сама, а туманности живут.
+   2. Захват — БЕЗ обработки: эхоподавление, шумодав и автоусиление выключены.
+      Именно эхоподавление переводит поток в «голосовой» режим, и уже по нему
+      голова опознаёт звонок. Сырой захват она чаще принимает за запись.
+   3. Свой AudioContext, а не игровой: если система всё же переключит контекст
+      в разговорный режим, пусть это будет пустой контекст анализатора, а не
+      тот, через который играет сама игра.
+   4. Выбор помнится в G.road.mic — но кнопка на экране всегда показывает, что
+      сейчас, и гасится одним нажатием прямо на ходу. */
+function roadMicOn(){
+  if(!RD||RD.an||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)return;
+  RD.mic=null;
+  navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,
+    autoGainControl:false,channelCount:1}}).then(st=>{
+    if(!RD){st.getTracks().forEach(t=>t.stop());return;}
+    RD.stream=st;
+    RD.actx=new (window.AudioContext||window.webkitAudioContext)();
+    RD.an=RD.actx.createAnalyser();RD.an.fftSize=256;RD.an.smoothingTimeConstant=.5;
+    RD.actx.createMediaStreamSource(st).connect(RD.an);
+    RD.eq=new Uint8Array(RD.an.frequencyBinCount);
+    roadAll().mic=1;
+    roadSenseBtn();
+  }).catch(()=>{if(RD){RD.mic="микрофон не дали — волна дышит сама";roadSenseBtn();}});
+}
+function roadMicOff(){
+  if(!RD)return;
+  if(RD.stream){RD.stream.getTracks().forEach(t=>t.stop());RD.stream=null;}
+  if(RD.actx){RD.actx.close().catch(()=>{});RD.actx=null;}
+  RD.an=null;RD.eq=null;RD.mic=null;
+  roadAll().mic=0;
+  roadSenseBtn();
+}
+/* кнопка называет действие, а не состояние — правило интерфейса */
+function roadSenseBtn(){
+  const b=document.getElementById("roadSense");
+  if(!b)return;
+  if(!RD){b.style.display="";b.textContent="РАЗРЕШИТЬ ДАТЧИКИ";return;}
+  b.style.display="";
+  b.textContent=!RD.asked?"РАЗРЕШИТЬ ДАТЧИКИ":RD.an?"ВЫКЛЮЧИТЬ МИКРОФОН":"СЛУШАТЬ МУЗЫКУ";
 }
 /* ── движение машины: автоноль, рамка от тяжести, рыскание (M168g) ──
    Телефон в машине никогда не стоит ровно: держатель скошен на пять-двадцать
@@ -45276,7 +45312,8 @@ function roadOpen(){
   roadDayReset();
   document.getElementById("roadwin").classList.add("open");
   document.body.classList.add("road");
-  const sb=document.getElementById("roadSense");if(sb)sb.style.display="";
+  roadSenseBtn();
+  if(roadAll().mic)roadMicOn();          /* выбор помнится: включали — включаем снова */
   RD.pingIv=setInterval(roadPing,30000);
   const cv=document.getElementById("roadcv");
   cv.width=cv.clientWidth*Math.min(2,devicePixelRatio||1);
@@ -45287,6 +45324,7 @@ function roadClose(){
   if(!RD)return;
   if(RD.watch!=null&&navigator.geolocation)navigator.geolocation.clearWatch(RD.watch);
   if(RD.stream)RD.stream.getTracks().forEach(t=>t.stop());
+  if(RD.actx)RD.actx.close().catch(()=>{});
   if(RD.lock)RD.lock.release().catch(()=>{});
   removeEventListener("devicemotion",roadOnShake);
   if(RD.raf)cancelAnimationFrame(RD.raf);
@@ -45667,9 +45705,22 @@ function drawRoad(ts){
   if(R.cr>=ROAD_CR_CAP){yy+=Math.round(H*.026);
     c.fillText("дневной потолок собран — дальше просто красиво",px2,yy);}
   /* телефон лёг набок: экранная ось X встала к вертикали, «поперёк» не
-     определено, а гироскопа нет — честно молчим, а не выдумываем поворот */
-  const hints=[RD.gps,RD.mic,RD.blind?"телефон лежит боком — повороты не читаю":null].filter(Boolean);
-  if(hints.length){yy+=Math.round(H*.022);c.fillText(hints.join(" · "),px2,yy);}
+     определено, а гироскопа нет — честно молчим, а не выдумываем поворот.
+     Про микрофон сказано прямо и до того, как его включат: подключён Android
+     Auto — голова машины принимает открытый захват за разговор и глушит музыку */
+  const hints=[RD.gps,RD.mic,
+    RD.blind?"телефон лежит боком — повороты не читаю":null,
+    RD.an?"микрофон слушает — цвет идёт по треку":null,
+    RD.asked&&!RD.an&&!RD.mic?"микрофон: цвет по треку, но Android Auto примет за звонок":null
+  ].filter(Boolean);
+  if(hints.length){
+    for(const s of hints){
+      yy+=Math.round(H*.022);
+      let ln=s;
+      while(ln.length>8&&c.measureText(ln+(ln===s?"":"…")).width>W-px2*2)ln=ln.replace(/[^ ]*.$/,"");
+      c.fillText(ln===s?ln:ln+"…",px2,yy);
+    }
+  }
   if(!RD.asked){
     c.fillStyle="rgba(242,178,92,.85)";
     c.font=Math.round(H*.017)+"px ui-monospace,monospace";
@@ -45697,7 +45748,12 @@ function drawRoad(ts){
   const x=document.getElementById("roadClose");
   if(x)x.addEventListener("click",roadClose);
   const s=document.getElementById("roadSense");
-  if(s)s.addEventListener("click",roadSensorsOn);
+  if(s)s.addEventListener("click",()=>{
+    if(!RD)return;
+    if(!RD.asked)roadSensorsOn();
+    else if(RD.an)roadMicOff();
+    else roadMicOn();
+  });
   const cv=document.getElementById("roadcv");
   if(cv)cv.addEventListener("pointerdown",e=>{
     if(!RD)return;

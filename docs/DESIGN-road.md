@@ -186,3 +186,25 @@ the path, which makes density identical at 30, 60 and 120 Hz.
 - The swerve limit is the hull's **measured** half-width (`roadHullHalf`), not `h.bw`:
   pods and pylons run about 2.3× wider than the body, and the old guard cut the ship at
   the edge.
+
+## Sixth pass (M168h, 0.136.2) — the microphone is a separate yes
+
+Android Auto connected: the head unit sees an open audio capture, decides a call is in
+progress, and ducks or stops the music. There is no web API that reports "a car head unit
+is attached", so this cannot be detected and worked around — it has to be a choice.
+
+The microphone only ever fed the mood colour; without it the wave breathes on its own and
+the nebulae still live. So:
+
+1. **Two consents, not one.** The button turns on GPS, motion and wake lock. The
+   microphone is a second, deliberate tap and is **off by default**. The button names the
+   next action ("СЛУШАТЬ МУЗЫКУ" → "ВЫКЛЮЧИТЬ МИКРОФОН"), so it can be killed mid-drive.
+2. **Raw capture when on:** `echoCancellation`, `noiseSuppression`, `autoGainControl` all
+   `false`. Echo cancellation is what puts the stream on the voice route, and it is the
+   voice route the head unit reads as a call.
+3. **Its own `AudioContext`.** If the system switches a context into communication mode,
+   it should be the empty analyser context, not the one the game plays through.
+4. **The cost is on screen before the tap.** Never let the driver find this out on the
+   motorway.
+
+Remembered in `G.road.mic`.

@@ -7,6 +7,33 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.136.2 — the microphone is a separate yes (M168h)
+
+Plug in Android Auto and the head unit sees an open audio capture, decides a call is in
+progress, and ducks or kills the music. The road screen was asking for the microphone
+inside the same "РАЗРЕШИТЬ ДАТЧИКИ" tap that turns on GPS — so anyone who wanted the
+feature at all got the microphone whether they wanted it or not.
+
+The microphone only ever fed the mood colour of the wave, and without it the wave breathes
+on its own. So it is now split off:
+
+- **Sensors and microphone are separate consents.** The button turns on what the screen is
+  actually for — GPS, motion, wake lock. The microphone is a second, deliberate tap, and
+  it is off by default. The button names the next action: "СЛУШАТЬ МУЗЫКУ", then
+  "ВЫКЛЮЧИТЬ МИКРОФОН", so it can be killed mid-drive without leaving the screen.
+- **When it is on, the capture is raw** — `echoCancellation`, `noiseSuppression` and
+  `autoGainControl` all off. Echo cancellation is what pushes the stream onto the voice
+  route, and it is that route the head unit reads as a call; an unprocessed capture is
+  usually taken for a recording instead.
+- **Its own `AudioContext`**, not the game's. If the system does switch a context into
+  communication mode, let it be the empty analyser context rather than the one the game
+  plays through.
+- **The cost is stated on screen before the tap**, not discovered on the motorway:
+  "микрофон: цвет по треку, но Android Auto примет за звонок". While it is listening the
+  screen says so.
+
+The choice is remembered in `G.road.mic` and survives a save.
+
 ## 0.136.1 — the road companion measures the road, not the cradle (M168g)
 
 Four minutes of real driving on a phone, watched frame by frame, turned up two faults

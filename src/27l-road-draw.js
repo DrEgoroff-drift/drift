@@ -22,7 +22,8 @@ function roadOpen(){
   roadDayReset();
   document.getElementById("roadwin").classList.add("open");
   document.body.classList.add("road");
-  const sb=document.getElementById("roadSense");if(sb)sb.style.display="";
+  roadSenseBtn();
+  if(roadAll().mic)roadMicOn();          /* выбор помнится: включали — включаем снова */
   RD.pingIv=setInterval(roadPing,30000);
   const cv=document.getElementById("roadcv");
   cv.width=cv.clientWidth*Math.min(2,devicePixelRatio||1);
@@ -33,6 +34,7 @@ function roadClose(){
   if(!RD)return;
   if(RD.watch!=null&&navigator.geolocation)navigator.geolocation.clearWatch(RD.watch);
   if(RD.stream)RD.stream.getTracks().forEach(t=>t.stop());
+  if(RD.actx)RD.actx.close().catch(()=>{});
   if(RD.lock)RD.lock.release().catch(()=>{});
   removeEventListener("devicemotion",roadOnShake);
   if(RD.raf)cancelAnimationFrame(RD.raf);
@@ -413,9 +415,22 @@ function drawRoad(ts){
   if(R.cr>=ROAD_CR_CAP){yy+=Math.round(H*.026);
     c.fillText("дневной потолок собран — дальше просто красиво",px2,yy);}
   /* телефон лёг набок: экранная ось X встала к вертикали, «поперёк» не
-     определено, а гироскопа нет — честно молчим, а не выдумываем поворот */
-  const hints=[RD.gps,RD.mic,RD.blind?"телефон лежит боком — повороты не читаю":null].filter(Boolean);
-  if(hints.length){yy+=Math.round(H*.022);c.fillText(hints.join(" · "),px2,yy);}
+     определено, а гироскопа нет — честно молчим, а не выдумываем поворот.
+     Про микрофон сказано прямо и до того, как его включат: подключён Android
+     Auto — голова машины принимает открытый захват за разговор и глушит музыку */
+  const hints=[RD.gps,RD.mic,
+    RD.blind?"телефон лежит боком — повороты не читаю":null,
+    RD.an?"микрофон слушает — цвет идёт по треку":null,
+    RD.asked&&!RD.an&&!RD.mic?"микрофон: цвет по треку, но Android Auto примет за звонок":null
+  ].filter(Boolean);
+  if(hints.length){
+    for(const s of hints){
+      yy+=Math.round(H*.022);
+      let ln=s;
+      while(ln.length>8&&c.measureText(ln+(ln===s?"":"…")).width>W-px2*2)ln=ln.replace(/[^ ]*.$/,"");
+      c.fillText(ln===s?ln:ln+"…",px2,yy);
+    }
+  }
   if(!RD.asked){
     c.fillStyle="rgba(242,178,92,.85)";
     c.font=Math.round(H*.017)+"px ui-monospace,monospace";
@@ -443,7 +458,12 @@ function drawRoad(ts){
   const x=document.getElementById("roadClose");
   if(x)x.addEventListener("click",roadClose);
   const s=document.getElementById("roadSense");
-  if(s)s.addEventListener("click",roadSensorsOn);
+  if(s)s.addEventListener("click",()=>{
+    if(!RD)return;
+    if(!RD.asked)roadSensorsOn();
+    else if(RD.an)roadMicOff();
+    else roadMicOn();
+  });
   const cv=document.getElementById("roadcv");
   if(cv)cv.addEventListener("pointerdown",e=>{
     if(!RD)return;
