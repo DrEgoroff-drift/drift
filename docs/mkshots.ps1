@@ -29,7 +29,13 @@ setTimeout(function(){
   function land(p){startLanding(p);}
   function surf(p){startLanding(p);enterSurface();G.surf.x=G.surf.shipX+260;G.surf.cam=null;}
   var SC={
-    system:function(){var S=sysWhere(function(S){return S.planets.length>=4&&S.station;});if(S)goTo(S);G.ship.x=-200;G.ship.y=-520;G.ship.a=.6;G.ship.vx=2.2;G.ship.vy=1.1;},
+    system:function(){
+      var S=sysWhere(function(S){return S.planets.length>=4&&S.station;});if(S)goTo(S);
+      /* виртуальное время прогоняет тысячи кадров — свободный корабль улетает
+         из кадра; орбита держит его у планеты, и планета остаётся в кадре */
+      var p=(S||G.sys).planets.slice().sort(function(a,b){return b.radius-a.radius;})[0];
+      G.ship.a=.6;G.orbit={p:p,r:p.radius+150,ang:2.4,w:.0012};G.orbit.sys=G.sx+","+G.sy;
+    },
     map:function(){G.mode="map";},
     belt:function(){var S=sysWhere(function(S){return !!S.belt;});if(S)goTo(S);G.shipId="obod";G.owned.obod=true;enterBelt();},
     belt2:function(){var S=sysWhere(function(S){return !!S.belt;},3);if(S)goTo(S);G.shipId="igla";G.owned.igla=true;enterBelt();},
@@ -78,6 +84,41 @@ setTimeout(function(){
       var S=sysWhere(function(S){return S.station;});goTo(S);
       G.ship.x=S.station.x+40;G.ship.y=S.station.y;openStation();tab="board";syncTabs();renderTab();
     },
+    /* дом стоит на ПЕРВОЙ твёрдой планете своей системы (homePlanet) —
+       садиться надо именно на неё, иначе дома в кадре не будет */
+    firstSolid:function(S){return S.planets.find(function(p){return p.type!=="gas";});},
+    /* Дать сцене отстояться: под --virtual-time-budget rAF успевает пару
+       кадров, а камере надо доехать, чанкам испечься, жильцам разойтись по
+       комнатам. Гоняем пару update/draw руками, как это делает prof(). */
+    settle:function(mode,n){
+      var M={surface:[updateSurface,drawSurface],homein:[updateHomeIn,drawHomeIn]}[mode];
+      if(!M)return;
+      for(var i=0;i<(n||240);i++){G.t+=1;M[0](1);M[1]();}
+    },
+    home:function(){
+      var S=sysWhere(function(S){var f=SC.firstSolid(S);return f&&f.type==="terran";});
+      if(S)goTo(S);
+      var p=SC.firstSolid(S);
+      G.home=homeInit();G.home.tier=8;G.home.sx=G.sx;G.home.sy=G.sy;
+      G.home.trophies=[{k:"a"},{k:"b"},{k:"c"},{k:"d"}];
+      G.owned.skat=1;G.home.garage=["skat"];
+      G.vega={stage:2,aboard:1,att:0,mood:1,offend:-1,calls:0,said:0};
+      surf(p);G.surf.x=homeDoorX(G.surf.tr,p)+40;G.surf.cam=null;
+      SC.settle("surface");
+    },
+    rooms:function(){
+      var S=sysWhere(function(S){return !!SC.firstSolid(S);});if(S)goTo(S);
+      var p=SC.firstSolid(S);
+      G.home=homeInit();G.home.tier=8;G.home.sx=G.sx;G.home.sy=G.sy;
+      G.home.trophies=[{k:"a"},{k:"b"},{k:"c"}];
+      G.owned.skat=1;G.home.garage=["skat"];
+      G.vega={stage:2,aboard:1,att:0,mood:1,offend:-1,calls:0,said:0};
+      G.crew=[{name:genName(rng(11)),role:"pilot"},{name:genName(rng(22)),role:"tech"}];
+      surf(p);enterHomeIn();
+      var st=hinRooms().find(function(v){return v.key==="study";});
+      G.hin.x=st?st.x+st.w*.5:hinWidth()*.5;
+      SC.settle("homein");
+    },
     lights:function(){
       var at=regionOfTheme("lights"),R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);
       var S=getSystem(R.core.sx,R.core.sy);goTo(S);
@@ -96,7 +137,7 @@ $out=$head+$add+"</body></html>"
 Write-Output "docs/shots.html собран"
 if($Shoot){
   $chrome="C:\Program Files\Google\Chrome\Application\chrome.exe"
-  $scenes=@("system","map","belt","belt2","scoop","landing","surface","surface2","cave","mine","base","raid","station","cantina","hq","hours","lights")
+  $scenes=@("system","map","belt","belt2","scoop","landing","surface","surface2","cave","mine","base","raid","station","cantina","hq","hours","lights","home","rooms")
   $dir=Join-Path $root "docs\shots"
   foreach($s in $scenes){
     $png=Join-Path $dir "$s.png"

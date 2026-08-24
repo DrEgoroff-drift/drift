@@ -112,6 +112,10 @@ who sits there depends on the station's kind. Managers are hired here, one per d
 darken with loyalty. An empty seat is drawn as an empty seat.
 </td>
 <td width="50%" valign="top">
+<img src="docs/shots/rooms.png" alt="Inside the home: the study under its lamp, Vega by the desk" width="100%">
+<b>The home from inside.</b> Eight tiers of turnover are eight rooms you walk through, each with
+its own floor and its own things. The people who live there live there: Vega keeps to the study,
+the lodger keeps house, off-duty crew rest in the hall.
 </td>
 </tr>
 </table>
@@ -445,8 +449,9 @@ On a phone, «В ДОРОГУ» turns a real trip into flight: GPS speed ×1 000
 banks and sways the hull through real turns, acceleration pulls it up the screen and braking
 down, and the microphone drives the scene — nebulae change colour with the music's mood, a
 beat births falling stars, the bottom of the screen glows with the track. Real land is mapped
-onto the universe: every ~2.8 km cell is a named star system, and the site counts other pilots
-riding the same sector (an anonymous tag and a cell number are all that leave the phone).
+onto the universe: every ~2.8 km cell is a named star system, and other pilots riding the same
+sector fly alongside as distant companion lights — a spark with an exhaust each, the same set for
+everyone in the cell (an anonymous tag and a cell number are all that leave the phone).
 Kilometres earn capped in-game credits, with a combo for riding without stopping.
 
 ## Graphics and sound
@@ -517,7 +522,7 @@ powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
 The same build produces `tests.html` — open it in a browser and it runs the suites against the
-real game state (currently 1 340 assertions, nothing mocked) and prints the report on the page.
+real game state (currently 6 340 assertions, nothing mocked) and prints the report on the page.
 
 Module order matters: the whole game shares one scope, so constants and tables must be declared
 before anything reads them at top level. A new module gets a new numeric prefix in the right
@@ -552,6 +557,14 @@ own law, its rumours and its returners — and the game its release face: a bott
 tunable receiver on every screen, one table that holds everything you read, and the road
 companion that flies your ship along your real commute.
 
-In progress: the fourteenth pass — the kit, the lodger on board, the expedition.
+The fourteenth pass is finished too — the kit and the suit doll, the lodger who moves in, the
+record book, the institute and its expedition, the trainee, and the phone edition. After it the
+game was looked at again screen by screen (the settlement, the mine, the cantina, deposits, the
+ground cross-section, the gas giant), and the home stopped being a panel and became a house you
+walk into.
+
+In progress: the graphics debt written down from looking, one fault at a time — the mine's
+shafts, the gas giant baked too soft, the machine-filled rooms of a base — and the passes the
+home may still want: furniture in the hall and at the dock, sounds indoors.
 
 Balance is tuned against measurements, so the numbers move between versions.
