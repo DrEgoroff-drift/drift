@@ -75,6 +75,10 @@ setTimeout(function(){
       G.hin.cam=G.hin.x;
     }
     for(var f3=0;f3<4;f3++){G.t+=.01;updateHomeIn(1);drawHomeIn();}
+  }else if(scene==="dock"){
+    /* станция: стыкуемся с торговым узлом стартовой системы */
+    var st=G.sys.station;
+    if(st){G.ship.x=st.x+40;G.ship.y=st.y;openStation();}
   }else if(scene==="raid"){
     /* абордаж: настоящая база из галактики, тем же поиском, что в тестах */
     var PB=null;

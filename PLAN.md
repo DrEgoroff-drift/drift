@@ -703,5 +703,16 @@ self-criticism, per the cross-cutting rule.
   4. **the phone**: the same screens at 390 px, measured, not imagined (`test.ps1 -Mobile`);
   5. **the whole**: one language across every screen — the same edges, the same weights, the same
      words.
-- **M186 — the walk-through**: every point the author raised in this session, checked one by one
-  on the live site, not on a stand.
+- **M186 — the walk-through** (run at the end of the night session, 2026-08-25 03:00): every point
+  of the author's five messages checked. **Closed tonight:** the old queue (12→13→A2→A3→9→10, six
+  versions), the deploy (broken since 0.139.0 — `Get-Content -Encoding Byte` does not exist in
+  PowerShell Core; fixed, `docs/live.ps1` now checks sources-vs-site in one line), the postcard
+  crops (skyHole by day, ground holes, РАНЕЦ under pads, prompt under console), the Forest-style
+  hold, the paper table kept, the pirate base pass 1, buttons that dim instead of vanishing, phone
+  measured for real (`test.ps1 -Mobile`, dock/system/surface/table at 390 px). **Still open, for
+  the author's morning:** interface passes 2/3/5 (the eye, the road, one language) — pass 4 (the
+  phone) is measured and green; pirate base passes 2+ (enemy bodies, hangar dressing, marks
+  through walls); M178 tails (flat far ridge, uniform rain). **Perf note:** the night's last
+  probe read system 43 / surface 39, but the 0.144 build read the same on the same machine at the
+  same hour — the regression is the machine (background load), not the code; re-measure clean
+  before believing any number.
