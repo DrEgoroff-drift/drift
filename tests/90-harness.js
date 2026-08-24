@@ -75,6 +75,10 @@ function landOnTestPlanet(){
 function steps(n,fn){for(let i=0;i<n;i++){actEdge=false;fn(1);G.t+=1;}}
 
 function runTests(){
+  /* игровой цикл на время прогона выключен: тесты сами двигают мир, а фоновые
+     кадры двигали бы G у них под руками — и в headless не давали странице
+     дойти до отчёта (M170) */
+  LOOP_OFF=true;
   const t0=performance.now();
   for(const fn of TEST_SUITES){
     try{fn();}catch(e){TEST.fail++;TEST.failed.push("набор упал: "+(e&&e.message||e));

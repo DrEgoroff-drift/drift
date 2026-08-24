@@ -66,7 +66,12 @@ TEST_SUITES.push(()=>suite("дорога: экран, разгон и тормо
   RD.accT=-.8;for(let i=0;i<24;i++)drawRoad(1100+i*33);
   ok(RD.acc<0,"тормоз дошёл до корпуса: "+RD.acc.toFixed(2));
   const cv=document.getElementById("roadcv");
-  const px=cv.getContext("2d").getImageData(Math.floor(cv.width*.5)-4,Math.floor(cv.height*.5)-40,8,80).data;
+  /* корпус ездит по вертикали: разгон тянет его вверх, тормоз вниз (M168e).
+     Поэтому проба берётся ВОКРУГ его нынешнего места, а не вокруг середины
+     экрана — иначе тест проверяет пустое небо над затормозившим кораблём */
+  const cy=Math.floor(cv.height*.5+(RD.yOff||0));
+  const y0=clamp(cy-60,0,cv.height-1), hh=Math.min(120,cv.height-y0);
+  const px=cv.getContext("2d").getImageData(Math.floor(cv.width*.5)-4,y0,8,hh).data;
   let lit=0;for(let i=0;i<px.length;i+=4)if(px[i]+px[i+1]+px[i+2]>60)lit++;
   ok(lit>0,"корпус нарисован");
   RD.moveT=100;roadEarnKm(3,RD.moveT);

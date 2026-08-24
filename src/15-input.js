@@ -158,6 +158,7 @@ function navAction(){
   if(G.mode==="belt"){exitBelt();return;}
   if(G.mode==="scoop"){exitScoop("Уход на орбиту");return;}
   if(G.mode==="base"){if(G.base.menu)G.base.menu=false;else exitBase();return;}
+  if(G.mode==="homein"){exitHomeIn();return;}          /* из дома — во двор (M170) */
   if(G.mode==="system"){G.mode="map";G.sel.x=G.sx;G.sel.y=G.sy;}
   else if(G.mode==="map")G.mode="system";
   else say("Навигация недоступна\nвне свободного полёта");

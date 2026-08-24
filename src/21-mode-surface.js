@@ -60,6 +60,17 @@ function enterSurface(){
     for(let i=arr.length-1;i>=0;i--)if(Math.abs(arr[i].x-caveMouth.x)<rad)arr.splice(i,1);
   };
   clearNear(deposits,70);clearNear(plants,50);clearNear(fauna,60);
+  /* двор дома (M170): у жилья участок расчищен — иначе гигантская флора растёт
+     сквозь крыльцо и дом не разглядеть. Чистим шире, чем у пещеры: это двор */
+  if(typeof homeHereP==="function"&&homeHereP(p)&&typeof homeSpotX==="function"){
+    const hx=homeSpotX(p,tr);
+    if(hx!=null){
+      const clearHome=(arr,rad)=>{
+        for(let i=arr.length-1;i>=0;i--)if(Math.abs(arr[i].x-hx)<rad)arr.splice(i,1);
+      };
+      clearHome(deposits,150);clearHome(plants,140);clearHome(fauna,150);
+    }
+  }
   /* подглядка (20c): луг лежит открытым. Куст или валун посреди мата закрывает
      собой идущих, а показывают здесь именно их */
   const peep=peepMake(tr,p);
@@ -199,6 +210,14 @@ function updateSurface(dt){
   if(S.cave&&Math.abs(S.cave.x-S.x)<34){
     G.prompt="ДЕЙСТВИЕ — ВОЙТИ В ПЕЩЕРУ";
     if(actEdge){enterCave();return;}
+  }
+  /* дверь дома (M170): своя планета, своё крыльцо — и в дом можно войти */
+  if(typeof homeDoorX==="function"&&homeHereP(S.p)){
+    const hx=homeDoorX(tr,S.p);
+    if(hx!=null&&Math.abs(hx-S.x)<38){
+      G.prompt="ДЕЙСТВИЕ — ВОЙТИ ДОМОЙ";
+      if(actEdge){enterHomeIn();return;}
+    }
   }
   /* путёвка (M162): океанический мир и путёвка на столе — три дня отдыха у корабля */
   if(typeof instRestHere==="function"&&instRestHere()&&dShip<shipZoneR()){

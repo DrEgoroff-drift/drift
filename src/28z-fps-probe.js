@@ -99,6 +99,14 @@ async function g11RunDeep(){
     await sleep(5000);                   /* прогрев: меряем крейсер, не пекарню */
     out.system=await g11Deep(["drawSysNebula","drawStars","drawSpaceDust","drawStarBody",
       "drawBeltRing","planetDraw","drawRing","drawTrail","drawBarges","drawFinds"]);
+    {
+      const s0=find(x=>x.planets.some(q=>q.type!=="gas"));
+      G.sx=s0.sx;G.sy=s0.sy;G.sys=s0;G.ap=null;
+      startLanding(s0.planets.find(q=>q.type!=="gas"));
+      await sleep(4000);
+      out.landing=await g11Deep(["drawSkyBase","drawSkyLayer","drawGround","drawStrata",
+        "drawRocks","drawClouds","drawWeather","drawLander","drawStars","geoFaultAt"]);
+    }
     const s=find(s=>s.planets.some(p=>p.type==="jungle"))||find(s=>s.planets.some(p=>p.type!=="gas"));
     G.sx=s.sx;G.sy=s.sy;G.sys=s;G.ap=null;
     const p=s.planets.find(p=>p.type==="jungle")||s.planets.find(p=>p.type!=="gas");

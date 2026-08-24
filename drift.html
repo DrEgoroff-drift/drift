@@ -851,7 +851,7 @@ body.road #console{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.134.0";
+const VER="0.136.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -5681,11 +5681,18 @@ function resize(){
      навсегда — события resize не будет, а рисование молча падает на drawImage.
      Берём запасной размер и просим повтор: пустой кадр честнее мёртвого. */
   if(W<2||H<2){
+    /* запасной холст МАЛЕНЬКИЙ. Большой стоил дорого там, где его никто не
+       видит: в headless страница считается видимой, кадры идут полным ходом, и
+       прогон тестов из тридцати секунд превращался в бесконечность (M170).
+       Как только придёт настоящий размер, канва перестроится. */
     const de=document.documentElement;
-    W=Math.max(320,(de&&de.clientWidth)||0,window.outerWidth||0)||1280;
-    H=Math.max(240,(de&&de.clientHeight)||0,(window.outerHeight||0)-120)||720;
-    setTimeout(resize,150);
-  }
+    W=Math.max(320,Math.min(640,(de&&de.clientWidth)||0));
+    H=Math.max(240,Math.min(480,(de&&de.clientHeight)||0));
+    /* повторов ровно несколько: бесконечный таймер под виртуальным временем
+       (headless-прогон тестов) съедал весь бюджет и страница не доезжала до
+       отчёта — стенд молчал, а тесты «висли» (M169) */
+    if((resize.tries=(resize.tries||0)+1)<12)setTimeout(resize,150);
+  }else resize.tries=0;
   cvs.width=Math.round(W*DPR);cvs.height=Math.round(H*DPR);
   ctx.setTransform(DPR,0,0,DPR,0,0);
 }
@@ -23265,6 +23272,7 @@ function navAction(){
   if(G.mode==="belt"){exitBelt();return;}
   if(G.mode==="scoop"){exitScoop("Уход на орбиту");return;}
   if(G.mode==="base"){if(G.base.menu)G.base.menu=false;else exitBase();return;}
+  if(G.mode==="homein"){exitHomeIn();return;}          /* из дома — во двор (M170) */
   if(G.mode==="system"){G.mode="map";G.sel.x=G.sx;G.sel.y=G.sy;}
   else if(G.mode==="map")G.mode="system";
   else say("Навигация недоступна\nвне свободного полёта");
@@ -34095,6 +34103,12 @@ function drawSurfaceHud(camx,camy){
   marks.push({x:S.shipX,ru:"КОРАБЛЬ",col:"rgba(242,178,92,.9)"});
   if(S.cave)marks.push({x:S.cave.x,ru:"ПЕЩЕРА",col:"rgba(150,225,255,.9)"});
   if(typeof lightsOpen==="function"&&lightsOpen(S.p))marks.push({x:lightsEntryX(S.tr,S.p),ru:"ВХОД",col:"rgba(255,236,190,.9)"});
+  /* дом (M170): до него надо дойти, значит его надо и найти — свой маркер,
+     тёплого цвета, чтобы не путать с кораблём */
+  if(typeof homeHereP==="function"&&homeHereP(S.p)){
+    const hx=homeSpotX(S.p,S.tr);
+    if(hx!=null)marks.push({x:hx,ru:"ДОМ",col:"rgba(255,206,138,.95)"});
+  }
   /* достопримечательность ведут отдельно от пещеры: до неё далеко, и без
      маркера игрок пройдёт мимо ровно того, ради чего стоило садиться */
   const poi=nearestPOI(S.tr,S.x);
@@ -34180,6 +34194,9 @@ function drawSurface(){
   /* ваши постройки — тем же слоем, что и POI: их видно с земли, заходить
      в меню, чтобы узнать об их существовании, больше не нужно */
   drawBuilt(tr,camx,camy,p);
+  /* дом стоит на своей планете (21f, M170) — до него доходят ногами */
+  if(typeof drawHomeOut==="function"&&typeof homeHereP==="function"&&homeHereP(p))
+    drawHomeOut(tr,camx,camy,p);
   /* посёлок (12t) — тем же слоем, что и постройки: место, к которому игрок идёт
      ногами, обязано быть видно с горизонта, иначе идти не за чем */
   if(settleCanLive(p))settleDraw(settleAt(G.sx,G.sy),tr,camx,camy,p);
@@ -34311,6 +34328,242 @@ function drawSurface(){
   drawSurfaceHud(camx,camy);
 }
 
+/* ══════════════ дом снаружи ══════════════
+   M170. До сих пор дом жил на вкладке станции: картинка в панели, к которой
+   нельзя подойти. Между тем это единственное место, про которое игра говорит
+   «здесь вы дома», — и оно обязано СТОЯТЬ НА ЗЕМЛЕ: на своей планете, в своей
+   системе, за своим забором, с окном, в котором горит свет.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Место считается, а не хранится. Планета — первая твёрдая в системе дома,
+      место на ней — из зерна: сохранение (v:4) не трогаем.
+   2. Мерило — человек (17 px на поверхности, как везде). Дом — два с
+      половиной, гараж шире дома, маяк выше всего.
+   3. Дом РАСТЁТ теми же ступенями, что в панели (HOME_TIERS): угол, прихожая,
+      гараж, витрина, мастерская, кабинет, жилая часть, причал с маяком. Что не
+      построено — того снаружи нет.
+   4. Ни одной подписи: дом узнают по крыльцу, свету в окне и дыму. */
+
+/* планета дома: первая твёрдая в его системе — та же, на которую садятся */
+function homePlanet(){
+  const H=G.home;if(!H||!H.tier)return null;
+  if(!starAt(H.sx,H.sy))return null;
+  const sys=getSystem(H.sx,H.sy);
+  if(!sys)return null;
+  return sys.planets.find(p=>p.type!=="gas")||null;
+}
+/* мы сейчас на планете дома? */
+function homeHereP(p){
+  const H=G.home;
+  if(!H||!H.tier||!p)return false;
+  if(G.sx!==H.sx||G.sy!==H.sy)return false;
+  const hp=homePlanet();
+  return !!(hp&&(hp.idx|0)===(p.idx|0));
+}
+/* где именно он стоит: своё место на планете, поодаль от площадки */
+function homeSpotX(p,tr){
+  if(!homeHereP(p))return null;
+  const W2=(tr&&tr.W)||4000;
+  const r=rng(hashi(G.sx,G.sy,0x40E7));
+  let x=420+r()*Math.max(240,W2-900);
+  if(Math.abs(x-tr.padX)<520)x+=x<tr.padX?-520:520;   /* не на посадочной площадке */
+  /* и не вплотную к посёлку: оба места считаются своими зёрнами и однажды
+     сошлись двор во двор — дом стоял прямо в чужой улице (самокритика M170) */
+  if(typeof settleSpotX==="function"&&typeof settleCanLive==="function"&&settleCanLive(p)){
+    const s=settleSpotX(p,tr);
+    if(s!=null&&Math.abs(x-s)<620)x=s+(x<s?-620:620);
+  }
+  return clamp(x,220,W2-220);
+}
+const HOME_MAN=17;                                    /* тот же человек, что везде */
+/* палитра дома: местный камень и дерево, но теплее — это жильё, а не порода */
+function homeOutPal(p){
+  const pal=p.T.pal;
+  const base=pal[Math.min(pal.length-1,2)];
+  return {
+    wall:sdMix(base,[176,150,116],.42),
+    roof:sdMix(pal[1],[74,62,52],.5),
+    wood:sdMix(base,[112,84,56],.6),
+    stone:sdMix([128,126,120],base,.2),
+    metal:[104,112,120],
+    warm:[255,206,138]
+  };
+}
+/* ── дом на поверхности ──
+   Рисуется в порядке слоёв: тень, фундамент, тело, крыша, свет, пристройки,
+   двор. Ступени добавляют части СЛЕВА НАПРАВО, как в панели, чтобы одно и то
+   же владение читалось одинаково и снаружи, и внутри. */
+function drawHomeOut(tr,camx,camy,p){
+  const bx=homeSpotX(p,tr);if(bx==null)return;
+  const sx=bx-camx;
+  if(sx<-420||sx>W+420)return;
+  const H0=G.home,tier=H0.tier|0;
+  const pal=homeOutPal(p);
+  const gy=groundAt(tr,bx)+2-camy;   /* дом стоит на срезанной полке (см. ниже) */
+  const nite=(typeof surfNight==="function")?surfNight(p):0;
+  const wind=(typeof WIND==="number")?WIND*2:0;
+  const M=HOME_MAN;
+  const w=M*3.4, wallH=M*1.9, roofH=M*.95;           /* дом: два с половиной роста */
+  /* ── площадка ──
+     Дом стоял прямо на склоне, и гараж повисал над обрывом (самокритика M170).
+     Под жильё срезают полку — той же рукой, что в посёлке (12tb): подпорная
+     стенка снизу, врез сверху, утоптанная земля между. */
+  if(typeof sdTerrace==="function"){
+    const span=w*3.2;
+    sdTerrace({x0:bx-w*1.75,x1:bx+w*1.45,span,baseY:groundAt(tr,bx)+2,
+               seed:hashi(G.sx,G.sy,0x40EC)},tr,camx,camy,
+              {earth:sdMix(p.T.pal[Math.min(p.T.pal.length-1,3)],[92,74,52],.38),
+               stone:pal.stone,wood:pal.wood},p);
+  }
+  /* двор: утоптанная площадка перед домом и тропа к ней */
+  ctx.save();
+  ctx.fillStyle="rgba(0,0,0,.18)";
+  ctx.beginPath();ctx.ellipse(sx,gy+2,w*1.5,7,0,0,TAU);ctx.fill();
+  ctx.fillStyle=sdRGB(sdMix(pal.wood,[200,186,150],.5));
+  for(let i=0;i<16;i++){
+    const t=i/15, px=sx-w*1.3+t*w*2.6;
+    const py=groundAt(tr,bx+(px-sx))-camy;
+    ctx.globalAlpha=.14+.1*Math.sin(t*6);
+    ctx.beginPath();ctx.ellipse(px,py-1,7+t*3,2.4,0,0,TAU);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  ctx.restore();
+  /* ── гараж (ступень 3) — слева, шире и ниже дома ── */
+  if(homeHas("garage")){
+    const gw=M*3.1,gh=M*1.5,gx=sx-w*.5-gw*.55;
+    const gyy=gy;                                     /* гараж стоит на той же полке */
+    sdShadow(gx,gyy,gw,gh);
+    sdBody(()=>ctx.rect(gx-gw/2,gyy-gh,gw,gh),sdRGB(sdMix(pal.wall,[0,0,0],.18)),null,.22);
+    sdWallTex(gx-gw/2,gyy-gh,gw,gh,"plate",0x6A2,pal.wall);
+    /* ворота: широкие, со створом и колеёй, ведущей к ним */
+    ctx.fillStyle=sdRGB(sdMix(pal.metal,[0,0,0],.25));
+    ctx.fillRect(gx-gw*.36,gyy-gh*.82,gw*.72,gh*.82);
+    ctx.strokeStyle="rgba(226,236,240,.18)";ctx.lineWidth=1;
+    for(let i=1;i<5;i++){
+      const yy=gyy-gh*.82+gh*.82*i/5;
+      ctx.beginPath();ctx.moveTo(gx-gw*.36,yy);ctx.lineTo(gx+gw*.36,yy);ctx.stroke();
+    }
+    ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillRect(gx-.8,gyy-gh*.82,1.6,gh*.82);
+    /* односкатная крыша к дому */
+    ctx.fillStyle=sdRGB(pal.roof);
+    ctx.beginPath();
+    ctx.moveTo(gx-gw/2-3,gyy-gh);ctx.lineTo(gx+gw/2+3,gyy-gh-M*.5);
+    ctx.lineTo(gx+gw/2+3,gyy-gh-M*.5+3);ctx.lineTo(gx-gw/2-3,gyy-gh+3);
+    ctx.closePath();ctx.fill();
+  }
+  /* ── тело дома ── */
+  const fh=Math.max(3,M*.22);
+  ctx.fillStyle=sdRGB(sdMix(pal.stone,[0,0,0],.3));
+  ctx.fillRect(sx-w/2-2,gy-fh,w+4,fh);
+  const fr=rng(0x40E8);
+  for(let xx=sx-w/2-1;xx<sx+w/2+1;xx+=5+fr()*3){
+    ctx.fillStyle=sdRGB(sdMix(pal.stone,[0,0,0],.14+fr()*.22));
+    ctx.fillRect(xx,gy-fh+fr()*1.4,4+fr()*3,fh-1);
+  }
+  sdBody(()=>ctx.rect(sx-w/2,gy-wallH,w,wallH-fh*.4),sdRGB(pal.wall),null,.24);
+  const lg=ctx.createLinearGradient(sx-w/2,0,sx+w/2,0);
+  lg.addColorStop(0,"rgba(0,0,0,.34)");lg.addColorStop(.55,"rgba(0,0,0,0)");
+  lg.addColorStop(1,"rgba(255,240,214,.16)");
+  ctx.fillStyle=lg;ctx.fillRect(sx-w/2,gy-wallH,w,wallH);
+  sdWallTex(sx-w/2,gy-wallH,w,wallH,"log",0x40E9,pal.wall);
+  sdRoof(sx-w/2,gy-wallH,w,roofH,"plank",{roof:pal.roof,
+    roofLit:sdMix(pal.roof,[236,214,170],.34),roofDark:sdMix(pal.roof,[12,16,24],.4)},0x40EA);
+  /* труба и дым: дом живой, пока в нём кто-то есть */
+  ctx.fillStyle=sdRGB(pal.stone);
+  ctx.fillRect(sx+w*.24,gy-wallH-roofH-M*.28,M*.34,M*.6);
+  ctx.fillStyle="rgba(255,246,220,.16)";ctx.fillRect(sx+w*.24,gy-wallH-roofH-M*.28,M*.17,M*.6);
+  if(typeof sdSmoke==="function")
+    sdSmoke(sx+w*.24+M*.17,gy-wallH-roofH-M*.34,wind,.7,3,9);
+  /* окно: главный признак жилья — в нём свет */
+  const ww=w*.26,wh=wallH*.30,wx=sx+w*.10,wy=gy-wallH*.70;
+  sdWindow(wx,wy,ww,wh,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},
+    Math.max(nite,.25),7);
+  if(homeHas("living")){                              /* жилая часть — второе окно */
+    sdWindow(sx-w*.34,wy,ww*.8,wh*.9,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},
+      Math.max(nite,.2),11);
+  }
+  /* крыльцо и дверь: сюда и входят */
+  const dw=w*.20,dh=wallH*.56,dX=sx-w*.30;
+  if(typeof sdDoor==="function")sdDoor(dX,gy,dw,dh,pal.wood,false);
+  ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.2));
+  ctx.fillRect(dX-3,gy-3,dw+6,3);
+  ctx.fillRect(dX-4.5,gy-1.4,dw+9,1.4);
+  ctx.strokeStyle=sdRGB(sdMix(pal.wood,[0,0,0],.32));ctx.lineWidth=1.4;
+  ctx.beginPath();
+  ctx.moveTo(dX-2,gy-3);ctx.lineTo(dX-2,gy-dh-5);
+  ctx.lineTo(dX+dw+2,gy-dh-5);ctx.lineTo(dX+dw+2,gy-3);ctx.stroke();
+  /* фонарь над крыльцом — он и зовёт: ночью его видно раньше дома */
+  const lx=dX+dw*.5,ly=gy-dh-8;
+  ctx.fillStyle=sdRGB(sdMix(pal.metal,[0,0,0],.3));
+  ctx.fillRect(lx-2.2,ly-3.4,4.4,3.4);
+  const lampOn=nite>.12;
+  ctx.fillStyle=lampOn?"rgba(255,206,138,.95)":"rgba(120,130,140,.6)";
+  ctx.fillRect(lx-1.4,ly-1,2.8,2.4);
+  if(lampOn){
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g=ctx.createRadialGradient(lx,ly,1,lx,ly,M*2.6);
+    g.addColorStop(0,"rgba(255,206,138,.30)");g.addColorStop(1,"rgba(255,180,110,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(lx,ly,M*2.6,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+  /* ── витрина (ступень 4): застеклённый шкаф у стены, видно снаружи ── */
+  if(homeHas("case")){
+    const cw=M*.9,ch=M*1.2,cx2=sx+w*.52;
+    const cyy=gy;
+    sdShadow(cx2,cyy,cw,ch);
+    ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.3));
+    ctx.fillRect(cx2-cw/2,cyy-ch,cw,ch);
+    ctx.fillStyle="rgba(150,190,205,.35)";
+    ctx.fillRect(cx2-cw/2+1.5,cyy-ch+1.5,cw-3,ch-3);
+    ctx.fillStyle="rgba(226,246,255,.25)";
+    ctx.beginPath();
+    ctx.moveTo(cx2-cw/2+1.5,cyy-2);ctx.lineTo(cx2+cw/2-1.5,cyy-ch+1.5);
+    ctx.lineTo(cx2+cw/2-1.5,cyy-ch+4);ctx.lineTo(cx2-cw/2+1.5,cyy+.5);ctx.closePath();ctx.fill();
+  }
+  /* ── причал с маяком (ступень 8): мачта выше всего, огонь мигает ── */
+  if(homeHas("dock")){
+    const mx=sx+w*1.15, myy=gy;
+    ctx.strokeStyle=sdRGB(sdMix(pal.metal,[0,0,0],.2));ctx.lineWidth=2.4;
+    ctx.beginPath();ctx.moveTo(mx,myy);ctx.lineTo(mx,myy-M*4.4);ctx.stroke();
+    ctx.lineWidth=1.2;
+    for(let i=1;i<4;i++){
+      const yy=myy-M*4.4*i/4;
+      ctx.beginPath();ctx.moveTo(mx-4,yy+4);ctx.lineTo(mx+4,yy-1);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(mx+4,yy+4);ctx.lineTo(mx-4,yy-1);ctx.stroke();
+    }
+    const bl=(Math.sin(G.t*.06)+1)*.5;
+    ctx.fillStyle="rgba(255,150,90,"+(.35+bl*.6).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(mx,myy-M*4.6,3.2,0,TAU);ctx.fill();
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g2=ctx.createRadialGradient(mx,myy-M*4.6,1,mx,myy-M*4.6,M*3*(.5+bl));
+    g2.addColorStop(0,"rgba(255,150,90,"+(.25*bl).toFixed(2)+")");
+    g2.addColorStop(1,"rgba(255,120,60,0)");
+    ctx.fillStyle=g2;ctx.beginPath();ctx.arc(mx,myy-M*4.6,M*3,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+  /* ── двор: поленница, бочка, верёвка — то же, чем живёт посёлок ── */
+  if(typeof sdWoodpile==="function")
+    sdWoodpile(sx+w*.62,gy,M*.7,M*.8,pal.wood,0x40EB);
+  if(homeHas("shop")){                                /* мастерская — верстак во дворе */
+    const tx=sx-w*.95, tyy=gy;
+    ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.28));
+    ctx.fillRect(tx-M*.7,tyy-M*.7,M*1.4,M*.16);
+    ctx.fillRect(tx-M*.6,tyy-M*.55,M*.12,M*.55);
+    ctx.fillRect(tx+M*.48,tyy-M*.55,M*.12,M*.55);
+    ctx.fillStyle=sdRGB(pal.metal);
+    ctx.fillRect(tx-M*.2,tyy-M*.86,M*.36,M*.18);      /* тиски */
+  }
+  /* тропа к двери: тёмная утоптанная полоса — по ней видно, что сюда ходят */
+  ctx.fillStyle="rgba(0,0,0,.16)";
+  ctx.beginPath();ctx.ellipse(dX+dw*.5,gy+1,M*1.1,3,0,0,TAU);ctx.fill();
+}
+/* дверь дома в мировых координатах: по ней считают, дошёл ли игрок */
+function homeDoorX(tr,p){
+  const bx=homeSpotX(p,tr);
+  if(bx==null)return null;
+  return bx-HOME_MAN*3.4*.30;
+}
+
 /* ══════════════ поверхность ══════════════ */
 function enterSurface(){
   const L=G.land,tr=L.tr,p=L.p,r=rng(p.seed^0x1234);
@@ -34373,6 +34626,17 @@ function enterSurface(){
     for(let i=arr.length-1;i>=0;i--)if(Math.abs(arr[i].x-caveMouth.x)<rad)arr.splice(i,1);
   };
   clearNear(deposits,70);clearNear(plants,50);clearNear(fauna,60);
+  /* двор дома (M170): у жилья участок расчищен — иначе гигантская флора растёт
+     сквозь крыльцо и дом не разглядеть. Чистим шире, чем у пещеры: это двор */
+  if(typeof homeHereP==="function"&&homeHereP(p)&&typeof homeSpotX==="function"){
+    const hx=homeSpotX(p,tr);
+    if(hx!=null){
+      const clearHome=(arr,rad)=>{
+        for(let i=arr.length-1;i>=0;i--)if(Math.abs(arr[i].x-hx)<rad)arr.splice(i,1);
+      };
+      clearHome(deposits,150);clearHome(plants,140);clearHome(fauna,150);
+    }
+  }
   /* подглядка (20c): луг лежит открытым. Куст или валун посреди мата закрывает
      собой идущих, а показывают здесь именно их */
   const peep=peepMake(tr,p);
@@ -34512,6 +34776,14 @@ function updateSurface(dt){
   if(S.cave&&Math.abs(S.cave.x-S.x)<34){
     G.prompt="ДЕЙСТВИЕ — ВОЙТИ В ПЕЩЕРУ";
     if(actEdge){enterCave();return;}
+  }
+  /* дверь дома (M170): своя планета, своё крыльцо — и в дом можно войти */
+  if(typeof homeDoorX==="function"&&homeHereP(S.p)){
+    const hx=homeDoorX(tr,S.p);
+    if(hx!=null&&Math.abs(hx-S.x)<38){
+      G.prompt="ДЕЙСТВИЕ — ВОЙТИ ДОМОЙ";
+      if(actEdge){enterHomeIn();return;}
+    }
   }
   /* путёвка (M162): океанический мир и путёвка на столе — три дня отдыха у корабля */
   if(typeof instRestHere==="function"&&instRestHere()&&dShip<shipZoneR()){
@@ -45810,6 +46082,9 @@ function hud(){
     b="сбор летучих газов";}
   else if(G.mode==="base"){a="БАЗА · "+(G.base?G.base.p.name.toUpperCase():"");
     b="разрез грунта";}
+  else if(G.mode==="homein"){a="ДОМ";
+    b=(G.home&&HOME_TIERS[G.home.tier-1]?HOME_TIERS[G.home.tier-1].ru:"угол")+" · "+
+      ((G.hin&&G.hin.folk.length)?"дома "+G.hin.folk.length:"никого нет");}
   else if(G.mode==="raid"){a=(G.raid?G.raid.PB.name:"АБОРДАЖ").toUpperCase();
     b="пиратская база · "+(G.raid?G.raid.foes.filter(f=>f.hp>0).length+" живых":"");}
   else if(G.mode==="dock"){a=G.st.name.toUpperCase();b=G.st.kind;}
@@ -45862,7 +46137,7 @@ function hud(){
     setTx($bBrk,"ТОРМОЗ");
     setSt($bBrk,"opacity","1");
   }
-  setTx($nav,(G.mode==="belt"||G.mode==="scoop")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
+  setTx($nav,(G.mode==="belt"||G.mode==="scoop"||G.mode==="homein")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
   /* под землёй ОГОНЬ — это импульсный разрядник, он есть всегда */
   setSt($fire,"display",(G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed))?"":"none");
   if(G.mode==="dig")setTx($fire,(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС");
@@ -45977,7 +46252,18 @@ function resAuto(d){
   }
 }
 let capIv=16.667, capPrev=0, capN=0;
+/* Выключатель цикла. Прогон тестов гоняет мир сам и в кадрах не нуждается:
+   пока они шли, фоновые кадры двигали G под тестами и жгли время впустую —
+   а в headless с виртуальным временем непрерывный rAF не давал странице
+   дойти до отчёта вовсе (M170). Ставится в tests/90-harness. */
+let LOOP_OFF=false;
 function frame(now){
+  if(LOOP_OFF)return;
+  /* Скрытая страница не рисует. Обычно её и так не будят — rAF стоит, — но в
+     headless с виртуальным временем кадры идут как из пулемёта, и полная
+     отрисовка в невидимую канву съедала весь бюджет: прогон тестов вставал
+     намертво (M170). Стенды рисуют своими вызовами и этой ветки не касаются. */
+  if(document.hidden){requestAnimationFrame(frame);return;}
   /* канва нулевого размера (страница поднялась скрытой) — чинится здесь же:
      иначе кадр падает на drawImage и игра стоит до первого resize */
   if(W<2||H<2){resize();if(W<2||H<2){requestAnimationFrame(frame);return;}}
@@ -46022,6 +46308,7 @@ function frame(now){
     else if(G.mode==="scoop"&&G.scoop)updateScoop(dt);
     else if(G.mode==="base"&&G.base)updateBase(dt);
     else if(G.mode==="raid"&&G.raid)updateRaid(dt);
+    else if(G.mode==="homein"&&G.hin)updateHomeIn(dt);   /* дом изнутри (M170) */
     if(typeof tapeTick==="function")tapeTick(dt);
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
@@ -46044,6 +46331,7 @@ function frame(now){
     else if(G.mode==="scoop"&&G.scoop)drawScoop();
     else if(G.mode==="base"&&G.base)drawBase();
     else if(G.mode==="raid"&&G.raid)drawRaid();
+    else if(G.mode==="homein"&&G.hin)drawHomeIn();
     hud();
     /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой
        игрок повернулся. Рисуется последней, но до DOM-строки приборов */
@@ -46280,6 +46568,14 @@ async function g11RunDeep(){
     await sleep(5000);                   /* прогрев: меряем крейсер, не пекарню */
     out.system=await g11Deep(["drawSysNebula","drawStars","drawSpaceDust","drawStarBody",
       "drawBeltRing","planetDraw","drawRing","drawTrail","drawBarges","drawFinds"]);
+    {
+      const s0=find(x=>x.planets.some(q=>q.type!=="gas"));
+      G.sx=s0.sx;G.sy=s0.sy;G.sys=s0;G.ap=null;
+      startLanding(s0.planets.find(q=>q.type!=="gas"));
+      await sleep(4000);
+      out.landing=await g11Deep(["drawSkyBase","drawSkyLayer","drawGround","drawStrata",
+        "drawRocks","drawClouds","drawWeather","drawLander","drawStars","geoFaultAt"]);
+    }
     const s=find(s=>s.planets.some(p=>p.type==="jungle"))||find(s=>s.planets.some(p=>p.type!=="gas"));
     G.sx=s.sx;G.sy=s.sy;G.sys=s;G.ap=null;
     const p=s.planets.find(p=>p.type==="jungle")||s.planets.find(p=>p.type!=="gas");
@@ -46300,6 +46596,626 @@ async function g11RunDeep(){
 }
 if(location.search.indexOf("g11=deep")>=0)addEventListener("load",()=>setTimeout(g11RunDeep,1200));
 else if(location.search.indexOf("g11")>=0)addEventListener("load",()=>setTimeout(g11Run,1200));
+
+/* ══════════════ дом изнутри: по нему ходят ══════════════
+   M170, по просьбе автора: «дом должен быть на планете, до него можно дойти,
+   в него зайти, походить по комнатам, порассматривать, чтобы Вега тоже
+   отрисовывалась — сидела, бегала». Панель «ВЛАДЕНИЕ» (27e) остаётся сводкой;
+   здесь дом — МЕСТО, такое же, как поверхность или база.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Мерило — человек. Хозяин 46 px: это ближе, чем на поверхности (17), и
+      дальше, чем портрет. Комнаты меряются им: дверь в полтора роста, стол по
+      бедро, стеллаж в полтора.
+   2. Комнаты — те же ступени (HOME_TIERS), в том же порядке слева направо.
+      Чего не построено — того нет: за последней стеной глухая кладка.
+   3. Ходить, а не листать: камера едет за человеком, комнаты разделены
+      проёмами, у каждой вещи своё место, к которому можно подойти.
+   4. Жильцы живут: у каждого своё место, свои дела и свой шаг. Вега сидит,
+      встаёт, ходит и работает — это её дом тоже.
+   5. Ничего нового не хранится. Позиция, дела жильцов, время — эфемерны;
+      сохранение остаётся v:4. */
+
+const HIN_MAN=46;                       /* рост хозяина в единицах комнаты */
+const HIN_FLOOR=0;                      /* пол — ноль по вертикали, всё вверх — минус */
+const HIN_ROOM_H=HIN_MAN*2.6;           /* высота комнаты: два с половиной роста */
+const HIN_DOORW=HIN_MAN*1.1;
+/* ширина комнаты по ступеням: угол тесный, гараж и жилая часть широкие */
+const HIN_ROOM_W=[190,150,290,170,240,210,260,230];
+function hinRooms(){
+  const H=G.home;if(!H||!H.tier)return [];
+  const out=[];let x=0;
+  for(let i=0;i<H.tier;i++){
+    const T=HOME_TIERS[i],w=HIN_ROOM_W[i]||200;
+    out.push({key:T.key,ru:T.ru,x,w,i});
+    x+=w;
+  }
+  return out;
+}
+function hinWidth(){const R=hinRooms();return R.length?R[R.length-1].x+R[R.length-1].w:0;}
+function hinRoomAt(x){
+  for(const r of hinRooms())if(x>=r.x&&x<r.x+r.w)return r;
+  return null;
+}
+/* ── вход и выход ── */
+function enterHomeIn(){
+  const H=G.home;if(!H||!H.tier)return;
+  for(const k in keys)keys[k]=false;
+  G.hin={x:HIN_ROOM_W[0]*.5,vx:0,face:1,walk:0,phase:0,cam:0,
+         look:null,lookT:0,folk:hinFolkMake(),t0:G.t};
+  G.mode="homein";
+  say("Дом\n← → пройтись · ДЕЙСТВИЕ — рассмотреть\nНАЗАД — выйти во двор",200);
+}
+function exitHomeIn(){
+  G.hin=null;
+  G.mode="surface";
+  for(const k in keys)keys[k]=false;
+}
+/* ── жильцы ──
+   Хозяин ходит сам; остальные живут по своим делам. У каждого: комната, точка,
+   к которой он идёт, поза и таймер. Дела берутся из того, кто это: Вега сидит
+   в кабинете и встаёт к витрине, домочадец хлопочет в жилой части, стажёр
+   вертится в мастерской, экипаж отдыхает. */
+function hinFolkMake(){
+  const R=hinRooms(),out=[];
+  if(!R.length)return out;
+  const roomX=key=>{const r=R.find(v=>v.key===key);return r?r.x+r.w*.5:R[R.length-1].x+R[R.length-1].w*.5;};
+  /* Вега узнаётся по платью и косынке — тем же, что на портрете в кресле
+     (11w-vega): один и тот же человек не может выглядеть в доме иначе */
+  if(typeof vegaAboard==="function"&&vegaAboard())
+    out.push({who:"vega",name:"ВЕГА",col:[91,74,110],look:{skirt:1,scarf:"#b8323a",skin:[230,201,168]},
+              x:roomX("study"),tx:roomX("study"),pose:"sit",t:0,face:-1,home:"study"});
+  if(typeof homeMateName==="function"&&G.home.tier>=2)
+    out.push({who:"mate",name:homeMateName().toUpperCase(),col:[196,168,132],
+              x:roomX("living"),tx:roomX("living"),pose:"work",t:0,face:1,home:"living"});
+  if(typeof traineeAboard==="function"&&traineeAboard())
+    out.push({who:"trainee",name:"СТАЖЁР",col:[168,196,150],x:roomX("shop"),tx:roomX("shop"),
+              pose:"work",t:0,face:1,home:"shop"});
+  /* экипаж, что сейчас не в рейсе, отдыхает дома — но не больше двоих в кадре */
+  const crew=(G.crew||[]).filter(c=>!c.run).slice(0,2);
+  crew.forEach((c,i)=>out.push({who:"crew",name:(c.name||"").toUpperCase(),col:[176,164,150],
+    x:roomX("hall")+i*40,tx:roomX("hall")+i*40,pose:i?"stand":"sit",t:0,face:i?-1:1,home:"hall"}));
+  return out;
+}
+function hinFolkTick(dt){
+  const S=G.hin;if(!S)return;
+  const R=hinRooms();if(!R.length)return;
+  for(const f of S.folk){
+    f.t-=dt;
+    if(f.t<=0){
+      /* новое дело: посидеть, поработать, перейти в другую комнату */
+      const r=rng(hashi(Math.round(G.t),f.x|0,0x40F1));
+      const roll=r();
+      if(roll<.34){f.pose="sit";f.t=300+r()*400;}
+      else if(roll<.62){f.pose="work";f.t=260+r()*380;}
+      else{
+        /* уходит в свою или в соседнюю комнату — дом живёт, а не позирует */
+        const room=(r()<.6?R.find(v=>v.key===f.home):R[Math.floor(r()*R.length)])||R[0];
+        f.tx=room.x+22+r()*(room.w-44);
+        f.pose="walk";f.t=200+r()*300;
+      }
+    }
+    /* посторонись: хозяин и жилец стояли ровно в одной точке и рисовались
+       один сквозь другого (самокритика M170). Кто стоит — отступает в сторону */
+    const gap=f.x-S.x;
+    if(Math.abs(gap)<16){
+      f.x+=(gap>=0?1:-1)*.9*dt;
+      f.face=gap>=0?1:-1;
+      if(f.pose==="sit")f.pose="stand";
+    }
+    if(f.pose==="walk"){
+      const d=f.tx-f.x;
+      if(Math.abs(d)<3){f.pose=Math.random()<.5?"stand":"work";f.t=200+Math.random()*300;}
+      else{f.face=d>0?1:-1;f.x+=f.face*Math.min(1.05,Math.abs(d))*dt*.7;f.walk=(f.walk||0)+dt*.22;}
+    }
+  }
+}
+/* ── ход ── */
+function updateHomeIn(dt){
+  const S=G.hin;if(!S){G.mode="surface";return;}
+  const wmax=hinWidth();
+  const spd=1.55;
+  let mv=0;
+  if(keys.left)mv-=1;
+  if(keys.right)mv+=1;
+  if(mv){S.face=mv;S.walk+=dt*.25;}
+  S.x=clamp(S.x+mv*spd*dt,14,wmax-14);
+  S.phase+=dt*.05;
+  hinFolkTick(dt);
+  /* что рядом: вещь этой комнаты, к которой стоит присмотреться */
+  const near=hinNear(S.x);
+  const folk=S.folk.find(f=>Math.abs(f.x-S.x)<26);
+  if(folk){
+    G.prompt="ДЕЙСТВИЕ — ОКЛИКНУТЬ · "+folk.name;
+    if(actEdge){hinTalk(folk);return;}
+  }else if(near){
+    G.prompt="ДЕЙСТВИЕ — РАССМОТРЕТЬ · "+near.ru.toUpperCase();
+    if(actEdge){S.look=near;S.lookT=420;sfx("ui");}
+  }else if(S.x<26){
+    G.prompt="ДЕЙСТВИЕ — ВЫЙТИ ВО ДВОР";
+    if(actEdge){exitHomeIn();return;}
+  }else G.prompt="";
+  if(S.lookT>0)S.lookT-=dt;
+  else S.look=null;
+}
+/* ── вещи, к которым подходят ──
+   Ровно то, что в этой комнате есть: не список, а места. Координата — доля
+   ширины комнаты, чтобы вещи не наезжали на проёмы. */
+const HIN_THINGS={
+  corner:[{at:.30,ru:"матрас",say:"Матрас у стены. С него всё началось."},
+          {at:.72,ru:"кружка",say:"Кружка на ящике. Чай остыл ещё вчера."}],
+  hall:  [{at:.35,ru:"крючки",say:"Крючки у двери: скафандр, куртка, чей-то шарф."},
+          {at:.75,ru:"сапоги",say:"Сапоги в грязи с трёх разных планет."}],
+  garage:[{at:.30,ru:"катер",say:"Второй корабль под чехлом. Ждёт своей очереди."},
+          {at:.78,ru:"стеллаж",say:"Запчасти на стеллаже, разложены по калибру."}],
+  case:  [{at:.50,ru:"витрина",say:"Витрина: то, что не продаётся ни за какие деньги."}],
+  shop:  [{at:.32,ru:"верстак",say:"Верстак. Недоделанный узел ждёт рук."},
+          {at:.74,ru:"станок",say:"Станок, смазан и накрыт. Работает, когда просят."}],
+  study: [{at:.34,ru:"стол",say:"Стол с бумагами: маршруты, счета, письма."},
+          {at:.76,ru:"карта",say:"Карта сектора на стене, с булавками и нитками."}],
+  living:[{at:.30,ru:"кровать",say:"Кровать заправлена. Кто-то заправил её за вас."},
+          {at:.70,ru:"стол",say:"Общий стол. За ним ужинают, когда все дома."}],
+  dock:  [{at:.40,ru:"пульт маяка",say:"Пульт маяка. Огонь виден с орбиты."},
+          {at:.80,ru:"причал",say:"Причальные захваты. Тут швартуется тяжёлое."}]
+};
+function hinNear(x){
+  const r=hinRoomAt(x);if(!r)return null;
+  const list=HIN_THINGS[r.key]||[];
+  for(const t of list){
+    const tx=r.x+r.w*t.at;
+    if(Math.abs(tx-x)<24)return {ru:t.ru,say:t.say,x:tx,room:r};
+  }
+  return null;
+}
+function hinTalk(f){
+  const S=G.hin;
+  let line="";
+  /* Вега говорит своими словами: тот же набор, что на борту (11w-vega) */
+  if(f.who==="vega"&&typeof VEGA_ABOARD!=="undefined"&&VEGA_ABOARD.length)
+    line=VEGA_ABOARD[Math.abs(hashi(Math.round(G.t/300),7,0x40F3))%VEGA_ABOARD.length];
+  if(!line){
+    const pool={
+      vega:["Тут тише, чем на борту.","Я разложила твои бумаги. Не благодари.","Дома странно. Хорошо, но странно."],
+      mate:["Печь топится, обед будет.","Полы мыла, ходи аккуратно.","Заходил сосед, спрашивал про тебя."],
+      trainee:["Я всё записал, честно!","А можно потрогать станок?","Когда снова в рейс?"],
+      crew:["Отдыхаем, командир.","Ноги гудят после пояса.","Дом у тебя ладный."]
+    }[f.who]||["…"];
+    line=pool[Math.abs(hashi(Math.round(G.t/300),f.x|0,0x40F2))%pool.length];
+  }
+  S.look={ru:f.name,say:line,x:f.x,room:hinRoomAt(f.x)};
+  S.lookT=420;
+  sfx("ui");
+}
+
+/* ══════════════ дом изнутри: кадр ══════════════
+   M170. Ход и жильцы — в 29c, здесь только растр. Порядок слоёв тот же, что в
+   базе и кантине: дальняя стена → пол и потолок → перегородки с проёмами →
+   обстановка комнаты → жильцы → хозяин → свет. Свет один на комнату: лампа
+   под потолком, и всё ей подчиняется. */
+function hinPal(){
+  return {wall:[52,46,44],wood:[96,72,50],metal:[104,112,120],floor:[62,50,40]};
+}
+function drawHomeIn(){
+  const S=G.hin;if(!S)return;
+  const P=hinPal(),R=hinRooms();
+  if(!R.length){exitHomeIn();return;}
+  /* масштаб по высоте комнаты: человек в доме крупнее, чем на поверхности —
+     здесь на него смотрят, а не идут мимо */
+  const k=clamp(H/(HIN_ROOM_H+HIN_MAN*1.6),1,2.4);
+  const vw=W/k;
+  const want=clamp(S.x-vw*.5,-30,Math.max(-30,hinWidth()-vw+30));
+  S.cam+=(want-S.cam)*.12;
+  const camx=S.cam;
+  ctx.fillStyle="#0a0808";ctx.fillRect(0,0,W,H);
+  ctx.save();ctx.scale(k,k);
+  ctx.translate(-camx,H/k-HIN_MAN*.9);
+  const fy=0, ceil=-HIN_ROOM_H;
+  /* ── дальняя стена ── */
+  const wg=ctx.createLinearGradient(0,ceil,0,fy);
+  wg.addColorStop(0,"rgb("+P.wall.map(v=>v*.7|0).join(",")+")");
+  wg.addColorStop(.6,"rgb("+P.wall.join(",")+")");
+  wg.addColorStop(1,"rgb("+P.wall.map(v=>v*.82|0).join(",")+")");
+  ctx.fillStyle=wg;ctx.fillRect(camx-40,ceil,vw+80,HIN_ROOM_H);
+  const rr=rng(0x40F5);
+  for(let x=Math.floor((camx-40)/64)*64;x<camx+vw+64;x+=64){
+    ctx.fillStyle="rgba(255,255,255,.015)";ctx.fillRect(x,ceil+6,60,HIN_ROOM_H-6);
+    ctx.fillStyle="rgba(0,0,0,.22)";ctx.fillRect(x+60,ceil+6,2,HIN_ROOM_H-6);
+  }
+  for(let i=0;i<70;i++){
+    ctx.fillStyle="rgba(0,0,0,"+(.03+rr()*.05).toFixed(3)+")";
+    ctx.fillRect(camx-40+rr()*(vw+80),ceil+8+rr()*(HIN_ROOM_H-16),1.4,1.4);
+  }
+  ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(camx-40,ceil,vw+80,7);
+  ctx.fillStyle="rgba(255,255,255,.05)";ctx.fillRect(camx-40,ceil+7,vw+80,1.2);
+  /* ── пол ── */
+  const fg=ctx.createLinearGradient(0,fy-2,0,fy+HIN_MAN*.8);
+  fg.addColorStop(0,"rgb("+P.floor.map(v=>Math.min(255,v*1.15)|0).join(",")+")");
+  fg.addColorStop(1,"rgb("+P.floor.map(v=>v*.7|0).join(",")+")");
+  ctx.fillStyle=fg;ctx.fillRect(camx-40,fy,vw+80,HIN_MAN*.9);
+  ctx.strokeStyle="rgba(0,0,0,.30)";ctx.lineWidth=1;
+  for(let x=Math.floor((camx-40)/26)*26;x<camx+vw+40;x+=26){
+    ctx.beginPath();ctx.moveTo(x,fy);ctx.lineTo(x-6,fy+HIN_MAN*.9);ctx.stroke();
+  }
+  ctx.fillStyle="rgba(0,0,0,.34)";ctx.fillRect(camx-40,fy,vw+80,2.4);
+  /* ── свет ДО обстановки ──
+     Конус, положенный последним, читался плёнкой поверх мебели: он лежал на
+     витрине и на станке, будто они прозрачные (самокритика M170). Свет падает
+     на пол и стену, а вещи стоят В НЁМ — значит, рисуется он раньше вещей. */
+  ctx.save();ctx.globalCompositeOperation="lighter";
+  for(const r of R){
+    const lx=r.x+r.w*.5;
+    if(lx<camx-100||lx>camx+vw+100)continue;
+    const cg=ctx.createLinearGradient(0,ceil+HIN_MAN*.62,0,0);
+    cg.addColorStop(0,"rgba(255,206,138,.22)");
+    cg.addColorStop(.7,"rgba(255,196,130,.08)");
+    cg.addColorStop(1,"rgba(255,180,110,0)");
+    ctx.fillStyle=cg;
+    ctx.beginPath();
+    ctx.moveTo(lx-HIN_MAN*.22,ceil+HIN_MAN*.62);ctx.lineTo(lx+HIN_MAN*.22,ceil+HIN_MAN*.62);
+    ctx.lineTo(lx+HIN_MAN*1.5,0);ctx.lineTo(lx-HIN_MAN*1.5,0);ctx.closePath();ctx.fill();
+    const fgl=ctx.createRadialGradient(lx,0,2,lx,0,HIN_MAN*1.7);
+    fgl.addColorStop(0,"rgba(255,206,138,.24)");
+    fgl.addColorStop(1,"rgba(255,180,110,0)");
+    ctx.fillStyle=fgl;
+    ctx.beginPath();ctx.ellipse(lx,0,HIN_MAN*1.7,HIN_MAN*.32,0,0,TAU);ctx.fill();
+  }
+  ctx.restore();
+  /* ── обстановка ── */
+  for(const r of R){
+    if(r.x+r.w<camx-60||r.x>camx+vw+60)continue;
+    hinRoomStuff(r,fy,ceil,P);
+  }
+  /* ── перегородки с проёмами ── */
+  for(let i=1;i<R.length;i++){
+    const x=R[i].x;
+    ctx.fillStyle="rgb("+P.wall.map(v=>v*.55|0).join(",")+")";
+    ctx.fillRect(x-4,ceil+6,8,HIN_ROOM_H-6);
+    ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(x-4,ceil+6,2,HIN_ROOM_H-6);
+    /* В проёме видно СОСЕДНЮЮ КОМНАТУ: стена в своей тени, полоска её пола и
+       тёплый отсвет её лампы. Чёрный прямоугольник читался шкафом, а не
+       проходом (самокритика M170). */
+    ctx.save();
+    ctx.beginPath();ctx.rect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,HIN_MAN*1.5);ctx.clip();
+    ctx.fillStyle="rgb("+P.wall.map(v=>v*.5|0).join(",")+")";
+    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,HIN_MAN*1.5);
+    ctx.fillStyle="rgb("+P.floor.map(v=>v*.55|0).join(",")+")";
+    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*.18,HIN_DOORW,HIN_MAN*.18);
+    const dg=ctx.createLinearGradient(0,fy-HIN_MAN*1.5,0,fy);
+    dg.addColorStop(0,"rgba(255,206,138,.03)");
+    dg.addColorStop(.75,"rgba(255,206,138,.10)");
+    dg.addColorStop(1,"rgba(255,206,138,.20)");
+    ctx.fillStyle=dg;ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,HIN_MAN*1.5);
+    ctx.fillStyle="rgba(0,0,0,.34)";                 /* тень косяка внутрь */
+    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,3,HIN_MAN*1.5);
+    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,3);
+    ctx.restore();
+    ctx.strokeStyle="rgba(226,226,220,.16)";ctx.lineWidth=1.4;
+    ctx.strokeRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,HIN_MAN*1.5);
+  }
+  /* входная дверь слева и глухая кладка справа */
+  ctx.fillStyle="rgb("+P.wood.map(v=>v*.6|0).join(",")+")";
+  ctx.fillRect(-2,fy-HIN_MAN*1.6,HIN_DOORW*.9,HIN_MAN*1.6);
+  ctx.strokeStyle="rgba(226,226,220,.2)";ctx.lineWidth=1.4;
+  ctx.strokeRect(-2,fy-HIN_MAN*1.6,HIN_DOORW*.9,HIN_MAN*1.6);
+  ctx.fillStyle="rgba(255,232,190,.6)";
+  ctx.fillRect(HIN_DOORW*.9-6,fy-HIN_MAN*.85,2.4,2.4);
+  {
+    const x=hinWidth();
+    ctx.fillStyle="rgb("+P.wall.map(v=>v*.42|0).join(",")+")";
+    ctx.fillRect(x,ceil+6,80,HIN_ROOM_H-6);
+    ctx.strokeStyle="rgba(0,0,0,.3)";ctx.lineWidth=1;
+    for(let yy=ceil+10;yy<fy;yy+=9)
+      for(let xx=x+((((yy-ceil)/9)|0)%2?6:0);xx<x+80;xx+=18)ctx.strokeRect(xx+.5,yy+.5,16,8);
+  }
+  /* ── жильцы и хозяин ── */
+  for(const f of S.folk){
+    if(f.x<camx-40||f.x>camx+vw+40)continue;
+    hinFigure(f.x,fy,f.col,f.face,f.pose,f.walk||0,f.name,f.look);
+  }
+  hinFigure(S.x,fy,[214,222,228],S.face,(keys.left||keys.right)?"walk":"stand",S.walk,null);
+  /* ── свет: по лампе на комнату ── */
+  ctx.save();ctx.globalCompositeOperation="lighter";
+  for(const r of R){
+    const lx=r.x+r.w*.5;
+    if(lx<camx-100||lx>camx+vw+100)continue;
+    /* поверх остаётся только мягкий тёплый отсвет вокруг самой лампы: он
+       ложится и на вещи, и на людей — это воздух комнаты, а не луч */
+    const g=ctx.createRadialGradient(lx,ceil+HIN_MAN*.6,4,lx,ceil+HIN_MAN*.6,HIN_ROOM_H*.7);
+    g.addColorStop(0,"rgba(255,206,138,.13)");
+    g.addColorStop(1,"rgba(255,180,110,0)");
+    ctx.fillStyle=g;ctx.fillRect(r.x,ceil,r.w,HIN_ROOM_H+HIN_MAN);
+  }
+  ctx.restore();
+  for(const r of R){
+    const lx=r.x+r.w*.5;
+    if(lx<camx-100||lx>camx+vw+100)continue;
+    ctx.strokeStyle="rgba(30,26,24,.9)";ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(lx,ceil+6);ctx.lineTo(lx,ceil+HIN_MAN*.42);ctx.stroke();
+    ctx.fillStyle="rgb("+P.metal.map(v=>v*.7|0).join(",")+")";
+    ctx.beginPath();
+    ctx.moveTo(lx-HIN_MAN*.24,ceil+HIN_MAN*.62);ctx.lineTo(lx+HIN_MAN*.24,ceil+HIN_MAN*.62);
+    ctx.lineTo(lx+HIN_MAN*.1,ceil+HIN_MAN*.42);ctx.lineTo(lx-HIN_MAN*.1,ceil+HIN_MAN*.42);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(255,214,150,.9)";
+    ctx.fillRect(lx-HIN_MAN*.16,ceil+HIN_MAN*.6,HIN_MAN*.32,2.2);
+  }
+  ctx.restore();
+  /* ── строка внимания ── */
+  if(S.look){
+    const a=clamp(S.lookT/120,0,1);
+    ctx.fillStyle="rgba(6,8,12,"+(.72*a).toFixed(2)+")";
+    ctx.fillRect(0,H-66,W,46);
+    ctx.fillStyle="rgba(242,178,92,"+a.toFixed(2)+")";
+    ctx.font="12px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillText(S.look.ru.toUpperCase(),16,H-45);
+    ctx.fillStyle="rgba(214,226,232,"+a.toFixed(2)+")";
+    ctx.font="13px ui-monospace,monospace";
+    ctx.fillText(S.look.say,16,H-27);
+  }
+  const room=hinRoomAt(S.x);
+  if(room){
+    ctx.fillStyle="rgba(127,230,216,.55)";
+    ctx.font="10px ui-monospace,monospace";ctx.textAlign="left";
+    ctx.fillText(room.ru.toUpperCase(),12,26);
+  }
+}
+/* ── обстановка комнаты ──
+   Каждая ступень — свои вещи на своих местах; координаты те же, что у зон
+   внимания (HIN_THINGS в 29c), иначе подойти можно к пустому месту. */
+function hinRoomStuff(r,fy,ceil,P){
+  /* Пол и стены комнаты — не общая заливка на весь дом: у мастерской пол в
+     масляных пятнах, у жилой части ковёр, у гаража бетон с колеёй. Комната
+     узнаётся раньше, чем в ней разглядят вещи (проход M170). */
+  const M0=HIN_MAN, rr0=rng(hashi(r.x|0,7,0x40F7));
+  if(r.key==="living"){
+    ctx.fillStyle="rgba(122,72,58,.55)";
+    ctx.fillRect(r.x+r.w*.16,fy+2,r.w*.68,M0*.5);
+    ctx.fillStyle="rgba(200,170,130,.18)";
+    ctx.fillRect(r.x+r.w*.16,fy+2,r.w*.68,2);
+    for(let i=0;i<5;i++)ctx.fillRect(r.x+r.w*.2+i*r.w*.13,fy+M0*.16,r.w*.05,2);
+  }else if(r.key==="shop"||r.key==="garage"){
+    ctx.fillStyle="rgba(30,28,26,.35)";
+    ctx.fillRect(r.x+2,fy,r.w-4,M0*.9);
+    ctx.fillStyle="rgba(12,10,10,.25)";
+    for(let i=0;i<9;i++)
+      ctx.beginPath(),ctx.ellipse(r.x+8+rr0()*(r.w-16),fy+M0*.2+rr0()*M0*.5,
+        3+rr0()*7,1.6+rr0()*2.4,0,0,TAU),ctx.fill();
+  }else if(r.key==="dock"){
+    ctx.fillStyle="rgba(60,66,72,.5)";
+    ctx.fillRect(r.x+2,fy,r.w-4,M0*.9);
+    ctx.fillStyle="rgba(226,178,92,.12)";              /* разметка причала */
+    for(let i=0;i<6;i++)ctx.fillRect(r.x+10+i*r.w*.16,fy+M0*.3,r.w*.08,2);
+  }
+  const wood="rgb("+P.wood.join(",")+")";
+  const woodD="rgb("+P.wood.map(v=>v*.6|0).join(",")+")";
+  const metal="rgb("+P.metal.join(",")+")";
+  const at=t=>r.x+r.w*t;
+  const M=HIN_MAN;
+  ctx.save();
+  if(r.key==="corner"){
+    ctx.fillStyle="rgb(86,74,70)";
+    ctx.fillRect(at(.30)-M*.6,fy-M*.22,M*1.2,M*.22);
+    ctx.fillStyle="rgba(226,220,206,.35)";
+    ctx.fillRect(at(.30)-M*.6,fy-M*.26,M*1.2,M*.07);
+    ctx.fillStyle=woodD;ctx.fillRect(at(.72)-M*.22,fy-M*.42,M*.44,M*.42);
+    ctx.fillStyle="rgba(226,236,240,.5)";ctx.fillRect(at(.72)-3,fy-M*.5,6,M*.09);
+  }else if(r.key==="hall"){
+    ctx.fillStyle=woodD;ctx.fillRect(at(.35)-M*.5,fy-M*1.5,M*1.0,3);
+    const cols=["rgba(120,140,150,.9)","rgba(150,120,90,.9)","rgba(90,110,90,.9)"];
+    for(let i=0;i<3;i++){
+      const hx=at(.35)-M*.36+i*M*.36;
+      ctx.fillStyle=metal;ctx.fillRect(hx-1,fy-M*1.5,2,4);
+      ctx.fillStyle=cols[i];
+      ctx.beginPath();
+      ctx.moveTo(hx-M*.14,fy-M*1.44);ctx.lineTo(hx+M*.14,fy-M*1.44);
+      ctx.lineTo(hx+M*.18,fy-M*.6);ctx.lineTo(hx-M*.18,fy-M*.6);ctx.closePath();ctx.fill();
+    }
+    ctx.fillStyle="rgb(58,50,44)";
+    ctx.fillRect(at(.75)-M*.3,fy-M*.26,M*.26,M*.26);
+    ctx.fillRect(at(.75)+M*.02,fy-M*.24,M*.26,M*.24);
+  }else if(r.key==="garage"){
+    ctx.fillStyle="rgba(120,126,132,.9)";
+    ctx.beginPath();
+    ctx.moveTo(at(.30)-M*1.5,fy);ctx.lineTo(at(.30)-M*1.2,fy-M*.86);
+    ctx.lineTo(at(.30)+M*1.1,fy-M*.94);ctx.lineTo(at(.30)+M*1.5,fy);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.08)";
+    ctx.beginPath();
+    ctx.moveTo(at(.30)-M*1.2,fy-M*.86);ctx.lineTo(at(.30)+M*1.1,fy-M*.94);
+    ctx.lineTo(at(.30)+M*.2,fy-M*.6);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="rgba(0,0,0,.3)";ctx.lineWidth=1;
+    for(let i=0;i<5;i++){
+      const xx=at(.30)-M*1.3+i*M*.62;
+      ctx.beginPath();ctx.moveTo(xx,fy-M*.9);ctx.lineTo(xx-M*.1,fy);ctx.stroke();
+    }
+    for(let s=0;s<3;s++){
+      const yy=fy-M*.5-s*M*.42;
+      ctx.fillStyle=woodD;ctx.fillRect(at(.78)-M*.5,yy,M*1.0,3);
+      ctx.fillStyle=metal;
+      for(let i=0;i<4;i++)ctx.fillRect(at(.78)-M*.44+i*M*.24,yy-M*.2,M*.14,M*.2);
+    }
+  }else if(r.key==="case"){
+    const cw=M*1.4,ch=M*1.6,cx=at(.5);
+    ctx.fillStyle=woodD;ctx.fillRect(cx-cw/2,fy-ch,cw,ch);
+    ctx.fillStyle="rgba(30,40,46,.9)";ctx.fillRect(cx-cw/2+3,fy-ch+3,cw-6,ch-6);
+    const tro=(G.home&&G.home.trophies)||[];
+    const tc=["rgba(214,178,96,.9)","rgba(150,196,224,.9)","rgba(196,150,214,.9)"];
+    for(let s=0;s<3;s++){
+      const yy=fy-ch+M*.44+s*M*.42;
+      ctx.fillStyle="rgba(90,80,70,.9)";ctx.fillRect(cx-cw/2+4,yy,cw-8,2);
+      for(let i=0;i<3;i++){
+        if(s*3+i>=Math.max(2,tro.length))break;
+        ctx.fillStyle=tc[(s+i)%3];
+        ctx.fillRect(cx-cw/2+8+i*M*.4,yy-M*.24,M*.2,M*.24);
+      }
+    }
+    ctx.fillStyle="rgba(226,246,255,.16)";
+    ctx.beginPath();
+    ctx.moveTo(cx-cw/2+3,fy-6);ctx.lineTo(cx+cw/2-3,fy-ch+3);
+    ctx.lineTo(cx+cw/2-3,fy-ch+12);ctx.lineTo(cx-cw/2+3,fy-2);ctx.closePath();ctx.fill();
+  }else if(r.key==="shop"){
+    ctx.fillStyle=wood;ctx.fillRect(at(.32)-M*.8,fy-M*.62,M*1.6,M*.14);
+    ctx.fillStyle=woodD;
+    ctx.fillRect(at(.32)-M*.72,fy-M*.48,M*.12,M*.48);
+    ctx.fillRect(at(.32)+M*.6,fy-M*.48,M*.12,M*.48);
+    ctx.fillStyle=metal;ctx.fillRect(at(.32)-M*.2,fy-M*.8,M*.34,M*.18);
+    ctx.fillStyle="rgba(226,236,240,.3)";ctx.fillRect(at(.32)-M*.2,fy-M*.8,M*.34,2);
+    /* станок: станина, шпиндель, маховик и ремень к валу под потолком —
+       серый ящик с тёмным квадратом читался холодильником (самокритика M170) */
+    const mx2=at(.74);
+    ctx.fillStyle="rgb(64,68,74)";                     /* станина на ногах */
+    ctx.fillRect(mx2-M*.44,fy-M*.5,M*.88,M*.5);
+    ctx.fillStyle="rgb(52,56,62)";
+    ctx.fillRect(mx2-M*.4,fy-M*.06,M*.12,M*.06);ctx.fillRect(mx2+M*.28,fy-M*.06,M*.12,M*.06);
+    ctx.fillStyle="rgb(84,90,96)";                     /* стол станка */
+    ctx.fillRect(mx2-M*.5,fy-M*.58,M*1.0,M*.1);
+    ctx.fillStyle="rgba(255,255,255,.10)";ctx.fillRect(mx2-M*.5,fy-M*.58,M*1.0,2);
+    ctx.fillStyle="rgb(70,76,82)";                     /* стойка и шпиндель */
+    ctx.fillRect(mx2+M*.16,fy-M*1.3,M*.16,M*.74);
+    ctx.fillRect(mx2-M*.06,fy-M*1.06,M*.3,M*.12);
+    ctx.fillStyle="rgb(120,128,136)";
+    ctx.fillRect(mx2+M*.02,fy-M*.94,M*.06,M*.24);
+    ctx.strokeStyle="rgb(96,104,112)";ctx.lineWidth=2;  /* маховик */
+    ctx.beginPath();ctx.arc(mx2-M*.3,fy-M*.78,M*.13,0,TAU);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(mx2-M*.43,fy-M*.78);ctx.lineTo(mx2-M*.17,fy-M*.78);ctx.stroke();
+    ctx.strokeStyle="rgba(40,36,32,.8)";ctx.lineWidth=1.6;   /* ремень наверх */
+    ctx.beginPath();ctx.moveTo(mx2+M*.2,fy-M*1.3);ctx.lineTo(mx2+M*.24,ceil+M*.9);ctx.stroke();
+    ctx.fillStyle="rgba(214,206,180,.16)";              /* стружка под станком */
+    for(let i=0;i<7;i++)ctx.fillRect(mx2-M*.5+i*M*.16,fy-2,M*.08,2);
+  }else if(r.key==="study"){
+    ctx.fillStyle=wood;ctx.fillRect(at(.34)-M*.8,fy-M*.62,M*1.6,M*.12);
+    ctx.fillStyle=woodD;ctx.fillRect(at(.34)-M*.7,fy-M*.5,M*1.4,M*.5);
+    ctx.fillStyle="rgba(226,226,214,.8)";
+    for(let i=0;i<3;i++)ctx.fillRect(at(.34)-M*.5+i*M*.3,fy-M*.68,M*.22,M*.06);
+    ctx.fillStyle="rgba(150,196,224,.5)";ctx.fillRect(at(.34)+M*.3,fy-M*.74,M*.22,M*.12);
+    ctx.fillStyle="rgba(40,52,60,.95)";
+    ctx.fillRect(at(.76)-M*.7,fy-M*1.7,M*1.4,M*.9);
+    ctx.strokeStyle="rgba(127,230,216,.35)";ctx.lineWidth=1;
+    for(let i=0;i<5;i++){
+      const px=at(.76)-M*.6+i*M*.28, py=fy-M*1.6+((i*7)%5)*M*.14;
+      ctx.beginPath();ctx.arc(px,py,1.6,0,TAU);ctx.stroke();
+    }
+    ctx.strokeStyle="rgba(226,120,90,.5)";
+    ctx.beginPath();ctx.moveTo(at(.76)-M*.6,fy-M*1.5);ctx.lineTo(at(.76)+M*.4,fy-M*1.2);ctx.stroke();
+  }else if(r.key==="living"){
+    ctx.fillStyle=woodD;ctx.fillRect(at(.30)-M*.9,fy-M*.46,M*1.8,M*.16);
+    ctx.fillStyle="rgb(96,86,80)";ctx.fillRect(at(.30)-M*.9,fy-M*.62,M*1.8,M*.18);
+    ctx.fillStyle="rgba(226,220,206,.5)";ctx.fillRect(at(.30)-M*.86,fy-M*.66,M*.5,M*.14);
+    ctx.fillStyle=woodD;ctx.fillRect(at(.30)+M*.8,fy-M*1.0,M*.14,M*1.0);
+    ctx.fillStyle=wood;ctx.fillRect(at(.70)-M*.7,fy-M*.6,M*1.4,M*.12);
+    ctx.fillStyle=woodD;
+    ctx.fillRect(at(.70)-M*.6,fy-M*.48,M*.1,M*.48);
+    ctx.fillRect(at(.70)+M*.5,fy-M*.48,M*.1,M*.48);
+    for(const s of [-1,1]){
+      ctx.fillStyle=woodD;
+      ctx.fillRect(at(.70)+s*M*.9-M*.12,fy-M*.4,M*.24,M*.4);
+      ctx.fillRect(at(.70)+s*M*.9-M*.12,fy-M*.72,M*.06,M*.34);
+    }
+  }else if(r.key==="dock"){
+    ctx.fillStyle="rgb(70,78,86)";ctx.fillRect(at(.40)-M*.5,fy-M*.9,M*1.0,M*.9);
+    ctx.fillStyle="rgba(20,26,32,.9)";ctx.fillRect(at(.40)-M*.4,fy-M*.8,M*.8,M*.34);
+    ctx.fillStyle="rgba(127,230,216,.6)";
+    for(let i=0;i<4;i++)ctx.fillRect(at(.40)-M*.34+i*M*.2,fy-M*.72,M*.12,M*.06);
+    ctx.fillStyle="rgba(255,150,90,"+(.4+.5*Math.abs(Math.sin(G.t*.05))).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(at(.40)+M*.3,fy-M*.98,3,0,TAU);ctx.fill();
+    ctx.fillStyle=metal;
+    for(let i=0;i<2;i++){
+      ctx.fillRect(at(.80)-M*.4+i*M*.5,fy-M*.5,M*.16,M*.5);
+      ctx.fillRect(at(.80)-M*.5+i*M*.5,fy-M*.6,M*.36,M*.14);
+    }
+  }
+  ctx.restore();
+  void ceil;
+}
+/* ── человек в доме ──
+   Тот же язык, что у жителей посёлка (12tb): плечи, руки при деле, ноги в
+   шаге. Здесь он крупнее, поэтому есть голова с затылком и наклон корпуса. */
+function hinFigure(x,fy,col,face,pose,walk,name,look){
+  const M=HIN_MAN;
+  const c="rgb("+col.map(v=>v|0).join(",")+")";
+  const dark="rgb("+col.map(v=>v*.55|0).join(",")+")";
+  const sit=pose==="sit";
+  const h=sit?M*.76:M;
+  ctx.save();
+  ctx.translate(x,fy);
+  ctx.fillStyle="rgba(0,0,0,.32)";
+  ctx.beginPath();ctx.ellipse(0,0,M*.34,M*.09,0,0,TAU);ctx.fill();
+  ctx.scale(face<0?-1:1,1);
+  const hipY=-h*.46,shY=-h*.80;
+  ctx.strokeStyle=dark;ctx.lineWidth=M*.10;ctx.lineCap="round";
+  if(sit){
+    ctx.beginPath();ctx.moveTo(0,hipY);ctx.lineTo(M*.26,hipY+M*.02);ctx.lineTo(M*.3,0);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,hipY);ctx.lineTo(M*.2,hipY+M*.04);ctx.lineTo(M*.22,0);ctx.stroke();
+  }else{
+    /* Стоящий человек стоит НА ДВУХ НОГАХ: при нулевом шаге обе линии ложились
+       одна на другую и получалась одна толстая палка — пешка, а не человек
+       (самокритика M170). Ноги врозь, колено согнуто, ступня своя у каждой. */
+    const st=pose==="walk"?Math.sin(walk)*M*.20:M*.07;
+    for(const s of [1,-1]){
+      const foot=s>0?st:-st;
+      ctx.beginPath();
+      ctx.moveTo(s*M*.05,hipY);
+      ctx.lineTo(foot*.6+s*M*.04,-M*.22);
+      ctx.lineTo(foot,0);
+      ctx.stroke();
+      ctx.fillStyle=dark;                            /* ступня */
+      ctx.fillRect(foot-M*.03,-M*.04,M*.13,M*.05);
+    }
+  }
+  /* корпус с плечами и шеей; рука темнее корпуса, иначе она в нём тонет.
+     У кого платье (Вега) — юбка от пояса: силуэт узнаётся раньше лица */
+  ctx.fillStyle=c;
+  ctx.beginPath();
+  ctx.moveTo(-M*.155,shY+M*.02);ctx.quadraticCurveTo(0,shY-M*.06,M*.155,shY+M*.02);
+  if(look&&look.skirt){
+    ctx.lineTo(M*.22,hipY+M*.16);ctx.lineTo(-M*.22,hipY+M*.16);
+  }else{
+    ctx.lineTo(M*.12,hipY);ctx.lineTo(-M*.12,hipY);
+  }
+  ctx.closePath();ctx.fill();
+  ctx.fillStyle="rgba(0,0,0,.22)";ctx.fillRect(-M*.12,hipY-M*.05,M*.24,M*.05);
+  ctx.fillStyle="rgba(0,0,0,.16)";                 /* ворот */
+  ctx.beginPath();
+  ctx.moveTo(-M*.06,shY);ctx.lineTo(M*.06,shY);ctx.lineTo(0,shY+M*.07);ctx.closePath();ctx.fill();
+  ctx.strokeStyle="rgb("+col.map(v=>v*.78|0).join(",")+")";ctx.lineWidth=M*.075;
+  if(pose==="work"){
+    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(M*.3,shY+M*.3);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-M*.1,shY+M*.06);ctx.lineTo(M*.22,shY+M*.34);ctx.stroke();
+  }else if(sit){
+    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(M*.24,hipY-M*.02);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-M*.1,shY+M*.06);ctx.lineTo(-M*.16,hipY-M*.04);ctx.stroke();
+  }else{
+    const sw=pose==="walk"?Math.sin(walk+Math.PI)*M*.16:M*.04;
+    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(sw+M*.06,shY+M*.34);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-M*.1,shY+M*.06);ctx.lineTo(-sw-M*.06,shY+M*.34);ctx.stroke();
+  }
+  /* шея и голова. Голова была в четверть роста — кукольная (самокритика M170):
+     теперь одна восьмая с небольшим, как у человека, и стоит на шее */
+  ctx.fillStyle="rgb("+col.map(v=>v*.8|0).join(",")+")";
+  ctx.fillRect(-M*.025,shY-M*.05,M*.05,M*.06);
+  ctx.fillStyle=look&&look.skin?"rgb("+look.skin.join(",")+")"
+    :"rgb("+col.map(v=>Math.min(255,v*1.05+18)|0).join(",")+")";
+  ctx.beginPath();ctx.arc(M*.015,shY-M*.115,M*.093,0,TAU);ctx.fill();
+  ctx.fillStyle=(look&&look.scarf)||"rgba(26,22,20,.82)";
+  if(look&&look.scarf){                            /* косынка над лбом, как на портрете */
+    ctx.beginPath();
+    ctx.moveTo(M*.015-M*.095,shY-M*.135);
+    ctx.quadraticCurveTo(M*.015,shY-M*.245,M*.015+M*.095,shY-M*.135);
+    ctx.lineTo(M*.015+M*.075,shY-M*.115);ctx.lineTo(M*.015-M*.075,shY-M*.115);
+    ctx.closePath();ctx.fill();
+  }else{
+    ctx.beginPath();ctx.arc(M*.015,shY-M*.13,M*.093,Math.PI*1.02,Math.PI*1.98);ctx.fill();
+  }
+  ctx.fillStyle="rgba(20,18,16,.75)";
+  ctx.fillRect(M*.05,shY-M*.12,M*.024,M*.024);
+  ctx.restore();
+  if(name&&G.hin&&Math.abs(G.hin.x-x)<44){
+    ctx.fillStyle="rgba(214,226,232,.55)";
+    ctx.font=Math.round(M*.22)+"px ui-monospace,monospace";
+    ctx.textAlign="center";
+    ctx.fillText(name,x,fy-M*1.3);
+  }
+}
 
 </script>
 <script>

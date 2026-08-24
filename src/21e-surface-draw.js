@@ -42,6 +42,12 @@ function drawSurfaceHud(camx,camy){
   marks.push({x:S.shipX,ru:"КОРАБЛЬ",col:"rgba(242,178,92,.9)"});
   if(S.cave)marks.push({x:S.cave.x,ru:"ПЕЩЕРА",col:"rgba(150,225,255,.9)"});
   if(typeof lightsOpen==="function"&&lightsOpen(S.p))marks.push({x:lightsEntryX(S.tr,S.p),ru:"ВХОД",col:"rgba(255,236,190,.9)"});
+  /* дом (M170): до него надо дойти, значит его надо и найти — свой маркер,
+     тёплого цвета, чтобы не путать с кораблём */
+  if(typeof homeHereP==="function"&&homeHereP(S.p)){
+    const hx=homeSpotX(S.p,S.tr);
+    if(hx!=null)marks.push({x:hx,ru:"ДОМ",col:"rgba(255,206,138,.95)"});
+  }
   /* достопримечательность ведут отдельно от пещеры: до неё далеко, и без
      маркера игрок пройдёт мимо ровно того, ради чего стоило садиться */
   const poi=nearestPOI(S.tr,S.x);
@@ -127,6 +133,9 @@ function drawSurface(){
   /* ваши постройки — тем же слоем, что и POI: их видно с земли, заходить
      в меню, чтобы узнать об их существовании, больше не нужно */
   drawBuilt(tr,camx,camy,p);
+  /* дом стоит на своей планете (21f, M170) — до него доходят ногами */
+  if(typeof drawHomeOut==="function"&&typeof homeHereP==="function"&&homeHereP(p))
+    drawHomeOut(tr,camx,camy,p);
   /* посёлок (12t) — тем же слоем, что и постройки: место, к которому игрок идёт
      ногами, обязано быть видно с горизонта, иначе идти не за чем */
   if(settleCanLive(p))settleDraw(settleAt(G.sx,G.sy),tr,camx,camy,p);

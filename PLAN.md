@@ -102,6 +102,31 @@ flora and fauna, a living camera, station modules, weather.
    the guard's list instead of being re-baselined inside it. **Next: `21a-mode-base`, 52 KB** â
    it grew over the base passes and is deliberately left shouting on every build.
 
+### M169 — the graphics campaign of 2026-08-24 (settlement, mine, cantina, ground, giant)
+
+Written after the author called the settlement "пиздец" and asked for every screen to be looked
+at again, five passes deep, with self-criticism instead of "this one is already fine".
+
+Closed here: **settlement** rebuilt as a place (`12tb-settle-draw`: terrace, street, a body per
+craft, four dwelling plans, villagers with a gait, communal fire, fence, night light pools);
+**mine** rock given a mass (`digRockMass`: cloudy tone, world-space jointing, dyke, damp stains,
+abandoned collapsed workings roughly one per screen); **cantina** given a host (barkeep with work
+that changes on an eight-second cycle, patron poses, bottle silhouettes); **deposits** turned from
+interface icons into outcrops with a form per raw material (`drawDeposit` in 21b); **ground
+cross-section** broken by faults with lenses inside the strata (18b); **gas giant** shear edges
+grown rolls (19a).
+
+Measured after all of it, clean machine, visible window at ×2: system 55, belt 60, landing 51,
+surface 48, dig 60, cave 60, scoop 55 — the same as before the campaign. The "regression" seen
+mid-run (system 45, landing 40) was the browser pane running the game in background tabs while
+the probe measured: **no other instance of the game may be open during a measurement.** The one
+pass worth optimising if surface ever drops below 45 is `drawPlant` (4–13 fps by the deep probe);
+bake per-plant sprites and shear them for the wind rather than redrawing paths per frame.
+
+Tooling from this campaign: `docs/shot.ps1` (headless capture of any stand, kills its browser
+after), stands rewritten to compare — `mksettle` (three stages plus night plus a ×3.2 close-up),
+`mkcant` (all five hall types in one sheet).
+
 ### Graphics debt (open faults, one line each)
 
 Written down on 2026-08-16 so the picture stops being an open-ended errand: everything below is a

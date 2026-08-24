@@ -125,6 +125,9 @@ function hud(){
     b="сбор летучих газов";}
   else if(G.mode==="base"){a="БАЗА · "+(G.base?G.base.p.name.toUpperCase():"");
     b="разрез грунта";}
+  else if(G.mode==="homein"){a="ДОМ";
+    b=(G.home&&HOME_TIERS[G.home.tier-1]?HOME_TIERS[G.home.tier-1].ru:"угол")+" · "+
+      ((G.hin&&G.hin.folk.length)?"дома "+G.hin.folk.length:"никого нет");}
   else if(G.mode==="raid"){a=(G.raid?G.raid.PB.name:"АБОРДАЖ").toUpperCase();
     b="пиратская база · "+(G.raid?G.raid.foes.filter(f=>f.hp>0).length+" живых":"");}
   else if(G.mode==="dock"){a=G.st.name.toUpperCase();b=G.st.kind;}
@@ -177,7 +180,7 @@ function hud(){
     setTx($bBrk,"ТОРМОЗ");
     setSt($bBrk,"opacity","1");
   }
-  setTx($nav,(G.mode==="belt"||G.mode==="scoop")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
+  setTx($nav,(G.mode==="belt"||G.mode==="scoop"||G.mode==="homein")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
   /* под землёй ОГОНЬ — это импульсный разрядник, он есть всегда */
   setSt($fire,"display",(G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed))?"":"none");
   if(G.mode==="dig")setTx($fire,(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС");
@@ -292,7 +295,18 @@ function resAuto(d){
   }
 }
 let capIv=16.667, capPrev=0, capN=0;
+/* Выключатель цикла. Прогон тестов гоняет мир сам и в кадрах не нуждается:
+   пока они шли, фоновые кадры двигали G под тестами и жгли время впустую —
+   а в headless с виртуальным временем непрерывный rAF не давал странице
+   дойти до отчёта вовсе (M170). Ставится в tests/90-harness. */
+let LOOP_OFF=false;
 function frame(now){
+  if(LOOP_OFF)return;
+  /* Скрытая страница не рисует. Обычно её и так не будят — rAF стоит, — но в
+     headless с виртуальным временем кадры идут как из пулемёта, и полная
+     отрисовка в невидимую канву съедала весь бюджет: прогон тестов вставал
+     намертво (M170). Стенды рисуют своими вызовами и этой ветки не касаются. */
+  if(document.hidden){requestAnimationFrame(frame);return;}
   /* канва нулевого размера (страница поднялась скрытой) — чинится здесь же:
      иначе кадр падает на drawImage и игра стоит до первого resize */
   if(W<2||H<2){resize();if(W<2||H<2){requestAnimationFrame(frame);return;}}
@@ -337,6 +351,7 @@ function frame(now){
     else if(G.mode==="scoop"&&G.scoop)updateScoop(dt);
     else if(G.mode==="base"&&G.base)updateBase(dt);
     else if(G.mode==="raid"&&G.raid)updateRaid(dt);
+    else if(G.mode==="homein"&&G.hin)updateHomeIn(dt);   /* дом изнутри (M170) */
     if(typeof tapeTick==="function")tapeTick(dt);
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
@@ -359,6 +374,7 @@ function frame(now){
     else if(G.mode==="scoop"&&G.scoop)drawScoop();
     else if(G.mode==="base"&&G.base)drawBase();
     else if(G.mode==="raid"&&G.raid)drawRaid();
+    else if(G.mode==="homein"&&G.hin)drawHomeIn();
     hud();
     /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой
        игрок повернулся. Рисуется последней, но до DOM-строки приборов */

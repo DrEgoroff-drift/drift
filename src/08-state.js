@@ -16,11 +16,18 @@ function resize(){
      навсегда — события resize не будет, а рисование молча падает на drawImage.
      Берём запасной размер и просим повтор: пустой кадр честнее мёртвого. */
   if(W<2||H<2){
+    /* запасной холст МАЛЕНЬКИЙ. Большой стоил дорого там, где его никто не
+       видит: в headless страница считается видимой, кадры идут полным ходом, и
+       прогон тестов из тридцати секунд превращался в бесконечность (M170).
+       Как только придёт настоящий размер, канва перестроится. */
     const de=document.documentElement;
-    W=Math.max(320,(de&&de.clientWidth)||0,window.outerWidth||0)||1280;
-    H=Math.max(240,(de&&de.clientHeight)||0,(window.outerHeight||0)-120)||720;
-    setTimeout(resize,150);
-  }
+    W=Math.max(320,Math.min(640,(de&&de.clientWidth)||0));
+    H=Math.max(240,Math.min(480,(de&&de.clientHeight)||0));
+    /* повторов ровно несколько: бесконечный таймер под виртуальным временем
+       (headless-прогон тестов) съедал весь бюджет и страница не доезжала до
+       отчёта — стенд молчал, а тесты «висли» (M169) */
+    if((resize.tries=(resize.tries||0)+1)<12)setTimeout(resize,150);
+  }else resize.tries=0;
   cvs.width=Math.round(W*DPR);cvs.height=Math.round(H*DPR);
   ctx.setTransform(DPR,0,0,DPR,0,0);
 }

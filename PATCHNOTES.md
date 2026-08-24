@@ -7,6 +7,34 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.135.0 — "Looked at again" (M169)
+
+A graphics campaign, screen by screen, against close-up shots rather than memory.
+
+**The settlement** was a row of identical boxes one human tall, stepping down a slope, with the
+kiln, the forge and the weir drawn exactly alike. It is a place now: a terrace cut into the hill
+with a retaining wall and a trodden street, homes in the middle and crafts at the edges, every
+third yard in a smaller sky-tinted back row, a body for every craft (dome kiln with a firebox,
+open forge with hearth and anvil, dam with a pond and a spill, saw trestles, still with a worm
+and barrels, field with beds and a scarecrow), four dwelling plans with porches and lean-tos,
+stone footings, real windows and doors, log-end woodpiles, laundry and barrels between the
+yards, a fence and a gate, a communal fire whose smoke is the settlement's column, and villagers
+who walk and work. The word ПОСЁЛОК printed over the roofs is gone: a place that needs a label
+is drawn badly.
+
+**The mine** got its rock — cloudy tone and temperature, jointing that runs across tiles, a
+mineral dyke, damp stains, and abandoned collapsed workings with rotten timber about one per
+screen of depth. **The cantina** got a host: a barkeep who wipes, pours, reaches for the shelf
+and leans on his elbows, patrons who sit in different poses, and a bottle wall with three
+silhouettes instead of one rectangle repeated forty times. **Deposits** stopped being interface
+icons and became outcrops with a form per material. **The ground cross-section** — half the
+surface screen — is broken by faults with lenses inside the layers. **The gas giant** grew shear
+rolls along its band edges.
+
+Two real bugs fell out of it: a page that loads hidden left the canvas 0×0 forever, and the
+corona's push cut off at the overheat rim so a hull hovering there vibrated. Frame rate after the
+campaign is unchanged (system 55, belt 60, landing 51, surface 48, dig/cave 60, scoop 55 at ×2).
+---
 ## 0.134.0 — "Company on the road" (M168f)
 
 Pilots riding the same real-world sector are no longer just a count: they fly alongside as
