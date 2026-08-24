@@ -11,6 +11,16 @@ function resize(){
   let want=0;try{want=(G.opts.gfx.res)||0;}catch(e){}   // первый вызов идёт до объявления G
   DPR=want?Math.min(want,window.devicePixelRatio||1):Math.min(RES_AUTO,window.devicePixelRatio||1);
   W=window.innerWidth;H=window.innerHeight;
+  /* Страница может открыться скрытой (фоновая вкладка, окно за другим окном,
+     headless): тогда innerWidth ноль, канва становится 0×0 и такой остаётся
+     навсегда — события resize не будет, а рисование молча падает на drawImage.
+     Берём запасной размер и просим повтор: пустой кадр честнее мёртвого. */
+  if(W<2||H<2){
+    const de=document.documentElement;
+    W=Math.max(320,(de&&de.clientWidth)||0,window.outerWidth||0)||1280;
+    H=Math.max(240,(de&&de.clientHeight)||0,(window.outerHeight||0)-120)||720;
+    setTimeout(resize,150);
+  }
   cvs.width=Math.round(W*DPR);cvs.height=Math.round(H*DPR);
   ctx.setTransform(DPR,0,0,DPR,0,0);
 }

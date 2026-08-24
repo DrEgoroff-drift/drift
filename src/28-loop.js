@@ -293,6 +293,9 @@ function resAuto(d){
 }
 let capIv=16.667, capPrev=0, capN=0;
 function frame(now){
+  /* канва нулевого размера (страница поднялась скрытой) — чинится здесь же:
+     иначе кадр падает на drawImage и игра стоит до первого resize */
+  if(W<2||H<2){resize();if(W<2||H<2){requestAnimationFrame(frame);return;}}
   if(capPrev){
     const d=now-capPrev;
     /* «самый короткий за последнее время»: медленно отпускаем оценку вверх,

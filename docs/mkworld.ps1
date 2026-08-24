@@ -22,6 +22,15 @@ setTimeout(function(){
   oc.fillStyle="#05070a";oc.fillRect(0,0,RW,RH*types.length);
   var cv=document.getElementById("c");
   var n=0;
+  /* Скрытая страница (headless, фоновая вкладка) держит таймеры на секунду и
+     не даёт кадров: канва остаётся 0×0, и первый же drawImage рушит весь
+     стенд. Ждём, пока игра сама починит размер (08-state), и только потом
+     начинаем снимать (M169). */
+  var tries=0;
+  function ready(){
+    if((cv.width<2||cv.height<2)&&tries++<20){resize();setTimeout(ready,120);return;}
+    shot();
+  }
   function shot(){
     if(n>=types.length){
       try{fetch("/world-types.png",{method:"POST",body:out.toDataURL("image/png")});}catch(e){}
@@ -43,7 +52,7 @@ setTimeout(function(){
     n++;
     setTimeout(shot,260);
   }
-  shot();
+  ready();
 },1600);
 </script>
 '@

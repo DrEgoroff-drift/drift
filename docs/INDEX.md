@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 243 · символов верхнего уровня: 2336
+Файлов: 243 · символов верхнего уровня: 2338
 
 ## СИМВОЛЫ
 
@@ -389,7 +389,7 @@ ctx                          src/08-state.js:3
 curTok                       src/09-audio.js:71
 CUT_RANGE                    src/24-mode-belt.js:183
 cvs                          src/08-state.js:2
-dbg                          src/28-loop.js:421
+dbg                          src/28-loop.js:424
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -406,6 +406,7 @@ decoSlab                     src/21b-surface-deco.js:282
 decoTruss                    src/21b-surface-deco.js:330
 decoWall                     src/21b-surface-deco.js:376
 deltaHtml                    src/05-parts.js:293
+depKind                      src/21b-surface-deco.js:631
 deployDrone                  src/12-economy.js:73
 DEPTH_TIERS                  src/04-mods.js:51
 DESC_MOOD                    src/01-core.js:52
@@ -478,6 +479,7 @@ drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
+drawDeposit                  src/21b-surface-deco.js:641
 drawDig                      src/23a-dig-draw.js:318
 drawDigFauna                 src/23-mode-dig.js:288
 drawDustMotes                src/19-mode-landing.js:341
@@ -694,7 +696,7 @@ fuseCost                     src/03-ships.js:33
 fuseGen                      src/03-ships.js:32
 fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
-G                            src/08-state.js:25
+G                            src/08-state.js:35
 g11Fps                       src/28z-fps-probe.js:7
 genBeast                     src/20-life.js:508
 genBeltPOI                   src/24b-belt-poi.js:20
@@ -802,7 +804,7 @@ heardReread                  src/12x-parrot.js:92
 heardUse                     src/12x-parrot.js:116
 heardWordsRu                 src/12x-parrot.js:79
 heardYours                   src/12x-parrot.js:71
-held                         src/08-state.js:139
+held                         src/08-state.js:149
 hex2rgb                      src/03-ships.js:145
 hexa                         src/12w-survey.js:91
 hexRGB                       src/24-mode-belt.js:80
@@ -1005,7 +1007,7 @@ keplerPos                    src/06-galaxy.js:39
 keyLabel                     src/15-input.js:63
 keyMap                       src/15-input.js:52
 keyRow                       src/27-ui-ship.js:188
-keys                         src/08-state.js:21
+keys                         src/08-state.js:31
 killPirate                   src/13-pirates.js:179
 killRock                     src/24-mode-belt.js:150
 KIT_FAM                      src/12x-suit.js:162
@@ -1556,10 +1558,10 @@ postHolding                  src/11e-post.js:107
 postItem                     src/11e-post.js:42
 postLinkHere                 src/11e-post.js:73
 postOpen                     src/11e-post.js:99
-prevAct                      src/08-state.js:23
+prevAct                      src/08-state.js:33
 pricesSeen                   src/12aa-need.js:188
 prism                        src/21b-surface-deco.js:201
-prof                         src/28-loop.js:384
+prof                         src/28-loop.js:387
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:17
@@ -1711,7 +1713,7 @@ repRepairMul                 src/12k-rep.js:53
 repShipMul                   src/12k-rep.js:69
 repWord                      src/12k-rep.js:31
 RES                          src/02-world.js:2
-RES_AUTO                     src/08-state.js:18
+RES_AUTO                     src/08-state.js:28
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:283
 resEma                       src/28-loop.js:282
@@ -1826,7 +1828,7 @@ S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:6
 saveGame                     src/14-save.js:520
-say                          src/08-state.js:140
+say                          src/08-state.js:150
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
 SCOOP_BAND                   src/19a-mode-scoop.js:7
@@ -1999,7 +2001,7 @@ starRGB                      src/19c-light.js:23
 start                        src/15-input.js:315
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
-stat                         src/08-state.js:98
+stat                         src/08-state.js:108
 STAT_SHOW                    src/05-parts.js:280
 stationDeals                 src/27g-deals.js:134
 stationFleet                 src/04b-fleet.js:163
@@ -2416,7 +2418,7 @@ zooTick                      src/11ad-zoo.js:41
   · рельеф:339
   · где сел — то и видел:363
 
-## src/08-state.js · 10 КБ
+## src/08-state.js · 11 КБ
   · состояние:1
 
 ## src/09-audio.js · 11 КБ
@@ -2777,8 +2779,9 @@ zooTick                      src/11ad-zoo.js:41
   · сеть баз:291
   · обновление сцены:322
 
-## src/21b-surface-deco.js · 34 КБ
+## src/21b-surface-deco.js · 44 КБ
   · крупная форма на поверхности:1
+  · залежь как выход породы (M169):620
 
 ## src/21c-built.js · 10 КБ
   · ваши постройки видны с земли:1
@@ -2885,8 +2888,8 @@ zooTick                      src/11ad-zoo.js:41
   · звук по кадрам:197
   · цикл:253
   · авторазрешение:276
-  · prof() — на что уходит кадр:372
-  · dbg() — что держит корабль:412
+  · prof() — на что уходит кадр:375
+  · dbg() — что держит корабль:415
 
 ## src/28z-fps-probe.js · 6 КБ
   · пробник G11: ?g11:1

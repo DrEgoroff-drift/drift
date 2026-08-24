@@ -616,3 +616,180 @@ function drawForeground(tr,camx,camy,p){
     }
   }
 }
+
+/* ══════════════ залежь как выход породы (M169) ══════════════
+   До этого прохода залежь была ТРЕМЯ ТРЕУГОЛЬНИКАМИ цвета ресурса и пульсирующим
+   кружком вокруг — значок интерфейса, наклеенный на мир. Игрок видел не выход
+   руды, а иконку, и на всех шести мирах она была одна и та же.
+
+   Теперь у каждого сырья своя форма, и форма говорит, что это: кристаллы
+   растут гранёными призмами со светлой гранью, лёд — торос с прозрачным краем,
+   железо — ржавый останец с плитчатым сколом, кремний — россыпь острых
+   осколков, органика — бугристая корка, титан — жила в камне, изотопы —
+   тёплый натёк в трещине. Общее у всех: гнездо потревоженной земли внизу,
+   тень, свет справа сверху (SUN_DIR) и осыпание по мере выработки. */
+function depKind(res){
+  if(res==="ice"||res==="icecrys")return "ice";
+  if(res==="crystal")return "crystal";
+  if(res==="iron")return "iron";
+  if(res==="silicon")return "shards";
+  if(res==="organics")return "crust";
+  if(res==="titan"||res==="iridium")return "vein";
+  if(res==="isotopes")return "seep";
+  return "iron";
+}
+function drawDeposit(x,y,res,left,near,seed,pal){
+  const col=hex2rgb(RES[res].col), kind=depKind(res);
+  const r=rng(hashi(seed|0,left|0,0xDEB0));
+  /* сколько осталось — столько и стоит: выработанная залежь оседает в гнездо */
+  const k=clamp(.45+Math.min(1,(left||1)/9)*.55,0,1);
+  const S=(14+r()*7)*k;
+  ctx.save();
+  /* Гнездо: потревоженная земля. Ровный тёмный эллипс читался ПОДСТАВКОЙ, как
+     у настольной фигурки (самокритика M169), поэтому оно рваное, шире тела и
+     сдвинуто в сторону тени. */
+  const soil=pal?sdMix(pal,[0,0,0],.2):[62,56,48];
+  ctx.fillStyle="rgba(0,0,0,.20)";
+  ctx.beginPath();
+  for(let i=0;i<=10;i++){
+    const a=Math.PI*(i/10), rr=1+((r()-.5)*.3);
+    const px=x-S*.2+Math.cos(a)*S*1.5*rr, py=y+1+Math.sin(a)*S*.3*rr;
+    i?ctx.lineTo(px,py):ctx.moveTo(px,py);
+  }
+  ctx.closePath();ctx.fill();
+  ctx.fillStyle="rgb("+soil.map(v=>v|0).join(",")+")";
+  for(let i=0;i<7;i++){                                   /* выброшенные комья */
+    const bx=x+(r()-.5)*S*2.2, by=y+(r()-.5)*2;
+    ctx.beginPath();ctx.ellipse(bx,by,1.6+r()*2.6,1+r()*1.4,0,0,TAU);ctx.fill();
+  }
+  /* тень тела влево, к свету справа сверху */
+  ctx.fillStyle="rgba(0,0,0,.24)";
+  ctx.beginPath();ctx.ellipse(x-S*.5,y,S*.8,S*.2,0,0,TAU);ctx.fill();
+  const lit="rgb("+col.map(v=>Math.min(255,v*1.35+40)|0).join(",")+")";
+  const mid="rgb("+col.join(",")+")";
+  const dark="rgb("+col.map(v=>v*.42|0).join(",")+")";
+  if(kind==="crystal"){
+    /* друза: три-пять призм, у каждой освещённая грань и тёмная сторона */
+    const n=3+Math.floor(r()*3);
+    for(let i=0;i<n;i++){
+      const t=(i+.5)/n-.5, bx=x+t*S*1.5, hh=S*(.7+r()*1.1)*(1-Math.abs(t)*.5);
+      const w=S*(.16+r()*.12);
+      ctx.beginPath();
+      ctx.moveTo(bx-w,y);ctx.lineTo(bx-w*.7,y-hh*.7);ctx.lineTo(bx,y-hh);
+      ctx.lineTo(bx+w*.7,y-hh*.7);ctx.lineTo(bx+w,y);ctx.closePath();
+      /* каждая призма своего тона: одинаково яркие читались пластиковыми */
+      const kk=.55+r()*.45;
+      ctx.fillStyle="rgb("+col.map(v=>v*kk|0).join(",")+")";ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(bx,y-hh);ctx.lineTo(bx+w*.7,y-hh*.7);ctx.lineTo(bx+w,y);ctx.lineTo(bx,y);
+      ctx.closePath();ctx.fillStyle=lit;ctx.globalAlpha=.55;ctx.fill();ctx.globalAlpha=1;
+      ctx.strokeStyle="rgba(255,255,255,.35)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(bx,y-hh);ctx.lineTo(bx,y);ctx.stroke();
+    }
+  }else if(kind==="ice"){
+    /* торос: глыба со сколом, прозрачная по кромке */
+    ctx.beginPath();
+    ctx.moveTo(x-S,y);ctx.lineTo(x-S*.7,y-S*.75);ctx.lineTo(x-S*.1,y-S*1.05);
+    ctx.lineTo(x+S*.55,y-S*.8);ctx.lineTo(x+S,y);ctx.closePath();
+    ctx.fillStyle=mid;ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.30)";
+    ctx.beginPath();
+    ctx.moveTo(x-S*.1,y-S*1.05);ctx.lineTo(x+S*.55,y-S*.8);ctx.lineTo(x+S,y);
+    ctx.lineTo(x+S*.3,y);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="rgba(226,246,255,.5)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x-S*.7,y-S*.75);ctx.lineTo(x+S*.1,y-S*.45);
+    ctx.lineTo(x+S*.55,y-S*.8);ctx.stroke();
+  }else if(kind==="iron"){
+    /* останец: плитчатый скол, ржавые натёки сверху вниз */
+    ctx.beginPath();
+    ctx.moveTo(x-S*.9,y);ctx.lineTo(x-S*.75,y-S*.9);
+    ctx.lineTo(x-S*.2,y-S*1.15);ctx.lineTo(x+S*.6,y-S*.85);
+    ctx.lineTo(x+S*.95,y);ctx.closePath();
+    ctx.fillStyle=dark;ctx.fill();
+    ctx.save();ctx.clip();
+    ctx.fillStyle=mid;ctx.fillRect(x-S*.2,y-S*1.2,S*1.2,S*1.2);
+    ctx.strokeStyle="rgba(0,0,0,.34)";ctx.lineWidth=1;
+    for(let yy=y-S*.2;yy>y-S*1.1;yy-=S*.22){
+      ctx.beginPath();ctx.moveTo(x-S,yy);ctx.lineTo(x+S,yy-S*.1);ctx.stroke();
+    }
+    ctx.fillStyle=lit;ctx.globalAlpha=.35;
+    ctx.fillRect(x+S*.1,y-S*1.1,S*.5,S*1.1);ctx.globalAlpha=1;
+    ctx.restore();
+  }else if(kind==="shards"){
+    /* россыпь острых осколков — кремний колется, а не растёт */
+    for(let i=0;i<7;i++){
+      const bx=x+(r()-.5)*S*1.8, hh=S*(.25+r()*.55), w=S*(.10+r()*.14);
+      ctx.beginPath();
+      ctx.moveTo(bx-w,y+1);ctx.lineTo(bx+(r()-.5)*w,y-hh);ctx.lineTo(bx+w,y+1);
+      ctx.closePath();
+      ctx.fillStyle=i%2?mid:dark;ctx.fill();
+      ctx.strokeStyle="rgba(255,255,255,.22)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(bx+(r()-.5)*w,y-hh);ctx.lineTo(bx+w,y+1);ctx.stroke();
+    }
+  }else if(kind==="crust"){
+    /* корка: бугры и поры, живое, а не гранёное */
+    for(let i=0;i<5;i++){
+      const bx=x+(i-2)*S*.42+(r()-.5)*3, rr=S*(.30+r()*.28);
+      ctx.beginPath();ctx.ellipse(bx,y-rr*.5,rr,rr*.72,0,0,TAU);
+      ctx.fillStyle=i%2?mid:dark;ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,.16)";
+      ctx.beginPath();ctx.ellipse(bx+rr*.2,y-rr*.8,rr*.34,rr*.22,0,0,TAU);ctx.fill();
+    }
+    ctx.fillStyle="rgba(0,0,0,.3)";
+    for(let i=0;i<6;i++)ctx.fillRect(x+(r()-.5)*S*1.5,y-S*.5-r()*S*.4,1.4,1.4);
+  }else if(kind==="vein"){
+    /* жила в камне: сам камень серый, металл — прожилками */
+    ctx.beginPath();
+    ctx.moveTo(x-S,y);ctx.lineTo(x-S*.6,y-S*.8);ctx.lineTo(x+S*.4,y-S*.95);
+    ctx.lineTo(x+S,y);ctx.closePath();
+    ctx.fillStyle="rgb(84,86,88)";ctx.fill();
+    ctx.save();ctx.clip();
+    /* Прожилки КОРОТКИЕ и наклонные: сплошные полосы через весь камень делали
+       из него полосатый колпак (самокритика M169) */
+    ctx.strokeStyle=mid;
+    for(let i=0;i<7;i++){
+      const y0=y-S*(.12+r()*.8), x0=x-S*.8+r()*S*1.6, ln=S*(.2+r()*.4);
+      const a=-.5+r()*1.0;
+      ctx.lineWidth=1+r()*1.6;
+      ctx.beginPath();ctx.moveTo(x0,y0);
+      ctx.lineTo(x0+Math.cos(a)*ln,y0+Math.sin(a)*ln*.5);ctx.stroke();
+    }
+    ctx.fillStyle="rgba(255,255,255,.14)";
+    for(let i=0;i<3;i++){                                 /* блики на металле */
+      const x0=x-S*.4+r()*S*1.0, y0=y-S*(.2+r()*.6);
+      ctx.fillRect(x0,y0,1.6+r()*2,1.2);
+    }
+    ctx.restore();
+    ctx.strokeStyle="rgba(0,0,0,.4)";ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(x-S,y);ctx.lineTo(x-S*.6,y-S*.8);ctx.lineTo(x+S*.4,y-S*.95);
+    ctx.lineTo(x+S,y);ctx.stroke();
+  }else{
+    /* натёк в трещине: тёплое вещество выступило и застыло потёками */
+    ctx.fillStyle="rgb(70,66,60)";
+    ctx.beginPath();
+    ctx.moveTo(x-S*.9,y);ctx.lineTo(x-S*.5,y-S*.7);ctx.lineTo(x+S*.5,y-S*.62);
+    ctx.lineTo(x+S*.9,y);ctx.closePath();ctx.fill();
+    ctx.fillStyle=mid;
+    for(let i=0;i<4;i++){
+      const bx=x-S*.5+i*S*.34;
+      ctx.beginPath();
+      ctx.moveTo(bx,y-S*.6);ctx.lineTo(bx+S*.16,y-S*.6);
+      ctx.lineTo(bx+S*.1,y);ctx.lineTo(bx-S*.04,y);ctx.closePath();ctx.fill();
+    }
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g=ctx.createRadialGradient(x,y-S*.4,1,x,y-S*.4,S*1.4);
+    g.addColorStop(0,"rgba("+col.join(",")+",.22)");
+    g.addColorStop(1,"rgba("+col.join(",")+",0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y-S*.4,S*1.4,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+  /* Подсказка «здесь можно копать» — не пульсирующий круг поверх мира, а
+     блик по кромке, который загорается, когда игрок подошёл. */
+  if(near>0){
+    ctx.strokeStyle="rgba(255,255,255,"+(.16*near).toFixed(3)+")";
+    ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.ellipse(x,y-S*.45,S*1.15,S*.85,0,Math.PI*1.15,Math.PI*1.95);ctx.stroke();
+  }
+  ctx.restore();
+}

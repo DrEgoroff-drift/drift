@@ -188,15 +188,10 @@ function drawSurface(){
     if(d.left<=0)continue;
     const x=d.x-camx;if(x<-50||x>W+50)continue;
     const y=d.y-camy,col=RES[d.res].col;
-    ctx.fillStyle=col;
-    for(let i=0;i<3;i++){
-      const o=(i-1)*6,hh=6+((i*7+d.left)%5);
-      ctx.beginPath();ctx.moveTo(x+o,y-hh);ctx.lineTo(x+o+4,y+2);ctx.lineTo(x+o-4,y+2);
-      ctx.closePath();ctx.fill();
-    }
-    ctx.strokeStyle=col;ctx.globalAlpha=.3;ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(x,y-3,15+Math.sin(G.t*.05+d.x)*2,0,TAU);ctx.stroke();
-    ctx.globalAlpha=1;
+    /* тело залежи — выход породы по виду сырья (21b, M169): три треугольника
+       и пульсирующий круг были значком интерфейса, приклеенным к миру */
+    const near=clamp(1-Math.abs(d.x-S.x)/120,0,1);
+    drawDeposit(x,y,d.res,d.left,near,d.x,p.T.pal[3]);
     if(Math.abs(d.x-S.x)<70){
       ctx.fillStyle=col;ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       /* соседние залежи разводим по высоте: рядом стоящие подписи наезжали друг
