@@ -553,7 +553,87 @@ body.screen #console{opacity:1}
 
 
 /* ══════════════ стол (M151a) ══════════════ */
+/* ══════════════ стол — бумага, а не окно списков (релизный вид, A3) ══════════════
+   Столешницу нарисовали ещё в M151a, но лежало на ней тёмное окно со списками:
+   тот же интерфейс, что везде, только на деревянном фоне. За столом читают
+   БУМАГУ — значит она и должна быть бумагой: тёплый лист с полем и красной
+   чертой, машинописные строки чернилами, а не фосфором. Вещи и ленты — не
+   строки перечня, а предметы: лежат на дереве, каждый со своей тенью и
+   поворотом, потому что руками их клали, а не выравнивали по сетке.
+   Всё под `body.table`: остальные экраны остаются стеклом поверх мира. */
 #tablewin{z-index:22;background:#0a0806}
+/* шапка и вкладки — по дереву, а не по стеклу */
+body.table #tablewin>header{border-bottom-color:rgba(122,90,54,.55);
+  background:linear-gradient(180deg,rgba(0,0,0,.30),transparent)}
+body.table #tablewin>header b{color:#f0dfb8}
+body.table #tablewin>header s{color:#b09776}
+body.table .wallet em{color:#f2c98a}
+body.table .wallet i{color:#c9b58e}
+body.table nav.tabs{background:rgba(0,0,0,.24);border-bottom-color:rgba(122,90,54,.55)}
+body.table nav.tabs button{color:#b09776;border-right-color:rgba(122,90,54,.30)}
+/* выбранная вкладка — бумажный ярлык на дереве, а не свечение фосфора */
+body.table nav.tabs button.on{color:#2c2418;
+  background:linear-gradient(180deg,#efe6cd,#dccfaf)}
+body.table nav.tabs button.on::after{background:#8a6a3a;box-shadow:none}
+
+/* ── лист ── */
+body.table #loglist,body.table #lorelist{
+  position:relative;max-width:720px;margin:16px auto 24px;padding:12px 0 18px;
+  /* лист остаётся листом, даже когда на нём две строки: у страницы есть тело */
+  min-height:min(62vh,520px);
+  border:0;border-radius:2px;font-size:11px;line-height:1.7;
+  background:repeating-linear-gradient(90deg,transparent 0 3px,rgba(120,96,56,.045) 3px 4px),
+    linear-gradient(178deg,#f0e8d2,#e7ddc1 58%,#e0d4b2);
+  box-shadow:0 12px 30px rgba(0,0,0,.48),0 2px 4px rgba(0,0,0,.3),
+    inset 0 1px 0 rgba(255,255,255,.5)}
+/* поле с красной чертой: по нему лист опознают раньше, чем прочтут */
+body.table #loglist::before,body.table #lorelist::before{content:"";position:absolute;
+  left:48px;top:0;bottom:0;width:1px;background:rgba(168,66,52,.38)}
+body.table #loglist .li,body.table #lorelist .li{
+  padding:7px 18px 7px 60px;border-bottom:1px dotted rgba(96,74,44,.30)}
+body.table #loglist .li em,body.table #lorelist .li em{
+  position:absolute;left:8px;width:34px;text-align:right;color:#9a8562;font-size:9px}
+body.table #loglist .li{position:relative}
+body.table #lorelist .li{position:relative}
+/* чернила, а не фосфор: у каждого рода записи свой цвет пасты */
+body.table #loglist .li span{color:#2f2718}
+body.table #loglist .li.ether span{color:#2b3a6a}
+body.table #loglist .li.talk span{color:#4a3a24}
+body.table #loglist .li.money span{color:#3f5628}
+body.table #loglist .li.tech span{color:#39505e}
+body.table #loglist .li.kill span,body.table #loglist .li.warn span{color:#8a3226}
+body.table #loglist .li.dim span{color:#8b7d61}
+body.table #loglist .li.head span,body.table #loglist .li.sec span{color:#8a7350}
+body.table #lorelist .li span{color:#2f2718}
+body.table #lorelist .li.gap span{color:#b5a888}
+body.table #lorelist .li.chap span{color:#7a4a20}
+body.table #lorelist .li.chap.read span{color:#8a6a2a}
+body.table #lorelist .li.note span{color:#6a5c44}
+body.table #lorelist .li.head span{color:#8a7350}
+
+/* ── предметы на дереве ── */
+body.table #loglist.desk{background:none;box-shadow:none;max-width:940px;padding:20px 10px 24px;
+  display:flex;flex-wrap:wrap;gap:18px;justify-content:center;align-items:flex-start}
+body.table #loglist.desk::before{display:none}
+body.table #loglist.desk .li{flex:0 0 100%;border:0;padding:0 6px 4px 6px}
+body.table #loglist.desk .li em{position:static;width:auto}
+body.table #loglist.desk .li span{color:#c9b58e}
+body.table #loglist.desk .li.head span{color:#b09776;letter-spacing:.16em;font-size:8px}
+body.table #loglist.desk .thing{flex:0 0 auto;width:250px;display:block;padding:12px 12px 10px;
+  border:0;border-radius:2px;background:linear-gradient(178deg,#d6c6a0,#c9b78e);
+  box-shadow:0 12px 24px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.35);
+  transform:rotate(-.8deg)}
+body.table #loglist.desk .thing:nth-child(even){transform:rotate(1deg)}
+body.table #loglist.desk .thing canvas{width:auto;height:84px;display:block;margin:0 auto 9px}
+body.table #loglist.desk .thing .nm b{color:#2c2418;font-size:12px}
+body.table #loglist.desk .thing .nm s{color:#6a5a3e;font-size:10px}
+/* «новое» на столе — не фосфорная обводка, а сургучная точка в углу: на бумаге
+   фосфор кричит чужим языком, а непрочитанное письмо метят именно так */
+body.table #loglist.desk .thing.new{box-shadow:0 14px 26px rgba(0,0,0,.55),
+  inset 0 1px 0 rgba(255,255,255,.4);position:relative}
+body.table #loglist.desk .thing.new::after{content:"";position:absolute;right:9px;top:9px;
+  width:9px;height:9px;border-radius:50%;background:#8f2f24;
+  box-shadow:0 1px 2px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.25)}
 #tablecv{position:absolute;inset:0;width:100%;height:100%;z-index:0}
 #tablewin>header,#tablewin>nav,#tablewin>.body,#tablewin>footer{position:relative;z-index:1}
 #tablewin>.body{padding:0 var(--pad) 10px}

@@ -855,6 +855,11 @@ the frame is the world**:
   they are about the world, not about the interface.
   **On a phone**: hairline bars are unreadable at that size, so it is one line of numbers only,
   above the console, between the thumb zones, colliding with neither the pads nor the buttons.
+- **A3 — BUILT (0.144.0, M177).** `27i-ui-table` + `body.table` styles: the notebook is a sheet
+  with a margin and red rule, ink per kind of record; things and tapes lie on the wood as objects
+  with shadows, rotation and a wax dot for unread; a clipping and a plate got their own silhouettes;
+  the active tab is a paper label. Checks in `91zzv-table`.
+
 - **A3. The table becomes paper**: `29-ui-table` stops being a dark window of lists — a sheet,
   bills in a pile, letters as envelopes, tapes as reels, clippings. Full screen on a phone, tabs
   no smaller than 44 px.
@@ -864,5 +869,6 @@ each other and against the screen edge — it will have to be re-pointed, not di
 
 ## Order
 
-12 (biology) — **done, 0.141.0** → 13 (planet light) — **done, 0.142.0** → 14 A2 → 14 A3 → 9 (second storey) →
+12 (biology) — **done, 0.141.0** → 13 (planet light) — **done, 0.142.0** →
+14 A2 — **done, 0.143.0** → 14 A3 — **done, 0.144.0** → 9 (second storey) →
 10 (world heard) → graphics debt one at a time → split debt.

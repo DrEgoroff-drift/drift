@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.144.0 — release look, pass A3: the table becomes paper (M177)
+
+The desk top has been drawn since M151a, but what lay on it was a dark window of lists — the same
+interface as everywhere else, only on a wooden background. At a desk you read **paper**.
+
+- **The notebook is a sheet.** `#loglist` and `#lorelist` stop being a translucent box: warm paper
+  with a margin and a red rule down it, entries typed in ink, the time a pencil note in the margin.
+  Each kind of record has its own ink — the ether in blue, people in pencil brown, money in dark
+  green, an alarm in dark red — instead of the same phosphor palette the rest of the interface
+  uses. A page keeps its body even when two lines are written on it.
+- **Things and tapes lie on the wood, not on the sheet** — paper on paper does not read. On those
+  two tabs the list becomes objects laid out by hand: each with its own shadow and a degree of
+  rotation, and unread ones marked with a wax dot rather than a phosphor outline, because that is
+  how unopened mail is marked on a desk.
+- **A clipping now looks like a clipping**: `drawThingIcon` grew a fourth form — a torn scrap with
+  a headline and two columns — and the "found object" became a metal plate with a notch and
+  scratches. Before, a newspaper cutting and a plate pulled out of a cave were the same grey
+  rectangle, and on a desk a thing is recognised by its silhouette before its caption is read.
+- **The active tab is a paper label** on the wood instead of a phosphor glow, and the sector on a
+  thing's caption says «сектор 0:0» instead of a bare «0:0».
+
+Everything is scoped to `body.table`: the station, ship, crew and HQ screens stay glass over the
+world. Suite: the table's own checks in `91zzv-table` — a page rather than a strip, dark ink rather
+than phosphor, things and tapes on the wood.
+
+---
 ## 0.143.0 — release look, pass A2: the state moves down (M176)
 
 Pass 1 hid the ship's instruments while on foot. This is the rest of it: **the top of the frame

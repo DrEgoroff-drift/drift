@@ -559,7 +559,7 @@ drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:278
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:170
+drawThingIcon                src/27i-ui-table.js:179
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
 drawTrail                    src/16-flight.js:338
@@ -1744,9 +1744,9 @@ renderOpts                   src/27-ui-ship.js:198
 renderPrices                 src/12aa-need.js:196
 renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
-renderStrips                 src/27i-ui-table.js:114
+renderStrips                 src/27i-ui-table.js:119
 renderTab                    src/26-ui-station.js:185
-renderThings                 src/27i-ui-table.js:145
+renderThings                 src/27i-ui-table.js:150
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -2187,7 +2187,7 @@ tableBlock                   src/27c-ui-hq.js:537
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewThings               src/27i-ui-table.js:36
 tableRender                  src/27i-ui-table.js:80
-tableRow                     src/27i-ui-table.js:106
+tableRow                     src/27i-ui-table.js:111
 tableSetTab                  src/27i-ui-table.js:50
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:37
@@ -2982,7 +2982,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27i-ui-table.js · 12 КБ
+## src/27i-ui-table.js · 14 КБ
   · стол: одно место для всего, что читают:1
 
 ## src/27j-console.js · 7 КБ
@@ -3224,7 +3224,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzu-domino.js · 2 КБ
   · автотесты: домино (M166):1
 
-## tests/91zzv-table.js · 8 КБ
+## tests/91zzv-table.js · 9 КБ
   · автотесты: пульт и стол (M151a):1
 
 ## tests/91zzw-economy.js · 10 КБ

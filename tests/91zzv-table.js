@@ -63,6 +63,7 @@ TEST_SUITES.push(()=>suite("пульт: приёмник на каждом эк�
     ok(rx&&rx.getBoundingClientRect().height>=20,"на телефоне ручка в развёрнутом приёмнике");
     document.getElementById("rx").classList.remove("sheet");
   }else ok(rx&&rx.getBoundingClientRect().height>=20,"ручка приёмника на пульте");
+  tableToggle(false);
   etherLine("…частота занята. Частота занята.");
   eq(document.getElementById("rxLine").textContent,"…частота занята. Частота занята.","услышанное показано на пульте");
   ok(document.getElementById("rx").classList.contains("fresh"),"и помечено свежим");
@@ -117,4 +118,37 @@ TEST_SUITES.push(()=>suite("станция: ДОСКА у всех, очеред
   eq(tab,"board","открылась доска");
   ok(document.querySelector("#stBody .sec"),"на доске есть разделы");
   closeStation();
+}));
+
+/* Стол стал бумагой (релизный вид, A3). Проверяем не «красиво», а три вещи,
+   на которых держится замысел: лист — это страница, а не полоска под текстом;
+   на бумаге чернила, а не фосфор; вещи и ленты лежат на дереве, а не на листе
+   (бумага на бумаге не читается). */
+TEST_SUITES.push(()=>suite("стол: бумага, а не окно списков",()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  tableToggle(true,"ether");
+  const box=document.getElementById("loglist");
+  ok(document.body.classList.contains("table"),"стол открыт");
+  ok(!box.classList.contains("desk"),"тетрадь лежит на листе");
+  const cs=getComputedStyle(box);
+  ok(cs.backgroundImage&&cs.backgroundImage!=="none","у листа есть бумага");
+  ok(box.getBoundingClientRect().height>200,
+     "лист — страница, а не полоска ("+Math.round(box.getBoundingClientRect().height)+")");
+  logAdd("ether","проба пера");
+  tableRender();
+  const li=box.querySelector(".li span");
+  ok(!!li,"строка на листе есть");
+  if(li){
+    const c=(getComputedStyle(li).color.match(/\d+/g)||[0,0,0]).map(Number);
+    ok(c[0]+c[1]+c[2]<340,"на бумаге чернила тёмные, а не фосфор ("+c.join(",")+")");
+  }
+  tableSetTab("things");
+  ok(box.classList.contains("desk"),"вещи лежат на дереве");
+  tableSetTab("strips");
+  ok(box.classList.contains("desk"),"ленты тоже");
+  tableSetTab("ether");
+  ok(!box.classList.contains("desk"),"а тетрадь снова на листе");
+  tableToggle(false);
+  ok(!document.body.classList.contains("table"),"и стол закрывается");
 }));

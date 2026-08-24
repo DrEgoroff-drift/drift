@@ -18,7 +18,10 @@ setTimeout(function(){
   /* приборы просыпаются от события; для снимка держим их открытыми насильно —
      иначе на кадре будет треть непрозрачности и судить не о чем */
   var s=document.createElement("style");
-  s.textContent=".hud{opacity:1!important}.pads{opacity:1!important}#console{opacity:1!important}";
+  /* анимация появления экрана при виртуальном времени застревает на середине —
+     снимок ловил полупрозрачный стол; для стенда она не нужна вовсе */
+  s.textContent=".hud{opacity:1!important}.pads{opacity:1!important}#console{opacity:1!important}"+
+    ".scr.open{animation:none!important}";
   document.head.appendChild(s);
   var scene=(location.search.match(/[?&]s=([a-z]+)/)||[])[1]||"surface";
   function land(t){
@@ -60,6 +63,24 @@ setTimeout(function(){
     var p2=land("terran");hour(p2,.30);G.mode="surface";G.surf.suit=14;
     G.fuel=Math.max(1,G.fuel*.06);
     G.prompt="";run(6,updateSurface,drawSurface);
+  }else if(scene==="table"||scene==="things"||scene==="strips"){
+    G.mode="system";
+    for(var f2=0;f2<2;f2++){G.t+=.02;drawSystem();}
+    /* немного бумаг на столе, иначе судить не о чем */
+    if(typeof thingAdd==="function"&&!(G.things&&G.things.length)){
+      thingAdd("letter","Письмо от Веги","«…в среду буду на Тине, если довезут»");
+      thingAdd("paper","Накладная 41-К","переплавка · 6 сплавов · оплачено");
+      thingAdd("find","Пластина с насечкой","поднята в пещере, Нейэль I");
+      thingAdd("cut","Вырезка из «Вестника»","о пропавшей экспедиции, третья полоса");
+    }
+    if(typeof logAdd==="function"){
+      logAdd("ether","диспетчер Тины: борта на подходе, очередь на стойку");
+      logAdd("ether","«…шестой не отвечает третьи сутки, идём по последнему счислению»");
+      logAdd("tech","заправка 42 единицы · 336 кр");
+      logAdd("money","продано: 12 сплавов · 984 кр");
+      logAdd("talk","Крапива: «мешок отдал, а расписки не взял»");
+    }
+    tableToggle(true,scene==="table"?"ether":scene);
   }else{
     var p3=land("terran");hour(p3,.30);G.mode="surface";atPlant();
     run(6,updateSurface,drawSurface);

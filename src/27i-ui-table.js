@@ -93,6 +93,11 @@ function tableRender(){
   if(wh)wh.textContent=(G.sys&&G.sys.name?G.sys.name:"—")+" · "+(G.mode||"");
   box.style.display=tableTab==="lore"?"none":"";
   if(lore)lore.style.display=tableTab==="lore"?"":"none";
+  /* Что читают — лежит на ЛИСТЕ; что держат в руках — лежит на СТОЛЕ (A3).
+     Тетрадь, дела, цены и книжка — это записи, им место на бумаге. Ленты и
+     вещи — предметы: письмо, накладная, вырезка, полоса самописца, — и лист
+     под ними был бы ошибкой: бумага на бумаге не читается. */
+  box.classList.toggle("desk",tableTab==="things"||tableTab==="strips");
   if(tableTab==="ether"||tableTab==="bort"||tableTab==="folk")renderLog(tableTab);
   else if(tableTab==="deeds")renderDeeds();
   else if(tableTab==="strips")renderStrips(box);
@@ -153,7 +158,8 @@ function renderThings(box){
     else if(t.k==="tape"&&t.ring&&typeof drawRingTape==="function")drawRingTape(cv.getContext("2d"),t,128,80);
     else drawThingIcon(cv.getContext("2d"),t.k,128,80);
     const nm=document.createElement("div");nm.className="nm";
-    nm.innerHTML="<b>"+t.ru+"</b><s>"+(t.note||"")+(t.sx!=null?" · "+t.sx+":"+t.sy:"")+"</s>";
+    nm.innerHTML="<b>"+t.ru+"</b><s>"+(t.note||"")+
+      (t.sx!=null?(t.note?" · ":"")+"сектор "+t.sx+":"+t.sy:"")+"</s>";
     row.appendChild(cv);row.appendChild(nm);
     /* «Желание-1» (M153): три желания, и все три — она */
     if(t.k==="wish"&&G.wishDevice===1&&typeof vegaWish==="function"){
@@ -166,7 +172,10 @@ function renderThings(box){
   });
   logBtnLabel();
 }
-/* значок вещи: конверт, бумага, предмет — три формы, остальное цветом */
+/* Значок вещи: конверт, бумага, вырезка, предмет. Четвёртая форма появилась
+   вместе с бумажным столом (A3): вырезка из газеты и найденная пластина
+   выглядели одним и тем же серым прямоугольником, а на столе вещь опознают
+   по силуэту раньше, чем прочтут подпись. */
 function drawThingIcon(c,k,W,H){
   c.clearRect(0,0,W,H);
   c.save();c.translate(W/2,H/2);
@@ -179,9 +188,27 @@ function drawThingIcon(c,k,W,H){
     c.strokeStyle="rgba(90,70,40,.35)";c.lineWidth=1;
     for(let y=-22;y<30;y+=8){c.beginPath();c.moveTo(-20,y);c.lineTo(20,y);c.stroke();}
     if(k==="record"){c.fillStyle="#8a2d2d";c.fillRect(-28,-34,56,10);}
+  }else if(k==="cut"||k==="clip"||k==="news"){
+    /* вырезка: рваный край справа, заголовок жирной строкой, две колонки */
+    c.fillStyle="#e4dcc6";
+    c.beginPath();c.moveTo(-36,-28);c.lineTo(30,-28);
+    for(let y=-24;y<28;y+=8)c.lineTo(30+((y/8)%2?4:-3),y);
+    c.lineTo(30,28);c.lineTo(-36,28);c.closePath();c.fill();
+    c.strokeStyle="rgba(90,70,40,.45)";c.lineWidth=1;c.stroke();
+    c.fillStyle="rgba(60,46,26,.75)";c.fillRect(-30,-22,50,4);
+    c.strokeStyle="rgba(90,70,40,.40)";
+    for(let y=-12;y<24;y+=5){
+      c.beginPath();c.moveTo(-30,y);c.lineTo(-6,y);c.stroke();
+      c.beginPath();c.moveTo(2,y);c.lineTo(24,y);c.stroke();
+    }
   }else{
+    /* пластина: металл с фаской, вырезом на кромке и парой царапин */
     c.fillStyle="#6f7b86";c.beginPath();c.roundRect(-30,-18,60,36,6);c.fill();
     c.fillStyle="rgba(255,255,255,.12)";c.fillRect(-30,-18,60,8);
+    c.fillStyle="rgba(0,0,0,.45)";c.beginPath();c.arc(30,0,7,0,TAU);c.fill();
+    c.strokeStyle="rgba(255,255,255,.22)";c.lineWidth=1;
+    c.beginPath();c.moveTo(-22,6);c.lineTo(-4,-2);c.stroke();
+    c.beginPath();c.moveTo(-14,12);c.lineTo(12,4);c.stroke();
     c.strokeStyle="rgba(0,0,0,.5)";c.lineWidth=1.5;c.beginPath();c.roundRect(-30,-18,60,36,6);c.stroke();
   }
   c.restore();
