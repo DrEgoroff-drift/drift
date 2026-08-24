@@ -1,4 +1,4 @@
-# Замер экономики: считает доход источников в кредитах за минуту на настоящем G.
+﻿# Замер экономики: считает доход источников в кредитах за минуту на настоящем G.
 $src = Get-Content -Raw -Encoding UTF8 "$PSScriptRoot\..\drift.html"
 $cut = $src.LastIndexOf("</body>")
 $head = $src.Substring(0, $cut)

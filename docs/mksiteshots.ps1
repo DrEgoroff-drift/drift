@@ -1,4 +1,4 @@
-# Скрины для заглавной (site/shots/*.webp, 1600×900) — кадры самой канвы, без кнопок.
+﻿# Скрины для заглавной (site/shots/*.webp, 1600×900) — кадры самой канвы, без кнопок.
 #
 #   powershell -ExecutionPolicy Bypass -File docs\mksiteshots.ps1
 #

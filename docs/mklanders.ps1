@@ -1,4 +1,4 @@
-# Lander sheet: every hull form as it stands on the pad, side by side.
+﻿# Lander sheet: every hull form as it stands on the pad, side by side.
 $src = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot "..\drift.html")
 $cut = $src.LastIndexOf("</body>")
 $head = $src.Substring(0, $cut)

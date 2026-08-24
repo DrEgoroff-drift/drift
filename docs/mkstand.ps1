@@ -1,4 +1,4 @@
-# Стенд рубки ШТАБ: игра + своя канва поверх, на которой рисуется только комната.
+﻿# Стенд рубки ШТАБ: игра + своя канва поверх, на которой рисуется только комната.
 $src = Get-Content -Raw -Encoding UTF8 "$PSScriptRoot\..\drift.html"
 $cut = $src.LastIndexOf("</body>")
 $head = $src.Substring(0, $cut)

@@ -1,4 +1,4 @@
-# Стенд логова: занятая система, вход в абордаж, барон на мостике.
+﻿# Стенд логова: занятая система, вход в абордаж, барон на мостике.
 $src = Get-Content -Raw -Encoding UTF8 "$PSScriptRoot\..\drift.html"
 $cut = $src.LastIndexOf("</body>")
 $head = $src.Substring(0, $cut)

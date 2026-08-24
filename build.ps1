@@ -90,6 +90,25 @@ function Bulk($files, $tfiles) {
     "  ! просятся на распил (>{0} КБ): {1}" -f $BULK_KB,
       (($big | ForEach-Object { "{0} {1} КБ" -f $_.Name, [math]::Round($_.Length / 1KB) }) -join ", ")
   }
+  # ── кодировка скриптов ──
+  # Windows PowerShell 5.1 читает .ps1 БЕЗ BOM как ANSI-кодировку системы, и
+  # весь русский в файле превращается в кракозябры — молча, без ошибки. Так
+  # уже уехал стенд, у которого подписи на листе стали "Р”Р’Р•РќРђР”Р¦РђРўР¬".
+  # Проверять глазами бесполезно: в редакторе файл выглядит правильно.
+  $noBom = @(Get-ChildItem $root -Recurse -Filter *.ps1 |
+    Where-Object { $_.FullName -notmatch '\\(node_modules|\.git)\\' } |
+    Where-Object {
+      $b = [byte[]](Get-Content -LiteralPath $_.FullName -Encoding Byte -TotalCount 3 -ErrorAction SilentlyContinue)
+      $hasBom = $b.Length -ge 3 -and $b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -eq 0xBF
+      if ($hasBom) { return $false }
+      $raw = [IO.File]::ReadAllBytes($_.FullName)
+      # непустой UTF-8 многобайтовый хвост = в файле есть не-ASCII
+      ($raw | Where-Object { $_ -gt 127 }).Count -gt 0
+    })
+  if ($noBom.Count) {
+    "  ! .ps1 с русским текстом и БЕЗ BOM (5.1 прочтёт как ANSI): {0}" -f
+      (($noBom | ForEach-Object { $_.Name }) -join ", ")
+  }
   $plan = Join-Path $root "PLAN.md"
   if (Test-Path $plan) {
     $pkb = [math]::Round((Get-Item $plan).Length / 1KB)

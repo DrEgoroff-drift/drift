@@ -1,4 +1,4 @@
-# Поверхность с вашими постройками: дом и база на горизонте.
+﻿# Поверхность с вашими постройками: дом и база на горизонте.
 $src = Get-Content -Raw -Encoding UTF8 "$PSScriptRoot\..\drift.html"
 $cut = $src.LastIndexOf("</body>")
 $head = $src.Substring(0, $cut)

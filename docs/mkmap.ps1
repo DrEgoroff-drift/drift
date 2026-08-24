@@ -1,4 +1,4 @@
-# Карта с фронтом пиратов: занятые системы обведены штрихами.
+﻿# Карта с фронтом пиратов: занятые системы обведены штрихами.
 $src = Get-Content -Raw -Encoding UTF8 "$PSScriptRoot\..\drift.html"
 $cut = $src.LastIndexOf("</body>")
 $head = $src.Substring(0, $cut)

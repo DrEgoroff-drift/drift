@@ -138,6 +138,47 @@ a family of functions), keep the concatenation order, and never split a `const` 
   he comes back as an exile in the cantina. Edits that reduce his departure to a log line again
   break the design: he is the one strong late-game opponent the player raised himself.
 
+## The dev stand — look at the work, don't argue with a PNG
+
+```bash
+powershell -ExecutionPolicy Bypass -File dev.ps1
+```
+
+Publishes **this** build to `https://drift-game.ru/dev.html` and every comparison
+sheet from `docs/shots/` to `https://drift-game.ru/dev/`. It never touches
+`play.html`, `index.html` or `api.php`, so broken work can go there safely.
+
+The order of work is: edit → `dev.ps1` → look at the dev URL → fix → push to
+`main` only when it is right (the push publishes `play.html` by itself).
+Headless captures stay useful for a self-critique pass between iterations, but
+they are no longer how the work is shown to anybody: a PNG cannot be walked
+through, waited out until night, or opened on a phone.
+
+## Tooling gotchas that cost real time
+
+- **A `.ps1` with Russian text MUST be saved UTF-8 *with* BOM.** Windows
+  PowerShell 5.1 reads a BOM-less file as the system ANSI codepage and turns
+  every Cyrillic literal into mojibake — silently, no error, and the file still
+  looks right in an editor. `build.ps1` now flags such files. To fix one:
+  `$t=[IO.File]::ReadAllText($p,[Text.Encoding]::UTF8); [IO.File]::WriteAllText($p,$t,(New-Object Text.UTF8Encoding $true))`.
+  Files under `src/` are safe — `build.ps1` reads them as UTF-8 explicitly.
+- **A script parameter shadows a variable of the same name, case-insensitively.**
+  `param([switch]$Shots)` plus a later `$shots = Get-ChildItem …` fails with
+  "Cannot convert System.Object[] to SwitchParameter".
+- **Never measure the frame with `--virtual-time-budget`.** It fast-forwards
+  timers, so the probe measures the fast-forward. `docs/g11.ps1` runs `?g11`
+  correctly; it also leaves the GPU on, because `--disable-gpu` reads ~10 fps in
+  every mode and tells you nothing.
+- **Long shell one-liners with quotes get mangled.** Write a script to the
+  scratchpad and run it instead — a `Remove-Item` once received `"C:\Program`
+  as its path.
+- There is **no `node` and no `python`** on this machine. PowerShell, or the
+  game itself in a browser.
+- `ssh drift` prints a post-quantum key-exchange warning on every connection.
+  That is the shared host being old; it is not an error. The louder
+  `client_global_hostkeys_prove_confirm` line was silenced with
+  `UpdateHostKeys no` in `~/.ssh/config`.
+
 ## How to verify
 
 **Autotests first, headless.** `build.ps1` also builds `tests.html` — the same game plus

@@ -1,4 +1,4 @@
-# Настоящий экран ШТАБ (не стенд): панель со своей шириной, комната внутри неё.
+﻿# Настоящий экран ШТАБ (не стенд): панель со своей шириной, комната внутри неё.
 $src = Get-Content -Raw -Encoding UTF8 "$PSScriptRoot\..\drift.html"
 $cut = $src.LastIndexOf("</body>")
 $head = $src.Substring(0, $cut)

@@ -1,4 +1,4 @@
-# Скрины для README: одна страница на все сцены, сцена выбирается ?scene=имя.
+﻿# Скрины для README: одна страница на все сцены, сцена выбирается ?scene=имя.
 #
 #   powershell -ExecutionPolicy Bypass -File docs\mkshots.ps1          # собрать docs/shots.html
 #   powershell -ExecutionPolicy Bypass -File docs\mkshots.ps1 -Shoot   # и снять все сцены headless Chrome

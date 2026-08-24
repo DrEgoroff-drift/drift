@@ -1,4 +1,4 @@
-# Карта с маршрутом фактора: плечи, борт на линии, подпись лучшего плеча.
+﻿# Карта с маршрутом фактора: плечи, борт на линии, подпись лучшего плеча.
 $src = Get-Content -Raw -Encoding UTF8 "$PSScriptRoot\..\drift.html"
 $cut = $src.LastIndexOf("</body>")
 $head = $src.Substring(0, $cut)

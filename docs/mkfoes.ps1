@@ -1,4 +1,4 @@
-# Лист противников абордажа: типы и барон рядом, крупно.
+﻿# Лист противников абордажа: типы и барон рядом, крупно.
 $src = Get-Content -Raw -Encoding UTF8 "$PSScriptRoot\..\drift.html"
 $cut = $src.LastIndexOf("</body>")
 $head = $src.Substring(0, $cut)

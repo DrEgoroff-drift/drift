@@ -1,4 +1,4 @@
-# Лист флота: все сто корпусов сеткой, чтобы силуэты и тиры смотрелись рядом.
+﻿# Лист флота: все сто корпусов сеткой, чтобы силуэты и тиры смотрелись рядом.
 $src = Get-Content -Raw -Encoding UTF8 "$PSScriptRoot\..\drift.html"
 $cut = $src.LastIndexOf("</body>")
 $head = $src.Substring(0, $cut)
