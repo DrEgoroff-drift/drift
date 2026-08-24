@@ -4545,3 +4545,230 @@ socket out is not wired); the recorder itself is not a purchasable unit, only th
 `26-ui-station` crossed 40 KB with this tab and is now shouting on every build; wear from the hull
 (`12s-wear`) and instrument age run on separate clocks that never speak to each other.
 
+
+---
+
+# Moved from PLAN.md on 2026-08-25 — the thirteenth pass, milestone by milestone
+
+These sections stood in the live plan long after they were built. They are kept verbatim:
+each one records why a thing was done the way it was, which is what this archive is for.
+
+# QUEUE: the thirteenth pass â the galaxy as a book of stories (M122âM151)
+
+**Full text lives in [`docs/PLAN-archive.md`](docs/PLAN-archive.md)** â grep it for `M122`. It was
+moved there on 2026-08-15 because thirty milestones of far-future work were being carried in a file
+that is read every session; the pass itself stands, and it is the release (0.72.0 â **1.00.0**).
+
+## M143–M151 (0.107.0, 0.108.0) — built. The thirteenth pass is closed
+
+`11o-slow` (figure/reply/rounds, `slowDrift` on the chrono needle), `11p-pass` (hulk, lights,
+tell), `11q-grown` (`grownExtra` houses, `grownOnGive` reciprocity from `settleGive`),
+`11r-plan` (`planEndless`/`planTook` in 12ta, `planDeliver` from `enterBase`), `11s-returners`
+(`tin` slot renamed, `retDrift` once, board block), `11t-rumours` (two per station per three
+days, 15% wrong, receiver line), `11u-names` (`nameOf` in map/HUD, cantina input, `namesEtherLine`
+after 15 jumps, rumours pick the name up), `docs/PASSPORTS.md` (M150 as a rules document),
+`11v-places` (three fixed addresses, nearest star, first solid planet, no log). Persisted:
+`G.slow`, `G.pass`, `G.grown`, `G.plan`, `G.ret`, `G.names`, `G.namesTold`. Suites `91zzb`–`91zzf`.
+
+**Open by design:** the second rumour channel "somebody shows his tape" is the detail line, not a
+real tape; the returners' arrivals board is a fixed table; M150's four wear layers on every prop
+remain art direction, not a generator.
+
+## M140-county, M141-charts, M142-quiet (0.106.0) — built
+
+`11l-county`: `countyPoiK` (20a scale), `countyHouseK` + `countyDrawTown` (12t), `countyNoiseTick`
+from `updateSurface` (levels 30/70/120/160), `countyAnswerLine` in the ether ≥20 jumps later.
+`11m-charts`: `chartsHidden`/`chartsJitter` in the map star loop, `chartsDock`, buy/drop/return
+(`chartsTick` from the ether tick), cantina block. `11n-quiet`: `quietNoPirates` (13),
+`quietNoWear` (12s), `quietMute` in `logAdd` and `tapeSample`, `quietLeave` in `jump`,
+`quietAfterLeave`, dock line and the open door block. Persisted `G.county`, `G.charts`, `G.quiet`.
+
+**Open by design:** level prices on the quiet edge (no single price function to hook; the market
+is per-station tables) — left.
+
+## M139-keepers (0.105.0) — built. The line of keepers
+
+`11k-keepers`: `keepersDock` from `openStation` (habit table by `visitHere`, ration taken every
+third visit, gone at visit 10), `keepersBlock` in the cantina (roster, sign, feed), `keepersDark`
+(gone && !signed, or signed && jumps−fed>12), effects `keepersCourseDrift` (25a), `keepersJumpK`
+(18 map cost ×1.5), `keepersEtherLine`; rhyme at the `pass` core (`keepersRhymeHere`). Persisted
+`G.keepers={gone,signed,fed,given}`. Suite `91zx-keepers`.
+
+## M138-grove (0.104.0) — built. The grove
+
+`11j-grove`: `groveSys` (core if it has a belt, else the region's first belt system), `groveDress`
+from `enterBelt` (edge 3 / core 22 marked rocks, res xeno), `groveTick` before thrust in
+`updateBelt` (close / flinch / part / close-for-good, min 150 or 90), collision exemption in the
+rock loop, `groveOnKill` from `killRock` (power≥3 shot, else cut +6 xeno), `groveDraw` halos after
+the rocks, `groveEtherLine`. Persisted `G.grove={turn,shot,cut}`. Suite `91zw-grove`.
+
+## M137-glow (0.103.0) — built. The light that remembers
+
+`11i-glow`: edge = region minus core. `glowDressFlora` (all plants glow), `glowDrawPad`,
+`glowScan` (+1 xeno), `glowPatches`/`glowDrawPatches` (rut, machine, foundation; night only),
+`glowGroundLine`. Core: `peepHere` forced, `P.pass` counts passes per eclipse (20c), `glowTier`
+gives ×1.4+flash / ×.9 / ×.34 near-only runner; `glowCaveX` puts the cave mouth at the mat's edge
+in the runner's direction. Suite `91zv-glow`.
+
+## M136-hours (0.102.0) — built. The drift of hours
+
+(The number M136 was reused by 0.100.0 "Under the skin" in the tails sweep; region milestones keep the
+archive numbers with a suffix from here on: `M136-hours`, `M137-glow`, …)
+
+`11h-hours`: the `hours` region (needle `chrono`). `hoursOffset()` in minutes — region 3–10, core
+orbit 60, core surface up to 240 toward `settleSpotX`; `hoursDrift()` adds to the chrono needle in
+`instrRead` (25a), the tape follows. `hoursEtherLine` (35% of edge ether), `hoursGroundLine`,
+`hoursNobody` hides the watchmen, `hoursDrawPeople` (windows by night, the one man during an
+eclipse), `hoursMachine` (7 cr → 1 organics). Edge = whole region minus core (rim placement).
+Persisted: `G.hours={man}`. Suite `91zu-hours`.
+
+**Open by design:** "automation feeds the stock" is shown only by smoke and the machine — the
+settlement's own stock is not auto-fed (would touch 12t economics); the night shadows are a pass
+of their own if the region ever gets a core interior.
+
+## M135 (0.101.0) — built. Three lights
+
+`11g-lights`: the `lights` region (needle `actino`). **Edge:** night capped at dusk (`lightsNight` in
+`surfNight`), one companion sun (`lightsSuns` after the star disc in `drawSkyLayer`), shutters on
+every settlement yard (`lightsShutters` from `settleDraw`). **Core:** no night, two companions.
+**Calendar:** `lightsConj(t)` — period 24–35 days from the region seed, a one-day window with a
+sine peak; anchored by `lightsArrive()` (ether tick and landing) at the first arrival so the last
+conjunction was yesterday, then fixed for good. No countdown is shown anywhere; `lightsGroundLine`
+speaks only of shutters and lights. **Reveal:** `lightsDrawReveal` draws road, foundations and
+arch on the core planet only while `lightsOpen(p)`; `lightsEnter` runs `enterCave` with `ancient`
+(seed 9, no fauna) and the find goes through `lightsCaveFind` (120 data, `relicRoll` .7).
+Persisted: `G.lights={t0,seen}`. Suite `91zt-lights`.
+
+**Open by design:** region talk ("colonies sleep by light" in cantina/counter lines) and a
+settlement glyph for the shutters wait for the factions pass; the edge generator per world type is
+still the table's reservation (M132 tail).
+
+## M134 (0.94.0) â built. The mirror
+
+`11f-mirror`: the transit region (`mirror`, needle `radio`). **Edge:** whatever the ether says
+inside the slope comes back thirty-seven seconds later, word for word (`mirrorEchoArm` from
+`etherTick`, `mirrorEchoTick` in the same tick); leave the system and the echo is gone; a
+dispatcher waves it off one time in three. **Core:** a fifth find kind, `echo`, always present at
+the core and never taken â a thin plate edge-on with one sliding glint. Listening lays two to four
+old reflections over each other: domestic lines (`MIRROR_CORE` â a time signal, a roll-call, a
+forgotten mug) mixed with the ordinary ether, none invented (M116). The first listen gives the
+bearing: a map mark 120â160 sectors out, where nobody flies. `G.mirror` is one bit. Suite
+`91zs-mirror`.
+
+**Still open → swept, see the tails ledger:** the edge has only the echo â the "atrocious comms" could also degrade the
+receiver's own reading (`instrRead` dev on `radio` is already there, but the ether itself does not
+stutter); the bearing mark cannot be removed or acknowledged; the mirror's lines do not yet enter
+the parrot's memory.
+
+## M138 (0.100.2) â built. The tunnel
+
+The cell grid moved into the mountain (`BASE_OX`/`BASE_OY` in `21a-mode-base`: two cells to the
+right of the gate, one level above the plain) and a 40 px tunnel from the gate at plain level
+runs to the floor of the top row; `BASE_GY` is the plain, `BASE_GATE_X` the gate. **Still open → swept, see the tails ledger:**
+the gate reads as part of the tunnel, not as a door; the tunnel has no light of its own.
+
+## M137 (0.100.1) â built. Into the mountain
+
+Base cross-section: mountain profile as a ramp-and-plateau to the top of the frame, gate in
+the left foot, mast on the summit (`21a-mode-base`). **Still open → swept, see the tails ledger:** the pad lights on the top
+row are buried under the slope; the plateau to the right is a plain wall of rock without a
+second plane.
+
+## M136 (0.100.0) â built. Under the skin
+
+Lander silhouette by `h.form` (`19-mode-landing`), the jetpack (`20d-jetpack`, surface and cave),
+and the cave rebuilt as a 2D rock field with carved passages and 2D raster tiles
+(`22-mode-cave`, `18c`). Stands: `docs/mklanders.ps1`, `docs/mkcave.ps1`. **Still open → swept, see the tails ledger:** the
+lower gallery has no dressing of its own (water, crystals and veins hang on the upper one only);
+beasts walk the upper gallery and never descend; the rock fringe of the contour stroke carries
+no material; the base was asked to look like a Fallout-Shelter cross-section and already is one
+â what exactly differs is a question for the author.
+
+## M133 (0.93.0) â built. The postal round
+
+`11e-post`: the first themed region. Six links â five who once carried the thing and the last
+addressee â hand-written, each with one line about himself and a word about who comes next, never
+about the parcel. Addresses are seeded and not stored: link 0 is the post region's plain trading
+system, link 5 its core, links 1â4 are stations 4â14 sectors out, outside the region. The parcel
+is an ordinary object (a bundle, a jar, a wrench with a blank tag). On docking at the next link
+the man comes to you himself (`postDock`, once per landing, toast + journal); the cantina shows the
+parcel next to the table with one button, **open**. Opened, the chain goes on; the last man says
+one extra sentence and does not reproach. Nothing is paid; the core counts as `care` in the memory
+of place. State is three numbers in `G.post`; suite `91zr-post`.
+
+**Still open → swept, see the tails ledger:** the links are met only in passing â nothing points at them (rumours, M148, are the
+natural pointer); the post region itself has no edge colouring yet beyond silent instruments; the
+parcel is not yet a thing one can put on the table (M128) or show to the bird.
+
+## M132 (0.92.0) â built. Regions: the table, and the memory of place
+
+`06c-regions`: a closed table of fifteen themed regions (post, mirror, lights, hours, glow, grove,
+keepers, county, charts, quiet, slow, pass, grown, plan, tin) laid over the M122 grid. Placement
+is seeded and cached (`regionPlace`): ring by theme, first cell whose core is a station system,
+which has a plain trading system on its edge, and which keeps one empty region between itself and
+any other theme â cores end up 3â23 sectors out, never closer than two stock jumps. `regionAt`
+now carries `theme`, the theme's name and its needle; **the postal round has no needle and
+`amp=0`** â the one region where the instruments say nothing. Plain regions are untouched.
+
+`11d-place`: memory of place, persisted in `v:4` as `G.place` + `G.odo`. Per place (same key as
+stories: system, or system/planet): first and last odometer, landings, and three coarse counters â
+`take` (mined units), `hurt` (player shots), `care` (repairs, closed quests). **Maturation is path,
+not time**: `G.odo` counts landings and jumps; `placeAge(key)` is path since the last visit. Nothing
+is shown; `placeMood` returns the counter that won, for the grove (M138) and the insects (M145).
+Suite `91zq-regions` (placement, monotone misclosure, silence in the post round, core spacing, BFS
+reachability from origin on a stock tank, memory counters, save round-trip).
+
+**Still open → swept, see the tails ledger:** the edge generator (parameters over world types per theme) and the hand-built core
+are left to each region's own milestone â the table only reserves the place; surface layer masks
+(presence/revelation, never switching in sight) wait for the first region that needs one (M135);
+`care` does not yet count the table (M128) or things left behind; `hurt` counts shots, not hits.
+
+## M131 (0.91.0) â built. A hundred and two
+
+`seenOf`/`unseenOf` conditions (a trace of another story seen), `carry` on a trace (the parrot
+remembers it as `heard` kind `story` and lists it with the place's address), `12k-stories-c`
+with 30 stories, 102 in all across the three data files (each under the 40 KB guard). Suite
+checks every `seenOf` target exists and that the bird records a carried line once.
+
+**The hundred is closed.** Left open, deliberately, in the design: the barge passenger as a
+channel, settlement glyph overrides, per-region colouring once regions (M132+) exist.
+
+## M130 (0.90.0) â built. The ground speaks too
+
+Channels `land`, `cave`, `settle`, `tin`; addresses `planet`, `settle`, `tin`, `world:T`; planet
+stories anchor to system/planet and landings on a planet are counted. `12k-stories-b`: 46
+stories, 72 in all. Lint now also rejects unknown address kinds.
+
+**Open for M131**: links as data (a trace may require a trace of *another* story seen), the parrot
+as carrier (a line heard at A repeated at B), the barge passenger as a channel, +30 stories to
+pass a hundred.
+
+## M129 (0.89.0) â built. Traces, not tasks
+
+Engine `11c-stories`, data `12k-stories-a` (26 stories, six of them long), suite `91zp-stories`.
+Decisions taken with the author on 2026-08-22: **no journal page** â stories leave no trace in
+the interface; **anchoring at first meeting** (deterministic lot per story Ã place, â¤4 floating
+per place); **a third never explained**; **the six rivals get six stories** (four built: baker,
+Krapiva, Kim, Shtof, Sovenya, Efim â five; the sixth waits for a face). Long stories are written
+in the key of institute fiction â the report on the event that never happens, the null-cabin.
+Channels: ether, counter queue, table, finds, rumours, cantina scene. Lint: closed `when`
+dictionary, every turn flag read, 2â7 traces, â¤4 surfaces (counter + table count as one).
+
+**Open for M130**: the surface, the settlement (glyph), the machine and the animals as channels
+â the four "ground" stories of the design (who feeds the Tin, the shoal, the shell, who turns
+off the light) wait for them; +40 stories. **M131**: links as data, the parrot as carrier, +40.
+
+M128 and M128b (speech queue, the table, the tape as an object; the frame's address, the performance pass and the wide-screen pane) are in `docs/PLAN-archive.md` â grep `M128`.
+
+What it is, in short. M106âM121 gave the arm one long story told in fragments; this pass gives it
+**many short ones**, and a body to fly them in. The unit is a **region**, not a planet: six to ten
+systems on one theme with a hidden gradient, a procedural edge and one hand-built core, so the
+periphery points at the core without a marker or a quest log. The instruments come first (M122 the
+panel and its misclosure, M123 the paper recorder), then everything the player sees moves into the
+cockpit (M124âM127), speech becomes a queue of lines and putting things on the table (M128), and
+**the hundred** â a hundred small human stories on one template â is the load-bearing wall
+(M129âM131). Design: [`docs/DESIGN-stories.md`](docs/DESIGN-stories.md) (2026-08-22, awaiting the author's call on four forks listed at its end). Fifteen regions follow (M132âM146), then rumours, a returnee and the release.
+
+
+---
+

@@ -424,30 +424,36 @@ function drawPlant(pl,x,y){
   /* шипы: настоящий признак вида, из-за которого слово «колючий» в имени
      перестало быть враньём. Сидят парами вдоль ствола, длина от толщины */
   if(pl.spiny){
+    /* все шипы — ОДИН путь и один stroke. Отдельный beginPath на каждый шип
+       давал дюжину вызовов на куст и десятки на куртину: правило «дорогое
+       считается один раз» относится и к вызовам растеризатора */
     ctx.lineWidth=Math.max(.7,pl.w*.3);
+    ctx.beginPath();
     for(let i=1;i<pts.length;i++){
       const a=pts[i-1],b2=pts[i], ln=Math.max(2.2,pl.w*1.4);
       for(let k=0;k<2;k++){
         const q=(k+.5)/2, px=lerp(a[0],b2[0],q), py=lerp(a[1],b2[1],q);
         const s=(i+k)%2?1:-1;
-        ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+s*ln,py-ln*.5);ctx.stroke();
+        ctx.moveTo(px,py);ctx.lineTo(px+s*ln,py-ln*.5);
       }
     }
+    ctx.stroke();
   }
   /* сухостой: у старого экземпляра одна-две ветви мертвы, голы и другого тона.
      Это единственное, по чему возраст читается силуэтом, а не размером */
   if(pl.dead&&pl.dead.length){
     ctx.strokeStyle=sc?"rgba(127,230,216,.35)":"rgba(122,106,84,.92)";
     ctx.lineWidth=Math.max(1,pl.w*.55);
+    ctx.beginPath();
     for(const d of pl.dead){
       const [dx,dy]=at(d.t);
       const ex=dx+Math.sin(d.ang)*d.len, ey=dy-d.len*.5;
-      ctx.beginPath();ctx.moveTo(dx,dy);
+      ctx.moveTo(dx,dy);
       ctx.quadraticCurveTo(dx+Math.sin(d.ang)*d.len*.55,dy-d.len*.42,ex,ey);
-      ctx.stroke();
-      ctx.beginPath();ctx.moveTo(ex,ey);
-      ctx.lineTo(ex+Math.sin(d.ang)*d.len*.28,ey-d.len*.12);ctx.stroke();
+      ctx.moveTo(ex,ey);
+      ctx.lineTo(ex+Math.sin(d.ang)*d.len*.28,ey-d.len*.12);
     }
+    ctx.stroke();
     ctx.strokeStyle=stemC;
   }
   /* ветви */

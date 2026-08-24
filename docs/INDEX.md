@@ -157,12 +157,12 @@ bDress                       src/21aa-base-rooms.js:122
 BEACON_COOL                  src/23-mode-dig.js:70
 beaconCool                   src/23-mode-dig.js:71
 beaconTick                   src/23-mode-dig.js:86
-BEAST_ALIEN                  src/20-life.js:557
-BEAST_ALIEN_WORD             src/20e-species.js:211
-BEAST_SHAPES                 src/20-life.js:549
-beastBias                    src/20-life.js:558
-beastFormWord                src/20e-species.js:213
-beastTraitWord               src/20e-species.js:222
+BEAST_ALIEN                  src/20-life.js:563
+BEAST_ALIEN_WORD             src/20e-species.js:213
+BEAST_SHAPES                 src/20-life.js:555
+beastBias                    src/20-life.js:564
+beastFormWord                src/20e-species.js:215
+beastTraitWord               src/20e-species.js:224
 BELT_AVLIM                   src/24-mode-belt.js:86
 BELT_HALF                    src/24-mode-belt.js:84
 BELT_POI                     src/24b-belt-poi.js:13
@@ -176,9 +176,9 @@ BG_BRIGHT                    src/16-flight.js:17
 BG_GROUP                     src/16-flight.js:11
 bGlow                        src/21aa-base-rooms.js:298
 bHazard                      src/21aa-base-rooms.js:289
-bioMark                      src/20e-species.js:308
+bioMark                      src/20e-species.js:310
 bioPlanet                    tests/91zzzb-bio.js:10
-bioScan                      src/20e-species.js:313
+bioScan                      src/20e-species.js:315
 bJunk                        src/21aa-base-rooms.js:62
 bLamp                        src/21aa-base-rooms.js:279
 BLUEPRINTS                   src/12c-mgr-core.js:662
@@ -461,8 +461,8 @@ drawBarges                   src/12l-barge.js:527
 drawBargesMap                src/12l-barge.js:552
 drawBase                     src/21ac-base-draw.js:43
 drawBaseBuilding             src/21c-built.js:99
-drawBeast                    src/20-life.js:743
-drawBeastAlien               src/20-life.js:577
+drawBeast                    src/20-life.js:749
+drawBeastAlien               src/20-life.js:583
 drawBelt                     src/24-mode-belt.js:366
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17c-system-draw.js:94
@@ -639,7 +639,7 @@ facePath                     src/12d-mgr-face.js:19
 faceRnd                      src/12d-mgr-face.js:16
 factPrices                   src/27c-ui-hq.js:484
 FAUNA_RES                    src/02-world.js:38
-faunaOf                      src/20e-species.js:266
+faunaOf                      src/20e-species.js:268
 fbm1                         src/01-core.js:19
 fbm2                         src/01-core.js:26
 fbm3                         src/24-mode-belt.js:16
@@ -702,8 +702,8 @@ foundBase                    src/21a-mode-base.js:53
 frame                        src/28-loop.js:345
 freeVoice                    src/09-audio.js:79
 fuelPriceHere                src/12k-rep.js:63
-FUR_TONES                    src/20-life.js:532
-furColor                     src/20-life.js:537
+FUR_TONES                    src/20-life.js:538
+furColor                     src/20-life.js:543
 fuseAffordable               src/03-ships.js:38
 fuseCost                     src/03-ships.js:33
 fuseGen                      src/03-ships.js:32
@@ -711,7 +711,7 @@ fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
 G                            src/08-state.js:42
 g11Fps                       src/28z-fps-probe.js:7
-genBeast                     src/20-life.js:570
+genBeast                     src/20-life.js:576
 genBeltPOI                   src/24b-belt-poi.js:20
 genDeco                      src/21b-surface-deco.js:37
 genDesc                      src/01-core.js:59
@@ -2056,9 +2056,9 @@ spawnAllies                  src/12a-crew.js:483
 spawnBarges                  src/12l-barge.js:102
 spawnPirates                 src/13-pirates.js:25
 SPEC_KEYS                    src/12a-crew.js:17
-speciesBeast                 src/20e-species.js:232
+speciesBeast                 src/20e-species.js:234
 speciesPlant                 src/20e-species.js:40
-specimenBeast                src/20e-species.js:283
+specimenBeast                src/20e-species.js:285
 specimenPlant                src/20e-species.js:134
 speechAll                    src/11b-speech.js:113
 speechHere                   src/11b-speech.js:115
@@ -2861,13 +2861,13 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/20e-species.js · 18 КБ
   · ВИД КАК ВЕЩЬ (M174):1
-  · фауна:210
-  · описан или нет:302
+  · фауна:212
+  · описан или нет:304
 
 ## src/20-life.js · 45 КБ
   · астронавт:1
   · флора:105
-  · фауна:523
+  · фауна:529
 
 ## src/21aa-base-rooms.js · 35 КБ
   · база: внутренности отсеков:1

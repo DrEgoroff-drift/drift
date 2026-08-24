@@ -197,14 +197,16 @@ function plantLitter(pl,sc){
   const c=pl.leaf;
   ctx.fillStyle=sc?"rgba(127,230,216,.22)"
     :"rgba("+(c[0]*.58|0)+","+(c[1]*.5|0)+","+(c[2]*.42|0)+",.62)";
+  /* весь опад — один путь и одна заливка */
+  ctx.beginPath();
   for(let i=0;i<pl.litter;i++){
     const u=((hashi(Math.round(pl.x),i,0x11A7)>>>7)&255)/255;
     const v=((hashi(Math.round(pl.x),i,0x5C31)>>>9)&255)/255;
     const w=Math.max(2,pl.h*.075*(.7+v*.6));
-    ctx.beginPath();
+    ctx.moveTo((u-.5)*pl.h*.75+w,-w*.3);
     ctx.ellipse((u-.5)*pl.h*.75,-w*.3,w,w*.4,(u-.5)*1.4,0,TAU);
-    ctx.fill();
   }
+  ctx.fill();
 }
 
 /* ══════════════ фауна ══════════════ */
