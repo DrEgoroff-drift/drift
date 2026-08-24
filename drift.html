@@ -863,7 +863,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.141.0";
+const VER="0.142.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -5434,11 +5434,37 @@ function planetPaint(p,x,y,r,S,L,turn){
     ctx.fillStyle="rgb("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+")";
     ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
   }
-  ctx.drawImage(L.sh,x-r,y-r,d,d);   // тень
+  /* ── свет приходит ОТТУДА, ГДЕ ЗВЕЗДА (M175) ──
+     Вектор света был зашит в выпечку константой, и планета слева от светила и
+     планета справа были освещены одинаково — из верхнего левого угла обе. Это
+     ровно тот дефект, который M172 исправил на поверхности («у света был час,
+     но не было направления»), только на экране, где игрок сидит чаще всего
+     после кокпита.
+     Чинится даром: терминатор, если смотреть сверху, — прямая через центр
+     диска, перпендикулярная направлению на звезду. Значит накладку не надо
+     печь заново под каждый угол, её достаточно ПОВЕРНУТЬ. Ни лишней выпечки,
+     ни разрастания кэша. Ободок вращается вместе с тенью: его радиальная часть
+     от поворота не зависит, а подсветка дневной стороны — зависит. */
+  const rot=planetSunRot(p);
+  ctx.save();
+  ctx.translate(x,y);
+  if(rot)ctx.rotate(rot);
+  ctx.drawImage(L.sh,-r,-r,d,d);   // тень
   const op=ctx.globalCompositeOperation;
   ctx.globalCompositeOperation="lighter";
-  ctx.drawImage(L.rim,x-r,y-r,d,d);  // ободок атмосферы
+  ctx.drawImage(L.rim,-r,-r,d,d);  // ободок атмосферы
   ctx.globalCompositeOperation=op;
+  ctx.restore();
+}
+/* угол, под которым свет запечён в накладку (см. planetLight) */
+const PLANET_BAKE_ANG=Math.atan2(-.42,-.52);
+/* Звезда стоит в начале системных координат, экран их не переворачивает
+   (zx/zy в 17-mode-system — сдвиг и масштаб), поэтому направление на светило с
+   планеты — это просто (−x, −y). */
+function planetSunRot(p){
+  const dx=-(p.x||0), dy=-(p.y||0);
+  if(!dx&&!dy)return 0;
+  return Math.atan2(dy,dx)-PLANET_BAKE_ANG;
 }
 /* ── планета в кадре ──
    Собранный шар кладётся в свой холст и дальше только КЛАДЁТСЯ на экран — один
@@ -5483,12 +5509,16 @@ function planetDraw(p,x,y,r){
     p.discCx=p.disc.getContext("2d");
     p.discTurn=null;p.discSide=side;
   }
-  if(p.discTurn===null||p.discLvl!==p.stripLvl||Math.abs(turn-p.discTurn)>=step){
+  /* в ключ пересборки входит и угол на звезду: планета ползёт по орбите, фаза
+     вместе с ней, и без этого кэшированный диск держал бы вчерашний свет */
+  const sun=planetSunRot(p);
+  if(p.discTurn===null||p.discLvl!==p.stripLvl||Math.abs(turn-p.discTurn)>=step
+     ||Math.abs(sun-(p.discSun||0))>=.008){
     p.discCx.clearRect(0,0,side,side);
     const prev=ctx;ctx=p.discCx;
     planetPaint(p,rr,rr,r,S,L,turn);
     ctx=prev;
-    p.discTurn=turn;p.discLvl=p.stripLvl;
+    p.discTurn=turn;p.discLvl=p.stripLvl;p.discSun=sun;
   }
   /* дробные координаты, а не целые: планета ползёт по орбите медленнее пикселя
      за кадр, и округление копило этот ход, чтобы разом прыгнуть на целый

@@ -807,7 +807,15 @@ so it cannot lie by construction; a second specimen of a known species is no lon
 (c) the specimen answers the world: leaning toward the star, taller and lusher in a wet hollow,
 stunted and harder on a dry ridge, litter and deadwood at the foot.
 
-## 13. Planets in the system view are lit from a constant, not from the star
+## 13. Planet light — **BUILT (0.142.0, M175)**. `planetSunRot` in `07-planet`, stand `docs/mkplight.ps1`
+
+The baked shading layer is rotated at draw time by the planet's angle to the star; the disc cache
+takes the sun angle into its rebuild key. No extra bake. The softness of the terminator was left
+as it was — a true half-phase is art direction and belongs to the author.
+
+### The original finding, kept for the record
+
+
 
 `planetLight` (`07-planet`) bakes the shading layer with a hardcoded vector:
 
@@ -850,5 +858,5 @@ each other and against the screen edge — it will have to be re-pointed, not di
 
 ## Order
 
-12 (biology) — **done, 0.141.0** → 13 (planet light) → 14 A2 → 14 A3 → 9 (second storey) →
+12 (biology) — **done, 0.141.0** → 13 (planet light) — **done, 0.142.0** → 14 A2 → 14 A3 → 9 (second storey) →
 10 (world heard) → graphics debt one at a time → split debt.

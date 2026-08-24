@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 252 · символов верхнего уровня: 2435
+Файлов: 252 · символов верхнего уровня: 2437
 
 ## СИМВОЛЫ
 
@@ -720,7 +720,7 @@ genPart                      src/05-parts.js:70
 genPlant                     src/20-life.js:151
 genPOI                       src/20a-poi.js:32
 genRaid                      src/24a-mode-raid.js:30
-genTerrain                   src/07-planet.js:401
+genTerrain                   src/07-planet.js:431
 genUniqueShip                src/03-ships.js:16
 GEO_FAULT                    src/18b-geology.js:91
 GEO_KIND                     src/18b-geology.js:13
@@ -776,7 +776,7 @@ grokTeach                    src/12tb-grok.js:145
 grokTick                     src/12tb-grok.js:76
 grokWant                     src/12tb-grok.js:42
 GROUND_BAKING                src/19-mode-landing.js:194
-groundAt                     src/07-planet.js:510
+groundAt                     src/07-planet.js:540
 groundShadow                 src/19-mode-landing.js:286
 GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
@@ -1087,7 +1087,7 @@ KMAP_BELT                    src/15-input.js:32
 labCount                     src/12h-relic.js:16
 labStaffed                   src/12h-relic.js:27
 labWorking                   src/12h-relic.js:32
-LAND_ARC                     src/07-planet.js:377
+LAND_ARC                     src/07-planet.js:407
 LAND_GY                      src/19f-lander.js:10
 landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:154
@@ -1525,6 +1525,7 @@ planDeliver                  src/11r-plan.js:67
 planDepthAt                  src/11r-plan.js:28
 planDepthHere                src/11r-plan.js:34
 planEndless                  src/11r-plan.js:54
+PLANET_BAKE_ANG              src/07-planet.js:297
 PLANET_BARGE                 src/12n-planet.js:17
 PLANET_CAP                   src/12n-planet.js:16
 PLANET_FULL                  src/12n-planet.js:14
@@ -1535,11 +1536,11 @@ planetBargeLoad              src/12n-planet.js:108
 planetBargeRow               src/12n-planet.js:145
 planetBiome                  src/20-life.js:123
 planetCols                   src/07-planet.js:229
-planetDraw                   src/07-planet.js:298
+planetDraw                   src/07-planet.js:324
 planetGrant                  src/12n-planet.js:25
-planetHasLife                src/07-planet.js:389
+planetHasLife                src/07-planet.js:419
 planetHaul                   src/12n-planet.js:67
-planetHeightAt               src/07-planet.js:393
+planetHeightAt               src/07-planet.js:423
 planetHere                   src/12n-planet.js:61
 planEtherLine                src/11r-plan.js:43
 planetLight                  src/07-planet.js:193
@@ -1560,9 +1561,10 @@ planetStripChunk             src/07-planet.js:99
 planetStripSeekRow           src/07-planet.js:92
 planetStripStart             src/07-planet.js:79
 planetStripTick              src/07-planet.js:154
+planetSunRot                 src/07-planet.js:301
 planetTakeLoad               src/12n-planet.js:126
 planetTick                   src/12n-planet.js:44
-planetWetAt                  src/07-planet.js:384
+planetWetAt                  src/07-planet.js:414
 planGroundLine               src/11r-plan.js:47
 planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
@@ -1729,7 +1731,7 @@ relicSlotOpen                src/12h-relic.js:71
 relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
-RELIEF_MIX                   src/07-planet.js:344
+RELIEF_MIX                   src/07-planet.js:374
 renderBarge                  src/12l-barge.js:613
 renderBasesTab               src/26a-ui-station-home.js:4
 renderCantina                src/27c-ui-hq.js:45
@@ -2508,12 +2510,12 @@ zooTick                      src/11ad-zoo.js:41
 ## src/06-galaxy.js · 9 КБ
   · галактика:1
 
-## src/07-planet.js · 33 КБ
+## src/07-planet.js · 36 КБ
   · текстуры планет:1
   · вращение:8
-  · рельеф:338
-  · рельеф:339
-  · где сел — то и видел:363
+  · рельеф:368
+  · рельеф:369
+  · где сел — то и видел:393
 
 ## src/08-state.js · 12 КБ
   · состояние:1
@@ -3234,7 +3236,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzza-trace.js · 5 КБ
 
-## tests/91zzzb-bio.js · 11 КБ
+## tests/91zzzb-bio.js · 13 КБ
 
 ## tests/91zzz-home-in.js · 5 КБ
 

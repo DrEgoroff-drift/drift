@@ -7,6 +7,28 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.142.0 — the planets are lit by their own star (M175)
+
+`planetLight` baked the shading layer with a light vector written into the code:
+`nx*-.52 + ny*-.42 + nz*.74`. So **every planet in every system was lit from the upper left**,
+whatever the star did — a planet to the left of the star and one to its right were shaded
+identically. It is the same fault M172 fixed on the surface ("the light had an hour but no
+direction"), still standing on the screen the player looks at most after the cockpit.
+
+The fix costs nothing, because seen from above the terminator is a straight line through the
+centre of the disc, perpendicular to the direction to the star. So the baked layer stays baked
+once and is **rotated** at draw time by the planet's angle to the star (`planetSunRot`) — no extra
+bake, no cache explosion. The rim layer rotates with it: its limb term is rotation-invariant, its
+day-side brightening is not. The disc cache now takes the sun angle into its rebuild key, so a
+cached disc cannot keep yesterday's light while the planet moves along its orbit.
+
+How hard the terminator is stays as it was — a soft light. That is art direction and belongs to
+the author.
+
+Stand: `docs/mkplight.ps1` (`powershell docs\shot.ps1 plight`) — six planets ringed around one
+star with a line drawn to it, plus the real system view.
+
+---
 ## 0.141.0 — a species becomes a thing (M174)
 
 The game kept a *register* of species — `G.species`, «Новый вид: …», the count on the map — and

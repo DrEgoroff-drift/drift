@@ -154,6 +154,29 @@ TEST_SUITES.push(()=>suite("био: пещерная флора светится
   }
 }));
 
+/* Свет планеты (M175): терминатор — прямая через центр диска, перпендикулярная
+   направлению на звезду. Накладка печётся один раз и поворачивается. */
+TEST_SUITES.push(()=>suite("свет планеты приходит от звезды",()=>{
+  resetWorld();
+  const p=G.sys.planets[0];
+  const norm=a=>{let v=a;while(v>Math.PI)v-=TAU;while(v<-Math.PI)v+=TAU;return v;};
+  /* планета слева от светила и планета справа освещены по-разному */
+  p.x=-1000;p.y=0;const left=planetSunRot(p);
+  p.x=1000;p.y=0;const right=planetSunRot(p);
+  ok(Math.abs(norm(left-right)-Math.PI)<1e-6,"противоположные места — противоположный свет");
+  /* поворот совмещает запечённое направление с направлением на звезду */
+  for(const [px,py] of [[500,0],[0,700],[-300,-300],[900,-400]]){
+    p.x=px;p.y=py;
+    const rot=planetSunRot(p);
+    const bx=Math.cos(PLANET_BAKE_ANG+rot), by=Math.sin(PLANET_BAKE_ANG+rot);
+    const d=Math.hypot(px,py);
+    ok(Math.abs(bx-(-px/d))<1e-6&&Math.abs(by-(-py/d))<1e-6,
+       "свет повёрнут точно на звезду из ("+px+","+py+")");
+  }
+  p.x=0;p.y=0;
+  eq(planetSunRot(p),0,"в центре системы поворачивать нечего");
+}));
+
 TEST_SUITES.push(()=>suite("био: старый реестр видов не переносится",()=>{
   resetWorld();
   G.species.add("Хмара коралловый, светящийся");
