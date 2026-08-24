@@ -75,24 +75,45 @@ html,body{height:100%;overflow:hidden;background:var(--void);
    или подходит к концу (`hud()` вешает .live). Постоянно горящая панель
    поверх мира — это панель, которую перестают замечать; всплывающая
    читается как проекция на стекле шлема, а не как наклейка на экране. */
-.hud{position:fixed;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 10px) 12px 0;
-  display:flex;gap:10px;align-items:flex-start;pointer-events:none;
-  opacity:.34;transition:opacity .65s var(--ease)}
+/* ── состояние ушло вниз (релизный вид, A2) ──
+   Панель стояла в верхних углах кадра — на самом дорогом его месте, — и
+   висела там над каждым экраном ради показаний, которые меняются раз в
+   минуту. Правило «над миром только то, что нужно сейчас» соблюдалось
+   наполовину: панель гасла до трети, но место занимала всегда.
+   Теперь верх кадра — мир, а показания стоят внизу, у рук, рядом с пультом:
+   слева состояние, справа место и кошелёк. И это больше не наклейка на
+   стекле — стекло, рамка и блюр сняты, остались волосяная шкала и число
+   прямо по миру, с тенью под текстом, чтобы читалось и на светлом грунте. */
+.hud{position:fixed;left:0;right:0;top:auto;bottom:calc(env(safe-area-inset-bottom) + 168px);
+  padding:0 14px;display:flex;gap:12px;align-items:flex-end;justify-content:space-between;
+  pointer-events:none;opacity:.34;transition:opacity .65s var(--ease)}
 .hud.live{opacity:1;transition-duration:.16s}
-.vitals{display:flex;flex-direction:column;gap:1px;background:var(--glass);
-  border:1px solid var(--edge);border-radius:var(--rad-p);padding:9px 11px;
-  backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
+/* Подложка вместо коробки. Волосяная строка по светлому грунту не читалась —
+   но возвращать стеклянную плашку значит вернуть наклейку. Вместо неё по низу
+   кадра идёт мягкий скат в темноту: он не имеет краёв, поэтому не читается
+   элементом, и держит разом все нижние вещи — показания, подсказку, пульт.
+   Живёт внутри .hud, а значит гаснет вместе с приборами: когда всё ровно,
+   мир внизу тоже чист. */
+.hud::before{content:"";position:fixed;left:0;right:0;bottom:0;height:236px;z-index:-1;
+  pointer-events:none;
+  background:linear-gradient(to top,rgba(3,6,12,.60),rgba(3,6,12,.26) 46%,rgba(3,6,12,0))}
+.vitals,.locus{text-shadow:0 1px 4px rgba(2,4,8,.9),0 0 12px rgba(2,4,8,.7)}
+.vitals{display:flex;flex-direction:column;gap:3px;background:none;
+  border:0;border-radius:0;padding:0;backdrop-filter:none;box-shadow:none}
 /* строка прибора: подпись — шкала — число. Число появилось потому, что
    «полоска чуть больше половины» не отвечает на вопрос «дотяну ли». */
-.v{display:grid;grid-template-columns:52px 74px 40px;align-items:center;gap:8px;height:17px}
-.v b{font-weight:400;font-size:8px;letter-spacing:.14em;color:var(--dim)}
+.v{display:grid;grid-template-columns:56px 68px 42px;align-items:center;gap:8px;height:14px}
+.v b{font-weight:400;font-size:8px;letter-spacing:.14em;color:var(--dim);
+  filter:brightness(1.25)}
 .v u{text-decoration:none;font-size:10px;text-align:right;color:var(--text);
   font-variant-numeric:tabular-nums}
-.bar{height:3px;background:rgba(255,255,255,.09);position:relative;overflow:hidden;border-radius:2px}
+.bar{height:2px;background:rgba(0,0,0,.45);position:relative;overflow:hidden;border-radius:2px;
+  box-shadow:0 0 0 1px rgba(255,255,255,.06)}
 .bar i{position:absolute;inset:0 auto 0 0;background:var(--phos);transition:width .15s linear}
 .bar.hull i{background:var(--amber)}
 .bar.hold i{background:var(--rare)}
 .bar.shld i{background:#9fd8ff}
+.bar.suit i{background:#cfe3ea}
 .bar.low i{background:var(--alarm)}
 .v.low u{color:var(--alarm)}
 /* тревога мигает, а не просто краснеет: периферийное зрение ловит движение */
@@ -102,27 +123,35 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 /* приборная колодка (25c): те же стрелки, что на потолочном блоке кабины, но
    в строке приборов — решения принимаются в системном виде, а не в поясе.
    Стекло и рамка те же, что у витальных: это один ряд, а не пристройка. */
-.ipod{width:208px;height:70px;background:var(--glass);border:1px solid var(--edge);
-  border-radius:var(--rad-p);backdrop-filter:blur(14px) saturate(1.15);
-  box-shadow:var(--lift),var(--glass-hi)}
+/* Колодка стоит вплотную к волосяным шкалам, и стеклянная плашка рядом с ними
+   читалась наклейкой поверх строки, а не прибором в одном с ней ряду. Стекло,
+   блюр и подъём сняты; осталась еле заметная подложка под стрелки, чтобы они
+   не висели в воздухе, и тонкая рамка снизу — линия стола, а не коробка. */
+.ipod{width:208px;height:70px;background:rgba(6,10,16,.34);border:0;
+  border-bottom:1px solid var(--edge);border-radius:0;backdrop-filter:none;box-shadow:none}
 /* на узком экране колодка уходит: «где мы» и кнопки под пальцем важнее */
 @media (max-width:720px){.ipod{display:none !important}}
+/* колодка — прибор КАБИНЫ (A2): на ногах, в доме и на базе её показания не
+   про этот экран, и место она занимает так же, как занимала наверху */
+body:not(.inflight) .ipod{display:none}
 
-.locus{margin-left:auto;text-align:right;background:var(--glass);border:1px solid var(--edge);
-  border-radius:var(--rad-p);padding:9px 12px;backdrop-filter:blur(14px) saturate(1.15);max-width:46vw;
-  box-shadow:var(--lift),var(--glass-hi)}
-.locus u{display:block;text-decoration:none;color:var(--amber);font-size:13px;letter-spacing:.1em;
+.locus{margin-left:auto;text-align:right;background:none;border:0;
+  border-radius:0;padding:0;backdrop-filter:none;max-width:46vw;box-shadow:none}
+.locus u{display:block;text-decoration:none;color:var(--amber);font-size:12px;letter-spacing:.1em;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.locus s{display:block;text-decoration:none;color:var(--dim);font-size:9px;margin-top:3px;line-height:1.5}
-.locus em{display:block;font-style:normal;color:var(--text);font-size:11px;margin-top:5px;
-  padding-top:5px;border-top:1px solid rgba(127,230,216,.12);font-variant-numeric:tabular-nums}
+.locus s{display:block;text-decoration:none;color:var(--dim);font-size:9px;margin-top:2px;line-height:1.5;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.locus em{display:block;font-style:normal;color:var(--text);font-size:11px;margin-top:3px;
+  font-variant-numeric:tabular-nums}
 
 /* ══════════════ сообщения ══════════════ */
 #msg{position:fixed;left:50%;top:21%;transform:translateX(-50%);text-align:center;
   pointer-events:none;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
   text-shadow:0 0 16px rgba(127,230,216,.45);white-space:pre-line;line-height:1.95;max-width:84%}
-/* подсказка держится над пэдами: это ответ на «что тут можно», её место у рук */
-#prompt{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 152px);transform:translateX(-50%);
+/* подсказка держится над пэдами: это ответ на «что тут можно», её место у рук.
+   Она стоит НИЖЕ строки состояния (A2): действие спрашивают чаще, чем остаток
+   топлива, поэтому оно ближе к рукам */
+#prompt{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 112px);transform:translateX(-50%);
   pointer-events:none;font-size:10px;letter-spacing:.1em;color:var(--amber);text-align:center;
   text-shadow:0 0 14px rgba(242,178,92,.4);white-space:pre-line;line-height:1.85;max-width:90%}
 
@@ -193,7 +222,12 @@ html,body{height:100%;overflow:hidden;background:var(--void);
 /* ══════════════ правый борт ══════════════
    Было девять кнопок в столбик по 27 px. Стало: две постоянные, масштаб
    и ящик со всем остальным. Контекстные приходят сами и уходят сами. */
-.rail{position:fixed;right:12px;top:calc(env(safe-area-inset-top) + 104px);
+/* Правый борт тоже спустился (A2). Он стоял под верхней панелью приборов и
+   держался за неё; когда приборы ушли вниз, столбик кнопок остался висеть
+   один в пустом верхнем углу — единственная вещь над миром, и оттого особенно
+   заметная. Теперь он растёт снизу вверх над строкой состояния: у кромки, как
+   требует правило, но в той половине кадра, где рука. */
+.rail{position:fixed;right:12px;top:auto;bottom:calc(env(safe-area-inset-bottom) + 240px);
   display:flex;flex-direction:column;gap:8px;align-items:flex-end;z-index:5;transition:opacity .2s}
 .rail .ctx{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
 /* Правый борт — пилюли со стеклом и иконкой. Иконка идёт перед подписью,
@@ -597,13 +631,31 @@ body.road #console{display:none}
   #seatOut s{max-width:70px}
   #perch{width:40px;height:40px;padding:2px}
   #perch canvas{width:34px;height:34px}
+  /* ── состояние на телефоне: одна строка чисел (A2) ──
+     Волосяная шкала в 2 px на телефоне не читается вовсе, а три строки со
+     шкалами съедают полосу, которой там и так нет. Остаются числа в одну
+     строку над пультом, между зонами больших пальцев: слева состояние,
+     справа место. Ни под пэды, ни под правый борт она не заходит. */
+  .hud{bottom:calc(env(safe-area-inset-bottom) + 166px);padding:0 10px;
+    right:auto;width:calc(100vw - 128px);align-items:center}
+  .vitals{flex-direction:row;gap:10px}
+  .v{grid-template-columns:auto auto;gap:5px;height:12px}
+  .v .bar{display:none}
+  .v b{font-size:7px;letter-spacing:.08em}
+  .v u{font-size:10px}
+  .locus u{font-size:10px}
+  .locus s,.locus em{display:none}
   /* зона большого пальца: КАРТА и МЕНЮ спускаются к правому краю снизу */
   .rail{top:auto;bottom:calc(env(safe-area-inset-bottom) + 158px)}
   #zin,#zout{display:none!important}   /* зум — щипком */
-  /* один слот: сообщение и подсказка над пультом, в одну строку */
-  #msg{top:auto;bottom:calc(env(safe-area-inset-bottom) + 158px);white-space:nowrap;overflow:hidden;
-    text-overflow:ellipsis;max-width:calc(100vw - 120px);font-size:11px;line-height:1.4}
-  #prompt{bottom:calc(env(safe-area-inset-bottom) + 138px);white-space:nowrap;overflow:hidden;
+  /* Сообщение вернулось наверх (A2). Его спустили вниз в M167, когда верх был
+     занят приборами и место там стоило дорого; теперь приборы внизу, наверху
+     чисто, а внизу стало тесно: пульт, подсказка и строка состояния встали в
+     три этажа, и событию там уже не помещаться. Наверху оно ничему не мешает —
+     оно не панель, оно проходит. */
+  #msg{top:20%;bottom:auto;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;max-width:calc(100vw - 24px);font-size:11px;line-height:1.4}
+  #prompt{bottom:calc(env(safe-area-inset-bottom) + 142px);white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis;max-width:calc(100vw - 24px);line-height:1.4}
   /* призрачных кнопок нет: ДЕЙСТВИЕ без действия отсутствует */
   body.mobile .pads button[data-k=act]:not(.ready){display:none}
@@ -631,14 +683,16 @@ body.afoot .ipod{display:none}
 <body>
 <canvas id="c"></canvas>
 
-<!-- ══ приборы: слева жизнь корабля, справа где мы и с чем ══
-     Порядок не случайный: взгляд читает слева направо, поэтому слева то,
-     что решает «жив ли я», справа — то, что решает «куда я». -->
+<!-- ══ состояние: внизу, у рук (релизный вид, A2) ══
+     Верх кадра — мир. Слева от пульта то, что решает «жив ли я», справа —
+     то, что решает «куда я». Состав меняется по экрану: на ногах топливо и
+     корпус решают не здесь, здесь решают скафандр и трюм. -->
 <div class="hud">
   <div class="vitals">
     <div class="v" id="vFuel"><b>ТОПЛИВО</b><div class="bar" id="fbar"><i></i></div><u id="fnum">—</u></div>
     <div class="v" id="vHull"><b>КОРПУС</b><div class="bar hull" id="hbar"><i></i></div><u id="hnum">—</u></div>
     <div class="v" id="sgauge" style="display:none"><b>ЩИТ</b><div class="bar shld" id="sbar"><i></i></div><u id="snum">—</u></div>
+    <div class="v" id="vSuit" style="display:none"><b>СКАФАНДР</b><div class="bar suit" id="ubar"><i></i></div><u id="unum">—</u></div>
     <div class="v" id="vHold"><b>ТРЮМ</b><div class="bar hold" id="cbar"><i></i></div><u id="cnum">—</u></div>
   </div>
   <!-- приборы области (M122-M124): пять стрелок, невязка и полоска ленты.
@@ -863,7 +917,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.142.0";
+const VER="0.143.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -47363,6 +47417,8 @@ const $fn=document.getElementById("fnum"),$hn=document.getElementById("hnum");
 const $sn=document.getElementById("snum"),$cn=document.getElementById("cnum");
 const $vf=document.getElementById("vFuel"),$vh=document.getElementById("vHull");
 const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse");
+const $vs=document.getElementById("vSuit"),$ub=document.querySelector("#ubar i");
+const $un=document.getElementById("unum");
 const $place=document.getElementById("place"),$sub=document.getElementById("sub");
 const $msg=document.getElementById("msg"),$prompt=document.getElementById("prompt");
 const $bThr=document.querySelector("[data-k=thrust]"),$bBrk=document.querySelector("[data-k=brake]");
@@ -47422,6 +47478,20 @@ function hud(){
   $vf.classList.toggle("low",fr<.2);$vf.classList.toggle("crit",fr<.08);
   $vh.classList.toggle("low",hr<.3);$vh.classList.toggle("crit",hr<.15);
   $vc.classList.toggle("low",cr>=1);
+  /* ── состав меняется по экрану (релизный вид, A2) ──
+     На ногах топливо и корпус решают не здесь (проход 1 их уже убрал), а
+     решает скафандр: он течёт, и когда он кончится, разговор окончен. Внутри
+     дома и на базе он не течёт — там шкале нечего показывать.
+     Расстояние до корабля сюда не дублируем: его несёт фишка у кромки кадра,
+     и она про мир, а не про интерфейс. */
+  const suitOn=G.surf&&(G.mode==="surface"||G.mode==="cave"||G.mode==="dig"||G.mode==="raid");
+  setSt($vs,"display",suitOn?"":"none");
+  if(suitOn){
+    const su=clamp(G.surf.suit,0,100);
+    setSt($ub,"width",su.toFixed(1)+"%");
+    setTx($un,Math.round(su)+"%");
+    $vs.classList.toggle("low",su<35);$vs.classList.toggle("crit",su<18);
+  }
   setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан");
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
      Повод — изменившееся показание, тревога или открытый режим, где приборы
@@ -47444,18 +47514,24 @@ function hud(){
   else if(G.mode==="map"){a="НАВИГАЦИЯ";b="радиус "+st.jump.toFixed(1)+" пк";}
   else if(G.mode==="landing"){a=G.land.p.name.toUpperCase();
     b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;}
+  /* ── строка места не повторяет шкалы (A2) ──
+     Пока приборы висели наверху, а «где мы» — рядом с ними, сводка дублировала
+     трюм и скафандр текстом: два раза одно и то же в одном углу кадра. Теперь
+     шкалы стоят слева от пульта, и строка говорит только то, чего в них нет. */
   else if(G.mode==="surface"){a=G.surf.p.name.toUpperCase();
-    b="трюм "+held()+"/"+st.cargoMax+" · скафандр "+Math.round(G.surf.suit)+"%";
+    b=G.surf.p.T.ru;
     /* погода в сводке: игрок должен понимать, почему вокруг потемнело, и
        что это пройдёт — она ходит циклом (19d-weather) */
     const wn=weatherName(G.surf.p);
     if(wn)b+=" · "+wn;}
   else if(G.mode==="dig"){a="ШАХТА · "+(G.dig?G.dig.p.name.toUpperCase():"");
-    b=(G.dig?G.dig.row*3:0)+" м · трюм "+held()+"/"+st.cargoMax;}
+    b=(G.dig?G.dig.row*3:0)+" м под грунтом";}
   else if(G.mode==="cave"){a="ПЕЩЕРА · "+G.surf.p.name.toUpperCase();
-    b="трюм "+held()+"/"+st.cargoMax+" · скафандр "+Math.round(G.surf.suit)+"%";}
+    b=G.surf.p.T.ru;}
   else if(G.mode==="belt"){a=(G.belt?G.belt.B.name:"ПОЯС").toUpperCase();
-    b="трюм "+held()+"/"+st.cargoMax;}
+    b=(G.belt&&G.belt.B&&G.belt.B.res&&G.belt.B.res.length)
+      ?("руда: "+G.belt.B.res.map(k=>(RES[k]&&RES[k].ru)||k).join(", "))
+      :"пояс астероидов";}
   else if(G.mode==="scoop"){a=(G.scoop?G.scoop.p.name:"АТМОСФЕРА").toUpperCase();
     b="сбор летучих газов";}
   else if(G.mode==="base"){a="БАЗА · "+(G.base?G.base.p.name.toUpperCase():"");
@@ -47492,19 +47568,26 @@ function hud(){
      Глагол уже есть в подсказке — берём оттуда, чтобы не заводить второй
      источник правды, который однажды разойдётся с первым. */
   const $act=document.querySelector("[data-k=act]");
-  let actLbl="ДЕЙСТВИЕ";
-  if(G.mode==="belt")actLbl="РЕЗАК";
-  else if(G.mode==="dig")actLbl="ВНИЗ";   // в шахте копают в четыре стороны, вниз — на большой кнопке
+  let actLbl="ДЕЙСТВИЕ", hasAct=false;
+  if(G.mode==="belt"){actLbl="РЕЗАК";hasAct=true;}
+  else if(G.mode==="dig"){actLbl="ВНИЗ";hasAct=true;}   // в шахте копают в четыре стороны, вниз — на большой кнопке
   else{
     const m=/^ДЕЙСТВИЕ\s*—\s*([^·\n]+)/.exec(G.prompt||"");
     if(m){
+      hasAct=true;
       const v=m[1].trim();
       if(v.length<=14)actLbl=v;
     }
   }
   setTx($act,actLbl);
-  /* подсвечиваем, когда действие вообще есть: иначе кнопка выглядит живой всегда */
-  $act.classList.toggle("ready",actLbl!=="ДЕЙСТВИЕ");
+  /* Подсвечиваем, когда действие вообще есть. Раньше признаком служила сама
+     подпись: «кнопка не называется ДЕЙСТВИЕ — значит есть что делать». Признак
+     врал, и на телефоне это стоило игроку самого действия: длинный глагол
+     («СКАНИРОВАТЬ ОРГАНИЗМ», 20 знаков) на кнопку не влезал, подпись падала
+     обратно в «ДЕЙСТВИЕ», кнопка считалась пустой — а правило «призрачных
+     кнопок нет» прячет пустую кнопку на телефоне совсем. Сканировать было
+     нечем. Теперь признак — НАЛИЧИЕ действия, а подпись отдельно. */
+  $act.classList.toggle("ready",hasAct);
   if(G.mode==="dig"){
     /* «вниз» уже висит на большой кнопке — второй такой же рядом только путает.
        Клавиша S при этом продолжает работать, раскладка WASD не рвётся. */
@@ -47538,6 +47621,10 @@ function hud(){
      критическим (класс .crit): тогда это и есть «нужно сейчас». */
   document.body.classList.toggle("afoot",
     G.mode==="surface"||G.mode==="cave"||G.mode==="dig"||G.mode==="base"||G.mode==="homein"||G.mode==="raid");
+  /* колодка области — прибор кабины (A2): она показывается там, где по ней
+     принимают решения, то есть в полёте и на карте */
+  document.body.classList.toggle("inflight",
+    G.mode==="system"||G.mode==="map"||G.mode==="belt"||G.mode==="scoop"||G.mode==="landing");
   document.body.classList.toggle("mobile",innerWidth<=760);   /* телефон (M167) */
 }
 

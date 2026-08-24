@@ -205,6 +205,29 @@ starts with `resetWorld()`).
 If you do open it in the pane: it caches `file://` — after a rebuild open `tests.html?v=N` with
 a fresh `N`, or you'll be reading the previous run. Headless has no such cache.
 
+**The phone layout is only measured if you ask for it.** The layout guards (`91f-ui`,
+`91zzx-mobile`) skip themselves when the window is not a phone, because in a desktop window the
+phone rules are not applied at all:
+
+```bash
+powershell -ExecutionPolicy Bypass -File test.ps1 -Mobile
+```
+
+**To look at the interface, screenshot the page, not the canvas.** `docs/shot.ps1` captures what a
+stand painted on the canvas, so it shows the world and *nothing* of the instruments, console, pads
+or rail — they are DOM. `docs/pageshot.ps1` runs Chrome's own `--screenshot` and captures
+everything:
+
+```bash
+powershell -ExecutionPolicy Bypass -File docs\pageshot.ps1 view -Q "?s=surface"
+```
+
+Scenes live in `docs/mkview.ps1` (`surface`, `system`, `cave`, `night`, `lowsuit`). Two traps that
+cost a session: the browser pane's screenshot does **not** show the game's DOM overlay at all (it
+shows the canvas only, whatever the z-index), and inside a stand the loop must be left running —
+`G.running=false` paints the title-screen starfield over everything (`28-loop`, the `else` branch),
+and `LOOP_OFF=true` freezes a half-baked frame because the world takes several frames to bake.
+
 ```bash
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```

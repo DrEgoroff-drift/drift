@@ -18,6 +18,9 @@ TEST_SUITES.push(()=>suite("интерфейс: во что тыкают пал�
   eq(small.join(", "),"","все кнопки полёта и меню дотягивают до 44 px");
 }));
 
+/* Строка состояния переехала вниз (релизный вид, A2), поэтому сторож смотрит
+   на новых соседей: пульт, подсказку действия и колодку области. Проверять
+   пересечение вверху, где теперь ничего нет, было бы проверкой пустоты. */
 TEST_SUITES.push(()=>suite("интерфейс: приборы и кнопки не наезжают друг на друга",()=>{
   resetWorld();
   document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
@@ -26,12 +29,16 @@ TEST_SUITES.push(()=>suite("интерфейс: приборы и кнопки �
   for(const id of ["starbtn","dronebtn","beaconbtn","firebtn"]){
     const e=document.getElementById(id);if(e)e.style.display="";
   }
+  /* подсказка в две строки — самая высокая из возможных: если она не задевает
+     строку состояния сверху и пульт снизу, не заденет никакая */
+  G.prompt="ДЕЙСТВИЕ — СТЫКОВКА · ТОРГОВЫЙ УЗЕЛ\nГРУЗ ЖДЁТ НА ПРИЧАЛЕ";
   hud();
   const box=s=>{const e=document.querySelector(s);if(!e)return null;
     const r=e.getBoundingClientRect();return r.width?{s,x:r.x,y:r.y,w:r.width,h:r.height}:null;};
-  const items=[".vitals",".locus",".rail",".pads>div:first-child",".pads>div:last-child"]
+  const items=[".vitals",".locus",".ipod","#prompt","#console",".rail",
+               ".pads>div:first-child",".pads>div:last-child"]
     .map(box).filter(Boolean);
-  ok(items.length>=4,"панели на месте");
+  ok(items.length>=6,"панели на месте ("+items.length+")");
   const hit=(a,b)=>!(a.x+a.w<=b.x||b.x+b.w<=a.x||a.y+a.h<=b.y||b.y+b.h<=a.y);
   const clash=[];
   for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++)
@@ -43,9 +50,19 @@ TEST_SUITES.push(()=>suite("интерфейс: приборы и кнопки �
     const out=items.filter(i=>i.x<-1||i.x+i.w>innerWidth+1);
     eq(out.map(i=>i.s).join(", "),"","и ничто не уехало за край экрана");
   }else ok(true,"экран не разложен — проверку ширины пропускаем");
+  /* И главное, ради чего всё двигали: верх кадра принадлежит миру. Считаются
+     ЧИТАЕМЫЕ панели — состояние, место, колодка, подсказка, пульт. Правый борт
+     и пэды сюда не входят: это органы управления у кромки, и правило интерфейса
+     держит их там нарочно («две постоянные кнопки на правом краю»). */
+  if(innerHeight>=400){
+    const read=[".vitals",".locus",".ipod","#prompt","#console"];
+    const top=items.filter(i=>read.indexOf(i.s)>=0&&i.y<innerHeight*.5);
+    eq(top.map(i=>i.s).join(", "),"","над миром в верхней половине кадра не висит ни одной панели");
+  }else ok(true,"экран не разложен — проверку верха пропускаем");
   for(const id of ["starbtn","dronebtn","beaconbtn","firebtn"]){
     const e=document.getElementById(id);if(e)e.style.display="none";
   }
+  G.prompt="";hud();
 }));
 
 TEST_SUITES.push(()=>suite("интерфейс: приборы не мигают от расхода",()=>{
@@ -93,6 +110,13 @@ TEST_SUITES.push(()=>suite("интерфейс: кнопка называет д
   /* длинную подпись на круглую кнопку не сажаем: она бы не поместилась */
   G.prompt="ДЕЙСТВИЕ — СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА (12)";hud();
   eq($act.textContent,"ДЕЙСТВИЕ","слишком длинный глагол на кнопку не лезет");
+  /* но кнопка при этом ЖИВА: на телефоне «призрачных кнопок нет» прячет
+     непригодную кнопку совсем, и длинный глагол отнимал у игрока действие */
+  ok($act.classList.contains("ready"),"длинный глагол не отнимает действие");
+  G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";hud();
+  ok($act.classList.contains("ready"),"и сканирование остаётся доступным");
+  G.prompt="СКАФАНДР НА ИСХОДЕ · К КОРАБЛЮ";hud();
+  ok(!$act.classList.contains("ready"),"а предупреждение действием не считается");
   G.prompt="";hud();
 }));
 

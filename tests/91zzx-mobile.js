@@ -29,3 +29,34 @@ TEST_SUITES.push(()=>suite("телефон: разрез КОРАБЛЬ|СКАФ
   G.mode="system";G.surf=null;hud();
   ok(document.querySelector("[data-k=brake]").style.display!=="none","в полёте есть");
 }));
+
+/* Низ телефона после релизного вида (A2) стал трёхэтажным: пульт, подсказка
+   действия, строка состояния. Проверяем не «красиво», а что этажи не налезают
+   друг на друга и не заходят под правый борт — на телефоне это стоило бы
+   игроку кнопки, а не вида. Класс .mobile ставится по ширине окна, поэтому в
+   узком окне проверка идёт по-настоящему, а в широком честно пропускается. */
+TEST_SUITES.push(()=>suite("телефон: этажи внизу не налезают друг на друга",()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  G.mode="surface";
+  G.surf={p:{type:"terran",T:{atm:"есть",ru:"землеподобная"},name:"т",seed:1},
+          suit:100,x:0,y:0,shipX:0,fauna:[],plants:[]};
+  G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
+  hud();
+  if(!document.body.classList.contains("mobile")){
+    ok(true,"окно не телефонное — проверку пропускаем");
+  }else{
+    const box=s=>{const e=document.querySelector(s);if(!e)return null;
+      const r=e.getBoundingClientRect();return r.width?{s,x:r.x,y:r.y,w:r.width,h:r.height}:null;};
+    const items=[".vitals",".locus","#prompt","#console",".rail",
+                 ".pads>div:first-child",".pads>div:last-child"].map(box).filter(Boolean);
+    const hit=(a,b)=>!(a.x+a.w<=b.x||b.x+b.w<=a.x||a.y+a.h<=b.y||b.y+b.h<=a.y);
+    const clash=[];
+    for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++)
+      if(hit(items[i],items[j]))clash.push(items[i].s+"×"+items[j].s);
+    eq(clash.join(", "),"","этажи не пересекаются");
+    const out=items.filter(i=>i.x<-1||i.x+i.w>innerWidth+1);
+    eq(out.map(i=>i.s).join(", "),"","и ничто не уехало за край");
+  }
+  G.prompt="";G.surf=null;G.mode="system";hud();
+}));

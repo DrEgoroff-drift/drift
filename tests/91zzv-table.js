@@ -55,7 +55,14 @@ TEST_SUITES.push(()=>suite("пульт: приёмник на каждом эк�
   const r=con.getBoundingClientRect();
   ok(r.width>0&&r.height>0,"пульт виден в полёте");
   const rx=document.getElementById("rxKnob");
-  ok(rx&&rx.getBoundingClientRect().height>=20,"ручка приёмника на пульте");
+  /* На телефоне ручка живёт в развёрнутом приёмнике (.sheet), а в свёрнутом
+     её нет по замыслу M167: полосу занимала бы шкала, а не строка эфира.
+     Проверка про то, что ручка ДОСТУПНА, а не про то, что она всегда видна. */
+  if(document.body.classList.contains("mobile")){
+    document.getElementById("rx").classList.add("sheet");
+    ok(rx&&rx.getBoundingClientRect().height>=20,"на телефоне ручка в развёрнутом приёмнике");
+    document.getElementById("rx").classList.remove("sheet");
+  }else ok(rx&&rx.getBoundingClientRect().height>=20,"ручка приёмника на пульте");
   etherLine("…частота занята. Частота занята.");
   eq(document.getElementById("rxLine").textContent,"…частота занята. Частота занята.","услышанное показано на пульте");
   ok(document.getElementById("rx").classList.contains("fresh"),"и помечено свежим");

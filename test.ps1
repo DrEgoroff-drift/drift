@@ -3,11 +3,15 @@
 #   powershell -ExecutionPolicy Bypass -File test.ps1            # build + run, print verdict
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -NoBuild   # run the existing tests.html
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Only роща # suites whose name contains the text
+#   powershell -ExecutionPolicy Bypass -File test.ps1 -Mobile    # same, in a 390x844 window
 #
 # Prints only the head line and the FAILURES block; exit code 1 on any failure.
 # Window must be 1280x800: at Chrome's default 800x600 the UI-overlap suite
 # (91f-ui) fails for real — the rail and the pads do overlap on a small screen.
-param([switch]$NoBuild, [string]$Only = "")
+# -Mobile runs the same suites in a phone window instead: the layout guards are
+# written to skip themselves when the window is not a phone, so without this
+# switch the phone half of the interface is never actually measured.
+param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile)
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -22,7 +26,8 @@ $url = "file:///" + ((Join-Path $root "tests.html") -replace "\\", "/")
 if ($Only) { $url += "?only=" + [uri]::EscapeDataString($Only) }
 $dom = Join-Path $env:TEMP "drift-tests-dom.html"
 $err = Join-Path $env:TEMP "drift-tests-err.txt"
-$argv = @("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1280,800",
+$win = if ($Mobile) { "390,844" } else { "1280,800" }
+$argv = @("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=$win",
           "--user-data-dir=$($env:TEMP)\drift-tests-profile",
           "--no-first-run", "--no-default-browser-check",
           "--virtual-time-budget=20000", "--timeout=60000", "--dump-dom", $url)

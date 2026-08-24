@@ -18,14 +18,16 @@
 <body>
 <canvas id="c"></canvas>
 
-<!-- ══ приборы: слева жизнь корабля, справа где мы и с чем ══
-     Порядок не случайный: взгляд читает слева направо, поэтому слева то,
-     что решает «жив ли я», справа — то, что решает «куда я». -->
+<!-- ══ состояние: внизу, у рук (релизный вид, A2) ══
+     Верх кадра — мир. Слева от пульта то, что решает «жив ли я», справа —
+     то, что решает «куда я». Состав меняется по экрану: на ногах топливо и
+     корпус решают не здесь, здесь решают скафандр и трюм. -->
 <div class="hud">
   <div class="vitals">
     <div class="v" id="vFuel"><b>ТОПЛИВО</b><div class="bar" id="fbar"><i></i></div><u id="fnum">—</u></div>
     <div class="v" id="vHull"><b>КОРПУС</b><div class="bar hull" id="hbar"><i></i></div><u id="hnum">—</u></div>
     <div class="v" id="sgauge" style="display:none"><b>ЩИТ</b><div class="bar shld" id="sbar"><i></i></div><u id="snum">—</u></div>
+    <div class="v" id="vSuit" style="display:none"><b>СКАФАНДР</b><div class="bar suit" id="ubar"><i></i></div><u id="unum">—</u></div>
     <div class="v" id="vHold"><b>ТРЮМ</b><div class="bar hold" id="cbar"><i></i></div><u id="cnum">—</u></div>
   </div>
   <!-- приборы области (M122-M124): пять стрелок, невязка и полоска ленты.

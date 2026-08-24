@@ -840,6 +840,12 @@ Pass 1 is done (on foot, the ship's instruments are hidden). What the rest means
 the author pushed back on "nothing at the top" — the goal is not an empty top, it is **the top of
 the frame is the world**:
 
+- **A2 — BUILT (0.143.0, M176).** The top panel is gone; state left of the console, place and purse
+  right, hairline bars over a bottom slope instead of a glass plate; composition per screen (suit
+  and hold on foot, pod in flight only); the rail came down; on a phone one line of numbers and the
+  message back at the top. Stand `docs/mkview.ps1` + `docs/pageshot.ps1` (whole page, interface
+  included); `test.ps1 -Mobile` measures the phone layout for real. Original text below.
+
 - **A2. The state moves down.** The top glass panel goes; fuel/hull/hold live as hairline bars
   with a number to the left of the console, place and purse to the right. It fades to a third and
   wakes for two seconds on change, staying open while an alarm holds — `hudWake` already does

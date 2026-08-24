@@ -1,0 +1,77 @@
+﻿# Живой кадр целиком: мир, приборы, пульт, пэды, правый борт.
+#
+# Все прежние стенды снимали канву и потому не показывали интерфейс вовсе —
+# а релизный вид (A2) это и есть интерфейс. Здесь страница просто приводится
+# в нужное состояние и остаётся стоять; снимает её docs\pageshot.ps1.
+#
+# Режим и обстановка задаются через ?s=  :
+#   surface (по умолчанию) · system · cave · night · lowsuit · dock
+param([string]$Scene = "surface")
+$src = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot "..\drift.html")
+$cut = $src.LastIndexOf("</body>")
+$head = $src.Substring(0, $cut)
+$add = @'
+<script>
+setTimeout(function(){
+  var i=document.getElementById("intro"); if(i)i.style.display="none";
+  G.running=true;
+  /* приборы просыпаются от события; для снимка держим их открытыми насильно —
+     иначе на кадре будет треть непрозрачности и судить не о чем */
+  var s=document.createElement("style");
+  s.textContent=".hud{opacity:1!important}.pads{opacity:1!important}#console{opacity:1!important}";
+  document.head.appendChild(s);
+  var scene=(location.search.match(/[?&]s=([a-z]+)/)||[])[1]||"surface";
+  function land(t){
+    var p=G.sys.planets.find(function(x){return x.type!=="gas";})||G.sys.planets[0];
+    if(t){p.type=t;p.T=TYPES[t]||p.T;p.mix=null;p.mw=null;
+      p.rough=Math.min(1.2,p.T.rough);p.res=worldRes(t,null,null);
+      delete p.tex;delete p.mat;delete p.strata;delete p.geo;delete p.bio;
+      delete p.biome;delete p.flora;delete p.fauna2;delete p.fauna3;delete p.caveFlora;}
+    var tr=genTerrain(p);
+    G.land={p:p,tr:tr,x:tr.padX,y:groundAt(tr,tr.padX)};
+    enterSurface();
+    G.surf.x=tr.W*.5;G.surf.y=groundAt(tr,G.surf.x)-10;
+    return p;
+  }
+  /* встать вплотную к растению: подсказка появится сама, как у игрока */
+  function atPlant(){
+    var S=G.surf;if(!S||!S.plants||!S.plants.length)return;
+    var best=S.plants[0];
+    for(var k=0;k<S.plants.length;k++)
+      if(Math.abs(S.plants[k].x-S.tr.W*.5)<Math.abs(best.x-S.tr.W*.5))best=S.plants[k];
+    S.x=best.x;S.y=groundAt(S.tr,S.x)-10;
+  }
+  function hour(p,ph){
+    var period=CEL_DAY*(6+((p.seed>>>7)&3));
+    G.t=period*((ph-(p.seed%100)/100+1)%1);
+  }
+  function run(n,u,d){for(var f=0;f<n;f++){G.t+=.01;u(1);d();}}
+  if(scene==="system"){
+    G.mode="system";G.zoom=.5;G.prompt="ДЕЙСТВИЕ — СТЫКОВКА · ТОРГОВЫЙ УЗЕЛ";
+    for(var f=0;f<3;f++){G.t+=.02;drawSystem();}
+  }else if(scene==="cave"){
+    land("terran");enterCave();
+    G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
+    run(4,updateCave,drawCave);
+  }else if(scene==="night"){
+    var p=land("terran");hour(p,.78);G.mode="surface";
+    G.prompt="";run(6,updateSurface,drawSurface);
+  }else if(scene==="lowsuit"){
+    var p2=land("terran");hour(p2,.30);G.mode="surface";G.surf.suit=14;
+    G.fuel=Math.max(1,G.fuel*.06);
+    G.prompt="";run(6,updateSurface,drawSurface);
+  }else{
+    var p3=land("terran");hour(p3,.30);G.mode="surface";atPlant();
+    run(6,updateSurface,drawSurface);
+  }
+  hud();
+  /* Цикл НЕ глушим. G.running=false рисует заставочный звёздный фон поверх
+     всего (28-loop, ветка else), а LOOP_OFF оставляет на канве мусор от
+     недопечённых чанков: мир собирается за несколько кадров. Пусть игра идёт
+     сама — снимок и должен показывать её такой, какая она есть. Подсказка
+     держится не подстановкой, а тем, что человек стоит РЯДОМ с растением. */
+},1200);
+</script>
+'@
+[IO.File]::WriteAllText((Join-Path $PSScriptRoot "view.html"), $head + $add + "</body></html>", (New-Object Text.UTF8Encoding $true))
+Write-Output "ok"

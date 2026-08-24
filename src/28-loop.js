@@ -28,6 +28,8 @@ const $fn=document.getElementById("fnum"),$hn=document.getElementById("hnum");
 const $sn=document.getElementById("snum"),$cn=document.getElementById("cnum");
 const $vf=document.getElementById("vFuel"),$vh=document.getElementById("vHull");
 const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse");
+const $vs=document.getElementById("vSuit"),$ub=document.querySelector("#ubar i");
+const $un=document.getElementById("unum");
 const $place=document.getElementById("place"),$sub=document.getElementById("sub");
 const $msg=document.getElementById("msg"),$prompt=document.getElementById("prompt");
 const $bThr=document.querySelector("[data-k=thrust]"),$bBrk=document.querySelector("[data-k=brake]");
@@ -87,6 +89,20 @@ function hud(){
   $vf.classList.toggle("low",fr<.2);$vf.classList.toggle("crit",fr<.08);
   $vh.classList.toggle("low",hr<.3);$vh.classList.toggle("crit",hr<.15);
   $vc.classList.toggle("low",cr>=1);
+  /* ── состав меняется по экрану (релизный вид, A2) ──
+     На ногах топливо и корпус решают не здесь (проход 1 их уже убрал), а
+     решает скафандр: он течёт, и когда он кончится, разговор окончен. Внутри
+     дома и на базе он не течёт — там шкале нечего показывать.
+     Расстояние до корабля сюда не дублируем: его несёт фишка у кромки кадра,
+     и она про мир, а не про интерфейс. */
+  const suitOn=G.surf&&(G.mode==="surface"||G.mode==="cave"||G.mode==="dig"||G.mode==="raid");
+  setSt($vs,"display",suitOn?"":"none");
+  if(suitOn){
+    const su=clamp(G.surf.suit,0,100);
+    setSt($ub,"width",su.toFixed(1)+"%");
+    setTx($un,Math.round(su)+"%");
+    $vs.classList.toggle("low",su<35);$vs.classList.toggle("crit",su<18);
+  }
   setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан");
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
      Повод — изменившееся показание, тревога или открытый режим, где приборы
@@ -109,18 +125,24 @@ function hud(){
   else if(G.mode==="map"){a="НАВИГАЦИЯ";b="радиус "+st.jump.toFixed(1)+" пк";}
   else if(G.mode==="landing"){a=G.land.p.name.toUpperCase();
     b=(G.land.auto?"авто-посадка":"ручная посадка")+" · "+G.land.p.T.ru;}
+  /* ── строка места не повторяет шкалы (A2) ──
+     Пока приборы висели наверху, а «где мы» — рядом с ними, сводка дублировала
+     трюм и скафандр текстом: два раза одно и то же в одном углу кадра. Теперь
+     шкалы стоят слева от пульта, и строка говорит только то, чего в них нет. */
   else if(G.mode==="surface"){a=G.surf.p.name.toUpperCase();
-    b="трюм "+held()+"/"+st.cargoMax+" · скафандр "+Math.round(G.surf.suit)+"%";
+    b=G.surf.p.T.ru;
     /* погода в сводке: игрок должен понимать, почему вокруг потемнело, и
        что это пройдёт — она ходит циклом (19d-weather) */
     const wn=weatherName(G.surf.p);
     if(wn)b+=" · "+wn;}
   else if(G.mode==="dig"){a="ШАХТА · "+(G.dig?G.dig.p.name.toUpperCase():"");
-    b=(G.dig?G.dig.row*3:0)+" м · трюм "+held()+"/"+st.cargoMax;}
+    b=(G.dig?G.dig.row*3:0)+" м под грунтом";}
   else if(G.mode==="cave"){a="ПЕЩЕРА · "+G.surf.p.name.toUpperCase();
-    b="трюм "+held()+"/"+st.cargoMax+" · скафандр "+Math.round(G.surf.suit)+"%";}
+    b=G.surf.p.T.ru;}
   else if(G.mode==="belt"){a=(G.belt?G.belt.B.name:"ПОЯС").toUpperCase();
-    b="трюм "+held()+"/"+st.cargoMax;}
+    b=(G.belt&&G.belt.B&&G.belt.B.res&&G.belt.B.res.length)
+      ?("руда: "+G.belt.B.res.map(k=>(RES[k]&&RES[k].ru)||k).join(", "))
+      :"пояс астероидов";}
   else if(G.mode==="scoop"){a=(G.scoop?G.scoop.p.name:"АТМОСФЕРА").toUpperCase();
     b="сбор летучих газов";}
   else if(G.mode==="base"){a="БАЗА · "+(G.base?G.base.p.name.toUpperCase():"");
@@ -157,19 +179,26 @@ function hud(){
      Глагол уже есть в подсказке — берём оттуда, чтобы не заводить второй
      источник правды, который однажды разойдётся с первым. */
   const $act=document.querySelector("[data-k=act]");
-  let actLbl="ДЕЙСТВИЕ";
-  if(G.mode==="belt")actLbl="РЕЗАК";
-  else if(G.mode==="dig")actLbl="ВНИЗ";   // в шахте копают в четыре стороны, вниз — на большой кнопке
+  let actLbl="ДЕЙСТВИЕ", hasAct=false;
+  if(G.mode==="belt"){actLbl="РЕЗАК";hasAct=true;}
+  else if(G.mode==="dig"){actLbl="ВНИЗ";hasAct=true;}   // в шахте копают в четыре стороны, вниз — на большой кнопке
   else{
     const m=/^ДЕЙСТВИЕ\s*—\s*([^·\n]+)/.exec(G.prompt||"");
     if(m){
+      hasAct=true;
       const v=m[1].trim();
       if(v.length<=14)actLbl=v;
     }
   }
   setTx($act,actLbl);
-  /* подсвечиваем, когда действие вообще есть: иначе кнопка выглядит живой всегда */
-  $act.classList.toggle("ready",actLbl!=="ДЕЙСТВИЕ");
+  /* Подсвечиваем, когда действие вообще есть. Раньше признаком служила сама
+     подпись: «кнопка не называется ДЕЙСТВИЕ — значит есть что делать». Признак
+     врал, и на телефоне это стоило игроку самого действия: длинный глагол
+     («СКАНИРОВАТЬ ОРГАНИЗМ», 20 знаков) на кнопку не влезал, подпись падала
+     обратно в «ДЕЙСТВИЕ», кнопка считалась пустой — а правило «призрачных
+     кнопок нет» прячет пустую кнопку на телефоне совсем. Сканировать было
+     нечем. Теперь признак — НАЛИЧИЕ действия, а подпись отдельно. */
+  $act.classList.toggle("ready",hasAct);
   if(G.mode==="dig"){
     /* «вниз» уже висит на большой кнопке — второй такой же рядом только путает.
        Клавиша S при этом продолжает работать, раскладка WASD не рвётся. */
@@ -203,6 +232,10 @@ function hud(){
      критическим (класс .crit): тогда это и есть «нужно сейчас». */
   document.body.classList.toggle("afoot",
     G.mode==="surface"||G.mode==="cave"||G.mode==="dig"||G.mode==="base"||G.mode==="homein"||G.mode==="raid");
+  /* колодка области — прибор кабины (A2): она показывается там, где по ней
+     принимают решения, то есть в полёте и на карте */
+  document.body.classList.toggle("inflight",
+    G.mode==="system"||G.mode==="map"||G.mode==="belt"||G.mode==="scoop"||G.mode==="landing");
   document.body.classList.toggle("mobile",innerWidth<=760);   /* телефон (M167) */
 }
 

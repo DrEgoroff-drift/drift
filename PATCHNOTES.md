@@ -7,6 +7,60 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.143.0 — release look, pass A2: the state moves down (M176)
+
+Pass 1 hid the ship's instruments while on foot. This is the rest of it: **the top of the frame
+is the world**. The glass panel that stood in the upper corners of every screen is gone — it held
+the most expensive place in the frame for readings that change once a minute, and the rule "only
+what is needed now hangs over the world" was being kept only halfway (it faded to a third, but it
+never left).
+
+- **The readings moved down, next to the console**: state on the left, place and purse on the
+  right, both as hairline bars with a number — no glass, no border, no blur, just a line and a
+  figure over the world. They still wake for two seconds on a change and stay open while an alarm
+  holds (`hudWake` moved, it did not change).
+- **A slope instead of a box.** A hairline over bright ground did not read, but bringing the glass
+  plate back would bring the sticker back with it. Instead the bottom of the frame falls off into
+  darkness — a gradient with no edges, so it is not read as an element, and it carries the state,
+  the action prompt and the console together. It lives inside `.hud`, so when the instruments
+  sleep, the bottom of the world is clean again.
+- **The composition changes per screen.** On foot fuel and hull decide nothing — the suit does,
+  and it is the thing that runs out, so on foot it is СКАФАНДР and ТРЮМ. The distance to the ship
+  is deliberately *not* duplicated here: the edge chip already carries it, and that chip is about
+  the world. The region instrument pod is a cockpit instrument and now shows in flight only; its
+  glass plate came off too, since it stood shoulder to shoulder with the hairlines.
+- **The place line stopped repeating the gauges**: it used to say "трюм 12/40 · скафандр 84%" a
+  hand's width from the bars that said the same. Now it says what only it knows — the world type
+  and weather on the surface, the depth in the mine, what the belt is made of.
+- **The right rail came down too.** It hung under the old top panel; with the panel gone it was
+  the one thing left above the world. It now grows upward from above the state line — at the edge,
+  as the rule requires, but in the half of the frame where the hand is.
+- **On a phone** hairlines are unreadable, so the state is one line of numbers above the console,
+  between the thumb zones. The bottom is three storeys now (console, prompt, state), so the
+  transient message went back up to where it lived before M167 — the top is free again, and a
+  message is not a panel, it passes.
+
+Two faults found while looking at the real frames and fixed here:
+
+- **On a phone a long verb cost the player the action itself.** «Есть ли действие» was inferred
+  from the button's own label: if it did not say ДЕЙСТВИЕ, there was something to do. But a verb
+  longer than fourteen characters («СКАНИРОВАТЬ ОРГАНИЗМ») does not fit the button and falls back
+  to ДЕЙСТВИЕ — so the button counted as empty, and the phone rule "no ghost buttons" hid it
+  completely. There was nothing to scan with. The flag now means *there is an action*; the label is
+  a separate matter.
+- **The suit lamp lit the whole column of ground at night** — see 0.141.0; the same sheet also
+  showed it here.
+
+Tools: `docs/pageshot.ps1` takes a screenshot of the **whole page**, interface included —
+`docs/shot.ps1` only ever captured what a stand drew on the canvas, which is why the interface had
+never once been looked at this way; `docs/mkview.ps1` is the scene stand behind it
+(`?s=system|surface|cave|night|lowsuit`). `test.ps1 -Mobile` runs the same suites in a 390×844
+window: the layout guards skip themselves when the window is not a phone, so without it the phone
+half of the interface was never actually measured. The overlap guard `91f-ui` was re-pointed at
+the new neighbours instead of being disabled, and now also asserts that no reading panel hangs in
+the upper half of the frame.
+
+---
 ## 0.142.0 — the planets are lit by their own star (M175)
 
 `planetLight` baked the shading layer with a light vector written into the code:
