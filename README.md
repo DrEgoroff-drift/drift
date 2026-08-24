@@ -427,6 +427,17 @@ Pirates are absent near home and increasingly common the further out you push. F
 own gun module and bounty tech, but outrunning or jumping away is always cheap and always valid.
 Bases, boarding and mercenary hunts are opt-in layers on top.
 
+### Home
+
+The home is not a screen of cards: it is a house standing on its own planet. Land there and the
+navigator shows **ДОМ**; walk up and the porch lamp is on, the chimney smokes, the window is lit,
+and every tier you have earned is out in the yard — garage, display case, workbench, the mast with
+its beacon. Go in and you walk its rooms: eight tiers, eight rooms, each with its own floor and
+its own things to stand next to and look at, openings that show the next room's lamplight, and
+blank masonry where the house has not grown yet. The people who live there live there — Vega sits
+in the study, gets up, walks, works and answers when hailed; the lodger keeps house, the trainee
+fiddles in the workshop, off-duty crew rest in the hall.
+
 ### The road companion
 
 On a phone, «В ДОРОГУ» turns a real trip into flight: GPS speed ×1 000 000 becomes cosmic
@@ -523,7 +534,7 @@ cross-device saves instead of manual codes. Set `PORT` to use something other th
 
 ## Status
 
-Version 0.133.0. Everything described above is built and playable, online at
+Version 0.136.0. Everything described above is built and playable, online at
 [drift-game.ru](https://drift-game.ru) with accounts and cloud saves, or offline from this file.
 
 Four development passes are behind it. The first finished the planned queue: celestial
