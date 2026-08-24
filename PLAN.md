@@ -421,7 +421,15 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
 
 # QUEUE: after the graphics campaign
 
-- **M170 the home as a place** (author, 2026-08-24) — the home stops being a screen of cards and
+- **M170 the home as a place** — **built (0.136.0)**: `21f-home-out` (the house on its planet:
+  terrace, footing, roof, smoking chimney, lit window, porch lamp, garage, display case, workbench,
+  beacon mast; cleared yard, kept away from the settlement; ДОМ marker in the navigator) and
+  `29c-home-in` + `29d-home-draw` (a walkable mode: eight tiers as eight rooms, openings that show
+  the next room, per-room floors, things to look at, residents who sit, work, walk and answer —
+  Vega in her dress and headscarf). Suite `91zzz-home-in`. Remaining passes if the author wants
+  more: furniture depth in the hall and dock, a second storey for the living part, sounds indoors.
+  Original ask below.
+- ~~**M170 the home as a place**~~ (author, 2026-08-24) — the home stops being a screen of cards and
   becomes a house standing on its planet: you land, you walk to it on foot, you go in, you walk
   its rooms and look at what is in them, and the people who live there are drawn living in it —
   Vega sits, gets up, walks, works. "Полноценный Симс" in the author's words. Ten passes, the

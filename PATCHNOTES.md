@@ -7,6 +7,26 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.136.0 — "Home" (M170)
+
+The home stops being a panel and becomes a house. It stands on its own planet in
+its own system: land there and the navigator shows **ДОМ** among the markers, walk
+up and the porch lamp is already on, the chimney is smoking, the window is lit.
+The yard is cleared, the house sits on a cut terrace, and every tier you have
+earned is out there — the garage with its doors, the display case, the workbench,
+the mast with the beacon blinking.
+
+**ДЕЙСТВИЕ at the door takes you inside.** The eight tiers are eight rooms you
+walk through, with openings that show the next room's light and blank masonry
+where the house has not grown yet. Each room has its own floor and its own things
+to stand next to and look at — the mattress it all began with, the crate that
+serves as a table, coats on hooks, the boat under a cover, the display case, the
+workbench and the machine, the desk and the wall map, the bed and the common
+table, the beacon console. And the people who live there live there: Вега sits in
+the study, gets up, walks and works, and answers when you hail her; the lodger
+keeps house, the trainee fiddles in the workshop, off-duty crew rest in the hall.
+They step aside when you crowd them.
+---
 ## 0.135.0 — "Looked at again" (M169)
 
 A graphics campaign, screen by screen, against close-up shots rather than memory.
