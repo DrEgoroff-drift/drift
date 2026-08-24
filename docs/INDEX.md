@@ -2935,7 +2935,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27k-road.js · 27 КБ
   · дорожный спутник:1
 
-## src/27l-road-draw.js · 31 КБ
+## src/27l-road-draw.js · 33 КБ
   · дорожный спутник: экран:1
 
 ## src/27-ui-ship.js · 26 КБ
@@ -3177,7 +3177,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzx-mobile.js · 2 КБ
   · автотесты: телефонный вид (M167):1
 
-## tests/91zzy-road.js · 15 КБ
+## tests/91zzy-road.js · 16 КБ
   · автотесты: дорожный спутник (M168, M168b):1
 
 ## tests/91zzz-home-in.js · 5 КБ

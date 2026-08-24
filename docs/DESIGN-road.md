@@ -250,3 +250,24 @@ in screen space, before the hull (nozzle cut hidden under the plating):
 Brightness floor `.30+depth*.62`, bright palette (`#eef7fc`/`#a8bccb`), per-star
 twinkle phase; a large near star gets a cross-glint **only near standstill** — on a
 moving streak the cross reads as a pinned "T".
+
+## Eighth pass (M168j, 0.136.4) — the bloom
+
+Reference: the "Моя волна" cover — light radiating from a centre, several
+distinct colours at once, palette following the track's mood.
+
+Structure, bottom-centre anchored, additive:
+
+1. **Core** — mood hue, radius `H*(.24+en*.30)`, beat pushes it.
+2. **Two satellites** at `±.34W`, hues `±115°` off the mood, same order of
+   brightness as the core — this is what makes it read as *multicoloured*
+   rather than one wash; their weights lean on spectral brightness, so a bassy
+   track and a bright one split the triad differently.
+3. **Seven rays**, fanned `±0.78 rad`, each ray's length driven by its own band
+   of `RD.wave` — the 28-band log-frequency curve finally drawn.
+4. A thin single-hue strip at the very edge lays light under the buttons.
+
+Lessons from tuning: at additive blending over a dark sky, satellite blobs need
+core-level alpha and a full `±115°` hue split, or everything averages into one
+green wash; and the first version failed exactly that way at half alpha and
+`±100°` with overlapping centres.

@@ -7,6 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.136.4 — the wave glows like the reference (M168j)
+
+The author brought screenshots of Yandex Music's "Моя волна" cover: a bloom of
+light radiating from the centre, several distinct colours at once, the palette
+following the mood of the track. The road's bottom glow was a flat single-hue
+wash by comparison.
+
+The bottom of the road screen is now that bloom: a core in the mood colour, two
+satellite blobs with hues shifted ±115° — an energetic track lands on
+magenta/amber/green, a sad one on cyan/green/violet — and a fan of seven thin
+rays whose lengths are individual bands of the spectrum: `RD.wave`, computed
+since M168b, is finally drawn rather than merely smoothed. Everything breathes
+with energy, the beat pushes the core, and the whole thing drifts slowly so it
+never reads as a static sticker. The flat wash survives only as a thin strip at
+the very edge, laying light under the buttons.
+
+The author's M168c ruling stands: no curve-band over the footer.
+
 ## 0.136.3 — the road hears the music and shows its engines (M168i)
 
 A second evening drive on video. Three complaints, all confirmed by the frames.

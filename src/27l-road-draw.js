@@ -404,15 +404,47 @@ function drawRoad(ts){
   drawHull(id,spd>ROAD_VMIN||RD.acc>.2,RD.acc<-.25,Math.min(3,fast*3+Math.max(0,RD.acc)*2+(tier===3?1:0)+RD.beat*.8),RD.bank);
   c.restore();
   ctx=old;
-  /* волна по нижней кромке: гладкая светящаяся кривая из лог-частот,
-     цвет настроения, дыхание энергией. Никаких столбиков. */
-  /* музыка — свечение от самого низа экрана, под кнопками: градиент цвета
-     настроения, высота и яркость дышат энергией, бит вспыхивает. Кривая-полоса
-     над футером спорила с кнопками (решение автора, M168c) */
-  const gh=H*(.15+en*.32);
+  /* ── «моя волна» снизу (M168j) ──
+     Сияние от центра нижней кромки, как у одноимённой заставки: РАЗНОЦВЕТНОЕ —
+     ядро цвета настроения, два спутниковых пятна с тоном, сдвинутым на ±100°
+     (энергичное даёт маджента/янтарь/зелень, грустное — циан/зелень/лиловый),
+     и веер тонких лучей, где длина каждого — своя полоса спектра: RD.wave
+     наконец рисуется, а не только считается. Всё дышит энергией, бит толкает
+     ядро. Кривой-полосы по-прежнему нет — она спорила с кнопками (M168c). */
+  c.save();c.globalCompositeOperation="lighter";
+  const ax=W*.5+Math.sin(t*.07)*W*.04, ay=H*1.02;
+  /* веер лучей — ПОД пятнами, чтобы читались краями, а не резали ядро */
+  for(let i=0;i<7;i++){
+    const wv=RD.wave[Math.min(27,Math.floor(i*27/6))];
+    const ang=-Math.PI/2+(i-3)*.26+Math.sin(t*.31+i*2.1)*.05;
+    const L=H*(.18+.38*wv)*(1+RD.beat*.18);
+    const hr=(hue+(i-3)*38+360)%360;
+    c.save();
+    c.translate(ax,ay);c.rotate(ang);c.scale(1,Math.max(.04,(.16-.012*Math.abs(i-3))));
+    const rg=c.createRadialGradient(0,0,0,0,0,L);
+    rg.addColorStop(0,"hsla("+hr+",90%,64%,"+(.16+wv*.28+en*.10).toFixed(3)+")");
+    rg.addColorStop(1,"hsla("+hr+",85%,55%,0)");
+    c.fillStyle=rg;c.fillRect(0,-L,L,L*2);
+    c.restore();
+  }
+  /* три пятна: ядро и два спутника по бокам, каждый со своим тоном и дыханием */
+  const blob=(bx,by,R,hb,a0)=>{
+    const bg=c.createRadialGradient(bx,by,0,bx,by,R);
+    bg.addColorStop(0,"hsla("+((hb+360)%360)+",95%,63%,"+a0.toFixed(3)+")");
+    bg.addColorStop(.55,"hsla("+((hb+360)%360)+",82%,48%,"+(a0*.45).toFixed(3)+")");
+    bg.addColorStop(1,"hsla("+((hb+360)%360)+",80%,42%,0)");
+    c.fillStyle=bg;c.fillRect(bx-R,by-R,R*2,R*2);
+  };
+  const R0=H*(.24+en*.30+RD.beat*.06);
+  blob(ax,ay,R0,hue,.34+en*.34);
+  blob(ax-W*(.34+.03*Math.sin(t*.13)),H*.97,R0*(.80+.1*Math.sin(t*.11)),hue+115,(.30+en*.28)*(.75+RD.bright*.4));
+  blob(ax+W*(.34+.03*Math.sin(t*.17+1)),H*.97,R0*(.80+.1*Math.cos(t*.15)),hue-115,(.30+en*.28)*(1.15-RD.bright*.4));
+  c.restore();
+  /* и тонкая подложка у самой кромки — свет ложится под кнопки ровно */
+  const gh=H*(.10+en*.14);
   const wg=c.createLinearGradient(0,H-gh,0,H);
   wg.addColorStop(0,"hsla("+hue+",75%,55%,0)");
-  wg.addColorStop(1,"hsla("+hue+",78%,58%,"+(.20+en*.40+RD.beat*.22).toFixed(3)+")");
+  wg.addColorStop(1,"hsla("+hue+",78%,58%,"+(.12+en*.22+RD.beat*.15).toFixed(3)+")");
   c.fillStyle=wg;c.fillRect(0,H-gh,W,gh);
   /* числа. Строки складываются курсором: чего нет — того нет, дыр не остаётся.
      На стоянке ни «—», ни «+0 кр» не висят (проход самокритики M168c) */

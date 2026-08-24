@@ -217,3 +217,32 @@ TEST_SUITES.push(()=>suite("дорога: тихий сырой микрофон
   roadClose();
   G.road=null;
 }));
+
+TEST_SUITES.push(()=>suite("дорога: сияние «моей волны» снизу — разноцветное и дышит музыкой",()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  G.road=null;
+  roadOpen();
+  if(RD.raf)cancelAnimationFrame(RD.raf);RD.raf=0;
+  RD.asked=1;RD.kmh=60;RD.shake=0;
+  /* громкая музыка с битом через фальшивый анализатор */
+  let n=0;RD.eq=new Uint8Array(128);
+  RD.an={getByteFrequencyData:a=>{n++;const v=(n%24<5)?46:18;
+    for(let i=0;i<a.length;i++)a[i]=Math.max(0,v-i*.15+8*Math.sin(n*.05+i*.4));}};
+  let ts=1000;for(let i=0;i<420;i++){ts+=16.7;drawRoad(ts);}
+  ok(RD.energy>.4,"энергия набрана: "+RD.energy.toFixed(2));
+  const cv=document.getElementById("roadcv"),cc=cv.getContext("2d");
+  const y0=Math.floor(cv.height*.86),hh=Math.floor(cv.height*.08);
+  const d=cc.getImageData(0,y0,cv.width,hh).data;
+  let lit=0,fam={r:0,g:0,b:0};
+  for(let i=0;i<d.length;i+=32){
+    const r=d[i],g=d[i+1],b=d[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+    if(mx>70&&mx-mn>25){lit++;
+      if(r===mx)fam.r++;else if(g===mx)fam.g++;else fam.b++;}
+  }
+  ok(lit>60,"низ горит цветным сиянием: "+lit);
+  const fams=(fam.r>8?1:0)+(fam.g>8?1:0)+(fam.b>8?1:0);
+  ok(fams>=2,"цветов несколько, а не один: r/g/b = "+fam.r+"/"+fam.g+"/"+fam.b);
+  roadClose();
+  G.road=null;
+}));
