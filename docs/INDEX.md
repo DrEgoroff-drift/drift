@@ -498,7 +498,7 @@ drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:240
 drawFindsSystem              src/17b-finds.js:149
 drawFlame                    src/03b-hull-paint.js:10
-drawFoeBody                  src/24aa-raid-draw.js:371
+drawFoeBody                  src/24aa-raid-draw.js:427
 drawForeground               src/21b-surface-deco.js:577
 drawGlassHUD                 src/24-mode-belt.js:593
 drawGround                   src/19-mode-landing.js:109
@@ -2946,7 +2946,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/23-mode-dig.js · 15 КБ
   · шахта: спуск вглубь планеты:1
 
-## src/24aa-raid-draw.js · 28 КБ
+## src/24aa-raid-draw.js · 32 КБ
   · рейд: отрисовка:1
   · рисование: пол → стены → объекты → эффекты:4
 

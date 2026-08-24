@@ -1006,7 +1006,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.148.0";
+const VER="0.149.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -38452,7 +38452,7 @@ function drawRaid(){
   const S=G.raid,R=S.R;
   ctx.fillStyle="#04060a";ctx.fillRect(0,0,W,H);
   /* камера от третьего лица: позади и выше, коллидится со стеной и подтягивается */
-  let back=150;
+  let back=118;
   for(let t=back;t>30;t-=15){
     const cx=S.x-Math.sin(S.a)*t, cz=S.z-Math.cos(S.a)*t;
     if(!raidSolidAt(R,cx,cz)){back=t;break;}
@@ -38463,12 +38463,20 @@ function drawRaid(){
   const right=[Math.cos(S.a),0,-Math.sin(S.a)];
   const up=[right[1]*fwd[2]-right[2]*fwd[1],right[2]*fwd[0]-right[0]*fwd[2],right[0]*fwd[1]-right[1]*fwd[0]];
   const F=Math.min(W,H)*.95;
+  /* ── горизонт выше середины (M180) ──
+     «Сверху всё» — первое, что сказал автор про этот экран: потолок занимал
+     верхнюю треть кадра, потому что главная точка проекции стояла ровно в
+     середине. Композиция чинится не наклоном камеры (наклон коверкает
+     вертикали), а СДВИГОМ главной точки: горизонт уходит на 40% высоты, кадр
+     достаётся полу и тем, кто по нему идёт. Это тот же приём, каким открытку
+     кадрируют — линия горизонта не в центре. */
+  const CY=H*.44;
   function proj(px,py,pz){
     const vx=px-cam[0],vy=py-cam[1],vz=pz-cam[2];
     const zc=vx*fwd[0]+vy*fwd[1]+vz*fwd[2];
     if(zc<8)return null;
     return {x:W/2+(vx*right[0]+vy*right[1]+vz*right[2])*F/zc,
-            y:H/2-(vx*up[0]+vy*up[1]+vz*up[2])*F/zc, z:zc};
+            y:CY-(vx*up[0]+vy*up[1]+vz*up[2])*F/zc, z:zc};
   }
   const polys=[];
   /* Стена одним прямоугольником одного тона — плоская наклейка. Делим её по
@@ -38558,7 +38566,10 @@ function drawRaid(){
     const ang=Math.abs(angDiff(Math.atan2(cxw-S.x,czw-S.z),S.a));
     const lamp=K==="reactor"?.16*Math.sin(G.t*.09+c):(K==="corr"?.1*Math.sin(G.t*.05+rr):0);
     const torch=clamp((1-ang/1.1),0,1)*clamp(1-dd/620,0,1)*.5;
-    const li=clamp(.95-dd/(RCELL*9)+torch+lamp,.1,1.15);
+    /* пятно у ног: нашлемный фонарь светит по курсу, но и вокруг человека
+       светло — иначе ближний пол под камерой уходил в чёрную жижу (M180) */
+    const near=clamp(1-dd/(RCELL*2.6),0,1)*.34;
+    const li=clamp(.95-dd/(RCELL*9)+torch+lamp+near,.1,1.15);
     quad([x0,h,z0],[x1,h,z0],[x1,h,z1],[x0,h,z1],base,li*.9,false);
     /* плита пола с зазором по кромке и пятно света под лампой: пол был
        одной заливкой от стены до стены (G4) */
@@ -38696,16 +38707,38 @@ function drawRaid(){
       ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;ctx.stroke();
     }
   }
-  /* объекты: контейнеры, враги, астронавт — плоскими значками по проекции */
+  /* ── лут — ЯЩИК в мире, а не значок на экране (M180) ──
+     Контейнер рисовался оранжевым прямоугольником в экранных координатах с
+     мигающей точкой — наклейка интерфейса поверх зала, где всё остальное
+     стоит в проекции. Теперь это та же коробка box(), что и груз в ангаре:
+     стоит на полу, ловит свет своей клетки, даёт контактную тень. Маячок
+     остаётся — но крошечный и НА ящике, а не вместо него. */
+  for(const L of S.loot){
+    if(L.taken)continue;
+    const fl0=raidFloorAt(R,L.x,L.z);
+    const dd=Math.hypot(L.x-S.x,L.z-S.z);
+    const li=clamp(.95-dd/(RCELL*9)+clamp(1-dd/620,0,1)*.4,.15,1.1);
+    box(L.x,fl0,L.z,30,20,24,[122,96,58],li);
+  }
+  /* подбираемое — тоже вещи на полу: кофр аптечки, ящик брони, короб зарядов.
+     Значок остаётся, но МАЛЕНЬКИЙ и на крышке — как трафарет на таре */
+  for(const P of S.picks){
+    if(P.taken)continue;
+    const fl0=raidFloorAt(R,P.x,P.z);
+    const dd=Math.hypot(P.x-S.x,P.z-S.z);
+    const li=clamp(.95-dd/(RCELL*9)+clamp(1-dd/620,0,1)*.4,.15,1.1);
+    const col=P.kind==="medkit"?[188,186,178]:(P.kind==="armor"?[92,110,128]:[110,102,84]);
+    box(P.x,fl0,P.z,18,11,14,col,li);
+  }
   const marks=[];
   for(const L of S.loot){
     if(L.taken)continue;
-    const p=proj(L.x,22,L.z);if(!p)continue;
+    const p=proj(L.x,raidFloorAt(R,L.x,L.z)+24,L.z);if(!p)continue;
     marks.push({p,kind:"loot",o:L});
   }
   for(const P of S.picks){
     if(P.taken)continue;
-    const p=proj(P.x,raidFloorAt(R,P.x,P.z)+16,P.z);if(!p)continue;
+    const p=proj(P.x,raidFloorAt(R,P.x,P.z)+13,P.z);if(!p)continue;
     marks.push({p,kind:"pick",o:P});
   }
   for(const f of S.foes){
@@ -38719,16 +38752,21 @@ function drawRaid(){
   for(const m of marks){
     const s=clamp(2200/m.p.z,.25,3);
     if(m.kind==="loot"){
-      ctx.fillStyle="rgba(242,178,92,.9)";ctx.strokeStyle="rgba(255,230,170,.9)";ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.rect(m.p.x-11*s,m.p.y-9*s,22*s,18*s);ctx.fill();ctx.stroke();
-      ctx.fillStyle=(Math.sin(G.t*.14)>0)?"#7fe6d8":"rgba(127,230,216,.3)";
-      ctx.beginPath();ctx.arc(m.p.x,m.p.y-13*s,2.4*s,0,TAU);ctx.fill();
+      /* сам ящик уже стоит в мире; здесь только дыхание маячка на крышке */
+      const on=Math.sin(G.t*.14)>0;
+      ctx.fillStyle=on?"#7fe6d8":"rgba(127,230,216,.35)";
+      ctx.beginPath();ctx.arc(m.p.x,m.p.y,2.2*s,0,TAU);ctx.fill();
+      if(on){
+        const gg=ctx.createRadialGradient(m.p.x,m.p.y,0,m.p.x,m.p.y,9*s);
+        gg.addColorStop(0,"rgba(127,230,216,.30)");gg.addColorStop(1,"rgba(127,230,216,0)");
+        ctx.fillStyle=gg;ctx.beginPath();ctx.arc(m.p.x,m.p.y,9*s,0,TAU);ctx.fill();
+      }
     }else if(m.kind==="pick"){
+      /* сам кофр стоит в мире; здесь только трафарет на крышке — маленький,
+         без дыхания и без заливки: тара с маркировкой, а не парящая иконка */
       const P=m.o,C=PICKUPS[P.kind];
-      ctx.save();ctx.translate(m.p.x,m.p.y+Math.sin(G.t*.06)*2*s);ctx.scale(s,s);
-      ctx.fillStyle=C.col;ctx.globalAlpha=.85;
-      ctx.beginPath();ctx.rect(-7,-7,14,14);ctx.fill();
-      ctx.globalAlpha=1;ctx.strokeStyle="rgba(255,255,255,.8)";ctx.lineWidth=1.4;
+      ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s*.55,s*.55);
+      ctx.strokeStyle=C.col;ctx.lineWidth=2;
       if(P.kind==="medkit"){ctx.beginPath();ctx.moveTo(-4,0);ctx.lineTo(4,0);
         ctx.moveTo(0,-4);ctx.lineTo(0,4);ctx.stroke();}
       else if(P.kind==="armor"){ctx.beginPath();ctx.moveTo(0,-5);ctx.lineTo(5,-1);
@@ -38737,6 +38775,18 @@ function drawRaid(){
       ctx.restore();
     }else if(m.kind==="foe"){
       const f=m.o,K=FOE_KINDS[f.kind]||FOE_KINDS.grunt;
+      /* контактная тень на полу: без неё тело висит в воздухе на своей
+         клетке — те самые «человечки», к которым автор и придрался (M180).
+         Тень стоит на ПОЛУ, а не под качающимся телом: качание — тела, пол
+         не качается */
+      /* страховка по вертикали: тень рисуется только НИЖЕ тела на экране.
+         Враг, заспаунившийся с полом выше собственной головы (мезонин над
+         залом), рисовал её на потолке */
+      const pf=proj(f.x,raidFloorAt(R,f.x,f.z)+1,f.z);
+      if(pf&&pf.y>m.p.y+4*s){
+        ctx.fillStyle="rgba(0,0,0,.42)";
+        ctx.beginPath();ctx.ellipse(pf.x,pf.y,15*s,4.2*s,0,0,TAU);ctx.fill();
+      }
       ctx.save();ctx.translate(m.p.x,m.p.y);ctx.scale(s*.9,s*.9);
       drawFoeBody(f,K);
       ctx.restore();
@@ -38751,6 +38801,12 @@ function drawRaid(){
         ctx.fillText("БАРОН",m.p.x,m.p.y-31*s);
       }
     }else{
+      /* и у самого скафандра тень тоже: он ходит по тому же полу */
+      const pm=proj(S.x,raidFloorAt(R,S.x,S.z)+1,S.z);
+      if(pm&&pm.y>m.p.y+4*s){
+        ctx.fillStyle="rgba(0,0,0,.45)";
+        ctx.beginPath();ctx.ellipse(pm.x,pm.y,13*s,3.8*s,0,0,TAU);ctx.fill();
+      }
       ctx.save();ctx.translate(m.p.x,m.p.y+10*s);ctx.scale(s*.8,s*.8);
       drawAstronaut({phase:S.walkPhase,amp:keys.thrust||keys.brake?1:0,walk:false,air:false});
       ctx.restore();

@@ -7,6 +7,31 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.149.0 — the pirate base, pass 1: composition and bodies (M180)
+
+«Пиратская база говно, там чё-то сверху всё, скафандр, человечки» — three faults, each named:
+
+- **«Сверху всё»** — the ceiling owned the top third of the frame because the principal point of
+  the projection sat exactly at screen centre. Composition is fixed the way a postcard is framed —
+  not by tilting the camera (tilt shears the verticals) but by **moving the horizon above centre**
+  (`CY=H*.44`): the frame belongs to the floor and to those who walk it. The camera also stays
+  closer (118 instead of 150), so fewer rock cells wedge between it and the player, and a pool of
+  light surrounds the walker so the near floor no longer sinks into black sludge.
+- **«Человечки»** — figures floated glued to their cells: no body had a contact shadow. Foes and
+  the player's suit now stand on ellipses of shade cast on *their* floor (with a sanity guard: a
+  shadow is only drawn below the body — a foe spawned over a mezzanine used to cast one onto the
+  ceiling).
+- **Stickers became things.** The loot container was an orange rectangle in screen coordinates
+  with a blinking dot — an interface label over a hall where everything else stands in projection.
+  It is now the same `box()` as the hangar cargo: standing on the floor, catching its cell's
+  light, casting a contact shadow, with only a tiny breathing beacon left on the lid. Medkits,
+  armour and charge packs are small cases on the floor too, their icons shrunk to stencil marks on
+  the lid instead of floating interface glyphs.
+
+Passes 2+ (the enemy bodies themselves, the hangar set dressing, the walkway reading) follow after
+the author's morning look.
+
+---
 ## 0.148.0 — the hold laid out in piles (M179)
 
 The author's reference was The Forest's inventory: everything you carry laid out as objects on a

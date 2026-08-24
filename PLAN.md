@@ -690,7 +690,10 @@ self-criticism, per the cross-cutting rule.
   material, people sitting on the edge. Paper stays for what is read. **Left open:** the suit kit
   as objects on the same desk (it lives in the ship screen's paperdoll today).
 - **M180 — the pirate base.** «Пиратская база говно, там чё-то сверху всё, скафандр, человечки».
-  The raid screen is the only one that never got the frame's own language: several passes.
+  Pass 1 **done (0.149.0)**: horizon moved above centre (postcard framing), camera closer, light
+  pool at the feet, contact shadows under every body, loot and pickups turned from screen stickers
+  into cases standing on the floor. **Open for passes 2+:** the enemy bodies themselves (blocky
+  torsos), the hangar set dressing, the walkway/mezzanine reading, marks drawing through walls.
 - **M181–M185 — five interface passes**, each with a named question:
   1. **the hand**: what is under the thumb on a phone and under the cursor on a desktop; nothing
      that can be pressed may vanish, ever — a hidden button is a lost action (M176 already cost

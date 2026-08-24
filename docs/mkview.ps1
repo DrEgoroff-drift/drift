@@ -75,6 +75,18 @@ setTimeout(function(){
       G.hin.cam=G.hin.x;
     }
     for(var f3=0;f3<4;f3++){G.t+=.01;updateHomeIn(1);drawHomeIn();}
+  }else if(scene==="raid"){
+    /* абордаж: настоящая база из галактики, тем же поиском, что в тестах */
+    var PB=null;
+    for(var qx=-12;qx<12&&!PB;qx++)for(var qy=-12;qy<12&&!PB;qy++){
+      if(!starAt(qx,qy))continue;
+      var qs=getSystem(qx,qy),qb=pirateBaseOf(qs);
+      if(qb){G.sys=qs;G.sx=qx;G.sy=qy;PB=qb;}
+    }
+    if(PB){
+      enterRaid(PB);
+      for(var f5=0;f5<8;f5++){G.t+=.02;updateRaid(1);drawRaid();}
+    }
   }else if(scene==="hold"){
     G.mode="system";
     for(var f4=0;f4<2;f4++){G.t+=.02;drawSystem();}
