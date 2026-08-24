@@ -229,6 +229,32 @@ function drawScoop(){
     ctx.globalAlpha=1;
     ctx.strokeStyle="rgba(12,8,18,"+(.20+dep*.20).toFixed(2)+")";ctx.lineWidth=2.6;ctx.stroke();
     ctx.restore();
+    /* ── завитки сдвига (M169) ──
+       Ровная тень вдоль всей кромки читается проведённой линией. На настоящей
+       границе двух потоков растут ВАЛЫ: гребень заворачивается в крючок,
+       крючки идут чередой и едут вместе с лентой. Их и рисуем — светлым по
+       верхней стороне, тенью под ней; это и есть «резкий фронт» из долга G5. */
+    const cw=110+re()*90;
+    const off=(S.x*spd*11)%cw;
+    for(let x=-cw-off;x<W+cw;x+=cw){
+      const yy=ey+Math.sin((x+S.x*spd*11)/wl*TAU)*amp
+                 +Math.sin((x*1.7-S.x*spd*6)/(wl*.43)*TAU)*amp*.32;
+      /* Вал — это ТЕЛО, а не контур: линиями он читался бровками, набросанными
+         карандашом поверх облаков (самокритика M169). Мягкий валик с бликом
+         сверху и тенью снизу, размер и наклон из хеша — чередой, но не под
+         копирку. */
+      const hh=hashi(Math.round(x/cw),e,0x0B11);
+      const cr=9+((hh&7)/7)*13, tilt=(((hh>>>3)&15)/15-.5)*.5;
+      ctx.save();
+      ctx.translate(x,yy);ctx.rotate(tilt);
+      const rg=ctx.createLinearGradient(0,-cr*.8,0,cr*.8);
+      rg.addColorStop(0,"rgba(248,242,255,"+(.11+dep*.07).toFixed(3)+")");
+      rg.addColorStop(.45,"rgba(200,190,220,0)");
+      rg.addColorStop(1,"rgba(8,4,14,"+(.13+dep*.10).toFixed(3)+")");
+      ctx.fillStyle=rg;
+      ctx.beginPath();ctx.ellipse(0,0,cr*1.7,cr*.72,0,0,TAU);ctx.fill();
+      ctx.restore();
+    }
   }
   /* набегающий поток: тонкие штрихи по всему кадру, гуще к низу */
   ctx.strokeStyle="rgba(255,255,255,.05)";ctx.lineWidth=1;
