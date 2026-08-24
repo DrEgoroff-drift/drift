@@ -116,8 +116,12 @@ interface icons into outcrops with a form per raw material (`drawDeposit` in 21b
 cross-section** broken by faults with lenses inside the strata (18b); **gas giant** shear edges
 grown rolls (19a).
 
-Measured after all of it, clean machine, visible window at ×2: system 55, belt 60, landing 51,
-surface 48, dig 60, cave 60, scoop 55 — the same as before the campaign. The "regression" seen
+Measured after all of it **and after M170**, clean machine, maximized window at ×2: system 58,
+belt 60, landing 54, surface 52, dig 60, cave 60, scoop 58 — the same as, or a shade better than,
+the pre-campaign baseline (55/60/51/48/60/60/55). Measure like for like: the same window size and
+scale, nothing else running. A 1550×900 window instead of maximized reads ten frames lower, and a
+run with `--force-device-scale-factor=2` that lands on a 2.5× display reads a third lower — those
+are the window, not the code. The "regression" seen
 mid-run (system 45, landing 40) was the browser pane running the game in background tabs while
 the probe measured: **no other instance of the game may be open during a measurement.** The one
 pass worth optimising if surface ever drops below 45 is `drawPlant` (4–13 fps by the deep probe);
