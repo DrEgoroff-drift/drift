@@ -730,9 +730,13 @@ body.road #console{display:none}
   #prompt{bottom:calc(env(safe-area-inset-bottom) + 204px);white-space:nowrap;overflow:hidden;
     left:10px;right:128px;transform:none;
     text-overflow:ellipsis;max-width:none;line-height:1.4}
-  /* призрачных кнопок нет: ДЕЙСТВИЕ без действия отсутствует */
-  body.mobile .pads button[data-k=act]:not(.ready){display:none}
 }
+/* ── кнопка не исчезает — кнопка гаснет (M181, прямое указание автора) ──
+   Правило M167 «призрачных кнопок нет» пряталo ДЕЙСТВИЕ и ТОРМОЗ совсем, и
+   раскладка прыгала: палец запоминает место, а места то есть, то нет. Автор
+   сказал прямо: «кнопки не исчезают на мобиле». Неприменимая кнопка теперь
+   стоит там же, но погашена и не ловит нажатий — рука всегда знает, где что. */
+.pads button.off{opacity:.22;pointer-events:none}
 /* фишки комплекта (M167): класс — фишкой, новое — точкой; ничего не переносится */
 .kitchip{font-style:normal;color:var(--void);background:var(--dim);border-radius:6px;
   padding:0 5px;font-size:8px;letter-spacing:.08em;vertical-align:1px;white-space:nowrap}

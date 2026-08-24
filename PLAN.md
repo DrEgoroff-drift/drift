@@ -695,9 +695,8 @@ self-criticism, per the cross-cutting rule.
   into cases standing on the floor. **Open for passes 2+:** the enemy bodies themselves (blocky
   torsos), the hangar set dressing, the walkway/mezzanine reading, marks drawing through walls.
 - **M181–M185 — five interface passes**, each with a named question:
-  1. **the hand**: what is under the thumb on a phone and under the cursor on a desktop; nothing
-     that can be pressed may vanish, ever — a hidden button is a lost action (M176 already cost
-     the player ДЕЙСТВИЕ once);
+  1. **the hand** — **done (0.150.0, M181)**: no pressable thing vanishes — ДЕЙСТВИЕ and ТОРМОЗ
+     dim (`.off`, deaf to taps) instead of hiding, the bottom row never jumps;
   2. **the eye**: what the player looks at first on each screen, and what is louder than it should
      be;
   3. **the road**: how many taps between wanting a thing and having it;

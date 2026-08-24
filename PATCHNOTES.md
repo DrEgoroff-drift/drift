@@ -7,6 +7,16 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.150.0 — a button dims, it never vanishes (M181)
+
+The author's direct order: «кнопки не исчезают на мобиле». The M167 rule "no ghost buttons" hid
+ДЕЙСТВИЕ and ТОРМОЗ entirely when they did not apply — and the whole bottom row jumped left and
+right on every mode change, while the thumb remembers a *place*. An inapplicable button now stands
+exactly where it always stands, dimmed to a fifth and deaf to taps (`.pads button.off`). The
+ready-flag fix of 0.143.0 (a long verb no longer counts as "no action") feeds the same class, so
+the two bugs cannot recombine. Guarded in `91zzx-mobile` on both desktop and `-Mobile` runs.
+
+---
 ## 0.149.0 — the pirate base, pass 1: composition and bodies (M180)
 
 «Пиратская база говно, там чё-то сверху всё, скафандр, человечки» — three faults, each named:

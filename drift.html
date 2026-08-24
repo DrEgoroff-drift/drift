@@ -744,9 +744,13 @@ body.road #console{display:none}
   #prompt{bottom:calc(env(safe-area-inset-bottom) + 204px);white-space:nowrap;overflow:hidden;
     left:10px;right:128px;transform:none;
     text-overflow:ellipsis;max-width:none;line-height:1.4}
-  /* призрачных кнопок нет: ДЕЙСТВИЕ без действия отсутствует */
-  body.mobile .pads button[data-k=act]:not(.ready){display:none}
 }
+/* ── кнопка не исчезает — кнопка гаснет (M181, прямое указание автора) ──
+   Правило M167 «призрачных кнопок нет» пряталo ДЕЙСТВИЕ и ТОРМОЗ совсем, и
+   раскладка прыгала: палец запоминает место, а места то есть, то нет. Автор
+   сказал прямо: «кнопки не исчезают на мобиле». Неприменимая кнопка теперь
+   стоит там же, но погашена и не ловит нажатий — рука всегда знает, где что. */
+.pads button.off{opacity:.22;pointer-events:none}
 /* фишки комплекта (M167): класс — фишкой, новое — точкой; ничего не переносится */
 .kitchip{font-style:normal;color:var(--void);background:var(--dim);border-radius:6px;
   padding:0 5px;font-size:8px;letter-spacing:.08em;vertical-align:1px;white-space:nowrap}
@@ -1006,7 +1010,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.149.0";
+const VER="0.150.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -48156,6 +48160,8 @@ function hud(){
     }
   }
   setTx($act,actLbl);
+  /* кнопка без действия гаснет, а не исчезает (M181): палец помнит место */
+  $act.classList.toggle("off",!hasAct);
   /* Подсвечиваем, когда действие вообще есть. Раньше признаком служила сама
      подпись: «кнопка не называется ДЕЙСТВИЕ — значит есть что делать». Признак
      врал, и на телефоне это стоило игроку самого действия: длинный глагол
@@ -48164,15 +48170,15 @@ function hud(){
      кнопок нет» прячет пустую кнопку на телефоне совсем. Сканировать было
      нечем. Теперь признак — НАЛИЧИЕ действия, а подпись отдельно. */
   $act.classList.toggle("ready",hasAct);
-  if(G.mode==="dig"){
-    /* «вниз» уже висит на большой кнопке — второй такой же рядом только путает.
-       Клавиша S при этом продолжает работать, раскладка WASD не рвётся. */
-    setSt($bBrk,"display","none");
-  }else{
-    /* призрачных кнопок нет (M167): на поверхности тормоза не бывает — кнопка отсутствует */
-    setSt($bBrk,"display",G.mode==="surface"?"none":"");
+  /* Тормоз не исчезает — тормоз гаснет (M181). Правило «призрачных кнопок
+     нет» убирало его на поверхности и в шахте совсем, и весь нижний ряд
+     прыгал влево-вправо при каждой смене режима. Палец помнит место. */
+  {
+    const brkOff=G.mode==="surface"||G.mode==="dig";
+    setSt($bBrk,"display","");
+    $bBrk.classList.toggle("off",brkOff);
     setTx($bBrk,"ТОРМОЗ");
-    setSt($bBrk,"opacity","1");
+    setSt($bBrk,"opacity","");
   }
   setTx($nav,(G.mode==="belt"||G.mode==="scoop"||G.mode==="homein")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
   /* под землёй ОГОНЬ — это импульсный разрядник, он есть всегда */

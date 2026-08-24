@@ -22,12 +22,24 @@ TEST_SUITES.push(()=>suite("телефон: разрез КОРАБЛЬ|СКАФ
   kitAll().torso=kitPiece("torso",1,0,1);kitAll().torso.model=2;
   ok(kitPalette().torso.main!==p1,"другое семейство — другой цвет куклы и ходока");
   G.kit=null;
-  /* призрачных кнопок нет: на поверхности тормоз отсутствует */
+  /* кнопка не исчезает — кнопка гаснет (M181): на поверхности тормоз погашен
+     и не ловит нажатий, но стоит на месте — палец помнит раскладку */
   G.mode="surface";G.surf={p:{type:"terran",T:{atm:"есть"},name:"т"},suit:100,x:0,y:0,fauna:[],plants:[]};
   hud();
-  eq(document.querySelector("[data-k=brake]").style.display,"none","на поверхности тормоза нет");
+  const $brk=document.querySelector("[data-k=brake]");
+  ok($brk.style.display!=="none","на поверхности тормоз ВИДЕН");
+  ok($brk.classList.contains("off"),"но погашен");
+  eq(getComputedStyle($brk).pointerEvents,"none","и не ловит нажатий");
   G.mode="system";G.surf=null;hud();
-  ok(document.querySelector("[data-k=brake]").style.display!=="none","в полёте есть");
+  ok(!$brk.classList.contains("off"),"в полёте живой");
+  /* и ДЕЙСТВИЕ так же: без действия гаснет, место держит */
+  const $act2=document.querySelector("[data-k=act]");
+  G.prompt="";hud();
+  ok($act2.style.display!=="none","ДЕЙСТВИЕ видно всегда");
+  ok($act2.classList.contains("off"),"без действия — погашено");
+  G.prompt="ДЕЙСТВИЕ — СТЫКОВКА";hud();
+  ok(!$act2.classList.contains("off"),"с действием — живое");
+  G.prompt="";hud();
 }));
 
 /* Низ телефона после релизного вида (A2) стал трёхэтажным: пульт, подсказка
