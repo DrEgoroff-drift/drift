@@ -51,7 +51,13 @@ function enterSurface(){
     const wide=Math.min(260,span*.9), step=wide/n;
     for(let i=0;i<n;i++){
       const x=clamp(cx-wide*.5+step*(i+.5)+(r()-.5)*step*.55,60,tr.W-60);
-      const pl=genPlant(r,p,x,groundAt(tr,x));
+      /* место, а не только координата (M174): вид растёт по-разному в
+         ложбине и на гребне, поэтому экземпляр получает сырость полосы и
+         то, насколько эта точка ниже соседних. Считается по groundAt, без
+         единого лишнего вызова r() — генерация полосы не сдвигается */
+      const gy=groundAt(tr,x);
+      const hollow=clamp((gy-(groundAt(tr,x-150)+groundAt(tr,x+150))*.5)/46*.5+.5,0,1);
+      const pl=genPlant(r,p,x,gy,{wet,hollow});
       /* глубина: у куртины есть перед и зад. Дальние мельче и глуше, ближние
          крупнее и темнее — без этого все растения стоят на одной линии в один
          кислотный тон и читаются наклейками */
@@ -69,15 +75,36 @@ function enterSurface(){
      отправляет обратно на орбиту вместо бурения */
   /* зверьё водится там же, где флора: ему есть что есть */
   const fauna=[];
-  if(flora)for(let i=0;i<Math.round((10+Math.floor(r()*10))*gp);i++){
-    const x=120+r()*(tr.W-240);
-    fauna.push(genBeast(r,p,x,groundAt(tr,x)));
+  if(flora){
+    const fs=faunaOf(p);
+    const N=Math.round((10+Math.floor(r()*10))*gp);
+    while(fauna.length<N){
+      const sp=pickShare(fs,r);
+      const x=120+r()*(tr.W-240);
+      /* стайные ходят группой (M174): иначе слово «стайный» в имени такое же
+         враньё, каким было всё остальное в старом имени вида */
+      const n=sp.herd?2+Math.floor(r()*3):1;
+      for(let k=0;k<n&&fauna.length<N;k++){
+        const bx=clamp(x+(k?(r()-.5)*150:0),100,tr.W-100);
+        fauna.push(specimenBeast(r,sp,bx,groundAt(tr,bx)));
+      }
+    }
   }
   /* вход в пещеру есть на каждой планете: раньше он выпадал с шансом .65, и
      игрок, обойдя пару планет без пещеры, решал, что механику убрали. Место
      по-прежнему случайное и далеко от корабля — дойти надо, а вот гадать,
      существует ли пещера в принципе, не надо: путь показывает навигатор сверху. */
-  const caveMouth={x:clamp(400+r()*(tr.W-800),150,tr.W-150)};
+  /* «далеко от корабля» до сих пор было только в этом комментарии: место
+     бросалось по всей полосе и могло лечь на пятачок посадки. Там подсказка и
+     ДЕЙСТВИЕ принадлежат кораблю (заложить базу / спуститься в неё), и пещера,
+     выпав туда, становилась недоступной вовсе. Теперь отступ считается */
+  let cmx=clamp(400+r()*(tr.W-800),150,tr.W-150);
+  const keep=Math.max(300,(typeof shipZoneR==="function"?shipZoneR():90)*3);
+  if(Math.abs(cmx-tr.padX)<keep){
+    const right=tr.padX+keep, left=tr.padX-keep;
+    cmx=right<=tr.W-150?right:(left>=150?left:clamp(right,150,tr.W-150));
+  }
+  const caveMouth={x:cmx};
   /* расчищаем пятачок у входа: залежь или куст, оказавшись на устье, перехватывали
      подсказку ДЕЙСТВ (бурение важнее по порядку проверок), и пещеру нельзя было
      открыть, стоя прямо на ней — отсюда и «пещер нет» */
@@ -428,8 +455,7 @@ function updateSurface(dt){
     if(actEdge){
       /* существо подаёт голос: тембр из его же seed, у каждого свой */
       sfx("beast",{seed:beast.seed||hashi(beast.x|0,beast.r*100|0,7)});
-      beast.scanned=true;G.species.add(beast.name);G.data+=14;G.bio=(G.bio|0)+1;
-      tell("","Новый вид: "+beast.name+" · +14 данных","Новый вид\n"+beast.name+"\n+14 данных");
+      bioScan(beast,14);
     }
   }else if((S.fauna||[]).some(b=>b.scanned&&!b.caught&&Math.abs(b.x-S.x)<30)){
     /* космозоо (M164): отсканированного можно поймать — клетка занимает слот трюма */
@@ -439,9 +465,8 @@ function updateSurface(dt){
   }else if(plant){
     G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
     if(actEdge){
-      plant.scanned=true;G.species.add(plant.name);G.data+=9;G.bio=(G.bio|0)+1;
+      bioScan(plant,9);
       if(typeof glowScan==="function")glowScan(plant);   /* светящийся мох — товар (11i) */
-      tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
     }
   }else if(dShip<shipZoneR()&&baseAt(G.sx,G.sy,S.p.idx)){
     /* шлюз базы стоит рядом с кораблём — вход тем же жестом, что в пещеру */

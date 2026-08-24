@@ -162,9 +162,9 @@ function enterCave(){
     const x=low?340+r()*(CAVE_W-520):200+r()*(CAVE_W-400);
     const y=low?caveScanDown(C,x,caveLowY(C,x)):caveFloor(C,x);
     if(y>=CAVE_Y1)continue;
-    const pl=genPlant(r,p,x,y);
-    pl.glow=true;pl.bloom=r()<.5;
-    plants.push(pl);
+    /* под землёй сыро и темно: своя флора планеты, светящаяся по виду, а не
+       по включённому руками флагу (M174, caveFloraOf) */
+    plants.push(specimenPlant(r,pickShare(caveFloraOf(p),r),p,x,y,{wet:.9,hollow:.75}));
   }
   /* дозор посёлка (12t): в его биоме кусачих просто меньше — не потому, что
      игроку сделали поблажку, а потому, что здесь их гоняют каждый день */
@@ -329,9 +329,9 @@ function updateCave(dt){
     const c=addRes("carbon",2+Math.floor(r()*4));
     const x2=r()<.4?addRes("xeno",1+Math.floor(r()*2)):0;
     C.fauna.splice(C.fauna.indexOf(nearBug),1);
-    G.species.add(nearBug.name);G.data+=6;G.bio=(G.bio|0)+1;
+    const d=bioMark(nearBug.name,6);G.data+=d;
     tell("tech","Образец: "+nearBug.name+" · углерод ×"+c+(x2?" · ксенобиом ×"+x2:""),
-      "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+"\n+6 данных");
+      "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+"\n+"+d+" данных");
   }
   let plant=null;
   for(const pl of C.plants)if(!pl.scanned&&Math.abs(pl.x-C.x)<30&&Math.abs(pl.y-C.y)<40)plant=pl;
@@ -359,9 +359,8 @@ function updateCave(dt){
   }else if(plant){
     G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
     if(actEdge){
-      plant.scanned=true;G.species.add(plant.name);G.data+=9;G.bio=(G.bio|0)+1;
-      if(typeof heardAdd==="function")heardAdd("ground",{sx:G.sx,sy:G.sy,note:"в пещере: "+plant.name},null);   // птица слышит и на планете (хвост M117)
-      tell("","Новый вид: "+plant.name+" · +9 данных","Новый вид\n"+plant.name+"\n+9 данных");
+      const isNew=bioScan(plant,9);
+      if(isNew&&typeof heardAdd==="function")heardAdd("ground",{sx:G.sx,sy:G.sy,note:"в пещере: "+plant.name},null);   // птица слышит и на планете (хвост M117)
     }
   }else if(C.fauna.some(b=>b.stun<=0&&b.flee<=0&&Math.abs(b.y-C.y)<120)){
     G.prompt=(C.watch>0?"КУСАЧИЕ ДЕРЖАТСЯ ПООДАЛЬ · ЗДЕСЬ ИХ ГОНЯЮТ\n":"КУСАЧИЕ РЯДОМ · ")+

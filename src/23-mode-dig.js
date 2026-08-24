@@ -280,9 +280,9 @@ function digFauna(dt,st){
     const c=addRes("carbon",2+Math.floor(r()*4));
     const x2=r()<.35+ti*.12?addRes("xeno",1+Math.floor(r()*2)):0;
     D.bugs.splice(D.bugs.indexOf(near),1);
-    G.species.add(near.name);G.data+=6;
+    const d=bioMark(near.name,6);G.data+=d;
     tell("tech","Образец: "+near.name+" · углерод ×"+c+(x2?" · ксенобиом ×"+x2:""),
-      "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+"\n+6 данных");
+      "Образец взят\nуглерод ×"+c+(x2?"\nксенобиом ×"+x2:"")+"\n+"+d+" данных");
   }
 }
 function drawDigFauna(camx,camy){

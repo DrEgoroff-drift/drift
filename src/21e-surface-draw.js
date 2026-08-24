@@ -312,23 +312,43 @@ function drawSurface(){
       ctx.save();ctx.globalCompositeOperation="lighter";
       /* 1. освещённый грунт */
       {
-        const x0=S.x, x1=S.x+f*reach;
+        /* полоса начинается чуть ПОЗАДИ ног: если её обрезать ровно по человеку,
+           у света остаётся вертикальная кромка, и он читается наклейкой */
+        const x0=S.x-f*30, x1=S.x+f*reach;
         const lo=Math.min(x0,x1), hi=Math.max(x0,x1), stp=Math.max(4,(hi-lo)/26);
-        const GP=new Path2D();
-        GP.moveTo(lo-camx,groundAt(tr,lo)-camy);
-        for(let wx=lo;wx<=hi;wx+=stp)GP.lineTo(wx-camx,groundAt(tr,wx)-camy);
-        GP.lineTo(hi-camx,groundAt(tr,hi)-camy);
-        GP.lineTo(hi-camx,H);GP.lineTo(lo-camx,H);GP.closePath();
-        ctx.save();ctx.clip(GP);
-        /* затухание по дальности от ног, а не от края экрана */
-        const gl=ctx.createLinearGradient(x,y,x+f*reach,y+40);
-        gl.addColorStop(0,"rgba(255,238,206,"+(.30*clamp(nite*1.3,0,1)).toFixed(3)+")");
-        gl.addColorStop(.30,"rgba(255,234,196,"+(.44*clamp(nite*1.3,0,1)).toFixed(3)+")");
-        gl.addColorStop(.72,"rgba(255,228,182,"+(.16*clamp(nite*1.3,0,1)).toFixed(3)+")");
-        gl.addColorStop(1,"rgba(255,224,170,0)");
-        ctx.fillStyle=gl;
-        ctx.fillRect(Math.min(x,x+f*reach)-6,y-70,reach+12,H);
-        ctx.restore();
+        /* Полоса идёт ВДОЛЬ профиля и неглубоко. Прежде она шла от профиля до
+           нижней кромки кадра — и фонарь высветлял весь столб геологического
+           разреза до самого низа, с бритвенно-ровной вертикальной кромкой по
+           обе стороны. Свет не проходит сквозь породу; в разрезе освещён
+           верхний слой, и край его должен быть мягким */
+        const band=(d)=>{
+          const P=new Path2D();
+          P.moveTo(lo-camx,groundAt(tr,lo)-camy);
+          for(let wx=lo;wx<=hi;wx+=stp)P.lineTo(wx-camx,groundAt(tr,wx)-camy);
+          P.lineTo(hi-camx,groundAt(tr,hi)-camy);
+          for(let wx=hi;wx>=lo;wx-=stp)P.lineTo(wx-camx,groundAt(tr,wx)-camy+d);
+          P.lineTo(lo-camx,groundAt(tr,lo)-camy+d);
+          P.closePath();return P;
+        };
+        const K=clamp(nite*1.3,0,1);
+        /* затухание по дальности от ног, а не от края экрана; на обоих концах
+           ноль, иначе полоса обрывается ступенькой */
+        const paint=(d,k)=>{
+          const gl=ctx.createLinearGradient(x-f*30,y,x+f*reach,y+40);
+          gl.addColorStop(0,"rgba(255,238,206,0)");
+          gl.addColorStop(.20,"rgba(255,238,206,"+(.34*K*k).toFixed(3)+")");
+          gl.addColorStop(.42,"rgba(255,234,196,"+(.44*K*k).toFixed(3)+")");
+          gl.addColorStop(.78,"rgba(255,228,182,"+(.14*K*k).toFixed(3)+")");
+          gl.addColorStop(1,"rgba(255,224,170,0)");
+          ctx.save();ctx.clip(band(d));
+          ctx.fillStyle=gl;
+          ctx.fillRect(Math.min(x-f*30,x+f*reach)-8,y-90,reach+46,H);
+          ctx.restore();
+        };
+        /* спад вглубь набирается слоями: четыре тонких полосы вместо одной
+           толстой, иначе у света в разрезе видно донную кромку. Площадь
+           крошечная (170×40), на кадре это не стоит ничего */
+        paint(66,.14);paint(42,.26);paint(26,.26);paint(14,.28);paint(6,.30);
       }
       /* 2. луч в воздухе: узкий, слабый и только там, где есть чем рассеивать */
       if(p.T.atm!=="отсутствует"){

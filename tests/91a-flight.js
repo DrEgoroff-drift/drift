@@ -189,6 +189,26 @@ TEST_SUITES.push(()=>suite("подсказки на планете",()=>{
   ok(/СКАФАНДР/.test(surfaceHint()||""),"на исходе скафандра предупреждают первым делом");
 }));
 
+/* Пещера, выпавшая на пятачок посадки, недоступна: и подсказка, и ДЕЙСТВИЕ
+   там принадлежат кораблю. Отступ считается генератором, а не подразумевается */
+TEST_SUITES.push(()=>suite("вход в пещеру не ложится на корабль",()=>{
+  resetWorld();
+  for(let i=0;i<40;i++){
+    const p=G.sys.planets.find(x=>x.type!=="gas")||G.sys.planets[0];
+    p.seed=(p.seed^(0x77+i*2654435761))>>>0;
+    delete p.biome;delete p.flora;delete p.fauna3;delete p.caveFlora;
+    const tr=genTerrain(p);
+    G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};
+    enterSurface();
+    const S=G.surf;
+    if(!S.cave)continue;
+    ok(Math.abs(S.cave.x-S.shipX)>shipZoneR()+34,
+       "устье вне зоны корабля (отступ "+Math.round(Math.abs(S.cave.x-S.shipX))+")");
+    S.x=S.cave.x;
+    ok(/ПЕЩЕР/.test(surfaceHint()||""),"и подсказка про пещеру доходит");
+  }
+}));
+
 /* ── музыка: сцены космоса и планет должны различаться ── */
 TEST_SUITES.push(()=>suite("музыка меняется по местам",()=>{
   resetWorld();

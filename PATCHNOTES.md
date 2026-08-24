@@ -7,6 +7,62 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.141.0 — a species becomes a thing (M174)
+
+The game kept a *register* of species — `G.species`, «Новый вид: …», the count on the map — and
+there was no species. Every trait was an independent roll per specimen: two plants "of one
+species" shared nothing, and the name was assembled from six form-words for twelve drawn forms
+plus a trait word rolled independently of what was actually drawn. **The game kept a register of
+species that do not exist**, and the interface reported that register to the player as discovery.
+
+A species is now a property of the planet, next to `planetBiome(p)` — `20e-species`:
+
+- **`floraOf(p)`** gives three to five plant species per world, each with a fixed form, fixed
+  proportions, fixed branching, its own colour, its own growth range, and its own preference for
+  wet or dry. **`faunaOf(p)`** gives two to four beast species with a fixed archetype, body
+  outline, colouring and habit; archetypes never repeat on one planet (two mantas in different
+  paint read as one species painted twice).
+- **A specimen is species + age + place, and nothing else.** Age is a body, not a scale: a
+  seedling has fewer segments, no branches to speak of, no flower and no fruit; an old plant has
+  a wider crown, two or three dead bare branches, a lean and litter at its foot. A young beast is
+  smaller and bigger-headed; an old one is heavier and slower.
+- **The specimen answers its place.** The strip's wetness and how far this point sits below its
+  neighbours decide vigour: in a hollow the same species stands taller, thinner-stemmed and
+  fuller-crowned; on a dry ridge it is stunted, harder and closer to the rock in colour. Leaning
+  is no longer a random roll — plants lean toward where the star actually stands (`sunSpot`), by
+  an amount that is a property of the species, so a whole thicket leans together.
+- **The name cannot lie by construction.** The form word is the drawn form; the trait word is
+  read off the real flags. Two lies were found this way and fixed rather than renamed: a spiral
+  or ribbon plant called «светящийся» had no glow drawn at all, and no alien beast archetype drew
+  glow either — so a «панцирник, светящийся» did not glow. Spines are now a real species trait
+  that is drawn, common on dry and cold worlds. Cave flora is its own list: glowing species of the
+  planet, or two of the cave's own if the planet has none — the old code took a surface plant and
+  switched its glow on, leaving the name unchanged.
+- **The register counts species, not bushes.** A second specimen of a known species is not a
+  discovery: full data once, a quarter for a repeat observation, and `G.bio` counts new ones only.
+
+Old registers are not carried over: a save without `bioV:2` loads with `G.species` emptied — its
+entries name species that never existed. Everything else in the save is untouched and the format
+is still `v:4`.
+
+Two faults found by looking at the sheet and fixed here as well:
+
+- **The cave mouth could land on the landing pad.** "Far from the ship" existed only in a comment;
+  the position was thrown across the whole strip. On the pad the prompt and ДЕЙСТВИЕ belong to
+  the ship, so the cave became unreachable. The clearance is now computed, and a test walks forty
+  seeds to prove it.
+- **At night the suit lamp lit the whole column of ground down to the bottom of the frame**, with
+  a razor-straight vertical edge on both sides — the lit strip was clipped from the terrain
+  profile to the bottom of the screen, so the geological cross-section glowed. Light does not
+  pass through rock: the strip now follows the profile, is shallow, is built from five thin layers
+  so it has a falloff into the ground instead of a bottom edge, and starts behind the walker's
+  feet so it has no vertical seam.
+
+Stand: `docs/mkbio.ps1` (`powershell docs\shot.ps1 bio`) — species of one planet, the age of one
+species, one species across five places, the beasts, and three real strips plus night. Suite
+`91zzzb-bio`.
+
+---
 ## 0.140.0 — a plant gets a body, not a fill
 
 Half of the author's «растения всратые» was fixed in 0.139.0 — where they stand. This is the

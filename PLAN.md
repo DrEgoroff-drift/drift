@@ -756,7 +756,26 @@ cockpit (M124âM127), speech becomes a queue of lines and putting things on 
 Everything below was **read in the code, not remembered**. Line numbers are omitted on purpose;
 the function names are the address.
 
-## 12. Biology: neither flora nor fauna has a species (author: «там нет биологии»)
+## 12. Biology — **BUILT (0.141.0, M174)**. `20e-species`, suite `91zzzb-bio`, stand `docs/mkbio.ps1`
+
+A species is a property of the planet: `floraOf(p)` (3–5 plant species, fixed form, proportions,
+branching, colour, growth range, wet/dry preference), `faunaOf(p)` (2–4 beast species, archetypes
+never repeating). A specimen is species + age + place. Age is a body — seedling without flower or
+fruit, old with a wider crown, dead branches and litter. Vigour comes from the strip's wetness and
+the local hollow; lean comes from where the star stands. The name is derived from the drawn form
+and the real flags, so it cannot lie — which immediately exposed three real lies (spiral and
+ribbon plants never drew their glow, no alien beast drew glow, spines did not exist) and they were
+drawn rather than renamed. The register counts species, not bushes; a save without `bioV:2` loads
+with `G.species` emptied.
+
+**Left open by design:** the *drawn* forms still number twelve for the whole galaxy — a species is
+a fixed point in that catalogue, not a new shape, and a generator of forms is a pass of its own.
+Litter is a few leaves at the foot, not a ground layer. Beasts do not eat, breed or avoid each
+other: fauna has species now, it does not have behaviour.
+
+### The original finding, kept for the record
+
+
 
 The game keeps a species *record* — `G.species`, `+9 данных` for a plant, `+14` for a beast,
 the `G.bio` counter, the line «Новый вид: …» — but there is no species *entity*. Verified in
@@ -829,8 +848,7 @@ the frame is the world**:
 The overlap guard `91f-ui` measures `.vitals`, `.locus`, `.rail` and both `.pads` groups against
 each other and against the screen edge — it will have to be re-pointed, not disabled.
 
-## Order proposed for the next session
+## Order
 
-12 (biology) → 13 (planet light — small and visible) → 14 A2 → 14 A3 → 9 (second storey) →
-10 (world heard) → graphics debt one at a time → split debt. Biology first: it is in every frame
-on the surface, and the interface is lying about species until it is done.
+12 (biology) — **done, 0.141.0** → 13 (planet light) → 14 A2 → 14 A3 → 9 (second storey) →
+10 (world heard) → graphics debt one at a time → split debt.

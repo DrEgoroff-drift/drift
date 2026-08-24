@@ -106,8 +106,9 @@ function drawAstronaut(o){
 /* каждое растение — своё: ствол из сегментов, ветви и одна из четырёх крон.
    Цвета берутся от палитры планеты, поэтому на токсичном мире флора ядовитая,
    а на ледяном — блёклая. */
-const PLANT_FORM=["стеблевой","ветвистый","папоротниковый","стручковый","коралловый","стелющийся"];
-const PLANT_TRAIT=["хрупкий","светящийся","колючий","мясистый","полупрозрачный","жёсткий"];
+/* Словари формы и признака переехали в 20e-species и стали ВЫВОДИМЫМИ из того,
+   что реально нарисовано: здесь их держать больше нечему — прежние шесть слов
+   на двенадцать форм и были причиной того, что имя вида врало. */
 /* «геном планеты»: у каждого мира свой уклон по формам и размерам жизни,
    поэтому соседние планеты выглядят по-разному, а не как один и тот же набор */
 /* Форм стало двенадцать: к прежним семи добавлены те, что узнаются силуэтом
@@ -143,55 +144,12 @@ function pickKindByBias(bias,r){
   for(let i=0;i<bias.length;i++){u-=bias[i];if(u<=0)return i;}
   return bias.length-1;
 }
-function genPlant(r,p,x,gy){
-  const bi=planetBiome(p);
-  const kind=pickKindByBias(bi.kindBias,r);
-  const giant=r()<bi.giantChance;
-  /* гигант вчетверо выше соседей превращался в салатовый блин во весь
-     распадок: крона такой ширины перестаёт быть растением и читается
-     пятном краски. Втрое — предел, после которого форма ещё видна */
-  const sizeMul=bi.scale*(giant?(1.8+r()*1.4):(.4+r()*1.3));
-  /* высота по форме: гриб и зонтик заметно выше травы, иначе силуэт не работает */
-  const h=(kind===6?6+r()*10:
-          (kind===4?10+r()*16:
-          (kind===7?34+r()*54:
-          (kind===9?46+r()*70:
-          (kind===8?40+r()*60:
-          (kind===10?26+r()*36:
-          (kind===11?18+r()*34:20+r()*58)))))))*sizeMul;
-  const segs=3+Math.floor(r()*4);
-  const lean=(r()-.5)*.5, curl=(r()-.5)*.7;
-  const branches=[];
-  const nb=kind===1?3+Math.floor(r()*4):(kind===2?5+Math.floor(r()*4):
-    (kind>=4&&kind<=11?0:Math.floor(r()*3)));
-  for(let i=0;i<nb;i++){
-    branches.push({t:.25+r()*.7, ang:(r()<.5?-1:1)*(.5+r()*.9), len:h*(.16+r()*.34), w:1+r()*1.6});
-  }
-  const pal=p.T.pal;
-  const base=pal[Math.min(pal.length-1,2+Math.floor(r()*2))];
-  const hue=(r()*.5+bi.hueBias*.5)%1;
-  /* ── лист берёт цвет у мира ──
-     Зелень считалась почти независимо от планеты: +130 к зелёному каналу и
-     столько же от оттенка давали чистый салатовый, и на приглушённом мире
-     кроны читались кислотными блинами — самым громким пятном кадра, хотя
-     это фон, а не событие. Лист по-прежнему свой у каждой биосферы, но
-     теперь он ЗАМЕШАН на палитре мира: подмешиваем к нему тон породы, и
-     растение садится в свой пейзаж, оставаясь опознаваемо живым. */
-  const raw=[clamp(base[0]*.5+hue*150,20,255),clamp(base[1]*.6+120+hue*55,30,255),
-             clamp(base[2]*.5+40+hue*90,20,255)];
-  const gr=pal[Math.min(pal.length-1,3)];
-  const leaf=[lerp(raw[0],gr[0],.28),lerp(raw[1],gr[1],.22),lerp(raw[2],gr[2],.28)];
-  const stem=[leaf[0]*.5+20,leaf[1]*.45+26,leaf[2]*.45+22];
-  return {x,y:gy,h,kind,segs,lean,curl,branches,
-    /* параметры новых форм: шляпка, витки спирали, рёбра зонтика, шары */
-    cap:.55+r()*.6, turns:2+r()*2.4, ribs:5+Math.floor(r()*4),
-    balls:1+Math.floor(r()*3), ribbons:3+Math.floor(r()*5),
-    leaf,stem,glow:r()<.28,bloom:r()<.4,pods:2+Math.floor(r()*4),
-    facets:5+Math.floor(r()*4),blobs:3+Math.floor(r()*4),
-    sway:kind===4?0:.008+r()*.02, phase:r()*TAU, w:(1.4+r()*2.2)*Math.min(2,sizeMul),
-    giant,
-    name:genName(r)+" "+pick(PLANT_FORM,r)+", "+pick(PLANT_TRAIT,r),
-    scanned:false};
+/* Экземпляр собирается из ВИДА планеты (20e-species): форма, пропорции, цвет и
+   ветвление закреплены за видом, экземпляру принадлежат только возраст, место
+   и мелкая кривизна. env={wet,hollow} — сырость полосы и насколько эта точка
+   ниже соседних: один вид растёт по-разному в ложбине и на гребне. */
+function genPlant(r,p,x,gy,env){
+  return specimenPlant(r,pickShare(floraOf(p),r),p,x,gy,env);
 }
 /* Формы, которые опознаются по одному силуэту: гриб, спираль, зонтик, шар на
    привязи, ленты. Ни одна из них не «палка с листьями» — именно это и было
@@ -199,7 +157,7 @@ function genPlant(r,p,x,gy){
 
    Свечение снизу шляпки и внутри мембраны — не украшение: оно отделяет
    растение от грунта в темноте, когда силуэт уже не читается. */
-function drawPlantAlien(pl,x,y,stemC,leafC,sc){
+function drawPlantAlien(pl,x,y,stemC,leafC,sc,ph){
   const bend=Math.sin(G.t*pl.sway+pl.phase);
   const gl=sc?"127,230,216":((pl.leaf[0]|0)+","+(pl.leaf[1]|0)+","+(pl.leaf[2]|0));
   ctx.save();ctx.translate(x,y);
@@ -208,7 +166,7 @@ function drawPlantAlien(pl,x,y,stemC,leafC,sc){
      жизни на календарь и единственное, по чему затмение видно не глядя вверх */
   const DK=typeof celDark==="function"?celDark():0;
   if(DK>.05)ctx.scale(1-.10*DK,1-.32*DK);
-  const lean=(pl.lean+bend*.22)*pl.h*.2;
+  const lean=(pl.lean+(ph||0)+bend*.22)*pl.h*.2;
   if(pl.kind===7){
     /* гриб: толстая ножка с утолщением у земли, широкая шляпка, пластинки */
     const capW=pl.h*pl.cap, st=Math.max(2.4,pl.w*1.5);
@@ -270,6 +228,15 @@ function drawPlantAlien(pl,x,y,stemC,leafC,sc){
       ctx.beginPath();
       ctx.ellipse(px+Math.sign(Math.sin(a))*5,py,pl.h*.10,pl.h*.035,a,0,TAU);
       ctx.fill();
+    }
+    /* свечение по витку: без него вид, названный светящимся, не светился —
+       имя врало ровно так же, как до M174, только тише */
+    if(pl.glow){
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      const g=ctx.createRadialGradient(lean*.5,-pl.h*.62,0,lean*.5,-pl.h*.62,pl.h*.5);
+      g.addColorStop(0,"rgba("+gl+",.20)");g.addColorStop(1,"rgba("+gl+",0)");
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(lean*.5,-pl.h*.62,pl.h*.5,0,TAU);ctx.fill();
+      ctx.restore();
     }
     ctx.lineCap="butt";
   }else if(pl.kind===9){
@@ -346,6 +313,15 @@ function drawPlantAlien(pl,x,y,stemC,leafC,sc){
       ctx.closePath();ctx.fill();
       ctx.globalAlpha=1;
     }
+    /* и у лент своё свечение — вдоль основания, там, где они гуще */
+    if(pl.glow){
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      const g=ctx.createRadialGradient(lean*.4,-pl.h*.35,0,lean*.4,-pl.h*.35,pl.h*.7);
+      g.addColorStop(0,"rgba("+gl+",.18)");g.addColorStop(1,"rgba("+gl+",0)");
+      ctx.fillStyle=g;
+      ctx.beginPath();ctx.ellipse(lean*.4,-pl.h*.35,pl.h*.7,pl.h*.5,0,0,TAU);ctx.fill();
+      ctx.restore();
+    }
   }
   ctx.restore();
 }
@@ -378,6 +354,15 @@ function drawPlant(pl,x,y){
   const H0=Math.max(8,pl.h||20);
   const stemC=sc?"rgba(127,230,216,.85)":plantGrad(tone(pl.stem),H0,ux,.58,1.10);
   const leafC=sc?"rgba(127,230,216,.55)":plantGrad(tone(pl.leaf),H0,ux,.52,1.16);
+  /* фототропизм (M174): растение тянется туда, где реально стоит звезда, и
+     сила этой тяги — свойство вида. Прежний lean был чистым броском: половина
+     кустов кланялась от света. Наклон общий для всей куртины — это и читается
+     как «здесь так падает свет», а не как случайная кривизна */
+  const ph=(pl.photo||0)*ux;
+  /* опад у комля: под старым и под пышным. Кристаллу и ковру опадать нечем */
+  if(pl.litter&&pl.kind!==4&&pl.kind!==6&&pl.kind!==10){
+    ctx.save();ctx.translate(x,y);plantLitter(pl,sc);ctx.restore();
+  }
   /* друза — без ствола: гроздь гранёных кристаллов, растёт прямо из грунта */
   if(pl.kind===4){
     ctx.save();ctx.translate(x,y);
@@ -416,14 +401,14 @@ function drawPlant(pl,x,y){
     ctx.restore();return;
   }
   /* ── формы, узнаваемые силуэтом ── */
-  if(pl.kind>=7&&pl.kind<=11){drawPlantAlien(pl,x,y,stemC,leafC,sc);return;}
+  if(pl.kind>=7&&pl.kind<=11){drawPlantAlien(pl,x,y,stemC,leafC,sc,ph);return;}
   const bend=Math.sin(G.t*pl.sway+pl.phase);
   ctx.save();ctx.translate(x,y);
   /* ствол: ломаная из сегментов, верх качается сильнее низа */
   const pts=[[0,0]];
   for(let i=1;i<=pl.segs;i++){
     const t=i/pl.segs;
-    pts.push([ (pl.lean+bend*.28)*pl.h*t*t + Math.sin(t*3.1)*pl.curl*pl.h*.18, -pl.h*t ]);
+    pts.push([ (pl.lean+ph+bend*.28)*pl.h*t*t + Math.sin(t*3.1)*pl.curl*pl.h*.18, -pl.h*t ]);
   }
   const tip=pts[pts.length-1];
   ctx.strokeStyle=stemC;ctx.lineCap="round";ctx.lineJoin="round";
@@ -436,6 +421,35 @@ function drawPlant(pl,x,y){
     const a=pts[Math.min(i,pts.length-1)], b=pts[Math.min(i+1,pts.length-1)];
     return [lerp(a[0],b[0],q),lerp(a[1],b[1],q)];
   };
+  /* шипы: настоящий признак вида, из-за которого слово «колючий» в имени
+     перестало быть враньём. Сидят парами вдоль ствола, длина от толщины */
+  if(pl.spiny){
+    ctx.lineWidth=Math.max(.7,pl.w*.3);
+    for(let i=1;i<pts.length;i++){
+      const a=pts[i-1],b2=pts[i], ln=Math.max(2.2,pl.w*1.4);
+      for(let k=0;k<2;k++){
+        const q=(k+.5)/2, px=lerp(a[0],b2[0],q), py=lerp(a[1],b2[1],q);
+        const s=(i+k)%2?1:-1;
+        ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+s*ln,py-ln*.5);ctx.stroke();
+      }
+    }
+  }
+  /* сухостой: у старого экземпляра одна-две ветви мертвы, голы и другого тона.
+     Это единственное, по чему возраст читается силуэтом, а не размером */
+  if(pl.dead&&pl.dead.length){
+    ctx.strokeStyle=sc?"rgba(127,230,216,.35)":"rgba(122,106,84,.92)";
+    ctx.lineWidth=Math.max(1,pl.w*.55);
+    for(const d of pl.dead){
+      const [dx,dy]=at(d.t);
+      const ex=dx+Math.sin(d.ang)*d.len, ey=dy-d.len*.5;
+      ctx.beginPath();ctx.moveTo(dx,dy);
+      ctx.quadraticCurveTo(dx+Math.sin(d.ang)*d.len*.55,dy-d.len*.42,ex,ey);
+      ctx.stroke();
+      ctx.beginPath();ctx.moveTo(ex,ey);
+      ctx.lineTo(ex+Math.sin(d.ang)*d.len*.28,ey-d.len*.12);ctx.stroke();
+    }
+    ctx.strokeStyle=stemC;
+  }
   /* ветви */
   ctx.lineWidth=Math.max(.8,pl.w*.55);
   for(const b of pl.branches){
@@ -461,24 +475,27 @@ function drawPlant(pl,x,y){
     }
   }
   ctx.lineCap="butt";
-  /* крона */
+  /* крона. Размеры здесь постоянные — это признак формы, а не роста, — но
+     умножены на пышность (M174): угнетённый на сухом гребне обязан отличаться
+     не только ростом, иначе «отвечает месту» ничего не значит на кадре */
+  const LU=pl.lush||1;
   ctx.fillStyle=leafC;
   if(pl.kind===0){
     for(let i=0;i<3;i++){
-      const o=(i-1)*4.5;
+      const o=(i-1)*4.5*LU;
       ctx.beginPath();
-      ctx.ellipse(tip[0]+o*.8,tip[1]-3-Math.abs(o)*.5,4.6-Math.abs(i-1)*1.2,6.4,o*.06,0,TAU);
+      ctx.ellipse(tip[0]+o*.8,tip[1]-3-Math.abs(o)*.5,(4.6-Math.abs(i-1)*1.2)*LU,6.4*LU,o*.06,0,TAU);
       ctx.fill();
     }
   }else if(pl.kind===1){
-    ctx.beginPath();ctx.arc(tip[0],tip[1]-4,5.6,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.arc(tip[0],tip[1]-4,5.6*LU,0,TAU);ctx.fill();
     ctx.fillStyle=sc?"rgba(127,230,216,.35)":"rgba(255,255,255,.16)";
-    ctx.beginPath();ctx.arc(tip[0]-1.6,tip[1]-5.6,2.4,0,TAU);ctx.fill();
+    ctx.beginPath();ctx.arc(tip[0]-1.6,tip[1]-5.6,2.4*LU,0,TAU);ctx.fill();
   }else if(pl.kind===2){
     for(let i=-1;i<=1;i++){
       ctx.beginPath();ctx.moveTo(tip[0],tip[1]);
-      ctx.quadraticCurveTo(tip[0]+i*9,tip[1]-9,tip[0]+i*13,tip[1]-1);
-      ctx.quadraticCurveTo(tip[0]+i*7,tip[1]-4,tip[0],tip[1]);ctx.fill();
+      ctx.quadraticCurveTo(tip[0]+i*9*LU,tip[1]-9*LU,tip[0]+i*13*LU,tip[1]-1);
+      ctx.quadraticCurveTo(tip[0]+i*7*LU,tip[1]-4*LU,tip[0],tip[1]);ctx.fill();
     }
   }else{
     for(let i=0;i<pl.pods;i++){
@@ -507,8 +524,8 @@ function drawPlant(pl,x,y){
 /* Наверху зверьё безобидное — его сканируют ради данных. В шахте живут
    породные грызуны: кусают скафандр, оглушаются импульсом (ОГОНЬ), с
    оглушённого берут образец (ТОРМ) — углерод и редкий ксенобиом. */
-const BEAST_FORM=["прыгун","ползун","шестиног","парусник","круглыш","тихоход"];
-const BEAST_TRAIT=["пугливый","любопытный","медлительный","стайный","бронированный","светящийся"];
+/* Имя зверя тоже выводится из архетипа и настоящих флагов (20e-species):
+   «парусник» доставался ходуну, «бронированный» — медузе. */
 /* натуральная гамма — мех/шкура/чешуя, без ядовитых неоновых тонов;
    лёгкий уклон от планеты и куда больший разброс светлота/охра/серость,
    чем радужный hue-поворот, который был раньше */
@@ -547,41 +564,11 @@ function beastBias(p){
   p.fauna2={bias:b,alienShare:.45+r()*.45};
   return p.fauna2;
 }
+/* Зверь собирается так же, как растение: вид планеты (20e-species) держит
+   архетип, выделку тела, окрас и повадку, экземпляру принадлежит возраст —
+   молодой мельче и головастее, старый крупнее и медленнее. */
 function genBeast(r,p,x,gy){
-  const pal=p.T.pal;
-  const base=pal[2+Math.floor(r()*2)];
-  const body=furColor(r,base);
-  const bi=planetBiome(p);
-  const fb=beastBias(p);
-  /* часть фауны — чужие архетипы, остальное прежние формы: смесь читается
-     живее, чем один тип на всю планету */
-  const alien=r()<fb.alienShare?BEAST_ALIEN[pickKindByBias(fb.bias,r)]:null;
-  const sizeMul=bi.scale*(r()<.08?2.2+r()*1.6:.55+r()*1.1);
-  const shape=Math.floor(r()*BEAST_SHAPES.length);
-  /* гранёный контур тела: N опорных точек с собственным радиусом —
-     не идеальный эллипс, а слегка неровный многоугольник */
-  const nv=7+Math.floor(r()*4);
-  const poly=[];
-  for(let i=0;i<nv;i++){
-    const a=i/nv*TAU;
-    poly.push([Math.cos(a),Math.sin(a)*(.62+r()*.14)*(.85+r()*.3)]);
-  }
-  const bx=shape===1?1.55:(shape===2?.92:(shape===3?.8:1.15));
-  const by=shape===1?.68:(shape===2?1.05:(shape===3?1.15:.85));
-  const headSize=shape===3?.78:(shape===1?.46:.62);
-  const headX=shape===1?1.25:(shape===2?.75:.95);
-  const furTufts=6+Math.floor(r()*7);
-  return {x,y:gy,vx:(r()<.5?-1:1)*(.06+r()*.12),face:1,
-    r:(5+r()*7)*sizeMul, legs:shape===4?6+Math.floor(r()*2)*2:2+Math.floor(r()*3)*2,
-    tail:r()<.6, crest:r()<.45,
-    ears:r()<.5, spots:Math.floor(r()*4), glow:r()<.2,
-    shape,poly,bx,by,headSize,headX,furTufts,
-    body, eye:r()<.5?"#101820":"#f2f7ff",
-    hop:r()<.45, phase:r()*TAU, spd:.09+r()*.1,
-    alien, tent:4+Math.floor(r()*4), facets:5+Math.floor(r()*4),
-    span:1.5+r()*1.2, hover:(alien==="jelly"||alien==="manta")?(14+r()*30):0,
-    name:genName(r)+" "+pick(BEAST_FORM,r)+", "+pick(BEAST_TRAIT,r),
-    scanned:false, shy:0};
+  return specimenBeast(r,pickShare(faunaOf(p),r),x,gy);
 }
 /* ── чужие архетипы ──
    Не «зверь другого цвета»: медуза висит и пульсирует, ходун стоит на высоких
@@ -740,6 +727,15 @@ function drawBeastAlien(b,x,y,hostile,stun){
       ctx.fillStyle=hi;
       ctx.beginPath();ctx.arc(R*1.3,0,1.4,0,TAU);ctx.fill();
     }
+  }
+  /* свечение чужих архетипов рисовалось только у земных форм: панцирник,
+     названный светящимся, не светился (M174 — имя обязано быть правдой) */
+  if(b.glow){
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const gg=ctx.createRadialGradient(0,0,0,0,0,R*2.2);
+    gg.addColorStop(0,col(1.5,.20));gg.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(0,0,R*2.2,0,TAU);ctx.fill();
+    ctx.restore();
   }
   ctx.restore();
 }

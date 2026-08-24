@@ -28,7 +28,8 @@ function snapshot(){
     x:G.ship.x,y:G.ship.y,a:G.ship.a,fuel:G.fuel,hull:G.hull,
     cargo:G.cargo,credits:G.credits,data:G.data,mods:G.mods,modsOwned:G.modsOwned,
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
-    tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],species:[...G.species],
+    tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
+    species:[...G.species],bioV:2,
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
     drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
@@ -85,7 +86,13 @@ function applySave(s){
   if(s.techLvl&&typeof s.techLvl==="object")
     for(const k in TECH)if(TECH[k].max)G.techLvl[k]=Math.max(0,s.techLvl[k]|0);
   G.barter=new Set(Array.isArray(s.barter)?s.barter.filter(k=>BARTER[k]):[]);
-  G.found=new Set(s.found||[]);G.species=new Set(s.species||[]);
+  G.found=new Set(s.found||[]);
+  /* Реестр видов до M174 хранил имена видов, которых не существует: слово
+     формы и слово признака выбирались независимо от того, что нарисовано, и
+     каждый экземпляр записывался как отдельный вид. Такой реестр не переносится
+     — со старого сохранения он обнуляется один раз, и дальше заполняется
+     настоящими видами планет. Всё остальное в сохранении цело, формат прежний. */
+  G.species=new Set((s.bioV|0)>=2?(s.species||[]):[]);
   Object.assign(G.opts,s.opts||{});
   G.zoom=clamp(s.zoom||1,.16,2.4);
   G.market=(s.market&&typeof s.market==="object")?s.market:{};
