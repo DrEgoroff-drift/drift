@@ -7,6 +7,37 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.145.0 — the house gets an upstairs, and a shell (M178-9)
+
+The last unpaid item of the original M170 ask («полноценный Симс»): the living part now has a
+second storey. And with it came a fault nobody had named: the house was drawn as a *room*, not as
+a *cross-section* — two thirds of the frame above the ceiling were flat black. A house has
+something above the ceiling and below the floor, and now it is drawn: joists and dark underfloor
+at the bottom, a roof slope with rafters and attic silhouettes at the top — and where the upstairs
+is built, the upstairs instead: its floorboards on the slab, blind silhouettes of its furniture,
+its lamp warmth seeping through the ceiling. The camera came closer (`k` up to 3.2), so the house
+fills the frame.
+
+- **`29e-home-up`**: the upstairs is not a new mechanic — `hinRooms()` simply returns a different
+  list when the player is up, so every part of 29d (walls, floor, lamps, doorways, folk) works
+  unchanged. Two rooms, СВЕТЁЛКА over the study and СПАЛЬНЯ over the living part; they appear with
+  the «жилая часть» tier, and there is no attic over the garage — sheds don't get lofts.
+- **The stair is a thing, not a button**: a real flight with treads, a stringer and a handrail in
+  the living part, lit from the opening above; upstairs it is a hole in the floor with a rail
+  around it, warm light from below. Walk to it, ДЕЙСТВИЕ — ПОДНЯТЬСЯ НАВЕРХ / СПУСТИТЬСЯ.
+- **Upstairs is furnished quietly**: a bed with a headboard, pillow and folded blanket; a bedside
+  lamp; a chair with a coat thrown over it; a window with the night sky, stars and a cold pool of
+  light (downstairs has no windows at all — upstairs they are the point); in the loft a wide
+  window sill with a cushion, three pot plants and a low table with books. Every one of them can
+  be examined (`HIN_THINGS.bed/loft`).
+- **Somebody lives up there**: Vega moves to the loft window — exactly her place, nothing is
+  decided there. Folk walk their own floor and never push someone through the ceiling
+  (`f.up`, floor-aware ticking).
+
+Nothing is persisted; the floor is as ephemeral as the position. Suite `91zzzc-home-up`: the
+upstairs appears with the tier, stair and hole align, floors don't mix, the things are reachable.
+
+---
 ## 0.144.0 — release look, pass A3: the table becomes paper (M177)
 
 The desk top has been drawn since M151a, but what lay on it was a dark window of lists — the same

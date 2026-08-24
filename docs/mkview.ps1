@@ -63,6 +63,18 @@ setTimeout(function(){
     var p2=land("terran");hour(p2,.30);G.mode="surface";G.surf.suit=14;
     G.fuel=Math.max(1,G.fuel*.06);
     G.prompt="";run(6,updateSurface,drawSurface);
+  }else if(scene==="home"||scene==="homeup"){
+    /* дом со всеми ступенями: иначе второго этажа просто нет */
+    G.home=G.home||homeInit();
+    G.home.tier=HOME_TIERS.length;
+    enterHomeIn();
+    if(scene==="homeup"){
+      G.hin.up=1;
+      var b=hinSpan();
+      G.hin.x=Math.min(b.hi,(hinHoleX()||b.hi)-60);
+      G.hin.cam=G.hin.x;
+    }
+    for(var f3=0;f3<4;f3++){G.t+=.01;updateHomeIn(1);drawHomeIn();}
   }else if(scene==="table"||scene==="things"||scene==="strips"){
     G.mode="system";
     for(var f2=0;f2<2;f2++){G.t+=.02;drawSystem();}

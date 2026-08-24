@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 252 · символов верхнего уровня: 2439
+Файлов: 254 · символов верхнего уровня: 2453
 
 ## СИМВОЛЫ
 
@@ -584,7 +584,7 @@ enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:88
 enterCave                    src/22-mode-cave.js:147
 enterDig                     src/23-mode-dig.js:50
-enterHomeIn                  src/29c-home-in.js:44
+enterHomeIn                  src/29c-home-in.js:66
 enterRaid                    src/24a-mode-raid.js:134
 enterSurface                 src/21-mode-surface.js:2
 env                          src/09-audio.js:47
@@ -599,7 +599,7 @@ exitBase                     src/21a-mode-base.js:81
 exitBelt                     src/24-mode-belt.js:174
 exitCave                     src/22-mode-cave.js:201
 exitDig                      src/23-mode-dig.js:60
-exitHomeIn                   src/29c-home-in.js:52
+exitHomeIn                   src/29c-home-in.js:74
 exitScoop                    src/19a-mode-scoop.js:19
 EXP_DAYS                     src/11x-expedition.js:19
 EXP_GOODS                    src/11x-expedition.js:20
@@ -829,18 +829,31 @@ HIN_FLOOR                    src/29c-home-in.js:21
 HIN_MAN                      src/29c-home-in.js:20
 HIN_ROOM_H                   src/29c-home-in.js:22
 HIN_ROOM_W                   src/29c-home-in.js:27
-HIN_THINGS                   src/29c-home-in.js:157
-hinFigure                    src/29d-home-draw.js:501
-hinFolkMake                  src/29c-home-in.js:62
-hinFolkTick                  src/29c-home-in.js:86
-hinFrontStuff                src/29d-home-draw.js:219
-hinNear                      src/29c-home-in.js:174
+HIN_THINGS                   src/29c-home-in.js:204
+HIN_UP                       src/29e-home-up.js:20
+hinDrawHole                  src/29e-home-up.js:219
+hinDrawShell                 src/29e-home-up.js:59
+hinDrawStair                 src/29e-home-up.js:175
+hinFigure                    src/29d-home-draw.js:521
+hinFolkMake                  src/29c-home-in.js:84
+hinFolkTick                  src/29c-home-in.js:115
+hinFrontStuff                src/29d-home-draw.js:236
+hinGroundRooms               src/29c-home-in.js:29
+hinHasUp                     src/29e-home-up.js:22
+hinHoleX                     src/29e-home-up.js:41
+hinNear                      src/29c-home-in.js:229
 hinPal                       src/29d-home-draw.js:6
-hinRoomAt                    src/29c-home-in.js:39
-hinRooms                     src/29c-home-in.js:28
-hinRoomStuff                 src/29d-home-draw.js:256
-hinTalk                      src/29c-home-in.js:183
-hinWidth                     src/29c-home-in.js:38
+hinRoomAt                    src/29c-home-in.js:61
+hinRooms                     src/29c-home-in.js:43
+hinRoomStuff                 src/29d-home-draw.js:273
+hinSpan                      src/29c-home-in.js:53
+hinStairX                    src/29e-home-up.js:36
+hinTalk                      src/29c-home-in.js:238
+hinUpBounds                  src/29e-home-up.js:46
+hinUpRooms                   src/29e-home-up.js:24
+hinUpStuff                   src/29e-home-up.js:243
+hinUpWindow                  src/29e-home-up.js:356
+hinWidth                     src/29c-home-in.js:51
 hireMerc                     src/12a-crew.js:148
 hireMgr                      src/12c-mgr-core.js:301
 HOME_HIT                     src/27e-ui-home.js:33
@@ -881,6 +894,7 @@ homeShowBonus                src/12j-home.js:217
 homeSpotX                    src/21f-home-out.js:34
 homeStore                    src/12j-home.js:189
 homeTurn                     src/12j-home.js:45
+homeUpWorld                  tests/91zzzc-home-up.js:5
 HOURS_COIN                   src/11h-hours.js:87
 HOURS_ETHER                  src/11h-hours.js:23
 hoursAll                     src/11h-hours.js:31
@@ -2331,7 +2345,7 @@ updateCave                   src/22-mode-cave.js:219
 updateCaveDeco               src/22a-cave-deco.js:184
 updateCombat                 src/13-pirates.js:77
 updateDig                    src/23-mode-dig.js:113
-updateHomeIn                 src/29c-home-in.js:127
+updateHomeIn                 src/29c-home-in.js:160
 updateLanding                src/19-mode-landing.js:45
 updateRaid                   src/24a-mode-raid.js:214
 updateScoop                  src/19a-mode-scoop.js:28
@@ -3009,11 +3023,15 @@ zooTick                      src/11ad-zoo.js:41
 ## src/28z-fps-probe.js · 7 КБ
   · пробник G11: ?g11:1
 
-## src/29c-home-in.js · 12 КБ
+## src/29c-home-in.js · 16 КБ
   · дом изнутри: по нему ходят:1
 
-## src/29d-home-draw.js · 32 КБ
+## src/29d-home-draw.js · 34 КБ
   · дом изнутри: кадр:1
+
+## src/29e-home-up.js · 20 КБ
+  · второй этаж жилой части (M178-9):1
+  · оболочка дома (M178-9):52
 
 ## tests/90-harness.js · 7 КБ
   · автотесты: каркас:1
@@ -3239,6 +3257,8 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzza-trace.js · 5 КБ
 
 ## tests/91zzzb-bio.js · 13 КБ
+
+## tests/91zzzc-home-up.js · 4 КБ
 
 ## tests/91zzz-home-in.js · 5 КБ
 

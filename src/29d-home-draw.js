@@ -12,15 +12,24 @@ function drawHomeIn(){
   if(!R.length){exitHomeIn();return;}
   /* масштаб по высоте комнаты: человек в доме крупнее, чем на поверхности —
      здесь на него смотрят, а не идут мимо */
-  const k=clamp(H/(HIN_ROOM_H+HIN_MAN*1.6),1,2.4);
+  /* Ближе, чем было: при 2.4 комната занимала нижнюю треть кадра, а над ней
+     висела пустота. Теперь дом заполняет кадр — комната, перекрытие и скат
+     видны разом, и человек в доме крупнее, чем на улице, как и задумано. */
+  const k=clamp(H/(HIN_ROOM_H+HIN_MAN*2.6),1,3.2);
   const vw=W/k;
-  const want=clamp(S.x-vw*.5,-30,Math.max(-30,hinWidth()-vw+30));
+  /* камера ходит по ТОЙ ЖЕ полосе, что и человек: наверху она короче и
+     начинается не с нуля, и без этого верх уезжал бы в пустой левый край */
+  const cLo=R[0].x-30, cHi=Math.max(cLo,R[R.length-1].x+R[R.length-1].w-vw+30);
+  const want=clamp(S.x-vw*.5,cLo,cHi);
   S.cam+=(want-S.cam)*.12;
   const camx=S.cam;
   ctx.fillStyle="#0a0808";ctx.fillRect(0,0,W,H);
   ctx.save();ctx.scale(k,k);
   ctx.translate(-camx,H/k-HIN_MAN*.9);
   const fy=0, ceil=-HIN_ROOM_H;
+  /* оболочка (29e): чердак или комната сверху и лаги снизу. Рисуется ПЕРВОЙ —
+     это то, что за стеной комнаты, а не поверх неё */
+  if(typeof hinDrawShell==="function")hinDrawShell(R,camx,vw,fy,ceil,P,S.up|0);
   /* ── дальняя стена ── */
   const wg=ctx.createLinearGradient(0,ceil,0,fy);
   wg.addColorStop(0,"rgb("+P.wall.map(v=>v*.7|0).join(",")+")");
@@ -127,15 +136,22 @@ function drawHomeIn(){
     ctx.strokeStyle="rgba(226,226,220,.16)";ctx.lineWidth=1.4;
     ctx.strokeRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,HIN_MAN*1.5);
   }
-  /* входная дверь слева и глухая кладка справа */
-  ctx.fillStyle="rgb("+P.wood.map(v=>v*.6|0).join(",")+")";
-  ctx.fillRect(-2,fy-HIN_MAN*1.6,HIN_DOORW*.9,HIN_MAN*1.6);
-  ctx.strokeStyle="rgba(226,226,220,.2)";ctx.lineWidth=1.4;
-  ctx.strokeRect(-2,fy-HIN_MAN*1.6,HIN_DOORW*.9,HIN_MAN*1.6);
-  ctx.fillStyle="rgba(255,232,190,.6)";
-  ctx.fillRect(HIN_DOORW*.9-6,fy-HIN_MAN*.85,2.4,2.4);
+  /* входная дверь слева — только на первом этаже: наверху выхода во двор нет */
+  if(!S.up){
+    ctx.fillStyle="rgb("+P.wood.map(v=>v*.6|0).join(",")+")";
+    ctx.fillRect(-2,fy-HIN_MAN*1.6,HIN_DOORW*.9,HIN_MAN*1.6);
+    ctx.strokeStyle="rgba(226,226,220,.2)";ctx.lineWidth=1.4;
+    ctx.strokeRect(-2,fy-HIN_MAN*1.6,HIN_DOORW*.9,HIN_MAN*1.6);
+    ctx.fillStyle="rgba(255,232,190,.6)";
+    ctx.fillRect(HIN_DOORW*.9-6,fy-HIN_MAN*.85,2.4,2.4);
+  }
+  /* лестница: снизу марш, сверху проём в полу (29e, M178-9) */
+  if(typeof hinHasUp==="function"&&hinHasUp()){
+    if(S.up)hinDrawHole(fy,P);
+    else hinDrawStair(fy,ceil,P);
+  }
   {
-    const x=hinWidth();
+    const x=R[R.length-1].x+R[R.length-1].w;
     ctx.fillStyle="rgb("+P.wall.map(v=>v*.42|0).join(",")+")";
     ctx.fillRect(x,ceil+6,80,HIN_ROOM_H-6);
     ctx.strokeStyle="rgba(0,0,0,.3)";ctx.lineWidth=1;
@@ -147,6 +163,7 @@ function drawHomeIn(){
      в комнате читались рядом одинаковых вырезок. Кто дальше — выше, мельче и
      глуше; разница маленькая, но именно она превращает ряд в компанию. */
   for(const f of S.folk){
+    if((f.up|0)!==(S.up|0))continue;      /* каждый на своём этаже (M178-9) */
     if(f.x<camx-40||f.x>camx+vw+40)continue;
     const z=f.z||0;
     ctx.save();
@@ -222,9 +239,9 @@ function hinFrontStuff(r,fy,P){
   const dk=k=>"rgb("+P.wood.map(v=>v*k|0).join(",")+")";
   const mk=k=>"rgb("+P.metal.map(v=>v*k|0).join(",")+")";
   ctx.save();
-  if(r.key==="hall"||r.key==="living"||r.key==="corner"){
+  if(r.key==="hall"||r.key==="living"||r.key==="corner"||r.key==="bed"){
     /* спинка стула: узнаётся силуэтом и не спорит с тем, что у стены */
-    const x=at(r.key==="living"?.24:.18), w=M*.52, h=M*.82;
+    const x=at(r.key==="living"?.24:(r.key==="bed"?.14:.18)), w=M*.52, h=M*.82;
     ctx.fillStyle=dk(.34);
     ctx.fillRect(x-w*.5,y0-h,w,h*.42);
     ctx.fillRect(x-w*.5,y0-h*.42,w*.13,h*.42);
@@ -241,9 +258,9 @@ function hinFrontStuff(r,fy,P){
     ctx.fillRect(x+w*.5-3-w*.09,y0-h*.70,w*.09,h*.70);
     ctx.fillStyle="rgba(226,236,240,.06)";ctx.fillRect(x-w*.5,y0-h,w,1.8);
   }
-  if(r.key==="study"||r.key==="hold"){
+  if(r.key==="study"||r.key==="hold"||r.key==="loft"){
     /* угол ящика: простой параллелепипед, но он и нужен только силуэтом */
-    const x=at(.80), w=M*.9, h=M*.55;
+    const x=at(r.key==="loft"?.16:.80), w=M*.9, h=M*.55;
     ctx.fillStyle=dk(.30);ctx.fillRect(x-w*.5,y0-h,w,h);
     ctx.fillStyle="rgba(0,0,0,.28)";ctx.fillRect(x-w*.5,y0-h,w,3);
     ctx.fillStyle="rgba(255,236,200,.05)";ctx.fillRect(x-w*.5,y0-h+3,w,1.4);
@@ -254,6 +271,9 @@ function hinFrontStuff(r,fy,P){
    Каждая ступень — свои вещи на своих местах; координаты те же, что у зон
    внимания (HIN_THINGS в 29c), иначе подойти можно к пустому месту. */
 function hinRoomStuff(r,fy,ceil,P){
+  /* верхние комнаты обставляет свой модуль (29e): здесь он зовётся первым и
+     на ключах первого этажа ничего не трогает */
+  if(typeof hinUpStuff==="function"&&hinUpStuff(r,fy,ceil,P))return;
   /* Пол и стены комнаты — не общая заливка на весь дом: у мастерской пол в
      масляных пятнах, у жилой части ковёр, у гаража бетон с колеёй. Комната
      узнаётся раньше, чем в ней разглядят вещи (проход M170). */

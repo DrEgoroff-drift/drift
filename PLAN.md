@@ -195,7 +195,9 @@ order, and struck out as they close. This is the live queue — new finds go at 
    forms got light and shade in one edit, lit from where the star actually is (`sunSpot`); tone
    varies ±12% between neighbours from a hash of the place, so a thicket is no longer one patch
    of paint. What this does **not** fix is item 12.
-9. **A second storey for the living part** — not started (the original M170 ask).
+9. ~~**A second storey for the living part**~~ — done (0.145.0, M178-9): `29e-home-up`, two rooms
+   over study and living, a real stair, the house drawn as a cross-section (roof, attic, joists),
+   Vega at the loft window. Suite `91zzzc-home-up`.
 10. **The world heard** — not started: room tone per screen, the house audible from inside,
    weather heard before it is seen. `09-audio`/`10-music` are about music, not about place.
 11. **Save format v:5** — the author said break it (2026-08-24). Then measured: all 119 persisted
@@ -658,5 +660,45 @@ each other and against the screen edge — it will have to be re-pointed, not di
 ## Order
 
 12 (biology) — **done, 0.141.0** → 13 (planet light) — **done, 0.142.0** →
-14 A2 — **done, 0.143.0** → 14 A3 — **done, 0.144.0** → 9 (second storey) →
-10 (world heard) → graphics debt one at a time → split debt.
+14 A2 — **done, 0.143.0** → 14 A3 — **done, 0.144.0** →
+**9 (second storey) → 10 (world heard)** → **then M178–M186 below** → graphics debt one at a
+time → split debt.
+
+Order fixed by the author on 2026-08-25, in his words: «сначала старые вехи закончи потом всё что
+накидал. Потом проверка по беседе и ещё раз пройтись» — so the open items of the old queue come
+first, the night orders after them, and the walk-through last.
+
+---
+
+# QUEUE: the author's night orders, 2026-08-25 (M178–M186)
+
+Written from the author's own crops of the screenshots in this session, plus two standing orders:
+**"как открытка, как просто самое лучшее что видели"** and **"кнопки не исчезают на мобиле"**.
+Each milestone is a version with tests and a commit; each is done in several passes with
+self-criticism, per the cross-cutting rule.
+
+- **M178 — the frame as a postcard.** Faults the author circled, in his order:
+  the ringed body in the sky is a black disc with a dull hoop; a black polygon lies on the ground
+  with no edge (the same fault as M173 #1, still standing somewhere else); the jetpack gauge
+  («РАНЕЦ» and its bar) is painted on the canvas underneath the DOM pads and shows through them;
+  the far ridge is one flat silhouette and the rain is one uniform speed; the state hairlines read
+  as plain lines rather than instruments.
+- **M179 — the inventory as a tray, the paper as a paper.** The author's reference is The Forest's
+  inventory: every thing laid out as an object on a surface, not a row in a list. The table keeps
+  the paper — «стол как бумага оставь, очень хорошо получилось» — and the split is by kind:
+  **paper** carries what is read (ether, board, people, deeds, prices, record book), a **tray**
+  carries what is held (things, tapes, cargo, kit). One screen, two surfaces.
+- **M180 — the pirate base.** «Пиратская база говно, там чё-то сверху всё, скафандр, человечки».
+  The raid screen is the only one that never got the frame's own language: several passes.
+- **M181–M185 — five interface passes**, each with a named question:
+  1. **the hand**: what is under the thumb on a phone and under the cursor on a desktop; nothing
+     that can be pressed may vanish, ever — a hidden button is a lost action (M176 already cost
+     the player ДЕЙСТВИЕ once);
+  2. **the eye**: what the player looks at first on each screen, and what is louder than it should
+     be;
+  3. **the road**: how many taps between wanting a thing and having it;
+  4. **the phone**: the same screens at 390 px, measured, not imagined (`test.ps1 -Mobile`);
+  5. **the whole**: one language across every screen — the same edges, the same weights, the same
+     words.
+- **M186 — the walk-through**: every point the author raised in this session, checked one by one
+  on the live site, not on a stand.
