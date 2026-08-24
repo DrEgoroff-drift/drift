@@ -34,6 +34,8 @@ if (-not $chrome) { throw "no headless browser found" }
 
 $url  = "http://localhost:8777/docs/$Name.html"
 $argv = @("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1280,800",
+          "--user-data-dir=$($env:TEMP)\drift-shot-profile",
+          "--no-first-run", "--no-default-browser-check",
           "--virtual-time-budget=$($WaitSec * 1000)", "--dump-dom", $url)
 # Браузер обязательно убить за собой: страница стенда держит rAF, и с
 # --dump-dom процесс не выходит сам. Двадцать забытых headless-хромов съедали
@@ -45,8 +47,10 @@ $proc = Start-Process -FilePath $chrome -ArgumentList $argv -NoNewWindow -PassTh
 function Stop-Shot {
   param($p)
   if ($p -and -not $p.HasExited) { try { Stop-Process -Id $p.Id -Force -ErrorAction Stop } catch {} }
+  # Только своё дерево: опознаём процессы по своему user-data-dir, как в
+  # mksiteshots.ps1 — фильтр по «--headless» цепляет чужое (M170).
   Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" |
-    Where-Object { $_.CommandLine -like "*--headless*" -and $_.CommandLine -like "*localhost:8777*" } |
+    Where-Object { $_.CommandLine -like "*drift-shot-profile*" } |
     ForEach-Object { try { Stop-Process -Id $_.ProcessId -Force -ErrorAction Stop } catch {} }
 }
 

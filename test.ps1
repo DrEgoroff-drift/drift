@@ -23,6 +23,8 @@ if ($Only) { $url += "?only=" + [uri]::EscapeDataString($Only) }
 $dom = Join-Path $env:TEMP "drift-tests-dom.html"
 $err = Join-Path $env:TEMP "drift-tests-err.txt"
 $argv = @("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1280,800",
+          "--user-data-dir=$($env:TEMP)\drift-tests-profile",
+          "--no-first-run", "--no-default-browser-check",
           "--virtual-time-budget=20000", "--timeout=60000", "--dump-dom", $url)
 Start-Process -FilePath $chrome -ArgumentList $argv -NoNewWindow -Wait `
   -RedirectStandardOutput $dom -RedirectStandardError $err | Out-Null
