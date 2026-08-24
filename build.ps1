@@ -95,15 +95,19 @@ function Bulk($files, $tfiles) {
   # весь русский в файле превращается в кракозябры — молча, без ошибки. Так
   # уже уехал стенд, у которого подписи на листе стали "Р”Р’Р•РќРђР”Р¦РђРўР¬".
   # Проверять глазами бесполезно: в редакторе файл выглядит правильно.
+  # Читаем байты через .NET, а НЕ через `Get-Content -Encoding Byte`: этого
+  # параметра нет в PowerShell Core, и на ubuntu-раннере сборка падала на нём с
+  # ошибкой привязки параметра. Падала молча для человека: локально всё
+  # собиралось (5.1 параметр знает), а выкладка не уезжала на сайт шесть версий
+  # подряд. Один и тот же скрипт обязан работать в обеих оболочках.
   $noBom = @(Get-ChildItem $root -Recurse -Filter *.ps1 |
-    Where-Object { $_.FullName -notmatch '\\(node_modules|\.git)\\' } |
+    Where-Object { $_.FullName -notmatch '[\\/](node_modules|\.git)[\\/]' } |
     Where-Object {
-      $b = [byte[]](Get-Content -LiteralPath $_.FullName -Encoding Byte -TotalCount 3 -ErrorAction SilentlyContinue)
-      $hasBom = $b.Length -ge 3 -and $b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -eq 0xBF
-      if ($hasBom) { return $false }
       $raw = [IO.File]::ReadAllBytes($_.FullName)
-      # непустой UTF-8 многобайтовый хвост = в файле есть не-ASCII
-      ($raw | Where-Object { $_ -gt 127 }).Count -gt 0
+      if ($raw.Length -ge 3 -and $raw[0] -eq 0xEF -and $raw[1] -eq 0xBB -and $raw[2] -eq 0xBF) { return $false }
+      # есть хоть один байт >127 — значит в файле есть не-ASCII, то есть русский
+      foreach ($b in $raw) { if ($b -gt 127) { return $true } }
+      $false
     })
   if ($noBom.Count) {
     "  ! .ps1 с русским текстом и БЕЗ BOM (5.1 прочтёт как ANSI): {0}" -f

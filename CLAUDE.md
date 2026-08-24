@@ -150,6 +150,17 @@ sheet from `docs/shots/` to `https://drift-game.ru/dev/`. It never touches
 
 The order of work is: edit → `dev.ps1` → look at the dev URL → fix → push to
 `main` only when it is right (the push publishes `play.html` by itself).
+
+**After a push, check that the site actually took it.** The deploy runs on GitHub
+and fails silently as far as this machine is concerned — it once stayed broken
+for six versions while every local build and test was green, because `build.ps1`
+used a parameter that exists in Windows PowerShell and not in PowerShell Core:
+
+```bash
+powershell -ExecutionPolicy Bypass -File docs\live.ps1
+```
+
+One line: what is in the sources, what is on the site, and whether they agree.
 Headless captures stay useful for a self-critique pass between iterations, but
 they are no longer how the work is shown to anybody: a PNG cannot be walked
 through, waited out until night, or opened on a phone.
