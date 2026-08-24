@@ -433,6 +433,20 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
 
 # QUEUE: after the graphics campaign
 
+- **M171 someone else's mark** — **built (0.137.0)**: the first thing in the game left by another
+  living player, and it arrives without a word — `11ag-trace`, `a=trace` in `site/api.php`, suite
+  `91zzza-trace`, design in [`docs/DESIGN-trace.md`](docs/DESIGN-trace.md). A pilot cuts his mark
+  into a stone beside his ship and leaves up to five units of cargo at its foot; the next person to
+  land there takes it, and it is gone for everyone. Nothing a human types ever crosses: what
+  crosses is a mark (one of twelve, derived from the anonymous pilot id — not chosen, never
+  explained), a six-character hand, a resource key and a count. Recognition is the hand and
+  nothing more; feedback is one ether line counting how many of yours were taken. Three per day,
+  eight per place, thirty days, one request per landing. Offline the feature does not exist and
+  the interface never mentions it.
+  **Left open by design**: only the surface carries a mark (the station counter, the settlement
+  wall and the cave mouth would each take one); no recognition beyond the hand — anything more
+  becomes a friends list; no way to leave a thing *for* somebody, because that is trade.
+
 - **M170 the home as a place** — **built (0.136.0)**: `21f-home-out` (the house on its planet:
   terrace, footing, roof, smoking chimney, lit window, porch lamp, garage, display case, workbench,
   beacon mast; cleared yard, kept away from the settlement; ДОМ marker in the navigator) and

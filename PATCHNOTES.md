@@ -7,6 +7,44 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.137.0 — somebody was here before you (M171)
+
+The first thing in the game left by another living player, and it arrives
+without a word. A pilot standing beside his ship can cut his mark into a stone
+and leave up to five units of cargo at its foot; somebody else, landing on that
+same planet, finds the stone, takes what is under it, and the goods are gone for
+everyone. `11ag-trace`, `a=trace` in `site/api.php`, suite `91zzza-trace`, design
+in [`docs/DESIGN-trace.md`](docs/DESIGN-trace.md).
+
+**Nothing a human types crosses between two games.** What crosses is a mark —
+one of twelve shapes — a six-character "hand", a resource key and a count. There
+is nothing to moderate because there is nothing to write. The mark is not chosen
+either: it is derived from the anonymous pilot id the road companion already
+uses (`localStorage.drift_pilot`, random, no account), so a pilot has one mark
+for life and cannot pick a shape to mean something with it. None of the twelve
+means anything, and the game never explains them.
+
+The hand is the whole of recognition: when you take a mark cut by a hand you have
+met before, the notebook writes «Рука та же.» and stops there. When somebody
+takes yours, your next landing brings one ether line — «ваш знак подняли» and how
+many. Never who, never where.
+
+Caps: three left per real day, eight kept per place, thirty days of life, one
+request per landing throttled to twenty seconds. Offline is the normal mode, not
+a degraded one — on `file://` there are no traces and no action to leave one, and
+the interface says nothing about it.
+
+Drawing took five passes and the fourth of them changed the design. The mark was
+meant to be cut into the ground; it read as a stick jammed into the dirt, and no
+amount of size or contrast fixed it — the game looks at the world **from the
+side**, where a mark lying flat has no surface to be seen on. So the mark is cut
+into a stone the pilot sets up: a vertical face is the only plane this world
+shows whole, and setting a stone on purpose is truer to the act anyway. The stone
+is chest-high to the walker, its silhouette broken out of the hand's hash so two
+of them are never twins, with sacks at its foot. Stand: `docs/mktrace.ps1`
+(twelve figures large, then two worlds at walking distance and at ×3).
+
+---
 ## 0.136.4 — the wave glows like the reference (M168j)
 
 The author brought screenshots of Yandex Music's "Моя волна" cover: a bloom of

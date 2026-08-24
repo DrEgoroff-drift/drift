@@ -463,4 +463,91 @@ if ($a === 'road') {
   out(['ok' => true, 'n' => count($p) - 1]);
 }
 
+/* ── чужой след: знак и вещь, оставленные в месте (M171) ──
+   Учётная запись не нужна: метка пилота случайна и заведена в localStorage той
+   же строкой, что у дороги. Наружу от человека не уходит НИ ОДНОГО НАПЕЧАТАННОГО
+   ЗНАКА — только номер фигуры, шесть знаков «руки», ключ ресурса и счёт единиц.
+   Модерировать нечего. Замысел: docs/DESIGN-trace.md */
+if ($a === 'trace') {
+  $b   = body();
+  $op  = (string)($b['op'] ?? '');
+  $id  = (string)($b['id'] ?? '');
+  $key = (string)($b['key'] ?? '');
+  if (!preg_match('/^[a-f0-9]{8,32}$/', $id))                       fail('нет метки пилота');
+  if (!preg_match('/^-?\d{1,6},-?\d{1,6}(\/\d{1,4})?$/', $key))     fail('место не читается');
+
+  $dir = root() . '/trace';
+  foreach ([$dir, "$dir/p", "$dir/u"] as $d) if (!is_dir($d)) @mkdir($d, 0700, true);
+  $pf  = "$dir/p/" . str_replace([',', '/', '-'], ['_', 'p', 'm'], $key) . '.json';
+  $uf  = "$dir/u/$id.json";
+  $now = time();
+
+  $list = readJson($pf);  if (!is_array($list)) $list = [];
+  $me   = readJson($uf);  if (!is_array($me))   $me   = [];
+  $day  = gmdate('Y-m-d');
+  if (($me['day'] ?? '') !== $day) { $me['day'] = $day; $me['n'] = 0; }
+
+  /* просрочка: тридцать дней — и следа нет. Метла редкая, как у дороги */
+  $keep = [];
+  foreach ($list as $t) if (is_array($t) && $now - (int)($t['t'] ?? 0) < 2592000) $keep[] = $t;
+  $stale = count($keep) !== count($list);
+  $list  = $keep;
+
+  if ($op === 'put') {
+    $m = (int)($b['m'] ?? -1);
+    $h = (string)($b['h'] ?? '');
+    $r = (string)($b['r'] ?? '');
+    $n = (int)($b['n'] ?? 0);
+    if ($m < 0 || $m > 31)                     fail('знака такого нет');
+    if (!preg_match('/^[a-f0-9]{6}$/', $h))    fail('нет руки');
+    if (!preg_match('/^[a-z]{2,12}$/', $r))    fail('это не груз');
+    if ($n < 1 || $n > 5)                      fail('столько не оставляют');
+    if ((int)($me['n'] ?? 0) >= 3) out(['ok' => false, 'reason' => 'на сегодня хватит']);
+    $list[] = ['i' => $now . substr($id, 0, 4), 'm' => $m, 'h' => $h, 'r' => $r, 'n' => $n,
+               't' => $now, 'o' => $id];
+    if (count($list) > 8) $list = array_slice($list, -8);   /* место помнит восьмерых */
+    $me['n'] = (int)($me['n'] ?? 0) + 1;
+    writeJson($pf, $list); writeJson($uf, $me);
+    out(['ok' => true]);
+  }
+
+  if ($op === 'ask') {
+    /* самый старый чужой — первым пришедшим и достаётся */
+    $t = null;
+    foreach ($list as $c) if (($c['o'] ?? '') !== $id) { $t = $c; break; }
+    $took = (int)($me['took'] ?? 0);
+    if ($took > 0) { $me['took'] = 0; writeJson($uf, $me); }
+    /* Пишем ТОЛЬКО если что-то протухло. Иначе каждая посадка в пустом месте
+       заводила бы пустой файл — а посадок за игру тысячи. */
+    if ($stale) writeJson($pf, $list);
+    if (mt_rand(1, 50) === 1)
+      foreach (glob("$dir/p/*.json") as $g)
+        if ($now - (int)@filemtime($g) > 2592000) @unlink($g);
+    out(['ok' => true, 'took' => $took,
+         't'  => $t ? ['i' => $t['i'], 'm' => (int)$t['m'], 'h' => $t['h'],
+                       'r' => $t['r'], 'n' => (int)$t['n']] : null]);
+  }
+
+  if ($op === 'take') {
+    $i = (string)($b['i'] ?? '');
+    $out = []; $owner = '';
+    foreach ($list as $c) {
+      if ($owner === '' && (string)($c['i'] ?? '') === $i && ($c['o'] ?? '') !== $id) { $owner = (string)$c['o']; continue; }
+      $out[] = $c;
+    }
+    if ($owner === '') out(['ok' => false, 'reason' => 'этого следа уже нет']);
+    writeJson($pf, $out);
+    /* оставившему — только счёт: кто и где, не сообщается никогда */
+    if (preg_match('/^[a-f0-9]{8,32}$/', $owner)) {
+      $of = "$dir/u/$owner.json";
+      $o  = readJson($of); if (!is_array($o)) $o = [];
+      $o['took'] = (int)($o['took'] ?? 0) + 1;
+      writeJson($of, $o);
+    }
+    out(['ok' => true]);
+  }
+
+  fail('неизвестная операция следа');
+}
+
 fail('неизвестное действие', 404);

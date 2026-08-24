@@ -93,6 +93,7 @@ function enterSurface(){
     suit:suitMax(),warned:false,beacon:0,walkAmp:0,walkPhase:0,cave:caveMouth,peep};
   G.mode="surface";
   if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
+  if(typeof traceAsk==="function")traceAsk();     // не оставил ли здесь знак другой живой человек (11ag)
   G.surfTipShown=0;
   logAdd("dim","Посадка на "+p.name+" · залежей: "+deposits.length);
   /* посадки на планету считаются так же, как на станцию: условиям историй
@@ -205,6 +206,24 @@ function updateSurface(dt){
      взлёт теперь отдельная кнопка с удержанием (см. tickLaunchHold), а не ДЕЙСТВ,
      чтобы добыча ресурса рядом с посадочной площадкой не отправляла в полёт случайно */
   if(dShip<shipZoneR()&&S.suit<suitMax()){S.suit=Math.min(suitMax(),S.suit+.5*(typeof vegaAboard==="function"&&vegaAboard()&&!vegaOffended()?1.5:1)*dt);S.warned=false;}
+  /* чужой знак (11ag): его поднимают раньше всего прочего — он тут один и он
+     разовый, а вырыть и просканировать можно и после */
+  if(typeof traceNear==="function"){
+    const t=traceNear(S,tr);
+    if(t){
+      G.prompt="ДЕЙСТВИЕ — ПОДНЯТЬ ЧУЖОЙ ЗНАК";
+      if(actEdge){traceTake(t);return;}
+    }
+  }
+  /* оставить свой (11ag): у корабля, где ничего другого не просят, и только
+     если в трюме есть чем платить — след без цены превращается в доску объявлений */
+  if(typeof traceCanLeave==="function"&&dShip<shipZoneR()&&!dep&&!poiNear(S,tr)&&!traceHere()){
+    const g=traceCanLeave();
+    if(g){
+      G.prompt="ДЕЙСТВИЕ — ОСТАВИТЬ ЗНАК · "+RES[g.k].ru.toUpperCase()+" ×"+g.n;
+      if(actEdge){traceLeave();return;}
+    }
+  }
   /* вход в пещеру проверяется раньше залежей и организмов: он редкий и разовый,
      а бурить и сканировать можно где угодно ещё */
   if(S.cave&&Math.abs(S.cave.x-S.x)<34){
