@@ -89,6 +89,26 @@ setTimeout(function(){
     }
     if(PB){
       enterRaid(PB);
+      /* Ставим ходока туда, где есть на что смотреть. С 0.161.0 метки и тела
+         не проходят сквозь переборки, и на стартовой площадке ангара кадр
+         честно пуст: все живые сидят в дальних отсеках. Для разбора это
+         бесполезный кадр — ищем комнату, из середины которой видно больше
+         всего живых, и смотрим оттуда. */
+      var S9=G.raid,R9=S9.R,best=null;
+      (R9.rooms||[]).forEach(function(rm){
+        var cx=(rm.c0+rm.c1+1)/2*RCELL, cz=(rm.r0+rm.r1+1)/2*RCELL;
+        if(raidSolidAt(R9,cx,cz))return;
+        var n=S9.foes.filter(function(q){return q.hp>0&&raidLineOfSight(R9,cx,cz,q.x,q.z);}).length;
+        if(!best||n>best.n)best={n:n,x:cx,z:cz};
+      });
+      if(best&&best.n>0){
+        S9.x=best.x;S9.z=best.z;
+        /* и повернуть на них: курс остался прежним, живые оказывались за
+           спиной, и кадр опять выходил пустым */
+        var vis=S9.foes.filter(function(q){return q.hp>0&&raidLineOfSight(R9,S9.x,S9.z,q.x,q.z);});
+        vis.sort(function(p,q){return Math.hypot(p.x-S9.x,p.z-S9.z)-Math.hypot(q.x-S9.x,q.z-S9.z);});
+        if(vis.length)S9.a=Math.atan2(vis[0].x-S9.x,vis[0].z-S9.z);
+      }
       for(var f5=0;f5<8;f5++){G.t+=.02;updateRaid(1);drawRaid();}
     }
   }else if(scene==="hold"){

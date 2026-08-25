@@ -48,6 +48,26 @@ async function g11Run(){
     ["cave",()=>{G.mode="surface";enterCave();}],
     ["scoop",()=>{const s=find(s=>s.planets.some(p=>p.type==="gas"));jump(s);
       startScoop(s.planets.find(p=>p.type==="gas"));}],
+    /* абордаж (0.161.0): единственный режим с настоящей проекцией — десятки
+       четырёхугольников с сортировкой по глубине на каждый кадр. В туре его не
+       было, поэтому цену переделки камеры и потолочных балок нечем было
+       измерить, кроме глаз. Ставим ходока в отсек, где есть на что смотреть, —
+       мерить пустой ангар смысла нет. */
+    ["raid",()=>{
+      const s=find(s=>pirateBaseOf(s));
+      if(!s)return;
+      jump(s);enterRaid(pirateBaseOf(s));
+      const S=G.raid,R=S.R;let best=null;
+      (R.rooms||[]).forEach(rm=>{
+        const cx=(rm.c0+rm.c1+1)/2*RCELL,cz=(rm.r0+rm.r1+1)/2*RCELL;
+        if(raidSolidAt(R,cx,cz))return;
+        const n=S.foes.filter(q=>q.hp>0&&raidLineOfSight(R,cx,cz,q.x,q.z)).length;
+        if(!best||n>best.n)best={n,x:cx,z:cz};
+      });
+      if(best&&best.n>0){S.x=best.x;S.z=best.z;
+        const v=S.foes.filter(q=>q.hp>0&&raidLineOfSight(R,S.x,S.z,q.x,q.z));
+        if(v.length)S.a=Math.atan2(v[0].x-S.x,v[0].z-S.z);}
+    }],
     /* дорога (M168k): у неё свой rAF и самый дорогой кадр в игре — поле света
        и длинный шлейф. Мерить её глазами по стенду нельзя, а на телефоне она и
        живёт, поэтому она в пробнике наравне с остальными. Ход и музыку задаём

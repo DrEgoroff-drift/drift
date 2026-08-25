@@ -7,6 +7,59 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.161.0 — the raid was drawn upside down (M180, pass 2)
+
+The author, 2026-08-25, on the pirate-base frame: «не очень понятно, посмотри на перспективу», and
+in the working note, «человек стоит на потолке». He was right, and literally so.
+
+**The up vector pointed down.** The raid's coordinate system is left-handed (x right, y up, z
+*forward*), but the camera basis was built as `right × fwd` — the right-hand rule. In a left-handed
+system that yields "down": the measured vector was `[0, −0.987, −0.158]`. Every frame of every raid
+since M35 was drawn mirrored about the horizontal: the floor receded into the *upper* half, the
+ceiling into the lower, and a standing figure had his feet projected above his head. A compartment
+is nearly symmetric top to bottom, so an upside-down corridor still looked like a corridor — the
+error survived until standing figures and directional lighting made it visible. `up` is now
+`fwd × right`, in a named function (`raidUp`) so an autotest can watch the sign; a second suite
+checks the *frame* rather than the vector, asking where the floor is, where the ceiling is and
+whether feet are below heads.
+
+Three things the flip had been quietly breaking, all of them listed as separate suspects in the
+plan, all of them one bug: the value order was "inverted" because the frame was inverted (the
+floor's light pools and plates were rendering above, the dark ceiling below); contact shadows were
+being suppressed by a guard that only draws a shadow *below* a body, and the floor projected above
+every body; and "hanging boxes look like floor boxes" because they were floor boxes, drawn overhead.
+
+**Loot crates had never once been drawn.** M180 replaced the on-screen loot sticker with a real
+crate standing on the floor, wrote the code, and called `box()` for it *after* the polygon list had
+already been sorted and painted. So for every version since, the world got a beacon floating in
+empty space and no crate under it. The two loops moved above the flush and the crates now live by
+the same rules as everything else — depth, fog, occlusion. Their light floor is also raised (.40
+against the walls' .15): the contour is only drawn above .3, and a container without a contour
+reads as "nothing was drawn here".
+
+**Marks no longer pass through bulkheads.** Beacons, stencils and health bars were painted over all
+geometry with no depth test, so the player could see loot and living pirates through the walls of
+rooms he had not entered. They are now gated by `raidLineOfSight` — the same ray the enemies shoot
+along, deliberately, so that "visible" means one thing in this mode and not two.
+
+**The man became the measure.** Body scale came from `clamp(2200/z, .25, 3)`, and the cap of 3 was
+reached at every playable distance — so bodies were drawn at a *fixed* size regardless of depth, and
+that size was about four times smaller than the compartment's own geometry demanded (measured, not
+guessed: a floor cell of 90 units spanned ~250 px beside the walker, so a 50-unit person should have
+been ~140 px and was 55). A 110-unit compartment read as a five-storey hall. Scale now comes from
+the projection itself — how many pixels a pole of body height occupies at that spot — so it cannot
+drift and perspective on bodies works for the first time. Shadows, health bars and beacons are all
+expressed in world units for the same reason. With honest scale the camera turned out to be standing
+on top of the player, so it moved from 118 units back to 236, and the principal point moved to
+`H*.53`, which now really does put the horizon at .375 of the frame (with the flipped vector, the
+old `H*.44` had been putting it *below* centre — the opposite of what its comment claimed).
+
+**The ceiling stopped being a hole:** value from .28 to .42 plus one transverse beam per cell, so
+the plane overhead has the rhythm that gives it depth. The raid is also a step in the `?g11` probe
+now, because until today the cost of this screen could not be measured at all. Clean run, one
+window: raid 60.
+
+---
 ## 0.160.0 — the instruments go back to the top, and the lamp starts meaning something (M187)
 
 Two direct orders from the author, 2026-08-26: «приборы сверху, сейчас очень плохо не видно» and

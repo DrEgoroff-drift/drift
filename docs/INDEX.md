@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 266 · символов верхнего уровня: 2507
+Файлов: 267 · символов верхнего уровня: 2508
 
 ## СИМВОЛЫ
 
@@ -502,7 +502,7 @@ drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:240
 drawFindsSystem              src/17b-finds.js:149
 drawFlame                    src/03b-hull-paint.js:10
-drawFoeBody                  src/24aa-raid-draw.js:427
+drawFoeBody                  src/24aa-raid-draw.js:541
 drawForeground               src/21b-surface-deco.js:248
 drawGlassHUD                 src/24-mode-belt.js:593
 drawGround                   src/19-mode-landing.js:109
@@ -537,7 +537,7 @@ drawPlant                    src/20-life.js:346
 drawPlantAlien               src/20-life.js:160
 drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
-drawRaid                     src/24aa-raid-draw.js:5
+drawRaid                     src/24aa-raid-draw.js:14
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:107
 drawRoad                     src/27l-road-draw.js:87
@@ -1686,6 +1686,7 @@ raidLeave                    src/24a-mode-raid.js:190
 raidLineOfSight              src/24a-mode-raid.js:347
 raidSolid                    src/24a-mode-raid.js:78
 raidSolidAt                  src/24a-mode-raid.js:82
+raidUp                       src/24aa-raid-draw.js:8
 ramp                         src/07-planet.js:2
 ransomPay                    src/12b-crew-events.js:230
 RARE                         src/12m-rare.js:74
@@ -3007,9 +3008,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/23-mode-dig.js · 15 КБ
   · шахта: спуск вглубь планеты:1
 
-## src/24aa-raid-draw.js · 32 КБ
+## src/24aa-raid-draw.js · 44 КБ
   · рейд: отрисовка:1
-  · рисование: пол → стены → объекты → эффекты:4
+  · рисование: пол → стены → объекты → эффекты:13
 
 ## src/24a-mode-raid.js · 20 КБ
   · рейд на пиратскую базу: полигональный интерьер:1
@@ -3105,7 +3106,7 @@ zooTick                      src/11ad-zoo.js:41
   · prof() — на что уходит кадр:503
   · dbg() — что держит корабль:543
 
-## src/28z-fps-probe.js · 7 КБ
+## src/28z-fps-probe.js · 9 КБ
   · пробник G11: ?g11:1
 
 ## src/29c-home-in.js · 16 КБ
@@ -3348,6 +3349,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzc-home-up.js · 4 КБ
 
 ## tests/91zzzd-roomtone.js · 5 КБ
+
+## tests/91zzze-raid-view.js · 5 КБ
+  · автотесты: абордаж — куда смотрит «вверх»:1
 
 ## tests/91zzze-sync.js · 4 КБ
   · обмен с облаком: то, что раньше молчало:1

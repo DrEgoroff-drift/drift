@@ -221,7 +221,18 @@ order, and struck out as they close. This is the live queue — new finds go at 
    cost of the reversal and the two rules that replaced A2's are in `PATCHNOTES.md` 0.160.0 and at
    the head of the instrument block in `style.css`.
 
-13. **The raid reads as if the man stood on the ceiling** — the author, 2026-08-25, on the
+13. ~~**The raid reads as if the man stood on the ceiling**~~ — **done (0.161.0, M180 pass 2).**
+   He was right literally: the camera's up vector pointed down, and every raid frame since M35 was
+   drawn mirrored about the horizontal. Three of the four suspects below turned out to be one bug
+   (the inverted value order, the missing contact shadows and the "hanging boxes" were all the
+   flip); the fourth — pitch and principal point doing one job twice — was **not** the fault, since
+   floor and ceiling converge to one horizon either way, but the framing numbers were re-derived
+   anyway once the flip was fixed. Found while looking at the corrected frames: loot crates had
+   never been drawn at all (queued into the polygon list after it was painted), marks drew through
+   bulkheads, and bodies were four times too small for the compartment. All in `PATCHNOTES.md`
+   0.161.0; guards in `91zzze-raid-view`. Original text:
+
+13a. **The raid reads as if the man stood on the ceiling** — the author, 2026-08-25, on the
    pirate-base frame: «не очень понятно, посмотри на перспективу». The complaint is about the
    legibility of the space, not about the bodies. Four suspects, in the order to check them
    (`24aa-raid-draw`):
