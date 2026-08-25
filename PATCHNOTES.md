@@ -7,6 +7,21 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.162.1 — the frame's darkened edges stop costing a full screen
+
+The `.slope` introduced in 0.160.0 — the soft darkening that gives the instruments and the console
+something to read against — was one element at `inset:0` carrying two gradients. Transparent in the
+middle, but the browser still rasterises and composites the whole box, which is exactly the
+full-screen fill that G0's rule forbids ("one full-screen pass costs 4–5 ms at ×2"). It is now two
+strips, 150 px and 210 px, painted by the element's own pseudo-elements: under half the frame, and
+identical to look at.
+
+Measurement note: this machine is reading ±10 fps run to run on the same build tonight (two clean
+`?g11` runs gave belt 54/49, landing 46/44, surface 48/43, road 30/41), so nothing here is quoted as
+a before/after. What is stable across runs: dig 60, cave 60, raid 60. The change is made because the
+rule says so, not because a number moved.
+
+---
 ## 0.162.0 — the eye and the road: two interface passes (M182, M183)
 
 The two remaining named questions from the interface series, run against the frames rather than

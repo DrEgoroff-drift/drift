@@ -106,10 +106,18 @@ html,body{height:100%;overflow:hidden;background:var(--void);
    Скат — отдельная вещь, а не псевдоэлемент приборов. Первым заходом он был
    их частью и гас вместе с ними; на кадре стало видно, что тогда голой над
    грунтом остаётся подсказка действия, которая не гаснет никогда. */
+/* Красится не весь кадр, а две полосы. Первым заходом это был один элемент
+   `inset:0` с двумя градиентами — то есть заливка во весь экран поверх канвы,
+   ровно то, что правило G0 запрещает («заливка во весь кадр стоит 4–5 мс на
+   ×2»). Прозрачная середина браузеру не бесплатна: он растрирует и
+   композитит весь короб. Две полосы по 150 и 210 px — меньше половины кадра,
+   и вид тот же. */
 .slope{position:fixed;inset:0;pointer-events:none;transition:opacity .3s var(--ease);
-  background:
-    linear-gradient(to bottom,rgba(3,6,12,.58),rgba(3,6,12,.24) 12%,rgba(3,6,12,0) 20%),
-    linear-gradient(to top,rgba(3,6,12,.60),rgba(3,6,12,.26) 16%,rgba(3,6,12,0) 28%)}
+  background:none}
+.slope::before{content:"";position:fixed;left:0;right:0;top:0;height:150px;
+  background:linear-gradient(to bottom,rgba(3,6,12,.58),rgba(3,6,12,.24) 46%,rgba(3,6,12,0))}
+.slope::after{content:"";position:fixed;left:0;right:0;bottom:0;height:210px;
+  background:linear-gradient(to top,rgba(3,6,12,.60),rgba(3,6,12,.26) 42%,rgba(3,6,12,0))}
 /* Событие делает верхнюю кромку плотнее — подложка помогает числам, а не
    заменяет их. Живёт на приборах, потому что зажигается вместе с ними. */
 .hud::before{content:"";position:fixed;left:0;right:0;top:0;height:170px;z-index:-1;
