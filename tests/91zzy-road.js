@@ -274,8 +274,15 @@ TEST_SUITES.push(()=>suite("дорога: тон по кругу — палит�
   /* небо разведено по кругу, а не сдвинуто на соседний оттенок */
   const spread=Math.max(...ROAD_SKY_H)-Math.min(...ROAD_SKY_H);
   ok(spread>200,"три туманности разведены по кругу: размах "+spread+"°");
-  /* спутники сияния стоят дальше, чем их радиусы: иначе тона усредняются */
-  ok(ROAD_BLOOM_SAT>ROAD_BLOOM_R*.6,"спутники разнесены шире своих радиусов");
+  /* плюмажи нижней кромки: соседи разведены по кругу, а не по соседнему оттенку */
+  eq(ROAD_BLOOM_H.length,5,"кромку держат пять плюмажей");
+  eq(ROAD_BLOOM_H[2],0,"середина — сам тон настроения");
+  let near=0;
+  for(let i=1;i<ROAD_BLOOM_H.length;i++){
+    const d=Math.abs(((ROAD_BLOOM_H[i]-ROAD_BLOOM_H[i-1]+540)%360)-180);
+    if(d<50)near++;
+  }
+  eq(near,0,"соседние плюмажи не одного семейства");
 }));
 
 TEST_SUITES.push(()=>suite("дорога: шкала хода взята от настоящих скоростей, звук игры молчит",()=>{
@@ -295,4 +302,20 @@ TEST_SUITES.push(()=>suite("дорога: шкала хода взята от н
   audioHush(false);
   ok(audioOn(),"на выходе возвращается, настройка игрока не тронута");
   ok(G.opts.audio.on===true,"и сама настройка осталась как была");
+}));
+
+TEST_SUITES.push(()=>suite("дорога: три полосы звука разведены по делу",()=>{
+  resetWorld();
+  const w=new Array(28).fill(0);
+  for(let i=0;i<6;i++)w[i]=1;                      /* один бас */
+  let b=roadBands(w);
+  ok(b.bass>.99&&b.mid<.01&&b.tre<.01,"чистый низ слышен только басом: "+b.bass.toFixed(2)+"/"+b.mid.toFixed(2)+"/"+b.tre.toFixed(2));
+  w.fill(0);for(let i=17;i<28;i++)w[i]=1;          /* один верх */
+  b=roadBands(w);
+  ok(b.tre>.99&&b.bass<.01,"чистый верх — только верхом: "+b.tre.toFixed(2));
+  w.fill(.5);
+  b=roadBands(w);
+  ok(Math.abs(b.bass-.5)<.01&&Math.abs(b.mid-.5)<.01&&Math.abs(b.tre-.5)<.01,"ровный спектр — ровные полосы");
+  eq(roadBands(null).bass,0,"без волны полосы нулевые, а не NaN");
+  ok(ROAD_BAND[3]===28,"полосы покрывают всю волну");
 }));

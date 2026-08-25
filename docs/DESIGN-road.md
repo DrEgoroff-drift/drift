@@ -305,9 +305,52 @@ was laid over the buttons in normal blending. On the footage a light ray cut thr
 «ВЫКЛЮЧИТЬ МИКРОФОН» and «НАЗАД» stood in amber on bright green. These are pressed at the
 wheel, without looking.
 
-The light now radiates **from the footer line upward** — a glow over a horizon — and the band
-below it fades to background, painted last, in normal blending. Whatever the music does, the
-letters lie on clean dark. The footer carries its own glass under `body.road`.
+The first answer was to raise the light to the footer line and paint the band below it dark.
+The author looked and said no, rightly: it read as a horizon with a searchlight and a dark road
+running into the distance — a scene, not a glow.
+
+The second answer took its shape from the author's own references («моя волна» covers) and is
+the one that shipped: **the bottom edge itself glows, across the whole width**, plumes rise out
+of it, and above them is black. Legibility is not bought by cutting a hole in the picture — it
+is the footer's own glass (`body.road .scr footer`) that carries the buttons, so the canvas is
+free to be beautiful right down to the last pixel.
+
+Structure, all additive:
+
+1. **The edge** — an even band of mood-hue light along the full width, `0.035…0.10 H` tall.
+2. **Five plumes**, narrow horizontally and tall — round blobs are wider than the gaps between
+   them and average under `lighter` into one pale lump, while narrow ones meet only at their
+   bases and hold their own tone above. Their hues are spread round the circle
+   (`ROAD_BLOOM_H`), the middle one is the mood itself and runs quieter than the rest: the
+   exhaust lives there, and two lights in one place cancel each other — the same lesson as the
+   trail's.
+3. **The seven-ray spectrum fan** on top, short.
+
+Each plume is **three lobes at their own noise offsets**, so the union has no hard rim (every
+lobe's gradient dies on its own) and the silhouette keeps flowing. The shape is driven by
+`fbm2` from `01-core` — the same thing a shader recipe reaches Perlin noise for, except it is
+five numbers a frame here instead of a million pixels.
+
+Height grows with energy only weakly, on purpose. The author's verdict on the standstill frame
+was that it is the best one — and standing still is exactly where there is little light and it
+does not flood the frame.
+
+### The bands, and what each one is allowed to touch
+
+Until now everything hung off one number (`energy`) plus the 28-bin wave. Now the wave also
+yields three bands (`roadBands`, pure and tested) — and they are given separate jobs, because
+one number moving everything is what makes a visualiser look mechanical:
+
+- **bass** — the height of the glow and the *speed of the noise flow*: the low end moves mass;
+- **treble** — a fast fine ripple on the plumes' edges, nothing else;
+- **mid** — overall density.
+
+The bands come from the wave rather than from the spectrum a second time: the wave is already
+normalised against its own peak (the M168i rule — never an absolute audio threshold here) and
+smoothed in time, so the bands inherit both, and the stand drives them together with the wave.
+
+A touch is now a **flash**, not a diagram: local light in the mood hue decaying by `exp(−t/τ)`,
+with a thin white ring on the front. It used to be the ring alone.
 
 ### The trail was two plastic tubes
 
@@ -364,7 +407,15 @@ exactly where a car turns.
 - **The reward became visible without becoming bigger.** 21 → 25 credits over six minutes gave
   no sign of life. Each credit now flies from the hull into the counter, and the combo chip says
   what it buys («×1.7 КОМБО · 3.4 кр/км») instead of an abstract multiplier.
-- The hull is 15% larger — at road scale it read as a toy in an empty sky.
+- The hull went **smaller**, not larger. It was raised 15% first, on the reading that it looked
+  like a toy in an empty sky; the author, seeing it, asked for smaller still. He is right and the
+  first reading was wrong: the emptiness was the problem, not the size, and the sky is no longer
+  empty now that the edge glows. `0.46 → 0.41` of the fitting scale.
+- **The swerve limit was wrong and nobody could have seen it.** `maxOff` used `W·ROAD_SWERVE`
+  where the constant says «доля полуширины экрана» — twice the intended travel. Only the edge
+  guard held it, so at a full dart the hull stood exactly in the screen edge and bank and shake
+  cut it off. It never showed on the road because the swerve never fired; it showed on the stand
+  within a minute of the measure becoming more sensitive. Now `W·0.5·ROAD_SWERVE`.
 - The microphone hint faded after ten seconds (it had hung for the whole six minutes) and comes
   back on a touch; faults never fade. The system name no longer stands on screen twice — the HUD
   line crossfades in as the centre announcement goes out.
@@ -385,3 +436,39 @@ A rounded, outlined box hung off the right edge in every frame of the video. Che
 browser at a phone viewport: no element overflows the viewport, `scrollWidth` equals
 `innerWidth`, and the page cannot scroll (`html,body` are `overflow:hidden; touch-action:none`).
 It is the phone's own edge panel handle. Written down so the next pass does not chase it again.
+
+## The shader question, answered on paper (2026-08-25)
+
+The author brought a recipe for this effect written for WebGL: a fullscreen fragment shader,
+Perlin/simplex noise for the liquid deformation, `mix`/`smoothstep` between two palettes,
+`AnalyserNode` split into bass/mid/treble as uniforms, an `exp(−t)` flash at the tap. It is a
+good recipe and it describes the right *effect*. Four of its five ideas are now in the game —
+they turned out to be independent of the technology:
+
+| the recipe | what it is here |
+|---|---|
+| Perlin/simplex in the fragment shader | `fbm2` from `01-core`, five samples a frame instead of a million pixels |
+| `u_time` keeps it alive on pause | `RD.flow`, and the wave breathes on its own with no microphone |
+| two palettes mixed with `mix`/`smoothstep` | mood hue × the player's own hull colour, blended on the hue **circle** |
+| `u_bass` / `u_mid` / `u_treble` | `roadBands` — bass moves height and flow speed, treble ripples the edges, mid the density |
+| `exp(−t)` flash at `u_mouse` | the touch flash in `27la-road-sky` |
+
+The one thing that does **not** transfer is the renderer, and that is the actual decision. What
+a shader would buy: per-pixel noise, so the light could be genuinely turbulent rather than a
+composition of soft lobes; and it would be cheaper per frame at high blur radii.
+
+What it would cost, honestly:
+
+- the project's first rule is canvas 2D and vanilla JS (`docs/` art direction, `CLAUDE.md`); this
+  would be the only WebGL surface in the game, so the language of the frame would split in two;
+- a second context on the same page, plus context-loss handling, plus a 2D fallback for phones
+  that refuse WebGL — the fallback then has to be kept looking like the shader, forever;
+- this mode runs for an hour in a cradle and battery is its stated price. A fullscreen fragment
+  shader at 60 Hz on a phone GPU is not obviously cheaper than the current composition, and it is
+  much easier to make accidentally expensive.
+
+Recommendation: **stay in 2D.** The frame the author signed off on was reached without a shader,
+and the remaining gap is turbulence, not colour — which can be closed by warping the lobes with
+more noise octaves if it ever matters. If the author wants the shader anyway, the honest scope is
+"one WebGL layer behind the road canvas, road mode only, with a 2D fallback kept alive" — that is
+a milestone of its own, not a tweak, and it is his call to make.

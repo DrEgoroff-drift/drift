@@ -397,7 +397,7 @@ function frame(now){
      не виден, а батарею ест вдвое — а именно батарея и есть заявленная цена
      режима. Плюс это единственный путь, которым мировой холст мог просочиться
      поверх заставки (стенд M168k). Цепочка кадров не рвётся: выйдут — поедет. */
-  if(RD){requestAnimationFrame(frame);return;}
+  if(RD&&document.body.classList.contains("road")){requestAnimationFrame(frame);return;}
   /* канва нулевого размера (страница поднялась скрытой) — чинится здесь же:
      иначе кадр падает на drawImage и игра стоит до первого resize */
   if(W<2||H<2){resize();if(W<2||H<2){requestAnimationFrame(frame);return;}}

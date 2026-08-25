@@ -20,10 +20,18 @@ blinking. The full pass is in [docs/DESIGN-road.md](docs/DESIGN-road.md).
   The three nebulae, which sat 42° apart and added up to one wash, are spread round it; the
   bloom's satellites now stand farther apart than they are wide, which is what it takes for three
   tones to read as three.
-- **The buttons are readable again.** The bloom flooded the whole footer — a ray cut through
-  «ВЫКЛЮЧИТЬ МИКРОФОН», «НАЗАД» stood amber on bright green. The light now rises from the footer
-  line like a glow over a horizon, and the band below it is painted dark last. These buttons get
-  pressed at the wheel, without looking.
+- **The bottom edge glows, across the whole width.** The bloom used to flood the footer — a ray
+  cut through «ВЫКЛЮЧИТЬ МИКРОФОН», «НАЗАД» stood amber on bright green — and the first fix
+  (raise the light, black out the band under it) read as a horizon with a searchlight. Now the
+  edge itself glows and five narrow plumes rise out of it, each holding its own tone, with black
+  above; the buttons are carried by the footer's own glass, not by a hole cut in the picture.
+  Height grows with energy only weakly — the frame is not supposed to be flooded.
+- **The glow is liquid, and the music moves it in three places.** Plume shapes are driven by the
+  engine's own `fbm2` noise (what a shader recipe would reach Perlin for, at five numbers a frame
+  instead of a million pixels), and the wave now also yields bass/mid/treble: bass moves the
+  height and the speed of the flow, treble puts a fine ripple on the edges, mid the density. One
+  number moving everything is what makes a visualiser look mechanical. A touch is a flash that
+  decays, not a drawn ring.
 - **The exhaust stopped being two plastic tubes.** Additive alpha peaked at 0.8 and clipped every
   channel to white, the ribbon's colour was taken from a near-white core along its whole visible
   length, and the two plumes ran parallel to the bottom of the screen. Now: a third of the alpha,
@@ -46,8 +54,10 @@ blinking. The full pass is in [docs/DESIGN-road.md](docs/DESIGN-road.md).
   old ceiling shut it exactly where a car turns.
 - **The reward is visible without being larger.** Each credit flies from the hull into the counter,
   and the combo says what it buys («×1.7 КОМБО · 3.4 кр/км») rather than an abstract multiplier.
-- The hull is 15% bigger, the microphone hint stops hanging for the whole trip, and the system name
-  no longer stands on screen twice.
+- The hull is smaller, the microphone hint stops hanging for the whole trip, and the system name
+  no longer stands on screen twice. The swerve limit was twice what its own constant says, so at a
+  full dart the hull stood in the screen edge and bank cut it off — never seen on the road, because
+  the swerve never fired.
 - **A stand for the road**: `docs/mkroad.ps1` → `docs/road.html`, with synthetic music and speed, so
   the frame that gets edited every pass can be looked at without half an hour of traffic.
 

@@ -130,11 +130,21 @@ function roadSky(c,W,H,t,dt,spd,tier,fast,hue,en){
     }else c.fillRect(s.x,s.y,1.4,4+s.v);
   }
   c.globalAlpha=1;
-  /* белые импульсы касания — как у «Волны» */
+  /* касание — вспышка, как у «Волны»: местное свечение в тон настроения,
+     затухающее по экспоненте, и тонкое кольцо по фронту. Прежде было одно
+     кольцо: чертёж, а не свет (M168k) */
+  c.save();c.globalCompositeOperation="lighter";
   for(let i=RD.pulses.length-1;i>=0;i--){
     const p=RD.pulses[i];p.r+=W*.012*60*dt;p.a*=Math.exp(-dt/.27);
     if(p.a<.02){RD.pulses.splice(i,1);continue;}
-    c.strokeStyle="rgba(255,255,255,"+p.a.toFixed(3)+")";c.lineWidth=2;
+    const R=p.r+W*.10;
+    const fg2=c.createRadialGradient(p.x,p.y,0,p.x,p.y,R);
+    fg2.addColorStop(0,"hsla("+hue+",90%,72%,"+(p.a*.85).toFixed(3)+")");
+    fg2.addColorStop(.45,"hsla("+hue+",92%,58%,"+(p.a*.30).toFixed(3)+")");
+    fg2.addColorStop(1,"hsla("+hue+",90%,52%,0)");
+    c.fillStyle=fg2;c.fillRect(p.x-R,p.y-R,R*2,R*2);
+    c.strokeStyle="rgba(255,255,255,"+(p.a*.45).toFixed(3)+")";c.lineWidth=1.5;
     c.beginPath();c.arc(p.x,p.y,p.r,0,TAU);c.stroke();
   }
+  c.restore();
 }
