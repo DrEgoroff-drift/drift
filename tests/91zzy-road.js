@@ -21,10 +21,10 @@ TEST_SUITES.push(()=>suite("дорога: километры — в кредит
   /* заработок: 5 км на ×1 — 10 кр; на ×3 — 30 кр */
   const c0=G.credits;
   roadEarnKm(5,0);
-  eq(G.credits-c0,10,"5 км по 2 кр — 10 кр");
-  eq(roadAll().cr,10,"счётчик дня совпадает");
+  eq(G.credits-c0,5*ROAD_CR_KM,"5 км по ставке — "+(5*ROAD_CR_KM)+" кр");
+  eq(roadAll().cr,5*ROAD_CR_KM,"счётчик дня совпадает");
   roadEarnKm(5,ROAD_COMBO_T);
-  eq(G.credits-c0,40,"те же 5 км на ×3 — 30 кр сверху");
+  eq(G.credits-c0,5*ROAD_CR_KM*4,"те же 5 км на ×3 — втрое сверху");
   /* потолок дня мягкий, но есть */
   roadEarnKm(10000,0);
   eq(roadAll().cr,ROAD_CR_CAP,"дневной потолок: "+ROAD_CR_CAP);
@@ -32,7 +32,7 @@ TEST_SUITES.push(()=>suite("дорога: километры — в кредит
   eq(G.credits,c1,"выше потолка не капает");
   /* назавтра заново: день календарный, поэтому двигаем отметку дня, а не G.t */
   roadAll().day=-1;roadEarnKm(1,0);
-  eq(roadAll().cr,2,"новый день — новый счёт");
+  eq(roadAll().cr,ROAD_CR_KM,"новый день — новый счёт");
   /* сохранение */
   const s=snapshot();G.road=null;applySave(JSON.parse(JSON.stringify(s)));
   ok(roadAll().day>=0,"дорога пережила сохранение");
@@ -318,4 +318,46 @@ TEST_SUITES.push(()=>suite("дорога: три полосы звука раз�
   ok(Math.abs(b.bass-.5)<.01&&Math.abs(b.mid-.5)<.01&&Math.abs(b.tre-.5)<.01,"ровный спектр — ровные полосы");
   eq(roadBands(null).bass,0,"без волны полосы нулевые, а не NaN");
   ok(ROAD_BAND[3]===28,"полосы покрывают всю волну");
+}));
+
+TEST_SUITES.push(()=>suite("дорога: платят за то, что делаешь — повороты и обратный курс",()=>{
+  resetWorld();
+  G.road=null;G.credits=600;
+  RD={crFrac:0,moveT:0,back:0,turn:0,turnPk:0};
+  /* ставка поднята: пять километров до дома — уже не десятка */
+  const c0=G.credits;
+  roadEarnKm(5,0);
+  eq(G.credits-c0,30,"5 км по 6 кр — 30 кр, а не 10");
+  /* обратный курс — полуторный */
+  RD.back=1;
+  const c1=G.credits;
+  roadEarnKm(5,0);
+  eq(G.credits-c1,45,"те же 5 км домой — 45 кр");
+  RD.back=0;
+  /* премия за поворот: по пику, один раз за дугу */
+  eq(roadTurnPay(1,1),ROAD_TURN_CR,"полный снос на комбо ×1 — "+ROAD_TURN_CR+" кр");
+  eq(roadTurnPay(.5,2),Math.round(ROAD_TURN_CR),"половинный на ×2 — столько же");
+  eq(roadTurnPay(0,3),0,"нет поворота — нет премии");
+  const c2=G.credits;
+  RD.turn=.8;eq(roadTurnTick(50),0,"пока крутит — не платим");
+  RD.turn=.9;eq(roadTurnTick(50),0,"и на пике тоже");
+  RD.turn=.05;
+  const paid=roadTurnTick(50);
+  ok(paid>0,"вышли из поворота — заплатили: "+paid);
+  eq(G.credits-c2,paid,"и деньги дошли до кошелька");
+  eq(roadTurnTick(50),0,"второй раз за ту же дугу не платят");
+  /* во дворе не платят: повороты есть, езды нет */
+  RD.turn=.9;roadTurnTick(3);RD.turn=.05;
+  eq(roadTurnTick(3),0,"ниже ворот по скорости поворот не оплачивается");
+  /* мелкое подруливание ниже порога — не поворот */
+  RD.turn=ROAD_TURN_PAY*.9;roadTurnTick(50);RD.turn=0;
+  eq(roadTurnTick(50),0,"подруливание не считается поворотом");
+  /* обратный курс: отъехали и вернулись */
+  ok(!roadHomeward(.3,.05),"близко от дома курса ещё нет");
+  ok(!roadHomeward(2,1.9),"отъехали далеко, но ещё не повернули");
+  ok(roadHomeward(2,1.5),"пошли обратно — курс домой");
+  const A={latitude:55.0,longitude:37.0},B={latitude:55.0,longitude:37.02};
+  ok(Math.abs(roadHav(A,B)-1.28)<.05,"гаверсинус считает километры: "+roadHav(A,B).toFixed(2));
+  eq(roadHav(A,A),0,"до себя — ноль");
+  RD=null;G.road=null;
 }));

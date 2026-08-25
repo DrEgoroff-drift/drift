@@ -31,7 +31,37 @@
 const ROAD_VMIN=3,ROAD_VMAX=1000;
 const ROAD_TIERS=[{v:200,ru:"ДОРОГА"},{v:400,ru:"ЭКСПРЕСС"},{v:1000,ru:"ГИПЕРДРАЙВ"}];
 const ROAD_C=299792;                      /* км/с: на гипердрайве счёт идёт в долях света */
-const ROAD_CR_KM=2,ROAD_CR_CAP=1500,ROAD_COMBO_MAX=3,ROAD_COMBO_T=1200,ROAD_STOP_T=120;
+/* ── деньги дороги (переработано M168k по словам автора) ──
+   «Еду 5 км до дома, как-то скучно за 20 кредитов» — и правда скучно: два
+   кредита за километр на комбо ×1 давали десятку за дорогу домой. Ставка
+   поднята втрое, но главное не в ставке: платить стало за ТО, ЧТО ДЕЛАЕШЬ.
+
+   1. КИЛОМЕТРЫ — ровный доход, шесть за километр на комбо.
+   2. ПОВОРОТ — разовая премия за каждый настоящий поворот, по его пику.
+      Считается один раз, на выходе из дуги: пока крутит — копится пик, вышли
+      из поворота — заплатили. Мелкое подруливание ниже порога не в счёт, во
+      дворе (ниже ворот по скорости) тоже.
+   3. ОБРАТНЫЙ КУРС — полуторный множитель, когда поездка ПОВЕРНУЛА ДОМОЙ:
+      расстояние от точки старта росло-росло и пошло вниз. Дорога с работы
+      оплачивается лучше дороги на работу, и это ровно тот случай, ради
+      которого режим и включают.
+   Потолок дня поднят соразмерно; скоростной здравый смысл остаётся
+   единственным сторожем, как автор и решил на втором проходе. */
+const ROAD_CR_KM=6,ROAD_CR_CAP=3000,ROAD_COMBO_MAX=3,ROAD_COMBO_T=1200,ROAD_STOP_T=120;
+const ROAD_TURN_CR=12,ROAD_TURN_PAY=.34;  /* премия за полный поворот и порог, доля полного сноса */
+const ROAD_BACK_FAR=.6,ROAD_BACK_DROP=.25,ROAD_BACK_K=1.5;  /* км: докуда отъехать и насколько вернуться */
+/* премия за поворот: по пику сноса, с тем же комбо, что и километры */
+function roadTurnPay(pk,combo){return Math.round(ROAD_TURN_CR*clamp(pk||0,0,1)*(combo||1));}
+/* расстояние между двумя точками, км (гаверсинус) */
+function roadHav(a,b){
+  if(!a||!b)return 0;
+  const R=6371,dLa=(b.latitude-a.latitude)*Math.PI/180,dLo=(b.longitude-a.longitude)*Math.PI/180;
+  const la1=a.latitude*Math.PI/180,la2=b.latitude*Math.PI/180;
+  const h=Math.sin(dLa/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLo/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+/* повернули домой? Отъехали достаточно далеко И заметно приблизились обратно */
+function roadHomeward(far,dst){return (far||0)>=ROAD_BACK_FAR&&(dst||0)<=(far||0)-ROAD_BACK_DROP;}
 /* ── меры движения (M168g) ──
    Все поперечные величины считаются в м/с², в одной шкале: поворот, снятый
    гироскопом, переводится в поперечное ускорение по a=v·ω, поэтому у двух
@@ -134,7 +164,7 @@ function roadEarnKm(km,moveT){
   const R=roadDayReset();
   R.km+=km;
   if(R.cr>=ROAD_CR_CAP)return 0;
-  const due=km*ROAD_CR_KM*roadCombo(moveT);
+  const due=km*ROAD_CR_KM*roadCombo(moveT)*(RD&&RD.back?ROAD_BACK_K:1);
   RD&&(RD.crFrac=(RD.crFrac||0)+due);
   let n=RD?Math.floor(RD.crFrac):Math.floor(due);
   if(RD)RD.crFrac-=n;
@@ -390,7 +420,33 @@ function roadOnPos(p){
       RD.kmh=roadSpeedOk(kmh)?kmh:0;
     }
   }
+  /* обратный курс: помним точку старта и самый дальний отход от неё */
+  if(!RD.pos0)RD.pos0={latitude:c.latitude,longitude:c.longitude};
+  else{
+    const dst=roadHav(RD.pos0,c);
+    if(dst>(RD.far||0))RD.far=dst;
+    if(!RD.back&&roadHomeward(RD.far,dst))RD.back=1;
+  }
   RD.lastPos=c;RD.lastT=t;
+}
+/* ── премия за поворот (M168k) ──
+   Платим ОДИН раз за дугу: пока крутит — копим пик, вышли из поворота — платим
+   по нему. Иначе один длинный съезд оплачивался бы шестьдесят раз в секунду.
+   Ниже ворот по скорости не платим вовсе: во дворе и с телефоном в руках
+   «повороты» есть, а езды нет. */
+function roadTurnTick(kmh){
+  if(!RD)return 0;
+  const at=Math.abs(RD.turn||0);
+  if(at>ROAD_TURN_PAY){RD.turnPk=Math.max(RD.turnPk||0,at);return 0;}
+  const pk=RD.turnPk||0;
+  RD.turnPk=0;
+  if(pk<=ROAD_TURN_PAY||(kmh||0)<ROAD_MOVE_GATE)return 0;
+  const R=roadDayReset();
+  if(R.cr>=ROAD_CR_CAP)return 0;
+  let n=roadTurnPay(pk,roadCombo(RD.moveT)*(RD.back?ROAD_BACK_K:1));
+  n=Math.min(n,ROAD_CR_CAP-R.cr);
+  if(n>0){R.cr+=n;earn(n,"road");RD.flash="ПОВОРОТ +"+n;RD.flashT=1.4;}
+  return n;
 }
 /* ── звук → настроение ──
    Как у «Волны»: анимация идёт в такт и меняет цвет по настроению трека.

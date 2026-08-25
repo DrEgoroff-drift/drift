@@ -568,3 +568,39 @@ Then the honest number, from the project's own probe (`?g11`, real rAF, GPU on):
 with every other mode. The flushed figures had been over-stating badly — `getImageData` serialises
 the pipeline, so it measures a stall, not a frame. The road is now a permanent step in that probe:
 it has the most expensive frame in the game and it lives on a phone.
+
+## Eleventh pass (M168k, 0.158.0) — the money, and paying for what you actually do
+
+The author: «хочется больше кредитов, я еду 5 км до дома как-то скучно за 20 кредитов, мож комбо
+за повороты там, за движение назад что-то такое придумай прикольное».
+
+He is right, and the boredom was not only in the size of the number. Two credits a kilometre on a
+×1 combo pays ten for a drive home, and the only thing that changed it was **elapsed time** —
+sitting on a motorway earned the same multiplier as threading through town. Nothing you did at the
+wheel mattered.
+
+Three changes, in ascending order of how much they matter:
+
+1. **The rate is three times what it was** — six credits a kilometre, on the combo.
+2. **A corner pays.** Every real corner earns a one-off bonus scaled by its peak, paid **once**,
+   on the way out of the arc: while the wheel is turning the peak accumulates, and when the swerve
+   falls back below the threshold the bonus lands. Small corrections below the threshold are not
+   corners, and below the speed gate nothing pays at all — in a car park there are plenty of
+   "corners" and no driving. It lands as a flying credit and a short «ПОВОРОТ +N» by the hull:
+   money should be an *event*, which is exactly what the slow counter never was.
+3. **The way home pays better.** When the trip's distance from its starting point has grown and
+   then falls back by a quarter kilometre, the mode decides you have **turned for home** and the
+   rate goes ×1.5 for the rest of the trip. The drive back from work is worth more than the drive
+   to it — and the drive back is precisely the one this mode gets switched on for.
+
+What this is worth in practice: five kilometres home, seven or eight minutes, with a few corners
+comes to roughly **130 credits** against the old 20.
+
+**The cap, honestly.** It went 1500 → 3000. It does not bind on a commute (a drive home is ~130,
+a two-way day ~250) — it binds on a long road trip, which is the case it exists for. The rule from
+the very first pass stands: this is a pleasantry, and the economy in
+[`docs/DESIGN-economy.md`](DESIGN-economy.md) must not be undermined by a car ride. Speed sanity
+(3–1000 km/h, tiered) remains the only other guard, as the author decided on the second pass.
+Worth knowing while driving: at the cap, a day of long-distance driving is about half the price of
+the Игла. If that turns out to be too much once he has driven with it, the lever to pull is the
+cap, not the rate — the rate is what he can feel.

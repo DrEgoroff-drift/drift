@@ -7,6 +7,23 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.158.0 — the road pays for what you actually do (M168k)
+
+«Еду 5 км до дома, как-то скучно за 20 кредитов» — and the boredom was not only in the size of the
+number. The multiplier grew with *elapsed time*, so sitting on a motorway earned exactly what
+threading through town did: nothing you did at the wheel mattered.
+
+- **Six credits a kilometre** instead of two.
+- **A corner pays.** Every real corner earns a one-off bonus by its peak, paid once on the way out
+  of the arc — with a flying credit and a short «ПОВОРОТ +N» by the hull. Small corrections are not
+  corners, and below the speed gate nothing pays: a car park has plenty of "corners" and no driving.
+- **The way home pays better.** Once the trip's distance from its start has grown and then falls
+  back, the mode decides you have turned for home and the rate goes ×1.5 for the rest of the trip.
+- In practice: five kilometres home with a few corners is now about **130 credits** against 20.
+  The daily cap went 1500 → 3000; it does not bind on a commute, it binds on a long road trip,
+  which is what it is for.
+
+---
 ## 0.157.0 — the road: the exhaust, and every hull checked (M168k)
 
 Three corrections from the author on the field-bloom frame. Full pass in

@@ -12,6 +12,7 @@
 #   ?kmh=35      скорость, км/ч            ?turn=0.7   снос вправо, -1..1
 #   ?en=0.62     энергия музыки, 0..1      ?br=0.5     яркость музыки, 0..1
 #   ?diag=1      окно правды по датчикам   ?ship=vyuk  чей корпус в кадре
+#   ?back=1      обратный курс             ?flash=1    премия за поворот в кадре
 $src = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot "..\drift.html")
 $cut = $src.LastIndexOf("</body>")
 $head = $src.Substring(0, $cut)
@@ -41,6 +42,8 @@ setTimeout(function(){
     RD.turnT=num("turn",0);
     RD.latG=RD.turnT*.24;RD.yawS=RD.turnT*6;RD.latA=RD.latG;
     RD.moveT=420;RD.vmax=Math.max(RD.vmax||0,RD.kmh);
+    RD.back=num("back",0);
+    if(num("flash",0)&&!RD.flashT){RD.flash="ПОВОРОТ +18";RD.flashT=1.2;}
     RD.sys={name:"Тауара",cx:1010,cy:-1999};RD.mates=2;
   };
   /* РАЗОГРЕВ. Headless-Chrome под --screenshot успевает отдать десяток кадров,

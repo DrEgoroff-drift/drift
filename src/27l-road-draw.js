@@ -21,6 +21,7 @@ function roadOpen(){
       lastPos:null,lastT:0,lastFrame:0,t0:Date.now(),asked:0,raf:0,moveT:0,stopT:0,crFrac:0,
       energy:.2,bright:.5,avg:.1,beat:0,beatT:0,wave:new Array(28).fill(.2),
       sparks:[],pulses:[],crShow:0,hintT:0,coins:[],crSeen:-1,
+      pos0:null,far:0,back:0,turnPk:0,flash:"",flashT:0,
       diag:/[?&]road=diag\b/.test(location.search)};
   roadDayReset();
   /* игровой звук молчит, пока открыт экран: он прорывался в музыку машины */
@@ -120,6 +121,8 @@ function drawRoad(ts){
   RD.turn=(RD.turn||0)+((RD.turnT||0)-(RD.turn||0))*ease(tauT);
   RD.bankT=clamp(RD.turn*.7,-1,1);
   RD.bank+=(RD.bankT-RD.bank)*ease(.27);
+  roadTurnTick(spd);                      /* поворот пройден — платим по его пику */
+  RD.flashT=Math.max(0,(RD.flashT||0)-dt);
   RD.acc+=(RD.accT-RD.acc)*ease(.2);RD.accT*=Math.exp(-dt/3.3);
   /* тряску ведёт roadOnShake; здесь она сама гаснет, если датчик замолчал */
   RD.shake=(RD.shake||0)*Math.exp(-dt/2.5);
@@ -475,7 +478,8 @@ function drawRoad(ts){
          в километре, иначе комбо читается украшением (M168k). Хвост срезается
          курсором, как и остальные строки: на узком экране места нет */
       const cx2=px2+cw+Math.round(W*.05);
-      let cmb="×"+combo.toFixed(1)+" КОМБО · "+(ROAD_CR_KM*combo).toFixed(1).replace(".0","")+" кр/км";
+      const rate=ROAD_CR_KM*combo*(RD.back?ROAD_BACK_K:1);
+      let cmb="×"+combo.toFixed(1)+" КОМБО · "+rate.toFixed(1).replace(".0","")+" кр/км";
       if(c.measureText(cmb).width>W-cx2-px2)cmb=cmb.replace(/ · [^·]*$/,"");
       c.fillText(cmb,cx2,yy);
     }
@@ -497,6 +501,14 @@ function drawRoad(ts){
     RD.an?"микрофон слушает — цвет идёт по треку":null,
     RD.asked&&!RD.an&&!RD.mic?"микрофон: цвет по треку, но Android Auto примет за звонок":null
   ].filter(Boolean);
+  /* обратный курс — не подсказка, а состояние: висит, пока едем домой */
+  if(RD.back){
+    yy+=Math.round(H*.022);
+    c.save();
+    c.fillStyle="rgba(242,178,92,.85)";
+    c.fillText("ОБРАТНЫЙ КУРС · ×"+ROAD_BACK_K+" за километр",px2,yy);
+    c.restore();
+  }
   const noteA=clamp((10-RD.hintT)/2,0,1);
   const line=s=>{
     yy+=Math.round(H*.022);
@@ -529,6 +541,15 @@ function drawRoad(ts){
     c.font=Math.round(H*.016)+"px ui-monospace,monospace";
     c.fillText("сектор "+RD.sys.cx+":"+RD.sys.cy,W*.5,H*.3+Math.round(H*.026));
     c.textAlign="left";
+  }
+  /* премия за поворот — коротко, у корпуса: деньги должны быть СОБЫТИЕМ */
+  if(RD.flashT>0&&RD.flash){
+    const fa=clamp(RD.flashT/.5,0,1);
+    c.save();c.textAlign="center";
+    c.font=Math.round(H*.022)+"px ui-monospace,monospace";
+    c.fillStyle="rgba(242,178,92,"+(fa*.95).toFixed(2)+")";
+    c.fillText(RD.flash,cx,cy-h.len*sc*.62-(1-fa)*H*.03);
+    c.restore();c.textAlign="left";
   }
   /* ── монеты: кредит летит от корпуса в счётчик ── */
   const tgt=RD.crXY||[W*.1,H*.2];

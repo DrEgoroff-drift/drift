@@ -549,12 +549,13 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   above), lanes merged into one filled body, and proportions equalised across every hull — the
   road is now a step in the `?g11` probe and reads 60 fps.
 
-- **Road economy — the author's next ask (2026-08-25, "запиши потом")**: «хочется больше кредитов,
-  я еду 5 км до дома как-то скучно за 20 кредитов, мож комбо за повороты там, за движение назад
-  что-то такое придумай прикольное». So: raise the rate, and make the combo *earned* by driving
-  rather than by mere elapsed time — corners, reversing, and whatever else the sensors already
-  know honestly. The daily cap and the speed sanity stay as the only guards
-  ([`docs/DESIGN-road.md`](docs/DESIGN-road.md), second pass).
+- **Road economy — done (0.158.0)**, from «хочется больше кредитов, я еду 5 км до дома как-то
+  скучно за 20 кредитов, мож комбо за повороты там, за движение назад». Six credits a kilometre
+  instead of two, a one-off bonus per real corner (paid by its peak, once, on the way out of the
+  arc), and ×1.5 once the trip turns back toward where it started. Five kilometres home is ~130
+  credits now against 20; the cap went 1500 → 3000 and binds only on a long trip. **Open for the
+  author to judge on the road:** whether the cap is now too generous — the lever is the cap, not
+  the rate.
 - **Release look** — after M161: the table as paper, removal of the overlay HUD.
 
 # QUEUE: after the graphics campaign
