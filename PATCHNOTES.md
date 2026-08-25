@@ -7,11 +7,15 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.155.0 — the road: the colour was arithmetic (M168k)
+## 0.155.1 — the road: the colour was arithmetic (M168k)
 
 Six minutes of a real city drive on film, with the microphone on, and three corrections from the
 author: a rich palette, the game's own sound off, and stars that read as flight rather than
 blinking. The full pass is in [docs/DESIGN-road.md](docs/DESIGN-road.md).
+
+(0.155.0 was this same pass with a different bloom — light raised to the footer line and a dark
+band beneath it. The author saw it and said no: it read as a horizon with a searchlight. What is
+described below is what shipped.)
 
 - **The sky was green whatever the music — and it was arithmetic, not taste.** Hue was mixed like
   an ordinary number, so the walk from cyan to amber went straight through green; the intended
