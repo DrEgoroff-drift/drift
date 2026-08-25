@@ -305,6 +305,23 @@ function tap(sxp,syp){
     return;
   }
   if(G.mode!=="system")return;
+  /* ── сперва фишки компаса ──
+     Они нарисованы на канве и лежат поверх мира, поэтому и в проверке идут
+     первыми: тычок в плашку «ЗВЕЗДА · 3105» — это выбор звезды, а не точки
+     пустоты за ней. Тестировщик 26.08.2026: «Метка выглядит как кнопка
+     (рамка, стрелка), но не нажимается» — и это был единственный видимый
+     объект на экране в первые минуты. */
+  if(typeof SYS_CHIPS!=="undefined"){
+    for(const ch of SYS_CHIPS){
+      if(sxp>=ch.x&&sxp<=ch.x+ch.w&&syp>=ch.y&&syp<=ch.y+ch.h){
+        G.ap=Object.assign({},ch.t);G.ap.phase="fly";
+        const nm=ch.t.kind==="planet"?ch.t.p.name
+              :(ch.t.kind==="station"?(G.sys.station?G.sys.station.name:"станция"):"звезда");
+        say("Автопилот → "+nm,90);
+        return;
+      }
+    }
+  }
   /* в режиме наблюдения камера стоит на наёмнике — тычок должен считаться от
      неё же, иначе автопилот получал бы цель со смещением на пол-экрана */
   const Z=G.zoom,sh=G.ship,wA=G.watch?allyOf(G.watch):null;
@@ -313,19 +330,30 @@ function tap(sxp,syp){
   const cx0=(G.viewCX!==undefined?G.viewCX:(wA?wA.x:sh.x));
   const cy0=(G.viewCY!==undefined?G.viewCY:(wA?wA.y:sh.y));
   const wx=cx0+(sxp-W/2)/Z, wy=cy0+(syp-H/2)/Z;
+  /* ── попадание меряется в пикселях экрана, а не в единицах мира ──
+     Было `d < p.radius + 40/Z`: на отдалении сорок единиц мира превращаются в
+     считаные пиксели, и по планете, которая на экране размером с горошину,
+     попасть нельзя. Тестировщик промахнулся дважды подряд и сделал вывод
+     «управление не работает». Порог тот же, что у всех кнопок игры, — 44 px
+     под палец: цель считается задетой, если тычок ближе 44 px к её краю. */
+  const PICK=44;
   let best=null,bd=1e9;
+  const near=(ox,oy,r)=>{
+    const d=Math.hypot(wx-ox,wy-oy);
+    return (d-r)*Z<PICK ? d : -1;
+  };
   for(const p of G.sys.planets){
-    const d=Math.hypot(wx-p.x,wy-p.y);
-    if(d<p.radius+40/Z&&d<bd){bd=d;best={kind:"planet",p};}
+    const d=near(p.x,p.y,p.radius);
+    if(d>=0&&d<bd){bd=d;best={kind:"planet",p};}
     for(const m of p.moons){
-      const dm=Math.hypot(wx-m.x,wy-m.y);
-      if(dm<m.radius+26/Z&&dm<bd){bd=dm;best={kind:"planet",p:m};}
+      const dm=near(m.x,m.y,m.radius);
+      if(dm>=0&&dm<bd){bd=dm;best={kind:"planet",p:m};}
     }
   }
   const S=G.sys.station;
   if(S){
-    const d=Math.hypot(wx-S.x,wy-S.y);
-    if(d<50/Z+30&&d<bd){bd=d;best={kind:"station"};}
+    const d=near(S.x,S.y,50);
+    if(d>=0&&d<bd){bd=d;best={kind:"station"};}
   }
   const B=G.sys.belt;
   if(B&&!best){
@@ -339,7 +367,12 @@ function tap(sxp,syp){
     G.ap=best;G.ap.phase="fly";
     const nm=best.kind==="planet"?best.p.name:(best.kind==="station"?S.name:B.name);
     say("Автопилот → "+nm,90);
-  }else{G.ap=null;}
+  }
+  /* ── промах НЕ отменяет цель ──
+     Здесь стояло `else{G.ap=null}`: один мимо-тычок по движущейся планете — и
+     игрок терял то, к чему уже летел. Наказание за неточность в игре, где
+     цель уезжает сама. Отменить автопилот по-прежнему можно — рукой на тяге
+     или тормозе (16-flight), то есть намеренно, а не случайно. */
 }
 
 /* версия проставляется из кода, а не руками в разметке — иначе заставка и

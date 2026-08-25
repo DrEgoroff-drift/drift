@@ -84,6 +84,14 @@ setTimeout(function(){
     /* станция: стыкуемся с торговым узлом стартовой системы */
     var st=G.sys.station;
     if(st){G.ship.x=st.x+40;G.ship.y=st.y;openStation();}
+  }else if(scene==="hq"||scene==="hqfull"){
+    /* Штаб. По умолчанию — ПУСТОЙ, потому что именно пустым его видит новый
+       игрок и именно там плейтестер решил, что «что-то сломал». `hqfull`
+       показывает его же с людьми, чтобы было с чем сравнивать. */
+    if(scene==="hqfull"&&typeof mgrHire==="function"){
+      try{ mgrHire(mgrRoll(1,"crew")); mgrHire(mgrRoll(2,"trade")); }catch(e){}
+    }else G.mgrs=[];
+    document.getElementById("hqbtn").click();
   }else if(scene==="raid"){
     /* абордаж: настоящая база из галактики, тем же поиском, что в тестах */
     var PB=null;

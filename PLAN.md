@@ -833,3 +833,70 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   release check.
 
 **Standing rule:** the Ring (M154) is never explained. An answer to it would kill it.
+
+---
+
+# QUEUE: after the outside playtest, 2026-08-26
+
+An outside playtest arrived (`PLAYTEST-REPORT.md`, `PLAYTEST-01.md`; played on 0.160.0). Its
+value is not the list — it is that someone who does not know the game looked at it. What follows
+is what survived checking, what did not, and what is still open.
+
+## Checked and did not reproduce — do not "fix" these again
+
+- **«ПРОДОЛЖИТЬ ПОЛЁТ» with no save.** The button is `display:none` in the markup and shown only
+  `if(hasSave())`; measured on a cleared browser, it is absent. Restoring also announces itself.
+  The tester had a save from their own first fifteen minutes.
+- **The instruments vanish in calm flight.** Measured after nine simulated seconds of nothing
+  changing: opacity 0.86, fully readable. True before 0.160.0, not since.
+- **The world stops living in a background tab.** Crew run off `Date.now()` with a 24-hour cap
+  (`CREW_OFFLINE_CAP`). The tab catching up on return is the design working.
+
+## Closed in 0.163.0
+
+The first minute (chips are buttons, a miss does not cancel the autopilot, hit-testing in screen
+pixels, the nearest planet in the compass); the empty HQ draws its own empty control room; the
+orphaned `#parrotwin`; the receiver docked into the panel header; the mine's doubled hint; the
+action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
+
+## Open, in the order I would take them
+
+1. **The walker is 3 % of the frame.** Measured: 25 px on an 840 px frame, and the tester spent
+   twenty seconds unable to find himself on the surface. The *ratio* to the lander is right; what
+   is wrong is that the surface camera does not scale with the window, so a bigger desktop window
+   just shows more world and shrinks everyone in it. The fix is a camera scale tied to frame
+   height — and it touches the world-x chunk cache, which is baked 1:1, so it is a milestone with
+   its own passes, not a patch.
+2. **A full-screen panel with a screenful of nothing.** The HQ is fixed by drawing its room, but
+   the class remains: `.scr` is `inset:22px …`, so every screen is full height whatever it holds.
+   Either panels shrink to their content, or every short screen needs something true to show.
+   Decide once, apply everywhere.
+3. **The mine is still the weakest screen** (M55 #1, G3 — known since long before this playtest,
+   now confirmed by an outsider): pale, monotone, rock and dug space indistinguishable. It comes
+   right after the surface, which is the game's best screen, and the contrast does the damage.
+4. **Instruments nobody can read.** The five-needle region pod carries no labels and its number
+   («0.000») has no unit; the belt cockpit's dial captions are too small to read at all. Either
+   they say what they are, or they are not instruments.
+5. **«Зачем лететь» lives inside the station.** The board (needs, tips, prices) is the game's
+   motor and it only runs after landing, docking and switching a tab. **The fix must stay in the
+   game's language:** the tester's own strongest praise was «ничто из этого не обращено к
+   игроку — и поэтому работает». Quest markers and objective banners would buy the metric and
+   sell the game. The receiver already broadcasts prices and rumours — make what it says
+   actionable, and let the navigator act on what was overheard. This is also where the author's
+   own idea belongs (below).
+
+## The author's receivers, 2026-08-26 — needs one confirmation before building
+
+Asked where the receiver should sit when a screen is open, the author answered with something
+larger: «давай отдельную панель приемники и они дают доход или бонусы или нихуя не дают, просто
+ты знаешь где они и можешь как в навигаторе проложить маршрут».
+
+**My reading, to be confirmed:** receivers become *places*. Relays, beacons, far stations and
+wintering posts that you have heard on the air get a panel of their own; each has a location, and
+from that panel you can send it to the navigator exactly like a station. Some pay a little for
+being serviced, some improve reception in their region, some only ever give a voice. That would
+also answer finding 5 above without a single objective marker: you fly somewhere because you
+heard something, not because the game told you to.
+
+If that is the wrong reading, say so before it is built — everything else in this section can
+proceed without it.

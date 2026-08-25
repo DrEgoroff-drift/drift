@@ -221,3 +221,34 @@ TEST_SUITES.push(()=>suite("интерфейс: на экранах нет кл�
   const uniq=[...new Set(leaks)];
   eq(uniq.slice(0,6).join(" | "),"","ни одного латинского слова в видимом тексте");
 }));
+
+/* ══════════════ на чистом старте в кадре нет лишнего ══════════════
+   `#parrotwin` пережил M151a: стили ей вычистили, разметку оставили, и блок
+   без единого правила рисовался обычным потоком — с первой секунды новой игры
+   в левом верхнем углу висело «ТРЕПЛО ×» у игрока, у которого никакой птицы
+   ещё нет (плейтест 26.08.2026). Такое глазами не ловится: элемент выглядит
+   как часть игры. Сторож проверяет каждый прямой блок под <body>: на чистом
+   старте видно только то, что и должно быть видно. */
+TEST_SUITES.push(()=>suite("интерфейс: на чистом старте в кадре нет лишнего",()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  if(typeof tableToggle==="function")tableToggle(false);
+  G.mode="system";G.parrot=null;hud();
+  /* что имеет право висеть над миром с первой секунды */
+  const OK=["c","slope","hud","msg","prompt","console","rail","pads","menu"];
+  const stray=[];
+  for(const e of document.body.children){
+    if(e.tagName==="SCRIPT"||e.tagName==="STYLE")continue;
+    const id=e.id||"", cls=(e.className||"").toString().split(" ")[0]||"";
+    if(OK.indexOf(id)>=0||OK.indexOf(cls)>=0)continue;
+    const cs=getComputedStyle(e);
+    if(cs.display==="none"||cs.visibility==="hidden"||parseFloat(cs.opacity)<.02)continue;
+    const r=e.getBoundingClientRect();
+    if(r.width<2||r.height<2)continue;
+    stray.push((id||cls||e.tagName)+" "+Math.round(r.width)+"×"+Math.round(r.height));
+  }
+  eq(stray.join(", "),"","поверх мира не висит ничего, кроме приборов и кнопок");
+  /* и отдельно про само трепло: без птицы ни окна, ни жёрдочки */
+  const pw=document.getElementById("parrotwin");
+  if(pw)eq(getComputedStyle(pw).display,"none","окно трепла закрыто, пока его не открыли");
+}));

@@ -649,6 +649,36 @@ body.screen #console{opacity:1}
   width:52px;height:52px;padding:4px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
 #perch canvas{width:44px;height:44px}
 
+/* ── окно трепла ──
+   M151a убрала три плавающих окна (журнал, отчёт, трепло) и вычистила их
+   стили. Разметка `#parrotwin` при этом осталась, и функция `toggleParrotWin`
+   продолжала вешать на неё класс `.open` — а правил у элемента не было ни
+   одного. Без правил блок рисуется обычным потоком: с первой секунды новой
+   игры в левом верхнем углу страницы висело сырое «ТРЕПЛО ×» с подписью
+   «ткни — отзовётся тем, что слышало», у игрока, у которого никакого трепла
+   ещё нет. Плейтестер 26.08.2026 честно записал это в непонятное.
+   Окно вернулось в общий язык: стекло, как у всех панелей, спрятано по
+   умолчанию, открывается жёрдочкой на пульте и стоит НАД ней, а не посреди
+   мира. Виден только тому, у кого птица есть, — жёрдочка сама скрыта. */
+#parrotwin{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom) + 112px);
+  z-index:12;width:186px;display:none;padding:10px 12px 11px;
+  background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);
+  backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
+#parrotwin.open{display:block}
+#parrotwin b{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:400}
+#parrotwin i#parrotname{font-style:normal;color:var(--amber);font-size:9px;letter-spacing:.14em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#parrotwin #parrotclose{cursor:pointer;color:var(--dim);font-size:14px;line-height:1;
+  padding:2px 6px;margin:-2px -6px 0 0;pointer-events:auto}
+#parrotwin #parrotclose:active{color:var(--phos)}
+#parrotwin canvas{display:block;width:100%;height:120px;margin:8px 0 6px}
+#parrotwin i#parrotsay{display:block;font-style:normal;color:var(--text);font-size:10px;line-height:1.5}
+#parrotwin s{display:block;text-decoration:none;color:var(--dim);font-size:9px;margin-top:5px;line-height:1.4}
+body.screen #parrotwin,body.table #parrotwin{display:none}
+@media (max-width:760px){
+  #parrotwin{right:10px;bottom:calc(env(safe-area-inset-bottom) + 150px);width:164px}
+  #parrotwin canvas{height:104px}
+}
 
 /* ══════════════ стол (M151a) ══════════════ */
 /* ══════════════ стол — бумага, а не окно списков (релизный вид, A3) ══════════════
@@ -769,7 +799,20 @@ body.table #loglist.desk .thing.new::after{content:"";position:absolute;right:9p
 #rxScale i{position:absolute;transform:translateX(-50%);font-style:normal;font-size:7px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
 /* на экранах станции и прочих пульт не прячется, а поднимается в шапку:
    эфир слышно и у стойки. На столе он не нужен — стол и есть его память */
-body.screen #console{top:6px;bottom:auto;z-index:21;transform:translateX(-50%) scale(.82);transform-origin:top center;opacity:.92}
+/* ── при открытом экране приёмник ВСТРАИВАЕТСЯ, а не наклеивается ──
+   Единственное, на что тестировщик прямо сказал «задолбало» (26.08.2026):
+   «каждый раз, открывая любое окно, натыкаться на панель радио, приклеенную
+   поверх заголовка». Он прав не в том, что она что-то закрывает (под ней
+   пусто), а в том, что она читается чужой: своё стекло, своя рамка, своя
+   тень — коробка, положенная сверху на другую коробку.
+   Приёмник остаётся там же и слышен по-прежнему везде (правило M151a), но
+   теряет собственный корпус и садится в полосу заголовка панели: та же
+   высота строки, никакой рамки, никакого блюра. Отдельным окном он быть
+   перестаёт, а голосом остаётся. */
+body.screen #console{top:26px;bottom:auto;z-index:21;
+  transform:translateX(-50%) scale(.78);transform-origin:top center;opacity:.92}
+body.screen #rx{background:none;border:0;box-shadow:none;backdrop-filter:none;padding:0 8px}
+body.screen #seat{background:none;border:0;box-shadow:none;backdrop-filter:none}
 body.table #console{display:none}
 /* в дороге не существует ничего, кроме заставки (M168k).
    Не гашением, а `display:none`: гашение — переход по прозрачности, он держится

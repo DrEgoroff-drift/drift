@@ -663,6 +663,36 @@ body.screen #console{opacity:1}
   width:52px;height:52px;padding:4px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
 #perch canvas{width:44px;height:44px}
 
+/* ── окно трепла ──
+   M151a убрала три плавающих окна (журнал, отчёт, трепло) и вычистила их
+   стили. Разметка `#parrotwin` при этом осталась, и функция `toggleParrotWin`
+   продолжала вешать на неё класс `.open` — а правил у элемента не было ни
+   одного. Без правил блок рисуется обычным потоком: с первой секунды новой
+   игры в левом верхнем углу страницы висело сырое «ТРЕПЛО ×» с подписью
+   «ткни — отзовётся тем, что слышало», у игрока, у которого никакого трепла
+   ещё нет. Плейтестер 26.08.2026 честно записал это в непонятное.
+   Окно вернулось в общий язык: стекло, как у всех панелей, спрятано по
+   умолчанию, открывается жёрдочкой на пульте и стоит НАД ней, а не посреди
+   мира. Виден только тому, у кого птица есть, — жёрдочка сама скрыта. */
+#parrotwin{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom) + 112px);
+  z-index:12;width:186px;display:none;padding:10px 12px 11px;
+  background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);
+  backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
+#parrotwin.open{display:block}
+#parrotwin b{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:400}
+#parrotwin i#parrotname{font-style:normal;color:var(--amber);font-size:9px;letter-spacing:.14em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#parrotwin #parrotclose{cursor:pointer;color:var(--dim);font-size:14px;line-height:1;
+  padding:2px 6px;margin:-2px -6px 0 0;pointer-events:auto}
+#parrotwin #parrotclose:active{color:var(--phos)}
+#parrotwin canvas{display:block;width:100%;height:120px;margin:8px 0 6px}
+#parrotwin i#parrotsay{display:block;font-style:normal;color:var(--text);font-size:10px;line-height:1.5}
+#parrotwin s{display:block;text-decoration:none;color:var(--dim);font-size:9px;margin-top:5px;line-height:1.4}
+body.screen #parrotwin,body.table #parrotwin{display:none}
+@media (max-width:760px){
+  #parrotwin{right:10px;bottom:calc(env(safe-area-inset-bottom) + 150px);width:164px}
+  #parrotwin canvas{height:104px}
+}
 
 /* ══════════════ стол (M151a) ══════════════ */
 /* ══════════════ стол — бумага, а не окно списков (релизный вид, A3) ══════════════
@@ -783,7 +813,20 @@ body.table #loglist.desk .thing.new::after{content:"";position:absolute;right:9p
 #rxScale i{position:absolute;transform:translateX(-50%);font-style:normal;font-size:7px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
 /* на экранах станции и прочих пульт не прячется, а поднимается в шапку:
    эфир слышно и у стойки. На столе он не нужен — стол и есть его память */
-body.screen #console{top:6px;bottom:auto;z-index:21;transform:translateX(-50%) scale(.82);transform-origin:top center;opacity:.92}
+/* ── при открытом экране приёмник ВСТРАИВАЕТСЯ, а не наклеивается ──
+   Единственное, на что тестировщик прямо сказал «задолбало» (26.08.2026):
+   «каждый раз, открывая любое окно, натыкаться на панель радио, приклеенную
+   поверх заголовка». Он прав не в том, что она что-то закрывает (под ней
+   пусто), а в том, что она читается чужой: своё стекло, своя рамка, своя
+   тень — коробка, положенная сверху на другую коробку.
+   Приёмник остаётся там же и слышен по-прежнему везде (правило M151a), но
+   теряет собственный корпус и садится в полосу заголовка панели: та же
+   высота строки, никакой рамки, никакого блюра. Отдельным окном он быть
+   перестаёт, а голосом остаётся. */
+body.screen #console{top:26px;bottom:auto;z-index:21;
+  transform:translateX(-50%) scale(.78);transform-origin:top center;opacity:.92}
+body.screen #rx{background:none;border:0;box-shadow:none;backdrop-filter:none;padding:0 8px}
+body.screen #seat{background:none;border:0;box-shadow:none;backdrop-filter:none}
 body.table #console{display:none}
 /* в дороге не существует ничего, кроме заставки (M168k).
    Не гашением, а `display:none`: гашение — переход по прозрачности, он держится
@@ -1139,7 +1182,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.162.3";
+const VER="0.163.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -24287,6 +24330,23 @@ function tap(sxp,syp){
     return;
   }
   if(G.mode!=="system")return;
+  /* ── сперва фишки компаса ──
+     Они нарисованы на канве и лежат поверх мира, поэтому и в проверке идут
+     первыми: тычок в плашку «ЗВЕЗДА · 3105» — это выбор звезды, а не точки
+     пустоты за ней. Тестировщик 26.08.2026: «Метка выглядит как кнопка
+     (рамка, стрелка), но не нажимается» — и это был единственный видимый
+     объект на экране в первые минуты. */
+  if(typeof SYS_CHIPS!=="undefined"){
+    for(const ch of SYS_CHIPS){
+      if(sxp>=ch.x&&sxp<=ch.x+ch.w&&syp>=ch.y&&syp<=ch.y+ch.h){
+        G.ap=Object.assign({},ch.t);G.ap.phase="fly";
+        const nm=ch.t.kind==="planet"?ch.t.p.name
+              :(ch.t.kind==="station"?(G.sys.station?G.sys.station.name:"станция"):"звезда");
+        say("Автопилот → "+nm,90);
+        return;
+      }
+    }
+  }
   /* в режиме наблюдения камера стоит на наёмнике — тычок должен считаться от
      неё же, иначе автопилот получал бы цель со смещением на пол-экрана */
   const Z=G.zoom,sh=G.ship,wA=G.watch?allyOf(G.watch):null;
@@ -24295,19 +24355,30 @@ function tap(sxp,syp){
   const cx0=(G.viewCX!==undefined?G.viewCX:(wA?wA.x:sh.x));
   const cy0=(G.viewCY!==undefined?G.viewCY:(wA?wA.y:sh.y));
   const wx=cx0+(sxp-W/2)/Z, wy=cy0+(syp-H/2)/Z;
+  /* ── попадание меряется в пикселях экрана, а не в единицах мира ──
+     Было `d < p.radius + 40/Z`: на отдалении сорок единиц мира превращаются в
+     считаные пиксели, и по планете, которая на экране размером с горошину,
+     попасть нельзя. Тестировщик промахнулся дважды подряд и сделал вывод
+     «управление не работает». Порог тот же, что у всех кнопок игры, — 44 px
+     под палец: цель считается задетой, если тычок ближе 44 px к её краю. */
+  const PICK=44;
   let best=null,bd=1e9;
+  const near=(ox,oy,r)=>{
+    const d=Math.hypot(wx-ox,wy-oy);
+    return (d-r)*Z<PICK ? d : -1;
+  };
   for(const p of G.sys.planets){
-    const d=Math.hypot(wx-p.x,wy-p.y);
-    if(d<p.radius+40/Z&&d<bd){bd=d;best={kind:"planet",p};}
+    const d=near(p.x,p.y,p.radius);
+    if(d>=0&&d<bd){bd=d;best={kind:"planet",p};}
     for(const m of p.moons){
-      const dm=Math.hypot(wx-m.x,wy-m.y);
-      if(dm<m.radius+26/Z&&dm<bd){bd=dm;best={kind:"planet",p:m};}
+      const dm=near(m.x,m.y,m.radius);
+      if(dm>=0&&dm<bd){bd=dm;best={kind:"planet",p:m};}
     }
   }
   const S=G.sys.station;
   if(S){
-    const d=Math.hypot(wx-S.x,wy-S.y);
-    if(d<50/Z+30&&d<bd){bd=d;best={kind:"station"};}
+    const d=near(S.x,S.y,50);
+    if(d>=0&&d<bd){bd=d;best={kind:"station"};}
   }
   const B=G.sys.belt;
   if(B&&!best){
@@ -24321,7 +24392,12 @@ function tap(sxp,syp){
     G.ap=best;G.ap.phase="fly";
     const nm=best.kind==="planet"?best.p.name:(best.kind==="station"?S.name:B.name);
     say("Автопилот → "+nm,90);
-  }else{G.ap=null;}
+  }
+  /* ── промах НЕ отменяет цель ──
+     Здесь стояло `else{G.ap=null}`: один мимо-тычок по движущейся планете — и
+     игрок терял то, к чему уже летел. Наказание за неточность в игре, где
+     цель уезжает сама. Отменить автопилот по-прежнему можно — рукой на тяге
+     или тормозе (16-flight), то есть намеренно, а не случайно. */
 }
 
 /* версия проставляется из кода, а не руками в разметке — иначе заставка и
@@ -26163,6 +26239,11 @@ function housePennant(){
 }
 
 /* ══════════════ режим: система ══════════════ */
+/* Фишки компаса у кромки кадра, с их прямоугольниками и готовыми целями
+   автопилота. Заполняется рисованием (drawSystem), читается тычком (15-input):
+   метка, которая выглядит кнопкой, обязана быть кнопкой. Один массив на кадр,
+   перезаписывается на месте — мусора не создаёт. */
+const SYS_CHIPS=[];
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
   document.getElementById("dronebtn").style.display="none";
@@ -26606,9 +26687,29 @@ function drawSystem(){
   ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),14,H-108);
   /* компас на край экрана: звезда, станция и текущая цель автопилота,
      если они за кадром — чтобы в бесконечном космосе нельзя было заблудиться */
-  const marks=[{x:0,y:0,c:"#f2b25c",l:"ЗВЕЗДА"}];
-  if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",l:sys.station.name.toUpperCase()});
-  if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6b57",l:"ЦЕЛЬ"});}
+  /* ── у метки есть цель, и по метке можно ткнуть (плейтест, 26.08.2026) ──
+     Тестировщик: «Ткнул в метку у края экрана — ничего. Метка выглядит как
+     кнопка (рамка, стрелка), но не нажимается». Так и было: фишки рисовались
+     на канве, а обработчик тычка искал только настоящие тела в мире. Вещь,
+     которая выглядит кнопкой, обязана быть кнопкой.
+     Каждая метка теперь несёт `t` — готовую цель автопилота, — а её
+     прямоугольник складывается в `SYS_CHIPS`, откуда его читает 15-input.
+     Заодно в список добавлена БЛИЖАЙШАЯ планета: раньше в компасе были
+     только звезда, станция и текущая цель, и вылетевший на отшиб игрок видел
+     у кромки одну звезду. Теперь из пустоты всегда видно, куда лететь. */
+  const marks=[{x:0,y:0,c:"#f2b25c",l:"ЗВЕЗДА",t:{kind:"star"}}];
+  if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",
+    l:sys.station.name.toUpperCase(),t:{kind:"station"}});
+  {
+    let np=null,nd=1e18;
+    for(const p of sys.planets){
+      const d=Math.hypot(p.x-sh.x,p.y-sh.y);
+      if(d<nd){nd=d;np=p;}
+    }
+    if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np.name.toUpperCase(),t:{kind:"planet",p:np}});
+  }
+  if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6b57",l:"ЦЕЛЬ",t:null});}
+  SYS_CHIPS.length=0;
   /* фишки у кромки (M167): раньше метки стояли на круге и на телефоне висели
      посреди сцены, наезжая друг на друга и на солнце. Теперь метка — плашка,
      прижатая к краю прямоугольника кадра (с отступами под приборы и пульт),
@@ -26636,6 +26737,12 @@ function drawSystem(){
       if(onSide)ry=ry+ch+4<=inset.y1-ch?ry+ch+4:inset.y0;else rx=rx+cw+4<=inset.x1-cw?rx+cw+4:inset.x0;
     }
     placed.push({x:rx,y:ry,w:cw,h:ch});
+    /* Зона нажатия шире плашки: правило интерфейса требует 44 px на палец, а
+       фишка ростом 16. Растим её вокруг центра, не трогая рисунок. */
+    if(m.t){
+      const PAD=Math.max(0,(44-ch)/2);
+      SYS_CHIPS.push({x:rx-6,y:ry-PAD,w:cw+12,h:ch+PAD*2,t:m.t});
+    }
     ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
     ctx.strokeStyle=m.c;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=1;
     ctx.save();ctx.translate(cx>W/2?rx+cw-8:rx+8,ry+ch/2);ctx.rotate(ang);
@@ -38619,8 +38726,11 @@ function enterDig(){
   /* то, что уже выкопано в этой шахте, остаётся выкопанным */
   mineLoad(G.dig,S.p);
   G.mode="dig";
-  /* «Шахта» стоит в сводке места, и спуск игрок только что видел глазами */
-  say("W A S D — копать вверх/вбок/вниз\nна поверхности W — выход · ОГОНЬ — импульс");
+  /* «Шахта» стоит в сводке места, спуск игрок только что видел глазами, а
+     «W A S D — копать» и без того постоянно висит в подсказке у пэдов —
+     тестировщик увидел одну и ту же строку дважды на одном экране. Остаётся
+     только то, чего нет больше нигде. */
+  say("на поверхности W — выход · ОГОНЬ — импульс");
 }
 function exitDig(){
   mineSave(G.dig,G.dig.p);
@@ -43765,6 +43875,15 @@ function hqRender(){
     : "домены пусты — управляющих нанимают в кантине станции";
   $hqBody.textContent="";
   if(!G.mgrs.length){
+    /* ── пустая рубка — это КАРТИНКА, а не пустой экран ──
+       Плейтест 26.08.2026: «открыл ШТАБ — на весь экран чёрное поле, две
+       строки текста вверху и кнопка внизу, между ними пятьсот пикселей
+       пустоты… я что-то сломал?». Рубка в игре нарисована (27f-hq-room), но
+       её показывали только когда управляющие уже есть, — то есть ровно тогда,
+       когда экран и без того не пустой. Теперь она рисуется всегда: тёмные
+       пульты, за которыми никто не сидит, отвечают на «а где все» лучше любой
+       строки текста, и «пока никого» перестаёт читаться поломкой. */
+    hqScene();
     $hqBody.appendChild(el("div","sec","НИКОГО · КАНТИНА ЕСТЬ НА ЛЮБОЙ СТАНЦИИ, КРОМЕ ЗАПРАВОЧНОЙ"));
     $hqBody.appendChild(el("div","row","<div class='nm'><s>управляющий берёт домен целиком: "+
       "звено наёмников, дроны и базы, торговый маршрут или лабораторию. Он не ускоряет "+
@@ -49429,7 +49548,13 @@ function hud(){
   if(G.mode==="belt"){actLbl="РЕЗАК";hasAct=true;}
   else if(G.mode==="dig"){actLbl="ВНИЗ";hasAct=true;}   // в шахте копают в четыре стороны, вниз — на большой кнопке
   else{
-    const m=/^ДЕЙСТВИЕ\s*—\s*([^·\n]+)/.exec(G.prompt||"");
+    /* «УДЕРЖИВАЙТЕ ДЕЙСТВИЕ — БУРЕНИЕ» кнопка раньше не разбирала: образец
+       требовал, чтобы строка НАЧИНАЛАСЬ со слова ДЕЙСТВИЕ. У залежи кнопка
+       поэтому называлась безымянным «ДЕЙСТВИЕ», а на шаг в сторону —
+       «ЗАЛОЖИТЬ ШАХТУ», и разницу игрок замечал уже под землёй (плейтест
+       26.08.2026: «одна кнопка делает два разных дела»). Теперь глагол
+       вынимается и из «удерживайте», и кнопка честно меняет имя под ногами. */
+    const m=/^(?:УДЕРЖИВАЙТЕ\s+)?ДЕЙСТВИЕ\s*—\s*([^·\n]+)/.exec(G.prompt||"");
     if(m){
       hasAct=true;
       const v=m[1].trim();

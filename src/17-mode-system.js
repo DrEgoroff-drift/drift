@@ -1,4 +1,9 @@
 /* ══════════════ режим: система ══════════════ */
+/* Фишки компаса у кромки кадра, с их прямоугольниками и готовыми целями
+   автопилота. Заполняется рисованием (drawSystem), читается тычком (15-input):
+   метка, которая выглядит кнопкой, обязана быть кнопкой. Один массив на кадр,
+   перезаписывается на месте — мусора не создаёт. */
+const SYS_CHIPS=[];
 function updateSystem(dt){
   const sh=G.ship,sys=G.sys,st=stat();
   document.getElementById("dronebtn").style.display="none";
@@ -442,9 +447,29 @@ function drawSystem(){
   ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),14,H-108);
   /* компас на край экрана: звезда, станция и текущая цель автопилота,
      если они за кадром — чтобы в бесконечном космосе нельзя было заблудиться */
-  const marks=[{x:0,y:0,c:"#f2b25c",l:"ЗВЕЗДА"}];
-  if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",l:sys.station.name.toUpperCase()});
-  if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6b57",l:"ЦЕЛЬ"});}
+  /* ── у метки есть цель, и по метке можно ткнуть (плейтест, 26.08.2026) ──
+     Тестировщик: «Ткнул в метку у края экрана — ничего. Метка выглядит как
+     кнопка (рамка, стрелка), но не нажимается». Так и было: фишки рисовались
+     на канве, а обработчик тычка искал только настоящие тела в мире. Вещь,
+     которая выглядит кнопкой, обязана быть кнопкой.
+     Каждая метка теперь несёт `t` — готовую цель автопилота, — а её
+     прямоугольник складывается в `SYS_CHIPS`, откуда его читает 15-input.
+     Заодно в список добавлена БЛИЖАЙШАЯ планета: раньше в компасе были
+     только звезда, станция и текущая цель, и вылетевший на отшиб игрок видел
+     у кромки одну звезду. Теперь из пустоты всегда видно, куда лететь. */
+  const marks=[{x:0,y:0,c:"#f2b25c",l:"ЗВЕЗДА",t:{kind:"star"}}];
+  if(sys.station)marks.push({x:sys.station.x,y:sys.station.y,c:"#7fe6d8",
+    l:sys.station.name.toUpperCase(),t:{kind:"station"}});
+  {
+    let np=null,nd=1e18;
+    for(const p of sys.planets){
+      const d=Math.hypot(p.x-sh.x,p.y-sh.y);
+      if(d<nd){nd=d;np=p;}
+    }
+    if(np)marks.push({x:np.x,y:np.y,c:"#9fd8ff",l:np.name.toUpperCase(),t:{kind:"planet",p:np}});
+  }
+  if(G.ap){const T=targetPos();if(T)marks.push({x:T.x,y:T.y,c:"#ff6b57",l:"ЦЕЛЬ",t:null});}
+  SYS_CHIPS.length=0;
   /* фишки у кромки (M167): раньше метки стояли на круге и на телефоне висели
      посреди сцены, наезжая друг на друга и на солнце. Теперь метка — плашка,
      прижатая к краю прямоугольника кадра (с отступами под приборы и пульт),
@@ -472,6 +497,12 @@ function drawSystem(){
       if(onSide)ry=ry+ch+4<=inset.y1-ch?ry+ch+4:inset.y0;else rx=rx+cw+4<=inset.x1-cw?rx+cw+4:inset.x0;
     }
     placed.push({x:rx,y:ry,w:cw,h:ch});
+    /* Зона нажатия шире плашки: правило интерфейса требует 44 px на палец, а
+       фишка ростом 16. Растим её вокруг центра, не трогая рисунок. */
+    if(m.t){
+      const PAD=Math.max(0,(44-ch)/2);
+      SYS_CHIPS.push({x:rx-6,y:ry-PAD,w:cw+12,h:ch+PAD*2,t:m.t});
+    }
     ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
     ctx.strokeStyle=m.c;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=1;
     ctx.save();ctx.translate(cx>W/2?rx+cw-8:rx+8,ry+ch/2);ctx.rotate(ang);

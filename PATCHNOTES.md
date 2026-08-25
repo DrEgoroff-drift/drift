@@ -7,6 +7,78 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.163.0 — the first minute, from a playtest (M188)
+
+An outside playtest arrived (`PLAYTEST-REPORT.md`, `PLAYTEST-01.md`, 26.08.2026, played on
+0.160.0). Every finding was checked against the code and against the running game before anything
+was touched — three of the five headline findings do not reproduce, and under two of those sat a
+different, real bug. What follows is what the measurements said, not what the report said.
+
+**Did not reproduce, measured:**
+
+- *«ПРОДОЛЖИТЬ ПОЛЁТ» is the first button and starts a new game in emptiness.* The button is
+  `display:none` in the markup and shown only `if(hasSave())`; on a cleared browser it is absent,
+  measured. Restoring also announces itself («Полёт восстановлен · система · сектор»). The tester
+  had a save from their own first fifteen minutes of fumbling. **But the state they described is
+  real** — continuing into empty space, with nothing in frame and no way out — and that is the bug
+  that got fixed, below.
+- *The instruments vanish after a few seconds of calm flight.* Measured after nine simulated
+  seconds with nothing changing: opacity 0.86, visible, reading «ТОПЛИВО 100/100 …». This was true
+  before 0.160.0, when the panel rested at .34 at the bottom edge; it has not been true since.
+- *The world stops living in a background tab.* Crew are computed from `Date.now()` with a
+  24-hour cap (`CREW_OFFLINE_CAP`), not from game time. A backgrounded tab catches up on return.
+  The tester flagged this as a question, not a conclusion; the answer is that the promise holds.
+
+**Fixed — the first minute.** Three separate findings turned out to be one disease: *the game
+offers a target and immediately loses it.*
+
+- A miss no longer cancels the autopilot. `else{G.ap=null}` meant one fumbled tap on a moving
+  planet threw away the flight already under way — punishment for imprecision in a game where the
+  target moves by itself. Deliberate cancelling still works (thrust, brake, turn — anything but
+  action/fire).
+- Hit-testing moved from world units to screen pixels. It was `d < p.radius + 40/Z`, so at any
+  distance forty world units are a few pixels and a planet the size of a pea could not be hit. The
+  threshold is now the project's own 44 px finger rule.
+- The compass chips at the frame's edge are buttons now, because they already looked like buttons —
+  frame, arrow, label. Tapping «ЗВЕЗДА · 3105» flies you there. Each chip carries its autopilot
+  target and a 44 px tall hit box. The **nearest planet** joined the star and the station in that
+  compass, so from anywhere in the void there is always somewhere to go.
+
+**Fixed — things that read as breakage:**
+
+- The empty HQ was a full-screen black panel with two lines at the top and five hundred pixels of
+  nothing («я что-то сломал?»). The control room is *drawn* in this game (`27f-hq-room`) and was
+  being shown only once managers existed — that is, only when the screen was not empty anyway. It
+  now draws always: dark consoles reading «ДОМЕН СВОБОДЕН», nobody at them. A picture answers
+  "where is everybody" better than a sentence.
+- `#parrotwin` outlived M151a: the styles were deleted, the markup was not, and `toggleParrotWin`
+  kept adding a class nothing listened to. With no rules at all the block rendered in normal flow —
+  so from the first second of a new game, «ТРЕПЛО ×» sat in the page's top-left corner belonging to
+  a player who has no bird. It is a proper window again, hidden until the perch opens it. A new
+  guard walks every direct child of `<body>` on a clean start and fails on anything visible that
+  should not be.
+- The receiver stops being a sticker over every panel. It was the one thing the tester said had
+  already become annoying. It stays where M151a put it and stays audible everywhere, but loses its
+  own glass, border and blur and sits inside the panel's header band.
+- The mine printed «W A S D — копать» twice on one screen: once as the entry message, once in the
+  permanent prompt. The message keeps only what the prompt does not say.
+- The action button now names hold-actions too. The pattern required the prompt to *begin* with
+  «ДЕЙСТВИЕ», so at a deposit («УДЕРЖИВАЙТЕ ДЕЙСТВИЕ — БУРЕНИЕ») the button read a nameless
+  «ДЕЙСТВИЕ», and one step aside it read «ЗАЛОЖИТЬ ШАХТУ» — the tester found out which he had
+  pressed only once he was underground.
+
+Guards: `91a-flight` (the chips, the miss, the screen-space pick), `91f-ui` (nothing stray on a
+clean start). Stand: `docs/mkview.ps1 ?s=hq` and `?s=hqfull`, because two full-screen empty windows
+were found by an outsider and could not be looked at here.
+
+**Открыто и записано, не сделано:** on the surface the walker is 25 px on an 840 px frame — 3.0 %
+of the frame's height, measured — and the tester spent twenty seconds unable to find himself. The
+ratio to the lander is correct (110 px vs 25 px ≈ a person against a seven-metre craft); what is
+wrong is that the surface camera does not scale with the window, so a large desktop window simply
+shows more world and shrinks everybody in it. The fix is a camera scale tied to frame height, and
+it touches the world-x chunk cache, which is baked 1:1 — a milestone, not a patch.
+
+---
 ## 0.162.3 — text over the world gets a shadow, not only a glow
 
 Seen on the low-suit frame: the arrival message ran across the lit ring of the sky giant and
