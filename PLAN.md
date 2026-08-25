@@ -544,7 +544,17 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   say why — and a stand, `docs/mkroad.ps1`. Sky split off into `27la-road-sky`. **0.156.0**: the
   author lifted the mode's battery budget («делай максимум, всё равно тел на зарядке»), so the
   glow became a per-pixel field with domain-warped noise (`27lb-road-bloom`) — the shader recipe
-  he brought, written on `ImageData`, measured down from 17.9 ms a frame to 2.6.
+  he brought, written on `ImageData`, measured down from 17.9 ms a frame to 2.6. **0.157.0**: the
+  halo round the hull killed, the exhaust given two habits (breath below 22 km/h, afterburner
+  above), lanes merged into one filled body, and proportions equalised across every hull — the
+  road is now a step in the `?g11` probe and reads 60 fps.
+
+- **Road economy — the author's next ask (2026-08-25, "запиши потом")**: «хочется больше кредитов,
+  я еду 5 км до дома как-то скучно за 20 кредитов, мож комбо за повороты там, за движение назад
+  что-то такое придумай прикольное». So: raise the rate, and make the combo *earned* by driving
+  rather than by mere elapsed time — corners, reversing, and whatever else the sensors already
+  know honestly. The daily cap and the speed sanity stay as the only guards
+  ([`docs/DESIGN-road.md`](docs/DESIGN-road.md), second pass).
 - **Release look** — after M161: the table as paper, removal of the overlay HUD.
 
 # QUEUE: after the graphics campaign

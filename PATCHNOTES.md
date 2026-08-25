@@ -7,6 +7,35 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.157.0 — the road: the exhaust, and every hull checked (M168k)
+
+Three corrections from the author on the field-bloom frame. Full pass in
+[docs/DESIGN-road.md](docs/DESIGN-road.md).
+
+- **The glow around the ship is gone.** The idea was right — the hull flies over a lit field — but
+  a patch of light around a silhouette reads as a nimbus, a separate object, not as illumination.
+- **The exhaust has two habits now, not one setting.** At a standstill it is a breath: short, wide,
+  softly spreading. From 22 km/h an afterburner takes over — the ribbon doubles in length, stops
+  spreading (parallel edges read as a lance, not a cloud), a white-hot thread lights inside, and
+  the gas shears sideways. By 55 the habit is new entirely; at 30 it is already clearly under way.
+- **The lanes were adding up.** Each nozzle drew its own body, and `lighter` summed them where the
+  jets converge — double for two nozzles, sixfold for the Топор's six, burning the tone to white.
+  All lanes of a burst are now subpaths of one path, filled once.
+- **Alpha and colour were pointing opposite ways.** Brightness lives at the nozzle, and that is
+  where the palette was whitest, while the hull's own accent sat in the tail at alpha 0.07. Fixed
+  in the palette, not the exponents: the Стриж's trail is mint now, the Вьюк's amber.
+- **Gas has no outline** — the body is laid twice, a wide pale halo and the main fill inside it.
+- **Proportions across hulls.** The old fit made wide ships *shorter* than slim ones (the Вьюк was
+  0.106 of the screen height against the Стриж's 0.171, though it is a tug). Length is now shared,
+  width is a ceiling. The combined jet width had ranged sevenfold between hulls — 0.032 of the
+  screen on the Клинок against 0.241 on the Топор — and is now a fraction of the hull's own
+  half-width, with stops at both ends.
+- **Measured, and one real cost found**: `imageSmoothingQuality:"high"` on the field's upscale was
+  19.7 ms a frame on its own — a CPU resampling path, indistinguishable from bilinear at this
+  magnification. The field is also blitted only where it glows. The probe (`?g11`) now includes the
+  road as a permanent step and reports **60 fps**, level with every other mode.
+
+---
 ## 0.156.0 — the road: the light is a field now (M168k, "делай максимум")
 
 The author lifted this mode's battery budget — «в этом режиме делай максимум, всё равно тел на

@@ -47,7 +47,16 @@ async function g11Run(){
     ["dig",()=>{enterDig();}],
     ["cave",()=>{G.mode="surface";enterCave();}],
     ["scoop",()=>{const s=find(s=>s.planets.some(p=>p.type==="gas"));jump(s);
-      startScoop(s.planets.find(p=>p.type==="gas"));}]];
+      startScoop(s.planets.find(p=>p.type==="gas"));}],
+    /* дорога (M168k): у неё свой rAF и самый дорогой кадр в игре — поле света
+       и длинный шлейф. Мерить её глазами по стенду нельзя, а на телефоне она и
+       живёт, поэтому она в пробнике наравне с остальными. Ход и музыку задаём
+       руками: на столе нет ни GPS, ни микрофона */
+    ["road",()=>{
+      roadOpen();
+      roadAudio=function(){if(!RD)return;RD.kmh=60;RD.energy=.7;RD.bright=.5;
+        for(let k=0;k<28;k++)RD.wave[k]=.25+.2*Math.sin(k);};
+    }]];
   for(const st of steps){
     try{
       st[1]();

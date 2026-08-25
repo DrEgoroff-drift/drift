@@ -11,7 +11,7 @@
 # Что можно крутить в запросе (всё необязательно):
 #   ?kmh=35      скорость, км/ч            ?turn=0.7   снос вправо, -1..1
 #   ?en=0.62     энергия музыки, 0..1      ?br=0.5     яркость музыки, 0..1
-#   ?diag=1      окно правды по датчикам
+#   ?diag=1      окно правды по датчикам   ?ship=vyuk  чей корпус в кадре
 $src = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot "..\drift.html")
 $cut = $src.LastIndexOf("</body>")
 $head = $src.Substring(0, $cut)
@@ -25,6 +25,7 @@ setTimeout(function(){
   var Q=new URLSearchParams(location.search);
   var num=function(k,d){var v=Q.get(k);return v==null?d:+v;};
   G.road={day:-1,km:7.2,cr:24,mic:false};
+  if(Q.get("ship")&&SHIPS[Q.get("ship")])G.shipId=Q.get("ship");
   roadOpen();
   roadDayReset();G.road.km=7.2;G.road.cr=24;
   RD.asked=1;RD.an={};                       /* подсказка про микрофон — как в поездке */

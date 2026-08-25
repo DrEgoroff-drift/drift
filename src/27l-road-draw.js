@@ -108,9 +108,13 @@ function drawRoad(ts){
      Поворот машины кренит корпус и уводит его наружу; разгон задирает нос и
      раздувает факел, тормоз бьёт носовыми соплами и клюёт вперёд. */
   const id=G.shipId,h=hullOf(id);
-  /* корабль мельче (было ×.6): пятая экрана вместо четверти — кадру нужен
-     воздух, а ленте место, чтобы кончиться до подвала (M168g) */
-  const sc=Math.min(W/(h.bw*5.2),H/(h.len*2.4))*.41;   /* M168k: автор просит мельче — кадру нужен воздух, а не крупный план */
+  /* посадка корпуса: длина одна на всех, ширина — потолок (разбор у констант) */
+  const half=roadHullHalf(id);
+  const sc=Math.min(H*ROAD_SHIP_LEN/h.len,W*ROAD_SHIP_WID/(2*half));
+  /* доля сопла в общей струе остаётся своя, а сумма приведена к полуширине
+     корпуса и зажата упорами — иначе у «Топора» шесть сопел дают стену света */
+  const engSum=h.eng.reduce((s,e)=>s+(e.r||0),0)||1;
+  const rk=clamp(ROAD_TRAIL_R*half*sc,W*ROAD_TRAIL_RMIN,W*ROAD_TRAIL_RMAX)/(engSum*sc);
   /* поворот: в сторону быстро, обратно медленно — иначе снос не читается */
   const tauT=Math.abs(RD.turnT||0)>Math.abs(RD.turn||0)?ROAD_TURN_ATK:ROAD_TURN_REL;
   RD.turn=(RD.turn||0)+((RD.turnT||0)-(RD.turn||0))*ease(tauT);
@@ -140,7 +144,7 @@ function drawRoad(ts){
      защита: корпус вставал ровно в край, а крен и дрожь его оттуда срезали.
      На дороге этого не видели — снос ни разу не сработал; поймано на стенде,
      как только мера стала чувствительнее (M168k) */
-  const maxOff=Math.max(0,Math.min(W*.5*ROAD_SWERVE,W*.5-roadHullHalf(id)*sc-W*.02));
+  const maxOff=Math.max(0,Math.min(W*.5*ROAD_SWERVE,W*.5-half*sc-W*.02));
   const want2=shove*maxOff;
   const kOff=ease(Math.abs(want2)>Math.abs(RD.xOff||0)?ROAD_XOFF_OUT:ROAD_XOFF_HOME);
   const lim=W*1.2*dt;                     /* и ничего не может прыгнуть за кадр */
@@ -161,8 +165,11 @@ function drawRoad(ts){
   const thrust=spd>ROAD_VMIN||RD.acc>.2;
   if(thrust&&!RD.thrOn)RD.burst++;
   RD.thrOn=thrust;
+  /* разгорание: 0 — выдох на светофоре, 1 — форсаж. Ведёт длину, ширину,
+     раскалённую нить внутри и снос газа вбок */
+  const burn=roadBurn(spd);
   const flow=H*(.22+fast*1.2);
-  const span=ROAD_TRAIL_LEN*H/flow;
+  const span=(ROAD_TRAIL_LEN+burn*ROAD_TRAIL_BURN)*H/flow;
   for(let i=RD.trail.length-1;i>=0;i--){
     const p=RD.trail[i];
     p.y+=flow*dt;p.x+=p.vx*dt;p.life-=dt;
@@ -186,8 +193,8 @@ function drawRoad(ts){
       for(let i=0;i<h.eng.length;i++){
         const e=h.eng[i];
         RD.trail.push({x:bx+(e.x*co-e.y*si)*sc,y:by+(e.x*si+e.y*co)*sc+back,e:i,b:RD.burst,cx0:bx,
-          vx:(Math.sin(t*2.3+i*2.1)*.7+(Math.random()-.5)*.6)*W*.045,
-          r:e.r*sc*(.6+Math.random()*.06),max:span,life:Math.max(.02,span-back/flow)});
+          vx:(Math.sin(t*2.3+i*2.1)*.7+(Math.random()-.5)*.6)*W*(.045+burn*.055),
+          r:e.r*rk*sc*(.92+burn*.30+Math.random()*.08),max:span,life:Math.max(.02,span-back/flow)});
       }
     }
   }
@@ -195,60 +202,107 @@ function drawRoad(ts){
   {
     const T=trailTint(id,G.mods.engine|0);
     c.save();c.globalCompositeOperation="lighter";
-    const lanes={};
-    for(const p of RD.trail){const k=p.e+"/"+p.b;(lanes[k]||(lanes[k]=[])).push(p);}
-    for(const k in lanes){
-      const arr=lanes[k];
-      if(arr.length<2)continue;
-      /* ОДНО тело на сопло: кромка туда, кромка обратно, одна заливка с
-         продольным градиентом. Прежде лента рисовалась сотней отрезков со
-         сложением света — на стыках копился пересвет, ширина росла ступеньками,
-         и газ превращался в стопку кирпичей (разбор M168g) */
-      const nrm=i=>{
-        const q=arr[Math.min(arr.length-1,i+1)],o=arr[Math.max(0,i-1)];
-        const tx=q.x-o.x,ty=q.y-o.y,tl=Math.hypot(tx,ty)||1;
-        const p=arr[i],u=clamp(p.life/p.max,0,1),w=p.r*(1.15+(1-u)*3.2);
-        return [-ty/tl*w,tx/tl*w];
+    /* ── ОДНО ТЕЛО НА ВСЕ СОПЛА (M168k) ──
+       Прежде каждое сопло рисовалось своей заливкой, и там, где струи сходятся,
+       «lighter» складывал их — двойная, у «Топора» шестерная яркость: тон
+       выгорал в белое, и шлейф читался стеной дыма. Теперь все ленты вспышки
+       кладутся ПОДПУТЯМИ в один путь и заливаются ОДИН раз: перекрытие ничего
+       не прибавляет, и ширина остаётся честной. То же правило, что у корпуса и
+       у процедурных сборок вообще — много кусков, одно тело. */
+    const groups={};
+    for(const p of RD.trail){
+      const g=groups[p.b]||(groups[p.b]={});
+      (g[p.e]||(g[p.e]=[])).push(p);
+    }
+    for(const b in groups){
+      const lanes=[];
+      for(const e in groups[b])if(groups[b][e].length>1)lanes.push(groups[b][e]);
+      if(!lanes.length)continue;
+      /* ПОВАДКА ЗАВИСИТ ОТ ХОДА (M168k). На выдохе лента быстро расходится к
+         хвосту — облако; на форсаже кромки почти параллельны, и то же самое
+         тело читается копьём. У сопла она при этом шире, а не уже: автор просил
+         «больше и виднее». Путь строится отдельной функцией, потому что рисуется
+         дважды — телом и раскалённой нитью внутри. */
+      const wid=(p,u)=>p.r*(1.25+burn*.40+(1-u)*(3.6-burn*2.3));
+      const lay=k=>{
+        c.beginPath();
+        for(const arr of lanes){
+          const nrm=i=>{
+            const q=arr[Math.min(arr.length-1,i+1)],o=arr[Math.max(0,i-1)];
+            const tx=q.x-o.x,ty=q.y-o.y,tl=Math.hypot(tx,ty)||1;
+            const p=arr[i],u=clamp(p.life/p.max,0,1),w=wid(p,u)*k;
+            return [-ty/tl*w,tx/tl*w];
+          };
+          for(let i=0;i<arr.length;i++){
+            const p=arr[i],nn=nrm(i);
+            if(i===0)c.moveTo(p.x+nn[0],p.y+nn[1]);else c.lineTo(p.x+nn[0],p.y+nn[1]);
+          }
+          for(let i=arr.length-1;i>=0;i--){
+            const p=arr[i],nn=nrm(i);
+            c.lineTo(p.x-nn[0],p.y-nn[1]);
+          }
+          c.closePath();
+        }
       };
-      c.beginPath();
-      for(let i=0;i<arr.length;i++){
-        const p=arr[i],nn=nrm(i);
-        if(i===0)c.moveTo(p.x+nn[0],p.y+nn[1]);else c.lineTo(p.x+nn[0],p.y+nn[1]);
-      }
-      for(let i=arr.length-1;i>=0;i--){
-        const p=arr[i],nn=nrm(i);
-        c.lineTo(p.x-nn[0],p.y-nn[1]);
-      }
-      c.closePath();
+      const arr=lanes[0];
       const a0=arr[0],a1=arr[arr.length-1];
       const u0=clamp(a0.life/a0.max,0,1),u1=clamp(a1.life/a1.max,0,1);
-      /* `T.core` — акцент, уведённый на 82% в белый, и прежде он занимал весь
-         верх ленты (u > .78) — то есть почти всю её видимую часть. Шлейф выходил
-         белым по построению; ядро сужено до самого среза сопла (разбор M168k) */
-      const col=u=>u>.93?mixc(T.mid,T.core,(u-.93)/.07):mixc(T.edge,T.mid,Math.pow(u/.93,1.9));
-      /* степень в хвосте (M168k, максимум): без неё почти вся видимая лента
-         сидела у `mid` — это акцент, уведённый на 42% в сливочный, — и рядом с
-         цветным полем читалась серой трубой. Теперь тело держит свой цвет */
+      /* ── почему шлейф был белым, хотя цвет в нём есть ── (M168k, проход 2)
+         Альфа и цвет были ПРОТИВОНАПРАВЛЕНЫ. Яркость держится у сопла (u→1), а
+         там `col` отдавал `T.mid` — акцент, уведённый на 42% в сливочный, — и
+         дальше `T.core`, уведённый на 82% в белый. Цветная часть ленты (`edge`,
+         чистый акцент корпуса) лежала в хвосте, где альфа уже 0.07: глазу
+         доставалось молоко, а цвет был там, где его не видно.
+         Правка не в степенях, а в самой палитре: на дороге середина ленты
+         подтянута обратно к акценту, и добела раскаляется только самый срез
+         сопла. «Стриж» теперь мятный, «Вьюк» янтарный — как их корпуса. */
+      const RT={core:T.core,mid:mixc(T.edge,T.mid,.42),edge:T.edge};
+      const col=u=>u>.96?mixc(RT.mid,RT.core,(u-.96)/.04):mixc(RT.edge,RT.mid,Math.pow(u/.96,1.5));
       /* спад квадратичный, как в полёте. Пик снят с .80 до .32 (M168k): под
          «lighter» две струи внахлёст давали 1.6, каналы упирались в потолок, и
          газ становился белой пластиковой трубой — тем более теперь, когда снизу
          светит сияние: прежняя формула настраивалась на чёрное небо */
-      const alp=u=>(u*u*.20+u*u*u*u*.30).toFixed(3);
-      if(Math.hypot(a1.x-a0.x,a1.y-a0.y)<1)c.fillStyle=rgba(col(u1),alp(u1));
-      else{
-        const gr=c.createLinearGradient(a1.x,a1.y,a0.x,a0.y);
-        for(let j=0;j<=4;j++){const s=j/4,u=u1+(u0-u1)*s;gr.addColorStop(s,rgba(col(u),alp(u)));}
-        c.fillStyle=gr;
+      /* спад пологий: прежний `u²·.20 + u⁴·.30` весь свет держал у сопла, а
+         тело ленты был почти прозрачным — газ читался коротким и плотным.
+         Теперь длина видна целиком, а пик ниже: перекрытий больше нет, и
+         набирать яркость сложением не нужно (M168k, проход 2) */
+      const alp=u=>((u*.075+u*u*.12+Math.pow(u,5)*.13)*(1+burn*.55)).toFixed(3);
+      const paint=(cf,af)=>{
+        if(Math.hypot(a1.x-a0.x,a1.y-a0.y)<1)c.fillStyle=rgba(cf(u1),af(u1));
+        else{
+          const gr=c.createLinearGradient(a1.x,a1.y,a0.x,a0.y);
+          for(let j=0;j<=4;j++){const s=j/4,u=u1+(u0-u1)*s;gr.addColorStop(s,rgba(cf(u),af(u)));}
+          c.fillStyle=gr;
+        }
+        c.fill();
+      };
+      /* ── у газа не бывает контура (M168k, проход 3) ──
+         Одна заливка, даже правильной ширины, читается вырезанной фигурой:
+         видно кромку. Кладём то же тело ДВАЖДЫ — широкий бледный ореол и
+         основное тело внутри него. Спад получается двухступенчатым, и силуэт
+         растворяется, не требуя ни размытия, ни лишних точек. */
+      lay(1.55);paint(col,u=>(+alp(u)*.30).toFixed(3));
+      lay(1);paint(col,alp);
+      /* раскалённая нить внутри — только на разгоревшемся. Это и есть «по-другому»:
+         на светофоре её нет вовсе, с тридцати она проступает и тянется от сопла */
+      if(burn>.04){
+        lay(.36-burn*.12);
+        paint(u=>mixc(T.mid,T.core,clamp(u*1.2-.2,0,1)),
+              u=>((u*u*u*.30+Math.pow(u,5)*.26)*burn).toFixed(3));
       }
-      c.fill();
-      /* выход из сопла: раскалённое ядро с ореолом */
-      if(a1.life>a1.max-.06){
-        const rr2=Math.max(2,a1.r*1.7);
-        const hg=c.createRadialGradient(a1.x,a1.y,0,a1.x,a1.y,rr2*3);
-        hg.addColorStop(0,rgba(T.core,.75));hg.addColorStop(.35,rgba(T.mid,.28));hg.addColorStop(1,rgba(T.edge,0));
-        c.fillStyle=hg;c.beginPath();c.arc(a1.x,a1.y,rr2*3,0,TAU);c.fill();
-        c.fillStyle=rgba(T.core,.85);
-        c.beginPath();c.arc(a1.x,a1.y,rr2,0,TAU);c.fill();
+      /* выход из сопла: раскалённое ядро с ореолом — у КАЖДОГО сопла своё */
+      for(const ln of lanes){
+        const e1=ln[ln.length-1];
+        if(e1.life<=e1.max-.06)continue;
+        /* и шире, чем прежде: ореол сопла — это ещё и шов между нарисованным
+           факелом корпуса (тёплым) и лентой (в цвет акцента). Без него на
+           стыке видно, где кончается одно и начинается другое */
+        const rr2=Math.max(2,e1.r*1.7);
+        const hg=c.createRadialGradient(e1.x,e1.y,0,e1.x,e1.y,rr2*4.5);
+        hg.addColorStop(0,rgba(T.core,.42+burn*.24));hg.addColorStop(.35,rgba(RT.mid,.22));hg.addColorStop(1,rgba(RT.edge,0));
+        c.fillStyle=hg;c.beginPath();c.arc(e1.x,e1.y,rr2*4.5,0,TAU);c.fill();
+        c.fillStyle=rgba(T.core,.55+burn*.25);
+        c.beginPath();c.arc(e1.x,e1.y,rr2,0,TAU);c.fill();
       }
     }
     c.restore();
@@ -306,20 +360,11 @@ function drawRoad(ts){
         H*(.025+.055*tv)*fl,Math.max(2.5,h.bw*sc*.16),.35+.4*tv);
     c.restore();
   }
-  /* отсвет снизу (M168k, максимум): корабль идёт над светящимся полем, и оно
-     обязано на него ложиться — иначе корпус выглядит вырезанным и наклеенным.
-     Не перекраска обшивки, а мягкий подсвет под днищем в тон настроения: света
-     ровно столько, сколько его сейчас внизу экрана. */
-  {
-    const ug=(.06+en*.15+RD.beat*.06);
-    const ur=h.len*sc*1.05;
-    c.save();c.globalCompositeOperation="lighter";
-    const bg2=c.createRadialGradient(cx,cy+h.len*sc*.34,0,cx,cy+h.len*sc*.34,ur);
-    bg2.addColorStop(0,"hsla("+((hue%360)+360)%360+",92%,60%,"+ug.toFixed(3)+")");
-    bg2.addColorStop(1,"hsla("+((hue%360)+360)%360+",90%,52%,0)");
-    c.fillStyle=bg2;c.beginPath();c.ellipse(cx,cy+h.len*sc*.34,ur*1.25,ur*.80,0,0,TAU);c.fill();
-    c.restore();
-  }
+  /* Отсвета вокруг корпуса нет и не будет (автор, M168k: «вокруг корабля можно
+     убить сияние»). Мысль была верная — корабль идёт над светом, свет должен на
+     него ложиться, — а исполнение нет: любое пятно вокруг силуэта читается
+     нимбом, то есть отдельным предметом, а не освещением. Свет ложится на
+     корпус там, где ему и место: факелом из сопел и шлейфом под ним. */
   const old=ctx;ctx=c;
   c.save();
   c.translate(cx,cy);

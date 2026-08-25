@@ -501,3 +501,70 @@ and the remaining gap is turbulence, not colour — which can be closed by warpi
 more noise octaves if it ever matters. If the author wants the shader anyway, the honest scope is
 "one WebGL layer behind the road canvas, road mode only, with a 2D fallback kept alive" — that is
 a milestone of its own, not a tweak, and it is his call to make.
+
+## Tenth pass (M168k, 0.157.0) — the exhaust, and every hull checked
+
+Three things from the author on the field-bloom frame: kill the glow around the ship, rework the
+exhaust ("bigger and more visible, longer, and from thirty it should start becoming different"),
+and check the other hulls — "they are longer and all that, maybe a proportion".
+
+### The halo around the hull is gone
+
+The idea behind it was right — the ship flies over a lit field, the light should land on it — but
+the execution was not: any patch of light around a silhouette reads as a **nimbus**, that is, as a
+separate object, not as illumination. Light lands on the ship where it belongs: the flame out of
+the nozzles and the trail below.
+
+### The exhaust has two habits, not one setting
+
+At a standstill and in traffic it is a **breath**: short, wide, spreading softly. From 22 km/h an
+**afterburner** takes over — the ribbon doubles in length, stops spreading (near-parallel edges
+read as a lance, not a cloud), a white-hot thread lights inside it, and the gas starts to shear
+sideways. By 55 the habit is new entirely. The crossover is a smoothstep so nothing clicks at the
+boundary; at 30 it is already clearly under way, which is what the author asked for.
+
+Three faults were found and fixed on the way, each visible only once the hulls were laid side by
+side:
+
+1. **The lanes were adding up.** Each nozzle drew its own filled body, and where the jets converge
+   `lighter` summed them — double brightness for two nozzles, sixfold for the Топор's six. The tone
+   burned out to white and the trail read as a wall of smoke. All lanes of one burst are now
+   **subpaths of a single path, filled once**: overlap adds nothing. The same rule as everywhere
+   else in this project — many pieces, one body.
+2. **Alpha and colour were pointing in opposite directions.** Brightness lives at the nozzle
+   (`u→1`), and there `col` returned `T.mid` — the accent already 42% into cream — and then
+   `T.core`, 82% into white. The coloured part of the ribbon (`T.edge`, the hull's own accent) sat
+   in the tail where alpha is 0.07. The eye got milk; the colour was where it could not be seen.
+   The fix is in the palette, not in the exponents: on the road the middle is pulled back toward
+   the accent and only the nozzle cut goes white-hot. The Стриж is mint now, the Вьюк amber — like
+   their hulls.
+3. **Gas does not have an outline.** One fill, however correctly shaped, reads as a cut-out. The
+   same body is now laid **twice** — a wide pale halo and the main body inside it. Two-step falloff
+   dissolves the silhouette without a blur and without more points.
+
+### Proportions: length is shared, width is a ceiling
+
+The old fit put the hull in a box, `min(W/bw, H/len)` — and wide ships therefore came out
+**shorter** than slim ones: the Вьюк's length on screen was 0.106 of the height against the
+Стриж's 0.171, though it is a tug. Now the length is the same for everybody
+(`ROAD_SHIP_LEN`) and the width is a ceiling (`ROAD_SHIP_WID`); whoever hits their limit gives up
+the slack. Width is measured honestly, by `roadHullHalf` — pylons and tanks — not by the body.
+
+The exhaust was worse. It came off the nozzle radius, and nozzles differ per hull: the combined
+jet width ranged from 0.032 of the screen (Клинок) to 0.241 (Топор) — a sevenfold spread, and on
+wide hulls the trail was a wall of light across half the screen. Now the **sum** of the jet radii
+is a fraction of the hull's half-width, the shares between nozzles stay as drawn, and there are
+stops at both ends: a needle must not have a thread for a flame, a slab must not have a bonfire.
+
+### What it costs
+
+Measured with a raster flush, `imageSmoothingQuality:"high"` on the field's upscale cost **19.7 ms**
+a frame by itself — in Chrome that is a CPU resampling path, and at a sixfold magnification of a
+soft glow it is indistinguishable from bilinear, which costs a third of that. Quality is no longer
+set at all. The field is also blitted **only where it glows**: the top 57% is empty by
+construction, and compositing it under `lighter` was 43% of the pixels for nothing.
+
+Then the honest number, from the project's own probe (`?g11`, real rAF, GPU on): **60 fps**, level
+with every other mode. The flushed figures had been over-stating badly — `getImageData` serialises
+the pipeline, so it measures a stall, not a frame. The road is now a permanent step in that probe:
+it has the most expensive frame in the game and it lives on a phone.
