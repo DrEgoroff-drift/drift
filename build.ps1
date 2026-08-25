@@ -75,10 +75,16 @@ $PLAN_KB = 60      # порог для PLAN.md
 # восемь помещений — в `21ab-base-interiors`) и вышел из списка совсем: долг
 # отдан, а не переписан. `21a-mode-base` при этом подрос за проходы по базе и
 # в список НЕ вносится — пусть кричит, он следующий на очереди.
+# 2026-08-25: отдано ещё пять долгов — `12tb-settle-draw` (промыслы →
+# `12tc-settle-crafts`), `23a-dig-draw` (порода → `23aa-dig-rock`), `20-life`
+# (звери → `20f-fauna`), `21b-surface-deco` (формы примет → `21ba-deco-shapes`)
+# и `26-ui-station` (четыре вкладки → `26b-ui-station-work`). Двое последних
+# вышли из этого списка СОВСЕМ (26-ui-station 36 КБ, 23-mode-dig 15 КБ после
+# давнего распила): поблажка снимается вместе с долгом, иначе она вечная.
 $BULK_OLD = @{     # известные крупные, замерены 2026-08-15
-  "12c-mgr-core.js"    = 47; "26-ui-station.js" = 48
+  "12c-mgr-core.js"    = 47
   "27f-hq-room.js"     = 40
-  "23-mode-dig.js"     = 44; "27e-ui-home.js"   = 43
+  "27e-ui-home.js"     = 43
 }
 function Bulk($files, $tfiles) {
   $big = @(@($files) + @($tfiles) | Where-Object {
@@ -112,6 +118,24 @@ function Bulk($files, $tfiles) {
   if ($noBom.Count) {
     "  ! .ps1 с русским текстом и БЕЗ BOM (5.1 прочтёт как ANSI): {0}" -f
       (($noBom | ForEach-Object { $_.Name }) -join ", ")
+  }
+  # ── вызов в никуда ──
+  # `if (typeof foo === "function") foo()` — привычная в этом проекте оговорка:
+  # модули собираются в один файл, и защита почти всегда лишняя. Но если такой
+  # функции НЕТ, проверка глотает вызов молча, и игра продолжает обещать то,
+  # чего не делает. Так сделка «Он пришёл к вам в звено — даром» три десятка
+  # версий не давала наёмника (25.08.2026, `crewGift`). Правило проекта про
+  # перки — «подпись без кода это ложь» — тут ровно то же самое.
+  $srcAll = ($files | ForEach-Object { [IO.File]::ReadAllText($_.FullName, [Text.Encoding]::UTF8) }) -join "`n"
+  $ghosts = @()
+  foreach ($nm in ([regex]::Matches($srcAll, 'typeof\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*===?\s*"function"') |
+                   ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique)) {
+    $decl = "(function\s+$nm\s*\(|(const|let|var)\s+$nm\s*=|\b$nm\s*=\s*function)"
+    if (-not [regex]::IsMatch($srcAll, $decl)) { $ghosts += $nm }
+  }
+  if ($ghosts.Count) {
+    "  ! typeof-проверка бережёт несуществующую функцию (вызов не сработает НИКОГДА): {0}" -f
+      ($ghosts -join ", ")
   }
   $plan = Join-Path $root "PLAN.md"
   if (Test-Path $plan) {

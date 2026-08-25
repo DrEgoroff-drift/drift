@@ -427,7 +427,7 @@ author or to a later pass, and it is carried here on purpose rather than silentl
   own milestone (M135+).
 - **M131**: barge passenger as a channel, settlement glyph overrides, per-region colouring — left
   open in the hundred's design.
-- **Split debt**: paid (0.108.1) — `17c-system-draw`, `19f-lander`, `21e-surface-draw`, `23a-dig-draw`, `24aa-raid-draw`. Left: `21ab-base-interiors` (one `const` table, 42 KB) and `12y-parrot-face` (42 KB) — flagged, not cut.
+- **Split debt**: paid (0.108.1) — `17c-system-draw`, `19f-lander`, `21e-surface-draw`, `23a-dig-draw`, `24aa-raid-draw`. Paid again (0.153.0, the audit) — `12tc-settle-crafts`, `23aa-dig-rock`, `20f-fauna`, `21ba-deco-shapes`, `26b-ui-station-work`; `26-ui-station` and `23-mode-dig` left the guard's concession list entirely. **Still on the list, with their seams named** (2026-08-25): `27d-ui-cantina` 45 KB (the hall's own drawing vs the counter/patrons UI), `12tb-settle-draw` 44 (brushes + `sdDwell` vs the street pass), `27e-ui-home` 44 (the cards vs the estate's own tables), `28-loop` 42 (`hud()` is half the file and is not the loop), `12y-parrot-face` 42 and `21ab-base-interiors` 42 (both one `const` table — do not split a table, leave them), `14-save` 42 (`snapshot`/`applySave` are one pair — leave). So the real remaining work is four files, not seven.
 - **Star disc on the surface**: closed (0.102.0) — was the dark sky tone since before the split; now the star colour.
 - **G11**: **closed by measurement (2026-08-24, 0.133.0).** The game now carries its own probe:
   `?g11` runs the mode tour and measures rAF fps in a visible tab (`28z-fps-probe`), `?g11=deep`

@@ -338,8 +338,3 @@ function settleStop(S){
     station:{name:"посёлок "+(S.name||sys.name),stype:"trade",kind:"посёлок",
       orbit:0,ang:0,spd:0,prices,fuelPrice:11,x:0,y:0,vx:0,vy:0}};
 }
-function settleStops(){
-  const out=[];
-  for(const key in settleMap()){const S=settleMap()[key],st=settleStop(S);if(st)out.push(st);}
-  return out;
-}

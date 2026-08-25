@@ -1,13 +1,4 @@
 /* ══════════════ карта ══════════════ */
-function wrapCenter(text,x,y,maxW,lh){
-  const words=text.split(" ");let line="",ly=y;
-  for(const w of words){
-    const t=line?line+" "+w:w;
-    if(ctx.measureText(t).width>maxW&&line){ctx.fillText(line,x,ly);line=w;ly+=lh;}
-    else line=t;
-  }
-  if(line)ctx.fillText(line,x,ly);
-}
 const PAD_SAFE=104;   // полоса экранных кнопок снизу: туда ничего не пишем
 function wrapLeft(text,x,y,maxW,lh){
   const words=text.split(" ");let line="",ly=y;

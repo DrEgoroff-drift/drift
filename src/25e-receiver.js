@@ -43,13 +43,3 @@ function radioTune(f){
   if(q<.55)text=text.replace(/[а-яёa-z]{3,}/gi,w=>r()<(1-q)*.6?"…":w);
   return {k:B.k,ru:B.ru,q,text};
 }
-/* блок в кантине: ручка и то, что слышно */
-function radioBlock(){
-  $body.appendChild(el("div","sec","ПРИЁМНИК · КРУТИТЕ РУЧКУ"));
-  const f=(G.radioF==null?.05:G.radioF),R=radioTune(f);
-  const r=el("div","row");
-  const inp=document.createElement("input");inp.type="range";inp.min=0;inp.max=1;inp.step=.005;inp.value=f;inp.style.cssText="width:14em";
-  const out=el("div","nm","<b>"+(R.ru||"шум")+"</b><s style='color:#cfe3ea'>"+R.text+"</s>");
-  inp.oninput=()=>{const Q=radioTune(+inp.value);out.innerHTML="<b>"+(Q.ru||"шум")+"</b><s style='color:#cfe3ea'>"+Q.text+"</s>";};
-  r.appendChild(inp);r.appendChild(out);$body.appendChild(r);
-}

@@ -84,9 +84,17 @@ function runTests(){
     try{fn();}catch(e){TEST.fail++;TEST.failed.push("набор упал: "+(e&&e.message||e));
       TEST.lines.push("✗✗ НАБОР УПАЛ: "+(e&&e.stack||e));}
   }
+  /* ── время прогона тут не измеряется, и это не лень ──
+     `test.ps1` запускает страницу с `--virtual-time-budget`: внутри
+     виртуального времени `performance.now()` между синхронными вызовами не
+     движется, и отчёт честно печатал «0 мс» на семи тысячах проверок с самого
+     появления этой строки. Цифра, которая всегда ноль, — не измерение, а
+     украшение. Реальные секунды показывает `test.ps1` снаружи, а здесь стоит
+     то, что действительно считается: сколько наборов отработало. */
   const ms=Math.round(performance.now()-t0);
   const head=(TEST.fail?"ПРОВАЛЕНО "+TEST.fail:"ВСЁ ЗЕЛЁНОЕ")+
-    " · пройдено "+TEST.pass+" · "+ms+" мс";
+    " · пройдено "+TEST.pass+" · наборов "+TEST_SUITES.length+
+    (ms>0?" · "+ms+" мс":"");
   TEST.summary=head;
   const box=document.createElement("pre");
   box.id="testout";

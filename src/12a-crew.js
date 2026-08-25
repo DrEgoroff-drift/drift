@@ -144,6 +144,26 @@ function assignToBase(c,B,role){
   return true;
 }
 function crewCap(){return 1+techLv("license")+mgrCrewCap();}
+/* ── человек, пришедший даром (25.08.2026) ──
+   Сделка «Он отработал и пришёл к вам в звено — даром» (27g-deals) вызывала
+   `crewGift()`, которой в игре не было НИ РАЗУ: вызов стоял под
+   `typeof …==="function"`, проверка молча его глотала, игрок читал обещание и
+   не получал ничего. Ложь такого рода правилами проекта запрещена прямо, так
+   что функция написана. Он приходит без платы, но и без выбора: кто пришёл,
+   тот и пришёл. Если мест нет — он не пропадает молча, а говорит об этом. */
+function crewGift(seed){
+  if(G.crew.length>=crewCap()){
+    say("Человек пришёл, а места нет\nнужна лицензия на флот");
+    return false;
+  }
+  const m=genMerc(seed||hashi(Date.now()&0xffffff,G.crew.length*7717,0xC1F),null);
+  m.fee=0;
+  G.crew.push(Object.assign(m,{cargo:{},order:{kind:"home",sx:G.sx,sy:G.sy},
+    tMs:Date.now(),paidMs:Date.now()}));
+  tell("good","В звено даром: "+m.name+" · "+CREW_SPEC[m.spec].ru,
+       "К вам пришёл "+m.name+"\n"+CREW_SPEC[m.spec].ru+"\nплаты не просит — выдайте корабль");
+  return true;
+}
 function mercFee(c){return Math.round(c.fee*mgrHireMul());}
 function hireMerc(c){
   if(G.crew.length>=crewCap()){say("Больше нанимать некому\nнужна лицензия на флот");return false;}

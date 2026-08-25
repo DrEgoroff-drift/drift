@@ -4,7 +4,6 @@
    открывается из полёта кнопкой ЭКИПАЖ, показывает баланс каждого, даёт приказ,
    приоритет по материалу, передачу своих модулей и режим наблюдения. */
 const $cv=document.getElementById("crewview"),$cvBody=document.getElementById("cvBody");
-function crewByIdG(id){return G.crew.find(c=>c.id===id)||null;}
 /* кого сейчас видно в этой системе настоящим кораблём */
 function allyOf(id){return (G.allies||[]).find(A=>A.c.id===id)||null;}
 /* ── скрытая удача наружу ──

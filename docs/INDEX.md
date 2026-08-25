@@ -6,11 +6,11 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 257 · символов верхнего уровня: 2466
+Файлов: 262 · символов верхнего уровня: 2457
 
 ## СИМВОЛЫ
 
-$bg                          src/12l-barge.js:576
+$bg                          src/12l-barge.js:575
 $bThr                        src/28-loop.js:37
 $cv                          src/27b-ui-crew.js:6
 $f                           src/28-loop.js:22
@@ -24,7 +24,7 @@ $menu                        src/15-input.js:180
 $msg                         src/28-loop.js:36
 $msl                         src/28-loop.js:39
 $nav                         src/28-loop.js:38
-$opts                        src/26-ui-station.js:783
+$opts                        src/26-ui-station.js:548
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:35
 $sh                          src/28-loop.js:24
@@ -62,8 +62,8 @@ aiFace                       src/12d-mgr-face.js:210
 aiLearn                      src/12f-mgr-ai.js:107
 aiStage                      src/12f-mgr-ai.js:19
 aiUpkeep                     src/12f-mgr-ai.js:126
-allyOf                       src/27b-ui-crew.js:9
-allyWork                     src/12a-crew.js:497
+allyOf                       src/27b-ui-crew.js:8
+allyWork                     src/12a-crew.js:517
 ambK                         src/19c-light.js:39
 ambRGB                       src/19c-light.js:36
 AMMO_BATCH                   src/16b-missile.js:26
@@ -91,30 +91,29 @@ autosave                     src/14-save.js:537
 b64dec                       src/14-save.js:13
 b64enc                       src/14-save.js:11
 bankTransform                src/03b-hull-paint.js:48
-BARGE_ART                    src/12l-barge.js:378
+BARGE_ART                    src/12l-barge.js:377
 BARGE_CAP                    src/12l-barge.js:13
 BARGE_CAPNAMES               src/12l-barge.js:23
 BARGE_PERIOD                 src/12l-barge.js:12
-BARGE_SS                     src/12l-barge.js:377
+BARGE_SS                     src/12l-barge.js:376
 BARGE_TEMPER                 src/12l-barge.js:17
 BARGE_TKEYS                  src/12l-barge.js:22
-bargeArtOf                   src/12l-barge.js:379
+bargeArtOf                   src/12l-barge.js:378
 bargeAttackers               src/12l-barge.js:153
 bargeBuyPrice                src/12l-barge.js:94
-bargeCur                     src/12l-barge.js:577
+bargeCur                     src/12l-barge.js:576
 bargeDestPrice               src/12l-barge.js:79
-bargeElRow                   src/12l-barge.js:603
+bargeElRow                   src/12l-barge.js:602
 bargeEscortAccept            src/12l-barge.js:284
 bargeEscortAdvance           src/12l-barge.js:283
 bargeEscortEnd               src/12l-barge.js:299
-bargeEscortLeave             src/12l-barge.js:315
 bargeInteract                src/12l-barge.js:257
 bargeLegs                    src/12l-barge.js:43
 bargeMarkup                  src/12l-barge.js:87
 bargeMineHit                 src/12l-barge.js:189
 bargeNearOther               src/12l-barge.js:67
 bargePaxDeliver              src/12l-barge.js:245
-bargeRepNudge                src/12l-barge.js:599
+bargeRepNudge                src/12l-barge.js:598
 bargeRescued                 src/12l-barge.js:203
 bargeSellPrice               src/12l-barge.js:91
 bargeSunk                    src/12l-barge.js:221
@@ -159,10 +158,10 @@ bDress                       src/21aa-base-rooms.js:122
 BEACON_COOL                  src/23-mode-dig.js:70
 beaconCool                   src/23-mode-dig.js:71
 beaconTick                   src/23-mode-dig.js:86
-BEAST_ALIEN                  src/20-life.js:563
+BEAST_ALIEN                  src/20f-fauna.js:45
 BEAST_ALIEN_WORD             src/20e-species.js:213
-BEAST_SHAPES                 src/20-life.js:555
-beastBias                    src/20-life.js:564
+BEAST_SHAPES                 src/20f-fauna.js:37
+beastBias                    src/20f-fauna.js:46
 beastFormWord                src/20e-species.js:215
 beastTraitWord               src/20e-species.js:224
 BELT_AVLIM                   src/24-mode-belt.js:86
@@ -295,7 +294,7 @@ cirrusSprite                 src/19e-clouds.js:126
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
-closeBarge                   src/12l-barge.js:588
+closeBarge                   src/12l-barge.js:587
 closeStation                 src/26-ui-station.js:89
 CLOUD                        src/14-save.js:5
 CLOUD_KEYS                   src/02a-worldmix.js:80
@@ -342,53 +341,53 @@ craftAmmo                    src/16b-missile.js:28
 craftPart                    src/03-ships.js:90
 CREW_EV_BASE                 src/12b-crew-events.js:69
 CREW_EVENTS                  src/12b-crew-events.js:97
-CREW_MODS                    src/12a-crew.js:214
+CREW_MODS                    src/12a-crew.js:234
 CREW_OFFLINE_CAP             src/12a-crew.js:11
 CREW_SPEC                    src/12a-crew.js:12
 CREW_TALES                   src/12b-crew-events.js:23
 CREW_TRAITS                  src/12a-crew.js:20
-CREW_TRIP_QUEUE              src/12a-crew.js:273
-CREW_YIELD                   src/12a-crew.js:274
-crewAssignShip               src/12a-crew.js:180
-crewBtnTick                  src/27b-ui-crew.js:27
-crewBusy                     src/12a-crew.js:286
-crewByIdG                    src/27b-ui-crew.js:7
+CREW_TRIP_QUEUE              src/12a-crew.js:293
+CREW_YIELD                   src/12a-crew.js:294
+crewAssignShip               src/12a-crew.js:200
+crewBtnTick                  src/27b-ui-crew.js:26
+crewBusy                     src/12a-crew.js:306
 crewCap                      src/12a-crew.js:146
-crewCargoMax                 src/12a-crew.js:257
-crewCredit                   src/12a-crew.js:466
-crewDamage                   src/12a-crew.js:413
-crewDeliver                  src/12a-crew.js:461
-crewEff                      src/12a-crew.js:281
-crewFill                     src/12a-crew.js:446
+crewCargoMax                 src/12a-crew.js:277
+crewCredit                   src/12a-crew.js:486
+crewDamage                   src/12a-crew.js:433
+crewDeliver                  src/12a-crew.js:481
+crewEff                      src/12a-crew.js:301
+crewFill                     src/12a-crew.js:466
 crewFreeHostage              src/12b-crew-events.js:237
 crewFreeHostagesAt           src/12b-crew-events.js:252
-crewGiveMod                  src/12a-crew.js:225
+crewGift                     src/12a-crew.js:154
+crewGiveMod                  src/12a-crew.js:245
 crewHas                      src/12a-crew.js:49
 crewHistory                  src/12b-crew-events.js:224
-crewHold                     src/12a-crew.js:256
+crewHold                     src/12a-crew.js:276
 crewHostages                 src/12b-crew-events.js:259
 crewHullPay                  src/12a-crew.js:55
 crewLuck                     src/12a-crew.js:35
-crewModLv                    src/12a-crew.js:219
+crewModLv                    src/12a-crew.js:239
 crewMul                      src/12a-crew.js:45
-crewOrder                    src/12a-crew.js:189
+crewOrder                    src/12a-crew.js:209
 crewPay                      src/12a-crew.js:56
-crewPayload                  src/12a-crew.js:475
-crewPayroll                  src/12a-crew.js:355
-crewRender                   src/27b-ui-crew.js:46
-crewRepair                   src/12a-crew.js:401
-crewRepairCost               src/12a-crew.js:400
-crewRest                     src/12a-crew.js:409
-crewSectorPool               src/12a-crew.js:432
-crewSeverance                src/12a-crew.js:166
+crewPayload                  src/12a-crew.js:495
+crewPayroll                  src/12a-crew.js:375
+crewRender                   src/27b-ui-crew.js:45
+crewRepair                   src/12a-crew.js:421
+crewRepairCost               src/12a-crew.js:420
+crewRest                     src/12a-crew.js:429
+crewSectorPool               src/12a-crew.js:452
+crewSeverance                src/12a-crew.js:186
 crewSkill                    src/12a-crew.js:51
 crewSwing                    src/12a-crew.js:44
 crewTale                     src/12b-crew-events.js:63
 crewTaleCtx                  src/12b-crew-events.js:17
-crewTick                     src/12a-crew.js:293
-crewTrip                     src/12a-crew.js:338
-crewTripMinutes              src/12a-crew.js:275
-crewUnload                   src/12a-crew.js:239
+crewTick                     src/12a-crew.js:313
+crewTrip                     src/12a-crew.js:358
+crewTripMinutes              src/12a-crew.js:295
+crewUnload                   src/12a-crew.js:259
 crownForge                   src/05a-nodes.js:160
 crownHas                     src/05a-nodes.js:171
 crownOwned                   src/05a-nodes.js:159
@@ -405,17 +404,17 @@ dealAnswer                   src/27g-deals.js:156
 dealsTick                    src/27g-deals.js:183
 dealTaken                    src/27g-deals.js:152
 DECO_KINDS                   src/21b-surface-deco.js:24
-decoCanopy                   src/21b-surface-deco.js:460
-decoColumn                   src/21b-surface-deco.js:419
-decoDruse                    src/21b-surface-deco.js:241
-decoFrond                    src/21b-surface-deco.js:543
+decoCanopy                   src/21ba-deco-shapes.js:231
+decoColumn                   src/21ba-deco-shapes.js:190
+decoDruse                    src/21ba-deco-shapes.js:12
+decoFrond                    src/21ba-deco-shapes.js:314
 decoMat                      src/21b-surface-deco.js:144
-decoShard                    src/21b-surface-deco.js:267
-decoSlab                     src/21b-surface-deco.js:282
-decoTruss                    src/21b-surface-deco.js:330
-decoWall                     src/21b-surface-deco.js:376
+decoShard                    src/21ba-deco-shapes.js:38
+decoSlab                     src/21ba-deco-shapes.js:53
+decoTruss                    src/21ba-deco-shapes.js:101
+decoWall                     src/21ba-deco-shapes.js:147
 deltaHtml                    src/05-parts.js:293
-depKind                      src/21b-surface-deco.js:666
+depKind                      src/21b-surface-deco.js:337
 deployDrone                  src/12-economy.js:73
 DEPTH_TIERS                  src/04-mods.js:51
 DESC_MOOD                    src/01-core.js:52
@@ -425,9 +424,9 @@ DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
 digCell                      src/23-mode-dig.js:29
 digFauna                     src/23-mode-dig.js:214
-digRockMass                  src/23a-dig-draw.js:91
-digRockPass                  src/23a-dig-draw.js:18
-digVoidPath                  src/23a-dig-draw.js:297
+digRockMass                  src/23aa-dig-rock.js:99
+digRockPass                  src/23aa-dig-rock.js:26
+digVoidPath                  src/23a-dig-draw.js:4
 DOM_GAME                     src/11af-domino.js:12
 dominoBlock                  src/11af-domino.js:58
 dominoEnd                    src/11af-domino.js:23
@@ -439,32 +438,31 @@ dominoTile                   src/11af-domino.js:13
 DOOM_FOLK                    src/12v-doom.js:23
 DOOM_LEAD                    src/12v-doom.js:21
 DOOM_WARN                    src/12v-doom.js:22
-doomArm                      src/12v-doom.js:28
-doomCanLand                  src/12v-doom.js:99
+doomArm                      src/12v-doom.js:27
+doomCanLand                  src/12v-doom.js:98
 doomGet                      src/12v-doom.js:24
-doomHelp                     src/12v-doom.js:58
-doomHereKey                  src/12v-doom.js:25
-doomIsHere                   src/12v-doom.js:37
-doomLand                     src/12v-doom.js:107
-doomLearn                    src/12v-doom.js:43
-doomLeft                     src/12v-doom.js:35
-doomLift                     src/12v-doom.js:80
-doomLine                     src/12v-doom.js:171
-doomMins                     src/12v-doom.js:36
-doomStanding                 src/12v-doom.js:39
-doomTick                     src/12v-doom.js:138
+doomHelp                     src/12v-doom.js:57
+doomIsHere                   src/12v-doom.js:36
+doomLand                     src/12v-doom.js:106
+doomLearn                    src/12v-doom.js:42
+doomLeft                     src/12v-doom.js:34
+doomLift                     src/12v-doom.js:79
+doomLine                     src/12v-doom.js:170
+doomMins                     src/12v-doom.js:35
+doomStanding                 src/12v-doom.js:38
+doomTick                     src/12v-doom.js:137
 drawAccel                    src/20aa-poi-shapes.js:143
 drawAccountShelf             src/12w-survey.js:99
-drawAllies                   src/12a-crew.js:551
+drawAllies                   src/12a-crew.js:571
 drawAnomaly                  src/20aa-poi-shapes.js:168
 drawAstronaut                src/20-life.js:4
-drawBarge                    src/12l-barge.js:496
-drawBarges                   src/12l-barge.js:527
-drawBargesMap                src/12l-barge.js:552
+drawBarge                    src/12l-barge.js:495
+drawBarges                   src/12l-barge.js:526
+drawBargesMap                src/12l-barge.js:551
 drawBase                     src/21ac-base-draw.js:43
 drawBaseBuilding             src/21c-built.js:99
-drawBeast                    src/20-life.js:749
-drawBeastAlien               src/20-life.js:583
+drawBeast                    src/20f-fauna.js:231
+drawBeastAlien               src/20f-fauna.js:65
 drawBelt                     src/24-mode-belt.js:366
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17c-system-draw.js:94
@@ -488,8 +486,8 @@ drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
-drawDeposit                  src/21b-surface-deco.js:676
-drawDig                      src/23a-dig-draw.js:338
+drawDeposit                  src/21b-surface-deco.js:347
+drawDig                      src/23a-dig-draw.js:45
 drawDigFauna                 src/23-mode-dig.js:288
 drawDustMotes                src/19-mode-landing.js:355
 drawElevator                 src/20aa-poi-shapes.js:91
@@ -499,7 +497,7 @@ drawFactRoute                src/13b-occupy.js:240
 drawFindsSystem              src/17b-finds.js:149
 drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24aa-raid-draw.js:427
-drawForeground               src/21b-surface-deco.js:577
+drawForeground               src/21b-surface-deco.js:248
 drawGlassHUD                 src/24-mode-belt.js:593
 drawGround                   src/19-mode-landing.js:109
 drawGroundCrumbs             src/19-mode-landing.js:196
@@ -518,7 +516,7 @@ drawLanding                  src/19-mode-landing.js:369
 drawLoreMarks                src/12q-lore.js:214
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
-drawMap                      src/18-mode-map.js:51
+drawMap                      src/18-mode-map.js:42
 drawMisFigure                src/11z-misclosure.js:63
 drawModule                   src/21aa-base-rooms.js:374
 drawMonolith                 src/20aa-poi-shapes.js:193
@@ -535,7 +533,7 @@ drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
 drawRaid                     src/24aa-raid-draw.js:5
 drawRing                     src/17c-system-draw.js:4
-drawRingTape                 src/11x-ring.js:108
+drawRingTape                 src/11x-ring.js:107
 drawRoad                     src/27l-road-draw.js:74
 drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
@@ -568,7 +566,7 @@ drawWallPaper                src/11ae-concert.js:39
 drawWear                     src/12s-wear.js:70
 drawWeather                  src/19d-weather.js:92
 drawWreck                    src/20aa-poi-shapes.js:8
-drawWrecksSystem             src/12l-barge.js:343
+drawWrecksSystem             src/12l-barge.js:342
 droneCapacity                src/12-economy.js:68
 DRONES                       src/04-mods.js:57
 droneTarget                  src/12-economy.js:72
@@ -585,7 +583,7 @@ enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:88
 enterCave                    src/22-mode-cave.js:147
 enterDig                     src/23-mode-dig.js:50
-enterHomeIn                  src/29c-home-in.js:66
+enterHomeIn                  src/29c-home-in.js:65
 enterRaid                    src/24a-mode-raid.js:134
 enterSurface                 src/21-mode-surface.js:2
 env                          src/09-audio.js:47
@@ -600,7 +598,7 @@ exitBase                     src/21a-mode-base.js:81
 exitBelt                     src/24-mode-belt.js:174
 exitCave                     src/22-mode-cave.js:201
 exitDig                      src/23-mode-dig.js:60
-exitHomeIn                   src/29c-home-in.js:74
+exitHomeIn                   src/29c-home-in.js:73
 exitScoop                    src/19a-mode-scoop.js:19
 EXP_DAYS                     src/11x-expedition.js:19
 EXP_GOODS                    src/11x-expedition.js:20
@@ -658,7 +656,7 @@ findsIn                      src/17b-finds.js:27
 findTake                     src/17b-finds.js:58
 findTestSys                  tests/91x-finds.js:3
 fireCool                     src/13-pirates.js:76
-fireMerc                     src/12a-crew.js:167
+fireMerc                     src/12a-crew.js:187
 fireMgr                      src/12c-mgr-core.js:356
 fireShot                     src/13-pirates.js:66
 fitMap                       src/05-parts.js:202
@@ -703,8 +701,8 @@ foundBase                    src/21a-mode-base.js:53
 frame                        src/28-loop.js:386
 freeVoice                    src/09-audio.js:79
 fuelPriceHere                src/12k-rep.js:63
-FUR_TONES                    src/20-life.js:538
-furColor                     src/20-life.js:543
+FUR_TONES                    src/20f-fauna.js:20
+furColor                     src/20f-fauna.js:25
 fuseAffordable               src/03-ships.js:38
 fuseCost                     src/03-ships.js:33
 fuseGen                      src/03-ships.js:32
@@ -712,7 +710,7 @@ fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
 G                            src/08-state.js:42
 g11Fps                       src/28z-fps-probe.js:7
-genBeast                     src/20-life.js:576
+genBeast                     src/20f-fauna.js:58
 genBeltPOI                   src/24b-belt-poi.js:20
 genDeco                      src/21b-surface-deco.js:37
 genDesc                      src/01-core.js:59
@@ -759,25 +757,24 @@ glowTier                     src/11i-glow.js:122
 goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
 gradePass                    src/19c-light.js:165
-GROK_CAP                     src/12tb-grok.js:27
-GROK_DIRT                    src/12tb-grok.js:30
-GROK_LIKE                    src/12tb-grok.js:29
-GROK_MIN                     src/12tb-grok.js:28
+GROK_DIRT                    src/12tb-grok.js:29
+GROK_LIKE                    src/12tb-grok.js:28
+GROK_MIN                     src/12tb-grok.js:27
 GROK_NAME                    src/12tb-grok.js:26
 grokBlock                    src/27c-ui-hq.js:141
-grokBusy                     src/12tb-grok.js:69
-grokCanTeach                 src/12tb-grok.js:137
-grokFace                     src/12tb-grok.js:174
-grokLeftMs                   src/12tb-grok.js:70
-grokLine                     src/12tb-grok.js:160
-grokPrice                    src/12tb-grok.js:49
-grokRec                      src/12tb-grok.js:32
-grokSend                     src/12tb-grok.js:83
-grokSites                    src/12tb-grok.js:57
-grokTake                     src/12tb-grok.js:101
-grokTeach                    src/12tb-grok.js:145
-grokTick                     src/12tb-grok.js:76
-grokWant                     src/12tb-grok.js:42
+grokBusy                     src/12tb-grok.js:68
+grokCanTeach                 src/12tb-grok.js:136
+grokFace                     src/12tb-grok.js:173
+grokLeftMs                   src/12tb-grok.js:69
+grokLine                     src/12tb-grok.js:159
+grokPrice                    src/12tb-grok.js:48
+grokRec                      src/12tb-grok.js:31
+grokSend                     src/12tb-grok.js:82
+grokSites                    src/12tb-grok.js:56
+grokTake                     src/12tb-grok.js:100
+grokTeach                    src/12tb-grok.js:144
+grokTick                     src/12tb-grok.js:75
+grokWant                     src/12tb-grok.js:41
 GROUND_BAKING                src/19-mode-landing.js:194
 groundAt                     src/07-planet.js:540
 groundShadow                 src/19-mode-landing.js:286
@@ -785,15 +782,14 @@ GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
 groveDepthAt                 src/11j-grove.js:30
 groveDepthHere               src/11j-grove.js:37
-groveDraw                    src/11j-grove.js:124
+groveDraw                    src/11j-grove.js:122
 groveDress                   src/11j-grove.js:60
 groveEtherLine               src/11j-grove.js:52
 groveMark                    src/11j-grove.js:77
-groveOnKill                  src/11j-grove.js:107
-groveSoft                    src/11j-grove.js:103
+groveOnKill                  src/11j-grove.js:105
 groveSys                     src/11j-grove.js:39
 groveTick                    src/11j-grove.js:85
-groveVisit                   src/11j-grove.js:118
+groveVisit                   src/11j-grove.js:116
 GROWN_LINES                  src/11q-grown.js:48
 grownAll                     src/11q-grown.js:19
 grownDepthAt                 src/11q-grown.js:20
@@ -825,37 +821,36 @@ held                         src/08-state.js:156
 hex2rgb                      src/03-ships.js:145
 hexa                         src/12w-survey.js:91
 hexRGB                       src/24-mode-belt.js:80
-HIN_DOORW                    src/29c-home-in.js:25
-HIN_FLOOR                    src/29c-home-in.js:21
+HIN_DOORW                    src/29c-home-in.js:24
 HIN_MAN                      src/29c-home-in.js:20
-HIN_ROOM_H                   src/29c-home-in.js:22
-HIN_ROOM_W                   src/29c-home-in.js:27
-HIN_THINGS                   src/29c-home-in.js:204
+HIN_ROOM_H                   src/29c-home-in.js:21
+HIN_ROOM_W                   src/29c-home-in.js:26
+HIN_THINGS                   src/29c-home-in.js:203
 HIN_UP                       src/29e-home-up.js:20
 hinDrawHole                  src/29e-home-up.js:219
 hinDrawShell                 src/29e-home-up.js:59
 hinDrawStair                 src/29e-home-up.js:175
 hinFigure                    src/29d-home-draw.js:521
-hinFolkMake                  src/29c-home-in.js:84
-hinFolkTick                  src/29c-home-in.js:115
+hinFolkMake                  src/29c-home-in.js:83
+hinFolkTick                  src/29c-home-in.js:114
 hinFrontStuff                src/29d-home-draw.js:236
-hinGroundRooms               src/29c-home-in.js:29
+hinGroundRooms               src/29c-home-in.js:28
 hinHasUp                     src/29e-home-up.js:22
 hinHoleX                     src/29e-home-up.js:41
-hinNear                      src/29c-home-in.js:229
+hinNear                      src/29c-home-in.js:228
 hinPal                       src/29d-home-draw.js:6
-hinRoomAt                    src/29c-home-in.js:61
-hinRooms                     src/29c-home-in.js:43
+hinRoomAt                    src/29c-home-in.js:60
+hinRooms                     src/29c-home-in.js:42
 hinRoomStuff                 src/29d-home-draw.js:273
-hinSpan                      src/29c-home-in.js:53
+hinSpan                      src/29c-home-in.js:52
 hinStairX                    src/29e-home-up.js:36
-hinTalk                      src/29c-home-in.js:238
+hinTalk                      src/29c-home-in.js:237
 hinUpBounds                  src/29e-home-up.js:46
 hinUpRooms                   src/29e-home-up.js:24
 hinUpStuff                   src/29e-home-up.js:243
 hinUpWindow                  src/29e-home-up.js:356
-hinWidth                     src/29c-home-in.js:51
-hireMerc                     src/12a-crew.js:148
+hinWidth                     src/29c-home-in.js:50
+hireMerc                     src/12a-crew.js:168
 hireMgr                      src/12c-mgr-core.js:301
 holdDrawPile                 src/27j-ui-hold.js:151
 holdPiece                    src/27j-ui-hold.js:26
@@ -976,38 +971,37 @@ instOfferHere                src/11ab-institute.js:27
 INSTR                        src/25a-instr.js:19
 INSTR_BY_ID                  src/25a-instr.js:55
 INSTR_KEYS                   src/25a-instr.js:54
-INSTR_SHELF_MAX              src/05b-instr-kit.js:33
-INSTR_WEAR_RATE              src/05b-instr-kit.js:85
-INSTR_WORK_KEYS              src/05b-instr-kit.js:32
+INSTR_SHELF_MAX              src/05b-instr-kit.js:32
+INSTR_WEAR_RATE              src/05b-instr-kit.js:84
 INSTR_WORKS                  src/05b-instr-kit.js:18
-instrAgeTick                 src/05b-instr-kit.js:86
-instrBuy                     src/05b-instr-kit.js:158
+instrAgeTick                 src/05b-instr-kit.js:85
+instrBuy                     src/05b-instr-kit.js:157
 instReport                   src/11ab-institute.js:51
 instRest                     src/11ab-institute.js:100
 instRestHere                 src/11ab-institute.js:96
-instrFix                     src/05b-instr-kit.js:168
-instrFixCost                 src/05b-instr-kit.js:119
-instrFromShelf               src/05b-instr-kit.js:177
-instrInstall                 src/05b-instr-kit.js:148
-instrJitter                  src/05b-instr-kit.js:74
-instrKit                     src/05b-instr-kit.js:40
-instrKitInit                 src/05b-instr-kit.js:35
-instrKnock                   src/05b-instr-kit.js:100
+instrFix                     src/05b-instr-kit.js:167
+instrFixCost                 src/05b-instr-kit.js:118
+instrFromShelf               src/05b-instr-kit.js:176
+instrInstall                 src/05b-instr-kit.js:147
+instrJitter                  src/05b-instr-kit.js:73
+instrKit                     src/05b-instr-kit.js:39
+instrKitInit                 src/05b-instr-kit.js:34
+instrKnock                   src/05b-instr-kit.js:99
 instrMisclose                src/25a-instr.js:92
-instrOffers                  src/05b-instr-kit.js:127
+instrOffers                  src/05b-instr-kit.js:126
 instrPanel                   src/25a-instr.js:100
-instrPenWidth                src/05b-instr-kit.js:78
+instrPenWidth                src/05b-instr-kit.js:77
 instrPodDraw                 src/25c-instr-hud.js:19
 instrPodTick                 src/25c-instr-hud.js:64
-instrPrice                   src/05b-instr-kit.js:115
-instrQuality                 src/05b-instr-kit.js:66
+instrPrice                   src/05b-instr-kit.js:114
+instrQuality                 src/05b-instr-kit.js:65
 instrRead                    src/25a-instr.js:59
-instrShelf                   src/05b-instr-kit.js:44
+instrShelf                   src/05b-instr-kit.js:43
 instrTrack                   src/25a-instr.js:86
-instrTraits                  src/05b-instr-kit.js:57
-instrUnit                    src/05b-instr-kit.js:48
-instrWearRu                  src/05b-instr-kit.js:97
-instrWorks                   src/05b-instr-kit.js:53
+instrTraits                  src/05b-instr-kit.js:56
+instrUnit                    src/05b-instr-kit.js:47
+instrWearRu                  src/05b-instr-kit.js:96
+instrWorks                   src/05b-instr-kit.js:52
 instState                    src/11ab-institute.js:26
 instTake                     src/11ab-institute.js:34
 instTestSci                  tests/91zzq-institute.js:2
@@ -1041,7 +1035,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:335
+jump                         src/18-mode-map.js:326
 jumpToBase                   src/21a-mode-base.js:304
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -1188,20 +1182,20 @@ loreVocab                    src/12q-lore.js:93
 loreWinOpen                  src/27h-ui-lore.js:17
 loyBar                       src/27c-ui-hq.js:17
 loyWord                      src/27c-ui-hq.js:13
-luckLine                     src/27b-ui-crew.js:16
+luckLine                     src/27b-ui-crew.js:15
 luxPal                       src/03c-hull-luxe.js:16
 MAIN_CTX                     src/08-state.js:4
 makeIR                       src/10-music.js:109
 makePhrase                   src/10-music.js:344
 makeRock                     src/24-mode-belt.js:53
 makeWorld                    src/02a-worldmix.js:47
-MAPBG                        src/18-mode-map.js:31
-mapNebula                    src/18-mode-map.js:32
+MAPBG                        src/18-mode-map.js:22
+mapNebula                    src/18-mode-map.js:23
 marketFor                    src/12-economy.js:2
 MAT_CHAR                     src/18a-material.js:49
 MAT_S                        src/18a-material.js:34
 matCell                      src/18a-material.js:53
-mercFee                      src/12a-crew.js:147
+mercFee                      src/12a-crew.js:167
 mergeKeyMap                  src/15-input.js:97
 MGR_CAP                      src/12c-mgr-core.js:8
 MGR_JOBS                     src/12e-mgr-jobs.js:90
@@ -1260,10 +1254,10 @@ mgrWorkKeep                  src/12c-mgr-core.js:552
 mgrWorkSci                   src/12c-mgr-core.js:683
 midiHz                       src/10-music.js:106
 minedUnit                    src/11-log.js:136
-mineKey                      src/23a-dig-draw.js:835
-mineLoad                     src/23a-dig-draw.js:836
+mineKey                      src/23a-dig-draw.js:542
+mineLoad                     src/23a-dig-draw.js:543
 MINERAL                      src/18a-material.js:32
-mineSave                     src/23a-dig-draw.js:846
+mineSave                     src/23a-dig-draw.js:553
 MIRROR_CORE                  src/11f-mirror.js:22
 MIRROR_DELAY                 src/11f-mirror.js:21
 mirrorAck                    src/11f-mirror.js:33
@@ -1284,7 +1278,6 @@ misStationOffset             src/11z-misclosure.js:19
 misTableReply                src/11z-misclosure.js:50
 misTestRegion                tests/91zzj-misclosure.js:2
 MIX_KIN                      src/02a-worldmix.js:19
-MIX_TYPES                    src/02-world.js:95
 mixc                         src/03-ships.js:150
 mixHex                       src/12x-suit.js:174
 mixNum                       src/02a-worldmix.js:43
@@ -1412,8 +1405,8 @@ odo                          src/11d-place.js:24
 odoAdd                       src/11d-place.js:26
 odoSum                       src/11d-place.js:25
 ok                           tests/90-harness.js:23
-openBarge                    src/12l-barge.js:578
-openCrewView                 src/27b-ui-crew.js:199
+openBarge                    src/12l-barge.js:577
+openCrewView                 src/27b-ui-crew.js:198
 openHq                       src/27c-ui-hq.js:523
 openShipView                 src/27-ui-ship.js:160
 openStation                  src/26-ui-station.js:5
@@ -1433,7 +1426,7 @@ ORE_NODE_W                   src/23-mode-dig.js:12
 oreNode                      src/23-mode-dig.js:13
 packPart                     src/05-parts.js:322
 PAD_KEY                      src/15-input.js:19
-PAD_SAFE                     src/18-mode-map.js:11
+PAD_SAFE                     src/18-mode-map.js:2
 padsAuto                     src/15-input.js:59
 padsFadeIn                   src/15-input.js:67
 padsFadeOut                  src/15-input.js:66
@@ -1676,7 +1669,6 @@ rackTex                      src/25d-instr-rack.js:162
 rackToggle                   src/25d-instr-rack.js:56
 RADIO_BANDS                  src/25e-receiver.js:13
 radioBand                    src/25e-receiver.js:19
-radioBlock                   src/25e-receiver.js:47
 radioTune                    src/25e-receiver.js:24
 RAID_N                       src/24a-mode-raid.js:6
 RAID_ROOMS                   src/24a-mode-raid.js:7
@@ -1755,7 +1747,7 @@ relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07-planet.js:374
-renderBarge                  src/12l-barge.js:613
+renderBarge                  src/12l-barge.js:612
 renderBasesTab               src/26a-ui-station-home.js:4
 renderCantina                src/27c-ui-hq.js:45
 renderDeeds                  src/11-log.js:92
@@ -1787,7 +1779,7 @@ RES_AUTO                     src/08-state.js:35
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:369
 resEma                       src/28-loop.js:368
-resetArm                     src/26-ui-station.js:782
+resetArm                     src/26-ui-station.js:547
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:24
@@ -1807,15 +1799,14 @@ RING_FIRST                   src/11x-ring.js:20
 RING_LEN                     src/11x-ring.js:21
 RING_SRC                     src/11x-ring.js:19
 ringAll                      src/11x-ring.js:22
-ringBlock                    src/11x-ring.js:96
+ringBlock                    src/11x-ring.js:95
 ringDir                      src/11x-ring.js:26
-ringEtherLine                src/11x-ring.js:89
-ringHandIn                   src/11x-ring.js:77
+ringEtherLine                src/11x-ring.js:88
+ringHandIn                   src/11x-ring.js:76
 ringJump                     src/11x-ring.js:37
 ringLine                     src/11x-ring.js:56
 ringNow                      src/11x-ring.js:35
 ringStrength                 src/11x-ring.js:30
-ringTapes                    src/11x-ring.js:75
 ringTick                     src/11x-ring.js:41
 rivalDefeated                src/12p-news.js:84
 rivalHere                    src/12p-news.js:66
@@ -1956,31 +1947,31 @@ scripVisitReset              src/12u-scrip.js:95
 SD_KIND                      src/12tb-settle-draw.js:33
 SD_MAN                       src/12tb-settle-draw.js:31
 sdBody                       src/12tb-settle-draw.js:203
-sdCast                       src/12tb-settle-draw.js:903
-sdCut                        src/12tb-settle-draw.js:632
+sdCast                       src/12tb-settle-draw.js:645
+sdCut                        src/12tc-settle-crafts.js:144
 sdDoor                       src/12tb-settle-draw.js:363
 sdDwell                      src/12tb-settle-draw.js:402
 sdFarPal                     src/12tb-settle-draw.js:72
-sdFence                      src/12tb-settle-draw.js:811
-sdField                      src/12tb-settle-draw.js:498
-sdForge                      src/12tb-settle-draw.js:659
-sdKiln                       src/12tb-settle-draw.js:595
+sdFence                      src/12tb-settle-draw.js:553
+sdField                      src/12tc-settle-crafts.js:10
+sdForge                      src/12tc-settle-crafts.js:171
+sdKiln                       src/12tc-settle-crafts.js:107
 sdMat                        src/12tb-settle-draw.js:40
 sdMix                        src/12tb-settle-draw.js:50
 sdPal                        src/12tb-settle-draw.js:53
-sdPerson                     src/12tb-settle-draw.js:844
-sdProps                      src/12tb-settle-draw.js:756
+sdPerson                     src/12tb-settle-draw.js:586
+sdProps                      src/12tb-settle-draw.js:498
 sdRGB                        src/12tb-settle-draw.js:49
 sdRoof                       src/12tb-settle-draw.js:260
 sdShadow                     src/12tb-settle-draw.js:215
-sdSmoke                      src/12tb-settle-draw.js:879
-sdStill                      src/12tb-settle-draw.js:714
+sdSmoke                      src/12tb-settle-draw.js:621
+sdStill                      src/12tc-settle-crafts.js:226
 sdTerrace                    src/12tb-settle-draw.js:131
 sdWallTex                    src/12tb-settle-draw.js:224
-sdWeir                       src/12tb-settle-draw.js:537
+sdWeir                       src/12tc-settle-crafts.js:49
 sdWindow                     src/12tb-settle-draw.js:325
 sdWoodpile                   src/12tb-settle-draw.js:382
-sdYard                       src/12tb-settle-draw.js:1041
+sdYard                       src/12tb-settle-draw.js:783
 sellCargo                    src/12-economy.js:26
 sellDroneYield               src/12-economy.js:37
 setSt                        src/28-loop.js:72
@@ -1999,7 +1990,7 @@ settleAsk                    src/12t-settle.js:168
 settleAt                     src/12t-settle.js:46
 settleCanLive                src/12t-settle.js:50
 settleDraw                   src/12t-settle.js:228
-settleDrawBody               src/12tb-settle-draw.js:914
+settleDrawBody               src/12tb-settle-draw.js:656
 settleGive                   src/12t-settle.js:127
 settleHere                   src/12t-settle.js:47
 settleKeyOf                  src/12t-settle.js:44
@@ -2014,7 +2005,6 @@ settleRaise                  src/12t-settle.js:101
 settleSpotX                  src/12t-settle.js:55
 settleStockSum               src/12t-settle.js:142
 settleStop                   src/12t-settle.js:330
-settleStops                  src/12t-settle.js:341
 settleTick                   src/12t-settle.js:77
 settleWatch                  src/12t-settle.js:288
 settleWords                  src/12t-settle.js:163
@@ -2078,8 +2068,8 @@ SMELT                        src/02-world.js:58
 snapshot                     src/14-save.js:26
 SND                          src/09-audio.js:4
 sndWalk                      src/28-loop.js:284
-spareModLv                   src/12a-crew.js:221
-spawnAllies                  src/12a-crew.js:483
+spareModLv                   src/12a-crew.js:241
+spawnAllies                  src/12a-crew.js:503
 spawnBarges                  src/12l-barge.js:102
 spawnPirates                 src/13-pirates.js:25
 SPEC_KEYS                    src/12a-crew.js:17
@@ -2095,7 +2085,7 @@ ST_GOLD                      src/17c-system-draw.js:117
 ST_GROUPS                    src/26-ui-station.js:44
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:8
-STAR_CLASS                   src/02-world.js:96
+STAR_CLASS                   src/02-world.js:94
 STAR_COLS                    src/16-flight.js:2
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:23
@@ -2176,6 +2166,10 @@ stripsAll                    src/11b-speech.js:180
 stripSell                    src/11b-speech.js:218
 stripValue                   src/11b-speech.js:181
 stSet                        src/14-save.js:9
+stTabFuse                    src/26b-ui-station-work.js:200
+stTabInstr                   src/26b-ui-station-work.js:108
+stTabLab                     src/26b-ui-station-work.js:175
+stTabMods                    src/26b-ui-station-work.js:12
 stTabsHere                   src/26-ui-station.js:54
 stTypeOf                     src/06-galaxy.js:27
 subdivide                    src/24-mode-belt.js:34
@@ -2245,7 +2239,7 @@ tell                         src/11-log.js:45
 TELL_SFX                     src/11-log.js:43
 TEST                         tests/90-harness.js:10
 TEST_ONLY                    tests/90-harness.js:14
-TEST_SUITES                  tests/90-harness.js:102
+TEST_SUITES                  tests/90-harness.js:110
 tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:28
 thingsAll                    src/27i-ui-table.js:27
@@ -2332,17 +2326,16 @@ trailStep                    src/16-flight.js:247
 trailTint                    src/16-flight.js:234
 TRAINEE_LINES                src/11ac-trainee.js:14
 TRAINEE_NAMES                src/11ac-trainee.js:13
-traineeAboard                src/11ac-trainee.js:20
-traineeAct                   src/11ac-trainee.js:39
-traineeAll                   src/11ac-trainee.js:19
-traineeBlock                 src/11ac-trainee.js:84
-traineeDiploma               src/11ac-trainee.js:74
-traineeDiplomaHere           src/11ac-trainee.js:73
-traineeDraw                  src/11ac-trainee.js:43
-traineeFind                  src/11ac-trainee.js:22
-traineeJump                  src/11ac-trainee.js:52
-traineeSeat                  src/11ac-trainee.js:35
-traineeTick                  src/11ac-trainee.js:60
+traineeAboard                src/11ac-trainee.js:19
+traineeAct                   src/11ac-trainee.js:38
+traineeBlock                 src/11ac-trainee.js:83
+traineeDiploma               src/11ac-trainee.js:73
+traineeDiplomaHere           src/11ac-trainee.js:72
+traineeDraw                  src/11ac-trainee.js:42
+traineeFind                  src/11ac-trainee.js:21
+traineeJump                  src/11ac-trainee.js:51
+traineeSeat                  src/11ac-trainee.js:34
+traineeTick                  src/11ac-trainee.js:59
 traitOf                      src/12a-crew.js:28
 TYPES                        src/02-world.js:70
 unfitPart                    src/05-parts.js:247
@@ -2350,7 +2343,7 @@ UNIQUE_COLS                  src/03-ships.js:14
 UNIQUE_TAG                   src/03-ships.js:15
 unlockAudio                  src/09-audio.js:36
 unpackPart                   src/05-parts.js:323
-updateAllies                 src/12a-crew.js:517
+updateAllies                 src/12a-crew.js:537
 updateBarges                 src/12l-barge.js:156
 updateBase                   src/21a-mode-base.js:323
 updateBelt                   src/24-mode-belt.js:184
@@ -2358,7 +2351,7 @@ updateCave                   src/22-mode-cave.js:219
 updateCaveDeco               src/22a-cave-deco.js:184
 updateCombat                 src/13-pirates.js:77
 updateDig                    src/23-mode-dig.js:113
-updateHomeIn                 src/29c-home-in.js:160
+updateHomeIn                 src/29c-home-in.js:159
 updateLanding                src/19-mode-landing.js:45
 updateRaid                   src/24a-mode-raid.js:214
 updateScoop                  src/19a-mode-scoop.js:28
@@ -2380,38 +2373,37 @@ VEGA_OUTING                  src/12k-vega.js:46
 VEGA_RELAY                   src/12k-vega.js:22
 VEGA_SICK                    src/12k-vega.js:41
 VEGA_WISHES                  src/12k-vega.js:5
-vegaAboard                   src/11w-vega.js:23
-vegaAll                      src/11w-vega.js:21
-vegaAmbientTick              src/11w-vega.js:272
-vegaAtHome                   src/11w-vega.js:24
-vegaBeastShout               src/11w-vega.js:199
-vegaBoard                    src/11w-vega.js:136
-vegaBroken                   src/11w-vega.js:296
-vegaCantinaBlock             src/11w-vega.js:263
-vegaDayTick                  src/11w-vega.js:57
-vegaDeviceBuy                src/11w-vega.js:33
-vegaDeviceOffered            src/11w-vega.js:27
-vegaEvict                    src/11w-vega.js:112
-vegaFleaBlock                src/11w-vega.js:235
-vegaHas                      src/11w-vega.js:22
-vegaHomeArrive               src/11w-vega.js:217
-vegaHomeBlock                src/11w-vega.js:249
-vegaHomeFigure               src/11w-vega.js:287
-vegaHullName                 src/11w-vega.js:25
-vegaJump                     src/11w-vega.js:192
-vegaLanded                   src/11w-vega.js:197
-vegaLaunchHold               src/11w-vega.js:226
-vegaMoraleMul                src/11w-vega.js:121
-vegaOffend                   src/11w-vega.js:127
-vegaOffended                 src/11w-vega.js:126
-vegaOuting                   src/11w-vega.js:205
-vegaSeatAct                  src/11w-vega.js:155
-vegaSeatDraw                 src/11w-vega.js:167
-vegaSeatLine                 src/11w-vega.js:149
+vegaAboard                   src/11w-vega.js:22
+vegaAmbientTick              src/11w-vega.js:280
+vegaAtHome                   src/11w-vega.js:23
+vegaBeastShout               src/11w-vega.js:207
+vegaBoard                    src/11w-vega.js:135
+vegaBroken                   src/11w-vega.js:304
+vegaCantinaBlock             src/11w-vega.js:271
+vegaDayTick                  src/11w-vega.js:56
+vegaDeviceBuy                src/11w-vega.js:32
+vegaDeviceOffered            src/11w-vega.js:26
+vegaEvict                    src/11w-vega.js:111
+vegaFleaBlock                src/11w-vega.js:243
+vegaHas                      src/11w-vega.js:21
+vegaHomeArrive               src/11w-vega.js:225
+vegaHomeBlock                src/11w-vega.js:257
+vegaHomeFigure               src/11w-vega.js:295
+vegaHullName                 src/11w-vega.js:24
+vegaJump                     src/11w-vega.js:200
+vegaLanded                   src/11w-vega.js:205
+vegaLaunchHold               src/11w-vega.js:234
+vegaMoraleMul                src/11w-vega.js:120
+vegaOffend                   src/11w-vega.js:126
+vegaOffended                 src/11w-vega.js:125
+vegaOuting                   src/11w-vega.js:213
+vegaSeatAct                  src/11w-vega.js:154
+vegaSeatDraw                 src/11w-vega.js:175
+vegaSeatLine                 src/11w-vega.js:148
 vegaTestBazaar               tests/91zzh-vega.js:7
 vegaTestHome                 tests/91zzh-vega.js:2
-vegaTick                     src/11w-vega.js:179
-vegaWish                     src/11w-vega.js:42
+vegaTick                     src/11w-vega.js:187
+vegaWish                     src/11w-vega.js:41
 VER                          src/01-core.js:4
 visitHere                    src/11b-speech.js:83
 visitMark                    src/11b-speech.js:87
@@ -2426,7 +2418,7 @@ wallFlash                    src/11ae-concert.js:31
 wallHero                     src/11ae-concert.js:24
 wallWrap                     src/11ae-concert.js:72
 wasBlurred                   src/15-input.js:166
-watchCrew                    src/27b-ui-crew.js:35
+watchCrew                    src/27b-ui-crew.js:34
 WEAR_FULL                    src/12s-wear.js:16
 WEAR_RATE                    src/12s-wear.js:18
 WEAR_RU                      src/12s-wear.js:37
@@ -2453,11 +2445,10 @@ WORLD_VIB                    src/10-music.js:98
 WORLD_VOICE                  src/10-music.js:57
 worldRes                     src/02a-worldmix.js:119
 worldTables                  src/02a-worldmix.js:86
-wrapCenter                   src/18-mode-map.js:2
-wrapLeft                     src/18-mode-map.js:12
+wrapLeft                     src/18-mode-map.js:3
 wreck                        src/28-loop.js:2
-wreckInteract                src/12l-barge.js:321
-wrecksHere                   src/12l-barge.js:318
+wreckInteract                src/12l-barge.js:320
+wrecksHere                   src/12l-barge.js:317
 wtab                         src/02a-worldmix.js:85
 yachtMoraleMul               src/12j-home.js:255
 yachtOwned                   src/12j-home.js:248
@@ -2649,7 +2640,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11v-places.js · 3 КБ
   · и что это, собственно, было:1
 
-## src/11w-vega.js · 18 КБ
+## src/11w-vega.js · 19 КБ
   · Вега: жиличка, которую нельзя выгнать:1
 
 ## src/11x-expedition.js · 15 КБ
@@ -2668,13 +2659,13 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12aa-need.js · 12 КБ
   · нужда станции и наряд:1
 
-## src/12a-crew.js · 34 КБ
+## src/12a-crew.js · 35 КБ
   · наёмники: флот, которым не управляешь напрямую:1
   · приказы:108
-  · переданные модули:210
-  · ленивая симуляция: рейсами, а не минутами:259
-  · жалованье, долг и мораль:351
-  · встреча в космосе:480
+  · переданные модули:230
+  · ленивая симуляция: рейсами, а не минутами:279
+  · жалованье, долг и мораль:371
+  · встреча в космосе:500
 
 ## src/12b-crew-events.js · 17 КБ
   · наёмники: рейс как раздача карт:1
@@ -2737,9 +2728,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12l-barge.js · 38 КБ
   · торговые баржи:1
   · контракт охраны:279
-  · остовы погибших барж:317
-  · корпус баржи:371
-  · торг с баржой:575
+  · остовы погибших барж:316
+  · корпус баржи:370
+  · торг с баржой:574
 
 ## src/12m-rare.js · 13 КБ
   · редкости: сто адресов, а не рулетка:1
@@ -2768,8 +2759,11 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12tb-grok.js · 22 КБ
   · Грохотун: единственный, кто работает не за деньги:1
 
-## src/12tb-settle-draw.js · 57 КБ
+## src/12tb-settle-draw.js · 44 КБ
   · посёлок с земли:1
+
+## src/12tc-settle-crafts.js · 14 КБ
+  · посёлок: промыслы:1
 
 ## src/12t-settle.js · 21 КБ
   · посёлок: вы даёте, решают они:1
@@ -2849,7 +2843,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/18-mode-map.js · 22 КБ
   · карта:1
-  · карта: ночное небо, а не схема молекулы:21
+  · карта: ночное небо, а не схема молекулы:12
 
 ## src/19a-mode-scoop.js · 24 КБ
   · сбор летучих газов: заход в атмосферу гиганта:1
@@ -2894,10 +2888,12 @@ zooTick                      src/11ad-zoo.js:41
   · фауна:212
   · описан или нет:304
 
-## src/20-life.js · 45 КБ
+## src/20f-fauna.js · 17 КБ
+  · фауна:1
+
+## src/20-life.js · 29 КБ
   · астронавт:1
   · флора:105
-  · фауна:529
 
 ## src/21aa-base-rooms.js · 35 КБ
   · база: внутренности отсеков:1
@@ -2918,9 +2914,12 @@ zooTick                      src/11ad-zoo.js:41
   · сеть баз:291
   · обновление сцены:322
 
-## src/21b-surface-deco.js · 46 КБ
+## src/21ba-deco-shapes.js · 18 КБ
+  · приметы места: формы:1
+
+## src/21b-surface-deco.js · 29 КБ
   · крупная форма на поверхности:1
-  · залежь как выход породы (M169):655
+  · залежь как выход породы (M169):326
 
 ## src/21c-built.js · 10 КБ
   · ваши постройки видны с земли:1
@@ -2944,7 +2943,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/22-mode-cave.js · 28 КБ
   · пещера: поле породы в двух измерениях:1
 
-## src/23a-dig-draw.js · 50 КБ
+## src/23aa-dig-rock.js · 18 КБ
+  · шахта: порода:1
+
+## src/23a-dig-draw.js · 34 КБ
   · шахта: отрисовка:1
 
 ## src/23-mode-dig.js · 15 КБ
@@ -2981,15 +2983,18 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25d-instr-rack.js · 25 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
-## src/25e-receiver.js · 4 КБ
+## src/25e-receiver.js · 3 КБ
   · приёмник: частота крутится рукой:1
 
 ## src/26a-ui-station-home.js · 12 КБ
   · станция: вкладка «дом и базы»:1
 
-## src/26-ui-station.js · 50 КБ
+## src/26b-ui-station-work.js · 15 КБ
+  · станция: мастерская и наука:1
+
+## src/26-ui-station.js · 36 КБ
   · станция:1
-  · настройки:781
+  · настройки:546
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -3058,7 +3063,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91a-flight.js · 12 КБ
   · автотесты: наборы:1
 
-## tests/91b-crew.js · 14 КБ
+## tests/91b-crew.js · 15 КБ
   · автотесты: наёмники: убыток по кредитам, удача, плен, рейсы, сохранение:1
 
 ## tests/91c-mgr.js · 14 КБ
@@ -3219,7 +3224,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzh-receiver.js · 1 КБ
   · приёмник: диапазоны на одном месте, между ними шум, на краю слова выпадают:1
 
-## tests/91zzh-vega.js · 7 КБ
+## tests/91zzh-vega.js · 9 КБ
   · автотесты: Вега (M153):1
 
 ## tests/91zzi-ring.js · 3 КБ

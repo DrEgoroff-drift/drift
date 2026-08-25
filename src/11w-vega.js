@@ -18,7 +18,6 @@
    1. Ничего не трогает экономику: разбитое — картинка и чуть морали, не налог.
    2. Слова — в 12k-vega. Здесь условия и счётчики.
    3. Выгнать нельзя ни на одной стадии: это не баг, это фильм. */
-function vegaAll(){return G.vega||null;}
 function vegaHas(){const V=G.vega;return !!(V&&V.stage>0);}
 function vegaAboard(){const V=G.vega;return !!(V&&V.stage>0&&V.aboard);}
 function vegaAtHome(){const H=G.home;return !!(H&&H.tier&&G.sx===H.sx&&G.sy===H.sy);}
@@ -159,6 +158,15 @@ function vegaSeatAct(){
   if(rare){
     G.cargo[rare]--;V.att=Math.max(0,V.att-1);V.mood=1;V.offend=-1;
     peopleLine(pick(VEGA_GIFT_OK,rng(hashi(celDay(),V.calls,0x61F))),"Вега",true);
+    return;
+  }
+  /* «руда — ссора» стояла в замысле этой функции с самого начала, а кода не
+     было: реплики (`VEGA_GIFT_BAD`) написаны и не звучали ни разу. Дарить
+     женщине железо из трюма — это поступок, и он должен иметь цену. */
+  const ore=RES_KEYS.find(k=>!RES[k].rare&&(G.cargo[k]|0)>0);
+  if(ore&&!vegaOffended()){
+    peopleLine(pick(VEGA_GIFT_BAD,rng(hashi(celDay(),V.said,0x62A))),"Вега",true);
+    vegaOffend("подарили "+RES[ore].ru);
     return;
   }
   if(vegaOffended()){say("Вега\n…",120);return;}

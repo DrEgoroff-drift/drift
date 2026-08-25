@@ -127,3 +127,34 @@ TEST_SUITES.push(()=>suite("Вега: переживает сохранение 
   ok(vegaHas(),"дом пересобран — Вега на месте");
   G.vega=null;G.seat=null;
 }));
+
+/* ── руда — ссора, и слова дома домашние (25.08.2026) ──
+   Две реплики Веги были написаны и не звучали ни разу: `VEGA_GIFT_BAD` (в коде
+   не было ветки, хотя комментарий её обещал) и `VEGA_DREAM` (дома она говорила
+   набором С БОРТА — «летаешь как баржа» в собственной кухне). */
+TEST_SUITES.push(()=>suite("Вега: руда обижает, дома говорит домашнее",()=>{
+  resetWorld();
+  G.vega={stage:2,day0:celDay(),att:0,away:0,homeDays:0,broken:[],evict:0,aboard:1,
+          mood:1,offend:-1,out:{},parrot2:0,lastDay:celDay(),calls:0,wish:"love",said:0};
+  /* в трюме только руда — подарок оборачивается ссорой */
+  for(const k in G.cargo)delete G.cargo[k];
+  const ore=RES_KEYS.find(k=>!RES[k].rare);
+  G.cargo[ore]=3;
+  ok(!vegaOffended(),"до подарка не в обиде");
+  vegaSeatAct();
+  ok(vegaOffended(),"подарили руду — обиделась");
+  eq(G.cargo[ore],3,"и руду не взяла");
+  /* редкость по-прежнему принимается и мирит */
+  G.vega.offend=-1;
+  const rare=RARE_RES[0];
+  G.cargo[rare]=1;
+  vegaSeatAct();
+  eq(G.cargo[rare]|0,0,"редкость приняла");
+  ok(!vegaOffended(),"и не в обиде");
+  /* дома — свои слова, не бортовые */
+  ok(VEGA_DREAM.length>0,"домашние реплики есть");
+  const home=VEGA_DREAM.join("|"), aboard=VEGA_ABOARD.join("|");
+  ok(VEGA_DREAM.every(l=>aboard.indexOf(l)<0),"и это не тот же набор, что на борту");
+  ok(home.indexOf("баржа")<0,"дома про баржу не говорят");
+  G.vega=null;G.seat=null;
+}));

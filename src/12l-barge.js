@@ -312,7 +312,6 @@ function bargeEscortEnd(b,ok){
    Здесь нет отдельного despawn-события, поэтому договор закрывается либо
    спасением (bargeRescued), либо гибелью (bargeSunk); если баржа просто мирно
    ушла за край без боя, считаем это доводкой. */
-function bargeEscortLeave(b){if(b.escort)bargeEscortEnd(b,true);}
 
 /* ══════════════ остовы погибших барж ══════════════ */
 function wrecksHere(){return G.wrecks[G.sx+","+G.sy]||null;}

@@ -24,7 +24,6 @@
    5. Считается лениво, по прошедшему времени, с потолком офлайна — как рейсы. */
 
 const GROK_NAME="Грохотун";
-const GROK_CAP=24*3600*1000;
 const GROK_MIN=18*60000, GROK_MAX=31*60000;    // сколько идёт копка
 const GROK_LIKE=["organics","carbon","ice","volatiles"];
 const GROK_DIRT=["silicon","iron","titan"];    // что он выносит из отвала

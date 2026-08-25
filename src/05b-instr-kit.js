@@ -29,7 +29,6 @@ const INSTR_WORKS={
   trofey: {ru:"Трофейный",  note:"чужая работа, подписи стёрты",
            res:1.15, jit:1.3, pen:.85, drift:1.1, age:1.25, price:1.4}
 };
-const INSTR_WORK_KEYS=Object.keys(INSTR_WORKS);
 const INSTR_SHELF_MAX=4;
 /* стартовый набор: казённые приборы, поставленные на верфи вместе с корпусом */
 function instrKitInit(){

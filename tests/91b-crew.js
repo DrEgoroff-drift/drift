@@ -282,3 +282,25 @@ TEST_SUITES.push(()=>suite("все режимы рисуются",()=>{
   exitCave();
   ok(draws.length===5,"отрисованы режимы: "+draws.join(", "));
 }));
+
+/* ── человек, пришедший даром (25.08.2026) ──
+   Сделка «пришёл к вам в звено — даром» вызывала `crewGift`, которой не
+   существовало: вызов стоял под `typeof …==="function"` и глотался молча.
+   Игра обещала наёмника и не давала его — проверяем, что теперь даёт. */
+TEST_SUITES.push(()=>suite("даровой наёмник приходит на самом деле",()=>{
+  resetWorld();
+  ok(typeof crewGift==="function","crewGift существует");
+  G.crew=[];G.techLvl.license=2;
+  const before=G.crew.length, money=G.credits;
+  const ok1=crewGift(12345);
+  ok(ok1===true,"пришёл");
+  eq(G.crew.length,before+1,"в звене на одного больше");
+  eq(G.credits,money,"и денег не взял — он даром");
+  eq(G.crew[G.crew.length-1].fee,0,"плата за него нулевая");
+  ok(!!G.crew[G.crew.length-1].name,"у него есть имя");
+  /* мест нет — говорит об этом, а не пропадает молча */
+  while(G.crew.length<crewCap())crewGift(1);
+  const full=G.crew.length;
+  eq(crewGift(2),false,"без места — отказ");
+  eq(G.crew.length,full,"и никто не появился");
+}));

@@ -192,7 +192,7 @@ function dealsTick(){
     if(R.credits>0)earn(R.credits,"deal");
     else if(R.credits<0)G.credits=Math.max(0,G.credits+R.credits);
     if(R.hull)G.hull=Math.max(1,G.hull+R.hull);
-    if(R.crew&&typeof crewGift==="function")crewGift();
+    if(R.crew)crewGift(hashi(d.at,R.crew,0xC1F));
     if(R.node&&typeof nodeDrop==="function")nodeDrop(R.node,.6,hashi(d.at,7,3));
     /* чем кончилось — тем и запомнят: удачное дело красит имя, провал портит */
     repAdd(good?1:-1);

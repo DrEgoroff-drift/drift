@@ -72,7 +72,6 @@ function rxRecord(){
   const b=document.getElementById("rxRec");if(b)b.style.display="none";
   return true;
 }
-function ringTapes(){return ringAll().tapes;}
 /* сдать у стойки: строка в очереди, запись, слух */
 function ringHandIn(i){
   const R=ringAll(),t=R.tapes[i];if(!t||t.handed)return false;

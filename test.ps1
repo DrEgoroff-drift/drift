@@ -31,8 +31,12 @@ $argv = @("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=$win
           "--user-data-dir=$($env:TEMP)\drift-tests-profile",
           "--no-first-run", "--no-default-browser-check",
           "--virtual-time-budget=20000", "--timeout=60000", "--dump-dom", $url)
+# Секунды считаем ЗДЕСЬ: внутри страницы часы стоят (--virtual-time-budget), и
+# отчёт годами печатал «0 мс». Снаружи время настоящее, вместе со стартом Chrome.
+$sw = [Diagnostics.Stopwatch]::StartNew()
 Start-Process -FilePath $chrome -ArgumentList $argv -NoNewWindow -Wait `
   -RedirectStandardOutput $dom -RedirectStandardError $err | Out-Null
+$sw.Stop()
 $html = [System.IO.File]::ReadAllText($dom, [System.Text.Encoding]::UTF8)
 
 $m = [regex]::Match($html, '<pre id="testout"[^>]*>([\s\S]*?)</pre>')
@@ -42,7 +46,7 @@ if (-not $m.Success) {
 }
 $text = [System.Net.WebUtility]::HtmlDecode($m.Groups[1].Value)
 $lines = $text -split "`n"
-$lines[0]
+"{0} · {1:N1} с" -f $lines[0].TrimEnd(), $sw.Elapsed.TotalSeconds
 # Head is "FAILED N · passed P" or "ALL GREEN · passed P": a digit before the first dot means failures.
 # The failures block follows the head after one blank line and ends at the next blank line.
 if ($lines[0] -match '^\S+ \d+ ') {

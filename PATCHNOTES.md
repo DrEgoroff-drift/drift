@@ -7,6 +7,39 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.153.0 — the audit: five files cut, two lies found (M183)
+
+An audit of the sources, asked for in three words: cut the files, check the tests, look at the
+structure. Measured first, then acted.
+
+**Two things the game was promising and not doing.** A search for `typeof X === "function"` guards
+standing over functions that do not exist turned up `crewGift`: the deal «Он отработал и пришёл к
+вам в звено — даром» told the player a hand had joined the crew, the guard swallowed the call, and
+nobody came. Written now (`12a-crew`), and the guard is gone. The same sweep for never-referenced
+symbols found Vega's two dead tables: `VEGA_GIFT_BAD` — the comment in `vegaSeatAct` had promised
+«руда — ссора» since the day it was written, with no code under it — and `VEGA_DREAM`, the lines
+for **home**, while at home she was speaking the ones from the ship's cabin («летаешь как баржа» in
+her own kitchen). Both now say what they were written to say. Fourteen genuinely dead functions and
+constants were deleted.
+
+**The build now catches this class of bug**: a `typeof` guard over a function that exists nowhere
+is flagged on every build. The project rule "a perk without code is a lie" applies to calls too.
+
+**Five files cut along their seams**, no rewriting: `12tb-settle-draw` 57→44 KB (the six trades →
+`12tc-settle-crafts`), `23a-dig-draw` 50→33 (the mountain → `23aa-dig-rock`), `20-life` 45→29 (the
+beasts → `20f-fauna`), `21b-surface-deco` 46→30 (the eight landmark forms → `21ba-deco-shapes`),
+and `26-ui-station` 50→36 — its 600-line `renderTab` could not be halved, but four tabs came out
+whole (`26b-ui-station-work`), the way the cantina and the flea market already had. The guard's
+list went from eleven files to seven, and two grandfathered entries were **removed** rather than
+re-baselined: a concession that outlives its debt is permanent.
+
+**The test report stopped lying.** It had printed «0 мс» for every run since the line was written —
+`test.ps1` runs the page under `--virtual-time-budget`, where `performance.now()` does not move
+between synchronous calls. It now prints what is actually counted (suites) plus real seconds
+measured outside: `ВСЁ ЗЕЛЁНОЕ · пройдено 6980 · наборов 258 · 11 с`. The suite itself needs no
+optimising — 258 suites and ~7000 assertions in eleven seconds, most of it Chrome starting up.
+
+---
 ## 0.152.0 — the pads never go away (M182)
 
 «Пусть кнопки на мобиле всегда доступны, они пропадают и это пугает». M181 dimmed ТОРМОЗ and

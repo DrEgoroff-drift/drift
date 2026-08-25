@@ -1032,7 +1032,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.152.0";
+const VER="0.153.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -1320,8 +1320,6 @@ const TYPES={
   ruin:{ru:"руинная",mix:"с руинами",pal:[[28,26,24],[68,60,50],[112,100,84],[156,142,120],[196,184,160],[226,218,200]],rough:.7,atm:"разреженная, пыльная",sky:[[152,134,108],[42,36,30]],grav:.9},
   gas:{ru:"газовый гигант",mix:"",pal:[[52,38,72],[96,68,110],[152,116,138],[204,168,158],[238,216,198]],rough:0,atm:"нет поверхности",sky:[[0,0,0],[0,0,0]],grav:2.4}
 };
-/* истинные миры, между которыми возможна смесь (гигант — вне) */
-const MIX_TYPES=Object.keys(TYPES).filter(k=>k!=="gas");
 const STAR_CLASS=[
   {ru:"красный карлик",col:"#ff7a52",t:.5},
   {ru:"оранжевая",col:"#ffab5e",t:.7},
@@ -4311,7 +4309,6 @@ const INSTR_WORKS={
   trofey: {ru:"Трофейный",  note:"чужая работа, подписи стёрты",
            res:1.15, jit:1.3, pen:.85, drift:1.1, age:1.25, price:1.4}
 };
-const INSTR_WORK_KEYS=Object.keys(INSTR_WORKS);
 const INSTR_SHELF_MAX=4;
 /* стартовый набор: казённые приборы, поставленные на верфи вместе с корпусом */
 function instrKitInit(){
@@ -7122,7 +7119,6 @@ const TRAINEE_LINES={
   2:["Я карту прочитал. Сам. Там нужда рядом — я видел.","Стрелка дёргается, когда вы так поворачиваете. Я записал.","Можно я за ручку? Я знаю, где эфир."],
   3:["Отправьте меня в рейс. Я готов. Честно.","Командир звена сказал — молод. А вы что скажете?","Я всё выучил. Диплом дадут — уйду. Не обижайтесь."]
 };
-function traineeAll(){return G.trainee||null;}
 function traineeAboard(){const T=G.trainee;return !!(T&&T.st>=1&&T.st<=3&&!T.gone);}
 /* найден в трюме после блошинца: раз за прохождение */
 function traineeFind(){
@@ -9350,8 +9346,6 @@ function groveTick(b,dt){
     a.gl=clamp(a.gl+(v>0?.02:-.01)*dt,0,1);         /* светится, когда идёт к тебе */
   }
 }
-/* роща не бьёт корпус: столкновение с её камнем — мягкий отвод, без урона */
-function groveSoft(a){return !!a.grove;}
 /* ── память ──
    killRock зовёт это первым. Оружие (power≥3) — выстрел: роща расступается
    навсегда. Резак (power<3) — срез: ксенобиом в трюм и роща смыкается. */
@@ -10573,7 +10567,6 @@ function placeDraw(tr,camx,camy,p){
    1. Ничего не трогает экономику: разбитое — картинка и чуть морали, не налог.
    2. Слова — в 12k-vega. Здесь условия и счётчики.
    3. Выгнать нельзя ни на одной стадии: это не баг, это фильм. */
-function vegaAll(){return G.vega||null;}
 function vegaHas(){const V=G.vega;return !!(V&&V.stage>0);}
 function vegaAboard(){const V=G.vega;return !!(V&&V.stage>0&&V.aboard);}
 function vegaAtHome(){const H=G.home;return !!(H&&H.tier&&G.sx===H.sx&&G.sy===H.sy);}
@@ -10714,6 +10707,15 @@ function vegaSeatAct(){
   if(rare){
     G.cargo[rare]--;V.att=Math.max(0,V.att-1);V.mood=1;V.offend=-1;
     peopleLine(pick(VEGA_GIFT_OK,rng(hashi(celDay(),V.calls,0x61F))),"Вега",true);
+    return;
+  }
+  /* «руда — ссора» стояла в замысле этой функции с самого начала, а кода не
+     было: реплики (`VEGA_GIFT_BAD`) написаны и не звучали ни разу. Дарить
+     женщине железо из трюма — это поступок, и он должен иметь цену. */
+  const ore=RES_KEYS.find(k=>!RES[k].rare&&(G.cargo[k]|0)>0);
+  if(ore&&!vegaOffended()){
+    peopleLine(pick(VEGA_GIFT_BAD,rng(hashi(celDay(),V.said,0x62A))),"Вега",true);
+    vegaOffend("подарили "+RES[ore].ru);
     return;
   }
   if(vegaOffended()){say("Вега\n…",120);return;}
@@ -11163,7 +11165,6 @@ function rxRecord(){
   const b=document.getElementById("rxRec");if(b)b.style.display="none";
   return true;
 }
-function ringTapes(){return ringAll().tapes;}
 /* сдать у стойки: строка в очереди, запись, слух */
 function ringHandIn(i){
   const R=ringAll(),t=R.tapes[i];if(!t||t.handed)return false;
@@ -11723,6 +11724,26 @@ function assignToBase(c,B,role){
   return true;
 }
 function crewCap(){return 1+techLv("license")+mgrCrewCap();}
+/* ── человек, пришедший даром (25.08.2026) ──
+   Сделка «Он отработал и пришёл к вам в звено — даром» (27g-deals) вызывала
+   `crewGift()`, которой в игре не было НИ РАЗУ: вызов стоял под
+   `typeof …==="function"`, проверка молча его глотала, игрок читал обещание и
+   не получал ничего. Ложь такого рода правилами проекта запрещена прямо, так
+   что функция написана. Он приходит без платы, но и без выбора: кто пришёл,
+   тот и пришёл. Если мест нет — он не пропадает молча, а говорит об этом. */
+function crewGift(seed){
+  if(G.crew.length>=crewCap()){
+    say("Человек пришёл, а места нет\nнужна лицензия на флот");
+    return false;
+  }
+  const m=genMerc(seed||hashi(Date.now()&0xffffff,G.crew.length*7717,0xC1F),null);
+  m.fee=0;
+  G.crew.push(Object.assign(m,{cargo:{},order:{kind:"home",sx:G.sx,sy:G.sy},
+    tMs:Date.now(),paidMs:Date.now()}));
+  tell("good","В звено даром: "+m.name+" · "+CREW_SPEC[m.spec].ru,
+       "К вам пришёл "+m.name+"\n"+CREW_SPEC[m.spec].ru+"\nплаты не просит — выдайте корабль");
+  return true;
+}
 function mercFee(c){return Math.round(c.fee*mgrHireMul());}
 function hireMerc(c){
   if(G.crew.length>=crewCap()){say("Больше нанимать некому\nнужна лицензия на флот");return false;}
@@ -16479,7 +16500,6 @@ function bargeEscortEnd(b,ok){
    Здесь нет отдельного despawn-события, поэтому договор закрывается либо
    спасением (bargeRescued), либо гибелью (bargeSunk); если баржа просто мирно
    ушла за край без боя, считаем это доводкой. */
-function bargeEscortLeave(b){if(b.escort)bargeEscortEnd(b,true);}
 
 /* ══════════════ остовы погибших барж ══════════════ */
 function wrecksHere(){return G.wrecks[G.sx+","+G.sy]||null;}
@@ -18621,7 +18641,6 @@ function tinDraw(T,tr,camx,camy,p){
    5. Считается лениво, по прошедшему времени, с потолком офлайна — как рейсы. */
 
 const GROK_NAME="Грохотун";
-const GROK_CAP=24*3600*1000;
 const GROK_MIN=18*60000, GROK_MAX=31*60000;    // сколько идёт копка
 const GROK_LIKE=["organics","carbon","ice","volatiles"];
 const GROK_DIRT=["silicon","iron","titan"];    // что он выносит из отвала
@@ -19440,264 +19459,6 @@ function sdDwell(x,y,w,h,pal,M,nite,seed,barn){
   ctx.fillRect(cx2-.8,y-h-h*.14,w*.12,h*.03);
   return {chim:{x:cx2+w*.05,y:y-h-h*.14}};
 }
-function sdField(x,y,w,h,pal,seed,wind){
-  const r=rng(hashi(seed,3,0x1E1D));
-  /* Гряды в два пикселя высотой терялись на улице (самокритика M169): поле
-     теперь выше человека по ботве, с бортиками, шпалерой и своей межой. */
-  ctx.fillStyle=sdRGB(sdMix(pal.earth,[0,0,0],.26));
-  ctx.fillRect(x-w*.55,y-4,w*1.1,4);
-  for(let i=0;i<4;i++){
-    const yy=y-i*3.4, ww=w*(1.05-i*.07);
-    ctx.fillStyle=sdRGB(sdMix(pal.earth,[0,0,0],.14+i*.06));
-    ctx.fillRect(x-ww/2,yy-3.4,ww,3.4);
-    ctx.fillStyle=sdRGB(sdMix(pal.earth,[214,198,152],.34));
-    ctx.fillRect(x-ww/2,yy-3.4,ww,1);
-    const green="rgba("+(96+i*10)+","+(158+i*8)+","+(78+i*6)+",.8)";
-    ctx.strokeStyle=green;ctx.lineWidth=1.2;
-    for(let k=0;k<10;k++){
-      const px=x-ww/2+ww*(k+.5)/10, hh=h*(.5+r()*.5);
-      ctx.beginPath();ctx.moveTo(px,yy-3.4);
-      ctx.quadraticCurveTo(px+wind*2,yy-hh*.6,px+wind*4.5,yy-hh);ctx.stroke();
-      if(r()<.35){                                   /* завязь: поле не только ботва */
-        ctx.fillStyle="rgba(214,182,86,.75)";
-        ctx.beginPath();ctx.arc(px+wind*3.4,yy-hh*.72,1.5,0,TAU);ctx.fill();
-      }
-    }
-  }
-  /* жерди с подвязкой и пугало: силуэт, который виден издали */
-  ctx.strokeStyle=sdRGB(sdMix(pal.wood,[0,0,0],.25));ctx.lineWidth=1.4;
-  for(let i=0;i<3;i++){
-    const px=x-w*.35+w*.35*i;
-    ctx.beginPath();ctx.moveTo(px,y);ctx.lineTo(px+wind,y-h*.9);ctx.stroke();
-  }
-  const sx2=x+w*.38;
-  ctx.beginPath();ctx.moveTo(sx2,y);ctx.lineTo(sx2,y-h*1.5);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(sx2-5,y-h*1.15);ctx.lineTo(sx2+5,y-h*1.15);ctx.stroke();
-  ctx.fillStyle=sdRGB(sdMix(pal.wall,[0,0,0],.15));
-  ctx.beginPath();ctx.arc(sx2,y-h*1.55,3,0,TAU);ctx.fill();
-  ctx.fillStyle="rgba(0,0,0,.3)";
-  ctx.beginPath();ctx.moveTo(sx2-4.5,y-h*1.62);ctx.lineTo(sx2+4.5,y-h*1.62);
-  ctx.lineTo(sx2,y-h*1.78);ctx.closePath();ctx.fill();
-}
-function sdWeir(x,y,w,h,pal,seed){
-  /* Запруда — не голубая коробка (первый проход давал именно её), а ПЛОТИНА:
-     каменная гряда поперёк ручья, вода стоит за ней и переливается через
-     гребень, ниже — сток и мокрые камни. Узнаётся по воде и по струе. */
-  const r=rng(hashi(seed,9,0x3E11));
-  sdShadow(x,y,w,h);
-  /* пруд за гребнем: тёмная вода с бликами, уходит вверх по склону */
-  const pond=ctx.createLinearGradient(0,y-h-14,0,y-h+2);
-  pond.addColorStop(0,"rgba(40,74,86,.9)");
-  pond.addColorStop(.7,"rgba(64,110,120,.85)");
-  pond.addColorStop(1,"rgba(120,168,170,.8)");
-  ctx.fillStyle=pond;
-  ctx.beginPath();
-  ctx.moveTo(x-w*.55,y-h+1);ctx.lineTo(x-w*.62,y-h-13);
-  ctx.lineTo(x+w*.30,y-h-13);ctx.lineTo(x+w*.34,y-h+1);ctx.closePath();ctx.fill();
-  ctx.fillStyle="rgba(226,248,255,.30)";                    /* рябь: короткие блики */
-  for(let i=0;i<7;i++){
-    const t=((G.t*.3+i*23)%90)/90;
-    ctx.fillRect(x-w*.5+t*w*.8,y-h-11+i*1.6,5+r()*4,1);
-  }
-  /* тело плотины */
-  sdBody(()=>{
-    ctx.moveTo(x-w/2,y);ctx.lineTo(x-w*.30,y-h);
-    ctx.lineTo(x+w*.24,y-h);ctx.lineTo(x+w*.44,y);ctx.closePath();
-  },sdRGB(pal.stone),null,.26);
-  ctx.save();ctx.beginPath();
-  ctx.moveTo(x-w/2,y);ctx.lineTo(x-w*.30,y-h);ctx.lineTo(x+w*.24,y-h);ctx.lineTo(x+w*.44,y);
-  ctx.closePath();ctx.clip();
-  for(let yy=y-2;yy>y-h;yy-=4.5)for(let xx=x-w/2;xx<x+w/2;xx+=6+r()*3){
-    ctx.fillStyle=sdRGB(sdMix(pal.stone,[0,0,0],.14+r()*.22));
-    ctx.fillRect(xx,yy-4,5+r()*3,4);
-    ctx.fillStyle="rgba(255,246,220,.12)";ctx.fillRect(xx,yy-4,5+r()*3,1);
-  }
-  const lg=ctx.createLinearGradient(x-w/2,0,x+w/2,0);
-  lg.addColorStop(0,"rgba(0,0,0,.34)");lg.addColorStop(1,"rgba(255,240,210,.16)");
-  ctx.fillStyle=lg;ctx.fillRect(x-w/2,y-h,w,h);
-  ctx.restore();
-  /* перелив через гребень и струя вниз: главное, что делает плотину плотиной */
-  ctx.fillStyle="rgba(206,238,246,.75)";
-  ctx.fillRect(x-w*.04,y-h-1,w*.16,2.4);
-  const jet=ctx.createLinearGradient(0,y-h,0,y);
-  jet.addColorStop(0,"rgba(214,242,248,.75)");jet.addColorStop(1,"rgba(180,220,232,.25)");
-  ctx.fillStyle=jet;
-  ctx.beginPath();
-  ctx.moveTo(x-w*.03,y-h);ctx.lineTo(x+w*.13,y-h);
-  ctx.lineTo(x+w*.19,y);ctx.lineTo(x-w*.09,y);ctx.closePath();ctx.fill();
-  /* брызги у подножия */
-  ctx.fillStyle="rgba(226,246,252,.35)";
-  for(let i=0;i<5;i++){
-    const t=((G.t*.8+i*17)%30)/30;
-    ctx.beginPath();ctx.arc(x+w*.05+(r()-.5)*10,y-t*5,1.6+t*2.4,0,TAU);ctx.fill();
-  }
-  /* мостки и вёдра: к воде ходят */
-  ctx.strokeStyle=sdRGB(sdMix(pal.wood,[0,0,0],.3));ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(x-w*.42,y-h*.42);ctx.lineTo(x+w*.02,y-h*.42);ctx.stroke();
-  ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.15));
-  ctx.fillRect(x-w*.36,y-h*.42-4,4,4);
-}
-function sdKiln(x,y,w,h,pal,seed,warm){
-  sdShadow(x,y,w,h);
-  /* купол с аркой топки — узнаётся силуэтом */
-  sdBody(()=>{
-    ctx.moveTo(x-w/2,y);
-    ctx.quadraticCurveTo(x-w/2,y-h*1.25,x,y-h*1.25);
-    ctx.quadraticCurveTo(x+w/2,y-h*1.25,x+w/2,y);
-    ctx.closePath();
-  },sdRGB(sdMix(pal.stone,[110,86,64],.4)),null,.26);
-  const g=ctx.createLinearGradient(x-w/2,0,x+w/2,0);
-  g.addColorStop(0,"rgba(0,0,0,.34)");g.addColorStop(1,"rgba(255,236,200,.20)");
-  ctx.save();ctx.beginPath();
-  ctx.moveTo(x-w/2,y);ctx.quadraticCurveTo(x-w/2,y-h*1.25,x,y-h*1.25);
-  ctx.quadraticCurveTo(x+w/2,y-h*1.25,x+w/2,y);ctx.closePath();ctx.clip();
-  ctx.fillStyle=g;ctx.fillRect(x-w/2,y-h*1.3,w,h*1.3);
-  ctx.strokeStyle="rgba(0,0,0,.18)";ctx.lineWidth=1;
-  for(let yy=y-3;yy>y-h*1.2;yy-=4){ctx.beginPath();ctx.moveTo(x-w/2,yy);ctx.lineTo(x+w/2,yy);ctx.stroke();}
-  ctx.restore();
-  /* топка: арка, а в ней жар */
-  const fw=w*.34,fh=h*.44;
-  ctx.fillStyle="rgba(12,10,10,.9)";
-  ctx.beginPath();
-  ctx.moveTo(x-fw/2,y);ctx.lineTo(x-fw/2,y-fh*.6);
-  ctx.quadraticCurveTo(x,y-fh*1.25,x+fw/2,y-fh*.6);ctx.lineTo(x+fw/2,y);ctx.closePath();ctx.fill();
-  if(warm){
-    const fg=ctx.createRadialGradient(x,y-fh*.4,0,x,y-fh*.4,fw);
-    const pulse=.7+.3*Math.sin(G.t*.06+seed);
-    fg.addColorStop(0,"rgba(255,190,90,"+(.85*pulse).toFixed(2)+")");
-    fg.addColorStop(1,"rgba(255,120,40,0)");
-    ctx.fillStyle=fg;ctx.beginPath();ctx.arc(x,y-fh*.4,fw,0,TAU);ctx.fill();
-  }
-  /* поленница и зола рядом — печь работает, а не стоит памятником */
-  ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.25));
-  ctx.fillRect(x+w*.55,y-h*.5,w*.3,h*.5);
-  ctx.fillStyle="rgba(160,150,140,.35)";
-  ctx.beginPath();ctx.ellipse(x-w*.62,y-1,w*.24,2.4,0,0,TAU);ctx.fill();
-}
-function sdCut(x,y,w,h,pal,seed){
-  const r=rng(hashi(seed,13,0x0C17));
-  sdShadow(x,y,w,h);
-  /* штабель плит: главный силуэт камнерезки */
-  let sy=y;
-  for(let i=0;i<4;i++){
-    const sw=w*(.62-i*.07),sh=h*.17;
-    ctx.fillStyle=sdRGB(sdMix(pal.stone,[0,0,0],.10+i*.04));
-    ctx.fillRect(x-sw/2+(r()-.5)*3,sy-sh,sw,sh);
-    ctx.fillStyle="rgba(255,246,226,.16)";
-    ctx.fillRect(x-sw/2+(r()-.5)*3,sy-sh,sw,1);
-    sy-=sh;
-  }
-  /* козлы с плитой на распиле и рама пилы */
-  const gx=x+w*.5,gy=y;
-  ctx.strokeStyle=sdRGB(sdMix(pal.wood,[0,0,0],.3));ctx.lineWidth=1.6;
-  for(const s of [-1,1]){
-    ctx.beginPath();ctx.moveTo(gx+s*5,gy);ctx.lineTo(gx+s*1.5,gy-h*.44);ctx.stroke();
-  }
-  ctx.fillStyle=sdRGB(sdMix(pal.stone,[220,220,214],.3));
-  ctx.fillRect(gx-w*.2,gy-h*.5,w*.4,h*.08);
-  ctx.strokeStyle="rgba(226,236,240,.4)";ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(gx-w*.18,gy-h*.56);ctx.lineTo(gx+w*.18,gy-h*.56);ctx.stroke();
-  /* каменная пыль под козлами */
-  ctx.fillStyle="rgba(226,222,210,.22)";
-  ctx.beginPath();ctx.ellipse(gx,gy-1,w*.24,2.2,0,0,TAU);ctx.fill();
-}
-function sdForge(x,y,w,h,pal,seed,warm){
-  /* Кузня — не телега под навесом (так вышло в первом проходе): открытый
-     сруб в три четверти стены, высокий горн с вытяжкой, наковальня в рост
-     колена и кузнец, если работает. Её узнают по свету изнутри. */
-  sdShadow(x,y,w,h);
-  const ph=h*.80,pw=2.6;
-  /* задняя стена — сначала, чтобы столбы и горн встали перед ней */
-  ctx.fillStyle=sdRGB(sdMix(pal.wall,[0,0,0],.42));
-  ctx.fillRect(x-w*.44,y-ph*.92,w*.88,ph*.92);
-  sdWallTex(x-w*.44,y-ph*.92,w*.88,ph*.92,"plank",seed,pal.wall);
-  ctx.fillStyle="rgba(0,0,0,.28)";ctx.fillRect(x-w*.44,y-ph*.92,w*.88,ph*.92);
-  ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.34));
-  ctx.fillRect(x-w/2,y-ph,pw,ph);ctx.fillRect(x+w/2-pw,y-ph,pw,ph);
-  sdRoof(x-w/2-3,y-ph,w+6,h-ph,"plank",pal,seed);
-  /* горн: кладка от земли, устье с жаром, над ним вытяжной колпак и труба */
-  const hx=x+w*.14,hh=h*.46;
-  ctx.fillStyle=sdRGB(sdMix(pal.stone,[92,72,56],.5));
-  ctx.fillRect(hx-w*.18,y-hh,w*.36,hh);
-  ctx.fillStyle="rgba(255,246,220,.12)";ctx.fillRect(hx-w*.18,y-hh,w*.36,1.4);
-  ctx.fillStyle=sdRGB(sdMix(pal.stone,[40,40,44],.5));
-  ctx.beginPath();
-  ctx.moveTo(hx-w*.22,y-hh-1);ctx.lineTo(hx+w*.22,y-hh-1);
-  ctx.lineTo(hx+w*.09,y-hh-h*.16);ctx.lineTo(hx-w*.09,y-hh-h*.16);ctx.closePath();ctx.fill();
-  ctx.fillRect(hx-w*.05,y-hh-h*.34,w*.1,h*.19);
-  if(warm){
-    const pulse=.65+.35*Math.sin(G.t*.09+seed);
-    ctx.fillStyle="rgba(255,180,80,"+(.9*pulse).toFixed(2)+")";
-    ctx.fillRect(hx-w*.12,y-hh*.86,w*.24,hh*.3);
-    const fg=ctx.createRadialGradient(hx,y-hh*.7,0,hx,y-hh*.7,w*.55);
-    fg.addColorStop(0,"rgba(255,196,110,"+(.55*pulse).toFixed(2)+")");
-    fg.addColorStop(1,"rgba(255,110,30,0)");
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    ctx.fillStyle=fg;ctx.beginPath();ctx.arc(hx,y-hh*.7,w*.55,0,TAU);ctx.fill();
-    ctx.restore();
-    for(let i=0;i<6;i++){                                /* искры от наковальни */
-      const t=((G.t*1.6+i*37)%60)/60;
-      ctx.fillStyle="rgba(255,214,140,"+((1-t)*.75).toFixed(2)+")";
-      ctx.fillRect(x-w*.2+Math.sin(i*2.1+G.t*.05)*7*t,y-h*.3-t*20,1.4,1.4);
-    }
-  }
-  /* наковальня на колоде */
-  const ax=x-w*.22;
-  ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.4));
-  ctx.fillRect(ax-4,y-h*.16,8,h*.16);
-  ctx.fillStyle=sdRGB(sdMix(pal.stone,[38,42,48],.62));
-  ctx.fillRect(ax-3,y-h*.22,6,h*.06);
-  ctx.beginPath();
-  ctx.moveTo(ax-7,y-h*.28);ctx.lineTo(ax+6,y-h*.28);ctx.lineTo(ax+4,y-h*.22);
-  ctx.lineTo(ax-4,y-h*.22);ctx.closePath();ctx.fill();
-  ctx.fillStyle="rgba(226,236,240,.28)";ctx.fillRect(ax-7,y-h*.28,13,1);
-  /* бочка с водой для закалки и клещи на стене */
-  ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.28));
-  ctx.fillRect(x-w*.44,y-h*.2,w*.14,h*.2);
-  ctx.fillStyle="rgba(150,196,206,.5)";ctx.fillRect(x-w*.44+1,y-h*.2+1,w*.14-2,2);
-}
-function sdStill(x,y,w,h,pal,seed,warm){
-  sdShadow(x,y,w,h);
-  /* бак с медным отливом */
-  sdBody(()=>{
-    ctx.moveTo(x-w*.32,y);ctx.lineTo(x-w*.26,y-h*.78);
-    ctx.quadraticCurveTo(x,y-h*1.02,x+w*.26,y-h*.78);
-    ctx.lineTo(x+w*.32,y);ctx.closePath();
-  },sdRGB(sdMix(pal.stone,[168,116,72],.62)),null,.26);
-  ctx.save();ctx.beginPath();
-  ctx.moveTo(x-w*.32,y);ctx.lineTo(x-w*.26,y-h*.78);
-  ctx.quadraticCurveTo(x,y-h*1.02,x+w*.26,y-h*.78);ctx.lineTo(x+w*.32,y);ctx.closePath();ctx.clip();
-  const g=ctx.createLinearGradient(x-w*.32,0,x+w*.32,0);
-  g.addColorStop(0,"rgba(0,0,0,.35)");g.addColorStop(.62,"rgba(255,226,180,.22)");
-  g.addColorStop(1,"rgba(0,0,0,.15)");
-  ctx.fillStyle=g;ctx.fillRect(x-w*.4,y-h*1.1,w*.8,h*1.1);
-  ctx.strokeStyle="rgba(0,0,0,.25)";ctx.lineWidth=1;
-  for(const t of [.3,.6]){ctx.beginPath();ctx.moveTo(x-w*.3,y-h*t);ctx.lineTo(x+w*.3,y-h*t);ctx.stroke();}
-  ctx.restore();
-  /* змеевик: три витка вниз, к бочке */
-  ctx.strokeStyle=sdRGB(sdMix(pal.stone,[190,140,90],.7));ctx.lineWidth=1.6;
-  ctx.beginPath();
-  ctx.moveTo(x+w*.12,y-h*.95);
-  for(let i=0;i<3;i++){
-    ctx.quadraticCurveTo(x+w*.55,y-h*(.85-i*.22),x+w*.34,y-h*(.72-i*.22));
-    ctx.quadraticCurveTo(x+w*.16,y-h*(.66-i*.22),x+w*.34,y-h*(.58-i*.22));
-  }
-  ctx.stroke();
-  /* бочки: две, одна на боку */
-  const bx=x+w*.5;
-  ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.2));
-  ctx.fillRect(bx,y-h*.34,w*.22,h*.34);
-  ctx.strokeStyle="rgba(0,0,0,.3)";ctx.lineWidth=1;
-  for(const t of [.25,.75]){ctx.beginPath();ctx.moveTo(bx,y-h*.34*t-h*.02);ctx.lineTo(bx+w*.22,y-h*.34*t-h*.02);ctx.stroke();}
-  if(warm){                                                 /* капель в подставленную посуду */
-    const t=((G.t*.9)%40)/40;
-    ctx.fillStyle="rgba(220,236,240,.6)";
-    ctx.fillRect(x+w*.34,y-h*.3+t*h*.26,1.2,2.4);
-  }
-}
-/* ── быт между дворами ──
-   Верёвка с бельём, бочка, корзины, жерди — то, чего нельзя вывести из
-   механики, но без чего посёлок остаётся макетом. */
 function sdProps(P,camx,camy,pal,wind,r){
   const y=P.baseY-camy;
   const yards=P.yards.filter(v=>!v.back);
@@ -19996,6 +19757,274 @@ function sdYard(v,x,y,pal,M,nite,warm,wind,seed){
     default:      return sdDwell(x,y,v.w,v.h,pal,M,nite,sd,false);
   }
 }
+
+/* ══════════════ посёлок: промыслы ══════════════
+   Отрезано от `12tb-settle-draw` 25.08.2026: файл дорос до 57 КБ, а внутри у
+   него был готовый шов. Здесь шесть производств, каждое — самостоятельное тело
+   со своим ремеслом: поле, запруда, обжиг, пилка, кузня, перегонка. Рисуются
+   из `sdYard` (12tb) по ключу двора; кисти, палитра и мерка человека — оттуда
+   же, это одна семья функций, просто в двух файлах.
+
+   ПРАВИЛА ТЕ ЖЕ, что у 12tb: мерило — рост жителя (SD_MAN), сначала тело и
+   обвод, потом материал, свет один на всю улицу. */
+function sdField(x,y,w,h,pal,seed,wind){
+  const r=rng(hashi(seed,3,0x1E1D));
+  /* Гряды в два пикселя высотой терялись на улице (самокритика M169): поле
+     теперь выше человека по ботве, с бортиками, шпалерой и своей межой. */
+  ctx.fillStyle=sdRGB(sdMix(pal.earth,[0,0,0],.26));
+  ctx.fillRect(x-w*.55,y-4,w*1.1,4);
+  for(let i=0;i<4;i++){
+    const yy=y-i*3.4, ww=w*(1.05-i*.07);
+    ctx.fillStyle=sdRGB(sdMix(pal.earth,[0,0,0],.14+i*.06));
+    ctx.fillRect(x-ww/2,yy-3.4,ww,3.4);
+    ctx.fillStyle=sdRGB(sdMix(pal.earth,[214,198,152],.34));
+    ctx.fillRect(x-ww/2,yy-3.4,ww,1);
+    const green="rgba("+(96+i*10)+","+(158+i*8)+","+(78+i*6)+",.8)";
+    ctx.strokeStyle=green;ctx.lineWidth=1.2;
+    for(let k=0;k<10;k++){
+      const px=x-ww/2+ww*(k+.5)/10, hh=h*(.5+r()*.5);
+      ctx.beginPath();ctx.moveTo(px,yy-3.4);
+      ctx.quadraticCurveTo(px+wind*2,yy-hh*.6,px+wind*4.5,yy-hh);ctx.stroke();
+      if(r()<.35){                                   /* завязь: поле не только ботва */
+        ctx.fillStyle="rgba(214,182,86,.75)";
+        ctx.beginPath();ctx.arc(px+wind*3.4,yy-hh*.72,1.5,0,TAU);ctx.fill();
+      }
+    }
+  }
+  /* жерди с подвязкой и пугало: силуэт, который виден издали */
+  ctx.strokeStyle=sdRGB(sdMix(pal.wood,[0,0,0],.25));ctx.lineWidth=1.4;
+  for(let i=0;i<3;i++){
+    const px=x-w*.35+w*.35*i;
+    ctx.beginPath();ctx.moveTo(px,y);ctx.lineTo(px+wind,y-h*.9);ctx.stroke();
+  }
+  const sx2=x+w*.38;
+  ctx.beginPath();ctx.moveTo(sx2,y);ctx.lineTo(sx2,y-h*1.5);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(sx2-5,y-h*1.15);ctx.lineTo(sx2+5,y-h*1.15);ctx.stroke();
+  ctx.fillStyle=sdRGB(sdMix(pal.wall,[0,0,0],.15));
+  ctx.beginPath();ctx.arc(sx2,y-h*1.55,3,0,TAU);ctx.fill();
+  ctx.fillStyle="rgba(0,0,0,.3)";
+  ctx.beginPath();ctx.moveTo(sx2-4.5,y-h*1.62);ctx.lineTo(sx2+4.5,y-h*1.62);
+  ctx.lineTo(sx2,y-h*1.78);ctx.closePath();ctx.fill();
+}
+function sdWeir(x,y,w,h,pal,seed){
+  /* Запруда — не голубая коробка (первый проход давал именно её), а ПЛОТИНА:
+     каменная гряда поперёк ручья, вода стоит за ней и переливается через
+     гребень, ниже — сток и мокрые камни. Узнаётся по воде и по струе. */
+  const r=rng(hashi(seed,9,0x3E11));
+  sdShadow(x,y,w,h);
+  /* пруд за гребнем: тёмная вода с бликами, уходит вверх по склону */
+  const pond=ctx.createLinearGradient(0,y-h-14,0,y-h+2);
+  pond.addColorStop(0,"rgba(40,74,86,.9)");
+  pond.addColorStop(.7,"rgba(64,110,120,.85)");
+  pond.addColorStop(1,"rgba(120,168,170,.8)");
+  ctx.fillStyle=pond;
+  ctx.beginPath();
+  ctx.moveTo(x-w*.55,y-h+1);ctx.lineTo(x-w*.62,y-h-13);
+  ctx.lineTo(x+w*.30,y-h-13);ctx.lineTo(x+w*.34,y-h+1);ctx.closePath();ctx.fill();
+  ctx.fillStyle="rgba(226,248,255,.30)";                    /* рябь: короткие блики */
+  for(let i=0;i<7;i++){
+    const t=((G.t*.3+i*23)%90)/90;
+    ctx.fillRect(x-w*.5+t*w*.8,y-h-11+i*1.6,5+r()*4,1);
+  }
+  /* тело плотины */
+  sdBody(()=>{
+    ctx.moveTo(x-w/2,y);ctx.lineTo(x-w*.30,y-h);
+    ctx.lineTo(x+w*.24,y-h);ctx.lineTo(x+w*.44,y);ctx.closePath();
+  },sdRGB(pal.stone),null,.26);
+  ctx.save();ctx.beginPath();
+  ctx.moveTo(x-w/2,y);ctx.lineTo(x-w*.30,y-h);ctx.lineTo(x+w*.24,y-h);ctx.lineTo(x+w*.44,y);
+  ctx.closePath();ctx.clip();
+  for(let yy=y-2;yy>y-h;yy-=4.5)for(let xx=x-w/2;xx<x+w/2;xx+=6+r()*3){
+    ctx.fillStyle=sdRGB(sdMix(pal.stone,[0,0,0],.14+r()*.22));
+    ctx.fillRect(xx,yy-4,5+r()*3,4);
+    ctx.fillStyle="rgba(255,246,220,.12)";ctx.fillRect(xx,yy-4,5+r()*3,1);
+  }
+  const lg=ctx.createLinearGradient(x-w/2,0,x+w/2,0);
+  lg.addColorStop(0,"rgba(0,0,0,.34)");lg.addColorStop(1,"rgba(255,240,210,.16)");
+  ctx.fillStyle=lg;ctx.fillRect(x-w/2,y-h,w,h);
+  ctx.restore();
+  /* перелив через гребень и струя вниз: главное, что делает плотину плотиной */
+  ctx.fillStyle="rgba(206,238,246,.75)";
+  ctx.fillRect(x-w*.04,y-h-1,w*.16,2.4);
+  const jet=ctx.createLinearGradient(0,y-h,0,y);
+  jet.addColorStop(0,"rgba(214,242,248,.75)");jet.addColorStop(1,"rgba(180,220,232,.25)");
+  ctx.fillStyle=jet;
+  ctx.beginPath();
+  ctx.moveTo(x-w*.03,y-h);ctx.lineTo(x+w*.13,y-h);
+  ctx.lineTo(x+w*.19,y);ctx.lineTo(x-w*.09,y);ctx.closePath();ctx.fill();
+  /* брызги у подножия */
+  ctx.fillStyle="rgba(226,246,252,.35)";
+  for(let i=0;i<5;i++){
+    const t=((G.t*.8+i*17)%30)/30;
+    ctx.beginPath();ctx.arc(x+w*.05+(r()-.5)*10,y-t*5,1.6+t*2.4,0,TAU);ctx.fill();
+  }
+  /* мостки и вёдра: к воде ходят */
+  ctx.strokeStyle=sdRGB(sdMix(pal.wood,[0,0,0],.3));ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(x-w*.42,y-h*.42);ctx.lineTo(x+w*.02,y-h*.42);ctx.stroke();
+  ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.15));
+  ctx.fillRect(x-w*.36,y-h*.42-4,4,4);
+}
+function sdKiln(x,y,w,h,pal,seed,warm){
+  sdShadow(x,y,w,h);
+  /* купол с аркой топки — узнаётся силуэтом */
+  sdBody(()=>{
+    ctx.moveTo(x-w/2,y);
+    ctx.quadraticCurveTo(x-w/2,y-h*1.25,x,y-h*1.25);
+    ctx.quadraticCurveTo(x+w/2,y-h*1.25,x+w/2,y);
+    ctx.closePath();
+  },sdRGB(sdMix(pal.stone,[110,86,64],.4)),null,.26);
+  const g=ctx.createLinearGradient(x-w/2,0,x+w/2,0);
+  g.addColorStop(0,"rgba(0,0,0,.34)");g.addColorStop(1,"rgba(255,236,200,.20)");
+  ctx.save();ctx.beginPath();
+  ctx.moveTo(x-w/2,y);ctx.quadraticCurveTo(x-w/2,y-h*1.25,x,y-h*1.25);
+  ctx.quadraticCurveTo(x+w/2,y-h*1.25,x+w/2,y);ctx.closePath();ctx.clip();
+  ctx.fillStyle=g;ctx.fillRect(x-w/2,y-h*1.3,w,h*1.3);
+  ctx.strokeStyle="rgba(0,0,0,.18)";ctx.lineWidth=1;
+  for(let yy=y-3;yy>y-h*1.2;yy-=4){ctx.beginPath();ctx.moveTo(x-w/2,yy);ctx.lineTo(x+w/2,yy);ctx.stroke();}
+  ctx.restore();
+  /* топка: арка, а в ней жар */
+  const fw=w*.34,fh=h*.44;
+  ctx.fillStyle="rgba(12,10,10,.9)";
+  ctx.beginPath();
+  ctx.moveTo(x-fw/2,y);ctx.lineTo(x-fw/2,y-fh*.6);
+  ctx.quadraticCurveTo(x,y-fh*1.25,x+fw/2,y-fh*.6);ctx.lineTo(x+fw/2,y);ctx.closePath();ctx.fill();
+  if(warm){
+    const fg=ctx.createRadialGradient(x,y-fh*.4,0,x,y-fh*.4,fw);
+    const pulse=.7+.3*Math.sin(G.t*.06+seed);
+    fg.addColorStop(0,"rgba(255,190,90,"+(.85*pulse).toFixed(2)+")");
+    fg.addColorStop(1,"rgba(255,120,40,0)");
+    ctx.fillStyle=fg;ctx.beginPath();ctx.arc(x,y-fh*.4,fw,0,TAU);ctx.fill();
+  }
+  /* поленница и зола рядом — печь работает, а не стоит памятником */
+  ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.25));
+  ctx.fillRect(x+w*.55,y-h*.5,w*.3,h*.5);
+  ctx.fillStyle="rgba(160,150,140,.35)";
+  ctx.beginPath();ctx.ellipse(x-w*.62,y-1,w*.24,2.4,0,0,TAU);ctx.fill();
+}
+function sdCut(x,y,w,h,pal,seed){
+  const r=rng(hashi(seed,13,0x0C17));
+  sdShadow(x,y,w,h);
+  /* штабель плит: главный силуэт камнерезки */
+  let sy=y;
+  for(let i=0;i<4;i++){
+    const sw=w*(.62-i*.07),sh=h*.17;
+    ctx.fillStyle=sdRGB(sdMix(pal.stone,[0,0,0],.10+i*.04));
+    ctx.fillRect(x-sw/2+(r()-.5)*3,sy-sh,sw,sh);
+    ctx.fillStyle="rgba(255,246,226,.16)";
+    ctx.fillRect(x-sw/2+(r()-.5)*3,sy-sh,sw,1);
+    sy-=sh;
+  }
+  /* козлы с плитой на распиле и рама пилы */
+  const gx=x+w*.5,gy=y;
+  ctx.strokeStyle=sdRGB(sdMix(pal.wood,[0,0,0],.3));ctx.lineWidth=1.6;
+  for(const s of [-1,1]){
+    ctx.beginPath();ctx.moveTo(gx+s*5,gy);ctx.lineTo(gx+s*1.5,gy-h*.44);ctx.stroke();
+  }
+  ctx.fillStyle=sdRGB(sdMix(pal.stone,[220,220,214],.3));
+  ctx.fillRect(gx-w*.2,gy-h*.5,w*.4,h*.08);
+  ctx.strokeStyle="rgba(226,236,240,.4)";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(gx-w*.18,gy-h*.56);ctx.lineTo(gx+w*.18,gy-h*.56);ctx.stroke();
+  /* каменная пыль под козлами */
+  ctx.fillStyle="rgba(226,222,210,.22)";
+  ctx.beginPath();ctx.ellipse(gx,gy-1,w*.24,2.2,0,0,TAU);ctx.fill();
+}
+function sdForge(x,y,w,h,pal,seed,warm){
+  /* Кузня — не телега под навесом (так вышло в первом проходе): открытый
+     сруб в три четверти стены, высокий горн с вытяжкой, наковальня в рост
+     колена и кузнец, если работает. Её узнают по свету изнутри. */
+  sdShadow(x,y,w,h);
+  const ph=h*.80,pw=2.6;
+  /* задняя стена — сначала, чтобы столбы и горн встали перед ней */
+  ctx.fillStyle=sdRGB(sdMix(pal.wall,[0,0,0],.42));
+  ctx.fillRect(x-w*.44,y-ph*.92,w*.88,ph*.92);
+  sdWallTex(x-w*.44,y-ph*.92,w*.88,ph*.92,"plank",seed,pal.wall);
+  ctx.fillStyle="rgba(0,0,0,.28)";ctx.fillRect(x-w*.44,y-ph*.92,w*.88,ph*.92);
+  ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.34));
+  ctx.fillRect(x-w/2,y-ph,pw,ph);ctx.fillRect(x+w/2-pw,y-ph,pw,ph);
+  sdRoof(x-w/2-3,y-ph,w+6,h-ph,"plank",pal,seed);
+  /* горн: кладка от земли, устье с жаром, над ним вытяжной колпак и труба */
+  const hx=x+w*.14,hh=h*.46;
+  ctx.fillStyle=sdRGB(sdMix(pal.stone,[92,72,56],.5));
+  ctx.fillRect(hx-w*.18,y-hh,w*.36,hh);
+  ctx.fillStyle="rgba(255,246,220,.12)";ctx.fillRect(hx-w*.18,y-hh,w*.36,1.4);
+  ctx.fillStyle=sdRGB(sdMix(pal.stone,[40,40,44],.5));
+  ctx.beginPath();
+  ctx.moveTo(hx-w*.22,y-hh-1);ctx.lineTo(hx+w*.22,y-hh-1);
+  ctx.lineTo(hx+w*.09,y-hh-h*.16);ctx.lineTo(hx-w*.09,y-hh-h*.16);ctx.closePath();ctx.fill();
+  ctx.fillRect(hx-w*.05,y-hh-h*.34,w*.1,h*.19);
+  if(warm){
+    const pulse=.65+.35*Math.sin(G.t*.09+seed);
+    ctx.fillStyle="rgba(255,180,80,"+(.9*pulse).toFixed(2)+")";
+    ctx.fillRect(hx-w*.12,y-hh*.86,w*.24,hh*.3);
+    const fg=ctx.createRadialGradient(hx,y-hh*.7,0,hx,y-hh*.7,w*.55);
+    fg.addColorStop(0,"rgba(255,196,110,"+(.55*pulse).toFixed(2)+")");
+    fg.addColorStop(1,"rgba(255,110,30,0)");
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    ctx.fillStyle=fg;ctx.beginPath();ctx.arc(hx,y-hh*.7,w*.55,0,TAU);ctx.fill();
+    ctx.restore();
+    for(let i=0;i<6;i++){                                /* искры от наковальни */
+      const t=((G.t*1.6+i*37)%60)/60;
+      ctx.fillStyle="rgba(255,214,140,"+((1-t)*.75).toFixed(2)+")";
+      ctx.fillRect(x-w*.2+Math.sin(i*2.1+G.t*.05)*7*t,y-h*.3-t*20,1.4,1.4);
+    }
+  }
+  /* наковальня на колоде */
+  const ax=x-w*.22;
+  ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.4));
+  ctx.fillRect(ax-4,y-h*.16,8,h*.16);
+  ctx.fillStyle=sdRGB(sdMix(pal.stone,[38,42,48],.62));
+  ctx.fillRect(ax-3,y-h*.22,6,h*.06);
+  ctx.beginPath();
+  ctx.moveTo(ax-7,y-h*.28);ctx.lineTo(ax+6,y-h*.28);ctx.lineTo(ax+4,y-h*.22);
+  ctx.lineTo(ax-4,y-h*.22);ctx.closePath();ctx.fill();
+  ctx.fillStyle="rgba(226,236,240,.28)";ctx.fillRect(ax-7,y-h*.28,13,1);
+  /* бочка с водой для закалки и клещи на стене */
+  ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.28));
+  ctx.fillRect(x-w*.44,y-h*.2,w*.14,h*.2);
+  ctx.fillStyle="rgba(150,196,206,.5)";ctx.fillRect(x-w*.44+1,y-h*.2+1,w*.14-2,2);
+}
+function sdStill(x,y,w,h,pal,seed,warm){
+  sdShadow(x,y,w,h);
+  /* бак с медным отливом */
+  sdBody(()=>{
+    ctx.moveTo(x-w*.32,y);ctx.lineTo(x-w*.26,y-h*.78);
+    ctx.quadraticCurveTo(x,y-h*1.02,x+w*.26,y-h*.78);
+    ctx.lineTo(x+w*.32,y);ctx.closePath();
+  },sdRGB(sdMix(pal.stone,[168,116,72],.62)),null,.26);
+  ctx.save();ctx.beginPath();
+  ctx.moveTo(x-w*.32,y);ctx.lineTo(x-w*.26,y-h*.78);
+  ctx.quadraticCurveTo(x,y-h*1.02,x+w*.26,y-h*.78);ctx.lineTo(x+w*.32,y);ctx.closePath();ctx.clip();
+  const g=ctx.createLinearGradient(x-w*.32,0,x+w*.32,0);
+  g.addColorStop(0,"rgba(0,0,0,.35)");g.addColorStop(.62,"rgba(255,226,180,.22)");
+  g.addColorStop(1,"rgba(0,0,0,.15)");
+  ctx.fillStyle=g;ctx.fillRect(x-w*.4,y-h*1.1,w*.8,h*1.1);
+  ctx.strokeStyle="rgba(0,0,0,.25)";ctx.lineWidth=1;
+  for(const t of [.3,.6]){ctx.beginPath();ctx.moveTo(x-w*.3,y-h*t);ctx.lineTo(x+w*.3,y-h*t);ctx.stroke();}
+  ctx.restore();
+  /* змеевик: три витка вниз, к бочке */
+  ctx.strokeStyle=sdRGB(sdMix(pal.stone,[190,140,90],.7));ctx.lineWidth=1.6;
+  ctx.beginPath();
+  ctx.moveTo(x+w*.12,y-h*.95);
+  for(let i=0;i<3;i++){
+    ctx.quadraticCurveTo(x+w*.55,y-h*(.85-i*.22),x+w*.34,y-h*(.72-i*.22));
+    ctx.quadraticCurveTo(x+w*.16,y-h*(.66-i*.22),x+w*.34,y-h*(.58-i*.22));
+  }
+  ctx.stroke();
+  /* бочки: две, одна на боку */
+  const bx=x+w*.5;
+  ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.2));
+  ctx.fillRect(bx,y-h*.34,w*.22,h*.34);
+  ctx.strokeStyle="rgba(0,0,0,.3)";ctx.lineWidth=1;
+  for(const t of [.25,.75]){ctx.beginPath();ctx.moveTo(bx,y-h*.34*t-h*.02);ctx.lineTo(bx+w*.22,y-h*.34*t-h*.02);ctx.stroke();}
+  if(warm){                                                 /* капель в подставленную посуду */
+    const t=((G.t*.9)%40)/40;
+    ctx.fillStyle="rgba(220,236,240,.6)";
+    ctx.fillRect(x+w*.34,y-h*.3+t*h*.26,1.2,2.4);
+  }
+}
+/* ── быт между дворами ──
+   Верёвка с бельём, бочка, корзины, жерди — то, чего нельзя вывести из
+   механики, но без чего посёлок остаётся макетом. */
 
 /* ══════════════ посёлок: вы даёте, решают они ══════════════
    Второй базы быть не должно. У своей базы (21a) игрок — хозяин: он ставит
@@ -20336,11 +20365,6 @@ function settleStop(S){
   return {key:sys.key,sx:sys.sx,sy:sys.sy,planets:sys.planets,name:sys.name,settle:1,
     station:{name:"посёлок "+(S.name||sys.name),stype:"trade",kind:"посёлок",
       orbit:0,ang:0,spd:0,prices,fuelPrice:11,x:0,y:0,vx:0,vy:0}};
-}
-function settleStops(){
-  const out=[];
-  for(const key in settleMap()){const S=settleMap()[key],st=settleStop(S);if(st)out.push(st);}
-  return out;
 }
 
 /* ══════════════ Блошинец: станция, где всё чьё-то ══════════════
@@ -20740,7 +20764,6 @@ const DOOM_LEAD=90*60000;        // сколько идёт срок с того
 const DOOM_WARN=[30,10,2];       // за сколько минут напоминать, по одному разу
 const DOOM_FOLK=60;              // сколько всего людей в посёлке второй ступени
 function doomGet(){return G.doom||null;}
-function doomHereKey(){return G.sx+","+G.sy;}
 /* срок назначается один на прохождение и только по посёлку игрока: считать его
    от Date.now() — тот же ленивый способ, каким живёт весь остальной мир */
 function doomArm(S){
@@ -26987,15 +27010,6 @@ function drawTiles(store,camx,camy,paint){
 }
 
 /* ══════════════ карта ══════════════ */
-function wrapCenter(text,x,y,maxW,lh){
-  const words=text.split(" ");let line="",ly=y;
-  for(const w of words){
-    const t=line?line+" "+w:w;
-    if(ctx.measureText(t).width>maxW&&line){ctx.fillText(line,x,ly);line=w;ly+=lh;}
-    else line=t;
-  }
-  if(line)ctx.fillText(line,x,ly);
-}
 const PAD_SAFE=104;   // полоса экранных кнопок снизу: туда ничего не пишем
 function wrapLeft(text,x,y,maxW,lh){
   const words=text.split(" ");let line="",ly=y;
@@ -31175,6 +31189,346 @@ function bioScan(o,data){
   return true;
 }
 
+/* ══════════════ фауна ══════════════
+   Отрезано от `20-life` 25.08.2026: файл держал в себе три разные жизни —
+   человека в скафандре, растения и зверей, — и дорос до 45 КБ. Здесь звери:
+   гамма шкуры, пять земных силуэтов и пять чужих, порождение особи и её
+   отрисовка. Скафандр и флора остались в `20-life`.
+
+   Мерило прежнее: человек. Зверь читается силуэтом раньше, чем деталями, и
+   поза говорит больше окраса — потому «враждебен» и «оглушён» меняют стойку,
+   а не цвет.
+
+   Наверху зверьё безобидное — его сканируют ради данных. В шахте живут
+   породные грызуны: кусают скафандр, оглушаются импульсом (ОГОНЬ), с
+   оглушённого берут образец (ТОРМ) — углерод и редкий ксенобиом.
+   Имя зверя выводится из архетипа и настоящих флагов (20e-species):
+   «парусник» доставался ходуну, «бронированный» — медузе. */
+
+/* натуральная гамма — мех/шкура/чешуя, без ядовитых неоновых тонов;
+   лёгкий уклон от планеты и куда больший разброс светлота/охра/серость,
+   чем радужный hue-поворот, который был раньше */
+const FUR_TONES=[
+  [101,72,42],[134,103,63],[168,138,94],[201,176,132],[221,201,163],
+  [96,92,84],[132,128,118],[74,70,66],[47,44,40],
+  [110,100,72],[86,96,72],[128,118,84],[150,132,96],[64,58,52]
+];
+function furColor(r,base){
+  const a=pick(FUR_TONES,r), bT=pick(FUR_TONES,r);
+  const m=.3+r()*.5;
+  const lum=.82+r()*.36;
+  return [
+    clamp(lerp(a[0],bT[0],m)*lum+base[0]*.06,18,235),
+    clamp(lerp(a[1],bT[1],m)*lum+base[1]*.06,18,235),
+    clamp(lerp(a[2],bT[2],m)*lum+base[2]*.06,18,235)
+  ];
+}
+/* силуэт — не всегда одна и та же капсула: пять архетипов пропорций плюс
+   гранёный (не идеально гладкий) контур тела, свой на каждую тварь */
+const BEAST_SHAPES=["capsule","long","stout","upright","segmented"];
+/* Пять чужих архетипов вместо «земного зверя другого цвета». Как и у флоры,
+   планета получает уклон: на одной висят медузы, на другой ходят панцирные —
+   если каждый мир населён всем каталогом, миры опять сливаются.
+
+   Летающие формы держатся над грунтом (hover) — это единственное, что тут
+   отличается по механике отрисовки, и оно же сильнее всего меняет ощущение
+   от планеты. */
+const BEAST_ALIEN=["jelly","strider","crystal","manta","shell"];
+function beastBias(p){
+  if(p.fauna2)return p.fauna2;
+  const r=rng(p.seed^0xFA02);
+  const b=BEAST_ALIEN.map(()=>.08+r()*.18);
+  const n=1+Math.floor(r()*2);
+  for(let i=0;i<n;i++)b[Math.floor(r()*b.length)]+=1.1+r()*1.4;
+  p.fauna2={bias:b,alienShare:.45+r()*.45};
+  return p.fauna2;
+}
+/* Зверь собирается так же, как растение: вид планеты (20e-species) держит
+   архетип, выделку тела, окрас и повадку, экземпляру принадлежит возраст —
+   молодой мельче и головастее, старый крупнее и медленнее. */
+function genBeast(r,p,x,gy){
+  return specimenBeast(r,pickShare(faunaOf(p),r),x,gy);
+}
+/* ── чужие архетипы ──
+   Не «зверь другого цвета»: медуза висит и пульсирует, ходун стоит на высоких
+   дугах, кристаллическое насекомое гранёное и светится в шве, манта идёт
+   волной по крылу, панцирный похож на камень, пока не пошёл. */
+function drawBeastAlien(b,x,y,hostile,stun){
+  const c=b.body;
+  const col=(k,a)=>"rgba("+Math.round(c[0]*k)+","+Math.round(c[1]*k)+","+Math.round(c[2]*k)+","+a+")";
+  const t=G.t*b.spd+b.phase;
+  const R=b.r;
+  const hov=b.hover?b.hover*(1+.16*Math.sin(t*.6)):0;
+  ctx.save();
+  ctx.translate(x,y-R*.9-hov);
+  ctx.scale(b.face,1);
+  if(stun>0){
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g=ctx.createRadialGradient(0,0,0,0,0,R*2.6);
+    g.addColorStop(0,"rgba(140,220,255,.3)");g.addColorStop(1,"rgba(120,200,255,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,R*2.6,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+  const hi=hostile?"rgba(255,120,90,.9)":col(1.25,.95);
+  if(b.alien==="jelly"){
+    /* купол пульсирует: сжался — потянулся вверх, это и есть его движение */
+    const puls=.82+.18*Math.sin(t*1.6);
+    const bw=R*1.25*puls, bh=R*.95/puls;
+    ctx.fillStyle=col(.9,.62);
+    ctx.beginPath();ctx.ellipse(0,0,bw,bh,0,Math.PI,TAU);ctx.fill();
+    ctx.fillStyle=col(1.5,.28);
+    ctx.beginPath();ctx.ellipse(-bw*.25,-bh*.35,bw*.4,bh*.32,0,0,TAU);ctx.fill();
+    ctx.strokeStyle=col(.6,.5);ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.ellipse(0,0,bw,bh,0,Math.PI,TAU);ctx.stroke();
+    /* щупальца тянутся вниз с задержкой по фазе */
+    ctx.strokeStyle=col(1.1,.45);
+    for(let i=0;i<b.tent;i++){
+      const u=(i/(b.tent-1)-.5)*1.7;
+      const sx=u*bw*.85;
+      ctx.lineWidth=1+(1-Math.abs(u))*1.2;
+      ctx.beginPath();ctx.moveTo(sx,0);
+      const L=R*(1.6+Math.abs(u)*.9);
+      ctx.quadraticCurveTo(sx+Math.sin(t*1.3+i)*R*.4,L*.55,
+        sx+Math.sin(t*1.1+i*1.7)*R*.7,L);
+      ctx.stroke();
+    }
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g=ctx.createRadialGradient(0,-bh*.2,0,0,-bh*.2,R*2.2);
+    g.addColorStop(0,col(1.6,.20));g.addColorStop(1,col(1.6,0));
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,-bh*.2,R*2.2,0,TAU);ctx.fill();
+    ctx.restore();
+  }else if(b.alien==="strider"){
+    /* шесть высоких дуг: тело висит вверху, ноги переступают попарно */
+    const legH=R*2.2;
+    ctx.strokeStyle=col(.65,.9);
+    for(let i=0;i<6;i++){
+      const side=i<3?-1:1, k=i%3;
+      const px=(k-1)*R*.55;
+      const step=Math.sin(t*1.4+i*2.1)*R*.5;
+      ctx.lineWidth=1.6;
+      ctx.beginPath();
+      ctx.moveTo(px,0);
+      ctx.quadraticCurveTo(px+side*R*1.1,legH*.45,px+step+side*R*.5,legH);
+      ctx.stroke();
+    }
+    ctx.fillStyle=col(.95,.95);
+    ctx.beginPath();ctx.ellipse(0,0,R*.95,R*.5,0,0,TAU);ctx.fill();
+    ctx.strokeStyle=col(.55,.8);ctx.lineWidth=1;ctx.stroke();
+    /* маленькая голова на длинной шее — по ней силуэт и опознаётся */
+    ctx.strokeStyle=col(.7,.9);ctx.lineWidth=1.6;
+    ctx.beginPath();ctx.moveTo(R*.7,-R*.2);
+    ctx.quadraticCurveTo(R*1.5,-R*.9,R*1.7,-R*1.5);ctx.stroke();
+    ctx.fillStyle=col(1.05,.95);
+    ctx.beginPath();ctx.ellipse(R*1.75,-R*1.65,R*.34,R*.26,0,0,TAU);ctx.fill();
+    ctx.fillStyle=hi;
+    ctx.beginPath();ctx.arc(R*1.9,-R*1.7,1.6,0,TAU);ctx.fill();
+  }else if(b.alien==="crystal"){
+    /* гранёное тело: жёсткие плоскости и светящийся шов между ними */
+    const P=[];
+    for(let i=0;i<b.facets;i++){
+      const a=i/b.facets*TAU;
+      P.push([Math.cos(a)*R*(.9+((i*37)%5)/5*.5),Math.sin(a)*R*.62]);
+    }
+    ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);
+    for(let i=1;i<P.length;i++)ctx.lineTo(P[i][0],P[i][1]);
+    ctx.closePath();
+    const g=ctx.createLinearGradient(-R,-R*.6,R,R*.6);
+    g.addColorStop(0,col(1.5,.85));g.addColorStop(.5,col(.8,.9));g.addColorStop(1,col(1.2,.8));
+    ctx.fillStyle=g;ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.35)";ctx.lineWidth=.8;ctx.stroke();
+    ctx.strokeStyle=col(1.8,.5+.3*Math.sin(t*2));
+    ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);ctx.lineTo(P[(b.facets>>1)][0],P[(b.facets>>1)][1]);
+    ctx.stroke();
+    /* тонкие ноги-иглы */
+    ctx.strokeStyle=col(.6,.85);ctx.lineWidth=1;
+    for(let i=0;i<6;i++){
+      const px=(i%3-1)*R*.5, side=i<3?-1:1;
+      const step=Math.sin(t*1.8+i)*R*.3;
+      ctx.beginPath();ctx.moveTo(px,R*.3);
+      ctx.lineTo(px+step+side*R*.6,R*1.25);ctx.stroke();
+    }
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const gg=ctx.createRadialGradient(0,0,0,0,0,R*1.8);
+    gg.addColorStop(0,col(1.9,.16));gg.addColorStop(1,col(1.9,0));
+    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(0,0,R*1.8,0,TAU);ctx.fill();
+    ctx.restore();
+  }else if(b.alien==="manta"){
+    /* крыло идёт волной: три сегмента с разной фазой вместо жёсткой дуги */
+    const S=R*b.span;
+    for(const side of [-1,1]){
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      const w1=Math.sin(t*1.5+(side>0?0:.9))*R*.5;
+      const w2=Math.sin(t*1.5+1+(side>0?0:.9))*R*.7;
+      ctx.quadraticCurveTo(side*S*.5,w1-R*.5,side*S,w2);
+      ctx.quadraticCurveTo(side*S*.5,w1+R*.35,0,R*.45);
+      ctx.closePath();
+      const g=ctx.createLinearGradient(0,0,side*S,0);
+      g.addColorStop(0,col(1.05,.92));g.addColorStop(1,col(.55,.55));
+      ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle=col(.45,.6);ctx.lineWidth=1;ctx.stroke();
+    }
+    ctx.fillStyle=col(1.1,.95);
+    ctx.beginPath();ctx.ellipse(0,R*.1,R*.42,R*.6,0,0,TAU);ctx.fill();
+    ctx.fillStyle=hi;
+    ctx.beginPath();ctx.arc(R*.18,-R*.05,1.5,0,TAU);ctx.fill();
+    /* хвост-жало */
+    ctx.strokeStyle=col(.7,.7);ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(0,R*.6);
+    ctx.quadraticCurveTo(-R*.3,R*1.4,-R*.1+Math.sin(t)*R*.3,R*2.1);ctx.stroke();
+  }else{
+    /* панцирный: купол-камень на коротких ногах, пока стоит — не отличить
+       от валуна, и в этом весь смысл */
+    ctx.fillStyle=col(.5,.95);
+    for(let i=0;i<4;i++){
+      const px=(i-1.5)*R*.5;
+      const step=Math.sin(t*1.6+i*1.6)*R*.22;
+      ctx.fillRect(px-1.2,R*.2,2.4,R*.6+step);
+    }
+    const g=ctx.createLinearGradient(0,-R*.9,0,R*.3);
+    g.addColorStop(0,col(1.35,.95));g.addColorStop(1,col(.55,.95));
+    ctx.fillStyle=g;
+    ctx.beginPath();ctx.ellipse(0,R*.15,R*1.15,R*.85,0,Math.PI,TAU);ctx.fill();
+    ctx.strokeStyle=col(.35,.8);ctx.lineWidth=1.2;ctx.stroke();
+    /* рёбра панциря */
+    ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=1;
+    for(let i=1;i<4;i++){
+      const u=i/4*2-1;
+      ctx.beginPath();
+      ctx.ellipse(0,R*.15,R*1.15*Math.abs(u),R*.85*Math.abs(u),0,Math.PI,TAU);
+      ctx.stroke();
+    }
+    /* голова выглядывает только на ходу */
+    if(Math.abs(b.vx)>.02){
+      ctx.fillStyle=col(.9,.95);
+      ctx.beginPath();ctx.ellipse(R*1.15,R*.05,R*.3,R*.22,0,0,TAU);ctx.fill();
+      ctx.fillStyle=hi;
+      ctx.beginPath();ctx.arc(R*1.3,0,1.4,0,TAU);ctx.fill();
+    }
+  }
+  /* свечение чужих архетипов рисовалось только у земных форм: панцирник,
+     названный светящимся, не светился (M174 — имя обязано быть правдой) */
+  if(b.glow){
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const gg=ctx.createRadialGradient(0,0,0,0,0,R*2.2);
+    gg.addColorStop(0,col(1.5,.20));gg.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(0,0,R*2.2,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+/* тело собирается из тех же частей, но пропорции, силуэт и набор — от seed */
+function drawBeast(b,x,y,hostile,stun){
+  if(b.alien){drawBeastAlien(b,x,y,hostile,stun);return;}
+  const c=b.body;
+  const col=(k,a)=>"rgba("+Math.round(c[0]*k)+","+Math.round(c[1]*k)+","+Math.round(c[2]*k)+","+a+")";
+  const t=G.t*b.spd+b.phase;
+  const bob=b.hop?Math.abs(Math.sin(t))*b.r*.35:Math.sin(t)*b.r*.08;
+  ctx.save();ctx.translate(x,y-b.r*.9-bob);ctx.scale(b.face,1);
+  if(stun>0){
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g=ctx.createRadialGradient(0,0,0,0,0,b.r*2.6);
+    g.addColorStop(0,"rgba(140,220,255,.3)");g.addColorStop(1,"rgba(120,200,255,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,b.r*2.6,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+  /* ноги */
+  ctx.strokeStyle=col(.55,1);ctx.lineWidth=Math.max(1,b.r*.16);ctx.lineCap="round";
+  for(let i=0;i<b.legs;i++){
+    const u=(i/(b.legs-1||1)-.5)*1.7;
+    const sw=stun>0?0:Math.sin(t*2+i*1.9)*b.r*.3;
+    ctx.beginPath();
+    ctx.moveTo(u*b.r*.8*b.bx,b.r*.35*b.by);
+    ctx.lineTo(u*b.r*.9*b.bx+sw,b.r*.95);
+    ctx.stroke();
+  }
+  ctx.lineCap="butt";
+  if(b.tail){
+    ctx.strokeStyle=col(.7,1);ctx.lineWidth=Math.max(1,b.r*.22);
+    ctx.beginPath();ctx.moveTo(-b.r*.8*b.bx,-b.r*.1);
+    ctx.quadraticCurveTo(-b.r*1.7*b.bx,-b.r*.5-Math.sin(t*1.6)*b.r*.3,
+                         -b.r*1.9*b.bx,b.r*.2);ctx.stroke();
+  }
+  /* туловище: гранёный многоугольник (не гладкий эллипс), каждая грань
+     чуть светлее/темнее соседней — читается как настоящая полигональная форма */
+  const P=b.poly;
+  ctx.beginPath();
+  ctx.moveTo(P[0][0]*b.r*b.bx,P[0][1]*b.r*b.by);
+  for(let i=1;i<P.length;i++)ctx.lineTo(P[i][0]*b.r*b.bx,P[i][1]*b.r*b.by);
+  ctx.closePath();
+  const g=ctx.createLinearGradient(0,-b.r*b.by,0,b.r*b.by);
+  g.addColorStop(0,col(1.15,1));g.addColorStop(1,col(.5,1));
+  ctx.fillStyle=g;ctx.fill();
+  for(let i=0;i<P.length;i++){
+    const a=P[i],bN=P[(i+1)%P.length];
+    ctx.beginPath();
+    ctx.moveTo(a[0]*b.r*b.bx,a[1]*b.r*b.by);ctx.lineTo(bN[0]*b.r*b.bx,bN[1]*b.r*b.by);
+    ctx.lineTo(0,0);ctx.closePath();
+    ctx.fillStyle=col(((i&1)?1.22:.92),.16);ctx.fill();
+  }
+  ctx.strokeStyle=col(.35,.9);ctx.lineWidth=1;ctx.stroke();
+  /* шерсть: короткие штрихи по контуру, торчащие наружу */
+  ctx.strokeStyle=col(.6,.7);ctx.lineWidth=Math.max(.6,b.r*.05);
+  for(let i=0;i<b.furTufts;i++){
+    const a=(i/b.furTufts)*TAU;
+    const px=Math.cos(a)*b.r*b.bx*.95,py=Math.sin(a)*b.r*b.by*.95;
+    const nx=Math.cos(a),ny=Math.sin(a)*.8;
+    ctx.beginPath();ctx.moveTo(px,py);
+    ctx.lineTo(px+nx*b.r*.22,py+ny*b.r*.22);ctx.stroke();
+  }
+  for(let i=0;i<b.spots;i++){
+    ctx.fillStyle=col(1.4,.5);
+    ctx.beginPath();ctx.arc(-b.r*.4*b.bx+i*b.r*.42,-b.r*.2+((i*7)%3)*b.r*.22,b.r*.14,0,TAU);ctx.fill();
+  }
+  if(b.crest){
+    ctx.fillStyle=col(1.3,.85);
+    ctx.beginPath();ctx.moveTo(-b.r*.3,-b.r*.75*b.by);
+    ctx.lineTo(0,-b.r*1.5*b.by);ctx.lineTo(b.r*.35,-b.r*.7*b.by);ctx.closePath();ctx.fill();
+  }
+  /* голова */
+  const hx=b.r*b.headX,hs=b.r*b.headSize;
+  ctx.fillStyle=col(1.05,1);
+  ctx.beginPath();ctx.arc(hx,-b.r*.3*b.by,hs,0,TAU);ctx.fill();
+  ctx.strokeStyle=col(.35,.9);ctx.stroke();
+  if(b.ears){
+    ctx.fillStyle=col(.8,1);
+    for(const s of [-1,1]){
+      ctx.beginPath();ctx.ellipse(hx+s*hs*.3,-b.r*.3*b.by-hs*.85,b.r*.16,b.r*.34,s*.4,0,TAU);ctx.fill();
+    }
+  }
+  if(hostile){
+    /* жвалы — единственное, что отличает шахтную форму */
+    ctx.strokeStyle=col(.4,1);ctx.lineWidth=Math.max(1.2,b.r*.18);
+    for(const s of [-1,1]){
+      ctx.beginPath();ctx.moveTo(hx+hs*.5,-b.r*.3*b.by+s*b.r*.2);
+      ctx.lineTo(hx+hs*1.05,-b.r*.3*b.by+s*b.r*.55);ctx.stroke();
+    }
+  }
+  /* глаз */
+  const blink=Math.sin(G.t*.05+b.phase*3)>.96;
+  ctx.fillStyle=stun>0?"#6fa8c8":(hostile?"#ff6b57":b.eye);
+  if(blink&&stun<=0){
+    ctx.fillRect(hx+hs*.05,-b.r*.3*b.by-hs*.2,hs*.4,hs*.15);
+  }else{
+    ctx.beginPath();ctx.arc(hx+hs*.2,-b.r*.3*b.by-hs*.1,hs*.22,0,TAU);ctx.fill();
+    if(!hostile){ctx.fillStyle="rgba(255,255,255,.9)";
+      ctx.beginPath();ctx.arc(hx+hs*.28,-b.r*.3*b.by-hs*.22,hs*.08,0,TAU);ctx.fill();}
+  }
+  if(b.glow){
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const gg=ctx.createRadialGradient(0,0,0,0,0,b.r*2.2);
+    gg.addColorStop(0,col(1.4,.18));gg.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(0,0,b.r*2.2,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+  if(stun>0){
+    ctx.fillStyle="rgba(160,225,255,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText("ОГЛУШЁН",x,y-b.r*2.6);
+  }
+}
+
 /* ══════════════ астронавт ══════════════ */
 /* один и тот же силуэт на поверхности и в шахте: ранец, шлем с забралом,
    фонарь и шагающие ноги. Акцент берётся от корабля, на котором прилетел. */
@@ -31701,336 +32055,6 @@ function drawPlant(pl,x,y){
     ctx.restore();
   }
   ctx.restore();
-}
-
-/* ══════════════ фауна ══════════════ */
-/* Наверху зверьё безобидное — его сканируют ради данных. В шахте живут
-   породные грызуны: кусают скафандр, оглушаются импульсом (ОГОНЬ), с
-   оглушённого берут образец (ТОРМ) — углерод и редкий ксенобиом. */
-/* Имя зверя тоже выводится из архетипа и настоящих флагов (20e-species):
-   «парусник» доставался ходуну, «бронированный» — медузе. */
-/* натуральная гамма — мех/шкура/чешуя, без ядовитых неоновых тонов;
-   лёгкий уклон от планеты и куда больший разброс светлота/охра/серость,
-   чем радужный hue-поворот, который был раньше */
-const FUR_TONES=[
-  [101,72,42],[134,103,63],[168,138,94],[201,176,132],[221,201,163],
-  [96,92,84],[132,128,118],[74,70,66],[47,44,40],
-  [110,100,72],[86,96,72],[128,118,84],[150,132,96],[64,58,52]
-];
-function furColor(r,base){
-  const a=pick(FUR_TONES,r), bT=pick(FUR_TONES,r);
-  const m=.3+r()*.5;
-  const lum=.82+r()*.36;
-  return [
-    clamp(lerp(a[0],bT[0],m)*lum+base[0]*.06,18,235),
-    clamp(lerp(a[1],bT[1],m)*lum+base[1]*.06,18,235),
-    clamp(lerp(a[2],bT[2],m)*lum+base[2]*.06,18,235)
-  ];
-}
-/* силуэт — не всегда одна и та же капсула: пять архетипов пропорций плюс
-   гранёный (не идеально гладкий) контур тела, свой на каждую тварь */
-const BEAST_SHAPES=["capsule","long","stout","upright","segmented"];
-/* Пять чужих архетипов вместо «земного зверя другого цвета». Как и у флоры,
-   планета получает уклон: на одной висят медузы, на другой ходят панцирные —
-   если каждый мир населён всем каталогом, миры опять сливаются.
-
-   Летающие формы держатся над грунтом (hover) — это единственное, что тут
-   отличается по механике отрисовки, и оно же сильнее всего меняет ощущение
-   от планеты. */
-const BEAST_ALIEN=["jelly","strider","crystal","manta","shell"];
-function beastBias(p){
-  if(p.fauna2)return p.fauna2;
-  const r=rng(p.seed^0xFA02);
-  const b=BEAST_ALIEN.map(()=>.08+r()*.18);
-  const n=1+Math.floor(r()*2);
-  for(let i=0;i<n;i++)b[Math.floor(r()*b.length)]+=1.1+r()*1.4;
-  p.fauna2={bias:b,alienShare:.45+r()*.45};
-  return p.fauna2;
-}
-/* Зверь собирается так же, как растение: вид планеты (20e-species) держит
-   архетип, выделку тела, окрас и повадку, экземпляру принадлежит возраст —
-   молодой мельче и головастее, старый крупнее и медленнее. */
-function genBeast(r,p,x,gy){
-  return specimenBeast(r,pickShare(faunaOf(p),r),x,gy);
-}
-/* ── чужие архетипы ──
-   Не «зверь другого цвета»: медуза висит и пульсирует, ходун стоит на высоких
-   дугах, кристаллическое насекомое гранёное и светится в шве, манта идёт
-   волной по крылу, панцирный похож на камень, пока не пошёл. */
-function drawBeastAlien(b,x,y,hostile,stun){
-  const c=b.body;
-  const col=(k,a)=>"rgba("+Math.round(c[0]*k)+","+Math.round(c[1]*k)+","+Math.round(c[2]*k)+","+a+")";
-  const t=G.t*b.spd+b.phase;
-  const R=b.r;
-  const hov=b.hover?b.hover*(1+.16*Math.sin(t*.6)):0;
-  ctx.save();
-  ctx.translate(x,y-R*.9-hov);
-  ctx.scale(b.face,1);
-  if(stun>0){
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    const g=ctx.createRadialGradient(0,0,0,0,0,R*2.6);
-    g.addColorStop(0,"rgba(140,220,255,.3)");g.addColorStop(1,"rgba(120,200,255,0)");
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,R*2.6,0,TAU);ctx.fill();
-    ctx.restore();
-  }
-  const hi=hostile?"rgba(255,120,90,.9)":col(1.25,.95);
-  if(b.alien==="jelly"){
-    /* купол пульсирует: сжался — потянулся вверх, это и есть его движение */
-    const puls=.82+.18*Math.sin(t*1.6);
-    const bw=R*1.25*puls, bh=R*.95/puls;
-    ctx.fillStyle=col(.9,.62);
-    ctx.beginPath();ctx.ellipse(0,0,bw,bh,0,Math.PI,TAU);ctx.fill();
-    ctx.fillStyle=col(1.5,.28);
-    ctx.beginPath();ctx.ellipse(-bw*.25,-bh*.35,bw*.4,bh*.32,0,0,TAU);ctx.fill();
-    ctx.strokeStyle=col(.6,.5);ctx.lineWidth=1.2;
-    ctx.beginPath();ctx.ellipse(0,0,bw,bh,0,Math.PI,TAU);ctx.stroke();
-    /* щупальца тянутся вниз с задержкой по фазе */
-    ctx.strokeStyle=col(1.1,.45);
-    for(let i=0;i<b.tent;i++){
-      const u=(i/(b.tent-1)-.5)*1.7;
-      const sx=u*bw*.85;
-      ctx.lineWidth=1+(1-Math.abs(u))*1.2;
-      ctx.beginPath();ctx.moveTo(sx,0);
-      const L=R*(1.6+Math.abs(u)*.9);
-      ctx.quadraticCurveTo(sx+Math.sin(t*1.3+i)*R*.4,L*.55,
-        sx+Math.sin(t*1.1+i*1.7)*R*.7,L);
-      ctx.stroke();
-    }
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    const g=ctx.createRadialGradient(0,-bh*.2,0,0,-bh*.2,R*2.2);
-    g.addColorStop(0,col(1.6,.20));g.addColorStop(1,col(1.6,0));
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,-bh*.2,R*2.2,0,TAU);ctx.fill();
-    ctx.restore();
-  }else if(b.alien==="strider"){
-    /* шесть высоких дуг: тело висит вверху, ноги переступают попарно */
-    const legH=R*2.2;
-    ctx.strokeStyle=col(.65,.9);
-    for(let i=0;i<6;i++){
-      const side=i<3?-1:1, k=i%3;
-      const px=(k-1)*R*.55;
-      const step=Math.sin(t*1.4+i*2.1)*R*.5;
-      ctx.lineWidth=1.6;
-      ctx.beginPath();
-      ctx.moveTo(px,0);
-      ctx.quadraticCurveTo(px+side*R*1.1,legH*.45,px+step+side*R*.5,legH);
-      ctx.stroke();
-    }
-    ctx.fillStyle=col(.95,.95);
-    ctx.beginPath();ctx.ellipse(0,0,R*.95,R*.5,0,0,TAU);ctx.fill();
-    ctx.strokeStyle=col(.55,.8);ctx.lineWidth=1;ctx.stroke();
-    /* маленькая голова на длинной шее — по ней силуэт и опознаётся */
-    ctx.strokeStyle=col(.7,.9);ctx.lineWidth=1.6;
-    ctx.beginPath();ctx.moveTo(R*.7,-R*.2);
-    ctx.quadraticCurveTo(R*1.5,-R*.9,R*1.7,-R*1.5);ctx.stroke();
-    ctx.fillStyle=col(1.05,.95);
-    ctx.beginPath();ctx.ellipse(R*1.75,-R*1.65,R*.34,R*.26,0,0,TAU);ctx.fill();
-    ctx.fillStyle=hi;
-    ctx.beginPath();ctx.arc(R*1.9,-R*1.7,1.6,0,TAU);ctx.fill();
-  }else if(b.alien==="crystal"){
-    /* гранёное тело: жёсткие плоскости и светящийся шов между ними */
-    const P=[];
-    for(let i=0;i<b.facets;i++){
-      const a=i/b.facets*TAU;
-      P.push([Math.cos(a)*R*(.9+((i*37)%5)/5*.5),Math.sin(a)*R*.62]);
-    }
-    ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);
-    for(let i=1;i<P.length;i++)ctx.lineTo(P[i][0],P[i][1]);
-    ctx.closePath();
-    const g=ctx.createLinearGradient(-R,-R*.6,R,R*.6);
-    g.addColorStop(0,col(1.5,.85));g.addColorStop(.5,col(.8,.9));g.addColorStop(1,col(1.2,.8));
-    ctx.fillStyle=g;ctx.fill();
-    ctx.strokeStyle="rgba(255,255,255,.35)";ctx.lineWidth=.8;ctx.stroke();
-    ctx.strokeStyle=col(1.8,.5+.3*Math.sin(t*2));
-    ctx.lineWidth=1.4;
-    ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);ctx.lineTo(P[(b.facets>>1)][0],P[(b.facets>>1)][1]);
-    ctx.stroke();
-    /* тонкие ноги-иглы */
-    ctx.strokeStyle=col(.6,.85);ctx.lineWidth=1;
-    for(let i=0;i<6;i++){
-      const px=(i%3-1)*R*.5, side=i<3?-1:1;
-      const step=Math.sin(t*1.8+i)*R*.3;
-      ctx.beginPath();ctx.moveTo(px,R*.3);
-      ctx.lineTo(px+step+side*R*.6,R*1.25);ctx.stroke();
-    }
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    const gg=ctx.createRadialGradient(0,0,0,0,0,R*1.8);
-    gg.addColorStop(0,col(1.9,.16));gg.addColorStop(1,col(1.9,0));
-    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(0,0,R*1.8,0,TAU);ctx.fill();
-    ctx.restore();
-  }else if(b.alien==="manta"){
-    /* крыло идёт волной: три сегмента с разной фазой вместо жёсткой дуги */
-    const S=R*b.span;
-    for(const side of [-1,1]){
-      ctx.beginPath();
-      ctx.moveTo(0,0);
-      const w1=Math.sin(t*1.5+(side>0?0:.9))*R*.5;
-      const w2=Math.sin(t*1.5+1+(side>0?0:.9))*R*.7;
-      ctx.quadraticCurveTo(side*S*.5,w1-R*.5,side*S,w2);
-      ctx.quadraticCurveTo(side*S*.5,w1+R*.35,0,R*.45);
-      ctx.closePath();
-      const g=ctx.createLinearGradient(0,0,side*S,0);
-      g.addColorStop(0,col(1.05,.92));g.addColorStop(1,col(.55,.55));
-      ctx.fillStyle=g;ctx.fill();
-      ctx.strokeStyle=col(.45,.6);ctx.lineWidth=1;ctx.stroke();
-    }
-    ctx.fillStyle=col(1.1,.95);
-    ctx.beginPath();ctx.ellipse(0,R*.1,R*.42,R*.6,0,0,TAU);ctx.fill();
-    ctx.fillStyle=hi;
-    ctx.beginPath();ctx.arc(R*.18,-R*.05,1.5,0,TAU);ctx.fill();
-    /* хвост-жало */
-    ctx.strokeStyle=col(.7,.7);ctx.lineWidth=1.2;
-    ctx.beginPath();ctx.moveTo(0,R*.6);
-    ctx.quadraticCurveTo(-R*.3,R*1.4,-R*.1+Math.sin(t)*R*.3,R*2.1);ctx.stroke();
-  }else{
-    /* панцирный: купол-камень на коротких ногах, пока стоит — не отличить
-       от валуна, и в этом весь смысл */
-    ctx.fillStyle=col(.5,.95);
-    for(let i=0;i<4;i++){
-      const px=(i-1.5)*R*.5;
-      const step=Math.sin(t*1.6+i*1.6)*R*.22;
-      ctx.fillRect(px-1.2,R*.2,2.4,R*.6+step);
-    }
-    const g=ctx.createLinearGradient(0,-R*.9,0,R*.3);
-    g.addColorStop(0,col(1.35,.95));g.addColorStop(1,col(.55,.95));
-    ctx.fillStyle=g;
-    ctx.beginPath();ctx.ellipse(0,R*.15,R*1.15,R*.85,0,Math.PI,TAU);ctx.fill();
-    ctx.strokeStyle=col(.35,.8);ctx.lineWidth=1.2;ctx.stroke();
-    /* рёбра панциря */
-    ctx.strokeStyle="rgba(0,0,0,.22)";ctx.lineWidth=1;
-    for(let i=1;i<4;i++){
-      const u=i/4*2-1;
-      ctx.beginPath();
-      ctx.ellipse(0,R*.15,R*1.15*Math.abs(u),R*.85*Math.abs(u),0,Math.PI,TAU);
-      ctx.stroke();
-    }
-    /* голова выглядывает только на ходу */
-    if(Math.abs(b.vx)>.02){
-      ctx.fillStyle=col(.9,.95);
-      ctx.beginPath();ctx.ellipse(R*1.15,R*.05,R*.3,R*.22,0,0,TAU);ctx.fill();
-      ctx.fillStyle=hi;
-      ctx.beginPath();ctx.arc(R*1.3,0,1.4,0,TAU);ctx.fill();
-    }
-  }
-  /* свечение чужих архетипов рисовалось только у земных форм: панцирник,
-     названный светящимся, не светился (M174 — имя обязано быть правдой) */
-  if(b.glow){
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    const gg=ctx.createRadialGradient(0,0,0,0,0,R*2.2);
-    gg.addColorStop(0,col(1.5,.20));gg.addColorStop(1,"rgba(0,0,0,0)");
-    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(0,0,R*2.2,0,TAU);ctx.fill();
-    ctx.restore();
-  }
-  ctx.restore();
-}
-/* тело собирается из тех же частей, но пропорции, силуэт и набор — от seed */
-function drawBeast(b,x,y,hostile,stun){
-  if(b.alien){drawBeastAlien(b,x,y,hostile,stun);return;}
-  const c=b.body;
-  const col=(k,a)=>"rgba("+Math.round(c[0]*k)+","+Math.round(c[1]*k)+","+Math.round(c[2]*k)+","+a+")";
-  const t=G.t*b.spd+b.phase;
-  const bob=b.hop?Math.abs(Math.sin(t))*b.r*.35:Math.sin(t)*b.r*.08;
-  ctx.save();ctx.translate(x,y-b.r*.9-bob);ctx.scale(b.face,1);
-  if(stun>0){
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    const g=ctx.createRadialGradient(0,0,0,0,0,b.r*2.6);
-    g.addColorStop(0,"rgba(140,220,255,.3)");g.addColorStop(1,"rgba(120,200,255,0)");
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,b.r*2.6,0,TAU);ctx.fill();
-    ctx.restore();
-  }
-  /* ноги */
-  ctx.strokeStyle=col(.55,1);ctx.lineWidth=Math.max(1,b.r*.16);ctx.lineCap="round";
-  for(let i=0;i<b.legs;i++){
-    const u=(i/(b.legs-1||1)-.5)*1.7;
-    const sw=stun>0?0:Math.sin(t*2+i*1.9)*b.r*.3;
-    ctx.beginPath();
-    ctx.moveTo(u*b.r*.8*b.bx,b.r*.35*b.by);
-    ctx.lineTo(u*b.r*.9*b.bx+sw,b.r*.95);
-    ctx.stroke();
-  }
-  ctx.lineCap="butt";
-  if(b.tail){
-    ctx.strokeStyle=col(.7,1);ctx.lineWidth=Math.max(1,b.r*.22);
-    ctx.beginPath();ctx.moveTo(-b.r*.8*b.bx,-b.r*.1);
-    ctx.quadraticCurveTo(-b.r*1.7*b.bx,-b.r*.5-Math.sin(t*1.6)*b.r*.3,
-                         -b.r*1.9*b.bx,b.r*.2);ctx.stroke();
-  }
-  /* туловище: гранёный многоугольник (не гладкий эллипс), каждая грань
-     чуть светлее/темнее соседней — читается как настоящая полигональная форма */
-  const P=b.poly;
-  ctx.beginPath();
-  ctx.moveTo(P[0][0]*b.r*b.bx,P[0][1]*b.r*b.by);
-  for(let i=1;i<P.length;i++)ctx.lineTo(P[i][0]*b.r*b.bx,P[i][1]*b.r*b.by);
-  ctx.closePath();
-  const g=ctx.createLinearGradient(0,-b.r*b.by,0,b.r*b.by);
-  g.addColorStop(0,col(1.15,1));g.addColorStop(1,col(.5,1));
-  ctx.fillStyle=g;ctx.fill();
-  for(let i=0;i<P.length;i++){
-    const a=P[i],bN=P[(i+1)%P.length];
-    ctx.beginPath();
-    ctx.moveTo(a[0]*b.r*b.bx,a[1]*b.r*b.by);ctx.lineTo(bN[0]*b.r*b.bx,bN[1]*b.r*b.by);
-    ctx.lineTo(0,0);ctx.closePath();
-    ctx.fillStyle=col(((i&1)?1.22:.92),.16);ctx.fill();
-  }
-  ctx.strokeStyle=col(.35,.9);ctx.lineWidth=1;ctx.stroke();
-  /* шерсть: короткие штрихи по контуру, торчащие наружу */
-  ctx.strokeStyle=col(.6,.7);ctx.lineWidth=Math.max(.6,b.r*.05);
-  for(let i=0;i<b.furTufts;i++){
-    const a=(i/b.furTufts)*TAU;
-    const px=Math.cos(a)*b.r*b.bx*.95,py=Math.sin(a)*b.r*b.by*.95;
-    const nx=Math.cos(a),ny=Math.sin(a)*.8;
-    ctx.beginPath();ctx.moveTo(px,py);
-    ctx.lineTo(px+nx*b.r*.22,py+ny*b.r*.22);ctx.stroke();
-  }
-  for(let i=0;i<b.spots;i++){
-    ctx.fillStyle=col(1.4,.5);
-    ctx.beginPath();ctx.arc(-b.r*.4*b.bx+i*b.r*.42,-b.r*.2+((i*7)%3)*b.r*.22,b.r*.14,0,TAU);ctx.fill();
-  }
-  if(b.crest){
-    ctx.fillStyle=col(1.3,.85);
-    ctx.beginPath();ctx.moveTo(-b.r*.3,-b.r*.75*b.by);
-    ctx.lineTo(0,-b.r*1.5*b.by);ctx.lineTo(b.r*.35,-b.r*.7*b.by);ctx.closePath();ctx.fill();
-  }
-  /* голова */
-  const hx=b.r*b.headX,hs=b.r*b.headSize;
-  ctx.fillStyle=col(1.05,1);
-  ctx.beginPath();ctx.arc(hx,-b.r*.3*b.by,hs,0,TAU);ctx.fill();
-  ctx.strokeStyle=col(.35,.9);ctx.stroke();
-  if(b.ears){
-    ctx.fillStyle=col(.8,1);
-    for(const s of [-1,1]){
-      ctx.beginPath();ctx.ellipse(hx+s*hs*.3,-b.r*.3*b.by-hs*.85,b.r*.16,b.r*.34,s*.4,0,TAU);ctx.fill();
-    }
-  }
-  if(hostile){
-    /* жвалы — единственное, что отличает шахтную форму */
-    ctx.strokeStyle=col(.4,1);ctx.lineWidth=Math.max(1.2,b.r*.18);
-    for(const s of [-1,1]){
-      ctx.beginPath();ctx.moveTo(hx+hs*.5,-b.r*.3*b.by+s*b.r*.2);
-      ctx.lineTo(hx+hs*1.05,-b.r*.3*b.by+s*b.r*.55);ctx.stroke();
-    }
-  }
-  /* глаз */
-  const blink=Math.sin(G.t*.05+b.phase*3)>.96;
-  ctx.fillStyle=stun>0?"#6fa8c8":(hostile?"#ff6b57":b.eye);
-  if(blink&&stun<=0){
-    ctx.fillRect(hx+hs*.05,-b.r*.3*b.by-hs*.2,hs*.4,hs*.15);
-  }else{
-    ctx.beginPath();ctx.arc(hx+hs*.2,-b.r*.3*b.by-hs*.1,hs*.22,0,TAU);ctx.fill();
-    if(!hostile){ctx.fillStyle="rgba(255,255,255,.9)";
-      ctx.beginPath();ctx.arc(hx+hs*.28,-b.r*.3*b.by-hs*.22,hs*.08,0,TAU);ctx.fill();}
-  }
-  if(b.glow){
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    const gg=ctx.createRadialGradient(0,0,0,0,0,b.r*2.2);
-    gg.addColorStop(0,col(1.4,.18));gg.addColorStop(1,"rgba(0,0,0,0)");
-    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(0,0,b.r*2.2,0,TAU);ctx.fill();
-    ctx.restore();
-  }
-  ctx.restore();
-  if(stun>0){
-    ctx.fillStyle="rgba(160,225,255,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText("ОГЛУШЁН",x,y-b.r*2.6);
-  }
 }
 
 /* ══════════════ база: внутренности отсеков ══════════════ */
@@ -34159,246 +34183,17 @@ function updateBase(dt){
   }
 }
 
-/* ══════════════ крупная форма на поверхности ══════════════ */
-/* После M78 у четырёх поздних миров свой закон формы ГРУНТА, и порода наконец
-   разная на ощупь. Но композиция кадра осталась одна на все двенадцать:
-   горизонт по трети, ровный профиль, между достопримечательностями пусто.
-   Тип различался цветом и фактурой, а не крупной формой — то есть с трёх
-   шагов все планеты по-прежнему один силуэт.
+/* ══════════════ приметы места: формы ══════════════
+   Отрезано от `21b-surface-deco` 25.08.2026 (46 КБ). Там остались отбор примет
+   для полосы, материал и общий проход отрисовки; здесь — сами формы, восемь
+   штук: друза, скол, плита, ферма, стена, колонна, навес, вайя. Каждая берёт
+   один объект `A` со своей палитрой и размерами и рисует тело.
 
-   Здесь заполняется пропуск в масштабах. Их было два: валун (радиус до 22) и
-   достопримечательность (150–900 в высоту, две-четыре на девять тысяч пути).
-   Между ними — ничего, а именно этот средний масштаб и держит кадр: 40–220 px,
-   то есть от груди астронавта до пятиэтажки. Мерило — человек 24 px, ровно
-   как в отсеках базы.
+   Правило семьи: примета узнаётся силуэтом с дальнего края экрана, поэтому
+   сначала форма и обвод, и только потом материал. Освещённая кромка
+   обязательна — тёмное пятно без неё читается дырой в кадре, а не вещью
+   (правило M173). */
 
-   Правила те же, что у достопримечательностей:
-   - формы растут КУРТИНАМИ, а не сплошным полем: сплошное поле — это вторая
-     заливка, только дороже;
-   - всё детерминировано от p.seed: планета всегда встречает тем же;
-   - геометрия дробится через poiPath (20a-poi) — единый язык скола и
-     выкрошенной кромки, а не второй способ рисовать камень;
-   - никаких столкновений: обстановка фантомна, поэтому её нет в зоне взлёта
-     и под постройками, где игрок ходит вплотную. */
-
-/* высота дана в единицах мира ДО множителя sc (.7–1.5) */
-const DECO_KINDS=[
-  {k:"druse",  on:"crystal",w:1.0,h: 90},   // друза призм из грунта
-  {k:"shard",  on:"crystal",w:.55,h:170},   // одиночная косая призма
-  {k:"slab",   on:"metal",  w:1.0,h:110},   // отвалившаяся плита обшивки
-  {k:"truss",  on:"metal",  w:.75,h:150},   // обломок фермы
-  {k:"wall",   on:"ruin",   w:1.0,h: 95},   // фрагмент стены
-  {k:"column", on:"ruin",   w:.8, h:130},   // колонна и упавшие барабаны
-  {k:"canopy", on:"jungle", w:1.0,h:180},   // дерево полога
-  {k:"frond",  on:"jungle", w:.85,h: 70}    // гигантский папоротник
-];
-/* сгенерировать и разложить; вызывается из startLanding после genPOI —
-   рельеф к этому моменту уже выровнен под постройками, и формы садятся
-   на итоговый профиль, а не на тот, который потом продавят */
-function genDeco(tr,p){
-  if(tr.deco)return tr.deco;
-  tr.deco=[];
-  if(p.type==="gas")return tr.deco;
-  /* смешанный мир: если украшен только второй тип, форм меньше — руины на
-     ледяной планете это гость, а не её собственное лицо */
-  const lead=DECO_KINDS.some(k=>k.on===p.type);
-  const pool=DECO_KINDS.filter(k=>k.on===p.type||(p.mix&&k.on===p.mix));
-  if(!pool.length)return tr.deco;
-  const share=lead?1:clamp((p.mw||.3)*1.8,.35,.9);
-  const r=rng(p.seed^0x0DEC0);
-  const nCl=Math.max(3,Math.round(clamp(tr.W/1600,4,12)*share));
-  for(let c=0;c<nCl;c++){
-    /* куртина ставится внутри своей полосы: иначе половина планеты пустая,
-       а вторая — свалка */
-    const lo=tr.W*(c+.12)/nCl, hi=tr.W*(c+.88)/nCl;
-    const cx=lo+r()*(hi-lo);
-    if(Math.abs(cx-tr.padX)<520)continue;                  // зона взлёта
-    if(tr.poi&&tr.poi.some(q=>Math.abs(q.x-cx)<q.h*.45+90))continue;
-    const n=1+Math.floor(r()*4);
-    for(let i=0;i<n;i++){
-      let tot=0;for(const k of pool)tot+=k.w*(k.on===p.type?1:.7);
-      let pick=r()*tot,K=pool[0];
-      for(const k of pool){pick-=k.w*(k.on===p.type?1:.7);if(pick<=0){K=k;break;}}
-      /* Место должно быть ровным. Первые кадры показали два разных провала от
-         одной причины: на крутом склоне друза висела в воздухе (её призмы
-         разъезжаются в стороны от точки замера), а в каньоне стена оказывалась
-         НИЖЕ окружающей породы, то есть нарисованной внутри камня. Проверяем
-         не наклон в точке, а разброс профиля на ширину самой формы.
-
-         Место ищется несколькими попытками: с одной изрезанный мир (шероховатость
-         под единицу — сплошные зубцы) остался бы вообще без крупной формы, а это
-         как раз тот мир, которому она нужнее всего. */
-      const hh=K.h*.9, ww=Math.max(30,hh*.45);
-      let x=-1;
-      for(let a=0;a<7&&x<0;a++){
-        const cand=clamp(cx+(r()-.5)*(160+320*r()),60,tr.W-60);
-        const gy=groundAt(tr,cand);
-        let mn=gy,mx=gy;
-        for(let s=-3;s<=3;s++){
-          const q=groundAt(tr,clamp(cand+s*ww*.5,10,tr.W-10));
-          if(q<mn)mn=q;if(q>mx)mx=q;
-        }
-        if(mx-mn>Math.max(26,hh*.5))continue;
-        let wide=gy;
-        for(let s=-4;s<=4;s++)wide=Math.min(wide,groundAt(tr,clamp(cand+s*60,10,tr.W-10)));
-        if(gy-wide>55)continue;                   // дно каньона: форму съест порода
-        x=cand;
-      }
-      if(x<0)continue;
-      /* высота гуляет умеренно, а sc отвечает только за коренастость: два
-         множителя на высоту разгоняли форму до размеров постройки, и средний
-         масштаб снова пропадал */
-      tr.deco.push({k:K.k,x,h:K.h*(.6+r()*.6),sc:.85+r()*.4,
-        flip:r()<.5,seed:hashi(p.seed,c*17+i,0x0DEC)});
-    }
-  }
-  /* Страховка: на изрезанном мире куртины могли не найти ни одного ровного
-     места, и планета оставалась совсем без крупной формы — то есть ровно тем,
-     против чего эта веха. Тогда ровные места ищутся по всему профилю, и берутся
-     самые ровные из них. Пусто быть не может: тип должен читаться силуэтом. */
-  if(tr.deco.length<3){
-    const cand=[];
-    for(let x=320;x<tr.W-320;x+=110){
-      if(Math.abs(x-tr.padX)<520)continue;
-      if(tr.poi&&tr.poi.some(q=>Math.abs(q.x-x)<q.h*.45+90))continue;
-      if(tr.deco.some(d=>Math.abs(d.x-x)<420))continue;
-      const gy=groundAt(tr,x);
-      let mn=gy,mx=gy;
-      for(let s=-3;s<=3;s++){
-        const q=groundAt(tr,clamp(x+s*22,10,tr.W-10));
-        if(q<mn)mn=q;if(q>mx)mx=q;
-      }
-      cand.push({x,sp:mx-mn});
-    }
-    cand.sort((a,b)=>a.sp-b.sp);
-    const put=[];
-    for(const q of cand){
-      if(tr.deco.length>=3)break;
-      if(put.some(v=>Math.abs(v-q.x)<700))continue;
-      put.push(q.x);
-      const K=pool[Math.floor(r()*pool.length)];
-      tr.deco.push({k:K.k,x:q.x,h:K.h*(.6+r()*.5),sc:.85+r()*.4,
-        flip:r()<.5,seed:hashi(p.seed,put.length,0x0DEF)});
-    }
-  }
-  /* крупное рисуется последним, то есть стоит впереди мелкого — иначе
-     призма в полтора роста прячется за крошкой у себя под боком */
-  tr.deco.sort((a,b)=>a.h-b.h);
-  return tr.deco;
-}
-/* смещение по грунту для части формы, отнесённой в сторону от точки замера:
-   призмы друзы и упавшие барабаны разъезжаются на десятки пикселей, и на любом
-   уклоне половина куста висела бы в воздухе */
-function dgy(A,dx){
-  const wx=A.d.x+(A.d.flip?-dx:dx);
-  return groundAt(A.tr,clamp(wx,4,A.tr.W-4))-groundAt(A.tr,A.d.x);
-}
-/* цвет из палитры мира: k — множитель светлоты, a — прозрачность */
-function dcol(pal,i,k,a){
-  const c=pal[Math.min(pal.length-1,i)];
-  const s=(v)=>Math.round(clamp(v*k,0,255));
-  return a===undefined?"rgb("+s(c[0])+","+s(c[1])+","+s(c[2])+")"
-    :"rgba("+s(c[0])+","+s(c[1])+","+s(c[2])+","+a.toFixed(3)+")";
-}
-/* та же порода, что под ногами, внутри силуэта формы: без этого объект
-   выглядит принесённым из другой игры (та же причина, что у валунов) */
-function decoMat(tr,P,w,h,ox,oy){
-  if(tr.mat)fillMaterial(tr.mat,ox,oy,.3,.24,P,{x:-w,y:-h,w:w*2,h:h*1.3});
-}
-function drawDeco(tr,camx,camy,p){
-  const list=tr.deco;if(!list||!list.length)return;
-  const pal=p.T.pal;
-  const vis=[];
-  for(const d of list){
-    const x=d.x-camx, m=d.h*.9+60;
-    if(x<-m||x>W+m)continue;
-    const y=groundAt(tr,d.x)-camy;
-    if(y<-d.h*1.4||y>H+40)continue;
-    vis.push({d,x,y,w:d.h*.42*d.sc,hgt:d.h});
-  }
-  if(!vis.length)return;
-  /* тени — ДО клипа: они лежат на грунте, а клип как раз всё, что ниже линии
-     грунта, и срезает (та же причина и тот же порядок, что у построек) */
-  for(const q of vis){
-    POI_SEED=q.d.seed;
-    ctx.save();ctx.globalAlpha=.72;
-    groundShadow(q.x-q.w*.45,q.y+2,Math.max(6,q.w*1.5),Math.max(2.6,q.hgt*.055));
-    ctx.restore();
-  }
-  /* Клип по профилю: форма стоит НА земле, значит ниже линии грунта её быть не
-     может. Без клипа стена в неровном месте рисовалась поверх породы и
-     читалась вкопанной в камень, а осыпь ложилась на склон соседнего холма.
-     Запас 10 px оставлен подножию: занос и упавшие обломки уходят в грунт. */
-  const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
-  const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
-  const SKY=new Path2D();
-  SKY.moveTo(i0*tr.step-camx,-4000);
-  for(let i=i0;i<=i1;i++)SKY.lineTo(i*tr.step-camx,tr.h[i]-camy+10);
-  SKY.lineTo(i1*tr.step-camx,-4000);
-  SKY.closePath();
-  ctx.save();ctx.clip(SKY);
-  for(const q of vis){
-    const d=q.d,x=q.x,y=q.y,w=q.w,hgt=q.hgt;
-    POI_SEED=d.seed;POI_MAT=null;      // потёки и копоть по телу здесь не нужны
-    ctx.save();ctx.translate(x,y);
-    if(d.flip)ctx.scale(-1,1);
-    const A={d,pal,p,tr,w,hgt,ox:camx-x,oy:camy-y};
-    if(d.k==="druse")decoDruse(A);
-    else if(d.k==="shard")decoShard(A);
-    else if(d.k==="slab")decoSlab(A);
-    else if(d.k==="truss")decoTruss(A);
-    else if(d.k==="wall")decoWall(A);
-    else if(d.k==="column")decoColumn(A);
-    else if(d.k==="canopy")decoCanopy(A);
-    else if(d.k==="frond")decoFrond(A);
-    ctx.restore();
-  }
-  ctx.restore();
-}
-/* ── кристаллический мир: призмы ──
-   Кристалл отличается от камня не цветом, а тем, что у него ИЗЛОМ, а не склон:
-   одно ребро повёрнуто к свету и горит, противоположное уходит в холод. То же
-   правило, что в MAT_CHAR.facet (18a-material) — только в крупной форме. */
-function prism(w,hgt,lean,pal,tr,ox,oy,i){
-  const t=lean;
-  const pts=[[-w,4],[-w*.72,-hgt*.55+t*hgt*.12],[-w*.3+t*w,-hgt],
-             [w*.34+t*w,-hgt*.92],[w*.78,-hgt*.5+t*hgt*.1],[w,4]];
-  const P=poiPath(pts,Math.min(2.4,w*.14));
-  const g=ctx.createLinearGradient(0,-hgt,0,6);
-  /* тело держится в средних ступенях палитры: на первых кадрах призмы шли
-     почти белыми и читались снегом на склоне — той же ошибкой, что палитра
-     кристаллического мира до M78 */
-  g.addColorStop(0,dcol(pal,4,1));
-  g.addColorStop(.4,dcol(pal,3,.9));
-  g.addColorStop(1,dcol(pal,1,.7));
-  ctx.fillStyle=g;ctx.fill(P);
-  decoMat(tr,P,w,hgt,ox,oy);
-  /* грань, повёрнутая к свету (солнце справа сверху), горит; левая тонет */
-  ctx.save();ctx.clip(P);
-  const gl=ctx.createLinearGradient(-w,0,w,0);
-  gl.addColorStop(0,"rgba(0,0,0,.62)");
-  gl.addColorStop(.5,"rgba(0,0,0,.06)");
-  gl.addColorStop(1,"rgba(255,255,255,.2)");
-  ctx.fillStyle=gl;ctx.fillRect(-w-2,-hgt-4,w*2+4,hgt+12);
-  ctx.restore();
-  /* дисперсия: светлое ребро уводит в холод или в тепло — этим прозрачная
-     грань и отличается от белёной кромки брусчатки (ошибка M78) */
-  const warm=h01(i,7,POI_SEED)<.5;
-  ctx.strokeStyle=warm?"rgba(255,214,190,.55)":"rgba(190,226,255,.55)";
-  ctx.lineWidth=Math.max(1,w*.06);
-  ctx.beginPath();
-  ctx.moveTo(-w*.3+t*w,-hgt);ctx.lineTo(w*.78,-hgt*.5+t*hgt*.1);ctx.lineTo(w,4);
-  ctx.stroke();
-  ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;
-  ctx.beginPath();
-  ctx.moveTo(-w*.3+t*w,-hgt);ctx.lineTo(-w*.72,-hgt*.55);ctx.lineTo(-w,4);
-  ctx.stroke();
-  /* внутренняя трещина: одна на призму, иначе кристалл выходит мятым */
-  ctx.strokeStyle="rgba(255,255,255,.14)";
-  ctx.beginPath();ctx.moveTo(-w*.1,-hgt*.85);
-  ctx.lineTo(w*.2,-hgt*.45);ctx.lineTo(-w*.05,-hgt*.12);ctx.stroke();
-  if(hgt>70)poiGlow(0,-hgt*.92,hgt*.3,"210,190,255",.10);
-}
 function decoDruse(A){
   const {pal,tr,w,hgt}=A;
   /* друза — не одна призма, а сросшийся куст разной высоты: ровная гребёнка
@@ -34727,6 +34522,247 @@ function decoFrond(A){
   }
   ctx.fillStyle=dcol(pal,0,1,.5);
   ctx.beginPath();ctx.ellipse(0,3,w*.5,Math.max(2,w*.12),0,0,TAU);ctx.fill();
+}
+
+/* ══════════════ крупная форма на поверхности ══════════════ */
+/* После M78 у четырёх поздних миров свой закон формы ГРУНТА, и порода наконец
+   разная на ощупь. Но композиция кадра осталась одна на все двенадцать:
+   горизонт по трети, ровный профиль, между достопримечательностями пусто.
+   Тип различался цветом и фактурой, а не крупной формой — то есть с трёх
+   шагов все планеты по-прежнему один силуэт.
+
+   Здесь заполняется пропуск в масштабах. Их было два: валун (радиус до 22) и
+   достопримечательность (150–900 в высоту, две-четыре на девять тысяч пути).
+   Между ними — ничего, а именно этот средний масштаб и держит кадр: 40–220 px,
+   то есть от груди астронавта до пятиэтажки. Мерило — человек 24 px, ровно
+   как в отсеках базы.
+
+   Правила те же, что у достопримечательностей:
+   - формы растут КУРТИНАМИ, а не сплошным полем: сплошное поле — это вторая
+     заливка, только дороже;
+   - всё детерминировано от p.seed: планета всегда встречает тем же;
+   - геометрия дробится через poiPath (20a-poi) — единый язык скола и
+     выкрошенной кромки, а не второй способ рисовать камень;
+   - никаких столкновений: обстановка фантомна, поэтому её нет в зоне взлёта
+     и под постройками, где игрок ходит вплотную. */
+
+/* высота дана в единицах мира ДО множителя sc (.7–1.5) */
+const DECO_KINDS=[
+  {k:"druse",  on:"crystal",w:1.0,h: 90},   // друза призм из грунта
+  {k:"shard",  on:"crystal",w:.55,h:170},   // одиночная косая призма
+  {k:"slab",   on:"metal",  w:1.0,h:110},   // отвалившаяся плита обшивки
+  {k:"truss",  on:"metal",  w:.75,h:150},   // обломок фермы
+  {k:"wall",   on:"ruin",   w:1.0,h: 95},   // фрагмент стены
+  {k:"column", on:"ruin",   w:.8, h:130},   // колонна и упавшие барабаны
+  {k:"canopy", on:"jungle", w:1.0,h:180},   // дерево полога
+  {k:"frond",  on:"jungle", w:.85,h: 70}    // гигантский папоротник
+];
+/* сгенерировать и разложить; вызывается из startLanding после genPOI —
+   рельеф к этому моменту уже выровнен под постройками, и формы садятся
+   на итоговый профиль, а не на тот, который потом продавят */
+function genDeco(tr,p){
+  if(tr.deco)return tr.deco;
+  tr.deco=[];
+  if(p.type==="gas")return tr.deco;
+  /* смешанный мир: если украшен только второй тип, форм меньше — руины на
+     ледяной планете это гость, а не её собственное лицо */
+  const lead=DECO_KINDS.some(k=>k.on===p.type);
+  const pool=DECO_KINDS.filter(k=>k.on===p.type||(p.mix&&k.on===p.mix));
+  if(!pool.length)return tr.deco;
+  const share=lead?1:clamp((p.mw||.3)*1.8,.35,.9);
+  const r=rng(p.seed^0x0DEC0);
+  const nCl=Math.max(3,Math.round(clamp(tr.W/1600,4,12)*share));
+  for(let c=0;c<nCl;c++){
+    /* куртина ставится внутри своей полосы: иначе половина планеты пустая,
+       а вторая — свалка */
+    const lo=tr.W*(c+.12)/nCl, hi=tr.W*(c+.88)/nCl;
+    const cx=lo+r()*(hi-lo);
+    if(Math.abs(cx-tr.padX)<520)continue;                  // зона взлёта
+    if(tr.poi&&tr.poi.some(q=>Math.abs(q.x-cx)<q.h*.45+90))continue;
+    const n=1+Math.floor(r()*4);
+    for(let i=0;i<n;i++){
+      let tot=0;for(const k of pool)tot+=k.w*(k.on===p.type?1:.7);
+      let pick=r()*tot,K=pool[0];
+      for(const k of pool){pick-=k.w*(k.on===p.type?1:.7);if(pick<=0){K=k;break;}}
+      /* Место должно быть ровным. Первые кадры показали два разных провала от
+         одной причины: на крутом склоне друза висела в воздухе (её призмы
+         разъезжаются в стороны от точки замера), а в каньоне стена оказывалась
+         НИЖЕ окружающей породы, то есть нарисованной внутри камня. Проверяем
+         не наклон в точке, а разброс профиля на ширину самой формы.
+
+         Место ищется несколькими попытками: с одной изрезанный мир (шероховатость
+         под единицу — сплошные зубцы) остался бы вообще без крупной формы, а это
+         как раз тот мир, которому она нужнее всего. */
+      const hh=K.h*.9, ww=Math.max(30,hh*.45);
+      let x=-1;
+      for(let a=0;a<7&&x<0;a++){
+        const cand=clamp(cx+(r()-.5)*(160+320*r()),60,tr.W-60);
+        const gy=groundAt(tr,cand);
+        let mn=gy,mx=gy;
+        for(let s=-3;s<=3;s++){
+          const q=groundAt(tr,clamp(cand+s*ww*.5,10,tr.W-10));
+          if(q<mn)mn=q;if(q>mx)mx=q;
+        }
+        if(mx-mn>Math.max(26,hh*.5))continue;
+        let wide=gy;
+        for(let s=-4;s<=4;s++)wide=Math.min(wide,groundAt(tr,clamp(cand+s*60,10,tr.W-10)));
+        if(gy-wide>55)continue;                   // дно каньона: форму съест порода
+        x=cand;
+      }
+      if(x<0)continue;
+      /* высота гуляет умеренно, а sc отвечает только за коренастость: два
+         множителя на высоту разгоняли форму до размеров постройки, и средний
+         масштаб снова пропадал */
+      tr.deco.push({k:K.k,x,h:K.h*(.6+r()*.6),sc:.85+r()*.4,
+        flip:r()<.5,seed:hashi(p.seed,c*17+i,0x0DEC)});
+    }
+  }
+  /* Страховка: на изрезанном мире куртины могли не найти ни одного ровного
+     места, и планета оставалась совсем без крупной формы — то есть ровно тем,
+     против чего эта веха. Тогда ровные места ищутся по всему профилю, и берутся
+     самые ровные из них. Пусто быть не может: тип должен читаться силуэтом. */
+  if(tr.deco.length<3){
+    const cand=[];
+    for(let x=320;x<tr.W-320;x+=110){
+      if(Math.abs(x-tr.padX)<520)continue;
+      if(tr.poi&&tr.poi.some(q=>Math.abs(q.x-x)<q.h*.45+90))continue;
+      if(tr.deco.some(d=>Math.abs(d.x-x)<420))continue;
+      const gy=groundAt(tr,x);
+      let mn=gy,mx=gy;
+      for(let s=-3;s<=3;s++){
+        const q=groundAt(tr,clamp(x+s*22,10,tr.W-10));
+        if(q<mn)mn=q;if(q>mx)mx=q;
+      }
+      cand.push({x,sp:mx-mn});
+    }
+    cand.sort((a,b)=>a.sp-b.sp);
+    const put=[];
+    for(const q of cand){
+      if(tr.deco.length>=3)break;
+      if(put.some(v=>Math.abs(v-q.x)<700))continue;
+      put.push(q.x);
+      const K=pool[Math.floor(r()*pool.length)];
+      tr.deco.push({k:K.k,x:q.x,h:K.h*(.6+r()*.5),sc:.85+r()*.4,
+        flip:r()<.5,seed:hashi(p.seed,put.length,0x0DEF)});
+    }
+  }
+  /* крупное рисуется последним, то есть стоит впереди мелкого — иначе
+     призма в полтора роста прячется за крошкой у себя под боком */
+  tr.deco.sort((a,b)=>a.h-b.h);
+  return tr.deco;
+}
+/* смещение по грунту для части формы, отнесённой в сторону от точки замера:
+   призмы друзы и упавшие барабаны разъезжаются на десятки пикселей, и на любом
+   уклоне половина куста висела бы в воздухе */
+function dgy(A,dx){
+  const wx=A.d.x+(A.d.flip?-dx:dx);
+  return groundAt(A.tr,clamp(wx,4,A.tr.W-4))-groundAt(A.tr,A.d.x);
+}
+/* цвет из палитры мира: k — множитель светлоты, a — прозрачность */
+function dcol(pal,i,k,a){
+  const c=pal[Math.min(pal.length-1,i)];
+  const s=(v)=>Math.round(clamp(v*k,0,255));
+  return a===undefined?"rgb("+s(c[0])+","+s(c[1])+","+s(c[2])+")"
+    :"rgba("+s(c[0])+","+s(c[1])+","+s(c[2])+","+a.toFixed(3)+")";
+}
+/* та же порода, что под ногами, внутри силуэта формы: без этого объект
+   выглядит принесённым из другой игры (та же причина, что у валунов) */
+function decoMat(tr,P,w,h,ox,oy){
+  if(tr.mat)fillMaterial(tr.mat,ox,oy,.3,.24,P,{x:-w,y:-h,w:w*2,h:h*1.3});
+}
+function drawDeco(tr,camx,camy,p){
+  const list=tr.deco;if(!list||!list.length)return;
+  const pal=p.T.pal;
+  const vis=[];
+  for(const d of list){
+    const x=d.x-camx, m=d.h*.9+60;
+    if(x<-m||x>W+m)continue;
+    const y=groundAt(tr,d.x)-camy;
+    if(y<-d.h*1.4||y>H+40)continue;
+    vis.push({d,x,y,w:d.h*.42*d.sc,hgt:d.h});
+  }
+  if(!vis.length)return;
+  /* тени — ДО клипа: они лежат на грунте, а клип как раз всё, что ниже линии
+     грунта, и срезает (та же причина и тот же порядок, что у построек) */
+  for(const q of vis){
+    POI_SEED=q.d.seed;
+    ctx.save();ctx.globalAlpha=.72;
+    groundShadow(q.x-q.w*.45,q.y+2,Math.max(6,q.w*1.5),Math.max(2.6,q.hgt*.055));
+    ctx.restore();
+  }
+  /* Клип по профилю: форма стоит НА земле, значит ниже линии грунта её быть не
+     может. Без клипа стена в неровном месте рисовалась поверх породы и
+     читалась вкопанной в камень, а осыпь ложилась на склон соседнего холма.
+     Запас 10 px оставлен подножию: занос и упавшие обломки уходят в грунт. */
+  const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
+  const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
+  const SKY=new Path2D();
+  SKY.moveTo(i0*tr.step-camx,-4000);
+  for(let i=i0;i<=i1;i++)SKY.lineTo(i*tr.step-camx,tr.h[i]-camy+10);
+  SKY.lineTo(i1*tr.step-camx,-4000);
+  SKY.closePath();
+  ctx.save();ctx.clip(SKY);
+  for(const q of vis){
+    const d=q.d,x=q.x,y=q.y,w=q.w,hgt=q.hgt;
+    POI_SEED=d.seed;POI_MAT=null;      // потёки и копоть по телу здесь не нужны
+    ctx.save();ctx.translate(x,y);
+    if(d.flip)ctx.scale(-1,1);
+    const A={d,pal,p,tr,w,hgt,ox:camx-x,oy:camy-y};
+    if(d.k==="druse")decoDruse(A);
+    else if(d.k==="shard")decoShard(A);
+    else if(d.k==="slab")decoSlab(A);
+    else if(d.k==="truss")decoTruss(A);
+    else if(d.k==="wall")decoWall(A);
+    else if(d.k==="column")decoColumn(A);
+    else if(d.k==="canopy")decoCanopy(A);
+    else if(d.k==="frond")decoFrond(A);
+    ctx.restore();
+  }
+  ctx.restore();
+}
+/* ── кристаллический мир: призмы ──
+   Кристалл отличается от камня не цветом, а тем, что у него ИЗЛОМ, а не склон:
+   одно ребро повёрнуто к свету и горит, противоположное уходит в холод. То же
+   правило, что в MAT_CHAR.facet (18a-material) — только в крупной форме. */
+function prism(w,hgt,lean,pal,tr,ox,oy,i){
+  const t=lean;
+  const pts=[[-w,4],[-w*.72,-hgt*.55+t*hgt*.12],[-w*.3+t*w,-hgt],
+             [w*.34+t*w,-hgt*.92],[w*.78,-hgt*.5+t*hgt*.1],[w,4]];
+  const P=poiPath(pts,Math.min(2.4,w*.14));
+  const g=ctx.createLinearGradient(0,-hgt,0,6);
+  /* тело держится в средних ступенях палитры: на первых кадрах призмы шли
+     почти белыми и читались снегом на склоне — той же ошибкой, что палитра
+     кристаллического мира до M78 */
+  g.addColorStop(0,dcol(pal,4,1));
+  g.addColorStop(.4,dcol(pal,3,.9));
+  g.addColorStop(1,dcol(pal,1,.7));
+  ctx.fillStyle=g;ctx.fill(P);
+  decoMat(tr,P,w,hgt,ox,oy);
+  /* грань, повёрнутая к свету (солнце справа сверху), горит; левая тонет */
+  ctx.save();ctx.clip(P);
+  const gl=ctx.createLinearGradient(-w,0,w,0);
+  gl.addColorStop(0,"rgba(0,0,0,.62)");
+  gl.addColorStop(.5,"rgba(0,0,0,.06)");
+  gl.addColorStop(1,"rgba(255,255,255,.2)");
+  ctx.fillStyle=gl;ctx.fillRect(-w-2,-hgt-4,w*2+4,hgt+12);
+  ctx.restore();
+  /* дисперсия: светлое ребро уводит в холод или в тепло — этим прозрачная
+     грань и отличается от белёной кромки брусчатки (ошибка M78) */
+  const warm=h01(i,7,POI_SEED)<.5;
+  ctx.strokeStyle=warm?"rgba(255,214,190,.55)":"rgba(190,226,255,.55)";
+  ctx.lineWidth=Math.max(1,w*.06);
+  ctx.beginPath();
+  ctx.moveTo(-w*.3+t*w,-hgt);ctx.lineTo(w*.78,-hgt*.5+t*hgt*.1);ctx.lineTo(w,4);
+  ctx.stroke();
+  ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(-w*.3+t*w,-hgt);ctx.lineTo(-w*.72,-hgt*.55);ctx.lineTo(-w,4);
+  ctx.stroke();
+  /* внутренняя трещина: одна на призму, иначе кристалл выходит мятым */
+  ctx.strokeStyle="rgba(255,255,255,.14)";
+  ctx.beginPath();ctx.moveTo(-w*.1,-hgt*.85);
+  ctx.lineTo(w*.2,-hgt*.45);ctx.lineTo(-w*.05,-hgt*.12);ctx.stroke();
+  if(hgt>70)poiGlow(0,-hgt*.92,hgt*.3,"210,190,255",.10);
 }
 
 /* ── передний план ──
@@ -37393,9 +37429,17 @@ function drawCave(){
      живут в строке состояния, галерея и глубина — в строке места (hud()). */
 }
 
-/* ══════════════ шахта: отрисовка ══════════════
-   Отрезано от 23-mode-dig на распиле 0.108.x: там состояние, ход и фауна, здесь
-   растр. Порядок склейки сохранён: 23 кладёт DIG_* и digCell, 23a читает их. */
+/* ══════════════ шахта: порода ══════════════
+   Отрезано от `23a-dig-draw` 25.08.2026: файл дорос до 50 КБ, и внутри у него
+   лежали рядом две разные работы — из чего сложена гора и что в ней построено.
+   Здесь первая: пласты, материал, трещины, блоки, дайки, сырые потёки и старые
+   брошенные выработки, то есть всё, что было тут до кирки. Пустота, крепь,
+   настилы, вагонетка и свет остались в `23a`.
+
+   Порядок склейки: 23 кладёт `DIG_*` и `digCell`, эти двое их читают.
+   Рисуется через тайловый кэш (`drawTiles`, 18c): порода под камерой не
+   меняется, значит печётся один раз, а кадр только кладёт картинки. */
+
 /* ── отрисовка ──
    Шахта рисовалась поклеточно: у каждой ячейки своя заливка, своя кромка и
    своя обводка. На экране это читалось клетчатой скатертью — сетка тридцати
@@ -37689,6 +37733,10 @@ function digRockMass(p,camx,camy){
   ctx.restore();
 }
 /* пустота: один путь на всю выработку */
+
+/* ══════════════ шахта: отрисовка ══════════════
+   Отрезано от 23-mode-dig на распиле 0.108.x: там состояние, ход и фауна, здесь
+   растр. Порядок склейки сохранён: 23 кладёт DIG_* и digCell, 23a читает их. */
 function digVoidPath(D,camx,camy){
   const P=new Path2D();
   const r0=Math.max(0,Math.floor(camy/DIG_CELL)-1), r1=Math.ceil((camy+H)/DIG_CELL)+1;
@@ -41863,16 +41911,6 @@ function radioTune(f){
   if(q<.55)text=text.replace(/[а-яёa-z]{3,}/gi,w=>r()<(1-q)*.6?"…":w);
   return {k:B.k,ru:B.ru,q,text};
 }
-/* блок в кантине: ручка и то, что слышно */
-function radioBlock(){
-  $body.appendChild(el("div","sec","ПРИЁМНИК · КРУТИТЕ РУЧКУ"));
-  const f=(G.radioF==null?.05:G.radioF),R=radioTune(f);
-  const r=el("div","row");
-  const inp=document.createElement("input");inp.type="range";inp.min=0;inp.max=1;inp.step=.005;inp.value=f;inp.style.cssText="width:14em";
-  const out=el("div","nm","<b>"+(R.ru||"шум")+"</b><s style='color:#cfe3ea'>"+R.text+"</s>");
-  inp.oninput=()=>{const Q=radioTune(+inp.value);out.innerHTML="<b>"+(Q.ru||"шум")+"</b><s style='color:#cfe3ea'>"+Q.text+"</s>";};
-  r.appendChild(inp);r.appendChild(out);$body.appendChild(r);
-}
 
 /* ══════════════ станция: вкладка «дом и базы» ══════════════ */
 /* Отпилено от 26-ui-station по шву вкладки (2026-08-23): renderTab зовёт
@@ -42057,6 +42095,257 @@ function renderBasesTab(st){
       $body.appendChild(r);
     }
 }
+
+/* ══════════════ станция: мастерская и наука ══════════════
+   Отрезано от `26-ui-station` 25.08.2026: файл дорос до 50 КБ, и почти весь
+   его вес держала одна функция `renderTab` — цепочка из полутора десятков
+   вкладок в одном теле. Резать её пополам нельзя, а вот вынести вкладку
+   целиком — можно, и так в этом файле уже сделано для кантины, блошинки и
+   бонов (`renderCantina`, `fleaRender`, `scripRender`). Здесь ещё четыре по
+   тому же образцу: ОСНАСТКА, ПРИБОРЫ, ЛАБОРАТОРИЯ, СПЛАВ.
+
+   Каждая рисует в общий `$body` теми же кистями (`el`) и перерисовывает экран
+   через `renderTab` — состояние станции остаётся в `26`, здесь только вид. */
+
+function stTabMods(){
+    const cap=capOf(G.shipId);
+    const capBar=()=>{
+      const used=capUsed();
+      $body.appendChild(el("div","sec","ОСНАСТКА: "+used+" / "+cap+
+        " · МОДУЛИ И ЧАСТИ ДЕЛЯТ ОДИН БЮДЖЕТ"+(used>cap?" · ПЕРЕГРУЗ":"")));
+    };
+    capBar();
+    $body.appendChild(el("div","sec","МОДУЛИ — ДО 4 УРОВНЕЙ · КАЖДЫЙ УРОВЕНЬ ЗАНИМАЕТ 1 МЕСТО"));
+    for(const k in MODS){
+      const M=MODS[k],own=G.modsOwned[k],lvl=G.mods[k],cost=modCost(k,own),max=own>=4;
+      const r=el("div","row");
+      /* точка залита — уровень стоит на корабле, обведена — куплен, но снят */
+      let dots="";for(let i=0;i<4;i++)dots+="<i class='"+(i<lvl?"f":(i<own?"o":""))+"'></i>";
+      r.appendChild(el("div","nm","<b>"+M.ru+"</b><s>"+M.note+
+        (own>lvl?" · снято "+(own-lvl):"")+"</s><div class='dots'>"+dots+"</div>"));
+      const box=el("div","modbtns");
+      if(lvl>0){
+        const bm=el("button","act sm","−");
+        bm.title="снять уровень";
+        bm.onclick=()=>{G.mods[k]--;afterFitChange();renderTab();};
+        box.appendChild(bm);
+      }
+      if(lvl<own){
+        const bp=el("button","act sm","+");
+        bp.title="поставить уровень";
+        bp.disabled=capUsed()+1>cap;
+        bp.onclick=()=>{
+          if(capUsed()+1>cap){say("Не хватает места в оснастке");return;}
+          G.mods[k]++;afterFitChange();renderTab();};
+        box.appendChild(bp);
+      }
+      const b=el("button","act"+(max?"":" gold"),max?"МАКСИМУМ":cost.toLocaleString("ru")+" кр");
+      b.disabled=max||G.credits<cost;
+      b.onclick=()=>{G.credits-=cost;G.modsOwned[k]++;
+        if(capUsed()+1<=cap)G.mods[k]++;
+        else say("Куплено, но места в оснастке нет\nснимите что-нибудь");
+        afterFitChange();
+        tell("money",M.ru+" → ур."+G.modsOwned[k]+" · −"+cost.toLocaleString("ru")+" кр",
+             M.ru+"\nуровень "+G.modsOwned[k]);
+        renderTab();};
+      box.appendChild(b);
+      r.appendChild(box);$body.appendChild(r);
+    }
+
+    /* сборка живёт на экране корабля — здесь только вход в неё */
+    {
+      const slots=slotsOf(G.shipId),fm=G.fit[G.shipId]||{};
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>ОСНАСТКА КОРПУСА</b><s>"+
+        Object.keys(fm).length+" из "+slots.length+" слотов занято · в инвентаре "+
+        G.inv.length+" частей</s>"));
+      const b=el("button","act sm gold","ОТКРЫТЬ");
+      /* уходим на экран корабля, не отстыковываясь: раньше здесь просто снимали
+         .open со станции, режим оставался "dock", и после ЗАКРЫТЬ игрок висел
+         в космосе без управления. Теперь помним, что вернуться надо на станцию. */
+      b.onclick=()=>{svReturn="station";$st.classList.remove("open");openShipView();};
+      r.appendChild(b);$body.appendChild(r);
+    }
+
+    /* ── части в продаже: ассортимент детерминирован seed станции и временным бакетом ── */
+    const offers=stationParts(G.sys);
+    if(offers.length){
+      $body.appendChild(el("div","sec","ЧАСТИ В ПРОДАЖЕ · АССОРТИМЕНТ СМЕНИТСЯ"));
+      for(const o of offers){
+        const K=PART_KINDS[o.part.kind],bought=G.partsBought[o.key];
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b style='color:"+K.col+"'>"+o.part.name+
+          (o.black?" <span style='color:#c58ae0;font-size:9px'>ПО СВЯЗЯМ ФАКТОРА</span>":"")+"</b><s>"+
+          K.ru.toLowerCase()+" · "+TIER_RU[o.part.tier]+" · место "+o.part.cap+"<br>"+
+          o.part.aff.map(a=>"<span style='color:"+(a.v>0?"#8fd08a":"#ff9d7a")+"'>"+affLabel(a)+"</span>").join(" · ")+"</s>"));
+        const b=el("button","act"+(bought?"":" gold"),bought?"КУПЛЕНО":o.price.toLocaleString("ru")+" кр");
+        b.disabled=!!bought||G.credits<o.price;
+        b.onclick=()=>{
+          G.credits-=o.price;G.partsBought[o.key]=1;
+          addPart(genPart(o.part.seed,o.part.tier,o.part.kind));
+          tell("money","Куплена часть: "+o.part.name+" · −"+o.price.toLocaleString("ru")+" кр",
+               o.part.name+"\nв инвентаре");
+          renderTab();};
+        r.appendChild(b);$body.appendChild(r);
+      }
+    }
+
+    $body.appendChild(el("div","sec","ТЕКУЩИЕ ХАРАКТЕРИСТИКИ"));
+    const s2=stat(),r=el("div","row");
+    r.appendChild(el("div","nm","<s>тяга "+s2.thr.toFixed(2)+" · поворот "+s2.turn.toFixed(2)+
+      "<br>бак "+s2.fuelMax+" · трюм "+s2.cargoMax+" · корпус "+s2.hullMax+
+      (s2.shieldMax?" · щит "+s2.shieldMax:"")+
+      "<br>бур ×"+s2.drill.toFixed(2)+" · прыжок "+s2.jump.toFixed(1)+" пк"+
+      (s2.armed?"<br>урон "+s2.dmg.toFixed(1)+" · откат "+s2.cool:"")+"</s>"));
+    $body.appendChild(r);
+  }
+  /* ── приборы (M127) ──
+     Прилавок, гнёзда и полка. Прибор — вещь: у него завод, возраст и характер,
+     и он не «улучшает характеристику», а лучше или хуже различает отклонение.
+     Поэтому в строке пишется не число, а то, что игрок реально почувствует. */
+function stTabInstr(){
+    /* самописец — товар (хвост M127): второй барабан, лента вдвое длиннее */
+    {
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>Самописец · второй барабан</b><s>"+
+        (G.tapeLong?"стоит: лента идёт вдвое медленнее и помнит вдвое дольше":
+         "лента идёт вдвое медленнее и помнит вдвое дольше")+"</s>"));
+      if(!G.tapeLong){
+        const b=el("button","act sm gold","2 400 кр");
+        b.disabled=G.credits<2400;
+        b.onclick=()=>{G.credits-=2400;G.tapeLong=1;
+          tell("tech","Самописец: второй барабан установлен","Второй барабан\nлента помнит вдвое дольше");renderTab();};
+        r.appendChild(b);
+      }else r.appendChild(el("div","nm","<s>установлен</s>"));
+      $body.appendChild(r);
+    }
+    $body.appendChild(el("div","sec","ПЯТЬ ГНЁЗД ПАНЕЛИ · ПРИБОР РАЗЛИЧАЕТ ОТКЛОНЕНИЕ, А НЕ ДАЁТ ПРОЦЕНТ"));
+    for(const id of INSTR_KEYS){
+      const I=INSTR_BY_ID[id],u=instrUnit(id),T=instrTraits(u);
+      /* в строке описывается САМ прибор: профессия корпуса умножает все пять
+         одинаково, и в лавке ей не место (03f учитывается на панели) */
+      const q=T.res*(1-clamp(u.wear||0,0,1)*.45), fix=instrFixCost(id);
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+I.ru+"</b><s>"+T.ru+" · "+instrWearRu(u.wear||0)+
+        " · "+T.note+"</s><s>различает "+(q>=1.25?"тонко":q>=.95?"как положено":
+        q>=.75?"грубовато":"едва")+" · стрелка "+(T.jit>=1.6?"нервная":T.jit>=1?"живая":"спокойная")+
+        " · перо "+(T.pen>=1.2?"жирное":T.pen>=.95?"обычное":"волосом")+"</s>"));
+      if(fix>0){
+        const b=el("button","act sm gold",fix.toLocaleString("ru")+" кр");
+        b.title="выверить и почистить";
+        b.disabled=G.credits<fix;
+        b.onclick=()=>{if(instrFix(id))renderTab();};
+        r.appendChild(b);
+      }else r.appendChild(el("div","nm","<s>выверен</s>"));
+      $body.appendChild(r);
+    }
+    const offers=instrOffers();
+    $body.appendChild(el("div","sec","ПРИЛАВОК · ТОВАР МЕНЯЕТСЯ РАЗ В НЕСКОЛЬКО ЧАСОВ"));
+    if(!offers.length)$body.appendChild(el("div","row","<div class='nm'><s>сегодня пусто</s></div>"));
+    for(const off of offers){
+      const I=INSTR_BY_ID[off.id],T=instrTraits(off.u),price=instrPrice(off.u);
+      const cu=instrUnit(off.id),ct=instrTraits(cu);
+      const cur=ct.res*(1-clamp(cu.wear||0,0,1)*.45);
+      const would=T.res*(1-clamp(off.u.wear||0,0,1)*.45);
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+I.ru+" · "+T.ru+"</b><s>"+instrWearRu(off.u.wear||0)+
+        " · "+T.note+"</s><s>"+(would>cur*1.08?"различает лучше вашего":
+        would<cur*.92?"различает хуже вашего":"как ваш")+"</s>"));
+      const b=el("button","act gold",price.toLocaleString("ru")+" кр");
+      b.disabled=G.credits<price;
+      b.onclick=()=>{if(instrBuy(off))renderTab();};
+      r.appendChild(b);$body.appendChild(r);
+    }
+    const shelf=instrShelf();
+    if(shelf.length){
+      $body.appendChild(el("div","sec","ПОЛКА · СНЯТОЕ ХРАНИТСЯ ЗДЕСЬ, МЕСТ "+INSTR_SHELF_MAX));
+      shelf.forEach((it,k)=>{
+        const I=INSTR_BY_ID[it.id],T=instrTraits(it.u);
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b>"+I.ru+" · "+T.ru+"</b><s>"+
+          instrWearRu(it.u.wear||0)+" · снят с панели</s>"));
+        const b=el("button","act sm","ПОСТАВИТЬ");
+        b.onclick=()=>{instrFromShelf(k);renderTab();};
+        r.appendChild(b);$body.appendChild(r);
+      });
+    }
+  }
+function stTabLab(){
+    /* наборы узлов идут первыми: это долгая цель, а наука — текущая работа */
+    if(nodeCount()>0||Object.keys(G.crowns||{}).length)nodesRender();
+    $body.appendChild(el("div","sec","ДАННЫЕ: "+G.data+
+      " · ИСТОЧНИКИ — НОВЫЕ ПЛАНЕТЫ (+6) И ВИДЫ (+9)"));
+    for(const k in TECH){
+      const T=TECH[k],max=T.max||1,lvl=techLv(k),done=lvl>=max,cost=techCost(k);
+      const r=el("div","row");
+      let dots="";
+      if(T.max)for(let i=0;i<max;i++)dots+="<i class='"+(i<lvl?"f":"")+"'></i>";
+      r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+T.ru+"</b><s>"+T.note+
+        "</s>"+(dots?"<div class='dots'>"+dots+"</div>":"")));
+      const b=el("button","act"+(done?"":" gold"),done?(T.max?"МАКСИМУМ":"ИЗУЧЕНО"):cost+" дан");
+      b.disabled=done||G.data<cost;
+      b.onclick=()=>{
+        G.data-=cost;
+        if(T.max)G.techLvl[k]=(G.techLvl[k]|0)+1; else G.tech.add(k);
+        if(k==="cera")G.hull+=30;
+        tell("tech","Изучено: "+T.ru+(T.max?" (ур."+techLv(k)+")":"")+" · −"+cost+" данных",
+             "Изучено:\n"+T.ru+(T.max?"\nуровень "+techLv(k):""));
+        renderTab();
+      };
+      r.appendChild(b);$body.appendChild(r);
+    }
+  }
+function stTabFuse(){
+    /* сплав корпусов: два корабля из ангара и редкое сырьё — на выходе один
+       новый, исходные расходуются. Прибавка тает с каждым поколением. */
+    const c=fuseCost();
+    $body.appendChild(el("div","sec","СПЛАВ КОРПУСОВ · ПОКОЛЕНИЕ "+(fuseGen()+1)+
+      " · ИСХОДНЫЕ КОРАБЛИ РАСХОДУЮТСЯ БЕЗВОЗВРАТНО"));
+    const free=Object.keys(G.owned).filter(id=>!G.crew.some(o=>o.shipId===id));
+    if(!fuseSel)fuseSel=[];
+    fuseSel=fuseSel.filter(id=>free.indexOf(id)>=0);
+    for(const id of free){
+      const S=shipData(id);if(!S)continue;
+      const on=fuseSel.indexOf(id)>=0;
+      const r=el("div","row");
+      r.appendChild(shipThumb(id,52,42));
+      r.appendChild(el("div","nm","<b style='color:"+S.col+"'>«"+S.ru+"»</b><s>"+
+        "тяга "+S.thr.toFixed(2)+" · поворот "+S.turn.toFixed(2)+" · трюм "+S.cargo+
+        " · бак "+S.fuel+" · корпус "+S.hull+(id===G.shipId?"<br>сейчас в рейсе — сплав пересадит вас на результат":"")+"</s>"));
+      const b=el("button","act"+(on?" gold":""),on?"ВЫБРАН":"ВЗЯТЬ");
+      b.onclick=()=>{
+        if(on)fuseSel.splice(fuseSel.indexOf(id),1);
+        else if(fuseSel.length<2)fuseSel.push(id);
+        else{fuseSel.shift();fuseSel.push(id);}
+        renderTab();
+      };
+      r.appendChild(b);$body.appendChild(r);
+    }
+    const need=el("div","row");
+    need.appendChild(el("div","nm","<b>Стоимость плавки</b><s>"+
+      c.credits.toLocaleString("ru")+" кр · сплавы "+G.cargo.alloy+"/"+c.alloy+
+      " · летучие газы "+G.cargo.volatiles+"/"+c.volatiles+
+      " · кристаллы льда "+G.cargo.icecrys+"/"+c.icecrys+
+      "<br>лишнее редкое сырьё в трюме идёт в прибавку, но каждое поколение прибавляет меньше</s>"));
+    const bf=el("button","act gold","СПЛАВИТЬ");
+    bf.disabled=fuseSel.length!==2||!fuseAffordable(c);
+    bf.onclick=()=>{if(fuseShips(fuseSel[0],fuseSel[1])){fuseSel=[];renderTab();}};
+    need.appendChild(bf);$body.appendChild(need);
+    $body.appendChild(el("div","sec","СБОРКА ЧАСТЕЙ ИЗ РЕДКОГО СЫРЬЯ · СТОК ДЛЯ ИЗЛИШКОВ"));
+    for(const spec of CRAFT_TIERS){
+      const r=el("div","row");
+      r.appendChild(el("div","nm","<b>"+spec.ru[0].toUpperCase()+spec.ru.slice(1)+"</b><s>"+
+        TIER_RU[spec.tier]+" · "+Object.keys(spec.cost).map(k=>
+          k==="credits"?spec.cost[k]+" кр":RES[k].ru.toLowerCase()+" "+spec.cost[k]).join(" · ")+"</s>"));
+      const b=el("button","act gold","СОБРАТЬ");
+      b.disabled=!craftAffordable(spec.cost)||G.inv.length>=PART_MAX;
+      b.onclick=()=>{craftPart(spec);renderTab();};
+      r.appendChild(b);$body.appendChild(r);
+    }
+    /* ракеты (M112): та же лаборатория, но выход — не часть, а груз. Сама
+       строка живёт в 16b-missile, рядом с механикой, а не здесь. */
+    ammoRow($body,renderTab);
+  }
 
 /* ══════════════ станция ══════════════ */
 const $st=document.getElementById("station"),$body=document.getElementById("stBody");
@@ -42429,245 +42718,10 @@ function renderTab(){
     }
   }
   }
-  else if(tab==="mods"){
-    const cap=capOf(G.shipId);
-    const capBar=()=>{
-      const used=capUsed();
-      $body.appendChild(el("div","sec","ОСНАСТКА: "+used+" / "+cap+
-        " · МОДУЛИ И ЧАСТИ ДЕЛЯТ ОДИН БЮДЖЕТ"+(used>cap?" · ПЕРЕГРУЗ":"")));
-    };
-    capBar();
-    $body.appendChild(el("div","sec","МОДУЛИ — ДО 4 УРОВНЕЙ · КАЖДЫЙ УРОВЕНЬ ЗАНИМАЕТ 1 МЕСТО"));
-    for(const k in MODS){
-      const M=MODS[k],own=G.modsOwned[k],lvl=G.mods[k],cost=modCost(k,own),max=own>=4;
-      const r=el("div","row");
-      /* точка залита — уровень стоит на корабле, обведена — куплен, но снят */
-      let dots="";for(let i=0;i<4;i++)dots+="<i class='"+(i<lvl?"f":(i<own?"o":""))+"'></i>";
-      r.appendChild(el("div","nm","<b>"+M.ru+"</b><s>"+M.note+
-        (own>lvl?" · снято "+(own-lvl):"")+"</s><div class='dots'>"+dots+"</div>"));
-      const box=el("div","modbtns");
-      if(lvl>0){
-        const bm=el("button","act sm","−");
-        bm.title="снять уровень";
-        bm.onclick=()=>{G.mods[k]--;afterFitChange();renderTab();};
-        box.appendChild(bm);
-      }
-      if(lvl<own){
-        const bp=el("button","act sm","+");
-        bp.title="поставить уровень";
-        bp.disabled=capUsed()+1>cap;
-        bp.onclick=()=>{
-          if(capUsed()+1>cap){say("Не хватает места в оснастке");return;}
-          G.mods[k]++;afterFitChange();renderTab();};
-        box.appendChild(bp);
-      }
-      const b=el("button","act"+(max?"":" gold"),max?"МАКСИМУМ":cost.toLocaleString("ru")+" кр");
-      b.disabled=max||G.credits<cost;
-      b.onclick=()=>{G.credits-=cost;G.modsOwned[k]++;
-        if(capUsed()+1<=cap)G.mods[k]++;
-        else say("Куплено, но места в оснастке нет\nснимите что-нибудь");
-        afterFitChange();
-        tell("money",M.ru+" → ур."+G.modsOwned[k]+" · −"+cost.toLocaleString("ru")+" кр",
-             M.ru+"\nуровень "+G.modsOwned[k]);
-        renderTab();};
-      box.appendChild(b);
-      r.appendChild(box);$body.appendChild(r);
-    }
-
-    /* сборка живёт на экране корабля — здесь только вход в неё */
-    {
-      const slots=slotsOf(G.shipId),fm=G.fit[G.shipId]||{};
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b>ОСНАСТКА КОРПУСА</b><s>"+
-        Object.keys(fm).length+" из "+slots.length+" слотов занято · в инвентаре "+
-        G.inv.length+" частей</s>"));
-      const b=el("button","act sm gold","ОТКРЫТЬ");
-      /* уходим на экран корабля, не отстыковываясь: раньше здесь просто снимали
-         .open со станции, режим оставался "dock", и после ЗАКРЫТЬ игрок висел
-         в космосе без управления. Теперь помним, что вернуться надо на станцию. */
-      b.onclick=()=>{svReturn="station";$st.classList.remove("open");openShipView();};
-      r.appendChild(b);$body.appendChild(r);
-    }
-
-    /* ── части в продаже: ассортимент детерминирован seed станции и временным бакетом ── */
-    const offers=stationParts(G.sys);
-    if(offers.length){
-      $body.appendChild(el("div","sec","ЧАСТИ В ПРОДАЖЕ · АССОРТИМЕНТ СМЕНИТСЯ"));
-      for(const o of offers){
-        const K=PART_KINDS[o.part.kind],bought=G.partsBought[o.key];
-        const r=el("div","row");
-        r.appendChild(el("div","nm","<b style='color:"+K.col+"'>"+o.part.name+
-          (o.black?" <span style='color:#c58ae0;font-size:9px'>ПО СВЯЗЯМ ФАКТОРА</span>":"")+"</b><s>"+
-          K.ru.toLowerCase()+" · "+TIER_RU[o.part.tier]+" · место "+o.part.cap+"<br>"+
-          o.part.aff.map(a=>"<span style='color:"+(a.v>0?"#8fd08a":"#ff9d7a")+"'>"+affLabel(a)+"</span>").join(" · ")+"</s>"));
-        const b=el("button","act"+(bought?"":" gold"),bought?"КУПЛЕНО":o.price.toLocaleString("ru")+" кр");
-        b.disabled=!!bought||G.credits<o.price;
-        b.onclick=()=>{
-          G.credits-=o.price;G.partsBought[o.key]=1;
-          addPart(genPart(o.part.seed,o.part.tier,o.part.kind));
-          tell("money","Куплена часть: "+o.part.name+" · −"+o.price.toLocaleString("ru")+" кр",
-               o.part.name+"\nв инвентаре");
-          renderTab();};
-        r.appendChild(b);$body.appendChild(r);
-      }
-    }
-
-    $body.appendChild(el("div","sec","ТЕКУЩИЕ ХАРАКТЕРИСТИКИ"));
-    const s2=stat(),r=el("div","row");
-    r.appendChild(el("div","nm","<s>тяга "+s2.thr.toFixed(2)+" · поворот "+s2.turn.toFixed(2)+
-      "<br>бак "+s2.fuelMax+" · трюм "+s2.cargoMax+" · корпус "+s2.hullMax+
-      (s2.shieldMax?" · щит "+s2.shieldMax:"")+
-      "<br>бур ×"+s2.drill.toFixed(2)+" · прыжок "+s2.jump.toFixed(1)+" пк"+
-      (s2.armed?"<br>урон "+s2.dmg.toFixed(1)+" · откат "+s2.cool:"")+"</s>"));
-    $body.appendChild(r);
-  }
-  /* ── приборы (M127) ──
-     Прилавок, гнёзда и полка. Прибор — вещь: у него завод, возраст и характер,
-     и он не «улучшает характеристику», а лучше или хуже различает отклонение.
-     Поэтому в строке пишется не число, а то, что игрок реально почувствует. */
-  else if(tab==="instr"){
-    /* самописец — товар (хвост M127): второй барабан, лента вдвое длиннее */
-    {
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b>Самописец · второй барабан</b><s>"+
-        (G.tapeLong?"стоит: лента идёт вдвое медленнее и помнит вдвое дольше":
-         "лента идёт вдвое медленнее и помнит вдвое дольше")+"</s>"));
-      if(!G.tapeLong){
-        const b=el("button","act sm gold","2 400 кр");
-        b.disabled=G.credits<2400;
-        b.onclick=()=>{G.credits-=2400;G.tapeLong=1;
-          tell("tech","Самописец: второй барабан установлен","Второй барабан\nлента помнит вдвое дольше");renderTab();};
-        r.appendChild(b);
-      }else r.appendChild(el("div","nm","<s>установлен</s>"));
-      $body.appendChild(r);
-    }
-    $body.appendChild(el("div","sec","ПЯТЬ ГНЁЗД ПАНЕЛИ · ПРИБОР РАЗЛИЧАЕТ ОТКЛОНЕНИЕ, А НЕ ДАЁТ ПРОЦЕНТ"));
-    for(const id of INSTR_KEYS){
-      const I=INSTR_BY_ID[id],u=instrUnit(id),T=instrTraits(u);
-      /* в строке описывается САМ прибор: профессия корпуса умножает все пять
-         одинаково, и в лавке ей не место (03f учитывается на панели) */
-      const q=T.res*(1-clamp(u.wear||0,0,1)*.45), fix=instrFixCost(id);
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b>"+I.ru+"</b><s>"+T.ru+" · "+instrWearRu(u.wear||0)+
-        " · "+T.note+"</s><s>различает "+(q>=1.25?"тонко":q>=.95?"как положено":
-        q>=.75?"грубовато":"едва")+" · стрелка "+(T.jit>=1.6?"нервная":T.jit>=1?"живая":"спокойная")+
-        " · перо "+(T.pen>=1.2?"жирное":T.pen>=.95?"обычное":"волосом")+"</s>"));
-      if(fix>0){
-        const b=el("button","act sm gold",fix.toLocaleString("ru")+" кр");
-        b.title="выверить и почистить";
-        b.disabled=G.credits<fix;
-        b.onclick=()=>{if(instrFix(id))renderTab();};
-        r.appendChild(b);
-      }else r.appendChild(el("div","nm","<s>выверен</s>"));
-      $body.appendChild(r);
-    }
-    const offers=instrOffers();
-    $body.appendChild(el("div","sec","ПРИЛАВОК · ТОВАР МЕНЯЕТСЯ РАЗ В НЕСКОЛЬКО ЧАСОВ"));
-    if(!offers.length)$body.appendChild(el("div","row","<div class='nm'><s>сегодня пусто</s></div>"));
-    for(const off of offers){
-      const I=INSTR_BY_ID[off.id],T=instrTraits(off.u),price=instrPrice(off.u);
-      const cu=instrUnit(off.id),ct=instrTraits(cu);
-      const cur=ct.res*(1-clamp(cu.wear||0,0,1)*.45);
-      const would=T.res*(1-clamp(off.u.wear||0,0,1)*.45);
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b>"+I.ru+" · "+T.ru+"</b><s>"+instrWearRu(off.u.wear||0)+
-        " · "+T.note+"</s><s>"+(would>cur*1.08?"различает лучше вашего":
-        would<cur*.92?"различает хуже вашего":"как ваш")+"</s>"));
-      const b=el("button","act gold",price.toLocaleString("ru")+" кр");
-      b.disabled=G.credits<price;
-      b.onclick=()=>{if(instrBuy(off))renderTab();};
-      r.appendChild(b);$body.appendChild(r);
-    }
-    const shelf=instrShelf();
-    if(shelf.length){
-      $body.appendChild(el("div","sec","ПОЛКА · СНЯТОЕ ХРАНИТСЯ ЗДЕСЬ, МЕСТ "+INSTR_SHELF_MAX));
-      shelf.forEach((it,k)=>{
-        const I=INSTR_BY_ID[it.id],T=instrTraits(it.u);
-        const r=el("div","row");
-        r.appendChild(el("div","nm","<b>"+I.ru+" · "+T.ru+"</b><s>"+
-          instrWearRu(it.u.wear||0)+" · снят с панели</s>"));
-        const b=el("button","act sm","ПОСТАВИТЬ");
-        b.onclick=()=>{instrFromShelf(k);renderTab();};
-        r.appendChild(b);$body.appendChild(r);
-      });
-    }
-  }
-  else if(tab==="lab"){
-    /* наборы узлов идут первыми: это долгая цель, а наука — текущая работа */
-    if(nodeCount()>0||Object.keys(G.crowns||{}).length)nodesRender();
-    $body.appendChild(el("div","sec","ДАННЫЕ: "+G.data+
-      " · ИСТОЧНИКИ — НОВЫЕ ПЛАНЕТЫ (+6) И ВИДЫ (+9)"));
-    for(const k in TECH){
-      const T=TECH[k],max=T.max||1,lvl=techLv(k),done=lvl>=max,cost=techCost(k);
-      const r=el("div","row");
-      let dots="";
-      if(T.max)for(let i=0;i<max;i++)dots+="<i class='"+(i<lvl?"f":"")+"'></i>";
-      r.appendChild(el("div","nm","<b"+(done?" style='color:var(--dim)'":"")+">"+T.ru+"</b><s>"+T.note+
-        "</s>"+(dots?"<div class='dots'>"+dots+"</div>":"")));
-      const b=el("button","act"+(done?"":" gold"),done?(T.max?"МАКСИМУМ":"ИЗУЧЕНО"):cost+" дан");
-      b.disabled=done||G.data<cost;
-      b.onclick=()=>{
-        G.data-=cost;
-        if(T.max)G.techLvl[k]=(G.techLvl[k]|0)+1; else G.tech.add(k);
-        if(k==="cera")G.hull+=30;
-        tell("tech","Изучено: "+T.ru+(T.max?" (ур."+techLv(k)+")":"")+" · −"+cost+" данных",
-             "Изучено:\n"+T.ru+(T.max?"\nуровень "+techLv(k):""));
-        renderTab();
-      };
-      r.appendChild(b);$body.appendChild(r);
-    }
-  }
-  else if(tab==="fuse"){
-    /* сплав корпусов: два корабля из ангара и редкое сырьё — на выходе один
-       новый, исходные расходуются. Прибавка тает с каждым поколением. */
-    const c=fuseCost();
-    $body.appendChild(el("div","sec","СПЛАВ КОРПУСОВ · ПОКОЛЕНИЕ "+(fuseGen()+1)+
-      " · ИСХОДНЫЕ КОРАБЛИ РАСХОДУЮТСЯ БЕЗВОЗВРАТНО"));
-    const free=Object.keys(G.owned).filter(id=>!G.crew.some(o=>o.shipId===id));
-    if(!fuseSel)fuseSel=[];
-    fuseSel=fuseSel.filter(id=>free.indexOf(id)>=0);
-    for(const id of free){
-      const S=shipData(id);if(!S)continue;
-      const on=fuseSel.indexOf(id)>=0;
-      const r=el("div","row");
-      r.appendChild(shipThumb(id,52,42));
-      r.appendChild(el("div","nm","<b style='color:"+S.col+"'>«"+S.ru+"»</b><s>"+
-        "тяга "+S.thr.toFixed(2)+" · поворот "+S.turn.toFixed(2)+" · трюм "+S.cargo+
-        " · бак "+S.fuel+" · корпус "+S.hull+(id===G.shipId?"<br>сейчас в рейсе — сплав пересадит вас на результат":"")+"</s>"));
-      const b=el("button","act"+(on?" gold":""),on?"ВЫБРАН":"ВЗЯТЬ");
-      b.onclick=()=>{
-        if(on)fuseSel.splice(fuseSel.indexOf(id),1);
-        else if(fuseSel.length<2)fuseSel.push(id);
-        else{fuseSel.shift();fuseSel.push(id);}
-        renderTab();
-      };
-      r.appendChild(b);$body.appendChild(r);
-    }
-    const need=el("div","row");
-    need.appendChild(el("div","nm","<b>Стоимость плавки</b><s>"+
-      c.credits.toLocaleString("ru")+" кр · сплавы "+G.cargo.alloy+"/"+c.alloy+
-      " · летучие газы "+G.cargo.volatiles+"/"+c.volatiles+
-      " · кристаллы льда "+G.cargo.icecrys+"/"+c.icecrys+
-      "<br>лишнее редкое сырьё в трюме идёт в прибавку, но каждое поколение прибавляет меньше</s>"));
-    const bf=el("button","act gold","СПЛАВИТЬ");
-    bf.disabled=fuseSel.length!==2||!fuseAffordable(c);
-    bf.onclick=()=>{if(fuseShips(fuseSel[0],fuseSel[1])){fuseSel=[];renderTab();}};
-    need.appendChild(bf);$body.appendChild(need);
-    $body.appendChild(el("div","sec","СБОРКА ЧАСТЕЙ ИЗ РЕДКОГО СЫРЬЯ · СТОК ДЛЯ ИЗЛИШКОВ"));
-    for(const spec of CRAFT_TIERS){
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b>"+spec.ru[0].toUpperCase()+spec.ru.slice(1)+"</b><s>"+
-        TIER_RU[spec.tier]+" · "+Object.keys(spec.cost).map(k=>
-          k==="credits"?spec.cost[k]+" кр":RES[k].ru.toLowerCase()+" "+spec.cost[k]).join(" · ")+"</s>"));
-      const b=el("button","act gold","СОБРАТЬ");
-      b.disabled=!craftAffordable(spec.cost)||G.inv.length>=PART_MAX;
-      b.onclick=()=>{craftPart(spec);renderTab();};
-      r.appendChild(b);$body.appendChild(r);
-    }
-    /* ракеты (M112): та же лаборатория, но выход — не часть, а груз. Сама
-       строка живёт в 16b-missile, рядом с механикой, а не здесь. */
-    ammoRow($body,renderTab);
-  }
+  else if(tab==="mods"){stTabMods();}
+  else if(tab==="instr"){stTabInstr();}
+  else if(tab==="lab"){stTabLab();}
+  else if(tab==="fuse"){stTabFuse();}
   else if(tab==="bases"){
     renderBasesTab(st);
   }
@@ -42855,7 +42909,6 @@ document.getElementById("optClose").addEventListener("click",()=>$opts.classList
    открывается из полёта кнопкой ЭКИПАЖ, показывает баланс каждого, даёт приказ,
    приоритет по материалу, передачу своих модулей и режим наблюдения. */
 const $cv=document.getElementById("crewview"),$cvBody=document.getElementById("cvBody");
-function crewByIdG(id){return G.crew.find(c=>c.id===id)||null;}
 /* кого сейчас видно в этой системе настоящим кораблём */
 function allyOf(id){return (G.allies||[]).find(A=>A.c.id===id)||null;}
 /* ── скрытая удача наружу ──
@@ -45997,7 +46050,7 @@ function dealsTick(){
     if(R.credits>0)earn(R.credits,"deal");
     else if(R.credits<0)G.credits=Math.max(0,G.credits+R.credits);
     if(R.hull)G.hull=Math.max(1,G.hull+R.hull);
-    if(R.crew&&typeof crewGift==="function")crewGift();
+    if(R.crew)crewGift(hashi(d.at,R.crew,0xC1F));
     if(R.node&&typeof nodeDrop==="function")nodeDrop(R.node,.6,hashi(d.at,7,3));
     /* чем кончилось — тем и запомнят: удачное дело красит имя, провал портит */
     repAdd(good?1:-1);
@@ -48790,7 +48843,6 @@ else if(location.search.indexOf("g11")>=0)addEventListener("load",()=>setTimeout
       сохранение остаётся v:4. */
 
 const HIN_MAN=46;                       /* рост хозяина в единицах комнаты */
-const HIN_FLOOR=0;                      /* пол — ноль по вертикали, всё вверх — минус */
 const HIN_ROOM_H=HIN_MAN*2.3;           /* высота комнаты: чуть выше двух ростов.
                                            2.6 читалось цехом: дом — не ангар,
                                            и потолок в нём слышно головой (M173) */
@@ -49010,9 +49062,14 @@ function hinNear(x){
 function hinTalk(f){
   const S=G.hin;
   let line="";
-  /* Вега говорит своими словами: тот же набор, что на борту (11w-vega) */
-  if(f.who==="vega"&&typeof VEGA_ABOARD!=="undefined"&&VEGA_ABOARD.length)
-    line=VEGA_ABOARD[Math.abs(hashi(Math.round(G.t/300),7,0x40F3))%VEGA_ABOARD.length];
+  /* ── дома она говорит домашнее (25.08.2026) ──
+     Здесь стоял набор С БОРТА: в собственной кухне Вега сообщала «летаешь как
+     баржа» и «укачивает, сколько ещё прыжков». А написанный для дома
+     `VEGA_DREAM` — про оставленный завтрак, про заштопанный локоть, про свет,
+     который она не станет гасить, — не звучал НИ РАЗУ ни в одной сборке.
+     Наборы просто стояли не на своих местах. */
+  if(f.who==="vega"&&VEGA_DREAM.length)
+    line=VEGA_DREAM[Math.abs(hashi(Math.round(G.t/300),7,0x40F3))%VEGA_DREAM.length];
   if(!line){
     const pool={
       vega:["Тут тише, чем на борту.","Я разложила твои бумаги. Не благодари.","Дома странно. Хорошо, но странно."],
