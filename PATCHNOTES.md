@@ -7,6 +7,29 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.153.1 — the door nobody was watching (online audit)
+
+An audit of the online side, asked for in plain words: what breaks without a connection, how would
+the server know what a player earned, what stops a cheat. Findings and reasoning live in
+[docs/DESIGN-online-risks.md](docs/DESIGN-online-risks.md); fixed here is the one item where a
+stranger could hurt everybody.
+
+- ** and  create files on disk without an account and without a rate limit.** Both
+  sweepers were a dice roll (), so a script creates files far faster than they
+  are swept — and on shared hosting the inode table runs out before the disk does. When it does,
+   stops writing *everything*, including other people's saves. Now: a generous per-IP
+  limit on both (300 road calls per quarter hour — ten honest pilots; 30 trace drops), a sweeper
+  that runs by the clock instead of by luck, and two directories that were never swept at all
+  (, ) now are.
+- **A save timestamp from the future froze the cloud forever.**  is the sending device's
+  , and conflicts are resolved by newest wins — so one phone with a broken clock made
+  every honest save older than the cloud copy, permanently. Anything more than a day ahead is now
+  taken as the server's own time.
+
+Not fixed, written down instead (they need the author): the sync state is invisible — a refused or
+failed push says nothing at all, which is how a phone and a desktop quietly become two universes;
+there is no guard against two open tabs; and the trace's three a day limit counts a pilot mark the
+client invents for itself.
 ## 0.153.0 — the audit: five files cut, two lies found (M183)
 
 An audit of the sources, asked for in three words: cut the files, check the tests, look at the
