@@ -491,19 +491,22 @@ const BIRD_C={
   perch:sRGB("#4a3a2c")
 };
 
-/* станция: [t, y, z, ширина, вынос вперёд, вынос назад] */
+/* станция: [t, y, z, ширина, вынос вперёд, вынос назад]
+   Птица не шар: у сидящего попугая корпус вытянут, грудь выдаётся вперёд, а
+   бока сжаты. Первая сборка дала колобок — числа середины ужаты, а хребет
+   удлинён, чтобы между лапами и головой было тело, а не мяч. */
 const BIRD_SPINE=[
-  [0.00, 0.60,-0.64, 0.09, 0.09, 0.09],
-  [0.10, 0.64,-0.50, 0.22, 0.20, 0.17],
-  [0.22, 0.71,-0.30, 0.34, 0.31, 0.27],
-  [0.35, 0.83,-0.13, 0.40, 0.40, 0.31],
-  [0.48, 1.01,-0.03, 0.41, 0.43, 0.32],
-  [0.60, 1.21, 0.00, 0.37, 0.38, 0.31],
-  [0.70, 1.39,-0.05, 0.29, 0.27, 0.28],
-  [0.78, 1.51,-0.05, 0.26, 0.25, 0.27],
-  [0.86, 1.65, 0.00, 0.30, 0.31, 0.30],
-  [0.94, 1.79, 0.05, 0.28, 0.28, 0.27],
-  [1.00, 1.92, 0.03, 0.08, 0.08, 0.08]
+  [0.00, 0.58,-0.66, 0.08, 0.08, 0.08],
+  [0.10, 0.62,-0.52, 0.20, 0.19, 0.16],
+  [0.22, 0.69,-0.32, 0.31, 0.29, 0.25],
+  [0.35, 0.82,-0.15, 0.36, 0.38, 0.29],
+  [0.48, 1.01,-0.05, 0.37, 0.41, 0.30],
+  [0.60, 1.22,-0.02, 0.34, 0.36, 0.29],
+  [0.70, 1.41,-0.06, 0.27, 0.26, 0.26],
+  [0.78, 1.53,-0.06, 0.25, 0.24, 0.26],
+  [0.86, 1.66,-0.01, 0.29, 0.30, 0.29],
+  [0.94, 1.80, 0.04, 0.28, 0.28, 0.27],
+  [1.00, 1.93, 0.02, 0.08, 0.08, 0.08]
 ];
 const SP_PTS=BIRD_SPINE.map(s=>s.slice(1));   /* для сплайна: без параметра t */
 
@@ -532,7 +535,11 @@ function bodyColor(t,a){
   const side=Math.abs(Math.cos(a));
   let c=vLerp(BIRD_C.blueD,BIRD_C.blue,smooth(.0,.55,belly)*.8+.2);
   /* грудь и брюхо кремовые, с тёплой подпалиной к хвосту */
-  const cream=smooth(.50,.68,belly)*smooth(.68,.57,t);
+  /* Кромка между кремовой грудью и кобальтом спины не бывает ровной: у птицы
+     она рвётся перьями. Порог сдвигается шумом по (t,a) — линейка исчезает,
+     а цвет остаётся тем же. */
+  const jit=(hashf(Math.round(t*90),Math.round(a*14))-0.5)*0.13;
+  const cream=smooth(.50,.68,belly+jit)*smooth(.70,.58,t);
   c=vLerp(c,vLerp(BIRD_C.creamD,BIRD_C.cream,smooth(.2,.6,t)),cream);
   /* плечо: янтарный эполет по бокам корпуса */
   const ep=smooth(.62,.44,Math.abs(t-.55)*6)*smooth(.35,.75,side)*smooth(.30,.45,belly);
@@ -540,11 +547,29 @@ function bodyColor(t,a){
   /* подхвостье уходит в фиолетовый — единственное холодное пятно внизу */
   c=vLerp(c,BIRD_C.viol,smooth(.16,.02,t)*.7);
   /* щека: тёплое пятно под глазом, чтобы голова не была одноцветной */
-  const ch=smooth(.075,.0,Math.abs(t-.885))*smooth(.55,.95,side)*smooth(.30,.62,belly);
+  const ch=smooth(.060,.010,Math.abs(t-.880))*smooth(.62,.90,side)*smooth(.34,.58,belly);
   c=vLerp(c,BIRD_C.amber,clamp(ch,0,1)*.95);
   /* темя темнее лба: голова круглая, и без этого она читается шаром */
   c=vLerp(c,BIRD_C.blueD,smooth(.90,1.0,t)*.5*(1-belly*.4));
   return c;
+}
+
+/* нормаль поверхности — одна на весь модуль.
+   Тело и укладка перьев ОБЯЗАНЫ считать её одинаково: пока их было две,
+   на голове они расходились в знаке, кожа выворачивалась наружу и
+   закрывала собой всё оперение головы — птица выходила лысой. */
+function bodyNormal(t,a){
+  const e=0.01,d=0.05;
+  const p=bodyAt(t,a);
+  const du=vSub(bodyAt(clamp(t+e,0,1),a),bodyAt(clamp(t-e,0,1),a));
+  const dv=vSub(bodyAt(t,a+d),bodyAt(t,a-d));
+  let n=vNorm(vCross(dv,du));
+  /* «наружу» меряется не от оси сечения, а от точки, отодвинутой назад по
+     хребту: на темени нормаль смотрит вверх, а радиус сечения — вбок, и знак
+     по радиусу там пляшет */
+  const S=spineAt(t),ref=vSub(p,vSub(S.c,vMul(S.T,0.12)));
+  if(vDot(n,ref)<0)n=vMul(n,-1);
+  return n;
 }
 
 /* ── сетка тела ──
@@ -563,17 +588,21 @@ function buildBody(NT,NA){
   }
   const at=(i,j)=>P[i*NA+((j%NA)+NA)%NA];
   for(let i=0;i<NT;i++)for(let j=0;j<NA;j++){
-    const i0=Math.max(0,i-1),i1=Math.min(NT-1,i+1);
-    const du=vSub(at(i1,j),at(i0,j)),dv=vSub(at(i,j+1),at(i,j-1));
-    let n=vNorm(vCross(dv,du));
+    let n=bodyNormal(i/(NT-1),j/NA*TAU);
     if(i===0||i===NT-1){ /* на капах разность вырождается — берём осевое направление */
       const S=spineAt(i===0?0:1);
       n=vNorm(vAdd(vMul(S.T,i===0?-1:1),vMul(n,.35)));
     }
     Nn.push(n);
   }
+  /* КОЖА ЛЕЖИТ НИЖЕ ОПЕРЕНИЯ. Тело строится по тем же станциям, что и укладка
+     перьев, но утоплено на два сантиметра внутрь. Иначе перо лежит ровно на
+     поверхности тела, глубина спорит сама с собой, и оперение проступает
+     рваными пятнами — на голове так пропало всё. */
+  const SKIN=0.022;
   for(let i=0;i<NT;i++)for(let j=0;j<NA;j++){
-    const k=(i*NA+j)*11,p=P[i*NA+j],n=Nn[i*NA+j],t=i/(NT-1),a=j/NA*TAU,c=bodyColor(t,a);
+    const k=(i*NA+j)*11,p0=P[i*NA+j],n=Nn[i*NA+j],t=i/(NT-1),a=j/NA*TAU,c=bodyColor(t,a);
+    const p=vSub(p0,vMul(n,SKIN));
     verts[k]=p[0];verts[k+1]=p[1];verts[k+2]=p[2];
     verts[k+3]=n[0];verts[k+4]=n[1];verts[k+5]=n[2];
     verts[k+6]=t;verts[k+7]=0;   /* материал 0: тёмная масса под перьями */
@@ -658,21 +687,21 @@ function buildParts(){
   const per=[];
   for(let i=0;i<=10;i++){
     const k=i/10,x=mix(-1.45,1.45,k);
-    per.push({p:[x,0.42+Math.sin(k*Math.PI)*0.035,-0.04+Math.cos(k*3.1)*0.012],
+    per.push({p:[x,0.33+Math.sin(k*Math.PI)*0.035,-0.04+Math.cos(k*3.1)*0.012],
       r:[0.085+Math.sin(k*Math.PI)*0.022,0.082+Math.sin(k*Math.PI)*0.020],t:-1});
   }
   tube(M,per,14,{m:3,t:-1,up:[0,1,0],col:wood});
-  sphere(M,[0.42,0.47,-0.02],0.055,8,{m:3,t:-1,scale:[1.3,0.7,1.1],col:()=>vLerp(C.perch,[0.05,0.04,0.03],.4)});
+  sphere(M,[0.42,0.38,-0.02],0.055,8,{m:3,t:-1,scale:[1.3,0.7,1.1],col:()=>vLerp(C.perch,[0.05,0.04,0.03],.4)});
 
   /* ── лапы ──
      Цевка короткая: сидящий попугай почти лежит на ветке брюхом. */
   for(const sx of [-1,1]){
     const hipX=sx*0.135;
     tube(M,[
-      {p:[hipX,0.72,-0.06],r:[0.062,0.062],t:0.12},
-      {p:[hipX,0.63,-0.05],r:[0.050,0.050],t:0.06},
-      {p:[hipX*1.02,0.55,-0.035],r:[0.044,0.044],t:0},
-      {p:[hipX*1.04,0.505,-0.03],r:[0.042,0.042],t:0}
+      {p:[hipX,0.66,-0.06],r:[0.062,0.062],t:0.12},
+      {p:[hipX,0.56,-0.05],r:[0.050,0.050],t:0.06},
+      {p:[hipX*1.02,0.47,-0.035],r:[0.044,0.044],t:0},
+      {p:[hipX*1.04,0.418,-0.03],r:[0.042,0.042],t:0}
     ],10,{m:4,t:0,up:[1,0,0],col:(v)=>vLerp(C.foot,C.footD,smooth(0,1,v)*.7)});
     /* четыре пальца: два вперёд, два назад, все обнимают ветку */
     const toes=[[0.62,1],[0.30,1],[-0.55,-1],[-1.05,-1]];
@@ -684,7 +713,7 @@ function buildParts(){
         const a=a0*k*1.35;
         const rr=0.098+0.030*(1-k);
         path.push({p:[hipX*1.04+sx*0.010*k+dir*0.0,
-                      0.425+Math.cos(a)*rr,
+                      0.335+Math.cos(a)*rr,
                       -0.035+Math.sin(a)*rr],
                    r:[0.030-0.014*k,0.028-0.013*k],t:0});
       }
@@ -724,8 +753,8 @@ function buildBeads(){
   const M=meshBox();
   for(let i=0;i<CREST_N;i++){
     const q=crestQuill(i);
-    const p=vAdd(q.base,vMul(q.dir,q.len));
-    sphere(M,p,0.0135,7,{m:6,t:1,col:()=>BIRD_C.glow});
+    const p=vAdd(q.base,vMul(q.dir,q.len*0.93));
+    sphere(M,p,0.0165,7,{m:6,t:1,col:()=>BIRD_C.glow});
   }
   return M.done();
 }
@@ -805,29 +834,21 @@ function flowAt(t,a){
   const p1=bodyAt(clamp(t-e,0,1),a),p2=bodyAt(clamp(t+e,0,1),a);
   return vNorm(vSub(p1,p2));      /* от головы к хвосту */
 }
-function normalAt(t,a){
-  const e=0.01,d=0.05;
-  const p=bodyAt(t,a);
-  const du=vSub(bodyAt(clamp(t+e,0,1),a),bodyAt(clamp(t-e,0,1),a));
-  const dv=vSub(bodyAt(t,a+d),bodyAt(t,a-d));
-  let n=vNorm(vCross(du,dv));
-  /* наружу: сверяемся с направлением от оси тела */
-  const S=spineAt(t),out=vSub(p,S.c);
-  if(vDot(n,out)<0)n=vMul(n,-1);
-  return n;
-}
+/* нормаль берётся из 20-body: одна формула на тело и на перья */
+const normalAt=(t,a)=>bodyNormal(t,a);
 
 /* ── оперение корпуса ──
    Ряды снизу вверх, каждый следующий перекрывает предыдущий. Шаг ряда меньше
    длины пера — иначе между рядами видно тело. */
+const COAT_STAT={all:0,head:0,cut:0};
 function layoutCoat(){
   const out=[],R=rnd(0x7b1d);
-  const ROWS=54;
+  const ROWS=64;
   for(let r=0;r<ROWS;r++){
     const t0=mix(0.055,0.995,r/(ROWS-1));
     const S=spineAt(t0);
     const girth=(S.rw+S.rf+S.rb)*0.5;
-    const n=Math.max(8,Math.round(girth*90));
+    const n=Math.max(9,Math.round(girth*118));
     for(let j=0;j<n;j++){
       const a=(j+(r%2)*0.5)/n*TAU+R()*0.10;
       /* ряд не должен читаться рядом: каждое перо гуляет вдоль хребта на
@@ -839,24 +860,35 @@ function layoutCoat(){
          больше всего, просто они там мелкие. Проверка идёт по РАССТОЯНИЮ до
          настоящих частей, а не по параметрам поверхности. */
       const base=bodyAt(t,a);
-      if(base[1]>1.50&&base[2]>0.17&&Math.abs(base[0])<0.15)continue;   /* клюв */
-      if(base[1]>1.79&&base[2]>0.05&&Math.abs(base[0])<0.13)continue;   /* восковица */
+      if(base[1]>1.50&&base[1]<1.80&&base[2]>0.19&&Math.abs(base[0])<0.12){COAT_STAT.cut++;continue;}   /* клюв */
+      if(base[1]>1.78&&base[1]<1.89&&base[2]>0.09&&Math.abs(base[0])<0.11){COAT_STAT.cut++;continue;} /* восковица */
       let inEye=false;
       for(const sx of [-1,1]){
         const d=Math.hypot(base[0]-sx*0.248,base[1]-1.786,base[2]-0.100);
         if(d<0.115){inEye=true;break;}
       }
-      if(inEye)continue;
+      if(inEye){COAT_STAT.cut++;continue;}
+      COAT_STAT.all++; if(base[1]>1.60)COAT_STAT.head++;
       const p=normalAt(t,a);
       const dir=flowAt(t,a);
-      /* перо не лежит плашмя: конец приподнят, иначе ряд читается чешуёй */
-      const lift=0.075+R()*0.035;
+      /* Перо ДЛИННЕЕ шага ряда втрое: у настоящей птицы видно не перья, а их
+         кончики — черепица, где каждое следующее прикрывает предыдущее на две
+         трети. Пока длина была равна шагу, оперение читалось мозаикой из
+         бумажных фишек. */
+      const len=mix(0.240,0.092,smooth(0.30,0.94,t))*(0.86+R()*0.28);
+      /* НАСКОЛЬКО поднят конец пера — считается, а не подбирается. Перо
+         лежит по касательной, а тело под ним круглое: на голове радиусом
+         0.28 перо длиной 0.09 уходит под поверхность на полтора сантиметра
+         и пропадает совсем. Первая версия так и потеряла всё оперение
+         головы — осталась голубая лысина. Наклон len/2R как раз выводит
+         кончик обратно наружу, дальше — вкус. */
+      const meanR=Math.max(0.10,(S.rw+S.rf+S.rb)/3);
+      const lift=Math.min(0.20,0.075+len/(2*meanR))+R()*0.03;
       const d2=vNorm(vAdd(dir,vMul(p,lift)));
-      const len=mix(0.170,0.088,smooth(0.35,1.0,t))*(0.84+R()*0.32);
-      const wid=len*mix(0.68,0.90,R());
+      const wid=len*mix(0.44,0.58,R());
       const col=bodyColor(t,a);
-      const cv=0.86+R()*0.28;
-      feaPush(out,vAdd(base,vMul(p,-0.012)),d2,p,len,wid,
+      const cv=0.90+R()*0.20;
+      feaPush(out,vAdd(base,vMul(p,-0.006)),d2,p,len,wid,
         [col[0]*cv,col[1]*cv,col[2]*cv],[1.0,0.5+R()*0.5,t,0.0]);
     }
   }
@@ -864,60 +896,74 @@ function layoutCoat(){
 }
 
 /* ── маховые, кроющие, хвост, хохол ──
-   Крупные перья лежат по своим осям: у сложенного крыла это дуга от плеча к
-   хвосту, у хвоста — веер из одной точки. Их немного, и каждое видно. */
+   Крупные перья лежат по своим осям, и каждое видно поимённо.
+
+   СЛОЖЕННОЕ КРЫЛО — не пучок ножей, торчащих из бока. Это слоёная лопасть:
+   маховые идут от плеча назад и сходятся кончиками ЗА корнем хвоста, каждое
+   следующее чуть ниже и длиннее предыдущего; поверх их основания ложатся
+   второстепенные, а поверх тех — кроющие. Поэтому длина пера здесь не
+   подбирается на глаз, а считается как расстояние до его кончика: только так
+   веер сходится в одну точку, а не рассыпается. */
 function layoutPlumes(){
   const out=[],R=rnd(0x51c3);
   for(const sx of [-1,1]){
-    /* маховые: от плеча вдоль бока назад, кончики сходятся у корня хвоста */
-    for(let i=0;i<10;i++){
-      const k=i/9;
-      const t=mix(0.60,0.40,k),a=sx>0?mix(0.10,-0.35,k):Math.PI-mix(0.10,-0.35,k);
+    const flip=a=>sx>0?a:Math.PI-a;
+    /* маховые */
+    const NP=11;
+    for(let i=0;i<NP;i++){
+      const k=i/(NP-1);
+      const t=mix(0.62,0.30,k),a=flip(mix(0.18,-0.26,k));
       const base=bodyAt(t,a),nrm=normalAt(t,a);
-      const tip=[sx*mix(0.16,0.05,k),mix(0.72,0.52,k),mix(-0.62,-0.95,k)];
-      const dir=vNorm(vSub(tip,base));
-      const len=mix(0.72,1.02,k)*(0.97+R()*0.06);
-      feaPush(out,vAdd(base,vMul(nrm,0.004)),vNorm(vAdd(dir,vMul(nrm,0.05))),nrm,
-        len,len*0.20,vLerp(BIRD_C.blueD,BIRD_C.body,0.25+k*0.35),
-        [0.7,0.85,t,1.0]);
+      const tip=[sx*mix(0.22,0.07,k),mix(0.76,0.52,k),mix(-0.56,-0.94,k)];
+      const dir=vSub(tip,base),len=vLen(dir);
+      feaPush(out,vAdd(base,vMul(nrm,0.008)),
+        vNorm(vAdd(vNorm(dir),vMul(nrm,0.03))),nrm,
+        len,len*0.26,vLerp(BIRD_C.blue,BIRD_C.blueD,0.42+k*0.42),[0.6,0.9,t,1.0]);
     }
     /* второстепенные: короче, выше, дают крылу толщину */
-    for(let i=0;i<9;i++){
-      const k=i/8;
-      const t=mix(0.66,0.46,k),a=sx>0?mix(0.34,-0.05,k):Math.PI-mix(0.34,-0.05,k);
+    const NS=9;
+    for(let i=0;i<NS;i++){
+      const k=i/(NS-1);
+      const t=mix(0.68,0.44,k),a=flip(mix(0.40,0.02,k));
       const base=bodyAt(t,a),nrm=normalAt(t,a);
-      const dir=vNorm(vAdd(flowAt(t,a),vMul(nrm,0.10)));
-      feaPush(out,base,dir,nrm,mix(0.40,0.56,k),mix(0.15,0.20,k),
-        vLerp(BIRD_C.blue,BIRD_C.blueD,0.35+k*0.4),[0.85,0.7,t,1.0]);
+      const tip=[sx*mix(0.26,0.16,k),mix(0.86,0.66,k),mix(-0.40,-0.72,k)];
+      const dir=vSub(tip,base),len=vLen(dir);
+      feaPush(out,vAdd(base,vMul(nrm,0.004)),
+        vNorm(vAdd(vNorm(dir),vMul(nrm,0.06))),nrm,
+        len,len*0.30,vLerp(BIRD_C.blue,BIRD_C.blueD,0.20+k*0.45),[0.7,0.8,t,1.0]);
     }
-    /* кроющие плеча: янтарный эполет, три коротких ряда */
-    for(let r=0;r<3;r++)for(let i=0;i<7;i++){
-      const k=i/6,t=mix(0.70,0.52,k)-r*0.015;
-      const a=(sx>0?1:-1)*(0.30+r*0.16)+(sx>0?0:Math.PI);
-      const aa=sx>0?a:Math.PI-(0.30+r*0.16);
-      const base=bodyAt(t,aa),nrm=normalAt(t,aa);
-      const dir=vNorm(vAdd(flowAt(t,aa),vMul(nrm,0.22)));
-      const c=vLerp(BIRD_C.amber,BIRD_C.amberD,0.35+r*0.22+R()*0.25);
-      feaPush(out,base,dir,nrm,0.125-r*0.012,0.088,c,[1.0,0.6,t,0.0]);
+    /* кроющие плеча: янтарный эполет, три коротких ряда черепицей */
+    for(let r=0;r<3;r++)for(let i=0;i<8;i++){
+      const k=i/7,t=mix(0.72,0.50,k)-r*0.012;
+      const a=flip(0.30-r*0.15+k*0.10);
+      const base=bodyAt(t,a),nrm=normalAt(t,a);
+      const dir=vNorm(vAdd(flowAt(t,a),vMul(nrm,0.16)));
+      const c=vLerp(BIRD_C.amber,BIRD_C.amberD,0.30+r*0.24+R()*0.22);
+      feaPush(out,base,dir,nrm,0.135-r*0.014,0.100-r*0.008,c,[1.0,0.6,t,0.0]);
     }
   }
-  /* хвост: длинный, слоёный, средняя пара длиннее всех */
+  /* хвост: длинный, слоёный, средняя пара длиннее всех.
+     Перья слегка расходятся веером и лежат друг на друге — сложенный хвост
+     это стопка, а не одна доска: первая сборка давала ровно доску. */
   for(let i=0;i<11;i++){
-    const k=(i/10-0.5)*2;
-    const a=Math.PI*1.5+k*0.5;
-    const base=bodyAt(0.045,a);
-    const dir=vNorm([k*0.30,-0.34-Math.abs(k)*0.10,-1.0]);
-    const len=1.30-Math.abs(k)*0.34;
-    const c=vLerp(BIRD_C.blue,BIRD_C.blueD,0.30+Math.abs(k)*0.45);
-    feaPush(out,base,dir,vNorm([k*0.3,1,-0.2]),len,len*0.13,c,[0.55,0.55,0.05,2.0]);
+    const k=(i/10-0.5)*2,ak=Math.abs(k);
+    const a=Math.PI*1.5+k*0.42;
+    const base=bodyAt(0.05,a);
+    const dir=vNorm([k*0.26,-0.44-ak*0.07,-1.0]);
+    const len=1.34-ak*0.32;
+    const c=vLerp(BIRD_C.blue,BIRD_C.blueD,0.26+ak*0.42);
+    /* каждое следующее перо чуть выше предыдущего: стопка, а не плоскость */
+    const up=vNorm([k*0.34,1,-0.16]);
+    feaPush(out,vAdd(base,vMul(up,0.006*(5-Math.abs(i-5)))),dir,up,
+      len,len*0.16,c,[0.55,0.55,0.05,2.0]);
   }
   /* хохол: отведённые назад пёрышки, на конце каждого — бусина (21-parts) */
   for(let i=0;i<CREST_N;i++){
     const q=crestQuill(i);
     /* пёрышко хохла шире, чем кажется: узкая спица читается проволокой, а
        бусина на конце — лампочкой на проводе */
-    feaPush(out,q.base,q.dir,normalAt(0.96,Math.PI*1.5),q.len,q.len*0.26,
-      vLerp(BIRD_C.blueL,BIRD_C.amber,0.30+Math.abs(q.k)*0.35),[0.9,1.1,1.0,3.0]);
+    feaPush(out,q.base,q.dir,normalAt(0.96,Math.PI*1.5),q.len,q.len*0.40,
+      vLerp(BIRD_C.amber,BIRD_C.blueL,0.42+Math.abs(q.k)*0.30),[0.9,1.1,1.0,3.0]);
   }
   return new Float32Array(out);
 }
@@ -1382,9 +1428,9 @@ function renderSize(w,h){
    приборов), обвод сзади. Правило то же, что у двумерной птицы. */
 const LIGHT={
   key:vNorm([0.55,0.80,0.45]), keyCol:[2.05,1.72,1.30],
-  fill:vNorm([-0.85,0.12,-0.25]), fillCol:[0.085,0.185,0.245],
+  fill:vNorm([-0.85,0.12,-0.25]), fillCol:[0.115,0.235,0.310],
   rim:[0.045,0.135,0.175],
-  sky:[0.030,0.046,0.072], gnd:[0.008,0.009,0.013]
+  sky:[0.085,0.115,0.165], gnd:[0.022,0.024,0.032]
 };
 function lightVP(){
   const c=[0,1.10,0],d=6.0;
@@ -1415,8 +1461,9 @@ function bindPose(P){
 function drawSolid(P,VP){
   gl.useProgram(P.p);bindPose(P);
   if(VP)glSet(P,"uVP",VP);else bindLight(P);
-  glDraw(MESH.body,0);
-  glDraw(MESH.parts,0);
+  /* стенд: ?nobody=1 убирает кожу и части — видно ровно то, что закрывают
+     перья, и ни одной догадки о том, чей это пиксель */
+  if(!R.noBody){glDraw(MESH.body,0);glDraw(MESH.parts,0);}
 }
 function drawFeathers(P,VP){
   gl.useProgram(P.p);bindPose(P);
@@ -1535,6 +1582,14 @@ function birdBoot(){
   if(Q.has("d"))CAM.dist=CAM.distT=+Q.get("d");
   if(Q.has("ty"))CAM.tgt[1]=+Q.get("ty");
   if(Q.has("still"))POSE.still=1;
+  if(Q.has("nobody"))R.noBody=1;
+  if(Q.has("dbg")){
+    console.log("перья: корпус "+MESH.coat.inst+" (голова "+COAT_STAT.head+
+      ", срезано "+COAT_STAT.cut+") · крупные "+MESH.plumes.inst);
+    for(const s of [[0.95,Math.PI/2],[0.95,0],[0.98,Math.PI*1.5],[0.90,Math.PI],[0.5,Math.PI/2]])
+      console.log("n("+s[0]+","+s[1].toFixed(2)+") = "+normalAt(s[0],s[1]).map(v=>v.toFixed(2))+
+        "  p="+bodyAt(s[0],s[1]).map(v=>v.toFixed(2)));
+  }
   birdSize();
   addEventListener("resize",birdSize);
   birdHands(cv);

@@ -41,9 +41,9 @@ function renderSize(w,h){
    приборов), обвод сзади. Правило то же, что у двумерной птицы. */
 const LIGHT={
   key:vNorm([0.55,0.80,0.45]), keyCol:[2.05,1.72,1.30],
-  fill:vNorm([-0.85,0.12,-0.25]), fillCol:[0.085,0.185,0.245],
+  fill:vNorm([-0.85,0.12,-0.25]), fillCol:[0.115,0.235,0.310],
   rim:[0.045,0.135,0.175],
-  sky:[0.030,0.046,0.072], gnd:[0.008,0.009,0.013]
+  sky:[0.085,0.115,0.165], gnd:[0.022,0.024,0.032]
 };
 function lightVP(){
   const c=[0,1.10,0],d=6.0;
@@ -74,8 +74,9 @@ function bindPose(P){
 function drawSolid(P,VP){
   gl.useProgram(P.p);bindPose(P);
   if(VP)glSet(P,"uVP",VP);else bindLight(P);
-  glDraw(MESH.body,0);
-  glDraw(MESH.parts,0);
+  /* стенд: ?nobody=1 убирает кожу и части — видно ровно то, что закрывают
+     перья, и ни одной догадки о том, чей это пиксель */
+  if(!R.noBody){glDraw(MESH.body,0);glDraw(MESH.parts,0);}
 }
 function drawFeathers(P,VP){
   gl.useProgram(P.p);bindPose(P);

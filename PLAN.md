@@ -945,3 +945,45 @@ the yacht last, because an ending cannot be built before the middle.
 **Held back on purpose:** none of this goes in before the first hour works. The playtest put the
 game's weakest point at minute two, and this arc lives on a scale of hours — building it first
 would be building the roof.
+
+# QUEUE: Трепло in the round — a separate 3D module (M200)
+
+The author, 2026-08-26: the in-game parrot stays exactly as it is; the site's "take the bird
+home" page gets a **separate module** with real 3D — shaders, pixels, no self-imposed limits,
+"as beautiful as it can be". It is not part of the game and never talks to it: the only things
+it borrows are the breed (cobalt back, cream breast, amber shoulder, swept crest with cold
+beads) and the lighting rule (warm key above, cold fill from the left, rim behind).
+
+**Where it lives.** Sources in `bird/`, built by `bird.ps1` into **one** self-contained file,
+`site/treplo3d.html` — no server, no dependencies, not one external image, so the bird can be
+downloaded as a single file and kept on a desktop. Same rules as the game's own build: modules
+in filename order, one scope, 40 KB guard.
+
+- `10-math` vectors/matrices/splines · `11-gl` WebGL2 wrappers · `15-geom` mesh box, tube,
+  sphere, disc · `20-body` the breed: eleven spine stations, colour as a function of (t,a),
+  the skin lofted 22 mm *under* the plumage · `21-parts` beak, cere, eyes, perch, zygodactyl
+  feet, crest beads · `22-feather` one feather mesh, ~2000 instances laid out as a coat plus
+  wing, tail and crest · `30-shade` GLSL · `40-pose` springs · `50-render` shadow → HDR →
+  bloom → ACES · `60-app` camera, hands, error overlay.
+
+**Built (first pass, 2026-08-26).** A parrot on a branch: hooked beak, ringed eye, folded wing
+whose primaries converge behind the tail, layered tail, crest quills each carrying a glowing
+bead, shadow-mapped warm key, HDR bloom on the beads, orbit camera, poke reaction.
+
+**The traps that cost time, written down so they are not repeated:**
+- *Sampler precision.* `sampler2DShadow` without an explicit `precision` is a compile error and
+  the page goes black; the preamble in `11-gl` now declares it.
+- *Frame transport.* A swept tube must carry its **X** axis along the path, not Y — carrying Y
+  swaps the axes at the first bend and the beak came out a flat plate turned sideways.
+- *One normal for skin and feathers.* They were computed twice, disagreed in sign on the crown,
+  the skin turned inside out over the plumage and the head rendered bald. `bodyNormal` is now
+  the single source, and "outward" is measured from a point pulled back along the spine —
+  measuring it from the section axis is unstable exactly at the crown.
+- *A feather is longer than its row spacing*, by about three times: a bird shows feather **tips**,
+  not feathers. Equal length and spacing reads as a mosaic of paper chips.
+- *The skin sits under the plumage*, 22 mm in. At the same surface the depth buffer fights itself
+  and the coat comes through in torn patches.
+
+**Still to do:** softer light in the gaps (ambient occlusion between feathers), the down layer,
+the page around the bird (install/download, the same voice as `site/treplo.html`), behaviours
+from `12z-parrot-acts` ported to the rig, sound, and the frame budget on a phone.

@@ -40,6 +40,14 @@ function birdBoot(){
   if(Q.has("d"))CAM.dist=CAM.distT=+Q.get("d");
   if(Q.has("ty"))CAM.tgt[1]=+Q.get("ty");
   if(Q.has("still"))POSE.still=1;
+  if(Q.has("nobody"))R.noBody=1;
+  if(Q.has("dbg")){
+    console.log("перья: корпус "+MESH.coat.inst+" (голова "+COAT_STAT.head+
+      ", срезано "+COAT_STAT.cut+") · крупные "+MESH.plumes.inst);
+    for(const s of [[0.95,Math.PI/2],[0.95,0],[0.98,Math.PI*1.5],[0.90,Math.PI],[0.5,Math.PI/2]])
+      console.log("n("+s[0]+","+s[1].toFixed(2)+") = "+normalAt(s[0],s[1]).map(v=>v.toFixed(2))+
+        "  p="+bodyAt(s[0],s[1]).map(v=>v.toFixed(2)));
+  }
   birdSize();
   addEventListener("resize",birdSize);
   birdHands(cv);

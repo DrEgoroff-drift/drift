@@ -68,21 +68,21 @@ function buildParts(){
   const per=[];
   for(let i=0;i<=10;i++){
     const k=i/10,x=mix(-1.45,1.45,k);
-    per.push({p:[x,0.42+Math.sin(k*Math.PI)*0.035,-0.04+Math.cos(k*3.1)*0.012],
+    per.push({p:[x,0.33+Math.sin(k*Math.PI)*0.035,-0.04+Math.cos(k*3.1)*0.012],
       r:[0.085+Math.sin(k*Math.PI)*0.022,0.082+Math.sin(k*Math.PI)*0.020],t:-1});
   }
   tube(M,per,14,{m:3,t:-1,up:[0,1,0],col:wood});
-  sphere(M,[0.42,0.47,-0.02],0.055,8,{m:3,t:-1,scale:[1.3,0.7,1.1],col:()=>vLerp(C.perch,[0.05,0.04,0.03],.4)});
+  sphere(M,[0.42,0.38,-0.02],0.055,8,{m:3,t:-1,scale:[1.3,0.7,1.1],col:()=>vLerp(C.perch,[0.05,0.04,0.03],.4)});
 
   /* ── лапы ──
      Цевка короткая: сидящий попугай почти лежит на ветке брюхом. */
   for(const sx of [-1,1]){
     const hipX=sx*0.135;
     tube(M,[
-      {p:[hipX,0.72,-0.06],r:[0.062,0.062],t:0.12},
-      {p:[hipX,0.63,-0.05],r:[0.050,0.050],t:0.06},
-      {p:[hipX*1.02,0.55,-0.035],r:[0.044,0.044],t:0},
-      {p:[hipX*1.04,0.505,-0.03],r:[0.042,0.042],t:0}
+      {p:[hipX,0.66,-0.06],r:[0.062,0.062],t:0.12},
+      {p:[hipX,0.56,-0.05],r:[0.050,0.050],t:0.06},
+      {p:[hipX*1.02,0.47,-0.035],r:[0.044,0.044],t:0},
+      {p:[hipX*1.04,0.418,-0.03],r:[0.042,0.042],t:0}
     ],10,{m:4,t:0,up:[1,0,0],col:(v)=>vLerp(C.foot,C.footD,smooth(0,1,v)*.7)});
     /* четыре пальца: два вперёд, два назад, все обнимают ветку */
     const toes=[[0.62,1],[0.30,1],[-0.55,-1],[-1.05,-1]];
@@ -94,7 +94,7 @@ function buildParts(){
         const a=a0*k*1.35;
         const rr=0.098+0.030*(1-k);
         path.push({p:[hipX*1.04+sx*0.010*k+dir*0.0,
-                      0.425+Math.cos(a)*rr,
+                      0.335+Math.cos(a)*rr,
                       -0.035+Math.sin(a)*rr],
                    r:[0.030-0.014*k,0.028-0.013*k],t:0});
       }
@@ -134,8 +134,8 @@ function buildBeads(){
   const M=meshBox();
   for(let i=0;i<CREST_N;i++){
     const q=crestQuill(i);
-    const p=vAdd(q.base,vMul(q.dir,q.len));
-    sphere(M,p,0.0135,7,{m:6,t:1,col:()=>BIRD_C.glow});
+    const p=vAdd(q.base,vMul(q.dir,q.len*0.93));
+    sphere(M,p,0.0165,7,{m:6,t:1,col:()=>BIRD_C.glow});
   }
   return M.done();
 }
