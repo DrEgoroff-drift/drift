@@ -674,7 +674,10 @@ body.screen #console{opacity:1}
    Окно вернулось в общий язык: стекло, как у всех панелей, спрятано по
    умолчанию, открывается жёрдочкой на пульте и стоит НАД ней, а не посреди
    мира. Виден только тому, у кого птица есть, — жёрдочка сама скрыта. */
-#parrotwin{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom) + 112px);
+/* Слева, а не справа: у правого края стоит правый борт (кнопки и масштаб), и
+   окно ложилось прямо на него. Слева в этой полосе свободно — приборы наверху,
+   пэд ниже. */
+#parrotwin{position:fixed;left:14px;bottom:calc(env(safe-area-inset-bottom) + 112px);
   z-index:12;width:186px;display:none;padding:10px 12px 11px;
   background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);
   backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
@@ -690,7 +693,7 @@ body.screen #console{opacity:1}
 #parrotwin s{display:block;text-decoration:none;color:var(--dim);font-size:9px;margin-top:5px;line-height:1.4}
 body.screen #parrotwin,body.table #parrotwin{display:none}
 @media (max-width:760px){
-  #parrotwin{right:10px;bottom:calc(env(safe-area-inset-bottom) + 150px);width:164px}
+  #parrotwin{left:10px;bottom:calc(env(safe-area-inset-bottom) + 150px);width:164px}
   #parrotwin canvas{height:104px}
 }
 
@@ -1182,7 +1185,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.163.0";
+const VER="0.163.1";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);

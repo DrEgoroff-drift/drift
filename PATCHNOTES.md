@@ -7,6 +7,13 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.163.1 — the parrot's window moves off the right rail
+
+Looked at on the stand (`?s=birdwin`) right after 0.163.0 gave it its styles back: at the right
+edge it lay straight over the right rail's buttons and zoom. Moved to the left edge, where that
+band is free — instruments are above it and the pad below.
+
+---
 ## 0.163.0 — the first minute, from a playtest (M188)
 
 An outside playtest arrived (`PLAYTEST-REPORT.md`, `PLAYTEST-01.md`, 26.08.2026, played on

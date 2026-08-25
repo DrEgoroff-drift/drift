@@ -92,6 +92,20 @@ setTimeout(function(){
       try{ mgrHire(mgrRoll(1,"crew")); mgrHire(mgrRoll(2,"trade")); }catch(e){}
     }else G.mgrs=[];
     document.getElementById("hqbtn").click();
+  }else if(scene==="bird"||scene==="birdwin"){
+    /* Трепло. Птица достаётся в вещах покойника, поэтому на стенде она
+       просто выдаётся, и ей дают что-то услышанное — иначе на тычок она
+       отвечает шорохом. `birdwin` открывает окно, `bird` оставляет жёрдочку
+       на пульте: смотрим, как птицу видно В ИГРЕ, а не на стенде. */
+    var pb=land("terran");hour(pb,.30);G.mode="surface";
+    if(typeof parrotFind==="function"){
+      parrotFind(12345,"разведчика «Тишина»");
+      heardAdd("yours",{note:"ноль-семь, приём"});
+      if(typeof heardPrices==="function")heardPrices(G.sys);
+    }
+    run(6,updateSurface,drawSurface);
+    if(typeof consoleTick==="function")consoleTick(999);
+    if(scene==="birdwin"&&typeof toggleParrotWin==="function")toggleParrotWin(true);
   }else if(scene==="raid"){
     /* абордаж: настоящая база из галактики, тем же поиском, что в тестах */
     var PB=null;
