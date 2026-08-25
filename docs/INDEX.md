@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 267 · символов верхнего уровня: 2508
+Файлов: 267 · символов верхнего уровня: 2510
 
 ## СИМВОЛЫ
 
@@ -24,7 +24,7 @@ $menu                        src/15-input.js:180
 $msg                         src/28-loop.js:44
 $msl                         src/28-loop.js:47
 $nav                         src/28-loop.js:46
-$opts                        src/26-ui-station.js:548
+$opts                        src/26-ui-station.js:559
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:43
 $sh                          src/28-loop.js:24
@@ -564,7 +564,7 @@ drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:278
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:232
+drawThingIcon                src/27i-ui-table.js:242
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
 drawTrail                    src/16-flight.js:338
@@ -604,7 +604,7 @@ exitBase                     src/21a-mode-base.js:82
 exitBelt                     src/24-mode-belt.js:174
 exitCave                     src/22-mode-cave.js:205
 exitDig                      src/23-mode-dig.js:61
-exitHomeIn                   src/29c-home-in.js:73
+exitHomeIn                   src/29c-home-in.js:74
 exitScoop                    src/19a-mode-scoop.js:19
 EXP_DAYS                     src/11x-expedition.js:19
 EXP_GOODS                    src/11x-expedition.js:20
@@ -831,26 +831,26 @@ HIN_DOORW                    src/29c-home-in.js:24
 HIN_MAN                      src/29c-home-in.js:20
 HIN_ROOM_H                   src/29c-home-in.js:21
 HIN_ROOM_W                   src/29c-home-in.js:26
-HIN_THINGS                   src/29c-home-in.js:203
+HIN_THINGS                   src/29c-home-in.js:204
 HIN_UP                       src/29e-home-up.js:20
 hinDrawHole                  src/29e-home-up.js:219
 hinDrawShell                 src/29e-home-up.js:59
 hinDrawStair                 src/29e-home-up.js:175
 hinFigure                    src/29d-home-draw.js:521
-hinFolkMake                  src/29c-home-in.js:83
-hinFolkTick                  src/29c-home-in.js:114
+hinFolkMake                  src/29c-home-in.js:84
+hinFolkTick                  src/29c-home-in.js:115
 hinFrontStuff                src/29d-home-draw.js:236
 hinGroundRooms               src/29c-home-in.js:28
 hinHasUp                     src/29e-home-up.js:22
 hinHoleX                     src/29e-home-up.js:41
-hinNear                      src/29c-home-in.js:228
+hinNear                      src/29c-home-in.js:229
 hinPal                       src/29d-home-draw.js:6
 hinRoomAt                    src/29c-home-in.js:60
 hinRooms                     src/29c-home-in.js:42
 hinRoomStuff                 src/29d-home-draw.js:273
 hinSpan                      src/29c-home-in.js:52
 hinStairX                    src/29e-home-up.js:36
-hinTalk                      src/29c-home-in.js:237
+hinTalk                      src/29c-home-in.js:238
 hinUpBounds                  src/29e-home-up.js:46
 hinUpRooms                   src/29e-home-up.js:24
 hinUpStuff                   src/29e-home-up.js:243
@@ -1292,6 +1292,8 @@ mixPal                       src/02a-worldmix.js:34
 mkCanvas                     src/18c-chunks.js:32
 mkMerc                       tests/91b-crew.js:3
 modCost                      src/11-log.js:129
+MODE_RU                      src/27i-ui-table.js:29
+modeRu                       src/27i-ui-table.js:32
 MODS                         src/04-mods.js:2
 mouseWalkAt                  src/15-input.js:273
 MSL_ARM                      src/16b-missile.js:20
@@ -1766,9 +1768,9 @@ renderOpts                   src/27-ui-ship.js:198
 renderPrices                 src/12aa-need.js:196
 renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
-renderStrips                 src/27i-ui-table.js:172
+renderStrips                 src/27i-ui-table.js:182
 renderTab                    src/26-ui-station.js:185
-renderThings                 src/27i-ui-table.js:203
+renderThings                 src/27i-ui-table.js:213
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -1787,7 +1789,7 @@ RES_AUTO                     src/08-state.js:35
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:393
 resEma                       src/28-loop.js:392
-resetArm                     src/26-ui-station.js:547
+resetArm                     src/26-ui-station.js:558
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:24
@@ -2250,18 +2252,18 @@ TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:146
-tableBake                    src/27i-ui-table.js:94
+tableBake                    src/27i-ui-table.js:103
 tableBlock                   src/27c-ui-hq.js:537
 tableIsOpen                  src/27i-ui-table.js:23
-tableNewBy                   src/27i-ui-table.js:67
-tableNewThings               src/27i-ui-table.js:64
-tableNoticeAll               src/27i-ui-table.js:59
-tableRender                  src/27i-ui-table.js:122
-tableRow                     src/27i-ui-table.js:164
-tableSetTab                  src/27i-ui-table.js:92
+tableNewBy                   src/27i-ui-table.js:76
+tableNewThings               src/27i-ui-table.js:73
+tableNoticeAll               src/27i-ui-table.js:68
+tableRender                  src/27i-ui-table.js:131
+tableRow                     src/27i-ui-table.js:174
+tableSetTab                  src/27i-ui-table.js:101
 tableTab                     src/27i-ui-table.js:22
-tableToggle                  src/27i-ui-table.js:75
-tableWasNew                  src/27i-ui-table.js:66
+tableToggle                  src/27i-ui-table.js:84
+tableWasNew                  src/27i-ui-table.js:75
 tabLive                      src/14a-cloud.js:36
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
@@ -2292,8 +2294,8 @@ TEST                         tests/90-harness.js:10
 TEST_ONLY                    tests/90-harness.js:14
 TEST_SUITES                  tests/90-harness.js:110
 tfbm                         src/18a-material.js:23
-thingAdd                     src/27i-ui-table.js:28
-thingsAll                    src/27i-ui-table.js:27
+thingAdd                     src/27i-ui-table.js:37
+thingsAll                    src/27i-ui-table.js:36
 tickDrones                   src/12-economy.js:82
 tickLaunchHold               src/21-mode-surface.js:505
 TIER_RU                      src/05-parts.js:51
@@ -2402,7 +2404,7 @@ updateCave                   src/22-mode-cave.js:223
 updateCaveDeco               src/22a-cave-deco.js:184
 updateCombat                 src/13-pirates.js:77
 updateDig                    src/23-mode-dig.js:114
-updateHomeIn                 src/29c-home-in.js:159
+updateHomeIn                 src/29c-home-in.js:160
 updateLanding                src/19-mode-landing.js:45
 updateRaid                   src/24a-mode-raid.js:215
 updateScoop                  src/19a-mode-scoop.js:28
@@ -3048,9 +3050,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26b-ui-station-work.js · 15 КБ
   · станция: мастерская и наука:1
 
-## src/26-ui-station.js · 36 КБ
+## src/26-ui-station.js · 37 КБ
   · станция:1
-  · настройки:546
+  · настройки:557
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -3073,7 +3075,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27i-ui-table.js · 19 КБ
+## src/27i-ui-table.js · 20 КБ
   · стол: одно место для всего, что читают:1
 
 ## src/27j-console.js · 7 КБ
@@ -3137,8 +3139,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91e-rogue.js · 6 КБ
   · автотесты: ушедший управляющий: ультиматум, ренегат, изгнанник:1
 
-## tests/91f-ui.js · 12 КБ
+## tests/91f-ui.js · 15 КБ
   · автотесты: интерфейс: 44 px, непересечение, кнопка называет действие, разделы:1
+  · ключи из кода не показываются игроку:180
 
 ## tests/91g-relic.js · 8 КБ
   · автотесты: лаборатория и артефакты: слот, эффекты, дерево перков без пустот:1
@@ -3328,7 +3331,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzu-domino.js · 2 КБ
   · автотесты: домино (M166):1
 
-## tests/91zzv-table.js · 15 КБ
+## tests/91zzv-table.js · 16 КБ
   · автотесты: пульт и стол (M151a):1
   · огонёк: «пришло» ≠ «не прочитано»:183
 

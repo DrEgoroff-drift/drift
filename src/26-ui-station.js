@@ -242,7 +242,17 @@ function renderTab(){
     const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
     $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
       " · ТОПЛИВО "+G.st.fuelPrice+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
-    renderRoute();
+    /* Маршрут переехал в конец вкладки (проход «дорога»). Он стоял вторым
+       блоком сверху, и у игрока без маршрута — то есть у всякого, кто открыл
+       рынок впервые, — первая цена оказывалась ниже середины экрана: шапка,
+       пустой маршрут в три строки, «трюм пуст», и только потом товар.
+       Рынок открывают ради цен; маршрут — это планирование, ему место после
+       того, ради чего пришли. Учить он меньше не стал, просто ждёт своей
+       очереди.
+       Но заведённый маршрут — не подсказка, а дело: он говорит, что грузить
+       прямо сейчас. Такой остаётся наверху. */
+    const hasRoute=(typeof routeOf==="function")&&routeOf().legs.length>=2;
+    if(hasRoute)renderRoute();
     let any=false,tot=0;
     for(const k of TRADE_KEYS){
       const q=G.cargo[k];if(!q)continue;any=true;
@@ -291,6 +301,7 @@ function renderTab(){
       r.appendChild(el("div","qt",prices[k]+"<s>кр/ед</s>"));
       $body.appendChild(r);
     }
+    if(!hasRoute)renderRoute();
   }
   else if(tab==="yard"){
     /* Под блокадой док не строит и не продаёт: занятость — это отнятые службы,

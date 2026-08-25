@@ -231,3 +231,27 @@ TEST_SUITES.push(()=>suite("стол: огонёк гаснет от визит�
   ok(!mb.classList.contains("on"),"и огонёк после такой загрузки молчит");
   tableToggle(false);
 }));
+
+/* Внутренние ключи не должны просачиваться в интерфейс. В шапке стола
+   печаталось `G.mode` как есть, и игрок читал «Нейэль · system» — английское
+   слово из кода в русской игре. Сторож проверяет все режимы разом: появится
+   новый и его забудут вписать — шапка обязана промолчать, а не выдать ключ. */
+TEST_SUITES.push(()=>suite("стол: в шапке нет ключей из кода",()=>{
+  resetWorld();
+  const modes=["system","map","landing","surface","cave","dig","belt","scoop",
+               "base","homein","raid","dock","road"];
+  const noRu=modes.filter(m=>!/[а-яё]/i.test(MODE_RU[m]||""));
+  eq(noRu.join(", "),"","у каждого режима есть русское имя");
+  const was=G.mode;
+  const leaks=[];
+  for(const m of modes){
+    G.mode=m;
+    const t=modeRu();
+    if(/[a-z]/i.test(t))leaks.push(m+"→"+t);
+  }
+  /* и выдуманный режим: имени нет — значит и строки нет */
+  G.mode="somethingNew";
+  eq(modeRu(),"","незнакомый режим молчит, а не печатает свой ключ");
+  G.mode=was;
+  eq(leaks.join(", "),"","ни одно имя не содержит латиницы");
+}));

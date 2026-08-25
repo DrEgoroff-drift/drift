@@ -68,7 +68,8 @@ function enterHomeIn(){
   G.hin={x:HIN_ROOM_W[0]*.5,vx:0,face:1,walk:0,phase:0,cam:0,up:0,
          look:null,lookT:0,folk:hinFolkMake(),t0:G.t};
   G.mode="homein";
-  say("Дом\n← → пройтись · ДЕЙСТВИЕ — рассмотреть\nНАЗАД — выйти во двор",200);
+  /* «Дом» стоит в сводке места — сообщение говорит только, как тут ходить */
+  say("← → пройтись · ДЕЙСТВИЕ — рассмотреть\nНАЗАД — выйти во двор",200);
 }
 function exitHomeIn(){
   G.hin=null;

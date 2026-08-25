@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.162.0 — the eye and the road: two interface passes (M182, M183)
+
+The two remaining named questions from the interface series, run against the frames rather than
+from memory: **the eye** — what the player looks at first on each screen, and what is louder than it
+deserves; **the road** — how many steps between wanting a thing and having it.
+
+**The market answers its own question first.** Opening a station's market, the first price sat below
+the middle of the screen: a header, then a three-line block explaining a route the player does not
+have, then "the hold is empty", and only then goods. An *absent* route is a hint and now waits at
+the bottom in one line; a route that exists is work in progress and stays at the top where it can
+be acted on. Six prices are visible where four were.
+
+**An internal key was being shown to the player.** The table's header printed `G.mode` verbatim, so
+the player read «Нейэль · system» — an English word out of the source, in a Russian game. There is
+now a table of Russian names for every mode, and an unknown mode prints nothing rather than its key.
+Two guards: one on the table's names, and a broader one that walks every screen and the table in
+every mode looking for Latin words in visible text — the kind of leak that is invisible to the eye
+because it looks like decoration. That guard also counts what it inspected and fails if it inspected
+nothing, so it cannot go quietly green.
+
+**Two more places said what the place summary already says** — the cave's «Пещера» and the home's
+«ДОМ» headline (five such were removed in 0.160.0; these two were found by looking at more screens).
+
+**The stand stopped lying.** `docs/mkview.ps1` forced `.hud{opacity:1!important}` so the instruments
+would survive into a screenshot back when they rested at .34. At .86 that is unnecessary, and it was
+actively harmful: it also overrode `body.screen .hud{opacity:0}`, so a screenshot of the station
+showed the instruments floating over the open panel — a bug that exists only in the stand. The
+override is gone; the stand shows what the game shows.
+
+---
 ## 0.161.0 — the raid was drawn upside down (M180, pass 2)
 
 The author, 2026-08-25, on the pirate-base frame: «не очень понятно, посмотри на перспективу», and

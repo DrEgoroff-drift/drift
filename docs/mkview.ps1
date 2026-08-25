@@ -15,13 +15,18 @@ $add = @'
 setTimeout(function(){
   var i=document.getElementById("intro"); if(i)i.style.display="none";
   G.running=true;
-  /* приборы просыпаются от события; для снимка держим их открытыми насильно —
-     иначе на кадре будет треть непрозрачности и судить не о чем */
+  /* ── стенд больше не подкручивает приборы ──
+     Здесь стояло `.hud{opacity:1!important}`: пока приборы в покое гасли до
+     трети, на снимке от них не оставалось ничего и судить было не о чем.
+     С 0.160.0 покой — .86, показывать нечего, а `!important` начал ВРАТЬ:
+     он перебивал `body.screen .hud{opacity:0}`, и на снимке станции приборы
+     висели поверх открытого экрана. Полчаса ушло на поиск «ошибки», которой
+     в игре не было. Стенд обязан показывать то же, что игра, и ничего сверх.
+     `.pads` и `#console` подкручивать тоже не надо: они не гаснут сами. */
   var s=document.createElement("style");
   /* анимация появления экрана при виртуальном времени застревает на середине —
      снимок ловил полупрозрачный стол; для стенда она не нужна вовсе */
-  s.textContent=".hud{opacity:1!important}.pads{opacity:1!important}#console{opacity:1!important}"+
-    ".scr.open{animation:none!important}";
+  s.textContent=".scr.open{animation:none!important}";
   document.head.appendChild(s);
   var scene=(location.search.match(/[?&]s=([a-z]+)/)||[])[1]||"surface";
   function land(t){

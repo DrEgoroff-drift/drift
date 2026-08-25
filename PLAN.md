@@ -665,12 +665,21 @@ self-criticism, per the cross-cutting rule.
 - **M181–M185 — five interface passes**, each with a named question:
   1. **the hand** — **done (0.150.0, M181)**: no pressable thing vanishes — ДЕЙСТВИЕ and ТОРМОЗ
      dim (`.off`, deaf to taps) instead of hiding, the bottom row never jumps;
-  2. **the eye**: what the player looks at first on each screen, and what is louder than it should
-     be;
-  3. **the road**: how many taps between wanting a thing and having it;
-  4. **the phone**: the same screens at 390 px, measured, not imagined (`test.ps1 -Mobile`);
-  5. **the whole**: one language across every screen — the same edges, the same weights, the same
-     words.
+  2. ~~**the eye**~~ — **done (0.162.0, M182)**: the loudest thing on the trading screen was an
+     empty-route block explaining a feature the player does not have, and it pushed the first price
+     below the middle of the frame. An absent route is a hint (one line, at the bottom); a route
+     that exists is work in progress and stays on top. Six prices visible where four were.
+  3. ~~**the road**~~ — **done (0.162.0, M183)**, same edit: the question "how many steps between
+     wanting a thing and having it" answered itself on the market screen — the thing you came for
+     was three explanatory blocks away. Nothing else measured worse; recheck when the post lands.
+  4. ~~**the phone**~~ — measured and green (`test.ps1 -Mobile`); the instruments' move to the top
+     was measured there too (0.160.0), two gauge rows and the place at 375 px, nothing colliding.
+  5. ~~**the whole**~~ — **done in passes (0.160.0, 0.162.0, M185)**: seven mode-entry messages
+     said what the place summary already says and were cut to what is nowhere else; an internal
+     mode key (`system`) was being printed to the player and now has Russian names for every mode.
+     Both are guarded, the second by a sweep over every screen looking for Latin words in visible
+     text. **Left open by design:** the receiver console sits over the panel's title bar when a
+     screen is open (M151a put it there deliberately); worth the author's eye, not a silent change.
 - **M186 — the walk-through** (run at the end of the night session, 2026-08-25 03:00): every point
   of the author's five messages checked. **Closed tonight:** the old queue (12→13→A2→A3→9→10, six
   versions), the deploy (broken since 0.139.0 — `Get-Content -Encoding Byte` does not exist in

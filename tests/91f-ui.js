@@ -176,3 +176,48 @@ TEST_SUITES.push(()=>suite("станция: разделы вместо деся
   }
   closeStation();
 }));
+
+/* ══════════════ ключи из кода не показываются игроку ══════════════
+   На столе в шапке печаталось `G.mode` как есть, и игрок читал
+   «Нейэль · system». Такое не ловится глазами: строка короткая, стоит в углу
+   и выглядит как часть оформления. Сторож обходит экраны и ищет в видимом
+   тексте латиницу — в русской игре ей взяться неоткуда, кроме как из кода.
+
+   Что разрешено: номер версии, единицы вроде «кг», римские цифры в именах
+   планет (НЕЙЭЛЬ I) и всё, что игрок и должен видеть латиницей. Список
+   короткий нарочно — если он начнёт расти, значит правило перестало работать. */
+TEST_SUITES.push(()=>suite("интерфейс: на экранах нет ключей из кода",()=>{
+  resetWorld();
+  const OK=/^(v?\d[\d.]*|[IVXLC]+|kb|KB|px|fps|GPS|km|QSL)$/;
+  const leaks=[];
+  let seen=0;
+  const scan=where=>{
+    document.querySelectorAll(where+" *").forEach(e=>{
+      if(e.children.length)return;
+      const t=(e.textContent||"").trim();
+      if(!t)return;
+      seen++;
+      /* латинское СЛОВО из трёх букв и длиннее — это почти наверняка ключ */
+      const m=t.match(/[a-zA-Z]{3,}/g);
+      if(!m)return;
+      for(const w of m)if(!OK.test(w))leaks.push(where+": «"+t.slice(0,50)+"»");
+    });
+  };
+  for(const id of ["shipbtn","crewbtn","hqbtn","tablebtn","optbtn"]){
+    const b=document.getElementById(id);if(!b)continue;
+    document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+    try{b.click();}catch(e){continue;}
+    scan(".scr.open");
+  }
+  /* стол во всех режимах: шапка «где мы» — та самая, где ключ и утёк */
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  for(const m of ["system","surface","cave","dig","belt","dock","homein","raid","base","scoop"]){
+    G.mode=m;tableToggle(true);scan("#tablewin");tableToggle(false);
+  }
+  G.mode="system";
+  /* Сторож, который ничего не осмотрел, хуже отсутствующего: он зелёный и
+     молчит. Считаем осмотренные строки и требуем, чтобы их было много. */
+  ok(seen>200,"экраны действительно раскрылись и осмотрены ("+seen+" строк)");
+  const uniq=[...new Set(leaks)];
+  eq(uniq.slice(0,6).join(" | "),"","ни одного латинского слова в видимом тексте");
+}));

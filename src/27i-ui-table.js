@@ -21,6 +21,15 @@
       списки того же каркаса, что у всех экранов. */
 let tableTab="ether",tableOpenNow=false,tableBaked=null;
 function tableIsOpen(){return tableOpenNow;}
+/* ── где мы, по-русски ──
+   В шапке стола печаталось `G.mode` как есть, и игрок читал «Нейэль · system»:
+   внутренний ключ режима, английским словом, в русской игре. Таблица держит
+   все режимы разом — если появится новый и его сюда не впишут, шапка честно
+   промолчит, а не выдаст ключ. */
+const MODE_RU={system:"в системе",map:"навигация",landing:"посадка",surface:"на поверхности",
+  cave:"в пещере",dig:"в шахте",belt:"в поясе",scoop:"в атмосфере",base:"на базе",
+  homein:"дома",raid:"абордаж",dock:"на станции",road:"в дороге"};
+function modeRu(){return MODE_RU[G.mode]||"";}
 /* ── вещи: общая полка ──
    {k:вид, ru:имя, note:строка, t:время, seen:0/1, sx,sy:откуда}. Кладут
    вехи; стол показывает. Новое светится, пока стол не открыли на ВЕЩАХ. */
@@ -142,7 +151,8 @@ function tableRender(){
              prices:"цены · как их видели, по станциям",record:"трудовая книжка · записи чужими руками",lore:"отчёт «Долгого хода»"};
   if(sub)sub.textContent=SUB[tableTab]||"";
   if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
-  if(wh)wh.textContent=(G.sys&&G.sys.name?G.sys.name:"—")+" · "+(G.mode||"");
+  if(wh){const mr=modeRu();
+    wh.textContent=(G.sys&&G.sys.name?G.sys.name:"—")+(mr?" · "+mr:"");}
   box.style.display=tableTab==="lore"?"none":"";
   if(lore)lore.style.display=tableTab==="lore"?"":"none";
   /* Что читают — лежит на ЛИСТЕ; что держат в руках — лежит на СТОЛЕ (A3).
