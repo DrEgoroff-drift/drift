@@ -900,3 +900,45 @@ heard something, not because the game told you to.
 
 If that is the wrong reading, say so before it is built — everything else in this section can
 proceed without it.
+
+---
+
+# QUEUE: the through-line — «Непутёвый» (author's pitch, 2026-08-26)
+
+Full design: [`docs/DESIGN-arc.md`](docs/DESIGN-arc.md). The personal spine of the whole game,
+running *underneath* the world's story that `DESIGN-act2.md` tells: that act is about a common
+undertaking and says outright the player is one of a thousand hands, not the hero. This one is
+about the man. They do not compete — the expedition is the world, the fool is the person.
+
+**The rule the arc stands on:** вселенная прощает, люди помнят. The world's offers never dry up,
+whatever he did; the human doors close one at a time, quietly, and nobody shouts at him. Every
+stake in the arc lives in the gap between those two ledgers.
+
+**The economic law it makes:** the game never hands out credits, it hands out **access** — a
+berth, a name to drop, a route nobody works, a bay in a garage, an introduction. Always attached
+to a person, always with a real window that closes.
+
+## First three, and only these — they turn the present sandbox into Act I
+
+- **M189 — возможность.** The offer as an entity: kind, person, place, window, taken/lost. Arrives
+  the way everything arrives here (ether line, counter queue, letter on the table), never marked
+  on a map, expires without comment. Nothing else in the arc can be built before it.
+- **M190 — игрок как источник слухов.** The rumour pipes (`11t`) exist and run one way: he only
+  receives. Make him a source — what he says at the counter travels and comes back days later
+  wearing someone else's face. The cheapest of the three squanders, and the one that teaches
+  fastest that this world remembers.
+- **M191 — тетрадь доброты.** Invisible, write-only, never displayed, never confirmed. It must
+  exist early or the ending cannot pay. First entry is already in the game: leaving cargo at a
+  mark for a stranger who will never know it was you (`11ag`, M171). Three guards: never shown; it
+  must cost at the moment of the deed; and calculated kindness weighs less than kindness while
+  broke.
+
+## After those, in order
+
+Act II (the first real loss, by his own hand, everyone kind about it) → the offers deepening
+through the expedition → Act IV (doors closed, the world still offering, nobody left to vouch) →
+the yacht last, because an ending cannot be built before the middle.
+
+**Held back on purpose:** none of this goes in before the first hour works. The playtest put the
+game's weakest point at minute two, and this arc lives on a scale of hours — building it first
+would be building the roof.

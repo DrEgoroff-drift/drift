@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#05070c">
+<title>Трепло — птица с корабля «Дрейф»</title>
+<meta name="description" content="Попугай из «Дрейфа» в объёме: настоящий трёхмерный свет, перья и повадки. Один файл, работает без интернета.">
+<style>/* Птица занимает окно целиком: это не страница с птицей, это птица.
+   Палитра — «Дрейфа», дословно. */
+:root{
+  --void:#05070c; --phos:#7fe6d8; --amber:#f2b25c; --dim:#6d8494; --text:#cfe3ea;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--void);color:var(--text);font-family:var(--mono);
+  overflow:hidden;-webkit-font-smoothing:antialiased}
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+/* подпись: имя породы, ничего больше. Она не должна спорить с птицей. */
+#tag{position:fixed;left:16px;bottom:14px;font-size:10px;letter-spacing:.16em;
+  color:var(--dim);pointer-events:none;text-transform:uppercase}
+#tag b{display:block;color:var(--amber);font-weight:400;font-size:11px}
+#boom{display:none;position:fixed;inset:auto 16px 16px 16px;max-height:60%;overflow:auto;
+  padding:12px 14px;border:1px solid rgba(255,107,87,.5);background:rgba(8,13,22,.92);
+  color:#ffb4a6;font-size:11px;line-height:1.5;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="tag"><b>Трепло</b>птица с корабля «Дрейф»</div>
+<pre id="boom"></pre>
+<script>/* ===== 10-math.js ===== */
+/* ══════════════ математика ══════════════
+   Своя, потому что модуль обязан остаться одним файлом без зависимостей.
+   Матрицы — column-major, как их ждёт WebGL (uniformMatrix4fv, transpose=false).
+   Векторы — обычные массивы из трёх чисел: типизированные тут ничего не дают,
+   а читаются хуже. */
+
+const TAU=Math.PI*2;
+const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+const mix=(a,b,k)=>a+(b-a)*k;
+const smooth=(e0,e1,x)=>{const t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t);};
+
+/* ── детерминированный шум ──
+   Всё, что «случайно» в птице (разброс перьев, фазы ряби), берётся отсюда:
+   одна и та же птица должна собираться одинаково в каждом запуске. */
+function hashf(x,y){
+  let h=Math.imul(x|0,374761393)+Math.imul(y|0,668265263);
+  h=Math.imul(h^(h>>>13),1274126177);
+  return ((h^(h>>>16))>>>0)/4294967296;
+}
+function rnd(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
+
+/* ── вектор ── */
+const v3=(x,y,z)=>[x,y,z];
+const vAdd=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const vSub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const vMul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k];
+const vDot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const vCross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const vLen=a=>Math.hypot(a[0],a[1],a[2]);
+function vNorm(a){const l=vLen(a)||1;return [a[0]/l,a[1]/l,a[2]/l];}
+const vLerp=(a,b,k)=>[mix(a[0],b[0],k),mix(a[1],b[1],k),mix(a[2],b[2],k)];
+
+/* ── матрица 4×4 ── */
+function mIdent(){return new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);}
+function mMul(a,b,out){
+  const o=out||new Float32Array(16);
+  for(let c=0;c<4;c++){
+    const b0=b[c*4],b1=b[c*4+1],b2=b[c*4+2],b3=b[c*4+3];
+    o[c*4  ]=a[0]*b0+a[4]*b1+a[8 ]*b2+a[12]*b3;
+    o[c*4+1]=a[1]*b0+a[5]*b1+a[9 ]*b2+a[13]*b3;
+    o[c*4+2]=a[2]*b0+a[6]*b1+a[10]*b2+a[14]*b3;
+    o[c*4+3]=a[3]*b0+a[7]*b1+a[11]*b2+a[15]*b3;
+  }
+  return o;
+}
+function mPersp(fovy,asp,near,far){
+  const f=1/Math.tan(fovy/2),o=new Float32Array(16);
+  o[0]=f/asp;o[5]=f;o[11]=-1;
+  o[10]=(far+near)/(near-far);o[14]=2*far*near/(near-far);
+  return o;
+}
+function mOrtho(l,r,b,t,n,f){
+  const o=mIdent();
+  o[0]=2/(r-l);o[5]=2/(t-b);o[10]=-2/(f-n);
+  o[12]=-(r+l)/(r-l);o[13]=-(t+b)/(t-b);o[14]=-(f+n)/(f-n);
+  return o;
+}
+function mLook(eye,at,up){
+  const z=vNorm(vSub(eye,at)),x=vNorm(vCross(up,z)),y=vCross(z,x);
+  const o=new Float32Array(16);
+  o[0]=x[0];o[1]=y[0];o[2]=z[0];o[3]=0;
+  o[4]=x[1];o[5]=y[1];o[6]=z[1];o[7]=0;
+  o[8]=x[2];o[9]=y[2];o[10]=z[2];o[11]=0;
+  o[12]=-vDot(x,eye);o[13]=-vDot(y,eye);o[14]=-vDot(z,eye);o[15]=1;
+  return o;
+}
+function mTrans(t){const o=mIdent();o[12]=t[0];o[13]=t[1];o[14]=t[2];return o;}
+function mScale(s){const o=mIdent();o[0]=s[0];o[5]=s[1];o[10]=s[2];return o;}
+function mRotX(a){const o=mIdent(),c=Math.cos(a),s=Math.sin(a);o[5]=c;o[6]=s;o[9]=-s;o[10]=c;return o;}
+function mRotY(a){const o=mIdent(),c=Math.cos(a),s=Math.sin(a);o[0]=c;o[2]=-s;o[8]=s;o[10]=c;return o;}
+function mRotZ(a){const o=mIdent(),c=Math.cos(a),s=Math.sin(a);o[0]=c;o[1]=s;o[4]=-s;o[5]=c;return o;}
+/* обратная к матрице вида/модели: нужна нормалям и лучу из курсора */
+function mInv(m){
+  const o=new Float32Array(16);
+  const a00=m[0],a01=m[1],a02=m[2],a03=m[3],a10=m[4],a11=m[5],a12=m[6],a13=m[7],
+        a20=m[8],a21=m[9],a22=m[10],a23=m[11],a30=m[12],a31=m[13],a32=m[14],a33=m[15];
+  const b00=a00*a11-a01*a10,b01=a00*a12-a02*a10,b02=a00*a13-a03*a10,
+        b03=a01*a12-a02*a11,b04=a01*a13-a03*a11,b05=a02*a13-a03*a12,
+        b06=a20*a31-a21*a30,b07=a20*a32-a22*a30,b08=a20*a33-a23*a30,
+        b09=a21*a32-a22*a31,b10=a21*a33-a23*a31,b11=a22*a33-a23*a32;
+  let det=b00*b11-b01*b10+b02*b09+b03*b08-b04*b07+b05*b06;
+  if(!det)return mIdent();
+  det=1/det;
+  o[0]=(a11*b11-a12*b10+a13*b09)*det; o[1]=(a02*b10-a01*b11-a03*b09)*det;
+  o[2]=(a31*b05-a32*b04+a33*b03)*det; o[3]=(a22*b04-a21*b05-a23*b03)*det;
+  o[4]=(a12*b08-a10*b11-a13*b07)*det; o[5]=(a00*b11-a02*b08+a03*b07)*det;
+  o[6]=(a32*b02-a30*b05-a33*b01)*det; o[7]=(a20*b05-a22*b02+a23*b01)*det;
+  o[8]=(a10*b10-a11*b08+a13*b06)*det; o[9]=(a01*b08-a00*b10-a03*b06)*det;
+  o[10]=(a30*b04-a31*b02+a33*b00)*det;o[11]=(a21*b02-a20*b04-a23*b00)*det;
+  o[12]=(a11*b07-a10*b09-a12*b06)*det;o[13]=(a00*b09-a01*b07+a02*b06)*det;
+  o[14]=(a31*b01-a30*b03-a32*b00)*det;o[15]=(a20*b03-a21*b01+a22*b00)*det;
+  return o;
+}
+function mTranspose(m){
+  return new Float32Array([m[0],m[4],m[8],m[12], m[1],m[5],m[9],m[13],
+                           m[2],m[6],m[10],m[14], m[3],m[7],m[11],m[15]]);
+}
+/* базис из направления: одна ось задана, две другие выбираются устойчиво —
+   без этого перо на «полюсе» тела получает случайный поворот и торчит боком */
+function basisFrom(dir,hint){
+  const z=vNorm(dir);
+  let up=hint||[0,1,0];
+  if(Math.abs(vDot(z,up))>.97)up=[1,0,0];
+  const x=vNorm(vCross(up,z)),y=vCross(z,x);
+  return [x,y,z];
+}
+/* матрица «положить в точке p с базисом b и масштабом s» */
+function mPlace(p,b,s){
+  const o=new Float32Array(16);
+  o[0]=b[0][0]*s[0];o[1]=b[0][1]*s[0];o[2]=b[0][2]*s[0];o[3]=0;
+  o[4]=b[1][0]*s[1];o[5]=b[1][1]*s[1];o[6]=b[1][2]*s[1];o[7]=0;
+  o[8]=b[2][0]*s[2];o[9]=b[2][1]*s[2];o[10]=b[2][2]*s[2];o[11]=0;
+  o[12]=p[0];o[13]=p[1];o[14]=p[2];o[15]=1;
+  return o;
+}
+/* ── сплайн Кэтмулла—Рома ──
+   Кривая, проходящая ЧЕРЕЗ опорные точки: породу птицы задают именно точки
+   силуэта, и правка одной не должна уводить соседние. */
+function catmull(pts,t){
+  const n=pts.length-1,x=clamp(t,0,1)*n,i=Math.min(n-1,Math.floor(x)),f=x-i;
+  const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(n,i+2)];
+  const out=[];
+  for(let k=0;k<p1.length;k++){
+    const a=p0[k],b=p1[k],c=p2[k],d=p3[k];
+    out[k]=.5*((2*b)+(-a+c)*f+(2*a-5*b+4*c-d)*f*f+(-a+3*b-3*c+d)*f*f*f);
+  }
+  return out;
+}
+/* цвет из «#rrggbb» в линейное пространство: весь свет считается в линейном,
+   а палитра породы записана так, как её видит глаз */
+function sRGB(hex){
+  const n=parseInt(hex.slice(1),16);
+  const f=v=>{v/=255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4);};
+  return [f((n>>16)&255),f((n>>8)&255),f(n&255)];
+}
+
+/* ===== 11-gl.js ===== */
+/* ══════════════ WebGL2: контекст и обёртки ══════════════
+   Тонкий слой, а не движок: программа, буфер, сетка, цель отрисовки. Всё
+   остальное пишется прямо в проходах — так видно, что происходит с кадром.
+
+   ПРАВИЛО ОШИБОК. Шейдер, который не собрался, не должен молчать: страница
+   показывает лог компиляции на экране (60-app), иначе поиск опечатки в GLSL
+   превращается в чёрный экран без единой зацепки. */
+let gl=null,GLX={};
+function glInit(cv){
+  gl=cv.getContext("webgl2",{antialias:false,alpha:false,depth:true,stencil:false,
+    powerPreference:"high-performance",preserveDrawingBuffer:false});
+  if(!gl)return null;
+  GLX.float=gl.getExtension("EXT_color_buffer_float");      /* HDR-цель */
+  GLX.lin  =gl.getExtension("OES_texture_float_linear");    /* её же фильтрация */
+  GLX.half =gl.getExtension("EXT_color_buffer_half_float");
+  GLX.aniso=gl.getExtension("EXT_texture_filter_anisotropic");
+  GLX.maxAniso=GLX.aniso?gl.getParameter(GLX.aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT):1;
+  return gl;
+}
+/* ── программа ──
+   Исходники хранятся без версии: `#version 300 es` подставляется здесь, чтобы
+   его нельзя было забыть, и чтобы номера строк в логе совпадали с файлом. */
+const GL_ERR=[];
+function glProg(vs,fs,name){
+  const sh=(type,src)=>{
+    const s=gl.createShader(type);
+    gl.shaderSource(s,"#version 300 es\nprecision highp float;\nprecision highp int;\n"+src);
+    gl.compileShader(s);
+    if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){
+      GL_ERR.push((name||"?")+" "+(type===gl.VERTEX_SHADER?"vert":"frag")+": "+gl.getShaderInfoLog(s));
+      return null;
+    }
+    return s;
+  };
+  const v=sh(gl.VERTEX_SHADER,vs),f=sh(gl.FRAGMENT_SHADER,fs);
+  if(!v||!f)return null;
+  const p=gl.createProgram();
+  gl.attachShader(p,v);gl.attachShader(p,f);gl.linkProgram(p);
+  gl.deleteShader(v);gl.deleteShader(f);
+  if(!gl.getProgramParameter(p,gl.LINK_STATUS)){
+    GL_ERR.push((name||"?")+" link: "+gl.getProgramInfoLog(p));return null;
+  }
+  /* адреса uniform-ов достаются один раз: getUniformLocation в кадре — это
+     обращение к драйверу на каждый вызов */
+  const u={},n=gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS);
+  for(let i=0;i<n;i++){
+    const nm=gl.getActiveUniform(p,i).name.replace(/\[0\]$/,"");
+    u[nm]=gl.getUniformLocation(p,nm);
+  }
+  return {p,u,name};
+}
+/* установка uniform по типу значения: число, вектор, матрица */
+function glSet(P,name,val){
+  const l=P.u[name];if(l===undefined||l===null)return;
+  if(typeof val==="number")gl.uniform1f(l,val);
+  else if(val.length===16)gl.uniformMatrix4fv(l,false,val);
+  else if(val.length===9)gl.uniformMatrix3fv(l,false,val);
+  else if(val.length===4)gl.uniform4f(l,val[0],val[1],val[2],val[3]);
+  else if(val.length===3)gl.uniform3f(l,val[0],val[1],val[2]);
+  else if(val.length===2)gl.uniform2f(l,val[0],val[1]);
+}
+function glTex(P,name,unit,tex,target){
+  const l=P.u[name];if(l===undefined||l===null)return;
+  gl.activeTexture(gl.TEXTURE0+unit);
+  gl.bindTexture(target||gl.TEXTURE_2D,tex);
+  gl.uniform1i(l,unit);
+}
+/* ── сетка ──
+   Атрибуты описываются одной таблицей: [имя, размер, смещение] в шаге stride.
+   Инстансы (перья) идут отдельным буфером с divisor=1. */
+function glMesh(spec){
+  const vao=gl.createVertexArray();
+  gl.bindVertexArray(vao);
+  const vb=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,vb);
+  gl.bufferData(gl.ARRAY_BUFFER,spec.verts,gl.STATIC_DRAW);
+  let loc=0;
+  for(const a of spec.attrs){
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc,a[1],gl.FLOAT,false,spec.stride*4,a[2]*4);
+    loc++;
+  }
+  let ib=null,count=0;
+  if(spec.index){
+    ib=gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,spec.index,gl.STATIC_DRAW);
+    count=spec.index.length;
+  }else count=spec.verts.length/spec.stride;
+  const M={vao,vb,ib,count,inst:0,ivb:null,type:spec.index instanceof Uint32Array?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT,
+           mode:spec.mode===undefined?gl.TRIANGLES:spec.mode,base:loc};
+  gl.bindVertexArray(null);
+  return M;
+}
+/* поток инстансов: буфер переписывается каждый кадр (перья дышат), поэтому
+   DYNAMIC_DRAW и bufferSubData вместо пересоздания */
+function glInstances(M,data,attrs,stride){
+  gl.bindVertexArray(M.vao);
+  if(!M.ivb){M.ivb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,M.ivb);gl.bufferData(gl.ARRAY_BUFFER,data,gl.DYNAMIC_DRAW);}
+  else{gl.bindBuffer(gl.ARRAY_BUFFER,M.ivb);gl.bufferSubData(gl.ARRAY_BUFFER,0,data);}
+  let loc=M.base;
+  for(const a of attrs){
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc,a[1],gl.FLOAT,false,stride*4,a[2]*4);
+    gl.vertexAttribDivisor(loc,1);
+    loc++;
+  }
+  M.inst=data.length/stride;
+  gl.bindVertexArray(null);
+}
+function glDraw(M,n){
+  gl.bindVertexArray(M.vao);
+  const inst=n===undefined?M.inst:n;
+  if(M.ib){
+    if(inst)gl.drawElementsInstanced(M.mode,M.count,M.type,0,inst);
+    else gl.drawElements(M.mode,M.count,M.type,0);
+  }else{
+    if(inst)gl.drawArraysInstanced(M.mode,0,M.count,inst);
+    else gl.drawArrays(M.mode,0,M.count);
+  }
+}
+/* ── цель отрисовки ──
+   fmt: "rgba16f" для света (в HDR считается всё), "depth" для карты теней. */
+function glTarget(w,h,fmt,filter){
+  const t={w,h,fmt};
+  t.fb=gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER,t.fb);
+  const F=filter===undefined?gl.LINEAR:filter;
+  if(fmt==="depth"){
+    t.tex=gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D,t.tex);
+    gl.texStorage2D(gl.TEXTURE_2D,1,gl.DEPTH_COMPONENT24,w,h);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+    /* сравнение прямо в железе: sampler2DShadow даёт мягкий край дешевле,
+       чем сравнение вручную в шейдере */
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_COMPARE_MODE,gl.COMPARE_REF_TO_TEXTURE);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_COMPARE_FUNC,gl.LEQUAL);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.TEXTURE_2D,t.tex,0);
+    gl.drawBuffers([gl.NONE]);gl.readBuffer(gl.NONE);
+  }else{
+    const ifmt=fmt==="rgba16f"?gl.RGBA16F:(fmt==="r11f"?gl.R11F_G11F_B10F:gl.RGBA8);
+    t.tex=gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D,t.tex);
+    gl.texStorage2D(gl.TEXTURE_2D,1,ifmt,w,h);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,F);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,F);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t.tex,0);
+    if(filter!==false){
+      t.rb=gl.createRenderbuffer();
+      gl.bindRenderbuffer(gl.RENDERBUFFER,t.rb);
+      gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT24,w,h);
+      gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,t.rb);
+    }
+  }
+  const st=gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+  if(st!==gl.FRAMEBUFFER_COMPLETE)GL_ERR.push("цель "+fmt+" "+w+"×"+h+" не собралась: "+st.toString(16));
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+  return t;
+}
+function glUse(t){
+  if(t){gl.bindFramebuffer(gl.FRAMEBUFFER,t.fb);gl.viewport(0,0,t.w,t.h);}
+  else{gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,gl.drawingBufferWidth,gl.drawingBufferHeight);}
+}
+/* полноэкранный треугольник для проходов постобработки: один треугольник
+   вместо двух — меньше перерисовки на диагонали */
+let QUAD=null;
+function glQuad(){
+  if(!QUAD)QUAD=glMesh({verts:new Float32Array([-1,-1, 3,-1, -1,3]),stride:2,attrs:[["p",2,0]]});
+  return QUAD;
+}
+
+/* ===== 20-body.js ===== */
+/* ══════════════ порода: тело ══════════════
+   Та же птица, что в игре (src/12y): кобальт спины, кремовая грудь, янтарь на
+   плече, хохол из отведённых назад пёрышек с холодной бусиной на конце. Здесь
+   она в объёме, поэтому порода задаётся не рисунком, а СИЛУЭТОМ: одиннадцать
+   станций вдоль хребта, у каждой ширина, вынос вперёд (грудь) и назад (спина).
+
+   Ось: X вправо, Y вверх, Z вперёд — птица смотрит в +Z, лапы на нуле.
+
+   ПРАВИЛО ТЕЛА (то же, что в двумерной сборке). Сперва одна масса силуэта, и
+   только потом на неё кладутся перья. Тело здесь — не подложка «чтобы не
+   просвечивало», а то, что читается на просвет между перьями и на кромке. */
+
+const BIRD_C={
+  body:sRGB("#101a2e"),
+  blue:sRGB("#2f6fd6"), blueD:sRGB("#17417f"), blueL:sRGB("#7cbdf5"),
+  cream:sRGB("#fdf7e9"), creamD:sRGB("#ddcbab"),
+  amber:sRGB("#f2a03c"), amberD:sRGB("#bc6a1c"),
+  viol:sRGB("#7a5ad2"),
+  beak:sRGB("#f7cd94"), beakD:sRGB("#c8853f"),
+  foot:sRGB("#b4763f"), footD:sRGB("#6f431f"),
+  glow:sRGB("#6ff0ff"),
+  eye:sRGB("#120b16"),
+  perch:sRGB("#4a3a2c")
+};
+
+/* станция: [t, y, z, ширина, вынос вперёд, вынос назад] */
+const BIRD_SPINE=[
+  [0.00, 0.60,-0.64, 0.09, 0.09, 0.09],
+  [0.10, 0.64,-0.50, 0.22, 0.20, 0.17],
+  [0.22, 0.71,-0.30, 0.34, 0.31, 0.27],
+  [0.35, 0.83,-0.13, 0.40, 0.40, 0.31],
+  [0.48, 1.01,-0.03, 0.41, 0.43, 0.32],
+  [0.60, 1.21, 0.00, 0.37, 0.38, 0.31],
+  [0.70, 1.39,-0.05, 0.29, 0.27, 0.28],
+  [0.78, 1.51,-0.05, 0.26, 0.25, 0.27],
+  [0.86, 1.65, 0.00, 0.30, 0.31, 0.30],
+  [0.94, 1.79, 0.05, 0.28, 0.28, 0.27],
+  [1.00, 1.92, 0.03, 0.08, 0.08, 0.08]
+];
+const SP_PTS=BIRD_SPINE.map(s=>s.slice(1));   /* для сплайна: без параметра t */
+
+/* точка хребта и его локальный базис.
+   N — «перёд» сечения: у шеи это грудь, у хвоста — брюхо. Считается из
+   касательной, поэтому силуэт правится одними числами таблицы. */
+function spineAt(t){
+  const s=catmull(SP_PTS,t);
+  const e=1e-3,a=catmull(SP_PTS,clamp(t-e,0,1)),b=catmull(SP_PTS,clamp(t+e,0,1));
+  const T=vNorm([0,b[0]-a[0],b[1]-a[1]]);
+  const N=[0,-T[2],T[1]];
+  return {c:[0,s[0],s[1]],T,N,rw:s[2],rf:s[3],rb:s[4]};
+}
+/* точка поверхности тела: a=0 — бок, a=+90° — грудь/брюхо, a=180° — другой бок */
+function bodyAt(t,a){
+  const S=spineAt(t),sa=Math.sin(a),ca=Math.cos(a);
+  const r=S.rb+(S.rf-S.rb)*(.5+.5*sa);
+  return [S.c[0]+ca*S.rw, S.c[1]+S.N[1]*r*sa, S.c[2]+S.N[2]*r*sa+ca*0];
+}
+
+/* ── окрас ──
+   Не текстура, а функция от (t,a): пятна породы должны переживать любую
+   пересборку сетки и одинаково красить и тело, и перья поверх него. */
+function bodyColor(t,a){
+  const belly=.5+.5*Math.sin(a);          /* 1 — грудь, 0 — спина */
+  const side=Math.abs(Math.cos(a));
+  let c=vLerp(BIRD_C.blueD,BIRD_C.blue,smooth(.0,.55,belly)*.8+.2);
+  /* грудь и брюхо кремовые, с тёплой подпалиной к хвосту */
+  const cream=smooth(.42,.72,belly)*smooth(.72,.55,t);
+  c=vLerp(c,vLerp(BIRD_C.creamD,BIRD_C.cream,smooth(.2,.6,t)),cream);
+  /* плечо: янтарный эполет по бокам корпуса */
+  const ep=smooth(.62,.44,Math.abs(t-.55)*6)*smooth(.35,.75,side)*smooth(.30,.45,belly);
+  c=vLerp(c,BIRD_C.amber,clamp(ep,0,1)*.9);
+  /* подхвостье уходит в фиолетовый — единственное холодное пятно внизу */
+  c=vLerp(c,BIRD_C.viol,smooth(.16,.02,t)*.7);
+  /* щека: тёплое пятно под глазом, чтобы голова не была одноцветной */
+  const ch=smooth(.10,.0,Math.abs(t-.90))*smooth(.4,.9,side)*smooth(.25,.7,belly);
+  c=vLerp(c,BIRD_C.amber,clamp(ch,0,1)*.75);
+  /* темя темнее лба: голова круглая, и без этого она читается шаром */
+  c=vLerp(c,BIRD_C.blueD,smooth(.90,1.0,t)*.5*(1-belly*.4));
+  return c;
+}
+
+/* ── сетка тела ──
+   Лофт по станциям: NT колец по NA точек. Нормали считаются разностями по
+   сетке — надёжнее аналитики, которая на капах врёт.
+   Атрибуты: pos(3) nrm(3) t(1) a(1) col(3) — по 11 чисел на вершину. */
+function buildBody(NT,NA){
+  const verts=new Float32Array(NT*NA*11),idx=[];
+  const P=[],Nn=[];
+  for(let i=0;i<NT;i++){
+    const t=i/(NT-1);
+    for(let j=0;j<NA;j++){
+      const a=j/NA*TAU;
+      P.push(bodyAt(t,a));
+    }
+  }
+  const at=(i,j)=>P[i*NA+((j%NA)+NA)%NA];
+  for(let i=0;i<NT;i++)for(let j=0;j<NA;j++){
+    const i0=Math.max(0,i-1),i1=Math.min(NT-1,i+1);
+    const du=vSub(at(i1,j),at(i0,j)),dv=vSub(at(i,j+1),at(i,j-1));
+    let n=vNorm(vCross(dv,du));
+    if(i===0||i===NT-1){ /* на капах разность вырождается — берём осевое направление */
+      const S=spineAt(i===0?0:1);
+      n=vNorm(vAdd(vMul(S.T,i===0?-1:1),vMul(n,.35)));
+    }
+    Nn.push(n);
+  }
+  for(let i=0;i<NT;i++)for(let j=0;j<NA;j++){
+    const k=(i*NA+j)*11,p=P[i*NA+j],n=Nn[i*NA+j],t=i/(NT-1),a=j/NA*TAU,c=bodyColor(t,a);
+    verts[k]=p[0];verts[k+1]=p[1];verts[k+2]=p[2];
+    verts[k+3]=n[0];verts[k+4]=n[1];verts[k+5]=n[2];
+    verts[k+6]=t;verts[k+7]=a;
+    verts[k+8]=c[0];verts[k+9]=c[1];verts[k+10]=c[2];
+  }
+  for(let i=0;i<NT-1;i++)for(let j=0;j<NA;j++){
+    const j1=(j+1)%NA,A=i*NA+j,B=i*NA+j1,C=(i+1)*NA+j,D=(i+1)*NA+j1;
+    idx.push(A,C,B, B,C,D);
+  }
+  return {verts,index:new Uint16Array(idx),stride:11,
+          attrs:[["p",3,0],["n",3,3],["ta",2,6],["c",3,8]]};
+}
+
+/* ===== 30-shade.js ===== */
+/* ══════════════ шейдеры ══════════════
+   Всё освещение в линейном пространстве и в HDR; sRGB и тон-компрессия — один
+   раз, в самом конце (`50-render`). Куски, общие для тела, перьев и частей,
+   держатся здесь строками и склеиваются в программы: расходиться им нельзя,
+   иначе перо освещено не так, как тело под ним, и птица распадается.
+
+   СВЕТ ПТИЦЫ — тот же, что в игре: тёплый ключ сверху, холодный подбой слева
+   (в игре — от приборов), и обвод сзади, чтобы силуэт не тонул в пустоте. */
+
+/* ── общая часть вершинных программ: поза ──
+   Кости не нужны: у сидящей птицы всего три сустава — шея, корпус и лапы.
+   Поворот шеи взвешен по параметру хребта t, поэтому голова тянет за собой
+   шею, а не отрывается от неё. */
+const GL_RIG=`
+uniform float uHeadYaw,uHeadPitch,uHeadRoll,uBreath,uLean,uBow,uTime,uPuff;
+uniform vec3 uNeckP;
+mat3 rotAxis(vec3 ax,float a){
+  float c=cos(a),s=sin(a),k=1.0-c;
+  return mat3(ax.x*ax.x*k+c, ax.x*ax.y*k+ax.z*s, ax.x*ax.z*k-ax.y*s,
+              ax.y*ax.x*k-ax.z*s, ax.y*ax.y*k+c, ax.y*ax.z*k+ax.x*s,
+              ax.z*ax.x*k+ax.y*s, ax.z*ax.y*k-ax.x*s, ax.z*ax.z*k+c);
+}
+/* t — положение вдоль хребта (0 хвост, 1 темя); для частей, у которых своего t
+   нет (клюв, хохол), передаётся единица: они едут с головой целиком */
+void rigApply(inout vec3 p, inout vec3 n, float t){
+  float bw=smoothstep(0.15,0.60,t)*smoothstep(1.0,0.72,t);
+  p+=n*(uBreath*bw+uPuff*(0.35+0.65*bw));
+  float w=smoothstep(0.66,0.92,t);
+  mat3 R=rotAxis(vec3(0.0,1.0,0.0),uHeadYaw*w)
+        *rotAxis(vec3(1.0,0.0,0.0),uHeadPitch*w)
+        *rotAxis(vec3(0.0,0.0,1.0),uHeadRoll*w);
+  p=uNeckP+R*(p-uNeckP); n=R*n;
+  /* корпус: наклон вперёд-назад от бёдер и поклон */
+  vec3 hip=vec3(0.0,0.62,-0.30);
+  mat3 B=rotAxis(vec3(1.0,0.0,0.0),uLean+uBow*smoothstep(0.1,0.9,t));
+  p=hip+B*(p-hip); n=B*n;
+}`;
+
+/* ── общая часть фрагментных программ: свет ── */
+const GL_LIGHT=`
+uniform vec3 uEye,uKeyDir,uKeyCol,uFillDir,uFillCol,uRimCol,uSkyCol,uGndCol;
+uniform sampler2DShadow uShadow;
+uniform mat4 uLightVP;
+uniform float uShadowTexel;
+
+float D_GGX(float NoH,float a){float a2=a*a;float d=NoH*NoH*(a2-1.0)+1.0;return a2/(3.14159265*d*d+1e-7);}
+float V_Smith(float NoV,float NoL,float a){
+  float k=a*0.5;
+  return 0.5/max(1e-5, mix(NoV,1.0,k)*mix(NoL,1.0,k)*2.0);
+}
+vec3 F_Schlick(vec3 f0,float u){return f0+(1.0-f0)*pow(1.0-u,5.0);}
+
+/* тень: PCF по девяти точкам с наклонным смещением — на пере, стоящем почти
+   вдоль луча, постоянный сдвиг либо рвёт контакт, либо даёт полосы */
+float shadowAt(vec3 wp,float NoL){
+  vec4 lp=uLightVP*vec4(wp,1.0);
+  vec3 q=lp.xyz/lp.w*0.5+0.5;
+  if(q.z>1.0||q.x<0.0||q.x>1.0||q.y<0.0||q.y>1.0)return 1.0;
+  float bias=uShadowTexel*(0.9+2.6*sqrt(1.0-NoL*NoL)/max(NoL,0.15));
+  float s=0.0;
+  for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++)
+    s+=texture(uShadow,vec3(q.xy+vec2(float(x),float(y))*uShadowTexel,q.z-bias));
+  return s/9.0;
+}
+
+/* Материал: альбедо, шероховатость, «пропускание» (перо и клюв просвечивают
+   на контровом свете) и анизотропия вдоль стержня пера. */
+vec3 lightPoint(vec3 wp,vec3 N,vec3 alb,float rough,float trans,vec3 tang,float aniso){
+  vec3 V=normalize(uEye-wp);
+  float NoV=max(dot(N,V),1e-4);
+  vec3 col=vec3(0.0);
+  /* ключ */
+  {
+    vec3 L=uKeyDir,H=normalize(L+V);
+    float NoL=dot(N,L);
+    float sh=shadowAt(wp,max(NoL,0.05));
+    /* обёрнутый рассеянный: перо — не гипс, свет заходит за терминатор */
+    float wr=clamp((NoL+0.35)/1.35,0.0,1.0);
+    float NoH=max(dot(N,H),0.0);
+    float a=rough*rough;
+    /* анизотропия: вдоль стержня блик тянется, поперёк собирается */
+    vec3 Ht=H-tang*dot(H,tang);
+    float NoHa=mix(NoH,clamp(length(Ht),0.0,1.0),aniso*0.55);
+    float spec=D_GGX(NoHa,a)*V_Smith(NoV,max(NoL,1e-4),a);
+    vec3 F=F_Schlick(vec3(0.045),max(dot(H,V),0.0));
+    col+=uKeyCol*sh*(alb*wr+F*spec*max(NoL,0.0)*2.0);
+    /* просвет: свет, прошедший насквозь, приходит с обратной стороны */
+    float bt=pow(clamp(dot(V,-L),0.0,1.0),2.5)*clamp(1.0-abs(dot(N,L)),0.0,1.0);
+    col+=uKeyCol*alb*trans*bt*sh*1.4;
+  }
+  /* подбой: холодный, без тени и без блика — это отражённый свет комнаты */
+  {
+    float NoL=clamp(dot(N,uFillDir)*0.5+0.5,0.0,1.0);
+    col+=uFillCol*alb*NoL*NoL;
+  }
+  /* обвод: узкая кромка по краю силуэта, чтобы птица отделялась от пустоты */
+  col+=uRimCol*pow(1.0-NoV,3.5)*(0.35+0.65*trans);
+  /* полусфера: небо сверху, пол снизу */
+  col+=alb*mix(uGndCol,uSkyCol,N.y*0.5+0.5);
+  return col;
+}`;
+
+/* ── тело ── */
+const VS_BODY=GL_RIG+`
+layout(location=0) in vec3 p;
+layout(location=1) in vec3 n;
+layout(location=2) in vec2 ta;
+layout(location=3) in vec3 c;
+uniform mat4 uVP;
+out vec3 vP,vN,vC;
+out vec2 vTA;
+void main(){
+  vec3 pp=p,nn=n;
+  rigApply(pp,nn,ta.x);
+  vP=pp;vN=normalize(nn);vC=c;vTA=ta;
+  gl_Position=uVP*vec4(pp,1.0);
+}`;
+const FS_BODY=GL_LIGHT+`
+in vec3 vP,vN,vC;
+in vec2 vTA;
+out vec4 o;
+void main(){
+  vec3 N=normalize(vN);
+  /* тело под перьями — тёмная масса: оно видно в щелях и на кромке, поэтому
+     красится своим цветом, приглушённым, а не цветом оперения */
+  vec3 alb=vC*0.34;
+  o=vec4(lightPoint(vP,N,alb,0.62,0.10,vec3(0.0,1.0,0.0),0.0),1.0);
+}`;
+
+/* ── глубина для карты теней ──
+   Одна программа на всё: геометрия та же, поза та же, цвет не нужен. */
+const VS_DEPTH=GL_RIG+`
+layout(location=0) in vec3 p;
+layout(location=1) in vec3 n;
+layout(location=2) in vec2 ta;
+uniform mat4 uVP;
+void main(){
+  vec3 pp=p,nn=n;
+  rigApply(pp,nn,ta.x);
+  gl_Position=uVP*vec4(pp,1.0);
+}`;
+const FS_DEPTH=`
+void main(){}`;
+
+/* ── фон ──
+   Пустота «Дрейфа»: холодный градиент, тёплое пятно там, откуда бьёт ключ, и
+   виньетка. Ни одной картинки — модуль обязан остаться одним файлом. */
+const VS_FLAT=`
+layout(location=0) in vec2 p;
+out vec2 vUV;
+void main(){vUV=p*0.5+0.5;gl_Position=vec4(p,0.0,1.0);}`;
+const FS_BG=`
+in vec2 vUV;
+uniform vec2 uRes;
+uniform float uTime;
+uniform vec3 uSkyCol,uKeyCol;
+out vec4 o;
+void main(){
+  vec2 uv=vUV;
+  float asp=uRes.x/uRes.y;
+  vec2 q=(uv-0.5)*vec2(asp,1.0);
+  float d=length(q);
+  vec3 col=mix(vec3(0.012,0.019,0.032),vec3(0.004,0.006,0.011),smoothstep(0.0,0.9,d));
+  /* пятно ключа: свет приходит сверху справа и оставляет след на стене */
+  col+=uKeyCol*0.055*exp(-6.0*length(q-vec2(0.34,0.34)));
+  col+=uSkyCol*0.35*exp(-3.0*length(q-vec2(-0.42,0.10)));
+  col*=1.0-0.55*smoothstep(0.35,1.05,d);
+  o=vec4(col,1.0);
+}`;
+
+/* ── вывод на экран ──
+   ACES (подгонка Нарковица) плюс дизеринг: без него в тёмном градиенте виден
+   бандинг, а вся сцена здесь — тёмный градиент. */
+const FS_TONE=`
+in vec2 vUV;
+uniform sampler2D uSrc,uBloom;
+uniform float uExposure,uBloomK,uTime;
+out vec4 o;
+vec3 aces(vec3 x){
+  const float a=2.51,b=0.03,c=2.43,d=0.59,e=0.14;
+  return clamp((x*(a*x+b))/(x*(c*x+d)+e),0.0,1.0);
+}
+void main(){
+  vec3 c=texture(uSrc,vUV).rgb;
+  c+=texture(uBloom,vUV).rgb*uBloomK;
+  c=aces(c*uExposure);
+  c=pow(c,vec3(1.0/2.2));
+  float dth=fract(sin(dot(gl_FragCoord.xy+uTime,vec2(12.9898,78.233)))*43758.5453);
+  o=vec4(c+(dth-0.5)/255.0,1.0);
+}`;
+
+/* ===== 40-pose.js ===== */
+/* ══════════════ поза и жизнь ══════════════
+   Как в игре: не «кадры анимации», а затухающие пружины. Повадка выставляет
+   степени свободы, пружины сами возвращают птицу в покой — застрять на кадре
+   невозможно, потому что кадров нет.
+
+   Мелкая рябь идёт ВСЕГДА и поверх всего: повадка — то, что птица делает,
+   рябь — то, что с ней происходит. */
+const POSE={t:0,yaw:0,pitch:0,roll:0,breath:0,puff:0,lean:0,bow:0,
+  yawV:0,pitchV:0,rollV:0,blink:0,blinkAt:2.2,look:[0,1.75,3]};
+
+function spring(v,vel,k,d,dt){vel+=-v*k*dt;vel*=Math.pow(d,dt*60);return [v+vel*dt,vel];}
+
+function poseStep(dt){
+  POSE.t+=dt;
+  const T=POSE.t;
+  /* дыхание: два вдоха в пять секунд, амплитуда меньше миллиметра в масштабе
+     птицы — заметно только тем, что птица не стоит */
+  POSE.breath=Math.sin(T*2.4)*0.006+Math.sin(T*0.7)*0.003;
+  /* пружины головы тянутся к цели, а не ставятся в неё */
+  [POSE.yaw,POSE.yawV]=spring(POSE.yaw-POSE.yawT,POSE.yawV,55,.86,dt);
+  POSE.yaw+=POSE.yawT;
+  [POSE.pitch,POSE.pitchV]=spring(POSE.pitch-POSE.pitchT,POSE.pitchV,55,.86,dt);
+  POSE.pitch+=POSE.pitchT;
+  [POSE.roll,POSE.rollV]=spring(POSE.roll-POSE.rollT,POSE.rollV,48,.88,dt);
+  POSE.roll+=POSE.rollT;
+  /* птица смотрит по сторонам сама: редко, коротко и не в одну и ту же точку */
+  if(T>POSE.nextLook){
+    POSE.nextLook=T+0.9+Math.random()*3.4;
+    POSE.yawT=(Math.random()-0.5)*0.9;
+    POSE.pitchT=(Math.random()-0.5)*0.34;
+    POSE.rollT=(Math.random()-0.5)*0.22;
+  }
+  if(POSE.blink>0)POSE.blink=Math.max(0,POSE.blink-dt*7.5);
+  if(T>POSE.blinkAt){POSE.blink=1;POSE.blinkAt=T+1.5+Math.random()*4.5;}
+  POSE.puff*=Math.pow(.92,dt*60);
+  POSE.bow*=Math.pow(.93,dt*60);
+  POSE.lean=Math.sin(T*0.53)*0.012;
+}
+POSE.yawT=0;POSE.pitchT=0;POSE.rollT=0;POSE.nextLook=1.5;
+
+/* ===== 50-render.js ===== */
+/* ══════════════ проходы кадра ══════════════
+   Порядок: тень → фон → птица в HDR → яркая часть → размытие → экран.
+   Ни один проход не знает про птицу: они знают про сцену, а сцену собирает
+   `sceneDraw` — так добавление части (клюв, перья, лапы) не трогает кадр. */
+
+const R={W:0,H:0,dpr:1,shadowSize:1536};
+
+function renderInit(){
+  R.pBody =glProg(VS_BODY,FS_BODY,"тело");
+  R.pDepth=glProg(VS_DEPTH,FS_DEPTH,"глубина");
+  R.pBg   =glProg(VS_FLAT,FS_BG,"фон");
+  R.pTone =glProg(VS_FLAT,FS_TONE,"экран");
+  R.shadow=glTarget(R.shadowSize,R.shadowSize,"depth");
+  R.black =gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D,R.black);
+  gl.texStorage2D(gl.TEXTURE_2D,1,gl.RGBA8,1,1);
+  gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+}
+function renderSize(w,h){
+  if(R.W===w&&R.H===h)return;
+  R.W=w;R.H=h;
+  /* HDR-цель: свет считается за пределами единицы, иначе бусины хохла и блик
+     на клюве срезаются ещё до тон-компрессии и светиться им нечем */
+  R.hdr=glTarget(w,h,GLX.float?"rgba16f":"rgba8");
+}
+
+/* ── свет сцены ──
+   Тёплый ключ сверху-справа-спереди, холодный подбой слева (в игре это
+   приборы), обвод сзади. Числа — те же по смыслу, что в двумерной птице. */
+const LIGHT={
+  key:vNorm([0.55,0.86,0.42]), keyCol:[3.10,2.62,1.98],
+  fill:vNorm([-0.80,0.16,-0.30]), fillCol:[0.16,0.36,0.44],
+  rim:[0.10,0.30,0.36],
+  sky:[0.055,0.085,0.130], gnd:[0.014,0.016,0.022]
+};
+function lightVP(){
+  const c=[0,1.15,0],d=6.0;
+  const eye=vAdd(c,vMul(LIGHT.key,d));
+  return mMul(mOrtho(-1.9,1.9,-1.9,1.9,1.0,11.0),mLook(eye,c,[0,1,0]));
+}
+function bindLight(P,VP,eye){
+  glSet(P,"uVP",VP);
+  glSet(P,"uEye",eye);
+  glSet(P,"uKeyDir",LIGHT.key);glSet(P,"uKeyCol",LIGHT.keyCol);
+  glSet(P,"uFillDir",LIGHT.fill);glSet(P,"uFillCol",LIGHT.fillCol);
+  glSet(P,"uRimCol",LIGHT.rim);
+  glSet(P,"uSkyCol",LIGHT.sky);glSet(P,"uGndCol",LIGHT.gnd);
+  glSet(P,"uLightVP",R.lightVP);
+  glSet(P,"uShadowTexel",1/R.shadowSize);
+  glTex(P,"uShadow",7,R.shadow.tex);
+}
+/* поза передаётся всем программам одинаково: расхождение позы между телом и
+   перьями — это перья, съехавшие с птицы */
+function bindPose(P){
+  glSet(P,"uHeadYaw",POSE.yaw);glSet(P,"uHeadPitch",POSE.pitch);glSet(P,"uHeadRoll",POSE.roll);
+  glSet(P,"uBreath",POSE.breath);glSet(P,"uPuff",POSE.puff);
+  glSet(P,"uLean",POSE.lean);glSet(P,"uBow",POSE.bow);
+  glSet(P,"uNeckP",[0,1.46,-0.04]);
+  glSet(P,"uTime",POSE.t);
+}
+function drawScene(depthOnly){
+  if(depthOnly){
+    gl.useProgram(R.pDepth.p);bindPose(R.pDepth);
+    glSet(R.pDepth,"uVP",R.lightVP);
+    glDraw(MESH.body,0);
+  }else{
+    gl.useProgram(R.pBody.p);bindPose(R.pBody);bindLight(R.pBody,R.VP,R.eye);
+    glDraw(MESH.body,0);
+  }
+}
+function renderFrame(){
+  R.lightVP=lightVP();
+  /* тень */
+  glUse(R.shadow);
+  gl.clear(gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);
+  gl.enable(gl.CULL_FACE);gl.cullFace(gl.FRONT);
+  drawScene(true);
+  gl.cullFace(gl.BACK);
+  /* сцена */
+  glUse(R.hdr);
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.disable(gl.DEPTH_TEST);
+  gl.useProgram(R.pBg.p);
+  glSet(R.pBg,"uRes",[R.W,R.H]);glSet(R.pBg,"uTime",POSE.t);
+  glSet(R.pBg,"uSkyCol",LIGHT.fillCol);glSet(R.pBg,"uKeyCol",LIGHT.keyCol);
+  glDraw(glQuad(),0);
+  gl.enable(gl.DEPTH_TEST);
+  drawScene(false);
+  /* экран */
+  glUse(null);
+  gl.disable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);
+  gl.useProgram(R.pTone.p);
+  glTex(R.pTone,"uSrc",0,R.hdr.tex);
+  glTex(R.pTone,"uBloom",1,R.bloomTex||R.black);
+  glSet(R.pTone,"uExposure",1.0);
+  glSet(R.pTone,"uBloomK",R.bloomTex?1.0:0.0);
+  glSet(R.pTone,"uTime",POSE.t);
+  glDraw(glQuad(),0);
+}
+
+/* ===== 60-app.js ===== */
+/* ══════════════ страница: кадр, камера, руки ══════════════
+   Модуль отдельный от игры и ни на что в ней не смотрит. Единственное, что
+   он берёт у «Дрейфа», — породу птицы и правило света.
+
+   ОШИБКИ ВИДНО. Не собравшийся шейдер обязан сказать об этом на экране: без
+   этого поиск опечатки в GLSL — чёрный прямоугольник без единой зацепки. */
+const CAM={az:0.62,el:0.16,dist:4.35,tgt:[0,1.16,0],azV:0,elV:0,distT:4.35};
+const MESH={};
+let birdRAF=0,birdT0=0,birdFPS=60;
+
+function fail(msg){
+  const b=document.getElementById("boom");
+  if(!b)return;
+  b.style.display="block";
+  b.textContent=msg;
+}
+function birdBoot(){
+  const cv=document.getElementById("cv");
+  if(!glInit(cv)){
+    fail("Здесь нужен WebGL 2. Он есть во всех нынешних браузерах — похоже, "+
+         "он выключен или машина отказалась его дать.\n\nПтица без него не соберётся.");
+    return;
+  }
+  MESH.body=glMesh(buildBody(96,64));
+  renderInit();
+  if(GL_ERR.length){fail("Шейдеры не собрались:\n\n"+GL_ERR.join("\n\n"));return;}
+  birdSize();
+  addEventListener("resize",birdSize);
+  birdHands(cv);
+  birdT0=performance.now();
+  birdRAF=requestAnimationFrame(birdFrame);
+}
+function birdSize(){
+  const cv=document.getElementById("cv");
+  /* плотность пикселей режется двойкой: на телефоне с тройной плотностью
+     разница не видна, а кадр дороже вдвое */
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  const w=Math.max(2,Math.round(cv.clientWidth*dpr)),h=Math.max(2,Math.round(cv.clientHeight*dpr));
+  if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
+  R.dpr=dpr;
+  renderSize(w,h);
+}
+function birdFrame(ts){
+  const dt=Math.min(.05,(ts-birdT0)/1000||.016);birdT0=ts;
+  birdFPS+=((1/Math.max(dt,1e-3))-birdFPS)*.05;
+  poseStep(dt);
+  /* камера тоже на пружине: рывок мышью не должен рвать кадр */
+  CAM.dist+=(CAM.distT-CAM.dist)*Math.min(1,dt*8);
+  CAM.az+=CAM.azV*dt;CAM.el+=CAM.elV*dt;
+  CAM.azV*=Math.pow(.02,dt);CAM.elV*=Math.pow(.02,dt);
+  CAM.el=clamp(CAM.el,-0.55,0.95);
+  const e=[CAM.tgt[0]+Math.sin(CAM.az)*Math.cos(CAM.el)*CAM.dist,
+           CAM.tgt[1]+Math.sin(CAM.el)*CAM.dist,
+           CAM.tgt[2]+Math.cos(CAM.az)*Math.cos(CAM.el)*CAM.dist];
+  R.eye=e;
+  R.VP=mMul(mPersp(0.56,R.W/R.H,0.15,40),mLook(e,CAM.tgt,[0,1,0]));
+  renderFrame();
+  birdRAF=requestAnimationFrame(birdFrame);
+}
+/* ── руки ──
+   Птицу можно обойти кругом и потрогать. Перетаскивание — камера, короткий
+   тычок — птица: разделяются по пройденному расстоянию, а не по кнопке. */
+function birdHands(cv){
+  let down=false,lx=0,ly=0,moved=0;
+  cv.addEventListener("pointerdown",e=>{down=true;lx=e.clientX;ly=e.clientY;moved=0;cv.setPointerCapture(e.pointerId);});
+  cv.addEventListener("pointermove",e=>{
+    if(!down)return;
+    const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;
+    moved+=Math.abs(dx)+Math.abs(dy);
+    CAM.azV=-dx*0.09;CAM.elV=dy*0.06;
+  });
+  const up=e=>{
+    if(down&&moved<6)birdPoke(e.clientX,e.clientY);
+    down=false;
+  };
+  cv.addEventListener("pointerup",up);
+  cv.addEventListener("pointercancel",()=>{down=false;});
+  cv.addEventListener("wheel",e=>{
+    CAM.distT=clamp(CAM.distT+Math.sign(e.deltaY)*0.28,1.9,8.0);
+    e.preventDefault();
+  },{passive:false});
+}
+function birdPoke(){
+  /* пока — общая реакция: птица вскидывается и распушается. Зоны появятся
+     вместе с хохлом и крылом. */
+  POSE.puff=0.035;
+  POSE.pitchT=-0.18;POSE.nextLook=POSE.t+1.2;
+  POSE.blink=1;
+}
+addEventListener("error",e=>fail("Сломалось: "+e.message+"\n"+(e.filename||"")+":"+(e.lineno||"")));
+if(document.readyState==="loading")addEventListener("DOMContentLoaded",birdBoot);else birdBoot();
+
+</script>
+</body>
+</html>
