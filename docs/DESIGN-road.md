@@ -315,25 +315,54 @@ of it, and above them is black. Legibility is not bought by cutting a hole in th
 is the footer's own glass (`body.road .scr footer`) that carries the buttons, so the canvas is
 free to be beautiful right down to the last pixel.
 
-Structure, all additive:
+The first version of this glow was a composition of soft lobes: five narrow plumes, three
+noise-offset lobes each. It worked, and it was the right thing to build under a battery budget.
+Then the author lifted the budget — «в этом режиме делай максимум, всё равно тел на зарядке» —
+and the honest answer to that is not "more lobes". It is a **field**.
 
-1. **The edge** — an even band of mood-hue light along the full width, `0.035…0.10 H` tall.
-2. **Five plumes**, narrow horizontally and tall — round blobs are wider than the gaps between
-   them and average under `lighter` into one pale lump, while narrow ones meet only at their
-   bases and hold their own tone above. Their hues are spread round the circle
-   (`ROAD_BLOOM_H`), the middle one is the mood itself and runs quieter than the rest: the
-   exhaust lives there, and two lights in one place cancel each other — the same lesson as the
-   trail's.
-3. **The seven-ray spectrum fan** on top, short.
+`27lb-road-bloom` computes the light **per pixel**: the shader from the recipe, written on
+`ImageData`. What is left of the composition is one even band of mood-hue light along the very
+edge, so the bottom glows even in total silence.
 
-Each plume is **three lobes at their own noise offsets**, so the union has no hard rim (every
-lobe's gradient dies on its own) and the silhouette keeps flowing. The shape is driven by
-`fbm2` from `01-core` — the same thing a shader recipe reaches Perlin noise for, except it is
-five numbers a frame here instead of a million pixels.
+- **Domain warp** — `fbm2` inside `fbm2`. One noise gives clouds; a noise that displaces the
+  coordinates of a second gives *viscosity*: strands that curl and pour. Without the warp the
+  field is fog; with it, liquid. This is the single thing that separates the effect from a
+  gradient.
+- **Colour comes from the warp**, not from position. A 64-step table is built each frame as a
+  closed loop through the five palette hues around the mood (`ROAD_BLOOM_H`), and the index is
+  driven mostly by the low-frequency warp — so tones come in patches that flow with the light.
+  Both extremes were tried and both are wrong: index by position and you get a rainbow strip,
+  index by the fine noise and you get psychedelic marble. The loop is closed on purpose: an
+  arbitrary arc round the circle would drag the palette through green, and that lesson is
+  already paid for.
+- **The spectrum enters by X.** The height of the light over each point of the edge is that
+  point's own `RD.wave` band. The equaliser is not drawn as bars — it is dissolved into the
+  light.
+- Contrast is `n²`, not `n`: light needs bright strands and dark gaps, or the field reads as
+  even fog.
 
 Height grows with energy only weakly, on purpose. The author's verdict on the standstill frame
 was that it is the best one — and standing still is exactly where there is little light and it
 does not flood the frame.
+
+**And the ship is lit by it.** A soft bounce under the hull in the mood hue, as much of it as
+there is light below: without it the hull reads as cut out and pasted onto the glow.
+
+### What it costs, measured
+
+"Battery does not matter" does not mean "the frame does not matter" — thirty hertz in a cradle
+is visible instantly. First measurement: **17.9 ms** a frame out of the 16.7 available, 95% of it
+the field. Three measures, none of which takes anything off the screen:
+
+1. **Two octaves instead of three.** The third runs at four times the frequency and carries a
+   seventh of the weight — after the field is stretched sixfold it lies inside one pixel.
+2. **A narrower field**: 88 points across instead of 124. The stretch *is* the blur; the screen
+   cannot tell, and there are half as many points.
+3. **The field lives at its own 26 Hz.** The flow is slow — a second of it crosses a tenth of the
+   noise — so there is nothing to recompute every frame; between recomputes the same bitmap is
+   laid down again. The frame stays 60 Hz: hull, trail, stars and numbers all keep moving.
+
+Measured after: **5.5 ms per recompute, 0.19 ms to lay it down, ≈2.6 ms a frame amortised.**
 
 ### The bands, and what each one is allowed to touch
 

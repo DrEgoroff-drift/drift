@@ -7,6 +7,31 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.156.0 — the road: the light is a field now (M168k, "делай максимум")
+
+The author lifted this mode's battery budget — «в этом режиме делай максимум, всё равно тел на
+зарядке» — and the honest answer to that is not "more blobs". The glow is now computed **per
+pixel**: the fragment shader from the recipe he brought, written on `ImageData`
+(`27lb-road-bloom`). Details in [docs/DESIGN-road.md](docs/DESIGN-road.md).
+
+- **Domain-warped noise** — `fbm2` displacing the coordinates of `fbm2`. That one trick is the
+  difference between fog and liquid: strands that curl and pour instead of blobs that breathe.
+- **Colour comes from the warp**, in patches that flow with the light, out of a 64-step table
+  built each frame as a closed loop through the palette. Both other options were tried and both
+  are wrong — index by position gives a rainbow strip, index by fine noise gives marble.
+- **The spectrum enters by X**: the height of the light over each point of the bottom edge is
+  that point's own band. The equaliser is not drawn any more, it is dissolved into the light.
+- **The ship is lit by the glow it flies over** — without the bounce it read as cut out and
+  pasted on.
+- The exhaust holds the hull's own colour along its length instead of fading to cream, which next
+  to a coloured field had it looking like a grey pipe.
+- **Measured, because "battery does not matter" is not "the frame does not matter".** First pass
+  cost 17.9 ms of a 16.7 ms frame. Two octaves instead of three (the third lies inside a pixel
+  after the stretch), a narrower field (the stretch *is* the blur), and the field on its own
+  26 Hz while the frame stays 60 — hull, trail, stars and numbers all keep moving. **2.6 ms a
+  frame** after.
+
+---
 ## 0.155.1 — the road: the colour was arithmetic (M168k)
 
 Six minutes of a real city drive on film, with the microphone on, and three corrections from the

@@ -541,7 +541,10 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   the footer buttons unreadable; the exhaust was white by construction; the travel scale was taken
   from 120 km/h while a city drive is 15–45. Plus a truth window for the sensors (long-press or
   `?road=diag`) — through the whole drive the hull never left the centre and the screen could not
-  say why — and a stand, `docs/mkroad.ps1`. Sky split off into `27la-road-sky`.
+  say why — and a stand, `docs/mkroad.ps1`. Sky split off into `27la-road-sky`. **0.156.0**: the
+  author lifted the mode's battery budget («делай максимум, всё равно тел на зарядке»), so the
+  glow became a per-pixel field with domain-warped noise (`27lb-road-bloom`) — the shader recipe
+  he brought, written on `ImageData`, measured down from 17.9 ms a frame to 2.6.
 - **Release look** — after M161: the table as paper, removal of the overlay HUD.
 
 # QUEUE: after the graphics campaign

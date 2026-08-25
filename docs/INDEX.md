@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 265 · символов верхнего уровня: 2478
+Файлов: 266 · символов верхнего уровня: 2486
 
 ## СИМВОЛЫ
 
@@ -1826,12 +1826,17 @@ ROAD_BLOOM_H                 src/27k-road.js:65
 ROAD_C                       src/27k-road.js:33
 ROAD_CR_KM                   src/27k-road.js:34
 ROAD_FAST_REF                src/27k-road.js:90
+ROAD_FLD_HZ                  src/27lb-road-bloom.js:42
+ROAD_FLD_OCT                 src/27lb-road-bloom.js:43
+ROAD_FLD_TOP                 src/27lb-road-bloom.js:41
+ROAD_FLD_W                   src/27lb-road-bloom.js:40
 ROAD_FOOT                    src/27k-road.js:66
 ROAD_G                       src/27k-road.js:39
 ROAD_HALF                    src/27l-road-draw.js:70
 ROAD_LAT_DEAD                src/27k-road.js:42
 ROAD_LAT_FULL                src/27k-road.js:40
 ROAD_LAT_MAX                 src/27k-road.js:41
+ROAD_LUT                     src/27lb-road-bloom.js:44
 ROAD_MASK                    src/27k-road.js:54
 ROAD_MOVE_GATE               src/27k-road.js:48
 ROAD_SHAKE_DEAD              src/27k-road.js:47
@@ -1850,6 +1855,8 @@ ROAD_ZERO_TAU                src/27k-road.js:44
 roadAll                      src/27k-road.js:68
 roadAudio                    src/27k-road.js:366
 roadBands                    src/27k-road.js:407
+roadBloom                    src/27lb-road-bloom.js:65
+roadBloomLut                 src/27lb-road-bloom.js:57
 roadClose                    src/27l-road-draw.js:42
 roadCombo                    src/27k-road.js:97
 roadCosmic                   src/27k-road.js:94
@@ -1858,7 +1865,8 @@ roadEarnKm                   src/27k-road.js:99
 roadFast                     src/27k-road.js:91
 roadFinish                   src/27k-road.js:111
 roadFrame                    src/27l-road-draw.js:60
-roadFullscreen               src/27l-road-draw.js:584
+roadFullscreen               src/27l-road-draw.js:541
+roadHsl                      src/27lb-road-bloom.js:47
 roadHueMix                   src/27k-road.js:417
 roadHullHalf                 src/27l-road-draw.js:71
 roadLightFrac                src/27k-road.js:93
@@ -3058,7 +3066,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27la-road-sky.js · 9 КБ
   · дорожный спутник: небо:1
 
-## src/27l-road-draw.js · 39 КБ
+## src/27lb-road-bloom.js · 9 КБ
+  · дорожный спутник: поле света:1
+
+## src/27l-road-draw.js · 37 КБ
   · дорожный спутник: экран:1
 
 ## src/27-ui-ship.js · 28 КБ
