@@ -7,6 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.158.1 — the road: a trip and a day are different numbers (M168k)
+
+«Каждая поездка новые кредиты или в день ограничить, а то не понятно» — and it was not clear for
+a good reason: the screen showed the **day's** figure under a line labelled «за поездку». Both
+numbers exist and both matter, so both are now on screen and say which is which.
+
+- The big counter and the kilometres line are **this trip** — that is what you feel at the wheel.
+  Each trip starts from zero.
+- A quiet line under them: «за сутки N из 3 000 кр» — the day's total against the cap, so the
+  limit is visible instead of being a surprise. It is hidden on the first trip of a day, when the
+  two numbers are the same.
+- The journal line the author liked now reports the trip first and the day beside it: «дорога ·
+  командировочные: 94 кр за 5 км (за сутки 210)».
+
+The cap stays a **day** limit, as it always was — that is what keeps a car ride from becoming an
+income stream. Credits themselves are earned fresh every trip.
+
+---
 ## 0.158.0 — the road pays for what you actually do (M168k)
 
 «Еду 5 км до дома, как-то скучно за 20 кредитов» — and the boredom was not only in the size of the

@@ -604,3 +604,22 @@ the very first pass stands: this is a pleasantry, and the economy in
 Worth knowing while driving: at the cap, a day of long-distance driving is about half the price of
 the Игла. If that turns out to be too much once he has driven with it, the lever to pull is the
 cap, not the rate — the rate is what he can feel.
+
+### A trip and a day are different numbers (0.158.1)
+
+The author, straight after: «каждая поездка новые кредиты или в день ограничить, а то не
+понятно». It was not clear for a good reason — the screen showed the **day's** total under a line
+that said «за поездку». One of those was a lie, and it had been there since the second pass.
+
+Both numbers exist and both matter, so both are on screen and each says what it is:
+
+- **The trip** is the big counter and the kilometres line. It starts at zero every time the mode
+  is opened, and it is what a driver actually feels.
+- **The day** is a quiet line beneath: «за сутки N из 3 000 кр». The cap becomes something you can
+  see approaching instead of a wall you hit. On the first trip of a day the line is hidden — the
+  two numbers are equal and repeating one twice says nothing.
+- **The journal** reports the trip first, with the day beside it when they differ.
+
+The cap remains a **daily** limit: that is the thing that keeps a car ride from turning into an
+income stream, and it is unchanged in kind since the first pass. Credits are earned fresh on every
+trip; what is limited is how much a day of driving can be worth.

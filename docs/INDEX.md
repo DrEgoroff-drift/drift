@@ -1822,7 +1822,7 @@ rivalYield                   src/12p-news.js:47
 rivetLine                    src/25-cockpit.js:179
 rng                          src/01-core.js:15
 ROAD_BACK_FAR                src/27k-road.js:52
-ROAD_BAND                    src/27k-road.js:496
+ROAD_BAND                    src/27k-road.js:509
 ROAD_BLOOM_H                 src/27k-road.js:129
 ROAD_BURN_LO                 src/27k-road.js:111
 ROAD_C                       src/27k-road.js:33
@@ -1860,8 +1860,8 @@ ROAD_YAW_MAX                 src/27k-road.js:73
 ROAD_ZERO_HOLD_A             src/27k-road.js:75
 ROAD_ZERO_TAU                src/27k-road.js:74
 roadAll                      src/27k-road.js:132
-roadAudio                    src/27k-road.js:456
-roadBands                    src/27k-road.js:497
+roadAudio                    src/27k-road.js:469
+roadBands                    src/27k-road.js:510
 roadBloom                    src/27lb-road-bloom.js:65
 roadBloomLut                 src/27lb-road-bloom.js:57
 roadBurn                     src/27k-road.js:114
@@ -1869,38 +1869,38 @@ roadClose                    src/27l-road-draw.js:43
 roadCombo                    src/27k-road.js:161
 roadCosmic                   src/27k-road.js:158
 roadDayReset                 src/27k-road.js:136
-roadEarnKm                   src/27k-road.js:163
+roadEarnKm                   src/27k-road.js:169
 roadFast                     src/27k-road.js:155
-roadFinish                   src/27k-road.js:175
+roadFinish                   src/27k-road.js:182
 roadFrame                    src/27l-road-draw.js:61
-roadFullscreen               src/27l-road-draw.js:607
+roadFullscreen               src/27l-road-draw.js:615
 roadHav                      src/27k-road.js:56
 roadHomeward                 src/27k-road.js:64
 roadHsl                      src/27lb-road-bloom.js:47
-roadHueMix                   src/27k-road.js:507
+roadHueMix                   src/27k-road.js:520
 roadHullHalf                 src/27l-road-draw.js:72
 roadLightFrac                src/27k-road.js:157
-roadMicOff                   src/27k-road.js:261
-roadMicOn                    src/27k-road.js:230
-roadMicPick                  src/27k-road.js:223
-roadMoodHue                  src/27k-road.js:521
-roadMoodPath                 src/27k-road.js:516
-roadOnPos                    src/27k-road.js:385
-roadOnShake                  src/27k-road.js:301
+roadMicOff                   src/27k-road.js:274
+roadMicOn                    src/27k-road.js:243
+roadMicPick                  src/27k-road.js:236
+roadMoodHue                  src/27k-road.js:534
+roadMoodPath                 src/27k-road.js:529
+roadOnPos                    src/27k-road.js:398
+roadOnShake                  src/27k-road.js:314
 roadOpen                     src/27l-road-draw.js:17
-roadPilotRu                  src/27k-road.js:384
-roadPing                     src/27k-road.js:368
-roadRgbHue                   src/27k-road.js:526
-roadSenseBtn                 src/27k-road.js:270
-roadSensorsOn                src/27k-road.js:183
+roadPilotRu                  src/27k-road.js:397
+roadPing                     src/27k-road.js:381
+roadRgbHue                   src/27k-road.js:539
+roadSenseBtn                 src/27k-road.js:283
+roadSensorsOn                src/27k-road.js:196
 roadSky                      src/27la-road-sky.js:9
 roadSpeedOk                  src/27k-road.js:141
-roadSys                      src/27k-road.js:360
+roadSys                      src/27k-road.js:373
 roadTier                     src/27k-road.js:143
 roadToday                    src/27k-road.js:135
 roadTripRu                   src/27k-road.js:159
 roadTurnPay                  src/27k-road.js:54
-roadTurnTick                 src/27k-road.js:437
+roadTurnTick                 src/27k-road.js:450
 ROCK_CELL                    src/17c-system-draw.js:40
 ROCK_SHAPES                  src/17c-system-draw.js:26
 ROGUE_CAP                    src/12g-mgr-rogue.js:11
@@ -3072,7 +3072,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27j-ui-hold.js · 9 КБ
   · трюм как раскладка (M179):1
 
-## src/27k-road.js · 40 КБ
+## src/27k-road.js · 42 КБ
   · дорожный спутник:1
 
 ## src/27la-road-sky.js · 9 КБ
@@ -3081,7 +3081,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27lb-road-bloom.js · 10 КБ
   · дорожный спутник: поле света:1
 
-## src/27l-road-draw.js · 42 КБ
+## src/27l-road-draw.js · 43 КБ
   · дорожный спутник: экран:1
 
 ## src/27-ui-ship.js · 28 КБ
@@ -3327,7 +3327,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzx-mobile.js · 11 КБ
   · автотесты: телефонный вид (M167):1
 
-## tests/91zzy-road.js · 24 КБ
+## tests/91zzy-road.js · 26 КБ
   · автотесты: дорожный спутник (M168, M168b):1
   · девятый проход (M168k):250
 

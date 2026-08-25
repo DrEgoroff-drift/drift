@@ -13,6 +13,7 @@
 #   ?en=0.62     энергия музыки, 0..1      ?br=0.5     яркость музыки, 0..1
 #   ?diag=1      окно правды по датчикам   ?ship=vyuk  чей корпус в кадре
 #   ?back=1      обратный курс             ?flash=1    премия за поворот в кадре
+#   ?trip=18     кредитов за поездку       ?tripkm=7.2 её же километры
 $src = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot "..\drift.html")
 $cut = $src.LastIndexOf("</body>")
 $head = $src.Substring(0, $cut)
@@ -43,6 +44,7 @@ setTimeout(function(){
     RD.latG=RD.turnT*.24;RD.yawS=RD.turnT*6;RD.latA=RD.latG;
     RD.moveT=420;RD.vmax=Math.max(RD.vmax||0,RD.kmh);
     RD.back=num("back",0);
+    RD.crTrip=num("trip",18);RD.kmTrip=num("tripkm",7.2);   /* стенд не ездит — счёт поездки задаём */
     if(num("flash",0)&&!RD.flashT){RD.flash="ПОВОРОТ +18";RD.flashT=1.2;}
     RD.sys={name:"Тауара",cx:1010,cy:-1999};RD.mates=2;
   };

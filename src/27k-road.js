@@ -160,23 +160,36 @@ function roadTripRu(km){return km<.001?"0":(km).toFixed(km<10?2:0)+" млн км
 /* комбо: секунды непрерывного хода → множитель до ×3; простой дольше двух минут сжигает */
 function roadCombo(moveT){return 1+Math.min(ROAD_COMBO_MAX-1,(moveT||0)/ROAD_COMBO_T*(ROAD_COMBO_MAX-1));}
 /* километры → кредиты, живьём, с мягким потолком дня */
+/* ── поездка и сутки — РАЗНЫЕ числа (M168k, вопрос автора) ──
+   «Каждая поездка новые кредиты или в день ограничить, а то не понятно» — и не
+   понятно было по делу: на экране висело суточное число, а подписано оно было
+   «за поездку». Считаем и то и другое: крупно то, что заработано СЕЙЧАС (его и
+   чувствуешь за рулём), тихой строкой — сутки против потолка (он и есть
+   ограничение). В журнал уходят оба. */
 function roadEarnKm(km,moveT){
   const R=roadDayReset();
   R.km+=km;
+  if(RD)RD.kmTrip=(RD.kmTrip||0)+km;
   if(R.cr>=ROAD_CR_CAP)return 0;
   const due=km*ROAD_CR_KM*roadCombo(moveT)*(RD&&RD.back?ROAD_BACK_K:1);
   RD&&(RD.crFrac=(RD.crFrac||0)+due);
   let n=RD?Math.floor(RD.crFrac):Math.floor(due);
   if(RD)RD.crFrac-=n;
   n=Math.min(n,ROAD_CR_CAP-R.cr);
-  if(n>0){R.cr+=n;earn(n,"road");}
+  if(n>0){R.cr+=n;RD&&(RD.crTrip=(RD.crTrip||0)+n);earn(n,"road");}
   return n;
 }
 function roadFinish(){
   const R=roadDayReset();
-  if(R.cr>0){
-    tell("money","Дорога: +"+R.cr+" кр за сегодня · "+R.km.toFixed(1)+" км","ДОРОГА\n+"+R.cr+" кр");
-    if(typeof recordAdd==="function")recordAdd("дорога","командировочные: "+R.cr+" кр за "+R.km.toFixed(0)+" км");
+  const cr=RD&&RD.crTrip?RD.crTrip:0, km=RD&&RD.kmTrip?RD.kmTrip:0;
+  if(cr>0){
+    /* сперва про поездку — про неё и спрашивают, — а сутки следом, чтобы было
+       видно, сколько ещё осталось до потолка */
+    tell("money","Дорога: +"+cr+" кр за поездку · "+km.toFixed(1)+" км"+
+      (R.cr>cr?" · за сутки "+R.cr+" из "+ROAD_CR_CAP:""),"ДОРОГА\n+"+cr+" кр");
+    if(typeof recordAdd==="function")
+      recordAdd("дорога","командировочные: "+cr+" кр за "+km.toFixed(0)+" км"+
+        (R.cr>cr?" (за сутки "+R.cr+")":""));
   }
 }
 /* ── датчики ── */
@@ -445,7 +458,7 @@ function roadTurnTick(kmh){
   if(R.cr>=ROAD_CR_CAP)return 0;
   let n=roadTurnPay(pk,roadCombo(RD.moveT)*(RD.back?ROAD_BACK_K:1));
   n=Math.min(n,ROAD_CR_CAP-R.cr);
-  if(n>0){R.cr+=n;earn(n,"road");RD.flash="ПОВОРОТ +"+n;RD.flashT=1.4;}
+  if(n>0){R.cr+=n;RD.crTrip=(RD.crTrip||0)+n;earn(n,"road");RD.flash="ПОВОРОТ +"+n;RD.flashT=1.4;}
   return n;
 }
 /* ── звук → настроение ──

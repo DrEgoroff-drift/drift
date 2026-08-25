@@ -21,7 +21,7 @@ function roadOpen(){
       lastPos:null,lastT:0,lastFrame:0,t0:Date.now(),asked:0,raf:0,moveT:0,stopT:0,crFrac:0,
       energy:.2,bright:.5,avg:.1,beat:0,beatT:0,wave:new Array(28).fill(.2),
       sparks:[],pulses:[],crShow:0,hintT:0,coins:[],crSeen:-1,
-      pos0:null,far:0,back:0,turnPk:0,flash:"",flashT:0,
+      pos0:null,far:0,back:0,turnPk:0,flash:"",flashT:0,crTrip:0,kmTrip:0,
       diag:/[?&]road=diag\b/.test(location.search)};
   roadDayReset();
   /* игровой звук молчит, пока открыт экран: он прорывался в музыку машины */
@@ -418,14 +418,14 @@ function drawRoad(ts){
   /* числа. Строки складываются курсором: чего нет — того нет, дыр не остаётся.
      На стоянке ни «—», ни «+0 кр» не висят (проход самокритики M168c) */
   const R=roadAll();
-  RD.crShow+=(R.cr-RD.crShow)*ease(.13);               /* счётчик тикает, не прыгает */
+  RD.crShow+=((RD.crTrip||0)-RD.crShow)*ease(.13);               /* счётчик тикает, не прыгает */
   /* начисление должно быть видно: за шесть минут съёмки счётчик вырос на четыре
      кредита и ничем себя не выдал. Каждый кредит теперь летит от корпуса в
      цифру — награда становится событием, оставаясь той же по величине (M168k) */
-  if(RD.crSeen<0)RD.crSeen=R.cr;
-  if(R.cr>RD.crSeen){
-    for(let k=Math.min(3,R.cr-RD.crSeen);k>0;k--)RD.coins.push({x:cx,y:cy,p:-(k-1)*.14});
-    RD.crSeen=R.cr;
+  if(RD.crSeen<0)RD.crSeen=RD.crTrip||0;
+  if((RD.crTrip||0)>RD.crSeen){
+    for(let k=Math.min(3,RD.crTrip-RD.crSeen);k>0;k--)RD.coins.push({x:cx,y:cy,p:-(k-1)*.14});
+    RD.crSeen=RD.crTrip;
   }
   const combo=roadCombo(RD.moveT);
   const px2=Math.round(W*.05),base=Math.round(H*.1),stand=spd<ROAD_VMIN;
@@ -457,13 +457,15 @@ function drawRoad(ts){
     }
     c.fillStyle="rgba(127,230,216,.6)";
   }
-  if(R.km>=.01){yy+=Math.round(H*.024);
-    let tl="за поездку "+roadTripRu(R.km);
+  /* «за поездку» и правда за поездку: прежде тут стояло суточное число под
+     этой подписью, и было непонятно, что вообще считается (вопрос автора) */
+  if((RD.kmTrip||0)>=.01){yy+=Math.round(H*.024);
+    let tl="за поездку "+roadTripRu(RD.kmTrip);
     if((RD.vmax||0)>ROAD_VMIN)tl+=" · макс "+roadCosmic(RD.vmax).toLocaleString("ru")+" км/с";
     while(tl.length>8&&c.measureText(tl).width>W-px2*2)tl=tl.replace(/ · [^·]*$/,"");
     c.fillText(tl,px2,yy);}
   /* счётчик: крупно, жёлтым, только когда деньги пошли; комбо — фишкой с ×1.2 */
-  if(R.cr>0||RD.crShow>.5){
+  if((RD.crTrip||0)>0||RD.crShow>.5){
     yy+=Math.round(H*.04);
     c.fillStyle="rgba(242,178,92,.95)";
     c.font=Math.round(H*.03)+"px ui-monospace,monospace";
@@ -486,6 +488,12 @@ function drawRoad(ts){
   }
   c.fillStyle="rgba(127,230,216,.5)";
   c.font=Math.round(H*.015)+"px ui-monospace,monospace";
+  /* сутки — тихой строкой под крупным числом поездки: крупно то, что
+     заработано сейчас, мелко — сколько уже собрано за день и где потолок.
+     Пока за сутки ровно столько же, сколько за поездку, строки нет: это
+     первая поездка дня, и повторять одно число дважды незачем */
+  if(R.cr>(RD.crTrip||0)&&R.cr<ROAD_CR_CAP){yy+=Math.round(H*.026);
+    c.fillText("за сутки "+R.cr.toLocaleString("ru")+" из "+ROAD_CR_CAP.toLocaleString("ru")+" кр",px2,yy);}
   if(R.cr>=ROAD_CR_CAP){yy+=Math.round(H*.026);
     c.fillText("дневной потолок собран — дальше просто красиво",px2,yy);}
   /* телефон лёг набок: экранная ось X встала к вертикали, «поперёк» не

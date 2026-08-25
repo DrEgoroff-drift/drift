@@ -361,3 +361,31 @@ TEST_SUITES.push(()=>suite("дорога: платят за то, что дел�
   eq(roadHav(A,A),0,"до себя — ноль");
   RD=null;G.road=null;
 }));
+
+TEST_SUITES.push(()=>suite("дорога: поездка и сутки — разные числа, и оба видны",()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  G.road=null;G.credits=600;G.record=null;
+  /* первая поездка дня */
+  roadOpen();
+  roadEarnKm(2,0);
+  eq(RD.crTrip,2*ROAD_CR_KM,"за поездку начислено по ставке");
+  ok(Math.abs(RD.kmTrip-2)<1e-9,"и километры поездки свои");
+  eq(roadAll().cr,RD.crTrip,"первая поездка дня: сутки равны поездке");
+  roadClose();
+  const dayCr=roadAll().cr;
+  /* вторая поездка того же дня начинает с нуля, а сутки продолжают */
+  roadOpen();
+  eq(RD.crTrip,0,"новая поездка — новый счёт");
+  eq(RD.kmTrip,0,"и километры с нуля");
+  eq(roadAll().cr,dayCr,"а сутки помнят прошлую поездку");
+  roadEarnKm(1,0);
+  eq(RD.crTrip,ROAD_CR_KM,"поездка считает только своё");
+  eq(roadAll().cr,dayCr+ROAD_CR_KM,"сутки складывают обе");
+  roadClose();
+  /* в журнале — поездка, и сутки рядом, раз они больше */
+  const e=recordAll().e.filter(x=>x.a==="дорога");
+  ok(e.length>=2,"каждая поездка оставляет свою строку: "+e.length);
+  ok(/за сутки/.test(e[e.length-1].s),"во второй строке видны и сутки: "+e[e.length-1].s);
+  G.road=null;
+}));
