@@ -208,6 +208,37 @@ order, and struck out as they close. This is the live queue — new finds go at 
    localStorage and from the cloud — so they stay at any version. Breaking now costs every
    existing save and buys almost nothing. **Held until the release look actually changes what is
    persisted**, then broken once, together with the cleanup. The author has the call.
+12. **"The instruments would sit better at the top"** — the author, 2026-08-25, looking at the
+   surface frame. Suit / pack / hold sit bottom-left and the planet card bottom-right, where A2
+   deliberately put them (0.143.0, M176: "the state moves down"). His eye now says the bottom edge
+   is the wrong home: on foot that band is already crowded — pads left and right, the console in
+   the middle, the action prompt over them — so the numbers land in the noisiest strip of the
+   frame, on the ground the walker is actually looking at. **The cost of the reversal, said before
+   doing it:** A2's argument was that the top edge belongs to the world (the postcard line, the
+   sky, and the two location tags КОРАБЛЬ / ПЕЩЕРА already live up there), so the state goes where
+   the eye is not. Moving it back up sets it beside those tags and re-opens what the pass closed.
+   This is not a repaint: decide **which** edge owns the state, then move every mode in one go
+   (surface, cave, dig, base, home, raid, flight, station), or the game grows two habits. The
+   author has the call; ask before touching A2's layout.
+13. **The raid reads as if the man stood on the ceiling** — the author, 2026-08-25, on the
+   pirate-base frame: «не очень понятно, посмотри на перспективу». The complaint is about the
+   legibility of the space, not about the bodies. Four suspects, in the order to check them
+   (`24aa-raid-draw`):
+   - **Pitch and principal point do one job twice.** The camera is tilted down
+     (`fwd=[…,-.16,…]`) *and* the principal point is lifted (`CY=H*.44`, M180). Shifting the
+     principal point is the architectural trick precisely because it keeps verticals straight
+     without a tilt; doing both leaves floor and ceiling converging at nearly the same rate, and a
+     plane that recedes upward stops reading as ground.
+   - **The value order is inverted.** The ceiling carries the light panels and the pale slabs, the
+     near floor is almost black — so the brightest receding plane in the frame is the one the man
+     is *not* standing on, and the eye takes that for the ground.
+   - **The player may be losing his contact shadow.** The pirates have theirs and read grounded;
+     the ellipse under the suit is drawn only when the floor point projects below the body
+     (`pm.y>m.p.y+4*s`), a guard this camera height can fail. Measure it before assuming it.
+   - **Hanging boxes look like floor boxes.** Crates on the upper wall carry the same silhouette,
+     tone and contour as the ones on the deck, so they add no up/down evidence either.
+   One frame is not a diagnosis: reproduce it on the stand (`docs/mkview.ps1`, `?s=raid`), and fix
+   the reading of the space — a horizon the floor alone owns — before touching anything else.
 
 ### Graphics debt (open faults, one line each)
 
