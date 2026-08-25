@@ -145,18 +145,23 @@ body:not(.inflight) .ipod{display:none}
 /* ══════════════ пэды ══════════════ */
 .pads{position:fixed;left:0;right:0;bottom:0;padding:0 14px calc(env(safe-area-inset-bottom) + 16px);
   display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;
-  transition:opacity .18s;--padscale:1}
+  transition:opacity .18s}
+/* Размеры приходят из JS (`padsFit`, `applyPadSize`) и ставятся НА САМ ряд.
+   Раньше `.pads` объявлял `--padscale:1` у себя, а applyPadSize писал
+   переменную в корень — собственное объявление всегда перекрывало
+   унаследованное, и настройка «Размер кнопок» не делала ничего. Здесь только
+   запасные значения в местах использования, никаких объявлений на `.pads`. */
 .pads.faded{opacity:.14}
-.pads>div>button,.pads>div{transform:scale(var(--padscale));transform-origin:bottom}
-.pads>div{display:flex;gap:10px;align-items:flex-end;pointer-events:auto}
+.pads>div>button,.pads>div{transform:scale(var(--padscale,1));transform-origin:bottom}
+.pads>div{display:flex;gap:var(--padgap,10px);align-items:flex-end;pointer-events:auto}
 /* Пэд — не круг с обводкой, а шайба под стеклом: внутрь уходит мягкий свет,
    по верхней кромке идёт блик, нажатие собирает свет в кольцо. Ободок
    рисуется отдельным слоем (::before), чтобы нажатие меняло его отдельно
    от тела кнопки — от этого и берётся ощущение хода, а не мигания цвета. */
 .pads button{-webkit-appearance:none;position:relative;isolation:isolate;
   background:radial-gradient(120% 120% at 50% 12%,rgba(127,230,216,.10),rgba(8,14,23,.60) 62%);
-  border:0;color:var(--phos);font-family:inherit;font-size:15px;width:56px;height:56px;
-  border-radius:50%;display:grid;place-items:center;backdrop-filter:blur(12px) saturate(1.1);
+  border:0;color:var(--phos);font-family:inherit;font-size:15px;width:var(--padw,56px);height:var(--padw,56px);
+  border-radius:50%;display:grid;place-items:center;backdrop-filter:blur(12px) saturate(1.1);flex:0 0 auto;
   transition:transform .14s var(--ease),box-shadow .18s var(--ease),color .18s;
   letter-spacing:.02em;line-height:1.1;padding:0 3px;
   box-shadow:var(--lift),inset 0 1px 0 rgba(190,245,255,.12)}
@@ -167,7 +172,7 @@ body:not(.inflight) .ipod{display:none}
   box-shadow:0 0 20px rgba(127,230,216,.32),inset 0 0 16px rgba(127,230,216,.22)}
 .pads button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 /* тяга крупнее прочего: её жмут чаще всех и держат */
-.pads button[data-k=thrust]{width:70px;height:70px;color:var(--amber);font-size:17px;
+.pads button[data-k=thrust]{width:calc(var(--padw,56px)*1.25);height:calc(var(--padw,56px)*1.25);color:var(--amber);font-size:17px;
   background:radial-gradient(120% 120% at 50% 12%,rgba(242,178,92,.14),rgba(10,12,18,.62) 62%)}
 .pads button[data-k=thrust]::before{border-color:rgba(242,178,92,.42)}
 .pads button[data-k=thrust].on::before{border-color:var(--amber);
@@ -440,11 +445,25 @@ input.vol::-moz-range-thumb{width:20px;height:20px;background:var(--phos);
 /* ── пояс: приборы уступают место обзору ── */
 body.inbelt .hud{opacity:0}
 body.inbelt #prompt{bottom:auto;top:29%}
+/* ── ▲▼ остаются поясными, и это единственное исключение ──
+   Их пробовали держать на месте погашенными (25.08.2026), но девять кнопок в
+   ряд на телефоне влезают только по 32 px — вдвое ниже правила «палец = 44».
+   Пояс и есть смена контура: меняется ракурс, уходят приборы, появляется
+   вертикаль как задача. Ряд меняет состав ровно здесь и больше нигде. */
 .beltonly{display:none!important}
 body.inbelt .beltonly{display:grid!important}
-body.inbelt .pads>div{gap:6px}
-body.inbelt .pads button{width:46px;height:46px;font-size:13px}
-body.inbelt .pads button[data-k=thrust]{width:58px;height:58px;font-size:14px}
+/* Размеры в поясе больше не прописаны руками: восемь кнопок вместо пяти —
+   это тот самый случай, ради которого `padsFit` и считает ширину. Жёсткие
+   46/58 px перебивали расчёт и мешали ему уложиться в кромку. */
+body.inbelt .pads button{font-size:13px}
+body.inbelt .pads button[data-k=thrust]{font-size:14px}
+/* крестовина: тангаж над поворотом (класс вешает `padsFit` на телефоне) */
+.pads>div.stack{display:grid;grid-template-columns:repeat(2,auto);
+  grid-auto-rows:auto;justify-items:center}
+.pads>div.stack button[data-k=pup]{order:1}
+.pads>div.stack button[data-k=pdown]{order:2}
+.pads>div.stack button[data-k=left]{order:3}
+.pads>div.stack button[data-k=right]{order:4}
 body.inbelt .pads button[data-k=act],
 body.inbelt .pads button[data-k=brake],
 body.inbelt .pads button[data-k=fire]{font-size:8px}
@@ -736,7 +755,10 @@ body.road #console{display:none}
    раскладка прыгала: палец запоминает место, а места то есть, то нет. Автор
    сказал прямо: «кнопки не исчезают на мобиле». Неприменимая кнопка теперь
    стоит там же, но погашена и не ловит нажатий — рука всегда знает, где что. */
-.pads button.off{opacity:.22;pointer-events:none}
+/* .22 читалось призраком — «кнопка почти пропала». Погашенная кнопка должна
+   читаться как ВЫКЛЮЧЕННАЯ вещь: тело видно, ободок виден, надпись тусклая. */
+.pads button.off{opacity:.38;pointer-events:none}
+.pads button.off::before{border-color:rgba(127,230,216,.16)}
 /* фишки комплекта (M167): класс — фишкой, новое — точкой; ничего не переносится */
 .kitchip{font-style:normal;color:var(--void);background:var(--dim);border-radius:6px;
   padding:0 5px;font-size:8px;letter-spacing:.08em;vertical-align:1px;white-space:nowrap}

@@ -7,6 +7,37 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.152.0 — the pads never go away (M182)
+
+«Пусть кнопки на мобиле всегда доступны, они пропадают и это пугает». M181 dimmed ТОРМОЗ and
+ДЕЙСТВИЕ instead of hiding them, but four separate mechanisms were still making buttons vanish,
+and the loudest one was not on any list:
+
+- **A touch on the world faded the whole row.** The "auto" pad mode was written for a desktop:
+  reach for the keyboard, the screen clears. But a browser fires a compatibility `mousemove` for
+  every touch, so on a phone **any** poke at the world dropped all pads to `opacity:.14`. Auto-fade
+  now never runs on a phone (`padsAuto`); the explicit «СКРЫТЬ» setting still works everywhere.
+- **ОГОНЬ and РАКЕТА jumped the row.** They were shown only where they could fire, so an armed
+  player leaving the system lost ОГОНЬ, the row re-packed, and ПРЫЖОК moved under the thumb. The
+  rule is now: **what the ship can do at all keeps its place** (dimmed when inapplicable); what the
+  ship does not have takes no space — that is not "vanished", it never existed. Mount a gun and the
+  button appears once and stays.
+- **The row could not fit and nobody had measured it.** With six buttons at a fixed 56 px the last
+  one ran off a 375 px screen — and had been doing so before this change. Button size is now
+  computed from how many are standing (`padsFit`), from 56 px down to the 44 px finger rule and
+  never below; it re-fits on rotation.
+- **The belt's eight buttons** (pitch, yaw, fire, brake, cutter, thrust — all live) do not fit in
+  one row at any legal size, so the left group folds into a D-pad: pitch above, yaw below. ◀▶ and
+  everything to the right now sit at the **same coordinates in flight, on foot and in the belt** —
+  guarded by a test that compares positions across modes.
+- Found on the way: `.pads` declared `--padscale` on itself while `applyPadSize` wrote it to the
+  root, so its own declaration always won — **the «Размер кнопок» setting had been doing nothing**.
+  The variables now live on the row itself.
+
+A dimmed button also went from `.22` to `.38`: at a fifth it read as a ghost, which is the very
+thing the author was pointing at.
+
+---
 ## 0.151.0 — the sky measured by the narrow side (M178, the author's morning screenshot)
 
 Two faults from the author's phone screenshot, both real and both about scale:

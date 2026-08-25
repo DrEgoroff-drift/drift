@@ -231,19 +231,37 @@ function hud(){
     setSt($bBrk,"opacity","");
   }
   setTx($nav,(G.mode==="belt"||G.mode==="scoop"||G.mode==="homein")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
-  /* под землёй ОГОНЬ — это импульсный разрядник, он есть всегда */
-  setSt($fire,"display",(G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed))?"":"none");
+  /* ── состав ряда не меняется на ходу (автор, 25.08.2026) ──
+     Правило M181 доводится до конца: ОГОНЬ и РАКЕТА тоже прыгали. У
+     вооружённого игрока при уходе из системы кнопка ОГОНЬ ПРОПАДАЛА, ряд
+     перестраивался, и ПРЫЖОК с ДЕЙСТВИЕМ уезжали под пальцем на новое место.
+     Граница простая: **что корабль в принципе умеет — стоит всегда** (сейчас
+     неприменимо — погашено); чего у корабля нет вовсе — места не занимает,
+     это не «пропало», этого никогда и не было. Поставил пушку — кнопка
+     появилась один раз и осталась.
+     Под землёй ОГОНЬ — импульсный разрядник, он есть всегда. */
+  const fireHas=G.mode==="dig"||st.armed;
+  const fireOn=G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed);
+  setSt($fire,"display",fireHas?"":"none");
+  $fire.classList.toggle("off",fireHas&&!fireOn);
   if(G.mode==="dig")setTx($fire,(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС");
   else setTx($fire,"ОГОНЬ");
-  /* ракета показывается только там, где ею можно выстрелить, и на кнопке стоит
-     не «готово», а остаток в трюме: боеприпас — это груз, и он тает */
+  /* ракета: на кнопке не «готово», а остаток в трюме — боеприпас это груз,
+     и он тает */
   if($msl){
-    const on=G.mode==="system"&&st.launcher;
-    setSt($msl,"display",on?"":"none");
-    if(on)setTx($msl,(G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0)));
+    const has=!!st.launcher, on=G.mode==="system"&&has;
+    setSt($msl,"display",has?"":"none");
+    $msl.classList.toggle("off",has&&!on);
+    if(has)setTx($msl,(on&&G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0)));
     $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");
+  /* состав ряда меняется редко (поставили пушку, вошли в пояс) — пересчитываем
+     ширину кнопок только тогда, а не каждый кадр */
+  {
+    const key=(fireHas?"f":"")+((st.launcher)?"m":"")+(G.mode==="belt"?"b":"");
+    if(key!==PAD_KEY){PAD_KEY=key;padsFit();}
+  }
   /* ── на ногах (релизный вид, проход 1) ──
      Приборы корабля висели над КАЖДЫМ экраном. Правило стиля говорит «над
      миром — только то, что нужно сейчас», и на поверхности, в пещере, в

@@ -180,6 +180,12 @@ through, waited out until night, or opened on a phone.
   timers, so the probe measures the fast-forward. `docs/g11.ps1` runs `?g11`
   correctly; it also leaves the GPU on, because `--disable-gpu` reads ~10 fps in
   every mode and tells you nothing.
+- **`docs/pageshot.ps1` does not give an honest narrow width.** Asked for 430×800 it writes a
+  430 px PNG, but the page inside is laid out wider and the shot is a crop — the right rail and the
+  last pad look cut off when in the real viewport they are not (measured 25.08.2026: rail right
+  edge 418 of 430). For anything about the screen's edge — pads, rail, overlap — measure
+  `getBoundingClientRect()` in the browser pane at a set viewport, or run `test.ps1 -Mobile`.
+  Use `pageshot` for how things *look*, never for whether they *fit*.
 - **Long shell one-liners with quotes get mangled.** Write a script to the
   scratchpad and run it instead — a `Remove-Item` once received `"C:\Program`
   as its path.

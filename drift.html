@@ -159,18 +159,23 @@ body:not(.inflight) .ipod{display:none}
 /* ══════════════ пэды ══════════════ */
 .pads{position:fixed;left:0;right:0;bottom:0;padding:0 14px calc(env(safe-area-inset-bottom) + 16px);
   display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;
-  transition:opacity .18s;--padscale:1}
+  transition:opacity .18s}
+/* Размеры приходят из JS (`padsFit`, `applyPadSize`) и ставятся НА САМ ряд.
+   Раньше `.pads` объявлял `--padscale:1` у себя, а applyPadSize писал
+   переменную в корень — собственное объявление всегда перекрывало
+   унаследованное, и настройка «Размер кнопок» не делала ничего. Здесь только
+   запасные значения в местах использования, никаких объявлений на `.pads`. */
 .pads.faded{opacity:.14}
-.pads>div>button,.pads>div{transform:scale(var(--padscale));transform-origin:bottom}
-.pads>div{display:flex;gap:10px;align-items:flex-end;pointer-events:auto}
+.pads>div>button,.pads>div{transform:scale(var(--padscale,1));transform-origin:bottom}
+.pads>div{display:flex;gap:var(--padgap,10px);align-items:flex-end;pointer-events:auto}
 /* Пэд — не круг с обводкой, а шайба под стеклом: внутрь уходит мягкий свет,
    по верхней кромке идёт блик, нажатие собирает свет в кольцо. Ободок
    рисуется отдельным слоем (::before), чтобы нажатие меняло его отдельно
    от тела кнопки — от этого и берётся ощущение хода, а не мигания цвета. */
 .pads button{-webkit-appearance:none;position:relative;isolation:isolate;
   background:radial-gradient(120% 120% at 50% 12%,rgba(127,230,216,.10),rgba(8,14,23,.60) 62%);
-  border:0;color:var(--phos);font-family:inherit;font-size:15px;width:56px;height:56px;
-  border-radius:50%;display:grid;place-items:center;backdrop-filter:blur(12px) saturate(1.1);
+  border:0;color:var(--phos);font-family:inherit;font-size:15px;width:var(--padw,56px);height:var(--padw,56px);
+  border-radius:50%;display:grid;place-items:center;backdrop-filter:blur(12px) saturate(1.1);flex:0 0 auto;
   transition:transform .14s var(--ease),box-shadow .18s var(--ease),color .18s;
   letter-spacing:.02em;line-height:1.1;padding:0 3px;
   box-shadow:var(--lift),inset 0 1px 0 rgba(190,245,255,.12)}
@@ -181,7 +186,7 @@ body:not(.inflight) .ipod{display:none}
   box-shadow:0 0 20px rgba(127,230,216,.32),inset 0 0 16px rgba(127,230,216,.22)}
 .pads button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 /* тяга крупнее прочего: её жмут чаще всех и держат */
-.pads button[data-k=thrust]{width:70px;height:70px;color:var(--amber);font-size:17px;
+.pads button[data-k=thrust]{width:calc(var(--padw,56px)*1.25);height:calc(var(--padw,56px)*1.25);color:var(--amber);font-size:17px;
   background:radial-gradient(120% 120% at 50% 12%,rgba(242,178,92,.14),rgba(10,12,18,.62) 62%)}
 .pads button[data-k=thrust]::before{border-color:rgba(242,178,92,.42)}
 .pads button[data-k=thrust].on::before{border-color:var(--amber);
@@ -454,11 +459,25 @@ input.vol::-moz-range-thumb{width:20px;height:20px;background:var(--phos);
 /* ── пояс: приборы уступают место обзору ── */
 body.inbelt .hud{opacity:0}
 body.inbelt #prompt{bottom:auto;top:29%}
+/* ── ▲▼ остаются поясными, и это единственное исключение ──
+   Их пробовали держать на месте погашенными (25.08.2026), но девять кнопок в
+   ряд на телефоне влезают только по 32 px — вдвое ниже правила «палец = 44».
+   Пояс и есть смена контура: меняется ракурс, уходят приборы, появляется
+   вертикаль как задача. Ряд меняет состав ровно здесь и больше нигде. */
 .beltonly{display:none!important}
 body.inbelt .beltonly{display:grid!important}
-body.inbelt .pads>div{gap:6px}
-body.inbelt .pads button{width:46px;height:46px;font-size:13px}
-body.inbelt .pads button[data-k=thrust]{width:58px;height:58px;font-size:14px}
+/* Размеры в поясе больше не прописаны руками: восемь кнопок вместо пяти —
+   это тот самый случай, ради которого `padsFit` и считает ширину. Жёсткие
+   46/58 px перебивали расчёт и мешали ему уложиться в кромку. */
+body.inbelt .pads button{font-size:13px}
+body.inbelt .pads button[data-k=thrust]{font-size:14px}
+/* крестовина: тангаж над поворотом (класс вешает `padsFit` на телефоне) */
+.pads>div.stack{display:grid;grid-template-columns:repeat(2,auto);
+  grid-auto-rows:auto;justify-items:center}
+.pads>div.stack button[data-k=pup]{order:1}
+.pads>div.stack button[data-k=pdown]{order:2}
+.pads>div.stack button[data-k=left]{order:3}
+.pads>div.stack button[data-k=right]{order:4}
 body.inbelt .pads button[data-k=act],
 body.inbelt .pads button[data-k=brake],
 body.inbelt .pads button[data-k=fire]{font-size:8px}
@@ -750,7 +769,10 @@ body.road #console{display:none}
    раскладка прыгала: палец запоминает место, а места то есть, то нет. Автор
    сказал прямо: «кнопки не исчезают на мобиле». Неприменимая кнопка теперь
    стоит там же, но погашена и не ловит нажатий — рука всегда знает, где что. */
-.pads button.off{opacity:.22;pointer-events:none}
+/* .22 читалось призраком — «кнопка почти пропала». Погашенная кнопка должна
+   читаться как ВЫКЛЮЧЕННАЯ вещь: тело видно, ободок виден, надпись тусклая. */
+.pads button.off{opacity:.38;pointer-events:none}
+.pads button.off::before{border-color:rgba(127,230,216,.16)}
 /* фишки комплекта (M167): класс — фишкой, новое — точкой; ничего не переносится */
 .kitchip{font-style:normal;color:var(--void);background:var(--dim);border-radius:6px;
   padding:0 5px;font-size:8px;letter-spacing:.08em;vertical-align:1px;white-space:nowrap}
@@ -1010,7 +1032,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.151.0";
+const VER="0.152.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -23692,14 +23714,69 @@ function cloudBoot(then){
 /* в режиме «авто» клавиатура/мышь гасят пэды сразу, а касание любого пэда
    возвращает их — на компьютере экран остаётся чистым, на телефоне всё как раньше */
 const $padsEl=document.querySelector(".pads");
-function applyPadSize(){document.documentElement.style.setProperty("--padscale",G.opts.padSize);}
+/* переменные ставятся на САМ ряд: `.pads` — их владелец, и его собственное
+   объявление перекрывало всё, что писалось в корень (на этом настройка
+   «Размер кнопок» молча не работала до 25.08.2026) */
+function applyPadSize(){$padsEl.style.setProperty("--padscale",G.opts.padSize);padsFit();}
+/* ── ряд подгоняется под экран, а не выпихивает кнопки за кромку ──
+   Когда ОГОНЬ и РАКЕТА перестали исчезать (25.08.2026), в ряду стало шесть-семь
+   кнопок вместо пяти, и на узком телефоне последняя — ПРЫЖОК — уезжала за
+   правый край. Ширина кнопки теперь считается от того, сколько их сейчас
+   стоит: базовые 56 px, если помещаются, и до 44 px (правило «палец»), если
+   нет. Меньше 44 не бывает: скорее ряд встанет впритык, чем появится кнопка,
+   в которую не попасть. */
+/* null, а не "": первый же кадр в обычном режиме даёт ключ "", и с пустой
+   начальной строкой расчёт не запускался НИ РАЗУ — ряд жил на запасных 56 px
+   и на узком телефоне уезжал за кромку */
+let PAD_KEY=null;
+function padsFit(){
+  if(!$padsEl)return;
+  const groupEls=[...$padsEl.children];
+  const vis=d=>[...d.querySelectorAll("button")].filter(b=>getComputedStyle(b).display!=="none");
+  /* ── крестовина в поясе ──
+     В поясе живы все восемь кнопок (тангаж, поворот, огонь, тормоз, резак,
+     тяга) — в один ряд на телефоне они не встают даже по 44 px. Левая группа
+     складывается в квадрат: сверху тангаж, снизу поворот. Большому пальцу так
+     даже привычнее — это крестовина, а не строка. */
+  const belt=document.body.classList.contains("inbelt")&&innerWidth<=760;
+  groupEls[0].classList.toggle("stack",belt);
+  const btns=groupEls.flatMap(vis);
+  if(!btns.length)return;
+  /* ширину ряда задаёт самая широкая колонка каждой группы, а не общее число
+     кнопок: сложенная группа занимает вдвое меньше места */
+  let units=0,gaps=0;
+  for(const d of groupEls){
+    const n=vis(d).length;if(!n)continue;
+    const cols=d.classList.contains("stack")?Math.ceil(n/2):n;
+    const big=vis(d).filter(b=>b.dataset.k==="thrust").length&&!d.classList.contains("stack")?1:0;
+    units+=(cols-big)+big*1.25;               /* ПРЫЖОК шире прочих в 1.25 */
+    gaps+=cols-1;
+  }
+  const scale=+(G.opts&&G.opts.padSize||1);
+  /* 28 — боковые поля ряда, 16 — минимальный просвет между группами */
+  const avail=(innerWidth-28-16)/Math.max(scale,.5);
+  let gap=10, w=(avail-gaps*gap)/units;
+  if(w<44){gap=6;w=(avail-gaps*gap)/units;}
+  w=clamp(w,44,56);
+  $padsEl.style.setProperty("--padw",Math.round(w)+"px");
+  $padsEl.style.setProperty("--padgap",gap+"px");
+}
+addEventListener("resize",padsFit);
+/* ── на телефоне пэды не гаснут никогда (автор, 25.08.2026) ──
+   «Авто» задумано для компьютера: взялся за клавиатуру — экран чистый. Но
+   касание холста браузер дублирует совместимым mousemove, поэтому на телефоне
+   ЛЮБОЙ тычок в мир гасил весь ряд до .14 — палец жмёт туда, где кнопки уже
+   почти нет. На телефоне пэды — единственный способ управлять, гасить их
+   нечем и незачем. */
+function padsAuto(){return G.opts.pads==="auto"&&!document.body.classList.contains("mobile");}
+/* «СКРЫТЬ» — осознанный выбор в настройках, он работает везде; само гаснуть
+   на телефоне не должно ничто */
 function applyPadMode(){
   if(G.opts.pads==="hide"){$padsEl.classList.add("faded");return;}
-  if(G.opts.pads==="always"){$padsEl.classList.remove("faded");return;}
   $padsEl.classList.remove("faded");
 }
-function padsFadeOut(){if(G.opts.pads==="auto")$padsEl.classList.add("faded");}
-function padsFadeIn(){if(G.opts.pads==="auto")$padsEl.classList.remove("faded");}
+function padsFadeOut(){if(padsAuto())$padsEl.classList.add("faded");}
+function padsFadeIn(){if(padsAuto())$padsEl.classList.remove("faded");}
 addEventListener("keydown",padsFadeOut,{capture:true});
 /* первый же ввод любого рода снимает блокировку автоплея — раньше нельзя */
 for(const ev of ["pointerdown","keydown","touchstart"])
@@ -48201,19 +48278,37 @@ function hud(){
     setSt($bBrk,"opacity","");
   }
   setTx($nav,(G.mode==="belt"||G.mode==="scoop"||G.mode==="homein")?"ВЫХОД":(G.mode==="map"?"НАЗАД":"КАРТА"));
-  /* под землёй ОГОНЬ — это импульсный разрядник, он есть всегда */
-  setSt($fire,"display",(G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed))?"":"none");
+  /* ── состав ряда не меняется на ходу (автор, 25.08.2026) ──
+     Правило M181 доводится до конца: ОГОНЬ и РАКЕТА тоже прыгали. У
+     вооружённого игрока при уходе из системы кнопка ОГОНЬ ПРОПАДАЛА, ряд
+     перестраивался, и ПРЫЖОК с ДЕЙСТВИЕМ уезжали под пальцем на новое место.
+     Граница простая: **что корабль в принципе умеет — стоит всегда** (сейчас
+     неприменимо — погашено); чего у корабля нет вовсе — места не занимает,
+     это не «пропало», этого никогда и не было. Поставил пушку — кнопка
+     появилась один раз и осталась.
+     Под землёй ОГОНЬ — импульсный разрядник, он есть всегда. */
+  const fireHas=G.mode==="dig"||st.armed;
+  const fireOn=G.mode==="dig"||((G.mode==="system"||G.mode==="belt")&&st.armed);
+  setSt($fire,"display",fireHas?"":"none");
+  $fire.classList.toggle("off",fireHas&&!fireOn);
   if(G.mode==="dig")setTx($fire,(G.dig&&G.dig.zap>0)?Math.ceil(G.dig.zap/60)+"с":"ИМПУЛЬС");
   else setTx($fire,"ОГОНЬ");
-  /* ракета показывается только там, где ею можно выстрелить, и на кнопке стоит
-     не «готово», а остаток в трюме: боеприпас — это груз, и он тает */
+  /* ракета: на кнопке не «готово», а остаток в трюме — боеприпас это груз,
+     и он тает */
   if($msl){
-    const on=G.mode==="system"&&st.launcher;
-    setSt($msl,"display",on?"":"none");
-    if(on)setTx($msl,(G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0)));
+    const has=!!st.launcher, on=G.mode==="system"&&has;
+    setSt($msl,"display",has?"":"none");
+    $msl.classList.toggle("off",has&&!on);
+    if(has)setTx($msl,(on&&G.mslCool>0)?"…":("РАКЕТА "+(G.cargo.missile|0)));
     $msl.classList.toggle("empty",on&&(G.cargo.missile|0)<=0);
   }
   document.body.classList.toggle("inbelt",G.mode==="belt");
+  /* состав ряда меняется редко (поставили пушку, вошли в пояс) — пересчитываем
+     ширину кнопок только тогда, а не каждый кадр */
+  {
+    const key=(fireHas?"f":"")+((st.launcher)?"m":"")+(G.mode==="belt"?"b":"");
+    if(key!==PAD_KEY){PAD_KEY=key;padsFit();}
+  }
   /* ── на ногах (релизный вид, проход 1) ──
      Приборы корабля висели над КАЖДЫМ экраном. Правило стиля говорит «над
      миром — только то, что нужно сейчас», и на поверхности, в пещере, в

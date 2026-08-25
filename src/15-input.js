@@ -2,14 +2,69 @@
 /* в режиме «авто» клавиатура/мышь гасят пэды сразу, а касание любого пэда
    возвращает их — на компьютере экран остаётся чистым, на телефоне всё как раньше */
 const $padsEl=document.querySelector(".pads");
-function applyPadSize(){document.documentElement.style.setProperty("--padscale",G.opts.padSize);}
+/* переменные ставятся на САМ ряд: `.pads` — их владелец, и его собственное
+   объявление перекрывало всё, что писалось в корень (на этом настройка
+   «Размер кнопок» молча не работала до 25.08.2026) */
+function applyPadSize(){$padsEl.style.setProperty("--padscale",G.opts.padSize);padsFit();}
+/* ── ряд подгоняется под экран, а не выпихивает кнопки за кромку ──
+   Когда ОГОНЬ и РАКЕТА перестали исчезать (25.08.2026), в ряду стало шесть-семь
+   кнопок вместо пяти, и на узком телефоне последняя — ПРЫЖОК — уезжала за
+   правый край. Ширина кнопки теперь считается от того, сколько их сейчас
+   стоит: базовые 56 px, если помещаются, и до 44 px (правило «палец»), если
+   нет. Меньше 44 не бывает: скорее ряд встанет впритык, чем появится кнопка,
+   в которую не попасть. */
+/* null, а не "": первый же кадр в обычном режиме даёт ключ "", и с пустой
+   начальной строкой расчёт не запускался НИ РАЗУ — ряд жил на запасных 56 px
+   и на узком телефоне уезжал за кромку */
+let PAD_KEY=null;
+function padsFit(){
+  if(!$padsEl)return;
+  const groupEls=[...$padsEl.children];
+  const vis=d=>[...d.querySelectorAll("button")].filter(b=>getComputedStyle(b).display!=="none");
+  /* ── крестовина в поясе ──
+     В поясе живы все восемь кнопок (тангаж, поворот, огонь, тормоз, резак,
+     тяга) — в один ряд на телефоне они не встают даже по 44 px. Левая группа
+     складывается в квадрат: сверху тангаж, снизу поворот. Большому пальцу так
+     даже привычнее — это крестовина, а не строка. */
+  const belt=document.body.classList.contains("inbelt")&&innerWidth<=760;
+  groupEls[0].classList.toggle("stack",belt);
+  const btns=groupEls.flatMap(vis);
+  if(!btns.length)return;
+  /* ширину ряда задаёт самая широкая колонка каждой группы, а не общее число
+     кнопок: сложенная группа занимает вдвое меньше места */
+  let units=0,gaps=0;
+  for(const d of groupEls){
+    const n=vis(d).length;if(!n)continue;
+    const cols=d.classList.contains("stack")?Math.ceil(n/2):n;
+    const big=vis(d).filter(b=>b.dataset.k==="thrust").length&&!d.classList.contains("stack")?1:0;
+    units+=(cols-big)+big*1.25;               /* ПРЫЖОК шире прочих в 1.25 */
+    gaps+=cols-1;
+  }
+  const scale=+(G.opts&&G.opts.padSize||1);
+  /* 28 — боковые поля ряда, 16 — минимальный просвет между группами */
+  const avail=(innerWidth-28-16)/Math.max(scale,.5);
+  let gap=10, w=(avail-gaps*gap)/units;
+  if(w<44){gap=6;w=(avail-gaps*gap)/units;}
+  w=clamp(w,44,56);
+  $padsEl.style.setProperty("--padw",Math.round(w)+"px");
+  $padsEl.style.setProperty("--padgap",gap+"px");
+}
+addEventListener("resize",padsFit);
+/* ── на телефоне пэды не гаснут никогда (автор, 25.08.2026) ──
+   «Авто» задумано для компьютера: взялся за клавиатуру — экран чистый. Но
+   касание холста браузер дублирует совместимым mousemove, поэтому на телефоне
+   ЛЮБОЙ тычок в мир гасил весь ряд до .14 — палец жмёт туда, где кнопки уже
+   почти нет. На телефоне пэды — единственный способ управлять, гасить их
+   нечем и незачем. */
+function padsAuto(){return G.opts.pads==="auto"&&!document.body.classList.contains("mobile");}
+/* «СКРЫТЬ» — осознанный выбор в настройках, он работает везде; само гаснуть
+   на телефоне не должно ничто */
 function applyPadMode(){
   if(G.opts.pads==="hide"){$padsEl.classList.add("faded");return;}
-  if(G.opts.pads==="always"){$padsEl.classList.remove("faded");return;}
   $padsEl.classList.remove("faded");
 }
-function padsFadeOut(){if(G.opts.pads==="auto")$padsEl.classList.add("faded");}
-function padsFadeIn(){if(G.opts.pads==="auto")$padsEl.classList.remove("faded");}
+function padsFadeOut(){if(padsAuto())$padsEl.classList.add("faded");}
+function padsFadeIn(){if(padsAuto())$padsEl.classList.remove("faded");}
 addEventListener("keydown",padsFadeOut,{capture:true});
 /* первый же ввод любого рода снимает блокировку автоплея — раньше нельзя */
 for(const ev of ["pointerdown","keydown","touchstart"])

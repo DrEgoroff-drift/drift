@@ -686,8 +686,10 @@ self-criticism, per the cross-cutting rule.
   state and place rows; the phone prompt no longer sits under the console. **Morning screenshot
   round (0.151.0):** far ridges scale with the frame's width (no more «гора в полкадра» in
   portrait), sky bodies measure by the narrow side and their parallax is unclamped (the hole no
-  longer follows the ship on approach). **Still open for later passes:** the rain is one uniform
-  speed everywhere.
+  longer follows the ship on approach). **Pads round (0.152.0, M182):** nothing fades itself on a
+  phone any more, ОГОНЬ/РАКЕТА keep their place, button width is computed to fit the screen
+  (44 px floor), the belt's left group folds into a D-pad, and the «Размер кнопок» setting works
+  for the first time. **Still open for later passes:** the rain is one uniform speed everywhere.
 - **M179 — the inventory as a tray** — **done (0.148.0)**: `27j-ui-hold`, the ТРЮМ tab on the
   desk lane — every resource a pile whose size answers "how much" without numbers, a form per
   material, people sitting on the edge. Paper stays for what is read. **Left open:** the suit kit
