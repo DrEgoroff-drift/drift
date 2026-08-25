@@ -76,7 +76,8 @@ function enterBase(p){
   G.base.x=cellX(G.base.cur);G.base.y=cellY(0);
   G.mode="base";
   for(const k in keys)keys[k]=false;
-  say("База «"+p.name+"»\n◀ ▶ — переход · ▲ ▼ — уровни\nДЕЙСТВИЕ — строить в пустой ячейке · НАЗАД — наружу");
+  /* имя базы стоит в сводке места — здесь только то, как тут ходить */
+  say("◀ ▶ — переход · ▲ ▼ — уровни\nДЕЙСТВИЕ — строить в пустой ячейке · НАЗАД — наружу");
 }
 function exitBase(){
   G.base=null;G.mode="surface";

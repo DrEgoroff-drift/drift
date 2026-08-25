@@ -164,7 +164,12 @@ function enterSurface(){
   if(!sl&&typeof planGroundLine==="function")sl=planGroundLine();      // план (11r)
   if(!sl&&typeof retGroundLine==="function")sl=retGroundLine();        // возвращение (11s)
   if(sl)logAdd("dim",sl);
-  say(p.name+"\n"+p.T.ru+"\nзалежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
+  /* Имя планеты и её тип сюда не повторяем: они стоят в сводке места, у
+     правой верхней кромки, и стоят там всё время, пока мы здесь. Пока приборы
+     гасли до трети, дубль был незаметен; вернувшись наверх, сводка стала
+     читаться — и на кадре оказалось, что игра дважды в одном экране называет
+     одно и то же. Сообщение говорит только то, чего в сводке нет. */
+  say("залежей: "+deposits.length+(sl?"\n"+sl:""),sl?320:150);
 }
 function updateSurface(dt){
   const S=G.surf,tr=S.tr,st=stat();

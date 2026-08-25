@@ -492,10 +492,19 @@ function drawRoad(ts){
      заработано сейчас, мелко — сколько уже собрано за день и где потолок.
      Пока за сутки ровно столько же, сколько за поездку, строки нет: это
      первая поездка дня, и повторять одно число дважды незачем */
+  /* ранг: он растёт месяцами, поэтому должен быть виден всегда — и рядом
+     сколько до следующего, иначе прогрессия существует только в коде */
+  {
+    const rk=roadRank(R.total);
+    yy+=Math.round(H*.026);
+    let rl=rk.ru+(rk.k>1?" ×"+rk.k:"")+(rk.next?" · "+rk.next+" через "+Math.ceil(rk.left)+" км":"");
+    while(rl.length>8&&c.measureText(rl).width>W-px2*2)rl=rl.replace(/ · [^·]*$/,"");
+    c.fillText(rl,px2,yy);
+  }
   if(R.bank>=1){
-    let dl=(R.cr>(RD.crTrip||0)?"за сутки "+R.cr.toLocaleString("ru")+" · ":"")+
-      "запас "+Math.floor(R.bank).toLocaleString("ru")+" кр";
-    if(dl){yy+=Math.round(H*.026);c.fillText(dl,px2,yy);}
+    yy+=Math.round(H*.026);
+    c.fillText((R.cr>(RD.crTrip||0)?"за сутки "+R.cr.toLocaleString("ru")+" · ":"")+
+      "запас "+Math.floor(R.bank).toLocaleString("ru")+" кр",px2,yy);
   }else{yy+=Math.round(H*.026);
     c.fillText("запас исчерпан — натечёт к завтрашнему дню, а пока просто красиво",px2,yy);}
   /* телефон лёг набок: экранная ось X встала к вертикали, «поперёк» не

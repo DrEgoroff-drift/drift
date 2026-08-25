@@ -184,7 +184,8 @@ function enterRaid(PB){
     walkPhase:0,hurt:0,flash:0,shots:[],exit:[sx0,sz0],level:PB.level};
   G.mode="raid";G.ap=null;
   for(const k in keys)keys[k]=false;
-  say("Абордаж · "+PB.name+"\n◀ ▶ — поворот · ▲ ▼ — ход\nОГОНЬ — стрельба · вернитесь в ангар и ДЕЙСТВИЕ — уход");
+  /* имя базы и счёт живых стоят в сводке места — здесь только управление */
+  say("◀ ▶ — поворот · ▲ ▼ — ход\nОГОНЬ — стрельба · вернитесь в ангар и ДЕЙСТВИЕ — уход");
 }
 function raidLeave(msg,lostShare){
   const S=G.raid;if(!S)return;
@@ -308,7 +309,10 @@ function updateRaid(dt){
   const atExit=Math.hypot(S.exit[0]-S.x,S.exit[1]-S.z)<70;
   const alive=S.foes.filter(f=>f.hp>0).length;
   if(near){
-    G.prompt="СКАФАНДР "+Math.round(S.suit)+"% · ДЕЙСТВИЕ — ВСКРЫТЬ КОНТЕЙНЕР";
+    /* Скафандр отсюда убран: он стоит шкалой наверху, крупно и с цветом
+       тревоги. Правило разделения — наверху то, что держит в живых; у рук
+       то, что тратит текущее действие (заряды, броня, сумка). */
+    G.prompt="ДЕЙСТВИЕ — ВСКРЫТЬ КОНТЕЙНЕР";
     if(actEdge){
       near.taken=true;
       if(near.kind==="part"){
@@ -326,13 +330,13 @@ function updateRaid(dt){
       }
     }
   }else if(atExit){
-    G.prompt="СКАФАНДР "+Math.round(S.suit)+"% · АНГАР · ДЕЙСТВИЕ — УХОД С ДОБЫЧЕЙ"+
+    G.prompt="АНГАР · ДЕЙСТВИЕ — УХОД С ДОБЫЧЕЙ"+
       "\nв сумке: техкомпонентов "+S.bag.tech+", данных "+S.bag.data+
       (S.bag.parts.length?", частей "+S.bag.parts.length:"")+
       (alive?"\nна базе ещё "+alive+" стволов":"\nбаза зачищена");
     if(actEdge){raidLeave(alive?"Уход с базы":"База зачищена",0);return;}
   }else{
-    G.prompt="СКАФАНДР "+Math.round(S.suit)+"% · ЗАРЯДОВ "+S.ammo+
+    G.prompt="ЗАРЯДОВ "+S.ammo+
       (S.armor>0?" · БРОНЯ −"+Math.round(S.armor*100)+"%":"")+" · ЖИВЫХ "+alive+
       "\nтехкомпонентов "+S.bag.tech+" · данных "+S.bag.data+
       (!st.armed?"\nОРУЖИЯ НЕТ — ПОСТАВЬТЕ ПУШКУ НА КОРАБЛЬ":

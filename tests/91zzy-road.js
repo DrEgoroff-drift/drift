@@ -31,7 +31,8 @@ TEST_SUITES.push(()=>suite("дорога: километры — в кредит
   const c1=G.credits;roadEarnKm(50,0);
   eq(G.credits,c1,"из пустого бака не капает");
   /* назавтра заново: день календарный, поэтому двигаем отметку дня, а не G.t */
-  roadAll().day=-1;roadAll().bank=999;roadEarnKm(1,0);
+  roadAll().day=-1;roadAll().bank=999;roadAll().total=0;   /* ранг здесь ни при чём: проверяем смену дня */
+  RD.crFrac=0;roadEarnKm(1,0);
   eq(roadAll().cr,ROAD_CR_KM,"новый день — новый счёт");
   /* сохранение */
   const s=snapshot();G.road=null;applySave(JSON.parse(JSON.stringify(s)));
@@ -423,5 +424,43 @@ TEST_SUITES.push(()=>suite("дорога: не потолок, а запас —
   roadEarnKm(300,ROAD_COMBO_T);               /* дача: три сотни километров */
   ok(G.credits-c0>4000,"дача оплачена из накопленного: +"+(G.credits-c0));
   ok(roadAll().bank<saved,"и бак на это потрачен");
+  RD=null;G.road=null;
+}));
+
+TEST_SUITES.push(()=>suite("дорога: прогрессия — кто больше наездил, больше зарабатывает",()=>{
+  resetWorld();
+  G.road=null;
+  /* ранги идут по НАСТОЯЩЕМУ пробегу за всё время */
+  eq(roadRank(0).ru,"НОВИЧОК","с нуля — новичок");
+  eq(roadRank(0).k,1,"и без надбавки");
+  eq(roadRank(99).ru,"НОВИЧОК","до порога ранг не меняется");
+  eq(roadRank(100).ru,"ПОПУТЧИК","ровно на пороге — уже следующий");
+  eq(roadRank(1000).ru,"ХОДОК","тысяча километров — ходок");
+  eq(roadRank(1e9).ru,"ВЕТЕРАН","выше последнего ранга нет");
+  eq(roadRank(1e9).next,null,"и дальше идти некуда");
+  eq(roadRank(1e9).left,0,"остаток на вершине — ноль");
+  ok(roadRank(200).left===100,"до следующего считается честно: "+roadRank(200).left);
+  /* множители растут и нигде не падают */
+  let prev=0;
+  for(const r of ROAD_RANKS){ok(r[2]>=prev,"множитель не падает на «"+r[1]+"»");prev=r[2];}
+  ok(roadRank(1e9).k<=2.5,"и сверху ограничен: ×"+roadRank(1e9).k);
+  /* ранг множит заработок */
+  G.road={day:-1,km:0,cr:0,total:0,bank:99999,bts:0};
+  RD={crFrac:0,crTrip:0,kmTrip:0};
+  const c0=G.credits;roadEarnKm(1,0);
+  const novice=G.credits-c0;
+  G.road.total=30000;G.road.bank=99999;
+  RD.crFrac=0;
+  const c1=G.credits;roadEarnKm(1,0);
+  ok(G.credits-c1>novice,"ветеран за тот же километр получает больше: "+(G.credits-c1)+" против "+novice);
+  /* и объём бака: ранг растит и запас, иначе он кончался бы вдвое быстрее */
+  ok(roadBankAdd(0,86400000*99,2.5)>roadBankAdd(0,86400000*99,1),"бак ветерана больше");
+  eq(roadBankAdd(0,86400000*99,2.5),ROAD_BANK_MAX*2.5,"и его потолок тоже по рангу");
+  /* переход ранга отмечается в книжке */
+  G.road={day:-1,km:0,cr:0,total:99,bank:99999,bts:0};
+  G.record=null;RD.crFrac=0;
+  roadEarnKm(2,0);
+  ok(recordAll().e.some(x=>x.a==="дорога"&&/ПОПУТЧИК/.test(x.s)),"новый ранг попал в книжку");
+  ok(/ПОПУТЧИК/.test(RD.flash||""),"и объявлен на экране: "+RD.flash);
   RD=null;G.road=null;
 }));

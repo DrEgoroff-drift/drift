@@ -7,6 +7,56 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.160.0 — the instruments go back to the top, and the lamp starts meaning something (M187)
+
+Two direct orders from the author, 2026-08-26: «приборы сверху, сейчас очень плохо не видно» and
+«на столе чтобы не случилось в меню огонёк, он типо всегда горит и соответственно не работает».
+
+**The state moved back to the top edge.** A2 (0.143.0) put it at the bottom on the argument that
+the top of the frame belongs to the world. On the author's own screen the argument lost: the
+bottom band already carries pads, console and action prompt, so the numbers landed in the noisiest
+strip of the frame — over the ground the walker is actually looking at — and rested at .34 opacity
+on top of that. Two rules replace the old one, and they are written into `style.css` so the next
+pass cannot quietly undo them:
+
+- **The top answers «who and where am I», the bottom answers «what can I do».** State (gauges left,
+  place and purse right, the region pod centred in flight) lives at the top; prompt, console and
+  pads live at the bottom; nothing lives in both, and the middle of the frame is always clear.
+  `91f-ui` was re-pointed rather than switched off: it now guards the two zones and the empty middle.
+- **An instrument that cannot be read is not an instrument.** Resting opacity .86 instead of .34,
+  bars 4 px instead of 2, labels and numbers one step larger, a centre tick so a bar answers "how
+  much" and not just "much/little". `91f-ui` measures both the resting opacity and the bar height.
+
+Found by looking at the frames, not by planning: the suit bar stayed calm white at 14% while only
+its number went red (`.low` sits on the row for suit/pack/hold and on the bar itself for fuel/hull —
+the CSS rule reached only half of them); the top scrim had been carrying the bottom row too, so
+moving it left the action prompt bare over bright ground (it is now its own element, `.slope`, with
+both edges); and the canvas hint bar on the surface was positioned by a constant of 58 px measured
+under three gauge rows, which in a crisis (five rows) sat inside them — it now reads the real band
+height, `HUD_BAND`.
+
+**One language, four screens.** With the place summary finally legible, four mode-entry messages
+turned out to be saying what the summary already says: the planet's name and type on landing, the
+word "Пещера" in the cave, the base's name, "Абордаж · name" on the raid. Each now says only what
+is nowhere else on screen.
+
+**The lamp.** It counted things with `!seen` — everything the player had not opened one by one — so
+with a dozen unopened papers permanently on the table it was permanently lit, and a signal that is
+always on is part of the button, not a message. Three separate notions now: the lamp in the menu
+means "arrived since you were last at the table" and goes out on the visit, read or not; the wax dot
+on an item means "unread" and goes out when the item is looked at; the counter on a tab says which
+shelf the news is on and holds while the table is open, so opening it does not erase the answer to
+"where". The visit is marked by an explicit `noticed` flag, not by comparing timestamps — a paper
+can land in the very millisecond the table closes. Saves without the marker load as "seen
+everything", so an old save does not light up on forty old papers. Guard: `91zzv-table`.
+
+**Carried over, not written here:** the road's rank ladder (`ROAD_RANKS` / `roadRank` in
+`27k-road`, shown on the road screen with the distance to the next rank) was finished in the
+0.159.0 session and left uncommitted in the working tree. It is tested and green, so it ships with
+this version rather than being reverted; the lifetime odometer `G.road.total` persists and defaults
+to zero for older saves.
+
+---
 ## 0.159.0 — the road: not a cap but a tank (M168k)
 
 «Ну ты 2 раза ездишь на работу с работы, выходные на дачу далеко, давай поднимем потолок + типо

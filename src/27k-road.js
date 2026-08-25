@@ -70,6 +70,36 @@ const ROAD_CR_KM=6,ROAD_COMBO_MAX=3,ROAD_COMBO_T=1200,ROAD_STOP_T=120;
    Натекает НЕПРЕРЫВНО, а не в полночь: выехал утром после ночи — уже часть
    суток в баке. Часы, переведённые назад, приток не начисляют (Math.max). */
 const ROAD_DAY_ADD=2200,ROAD_BANK_MAX=14000;
+/* ── прогрессия: кто больше наездил, тот больше зарабатывает (M168k) ──
+   Счётчик один и честный — НАСТОЯЩИЕ километры за всё время, он не обнуляется
+   ни днём, ни поездкой. По нему идёт ранг, и ранг множит СРАЗУ ВСЁ: ставку за
+   километр, премию за поворот, суточный приток в бак и сам объём бака. То есть
+   растёт не только заработок, но и способность запасать — иначе у ветерана
+   ставка была бы вдвое, а бак кончался бы вдвое быстрее.
+
+   Пороги редкие и по-настоящему далёкие: сотня километров — это неделя дорог
+   на работу, тридцать тысяч — годы. Прогрессия должна быть чем-то, что
+   замечаешь раз в месяц, а не полоской, которая ползёт на глазах.
+
+   Верх ограничен ×2.5 нарочно: даже там суточный приток (5 500) — это
+   восемнадцать минут содержания штаба с полным штатом. Дорога остаётся
+   приятностью на любом ранге (docs/DESIGN-economy.md). */
+const ROAD_RANKS=[
+  [0,"НОВИЧОК",1],
+  [100,"ПОПУТЧИК",1.15],
+  [300,"ЕЗДОК",1.3],
+  [1000,"ХОДОК",1.5],
+  [3000,"ДАЛЬНОБОЙ",1.75],
+  [10000,"СТАРОЖИЛ",2.1],
+  [30000,"ВЕТЕРАН",2.5]];
+function roadRank(total){
+  const km=total||0;
+  let i=0;
+  for(let k=1;k<ROAD_RANKS.length;k++)if(km>=ROAD_RANKS[k][0])i=k;
+  const n=ROAD_RANKS[i+1];
+  return {i,ru:ROAD_RANKS[i][1],k:ROAD_RANKS[i][2],
+    next:n?n[1]:null,left:n?Math.max(0,n[0]-km):0};
+}
 const ROAD_TURN_CR=12,ROAD_TURN_PAY=.34;  /* премия за полный поворот и порог, доля полного сноса */
 const ROAD_BACK_FAR=.6,ROAD_BACK_DROP=.25,ROAD_BACK_K=1.5;  /* км: докуда отъехать и насколько вернуться */
 /* премия за поворот: по пику сноса, с тем же комбо, что и километры */
@@ -151,23 +181,29 @@ const ROAD_SKY_H=[0,132,-118],ROAD_SKY_S=[78,62,88];
 const ROAD_BLOOM_H=[-118,62,0,-58,124];
 const ROAD_FOOT=.13;                      /* доля экрана снизу под подвал: там окно правды не мешает кнопкам */
 let RD=null;
-function roadAll(){if(!G.road||typeof G.road!=="object")G.road={day:-1,km:0,cr:0};return G.road;}
+function roadAll(){
+  if(!G.road||typeof G.road!=="object")G.road={day:-1,km:0,cr:0,total:0};
+  if(G.road.total==null)G.road.total=0;   /* старым сохранениям пробег с нуля */
+  return G.road;
+}
 /* день — календарный: игровые сутки идут 60 секунд, и на них «за поездку»
    обнулялось раз в минуту прямо посреди дороги (M168g) */
 function roadToday(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
-/* приток в бак: чистая функция, её и гоняют автотесты */
-function roadBankAdd(bank,ms){
-  return clamp((bank||0)+ROAD_DAY_ADD*Math.max(0,ms||0)/86400000,0,ROAD_BANK_MAX);
+/* приток в бак: чистая функция, её и гоняют автотесты. Ранг множит и приток,
+   и потолок — иначе у ветерана ставка вдвое, а бак кончается вдвое быстрее */
+function roadBankAdd(bank,ms,k){
+  k=k||1;
+  return clamp((bank||0)+ROAD_DAY_ADD*k*Math.max(0,ms||0)/86400000,0,ROAD_BANK_MAX*k);
 }
 function roadDayReset(now){
   const R=roadAll(),d=roadToday();
   if(R.day!==d){R.day=d;R.km=0;R.cr=0;}
   /* бак: старым сохранениям наливаем полный — они его ни разу не тратили */
-  const t=now==null?Date.now():now;
-  if(R.bank==null){R.bank=ROAD_BANK_MAX;R.bts=t;}
+  const t=now==null?Date.now():now,rk=roadRank(R.total).k;
+  if(R.bank==null){R.bank=ROAD_BANK_MAX*rk;R.bts=t;}
   /* именно `==null`, а не `||`: отметка времени в ноль — законное значение, а
      на `||` она подменялась текущим временем, и приток молча не начислялся */
-  else{R.bank=roadBankAdd(R.bank,t-(R.bts==null?t:R.bts));R.bts=t;}
+  else{R.bank=roadBankAdd(R.bank,t-(R.bts==null?t:R.bts),rk);R.bts=t;}
   return R;
 }
 function roadSpeedOk(kmh){return kmh>=ROAD_VMIN&&kmh<=ROAD_VMAX;}
@@ -202,8 +238,14 @@ function roadEarnKm(km,moveT){
   const R=roadDayReset();
   R.km+=km;
   if(RD)RD.kmTrip=(RD.kmTrip||0)+km;
+  /* общий пробег за всё время — счётчик прогрессии, не обнуляется никогда */
+  const was=roadRank(R.total).i;
+  R.total=(R.total||0)+km;
+  const now2=roadRank(R.total);
+  if(now2.i>was&&RD){RD.flash=now2.ru+" · "+Math.round(R.total)+" км за спиной";RD.flashT=3.4;
+    if(typeof recordAdd==="function")recordAdd("дорога","ранг «"+now2.ru+"»: "+Math.round(R.total)+" км за спиной");}
   if(R.bank<1)return 0;
-  const due=km*ROAD_CR_KM*roadCombo(moveT)*(RD&&RD.back?ROAD_BACK_K:1);
+  const due=km*ROAD_CR_KM*roadCombo(moveT)*(RD&&RD.back?ROAD_BACK_K:1)*now2.k;
   RD&&(RD.crFrac=(RD.crFrac||0)+due);
   let n=RD?Math.floor(RD.crFrac):Math.floor(due);
   if(RD)RD.crFrac-=n;
@@ -488,7 +530,7 @@ function roadTurnTick(kmh){
   if(pk<=ROAD_TURN_PAY||(kmh||0)<ROAD_MOVE_GATE)return 0;
   const R=roadDayReset();
   if(R.bank<1)return 0;
-  let n=roadTurnPay(pk,roadCombo(RD.moveT)*(RD.back?ROAD_BACK_K:1));
+  let n=roadTurnPay(pk,roadCombo(RD.moveT)*(RD.back?ROAD_BACK_K:1)*roadRank(R.total).k);
   n=Math.min(n,Math.floor(R.bank));
   if(n>0){R.bank-=n;R.cr+=n;RD.crTrip=(RD.crTrip||0)+n;earn(n,"road");RD.flash="ПОВОРОТ +"+n;RD.flashT=1.4;}
   return n;

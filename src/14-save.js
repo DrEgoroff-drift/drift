@@ -66,7 +66,8 @@ function snapshot(){
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,
-    dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,ts:Date.now()};
+    dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,
+    tableSeen:G.tableSeen|0,ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
@@ -516,6 +517,13 @@ function applySave(s){
     ? s.log.filter(e=>e&&typeof e.s==="string").slice(-LOG_MAX).map(e=>({t:+e.t||Date.now(),k:String(e.k||""),s:e.s}))
     : [];
   G.logNew=0;
+  /* Отметка «стол видели» служит и признаком формата: если её в записи нет,
+     запись старая, и флагов `noticed` на вещах в ней тоже нет. Тогда считаем
+     видимым всё — иначе загрузка старого сохранения зажжёт огонёк на сорока
+     давно лежащих бумагах, то есть вернёт ровно ту поломку, ради которой
+     отметка и заведена. Ставится после восстановления G.things и G.strips. */
+  G.tableSeen=(+s.tableSeen)||0;
+  if(!G.tableSeen&&typeof tableNoticeAll==="function")tableNoticeAll();
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
   for(const k of RES_KEYS)G.cargo[k]=Math.max(0,(s.cargo&&s.cargo[k])|0);
   const st=stat();

@@ -26,6 +26,14 @@ const $sh=document.querySelector("#sbar i"),$sg=document.getElementById("sgauge"
    вопрос «дотяну ли до станции», а «34/100» отвечает */
 const $fn=document.getElementById("fnum"),$hn=document.getElementById("hnum");
 const $sn=document.getElementById("snum"),$cn=document.getElementById("cnum");
+/* ── высота приборной полосы ──
+   Приборы вернулись к верхней кромке, и всё, что рисуется по канве наверху
+   (подсказка поверхности, фишки целей), обязано знать, где полоса кончается,
+   иначе фишка «КОРАБЛЬ 1454 м» встаёт четвёртой строкой приборов.
+   Число в CSS-пикселях: холст масштабируется через setTransform(DPR), так что
+   координаты рисования и есть CSS-пиксели. */
+let HUD_BAND=72;
+const $vitals=document.querySelector(".vitals"),$locusEl=document.querySelector(".locus");
 const $vf=document.getElementById("vFuel"),$vh=document.getElementById("vHull");
 const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse");
 const $vs=document.getElementById("vSuit"),$ub=document.querySelector("#ubar i");
@@ -171,9 +179,11 @@ function hud(){
   else if(G.mode==="homein"){a="ДОМ";
     b=(G.home&&HOME_TIERS[G.home.tier-1]?HOME_TIERS[G.home.tier-1].ru:"угол")+" · "+
       ((G.hin&&G.hin.folk.length)?"дома "+G.hin.folk.length:"никого нет");}
+  /* Заряды, броня и счёт живых ушли отсюда к рукам, в подсказку: они там
+     крупнее, и главное — это расход текущего действия, а не «где я». Сводка
+     места говорит место. */
   else if(G.mode==="raid"){a=(G.raid?G.raid.PB.name:"АБОРДАЖ").toUpperCase();
-    b="пиратская база · "+(G.raid?G.raid.foes.filter(f=>f.hp>0).length+" живых · зарядов "+G.raid.ammo+
-      (G.raid.armor>0?" · броня "+Math.round(G.raid.armor*100)+"%":""):"");}
+    b="пиратская база";}
   else if(G.mode==="dock"){a=G.st.name.toUpperCase();b=G.st.kind;}
   if(G.drones.length>0)b+=" · дронов работает: "+G.drones.length;
   /* небо говорит само за себя, но событие обязано быть НАЗВАНО: без имени
@@ -192,6 +202,17 @@ function hud(){
   /* приборная колодка (25c): рисуется каждым кадром, гаснет вместе со строкой */
   if(typeof instrPodTick==="function")instrPodTick();
   setTx($place,a);setTx($sub,b);
+  /* Полосу меряем по самому DOM, а не пересчитываем правила CSS в JS: состав
+     строк задан таблицей стилей (body.afoot прячет топливо и корпус, узкий
+     экран кладёт шкалы в ряд), и второй источник правды однажды с ней
+     разойдётся. Чтение — одно на кадр и почти всегда бесплатное: setTx/setSt
+     не пишут в DOM, пока показания не менялись, поэтому вёрстка чаще всего
+     не грязная и пересчитывать её браузеру не приходится. */
+  if($vitals&&$locusEl){
+    const vb=$vitals.getBoundingClientRect().bottom,lb=$locusEl.getBoundingClientRect().bottom;
+    const band=Math.max(vb,lb);
+    if(band>0)HUD_BAND=Math.round(band);
+  }
   setTx($msg,G.msgT>0?G.msg:"");
   setSt($msg,"opacity",G.msgT>0?clamp(G.msgT/40,0,1):0);
   setTx($prompt,G.mode==="dock"?"":G.prompt);

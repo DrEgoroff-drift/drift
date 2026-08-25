@@ -33,7 +33,45 @@ function thingAdd(k,ru,note,extra){
   if(tableOpenNow&&tableTab==="things")tableRender();else logBtnLabel();
   return th;
 }
-function tableNewThings(){return thingsAll().filter(t=>!t.seen).length;}
+/* ── огонёк: «пришло» и «не прочитано» — разные вещи ──
+   Автор (2026-08-26): «на столе чтобы не случилось в меню огонёк, он типо
+   всегда горит и соответственно не работает». Так и было: огонёк считал
+   вещи с `!seen`, то есть ВСЁ, что игрок не открыл поштучно. На столе всегда
+   лежит десяток не открытых бумаг, значит огонёк горел всегда, а сигнал,
+   который горит всегда, не сигнал, а часть рамки кнопки.
+
+   Понятия разведены:
+   · **огонёк в меню** = «пришло после того, как вы последний раз подходили к
+     столу». Меряется временем прихода против `G.tableSeen`; открыл стол —
+     погас, даже если ничего не читал. Гореть вечно он теперь не может.
+   · **сургучная точка на предмете** = «не прочитано» (A3). Живёт своей
+     жизнью и гаснет только когда предмет открыли. Это правильная вещь, она
+     остаётся — просто она не про кнопку МЕНЮ.
+   · **счётчик на закладке** показывает, КУДА смотреть, и держится, пока стол
+     открыт: если гасить его вместе с огоньком, игрок откроет стол и не
+     узнает, на какой закладке новость.
+
+   Метка визита — свой флаг `noticed` на предмете, а не сравнение времени
+   прихода с временем визита. Времени тут доверять нельзя: `Date.now()` идёт
+   миллисекундами, а бумага вполне может лечь на стол в ту же миллисекунду,
+   в которую его закрыли (одно нажатие делает и то, и другое), — и тогда
+   новость теряется навсегда. Флаг ставится явно и не зависит от часов. */
+function tableNoticeAll(){
+  thingsAll().forEach(t=>{t.noticed=1;});
+  (G.strips||[]).forEach(t=>{t.noticed=1;});
+  G.tableSeen=Date.now();
+}
+function tableNewThings(){return thingsAll().filter(t=>!t.noticed).length;}
+/* снимок «что было новым» на момент открытия — живёт, пока стол открыт */
+let tableWasNew=null;
+function tableNewBy(tab){
+  const w=tableWasNew;
+  if(w)return w[tab]|0;
+  if(tab==="ether"||tab==="bort"||tab==="folk")return (G.logNewBy&&G.logNewBy[tab])|0;
+  if(tab==="things")return thingsAll().filter(t=>!t.noticed).length;
+  if(tab==="strips")return (G.strips||[]).filter(t=>!t.noticed).length;
+  return 0;
+}
 function tableToggle(open,tab){
   const w=document.getElementById("tablewin");if(!w)return;
   tableOpenNow=open===undefined?!tableOpenNow:!!open;
@@ -42,9 +80,13 @@ function tableToggle(open,tab){
   document.body.classList.toggle("table",tableOpenNow);
   logOpen=tableOpenNow;
   if(tableOpenNow){
-    G.logNew=0;G.logNewBy={};
+    /* Сперва снимок — иначе закладки погаснут в тот же миг, и игрок,
+       открывший стол «потому что горело», не узнает, где именно новость. */
+    tableWasNew={ether:tableNewBy("ether"),bort:tableNewBy("bort"),folk:tableNewBy("folk"),
+                 things:tableNewBy("things"),strips:tableNewBy("strips")};
+    G.logNew=0;G.logNewBy={};tableNoticeAll();
     tableBake();tableRender();
-  }
+  }else tableWasNew=null;
   logBtnLabel();
 }
 function tableSetTab(t){tableTab=t;tableRender();}
@@ -83,6 +125,15 @@ function tableRender(){
   document.querySelectorAll("#tableTabs button").forEach(b=>{
     b.classList.toggle("on",b.dataset.tab===tableTab);
     if(b.dataset.tab==="lore")b.style.display=(typeof loreCount==="function"&&loreCount())?"":"none";
+    /* счётчик новостей на самой закладке: огонёк привёл к столу, закладка
+       говорит, на какую полку смотреть. Подпись не переписываем — у неё своя
+       ширина, и прыгающие вкладки читаются браком. */
+    let dot=b.querySelector("i");
+    const n=tableNewBy(b.dataset.tab);
+    if(n){
+      if(!dot){dot=document.createElement("i");b.appendChild(dot);}
+      dot.textContent=n>99?"99+":n;
+    }else if(dot)dot.remove();
   });
   const sub=document.getElementById("tableSub"),cr=document.getElementById("tableCr"),wh=document.getElementById("tableWhere");
   const SUB={ether:"эфир · что было услышано",bort:"борт · техника и деньги",folk:"люди · что вам сказали",

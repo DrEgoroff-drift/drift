@@ -208,18 +208,19 @@ order, and struck out as they close. This is the live queue — new finds go at 
    localStorage and from the cloud — so they stay at any version. Breaking now costs every
    existing save and buys almost nothing. **Held until the release look actually changes what is
    persisted**, then broken once, together with the cleanup. The author has the call.
-12. **"The instruments would sit better at the top"** — the author, 2026-08-25, looking at the
-   surface frame. Suit / pack / hold sit bottom-left and the planet card bottom-right, where A2
-   deliberately put them (0.143.0, M176: "the state moves down"). His eye now says the bottom edge
-   is the wrong home: on foot that band is already crowded — pads left and right, the console in
-   the middle, the action prompt over them — so the numbers land in the noisiest strip of the
-   frame, on the ground the walker is actually looking at. **The cost of the reversal, said before
-   doing it:** A2's argument was that the top edge belongs to the world (the postcard line, the
-   sky, and the two location tags КОРАБЛЬ / ПЕЩЕРА already live up there), so the state goes where
-   the eye is not. Moving it back up sets it beside those tags and re-opens what the pass closed.
-   This is not a repaint: decide **which** edge owns the state, then move every mode in one go
-   (surface, cave, dig, base, home, raid, flight, station), or the game grows two habits. The
-   author has the call; ask before touching A2's layout.
+12. ~~**"The instruments would sit better at the top"**~~ — **decided and done (0.160.0, M187).**
+   The author settled it on 2026-08-26 in one line: «приборы сверху, сейчас очень плохо не видно».
+   Everything below is the argument as it stood before the call; what was actually built, and the
+   two rules that replaced A2's, are in `PATCHNOTES.md` 0.160.0 and at the head of the instrument
+   block in `style.css`. The reversal was done in one go across every mode, as the note demanded —
+   the composition per screen survived, only the edge changed.
+
+12a. *The argument as it stood before the call* (author, 2026-08-25 → settled 2026-08-26): A2 had
+   put the state at the bottom on the ground that the top edge belongs to the world; the author's
+   eye said the bottom band was already the noisiest strip of the frame. The full reasoning, the
+   cost of the reversal and the two rules that replaced A2's are in `PATCHNOTES.md` 0.160.0 and at
+   the head of the instrument block in `style.css`.
+
 13. **The raid reads as if the man stood on the ceiling** — the author, 2026-08-25, on the
    pirate-base frame: «не очень понятно, посмотри на перспективу». The complaint is about the
    legibility of the space, not about the bodies. Four suspects, in the order to check them
@@ -272,115 +273,11 @@ one at a time when a pass is due, and nothing here blocks a milestone.
   noon still reads overcast on every world, and that is art direction, not a fault.
 - **split debt** â `21a-mode-base` 52 KB, `23-mode-dig`, `27e-ui-home` (see item 10).
 
-### The graphics & performance pass (G1âG12) â written 2026-08-22 from the shots, not from memory
+### The graphics & performance pass (G1–G12) — closed, moved to the archive 2026-08-26
 
-Self-review of every screen against the art direction (M54 rules). Each line is a **fault seen in a
-frame**, then the fix. Order is by how much of play time the screen takes; G0 comes first because
-the rest of the pass is measured against it.
-
-**What is already right and must not be touched:** base cross-section, cantina bar, HQ room,
-nav map, cockpit frame and rack, crystalline surface mosaic, the hundred portraits. These set the
-standard; the rest is pulled up to them, not the other way round.
-
-- **G0 â measured (2026-08-22, 0.95.0), visible Chrome tab, AMD iGPU, window 1536Ã735 CSS.**
-  fps by mode at Ã2 (3072Ã1470), before â after the first cache pass: surface 40â45, mine 39â44,
-  cave 55â59, scoop 51â55, landing 53â55, system 53, map 61. Same surface at Ã1.5: 58, at Ã1: 60.
-  The frame is **fill-rate bound**: one full-screen pass (a blit, a fill, a gradient) costs
-  ~4â5 ms at Ã2 on this GPU, JS is â¤3 ms in every mode. So the budget is counted in
-  **full-screen passes per frame**, not in objects: about six fit at Ã2, twelve at Ã1.5.
-  The hidden-tab `prof()` numbers are not comparable with these (readback inflates everything
-  Ã3 and gradients Ã8) â rank with them, never quote them. Rules that follow: (1) a gradient
-  or a composite that does not change frame to frame is a `screenLayer`, never a per-frame
-  fill; (2) anything static under the camera is a chunk; (3) every new painting pass below
-  states how many passes it adds and pays for them somewhere else; (4) `resAuto` stays the
-  safety net, Ã1.5 is the honest default on integrated GPUs.
-- **G1 â six worlds, one body** (`world-types.png`). Earthlike, desert, ice, volcanic, toxic and
-  jungle differ by palette only: the same cell-outline macro texture on rock, sand and ice, the
-  same relief amplitude, the same god-ray stamp at the same angle on every world, the same three
-  strata. Violates "material in three scales" and "one screenshot says where you are". Fix per
-  world type, not per colour: a **material kit** (`18a-material`) with its own macro form â
-  dunes/ripples for desert, fracture plates and blue depth for ice, cooled crust with glowing
-  cracks for volcanic, sodden banks and pools for toxic, root mass and canopy for jungle; relief
-  amplitude and strata count from the kit; rays only where the sky gives a reason (dust, mist).
-  **Done in 0.97.0** for the material kit (dune, frost, crust, sludge, soil) and the shafts.
-  Still open → closed, see the tails ledger: relief amplitude and strata count per kit; flora silhouettes per world.
-- **G2 â no aerial perspective on the surface** (`surface.png`). Far ridges use the near ground's
-  texture and value; the ground does not darken with depth; nothing stands in front of the player.
-  Fix: three planes â far ridges as flat value silhouettes tinted by the sky (cached
-  `screenLayer` per world), mid ground as now, a sparse **foreground** band (boulders, grass,
-  drift) at 1.15Ã parallax drawn last and blurred by value, not by filter. Depth gradient on the
-  ground: the lowest third goes to the sky's shadow colour.
-  **Done in 0.98.0** for the foreground band (`drawForeground`, 21b). Still open → closed, see the tails ledger: far ridges as
-  a cached sky-tinted layer; a deeper value gradient on the near ground.
-- **G3 â the mine is an empty frame** (`mine.png`). Shaft on a blank plane: strata are flat fills
-  with one outline, no texture, no niches, no scale; a tub reads as a crate in a pit (debt above).
-  Fix: rock from the same material kit as the surface (chunked by world-x, as cave rock), strata
-  with their own micro grain, landings as real rooms (beam, lamp, crate stack, a man-height mark),
-  changes of section along the shaft, dust in the lamp cone. This is the weakest screen in the
-  game and the first painting job.
-  **Done in 0.96.0** (rock was invisible by a clip bug; contacts, landings, lamps, hoppers).
-  Still open → closed, see the tails ledger: niches and a change of section along a long shaft; rock chunks by world-y.
-  Passes added: 0 (lamps are sprites inside the void clip).
-- **G4 â the raid is in a different language** (`raid.png`). A projected corridor of flat fills,
-  wireframe crates, an enemy as a pink capsule. It is the only screen the player would not
-  recognise as the same game. Fix: keep the projection, repaint with the base's brushes â
-  plated walls with rivets (`bDress`), real crates, pirates drawn as bodies (M74 rules), a floor
-  with grating and cable runs, one light cone from the hangar door, dust.
-  **Done in 0.99.5** for plating, floor plates, light pools, crate rims. Still open → closed, see the tails ledger: pirates
-  at rest (poses), the hangar door cone, a rock wall where the base meets the asteroid.
-- **G5 â the scoop giant tiles visibly** (`scoop.png`). The band's waves repeat at one screen
-  width and the baked 512Ã256 is stretched to Ã3. Fix: bake at 1024Ã512 per giant type with a
-  non-tiling domain warp (fbm on fbm), bands as fronts with sharp leading edges and soft trailing
-  ones; the floor darker than the band; per-type structure (spots, vortices, plumes), not
-  palette.
-  **Partly done in 0.99.2** (768Ã384, wider tile). Still open → closed, see the tails ledger: per-type structure, sharp fronts.
-- **G6 â the belt is unlit** (`cockpit1.png`). Asteroids are flat polyhedra with no light
-  direction; the void behind is a gradient; nothing gives distance. Fix: one star direction per
-  belt, faces shaded by normal against it (computed once per rock, cached), a rim on the lit
-  edge, three depth planes with dust motes drifting in the near one, the far rocks smaller and
-  greyer. The frame and rack stay.
-  **Note (0.99.2):** the faces were already lit by normal against the star with a rim; the
-  fault was contrast â terminator sharpened. Still open → closed, see the tails ledger: depth planes, near dust motes.
-- **G7 â the sky is a band.** On every world the sky is a vertical gradient; the landing screen
-  draws clouds as puffs on haze and rain as uniform streaks; the ringed body is drawn through its
-  ring. Fix: sky from `19b` as a cached `screenLayer` per (world, hour, weather): horizon glow,
-  a gradient bent by the star's altitude, a few cloud fronts from `19e` with a lit and a shadow
-  side; rain in two speeds; ring split into back/front halves around the disc.
-  **Note (0.99.6):** the sky base is a cached layer since 0.95.0 and rings were already split;
-  0.99.8: horizon glow in the star colour, rain in two depths; clouds already had
-  lit/shadow sides. Still open → closed, see the tails ledger: glow bent by the star altitude (needs the hour from 06a).
-- **G8 â the ship on the ground is a postage stamp.** On the surface the landed ship is ~40 px
-  with no shadow, no landing gear dust, no hatch light. Fix: contact shadow, a pool of light
-  under the hatch at night, the hull at the same scale as the base's people (the human is the
-  rule).
-  **Done in 0.99.6** (shadow, hatch pool). Still open → closed, see the tails ledger: the scale check against the base people.
-- **G9 â base surroundings** (`base.png`). The hill is one flat dark mass; the soil around the
-  modules is one brown. Fix: strata through the soil with the surface's micro grain (chunked),
-  a few buried stones, the shaft's spoil heap on top, the hill silhouette with a lit edge from the
-  sky. The rooms stay.
-  **Done in 0.99.2** for the hill (lit gradient, material, sky rim). Still open → closed, see the tails ledger: spoil heap,
-  buried stones that read.
-- **G10 â system view composes nothing** (`system.png`). Nebula blobs, even stars, the star and
-  planets off-frame: the screen looks like a loading state. Fix: stars in three magnitudes with a
-  few coloured ones, the primary's glow bleeding into the frame from its direction even
-  off-screen, orbit lines fading with distance, nebula as two layers with parallax.
-  **Done in 0.99.7** for the off-screen bleed and orbit fade. Still open → closed, see the tails ledger: three star
-  magnitudes with a few coloured ones; nebula parallax.
-- **G11 â raster budget, by rule.** After G0: anything static under a moving camera goes
-  through `18c-chunks` (today only landing and weather call `screenLayer`/`chunkAt` â the
-  surface ground, cave and mine rock, base soil and the sky should all go through it); per-frame
-  `createRadialGradient` in `20-life` (11 sites: astronaut lamp, flora caps, fauna glows) is
-  replaced by sprites baked once per (kind, size) and `drawImage`d; the full-screen veil and
-  vignette are one cached layer; `globalCompositeOperation` switches are grouped so the layer
-  stack flushes once. Target: every mode â¥ 55 fps at Ã2 on the dev machine, with `resAuto`
-  never firing in normal play.
-- **G12 â the foot world gets its pass** (debt above). The longest screen after the cockpit. After
-  G1âG2: a POI every 2â3 screens with a silhouette visible from afar, wind in the flora, tracks
-  behind the walker, a night with the suit lamp as the only light.
-  **Pass 1 in 0.99.9:** tracks. Still open → closed, see the tails ledger: POI rhythm, wind in flora, night (needs an hour).
-
-Not in this pass (still the list under "What not to do"): blur, DoF, chromatic aberration,
-motion blur. Depth is done by value and overlap, never by filter.
+Every line of it is closed (see the tails ledger below). The measurements, the faults seen in
+each frame and the fix chosen for each are in [`docs/PLAN-archive.md`](docs/PLAN-archive.md) —
+grep it for `G1` … `G12`. The rules that came out of G0 live on in "Cross-cutting rules" above.
 
 ### What not to do
 
@@ -776,3 +673,120 @@ self-criticism, per the cross-cutting rule.
   probe read system 43 / surface 39, but the 0.144 build read the same on the same machine at the
   same hour — the regression is the machine (background load), not the code; re-measure clean
   before believing any number.
+
+---
+
+# QUEUE: written 2026-08-26 with the author — the online postcard, the world alive, the joys
+
+Agreed in conversation over three messages. The order below is the order of work; forks the
+author has already settled are marked as settled, and nothing here waits on him except where
+it says so.
+
+## Done in this run
+
+- **M187 — the instruments at the top, and the lamp that means something** — **built (0.160.0).**
+  See `PATCHNOTES.md`. Two rules now guarded by `91f-ui`: *the top answers "who and where am I",
+  the bottom answers "what can I do", the middle is the world*; and *an instrument that cannot be
+  read is not an instrument* (resting opacity, bar height and the empty middle are all measured,
+  not trusted). The lamp: "arrived since your last visit" (goes out on the visit), separate from
+  the wax dot "unread" (goes out when the item is looked at), separate again from the per-tab
+  counter that says which shelf the news is on.
+
+## The postcard — the online part (M188–M192)
+
+Rules of this block, settled by the author on 2026-08-26 and not to be re-opened without him:
+
+- **No names.** No hands, no address book, no way to look anyone up. A postcard goes to the pool
+  and is caught out of the ether; a reply travels back through the server without either side ever
+  seeing an identity. Continuity is a stack of cards clipped together on the table, and you know
+  your correspondent by how they cross out and what they photograph. Go quiet and you are gone for
+  good. One button about a person: "не принимать" on the stack.
+- **No parcels.** Trade between players was designed and then cut — it would have been the only
+  hole in the market, and the author said no.
+- **Nothing a human types ever crosses.** The payload is a form id, a bitmask of crossings-out,
+  glyphs, and a scene snapshot. This is what makes the whole feature need no moderation at all.
+
+- **M188 — the camera.** A photograph is not pixels but a **snapshot of the scene**: mode, world
+  seeds, hour, weather, camera point, `VER` — about 200 bytes, re-rendered by the receiver's own
+  engine. Three reasons, in order: the server carries bytes instead of megabytes; nothing but the
+  game's own world can physically cross the boundary; and an old card re-rendered by a newer engine
+  comes out slightly not-the-same, which is what an old photograph does. Button ФОТО on the
+  console, an album of twelve on the table. Offline, needs no server — a joy on its own.
+- **M189 — the forms.** A form is a title plus lines; a line is a set of variants; tapping a
+  variant crosses the others out. **Every line ships with a sensible default, so a card can be sent
+  without a single tap** — that is what "чтобы не париться" means in practice. About thirty in this
+  milestone, to a hundred over later passes: road, holiday, wintering, household, lyrical,
+  scientific, official ("Форма №7"), children's. A postscript of up to three settlement glyphs,
+  whose meaning the players work out among themselves. A place stamp, never a name.
+- **M190 — the post.** `api.php a=post`: the card goes to the pool; a reply travels back down the
+  chain anonymously. Three a day, thirty days of life, TTL sweep, one request per docking (the M171
+  rule). Offline the feature does not exist and the interface never mentions it.
+- **M191 — the night ether.** An evening window in which the receiver reads cards out of the pool
+  in their printed lines; one or two can be caught per evening, and a caught card lands on the
+  table with a reply open. No notification needed at that hour — the ether *is* the notification.
+- **M192 — chess by post.** The same pipe: an anonymous game, a move a day, the board on the table.
+  A move is data, so the "nothing typed crosses" rule holds unchanged. After the post has bedded in.
+
+## The world alive (M193–M196)
+
+- **M193 — beasts begin to live.** Biology gave fauna species (0.141.0) and no behaviour. Herds
+  that graze, a predator that walks the herd, bolting or staring at the walker by the species'
+  temper, feeding on the plants they actually prefer, activity by the hour, tracks, burrows and
+  nests as things in the world. On `20e-species` / `20f-fauna`, stand `docs/mkbio.ps1`, frame
+  budget checked in every pass.
+- **M194 — marks in other places.** M171 left it open itself: the station counter, the settlement
+  wall, the cave mouth. One surface field in the same API; three times as many living people in the
+  game for very little.
+- **M195 — the sky watch.** `celestAt` already computes eclipses, parades and comets, and nobody
+  is on duty for them. An institute topic: observe the event from the right place, report it before
+  the institute's own bulletin, and the comet takes a name out of your record book. Entirely
+  offline.
+- **M196 — the pennant.** Build an automatic probe in the lab, launch it at a star you will never
+  reach, forget it. Weeks of real time later (lazily, from `Date.now()`) the receiver catches its
+  weakening voice once — and the probe sends back a **snapshot photograph** of where it got to, so
+  M188's technique works for it. A line in the record book.
+
+## Places (M197–M199)
+
+- **M197 — the wintering.** A contract off the board: a month alone on a far station — hold the
+  power balance, keep a diary in the form language, listen to the wall (`09a-roomtone` was built
+  for this), wait for the barge. A mode about solitude and routine; the reward is small in money
+  and large in the record book.
+- **M198 — the observer's choice.** `12t-settle` already decides for itself what to raise. Add the
+  fork: feed and watch, or step in with instructions. Step in and the settlement grows faster but
+  loses its glyphs and its own path and becomes *yours* — and that is visible in the frame. Not one
+  word of morality in the interface: the dilemma is shown, never stated.
+- **M199 — the sanatorium.** M162's voucher becomes a planet: treatments on a timetable, an oxygen
+  cocktail, chess on the veranda, and **nothing happens** — the only mode in which the game allows
+  rest. Ageing and the medical board (M161) give it weight; Vega can come.
+
+## Joys (one between milestones, an evening each)
+
+- **Holidays on the real calendar.** New Year: a tree in the mess and at home, mandarins,
+  congratulatory radiograms from the people in your record book (the hundred knows them by name);
+  Cosmonautics Day. The road companion proved the game can live in real time. Must be in before
+  31.12 — schedule it no later than November.
+- **The travelling cinema.** A barge brings a film; the cantina reseats itself in rows for one
+  evening and a short procedural newsreel about the regions and the expedition plays on the wall.
+- **The bookshelf.** Books turn up in wrecks: a title and a paragraph, about forty hand-written
+  fragments in the voice of that fiction (a table, not generated prose). A shelf at home, read from
+  the chair, a count of what has been collected.
+- **QSL cards.** Reworked for "no names": the operators are **characters of the game** — winterers,
+  the expedition, far settlements — not living players. Catch a distant one on the receiver, send a
+  card, weeks later the answering card arrives and the wall at home fills up. Entirely offline, and
+  it breaks in the post before real people use it.
+- **The travelling pennant.** Once a quarter the best base gets a banner on the wall and a line in
+  the ether. Pure flavour; it does not touch the economy.
+- **The greenhouse.** A bed by the house: seeds of discovered species (the biology register) grow
+  over days in their own species' form, Vega waters them. Ties biology, the home and her together.
+
+## To the release
+
+- **The newcomer's first hour.** A fresh save, an hour of play, every "boring" and every "I don't
+  understand" written down, then fixed as a list. There is a hundred milestones of content and one
+  way in; before the release look this matters more than any new feature.
+- **v:5 and the last of the overlay**, in one go, now that the edge question is settled.
+- **A clean performance measurement** by the M169 rules (one window, nothing else running) as the
+  release check.
+
+**Standing rule:** the Ring (M154) is never explained. An answer to it would kill it.
