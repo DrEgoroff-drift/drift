@@ -433,6 +433,27 @@ if ($a === 'setmail') {
   out(['ok' => true, 'mail' => $mail]);
 }
 
+/* ── уйти совсем ──
+   Способа удалить запись не было вовсе: человек, попросивший стереть его данные,
+   упирался в переписку и ручную работу. Просим пароль — не из недоверия к токену,
+   а потому что это последнее необратимое действие в игре, и оно должно стоить
+   осознанного усилия. Уносим всё: учётную запись, сохранение, суточные копии и
+   все сессии на всех устройствах. */
+if ($a === 'delete') {
+  if (!rateHit('del')) fail('слишком много попыток, подождите четверть часа', 429);
+  $u    = need();
+  $b    = body();
+  $pass = (string)($b['pass'] ?? '');
+  if (!password_verify($pass, $u['hash'] ?? '')) fail('пароль не подходит', 401);
+  $login = $u['login'];
+  foreach (($u['tokens'] ?? []) as $h => $e) @unlink(tokenFile($h));
+  @unlink(saveFile($login));
+  $bak = root() . '/bak/' . $login;
+  if (is_dir($bak)) { foreach (glob("$bak/*.json") as $g) @unlink($g); @rmdir($bak); }
+  @unlink(userFile($login));
+  out(['ok' => true, 'deleted' => $login]);
+}
+
 if ($a === 'pull') {
   $u = need();
   $s = readJson(saveFile($u['login']));
@@ -458,6 +479,24 @@ if ($a === 'push') {
   if ($ts > (time() + 86400) * 1000) { $ts = (int)round(microtime(true) * 1000); $save['ts'] = $ts; }
   if ($old && ($old['ts'] ?? 0) > $ts && empty($b['force'])) {
     out(['ok' => false, 'reason' => 'в облаке запись новее', 'ts' => $old['ts']]);
+  }
+  /* ── суточная копия ПРЕДЫДУЩЕЙ записи ──
+     Одно сохранение на игрока и одна перезапись поверх: если клиент пришлёт
+     испорченный или полупустой снимок, настоящей игры больше нигде нет. Раз в
+     сутки, перед первой перезаписью, откладываем то, что лежало ДО неё, — так в
+     папке остаётся по слепку на каждый прожитый день, а не копия сегодняшней
+     беды. Данных на всю игру — десятки килобайт, места это не стоит.
+     Держим две недели: дальше человек уже не вспомнит, к какому дню возвращаться. */
+  if ($old) {
+    $bak = root() . '/bak/' . $u['login'];
+    if (!is_dir($bak)) @mkdir($bak, 0700, true);
+    $today = $bak . '/' . gmdate('Y-m-d') . '.json';
+    if (!is_file($today)) {
+      writeJson($today, $old);
+      $all = glob("$bak/*.json");
+      sort($all);
+      while (count($all) > 14) @unlink(array_shift($all));
+    }
   }
   if (!writeJson(saveFile($u['login']), $save)) fail('не удалось записать', 500);
   out(['ok' => true, 'ts' => $ts]);

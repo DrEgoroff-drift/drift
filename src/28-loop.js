@@ -121,7 +121,10 @@ function hud(){
     setTx($jn,Math.round(jf*100)+"%");
     $vj.classList.toggle("low",jf<.2);
   }
-  setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан");
+  /* Кошелёк, а под ним — облако, но только когда с ним что-то не так. Молчащий
+     обмен места в кадре не занимает (docs/DESIGN-online-risks.md, A1). */
+  const cl=(typeof cloudLine==="function")?cloudLine():"";
+  setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан"+(cl?" · "+cl:""));
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
      Повод — изменившееся показание, тревога или открытый режим, где приборы
      и есть содержание кадра. Панель, которая горит всегда, перестаёт читаться

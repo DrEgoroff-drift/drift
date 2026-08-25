@@ -280,10 +280,16 @@ function roadSys(lat,lon){
    Оффлайн и file:// молчат: строки про пилотов просто нет. */
 function roadPing(){
   if(!RD||!RD.sys||location.protocol.indexOf("http")!==0)return;
+  /* ── у дороги своя метка (25.08.2026) ──
+     Была общая с игровым следом (`drift_pilot`). Сама по себе каждая безобидна:
+     дорога хранит номер клетки 2.8 км три минуты, след — место в игре тридцать
+     дней. Но метка-то одна, и на сервере эти две записи ложатся рядом — то есть
+     появляется ниточка между тем, ГДЕ человек ездит по земле, и тем, что он
+     делает в игре. Никому эта ниточка не нужна, а стоит она одну строку. */
   let id="";
   try{
-    id=localStorage.drift_pilot||"";
-    if(!id){id=Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,"0")).join("");localStorage.drift_pilot=id;}
+    id=localStorage.drift_road||"";
+    if(!id){id=Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,"0")).join("");localStorage.drift_road=id;}
   }catch(e){return;}
   fetch(CLOUD.api+"?a=road",{method:"POST",body:JSON.stringify({sec:RD.sys.cx+":"+RD.sys.cy,id})})
     .then(r=>r.json()).then(j=>{if(RD&&j&&j.ok)RD.mates=j.n|0;}).catch(()=>{});

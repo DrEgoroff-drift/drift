@@ -72,6 +72,7 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `02-world` `06-galaxy` `07-planet` | resources, world types, `starAt`/`getSystem`, planet textures and relief |
 | `03-ships` `04-mods` `05-parts` | hulls (`hullOf`/`drawHull`), modules and science, part and slot generation |
 | `08-state` `14-save` | the `G` object, `snapshot()`/`applySave()` |
+| `14a-cloud` | account, push/pull, the visible state of the exchange, the one-tab rule. The online risk register — what the server can and cannot know, and what is deliberately left open — is [`docs/DESIGN-online-risks.md`](docs/DESIGN-online-risks.md) |
 | `09-audio` `10-music` | sound synthesis, generative music |
 | `11-log` `12-economy` `13-pirates` | journal, live market and drones, pirates |
 | `11c-stories` `12k-stories-*` | the hundred: traces pulled by channels (ether, counter, table, finds, rumours, cantina), lazy turns, anchoring; data in `12k-*` |

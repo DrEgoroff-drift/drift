@@ -176,13 +176,20 @@ number of files per directory, and a deterministic sweep instead of a 1-in-50 di
 `rate/*` is never swept — one file per IP per tag, forever. `trace/u/<id>.json` is never swept
 either: one file per pilot identity, forever, and identities are free. Slow, quiet, unbounded.
 
-### E3. Backups — an open question for the author
+### E3. Backups — decided 2026-08-25: server-side only
 
-Everything lives in `~/drift-data` on one shared host: accounts, password hashes, emails, saves.
-Nothing in the repo mentions a backup, and the deploy (`docs/DEPLOY.md`) only ever pushes three files
-up. **If that directory is lost, every account and every save is gone with no recourse** — players
-cannot even re-import, because their own copy sits in the `localStorage` of one browser. A nightly
-`tar` off-host is an hour of work, and the difference between an incident and the end of the game.
+**What was done.** Every `push` now sets aside a daily copy of the save it is about to replace —
+`bak/<login>/<date>.json`, fourteen days deep (`api.php`). It deliberately keeps the *previous*
+state rather than the incoming one, because the incident that actually happens is a broken or
+half-initialised client overwriting a real game; a copy of the damage would be worthless. Costs one
+small write per player per day.
+
+**What was declined, knowingly** (author, 25.08.2026 — «пусть бекап только на сервере будет,
+ничего страшного»): a copy off the host. So the residual risk stands and is worth naming plainly —
+everything still lives in one directory on one shared host, the daily copies included. **If that
+disk is lost, every account and every save goes with it**, because a player's own copy exists only
+in the `localStorage` of one browser. Accepted, not overlooked. One archive pulled on 25.08.2026
+sits in `~/drift-backups` on the author's machine if it is ever wanted.
 
 ### E4. There is no way to delete an account
 
@@ -217,3 +224,25 @@ who asks to be removed has to be handled by hand, and there is nothing to point 
 3. **E3** — confirm a backup exists; if it does not, make one.
 4. **A3, A4** — two tabs, and the storage warning.
 5. **D** — decide what the trace should be when somebody abuses it. The author's call.
+
+---
+
+# What was done, 25.08.2026 (0.153.1 and 0.154.0)
+
+**Closed:** E1 (per-IP limits on  and , a sweeper that runs by the clock, and the two
+directories that were never swept), A2 (a future  is taken as server time), A1 (every failed
+exchange is visible and retried when the network or the tab comes back), A4 (storage failure speaks
+immediately), A3 (the tab opened last plays; the older one stops writing and says so), E4 (an
+account can be deleted, password required), E3 in its server-side half (daily copies of the
+previous save, fourteen days), and F's shared pilot mark (the road and the trace now use their own).
+
+**Left open, on purpose:**
+
+- **D, the trace.** The per-IP limit makes flooding expensive, but the «three a day» rule still
+  counts a mark the client invents for itself, so a determined person can still push other people's
+  gifts out of a place. Requiring an account for «leave» would end it — and would also end the
+  feature's anonymity, which is the point of M171. The author's call, not a patch.
+- **A5.** A guard when the snapshot passes ~600 KB. Nothing to do until saves get near it, and
+  measurement says that is years away.
+- **B.** Nothing to build. Written down so that the first competitive-looking feature does not
+  quietly assume the server can vouch for a number.

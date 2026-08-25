@@ -1032,7 +1032,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.153.1";
+const VER="0.154.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -7529,8 +7529,9 @@ function dominoBlock(who){
    что писать нечем.
 
    Знак не выбирают: он выводится из анонимной метки пилота (localStorage
-   drift_pilot, та же, что у дорожного спутника M168c — случайная, без учётной
-   записи). Поэтому знак ваш и он один; выбрать фигуру «со значением» нельзя.
+   drift_pilot — случайная, без учётной записи; у дорожного спутника M168c с
+   25.08.2026 метка СВОЯ, чтобы игра и поездки не сходились в одну ниточку).
+   Поэтому знак ваш и он один; выбрать фигуру «со значением» нельзя.
    Значения у фигур нет вовсе, и игра его никогда не объясняет.
 
    Рядом со знаком ходит РУКА — шесть шестнадцатеричных знаков от той же метки,
@@ -23127,6 +23128,179 @@ function drawCombat(zx,zy,Z){
   }
 }
 
+/* ══════════════ облако, вкладки и обмен ══════════════
+   Отрезано от `14-save` 25.08.2026: там остались снимок игры и его разбор
+   (`snapshot`/`applySave` — пара, которую разносить нельзя), здесь всё про
+   ОБМЕН: учётная запись, отправка и приём, видимое состояние обмена и правило
+   «играет та вкладка, которую открыли последней».
+
+   Разбор рисков онлайна — docs/DESIGN-online-risks.md. Главное из него: сервер
+   не знает и не может знать, сколько игрок заработал, и это правильно; опасен
+   не читер, а ТИШИНА — обмен, который не сложился и промолчал.
+/* ══════════════ одна вкладка — одна игра ══════════════
+   Две открытые вкладки писали в один и тот же ключ, каждая своё, и побеждала та,
+   что сохранилась последней: вкладка, забытая утром, к вечеру затирала вечер.
+   Никакого злоумышленника для этого не нужно — достаточно случайно открыть игру
+   дважды, что люди и делают.
+
+   Правило: играет та вкладка, которую открыли ПОСЛЕДНЕЙ. Старая не спорит и не
+   пропадает — она перестаёт записывать и говорит об этом прямо, чтобы человек
+   понимал, в каком окне продолжать. Летать в ней по-прежнему можно. */
+let TAB_LIVE=true;
+const TAB_ID=Math.random().toString(36).slice(2)+Date.now().toString(36);
+let TAB_CH=null;
+try{
+  TAB_CH=new BroadcastChannel("drift-tabs");
+  TAB_CH.onmessage=e=>{
+    const d=e&&e.data;
+    if(!d||d.id===TAB_ID)return;
+    if(d.k==="hello"&&TAB_LIVE){
+      /* пришла новая — уступаем место и замолкаем */
+      TAB_LIVE=false;
+      if(typeof say==="function")say("ИГРА ОТКРЫТА В ДРУГОЙ ВКЛАДКЕ\nздесь запись остановлена,\nчтобы не затереть ту",420);
+      if(typeof logAdd==="function")logAdd("warn","Игра открыта в другой вкладке — эта больше не сохраняется.");
+    }
+  };
+  TAB_CH.postMessage({k:"hello",id:TAB_ID});
+}catch(e){TAB_CH=null;}          /* нет BroadcastChannel — работаем как раньше */
+function tabLive(){return TAB_LIVE;}
+
+function saveGame(quiet){
+  if(!TAB_LIVE){
+    if(!quiet)say("Здесь запись остановлена\nигра открыта в другой вкладке");
+    return false;
+  }
+  const ok=stSet(SAVE_KEY,JSON.stringify(snapshot()));
+  if(!quiet)say(ok?"Полёт записан":"Хранилище недоступно\nвоспользуйтесь кодом");
+  if(ok)cloudPush(false);
+  return ok;
+}
+function autosave(){
+  if(G.t-lastSave<600)return;
+  lastSave=G.t;saveGame(true);
+}
+function loadGame(){
+  const raw=stGet(SAVE_KEY);if(!raw)return false;
+  try{return applySave(JSON.parse(raw));}catch(e){return false;}
+}
+function hasSave(){return !!stGet(SAVE_KEY);}
+function exportCode(){return b64enc(JSON.stringify(snapshot()));}
+function importCode(c){
+  try{return applySave(JSON.parse(b64dec(c)));}catch(e){return false;}
+}
+/* ══════════════ облако ══════════════
+   Три состояния, и путать их нельзя: игра с диска (облака нет вовсе), игра на
+   сайте без входа (есть, но не наше) и игра с учётной записью. */
+function cloudTok(){return stGet(CLOUD.tkey)||"";}
+function cloudName(){return stGet(CLOUD.lkey)||"";}
+function cloudHere(){return location.protocol==="http:"||location.protocol==="https:";}
+function cloudOn(){return cloudHere()&&!!cloudTok();}
+function cloudCall(a,body){
+  return fetch(CLOUD.api+"?a="+a,{method:"POST",
+    headers:{"Content-Type":"application/json","X-Drift-Token":cloudTok()},
+    body:JSON.stringify(body||{})}).then(r=>r.json());
+}
+function cloudForget(){stDel(CLOUD.tkey);stDel(CLOUD.lkey);}
+
+let cloudBusy=0,cloudLastTs=0;
+/* ══════════════ видимое состояние обмена ══════════════
+   Отправка молчалива по замыслу — она случается сама, раз в двадцать секунд, и
+   болтать о каждой удаче ей незачем. Беда была в том, что молчала она и когда
+   НЕ вышло: сеть пропала, вход устарел, в облаке запись новее. Игрок при этом
+   уверен, что всё сложено, летит дальше — а вечером открывает игру на другом
+   устройстве и не находит своего вечера.
+
+   Поэтому: удача по-прежнему молчит (кроме короткой отметки времени), а всякая
+   неудача остаётся на виду до тех пор, пока не разрешится. Ругаемся один раз
+   на смену состояния, а не каждые двадцать секунд: строка в углу — не
+   напоминание, а сообщение. */
+let CLOUD_ST={k:"",ts:0,said:""};
+function cloudMark(k){
+  CLOUD_ST.k=k;CLOUD_ST.ts=Date.now();
+  if(CLOUD_ST.said===k)return;                 /* об одном и том же — один раз */
+  CLOUD_ST.said=k;
+  if(k==="gone"){
+    logAdd("warn","Облако: вход устарел — войдите заново на вкладке КОРАБЛЬ");
+    say("ОБЛАКО\nвход устарел\nвойдите заново",220);
+  }else if(k==="conflict"){
+    logAdd("warn","Облако: там запись новее этой. Заберите её или выгрузите свою — вкладка КОРАБЛЬ");
+    say("ОБЛАКО\nтам запись новее\nвкладка КОРАБЛЬ",240);
+  }else if(k==="big"){
+    logAdd("warn","Облако: запись слишком велика, она больше не отправляется");
+  }
+}
+/* Строка для угла кадра. Пусто — значит сказать нечего, и место остаётся миру. */
+function cloudLine(){
+  if(typeof TAB_LIVE!=="undefined"&&!TAB_LIVE)return "запись здесь остановлена";
+  if(!cloudOn())return "";
+  const k=CLOUD_ST.k;
+  if(k==="fail")return "облако · не отправлено";
+  if(k==="gone")return "облако · вход устарел";
+  if(k==="conflict")return "облако · там запись новее";
+  if(k==="big")return "облако · запись велика";
+  return "";
+}
+/* Не вышло — пробуем снова, когда появился повод: вернулась сеть или игрок
+   вернулся во вкладку. Раньше следующая попытка ждала следующего сохранения, а
+   его могло и не случиться — игру просто закрывали. */
+function cloudRetry(){
+  if(!cloudOn())return;
+  const k=CLOUD_ST.k;
+  if(k!=="fail"&&k!=="")return;
+  cloudBusy=0;cloudPush(false);
+}
+if(typeof window!=="undefined"){
+  window.addEventListener("online",cloudRetry);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)cloudRetry();});
+}
+/* Отправка идёт молча и не чаще раза в двадцать секунд: сохранение случается
+   часто, а сеть — единственное в игре, что умеет тормозить кадр. */
+function cloudPush(loud){
+  if(!cloudOn()){if(loud)say("Вы не вошли в учётную запись");return;}
+  const now=Date.now();
+  if(!loud&&now-cloudBusy<20000)return;
+  cloudBusy=now;
+  const snap=snapshot();
+  cloudCall("push",{save:snap})
+    .then(d=>{
+      if(d&&d.ok){cloudLastTs=d.ts;cloudMark("");CLOUD_ST.said="";if(loud)say("Отправлено в облако");}
+      else if(d&&d.reason){cloudMark("conflict");if(loud)say("В облаке запись новее\nсначала заберите её");}
+      else if(d&&d.error==="нужен вход"){cloudForget();cloudMark("gone");if(loud)say("Вход устарел\nвойдите заново");}
+      /* «слишком большая запись» приходила как 413 и не подходила ни под одну
+         ветку: облако переставало обновляться навсегда, и никто об этом не
+         узнавал (A5 в docs/DESIGN-online-risks.md) */
+      else if(d&&d.error){cloudMark("big");if(loud)say("Облако не приняло запись\n"+d.error);}
+    })
+    .catch(()=>{cloudMark("fail");if(loud)say("Облако недоступно");});
+}
+function cloudPull(){
+  if(!cloudOn()){say("Вы не вошли в учётную запись");return;}
+  cloudCall("pull")
+    .then(d=>{
+      if(!d||!d.ok){say("В облаке нет записи");return;}
+      /* забрали чужое-новое — спор исчерпан, метка снимается */
+      if(applySave(d.save)){stSet(SAVE_KEY,JSON.stringify(d.save));cloudMark("");CLOUD_ST.said="";say("Загружено из облака");}
+      else say("Запись из облака не подошла");
+    })
+    .catch(()=>say("Облако недоступно"));
+}
+/* На запуске облако не спрашивает игрока и ничего не перетирает молча: оно лишь
+   кладёт в локальное хранилище ту запись, которая новее, — а продолжать полёт
+   или начинать заново, по-прежнему решает кнопка на заставке. */
+function cloudBoot(then){
+  if(!cloudOn()){then&&then(false);return;}
+  cloudCall("pull")
+    .then(d=>{
+      if(!d||!d.ok||!d.save){then&&then(false);return;}
+      let mine=0;
+      try{mine=(JSON.parse(stGet(SAVE_KEY))||{}).ts||0;}catch(e){}
+      if((d.save.ts||0)>mine){stSet(SAVE_KEY,JSON.stringify(d.save));then&&then(true);}
+      else then&&then(false);
+    })
+    .catch(()=>{then&&then(false);});
+}
+
+
 /* ══════════════ сохранение ══════════════ */
 /* Облако включается не настройкой, а входом: заглавная страница кладёт токен в
    localStorage того же домена, игра его просто видит. Открытая с диска игра
@@ -23135,7 +23309,23 @@ const CLOUD={api:"/api.php",tkey:"drift_token",lkey:"drift_login"};
 const SAVE_KEY="drift_save_v4";
 let STORAGE_OK=true, lastSave=0;
 function stGet(k){try{return localStorage.getItem(k);}catch(e){STORAGE_OK=false;return null;}}
-function stSet(k,v){try{localStorage.setItem(k,v);return true;}catch(e){STORAGE_OK=false;return false;}}
+/* Отказ хранилища раньше был виден только тому, кто сам открыл НАСТРОЙКИ →
+   СОХРАНЕНИЕ. В приватном окне Safari или при переполненной квоте человек играл
+   часами, ничего не записывая, и узнавал об этом закрыв вкладку. Про такое
+   сообщают сразу и громко — один раз, чтобы не превратиться в шум. */
+let STORAGE_TOLD=false;
+function stSet(k,v){
+  try{localStorage.setItem(k,v);return true;}
+  catch(e){
+    STORAGE_OK=false;
+    if(!STORAGE_TOLD){
+      STORAGE_TOLD=true;
+      if(typeof say==="function")say("ИГРА НЕ ЗАПИСЫВАЕТСЯ\nбраузер не даёт хранить\nсохраните код: НАСТРОЙКИ → СОХРАНЕНИЕ",420);
+      if(typeof logAdd==="function")logAdd("warn","Браузер не даёт записывать: полёт не сохраняется. НАСТРОЙКИ → СОХРАНЕНИЕ, скопируйте код.");
+    }
+    return false;
+  }
+}
 function stDel(k){try{localStorage.removeItem(k);}catch(e){}}
 function b64enc(s){const b=new TextEncoder().encode(s);let o="";
   for(let i=0;i<b.length;i++)o+=String.fromCharCode(b[i]);return btoa(o);}
@@ -23656,81 +23846,6 @@ function applySave(s){
   if(typeof G.opts.audio.engine!=="number")G.opts.audio.engine=.4;
   invalidateKeyMap();applyPadMode();applyPadSize();applyVolumes();
   return true;
-}
-function saveGame(quiet){
-  const ok=stSet(SAVE_KEY,JSON.stringify(snapshot()));
-  if(!quiet)say(ok?"Полёт записан":"Хранилище недоступно\nвоспользуйтесь кодом");
-  if(ok)cloudPush(false);
-  return ok;
-}
-function autosave(){
-  if(G.t-lastSave<600)return;
-  lastSave=G.t;saveGame(true);
-}
-function loadGame(){
-  const raw=stGet(SAVE_KEY);if(!raw)return false;
-  try{return applySave(JSON.parse(raw));}catch(e){return false;}
-}
-function hasSave(){return !!stGet(SAVE_KEY);}
-function exportCode(){return b64enc(JSON.stringify(snapshot()));}
-function importCode(c){
-  try{return applySave(JSON.parse(b64dec(c)));}catch(e){return false;}
-}
-/* ══════════════ облако ══════════════
-   Три состояния, и путать их нельзя: игра с диска (облака нет вовсе), игра на
-   сайте без входа (есть, но не наше) и игра с учётной записью. */
-function cloudTok(){return stGet(CLOUD.tkey)||"";}
-function cloudName(){return stGet(CLOUD.lkey)||"";}
-function cloudHere(){return location.protocol==="http:"||location.protocol==="https:";}
-function cloudOn(){return cloudHere()&&!!cloudTok();}
-function cloudCall(a,body){
-  return fetch(CLOUD.api+"?a="+a,{method:"POST",
-    headers:{"Content-Type":"application/json","X-Drift-Token":cloudTok()},
-    body:JSON.stringify(body||{})}).then(r=>r.json());
-}
-function cloudForget(){stDel(CLOUD.tkey);stDel(CLOUD.lkey);}
-
-let cloudBusy=0,cloudLastTs=0;
-/* Отправка идёт молча и не чаще раза в двадцать секунд: сохранение случается
-   часто, а сеть — единственное в игре, что умеет тормозить кадр. */
-function cloudPush(loud){
-  if(!cloudOn()){if(loud)say("Вы не вошли в учётную запись");return;}
-  const now=Date.now();
-  if(!loud&&now-cloudBusy<20000)return;
-  cloudBusy=now;
-  const snap=snapshot();
-  cloudCall("push",{save:snap})
-    .then(d=>{
-      if(d&&d.ok){cloudLastTs=d.ts;if(loud)say("Отправлено в облако");}
-      else if(d&&d.reason){if(loud)say("В облаке запись новее\nсначала заберите её");}
-      else if(d&&d.error==="нужен вход"){cloudForget();if(loud)say("Вход устарел\nвойдите заново");}
-    })
-    .catch(()=>{if(loud)say("Облако недоступно");});
-}
-function cloudPull(){
-  if(!cloudOn()){say("Вы не вошли в учётную запись");return;}
-  cloudCall("pull")
-    .then(d=>{
-      if(!d||!d.ok){say("В облаке нет записи");return;}
-      if(applySave(d.save)){stSet(SAVE_KEY,JSON.stringify(d.save));say("Загружено из облака");}
-      else say("Запись из облака не подошла");
-    })
-    .catch(()=>say("Облако недоступно"));
-}
-/* На запуске облако не спрашивает игрока и ничего не перетирает молча: оно лишь
-   кладёт в локальное хранилище ту запись, которая новее, — а продолжать полёт
-   или начинать заново, по-прежнему решает кнопка на заставке. */
-function cloudBoot(then){
-  if(!cloudOn()){then&&then(false);return;}
-  cloudCall("pull")
-    .then(d=>{
-      if(!d||!d.ok||!d.save){then&&then(false);return;}
-      let mine=0;
-      try{mine=(JSON.parse(stGet(SAVE_KEY))||{}).ts||0;}catch(e){}
-      if((d.save.ts||0)>mine){stSet(SAVE_KEY,JSON.stringify(d.save));then&&then(true);}
-      else then&&then(false);
-    })
-    .catch(()=>{then&&then(false);});
 }
 
 /* ══════════════ экранные кнопки: авто-скрытие и размер ══════════════ */
@@ -46967,10 +47082,16 @@ function roadSys(lat,lon){
    Оффлайн и file:// молчат: строки про пилотов просто нет. */
 function roadPing(){
   if(!RD||!RD.sys||location.protocol.indexOf("http")!==0)return;
+  /* ── у дороги своя метка (25.08.2026) ──
+     Была общая с игровым следом (`drift_pilot`). Сама по себе каждая безобидна:
+     дорога хранит номер клетки 2.8 км три минуты, след — место в игре тридцать
+     дней. Но метка-то одна, и на сервере эти две записи ложатся рядом — то есть
+     появляется ниточка между тем, ГДЕ человек ездит по земле, и тем, что он
+     делает в игре. Никому эта ниточка не нужна, а стоит она одну строку. */
   let id="";
   try{
-    id=localStorage.drift_pilot||"";
-    if(!id){id=Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,"0")).join("");localStorage.drift_pilot=id;}
+    id=localStorage.drift_road||"";
+    if(!id){id=Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,"0")).join("");localStorage.drift_road=id;}
   }catch(e){return;}
   fetch(CLOUD.api+"?a=road",{method:"POST",body:JSON.stringify({sec:RD.sys.cx+":"+RD.sys.cy,id})})
     .then(r=>r.json()).then(j=>{if(RD&&j&&j.ok)RD.mates=j.n|0;}).catch(()=>{});
@@ -48039,6 +48160,27 @@ function renderOpts(){
       rcl.appendChild(b3);
     }
     $optBody.appendChild(rcl);
+    /* ── уйти совсем ──
+       Раньше уйти было нельзя: запись, почта и хеш пароля оставались навсегда, а
+       просьба «удалите меня» упиралась в переписку. Кнопка стоит последней и
+       спрашивает пароль — необратимое действие должно стоить усилия. */
+    if(cloudOn()){
+      const rdel=el("div","row");
+      rdel.appendChild(el("div","nm","<b>Удалить учётную запись</b>"+
+        "<s>с сервера уйдёт всё: запись, почта, облачное сохранение и суточные копии.<br>"+
+        "полёт в этом браузере останется — он хранится здесь</s>"));
+      const bd=el("button","act","УДАЛИТЬ");
+      bd.onclick=()=>{
+        const p=prompt("Это необратимо: с сервера уйдёт всё.\nВведите пароль, чтобы подтвердить:");
+        if(!p)return;
+        cloudCall("delete",{pass:p}).then(d=>{
+          if(d&&d.ok){cloudForget();say("Учётная запись удалена\nполёт остался в этом браузере",260);renderOpts();}
+          else say("Не удалено\n"+((d&&d.error)||"сервер не ответил"),220);
+        }).catch(()=>say("Облако недоступно"));
+      };
+      rdel.appendChild(bd);
+      $optBody.appendChild(rdel);
+    }
   }
 
   const rrs=el("div","row");
@@ -48221,7 +48363,10 @@ function hud(){
     setTx($jn,Math.round(jf*100)+"%");
     $vj.classList.toggle("low",jf<.2);
   }
-  setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан");
+  /* Кошелёк, а под ним — облако, но только когда с ним что-то не так. Молчащий
+     обмен места в кадре не занимает (docs/DESIGN-online-risks.md, A1). */
+  const cl=(typeof cloudLine==="function")?cloudLine():"";
+  setTx($purse,Math.round(G.credits).toLocaleString("ru")+" кр · "+G.data+" дан"+(cl?" · "+cl:""));
   /* Приборы проявляются, когда есть о чём сказать, и гаснут, когда всё ровно.
      Повод — изменившееся показание, тревога или открытый режим, где приборы
      и есть содержание кадра. Панель, которая горит всегда, перестаёт читаться

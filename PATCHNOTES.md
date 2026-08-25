@@ -7,6 +7,42 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.154.0 — the exchange stops being silent (online audit, part two)
+
+The rest of the online audit ([docs/DESIGN-online-risks.md](docs/DESIGN-online-risks.md)). The
+finding that drove all of it: in a single-player game with a cloud save, the dangerous party is not
+a cheat — it is **silence**. The server cannot know what a player earned (it stores whatever the
+client sends, by design, and that is the right choice), so nothing is at stake in anyone's numbers.
+What *is* at stake is an evening of play that quietly failed to upload.
+
+- **Every failed exchange now says so, once.** A push refused because the cloud is newer, a token
+  that expired, a save that no longer fits, a network that is gone — all four used to return
+  silently, and the player learned about it days later on another device, by not finding their
+  evening. Now the state lives next to the purse — `облако · не отправлено` — appears only when
+  something is wrong, and the journal explains it in one line. Success stays silent, as it should.
+- **A failed push is retried when there is a reason to** — the network came back, or the player
+  returned to the tab — instead of waiting for the next save that may never come.
+- **One tab plays.** Two open tabs wrote to the same key, and whichever saved last won: a tab
+  forgotten in the morning would overwrite the evening. No attacker needed — just opening the game
+  twice. The tab opened last plays; the older one stops writing and says so plainly, so the player
+  knows which window to continue in.
+- **Storage failure is now loud.** In Safari's private mode, or with a full quota, the game was
+  writing nothing and only admitted it inside the settings screen. Now it says so the moment it
+  happens — once, with what to do about it.
+- **A save timestamp from the future no longer freezes the cloud** (server side, 0.153.1).
+- **An account can be deleted** — `НАСТРОЙКИ → ОБЛАКО → УДАЛИТЬ`, password required. Everything goes:
+  the record, the email, the cloud save and its daily copies. There was no way to leave before.
+- **The server keeps a daily copy of the save it is about to replace**, fourteen days deep. It
+  deliberately keeps the *previous* state: the incident that actually happens is a broken client
+  overwriting a good game, and a copy of the damage would be worthless. A copy off the host was
+  declined by the author, knowingly — the risk is written down in the document.
+- **The road and the trace no longer share one pilot mark.** Each was harmless alone; together, on
+  one disk, they tied where a person drives in the real world to what they do in the game. Two keys
+  instead of one.
+
+`14-save` was split along the fresh seam: the snapshot stays, the exchange moved to `14a-cloud`.
+Suite `91zzze-sync`.
+---
 ## 0.153.1 — the door nobody was watching (online audit)
 
 An audit of the online side, asked for in plain words: what breaks without a connection, how would

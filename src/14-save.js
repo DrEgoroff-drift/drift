@@ -6,7 +6,23 @@ const CLOUD={api:"/api.php",tkey:"drift_token",lkey:"drift_login"};
 const SAVE_KEY="drift_save_v4";
 let STORAGE_OK=true, lastSave=0;
 function stGet(k){try{return localStorage.getItem(k);}catch(e){STORAGE_OK=false;return null;}}
-function stSet(k,v){try{localStorage.setItem(k,v);return true;}catch(e){STORAGE_OK=false;return false;}}
+/* Отказ хранилища раньше был виден только тому, кто сам открыл НАСТРОЙКИ →
+   СОХРАНЕНИЕ. В приватном окне Safari или при переполненной квоте человек играл
+   часами, ничего не записывая, и узнавал об этом закрыв вкладку. Про такое
+   сообщают сразу и громко — один раз, чтобы не превратиться в шум. */
+let STORAGE_TOLD=false;
+function stSet(k,v){
+  try{localStorage.setItem(k,v);return true;}
+  catch(e){
+    STORAGE_OK=false;
+    if(!STORAGE_TOLD){
+      STORAGE_TOLD=true;
+      if(typeof say==="function")say("ИГРА НЕ ЗАПИСЫВАЕТСЯ\nбраузер не даёт хранить\nсохраните код: НАСТРОЙКИ → СОХРАНЕНИЕ",420);
+      if(typeof logAdd==="function")logAdd("warn","Браузер не даёт записывать: полёт не сохраняется. НАСТРОЙКИ → СОХРАНЕНИЕ, скопируйте код.");
+    }
+    return false;
+  }
+}
 function stDel(k){try{localStorage.removeItem(k);}catch(e){}}
 function b64enc(s){const b=new TextEncoder().encode(s);let o="";
   for(let i=0;i<b.length;i++)o+=String.fromCharCode(b[i]);return btoa(o);}
@@ -527,79 +543,4 @@ function applySave(s){
   if(typeof G.opts.audio.engine!=="number")G.opts.audio.engine=.4;
   invalidateKeyMap();applyPadMode();applyPadSize();applyVolumes();
   return true;
-}
-function saveGame(quiet){
-  const ok=stSet(SAVE_KEY,JSON.stringify(snapshot()));
-  if(!quiet)say(ok?"Полёт записан":"Хранилище недоступно\nвоспользуйтесь кодом");
-  if(ok)cloudPush(false);
-  return ok;
-}
-function autosave(){
-  if(G.t-lastSave<600)return;
-  lastSave=G.t;saveGame(true);
-}
-function loadGame(){
-  const raw=stGet(SAVE_KEY);if(!raw)return false;
-  try{return applySave(JSON.parse(raw));}catch(e){return false;}
-}
-function hasSave(){return !!stGet(SAVE_KEY);}
-function exportCode(){return b64enc(JSON.stringify(snapshot()));}
-function importCode(c){
-  try{return applySave(JSON.parse(b64dec(c)));}catch(e){return false;}
-}
-/* ══════════════ облако ══════════════
-   Три состояния, и путать их нельзя: игра с диска (облака нет вовсе), игра на
-   сайте без входа (есть, но не наше) и игра с учётной записью. */
-function cloudTok(){return stGet(CLOUD.tkey)||"";}
-function cloudName(){return stGet(CLOUD.lkey)||"";}
-function cloudHere(){return location.protocol==="http:"||location.protocol==="https:";}
-function cloudOn(){return cloudHere()&&!!cloudTok();}
-function cloudCall(a,body){
-  return fetch(CLOUD.api+"?a="+a,{method:"POST",
-    headers:{"Content-Type":"application/json","X-Drift-Token":cloudTok()},
-    body:JSON.stringify(body||{})}).then(r=>r.json());
-}
-function cloudForget(){stDel(CLOUD.tkey);stDel(CLOUD.lkey);}
-
-let cloudBusy=0,cloudLastTs=0;
-/* Отправка идёт молча и не чаще раза в двадцать секунд: сохранение случается
-   часто, а сеть — единственное в игре, что умеет тормозить кадр. */
-function cloudPush(loud){
-  if(!cloudOn()){if(loud)say("Вы не вошли в учётную запись");return;}
-  const now=Date.now();
-  if(!loud&&now-cloudBusy<20000)return;
-  cloudBusy=now;
-  const snap=snapshot();
-  cloudCall("push",{save:snap})
-    .then(d=>{
-      if(d&&d.ok){cloudLastTs=d.ts;if(loud)say("Отправлено в облако");}
-      else if(d&&d.reason){if(loud)say("В облаке запись новее\nсначала заберите её");}
-      else if(d&&d.error==="нужен вход"){cloudForget();if(loud)say("Вход устарел\nвойдите заново");}
-    })
-    .catch(()=>{if(loud)say("Облако недоступно");});
-}
-function cloudPull(){
-  if(!cloudOn()){say("Вы не вошли в учётную запись");return;}
-  cloudCall("pull")
-    .then(d=>{
-      if(!d||!d.ok){say("В облаке нет записи");return;}
-      if(applySave(d.save)){stSet(SAVE_KEY,JSON.stringify(d.save));say("Загружено из облака");}
-      else say("Запись из облака не подошла");
-    })
-    .catch(()=>say("Облако недоступно"));
-}
-/* На запуске облако не спрашивает игрока и ничего не перетирает молча: оно лишь
-   кладёт в локальное хранилище ту запись, которая новее, — а продолжать полёт
-   или начинать заново, по-прежнему решает кнопка на заставке. */
-function cloudBoot(then){
-  if(!cloudOn()){then&&then(false);return;}
-  cloudCall("pull")
-    .then(d=>{
-      if(!d||!d.ok||!d.save){then&&then(false);return;}
-      let mine=0;
-      try{mine=(JSON.parse(stGet(SAVE_KEY))||{}).ts||0;}catch(e){}
-      if((d.save.ts||0)>mine){stSet(SAVE_KEY,JSON.stringify(d.save));then&&then(true);}
-      else then&&then(false);
-    })
-    .catch(()=>{then&&then(false);});
 }
