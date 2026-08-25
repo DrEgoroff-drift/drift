@@ -1045,7 +1045,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.158.1";
+const VER="0.159.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -46874,7 +46874,29 @@ const ROAD_C=299792;                      /* км/с: на гипердрайв�
       которого режим и включают.
    Потолок дня поднят соразмерно; скоростной здравый смысл остаётся
    единственным сторожем, как автор и решил на втором проходе. */
-const ROAD_CR_KM=6,ROAD_CR_CAP=3000,ROAD_COMBO_MAX=3,ROAD_COMBO_T=1200,ROAD_STOP_T=120;
+const ROAD_CR_KM=6,ROAD_COMBO_MAX=3,ROAD_COMBO_T=1200,ROAD_STOP_T=120;
+/* ── ЗАПАС вместо суточной стенки (M168k, слова автора) ──
+   «Ну ты 2 раза ездишь на работу с работы, выходные на дачу далеко, давай
+   поднимем потолок + типо учтём колебания такие».
+
+   Плоский потолок дня не умеет в колебания по построению: он одинаково режет и
+   будни, и дачу, а ездят люди не ровно. Поэтому не потолок, а БАК. Каждые сутки
+   в него натекает `ROAD_DAY_ADD`, накопиться он может до `ROAD_BANK_MAX` —
+   около недели, — а поездка тратит из накопленного.
+
+   Что из этого выходит само:
+   · будни (две дороги, 300–600 кр) тратят меньше, чем натекает, — бак растёт;
+   · дача в выходные (три сотни километров туда-обратно, ~6 700) оплачивается
+     целиком из того, что накоплено за неделю, и это ощущается наградой;
+   · а тот, кто катается целыми днями подряд, получает ровно суточный приток и
+     не больше: сколько ни езди, из пустого бака не капнет.
+   Экономику это не двигает: одно торговое плечо — 300–600 кр, содержание штаба
+   с полным штатом — 300+ кр/мин, то есть весь суточный приток дороги штаб
+   проедает за семь минут (docs/DESIGN-economy.md). Дорога остаётся приятностью.
+
+   Натекает НЕПРЕРЫВНО, а не в полночь: выехал утром после ночи — уже часть
+   суток в баке. Часы, переведённые назад, приток не начисляют (Math.max). */
+const ROAD_DAY_ADD=2200,ROAD_BANK_MAX=14000;
 const ROAD_TURN_CR=12,ROAD_TURN_PAY=.34;  /* премия за полный поворот и порог, доля полного сноса */
 const ROAD_BACK_FAR=.6,ROAD_BACK_DROP=.25,ROAD_BACK_K=1.5;  /* км: докуда отъехать и насколько вернуться */
 /* премия за поворот: по пику сноса, с тем же комбо, что и километры */
@@ -46960,9 +46982,19 @@ function roadAll(){if(!G.road||typeof G.road!=="object")G.road={day:-1,km:0,cr:0
 /* день — календарный: игровые сутки идут 60 секунд, и на них «за поездку»
    обнулялось раз в минуту прямо посреди дороги (M168g) */
 function roadToday(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
-function roadDayReset(){
+/* приток в бак: чистая функция, её и гоняют автотесты */
+function roadBankAdd(bank,ms){
+  return clamp((bank||0)+ROAD_DAY_ADD*Math.max(0,ms||0)/86400000,0,ROAD_BANK_MAX);
+}
+function roadDayReset(now){
   const R=roadAll(),d=roadToday();
   if(R.day!==d){R.day=d;R.km=0;R.cr=0;}
+  /* бак: старым сохранениям наливаем полный — они его ни разу не тратили */
+  const t=now==null?Date.now():now;
+  if(R.bank==null){R.bank=ROAD_BANK_MAX;R.bts=t;}
+  /* именно `==null`, а не `||`: отметка времени в ноль — законное значение, а
+     на `||` она подменялась текущим временем, и приток молча не начислялся */
+  else{R.bank=roadBankAdd(R.bank,t-(R.bts==null?t:R.bts));R.bts=t;}
   return R;
 }
 function roadSpeedOk(kmh){return kmh>=ROAD_VMIN&&kmh<=ROAD_VMAX;}
@@ -46997,13 +47029,13 @@ function roadEarnKm(km,moveT){
   const R=roadDayReset();
   R.km+=km;
   if(RD)RD.kmTrip=(RD.kmTrip||0)+km;
-  if(R.cr>=ROAD_CR_CAP)return 0;
+  if(R.bank<1)return 0;
   const due=km*ROAD_CR_KM*roadCombo(moveT)*(RD&&RD.back?ROAD_BACK_K:1);
   RD&&(RD.crFrac=(RD.crFrac||0)+due);
   let n=RD?Math.floor(RD.crFrac):Math.floor(due);
   if(RD)RD.crFrac-=n;
-  n=Math.min(n,ROAD_CR_CAP-R.cr);
-  if(n>0){R.cr+=n;RD&&(RD.crTrip=(RD.crTrip||0)+n);earn(n,"road");}
+  n=Math.min(n,Math.floor(R.bank));
+  if(n>0){R.bank-=n;R.cr+=n;RD&&(RD.crTrip=(RD.crTrip||0)+n);earn(n,"road");}
   return n;
 }
 function roadFinish(){
@@ -47013,7 +47045,7 @@ function roadFinish(){
     /* сперва про поездку — про неё и спрашивают, — а сутки следом, чтобы было
        видно, сколько ещё осталось до потолка */
     tell("money","Дорога: +"+cr+" кр за поездку · "+km.toFixed(1)+" км"+
-      (R.cr>cr?" · за сутки "+R.cr+" из "+ROAD_CR_CAP:""),"ДОРОГА\n+"+cr+" кр");
+      (R.cr>cr?" · за сутки "+R.cr:"")+" · запас "+Math.floor(R.bank),"ДОРОГА\n+"+cr+" кр");
     if(typeof recordAdd==="function")
       recordAdd("дорога","командировочные: "+cr+" кр за "+km.toFixed(0)+" км"+
         (R.cr>cr?" (за сутки "+R.cr+")":""));
@@ -47282,10 +47314,10 @@ function roadTurnTick(kmh){
   RD.turnPk=0;
   if(pk<=ROAD_TURN_PAY||(kmh||0)<ROAD_MOVE_GATE)return 0;
   const R=roadDayReset();
-  if(R.cr>=ROAD_CR_CAP)return 0;
+  if(R.bank<1)return 0;
   let n=roadTurnPay(pk,roadCombo(RD.moveT)*(RD.back?ROAD_BACK_K:1));
-  n=Math.min(n,ROAD_CR_CAP-R.cr);
-  if(n>0){R.cr+=n;RD.crTrip=(RD.crTrip||0)+n;earn(n,"road");RD.flash="ПОВОРОТ +"+n;RD.flashT=1.4;}
+  n=Math.min(n,Math.floor(R.bank));
+  if(n>0){R.bank-=n;R.cr+=n;RD.crTrip=(RD.crTrip||0)+n;earn(n,"road");RD.flash="ПОВОРОТ +"+n;RD.flashT=1.4;}
   return n;
 }
 /* ── звук → настроение ──
@@ -48157,10 +48189,12 @@ function drawRoad(ts){
      заработано сейчас, мелко — сколько уже собрано за день и где потолок.
      Пока за сутки ровно столько же, сколько за поездку, строки нет: это
      первая поездка дня, и повторять одно число дважды незачем */
-  if(R.cr>(RD.crTrip||0)&&R.cr<ROAD_CR_CAP){yy+=Math.round(H*.026);
-    c.fillText("за сутки "+R.cr.toLocaleString("ru")+" из "+ROAD_CR_CAP.toLocaleString("ru")+" кр",px2,yy);}
-  if(R.cr>=ROAD_CR_CAP){yy+=Math.round(H*.026);
-    c.fillText("дневной потолок собран — дальше просто красиво",px2,yy);}
+  if(R.bank>=1){
+    let dl=(R.cr>(RD.crTrip||0)?"за сутки "+R.cr.toLocaleString("ru")+" · ":"")+
+      "запас "+Math.floor(R.bank).toLocaleString("ru")+" кр";
+    if(dl){yy+=Math.round(H*.026);c.fillText(dl,px2,yy);}
+  }else{yy+=Math.round(H*.026);
+    c.fillText("запас исчерпан — натечёт к завтрашнему дню, а пока просто красиво",px2,yy);}
   /* телефон лёг набок: экранная ось X встала к вертикали, «поперёк» не
      определено, а гироскопа нет — честно молчим, а не выдумываем поворот.
      Про микрофон сказано прямо и до того, как его включат: подключён Android

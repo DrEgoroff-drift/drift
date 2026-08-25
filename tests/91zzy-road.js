@@ -25,13 +25,13 @@ TEST_SUITES.push(()=>suite("дорога: километры — в кредит
   eq(roadAll().cr,5*ROAD_CR_KM,"счётчик дня совпадает");
   roadEarnKm(5,ROAD_COMBO_T);
   eq(G.credits-c0,5*ROAD_CR_KM*4,"те же 5 км на ×3 — втрое сверху");
-  /* потолок дня мягкий, но есть */
-  roadEarnKm(10000,0);
-  eq(roadAll().cr,ROAD_CR_CAP,"дневной потолок: "+ROAD_CR_CAP);
+  /* запас конечен: из пустого бака не капает */
+  roadEarnKm(100000,0);
+  ok(roadAll().bank<1,"бак вычерпан: "+roadAll().bank.toFixed(2));
   const c1=G.credits;roadEarnKm(50,0);
-  eq(G.credits,c1,"выше потолка не капает");
+  eq(G.credits,c1,"из пустого бака не капает");
   /* назавтра заново: день календарный, поэтому двигаем отметку дня, а не G.t */
-  roadAll().day=-1;roadEarnKm(1,0);
+  roadAll().day=-1;roadAll().bank=999;roadEarnKm(1,0);
   eq(roadAll().cr,ROAD_CR_KM,"новый день — новый счёт");
   /* сохранение */
   const s=snapshot();G.road=null;applySave(JSON.parse(JSON.stringify(s)));
@@ -388,4 +388,40 @@ TEST_SUITES.push(()=>suite("дорога: поездка и сутки — ра�
   ok(e.length>=2,"каждая поездка оставляет свою строку: "+e.length);
   ok(/за сутки/.test(e[e.length-1].s),"во второй строке видны и сутки: "+e[e.length-1].s);
   G.road=null;
+}));
+
+TEST_SUITES.push(()=>suite("дорога: не потолок, а запас — будни копят, дача тратит",()=>{
+  resetWorld();
+  G.road=null;
+  /* приток: сутки дают ровно суточную норму, и не больше потолка бака */
+  ok(Math.abs(roadBankAdd(0,86400000)-ROAD_DAY_ADD)<1e-6,"за сутки натекает "+ROAD_DAY_ADD);
+  ok(Math.abs(roadBankAdd(0,43200000)-ROAD_DAY_ADD/2)<1e-6,"за полсуток — половина: приток непрерывный");
+  eq(roadBankAdd(ROAD_BANK_MAX,86400000*10),ROAD_BANK_MAX,"выше потолка бак не растёт");
+  eq(roadBankAdd(500,-86400000),500,"часы назад — приток не начисляется");
+  eq(roadBankAdd(0,0),0,"без времени нет притока");
+  /* старому сохранению наливаем полный бак: оно его ни разу не тратило */
+  G.road={day:-1,km:0,cr:0};
+  const R=roadDayReset(1000);
+  eq(R.bank,ROAD_BANK_MAX,"старое сохранение получает полный бак");
+  /* бак живёт по календарю, а не по игровым суткам */
+  R.bank=100;R.bts=0;
+  roadDayReset(86400000);
+  ok(Math.abs(roadAll().bank-(100+ROAD_DAY_ADD))<1,"сутки простоя — плюс суточная норма: "+roadAll().bank.toFixed(0));
+  /* колебания: неделя буден копит на дачу */
+  G.road={day:-1,km:0,cr:0,bank:0,bts:0};
+  let t=0;
+  for(let d=0;d<5;d++){                       /* пять будних дней по две дороги */
+    t+=86400000;roadDayReset(t);
+    RD={crFrac:0,crTrip:0,kmTrip:0};
+    roadEarnKm(10,600);roadEarnKm(10,600);    /* туда и обратно, по десять км */
+    RD=null;
+  }
+  const saved=roadAll().bank;
+  ok(saved>6000,"за рабочую неделю бак накопился: "+Math.round(saved));
+  RD={crFrac:0,crTrip:0,kmTrip:0};
+  const c0=G.credits;
+  roadEarnKm(300,ROAD_COMBO_T);               /* дача: три сотни километров */
+  ok(G.credits-c0>4000,"дача оплачена из накопленного: +"+(G.credits-c0));
+  ok(roadAll().bank<saved,"и бак на это потрачен");
+  RD=null;G.road=null;
 }));

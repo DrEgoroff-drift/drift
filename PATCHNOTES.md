@@ -7,6 +7,27 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.159.0 — the road: not a cap but a tank (M168k)
+
+«Ну ты 2 раза ездишь на работу с работы, выходные на дачу далеко, давай поднимем потолок + типо
+учтём колебания такие.» A flat daily cap cannot do swings by construction: it cuts a weekday and a
+trip to the dacha the same way, and nobody drives evenly.
+
+So it is a **tank** now. 2 200 credits flow in every day, it fills to 14 000 — about a week — and a
+trip spends what has accumulated. The inflow is continuous, not at midnight.
+
+- A weekday with two commutes spends 300–600 against an inflow of 2 200: **the tank grows.**
+- **The dacha, three hundred kilometres there and back, is paid in full** — roughly 6 700, out of
+  what the working week put by.
+- Driving all day every day settles at the daily inflow and no more. This is not a cap that
+  punishes a big day; it is a reservoir that rewards not having driven.
+- On screen it is a quiet line under the trip counter — «запас 14 000 кр» — so it can be watched
+  going down instead of being a wall. Empty, it says so and the mode goes on being free and pretty.
+
+It stays a pleasantry against the game's own scale: a trade leg is 300–600 credits, a fully
+staffed HQ burns 300+ a minute, so the road's entire daily inflow is about seven minutes of upkeep.
+
+---
 ## 0.158.1 — the road: a trip and a day are different numbers (M168k)
 
 «Каждая поездка новые кредиты или в день ограничить, а то не понятно» — and it was not clear for

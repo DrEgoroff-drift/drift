@@ -492,10 +492,12 @@ function drawRoad(ts){
      заработано сейчас, мелко — сколько уже собрано за день и где потолок.
      Пока за сутки ровно столько же, сколько за поездку, строки нет: это
      первая поездка дня, и повторять одно число дважды незачем */
-  if(R.cr>(RD.crTrip||0)&&R.cr<ROAD_CR_CAP){yy+=Math.round(H*.026);
-    c.fillText("за сутки "+R.cr.toLocaleString("ru")+" из "+ROAD_CR_CAP.toLocaleString("ru")+" кр",px2,yy);}
-  if(R.cr>=ROAD_CR_CAP){yy+=Math.round(H*.026);
-    c.fillText("дневной потолок собран — дальше просто красиво",px2,yy);}
+  if(R.bank>=1){
+    let dl=(R.cr>(RD.crTrip||0)?"за сутки "+R.cr.toLocaleString("ru")+" · ":"")+
+      "запас "+Math.floor(R.bank).toLocaleString("ru")+" кр";
+    if(dl){yy+=Math.round(H*.026);c.fillText(dl,px2,yy);}
+  }else{yy+=Math.round(H*.026);
+    c.fillText("запас исчерпан — натечёт к завтрашнему дню, а пока просто красиво",px2,yy);}
   /* телефон лёг набок: экранная ось X встала к вертикали, «поперёк» не
      определено, а гироскопа нет — честно молчим, а не выдумываем поворот.
      Про микрофон сказано прямо и до того, как его включат: подключён Android

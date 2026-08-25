@@ -623,3 +623,37 @@ Both numbers exist and both matter, so both are on screen and each says what it 
 The cap remains a **daily** limit: that is the thing that keeps a car ride from turning into an
 income stream, and it is unchanged in kind since the first pass. Credits are earned fresh on every
 trip; what is limited is how much a day of driving can be worth.
+
+### Not a cap but a tank (0.159.0)
+
+The author: «ну ты 2 раза ездишь на работу с работы, выходные на дачу далеко, давай поднимем
+потолок + типо учтём колебания такие».
+
+A flat daily cap cannot do swings, by construction — it cuts a weekday and a trip to the dacha the
+same way, and nobody drives evenly. So it is not a cap any more, it is a **tank**. Every day
+`ROAD_DAY_ADD` (2 200) flows into it, it fills up to `ROAD_BANK_MAX` (14 000, about a week), and a
+trip spends what has accumulated. The inflow is continuous rather than at midnight — set off in
+the morning after a night and part of a day is already in the tank. Clocks moved backwards accrue
+nothing.
+
+What falls out of that shape on its own:
+
+| | spends | against an inflow of 2 200 |
+|---|---|---|
+| a weekday, two commutes | 300–600 | the tank grows |
+| a working week | ~2 500 | ends near full |
+| the dacha, 300 km there and back | ~6 700 | paid in full out of the week |
+| driving all day, every day | — | the sustained ceiling is the daily inflow, and no more |
+
+That last row is the point: this is not a cap that punishes a big day, it is a reservoir that
+rewards *not* having driven. And it stays a pleasantry against the game's own numbers — one trade
+leg is 300–600 credits and a fully staffed HQ burns 300+ a minute, so the road's whole daily
+inflow is about seven minutes of upkeep ([`docs/DESIGN-economy.md`](DESIGN-economy.md)).
+
+On screen the tank is a quiet line under the trip's counter — «запас 14 000 кр» — so it can be
+watched going down instead of hitting a wall. Empty, it says so and the mode goes on being
+beautiful for free.
+
+A bug the suite caught while this was being written: the accrual read its timestamp as
+`R.bts||t`, and a stored zero is falsy — the elapsed time became zero and nothing ever accrued for
+that save. `==null` now, as it should have been.

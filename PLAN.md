@@ -553,9 +553,11 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
   скучно за 20 кредитов, мож комбо за повороты там, за движение назад». Six credits a kilometre
   instead of two, a one-off bonus per real corner (paid by its peak, once, on the way out of the
   arc), and ×1.5 once the trip turns back toward where it started. Five kilometres home is ~130
-  credits now against 20; the cap went 1500 → 3000 and binds only on a long trip. **Open for the
-  author to judge on the road:** whether the cap is now too generous — the lever is the cap, not
-  the rate.
+  credits now against 20. The trip and the day are separate numbers on screen (0.158.1 — the label
+  «за поездку» had been showing the day since the second pass). And the daily cap became a **tank**
+  (0.159.0): 2 200 flows in a day, it fills to 14 000, a trip spends what accumulated — so a week
+  of commuting pays for a weekend run to the dacha, while driving all day every day settles at the
+  daily inflow. **Open for the author to judge on the road:** the inflow and the tank size.
 - **Release look** — after M161: the table as paper, removal of the overlay HUD.
 
 # QUEUE: after the graphics campaign
