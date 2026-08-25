@@ -7,6 +7,14 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.162.3 — text over the world gets a shadow, not only a glow
+
+Seen on the low-suit frame: the arrival message ran across the lit ring of the sky giant and
+disappeared inside it. A glow separates a letter from a *dark* background and does nothing on a
+bright one, and both the message and the action prompt had only a glow. Both now carry a dark
+shadow first and keep the glow as mood. The same rule the instruments already follow.
+
+---
 ## 0.162.2 — rain falls at its own speed, and the camera's precondition is written down
 
 **The rain.** It has had two depths since 0.99.8, and that already gave it distance — but inside the
