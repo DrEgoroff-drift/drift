@@ -32,6 +32,13 @@ function skyScene(p){
   p.sky2=S;
   return S;
 }
+/* ── мерка неба (автор: «дыра в полкадра» на телефоне, M178) ──
+   Размеры небесных тел считались от ВЫСОТЫ кадра. На мониторе она меньше
+   ширины и мерка честная; на телефоне в портрете высота вдвое больше ширины —
+   и чёрная дыра с гигантом раздувались на полкадра, съедая всю композицию.
+   Мерка тела — узкая сторона кадра: на мониторе это та же высота (ничего не
+   меняется), на телефоне тела соразмерны экрану. */
+function skyU(){return Math.min(H,W*1.05);}
 /* цветовая связка: небесное берёт оттенок от звезды системы и от палитры
    планеты, поэтому кадр остаётся одной картинкой, а не набором наклеек */
 function skyTint(p,i){
@@ -60,12 +67,15 @@ function drawSkyBodies(p,camx,camy){
   const S=skyScene(p);if(!S.length)return;
   const atm=p.T.atm!=="отсутствует";
   const dim=atm?.42:1;                       // воздух гасит небо
-  /* параллакс считается от середины мира, а не от нуля: при отсчёте от нуля
-     к середине планеты сдвиг доходил до трети экрана и вся композиция уезжала
-     за левую кромку. Ход зажат — небо далеко, оно почти не движется. */
+  /* ── параллакс без зажима (автор: «дыра следует за кораблём», M178) ──
+     Сдвиг был зажат в десятую экрана, и на подлёте через всю полосу тело
+     ехало вместе с кораблём, как приклеенное к стеклу. Теперь ход свободный
+     и медленный: летишь — небо остаётся, тело уходит за кадр и возвращается,
+     когда возвращаешься ты. Отсчёт от середины мира, чтобы композиция сцены
+     держалась в серёдке полосы, где садятся чаще всего. */
   const tw=(G.surf&&G.surf.tr?G.surf.tr.W:(G.land&&G.land.tr?G.land.tr.W:9000));
-  const px=clamp(-(camx-tw*.5)*.02,-W*.10,W*.10);
-  const py=clamp(-camy*.02,-H*.06,H*.06);
+  const px=-(camx-tw*.5)*.05;
+  const py=-(camy-260)*.05;
   for(const e of S){
     const x=e.x*W+px, y=e.y*H+py;
     if(e.k==="giant")skyGiant(p,e,x,y,dim);
@@ -145,7 +155,7 @@ function skyWorldTex(e){
 }
 function skyWorld(p,e,x,y,dim){
   const T=skyWorldTex(e);
-  const R=H*(e.k==="world"?.12:.09)*e.s;
+  const R=skyU()*(e.k==="world"?.12:.09)*e.s;
   const K=e.kind||SKY_WORLD_KINDS[0];
   ctx.save();
   ctx.globalAlpha=dim*.96;
@@ -175,7 +185,7 @@ function skyWorld(p,e,x,y,dim){
 }
 /* ── газовый гигант: полосы, терминатор, кромочный свет, иногда кольца ── */
 function skyGiant(p,e,x,y,dim,ringy){
-  const R=H*.17*e.s*(ringy?.8:1);
+  const R=skyU()*.17*e.s*(ringy?.8:1);
   const r=rng(e.seed);
   /* ── ЧЕТВЁРТАЯ ПЕРЕДЕЛКА, по прямому указанию автора (24.08.2026) ──
      Гигант в небе читался «дыркой с обручем», и на то было три причины.
@@ -299,7 +309,7 @@ function skyGiant(p,e,x,y,dim,ringy){
 }
 /* ── галактика: ядро, диск под углом, пылевая полоса ── */
 function skyGalaxy(p,e,x,y,dim){
-  const R=H*.30*e.s, r=rng(e.seed), tilt=(r()-.5)*1.5;
+  const R=skyU()*.30*e.s, r=rng(e.seed), tilt=(r()-.5)*1.5;
   ctx.save();ctx.globalAlpha=dim*.8;
   ctx.translate(x,y);ctx.rotate(tilt);
   const t1=skyTint(p,4);
@@ -322,7 +332,7 @@ function skyGalaxy(p,e,x,y,dim){
 }
 /* ── чёрная дыра: диск, аккреционное кольцо, слабое искривление вокруг ── */
 function skyHole(p,e,x,y,dim){
-  const R=H*.075*e.s;
+  const R=skyU()*.075*e.s;
   /* ── дыру ГАСИТ дневное небо, а не прозрачность (M178) ──
      Дыра рисовалась одинаково всюду, только бледнее через globalAlpha. Сквозь
      дневную атмосферу от неё оставалось большое ТЁМНОЕ пятно с еле видимым
@@ -388,7 +398,7 @@ function skyAurora(p,e,x,y,dim){
 }
 /* ── луна: фаза, кратеры, лёгкое свечение ── */
 function skyMoon(p,e,x,y,dim){
-  const R=H*.035*e.s, r=rng(e.seed);
+  const R=skyU()*.035*e.s, r=rng(e.seed);
   const c=skyTint(p,4);
   ctx.save();ctx.globalAlpha=dim*.95;
   ctx.save();
@@ -421,7 +431,7 @@ function skyNeb(p,e,x,y,dim){
 function skyComet(p,e,x,y,dim){
   const t=((G.t*.00035+e.ph/TAU)%1);
   const cx=W*(1.15-t*1.3)+0, cy=y+Math.sin(t*Math.PI)*H*.1;
-  const len=H*.12*e.s;
+  const len=skyU()*.12*e.s;
   ctx.save();ctx.globalAlpha=dim*.9;
   const g=ctx.createLinearGradient(cx,cy,cx+len,cy-len*.5);
   g.addColorStop(0,"rgba(215,240,255,.55)");
@@ -447,7 +457,7 @@ function skyPulsar(p,e,x,y,dim){
   ctx.fillStyle="rgba(200,225,255,.85)";
   ctx.beginPath();ctx.arc(x,y,1.6,0,TAU);ctx.fill();
   if(f>.01){
-    const L=H*.2*e.s*f;
+    const L=skyU()*.2*e.s*f;
     ctx.save();ctx.translate(x,y);ctx.rotate(e.ph);
     const g=ctx.createLinearGradient(0,-L,0,L);
     g.addColorStop(0,"rgba(180,215,255,0)");

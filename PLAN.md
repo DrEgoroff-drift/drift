@@ -683,8 +683,11 @@ self-criticism, per the cross-cutting rule.
   through a day sky — dark lens now comes with the night, the disc stays as a pale day ghost; the
   sky giant floored against the current air with a halo; the cave mouth and the mine's abandoned
   workings got lips, depth and lit rims; РАНЕЦ and every other canvas-corner gauge moved into the
-  state and place rows; the phone prompt no longer sits under the console. **Still open for later
-  passes:** the far ridge is one flat silhouette; the rain is one uniform speed everywhere.
+  state and place rows; the phone prompt no longer sits under the console. **Morning screenshot
+  round (0.151.0):** far ridges scale with the frame's width (no more «гора в полкадра» in
+  portrait), sky bodies measure by the narrow side and their parallax is unclamped (the hole no
+  longer follows the ship on approach). **Still open for later passes:** the rain is one uniform
+  speed everywhere.
 - **M179 — the inventory as a tray** — **done (0.148.0)**: `27j-ui-hold`, the ТРЮМ tab on the
   desk lane — every resource a pile whose size answers "how much" without numbers, a form per
   material, people sitting on the edge. Paper stays for what is read. **Left open:** the suit kit

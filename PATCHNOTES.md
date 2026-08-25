@@ -7,6 +7,25 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.151.0 — the sky measured by the narrow side (M178, the author's morning screenshot)
+
+Two faults from the author's phone screenshot, both real and both about scale:
+
+- **«Гора в полкадра».** The far ridges' amplitude and stretch were one size for every screen. On
+  a portrait phone the frame is as tall as a monitor but a third as wide — so the viewport caught
+  exactly one featureless flank with not a single summit in it, and a mute mass owned half the
+  sky. The far layers now shrink with the width (`FARK=clamp(W/1150,.5,1)`): lower amplitude,
+  denser undulation, tiles baked per measure (the key carries it, so rotating the phone simply
+  rebakes). On a monitor nothing changes — the factor is 1.
+- **«Дыра в полкадра» и «дыра следует за кораблём».** Sky-body sizes were computed from the frame
+  HEIGHT — honest on a monitor, ruinous in portrait, where the black hole and the gas giant
+  ballooned to half the frame. Every body now takes the narrow side (`skyU()=min(H,W*1.05)`);
+  desktops are untouched. And the parallax was clamped to a tenth of the screen, so on approach
+  across the whole strip the body rode along with the ship like a decal on glass. The clamp is
+  gone: the drift is free and slow (5% of camera travel from the strip's middle) — fly away and
+  the sky stays, the body leaves the frame and is there again when you come back.
+
+---
 ## 0.150.0 — a button dims, it never vanishes (M181)
 
 The author's direct order: «кнопки не исчезают на мобиле». The M167 rule "no ghost buttons" hid

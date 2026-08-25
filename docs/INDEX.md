@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 257 · символов верхнего уровня: 2462
+Файлов: 257 · символов верхнего уровня: 2463
 
 ## СИМВОЛЫ
 
@@ -541,7 +541,7 @@ drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:163
 drawSkyBase                  src/19c-light.js:202
-drawSkyBodies                src/19b-sky.js:59
+drawSkyBodies                src/19b-sky.js:66
 drawSkyLayer                 src/19-mode-landing.js:296
 drawSpaceDust                src/16a-space.js:154
 drawStarBody                 src/16a-space.js:293
@@ -2034,22 +2034,23 @@ shipZoneR                    src/19f-lander.js:14
 sixthGone                    src/12k-stories-d.js:75
 SKY_LOUD                     src/19b-sky.js:13
 SKY_QUIET                    src/19b-sky.js:14
-SKY_WORLD_KINDS              src/19b-sky.js:91
-skyAurora                    src/19b-sky.js:364
-skyComet                     src/19b-sky.js:421
-skyField                     src/19b-sky.js:464
-skyGalaxy                    src/19b-sky.js:301
-skyGiant                     src/19b-sky.js:177
+SKY_WORLD_KINDS              src/19b-sky.js:101
+skyAurora                    src/19b-sky.js:374
+skyComet                     src/19b-sky.js:431
+skyField                     src/19b-sky.js:474
+skyGalaxy                    src/19b-sky.js:311
+skyGiant                     src/19b-sky.js:187
 skyGrad                      src/19-mode-landing.js:277
-skyHole                      src/19b-sky.js:324
-skyMoon                      src/19b-sky.js:390
-skyNeb                       src/19b-sky.js:411
-skyNebula                    src/19b-sky.js:42
-skyPulsar                    src/19b-sky.js:442
+skyHole                      src/19b-sky.js:334
+skyMoon                      src/19b-sky.js:400
+skyNeb                       src/19b-sky.js:421
+skyNebula                    src/19b-sky.js:49
+skyPulsar                    src/19b-sky.js:452
 skyScene                     src/19b-sky.js:15
-skyTint                      src/19b-sky.js:37
-skyWorld                     src/19b-sky.js:146
-skyWorldTex                  src/19b-sky.js:100
+skyTint                      src/19b-sky.js:44
+skyU                         src/19b-sky.js:41
+skyWorld                     src/19b-sky.js:156
+skyWorldTex                  src/19b-sky.js:110
 SLOT_CACHE                   src/05-parts.js:113
 slotAnchors                  src/05-parts.js:141
 slotsOf                      src/05-parts.js:114
@@ -2851,7 +2852,7 @@ zooTick                      src/11ad-zoo.js:41
   · сбор летучих газов: заход в атмосферу гиганта:1
   · небо гиганта: полосы, а не лепёшки:71
 
-## src/19b-sky.js · 27 КБ
+## src/19b-sky.js · 28 КБ
   · небо:1
 
 ## src/19c-light.js · 16 КБ
@@ -2924,7 +2925,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 27 КБ
+## src/21e-surface-draw.js · 28 КБ
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21f-home-out.js · 13 КБ

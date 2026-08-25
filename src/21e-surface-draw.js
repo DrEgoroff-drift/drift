@@ -116,16 +116,26 @@ function drawSurface(){
      почти прямая: горизонт читался ровной полосой дымки, приклеенной к небу,
      и глазу нечем было мерить расстояние. Даём им собственную амплитуду —
      чем дальше, тем выше и крупнее гряда, — и печём её один раз на планету. */
-  if(!tr.farH){
+  /* ── гряда по мерке экрана (автор: «гора в полкадра», M178) ──
+     Амплитуда и шаг дальней гряды были одни на все экраны. На узком телефоне
+     вертикаль кадра та же, что на мониторе, а горизонталь — треть: в кадр
+     попадал ОДИН склон без единой вершины, и полнеба занимала глухая масса.
+     Узкому экрану — ниже и чаще: амплитуда и растяжка сжимаются с шириной,
+     и в кадре снова гряда с вершинами, а не гора. Тайлы пекутся под свою
+     мерку (ключ), поворот телефона просто перепекает их. */
+  const FARK=clamp(W/1150,.5,1);
+  if(!tr.farH||tr.farK!==FARK){
     let s=0;for(let i=0;i<tr.N;i++)s+=tr.h[i];
     const mid=s/tr.N;
     const mk=k=>{const a=new Float32Array(tr.N);for(let i=0;i<tr.N;i++)a[i]=mid+(tr.h[i]-mid)*k;return a;};
-    tr.farH=[mk(2.3),mk(1.6)];
+    tr.farH=[mk(2.3*FARK),mk(1.6*FARK)];
+    tr.farK=FARK;
   }
-  S.farA=tileStore(S.farA,"farA|"+p.seed+"|"+DPR);
-  drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.farH[0],N:tr.N,step:tr.step*3.6},wx0,wy0,hazeFar(p,.58),null));
-  S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR);
-  drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.farH[1],N:tr.N,step:tr.step*2.4},wx0,wy0,hazeFar(p,.32),null));
+  const stpK=.55+.45*FARK;
+  S.farA=tileStore(S.farA,"farA|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2));
+  drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.farH[0],N:tr.N,step:tr.step*3.6*stpK},wx0,wy0,hazeFar(p,.58),null));
+  S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2));
+  drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.farH[1],N:tr.N,step:tr.step*2.4*stpK},wx0,wy0,hazeFar(p,.32),null));
   hazeBand(p,H*(SURF_HOR-.06),H*.22);
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
     "rgba(200,240,246,.4)",p.T.pal);
