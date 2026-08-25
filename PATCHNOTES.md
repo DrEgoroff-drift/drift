@@ -7,6 +7,27 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.162.2 — rain falls at its own speed, and the camera's precondition is written down
+
+**The rain.** It has had two depths since 0.99.8, and that already gave it distance — but inside the
+near layer every drop fell at exactly 1.75×, so the layer read as a texture sliding down the glass
+rather than as water. The eye catches identical *motion* faster than identical size. Speed is now
+per drop, from its own hash so it is not tied to depth: fast and lazy drops fall side by side. The
+last of the M178 tails except the flat far ridge.
+
+**M188, the camera — checked before starting, and it does not begin where it looks like it begins.**
+The agreed design is "a photograph is a snapshot of the scene, not pixels", and it rests on the
+engine being able to re-render a stored scene. It cannot today — not because the world is
+non-deterministic (it is deterministic: `enterSurface` rebuilds terrain from the planet's seed), but
+because drawing is welded to globals: every path paints into the one `ctx` at the one `W`/`H`,
+reading the one live `G`. Rendering a stored scene therefore means either swapping the world under
+the renderer and restoring it after — a save-corrupting class of bug — or giving the postcard its
+own painter that owes nothing to `G`. The pixel alternative was measured and rejected: twelve
+480×300 JPEGs are ~300 KB inside a save that also syncs to the cloud. The milestone's first pass is
+`drawPostcard(ctx, snap, w, h)`; the button and the album mean nothing before it exists. Written
+into `PLAN.md` rather than discovered again next session.
+
+---
 ## 0.162.1 — the frame's darkened edges stop costing a full screen
 
 The `.slope` introduced in 0.160.0 — the soft darkening that gives the instruments and the console

@@ -2913,7 +2913,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19c-light.js · 16 КБ
   · свет и воздух:1
 
-## src/19d-weather.js · 12 КБ
+## src/19d-weather.js · 13 КБ
   · погода:1
 
 ## src/19e-clouds.js · 13 КБ

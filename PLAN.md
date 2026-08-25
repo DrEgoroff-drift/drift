@@ -687,12 +687,17 @@ self-criticism, per the cross-cutting rule.
   crops (skyHole by day, ground holes, РАНЕЦ under pads, prompt under console), the Forest-style
   hold, the paper table kept, the pirate base pass 1, buttons that dim instead of vanishing, phone
   measured for real (`test.ps1 -Mobile`, dock/system/surface/table at 390 px). **Still open, for
-  the author's morning:** interface passes 2/3/5 (the eye, the road, one language) — pass 4 (the
-  phone) is measured and green; pirate base passes 2+ (enemy bodies, hangar dressing, marks
-  through walls); M178 tails (flat far ridge, uniform rain). **Perf note:** the night's last
-  probe read system 43 / surface 39, but the 0.144 build read the same on the same machine at the
-  same hour — the regression is the machine (background load), not the code; re-measure clean
-  before believing any number.
+  the author's morning (as of 2026-08-26 night, all but one closed):**
+  ~~interface passes 2/3/5~~ — closed 0.162.0. ~~pass 4, the phone~~ — measured and green.
+  ~~pirate base passes 2+~~ — closed 0.161.0: the perspective was mirrored, marks drew through
+  bulkheads, and the loot crates had never been drawn at all. *Still open there:* the enemy bodies
+  themselves are blocky, and the hangar wants dressing. ~~uniform rain~~ — closed 0.162.1, the
+  speed is per drop now, not per layer. **Still open:** the flat far ridge.
+  **Perf note:** the night's probe read system 43 / surface 39, but the 0.144 build read the same on
+  the same machine at the same hour — the regression is the machine (background load), not the code;
+  re-measure clean before believing any number. Confirmed again on 2026-08-26: two clean runs of the
+  same build differed by ±10 fps (belt 54/49, landing 46/44, surface 48/43, road 30/41). Stable
+  across every run: dig 60, cave 60, raid 60.
 
 ---
 
@@ -732,6 +737,24 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   game's own world can physically cross the boundary; and an old card re-rendered by a newer engine
   comes out slightly not-the-same, which is what an old photograph does. Button ФОТО on the
   console, an album of twelve on the table. Offline, needs no server — a joy on its own.
+
+  **Checked before starting, 2026-08-26, and it does not start where it looks like it starts.** The
+  design rests on "the engine can re-render any past scene", and today it cannot — not because the
+  world is not deterministic (it is: `enterSurface` rebuilds terrain from the planet's seed), but
+  because **drawing is welded to globals**: every draw path paints into the single `ctx` at the
+  single `W`/`H`, reading the single live `G`. Rendering a stored scene into a thumbnail means
+  either swapping the whole world under the renderer and restoring it afterwards — a save-corrupting
+  class of bug — or giving the postcard **its own painter**, one function that takes a snapshot and
+  a target context and owes nothing to `G`.
+
+  The alternative that avoids all of it — storing captured pixels — was measured and rejected: a
+  480×300 JPEG is ~25 KB, twelve of them ~300 KB, and the album persists into a save that also goes
+  to the cloud. That is not an album, that is a new save-format problem.
+
+  So the milestone's first pass is `drawPostcard(ctx, snap, w, h)`: sky by world type, hour and
+  weather; the terrain profile from the seed; the star from `sunSpot`; a subject silhouette. It is a
+  *view*, not a re-run of the mode, and it should be written as such from the start. Only after it
+  exists do the button, the album and the wire format mean anything.
 - **M189 — the forms.** A form is a title plus lines; a line is a set of variants; tapping a
   variant crosses the others out. **Every line ships with a sensible default, so a card can be sent
   without a single tap** — that is what "чтобы не париться" means in practice. About thirty in this
