@@ -21,9 +21,25 @@ function birdBoot(){
          "он выключен или машина отказалась его дать.\n\nПтица без него не соберётся.");
     return;
   }
-  MESH.body=glMesh(buildBody(96,64));
+  /* сетки собираются один раз: форма птицы не меняется, меняется поза */
+  MESH.body  =glMesh(buildBody(96,64));
+  MESH.parts =glMesh(buildParts());
+  MESH.beads =glMesh(buildBeads());
+  const IA=[["r0",4,0],["r1",4,4],["r2",4,8],["icol",3,12],["ipar",4,15]];
+  MESH.coat  =glMesh(buildFeather(5,7));
+  glInstances(MESH.coat,layoutCoat(),IA,FEA_STRIDE);
+  MESH.plumes=glMesh(buildFeather(7,11));
+  glInstances(MESH.plumes,layoutPlumes(),IA,FEA_STRIDE);
   renderInit();
   if(GL_ERR.length){fail("Шейдеры не собрались:\n\n"+GL_ERR.join("\n\n"));return;}
+  /* стенд: камера и покой задаются адресом, чтобы снимки были сравнимы
+     между собой — ?az=0.6&el=0.15&d=4.3&still=1 */
+  const Q=new URLSearchParams(location.search);
+  if(Q.has("az"))CAM.az=+Q.get("az");
+  if(Q.has("el"))CAM.el=+Q.get("el");
+  if(Q.has("d"))CAM.dist=CAM.distT=+Q.get("d");
+  if(Q.has("ty"))CAM.tgt[1]=+Q.get("ty");
+  if(Q.has("still"))POSE.still=1;
   birdSize();
   addEventListener("resize",birdSize);
   birdHands(cv);
@@ -83,7 +99,7 @@ function birdHands(cv){
 function birdPoke(){
   /* пока — общая реакция: птица вскидывается и распушается. Зоны появятся
      вместе с хохлом и крылом. */
-  POSE.puff=0.035;
+  POSE.puff=0.035;POSE.ruffle=0.06;
   POSE.pitchT=-0.18;POSE.nextLook=POSE.t+1.2;
   POSE.blink=1;
 }

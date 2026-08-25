@@ -86,7 +86,7 @@ vec3 lightPoint(vec3 wp,vec3 N,vec3 alb,float rough,float trans,vec3 tang,float 
     col+=uKeyCol*sh*(alb*wr+F*spec*max(NoL,0.0)*2.0);
     /* просвет: свет, прошедший насквозь, приходит с обратной стороны */
     float bt=pow(clamp(dot(V,-L),0.0,1.0),2.5)*clamp(1.0-abs(dot(N,L)),0.0,1.0);
-    col+=uKeyCol*alb*trans*bt*sh*1.4;
+    col+=uKeyCol*alb*trans*bt*sh*0.70;
   }
   /* подбой: холодный, без тени и без блика — это отражённый свет комнаты */
   {
@@ -115,16 +115,45 @@ void main(){
   vP=pp;vN=normalize(nn);vC=c;vTA=ta;
   gl_Position=uVP*vec4(pp,1.0);
 }`;
-const FS_BODY=GL_LIGHT+`
+const FS_SOLID=GL_LIGHT+`
 in vec3 vP,vN,vC;
 in vec2 vTA;
 out vec4 o;
+/* мелкая клетка кожи на лапах: без неё палец выглядит резиновым */
+float scales(vec3 p){
+  vec3 q=p*46.0;
+  vec2 g=vec2(sin(q.y)+sin(q.z*0.7),sin(q.y*0.8+q.x));
+  return smoothstep(0.35,1.0,abs(sin(q.y*1.0))*abs(sin(q.z*0.6+q.x*0.4)));
+}
 void main(){
   vec3 N=normalize(vN);
-  /* тело под перьями — тёмная масса: оно видно в щелях и на кромке, поэтому
-     красится своим цветом, приглушённым, а не цветом оперения */
-  vec3 alb=vC*0.34;
-  o=vec4(lightPoint(vP,N,alb,0.62,0.10,vec3(0.0,1.0,0.0),0.0),1.0);
+  float m=vTA.y;
+  vec3 alb=vC;float rough=0.6,trans=0.1,ao=1.0;
+  if(m<0.5){
+    /* тело под перьями — тёмная масса: его видно в щелях и на кромке, и
+       красится оно приглушённым своим цветом, а не цветом оперения */
+    alb=vC*0.30;rough=0.72;trans=0.06;
+  }else if(m<1.5){
+    /* клюв: рог. Гладкий, с продольными бороздками у основания и с блеском,
+       который и делает его роговым, а не пластмассовым */
+    float gr=smoothstep(0.6,0.0,abs(vTA.x-1.0))*0.0;
+    rough=0.20+0.16*abs(sin(vP.z*90.0))*smoothstep(0.30,0.10,abs(vP.z-0.18));
+    trans=0.45;alb=vC;
+  }else if(m<2.5){
+    rough=0.06;trans=0.0;alb=vC*0.7;      /* глаз */
+  }else if(m<3.5){
+    rough=0.88;trans=0.02;alb=vC;         /* дерево */
+    alb*=0.86+0.14*sin(vP.x*120.0);
+  }else if(m<4.5){
+    float s=scales(vP);
+    rough=0.48+0.22*s;trans=0.18;alb=vC*(0.82+0.30*s);
+    N=normalize(N+vec3(0.0,s*0.10-0.05,0.0));
+  }else if(m<5.5){
+    rough=0.80;trans=0.42;alb=vC;         /* голая кожа: восковица, кольцо */
+  }else{
+    rough=0.22;trans=0.10;alb=vC;         /* коготь */
+  }
+  o=vec4(lightPoint(vP,N,alb,rough,trans,vec3(0.0,1.0,0.0),0.0)*ao,1.0);
 }`;
 
 /* ── глубина для карты теней ──
@@ -187,4 +216,154 @@ void main(){
   c=pow(c,vec3(1.0/2.2));
   float dth=fract(sin(dot(gl_FragCoord.xy+uTime,vec2(12.9898,78.233)))*43758.5453);
   o=vec4(c+(dth-0.5)/255.0,1.0);
+}`;
+
+/* ── перо ──
+   Геометрия у пера общая на всех, а различие — в настройках инстанса: длина,
+   ширина, чашка, род (корпус, маховое, хвост, хохол). Рисунок опахала не
+   текстура, а функция: бородки идут под углом к стержню, стержень светлее и
+   глаже, кромка темнее. Текстуры нет, потому что модуль — один файл. */
+const VS_FEATHER=GL_RIG+`
+layout(location=0) in vec3 p;
+layout(location=1) in vec3 n;
+layout(location=2) in vec2 uv;
+layout(location=3) in vec4 r0;
+layout(location=4) in vec4 r1;
+layout(location=5) in vec4 r2;
+layout(location=6) in vec3 icol;
+layout(location=7) in vec4 ipar;
+uniform mat4 uVP;
+uniform float uRuffle;
+out vec3 vP,vN,vC,vT;
+out vec2 vUV;
+out float vKind,vId;
+void main(){
+  vec3 lp=p;
+  lp.y*=ipar.x;
+  /* рябь: у каждого пера своя фаза, поэтому оперение шевелится волной, а не
+     всё разом. Это то же правило, что у двумерной птицы. */
+  float id=float(gl_InstanceID);
+  float ph=fract(sin(id*12.9898)*43758.5453);
+  float lift=sin(uTime*2.6+ph*6.2831)*uRuffle*(0.5+0.5*ph);
+  lp.y+=lift*lp.z*lp.z*1.6;
+  vec3 cx=vec3(r0.x,r1.x,r2.x), cy=vec3(r0.y,r1.y,r2.y), cz=vec3(r0.z,r1.z,r2.z);
+  float sx=length(cx), sy=length(cy), sz=length(cz);
+  vec3 wp=vec3(dot(r0.xyz,lp)+r0.w, dot(r1.xyz,lp)+r1.w, dot(r2.xyz,lp)+r2.w);
+  /* нормаль по обратно-транспонированной: у пера масштаб вдоль и поперёк
+     отличается впятеро, и обычный поворот дал бы нормаль набок */
+  vec3 wn=normalize(cx*(n.x/(sx*sx))+cy*(n.y/(sy*sy))+cz*(n.z/(sz*sz)));
+  vec3 wt=cz/max(sz,1e-5);
+  rigApply(wp,wn,ipar.z);
+  /* стержень поворачивается вместе с пером: тангенс нужен блику */
+  vec3 dummy=wt; vec3 dn=wt; vec3 dp=wp;
+  vP=wp;vN=wn;vC=icol;vT=wt;vUV=uv;vKind=ipar.w;vId=ph;
+  gl_Position=uVP*vec4(wp,1.0);
+}`;
+const FS_FEATHER=GL_LIGHT+`
+in vec3 vP,vN,vC,vT;
+in vec2 vUV;
+in float vKind,vId;
+out vec4 o;
+void main(){
+  float u=vUV.x, v=vUV.y;
+  vec3 N=normalize(vN);
+  if(!gl_FrontFacing)N=-N;              /* перо двустороннее */
+  /* бородки: частые полоски под углом к стержню. Они не рисуются линиями, а
+     качают нормаль — иначе на движении получается муар. */
+  /* частота бородок зависит от рода пера: на маховом длиной в полптицы
+     редкие бородки читаются рёбрами жалюзи */
+  float bf=vKind>0.5?58.0:24.0;
+  float barb=sin((v*bf+abs(u)*9.0+vId*3.0)*3.14159);
+  float barb2=sin((v*bf*2.4+abs(u)*21.0)*3.14159);
+  vec3 side=normalize(cross(N,vT));
+  N=normalize(N+side*barb*0.055*sign(u)+vT*barb2*0.02);
+  /* стержень: светлее, глаже, чуть выпуклый */
+  float rach=smoothstep(0.10,0.0,abs(u));
+  N=normalize(N+side*sign(u)*rach*0.35);
+  vec3 alb=vC;
+  alb*=0.80+0.20*barb*0.5;
+  alb=mix(alb,alb*1.35+0.02,rach*0.5);
+  /* кромка опахала темнее, кончик светлее — так ряд читается рядом, а не
+     сплошным полем */
+  alb*=mix(1.0,0.72,smoothstep(0.55,1.0,abs(u)));
+  alb=mix(alb,alb*1.28,smoothstep(0.55,1.0,v));
+  /* основание пера всегда в тени соседнего: без этого черепица плоская */
+  alb*=mix(0.84,1.0,smoothstep(0.0,0.28,v));
+  float rough=mix(0.42,0.30,rach);
+  float trans=mix(0.55,0.30,rach);
+  if(vKind>2.5){                        /* хохол: к концу перо разогрето бусиной */
+    alb+=uRimCol*0.0;
+    trans=0.75;
+  }
+  vec3 col=lightPoint(vP,N,alb,rough,trans,vT,0.75);
+  if(vKind>2.5)col+=vec3(0.10,0.42,0.50)*smoothstep(0.45,1.0,v)*0.55;
+  o=vec4(col,1.0);
+}`;
+
+/* ── бусина ──
+   Кладётся ПОСЛЕ света и аддитивно: свет не должен её гасить. Внутри —
+   плотное ядро, снаружи — ореол по краю сферы. */
+const VS_BEAD=GL_RIG+`
+layout(location=0) in vec3 p;
+layout(location=1) in vec3 n;
+layout(location=2) in vec2 tm;
+layout(location=3) in vec3 c;
+uniform mat4 uVP;
+out vec3 vP,vN,vC;
+void main(){
+  vec3 pp=p,nn=n;
+  rigApply(pp,nn,tm.x);
+  vP=pp;vN=normalize(nn);vC=c;
+  gl_Position=uVP*vec4(pp,1.0);
+}`;
+const FS_BEAD=`
+in vec3 vP,vN,vC;
+uniform vec3 uEye;
+uniform float uGlow;
+out vec4 o;
+void main(){
+  vec3 V=normalize(uEye-vP);
+  float f=1.0-abs(dot(normalize(vN),V));
+  /* ядро ровное, ореол по касательной: так бусина выглядит стеклянной, а не
+     закрашенным кружком */
+  o=vec4(vC*(1.1+3.4*pow(f,2.2))*uGlow,1.0);
+}`;
+
+/* ── свечение: порог и ступени ── */
+const FS_BRIGHT=`
+in vec2 vUV;
+uniform sampler2D uSrc;
+uniform vec2 uTexel;
+uniform float uThresh;
+out vec4 o;
+void main(){
+  vec3 c=vec3(0.0);
+  /* четыре точки вместо одной: порог по одиночному пикселю мерцает на
+     движении, а бусины у нас как раз мелкие и подвижные */
+  c+=texture(uSrc,vUV+uTexel*vec2( 1.0, 1.0)).rgb;
+  c+=texture(uSrc,vUV+uTexel*vec2(-1.0, 1.0)).rgb;
+  c+=texture(uSrc,vUV+uTexel*vec2( 1.0,-1.0)).rgb;
+  c+=texture(uSrc,vUV+uTexel*vec2(-1.0,-1.0)).rgb;
+  c*=0.25;
+  float l=max(max(c.r,c.g),c.b);
+  o=vec4(c*smoothstep(uThresh,uThresh*2.0,l),1.0);
+}`;
+const FS_BLUR=`
+in vec2 vUV;
+uniform sampler2D uSrc;
+uniform vec2 uTexel;
+uniform float uK;
+out vec4 o;
+void main(){
+  /* палатка из девяти точек: на билинейной выборке это уже гладко */
+  vec3 c=texture(uSrc,vUV).rgb*4.0;
+  c+=texture(uSrc,vUV+vec2( uTexel.x,0.0)).rgb*2.0;
+  c+=texture(uSrc,vUV+vec2(-uTexel.x,0.0)).rgb*2.0;
+  c+=texture(uSrc,vUV+vec2(0.0, uTexel.y)).rgb*2.0;
+  c+=texture(uSrc,vUV+vec2(0.0,-uTexel.y)).rgb*2.0;
+  c+=texture(uSrc,vUV+uTexel).rgb;
+  c+=texture(uSrc,vUV-uTexel).rgb;
+  c+=texture(uSrc,vUV+vec2(uTexel.x,-uTexel.y)).rgb;
+  c+=texture(uSrc,vUV+vec2(-uTexel.x,uTexel.y)).rgb;
+  o=vec4(c/16.0*uK,1.0);
 }`;

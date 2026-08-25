@@ -64,7 +64,7 @@ function bodyColor(t,a){
   const side=Math.abs(Math.cos(a));
   let c=vLerp(BIRD_C.blueD,BIRD_C.blue,smooth(.0,.55,belly)*.8+.2);
   /* грудь и брюхо кремовые, с тёплой подпалиной к хвосту */
-  const cream=smooth(.42,.72,belly)*smooth(.72,.55,t);
+  const cream=smooth(.50,.68,belly)*smooth(.68,.57,t);
   c=vLerp(c,vLerp(BIRD_C.creamD,BIRD_C.cream,smooth(.2,.6,t)),cream);
   /* плечо: янтарный эполет по бокам корпуса */
   const ep=smooth(.62,.44,Math.abs(t-.55)*6)*smooth(.35,.75,side)*smooth(.30,.45,belly);
@@ -72,8 +72,8 @@ function bodyColor(t,a){
   /* подхвостье уходит в фиолетовый — единственное холодное пятно внизу */
   c=vLerp(c,BIRD_C.viol,smooth(.16,.02,t)*.7);
   /* щека: тёплое пятно под глазом, чтобы голова не была одноцветной */
-  const ch=smooth(.10,.0,Math.abs(t-.90))*smooth(.4,.9,side)*smooth(.25,.7,belly);
-  c=vLerp(c,BIRD_C.amber,clamp(ch,0,1)*.75);
+  const ch=smooth(.075,.0,Math.abs(t-.885))*smooth(.55,.95,side)*smooth(.30,.62,belly);
+  c=vLerp(c,BIRD_C.amber,clamp(ch,0,1)*.95);
   /* темя темнее лба: голова круглая, и без этого она читается шаром */
   c=vLerp(c,BIRD_C.blueD,smooth(.90,1.0,t)*.5*(1-belly*.4));
   return c;
@@ -108,7 +108,7 @@ function buildBody(NT,NA){
     const k=(i*NA+j)*11,p=P[i*NA+j],n=Nn[i*NA+j],t=i/(NT-1),a=j/NA*TAU,c=bodyColor(t,a);
     verts[k]=p[0];verts[k+1]=p[1];verts[k+2]=p[2];
     verts[k+3]=n[0];verts[k+4]=n[1];verts[k+5]=n[2];
-    verts[k+6]=t;verts[k+7]=a;
+    verts[k+6]=t;verts[k+7]=0;   /* материал 0: тёмная масса под перьями */
     verts[k+8]=c[0];verts[k+9]=c[1];verts[k+10]=c[2];
   }
   for(let i=0;i<NT-1;i++)for(let j=0;j<NA;j++){
@@ -116,5 +116,5 @@ function buildBody(NT,NA){
     idx.push(A,C,B, B,C,D);
   }
   return {verts,index:new Uint16Array(idx),stride:11,
-          attrs:[["p",3,0],["n",3,3],["ta",2,6],["c",3,8]]};
+          attrs:[["p",3,0],["n",3,3],["tm",2,6],["c",3,8]]};
 }

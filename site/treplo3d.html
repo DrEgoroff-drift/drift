@@ -193,7 +193,11 @@ const GL_ERR=[];
 function glProg(vs,fs,name){
   const sh=(type,src)=>{
     const s=gl.createShader(type);
-    gl.shaderSource(s,"#version 300 es\nprecision highp float;\nprecision highp int;\n"+src);
+    /* точность у сэмплеров обязана быть объявлена явно: во фрагментной
+       программе есть умолчание только для float, а sampler2DShadow без
+       precision — ошибка компиляции, и на этом кадр становится чёрным */
+    gl.shaderSource(s,"#version 300 es\nprecision highp float;\nprecision highp int;\n"+
+      "precision highp sampler2D;\nprecision highp sampler2DShadow;\n"+src);
     gl.compileShader(s);
     if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){
       GL_ERR.push((name||"?")+" "+(type===gl.VERTEX_SHADER?"vert":"frag")+": "+gl.getShaderInfoLog(s));
@@ -343,6 +347,124 @@ function glQuad(){
   return QUAD;
 }
 
+/* ===== 15-geom.js ===== */
+/* ══════════════ сборка сеток ══════════════
+   Копилка вершин и три примитива, из которых собрано всё твёрдое: труба по
+   пути (клюв, пальцы, жёрдочка), шар (глаз, бусина) и диск (веко, кольцо
+   вокруг глаза).
+
+   Вершина везде одна и та же — pos(3) nrm(3) t(1) m(1) col(3) — потому что и
+   тело, и части идут одной программой. `t` — место вдоль хребта: по нему поза
+   решает, ехать этой вершине с головой или стоять с лапами. `m` — материал.
+
+   МАТЕРИАЛЫ: 0 тело · 1 клюв · 2 глаз · 3 дерево · 4 лапа · 5 голая кожа ·
+   6 бусина (светится) · 7 коготь. */
+function meshBox(){
+  return {v:[],i:[],n:0,
+    add(p,nr,t,m,c){this.v.push(p[0],p[1],p[2],nr[0],nr[1],nr[2],t,m,c[0],c[1],c[2]);return this.n++;},
+    tri(a,b,c){this.i.push(a,b,c);},
+    quad(a,b,c,d){this.i.push(a,b,d,b,c,d);},
+    done(){
+      return {verts:new Float32Array(this.v),index:new Uint32Array(this.i),stride:11,
+              attrs:[["p",3,0],["n",3,3],["tm",2,6],["c",3,8]]};
+    }};
+}
+/* объединение: части птицы рисуются одним вызовом, а не двадцатью */
+function meshJoin(list){
+  const M=meshBox();
+  for(const g of list){
+    const off=M.n;
+    for(let k=0;k<g.v.length;k+=11)M.v.push(...g.v.slice(k,k+11));
+    M.n+=g.n;
+    for(const ix of g.i)M.i.push(ix+off);
+  }
+  return M;
+}
+/* ── труба по пути ──
+   Рамка переносится вдоль пути параллельно (без кручения): у клюва с сильным
+   загибом обычная рамка Френе переворачивается на перегибе и выворачивает
+   поверхность наизнанку. */
+function tube(M,path,sides,opt){
+  const o=opt||{},rigT=o.t===undefined?1:o.t,mat=o.m===undefined?0:o.m;
+  let up=o.up||[0,1,0];
+  const rings=[];
+  for(let i=0;i<path.length;i++){
+    const s=path[i];
+    const a=path[Math.max(0,i-1)].p,b=path[Math.min(path.length-1,i+1)].p;
+    const T=vNorm(vSub(b,a));
+    let X=vNorm(vSub(up,vMul(T,vDot(up,T))));
+    if(vLen(X)<1e-4)X=basisFrom(T)[0];
+    const Y=vCross(T,X);
+    /* переносится именно X: из него считается всё кольцо. Если тащить Y,
+       оси меняются местами на первом же изгибе — клюв выходил плоской
+       пластиной, повёрнутой поперёк себя */
+    up=X;
+    const rx=s.r[0],ry=s.r[1],ring=[];
+    for(let j=0;j<sides;j++){
+      const ang=j/sides*TAU,cx=Math.cos(ang),sy=Math.sin(ang);
+      const p=[s.p[0]+X[0]*cx*rx+Y[0]*sy*ry, s.p[1]+X[1]*cx*rx+Y[1]*sy*ry, s.p[2]+X[2]*cx*rx+Y[2]*sy*ry];
+      const n=vNorm([X[0]*cx/rx+Y[0]*sy/ry, X[1]*cx/rx+Y[1]*sy/ry, X[2]*cx/rx+Y[2]*sy/ry]);
+      const c=o.col?o.col(i/(path.length-1),ang/TAU,s):[1,1,1];
+      ring.push(M.add(p,n,s.t===undefined?rigT:s.t,mat,c));
+    }
+    rings.push(ring);
+  }
+  for(let i=0;i<rings.length-1;i++)for(let j=0;j<sides;j++){
+    const j1=(j+1)%sides;
+    M.quad(rings[i][j],rings[i][j1],rings[i+1][j1],rings[i+1][j]);
+  }
+  /* заглушки: без них труба светит дырой на просвет */
+  if(o.cap!==false){
+    for(const [ri,dir] of [[0,-1],[rings.length-1,1]]){
+      const s=path[ri],a=path[Math.max(0,ri-1)].p,b=path[Math.min(path.length-1,ri+1)].p;
+      const T=vMul(vNorm(vSub(b,a)),dir);
+      const c=o.col?o.col(ri/(path.length-1),0,s):[1,1,1];
+      const ctr=M.add(s.p,T,s.t===undefined?rigT:s.t,mat,c);
+      for(let j=0;j<sides;j++){
+        const j1=(j+1)%sides;
+        if(dir<0)M.tri(ctr,rings[ri][j1],rings[ri][j]);
+        else M.tri(ctr,rings[ri][j],rings[ri][j1]);
+      }
+    }
+  }
+  return M;
+}
+function sphere(M,ctr,r,seg,opt){
+  const o=opt||{},rigT=o.t===undefined?1:o.t,mat=o.m===undefined?0:o.m;
+  const S=o.scale||[1,1,1],rows=[];
+  for(let i=0;i<=seg;i++){
+    const v=i/seg,ph=v*Math.PI,row=[];
+    for(let j=0;j<seg*2;j++){
+      const u=j/(seg*2),th=u*TAU;
+      const n=[Math.sin(ph)*Math.cos(th),Math.cos(ph),Math.sin(ph)*Math.sin(th)];
+      const p=[ctr[0]+n[0]*r*S[0],ctr[1]+n[1]*r*S[1],ctr[2]+n[2]*r*S[2]];
+      const nn=vNorm([n[0]/S[0],n[1]/S[1],n[2]/S[2]]);
+      row.push(M.add(p,nn,rigT,mat,o.col?o.col(u,v,n):[1,1,1]));
+    }
+    rows.push(row);
+  }
+  const cols=seg*2;
+  for(let i=0;i<seg;i++)for(let j=0;j<cols;j++){
+    const j1=(j+1)%cols;
+    M.quad(rows[i][j],rows[i][j1],rows[i+1][j1],rows[i+1][j]);
+  }
+  return M;
+}
+/* диск с нормалью n: голая кожа вокруг глаза и веко */
+function disc(M,ctr,nrm,r,seg,opt){
+  const o=opt||{},rigT=o.t===undefined?1:o.t,mat=o.m===undefined?0:o.m;
+  const B=basisFrom(nrm),col=o.col||(()=>[1,1,1]);
+  const ctrI=M.add(ctr,nrm,rigT,mat,col(0));
+  const ring=[];
+  for(let j=0;j<seg;j++){
+    const a=j/seg*TAU;
+    const p=vAdd(ctr,vAdd(vMul(B[0],Math.cos(a)*r*(o.rx||1)),vMul(B[1],Math.sin(a)*r*(o.ry||1))));
+    ring.push(M.add(p,nrm,rigT,mat,col(1,a)));
+  }
+  for(let j=0;j<seg;j++)M.tri(ctrI,ring[j],ring[(j+1)%seg]);
+  return M;
+}
+
 /* ===== 20-body.js ===== */
 /* ══════════════ порода: тело ══════════════
    Та же птица, что в игре (src/12y): кобальт спины, кремовая грудь, янтарь на
@@ -410,7 +532,7 @@ function bodyColor(t,a){
   const side=Math.abs(Math.cos(a));
   let c=vLerp(BIRD_C.blueD,BIRD_C.blue,smooth(.0,.55,belly)*.8+.2);
   /* грудь и брюхо кремовые, с тёплой подпалиной к хвосту */
-  const cream=smooth(.42,.72,belly)*smooth(.72,.55,t);
+  const cream=smooth(.50,.68,belly)*smooth(.68,.57,t);
   c=vLerp(c,vLerp(BIRD_C.creamD,BIRD_C.cream,smooth(.2,.6,t)),cream);
   /* плечо: янтарный эполет по бокам корпуса */
   const ep=smooth(.62,.44,Math.abs(t-.55)*6)*smooth(.35,.75,side)*smooth(.30,.45,belly);
@@ -418,8 +540,8 @@ function bodyColor(t,a){
   /* подхвостье уходит в фиолетовый — единственное холодное пятно внизу */
   c=vLerp(c,BIRD_C.viol,smooth(.16,.02,t)*.7);
   /* щека: тёплое пятно под глазом, чтобы голова не была одноцветной */
-  const ch=smooth(.10,.0,Math.abs(t-.90))*smooth(.4,.9,side)*smooth(.25,.7,belly);
-  c=vLerp(c,BIRD_C.amber,clamp(ch,0,1)*.75);
+  const ch=smooth(.075,.0,Math.abs(t-.885))*smooth(.55,.95,side)*smooth(.30,.62,belly);
+  c=vLerp(c,BIRD_C.amber,clamp(ch,0,1)*.95);
   /* темя темнее лба: голова круглая, и без этого она читается шаром */
   c=vLerp(c,BIRD_C.blueD,smooth(.90,1.0,t)*.5*(1-belly*.4));
   return c;
@@ -454,7 +576,7 @@ function buildBody(NT,NA){
     const k=(i*NA+j)*11,p=P[i*NA+j],n=Nn[i*NA+j],t=i/(NT-1),a=j/NA*TAU,c=bodyColor(t,a);
     verts[k]=p[0];verts[k+1]=p[1];verts[k+2]=p[2];
     verts[k+3]=n[0];verts[k+4]=n[1];verts[k+5]=n[2];
-    verts[k+6]=t;verts[k+7]=a;
+    verts[k+6]=t;verts[k+7]=0;   /* материал 0: тёмная масса под перьями */
     verts[k+8]=c[0];verts[k+9]=c[1];verts[k+10]=c[2];
   }
   for(let i=0;i<NT-1;i++)for(let j=0;j<NA;j++){
@@ -462,7 +584,342 @@ function buildBody(NT,NA){
     idx.push(A,C,B, B,C,D);
   }
   return {verts,index:new Uint16Array(idx),stride:11,
-          attrs:[["p",3,0],["n",3,3],["ta",2,6],["c",3,8]]};
+          attrs:[["p",3,0],["n",3,3],["tm",2,6],["c",3,8]]};
+}
+
+/* ===== 21-parts.js ===== */
+/* ══════════════ части: клюв, глаза, лапы, жёрдочка ══════════════
+   Всё, что не перо. Собирается один раз в одну сетку и рисуется одним вызовом.
+
+   КЛЮВ — главная примета попугая: короткий, высокий у основания и с крючком,
+   который уходит НАЗАД под себя. Прямой конус — это не попугай, это воробей.
+   Нижняя челюсть короче и тупее, она прячется в крючок.
+
+   ЛАПЫ. Попугай зигодактиль: два пальца вперёд, два назад — и именно поэтому
+   он держится за ветку, а не стоит на ней. Пальцы обнимают жёрдочку по её
+   окружности, а не заканчиваются в воздухе. */
+
+function buildParts(){
+  const M=meshBox();
+  const C=BIRD_C;
+  /* ── клюв ──
+     Первая сборка дала жёлтую пластину на щеке: клюв начинался ВНУТРИ головы
+     и почти весь в ней и оставался, наружу торчало только широкое основание.
+     Клюв попугая короткий, но ВЫСОКИЙ и загнутый: надклювье выходит из
+     восковицы, идёт вперёд-вниз и уходит крючком назад под себя. Наружу от
+     поверхности головы (z≈0.30) он выступает всего на полторы своих толщины —
+     длинный клюв делает из попугая ворону. */
+  const beakCol=(v)=>vLerp(C.beak,C.beakD,smooth(.10,.95,v));
+  tube(M,[
+    {p:[0,1.790,0.150],r:[0.092,0.110]},
+    {p:[0,1.766,0.245],r:[0.090,0.106]},
+    {p:[0,1.728,0.328],r:[0.079,0.095]},
+    {p:[0,1.680,0.388],r:[0.060,0.078]},
+    {p:[0,1.624,0.418],r:[0.042,0.057]},
+    {p:[0,1.575,0.406],r:[0.026,0.038]},
+    {p:[0,1.548,0.374],r:[0.008,0.018]}
+  ],16,{m:1,t:1,up:[1,0,0],col:(v)=>beakCol(v)});
+  /* подклювье: короче, тупее, шире — оно прячется в крючок надклювья */
+  tube(M,[
+    {p:[0,1.668,0.150],r:[0.079,0.039]},
+    {p:[0,1.651,0.240],r:[0.075,0.039]},
+    {p:[0,1.634,0.312],r:[0.059,0.035]},
+    {p:[0,1.620,0.362],r:[0.033,0.026]},
+    {p:[0,1.615,0.386],r:[0.008,0.010]}
+  ],12,{m:1,t:1,up:[1,0,0],col:(v)=>vLerp(vLerp(C.beak,C.beakD,.50),C.beakD,smooth(.2,1,v))});
+  /* восковица: валик у основания клюва, матовый и светлее рога */
+  tube(M,[
+    {p:[0,1.848,0.075],r:[0.098,0.070]},
+    {p:[0,1.838,0.140],r:[0.104,0.078]},
+    {p:[0,1.816,0.192],r:[0.092,0.066]}
+  ],12,{m:5,t:1,up:[1,0,0],col:()=>vLerp(C.cream,C.creamD,.40)});
+  /* ноздри: две тёмные точки на восковице — мелочь, которую замечают */
+  for(const sx of [-1,1])
+    sphere(M,[sx*0.048,1.838,0.175],0.014,6,{m:2,t:1,col:()=>[0.02,0.02,0.03]});
+
+  /* ── глаза ──
+     Тёмная бусина с голым кольцом вокруг. Кольцо — примета попугая не меньше
+     клюва: без него глаз тонет в оперении и голова делается кукольной. */
+  for(const sx of [-1,1]){
+    const p=[sx*0.248,1.786,0.100];
+    const n=vNorm([sx*0.94,0.14,0.31]);
+    disc(M,vAdd(p,vMul(n,-0.015)),n,0.092,20,{m:5,t:1,ry:0.88,
+      col:(k)=>k?vLerp(C.creamD,C.blueD,.50):vLerp(C.cream,C.creamD,.35)});
+    sphere(M,vAdd(p,vMul(n,0.010)),0.054,10,{m:2,t:1,col:()=>C.eye});
+    disc(M,vAdd(p,vMul(n,0.048)),n,0.032,16,{m:2,t:1,
+      col:(k)=>k?vLerp(C.amberD,C.eye,.40):C.eye});
+  }
+
+  /* ── жёрдочка ──
+     Ветка, а не палка: слегка гнётся, к концам тоньше, с одним сучком.
+     t=-1 — эта геометрия не едет с птицей ни при каком её движении. */
+  const wood=(v,u)=>vLerp(C.perch,vLerp(C.perch,[0.02,0.02,0.03],.55),
+    .5+.5*Math.sin(u*TAU*3+v*9));
+  const per=[];
+  for(let i=0;i<=10;i++){
+    const k=i/10,x=mix(-1.45,1.45,k);
+    per.push({p:[x,0.42+Math.sin(k*Math.PI)*0.035,-0.04+Math.cos(k*3.1)*0.012],
+      r:[0.085+Math.sin(k*Math.PI)*0.022,0.082+Math.sin(k*Math.PI)*0.020],t:-1});
+  }
+  tube(M,per,14,{m:3,t:-1,up:[0,1,0],col:wood});
+  sphere(M,[0.42,0.47,-0.02],0.055,8,{m:3,t:-1,scale:[1.3,0.7,1.1],col:()=>vLerp(C.perch,[0.05,0.04,0.03],.4)});
+
+  /* ── лапы ──
+     Цевка короткая: сидящий попугай почти лежит на ветке брюхом. */
+  for(const sx of [-1,1]){
+    const hipX=sx*0.135;
+    tube(M,[
+      {p:[hipX,0.72,-0.06],r:[0.062,0.062],t:0.12},
+      {p:[hipX,0.63,-0.05],r:[0.050,0.050],t:0.06},
+      {p:[hipX*1.02,0.55,-0.035],r:[0.044,0.044],t:0},
+      {p:[hipX*1.04,0.505,-0.03],r:[0.042,0.042],t:0}
+    ],10,{m:4,t:0,up:[1,0,0],col:(v)=>vLerp(C.foot,C.footD,smooth(0,1,v)*.7)});
+    /* четыре пальца: два вперёд, два назад, все обнимают ветку */
+    const toes=[[0.62,1],[0.30,1],[-0.55,-1],[-1.05,-1]];
+    for(const [a0,dir] of toes){
+      const path=[],n=5;
+      for(let i=0;i<n;i++){
+        const k=i/(n-1);
+        /* палец идёт по окружности ветки: от верха вниз по её боку */
+        const a=a0*k*1.35;
+        const rr=0.098+0.030*(1-k);
+        path.push({p:[hipX*1.04+sx*0.010*k+dir*0.0,
+                      0.425+Math.cos(a)*rr,
+                      -0.035+Math.sin(a)*rr],
+                   r:[0.030-0.014*k,0.028-0.013*k],t:0});
+      }
+      tube(M,path,8,{m:4,t:0,up:[1,0,0],col:(v)=>vLerp(C.foot,C.footD,.25+v*.6)});
+      /* коготь: маленький загнутый конус на конце пальца */
+      const e=path[n-1].p,a=a0*1.35;
+      const tip=[e[0],e[1]+Math.cos(a+0.5)*0.048,e[2]+Math.sin(a+0.5)*0.048];
+      tube(M,[{p:e,r:[0.017,0.017],t:0},
+              {p:vLerp(e,tip,.6),r:[0.011,0.011],t:0},
+              {p:tip,r:[0.002,0.002],t:0}],
+           6,{m:7,t:0,up:[1,0,0],col:()=>[0.035,0.030,0.038]});
+    }
+  }
+  return M.done();
+}
+
+/* ── бусины хохла ──
+   Примета породы: у каждого пёрышка хохла на конце холодная светящаяся
+   бусина. Они собираются отдельной сеткой, потому что рисуются ПОСЛЕ света и
+   аддитивно — свет не должен их гасить (то же правило, что в игре). */
+const CREST_N=13;
+function crestQuill(i){
+  /* Хохол идёт по темени ОТ ЛБА К ЗАТЫЛКУ, а не поперёк: первая сборка ставила
+     пёрышки на лоб (a=π/2 у макушки — это перёд), и над клювом получался
+     светящийся рог. Здесь s=0 — переднее пёрышко у восковицы, s=1 — заднее на
+     затылке; каждое отведено назад, и чем дальше, тем сильнее. */
+  const s=i/(CREST_N-1);
+  const t=0.995-s*0.10;
+  const a=Math.PI*1.5;                            /* затылочная сторона */
+  const side=Math.sin(s*Math.PI)*((i%3)-1)*0.052;   /* веер в три ручья, а не гребень */
+  const base=vAdd(bodyAt(t,a),[side,0,0]);
+  const dir=vNorm([side*3.4,mix(0.95,0.45,s),mix(0.10,-0.90,s)]);
+  const len=(0.265-Math.abs(s-0.45)*0.13);
+  return {base,dir,len,k:side/0.055};
+}
+function buildBeads(){
+  const M=meshBox();
+  for(let i=0;i<CREST_N;i++){
+    const q=crestQuill(i);
+    const p=vAdd(q.base,vMul(q.dir,q.len));
+    sphere(M,p,0.0135,7,{m:6,t:1,col:()=>BIRD_C.glow});
+  }
+  return M.done();
+}
+
+/* ===== 22-feather.js ===== */
+/* ══════════════ перо ══════════════
+   Одно перо на всю птицу — остальное делают инстансы. Форма ланцетовидная:
+   узкое у основания, широкое в средней трети, острое на конце. Стержень
+   выгнут, опахало «зачерпнуто» — плоский четырёхугольник читается фольгой.
+
+   ПРАВИЛО (то же, что в двумерной птице): щель между перьями заметнее самого
+   пера. Поэтому ряды кладутся черепицей с перекрытием, а не встык, и под
+   ними всегда лежит тёмная масса тела.
+
+   Прозрачности нет ни грамма: контур пера — это геометрия. Так перья честно
+   попадают в карту теней и не требуют сортировки. */
+function buildFeather(cols,rows){
+  const M={v:[],i:[],n:0};
+  const P=[];
+  /* кончик у контурного пера ЗАКРУГЛЁН, а не заострён: острые концы дают
+     чешую, и первая сборка ушла именно в неё */
+  const wid=v=>{
+    const b=Math.pow(Math.sin(Math.pow(clamp(v,0,1),0.62)*Math.PI),0.42);
+    /* и ещё раз про кончик: он скругляется дугой на последней восьмой длины.
+       Без этого перо сходится в остриё, ряд читается чешуёй, а на силуэте
+       птица покрывается шипами */
+    const e=Math.max(0,(v-0.86)/0.14);
+    return b*Math.sqrt(Math.max(0,1-e*e));
+  };
+  const cup=(u,v)=>-0.16*u*u*wid(v)-0.10*v*v;      /* чашка опахала и выгиб стержня */
+  for(let i=0;i<rows;i++){
+    const v=i/(rows-1),row=[];
+    for(let j=0;j<cols;j++){
+      const u=(j/(cols-1)-0.5)*2;
+      row.push([u*wid(v)*0.5,cup(u,v),v]);
+    }
+    P.push(row);
+  }
+  const at=(i,j)=>P[clamp(i,0,rows-1)][clamp(j,0,cols-1)];
+  const V=[];
+  for(let i=0;i<rows;i++)for(let j=0;j<cols;j++){
+    const du=vSub(at(i+1,j),at(i-1,j)),dv=vSub(at(i,j+1),at(i,j-1));
+    let n=vNorm(vCross(dv,du));
+    if(n[1]<0)n=vMul(n,-1);
+    const u=(j/(cols-1)-0.5)*2,v=i/(rows-1);
+    V.push(...at(i,j),...n,u,v);
+  }
+  const idx=[];
+  for(let i=0;i<rows-1;i++)for(let j=0;j<cols-1;j++){
+    const a=i*cols+j,b=a+1,c=a+cols,d=c+1;
+    idx.push(a,c,b,b,c,d);
+  }
+  return {verts:new Float32Array(V),index:new Uint16Array(idx),stride:8,
+          attrs:[["p",3,0],["n",3,3],["uv",2,6]]};
+}
+
+/* ── укладка ──
+   Инстанс: матрица 3×4 (12), цвет (3), настройки (4: чашка, выгиб, t хребта,
+   род пера). Строится один раз — поза живёт в вершинной программе. */
+const FEA_STRIDE=19;
+function feaPush(out,p,dir,up,len,wid,col,par){
+  const Z=vNorm(dir);
+  let Y=vNorm(vSub(up,vMul(Z,vDot(up,Z))));
+  if(vLen(Y)<1e-4)Y=basisFrom(Z)[1];
+  const X=vCross(Y,Z);
+  /* матрица кладётся тремя строками по четыре: столбцы — оси, четвёртое
+     число строки — сдвиг. Так в шейдере она читается тремя vec4 */
+  out.push(X[0]*wid,Y[0]*wid,Z[0]*len,p[0],
+           X[1]*wid,Y[1]*wid,Z[1]*len,p[1],
+           X[2]*wid,Y[2]*wid,Z[2]*len,p[2],
+           col[0],col[1],col[2],
+           par[0],par[1],par[2],par[3]);
+}
+/* тангенс «к хвосту» на поверхности тела: перо всегда лежит вдоль потока */
+function flowAt(t,a){
+  const e=0.012;
+  const p1=bodyAt(clamp(t-e,0,1),a),p2=bodyAt(clamp(t+e,0,1),a);
+  return vNorm(vSub(p1,p2));      /* от головы к хвосту */
+}
+function normalAt(t,a){
+  const e=0.01,d=0.05;
+  const p=bodyAt(t,a);
+  const du=vSub(bodyAt(clamp(t+e,0,1),a),bodyAt(clamp(t-e,0,1),a));
+  const dv=vSub(bodyAt(t,a+d),bodyAt(t,a-d));
+  let n=vNorm(vCross(du,dv));
+  /* наружу: сверяемся с направлением от оси тела */
+  const S=spineAt(t),out=vSub(p,S.c);
+  if(vDot(n,out)<0)n=vMul(n,-1);
+  return n;
+}
+
+/* ── оперение корпуса ──
+   Ряды снизу вверх, каждый следующий перекрывает предыдущий. Шаг ряда меньше
+   длины пера — иначе между рядами видно тело. */
+function layoutCoat(){
+  const out=[],R=rnd(0x7b1d);
+  const ROWS=54;
+  for(let r=0;r<ROWS;r++){
+    const t0=mix(0.055,0.995,r/(ROWS-1));
+    const S=spineAt(t0);
+    const girth=(S.rw+S.rf+S.rb)*0.5;
+    const n=Math.max(8,Math.round(girth*90));
+    for(let j=0;j<n;j++){
+      const a=(j+(r%2)*0.5)/n*TAU+R()*0.10;
+      /* ряд не должен читаться рядом: каждое перо гуляет вдоль хребта на
+         полшага, и черепица становится оперением, а не кладкой */
+      const t=clamp(t0+(R()-0.5)*0.028,0.03,0.998);
+      /* Голое место на птице — только клюв, восковица и кольцо вокруг глаза.
+         Первая версия резала перья по (t,a) на глазок и оставляла голубую
+         лысину во всю голову: голова у птицы и есть то место, где перьев
+         больше всего, просто они там мелкие. Проверка идёт по РАССТОЯНИЮ до
+         настоящих частей, а не по параметрам поверхности. */
+      const base=bodyAt(t,a);
+      if(base[1]>1.50&&base[2]>0.17&&Math.abs(base[0])<0.15)continue;   /* клюв */
+      if(base[1]>1.79&&base[2]>0.05&&Math.abs(base[0])<0.13)continue;   /* восковица */
+      let inEye=false;
+      for(const sx of [-1,1]){
+        const d=Math.hypot(base[0]-sx*0.248,base[1]-1.786,base[2]-0.100);
+        if(d<0.115){inEye=true;break;}
+      }
+      if(inEye)continue;
+      const p=normalAt(t,a);
+      const dir=flowAt(t,a);
+      /* перо не лежит плашмя: конец приподнят, иначе ряд читается чешуёй */
+      const lift=0.075+R()*0.035;
+      const d2=vNorm(vAdd(dir,vMul(p,lift)));
+      const len=mix(0.170,0.088,smooth(0.35,1.0,t))*(0.84+R()*0.32);
+      const wid=len*mix(0.68,0.90,R());
+      const col=bodyColor(t,a);
+      const cv=0.86+R()*0.28;
+      feaPush(out,vAdd(base,vMul(p,-0.012)),d2,p,len,wid,
+        [col[0]*cv,col[1]*cv,col[2]*cv],[1.0,0.5+R()*0.5,t,0.0]);
+    }
+  }
+  return new Float32Array(out);
+}
+
+/* ── маховые, кроющие, хвост, хохол ──
+   Крупные перья лежат по своим осям: у сложенного крыла это дуга от плеча к
+   хвосту, у хвоста — веер из одной точки. Их немного, и каждое видно. */
+function layoutPlumes(){
+  const out=[],R=rnd(0x51c3);
+  for(const sx of [-1,1]){
+    /* маховые: от плеча вдоль бока назад, кончики сходятся у корня хвоста */
+    for(let i=0;i<10;i++){
+      const k=i/9;
+      const t=mix(0.60,0.40,k),a=sx>0?mix(0.10,-0.35,k):Math.PI-mix(0.10,-0.35,k);
+      const base=bodyAt(t,a),nrm=normalAt(t,a);
+      const tip=[sx*mix(0.16,0.05,k),mix(0.72,0.52,k),mix(-0.62,-0.95,k)];
+      const dir=vNorm(vSub(tip,base));
+      const len=mix(0.72,1.02,k)*(0.97+R()*0.06);
+      feaPush(out,vAdd(base,vMul(nrm,0.004)),vNorm(vAdd(dir,vMul(nrm,0.05))),nrm,
+        len,len*0.20,vLerp(BIRD_C.blueD,BIRD_C.body,0.25+k*0.35),
+        [0.7,0.85,t,1.0]);
+    }
+    /* второстепенные: короче, выше, дают крылу толщину */
+    for(let i=0;i<9;i++){
+      const k=i/8;
+      const t=mix(0.66,0.46,k),a=sx>0?mix(0.34,-0.05,k):Math.PI-mix(0.34,-0.05,k);
+      const base=bodyAt(t,a),nrm=normalAt(t,a);
+      const dir=vNorm(vAdd(flowAt(t,a),vMul(nrm,0.10)));
+      feaPush(out,base,dir,nrm,mix(0.40,0.56,k),mix(0.15,0.20,k),
+        vLerp(BIRD_C.blue,BIRD_C.blueD,0.35+k*0.4),[0.85,0.7,t,1.0]);
+    }
+    /* кроющие плеча: янтарный эполет, три коротких ряда */
+    for(let r=0;r<3;r++)for(let i=0;i<7;i++){
+      const k=i/6,t=mix(0.70,0.52,k)-r*0.015;
+      const a=(sx>0?1:-1)*(0.30+r*0.16)+(sx>0?0:Math.PI);
+      const aa=sx>0?a:Math.PI-(0.30+r*0.16);
+      const base=bodyAt(t,aa),nrm=normalAt(t,aa);
+      const dir=vNorm(vAdd(flowAt(t,aa),vMul(nrm,0.22)));
+      const c=vLerp(BIRD_C.amber,BIRD_C.amberD,0.35+r*0.22+R()*0.25);
+      feaPush(out,base,dir,nrm,0.125-r*0.012,0.088,c,[1.0,0.6,t,0.0]);
+    }
+  }
+  /* хвост: длинный, слоёный, средняя пара длиннее всех */
+  for(let i=0;i<11;i++){
+    const k=(i/10-0.5)*2;
+    const a=Math.PI*1.5+k*0.5;
+    const base=bodyAt(0.045,a);
+    const dir=vNorm([k*0.30,-0.34-Math.abs(k)*0.10,-1.0]);
+    const len=1.30-Math.abs(k)*0.34;
+    const c=vLerp(BIRD_C.blue,BIRD_C.blueD,0.30+Math.abs(k)*0.45);
+    feaPush(out,base,dir,vNorm([k*0.3,1,-0.2]),len,len*0.13,c,[0.55,0.55,0.05,2.0]);
+  }
+  /* хохол: отведённые назад пёрышки, на конце каждого — бусина (21-parts) */
+  for(let i=0;i<CREST_N;i++){
+    const q=crestQuill(i);
+    /* пёрышко хохла шире, чем кажется: узкая спица читается проволокой, а
+       бусина на конце — лампочкой на проводе */
+    feaPush(out,q.base,q.dir,normalAt(0.96,Math.PI*1.5),q.len,q.len*0.26,
+      vLerp(BIRD_C.blueL,BIRD_C.amber,0.30+Math.abs(q.k)*0.35),[0.9,1.1,1.0,3.0]);
+  }
+  return new Float32Array(out);
 }
 
 /* ===== 30-shade.js ===== */
@@ -554,7 +1011,7 @@ vec3 lightPoint(vec3 wp,vec3 N,vec3 alb,float rough,float trans,vec3 tang,float 
     col+=uKeyCol*sh*(alb*wr+F*spec*max(NoL,0.0)*2.0);
     /* просвет: свет, прошедший насквозь, приходит с обратной стороны */
     float bt=pow(clamp(dot(V,-L),0.0,1.0),2.5)*clamp(1.0-abs(dot(N,L)),0.0,1.0);
-    col+=uKeyCol*alb*trans*bt*sh*1.4;
+    col+=uKeyCol*alb*trans*bt*sh*0.70;
   }
   /* подбой: холодный, без тени и без блика — это отражённый свет комнаты */
   {
@@ -583,16 +1040,45 @@ void main(){
   vP=pp;vN=normalize(nn);vC=c;vTA=ta;
   gl_Position=uVP*vec4(pp,1.0);
 }`;
-const FS_BODY=GL_LIGHT+`
+const FS_SOLID=GL_LIGHT+`
 in vec3 vP,vN,vC;
 in vec2 vTA;
 out vec4 o;
+/* мелкая клетка кожи на лапах: без неё палец выглядит резиновым */
+float scales(vec3 p){
+  vec3 q=p*46.0;
+  vec2 g=vec2(sin(q.y)+sin(q.z*0.7),sin(q.y*0.8+q.x));
+  return smoothstep(0.35,1.0,abs(sin(q.y*1.0))*abs(sin(q.z*0.6+q.x*0.4)));
+}
 void main(){
   vec3 N=normalize(vN);
-  /* тело под перьями — тёмная масса: оно видно в щелях и на кромке, поэтому
-     красится своим цветом, приглушённым, а не цветом оперения */
-  vec3 alb=vC*0.34;
-  o=vec4(lightPoint(vP,N,alb,0.62,0.10,vec3(0.0,1.0,0.0),0.0),1.0);
+  float m=vTA.y;
+  vec3 alb=vC;float rough=0.6,trans=0.1,ao=1.0;
+  if(m<0.5){
+    /* тело под перьями — тёмная масса: его видно в щелях и на кромке, и
+       красится оно приглушённым своим цветом, а не цветом оперения */
+    alb=vC*0.30;rough=0.72;trans=0.06;
+  }else if(m<1.5){
+    /* клюв: рог. Гладкий, с продольными бороздками у основания и с блеском,
+       который и делает его роговым, а не пластмассовым */
+    float gr=smoothstep(0.6,0.0,abs(vTA.x-1.0))*0.0;
+    rough=0.20+0.16*abs(sin(vP.z*90.0))*smoothstep(0.30,0.10,abs(vP.z-0.18));
+    trans=0.45;alb=vC;
+  }else if(m<2.5){
+    rough=0.06;trans=0.0;alb=vC*0.7;      /* глаз */
+  }else if(m<3.5){
+    rough=0.88;trans=0.02;alb=vC;         /* дерево */
+    alb*=0.86+0.14*sin(vP.x*120.0);
+  }else if(m<4.5){
+    float s=scales(vP);
+    rough=0.48+0.22*s;trans=0.18;alb=vC*(0.82+0.30*s);
+    N=normalize(N+vec3(0.0,s*0.10-0.05,0.0));
+  }else if(m<5.5){
+    rough=0.80;trans=0.42;alb=vC;         /* голая кожа: восковица, кольцо */
+  }else{
+    rough=0.22;trans=0.10;alb=vC;         /* коготь */
+  }
+  o=vec4(lightPoint(vP,N,alb,rough,trans,vec3(0.0,1.0,0.0),0.0)*ao,1.0);
 }`;
 
 /* ── глубина для карты теней ──
@@ -657,6 +1143,156 @@ void main(){
   o=vec4(c+(dth-0.5)/255.0,1.0);
 }`;
 
+/* ── перо ──
+   Геометрия у пера общая на всех, а различие — в настройках инстанса: длина,
+   ширина, чашка, род (корпус, маховое, хвост, хохол). Рисунок опахала не
+   текстура, а функция: бородки идут под углом к стержню, стержень светлее и
+   глаже, кромка темнее. Текстуры нет, потому что модуль — один файл. */
+const VS_FEATHER=GL_RIG+`
+layout(location=0) in vec3 p;
+layout(location=1) in vec3 n;
+layout(location=2) in vec2 uv;
+layout(location=3) in vec4 r0;
+layout(location=4) in vec4 r1;
+layout(location=5) in vec4 r2;
+layout(location=6) in vec3 icol;
+layout(location=7) in vec4 ipar;
+uniform mat4 uVP;
+uniform float uRuffle;
+out vec3 vP,vN,vC,vT;
+out vec2 vUV;
+out float vKind,vId;
+void main(){
+  vec3 lp=p;
+  lp.y*=ipar.x;
+  /* рябь: у каждого пера своя фаза, поэтому оперение шевелится волной, а не
+     всё разом. Это то же правило, что у двумерной птицы. */
+  float id=float(gl_InstanceID);
+  float ph=fract(sin(id*12.9898)*43758.5453);
+  float lift=sin(uTime*2.6+ph*6.2831)*uRuffle*(0.5+0.5*ph);
+  lp.y+=lift*lp.z*lp.z*1.6;
+  vec3 cx=vec3(r0.x,r1.x,r2.x), cy=vec3(r0.y,r1.y,r2.y), cz=vec3(r0.z,r1.z,r2.z);
+  float sx=length(cx), sy=length(cy), sz=length(cz);
+  vec3 wp=vec3(dot(r0.xyz,lp)+r0.w, dot(r1.xyz,lp)+r1.w, dot(r2.xyz,lp)+r2.w);
+  /* нормаль по обратно-транспонированной: у пера масштаб вдоль и поперёк
+     отличается впятеро, и обычный поворот дал бы нормаль набок */
+  vec3 wn=normalize(cx*(n.x/(sx*sx))+cy*(n.y/(sy*sy))+cz*(n.z/(sz*sz)));
+  vec3 wt=cz/max(sz,1e-5);
+  rigApply(wp,wn,ipar.z);
+  /* стержень поворачивается вместе с пером: тангенс нужен блику */
+  vec3 dummy=wt; vec3 dn=wt; vec3 dp=wp;
+  vP=wp;vN=wn;vC=icol;vT=wt;vUV=uv;vKind=ipar.w;vId=ph;
+  gl_Position=uVP*vec4(wp,1.0);
+}`;
+const FS_FEATHER=GL_LIGHT+`
+in vec3 vP,vN,vC,vT;
+in vec2 vUV;
+in float vKind,vId;
+out vec4 o;
+void main(){
+  float u=vUV.x, v=vUV.y;
+  vec3 N=normalize(vN);
+  if(!gl_FrontFacing)N=-N;              /* перо двустороннее */
+  /* бородки: частые полоски под углом к стержню. Они не рисуются линиями, а
+     качают нормаль — иначе на движении получается муар. */
+  /* частота бородок зависит от рода пера: на маховом длиной в полптицы
+     редкие бородки читаются рёбрами жалюзи */
+  float bf=vKind>0.5?58.0:24.0;
+  float barb=sin((v*bf+abs(u)*9.0+vId*3.0)*3.14159);
+  float barb2=sin((v*bf*2.4+abs(u)*21.0)*3.14159);
+  vec3 side=normalize(cross(N,vT));
+  N=normalize(N+side*barb*0.055*sign(u)+vT*barb2*0.02);
+  /* стержень: светлее, глаже, чуть выпуклый */
+  float rach=smoothstep(0.10,0.0,abs(u));
+  N=normalize(N+side*sign(u)*rach*0.35);
+  vec3 alb=vC;
+  alb*=0.80+0.20*barb*0.5;
+  alb=mix(alb,alb*1.35+0.02,rach*0.5);
+  /* кромка опахала темнее, кончик светлее — так ряд читается рядом, а не
+     сплошным полем */
+  alb*=mix(1.0,0.72,smoothstep(0.55,1.0,abs(u)));
+  alb=mix(alb,alb*1.28,smoothstep(0.55,1.0,v));
+  /* основание пера всегда в тени соседнего: без этого черепица плоская */
+  alb*=mix(0.84,1.0,smoothstep(0.0,0.28,v));
+  float rough=mix(0.42,0.30,rach);
+  float trans=mix(0.55,0.30,rach);
+  if(vKind>2.5){                        /* хохол: к концу перо разогрето бусиной */
+    alb+=uRimCol*0.0;
+    trans=0.75;
+  }
+  vec3 col=lightPoint(vP,N,alb,rough,trans,vT,0.75);
+  if(vKind>2.5)col+=vec3(0.10,0.42,0.50)*smoothstep(0.45,1.0,v)*0.55;
+  o=vec4(col,1.0);
+}`;
+
+/* ── бусина ──
+   Кладётся ПОСЛЕ света и аддитивно: свет не должен её гасить. Внутри —
+   плотное ядро, снаружи — ореол по краю сферы. */
+const VS_BEAD=GL_RIG+`
+layout(location=0) in vec3 p;
+layout(location=1) in vec3 n;
+layout(location=2) in vec2 tm;
+layout(location=3) in vec3 c;
+uniform mat4 uVP;
+out vec3 vP,vN,vC;
+void main(){
+  vec3 pp=p,nn=n;
+  rigApply(pp,nn,tm.x);
+  vP=pp;vN=normalize(nn);vC=c;
+  gl_Position=uVP*vec4(pp,1.0);
+}`;
+const FS_BEAD=`
+in vec3 vP,vN,vC;
+uniform vec3 uEye;
+uniform float uGlow;
+out vec4 o;
+void main(){
+  vec3 V=normalize(uEye-vP);
+  float f=1.0-abs(dot(normalize(vN),V));
+  /* ядро ровное, ореол по касательной: так бусина выглядит стеклянной, а не
+     закрашенным кружком */
+  o=vec4(vC*(1.1+3.4*pow(f,2.2))*uGlow,1.0);
+}`;
+
+/* ── свечение: порог и ступени ── */
+const FS_BRIGHT=`
+in vec2 vUV;
+uniform sampler2D uSrc;
+uniform vec2 uTexel;
+uniform float uThresh;
+out vec4 o;
+void main(){
+  vec3 c=vec3(0.0);
+  /* четыре точки вместо одной: порог по одиночному пикселю мерцает на
+     движении, а бусины у нас как раз мелкие и подвижные */
+  c+=texture(uSrc,vUV+uTexel*vec2( 1.0, 1.0)).rgb;
+  c+=texture(uSrc,vUV+uTexel*vec2(-1.0, 1.0)).rgb;
+  c+=texture(uSrc,vUV+uTexel*vec2( 1.0,-1.0)).rgb;
+  c+=texture(uSrc,vUV+uTexel*vec2(-1.0,-1.0)).rgb;
+  c*=0.25;
+  float l=max(max(c.r,c.g),c.b);
+  o=vec4(c*smoothstep(uThresh,uThresh*2.0,l),1.0);
+}`;
+const FS_BLUR=`
+in vec2 vUV;
+uniform sampler2D uSrc;
+uniform vec2 uTexel;
+uniform float uK;
+out vec4 o;
+void main(){
+  /* палатка из девяти точек: на билинейной выборке это уже гладко */
+  vec3 c=texture(uSrc,vUV).rgb*4.0;
+  c+=texture(uSrc,vUV+vec2( uTexel.x,0.0)).rgb*2.0;
+  c+=texture(uSrc,vUV+vec2(-uTexel.x,0.0)).rgb*2.0;
+  c+=texture(uSrc,vUV+vec2(0.0, uTexel.y)).rgb*2.0;
+  c+=texture(uSrc,vUV+vec2(0.0,-uTexel.y)).rgb*2.0;
+  c+=texture(uSrc,vUV+uTexel).rgb;
+  c+=texture(uSrc,vUV-uTexel).rgb;
+  c+=texture(uSrc,vUV+vec2(uTexel.x,-uTexel.y)).rgb;
+  c+=texture(uSrc,vUV+vec2(-uTexel.x,uTexel.y)).rgb;
+  o=vec4(c/16.0*uK,1.0);
+}`;
+
 /* ===== 40-pose.js ===== */
 /* ══════════════ поза и жизнь ══════════════
    Как в игре: не «кадры анимации», а затухающие пружины. Повадка выставляет
@@ -665,7 +1301,7 @@ void main(){
 
    Мелкая рябь идёт ВСЕГДА и поверх всего: повадка — то, что птица делает,
    рябь — то, что с ней происходит. */
-const POSE={t:0,yaw:0,pitch:0,roll:0,breath:0,puff:0,lean:0,bow:0,
+const POSE={t:0,yaw:0,pitch:0,roll:0,breath:0,puff:0,lean:0,bow:0,ruffle:0.012,
   yawV:0,pitchV:0,rollV:0,blink:0,blinkAt:2.2,look:[0,1.75,3]};
 
 function spring(v,vel,k,d,dt){vel+=-v*k*dt;vel*=Math.pow(d,dt*60);return [v+vel*dt,vel];}
@@ -684,7 +1320,8 @@ function poseStep(dt){
   [POSE.roll,POSE.rollV]=spring(POSE.roll-POSE.rollT,POSE.rollV,48,.88,dt);
   POSE.roll+=POSE.rollT;
   /* птица смотрит по сторонам сама: редко, коротко и не в одну и ту же точку */
-  if(T>POSE.nextLook){
+  if(POSE.still){POSE.yawT=0;POSE.pitchT=0;POSE.rollT=0;POSE.blink=0;POSE.blinkAt=1e9;}
+  else if(T>POSE.nextLook){
     POSE.nextLook=T+0.9+Math.random()*3.4;
     POSE.yawT=(Math.random()-0.5)*0.9;
     POSE.pitchT=(Math.random()-0.5)*0.34;
@@ -693,6 +1330,9 @@ function poseStep(dt){
   if(POSE.blink>0)POSE.blink=Math.max(0,POSE.blink-dt*7.5);
   if(T>POSE.blinkAt){POSE.blink=1;POSE.blinkAt=T+1.5+Math.random()*4.5;}
   POSE.puff*=Math.pow(.92,dt*60);
+  /* рябь по оперению: она идёт всегда, поверх любой повадки — это не то, что
+     птица делает, а то, что с ней происходит */
+  POSE.ruffle=0.012+POSE.puff*1.6;
   POSE.bow*=Math.pow(.93,dt*60);
   POSE.lean=Math.sin(T*0.53)*0.012;
 }
@@ -700,50 +1340,60 @@ POSE.yawT=0;POSE.pitchT=0;POSE.rollT=0;POSE.nextLook=1.5;
 
 /* ===== 50-render.js ===== */
 /* ══════════════ проходы кадра ══════════════
-   Порядок: тень → фон → птица в HDR → яркая часть → размытие → экран.
-   Ни один проход не знает про птицу: они знают про сцену, а сцену собирает
-   `sceneDraw` — так добавление части (клюв, перья, лапы) не трогает кадр. */
+   Порядок: тень → фон → твёрдое → перья → бусины поверх света → свечение →
+   экран. Ни один проход не знает, что рисует птицу: он знает про сцену, а
+   сцену собирает `drawScene`. Поэтому новая часть тела не трогает кадр.
 
-const R={W:0,H:0,dpr:1,shadowSize:1536};
+   Весь свет считается в HDR (rgba16f) и сжимается один раз, в самом конце.
+   Иначе бусины хохла и блик на клюве срезаются до тон-компрессии, и светиться
+   им уже нечем. */
+
+const R={W:0,H:0,dpr:1,shadowSize:1536,bloomN:5,exposure:0.62};
 
 function renderInit(){
-  R.pBody =glProg(VS_BODY,FS_BODY,"тело");
+  R.pSolid=glProg(VS_BODY,FS_SOLID,"твёрдое");
   R.pDepth=glProg(VS_DEPTH,FS_DEPTH,"глубина");
+  R.pFea  =glProg(VS_FEATHER,FS_FEATHER,"перо");
+  R.pFeaD =glProg(VS_FEATHER,FS_DEPTH,"перо·глубина");
+  R.pBead =glProg(VS_BEAD,FS_BEAD,"бусина");
   R.pBg   =glProg(VS_FLAT,FS_BG,"фон");
   R.pTone =glProg(VS_FLAT,FS_TONE,"экран");
+  R.pBright=glProg(VS_FLAT,FS_BRIGHT,"яркое");
+  R.pBlur =glProg(VS_FLAT,FS_BLUR,"размытие");
   R.shadow=glTarget(R.shadowSize,R.shadowSize,"depth");
-  R.black =gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D,R.black);
-  gl.texStorage2D(gl.TEXTURE_2D,1,gl.RGBA8,1,1);
-  gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
-  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
 }
 function renderSize(w,h){
   if(R.W===w&&R.H===h)return;
   R.W=w;R.H=h;
-  /* HDR-цель: свет считается за пределами единицы, иначе бусины хохла и блик
-     на клюве срезаются ещё до тон-компрессии и светиться им нечем */
-  R.hdr=glTarget(w,h,GLX.float?"rgba16f":"rgba8");
+  const fmt=GLX.float?"rgba16f":"rgba8";
+  R.hdr=glTarget(w,h,fmt);
+  /* лестница свечения: каждая ступень вдвое меньше предыдущей. Пять ступеней
+     дают ореол шириной в треть кадра при цене в один процент */
+  R.bloom=[];
+  let bw=Math.max(2,w>>1),bh=Math.max(2,h>>1);
+  for(let i=0;i<R.bloomN;i++){
+    R.bloom.push([glTarget(bw,bh,fmt,gl.LINEAR),glTarget(bw,bh,fmt,gl.LINEAR)]);
+    bw=Math.max(2,bw>>1);bh=Math.max(2,bh>>1);
+  }
 }
 
 /* ── свет сцены ──
-   Тёплый ключ сверху-справа-спереди, холодный подбой слева (в игре это
-   приборы), обвод сзади. Числа — те же по смыслу, что в двумерной птице. */
+   Тёплый ключ сверху-справа-спереди, холодный подбой слева (в игре это свет
+   приборов), обвод сзади. Правило то же, что у двумерной птицы. */
 const LIGHT={
-  key:vNorm([0.55,0.86,0.42]), keyCol:[3.10,2.62,1.98],
-  fill:vNorm([-0.80,0.16,-0.30]), fillCol:[0.16,0.36,0.44],
-  rim:[0.10,0.30,0.36],
-  sky:[0.055,0.085,0.130], gnd:[0.014,0.016,0.022]
+  key:vNorm([0.55,0.80,0.45]), keyCol:[2.05,1.72,1.30],
+  fill:vNorm([-0.85,0.12,-0.25]), fillCol:[0.085,0.185,0.245],
+  rim:[0.045,0.135,0.175],
+  sky:[0.030,0.046,0.072], gnd:[0.008,0.009,0.013]
 };
 function lightVP(){
-  const c=[0,1.15,0],d=6.0;
+  const c=[0,1.10,0],d=6.0;
   const eye=vAdd(c,vMul(LIGHT.key,d));
-  return mMul(mOrtho(-1.9,1.9,-1.9,1.9,1.0,11.0),mLook(eye,c,[0,1,0]));
+  return mMul(mOrtho(-2.0,2.0,-2.0,2.0,1.0,11.0),mLook(eye,c,[0,1,0]));
 }
-function bindLight(P,VP,eye){
-  glSet(P,"uVP",VP);
-  glSet(P,"uEye",eye);
+function bindLight(P){
+  glSet(P,"uVP",R.VP);
+  glSet(P,"uEye",R.eye);
   glSet(P,"uKeyDir",LIGHT.key);glSet(P,"uKeyCol",LIGHT.keyCol);
   glSet(P,"uFillDir",LIGHT.fill);glSet(P,"uFillCol",LIGHT.fillCol);
   glSet(P,"uRimCol",LIGHT.rim);
@@ -752,35 +1402,41 @@ function bindLight(P,VP,eye){
   glSet(P,"uShadowTexel",1/R.shadowSize);
   glTex(P,"uShadow",7,R.shadow.tex);
 }
-/* поза передаётся всем программам одинаково: расхождение позы между телом и
-   перьями — это перья, съехавшие с птицы */
+/* поза уходит во все программы одинаково: разошлась поза — перья съехали с
+   птицы, и это видно сразу */
 function bindPose(P){
   glSet(P,"uHeadYaw",POSE.yaw);glSet(P,"uHeadPitch",POSE.pitch);glSet(P,"uHeadRoll",POSE.roll);
   glSet(P,"uBreath",POSE.breath);glSet(P,"uPuff",POSE.puff);
   glSet(P,"uLean",POSE.lean);glSet(P,"uBow",POSE.bow);
   glSet(P,"uNeckP",[0,1.46,-0.04]);
   glSet(P,"uTime",POSE.t);
+  glSet(P,"uRuffle",POSE.ruffle);
 }
-function drawScene(depthOnly){
-  if(depthOnly){
-    gl.useProgram(R.pDepth.p);bindPose(R.pDepth);
-    glSet(R.pDepth,"uVP",R.lightVP);
-    glDraw(MESH.body,0);
-  }else{
-    gl.useProgram(R.pBody.p);bindPose(R.pBody);bindLight(R.pBody,R.VP,R.eye);
-    glDraw(MESH.body,0);
-  }
+function drawSolid(P,VP){
+  gl.useProgram(P.p);bindPose(P);
+  if(VP)glSet(P,"uVP",VP);else bindLight(P);
+  glDraw(MESH.body,0);
+  glDraw(MESH.parts,0);
+}
+function drawFeathers(P,VP){
+  gl.useProgram(P.p);bindPose(P);
+  if(VP)glSet(P,"uVP",VP);else bindLight(P);
+  gl.disable(gl.CULL_FACE);          /* перо видно с обеих сторон */
+  glDraw(MESH.coat);
+  glDraw(MESH.plumes);
+  gl.enable(gl.CULL_FACE);
 }
 function renderFrame(){
   R.lightVP=lightVP();
-  /* тень */
+  /* ── тень ── */
   glUse(R.shadow);
   gl.clear(gl.DEPTH_BUFFER_BIT);
   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);
   gl.enable(gl.CULL_FACE);gl.cullFace(gl.FRONT);
-  drawScene(true);
+  drawSolid(R.pDepth,R.lightVP);
+  drawFeathers(R.pFeaD,R.lightVP);
   gl.cullFace(gl.BACK);
-  /* сцена */
+  /* ── сцена ── */
   glUse(R.hdr);
   gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
   gl.disable(gl.DEPTH_TEST);
@@ -789,17 +1445,51 @@ function renderFrame(){
   glSet(R.pBg,"uSkyCol",LIGHT.fillCol);glSet(R.pBg,"uKeyCol",LIGHT.keyCol);
   glDraw(glQuad(),0);
   gl.enable(gl.DEPTH_TEST);
-  drawScene(false);
-  /* экран */
-  glUse(null);
+  drawSolid(R.pSolid,null);
+  drawFeathers(R.pFea,null);
+  /* бусины: после всего света и аддитивно */
+  gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE);gl.depthMask(false);
+  gl.useProgram(R.pBead.p);bindPose(R.pBead);
+  glSet(R.pBead,"uVP",R.VP);glSet(R.pBead,"uEye",R.eye);
+  glSet(R.pBead,"uGlow",0.62+Math.sin(POSE.t*1.7)*0.09);
+  glDraw(MESH.beads,0);
+  gl.disable(gl.BLEND);gl.depthMask(true);
+  /* ── свечение ── */
   gl.disable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);
+  bloomPass();
+  /* ── экран ── */
+  glUse(null);
   gl.useProgram(R.pTone.p);
   glTex(R.pTone,"uSrc",0,R.hdr.tex);
-  glTex(R.pTone,"uBloom",1,R.bloomTex||R.black);
-  glSet(R.pTone,"uExposure",1.0);
-  glSet(R.pTone,"uBloomK",R.bloomTex?1.0:0.0);
+  glTex(R.pTone,"uBloom",1,R.bloom[0][0].tex);
+  glSet(R.pTone,"uExposure",R.exposure);
+  glSet(R.pTone,"uBloomK",0.55);
   glSet(R.pTone,"uTime",POSE.t);
   glDraw(glQuad(),0);
+}
+/* ── свечение ──
+   Порог → лестница вниз → сложение вверх. Ореол собирается из ступеней, а не
+   одним большим размытием: широкий свет стоит копейки, если он низкого
+   разрешения. */
+function bloomPass(){
+  glUse(R.bloom[0][0]);
+  gl.useProgram(R.pBright.p);
+  glTex(R.pBright,"uSrc",0,R.hdr.tex);
+  glSet(R.pBright,"uTexel",[1/R.W,1/R.H]);
+  glSet(R.pBright,"uThresh",1.55);
+  glDraw(glQuad(),0);
+  for(let i=1;i<R.bloomN;i++)blit(R.bloom[i-1][0],R.bloom[i][0],0.0);
+  for(let i=R.bloomN-1;i>0;i--)blit(R.bloom[i][0],R.bloom[i-1][0],1.0);
+}
+function blit(src,dst,add){
+  glUse(dst);
+  if(add){gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE);}
+  gl.useProgram(R.pBlur.p);
+  glTex(R.pBlur,"uSrc",0,src.tex);
+  glSet(R.pBlur,"uTexel",[1/src.w,1/src.h]);
+  glSet(R.pBlur,"uK",add?1.0:1.0);
+  glDraw(glQuad(),0);
+  if(add)gl.disable(gl.BLEND);
 }
 
 /* ===== 60-app.js ===== */
@@ -826,9 +1516,25 @@ function birdBoot(){
          "он выключен или машина отказалась его дать.\n\nПтица без него не соберётся.");
     return;
   }
-  MESH.body=glMesh(buildBody(96,64));
+  /* сетки собираются один раз: форма птицы не меняется, меняется поза */
+  MESH.body  =glMesh(buildBody(96,64));
+  MESH.parts =glMesh(buildParts());
+  MESH.beads =glMesh(buildBeads());
+  const IA=[["r0",4,0],["r1",4,4],["r2",4,8],["icol",3,12],["ipar",4,15]];
+  MESH.coat  =glMesh(buildFeather(5,7));
+  glInstances(MESH.coat,layoutCoat(),IA,FEA_STRIDE);
+  MESH.plumes=glMesh(buildFeather(7,11));
+  glInstances(MESH.plumes,layoutPlumes(),IA,FEA_STRIDE);
   renderInit();
   if(GL_ERR.length){fail("Шейдеры не собрались:\n\n"+GL_ERR.join("\n\n"));return;}
+  /* стенд: камера и покой задаются адресом, чтобы снимки были сравнимы
+     между собой — ?az=0.6&el=0.15&d=4.3&still=1 */
+  const Q=new URLSearchParams(location.search);
+  if(Q.has("az"))CAM.az=+Q.get("az");
+  if(Q.has("el"))CAM.el=+Q.get("el");
+  if(Q.has("d"))CAM.dist=CAM.distT=+Q.get("d");
+  if(Q.has("ty"))CAM.tgt[1]=+Q.get("ty");
+  if(Q.has("still"))POSE.still=1;
   birdSize();
   addEventListener("resize",birdSize);
   birdHands(cv);
@@ -888,7 +1594,7 @@ function birdHands(cv){
 function birdPoke(){
   /* пока — общая реакция: птица вскидывается и распушается. Зоны появятся
      вместе с хохлом и крылом. */
-  POSE.puff=0.035;
+  POSE.puff=0.035;POSE.ruffle=0.06;
   POSE.pitchT=-0.18;POSE.nextLook=POSE.t+1.2;
   POSE.blink=1;
 }

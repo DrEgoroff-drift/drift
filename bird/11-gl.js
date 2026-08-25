@@ -24,7 +24,11 @@ const GL_ERR=[];
 function glProg(vs,fs,name){
   const sh=(type,src)=>{
     const s=gl.createShader(type);
-    gl.shaderSource(s,"#version 300 es\nprecision highp float;\nprecision highp int;\n"+src);
+    /* точность у сэмплеров обязана быть объявлена явно: во фрагментной
+       программе есть умолчание только для float, а sampler2DShadow без
+       precision — ошибка компиляции, и на этом кадр становится чёрным */
+    gl.shaderSource(s,"#version 300 es\nprecision highp float;\nprecision highp int;\n"+
+      "precision highp sampler2D;\nprecision highp sampler2DShadow;\n"+src);
     gl.compileShader(s);
     if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){
       GL_ERR.push((name||"?")+" "+(type===gl.VERTEX_SHADER?"vert":"frag")+": "+gl.getShaderInfoLog(s));

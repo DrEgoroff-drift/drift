@@ -903,10 +903,13 @@ proceed without it.
 
 ---
 
-# QUEUE: the through-line — «Непутёвый» (author's pitch, 2026-08-26)
+# QUEUE: the through-line — the arc of Восьмой (author's pitch, 2026-08-26)
 
-Full design: [`docs/DESIGN-arc.md`](docs/DESIGN-arc.md). The personal spine of the whole game,
-running *underneath* the world's story that `DESIGN-act2.md` tells: that act is about a common
+The story lives in the saga, not here: [`docs/saga/ДУГА.md`](docs/saga/ДУГА.md) — the Lie, the
+Truth, the single value, and how it lands on the eight parts of «Смена». The machinery it needs in
+`src/` is [`docs/DESIGN-arc.md`](docs/DESIGN-arc.md). If the two ever disagree, the saga wins.
+
+It runs *underneath* the world's story that `DESIGN-act2.md` tells: that act is about a common
 undertaking and says outright the player is one of a thousand hands, not the hero. This one is
 about the man. They do not compete — the expedition is the world, the fool is the person.
 
