@@ -7,6 +7,51 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.155.0 — the road: the colour was arithmetic (M168k)
+
+Six minutes of a real city drive on film, with the microphone on, and three corrections from the
+author: a rich palette, the game's own sound off, and stars that read as flight rather than
+blinking. The full pass is in [docs/DESIGN-road.md](docs/DESIGN-road.md).
+
+- **The sky was green whatever the music — and it was arithmetic, not taste.** Hue was mixed like
+  an ordinary number, so the walk from cyan to amber went straight through green; the intended
+  «violet-cyan → magenta-amber» was unreachable by that formula. The hot end is now written past
+  360, so the path always rises through magenta, and the ship's accent is blended on the circle.
+  The three nebulae, which sat 42° apart and added up to one wash, are spread round it; the
+  bloom's satellites now stand farther apart than they are wide, which is what it takes for three
+  tones to read as three.
+- **The buttons are readable again.** The bloom flooded the whole footer — a ray cut through
+  «ВЫКЛЮЧИТЬ МИКРОФОН», «НАЗАД» stood amber on bright green. The light now rises from the footer
+  line like a glow over a horizon, and the band below it is painted dark last. These buttons get
+  pressed at the wheel, without looking.
+- **The exhaust stopped being two plastic tubes.** Additive alpha peaked at 0.8 and clipped every
+  channel to white, the ribbon's colour was taken from a near-white core along its whole visible
+  length, and the two plumes ran parallel to the bottom of the screen. Now: a third of the alpha,
+  the body in the hull's own tint, and the plumes easing onto one axis.
+- **Stars behave like travel.** The scale divided by 120 km/h while a city drive is 15–45, so a
+  streak came out three pixels and the only motion left was a sine on alpha. The scale now comes
+  from the speeds a tier actually sees, streaks are longer, and the twinkle fades out as soon as
+  the car moves — blinking is for standing still.
+- **The game does not sound in the road.** It was breaking through the music playing in the car.
+  A companion mode shows; it does not play. The player's own sound setting is untouched.
+- **Nothing but the screensaver is on screen** — the pads and, later, the parrot window had been
+  leaking through — and the main loop stops drawing the world while the road is up: it is invisible
+  under a full-screen mode, and battery is this mode's stated price. The sensor tap now also takes
+  the screen full-size; the browser's furniture was eating a seventh of it.
+- **A truth window for the sensors** — long-press, or `?road=diag`. Through the whole filmed drive
+  the hull never left the centre and never banked, and the screen could not say whether the road
+  was straight or the measure was reading zero. Six lines of live numbers instead of guessing. Two
+  thresholds moved with it: full swerve at 0.24 g instead of 0.30 (an unhurried city corner is
+  0.10–0.20 g), and the speed gate opens fully at 14 km/h instead of 20, because in stop-and-go the
+  old ceiling shut it exactly where a car turns.
+- **The reward is visible without being larger.** Each credit flies from the hull into the counter,
+  and the combo says what it buys («×1.7 КОМБО · 3.4 кр/км») rather than an abstract multiplier.
+- The hull is 15% bigger, the microphone hint stops hanging for the whole trip, and the system name
+  no longer stands on screen twice.
+- **A stand for the road**: `docs/mkroad.ps1` → `docs/road.html`, with synthetic music and speed, so
+  the frame that gets edited every pass can be looked at without half an hour of traffic.
+
+---
 ## 0.154.0 — the exchange stops being silent (online audit, part two)
 
 The rest of the online audit ([docs/DESIGN-online-risks.md](docs/DESIGN-online-risks.md)). The

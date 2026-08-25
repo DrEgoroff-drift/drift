@@ -533,7 +533,15 @@ a commit. The joys (M164–M166) may be slotted between big milestones as breath
 - **M168 road companion** — **built (0.129.0–0.132.0)**: the living screensaver for real travel — credits by the kilometre with a ×3 combo, acceleration and braking on the hull, the mood wave — per
   [`docs/DESIGN-road.md`](docs/DESIGN-road.md) — the player's hull flies by GPS, banks by the
   gyroscope, shakes with the road, an equalizer breathes by the microphone; a kilometre of
-  road is a unit of ice, 40 a day; `27k-road`, `91zzy`.
+  road is a unit of ice, 40 a day; `27k-road`, `91zzy`. Passes b–j moved it to credits, tiers,
+  nose-up flight, an honest turn measure through a crooked cradle and the «моя волна» bloom.
+  **M168k (0.155.0)** — the ninth pass, from six filmed minutes of city driving and three
+  corrections from the author (a rich palette, the game's sound off, stars that read as flight):
+  hue was being averaged like a number and so every track painted the sky green; the bloom made
+  the footer buttons unreadable; the exhaust was white by construction; the travel scale was taken
+  from 120 km/h while a city drive is 15–45. Plus a truth window for the sensors (long-press or
+  `?road=diag`) — through the whole drive the hull never left the centre and the screen could not
+  say why — and a stand, `docs/mkroad.ps1`. Sky split off into `27la-road-sky`.
 - **Release look** — after M161: the table as paper, removal of the overlay HUD.
 
 # QUEUE: after the graphics campaign

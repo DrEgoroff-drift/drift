@@ -693,8 +693,21 @@ body.table #loglist.desk .thing.new::after{content:"";position:absolute;right:9p
    эфир слышно и у стойки. На столе он не нужен — стол и есть его память */
 body.screen #console{top:6px;bottom:auto;z-index:21;transform:translateX(-50%) scale(.82);transform-origin:top center;opacity:.92}
 body.table #console{display:none}
-/* в дороге эфира нет: экран — заставка, любой чужой прибор ломает её */
-body.road #console{display:none}
+/* в дороге не существует ничего, кроме заставки (M168k).
+   Не гашением, а `display:none`: гашение — переход по прозрачности, он держится
+   на кадрах, и стоит циклу споткнуться — сквозь заставку просвечивают пэды и
+   шкалы. И не списком: перечисление уже дважды оказалось неполным — просвечивали
+   то пэды, то окно трепла. Экран занят целиком, значит целиком и гасим. */
+body.road > *:not(#roadwin){display:none}
+/* подвал дороги стоит на своей тёмной подложке (M168k): сияние «моей волны»
+   светило прямо сквозь кнопки — «ВЫКЛЮЧИТЬ МИКРОФОН» перечёркивало лучом, а
+   «НАЗАД» стояло янтарём по ярко-зелёному. За рулём их жмут не глядя, поэтому
+   читаемость важнее красоты: холст гасит полосу под линией подвала, а подвал
+   добавляет к этому своё стекло. */
+body.road .scr footer{background:linear-gradient(0deg,rgba(4,7,12,.94),rgba(4,7,12,.74));
+  backdrop-filter:blur(8px) saturate(1.05);-webkit-backdrop-filter:blur(8px) saturate(1.05)}
+body.road .scr footer .act{background:linear-gradient(180deg,rgba(127,230,216,.19),rgba(127,230,216,.07))}
+body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,92,.20),rgba(242,178,92,.07))}
 
 /* ══════════════ телефон (M167) ══════════════
    Всё взаимодействие — в нижней четверти, под большим пальцем. Приёмник —

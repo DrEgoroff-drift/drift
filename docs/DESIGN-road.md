@@ -271,3 +271,117 @@ Lessons from tuning: at additive blending over a dark sky, satellite blobs need
 core-level alpha and a full `±115°` hue split, or everything averages into one
 green wash; and the first version failed exactly that way at half alpha and
 `±100°` with overlapping centres.
+
+## Ninth pass (M168k, 0.155.0) — the colour was arithmetic, not taste
+
+Six minutes of a real city drive, filmed with the microphone on, plus the author's three
+corrections: a rich palette, the game's own sound off, and stars that read as flight rather
+than blinking. What the footage showed, and what came out of it.
+
+### The sky was green for six minutes because hue was averaged like a number
+
+`roadMoodHue` interpolated **degrees on a line**: `calm = 265 − 75·bright` (violet → cyan)
+and `hot = 320 − 280·bright` (magenta → amber). On a bright track that is a walk from 190 to
+40 — straight through 150 and 100, which is green. Every track, any energy, one salad wash.
+The intent ("violet-cyan → magenta-amber") was never reachable by that formula.
+
+The hot end is now written **past 360** (`320 + 80·bright`, so amber is 400 ≡ 40). The path
+from calm therefore always rises — violet, magenta, red, amber — and never touches green.
+The accent blend is a proper circular mix (`roadHueMix`, shortest arc). `roadMoodPath` is
+pure and tested: a 11 × 21 grid of (energy, brightness) must not produce a single hue in
+50…185.
+
+Richness needed a second fix. Three nebulae at `hue`, `hue+42`, `hue+84` are neighbours of
+one family and add up under `lighter` to one wash; they are now spread round the circle
+(`ROAD_SKY_H = [0, 132, −118]`) with their own saturations. The bloom's satellites were
+±115° apart in hue but only ±0.34 W apart in space with radii of 0.8 R₀ — overlapping cores
+average to a white lump, which is exactly what the eighth pass thought it had fixed. They now
+stand at ±0.46 W with radius 0.62 R₀: farther apart than they are wide.
+
+### The footer was unreadable
+
+The bloom was anchored at `H·1.02` and a tinted strip up to `0.24 H` tall, alpha up to 0.49,
+was laid over the buttons in normal blending. On the footage a light ray cut through
+«ВЫКЛЮЧИТЬ МИКРОФОН» and «НАЗАД» stood in amber on bright green. These are pressed at the
+wheel, without looking.
+
+The light now radiates **from the footer line upward** — a glow over a horizon — and the band
+below it fades to background, painted last, in normal blending. Whatever the music does, the
+letters lie on clean dark. The footer carries its own glass under `body.road`.
+
+### The trail was two plastic tubes
+
+Three causes, all measured:
+
+1. Alpha peaked at 0.80 under `lighter`; two lanes overlapping gave 1.6 and every channel
+   clipped — the tint was destroyed by construction, and doubly so now that the bloom lights
+   the lower screen (the falloff had been tuned against a black sky). Peak is now 0.32.
+2. `col(u)` used `T.core` for `u > .78`, and the visible ribbon lies almost entirely there.
+   `T.core` is the accent mixed 82% into white — so the exhaust was white whatever the hull.
+   The core is now confined to `u > .93`, the body carries `mid`/`edge`.
+3. The two lanes ran parallel to the bottom of the screen. Each point now eases toward the
+   axis it was emitted on (τ = 1 s): one flame, not two pipes. Width tapers harder as well.
+
+### Stars: blinking is a trick for standing still
+
+`fast` divided speed by 120 km/h in the first tier, but a city drive is 15–45: the scale read
+0.2, a star's streak came out three pixels, and the only thing moving was a sine on alpha.
+The reference is now the speed that tier actually sees (`ROAD_FAST_REF = [60, 330, 900]`),
+streaks are longer, the flow is faster, and the twinkle amplitude falls to zero by half the
+scale. The cross-glint fades out smoothly instead of switching at 30 km/h — in stop-and-go it
+blinked at every light.
+
+### The swerve never fired, and the screen could not say why
+
+Across the whole filmed drive — 45 consecutive seconds sampled frame by frame, 35 samples over
+six minutes — the hull never left the centre and never banked, while the "phone is on its side"
+hint stayed off, so the measure was not blind. Whether the road was straight or the measure
+reads zero is not knowable from the screen, and tuning thresholds blind is guessing.
+
+So: a **truth window** — long-press the screen, or `?road=diag`. Six lines: lateral in g (and
+the accelerometer's own reading beside the fused one), yaw rate, `|x̂·ĝ|`, the swerve, the speed
+gate, the offset in screen widths, bank, shake, the travel scale, the auto-zero's age and the
+real frame rate. Nobody sees it on an ordinary drive.
+
+Two thresholds moved with it, and both are reversible. `ROAD_LAT_FULL` 0.30 g → **0.24 g**: an
+unhurried city corner (0.10–0.20 g) now carries the hull past half its travel. Lower is wrong —
+at 0.18 g a motorway curve already pins the scale, and the suite catches it. `ROAD_MOVE_FULL`
+20 → **14 km/h**: in stop-and-go half the drive sat under the old ceiling, so the gate was shut
+exactly where a car turns.
+
+### The rest of what the footage showed
+
+- **The game does not sound in the road.** `audioHush` mutes the buses and stops the music
+  without touching the player's setting; a companion mode shows, it does not play. The sound
+  belongs to whatever is playing in the car.
+- **Nothing but the screensaver exists.** `body.road > *:not(#roadwin) {display:none}` — twice
+  an explicit list turned out to be incomplete (the pads leaked, then the parrot window), and
+  opacity is no defence because it rides on frames. The main loop also **stops drawing the
+  world** while `RD` is up: it is invisible under a full-screen mode and battery is the stated
+  price of this one.
+- **Full screen** on the sensor tap — the browser's furniture ate a seventh of the screen of a
+  mode that stands in a cradle for the whole trip. The gesture already exists.
+- **The reward became visible without becoming bigger.** 21 → 25 credits over six minutes gave
+  no sign of life. Each credit now flies from the hull into the counter, and the combo chip says
+  what it buys («×1.7 КОМБО · 3.4 кр/км») instead of an abstract multiplier.
+- The hull is 15% larger — at road scale it read as a toy in an empty sky.
+- The microphone hint faded after ten seconds (it had hung for the whole six minutes) and comes
+  back on a touch; faults never fade. The system name no longer stands on screen twice — the HUD
+  line crossfades in as the centre announcement goes out.
+
+### The stand
+
+`docs/mkroad.ps1` → `docs/road.html`: the road screen with synthetic music and a synthetic
+speed, so the frame that gets edited every pass can be looked at from the desk instead of
+costing half an hour of traffic. `?kmh= &turn= &en= &br= &diag=` set the case.
+
+```bash
+powershell -ExecutionPolicy Bypass -File docs\pageshot.ps1 road -Width 420 -Height 880 -Q "?kmh=48&turn=0.85"
+```
+
+### One thing the footage suggested that turned out not to be ours
+
+A rounded, outlined box hung off the right edge in every frame of the video. Checked in the
+browser at a phone viewport: no element overflows the viewport, `scrollWidth` equals
+`innerWidth`, and the page cannot scroll (`html,body` are `overflow:hidden; touch-action:none`).
+It is the phone's own edge panel handle. Written down so the next pass does not chase it again.

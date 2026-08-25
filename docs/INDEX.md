@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 264 · символов верхнего уровня: 2466
+Файлов: 265 · символов верхнего уровня: 2476
 
 ## СИМВОЛЫ
 
@@ -78,13 +78,14 @@ applyCrewEvent               src/12b-crew-events.js:214
 applyPadMode                 src/15-input.js:62
 applyPadSize                 src/15-input.js:8
 applySave                    src/14-save.js:71
-applyVolumes                 src/09-audio.js:28
+applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:108
 arrive                       src/16-flight.js:154
 ARTIFACTS                    src/12h-relic.js:48
 assignToBase                 src/12a-crew.js:136
 AST_N                        src/24-mode-belt.js:85
-audioOn                      src/09-audio.js:6
+audioHush                    src/09-audio.js:12
+audioOn                      src/09-audio.js:11
 audioTick                    src/28-loop.js:288
 autoLandInputs               src/19-mode-landing.js:33
 autosave                     src/14a-cloud.js:48
@@ -398,10 +399,10 @@ crownOwned                   src/05a-nodes.js:159
 crownReady                   src/05a-nodes.js:158
 CSW                          src/19e-clouds.js:53
 ctx                          src/08-state.js:3
-curTok                       src/09-audio.js:71
+curTok                       src/09-audio.js:83
 CUT_RANGE                    src/24-mode-belt.js:183
 cvs                          src/08-state.js:2
-dbg                          src/28-loop.js:526
+dbg                          src/28-loop.js:531
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -538,7 +539,7 @@ drawPortal                   src/20aa-poi-shapes.js:464
 drawRaid                     src/24aa-raid-draw.js:5
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:107
-drawRoad                     src/27l-road-draw.js:74
+drawRoad                     src/27l-road-draw.js:86
 drawRocks                    src/19-mode-landing.js:226
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:163
@@ -582,7 +583,7 @@ ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
 el                           src/26-ui-station.js:121
 endPtr                       src/15-input.js:263
-engineLoop                   src/09-audio.js:233
+engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:88
 enterCave                    src/22-mode-cave.js:147
@@ -590,7 +591,7 @@ enterDig                     src/23-mode-dig.js:50
 enterHomeIn                  src/29c-home-in.js:65
 enterRaid                    src/24a-mode-raid.js:134
 enterSurface                 src/21-mode-surface.js:2
-env                          src/09-audio.js:47
+env                          src/09-audio.js:59
 eq                           tests/90-harness.js:28
 ETHER                        src/11b-speech.js:24
 ETHER_EVERY                  src/11b-speech.js:38
@@ -703,7 +704,7 @@ floraOf                      src/20e-species.js:91
 FOE_KINDS                    src/24a-mode-raid.js:17
 foundBase                    src/21a-mode-base.js:53
 frame                        src/28-loop.js:389
-freeVoice                    src/09-audio.js:79
+freeVoice                    src/09-audio.js:91
 fuelPriceHere                src/12k-rep.js:63
 FUR_TONES                    src/20f-fauna.js:20
 furColor                     src/20f-fauna.js:25
@@ -965,7 +966,7 @@ huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
 importCode                   src/14a-cloud.js:58
-initAudio                    src/09-audio.js:7
+initAudio                    src/09-audio.js:19
 INST_TOPICS                  src/11ab-institute.js:17
 instAll                      src/11ab-institute.js:25
 instBlock                    src/11ab-institute.js:112
@@ -1377,11 +1378,11 @@ nodeRoll                     src/05a-nodes.js:123
 NODES                        src/05a-nodes.js:70
 nodesHave                    src/05a-nodes.js:102
 nodesRender                  src/05a-nodes.js:177
-noise                        src/09-audio.js:54
+noise                        src/09-audio.js:66
 noise1                       src/01-core.js:18
 noise2                       src/01-core.js:21
 noise3                       src/24-mode-belt.js:7
-noiseBuf                     src/09-audio.js:53
+noiseBuf                     src/09-audio.js:65
 NPC_SHIPS                    src/03-ships.js:144
 OCC_CALM_MS                  src/13b-occupy.js:205
 OCC_LVL                      src/13b-occupy.js:20
@@ -1627,7 +1628,7 @@ postOpen                     src/11e-post.js:99
 prevAct                      src/08-state.js:40
 pricesSeen                   src/12aa-need.js:188
 prism                        src/21b-surface-deco.js:201
-prof                         src/28-loop.js:489
+prof                         src/28-loop.js:494
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
@@ -1704,7 +1705,7 @@ rareList                     src/12m-rare.js:103
 rareRender                   src/12m-rare.js:151
 rareSum                      src/12m-rare.js:140
 rareTake                     src/12m-rare.js:115
-RD                           src/27k-road.js:55
+RD                           src/27k-road.js:64
 rebinding                    src/15-input.js:136
 RECORD_YEARS                 src/11aa-record.js:17
 recordAdd                    src/11aa-record.js:22
@@ -1820,10 +1821,13 @@ rivalSpawn                   src/12p-news.js:74
 rivalYield                   src/12p-news.js:47
 rivetLine                    src/25-cockpit.js:179
 rng                          src/01-core.js:15
+ROAD_BLOOM_SAT               src/27k-road.js:62
 ROAD_C                       src/27k-road.js:33
 ROAD_CR_KM                   src/27k-road.js:34
+ROAD_FAST_REF                src/27k-road.js:87
+ROAD_FOOT                    src/27k-road.js:63
 ROAD_G                       src/27k-road.js:39
-ROAD_HALF                    src/27l-road-draw.js:58
+ROAD_HALF                    src/27l-road-draw.js:70
 ROAD_LAT_DEAD                src/27k-road.js:42
 ROAD_LAT_FULL                src/27k-road.js:40
 ROAD_LAT_MAX                 src/27k-road.js:41
@@ -1831,6 +1835,7 @@ ROAD_MASK                    src/27k-road.js:54
 ROAD_MOVE_GATE               src/27k-road.js:48
 ROAD_SHAKE_DEAD              src/27k-road.js:47
 ROAD_SIDE_MAX                src/27k-road.js:46
+ROAD_SKY_H                   src/27k-road.js:61
 ROAD_SWERVE                  src/27k-road.js:51
 ROAD_TIERS                   src/27k-road.js:32
 ROAD_TRAIL_LEN               src/27k-road.js:53
@@ -1841,34 +1846,39 @@ ROAD_XOFF_OUT                src/27k-road.js:50
 ROAD_YAW_MAX                 src/27k-road.js:43
 ROAD_ZERO_HOLD_A             src/27k-road.js:45
 ROAD_ZERO_TAU                src/27k-road.js:44
-roadAll                      src/27k-road.js:56
-roadAudio                    src/27k-road.js:343
-roadClose                    src/27l-road-draw.js:33
-roadCombo                    src/27k-road.js:77
-roadCosmic                   src/27k-road.js:74
-roadDayReset                 src/27k-road.js:60
-roadEarnKm                   src/27k-road.js:79
-roadFinish                   src/27k-road.js:91
-roadFrame                    src/27l-road-draw.js:48
-roadHullHalf                 src/27l-road-draw.js:59
-roadLightFrac                src/27k-road.js:73
-roadMicOff                   src/27k-road.js:177
-roadMicOn                    src/27k-road.js:146
-roadMicPick                  src/27k-road.js:139
-roadMoodHue                  src/27k-road.js:380
-roadOnPos                    src/27k-road.js:298
-roadOnShake                  src/27k-road.js:217
-roadOpen                     src/27l-road-draw.js:15
-roadPilotRu                  src/27k-road.js:297
-roadPing                     src/27k-road.js:281
-roadRgbHue                   src/27k-road.js:388
-roadSenseBtn                 src/27k-road.js:186
-roadSensorsOn                src/27k-road.js:99
-roadSpeedOk                  src/27k-road.js:65
-roadSys                      src/27k-road.js:273
-roadTier                     src/27k-road.js:67
-roadToday                    src/27k-road.js:59
-roadTripRu                   src/27k-road.js:75
+roadAll                      src/27k-road.js:65
+roadAudio                    src/27k-road.js:363
+roadClose                    src/27l-road-draw.js:42
+roadCombo                    src/27k-road.js:94
+roadCosmic                   src/27k-road.js:91
+roadDayReset                 src/27k-road.js:69
+roadEarnKm                   src/27k-road.js:96
+roadFast                     src/27k-road.js:88
+roadFinish                   src/27k-road.js:108
+roadFrame                    src/27l-road-draw.js:60
+roadFullscreen               src/27l-road-draw.js:547
+roadHueMix                   src/27k-road.js:404
+roadHullHalf                 src/27l-road-draw.js:71
+roadLightFrac                src/27k-road.js:90
+roadMicOff                   src/27k-road.js:194
+roadMicOn                    src/27k-road.js:163
+roadMicPick                  src/27k-road.js:156
+roadMoodHue                  src/27k-road.js:418
+roadMoodPath                 src/27k-road.js:413
+roadOnPos                    src/27k-road.js:318
+roadOnShake                  src/27k-road.js:234
+roadOpen                     src/27l-road-draw.js:17
+roadPilotRu                  src/27k-road.js:317
+roadPing                     src/27k-road.js:301
+roadRgbHue                   src/27k-road.js:423
+roadSenseBtn                 src/27k-road.js:203
+roadSensorsOn                src/27k-road.js:116
+roadSky                      src/27la-road-sky.js:9
+roadSpeedOk                  src/27k-road.js:74
+roadSys                      src/27k-road.js:293
+roadTier                     src/27k-road.js:76
+roadToday                    src/27k-road.js:68
+roadTripRu                   src/27k-road.js:92
 ROCK_CELL                    src/17c-system-draw.js:40
 ROCK_SHAPES                  src/17c-system-draw.js:26
 ROGUE_CAP                    src/12g-mgr-rogue.js:11
@@ -2014,8 +2024,8 @@ settleWatch                  src/12t-settle.js:288
 settleWords                  src/12t-settle.js:163
 setTx                        src/28-loop.js:71
 setZoom                      src/15-input.js:232
-sfx                          src/09-audio.js:225
-SFX                          src/09-audio.js:85
+sfx                          src/09-audio.js:237
+SFX                          src/09-audio.js:97
 SH_DX                        src/03b-hull-paint.js:164
 shatter                      src/24-mode-belt.js:135
 SHIFT_TALK                   src/03f-hull-role.js:63
@@ -2114,7 +2124,7 @@ steps                        tests/90-harness.js:75
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:53
 stGroupOf                    src/26-ui-station.js:52
-stopEngine                   src/09-audio.js:257
+stopEngine                   src/09-audio.js:269
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
 STORIES                      src/12k-stories-a.js:42
@@ -2350,7 +2360,7 @@ TYPES                        src/02-world.js:70
 unfitPart                    src/05-parts.js:247
 UNIQUE_COLS                  src/03-ships.js:14
 UNIQUE_TAG                   src/03-ships.js:15
-unlockAudio                  src/09-audio.js:36
+unlockAudio                  src/09-audio.js:48
 unpackPart                   src/05-parts.js:323
 updateAllies                 src/12a-crew.js:537
 updateBarges                 src/12l-barge.js:156
@@ -2417,7 +2427,7 @@ VER                          src/01-core.js:4
 visitHere                    src/11b-speech.js:83
 visitMark                    src/11b-speech.js:87
 visitsAll                    src/11b-speech.js:82
-voice                        src/09-audio.js:72
+voice                        src/09-audio.js:84
 VOICE_KEYS                   src/02a-worldmix.js:81
 VOICE_MAX                    src/09-audio.js:5
 W                            src/08-state.js:5
@@ -2552,7 +2562,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/09a-roomtone.js · 5 КБ
   · мир слышен: тон места (M178-10):1
 
-## src/09-audio.js · 12 КБ
+## src/09-audio.js · 13 КБ
   · звук: чистый синтез, ни одного файла:1
 
 ## src/10-music.js · 30 КБ
@@ -3040,23 +3050,26 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27j-ui-hold.js · 9 КБ
   · трюм как раскладка (M179):1
 
-## src/27k-road.js · 27 КБ
+## src/27k-road.js · 32 КБ
   · дорожный спутник:1
 
-## src/27l-road-draw.js · 33 КБ
+## src/27la-road-sky.js · 8 КБ
+  · дорожный спутник: небо:1
+
+## src/27l-road-draw.js · 37 КБ
   · дорожный спутник: экран:1
 
 ## src/27-ui-ship.js · 28 КБ
   · экран корабля:1
 
-## src/28-loop.js · 42 КБ
+## src/28-loop.js · 43 КБ
   · авария:1
   · телеметрия:21
   · звук по кадрам:284
   · цикл:342
   · авторазрешение:365
-  · prof() — на что уходит кадр:477
-  · dbg() — что держит корабль:517
+  · prof() — на что уходит кадр:482
+  · dbg() — что держит корабль:522
 
 ## src/28z-fps-probe.js · 7 КБ
   · пробник G11: ?g11:1
@@ -3289,8 +3302,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzx-mobile.js · 11 КБ
   · автотесты: телефонный вид (M167):1
 
-## tests/91zzy-road.js · 16 КБ
+## tests/91zzy-road.js · 20 КБ
   · автотесты: дорожный спутник (M168, M168b):1
+  · девятый проход (M168k):250
 
 ## tests/91zzza-trace.js · 5 КБ
 

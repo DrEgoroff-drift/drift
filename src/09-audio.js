@@ -1,9 +1,21 @@
 /* ══════════════ звук: чистый синтез, ни одного файла ══════════════ */
 /* Браузер не даёт завести AudioContext до жеста пользователя, поэтому
    контекст создаётся лениво из unlockAudio(), повешенного на первый ввод. */
-const SND={ctx:null,master:null,music:null,sfx:null,ready:false,voices:0,loops:{}};
+const SND={ctx:null,master:null,music:null,sfx:null,ready:false,voices:0,loops:{},hush:false};
 const VOICE_MAX=18;
-function audioOn(){return G.opts.audio&&G.opts.audio.on!==false;}
+/* ── тишина режима-компаньона (M168k) ──
+   «Дорога» едет поверх музыки, которая играет в машине, и синтез «Дрейфа»
+   прорывался в неё помехой. Режим-компаньон показывает, а не играет: звук в
+   нём принадлежит тому, что слушает человек. Настройка игрока при этом не
+   трогается — глушение временное и снимается на выходе. */
+function audioOn(){return !SND.hush&&G.opts.audio&&G.opts.audio.on!==false;}
+function audioHush(on){
+  const was=SND.hush;
+  SND.hush=!!on;
+  if(SND.hush===was)return;
+  applyVolumes();
+  if(SND.hush&&typeof musicStop==="function")musicStop();
+}
 function initAudio(){
   if(SND.ctx)return SND.ctx;
   const AC=window.AudioContext||window.webkitAudioContext;
@@ -28,7 +40,7 @@ function initAudio(){
 function applyVolumes(){
   if(!SND.ready)return;
   const a=G.opts.audio||{music:.6,sfx:.6,engine:.4,on:true};
-  const on=a.on!==false?1:0;
+  const on=(a.on!==false&&!SND.hush)?1:0;
   SND.music.gain.value=(a.music==null?.6:a.music)*on;
   SND.sfx.gain.value=(a.sfx==null?.6:a.sfx)*on;
   SND.eng.gain.value=(a.engine==null?.4:a.engine)*on;

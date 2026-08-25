@@ -37,7 +37,7 @@ const ROAD_CR_KM=2,ROAD_CR_CAP=1500,ROAD_COMBO_MAX=3,ROAD_COMBO_T=1200,ROAD_STOP
    гироскопом, переводится в поперечное ускорение по a=v·ω, поэтому у двух
    датчиков одна мера и один потолок, а не две подогнанные шкалы. */
 const ROAD_G=9.80665;
-const ROAD_LAT_FULL=.30*ROAD_G;           /* полный отброс к краю: 0.30 g — бодрый городской поворот */
+const ROAD_LAT_FULL=.24*ROAD_G;           /* полный отброс к краю (M168k: было .30 g; спокойный городской поворот — 0.10–0.20 g, теперь он уводит корпус за половину размаха. Ниже опускать нельзя: на .18 дуга шоссе упирается в потолок) */
 const ROAD_LAT_MAX=.60*ROAD_G;            /* выше уже не считаем: держимся своей шкалы */
 const ROAD_LAT_DEAD=.04*ROAD_G;           /* мёртвая зона: подруливание и швы асфальта */
 const ROAD_YAW_MAX=60;                    /* °/с: быстрее крутится только телефон в руках */
@@ -45,13 +45,22 @@ const ROAD_ZERO_TAU=20,ROAD_ZERO_FAST=.6,ROAD_ZERO_GRAB=3;  /* с: автоно�
 const ROAD_ZERO_HOLD_A=.08*ROAD_G,ROAD_ZERO_HOLD_W=4;       /* база учится только на прямой */
 const ROAD_SIDE_MAX=.75;                  /* |x̂·ĝ|: дальше экранная ось X слишком близко к вертикали */
 const ROAD_SHAKE_DEAD=.35,ROAD_SHAKE_FULL=2.5,ROAD_SHAKE_KICK=3.5;   /* м/с²: тряска и удар о яму */
-const ROAD_MOVE_GATE=8,ROAD_MOVE_FULL=20; /* км/ч: ниже — корабль не швыряет (двор, парковка, телефон в руках) */
+const ROAD_MOVE_GATE=8,ROAD_MOVE_FULL=14; /* км/ч: ниже — корабль не швыряет (двор, парковка, телефон в руках). Потолок опущен с 20 (M168k): в пробке половина хода была ниже него, и ворота держали снос закрытыми ровно там, где машина и поворачивает */
 const ROAD_TURN_ATK=.30,ROAD_TURN_REL=.80;/* с: в сторону быстро, обратно медленно */
 const ROAD_XOFF_OUT=.28,ROAD_XOFF_HOME=1.4;
 const ROAD_SWERVE=.46;                    /* доля полуширины экрана, на которую шарахает */
 const ROAD_TURN_SIGN=-1;                  /* корпус уходит НАРУЖУ поворота; знак проверяется на стенде одной правкой */
 const ROAD_TRAIL_LEN=.40,ROAD_TRAIL_STEP=.012,ROAD_TRAIL_MAX=300;  /* лента: длина на экране, шаг точек, потолок */
 const ROAD_MASK=.24;                      /* нижняя доля экрана гаснет в фон: подвал с кнопкой должен быть чистым */
+/* ── разведение тонов неба (M168k) ──
+   Три туманности стояли на hue, hue+42, hue+84 — соседние оттенки одного
+   семейства, которые под «lighter» складываются в одну заливку. Разводим по
+   кругу и даём каждой свою насыщенность: богатство даёт разница тонов, а не
+   прибавка яркости. Спутники сияния разведены там же и разнесены по ширине —
+   пятна шире, чем расстояние между ними, усредняются в белесый ком. */
+const ROAD_SKY_H=[0,132,-118],ROAD_SKY_S=[78,62,88];
+const ROAD_BLOOM_SAT=.46,ROAD_BLOOM_R=.62;/* спутники: доля ширины в сторону и доля радиуса ядра */
+const ROAD_FOOT=.13;                      /* доля экрана снизу, которую сияние не засвечивает: там кнопки */
 let RD=null;
 function roadAll(){if(!G.road||typeof G.road!=="object")G.road={day:-1,km:0,cr:0};return G.road;}
 /* день — календарный: игровые сутки идут 60 секунд, и на них «за поездку»
@@ -69,6 +78,14 @@ function roadTier(kmh){
   for(let i=0;i<ROAD_TIERS.length;i++)if(kmh<=ROAD_TIERS[i].v)return i+1;
   return 0;
 }
+/* ── шкала хода (M168k) ──
+   «Быстро» меряется не от потолка яруса, а от той скорости, которая в этом
+   ярусе бывает на самом деле. Прежде первый ярус делился на 120 км/ч, а по
+   городу едут 15–45: шкала давала 0.2, хвост звезды выходил в три пикселя, и
+   всё ощущение хода сводилось к мерцанию — автор об этом и сказал по видео
+   («звёзды мигают, а не так, будто ты летишь на фоне»). */
+const ROAD_FAST_REF=[60,330,900];
+function roadFast(kmh,tier){return clamp((kmh||0)/ROAD_FAST_REF[clamp((tier||1)-1,0,2)],0,1);}
 /* доля скорости света после ×1 000 000: 850 км/ч → 0.79 c */
 function roadLightFrac(kmh){return kmh/3.6*1000/ROAD_C;}
 function roadCosmic(kmh){return Math.round(kmh/3.6*1000);}
@@ -255,6 +272,9 @@ function roadOnShake(e){
   }
   else s=aYaw!=null?aYaw:lat;
   RD.blind=lat==null&&aYaw==null;
+  /* для окна правды (M168k): без этих трёх чисел на экране нельзя понять,
+     почему корпус не сходит с центра, а крутить пороги вслепую — гадание */
+  RD.latG=s==null?null:s/ROAD_G;RD.yawS=yaw;RD.latA=lat==null?null:lat/ROAD_G;
   if(s!=null){
     const m=Math.abs(s)<ROAD_LAT_DEAD?0:Math.sign(s)*Math.min(Math.abs(s)-ROAD_LAT_DEAD,ROAD_LAT_MAX-ROAD_LAT_DEAD);
     RD.turnT=clamp(ROAD_TURN_SIGN*m/(ROAD_LAT_FULL-ROAD_LAT_DEAD),-1,1);
@@ -377,13 +397,28 @@ function roadAudio(t){
 }
 /* цвет настроения: спокойное — фиолетовый→циан по яркости, энергичное —
    маджента→янтарь; смешан с личным цветом — цветом вашего корпуса */
+/* ── тон по кругу, а не по числовой прямой (M168k) ──
+   Тон — угол. Смешивать его как обычное число нельзя: 190 и 40 в среднем дают
+   115, то есть ЗЕЛЕНЬ, хотя между цианом и янтарём зелени нет ни на одном
+   пути, который мы имели в виду. Здесь — короткая дуга. */
+function roadHueMix(a,b,k){const d=((b-a+540)%360)-180;return ((a+d*k)%360+360)%360;}
+/* Настроение музыки в тон. Энергия ведёт от спокойного к горячему, яркость
+   (спектральный центроид) выбирает внутри каждого края.
+
+   Горячий край записан ЗА 360 (маджента 320 → янтарь 400 ≡ 40), поэтому путь
+   от спокойного всегда идёт вверх: фиолет → маджента → красный → янтарь. До
+   M168k он считался как 320−280·bright, и на ярком треке дорога вела 190→40 —
+   напрямую через 150 и 100, то есть через зелень. Шесть минут настоящей поездки
+   на видео были одного салатового тона при любой музыке. */
+function roadMoodPath(energy,bright){
+  const calm=265-75*bright;                /* спокойное: фиолетовое → циан */
+  const hot=320+80*bright;                 /* энергичное: маджента → янтарь */
+  return (calm+(hot-calm)*clamp(energy*1.6,0,1))%360;
+}
 function roadMoodHue(){
-  const calm=265-(265-190)*RD.bright;
-  const hot=320-(320-40)*RD.bright;
-  let h=calm+(hot-calm)*clamp(RD.energy*1.6,0,1);
-  const acc=hex2rgb(shipData(G.shipId).col);
-  const accH=roadRgbHue(acc);
-  return h*.72+accH*.28;
+  const h=roadMoodPath(RD.energy,RD.bright);
+  const accH=roadRgbHue(hex2rgb(shipData(G.shipId).col));
+  return roadHueMix(h,accH,.28);           /* и 28% своего корпуса — по дуге же */
 }
 function roadRgbHue(c){
   const r=c[0]/255,g=c[1]/255,b=c[2]/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b);
