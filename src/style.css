@@ -805,7 +805,10 @@ body.table #loglist.desk .thing.new::after{content:"";position:absolute;right:9p
 #lorelist .li.note span{color:var(--dim);font-style:italic}
 #lorelist .li.head span{color:var(--dim);letter-spacing:.16em}
 #rxScale{position:relative;height:9px;margin-top:-4px}
-#rxScale i{position:absolute;transform:translateX(-50%);font-style:normal;font-size:7px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+#rxScale i{position:absolute;transform:translateX(-50%);font-style:normal;font-size:7px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+/* ночная почта (M191): подпись зажигается, когда диапазон появляется. Она
+   чуть теплее остальных — это единственное, чем игра сообщает о вечере */
+#rxNight{color:var(--amber);opacity:.85}
 /* на экранах станции и прочих пульт не прячется, а поднимается в шапку:
    эфир слышно и у стойки. На столе он не нужен — стол и есть его память */
 /* ── при открытом экране приёмник ВСТРАИВАЕТСЯ, а не наклеивается ──

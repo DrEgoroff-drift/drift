@@ -17,6 +17,11 @@ const RADIO_BANDS=[
   {lo:.88,hi:1.0,k:"ether", ru:"ЭФИР"}
 ];
 function radioBand(f){
+  /* Пятый диапазон (M191) не лежит в таблице: он ЕСТЬ НЕ ВСЕГДА — только
+     вечером и только в сети. Диапазон, который «иногда работает», в таблице
+     постоянных диапазонов был бы неправдой про сам приёмник */
+  if(typeof ethBandAt==="function"&&ethBandAt(f))
+    return {lo:ETH_LO,hi:ETH_HI,k:"night",ru:"НОЧНАЯ ПОЧТА"};
   for(const B of RADIO_BANDS)if(f>=B.lo&&f<=B.hi)return B;
   return null;
 }
@@ -38,8 +43,13 @@ function radioTune(f){
     const ps=((G.sys&&G.sys.planets)||[]).filter(p=>p.type!=="gas");
     if(ps.length){const p=ps[Math.floor(r()*ps.length)],w=weatherPower(p),wk=weatherOf(p).kind;text="…"+p.name+": "+(wk?(w>.6?"штормит, "+wk:(w>.25?wk+", умеренно":"тихо, "+wk)):"без атмосферы, без погоды")+".";}
     else text="…погоды нет: твёрдых миров в системе нет";
+  }else if(B.k==="night"){
+    /* ночная почта читается по строке за раз, и ход передачи ведёт 25l */
+    text=(typeof ethTick==="function"&&ethTick(q))||"…шшш…";
   }else{text=pick(ETHER,r);}
   /* на краю диапазона слова выпадают */
-  if(q<.55)text=text.replace(/[а-яёa-z]{3,}/gi,w=>r()<(1-q)*.6?"…":w);
+  /* ночную почту на краю не глушим второй раз: ethTick уже отдал «шшш», а
+     дырявить готовую строку карточки значило бы врать про то, что услышано */
+  if(q<.55&&B.k!=="night")text=text.replace(/[а-яёa-z]{3,}/gi,w=>r()<(1-q)*.6?"…":w);
   return {k:B.k,ru:B.ru,q,text};
 }

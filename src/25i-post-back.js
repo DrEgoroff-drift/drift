@@ -66,6 +66,20 @@ function postRead(s){
   const F=postForm(s.f);
   return F.l.map((ln,i)=>ln[0]+" — "+(ln[1+(s.c[i]|0)]||ln[1])).join(" · ");
 }
+/* ── карточка вслух ──
+   Ночной эфир (M191) читает её так, как читали телеграммы: по строке за раз,
+   с названием бланка в начале и местом в конце. Оттого чужая карточка и
+   доходит — её не показывают целиком, её приходится дослушать. */
+function postLines(s){
+  if(!postSigned(s))return [];
+  const F=postForm(s.f);
+  const out=["…карточка. Бланк «"+F.ru.toLowerCase()+"»."];
+  F.l.forEach((ln,i)=>out.push(ln[0].toLowerCase()+" — "+(ln[1+(s.c[i]|0)]||ln[1])+"."));
+  if(s.g&&s.g.length)
+    out.push("приписка: "+s.g.map(g=>SETTLE_GLYPH[g%SETTLE_GLYPH.length]).join(" ")+".");
+  out.push("место — "+postCaption(s)+". Конец карточки.");
+  return out;
+}
 /* ── оборот разметкой ──
    `ro` — чужая карточка: её читают, а не заполняют. Тогда варианты становятся
    просто текстом (выбранный обычным, соседи вычеркнутыми), а перелистывание

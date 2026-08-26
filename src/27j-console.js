@@ -38,6 +38,10 @@ function consoleTick(dt){
   const RN=(typeof ringLine==="function")?ringLine():null;   /* Кольцо (M154): пока звучит — только оно */
   const rec=document.getElementById("rxRec");if(rec)rec.style.display=(RN&&G.ringNow&&!G.ringNow.rec)?"":"none";
   if(typeof camBtnTick==="function")camBtnTick();
+  /* ночная почта (M191): подпись на шкале зажигается сама, когда диапазон
+     появляется. Шкала — это и есть всё уведомление, другого не будет */
+  const nb=document.getElementById("rxNight");
+  if(nb)nb.style.display=(typeof ethOn==="function"&&ethOn())?"":"none";
   if(RN&&line){band.textContent=RN.ru;line.textContent=RN.text;con.classList.remove("quiet");}
   else if(conFresh<=0&&line&&typeof radioTune==="function"){
     const f=(G.radioF==null?.05:G.radioF);

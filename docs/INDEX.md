@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 282 · символов верхнего уровня: 2637
+Файлов: 283 · символов верхнего уровня: 2650
 
 ## СИМВОЛЫ
 
@@ -601,10 +601,19 @@ enterRaid                    src/24a-mode-raid.js:134
 enterSurface                 src/21-mode-surface.js:2
 env                          src/09-audio.js:59
 eq                           tests/90-harness.js:28
+ETH_CATCH                    src/25l-post-ether.js:28
+ETH_H0                       src/25l-post-ether.js:27
+ETH_HOLD                     src/25l-post-ether.js:29
+ETH_LO                       src/25l-post-ether.js:26
+ethBandAt                    src/25l-post-ether.js:53
+ethCard                      src/25l-post-ether.js:30
 ETHER                        src/11b-speech.js:24
 ETHER_EVERY                  src/11b-speech.js:38
 etherLine                    src/11-log.js:29
 etherTick                    src/11b-speech.js:39
+ethOn                        src/25l-post-ether.js:52
+ethReset                     src/25l-post-ether.js:104
+ethTick                      src/25l-post-ether.js:59
 evacuate                     src/21-mode-surface.js:529
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:82
@@ -1219,24 +1228,27 @@ loyBar                       src/27c-ui-hq.js:17
 loyWord                      src/27c-ui-hq.js:13
 luckLine                     src/27b-ui-crew.js:15
 luxPal                       src/03c-hull-luxe.js:16
-MAIL_CARDS_MAX               src/25j-post-wire.js:29
-MAIL_STACK_MAX               src/25j-post-wire.js:28
-mailAll                      src/25j-post-wire.js:30
-mailBusy                     src/25j-post-wire.js:45
-mailCall                     src/25j-post-wire.js:46
+MAIL_CARDS_MAX               src/25j-post-wire.js:30
+MAIL_STACK_MAX               src/25j-post-wire.js:29
+mailAll                      src/25j-post-wire.js:31
+mailBusy                     src/25j-post-wire.js:46
+mailCall                     src/25j-post-wire.js:47
 mailCard                     src/25k-post-mail.js:19
-mailDock                     src/25j-post-wire.js:111
-mailDrop                     src/25j-post-wire.js:142
-mailFresh                    src/25j-post-wire.js:147
-mailLeft                     src/25j-post-wire.js:40
-mailMute                     src/25j-post-wire.js:135
-mailOn                       src/25j-post-wire.js:35
+mailDock                     src/25j-post-wire.js:113
+mailDrop                     src/25j-post-wire.js:136
+mailEve                      src/25l-post-ether.js:41
+mailFresh                    src/25j-post-wire.js:141
+mailLeft                     src/25j-post-wire.js:41
+mailMute                     src/25j-post-wire.js:129
+mailNight                    src/25l-post-ether.js:34
+mailNightLeft                src/25l-post-ether.js:46
+mailOn                       src/25j-post-wire.js:36
 mailOpen                     src/25k-post-mail.js:18
-mailPush                     src/25j-post-wire.js:77
-mailSend                     src/25j-post-wire.js:89
-mailStack                    src/25j-post-wire.js:67
-mailToday                    src/25j-post-wire.js:39
-mailWire                     src/25j-post-wire.js:54
+mailPush                     src/25j-post-wire.js:78
+mailSend                     src/25j-post-wire.js:90
+mailStack                    src/25j-post-wire.js:68
+mailToday                    src/25j-post-wire.js:40
+mailWire                     src/25j-post-wire.js:55
 MAIN_CTX                     src/08-state.js:4
 makeIR                       src/10-music.js:109
 makePhrase                   src/10-music.js:344
@@ -1713,6 +1725,7 @@ postFormNext                 src/25h-post-forms.js:207
 postGlyph                    src/25i-post-back.js:54
 postHolding                  src/11e-post.js:107
 postItem                     src/11e-post.js:42
+postLines                    src/25i-post-back.js:73
 postLinkHere                 src/11e-post.js:73
 postOpen                     src/11e-post.js:99
 postRead                     src/25i-post-back.js:64
@@ -1772,7 +1785,7 @@ rackTex                      src/25d-instr-rack.js:168
 rackToggle                   src/25d-instr-rack.js:56
 RADIO_BANDS                  src/25e-receiver.js:13
 radioBand                    src/25e-receiver.js:19
-radioTune                    src/25e-receiver.js:24
+radioTune                    src/25e-receiver.js:29
 RAID_N                       src/24a-mode-raid.js:6
 RAID_ROOMS                   src/24a-mode-raid.js:7
 raidFloorAt                  src/24a-mode-raid.js:77
@@ -1855,7 +1868,7 @@ renderAlbum                  src/25g-postcard.js:530
 renderBarge                  src/12l-barge.js:617
 renderBasesTab               src/26a-ui-station-home.js:4
 renderCantina                src/27c-ui-hq.js:45
-renderCardBack               src/25i-post-back.js:74
+renderCardBack               src/25i-post-back.js:88
 renderDeeds                  src/11-log.js:92
 renderHold                   src/27j-ui-hold.js:176
 renderLog                    src/11-log.js:71
@@ -3183,7 +3196,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25d-instr-rack.js · 26 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
-## src/25e-receiver.js · 3 КБ
+## src/25e-receiver.js · 4 КБ
   · приёмник: частота крутится рукой:1
 
 ## src/25f-globus.js · 8 КБ
@@ -3196,7 +3209,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25h-post-forms.js · 18 КБ
   · бланки открытки:1
 
-## src/25i-post-back.js · 9 КБ
+## src/25i-post-back.js · 10 КБ
   · оборот карточки:1
 
 ## src/25j-post-wire.js · 8 КБ
@@ -3204,6 +3217,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/25k-post-mail.js · 6 КБ
   · почта на столе:1
+
+## src/25l-post-ether.js · 7 КБ
+  · ночной эфир:1
 
 ## src/26a-ui-station-home.js · 12 КБ
   · станция: вкладка «дом и базы»:1
@@ -3534,9 +3550,10 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzh-told.js · 3 КБ
   · автотесты: ляпнул лишнего:1
 
-## tests/91zzzi-postcard.js · 17 КБ
+## tests/91zzzi-postcard.js · 21 КБ
   · автотесты: открытка — снимок сцены (M188):1
   · бланки открытки (M189):111
   · почта: провод (M190):197
+  · ночной эфир (M191):283
 
 ## tests/99-run.js · 0 КБ

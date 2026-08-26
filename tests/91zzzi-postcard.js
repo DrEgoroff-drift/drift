@@ -280,3 +280,54 @@ TEST_SUITES.push(()=>suite("почта: два семейства с прист�
   ok(postAll()===G.post,"postAll() — это по-прежнему круг (G.post)");
   ok(Array.isArray(albumAll()),"а альбом — свой (G.album)");
 }));
+/* ══════════════ ночной эфир (M191) ══════════════ */
+TEST_SUITES.push(()=>suite("эфир: диапазон есть только вечером, и вечер считается вечером",()=>{
+  resetWorld();
+  /* окно с девяти вечера до двух ночи, по местным часам человека */
+  for(const h of [21,22,23,0,1])ok(mailNight(h),"в "+h+" — ночь");
+  for(const h of [2,3,9,14,18,20])ok(!mailNight(h),"в "+h+" — не ночь");
+  /* час ночи принадлежит ВЧЕРАШНЕМУ вечеру: иначе счёт «две за вечер»
+     обнуляется в полночь и за один вечер выходит четыре */
+  const late=new Date(2026,7,26,23,30), post=new Date(2026,7,27,1,30);
+  eq(mailEve(late),mailEve(post),"полночь вечера не обрывает");
+  const nextEve=new Date(2026,7,27,22,0);
+  ok(mailEve(nextEve)!==mailEve(late),"а следующий вечер — уже другой");
+  /* границы диапазона */
+  ok(ETH_LO<0.12,"ночная почта лежит НИЖЕ слухов, на длинных волнах");
+  ok(ETH_HI<0.12,"и не залезает в чужой диапазон");
+  for(const B of RADIO_BANDS)ok(B.lo>ETH_HI,"постоянный диапазон "+B.ru+" не пересекается с ночным");
+  /* днём и офлайн диапазона нет вовсе, а не «есть, но молчит» */
+  if(!mailOn()){
+    ok(!ethOn(),"без сети ночного эфира не существует");
+    ok(!ethBandAt(0.05),"и на его частоте — ничего");
+    eq(radioBand(0.05),null,"шкала там пуста");
+    eq(ethTick(1),null,"передача не идёт");
+    const R=radioTune(0.05);
+    eq(R.k,"noise","приёмник честно шумит");
+  }
+}));
+TEST_SUITES.push(()=>suite("эфир: карточка читается по строке, и в строках нет ни одного имени",()=>{
+  resetWorld();
+  G.album=[];G.mail=null;
+  const F=pcTestPlanet();
+  const tr=genTerrain(F.p,null);
+  G.sx=F.s.sx;G.sy=F.s.sy;G.sys=F.s;
+  G.mode="surface";G.surf={p:F.p,tr,x:tr.W*.5};
+  const s=postSign(postTake());
+  postChoose(s,0,1);postChoose(s,2,3);postGlyph(s,2);postGlyph(s,14);
+  const L=postLines(s);
+  ok(L.length>=postForm(s.f).l.length+2,"строк столько же, сколько в бланке, плюс шапка и место");
+  ok(/бланк/i.test(L[0]),"первой читают форму: "+L[0]);
+  ok(/конец карточки/i.test(L[L.length-1]),"последней — конец: "+L[L.length-1]);
+  ok(L.some(x=>/приписка/.test(x)),"приписка прочитана");
+  /* и ровно то, что выбрано: вычеркнутое вслух не читают */
+  const form=postForm(s.f);
+  ok(L.some(x=>x.indexOf(form.l[0][1+1])>=0),"прочитан выбранный вариант");
+  ok(!L.some(x=>x.indexOf(form.l[0][1+2])>=0&&form.l[0][3]!==form.l[0][2]),
+     "а невыбранный — нет");
+  /* ни метки, ни цепочки, ни числа, по которому ищут */
+  const all=L.join(" ");
+  ok(!/[a-f0-9]{8,}/.test(all),"в эфире нет ни меток, ни номеров цепочек");
+  ok(all.indexOf(F.p.name)>=0,"место названо, и это единственное, что названо");
+  G.mode="system";G.surf=null;
+}));

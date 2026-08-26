@@ -819,7 +819,10 @@ body.table #loglist.desk .thing.new::after{content:"";position:absolute;right:9p
 #lorelist .li.note span{color:var(--dim);font-style:italic}
 #lorelist .li.head span{color:var(--dim);letter-spacing:.16em}
 #rxScale{position:relative;height:9px;margin-top:-4px}
-#rxScale i{position:absolute;transform:translateX(-50%);font-style:normal;font-size:7px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+#rxScale i{position:absolute;transform:translateX(-50%);font-style:normal;font-size:7px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+/* ночная почта (M191): подпись зажигается, когда диапазон появляется. Она
+   чуть теплее остальных — это единственное, чем игра сообщает о вечере */
+#rxNight{color:var(--amber);opacity:.85}
 /* на экранах станции и прочих пульт не прячется, а поднимается в шапку:
    эфир слышно и у стойки. На столе он не нужен — стол и есть его память */
 /* ── при открытом экране приёмник ВСТРАИВАЕТСЯ, а не наклеивается ──
@@ -1082,7 +1085,7 @@ body.afoot .ipod{display:none}
      середина — подсказка действия (#prompt выше), кресло — кто летит с вами.
      Живёт на каждом экране; гаснет, когда всё ровно. -->
 <div id="console">
-  <div id="rx"><input id="rxKnob" type="range" min="0" max="1" step="0.005" aria-label="приёмник"><div id="rxScale"><i style="left:21%">слухи</i><i style="left:49%">цены</i><i style="left:73%">погода</i><i style="left:94%">эфир</i></div><div id="rxOut"><b id="rxBand">ШУМ</b><s id="rxLine">…шшш…</s></div><button id="rxRec" style="display:none">ЗАПИСАТЬ</button></div>
+  <div id="rx"><input id="rxKnob" type="range" min="0" max="1" step="0.005" aria-label="приёмник"><div id="rxScale"><i id="rxNight" style="left:6%;display:none">ночная почта</i><i style="left:21%">слухи</i><i style="left:49%">цены</i><i style="left:73%">погода</i><i style="left:94%">эфир</i></div><div id="rxOut"><b id="rxBand">ШУМ</b><s id="rxLine">…шшш…</s></div><button id="rxRec" style="display:none">ЗАПИСАТЬ</button></div>
   <div id="seat" style="display:none"><canvas id="seatcv" width="56" height="56"></canvas><div id="seatOut"><b id="seatName">—</b><s id="seatLine"></s></div></div>
   <!-- ФОТО: появляется только там, где есть что снять — на грунте и на заходе.
        Кнопка, которая висит всегда, перестаёт быть поводом (M188). -->
@@ -1293,7 +1296,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.173.0";
+const VER="0.174.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -43390,6 +43393,11 @@ const RADIO_BANDS=[
   {lo:.88,hi:1.0,k:"ether", ru:"ЭФИР"}
 ];
 function radioBand(f){
+  /* Пятый диапазон (M191) не лежит в таблице: он ЕСТЬ НЕ ВСЕГДА — только
+     вечером и только в сети. Диапазон, который «иногда работает», в таблице
+     постоянных диапазонов был бы неправдой про сам приёмник */
+  if(typeof ethBandAt==="function"&&ethBandAt(f))
+    return {lo:ETH_LO,hi:ETH_HI,k:"night",ru:"НОЧНАЯ ПОЧТА"};
   for(const B of RADIO_BANDS)if(f>=B.lo&&f<=B.hi)return B;
   return null;
 }
@@ -43411,9 +43419,14 @@ function radioTune(f){
     const ps=((G.sys&&G.sys.planets)||[]).filter(p=>p.type!=="gas");
     if(ps.length){const p=ps[Math.floor(r()*ps.length)],w=weatherPower(p),wk=weatherOf(p).kind;text="…"+p.name+": "+(wk?(w>.6?"штормит, "+wk:(w>.25?wk+", умеренно":"тихо, "+wk)):"без атмосферы, без погоды")+".";}
     else text="…погоды нет: твёрдых миров в системе нет";
+  }else if(B.k==="night"){
+    /* ночная почта читается по строке за раз, и ход передачи ведёт 25l */
+    text=(typeof ethTick==="function"&&ethTick(q))||"…шшш…";
   }else{text=pick(ETHER,r);}
   /* на краю диапазона слова выпадают */
-  if(q<.55)text=text.replace(/[а-яёa-z]{3,}/gi,w=>r()<(1-q)*.6?"…":w);
+  /* ночную почту на краю не глушим второй раз: ethTick уже отдал «шшш», а
+     дырявить готовую строку карточки значило бы врать про то, что услышано */
+  if(q<.55&&B.k!=="night")text=text.replace(/[а-яёa-z]{3,}/gi,w=>r()<(1-q)*.6?"…":w);
   return {k:B.k,ru:B.ru,q,text};
 }
 
@@ -44430,6 +44443,20 @@ function postRead(s){
   const F=postForm(s.f);
   return F.l.map((ln,i)=>ln[0]+" — "+(ln[1+(s.c[i]|0)]||ln[1])).join(" · ");
 }
+/* ── карточка вслух ──
+   Ночной эфир (M191) читает её так, как читали телеграммы: по строке за раз,
+   с названием бланка в начале и местом в конце. Оттого чужая карточка и
+   доходит — её не показывают целиком, её приходится дослушать. */
+function postLines(s){
+  if(!postSigned(s))return [];
+  const F=postForm(s.f);
+  const out=["…карточка. Бланк «"+F.ru.toLowerCase()+"»."];
+  F.l.forEach((ln,i)=>out.push(ln[0].toLowerCase()+" — "+(ln[1+(s.c[i]|0)]||ln[1])+"."));
+  if(s.g&&s.g.length)
+    out.push("приписка: "+s.g.map(g=>SETTLE_GLYPH[g%SETTLE_GLYPH.length]).join(" ")+".");
+  out.push("место — "+postCaption(s)+". Конец карточки.");
+  return out;
+}
 /* ── оборот разметкой ──
    `ro` — чужая карточка: её читают, а не заполняют. Тогда варианты становятся
    просто текстом (выбранный обычным, соседи вычеркнутыми), а перелистывание
@@ -44538,8 +44565,9 @@ function renderCardBack(host,s,onChange,ro){
    позвать её или узнать, что это тот же человек. Замолчал — и тебя нет.
 
    ОДИН ЗАПРОС НА СТЫКОВКУ (правило M171). Игра не опрашивает сервер по
-   таймеру и не держит соединение: раз пристыковались — один поход, который
-   разом забирает ответы и, если повезло, приносит чужую карточку.
+   таймеру и не держит соединение: раз пристыковались — один поход за тем, что
+   адресовано вам. Чужие карточки из общей кучи ловятся не здесь, а в ночном
+   эфире (25l, M191): их дослушивают вечером, а не получают к заправке.
 
    ОФЛАЙН ЭТОЙ ЗАТЕИ НЕТ ВОВСЕ, и интерфейс о ней не заикается: открытый с
    рабочего стола файл — это игра без почты, а не игра со сломанной почтой.
@@ -44551,7 +44579,7 @@ function renderCardBack(host,s,onChange,ro){
 const MAIL_STACK_MAX=8;     /* стопок на столе */
 const MAIL_CARDS_MAX=12;    /* карточек в одной стопке */
 function mailAll(){
-  if(!G.mail||typeof G.mail!=="object")G.mail={st:[],day:"",sent:0,seen:0};
+  if(!G.mail||typeof G.mail!=="object")G.mail={st:[],day:"",sent:0};
   if(!Array.isArray(G.mail.st))G.mail.st=[];
   return G.mail;
 }
@@ -44629,8 +44657,9 @@ function mailSend(s,ch){
   });
 }
 /* ── стыковка: один поход ──
-   Забирает ответы и заодно тянет из кучи чужую карточку. С M191 ловля уедет
-   в вечерний эфир и станет событием, а не побочным делом стыковки. */
+   Забирает ОТВЕТЫ — то, что адресовано вам. Ловля чужих карточек с M191 живёт
+   в ночном эфире (25l) и стыковки не касается: карточку из общей кучи не
+   выдают в нагрузку к заправке, её дослушивают вечером. */
 function mailDock(){
   if(!mailOn())return;
   const now=Date.now();
@@ -44643,14 +44672,6 @@ function mailDock(){
       tell("good","Пришёл ответ на карточку","ПРИШЁЛ ОТВЕТ\nстопка на столе");
       if(tableOpenNow)tableRender();
     }
-    return mailCall("ask");
-  }).then(j=>{
-    if(!j||!j.ok||!j.card||!j.ch)return;
-    mailPush(String(j.ch),j.card,false);
-    mailAll().seen=(mailAll().seen|0)+1;
-    logAdd("ether","Из общей почты выпала чужая карточка");
-    tell("good","Чужая карточка","ЧУЖАЯ КАРТОЧКА\nиз общей почты\nстопка на столе");
-    if(tableOpenNow)tableRender();
   });
 }
 /* «не принимать»: единственная кнопка про человека. Цепочка умирает, тому
@@ -44778,6 +44799,111 @@ function renderMail(box){
   });
   box.appendChild(wrap);
 }
+
+/* ══════════════ ночной эфир ══════════════
+   M191. У приёмника (25e) четыре диапазона, и они всегда на месте. Пятый —
+   ночная почта — на месте НЕ всегда: он появляется на самом низу шкалы после
+   девяти вечера и пропадает к двум. Так ведут себя длинные волны на настоящем
+   приёмнике, и так же должна вести себя вещь, ради которой стоит включить
+   игру вечером.
+
+   ВРЕМЯ ЗДЕСЬ НАСТОЯЩЕЕ, а не игровые сутки. Дорожный спутник (M168) уже
+   доказал, что игра умеет жить в одном времени с человеком; окно по игровым
+   суткам (минута каждые) не окно, а мигание. И только настоящий вечер даёт
+   то, ради чего всё затевалось: в этот час никакого уведомления не нужно —
+   ЭФИР И ЕСТЬ УВЕДОМЛЕНИЕ.
+
+   КАРТОЧКУ НЕ ПОКАЗЫВАЮТ, ЕЁ ДОСЛУШИВАЮТ. Диктор читает её по строке, как
+   читали телеграммы; уйти с волны на середине — значит не получить ничего.
+   Дочитанная карточка ложится на стол стопкой, и ответ в ней уже открыт.
+
+   ДВЕ ЗА ВЕЧЕР. Не потому, что жалко, а потому что третья обесценивает
+   первую: вечер должен кончаться раньше, чем интерес.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Ничего не хранится, кроме счёта за вечер. Читаемая карточка эфемерна:
+      оборвалась связь — оборвалась и передача, как в жизни.
+   2. Диапазона нет, когда нет ни ночи, ни сети. Пустой диапазон, который
+      «иногда работает», — это сломанный приёмник, а не примета. */
+const ETH_LO=0.02, ETH_HI=0.10;    /* самый низ шкалы: длинные волны */
+const ETH_H0=21, ETH_H1=2;         /* с девяти вечера до двух ночи, по местным */
+const ETH_CATCH=2;                 /* карточек за вечер */
+const ETH_HOLD=2;                  /* тиков консоли на строку (тик ~секунда) */
+let ethCard=null,ethLine=0,ethHold=0,ethAsk=0;
+
+/* час можно подставить: иначе проверить окно можно было бы только вечером,
+   то есть никогда — а окно тут вся веха */
+function mailNight(h){
+  h=(h==null)?new Date().getHours():h;
+  return h>=ETH_H0||h<ETH_H1;
+}
+/* вечер считается по календарю ВЕЧЕРА, а не суток: час ночи принадлежит
+   вчерашнему вечеру, иначе счёт «две за вечер» обнуляется в полночь и
+   получается четыре */
+function mailEve(at){
+  const d=at?new Date(at.getTime()):new Date();
+  if(d.getHours()<ETH_H1)d.setDate(d.getDate()-1);
+  return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+}
+function mailNightLeft(){
+  const M=mailAll(),e=mailEve();
+  if(M.eve!==e){M.eve=e;M.caught=0;}
+  return Math.max(0,ETH_CATCH-(M.caught|0));
+}
+/* диапазон существует, только когда есть и ночь, и сеть */
+function ethOn(){return mailNight()&&mailOn();}
+function ethBandAt(f){return ethOn()&&f>=ETH_LO&&f<=ETH_HI;}
+
+/* ── ход передачи ──
+   Зовётся из consoleTick, когда ручка стоит в ночном диапазоне. Возвращает
+   строку, которую слышно прямо сейчас. Ничего не рисует и ничего не решает
+   за игрока: сойти с волны можно на любой строке. */
+function ethTick(q){
+  if(!ethOn())return null;
+  /* на краю диапазона слышно шум — но ход передачи НЕ сбрасываем: consoleTick
+     у стойки зовёт radioTune второй раз с соседней частотой, и сброс съедал бы
+     паузу между строками */
+  if(q<.55)return "…шшш…";
+  if(!ethCard){
+    /* тишина между карточками: эфир не выдаёт их подряд без паузы */
+    if(ethHold>0){ethHold--;return "…";}
+    if(mailNightLeft()<=0)return "…на сегодня эфир пуст…";
+    const now=Date.now();
+    if(now-ethAsk<12000)return "…";
+    ethAsk=now;
+    mailCall("ask").then(j=>{
+      if(!j||!j.ok||!j.card||!j.ch)return;
+      ethCard={ch:String(j.ch),card:j.card,lines:postLines(j.card)};
+      ethLine=0;ethHold=0;
+      sfx("ui",{f:520,to:820,d:.09,v:.16});
+    });
+    return "…";
+  }
+  if(ethHold>0){ethHold--;return ethCard.lines[Math.min(ethLine,ethCard.lines.length-1)];}
+  const line=ethCard.lines[ethLine];
+  ethHold=ETH_HOLD;
+  ethLine++;
+  if(ethLine>=ethCard.lines.length){
+    /* дочитано: карточка ложится на стол, и ответ в ней уже открыт. Экран при
+       этом НЕ распахивается сам — правило «только то, что нужно прямо сейчас,
+       висит над миром» сильнее желания показать награду немедленно */
+    const st=mailPush(ethCard.ch,ethCard.card,false);
+    const M=mailAll();
+    M.caught=(M.caught|0)+1;
+    if(typeof mailOpen!=="undefined"){
+      mailOpen=M.st.indexOf(st);
+      mailPick=mailOpen;
+      mailBack=-1;
+    }
+    logAdd("ether","Из ночного эфира принята карточка · стопка на столе, ответ открыт");
+    tell("good","Карточка принята из ночного эфира","ПРИНЯТО\nстопка на столе\nответ открыт");
+    ethCard=null;ethLine=0;ethHold=6;
+    if(tableOpenNow)tableRender();
+  }
+  return line;
+}
+/* оборвалась ночь или сеть — оборвалась и передача */
+function ethReset(){ethCard=null;ethLine=0;ethHold=0;}
 
 /* ══════════════ станция: вкладка «дом и базы» ══════════════ */
 /* Отпилено от 26-ui-station по шву вкладки (2026-08-23): renderTab зовёт
@@ -49468,6 +49594,10 @@ function consoleTick(dt){
   const RN=(typeof ringLine==="function")?ringLine():null;   /* Кольцо (M154): пока звучит — только оно */
   const rec=document.getElementById("rxRec");if(rec)rec.style.display=(RN&&G.ringNow&&!G.ringNow.rec)?"":"none";
   if(typeof camBtnTick==="function")camBtnTick();
+  /* ночная почта (M191): подпись на шкале зажигается сама, когда диапазон
+     появляется. Шкала — это и есть всё уведомление, другого не будет */
+  const nb=document.getElementById("rxNight");
+  if(nb)nb.style.display=(typeof ethOn==="function"&&ethOn())?"":"none";
   if(RN&&line){band.textContent=RN.ru;line.textContent=RN.text;con.classList.remove("quiet");}
   else if(conFresh<=0&&line&&typeof radioTune==="function"){
     const f=(G.radioF==null?.05:G.radioF);

@@ -175,6 +175,30 @@ setTimeout(function(){
     G.cargo.organics=5;G.cargo.isotopes=1;G.cargo.volatiles=4;G.cargo.missile=3;
     G.cargo.folk=2;G.cargo.alloy=6;
     tableToggle(true,"hold");
+  }else if(scene==="ether"){
+    /* ночной эфир (M191): вечера ждать нельзя, поэтому час подменяется, а
+       вместо сервера подставляется своя карточка — путь при этом остаётся
+       настоящим: ethTick читает её по строке, как читал бы чужую */
+    var pn=land("terran");hour(pn,.78);G.mode="surface";
+    var pern=CEL_DAY*(6+((pn.seed>>>7)&3));
+    G.album=[];G.mail=null;
+    G.surf.x=G.surf.tr.W*.5;G.t=pern*40.78;
+    postTake();var mine=postSign(albumAll()[0]);
+    postChoose(mine,0,1);postChoose(mine,2,3);postGlyph(mine,2);postGlyph(mine,14);
+    var fake=mailWire(mine);
+    mailNight=function(){return true;};
+    mailCall=function(op){
+      if(op==="ask")return Promise.resolve({ok:true,card:fake,ch:"abcdef012345"});
+      return Promise.resolve({ok:true});
+    };
+    G.radioF=0.06;
+    run(4,updateSurface,drawSurface);
+    /* несколько тиков консоли: первый спрашивает кучу, дальше идут строки */
+    var n=0;
+    (function step(){
+      consoleTick(999);
+      if(++n<14)setTimeout(step,90);
+    })();
   }else if(scene==="mail"){
     /* почта (M190): две стопки — в одной ждём ответа, в другой пришло чужое.
        Сервер тут не нужен: раскладку проверяем на карточках, положенных в

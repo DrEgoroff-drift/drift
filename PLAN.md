@@ -810,9 +810,15 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
 
   **Still open:** catching happens on the docking trip; M191 moves it into the evening ether and
   gives it its own presentation.
-- **M191 — the night ether.** An evening window in which the receiver reads cards out of the pool
-  in their printed lines; one or two can be caught per evening, and a caught card lands on the
-  table with a reply open. No notification needed at that hour — the ether *is* the notification.
+- **M191 — the night ether** — **built (0.174.0).** `25l-post-ether`, suite `91zzzi-postcard`,
+  stand `pageshot view -Q "?s=ether"`. A fifth band at the very bottom of the dial that exists only
+  after nine in the evening and only online — **by the real clock**, because a window measured in
+  game days (a minute each) is a flicker, not a window. The announcer reads a card a line at a
+  time: the blank's name, each line as it was left standing, the postscript glyphs, the place.
+  Leave the wavelength halfway and you get nothing. Two a night, counted on the evening's calendar
+  so one in the morning still belongs to last night. A card read to the end lands on the table as a
+  stack with the reply already open — the screen does not open itself. No notification: the dial
+  lights its own label and that is all. Catching moved out of docking, where M190 had parked it.
 - **M192 — chess by post.** The same pipe: an anonymous game, a move a day, the board on the table.
   A move is data, so the "nothing typed crosses" rule holds unchanged. After the post has bedded in.
 

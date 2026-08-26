@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.174.0 — the night ether: the band that only exists in the evening (M191)
+
+The receiver has four bands and they are always in the same place, like a real set. The fifth —
+**ночная почта**, at the very bottom of the dial where long waves live — is *not* always there. It
+appears after nine in the evening and is gone by two, and only when there is a network at all.
+
+**The hour is the real one**, not the game's. The road companion already proved the game can keep
+time with the person playing it; a window measured in game days (a minute each) is not a window,
+it is a flicker. And only a real evening gives the thing the whole feature was for: at that hour no
+notification is needed, because **the ether is the notification**. The dial lights its own label
+and says nothing else.
+
+**A card is not shown, it is heard out.** The announcer reads it a line at a time, the way
+telegrams were read — the blank's name, then each line as it was left standing, then the postscript
+glyphs, then the place. Leave the wavelength halfway and you get nothing. A card read to the end
+lands on the table as a stack with the reply already open — the screen does not throw itself at
+you, because "only what is needed right now hangs over the world" outranks showing off a reward.
+
+**Two a night.** Not out of stinginess: the third devalues the first, and an evening should end
+before the interest does. The count runs on the *evening's* calendar rather than the day's, so one
+in the morning still belongs to last night — otherwise midnight resets it and two becomes four.
+
+Catching moved out of docking entirely, where M190 had parked it: a stranger's card is not handed
+over as a bonus with the refuelling. Docking still brings replies, because a reply is addressed to
+you.
+
+Verified on the stand with the hour forced and the pool faked, so the path is the real one:
+`pageshot view -Q "?s=ether"`. And verified by accident at 23:00 local, which is when the band
+turned up on the dial without anyone forcing anything.
+
 ## 0.173.0 — the post: a card goes into the pool and a stranger catches it (M190)
 
 The pipe under the postcard. `a=post` in `api.php`, `25j-post-wire` on the client, and a ПОЧТА tab
