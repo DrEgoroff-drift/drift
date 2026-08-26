@@ -547,7 +547,7 @@ if ($a === 'trace') {
   if (!preg_match('/^-?\d{1,6},-?\d{1,6}(\/\d{1,4})?$/', $key))     fail('место не читается');
 
   $dir = root() . '/trace';
-  foreach ([$dir, "$dir/p", "$dir/u"] as $d) if (!is_dir($d)) @mkdir($d, 0700, true);
+  foreach ([$dir, "$dir/p", "$dir/u", "$dir/w"] as $d) if (!is_dir($d)) @mkdir($d, 0700, true);
   $pf  = "$dir/p/" . str_replace([',', '/', '-'], ['_', 'p', 'm'], $key) . '.json';
   $uf  = "$dir/u/$id.json";
   $now = time();
@@ -562,6 +562,50 @@ if ($a === 'trace') {
   foreach ($list as $t) if (is_array($t) && $now - (int)($t['t'] ?? 0) < 2592000) $keep[] = $t;
   $stale = count($keep) !== count($list);
   $list  = $keep;
+
+  /* ── стена (M210) ──
+     Тайник (put/ask/take) исчезает, как только его подняли, и потому чужой
+     знак почти никогда не виден: он либо ещё не оставлен, либо уже унесён.
+     Стена — обратное: знаки НАКАПЛИВАЮТСЯ. Брать с неё нечего и класть на неё
+     нечего; на ней расписываются, и вся награда в том, чтобы увидеть, сколько
+     народу тут уже стояло. Поэтому и хранится она дольше тайника, и вмещает
+     не восьмерых, а дюжину.
+
+     Наружу не уходит ни метка пилота, ни время: только знак, рука и признак
+     «это твой». Признание — рука и ничего больше, как в M171. */
+  if ($op === 'wall' || $op === 'sign') {
+    $wk = (string)($b['w'] ?? '');
+    if ($wk !== 's' && $wk !== 'c') fail('такой стены нет');
+    $wf = "$dir/w/" . $wk . '_' . str_replace([',', '/', '-'], ['_', 'p', 'm'], $key) . '.json';
+    $wall = readJson($wf); if (!is_array($wall)) $wall = [];
+    $wkeep = [];
+    /* девяносто дней: стена помнит дольше тайника — она запись, а не запас */
+    foreach ($wall as $t) if (is_array($t) && $now - (int)($t['t'] ?? 0) < 7776000) $wkeep[] = $t;
+    $wstale = count($wkeep) !== count($wall);
+    $wall = $wkeep;
+
+    if ($op === 'sign') {
+      if (!rateHit('twall', 40)) fail('слишком часто', 429);
+      $m = (int)($b['m'] ?? -1);
+      $h = (string)($b['h'] ?? '');
+      if ($m < 0 || $m > 31)                  fail('знака такого нет');
+      if (!preg_match('/^[a-f0-9]{6}$/', $h)) fail('нет руки');
+      /* один знак на стену от одного человека: стена своих же подписей —
+         не запись о людях, а тщеславие */
+      foreach ($wall as $t) if (($t['o'] ?? '') === $id) out(['ok' => false, 'reason' => 'ваш знак тут уже есть']);
+      $wall[] = ['m' => $m, 'h' => $h, 't' => $now, 'o' => $id];
+      if (count($wall) > 12) $wall = array_slice($wall, -12);
+      writeJson($wf, $wall);
+    } elseif ($wstale) {
+      writeJson($wf, $wall);
+    }
+    sweepDir("$dir/w", 7776000, 86400);
+    $outw = [];
+    foreach ($wall as $t)
+      $outw[] = ['m' => (int)($t['m'] ?? 0), 'h' => (string)($t['h'] ?? ''),
+                 'me' => (($t['o'] ?? '') === $id) ? 1 : 0];
+    out(['ok' => true, 'w' => $outw]);
+  }
 
   if ($op === 'put') {
     /* Оставить след можно трижды в сутки — но счёт ведётся по метке пилота,

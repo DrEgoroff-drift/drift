@@ -668,6 +668,14 @@ function settleDrawBody(S,tr,camx,camy,p){
   const wind=(typeof WIND==="number")?WIND*2:0;
   const r=rng(hashi(P.seed,3,0x5EED));
   sdTerrace(P,tr,camx,camy,pal,p);
+  /* чужие руки на подпорной стенке (M210). Кладутся сразу после камня и до
+     всего остального: знак ВРЕЗАН в стену, а не висит перед посёлком */
+  if(typeof wallStone==="function"&&wallCount(WALL_S)>0){
+    const wxw=settleWallX(P), sxw=wxw-camx;
+    if(sxw>-160&&sxw<W+160)
+      wallStone(sxw,groundAt(tr,wxw)-camy+1,
+                [pal.earth,pal.stone,pal.stone,sdMix(pal.stone,[255,246,224],.35)],WALL_S);
+  }
   const y=P.baseY-camy;
   /* задний ряд: выше, мельче, темнее — глубина тоном и перекрытием */
   /* дальний план — своей палитрой, подмешанной к небу, и вполсилы. Раньше

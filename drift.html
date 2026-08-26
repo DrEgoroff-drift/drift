@@ -1310,7 +1310,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.188.0";
+const VER="0.189.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -8364,6 +8364,229 @@ function offerLine(o){
   const K=OFFER_KIND[o.kind];
   const pay=offerPay(o);
   return (o.named?"вам":"кто рядом")+" · "+K.ru+(pay>0?" · "+pay+" кр":"");
+}
+
+/* ══════════════ стена, которая помнит ══════════════
+   M210. M171 положил в игру первую вещь, оставленную ЖИВЫМ человеком, — знак
+   у корабля и груз под ним. И записал себе в долг: «только поверхность несёт
+   знак; стена посёлка и устье пещеры взяли бы по своему». Долг простоял
+   с 0.137.0, и M194 обошёл его стороной, сделав из игрока источник слухов.
+   Вот он, и вот почему его стоило делать не так, как тайник.
+
+   ТАЙНИК ИСЧЕЗАЕТ, СТЕНА КОПИТ. Знак у корабля виден ровно до того, как его
+   подняли, — то есть почти никогда: он либо ещё не оставлен, либо уже унесён.
+   Из-за этого главное чувство M171 — «тут был кто-то живой» — доставалось
+   игроку в лучшем случае раз за много посадок. На стене знаки НАКАПЛИВАЮТСЯ.
+   Двадцать четыре чужих руки на камне — это не двадцать четыре награды, это
+   ОДНА, и она сильнее всех тайников: место, где до тебя стояли люди.
+
+   ПОЧЕМУ ДВЕНАДЦАТЬ, А НЕ ДВАДЦАТЬ ЧЕТЫРЕ. Первый счёт держал два десятка, и
+   на снимке стенда они превратились в кашу из царапин: человек в этом мире
+   ростом в 26 пикселей, лицо камня — вдвое меньше, и знак получался в три
+   пикселя. Двенадцать РАЗБОРЧИВЫХ рук говорят «тут стояли люди» сильнее, чем
+   двадцать четыре неразборчивых. И число в подсказке при этом не врёт: на
+   камне ровно столько, сколько сказано.
+
+   БРАТЬ НЕЧЕГО И КЛАСТЬ НЕЧЕГО. Ни груза, ни цены, ни счёта. Тайник без цены
+   выродился бы в доску объявлений (M171 это уже проверил); стена без цены не
+   вырождается ни во что, потому что на ней нельзя ничего получить. Один знак
+   на стену от одного человека — стена собственных подписей была бы не записью
+   о людях, а тщеславием.
+
+   ЧТО УХОДИТ ПО ПРОВОДУ: номер знака (один из двенадцати, выведен из метки
+   пилота — не выбран и не объяснён) и шестизначная рука. Ни имени, ни времени,
+   ни места отправителя. Обратно приходит то же самое плюс признак «этот твой».
+   Признание — рука и ничего больше, как и было решено в M171: всё, что больше,
+   становится списком друзей.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Стена НЕ ЛОЖИТСЯ В СОХРАНЕНИЕ. Она живёт на сервере и в памяти вкладки;
+      сохранённая, она врала бы про мир, которого уже нет.
+   2. Офлайн этой вещи не существует — ни кнопки, ни пустой стены, ни намёка.
+      Пустая стена, которая «иногда работает», хуже, чем никакой.
+   3. Один запрос на приход в место, как у следа и у почты. */
+const WALL_MAX=12;
+const WALL_S="s", WALL_C="c";              /* стена посёлка · устье пещеры */
+const WALL_KIND_RU={s:"стене посёлка",c:"устье пещеры"};
+/* в памяти вкладки, а не в G: см. правило 1 */
+const WALL_CACHE=new Map();
+let wallBusy=0;
+
+function wallOn(){return typeof traceOn==="function"&&traceOn();}
+function wallCall(op,body){
+  return traceCall(op,Object.assign({},body||{}));
+}
+/* ключ места — тот же, что у следа: стена принадлежит МЕСТУ, а не планете.
+   Два посёлка на одном мире — две разные стены, и это правильно */
+function wallKeyHere(){
+  return (typeof placeKeyHere==="function")?placeKeyHere():null;
+}
+function wallCacheKey(kind,key){return kind+"|"+key;}
+function wallHere(kind){
+  const key=wallKeyHere();
+  if(!key)return null;
+  return WALL_CACHE.get(wallCacheKey(kind,key))||null;
+}
+/* ── спросить стену ──
+   Зовётся при входе в место, один раз, а не каждый кадр. Пока ответа нет,
+   стены нет: рисовать «загрузку» на камне не станем — камень не грузится */
+function wallAsk(kind){
+  if(!wallOn())return;
+  const key=wallKeyHere();
+  if(!key)return;
+  const ck=wallCacheKey(kind,key);
+  if(WALL_CACHE.has(ck))return;
+  const now=Date.now();
+  if(now-wallBusy<15000)return;
+  wallBusy=now;
+  /* заглушка на время ответа: без неё каждый кадр слал бы новый запрос */
+  WALL_CACHE.set(ck,{list:[],mine:false,pending:true});
+  wallCall("wall",{key:key,w:kind}).then(j=>{
+    if(!j||!j.ok||!Array.isArray(j.w)){WALL_CACHE.delete(ck);return;}
+    wallStore(ck,j.w);
+  }).catch(()=>WALL_CACHE.delete(ck));
+}
+function wallStore(ck,arr){
+  const list=[];let mine=false;
+  for(const t of arr.slice(0,WALL_MAX)){
+    if(!t||typeof t.m!=="number")continue;
+    if(!/^[a-f0-9]{6}$/.test(String(t.h||"")))continue;
+    if(t.me)mine=true;
+    list.push({m:t.m|0,h:String(t.h),me:!!t.me});
+  }
+  WALL_CACHE.set(ck,{list,mine,pending:false});
+}
+/* ── расписаться ──
+   Один раз на стену. Отказ сервера («ваш знак тут уже есть») — не ошибка, а
+   ответ, и говорится он тем же спокойным голосом */
+function wallCanSign(kind){
+  const w=wallHere(kind);
+  return !!(wallOn()&&w&&!w.pending&&!w.mine);
+}
+function wallSign(kind){
+  const key=wallKeyHere();
+  if(!key||!wallCanSign(kind))return;
+  const ck=wallCacheKey(kind,key), w=WALL_CACHE.get(ck);
+  /* знак ставится СРАЗУ, не дожидаясь сервера: человек стукнул по камню и
+     видит свою руку. Если сервер откажет — уберём */
+  const mine={m:traceMarkOf(),h:traceHand(),me:true};
+  w.list=w.list.concat([mine]).slice(-WALL_MAX);
+  w.mine=true;
+  sfx("ui",{f:180,to:120,d:.14,v:.20});
+  logAdd("good","Свой знак — на "+(WALL_KIND_RU[kind]||"стене"));
+  wallCall("sign",{key:key,w:kind,m:mine.m,h:mine.h}).then(j=>{
+    if(!j||!j.ok){
+      /* отказ — знак снимаем молча: врать про чужую стену нельзя */
+      const cur=WALL_CACHE.get(ck);
+      if(cur){cur.list=cur.list.filter(t=>t!==mine);cur.mine=cur.list.some(t=>t.me);}
+      return;
+    }
+    if(Array.isArray(j.w))wallStore(ck,j.w);
+  }).catch(()=>{});
+}
+/* ── как знаки ложатся на камень ──
+   Не сеткой. Люди расписываются там, где рука достала: у кромки, где удобно
+   стоять, и вразбежку по высоте. Ряд одинаково расставленных знаков читался бы
+   орнаментом, то есть частью постройки, — а весь смысл в том, что их НАНЕСЛИ.
+
+   Место каждого знака выводится из его РУКИ, а не из счётчика: тогда знак не
+   переезжает, когда стена пополнилась, и стена, увиденная дважды, — та же. */
+const WALL_COLS=3, WALL_ROWS=4;   /* двенадцать мест на лице камня */
+function wallSpot(t,i,x0,x1,y0,y1){
+  /* ЧИСТО СЛУЧАЙНЫЙ РАЗБРОС СБИВАЕТСЯ В КУЧУ. Первый проход ставил знак в
+     любую точку лица, и восемнадцать рук наложились друг на друга в кашу из
+     штрихов: случайность даёт сгустки, а места на камне ровно столько,
+     сколько его есть. Клетка выбирается по руке (значит, не переезжает), а
+     внутри клетки — свободный сдвиг и наклон, чтобы ряд не читался таблицей.
+     Две руки могут попасть в одну клетку — и пусть: на настоящем камне
+     расписываются поверх, когда места не осталось. */
+  const cell=traceHashOf(t.h+"|клетка")%(WALL_COLS*WALL_ROWS);
+  const cx=cell%WALL_COLS, cy=(cell/WALL_COLS)|0;
+  const cw=(x1-x0)/WALL_COLS, ch=(y1-y0)/WALL_ROWS;
+  const r=rng(traceHashOf(t.h+"|место"));
+  return {x:x0+cw*(cx+.22+r()*.56),
+          y:y0+ch*(cy+.30+r()*.44),
+          s:.82+r()*.36, a:(r()-.5)*.42};
+}
+/* ── нарисовать ──
+   Знаки — то же семейство, что у следа (traceDrawMark), тем же размером: одна
+   рука на всю игру. Свои — светлее и с подчёркиванием, чужие — просто врезаны.
+   Рисуется в ЖИВОЙ ctx: это часть мира, а не открытка. */
+function wallDraw(kind,x0,x1,y0,y1,col){
+  const w=wallHere(kind);
+  if(!w||w.pending||!w.list.length)return 0;
+  /* размер знака — от КЛЕТКИ, а не от всего лица: знак должен помещаться в
+     свою долю камня, иначе четыре столбца по шесть накладываются один на
+     другой независимо от того, как их расставить */
+  const sc=Math.max(3.2,Math.min(9,(x1-x0)/WALL_COLS*.52));
+  ctx.save();
+  for(let i=0;i<w.list.length;i++){
+    const t=w.list[i], q=wallSpot(t,i,x0,x1,y0,y1);
+    ctx.save();
+    ctx.translate(q.x,q.y);ctx.rotate(q.a);
+    /* врез: тёмная копия на пиксель ниже — знак вырезан, а не наклеен */
+    traceDrawMark(t.m,sc*q.s,"rgba(0,0,0,.42)",1.4);
+    ctx.translate(0,-1.2);
+    traceDrawMark(t.m,sc*q.s,t.me?"rgba(255,238,196,.80)":(col||"rgba(226,222,208,.44)"),1.3);
+    ctx.restore();
+  }
+  ctx.restore();
+  return w.list.length;
+}
+/* ── камень у околицы ──
+   ПОЧЕМУ НЕ САМА СТЕНА ПОСЁЛКА. Первый проход клал знаки на подпорную стенку
+   террасы — и промахнулся дважды. Мерили профиль настоящего посёлка: слева
+   полка ВРЕЗАНА в склон (земля на 27–35 px выше её кромки), справа насыпь
+   всего в 2–14 px. Лица под расписки там просто нет, и знаки повисали на
+   траве. Второй промах глубже и он уже был разобран в M171: игра смотрит на
+   мир СБОКУ, и вырез в откосе в такой проекции не существует физически —
+   вертикальная грань единственная поверхность, которую этот мир показывает.
+
+   Поэтому у околицы стоит КАМЕНЬ — тот же язык, что у следа (11ag): плиту
+   ставят руками, верх сколот, бока не параллельны. Межевой камень на въезде в
+   село вещь настолько старая, что объяснять её не нужно; и на нём, в отличие
+   от откоса, режут по-настоящему. Устья пещеры это не касается: там порода и
+   так стоит стеной, и рисовать ей подпорку было бы враньём.
+
+   Камень выше плиты следа: на нём не один знак, а два десятка. */
+function wallStone(x,y,pal,kind){
+  const HS=36, HW=17;   /* ходоку по макушку, а не вдвое выше: 44 читалось менгиром */
+  const r=rng(hashi((x*7)|0,(y*13)|0,0x57A1));
+  const j=[r(),r(),r(),r(),r()];
+  const P=pal&&pal.length?pal:[[60,60,64],[110,108,104],[130,128,124],[170,168,160]];
+  const body="rgb("+P[1].map(v=>Math.round(v*.60)).join(",")+")";
+  const lite="rgb("+P[Math.min(3,P.length-1)].map((v,i)=>
+    Math.round((v*.45+P[1][i]*.55)*1.1)).join(",")+")";
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.beginPath();ctx.ellipse(2,0,HW*1.45,4.5,0,0,TAU);
+  ctx.fillStyle="rgba(0,0,0,.34)";ctx.fill();
+  const tl=-HS*(.70+j[0]*.26), tr2=-HS*(.66+j[1]*.30);
+  ctx.beginPath();
+  ctx.moveTo(-HW*(.88+j[2]*.26),2);
+  ctx.lineTo(-HW*(.74+j[3]*.28),tl);
+  ctx.lineTo(-HW*(.30-j[4]*.44),-HS);
+  ctx.lineTo(HW*(.56+j[4]*.38),tr2);
+  ctx.lineTo(HW*(.82+j[0]*.24),2);
+  ctx.closePath();
+  ctx.fillStyle=body;ctx.fill();
+  ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=1;ctx.stroke();
+  ctx.save();ctx.clip();
+  ctx.beginPath();ctx.moveTo(-HW*.80,tl);ctx.lineTo(-HW*.14,-HS-1);ctx.lineTo(HW*.66,tr2);
+  ctx.lineTo(HW*.66,tr2+3.6);ctx.lineTo(-HW*.14,-HS+3.6);ctx.lineTo(-HW*.80,tl+3.6);ctx.closePath();
+  ctx.fillStyle=lite;ctx.globalAlpha=.40;ctx.fill();ctx.globalAlpha=1;
+  ctx.beginPath();ctx.moveTo(HW*.32,tr2);ctx.lineTo(HW,2);ctx.lineTo(HW*.32,2);ctx.closePath();
+  ctx.fillStyle="rgba(0,0,0,.26)";ctx.fill();
+  ctx.restore();
+  ctx.restore();
+  /* лицо камня — то поле, на котором и режут */
+  wallDraw(kind,x-HW*.62,x+HW*.60,y-HS*.90,y-HS*.14,"rgba(232,226,206,.46)");
+}
+/* сколько рук на стене — для подсказки; ноль значит «ещё никого», и это
+   тоже стоит сказать: пустая стена в обитаемом месте — сама по себе новость */
+function wallCount(kind){
+  const w=wallHere(kind);
+  return (w&&!w.pending)?w.list.length:-1;
 }
 
 /* ══════════════ тетрадь, которой никто не ведёт ══════════════
@@ -21116,6 +21339,14 @@ function settleDrawBody(S,tr,camx,camy,p){
   const wind=(typeof WIND==="number")?WIND*2:0;
   const r=rng(hashi(P.seed,3,0x5EED));
   sdTerrace(P,tr,camx,camy,pal,p);
+  /* чужие руки на подпорной стенке (M210). Кладутся сразу после камня и до
+     всего остального: знак ВРЕЗАН в стену, а не висит перед посёлком */
+  if(typeof wallStone==="function"&&wallCount(WALL_S)>0){
+    const wxw=settleWallX(P), sxw=wxw-camx;
+    if(sxw>-160&&sxw<W+160)
+      wallStone(sxw,groundAt(tr,wxw)-camy+1,
+                [pal.earth,pal.stone,pal.stone,sdMix(pal.stone,[255,246,224],.35)],WALL_S);
+  }
   const y=P.baseY-camy;
   /* задний ряд: выше, мельче, темнее — глубина тоном и перекрытием */
   /* дальний план — своей палитрой, подмешанной к небу, и вполсилы. Раньше
@@ -21705,6 +21936,22 @@ function settleCanLive(p){
 }
 /* где именно они живут: одно место на планете, посчитанное из зерна системы, а
    не «везде, где стоит игрок». Ходить к ним надо ногами, как к пещере. */
+/* стена (M210) — у ДАЛЬНЕГО КОНЦА полки, а не в середине посёлка. Причин две.
+   Живая: расписываются на краю, там, где стоят и ждут, а не посреди улицы.
+   Устройственная: в середине посёлка кнопка ДЕЙСТВИЕ уже занята — там кормят
+   и просят, — а два дела на одну кнопку в одном шаге это отобранный выбор */
+function settleWallX(P){return P?P.x0-10:null;}
+/* то же место, но считанное с нуля — рисованию план и так строится каждый
+   кадр, а ходьбе он нужен один раз за посадку. Посёлка может ещё и не быть
+   (запись заводится только когда его накормят), поэтому S подставляется той
+   же болванкой, что и в отрисовке: место у полки от этого не съезжает */
+function settleWallHereX(p,tr){
+  if(!settleCanLive(p))return null;
+  const S=settleAt(G.sx,G.sy)||
+    {seed:hashi(G.sx,G.sy,(p&&p.idx|0)+0x5E77),built:[],mood:20,stage:1};
+  const P=settlePlan(S,tr,p);
+  return P?settleWallX(P):null;
+}
 function settleSpotX(p,tr){
   if(!settleCanLive(p))return null;
   const r=rng(hashi(G.sx,G.sy,(p&&p.idx|0)+0x50D));
@@ -38934,6 +39181,24 @@ function updateSurface(dt){
       G.prompt="НАРЯД НЕ ЗАКРЫТ · НУЖЕН "+RES[A.k].ru.toUpperCase()+"\n"+tinLine(T);
     }
   }
+  /* стена посёлка (M210): у дальнего конца полки, отдельным шагом от кормёжки.
+     Стену спрашиваем только когда до неё дошли — один запрос на приход в место,
+     как у следа и у почты, и ни одного на посадки мимо посёлка */
+  else if(typeof wallDraw==="function"&&settleCanLive(S.p)&&
+          (S._wallX===undefined?(S._wallX=settleWallHereX(S.p,tr)):S._wallX)!=null&&
+          Math.abs(S.x-S._wallX)<30){
+    wallAsk(WALL_S);
+    const n=wallCount(WALL_S);
+    if(wallCanSign(WALL_S)){
+      G.prompt="ДЕЙСТВИЕ — ОСТАВИТЬ СВОЙ ЗНАК НА СТЕНЕ"+
+        (n>0?"\nТУТ УЖЕ "+n+" ЧУЖИХ РУК":(n===0?"\nСТЕНА ПУСТА":""));
+      if(actEdge){wallSign(WALL_S);return;}
+    }else if(n>0){
+      /* расписался — больше сказать нечего, и просить нечего. Кнопки нет,
+         строка есть: место должно уметь молчать, но не притворяться пустым */
+      G.prompt="СТЕНА ПОСЁЛКА · "+n+" РУК"+(wallHere(WALL_S)&&wallHere(WALL_S).mine?", СРЕДИ НИХ ВАША":"");
+    }
+  }
   else if(settleCanLive(S.p)&&Math.abs(S.x-settleSpotX(S.p,tr))<44){
     const V=settleTick(settleAt(G.sx,G.sy));
     let big="",bn=0;
@@ -39536,6 +39801,8 @@ function drawCaveGlow(C,camx,camy,px,py){
    сетке, поэтому убранство не узнало, что пещера стала объёмной.
    Порода красится тайлами (18c): в кадре остаётся drawImage. */
 const CAVE_W=2200, CAVE_CS=5, CAVE_Y0=-160, CAVE_Y1=1340;
+/* стена расписок (M210): на шаг внутрь от устья, где кончается дневной свет */
+const CAVE_WALL_X0=150, CAVE_WALL_X1=248;
 const CAVE_NX=Math.ceil(CAVE_W/CAVE_CS), CAVE_NY=Math.ceil((CAVE_Y1-CAVE_Y0)/CAVE_CS);
 /* ось верхней галереи: тот же шум, что и прежний пол, так что залы (22a)
    легли туда же, куда ложились */
@@ -39874,7 +40141,23 @@ function updateCave(dt){
   if(atMouth){
     G.prompt="ДЕЙСТВИЕ — НАЗАД НА ПОВЕРХНОСТЬ";
     if(actEdge){exitCave();return;}
-  }else if(!C.found&&Math.hypot(C.x-C.findX,C.y-C.findY)<44){
+  }
+  /* стена у устья (M210): НЕ в самом устье — там ДЕЙСТВИЕ уже выводит наружу.
+     Расписываются на шаг внутрь, где кончается дневной свет: так и в жизни —
+     под навесом, а не на сквозняке */
+  else if(typeof wallDraw==="function"&&C.x>CAVE_WALL_X0&&C.x<CAVE_WALL_X1&&
+          C.y<caveGalY(C,C.x)+90){
+    wallAsk(WALL_C);
+    const n=wallCount(WALL_C);
+    if(wallCanSign(WALL_C)){
+      G.prompt="ДЕЙСТВИЕ — ОСТАВИТЬ СВОЙ ЗНАК У УСТЬЯ"+
+        (n>0?"\nТУТ УЖЕ "+n+" ЧУЖИХ РУК":(n===0?"\nКАМЕНЬ ЧИСТ":""));
+      if(actEdge){wallSign(WALL_C);return;}
+    }else if(n>0){
+      G.prompt="УСТЬЕ · "+n+" РУК"+(wallHere(WALL_C)&&wallHere(WALL_C).mine?", СРЕДИ НИХ ВАША":"");
+    }
+  }
+  else if(!C.found&&Math.hypot(C.x-C.findX,C.y-C.findY)<44){
     G.prompt="ДЕЙСТВИЕ — ОСМОТРЕТЬ НАХОДКУ";
     if(actEdge){
       C.found=true;
@@ -40014,6 +40297,15 @@ function drawCave(){
     ctx.fillStyle=lg;
     ctx.beginPath();ctx.moveTo(mx-26,my-240);ctx.lineTo(mx+26,my-240);ctx.lineTo(mx+70,my+60);ctx.lineTo(mx-70,my+60);ctx.closePath();ctx.fill();
     ctx.restore();
+  }
+  /* чужие руки на камне у устья (M210): до света, чтобы дневной луч из устья
+     лёг и на них — знак врезан в породу, а не наклеен поверх сцены */
+  if(typeof wallDraw==="function"&&wallCount(WALL_C)>0){
+    const wx0=CAVE_WALL_X0-camx, wx1=CAVE_WALL_X1-camx;
+    if(wx1>-120&&wx0<W+120){
+      const fy=caveFloor(C,(CAVE_WALL_X0+CAVE_WALL_X1)/2)-camy;
+      wallDraw(WALL_C,wx0,wx1,fy-50,fy-8,"rgba(236,232,214,.66)");
+    }
   }
   drawCaveGlow(C,camx,camy,px,py);
   /* дозорные посёлка у устья (хвост M110): их видно, а не только читается

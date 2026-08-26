@@ -412,6 +412,24 @@ function updateSurface(dt){
       G.prompt="НАРЯД НЕ ЗАКРЫТ · НУЖЕН "+RES[A.k].ru.toUpperCase()+"\n"+tinLine(T);
     }
   }
+  /* стена посёлка (M210): у дальнего конца полки, отдельным шагом от кормёжки.
+     Стену спрашиваем только когда до неё дошли — один запрос на приход в место,
+     как у следа и у почты, и ни одного на посадки мимо посёлка */
+  else if(typeof wallDraw==="function"&&settleCanLive(S.p)&&
+          (S._wallX===undefined?(S._wallX=settleWallHereX(S.p,tr)):S._wallX)!=null&&
+          Math.abs(S.x-S._wallX)<30){
+    wallAsk(WALL_S);
+    const n=wallCount(WALL_S);
+    if(wallCanSign(WALL_S)){
+      G.prompt="ДЕЙСТВИЕ — ОСТАВИТЬ СВОЙ ЗНАК НА СТЕНЕ"+
+        (n>0?"\nТУТ УЖЕ "+n+" ЧУЖИХ РУК":(n===0?"\nСТЕНА ПУСТА":""));
+      if(actEdge){wallSign(WALL_S);return;}
+    }else if(n>0){
+      /* расписался — больше сказать нечего, и просить нечего. Кнопки нет,
+         строка есть: место должно уметь молчать, но не притворяться пустым */
+      G.prompt="СТЕНА ПОСЁЛКА · "+n+" РУК"+(wallHere(WALL_S)&&wallHere(WALL_S).mine?", СРЕДИ НИХ ВАША":"");
+    }
+  }
   else if(settleCanLive(S.p)&&Math.abs(S.x-settleSpotX(S.p,tr))<44){
     const V=settleTick(settleAt(G.sx,G.sy));
     let big="",bn=0;

@@ -403,8 +403,14 @@ M188–M206” — grep it there for any of them. What they left open, in the or
   photograph was offered «С ДОРОГИ», and a *received* card had no live mode at all), and kind alone
   was too coarse a sieve — «В АТМОСФЕРЕ» under a shot taken from orbit. A blank now carries the
   letters of the places it suits.
-- **marks in the places themselves** (M171, M194): the settlement wall, the cave mouth. M194 went
-  around it via rumours; the original ask is still standing.
+- ~~**marks in the places themselves** (M171, M194)~~ — **closed by M210 (0.189.0).** `11ah-wall`,
+  `wall`/`sign` on `a=trace`, suite `91zzzv-wall`. Built as the opposite of the cache: a cache
+  disappears when it is taken, so M171's whole point reached a player once in many landings, while
+  a wall **accumulates** — twelve hands is one reward, not twelve, and a stronger one. Nothing to
+  take, nothing to leave, one mark per person per wall. The settlement gets a boundary stone rather
+  than its retaining wall (measured: the terrace is a cut, not a fill — there is no face to carve,
+  and M171 had already settled that a side-on world needs a vertical stone); the cave mouth needed
+  no such thing. Twelve rather than twenty-four, because two dozen at world scale is scratch-noise.
 - **the winter frame** (M197): at street scale the wintering reads, but weakly. The frame could
   say it louder.
 - **the release board** below is the live list; these five are debts against it, not blockers.

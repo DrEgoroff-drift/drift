@@ -9,6 +9,8 @@
    сетке, поэтому убранство не узнало, что пещера стала объёмной.
    Порода красится тайлами (18c): в кадре остаётся drawImage. */
 const CAVE_W=2200, CAVE_CS=5, CAVE_Y0=-160, CAVE_Y1=1340;
+/* стена расписок (M210): на шаг внутрь от устья, где кончается дневной свет */
+const CAVE_WALL_X0=150, CAVE_WALL_X1=248;
 const CAVE_NX=Math.ceil(CAVE_W/CAVE_CS), CAVE_NY=Math.ceil((CAVE_Y1-CAVE_Y0)/CAVE_CS);
 /* ось верхней галереи: тот же шум, что и прежний пол, так что залы (22a)
    легли туда же, куда ложились */
@@ -347,7 +349,23 @@ function updateCave(dt){
   if(atMouth){
     G.prompt="ДЕЙСТВИЕ — НАЗАД НА ПОВЕРХНОСТЬ";
     if(actEdge){exitCave();return;}
-  }else if(!C.found&&Math.hypot(C.x-C.findX,C.y-C.findY)<44){
+  }
+  /* стена у устья (M210): НЕ в самом устье — там ДЕЙСТВИЕ уже выводит наружу.
+     Расписываются на шаг внутрь, где кончается дневной свет: так и в жизни —
+     под навесом, а не на сквозняке */
+  else if(typeof wallDraw==="function"&&C.x>CAVE_WALL_X0&&C.x<CAVE_WALL_X1&&
+          C.y<caveGalY(C,C.x)+90){
+    wallAsk(WALL_C);
+    const n=wallCount(WALL_C);
+    if(wallCanSign(WALL_C)){
+      G.prompt="ДЕЙСТВИЕ — ОСТАВИТЬ СВОЙ ЗНАК У УСТЬЯ"+
+        (n>0?"\nТУТ УЖЕ "+n+" ЧУЖИХ РУК":(n===0?"\nКАМЕНЬ ЧИСТ":""));
+      if(actEdge){wallSign(WALL_C);return;}
+    }else if(n>0){
+      G.prompt="УСТЬЕ · "+n+" РУК"+(wallHere(WALL_C)&&wallHere(WALL_C).mine?", СРЕДИ НИХ ВАША":"");
+    }
+  }
+  else if(!C.found&&Math.hypot(C.x-C.findX,C.y-C.findY)<44){
     G.prompt="ДЕЙСТВИЕ — ОСМОТРЕТЬ НАХОДКУ";
     if(actEdge){
       C.found=true;
@@ -487,6 +505,15 @@ function drawCave(){
     ctx.fillStyle=lg;
     ctx.beginPath();ctx.moveTo(mx-26,my-240);ctx.lineTo(mx+26,my-240);ctx.lineTo(mx+70,my+60);ctx.lineTo(mx-70,my+60);ctx.closePath();ctx.fill();
     ctx.restore();
+  }
+  /* чужие руки на камне у устья (M210): до света, чтобы дневной луч из устья
+     лёг и на них — знак врезан в породу, а не наклеен поверх сцены */
+  if(typeof wallDraw==="function"&&wallCount(WALL_C)>0){
+    const wx0=CAVE_WALL_X0-camx, wx1=CAVE_WALL_X1-camx;
+    if(wx1>-120&&wx0<W+120){
+      const fy=caveFloor(C,(CAVE_WALL_X0+CAVE_WALL_X1)/2)-camy;
+      wallDraw(WALL_C,wx0,wx1,fy-50,fy-8,"rgba(236,232,214,.66)");
+    }
   }
   drawCaveGlow(C,camx,camy,px,py);
   /* дозорные посёлка у устья (хвост M110): их видно, а не только читается

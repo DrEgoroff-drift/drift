@@ -61,6 +61,78 @@ setTimeout(function(){
     land("terran");enterCave();
     G.prompt="ДЕЙСТВИЕ — СКАНИРОВАТЬ ОРГАНИЗМ";
     run(4,updateCave,drawCave);
+  }else if(scene==="wallset"||scene==="wallcave"){
+    /* стена, которая помнит (M210). Сервера у стенда нет, поэтому руки
+       кладутся в память напрямую — ровно то, что положил бы ответ: знак,
+       рука и признак «этот твой». Проверяется, как знаки СИДЯТ НА КАМНЕ:
+       не сеткой, не орнаментом, и свой среди чужих виден */
+    var pw=land("terran");hour(pw,.34);
+    var kindw=(scene==="wallcave")?WALL_C:WALL_S;
+    var keyw=wallKeyHere()||"0,0";
+    var lw=[];
+    for(var q2=0;q2<11;q2++)
+      lw.push({m:(q2*5+2)%TRACE_MARK.length,
+               h:("00000"+(q2*2654435761%16777216).toString(16)).slice(-6),me:false});
+    lw.push({m:4,h:"c0ffee",me:true});
+    WALL_CACHE.set(wallCacheKey(kindw,keyw),{list:lw,mine:true,pending:false});
+    if(scene==="wallcave"){
+      enterCave();
+      G.cave.x=(CAVE_WALL_X0+CAVE_WALL_X1)/2;
+      G.cave.y=caveFloor(G.cave,G.cave.x);
+      G.prompt="УСТЬЕ · 12 РУК, СРЕДИ НИХ ВАША";
+      run(30,updateCave,drawCave);
+    }else{
+      G.mode="surface";
+      var wxs=settleWallHereX(G.surf.p,G.surf.tr);
+      if(wxs!=null){G.surf.x=wxs;G.surf.y=groundAt(G.surf.tr,wxs)-10;}
+      G.prompt="СТЕНА ПОСЁЛКА · 12 РУК, СРЕДИ НИХ ВАША";
+      run(24,updateSurface,drawSurface);
+    }
+    /* ЛУПА. Знаки живут в мире в натуральную величину — с человека ростом в
+       26 пикселей это горсть штрихов, и по снимку всего экрана нельзя судить
+       ни о разбросе, ни о том, читается ли свой среди чужих. Стенд поэтому
+       кладёт в угол увеличенный кусок того же кадра: это не другая отрисовка,
+       а тот же пиксель крупно */
+    (function(){
+      var cvv=document.querySelector("canvas");if(!cvv)return;
+      /* СВОИМ холстом поверх, а не поверх игрового: цикл игры в стенде
+         намеренно оставлен работать (иначе заставка закрасит кадр), и всё,
+         что дорисовано в игровой ctx, следующий кадр стирает */
+      var lo=document.createElement("canvas");
+      lo.width=884;lo.height=484;
+      lo.style.cssText="position:fixed;left:12px;top:12px;z-index:99999;"+
+        "width:884px;height:484px;image-rendering:pixelated;"+
+        "outline:1px solid rgba(255,255,255,.35)";
+      document.body.appendChild(lo);
+      var lc=lo.getContext("2d");
+      lc.imageSmoothingEnabled=false;
+      /* НАВОДИТСЯ САМА. Раньше вырезка бралась от середины кадра, и в пещере
+         лупа смотрела в пустую породу: знаки оказались правее. Считать их
+         экранное место по камере значит повторить в стенде половину отрисовки;
+         проще найти их так же, как их находит глаз, — по светлому пятну.
+         Один проход по кадру, один раз, дальше держимся найденной точки */
+      var aim=null;
+      (function tick(){
+        if(!aim){
+          var g0=cvv.getContext("2d"), d=null;
+          try{d=g0.getImageData(0,0,cvv.width,cvv.height).data;}catch(e){}
+          if(d){
+            var sx2=0,sy2=0,n2=0;
+            for(var y2=0;y2<cvv.height;y2+=2)for(var x2=0;x2<cvv.width;x2+=2){
+              var i2=(y2*cvv.width+x2)*4;
+              if(d[i2]>150&&d[i2+1]>140&&d[i2+2]>110){sx2+=x2;sy2+=y2;n2++;}
+            }
+            if(n2>8)aim=[Math.round(sx2/n2),Math.round(sy2/n2)];
+          }
+        }
+        var ax=aim?aim[0]:Math.round(cvv.width*.5), ay=aim?aim[1]:Math.round(cvv.height*.6);
+        var pxx=Math.max(0,Math.min(cvv.width-220,ax-110));
+        var pyy=Math.max(0,Math.min(cvv.height-120,ay-60));
+        lc.clearRect(0,0,lo.width,lo.height);
+        lc.drawImage(cvv,pxx,pyy,220,120,2,2,880,480);
+        requestAnimationFrame(tick);
+      })();
+    })();
   }else if(scene==="night"){
     var p=land("terran");hour(p,.78);G.mode="surface";
     G.prompt="";run(6,updateSurface,drawSurface);

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 311 · символов верхнего уровня: 2867
+Файлов: 313 · символов верхнего уровня: 2891
 
 ## СИМВОЛЫ
 
@@ -237,30 +237,31 @@ capUsed                      src/05-parts.js:219
 CAST                         src/12k-stories-a.js:19
 CAST_B                       src/12k-stories-b.js:7
 CAST_C                       src/12k-stories-c.js:7
-CAVE_NX                      src/22-mode-cave.js:12
+CAVE_NX                      src/22-mode-cave.js:14
 CAVE_W                       src/22-mode-cave.js:11
+CAVE_WALL_X0                 src/22-mode-cave.js:13
 CAVE_ZONE                    src/22a-cave-deco.js:17
 CAVE_ZONE_MIX                src/22a-cave-deco.js:26
-caveBoxFree                  src/22-mode-cave.js:211
-caveBuild                    src/22-mode-cave.js:81
-caveCeil                     src/22-mode-cave.js:43
-caveCeilLow                  src/22-mode-cave.js:58
-caveCeilOf                   src/22-mode-cave.js:66
-caveContour                  src/22-mode-cave.js:379
+caveBoxFree                  src/22-mode-cave.js:213
+caveBuild                    src/22-mode-cave.js:83
+caveCeil                     src/22-mode-cave.js:45
+caveCeilLow                  src/22-mode-cave.js:60
+caveCeilOf                   src/22-mode-cave.js:68
+caveContour                  src/22-mode-cave.js:397
 caveDeco                     src/22a-cave-deco.js:94
-caveFloor                    src/22-mode-cave.js:37
-caveFloorLow                 src/22-mode-cave.js:51
-caveFloorOf                  src/22-mode-cave.js:65
+caveFloor                    src/22-mode-cave.js:39
+caveFloorLow                 src/22-mode-cave.js:53
+caveFloorOf                  src/22-mode-cave.js:67
 caveFloraOf                  src/20e-species.js:111
-caveGalR                     src/22-mode-cave.js:16
-caveGalY                     src/22-mode-cave.js:15
-caveLowY                     src/22-mode-cave.js:18
-caveMoveX                    src/22-mode-cave.js:217
+caveGalR                     src/22-mode-cave.js:18
+caveGalY                     src/22-mode-cave.js:17
+caveLowY                     src/22-mode-cave.js:20
+caveMoveX                    src/22-mode-cave.js:219
 cavePool                     src/22a-cave-deco.js:76
-caveScanDown                 src/22-mode-cave.js:25
-caveScanUp                   src/22-mode-cave.js:31
-caveSolidAt                  src/22-mode-cave.js:19
-caveStamp                    src/22-mode-cave.js:68
+caveScanDown                 src/22-mode-cave.js:27
+caveScanUp                   src/22-mode-cave.js:33
+caveSolidAt                  src/22-mode-cave.js:21
+caveStamp                    src/22-mode-cave.js:70
 caveTip                      src/22a-cave-deco.js:212
 caveVault                    src/22a-cave-deco.js:64
 caveWet                      src/22a-cave-deco.js:88
@@ -520,11 +521,11 @@ drawBeltRocks                src/17c-system-draw.js:41
 drawBuildMenu                src/21aa-base-rooms.js:492
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
-drawCave                     src/22-mode-cave.js:465
+drawCave                     src/22-mode-cave.js:483
 drawCaveDark                 src/22a-cave-deco.js:288
-drawCaveFar                  src/22-mode-cave.js:452
+drawCaveFar                  src/22-mode-cave.js:470
 drawCaveGlow                 src/22a-cave-deco.js:308
-drawCaveRock                 src/22-mode-cave.js:404
+drawCaveRock                 src/22-mode-cave.js:422
 drawCaveSolid                src/22a-cave-deco.js:220
 drawCaveWater                src/22a-cave-deco.js:261
 drawCelest                   src/06a-celest.js:167
@@ -634,7 +635,7 @@ endPtr                       src/15-input.js:272
 engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:88
-enterCave                    src/22-mode-cave.js:147
+enterCave                    src/22-mode-cave.js:149
 enterDig                     src/23-mode-dig.js:50
 enterHomeIn                  src/29c-home-in.js:65
 enterRaid                    src/24a-mode-raid.js:134
@@ -656,11 +657,11 @@ etherTick                    src/11b-speech.js:39
 ethOn                        src/25l-post-ether.js:52
 ethReset                     src/25l-post-ether.js:106
 ethTick                      src/25l-post-ether.js:59
-evacuate                     src/21-mode-surface.js:541
+evacuate                     src/21-mode-surface.js:559
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:82
 exitBelt                     src/24-mode-belt.js:174
-exitCave                     src/22-mode-cave.js:205
+exitCave                     src/22-mode-cave.js:207
 exitDig                      src/23-mode-dig.js:64
 exitHomeIn                   src/29c-home-in.js:74
 exitScoop                    src/19a-mode-scoop.js:19
@@ -1248,8 +1249,8 @@ LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:375
 lastRunDay                   src/12k-letters.js:44
 lastRunTick                  src/12k-letters.js:46
-launch                       src/21-mode-surface.js:581
-launchHold                   src/21-mode-surface.js:526
+launch                       src/21-mode-surface.js:599
+launchHold                   src/21-mode-surface.js:544
 layerLevel                   src/10-music.js:326
 ledgerAll                    src/11ai-ledger.js:36
 ledgerNeed                   src/11ai-ledger.js:44
@@ -2278,7 +2279,7 @@ sdWallTex                    src/12tb-settle-draw.js:227
 sdWeir                       src/12tc-settle-crafts.js:49
 sdWindow                     src/12tb-settle-draw.js:328
 sdWoodpile                   src/12tb-settle-draw.js:385
-sdYard                       src/12tb-settle-draw.js:789
+sdYard                       src/12tb-settle-draw.js:797
 sellCargo                    src/12-economy.js:26
 sellDroneYield               src/12-economy.js:37
 setSt                        src/28-loop.js:80
@@ -2292,36 +2293,38 @@ SETTLE_ON                    src/12t-settle.js:27
 SETTLE_STEP                  src/12t-settle.js:22
 SETTLE_STOCK                 src/12t-settle.js:23
 SETTLE_WAIT                  src/12t-settle.js:25
-SETTLE_WORD                  src/12t-settle.js:180
-settleAsk                    src/12t-settle.js:187
+SETTLE_WORD                  src/12t-settle.js:196
+settleAsk                    src/12t-settle.js:203
 settleAt                     src/12t-settle.js:46
 settleCanHand                src/12td-settle-hand.js:36
 settleCanLive                src/12t-settle.js:50
-settleDraw                   src/12t-settle.js:251
+settleDraw                   src/12t-settle.js:267
 settleDrawBody               src/12tb-settle-draw.js:662
-settleGive                   src/12t-settle.js:144
+settleGive                   src/12t-settle.js:160
 settleHandLine               src/12td-settle-hand.js:65
 settleHandMast               src/12td-settle-hand.js:97
 settleHandPick               src/12td-settle-hand.js:56
 settleHandPlan               src/12td-settle-hand.js:73
 settleHere                   src/12t-settle.js:47
 settleKeyOf                  src/12t-settle.js:44
-settleLeftBehind             src/12t-settle.js:342
-settleLine                   src/12t-settle.js:220
-settleMake                   src/12t-settle.js:61
-settleMakes                  src/12t-settle.js:167
+settleLeftBehind             src/12t-settle.js:358
+settleLine                   src/12t-settle.js:236
+settleMake                   src/12t-settle.js:77
+settleMakes                  src/12t-settle.js:183
 settleMap                    src/12t-settle.js:45
 settleMine                   src/12td-settle-hand.js:35
 settlePlan                   src/12tb-settle-draw.js:83
-settleRaid                   src/12t-settle.js:325
-settleRaise                  src/12t-settle.js:103
-settleSpotX                  src/12t-settle.js:55
-settleStockSum               src/12t-settle.js:161
-settleStop                   src/12t-settle.js:356
+settleRaid                   src/12t-settle.js:341
+settleRaise                  src/12t-settle.js:119
+settleSpotX                  src/12t-settle.js:71
+settleStockSum               src/12t-settle.js:177
+settleStop                   src/12t-settle.js:372
 settleTakeHand               src/12td-settle-hand.js:40
-settleTick                   src/12t-settle.js:77
-settleWatch                  src/12t-settle.js:314
-settleWords                  src/12t-settle.js:182
+settleTick                   src/12t-settle.js:93
+settleWallHereX              src/12t-settle.js:64
+settleWallX                  src/12t-settle.js:59
+settleWatch                  src/12t-settle.js:330
+settleWords                  src/12t-settle.js:198
 setTx                        src/28-loop.js:79
 setZoom                      src/15-input.js:241
 sfx                          src/09-audio.js:237
@@ -2608,7 +2611,7 @@ tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
 tickDrones                   src/12-economy.js:82
-tickLaunchHold               src/21-mode-surface.js:527
+tickLaunchHold               src/21-mode-surface.js:545
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
@@ -2660,7 +2663,7 @@ toldKey                      src/11aj-told.js:35
 toldOf                       src/11aj-told.js:36
 toldWorked                   src/11aj-told.js:41
 toldWorth                    src/11aj-told.js:49
-totalLoss                    src/21-mode-surface.js:558
+totalLoss                    src/21-mode-surface.js:576
 towShare                     src/03f-hull-role.js:87
 TRACE_CAP_DAY                src/11ag-trace.js:46
 TRACE_MARK                   src/11ag-trace.js:32
@@ -2719,7 +2722,7 @@ updateAllies                 src/12a-crew.js:537
 updateBarges                 src/12l-barge.js:156
 updateBase                   src/21a-mode-base.js:324
 updateBelt                   src/24-mode-belt.js:184
-updateCave                   src/22-mode-cave.js:223
+updateCave                   src/22-mode-cave.js:225
 updateCaveDeco               src/22a-cave-deco.js:184
 updateCombat                 src/13-pirates.js:77
 updateDig                    src/23-mode-dig.js:117
@@ -2786,10 +2789,31 @@ voice                        src/09-audio.js:84
 VOICE_KEYS                   src/02a-worldmix.js:81
 VOICE_MAX                    src/09-audio.js:5
 W                            src/08-state.js:5
+WALL_CACHE                   src/11ah-wall.js:44
+WALL_COLS                    src/11ah-wall.js:126
+WALL_KIND_RU                 src/11ah-wall.js:42
+WALL_MAX                     src/11ah-wall.js:40
 WALL_POEMS                   src/11ae-concert.js:16
+WALL_S                       src/11ah-wall.js:41
+wallAsk                      src/11ah-wall.js:65
 wallBlock                    src/11ae-concert.js:106
+wallBusy                     src/11ah-wall.js:45
+wallCacheKey                 src/11ah-wall.js:56
+wallCall                     src/11ah-wall.js:48
+wallCanSign                  src/11ah-wall.js:94
+wallCount                    src/11ah-wall.js:219
+wallDraw                     src/11ah-wall.js:147
+wallFake                     tests/91zzzv-wall.js:10
 wallFlash                    src/11ae-concert.js:31
+wallHere                     src/11ah-wall.js:57
 wallHero                     src/11ae-concert.js:24
+wallKeyHere                  src/11ah-wall.js:53
+wallOn                       src/11ah-wall.js:47
+wallReset                    tests/91zzzv-wall.js:6
+wallSign                     src/11ah-wall.js:98
+wallSpot                     src/11ah-wall.js:127
+wallStone                    src/11ah-wall.js:184
+wallStore                    src/11ah-wall.js:81
 wallWrap                     src/11ae-concert.js:72
 wasBlurred                   src/15-input.js:166
 watchCrew                    src/27b-ui-crew.js:34
@@ -2982,6 +3006,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/11ah-offer.js · 15 КБ
   · возможность:1
+
+## src/11ah-wall.js · 15 КБ
+  · стена, которая помнит:1
 
 ## src/11ai-ledger.js · 4 КБ
   · тетрадь, которой никто не ведёт:1
@@ -3199,7 +3226,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12td-settle-hand.js · 8 КБ
   · посёлок под рукой:1
 
-## src/12t-settle.js · 23 КБ
+## src/12t-settle.js · 24 КБ
   · посёлок: вы даёте, решают они:1
 
 ## src/12ua-flea.js · 12 КБ
@@ -3384,14 +3411,14 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21h-pennant.js · 6 КБ
   · переходящий вымпел:1
 
-## src/21-mode-surface.js · 39 КБ
+## src/21-mode-surface.js · 40 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:597
+  · навигатор и подсказки сверху:615
 
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
 
-## src/22-mode-cave.js · 28 КБ
+## src/22-mode-cave.js · 29 КБ
   · пещера: поле породы в двух измерениях:1
 
 ## src/23aa-dig-rock.js · 18 КБ
@@ -3862,5 +3889,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzu-post-scenes.js · 8 КБ
   · автотесты: открытка в пяти других местах (M208):1
+
+## tests/91zzzv-wall.js · 7 КБ
+  · автотесты: стена, которая помнит (M210):1
 
 ## tests/99-run.js · 0 КБ

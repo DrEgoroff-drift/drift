@@ -7,6 +7,44 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.189.0 — the stone that remembers: marks in the places themselves (M210)
+
+M171 put the first thing left by a *living* player into the game — a mark cut beside your ship with
+cargo at its foot — and wrote itself a debt: "only the surface carries a mark; the settlement wall
+and the cave mouth would each take one". The debt stood since 0.137.0, and M194 walked around it by
+turning the player into a source of rumours instead. This is it, and it is deliberately not built
+like the cache.
+
+**A cache disappears; a wall accumulates.** The mark by your ship is visible exactly until someone
+picks it up — which is to say almost never: it has either not been left yet or has already been
+carried off. So M171's whole point, *someone alive was here*, reached a player once in many
+landings. On a wall the marks pile up. Twelve strangers' hands on one stone is not twelve rewards,
+it is **one**, and it is stronger than any cache: a place where people stood before you.
+
+**Nothing to take and nothing to leave.** No cargo, no price, no count. A cache without a price
+would degenerate into a noticeboard — M171 checked that already — and a wall cannot degenerate into
+anything, because there is nothing on it to get. One mark per wall per person: a wall of your own
+signatures is vanity, not a record of people.
+
+**Two passes on the surface, and the second one changed the object.** The marks first went on the
+settlement's retaining wall — and missed twice. Measuring a real settlement's profile: on the left
+the terrace is *cut into* the slope (ground 27–35 px above its edge), on the right the fill is 2–14
+px. There is no face to carve, and the marks hung on the grass. The deeper miss was one M171 had
+already solved: this world is seen from the side, and a cut in an earth bank does not exist in that
+projection. So the settlement gets a **boundary stone** at its edge, in the same visual language as
+the trace slab — set by hand, top chipped, sides not parallel. The cave mouth needed none of this:
+rock already stands as a wall there.
+
+**Twelve, not twenty-four.** The first count held two dozen and they turned to scratch-noise: a
+person in this world is 26 px tall, the stone's face is half that, and a mark came out three pixels
+across. Twelve *legible* hands say "people stood here" better than twenty-four illegible ones — and
+the number in the prompt stays honest, because the stone holds exactly what it says.
+
+Down the wire: the mark index and the six-character hand, nothing else. Back: the same plus "this
+one is yours". `11ah-wall`, `wall`/`sign` on `a=trace` in `api.php`, suite `91zzzv-wall`, stands
+`pageshot view -Q "?s=wallset"` and `"?s=wallcave"` (with a self-aiming loupe — marks are
+world-scale and a full-screen shot cannot judge them). 10724 assertions in 354 suites.
+---
 ## 0.188.0 — the hundred blanks, and a card that knows where it was taken (M209)
 
 M189 laid down thirty printed blanks and wrote "a hundred over later passes" into the plan. Here
