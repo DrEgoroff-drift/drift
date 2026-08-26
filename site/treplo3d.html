@@ -63,6 +63,15 @@ body.pet #tag,body.pet #hint,body.pet #bar,body.pet #about{display:none}
   #bar{left:12px;right:12px;bottom:12px;justify-content:center}
   #about{bottom:104px}
 }
+
+/* то, что птица бормочет: короткая строка, гаснет сама */
+#say{position:fixed;left:50%;transform:translateX(-50%);bottom:44px;font-size:11px;
+  letter-spacing:.08em;color:var(--phos);opacity:0;pointer-events:none;
+  text-shadow:0 0 12px rgba(127,230,216,.5)}
+#say.on{animation:sayfade 2.6s ease-out}
+@keyframes sayfade{0%{opacity:0}12%{opacity:.95}70%{opacity:.95}100%{opacity:0}}
+body.pet #say{bottom:16px}
+@media (max-width:760px){#say{bottom:120px}}
 </style>
 </head>
 <body>
@@ -70,6 +79,7 @@ body.pet #tag,body.pet #hint,body.pet #bar,body.pet #about{display:none}
 
 <div id="tag"><b>Трепло</b>птица с корабля «Дрейф»</div>
 <div id="hint">потяните — обойдёте кругом · ткните — отзовётся</div>
+<div id="say"></div>
 
 <div id="bar">
   <button id="install" class="btn" style="display:none">УСТАНОВИТЬ</button>
@@ -779,6 +789,11 @@ function buildParts(){
   /* Клюв крупнее прежнего на десятую: на листе он занимает треть головы по
      высоте, и мелкий клюв сразу превращает попугая в воробья. Цвет костяной,
      к крючку темнеет до рогового. */
+  /* ── КЛЮВ ──
+     Размер взят с листа породы по отношению к голове, а не на глаз: высота у
+     основания — чуть больше половины диаметра черепа (0.62), вынос вперёд от
+     лица — около сорока пяти сотых того же диаметра. Прежний клюв был вдвое
+     меньше нужного и читался воробьиным. */
   const beakCol=(v,u)=>{
     /* градиент не только вдоль, но и ПОПЕРЁК: низ клюва темнее верха, иначе
        кость выходит плоским леденцом без объёма */
@@ -787,45 +802,39 @@ function buildParts(){
     return vLerp(along,vLerp(C.beakD,C.beakTip,.45),down*.42);
   };
   tube(M,[
-    {p:[0,1.788,0.116],r:[0.084,0.124]},
-    {p:[0,1.764,0.206],r:[0.080,0.116]},
-    {p:[0,1.722,0.288],r:[0.070,0.101]},
-    {p:[0,1.672,0.350],r:[0.055,0.081]},
-    {p:[0,1.616,0.380],r:[0.038,0.056]},
-    {p:[0,1.564,0.370],r:[0.023,0.037]},
-    {p:[0,1.534,0.340],r:[0.006,0.017]}
-  ],16,{m:1,t:1,up:[1,0,0],col:(v,u)=>beakCol(v,u)});
+    {p:[0,1.806,0.086],r:[0.086,0.168]},
+    {p:[0,1.782,0.192],r:[0.084,0.160]},
+    {p:[0,1.740,0.294],r:[0.076,0.142]},
+    {p:[0,1.676,0.372],r:[0.062,0.114]},
+    {p:[0,1.588,0.416],r:[0.044,0.082]},
+    {p:[0,1.512,0.412],r:[0.028,0.054]},
+    {p:[0,1.458,0.392],r:[0.016,0.030]},
+    {p:[0,1.438,0.340],r:[0.005,0.014]}
+  ],18,{m:1,t:1,up:[1,0,0],col:(v,u)=>beakCol(v,u)});
   /* подклювье: короче, тупее, шире — оно прячется в крючок надклювья */
   tube(M,[
-    {p:[0,1.672,0.116],r:[0.074,0.038]},
-    {p:[0,1.656,0.202],r:[0.070,0.038]},
-    {p:[0,1.640,0.268],r:[0.055,0.033]},
-    {p:[0,1.628,0.314],r:[0.031,0.024]},
-    {p:[0,1.624,0.336],r:[0.007,0.010]}
-  ],12,{m:9,t:1,up:[1,0,0],col:(v)=>vLerp(vLerp(C.beak,C.beakD,.55),C.beakTip,smooth(.3,1,v)*.7)});
+    {p:[0,1.658,0.086],r:[0.092,0.050]},
+    {p:[0,1.638,0.190],r:[0.088,0.050]},
+    {p:[0,1.616,0.286],r:[0.070,0.044]},
+    {p:[0,1.598,0.356],r:[0.042,0.032]},
+    {p:[0,1.590,0.392],r:[0.009,0.012]}
+  ],14,{m:9,t:1,up:[1,0,0],col:(v)=>vLerp(vLerp(C.beak,C.beakD,.55),C.beakTip,smooth(.3,1,v)*.7)});
   /* НУТРО. Пока клюв закрыт, его не видно вовсе; стоит челюсти открыться — там
      обязана быть темнота с языком, а не дырка в модели. Зевок без нутра
      выглядит поломкой, и это первое, что замечают. */
-  sphere(M,[0,1.678,0.150],0.088,10,{m:2,t:1,scale:[0.86,0.72,1.25],
+  sphere(M,[0,1.664,0.170],0.104,10,{m:2,t:1,scale:[0.84,0.74,1.30],
     col:()=>C.mouth});
   tube(M,[
-    {p:[0,1.652,0.120],r:[0.030,0.016],t:1},
-    {p:[0,1.646,0.196],r:[0.026,0.014],t:1},
-    {p:[0,1.641,0.256],r:[0.014,0.009],t:1}
+    {p:[0,1.636,0.104],r:[0.034,0.018],t:1},
+    {p:[0,1.628,0.196],r:[0.030,0.016],t:1},
+    {p:[0,1.620,0.272],r:[0.016,0.010],t:1}
   ],8,{m:9,t:1,up:[1,0,0],col:(v)=>vLerp(C.tongue,C.mouth,smooth(.2,1,v)*.6)});
-  /* Восковицы НЕТ. Валик у основания клюва закрывал собой ноздрю и делал лоб
-     тяжёлым; на листе породы её нет вовсе, а ноздря сидит прямо на роге.
-     Ноздря считается по сечению клюва, а не ставится на глаз: раз за разом
-     она оказывалась внутри рога и пропадала. */
-
-  /* уголок рта: тёмная точка там, где сходятся челюсти. Без неё клюв выглядит
-     приклеенным к лицу, а не растущим из него */
+  /* Восковицы НЕТ: на листе породы её нет, а ноздря — тёмное пятно прямо на
+     роге (красится в 30-shade, геометрии не стоит). Уголок рта — точка там,
+     где сходятся челюсти: без неё клюв выглядит приклеенным к лицу. */
   for(const sx of [-1,1])
-    sphere(M,[sx*0.078,1.664,0.132],0.021,7,{m:2,t:1,scale:[0.7,1,1.4],
+    sphere(M,[sx*0.098,1.652,0.104],0.024,7,{m:2,t:1,scale:[0.7,1,1.5],
       col:()=>vLerp(C.mouth,C.eye,.5)});
-  /* ноздри: две тёмные точки на восковице — мелочь, которую замечают */
-  for(const sx of [-1,1])
-    sphere(M,[sx*0.044,1.824,0.152],0.013,6,{m:2,t:1,col:()=>[0.02,0.02,0.03]});
 
   /* ── глаза ──
      Тёмная бусина с голым кольцом вокруг. Кольцо — примета попугая не меньше
@@ -839,22 +848,22 @@ function buildParts(){
        0.092 давало оранжевое блюдце в треть черепа */
     /* два кольца: голое светлое снаружи и тёмный ободок вплотную к яблоку.
        Без тёмного глаз лежит на голубой коже как пуговица на пальто. */
-    disc(M,vAdd(p,vMul(n,-0.006)),n,0.066,22,{m:5,t:1,ry:0.88,
+    disc(M,vAdd(p,vMul(n,-0.004)),n,0.072,22,{m:5,t:1,ry:0.88,
       col:(k)=>k?vLerp(C.creamD,C.blueD,.35):vLerp(C.cream,C.creamD,.10)});
-    disc(M,vAdd(p,vMul(n,0.004)),n,0.060,22,{m:5,t:1,ry:0.94,
+    disc(M,vAdd(p,vMul(n,0.006)),n,0.064,22,{m:5,t:1,ry:0.94,
       col:(k)=>k?vLerp(C.blueD,C.eye,.55):vLerp(C.eye,C.blueD,.35)});
     /* яблоко крупнее: на листе глаз занимает четверть головы, и мелкий глаз
        сразу делает птицу игрушечной */
-    sphere(M,vAdd(p,vMul(n,0.024)),0.062,12,{m:2,t:1,col:()=>C.eye});
+    sphere(M,vAdd(p,vMul(n,0.022)),0.066,12,{m:2,t:1,col:()=>C.eye});
     /* радужка почти чёрная: на листе тёплого в ней ровно на догадку. Кольцо
        амбером во всю радужку читалось неоновой линзой */
     /* радужка: тонкий тёплый ободок ПО КРАЮ яблока, а не диск поверх него.
        Без него зрачок занимает весь глаз и взгляд пропадает */
     /* радужка и зрачок ВЫНЕСЕНЫ за поверхность яблока: утопленные внутрь
        сферы они не видны вовсе, и глаз читается чёрной пуговицей */
-    disc(M,vAdd(p,vMul(n,0.078)),n,0.040,20,{m:2,t:1,
+    disc(M,vAdd(p,vMul(n,0.082)),n,0.044,20,{m:2,t:1,
       col:(k)=>k?vLerp(C.eye,C.amberD,.16):C.eye});
-    disc(M,vAdd(p,vMul(n,0.083)),n,0.030,16,{m:2,t:1,col:()=>C.eye});
+    disc(M,vAdd(p,vMul(n,0.088)),n,0.031,16,{m:2,t:1,col:()=>C.eye});
     /* складка над глазом: узкий тёмный полумесяц. Без неё глаз — пуговица,
        пришитая к голове, а не глаз в веке */
     {
@@ -1150,10 +1159,11 @@ const normalAt=(t,a)=>bodyNormal(t,a);
    клюва — перья должны наезжать на его основание, иначе между рогом и
    оперением остаётся тёмная щель, как будто клюв приклеили */
 const BEAK_BALLS=[
-  [0,1.812,0.108,0.086],[0,1.788,0.170,0.090],[0,1.752,0.240,0.086],
-  [0,1.716,0.300,0.078],[0,1.668,0.352,0.068],[0,1.668,0.190,0.080]
+  [0,1.812,0.100,0.108],[0,1.786,0.190,0.112],[0,1.744,0.290,0.104],
+  [0,1.690,0.380,0.090],[0,1.610,0.450,0.074],[0,1.652,0.150,0.100]
 ];
 const COAT_STAT={all:0,head:0,cut:0};
+const PLUME_STAT=[];
 function layoutCoat(rows,dens){
   const out=[],R=rnd(0x7b1d);
   const ROWS=rows||72,DENS=dens||142;
@@ -1182,7 +1192,7 @@ function layoutCoat(rows,dens){
       }
       if(!bare)for(const sx of [-1,1]){
         const d=Math.hypot(base[0]-sx*0.252,base[1]-1.758,base[2]-0.108);
-        if(d<0.080){bare=true;break;}
+        if(d<0.086){bare=true;break;}
       }
       if(bare){COAT_STAT.cut++;continue;}
       COAT_STAT.all++; if(base[1]>1.60)COAT_STAT.head++;
@@ -1233,25 +1243,31 @@ function layoutCoat(rows,dens){
    веер сходится в одну точку, а не рассыпается. */
 function layoutPlumes(){
   const out=[],R=rnd(0x51c3);
+  const mark=(s)=>{PLUME_STAT.push(s+":"+(out.length/FEA_STRIDE));};
   for(const sx of [-1,1]){
     const flip=a=>sx>0?a:Math.PI-a;
     /* маховые */
     const NP=11;
     for(let i=0;i<NP;i++){
       const k=i/(NP-1);
-      const t=mix(0.62,0.30,k),a=flip(mix(0.18,-0.26,k));
+      /* ОСНОВАНИЯ МАХОВЫХ — в узкий пучок у плеча. Пока они были размазаны по
+         всему боку, поворот вокруг одного плеча разбрасывал перья звездой:
+         у птицы маховые растут из кисти, а вдоль тела лежат только их концы */
+      const t=mix(0.60,0.51,k),a=flip(mix(0.16,0.00,k));
       const base=bodyAt(t,a),nrm=normalAt(t,a);
-      const tip=[sx*mix(0.22,0.07,k),mix(0.74,0.46,k),mix(-0.56,-1.10,k)];
+      /* маховые длиннее и УЖЕ прежних: в полёте на листе видно каждое перо
+         отдельно, а широкие короткие перья сливаются в лопасть с тупым краем */
+      const tip=[sx*mix(0.24,0.10,k),mix(0.74,0.44,k),mix(-0.62,-1.34,k)];
       const dir=vSub(tip,base),len=vLen(dir);
       feaPush(out,vAdd(base,vMul(nrm,0.008)),
         vNorm(vAdd(vNorm(dir),vMul(nrm,0.03))),nrm,
-        len,len*0.26,vLerp(BIRD_C.blue,BIRD_C.blueD,0.42+k*0.42),[0.6,0.14,t,1.0]);
+        len,len*0.185,vLerp(BIRD_C.blue,BIRD_C.blueD,0.42+k*0.42),[0.6,0.14,t,1.0]);
     }
     /* второстепенные: короче, выше, дают крылу толщину */
     const NS=9;
     for(let i=0;i<NS;i++){
       const k=i/(NS-1);
-      const t=mix(0.68,0.44,k),a=flip(mix(0.40,0.02,k));
+      const t=mix(0.66,0.56,k),a=flip(mix(0.34,0.10,k));
       const base=bodyAt(t,a),nrm=normalAt(t,a);
       const tip=[sx*mix(0.26,0.16,k),mix(0.86,0.66,k),mix(-0.40,-0.72,k)];
       const dir=vSub(tip,base),len=vLen(dir);
@@ -1264,8 +1280,8 @@ function layoutPlumes(){
        дуги, что маховые, и каждый следующий короче и темнее. */
     for(let r=0;r<2;r++)for(let i=0;i<11;i++){
       const k=i/10;
-      const t=mix(0.70,0.40,k)-r*0.010;
-      const a=flip(mix(0.30,-0.06,k)+r*0.13);
+      const t=mix(0.70,0.54,k)-r*0.010;
+      const a=flip(mix(0.30,0.06,k)+r*0.13);
       const base=bodyAt(t,a),nrm=normalAt(t,a);
       const tip=[sx*mix(0.24,0.12,k),mix(0.86,0.60,k)-r*0.04,mix(-0.34,-0.62,k)];
       const dir=vSub(tip,base),len=vLen(dir)*(0.92-r*0.10);
@@ -1273,6 +1289,34 @@ function layoutPlumes(){
       feaPush(out,vAdd(base,vMul(nrm,0.002)),
         vNorm(vAdd(vNorm(dir),vMul(nrm,0.10))),nrm,
         len,len*0.34,c,[0.8,0.16,t,1.0]);
+    }
+    /* ЗЕРКАЛО И КАЙМА. На листе у раскрытого крыла светлая внутренняя часть и
+       тёплая полоса по переднему краю — по ним крыло и читается крылом, а не
+       синей лопастью. Оба ряда лежат поверх кроющих и раскрываются вместе с
+       ними, потому что род пера у них тот же (1). */
+    for(let i=0;i<9;i++){
+      const k=i/8;
+      const t=mix(0.68,0.46,k);
+      const a=flip(mix(0.42,0.16,k));
+      const base=bodyAt(t,a),nrm=normalAt(t,a);
+      /* кайма — узкая ПОЛОСА по переднему краю, а не нагрудник: широкие перья
+         во весь бок закрывали собой всё крыло оранжевым щитом */
+      const tip=[sx*mix(0.30,0.22,k),mix(0.88,0.74,k),mix(-0.22,-0.34,k)];
+      const dir=vSub(tip,base),len=vLen(dir)*0.52;
+      feaPush(out,vAdd(base,vMul(nrm,0.010)),
+        vNorm(vAdd(vNorm(dir),vMul(nrm,0.16))),nrm,
+        len,len*0.30,vLerp(BIRD_C.amber,BIRD_C.amberD,0.20+k*0.45),[0.9,0.16,t,1.0]);
+    }
+    for(let i=0;i<8;i++){
+      const k=i/7;
+      const t=mix(0.62,0.44,k);
+      const a=flip(mix(0.24,0.02,k));
+      const base=bodyAt(t,a),nrm=normalAt(t,a);
+      const tip=[sx*mix(0.28,0.20,k),mix(0.80,0.66,k),mix(-0.36,-0.52,k)];
+      const dir=vSub(tip,base),len=vLen(dir)*0.66;
+      feaPush(out,vAdd(base,vMul(nrm,0.006)),
+        vNorm(vAdd(vNorm(dir),vMul(nrm,0.12))),nrm,
+        len,len*0.34,vLerp(BIRD_C.cream,BIRD_C.blueL,0.18+k*0.30),[0.9,0.16,t,1.0]);
     }
     /* ШТАНЫ: перья бедра свисают на цевку. Без них нога торчит из-под груди
        голой трубкой, а на листе она прикрыта почти до пятки. */
@@ -1290,8 +1334,8 @@ function layoutPlumes(){
        почти белой полосой, и она же не даёт крылу слиться с хвостом */
     for(let i=0;i<10;i++){
       const k=i/9;
-      const t=mix(0.66,0.42,k);
-      const a=flip(mix(0.34,0.00,k));
+      const t=mix(0.66,0.54,k);
+      const a=flip(mix(0.34,0.10,k));
       const base=bodyAt(t,a),nrm=normalAt(t,a);
       const tip=[sx*mix(0.26,0.14,k),mix(0.84,0.62,k),mix(-0.30,-0.56,k)];
       const dir=vSub(tip,base),len=vLen(dir)*0.62;
@@ -1309,6 +1353,7 @@ function layoutPlumes(){
       feaPush(out,base,dir,nrm,0.135-r*0.014,0.100-r*0.008,c,[1.0,0.10,t,0.0]);
     }
   }
+  mark("бока");
   /* хвост: длинный, слоёный, средняя пара длиннее всех.
      Перья слегка расходятся веером и лежат друг на друге — сложенный хвост
      это стопка, а не одна доска: первая сборка давала ровно доску. */
@@ -1325,6 +1370,7 @@ function layoutPlumes(){
     feaPush(out,vAdd(base,vMul(up,0.006*(5-Math.abs(i-5)))),dir,up,
       len,len*0.155,c,[0.55,0.10,0.05,2.0]);
   }
+  mark("хвост");
   /* хохол: длинные плюмажи широкой дугой. Цвет идёт по вееру — передние
      янтарные, средние кобальтовые, задние с фиалковым отливом: на листе
      породы хохол трёхцветный, и именно это делает его хохлом, а не гребнем. */
@@ -1346,6 +1392,7 @@ function layoutPlumes(){
     feaPush(out,q.base,q.dir,normalAt(0.96,Math.PI*1.5),q.len,q.len*0.155,
       c,[0.9,-0.26-s*0.16,1.0,3.0],(i%3-1)*0.26+((i%2)?0.12:-0.12));
   }
+  mark("хохол");
   return new Float32Array(out);
 }
 /* ── пыль в воздухе ──
@@ -1375,6 +1422,7 @@ function buildDust(n){
    шею, а не отрывается от неё. */
 const GL_RIG=`
 uniform float uHeadYaw,uHeadPitch,uHeadRoll,uBreath,uLean,uBow,uTime,uPuff,uBlink,uJaw;
+uniform float uFlap,uStretch,uFan,uCrest,uTuck,uStep,uHop,uTurn,uFootUp,uFootSide,uPeck,uHang;
 uniform vec3 uNeckP;
 mat3 rotAxis(vec3 ax,float a){
   float c=cos(a),s=sin(a),k=1.0-c;
@@ -1382,25 +1430,66 @@ mat3 rotAxis(vec3 ax,float a){
               ax.y*ax.x*k-ax.z*s, ax.y*ax.y*k+c, ax.y*ax.z*k+ax.x*s,
               ax.z*ax.x*k+ax.y*s, ax.z*ax.y*k-ax.x*s, ax.z*ax.z*k+c);
 }
-/* ── подвижные части головы ──
-   Веко и подклювье — единственные два сустава, кроме шеи. Оба сделаны без
-   костей: вершина знает свой материал, и по нему решает, вокруг чего ей
-   поворачиваться. Веко собрано ЗАКРЫТЫМ и откинуто назад — так его нулевое
-   положение точно совпадает с глазом, а не «почти». */
-void partJoints(inout vec3 p, inout vec3 n, float m){
-  /* ус: качка по своей доле вдоль нити (дробная часть материала). Амплитуда
-     растёт квадратом — корень стоит, кончик ходит, и бусина на нём. Две
-     несоизмеримые частоты, чтобы качание не читалось метрономом. */
+/* ── суставы оперения ──
+   Крыло, хвост и хохол — три поворота, без которых повадки из игры нечем
+   играть: «хлопнуть крыльями», «веер хвостом», «вскинуть хохол» опираются
+   именно на них. Ось крыла — плечо, хвоста — его корень, хохла — темя.
+   Считается ДО поворота головы и корпуса: сустав локальный, поза общая. */
+const vec3 SHOULDER=vec3(0.20,1.16,-0.06);
+const vec3 TAILROOT=vec3(0.0,0.56,-0.62);
+const vec3 CROWN=vec3(0.0,1.80,-0.02);
+void crestTurn(inout vec3 p, inout vec3 n){
+  mat3 R=rotAxis(vec3(1.0,0.0,0.0),-uCrest*0.62);
+  p=CROWN+R*(p-CROWN); n=R*n;
+}
+void plumeJoints(inout vec3 p, inout vec3 n, float kind, float sx, float tSpine){
+  if(kind>0.5&&kind<1.5){
+    vec3 sh=vec3(sx*SHOULDER.x,SHOULDER.y,SHOULDER.z);
+    /* Ось РАСКРЫТИЯ — вертикальная: сложенное крыло лежит вдоль тела назад, а
+     раскрытое смотрит вбок, то есть перо надо повернуть из -Z в +X. Поворот
+     вокруг Z, который стоял здесь сначала, почти не двигает перья, лежащие
+     вдоль Z, — крыло просто пропадало внутри тела. Подъём добавляется вторым
+     поворотом, уже вокруг Z. */
+    /* ВЕЕР КРЫЛА: чем дальше перо от плеча по хребту, тем сильнее оно
+       отводится. Без этого раскрытое крыло — одна лопасть, а на листе
+       породы в полёте видно каждое маховое отдельно. */
+    /* Крыло раскрывается ЦЕЛИКОМ одним поворотом, и только поверх него идёт
+       веер — небольшой доворот в плоскости самого крыла, свой у каждого пера.
+       Когда веером двигали основной угол, дальние перья уходили вверх-вперёд
+       и крыло накрывало голову. */
+    float ord=clamp((0.66-tSpine)*3.0,0.0,1.0);
+    float open=uFlap*0.85+uStretch*0.55;
+    float sprd=open+(ord-0.5)*0.30*open;
+    mat3 R=rotAxis(vec3(0.0,0.0,1.0),sx*uFlap*0.42)
+          *rotAxis(vec3(0.0,1.0,0.0),-sx*sprd);
+    p=sh+R*(p-sh); n=R*n;
+  }else if(kind>1.5&&kind<2.5){
+    /* веер: перо отводится тем сильнее, чем дальше оно от середины хвоста */
+    float lat=clamp(p.x*2.4,-1.0,1.0);
+    /* раскрытый хвост не только расходится, но и ОПУСКАЕТСЯ: сложенный он
+       лежит за телом и в вееере остаётся за ним же, если его не увести вниз */
+    mat3 R=rotAxis(vec3(0.0,1.0,0.0),-lat*uFan*0.62)
+          *rotAxis(vec3(1.0,0.0,0.0),uFan*0.30);
+    p=TAILROOT+R*(p-TAILROOT); n=R*n;
+  }else if(kind>2.5){
+    crestTurn(p,n);
+  }
+}
+/* ── подвижные части головы и лап ──
+   Веко, подклювье, ус и поджатая лапа. Все без костей: вершина знает свой
+   материал и по нему решает, вокруг чего ей поворачиваться. */
+void partJoints(inout vec3 p, inout vec3 n, float m, float t){
   if(m>=9.5){
+    /* ус: качка по своей доле вдоль нити (дробная часть материала). Фаза
+       ступенчатая по |x| — у нити и бусины координаты вершин разные, и от
+       плавной фазы бусина уезжала в сторону от кончика. */
     float s=m-10.0;
-    /* Фаза ступенчатая по |x|: у нити и её бусины координаты вершин разные, и
-       от плавной фазы бусина уезжала в сторону от кончика. Ступень крупная —
-       кончик и бусина всегда попадают в одну. */
     float ph=sign(p.x)*1.7+floor(abs(p.x)*4.0)*1.3;
     float amp=s*s*0.085;
     p.x+=sin(uTime*1.9+ph)*amp;
     p.y+=sin(uTime*2.7+ph*1.7)*amp*0.55;
     p.z+=cos(uTime*1.5+ph*0.8)*amp*0.60;
+    if(t>0.5)crestTurn(p,n);      /* усы хохла едут с хохлом, хвостовые — нет */
     return;
   }
   if(m>7.5&&m<8.5){
@@ -1408,17 +1497,34 @@ void partJoints(inout vec3 p, inout vec3 n, float m){
     mat3 R=rotAxis(vec3(1.0,0.0,0.0),-(1.0-uBlink)*1.55);
     p=c+R*(p-c); n=R*n;
   }else if(m>8.5){
-    vec3 h=vec3(0.0,1.682,0.112);
+    vec3 h=vec3(0.0,1.672,0.100);
     mat3 R=rotAxis(vec3(1.0,0.0,0.0),uJaw);
     p=h+R*(p-h); n=R*n;
+  }else if(m>3.5&&m<4.5||m>6.5&&m<7.5){
+    /* поджатая лапа: поворачивается ОДНА, та, что назначена. Птица стоит на
+       одной ноге чаще, чем на двух, и без этого половина повадок пропадает */
+    if(sign(p.x)==uFootSide&&uFootUp>0.001){
+      vec3 hip=vec3(sign(p.x)*0.14,0.62,-0.08);
+      mat3 R=rotAxis(vec3(1.0,0.0,0.0),uFootUp*1.15);
+      p=hip+R*(p-hip); n=R*n;
+    }
   }
 }
 /* t — положение вдоль хребта (0 хвост, 1 темя); для частей, у которых своего t
-   нет (клюв, хохол), передаётся единица: они едут с головой целиком */
+   нет (клюв, хохол), передаётся единица: они едут с головой целиком.
+   Отрицательное t — геометрия, которая не едет вовсе (жёрдочка). */
 void rigApply(inout vec3 p, inout vec3 n, float t){
+  if(t<0.0)return;
   float bw=smoothstep(0.15,0.60,t)*smoothstep(1.0,0.72,t);
   p+=n*(uBreath*bw+uPuff*(0.35+0.65*bw));
+  /* ── голова ──
+     Втянуть (tuck) и клюнуть (peck) идут ДО поворота: втянутая голова
+     поворачивается вокруг того же места, что и вытянутая, иначе на каждой
+     сонной повадке шея ломается вбок. */
   float w=smoothstep(0.66,0.92,t);
+  p.y-=uTuck*0.115*w;
+  p.z-=uTuck*0.055*w;
+  p.z+=uPeck*0.095*w;
   mat3 R=rotAxis(vec3(0.0,1.0,0.0),uHeadYaw*w)
         *rotAxis(vec3(1.0,0.0,0.0),uHeadPitch*w)
         *rotAxis(vec3(0.0,0.0,1.0),uHeadRoll*w);
@@ -1427,6 +1533,23 @@ void rigApply(inout vec3 p, inout vec3 n, float t){
   vec3 hip=vec3(0.0,0.62,-0.30);
   mat3 B=rotAxis(vec3(1.0,0.0,0.0),uLean+uBow*smoothstep(0.1,0.9,t));
   p=hip+B*(p-hip); n=B*n;
+  /* ── вся птица ──
+     Подскок поднимает корпус, но не лапы: они остаются на ветке и тянутся.
+     Шаг и разворот едут целиком, включая лапы, — ветка стоит (t<0). */
+  p.y+=uHop*smoothstep(0.02,0.24,t);
+  p.x+=uStep;
+  if(abs(uTurn)>0.0005){
+    vec3 c=vec3(uStep,0.62,-0.10);
+    mat3 T=rotAxis(vec3(0.0,1.0,0.0),uTurn*6.2831853);
+    p=c+T*(p-c); n=T*n;
+  }
+  /* вис вниз головой: птица поворачивается вокруг САМОЙ ЖЁРДОЧКИ, держась за
+     неё лапами. Поэтому ось — ось ветки, а не что-нибудь внутри тела */
+  if(uHang>0.001){
+    vec3 c=vec3(uStep,0.150,-0.040);
+    mat3 H=rotAxis(vec3(1.0,0.0,0.0),uHang*3.1415927);
+    p=c+H*(p-c); n=H*n;
+  }
 }`;
 
 /* ── общая часть фрагментных программ: свет ── */
@@ -1515,7 +1638,7 @@ out vec3 vP,vN,vC;
 out vec2 vTA;
 void main(){
   vec3 pp=p,nn=n;
-  partJoints(pp,nn,ta.y);
+  partJoints(pp,nn,ta.y,ta.x);
   rigApply(pp,nn,ta.x);
   vP=pp;vN=normalize(nn);vC=c;vTA=ta;
   gl_Position=uVP*vec4(pp,1.0);
@@ -1555,7 +1678,7 @@ void main(){
        внутри клюва, потому что сечение наклонено. Пятно ложится ровно там,
        где нужно, и стоит ноль вершин */
     float nz=1.0-smoothstep(0.012,0.030,
-      length(vec3((abs(vP.x)-0.048)*1.0,(vP.y-1.762)*0.80,(vP.z-0.222)*0.70)));
+      length(vec3((abs(vP.x)-0.056)*1.0,(vP.y-1.766)*0.80,(vP.z-0.218)*0.70)));
     alb=mix(alb,vec3(0.018,0.014,0.018),nz*0.95);
     rough=mix(rough,0.7,nz);
     float grooves=sin(vP.y*54.0+vP.z*16.0)*0.5+0.5;
@@ -1617,7 +1740,7 @@ layout(location=2) in vec2 ta;
 uniform mat4 uVP;
 void main(){
   vec3 pp=p,nn=n;
-  partJoints(pp,nn,ta.y);
+  partJoints(pp,nn,ta.y,ta.x);
   rigApply(pp,nn,ta.x);
   gl_Position=uVP*vec4(pp,1.0);
 }`;
@@ -1709,6 +1832,9 @@ void main(){
      отличается впятеро, и обычный поворот дал бы нормаль набок */
   vec3 wn=normalize(cx*(n.x/(sx*sx))+cy*(n.y/(sy*sy))+cz*(n.z/(sz*sz)));
   vec3 wt=cz/max(sz,1e-5);
+  /* сустав оперения (крыло/хвост/хохол) — до общей позы: он локальный */
+  float sxw=r0.w<0.0?-1.0:1.0;
+  plumeJoints(wp,wn,ipar.w,sxw,ipar.z);
   rigApply(wp,wn,ipar.z);
   /* стержень поворачивается вместе с пером: тангенс нужен блику */
   vec3 dummy=wt; vec3 dn=wt; vec3 dp=wp;
@@ -1777,6 +1903,7 @@ uniform mat4 uVP;
 out vec3 vP,vN,vC;
 void main(){
   vec3 pp=p,nn=n;
+  partJoints(pp,nn,tm.y,tm.x);
   rigApply(pp,nn,tm.x);
   vP=pp;vN=normalize(nn);vC=c;
   gl_Position=uVP*vec4(pp,1.0);
@@ -1876,17 +2003,32 @@ void main(){
 
 /* ===== 40-pose.js ===== */
 /* ══════════════ поза и жизнь ══════════════
-   Как в игре: не «кадры анимации», а затухающие пружины. Повадка (41-acts)
-   выставляет цели, пружины сами доводят до них и сами возвращают в покой —
-   застрять на кадре невозможно, потому что кадров нет.
+   Устройство то же, что у птицы в игре (src/12y, 12z): не «кадры анимации», а
+   ЦЕЛИ и затухающие пружины. Повадка (41-acts) каждый кадр выставляет цели,
+   пружины сами доводят до них и сами возвращают в покой — застрять на кадре
+   невозможно, потому что кадров нет, а прервать повадку можно в любой момент.
+
+   Степени свободы взяты один в один из игровой таблицы повадок, иначе
+   переносить её нечем: look, roll, bow, tuck, step, footUp, stretch, fan,
+   flap, hop, crest, ruff, shiver, turn, peck, beak, yawn, blink.
 
    Мелкая рябь, дыхание и моргание идут ВСЕГДА и поверх всего: повадка — то,
    что птица делает; рябь — то, что с ней происходит. */
-const POSE={t:0,yaw:0,pitch:0,roll:0,breath:0,puff:0,lean:0,bow:0,ruffle:0.012,
-  jaw:0,blink:0,blinkAt:2.2,
-  yawV:0,pitchV:0,rollV:0,bowV:0,jawV:0,
-  yawT:0,pitchT:0,rollT:0,bowT:0,jawT:0,puffAdd:0,ruffleAdd:0,blinkHold:0,
-  nextLook:1.5,still:0};
+const POSE={t:0,
+  /* голова */
+  yaw:0,pitch:0,roll:0,yawV:0,pitchV:0,rollV:0,yawT:0,pitchT:0,rollT:0,
+  /* корпус */
+  bow:0,bowV:0,bowT:0, lean:0, breath:0, puff:0, tuck:0,tuckV:0,tuckT:0,
+  hop:0,hopV:0, step:0,stepV:0,stepT:0, turn:0,turnV:0,turnT:0,
+  /* оперение */
+  flap:0,flapV:0,flapT:0, stretch:0,stretchV:0,stretchT:0,
+  fan:0,fanV:0,fanT:0, crest:0,crestV:0,crestT:0, ruffle:0.012,ruffleAdd:0,shiver:0,
+  /* лапы, клюв, глаз */
+  footUp:0,footUpV:0,footUpT:0, footSide:1,
+  jaw:0,jawV:0,jawT:0, peck:0, blink:0,blinkAt:2.2,blinkHold:0,
+  /* настроение: то же, что в игре — взвинчена, сонная */
+  mad:0, sleep:0,
+  nextLook:1.5, still:0, puffAdd:0};
 
 function spring(v,vel,k,d,dt){vel+=-v*k*dt;vel*=Math.pow(d,dt*60);return [v+vel*dt,vel];}
 /* пружина К ЦЕЛИ: считается по отклонению, поэтому цель можно двигать каждый
@@ -1899,7 +2041,12 @@ function springTo(v,vel,tgt,k,d,dt){
 function poseStep(dt){
   POSE.t+=dt;
   const T=POSE.t;
-  if(typeof actsStep==="function")actsStep();
+  /* цели обнуляются каждый кадр: их выставляет только текущая повадка, и
+     «залипшая» цель от прошлой — самый частый способ сломать покой */
+  POSE.jawT=0;POSE.bowT=0;POSE.tuckT=0;POSE.stepT=0;POSE.footUpT=0;
+  POSE.stretchT=0;POSE.fanT=0;POSE.crestT=0;POSE.turnT=0;POSE.flapT=0;
+  POSE.puffAdd=0;POSE.ruffleAdd=0;POSE.blinkHold=0;POSE.peck*=Math.pow(.86,dt*60);
+  if(typeof actsStep==="function")actsStep(dt);
   /* дыхание: два вдоха в пять секунд, и амплитуда такая, что заметно только
      одно — птица не стоит */
   POSE.breath=Math.sin(T*2.4)*0.006+Math.sin(T*0.7)*0.003;
@@ -1916,110 +2063,269 @@ function poseStep(dt){
   [POSE.pitch,POSE.pitchV]=springTo(POSE.pitch,POSE.pitchV,POSE.pitchT,60,.86,dt);
   [POSE.roll,POSE.rollV]=springTo(POSE.roll,POSE.rollV,POSE.rollT,52,.87,dt);
   [POSE.bow,POSE.bowV]=springTo(POSE.bow,POSE.bowV,POSE.bowT,40,.88,dt);
+  [POSE.tuck,POSE.tuckV]=springTo(POSE.tuck,POSE.tuckV,POSE.tuckT,34,.88,dt);
+  [POSE.step,POSE.stepV]=springTo(POSE.step,POSE.stepV,POSE.stepT,26,.86,dt);
+  [POSE.turn,POSE.turnV]=springTo(POSE.turn,POSE.turnV,POSE.turnT,30,.87,dt);
+  [POSE.stretch,POSE.stretchV]=springTo(POSE.stretch,POSE.stretchV,POSE.stretchT,42,.87,dt);
+  [POSE.fan,POSE.fanV]=springTo(POSE.fan,POSE.fanV,POSE.fanT,50,.86,dt);
+  [POSE.footUp,POSE.footUpV]=springTo(POSE.footUp,POSE.footUpV,POSE.footUpT,44,.86,dt);
   /* челюсть жёстче и суше остальных: клюв не качается, он щёлкает */
   [POSE.jaw,POSE.jawV]=springTo(POSE.jaw,POSE.jawV,Math.max(POSE.jawT,POSE.jawHold||0),220,.72,dt);
-  /* моргание врозь: своё время, поверх любой повадки; зевок держит глаз
-     прикрытым, поэтому blinkHold складывается, а не спорит */
+  /* КРЫЛО, ХОХОЛ, ПОДСКОК — свободные пружины к нулю, как в игре: повадка
+     бьёт по скорости (flapV+=13), а не ставит значение. Так «хлопнуть
+     крыльями» получается ударом, а не плавным подъёмом. */
+  /* стенд: зажатая адресом степень свободы перебивает повадку */
+  for(const k of ["flap","stretch","fan","crest","tuck","footUp","bow"])
+    if(POSE[k+"Hold"]!==undefined)POSE[k+"T"]=POSE[k+"Hold"];
+  if(POSE.hangHold!==undefined)POSE.hangT=POSE.hangHold;
+  if(POSE.turnHold!==undefined)POSE.turnT=POSE.turnHold;
+  [POSE.flap,POSE.flapV]=springTo(POSE.flap,POSE.flapV,POSE.flapT,150,.86,dt);
+  [POSE.crest,POSE.crestV]=springTo(POSE.crest,POSE.crestV,POSE.crestT,60,.90,dt);
+  [POSE.hop,POSE.hopV]=spring(POSE.hop,POSE.hopV,110,.87,dt);
+  /* подскок идёт от крыла: птица машет всем телом, а не одним крылом */
+  if(POSE.flapV>0)POSE.hopV+=POSE.flapV*0.045*dt*60;
+  /* моргание врозь: своё время, поверх любой повадки */
   if(POSE.blink>0)POSE.blink=Math.max(0,POSE.blink-dt*7.5);
   if(!POSE.still&&T>POSE.blinkAt){POSE.blink=1;POSE.blinkAt=T+1.5+Math.random()*4.5;}
   POSE.blinkNow=clamp(Math.max(POSE.blink,POSE.blinkHold||0),0,1);
   POSE.puff*=Math.pow(.92,dt*60);
-  POSE.ruffle=0.012+POSE.puff*1.6+(POSE.ruffleAdd||0);
-  POSE.puffShow=POSE.puff+(POSE.puffAdd||0);
-  POSE.lean=Math.sin(T*0.53)*0.012;
+  POSE.shiver*=Math.pow(.90,dt*60);
+  /* дрожь идёт поверх ряби, как в игре: частая мелкая тряска по оперению */
+  POSE.ruffle=0.012+POSE.puff*1.6+POSE.ruffleAdd+POSE.shiver*0.05;
+  POSE.puffShow=POSE.puff+POSE.puffAdd;
+  POSE.lean=Math.sin(T*0.53)*0.012+POSE.shiver*Math.sin(T*47)*0.02;
+  /* настроение стынет само: злость держится секунд восемь, сон копится */
+  POSE.mad*=Math.pow(.9975,dt*60);
+  if(!POSE.still)POSE.sleep=clamp(POSE.sleep+dt*0.0032-POSE.mad*dt*0.4,0,1);
 }
 
 /* ===== 41-acts.js ===== */
 /* ══════════════ повадки ══════════════
-   То же устройство, что у птицы в игре (src/12z): повадка не анимация, а
-   короткий заход, который выставляет ЦЕЛИ, а доводят до них пружины. Поэтому
-   повадку можно прервать в любом кадре и ничего не сломается, а две подряд
-   одинаковыми не выглядят — пружина стартует из другого места.
+   Таблица перенесена из игры (src/12z-parrot-acts) один в один: те же названия,
+   веса, длительности и настроения. Разница только в том, во что они упираются:
+   в игре это степени свободы двумерного рисунка, здесь — суставы модели.
 
-   ПРАВИЛО: повадка — то, что птица делает; рябь по оперению, дыхание и
-   моргание идут ВСЕГДА и поверх неё. Смешивать их нельзя, иначе живое
-   получается только в момент повадки, а между ними стоит чучело. */
-const ACTS=[
-  {id:"осмотреться",dur:2.6,w:3,run(p){
-    const s=this.side;
-    POSE.yawT=Math.sin(p*Math.PI)*0.85*s;
-    POSE.pitchT=Math.sin(p*Math.PI)*-0.10;
-    POSE.rollT=Math.sin(p*Math.PI)*0.16*s;
-  }},
-  {id:"наклонить голову",dur:2.2,w:2,run(p){
-    const k=parBell(p);
-    POSE.rollT=k*0.62*this.side;
-    POSE.yawT=k*0.22*this.side;
-  }},
-  {id:"чистить перо",dur:3.4,w:3,run(p){
-    /* птица достаёт клювом плечо: голова уходит вниз и вбок, и там мелко
-       работает — не плавная дуга, а частые короткие движения */
-    const k=parHold(p,.22,.22),s=this.side;
-    POSE.yawT=k*1.15*s;
-    POSE.pitchT=k*(0.62+Math.sin(p*46)*0.06);
-    POSE.rollT=k*0.30*s;
-    POSE.jawT=k*(0.12+Math.max(0,Math.sin(p*38))*0.10);
-    POSE.ruffleAdd=k*0.020;
-  }},
-  {id:"встряхнуться",dur:1.5,w:2,run(p){
-    const k=parBell(p);
-    POSE.puffAdd=k*0.030;
-    POSE.ruffleAdd=k*0.075;
-    POSE.rollT=Math.sin(p*34)*k*0.16;
-    POSE.yawT=Math.sin(p*27)*k*0.12;
-  }},
-  {id:"зевнуть",dur:2.4,w:1,run(p){
-    const k=parHold(p,.35,.35);
-    POSE.jawT=k*0.42;
-    POSE.pitchT=-k*0.30;
-    POSE.blinkHold=k;
-  }},
-  {id:"поклониться",dur:2.0,w:2,run(p){
-    const k=Math.sin(p*Math.PI*2)*Math.sin(p*Math.PI);
-    POSE.bowT=k*0.16;
-    POSE.pitchT=k*0.34;
-  }},
-  {id:"потянуться",dur:2.6,w:1,run(p){
-    const k=parHold(p,.30,.40);
-    POSE.puffAdd=k*0.022;
-    POSE.pitchT=-k*0.22;
-    POSE.bowT=-k*0.10;
-    POSE.ruffleAdd=k*0.030;
-  }},
-  {id:"поболтать",dur:2.8,w:2,run(p){
-    /* трепло на то и трепло: клюв работает, голова кивает в такт */
-    const k=parHold(p,.15,.25),ch=Math.max(0,Math.sin(p*30));
-    POSE.jawT=k*ch*0.30;
-    POSE.pitchT=k*ch*0.12-k*0.05;
-    POSE.yawT=k*Math.sin(p*7)*0.16;
-  }}
-];
+   ПРАВИЛО (оттуда же): повадка не анимация, а короткий заход, который каждый
+   кадр выставляет ЦЕЛИ. Доводят до целей пружины, поэтому повадку можно
+   оборвать в любом кадре и ничего не сломается. Часть повадок бьёт по
+   СКОРОСТИ (flapV, hopV, crestV) — так «хлопнуть крыльями» выходит ударом, а
+   не плавным подъёмом.
+
+   Настроения те же три: покой, взвинчена (x) — только когда её задели, сонная
+   (s) — копится сама и сбрасывается тычком. */
 function parBell(p){return Math.sin(clamp(p,0,1)*Math.PI);}
-/* ровное «плато» с мягким входом и выходом: повадка держится, а не мигает */
 function parHold(p,in_,out){
+  in_=in_===undefined?.25:in_; out=out===undefined?in_:out;
   if(p<in_)return smooth(0,1,p/in_);
   if(p>1-out)return smooth(0,1,(1-p)/out);
   return 1;
 }
-const ACT={cur:null,t0:0,next:2.0,last:""};
-function actsStep(){
+/* шаг в игре считался в пикселях; здесь — в единицах птицы */
+const STEP_K=0.0055;
+
+const ACTS=[
+/* ── осмотреться и переступить: из этого состоит покой ── */
+{ru:"осмотреться",w:9,d:2.6,m:"",f:(p,S)=>{POSE.yawT=Math.sin(p*6.283)*0.80;}},
+{ru:"наклон головы",w:9,d:2.2,m:"",f:(p,S)=>{
+  if(!S.s)S.s=Math.random()<.5?-1:1;
+  POSE.rollT=parBell(p)*0.62*S.s;}},
+{ru:"долгий наклон",w:5,d:3.4,m:"c",f:(p,S)=>{
+  POSE.rollT=parHold(p,.22,.3)*.62;POSE.yawT=.30;}},
+{ru:"переступить",w:8,d:1.9,m:"",f:(p,S)=>{
+  if(!S.d)S.d=(Math.random()<.5?-1:1)*(8+Math.random()*16);
+  POSE.stepT=parHold(p,.3,.3)*S.d*STEP_K;POSE.footUpT=parBell(p)*.5;}},
+{ru:"пройтись по жёрдочке",w:4,d:3.6,m:"",f:(p,S)=>{
+  if(!S.d)S.d=(Math.random()<.5?-1:1)*(22+Math.random()*14);
+  POSE.stepT=Math.sin(p*3.14159)*S.d*STEP_K;
+  POSE.footUpT=Math.abs(Math.sin(p*12.5))*.45;POSE.shiver=Math.abs(Math.sin(p*12.5))*.10;}},
+{ru:"переминаться",w:6,d:2.4,m:"",f:(p,S)=>{
+  POSE.stepT=Math.sin(p*9.4)*4*STEP_K;POSE.footUpT=Math.abs(Math.sin(p*9.4))*.4;}},
+/* ── уход за собой: то, чем птица занята большую часть суток ── */
+{ru:"поджать лапу",w:7,d:4.5,m:"",f:(p,S)=>{
+  POSE.footUpT=parHold(p,.12,.14);POSE.tuckT=parHold(p)*.35;}},
+{ru:"сменить лапу",w:4,d:3.2,m:"",f:(p,S)=>{
+  if(!S.o&&p>.5){S.o=1;POSE.footSide=-POSE.footSide;}
+  POSE.footUpT=p<.45?parHold(p/.45,.2,.2):(p>.55?parHold((p-.55)/.45,.2,.2):0);}},
+{ru:"потянуть крыло",w:6,d:2.4,m:"",f:(p,S)=>{
+  POSE.stretchT=parBell(p);POSE.fanT=parBell(p)*.4;POSE.flapT=parBell(p)*.25;}},
+{ru:"потянуться целиком",w:4,d:3.0,m:"",f:(p,S)=>{
+  POSE.stretchT=parHold(p,.3,.3);POSE.fanT=parHold(p,.3,.3)*.8;
+  POSE.flapT=parHold(p,.3,.3)*.45;
+  POSE.footUpT=parHold(p,.35,.35)*.7;POSE.jawT=parBell(p)*.35;}},
+{ru:"почесать голову",w:5,d:3.0,m:"",f:(p,S)=>{
+  /* лапа к щеке, голова — навстречу лапе, и мелкая тряска, пока чешет */
+  const h=parHold(p,.25,.25);
+  POSE.footUpT=h;POSE.tuckT=h*.55;POSE.rollT=h*.42*POSE.footSide;
+  POSE.shiver=h*.6+Math.sin(p*40)*h*.3;}},
+{ru:"чистить грудь",w:7,d:3.2,m:"",f:(p,S)=>{
+  POSE.bowT=parHold(p,.2,.2)*.50;POSE.rollT=Math.sin(p*15.7)*.18;
+  POSE.pitchT=parHold(p,.2,.2)*.55;
+  if(Math.random()<.14)POSE.peck=.6;}},
+{ru:"чистить хвост",w:4,d:3.4,m:"",f:(p,S)=>{
+  POSE.bowT=parHold(p,.22,.22)*.62;POSE.fanT=parHold(p,.25,.25)*.7;
+  POSE.yawT=parHold(p,.22,.22)*1.15*POSE.footSide;
+  POSE.rollT=Math.sin(p*12)*.22;}},
+{ru:"перебрать перо",w:6,d:2.9,m:"",f:(p,S)=>{
+  const h=parHold(p,.25,.25);
+  if(!S.s)S.s=Math.random()<.5?-1:1;
+  POSE.yawT=h*1.05*S.s;
+  POSE.pitchT=h*(.52+Math.sin(p*46)*.06);POSE.jawT=h*.14;
+  if(Math.random()<.10)POSE.peck=.5;}},
+{ru:"распушиться",w:6,d:2.0,m:"",f:(p,S)=>{
+  POSE.ruffleAdd+=parBell(p)*.055;POSE.puffAdd=parBell(p)*.030;POSE.tuckT=parBell(p)*.5;}},
+{ru:"встряхнуться",w:6,d:1.5,m:"",f:(p,S)=>{
+  POSE.shiver=parBell(p)*1.3;POSE.fanT=parBell(p)*.5;
+  if(!S.o&&p>.3){S.o=1;POSE.flapV+=6;POSE.crestV+=8;}}},
+{ru:"почистить клюв",w:5,d:2.6,m:"",f:(p,S)=>{
+  POSE.bowT=parHold(p,.2,.2)*.66;POSE.stepT=Math.sin(p*9)*3*STEP_K;
+  POSE.pitchT=parHold(p,.2,.2)*.62;
+  if(Math.random()<.22)POSE.peck=.8;}},
+{ru:"точить клюв",w:3,d:2.2,m:"",f:(p,S)=>{
+  POSE.bowT=parHold(p,.2,.2)*.55;POSE.pitchT=parHold(p,.2,.2)*.5;
+  POSE.jawT=Math.abs(Math.sin(p*25))*.28;}},
+/* ── крылья и прыжки: то, что видно через всё окно ── */
+{ru:"хлопнуть крыльями",w:6,d:1.4,m:"",f:(p,S)=>{
+  if(!S.o){S.o=1;POSE.flapV+=13;POSE.crestV+=6;}
+  POSE.fanT=parBell(p)*.6;}},
+{ru:"расправить и сложить",w:4,d:2.6,m:"",f:(p,S)=>{
+  POSE.flapT=parHold(p,.25,.35)*.85;POSE.stretchT=parHold(p,.25,.35)*.7;
+  POSE.fanT=parHold(p,.3,.3);}},
+{ru:"подпрыгнуть",w:4,d:1.6,m:"",f:(p,S)=>{
+  if(!S.o){S.o=1;POSE.hopV+=1.1;POSE.flapV+=9;}}},
+/* разворот: доля, а не сторона. Ноль — покой, единица — полный оборот */
+{ru:"развернуться",w:5,d:1.8,m:"",f:(p,S)=>{
+  POSE.turnT=parHold(p,.02,.02)*p;POSE.footUpT=parBell(p)*.4;
+  if(p>=1)POSE.turnT=0;}},
+{ru:"обернуться и назад",w:4,d:3.0,m:"",f:(p,S)=>{
+  POSE.turnT=parBell(p)*.30;POSE.yawT=Math.sin(p*6.283)*.6;}},
+{ru:"подскок с разворотом",w:3,d:2.0,m:"",f:(p,S)=>{
+  if(!S.o){S.o=1;POSE.hopV+=1.0;POSE.flapV+=11;}
+  POSE.turnT=parBell(p)*.35;}},
+{ru:"веер хвостом",w:5,d:1.8,m:"",f:(p,S)=>{POSE.fanT=parBell(p);}},
+{ru:"качнуть хвостом",w:5,d:1.6,m:"",f:(p,S)=>{
+  POSE.fanT=parBell(p)*.5;POSE.stepT=Math.sin(p*9.4)*2*STEP_K;}},
+/* ── общение с тем, кто смотрит ── */
+{ru:"поклон",w:5,d:1.9,m:"",f:(p,S)=>{POSE.bowT=parBell(p)*.62;POSE.crestT=parBell(p)*.4;}},
+{ru:"кивать",w:5,d:2.4,m:"",f:(p,S)=>{POSE.bowT=(1-Math.cos(p*18.8))*.20;}},
+{ru:"уставиться",w:6,d:3.8,m:"",f:(p,S)=>{
+  POSE.yawT=0;POSE.pitchT=0;POSE.tuckT=parHold(p,.3,.3)*.25;
+  if(!S.o){S.o=1;POSE.blinkAt=POSE.t+3.4;}}},
+{ru:"заглянуть вниз",w:5,d:2.2,m:"",f:(p,S)=>{
+  POSE.bowT=parHold(p,.3,.3)*.55;POSE.pitchT=parHold(p,.3,.3)*.55;}},
+{ru:"заглянуть вверх",w:4,d:2.2,m:"",f:(p,S)=>{
+  POSE.pitchT=parHold(p,.3,.3)*-.50;POSE.rollT=parHold(p,.3,.3)*-.30;}},
+{ru:"насторожиться",w:5,d:2.6,m:"",f:(p,S)=>{
+  if(!S.o){S.o=1;POSE.crestV+=14;}
+  POSE.tuckT=parHold(p,.15,.3)*.5;POSE.yawT=p<.5?-.7:.7;}},
+{ru:"щёлкнуть клювом",w:5,d:1.6,m:"",f:(p,S)=>{
+  POSE.jawT=Math.abs(Math.sin(p*18.8))*.42;
+  if(!S.o&&p>.2){S.o=1;POSE.peck=.7;}}},
+{ru:"бормотать",w:6,d:2.8,m:"",f:(p,S)=>{
+  POSE.jawT=(1-Math.cos(p*25))*.11;POSE.tuckT=parHold(p)*.2;
+  if(!S.o&&p>.25){S.o=1;if(Math.random()<.5)birdSay();}}},
+{ru:"повторить услышанное",w:4,d:2.4,m:"",f:(p,S)=>{
+  if(!S.o){S.o=1;POSE.crestV+=6;birdSay();}
+  POSE.jawT=parBell(p)*.38;POSE.bowT=parBell(p)*.20;}},
+{ru:"чихнуть",w:3,d:1.3,m:"",f:(p,S)=>{
+  if(p<=.35){POSE.rollT=-p*.9;POSE.pitchT=-p*.4;return;}
+  if(!S.o){S.o=1;POSE.shiver=1.4;POSE.flapV+=6;POSE.crestV+=9;}
+  POSE.bowT=parBell((p-.35)/.65)*.62;}},
+{ru:"кашлянуть",w:4,d:1.7,m:"",f:(p,S)=>{
+  POSE.bowT=Math.abs(Math.sin(p*9.4))*.38;POSE.jawT=Math.abs(Math.sin(p*9.4))*.30;}},
+{ru:"зевнуть",w:5,d:2.2,m:"",f:(p,S)=>{
+  POSE.jawT=parBell(p)*.52;POSE.pitchT=parBell(p)*-.26;POSE.blinkHold=parBell(p)*.9;}},
+/* ── взвинчена: только когда её задели ── */
+{ru:"вскинуть хохол",w:6,d:1.8,m:"x",f:(p,S)=>{if(!S.o){S.o=1;POSE.crestV+=22;}}},
+{ru:"хохол дыбом и осесть",w:5,d:3.0,m:"x",f:(p,S)=>{
+  POSE.crestT=parHold(p,.1,.45);POSE.ruffleAdd+=parBell(p)*.045;
+  POSE.yawT=Math.sin(p*9.4)*.7;}},
+{ru:"расхаживать",w:4,d:3.4,m:"x",f:(p,S)=>{
+  POSE.stepT=Math.sin(p*6.283)*20*STEP_K;POSE.crestT=parHold(p,.2,.2)*.6;
+  POSE.footUpT=Math.abs(Math.sin(p*18.8))*.4;}},
+{ru:"вспорхнуть на месте",w:3,d:2.2,m:"x",f:(p,S)=>{
+  if(!S.o){S.o=1;POSE.hopV+=1.4;POSE.flapV+=17;POSE.crestV+=10;}
+  POSE.fanT=parBell(p)*.9;POSE.stretchT=parBell(p)*.8;}},
+{ru:"огрызнуться",w:4,d:1.6,m:"x",f:(p,S)=>{
+  if(!S.o){S.o=1;POSE.peck=1;POSE.crestV+=12;}
+  POSE.jawT=parBell(p)*.52;POSE.bowT=parBell(p)*.34;}},
+{ru:"плясать",w:3,d:3.6,m:"x",f:(p,S)=>{
+  POSE.stepT=Math.sin(p*15.7)*9*STEP_K;POSE.bowT=(1-Math.cos(p*15.7))*.18;
+  POSE.crestT=parHold(p,.2,.2)*.7;POSE.footUpT=Math.abs(Math.sin(p*15.7))*.4;}},
+/* ── сонная: копится сама, сбрасывается тычком ── */
+{ru:"моргать медленно",w:7,d:3.2,m:"s",f:(p,S)=>{
+  POSE.tuckT=parHold(p,.3,.3)*.4;
+  if(Math.random()<.05){POSE.blink=1;POSE.blinkAt=POSE.t+1.2;}}},
+{ru:"клевать носом",w:6,d:4.2,m:"s",f:(p,S)=>{
+  POSE.bowT=(1-Math.cos(p*9.4))*.20;POSE.pitchT=(1-Math.cos(p*9.4))*.24;
+  POSE.tuckT=parHold(p,.2,.2)*.6;
+  if(Math.random()<.08)POSE.blink=1;}},
+{ru:"спрятать голову",w:5,d:6.5,m:"s",f:(p,S)=>{
+  POSE.tuckT=parHold(p,.14,.16);POSE.footUpT=parHold(p,.2,.2)*.9;
+  POSE.yawT=parHold(p,.2,.2)*1.35;
+  POSE.blinkHold=parHold(p,.2,.2);}},
+{ru:"дремать на одной лапе",w:4,d:7.5,m:"s",f:(p,S)=>{
+  POSE.tuckT=parHold(p,.12,.14)*.8;POSE.footUpT=parHold(p,.1,.1);
+  POSE.blinkHold=parHold(p,.18,.18)*.9;}},
+{ru:"проснуться",w:4,d:2.6,m:"s",f:(p,S)=>{
+  POSE.jawT=parBell(p)*.45;POSE.shiver=parBell(p)*.9;POSE.fanT=parBell(p)*.5;
+  POSE.stretchT=parBell(p)*.6;
+  if(!S.o&&p>.5){S.o=1;POSE.crestV+=8;POSE.sleep=0;}}},
+/* ── трюки: редкие по весу и по настроению ── */
+{ru:"повиснуть вниз головой",w:1,d:5.0,m:"c",f:(p,S)=>{
+  POSE.hangT=parHold(p,.22,.22);
+  POSE.fanT=parHold(p,.3,.3)*.5;POSE.crestT=parHold(p)*.4;}},
+{ru:"качнуться на висе",w:1,d:6.0,m:"c",f:(p,S)=>{
+  POSE.hangT=parHold(p,.18,.18);
+  POSE.turnT=Math.sin(p*12.5)*.05;POSE.fanT=parHold(p,.25,.25)*.7;}},
+{ru:"повисеть и вернуться",w:1,d:4.4,m:"c",f:(p,S)=>{
+  POSE.hangT=parBell(p);POSE.footUpT=parBell(p)*.5;
+  if(!S.o&&p>.5){S.o=1;POSE.flapV+=7;}}}
+];
+
+/* ── что она бормочет ──
+   Отдельная от игры птица ничего не слышала, и повторять ей нечего: в игре на
+   этом месте её собственная память (12x), здесь — честный шорох. Выдумывать за
+   неё слова нельзя, это то же враньё, что перк без кода. */
+const BIRD_IDLE=["…","кхх-кхх","чшшш","тк-тк-тк","кхе","пр-р-р"];
+function birdPick(a){return a[Math.floor(Math.random()*a.length)%a.length];}
+function birdSay(){
+  const el=document.getElementById("say");
+  if(!el)return;
+  el.textContent=birdPick(BIRD_IDLE);
+  el.classList.remove("on");void el.offsetWidth;el.classList.add("on");
+}
+
+/* ── жеребьёвка ──
+   Вес, настроение и запрет на повтор двух последних — как в игре. Без запрета
+   случайность выдаёт «переступить, переступить, переступить», и весь
+   репертуар пропадает зря именно тогда, когда на птицу смотрят. */
+const ACT={cur:null,t0:0,next:2.0,S:null,last:[]};
+function actMood(){
+  if(POSE.mad>.25)return "x";
+  if(POSE.sleep>.62)return "s";
+  return "";
+}
+function actsStep(dt){
+  POSE.hangT=0;
   const T=POSE.t;
-  POSE.jawT=0;POSE.bowT=0;POSE.puffAdd=0;POSE.ruffleAdd=0;POSE.blinkHold=0;
   if(ACT.cur){
-    const p=(T-ACT.t0)/ACT.cur.dur;
-    if(p>=1){ACT.cur=null;ACT.next=T+1.4+Math.random()*3.6;}
-    else{ACT.cur.run(p);return;}
+    const p=(T-ACT.t0)/ACT.cur.d;
+    if(p>=1){ACT.cur=null;ACT.next=T+0.9+Math.random()*2.6;}
+    else ACT.cur.f(clamp(p,0,1),ACT.S);
   }
-  if(POSE.still||T<ACT.next)return;
-  /* выбор с весами и без повторов подряд: одна и та же повадка дважды — это
-     уже не повадка, а тик */
-  let pool=ACTS.filter(a=>a.id!==ACT.last);
-  let sum=0;for(const a of pool)sum+=a.w;
-  let r=Math.random()*sum;
-  let pick=pool[0];
-  for(const a of pool){r-=a.w;if(r<=0){pick=a;break;}}
-  pick.side=Math.random()<.5?-1:1;
-  ACT.cur=pick;ACT.t0=T;ACT.last=pick.id;
+  if(!ACT.cur&&!POSE.still&&T>=ACT.next){
+    const mood=actMood();
+    /* «c» — спокойные трюки: их можно и в покое, но редко */
+    const pool=ACTS.filter(a=>(a.m===mood||a.m===""||(a.m==="c"&&mood===""))
+                              &&ACT.last.indexOf(a.ru)<0);
+    let sum=0;for(const a of pool)sum+=a.w;
+    let r=Math.random()*sum,got=pool[0];
+    for(const a of pool){r-=a.w;if(r<=0){got=a;break;}}
+    ACT.cur=got;ACT.t0=T;ACT.S={};
+    ACT.last.push(got.ru);if(ACT.last.length>2)ACT.last.shift();
+  }
+  /* вис — своя пружина: он двигает всю птицу вокруг жёрдочки */
+  POSE.hang=(POSE.hang||0)+((POSE.hangT||0)-(POSE.hang||0))*Math.min(1,dt*4.5);
 }
 
 /* ===== 50-render.js ===== */
@@ -2095,6 +2401,13 @@ function bindPose(P){
   glSet(P,"uHeadYaw",POSE.yaw);glSet(P,"uHeadPitch",POSE.pitch);glSet(P,"uHeadRoll",POSE.roll);
   glSet(P,"uBreath",POSE.breath);glSet(P,"uPuff",POSE.puffShow||0);
   glSet(P,"uBlink",POSE.blinkNow||0);glSet(P,"uJaw",POSE.jaw);
+  /* суставы: крыло, хвост, хохол, лапа, шаг, подскок, разворот, вис */
+  glSet(P,"uFlap",POSE.flap);glSet(P,"uStretch",POSE.stretch);
+  glSet(P,"uFan",POSE.fan);glSet(P,"uCrest",POSE.crest);
+  glSet(P,"uTuck",POSE.tuck);glSet(P,"uStep",POSE.step);
+  glSet(P,"uHop",POSE.hop);glSet(P,"uTurn",POSE.turn);
+  glSet(P,"uFootUp",POSE.footUp);glSet(P,"uFootSide",POSE.footSide);
+  glSet(P,"uPeck",POSE.peck);glSet(P,"uHang",POSE.hang||0);
   glSet(P,"uLean",POSE.lean);glSet(P,"uBow",POSE.bow);
   glSet(P,"uNeckP",[0,1.46,-0.04]);
   glSet(P,"uTime",POSE.t);
@@ -2201,6 +2514,9 @@ function blit(src,dst,add){
    ?q=low и ?q=high переключают руками — для проверки. */
 const QUAL={};
 function qualPick(){
+  /* Качество НЕ падает на ходу: птица одна на весь кадр, и разбираться, почему
+     она вдруг стала проще, игроку неоткуда. Телефон получает свой набор чисел
+     сразу и держит его до конца. */
   const q=new URLSearchParams(location.search).get("q");
   const m=q?q==="low":(innerWidth<=760||(navigator.maxTouchPoints||0)>1);
   QUAL.mobile=m;
@@ -2256,10 +2572,16 @@ function birdBoot(){
   if(Q.has("still"))POSE.still=1;
   /* стенд: ?jaw=0.4 держит клюв открытым — иначе нутро и язык нечем проверить */
   if(Q.has("jaw"))POSE.jawHold=+Q.get("jaw");
+  /* стенд поз: любую степень свободы можно зажать адресом и снять кадр —
+     ?flap=1&stretch=1 это «в полёте» с листа породы */
+  for(const k of ["flap","stretch","fan","crest","tuck","footUp","hang","turn","bow"])
+    if(Q.has(k))POSE[k+"Hold"]=+Q.get(k);
   if(Q.has("nobody"))R.noBody=1;
   if(Q.has("dbg")){
+    setTimeout(()=>console.log("поза: flap="+POSE.flap.toFixed(2)+" stretch="+POSE.stretch.toFixed(2)+
+      " fan="+POSE.fan.toFixed(2)+" crest="+POSE.crest.toFixed(2)+" hold="+JSON.stringify(POSE.flapHold)),2500);
     console.log("перья: корпус "+MESH.coat.inst+" (голова "+COAT_STAT.head+
-      ", срезано "+COAT_STAT.cut+") · крупные "+MESH.plumes.inst);
+      ", срезано "+COAT_STAT.cut+") · крупные "+MESH.plumes.inst+" ["+PLUME_STAT.join(" ")+"]");
     for(const s of [[0.95,Math.PI/2],[0.95,0],[0.98,Math.PI*1.5],[0.90,Math.PI],[0.5,Math.PI/2]])
       console.log("n("+s[0]+","+s[1].toFixed(2)+") = "+normalAt(s[0],s[1]).map(v=>v.toFixed(2))+
         "  p="+bodyAt(s[0],s[1]).map(v=>v.toFixed(2)));
@@ -2281,27 +2603,9 @@ function birdSize(){
   R.dpr=dpr;
   renderSize(w,h);
 }
-/* ── качество на ходу ──
-   Тир по ширине окна — догадка: бывает ноутбук с большим экраном и слабым
-   железом. Если кадр не держится, птица сама сбавляет плотность пикселей, а
-   потом лестницу свечения. Понижение одностороннее: качели «туда-сюда» на
-   границе хуже, чем чуть более простая картинка. */
-const ADAPT={t:0,drops:0};
-function adaptTick(dt){
-  if(ADAPT.drops>=2)return;
-  ADAPT.t+=dt;
-  if(ADAPT.t<3.0)return;
-  ADAPT.t=0;
-  if(birdFPS>=42)return;
-  ADAPT.drops++;
-  if(ADAPT.drops===1&&R.dpr>1.2){QUAL.dpr=Math.max(1.15,R.dpr-0.35);birdSize();}
-  else{R.bloomN=Math.max(3,R.bloomN-2);}
-}
-
 function birdFrame(ts){
   const dt=Math.min(.05,(ts-birdT0)/1000||.016);birdT0=ts;
   birdFPS+=((1/Math.max(dt,1e-3))-birdFPS)*.05;
-  adaptTick(dt);
   poseStep(dt);
   /* камера тоже на пружине: рывок мышью не должен рвать кадр */
   /* узкий экран: птица длиннее, чем широка, и в портрете хвост с хохлом
@@ -2344,17 +2648,59 @@ function birdHands(cv){
     e.preventDefault();
   },{passive:false});
 }
-function birdPoke(){
+/* ── тычок ──
+   Как в игре (12y, parrotPoke): зон несколько, и на каждую свой ответ, потому
+   что одинаковая реакция на любой клик — это кнопка, а не животное. Зона
+   считается лучом из курсора по нескольким шарам: точная геометрия тут не
+   нужна, нужна честная разница между «тронули хохол» и «тронули хвост». */
+const POKE_ZONES=[
+  {id:"crest",c:[0,2.05,-0.25],r:0.52},
+  {id:"beak", c:[0,1.66,0.34], r:0.26},
+  {id:"head", c:[0,1.75,0.03], r:0.40},
+  {id:"tail", c:[0,0.45,-1.05],r:0.55},
+  {id:"wing", c:[0,1.00,-0.35],r:0.55},
+  {id:"body", c:[0,0.95,-0.02],r:0.52}
+];
+function birdZoneAt(sx,sy){
+  /* экранная точка → луч в мире: обратная матрица вида-проекции, две точки */
+  const inv=mInv(R.VP),cv=document.getElementById("cv");
+  const rc=cv.getBoundingClientRect();
+  const x=((sx-rc.left)/rc.width)*2-1, y=1-((sy-rc.top)/rc.height)*2;
+  const un=(z)=>{
+    const o=[inv[0]*x+inv[4]*y+inv[8]*z+inv[12], inv[1]*x+inv[5]*y+inv[9]*z+inv[13],
+             inv[2]*x+inv[6]*y+inv[10]*z+inv[14]];
+    const w=inv[3]*x+inv[7]*y+inv[11]*z+inv[15];
+    return [o[0]/w,o[1]/w,o[2]/w];
+  };
+  const a=un(-1),b=un(1),d=vNorm(vSub(b,a));
+  let best=null,bd=1e9;
+  for(const z of POKE_ZONES){
+    const oc=vSub(z.c,a),tca=vDot(oc,d);
+    if(tca<0)continue;
+    const d2=vDot(oc,oc)-tca*tca;
+    if(d2>z.r*z.r)continue;
+    const th=Math.sqrt(z.r*z.r-d2),t0=tca-th;
+    if(t0<bd){bd=t0;best=z.id;}
+  }
+  return best;
+}
+function birdPoke(sx,sy){
   uiTouched();
+  const zone=birdZoneAt(sx,sy)||"body";
   /* Тычок обрывает повадку: животное, которое доигрывает начатое, пока его
-     трогают, — это заводная игрушка. Птица вскидывается, распушается и
-     смотрит на того, кто её тронул. */
-  ACT.cur=null;ACT.next=POSE.t+1.6;
-  POSE.puff=0.038;
-  POSE.pitchT=-0.16;POSE.yawT=(Math.random()-0.5)*0.5;
-  POSE.nextLook=POSE.t+1.4;
-  POSE.blink=1;
-  POSE.jawT=0.22;setTimeout(()=>{POSE.jawT=0;},160);
+     трогают, — это заводная игрушка. Дальше — ответ по зоне, ровно как в игре. */
+  ACT.cur=null;ACT.next=POSE.t+0.9;
+  POSE.sleep=0;
+  if(zone==="crest"){POSE.crestV+=26;POSE.mad=Math.min(1,POSE.mad+.5);POSE.blink=1;}
+  else if(zone==="beak"){POSE.peck=1;POSE.flapV+=5;POSE.jawT=.4;
+    POSE.mad=Math.min(1,POSE.mad+.35);birdSay();}
+  else if(zone==="head"){POSE.crestV+=8;POSE.yawT=(Math.random()-0.5)*1.2;POSE.blink=1;}
+  else if(zone==="tail"){POSE.flapV+=26;POSE.hopV+=0.5;POSE.crestV+=16;POSE.fanT=1;}
+  else if(zone==="wing"){POSE.flapV+=18;POSE.stretchT=0.8;POSE.crestV+=9;}
+  else {POSE.flapV+=15;POSE.crestV+=9;POSE.hopV+=0.3;POSE.puff=0.030;}
+  POSE.ruffle=0.06;
+  const el=document.getElementById("say");
+  if(el&&zone!=="beak"&&Math.random()<0.5)birdSay();
 }
 addEventListener("error",e=>fail("Сломалось: "+e.message+"\n"+(e.filename||"")+":"+(e.lineno||"")));
 if(document.readyState==="loading")addEventListener("DOMContentLoaded",birdBoot);else birdBoot();

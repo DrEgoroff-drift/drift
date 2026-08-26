@@ -11,6 +11,9 @@
    ?q=low и ?q=high переключают руками — для проверки. */
 const QUAL={};
 function qualPick(){
+  /* Качество НЕ падает на ходу: птица одна на весь кадр, и разбираться, почему
+     она вдруг стала проще, игроку неоткуда. Телефон получает свой набор чисел
+     сразу и держит его до конца. */
   const q=new URLSearchParams(location.search).get("q");
   const m=q?q==="low":(innerWidth<=760||(navigator.maxTouchPoints||0)>1);
   QUAL.mobile=m;
@@ -66,10 +69,16 @@ function birdBoot(){
   if(Q.has("still"))POSE.still=1;
   /* стенд: ?jaw=0.4 держит клюв открытым — иначе нутро и язык нечем проверить */
   if(Q.has("jaw"))POSE.jawHold=+Q.get("jaw");
+  /* стенд поз: любую степень свободы можно зажать адресом и снять кадр —
+     ?flap=1&stretch=1 это «в полёте» с листа породы */
+  for(const k of ["flap","stretch","fan","crest","tuck","footUp","hang","turn","bow"])
+    if(Q.has(k))POSE[k+"Hold"]=+Q.get(k);
   if(Q.has("nobody"))R.noBody=1;
   if(Q.has("dbg")){
+    setTimeout(()=>console.log("поза: flap="+POSE.flap.toFixed(2)+" stretch="+POSE.stretch.toFixed(2)+
+      " fan="+POSE.fan.toFixed(2)+" crest="+POSE.crest.toFixed(2)+" hold="+JSON.stringify(POSE.flapHold)),2500);
     console.log("перья: корпус "+MESH.coat.inst+" (голова "+COAT_STAT.head+
-      ", срезано "+COAT_STAT.cut+") · крупные "+MESH.plumes.inst);
+      ", срезано "+COAT_STAT.cut+") · крупные "+MESH.plumes.inst+" ["+PLUME_STAT.join(" ")+"]");
     for(const s of [[0.95,Math.PI/2],[0.95,0],[0.98,Math.PI*1.5],[0.90,Math.PI],[0.5,Math.PI/2]])
       console.log("n("+s[0]+","+s[1].toFixed(2)+") = "+normalAt(s[0],s[1]).map(v=>v.toFixed(2))+
         "  p="+bodyAt(s[0],s[1]).map(v=>v.toFixed(2)));
@@ -91,27 +100,9 @@ function birdSize(){
   R.dpr=dpr;
   renderSize(w,h);
 }
-/* ── качество на ходу ──
-   Тир по ширине окна — догадка: бывает ноутбук с большим экраном и слабым
-   железом. Если кадр не держится, птица сама сбавляет плотность пикселей, а
-   потом лестницу свечения. Понижение одностороннее: качели «туда-сюда» на
-   границе хуже, чем чуть более простая картинка. */
-const ADAPT={t:0,drops:0};
-function adaptTick(dt){
-  if(ADAPT.drops>=2)return;
-  ADAPT.t+=dt;
-  if(ADAPT.t<3.0)return;
-  ADAPT.t=0;
-  if(birdFPS>=42)return;
-  ADAPT.drops++;
-  if(ADAPT.drops===1&&R.dpr>1.2){QUAL.dpr=Math.max(1.15,R.dpr-0.35);birdSize();}
-  else{R.bloomN=Math.max(3,R.bloomN-2);}
-}
-
 function birdFrame(ts){
   const dt=Math.min(.05,(ts-birdT0)/1000||.016);birdT0=ts;
   birdFPS+=((1/Math.max(dt,1e-3))-birdFPS)*.05;
-  adaptTick(dt);
   poseStep(dt);
   /* камера тоже на пружине: рывок мышью не должен рвать кадр */
   /* узкий экран: птица длиннее, чем широка, и в портрете хвост с хохлом
@@ -154,17 +145,59 @@ function birdHands(cv){
     e.preventDefault();
   },{passive:false});
 }
-function birdPoke(){
+/* ── тычок ──
+   Как в игре (12y, parrotPoke): зон несколько, и на каждую свой ответ, потому
+   что одинаковая реакция на любой клик — это кнопка, а не животное. Зона
+   считается лучом из курсора по нескольким шарам: точная геометрия тут не
+   нужна, нужна честная разница между «тронули хохол» и «тронули хвост». */
+const POKE_ZONES=[
+  {id:"crest",c:[0,2.05,-0.25],r:0.52},
+  {id:"beak", c:[0,1.66,0.34], r:0.26},
+  {id:"head", c:[0,1.75,0.03], r:0.40},
+  {id:"tail", c:[0,0.45,-1.05],r:0.55},
+  {id:"wing", c:[0,1.00,-0.35],r:0.55},
+  {id:"body", c:[0,0.95,-0.02],r:0.52}
+];
+function birdZoneAt(sx,sy){
+  /* экранная точка → луч в мире: обратная матрица вида-проекции, две точки */
+  const inv=mInv(R.VP),cv=document.getElementById("cv");
+  const rc=cv.getBoundingClientRect();
+  const x=((sx-rc.left)/rc.width)*2-1, y=1-((sy-rc.top)/rc.height)*2;
+  const un=(z)=>{
+    const o=[inv[0]*x+inv[4]*y+inv[8]*z+inv[12], inv[1]*x+inv[5]*y+inv[9]*z+inv[13],
+             inv[2]*x+inv[6]*y+inv[10]*z+inv[14]];
+    const w=inv[3]*x+inv[7]*y+inv[11]*z+inv[15];
+    return [o[0]/w,o[1]/w,o[2]/w];
+  };
+  const a=un(-1),b=un(1),d=vNorm(vSub(b,a));
+  let best=null,bd=1e9;
+  for(const z of POKE_ZONES){
+    const oc=vSub(z.c,a),tca=vDot(oc,d);
+    if(tca<0)continue;
+    const d2=vDot(oc,oc)-tca*tca;
+    if(d2>z.r*z.r)continue;
+    const th=Math.sqrt(z.r*z.r-d2),t0=tca-th;
+    if(t0<bd){bd=t0;best=z.id;}
+  }
+  return best;
+}
+function birdPoke(sx,sy){
   uiTouched();
+  const zone=birdZoneAt(sx,sy)||"body";
   /* Тычок обрывает повадку: животное, которое доигрывает начатое, пока его
-     трогают, — это заводная игрушка. Птица вскидывается, распушается и
-     смотрит на того, кто её тронул. */
-  ACT.cur=null;ACT.next=POSE.t+1.6;
-  POSE.puff=0.038;
-  POSE.pitchT=-0.16;POSE.yawT=(Math.random()-0.5)*0.5;
-  POSE.nextLook=POSE.t+1.4;
-  POSE.blink=1;
-  POSE.jawT=0.22;setTimeout(()=>{POSE.jawT=0;},160);
+     трогают, — это заводная игрушка. Дальше — ответ по зоне, ровно как в игре. */
+  ACT.cur=null;ACT.next=POSE.t+0.9;
+  POSE.sleep=0;
+  if(zone==="crest"){POSE.crestV+=26;POSE.mad=Math.min(1,POSE.mad+.5);POSE.blink=1;}
+  else if(zone==="beak"){POSE.peck=1;POSE.flapV+=5;POSE.jawT=.4;
+    POSE.mad=Math.min(1,POSE.mad+.35);birdSay();}
+  else if(zone==="head"){POSE.crestV+=8;POSE.yawT=(Math.random()-0.5)*1.2;POSE.blink=1;}
+  else if(zone==="tail"){POSE.flapV+=26;POSE.hopV+=0.5;POSE.crestV+=16;POSE.fanT=1;}
+  else if(zone==="wing"){POSE.flapV+=18;POSE.stretchT=0.8;POSE.crestV+=9;}
+  else {POSE.flapV+=15;POSE.crestV+=9;POSE.hopV+=0.3;POSE.puff=0.030;}
+  POSE.ruffle=0.06;
+  const el=document.getElementById("say");
+  if(el&&zone!=="beak"&&Math.random()<0.5)birdSay();
 }
 addEventListener("error",e=>fail("Сломалось: "+e.message+"\n"+(e.filename||"")+":"+(e.lineno||"")));
 if(document.readyState==="loading")addEventListener("DOMContentLoaded",birdBoot);else birdBoot();

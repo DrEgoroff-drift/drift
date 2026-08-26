@@ -70,6 +70,13 @@ function bindPose(P){
   glSet(P,"uHeadYaw",POSE.yaw);glSet(P,"uHeadPitch",POSE.pitch);glSet(P,"uHeadRoll",POSE.roll);
   glSet(P,"uBreath",POSE.breath);glSet(P,"uPuff",POSE.puffShow||0);
   glSet(P,"uBlink",POSE.blinkNow||0);glSet(P,"uJaw",POSE.jaw);
+  /* суставы: крыло, хвост, хохол, лапа, шаг, подскок, разворот, вис */
+  glSet(P,"uFlap",POSE.flap);glSet(P,"uStretch",POSE.stretch);
+  glSet(P,"uFan",POSE.fan);glSet(P,"uCrest",POSE.crest);
+  glSet(P,"uTuck",POSE.tuck);glSet(P,"uStep",POSE.step);
+  glSet(P,"uHop",POSE.hop);glSet(P,"uTurn",POSE.turn);
+  glSet(P,"uFootUp",POSE.footUp);glSet(P,"uFootSide",POSE.footSide);
+  glSet(P,"uPeck",POSE.peck);glSet(P,"uHang",POSE.hang||0);
   glSet(P,"uLean",POSE.lean);glSet(P,"uBow",POSE.bow);
   glSet(P,"uNeckP",[0,1.46,-0.04]);
   glSet(P,"uTime",POSE.t);

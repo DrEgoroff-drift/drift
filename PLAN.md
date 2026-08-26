@@ -1022,3 +1022,37 @@ Things that cost a pass each, worth remembering:
 
 Quality now degrades by itself: window width and touch pick the tier, and if the frame does not
 hold, the page drops pixel density and then the bloom ladder — one way only, never oscillating.
+
+## M200b — the joints, and the game's habits on top of them (2026-08-26)
+
+The author: no quality fallback, the beak is small against the sheet, and **all the habits must
+come from the game** — poke it and it flaps. The last point is the one that mattered: the model
+had a head, a jaw and eyelids and nothing else, so the game's table of fifty habits had nothing
+to drive. That is why twenty passes of colour and shape still read as "as it was, so it stayed".
+
+**The rig now has the same degrees of freedom as the game's bird** (`12z-parrot-acts`):
+`flap`, `stretch`, `fan`, `crest`, `tuck`, `step`, `footUp`, `hop`, `turn`, `peck`, `hang`,
+plus the head, jaw and lids it already had. Wing, tail and crest are three joints applied
+*before* the body pose, because they are local; the foot is lifted on one side only, chosen by
+`footSide`; hang rotates the whole bird around the branch's own axis.
+
+**The habit table is ported one to one** — same names, weights, durations, moods. Habits set
+targets every frame, springs do the moving, and a few of them hit *velocity* (`flapV`, `hopV`,
+`crestV`) so a wing-clap is a blow rather than a smooth lift. Mood works as in the game: `x`
+when she has been touched, `s` as sleep builds up, cleared by a poke.
+
+**The poke has zones again.** A ray from the cursor against six spheres — crest, beak, head,
+wing, tail, body — and each answers differently, because one reaction for every click is a
+button, not an animal.
+
+Traps of this pass:
+
+- *A joint's axis has to match what it moves.* The wing was first rotated around Z — the axis
+  the folded feathers already lie along — so it barely moved and vanished into the body. It
+  opens around **Y**: from lying back to pointing sideways.
+- *Fan the feathers inside the wing's plane, not by moving the wing's own angle.* Spreading the
+  main angle per feather threw the far primaries up over the head.
+- *Flight feathers grow from the wrist.* With their roots smeared along the whole flank, one
+  shoulder pivot scattered them like a star. Roots into a tight bunch, tips along the body.
+- *A dead stand server serves from the browser's cache.* Three renders in a row "proved" the
+  wings were broken; the page was simply the previous build.

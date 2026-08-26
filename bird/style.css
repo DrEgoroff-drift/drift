@@ -48,3 +48,12 @@ body.pet #tag,body.pet #hint,body.pet #bar,body.pet #about{display:none}
   #bar{left:12px;right:12px;bottom:12px;justify-content:center}
   #about{bottom:104px}
 }
+
+/* то, что птица бормочет: короткая строка, гаснет сама */
+#say{position:fixed;left:50%;transform:translateX(-50%);bottom:44px;font-size:11px;
+  letter-spacing:.08em;color:var(--phos);opacity:0;pointer-events:none;
+  text-shadow:0 0 12px rgba(127,230,216,.5)}
+#say.on{animation:sayfade 2.6s ease-out}
+@keyframes sayfade{0%{opacity:0}12%{opacity:.95}70%{opacity:.95}100%{opacity:0}}
+body.pet #say{bottom:16px}
+@media (max-width:760px){#say{bottom:120px}}

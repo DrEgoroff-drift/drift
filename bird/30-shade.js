@@ -13,6 +13,7 @@
    шею, а не отрывается от неё. */
 const GL_RIG=`
 uniform float uHeadYaw,uHeadPitch,uHeadRoll,uBreath,uLean,uBow,uTime,uPuff,uBlink,uJaw;
+uniform float uFlap,uStretch,uFan,uCrest,uTuck,uStep,uHop,uTurn,uFootUp,uFootSide,uPeck,uHang;
 uniform vec3 uNeckP;
 mat3 rotAxis(vec3 ax,float a){
   float c=cos(a),s=sin(a),k=1.0-c;
@@ -20,25 +21,66 @@ mat3 rotAxis(vec3 ax,float a){
               ax.y*ax.x*k-ax.z*s, ax.y*ax.y*k+c, ax.y*ax.z*k+ax.x*s,
               ax.z*ax.x*k+ax.y*s, ax.z*ax.y*k-ax.x*s, ax.z*ax.z*k+c);
 }
-/* ── подвижные части головы ──
-   Веко и подклювье — единственные два сустава, кроме шеи. Оба сделаны без
-   костей: вершина знает свой материал, и по нему решает, вокруг чего ей
-   поворачиваться. Веко собрано ЗАКРЫТЫМ и откинуто назад — так его нулевое
-   положение точно совпадает с глазом, а не «почти». */
-void partJoints(inout vec3 p, inout vec3 n, float m){
-  /* ус: качка по своей доле вдоль нити (дробная часть материала). Амплитуда
-     растёт квадратом — корень стоит, кончик ходит, и бусина на нём. Две
-     несоизмеримые частоты, чтобы качание не читалось метрономом. */
+/* ── суставы оперения ──
+   Крыло, хвост и хохол — три поворота, без которых повадки из игры нечем
+   играть: «хлопнуть крыльями», «веер хвостом», «вскинуть хохол» опираются
+   именно на них. Ось крыла — плечо, хвоста — его корень, хохла — темя.
+   Считается ДО поворота головы и корпуса: сустав локальный, поза общая. */
+const vec3 SHOULDER=vec3(0.20,1.16,-0.06);
+const vec3 TAILROOT=vec3(0.0,0.56,-0.62);
+const vec3 CROWN=vec3(0.0,1.80,-0.02);
+void crestTurn(inout vec3 p, inout vec3 n){
+  mat3 R=rotAxis(vec3(1.0,0.0,0.0),-uCrest*0.62);
+  p=CROWN+R*(p-CROWN); n=R*n;
+}
+void plumeJoints(inout vec3 p, inout vec3 n, float kind, float sx, float tSpine){
+  if(kind>0.5&&kind<1.5){
+    vec3 sh=vec3(sx*SHOULDER.x,SHOULDER.y,SHOULDER.z);
+    /* Ось РАСКРЫТИЯ — вертикальная: сложенное крыло лежит вдоль тела назад, а
+     раскрытое смотрит вбок, то есть перо надо повернуть из -Z в +X. Поворот
+     вокруг Z, который стоял здесь сначала, почти не двигает перья, лежащие
+     вдоль Z, — крыло просто пропадало внутри тела. Подъём добавляется вторым
+     поворотом, уже вокруг Z. */
+    /* ВЕЕР КРЫЛА: чем дальше перо от плеча по хребту, тем сильнее оно
+       отводится. Без этого раскрытое крыло — одна лопасть, а на листе
+       породы в полёте видно каждое маховое отдельно. */
+    /* Крыло раскрывается ЦЕЛИКОМ одним поворотом, и только поверх него идёт
+       веер — небольшой доворот в плоскости самого крыла, свой у каждого пера.
+       Когда веером двигали основной угол, дальние перья уходили вверх-вперёд
+       и крыло накрывало голову. */
+    float ord=clamp((0.66-tSpine)*3.0,0.0,1.0);
+    float open=uFlap*0.85+uStretch*0.55;
+    float sprd=open+(ord-0.5)*0.30*open;
+    mat3 R=rotAxis(vec3(0.0,0.0,1.0),sx*uFlap*0.42)
+          *rotAxis(vec3(0.0,1.0,0.0),-sx*sprd);
+    p=sh+R*(p-sh); n=R*n;
+  }else if(kind>1.5&&kind<2.5){
+    /* веер: перо отводится тем сильнее, чем дальше оно от середины хвоста */
+    float lat=clamp(p.x*2.4,-1.0,1.0);
+    /* раскрытый хвост не только расходится, но и ОПУСКАЕТСЯ: сложенный он
+       лежит за телом и в вееере остаётся за ним же, если его не увести вниз */
+    mat3 R=rotAxis(vec3(0.0,1.0,0.0),-lat*uFan*0.62)
+          *rotAxis(vec3(1.0,0.0,0.0),uFan*0.30);
+    p=TAILROOT+R*(p-TAILROOT); n=R*n;
+  }else if(kind>2.5){
+    crestTurn(p,n);
+  }
+}
+/* ── подвижные части головы и лап ──
+   Веко, подклювье, ус и поджатая лапа. Все без костей: вершина знает свой
+   материал и по нему решает, вокруг чего ей поворачиваться. */
+void partJoints(inout vec3 p, inout vec3 n, float m, float t){
   if(m>=9.5){
+    /* ус: качка по своей доле вдоль нити (дробная часть материала). Фаза
+       ступенчатая по |x| — у нити и бусины координаты вершин разные, и от
+       плавной фазы бусина уезжала в сторону от кончика. */
     float s=m-10.0;
-    /* Фаза ступенчатая по |x|: у нити и её бусины координаты вершин разные, и
-       от плавной фазы бусина уезжала в сторону от кончика. Ступень крупная —
-       кончик и бусина всегда попадают в одну. */
     float ph=sign(p.x)*1.7+floor(abs(p.x)*4.0)*1.3;
     float amp=s*s*0.085;
     p.x+=sin(uTime*1.9+ph)*amp;
     p.y+=sin(uTime*2.7+ph*1.7)*amp*0.55;
     p.z+=cos(uTime*1.5+ph*0.8)*amp*0.60;
+    if(t>0.5)crestTurn(p,n);      /* усы хохла едут с хохлом, хвостовые — нет */
     return;
   }
   if(m>7.5&&m<8.5){
@@ -46,17 +88,34 @@ void partJoints(inout vec3 p, inout vec3 n, float m){
     mat3 R=rotAxis(vec3(1.0,0.0,0.0),-(1.0-uBlink)*1.55);
     p=c+R*(p-c); n=R*n;
   }else if(m>8.5){
-    vec3 h=vec3(0.0,1.682,0.112);
+    vec3 h=vec3(0.0,1.672,0.100);
     mat3 R=rotAxis(vec3(1.0,0.0,0.0),uJaw);
     p=h+R*(p-h); n=R*n;
+  }else if(m>3.5&&m<4.5||m>6.5&&m<7.5){
+    /* поджатая лапа: поворачивается ОДНА, та, что назначена. Птица стоит на
+       одной ноге чаще, чем на двух, и без этого половина повадок пропадает */
+    if(sign(p.x)==uFootSide&&uFootUp>0.001){
+      vec3 hip=vec3(sign(p.x)*0.14,0.62,-0.08);
+      mat3 R=rotAxis(vec3(1.0,0.0,0.0),uFootUp*1.15);
+      p=hip+R*(p-hip); n=R*n;
+    }
   }
 }
 /* t — положение вдоль хребта (0 хвост, 1 темя); для частей, у которых своего t
-   нет (клюв, хохол), передаётся единица: они едут с головой целиком */
+   нет (клюв, хохол), передаётся единица: они едут с головой целиком.
+   Отрицательное t — геометрия, которая не едет вовсе (жёрдочка). */
 void rigApply(inout vec3 p, inout vec3 n, float t){
+  if(t<0.0)return;
   float bw=smoothstep(0.15,0.60,t)*smoothstep(1.0,0.72,t);
   p+=n*(uBreath*bw+uPuff*(0.35+0.65*bw));
+  /* ── голова ──
+     Втянуть (tuck) и клюнуть (peck) идут ДО поворота: втянутая голова
+     поворачивается вокруг того же места, что и вытянутая, иначе на каждой
+     сонной повадке шея ломается вбок. */
   float w=smoothstep(0.66,0.92,t);
+  p.y-=uTuck*0.115*w;
+  p.z-=uTuck*0.055*w;
+  p.z+=uPeck*0.095*w;
   mat3 R=rotAxis(vec3(0.0,1.0,0.0),uHeadYaw*w)
         *rotAxis(vec3(1.0,0.0,0.0),uHeadPitch*w)
         *rotAxis(vec3(0.0,0.0,1.0),uHeadRoll*w);
@@ -65,6 +124,23 @@ void rigApply(inout vec3 p, inout vec3 n, float t){
   vec3 hip=vec3(0.0,0.62,-0.30);
   mat3 B=rotAxis(vec3(1.0,0.0,0.0),uLean+uBow*smoothstep(0.1,0.9,t));
   p=hip+B*(p-hip); n=B*n;
+  /* ── вся птица ──
+     Подскок поднимает корпус, но не лапы: они остаются на ветке и тянутся.
+     Шаг и разворот едут целиком, включая лапы, — ветка стоит (t<0). */
+  p.y+=uHop*smoothstep(0.02,0.24,t);
+  p.x+=uStep;
+  if(abs(uTurn)>0.0005){
+    vec3 c=vec3(uStep,0.62,-0.10);
+    mat3 T=rotAxis(vec3(0.0,1.0,0.0),uTurn*6.2831853);
+    p=c+T*(p-c); n=T*n;
+  }
+  /* вис вниз головой: птица поворачивается вокруг САМОЙ ЖЁРДОЧКИ, держась за
+     неё лапами. Поэтому ось — ось ветки, а не что-нибудь внутри тела */
+  if(uHang>0.001){
+    vec3 c=vec3(uStep,0.150,-0.040);
+    mat3 H=rotAxis(vec3(1.0,0.0,0.0),uHang*3.1415927);
+    p=c+H*(p-c); n=H*n;
+  }
 }`;
 
 /* ── общая часть фрагментных программ: свет ── */
@@ -153,7 +229,7 @@ out vec3 vP,vN,vC;
 out vec2 vTA;
 void main(){
   vec3 pp=p,nn=n;
-  partJoints(pp,nn,ta.y);
+  partJoints(pp,nn,ta.y,ta.x);
   rigApply(pp,nn,ta.x);
   vP=pp;vN=normalize(nn);vC=c;vTA=ta;
   gl_Position=uVP*vec4(pp,1.0);
@@ -193,7 +269,7 @@ void main(){
        внутри клюва, потому что сечение наклонено. Пятно ложится ровно там,
        где нужно, и стоит ноль вершин */
     float nz=1.0-smoothstep(0.012,0.030,
-      length(vec3((abs(vP.x)-0.048)*1.0,(vP.y-1.762)*0.80,(vP.z-0.222)*0.70)));
+      length(vec3((abs(vP.x)-0.056)*1.0,(vP.y-1.766)*0.80,(vP.z-0.218)*0.70)));
     alb=mix(alb,vec3(0.018,0.014,0.018),nz*0.95);
     rough=mix(rough,0.7,nz);
     float grooves=sin(vP.y*54.0+vP.z*16.0)*0.5+0.5;
@@ -255,7 +331,7 @@ layout(location=2) in vec2 ta;
 uniform mat4 uVP;
 void main(){
   vec3 pp=p,nn=n;
-  partJoints(pp,nn,ta.y);
+  partJoints(pp,nn,ta.y,ta.x);
   rigApply(pp,nn,ta.x);
   gl_Position=uVP*vec4(pp,1.0);
 }`;
@@ -347,6 +423,9 @@ void main(){
      отличается впятеро, и обычный поворот дал бы нормаль набок */
   vec3 wn=normalize(cx*(n.x/(sx*sx))+cy*(n.y/(sy*sy))+cz*(n.z/(sz*sz)));
   vec3 wt=cz/max(sz,1e-5);
+  /* сустав оперения (крыло/хвост/хохол) — до общей позы: он локальный */
+  float sxw=r0.w<0.0?-1.0:1.0;
+  plumeJoints(wp,wn,ipar.w,sxw,ipar.z);
   rigApply(wp,wn,ipar.z);
   /* стержень поворачивается вместе с пером: тангенс нужен блику */
   vec3 dummy=wt; vec3 dn=wt; vec3 dp=wp;
@@ -415,6 +494,7 @@ uniform mat4 uVP;
 out vec3 vP,vN,vC;
 void main(){
   vec3 pp=p,nn=n;
+  partJoints(pp,nn,tm.y,tm.x);
   rigApply(pp,nn,tm.x);
   vP=pp;vN=normalize(nn);vC=c;
   gl_Position=uVP*vec4(pp,1.0);
