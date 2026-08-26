@@ -325,6 +325,13 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
     c.beginPath();c.arc(px,py,.8+RR()*1.1,0,TAU);c.fill();
   }
   c.restore();
+  /* ── ёлка тридцать первого декабря (M201) ──
+     По настоящему календарю, один раз в году. Стоит В УГЛУ ПЕРЕДНЕГО ПЛАНА и
+     рисуется последней: поставленная вместе с прочим реквизитом, она уходила
+     за стойку и за спины — то есть её не было видно вовсе. Ёлку в зале ставят
+     туда, где она никому не мешает и всем видна, и рисовать её надо так же. */
+  if(typeof holTreeUp==="function"&&holTreeUp()&&typeof holTree==="function")
+    holTree(c,W2*0.93,fy+H2*0.10,fy*0.72,rgba(acc,.5));
   const vg=c.createRadialGradient(W2/2,H2/2,H2*.35,W2/2,H2/2,H2*1.05);
   vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.36)");   // виньетка в .55 топила зал
   c.fillStyle=vg;c.fillRect(0,0,W2,H2);

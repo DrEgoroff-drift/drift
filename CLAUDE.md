@@ -91,6 +91,7 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `18c-chunks` | raster cache: world-x chunks for ground and cave rock, full-screen layers for sky glow and weather veil |
 | `17`–`25` `mode-*` | modes: system, map, landing, surface, cave, mine, belt, cockpit; `20-life` — astronaut and flora, `20f-fauna` — the beasts. Draw halves split off on 0.108.x: `17c-system-draw`, `19f-lander`, `21e-surface-draw`, `23a-dig-draw`, `24aa-raid-draw`; on 0.153.0: `23aa-dig-rock` (the mountain), `21ba-deco-shapes` (the eight landmark forms), `12tc-settle-crafts` (the six trades), `26b-ui-station-work` (the ОСНАСТКА/ПРИБОРЫ/ЛАБОРАТОРИЯ/СПЛАВ tabs) |
 | `11g`–`11v` | the thirteenth pass, one module per region: lights, hours, glow, grove, keepers, county, charts, quiet, slow, pass, grown, plan, returners; rumours, names, places; rules in `docs/PASSPORTS.md` |
+| `11am-holiday` | New Year and Cosmonautics Day on the player's real calendar: a tree, mandarins, and radiograms from whoever wrote in the record book |
 | `11ak-skywatch` | the sky watch: an institute order names a place, an event and a day out of `celestAt`; a report before the institute's own bulletin, and a comet named from the record book |
 | `29h-spa` `29i-spa-draw` | the sanatorium: three days on a veranda where nothing happens — the only place in the game where resting is allowed |
 | `12td-settle-hand` | the observer's choice: one irreversible button that makes a settlement yours — better by every number, and it stops speaking in glyphs |

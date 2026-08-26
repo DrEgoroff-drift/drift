@@ -7,6 +7,33 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.179.0 — the holidays are on the real calendar (M201)
+
+The road companion proved the game can keep time with the person playing it, and the night ether
+proved that doing so makes it a different thing. This is the same idea on the year's circle: on the
+thirty-first of December there is a tree in the cantina, and the ether carries congratulations.
+
+**The people who congratulate you are the ones in your record book.** Not a random NPC and not a
+table of names: the radiograms come from whoever wrote something in your book over this game
+(`11aa`) — a station chief, a topic's lead, Vega, the parrot. Whoever was not there does not
+congratulate you. So a first player's first New Year brings one radiogram and a year-old pilot's
+brings half a dozen, and that is the only difference the feature makes.
+
+**The holiday gives nothing.** No discount, no bonus, no double-reward event. A tree, mandarins,
+other people's voices, and a line in the book. Any reward would turn the thirty-first of December
+into farming, and it comes once a year as it is.
+
+The tree is drawn once and stands in two places, the cantina and the living room at home. It is not
+a stack of triangles: three tiers of branches with ragged lower edges, a trunk visible below,
+baubles hanging *on* the branches rather than floating beside them, two strands of tinsel catching
+whatever light the room has, and a star. It is drawn **last, in the near corner** — put in with the
+rest of the props it went behind the counter and the crowd, which is to say it was not there at all.
+A tree in a mess hall stands where it is in nobody's way and in everybody's sight.
+
+A test caught one thing that would have been quietly wrong for a year: the holiday leaves a line in
+the record book under its own name, so on the next New Year «Новый год» was sending itself a
+greeting. Institutions and holidays are struck off the correspondents now.
+
 ## 0.178.1 — the two debts from last night, paid
 
 Both scenes shipped with a named art debt. Neither is a bug, and that is exactly why they get paid

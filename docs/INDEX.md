@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 292 · символов верхнего уровня: 2741
+Файлов: 294 · символов верхнего уровня: 2753
 
 ## СИМВОЛЫ
 
@@ -24,7 +24,7 @@ $menu                        src/15-input.js:180
 $msg                         src/28-loop.js:44
 $msl                         src/28-loop.js:47
 $nav                         src/28-loop.js:46
-$opts                        src/26-ui-station.js:656
+$opts                        src/26-ui-station.js:658
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:43
 $sh                          src/28-loop.js:24
@@ -211,18 +211,18 @@ camOffset                    src/19c-light.js:76
 camStep                      src/19c-light.js:62
 canPay                       src/21a-mode-base.js:51
 CANT_STYLE                   src/27d-ui-cantina.js:15
-cantBarkeep                  src/27d-ui-cantina.js:399
-cantCounter                  src/27d-ui-cantina.js:678
-cantFigure                   src/27d-ui-cantina.js:344
+cantBarkeep                  src/27d-ui-cantina.js:406
+cantCounter                  src/27d-ui-cantina.js:685
+cantFigure                   src/27d-ui-cantina.js:351
 cantinaPool                  src/12c-mgr-core.js:259
 cantinaScene                 src/27c-ui-hq.js:193
-cantProps                    src/27d-ui-cantina.js:525
+cantProps                    src/27d-ui-cantina.js:532
 cantRoomBody                 src/27d-ui-cantina.js:45
-cantSeats                    src/27d-ui-cantina.js:336
+cantSeats                    src/27d-ui-cantina.js:343
 cantSel                      src/27c-ui-hq.js:192
 cantStyle                    src/27d-ui-cantina.js:27
-cantTables                   src/27d-ui-cantina.js:613
-cantView                     src/27d-ui-cantina.js:466
+cantTables                   src/27d-ui-cantina.js:620
+cantView                     src/27d-ui-cantina.js:473
 capIv                        src/28-loop.js:414
 capOf                        src/05-parts.js:108
 capUsed                      src/05-parts.js:219
@@ -301,7 +301,7 @@ CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
 closeBarge                   src/12l-barge.js:592
-closeStation                 src/26-ui-station.js:107
+closeStation                 src/26-ui-station.js:109
 CLOUD                        src/14-save.js:5
 CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
@@ -591,7 +591,7 @@ dustTable                    src/16a-space.js:145
 earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
-el                           src/26-ui-station.js:140
+el                           src/26-ui-station.js:142
 endPtr                       src/15-input.js:272
 engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
@@ -881,7 +881,7 @@ HIN_UP                       src/29e-home-up.js:20
 hinDrawHole                  src/29e-home-up.js:219
 hinDrawShell                 src/29e-home-up.js:59
 hinDrawStair                 src/29e-home-up.js:175
-hinFigure                    src/29d-home-draw.js:521
+hinFigure                    src/29d-home-draw.js:524
 hinFolkMake                  src/29c-home-in.js:84
 hinFolkTick                  src/29c-home-in.js:115
 hinFrontStuff                src/29d-home-draw.js:236
@@ -903,9 +903,21 @@ hinUpWindow                  src/29e-home-up.js:356
 hinWidth                     src/29c-home-in.js:50
 hireMerc                     src/12a-crew.js:168
 hireMgr                      src/12c-mgr-core.js:301
+HOL_BY                       src/11am-holiday.js:26
+HOL_D                        tests/91zzzm-holiday.js:2
+HOL_ETHER                    src/11am-holiday.js:28
+HOL_GREET                    src/11am-holiday.js:45
 holdDrawPile                 src/27j-ui-hold.js:151
+holDock                      src/11am-holiday.js:87
 holdPiece                    src/27j-ui-hold.js:26
 holdPileN                    src/27j-ui-hold.js:22
+holEtherLine                 src/11am-holiday.js:77
+HOLIDAYS                     src/11am-holiday.js:22
+holIs                        src/11am-holiday.js:74
+holMap                       src/11am-holiday.js:59
+holNow                       src/11am-holiday.js:61
+holTree                      src/11am-holiday.js:127
+holTreeUp                    src/11am-holiday.js:75
 HOME_HIT                     src/27e-ui-home.js:33
 HOME_MAN                     src/21f-home-out.js:48
 HOME_MATE                    src/12j-home.js:79
@@ -1905,12 +1917,12 @@ renderPrices                 src/12aa-need.js:196
 renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
 renderStrips                 src/27i-ui-table.js:199
-renderTab                    src/26-ui-station.js:204
+renderTab                    src/26-ui-station.js:206
 renderThings                 src/27i-ui-table.js:230
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
-repairCost                   src/26-ui-station.js:103
+repairCost                   src/26-ui-station.js:105
 repAt                        src/12k-rep.js:27
 repFuelMul                   src/12k-rep.js:52
 repHireMul                   src/12k-rep.js:54
@@ -1925,7 +1937,7 @@ RES_AUTO                     src/08-state.js:35
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:403
 resEma                       src/28-loop.js:402
-resetArm                     src/26-ui-station.js:655
+resetArm                     src/26-ui-station.js:657
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:29
@@ -2206,9 +2218,9 @@ SHIFT_TALK                   src/03f-hull-role.js:63
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:163
+shipRow                      src/26-ui-station.js:165
 SHIPS                        src/03-ships.js:2
-shipThumb                    src/26-ui-station.js:150
+shipThumb                    src/26-ui-station.js:152
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:211
 shipZoneR                    src/19f-lander.js:14
@@ -2311,7 +2323,7 @@ SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
 sprgba                       src/29i-spa-draw.js:22
 ST_GOLD                      src/17c-system-draw.js:117
-ST_GROUPS                    src/26-ui-station.js:62
+ST_GROUPS                    src/26-ui-station.js:64
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:8
 STAR_CLASS                   src/02-world.js:94
@@ -2337,8 +2349,8 @@ stCore                       src/17c-system-draw.js:128
 stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:75
 stGet                        src/14-save.js:8
-stGroup                      src/26-ui-station.js:71
-stGroupOf                    src/26-ui-station.js:70
+stGroup                      src/26-ui-station.js:73
+stGroupOf                    src/26-ui-station.js:72
 stopEngine                   src/09-audio.js:269
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
@@ -2400,7 +2412,7 @@ stTabFuse                    src/26b-ui-station-work.js:201
 stTabInstr                   src/26b-ui-station-work.js:108
 stTabLab                     src/26b-ui-station-work.js:175
 stTabMods                    src/26b-ui-station-work.js:12
-stTabsHere                   src/26-ui-station.js:72
+stTabsHere                   src/26-ui-station.js:74
 stTypeOf                     src/06-galaxy.js:27
 subdivide                    src/24-mode-belt.js:34
 suite                        tests/90-harness.js:15
@@ -2423,7 +2435,7 @@ svMode                       src/27-ui-ship.js:45
 svRender                     src/27-ui-ship.js:46
 svReturn                     src/27-ui-ship.js:6
 svSlot                       src/27-ui-ship.js:4
-syncTabs                     src/26-ui-station.js:73
+syncTabs                     src/26-ui-station.js:75
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
 SYS_EXOTIC                   src/16a-space.js:14
@@ -2866,6 +2878,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11ak-skywatch.js · 16 КБ
   · небесная вахта:1
 
+## src/11am-holiday.js · 11 КБ
+  · праздники по настоящему календарю:1
+
 ## src/11a-quests.js · 6 КБ
   · журнал дел:1
 
@@ -3290,7 +3305,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25d-instr-rack.js · 26 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
-## src/25e-receiver.js · 4 КБ
+## src/25e-receiver.js · 5 КБ
   · приёмник: частота крутится рукой:1
 
 ## src/25f-globus.js · 8 КБ
@@ -3326,7 +3341,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/26-ui-station.js · 43 КБ
   · станция:1
-  · настройки:654
+  · настройки:656
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -3334,7 +3349,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27c-ui-hq.js · 38 КБ
   · ШТАБ и кантина:1
 
-## src/27d-ui-cantina.js · 45 КБ
+## src/27d-ui-cantina.js · 46 КБ
   · кантина: помещение, а не список:1
 
 ## src/27e-ui-home.js · 44 КБ
@@ -3674,5 +3689,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzl-spa.js · 4 КБ
   · автотесты: санаторий (M199):1
+
+## tests/91zzzm-holiday.js · 4 КБ
+  · автотесты: праздники по календарю (M201):1
 
 ## tests/99-run.js · 0 КБ

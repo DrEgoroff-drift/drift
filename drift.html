@@ -1299,7 +1299,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.178.1";
+const VER="0.179.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -8768,6 +8768,192 @@ function skyBlock(){
     b.onclick=()=>{skyReport();renderTab();};
     r.appendChild(b);$body.appendChild(r);
   }
+}
+
+/* ══════════════ праздники по настоящему календарю ══════════════
+   M201, из списка «радостей». Дорожный спутник (M168) доказал, что игра умеет
+   жить в одном времени с человеком, а ночной эфир (M191) — что от этого она
+   становится другой вещью. Здесь то же самое, но на годовом круге: тридцать
+   первого декабря в кантине стоит ёлка, а в эфире идут поздравления.
+
+   ПОЗДРАВЛЯЮТ ТЕ, КТО ЕСТЬ В ТРУДОВОЙ КНИЖКЕ. Не «случайный NPC» и не список
+   имён из таблицы: радиограммы приходят от людей, которые за эту игру что-то
+   в вашей книжке написали (11aa) — начальник станции, руководитель темы, Вега,
+   попугай. Кого не было, тот и не поздравит. Поэтому у первого игрока в первый
+   Новый год придёт одна радиограмма, а у того, кто отлетал год, — полдюжины, и
+   это единственная разница, которую игра тут делает.
+
+   ПРАЗДНИК НИЧЕГО НЕ ДАЁТ. Ни скидки, ни бонуса, ни события «двойная награда».
+   Ёлка, мандарины, чужие голоса и строка в книжке. Любая награда превратила бы
+   тридцать первое декабря в фарм, а он и так один раз в году.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Дата настоящая, местная. Ни игровых суток, ни seed.
+   2. Отмечается раз в год: `G.hol[год+":"+id]`. Больше ничего не хранится.
+   3. Ни одной цифры игроку. Праздник — это когда просто по-другому. */
+const HOLIDAYS=[
+  {id:"ny", ru:"Новый год",         from:[12,31], to:[1,2],  tree:1},
+  {id:"cos",ru:"День космонавтики", from:[4,12],  to:[4,12]}
+];
+const HOL_BY={};HOLIDAYS.forEach(h=>HOL_BY[h.id]=h);
+/* эфир праздника: чужие голоса, которые ничего от вас не хотят */
+const HOL_ETHER={
+  ny:[
+    "…всем бортам в секторе: с наступающим. Кто на подходе — не гоните, успеете.",
+    "…у нас тут ёлка из проволоки и фольги. Красивая, между прочим.",
+    "…диспетчер шестой: смена моя, поздравлять некому, поздравляю вас.",
+    "…мандарины привезли. Двенадцать сеток на четыреста человек. Делим.",
+    "…слушайте куранты на девятьсот двадцать. Опоздание две минуты, но чьи это минуты.",
+    "…я дома в этом году не буду. И в прошлом не был. Ну и что."
+  ],
+  cos:[
+    "…сегодня подняли флаг. Никто не строился, все просто вышли и постояли.",
+    "…с праздником, борта. Первым сегодня наливают без очереди.",
+    "…в двенадцатой рассказывают, как это было. Врут, конечно. Красиво врут.",
+    "…а мой дед говорил: полетели — и всё. Больше ничего не говорил."
+  ]
+};
+/* чем поздравляют: короткая радиограмма, и всегда про отправителя */
+const HOL_GREET={
+  ny:[
+    "с наступающим · у нас всё по-старому, и это хорошо",
+    "с Новым годом · ёлка стоит, стол накрыт, места хватило всем",
+    "поздравляю · берегите себя, остальное приложится",
+    "с Новым годом · в этом году я вас вспоминал чаще, чем собирался",
+    "с праздником · если будете рядом — заходите, у нас всегда есть чай"
+  ],
+  cos:[
+    "с праздником · за тех, кто пошёл первым",
+    "поздравляю · сегодня даже начальство человеческое",
+    "с Днём космонавтики · держитесь курса, остальное мелочи"
+  ]
+};
+function holMap(){if(!G.hol||typeof G.hol!=="object")G.hol={};return G.hol;}
+/* какой сегодня праздник по НАСТОЯЩЕМУ календарю игрока */
+function holNow(at){
+  const d=at?new Date(at.getTime()):new Date();
+  const m=d.getMonth()+1, day=d.getDate();
+  for(const h of HOLIDAYS){
+    const [fm,fd]=h.from,[tm,td]=h.to;
+    /* праздник через новый год: декабрь-январь — один отрезок, а не два */
+    const inSpan=(fm<tm||(fm===tm&&fd<=td))
+      ? ((m>fm||(m===fm&&day>=fd))&&(m<tm||(m===tm&&day<=td)))
+      : ((m>fm||(m===fm&&day>=fd))||(m<tm||(m===tm&&day<=td)));
+    if(inSpan)return h;
+  }
+  return null;
+}
+function holIs(id){const h=holNow();return !!(h&&h.id===id);}
+function holTreeUp(){const h=holNow();return !!(h&&h.tree);}
+/* строка в эфир: приёмник подмешивает её к обычным голосам (25e) */
+function holEtherLine(){
+  const h=holNow();if(!h)return "";
+  const L=HOL_ETHER[h.id]||[];
+  if(!L.length)return "";
+  const r=rng(hashi(Math.floor(Date.now()/60000),h.id.length,0x0801));
+  return L[Math.floor(r()*L.length)];
+}
+/* ── радиограммы ──
+   Раз в год, при первой стыковке в праздник. Поздравляют те, кто есть в
+   книжке: их имена уже написаны, придумывать некого. */
+function holDock(){
+  const h=holNow();if(!h)return false;
+  const d=new Date();
+  const year=d.getMonth()+1>=7?d.getFullYear():d.getFullYear()-1;   /* год ПРАЗДНИКА, а не календаря */
+  const key=(h.id==="ny"?year:d.getFullYear())+":"+h.id;
+  const M=holMap();
+  if(M[key])return false;
+  M[key]=1;
+  const R=(typeof recordAll==="function")?recordAll():{e:[]};
+  /* поздравляют ЛЮДИ. Учреждения из книжки вычеркнуты — и сам праздник тоже:
+     он оставляет в книжке строку от своего имени, и на следующий год «Новый
+     год» слал поздравление сам себе. Поймано тестом на число радиограмм. */
+  const bad=/^(медкомиссия|санаторий|вымпел|лаборатория|зимовка|институт)/i;
+  const hols=HOLIDAYS.map(x=>x.ru);
+  const who=[];
+  for(const e of (R.e||[]))
+    if(!bad.test(e.a)&&hols.indexOf(e.a)<0&&who.indexOf(e.a)<0)who.push(e.a);
+  const L=HOL_GREET[h.id]||[];
+  const r=rng(hashi(year,h.id.length*7,0x0901));
+  let n=0;
+  for(const a of who.slice(0,6)){
+    const line=L[Math.floor(r()*L.length)];
+    thingAdd("letter","Радиограмма · "+a,line,{hol:h.id});
+    n++;
+  }
+  if(n)logAdd("good",h.ru+": радиограмм "+n+" · на столе");
+  else logAdd("dim",h.ru+". Поздравить вас пока некому.");
+  /* мандарины бывают только на Новый год и только если баржа дошла */
+  if(h.id==="ny"&&r()<.8)
+    thingAdd("find","Мандарины · полсетки","привезли баржой · пахнут так, что слышно в коридоре",{hol:"ny"});
+  recordAdd(h.ru,n?("встречен в рейсе · радиограмм "+n):"встречен в рейсе");
+  tell("good",h.ru,h.ru.toUpperCase()+(n?"\nРАДИОГРАММ "+n:"")+"\nна столе");
+  if(typeof parrotHas==="function"&&parrotHas()&&h.id==="ny")
+    logAdd("dim","Попугай нашёл мандарин и унёс. Отдавать не собирается.");
+  return true;
+}
+/* ── ёлка ──
+   Одна функция на все места, где она стоит: кантина и дом. Не пирамида из
+   треугольников — три яруса лап разной ширины, ствол виден снизу, игрушки
+   висят НА лапах, а не парят рядом, и фольга ловит тот свет, что в комнате. */
+function holTree(c,x,fy,hh,acc){
+  const w=hh*0.52;
+  c.fillStyle="rgba(0,0,0,.30)";
+  c.beginPath();c.ellipse(x,fy+2,w*0.42,hh*0.035,0,0,TAU);c.fill();
+  /* крестовина и ствол */
+  c.fillStyle="rgba(96,72,50,.95)";
+  c.fillRect(x-w*0.06,fy-hh*0.14,w*0.12,hh*0.14);
+  c.fillRect(x-w*0.20,fy-hh*0.03,w*0.40,Math.max(2,hh*0.030));
+  /* три яруса лап, снизу шире */
+  for(let i=0;i<3;i++){
+    const q=i/2;
+    const bw=w*(1-q*0.42), by=fy-hh*(0.14+q*0.30), bh=hh*0.34;
+    c.fillStyle=i%2?"rgba(58,102,64,.96)":"rgba(70,118,74,.96)";
+    c.beginPath();
+    c.moveTo(x,by-bh);
+    c.lineTo(x+bw*0.5,by);
+    /* нижняя кромка лапы зубчатая: ровный треугольник читается пирамидкой */
+    for(let k=4;k>=0;k--){
+      const t2=k/5;
+      c.lineTo(x-bw*0.5+bw*t2,by-((k%2)?bh*0.06:0));
+    }
+    c.lineTo(x-bw*0.5,by);
+    c.closePath();c.fill();
+    c.fillStyle="rgba(255,255,255,.07)";
+    c.beginPath();
+    c.moveTo(x,by-bh);c.lineTo(x+bw*0.5,by);c.lineTo(x+bw*0.12,by);
+    c.closePath();c.fill();
+  }
+  /* игрушки: висят на кромках лап */
+  const r=rng(hashi(x|0,fy|0,0x0E1C));
+  for(let i=0;i<9;i++){
+    const q=r();
+    const bw=w*(1-q*0.42);
+    const bx=x+(r()-0.5)*bw*0.86;
+    const by=fy-hh*(0.16+q*0.60);
+    c.fillStyle=["rgba(214,84,64,.95)","rgba(228,190,90,.95)","rgba(120,168,214,.95)"][i%3];
+    c.beginPath();c.arc(bx,by,Math.max(1.6,hh*0.026),0,TAU);c.fill();
+    c.fillStyle="rgba(255,255,255,.45)";
+    c.beginPath();c.arc(bx-hh*0.008,by-hh*0.008,Math.max(1,hh*0.009),0,TAU);c.fill();
+  }
+  /* фольга: две нити наискось, ловят свет комнаты */
+  c.strokeStyle=acc||"rgba(232,214,150,.55)";
+  c.lineWidth=Math.max(1,hh*0.012);
+  for(const s of [0,1]){
+    c.beginPath();
+    c.moveTo(x-w*0.42+s*w*0.2,fy-hh*0.30-s*hh*0.22);
+    c.quadraticCurveTo(x,fy-hh*0.42-s*hh*0.20,x+w*0.42-s*w*0.2,fy-hh*0.28-s*hh*0.24);
+    c.stroke();
+  }
+  /* звезда */
+  c.fillStyle="rgba(240,214,120,.95)";
+  c.beginPath();
+  for(let i=0;i<10;i++){
+    const a=-Math.PI/2+i*Math.PI/5, rr=i%2?hh*0.030:hh*0.062;
+    const px=x+Math.cos(a)*rr, py=fy-hh*0.80+Math.sin(a)*rr;
+    i?c.lineTo(px,py):c.moveTo(px,py);
+  }
+  c.closePath();c.fill();
 }
 
 /* ══════════════ журнал дел ══════════════ */
@@ -24674,7 +24860,7 @@ function snapshot(){
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
-    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,win:G.win,spa:G.spa,   /* M154–M199 */
+    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,win:G.win,spa:G.spa,hol:G.hol,   /* M154–M201 */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -25148,6 +25334,9 @@ function applySave(s){
   /* санаторий (M199): три дня, которые можно прервать выходом и вернуться
      потом — потому и лежит в сейве, хотя ничего в игре и не меняет */
   G.spa=(s.spa&&typeof s.spa==="object"&&s.spa.days)?s.spa:null;
+  /* какие праздники уже отмечены (M201): по одной единице на год и праздник,
+     иначе радиограммы придут во второй раз при следующей же стыковке */
+  G.hol=(s.hol&&typeof s.hol==="object")?s.hol:null;
   G.trainee=(s.trainee&&typeof s.trainee==="object"&&s.trainee.name)?s.trainee:null;
   G.zoo=(s.zoo&&typeof s.zoo==="object"&&Array.isArray(s.zoo.pen))?s.zoo:null;
   G.concert=(s.concert&&typeof s.concert==="object")?s.concert:null;
@@ -43642,7 +43831,10 @@ function radioTune(f){
     /* вымпел (M196): дошедший зонд говорит ОДИН раз и вместо эфира. Порог по
        качеству тот же, что у слов: на краю диапазона его не «израсходовать» */
     const P=(typeof probeDue==="function"&&q>.55)?probeDue():null;
-    text=P?probeSpeak(P):pick(ETHER,r);
+    /* праздник слышно в эфире (M201): чужие голоса, которым от вас ничего не
+       надо. Вымпел важнее — он говорит один раз в жизни */
+    const HL=(!P&&typeof holEtherLine==="function"&&q>.55&&r()<.45)?holEtherLine():"";
+    text=P?probeSpeak(P):(HL||pick(ETHER,r));
   }
   /* на краю диапазона слова выпадают */
   /* ночную почту на краю не глушим второй раз: ethTick уже отдал «шшш», а
@@ -45715,6 +45907,8 @@ function openStation(){
   /* почта (M190): ОДИН поход наружу на стыковку — забрать ответы и, если
      повезло, поймать чужую карточку. Ни таймера, ни опроса (правило M171) */
   if(typeof mailDock==="function")mailDock();
+  /* праздник по настоящему календарю (M201): раз в год, при первой стыковке */
+  if(typeof holDock==="function")holDock();
   /* счётчик посадок на это место (11b-speech): от него зависит, как к вам
      обращаются и какая реплика в очереди станет следующей */
   if(typeof visitMark==="function")visitMark();
@@ -47520,6 +47714,13 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
     c.beginPath();c.arc(px,py,.8+RR()*1.1,0,TAU);c.fill();
   }
   c.restore();
+  /* ── ёлка тридцать первого декабря (M201) ──
+     По настоящему календарю, один раз в году. Стоит В УГЛУ ПЕРЕДНЕГО ПЛАНА и
+     рисуется последней: поставленная вместе с прочим реквизитом, она уходила
+     за стойку и за спины — то есть её не было видно вовсе. Ёлку в зале ставят
+     туда, где она никому не мешает и всем видна, и рисовать её надо так же. */
+  if(typeof holTreeUp==="function"&&holTreeUp()&&typeof holTree==="function")
+    holTree(c,W2*0.93,fy+H2*0.10,fy*0.72,rgba(acc,.5));
   const vg=c.createRadialGradient(W2/2,H2/2,H2*.35,W2/2,H2/2,H2*1.05);
   vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.36)");   // виньетка в .55 топила зал
   c.fillStyle=vg;c.fillRect(0,0,W2,H2);
@@ -53645,6 +53846,9 @@ function hinRoomStuff(r,fy,ceil,P){
      масляных пятнах, у жилой части ковёр, у гаража бетон с колеёй. Комната
      узнаётся раньше, чем в ней разглядят вещи (проход M170). */
   const M0=HIN_MAN, rr0=rng(hashi(r.x|0,7,0x40F7));
+  /* ёлка в жилой комнате (M201): та же, что в кантине, и в те же дни */
+  if(r.key==="living"&&typeof holTreeUp==="function"&&holTreeUp()&&typeof holTree==="function")
+    holTree(ctx,r.x+r.w*0.84,fy,HIN_MAN*1.05,"rgba(236,214,150,.5)");
   if(r.key==="living"){
     ctx.fillStyle="rgba(122,72,58,.55)";
     ctx.fillRect(r.x+r.w*.16,fy+2,r.w*.68,M0*.5);

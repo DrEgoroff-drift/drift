@@ -902,10 +902,12 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
 
 ## Joys (one between milestones, an evening each)
 
-- **Holidays on the real calendar.** New Year: a tree in the mess and at home, mandarins,
-  congratulatory radiograms from the people in your record book (the hundred knows them by name);
-  Cosmonautics Day. The road companion proved the game can live in real time. Must be in before
-  31.12 — schedule it no later than November.
+- **Holidays on the real calendar** — **built (0.179.0, M201).** `11am-holiday`, suite
+  `91zzzm-holiday`, stand `pageshot view -Q "?s=tree"`. New Year (31.12–02.01) and Cosmonautics
+  Day (12.04) by the player's real local date. A tree in the cantina and in the living room at
+  home, mandarins, congratulations in the ether, and radiograms from the people who wrote in your
+  record book — whoever was not there does not congratulate you. The holiday gives nothing:
+  no discount, no bonus, no double reward. Done well before 31.12, as the note asked.
 - **The travelling cinema.** A barge brings a film; the cantina reseats itself in rows for one
   evening and a short procedural newsreel about the regions and the expedition plays on the wall.
 - **The bookshelf.** Books turn up in wrecks: a title and a paragraph, about forty hand-written

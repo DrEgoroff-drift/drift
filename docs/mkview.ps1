@@ -175,6 +175,17 @@ setTimeout(function(){
     G.cargo.organics=5;G.cargo.isotopes=1;G.cargo.volatiles=4;G.cargo.missile=3;
     G.cargo.folk=2;G.cargo.alloy=6;
     tableToggle(true,"hold");
+  }else if(scene==="tree"){
+    /* ёлка (M201): подменяем дату на 31 декабря и открываем кантину. Дата
+       настоящая по замыслу, и ждать декабря стенд не может */
+    var RD=Date, fake=new RD(2026,11,31,20,0,0).getTime();
+    window.Date=function(x){return x===undefined?new RD(fake):new RD(x);};
+    window.Date.now=function(){return fake;};
+    window.Date.prototype=RD.prototype;
+    var st9=G.sys.station;
+    if(st9){G.ship.x=st9.x+40;G.ship.y=st9.y;openStation();}
+    var cb=document.querySelector("#stTabs button[data-tab=cantina]");
+    if(cb)cb.click();
   }else if(scene==="spa"){
     /* санаторий (M199): второй день, часть распорядка уже вычеркнута */
     G.spa={day:2,days:3,slot:0,done:0,took:{"2:bath":1,"2:cock":1},talked:0,
