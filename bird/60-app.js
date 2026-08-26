@@ -4,7 +4,26 @@
 
    ОШИБКИ ВИДНО. Не собравшийся шейдер обязан сказать об этом на экране: без
    этого поиск опечатки в GLSL — чёрный прямоугольник без единой зацепки. */
-const CAM={az:0.62,el:0.10,dist:3.95,tgt:[0,1.08,0],azV:0,elV:0,distT:3.95};
+/* ── во что обходится красота ──
+   Один набор чисел на всё качество: телефон получает ту же птицу, но дешевле —
+   меньше перьев, мельче карта теней, короче лестница свечения. Подбирать по
+   имени браузера нельзя, поэтому решает ширина окна и наличие пальца.
+   ?q=low и ?q=high переключают руками — для проверки. */
+const QUAL={};
+function qualPick(){
+  const q=new URLSearchParams(location.search).get("q");
+  const m=q?q==="low":(innerWidth<=760||(navigator.maxTouchPoints||0)>1);
+  QUAL.mobile=m;
+  QUAL.coatMesh=m?[5,6]:[7,8];
+  QUAL.rows=m?46:64;
+  QUAL.dens=m?84:118;
+  QUAL.shadow=m?1024:1536;
+  QUAL.dpr=m?1.6:2;
+  QUAL.bloomN=m?4:5;
+  QUAL.dust=m?120:260;
+}
+
+const CAM={az:1.02,el:0.08,dist:3.90,tgt:[0,1.08,0],azV:0,elV:0,distT:3.90};
 const MESH={};
 let birdRAF=0,birdT0=0,birdFPS=60;
 
@@ -21,13 +40,18 @@ function birdBoot(){
          "он выключен или машина отказалась его дать.\n\nПтица без него не соберётся.");
     return;
   }
+  qualPick();
   /* сетки собираются один раз: форма птицы не меняется, меняется поза */
   MESH.body  =glMesh(buildBody(96,64));
   MESH.parts =glMesh(buildParts());
   MESH.beads =glMesh(buildBeads());
+  /* пыль: билборд из двух треугольников, остальное делают инстансы */
+  MESH.dust=glMesh({verts:new Float32Array([-1,-1, 1,-1, 1,1, -1,-1, 1,1, -1,1]),
+    stride:2,attrs:[["p",2,0]]});
+  glInstances(MESH.dust,buildDust(QUAL.dust),[["seed",4,0]],4);
   const IA=[["r0",4,0],["r1",4,4],["r2",4,8],["icol",3,12],["ipar",4,15]];
-  MESH.coat  =glMesh(buildFeather(7,8));
-  glInstances(MESH.coat,layoutCoat(),IA,FEA_STRIDE);
+  MESH.coat  =glMesh(buildFeather(QUAL.coatMesh[0],QUAL.coatMesh[1]));
+  glInstances(MESH.coat,layoutCoat(QUAL.rows,QUAL.dens),IA,FEA_STRIDE);
   MESH.plumes=glMesh(buildFeather(7,11));
   glInstances(MESH.plumes,layoutPlumes(),IA,FEA_STRIDE);
   renderInit();
@@ -59,7 +83,7 @@ function birdSize(){
   const cv=document.getElementById("cv");
   /* плотность пикселей режется двойкой: на телефоне с тройной плотностью
      разница не видна, а кадр дороже вдвое */
-  const dpr=Math.min(2,window.devicePixelRatio||1);
+  const dpr=Math.min(QUAL.dpr||2,window.devicePixelRatio||1);
   const w=Math.max(2,Math.round(cv.clientWidth*dpr)),h=Math.max(2,Math.round(cv.clientHeight*dpr));
   if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
   R.dpr=dpr;
@@ -108,11 +132,15 @@ function birdHands(cv){
 }
 function birdPoke(){
   uiTouched();
-  /* пока — общая реакция: птица вскидывается и распушается. Зоны появятся
-     вместе с хохлом и крылом. */
-  POSE.puff=0.035;POSE.ruffle=0.06;
-  POSE.pitchT=-0.18;POSE.nextLook=POSE.t+1.2;
+  /* Тычок обрывает повадку: животное, которое доигрывает начатое, пока его
+     трогают, — это заводная игрушка. Птица вскидывается, распушается и
+     смотрит на того, кто её тронул. */
+  ACT.cur=null;ACT.next=POSE.t+1.6;
+  POSE.puff=0.038;
+  POSE.pitchT=-0.16;POSE.yawT=(Math.random()-0.5)*0.5;
+  POSE.nextLook=POSE.t+1.4;
   POSE.blink=1;
+  POSE.jawT=0.22;setTimeout(()=>{POSE.jawT=0;},160);
 }
 addEventListener("error",e=>fail("Сломалось: "+e.message+"\n"+(e.filename||"")+":"+(e.lineno||"")));
 if(document.readyState==="loading")addEventListener("DOMContentLoaded",birdBoot);else birdBoot();

@@ -600,9 +600,12 @@ function bodyColor(t,a){
   const ep=smooth(.62,.44,Math.abs(t-.55)*6)*smooth(.35,.75,side)*smooth(.30,.45,belly);
   c=vLerp(c,BIRD_C.amber,clamp(ep,0,1)*.9);
   /* подхвостье уходит в фиолетовый — единственное холодное пятно внизу */
-  c=vLerp(c,BIRD_C.viol,smooth(.16,.02,t)*.7);
+  c=vLerp(c,BIRD_C.viol,smooth(.14,.03,t)*.45);
   /* щека: тёплое пятно под глазом, чтобы голова не была одноцветной */
-  const ch=smooth(.055,.012,Math.abs(t-.870))*smooth(.66,.92,side)*smooth(.46,.30,belly);
+  /* щека: пятно с рваным краем, и мешается оно почти в упор — половинчатая
+     подмесь янтаря в кобальт даёт сиреневый, а не тёплую щёку */
+  const cj=(hashf(Math.round(t*120),Math.round(a*18))-0.5)*0.10;
+  const ch=smooth(.060,.028,Math.abs(t-.872)+cj*0.35)*smooth(.68,.86,side)*smooth(.46,.32,belly);
   c=vLerp(c,BIRD_C.amber,clamp(ch,0,1));
   /* темя темнее лба: голова круглая, и без этого она читается шаром */
   c=vLerp(c,BIRD_C.blueD,smooth(.90,1.0,t)*.5*(1-belly*.4));
@@ -710,7 +713,7 @@ function buildParts(){
     {p:[0,1.637,0.280],r:[0.057,0.034]},
     {p:[0,1.623,0.327],r:[0.032,0.025]},
     {p:[0,1.618,0.350],r:[0.007,0.010]}
-  ],12,{m:1,t:1,up:[1,0,0],col:(v)=>vLerp(vLerp(C.beak,C.beakD,.50),C.beakD,smooth(.2,1,v))});
+  ],12,{m:9,t:1,up:[1,0,0],col:(v)=>vLerp(vLerp(C.beak,C.beakD,.50),C.beakD,smooth(.2,1,v))});
   /* восковица: валик у основания клюва, матовый и светлее рога */
   tube(M,[
     {p:[0,1.833,0.065],r:[0.090,0.064]},
@@ -729,11 +732,38 @@ function buildParts(){
     const n=vNorm([sx*0.94,0.14,0.31]);
     /* голое кольцо: у попугая оно есть, но это узкий ободок, а не пол-головы.
        0.092 давало оранжевое блюдце в треть черепа */
-    disc(M,vAdd(p,vMul(n,-0.012)),n,0.070,20,{m:5,t:1,ry:0.90,
+    /* два кольца: голое светлое снаружи и тёмный ободок вплотную к яблоку.
+       Без тёмного глаз лежит на голубой коже как пуговица на пальто. */
+    disc(M,vAdd(p,vMul(n,-0.012)),n,0.072,22,{m:5,t:1,ry:0.90,
       col:(k)=>k?vLerp(C.creamD,C.blueD,.62):vLerp(C.cream,C.creamD,.20)});
+    disc(M,vAdd(p,vMul(n,0.002)),n,0.061,22,{m:5,t:1,ry:0.94,
+      col:(k)=>k?vLerp(C.blueD,C.eye,.55):vLerp(C.eye,C.blueD,.35)});
     sphere(M,vAdd(p,vMul(n,0.010)),0.054,10,{m:2,t:1,col:()=>C.eye});
     disc(M,vAdd(p,vMul(n,0.048)),n,0.032,16,{m:2,t:1,
       col:(k)=>k?vLerp(C.amberD,C.eye,.40):C.eye});
+    /* ВЕКО. Собирается закрытым — куполом ровно по глазу — и в покое откинуто
+       назад поворотом в вершинной программе (материал 8). Так закрытый глаз
+       совпадает с открытым до сотой, чего подбором углов не добиться. */
+    {
+      const B=basisFrom(n),lid=meshBox();
+      for(let i=0;i<=6;i++){
+        const v=i/6;
+        for(let j=0;j<14;j++){
+          const th=j/14*TAU,r=0.062*Math.sin(v*Math.PI/2+0.10);
+          const q=vAdd(vAdd(p,vMul(B[0],Math.cos(th)*r)),vMul(B[1],Math.sin(th)*r));
+          const off=vMul(n,0.052*Math.cos(v*Math.PI/2));
+          lid.add(vAdd(q,off),n,1,8,vLerp(C.blueD,C.creamD,0.30));
+        }
+      }
+      for(let i=0;i<6;i++)for(let j=0;j<14;j++){
+        const j1=(j+1)%14;
+        lid.quad(i*14+j,i*14+j1,(i+1)*14+j1,(i+1)*14+j);
+      }
+      const off=M.n;
+      for(let k=0;k<lid.v.length;k++)M.v.push(lid.v[k]);
+      M.n+=lid.n;
+      for(const ix of lid.i)M.i.push(ix+off);
+    }
   }
 
   /* ── жёрдочка ──
@@ -901,34 +931,40 @@ const normalAt=(t,a)=>bodyNormal(t,a);
 /* ── оперение корпуса ──
    Ряды снизу вверх, каждый следующий перекрывает предыдущий. Шаг ряда меньше
    длины пера — иначе между рядами видно тело. */
+/* шары вдоль клюва и восковицы: перьев внутри них не бывает */
+const BEAK_BALLS=[
+  [0,1.826,0.090,0.115],[0,1.790,0.150,0.120],[0,1.752,0.235,0.115],
+  [0,1.712,0.305,0.100],[0,1.665,0.355,0.085],[0,1.660,0.180,0.105]
+];
 const COAT_STAT={all:0,head:0,cut:0};
-function layoutCoat(){
+function layoutCoat(rows,dens){
   const out=[],R=rnd(0x7b1d);
-  const ROWS=64;
+  const ROWS=rows||64,DENS=dens||118;
   for(let r=0;r<ROWS;r++){
     const t0=mix(0.055,0.995,r/(ROWS-1));
     const S=spineAt(t0);
     const girth=(S.rw+S.rf+S.rb)*0.5;
-    const n=Math.max(9,Math.round(girth*118));
+    const n=Math.max(9,Math.round(girth*DENS));
     for(let j=0;j<n;j++){
       const a=(j+(r%2)*0.5)/n*TAU+R()*0.10;
       /* ряд не должен читаться рядом: каждое перо гуляет вдоль хребта на
          полшага, и черепица становится оперением, а не кладкой */
       const t=clamp(t0+(R()-0.5)*0.028,0.03,0.998);
-      /* Голое место на птице — только клюв, восковица и кольцо вокруг глаза.
-         Первая версия резала перья по (t,a) на глазок и оставляла голубую
-         лысину во всю голову: голова у птицы и есть то место, где перьев
-         больше всего, просто они там мелкие. Проверка идёт по РАССТОЯНИЮ до
-         настоящих частей, а не по параметрам поверхности. */
+      /* Голое место на птице — только клюв, восковица и кольцо у глаза.
+         Граница считается по РАССТОЯНИЮ до частей, а не коробкой: коробка
+         режет оперение прямой линией, и у основания клюва получался ровный
+         вертикальный срез, какого на птице не бывает. */
       const base=bodyAt(t,a);
-      if(base[1]>1.50&&base[1]<1.79&&base[2]>0.17&&Math.abs(base[0])<0.11){COAT_STAT.cut++;continue;}   /* клюв */
-      if(base[1]>1.77&&base[1]<1.87&&base[2]>0.075&&Math.abs(base[0])<0.10){COAT_STAT.cut++;continue;} /* восковица */
-      let inEye=false;
-      for(const sx of [-1,1]){
-        const d=Math.hypot(base[0]-sx*0.248,base[1]-1.786,base[2]-0.100);
-        if(d<0.095){inEye=true;break;}
+      let bare=false;
+      for(const b of BEAK_BALLS){
+        const d=Math.hypot(base[0]-b[0],base[1]-b[1],base[2]-b[2]);
+        if(d<b[3]){bare=true;break;}
       }
-      if(inEye){COAT_STAT.cut++;continue;}
+      if(!bare)for(const sx of [-1,1]){
+        const d=Math.hypot(base[0]-sx*0.248,base[1]-1.786,base[2]-0.100);
+        if(d<0.079){bare=true;break;}
+      }
+      if(bare){COAT_STAT.cut++;continue;}
       COAT_STAT.all++; if(base[1]>1.60)COAT_STAT.head++;
       const p=normalAt(t,a);
       const dir=flowAt(t,a);
@@ -1028,6 +1064,16 @@ function layoutPlumes(){
   }
   return new Float32Array(out);
 }
+/* ── пыль в воздухе ──
+   Строится один раз: точки в объёме вокруг птицы, всё движение — в шейдере. */
+function buildDust(n){
+  const R=rnd(0x0d51),d=[];
+  for(let i=0;i<n;i++){
+    const a=R()*TAU,r=0.5+R()*2.4;
+    d.push(Math.cos(a)*r,0.1+R()*2.3,Math.sin(a)*r-0.2,R());
+  }
+  return new Float32Array(d);
+}
 
 /* ===== 30-shade.js ===== */
 /* ══════════════ шейдеры ══════════════
@@ -1044,13 +1090,29 @@ function layoutPlumes(){
    Поворот шеи взвешен по параметру хребта t, поэтому голова тянет за собой
    шею, а не отрывается от неё. */
 const GL_RIG=`
-uniform float uHeadYaw,uHeadPitch,uHeadRoll,uBreath,uLean,uBow,uTime,uPuff;
+uniform float uHeadYaw,uHeadPitch,uHeadRoll,uBreath,uLean,uBow,uTime,uPuff,uBlink,uJaw;
 uniform vec3 uNeckP;
 mat3 rotAxis(vec3 ax,float a){
   float c=cos(a),s=sin(a),k=1.0-c;
   return mat3(ax.x*ax.x*k+c, ax.x*ax.y*k+ax.z*s, ax.x*ax.z*k-ax.y*s,
               ax.y*ax.x*k-ax.z*s, ax.y*ax.y*k+c, ax.y*ax.z*k+ax.x*s,
               ax.z*ax.x*k+ax.y*s, ax.z*ax.y*k-ax.x*s, ax.z*ax.z*k+c);
+}
+/* ── подвижные части головы ──
+   Веко и подклювье — единственные два сустава, кроме шеи. Оба сделаны без
+   костей: вершина знает свой материал, и по нему решает, вокруг чего ей
+   поворачиваться. Веко собрано ЗАКРЫТЫМ и откинуто назад — так его нулевое
+   положение точно совпадает с глазом, а не «почти». */
+void partJoints(inout vec3 p, inout vec3 n, float m){
+  if(m>7.5&&m<8.5){
+    vec3 c=vec3(sign(p.x)*0.248,1.786,0.100);
+    mat3 R=rotAxis(vec3(1.0,0.0,0.0),-(1.0-uBlink)*1.55);
+    p=c+R*(p-c); n=R*n;
+  }else if(m>8.5){
+    vec3 h=vec3(0.0,1.678,0.118);
+    mat3 R=rotAxis(vec3(1.0,0.0,0.0),uJaw);
+    p=h+R*(p-h); n=R*n;
+  }
 }
 /* t — положение вдоль хребта (0 хвост, 1 темя); для частей, у которых своего t
    нет (клюв, хохол), передаётся единица: они едут с головой целиком */
@@ -1147,6 +1209,7 @@ out vec3 vP,vN,vC;
 out vec2 vTA;
 void main(){
   vec3 pp=p,nn=n;
+  partJoints(pp,nn,ta.y);
   rigApply(pp,nn,ta.x);
   vP=pp;vN=normalize(nn);vC=c;vTA=ta;
   gl_Position=uVP*vec4(pp,1.0);
@@ -1169,7 +1232,7 @@ void main(){
     /* тело под перьями — тёмная масса: его видно в щелях и на кромке, и
        красится оно приглушённым своим цветом, а не цветом оперения */
     alb=vC*0.30;rough=0.72;trans=0.06;
-  }else if(m<1.5){
+  }else if(m<1.5||m>8.5){
     /* Клюв — рог, а не пластмасса: вдоль верха идёт киль, к концу рог темнеет
        и уплотняется, у основания видны следы роста — поперечные бороздки.
        Без них клюв читается леденцом: гладкая жёлтая масса и один блик. */
@@ -1203,8 +1266,11 @@ void main(){
     N=normalize(N+vec3(0.0,s*0.10-0.05,0.0));
   }else if(m<5.5){
     rough=0.80;trans=0.42;alb=vC;         /* голая кожа: восковица, кольцо */
-  }else{
+  }else if(m<7.5){
     rough=0.22;trans=0.10;alb=vC;         /* коготь */
+  }else{
+    /* веко: кожа, но тоньше и теплее — на просвет через него видно кровь */
+    rough=0.70;trans=0.55;alb=vC;
   }
   o=vec4(lightPoint(vP,N,alb,rough,trans,vec3(0.0,1.0,0.0),0.0)*ao,1.0);
 }`;
@@ -1218,6 +1284,7 @@ layout(location=2) in vec2 ta;
 uniform mat4 uVP;
 void main(){
   vec3 pp=p,nn=n;
+  partJoints(pp,nn,ta.y);
   rigApply(pp,nn,ta.x);
   gl_Position=uVP*vec4(pp,1.0);
 }`;
@@ -1421,50 +1488,194 @@ void main(){
   o=vec4(c/16.0*uK,1.0);
 }`;
 
+/* ── пыль ──
+   Несколько сот пылинок в луче: они дают воздуху объём и говорят, что птица
+   сидит В КОМНАТЕ, а не висит на градиенте. Каждая — билборд в один пиксель с
+   ореолом, летит по своей медленной спирали, ярче там, где стоит ключ.
+   Рисуются аддитивно и после всего света, глубину читают, но не пишут. */
+const VS_DUST=`
+layout(location=0) in vec2 p;
+layout(location=1) in vec4 seed;      /* xyz — точка, w — размер */
+uniform mat4 uVP;
+uniform vec3 uEye;
+uniform float uTime;
+out vec2 vUV;
+out float vB;
+void main(){
+  vec3 c=seed.xyz;
+  float ph=seed.w*37.0;
+  /* дрейф: три несоизмеримые синусоиды — движение не зацикливается на глаз */
+  c+=vec3(sin(uTime*0.13+ph)*0.30, sin(uTime*0.09+ph*1.7)*0.22+uTime*0.012,
+          cos(uTime*0.11+ph*2.3)*0.30);
+  c.y=mod(c.y+1.2,2.6)-1.2;
+  vec3 f=normalize(uEye-c),r=normalize(cross(vec3(0.0,1.0,0.0),f)),u=cross(f,r);
+  float s=0.004+seed.w*0.010;
+  vec3 wp=c+r*p.x*s+u*p.y*s;
+  vUV=p;
+  /* ярче в конусе ключа и мягко гаснет к краям кадра */
+  vB=(0.25+0.75*smoothstep(-0.2,0.9,dot(normalize(c-vec3(0.0,1.0,0.0)),vec3(0.55,0.8,0.45))))
+     *(0.5+0.5*sin(uTime*0.7+ph));
+  gl_Position=uVP*vec4(wp,1.0);
+}`;
+const FS_DUST=`
+in vec2 vUV;
+in float vB;
+uniform vec3 uCol;
+out vec4 o;
+void main(){
+  float d=length(vUV);
+  if(d>1.0)discard;
+  float a=pow(1.0-d,3.0);
+  o=vec4(uCol*a*vB*0.9,1.0);
+}`;
+
 /* ===== 40-pose.js ===== */
 /* ══════════════ поза и жизнь ══════════════
-   Как в игре: не «кадры анимации», а затухающие пружины. Повадка выставляет
-   степени свободы, пружины сами возвращают птицу в покой — застрять на кадре
-   невозможно, потому что кадров нет.
+   Как в игре: не «кадры анимации», а затухающие пружины. Повадка (41-acts)
+   выставляет цели, пружины сами доводят до них и сами возвращают в покой —
+   застрять на кадре невозможно, потому что кадров нет.
 
-   Мелкая рябь идёт ВСЕГДА и поверх всего: повадка — то, что птица делает,
-   рябь — то, что с ней происходит. */
+   Мелкая рябь, дыхание и моргание идут ВСЕГДА и поверх всего: повадка — то,
+   что птица делает; рябь — то, что с ней происходит. */
 const POSE={t:0,yaw:0,pitch:0,roll:0,breath:0,puff:0,lean:0,bow:0,ruffle:0.012,
-  yawV:0,pitchV:0,rollV:0,blink:0,blinkAt:2.2,look:[0,1.75,3]};
+  jaw:0,blink:0,blinkAt:2.2,
+  yawV:0,pitchV:0,rollV:0,bowV:0,jawV:0,
+  yawT:0,pitchT:0,rollT:0,bowT:0,jawT:0,puffAdd:0,ruffleAdd:0,blinkHold:0,
+  nextLook:1.5,still:0};
 
 function spring(v,vel,k,d,dt){vel+=-v*k*dt;vel*=Math.pow(d,dt*60);return [v+vel*dt,vel];}
+/* пружина К ЦЕЛИ: считается по отклонению, поэтому цель можно двигать каждый
+   кадр и рывка не будет */
+function springTo(v,vel,tgt,k,d,dt){
+  const r=spring(v-tgt,vel,k,d,dt);
+  return [r[0]+tgt,r[1]];
+}
 
 function poseStep(dt){
   POSE.t+=dt;
   const T=POSE.t;
-  /* дыхание: два вдоха в пять секунд, амплитуда меньше миллиметра в масштабе
-     птицы — заметно только тем, что птица не стоит */
+  if(typeof actsStep==="function")actsStep();
+  /* дыхание: два вдоха в пять секунд, и амплитуда такая, что заметно только
+     одно — птица не стоит */
   POSE.breath=Math.sin(T*2.4)*0.006+Math.sin(T*0.7)*0.003;
-  /* пружины головы тянутся к цели, а не ставятся в неё */
-  [POSE.yaw,POSE.yawV]=spring(POSE.yaw-POSE.yawT,POSE.yawV,55,.86,dt);
-  POSE.yaw+=POSE.yawT;
-  [POSE.pitch,POSE.pitchV]=spring(POSE.pitch-POSE.pitchT,POSE.pitchV,55,.86,dt);
-  POSE.pitch+=POSE.pitchT;
-  [POSE.roll,POSE.rollV]=spring(POSE.roll-POSE.rollT,POSE.rollV,48,.88,dt);
-  POSE.roll+=POSE.rollT;
-  /* птица смотрит по сторонам сама: редко, коротко и не в одну и ту же точку */
+  /* птица смотрит по сторонам и между повадками: редко, коротко и не в одну и
+     ту же точку */
   if(POSE.still){POSE.yawT=0;POSE.pitchT=0;POSE.rollT=0;POSE.blink=0;POSE.blinkAt=1e9;}
-  else if(T>POSE.nextLook){
-    POSE.nextLook=T+0.9+Math.random()*3.4;
-    POSE.yawT=(Math.random()-0.5)*0.9;
-    POSE.pitchT=(Math.random()-0.5)*0.34;
-    POSE.rollT=(Math.random()-0.5)*0.22;
+  else if(!ACT.cur&&T>POSE.nextLook){
+    POSE.nextLook=T+1.1+Math.random()*3.8;
+    POSE.yawT=(Math.random()-0.5)*0.75;
+    POSE.pitchT=(Math.random()-0.5)*0.28;
+    POSE.rollT=(Math.random()-0.5)*0.20;
   }
+  [POSE.yaw,POSE.yawV]=springTo(POSE.yaw,POSE.yawV,POSE.yawT,60,.86,dt);
+  [POSE.pitch,POSE.pitchV]=springTo(POSE.pitch,POSE.pitchV,POSE.pitchT,60,.86,dt);
+  [POSE.roll,POSE.rollV]=springTo(POSE.roll,POSE.rollV,POSE.rollT,52,.87,dt);
+  [POSE.bow,POSE.bowV]=springTo(POSE.bow,POSE.bowV,POSE.bowT,40,.88,dt);
+  /* челюсть жёстче и суше остальных: клюв не качается, он щёлкает */
+  [POSE.jaw,POSE.jawV]=springTo(POSE.jaw,POSE.jawV,POSE.jawT,220,.72,dt);
+  /* моргание врозь: своё время, поверх любой повадки; зевок держит глаз
+     прикрытым, поэтому blinkHold складывается, а не спорит */
   if(POSE.blink>0)POSE.blink=Math.max(0,POSE.blink-dt*7.5);
-  if(T>POSE.blinkAt){POSE.blink=1;POSE.blinkAt=T+1.5+Math.random()*4.5;}
+  if(!POSE.still&&T>POSE.blinkAt){POSE.blink=1;POSE.blinkAt=T+1.5+Math.random()*4.5;}
+  POSE.blinkNow=clamp(Math.max(POSE.blink,POSE.blinkHold||0),0,1);
   POSE.puff*=Math.pow(.92,dt*60);
-  /* рябь по оперению: она идёт всегда, поверх любой повадки — это не то, что
-     птица делает, а то, что с ней происходит */
-  POSE.ruffle=0.012+POSE.puff*1.6;
-  POSE.bow*=Math.pow(.93,dt*60);
+  POSE.ruffle=0.012+POSE.puff*1.6+(POSE.ruffleAdd||0);
+  POSE.puffShow=POSE.puff+(POSE.puffAdd||0);
   POSE.lean=Math.sin(T*0.53)*0.012;
 }
-POSE.yawT=0;POSE.pitchT=0;POSE.rollT=0;POSE.nextLook=1.5;
+
+/* ===== 41-acts.js ===== */
+/* ══════════════ повадки ══════════════
+   То же устройство, что у птицы в игре (src/12z): повадка не анимация, а
+   короткий заход, который выставляет ЦЕЛИ, а доводят до них пружины. Поэтому
+   повадку можно прервать в любом кадре и ничего не сломается, а две подряд
+   одинаковыми не выглядят — пружина стартует из другого места.
+
+   ПРАВИЛО: повадка — то, что птица делает; рябь по оперению, дыхание и
+   моргание идут ВСЕГДА и поверх неё. Смешивать их нельзя, иначе живое
+   получается только в момент повадки, а между ними стоит чучело. */
+const ACTS=[
+  {id:"осмотреться",dur:2.6,w:3,run(p){
+    const s=this.side;
+    POSE.yawT=Math.sin(p*Math.PI)*0.85*s;
+    POSE.pitchT=Math.sin(p*Math.PI)*-0.10;
+    POSE.rollT=Math.sin(p*Math.PI)*0.16*s;
+  }},
+  {id:"наклонить голову",dur:2.2,w:2,run(p){
+    const k=parBell(p);
+    POSE.rollT=k*0.62*this.side;
+    POSE.yawT=k*0.22*this.side;
+  }},
+  {id:"чистить перо",dur:3.4,w:3,run(p){
+    /* птица достаёт клювом плечо: голова уходит вниз и вбок, и там мелко
+       работает — не плавная дуга, а частые короткие движения */
+    const k=parHold(p,.22,.22),s=this.side;
+    POSE.yawT=k*1.15*s;
+    POSE.pitchT=k*(0.62+Math.sin(p*46)*0.06);
+    POSE.rollT=k*0.30*s;
+    POSE.jawT=k*(0.12+Math.max(0,Math.sin(p*38))*0.10);
+    POSE.ruffleAdd=k*0.020;
+  }},
+  {id:"встряхнуться",dur:1.5,w:2,run(p){
+    const k=parBell(p);
+    POSE.puffAdd=k*0.030;
+    POSE.ruffleAdd=k*0.075;
+    POSE.rollT=Math.sin(p*34)*k*0.16;
+    POSE.yawT=Math.sin(p*27)*k*0.12;
+  }},
+  {id:"зевнуть",dur:2.4,w:1,run(p){
+    const k=parHold(p,.35,.35);
+    POSE.jawT=k*0.42;
+    POSE.pitchT=-k*0.30;
+    POSE.blinkHold=k;
+  }},
+  {id:"поклониться",dur:2.0,w:2,run(p){
+    const k=Math.sin(p*Math.PI*2)*Math.sin(p*Math.PI);
+    POSE.bowT=k*0.16;
+    POSE.pitchT=k*0.34;
+  }},
+  {id:"потянуться",dur:2.6,w:1,run(p){
+    const k=parHold(p,.30,.40);
+    POSE.puffAdd=k*0.022;
+    POSE.pitchT=-k*0.22;
+    POSE.bowT=-k*0.10;
+    POSE.ruffleAdd=k*0.030;
+  }},
+  {id:"поболтать",dur:2.8,w:2,run(p){
+    /* трепло на то и трепло: клюв работает, голова кивает в такт */
+    const k=parHold(p,.15,.25),ch=Math.max(0,Math.sin(p*30));
+    POSE.jawT=k*ch*0.30;
+    POSE.pitchT=k*ch*0.12-k*0.05;
+    POSE.yawT=k*Math.sin(p*7)*0.16;
+  }}
+];
+function parBell(p){return Math.sin(clamp(p,0,1)*Math.PI);}
+/* ровное «плато» с мягким входом и выходом: повадка держится, а не мигает */
+function parHold(p,in_,out){
+  if(p<in_)return smooth(0,1,p/in_);
+  if(p>1-out)return smooth(0,1,(1-p)/out);
+  return 1;
+}
+const ACT={cur:null,t0:0,next:2.0,last:""};
+function actsStep(){
+  const T=POSE.t;
+  POSE.jawT=0;POSE.bowT=0;POSE.puffAdd=0;POSE.ruffleAdd=0;POSE.blinkHold=0;
+  if(ACT.cur){
+    const p=(T-ACT.t0)/ACT.cur.dur;
+    if(p>=1){ACT.cur=null;ACT.next=T+1.4+Math.random()*3.6;}
+    else{ACT.cur.run(p);return;}
+  }
+  if(POSE.still||T<ACT.next)return;
+  /* выбор с весами и без повторов подряд: одна и та же повадка дважды — это
+     уже не повадка, а тик */
+  let pool=ACTS.filter(a=>a.id!==ACT.last);
+  let sum=0;for(const a of pool)sum+=a.w;
+  let r=Math.random()*sum;
+  let pick=pool[0];
+  for(const a of pool){r-=a.w;if(r<=0){pick=a;break;}}
+  pick.side=Math.random()<.5?-1:1;
+  ACT.cur=pick;ACT.t0=T;ACT.last=pick.id;
+}
 
 /* ===== 50-render.js ===== */
 /* ══════════════ проходы кадра ══════════════
@@ -1477,6 +1688,7 @@ POSE.yawT=0;POSE.pitchT=0;POSE.rollT=0;POSE.nextLook=1.5;
    им уже нечем. */
 
 const R={W:0,H:0,dpr:1,shadowSize:1536,bloomN:5,exposure:0.55};
+/* размеры целей приходят из QUAL (60-app): качество решается один раз */
 
 function renderInit(){
   R.pSolid=glProg(VS_BODY,FS_SOLID,"твёрдое");
@@ -1485,9 +1697,11 @@ function renderInit(){
   R.pFeaD =glProg(VS_FEATHER,FS_DEPTH,"перо·глубина");
   R.pBead =glProg(VS_BEAD,FS_BEAD,"бусина");
   R.pBg   =glProg(VS_FLAT,FS_BG,"фон");
+  R.pDust =glProg(VS_DUST,FS_DUST,"пыль");
   R.pTone =glProg(VS_FLAT,FS_TONE,"экран");
   R.pBright=glProg(VS_FLAT,FS_BRIGHT,"яркое");
   R.pBlur =glProg(VS_FLAT,FS_BLUR,"размытие");
+  R.shadowSize=QUAL.shadow||1536;R.bloomN=QUAL.bloomN||5;
   R.shadow=glTarget(R.shadowSize,R.shadowSize,"depth");
 }
 function renderSize(w,h){
@@ -1534,7 +1748,8 @@ function bindLight(P){
    птицы, и это видно сразу */
 function bindPose(P){
   glSet(P,"uHeadYaw",POSE.yaw);glSet(P,"uHeadPitch",POSE.pitch);glSet(P,"uHeadRoll",POSE.roll);
-  glSet(P,"uBreath",POSE.breath);glSet(P,"uPuff",POSE.puff);
+  glSet(P,"uBreath",POSE.breath);glSet(P,"uPuff",POSE.puffShow||0);
+  glSet(P,"uBlink",POSE.blinkNow||0);glSet(P,"uJaw",POSE.jaw);
   glSet(P,"uLean",POSE.lean);glSet(P,"uBow",POSE.bow);
   glSet(P,"uNeckP",[0,1.46,-0.04]);
   glSet(P,"uTime",POSE.t);
@@ -1576,8 +1791,14 @@ function renderFrame(){
   gl.enable(gl.DEPTH_TEST);
   drawSolid(R.pSolid,null);
   drawFeathers(R.pFea,null);
-  /* бусины: после всего света и аддитивно */
+  /* пыль и бусины: после всего света и аддитивно */
   gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE);gl.depthMask(false);
+  if(MESH.dust){
+    gl.useProgram(R.pDust.p);
+    glSet(R.pDust,"uVP",R.VP);glSet(R.pDust,"uEye",R.eye);glSet(R.pDust,"uTime",POSE.t);
+    glSet(R.pDust,"uCol",[0.42,0.52,0.62]);
+    glDraw(MESH.dust);
+  }
   gl.useProgram(R.pBead.p);bindPose(R.pBead);
   glSet(R.pBead,"uVP",R.VP);glSet(R.pBead,"uEye",R.eye);
   glSet(R.pBead,"uGlow",0.62+Math.sin(POSE.t*1.7)*0.09);
@@ -1628,7 +1849,26 @@ function blit(src,dst,add){
 
    ОШИБКИ ВИДНО. Не собравшийся шейдер обязан сказать об этом на экране: без
    этого поиск опечатки в GLSL — чёрный прямоугольник без единой зацепки. */
-const CAM={az:0.62,el:0.10,dist:3.95,tgt:[0,1.08,0],azV:0,elV:0,distT:3.95};
+/* ── во что обходится красота ──
+   Один набор чисел на всё качество: телефон получает ту же птицу, но дешевле —
+   меньше перьев, мельче карта теней, короче лестница свечения. Подбирать по
+   имени браузера нельзя, поэтому решает ширина окна и наличие пальца.
+   ?q=low и ?q=high переключают руками — для проверки. */
+const QUAL={};
+function qualPick(){
+  const q=new URLSearchParams(location.search).get("q");
+  const m=q?q==="low":(innerWidth<=760||(navigator.maxTouchPoints||0)>1);
+  QUAL.mobile=m;
+  QUAL.coatMesh=m?[5,6]:[7,8];
+  QUAL.rows=m?46:64;
+  QUAL.dens=m?84:118;
+  QUAL.shadow=m?1024:1536;
+  QUAL.dpr=m?1.6:2;
+  QUAL.bloomN=m?4:5;
+  QUAL.dust=m?120:260;
+}
+
+const CAM={az:1.02,el:0.08,dist:3.90,tgt:[0,1.08,0],azV:0,elV:0,distT:3.90};
 const MESH={};
 let birdRAF=0,birdT0=0,birdFPS=60;
 
@@ -1645,13 +1885,18 @@ function birdBoot(){
          "он выключен или машина отказалась его дать.\n\nПтица без него не соберётся.");
     return;
   }
+  qualPick();
   /* сетки собираются один раз: форма птицы не меняется, меняется поза */
   MESH.body  =glMesh(buildBody(96,64));
   MESH.parts =glMesh(buildParts());
   MESH.beads =glMesh(buildBeads());
+  /* пыль: билборд из двух треугольников, остальное делают инстансы */
+  MESH.dust=glMesh({verts:new Float32Array([-1,-1, 1,-1, 1,1, -1,-1, 1,1, -1,1]),
+    stride:2,attrs:[["p",2,0]]});
+  glInstances(MESH.dust,buildDust(QUAL.dust),[["seed",4,0]],4);
   const IA=[["r0",4,0],["r1",4,4],["r2",4,8],["icol",3,12],["ipar",4,15]];
-  MESH.coat  =glMesh(buildFeather(7,8));
-  glInstances(MESH.coat,layoutCoat(),IA,FEA_STRIDE);
+  MESH.coat  =glMesh(buildFeather(QUAL.coatMesh[0],QUAL.coatMesh[1]));
+  glInstances(MESH.coat,layoutCoat(QUAL.rows,QUAL.dens),IA,FEA_STRIDE);
   MESH.plumes=glMesh(buildFeather(7,11));
   glInstances(MESH.plumes,layoutPlumes(),IA,FEA_STRIDE);
   renderInit();
@@ -1683,7 +1928,7 @@ function birdSize(){
   const cv=document.getElementById("cv");
   /* плотность пикселей режется двойкой: на телефоне с тройной плотностью
      разница не видна, а кадр дороже вдвое */
-  const dpr=Math.min(2,window.devicePixelRatio||1);
+  const dpr=Math.min(QUAL.dpr||2,window.devicePixelRatio||1);
   const w=Math.max(2,Math.round(cv.clientWidth*dpr)),h=Math.max(2,Math.round(cv.clientHeight*dpr));
   if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
   R.dpr=dpr;
@@ -1732,11 +1977,15 @@ function birdHands(cv){
 }
 function birdPoke(){
   uiTouched();
-  /* пока — общая реакция: птица вскидывается и распушается. Зоны появятся
-     вместе с хохлом и крылом. */
-  POSE.puff=0.035;POSE.ruffle=0.06;
-  POSE.pitchT=-0.18;POSE.nextLook=POSE.t+1.2;
+  /* Тычок обрывает повадку: животное, которое доигрывает начатое, пока его
+     трогают, — это заводная игрушка. Птица вскидывается, распушается и
+     смотрит на того, кто её тронул. */
+  ACT.cur=null;ACT.next=POSE.t+1.6;
+  POSE.puff=0.038;
+  POSE.pitchT=-0.16;POSE.yawT=(Math.random()-0.5)*0.5;
+  POSE.nextLook=POSE.t+1.4;
   POSE.blink=1;
+  POSE.jawT=0.22;setTimeout(()=>{POSE.jawT=0;},160);
 }
 addEventListener("error",e=>fail("Сломалось: "+e.message+"\n"+(e.filename||"")+":"+(e.lineno||"")));
 if(document.readyState==="loading")addEventListener("DOMContentLoaded",birdBoot);else birdBoot();

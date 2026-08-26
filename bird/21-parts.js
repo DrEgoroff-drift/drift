@@ -55,8 +55,12 @@ function buildParts(){
     const n=vNorm([sx*0.94,0.14,0.31]);
     /* голое кольцо: у попугая оно есть, но это узкий ободок, а не пол-головы.
        0.092 давало оранжевое блюдце в треть черепа */
-    disc(M,vAdd(p,vMul(n,-0.012)),n,0.070,20,{m:5,t:1,ry:0.90,
+    /* два кольца: голое светлое снаружи и тёмный ободок вплотную к яблоку.
+       Без тёмного глаз лежит на голубой коже как пуговица на пальто. */
+    disc(M,vAdd(p,vMul(n,-0.012)),n,0.072,22,{m:5,t:1,ry:0.90,
       col:(k)=>k?vLerp(C.creamD,C.blueD,.62):vLerp(C.cream,C.creamD,.20)});
+    disc(M,vAdd(p,vMul(n,0.002)),n,0.061,22,{m:5,t:1,ry:0.94,
+      col:(k)=>k?vLerp(C.blueD,C.eye,.55):vLerp(C.eye,C.blueD,.35)});
     sphere(M,vAdd(p,vMul(n,0.010)),0.054,10,{m:2,t:1,col:()=>C.eye});
     disc(M,vAdd(p,vMul(n,0.048)),n,0.032,16,{m:2,t:1,
       col:(k)=>k?vLerp(C.amberD,C.eye,.40):C.eye});

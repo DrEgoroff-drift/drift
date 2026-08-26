@@ -77,9 +77,12 @@ function bodyColor(t,a){
   const ep=smooth(.62,.44,Math.abs(t-.55)*6)*smooth(.35,.75,side)*smooth(.30,.45,belly);
   c=vLerp(c,BIRD_C.amber,clamp(ep,0,1)*.9);
   /* подхвостье уходит в фиолетовый — единственное холодное пятно внизу */
-  c=vLerp(c,BIRD_C.viol,smooth(.16,.02,t)*.7);
+  c=vLerp(c,BIRD_C.viol,smooth(.14,.03,t)*.45);
   /* щека: тёплое пятно под глазом, чтобы голова не была одноцветной */
-  const ch=smooth(.055,.012,Math.abs(t-.870))*smooth(.66,.92,side)*smooth(.46,.30,belly);
+  /* щека: пятно с рваным краем, и мешается оно почти в упор — половинчатая
+     подмесь янтаря в кобальт даёт сиреневый, а не тёплую щёку */
+  const cj=(hashf(Math.round(t*120),Math.round(a*18))-0.5)*0.10;
+  const ch=smooth(.060,.028,Math.abs(t-.872)+cj*0.35)*smooth(.68,.86,side)*smooth(.46,.32,belly);
   c=vLerp(c,BIRD_C.amber,clamp(ch,0,1));
   /* темя темнее лба: голова круглая, и без этого она читается шаром */
   c=vLerp(c,BIRD_C.blueD,smooth(.90,1.0,t)*.5*(1-belly*.4));

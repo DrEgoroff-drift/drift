@@ -80,34 +80,40 @@ const normalAt=(t,a)=>bodyNormal(t,a);
 /* ── оперение корпуса ──
    Ряды снизу вверх, каждый следующий перекрывает предыдущий. Шаг ряда меньше
    длины пера — иначе между рядами видно тело. */
+/* шары вдоль клюва и восковицы: перьев внутри них не бывает */
+const BEAK_BALLS=[
+  [0,1.826,0.090,0.115],[0,1.790,0.150,0.120],[0,1.752,0.235,0.115],
+  [0,1.712,0.305,0.100],[0,1.665,0.355,0.085],[0,1.660,0.180,0.105]
+];
 const COAT_STAT={all:0,head:0,cut:0};
-function layoutCoat(){
+function layoutCoat(rows,dens){
   const out=[],R=rnd(0x7b1d);
-  const ROWS=64;
+  const ROWS=rows||64,DENS=dens||118;
   for(let r=0;r<ROWS;r++){
     const t0=mix(0.055,0.995,r/(ROWS-1));
     const S=spineAt(t0);
     const girth=(S.rw+S.rf+S.rb)*0.5;
-    const n=Math.max(9,Math.round(girth*118));
+    const n=Math.max(9,Math.round(girth*DENS));
     for(let j=0;j<n;j++){
       const a=(j+(r%2)*0.5)/n*TAU+R()*0.10;
       /* ряд не должен читаться рядом: каждое перо гуляет вдоль хребта на
          полшага, и черепица становится оперением, а не кладкой */
       const t=clamp(t0+(R()-0.5)*0.028,0.03,0.998);
-      /* Голое место на птице — только клюв, восковица и кольцо вокруг глаза.
-         Первая версия резала перья по (t,a) на глазок и оставляла голубую
-         лысину во всю голову: голова у птицы и есть то место, где перьев
-         больше всего, просто они там мелкие. Проверка идёт по РАССТОЯНИЮ до
-         настоящих частей, а не по параметрам поверхности. */
+      /* Голое место на птице — только клюв, восковица и кольцо у глаза.
+         Граница считается по РАССТОЯНИЮ до частей, а не коробкой: коробка
+         режет оперение прямой линией, и у основания клюва получался ровный
+         вертикальный срез, какого на птице не бывает. */
       const base=bodyAt(t,a);
-      if(base[1]>1.50&&base[1]<1.79&&base[2]>0.17&&Math.abs(base[0])<0.11){COAT_STAT.cut++;continue;}   /* клюв */
-      if(base[1]>1.77&&base[1]<1.87&&base[2]>0.075&&Math.abs(base[0])<0.10){COAT_STAT.cut++;continue;} /* восковица */
-      let inEye=false;
-      for(const sx of [-1,1]){
-        const d=Math.hypot(base[0]-sx*0.248,base[1]-1.786,base[2]-0.100);
-        if(d<0.095){inEye=true;break;}
+      let bare=false;
+      for(const b of BEAK_BALLS){
+        const d=Math.hypot(base[0]-b[0],base[1]-b[1],base[2]-b[2]);
+        if(d<b[3]){bare=true;break;}
       }
-      if(inEye){COAT_STAT.cut++;continue;}
+      if(!bare)for(const sx of [-1,1]){
+        const d=Math.hypot(base[0]-sx*0.248,base[1]-1.786,base[2]-0.100);
+        if(d<0.079){bare=true;break;}
+      }
+      if(bare){COAT_STAT.cut++;continue;}
       COAT_STAT.all++; if(base[1]>1.60)COAT_STAT.head++;
       const p=normalAt(t,a);
       const dir=flowAt(t,a);
@@ -206,4 +212,14 @@ function layoutPlumes(){
       vLerp(BIRD_C.blue,BIRD_C.blueL,0.30+Math.abs(q.k)*0.35),[0.9,1.1,1.0,3.0]);
   }
   return new Float32Array(out);
+}
+/* ── пыль в воздухе ──
+   Строится один раз: точки в объёме вокруг птицы, всё движение — в шейдере. */
+function buildDust(n){
+  const R=rnd(0x0d51),d=[];
+  for(let i=0;i<n;i++){
+    const a=R()*TAU,r=0.5+R()*2.4;
+    d.push(Math.cos(a)*r,0.1+R()*2.3,Math.sin(a)*r-0.2,R());
+  }
+  return new Float32Array(d);
 }

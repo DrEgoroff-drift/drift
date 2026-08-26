@@ -409,3 +409,44 @@ void main(){
   c+=texture(uSrc,vUV+vec2(-uTexel.x,uTexel.y)).rgb;
   o=vec4(c/16.0*uK,1.0);
 }`;
+
+/* ── пыль ──
+   Несколько сот пылинок в луче: они дают воздуху объём и говорят, что птица
+   сидит В КОМНАТЕ, а не висит на градиенте. Каждая — билборд в один пиксель с
+   ореолом, летит по своей медленной спирали, ярче там, где стоит ключ.
+   Рисуются аддитивно и после всего света, глубину читают, но не пишут. */
+const VS_DUST=`
+layout(location=0) in vec2 p;
+layout(location=1) in vec4 seed;      /* xyz — точка, w — размер */
+uniform mat4 uVP;
+uniform vec3 uEye;
+uniform float uTime;
+out vec2 vUV;
+out float vB;
+void main(){
+  vec3 c=seed.xyz;
+  float ph=seed.w*37.0;
+  /* дрейф: три несоизмеримые синусоиды — движение не зацикливается на глаз */
+  c+=vec3(sin(uTime*0.13+ph)*0.30, sin(uTime*0.09+ph*1.7)*0.22+uTime*0.012,
+          cos(uTime*0.11+ph*2.3)*0.30);
+  c.y=mod(c.y+1.2,2.6)-1.2;
+  vec3 f=normalize(uEye-c),r=normalize(cross(vec3(0.0,1.0,0.0),f)),u=cross(f,r);
+  float s=0.004+seed.w*0.010;
+  vec3 wp=c+r*p.x*s+u*p.y*s;
+  vUV=p;
+  /* ярче в конусе ключа и мягко гаснет к краям кадра */
+  vB=(0.25+0.75*smoothstep(-0.2,0.9,dot(normalize(c-vec3(0.0,1.0,0.0)),vec3(0.55,0.8,0.45))))
+     *(0.5+0.5*sin(uTime*0.7+ph));
+  gl_Position=uVP*vec4(wp,1.0);
+}`;
+const FS_DUST=`
+in vec2 vUV;
+in float vB;
+uniform vec3 uCol;
+out vec4 o;
+void main(){
+  float d=length(vUV);
+  if(d>1.0)discard;
+  float a=pow(1.0-d,3.0);
+  o=vec4(uCol*a*vB*0.9,1.0);
+}`;

@@ -8,6 +8,7 @@
    им уже нечем. */
 
 const R={W:0,H:0,dpr:1,shadowSize:1536,bloomN:5,exposure:0.55};
+/* размеры целей приходят из QUAL (60-app): качество решается один раз */
 
 function renderInit(){
   R.pSolid=glProg(VS_BODY,FS_SOLID,"твёрдое");
@@ -16,9 +17,11 @@ function renderInit(){
   R.pFeaD =glProg(VS_FEATHER,FS_DEPTH,"перо·глубина");
   R.pBead =glProg(VS_BEAD,FS_BEAD,"бусина");
   R.pBg   =glProg(VS_FLAT,FS_BG,"фон");
+  R.pDust =glProg(VS_DUST,FS_DUST,"пыль");
   R.pTone =glProg(VS_FLAT,FS_TONE,"экран");
   R.pBright=glProg(VS_FLAT,FS_BRIGHT,"яркое");
   R.pBlur =glProg(VS_FLAT,FS_BLUR,"размытие");
+  R.shadowSize=QUAL.shadow||1536;R.bloomN=QUAL.bloomN||5;
   R.shadow=glTarget(R.shadowSize,R.shadowSize,"depth");
 }
 function renderSize(w,h){
@@ -65,7 +68,8 @@ function bindLight(P){
    птицы, и это видно сразу */
 function bindPose(P){
   glSet(P,"uHeadYaw",POSE.yaw);glSet(P,"uHeadPitch",POSE.pitch);glSet(P,"uHeadRoll",POSE.roll);
-  glSet(P,"uBreath",POSE.breath);glSet(P,"uPuff",POSE.puff);
+  glSet(P,"uBreath",POSE.breath);glSet(P,"uPuff",POSE.puffShow||0);
+  glSet(P,"uBlink",POSE.blinkNow||0);glSet(P,"uJaw",POSE.jaw);
   glSet(P,"uLean",POSE.lean);glSet(P,"uBow",POSE.bow);
   glSet(P,"uNeckP",[0,1.46,-0.04]);
   glSet(P,"uTime",POSE.t);
@@ -107,8 +111,14 @@ function renderFrame(){
   gl.enable(gl.DEPTH_TEST);
   drawSolid(R.pSolid,null);
   drawFeathers(R.pFea,null);
-  /* бусины: после всего света и аддитивно */
+  /* пыль и бусины: после всего света и аддитивно */
   gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE);gl.depthMask(false);
+  if(MESH.dust){
+    gl.useProgram(R.pDust.p);
+    glSet(R.pDust,"uVP",R.VP);glSet(R.pDust,"uEye",R.eye);glSet(R.pDust,"uTime",POSE.t);
+    glSet(R.pDust,"uCol",[0.42,0.52,0.62]);
+    glDraw(MESH.dust);
+  }
   gl.useProgram(R.pBead.p);bindPose(R.pBead);
   glSet(R.pBead,"uVP",R.VP);glSet(R.pBead,"uEye",R.eye);
   glSet(R.pBead,"uGlow",0.62+Math.sin(POSE.t*1.7)*0.09);
