@@ -172,10 +172,22 @@ weakness and adds a couple of its own. Written down before anyone finds them the
   leaves the server; the catcher gets the card and a chain id, and the reply is routed by the
   server. Neither side can find, call, or recognise the other across chains. «Не принимать» kills
   the chain and tells the other end nothing.
+- **A chain id is a capability.** Whoever holds one can claim the empty second end of that chain by
+  replying into it. That is safe only because the id is 48 random bits and is handed to exactly one
+  person — the catcher — and the pool entry is deleted at the moment of catching, so a second
+  catcher never exists. If a chain id ever starts travelling anywhere else, this stops being safe.
 - **What a nosy operator could still do.** Anyone with the data directory can see which mark posted
   which card and which two marks share a chain. Marks are not accounts and are not tied to a login,
   so this is a graph of anonymous ids — but it is worth knowing it exists, and it is the reason the
   pool entry is deleted on catch instead of being kept "for statistics".
+
+**Walked end to end against the live server, 2026-08-26**, with two throwaway marks and no residue
+left in the pool: A posts and gets a chain; B catches it and the card comes back byte-identical; A
+cannot catch its own; B replies and A's inbox has it; the inbox is empty on the second read; A
+mutes and B's next reply is refused; and `a=me` still answers 401, so accounts were never touched.
+Every malformed card was refused — an unknown mode, a choice out of range, a blank with a space,
+with an angle bracket, or sixteen characters long. A body the server cannot parse at all fails
+**closed** («нет метки пилота»), which is the right direction to fail in.
 
 ---
 
