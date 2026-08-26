@@ -7,6 +7,33 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.168.0 — the line with no name (M193)
+
+Second item off the saga-vs-game gap list, and the cheapest thing in it: one row of data.
+
+The arrivals board in the Tin's cantina has always carried overdue lines that nobody clears. One
+of them is now the **shuttle of the «Долгий Ход»** — «Тесло», twenty-three years late, in exactly
+the same markup as its neighbours, with no highlight and no note. It is not evidence. It is a line
+on a board.
+
+For that line to mean anything the player has to have met the call sign somewhere, so **one piece
+of the hundred is now written by hand instead of assembled**. The other ninety-nine come out of
+three banks — who, did what, and what it has to do with anything — and their strength is that a
+ship's log is uniformly dry. This one names the boat plainly, in the middle of the «Тихоня»
+chapter, in the same flat voice: *«младший борт ушёл на тихой тяге, шлюпка „Тесло", и это
+последняя запись»*.
+
+And then the game does nothing at all. It does not highlight, does not connect the two, does not
+congratulate anyone for noticing. Whoever reads both lines puts them together themselves; whoever
+does not sees one more overdue row on a board nobody cleans, and is right.
+
+A guard caught something worth keeping while this went in: the board's test asserted "half the
+lines are overdue" as the literal number three. Adding the shuttle made it four of seven. The test
+was not relaxed — the ratio is a real design statement — so a seventh arrival («Обод») joined the
+board and the assertion now checks the ratio rather than the count, plus that the shuttle is among
+the overdue ones and carries the name the report uses.
+
+---
 ## 0.167.0 — «Глобус»: прибор, который показывает место, а не число (M192)
 
 The book's central object, and it was not invented: real ships carried a navigation indicator

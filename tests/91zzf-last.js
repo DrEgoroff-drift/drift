@@ -9,7 +9,11 @@ TEST_SUITES.push(()=>suite("возвращение: хронометр обма�
   const d=retDock();ok(d&&d.first&&/Домино/.test(d.line),"домино, снабжение");
   eq(retDrift(),0,"после — стоит, и больше никогда");
   ok(!retDock().first,"второй раз — партия как раз");
-  ok(RET_BOARD.filter(b=>b[1]>0).length===3,"половина строк табло просрочена");
+  /* Половина — это отношение, а не число: строк стало восемь, когда среди них
+     появилась шлюпка «Долгого Хода» (11s, 12q). Сторожим отношение. */
+  eq(RET_BOARD.filter(b=>b[1]>0).length*2,RET_BOARD.length,"половина строк табло просрочена");
+  ok(RET_BOARD.some(b=>b[0].indexOf(LORE_SHUTTLE)>=0&&b[1]>0),
+     "и среди просроченных стоит шлюпка, названная в отчёте");
   const s=snapshot();applySave(s);eq(G.ret.seen,1,"помнится");
   G.sx=0;G.sy=0;G.sys=getSystem(0,0);eq(retDrift(),0,"дома ничего");
 }));

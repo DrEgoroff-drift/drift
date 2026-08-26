@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 273 · символов верхнего уровня: 2550
+Файлов: 273 · символов верхнего уровня: 2551
 
 ## СИМВОЛЫ
 
@@ -521,7 +521,7 @@ drawKitFigure                src/12x-suit.js:188
 drawLander                   src/19f-lander.js:52
 drawLandGear                 src/19f-lander.js:26
 drawLanding                  src/19-mode-landing.js:369
-drawLoreMarks                src/12q-lore.js:214
+drawLoreMarks                src/12q-lore.js:235
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
 drawMap                      src/18-mode-map.js:42
@@ -1193,21 +1193,22 @@ LORE_CHAP                    src/12q-lore.js:31
 LORE_CHAP_IX                 src/12q-lore.js:41
 LORE_GIVE                    src/12q-lore.js:61
 LORE_SALT                    src/12q-lore.js:70
+LORE_SHUTTLE                 src/12q-lore.js:99
 LORE_TAIL                    src/12q-lore.js:50
 LORE_WHO                     src/12q-lore.js:45
 LORE_WORDS                   src/12q-lore.js:56
-loreAddr                     src/12q-lore.js:125
-loreAtPlace                  src/12q-lore.js:109
+loreAddr                     src/12q-lore.js:146
+loreAtPlace                  src/12q-lore.js:130
 loreBtnTick                  src/27h-ui-lore.js:18
-loreChapter                  src/12q-lore.js:99
-loreChaptersRead             src/12q-lore.js:105
-loreCount                    src/12q-lore.js:90
-loreHas                      src/12q-lore.js:89
-loreList                     src/12q-lore.js:88
-loreMarks                    src/12q-lore.js:91
+loreChapter                  src/12q-lore.js:120
+loreChaptersRead             src/12q-lore.js:126
+loreCount                    src/12q-lore.js:111
+loreHas                      src/12q-lore.js:110
+loreList                     src/12q-lore.js:109
+loreMarks                    src/12q-lore.js:112
 loreRow                      src/27h-ui-lore.js:19
-loreTake                     src/12q-lore.js:143
-loreVocab                    src/12q-lore.js:93
+loreTake                     src/12q-lore.js:164
+loreVocab                    src/12q-lore.js:114
 loreWinOpen                  src/27h-ui-lore.js:17
 loyBar                       src/27c-ui-hq.js:17
 loyWord                      src/27c-ui-hq.js:13
@@ -1831,16 +1832,16 @@ resEma                       src/28-loop.js:398
 resetArm                     src/26-ui-station.js:634
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
-RET_BOARD                    src/11s-returners.js:24
+RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19
-retAll                       src/11s-returners.js:25
-retBlock                     src/11s-returners.js:53
-retDepthAt                   src/11s-returners.js:26
-retDepthHere                 src/11s-returners.js:32
-retDock                      src/11s-returners.js:44
-retDrift                     src/11s-returners.js:41
-retEtherLine                 src/11s-returners.js:33
-retGroundLine                src/11s-returners.js:37
+retAll                       src/11s-returners.js:32
+retBlock                     src/11s-returners.js:60
+retDepthAt                   src/11s-returners.js:33
+retDepthHere                 src/11s-returners.js:39
+retDock                      src/11s-returners.js:51
+retDrift                     src/11s-returners.js:48
+retEtherLine                 src/11s-returners.js:40
+retGroundLine                src/11s-returners.js:44
 reticle                      src/17c-system-draw.js:16
 rgba                         src/03-ships.js:149
 ridged                       src/18a-material.js:30
@@ -2727,7 +2728,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11r-plan.js · 5 КБ
   · план: комбинат, которому никто не отменил наряд:1
 
-## src/11s-returners.js · 4 КБ
+## src/11s-returners.js · 5 КБ
   · возвращение: люди моложе своих внуков:1
 
 ## src/11t-rumours.js · 5 КБ
@@ -2843,7 +2844,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12p-news.js · 12 КБ
   · пересказ: мир двигался, пока вас не было:1
 
-## src/12q-lore.js · 16 КБ
+## src/12q-lore.js · 18 КБ
   · отчёт «Долгого Хода»: сто кусков:1
 
 ## src/12r-route.js · 16 КБ
@@ -3331,7 +3332,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zze-plan.js · 2 КБ
   · план: комбинат без наряда, изделие, которое принимает только база:1
 
-## tests/91zzf-last.js · 5 КБ
+## tests/91zzf-last.js · 6 КБ
   · возвращение, слухи, имена, единичные места:1
 
 ## tests/91zzg-houses.js · 1 КБ
