@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.175.0 — the pennant: a probe you launch and are meant to forget (M196)
+
+An automatic probe is assembled in the lab and launched at a star no hull will ever reach. Then
+you are supposed to **forget about it**, and that is mechanics rather than a turn of phrase: no
+marker, no counter, no "so many days left" anywhere in the interface. Weeks later the receiver
+catches its weakening voice once, the probe sends back a photograph of where it got to, and it is
+silent for good.
+
+**Real time, and lazy with it.** No flight is simulated — the probe has a `Date.now()` of launch
+and a due date, and until that date it exists nowhere but as one line in the save. A game left
+closed for a month sleeps through nothing.
+
+**The photograph is the probe's, and the postcard's painter takes it.** M188 was written as a
+separate painter precisely so it could draw *any* snapshot of a scene — including one where no
+person has been or will be. The place is computed from the seed of the system the probe was flying
+to: the game does not invent the picture, it works it out the same way it would work out yours.
+
+It is the only thing in the game with **no reward and no use**: no money, no data, no route opened.
+A line in the record book, and a photograph of a place you will never stand in.
+
+Once it has spoken, the probe is removed from the save entirely. What remains of it is the record
+book entry and the picture — not a row of state. Otherwise a long game accumulates a graveyard of
+probes the game will never mention again.
+
+Three in the sky at most; past that it is a fleet rather than a gesture.
+
 ## 0.174.0 — the night ether: the band that only exists in the evening (M191)
 
 The receiver has four bands and they are always in the same place, like a real set. The fifth —

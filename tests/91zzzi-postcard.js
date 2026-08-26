@@ -331,3 +331,56 @@ TEST_SUITES.push(()=>suite("эфир: карточка читается по с�
   ok(all.indexOf(F.p.name)>=0,"место названо, и это единственное, что названо");
   G.mode="system";G.surf=null;
 }));
+/* ══════════════ вымпел (M196) ══════════════ */
+TEST_SUITES.push(()=>suite("вымпел: уходит навсегда, молчит недели и говорит один раз",()=>{
+  resetWorld();
+  G.probes=[];G.album=[];G.record=null;G.things=[];G.log=[];
+  /* стойка научной станции */
+  const S=skyTestSci();
+  G.sx=S.sx;G.sy=S.sy;G.sys=S;G.st=S.station;
+  G.data=2;G.credits=100;
+  ok(!probeCanBuild(),"без данных и денег зонда не собрать");
+  ok(!probeBuild(),"и кнопка ничего не делает");
+  G.data=PROBE_COST_DATA+3;G.credits=PROBE_COST_CR+50;
+  ok(probeCanBuild(),"с данными и деньгами — можно");
+  const cr=G.credits,dt=G.data;
+  ok(probeBuild(),"зонд собран");
+  eq(G.credits,cr-PROBE_COST_CR,"железо оплачено");
+  eq(G.data,dt-PROBE_COST_DATA,"данные потрачены");
+  eq(probeAll().length,1,"один в небе");
+  ok(G.things.some(x=>/Вымпел/.test(x.ru)),"расписка на столе");
+  ok(recordAll().e.some(x=>/зонд/.test(x.s)),"запись о запуске в книжке");
+  const p=probeAll()[0];
+  /* цель — настоящая система, и далеко */
+  ok(starAt(p.tsx,p.tsy),"курс задан на настоящую звезду");
+  ok(Math.hypot(p.tsx,p.tsy)>80,"и она за краем обжитого ("+Math.round(Math.hypot(p.tsx,p.tsy))+")");
+  /* до срока — молчит, и нигде о нём ни строки */
+  eq(probeDue(),null,"до срока зонда как будто нет");
+  ok(p.due-p.t0>=PROBE_WAIT,"срок — недели, а не минуты");
+  /* переводим часы вперёд, как это сделает жизнь */
+  p.due=Date.now()-1000;
+  ok(probeDue()===p,"срок вышел — зонд готов заговорить");
+  const before=albumAll().length;
+  const voice=probeSpeak(p);
+  ok(voice&&voice.length>8,"голос: "+voice);
+  eq(albumAll().length,before+1,"снимок лёг в альбом");
+  const shot=albumAll()[0];
+  eq(shot.sx,p.tsx,"и снят там, куда зонд дошёл");
+  ok(drawPostcard(document.createElement("canvas").getContext("2d"),shot,80,50),
+     "снимок с той стороны рисуется тем же художником");
+  ok(recordAll().e.some(x=>/дошёл до/.test(x.s)),"в книжке — что дошёл");
+  eq(probeAll().length,0,"отзвучавший зонд из состояния убран");
+  eq(probeDue(),null,"и второй раз не заговорит");
+  eq(probeSpeak(p),"","повторный вызов молчит");
+  /* больше трёх в небе не держат */
+  G.data=99;G.credits=9999;
+  for(let i=0;i<PROBE_MAX+2;i++)probeBuild();
+  eq(probeAll().length,PROBE_MAX,"больше трёх не запустить");
+  /* сохранение */
+  const snap=snapshot();G.probes=null;applySave(JSON.parse(JSON.stringify(snap)));
+  eq(probeAll().length,PROBE_MAX,"зонды пережили сохранение");
+  const old=snapshot();delete old.probes;
+  applySave(JSON.parse(JSON.stringify(old)));
+  eq(probeAll().length,0,"сохранение без зондов — пустое небо, а не падение");
+  G.st=null;
+}));

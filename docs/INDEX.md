@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 283 · символов верхнего уровня: 2650
+Файлов: 284 · символов верхнего уровня: 2664
 
 ## СИМВОЛЫ
 
@@ -1739,6 +1739,20 @@ postWorld                    src/25g-postcard.js:49
 prevAct                      src/08-state.js:40
 pricesSeen                   src/12aa-need.js:188
 prism                        src/21b-surface-deco.js:201
+PROBE_COST_CR                src/25m-probe.js:27
+PROBE_COST_DATA              src/25m-probe.js:26
+PROBE_MAX                    src/25m-probe.js:30
+PROBE_SPREAD                 src/25m-probe.js:29
+PROBE_WAIT                   src/25m-probe.js:28
+probeAll                     src/25m-probe.js:31
+probeBlock                   src/25m-probe.js:125
+probeBuild                   src/25m-probe.js:51
+probeCanBuild                src/25m-probe.js:47
+probeDue                     src/25m-probe.js:68
+probeShot                    src/25m-probe.js:85
+probeSpeak                   src/25m-probe.js:100
+probeTarget                  src/25m-probe.js:38
+probeVoice                   src/25m-probe.js:75
 prof                         src/28-loop.js:527
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
@@ -2343,7 +2357,7 @@ stripsAll                    src/11b-speech.js:180
 stripSell                    src/11b-speech.js:218
 stripValue                   src/11b-speech.js:181
 stSet                        src/14-save.js:14
-stTabFuse                    src/26b-ui-station-work.js:200
+stTabFuse                    src/26b-ui-station-work.js:201
 stTabInstr                   src/26b-ui-station-work.js:108
 stTabLab                     src/26b-ui-station-work.js:175
 stTabMods                    src/26b-ui-station-work.js:12
@@ -3012,7 +3026,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:61
   · видимое состояние обмена:76
 
-## src/14-save.js · 42 КБ
+## src/14-save.js · 43 КБ
   · сохранение:1
 
 ## src/15-input.js · 23 КБ
@@ -3220,6 +3234,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/25l-post-ether.js · 7 КБ
   · ночной эфир:1
+
+## src/25m-probe.js · 9 КБ
+  · вымпел: зонд, который уходит навсегда:1
 
 ## src/26a-ui-station-home.js · 12 КБ
   · станция: вкладка «дом и базы»:1
@@ -3550,10 +3567,11 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzh-told.js · 3 КБ
   · автотесты: ляпнул лишнего:1
 
-## tests/91zzzi-postcard.js · 21 КБ
+## tests/91zzzi-postcard.js · 24 КБ
   · автотесты: открытка — снимок сцены (M188):1
   · бланки открытки (M189):111
   · почта: провод (M190):197
   · ночной эфир (M191):283
+  · вымпел (M196):334
 
 ## tests/99-run.js · 0 КБ

@@ -843,10 +843,14 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   a report after that is half pay. A comet reported first takes a name out of the record book —
   which other people write, so the player cannot name one after himself. Persisted in `G.duty`
   (order, tally, comet names); the sky itself still reaches no save.
-- **M196 — the pennant.** Build an automatic probe in the lab, launch it at a star you will never
-  reach, forget it. Weeks of real time later (lazily, from `Date.now()`) the receiver catches its
-  weakening voice once — and the probe sends back a **snapshot photograph** of where it got to, so
-  M188's technique works for it. A line in the record book.
+- **M196 — the pennant** — **built (0.175.0).** `25m-probe`, suite `91zzzi-postcard`. Build an
+  automatic probe in the lab, launch it at a star you will never reach, forget it — and forgetting
+  is mechanics, not a phrase: no marker, no counter, no "days left" anywhere. Weeks of real time
+  later (lazily, from `Date.now()`; nothing is simulated) the receiver catches its weakening voice
+  once on the ЭФИР band, and the probe sends back a snapshot photograph of where it got to — drawn
+  by M188's painter, from the seed of the target system, a place no person has stood in. A line in
+  the record book, and then the probe is removed from the save entirely: what remains of it is the
+  entry and the picture, not a row of state. The only thing in the game with no reward and no use.
 
 ## Places (M197–M199)
 
