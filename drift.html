@@ -1185,7 +1185,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.168.0";
+const VER="0.169.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6121,6 +6121,8 @@ const G={
   /* главный квест (11ah, 11ai): живые возможности, память людей и тетрадь,
      которой никто не ведёт. Тетрадь не показывается нигде и никогда. */
   offers:[],folk:{},ledger:{n:0,w:0},folkSay:{},
+  /* ляпнул лишнего (11aj): где он уже рассказал и что взял последним */
+  told:[],lastDig:null,
   /* обломки погибших барж — след, а не эфемерное: решение (спасли/добили/прошли
      мимо) пережило встречу. Разреженный оверлей по "sx,sy". Пассажиры спасённых
      барж ждут в звене отдельным списком. */
@@ -8283,6 +8285,96 @@ function deedAdd(kind,cost){
   /* Ни `say`, ни `logAdd`, ни звука. Здесь ничего не происходит для игрока, и
      это единственное место в игре, где молчание — не оформление, а механика. */
   return w;
+}
+
+/* ══════════════ ляпнул лишнего ══════════════
+
+   Третий просёр из `docs/saga/ДУГА.md` §5, и самый интересный из трёх.
+
+   Слухи в этой игре (`11t`) текут в одну сторону: игрок только СЛЫШИТ. Здесь он
+   становится источником. Он рассказывает у стойки, где взял хорошее, — и через
+   несколько дней туда приходит баржа.
+
+   ── Почему это не наказание ──
+
+   Книга и приговор (`docs/saga/СУД.md`) требуют одного: **игра никогда не
+   заставляет его оступиться**. Рассказать — выбор, и выбор в ту минуту хороший:
+   человека, который делится, слушают, и слушают охотно. Плата приходит потом и
+   всегда по человеческой линии, никогда по мировой.
+
+   Что он получает СРАЗУ и по-настоящему: тот, кто за стойкой, запоминает его
+   тёплым, а значит следующее предложение придёт **именное** (11ah), то есть
+   втрое дороже. Это не подачка — это ровно та валюта, на которой стоит вся дуга.
+
+   Что он теряет ПОТОМ: залежь на том месте вырабатывают без него. Ни строки
+   упрёка, ни разбора: просто в эфире однажды проходит, что там работает баржа,
+   и «кто-то навёл». Прилетев, он найдёт бедное место.
+
+   ── Устройство ──
+
+   Залежи не персистятся — они выводятся из сида посадки. Поэтому «выработано»
+   живёт разрежённым оверлеем по месту, как велит правило проекта, а не на самой
+   залежи, которой к тому времени уже не существует. */
+
+/* Через сколько суток мира туда доходит баржа. Три — чтобы игрок успел улететь
+   и забыть, но не успел решить, что связи нет. */
+const TOLD_LAG=3;
+
+function toldAll(){return (G.told||(G.told=[]));}
+function toldKey(sx,sy,pi){return sx+","+sy+"#"+(pi|0);}
+function toldOf(sx,sy,pi){
+  const k=toldKey(sx,sy,pi);
+  return toldAll().find(t=>t.k===k)||null;
+}
+/* Место уже выработали? Не в момент рассказа — через несколько дней. */
+function toldWorked(sx,sy,pi){
+  const t=toldOf(sx,sy,pi);
+  if(!t)return false;
+  return (typeof celDay==="function"?celDay():0)-t.d>=TOLD_LAG;
+}
+/* ── что вообще есть рассказать ──
+   Только то, что он взял сам и своими руками, и только если взял заметно.
+   Пустая болтовня ничего не стоит и ничего не покупает. */
+function toldWorth(){
+  const L=G.lastDig;
+  if(!L||L.n<6)return null;
+  if(toldOf(L.sx,L.sy,L.pi))return null;      // про это место уже рассказано
+  return L;
+}
+/* ── рассказал ──
+   Никакого подтверждения о будущем. Одна реплика, и человек запомнил его
+   тёплым: следующее предложение придёт именным. */
+function toldDo(){
+  const L=toldWorth();
+  if(!L)return false;
+  toldAll().push({k:toldKey(L.sx,L.sy,L.pi),sx:L.sx,sy:L.sy,pi:L.pi,
+                  res:L.res,d:(typeof celDay==="function"?celDay():0),said:0});
+  while(toldAll().length>24)toldAll().shift();
+  /* тот, кто за стойкой, слушал и запомнил (11ah) */
+  if(G.sys&&typeof folkOf==="function"){
+    const f=folkOf("st:"+G.sys.key);
+    if(f.good)f.warm=1;
+  }
+  if(typeof tell==="function")
+    tell("","Рассказал, где брали "+RES[L.res].ru.toLowerCase(),
+         "— Вот как.\nНу, спасибо.");
+  G.lastDig=null;
+  return true;
+}
+/* ── и однажды это возвращается ──
+   Одна строка в эфире, чужим голосом, без имени игрока. Больше не повторяется.
+   Зовётся редким фоновым тактом, как всё ленивое в этой игре. */
+function toldEther(){
+  const day=(typeof celDay==="function"?celDay():0);
+  for(const t of toldAll()){
+    if(t.said||day-t.d<TOLD_LAG)continue;
+    t.said=1;
+    if(typeof etherLine==="function")
+      etherLine("…там, где брали "+RES[t.res].ru.toLowerCase()+
+                ", работает баржа. Кто-то навёл.");
+    return true;
+  }
+  return false;
 }
 
 /* ══════════════ журнал дел ══════════════ */
@@ -24037,6 +24129,7 @@ function snapshot(){
     /* главный квест: возможности живут недолго, а память людей и тетрадь —
        навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
     offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,
+    told:G.told,lastDig:G.lastDig,
     ts:Date.now()};
 }
 function applySave(s){
@@ -24503,6 +24596,10 @@ function applySave(s){
   /* докуда дошли реплики своих: иначе после загрузки они начнут с начала и
      повторят то, что игрок уже слышал */
   G.folkSay=(s.folkSay&&typeof s.folkSay==="object")?s.folkSay:{};
+  /* рассказанное не забывается: место, про которое он проговорился, выработают
+     и без него, сколько бы раз он ни перезагрузился (11aj) */
+  G.told=Array.isArray(s.told)?s.told.slice(-24):[];
+  G.lastDig=(s.lastDig&&typeof s.lastDig==="object")?s.lastDig:null;
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
   for(const k of RES_KEYS)G.cargo[k]=Math.max(0,(s.cargo&&s.cargo[k])|0);
   const st=stat();
@@ -36810,7 +36907,12 @@ function enterSurface(){
   const deposits=[],plants=[],prof=p.res||PROFILE[p.type]||[];
   if(prof.length)for(let i=0;i<22;i++){
     const x=120+r()*(tr.W-240),k=prof[Math.floor(r()*prof.length)];
-    deposits.push({x,y:groundAt(tr,x)-6,res:k,left:6+Math.floor(r()*11),prog:0});
+    /* Место, про которое он рассказал, к этому дню уже выработали: залежей
+       меньше и они беднее. Ни строки объяснения — просто беднее (11aj). */
+    const worked=(typeof toldWorked==="function")&&toldWorked(G.sx,G.sy,p.idx);
+    if(worked&&r()<.45)continue;
+    deposits.push({x,y:groundAt(tr,x)-6,res:k,
+      left:(worked?2:6)+Math.floor(r()*(worked?4:11)),prog:0});
   }
   /* флора растёт куртинами, а не поштучно по всей планете */
   const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.type==="jungle"||
@@ -37255,6 +37357,11 @@ function updateSurface(dt){
         while(dep.prog>=1&&dep.left>0&&held()<st.cargoMax){
           dep.prog-=1;dep.left--;minedUnit(dep.res);
         }
+        /* что взял своими руками — то и можно разболтать у стойки (11aj) */
+        if(!G.lastDig||G.lastDig.sx!==G.sx||G.lastDig.sy!==G.sy||
+           G.lastDig.pi!==S.p.idx||G.lastDig.res!==dep.res)
+          G.lastDig={sx:G.sx,sy:G.sy,pi:S.p.idx,res:dep.res,n:0};
+        G.lastDig.n++;
         if(dep.left<=0)say("Залежь выработана\n"+RES[dep.res].ru);
       }
     }
@@ -43743,6 +43850,22 @@ function renderTab(){
         $body.appendChild(el("div","sec",FOLK[fs.id].ru.toUpperCase()));
         $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
           fs.line+"</s></div>"));
+      }
+    }
+    /* ── рассказать, где взяли (11aj) ──
+       Появляется, только если он и правда где-то взял заметно, и только по разу
+       на место. Ни предупреждения, ни последствий в тексте: человек слушает,
+       благодарит, и всё. Счёт придёт через несколько дней и чужим голосом. */
+    if(typeof toldWorth==="function"){
+      const tw=toldWorth();
+      if(tw){
+        $body.appendChild(el("div","sec","У СТОЙКИ СЛУШАЮТ"));
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b>Рассказать, где взяли "+
+          RES[tw.res].ru.toLowerCase()+"</b><s>тут любят, когда делятся</s>"));
+        const b=el("button","act","РАССКАЗАТЬ");
+        b.onclick=()=>{toldDo();renderTab();};
+        r.appendChild(b);$body.appendChild(r);
       }
     }
     /* ── что вы уже взяли ──
@@ -50522,7 +50645,9 @@ function frame(now){
       /* возможности (11ah): истекают молча, тем же редким тактом. Ни звука,
          ни строки — окно просто закрылось, и если оно было именным, человек
          больше не назовёт твой позывной. */
-      if(typeof offerTick==="function")offerTick();}
+      if(typeof offerTick==="function")offerTick();
+      /* и однажды рассказанное возвращается чужим голосом (11aj) */
+      if(typeof toldEther==="function")toldEther();}
     if(G.msgT>0)G.msgT-=dt;
     if(G.mode==="system")autosave();
     if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")updateSystem(dt);

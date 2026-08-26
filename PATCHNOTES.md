@@ -7,6 +7,38 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.169.0 — ляпнул лишнего: the player becomes a source of rumours (M194)
+
+Third of the three squanders from the book, and the one the plan called cheapest and most
+interesting. Rumours (`11t`) have always run one way — the player only ever *hears*. Now he can
+talk, and what he says comes back.
+
+At a station counter, if he has actually dug something notable and not yet told anyone about that
+place, the board offers one row: **«Рассказать, где взяли …»**. There is no warning attached and no
+consequence written anywhere.
+
+**What he gets immediately, and it is real:** the person behind the counter remembers him warmly,
+which means the next thing they offer arrives **named** — three times the money (`11ah`). That is
+not a consolation prize, it is exactly the currency the whole arc runs on. People listen to a man
+who shares, and they listen gladly.
+
+**What he loses later:** three days on, a barge is working that place. One line goes out on the air
+— *«…там, где брали железо, работает баржа. Кто-то навёл»* — and it never repeats. It does not name
+him. Fly back and the deposits are fewer and poorer, with no explanation offered.
+
+Deposits are derived from the landing seed and never persisted, so "worked out" lives as a sparse
+overlay keyed by place, per the project's own rule, rather than on a deposit that no longer exists
+by then. It survives reloading: a place he talked about stays talked about.
+
+**The game never makes him do it.** Telling is opt-in, it buys something true, and the bill arrives
+in the human ledger rather than as a punishment. A player who never says a word simply loses
+differently — quietly, by keeping to himself.
+
+Guards: `91zzzh-told` — small finds are not worth telling; telling warms the counter and can only
+happen once per place; the ether line fires exactly once, after the lag, and does not name the
+player; and none of it is forgotten by reloading.
+
+---
 ## 0.168.0 — the line with no name (M193)
 
 Second item off the saga-vs-game gap list, and the cheapest thing in it: one row of data.

@@ -7,7 +7,12 @@ function enterSurface(){
   const deposits=[],plants=[],prof=p.res||PROFILE[p.type]||[];
   if(prof.length)for(let i=0;i<22;i++){
     const x=120+r()*(tr.W-240),k=prof[Math.floor(r()*prof.length)];
-    deposits.push({x,y:groundAt(tr,x)-6,res:k,left:6+Math.floor(r()*11),prog:0});
+    /* Место, про которое он рассказал, к этому дню уже выработали: залежей
+       меньше и они беднее. Ни строки объяснения — просто беднее (11aj). */
+    const worked=(typeof toldWorked==="function")&&toldWorked(G.sx,G.sy,p.idx);
+    if(worked&&r()<.45)continue;
+    deposits.push({x,y:groundAt(tr,x)-6,res:k,
+      left:(worked?2:6)+Math.floor(r()*(worked?4:11)),prog:0});
   }
   /* флора растёт куртинами, а не поштучно по всей планете */
   const flora=p.T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.type==="jungle"||
@@ -452,6 +457,11 @@ function updateSurface(dt){
         while(dep.prog>=1&&dep.left>0&&held()<st.cargoMax){
           dep.prog-=1;dep.left--;minedUnit(dep.res);
         }
+        /* что взял своими руками — то и можно разболтать у стойки (11aj) */
+        if(!G.lastDig||G.lastDig.sx!==G.sx||G.lastDig.sy!==G.sy||
+           G.lastDig.pi!==S.p.idx||G.lastDig.res!==dep.res)
+          G.lastDig={sx:G.sx,sy:G.sy,pi:S.p.idx,res:dep.res,n:0};
+        G.lastDig.n++;
         if(dep.left<=0)say("Залежь выработана\n"+RES[dep.res].ru);
       }
     }

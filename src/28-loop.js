@@ -461,7 +461,9 @@ function frame(now){
       /* возможности (11ah): истекают молча, тем же редким тактом. Ни звука,
          ни строки — окно просто закрылось, и если оно было именным, человек
          больше не назовёт твой позывной. */
-      if(typeof offerTick==="function")offerTick();}
+      if(typeof offerTick==="function")offerTick();
+      /* и однажды рассказанное возвращается чужим голосом (11aj) */
+      if(typeof toldEther==="function")toldEther();}
     if(G.msgT>0)G.msgT-=dt;
     if(G.mode==="system")autosave();
     if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")updateSystem(dt);

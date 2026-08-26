@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 273 · символов верхнего уровня: 2551
+Файлов: 275 · символов верхнего уровня: 2559
 
 ## СИМВОЛЫ
 
@@ -24,7 +24,7 @@ $menu                        src/15-input.js:180
 $msg                         src/28-loop.js:44
 $msl                         src/28-loop.js:47
 $nav                         src/28-loop.js:46
-$opts                        src/26-ui-station.js:635
+$opts                        src/26-ui-station.js:651
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:43
 $sh                          src/28-loop.js:24
@@ -78,7 +78,7 @@ angWrap                      src/01-core.js:35
 applyCrewEvent               src/12b-crew-events.js:214
 applyPadMode                 src/15-input.js:62
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:76
+applySave                    src/14-save.js:77
 applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:108
 arrive                       src/16-flight.js:154
@@ -403,7 +403,7 @@ ctx                          src/08-state.js:3
 curTok                       src/09-audio.js:83
 CUT_RANGE                    src/24-mode-belt.js:183
 cvs                          src/08-state.js:2
-dbg                          src/28-loop.js:562
+dbg                          src/28-loop.js:564
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -600,7 +600,7 @@ ETHER                        src/11b-speech.js:24
 ETHER_EVERY                  src/11b-speech.js:38
 etherLine                    src/11-log.js:29
 etherTick                    src/11b-speech.js:39
-evacuate                     src/21-mode-surface.js:519
+evacuate                     src/21-mode-surface.js:529
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:82
 exitBelt                     src/24-mode-belt.js:174
@@ -843,7 +843,7 @@ heardReread                  src/12x-parrot.js:92
 heardUse                     src/12x-parrot.js:116
 heardWordsRu                 src/12x-parrot.js:79
 heardYours                   src/12x-parrot.js:71
-held                         src/08-state.js:162
+held                         src/08-state.js:164
 hex2rgb                      src/03-ships.js:145
 hexa                         src/12w-survey.js:91
 hexRGB                       src/24-mode-belt.js:80
@@ -1140,8 +1140,8 @@ LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:371
 lastRunDay                   src/12k-letters.js:44
 lastRunTick                  src/12k-letters.js:46
-launch                       src/21-mode-surface.js:559
-launchHold                   src/21-mode-surface.js:504
+launch                       src/21-mode-surface.js:569
+launchHold                   src/21-mode-surface.js:514
 layerLevel                   src/10-music.js:326
 ledgerAll                    src/11ai-ledger.js:36
 ledgerNeed                   src/11ai-ledger.js:44
@@ -1672,7 +1672,7 @@ postOpen                     src/11e-post.js:99
 prevAct                      src/08-state.js:40
 pricesSeen                   src/12aa-need.js:188
 prism                        src/21b-surface-deco.js:201
-prof                         src/28-loop.js:525
+prof                         src/28-loop.js:527
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
@@ -1829,7 +1829,7 @@ RES_AUTO                     src/08-state.js:35
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:399
 resEma                       src/28-loop.js:398
-resetArm                     src/26-ui-station.js:634
+resetArm                     src/26-ui-station.js:650
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:29
@@ -2000,7 +2000,7 @@ S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:6
 saveGame                     src/14a-cloud.js:38
-say                          src/08-state.js:163
+say                          src/08-state.js:165
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
 SCOOP_BAND                   src/19a-mode-scoop.js:7
@@ -2177,7 +2177,7 @@ starRGB                      src/19c-light.js:23
 start                        src/15-input.js:404
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
-stat                         src/08-state.js:121
+stat                         src/08-state.js:123
 STAT_SHOW                    src/05-parts.js:280
 stationDeals                 src/27g-deals.js:134
 stationFleet                 src/04b-fleet.js:163
@@ -2338,7 +2338,7 @@ tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
 tickDrones                   src/12-economy.js:82
-tickLaunchHold               src/21-mode-surface.js:505
+tickLaunchHold               src/21-mode-surface.js:515
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
@@ -2382,7 +2382,15 @@ toggleLog                    src/11-log.js:124
 toggleLoreBoard              src/27h-ui-lore.js:81
 toggleMenu                   src/15-input.js:181
 toggleParrotWin              src/12y-parrot-face.js:693
-totalLoss                    src/21-mode-surface.js:536
+TOLD_LAG                     src/11aj-told.js:32
+toldAll                      src/11aj-told.js:34
+toldDo                       src/11aj-told.js:58
+toldEther                    src/11aj-told.js:78
+toldKey                      src/11aj-told.js:35
+toldOf                       src/11aj-told.js:36
+toldWorked                   src/11aj-told.js:41
+toldWorth                    src/11aj-told.js:49
+totalLoss                    src/21-mode-surface.js:546
 towShare                     src/03f-hull-role.js:87
 TRACE_CAP_DAY                src/11ag-trace.js:46
 TRACE_MARK                   src/11ag-trace.js:32
@@ -2449,7 +2457,7 @@ updateHomeIn                 src/29c-home-in.js:160
 updateLanding                src/19-mode-landing.js:45
 updateRaid                   src/24a-mode-raid.js:215
 updateScoop                  src/19a-mode-scoop.js:28
-updateSurface                src/21-mode-surface.js:174
+updateSurface                src/21-mode-surface.js:179
 updateSystem                 src/17-mode-system.js:7
 useBeacon                    src/23-mode-dig.js:76
 VEGA_ABOARD                  src/12k-vega.js:35
@@ -2669,6 +2677,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/11ai-ledger.js · 4 КБ
   · тетрадь, которой никто не ведёт:1
+
+## src/11aj-told.js · 5 КБ
+  · ляпнул лишнего:1
 
 ## src/11a-quests.js · 6 КБ
   · журнал дел:1
@@ -2907,7 +2918,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:61
   · видимое состояние обмена:76
 
-## src/14-save.js · 41 КБ
+## src/14-save.js · 42 КБ
   · сохранение:1
 
 ## src/15-input.js · 23 КБ
@@ -3041,9 +3052,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21f-home-out.js · 13 КБ
   · дом снаружи:1
 
-## src/21-mode-surface.js · 37 КБ
+## src/21-mode-surface.js · 38 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:575
+  · навигатор и подсказки сверху:585
 
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
@@ -3103,9 +3114,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26b-ui-station-work.js · 15 КБ
   · станция: мастерская и наука:1
 
-## src/26-ui-station.js · 41 КБ
+## src/26-ui-station.js · 42 КБ
   · станция:1
-  · настройки:633
+  · настройки:649
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -3158,8 +3169,8 @@ zooTick                      src/11ad-zoo.js:41
   · звук по кадрам:311
   · цикл:369
   · авторазрешение:392
-  · prof() — на что уходит кадр:513
-  · dbg() — что держит корабль:553
+  · prof() — на что уходит кадр:515
+  · dbg() — что держит корабль:555
 
 ## src/28z-fps-probe.js · 9 КБ
   · пробник G11: ?g11:1
@@ -3421,5 +3432,8 @@ zooTick                      src/11ad-zoo.js:41
   · автотесты: «Глобус»:1
 
 ## tests/91zzz-home-in.js · 5 КБ
+
+## tests/91zzzh-told.js · 3 КБ
+  · автотесты: ляпнул лишнего:1
 
 ## tests/99-run.js · 0 КБ
