@@ -54,6 +54,17 @@ jobs:
           # порог грубый, но ловит главное — склейку, потерявшую половину модулей
           [ "$size" -gt 1000000 ] || { echo "сборка подозрительно мала"; exit 1; }
 
+      - name: Проверить синтаксис api.php
+        run: |
+          # На машине разработчика PHP нет вовсе (CLAUDE.md: ни node, ни python),
+          # то есть единственный файл бэкенда до сих пор уезжал на боевой сайт
+          # ни разу не разобранным. Одна опечатка в нём — и это не «страница
+          # съехала», а лежат учётные записи и облачные сохранения у живых людей:
+          # проверка ниже (a=me → 401) ловит беду ПОСЛЕ выкладки, когда файл уже
+          # там. На раннере PHP есть всегда — разбираем до заливки.
+          php -v | head -1
+          php -l site/api.php || { echo "api.php не разбирается — выкладки не будет"; exit 1; }
+
       - name: Ключ для выкладки
         env:
           KEY: ${{ secrets.DRIFT_SSH_KEY }}
@@ -119,6 +130,7 @@ jobs:
           # страницы и их ассеты: битая картинка на заглавной — тоже поломка выкладки
           for u in mechanics.html parrot.html reset.html treplo.html treplo3d.html site.css sky.js planets.js \
                    auth.js parrot.js favicon.svg og.jpg shots/world.webp shots/land.webp \
+                   shots/bird3d.webp shots/road.webp \
                    icons/parrot-512.png icons/fav-32.png parrot.webmanifest \
                    treplo3d.webmanifest treplo3d-sw.js \
                    drift.webmanifest drift-sw.js; do
