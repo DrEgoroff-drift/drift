@@ -1056,3 +1056,39 @@ Traps of this pass:
   shoulder pivot scattered them like a star. Roots into a tight bunch, tips along the body.
 - *A dead stand server serves from the browser's cache.* Three renders in a row "proved" the
   wings were broken; the page was simply the previous build.
+
+## M200c — the art director's pass: silhouette over detail (2026-08-26)
+
+The author's read of the model: technically strong, but it had become a *mechanical bird made of
+voxel feathers* rather than the character — everything sat at the same level of importance, so
+the eye had nothing to hold on to. His order of priorities, adopted verbatim:
+
+    silhouette ↑↑↑ → big forms ↑↑ → character ↑↑ → small detail ↓
+
+and, explicitly: **do not make it more realistic**. The strength here is stylised creature
+design — a fluffy exotic bird plus something alien plus a little biomechanics, not a real parrot
+rendered in 3D. The palette was declared correct and untouched.
+
+What changed:
+
+- **Coat: five times fewer feathers, each a plate instead of a scale** (34 rows × 52 against
+  72 × 142). Per-feather colour jitter cut to a third: an even block of colour is the point, and
+  the jitter was what turned the body into noise.
+- **Crest: seven big plumes** instead of twenty-odd needles, with a length table so three of them
+  carry the outline. The crest is now recognisable by its *contour*.
+- **Whiskers: two pairs**, thick at the root and tapering, one pair swept back, beads a third
+  smaller — an alien sensory organ, not wires glued to a bird.
+- **Wing in three tiers**: five large primaries, five secondaries, two rows of six coverts, plus
+  a pale mirror and a narrow amber leading edge. Colour in blocks; nothing multicoloured
+  per-feather.
+- **Tail: five long feathers**, the middle pair longest.
+- **Beak a fifth shorter and thicker at the base**, hook sharper: it should be part of the
+  character rather than the character being built around it.
+- **Eye smaller and set deeper**, dark iris with a thin amber ring around the pupil.
+- **Legs of a creature**: longer and thinner tarsus, three toes forward and one back, segmented,
+  smaller claws, warm brown-gold.
+
+**And the hole in the head was real.** A loft is a tube: its poles were never closed, and while
+the plumage was dense and small nobody saw it. Enlarging the feathers opened a window straight
+into the skull from above. Fixed twice over — the caps are built now, and a *crown* of nine
+feathers is laid over the pole where the loft's sections degenerate to a point.

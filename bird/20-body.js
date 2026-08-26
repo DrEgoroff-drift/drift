@@ -20,7 +20,7 @@ const BIRD_C={
      тенью, и именно поэтому он не спорит с янтарём хохла */
   beak:sRGB("#f2eddd"), beakD:sRGB("#c6ab84"), beakTip:sRGB("#7d5c38"),
   mouth:sRGB("#4a2028"), tongue:sRGB("#96545c"),
-  foot:sRGB("#6f5a46"), footD:sRGB("#2e241b"),
+  foot:sRGB("#8a6a3c"), footD:sRGB("#3a2a18"),
   glow:sRGB("#6ff0ff"),
   eye:sRGB("#120b16"),
   perch:sRGB("#6a4c30")
@@ -145,7 +145,8 @@ function bodyNormal(t,a){
    сетке — надёжнее аналитики, которая на капах врёт.
    Атрибуты: pos(3) nrm(3) t(1) a(1) col(3) — по 11 чисел на вершину. */
 function buildBody(NT,NA){
-  const verts=new Float32Array(NT*NA*11),idx=[];
+  /* +2 вершины на полюса: труба лофта без них открыта с обоих концов */
+  const verts=new Float32Array((NT*NA+2)*11),idx=[];
   const P=[],Nn=[];
   for(let i=0;i<NT;i++){
     const t=i/(NT-1);
@@ -180,6 +181,28 @@ function buildBody(NT,NA){
     const j1=(j+1)%NA,A=i*NA+j,B=i*NA+j1,C=(i+1)*NA+j,D=(i+1)*NA+j1;
     idx.push(A,C,B, B,C,D);
   }
+  /* ── ПОЛЮСА ──
+     Лофт — это труба: на макушке и у корня хвоста у неё оставались открытые
+     кольца. Пока перья были длинные и густые, дыры не было видно; стоило
+     оперение укрупнить — и в темени появилось окно прямо в череп.
+     Затыкаются веером на осевую точку, сдвинутую внутрь на ту же кожу. */
+  const cap=(row,dir)=>{
+    const S=spineAt(row===0?0:1);
+    const n=vMul(S.T,dir);
+    const apex=vAdd(S.c,vMul(n,(row===0?S.rb:S.rf)*0.45-SKIN*0.5));
+    const c=bodyColor(row===0?0:1,0);
+    const k=(NT*NA+(row===0?0:1))*11;
+    verts[k]=apex[0];verts[k+1]=apex[1];verts[k+2]=apex[2];
+    verts[k+3]=n[0];verts[k+4]=n[1];verts[k+5]=n[2];
+    verts[k+6]=row===0?0:1;verts[k+7]=0;
+    verts[k+8]=c[0];verts[k+9]=c[1];verts[k+10]=c[2];
+    const ai=NT*NA+(row===0?0:1);
+    for(let j=0;j<NA;j++){
+      const j1=(j+1)%NA,A=row*NA+j,B=row*NA+j1;
+      if(dir<0)idx.push(ai,B,A);else idx.push(ai,A,B);
+    }
+  };
+  cap(0,-1);cap(NT-1,1);
   return {verts,index:new Uint16Array(idx),stride:11,
           attrs:[["p",3,0],["n",3,3],["tm",2,6],["c",3,8]]};
 }
