@@ -522,9 +522,11 @@ function camBtnTick(){
 }
 /* ── альбом на столе ──
    Карточки рисуются в свои холсты тем же художником, что и у получателя
-   открытки: если альбом выглядит правильно, значит и чужая карточка выглядит
-   правильно. Тычок по карточке разворачивает её на всю ширину листа. */
-let albumOpen=-1;
+   открытки: если альбом выглядит правильно, значит и чужая выглядит правильно.
+   Тычок по карточке разворачивает её на всю ширину листа; развёрнутую можно
+   ПЕРЕВЕРНУТЬ — и там оборот, печатный бланк (25i, M189). Мелкие карточки
+   всегда лицом: пачка фотографий на столе лежит лицом вверх. */
+let albumOpen=-1,albumBack=false;
 function renderAlbum(box){
   const A=albumAll();
   box.innerHTML="";
@@ -538,19 +540,40 @@ function renderAlbum(box){
     const big=(albumOpen===i);
     const cell=document.createElement("div");
     cell.className="card"+(big?" big":"");
-    const cw=big?Math.max(320,Math.min(880,box.clientWidth-24)):228;
+    const cw=big?Math.max(320,Math.min(760,box.clientWidth-24)):228;
     const ch=Math.round(cw*.625);
-    const cv=document.createElement("canvas");
-    cv.width=Math.round(cw*2);cv.height=Math.round(ch*2);
-    cv.style.width=cw+"px";cv.style.height=ch+"px";
-    const cc=cv.getContext("2d");
-    cc.scale(2,2);
-    if(!drawPostcard(cc,s,cw,ch)){cc.fillStyle="#12161d";cc.fillRect(0,0,cw,ch);}
-    cell.appendChild(cv);
+    if(big&&albumBack&&typeof renderCardBack==="function"){
+      const host=document.createElement("div");
+      host.className="side";host.style.width=cw+"px";host.style.minHeight=ch+"px";
+      renderCardBack(host,s,()=>tableRender());
+      cell.appendChild(host);
+    }else{
+      const cv=document.createElement("canvas");
+      cv.width=Math.round(cw*2);cv.height=Math.round(ch*2);
+      cv.style.width=cw+"px";cv.style.height=ch+"px";
+      const cc=cv.getContext("2d");
+      cc.scale(2,2);
+      if(!drawPostcard(cc,s,cw,ch)){cc.fillStyle="#12161d";cc.fillRect(0,0,cw,ch);}
+      cell.appendChild(cv);
+    }
+    if(big){
+      const row=document.createElement("div");row.className="acts";
+      const b=document.createElement("button");
+      b.className="act sm";
+      const signed=(typeof postSigned==="function")&&postSigned(s);
+      /* кнопка называет действие, а не состояние: неподписанную карточку
+         «подписывают», подписанную — «переворачивают» (правило интерфейса) */
+      b.textContent=albumBack?"ЛИЦО":(signed?"ПЕРЕВЕРНУТЬ":"ПОДПИСАТЬ");
+      b.onclick=e=>{e.stopPropagation();
+        if(!albumBack&&!signed&&typeof postSign==="function")postSign(s);
+        albumBack=!albumBack;tableRender();};
+      row.appendChild(b);
+      cell.appendChild(row);
+    }
     const cap=document.createElement("s");
     cap.textContent=postCaption(s)+(s.ver&&s.ver!==VER?" · снято на "+s.ver:"");
     cell.appendChild(cap);
-    cell.onclick=()=>{albumOpen=big?-1:i;tableRender();};
+    cell.onclick=()=>{albumOpen=big?-1:i;albumBack=false;tableRender();};
     wrap.appendChild(cell);
   });
   box.appendChild(wrap);

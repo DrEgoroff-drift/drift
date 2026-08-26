@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 278 · символов верхнего уровня: 2604
+Файлов: 280 · символов верхнего уровня: 2618
 
 ## СИМВОЛЫ
 
@@ -65,7 +65,7 @@ aiStage                      src/12f-mgr-ai.js:19
 aiUpkeep                     src/12f-mgr-ai.js:126
 ALBUM_MAX                    src/25g-postcard.js:496
 albumAll                     src/25g-postcard.js:497
-albumOpen                    src/25g-postcard.js:527
+albumOpen                    src/25g-postcard.js:529
 allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:517
 ambK                         src/19c-light.js:39
@@ -1669,10 +1669,14 @@ poiPath                      src/20a-poi.js:91
 poiPoly                      src/20a-poi.js:110
 poiSkin                      src/20a-poi.js:119
 POST_ADDR                    src/11e-post.js:46
+POST_FORM_BY                 src/25h-post-forms.js:195
+POST_FORMS                   src/25h-post-forms.js:35
 POST_HOR                     src/25g-postcard.js:33
 POST_ITEMS                   src/11e-post.js:20
+POST_KINDS                   src/25h-post-forms.js:25
 POST_LAST                    src/11e-post.js:112
 POST_LINKS                   src/11e-post.js:25
+POST_PS_MAX                  src/25i-post-back.js:27
 POST_SALT                    src/11e-post.js:18
 POST_TR                      src/25g-postcard.js:39
 POST_TR_MAX                  src/25g-postcard.js:40
@@ -1683,11 +1687,20 @@ postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113
 postCanShoot                 src/25g-postcard.js:498
 postCaption                  src/25g-postcard.js:68
+postChoose                   src/25i-post-back.js:48
 postDock                     src/11e-post.js:80
+postForm                     src/25h-post-forms.js:196
+postFormFor                  src/25h-post-forms.js:200
+postFormNext                 src/25h-post-forms.js:207
+postGlyph                    src/25i-post-back.js:54
 postHolding                  src/11e-post.js:107
 postItem                     src/11e-post.js:42
 postLinkHere                 src/11e-post.js:73
 postOpen                     src/11e-post.js:99
+postRead                     src/25i-post-back.js:64
+postSetForm                  src/25i-post-back.js:44
+postSign                     src/25i-post-back.js:35
+postSigned                   src/25i-post-back.js:32
 postSnap                     src/25g-postcard.js:57
 postTake                     src/25g-postcard.js:502
 postTerrain                  src/25g-postcard.js:41
@@ -1820,10 +1833,11 @@ relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07-planet.js:374
-renderAlbum                  src/25g-postcard.js:528
+renderAlbum                  src/25g-postcard.js:530
 renderBarge                  src/12l-barge.js:617
 renderBasesTab               src/26a-ui-station-home.js:4
 renderCantina                src/27c-ui-hq.js:45
+renderCardBack               src/25i-post-back.js:70
 renderDeeds                  src/11-log.js:92
 renderHold                   src/27j-ui-hold.js:176
 renderLog                    src/11-log.js:71
@@ -3156,9 +3170,15 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25f-globus.js · 8 КБ
   · «Глобус» — указатель места полёта:1
 
-## src/25g-postcard.js · 32 КБ
+## src/25g-postcard.js · 34 КБ
   · открытка: снимок сцены, а не пиксели:1
   · камера и альбом:482
+
+## src/25h-post-forms.js · 18 КБ
+  · бланки открытки:1
+
+## src/25i-post-back.js · 9 КБ
+  · оборот карточки:1
 
 ## src/26a-ui-station-home.js · 12 КБ
   · станция: вкладка «дом и базы»:1
@@ -3489,7 +3509,8 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzh-told.js · 3 КБ
   · автотесты: ляпнул лишнего:1
 
-## tests/91zzzi-postcard.js · 6 КБ
+## tests/91zzzi-postcard.js · 12 КБ
   · автотесты: открытка — снимок сцены (M188):1
+  · бланки открытки (M189):111
 
 ## tests/99-run.js · 0 КБ

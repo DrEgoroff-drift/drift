@@ -768,12 +768,29 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
 
   **Still open:** the wire format and the receiver's side, which belong to M190; modes other than
   ground and approach (cave, mine, belt, system, scoop) are not photographable yet.
-- **M189 — the forms.** A form is a title plus lines; a line is a set of variants; tapping a
+- **M189 — the forms** — **built (0.172.0).** A form is a title plus lines; a line is a set of variants; tapping a
   variant crosses the others out. **Every line ships with a sensible default, so a card can be sent
   without a single tap** — that is what "чтобы не париться" means in practice. About thirty in this
   milestone, to a hundred over later passes: road, holiday, wintering, household, lyrical,
   scientific, official ("Форма №7"), children's. A postscript of up to three settlement glyphs,
   whose meaning the players work out among themselves. A place stamp, never a name.
+
+  **BUILT (0.172.0):** `25h-post-forms` (the table), `25i-post-back` (the back, as markup rather
+  than canvas — a variant has to be hit with a finger, and text in markup stays text at any size),
+  suite `91zzzi-postcard`, stand `pageshot view -Q "?s=pcback"`. Thirty blanks, all eight kinds,
+  flipped one at a time in the header. Struck-out variants stay visible — a stranger's card tells
+  you about them by what they crossed out. The address side is empty on purpose and says so in
+  print: *адресат не указывается · карточка идёт в общую почту*. On the snapshot: `f` blank,
+  `c` choices, `g` glyphs — under a third of a kilobyte per card. Measured at 375 px: fits, no
+  overflow, no touch target under the size rule.
+
+  Two collisions, both invisible to the eye: the choices were first written into `s.m`, which is
+  the snapshot's *shooting mode*, so a signed approach card lost its lander; and the variant
+  buttons carried `class="v"`, which the game already uses for an instrument row (`display:grid`,
+  64/88/46), so every variant inherited that grid and stretched to a quarter of the card.
+
+  **Still open:** a hundred blanks over later passes (thirty are in); and the card cannot be sent
+  anywhere yet — that is M190.
 - **M190 — the post.** `api.php a=post`: the card goes to the pool; a reply travels back down the
   chain anonymously. Three a day, thirty days of life, TTL sweep, one request per docking (the M171
   rule). Offline the feature does not exist and the interface never mentions it.

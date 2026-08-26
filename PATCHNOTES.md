@@ -7,6 +7,48 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.172.0 — the forms: a postcard you can send without typing a word (M189)
+
+The back of a card is a **printed blank**: a title and lines, each line a set of ready variants.
+Tapping one strikes the others out, exactly as a pencil does on a real form. Thirty blanks in
+eight kinds — road, holiday, wintering, household, lyrical, scientific, official («ФОРМА №7»),
+children's — flipped through one at a time in the card's header, because a list of thirty is a
+list and a postcard is a thing.
+
+**Every line's default is its first variant, and that is a rule rather than an accident.** The
+author's word on postcards was «чтобы не париться»: a card must be sendable without a single tap
+and still say something human. So the first variant everywhere is the calm, ordinary one — the
+one nine people out of ten would write.
+
+**Why variants and not a free line.** A free line is a chat, and a chat between strangers has to
+be policed, which turns a game into a service. The blank takes away exactly the freedom that
+would have required people on moderation duty and keeps the one a postcard is sent for: choice.
+What crosses the wire is a form id, the numbers of the chosen variants and up to three glyphs —
+under a third of a kilobyte per card, and nothing a person wrote.
+
+**The struck-out variants stay visible.** Hiding them would throw away half the message: a
+stranger's card tells you about them by *what they crossed out*.
+
+**A postscript of up to three glyphs** from the settlement pidgin (`12t`). What they mean is
+never explained to anyone — the meaning is for people to agree on among themselves, and it is the
+only thing crossing the boundary that the game has not written.
+
+The address side of the back is empty on purpose, so the emptiness is named out loud in print:
+«адресат не указывается · карточка идёт в общую почту». One line states the rule the whole
+feature stands on, and states it as part of the world rather than as interface help.
+
+Two collisions found and fixed on the way, both invisible to the eye:
+
+- the choices were being written into `s.m`, which is the snapshot's **shooting mode** — a card
+  taken on approach silently lost its lander and drew a walking figure the moment it was signed.
+  They live in `s.c` now.
+- the variant buttons carried `class="v"`, and the game already has a global `.v` — an instrument
+  row, `display:grid` with 64/88/46 columns. Every variant quietly inherited that grid and
+  stretched to a quarter of the card.
+
+Stand: `pageshot view -Q "?s=pcback"`. Measured at 375 px: the card fits, nothing overflows, and
+none of its 42 touch targets falls under the size rule.
+
 ## 0.171.0 — the camera: a photograph is a snapshot of the scene, not pixels (M188)
 
 First pass of the postcard block. A photograph in Drift is **about two hundred bytes**: mode,

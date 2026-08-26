@@ -944,3 +944,64 @@ body.afoot .ipod{display:none}
 .album .card canvas{display:block;border-radius:1px}
 .album .card s{display:block;text-decoration:none;color:#5d5342;font-size:10px;
   letter-spacing:.06em;padding:6px 2px 2px;text-align:center}
+
+/* ── оборот открытки (M189) ──
+   Не панель интерфейса, а печатный бланк: бумага, типографская сетка, вариант
+   выбирается вычёркиванием соседей. Кнопки не выглядят кнопками — на бланке
+   их и не бывает; работает то, что похоже на карандашную пометку. */
+.album .card .side{background:#efe9db;border-radius:1px;box-sizing:border-box;
+  padding:14px 16px 12px;display:flex;flex-direction:column;gap:9px;
+  box-shadow:inset 0 0 0 1px rgba(93,83,66,.16)}
+/* оборот тянется на всю высоту карточки: иначе штамп, прижатый margin-top:auto,
+   упирался в собственный конец текста, а под ним оставалась пустая треть бумаги */
+.pcback{display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;
+  color:#4a4234;font-size:12px;line-height:1.5}
+.pcback .hd{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid rgba(93,83,66,.28);
+  padding-bottom:7px}
+.pcback .hd b{font-weight:400;letter-spacing:.16em;font-size:12px;color:#3c352a}
+.pcback .hd i{font-style:normal;color:#8a7c63;font-size:10px;letter-spacing:.1em}
+.pcback .hd .nav{margin-left:auto;display:flex;align-items:center;gap:6px}
+.pcback .hd .nav s{text-decoration:none;color:#a2967f;font-size:9px;letter-spacing:.14em}
+.pcback .flip{-webkit-appearance:none;background:none;border:1px solid rgba(93,83,66,.32);
+  color:#5d5342;border-radius:3px;min-width:34px;min-height:34px;font:inherit;font-size:13px;cursor:pointer}
+.pcback .ln{display:flex;flex-wrap:wrap;align-items:baseline;gap:1px 9px}
+.pcback .ln em{font-style:normal;color:#8a7c63;font-size:10px;letter-spacing:.1em;
+  min-width:92px;flex:0 0 auto;align-self:baseline}
+/* варианты идут строкой, как на настоящем бланке, и НЕ растягиваются: в
+   flex-контейнере кнопки по умолчанию тянутся на всю высоту, и подчёркивание
+   выбранного уезжало через всю колонку линейкой. align-items:baseline сажает
+   их на общую строку, nowrap не даёт рвать «один и тот же борт» пополам */
+.pcback .vs{display:flex;flex-wrap:wrap;align-items:baseline;gap:1px 10px;
+  flex:1 1 auto;min-width:0}
+.pcback .pcv{-webkit-appearance:none;background:none;border:0;font:inherit;font-size:12px;
+  padding:5px 2px;min-height:32px;cursor:pointer;color:#3c352a;white-space:nowrap;
+  align-self:baseline;border-bottom:1px solid transparent}
+.pcback .pcv.on{border-bottom-color:rgba(60,53,42,.55)}
+/* вычеркнутый вариант ОСТАЁТСЯ ВИДЕН: по тому, что человек вычеркнул, его и
+   узнают — спрятать соседей значило бы выбросить половину сообщения */
+.pcback .pcv.off{color:#a2967f;text-decoration:line-through;text-decoration-thickness:1px}
+.pcback .ps{display:flex;align-items:center;gap:10px;padding-top:4px}
+.pcback .ps em{font-style:normal;color:#8a7c63;font-size:10px;letter-spacing:.1em}
+.pcback .slots{display:flex;gap:6px}
+.pcback .slots .g{font-style:normal;font-size:17px;color:#3c352a;width:24px;text-align:center}
+.pcback .slots .g.e{color:#c0b49b}
+.pcback .alph{display:flex;flex-wrap:wrap;gap:2px}
+.pcback .gl{-webkit-appearance:none;background:none;border:1px solid transparent;border-radius:3px;
+  color:#7c705c;font:inherit;font-size:15px;min-width:32px;min-height:32px;cursor:pointer}
+.pcback .gl.on{border-color:rgba(93,83,66,.45);color:#3c352a;background:rgba(93,83,66,.08)}
+.pcback .addr{margin-top:auto;display:flex;align-items:flex-end;justify-content:flex-end;
+  gap:10px;padding-bottom:6px}
+.pcback .addr .box{width:46px;height:56px;border:1px dashed rgba(93,83,66,.34);border-radius:2px;
+  flex:0 0 auto}
+.pcback .addr s{text-decoration:none;font-size:9px;letter-spacing:.1em;color:#a2967f;
+  text-align:right;max-width:210px;line-height:1.6}
+.pcback .stamp{border-top:1px solid rgba(93,83,66,.28);padding-top:7px;
+  display:flex;align-items:baseline;gap:10px}
+.pcback .stamp b{font-weight:400;font-size:10px;letter-spacing:.14em;color:#5d5342}
+.pcback .stamp s{margin-left:auto;text-decoration:none;font-size:9px;letter-spacing:.1em;color:#a2967f}
+.album .card .acts{display:flex;justify-content:center;padding-top:7px}
+@media (max-width:760px){
+  .pcback .ln em{min-width:0;flex:0 0 100%}
+  .pcback .gl{min-width:36px;min-height:36px}
+  .pcback .pcv{min-height:36px}
+}

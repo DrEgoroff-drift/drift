@@ -108,3 +108,89 @@ TEST_SUITES.push(()=>suite("открытка: альбом — двенадца�
   eq(albumAll().length,0,"сохранение без альбома — пустой альбом, а не падение");
   G.mode="system";G.surf=null;
 }));
+/* ══════════════ бланки открытки (M189) ══════════════ */
+TEST_SUITES.push(()=>suite("бланк: тридцать штук, у каждой строки значение по умолчанию",()=>{
+  resetWorld();
+  ok(POST_FORMS.length>=30,"бланков не меньше тридцати ("+POST_FORMS.length+")");
+  const ids={},kinds={};
+  let minL=99,minV=99;
+  for(const F of POST_FORMS){
+    ok(!ids[F.id],"номер бланка не повторяется: "+F.id);ids[F.id]=1;
+    ok(!!POST_KINDS[F.k],"вид бланка из таблицы: "+F.k);kinds[F.k]=1;
+    ok(F.ru===F.ru.toUpperCase()||/[№]/.test(F.ru),"заголовок набран прописными: "+F.ru);
+    minL=Math.min(minL,F.l.length);
+    for(const ln of F.l){
+      minV=Math.min(minV,ln.length-1);
+      ok(typeof ln[0]==="string"&&ln[0].length>0,"у строки есть подпись ("+F.id+")");
+      /* ни одного варианта с именем, адресом или числом, по которому ищут */
+      for(let i=1;i<ln.length;i++)
+        ok(!/\d{3,}|@|сектор|координат/i.test(ln[i]),"вариант никого не адресует: «"+ln[i]+"»");
+    }
+  }
+  ok(Object.keys(kinds).length>=8,"все восемь родов бланка заведены ("+Object.keys(kinds).length+")");
+  ok(minL>=3,"в бланке не меньше трёх строк (минимум "+minL+")");
+  ok(minV>=3,"в строке не меньше трёх вариантов (минимум "+minV+")");
+}));
+TEST_SUITES.push(()=>suite("бланк: подписывается сам, вычёркивание меняет только свою строку",()=>{
+  resetWorld();
+  G.album=[];
+  const F=pcTestPlanet();
+  const tr=genTerrain(F.p,null);
+  G.sx=F.s.sx;G.sy=F.s.sy;G.sys=F.s;
+  G.mode="surface";G.surf={p:F.p,tr,x:tr.W*.5};
+  const s=postTake();
+  ok(!postSigned(s),"снимок сам по себе — ещё не открытка");
+  postSign(s);
+  ok(postSigned(s),"подписан");
+  const form=postForm(s.f);
+  eq(s.c.length,form.l.length,"выбор заведён на каждую строку");
+  ok(s.c.every(x=>x===0),"и всюду стоит значение по умолчанию");
+  eq(s.m,"s","и РЕЖИМ съёмки подпись не затёрла");
+  /* карточку можно прочесть, не тронув ни одного варианта */
+  const plain=postRead(s);
+  ok(plain.length>10,"её уже можно прочитать: "+plain.slice(0,60));
+  /* вычёркивание */
+  postChoose(s,1,2);
+  eq(s.c[1],2,"вторая строка переехала на третий вариант");
+  eq(s.c[0],0,"первая осталась на своём");
+  ok(postRead(s)!==plain,"и текст карточки изменился");
+  /* смена бланка обнуляет выбор: у другого бланка другие строки */
+  const other=postFormNext(s.f,1);
+  postSetForm(s,other);
+  eq(s.f,other,"бланк перелистнулся");
+  eq(s.c.length,postForm(other).l.length,"строк столько, сколько в новом бланке");
+  ok(s.c.every(x=>x===0),"выбор сброшен, а не перенесён вслепую");
+  /* по кругу и обратно */
+  const back=postFormNext(postFormNext(s.f,1),-1);
+  eq(back,s.f,"листание ходит по кругу в обе стороны");
+  G.mode="system";G.surf=null;
+}));
+TEST_SUITES.push(()=>suite("бланк: приписка — до трёх глифов, и ничего написанного не уезжает",()=>{
+  resetWorld();
+  G.album=[];
+  const F=pcTestPlanet();
+  const tr=genTerrain(F.p,null);
+  G.sx=F.s.sx;G.sy=F.s.sy;G.sys=F.s;
+  G.mode="surface";G.surf={p:F.p,tr,x:tr.W*.5};
+  const s=postSign(postTake());
+  ok(postGlyph(s,3)&&postGlyph(s,7)&&postGlyph(s,11),"три глифа легли");
+  eq(s.g.length,3,"их три");
+  ok(!postGlyph(s,15),"четвёртый не лезет");
+  eq(s.g.length,3,"и не лёг");
+  ok(postGlyph(s,7),"повторный тычок по своему глифу — снять");
+  eq(s.g.length,2,"снялся");
+  ok(postGlyph(s,15),"освободившееся место занято");
+  /* вся карточка целиком: ничего, кроме чисел и номера бланка */
+  const wire=JSON.stringify(s);
+  ok(wire.length<340,"карточка с бланком укладывается в треть килобайта ("+wire.length+")");
+  ok(!/[а-яё]{6,}/i.test(wire.replace(/"[fcmgv]"|"ver":"[^"]*"/g,"")),
+     "в карточке нет русских слов, кроме версии: "+wire.slice(0,120));
+  /* и она переживает сохранение вместе с бланком */
+  const before=JSON.stringify(s);
+  const snap=snapshot();G.album=[];applySave(JSON.parse(JSON.stringify(snap)));
+  eq(JSON.stringify(albumAll()[0]),before,"бланк, выбор и приписка пережили сохранение");
+  /* битый номер бланка не роняет чтение */
+  albumAll()[0].f="нет-такого";
+  ok(typeof postRead(albumAll()[0])==="string","неизвестный бланк читается запасным");
+  G.mode="system";G.surf=null;
+}));
