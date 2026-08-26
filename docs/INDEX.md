@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 294 · символов верхнего уровня: 2753
+Файлов: 296 · символов верхнего уровня: 2762
 
 ## СИМВОЛЫ
 
@@ -190,6 +190,14 @@ bLamp                        src/21aa-base-rooms.js:279
 BLUEPRINTS                   src/12c-mgr-core.js:662
 BM_WARM                      src/21aa-base-rooms.js:20
 bodyInSystem                 src/16-flight.js:85
+bookAll                      src/12ub-books.js:106
+bookCount                    src/12ub-books.js:108
+bookFind                     src/12ub-books.js:113
+bookHas                      src/12ub-books.js:107
+bookOpen                     src/12ub-books.js:140
+bookRoll                     src/12ub-books.js:133
+BOOKS                        src/12ub-books.js:23
+BOOKS_BY                     src/12ub-books.js:105
 BP_KEYS                      src/12c-mgr-core.js:669
 bPipe                        src/21aa-base-rooms.js:244
 bpMul                        src/12c-mgr-core.js:673
@@ -506,7 +514,7 @@ drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:207
 drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:240
-drawFindsSystem              src/17b-finds.js:149
+drawFindsSystem              src/17b-finds.js:152
 drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24aa-raid-draw.js:541
 drawForeground               src/21b-surface-deco.js:248
@@ -572,7 +580,7 @@ drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:283
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:259
+drawThingIcon                src/27i-ui-table.js:263
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
 drawTrail                    src/16-flight.js:338
@@ -676,7 +684,7 @@ FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
 FIND_KINDS                   src/17b-finds.js:19
 findBucket                   src/17b-finds.js:18
-findInteract                 src/17b-finds.js:124
+findInteract                 src/17b-finds.js:127
 findsBlock                   src/12aa-need.js:159
 findSeen                     src/17b-finds.js:54
 findsHere                    src/17b-finds.js:53
@@ -1904,6 +1912,7 @@ RELIEF_MIX                   src/07-planet.js:374
 renderAlbum                  src/25g-postcard.js:530
 renderBarge                  src/12l-barge.js:617
 renderBasesTab               src/26a-ui-station-home.js:4
+renderBooks                  src/12ub-books.js:141
 renderCantina                src/27c-ui-hq.js:45
 renderCardBack               src/25i-post-back.js:88
 renderDeeds                  src/11-log.js:92
@@ -1916,9 +1925,9 @@ renderOpts                   src/27-ui-ship.js:198
 renderPrices                 src/12aa-need.js:196
 renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
-renderStrips                 src/27i-ui-table.js:199
+renderStrips                 src/27i-ui-table.js:203
 renderTab                    src/26-ui-station.js:206
-renderThings                 src/27i-ui-table.js:230
+renderThings                 src/27i-ui-table.js:234
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -2456,7 +2465,7 @@ tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
 tableNoticeAll               src/27i-ui-table.js:68
 tableRender                  src/27i-ui-table.js:131
-tableRow                     src/27i-ui-table.js:191
+tableRow                     src/27i-ui-table.js:195
 tableSetTab                  src/27i-ui-table.js:101
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:84
@@ -3085,6 +3094,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ua-flea.js · 12 КБ
   · Блошинец: станция, где всё чьё-то:1
 
+## src/12ub-books.js · 21 КБ
+  · книжная полка:1
+
 ## src/12u-folk.js · 9 КБ
   · четверо:1
 
@@ -3692,5 +3704,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzm-holiday.js · 4 КБ
   · автотесты: праздники по календарю (M201):1
+
+## tests/91zzzn-books.js · 4 КБ
+  · автотесты: книжная полка (M202):1
 
 ## tests/99-run.js · 0 КБ

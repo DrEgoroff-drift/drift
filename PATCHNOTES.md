@@ -7,6 +7,27 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.180.0 — the bookshelf: forty fragments, all of them written by hand (M202)
+
+Books turn up in wreckage — a hulk, a container, a barge that did not make it. What is left of a
+book is **a title and one paragraph**: exactly as much as you get through before someone calls you.
+
+**It is a table, not a generator, and that is a condition rather than laziness.** Generated prose
+gives itself away by the third line and devalues all forty at once. A fragment has to be worth
+rereading, which means somebody has to have written it.
+
+**The voices differ.** Not one invented book in forty extracts but forty books: a service
+regulation, a pilot book, a children's story, a commission's report, poems, a cookbook, a novel
+nobody finished, a first reader with a child's pencil in the margin, the last pages of a barge's
+log. The world gets larger not from having many planets but from people in it having written
+different things.
+
+One place always yields the same book — the seed of the wreck decides which — so a wreck has an
+address rather than a dice roll. Roughly one wreck in three has one. The shelf lives at home and is
+read from the chair; the only number anywhere is how many of the forty you have.
+
+No award for completing it. The book is the award.
+
 ## 0.179.0 — the holidays are on the real calendar (M201)
 
 The road companion proved the game can keep time with the person playing it, and the night ether

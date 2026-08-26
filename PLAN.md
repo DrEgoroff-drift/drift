@@ -910,9 +910,13 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   no discount, no bonus, no double reward. Done well before 31.12, as the note asked.
 - **The travelling cinema.** A barge brings a film; the cantina reseats itself in rows for one
   evening and a short procedural newsreel about the regions and the expedition plays on the wall.
-- **The bookshelf.** Books turn up in wrecks: a title and a paragraph, about forty hand-written
-  fragments in the voice of that fiction (a table, not generated prose). A shelf at home, read from
-  the chair, a count of what has been collected.
+- **The bookshelf** — **built (0.180.0, M202).** `12ub-books`, suite `91zzzn-books`. Forty books
+  found in wreckage — hulk, container, barge — each a title, an imprint and one paragraph, all
+  written by hand, because generated prose gives itself away by the third line. Forty different
+  voices, not one invented book: regulation, pilot book, children's story, commission report,
+  poems, cookbook, an unfinished novel, a first reader with a child's pencil in the margin. One
+  wreck always yields the same book (its seed decides), about one wreck in three has one. Shelf on
+  the table, the only number is how many of the forty. No award for completing it.
 - **QSL cards.** Reworked for "no names": the operators are **characters of the game** — winterers,
   the expedition, far settlements — not living players. Catch a distant one on the receiver, send a
   card, weeks later the answering card arrives and the wall at home fills up. Entirely offline, and

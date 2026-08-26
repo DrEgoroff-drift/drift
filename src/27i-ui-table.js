@@ -139,6 +139,8 @@ function tableRender(){
     if(b.dataset.tab==="album")b.style.display=(typeof albumAll==="function"&&albumAll().length)?"":"none";
     /* почта появляется, когда она есть: офлайн её нет вовсе, и пустая закладка
        обещала бы то, чего в этой сборке не бывает (M190) */
+    if(b.dataset.tab==="books")b.style.display=
+      (typeof bookCount==="function"&&bookCount())?"":"none";
     if(b.dataset.tab==="diary")b.style.display=
       ((typeof winOn==="function"&&winOn())||thingsAll().some(t=>t.diary))?"":"none";
     if(b.dataset.tab==="mail")b.style.display=
@@ -161,6 +163,7 @@ function tableRender(){
              album:"альбом · снимки мест, где вы стояли",
              mail:"почта · стопки карточек, скреплённые скрепкой",
              diary:"дневник зимовки · бланками, потому что писать некому",
+             books:"полка · что нашлось в обломках и уцелело",
              lore:"отчёт «Долгого хода»"};
   if(sub)sub.textContent=SUB[tableTab]||"";
   if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
@@ -186,6 +189,7 @@ function tableRender(){
   else if(tableTab==="album"&&typeof renderAlbum==="function")renderAlbum(box);
   else if(tableTab==="mail"&&typeof renderMail==="function")renderMail(box);
   else if(tableTab==="diary"&&typeof renderDiary==="function")renderDiary(box);
+  else if(tableTab==="books"&&typeof renderBooks==="function")renderBooks(box);
   else if(tableTab==="lore"&&typeof renderLoreBoard==="function")renderLoreBoard();
 }
 function tableRow(box,cls,em,text){

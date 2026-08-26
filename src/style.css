@@ -1026,3 +1026,10 @@ body.afoot .ipod{display:none}
 .album.mail .card.theirs{transform:rotate(.7deg)}
 .album.mail .card:hover{transform:rotate(0) translateY(-2px)}
 .album.mail .acts{display:flex;gap:10px;padding-top:11px}
+
+/* ── отрывок из книги (M202) ──
+   Читается как страница, а не как строка интерфейса: колонка в полсотни знаков,
+   межстрочный воздух и мягкий отступ. Иначе абзац, ради которого всё затевалось,
+   выглядит подписью к кнопке. */
+.album.mail .bookfrag{color:#d6c8a6;font-size:13px;line-height:1.75;max-width:56ch;
+  padding:10px 4px 4px;letter-spacing:.01em}
