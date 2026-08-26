@@ -100,7 +100,18 @@ function birdSize(){
   const cv=document.getElementById("cv");
   /* плотность пикселей режется двойкой: на телефоне с тройной плотностью
      разница не видна, а кадр дороже вдвое */
-  const dpr=Math.min(QUAL.dpr||2,window.devicePixelRatio||1);
+  /* ── ПОТОЛОК ПО ПЛОЩАДИ, А НЕ ПО ПЛОТНОСТИ ──
+     Оперение — это огромная перерисовка: один пиксель экрана проходит через
+     десяток перьев, и каждое считает свет с тенью. Окно 1512×950 при
+     плотности 2 — это 5.7 миллиона пикселей на кадр; кадр перестаёт
+     укладываться в 16 мс, часть кадров пропускается, и получается то самое
+     «средние шестьдесят, а идёт рывками». Плотность подбирается так, чтобы
+     площадь не перевалила за потолок: между 2.0 и 1.5 глазом не отличить, а
+     срывы пропадают. Ниже единицы не опускаемся — там уже видно лесенку. */
+  const cw=Math.max(2,cv.clientWidth),ch=Math.max(2,cv.clientHeight);
+  const cap=QUAL.mobile?1.35e6:3.15e6;
+  const dpr=Math.max(1,Math.min(QUAL.dpr||2,window.devicePixelRatio||1,
+                                Math.sqrt(cap/(cw*ch))));
   const w=Math.max(2,Math.round(cv.clientWidth*dpr)),h=Math.max(2,Math.round(cv.clientHeight*dpr));
   if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}
   R.dpr=dpr;

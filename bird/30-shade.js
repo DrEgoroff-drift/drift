@@ -173,10 +173,22 @@ float shadowAt(vec3 wp,float NoL){
   float bias=uShadowTexel*(0.9+2.6*sqrt(1.0-NoL*NoL)/max(NoL,0.15));
   /* шире, чем один тексель: тень между перьями должна быть мягкой, иначе
      оперение выглядит вырезанным из бумаги и наклеенным */
+#ifdef SH_FAST
+  /* ПЕРЬЯМ ХВАТАЕТ ЧЕТЫРЁХ ВЫБОРОК. Девять — самая дорогая строка кадра: их
+     платит каждый пиксель каждого пера, а перья лежат по десятку на пиксель.
+     Между 4 и 9 на пере разницы не видно (его собственная тень мельче
+     размытия), а кадр на плотном экране перестаёт срываться с шестидесяти. */
+  float s=texture(uShadow,vec3(q.xy+vec2(-1.0,-1.0)*uShadowTexel*2.2,q.z-bias))
+         +texture(uShadow,vec3(q.xy+vec2( 1.0,-1.0)*uShadowTexel*2.2,q.z-bias))
+         +texture(uShadow,vec3(q.xy+vec2(-1.0, 1.0)*uShadowTexel*2.2,q.z-bias))
+         +texture(uShadow,vec3(q.xy+vec2( 1.0, 1.0)*uShadowTexel*2.2,q.z-bias));
+  return mix(0.16,1.0,s*0.25);
+#else
   float s=0.0;
   for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++)
     s+=texture(uShadow,vec3(q.xy+vec2(float(x),float(y))*uShadowTexel*1.7,q.z-bias));
   return mix(0.16,1.0,s/9.0);
+#endif
 }
 
 /* Материал: альбедо, шероховатость, «пропускание» (перо и клюв просвечивают
@@ -232,17 +244,20 @@ layout(location=1) in vec3 n;
 layout(location=2) in vec2 ta;
 layout(location=3) in vec3 c;
 uniform mat4 uVP;
-out vec3 vP,vN,vC;
+out vec3 vP,vN,vC,vL;
 out vec2 vTA;
 void main(){
   vec3 pp=p,nn=n;
   partJoints(pp,nn,ta.y,ta.x);
   rigApply(pp,nn,ta.x);
+  /* МЕСТНАЯ точка — до позы. По ней рисуется всё, что должно стоять на месте
+     детали, куда бы птица ни повернулась: радужка, ноздря, лимб */
+  vL=p;
   vP=pp;vN=normalize(nn);vC=c;vTA=ta;
   gl_Position=uVP*vec4(pp,1.0);
 }`;
 const FS_SOLID=GL_LIGHT+`
-in vec3 vP,vN,vC;
+in vec3 vP,vN,vC,vL;
 in vec2 vTA;
 /* uTime объявлен и в вершинной части (GL_RIG): одно и то же имя одного типа
    в двух ступенях — это одна общая переменная, и ставить её отдельно не надо */
@@ -297,8 +312,47 @@ void main(){
        «поймай-свет» с постоянного направления — без него зрачок читается
        дыркой, стоит ключу уйти за голову */
     rough=0.06;trans=0.0;alb=vC*0.7;
-    float cl=pow(clamp(dot(normalize(N),normalize(vec3(-0.45,0.75,0.49))),0.0,1.0),120.0);
-    o=vec4(lightPoint(vP,N,alb,rough,trans,vec3(0.0,1.0,0.0),0.0)+vec3(2.6)*cl,1.0);
+    /* ── РАДУЖКА РИСУЕТСЯ, А НЕ ЛЕПИТСЯ ──
+       С фотографии: ровный круглый зрачок, от него лучами волокна, к краю —
+       тёмный лимб. Геометрией этого не сделать: диски поверх шара разъезжались
+       с любого угла, а лепить волокна — тысячи вершин на предмет размером с
+       ноготь. Считается всё в МЕСТНЫХ координатах (vL, до позы): центр глаза и
+       его ось постоянны, поэтому рисунок не съезжает, куда бы птица ни
+       повернула голову, и круг остаётся кругом с любой стороны. */
+    vec3 ec=vec3(sign(vL.x)*0.252,1.758,0.108);
+    vec3 ax=normalize(vec3(sign(vL.x)*0.94,0.10,0.33));
+    vec3 dl=vL-ec;
+    vec3 rd=dl-ax*dot(dl,ax);
+    float rr=length(rd);
+    if(length(dl)<0.075&&rr<0.058){
+      vec3 e1=normalize(cross(ax,vec3(0.0,1.0,0.0)));
+      float th=atan(dot(rd,cross(ax,e1)),dot(rd,e1));
+      float k=clamp(rr/0.0567,0.0,1.0);
+      /* волокна двумя частотами, и вторая гуляет по первой: ровная гребёнка
+         читается шестерёнкой, а не радужкой */
+      float fib=sin(th*186.0+sin(th*23.0)*1.6)*0.5+0.5;
+      fib=mix(fib,sin(th*61.0+1.1)*0.5+0.5,0.35);
+      float fk=smoothstep(0.30,0.52,k)*smoothstep(1.0,0.80,k);
+      /* ТЁМНАЯ радужка со светлым кантом, а не светлая целиком: на фотографии
+         сливовая масса занимает почти всю радужку, а маджента — только
+         кольцо ближе к краю. Ровно-яркая радужка читается неоновым шариком,
+         чем первая правка и кончилась. */
+      vec3 deep=vC*0.09+vec3(0.007,0.004,0.011);   /* слива у зрачка */
+      vec3 ring=vC*0.90+vec3(0.05,0.012,0.045);    /* маджентовый кант */
+      vec3 iris=mix(deep,vC*0.34,smoothstep(0.44,0.74,k));
+      iris=mix(iris,ring,smoothstep(0.70,0.89,k));
+      iris*=0.72+0.56*fib*fk;
+      /* тёмный лимб по краю: без него радужка кончается ничем */
+      iris=mix(iris,vC*0.07,smoothstep(0.90,1.0,k));
+      /* зрачок — ровный круг, чуть меньше половины радужки */
+      alb=mix(iris,vec3(0.006,0.004,0.008),smoothstep(0.50,0.44,k));
+      rough=0.05;
+    }
+    /* блик: острое ядро и мягкий ореол вокруг него — один голый «поймай-свет»
+       читается наклейкой */
+    float cd=clamp(dot(normalize(N),normalize(vec3(-0.45,0.75,0.49))),0.0,1.0);
+    o=vec4(lightPoint(vP,N,alb,rough,trans,vec3(0.0,1.0,0.0),0.0)
+           +vec3(2.6)*pow(cd,120.0)+vec3(0.55,0.60,0.72)*pow(cd,26.0)*0.30,1.0);
     return;
   }else if(m<3.5){
     rough=0.88;trans=0.02;alb=vC;         /* дерево */
@@ -452,7 +506,9 @@ void main(){
   vP=wp;vN=wn;vC=icol;vT=wt;vUV=uv;vKind=ipar.w;vId=ph;
   gl_Position=uVP*vec4(wp,1.0);
 }`;
-const FS_FEATHER=GL_LIGHT+`
+/* SH_FAST: перо берёт тень четырьмя выборками вместо девяти. Объявление
+   стоит ДО общей части света — она сама на него смотрит (см. shadowAt) */
+const FS_FEATHER="#define SH_FAST 1\n"+GL_LIGHT+`
 in vec3 vP,vN,vC,vT;
 in vec2 vUV;
 in float vKind,vId;
@@ -492,7 +548,9 @@ void main(){
   }
   alb=mix(alb,alb*1.28,smoothstep(0.55,1.0,v));
   /* основание пера всегда в тени соседнего: без этого черепица плоская */
-  alb*=mix(0.84,1.0,smoothstep(0.0,0.28,v));
+  /* корень темнее прежнего: пух больше не пишется в карту теней (50-render),
+     и мягкое затенение между перьями надо вернуть даром */
+  alb*=mix(vKind<-0.5?0.64:0.78,1.0,smoothstep(0.0,0.30,v));
   float rough=mix(0.42,0.30,rach);
   float trans=mix(0.55,0.30,rach);
   /* ── ПУХ (род -1) ──

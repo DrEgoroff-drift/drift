@@ -1283,3 +1283,29 @@ the wing, one stray wing feather, and whiskers that did not glow.
   lost in the general light and never crossed the bloom threshold (1.55), so the beads glowed and
   the whiskers hung there like wires. The thread is a source now — an even core, a run-up toward
   the tip, a halo along the grazing angle, pulsing at 1.7 Hz in step with the bead.
+
+## M200i — the iris off the photograph, and why sixty was not sixty (2026-08-26)
+
+- **The iris is painted, not modelled.** Third attempt at the eye, and the first that holds from
+  every angle: the eyeball is one smooth sphere and everything on it — the round pupil, the
+  radial fibres, the magenta band, the dark limbus — is computed in the fragment shader from the
+  **local** position (`vL`, before the rig). Geometry could not do this: discs floated over the
+  sphere had the sphere push through them in the middle, and fibres would have cost thousands of
+  vertices on something the size of a fingernail. A local frame also means the pattern never
+  drifts, however the head turns. First take came out a neon marble — a fully lit iris; the
+  photograph has a dark plum mass and magenta only in a ring near the rim, so the ramp goes
+  deep → mid → band → limbus, and the fibres modulate ±26%.
+- **"It jerks unevenly."** It did, and the average frame rate said nothing: 60 fps at the median,
+  33.4 ms at the 90th percentile — one frame in ten dropped, a few 50 ms. Profiling by canvas
+  size found it fill-bound, not CPU: at 1024×768 the frame was rock solid, at 2419×1520 it was
+  not. Three fixes, none of them visible:
+  - **Feathers take the shadow with four samples instead of nine** (`SH_FAST` in the feather
+    program). Nine PCF taps was the most expensive line in the frame — paid by every pixel of
+    every feather, and feathers lie ten deep on a pixel.
+  - **Down casts no shadow.** Sixteen thousand instances in the shadow map cost more than
+    everything else together, and the plates underneath cast the same shadow anyway. The soft
+    shading it used to give between feathers is bought back for free: the root of a down feather
+    is darkened to 0.64.
+  - **The canvas is capped by area, not by pixel density** (3.15 Mpix desktop, 1.35 mobile).
+    Density 1.5 against 2.0 cannot be told apart; dropped frames can.
+  - Result at the same window: 90th percentile 33.4 ms → 16.8 ms, dropped frames 10% → 0.9%.

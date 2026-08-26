@@ -93,7 +93,11 @@ function drawFeathers(P,VP){
   gl.useProgram(P.p);bindPose(P);
   if(VP)glSet(P,"uVP",VP);else bindLight(P);
   gl.disable(gl.CULL_FACE);          /* перо видно с обеих сторон */
-  if(MESH.down)glDraw(MESH.down);
+  /* ПУХ НЕ ОТБРАСЫВАЕТ ТЕНЬ (VP задан — значит, идёт карта теней). Шестнадцать
+     тысяч пушинок в карте стоят дороже всего остального вместе, а тень они
+     дают ту же, что пластины под ними: пух лежит поверх и по тем же местам.
+     Разницы на кадре нет, а карта теней считается вдвое быстрее. */
+  if(MESH.down&&!VP)glDraw(MESH.down);
   glDraw(MESH.coat);
   glDraw(MESH.plumes);
   gl.enable(gl.CULL_FACE);
