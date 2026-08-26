@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.166.0 — an offer becomes a job, and the clock was measured in the wrong unit (M191)
+
+**A button that pays you is not work.** Offers used to credit you the moment you clicked ВЗЯТЬ,
+which made the game's main quest a vending machine. Now a paying offer has an address: you take it
+here and you are paid **there**, and only there.
+
+Taking one puts a **paper on the table** (`27i`) with the destination on it. That is the quest log
+of this game, in its own language — there is no journal, no marker, no arrow, no timer, and the
+board carries one dim «ВЕЗЁТЕ» line so that a man standing at the notice board does not have to
+remember from memory where he was going.
+
+**And this is how a name is earned.** Not by taking the work — by delivering it. Deliver, and the
+next thing that person offers you comes with your call sign on it, without being asked. Fail to
+deliver in time and, if it was named, the door shuts for good, silently, exactly as before. One
+duty carried is worth more than any amount of standing about.
+
+**The bug that mattered more than the feature.** `G.t` counts *frames* — `dt` in the loop is a
+fraction of a 60 fps frame, and a day of this world is `CEL_DAY`, 3600 of them, one real minute.
+The first build wrote the windows as `40`–`180`, "as if in minutes", so offers actually expired
+**after about two seconds**, and the station's shift rolled over every four — meaning the guard
+against farming stations did nothing at all. Everything about time in these modules now goes
+through `CEL_DAY`, and two assertions pin the unit so the mistake cannot come back quietly.
+
+---
 ## 0.165.0 — the four (M190)
 
 Гуся, Рыба, Гвоздь, Птица — the people who stay for the whole game

@@ -99,8 +99,9 @@ TEST_SUITES.push(()=>suite("возможность: станция не выда
   for(const o of offerHere().slice())offerTake(o);
   closeStation();openStation();
   eq(offerHere().length,0,"взятое не восполняется в ту же смену");
-  /* сменилась смена — снова предлагают */
-  G.t+=260;
+  /* сменилась смена — снова предлагают. Смена — сутки мира (CEL_DAY), а не
+     произвольное число кадров: на этом уже один раз обожглись */
+  G.t+=OFFER_SHIFT+10;
   closeStation();openStation();
   ok(offerHere().length>0,"в следующую смену предлагают снова");
   closeStation();
@@ -144,4 +145,56 @@ TEST_SUITES.push(()=>suite("четверо: одна реплика за зах�
   let some=0;
   for(let i=0;i<40;i++){G.t+=240;if(folkOffer("gusya"))some++;}
   ok(some>0,"Гуся иногда называет ("+some+" из 40)");
+}));
+
+/* Возможность — работа, а не кнопка. Взял здесь, довёз туда, там и платят;
+   не довёз в срок — именная дверь закрылась. И заслуживают имя не тем, что
+   взяли, а тем, что довезли. */
+TEST_SUITES.push(()=>suite("возможность: берут здесь, платят там",()=>{
+  resetWorld();
+  G.offers=[];G.folk={};G.things=[];G.t=2000;
+  const cr0=G.credits;
+  /* заводим оплачиваемую работу и берём её */
+  let o=null;
+  for(let i=0;i<40&&!o;i++){const c=offerAdd("run","проба",false);if(offerDest(c))o=c;else c.taken=1;}
+  ok(!!o,"нашлась работа с адресом");
+  offerTake(o);
+  eq(G.credits,cr0,"на взятии не платят ничего");
+  ok(o.carry&&o.to,"работа взята и её везут");
+  ok(G.things.some(t=>/на «/.test(t.note||"")),"на столе появилась бумага с адресом");
+  eq(offerCarried().length,1,"везём одну");
+  /* не там — не платят */
+  G.sx=o.to.sx+1;G.sy=o.to.sy+1;
+  eq(offerDeliver(),0,"в чужой системе не платят");
+  /* там — платят */
+  G.sx=o.to.sx;G.sy=o.to.sy;
+  const pay=offerDeliver();
+  ok(pay>0,"на месте заплатили ("+pay+")");
+  eq(G.credits,cr0+pay,"и ровно столько");
+  eq(offerCarried().length,0,"больше не везём");
+  /* довёз — в следующий раз назовут */
+  ok(folkOf("проба").warm,"довёз — и его запомнили тёплым");
+  const nxt=offerAdd("haul","проба",false);
+  eq(nxt.named,1,"следующее предложение именное, хотя не просили");
+  ok(!folkOf("проба").warm,"тепло потрачено на одно предложение");
+}));
+
+TEST_SUITES.push(()=>suite("возможность: не довёз именное — дверь закрылась",()=>{
+  resetWorld();
+  G.offers=[];G.folk={};G.things=[];G.t=3000;
+  let o=null;
+  for(let i=0;i<40&&!o;i++){const c=offerAdd("run","гуся",true);if(offerDest(c))o=c;else c.taken=1;}
+  ok(o&&o.named,"его назвали по позывному");
+  offerTake(o);
+  const logWas=G.log.length;
+  /* окно везомой работы втрое длиннее, чем у предложения на доске */
+  G.t+=o.ttl*2+1;offerTick();
+  ok(folkOf("гуся").good,"две трети срока прошло — дверь ещё открыта");
+  G.t+=o.ttl+1;offerTick();
+  ok(!folkOf("гуся").good,"не довёз — и дверь закрылась");
+  eq(G.log.length,logWas,"и об этом нигде ни строки");
+  /* и сроки эти — в сутках мира, а не в кадрах: сборка, где окно жило две
+     секунды, выглядела ровно так же и была сломана насквозь */
+  ok(OFFER_TTL[0]>=CEL_DAY*.5,"окно предложения — не меньше полусуток");
+  eq(OFFER_SHIFT,CEL_DAY,"смена на станции равна суткам");
 }));

@@ -157,9 +157,8 @@ in vec2 vTA;
 out vec4 o;
 /* мелкая клетка кожи на лапах: без неё палец выглядит резиновым */
 float scales(vec3 p){
-  vec3 q=p*46.0;
-  vec2 g=vec2(sin(q.y)+sin(q.z*0.7),sin(q.y*0.8+q.x));
-  return smoothstep(0.35,1.0,abs(sin(q.y*1.0))*abs(sin(q.z*0.6+q.x*0.4)));
+  vec3 q=p*78.0;
+  return smoothstep(0.20,0.95,abs(sin(q.y*1.0+q.x*0.3))*abs(sin(q.z*0.75+q.x*0.5)));
 }
 void main(){
   vec3 N=normalize(vN);
@@ -175,13 +174,19 @@ void main(){
        Без них клюв читается леденцом: гладкая жёлтая масса и один блик. */
     alb=vC;
     float ridge=smoothstep(0.050,0.0,abs(vP.x))*clamp(N.y,0.0,1.0);
-    float tipk=smoothstep(1.66,1.54,vP.y)*smoothstep(0.30,0.40,vP.z);
-    alb*=mix(1.0,0.58,tipk);
+    float tipk=smoothstep(1.68,1.52,vP.y)*smoothstep(0.26,0.38,vP.z);
+    alb*=mix(1.0,0.46,tipk);
     alb*=0.94+0.12*ridge;
     float grooves=sin(vP.y*54.0+vP.z*16.0)*0.5+0.5;
     float bs=smoothstep(0.34,0.14,vP.z);
-    rough=0.26+0.20*grooves*bs+0.14*tipk;
+    rough=0.24+0.20*grooves*bs+0.14*tipk;
     trans=0.50*(1.0-tipk*0.55);
+    /* тень от надклювья на подклювье: без неё две челюсти читаются одним
+       куском рога, и рот пропадает. Полоса узкая и идёт по линии смыкания */
+    if(m>8.5){
+      float lip=smoothstep(0.055,0.0,abs(vP.y-(1.664-vP.z*0.16)));
+      alb*=mix(1.0,0.34,lip);
+    }
   }else if(m<2.5){
     /* глаз: тёмный и мокрый. Кроме честного блика от ключа ему дан один
        «поймай-свет» с постоянного направления — без него зрачок читается
@@ -198,9 +203,11 @@ void main(){
     alb*=0.80+0.28*fract(sin(floor(vP.x*26.0)*12.9898+floor(ang*9.0)*4.1414)*43758.5453);
     rough=0.92;
   }else if(m<4.5){
+    /* чешуя: на листе лапа заметно чешуйчатая, и это единственное, что не даёт
+       ей выглядеть резиновой. Клетка мельче и глубже прежней */
     float s=scales(vP);
-    rough=0.48+0.22*s;trans=0.18;alb=vC*(0.82+0.30*s);
-    N=normalize(N+vec3(0.0,s*0.10-0.05,0.0));
+    rough=0.42+0.34*s;trans=0.12;alb=vC*(0.70+0.52*s);
+    N=normalize(N+vec3(0.0,s*0.18-0.09,s*0.06));
   }else if(m<5.5){
     rough=0.80;trans=0.42;alb=vC;         /* голая кожа: восковица, кольцо */
   }else if(m<7.5){

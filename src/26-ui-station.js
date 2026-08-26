@@ -15,6 +15,12 @@ function openStation(){
   if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
   /* что здесь сегодня предлагают (11ah): часть предложений — не вам, и это
      нормально. Именное приходит только от того, кто вас помнит хорошо */
+  /* сперва сдать привезённое, потом смотреть, что предлагают сегодня (11ah) */
+  if(typeof offerDeliver==="function"){
+    const got=offerDeliver();
+    if(got>0)tell("money","Работа сдана · +"+got.toLocaleString("ru")+" кр",
+                  "Сдано\n+"+got.toLocaleString("ru")+" кр");
+  }
   if(typeof offerVisit==="function")offerVisit();
   /* четверо (12u-folk): если кто-то из своих сегодня здесь, он может назвать
      твой позывной — и тогда предложение весит столько, сколько весит он */
@@ -231,6 +237,23 @@ function renderTab(){
           fs.line+"</s></div>"));
       }
     }
+    /* ── что вы уже взяли ──
+       Не задание: ни стрелки, ни срока, ни напоминания вне этой строки.
+       Настоящий журнал — бумага на столе (27i), она ложится туда при взятии.
+       Здесь только строчка, чтобы человек, стоящий у доски, не вспоминал по
+       памяти, куда он собирался. */
+    if(typeof offerCarried==="function"){
+      const car=offerCarried();
+      if(car.length){
+        $body.appendChild(el("div","sec","ВЕЗЁТЕ"));
+        for(const o of car){
+          const K=OFFER_KIND[o.kind];
+          $body.appendChild(el("div","row","<div class='nm'><b>"+
+            K.ru[0].toUpperCase()+K.ru.slice(1)+"</b><s>на «"+o.to.name+"»"+
+            (o.named?" · вас назвали":"")+"</s></div>"));
+        }
+      }
+    }
     /* ── возможности (11ah) ──
        Не задания: у них нет цели, нет маркера и нет напоминания. Это то, что
        здесь сегодня предлагают, и половина предложений — не тебе.
@@ -252,9 +275,10 @@ function renderTab(){
           if(pay>0)r.appendChild(el("div","qt",pay+"<s>кр</s>"));
           const b=el("button","act"+(o.named?" gold":""),"ВЗЯТЬ");
           b.onclick=()=>{
-            const got=offerTake(o);
-            tell("money",K.ru[0].toUpperCase()+K.ru.slice(1)+(got?" · +"+got+" кр":""),
-                 got?"+"+got+" кр":K.ru);
+            offerTake(o);
+            const d=o.to;
+            tell("","Взято: "+K.ru+(d?" · на «"+d.name+"»":""),
+                 d?K.ru+"\nна «"+d.name+"»":K.ru);
             renderTab();
           };
           r.appendChild(b);$body.appendChild(r);

@@ -95,6 +95,12 @@ setTimeout(function(){
     if(scene==="board"||scene==="folk"){
       var bb=document.querySelector("#stTabs button[data-tab=board]");
       if(bb)bb.click();
+      /* берём одну работу, чтобы на доске было видно и «что предлагают», и
+         «везёте» разом: иначе второй блок никогда не попадёт на снимок */
+      if(scene==="folk"&&typeof offerHere==="function"){
+        var oo=offerHere()[0];
+        if(oo){offerTake(oo);if(typeof renderTab==="function")renderTab();}
+      }
     }
   }else if(scene==="hq"||scene==="hqfull"){
     /* Штаб. По умолчанию — ПУСТОЙ, потому что именно пустым его видит новый

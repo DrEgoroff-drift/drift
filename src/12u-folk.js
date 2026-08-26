@@ -90,7 +90,7 @@ function folkState(){
    местом и сменой, чтобы в одну смену тут был один и тот же. */
 function folkHere(){
   if(!G.sys||!G.sys.station)return null;
-  const shift=Math.floor(G.t/240);
+  const shift=Math.floor(G.t/OFFER_SHIFT);
   const h=hashi(G.sx,G.sy,shift)>>>0;
   if((h%100)<45)return null;                    // чаще всего никого
   return FOLK_IDS[h%FOLK_IDS.length];
@@ -123,7 +123,7 @@ function folkOffer(id){
   const who="folk:"+id;
   const f=folkOf(who);
   if(!f.good)return null;
-  const shift=Math.floor(G.t/240);
+  const shift=Math.floor(G.t/OFFER_SHIFT);
   if(f.shift===shift)return null;
   f.shift=shift;
   const r=rng(hashi(G.sx,G.sy,shift^0x5AF)>>>0);

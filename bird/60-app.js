@@ -23,7 +23,7 @@ function qualPick(){
   QUAL.dust=m?120:260;
 }
 
-const CAM={az:1.02,el:0.08,dist:3.90,tgt:[0,1.08,0],azV:0,elV:0,distT:3.90};
+const CAM={az:1.02,el:0.05,dist:4.15,tgt:[0,1.14,0],azV:0,elV:0,distT:4.15};
 const MESH={};
 let birdRAF=0,birdT0=0,birdFPS=60;
 

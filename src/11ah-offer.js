@@ -50,9 +50,21 @@ const OFFER_KIND={
    проценты»: разницу обязано быть видно с первого взгляда на две строки
    рядом. */
 const OFFER_NAMED_K=3;
-/* Сколько живёт окно, в игровых минутах. Короткое нарочно: цена промаха — не
-   штраф, а просто закрывшаяся дверь. */
-const OFFER_TTL=[40,180];
+/* ── сроки считаются В СУТКАХ, а не в кадрах ──
+   `G.t` растёт кадрами (28-loop: dt — доля кадра при 60 в секунду), и сутки
+   этого мира — `CEL_DAY`, то есть 3600 кадров, минута реального времени.
+   Первая сборка задала окна числами 40–180, «как бы в минутах», и вышли сроки
+   по две секунды: предложение закрывалось раньше, чем игрок дочитывал строку,
+   а «смена» на станции менялась каждые четыре секунды и защита от фарма не
+   работала вовсе. Всё, что здесь про время, теперь пишется через CEL_DAY —
+   иначе ошибка повторится. */
+const OFFER_TTL=[Math.round(CEL_DAY*.8),CEL_DAY*3];
+/* Взятая работа живёт втрое дольше предложения на доске: одно дело не взять,
+   другое — взять и не довезти, и на дорогу нужно время. */
+const OFFER_CARRY_K=3;
+/* Смена на станции — сутки. Пока она не сменилась, здесь предлагают то же
+   самое, что уже предложили. */
+const OFFER_SHIFT=CEL_DAY;
 
 function offersAll(){
   if(!Array.isArray(G.offers))G.offers=[];
@@ -91,7 +103,10 @@ function offerPay(o){
 function offerAdd(kind,who,named){
   if(!OFFER_KIND[kind])return null;
   const f=folkOf(who);
-  const nm=!!named&&!!f.good;
+  /* Довёз прошлую — назовут наверняка. Это единственный способ заслужить имя,
+     и он ровно тот, что в книге: не за то, что взял, а за то, что довёз. */
+  const nm=(!!named||!!f.warm)&&!!f.good;
+  if(nm)f.warm=0;
   const seed=hashi(Math.floor(G.t*7),offersAll().length,0x0FFE)>>>0;
   const ttl=OFFER_TTL[0]+Math.floor(rng(seed)()*(OFFER_TTL[1]-OFFER_TTL[0]));
   const o={id:seed,kind,who,named:nm?1:0,sx:G.sx,sy:G.sy,
@@ -116,7 +131,7 @@ function offerVisit(){
      предложения, и так пока не надоест. Смена держится своим часом, и пока
      она не сменилась, здесь предлагают ровно то, что уже предложили, — даже
      если игрок это упустил. Упустил — значит упустил. */
-  const shift=Math.floor(G.t/240);
+  const shift=Math.floor(G.t/OFFER_SHIFT);
   if(f.shift===shift)return;
   f.shift=shift;
   const r=rng(hashi(G.sx,G.sy,shift)>>>0);
@@ -147,24 +162,84 @@ function offerTick(){
   const t=G.t;
   for(let i=L.length-1;i>=0;i--){
     const o=L[i];
-    if(o.taken){L.splice(i,1);continue;}
-    if(t-o.t0<o.ttl)continue;
+    if(o.done){L.splice(i,1);continue;}
+    /* Везомая работа живёт своим окном — втрое длиннее, чем предложение на
+       доске: одно дело не взять, другое взять и не довезти, и на дорогу
+       нужно время. */
+    const ttl=o.carry?o.ttl*OFFER_CARRY_K:o.ttl;
+    if(o.taken&&!o.carry){L.splice(i,1);continue;}
+    if(t-o.t0<ttl)continue;
+    /* Не довёз. Именное — дверь закрылась; холодное — просто пропало.
+       Ни сообщения, ни звука: бумага на столе так и останется лежать, и это
+       единственный след. */
     if(o.named)folkShut(o.who);
     L.splice(i,1);
   }
   while(L.length>24)L.shift();
 }
-/* Взятие. Плата — доступом или деньгами, смотря по виду; именное платит втрое.
-   Взятая именная возможность подтверждает память человека, а не улучшает её:
-   цифр нет, улучшать нечего. */
+/* ── куда везти ──
+   Возможность, которая платит, — это работа, а не кнопка «получить». Ей нужен
+   адрес: соседняя система со станцией, куда игрок и так может дойти. Виды без
+   платы (бокс, имя, плечо) адреса не имеют — их берут на месте. */
+function offerDest(o){
+  if(!OFFER_KIND[o.kind]||OFFER_KIND[o.kind].pay[1]<=0)return null;
+  const r=rng((o.seed^0xD35)>>>0);
+  for(let i=0;i<24;i++){
+    const dx=Math.round((r()*2-1)*2),dy=Math.round((r()*2-1)*2);
+    if(!dx&&!dy)continue;
+    const sx=o.sx+dx,sy=o.sy+dy;
+    if(!starAt(sx,sy))continue;
+    const s=getSystem(sx,sy);
+    if(s&&s.station)return {sx,sy,name:s.station.name,d:Math.abs(dx)+Math.abs(dy)};
+  }
+  return null;
+}
+/* ── взятие: это только начало ──
+   Раньше здесь сразу платили, и возможность была кнопкой. Теперь взятая работа
+   ложится бумагой на стол (27i) и ждёт доставки. Журнала заданий в этой игре
+   нет и не будет — бумага на столе и есть журнал, и она не напоминает о себе
+   ничем (`docs/DESIGN-quest.md` §1). */
 function offerTake(o){
   if(!o||o.taken)return 0;
+  const K=OFFER_KIND[o.kind];
+  const dest=offerDest(o);
   o.taken=1;
-  const pay=offerPay(o);
-  /* деньги идут одной воронкой: `earn` (12j) считает оборот дома, и мимо неё
-     доход в этой игре не заводится — за этим следит отдельный сторож */
-  if(pay>0&&typeof earn==="function")earn(pay,"возможность");
-  return pay;
+  if(!dest){
+    /* доступ, а не работа: бокс, имя, плечо. Берётся на месте и на месте же
+       кончается — платить тут нечем и не надо */
+    return 0;
+  }
+  o.to=dest;o.carry=1;o.t0=G.t;
+  if(typeof thingAdd==="function")
+    thingAdd("paper",K.ru[0].toUpperCase()+K.ru.slice(1),
+      "на «"+dest.name+"» · "+(o.named?"вас назвали":"взято на доске"));
+  return 0;
+}
+/* ── сдача ──
+   Платят там, куда везли, и только там. Именное платит втрое — в этом весь
+   смысл: разницу между «вам» и «кто рядом» игрок должен почувствовать
+   кошельком, а не строкой интерфейса. */
+function offerDeliver(){
+  let sum=0;
+  for(const o of offersAll()){
+    if(!o.carry||!o.to)continue;
+    if(o.to.sx!==G.sx||o.to.sy!==G.sy)continue;
+    o.carry=0;o.done=1;
+    const pay=offerPay(o);
+    /* деньги идут одной воронкой: `earn` (12j) считает оборот дома, и мимо неё
+       доход в этой игре не заводится — за этим следит отдельный сторож */
+    if(pay>0&&typeof earn==="function")earn(pay,"возможность");
+    sum+=pay;
+    /* ── и вот тут его называют в следующий раз ──
+       Не за то, что взял, а за то, что довёз. Цифр по-прежнему нет: у человека
+       два состояния, и «довёз» просто оставляет память хорошей. */
+    const f=folkOf(o.who);
+    if(f.good)f.warm=1;
+  }
+  return sum;
+}
+function offerCarried(){
+  return offersAll().filter(o=>o.carry&&o.to);
 }
 /* Строка для доски и для эфира. Разница между именным и холодным должна быть
    слышна словами, а не только цифрой: холодное объявляют всем, именное

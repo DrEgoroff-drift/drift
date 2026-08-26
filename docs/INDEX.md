@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 271 · символов верхнего уровня: 2539
+Файлов: 271 · символов верхнего уровня: 2544
 
 ## СИМВОЛЫ
 
@@ -24,7 +24,7 @@ $menu                        src/15-input.js:180
 $msg                         src/28-loop.js:44
 $msl                         src/28-loop.js:47
 $nav                         src/28-loop.js:46
-$opts                        src/26-ui-station.js:611
+$opts                        src/26-ui-station.js:635
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:43
 $sh                          src/28-loop.js:24
@@ -297,7 +297,7 @@ CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
 closeBarge                   src/12l-barge.js:592
-closeStation                 src/26-ui-station.js:98
+closeStation                 src/26-ui-station.js:104
 CLOUD                        src/14-save.js:5
 CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
@@ -584,7 +584,7 @@ dustTable                    src/16a-space.js:145
 earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
-el                           src/26-ui-station.js:131
+el                           src/26-ui-station.js:137
 endPtr                       src/15-input.js:263
 engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
@@ -707,14 +707,14 @@ floraOf                      src/20e-species.js:91
 FOE_KINDS                    src/24a-mode-raid.js:17
 FOLK                         src/12u-folk.js:31
 FOLK_IDS                     src/12u-folk.js:81
-folkAll                      src/11ah-offer.js:64
+folkAll                      src/11ah-offer.js:76
 folkHere                     src/12u-folk.js:91
 folkLeave                    src/12u-folk.js:115
 folkNow                      src/12u-folk.js:103
-folkOf                       src/11ah-offer.js:68
+folkOf                       src/11ah-offer.js:80
 folkOffer                    src/12u-folk.js:120
 folkShown                    src/12u-folk.js:114
-folkShut                     src/11ah-offer.js:78
+folkShut                     src/11ah-offer.js:90
 folkState                    src/12u-folk.js:83
 folkVisit                    src/12u-folk.js:104
 foundBase                    src/21a-mode-base.js:53
@@ -1429,18 +1429,23 @@ occTick                      src/13b-occupy.js:60
 odo                          src/11d-place.js:24
 odoAdd                       src/11d-place.js:26
 odoSum                       src/11d-place.js:25
+OFFER_CARRY_K                src/11ah-offer.js:64
 OFFER_KIND                   src/11ah-offer.js:41
 OFFER_NAMED_K                src/11ah-offer.js:52
-OFFER_TTL                    src/11ah-offer.js:55
-offerAdd                     src/11ah-offer.js:91
-offerHere                    src/11ah-offer.js:136
-offerLine                    src/11ah-offer.js:172
-offerLive                    src/11ah-offer.js:132
-offerPay                     src/11ah-offer.js:82
-offersAll                    src/11ah-offer.js:57
-offerTake                    src/11ah-offer.js:160
-offerTick                    src/11ah-offer.js:144
-offerVisit                   src/11ah-offer.js:109
+OFFER_SHIFT                  src/11ah-offer.js:67
+OFFER_TTL                    src/11ah-offer.js:61
+offerAdd                     src/11ah-offer.js:103
+offerCarried                 src/11ah-offer.js:241
+offerDeliver                 src/11ah-offer.js:222
+offerDest                    src/11ah-offer.js:184
+offerHere                    src/11ah-offer.js:151
+offerLine                    src/11ah-offer.js:247
+offerLive                    src/11ah-offer.js:147
+offerPay                     src/11ah-offer.js:94
+offersAll                    src/11ah-offer.js:69
+offerTake                    src/11ah-offer.js:202
+offerTick                    src/11ah-offer.js:159
+offerVisit                   src/11ah-offer.js:124
 ok                           tests/90-harness.js:23
 openBarge                    src/12l-barge.js:582
 openCrewView                 src/27b-ui-crew.js:198
@@ -1797,12 +1802,12 @@ renderPrices                 src/12aa-need.js:196
 renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
 renderStrips                 src/27i-ui-table.js:182
-renderTab                    src/26-ui-station.js:195
+renderTab                    src/26-ui-station.js:201
 renderThings                 src/27i-ui-table.js:213
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
-repairCost                   src/26-ui-station.js:94
+repairCost                   src/26-ui-station.js:100
 repAt                        src/12k-rep.js:27
 repFuelMul                   src/12k-rep.js:52
 repHireMul                   src/12k-rep.js:54
@@ -1817,7 +1822,7 @@ RES_AUTO                     src/08-state.js:35
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:399
 resEma                       src/28-loop.js:398
-resetArm                     src/26-ui-station.js:610
+resetArm                     src/26-ui-station.js:634
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:24
@@ -2091,9 +2096,9 @@ SHIFT_TALK                   src/03f-hull-role.js:63
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:154
+shipRow                      src/26-ui-station.js:160
 SHIPS                        src/03-ships.js:2
-shipThumb                    src/26-ui-station.js:141
+shipThumb                    src/26-ui-station.js:147
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:211
 shipZoneR                    src/19f-lander.js:14
@@ -2155,7 +2160,7 @@ speechHere                   src/11b-speech.js:115
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
 ST_GOLD                      src/17c-system-draw.js:117
-ST_GROUPS                    src/26-ui-station.js:53
+ST_GROUPS                    src/26-ui-station.js:59
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:8
 STAR_CLASS                   src/02-world.js:94
@@ -2181,8 +2186,8 @@ stCore                       src/17c-system-draw.js:128
 stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:75
 stGet                        src/14-save.js:8
-stGroup                      src/26-ui-station.js:62
-stGroupOf                    src/26-ui-station.js:61
+stGroup                      src/26-ui-station.js:68
+stGroupOf                    src/26-ui-station.js:67
 stopEngine                   src/09-audio.js:269
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
@@ -2244,7 +2249,7 @@ stTabFuse                    src/26b-ui-station-work.js:200
 stTabInstr                   src/26b-ui-station-work.js:108
 stTabLab                     src/26b-ui-station-work.js:175
 stTabMods                    src/26b-ui-station-work.js:12
-stTabsHere                   src/26-ui-station.js:63
+stTabsHere                   src/26-ui-station.js:69
 stTypeOf                     src/06-galaxy.js:27
 subdivide                    src/24-mode-belt.js:34
 suite                        tests/90-harness.js:15
@@ -2267,7 +2272,7 @@ svMode                       src/27-ui-ship.js:45
 svRender                     src/27-ui-ship.js:46
 svReturn                     src/27-ui-ship.js:6
 svSlot                       src/27-ui-ship.js:4
-syncTabs                     src/26-ui-station.js:64
+syncTabs                     src/26-ui-station.js:70
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
 SYS_EXOTIC                   src/16a-space.js:14
@@ -2652,7 +2657,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11ag-trace.js · 17 КБ
   · чужой след: одна метка на всю жизнь:1
 
-## src/11ah-offer.js · 11 КБ
+## src/11ah-offer.js · 15 КБ
   · возможность:1
 
 ## src/11ai-ledger.js · 4 КБ
@@ -3088,9 +3093,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26b-ui-station-work.js · 15 КБ
   · станция: мастерская и наука:1
 
-## src/26-ui-station.js · 40 КБ
+## src/26-ui-station.js · 41 КБ
   · станция:1
-  · настройки:609
+  · настройки:633
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -3399,7 +3404,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzze-sync.js · 4 КБ
   · обмен с облаком: то, что раньше молчало:1
 
-## tests/91zzzf-offer.js · 9 КБ
+## tests/91zzzf-offer.js · 12 КБ
   · автотесты: возможность и тетрадь:1
 
 ## tests/91zzz-home-in.js · 5 КБ
