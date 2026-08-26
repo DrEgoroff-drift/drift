@@ -12,3 +12,7 @@ shot
 # кадры для заглавной: docs/mksiteshots.ps1 принимает их в docs/shots и копирует
 # в site/shots — в репозитории нужна только копия для сайта
 docs/shots/*.webp
+docs/ref/
+
+# линейка по чужой модели пишется руками, а не генератором — её храним
+!docs/macaw-stand.html

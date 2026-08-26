@@ -1,0 +1,79 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<title>Линейка: ара против нашей птицы</title>
+<style>
+body{margin:0;background:#0b0e12;color:#c9d6df;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace}
+h1{font-size:15px;letter-spacing:.06em;margin:14px 18px 4px}
+p{margin:0 18px 10px;color:#6d7a86}
+canvas{display:block;margin:8px 18px;background:#070a0d;border:1px solid #1b232c}
+pre{margin:10px 18px;color:#7fe6d8;font-size:12px;white-space:pre-wrap}
+</style></head><body>
+<h1>ЛИНЕЙКА · ара из FBX против нашей птицы</h1>
+<p>Силуэт чужой модели и профиль её сечений. Пропорции меряются числами, а не на глаз.</p>
+<canvas id="cv" width="1180" height="520"></canvas>
+<pre id="out">читаю сетку…</pre>
+<script>
+/* Стенд, а не часть модуля: читает сырые массивы, вытащенные docs/fbx.ps1 из
+   FBX, и меряет по ним пропорции. В птицу ничего из этого не попадает — модель
+   служит линейкой, и только. */
+const $=id=>document.getElementById(id);
+async function main(){
+  const r=await fetch("ref/macaw-pos64.bin");
+  const buf=await r.arrayBuffer();
+  const P=new Float64Array(buf), N=P.length/3;
+  /* габарит */
+  const mn=[1e9,1e9,1e9],mx=[-1e9,-1e9,-1e9];
+  for(let i=0;i<N;i++)for(let k=0;k<3;k++){
+    const v=P[i*3+k];
+    if(v<mn[k])mn[k]=v; if(v>mx[k])mx[k]=v;
+  }
+  const size=[mx[0]-mn[0],mx[1]-mn[1],mx[2]-mn[2]];
+  /* самая длинная ось — размах крыльев; вторая по длине — рост или длина тела */
+  const ord=[0,1,2].sort((a,b)=>size[b]-size[a]);
+  let txt="вершин: "+N.toLocaleString("ru")+"\n";
+  txt+="габарит: X "+size[0].toFixed(3)+"  Y "+size[1].toFixed(3)+"  Z "+size[2].toFixed(3)+"\n";
+  txt+="оси по длине: "+ord.map(k=>"XYZ"[k]).join(" > ")+"\n";
+  /* ЦЕНТРАЛЬНАЯ ПОЛОСА: точки, близкие к средней плоскости размаха, — это тело.
+     По ним и меряется профиль, иначе всё меряется по крыльям. */
+  const W=ord[0];                       /* ось размаха */
+  const cW=(mn[W]+mx[W])/2, band=size[W]*0.055;
+  const A=ord[1], B=ord[2];             /* две другие оси: длина и высота тела */
+  const SL=28, prof=[];
+  for(let s=0;s<SL;s++)prof.push({lo:1e9,hi:-1e9,n:0});
+  for(let i=0;i<N;i++){
+    if(Math.abs(P[i*3+W]-cW)>band)continue;
+    const a=P[i*3+A], b=P[i*3+B];
+    const s=Math.min(SL-1,Math.max(0,Math.floor((a-mn[A])/(size[A]||1)*SL)));
+    const p=prof[s];
+    if(b<p.lo)p.lo=b; if(b>p.hi)p.hi=b; p.n++;
+  }
+  txt+="\nпрофиль тела по оси "+"XYZ"[A]+" (толщина по "+"XYZ"[B]+"), доля от длины:\n";
+  for(let s=0;s<SL;s++){
+    const p=prof[s];
+    if(!p.n)continue;
+    const rel=(p.hi-p.lo)/size[A];
+    txt+=("  "+(s/SL).toFixed(2)+"  "+rel.toFixed(3)+"  "+"█".repeat(Math.round(rel*60))+"\n");
+  }
+  $("out").textContent=txt;
+  /* ТРИ ПРОЕКЦИИ целиком. Модель в файле повёрнута — птица «летит» по
+     диагонали, — поэтому срез по средней плоскости резал её косо и давал
+     месиво. Три ортопроекции всей сетки честнее любой попытки угадать ось. */
+  const c=$("cv"),g=c.getContext("2d");
+  const views=[[0,1,"XY"],[0,2,"XZ"],[2,1,"ZY"]];
+  const w=c.width/3;
+  g.font="12px monospace";
+  views.forEach((v,vi)=>{
+    const A=v[0],B=v[1];
+    const sc=Math.min(w/size[A],c.height/size[B])*0.86;
+    const ox=vi*w+(w-size[A]*sc)/2, oy=(c.height-size[B]*sc)/2;
+    g.fillStyle="#7fe6d8";
+    for(let i=0;i<N;i+=2){
+      const x=ox+(P[i*3+A]-mn[A])*sc, y=c.height-oy-(P[i*3+B]-mn[B])*sc;
+      g.fillRect(x,y,1,1);
+    }
+    g.fillStyle="#f2b25c";
+    g.fillText(v[2]+"  "+size[A].toFixed(2)+" x "+size[B].toFixed(2),vi*w+10,16);
+    g.strokeStyle="#1b232c";g.strokeRect(vi*w+0.5,0.5,w-1,c.height-1);
+  });
+}
+main().catch(e=>{$("out").textContent="сломалось: "+e.message;});
+</script></body></html>

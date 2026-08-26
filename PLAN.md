@@ -1142,3 +1142,35 @@ feathers is laid over the pole where the loft's sections degenerate to a point.
 3. **Игрок как источник слухов** — следующий по приговору `docs/saga/СУД.md`.
 4. **Восьмая графа** — главный поворот книги.
 5. Ночи дома · ирония трепла · концовка смотрителя · Заступа · зимовка · лезвие.
+
+## M200d — the ruler: a real macaw against ours (2026-08-26)
+
+The author dropped in a rigged scarlet-macaw FBX (Tripo reconstruction, 56 MB, 970k vertices,
+plumage *painted* rather than modelled). It cannot go into the module and was never meant to:
+the module is one downloadable file, its pose lives on fifteen joints, and its colour is a
+function of the breed. What the model is good for is a **ruler**.
+
+- `docs/fbx.ps1` reads binary FBX (7400) directly — nested records, zlib-deflated arrays — and
+  writes the mesh out raw. Two traps: `New-Object Type($a,$b,$c)` parses the parentheses as one
+  array and arithmetic inside them lands on the array (`op_Subtraction on Object[]`), so
+  arguments go through `-ArgumentList`; and converting three million doubles to float32 in
+  PowerShell takes minutes, so the arrays are written as they are and the browser reads them as
+  `Float64Array`.
+- `docs/macaw-stand.html` draws three orthographic projections of the point cloud. A slice
+  through the middle plane was useless — the model flies diagonally in its own file, so the cut
+  went across it; whole projections are honest.
+
+**Measured, then applied.** Wingspan 0.98 against body length 0.89: a wing is about as long as
+the body, and ours reached a third of it. Fixed, and with it two things the ruler exposed:
+
+- *Folded flight feathers are a stack, not a fan.* Their directions are nearly parallel and only
+  the length differs; ours already fanned at rest, so opening the wing turned it into a star
+  around the bird instead of a blade.
+- *A tail fans from where the feathers grow.* The spread was computed from vertex x, and on a
+  long feather the tip crosses the centre line, flipping the sign mid-feather — the tail opened
+  as a cross. It now uses the instance's own root.
+
+Also this pass, on the author's note that the bird had become a mechanical thing made of voxel
+feathers: the coat is laid in **two layers** — dense small down underneath, big plates over it —
+and the feather profile was rebuilt from a real contour feather: a thread-thin calamus, quick
+widening, the broadest point below the middle, a soft oval tip, and asymmetric vanes.

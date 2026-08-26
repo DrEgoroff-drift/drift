@@ -209,34 +209,32 @@ function layoutPlumes(){
   const mark=(s)=>{PLUME_STAT.push(s+":"+(out.length/FEA_STRIDE));};
   for(const sx of [-1,1]){
     const flip=a=>sx>0?a:Math.PI-a;
-    /* маховые */
+    /* МАХОВЫЕ. В сложенном крыле они лежат СТОПКОЙ: направления почти
+       одинаковые, разная только длина — потому кончики и образуют ступеньку
+       вдоль тела. Пока направления расходились веером уже в покое, раскрытое
+       крыло превращалось в звезду вокруг птицы вместо лопасти. */
     const NP=5;
     for(let i=0;i<NP;i++){
       const k=i/(NP-1);
-      /* ОСНОВАНИЯ МАХОВЫХ — в узкий пучок у плеча. Пока они были размазаны по
-         всему боку, поворот вокруг одного плеча разбрасывал перья звездой:
-         у птицы маховые растут из кисти, а вдоль тела лежат только их концы */
-      const t=mix(0.60,0.51,k),a=flip(mix(0.16,0.00,k));
+      const t=mix(0.60,0.52,k),a=flip(mix(0.16,0.02,k));
       const base=bodyAt(t,a),nrm=normalAt(t,a);
-      /* маховые длиннее и УЖЕ прежних: в полёте на листе видно каждое перо
-         отдельно, а широкие короткие перья сливаются в лопасть с тупым краем */
-      const tip=[sx*mix(0.24,0.10,k),mix(0.74,0.44,k),mix(-0.62,-1.34,k)];
-      const dir=vSub(tip,base),len=vLen(dir);
+      const dir=vNorm([sx*(0.17-0.05*k),-0.20-0.05*k,-0.94]);
+      const len=mix(0.92,1.32,k);
       feaPush(out,vAdd(base,vMul(nrm,0.008)),
-        vNorm(vAdd(vNorm(dir),vMul(nrm,0.03))),nrm,
+        vNorm(vAdd(dir,vMul(nrm,0.03))),nrm,
         len,len*0.30,vLerp(BIRD_C.blueD,BIRD_C.blue,0.30-k*0.20),[0.6,0.14,t,1.0]);
     }
-    /* второстепенные: короче, выше, дают крылу толщину */
+    /* второстепенные: та же стопка, короче и выше */
     const NS=5;
     for(let i=0;i<NS;i++){
       const k=i/(NS-1);
-      const t=mix(0.66,0.56,k),a=flip(mix(0.34,0.10,k));
+      const t=mix(0.66,0.56,k),a=flip(mix(0.32,0.12,k));
       const base=bodyAt(t,a),nrm=normalAt(t,a);
-      const tip=[sx*mix(0.26,0.16,k),mix(0.86,0.66,k),mix(-0.40,-0.72,k)];
-      const dir=vSub(tip,base),len=vLen(dir);
+      const dir=vNorm([sx*(0.26-0.06*k),-0.02-0.05*k,-0.92]);
+      const len=mix(0.62,0.90,k);
       feaPush(out,vAdd(base,vMul(nrm,0.004)),
-        vNorm(vAdd(vNorm(dir),vMul(nrm,0.06))),nrm,
-        len,len*0.30,vLerp(BIRD_C.blue,BIRD_C.blueD,0.20+k*0.45),[0.7,0.8,t,1.0]);
+        vNorm(vAdd(dir,vMul(nrm,0.06))),nrm,
+        len,len*0.40,vLerp(BIRD_C.blue,BIRD_C.blueD,0.28+k*0.30),[0.7,0.16,t,1.0]);
     }
     /* Кроющие крыла двумя рядами поверх второстепенных: на листе крыло —
        слоёная панель с тёмной каймой, а не синее поле. Ряды идут вдоль той же

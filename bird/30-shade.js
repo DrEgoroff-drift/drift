@@ -33,7 +33,7 @@ void crestTurn(inout vec3 p, inout vec3 n){
   mat3 R=rotAxis(vec3(1.0,0.0,0.0),-uCrest*0.62);
   p=CROWN+R*(p-CROWN); n=R*n;
 }
-void plumeJoints(inout vec3 p, inout vec3 n, float kind, float sx, float tSpine){
+void plumeJoints(inout vec3 p, inout vec3 n, float kind, float sx, float tSpine, float bx){
   if(kind>0.5&&kind<1.5){
     vec3 sh=vec3(sx*SHOULDER.x,SHOULDER.y,SHOULDER.z);
     /* Ось РАСКРЫТИЯ — вертикальная: сложенное крыло лежит вдоль тела назад, а
@@ -49,14 +49,21 @@ void plumeJoints(inout vec3 p, inout vec3 n, float kind, float sx, float tSpine)
        Когда веером двигали основной угол, дальние перья уходили вверх-вперёд
        и крыло накрывало голову. */
     float ord=clamp((0.66-tSpine)*3.0,0.0,1.0);
-    float open=uFlap*0.85+uStretch*0.55;
-    float sprd=open+(ord-0.5)*0.30*open;
+    /* Раскрытие до ста десяти градусов: по обмеру настоящего ары крыло уходит
+       почти строго вбок, и его длина близка к длине корпуса. При прежних
+       восьмидесяти сверху крыло выступало на треть корпуса — не крыло, а
+       оборка. */
+    float open=uFlap*0.95+uStretch*0.60;
+    float sprd=open+(ord-0.5)*0.18*open;
     mat3 R=rotAxis(vec3(0.0,0.0,1.0),sx*uFlap*0.42)
           *rotAxis(vec3(0.0,1.0,0.0),-sx*sprd);
     p=sh+R*(p-sh); n=R*n;
   }else if(kind>1.5&&kind<2.5){
     /* веер: перо отводится тем сильнее, чем дальше оно от середины хвоста */
-    float lat=clamp(p.x*2.4,-1.0,1.0);
+    /* Веер считается от места, где перо РАСТЁТ, а не от координаты вершины:
+       у длинного пера кончик уезжает за середину, знак по дороге меняется, и
+       хвост раскрывался крестом вместо веера. */
+    float lat=clamp(bx*7.0,-1.0,1.0);
     /* раскрытый хвост не только расходится, но и ОПУСКАЕТСЯ: сложенный он
        лежит за телом и в вееере остаётся за ним же, если его не увести вниз */
     mat3 R=rotAxis(vec3(0.0,1.0,0.0),-lat*uFan*0.62)
@@ -425,7 +432,7 @@ void main(){
   vec3 wt=cz/max(sz,1e-5);
   /* сустав оперения (крыло/хвост/хохол) — до общей позы: он локальный */
   float sxw=r0.w<0.0?-1.0:1.0;
-  plumeJoints(wp,wn,ipar.w,sxw,ipar.z);
+  plumeJoints(wp,wn,ipar.w,sxw,ipar.z,r0.w);
   rigApply(wp,wn,ipar.z);
   /* стержень поворачивается вместе с пером: тангенс нужен блику */
   vec3 dummy=wt; vec3 dn=wt; vec3 dp=wp;

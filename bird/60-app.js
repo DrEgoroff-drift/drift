@@ -18,15 +18,15 @@ function qualPick(){
   const m=q?q==="low":(innerWidth<=760||(navigator.maxTouchPoints||0)>1);
   QUAL.mobile=m;
   QUAL.coatMesh=m?[5,6]:[7,8];
-  QUAL.rows=m?28:34;
-  QUAL.dens=m?44:52;
+  QUAL.rows=m?32:42;
+  QUAL.dens=m?50:64;
   QUAL.shadow=m?1024:1536;
   QUAL.dpr=m?1.6:2;
   QUAL.bloomN=m?4:5;
   QUAL.dust=m?120:260;
 }
 
-const CAM={az:1.18,el:0.05,dist:4.55,tgt:[0,1.20,0],azV:0,elV:0,distT:4.55};
+const CAM={az:1.18,el:0.05,dist:4.85,tgt:[0,1.16,0],azV:0,elV:0,distT:4.85};
 const MESH={};
 let birdRAF=0,birdT0=0,birdFPS=60;
 
