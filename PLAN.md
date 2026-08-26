@@ -928,8 +928,12 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   his head from having heard it, and the dial is the whole mechanism. Send a card from the table,
   wait weeks of real time (lazy, like the pennant), the answer goes on the wall at home. No score,
   no reward: the wall fills up and afterwards shows where you were heard.
-- **The travelling pennant.** Once a quarter the best base gets a banner on the wall and a line in
-  the ether. Pure flavour; it does not touch the economy.
+- **The travelling pennant** — **built (0.184.0, M206).** `21h-pennant`, suite `91zzzr-penn`. Once
+  a quarter the best base — most built, best balanced, NOT most profitable — gets a banner drawn on
+  its wall and one line in the ether. Gives nothing at all. Who holds it is computed from the state
+  of the bases and the quarter number; only the announced quarters are stored. A test caught the
+  tie-breaker being hashed from the key's LENGTH, which is equal for all base keys — the banner
+  would have grown onto one base forever.
 - **The greenhouse** — **built (0.182.0, M204).** `21g-greenhouse`, suite `91zzzp-green`. Four beds
   beside the house; sowing costs one biological sample and puts in the last species you described
   that is not yet in the ground. Growth is by real days, lazily from `Date.now()`, and Vega waters

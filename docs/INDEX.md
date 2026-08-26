@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 302 · символов верхнего уровня: 2805
+Файлов: 304 · символов верхнего уровня: 2815
 
 ## СИМВОЛЫ
 
@@ -24,7 +24,7 @@ $menu                        src/15-input.js:180
 $msg                         src/28-loop.js:44
 $msl                         src/28-loop.js:47
 $nav                         src/28-loop.js:46
-$opts                        src/26-ui-station.js:658
+$opts                        src/26-ui-station.js:660
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:43
 $sh                          src/28-loop.js:24
@@ -309,7 +309,7 @@ CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
 closeBarge                   src/12l-barge.js:592
-closeStation                 src/26-ui-station.js:109
+closeStation                 src/26-ui-station.js:111
 CLOUD                        src/14-save.js:5
 CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
@@ -599,7 +599,7 @@ dustTable                    src/16a-space.js:145
 earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
-el                           src/26-ui-station.js:142
+el                           src/26-ui-station.js:144
 endPtr                       src/15-input.js:272
 engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
@@ -1651,6 +1651,16 @@ peepHere                     src/20c-peep.js:33
 peepMake                     src/20c-peep.js:52
 peepScene                    src/20c-peep.js:42
 peepUpdate                   src/20c-peep.js:67
+PENN_DAYS                    src/21h-pennant.js:22
+pennAll                      src/21h-pennant.js:24
+pennDraw                     src/21h-pennant.js:84
+pennHash                     src/21h-pennant.js:41
+pennHere                     src/21h-pennant.js:58
+pennHolder                   src/21h-pennant.js:47
+pennQuarter                  src/21h-pennant.js:23
+pennScore                    src/21h-pennant.js:26
+pennTestBase                 tests/91zzzr-penn.js:2
+pennTick                     src/21h-pennant.js:65
 peopleLine                   src/11-log.js:36
 pick                         src/01-core.js:17
 pickKindByBias               src/20-life.js:142
@@ -1969,12 +1979,12 @@ renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
 renderStrips                 src/27i-ui-table.js:207
-renderTab                    src/26-ui-station.js:206
+renderTab                    src/26-ui-station.js:208
 renderThings                 src/27i-ui-table.js:238
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
-repairCost                   src/26-ui-station.js:105
+repairCost                   src/26-ui-station.js:107
 repAt                        src/12k-rep.js:27
 repFuelMul                   src/12k-rep.js:52
 repHireMul                   src/12k-rep.js:54
@@ -1989,7 +1999,7 @@ RES_AUTO                     src/08-state.js:35
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:403
 resEma                       src/28-loop.js:402
-resetArm                     src/26-ui-station.js:657
+resetArm                     src/26-ui-station.js:659
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:29
@@ -2270,9 +2280,9 @@ SHIFT_TALK                   src/03f-hull-role.js:63
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:165
+shipRow                      src/26-ui-station.js:167
 SHIPS                        src/03-ships.js:2
-shipThumb                    src/26-ui-station.js:152
+shipThumb                    src/26-ui-station.js:154
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:211
 shipZoneR                    src/19f-lander.js:14
@@ -2375,7 +2385,7 @@ SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
 sprgba                       src/29i-spa-draw.js:22
 ST_GOLD                      src/17c-system-draw.js:117
-ST_GROUPS                    src/26-ui-station.js:64
+ST_GROUPS                    src/26-ui-station.js:66
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:8
 STAR_CLASS                   src/02-world.js:94
@@ -2401,8 +2411,8 @@ stCore                       src/17c-system-draw.js:128
 stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:75
 stGet                        src/14-save.js:8
-stGroup                      src/26-ui-station.js:73
-stGroupOf                    src/26-ui-station.js:72
+stGroup                      src/26-ui-station.js:75
+stGroupOf                    src/26-ui-station.js:74
 stopEngine                   src/09-audio.js:269
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
@@ -2464,7 +2474,7 @@ stTabFuse                    src/26b-ui-station-work.js:201
 stTabInstr                   src/26b-ui-station-work.js:108
 stTabLab                     src/26b-ui-station-work.js:175
 stTabMods                    src/26b-ui-station-work.js:12
-stTabsHere                   src/26-ui-station.js:74
+stTabsHere                   src/26-ui-station.js:76
 stTypeOf                     src/06-galaxy.js:27
 subdivide                    src/24-mode-belt.js:34
 suite                        tests/90-harness.js:15
@@ -2487,7 +2497,7 @@ svMode                       src/27-ui-ship.js:45
 svRender                     src/27-ui-ship.js:46
 svReturn                     src/27-ui-ship.js:6
 svSlot                       src/27-ui-ship.js:4
-syncTabs                     src/26-ui-station.js:75
+syncTabs                     src/26-ui-station.js:77
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
 SYS_EXOTIC                   src/16a-space.js:14
@@ -3316,6 +3326,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21g-greenhouse.js · 10 КБ
   · грядка у дома:1
 
+## src/21h-pennant.js · 6 КБ
+  · переходящий вымпел:1
+
 ## src/21-mode-surface.js · 39 КБ
   · поверхность:1
   · навигатор и подсказки сверху:597
@@ -3402,7 +3415,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/26-ui-station.js · 43 КБ
   · станция:1
-  · настройки:656
+  · настройки:658
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -3768,5 +3781,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzq-kino.js · 4 КБ
   · автотесты: кинопередвижка (M205):1
+
+## tests/91zzzr-penn.js · 3 КБ
+  · автотесты: переходящий вымпел (M206):1
 
 ## tests/99-run.js · 0 КБ

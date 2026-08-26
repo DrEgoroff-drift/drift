@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.184.0 — the travelling pennant (M206)
+
+Once a quarter the best of your bases gets a banner on the wall and one line in the ether. That is
+all of it.
+
+**It is pure form, and that is the design.** The pennant gives no output bonus, no discount, no
+reputation, no points. It hangs. The whole meaning of a travelling banner is that it travels: next
+quarter it is taken down and carried to another base, perhaps yours again, perhaps not, and the
+only thing left of it is a line in the record book saying you once had it.
+
+**Best means most built and best balanced**, not most profitable. Profit is already visible in
+numbers, and a banner for it would be the same thing said twice. What is counted here is work.
+A power balance sitting at zero-plus counts for more than twenty kilowatts of headroom, which says
+only that a reactor was installed and forgotten.
+
+Which quarter it is, and who holds it, are computed from the state of your bases and the quarter
+number. Stored is only which quarters have already been announced, so the ether does not repeat
+itself.
+
+A test caught the one thing that would have made the whole idea a lie: the tie-breaker between
+equal bases was hashed from the **length** of the base's key, and `"1,1:0"` and `"5,5:0"` are the
+same length — so there was no spread at all and the banner grew onto the first base in the list
+forever. It hashes the whole key now, and over a year of quarters it visits more than one base.
+
 ## 0.183.0 — the travelling cinema (M205)
 
 A barge brings a film, and for one evening the cantina reseats itself: the counter goes dark, the

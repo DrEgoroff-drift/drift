@@ -571,5 +571,9 @@ function drawBase(){
     ctx.fillStyle="rgba(127,230,216,.5)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
     ctx.fillText("МЕСТО ПОД ЗАСТРОЙКУ",sx+BCELL_W/2,sy+BCELL_H/2+3);
   }
+  /* переходящий вымпел (M206): знамя на стене у входа, если оно в этом
+     квартале досталось этой базе. Ничего не даёт, только висит */
+  if(typeof pennHere==="function"&&pennHere()&&typeof pennDraw==="function")
+    pennDraw(X(BASE_OX+18),Y(58),BCELL_W*0.52,BCELL_H*0.42);
   if(S.menu)drawBuildMenu(S);
 }

@@ -14,6 +14,8 @@ function openStation(){
   if(typeof mailDock==="function")mailDock();
   /* праздник по настоящему календарю (M201): раз в год, при первой стыковке */
   if(typeof holDock==="function")holDock();
+  /* переходящий вымпел (M206): раз в квартал, при первой стыковке */
+  if(typeof pennTick==="function")pennTick();
   /* счётчик посадок на это место (11b-speech): от него зависит, как к вам
      обращаются и какая реплика в очереди станет следующей */
   if(typeof visitMark==="function")visitMark();
