@@ -1174,3 +1174,19 @@ Also this pass, on the author's note that the bird had become a mechanical thing
 feathers: the coat is laid in **two layers** — dense small down underneath, big plates over it —
 and the feather profile was rebuilt from a real contour feather: a thread-thin calamus, quick
 widening, the broadest point below the middle, a soft oval tip, and asymmetric vanes.
+
+## M200e — the wing has its own axes (2026-08-26)
+
+The author drew the direction of the feathers straight onto the reference: they do not run along
+the body, they fan **from the leading edge back and outward**, in overlapping rows. Everything
+laid out along the body's spine parameter therefore read as ribbons down the flank, however many
+feathers were in it.
+
+The wing now has its own frame: `axis` from shoulder to wingtip, `across` from leading edge to
+trailing, and a table of five rows — amber coverts on the edge, then violet-grey, the cream
+band, pale-blue secondaries and long primaries — each row shifted back, longer, and rotated a
+little less. Colours from the sheet; the deep cobalt trailing edge closes the stack.
+
+Also: the beak follows the author's photograph now — bone at the base washing into warm amber
+toward the hook, dark horn at the very tip, and the lower mandible as a short **darker** wedge.
+A pale lower mandible merges into the upper one and the mouth disappears.
