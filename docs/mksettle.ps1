@@ -31,7 +31,10 @@ setTimeout(function(){
     ["BEFORE THE FIRST GIFT", null, 0],
     ["STAGE 2, WATCHERS OUT", ["weir","kiln","field"], 0],
     ["STAGE 3, SMOKE AND ALL", ["weir","kiln","field","forge","still"], 0],
-    ["STAGE 3 AT NIGHT", ["weir","kiln","field","forge","still"], 1]
+    ["STAGE 3 AT NIGHT", ["weir","kiln","field","forge","still"], 1],
+    /* M198: тот же посёлок, взятый под руку. Улица прямая, дворы в один рост,
+       общего огня нет, у края мачта со знаком — и ни одной подписи об этом */
+    ["STAGE 3, TAKEN IN HAND", ["weir","kiln","field","forge","still"], 0, 1]
   ];
   var K=2.2, CW=Math.round(W/K), CH=Math.round(H*.42);      // вырезка вокруг улицы
   var ZK=3.2, ZS=Math.round(H*.17);                          // и крупный план на неё же
@@ -47,6 +50,7 @@ setTimeout(function(){
     else{
       var V=settleMake(p);
       V.built=row[1].slice();V.stage=V.built.length>=5?3:2;V.mood=88;V.last=Date.now();
+      V.mine=row[3]?1:0;V._plan=null;
     }
     /* ночь двигаем временем: surfNight считается от celSun, а не от флага */
     G.t=row[2]?t0+CEL_DAY*(3+((p.seed>>>7)&3))*.5:t0;

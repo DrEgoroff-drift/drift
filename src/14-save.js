@@ -200,9 +200,13 @@ function applySave(s){
       mood:clamp(+v.mood||0,0,100),fed:Math.max(0,+v.fed||0),
       stock:{},diet:{},built,
       made:+v.made||Date.now(),last:+v.last||Date.now(),
-      asked:+v.asked||0,paid:Math.max(0,v.paid|0),raided:Math.max(0,v.raided|0)};
+      asked:+v.asked||0,paid:Math.max(0,v.paid|0),raided:Math.max(0,v.raided|0),
+      /* взят ли под руку (M198) — это РЕШЕНИЕ ИГРОКА, и оно необратимо, значит
+         обязано пережить загрузку. Список полей здесь белый: не вписал — потерял
+         молча, ровно как это уже случалось с полями управляющего */
+      mine:v.mine?1:0,handAt:+v.handAt||0};
     for(const k of RES_KEYS){
-      if(v.stock&&v.stock[k]>0)S.stock[k]=clamp(+v.stock[k],0,SETTLE_STOCK);
+      if(v.stock&&v.stock[k]>0)S.stock[k]=clamp(+v.stock[k],0,SETTLE_STOCK*(S.mine?HAND_STOCK:1));
       if(v.diet&&v.diet[k]>0)S.diet[k]=Math.max(0,+v.diet[k]);
     }
     G.settle[key]=S;

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 287 · символов верхнего уровня: 2705
+Файлов: 289 · символов верхнего уровня: 2717
 
 ## СИМВОЛЫ
 
@@ -591,7 +591,7 @@ earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
 el                           src/26-ui-station.js:140
-endPtr                       src/15-input.js:265
+endPtr                       src/15-input.js:270
 engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:88
@@ -842,6 +842,11 @@ grownGroundLine              src/11q-grown.js:39
 grownIsCore                  src/11q-grown.js:27
 grownOnGive                  src/11q-grown.js:54
 h01                          src/01-core.js:14
+HAND_LINE                    src/12td-settle-hand.js:31
+HAND_STEP                    src/12td-settle-hand.js:27
+HAND_STOCK                   src/12td-settle-hand.js:28
+handBtnTick                  src/12td-settle-hand.js:123
+handTestSettle               tests/91zzzk-hand.js:2
 hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
 hasSave                      src/14a-cloud.js:56
@@ -1356,7 +1361,7 @@ modCost                      src/11-log.js:129
 MODE_RU                      src/27i-ui-table.js:29
 modeRu                       src/27i-ui-table.js:32
 MODS                         src/04-mods.js:2
-mouseWalkAt                  src/15-input.js:275
+mouseWalkAt                  src/15-input.js:280
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
 MSL_DMG                      src/16b-missile.js:14
@@ -1602,7 +1607,7 @@ pickKindByBias               src/20-life.js:142
 pickShare                    src/20e-species.js:125
 pickStType                   src/06-galaxy.js:30
 PICKUPS                      src/24a-mode-raid.js:24
-pinch0                       src/15-input.js:239
+pinch0                       src/15-input.js:244
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20
 PIR_SS                       src/12i-pirate-hull.js:17
@@ -1760,7 +1765,7 @@ prof                         src/28-loop.js:531
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
-ptr                          src/15-input.js:238
+ptr                          src/15-input.js:243
 putOnTable                   src/11b-speech.js:208
 QUEST_MAX                    src/11a-quests.js:15
 questAdd                     src/11a-quests.js:22
@@ -2119,32 +2124,32 @@ scripVisit                   src/12u-scrip.js:94
 scripVisitReset              src/12u-scrip.js:95
 SD_KIND                      src/12tb-settle-draw.js:33
 SD_MAN                       src/12tb-settle-draw.js:31
-sdBody                       src/12tb-settle-draw.js:203
-sdCast                       src/12tb-settle-draw.js:645
+sdBody                       src/12tb-settle-draw.js:206
+sdCast                       src/12tb-settle-draw.js:651
 sdCut                        src/12tc-settle-crafts.js:144
-sdDoor                       src/12tb-settle-draw.js:363
-sdDwell                      src/12tb-settle-draw.js:402
+sdDoor                       src/12tb-settle-draw.js:366
+sdDwell                      src/12tb-settle-draw.js:405
 sdFarPal                     src/12tb-settle-draw.js:72
-sdFence                      src/12tb-settle-draw.js:553
+sdFence                      src/12tb-settle-draw.js:559
 sdField                      src/12tc-settle-crafts.js:10
 sdForge                      src/12tc-settle-crafts.js:171
 sdKiln                       src/12tc-settle-crafts.js:107
 sdMat                        src/12tb-settle-draw.js:40
 sdMix                        src/12tb-settle-draw.js:50
 sdPal                        src/12tb-settle-draw.js:53
-sdPerson                     src/12tb-settle-draw.js:586
-sdProps                      src/12tb-settle-draw.js:498
+sdPerson                     src/12tb-settle-draw.js:592
+sdProps                      src/12tb-settle-draw.js:501
 sdRGB                        src/12tb-settle-draw.js:49
-sdRoof                       src/12tb-settle-draw.js:260
-sdShadow                     src/12tb-settle-draw.js:215
-sdSmoke                      src/12tb-settle-draw.js:621
+sdRoof                       src/12tb-settle-draw.js:263
+sdShadow                     src/12tb-settle-draw.js:218
+sdSmoke                      src/12tb-settle-draw.js:627
 sdStill                      src/12tc-settle-crafts.js:226
-sdTerrace                    src/12tb-settle-draw.js:131
-sdWallTex                    src/12tb-settle-draw.js:224
+sdTerrace                    src/12tb-settle-draw.js:134
+sdWallTex                    src/12tb-settle-draw.js:227
 sdWeir                       src/12tc-settle-crafts.js:49
-sdWindow                     src/12tb-settle-draw.js:325
-sdWoodpile                   src/12tb-settle-draw.js:382
-sdYard                       src/12tb-settle-draw.js:783
+sdWindow                     src/12tb-settle-draw.js:328
+sdWoodpile                   src/12tb-settle-draw.js:385
+sdYard                       src/12tb-settle-draw.js:789
 sellCargo                    src/12-economy.js:26
 sellDroneYield               src/12-economy.js:37
 setSt                        src/28-loop.js:80
@@ -2158,31 +2163,38 @@ SETTLE_ON                    src/12t-settle.js:27
 SETTLE_STEP                  src/12t-settle.js:22
 SETTLE_STOCK                 src/12t-settle.js:23
 SETTLE_WAIT                  src/12t-settle.js:25
-SETTLE_WORD                  src/12t-settle.js:161
-settleAsk                    src/12t-settle.js:168
+SETTLE_WORD                  src/12t-settle.js:180
+settleAsk                    src/12t-settle.js:187
 settleAt                     src/12t-settle.js:46
+settleCanHand                src/12td-settle-hand.js:36
 settleCanLive                src/12t-settle.js:50
-settleDraw                   src/12t-settle.js:228
-settleDrawBody               src/12tb-settle-draw.js:656
-settleGive                   src/12t-settle.js:127
+settleDraw                   src/12t-settle.js:251
+settleDrawBody               src/12tb-settle-draw.js:662
+settleGive                   src/12t-settle.js:144
+settleHandLine               src/12td-settle-hand.js:65
+settleHandMast               src/12td-settle-hand.js:97
+settleHandPick               src/12td-settle-hand.js:56
+settleHandPlan               src/12td-settle-hand.js:73
 settleHere                   src/12t-settle.js:47
 settleKeyOf                  src/12t-settle.js:44
-settleLeftBehind             src/12t-settle.js:316
-settleLine                   src/12t-settle.js:201
+settleLeftBehind             src/12t-settle.js:342
+settleLine                   src/12t-settle.js:220
 settleMake                   src/12t-settle.js:61
-settleMakes                  src/12t-settle.js:148
+settleMakes                  src/12t-settle.js:167
 settleMap                    src/12t-settle.js:45
+settleMine                   src/12td-settle-hand.js:35
 settlePlan                   src/12tb-settle-draw.js:83
-settleRaid                   src/12t-settle.js:299
-settleRaise                  src/12t-settle.js:101
+settleRaid                   src/12t-settle.js:325
+settleRaise                  src/12t-settle.js:103
 settleSpotX                  src/12t-settle.js:55
-settleStockSum               src/12t-settle.js:142
-settleStop                   src/12t-settle.js:330
+settleStockSum               src/12t-settle.js:161
+settleStop                   src/12t-settle.js:356
+settleTakeHand               src/12td-settle-hand.js:40
 settleTick                   src/12t-settle.js:77
-settleWatch                  src/12t-settle.js:288
-settleWords                  src/12t-settle.js:163
+settleWatch                  src/12t-settle.js:314
+settleWords                  src/12t-settle.js:182
 setTx                        src/28-loop.js:79
-setZoom                      src/15-input.js:234
+setZoom                      src/15-input.js:239
 sfx                          src/09-audio.js:237
 SFX                          src/09-audio.js:97
 SH_DX                        src/03b-hull-paint.js:164
@@ -2283,7 +2295,7 @@ STAR_CLASS                   src/02-world.js:94
 STAR_COLS                    src/16-flight.js:2
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:23
-start                        src/15-input.js:412
+start                        src/15-input.js:417
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
 stat                         src/08-state.js:123
@@ -2417,7 +2429,7 @@ tableWasNew                  src/27i-ui-table.js:75
 tabLive                      src/14a-cloud.js:36
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
-tap                          src/15-input.js:295
+tap                          src/15-input.js:300
 TAPE_ADAPT                   src/25b-tape.js:26
 TAPE_DT                      src/25b-tape.js:24
 TAPE_GAIN                    src/25b-tape.js:25
@@ -3019,13 +3031,16 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12tb-grok.js · 22 КБ
   · Грохотун: единственный, кто работает не за деньги:1
 
-## src/12tb-settle-draw.js · 44 КБ
+## src/12tb-settle-draw.js · 45 КБ
   · посёлок с земли:1
 
 ## src/12tc-settle-crafts.js · 14 КБ
   · посёлок: промыслы:1
 
-## src/12t-settle.js · 21 КБ
+## src/12td-settle-hand.js · 8 КБ
+  · посёлок под рукой:1
+
+## src/12t-settle.js · 23 КБ
   · посёлок: вы даёте, решают они:1
 
 ## src/12ua-flea.js · 12 КБ
@@ -3623,5 +3638,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzj-winter.js · 6 КБ
   · автотесты: зимовка (M197):1
+
+## tests/91zzzk-hand.js · 6 КБ
+  · автотесты: посёлок под рукой (M198):1
 
 ## tests/99-run.js · 0 КБ

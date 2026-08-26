@@ -224,6 +224,11 @@ document.getElementById("zin").addEventListener("click",()=>setZoom(G.zoom*1.35)
 document.getElementById("zout").addEventListener("click",()=>setZoom(G.zoom/1.35));
 document.getElementById("dronebtn").addEventListener("click",deployDrone);
 document.getElementById("beaconbtn").addEventListener("click",useBeacon);
+/* посёлок под руку (M198): решение необратимо и подтверждения не спрашивает —
+   игра нигде не говорит, что правильно */
+document.getElementById("handbtn").addEventListener("click",()=>{
+  if(typeof settleTakeHand==="function")settleTakeHand(settleAt(G.sx,G.sy));
+});
 /* плечо маршрута ставится там же, где выбирается цель прыжка: маршрут — это
    карта, а не пункт меню */
 document.getElementById("routebtn").addEventListener("click",()=>{

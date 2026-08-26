@@ -90,8 +90,10 @@ function settleTick(S){
   const hungry=need>0;
   S.fed+=ate;
   S.mood=clamp(S.mood+(hungry?-mins*.5:mins*.12),0,100);
-  while(S.fed>=SETTLE_STEP){
-    S.fed-=SETTLE_STEP;
+  /* под рукой (M198) постройка обходится дешевле: план всегда быстрее уклада */
+  const step=SETTLE_STEP*((typeof settleMine==="function"&&settleMine(S))?HAND_STEP:1);
+  while(S.fed>=step){
+    S.fed-=step;
     settleRaise(S);
   }
   return S;
@@ -99,6 +101,21 @@ function settleTick(S){
 /* что именно поднимут — считают они. Склонность из зерна плюс то, чем кормили:
    десять часов руды и десять часов летучих дают разные деревни. */
 function settleRaise(S){
+  /* под рукой (M198) строят то, что окупается: своей воли в счёте больше нет,
+     и потому все взятые под руку посёлки со временем похожи друг на друга */
+  if(typeof settleMine==="function"&&settleMine(S)){
+    const pick=settleHandPick(S);
+    S.built.push(pick);
+    const was0=S.stage;
+    S.stage=S.built.length>=5?3:(S.built.length>=3?2:1);
+    if(was0<3&&S.stage>=3&&typeof scripOnSettle==="function")scripOnSettle(G.sx,G.sy);
+    if(was0<2&&S.stage>=2&&typeof doomArm==="function"&&!S.moved)doomArm(S);
+    S._plan=null;
+    S.mood=clamp(S.mood+4,0,100);
+    if(typeof logAdd==="function")
+      logAdd("good","Посёлок "+(S.name||"")+" поднял по указанию: "+SETTLE_BY_K[pick].ru);
+    return pick;
+  }
   const score={};
   for(const b of SETTLE_BUILD){
     score[b.k]=(S.diet[b.diet]||0)*1.0+(b.k===S.lean?SETTLE_STEP*.8:0)
@@ -128,7 +145,9 @@ function settleGive(S,k,n){
   S=settleTick(S);
   if(!S||!k)return 0;
   n=Math.min(n|0,G.cargo[k]|0);
-  const room=Math.max(0,SETTLE_STOCK-settleStockSum(S));
+  /* амбар под рукой больше: склад строят по норме, а не по нужде (M198) */
+  const cap=SETTLE_STOCK*((typeof settleMine==="function"&&settleMine(S))?HAND_STOCK:1);
+  const room=Math.max(0,cap-settleStockSum(S));
   n=Math.min(n,Math.floor(room));
   if(n<=0)return 0;
   G.cargo[k]-=n;
@@ -199,6 +218,10 @@ function settleAsk(S,word){
    Строка глифов, постоянная для посёлка и для повода. Понятые слова (те, что
    пришли кусками отчёта) показываются словом, остальные остаются знаками. */
 function settleLine(S,topic){
+  /* под рукой глифов больше нет: отвечают служебным словом (12td, M198).
+     Словарь, который игрок собирал кусками отчёта, здесь перестаёт работать —
+     и это единственная потеря, которой нет ни в одной цифре */
+  if(typeof settleMine==="function"&&settleMine(S))return settleHandLine(S,topic);
   const r=rng(hashi(S.seed,(topic|0)*131+7,5));
   const vocab=(typeof loreVocab==="function")?loreVocab():[];
   const n=3+Math.floor(r()*3),out=[];
@@ -241,6 +264,9 @@ function settleDraw(S,tr,camx,camy,p){
   /* тела дворов, терраса, улица и быт — в 12tb (M169). Здесь остаётся то, что
      принадлежит посёлку как месту в мире: дозорные, знак дома, вымпел, дым */
   settleDrawBody(S,tr,camx,camy,p);
+  /* мачта со знаком: единственное, что посёлок под рукой (M198) получает сверх */
+  if(typeof settleMine==="function"&&settleMine(S)&&typeof settleHandMast==="function"&&P)
+    settleHandMast(P,camx,camy,(typeof sdPal==="function")?sdPal(p):{});
   if(typeof houseWallMark==="function"&&typeof houseOf==="function"&&P&&P.yards[0]){
     const v=P.yards[0],ox=v.wx-camx,oy=P.baseY-camy-v.lift;
     houseWallMark(houseOf(G.sys),ox-v.w/2,oy,v.w,v.h*.66);          /* знак дома на стене (17d) */

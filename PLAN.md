@@ -871,10 +871,18 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   **Still open: the room wants another art pass** — the figure reads as a coat rather than a
   person, the berth under the window is a plank with a pillow, and the stove's foot is lost in the
   vignette.
-- **M198 — the observer's choice.** `12t-settle` already decides for itself what to raise. Add the
-  fork: feed and watch, or step in with instructions. Step in and the settlement grows faster but
-  loses its glyphs and its own path and becomes *yours* — and that is visible in the frame. Not one
-  word of morality in the interface: the dilemma is shown, never stated.
+- **M198 — the observer's choice** — **built (0.177.0).** `12td-settle-hand`, suite `91zzzk-hand`,
+  stand `docs/shot.ps1 settle` (fifth row). One irreversible button at a settlement of stage 2 or
+  more: take it in hand. Everything measurable improves — faster growth, it raises what pays, twice
+  the barn, steadier giving. What is lost is in no number: the glyph speech goes (the collected
+  vocabulary has nothing to do here, the answer is «принято»), its own will in choosing a building
+  goes, and the crooked street goes — yards in a line, roofs to one height and one pattern, no
+  communal hearth, a mast with your house mark. Not one word of morality, no confirmation, no undo.
+
+  Caught while wiring: the save rebuilds a settlement field by field from a whitelist, so `mine` was
+  dropped on load — the manager-field class of bug, third repeat.
+
+  **Still open:** at street scale the difference reads, but weakly. The frame could say it louder.
 - **M199 — the sanatorium.** M162's voucher becomes a planet: treatments on a timetable, an oxygen
   cocktail, chess on the veranda, and **nothing happens** — the only mode in which the game allows
   rest. Ageing and the medical board (M161) give it weight; Vega can come.

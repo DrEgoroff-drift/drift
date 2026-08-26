@@ -1101,6 +1101,8 @@ body.afoot .ipod{display:none}
     <button id="starbtn" style="display:none">К ЗВЕЗДЕ</button>
     <button id="dronebtn" style="display:none">ДРОН</button>
     <button id="beaconbtn" style="display:none">МАЯК</button>
+    <!-- посёлок под руку (M198): необратимо, и кнопка говорит только действие -->
+    <button id="handbtn" style="display:none">ВЗЯТЬ ПОД РУКУ</button>
     <button id="routebtn" style="display:none">В МАРШРУТ</button>
   </div>
   <!-- Иконки тонкой линией и все из одного набора: круг-орбита, три полосы
@@ -1297,7 +1299,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.176.0";
+const VER="0.177.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -20092,6 +20094,9 @@ function settlePlan(S,tr,p){
   const baseY=groundAt(tr,bx)+2;
   const plan={key,bx,x0,x1:x0+span,span,baseY,yards,
     seed:(S&&S.seed)|0,homes};
+  /* улица под рукой (M198) — прямая линия ровным шагом: план, а не уклад */
+  if(typeof settleMine==="function"&&settleMine(S)&&typeof settleHandPlan==="function")
+    settleHandPlan(plan);
   if(S)S._plan=plan;
   return plan;
 }
@@ -20475,7 +20480,10 @@ function sdProps(P,camx,camy,pal,wind,r){
     /* над общим очагом ничего не вешают: верёвка с бельём шла прямо через
        костёр и его дым (крупный план M169) */
     const mid=(a.wx+b.wx)/2;
-    const kind=Math.abs(mid-P.bx)<34?1:Math.floor(r()*3);
+    /* под рукой (M198) общего очага в середине улицы нет: собираться незачем,
+       и это единственный способ, каким кадр об этом говорит */
+    const handed=(typeof settleMine==="function")&&settleMine(settleAt(G.sx,G.sy));
+    const kind=(Math.abs(mid-P.bx)<34&&!handed)?1:Math.floor(r()*3);
     if(kind===0){                                           /* верёвка с бельём */
       /* Светлая нитка через весь кадр читалась царапиной на стекле, а бельё —
          полупрозрачными бумажками (крупный план M169). Верёвка тёмная и
@@ -21032,6 +21040,141 @@ function sdStill(x,y,w,h,pal,seed,warm){
    Верёвка с бельём, бочка, корзины, жерди — то, чего нельзя вывести из
    механики, но без чего посёлок остаётся макетом. */
 
+/* ══════════════ посёлок под рукой ══════════════
+   M198. У посёлка (12t) до сих пор была одна связь с игроком: КОРМИТЬ. Что из
+   этого вырастет, решали живущие, и это был весь замысел. Здесь появляется
+   вторая, необратимая: взять посёлок под руку.
+
+   ЧТО МЕНЯЕТСЯ, И ВСЁ ЭТО К ЛУЧШЕМУ ПО ЛЮБОМУ СЧЁТУ. Растёт быстрее. Строит
+   то, что окупается, а не то, что взбрело. Амбар больше, отдают чаще и
+   ровнее. Ни одна цифра не становится хуже.
+
+   ЧТО ПРОПАДАЕТ, И ЭТОГО НЕТ НИ В ОДНОЙ ЦИФРЕ. Они перестают говорить
+   глифами: словарь, который игрок собирал кусками отчёта (12q), здесь больше
+   не нужен — ему отвечают «принято» и «сделаем». Пропадает своя воля в
+   выборе постройки: дальше это план, а планы одинаковы. И пропадает кривая
+   улица — дворы встают в линию, крыши в один рост, общего огня нет.
+
+   НИ СЛОВА МОРАЛИ. Игра нигде не говорит, что правильно, не спрашивает
+   «уверены?», не пишет «вы потеряли их culture». Кнопка называет действие,
+   и всё; дилемма показана, а не изложена. Понять, что именно сменилось,
+   можно только глазами и ушами — и только после.
+
+   ОБРАТНОГО ХОДА НЕТ. Не потому, что жестоко, а потому что в жизни его тоже
+   нет: руку не убирают. Возврат превратил бы решение в настройку.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Ничего своего не хранит: только флаг `mine` на самом посёлке (12t).
+   2. Ни одной оценки в тексте. Ни здесь, ни в интерфейсе. */
+const HAND_STEP=0.62;             /* во столько раз дешевле постройка под рукой */
+const HAND_STOCK=2.1;             /* во столько раз больше амбар */
+/* Речь под рукой: служебная, короткая, без глифов. Ровно то, чем отвечают,
+   когда отвечать больше нечем. */
+const HAND_LINE=[
+  "принято","сделаем","как скажете","есть","будет готово","поняли",
+  "исполним","добро","записано"
+];
+function settleMine(S){return !!(S&&S.mine);}
+function settleCanHand(S){
+  /* до второй ступени брать нечего: там ещё нет ни улицы, ни своего пути */
+  return !!(S&&!S.mine&&(S.stage|0)>=2);
+}
+function settleTakeHand(S){
+  if(!settleCanHand(S))return false;
+  S.mine=1;
+  S.handAt=(typeof celDay==="function")?celDay():0;
+  S._plan=null;                    /* улица пересчитается по-новому */
+  if(typeof recordAdd==="function")
+    recordAdd("посёлок "+(S.name||""),"взят под руку");
+  if(typeof logAdd==="function")
+    logAdd("tech","Посёлок "+(S.name||"")+" взят под руку. Дальше строят по указанию.");
+  if(typeof tell==="function")
+    tell("tech","Посёлок взят под руку","ВЗЯТ ПОД РУКУ\n"+(S.name||""));
+  if(typeof saveGame==="function")saveGame(true);
+  return true;
+}
+/* что поднимут под рукой: то, что окупается. Ни своей воли, ни надбавки за
+   разнообразие — план и есть план, и потому все такие посёлки похожи */
+function settleHandPick(S){
+  let best=SETTLE_BUILD[0].k,bs=-1e9;
+  for(const b of SETTLE_BUILD){
+    const s=(S.diet[b.diet]||0)*1.0-(S.built.filter(x=>x===b.k).length)*SETTLE_STEP*.12;
+    if(s>bs){bs=s;best=b.k;}
+  }
+  return best;
+}
+/* строка под рукой: без глифов и без словаря */
+function settleHandLine(S,topic){
+  const r=rng(hashi((S&&S.seed)|0,(topic|0)*77+11,0x4A1D));
+  return HAND_LINE[Math.floor(r()*HAND_LINE.length)]+".";
+}
+/* ── улица под рукой ──
+   Плана «как удобно жить» больше нет — есть план «как удобно считать». Дворы
+   в линию, ровным шагом, одного роста, ремесло к краю. Разница видна с первого
+   взгляда, и ни одна подпись на неё не указывает. */
+function settleHandPlan(P){
+  if(!P)return P;
+  const n=P.yards.length;
+  let x=0;
+  for(let i=0;i<n;i++){
+    const y=P.yards[i];
+    y.back=false;y.lift=0;y.flip=false;
+    y.k=1.0;
+    /* и семя двора одно на всех: крыши, наличники, доски — по одному образцу.
+     Разнобой отделки и есть то, чем посёлок выглядел своим */
+    y.r=0.5;
+    const K=SD_KIND[y.kind]||SD_KIND.dwell;
+    y.w=SD_MAN*K.w;y.h=SD_MAN*K.h;
+    y.gap=14;
+    y.x=x+y.w/2;x+=y.w+y.gap;
+  }
+  const span=Math.max(120,x-14);
+  const x0=P.bx-span/2;
+  P.span=span;P.x0=x0;P.x1=x0+span;
+  P.yards.forEach(y=>{y.wx=x0+y.x;});
+  return P;
+}
+/* мачта со знаком дома: единственное, что под рукой ДОБАВЛЯЕТСЯ в кадр.
+   Ставится у края улицы, и по ней посёлок узнают издали */
+function settleHandMast(P,camx,camy,pal){
+  if(!P)return;
+  /* мачта у НАЧАЛА улицы, а не за её краем: за краем она попадала мимо кадра */
+  const x=P.x0-camx-SD_MAN*0.9, y0=P.baseY-camy;
+  const h=SD_MAN*2.6;
+  ctx.fillStyle="rgba(0,0,0,.30)";
+  ctx.fillRect(x-SD_MAN*0.05,y0,SD_MAN*0.5,3);
+  ctx.fillStyle=sdRGB(sdMix(pal.wood||[110,92,70],[40,36,32],.25));
+  ctx.fillRect(x,y0-h,Math.max(2,SD_MAN*0.075),h);
+  ctx.fillStyle="rgba(255,255,255,.10)";
+  ctx.fillRect(x,y0-h,Math.max(1,SD_MAN*0.025),h);
+  /* вымпел: маленький, ровный, и он тут не праздник, а метка */
+  const w=SD_MAN*0.9,hh=SD_MAN*0.42;
+  ctx.fillStyle=sdRGB(sdMix(pal.roof||[120,100,80],[210,180,120],.5));
+  ctx.beginPath();
+  ctx.moveTo(x+SD_MAN*0.075,y0-h);
+  ctx.lineTo(x+SD_MAN*0.075+w,y0-h+hh*0.34);
+  ctx.lineTo(x+SD_MAN*0.075,y0-h+hh);
+  ctx.closePath();ctx.fill();
+  ctx.fillStyle="rgba(0,0,0,.22)";
+  ctx.fillRect(x+SD_MAN*0.075,y0-h+hh*0.62,w*0.5,Math.max(1,hh*0.10));
+}
+
+/* ── кнопка ──
+   Появляется у посёлка со второй ступени и нигде больше. Ни предупреждения,
+   ни «уверены?»: кнопка называет действие, и это всё, что игра говорит. */
+function handBtnTick(){
+  const b=document.getElementById("handbtn");
+  if(!b)return;
+  let show=false;
+  if(G.mode==="surface"&&G.surf&&G.surf.p&&typeof settleCanLive==="function"
+     &&settleCanLive(G.surf.p)){
+    const sx=settleSpotX(G.surf.p,G.surf.tr);
+    if(sx!=null&&Math.abs(G.surf.x-sx)<44)
+      show=settleCanHand(settleAt(G.sx,G.sy));
+  }
+  b.style.display=show?"":"none";
+}
+
 /* ══════════════ посёлок: вы даёте, решают они ══════════════
    Второй базы быть не должно. У своей базы (21a) игрок — хозяин: он ставит
    отсеки, он платит, он приказывает. Здесь власти у него нет вовсе. Он может
@@ -21124,8 +21267,10 @@ function settleTick(S){
   const hungry=need>0;
   S.fed+=ate;
   S.mood=clamp(S.mood+(hungry?-mins*.5:mins*.12),0,100);
-  while(S.fed>=SETTLE_STEP){
-    S.fed-=SETTLE_STEP;
+  /* под рукой (M198) постройка обходится дешевле: план всегда быстрее уклада */
+  const step=SETTLE_STEP*((typeof settleMine==="function"&&settleMine(S))?HAND_STEP:1);
+  while(S.fed>=step){
+    S.fed-=step;
     settleRaise(S);
   }
   return S;
@@ -21133,6 +21278,21 @@ function settleTick(S){
 /* что именно поднимут — считают они. Склонность из зерна плюс то, чем кормили:
    десять часов руды и десять часов летучих дают разные деревни. */
 function settleRaise(S){
+  /* под рукой (M198) строят то, что окупается: своей воли в счёте больше нет,
+     и потому все взятые под руку посёлки со временем похожи друг на друга */
+  if(typeof settleMine==="function"&&settleMine(S)){
+    const pick=settleHandPick(S);
+    S.built.push(pick);
+    const was0=S.stage;
+    S.stage=S.built.length>=5?3:(S.built.length>=3?2:1);
+    if(was0<3&&S.stage>=3&&typeof scripOnSettle==="function")scripOnSettle(G.sx,G.sy);
+    if(was0<2&&S.stage>=2&&typeof doomArm==="function"&&!S.moved)doomArm(S);
+    S._plan=null;
+    S.mood=clamp(S.mood+4,0,100);
+    if(typeof logAdd==="function")
+      logAdd("good","Посёлок "+(S.name||"")+" поднял по указанию: "+SETTLE_BY_K[pick].ru);
+    return pick;
+  }
   const score={};
   for(const b of SETTLE_BUILD){
     score[b.k]=(S.diet[b.diet]||0)*1.0+(b.k===S.lean?SETTLE_STEP*.8:0)
@@ -21162,7 +21322,9 @@ function settleGive(S,k,n){
   S=settleTick(S);
   if(!S||!k)return 0;
   n=Math.min(n|0,G.cargo[k]|0);
-  const room=Math.max(0,SETTLE_STOCK-settleStockSum(S));
+  /* амбар под рукой больше: склад строят по норме, а не по нужде (M198) */
+  const cap=SETTLE_STOCK*((typeof settleMine==="function"&&settleMine(S))?HAND_STOCK:1);
+  const room=Math.max(0,cap-settleStockSum(S));
   n=Math.min(n,Math.floor(room));
   if(n<=0)return 0;
   G.cargo[k]-=n;
@@ -21233,6 +21395,10 @@ function settleAsk(S,word){
    Строка глифов, постоянная для посёлка и для повода. Понятые слова (те, что
    пришли кусками отчёта) показываются словом, остальные остаются знаками. */
 function settleLine(S,topic){
+  /* под рукой глифов больше нет: отвечают служебным словом (12td, M198).
+     Словарь, который игрок собирал кусками отчёта, здесь перестаёт работать —
+     и это единственная потеря, которой нет ни в одной цифре */
+  if(typeof settleMine==="function"&&settleMine(S))return settleHandLine(S,topic);
   const r=rng(hashi(S.seed,(topic|0)*131+7,5));
   const vocab=(typeof loreVocab==="function")?loreVocab():[];
   const n=3+Math.floor(r()*3),out=[];
@@ -21275,6 +21441,9 @@ function settleDraw(S,tr,camx,camy,p){
   /* тела дворов, терраса, улица и быт — в 12tb (M169). Здесь остаётся то, что
      принадлежит посёлку как месту в мире: дозорные, знак дома, вымпел, дым */
   settleDrawBody(S,tr,camx,camy,p);
+  /* мачта со знаком: единственное, что посёлок под рукой (M198) получает сверх */
+  if(typeof settleMine==="function"&&settleMine(S)&&typeof settleHandMast==="function"&&P)
+    settleHandMast(P,camx,camy,(typeof sdPal==="function")?sdPal(p):{});
   if(typeof houseWallMark==="function"&&typeof houseOf==="function"&&P&&P.yards[0]){
     const v=P.yards[0],ox=v.wx-camx,oy=P.baseY-camy-v.lift;
     houseWallMark(houseOf(G.sys),ox-v.w/2,oy,v.w,v.h*.66);          /* знак дома на стене (17d) */
@@ -24642,9 +24811,13 @@ function applySave(s){
       mood:clamp(+v.mood||0,0,100),fed:Math.max(0,+v.fed||0),
       stock:{},diet:{},built,
       made:+v.made||Date.now(),last:+v.last||Date.now(),
-      asked:+v.asked||0,paid:Math.max(0,v.paid|0),raided:Math.max(0,v.raided|0)};
+      asked:+v.asked||0,paid:Math.max(0,v.paid|0),raided:Math.max(0,v.raided|0),
+      /* взят ли под руку (M198) — это РЕШЕНИЕ ИГРОКА, и оно необратимо, значит
+         обязано пережить загрузку. Список полей здесь белый: не вписал — потерял
+         молча, ровно как это уже случалось с полями управляющего */
+      mine:v.mine?1:0,handAt:+v.handAt||0};
     for(const k of RES_KEYS){
-      if(v.stock&&v.stock[k]>0)S.stock[k]=clamp(+v.stock[k],0,SETTLE_STOCK);
+      if(v.stock&&v.stock[k]>0)S.stock[k]=clamp(+v.stock[k],0,SETTLE_STOCK*(S.mine?HAND_STOCK:1));
       if(v.diet&&v.diet[k]>0)S.diet[k]=Math.max(0,+v.diet[k]);
     }
     G.settle[key]=S;
@@ -25252,6 +25425,11 @@ document.getElementById("zin").addEventListener("click",()=>setZoom(G.zoom*1.35)
 document.getElementById("zout").addEventListener("click",()=>setZoom(G.zoom/1.35));
 document.getElementById("dronebtn").addEventListener("click",deployDrone);
 document.getElementById("beaconbtn").addEventListener("click",useBeacon);
+/* посёлок под руку (M198): решение необратимо и подтверждения не спрашивает —
+   игра нигде не говорит, что правильно */
+document.getElementById("handbtn").addEventListener("click",()=>{
+  if(typeof settleTakeHand==="function")settleTakeHand(settleAt(G.sx,G.sy));
+});
 /* плечо маршрута ставится там же, где выбирается цель прыжка: маршрут — это
    карта, а не пункт меню */
 document.getElementById("routebtn").addEventListener("click",()=>{
@@ -52591,7 +52769,7 @@ function frame(now){
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
     if(typeof etherTick==="function")etherTick(dt);
-    beaconTick(dt);crewBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof skyTick==="function")skyTick();if(typeof traineeTick==="function")traineeTick();if(typeof zooTick==="function")zooTick();wearTick(dt);
+    beaconTick(dt);crewBtnTick();if(typeof handBtnTick==="function")handBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof skyTick==="function")skyTick();if(typeof traineeTick==="function")traineeTick();if(typeof zooTick==="function")zooTick();wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){

@@ -7,6 +7,34 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.177.0 — the observer's choice: take the settlement in hand, once (M198)
+
+The settlement (`12t`) had exactly one connection to the player: **feed it**. What grew out of that
+was theirs to decide, and that was the whole design. Now there is a second connection, and it is
+one-way: take it in hand.
+
+**Everything measurable gets better.** It grows faster. It raises what pays instead of what came
+into its head. The barn is twice the size, and they give more often and more evenly. Not one number
+gets worse.
+
+**What is lost is in no number at all.** They stop speaking in glyphs: the vocabulary the player
+collected out of fragments of the report (`12q`) has nothing left to do here, because the answer is
+now «принято» and «сделаем». Their own will in choosing a building goes: from here on it is a plan,
+and plans are alike — two settlements taken in hand end up the same settlement. And the crooked
+street goes with it. The yards line up, the roofs come to one height and one pattern, there is no
+communal hearth in the middle any more, and a mast with your house mark stands at the end of it.
+
+**Not one word of morality.** The game does not say which is right, does not ask "are you sure?",
+does not report a loss. The button names the action and stops there: the dilemma is shown, never
+stated. What changed can only be seen and heard, and only afterwards.
+
+**There is no way back**, not out of cruelty but because there is none in life either. A hand is
+not withdrawn, and an undo would turn a decision into a setting.
+
+Caught while wiring it: the save rebuilds a settlement field by field from a whitelist, so `mine`
+was being dropped on load — the same class of bug the manager fields hit three times. It is in the
+list now.
+
 ## 0.176.0 — the wintering: a month alone, and the light is an instrument (M197)
 
 A contract off the board unlike any other in the game: not fetch, not kill, not find — **stand it

@@ -122,6 +122,9 @@ function settlePlan(S,tr,p){
   const baseY=groundAt(tr,bx)+2;
   const plan={key,bx,x0,x1:x0+span,span,baseY,yards,
     seed:(S&&S.seed)|0,homes};
+  /* улица под рукой (M198) — прямая линия ровным шагом: план, а не уклад */
+  if(typeof settleMine==="function"&&settleMine(S)&&typeof settleHandPlan==="function")
+    settleHandPlan(plan);
   if(S)S._plan=plan;
   return plan;
 }
@@ -505,7 +508,10 @@ function sdProps(P,camx,camy,pal,wind,r){
     /* над общим очагом ничего не вешают: верёвка с бельём шла прямо через
        костёр и его дым (крупный план M169) */
     const mid=(a.wx+b.wx)/2;
-    const kind=Math.abs(mid-P.bx)<34?1:Math.floor(r()*3);
+    /* под рукой (M198) общего очага в середине улицы нет: собираться незачем,
+       и это единственный способ, каким кадр об этом говорит */
+    const handed=(typeof settleMine==="function")&&settleMine(settleAt(G.sx,G.sy));
+    const kind=(Math.abs(mid-P.bx)<34&&!handed)?1:Math.floor(r()*3);
     if(kind===0){                                           /* верёвка с бельём */
       /* Светлая нитка через весь кадр читалась царапиной на стекле, а бельё —
          полупрозрачными бумажками (крупный план M169). Верёвка тёмная и
