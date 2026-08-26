@@ -94,8 +94,8 @@ const normalAt=(t,a)=>bodyNormal(t,a);
    клюва — перья должны наезжать на его основание, иначе между рогом и
    оперением остаётся тёмная щель, как будто клюв приклеили */
 const BEAK_BALLS=[
-  [0,1.804,0.094,0.100],[0,1.782,0.170,0.102],[0,1.752,0.238,0.096],
-  [0,1.710,0.292,0.084],[0,1.656,0.318,0.070],[0,1.672,0.126,0.092]
+  [0,1.802,0.122,0.102],[0,1.786,0.220,0.104],[0,1.760,0.320,0.098],
+  [0,1.716,0.412,0.086],[0,1.658,0.468,0.072],[0,1.674,0.150,0.094]
 ];
 const COAT_STAT={all:0,head:0,cut:0};
 const PLUME_STAT=[];
@@ -219,18 +219,18 @@ function layoutPlumes(){
        удлиняются и разворачиваются: янтарные кроющие по кромке, за ними
        сиренево-серые, кремовая полоса, светло-голубые второстепенные и длинные
        маховые. Цвета — с листа. */
-    const W0=[sx*0.21,1.22,-0.04];
-    const axis=vNorm([sx*0.16,-0.02,-0.99]);
+    const W0=[sx*0.20,1.30,-0.03];
+    const axis=vNorm([sx*0.15,-0.24,-0.96]);
     let across=vNorm(vCross(axis,[sx,0,0]));
     if(across[1]>0)across=vMul(across,-1);
     const wnrm=vNorm(vCross(across,axis));
     /* слой: [сколько, длина, ширина, сдвиг назад, разворот назад, цвет а, цвет б] */
     const LAYERS=[
-      [9, 0.24,0.34,0.00,0.46,BIRD_C.amber,BIRD_C.amberD],
+      [9, 0.26,0.34,-0.03,0.46,BIRD_C.amber,BIRD_C.amberD],
       [11,0.40,0.30,0.045,0.38,vLerp(BIRD_C.viol,BIRD_C.creamD,0.30),BIRD_C.blueD],
       [12,0.58,0.26,0.090,0.30,BIRD_C.cream,BIRD_C.creamD],
-      [13,0.78,0.22,0.135,0.22,BIRD_C.blueL,BIRD_C.blue],
-      [14,1.06,0.17,0.180,0.15,vLerp(BIRD_C.blueL,BIRD_C.blue,0.35),BIRD_C.blue]
+      [13,0.70,0.22,0.135,0.22,BIRD_C.blueL,BIRD_C.blue],
+      [14,0.94,0.17,0.180,0.15,vLerp(BIRD_C.blueL,BIRD_C.blue,0.35),BIRD_C.blue]
     ];
     LAYERS.forEach((L,li)=>{
       const [N,len0,wk,back,turn,cA,cB]=L;
@@ -240,7 +240,10 @@ function layoutPlumes(){
         const len=len0*mix(0.66,1.12,s)*(0.90+hashf(i*17+li*7,sx>0?1:2)*0.20);
         const base=vAdd(vAdd(W0,vMul(axis,0.06+s*0.52)),vMul(across,back+s*0.05));
         /* разворот: чем ближе к корню, тем сильнее перо отведено назад */
-        const dir=vNorm(vAdd(vMul(axis,1.0),vMul(across,turn*(1.0-s*0.45))));
+        /* кончики маховых РАСХОДЯТСЯ: без разброса по s они сходятся в одну точку
+           и крыло кончается веником */
+        const dir=vNorm(vAdd(vAdd(vMul(axis,1.0),vMul(across,turn*(1.0-s*0.45))),
+          vMul([sx,0,0],(s-0.5)*0.22)));
         const c=vLerp(cA,cB,0.15+s*0.55);
         feaPush(out,vAdd(base,vMul(wnrm,0.004*li)),
           vNorm(vAdd(dir,vMul(wnrm,0.05))),wnrm,
@@ -299,16 +302,18 @@ function layoutPlumes(){
      две центральные длиннее, боковые короче и разведены */
   for(let i=0;i<5;i++){
     const k=(i/4-0.5)*2,ak=Math.abs(k);
-    const a=Math.PI*1.5+k*0.42;
+    const a=Math.PI*1.5+k*0.58;
     const base=bodyAt(0.05,a);
-    const dir=vNorm([k*0.26,-0.28-ak*0.06,-1.0]);
+    const dir=vNorm([k*0.24,-0.62-ak*0.08,-1.0]);
     /* длины соседних перьев ступенькой: ровный веер читается одной лопастью */
-    const len=1.34-ak*0.34;
+    /* длины вразнобой: ровный веер из пяти одинаковых перьев читается одной
+       синей палкой, а на листе у хвоста видно каждое перо */
+    const len=(1.70-ak*0.40)*(0.86+hashf(i*13+7,4)*0.28);
     const c=vLerp(BIRD_C.blue,(i%2)?BIRD_C.blue:BIRD_C.blueD,0.26+ak*0.46);
     /* каждое следующее перо чуть выше предыдущего: стопка, а не плоскость */
     const up=vNorm([k*0.34,1,-0.16]);
     feaPush(out,vAdd(base,vMul(up,0.006*(5-Math.abs(i-5)))),dir,up,
-      len,len*0.34,c,[0.55,0.10,0.05,2.0]);
+      len,len*0.26,c,[0.55,0.10,0.05,2.0]);
   }
   mark("хвост");
   /* хохол: длинные плюмажи широкой дугой. Цвет идёт по вееру — передние

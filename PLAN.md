@@ -1190,3 +1190,24 @@ little less. Colours from the sheet; the deep cobalt trailing edge closes the st
 Also: the beak follows the author's photograph now — bone at the base washing into warm amber
 toward the hook, dark horn at the very tip, and the lower mandible as a short **darker** wedge.
 A pale lower mandible merges into the upper one and the mouth disappears.
+
+## M200f — five passes against the sheet, and why the site lagged (2026-08-26)
+
+Five rounds of render → critique → fix → verify, each against the breed sheet's «Сбоку» view:
+
+1. The folded wing lay as a horizontal plank longer than the tail; on the sheet it angles down
+   and back and ends before the tail does. Wing axis tilted, rows shortened.
+2. The beak was too big and almost white — warmed to the photograph's amber and cut down; belly
+   tucked so it stops overhanging the feet.
+3. Overcorrected: the beak had become a duck's nose with no hook. Height and hook restored, and
+   the tail's five feathers given scattered lengths — an even fan of identical feathers reads as
+   one blue plank.
+4. Wing and tail merged into a single horizontal mass. The wing went up onto the back, the tail
+   down and back; the crest grew a fifth.
+5. Primaries converged to a point — a besom, not a wing tip. They splay now, and the culmen was
+   slimmed where it had gone bulbous.
+
+**And the reason the live site kept lagging a commit:** `bird.ps1` built its output path as
+`Join-Path $root "site\treplo3d.html"`. On the Linux runner the backslash is not a separator but
+part of a filename, so CI wrote a file literally named `site\treplo3d.html` into the repo root and
+uploaded the *previous* committed page. Paths are composed part by part now.

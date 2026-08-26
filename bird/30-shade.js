@@ -95,7 +95,7 @@ void partJoints(inout vec3 p, inout vec3 n, float m, float t){
     mat3 R=rotAxis(vec3(1.0,0.0,0.0),-(1.0-uBlink)*1.55);
     p=c+R*(p-c); n=R*n;
   }else if(m>8.5){
-    vec3 h=vec3(0.0,1.672,0.100);
+    vec3 h=vec3(0.0,1.676,0.118);
     mat3 R=rotAxis(vec3(1.0,0.0,0.0),uJaw);
     p=h+R*(p-h); n=R*n;
   }else if(m>3.5&&m<4.5||m>6.5&&m<7.5){
@@ -276,7 +276,7 @@ void main(){
        внутри клюва, потому что сечение наклонено. Пятно ложится ровно там,
        где нужно, и стоит ноль вершин */
     float nz=1.0-smoothstep(0.012,0.030,
-      length(vec3((abs(vP.x)-0.054)*1.0,(vP.y-1.768)*0.80,(vP.z-0.176)*0.70)));
+      length(vec3((abs(vP.x)-0.056)*1.0,(vP.y-1.772)*0.80,(vP.z-0.232)*0.70)));
     alb=mix(alb,vec3(0.018,0.014,0.018),nz*0.95);
     rough=mix(rough,0.7,nz);
     float grooves=sin(vP.y*54.0+vP.z*16.0)*0.5+0.5;
@@ -286,7 +286,7 @@ void main(){
     /* тень от надклювья на подклювье: без неё две челюсти читаются одним
        куском рога, и рот пропадает. Полоса узкая и идёт по линии смыкания */
     if(m>8.5){
-      float lip=smoothstep(0.050,0.0,abs(vP.y-(1.680-vP.z*0.15)));
+      float lip=smoothstep(0.050,0.0,abs(vP.y-(1.686-vP.z*0.12)));
       alb*=mix(1.0,0.34,lip);
     }
   }else if(m<2.5){

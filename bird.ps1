@@ -15,7 +15,10 @@ param([switch]$Watch)
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $src  = Join-Path $root "bird"
-$out  = Join-Path $root "site\treplo3d.html"
+# путь собирается через Join-Path по частям: обратный слеш внутри строки на
+# линуксовом раннере не разделитель, а часть имени — сборка в CI молча писала
+# файл «site	replo3d.html» в корень, а на сайт уезжала прежняя птица
+$out  = Join-Path (Join-Path $root "site") "treplo3d.html"
 $enc  = New-Object System.Text.UTF8Encoding($false)
 
 function Build {
