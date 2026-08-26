@@ -391,8 +391,12 @@ The online postcard, the world alive, the places and the joys. Moved to
 [`docs/PLAN-archive.md`](docs/PLAN-archive.md) on 2026-08-27 under the header “the 26.08 queue,
 M188–M206” — grep it there for any of them. What they left open, in the order I would take it:
 
-- **photographable modes** (M188): only ground and approach. Cave, mine, belt, system and scoop
-  have no snapshot painter, so the camera is silent in five of eight places the player stands.
+- ~~**photographable modes** (M188)~~ — **closed by M208 (0.187.0).** `25ga-post-scenes`, suite
+  `91zzzu-post-scenes`, stand `docs\shot.ps1 scenes`. Five painters — cave, mine, belt, orbit,
+  gas-giant air — sharing one light kit passed in as an argument, each with an object of known
+  size in it. The snapshot did not grow: `cx`/`cy` mean something different per place instead of
+  a new pair of fields per mode, and terrain is now computed only where it is drawn. Four passes;
+  what was wrong in the first three is written down in the module.
 - **a hundred blanks** (M189): thirty are in, and the plan asked for a hundred over later passes.
   A blank is data, so this is writing rather than engineering — a pass at a time.
 - **marks in the places themselves** (M171, M194): the settlement wall, the cave mouth. M194 went

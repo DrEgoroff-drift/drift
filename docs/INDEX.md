@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 308 · символов верхнего уровня: 2852
+Файлов: 310 · символов верхнего уровня: 2865
 
 ## СИМВОЛЫ
 
@@ -63,9 +63,9 @@ aiFace                       src/12d-mgr-face.js:210
 aiLearn                      src/12f-mgr-ai.js:107
 aiStage                      src/12f-mgr-ai.js:19
 aiUpkeep                     src/12f-mgr-ai.js:126
-ALBUM_MAX                    src/25g-postcard.js:496
-albumAll                     src/25g-postcard.js:497
-albumOpen                    src/25g-postcard.js:529
+ALBUM_MAX                    src/25g-postcard.js:578
+albumAll                     src/25g-postcard.js:579
+albumOpen                    src/25g-postcard.js:622
 allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:517
 ambK                         src/19c-light.js:39
@@ -214,7 +214,7 @@ builtKey                     src/21c-built.js:16
 builtSpot                    src/21c-built.js:34
 bWall                        src/21aa-base-rooms.js:187
 bWorker                      src/21aa-base-rooms.js:322
-camBtnTick                   src/25g-postcard.js:518
+camBtnTick                   src/25g-postcard.js:611
 camOffset                    src/19c-light.js:76
 camStep                      src/19c-light.js:62
 canPay                       src/21a-mode-base.js:51
@@ -581,7 +581,7 @@ drawPlant                    src/20-life.js:346
 drawPlantAlien               src/20-life.js:160
 drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
-drawPostcard                 src/25g-postcard.js:101
+drawPostcard                 src/25g-postcard.js:165
 drawRaid                     src/24aa-raid-draw.js:14
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:107
@@ -1668,11 +1668,21 @@ passShipX                    src/11p-pass.js:34
 passTell                     src/11p-pass.js:55
 PAX_KEYS                     src/02-world.js:35
 payCost                      src/21a-mode-base.js:52
-pcA                          src/25g-postcard.js:80
-pcC                          src/25g-postcard.js:77
-pcMix                        src/25g-postcard.js:79
+pcA                          src/25g-postcard.js:144
+pcBelt                       src/25ga-post-scenes.js:418
+pcC                          src/25g-postcard.js:141
+pcCave                       src/25ga-post-scenes.js:106
+pcMan                        src/25ga-post-scenes.js:29
+pcMine                       src/25ga-post-scenes.js:226
+pcMix                        src/25g-postcard.js:143
+pcOre                        src/25ga-post-scenes.js:79
+pcPrint                      src/25g-postcard.js:130
 pcSame                       tests/91zzzi-postcard.js:23
-pcStar                       src/25g-postcard.js:82
+pcScoop                      src/25ga-post-scenes.js:755
+pcShip                       src/25ga-post-scenes.js:383
+pcStar                       src/25g-postcard.js:146
+pcStrata                     src/25ga-post-scenes.js:64
+pcSystem                     src/25ga-post-scenes.js:588
 pcTestPixels                 tests/91zzzi-postcard.js:17
 pcTestPlanet                 tests/91zzzi-postcard.js:2
 pcTestSnap                   tests/91zzzi-postcard.js:12
@@ -1816,11 +1826,12 @@ POST_TR                      src/25g-postcard.js:39
 POST_TR_MAX                  src/25g-postcard.js:40
 POST_V                       src/25g-postcard.js:32
 POST_WHAT                    src/11e-post.js:19
+POST_WHERE                   src/25g-postcard.js:113
 postAddrs                    src/11e-post.js:47
 postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113
-postCanShoot                 src/25g-postcard.js:498
-postCaption                  src/25g-postcard.js:68
+postCanShoot                 src/25g-postcard.js:583
+postCaption                  src/25g-postcard.js:114
 postChoose                   src/25i-post-back.js:48
 postDock                     src/11e-post.js:80
 postForm                     src/25h-post-forms.js:196
@@ -1836,8 +1847,8 @@ postRead                     src/25i-post-back.js:64
 postSetForm                  src/25i-post-back.js:44
 postSign                     src/25i-post-back.js:35
 postSigned                   src/25i-post-back.js:32
-postSnap                     src/25g-postcard.js:57
-postTake                     src/25g-postcard.js:502
+postSnap                     src/25g-postcard.js:65
+postTake                     src/25g-postcard.js:595
 postTerrain                  src/25g-postcard.js:41
 postWorld                    src/25g-postcard.js:49
 prevAct                      src/08-state.js:40
@@ -1861,6 +1872,8 @@ prof                         src/28-loop.js:535
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
+psPlanet                     tests/91zzzu-post-scenes.js:6
+psSnap                       tests/91zzzu-post-scenes.js:17
 ptr                          src/15-input.js:245
 putOnTable                   src/11b-speech.js:208
 QSL_BY                       src/11an-qsl.js:46
@@ -1997,7 +2010,7 @@ relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07-planet.js:374
-renderAlbum                  src/25g-postcard.js:530
+renderAlbum                  src/25g-postcard.js:623
 renderBarge                  src/12l-barge.js:617
 renderBasesTab               src/26a-ui-station-home.js:4
 renderBooks                  src/12ub-books.js:141
@@ -3425,9 +3438,17 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25f-globus.js · 8 КБ
   · «Глобус» — указатель места полёта:1
 
-## src/25g-postcard.js · 34 КБ
+## src/25ga-post-scenes.js · 52 КБ
+  · открытка: пять других мест:1
+  · пещера:91
+  · шахта:210
+  · пояс:409
+  · орбита:580
+  · атмосфера газового гиганта:747
+
+## src/25g-postcard.js · 41 КБ
   · открытка: снимок сцены, а не пиксели:1
-  · камера и альбом:482
+  · камера и альбом:564
 
 ## src/25h-post-forms.js · 18 КБ
   · бланки открытки:1
@@ -3794,12 +3815,12 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzh-told.js · 3 КБ
   · автотесты: ляпнул лишнего:1
 
-## tests/91zzzi-postcard.js · 24 КБ
+## tests/91zzzi-postcard.js · 25 КБ
   · автотесты: открытка — снимок сцены (M188):1
-  · бланки открытки (M189):111
-  · почта: провод (M190):197
-  · ночной эфир (M191):283
-  · вымпел (M196):334
+  · бланки открытки (M189):113
+  · почта: провод (M190):199
+  · ночной эфир (M191):285
+  · вымпел (M196):336
 
 ## tests/91zzzj-winter.js · 6 КБ
   · автотесты: зимовка (M197):1
@@ -3833,5 +3854,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzt-chess.js · 8 КБ
   · автотесты: шахматы по почте (M192):1
+
+## tests/91zzzu-post-scenes.js · 8 КБ
+  · автотесты: открытка в пяти других местах (M208):1
 
 ## tests/99-run.js · 0 КБ

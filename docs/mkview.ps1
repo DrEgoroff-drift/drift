@@ -263,14 +263,21 @@ setTimeout(function(){
     var pa=land("terran");G.mode="surface";
     var pera=CEL_DAY*(6+((pa.seed>>>7)&3));
     G.album=[];
-    for(var q=0;q<6;q++){
+    /* с M208 альбом собирается из ВОСЬМИ мест, а не из двух: стенд обязан
+       показывать ту же пачку, что увидит игрок, иначе он проверяет не то */
+    for(var q=0;q<4;q++){
       G.surf.x=1500+q*2300;G.t=pera*(40+q*0.19);
-      if(q===5){
-        var sv=G.surf;G.land={p:pa,tr:sv.tr,x:sv.tr.W*0.3};
-        G.surf=null;G.mode="landing";postTake();
-        G.surf=sv;G.land=null;G.mode="surface";
-      }else postTake();
+      postTake();
     }
+    var sv=G.surf;
+    G.land={p:pa,tr:sv.tr,x:sv.tr.W*0.3};G.surf=null;G.mode="landing";postTake();
+    G.land=null;G.surf=sv;
+    G.mode="cave";G.cave={x:520,y:140};postTake();
+    G.mode="dig";G.cave=null;G.dig={p:pa,col:4,row:6};postTake();
+    G.mode="belt";G.dig=null;G.belt={yaw:0.7,pitch:0.1};postTake();
+    G.mode="system";G.belt=null;
+    G.ship.x=(pa.x||0)+60;G.ship.y=(pa.y||0)+60;postTake();
+    G.mode="surface";
     run(4,updateSurface,drawSurface);
     tableToggle(true,"album");
     /* оборот (M189): развернуть первую карточку и перевернуть её */

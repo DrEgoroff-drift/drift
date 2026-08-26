@@ -107,7 +107,8 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `25l-post-ether` | the fifth band: night post, present only after nine by the real clock, reading a caught card a line at a time |
 | `25j-post-wire` `25k-post-mail` | the post: a card into a global pool, caught by a stranger, replies routed by the server so neither end ever learns the other; stacks on the table, one request per docking |
 | `25h-post-forms` `25i-post-back` | thirty printed blanks and the card's back: a line is a set of variants, tapping one strikes the others out, and the struck-out ones stay visible; postscript of up to three settlement glyphs, no addressee anywhere |
-| `25g-postcard` | the postcard's own painter: `drawPostcard(c,snap,w,h)` redraws a ~200-byte snapshot of a scene owing nothing to `G`; ФОТО on the console, the album of twelve on the desk |
+| `25g-postcard` | the postcard's own painter: `drawPostcard(c,snap,w,h)` redraws a ~200-byte snapshot of a scene owing nothing to `G`; ФОТО on the console, the album of twelve on the desk. It paints ground and approach itself and dispatches the rest |
+| `25ga-post-scenes` | the other five places a card can come from — cave, mine, belt, orbit, gas-giant air. One light kit passed in as an argument, an object of known size in every frame, and the two underground ones lit from inside |
 | `17b-finds` | four finds in the void: capsule, satellite, container, hulk — the satellite is theirs |
 | `19a-mode-scoop` | scooping volatiles from a gas giant's atmosphere |
 | `21a-mode-base` | the base in cross-section: cell grid, power balance, base network |

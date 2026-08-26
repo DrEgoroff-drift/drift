@@ -7,6 +7,42 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.187.0 — the camera works in five more places (M208)
+
+M188 gave the game a camera and taught it two places: the ground and the approach. That left five
+where the ФОТО button simply never appeared — the cave, the mine, the belt, orbit, and the air of a
+gas giant — which is most of where a player actually stands. The album was twelve slots holding
+twelve variations of the same green hillside.
+
+**The snapshot did not grow.** A card is still a couple of hundred bytes, and `cx`/`cy` mean
+something different per place — the step along a gallery, the cell at a working face, the heading,
+the altitude — rather than a new pair of fields per mode. Terrain is now computed only for the two
+places that draw it: five painters were asking for fifteen hundred points and fifty boulders each
+and throwing them away, twelve times over on every album repaint.
+
+**Five painters in `25ga-post-scenes`, one light between them.** Each gets the star, the night
+count, the ground ramp and the seed as an argument and never makes its own — eight cards lit by
+eight different suns read as eight different games rather than one trip. And every place carries an
+object of known size: the same figure in a suit, timber, a ship's wedge. Without one, a gallery
+could be a burrow or a railway station.
+
+**Two of them are lit from inside.** The cave and the mine are the only places in the game the star
+does not reach, so their frames are built the other way round: the far end is *lighter* than the
+near rock, because the light comes forward from a helmet lamp. That inversion is what makes an
+underground card recognisable at arm's length.
+
+**Four passes, and the first three were wrong in ways only eyes catch.** The cave came out a
+*night landscape with a hill*: the vault sat at the top of the frame and the rock took `T.pal[0]`,
+which on a terran world is the ocean — a blue cave. The mine was a beige field with a gallows in
+it, because the lamp washed the strata flat and every cell got an identical timber frame. Belt rocks
+were soft potatoes (a soft shadow means air, and there is none), then a black paper cut-out. The
+planet was striped like Jupiter with white papercut continents. The gas bands read as rolling
+hills, and the scoop trail was drawn in front of the ship like a searchlight. All of it is written
+down in the module where it happened.
+
+`25ga-post-scenes`, suite `91zzzu-post-scenes`, stand `docs\shot.ps1 scenes`; the album stand now
+builds its pack from all eight places. 8868 assertions in 348 suites.
+---
 ## 0.186.0 — chess by post: a move a day, and still nobody has a name (M192)
 
 The post (M188–M191) carries a photograph and a printed blank; this adds a second thing the same

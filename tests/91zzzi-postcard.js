@@ -62,8 +62,10 @@ TEST_SUITES.push(()=>suite("открытка: камера снимает тол
   resetWorld();
   G.album=[];G.log=[];
   const F=pcTestPlanet();
-  G.mode="system";G.running=true;
-  ok(!postCanShoot(),"в полёте снимать нечего");
+  /* M208 открыл камеру в системе: в полёте есть что снять — планета рядом.
+     А вот на станции нет: оттуда снимок был бы кадром интерфейса */
+  G.mode="dock";G.running=true;
+  ok(!postCanShoot(),"со станции снимать нечего");
   ok(postSnap()===null,"и снимка не выходит");
   ok(postTake()===null,"кнопка ничего не делает");
   /* встали на грунт */

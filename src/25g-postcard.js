@@ -53,25 +53,89 @@ function postWorld(s){
   return {sys,p};
 }
 /* ── снимок ──
-   Только то, чего нельзя вывести. Всё остальное — из семени. */
+   Только то, чего нельзя вывести. Всё остальное — из семени.
+
+   ВОСЕМЬ МЕСТ, А НЕ ДВА (M208). Первый проход умел грунт и заход, и это
+   значило, что в пяти местах из восьми кнопка ФОТО просто не появлялась —
+   камера молчала там, где игрок проводит половину времени. Формат снимка при
+   этом НЕ вырос: `cx`/`cy` в каждом режиме значат своё (шаг по галерее,
+   клетка забоя, курс, высота), а не заведены по паре полей на режим. Двести
+   байт — это условие, а не достижение: снимок ездит по проводу и лежит в
+   сохранении, которое ходит в облако. */
 function postSnap(){
+  const B={v:POST_V,sx:G.sx,sy:G.sy,t:Math.round(G.t),ver:VER};
+  const idx=(p)=>{const moon=p.parentIdx!=null;
+    return {pi:moon?p.parentIdx:p.idx, mi:moon?p.idx:-1};};
+  const M=G.mode;
+  /* пещера: планета берётся с поверхности — в пещеру спускаются с неё, и
+     `G.surf` живёт всё это время (наверх ведь ещё возвращаться) */
+  /* долготы тут нет намеренно: под землёй рельеф за спиной, художник пещеры
+     его не рисует, а поле, которое никто не читает, — это лишние байты в
+     формате, чьё единственное оправдание в том, что он маленький */
+  if(M==="cave"&&G.cave&&G.surf&&G.surf.p)
+    return Object.assign(B,{m:"c"},idx(G.surf.p),
+      {cx:Math.round(G.cave.x),cy:Math.round(G.cave.y),lon:null});
+  if(M==="dig"&&G.dig&&G.dig.p)
+    return Object.assign(B,{m:"d"},idx(G.dig.p),
+      {cx:G.dig.col|0,cy:G.dig.row|0,lon:null});
+  if(M==="belt"&&G.belt)
+    return Object.assign(B,{m:"b",pi:0,mi:-1,lon:null,
+      cx:Math.round((G.belt.yaw||0)*180/Math.PI)%360,
+      cy:Math.round((G.belt.pitch||0)*180/Math.PI)});
+  if(M==="scoop"&&G.scoop&&G.scoop.p)
+    return Object.assign(B,{m:"g"},idx(G.scoop.p),
+      {cx:Math.round(G.scoop.bank*100),
+       cy:Math.round((G.scoop.y/Math.max(1,H))*1000),lon:null});
+  if(M==="system"){
+    /* ближняя планета — та, о которой снимок: кадр в пустоте без тела в нём
+       не место, а обои */
+    const sys=getSystem(G.sx,G.sy), sh=G.ship;
+    let best=null,bd=1e18;
+    for(const q of (sys.planets||[])){
+      const d=Math.hypot((q.x||0)-sh.x,(q.y||0)-sh.y);
+      if(d<bd){bd=d;best=q;}
+    }
+    if(!best)return null;
+    return Object.assign(B,{m:"y"},idx(best),
+      {cx:Math.round(Math.atan2(sh.y-(best.y||0),sh.x-(best.x||0))*180/Math.PI),
+       cy:Math.round(Math.min(999,bd/Math.max(1,best.r||1)*10)),lon:null});
+  }
   const surf=G.surf&&G.surf.p?G.surf:null, land=!surf&&G.land&&G.land.p?G.land:null;
   const st=surf||land;
   if(!st)return null;
-  const p=st.p, moon=p.parentIdx!=null;
-  return {v:POST_V,m:surf?"s":"l",sx:G.sx,sy:G.sy,
-    pi:moon?p.parentIdx:p.idx, mi:moon?p.idx:-1,
-    lon:st.tr?+st.tr.lon.toFixed(3):null,
-    cx:Math.round(st.x||0), t:Math.round(G.t), ver:VER};
+  return Object.assign(B,{m:surf?"s":"l"},idx(st.p),
+    {lon:st.tr?+st.tr.lon.toFixed(3):null, cx:Math.round(st.x||0), cy:0});
 }
-/* подпись под карточкой: место и час, без единого числа из интерфейса */
+/* подпись под карточкой: место и час, без единого числа из интерфейса.
+   Место — это не только имя планеты: снимок из шахты и снимок с гребня над
+   ней приходят с одним именем и разными кадрами, и подпись обязана их
+   различать, иначе альбом из восьми мест читается как восемь видов одного */
+const POST_WHERE={c:"пещера",d:"шахта",b:"пояс",g:"атмосфера",y:"на орбите"};
 function postCaption(s){
   const W0=postWorld(s);
   if(!W0.p)return "";
   const sun=celSun(W0.p,s.t);
   const hour=sun.alt>.45?"полдень":(sun.alt>.08?"день":
     (sun.alt>-.08?(sun.az>0?"закат":"рассвет"):(sun.alt>-.5?"сумерки":"ночь")));
-  return W0.p.name+" · "+hour;
+  const wh=POST_WHERE[s.m];
+  /* под землёй часа не видно, и врать про полдень нельзя */
+  if(s.m==="c"||s.m==="d")return W0.p.name+" · "+wh;
+  return W0.p.name+" · "+(wh?wh+", ":"")+hour;
+}
+/* ── печать ──
+   Виньетка и зерно — ровно столько, чтобы кадр читался напечатанным, а не
+   выведенным на экран: открытку держат в руках. Общая для всех восьми мест
+   и НАМЕРЕННО одинаковая: печать — это то, что делает восемь разных кадров
+   одним альбомом. */
+function pcPrint(c,s,w,h,p){
+  const vg=c.createRadialGradient(w*.5,h*.46,Math.min(w,h)*.30,w*.5,h*.5,Math.max(w,h)*.72);
+  vg.addColorStop(0,"rgba(0,0,0,0)");
+  vg.addColorStop(1,"rgba(0,0,0,.38)");
+  c.fillStyle=vg;c.fillRect(0,0,w,h);
+  const rg=rng(hashi(p.seed,s.cx|0,0x6247));
+  c.globalAlpha=.05;c.fillStyle="#fff";
+  for(let i=0;i<Math.round(w*h/1000);i++)c.fillRect(rg()*w,rg()*h,1,1);
+  c.globalAlpha=1;
 }
 /* ── цвет ── */
 function pcC(a,k){const m=k==null?1:k;
@@ -103,7 +167,11 @@ function drawPostcard(c,s,w,h){
   const W0=postWorld(s), p=W0.p;
   if(!p)return false;
   const T=p.T||TYPES[p.type]||TYPES.rocky;
-  const tr=postTerrain(p,s.lon);
+  /* рельеф нужен только там, где он ВИДЕН: на грунте и на заходе. Пять
+     остальных мест его не рисуют — под землёй он за спиной, в вакууме его
+     нет вовсе, — а считать его значит полторы тысячи точек и полсотни
+     валунов в мусор на каждой перерисовке альбома из двенадцати карточек */
+  const tr=(s.m==="s"||s.m==="l"||!s.m)?postTerrain(p,s.lon):null;
   const sun=celSun(p,s.t);
   const airless=T.atm==="отсутствует";
   const night=clamp(-sun.alt*(airless?1.9:1.5)+.15,0,.62);
@@ -130,6 +198,32 @@ function drawPostcard(c,s,w,h){
   const up=sun.alt>-.08;
   const hy=h*POST_HOR;
   const rs=rng(hashi(p.seed,0x5747,3));
+
+  c.save();
+  c.beginPath();c.rect(0,0,w,h);c.clip();
+
+  /* ── развилка по месту (M208) ──
+     Грунт и заход рисуются ниже, в этой же функции: они были первыми и их
+     слои — образец для всех остальных. Пять других мест живут в 25ga своими
+     художниками. Общее у всех — НАБОР: одна звезда, один счёт ночи, одна
+     палитра грунта, одно зерно. Художник места получает его доводом и не
+     заводит своего света: два источника в одном альбоме — и альбом
+     рассыпается на восемь разных игр.
+
+     Печать (виньетка и зерно) — тоже общая, и она в конце для всех: снимок
+     из шахты держат в руках так же, как снимок с гребня. */
+  if(s.m&&s.m!=="s"&&s.m!=="l"){
+    const K={sys:W0.sys,p,T,sun,airless,night,day,dim,GC,star,sunX,sunY,up,hy,rs,cold};
+    let done=false;
+    if(s.m==="c")done=pcCave(c,s,w,h,K);
+    else if(s.m==="d")done=pcMine(c,s,w,h,K);
+    else if(s.m==="b")done=pcBelt(c,s,w,h,K);
+    else if(s.m==="y")done=pcSystem(c,s,w,h,K);
+    else if(s.m==="g")done=pcScoop(c,s,w,h,K);
+    if(done)pcPrint(c,s,w,h,p);
+    c.restore();
+    return done;
+  }
 
   c.save();
   c.beginPath();c.rect(0,0,w,h);c.clip();
@@ -462,19 +556,7 @@ function drawPostcard(c,s,w,h){
     }
   }
 
-  /* ── 10. отпечаток ──
-     Виньетка и зерно — ровно столько, чтобы кадр читался напечатанным, а не
-     выведенным на экран: открытку держат в руках */
-  {
-    const vg=c.createRadialGradient(w*.5,h*.46,Math.min(w,h)*.30,w*.5,h*.5,Math.max(w,h)*.72);
-    vg.addColorStop(0,"rgba(0,0,0,0)");
-    vg.addColorStop(1,"rgba(0,0,0,.38)");
-    c.fillStyle=vg;c.fillRect(0,0,w,h);
-    const rg=rng(hashi(p.seed,s.cx|0,0x6247));
-    c.globalAlpha=.05;c.fillStyle="#fff";
-    for(let i=0;i<Math.round(w*h/1000);i++)c.fillRect(rg()*w,rg()*h,1,1);
-    c.globalAlpha=1;
-  }
+  pcPrint(c,s,w,h,p);
   c.restore();
   return true;
 }
@@ -495,9 +577,20 @@ function drawPostcard(c,s,w,h){
    делает со снимком время. */
 const ALBUM_MAX=12;
 function albumAll(){if(!Array.isArray(G.album))G.album=[];return G.album;}
+/* Снимать можно там, где снимок читается местом, а не обоями: восемь режимов
+   из M208. Стыковка, ангар, база, стол и налёт кнопки не получают — из них
+   снимок был бы кадром интерфейса, а не мира. */
 function postCanShoot(){
-  return !!(G.running&&((G.mode==="surface"&&G.surf&&G.surf.p)||
-                        (G.mode==="landing"&&G.land&&G.land.p)));
+  if(!G.running)return false;
+  const M=G.mode;
+  if(M==="surface")return !!(G.surf&&G.surf.p);
+  if(M==="landing")return !!(G.land&&G.land.p);
+  if(M==="cave")return !!(G.cave&&G.surf&&G.surf.p);
+  if(M==="dig")return !!(G.dig&&G.dig.p);
+  if(M==="belt")return !!G.belt;
+  if(M==="scoop")return !!(G.scoop&&G.scoop.p);
+  if(M==="system")return !!(getSystem(G.sx,G.sy).planets||[]).length;
+  return false;
 }
 function postTake(){
   const s=postSnap();
