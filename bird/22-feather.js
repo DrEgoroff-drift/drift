@@ -55,10 +55,16 @@ function buildFeather(cols,rows){
    Инстанс: матрица 3×4 (12), цвет (3), настройки (4: чашка, выгиб, t хребта,
    род пера). Строится один раз — поза живёт в вершинной программе. */
 const FEA_STRIDE=19;
-function feaPush(out,p,dir,up,len,wid,col,par){
+function feaPush(out,p,dir,up,len,wid,col,par,roll){
   const Z=vNorm(dir);
   let Y=vNorm(vSub(up,vMul(Z,vDot(up,Z))));
   if(vLen(Y)<1e-4)Y=basisFrom(Z)[1];
+  /* поворот пера вокруг собственной оси: без него пучок перьев лежит в одной
+     плоскости и читается веером из бумаги. Часть перьев обязана стоять ребром */
+  if(roll){
+    const c=Math.cos(roll),s=Math.sin(roll),X0=vCross(Y,Z);
+    Y=vAdd(vMul(Y,c),vMul(X0,s));
+  }
   const X=vCross(Y,Z);
   /* матрица кладётся тремя строками по четыре: столбцы — оси, четвёртое
      число строки — сдвиг. Так в шейдере она читается тремя vec4 */
@@ -138,7 +144,7 @@ function layoutCoat(rows,dens){
          краской, а не оперением. Сдвиг мелкий — породу он не трогает. */
       const wc=(R()-0.5)*0.055;
       feaPush(out,vAdd(base,vMul(p,-0.006)),d2,p,len,wid,
-        [col[0]*cv*(1+wc),col[1]*cv,col[2]*cv*(1-wc)],[1.0,0.5+R()*0.5,t,0.0]);
+        [col[0]*cv*(1+wc),col[1]*cv,col[2]*cv*(1-wc)],[1.0,0.04+R()*0.06,t,0.0]);
     }
   }
   return new Float32Array(out);
@@ -167,7 +173,7 @@ function layoutPlumes(){
       const dir=vSub(tip,base),len=vLen(dir);
       feaPush(out,vAdd(base,vMul(nrm,0.008)),
         vNorm(vAdd(vNorm(dir),vMul(nrm,0.03))),nrm,
-        len,len*0.26,vLerp(BIRD_C.blue,BIRD_C.blueD,0.42+k*0.42),[0.6,0.9,t,1.0]);
+        len,len*0.26,vLerp(BIRD_C.blue,BIRD_C.blueD,0.42+k*0.42),[0.6,0.14,t,1.0]);
     }
     /* второстепенные: короче, выше, дают крылу толщину */
     const NS=9;
@@ -188,7 +194,7 @@ function layoutPlumes(){
       const base=bodyAt(t,a),nrm=normalAt(t,a);
       const dir=vNorm(vAdd(flowAt(t,a),vMul(nrm,0.16)));
       const c=vLerp(BIRD_C.amber,BIRD_C.amberD,0.30+r*0.24+R()*0.22);
-      feaPush(out,base,dir,nrm,0.135-r*0.014,0.100-r*0.008,c,[1.0,0.6,t,0.0]);
+      feaPush(out,base,dir,nrm,0.135-r*0.014,0.100-r*0.008,c,[1.0,0.10,t,0.0]);
     }
   }
   /* хвост: длинный, слоёный, средняя пара длиннее всех.
@@ -204,15 +210,19 @@ function layoutPlumes(){
     /* каждое следующее перо чуть выше предыдущего: стопка, а не плоскость */
     const up=vNorm([k*0.34,1,-0.16]);
     feaPush(out,vAdd(base,vMul(up,0.006*(5-Math.abs(i-5)))),dir,up,
-      len,len*0.16,c,[0.55,0.55,0.05,2.0]);
+      len,len*0.16,c,[0.55,0.10,0.05,2.0]);
   }
-  /* хохол: отведённые назад пёрышки, на конце каждого — бусина (21-parts) */
+  /* хохол: длинные плюмажи широкой дугой. Цвет идёт по вееру — передние
+     янтарные, средние кобальтовые, задние с фиалковым отливом: на листе
+     породы хохол трёхцветный, и именно это делает его хохлом, а не гребнем. */
   for(let i=0;i<CREST_N;i++){
     const q=crestQuill(i);
-    /* пёрышко хохла шире, чем кажется: узкая спица читается проволокой, а
-       бусина на конце — лампочкой на проводе */
-    feaPush(out,q.base,q.dir,normalAt(0.96,Math.PI*1.5),q.len,q.len*0.40,
-      vLerp(BIRD_C.blue,BIRD_C.blueL,0.30+Math.abs(q.k)*0.35),[0.9,1.1,1.0,3.0]);
+    const s=q.s;
+    let c=vLerp(BIRD_C.amber,BIRD_C.blue,smooth(0.05,0.50,s));
+    c=vLerp(c,BIRD_C.viol,smooth(0.55,1.0,s)*0.75);
+    c=vLerp(c,BIRD_C.blueL,Math.abs(q.k)*0.22);
+    feaPush(out,q.base,q.dir,normalAt(0.96,Math.PI*1.5),q.len,q.len*0.22,
+      c,[0.9,0.52+s*0.20,1.0,3.0],(i%3-1)*0.55+((i%2)?0.25:-0.25));
   }
   return new Float32Array(out);
 }

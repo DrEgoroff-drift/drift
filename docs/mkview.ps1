@@ -80,10 +80,16 @@ setTimeout(function(){
       G.hin.cam=G.hin.x;
     }
     for(var f3=0;f3<4;f3++){G.t+=.01;updateHomeIn(1);drawHomeIn();}
-  }else if(scene==="dock"){
+  }else if(scene==="dock"||scene==="board"){
     /* станция: стыкуемся с торговым узлом стартовой системы */
     var st=G.sys.station;
     if(st){G.ship.x=st.x+40;G.ship.y=st.y;openStation();}
+    /* доска — то, ради чего вообще прилетают: очередь у стойки, что здесь
+       предлагают, дела, слухи. Смотреть её надо отдельно от рынка */
+    if(scene==="board"){
+      var bb=document.querySelector("#stTabs button[data-tab=board]");
+      if(bb)bb.click();
+    }
   }else if(scene==="hq"||scene==="hqfull"){
     /* Штаб. По умолчанию — ПУСТОЙ, потому что именно пустым его видит новый
        игрок и именно там плейтестер решил, что «что-то сломал». `hqfull`

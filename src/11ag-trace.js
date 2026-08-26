@@ -162,6 +162,12 @@ function traceLeave(){
   if(typeof say==="function")say("ЗНАК ОСТАВЛЕН · "+M.ru.toUpperCase()+"\n"+RES[g.k].ru+" ×"+g.n,170);
   if(typeof logAdd==="function")logAdd("dim","Оставлен знак — "+M.ru+", под ним "+RES[g.k].ru.toLowerCase()+" ×"+g.n+".");
   if(typeof placeNote==="function")placeNote("care",1);
+  /* ── первая запись в тетради, которой никто не ведёт (11ai) ──
+     Груз, оставленный чужому, который никогда не узнает, что это был ты, —
+     ровно тот поступок, ради которого тетрадь и заведена. Цена настоящая:
+     товар ушёл из трюма по своей цене. Игроку об этом не сообщается ничем. */
+  if(typeof deedAdd==="function")
+    deedAdd("mark",g.n*((RES[g.k]&&RES[g.k].price)||1));
   return true;
 }
 

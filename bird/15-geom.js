@@ -114,3 +114,47 @@ function disc(M,ctr,nrm,r,seg,opt){
   for(let j=0;j<seg;j++)M.tri(ctrI,ring[j],ring[(j+1)%seg]);
   return M;
 }
+
+/* ── ус ──
+   Тонкая изогнутая нить с бусиной на конце — примета породы с листа: это не
+   перо и не проволока, это дуга. Путь — квадратичная кривая, поэтому дуга
+   задаётся одной точкой оттяжки, а не подбором станций.
+
+   МАТЕРИАЛ 10+s: в дробной части материала едет доля вдоль нити (0 у корня,
+   1 на конце). По ней вершинная программа качает ус — своего атрибута под это
+   заводить не пришлось, а качаться должен именно кончик, а не нить целиком. */
+function filament(M,a,ctrl,b,r0,r1,sides,col,rigT){
+  const N=16,path=[];
+  for(let i=0;i<N;i++){
+    const s=i/(N-1),k=1-s;
+    const p=[k*k*a[0]+2*k*s*ctrl[0]+s*s*b[0],
+             k*k*a[1]+2*k*s*ctrl[1]+s*s*b[1],
+             k*k*a[2]+2*k*s*ctrl[2]+s*s*b[2]];
+    path.push({p,r:mix(r0,r1,Math.pow(s,0.7)),m:10+Math.min(0.999,s),s});
+  }
+  const rings=[];
+  let up=[0,1,0];
+  for(let i=0;i<path.length;i++){
+    const st=path[i];
+    const pa=path[Math.max(0,i-1)].p,pb=path[Math.min(path.length-1,i+1)].p;
+    const T=vNorm(vSub(pb,pa));
+    let X=vNorm(vSub(up,vMul(T,vDot(up,T))));
+    if(vLen(X)<1e-4)X=basisFrom(T)[0];
+    const Y=vCross(T,X);up=X;
+    const ring=[];
+    for(let j=0;j<sides;j++){
+      const ang=j/sides*TAU,cx=Math.cos(ang),sy=Math.sin(ang);
+      const p=[st.p[0]+X[0]*cx*st.r+Y[0]*sy*st.r,
+               st.p[1]+X[1]*cx*st.r+Y[1]*sy*st.r,
+               st.p[2]+X[2]*cx*st.r+Y[2]*sy*st.r];
+      const n=vNorm([X[0]*cx+Y[0]*sy,X[1]*cx+Y[1]*sy,X[2]*cx+Y[2]*sy]);
+      ring.push(M.add(p,n,rigT===undefined?1:rigT,st.m,col(st.s)));
+    }
+    rings.push(ring);
+  }
+  for(let i=0;i<rings.length-1;i++)for(let j=0;j<sides;j++){
+    const j1=(j+1)%sides;
+    M.quad(rings[i][j],rings[i][j1],rings[i+1][j1],rings[i+1][j]);
+  }
+  return path[path.length-1].p;
+}

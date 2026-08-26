@@ -7,6 +7,47 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.164.0 — the main quest gets its spine: the offer, the ledger, the door that shuts (M189)
+
+The book («Смена», `docs/saga/`) becomes playable, and this is the part without which none of the
+rest of it works.
+
+**Why this first.** The arc turns exactly one value: *will anyone say your call sign out loud.* In
+a book the prose points at that. In this game there is no quest journal, no marker, no reputation
+bar and there never will be — so the value risked being invisible to the player entirely. That is
+an architectural problem, not a cosmetic one, and it is written up in `docs/saga/СУД.md`, pass I.
+
+The answer is not a UI. It is that **a named offer is visibly better than a cold one** — three
+times, not ten per cent. Then a door closing is felt in the wallet and in the list of what is on
+offer, without one line of interface. The player will never read the words "reputation" or
+"morality". He will notice that he used to be offered good things and is now offered ordinary ones.
+
+- **Возможность** (`11ah-offer`): the world hands out **access, not credits** — a berth, a bay in
+  someone's garage, an institute topic, a name to drop. Always with a face, always with a window
+  that closes. It arrives the way everything here arrives (the counter, the board) and expires
+  **silently**: no countdown, no reminder, not a line in the journal. In the book the expedition
+  list closes on a Friday and nobody tells him.
+- **The door shuts for good.** Miss a *named* offer and that person keeps greeting you exactly as
+  warmly and never names you again. There is no number behind it and no way back — not with time,
+  not with money, not by reloading, because it persists. It is the only irreversible thing in the
+  game, which is precisely why it will carry weight.
+- **Тетрадь доброты** (`11ai-ledger`): everything done for free and without witnesses, written to a
+  place the player can never see. Three guards, all tested: it is never displayed; **it refuses to
+  record a deed that cost nothing** (the price is an argument of the function, so a free good deed
+  cannot be logged); and helping while broke weighs more than helping with a full hold. First two
+  hooks: cargo left at a mark for a stranger (`11ag`), and a barge fought off pirates (`12l`).
+- **The station is not a tap.** Offers are generated once per place per shift. Fly away and come
+  back and you are offered what you were already offered — even if you let it go. Missed is missed.
+
+Caught by the project's own guards while building: income tried to go around `earn()`, and the
+architectural test that funnels all income through it failed immediately. And the first screenshot
+showed a named berth paying 852 credits to a player holding 600 — visible, yes, and it would have
+broken the early curve; the amounts now sit deliberately below a full hold.
+
+Guard: `91zzzf-offer` — the named/cold ratio, the door that shuts and survives a save, the ledger's
+invisibility (it asserts the words are nowhere in the DOM), and the tap that no longer runs.
+
+---
 ## 0.163.1 — the parrot's window moves off the right rail
 
 Looked at on the stand (`?s=birdwin`) right after 0.163.0 gave it its styles back: at the right

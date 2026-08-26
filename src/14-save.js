@@ -67,7 +67,11 @@ function snapshot(){
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,
-    tableSeen:G.tableSeen|0,ts:Date.now()};
+    tableSeen:G.tableSeen|0,
+    /* главный квест: возможности живут недолго, а память людей и тетрадь —
+       навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
+    offers:G.offers,folk:G.folk,ledger:G.ledger,
+    ts:Date.now()};
 }
 function applySave(s){
   if(!s||s.v!==4)return false;
@@ -524,6 +528,12 @@ function applySave(s){
      отметка и заведена. Ставится после восстановления G.things и G.strips. */
   G.tableSeen=(+s.tableSeen)||0;
   if(!G.tableSeen&&typeof tableNoticeAll==="function")tableNoticeAll();
+  /* Главный квест. Возможности — живые и короткие, поэтому валидируются;
+     память людей и тетрадь переносятся как есть, потому что закрытая дверь
+     обязана пережить и загрузку, и время. */
+  G.offers=Array.isArray(s.offers)?s.offers.filter(o=>o&&o.kind&&o.who).slice(-24):[];
+  G.folk=(s.folk&&typeof s.folk==="object")?s.folk:{};
+  G.ledger=(s.ledger&&typeof s.ledger==="object")?s.ledger:{n:0,w:0};
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
   for(const k of RES_KEYS)G.cargo[k]=Math.max(0,(s.cargo&&s.cargo[k])|0);
   const st=stat();

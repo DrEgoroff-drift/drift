@@ -13,6 +13,9 @@ function openStation(){
      обращаются и какая реплика в очереди станет следующей */
   if(typeof visitMark==="function")visitMark();
   if(typeof placeMark==="function")placeMark();   // память места и одометр (11d)
+  /* что здесь сегодня предлагают (11ah): часть предложений — не вам, и это
+     нормально. Именное приходит только от того, кто вас помнит хорошо */
+  if(typeof offerVisit==="function")offerVisit();
   /* почтовый круг (11e): если это следующее звено, человек подходит сам */
   if(typeof postDock==="function"){const pr=postDock();if(pr)say(pr.who+":\n"+pr.line);}
   if(typeof keepersDock==="function"){const kr=keepersDock();if(kr&&kr.line)say("Смотритель:\n"+kr.line);}   /* линия смотрителей (11k) */
@@ -208,6 +211,36 @@ function renderTab(){
         (sp.silent?"<i>смотрит и ничего не говорит</i>":sp.line)+"</s><s>следующая реплика — в следующий заход</s></div>"));
       const tag=G.sys.key+"#"+visitHere();
       if(G.spLogged!==tag&&!sp.silent){G.spLogged=tag;peopleLine(sp.line,G.st.name);}
+    }
+    /* ── возможности (11ah) ──
+       Не задания: у них нет цели, нет маркера и нет напоминания. Это то, что
+       здесь сегодня предлагают, и половина предложений — не тебе.
+       Именное стоит первым и подписано «вам»: разница между «кто рядом» и
+       «вам» — это вся дуга книги, набранная двумя словами. Платит оно втрое,
+       и в этом весь смысл — закрытую дверь игрок почувствует кошельком, а не
+       строкой интерфейса. */
+    if(typeof offerHere==="function"){
+      const oh=offerHere();
+      if(oh.length){
+        oh.sort((a,b)=>b.named-a.named);
+        $body.appendChild(el("div","sec","ЧТО ПРЕДЛАГАЮТ"));
+        for(const o of oh){
+          const K=OFFER_KIND[o.kind];
+          const r=el("div","row");
+          r.appendChild(el("div","nm","<b>"+(o.named?"Вам":K.ru[0].toUpperCase()+K.ru.slice(1))+
+            (o.named?" — "+K.ru:"")+"</b><s>"+K.note+"</s>"));
+          const pay=offerPay(o);
+          if(pay>0)r.appendChild(el("div","qt",pay+"<s>кр</s>"));
+          const b=el("button","act"+(o.named?" gold":""),"ВЗЯТЬ");
+          b.onclick=()=>{
+            const got=offerTake(o);
+            tell("money",K.ru[0].toUpperCase()+K.ru.slice(1)+(got?" · +"+got+" кр":""),
+                 got?"+"+got+" кр":K.ru);
+            renderTab();
+          };
+          r.appendChild(b);$body.appendChild(r);
+        }
+      }
     }
     if(typeof questOpen==="function"){
       const here=questOpen().filter(q=>q.sx===G.sx&&q.sy===G.sy);

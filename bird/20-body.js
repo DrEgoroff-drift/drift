@@ -16,7 +16,10 @@ const BIRD_C={
   cream:sRGB("#fdf7e9"), creamD:sRGB("#ddcbab"),
   amber:sRGB("#f2a03c"), amberD:sRGB("#bc6a1c"),
   viol:sRGB("#7a5ad2"),
-  beak:sRGB("#f0bf78"), beakD:sRGB("#b06f2e"),
+  /* клюв не жёлтый, а костяной: на листе породы это слоновая кость с тёплой
+     тенью, и именно поэтому он не спорит с янтарём хохла */
+  beak:sRGB("#f4e6c6"), beakD:sRGB("#c99f66"), beakTip:sRGB("#8a6234"),
+  mouth:sRGB("#4a2028"), tongue:sRGB("#96545c"),
   foot:sRGB("#b4763f"), footD:sRGB("#6f431f"),
   glow:sRGB("#6ff0ff"),
   eye:sRGB("#120b16"),
@@ -84,8 +87,22 @@ function bodyColor(t,a){
   const cj=(hashf(Math.round(t*120),Math.round(a*18))-0.5)*0.10;
   const ch=smooth(.060,.028,Math.abs(t-.872)+cj*0.35)*smooth(.68,.86,side)*smooth(.46,.32,belly);
   c=vLerp(c,BIRD_C.amber,clamp(ch,0,1));
-  /* темя темнее лба: голова круглая, и без этого она читается шаром */
-  c=vLerp(c,BIRD_C.blueD,smooth(.90,1.0,t)*.5*(1-belly*.4));
+  /* ── ЛИЦО ──
+     Главная примета головы с листа породы: лоб, щёки и горло кремовые, кобальт
+     лежит по темени и затылку. Без маски птица читается синим комком, и никакой
+     клюв этого не спасает. Край маски рвётся тем же шумом, что и грудь. */
+  const frontal=.5+.5*Math.sin(a);
+  const headk=smooth(.79,.87,t);
+  /* маска НЕ должна заходить на темя: там кобальт. Верхняя граница по t жёстче
+     нижней, и фронтальность требуется настоящая, а не «чуть спереди» */
+  const mask=headk*smooth(.52,.78,frontal+jit*0.6)*smooth(.965,.905,t);
+  c=vLerp(c,vLerp(BIRD_C.cream,BIRD_C.creamD,.18),clamp(mask,0,1)*.92);
+  /* бровь: тёмная дуга над глазом. Она делает взгляд, и на листе он есть */
+  const brow=smooth(.042,.006,Math.abs(t-.952))*smooth(.42,.78,side)*smooth(.30,.62,frontal);
+  c=vLerp(c,vLerp(BIRD_C.body,BIRD_C.blueD,.35),clamp(brow,0,1));
+  /* янтарь у основания хохла: тёплая искра на затылке, как на листе */
+  const nape=smooth(.045,.0,Math.abs(t-.955))*smooth(.45,.15,frontal);
+  c=vLerp(c,BIRD_C.amber,clamp(nape,0,1)*.8);
   return c;
 }
 
