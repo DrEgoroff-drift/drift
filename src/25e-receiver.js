@@ -53,7 +53,9 @@ function radioTune(f){
     /* праздник слышно в эфире (M201): чужие голоса, которым от вас ничего не
        надо. Вымпел важнее — он говорит один раз в жизни */
     const HL=(!P&&typeof holEtherLine==="function"&&q>.55&&r()<.45)?holEtherLine():"";
-    text=P?probeSpeak(P):(HL||pick(ETHER,r));
+    /* дальние корреспонденты (M203): редкая удача на ЭФИРе. Услышал — записал */
+    const QL=(!P&&!HL&&typeof qslEtherLine==="function"&&q>.7)?qslEtherLine():"";
+    text=P?probeSpeak(P):(HL||QL||pick(ETHER,r));
   }
   /* на краю диапазона слова выпадают */
   /* ночную почту на краю не глушим второй раз: ethTick уже отдал «шшш», а

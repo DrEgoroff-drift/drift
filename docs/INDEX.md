@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 296 · символов верхнего уровня: 2762
+Файлов: 298 · символов верхнего уровня: 2778
 
 ## СИМВОЛЫ
 
@@ -580,7 +580,7 @@ drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:283
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:263
+drawThingIcon                src/27i-ui-table.js:267
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
 drawTrail                    src/16-flight.js:338
@@ -889,7 +889,7 @@ HIN_UP                       src/29e-home-up.js:20
 hinDrawHole                  src/29e-home-up.js:219
 hinDrawShell                 src/29e-home-up.js:59
 hinDrawStair                 src/29e-home-up.js:175
-hinFigure                    src/29d-home-draw.js:524
+hinFigure                    src/29d-home-draw.js:528
 hinFolkMake                  src/29c-home-in.js:84
 hinFolkTick                  src/29c-home-in.js:115
 hinFrontStuff                src/29d-home-draw.js:236
@@ -1790,6 +1790,21 @@ profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
 ptr                          src/15-input.js:245
 putOnTable                   src/11b-speech.js:208
+QSL_BY                       src/11an-qsl.js:46
+QSL_OPS                      src/11an-qsl.js:24
+QSL_SPREAD                   src/11an-qsl.js:23
+QSL_WAIT                     src/11an-qsl.js:22
+qslAll                       src/11an-qsl.js:47
+qslDraw                      src/11an-qsl.js:116
+qslDrawWall                  src/11an-qsl.js:146
+qslEtherLine                 src/11an-qsl.js:72
+qslGot                       src/11an-qsl.js:55
+qslHear                      src/11an-qsl.js:60
+qslHeard                     src/11an-qsl.js:53
+qslSend                      src/11an-qsl.js:79
+qslSent                      src/11an-qsl.js:54
+qslTick                      src/11an-qsl.js:90
+qslWall                      src/11an-qsl.js:56
 QUEST_MAX                    src/11a-quests.js:15
 questAdd                     src/11a-quests.js:22
 questAll                     src/11a-quests.js:17
@@ -1923,11 +1938,12 @@ renderLoreBoard              src/27h-ui-lore.js:26
 renderMail                   src/25k-post-mail.js:36
 renderOpts                   src/27-ui-ship.js:198
 renderPrices                 src/12aa-need.js:196
+renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
-renderStrips                 src/27i-ui-table.js:203
+renderStrips                 src/27i-ui-table.js:207
 renderTab                    src/26-ui-station.js:206
-renderThings                 src/27i-ui-table.js:234
+renderThings                 src/27i-ui-table.js:238
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -2465,7 +2481,7 @@ tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
 tableNoticeAll               src/27i-ui-table.js:68
 tableRender                  src/27i-ui-table.js:131
-tableRow                     src/27i-ui-table.js:195
+tableRow                     src/27i-ui-table.js:199
 tableSetTab                  src/27i-ui-table.js:101
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:84
@@ -2890,6 +2906,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11am-holiday.js · 11 КБ
   · праздники по настоящему календарю:1
 
+## src/11an-qsl.js · 12 КБ
+  · QSL: стена карточек:1
+
 ## src/11a-quests.js · 6 КБ
   · журнал дел:1
 
@@ -3133,7 +3152,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:61
   · видимое состояние обмена:76
 
-## src/14-save.js · 44 КБ
+## src/14-save.js · 45 КБ
   · сохранение:1
 
 ## src/15-input.js · 24 КБ
@@ -3376,7 +3395,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27i-ui-table.js · 21 КБ
+## src/27i-ui-table.js · 22 КБ
   · стол: одно место для всего, что читают:1
 
 ## src/27j-console.js · 7 КБ
@@ -3707,5 +3726,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzn-books.js · 4 КБ
   · автотесты: книжная полка (M202):1
+
+## tests/91zzzo-qsl.js · 4 КБ
+  · автотесты: QSL-карточки (M203):1
 
 ## tests/99-run.js · 0 КБ

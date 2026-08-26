@@ -917,10 +917,13 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   poems, cookbook, an unfinished novel, a first reader with a child's pencil in the margin. One
   wreck always yields the same book (its seed decides), about one wreck in three has one. Shelf on
   the table, the only number is how many of the forty. No award for completing it.
-- **QSL cards.** Reworked for "no names": the operators are **characters of the game** — winterers,
-  the expedition, far settlements — not living players. Catch a distant one on the receiver, send a
-  card, weeks later the answering card arrives and the wall at home fills up. Entirely offline, and
-  it breaks in the post before real people use it.
+- **QSL cards** — **built (0.181.0, M203).** `11an-qsl`, suite `91zzzo-qsl`. Twenty operators, all
+  of them people of this game — winterers, the expedition, far settlements, a lighthouse, an
+  observatory, a barge, a children's club allowed on the air for five minutes. Catch one by ear on
+  ЭФИР and the callsign is yours: no "note it down" button, because an operator keeps a callsign in
+  his head from having heard it, and the dial is the whole mechanism. Send a card from the table,
+  wait weeks of real time (lazy, like the pennant), the answer goes on the wall at home. No score,
+  no reward: the wall fills up and afterwards shows where you were heard.
 - **The travelling pennant.** Once a quarter the best base gets a banner on the wall and a line in
   the ether. Pure flavour; it does not touch the economy.
 - **The greenhouse.** A bed by the house: seeds of discovered species (the biology register) grow

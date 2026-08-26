@@ -7,6 +7,26 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.181.0 — QSL: the wall of cards (M203)
+
+Reworked for the "no names" rule the whole online part stands on: the operators at the other end
+are **people of this game** — winterers, the expedition, far settlements, a lighthouse, an
+observatory, a barge, a children's radio club that was allowed on the air for five minutes — not
+living players. The whole thing is offline; the server has nothing to do with it.
+
+It works the way it works among radio amateurs. Catch a distant station by ear on the ЭФИР band,
+and the callsign is yours — **there is no "note it down" button**, because a radio operator keeps a
+callsign in his head from the fact of having heard it. The dial is the whole mechanism: whoever
+turns it collects. Send them a card from the table; weeks later the answering card arrives and goes
+on the wall at home.
+
+Real time and lazy about it, like the pennant: a card has a `Date.now()` due date and until then it
+exists nowhere but as a line in the save. A game closed for a month sleeps through nothing and
+simulates nothing.
+
+No score and no reward. The point is that the wall fills up, and afterwards you can see from it
+where you were heard.
+
 ## 0.180.0 — the bookshelf: forty fragments, all of them written by hand (M202)
 
 Books turn up in wreckage — a hulk, a container, a barge that did not make it. What is left of a

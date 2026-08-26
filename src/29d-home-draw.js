@@ -278,6 +278,10 @@ function hinRoomStuff(r,fy,ceil,P){
      масляных пятнах, у жилой части ковёр, у гаража бетон с колеёй. Комната
      узнаётся раньше, чем в ней разглядят вещи (проход M170). */
   const M0=HIN_MAN, rr0=rng(hashi(r.x|0,7,0x40F7));
+  /* стена карточек (M203): заполняется ответами, и по ней видно, где ты был
+     слышен. Висит над диваном в жилой комнате */
+  if(r.key==="living"&&typeof qslDrawWall==="function")
+    qslDrawWall(r.x+r.w*0.10,fy-HIN_MAN*1.62,r.w*0.52,HIN_MAN*0.58);
   /* ёлка в жилой комнате (M201): та же, что в кантине, и в те же дни */
   if(r.key==="living"&&typeof holTreeUp==="function"&&holTreeUp()&&typeof holTree==="function")
     holTree(ctx,r.x+r.w*0.84,fy,HIN_MAN*1.05,"rgba(236,214,150,.5)");
