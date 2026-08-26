@@ -1020,6 +1020,24 @@ body.afoot .ipod{display:none}
   .pcback .pcv{min-height:36px}
 }
 
+/* ── почта: стопки на столе (M190) ── */
+.album.mail{flex-direction:column;align-items:stretch;gap:14px}
+.album.mail .pack{background:rgba(20,15,9,.30);border:1px solid rgba(201,181,142,.14);
+  border-radius:4px;padding:10px 12px 12px}
+.album.mail .pack.open{background:rgba(20,15,9,.44);border-color:rgba(201,181,142,.26)}
+.album.mail .pack.mute{opacity:.55}
+.album.mail .ph{display:flex;align-items:baseline;gap:12px;cursor:pointer;padding-bottom:9px}
+.album.mail .ph b{font-weight:400;color:#d9c9a3;font-size:10px;letter-spacing:.16em}
+.album.mail .ph s{text-decoration:none;color:#a08a63;font-size:10px;letter-spacing:.06em}
+.album.mail .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+.album.mail .row.pick{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(201,181,142,.2)}
+.album.mail .row .none{text-decoration:none;color:#a08a63;font-size:11px;line-height:1.6;max-width:44ch}
+/* чужая карточка держится ровно, своя — с наклоном: в стопке видно, где чей ход */
+.album.mail .card{transform:rotate(-.6deg)}
+.album.mail .card.theirs{transform:rotate(.7deg)}
+.album.mail .card:hover{transform:rotate(0) translateY(-2px)}
+.album.mail .acts{display:flex;gap:10px;padding-top:11px}
+
 </style>
 </head>
 <body>
@@ -1133,6 +1151,7 @@ body.afoot .ipod{display:none}
     <button data-tab="prices">ЦЕНЫ</button>
     <button data-tab="record">КНИЖКА</button>
     <button data-tab="album" style="display:none">АЛЬБОМ</button>
+    <button data-tab="mail" style="display:none">ПОЧТА</button>
     <button data-tab="lore" style="display:none">ОТЧЁТ</button>
   </nav>
   <div class="body" id="tableBody"><div id="loglist"></div><div id="lorelist" style="display:none"></div></div>
@@ -1274,7 +1293,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.172.0";
+const VER="0.173.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -24468,7 +24487,7 @@ function snapshot(){
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
-    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,   /* M154–M195 */
+    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,   /* M154–M195 */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -24926,6 +24945,9 @@ function applySave(s){
   /* альбом — двенадцать снимков сцены по паре сотен байт (M188). Не пиксели:
      иначе сохранение, которое ходит в облако, потяжелело бы на треть мегабайта */
   G.album=Array.isArray(s.album)?s.album.slice(0,ALBUM_MAX):[];
+  /* почта (M190): в сейве только то, что УЖЕ пришло — стопки и номера цепочек.
+     Общая куча живёт на сервере и в сохранение не попадает никогда */
+  G.mail=(s.mail&&typeof s.mail==="object"&&Array.isArray(s.mail.st))?s.mail:null;
   G.trainee=(s.trainee&&typeof s.trainee==="object"&&s.trainee.name)?s.trainee:null;
   G.zoo=(s.zoo&&typeof s.zoo==="object"&&Array.isArray(s.zoo.pen))?s.zoo:null;
   G.concert=(s.concert&&typeof s.concert==="object")?s.concert:null;
@@ -44106,6 +44128,17 @@ function renderAlbum(box){
         if(!albumBack&&!signed&&typeof postSign==="function")postSign(s);
         albumBack=!albumBack;tableRender();};
       row.appendChild(b);
+      /* отправить можно только подписанную: пустая фотография без бланка —
+         это снимок для себя, а не открытка кому-то (M190) */
+      if(signed&&typeof mailOn==="function"&&mailOn()){
+        const sd=document.createElement("button");
+        sd.className="act sm gold";
+        const left=mailLeft();
+        sd.textContent=left>0?"ОТПРАВИТЬ":"СЕГОДНЯ ХВАТИТ";
+        sd.disabled=left<=0;
+        sd.onclick=e=>{e.stopPropagation();mailSend(s,null);};
+        row.appendChild(sd);
+      }
       cell.appendChild(row);
     }
     const cap=document.createElement("s");
@@ -44397,8 +44430,12 @@ function postRead(s){
   const F=postForm(s.f);
   return F.l.map((ln,i)=>ln[0]+" — "+(ln[1+(s.c[i]|0)]||ln[1])).join(" · ");
 }
-/* ── оборот разметкой ── */
-function renderCardBack(host,s,onChange){
+/* ── оборот разметкой ──
+   `ro` — чужая карточка: её читают, а не заполняют. Тогда варианты становятся
+   просто текстом (выбранный обычным, соседи вычеркнутыми), а перелистывание
+   бланка и азбука глифов пропадают вовсе: оставить их «на всякий случай»
+   значило бы предложить править чужое письмо. */
+function renderCardBack(host,s,onChange,ro){
   host.innerHTML="";
   if(!postSigned(s))return;
   const F=postForm(s.f);
@@ -44412,16 +44449,18 @@ function renderCardBack(host,s,onChange){
   const nm=el("b",null,F.ru+(F.no?"":""));
   const kd=el("i",null,POST_KINDS[F.k]?POST_KINDS[F.k].ru:"");
   hd.appendChild(nm);hd.appendChild(kd);
-  const nav=el("div","nav");
-  /* стрелки без слова читаются как «листать карточки», а листают они БЛАНК —
-     и то, что бланков три десятка, иначе не узнать вовсе */
-  nav.appendChild(el("s",null,"бланк"));
-  for(const d of [-1,1]){
-    const b=el("button","flip",d<0?"‹":"›");
-    b.onclick=e=>{e.stopPropagation();postSetForm(s,postFormNext(s.f,d));onChange&&onChange();};
-    nav.appendChild(b);
+  if(!ro){
+    const nav=el("div","nav");
+    /* стрелки без слова читаются как «листать карточки», а листают они БЛАНК —
+       и то, что бланков три десятка, иначе не узнать вовсе */
+    nav.appendChild(el("s",null,"бланк"));
+    for(const d of [-1,1]){
+      const b=el("button","flip",d<0?"‹":"›");
+      b.onclick=e=>{e.stopPropagation();postSetForm(s,postFormNext(s.f,d));onChange&&onChange();};
+      nav.appendChild(b);
+    }
+    hd.appendChild(nav);
   }
-  hd.appendChild(nav);
   back.appendChild(hd);
 
   /* строки: выбранный вариант остаётся, соседи зачёркиваются */
@@ -44434,8 +44473,8 @@ function renderCardBack(host,s,onChange){
       /* класс НЕ «v»: в игре уже есть глобальный `.v` — строка прибора
          (display:grid с колонками 64/88/46), и варианты бланка молча получали
          её сетку, растягиваясь на четверть карточки каждый */
-      const b=el("button","pcv"+(on?" on":" off"),ln[1+vi]);
-      b.onclick=e=>{e.stopPropagation();postChoose(s,li,vi);onChange&&onChange();};
+      const b=el(ro?"span":"button","pcv"+(on?" on":" off"),ln[1+vi]);
+      if(!ro)b.onclick=e=>{e.stopPropagation();postChoose(s,li,vi);onChange&&onChange();};
       vs.appendChild(b);
     }
     row.appendChild(vs);
@@ -44451,14 +44490,16 @@ function renderCardBack(host,s,onChange){
       (s.g&&s.g[i]!=null)?SETTLE_GLYPH[s.g[i]%SETTLE_GLYPH.length]:"·"));
   ps.appendChild(slots);
   back.appendChild(ps);
-  const alph=el("div","alph");
-  for(let gi=0;gi<SETTLE_GLYPH.length;gi++){
-    const on=(s.g||[]).indexOf(gi)>=0;
-    const b=el("button","gl"+(on?" on":""),SETTLE_GLYPH[gi]);
-    b.onclick=e=>{e.stopPropagation();postGlyph(s,gi);onChange&&onChange();};
-    alph.appendChild(b);
+  if(!ro){
+    const alph=el("div","alph");
+    for(let gi=0;gi<SETTLE_GLYPH.length;gi++){
+      const on=(s.g||[]).indexOf(gi)>=0;
+      const b=el("button","gl"+(on?" on":""),SETTLE_GLYPH[gi]);
+      b.onclick=e=>{e.stopPropagation();postGlyph(s,gi);onChange&&onChange();};
+      alph.appendChild(b);
+    }
+    back.appendChild(alph);
   }
-  back.appendChild(alph);
 
   /* ── сторона адреса ──
      На всякой почтовой карточке правая половина оборота — «кому» и «куда», и
@@ -44478,6 +44519,264 @@ function renderCardBack(host,s,onChange){
   back.appendChild(st);
 
   host.appendChild(back);
+}
+
+/* ══════════════ почта: провод ══════════════
+   M190. Карточка (25g, 25h, 25i) уходит в общую кучу и ловится оттуда чужой
+   рукой. Учётной записи не нужно: наружу идёт та же метка пилота, что у следа
+   (11ag) — случайная строка в localStorage, ни на что не годная, кроме счёта
+   «сколько сегодня».
+
+   ЧТО ФИЗИЧЕСКИ ПРОХОДИТ ЧЕРЕЗ ГРАНИЦУ. Номера: бланк, вычеркнутые варианты,
+   глифы приписки и числа снимка сцены. Ни одного напечатанного человеком
+   знака, ни одного имени, ни одного адреса. Поэтому у почты нет и не может
+   быть модерации — разбирать нечего.
+
+   ИМЁН НЕТ И У СЕРВЕРА ДЛЯ ИГРОКА. Он знает, чья карточка лежит в куче, но
+   наружу этого не отдаёт никогда: поймавший видит карточку и номер цепочки,
+   ответ раскладывает сам сервер. Ни одна сторона не может найти другую,
+   позвать её или узнать, что это тот же человек. Замолчал — и тебя нет.
+
+   ОДИН ЗАПРОС НА СТЫКОВКУ (правило M171). Игра не опрашивает сервер по
+   таймеру и не держит соединение: раз пристыковались — один поход, который
+   разом забирает ответы и, если повезло, приносит чужую карточку.
+
+   ОФЛАЙН ЭТОЙ ЗАТЕИ НЕТ ВОВСЕ, и интерфейс о ней не заикается: открытый с
+   рабочего стола файл — это игра без почты, а не игра со сломанной почтой.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Ошибки сети — молча. Кадр не ждёт ответа никогда.
+   2. В сохранении лежит только то, что уже пришло: стопки и номера цепочек.
+      Куча живёт на сервере и в сейв не попадает. */
+const MAIL_STACK_MAX=8;     /* стопок на столе */
+const MAIL_CARDS_MAX=12;    /* карточек в одной стопке */
+function mailAll(){
+  if(!G.mail||typeof G.mail!=="object")G.mail={st:[],day:"",sent:0,seen:0};
+  if(!Array.isArray(G.mail.st))G.mail.st=[];
+  return G.mail;
+}
+function mailOn(){
+  return typeof location!=="undefined"&&location.protocol.indexOf("http")===0&&
+         typeof traceId==="function"&&!!traceId();
+}
+function mailToday(){const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+function mailLeft(){
+  const M=mailAll(),t=mailToday();
+  if(M.day!==t){M.day=t;M.sent=0;}
+  return Math.max(0,3-(M.sent|0));
+}
+let mailBusy=0;
+function mailCall(op,body){
+  if(!mailOn())return Promise.resolve(null);
+  const b=Object.assign({op:op,id:traceId()},body||{});
+  return fetch(CLOUD.api+"?a=post",{method:"POST",body:JSON.stringify(b)})
+    .then(r=>r.json()).catch(()=>null);
+}
+/* карточка на провод: только те поля, которые сервер и так проверит. Лишнее
+   не отсекается «на всякий случай» — его тут просто неоткуда взять */
+function mailWire(s){
+  /* `v` едет вместе со всем: без него художник открытки отказывается рисовать
+     первой же строкой (`!s.v` — «снимок не читается»), и своя отправленная
+     карточка ложилась в стопку чёрным прямоугольником. Сервер эту единицу
+     всё равно ставит сам, но карточка живёт и до сервера, и после него */
+  return {v:POST_V,m:s.m,sx:s.sx|0,sy:s.sy|0,pi:s.pi|0,mi:s.mi==null?-1:s.mi|0,
+    lon:(s.lon==null?null:+s.lon),cx:s.cx|0,t:s.t|0,ver:String(s.ver||VER),
+    f:String(s.f||""),c:(s.c||[]).map(x=>x|0),g:(s.g||[]).map(x=>x|0)};
+}
+/* ── стопки ──
+   Цепочка — это стопка карточек, скреплённая на столе. Своя карточка и чужая
+   лежат в ней вперемешку, по времени, и корреспондента узнают не по имени
+   (его нет), а по тому, КАК ОН ВЫЧЁРКИВАЕТ. */
+function mailStack(ch){
+  const M=mailAll();
+  let st=M.st.find(x=>x.ch===ch);
+  if(!st){
+    st={ch:ch,c:[],t:Date.now(),mute:0};
+    M.st.unshift(st);
+    while(M.st.length>MAIL_STACK_MAX)M.st.pop();
+  }
+  return st;
+}
+function mailPush(ch,card,mine){
+  const st=mailStack(ch);
+  card.mine=mine?1:0;card.at=Date.now();
+  st.c.push(card);
+  while(st.c.length>MAIL_CARDS_MAX)st.c.shift();
+  st.t=Date.now();
+  if(!mine)st.fresh=1;
+  return st;
+}
+/* ── отправить ──
+   Своя карточка либо заводит новую цепочку (легла в кучу), либо отвечает в
+   уже заведённую. Разница для игрока одна: у ответа есть кому дойти. */
+function mailSend(s,ch){
+  if(!mailOn()||!postSigned(s))return Promise.resolve(false);
+  if(mailLeft()<=0){tell("dim","Три карточки в сутки — и хватит","ТРИ КАРТОЧКИ В СУТКИ");return Promise.resolve(false);}
+  const M=mailAll();
+  return mailCall(ch?"reply":"put",{card:mailWire(s),ch:ch||undefined}).then(j=>{
+    if(!j||!j.ok){
+      if(j&&j.reason)logAdd("dim","Почта: "+j.reason);
+      return false;
+    }
+    M.sent=(M.sent|0)+1;
+    const id=ch||String(j.ch||"");
+    if(id)mailPush(id,Object.assign({},mailWire(s)),true);
+    sfx("ui",{f:900,to:1500,d:.07,v:.18});
+    logAdd("good","Карточка ушла"+(ch?" в ответ":" в общую почту")+" · "+postCaption(s));
+    tell("good","Карточка ушла"+(ch?" в ответ":""),"ОТПРАВЛЕНО\n"+postCaption(s).toUpperCase());
+    if(tableOpenNow)tableRender();
+    return true;
+  });
+}
+/* ── стыковка: один поход ──
+   Забирает ответы и заодно тянет из кучи чужую карточку. С M191 ловля уедет
+   в вечерний эфир и станет событием, а не побочным делом стыковки. */
+function mailDock(){
+  if(!mailOn())return;
+  const now=Date.now();
+  if(now-mailBusy<45000)return;
+  mailBusy=now;
+  mailCall("in").then(j=>{
+    if(j&&j.ok&&j.in&&j.in.length){
+      for(const r of j.in)if(r&&r.card&&r.ch)mailPush(String(r.ch),r.card,false);
+      logAdd("good","Ответ на карточку"+(j.in.length>1?" ×"+j.in.length:""));
+      tell("good","Пришёл ответ на карточку","ПРИШЁЛ ОТВЕТ\nстопка на столе");
+      if(tableOpenNow)tableRender();
+    }
+    return mailCall("ask");
+  }).then(j=>{
+    if(!j||!j.ok||!j.card||!j.ch)return;
+    mailPush(String(j.ch),j.card,false);
+    mailAll().seen=(mailAll().seen|0)+1;
+    logAdd("ether","Из общей почты выпала чужая карточка");
+    tell("good","Чужая карточка","ЧУЖАЯ КАРТОЧКА\nиз общей почты\nстопка на столе");
+    if(tableOpenNow)tableRender();
+  });
+}
+/* «не принимать»: единственная кнопка про человека. Цепочка умирает, тому
+   концу не сообщается ничего — его карточки просто перестают доходить */
+function mailMute(st){
+  if(!st)return;
+  st.mute=1;
+  mailCall("mute",{ch:st.ch});
+  logAdd("dim","Стопка закрыта: больше с этого конца ничего не придёт");
+  if(tableOpenNow)tableRender();
+}
+function mailDrop(st){
+  const M=mailAll(),i=M.st.indexOf(st);
+  if(i>=0)M.st.splice(i,1);
+  if(tableOpenNow)tableRender();
+}
+function mailFresh(){return mailAll().st.filter(s=>s.fresh).length;}
+
+/* ══════════════ почта на столе ══════════════
+   M190. Стопка карточек, скреплённая скрепкой, — вот и вся «переписка». Имени
+   у корреспондента нет и не будет; узнают его по тому, КАК ОН ВЫЧЁРКИВАЕТ и
+   что фотографирует. Своя карточка и чужая лежат в стопке вперемешку, по
+   времени, чтобы разговор читался разговором.
+
+   ОДНА КНОПКА ПРО ЧЕЛОВЕКА — «не принимать». Не жалоба, не блок-лист, не
+   объяснение: цепочка просто умирает, и на том конце об этом не сообщается
+   ничего. Так это и бывает, когда перестают писать.
+
+   ОТВЕТ — ЭТО ТОЖЕ КАРТОЧКА, а не строка: чтобы ответить, нужен свой снимок,
+   подписанный бланком. Поэтому «ОТВЕТИТЬ» показывает подписанные карточки из
+   альбома, а не поле ввода, которого в этой игре нет нигде.
+
+   ЗАКЛАДКА ЖИВЁТ, ПОКА ЖИВА ПОЧТА: офлайн её нет вовсе, и ни одна строка
+   интерфейса о почте не заикается — открытый с рабочего стола файл это игра
+   без почты, а не игра со сломанной почтой. */
+let mailOpen=-1,mailPick=-1,mailBack=-1;
+function mailCard(box,s,w,ro,onTap){
+  const cell=document.createElement("div");
+  cell.className="card"+(ro?" theirs":"");
+  const h=Math.round(w*.625);
+  const cv=document.createElement("canvas");
+  cv.width=Math.round(w*2);cv.height=Math.round(h*2);
+  cv.style.width=w+"px";cv.style.height=h+"px";
+  const cc=cv.getContext("2d");cc.scale(2,2);
+  if(!drawPostcard(cc,s,w,h)){cc.fillStyle="#12161d";cc.fillRect(0,0,w,h);}
+  cell.appendChild(cv);
+  const cap=document.createElement("s");
+  cap.textContent=(ro?"":"ваша · ")+postCaption(s);
+  cell.appendChild(cap);
+  if(onTap)cell.onclick=e=>{e.stopPropagation();onTap();};
+  box.appendChild(cell);
+  return cell;
+}
+function renderMail(box){
+  box.innerHTML="";
+  const M=mailAll();
+  if(!mailOn()){
+    /* Офлайн почты не существует. Сказать «почта недоступна» значило бы
+       пообещать её — поэтому закладка сюда просто не пускает */
+    tableRow(box,"dim","","здесь ничего нет");
+    return;
+  }
+  if(!M.st.length){
+    tableRow(box,"dim","","почта пуста: подпишите снимок в альбоме и отправьте — карточку поймает кто-нибудь");
+    tableRow(box,"dim","","чужие карточки и ответы приходят при стыковке, по одной за раз");
+    return;
+  }
+  const wrap=document.createElement("div");wrap.className="album mail";
+  M.st.forEach((st,i)=>{
+    const open=(mailOpen===i);
+    const pack=document.createElement("div");
+    pack.className="pack"+(open?" open":"")+(st.mute?" mute":"");
+    /* шапка стопки: сколько карточек и чья последняя. Ни имени, ни числа,
+       по которому человека можно было бы искать */
+    const hd=document.createElement("div");hd.className="ph";
+    const last=st.c[st.c.length-1];
+    hd.innerHTML="<b>СТОПКА · "+st.c.length+"</b><s>"+
+      (st.mute?"закрыта":(st.fresh?"пришло новое":(last&&last.mine?"ждём ответа":"ваш ход")))+"</s>";
+    hd.onclick=()=>{mailOpen=open?-1:i;mailPick=-1;mailBack=-1;st.fresh=0;tableRender();};
+    pack.appendChild(hd);
+
+    const row=document.createElement("div");row.className="row";
+    const list=open?st.c:st.c.slice(-3);
+    list.forEach((c,ci)=>{
+      const gi=open?ci:st.c.length-list.length+ci;
+      const showBack=open&&mailBack===gi;
+      if(showBack&&typeof renderCardBack==="function"){
+        const host=document.createElement("div");
+        host.className="card side";host.style.width="228px";host.style.minHeight="143px";
+        renderCardBack(host,c,null,true);
+        host.onclick=e=>{e.stopPropagation();mailBack=-1;tableRender();};
+        row.appendChild(host);
+      }else{
+        mailCard(row,c,open?228:150,!c.mine,open?()=>{mailBack=gi;tableRender();}:null);
+      }
+    });
+    pack.appendChild(row);
+
+    if(open&&!st.mute){
+      const acts=document.createElement("div");acts.className="acts";
+      const rep=document.createElement("button");
+      rep.className="act sm gold";rep.textContent=mailPick===i?"НЕ ОТВЕЧАТЬ":"ОТВЕТИТЬ";
+      rep.onclick=e=>{e.stopPropagation();mailPick=(mailPick===i?-1:i);tableRender();};
+      acts.appendChild(rep);
+      const mu=document.createElement("button");
+      mu.className="act sm";mu.textContent="НЕ ПРИНИМАТЬ";
+      mu.onclick=e=>{e.stopPropagation();mailMute(st);};
+      acts.appendChild(mu);
+      pack.appendChild(acts);
+
+      if(mailPick===i){
+        const mine=albumAll().filter(a=>postSigned(a));
+        const pick=document.createElement("div");pick.className="row pick";
+        if(!mine.length){
+          const n=document.createElement("s");
+          n.className="none";
+          n.textContent="в альбоме нет подписанной карточки: закладка АЛЬБОМ, развернуть снимок, ПОДПИСАТЬ";
+          pick.appendChild(n);
+        }else for(const a of mine)
+          mailCard(pick,a,150,false,()=>{mailSend(a,st.ch);mailPick=-1;});
+        pack.appendChild(pick);
+      }
+    }
+    wrap.appendChild(pack);
+  });
+  box.appendChild(wrap);
 }
 
 /* ══════════════ станция: вкладка «дом и базы» ══════════════ */
@@ -44926,6 +45225,9 @@ function openStation(){
   /* трепло (12x): у прилавка оно слышит цены, а иногда выдаёт то, что слышало
      у вас. Обе стороны одной птицы, и обе — на стыковке */
   if(typeof parrotDock==="function")parrotDock(G.sys);
+  /* почта (M190): ОДИН поход наружу на стыковку — забрать ответы и, если
+     повезло, поймать чужую карточку. Ни таймера, ни опроса (правило M171) */
+  if(typeof mailDock==="function")mailDock();
   /* счётчик посадок на это место (11b-speech): от него зависит, как к вам
      обращаются и какая реплика в очереди станет следующей */
   if(typeof visitMark==="function")visitMark();
@@ -48964,6 +49266,10 @@ function tableRender(){
     /* альбом заводится с первым снимком: пустая закладка обещает содержимое,
        которого нет, и на телефоне отнимает место у тех, где что-то лежит */
     if(b.dataset.tab==="album")b.style.display=(typeof albumAll==="function"&&albumAll().length)?"":"none";
+    /* почта появляется, когда она есть: офлайн её нет вовсе, и пустая закладка
+       обещала бы то, чего в этой сборке не бывает (M190) */
+    if(b.dataset.tab==="mail")b.style.display=
+      (typeof mailOn==="function"&&mailOn()&&(mailAll().st.length||albumAll().length))?"":"none";
     /* счётчик новостей на самой закладке: огонёк привёл к столу, закладка
        говорит, на какую полку смотреть. Подпись не переписываем — у неё своя
        ширина, и прыгающие вкладки читаются браком. */
@@ -48979,7 +49285,8 @@ function tableRender(){
              deeds:"дела · что вы должны",strips:"ленты · оторванные полосы самописца",things:"вещи · письма, находки, бумаги",
              hold:"трюм · груз, разложенный по кучам",
              prices:"цены · как их видели, по станциям",record:"трудовая книжка · записи чужими руками",
-             album:"альбом · снимки мест, где вы стояли",lore:"отчёт «Долгого хода»"};
+             album:"альбом · снимки мест, где вы стояли",
+             mail:"почта · стопки карточек, скреплённые скрепкой",lore:"отчёт «Долгого хода»"};
   if(sub)sub.textContent=SUB[tableTab]||"";
   if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
   if(wh){const mr=modeRu();
@@ -48991,7 +49298,7 @@ function tableRender(){
      вещи — предметы: письмо, накладная, вырезка, полоса самописца, — и лист
      под ними был бы ошибкой: бумага на бумаге не читается. */
   box.classList.toggle("desk",tableTab==="things"||tableTab==="strips"||tableTab==="hold"||
-    tableTab==="album");
+    tableTab==="album"||tableTab==="mail");
   if(tableTab==="ether"||tableTab==="bort"||tableTab==="folk")renderLog(tableTab);
   else if(tableTab==="deeds")renderDeeds();
   else if(tableTab==="strips")renderStrips(box);
@@ -49002,6 +49309,7 @@ function tableRender(){
   else if(tableTab==="prices"&&typeof renderPrices==="function")renderPrices(box);
   else if(tableTab==="record"&&typeof renderRecord==="function")renderRecord(box);
   else if(tableTab==="album"&&typeof renderAlbum==="function")renderAlbum(box);
+  else if(tableTab==="mail"&&typeof renderMail==="function")renderMail(box);
   else if(tableTab==="lore"&&typeof renderLoreBoard==="function")renderLoreBoard();
 }
 function tableRow(box,cls,em,text){

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 280 · символов верхнего уровня: 2618
+Файлов: 282 · символов верхнего уровня: 2637
 
 ## СИМВОЛЫ
 
@@ -24,7 +24,7 @@ $menu                        src/15-input.js:180
 $msg                         src/28-loop.js:44
 $msl                         src/28-loop.js:47
 $nav                         src/28-loop.js:46
-$opts                        src/26-ui-station.js:652
+$opts                        src/26-ui-station.js:655
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:43
 $sh                          src/28-loop.js:24
@@ -301,7 +301,7 @@ CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
 closeBarge                   src/12l-barge.js:592
-closeStation                 src/26-ui-station.js:104
+closeStation                 src/26-ui-station.js:107
 CLOUD                        src/14-save.js:5
 CLOUD_KEYS                   src/02a-worldmix.js:80
 CLOUD_KIND                   src/19e-clouds.js:35
@@ -571,7 +571,7 @@ drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:283
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:248
+drawThingIcon                src/27i-ui-table.js:254
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
 drawTrail                    src/16-flight.js:338
@@ -589,7 +589,7 @@ dustTable                    src/16a-space.js:145
 earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
-el                           src/26-ui-station.js:137
+el                           src/26-ui-station.js:140
 endPtr                       src/15-input.js:263
 engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
@@ -1219,6 +1219,24 @@ loyBar                       src/27c-ui-hq.js:17
 loyWord                      src/27c-ui-hq.js:13
 luckLine                     src/27b-ui-crew.js:15
 luxPal                       src/03c-hull-luxe.js:16
+MAIL_CARDS_MAX               src/25j-post-wire.js:29
+MAIL_STACK_MAX               src/25j-post-wire.js:28
+mailAll                      src/25j-post-wire.js:30
+mailBusy                     src/25j-post-wire.js:45
+mailCall                     src/25j-post-wire.js:46
+mailCard                     src/25k-post-mail.js:19
+mailDock                     src/25j-post-wire.js:111
+mailDrop                     src/25j-post-wire.js:142
+mailFresh                    src/25j-post-wire.js:147
+mailLeft                     src/25j-post-wire.js:40
+mailMute                     src/25j-post-wire.js:135
+mailOn                       src/25j-post-wire.js:35
+mailOpen                     src/25k-post-mail.js:18
+mailPush                     src/25j-post-wire.js:77
+mailSend                     src/25j-post-wire.js:89
+mailStack                    src/25j-post-wire.js:67
+mailToday                    src/25j-post-wire.js:39
+mailWire                     src/25j-post-wire.js:54
 MAIN_CTX                     src/08-state.js:4
 makeIR                       src/10-music.js:109
 makePhrase                   src/10-music.js:344
@@ -1837,22 +1855,23 @@ renderAlbum                  src/25g-postcard.js:530
 renderBarge                  src/12l-barge.js:617
 renderBasesTab               src/26a-ui-station-home.js:4
 renderCantina                src/27c-ui-hq.js:45
-renderCardBack               src/25i-post-back.js:70
+renderCardBack               src/25i-post-back.js:74
 renderDeeds                  src/11-log.js:92
 renderHold                   src/27j-ui-hold.js:176
 renderLog                    src/11-log.js:71
 renderLoreBoard              src/27h-ui-lore.js:26
+renderMail                   src/25k-post-mail.js:36
 renderOpts                   src/27-ui-ship.js:198
 renderPrices                 src/12aa-need.js:196
 renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
-renderStrips                 src/27i-ui-table.js:188
-renderTab                    src/26-ui-station.js:201
-renderThings                 src/27i-ui-table.js:219
+renderStrips                 src/27i-ui-table.js:194
+renderTab                    src/26-ui-station.js:204
+renderThings                 src/27i-ui-table.js:225
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
-repairCost                   src/26-ui-station.js:100
+repairCost                   src/26-ui-station.js:103
 repAt                        src/12k-rep.js:27
 repFuelMul                   src/12k-rep.js:52
 repHireMul                   src/12k-rep.js:54
@@ -1867,7 +1886,7 @@ RES_AUTO                     src/08-state.js:35
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:399
 resEma                       src/28-loop.js:398
-resetArm                     src/26-ui-station.js:651
+resetArm                     src/26-ui-station.js:654
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:29
@@ -2141,9 +2160,9 @@ SHIFT_TALK                   src/03f-hull-role.js:63
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:160
+shipRow                      src/26-ui-station.js:163
 SHIPS                        src/03-ships.js:2
-shipThumb                    src/26-ui-station.js:147
+shipThumb                    src/26-ui-station.js:150
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:211
 shipZoneR                    src/19f-lander.js:14
@@ -2226,7 +2245,7 @@ speechHere                   src/11b-speech.js:115
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
 ST_GOLD                      src/17c-system-draw.js:117
-ST_GROUPS                    src/26-ui-station.js:59
+ST_GROUPS                    src/26-ui-station.js:62
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:8
 STAR_CLASS                   src/02-world.js:94
@@ -2252,8 +2271,8 @@ stCore                       src/17c-system-draw.js:128
 stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:75
 stGet                        src/14-save.js:8
-stGroup                      src/26-ui-station.js:68
-stGroupOf                    src/26-ui-station.js:67
+stGroup                      src/26-ui-station.js:71
+stGroupOf                    src/26-ui-station.js:70
 stopEngine                   src/09-audio.js:269
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
@@ -2315,7 +2334,7 @@ stTabFuse                    src/26b-ui-station-work.js:200
 stTabInstr                   src/26b-ui-station-work.js:108
 stTabLab                     src/26b-ui-station-work.js:175
 stTabMods                    src/26b-ui-station-work.js:12
-stTabsHere                   src/26-ui-station.js:69
+stTabsHere                   src/26-ui-station.js:72
 stTypeOf                     src/06-galaxy.js:27
 subdivide                    src/24-mode-belt.js:34
 suite                        tests/90-harness.js:15
@@ -2338,7 +2357,7 @@ svMode                       src/27-ui-ship.js:45
 svRender                     src/27-ui-ship.js:46
 svReturn                     src/27-ui-ship.js:6
 svSlot                       src/27-ui-ship.js:4
-syncTabs                     src/26-ui-station.js:70
+syncTabs                     src/26-ui-station.js:73
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
 SYS_EXOTIC                   src/16a-space.js:14
@@ -2359,7 +2378,7 @@ tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
 tableNoticeAll               src/27i-ui-table.js:68
 tableRender                  src/27i-ui-table.js:131
-tableRow                     src/27i-ui-table.js:180
+tableRow                     src/27i-ui-table.js:186
 tableSetTab                  src/27i-ui-table.js:101
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:84
@@ -3180,15 +3199,21 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25i-post-back.js · 9 КБ
   · оборот карточки:1
 
+## src/25j-post-wire.js · 8 КБ
+  · почта: провод:1
+
+## src/25k-post-mail.js · 6 КБ
+  · почта на столе:1
+
 ## src/26a-ui-station-home.js · 12 КБ
   · станция: вкладка «дом и базы»:1
 
 ## src/26b-ui-station-work.js · 15 КБ
   · станция: мастерская и наука:1
 
-## src/26-ui-station.js · 42 КБ
+## src/26-ui-station.js · 43 КБ
   · станция:1
-  · настройки:650
+  · настройки:653
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -3211,7 +3236,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27i-ui-table.js · 20 КБ
+## src/27i-ui-table.js · 21 КБ
   · стол: одно место для всего, что читают:1
 
 ## src/27j-console.js · 7 КБ
@@ -3509,8 +3534,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzh-told.js · 3 КБ
   · автотесты: ляпнул лишнего:1
 
-## tests/91zzzi-postcard.js · 12 КБ
+## tests/91zzzi-postcard.js · 17 КБ
   · автотесты: открытка — снимок сцены (M188):1
   · бланки открытки (M189):111
+  · почта: провод (M190):197
 
 ## tests/99-run.js · 0 КБ

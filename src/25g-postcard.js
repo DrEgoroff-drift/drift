@@ -568,6 +568,17 @@ function renderAlbum(box){
         if(!albumBack&&!signed&&typeof postSign==="function")postSign(s);
         albumBack=!albumBack;tableRender();};
       row.appendChild(b);
+      /* отправить можно только подписанную: пустая фотография без бланка —
+         это снимок для себя, а не открытка кому-то (M190) */
+      if(signed&&typeof mailOn==="function"&&mailOn()){
+        const sd=document.createElement("button");
+        sd.className="act sm gold";
+        const left=mailLeft();
+        sd.textContent=left>0?"ОТПРАВИТЬ":"СЕГОДНЯ ХВАТИТ";
+        sd.disabled=left<=0;
+        sd.onclick=e=>{e.stopPropagation();mailSend(s,null);};
+        row.appendChild(sd);
+      }
       cell.appendChild(row);
     }
     const cap=document.createElement("s");

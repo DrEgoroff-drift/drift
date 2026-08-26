@@ -1005,3 +1005,21 @@ body.afoot .ipod{display:none}
   .pcback .gl{min-width:36px;min-height:36px}
   .pcback .pcv{min-height:36px}
 }
+
+/* ── почта: стопки на столе (M190) ── */
+.album.mail{flex-direction:column;align-items:stretch;gap:14px}
+.album.mail .pack{background:rgba(20,15,9,.30);border:1px solid rgba(201,181,142,.14);
+  border-radius:4px;padding:10px 12px 12px}
+.album.mail .pack.open{background:rgba(20,15,9,.44);border-color:rgba(201,181,142,.26)}
+.album.mail .pack.mute{opacity:.55}
+.album.mail .ph{display:flex;align-items:baseline;gap:12px;cursor:pointer;padding-bottom:9px}
+.album.mail .ph b{font-weight:400;color:#d9c9a3;font-size:10px;letter-spacing:.16em}
+.album.mail .ph s{text-decoration:none;color:#a08a63;font-size:10px;letter-spacing:.06em}
+.album.mail .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+.album.mail .row.pick{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(201,181,142,.2)}
+.album.mail .row .none{text-decoration:none;color:#a08a63;font-size:11px;line-height:1.6;max-width:44ch}
+/* чужая карточка держится ровно, своя — с наклоном: в стопке видно, где чей ход */
+.album.mail .card{transform:rotate(-.6deg)}
+.album.mail .card.theirs{transform:rotate(.7deg)}
+.album.mail .card:hover{transform:rotate(0) translateY(-2px)}
+.album.mail .acts{display:flex;gap:10px;padding-top:11px}

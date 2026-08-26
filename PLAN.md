@@ -791,9 +791,25 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
 
   **Still open:** a hundred blanks over later passes (thirty are in); and the card cannot be sent
   anywhere yet — that is M190.
-- **M190 — the post.** `api.php a=post`: the card goes to the pool; a reply travels back down the
-  chain anonymously. Three a day, thirty days of life, TTL sweep, one request per docking (the M171
-  rule). Offline the feature does not exist and the interface never mentions it.
+- **M190 — the post** — **built (0.173.0).** `a=post` in `api.php`, `25j-post-wire` and
+  `25k-post-mail` on the client, suite `91zzzi-postcard`, stand `pageshot view -Q "?s=mail"`.
+  The card goes to the pool; a reply travels back down the chain anonymously. Three a day, two
+  caught, thirty days of life, a sweeper on the clock, one request per docking (the M171 rule).
+  Offline the feature does not exist and the interface never mentions it.
+
+  The card is rebuilt field by field ON THE SERVER — every number range-checked, anything
+  unexpected rejected rather than trimmed — so "nothing typed crosses" is enforced rather than
+  trusted from the client. The sender's mark never leaves the server; the reply is routed there.
+  «Не принимать» kills the chain and tells the other end nothing.
+
+  Also landed here, and it should have landed years ago: **`php -l site/api.php` on the runner
+  before the upload step.** There is no PHP on this machine, so the one file the whole backend
+  lives in had been going to the live site unparsed, and the existing smoke check only notices
+  after it is up. New risks written into `docs/DESIGN-online-risks.md` D2 — the pool is global, so
+  a flooder pushes cards in front of everyone rather than in front of one place.
+
+  **Still open:** catching happens on the docking trip; M191 moves it into the evening ether and
+  gives it its own presentation.
 - **M191 — the night ether.** An evening window in which the receiver reads cards out of the pool
   in their printed lines; one or two can be caught per evening, and a caught card lands on the
   table with a reply open. No notification needed at that hour — the ether *is* the notification.

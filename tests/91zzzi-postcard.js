@@ -194,3 +194,89 @@ TEST_SUITES.push(()=>suite("бланк: приписка — до трёх гл�
   ok(typeof postRead(albumAll()[0])==="string","неизвестный бланк читается запасным");
   G.mode="system";G.surf=null;
 }));
+/* ══════════════ почта: провод (M190) ══════════════ */
+TEST_SUITES.push(()=>suite("почта: по проводу идут только числа, и офлайн её нет",()=>{
+  resetWorld();
+  G.album=[];G.mail=null;
+  const F=pcTestPlanet();
+  const tr=genTerrain(F.p,null);
+  G.sx=F.s.sx;G.sy=F.s.sy;G.sys=F.s;
+  G.mode="surface";G.surf={p:F.p,tr,x:tr.W*.5};
+  const s=postSign(postTake());
+  postChoose(s,0,2);postGlyph(s,5);postGlyph(s,9);
+  const w=mailWire(s);
+  const raw=JSON.stringify(w);
+  ok(raw.length<280,"карточка на проводе — четверть килобайта ("+raw.length+")");
+  ok(drawPostcard(document.createElement("canvas").getContext("2d"),w,40,25),
+     "и её можно нарисовать: то, что уехало, получатель увидит");
+  ok(!/[а-яё]/i.test(raw.replace(/"ver":"[^"]*"/,"")),"ни одной русской буквы: "+raw.slice(0,90));
+  ok(!("mine" in w)&&!("at" in w)&&!("seen" in w),"домашние пометки наружу не едут");
+  /* поля — ровно те, что разбирает сервер */
+  const need=["v","m","sx","sy","pi","mi","lon","cx","t","ver","f","c","g"];
+  for(const k of need)ok(k in w,"поле «"+k+"» на месте");
+  eq(Object.keys(w).length,need.length,"и ничего сверх них");
+  ok(w.c.every(x=>Number.isInteger(x)),"вычёркивания — числа");
+  ok(w.g.every(x=>Number.isInteger(x)),"глифы — числа");
+  /* офлайн: в тестах страница открыта файлом, и почты не существует */
+  if(location.protocol.indexOf("http")!==0)ok(!mailOn(),"с файла почты нет вовсе");
+  G.mode="system";G.surf=null;
+}));
+TEST_SUITES.push(()=>suite("почта: стопка — это цепочка, и она переживает сохранение",()=>{
+  resetWorld();
+  G.mail=null;G.album=[];
+  const F=pcTestPlanet();
+  const tr=genTerrain(F.p,null);
+  G.sx=F.s.sx;G.sy=F.s.sy;G.sys=F.s;
+  G.mode="surface";G.surf={p:F.p,tr,x:tr.W*.5};
+  const mine=mailWire(postSign(postTake()));
+  const theirs=Object.assign({},mine,{cx:mine.cx+5000,f:postFormNext(mine.f,1)});
+  mailPush("aabbccddeeff",mine,true);
+  mailPush("aabbccddeeff",theirs,false);
+  const M=mailAll();
+  eq(M.st.length,1,"одна цепочка — одна стопка");
+  eq(M.st[0].c.length,2,"в ней две карточки");
+  eq(M.st[0].c[0].mine,1,"своя помечена своей");
+  eq(M.st[0].c[1].mine,0,"чужая — чужой");
+  ok(M.st[0].fresh===1,"пришедшее подсвечено");
+  eq(mailFresh(),1,"и сосчитано");
+  /* вторая цепочка — вторая стопка, и стопок не больше восьми */
+  for(let i=0;i<MAIL_STACK_MAX+3;i++)mailPush("ff00"+("0000000"+i).slice(-8),theirs,false);
+  eq(mailAll().st.length,MAIL_STACK_MAX,"стопок на столе не больше восьми");
+  /* и карточек в стопке не больше двенадцати */
+  const ch="121212121212";
+  for(let i=0;i<MAIL_CARDS_MAX+5;i++)mailPush(ch,Object.assign({},mine,{cx:i*11}),i%2===0);
+  const st=mailAll().st.find(x=>x.ch===ch);
+  eq(st.c.length,MAIL_CARDS_MAX,"в стопке не больше двенадцати");
+  eq(st.c[st.c.length-1].cx,(MAIL_CARDS_MAX+4)*11,"последняя — самая свежая");
+  /* дневная граница */
+  mailAll().day=mailToday();mailAll().sent=3;
+  eq(mailLeft(),0,"три карточки в сутки — и всё");
+  mailAll().day="вчера";
+  eq(mailLeft(),3,"назавтра снова три");
+  /* сохранение */
+  const before=JSON.stringify(mailAll().st);
+  const snap=snapshot();G.mail=null;applySave(JSON.parse(JSON.stringify(snap)));
+  eq(JSON.stringify(mailAll().st),before,"стопки пережили сохранение");
+  const old=snapshot();delete old.mail;
+  applySave(JSON.parse(JSON.stringify(old)));
+  eq(mailAll().st.length,0,"сохранение без почты — пустой стол, а не падение");
+  G.mode="system";G.surf=null;
+}));
+TEST_SUITES.push(()=>suite("почта: два семейства с приставкой post не затирают друг друга",()=>{
+  /* 11e-post (почтовый круг, M133) и 25g/25h/25i (открытка, M188–M189) обе
+     зовутся post*, и склейка идёт в один общий разбор имён: та, что ниже по
+     номеру файла, молча переопределила бы первую. Проверка — не педантизм:
+     обе живые, и обе на столе */
+  const circle=["postAll","postItem","postAddrs","postLinkHere","postDock","postOpen",
+                "postHolding","postBlock"];
+  const card=["postSnap","postCaption","postTake","postWorld","postTerrain","postCanShoot",
+              "postSign","postSigned","postSetForm","postChoose","postGlyph","postRead",
+              "postForm","postFormFor","postFormNext"];
+  for(const n of circle)ok(typeof window[n]==="function","почтовый круг цел: "+n);
+  for(const n of card)ok(typeof window[n]==="function","открытка цела: "+n);
+  for(const n of card)ok(circle.indexOf(n)<0,"имена не пересекаются: "+n);
+  /* и почтовый круг всё ещё работает своим состоянием, а не альбомом */
+  resetWorld();
+  ok(postAll()===G.post,"postAll() — это по-прежнему круг (G.post)");
+  ok(Array.isArray(albumAll()),"а альбом — свой (G.album)");
+}));

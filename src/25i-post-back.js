@@ -66,8 +66,12 @@ function postRead(s){
   const F=postForm(s.f);
   return F.l.map((ln,i)=>ln[0]+" — "+(ln[1+(s.c[i]|0)]||ln[1])).join(" · ");
 }
-/* ── оборот разметкой ── */
-function renderCardBack(host,s,onChange){
+/* ── оборот разметкой ──
+   `ro` — чужая карточка: её читают, а не заполняют. Тогда варианты становятся
+   просто текстом (выбранный обычным, соседи вычеркнутыми), а перелистывание
+   бланка и азбука глифов пропадают вовсе: оставить их «на всякий случай»
+   значило бы предложить править чужое письмо. */
+function renderCardBack(host,s,onChange,ro){
   host.innerHTML="";
   if(!postSigned(s))return;
   const F=postForm(s.f);
@@ -81,16 +85,18 @@ function renderCardBack(host,s,onChange){
   const nm=el("b",null,F.ru+(F.no?"":""));
   const kd=el("i",null,POST_KINDS[F.k]?POST_KINDS[F.k].ru:"");
   hd.appendChild(nm);hd.appendChild(kd);
-  const nav=el("div","nav");
-  /* стрелки без слова читаются как «листать карточки», а листают они БЛАНК —
-     и то, что бланков три десятка, иначе не узнать вовсе */
-  nav.appendChild(el("s",null,"бланк"));
-  for(const d of [-1,1]){
-    const b=el("button","flip",d<0?"‹":"›");
-    b.onclick=e=>{e.stopPropagation();postSetForm(s,postFormNext(s.f,d));onChange&&onChange();};
-    nav.appendChild(b);
+  if(!ro){
+    const nav=el("div","nav");
+    /* стрелки без слова читаются как «листать карточки», а листают они БЛАНК —
+       и то, что бланков три десятка, иначе не узнать вовсе */
+    nav.appendChild(el("s",null,"бланк"));
+    for(const d of [-1,1]){
+      const b=el("button","flip",d<0?"‹":"›");
+      b.onclick=e=>{e.stopPropagation();postSetForm(s,postFormNext(s.f,d));onChange&&onChange();};
+      nav.appendChild(b);
+    }
+    hd.appendChild(nav);
   }
-  hd.appendChild(nav);
   back.appendChild(hd);
 
   /* строки: выбранный вариант остаётся, соседи зачёркиваются */
@@ -103,8 +109,8 @@ function renderCardBack(host,s,onChange){
       /* класс НЕ «v»: в игре уже есть глобальный `.v` — строка прибора
          (display:grid с колонками 64/88/46), и варианты бланка молча получали
          её сетку, растягиваясь на четверть карточки каждый */
-      const b=el("button","pcv"+(on?" on":" off"),ln[1+vi]);
-      b.onclick=e=>{e.stopPropagation();postChoose(s,li,vi);onChange&&onChange();};
+      const b=el(ro?"span":"button","pcv"+(on?" on":" off"),ln[1+vi]);
+      if(!ro)b.onclick=e=>{e.stopPropagation();postChoose(s,li,vi);onChange&&onChange();};
       vs.appendChild(b);
     }
     row.appendChild(vs);
@@ -120,14 +126,16 @@ function renderCardBack(host,s,onChange){
       (s.g&&s.g[i]!=null)?SETTLE_GLYPH[s.g[i]%SETTLE_GLYPH.length]:"·"));
   ps.appendChild(slots);
   back.appendChild(ps);
-  const alph=el("div","alph");
-  for(let gi=0;gi<SETTLE_GLYPH.length;gi++){
-    const on=(s.g||[]).indexOf(gi)>=0;
-    const b=el("button","gl"+(on?" on":""),SETTLE_GLYPH[gi]);
-    b.onclick=e=>{e.stopPropagation();postGlyph(s,gi);onChange&&onChange();};
-    alph.appendChild(b);
+  if(!ro){
+    const alph=el("div","alph");
+    for(let gi=0;gi<SETTLE_GLYPH.length;gi++){
+      const on=(s.g||[]).indexOf(gi)>=0;
+      const b=el("button","gl"+(on?" on":""),SETTLE_GLYPH[gi]);
+      b.onclick=e=>{e.stopPropagation();postGlyph(s,gi);onChange&&onChange();};
+      alph.appendChild(b);
+    }
+    back.appendChild(alph);
   }
-  back.appendChild(alph);
 
   /* ── сторона адреса ──
      На всякой почтовой карточке правая половина оборота — «кому» и «куда», и

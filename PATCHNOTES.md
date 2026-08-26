@@ -7,6 +7,49 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.173.0 — the post: a card goes into the pool and a stranger catches it (M190)
+
+The pipe under the postcard. `a=post` in `api.php`, `25j-post-wire` on the client, and a ПОЧТА tab
+on the table where chains lie as stacks of cards clipped together.
+
+**No account, and no names anywhere.** The pilot mark is the one the trace already uses — a random
+string in `localStorage`, good for nothing but counting "how many today". The server knows whose
+card is in the pool and never says: the catcher gets the card and a chain id, and the reply is
+routed by the server itself. Neither side can find the other, call the other, or recognise the
+other across chains. Go quiet and you are gone for good.
+
+**Nothing typed crosses, and that is enforced on the server rather than trusted from the client.**
+The card is rebuilt field by field — every number range-checked, the blank matched against
+`[a-z0-9]{1,8}`, at most eight choices 0..7 and three glyphs 0..31 — and anything unexpected is
+rejected instead of trimmed. That is why the whole feature needs no moderation: there is no channel
+for a person's words, not even a narrow one.
+
+**One request per docking** (the M171 rule). No timer, no poll, no socket: you dock, the game goes
+out once, and that one trip brings back replies and — if the pool had something — one stranger's
+card. Three cards a day out, two caught, a second fence per IP, thirty days of life, a sweeper on
+the clock rather than on a dice roll.
+
+**One button about a person: «не принимать».** Not a report, not a block list, not an explanation.
+The chain dies and the other end is told nothing at all, which is what happens when people stop
+writing.
+
+Offline the feature does not exist and the interface never mentions it: a file opened from the
+desktop is a game without a post, not a game with a broken one.
+
+Two things fixed before they shipped:
+
+- `mailWire` dropped `v`, the marker `drawPostcard` checks on its first line, so a card you sent
+  landed in your own stack as a black rectangle.
+- and, before that, the deploy: **there is no PHP on this machine**, so the one file the whole
+  backend lives in had been going to the live site without ever being parsed. `php -l site/api.php`
+  now runs on the runner before the upload step. A typo there is not a page that looks wrong — it
+  is accounts and cloud saves down for real people.
+
+The risk register has a new section (`docs/DESIGN-online-risks.md`, D2): the pool is global, so a
+flooder pushes their cards in front of everyone rather than in front of one place; the daily limit
+is self-asserted like the trace's, and the per-IP fence is what actually holds. Stands:
+`pageshot view -Q "?s=mail"`.
+
 ## 0.172.0 — the forms: a postcard you can send without typing a word (M189)
 
 The back of a card is a **printed blank**: a title and lines, each line a set of ready variants.

@@ -175,6 +175,24 @@ setTimeout(function(){
     G.cargo.organics=5;G.cargo.isotopes=1;G.cargo.volatiles=4;G.cargo.missile=3;
     G.cargo.folk=2;G.cargo.alloy=6;
     tableToggle(true,"hold");
+  }else if(scene==="mail"){
+    /* почта (M190): две стопки — в одной ждём ответа, в другой пришло чужое.
+       Сервер тут не нужен: раскладку проверяем на карточках, положенных в
+       стопки теми же mailPush, какими их кладёт настоящий ответ */
+    var pm=land("terran");G.mode="surface";
+    var perm=CEL_DAY*(6+((pm.seed>>>7)&3));
+    G.album=[];G.mail=null;
+    for(var z=0;z<3;z++){G.surf.x=1800+z*2600;G.t=perm*(40+z*0.21);postTake();}
+    albumAll().forEach(function(a){postSign(a);});
+    postChoose(albumAll()[0],1,2);postGlyph(albumAll()[0],4);postGlyph(albumAll()[0],17);
+    var w0=mailWire(albumAll()[0]), w1=mailWire(albumAll()[1]), w2=mailWire(albumAll()[2]);
+    mailPush("a1b2c3d4e5f6",w0,true);
+    mailPush("a1b2c3d4e5f6",w1,false);
+    mailPush("a1b2c3d4e5f6",w2,true);
+    mailPush("0f0e0d0c0b0a",w1,false);
+    mailOpen=0;
+    run(4,updateSurface,drawSurface);
+    tableToggle(true,"mail");
   }else if(scene==="album"||scene==="pcback"){
     /* альбом (M188): шесть снимков одного мира — разные места и часы. Кадры
        рисует художник открытки, а не игра, поэтому стенд показывает ровно то,

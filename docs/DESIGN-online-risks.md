@@ -147,6 +147,36 @@ key cannot poison the game), and the server validates shape (`m` 0..31, `n` 1..5
 scarce, spam becomes expensive, and it costs one `need()` in `api.php`;
 (c) keep it anonymous but bind the daily limit to the IP as well as the id.
 
+### D2. The post (M190) — the second shared feature, and the same identity problem
+
+`a=post` puts a postcard into a **global** pool and hands it to a stranger. It inherits the trace's
+weakness and adds a couple of its own. Written down before anyone finds them the hard way:
+
+- **The daily limit is self-asserted again.** Three cards a day is counted per `traceId`, and a
+  cleared `localStorage` key buys three more. The second fence is per-IP (`rateHit('post',40)`),
+  which is what actually stops a script; a human never sees it.
+- **The pool is global, not per place.** A flooder does not push out one place's gifts, they push
+  their own cards in front of everyone in the game. Mitigated by three-a-day and by a hard cap of
+  4000 files, past which `put` refuses — so the worst case is a boring pool, not a dead disk.
+  Whether that is enough is a product decision of the same shape as D's: an account for `put`
+  would make identity scarce and cost one `need()`.
+- **A harvester can drain the pool.** `ask` is two a day per id and rate-limited per IP, and a
+  caught card *leaves* the pool — so a bot with fresh ids can empty it. The cost of that is other
+  players catching nothing, which is the same class of harm as D's harvester.
+- **Nothing typed crosses, and this is enforced on the server, not only in the client.** The card
+  is rebuilt field by field (`$card`), every number is range-checked, `f` matches `[a-z0-9]{1,8}`,
+  `c` is at most eight values 0..7 and `g` at most three 0..31. Anything unexpected is rejected
+  rather than trimmed. This is why the feature needs no moderation at all: there is no channel for
+  a person's words, not even a narrow one.
+- **The two ends never learn each other.** The sender's mark is stored in the pool entry and never
+  leaves the server; the catcher gets the card and a chain id, and the reply is routed by the
+  server. Neither side can find, call, or recognise the other across chains. «Не принимать» kills
+  the chain and tells the other end nothing.
+- **What a nosy operator could still do.** Anyone with the data directory can see which mark posted
+  which card and which two marks share a chain. Marks are not accounts and are not tied to a login,
+  so this is a graph of anonymous ids — but it is worth knowing it exists, and it is the reason the
+  pool entry is deleted on catch instead of being kept "for statistics".
+
 ---
 
 ## E. Infrastructure — the part that takes the whole site down
