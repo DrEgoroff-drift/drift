@@ -7,6 +7,47 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.167.0 — «Глобус»: прибор, который показывает место, а не число (M192)
+
+The book's central object, and it was not invented: real ships carried a navigation indicator
+called «Глобус» (ИМП, later ИНК) — an electromechanical analogue computer of gears, cams and
+differentials, two ratchet solenoids, twenty-seven volts, one pulse a second, turning an actual
+globe behind glass. It answered exactly two questions: where you are, and **where you would come
+down if you braked right now**.
+
+Nothing better could be designed for this game, so nothing was. It **does not speak** — the world's
+rule for instruments (25a) holds: no beep, no alarm colour, no line in the journal; it shows, and
+the player notices. It is mechanical, so the fourth layer of wear settles on it by itself. And it is
+the theme cast in brass: for the whole game a device stands in front of the pilot answering, once a
+second, «and where would I end up if I dropped all this now» — and half the time it points at empty
+space.
+
+It lives in the cockpit rack, right of the recorder, deliberately not in the row of dials: it is a
+different kind of instrument and it has a different shape. A ray is marched along the current
+velocity to the first body it meets; planets travel their orbits while the ray flies straight, so
+the instrument lies exactly as much as an iron one would — it answers "if NOW", not "if you go
+there".
+
+**No sound.** The book has it clicking, and a click once a second for a whole flight is not
+character, it is an irritant; the instruments-don't-speak rule beats the pretty detail. The tick was
+made visible instead: the globe turns by a hair in a jerk once a second rather than gliding.
+
+One design error found by looking at the frame: the second needle, "where you would land", always
+lay exactly on the first — for a straight ray the bearing to the target *is* the heading. It is now
+a range marker that creeps along the heading line from the axis to the rim as the target gets
+further, and there is no marker at all when there is nothing ahead.
+
+Two tooling traps paid for on the way: the stand kept setting the ship's velocity by hand and the
+game loop kept damping it away, so the screenshot showed an instrument that had nothing to point
+at — it now flies on a real autopilot. And a `perl -0pi` rewrite of `mkview.ps1` stripped the file's
+BOM and moved the inserted block to the top; restored from git and reinserted by line number.
+The BOM rule in `CLAUDE.md` exists for exactly this.
+
+Guards: `91zzzg-globus` — the aim over twenty-four headings must only ever name bodies that really
+exist in that system; the once-a-second rule; and a source-level check that the module contains no
+`say`, `tell`, `logAdd` or `sfx`. Stand: `docs/mkview.ps1 ?s=rack`.
+
+---
 ## 0.166.0 — an offer becomes a job, and the clock was measured in the wrong unit (M191)
 
 **A button that pays you is not work.** Offers used to credit you the moment you clicked ВЗЯТЬ,

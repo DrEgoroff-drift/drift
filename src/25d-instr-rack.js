@@ -69,8 +69,14 @@ function rackGeo(){
   const w=Math.min(W*.94,1180), h=Math.min(H*.66,470);
   const x=(W-w)/2, y=Math.min(14,H*.03);
   const gh=Math.round(h*.40);                 // верхняя секция: стрелки
+  /* Справа от самописца — круглое окно «Глобуса» (25f): он не стрелка в общем
+     ряду, он показывает МЕСТО, и потому стоит отдельно и своей формой. */
+  const recH=h-gh-10-RACK_PAD;
+  const gRad=Math.max(26,Math.min(recH*.42,88));
+  const gBox=gRad*2+34;
   return {x,y,w,h,gh,
-          rec:{x:RACK_PAD,y:gh+10,w:w-RACK_PAD*2,h:h-gh-10-RACK_PAD}};
+          rec:{x:RACK_PAD,y:gh+10,w:w-RACK_PAD*2-gBox,h:recH},
+          glob:{cx:w-RACK_PAD-gBox/2+6,cy:gh+10+recH*.44,r:gRad}};
 }
 /* ── материалы ──
    Всё дорогое — металл, циферблаты, деления, сетка бумаги — печётся один раз в
@@ -463,5 +469,12 @@ function rackDraw(){
   ctx.fillStyle=lg;ctx.beginPath();ctx.arc(lx,ly,7,0,TAU);ctx.fill();
   ctx.fillStyle="rgba(255,214,150,.95)";
   ctx.beginPath();ctx.arc(lx,ly,2.2,0,TAU);ctx.fill();
+
+  /* ── «Глобус» (25f) ──
+     Единственный прибор стойки, который показывает не число, а место: где ты и
+     где окажешься, если затормозить прямо сейчас. Стоит отдельно от ряда
+     стрелок нарочно — он другого рода. */
+  if(g0.glob&&typeof globusDraw==="function")
+    globusDraw(ctx,g0.glob.cx,g0.glob.cy,g0.glob.r);
   ctx.restore();
 }

@@ -93,6 +93,7 @@ function drawFeathers(P,VP){
   gl.useProgram(P.p);bindPose(P);
   if(VP)glSet(P,"uVP",VP);else bindLight(P);
   gl.disable(gl.CULL_FACE);          /* перо видно с обеих сторон */
+  if(MESH.down)glDraw(MESH.down);
   glDraw(MESH.coat);
   glDraw(MESH.plumes);
   gl.enable(gl.CULL_FACE);

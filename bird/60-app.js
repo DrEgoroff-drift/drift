@@ -55,7 +55,10 @@ function birdBoot(){
   const IA=[["r0",4,0],["r1",4,4],["r2",4,8],["icol",3,12],["ipar",4,15]];
   MESH.coat  =glMesh(buildFeather(QUAL.coatMesh[0],QUAL.coatMesh[1]));
   glInstances(MESH.coat,layoutCoat(QUAL.rows,QUAL.dens),IA,FEA_STRIDE);
-  MESH.plumes=glMesh(buildFeather(7,11));
+  /* подпушь: вдвое гуще и вдвое мельче, кладётся ПОД пластины */
+  MESH.down  =glMesh(buildFeather(5,7));
+  glInstances(MESH.down,layoutCoat(Math.round(QUAL.rows*1.7),Math.round(QUAL.dens*1.8),0.52,0x51f7),IA,FEA_STRIDE);
+  MESH.plumes=glMesh(buildFeather(7,13,true));
   glInstances(MESH.plumes,layoutPlumes(),IA,FEA_STRIDE);
   renderInit();
   if(GL_ERR.length){fail("Шейдеры не собрались:\n\n"+GL_ERR.join("\n\n"));return;}

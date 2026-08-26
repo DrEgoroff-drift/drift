@@ -156,6 +156,17 @@ setTimeout(function(){
       }
       for(var f5=0;f5<8;f5++){G.t+=.02;updateRaid(1);drawRaid();}
     }
+  }else if(scene==="rack"){
+    /* Приборная стойка кабины: восемь стрелок, самописец и «Глобус» (25f).
+       Скорость подкручивать бесполезно — игровой цикл гасит её сопротивлением,
+       и на снимке расчётная точка честно пропадала: стенд врал про исправный
+       прибор. Даём настоящий автопилот, и корабль действительно летит. */
+    G.mode="system";
+    var pl=G.sys.planets[0];
+    if(pl)G.ap={kind:"planet",p:pl,phase:"fly"};
+    G.rack=G.rack||{};G.rack.on=1;
+    for(var f7=0;f7<40;f7++){G.t+=.02;updateSystem(1);drawSystem();}
+    if(typeof rackDraw==="function")rackDraw();
   }else if(scene==="hold"){
     G.mode="system";
     for(var f4=0;f4<2;f4++){G.t+=.02;drawSystem();}

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 271 · символов верхнего уровня: 2544
+Файлов: 273 · символов верхнего уровня: 2550
 
 ## СИМВОЛЫ
 
@@ -756,6 +756,12 @@ GIANT                        src/19a-mode-scoop.js:86
 GIANT_KEEP                   src/19a-mode-scoop.js:87
 giantTex                     src/19a-mode-scoop.js:88
 glassOutline                 src/25-cockpit.js:54
+GLOB                         src/25f-globus.js:44
+GLOB_STEP                    src/25f-globus.js:43
+globusAim                    src/25f-globus.js:49
+globusDraw                   src/25f-globus.js:81
+globusSys                    tests/91zzzg-globus.js:7
+globusTick                   src/25f-globus.js:70
 GLOW_CACHE                   src/16a-space.js:274
 GLOW_SP                      src/16a-space.js:273
 GLOW_TIERS                   src/11i-glow.js:121
@@ -1698,16 +1704,16 @@ RACK                         src/25d-instr-rack.js:54
 RACK_CH                      src/25d-instr-rack.js:27
 RACK_G                       src/25d-instr-rack.js:36
 RACK_PAD                     src/25d-instr-rack.js:25
-rackDial                     src/25d-instr-rack.js:99
-rackDraw                     src/25d-instr-rack.js:317
+rackDial                     src/25d-instr-rack.js:105
+rackDraw                     src/25d-instr-rack.js:323
 rackGeo                      src/25d-instr-rack.js:68
-rackGlass                    src/25d-instr-rack.js:145
-rackGrain                    src/25d-instr-rack.js:88
+rackGlass                    src/25d-instr-rack.js:151
+rackGrain                    src/25d-instr-rack.js:94
 rackOpen                     src/25d-instr-rack.js:55
-rackPaperBox                 src/25d-instr-rack.js:278
-rackRoller                   src/25d-instr-rack.js:284
-rackScrew                    src/25d-instr-rack.js:78
-rackTex                      src/25d-instr-rack.js:162
+rackPaperBox                 src/25d-instr-rack.js:284
+rackRoller                   src/25d-instr-rack.js:290
+rackScrew                    src/25d-instr-rack.js:84
+rackTex                      src/25d-instr-rack.js:168
 rackToggle                   src/25d-instr-rack.js:56
 RADIO_BANDS                  src/25e-receiver.js:13
 radioBand                    src/25e-receiver.js:19
@@ -3081,11 +3087,14 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25-cockpit.js · 34 КБ
   · кабина: процедурная, статика в offscreen:1
 
-## src/25d-instr-rack.js · 25 КБ
+## src/25d-instr-rack.js · 26 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
 ## src/25e-receiver.js · 3 КБ
   · приёмник: частота крутится рукой:1
+
+## src/25f-globus.js · 8 КБ
+  · «Глобус» — указатель места полёта:1
 
 ## src/26a-ui-station-home.js · 12 КБ
   · станция: вкладка «дом и базы»:1
@@ -3406,6 +3415,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzf-offer.js · 12 КБ
   · автотесты: возможность и тетрадь:1
+
+## tests/91zzzg-globus.js · 4 КБ
+  · автотесты: «Глобус»:1
 
 ## tests/91zzz-home-in.js · 5 КБ
 
