@@ -146,9 +146,15 @@ function layoutCoat(rows,dens,scale,seed,downy){
         const d=Math.hypot(base[0]-b[0],base[1]-b[1],base[2]-b[2]);
         if(d<b[3]){bare=true;break;}
       }
+      /* ВОКРУГ ГЛАЗА ПЛАСТИН НЕТ ВОВСЕ. Пластина лежит по потоку — назад, — и
+         та, что растёт перед глазом, накрывает его кончиком: при срезе в 86 мм
+         глаз просто зарастал. Но и широкий срез не годится, он и был тем
+         гладким блином. Поэтому пластины убраны из всего кольца, а кольцо
+         отдано розетке (ниже): её перья смотрят ОТ глаза и закрыть его не
+         могут. Подпушь мельче и мягче, ей хватает узкого среза. */
       if(!bare)for(const sx of [-1,1]){
         const d=Math.hypot(base[0]-sx*0.252,base[1]-1.758,base[2]-0.108);
-        if(d<0.120){bare=true;break;}
+        if(d<(downy?0.100:0.150)){bare=true;break;}
       }
       if(bare){COAT_STAT.cut++;continue;}
       COAT_STAT.all++; if(base[1]>1.60)COAT_STAT.head++;
@@ -242,6 +248,44 @@ function layoutCoat(rows,dens,scale,seed,downy){
       const top=bodyAt(0.999,a),pt=normalAt(0.999,a);
       feaPush(out,top,vNorm([Math.cos(a)*0.50,0.30,-0.86+Math.sin(a)*0.24]),pt,
         0.215,0.150,bodyColor(0.99,a),[1.0,0.05,1.0,0.0]);
+    }
+  }
+  /* ── РОЗЕТКА ВОКРУГ ГЛАЗА ──
+     Оперение обрывалось ровным кругом, и вокруг глаза стояло гладкое пятно
+     кожи с жёсткой кромкой — то самое «некрасиво вокруг глаза». У птицы там
+     не срез: перья идут ОТ глаза лучами и мельчают к самому веку, а кромки
+     не видно вовсе, потому что её закрывают кончики.
+     Кладётся по тем же (t,a), что и весь корпус — тогда перо садится на
+     поверхность и красится общим окрасом, — но направление берётся не по
+     потоку, а строго от центра глаза. */
+  {
+    const EYES=[[-0.252,1.758,0.108],[0.252,1.758,0.108]];
+    const NT=54,NA=132;
+    for(let ti=0;ti<NT;ti++){
+      const t=mix(0.80,0.999,ti/(NT-1));
+      for(let ai=0;ai<NA;ai++){
+        const a=(ai+(ti%2)*0.5)/NA*TAU+R()*0.03;
+        const base=bodyAt(t,a);
+        for(const ec of EYES){
+          const d=Math.hypot(base[0]-ec[0],base[1]-ec[1],base[2]-ec[2]);
+          if(d<0.084||d>0.152)continue;
+          const p=normalAt(t,a);
+          /* «от глаза» по поверхности: разность точек, из которой вычтена
+             нормаль — иначе перо у самого века встаёт торчком */
+          let away=vSub(base,ec);
+          away=vSub(away,vMul(p,vDot(away,p)));
+          if(vLen(away)<1e-5)continue;
+          away=vNorm(away);
+          const k=smooth(0.084,0.152,d);
+          const len=mix(0.052,0.115,k)*(0.84+R()*0.32);
+          const col=bodyColor(t,a);
+          const cv=0.94+R()*0.12;
+          feaPush(out,vAdd(base,vMul(p,-0.004)),
+            vNorm(vAdd(away,vMul(p,0.16+R()*0.10))),p,
+            len,len*0.62,[col[0]*cv,col[1]*cv,col[2]*cv],
+            [1.0,0.05+R()*0.05,t,0.0],(ai%2?0.22:-0.22));
+        }
+      }
     }
   }
   return new Float32Array(out);

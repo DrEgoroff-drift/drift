@@ -369,6 +369,32 @@ void main(){
     N=normalize(N+vec3(0.0,s*0.18-0.09,s*0.06));
   }else if(m<5.5){
     rough=0.80;trans=0.42;alb=vC;         /* голая кожа: восковица, кольцо */
+    /* ── КОЖА ВОКРУГ ГЛАЗА ──
+       У попугая она не гладкая: по ней идут кольцами мелкие точки — места,
+       откуда растёт пушок, — а над глазом лежит складка. Пока кольцо было
+       ровным пятном, оно читалось наклейкой, приклеенной к морде; складку же
+       лепили геометрией, и она торчала из брови тёмным лезвием. Теперь и то
+       и другое — рисунок по местным координатам, ценой в десяток строк. */
+    vec3 ec=vec3(sign(vL.x)*0.252,1.758,0.108);
+    vec3 ax=normalize(vec3(sign(vL.x)*0.94,0.10,0.33));
+    vec3 dl=vL-ec;
+    vec3 rd=dl-ax*dot(dl,ax);
+    float rr=length(rd);
+    if(rr<0.12&&length(dl)<0.15){
+      vec3 e1=normalize(cross(ax,vec3(0.0,1.0,0.0)));
+      vec3 up=normalize(vec3(0.0,1.0,0.0)-ax*ax.y);
+      float th=atan(dot(rd,cross(ax,e1)),dot(rd,e1));
+      float ring=rr*155.0;
+      float dots=sin(ring*3.14159)*sin(th*52.0+floor(ring)*2.1);
+      alb*=0.89+0.16*smoothstep(-0.25,0.9,dots);
+      /* складка дугой над глазом — тень, а не предмет */
+      float over=clamp(dot(normalize(rd+1e-6),up),0.0,1.0);
+      float fold=smoothstep(0.34,1.0,over)*smoothstep(0.060,0.078,rr)*smoothstep(0.100,0.082,rr);
+      alb*=mix(1.0,0.50,fold);
+      /* к кромке кожа темнеет и уходит под перо: ровный светлый обрез — это
+         и есть та «наклейка» */
+      alb*=mix(1.0,0.66,smoothstep(0.076,0.098,rr));
+    }
   }else if(m<7.5){
     rough=0.22;trans=0.10;alb=vC;         /* коготь */
   }else if(m<9.5){

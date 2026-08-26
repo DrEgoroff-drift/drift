@@ -1309,3 +1309,23 @@ the wing, one stray wing feather, and whiskers that did not glow.
   - **The canvas is capped by area, not by pixel density** (3.15 Mpix desktop, 1.35 mobile).
     Density 1.5 against 2.0 cannot be told apart; dropped frames can.
   - Result at the same window: 90th percentile 33.4 ms → 16.8 ms, dropped frames 10% → 0.9%.
+
+## M200j — the eye stops being a sticker (2026-08-26)
+
+"Ugly around the eye", with the spot circled. Three things were wrong at once, and all three were
+the same mistake — solving a plumage problem with a bare patch.
+
+- **The bare ring was a pancake.** 0.134 across is a third of the cheek: a smooth, unshaded blob
+  with a hard rim where the feathers stopped. Narrowed to 0.098, and the dark inner ring to 0.068
+  so it reads as a liner rather than a puddle.
+- **The brow "fold" was a black blade.** It was geometry — a near-black crescent standing 22 mm
+  proud of the skin, which from most angles read as a hole in the head above the eye. Deleted;
+  the crease is drawn on the skin in the shader now, along with the rows of fine dots real bare
+  parrot skin has. Both cost ten lines and no vertices.
+- **Plate feathers are gone from the whole ring, and a rosette owns it.** Plates lie *along the
+  flow* — backwards — so any plate rooted in front of the eye covers it with its tip: cutting the
+  bare zone down to 86 mm simply grew the eye over. A wide cut is what the pancake was. So plates
+  are cut out to 150 mm and the ring belongs to a rosette laid on the same (t,a) as the rest of
+  the coat — it lands on the surface and takes the common colouring — but pointed **away from the
+  eye centre** instead of along the flow. Feathers that radiate cannot cover the eye, and the cut
+  edge disappears under their tips. Down keeps a narrow 100 mm cut: it is small and soft.
