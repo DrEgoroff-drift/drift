@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.183.0 — the travelling cinema (M205)
+
+A barge brings a film, and for one evening the cantina reseats itself: the counter goes dark, the
+chairs turn to face the wall, and a short newsreel runs on it.
+
+**A newsreel, not a film.** There is nothing to show a film with and no reason to: the film is
+running somewhere over there, and what the game shows is the thing people come early for — six
+frames with an announcer's captions, each about something this game actually has: new regions, the
+expedition's stores, a shift handed over without remarks, species described, the sky's calendar,
+houses going up. Dry, unsentimental, informative.
+
+**The hall is not rebuilt, it goes dark.** A cantina does not turn into a cinema; for one evening
+it pretends to be one. The existing hall dims, a screen appears on the back wall with a dusty beam
+across the room, and in the foreground are chair backs and the backs of heads — the same people,
+just turned around. A poster by the door says СЕГОДНЯ and the title.
+
+**Where and when is computed, not stored** — from the station's coordinates and the calendar week,
+per the rule about the ephemeral. What is stored is only which showings you have been to, and that
+only for one line in the record book. It gives nothing: no money, no data, no reputation. An
+evening is an evening.
+
+One thing fixed while looking at it: the caption's type size was reckoned from the screen's height,
+so it ran off both edges and read as a fragment. It is reckoned from the screen's width now.
+
 ## 0.182.0 — the bed by the house (M204)
 
 Seeds of species you have described (the biology register, `20e`) go into a bed beside the house

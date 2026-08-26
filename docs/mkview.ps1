@@ -175,6 +175,18 @@ setTimeout(function(){
     G.cargo.organics=5;G.cargo.isotopes=1;G.cargo.volatiles=4;G.cargo.missile=3;
     G.cargo.folk=2;G.cargo.alloy=6;
     tableToggle(true,"hold");
+  }else if(scene==="kino"){
+    /* кинопередвижка (M205): ищем станцию, где на этой неделе идёт сеанс */
+    var kx=null;
+    for(var qx=-12;qx<=12&&kx===null;qx++)for(var qy=-12;qy<=12&&kx===null;qy++){
+      if(!starAt(qx,qy))continue;
+      var qs=getSystem(qx,qy);
+      if(qs.station&&kinoAt(qx,qy)){kx=qx;G.sx=qx;G.sy=qy;G.sys=qs;}
+    }
+    var stk=G.sys.station;
+    if(stk){G.ship.x=stk.x+40;G.ship.y=stk.y;openStation();}
+    var kb=document.querySelector("#stTabs button[data-tab=cantina]");
+    if(kb)kb.click();
   }else if(scene==="tree"){
     /* ёлка (M201): подменяем дату на 31 декабря и открываем кантину. Дата
        настоящая по замыслу, и ждать декабря стенд не может */

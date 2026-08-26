@@ -908,8 +908,12 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   home, mandarins, congratulations in the ether, and radiograms from the people who wrote in your
   record book — whoever was not there does not congratulate you. The holiday gives nothing:
   no discount, no bonus, no double reward. Done well before 31.12, as the note asked.
-- **The travelling cinema.** A barge brings a film; the cantina reseats itself in rows for one
-  evening and a short procedural newsreel about the regions and the expedition plays on the wall.
+- **The travelling cinema** — **built (0.183.0, M205).** `27da-kino`, suite `91zzzq-kino`, stand
+  `pageshot view -Q "?s=kino"`. A newsreel rather than a film: six announcer-captioned frames, each
+  about something the game actually has. The hall is not rebuilt, it goes dark — screen on the back
+  wall, a dusty beam across the room, chair backs and the backs of heads in the foreground, a
+  poster saying СЕГОДНЯ. Where and when is computed from the station and the calendar week; only
+  which showings you attended is stored, for one line in the record book. Gives nothing.
 - **The bookshelf** — **built (0.180.0, M202).** `12ub-books`, suite `91zzzn-books`. Forty books
   found in wreckage — hulk, container, barge — each a title, an imprint and one paragraph, all
   written by hand, because generated prose gives itself away by the third line. Forty different

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 300 · символов верхнего уровня: 2793
+Файлов: 302 · символов верхнего уровня: 2805
 
 ## СИМВОЛЫ
 
@@ -219,18 +219,18 @@ camOffset                    src/19c-light.js:76
 camStep                      src/19c-light.js:62
 canPay                       src/21a-mode-base.js:51
 CANT_STYLE                   src/27d-ui-cantina.js:15
-cantBarkeep                  src/27d-ui-cantina.js:406
-cantCounter                  src/27d-ui-cantina.js:685
-cantFigure                   src/27d-ui-cantina.js:351
+cantBarkeep                  src/27d-ui-cantina.js:413
+cantCounter                  src/27d-ui-cantina.js:692
+cantFigure                   src/27d-ui-cantina.js:358
 cantinaPool                  src/12c-mgr-core.js:259
 cantinaScene                 src/27c-ui-hq.js:193
-cantProps                    src/27d-ui-cantina.js:532
+cantProps                    src/27d-ui-cantina.js:539
 cantRoomBody                 src/27d-ui-cantina.js:45
-cantSeats                    src/27d-ui-cantina.js:343
+cantSeats                    src/27d-ui-cantina.js:350
 cantSel                      src/27c-ui-hq.js:192
 cantStyle                    src/27d-ui-cantina.js:27
-cantTables                   src/27d-ui-cantina.js:620
-cantView                     src/27d-ui-cantina.js:473
+cantTables                   src/27d-ui-cantina.js:627
+cantView                     src/27d-ui-cantina.js:480
 capIv                        src/28-loop.js:414
 capOf                        src/05-parts.js:108
 capUsed                      src/05-parts.js:219
@@ -1148,6 +1148,18 @@ keyRow                       src/27-ui-ship.js:188
 keys                         src/08-state.js:38
 killPirate                   src/13-pirates.js:179
 killRock                     src/24-mode-belt.js:150
+KINO_EVERY                   src/27da-kino.js:20
+KINO_REEL                    src/27da-kino.js:23
+KINO_TITLES                  src/27da-kino.js:31
+kinoAt                       src/27da-kino.js:39
+kinoBeam                     src/27da-kino.js:158
+kinoFrame                    src/27da-kino.js:63
+kinoHere                     src/27da-kino.js:46
+kinoOverlay                  src/27da-kino.js:174
+kinoScreen                   src/27da-kino.js:72
+kinoSeen                     src/27da-kino.js:36
+kinoWatch                    src/27da-kino.js:51
+kinoWeek                     src/27da-kino.js:38
 KIT_FAM                      src/12x-suit.js:162
 KIT_MODELS                   src/12x-suit.js:24
 KIT_MODS                     src/12x-suit.js:34
@@ -3167,7 +3179,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:61
   · видимое состояние обмена:76
 
-## src/14-save.js · 45 КБ
+## src/14-save.js · 46 КБ
   · сохранение:1
 
 ## src/15-input.js · 24 КБ
@@ -3397,6 +3409,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/27c-ui-hq.js · 38 КБ
   · ШТАБ и кантина:1
+
+## src/27da-kino.js · 11 КБ
+  · кинопередвижка:1
 
 ## src/27d-ui-cantina.js · 46 КБ
   · кантина: помещение, а не список:1
@@ -3750,5 +3765,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzp-green.js · 5 КБ
   · автотесты: грядка у дома (M204):1
+
+## tests/91zzzq-kino.js · 4 КБ
+  · автотесты: кинопередвижка (M205):1
 
 ## tests/99-run.js · 0 КБ
