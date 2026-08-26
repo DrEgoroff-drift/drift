@@ -7,6 +7,34 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.178.0 — the sanatorium: three days in which nothing happens (M199)
+
+M162's voucher was one line of code: `+3 суток, мораль полная`. It is a **place** now. A veranda
+over the sea, a timetable on a board, an oxygen cocktail, a quiet hour, chess. And — the point —
+nothing happens.
+
+**That is not an omission, it is the only place in the game where resting is allowed.** No pirates
+arrive, no reactor fails, no contract comes in. You can skip a treatment and nothing follows. You
+can leave in the middle of a minute and nothing follows from that either. For three days the game
+wants nothing from the player — and since the other hundred milestones want something continuously,
+three days of quiet weigh more than any reward.
+
+**The weight comes from ageing.** The record book counts the years (M161) and the medical board is
+waiting for its date, so these are three days you do not get back. The game never mentions it. It
+simply lets you spend them.
+
+**What is not here and never will be:** points for attendance, a relaxation bar, an achievement for
+completing the course. Any of those turns rest into work and kills the one reason this place exists.
+A test guards it: doing every treatment for three days and doing nothing at all for three days end
+in exactly the same state.
+
+The veranda is built as the opposite of the wintering in every respect, deliberately — one dark
+room with no outside against an open deck with the sea to the horizon and more light than anyone
+is counting. The neighbour in the deck chair talks about himself and asks for nothing.
+
+**Still open:** the deck is a large empty field, the deck chair reads as a bundle of sticks, and
+the figure at the rail is a slab. The scene wants another pass, same as the wintering's room.
+
 ## 0.177.0 — the observer's choice: take the settlement in hand, once (M198)
 
 The settlement (`12t`) had exactly one connection to the player: **feed it**. What grew out of that

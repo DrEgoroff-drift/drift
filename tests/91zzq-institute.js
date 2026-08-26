@@ -33,17 +33,20 @@ TEST_SUITES.push(()=>suite("институт: тема берётся письм
   ok(instState("4a").st>0,"тема пережила сохранение");
 }));
 
-TEST_SUITES.push(()=>suite("институт: путёвка — три дня на океаническом мире, экипаж отдохнул",()=>{
+TEST_SUITES.push(()=>suite("институт: путёвка открывает санаторий, а не начисляет отдых",()=>{
+  /* С M199 путёвка перестала быть строкой «+3 суток»: она открывает МЕСТО.
+     Три дня и отдых берутся там, прожитыми, а не выданными на стойке. */
   resetWorld();
-  G.inst={t:{},vouch:1,used:0};G.things=[];G.record=null;
+  G.inst={t:{},vouch:1,used:0};G.things=[];G.record=null;G.spa=null;
   const c=genMerc(3,["haul"]);c.morale=.2;G.crew=[c];
   G.surf={p:{type:"ice"}};ok(!instRestHere(),"на льду не курорт");
-  G.surf={p:{type:"ocean"}};ok(instRestHere(),"океан — курорт");
+  G.surf={p:{type:"ocean",name:"—"}};ok(instRestHere(),"океан — курорт");
   const t0=G.t;
-  ok(instRest(),"отдохнули");
-  eq(G.t-t0,CEL_DAY*3,"три дня прошло");
-  eq(c.morale,1,"мораль полная");
+  ok(instRest(),"поехали");
+  eq(G.mode,"spa","путёвка открыла санаторий");
+  eq(G.t-t0,0,"и ни одного дня НЕ начислила: их надо прожить");
+  eq(c.morale,.2,"мораль тоже не выдана авансом");
   eq(instAll().vouch,0,"путёвка использована");
-  ok(recordAll().e.some(x=>x.a==="санаторий"),"запись в книжке");
+  G.spa=null;G.mode="system";
   G.surf=null;G.crew=[];G.inst=null;
 }));

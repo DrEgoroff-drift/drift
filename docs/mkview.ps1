@@ -175,6 +175,12 @@ setTimeout(function(){
     G.cargo.organics=5;G.cargo.isotopes=1;G.cargo.volatiles=4;G.cargo.missile=3;
     G.cargo.folk=2;G.cargo.alloy=6;
     tableToggle(true,"hold");
+  }else if(scene==="spa"){
+    /* санаторий (M199): второй день, часть распорядка уже вычеркнута */
+    G.spa={day:2,days:3,slot:0,done:0,took:{"2:bath":1,"2:cock":1},talked:0,
+      pname:"Тиун III",home:{sx:G.sx,sy:G.sy},seed:1234567};
+    G.mode="spa";
+    for(var sf=0;sf<3;sf++){G.t+=.02;drawSpa();}
   }else if(scene==="winter"||scene==="winterlow"){
     /* зимовка (M197): комната на середине месяца. `winterlow` — та же комната
        с убавленным светом: баланс должен быть ВИДЕН, а не написан цифрой */

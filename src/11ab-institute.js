@@ -97,7 +97,11 @@ function instRestHere(){
   const I=instAll();if(I.vouch<=0)return false;
   return !!(G.surf&&G.surf.p&&G.surf.p.type==="ocean");
 }
+/* Путёвка больше не строка «+3 суток»: она открывает МЕСТО (29h, M199).
+   Старое тело оставлено ниже недостижимым нарочно — по нему видно, чем это
+   было, и почему стало. */
 function instRest(){
+  if(typeof enterSpa==="function")return enterSpa();
   const I=instAll();if(!instRestHere())return false;
   I.vouch--;I.used++;
   G.t+=CEL_DAY*3;

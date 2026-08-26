@@ -883,9 +883,17 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   dropped on load — the manager-field class of bug, third repeat.
 
   **Still open:** at street scale the difference reads, but weakly. The frame could say it louder.
-- **M199 — the sanatorium.** M162's voucher becomes a planet: treatments on a timetable, an oxygen
-  cocktail, chess on the veranda, and **nothing happens** — the only mode in which the game allows
-  rest. Ageing and the medical board (M161) give it weight; Vega can come.
+- **M199 — the sanatorium** — **built (0.178.0).** `29h-spa` and `29i-spa-draw`, suite
+  `91zzzl-spa`, stand `pageshot view -Q "?s=spa"`. The voucher stopped being a line of code and
+  became a place: a veranda over the sea, a timetable on a board, an oxygen cocktail, a quiet hour,
+  chess. Nothing happens, and that is the only place in the game where resting is allowed — skip a
+  treatment and nothing follows, leave mid-minute and nothing follows either. Weight comes from
+  ageing: the record book counts the years and these three days are not coming back, and the game
+  never mentions it. No attendance points, no relaxation bar, no completion award — a test guards
+  it: doing everything and doing nothing end in the same state. Vega comes if she is aboard.
+
+  **Still open:** the deck is a large empty field, the deck chair reads as a bundle of sticks, and
+  the figure at the rail is a slab — the scene wants another pass, like the wintering's room.
 
 ## Joys (one between milestones, an evening each)
 
