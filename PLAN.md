@@ -926,8 +926,12 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   no reward: the wall fills up and afterwards shows where you were heard.
 - **The travelling pennant.** Once a quarter the best base gets a banner on the wall and a line in
   the ether. Pure flavour; it does not touch the economy.
-- **The greenhouse.** A bed by the house: seeds of discovered species (the biology register) grow
-  over days in their own species' form, Vega waters them. Ties biology, the home and her together.
+- **The greenhouse** — **built (0.182.0, M204).** `21g-greenhouse`, suite `91zzzp-green`. Four beds
+  beside the house; sowing costs one biological sample and puts in the last species you described
+  that is not yet in the ground. Growth is by real days, lazily from `Date.now()`, and Vega waters
+  them — with her it grows about twice as fast. The form is reconstructed from the species NAME,
+  which in this game is its passport, so one name always grows the same plant. It gives nothing:
+  no harvest, no sale, no accelerant.
 
 ## To the release
 

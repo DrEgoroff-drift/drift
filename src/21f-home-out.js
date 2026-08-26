@@ -226,6 +226,8 @@ function drawHomeOut(tr,camx,camy,p){
   /* тропа к двери: тёмная утоптанная полоса — по ней видно, что сюда ходят */
   ctx.fillStyle="rgba(0,0,0,.16)";
   ctx.beginPath();ctx.ellipse(dX+dw*.5,gy+1,M*1.1,3,0,0,TAU);ctx.fill();
+  /* грядка (M204): ряд у стены, с той стороны, где не ходят к двери */
+  if(typeof greenDraw==="function")greenDraw(sx+w*.58,gy,M*2.6,p);
 }
 /* дверь дома в мировых координатах: по ней считают, дошёл ли игрок */
 function homeDoorX(tr,p){

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 298 · символов верхнего уровня: 2778
+Файлов: 300 · символов верхнего уровня: 2793
 
 ## СИМВОЛЫ
 
@@ -626,7 +626,7 @@ etherTick                    src/11b-speech.js:39
 ethOn                        src/25l-post-ether.js:52
 ethReset                     src/25l-post-ether.js:104
 ethTick                      src/25l-post-ether.js:59
-evacuate                     src/21-mode-surface.js:529
+evacuate                     src/21-mode-surface.js:541
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:82
 exitBelt                     src/24-mode-belt.js:174
@@ -811,6 +811,21 @@ glowTier                     src/11i-glow.js:122
 goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
 gradePass                    src/19c-light.js:165
+GREEN_BEDS                   src/21g-greenhouse.js:23
+GREEN_FULL                   src/21g-greenhouse.js:24
+GREEN_SP                     src/21g-greenhouse.js:68
+GREEN_VEGA                   src/21g-greenhouse.js:25
+greenAll                     src/21g-greenhouse.js:26
+greenCanSow                  src/21g-greenhouse.js:50
+greenDraw                    src/21g-greenhouse.js:177
+greenDrawBed                 src/21g-greenhouse.js:105
+greenGrow                    src/21g-greenhouse.js:36
+greenNext                    src/21g-greenhouse.js:43
+greenPrompt                  src/21g-greenhouse.js:184
+greenSow                     src/21g-greenhouse.js:53
+greenSpecies                 src/21g-greenhouse.js:69
+greenSpeciesFields           src/21g-greenhouse.js:86
+greenWatered                 src/21g-greenhouse.js:32
 GROK_DIRT                    src/12tb-grok.js:29
 GROK_LIKE                    src/12tb-grok.js:28
 GROK_MIN                     src/12tb-grok.js:27
@@ -938,7 +953,7 @@ homeBeaconCost               src/12j-home.js:170
 homeCanRebuild               src/12j-home.js:226
 homeCanRevive                src/12j-home.js:146
 homeCrewFigure               src/27e-ui-home.js:680
-homeDoorX                    src/21f-home-out.js:231
+homeDoorX                    src/21f-home-out.js:233
 homeFigure                   src/27e-ui-home.js:613
 homeHas                      src/12j-home.js:24
 homeHereP                    src/21f-home-out.js:26
@@ -1185,8 +1200,8 @@ LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:375
 lastRunDay                   src/12k-letters.js:44
 lastRunTick                  src/12k-letters.js:46
-launch                       src/21-mode-surface.js:569
-launchHold                   src/21-mode-surface.js:514
+launch                       src/21-mode-surface.js:581
+launchHold                   src/21-mode-surface.js:526
 layerLevel                   src/10-music.js:326
 ledgerAll                    src/11ai-ledger.js:36
 ledgerNeed                   src/11ai-ledger.js:44
@@ -2519,7 +2534,7 @@ tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
 tickDrones                   src/12-economy.js:82
-tickLaunchHold               src/21-mode-surface.js:515
+tickLaunchHold               src/21-mode-surface.js:527
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
@@ -2571,7 +2586,7 @@ toldKey                      src/11aj-told.js:35
 toldOf                       src/11aj-told.js:36
 toldWorked                   src/11aj-told.js:41
 toldWorth                    src/11aj-told.js:49
-totalLoss                    src/21-mode-surface.js:546
+totalLoss                    src/21-mode-surface.js:558
 towShare                     src/03f-hull-role.js:87
 TRACE_CAP_DAY                src/11ag-trace.js:46
 TRACE_MARK                   src/11ag-trace.js:32
@@ -3286,9 +3301,12 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21f-home-out.js · 13 КБ
   · дом снаружи:1
 
-## src/21-mode-surface.js · 38 КБ
+## src/21g-greenhouse.js · 10 КБ
+  · грядка у дома:1
+
+## src/21-mode-surface.js · 39 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:585
+  · навигатор и подсказки сверху:597
 
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
@@ -3729,5 +3747,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzo-qsl.js · 4 КБ
   · автотесты: QSL-карточки (M203):1
+
+## tests/91zzzp-green.js · 5 КБ
+  · автотесты: грядка у дома (M204):1
 
 ## tests/99-run.js · 0 КБ

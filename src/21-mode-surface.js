@@ -299,6 +299,18 @@ function updateSurface(dt){
       G.prompt="ДЕЙСТВИЕ — ВОЙТИ ДОМОЙ";
       if(actEdge){enterHomeIn();return;}
     }
+    /* грядка (M204): чуть в стороне от двери, чтобы не спорить с ней за
+       ДЕЙСТВИЕ. Сеется то, что описано последним и ещё не посеяно */
+    if(hx!=null&&typeof greenPrompt==="function"){
+      const gx=hx+HOME_MAN*3.0;
+      if(Math.abs(gx-S.x)<40){
+        const gp=greenPrompt();
+        if(gp){
+          G.prompt=gp;
+          if(actEdge&&typeof greenCanSow==="function"&&greenCanSow()){greenSow();return;}
+        }
+      }
+    }
   }
   /* путёвка (M162): океанический мир и путёвка на столе — три дня отдыха у корабля */
   if(typeof instRestHere==="function"&&instRestHere()&&dShip<shipZoneR()){

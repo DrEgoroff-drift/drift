@@ -7,6 +7,29 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.182.0 — the bed by the house (M204)
+
+Seeds of species you have described (the biology register, `20e`) go into a bed beside the house
+and grow **by real days**. Vega waters them. It ties together three things that had never met:
+biology, the home, and her.
+
+Lazy about real time, like the pennant and like a QSL reply: a bed has a `Date.now()` of sowing and
+nothing else. No simulation — look in a week later and you see a week of growth. A game closed for
+a month sleeps through nothing.
+
+**The form is the species', not "a plant".** The species is reconstructed from its **name**: in
+Drift a species name *is* its passport (`speciesPlant` builds a species out of a stream of random
+numbers and the name out of the species), so one name always yields the same form, colour and
+habit. It will not match the exact bush on the far planet — the form there also takes the place
+into account — but every bed has a face of its own, and two identical names grow up identical.
+
+What sowing costs is one biological sample, the same currency a manager's perk spends. What it
+gives is nothing: no harvest, no sale, no growth accelerant, no "fertilise for 200 credits". The
+bed grows.
+
+Four beds at most. The species sown is the last one you described that is not already in the
+ground — the register keeps discovery order, so the seed in your hand is the one that goes in.
+
 ## 0.181.0 — QSL: the wall of cards (M203)
 
 Reworked for the "no names" rule the whole online part stands on: the operators at the other end
