@@ -56,7 +56,7 @@ function snapshot(){
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
-    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,win:G.win,spa:G.spa,hol:G.hol,books:G.books,qsl:G.qsl,green:G.green,kino:G.kino,penn:G.penn,first:G.first,   /* M154–M207 */
+    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,win:G.win,spa:G.spa,hol:G.hol,books:G.books,qsl:G.qsl,green:G.green,kino:G.kino,penn:G.penn,first:G.first,chess:G.chess,   /* M154–M207, M192 */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -569,6 +569,27 @@ function applySave(s){
   /* первый час (M207): какие строки сменщика уже сказаны. Повторять их нельзя
      ни при загрузке, ни при возвращении — живые люди не повторяют */
   G.first=Array.isArray(s.first)?s.first.filter(x=>!!FIRST_BY[x]):[];
+  /* партии по переписке (M192): в сейве лежат ХОДЫ, а не позиция. Доска
+     считается из них, и потому рассинхрона между двумя концами не бывает в
+     принципе; а порченый ход обрывает список, а не портит партию целиком */
+  G.chess=null;
+  if(s.chess&&s.chess.g&&typeof s.chess.g==="object"){
+    const GG={};
+    for(const ch in s.chess.g){
+      if(!/^[a-f0-9]{12}$/.test(ch))continue;
+      const g=s.chess.g[ch];
+      if(!g||!Array.isArray(g.mv))continue;
+      const mv=[];
+      for(const m of g.mv.slice(0,300)){
+        if(!m)continue;
+        const f=m.f|0,t=m.t|0,p=m.p|0;
+        if(f<0||f>63||t<0||t>63||p<0||p>3)break;
+        mv.push({f,t,p});
+      }
+      GG[ch]={mv,w:g.w?1:0,t:+g.t||0,sent:+g.sent||0};
+    }
+    G.chess={g:GG};
+  }
   G.trainee=(s.trainee&&typeof s.trainee==="object"&&s.trainee.name)?s.trainee:null;
   G.zoo=(s.zoo&&typeof s.zoo==="object"&&Array.isArray(s.zoo.pen))?s.zoo:null;
   G.concert=(s.concert&&typeof s.concert==="object")?s.concert:null;

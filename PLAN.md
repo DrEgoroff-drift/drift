@@ -819,8 +819,18 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   so one in the morning still belongs to last night. A card read to the end lands on the table as a
   stack with the reply already open — the screen does not open itself. No notification: the dial
   lights its own label and that is all. Catching moved out of docking, where M190 had parked it.
-- **M192 — chess by post.** The same pipe: an anonymous game, a move a day, the board on the table.
-  A move is data, so the "nothing typed crosses" rule holds unchanged. After the post has bedded in.
+- **M192 — chess by post** — **built (0.186.0).** `25n-chess`, suite `91zzzt-chess`, tab ПАРТИЯ on
+  the desk. The same pipe carries a second kind of thing: a game with a stranger, one move per card.
+  A move is `{f,t,p}` — three small numbers — so the "nothing typed crosses" rule holds without a
+  new exception, and the wire stays as dumb as it was. **The board is neither sent nor stored**: the
+  list of moves persists and the position is replayed from it, the way the world is replayed from a
+  seed; a corrupt move truncates the list rather than poisoning the game. Full rules — castling with
+  real rights, en passant with the pawn removed, promotion to four pieces, шах/мат/пат, and the
+  expensive one: you may not leave your own king attacked. The server (`api.php`) validates and
+  carries `mv` through `put`/`reply`/`ask`/`in` and is never trusted — legality is re-checked on the
+  client before a move touches a game. Caught in the night ether, the move lands on the board while
+  the announcer is still reading the card. The plan asked for this *after* the post had bedded in;
+  it was built now on the author's instruction to work the whole queue through.
 
 ## The world alive (M193–M196)
 

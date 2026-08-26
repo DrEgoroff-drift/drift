@@ -71,7 +71,7 @@ function ethTick(q){
     ethAsk=now;
     mailCall("ask").then(j=>{
       if(!j||!j.ok||!j.card||!j.ch)return;
-      ethCard={ch:String(j.ch),card:j.card,lines:postLines(j.card)};
+      ethCard={ch:String(j.ch),card:j.card,mv:j.mv||null,lines:postLines(j.card)};
       ethLine=0;ethHold=0;
       sfx("ui",{f:520,to:820,d:.09,v:.16});
     });
@@ -86,6 +86,8 @@ function ethTick(q){
        этом НЕ распахивается сам — правило «только то, что нужно прямо сейчас,
        висит над миром» сильнее желания показать награду немедленно */
     const st=mailPush(ethCard.ch,ethCard.card,false);
+    /* если с карточкой пришёл ход — он ложится в партию этой цепочки (M192) */
+    if(ethCard.mv&&typeof chessTake==="function")chessTake(ethCard.ch,ethCard.mv);
     const M=mailAll();
     M.caught=(M.caught|0)+1;
     if(typeof mailOpen!=="undefined"){

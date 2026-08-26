@@ -708,11 +708,26 @@ if ($a === 'post') {
   sweepDir("$dir/ch",   2592000, 86400);
   sweepDir("$dir/u",    15552000, 86400);
 
+  /* ── ход в партии по переписке (M192) ──
+     Три маленьких числа рядом с карточкой. Ход — это данные, поэтому правило
+     «ничего напечатанного человеком не проходит» держится без единой оговорки,
+     и разбирается он так же строго, как сама карточка: поле за полем. */
+  $move = function ($v) {
+    if ($v === null) return null;
+    if (!is_array($v)) return false;
+    $f = (int)($v['f'] ?? -1); $t = (int)($v['t'] ?? -1); $p = (int)($v['p'] ?? 0);
+    if ($f < 0 || $f > 63 || $t < 0 || $t > 63 || $f === $t) return false;
+    if ($p < 0 || $p > 3) return false;
+    return ['f' => $f, 't' => $t, 'p' => $p];
+  };
+
   if ($op === 'put' || $op === 'reply') {
     if (!rateHit('post', 40)) fail('слишком часто', 429);
     if ((int)($me['put'] ?? 0) >= 3) out(['ok' => false, 'reason' => 'три карточки в сутки']);
     $c = $card($b['card'] ?? null);
     if (!$c) fail('карточка не читается');
+    $mv = $move($b['mv'] ?? null);
+    if ($mv === false) fail('ход не читается');
 
     if ($op === 'reply') {
       /* ответ идёт НА ДРУГОЙ КОНЕЦ цепочки, и класть его туда — дело сервера:
@@ -731,7 +746,9 @@ if ($a === 'post') {
       $T  = readJson($tf); if (!is_array($T)) $T = [];
       $in = (array)($T['in'] ?? []);
       /* ящик не резиновый: восемь карточек, дальше самая старая выпадает */
-      $in[] = ['ch' => $chId, 'card' => $c, 't' => $now];
+      $one = ['ch' => $chId, 'card' => $c, 't' => $now];
+      if ($mv) $one['mv'] = $mv;
+      $in[] = $one;
       if (count($in) > 8) $in = array_slice($in, -8);
       $T['in'] = $in;
       writeJson($tf, $T);
@@ -747,7 +764,9 @@ if ($a === 'post') {
     $chId = bin2hex(random_bytes(6));
     writeJson("$dir/ch/$chId.json", ['a' => $id, 'b' => '', 't' => $now]);
     $cid  = $now . substr(sha1($id . $chId), 0, 8);
-    writeJson("$dir/pool/$cid.json", ['i' => $cid, 'ch' => $chId, 'o' => $id, 't' => $now, 'card' => $c]);
+    $entry = ['i' => $cid, 'ch' => $chId, 'o' => $id, 't' => $now, 'card' => $c];
+    if ($mv) $entry['mv'] = $mv;                      /* партия по переписке (M192) */
+    writeJson("$dir/pool/$cid.json", $entry);
     $me['put'] = (int)($me['put'] ?? 0) + 1;
     writeJson($uf, $me);
     out(['ok' => true, 'ch' => $chId]);
@@ -767,7 +786,9 @@ if ($a === 'post') {
       $me['got'] = (int)($me['got'] ?? 0) + 1;
       writeJson($uf, $me);
       /* наружу — карточка и номер цепочки. Метка отправителя остаётся здесь */
-      out(['ok' => true, 'card' => $P['card'], 'ch' => (string)$P['ch']]);
+      $res = ['ok' => true, 'card' => $P['card'], 'ch' => (string)$P['ch']];
+      if (!empty($P['mv'])) $res['mv'] = $P['mv'];    /* партия по переписке (M192) */
+      out($res);
     }
     out(['ok' => true, 'card' => null]);
   }
@@ -779,7 +800,9 @@ if ($a === 'post') {
     $outL = [];
     foreach ($in as $r)
       if (is_array($r) && isset($r['card']))
-        $outL[] = ['ch' => (string)($r['ch'] ?? ''), 'card' => $r['card']];
+        $row = ['ch' => (string)($r['ch'] ?? ''), 'card' => $r['card']];
+        if (!empty($r['mv'])) $row['mv'] = $r['mv'];  /* партия по переписке (M192) */
+        $outL[] = $row;
     out(['ok' => true, 'in' => $outL]);
   }
 

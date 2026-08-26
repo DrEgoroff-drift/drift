@@ -103,6 +103,7 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `12td-settle-hand` | the observer's choice: one irreversible button that makes a settlement yours — better by every number, and it stops speaking in glyphs |
 | `29f-winter` `29g-winter-draw` | the wintering: a month alone in one room — power balance you can see by the light, a diary in postcard blanks, a wall that talks, a calendar crossed off by hand |
 | `25m-probe` | the pennant: a probe launched at a star nobody reaches, silent for weeks, then one voice on the ether and a photograph of where it got to |
+| `25n-chess` | chess by post: a move is three numbers, the board is replayed from the list of moves and never stored; full rules, шах/мат/пат, the tab ПАРТИЯ on the desk |
 | `25l-post-ether` | the fifth band: night post, present only after nine by the real clock, reading a caught card a line at a time |
 | `25j-post-wire` `25k-post-mail` | the post: a card into a global pool, caught by a stranger, replies routed by the server so neither end ever learns the other; stacks on the table, one request per docking |
 | `25h-post-forms` `25i-post-back` | thirty printed blanks and the card's back: a line is a set of variants, tapping one strikes the others out, and the struck-out ones stay visible; postscript of up to three settlement glyphs, no addressee anywhere |

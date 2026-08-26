@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 306 · символов верхнего уровня: 2821
+Файлов: 308 · символов верхнего уровня: 2852
 
 ## СИМВОЛЫ
 
@@ -289,6 +289,12 @@ celNow                       src/06a-celest.js:133
 celPeriod                    src/06a-celest.js:53
 celSun                       src/06a-celest.js:36
 celTestPlanet                tests/91w-celest.js:3
+CH_DIRS                      src/25n-chess.js:29
+CH_GLYPH                     src/25n-chess.js:249
+CH_PROMO                     src/25n-chess.js:35
+CH_START                     src/25n-chess.js:28
+chAllMoves                   src/25n-chess.js:176
+chApply                      src/25n-chess.js:51
 CHARTS_PRICE                 src/11m-charts.js:19
 chartsAll                    src/11m-charts.js:20
 chartsBlock                  src/11m-charts.js:71
@@ -300,10 +306,34 @@ chartsDrop                   src/11m-charts.js:57
 chartsHidden                 src/11m-charts.js:30
 chartsJitter                 src/11m-charts.js:38
 chartsTick                   src/11m-charts.js:65
+chAt                         src/25n-chess.js:39
+chAttacked                   src/25n-chess.js:80
+chBlack                      src/25n-chess.js:37
+chCheck                      src/25n-chess.js:182
+chessAll                     src/25n-chess.js:199
+chessCanMove                 src/25n-chess.js:218
+chessDraw                    src/25n-chess.js:252
+chessGame                    src/25n-chess.js:204
+chessMove                    src/25n-chess.js:223
+chessMyTurn                  src/25n-chess.js:212
+chessStart                   src/25n-chess.js:205
+chessTake                    src/25n-chess.js:234
+chFrom                       tests/91zzzt-chess.js:4
+chKing                       src/25n-chess.js:112
+chLegal                      src/25n-chess.js:191
+chMine                       src/25n-chess.js:38
+chMoves                      src/25n-chess.js:166
+chName                       tests/91zzzt-chess.js:3
+chPosition                   src/25n-chess.js:43
+chPseudo                     src/25n-chess.js:119
+chSel                        src/25n-chess.js:251
+chSq                         tests/91zzzt-chess.js:2
+chState                      src/25n-chess.js:184
 CHUNK_KEEP                   src/18c-chunks.js:20
 CHUNK_W                      src/18c-chunks.js:19
 chunkAt                      src/18c-chunks.js:44
 chunkStore                   src/18c-chunks.js:39
+chWhite                      src/25n-chess.js:36
 cirrusSprite                 src/19e-clouds.js:126
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
@@ -580,7 +610,7 @@ drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:283
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:267
+drawThingIcon                src/27i-ui-table.js:271
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
 drawTrail                    src/16-flight.js:338
@@ -624,7 +654,7 @@ ETHER_EVERY                  src/11b-speech.js:38
 etherLine                    src/11-log.js:29
 etherTick                    src/11b-speech.js:39
 ethOn                        src/25l-post-ether.js:52
-ethReset                     src/25l-post-ether.js:104
+ethReset                     src/25l-post-ether.js:106
 ethTick                      src/25l-post-ether.js:59
 evacuate                     src/21-mode-surface.js:541
 exileCandidates              src/12g-mgr-rogue.js:123
@@ -1298,12 +1328,12 @@ mailAll                      src/25j-post-wire.js:31
 mailBusy                     src/25j-post-wire.js:46
 mailCall                     src/25j-post-wire.js:47
 mailCard                     src/25k-post-mail.js:19
-mailDock                     src/25j-post-wire.js:113
-mailDrop                     src/25j-post-wire.js:136
+mailDock                     src/25j-post-wire.js:116
+mailDrop                     src/25j-post-wire.js:143
 mailEve                      src/25l-post-ether.js:41
-mailFresh                    src/25j-post-wire.js:141
+mailFresh                    src/25j-post-wire.js:148
 mailLeft                     src/25j-post-wire.js:41
-mailMute                     src/25j-post-wire.js:129
+mailMute                     src/25j-post-wire.js:136
 mailNight                    src/25l-post-ether.js:34
 mailNightLeft                src/25l-post-ether.js:46
 mailOn                       src/25j-post-wire.js:36
@@ -1973,6 +2003,7 @@ renderBasesTab               src/26a-ui-station-home.js:4
 renderBooks                  src/12ub-books.js:141
 renderCantina                src/27c-ui-hq.js:45
 renderCardBack               src/25i-post-back.js:88
+renderChess                  src/25n-chess.js:285
 renderDeeds                  src/11-log.js:92
 renderDiary                  src/29f-winter.js:219
 renderHold                   src/27j-ui-hold.js:176
@@ -1984,9 +2015,9 @@ renderPrices                 src/12aa-need.js:196
 renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
-renderStrips                 src/27i-ui-table.js:207
+renderStrips                 src/27i-ui-table.js:211
 renderTab                    src/26-ui-station.js:208
-renderThings                 src/27i-ui-table.js:238
+renderThings                 src/27i-ui-table.js:242
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -2524,7 +2555,7 @@ tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
 tableNoticeAll               src/27i-ui-table.js:68
 tableRender                  src/27i-ui-table.js:131
-tableRow                     src/27i-ui-table.js:199
+tableRow                     src/27i-ui-table.js:203
 tableSetTab                  src/27i-ui-table.js:101
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:84
@@ -3404,7 +3435,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25i-post-back.js · 10 КБ
   · оборот карточки:1
 
-## src/25j-post-wire.js · 8 КБ
+## src/25j-post-wire.js · 9 КБ
   · почта: провод:1
 
 ## src/25k-post-mail.js · 6 КБ
@@ -3415,6 +3446,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/25m-probe.js · 9 КБ
   · вымпел: зонд, который уходит навсегда:1
+
+## src/25n-chess.js · 15 КБ
+  · шахматы по почте:1
 
 ## src/26a-ui-station-home.js · 12 КБ
   · станция: вкладка «дом и базы»:1
@@ -3796,5 +3830,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzs-first.js · 4 КБ
   · автотесты: первый час (M207):1
+
+## tests/91zzzt-chess.js · 8 КБ
+  · автотесты: шахматы по почте (M192):1
 
 ## tests/99-run.js · 0 КБ

@@ -87,11 +87,14 @@ function mailPush(ch,card,mine){
 /* ── отправить ──
    Своя карточка либо заводит новую цепочку (легла в кучу), либо отвечает в
    уже заведённую. Разница для игрока одна: у ответа есть кому дойти. */
-function mailSend(s,ch){
+function mailSend(s,ch,mv){
   if(!mailOn()||!postSigned(s))return Promise.resolve(false);
   if(mailLeft()<=0){tell("dim","Три карточки в сутки — и хватит","ТРИ КАРТОЧКИ В СУТКИ");return Promise.resolve(false);}
   const M=mailAll();
-  return mailCall(ch?"reply":"put",{card:mailWire(s),ch:ch||undefined}).then(j=>{
+  /* ход в партии (M192) едет ТОЙ ЖЕ посылкой, что и карточка: партия — это
+     та же переписка, и заводить ей второй провод незачем */
+  return mailCall(ch?"reply":"put",
+    {card:mailWire(s),ch:ch||undefined,mv:mv||undefined}).then(j=>{
     if(!j||!j.ok){
       if(j&&j.reason)logAdd("dim","Почта: "+j.reason);
       return false;
@@ -117,7 +120,11 @@ function mailDock(){
   mailBusy=now;
   mailCall("in").then(j=>{
     if(j&&j.ok&&j.in&&j.in.length){
-      for(const r of j.in)if(r&&r.card&&r.ch)mailPush(String(r.ch),r.card,false);
+      for(const r of j.in)if(r&&r.card&&r.ch){
+        mailPush(String(r.ch),r.card,false);
+        /* пришёл ход — кладём его в партию этой же цепочки (M192) */
+        if(r.mv&&typeof chessTake==="function")chessTake(String(r.ch),r.mv);
+      }
       logAdd("good","Ответ на карточку"+(j.in.length>1?" ×"+j.in.length:""));
       tell("good","Пришёл ответ на карточку","ПРИШЁЛ ОТВЕТ\nстопка на столе");
       if(tableOpenNow)tableRender();

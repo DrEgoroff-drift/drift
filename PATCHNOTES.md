@@ -7,6 +7,39 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.186.0 — chess by post: a move a day, and still nobody has a name (M192)
+
+The post (M188–M191) carries a photograph and a printed blank; this adds a second thing the same
+pipe can carry — **a game of chess with a stranger, one move per card**. The plan asked for it
+"after the post has bedded in"; it is being done now on the author's instruction to work the whole
+queue through.
+
+**A move is three small numbers.** `{f,t,p}` — from square, to square, promotion choice — and that
+is the entire wire format, so the rule the post was built on holds without a new exception: nothing
+the player *types* ever crosses. The board is not sent and is not stored. What persists is the list
+of moves, and the position is replayed from it (`chPosition`), the same way the world is replayed
+from a seed rather than saved. A corrupt move truncates the list instead of poisoning the game.
+
+**The engine is complete, not "enough for a demo".** Castling both sides with the rook's and king's
+own rights, en passant with the captured pawn actually removed, promotion to any of four pieces,
+check, mate and stalemate named as шах / мат / пат, and the rule that costs the most code and is
+the point of chess: you may not leave your own king attacked. `chLegal` filters pseudo-moves by
+playing them and asking. Three of the first test failures here were bugs in the *tests* — a knight
+asked to reach an occupied square, a promoting pawn placed one rank short — and the engine was
+right; they are written down in the suite so the next reader does not re-derive them.
+
+**Correspondence, not a match.** You start a game on a card you sent or caught, and after that each
+card carries one move. You cannot move twice; a move arriving out of turn is dropped and the game
+is untouched. The board lives on the desk as its own tab (ПАРТИЯ) and the move goes out with the
+next card — including through the night ether, where a caught card lays its move on the board while
+the announcer is still reading.
+
+**Server side.** `site/api.php` learns an `mv` field: validated field by field (`0…63`, no null
+move, promotion `0…3`), carried through `put` / `reply` / `ask` / `in`, and never trusted — the
+client re-checks legality before the move touches a game. The runner's `php -l` gate added in
+M190 covers it.
+
+`25n-chess`, suite `91zzzt-chess`, 8794 assertions in 344 suites.
 ## 0.185.0 — the newcomer's first hour: a relief operator, not a tutorial (M207)
 
 The plan has been asking for this since before the release block existed: walk a fresh save, write

@@ -139,6 +139,8 @@ function tableRender(){
     if(b.dataset.tab==="album")b.style.display=(typeof albumAll==="function"&&albumAll().length)?"":"none";
     /* почта появляется, когда она есть: офлайн её нет вовсе, и пустая закладка
        обещала бы то, чего в этой сборке не бывает (M190) */
+    if(b.dataset.tab==="chess")b.style.display=
+      (typeof chessAll==="function"&&Object.keys(chessAll().g).length)?"":"none";
     if(b.dataset.tab==="qsl")b.style.display=
       (typeof qslAll==="function"&&Object.keys(qslAll().heard).length)?"":"none";
     if(b.dataset.tab==="books")b.style.display=
@@ -167,6 +169,7 @@ function tableRender(){
              diary:"дневник зимовки · бланками, потому что писать некому",
              books:"полка · что нашлось в обломках и уцелело",
              qsl:"карточки · кого слышал и кто ответил",
+             chess:"партия · ход в сутки, доска считается из ходов",
              lore:"отчёт «Долгого хода»"};
   if(sub)sub.textContent=SUB[tableTab]||"";
   if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
@@ -194,6 +197,7 @@ function tableRender(){
   else if(tableTab==="diary"&&typeof renderDiary==="function")renderDiary(box);
   else if(tableTab==="books"&&typeof renderBooks==="function")renderBooks(box);
   else if(tableTab==="qsl"&&typeof renderQsl==="function")renderQsl(box);
+  else if(tableTab==="chess"&&typeof renderChess==="function")renderChess(box);
   else if(tableTab==="lore"&&typeof renderLoreBoard==="function")renderLoreBoard();
 }
 function tableRow(box,cls,em,text){
