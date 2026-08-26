@@ -12,13 +12,29 @@
    Поворот шеи взвешен по параметру хребта t, поэтому голова тянет за собой
    шею, а не отрывается от неё. */
 const GL_RIG=`
-uniform float uHeadYaw,uHeadPitch,uHeadRoll,uBreath,uLean,uBow,uTime,uPuff;
+uniform float uHeadYaw,uHeadPitch,uHeadRoll,uBreath,uLean,uBow,uTime,uPuff,uBlink,uJaw;
 uniform vec3 uNeckP;
 mat3 rotAxis(vec3 ax,float a){
   float c=cos(a),s=sin(a),k=1.0-c;
   return mat3(ax.x*ax.x*k+c, ax.x*ax.y*k+ax.z*s, ax.x*ax.z*k-ax.y*s,
               ax.y*ax.x*k-ax.z*s, ax.y*ax.y*k+c, ax.y*ax.z*k+ax.x*s,
               ax.z*ax.x*k+ax.y*s, ax.z*ax.y*k-ax.x*s, ax.z*ax.z*k+c);
+}
+/* ── подвижные части головы ──
+   Веко и подклювье — единственные два сустава, кроме шеи. Оба сделаны без
+   костей: вершина знает свой материал, и по нему решает, вокруг чего ей
+   поворачиваться. Веко собрано ЗАКРЫТЫМ и откинуто назад — так его нулевое
+   положение точно совпадает с глазом, а не «почти». */
+void partJoints(inout vec3 p, inout vec3 n, float m){
+  if(m>7.5&&m<8.5){
+    vec3 c=vec3(sign(p.x)*0.248,1.786,0.100);
+    mat3 R=rotAxis(vec3(1.0,0.0,0.0),-(1.0-uBlink)*1.55);
+    p=c+R*(p-c); n=R*n;
+  }else if(m>8.5){
+    vec3 h=vec3(0.0,1.678,0.118);
+    mat3 R=rotAxis(vec3(1.0,0.0,0.0),uJaw);
+    p=h+R*(p-h); n=R*n;
+  }
 }
 /* t — положение вдоль хребта (0 хвост, 1 темя); для частей, у которых своего t
    нет (клюв, хохол), передаётся единица: они едут с головой целиком */
@@ -115,6 +131,7 @@ out vec3 vP,vN,vC;
 out vec2 vTA;
 void main(){
   vec3 pp=p,nn=n;
+  partJoints(pp,nn,ta.y);
   rigApply(pp,nn,ta.x);
   vP=pp;vN=normalize(nn);vC=c;vTA=ta;
   gl_Position=uVP*vec4(pp,1.0);
@@ -137,7 +154,7 @@ void main(){
     /* тело под перьями — тёмная масса: его видно в щелях и на кромке, и
        красится оно приглушённым своим цветом, а не цветом оперения */
     alb=vC*0.30;rough=0.72;trans=0.06;
-  }else if(m<1.5){
+  }else if(m<1.5||m>8.5){
     /* Клюв — рог, а не пластмасса: вдоль верха идёт киль, к концу рог темнеет
        и уплотняется, у основания видны следы роста — поперечные бороздки.
        Без них клюв читается леденцом: гладкая жёлтая масса и один блик. */
@@ -171,8 +188,11 @@ void main(){
     N=normalize(N+vec3(0.0,s*0.10-0.05,0.0));
   }else if(m<5.5){
     rough=0.80;trans=0.42;alb=vC;         /* голая кожа: восковица, кольцо */
-  }else{
+  }else if(m<7.5){
     rough=0.22;trans=0.10;alb=vC;         /* коготь */
+  }else{
+    /* веко: кожа, но тоньше и теплее — на просвет через него видно кровь */
+    rough=0.70;trans=0.55;alb=vC;
   }
   o=vec4(lightPoint(vP,N,alb,rough,trans,vec3(0.0,1.0,0.0),0.0)*ao,1.0);
 }`;
@@ -186,6 +206,7 @@ layout(location=2) in vec2 ta;
 uniform mat4 uVP;
 void main(){
   vec3 pp=p,nn=n;
+  partJoints(pp,nn,ta.y);
   rigApply(pp,nn,ta.x);
   gl_Position=uVP*vec4(pp,1.0);
 }`;

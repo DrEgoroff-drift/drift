@@ -36,7 +36,7 @@ function buildParts(){
     {p:[0,1.637,0.280],r:[0.057,0.034]},
     {p:[0,1.623,0.327],r:[0.032,0.025]},
     {p:[0,1.618,0.350],r:[0.007,0.010]}
-  ],12,{m:1,t:1,up:[1,0,0],col:(v)=>vLerp(vLerp(C.beak,C.beakD,.50),C.beakD,smooth(.2,1,v))});
+  ],12,{m:9,t:1,up:[1,0,0],col:(v)=>vLerp(vLerp(C.beak,C.beakD,.50),C.beakD,smooth(.2,1,v))});
   /* восковица: валик у основания клюва, матовый и светлее рога */
   tube(M,[
     {p:[0,1.833,0.065],r:[0.090,0.064]},
@@ -60,6 +60,29 @@ function buildParts(){
     sphere(M,vAdd(p,vMul(n,0.010)),0.054,10,{m:2,t:1,col:()=>C.eye});
     disc(M,vAdd(p,vMul(n,0.048)),n,0.032,16,{m:2,t:1,
       col:(k)=>k?vLerp(C.amberD,C.eye,.40):C.eye});
+    /* ВЕКО. Собирается закрытым — куполом ровно по глазу — и в покое откинуто
+       назад поворотом в вершинной программе (материал 8). Так закрытый глаз
+       совпадает с открытым до сотой, чего подбором углов не добиться. */
+    {
+      const B=basisFrom(n),lid=meshBox();
+      for(let i=0;i<=6;i++){
+        const v=i/6;
+        for(let j=0;j<14;j++){
+          const th=j/14*TAU,r=0.062*Math.sin(v*Math.PI/2+0.10);
+          const q=vAdd(vAdd(p,vMul(B[0],Math.cos(th)*r)),vMul(B[1],Math.sin(th)*r));
+          const off=vMul(n,0.052*Math.cos(v*Math.PI/2));
+          lid.add(vAdd(q,off),n,1,8,vLerp(C.blueD,C.creamD,0.30));
+        }
+      }
+      for(let i=0;i<6;i++)for(let j=0;j<14;j++){
+        const j1=(j+1)%14;
+        lid.quad(i*14+j,i*14+j1,(i+1)*14+j1,(i+1)*14+j);
+      }
+      const off=M.n;
+      for(let k=0;k<lid.v.length;k++)M.v.push(lid.v[k]);
+      M.n+=lid.n;
+      for(const ix of lid.i)M.i.push(ix+off);
+    }
   }
 
   /* ── жёрдочка ──
