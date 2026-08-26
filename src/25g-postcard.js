@@ -32,13 +32,17 @@
 const POST_V=1;
 const POST_HOR=0.62;              /* горизонт в долях кадра */
 /* Рельеф дорог (полторы тысячи точек и полсотни валунов), а альбом рисует
-   двенадцать карточек подряд. Кэш на связку «планета+долгота» держит десяток. */
+   двенадцать карточек подряд. Кэш на связку «планета+долгота» держит с запасом
+   БОЛЬШЕ, чем мест в альбоме: ровно двенадцать значило бы, что альбом из
+   двенадцати разных планет вытесняет сам себя на каждой перерисовке. Замер на
+   худшем случае: холодный кэш — 178 мс, тёплый — 17. */
 const POST_TR=new Map();
+const POST_TR_MAX=18;
 function postTerrain(p,lon){
   const k=p.key+"@"+(lon==null?"-":lon.toFixed(3));
   let tr=POST_TR.get(k);
   if(!tr){tr=genTerrain(p,lon);POST_TR.set(k,tr);
-    if(POST_TR.size>12)POST_TR.delete(POST_TR.keys().next().value);}
+    if(POST_TR.size>POST_TR_MAX)POST_TR.delete(POST_TR.keys().next().value);}
   return tr;
 }
 /* мир снимка: планета или спутник по индексам */

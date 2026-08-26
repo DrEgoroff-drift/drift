@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 278 · символов верхнего уровня: 2603
+Файлов: 278 · символов верхнего уровня: 2604
 
 ## СИМВОЛЫ
 
@@ -63,9 +63,9 @@ aiFace                       src/12d-mgr-face.js:210
 aiLearn                      src/12f-mgr-ai.js:107
 aiStage                      src/12f-mgr-ai.js:19
 aiUpkeep                     src/12f-mgr-ai.js:126
-ALBUM_MAX                    src/25g-postcard.js:492
-albumAll                     src/25g-postcard.js:493
-albumOpen                    src/25g-postcard.js:523
+ALBUM_MAX                    src/25g-postcard.js:496
+albumAll                     src/25g-postcard.js:497
+albumOpen                    src/25g-postcard.js:527
 allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:517
 ambK                         src/19c-light.js:39
@@ -206,7 +206,7 @@ builtKey                     src/21c-built.js:16
 builtSpot                    src/21c-built.js:34
 bWall                        src/21aa-base-rooms.js:187
 bWorker                      src/21aa-base-rooms.js:322
-camBtnTick                   src/25g-postcard.js:514
+camBtnTick                   src/25g-postcard.js:518
 camOffset                    src/19c-light.js:76
 camStep                      src/19c-light.js:62
 canPay                       src/21a-mode-base.js:51
@@ -543,7 +543,7 @@ drawPlant                    src/20-life.js:346
 drawPlantAlien               src/20-life.js:160
 drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
-drawPostcard                 src/25g-postcard.js:97
+drawPostcard                 src/25g-postcard.js:101
 drawRaid                     src/24aa-raid-draw.js:14
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:107
@@ -1544,11 +1544,11 @@ passShipX                    src/11p-pass.js:34
 passTell                     src/11p-pass.js:55
 PAX_KEYS                     src/02-world.js:35
 payCost                      src/21a-mode-base.js:52
-pcA                          src/25g-postcard.js:76
-pcC                          src/25g-postcard.js:73
-pcMix                        src/25g-postcard.js:75
+pcA                          src/25g-postcard.js:80
+pcC                          src/25g-postcard.js:77
+pcMix                        src/25g-postcard.js:79
 pcSame                       tests/91zzzi-postcard.js:23
-pcStar                       src/25g-postcard.js:78
+pcStar                       src/25g-postcard.js:82
 pcTestPixels                 tests/91zzzi-postcard.js:17
 pcTestPlanet                 tests/91zzzi-postcard.js:2
 pcTestSnap                   tests/91zzzi-postcard.js:12
@@ -1674,23 +1674,24 @@ POST_ITEMS                   src/11e-post.js:20
 POST_LAST                    src/11e-post.js:112
 POST_LINKS                   src/11e-post.js:25
 POST_SALT                    src/11e-post.js:18
-POST_TR                      src/25g-postcard.js:36
+POST_TR                      src/25g-postcard.js:39
+POST_TR_MAX                  src/25g-postcard.js:40
 POST_V                       src/25g-postcard.js:32
 POST_WHAT                    src/11e-post.js:19
 postAddrs                    src/11e-post.js:47
 postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113
-postCanShoot                 src/25g-postcard.js:494
-postCaption                  src/25g-postcard.js:64
+postCanShoot                 src/25g-postcard.js:498
+postCaption                  src/25g-postcard.js:68
 postDock                     src/11e-post.js:80
 postHolding                  src/11e-post.js:107
 postItem                     src/11e-post.js:42
 postLinkHere                 src/11e-post.js:73
 postOpen                     src/11e-post.js:99
-postSnap                     src/25g-postcard.js:53
-postTake                     src/25g-postcard.js:498
-postTerrain                  src/25g-postcard.js:37
-postWorld                    src/25g-postcard.js:45
+postSnap                     src/25g-postcard.js:57
+postTake                     src/25g-postcard.js:502
+postTerrain                  src/25g-postcard.js:41
+postWorld                    src/25g-postcard.js:49
 prevAct                      src/08-state.js:40
 pricesSeen                   src/12aa-need.js:188
 prism                        src/21b-surface-deco.js:201
@@ -1819,7 +1820,7 @@ relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07-planet.js:374
-renderAlbum                  src/25g-postcard.js:524
+renderAlbum                  src/25g-postcard.js:528
 renderBarge                  src/12l-barge.js:617
 renderBasesTab               src/26a-ui-station-home.js:4
 renderCantina                src/27c-ui-hq.js:45
@@ -3157,7 +3158,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/25g-postcard.js · 32 КБ
   · открытка: снимок сцены, а не пиксели:1
-  · камера и альбом:478
+  · камера и альбом:482
 
 ## src/26a-ui-station-home.js · 12 КБ
   · станция: вкладка «дом и базы»:1
