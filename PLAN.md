@@ -1211,3 +1211,16 @@ Five rounds of render → critique → fix → verify, each against the breed sh
 `Join-Path $root "site\treplo3d.html"`. On the Linux runner the backslash is not a separator but
 part of a filename, so CI wrote a file literally named `site\treplo3d.html` into the repo root and
 uploaded the *previous* committed page. Paths are composed part by part now.
+
+## M200g — the pole plugged for good, seven times the feathers (2026-08-26)
+
+- **The hole in the crown, third and last time.** The loft's poles are closed by a fan of
+  triangles, but that fan's winding is easy to get backwards, and then face culling eats the cap
+  and the window into the skull is back. The poles are now simply **plugged with spheres** —
+  closed at any winding, twenty vertices each, sunk under the skin so nothing shows through the
+  plumage. A sphere sticking out reads as a dark bead on the crown, so it sits 30 mm in.
+- **Feathers ×7** (3 300 → ~22 000: 6 200 plates and ~15 900 of down), and **fluffier**: the tip
+  of every feather is lifted higher, its angle scattered in all three axes, and the plates are
+  narrower so the down shows between them. Quality never falls back on the fly — the phone tier
+  is set once, at about a third of the count.
+- The beak is pushed a further 30 mm forward, hook and all.

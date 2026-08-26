@@ -18,8 +18,8 @@ function qualPick(){
   const m=q?q==="low":(innerWidth<=760||(navigator.maxTouchPoints||0)>1);
   QUAL.mobile=m;
   QUAL.coatMesh=m?[5,6]:[7,8];
-  QUAL.rows=m?32:42;
-  QUAL.dens=m?50:64;
+  QUAL.rows=m?54:94;
+  QUAL.dens=m?86:143;
   QUAL.shadow=m?1024:1536;
   QUAL.dpr=m?1.6:2;
   QUAL.bloomN=m?4:5;
@@ -57,7 +57,7 @@ function birdBoot(){
   glInstances(MESH.coat,layoutCoat(QUAL.rows,QUAL.dens),IA,FEA_STRIDE);
   /* подпушь: вдвое гуще и вдвое мельче, кладётся ПОД пластины */
   MESH.down  =glMesh(buildFeather(5,7));
-  glInstances(MESH.down,layoutCoat(Math.round(QUAL.rows*1.7),Math.round(QUAL.dens*1.8),0.52,0x51f7),IA,FEA_STRIDE);
+  glInstances(MESH.down,layoutCoat(Math.round(QUAL.rows*1.55),Math.round(QUAL.dens*1.65),0.60,0x51f7),IA,FEA_STRIDE);
   MESH.plumes=glMesh(buildFeather(7,13,true));
   glInstances(MESH.plumes,layoutPlumes(),IA,FEA_STRIDE);
   renderInit();
