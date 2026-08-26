@@ -94,8 +94,8 @@ const normalAt=(t,a)=>bodyNormal(t,a);
    клюва — перья должны наезжать на его основание, иначе между рогом и
    оперением остаётся тёмная щель, как будто клюв приклеили */
 const BEAK_BALLS=[
-  [0,1.808,0.100,0.112],[0,1.782,0.180,0.114],[0,1.746,0.260,0.104],
-  [0,1.696,0.330,0.090],[0,1.628,0.370,0.074],[0,1.666,0.140,0.100]
+  [0,1.800,0.100,0.098],[0,1.778,0.176,0.100],[0,1.748,0.244,0.094],
+  [0,1.706,0.300,0.082],[0,1.652,0.330,0.068],[0,1.670,0.130,0.092]
 ];
 const COAT_STAT={all:0,head:0,cut:0};
 const PLUME_STAT=[];
@@ -113,7 +113,7 @@ function layoutCoat(rows,dens,scale,seed){
     /* на голове перьев ВДВОЕ гуще: они там мельче, и той же плотности не
        хватает — между ними проступает кожа. Это не украшение, это единственный
        способ иметь мелкое перо и не облысеть */
-    const n=Math.max(7,Math.round(girth*DENS*mix(1.0,2.30,smooth(0.72,0.92,t0))));
+    const n=Math.max(7,Math.round(girth*DENS*mix(1.0,3.10,smooth(0.70,0.92,t0))));
     for(let j=0;j<n;j++){
       const a=(j+(r%2)*0.5)/n*TAU+R()*0.10;
       /* ряд не должен читаться рядом: каждое перо гуляет вдоль хребта на
@@ -131,7 +131,7 @@ function layoutCoat(rows,dens,scale,seed){
       }
       if(!bare)for(const sx of [-1,1]){
         const d=Math.hypot(base[0]-sx*0.252,base[1]-1.758,base[2]-0.108);
-        if(d<0.076){bare=true;break;}
+        if(d<0.118){bare=true;break;}
       }
       if(bare){COAT_STAT.cut++;continue;}
       COAT_STAT.all++; if(base[1]>1.60)COAT_STAT.head++;
@@ -144,7 +144,7 @@ function layoutCoat(rows,dens,scale,seed){
       /* КРУПНЫЕ МАССЫ. Три тысячи одинаковых перьев дают шум, в котором глазу
          не за что зацепиться: перьев теперь впятеро меньше, и каждое — не
          чешуйка, а пластина. Мелкое остаётся только на голове. */
-      const len=mix(0.335,0.105,smooth(0.06,0.76,t))*(0.90+R()*0.20)*SC;
+      const len=mix(0.335,0.072,smooth(0.06,0.72,t))*(0.90+R()*0.20)*SC;
       /* НАСКОЛЬКО поднят конец пера — считается, а не подбирается. Перо
          лежит по касательной, а тело под ним круглое: на голове радиусом
          0.28 перо длиной 0.09 уходит под поверхность на полтора сантиметра
@@ -209,76 +209,71 @@ function layoutPlumes(){
   const mark=(s)=>{PLUME_STAT.push(s+":"+(out.length/FEA_STRIDE));};
   for(const sx of [-1,1]){
     const flip=a=>sx>0?a:Math.PI-a;
-    /* МАХОВЫЕ. В сложенном крыле они лежат СТОПКОЙ: направления почти
-       одинаковые, разная только длина — потому кончики и образуют ступеньку
-       вдоль тела. Пока направления расходились веером уже в покое, раскрытое
-       крыло превращалось в звезду вокруг птицы вместо лопасти. */
-    const NP=5;
+    /* ── КРЫЛО В ЧЕТЫРЕ СЛОЯ ──
+       С листа породы, от кромки к телу:
+         1. маховые — длинные, светло-голубые, к концу почти цианные;
+         2. второстепенные — кремовая полоса;
+         3. кроющие — приглушённый сиренево-серый ряд;
+         4. плечевые — яркий янтарь у самого корпуса.
+       Плюс тёмно-кобальтовая кромка снизу. Слои различаются не только цветом,
+       но и длиной: если их уравнять, четыре ряда сольются в одно поле. */
+    const NP=14;
     for(let i=0;i<NP;i++){
       const k=i/(NP-1);
-      const t=mix(0.60,0.52,k),a=flip(mix(0.16,0.02,k));
+      const t=mix(0.60,0.50,k),a=flip(mix(0.17,0.01,k));
       const base=bodyAt(t,a),nrm=normalAt(t,a);
-      const dir=vNorm([sx*(0.17-0.05*k),-0.20-0.05*k,-0.94]);
-      const len=mix(0.92,1.32,k);
-      feaPush(out,vAdd(base,vMul(nrm,0.008)),
-        vNorm(vAdd(dir,vMul(nrm,0.03))),nrm,
-        len,len*0.30,vLerp(BIRD_C.blueD,BIRD_C.blue,0.30-k*0.20),[0.6,0.14,t,1.0]);
+      const dir=vNorm([sx*(0.17-0.05*k+(hashf(i*29,7)-0.5)*0.06),-0.20-0.05*k+(hashf(i*31,9)-0.5)*0.05,-0.94]);
+      /* Разброс по длине и углу — то, чем перья отличаются от ленты. Ровный
+         ряд одинаковых перьев сливается в гладкую полосу, сколько бы их ни
+         было: край читается по ПИЛЕ из кончиков, а не по числу перьев. */
+      const jt=hashf(i*17+3,sx>0?1:2);
+      const len=mix(0.86,1.34,k)*(0.90+jt*0.20);
+      /* к внешним перьям цвет светлеет: на листе кромка крыла почти цианная */
+      const c=vLerp(BIRD_C.blue,BIRD_C.blueL,0.18+k*0.62);
+      feaPush(out,vAdd(base,vMul(nrm,0.010)),
+        vNorm(vAdd(dir,vMul(nrm,0.03+(i%2)*0.045))),nrm,len,len*0.165,c,[0.6,0.14,t,1.0]);
     }
-    /* второстепенные: та же стопка, короче и выше */
-    const NS=5;
+    const NS=12;
     for(let i=0;i<NS;i++){
       const k=i/(NS-1);
-      const t=mix(0.66,0.56,k),a=flip(mix(0.32,0.12,k));
+      const t=mix(0.66,0.55,k),a=flip(mix(0.30,0.10,k));
       const base=bodyAt(t,a),nrm=normalAt(t,a);
-      const dir=vNorm([sx*(0.26-0.06*k),-0.02-0.05*k,-0.92]);
-      const len=mix(0.62,0.90,k);
-      feaPush(out,vAdd(base,vMul(nrm,0.004)),
-        vNorm(vAdd(dir,vMul(nrm,0.06))),nrm,
-        len,len*0.40,vLerp(BIRD_C.blue,BIRD_C.blueD,0.28+k*0.30),[0.7,0.16,t,1.0]);
-    }
-    /* Кроющие крыла двумя рядами поверх второстепенных: на листе крыло —
-       слоёная панель с тёмной каймой, а не синее поле. Ряды идут вдоль той же
-       дуги, что маховые, и каждый следующий короче и темнее. */
-    for(let r=0;r<2;r++)for(let i=0;i<6;i++){
-      const k=i/5;
-      const t=mix(0.70,0.54,k)-r*0.010;
-      const a=flip(mix(0.30,0.06,k)+r*0.13);
-      const base=bodyAt(t,a),nrm=normalAt(t,a);
-      const tip=[sx*mix(0.24,0.12,k),mix(0.86,0.60,k)-r*0.04,mix(-0.34,-0.62,k)];
-      const dir=vSub(tip,base),len=vLen(dir)*(0.92-r*0.10);
-      /* цвет крупными блоками: разноцветить каждое перо — снова шум */
-      const c=vLerp(BIRD_C.blue,BIRD_C.blueD,0.18+r*0.40);
-      feaPush(out,vAdd(base,vMul(nrm,0.002)),
-        vNorm(vAdd(vNorm(dir),vMul(nrm,0.10))),nrm,
-        len,len*0.52,c,[0.8,0.16,t,1.0]);
-    }
-    /* ЗЕРКАЛО И КАЙМА. На листе у раскрытого крыла светлая внутренняя часть и
-       тёплая полоса по переднему краю — по ним крыло и читается крылом, а не
-       синей лопастью. Оба ряда лежат поверх кроющих и раскрываются вместе с
-       ними, потому что род пера у них тот же (1). */
-    for(let i=0;i<5;i++){
-      const k=i/4;
-      const t=mix(0.68,0.50,k);
-      const a=flip(mix(0.42,0.16,k));
-      const base=bodyAt(t,a),nrm=normalAt(t,a);
-      /* кайма — узкая ПОЛОСА по переднему краю, а не нагрудник: широкие перья
-         во весь бок закрывали собой всё крыло оранжевым щитом */
-      const tip=[sx*mix(0.30,0.22,k),mix(0.88,0.74,k),mix(-0.22,-0.34,k)];
-      const dir=vSub(tip,base),len=vLen(dir)*0.52;
-      feaPush(out,vAdd(base,vMul(nrm,0.010)),
-        vNorm(vAdd(vNorm(dir),vMul(nrm,0.16))),nrm,
-        len,len*0.30,vLerp(BIRD_C.amber,BIRD_C.amberD,0.20+k*0.45),[0.9,0.16,t,1.0]);
-    }
-    for(let i=0;i<4;i++){
-      const k=i/3;
-      const t=mix(0.62,0.48,k);
-      const a=flip(mix(0.24,0.02,k));
-      const base=bodyAt(t,a),nrm=normalAt(t,a);
-      const tip=[sx*mix(0.28,0.20,k),mix(0.80,0.66,k),mix(-0.36,-0.52,k)];
-      const dir=vSub(tip,base),len=vLen(dir)*0.66;
+      const dir=vNorm([sx*(0.26-0.06*k),-0.04-0.05*k,-0.92]);
+      const len=mix(0.60,0.86,k)*(0.90+hashf(i*23+5,3)*0.20);
+      const c=vLerp(BIRD_C.cream,BIRD_C.creamD,0.15+k*0.45);
       feaPush(out,vAdd(base,vMul(nrm,0.006)),
-        vNorm(vAdd(vNorm(dir),vMul(nrm,0.12))),nrm,
-        len,len*0.34,vLerp(BIRD_C.cream,BIRD_C.blueL,0.18+k*0.30),[0.9,0.16,t,1.0]);
+        vNorm(vAdd(dir,vMul(nrm,0.06+(i%2)*0.05))),nrm,len,len*0.225,c,[0.7,0.16,t,1.0]);
+    }
+    /* сиренево-серый ряд: он и разделяет кремовую полосу с янтарём */
+    const NC=12;
+    for(let i=0;i<NC;i++){
+      const k=i/(NC-1);
+      const t=mix(0.70,0.58,k),a=flip(mix(0.40,0.20,k));
+      const base=bodyAt(t,a),nrm=normalAt(t,a);
+      const dir=vNorm([sx*(0.30-0.06*k),0.06-0.05*k,-0.88]);
+      const len=mix(0.40,0.58,k)*(0.88+hashf(i*19+11,5)*0.24);
+      const c=vLerp(vLerp(BIRD_C.viol,BIRD_C.creamD,0.30),BIRD_C.blueD,0.30+k*0.34);
+      feaPush(out,vAdd(base,vMul(nrm,0.004)),
+        vNorm(vAdd(dir,vMul(nrm,0.10))),nrm,len,len*0.26,c,[0.8,0.16,t,1.0]);
+    }
+    /* янтарные плечевые: самый ближний к телу слой, он же эполет */
+    for(let r=0;r<3;r++)for(let i=0;i<9;i++){
+      const k=i/8,t=mix(0.72,0.58,k)-r*0.012;
+      const a=flip(0.46-r*0.15+k*0.10);
+      const base=bodyAt(t,a),nrm=normalAt(t,a);
+      const dir=vNorm(vAdd(flowAt(t,a),vMul(nrm,0.20)));
+      const c=vLerp(BIRD_C.amber,BIRD_C.amberD,0.10+r*0.26+R()*0.18);
+      feaPush(out,base,dir,nrm,0.26-r*0.04,0.095-r*0.012,c,[1.0,0.12,t,1.0]);
+    }
+    /* тёмная кромка по низу крыла: без неё слои некуда «положить» */
+    for(let i=0;i<10;i++){
+      const k=i/9;
+      const t=mix(0.58,0.48,k),a=flip(mix(-0.05,-0.24,k));
+      const base=bodyAt(t,a),nrm=normalAt(t,a);
+      const dir=vNorm([sx*(0.12-0.03*k),-0.30-0.06*k,-0.94]);
+      const len=mix(0.70,1.00,k);
+      feaPush(out,base,vNorm(vAdd(dir,vMul(nrm,0.02))),nrm,
+        len,len*0.155,vLerp(BIRD_C.blueD,BIRD_C.body,0.10+k*0.30),[0.6,0.14,t,1.0]);
     }
     /* ШТАНЫ: перья бедра свисают на цевку. Без них нога торчит из-под груди
        голой трубкой, а на листе она прикрыта почти до пятки. */
@@ -353,7 +348,7 @@ function layoutPlumes(){
          :vLerp(BIRD_C.blue,BIRD_C.blueL,smooth(0.10,0.95,s));
     if(hv>0.86)c=vLerp(c,BIRD_C.viol,0.42);
     c=vLerp(c,BIRD_C.viol,smooth(0.72,1.0,s)*0.35);
-    feaPush(out,q.base,q.dir,normalAt(0.96,Math.PI*1.5),q.len,q.len*0.42,
+    feaPush(out,q.base,q.dir,normalAt(0.96,Math.PI*1.5),q.len,q.len*0.46,
       c,[0.9,-0.26-s*0.16,1.0,3.0],(i%3-1)*0.26+((i%2)?0.12:-0.12));
   }
   mark("хохол");
