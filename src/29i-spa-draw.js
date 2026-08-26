@@ -119,6 +119,29 @@ function drawSpa(){
     sg.addColorStop(0,sprgba(SPA_C.shade,0.24));
     sg.addColorStop(1,sprgba(SPA_C.shade,0.02));
     ctx.fillStyle=sg;ctx.fillRect(0,g.deck,W,H-g.deck);
+    /* ── тень перил поперёк палубы ──
+       Пол был большим пустым коричневым полем. Заполнять его мебелью значило
+       бы захламлять веранду; заполняет его то, что там и должно быть в полдень:
+       решётка тени от перил, косая и длинная. И она же говорит, где солнце. */
+    const rr=g.rail, sl=W*0.11;
+    ctx.save();
+    ctx.beginPath();ctx.rect(0,g.deck,W,H-g.deck);ctx.clip();
+    ctx.fillStyle=sprgba([30,44,58],0.16);
+    for(let x=-sl;x<W;x+=W*0.075){
+      ctx.beginPath();
+      ctx.moveTo(x+sl,g.deck);
+      ctx.lineTo(x+sl+W*0.010,g.deck);
+      ctx.lineTo(x+W*0.014,H);
+      ctx.lineTo(x,H);
+      ctx.closePath();ctx.fill();
+    }
+    /* и две продольные тени от поручней */
+    for(const q of [0.30,0.52]){
+      const y=g.deck+(H-g.deck)*q;
+      ctx.fillStyle=sprgba([30,44,58],0.14);
+      ctx.fillRect(0,y,W,Math.max(3,H*0.010*(0.6+q)));
+    }
+    ctx.restore();
   }
 
   /* ── 5. перила: стойки и два поручня ── */
@@ -215,30 +238,75 @@ function drawSpa(){
     }
   }
 
-  /* ── 8. шезлонг ── */
+  /* ── 8. шезлонг ──
+     Первый счёт рисовал две палки и многоугольник — выходила связка хвороста.
+     Шезлонг читается шезлонгом от ИЗЛОМА: спинка идёт вверх-назад, сиденье
+     почти горизонтально, между ними колено, и ткань одним куском проходит по
+     обеим плоскостям. Плюс рама из двух пар ножек крест-накрест и подлокотник:
+     без подлокотника это раскладушка. */
   {
     const c=g.chair;
-    ctx.fillStyle="rgba(0,0,0,.20)";
-    ctx.fillRect(c.x-c.w*0.05,g.deck+H*0.006,c.w*1.1,Math.max(2,H*0.010));
-    ctx.strokeStyle=spcol(SPA_C.rail,0.88);
-    ctx.lineWidth=Math.max(3,H*0.006);
+    const bx=c.x, by=g.deck;                     /* низ передних ножек */
+    const kneeX=bx+c.w*0.46, kneeY=c.y+c.h*0.58; /* колено ткани */
+    const headX=bx+c.w*0.10, headY=c.y+c.h*0.04; /* верх спинки */
+    const footX=bx+c.w*0.98, footY=c.y+c.h*0.70; /* край сиденья */
+    ctx.fillStyle="rgba(0,0,0,.22)";
     ctx.beginPath();
-    ctx.moveTo(c.x,g.deck);ctx.lineTo(c.x+c.w*0.30,c.y+c.h*0.34);
-    ctx.moveTo(c.x+c.w*0.92,g.deck);ctx.lineTo(c.x+c.w*0.62,c.y+c.h*0.62);
+    ctx.ellipse(bx+c.w*0.52,by+H*0.010,c.w*0.60,H*0.014,0,0,TAU);ctx.fill();
+    /* рама: две пары ножек крест-накрест */
+    ctx.strokeStyle=spcol(SPA_C.wood2,1.05);
+    ctx.lineWidth=Math.max(3,H*0.0062);
+    ctx.lineCap="round";
+    ctx.beginPath();
+    ctx.moveTo(bx+c.w*0.10,by);ctx.lineTo(kneeX+c.w*0.06,kneeY-c.h*0.02);
+    ctx.moveTo(bx+c.w*0.62,by);ctx.lineTo(bx+c.w*0.30,kneeY+c.h*0.06);
+    ctx.moveTo(bx+c.w*0.86,by);ctx.lineTo(footX-c.w*0.10,footY);
     ctx.stroke();
-    ctx.fillStyle=spcol([214,196,150],1);
+    /* ткань одним куском: спинка и сиденье через колено */
+    ctx.fillStyle=spcol([228,212,168],1);
     ctx.beginPath();
-    ctx.moveTo(c.x+c.w*0.14,c.y+c.h*0.30);
-    ctx.lineTo(c.x+c.w*0.44,c.y+c.h*0.06);
-    ctx.lineTo(c.x+c.w*0.62,c.y+c.h*0.24);
-    ctx.lineTo(c.x+c.w*0.96,c.y+c.h*0.66);
-    ctx.lineTo(c.x+c.w*0.72,c.y+c.h*0.78);
-    ctx.lineTo(c.x+c.w*0.06,c.y+c.h*0.44);
+    ctx.moveTo(headX,headY);
+    ctx.lineTo(headX+c.w*0.22,headY+c.h*0.10);
+    ctx.lineTo(kneeX+c.w*0.10,kneeY+c.h*0.02);
+    ctx.lineTo(footX,footY);
+    ctx.lineTo(footX-c.w*0.06,footY+c.h*0.13);
+    ctx.lineTo(kneeX-c.w*0.02,kneeY+c.h*0.14);
+    ctx.lineTo(headX-c.w*0.04,headY+c.h*0.16);
     ctx.closePath();ctx.fill();
-    /* полосы на ткани */
-    ctx.fillStyle="rgba(190,120,88,.45)";
-    for(let i=0;i<4;i++)
-      ctx.fillRect(c.x+c.w*(0.16+i*0.18),c.y+c.h*0.12,c.w*0.055,c.h*0.62);
+    /* полосы идут ПОПЕРЁК ткани, ломаясь на колене вместе с ней */
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(headX,headY);
+    ctx.lineTo(headX+c.w*0.22,headY+c.h*0.10);
+    ctx.lineTo(kneeX+c.w*0.10,kneeY+c.h*0.02);
+    ctx.lineTo(footX,footY);
+    ctx.lineTo(footX-c.w*0.06,footY+c.h*0.13);
+    ctx.lineTo(kneeX-c.w*0.02,kneeY+c.h*0.14);
+    ctx.lineTo(headX-c.w*0.04,headY+c.h*0.16);
+    ctx.closePath();ctx.clip();
+    ctx.strokeStyle="rgba(194,118,86,.55)";
+    ctx.lineWidth=Math.max(3,c.w*0.030);
+    for(let i=0;i<7;i++){
+      const q=i/6;
+      const ax=headX+(kneeX-headX)*q, ay=headY+(kneeY-headY)*q;
+      ctx.beginPath();
+      ctx.moveTo(ax,ay-c.h*0.02);ctx.lineTo(ax+c.w*0.10,ay+c.h*0.17);ctx.stroke();
+    }
+    for(let i=0;i<5;i++){
+      const q=i/4;
+      const ax=kneeX+(footX-kneeX)*q, ay=kneeY+(footY-kneeY)*q;
+      ctx.beginPath();
+      ctx.moveTo(ax,ay-c.h*0.01);ctx.lineTo(ax+c.w*0.04,ay+c.h*0.15);ctx.stroke();
+    }
+    ctx.restore();
+    /* подлокотник */
+    ctx.strokeStyle=spcol(SPA_C.wood,1.08);
+    ctx.lineWidth=Math.max(3,H*0.0055);
+    ctx.beginPath();
+    ctx.moveTo(headX+c.w*0.06,headY+c.h*0.22);
+    ctx.lineTo(kneeX+c.w*0.04,kneeY+c.h*0.16);
+    ctx.stroke();
+    ctx.lineCap="butt";
   }
 
   /* ── 9. стакан на перилах: коктейль, пена оседает ── */
@@ -259,37 +327,77 @@ function drawSpa(){
      что они на веранде делают. */
   {
     const m=g.man*0.86, x=g.manx, y=g.deck;
-    ctx.fillStyle="rgba(0,0,0,.22)";
-    ctx.beginPath();ctx.ellipse(x,y+m*0.012,m*0.15,m*0.024,0,0,TAU);ctx.fill();
-    const col=[64,72,84];
-    ctx.fillStyle=spcol(col,1);
-    ctx.fillRect(x-m*0.055,y-m*0.42,m*0.044,m*0.42);
-    ctx.fillRect(x+m*0.014,y-m*0.42,m*0.044,m*0.42);
-    ctx.beginPath();
-    ctx.moveTo(x-m*0.085,y-m*0.82);ctx.lineTo(x+m*0.085,y-m*0.82);
-    ctx.lineTo(x+m*0.072,y-m*0.40);ctx.lineTo(x-m*0.072,y-m*0.40);
-    ctx.closePath();ctx.fill();
-    /* руки на поручне: поза, по которой сразу видно, что человек стоит и смотрит */
-    /* руки лежат на поручне: локоть вниз, кисть на перекладине. Без излома
-       это были две палки от плеча, и поза не читалась вовсе */
-    ctx.strokeStyle=spcol(col,1.06);
-    ctx.lineWidth=Math.max(2.4,m*0.046);
-    ctx.lineCap="round";
     const rl=g.rail.y+g.rail.h*0.42;
+    ctx.fillStyle="rgba(0,0,0,.24)";
+    ctx.beginPath();ctx.ellipse(x,y+m*0.012,m*0.16,m*0.026,0,0,TAU);ctx.fill();
+    const skin=[206,172,142], shirt=[228,232,236], trous=[86,96,110];
+    /* ноги в лёгких брюках: узкие в колене, шире внизу — в санатории ходят не
+       в скафандре, и это должно быть видно силуэтом */
+    ctx.fillStyle=spcol(trous,1);
+    for(const s2 of [-1,1]){
+      const lx=x+s2*m*0.034;
+      ctx.beginPath();
+      ctx.moveTo(lx-m*0.030,y-m*0.44);
+      ctx.lineTo(lx+m*0.030,y-m*0.44);
+      ctx.lineTo(lx+m*0.034,y-m*0.02);
+      ctx.lineTo(lx-m*0.034,y-m*0.02);
+      ctx.closePath();ctx.fill();
+    }
+    /* сандалии */
+    ctx.fillStyle=spcol([120,96,72],1);
+    for(const s2 of [-1,1])
+      ctx.fillRect(x+s2*m*0.034-m*0.038,y-m*0.024,m*0.078,m*0.024);
+    /* рубаха навыпуск: плечи — талия — подол, три перелома, как у ватника,
+       только светлая и короче */
+    ctx.fillStyle=spcol(shirt,1);
+    ctx.beginPath();
+    ctx.moveTo(x-m*0.082,y-m*0.800);
+    ctx.lineTo(x+m*0.082,y-m*0.800);
+    ctx.lineTo(x+m*0.088,y-m*0.660);
+    ctx.lineTo(x+m*0.064,y-m*0.560);
+    ctx.lineTo(x+m*0.082,y-m*0.420);
+    ctx.lineTo(x-m*0.082,y-m*0.420);
+    ctx.lineTo(x-m*0.064,y-m*0.560);
+    ctx.lineTo(x-m*0.088,y-m*0.660);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle=sprgba(SPA_C.shade,0.16);
+    ctx.fillRect(x-m*0.082,y-m*0.470,m*0.164,m*0.050);
+    /* руки лежат на поручне: локоть вниз, кисть на перекладине */
+    ctx.strokeStyle=spcol(skin,1);
+    ctx.lineWidth=Math.max(2.4,m*0.044);
+    ctx.lineCap="round";ctx.lineJoin="round";
     for(const s2 of [-1,1]){
       ctx.beginPath();
-      ctx.moveTo(x+s2*m*0.078,y-m*0.77);
-      ctx.lineTo(x+s2*m*0.145,y-m*0.55);
-      ctx.lineTo(x+s2*m*0.115,rl);
+      ctx.moveTo(x+s2*m*0.076,y-m*0.760);
+      ctx.lineTo(x+s2*m*0.140,y-m*0.560);
+      ctx.lineTo(x+s2*m*0.112,rl);
       ctx.stroke();
     }
-    ctx.lineCap="butt";
-    ctx.fillStyle=spcol([196,166,138],1);
-    ctx.fillRect(x-m*0.020,y-m*0.855,m*0.040,m*0.042);
-    ctx.beginPath();ctx.arc(x,y-m*0.90,m*0.058,0,TAU);ctx.fill();
-    /* солнечный верх: тёплая полоса по плечам и голове */
-    ctx.fillStyle=sprgba(SPA_C.sun,0.30);
-    ctx.fillRect(x-m*0.085,y-m*0.82,m*0.17,Math.max(1.5,m*0.016));
+    ctx.lineCap="butt";ctx.lineJoin="miter";
+    /* короткий рукав: полоса рубахи поверх начала руки */
+    ctx.fillStyle=spcol(shirt,0.94);
+    for(const s2 of [-1,1]){
+      ctx.beginPath();
+      ctx.moveTo(x+s2*m*0.052,y-m*0.800);
+      ctx.lineTo(x+s2*m*0.098,y-m*0.790);
+      ctx.lineTo(x+s2*m*0.106,y-m*0.690);
+      ctx.lineTo(x+s2*m*0.058,y-m*0.700);
+      ctx.closePath();ctx.fill();
+    }
+    /* шея, голова, волосы: затылок к нам — человек смотрит на море */
+    ctx.fillStyle=spcol(skin,1);
+    ctx.fillRect(x-m*0.019,y-m*0.836,m*0.038,m*0.040);
+    ctx.beginPath();ctx.arc(x,y-m*0.878,m*0.056,0,TAU);ctx.fill();
+    ctx.fillStyle=spcol([74,60,50],1);
+    ctx.beginPath();
+    ctx.arc(x,y-m*0.884,m*0.056,Math.PI*0.86,Math.PI*2.14);ctx.fill();
+    ctx.fillRect(x-m*0.050,y-m*0.892,m*0.100,m*0.040);
+    /* солнце сверху слева: тёплая кромка по плечу и по голове */
+    ctx.fillStyle=sprgba(SPA_C.sun,0.34);
+    ctx.fillRect(x-m*0.082,y-m*0.800,m*0.164,Math.max(1.5,m*0.014));
+    ctx.beginPath();
+    ctx.arc(x-m*0.010,y-m*0.884,m*0.056,Math.PI*1.05,Math.PI*1.55);
+    ctx.lineTo(x-m*0.010,y-m*0.884);ctx.fill();
   }
   {
     /* сосед в шезлонге: только голова, колени и книжка. Больше и не надо */

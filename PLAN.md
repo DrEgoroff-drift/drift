@@ -868,9 +868,11 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   unit each and a repair eats the day (no diary that evening). The wall talks iron early and almost
   words by the end, with the explanation always available.
 
-  **Still open: the room wants another art pass** — the figure reads as a coat rather than a
-  person, the berth under the window is a plank with a pillow, and the stove's foot is lost in the
-  vignette.
+  **Art pass, 0.178.1:** the figure is a person now — a padded coat with three breaks in the
+  silhouette (shoulders, belt, skirt), felt boots wider at the foot than the shin, an ear-flapped
+  cap and a cheek-sized patch of face lit by the stove. The berth got thickness: side rail, gap to
+  the floor, mattress overhanging the frame, blanket turned back off a light sheet. The stove got
+  legs to the floor and a contact shadow.
 - **M198 — the observer's choice** — **built (0.177.0).** `12td-settle-hand`, suite `91zzzk-hand`,
   stand `docs/shot.ps1 settle` (fifth row). One irreversible button at a settlement of stage 2 or
   more: take it in hand. Everything measurable improves — faster growth, it raises what pays, twice
@@ -892,8 +894,11 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   never mentions it. No attendance points, no relaxation bar, no completion award — a test guards
   it: doing everything and doing nothing end in the same state. Vega comes if she is aboard.
 
-  **Still open:** the deck is a large empty field, the deck chair reads as a bundle of sticks, and
-  the figure at the rail is a slab — the scene wants another pass, like the wintering's room.
+  **Art pass, 0.178.1:** the deck is filled by the thing that belongs there at noon — the slanted
+  grid of the railing.s shadow, which also says where the sun is. The deck chair reads from its
+  KNEE: back up and away, seat near-flat, one piece of fabric bending across both planes, plus
+  crossed legs and an armrest. The man at the rail wears a light shirt and trousers, has hair and
+  the back of his head to us, and his forearms lie along the handrail.
 
 ## Joys (one between milestones, an evening each)
 

@@ -41,7 +41,8 @@ function winGeom(){
   return {
     man,flo,cei,
     panel:{x:W*0.045,y:cei+man*0.20,w:W*0.215,h:man*0.70},
-    stove:{x:W*0.065,y:flo-man*0.44,w:W*0.115,h:man*0.44},
+    /* печь приподнята: её низ уходил под виньетку и пульт, и опора терялась */
+    stove:{x:W*0.065,y:flo-man*0.50,w:W*0.115,h:man*0.40},
     table:{x:W*0.375,y:flo-man*0.42,w:W*0.235,h:man*0.42},
     bunk :{x:W*0.635,y:flo-man*0.34,w:W*0.215,h:man*0.34},
     win  :{x:W*0.630,y:cei+man*0.16,w:W*0.205,h:man*0.58},
@@ -216,8 +217,15 @@ function winRoomLayer(W0){
       c.fillRect(s.x+s.w*0.14,s.y+s.h*0.16,s.w*0.72,s.h*0.42);
       c.fillStyle=wcol(WIN_C.rib,0.8);
       c.fillRect(s.x,s.y+s.h*0.66,s.w,Math.max(3,s.h*0.06));
-      c.fillRect(s.x+s.w*0.06,s.y+s.h*0.90,Math.max(3,s.w*0.08),s.h*0.10);
-      c.fillRect(s.x+s.w*0.86,s.y+s.h*0.90,Math.max(3,s.w*0.08),s.h*0.10);
+      /* ножки до самого пола и тень под ними: печь ДОЛЖНА на чём-то стоять,
+         иначе она висит в темноте нижней кромки кадра */
+      const legH=g.flo-(s.y+s.h);
+      c.fillRect(s.x+s.w*0.08,s.y+s.h,Math.max(3,s.w*0.09),legH);
+      c.fillRect(s.x+s.w*0.83,s.y+s.h,Math.max(3,s.w*0.09),legH);
+      c.fillStyle=wrgba([255,255,255],0.10);
+      c.fillRect(s.x+s.w*0.08,s.y+s.h,Math.max(1,s.w*0.03),legH);
+      c.fillStyle="rgba(0,0,0,.38)";
+      c.fillRect(s.x-s.w*0.04,g.flo-Math.max(2,H*0.004),s.w*1.08,Math.max(3,H*0.012));
       /* труба от печи вверх — тепло куда-то уходит, и это видно */
       c.fillStyle=wcol(WIN_C.metal,winLit(g,W0,s.x+s.w*0.5,s.y-g.man*0.3));
       c.fillRect(s.x+s.w*0.42,g.cei,Math.max(3,s.w*0.16),s.y-g.cei);
@@ -238,41 +246,79 @@ function winRoomLayer(W0){
       c.fillRect(t.x,g.flo,t.w,Math.max(2,H*0.010));
     }
 
-    /* ── 8. койка: рама, матрас, одеяло складкой, подушка ── */
+    /* ── 8. койка ──
+       Первый счёт давал доску с подушкой. Койка читается койкой от ТОЛЩИНЫ:
+       у неё есть царга сбоку, под ней виден просвет до пола, матрас лежит НА
+       раме и свисает за край, а одеяло откинуто углом — под ним видна светлая
+       простыня. Всё вместе — четыре тела, и ни одно не плоская полоса. */
     {
       const b=g.bunk;
       const k=winLit(g,W0,b.x+b.w*0.5,b.y);
-      c.fillStyle=wcol(WIN_C.metal,k*0.75);
-      c.fillRect(b.x,b.y,b.w,Math.max(4,b.h*0.10));
-      /* матрас */
-      c.fillStyle=wcol([72,74,72],k*0.9);
-      c.fillRect(b.x+b.w*0.03,b.y-b.h*0.13,b.w*0.94,b.h*0.15);
-      /* одеяло: единственное тёплое пятно в комнате, и складка на нём */
-      c.fillStyle=wcol([96,72,54],k);
+      const top=b.y;                       /* верх рамы */
+      /* тень на полу под койкой: она и говорит, что койка стоит, а не нарисована */
+      c.fillStyle="rgba(0,0,0,.34)";
+      c.fillRect(b.x-b.w*0.01,g.flo-Math.max(2,H*0.004),b.w*1.02,Math.max(3,H*0.012));
+      /* ножки и царга */
+      c.fillStyle=wcol(WIN_C.rib,k*0.6);
+      c.fillRect(b.x+b.w*0.06,top+b.h*0.20,Math.max(3,b.w*0.035),g.flo-top-b.h*0.20);
+      c.fillRect(b.x+b.w*0.88,top+b.h*0.20,Math.max(3,b.w*0.035),g.flo-top-b.h*0.20);
+      c.fillStyle=wcol(WIN_C.metal,k*0.72);
+      c.fillRect(b.x,top+b.h*0.06,b.w,Math.max(5,b.h*0.16));
+      c.fillStyle=wrgba(WIN_C.dark,0.34);
+      c.fillRect(b.x,top+b.h*0.06+Math.max(5,b.h*0.16),b.w,Math.max(2,b.h*0.04));
+      /* матрас: свисает за царгу, и оттого у койки появляется толщина */
+      c.fillStyle=wcol([96,98,94],k*0.95);
       c.beginPath();
-      c.moveTo(b.x+b.w*0.06,b.y-b.h*0.11);
-      c.lineTo(b.x+b.w*0.80,b.y-b.h*0.20);
-      c.lineTo(b.x+b.w*0.80,b.y-b.h*0.02);
-      c.lineTo(b.x+b.w*0.06,b.y+b.h*0.02);
+      c.moveTo(b.x-b.w*0.015,top+b.h*0.08);
+      c.lineTo(b.x+b.w*1.015,top+b.h*0.05);
+      c.lineTo(b.x+b.w*1.015,top-b.h*0.10);
+      c.lineTo(b.x-b.w*0.015,top-b.h*0.07);
       c.closePath();c.fill();
-      c.fillStyle=wrgba(WIN_C.dark,0.30);
+      c.fillStyle=wrgba([255,255,255],0.10+k*0.12);
+      c.fillRect(b.x-b.w*0.015,top-b.h*0.10,b.w*1.03,Math.max(1.5,b.h*0.022));
+      /* простыня из-под одеяла */
+      c.fillStyle=wcol([182,178,166],k);
       c.beginPath();
-      c.moveTo(b.x+b.w*0.34,b.y-b.h*0.16);
-      c.lineTo(b.x+b.w*0.40,b.y-b.h*0.17);
-      c.lineTo(b.x+b.w*0.38,b.y+b.h*0.01);
-      c.lineTo(b.x+b.w*0.32,b.y+b.h*0.02);
+      c.moveTo(b.x+b.w*0.05,top-b.h*0.08);
+      c.lineTo(b.x+b.w*0.52,top-b.h*0.13);
+      c.lineTo(b.x+b.w*0.52,top+b.h*0.02);
+      c.lineTo(b.x+b.w*0.05,top+b.h*0.05);
       c.closePath();c.fill();
-      /* подушка */
-      c.fillStyle=wcol([158,152,140],k);
+      /* одеяло откинуто углом — единственное тёплое пятно в комнате */
+      c.fillStyle=wcol([104,74,52],k);
       c.beginPath();
-      c.ellipse(b.x+b.w*0.87,b.y-b.h*0.18,b.w*0.11,b.h*0.09,-0.12,0,TAU);c.fill();
-      c.fillStyle=wrgba([255,255,255],0.10+k*0.10);
-      c.fillRect(b.x,b.y,b.w,Math.max(1,H*0.002));
-      /* спинка и ножки */
-      c.fillStyle=wcol(WIN_C.rib,k*0.8);
-      c.fillRect(b.x+b.w*0.96,b.y-b.h*0.62,Math.max(3,b.w*0.04),b.h*0.62);
-      c.fillRect(b.x+b.w*0.05,b.y+b.h*0.10,Math.max(3,b.w*0.03),g.flo-b.y-b.h*0.10);
-      c.fillRect(b.x+b.w*0.90,b.y+b.h*0.10,Math.max(3,b.w*0.03),g.flo-b.y-b.h*0.10);
+      c.moveTo(b.x+b.w*0.34,top-b.h*0.11);
+      c.lineTo(b.x+b.w*0.92,top-b.h*0.17);
+      c.lineTo(b.x+b.w*0.92,top+b.h*0.04);
+      c.lineTo(b.x+b.w*0.34,top+b.h*0.07);
+      c.closePath();c.fill();
+      /* отворот: треугольник светлее самого одеяла */
+      c.fillStyle=wcol([134,102,74],Math.min(1.1,k*1.12));
+      c.beginPath();
+      c.moveTo(b.x+b.w*0.34,top-b.h*0.11);
+      c.lineTo(b.x+b.w*0.50,top-b.h*0.13);
+      c.lineTo(b.x+b.w*0.38,top+b.h*0.05);
+      c.closePath();c.fill();
+      /* две складки поперёк */
+      c.fillStyle=wrgba(WIN_C.dark,0.26);
+      for(const q of [0.60,0.76]){
+        c.beginPath();
+        c.moveTo(b.x+b.w*q,top-b.h*0.145);
+        c.lineTo(b.x+b.w*(q+0.035),top-b.h*0.150);
+        c.lineTo(b.x+b.w*(q+0.030),top+b.h*0.045);
+        c.lineTo(b.x+b.w*(q-0.005),top+b.h*0.050);
+        c.closePath();c.fill();
+      }
+      /* подушка: продавлена, со складкой у изголовья */
+      c.fillStyle=wcol([176,170,156],Math.min(1.1,k*1.05));
+      c.beginPath();
+      c.ellipse(b.x+b.w*0.14,top-b.h*0.16,b.w*0.12,b.h*0.085,-0.10,0,TAU);c.fill();
+      c.fillStyle=wrgba(WIN_C.dark,0.20);
+      c.beginPath();
+      c.ellipse(b.x+b.w*0.14,top-b.h*0.135,b.w*0.085,b.h*0.030,-0.10,0,TAU);c.fill();
+      /* спинка в изголовье */
+      c.fillStyle=wcol(WIN_C.rib,k*0.85);
+      c.fillRect(b.x-b.w*0.02,top-b.h*0.62,Math.max(3,b.w*0.045),b.h*0.62);
       c.fillStyle="rgba(0,0,0,.32)";
       c.fillRect(b.x,g.flo,b.w,Math.max(2,H*0.011));
     }
@@ -555,41 +601,113 @@ function drawWinter(){
   }
 
   /* ── зимовщик ──
-     Мерило кадра. Тёмный силуэт с тёплым обводом со стороны печи: без обвода
-     он совпадал по светлоте со стеной и пропадал, а мерило пропадать не может. */
+     Мерило кадра, и потому единственная фигура, которую нельзя рисовать
+     ящиками. Ватник читается ватником не от цвета, а от ТРЁХ ПЕРЕЛОМОВ силуэта:
+     плечи шире, пояс уже, подол снова шире. Убери пояс — и получится пальто,
+     убери подол — плащ. Плюс валенки (внизу шире, чем голень), шапка с ушами и
+     светлое пятно лица со стороны печи: без лица фигура остаётся вещью.
+
+     Обвод — тот же силуэт, залитый тёплым и сдвинутый к печи: на каменном
+     мире ночью силуэт совпадал по светлоте с грунтом и пропадал совсем. */
   {
     const m=g.man, x=g.manx, y=g.flo;
     const k=winLit(g,W0,x,y-m*0.6);
-    const body=pcMix([34,38,42],WIN_C.warm,0.10);
-    ctx.fillStyle="rgba(0,0,0,.36)";
-    ctx.beginPath();ctx.ellipse(x,y+m*0.012,m*0.17,m*0.028,0,0,TAU);ctx.fill();
-    /* обвод: тот же силуэт, сдвинутый к печи и залитый тёплым */
-    const off=m*0.013;
-    const draw=(dx,dy,col)=>{
+    const body=pcMix([36,40,45],WIN_C.warm,0.12);
+    const toStove=g.stove.x<x?-1:1;                /* с какой стороны печь */
+    ctx.fillStyle="rgba(0,0,0,.38)";
+    ctx.beginPath();ctx.ellipse(x,y+m*0.012,m*0.19,m*0.030,0,0,TAU);ctx.fill();
+    const silh=(dx,dy,col)=>{
       ctx.fillStyle=col;ctx.strokeStyle=col;
       ctx.save();ctx.translate(dx,dy);
-      ctx.fillRect(x-m*0.062,y-m*0.44,m*0.048,m*0.44);
-      ctx.fillRect(x+m*0.016,y-m*0.44,m*0.048,m*0.44);
-      /* ватник: плечи шире бёдер, но не вдвое — первый счёт давал квадрат */
+      /* валенки: голенище узкое, стопа шире и вперёд */
+      for(const s2 of [-1,1]){
+        const fx=x+s2*m*0.040;
+        ctx.beginPath();
+        ctx.moveTo(fx-m*0.028,y-m*0.42);
+        ctx.lineTo(fx+m*0.028,y-m*0.42);
+        ctx.lineTo(fx+m*0.034,y-m*0.035);
+        ctx.lineTo(fx+m*0.062,y-m*0.010);
+        ctx.lineTo(fx+m*0.062,y);
+        ctx.lineTo(fx-m*0.040,y);
+        ctx.closePath();ctx.fill();
+      }
+      /* ватник: плечи — пояс — подол */
       ctx.beginPath();
-      ctx.moveTo(x-m*0.098,y-m*0.85);ctx.lineTo(x+m*0.098,y-m*0.85);
-      ctx.lineTo(x+m*0.082,y-m*0.42);ctx.lineTo(x-m*0.082,y-m*0.42);
+      ctx.moveTo(x-m*0.086,y-m*0.845);
+      ctx.lineTo(x+m*0.086,y-m*0.845);
+      ctx.lineTo(x+m*0.094,y-m*0.700);
+      ctx.lineTo(x+m*0.062,y-m*0.570);      /* пояс */
+      ctx.lineTo(x+m*0.090,y-m*0.400);      /* подол */
+      ctx.lineTo(x-m*0.090,y-m*0.400);
+      ctx.lineTo(x-m*0.062,y-m*0.570);
+      ctx.lineTo(x-m*0.094,y-m*0.700);
       ctx.closePath();ctx.fill();
-      ctx.lineWidth=Math.max(2,m*0.05);
+      /* руки: дальняя вниз, ближняя согнута к панели */
+      ctx.lineWidth=Math.max(2.2,m*0.048);
+      ctx.lineJoin="round";ctx.lineCap="round";
       ctx.beginPath();
-      ctx.moveTo(x-m*0.088,y-m*0.79);ctx.lineTo(x-m*0.155,y-m*0.60);ctx.stroke();
+      ctx.moveTo(x-toStove*m*0.082,y-m*0.800);
+      ctx.lineTo(x-toStove*m*0.108,y-m*0.620);
+      ctx.lineTo(x-toStove*m*0.086,y-m*0.470);
+      ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(x+m*0.088,y-m*0.79);ctx.lineTo(x+m*0.118,y-m*0.55);ctx.stroke();
-      /* шея: без неё голова — шар на ящике */
-      ctx.fillRect(x-m*0.022,y-m*0.885,m*0.044,m*0.045);
-      ctx.beginPath();ctx.arc(x,y-m*0.925,m*0.062,0,TAU);ctx.fill();
+      ctx.moveTo(x+toStove*m*0.082,y-m*0.800);
+      ctx.lineTo(x+toStove*m*0.132,y-m*0.690);
+      ctx.lineTo(x+toStove*m*0.176,y-m*0.740);
+      ctx.stroke();
+      ctx.lineCap="butt";ctx.lineJoin="miter";
+      /* шея, голова, шапка с ушами */
+      ctx.fillRect(x-m*0.020,y-m*0.880,m*0.040,m*0.042);
+      ctx.beginPath();ctx.arc(x,y-m*0.920,m*0.058,0,TAU);ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(x-m*0.070,y-m*0.935);
+      ctx.quadraticCurveTo(x,y-m*1.010,x+m*0.070,y-m*0.935);
+      ctx.lineTo(x+m*0.070,y-m*0.905);
+      ctx.lineTo(x-m*0.070,y-m*0.905);
+      ctx.closePath();ctx.fill();
+      for(const s2 of [-1,1]){
+        ctx.beginPath();
+        ctx.ellipse(x+s2*m*0.066,y-m*0.900,m*0.022,m*0.034,0,0,TAU);ctx.fill();
+      }
       ctx.restore();
     };
-    draw(-off,-off*0.5,wrgba(WIN_C.warm,0.16+k*0.14));
-    draw(0,0,wcol(body,0.55+k*0.5));
-    /* воротник ватника: одна светлая полоса, и фигура перестаёт быть плоской */
-    ctx.fillStyle=wrgba([255,255,255],0.10+k*0.10);
-    ctx.fillRect(x-m*0.098,y-m*0.85,m*0.196,Math.max(1.5,m*0.016));
+    /* обвод тонкий: при сдвиге в полтора десятка пикселей и альфе под треть он
+       читался вторым, светящимся человеком рядом с тёмным */
+    const off=m*0.007;
+    silh(toStove*off,-off*0.6,wrgba(WIN_C.warm,0.10+k*0.10));
+    silh(0,0,wcol(body,0.52+k*0.52));
+    /* воротник: светлая полоса поперёк плеч — фигура перестаёт быть плоской */
+    ctx.fillStyle=wrgba([228,222,206],0.16+k*0.20);
+    ctx.beginPath();
+    ctx.moveTo(x-m*0.086,y-m*0.845);ctx.lineTo(x+m*0.086,y-m*0.845);
+    ctx.lineTo(x+m*0.070,y-m*0.815);ctx.lineTo(x-m*0.070,y-m*0.815);
+    ctx.closePath();ctx.fill();
+    /* лицо: маленькое тёплое пятно со стороны печи. Без него зимовщик — вещь */
+    ctx.fillStyle=wrgba(pcMix([214,178,146],WIN_C.warm,0.25),0.30+k*0.45);
+    ctx.beginPath();
+    ctx.ellipse(x+toStove*m*0.016,y-m*0.915,m*0.036,m*0.042,0,0,TAU);ctx.fill();
+    /* нить по краю ватника шла до подола и читалась лампасом: она нужна только
+       на переломе плечо—пояс, где и ловится свет */
+    ctx.strokeStyle=wrgba(WIN_C.warm,0.18+k*0.20);
+    ctx.lineWidth=Math.max(1,m*0.010);
+    ctx.beginPath();
+    ctx.moveTo(x+toStove*m*0.086,y-m*0.845);
+    ctx.lineTo(x+toStove*m*0.094,y-m*0.700);
+    ctx.lineTo(x+toStove*m*0.062,y-m*0.570);
+    ctx.stroke();
+    /* валенки светлее ватника: серый войлок против тёмной стёжки */
+    ctx.fillStyle=wcol(pcMix([92,88,80],WIN_C.warm,0.10),0.42+k*0.44);
+    for(const s3 of [-1,1]){
+      const fx=x+s3*m*0.040;
+      ctx.beginPath();
+      ctx.moveTo(fx-m*0.026,y-m*0.230);
+      ctx.lineTo(fx+m*0.026,y-m*0.230);
+      ctx.lineTo(fx+m*0.034,y-m*0.035);
+      ctx.lineTo(fx+m*0.062,y-m*0.010);
+      ctx.lineTo(fx+m*0.062,y);
+      ctx.lineTo(fx-m*0.040,y);
+      ctx.closePath();ctx.fill();
+    }
   }
 
   /* ── воздух комнаты ── */

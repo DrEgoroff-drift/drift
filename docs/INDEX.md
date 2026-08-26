@@ -579,7 +579,7 @@ drawTrail                    src/16-flight.js:338
 drawWallPaper                src/11ae-concert.js:39
 drawWear                     src/12s-wear.js:70
 drawWeather                  src/19d-weather.js:92
-drawWinter                   src/29g-winter-draw.js:282
+drawWinter                   src/29g-winter-draw.js:328
 drawWreck                    src/20aa-poi-shapes.js:8
 drawWrecksSystem             src/12l-barge.js:347
 droneCapacity                src/12-economy.js:68
@@ -2287,13 +2287,13 @@ spaBoardRows                 src/29i-spa-draw.js:38
 spaCanHere                   src/29h-spa.js:47
 spaEnd                       src/29h-spa.js:103
 spaGeom                      src/29i-spa-draw.js:24
-spaHit                       src/29i-spa-draw.js:361
+spaHit                       src/29i-spa-draw.js:469
 spaOn                        src/29h-spa.js:46
 spareModLv                   src/12a-crew.js:241
 spaSleep                     src/29h-spa.js:95
 spaTake                      src/29h-spa.js:67
 spaTalk                      src/29h-spa.js:85
-spaTap                       src/29i-spa-draw.js:380
+spaTap                       src/29i-spa-draw.js:488
 spaTestStart                 tests/91zzzl-spa.js:2
 spaTookToday                 src/29i-spa-draw.js:39
 spawnAllies                  src/12a-crew.js:503
@@ -2601,10 +2601,10 @@ updateHomeIn                 src/29c-home-in.js:160
 updateLanding                src/19-mode-landing.js:45
 updateRaid                   src/24a-mode-raid.js:215
 updateScoop                  src/19a-mode-scoop.js:28
-updateSpa                    src/29i-spa-draw.js:387
+updateSpa                    src/29i-spa-draw.js:495
 updateSurface                src/21-mode-surface.js:179
 updateSystem                 src/17-mode-system.js:7
-updateWinter                 src/29g-winter-draw.js:670
+updateWinter                 src/29g-winter-draw.js:788
 useBeacon                    src/23-mode-dig.js:76
 VEGA_ABOARD                  src/12k-vega.js:35
 VEGA_BEAST                   src/12k-vega.js:42
@@ -2699,7 +2699,7 @@ WIN_WALL_LATE                src/29f-winter.js:54
 winAll                       src/29f-winter.js:62
 winBad                       src/29f-winter.js:72
 winBlock                     src/29f-winter.js:251
-winBody                      src/29g-winter-draw.js:96
+winBody                      src/29g-winter-draw.js:97
 winCap                       src/29f-winter.js:65
 WIND                         src/19c-light.js:15
 winDiaryToday                src/29f-winter.js:174
@@ -2708,18 +2708,18 @@ winDraw_                     src/29f-winter.js:69
 winEnd                       src/29f-winter.js:191
 winFix                       src/29f-winter.js:147
 winGeom                      src/29g-winter-draw.js:34
-winHit                       src/29g-winter-draw.js:630
-winLevers                    src/29g-winter-draw.js:53
-winLit                       src/29g-winter-draw.js:66
+winHit                       src/29g-winter-draw.js:748
+winLevers                    src/29g-winter-draw.js:54
+winLit                       src/29g-winter-draw.js:67
 winOfferHere                 src/29f-winter.js:76
 winOn                        src/29f-winter.js:63
 winOver                      src/29f-winter.js:70
-winRoomLayer                 src/29g-winter-draw.js:120
+winRoomLayer                 src/29g-winter-draw.js:121
 winShift                     src/29f-winter.js:121
 winTake                      src/29f-winter.js:95
-winTap                       src/29g-winter-draw.js:649
+winTap                       src/29g-winter-draw.js:767
 winTestStart                 tests/91zzzj-winter.js:2
-winTone                      src/29g-winter-draw.js:88
+winTone                      src/29g-winter-draw.js:89
 winWall                      src/29f-winter.js:160
 withCtx                      src/18c-chunks.js:24
 WORLD_MOOD                   src/10-music.js:39
@@ -3398,13 +3398,13 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29f-winter.js · 15 КБ
   · зимовка: месяц одному:1
 
-## src/29g-winter-draw.js · 32 КБ
+## src/29g-winter-draw.js · 38 КБ
   · зимовка: кадр:1
 
 ## src/29h-spa.js · 8 КБ
   · санаторий: три дня, и ничего не происходит:1
 
-## src/29i-spa-draw.js · 18 КБ
+## src/29i-spa-draw.js · 23 КБ
   · санаторий: веранда:1
 
 ## tests/90-harness.js · 7 КБ

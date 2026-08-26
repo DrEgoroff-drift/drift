@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.178.1 — the two debts from last night, paid
+
+Both scenes shipped with a named art debt. Neither is a bug, and that is exactly why they get paid
+before anything new goes on top: a room where the figure reads as a coat is a room that will keep
+reading as a coat.
+
+**The wintering room.** The winterer is a person now. A padded coat reads as a padded coat not from
+its colour but from **three breaks in the silhouette** — shoulders wider, belt narrower, skirt wider
+again; take the belt away and you get an overcoat, take the skirt away and you get a raincoat. Felt
+boots wider at the foot than at the shin, an ear-flapped cap, and a patch of face the size of a
+cheek lit from the stove — without a face the figure stays an object. The warm rim was doing too
+much work and read as a second, glowing man standing beside the dark one; it is a thin edge now.
+
+The berth got **thickness**: a side rail, a gap to the floor under it, a mattress overhanging the
+frame, a blanket turned back off a light sheet with two creases across it, a dented pillow. Before,
+it was a plank. The stove got legs down to the floor and a contact shadow, because its foot was
+disappearing into the vignette and it looked like it was hanging in the dark.
+
+**The veranda.** The deck was a large empty brown field. Filling it with furniture would have
+cluttered a veranda; what fills it is what belongs there at noon — the slanted grid of the
+railing's shadow, which also tells you where the sun is. The deck chair reads from its **knee**:
+back going up and away, seat near-flat, one piece of fabric bending across both planes, with the
+stripes breaking at the fold; plus crossed legs and an armrest, without which it is a camp bed.
+The man at the rail is in a light shirt and trousers, with hair and the back of his head to us,
+and his forearms lie along the handrail.
+
 ## 0.178.0 — the sanatorium: three days in which nothing happens (M199)
 
 M162's voucher was one line of code: `+3 суток, мораль полная`. It is a **place** now. A veranda
