@@ -16,6 +16,12 @@ function openStation(){
   /* что здесь сегодня предлагают (11ah): часть предложений — не вам, и это
      нормально. Именное приходит только от того, кто вас помнит хорошо */
   if(typeof offerVisit==="function")offerVisit();
+  /* четверо (12u-folk): если кто-то из своих сегодня здесь, он может назвать
+     твой позывной — и тогда предложение весит столько, сколько весит он */
+  if(typeof folkVisit==="function"){
+    const fv=folkVisit();
+    if(fv&&typeof folkOffer==="function")folkOffer(fv.id);
+  }
   /* почтовый круг (11e): если это следующее звено, человек подходит сам */
   if(typeof postDock==="function"){const pr=postDock();if(pr)say(pr.who+":\n"+pr.line);}
   if(typeof keepersDock==="function"){const kr=keepersDock();if(kr&&kr.line)say("Смотритель:\n"+kr.line);}   /* линия смотрителей (11k) */
@@ -91,6 +97,7 @@ function repairCost(){
 }
 function closeStation(){
   if(typeof vegaLaunchHold==="function"&&vegaLaunchHold())return;   /* зеркало (M153): раз в день — «вы обещали остаться» */
+  if(typeof folkLeave==="function")folkLeave();   /* свои остались на станции (12u-folk) */
   /* блошинец (12ua): то, что про вас записано, вы либо забрали, либо оставили
      на прилавке — и тогда его покупает кто-то другой */
   if(typeof fleaLeave==="function")fleaLeave(G.sys);
@@ -211,6 +218,18 @@ function renderTab(){
         (sp.silent?"<i>смотрит и ничего не говорит</i>":sp.line)+"</s><s>следующая реплика — в следующий заход</s></div>"));
       const tag=G.sys.key+"#"+visitHere();
       if(G.spLogged!==tag&&!sp.silent){G.spLogged=tag;peopleLine(sp.line,G.st.name);}
+    }
+    /* ── кто здесь (12u-folk) ──
+       Свои. Стоят не на каждом причале и не каждую смену: человек, который
+       есть всегда, перестаёт быть человеком. Говорят про своё и никогда — про
+       игрока; попросить о чём-нибудь тоже не могут, это не их разговор. */
+    if(typeof folkShown==="function"){
+      const fs=folkShown();
+      if(fs&&FOLK[fs.id]){
+        $body.appendChild(el("div","sec",FOLK[fs.id].ru.toUpperCase()));
+        $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
+          fs.line+"</s></div>"));
+      }
     }
     /* ── возможности (11ah) ──
        Не задания: у них нет цели, нет маркера и нет напоминания. Это то, что

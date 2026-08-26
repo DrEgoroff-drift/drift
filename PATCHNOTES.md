@@ -7,6 +7,42 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.165.0 — the four (M190)
+
+Гуся, Рыба, Гвоздь, Птица — the people who stay for the whole game
+(`docs/saga/ЖИВЫЕ.md`). Not eccentrics: a crew of colourful oddballs is the most worn-out thing in
+the genre, and the poetics forbid it outright — nobody wisecracks better than their tiredness
+allows. These four are **broken specifically, by the work**, and each is funny for what he takes
+seriously. None of them knows anything is wrong with him and nobody around them brings it up.
+
+- **Гуся** — a flight engineer who does not fly. Twenty years in the sky and not one takeoff of his
+  own. Talks in long bursts without stopping so nobody can get a question in.
+- **Рыба** — a pilot who cannot be indoors. Sleeps three hours, sleeps in the cabin even at a
+  station, answers questions literally. Always on the air because she never sleeps.
+- **Гвоздь** — throws nothing away, carries a box of other people's things and knows where each
+  came from. «Ничьё уже». — «А зачем тогда?» — «Ну оно же есть».
+- **Птица** — charming, asks for nothing, offers everything, never lies, only omits. Pleasant to
+  stand next to, and that is where all the harm comes from.
+
+They do three jobs at once. They make the world warm — until now only official voices spoke here.
+They give an offer a **face**: «Вам — место в рейсе» weighs exactly what the person saying it
+weighs, and an anonymous counter weighs nothing. And they carry the theme sideways: each of them is
+somebody nobody came to relieve, and it shows in what they say rather than in explanation.
+
+**Птица never names your call sign.** He proposes things himself, which is an entirely different
+matter, and the guard checks it thirty times over.
+
+Two rules made mechanical: one man per station and not every shift (a person who is always there
+stops being a person and becomes furniture); and **one line per visit** — the first build let the
+board's re-render advance his line, so buying fuel made him start a new sentence. People do not
+talk like that.
+
+Guard: `91zzzf-offer` — the line holding still across re-renders, the lines cycling without repeats
+until they run out, and Птица never naming anyone. Stand: `docs/mkview.ps1 ?s=folk`, which winds
+time forward to a shift where somebody is actually standing there, because otherwise you cannot look
+at them, and looking is the point.
+
+---
 ## 0.164.0 — the main quest gets its spine: the offer, the ledger, the door that shuts (M189)
 
 The book («Смена», `docs/saga/`) becomes playable, and this is the part without which none of the

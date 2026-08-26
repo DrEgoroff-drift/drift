@@ -80,13 +80,19 @@ setTimeout(function(){
       G.hin.cam=G.hin.x;
     }
     for(var f3=0;f3<4;f3++){G.t+=.01;updateHomeIn(1);drawHomeIn();}
-  }else if(scene==="dock"||scene==="board"){
+  }else if(scene==="dock"||scene==="board"||scene==="folk"){
     /* станция: стыкуемся с торговым узлом стартовой системы */
     var st=G.sys.station;
+    /* Свои стоят не в каждую смену — это замысел, а не редкость ради редкости.
+       Для стенда отматываем время до смены, в которую кто-то есть: иначе на
+       них нельзя посмотреть, а смотреть надо. */
+    if(scene==="folk"&&typeof folkHere==="function"){
+      for(var fk=0;fk<400&&!folkHere();fk++)G.t+=240;
+    }
     if(st){G.ship.x=st.x+40;G.ship.y=st.y;openStation();}
     /* доска — то, ради чего вообще прилетают: очередь у стойки, что здесь
        предлагают, дела, слухи. Смотреть её надо отдельно от рынка */
-    if(scene==="board"){
+    if(scene==="board"||scene==="folk"){
       var bb=document.querySelector("#stTabs button[data-tab=board]");
       if(bb)bb.click();
     }

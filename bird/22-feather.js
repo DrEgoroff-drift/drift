@@ -116,8 +116,8 @@ function layoutCoat(rows,dens){
         if(d<b[3]){bare=true;break;}
       }
       if(!bare)for(const sx of [-1,1]){
-        const d=Math.hypot(base[0]-sx*0.248,base[1]-1.786,base[2]-0.100);
-        if(d<0.079){bare=true;break;}
+        const d=Math.hypot(base[0]-sx*0.252,base[1]-1.758,base[2]-0.108);
+        if(d<0.098){bare=true;break;}
       }
       if(bare){COAT_STAT.cut++;continue;}
       COAT_STAT.all++; if(base[1]>1.60)COAT_STAT.head++;
@@ -127,7 +127,7 @@ function layoutCoat(rows,dens){
          кончики — черепица, где каждое следующее прикрывает предыдущее на две
          трети. Пока длина была равна шагу, оперение читалось мозаикой из
          бумажных фишек. */
-      const len=mix(0.240,0.092,smooth(0.30,0.94,t))*(0.86+R()*0.28);
+      const len=mix(0.240,0.072,smooth(0.26,0.92,t))*(0.86+R()*0.28);
       /* НАСКОЛЬКО поднят конец пера — считается, а не подбирается. Перо
          лежит по касательной, а тело под ним круглое: на голове радиусом
          0.28 перо длиной 0.09 уходит под поверхность на полтора сантиметра
@@ -187,10 +187,25 @@ function layoutPlumes(){
         vNorm(vAdd(vNorm(dir),vMul(nrm,0.06))),nrm,
         len,len*0.30,vLerp(BIRD_C.blue,BIRD_C.blueD,0.20+k*0.45),[0.7,0.8,t,1.0]);
     }
+    /* Кроющие крыла двумя рядами поверх второстепенных: на листе крыло —
+       слоёная панель с тёмной каймой, а не синее поле. Ряды идут вдоль той же
+       дуги, что маховые, и каждый следующий короче и темнее. */
+    for(let r=0;r<2;r++)for(let i=0;i<11;i++){
+      const k=i/10;
+      const t=mix(0.70,0.40,k)-r*0.010;
+      const a=flip(mix(0.30,-0.06,k)+r*0.13);
+      const base=bodyAt(t,a),nrm=normalAt(t,a);
+      const tip=[sx*mix(0.24,0.12,k),mix(0.86,0.60,k)-r*0.04,mix(-0.34,-0.62,k)];
+      const dir=vSub(tip,base),len=vLen(dir)*(0.92-r*0.10);
+      const c=vLerp(BIRD_C.blue,BIRD_C.blueD,0.10+r*0.30+k*0.30);
+      feaPush(out,vAdd(base,vMul(nrm,0.002)),
+        vNorm(vAdd(vNorm(dir),vMul(nrm,0.10))),nrm,
+        len,len*0.34,c,[0.8,0.16,t,1.0]);
+    }
     /* кроющие плеча: янтарный эполет, три коротких ряда черепицей */
     for(let r=0;r<3;r++)for(let i=0;i<8;i++){
       const k=i/7,t=mix(0.72,0.50,k)-r*0.012;
-      const a=flip(0.30-r*0.15+k*0.10);
+      const a=flip(0.15-r*0.13+k*0.07);
       const base=bodyAt(t,a),nrm=normalAt(t,a);
       const dir=vNorm(vAdd(flowAt(t,a),vMul(nrm,0.16)));
       const c=vLerp(BIRD_C.amber,BIRD_C.amberD,0.30+r*0.24+R()*0.22);
@@ -202,15 +217,15 @@ function layoutPlumes(){
      это стопка, а не одна доска: первая сборка давала ровно доску. */
   for(let i=0;i<11;i++){
     const k=(i/10-0.5)*2,ak=Math.abs(k);
-    const a=Math.PI*1.5+k*0.42;
+    const a=Math.PI*1.5+k*0.56;
     const base=bodyAt(0.05,a);
     const dir=vNorm([k*0.26,-0.44-ak*0.07,-1.0]);
-    const len=1.34-ak*0.32;
+    const len=1.30-ak*0.26;
     const c=vLerp(BIRD_C.blue,BIRD_C.blueD,0.26+ak*0.42);
     /* каждое следующее перо чуть выше предыдущего: стопка, а не плоскость */
     const up=vNorm([k*0.34,1,-0.16]);
     feaPush(out,vAdd(base,vMul(up,0.006*(5-Math.abs(i-5)))),dir,up,
-      len,len*0.16,c,[0.55,0.10,0.05,2.0]);
+      len,len*0.23,c,[0.55,0.10,0.05,2.0]);
   }
   /* хохол: длинные плюмажи широкой дугой. Цвет идёт по вееру — передние
      янтарные, средние кобальтовые, задние с фиалковым отливом: на листе
@@ -218,11 +233,14 @@ function layoutPlumes(){
   for(let i=0;i<CREST_N;i++){
     const q=crestQuill(i);
     const s=q.s;
-    let c=vLerp(BIRD_C.amber,BIRD_C.blue,smooth(0.05,0.50,s));
-    c=vLerp(c,BIRD_C.viol,smooth(0.55,1.0,s)*0.75);
-    c=vLerp(c,BIRD_C.blueL,Math.abs(q.k)*0.22);
-    feaPush(out,q.base,q.dir,normalAt(0.96,Math.PI*1.5),q.len,q.len*0.22,
-      c,[0.9,0.52+s*0.20,1.0,3.0],(i%3-1)*0.55+((i%2)?0.25:-0.25));
+    /* трёхцветный веер: передние янтарные, средние кобальтовые, задние светло-
+       голубые с фиалковым отливом. Янтарь берётся чистым — половинчатая
+       подмесь в кобальт даёт терракоту, чем первая сборка и кончилась */
+    let c=s<0.28?vLerp(BIRD_C.amber,BIRD_C.amberD,s*1.2)
+         :vLerp(BIRD_C.blue,BIRD_C.blueL,smooth(0.30,0.95,s));
+    c=vLerp(c,BIRD_C.viol,smooth(0.62,1.0,s)*0.55);
+    feaPush(out,q.base,q.dir,normalAt(0.96,Math.PI*1.5),q.len,q.len*0.32,
+      c,[0.9,-0.10-s*0.10,1.0,3.0],(i%3-1)*0.26+((i%2)?0.12:-0.12));
   }
   return new Float32Array(out);
 }

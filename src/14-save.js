@@ -70,7 +70,7 @@ function snapshot(){
     tableSeen:G.tableSeen|0,
     /* главный квест: возможности живут недолго, а память людей и тетрадь —
        навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
-    offers:G.offers,folk:G.folk,ledger:G.ledger,
+    offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,
     ts:Date.now()};
 }
 function applySave(s){
@@ -534,6 +534,9 @@ function applySave(s){
   G.offers=Array.isArray(s.offers)?s.offers.filter(o=>o&&o.kind&&o.who).slice(-24):[];
   G.folk=(s.folk&&typeof s.folk==="object")?s.folk:{};
   G.ledger=(s.ledger&&typeof s.ledger==="object")?s.ledger:{n:0,w:0};
+  /* докуда дошли реплики своих: иначе после загрузки они начнут с начала и
+     повторят то, что игрок уже слышал */
+  G.folkSay=(s.folkSay&&typeof s.folkSay==="object")?s.folkSay:{};
   G.credits=Math.max(0,s.credits|0);G.data=Math.max(0,s.data|0);
   for(const k of RES_KEYS)G.cargo[k]=Math.max(0,(s.cargo&&s.cargo[k])|0);
   const st=stat();

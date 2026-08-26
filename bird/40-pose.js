@@ -40,7 +40,7 @@ function poseStep(dt){
   [POSE.roll,POSE.rollV]=springTo(POSE.roll,POSE.rollV,POSE.rollT,52,.87,dt);
   [POSE.bow,POSE.bowV]=springTo(POSE.bow,POSE.bowV,POSE.bowT,40,.88,dt);
   /* челюсть жёстче и суше остальных: клюв не качается, он щёлкает */
-  [POSE.jaw,POSE.jawV]=springTo(POSE.jaw,POSE.jawV,POSE.jawT,220,.72,dt);
+  [POSE.jaw,POSE.jawV]=springTo(POSE.jaw,POSE.jawV,Math.max(POSE.jawT,POSE.jawHold||0),220,.72,dt);
   /* моргание врозь: своё время, поверх любой повадки; зевок держит глаз
      прикрытым, поэтому blinkHold складывается, а не спорит */
   if(POSE.blink>0)POSE.blink=Math.max(0,POSE.blink-dt*7.5);

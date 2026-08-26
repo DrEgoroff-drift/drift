@@ -64,6 +64,8 @@ function birdBoot(){
   if(Q.has("d"))CAM.dist=CAM.distT=+Q.get("d");
   if(Q.has("ty"))CAM.tgt[1]=+Q.get("ty");
   if(Q.has("still"))POSE.still=1;
+  /* стенд: ?jaw=0.4 держит клюв открытым — иначе нутро и язык нечем проверить */
+  if(Q.has("jaw"))POSE.jawHold=+Q.get("jaw");
   if(Q.has("nobody"))R.noBody=1;
   if(Q.has("dbg")){
     console.log("перья: корпус "+MESH.coat.inst+" (голова "+COAT_STAT.head+
