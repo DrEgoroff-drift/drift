@@ -91,18 +91,21 @@ const normalAt=(t,a)=>bodyNormal(t,a);
    клюва — перья должны наезжать на его основание, иначе между рогом и
    оперением остаётся тёмная щель, как будто клюв приклеили */
 const BEAK_BALLS=[
-  [0,1.830,0.105,0.098],[0,1.794,0.165,0.104],[0,1.756,0.245,0.100],
-  [0,1.714,0.310,0.090],[0,1.660,0.360,0.078],[0,1.664,0.190,0.092]
+  [0,1.812,0.108,0.086],[0,1.788,0.170,0.090],[0,1.752,0.240,0.086],
+  [0,1.716,0.300,0.078],[0,1.668,0.352,0.068],[0,1.668,0.190,0.080]
 ];
 const COAT_STAT={all:0,head:0,cut:0};
 function layoutCoat(rows,dens){
   const out=[],R=rnd(0x7b1d);
-  const ROWS=rows||64,DENS=dens||118;
+  const ROWS=rows||72,DENS=dens||142;
   for(let r=0;r<ROWS;r++){
     const t0=mix(0.055,0.995,r/(ROWS-1));
     const S=spineAt(t0);
     const girth=(S.rw+S.rf+S.rb)*0.5;
-    const n=Math.max(9,Math.round(girth*DENS));
+    /* на голове перьев ВДВОЕ гуще: они там мельче, и той же плотности не
+       хватает — между ними проступает кожа. Это не украшение, это единственный
+       способ иметь мелкое перо и не облысеть */
+    const n=Math.max(9,Math.round(girth*DENS*mix(1.0,1.85,smooth(0.74,0.92,t0))));
     for(let j=0;j<n;j++){
       const a=(j+(r%2)*0.5)/n*TAU+R()*0.10;
       /* ряд не должен читаться рядом: каждое перо гуляет вдоль хребта на
@@ -120,7 +123,7 @@ function layoutCoat(rows,dens){
       }
       if(!bare)for(const sx of [-1,1]){
         const d=Math.hypot(base[0]-sx*0.252,base[1]-1.758,base[2]-0.108);
-        if(d<0.098){bare=true;break;}
+        if(d<0.080){bare=true;break;}
       }
       if(bare){COAT_STAT.cut++;continue;}
       COAT_STAT.all++; if(base[1]>1.60)COAT_STAT.head++;
@@ -130,7 +133,7 @@ function layoutCoat(rows,dens){
          кончики — черепица, где каждое следующее прикрывает предыдущее на две
          трети. Пока длина была равна шагу, оперение читалось мозаикой из
          бумажных фишек. */
-      const len=mix(0.235,0.062,smooth(0.18,0.90,t))*(0.86+R()*0.28);
+      const len=mix(0.235,0.076,smooth(0.08,0.78,t))*(0.86+R()*0.28);
       /* НАСКОЛЬКО поднят конец пера — считается, а не подбирается. Перо
          лежит по касательной, а тело под ним круглое: на голове радиусом
          0.28 перо длиной 0.09 уходит под поверхность на полтора сантиметра
@@ -138,16 +141,23 @@ function layoutCoat(rows,dens){
          головы — осталась голубая лысина. Наклон len/2R как раз выводит
          кончик обратно наружу, дальше — вкус. */
       const meanR=Math.max(0.10,(S.rw+S.rf+S.rb)/3);
-      const lift=Math.min(0.20,0.075+len/(2*meanR))+R()*0.03;
+      /* на голове перо прижато сильнее: мелкие перья с тем же подъёмом, что на
+         груди, встают дыбом и читаются щетиной */
+      const liftK=mix(1.0,0.55,smooth(0.72,0.92,t));
+      const lift=(Math.min(0.20,0.075+len/(2*meanR))+R()*0.03)*liftK;
       const d2=vNorm(vAdd(dir,vMul(p,lift)));
       const wid=len*mix(0.44,0.58,R());
       const col=bodyColor(t,a);
       const cv=0.84+R()*0.28;
+      /* каждое шестое перо груди отдаёт в голубой: на листе кремовое поле не
+         монолитное, по нему идут холодные канты */
+      const cool=R()<0.10?0.14+R()*0.12:0;
       /* тёплый-холодный разброс по перьям: ровное поле одного цвета читается
          краской, а не оперением. Сдвиг мелкий — породу он не трогает. */
       const wc=(R()-0.5)*0.055;
+      const cc=cool?vLerp(col,BIRD_C.blueL,cool):col;
       feaPush(out,vAdd(base,vMul(p,-0.006)),d2,p,len,wid,
-        [col[0]*cv*(1+wc),col[1]*cv,col[2]*cv*(1-wc)],[1.0,0.04+R()*0.06,t,0.0]);
+        [cc[0]*cv*(1+wc),cc[1]*cv,cc[2]*cv*(1-wc)],[1.0,0.04+R()*0.06,t,0.0]);
     }
   }
   return new Float32Array(out);
@@ -200,7 +210,7 @@ function layoutPlumes(){
       const base=bodyAt(t,a),nrm=normalAt(t,a);
       const tip=[sx*mix(0.24,0.12,k),mix(0.86,0.60,k)-r*0.04,mix(-0.34,-0.62,k)];
       const dir=vSub(tip,base),len=vLen(dir)*(0.92-r*0.10);
-      const c=vLerp(BIRD_C.blue,BIRD_C.blueD,0.10+r*0.30+k*0.30);
+      const c=vLerp(BIRD_C.blue,r?BIRD_C.blueD:BIRD_C.blueL,0.24+r*0.44+k*0.28);
       feaPush(out,vAdd(base,vMul(nrm,0.002)),
         vNorm(vAdd(vNorm(dir),vMul(nrm,0.10))),nrm,
         len,len*0.34,c,[0.8,0.16,t,1.0]);
@@ -213,7 +223,7 @@ function layoutPlumes(){
       const a=flip(-0.50-r*0.20+k*0.34);
       const base=bodyAt(t,a),nrm=normalAt(t,a);
       const dir=vNorm([sx*0.10,-1.0,0.02+k*0.16]);
-      const c=vLerp(BIRD_C.creamD,BIRD_C.blueD,0.16+r*0.30+k*0.26);
+      const c=vLerp(BIRD_C.creamD,BIRD_C.blueD,0.34+r*0.30+k*0.26);
       feaPush(out,base,vNorm(vAdd(dir,vMul(nrm,0.07))),nrm,
         0.36-r*0.045,0.105,c,[1.0,0.14,t,0.0]);
     }
@@ -228,7 +238,7 @@ function layoutPlumes(){
       const dir=vSub(tip,base),len=vLen(dir)*0.62;
       feaPush(out,vAdd(base,vMul(nrm,0.006)),
         vNorm(vAdd(vNorm(dir),vMul(nrm,0.14))),nrm,
-        len,len*0.30,vLerp(BIRD_C.blueL,BIRD_C.cream,0.34-k*0.18),[0.9,0.18,t,1.0]);
+        len,len*0.30,vLerp(BIRD_C.blueL,BIRD_C.blue,0.30+k*0.22),[0.9,0.18,t,1.0]);
     }
     /* кроющие плеча: янтарный эполет, три коротких ряда черепицей */
     for(let r=0;r<3;r++)for(let i=0;i<8;i++){
@@ -247,10 +257,10 @@ function layoutPlumes(){
     const k=(i/14-0.5)*2,ak=Math.abs(k);
     const a=Math.PI*1.5+k*0.64;
     const base=bodyAt(0.05,a);
-    const dir=vNorm([k*0.26,-0.44-ak*0.07,-1.0]);
+    const dir=vNorm([k*0.26,-0.28-ak*0.06,-1.0]);
     /* длины соседних перьев ступенькой: ровный веер читается одной лопастью */
     const len=1.32-ak*0.30+((i%2)?0.085:-0.085);
-    const c=vLerp(BIRD_C.blue,BIRD_C.blueD,0.26+ak*0.42);
+    const c=vLerp(BIRD_C.blue,(i%2)?BIRD_C.blue:BIRD_C.blueD,0.26+ak*0.46);
     /* каждое следующее перо чуть выше предыдущего: стопка, а не плоскость */
     const up=vNorm([k*0.34,1,-0.16]);
     feaPush(out,vAdd(base,vMul(up,0.006*(5-Math.abs(i-5)))),dir,up,
@@ -267,12 +277,15 @@ function layoutPlumes(){
        подмесь в кобальт даёт терракоту, чем первая сборка и кончилась */
     /* тёплые и холодные перья ПЕРЕМЕШАНЫ по вееру, а не разложены по краям:
        пучок оранжевых спереди читается отдельным украшением, а не хохлом */
-    let c=(i%3===0)?vLerp(BIRD_C.amber,BIRD_C.amberD,0.15+s*0.5)
+    /* цвет берётся по ХЕШУ индекса, а не по i%3: раскладка перьев теперь тоже
+       идёт по i%3, и янтарные перья сошлись все в один ряд */
+    const hv=hashf(i*13+5,7);
+    let c=(hv<0.30)?vLerp(BIRD_C.amber,BIRD_C.amberD,0.15+s*0.5)
          :vLerp(BIRD_C.blue,BIRD_C.blueL,smooth(0.10,0.95,s));
-    if(i%5===2)c=vLerp(c,BIRD_C.viol,0.55);
+    if(hv>0.86)c=vLerp(c,BIRD_C.viol,0.42);
     c=vLerp(c,BIRD_C.viol,smooth(0.72,1.0,s)*0.35);
     feaPush(out,q.base,q.dir,normalAt(0.96,Math.PI*1.5),q.len,q.len*0.155,
-      c,[0.9,-0.05-s*0.06,1.0,3.0],(i%3-1)*0.26+((i%2)?0.12:-0.12));
+      c,[0.9,-0.26-s*0.16,1.0,3.0],(i%3-1)*0.26+((i%2)?0.12:-0.12));
   }
   return new Float32Array(out);
 }

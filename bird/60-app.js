@@ -15,15 +15,15 @@ function qualPick(){
   const m=q?q==="low":(innerWidth<=760||(navigator.maxTouchPoints||0)>1);
   QUAL.mobile=m;
   QUAL.coatMesh=m?[5,6]:[7,8];
-  QUAL.rows=m?46:64;
-  QUAL.dens=m?84:118;
+  QUAL.rows=m?50:72;
+  QUAL.dens=m?96:142;
   QUAL.shadow=m?1024:1536;
   QUAL.dpr=m?1.6:2;
   QUAL.bloomN=m?4:5;
   QUAL.dust=m?120:260;
 }
 
-const CAM={az:1.02,el:0.05,dist:4.15,tgt:[0,1.14,0],azV:0,elV:0,distT:4.15};
+const CAM={az:1.18,el:0.05,dist:3.90,tgt:[0,1.16,0],azV:0,elV:0,distT:3.90};
 const MESH={};
 let birdRAF=0,birdT0=0,birdFPS=60;
 
@@ -91,12 +91,34 @@ function birdSize(){
   R.dpr=dpr;
   renderSize(w,h);
 }
+/* ── качество на ходу ──
+   Тир по ширине окна — догадка: бывает ноутбук с большим экраном и слабым
+   железом. Если кадр не держится, птица сама сбавляет плотность пикселей, а
+   потом лестницу свечения. Понижение одностороннее: качели «туда-сюда» на
+   границе хуже, чем чуть более простая картинка. */
+const ADAPT={t:0,drops:0};
+function adaptTick(dt){
+  if(ADAPT.drops>=2)return;
+  ADAPT.t+=dt;
+  if(ADAPT.t<3.0)return;
+  ADAPT.t=0;
+  if(birdFPS>=42)return;
+  ADAPT.drops++;
+  if(ADAPT.drops===1&&R.dpr>1.2){QUAL.dpr=Math.max(1.15,R.dpr-0.35);birdSize();}
+  else{R.bloomN=Math.max(3,R.bloomN-2);}
+}
+
 function birdFrame(ts){
   const dt=Math.min(.05,(ts-birdT0)/1000||.016);birdT0=ts;
   birdFPS+=((1/Math.max(dt,1e-3))-birdFPS)*.05;
+  adaptTick(dt);
   poseStep(dt);
   /* камера тоже на пружине: рывок мышью не должен рвать кадр */
-  CAM.dist+=(CAM.distT-CAM.dist)*Math.min(1,dt*8);
+  /* узкий экран: птица длиннее, чем широка, и в портрете хвост с хохлом
+     упираются в кромки. Камера отъезжает ровно настолько, насколько кадр уже */
+  const asp=R.W/Math.max(1,R.H);
+  const fit=asp<0.95?1.0+(0.95-asp)*0.85:1.0;
+  CAM.dist+=(CAM.distT*fit-CAM.dist)*Math.min(1,dt*8);
   CAM.az+=CAM.azV*dt;CAM.el+=CAM.elV*dt;
   CAM.azV*=Math.pow(.02,dt);CAM.elV*=Math.pow(.02,dt);
   CAM.el=clamp(CAM.el,-0.55,0.95);

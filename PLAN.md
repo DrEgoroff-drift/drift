@@ -987,3 +987,38 @@ bead, shadow-mapped warm key, HDR bloom on the beads, orbit camera, poke reactio
 **Still to do:** softer light in the gaps (ambient occlusion between feathers), the down layer,
 the page around the bird (install/download, the same voice as `site/treplo.html`), behaviours
 from `12z-parrot-acts` ported to the rig, sound, and the frame budget on a phone.
+
+## M200a — the breed sheet, twenty passes (2026-08-26)
+
+The author brought the character sheet for «Птица Говоруна» and asked for twenty passes of
+"render → compare → fix", criticising the model against the sheet each time. What the sheet
+said that the first build did not:
+
+- **The crest is two objects, not one.** Long plumes swept back in an arc, *and* separate thin
+  whiskers each carrying a cold bead. Building only the first gave a mohawk of short leaves.
+- **The face is cream** — forehead, cheek and throat — with cobalt kept to crown and nape.
+  Without the mask the bird reads as a blue lump no matter how good the beak is.
+- **Ivory beak, not yellow**, with a raised keel, a dark tip, a painted nostril and a visible
+  mouth corner; a dark interior with a tongue behind it so an open beak is not a hole.
+- **Legs are long, grey-brown and scaly**, half-covered by thigh feathers; the toes wrap the
+  branch by its own radius and end in real claws.
+- **The tail is a stack**, not a plank: fifteen narrow feathers with stepped tips and two
+  streamers of their own.
+
+Things that cost a pass each, worth remembering:
+
+- *A feather is longer than its row spacing, and its tip is what you see.* Twice the coat was
+  fixed by changing tip shape, not by adding feathers.
+- *Density on the head is a separate number.* Head feathers are small; at body density the skin
+  shows through, and the head goes bald — twice.
+- *Where the loft's sections vanish, so does everything laid out by `t`.* The crest roots all
+  collapsed into one point at the crown until they were spread along the real arc instead.
+- *A painted spot beats a modelled bead* for the nostril: the beak's sections are tilted, so a
+  sphere placed "on the surface" kept ending up inside the horn.
+- *Whisker and bead must share one sway phase.* A smooth phase from vertex position drifted the
+  bead off its own thread; a coarse step over |x| keeps them together.
+- *Back light belongs to the body, not to the plumage.* At full strength on translucent feathers
+  the tail turned into a white skirt seen from behind.
+
+Quality now degrades by itself: window width and touch pick the tier, and if the frame does not
+hold, the page drops pixel density and then the bloom ladder — one way only, never oscillating.

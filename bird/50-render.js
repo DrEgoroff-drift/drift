@@ -45,7 +45,7 @@ function renderSize(w,h){
 const LIGHT={
   key:vNorm([0.55,0.80,0.45]), keyCol:[2.05,1.72,1.30],
   fill:vNorm([-0.85,0.12,-0.25]), fillCol:[0.115,0.235,0.310],
-  rim:[0.085,0.235,0.300],
+  rim:[0.150,0.360,0.460],
   sky:[0.085,0.115,0.165], gnd:[0.022,0.024,0.032]
 };
 function lightVP(){

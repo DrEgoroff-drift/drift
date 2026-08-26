@@ -41,7 +41,10 @@ html,body{height:100%;background:var(--void);color:var(--text);font-family:var(-
 /* установленное окно: только птица */
 body.pet #tag,body.pet #hint,body.pet #bar,body.pet #about{display:none}
 @media (max-width:760px){
-  #tag{left:12px;bottom:52px}
-  #hint{bottom:52px;font-size:9px;width:100%;text-align:center}
+  /* подписи не должны налезать друг на друга: имя над кнопками, подсказка
+     ещё выше, и обе мельче */
+  #tag{left:12px;bottom:58px}
+  #hint{bottom:92px;font-size:9px;left:12px;right:12px;width:auto;transform:none;text-align:center}
   #bar{left:12px;right:12px;bottom:12px;justify-content:center}
+  #about{bottom:104px}
 }
