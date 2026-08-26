@@ -43444,6 +43444,441 @@ function globusDraw(c,cx,cy,r){
   c.restore();
 }
 
+/* ══════════════ открытка: снимок сцены, а не пиксели ══════════════
+   M188, первый проход. Фотография в «Дрейфе» — не картинка, а СНИМОК СЦЕНЫ:
+   режим, семена мира, час, погода, точка съёмки, VER. Двести байт, которые
+   получатель рисует своим движком. Три причины, по порядку: сервер возит
+   байты вместо мегабайт; ничего, кроме собственного мира игры, через границу
+   физически не проходит; и старая карточка, перерисованная новым движком,
+   выходит чуть не такой — ровно то, что делает со снимком время.
+
+   ПОЧЕМУ ЭТО ОТДЕЛЬНЫЙ ХУДОЖНИК, А НЕ ПОВТОР РЕЖИМА. Вся отрисовка игры
+   приварена к глобальным: любой путь пишет в единственный `ctx` при
+   единственных `W`/`H`, читая единственный живой `G`. Нарисовать сохранённую
+   сцену «как есть» значило бы подменить мир под рендером и вернуть обратно —
+   класс ошибок, который портит сохранение. Поэтому у открытки СВОЙ художник:
+   `drawPostcard(c,snap,w,h)` берёт снимок и чужой контекст и не должен `G`
+   ничего. Это ВИД, а не прогон режима, и написан он так с самого начала.
+
+   ПОЧЕМУ НЕ ПИКСЕЛИ. Мерили: JPEG 480×300 — около 25 КБ, двенадцать штук —
+   триста, и альбом уезжает в сохранение, которое ходит в облако. Это не
+   альбом, это новая беда с форматом сохранения.
+
+   ЧТО ДЕЛАЕТ КАДР ФОТОГРАФИЕЙ. Мерило — человек: фигура у нижней трети даёт
+   масштаб всему остальному, без неё гряда может быть и валуном, и горой.
+   Порядок слоёв — от неба к земле, и каждый следующий темнее и резче
+   предыдущего: воздух между планами и есть глубина. Свет один и тот же во
+   всех слоях — от звезды, посчитанной по часу.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Ни одной ссылки на `G`, `ctx`, `W`, `H`. Всё приходит доводами.
+   2. Ни одного собственного случайного числа: только семена мира.
+   3. Рельеф берётся `genTerrain` — тем же, что и в полёте. Своя формула
+      рельефа означала бы, что открытка врёт про место. */
+const POST_V=1;
+const POST_HOR=0.62;              /* горизонт в долях кадра */
+/* Рельеф дорог (полторы тысячи точек и полсотни валунов), а альбом рисует
+   двенадцать карточек подряд. Кэш на связку «планета+долгота» держит десяток. */
+const POST_TR=new Map();
+function postTerrain(p,lon){
+  const k=p.key+"@"+(lon==null?"-":lon.toFixed(3));
+  let tr=POST_TR.get(k);
+  if(!tr){tr=genTerrain(p,lon);POST_TR.set(k,tr);
+    if(POST_TR.size>12)POST_TR.delete(POST_TR.keys().next().value);}
+  return tr;
+}
+/* мир снимка: планета или спутник по индексам */
+function postWorld(s){
+  const sys=getSystem(s.sx,s.sy);
+  let p=(sys.planets[s.pi]||sys.planets[0])||null;
+  if(p&&s.mi>=0&&p.moons&&p.moons[s.mi])p=p.moons[s.mi];
+  return {sys,p};
+}
+/* ── снимок ──
+   Только то, чего нельзя вывести. Всё остальное — из семени. */
+function postSnap(){
+  const surf=G.surf&&G.surf.p?G.surf:null, land=!surf&&G.land&&G.land.p?G.land:null;
+  const st=surf||land;
+  if(!st)return null;
+  const p=st.p, moon=p.parentIdx!=null;
+  return {v:POST_V,m:surf?"s":"l",sx:G.sx,sy:G.sy,
+    pi:moon?p.parentIdx:p.idx, mi:moon?p.idx:-1,
+    lon:st.tr?+st.tr.lon.toFixed(3):null,
+    cx:Math.round(st.x||0), t:Math.round(G.t), ver:VER};
+}
+/* подпись под карточкой: место и час, без единого числа из интерфейса */
+function postCaption(s){
+  const W0=postWorld(s);
+  if(!W0.p)return "";
+  const sun=celSun(W0.p,s.t);
+  const hour=sun.alt>.45?"полдень":(sun.alt>.08?"день":
+    (sun.alt>-.08?(sun.az>0?"закат":"рассвет"):(sun.alt>-.5?"сумерки":"ночь")));
+  return W0.p.name+" · "+hour;
+}
+/* ── цвет ── */
+function pcC(a,k){const m=k==null?1:k;
+  return "rgb("+Math.round(a[0]*m)+","+Math.round(a[1]*m)+","+Math.round(a[2]*m)+")";}
+function pcMix(a,b,k){return [a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k,a[2]+(b[2]-a[2])*k];}
+function pcA(a,al){return "rgba("+Math.round(a[0])+","+Math.round(a[1])+","+Math.round(a[2])+","+al.toFixed(3)+")";}
+/* цвет звезды строкой «#rrggbb» из таблицы классов — в числа */
+function pcStar(sys){
+  const h=(sys&&sys.cls&&sys.cls.col)||"#ffe08a";
+  return [parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)];
+}
+/* ── художник ──
+   c — чужой контекст, s — снимок, w×h — куда рисовать. Возвращает false,
+   если снимок не читается: карточка тогда останется пустым бланком, и это
+   честнее, чем нарисовать не то место.
+
+   ЯЗЫК КАДРА — ТОТ ЖЕ, ЧТО У ИГРЫ, и это не вкусовщина, а условие: карточка
+   должна быть узнана как снимок ИЗ ЭТОЙ игры, иначе она чужая. Первый проход
+   рисовал далёкую гряду в дымке — красиво и мимо. У «Дрейфа» на поверхности:
+   небо с большим телом в нём, профиль с подсвеченной кромкой, а под профилем
+   не пустота, а ТЕЛО ГРУНТА со слоями породы, и по кромке — силуэты растений.
+   Разрез земли — половина кадра, и это он делает мир осязаемым.
+
+   ПОРЯДОК СЛОЁВ — от дальнего к ближнему, каждый следующий темнее и резче:
+   воздух между планами и есть глубина. Свет один на все слои — от звезды,
+   посчитанной по часу. */
+function drawPostcard(c,s,w,h){
+  if(!c||!s||!s.v)return false;
+  const W0=postWorld(s), p=W0.p;
+  if(!p)return false;
+  const T=p.T||TYPES[p.type]||TYPES.rocky;
+  const tr=postTerrain(p,s.lon);
+  const sun=celSun(p,s.t);
+  const airless=T.atm==="отсутствует";
+  const night=clamp(-sun.alt*(airless?1.9:1.5)+.15,0,.62);
+  /* ночь — это не «умножить на ноль», а другой цвет: свет уходит, синева
+     остаётся. Множитель мягкий, разница держится подмешиванием в холод */
+  const day=clamp(1-night*.95,.30,1);
+  const cold=[18,26,46];
+  const dim=(col,k)=>pcMix(pcMix(col,cold,night*(k==null?.55:k)),[0,0,0],night*.30);
+  /* ── цвет грунта ──
+     `T.pal` — рампа ПЛАНЕТНОЙ ТЕКСТУРЫ, вид с орбиты: нижние ступени там
+     океан и тень, верхние — нагорье и лёд. Взять pal[1] за землю (первый
+     счёт так и делал) значит покрасить землеподобный мир в синий: под ногами
+     оказывалось море. Земля живёт в верхней середине рампы, порода уходит
+     к самой тёмной ступени, а свет по кромке берётся с самой светлой. */
+  /* и земля ВСЕГДА темнее своего неба. У ледяного мира рампа грунта и рампа
+     неба почти совпадают числами, и кадр расслаивался в белый туман: горизонта
+     не было видно вовсе. Небо светится, земля светится отражённым — разница в
+     светлоте между ними и есть то, чем читается горизонт */
+  const GC={body:pcMix(T.pal[Math.min(2,T.pal.length-1)],T.pal[0],.30),
+            deep:T.pal[0],
+            lit :T.pal[Math.min(4,T.pal.length-1)]};
+  const star=pcStar(W0.sys);
+  const sunX=w*(.5-sun.az*.40), sunY=Math.max(h*.09,h*(.56-sun.alt*.50));
+  const up=sun.alt>-.08;
+  const hy=h*POST_HOR;
+  const rs=rng(hashi(p.seed,0x5747,3));
+
+  c.save();
+  c.beginPath();c.rect(0,0,w,h);c.clip();
+
+  /* ── 1. небо ── */
+  const skH=dim(T.sky[0],.62), skZ=dim(T.sky[1],.5);
+  {
+    const g=c.createLinearGradient(0,0,0,hy+h*.06);
+    g.addColorStop(0,pcC(skZ,day));
+    g.addColorStop(.70,pcC(pcMix(skZ,skH,.75),day));
+    g.addColorStop(1,pcC(skH,day));
+    c.fillStyle=g;c.fillRect(0,0,w,hy+h*.07);
+  }
+
+  /* ── 2. звёзды ──
+     Видны там, где нечему их прятать: ночью и всегда в вакууме */
+  const starK=airless?Math.max(.40,night*1.7):Math.max(0,(night-.16)*2.6);
+  if(starK>.02){
+    c.fillStyle="#e8f0ff";
+    for(let i=0;i<110;i++){
+      const x=rs()*w,y=rs()*hy,q=rs();
+      c.globalAlpha=Math.min(.92,starK*(.16+q*q*.9));
+      c.fillRect(x,y,q>.94?1.7:1,q>.94?1.7:1);
+    }
+    c.globalAlpha=1;
+  }
+
+  /* ── 3. тело в небе ──
+     Подпись «Дрейфа»: над головой всегда что-то висит — сосед по системе или
+     собственный спутник. Без него небо — просто градиент, и планета могла бы
+     быть любой. Тело берётся из ТОЙ ЖЕ системы, а не выдумывается */
+  {
+    const sib=(W0.sys.planets||[]).filter(q=>q!==p);
+    const body=(p.moons&&p.moons.length&&rs()<.5)?p.moons[0]
+              :(sib.length?sib[Math.floor(rs()*sib.length)]:null);
+    if(body){
+      const bt=body.T||TYPES[body.type]||TYPES.rocky;
+      /* размер и место: тело в небе — примета, а не сюжет. Четверть кадра
+         посреди карточки забирала её себе; диск меньше и уходит от центра */
+      const R=h*(body.type==="gas"?.135:.075)*(.85+rs()*.45);
+      const bx=w*(rs()<.5?.13+rs()*.22:.65+rs()*.22), by=hy*(.14+rs()*.34);
+      /* далеко и в воздухе: диск заметно бледнее неба над ним не бывает —
+         он темнее, и виден силуэтом с освещённым краем */
+      const base=dim(pcMix(bt.pal[2],bt.pal[3]||bt.pal[2],.4),.7);
+      c.fillStyle=pcC(base,day*(airless?.9:.68));
+      c.beginPath();c.arc(bx,by,R,0,TAU);c.fill();
+      /* терминатор: тень с той стороны, куда не смотрит звезда */
+      const ang=Math.atan2(by-sunY,bx-sunX);
+      const sh=c.createLinearGradient(bx-Math.cos(ang)*R,by-Math.sin(ang)*R,
+                                      bx+Math.cos(ang)*R,by+Math.sin(ang)*R);
+      sh.addColorStop(0,"rgba(0,0,0,0)");
+      sh.addColorStop(.42,"rgba(0,0,0,0)");
+      sh.addColorStop(1,"rgba(0,0,0,"+(up?.62:.78).toFixed(2)+")");
+      c.save();c.beginPath();c.arc(bx,by,R,0,TAU);c.clip();
+      c.fillStyle=sh;c.fillRect(bx-R,by-R,R*2,R*2);
+      /* серпик со стороны звезды: без него диск — просто тёмное пятно, и не
+         видно, что он освещён тем же светилом, что и земля под ногами */
+      c.strokeStyle=pcA(pcMix(pcMix(bt.pal[3]||bt.pal[2],star,.35),cold,night*.5),
+        up?.62:.30);
+      c.lineWidth=Math.max(1,R*.13);
+      c.beginPath();
+      c.arc(bx-Math.cos(ang)*R*.10,by-Math.sin(ang)*R*.10,R*.97,0,TAU);
+      c.stroke();
+      c.restore();
+      if(body.type==="gas"){
+        c.strokeStyle=pcA(dim(bt.pal[4]||bt.pal[3]||bt.pal[2],.6),day*.5);
+        c.lineWidth=Math.max(1.2,R*.10);
+        c.save();c.translate(bx,by);c.rotate(-.34);
+        c.beginPath();c.ellipse(0,0,R*1.75,R*.34,0,0,TAU);c.stroke();
+        c.restore();
+      }
+    }
+  }
+
+  /* ── 4. звезда ──
+     Диск маленький: солнце на снимке всегда меньше, чем помнится. Зарево —
+     широкое и слабое, и оно же объясняет, откуда свет на всём остальном */
+  {
+    const gr=Math.min(w,h)*(up?.66:.46);
+    const gg=c.createRadialGradient(sunX,up?sunY:hy,0,sunX,up?sunY:hy,gr);
+    gg.addColorStop(0,pcA(star,(up?.40:.26)*(1-night*.42)));
+    gg.addColorStop(.42,pcA(star,(up?.13:.09)*(1-night*.42)));
+    gg.addColorStop(1,pcA(star,0));
+    c.fillStyle=gg;c.fillRect(0,0,w,hy+h*.07);
+    if(up){
+      const rr=Math.max(2.4,Math.min(w,h)*.020*(W0.sys.cls.t||1));
+      c.fillStyle=pcA(pcMix(star,[255,255,255],.5),.95);
+      c.beginPath();c.arc(sunX,sunY,rr,0,TAU);c.fill();
+    }
+  }
+
+  /* ── 5. дальние гряды ──
+     Дымка — не прозрачность: далёкий склон СВЕТЛЕЕ неба у горизонта, а не
+     виден насквозь. Поэтому цвет мешается к небу, а альфа остаётся единицей.
+     Каждый план берёт рельеф из своего места полосы — иначе две гряды
+     повторяют друг друга и глубина рассыпается */
+  const gcol=GC.body;
+  for(let L=0;L<2;L++){
+    const haze=L===0?.70:.42, amp=h*(L===0?.050:.080), off=L===0?43000:17000;
+    c.fillStyle=pcC(pcMix(dim(gcol,.45),skH,haze),day);
+    c.beginPath();c.moveTo(0,h);
+    const base=hy-h*(L===0?.028:.010);
+    for(let x=0;x<=w;x+=3){
+      const u=((s.cx+off+(x/w-.5)*3400*(L===0?2.8:1.8))%tr.W+tr.W)%tr.W;
+      c.lineTo(x,base-((groundAt(tr,u)-900)/300)*amp);
+    }
+    c.lineTo(w,h);c.closePath();c.fill();
+  }
+
+  /* ── 6. тело грунта ──
+     Не силуэт холма, а РАЗРЕЗ: от профиля вниз до кромки кадра, со слоями
+     породы.
+
+     ОКНО И ВЫСОТА. Масштаб по вертикали РАВЕН масштабу по горизонтали, и это
+     не придирка: у фотографии он изотропный. Пока высота считалась от `h`, на
+     вулканическом мире профиль уходил пиками за верхнюю кромку — карточка
+     втрое уже игрового кадра, и тот же рельеф в ней задирался втрое. Теперь
+     один множитель `w/WIN` на обе оси, с четвертью прибавки на выразительность.
+
+     СЛОИ идут параллельно профилю у поверхности и ВЫПРЯМЛЯЮТСЯ С ГЛУБИНОЙ:
+     верхний слой повторяет рельеф, нижние ложатся почти горизонтально — так
+     и залегает порода. Пока все полосы повторяли профиль целиком, разрез
+     читался топографическим узором, а не землёй. */
+  const WIN=2400, y0=groundAt(tr,s.cx), PSC=(w/WIN)*1.25;
+  const gy=x=>hy+(groundAt(tr,s.cx+(x/w-.5)*WIN)-y0)*PSC;
+  {
+    c.save();
+    c.beginPath();c.moveTo(0,h);
+    for(let x=0;x<=w;x+=2)c.lineTo(x,gy(x));
+    c.lineTo(w,h);c.closePath();
+    c.clip();
+    /* ночь гасит СВЕТ, но не должна гасить РАЗЛИЧИЯ: на каменистом мире общий
+       множитель .30 съедал и слои, и профиль, и полкарточки уходило в чёрное
+       поле. У земли свой пол по светлоте — она ловит и звёздный свет тоже */
+    const dayG=Math.max(day,.46);
+    c.fillStyle=pcC(dim(GC.body,.5),dayG);
+    c.fillRect(0,0,w,h);
+    const nS=clamp((tr.strata|0)+3,5,8);
+    const flat=hy+h*.02;                      /* уровень, к которому выпрямляются слои */
+    for(let i=1;i<=nS;i++){
+      const k=i/nS;
+      const col=dim(pcMix(GC.body,GC.deep,Math.pow(k,.75)*.78),.45);
+      c.fillStyle=pcC(col,dayG*(1-k*.08));
+      c.beginPath();c.moveTo(0,h);
+      for(let x=0;x<=w;x+=4){
+        const u=s.cx+(x/w-.5)*WIN;
+        const wob=Math.sin(u*.0009+i*2.1)*h*.007+Math.sin(u*.0031+i*5.3)*h*.003;
+        /* доля рельефа в кровле слоя падает с глубиной */
+        const follow=Math.pow(1-k,1.6);
+        const top=gy(x)*follow+flat*(1-follow);
+        /* глубины идут почти ровным шагом до самой кромки кадра: при степени
+           1.35 все полосы жались к профилю, а нижняя треть карточки была одной
+           заливкой — то есть слои кончались там, где земля ещё видна */
+        c.lineTo(x,top+h*(.030+Math.pow(k,1.06)*.62)+wob);
+      }
+      c.lineTo(w,h);c.closePath();c.fill();
+    }
+    /* Линза тёмной породы (18b) была тут и её убрали: на карточке в ладонь
+       эллипс не читается геологией, он читается чёрным пятном поверх слоёв —
+       на ледяном и вулканическом мире это выглядело браком печати. Всё, что
+       мельче слоя, на этом размере лишнее. */
+    c.restore();
+  }
+  /* кромка по свету: без неё грунт — плоская заливка, и весь рельеф держится
+     на одном силуэте. Тонкая: на вулканическом мире жирная кромка превращалась
+     в оранжевую змею поперёк карточки и забирала кадр себе */
+  {
+    const lit=pcMix(GC.lit,star,.26);
+    c.strokeStyle=pcA(dim(lit,.5),up?.55:.26);
+    c.lineWidth=Math.max(1,h*.0035);
+    c.beginPath();
+    for(let x=0;x<=w;x+=2){const y=gy(x);x?c.lineTo(x,y):c.moveTo(x,y);}
+    c.stroke();
+  }
+
+  /* ── 7. что стоит на кромке ──
+     Валуны — те, что лежат на профиле в игре: снимок сделан в этом месте, а
+     не в похожем. Растения — только там, где им есть чем дышать; силуэтом, с
+     шляпкой, потому что именно так они читаются в кадре игры */
+  {
+    const sc=w/WIN;
+    const wx=x=>w*.5+((((x-s.cx+tr.W*1.5)%tr.W)-tr.W*.5))*sc;
+    for(const rk of tr.rocks){
+      const x=wx(rk.x);
+      if(x<-40||x>w+40)continue;
+      const y=gy(x), q=sc*1.35;
+      if(rk.rad*q<.8)continue;
+      c.fillStyle=pcC(dim(pcMix(GC.deep,GC.body,rk.tint*.75),.4),day*.92);
+      c.beginPath();
+      for(let i=0;i<rk.poly.length;i++){
+        const px=x+rk.poly[i][0]*q*(rk.flip?-1:1), py=y+rk.poly[i][1]*q*.85;
+        i?c.lineTo(px,py):c.moveTo(px,py);
+      }
+      c.closePath();c.fill();
+    }
+    const flora=T.atm.indexOf("пригодна")>=0||p.type==="toxic"||p.type==="jungle"||
+                p.mix==="toxic"||p.mix==="jungle";
+    if(flora){
+      const rp=rng(hashi(p.seed,0x71A2,Math.floor(s.cx/600)));
+      const gcol2=p.type==="jungle"?[64,132,66]:(p.type==="toxic"?[128,150,58]:[70,120,72]);
+      const col=pcA(dim(gcol2,.68),.96);
+      const n=6+Math.floor(rp()*10);
+      for(let i=0;i<n;i++){
+        const x=rp()*w, y=gy(x), Hh=h*(.035+rp()*rp()*.11);
+        c.strokeStyle=col;c.lineWidth=Math.max(1,Hh*.055);
+        const bend=(rp()-.5)*Hh*.34;
+        c.beginPath();c.moveTo(x,y);
+        c.quadraticCurveTo(x+bend*.5,y-Hh*.6,x+bend,y-Hh);c.stroke();
+        c.fillStyle=col;
+        if(rp()<.55){                      /* шляпка */
+          c.beginPath();c.ellipse(x+bend,y-Hh,Hh*(.22+rp()*.20),Hh*.11,0,Math.PI,TAU);c.fill();
+        }else{                             /* соцветие */
+          c.beginPath();c.arc(x+bend,y-Hh,Hh*.085,0,TAU);c.fill();
+        }
+      }
+    }
+  }
+
+  /* ── 8. мерило ──
+     Человек или посадочный аппарат. Единственная фигура на карточке, и стоит
+     она не для красоты: без неё гряда позади — и валун, и горный хребет
+     одновременно. Рост взят от кадра, а не от мира: на снимке человек всегда
+     примерно одной величины, как на всякой фотографии */
+  {
+    const x=w*.5, y=gy(w*.5), H0=h*.075;
+    const dark=pcMix([8,10,16],T.pal[0],.30);
+    /* тень под ногами: без неё фигура висит над слоями, а не стоит на них */
+    c.fillStyle="rgba(0,0,0,.30)";
+    c.beginPath();c.ellipse(x,y+H0*.03,H0*.34,H0*.075,0,0,TAU);c.fill();
+    /* и обвод со стороны звезды: на каменистом мире ночью силуэт совпадал по
+       светлоте с грунтом и пропадал совсем — а это единственное мерило кадра */
+    c.strokeStyle=pcA(pcMix(star,[255,255,255],.35),up?.42:.26);
+    c.lineWidth=Math.max(1,H0*.055);
+    c.save();
+    c.translate(sunX>x?H0*.045:-H0*.045,-H0*.02);
+    c.beginPath();c.arc(x,y-H0+H0*.20,H0*.20,0,TAU);c.stroke();
+    c.beginPath();c.moveTo(x,y-H0+H0*.33);c.lineTo(x,y-H0*.40);c.stroke();
+    c.restore();
+    c.fillStyle=pcA(dark,.94);
+    if(s.m==="l"){
+      const bw=H0*.90,bh=H0*.55;
+      c.beginPath();
+      c.moveTo(x-bw*.40,y-H0);c.lineTo(x+bw*.40,y-H0);
+      c.lineTo(x+bw*.50,y-H0+bh);c.lineTo(x-bw*.50,y-H0+bh);c.closePath();c.fill();
+      c.strokeStyle=pcA(dark,.94);c.lineWidth=Math.max(1,H0*.085);
+      for(const k of [-1,0,1]){
+        c.beginPath();c.moveTo(x+k*bw*.33,y-H0+bh);c.lineTo(x+k*bw*.60,y);c.stroke();
+      }
+    }else{
+      const hd=H0*.20;
+      c.beginPath();c.arc(x,y-H0+hd,hd,0,TAU);c.fill();
+      c.beginPath();
+      c.moveTo(x-H0*.17,y-H0+hd*1.65);c.lineTo(x+H0*.17,y-H0+hd*1.65);
+      c.lineTo(x+H0*.12,y-H0*.40);c.lineTo(x-H0*.12,y-H0*.40);c.closePath();c.fill();
+      c.strokeStyle=pcA(dark,.94);c.lineWidth=Math.max(1.1,H0*.095);
+      c.beginPath();c.moveTo(x-H0*.05,y-H0*.42);c.lineTo(x-H0*.14,y);
+      c.moveTo(x+H0*.05,y-H0*.42);c.lineTo(x+H0*.16,y);c.stroke();
+    }
+  }
+
+  /* ── 9. погода ──
+     Не частицы: на карточке величиной с ладонь дождь читается пеленой и
+     наклоном, а не каплями */
+  {
+    const wx=weatherOf(p);
+    if(wx&&wx.kind){
+      const t=Math.sin(s.t/wx.per*TAU+wx.ph)*.5+.5;
+      const k=clamp(lerp(wx.lo,wx.hi,Math.pow(t,1.7))*(wx.cap===undefined?1:wx.cap),0,1);
+      if(k>.12){
+        const WC={dust:[186,150,96],snow:[224,236,246],ash:[120,116,116],
+          rain:[150,178,200],acid:[168,196,110],fog:[196,206,214],spore:[176,196,140]};
+        const col=dim(WC[wx.kind]||[190,190,190],.6);
+        c.fillStyle=pcA(col,Math.min(.40,k*.38));
+        c.fillRect(0,0,w,h);
+        if(wx.kind!=="fog"&&wx.kind!=="spore"){
+          const rw=rng(hashi(p.seed,0x2A11,Math.floor(s.t/600)));
+          c.strokeStyle=pcA(col,Math.min(.30,k*.30));
+          c.lineWidth=1;
+          const slant=(wx.kind==="snow")?.18:.42, len=h*(wx.kind==="snow"?.028:.080);
+          c.beginPath();
+          for(let i=0;i<Math.round(28+k*70);i++){
+            const x=rw()*w*1.3-w*.15,y=rw()*h;
+            c.moveTo(x,y);c.lineTo(x-len*slant,y+len);
+          }
+          c.stroke();
+        }
+      }
+    }
+  }
+
+  /* ── 10. отпечаток ──
+     Виньетка и зерно — ровно столько, чтобы кадр читался напечатанным, а не
+     выведенным на экран: открытку держат в руках */
+  {
+    const vg=c.createRadialGradient(w*.5,h*.46,Math.min(w,h)*.30,w*.5,h*.5,Math.max(w,h)*.72);
+    vg.addColorStop(0,"rgba(0,0,0,0)");
+    vg.addColorStop(1,"rgba(0,0,0,.38)");
+    c.fillStyle=vg;c.fillRect(0,0,w,h);
+    const rg=rng(hashi(p.seed,s.cx|0,0x6247));
+    c.globalAlpha=.05;c.fillStyle="#fff";
+    for(let i=0;i<Math.round(w*h/1000);i++)c.fillRect(rg()*w,rg()*h,1,1);
+    c.globalAlpha=1;
+  }
+  c.restore();
+  return true;
+}
+
 /* ══════════════ станция: вкладка «дом и базы» ══════════════ */
 /* Отпилено от 26-ui-station по шву вкладки (2026-08-23): renderTab зовёт
    renderBasesTab(st), всё остальное — те же $body/el/renderTab. */

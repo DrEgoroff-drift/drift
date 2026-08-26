@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 276 · символов верхнего уровня: 2580
+Файлов: 277 · символов верхнего уровня: 2592
 
 ## СИМВОЛЫ
 
@@ -539,6 +539,7 @@ drawPlant                    src/20-life.js:346
 drawPlantAlien               src/20-life.js:160
 drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
+drawPostcard                 src/25g-postcard.js:97
 drawRaid                     src/24aa-raid-draw.js:14
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:107
@@ -1539,6 +1540,10 @@ passShipX                    src/11p-pass.js:34
 passTell                     src/11p-pass.js:55
 PAX_KEYS                     src/02-world.js:35
 payCost                      src/21a-mode-base.js:52
+pcA                          src/25g-postcard.js:76
+pcC                          src/25g-postcard.js:73
+pcMix                        src/25g-postcard.js:75
+pcStar                       src/25g-postcard.js:78
 PEEP_LIT                     src/20c-peep.js:28
 PEEP_LOAD                    src/20c-peep.js:27
 PEEP_PASS                    src/20c-peep.js:25
@@ -1656,19 +1661,26 @@ poiPath                      src/20a-poi.js:91
 poiPoly                      src/20a-poi.js:110
 poiSkin                      src/20a-poi.js:119
 POST_ADDR                    src/11e-post.js:46
+POST_HOR                     src/25g-postcard.js:33
 POST_ITEMS                   src/11e-post.js:20
 POST_LAST                    src/11e-post.js:112
 POST_LINKS                   src/11e-post.js:25
 POST_SALT                    src/11e-post.js:18
+POST_TR                      src/25g-postcard.js:36
+POST_V                       src/25g-postcard.js:32
 POST_WHAT                    src/11e-post.js:19
 postAddrs                    src/11e-post.js:47
 postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113
+postCaption                  src/25g-postcard.js:64
 postDock                     src/11e-post.js:80
 postHolding                  src/11e-post.js:107
 postItem                     src/11e-post.js:42
 postLinkHere                 src/11e-post.js:73
 postOpen                     src/11e-post.js:99
+postSnap                     src/25g-postcard.js:53
+postTerrain                  src/25g-postcard.js:37
+postWorld                    src/25g-postcard.js:45
 prevAct                      src/08-state.js:40
 pricesSeen                   src/12aa-need.js:188
 prism                        src/21b-surface-deco.js:201
@@ -3131,6 +3143,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/25f-globus.js · 8 КБ
   · «Глобус» — указатель места полёта:1
+
+## src/25g-postcard.js · 25 КБ
+  · открытка: снимок сцены, а не пиксели:1
 
 ## src/26a-ui-station-home.js · 12 КБ
   · станция: вкладка «дом и базы»:1

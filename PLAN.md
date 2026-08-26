@@ -1231,3 +1231,42 @@ uploaded the *previous* committed page. Paths are composed part by part now.
   narrower so the down shows between them. Quality never falls back on the fly — the phone tier
   is set once, at about a third of the count.
 - The beak is pushed a further 30 mm forward, hook and all.
+
+## M200h — six notes from the author, and the dark bead that was the hole (2026-08-26)
+
+Six marks on a screenshot: the eye, the hole in the crown, invisible fluff, too few feathers on
+the wing, one stray wing feather, and whiskers that did not glow.
+
+- **The eye sat in a pit — and the pit was arithmetic.** The coat cut a bare disc of radius 0.118
+  around the eye, while the bare-skin ring ended at 0.098. Between them lay naked *body*, and the
+  body is painted as the dark mass under the plumage (material 0, albedo ×0.30): a flat blue
+  patch half a cheek wide. The rule is now the other way round — the ring (0.134) is always wider
+  than the cut (0.120), so feathers land *on* its edge.
+- **The iris is the eyeball now, and the pupil a dome on top.** Both used to be flat discs floated
+  in front of the sphere. The clearance only worked at the rim; in the middle the sphere pushed
+  through, so from any angle but dead-on the warm ring was reduced to a crescent and the eye read
+  as a black smudge. A dome stays a dome from every side, and it gives the cornea its bulge.
+- **The hole in the crown was never geometry — it was colour.** The plug spheres passed
+  `bodyColor × 0.30`, and material 0 darkens albedo by another 0.30 in the shader: 0.09, near
+  black. The plug *was* the dark spot everyone kept seeing. Colour goes in plain now; the crown
+  also gets four overlapping feather rings (17/14/11/8 quills, staggered) plus four caps over the
+  pole itself.
+- **Fluff is a shape, not a count.** Three tiers of the same oval give armour plating however many
+  you lay down. Down is now its own profile — wide at the root, tapering to a hair — its own
+  length (a plate's on average, every fourteenth one 1.7×), its own scatter, and its own light in
+  the shader: the edge is lit rather than darkened, translucency 0.94, barbs sparse. Fluff reads
+  where the silhouette breaks and light passes between the tips. First attempt overdid it and the
+  bird came out a thistle: the taper exponent was the culprit, 1.55 gives a spike.
+- **The wing: 59 feathers per side → 152.** Six layers instead of five (a row of marginal coverts
+  along the leading edge covers everyone else's roots), each narrower, with the step jittered —
+  thirty evenly spaced feathers read as a rack of teeth.
+- **The stray feather across the breast.** The light piping along the coverts was built "from a
+  point on the chest to a point in mid-air", and its length came out of the distance between
+  them: on the shoulder that was a single feather a quarter of the bird long, lying across the
+  white breast. Piping is piping — short feathers along the flow down the wing's leading edge.
+  The amber epaulette moved back onto the shoulder for the same reason: near zero azimuth it
+  crawled onto the chest and read as a bib.
+- **The whiskers light up.** They were "a near-black thread, warmed at the tip": the warmth was
+  lost in the general light and never crossed the bloom threshold (1.55), so the beads glowed and
+  the whiskers hung there like wires. The thread is a source now — an even core, a run-up toward
+  the tip, a halo along the grazing angle, pulsing at 1.7 Hz in step with the bead.
