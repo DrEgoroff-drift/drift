@@ -65,19 +65,25 @@
   .loop .st:last-child{border-bottom:1px solid var(--line)}
 }
 
-/* ── птица на главной ── */
-.bird{display:grid;gap:30px;grid-template-columns:270px 1fr;align-items:center;
-  border:1px solid var(--line);background:rgba(8,13,22,.6);padding:26px 28px}
-@media(max-width:760px){.bird{grid-template-columns:1fr;justify-items:center;text-align:center}}
-.cage{width:100%;max-width:270px;aspect-ratio:230/272;cursor:pointer;position:relative;
+/* ── доп механики: две птицы и дорога ──
+   Карточки одного роста: окно превью у всех одной пропорции (та же, что у
+   клетки с плоской птицей, — по ней parrot.js считает попадание тычка),
+   кнопка прижата вниз через margin-top:auto. */
+.extras{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(238px,1fr))}
+.ex{border:1px solid var(--line);background:rgba(8,13,22,.6);
+  padding:16px 16px 18px;display:flex;flex-direction:column}
+.ex .pv{display:block;width:100%;aspect-ratio:230/272;overflow:hidden;margin-bottom:14px;
   background:linear-gradient(157deg,rgba(28,44,60,.42),rgba(7,12,20,.5) 62%,rgba(6,10,17,.6));
-  border:1px solid rgba(127,230,216,.24);border-radius:12px;overflow:hidden}
+  border:1px solid rgba(127,230,216,.24);border-radius:12px}
+.ex .pv img{width:100%;height:100%;object-fit:cover;display:block}
+.cage{cursor:pointer}
 .cage canvas{width:100%;height:100%;display:block}
-.bird h3{font-size:15px;font-weight:400;color:var(--text);margin-bottom:10px}
-.bird p{font-size:13.5px;color:var(--text);opacity:.86;margin-bottom:10px;max-width:38em}
-.bird .said{min-height:24px;font-size:13.5px;color:var(--phos);margin:12px 0 16px}
-.bird .row{display:flex;gap:10px;flex-wrap:wrap}
-@media(max-width:760px){.bird .row{justify-content:center}}
+.ex h3{font-size:15px;font-weight:400;color:var(--text);margin-bottom:8px}
+.ex h3 em{font-style:normal;color:var(--dim);font-size:12px;letter-spacing:.12em;
+  display:block;margin-bottom:4px}
+.ex p{font-size:13px;color:var(--text);opacity:.86;margin-bottom:12px}
+.ex .said{min-height:22px;font-size:13px;color:var(--phos);margin:0 0 12px}
+.ex .btn{align-self:flex-start;margin-top:auto}
 
 /* ── почему ── */
 .why{border:1px solid var(--line);background:rgba(8,13,22,.6);padding:30px 28px}
@@ -298,22 +304,42 @@
 
 <section id="bird">
   <div class="eyebrow">Мелочь, но приятно</div>
-  <h2>На корабле живёт попугай</h2>
-  <p class="lead">Он подслушивает чужие переговоры и повторяет обрывки: цены, позывные,
-  слова на непонятном языке. Иногда это единственный способ узнать что-то заранее.</p>
-  <div class="bird">
-    <div class="cage" id="cage" title="ткните птицу"><canvas id="parrotcv"></canvas></div>
-    <div>
-      <h3>Заберите его себе</h3>
-      <p>Ткните птицу — она ответит. А если понравится, её можно поставить
-      отдельным окошком на рабочий стол: будет сидеть, чиститься и изредка
-      бормотать. Работает и без интернета.</p>
+  <h2>Не только полёт</h2>
+  <p class="lead">Три штуки живут отдельно от игры. Птица с корабля — она подслушивает
+  чужие переговоры и повторяет обрывки — в двух видах, плоском и объёмном. И экран,
+  который едет с вами в машине.</p>
+  <div class="extras">
+
+    <article class="ex">
+      <div class="pv cage" id="cage" title="ткните птицу"><canvas id="parrotcv"></canvas></div>
+      <h3><em>ТРЕПЛО</em>Птица в окошке</h3>
+      <p>Ткните — ответит. Ставится отдельным окошком на рабочий стол: будет
+      сидеть, чиститься и изредка бормотать. Работает и без интернета.</p>
       <div class="said" id="said">…</div>
-      <div class="row">
-        <a class="btn ghost sm" href="/parrot.html">Как забрать себе →</a>
-        <a class="btn ghost sm" href="/treplo3d.html">Та же птица в объёме →</a>
-      </div>
-    </div>
+      <a class="btn ghost sm" href="/parrot.html">Как забрать себе →</a>
+    </article>
+
+    <article class="ex">
+      <a class="pv" href="/treplo3d.html"><img src="/shots/bird3d.webp" loading="lazy"
+        width="720" height="900"
+        alt="Объёмный сине-белый попугай с золотым клювом сидит на ветке, у него светятся усы-антенны"></a>
+      <h3><em>ТРЕПЛО В ОБЪЁМЕ</em>Она же, но настоящая</h3>
+      <p>Собрана заново: двадцать тысяч перьев, честный свет с тенями и все
+      повадки из игры. Обходится кругом, отзывается на тычок и скачивается одним файлом.</p>
+      <a class="btn ghost sm" href="/treplo3d.html">Открыть →</a>
+    </article>
+
+    <article class="ex">
+      <a class="pv" href="/play.html"><img src="/shots/road.webp" loading="lazy"
+        width="720" height="900"
+        alt="Экран «Дороги» на телефоне: корабль летит вверх сквозь звёздную ленту, сверху скорость и премия за поездку"></a>
+      <h3><em>В ДОРОГУ</em>Корабль летит с вами</h3>
+      <p>Настоящая поездка кормит корабль: телефон считает скорость и крены, музыка
+      красит небо, местность разбита на звёздные сектора. Открывается в самой игре —
+      бортовые системы, «В ДОРОГУ».</p>
+      <a class="btn ghost sm" href="/play.html">Играть →</a>
+    </article>
+
   </div>
 </section>
 

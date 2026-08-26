@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<meta charset="utf-8">
+<title>towebp</title>
+<body style="background:#05070c;color:#9fb2c6;font:13px system-ui;padding:20px">
+<p id="s">…</p>
+<script>
+/* ══════════════ перегон снимка в webp ══════════════
+   Своего кодировщика webp на машине нет — ни ImageMagick, ни cwebp (в PATH
+   лежит одноимённый convert.exe от Windows, который переводит файловую
+   систему, а не картинки). Chrome умеет: canvas.toDataURL("image/webp").
+
+   Страница берёт снимок со стенда, кладёт его в канву нужного размера и
+   отправляет POST'ом на /shot — тем же путём, каким снимаются кадры заглавной
+   (docs/mksiteshots.ps1). Стенд пишет результат в docs/shots/<n>.webp.
+
+     /docs/towebp.html?src=/docs/shots/road.png&n=road&w=720&h=900&crop=0,0,460,800
+
+   src   что брать                 n     как назвать
+   w,h   размер готового кадра      crop  вырезка из исходника: x,y,ш,в
+   fit   cover (по умолчанию) или contain — как вписывать
+   bg    фон под contain, по умолчанию чёрный
+   q     качество, 0..1, по умолчанию 0.9
+
+   Запускается через docs/towebp.ps1. */
+(function(){
+  var Q=new URLSearchParams(location.search);
+  var say=function(t){document.getElementById("s").textContent=t;document.title=t;};
+  var src=Q.get("src");
+  if(!src){say("нет src");return;}
+  var W=+(Q.get("w")||0),H=+(Q.get("h")||0),q=+(Q.get("q")||0.9);
+  var fit=Q.get("fit")||"cover",bg=Q.get("bg")||"#05070c";
+  var n=Q.get("n")||"out";
+  var im=new Image();
+  im.onload=function(){
+    var cr=(Q.get("crop")||"").split(",").map(Number);
+    var sx=0,sy=0,sw=im.width,sh=im.height;
+    if(cr.length===4&&cr.every(function(v){return !isNaN(v);})){
+      sx=cr[0];sy=cr[1];sw=cr[2];sh=cr[3];
+    }
+    var w=W||sw,h=H||sh;
+    var cv=document.createElement("canvas");cv.width=w;cv.height=h;
+    var g=cv.getContext("2d");
+    g.fillStyle=bg;g.fillRect(0,0,w,h);
+    /* cover: вписываем по меньшей стороне и режем лишнее; contain: целиком */
+    var k=fit==="contain"?Math.min(w/sw,h/sh):Math.max(w/sw,h/sh);
+    var dw=Math.round(sw*k),dh=Math.round(sh*k);
+    g.imageSmoothingQuality="high";
+    g.drawImage(im,sx,sy,sw,sh,Math.round((w-dw)/2),Math.round((h-dh)/2),dw,dh);
+    fetch("/shot?n="+encodeURIComponent(n),{method:"POST",
+      body:cv.toDataURL("image/webp",q)})
+      .then(function(r){say("POSTED "+r.status+" "+w+"×"+h);},
+            function(e){say("POSTERR "+e);});
+  };
+  im.onerror=function(){say("не читается "+src);};
+  im.src=src;
+})();
+</script>
+</body>
+</html>

@@ -1346,3 +1346,23 @@ the same mistake — solving a plumage problem with a bare patch.
   the coat — it lands on the surface and takes the common colouring — but pointed **away from the
   eye centre** instead of along the flow. Feathers that radiate cannot cover the eye, and the cut
   edge disappears under their tips. Down keeps a narrow 100 mm cut: it is small and soft.
+
+## M201 — the extras shelf: two birds and the road (2026-08-26)
+
+The bird block on the front page becomes a shelf of three things that live outside the flight,
+each with its own preview of the same proportion:
+
+- **Трепло, flat** — the live canvas that was already there, poked with a finger, linking to
+  `/parrot.html`. Kept as its own card rather than replaced: the 3D module is a second version,
+  not a successor, and both stay.
+- **Трепло in the round** — `/treplo3d.html`, preview rendered by `bird/shot.ps1`.
+- **В дорогу** — the companion screen, shot off the `docs/mkroad.ps1` stand. It opens inside the
+  game (systems → «В ДОРОГУ»), and the card says so rather than pretending to be a launcher.
+
+**`docs/towebp.html` + `docs/towebp.ps1`.** There is no webp encoder on this machine — no
+ImageMagick, no cwebp, and the `convert` in PATH is Windows' filesystem converter. Chrome has one:
+the page loads a PNG off the stand, draws it into a canvas of the requested size and crop, and
+POSTs `canvas.toDataURL("image/webp")` to `/shot` — the same route the front-page frames already
+use (`docs/mksiteshots.ps1`). 397 KB PNG → 37 KB webp. Trap on the way: a local `$q` in a script
+that also declares a `[double]$Q` parameter is the *same variable* in PowerShell, and the string
+assignment fails with a type error that names neither.
