@@ -7,6 +7,38 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.188.0 — the hundred blanks, and a card that knows where it was taken (M209)
+
+M189 laid down thirty printed blanks and wrote "a hundred over later passes" into the plan. Here
+are the other seventy, in `25h-post-forms2` — and two kinds that could not have existed before
+yesterday.
+
+**Two new kinds, because the camera reached two new kinds of place.** «подземная» and «из
+пустоты» were missing not from neglect but because until M208 there was no way to photograph a
+working face or a belt, so a blank for one had nothing to sit behind. Their voice is their own: the
+underground forms carry no weather and no hour (there is neither, down there), and the vacuum ones
+are deliberately flat — a person who lives in emptiness writes about it as routine, and that
+plainness is the tell.
+
+**The blank is now chosen by where the photograph was taken, not by where you are sitting.** The
+old code asked `G.mode`, which was wrong twice over: a card is signed at the desk, on a station,
+long after the shot — so a picture from a mine was offered «С ДОРОГИ» — and a card received from a
+stranger has no live mode at all, since the recipient is in their own game and their location has
+nothing to do with that photograph. The snapshot knows where it came from; that is what gets asked.
+
+**Kind turned out to be too coarse a sieve.** «Из пустоты» covers the belt, orbit and a gas giant's
+air alike, and the first count duly put «В АТМОСФЕРЕ» — *"going through the layers, pulling
+steady"* — under a photograph of a planet seen from above. A blank now carries an optional `m`, the
+letters of the places it suits; those are preferred, kind is the fallback, and the player can still
+flip to any of the hundred.
+
+Also caught here and written into `CLAUDE.md`, because it cost a build: **`Sort-Object Name`
+ignores hyphens**, so `25ha-post-forms2.js` concatenates *before* `25h-post-forms.js` and the
+second table dies reading the first. To land after a module, extend its stem, not its letter.
+
+Suite `91zzzi-postcard`: a hundred blanks, no repeated heading, every one findable by the number
+that travels down the wire. 10693 assertions in 349 suites.
+---
 ## 0.187.0 — the camera works in five more places (M208)
 
 M188 gave the game a camera and taught it two places: the ground and the approach. That left five

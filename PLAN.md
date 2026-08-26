@@ -397,8 +397,12 @@ M188–M206” — grep it there for any of them. What they left open, in the or
   size in it. The snapshot did not grow: `cx`/`cy` mean something different per place instead of
   a new pair of fields per mode, and terrain is now computed only where it is drawn. Four passes;
   what was wrong in the first three is written down in the module.
-- **a hundred blanks** (M189): thirty are in, and the plan asked for a hundred over later passes.
-  A blank is data, so this is writing rather than engineering — a pass at a time.
+- ~~**a hundred blanks** (M189)~~ — **closed by M209 (0.188.0).** `25h-post-forms2`, seventy more,
+  with two kinds that could not exist before M208 gave the camera the cave, the mine and the void.
+  Two real bugs fell out of writing them: the default blank was chosen from `G.mode` (so a mine
+  photograph was offered «С ДОРОГИ», and a *received* card had no live mode at all), and kind alone
+  was too coarse a sieve — «В АТМОСФЕРЕ» under a shot taken from orbit. A blank now carries the
+  letters of the places it suits.
 - **marks in the places themselves** (M171, M194): the settlement wall, the cave mouth. M194 went
   around it via rumours; the original ask is still standing.
 - **the winter frame** (M197): at street scale the wintering reads, but weakly. The frame could

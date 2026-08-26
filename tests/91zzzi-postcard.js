@@ -111,9 +111,10 @@ TEST_SUITES.push(()=>suite("открытка: альбом — двенадца�
   G.mode="system";G.surf=null;
 }));
 /* ══════════════ бланки открытки (M189) ══════════════ */
-TEST_SUITES.push(()=>suite("бланк: тридцать штук, у каждой строки значение по умолчанию",()=>{
+TEST_SUITES.push(()=>suite("бланк: сотня штук, у каждой строки значение по умолчанию",()=>{
   resetWorld();
-  ok(POST_FORMS.length>=30,"бланков не меньше тридцати ("+POST_FORMS.length+")");
+  /* M189 положил тридцать и записал в план сотню; M209 её дописал */
+  ok(POST_FORMS.length>=100,"бланков не меньше сотни ("+POST_FORMS.length+")");
   const ids={},kinds={};
   let minL=99,minV=99;
   for(const F of POST_FORMS){
@@ -129,9 +130,54 @@ TEST_SUITES.push(()=>suite("бланк: тридцать штук, у каждо
         ok(!/\d{3,}|@|сектор|координат/i.test(ln[i]),"вариант никого не адресует: «"+ln[i]+"»");
     }
   }
-  ok(Object.keys(kinds).length>=8,"все восемь родов бланка заведены ("+Object.keys(kinds).length+")");
+  ok(Object.keys(kinds).length>=10,"все десять родов бланка заведены ("+Object.keys(kinds).length+")");
   ok(minL>=3,"в бланке не меньше трёх строк (минимум "+minL+")");
   ok(minV>=3,"в строке не меньше трёх вариантов (минимум "+minV+")");
+  /* вторая таблица (25h-post-forms2) должна СРАСТИСЬ с первой, а не лежать
+     рядом: номер бланка — это то, что уезжает по проводу, и бланк, которого
+     нет в указателе, означает потерянную чужую карточку */
+  for(const F of POST_FORMS)
+    ok(POST_FORM_BY[F.id]===F,"бланк находится по номеру: "+F.id);
+  ok(POST_FORMS.indexOf(postForm("v1"))>=0,"бланк из второй таблицы нашёлся");
+  ok(postForm("такого нет").id!=="такого нет","за неизвестным номером — не пустота");
+  /* и ни один заголовок не повторяется: сотня одинаковых «С ДОРОГИ» была бы
+     сотней только по счёту */
+  const heads={};
+  for(const F of POST_FORMS){
+    ok(!heads[F.ru],"заголовок не повторяется: "+F.ru);
+    heads[F.ru]=1;
+  }
+}));
+TEST_SUITES.push(()=>suite("бланк: предлагается по МЕСТУ СНИМКА, а не по тому, где сидишь",()=>{
+  resetWorld();
+  const F=pcTestPlanet();
+  const snap=(m)=>({v:POST_V,m,sx:F.s.sx,sy:F.s.sy,pi:F.p.idx,mi:-1,
+                    lon:null,cx:100,cy:0,t:CEL_DAY*7+123,ver:VER});
+  /* сидим на станции — то есть режим не значит ничего */
+  G.mode="dock";
+  eq(postForm(postFormFor(snap("d"))).k,"deep","к кадру из шахты — подземный бланк");
+  eq(postForm(postFormFor(snap("c"))).k,"deep","и к кадру из пещеры тоже");
+  eq(postForm(postFormFor(snap("b"))).k,"void","к кадру из пояса — из пустоты");
+  eq(postForm(postFormFor(snap("y"))).k,"void","и с орбиты");
+  eq(postForm(postFormFor(snap("g"))).k,"void","и из атмосферы");
+  /* и род — не последнее слово: бланк «В АТМОСФЕРЕ» под снимком С ОРБИТЫ
+     врёт ровно так же, как «С ДОРОГИ» под снимком из шахты */
+  for(const m of ["c","d","b","y","g"]){
+    const F=postForm(postFormFor(snap(m)));
+    ok(!F.m||F.m.indexOf(m)>=0,"бланк «"+F.ru+"» впору месту «"+m+"»");
+  }
+  eq(postForm(postFormFor(snap("s"))).k,"road","к кадру с грунта — дорожный");
+  /* живой режим на выбор не влияет НИКАК: чужую карточку подписывают в своей
+     игре, и место получателя к её кадру отношения не имеет */
+  const was=postFormFor(snap("d"));
+  G.mode="surface";G.surf={p:F.p,tr:genTerrain(F.p,null),x:0};
+  eq(postFormFor(snap("d")),was,"встали на грунт — бланк для шахты тот же");
+  G.mode="belt";G.surf=null;G.belt={yaw:0,pitch:0};
+  eq(postFormFor(snap("d")),was,"ушли в пояс — всё равно тот же");
+  G.mode="system";G.belt=null;
+  /* снимка нет вовсе — бланк всё равно находится, а не роняет оборот */
+  ok(!!postForm(postFormFor(null)),"без снимка бланк всё равно есть");
+  ok(!!postForm(postFormFor({m:"такого режима нет"})),"и с незнакомым местом тоже");
 }));
 TEST_SUITES.push(()=>suite("бланк: подписывается сам, вычёркивание меняет только свою строку",()=>{
   resetWorld();

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 310 · символов верхнего уровня: 2865
+Файлов: 311 · символов верхнего уровня: 2867
 
 ## СИМВОЛЫ
 
@@ -1813,10 +1813,12 @@ poiPath                      src/20a-poi.js:91
 poiPoly                      src/20a-poi.js:110
 poiSkin                      src/20a-poi.js:119
 POST_ADDR                    src/11e-post.js:46
-POST_FORM_BY                 src/25h-post-forms.js:195
-POST_FORMS                   src/25h-post-forms.js:35
+POST_FORM_BY                 src/25h-post-forms.js:200
+POST_FORMS                   src/25h-post-forms.js:40
+POST_FORMS2                  src/25h-post-forms2.js:22
 POST_HOR                     src/25g-postcard.js:33
 POST_ITEMS                   src/11e-post.js:20
+POST_KIND_OF                 src/25h-post-forms.js:220
 POST_KINDS                   src/25h-post-forms.js:25
 POST_LAST                    src/11e-post.js:112
 POST_LINKS                   src/11e-post.js:25
@@ -1834,9 +1836,9 @@ postCanShoot                 src/25g-postcard.js:583
 postCaption                  src/25g-postcard.js:114
 postChoose                   src/25i-post-back.js:48
 postDock                     src/11e-post.js:80
-postForm                     src/25h-post-forms.js:196
-postFormFor                  src/25h-post-forms.js:200
-postFormNext                 src/25h-post-forms.js:207
+postForm                     src/25h-post-forms.js:201
+postFormFor                  src/25h-post-forms.js:221
+postFormNext                 src/25h-post-forms.js:230
 postGlyph                    src/25i-post-back.js:54
 postHolding                  src/11e-post.js:107
 postItem                     src/11e-post.js:42
@@ -3450,8 +3452,11 @@ zooTick                      src/11ad-zoo.js:41
   · открытка: снимок сцены, а не пиксели:1
   · камера и альбом:564
 
-## src/25h-post-forms.js · 18 КБ
+## src/25h-post-forms.js · 20 КБ
   · бланки открытки:1
+
+## src/25h-post-forms2.js · 36 КБ
+  · бланки открытки: остальные семьдесят:1
 
 ## src/25i-post-back.js · 10 КБ
   · оборот карточки:1
@@ -3815,12 +3820,12 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzh-told.js · 3 КБ
   · автотесты: ляпнул лишнего:1
 
-## tests/91zzzi-postcard.js · 25 КБ
+## tests/91zzzi-postcard.js · 28 КБ
   · автотесты: открытка — снимок сцены (M188):1
   · бланки открытки (M189):113
-  · почта: провод (M190):199
-  · ночной эфир (M191):285
-  · вымпел (M196):336
+  · почта: провод (M190):245
+  · ночной эфир (M191):331
+  · вымпел (M196):382
 
 ## tests/91zzzj-winter.js · 6 КБ
   · автотесты: зимовка (M197):1

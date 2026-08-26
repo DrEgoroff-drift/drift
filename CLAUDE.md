@@ -106,7 +106,7 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `25n-chess` | chess by post: a move is three numbers, the board is replayed from the list of moves and never stored; full rules, шах/мат/пат, the tab ПАРТИЯ on the desk |
 | `25l-post-ether` | the fifth band: night post, present only after nine by the real clock, reading a caught card a line at a time |
 | `25j-post-wire` `25k-post-mail` | the post: a card into a global pool, caught by a stranger, replies routed by the server so neither end ever learns the other; stacks on the table, one request per docking |
-| `25h-post-forms` `25i-post-back` | thirty printed blanks and the card's back: a line is a set of variants, tapping one strikes the others out, and the struck-out ones stay visible; postscript of up to three settlement glyphs, no addressee anywhere |
+| `25h-post-forms` `25h-post-forms2` `25i-post-back` | a hundred printed blanks in ten kinds and the card's back: a line is a set of variants, tapping one strikes the others out, and the struck-out ones stay visible; postscript of up to three settlement glyphs, no addressee anywhere. The default blank comes from where the *photograph* was taken, never from `G.mode` |
 | `25g-postcard` | the postcard's own painter: `drawPostcard(c,snap,w,h)` redraws a ~200-byte snapshot of a scene owing nothing to `G`; ФОТО on the console, the album of twelve on the desk. It paints ground and approach itself and dispatches the rest |
 | `25ga-post-scenes` | the other five places a card can come from — cave, mine, belt, orbit, gas-giant air. One light kit passed in as an argument, an object of known size in every frame, and the two underground ones lit from inside |
 | `17b-finds` | four finds in the void: capsule, satellite, container, hulk — the satellite is theirs |
@@ -192,6 +192,13 @@ through, waited out until night, or opened on a phone.
   looks right in an editor. `build.ps1` now flags such files. To fix one:
   `$t=[IO.File]::ReadAllText($p,[Text.Encoding]::UTF8); [IO.File]::WriteAllText($p,$t,(New-Object Text.UTF8Encoding $true))`.
   Files under `src/` are safe — `build.ps1` reads them as UTF-8 explicitly.
+- **`Sort-Object Name` ignores the hyphen, so `25ha-` sorts BEFORE `25h-`.** The build orders
+  `src/` with PowerShell's culture-aware compare, which treats `-` as a minor difference: it
+  compares `25hapostforms2` against `25hpostforms`, and `a` < `p`. A module named `25ha-…` that
+  reads a `const` table declared in `25h-…` therefore dies at load with "Cannot access X before
+  initialization" — the table has not been declared yet. To land *after* an existing module, extend
+  its stem rather than its letter: `25h-post-forms2.js`, not `25ha-post-forms2.js`. (Alphabetical
+  intuition is wrong here, and the build gives no warning: the page simply throws.)
 - **A script parameter shadows a variable of the same name, case-insensitively.**
   `param([switch]$Shots)` plus a later `$shots = Get-ChildItem …` fails with
   "Cannot convert System.Object[] to SwitchParameter".
