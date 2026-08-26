@@ -175,6 +175,23 @@ setTimeout(function(){
     G.cargo.organics=5;G.cargo.isotopes=1;G.cargo.volatiles=4;G.cargo.missile=3;
     G.cargo.folk=2;G.cargo.alloy=6;
     tableToggle(true,"hold");
+  }else if(scene==="album"){
+    /* альбом (M188): шесть снимков одного мира — разные места и часы. Кадры
+       рисует художник открытки, а не игра, поэтому стенд показывает ровно то,
+       что увидит и получатель карточки */
+    var pa=land("terran");G.mode="surface";
+    var pera=CEL_DAY*(6+((pa.seed>>>7)&3));
+    G.album=[];
+    for(var q=0;q<6;q++){
+      G.surf.x=1500+q*2300;G.t=pera*(40+q*0.19);
+      if(q===5){
+        var sv=G.surf;G.land={p:pa,tr:sv.tr,x:sv.tr.W*0.3};
+        G.surf=null;G.mode="landing";postTake();
+        G.surf=sv;G.land=null;G.mode="surface";
+      }else postTake();
+    }
+    run(4,updateSurface,drawSurface);
+    tableToggle(true,"album");
   }else if(scene==="table"||scene==="things"||scene==="strips"){
     G.mode="system";
     for(var f2=0;f2<2;f2++){G.t+=.02;drawSystem();}
@@ -198,6 +215,9 @@ setTimeout(function(){
     run(6,updateSurface,drawSurface);
   }
   hud();
+  /* кнопка ФОТО показывается из consoleTick, а он идёт раз в секунду с
+     небольшим: стенду ждать нечего, зовём напрямую */
+  if(typeof camBtnTick==="function")camBtnTick();
   /* Цикл НЕ глушим. G.running=false рисует заставочный звёздный фон поверх
      всего (28-loop, ветка else), а LOOP_OFF оставляет на канве мусор от
      недопечённых чанков: мир собирается за несколько кадров. Пусть игра идёт

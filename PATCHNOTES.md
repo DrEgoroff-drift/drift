@@ -7,6 +7,57 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.171.0 — the camera: a photograph is a snapshot of the scene, not pixels (M188)
+
+First pass of the postcard block. A photograph in Drift is **about two hundred bytes**: mode,
+world seeds, hour, camera point, `VER`. The receiver's own engine draws it. Three reasons, in
+order: the server carries bytes instead of megabytes; nothing but the game's own world can
+physically cross the boundary, which is what makes the whole online feature need no moderation;
+and an old card re-rendered by a newer engine comes out slightly not-the-same, which is exactly
+what time does to a photograph.
+
+**It needed its own painter, and that is the whole milestone.** Every draw path in the game
+writes into the single `ctx` at the single `W`/`H`, reading the single live `G`. Rendering a
+stored scene "as it is" would mean swapping the world under the renderer and putting it back — a
+save-corrupting class of bug. So `drawPostcard(c, snap, w, h)` takes a snapshot and someone
+else's context and owes `G` nothing at all. A test proves it: the same snapshot draws
+pixel-identical frames before and after the live world is moved to another sector, another day
+and another mode. The terrain comes from `genTerrain` — the same function the game walks on, so
+the card cannot lie about the place.
+
+Storing captured pixels was measured and rejected: a 480×300 JPEG is ~25 KB, twelve of them
+~300 KB, and the album persists into a save that also goes to the cloud. The whole album now
+weighs under three kilobytes.
+
+**ФОТО** appears on the console only where there is something to shoot — on the ground and on
+approach — and the album is a tab on the table that only exists once there is a first photograph
+in it. Twelve places; the thirteenth shot pushes the oldest out and says so out loud.
+
+**Five passes on the card itself**, each against the game's own frame:
+
+1. A distant hazy ridgeline — pretty, and nothing like this game. Drift's surface is sky with a
+   body hanging in it, a profile with a lit rim, and under the profile not emptiness but a **body
+   of ground with strata**. Rebuilt around that.
+2. The ground took its colour from `T.pal` — which is the *planet texture* ramp, seen from
+   orbit, where the low steps are ocean and shadow. An earthlike world came out blue: the player
+   was standing on the sea. Ground lives in the upper middle of the ramp.
+3. Vertical scale was reckoned from frame height, so a volcanic world's peaks left the top of
+   the card — a postcard is a third the width of the game's frame and stretched the same relief
+   three times. One scale on both axes now, as a photograph has.
+4. Strata followed the profile all the way down and read as contour lines. They flatten with
+   depth now, and reach the bottom edge instead of crowding the top third.
+5. No clouds, and that was the first thing that separated the card from the live frame. Added as
+   soft radial blobs — filled ellipses gave a chain of identical lozenges with a hard edge, and
+   at this size anything with a contour reads as a blot.
+
+The scale in the frame is a person: without a figure at the profile the ridge behind is a boulder
+and a mountain range at the same time. It carries a rim light from the star, because on an
+airless world at night the silhouette matched the ground exactly and the one measure in the
+picture disappeared.
+
+Stands: `docs/mkpost.ps1` (six cards, six worlds and hours — the painter alone, the game never
+touched) and `docs\pageshot.ps1 view -Q "?s=album"` for the album on the desk.
+
 ## 0.170.0 — the sky watch: the calendar finally has somebody on duty (M195)
 
 `celestAt` has computed eclipses, parades and comets since 0.126.0, and the whole point of it was

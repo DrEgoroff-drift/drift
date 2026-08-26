@@ -659,6 +659,12 @@ body.screen #console{opacity:1}
 #seat canvas{width:56px;height:56px}
 #seatOut b{display:block;font-weight:400;color:var(--amber);font-size:10px;letter-spacing:.12em}
 #seatOut s{display:block;text-decoration:none;color:var(--dim);font-size:9px;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ФОТО (M188): собственная кнопка пульта, стеклом и высотой как жёрдочка —
+   на пульте не должно быть двух разных языков у соседних кнопок */
+#camBtn{-webkit-appearance:none;pointer-events:auto;background:var(--glass);border:1px solid var(--edge);
+  border-radius:var(--rad-p);color:var(--amber);font:inherit;font-size:9px;letter-spacing:.16em;
+  min-height:52px;padding:0 14px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);
+  box-shadow:var(--lift),var(--glass-hi)}
 #perch{-webkit-appearance:none;pointer-events:auto;background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);
   width:52px;height:52px;padding:4px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
 #perch canvas{width:44px;height:44px}
@@ -863,6 +869,7 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
   #rxOut b{flex:0 0 auto;white-space:nowrap}
   #rxOut s{flex:1}
   #rxRec{min-height:36px;padding:0 10px}
+  #camBtn{min-height:40px;padding:0 12px}
   #seat{padding:2px 8px 2px 2px;min-height:40px}
   #seat canvas{width:36px;height:36px}
   #seatOut s{max-width:70px}
@@ -935,6 +942,23 @@ body.afoot #vHull:not(.crit),
 body.afoot #sgauge,
 body.afoot .ipod{display:none}
 
+/* ── альбом (M188) ──
+   Карточки лежат на столе как фотографии, а не как плитки интерфейса: белый
+   кант, тень, лёгкий разворот. Тычок разворачивает одну на всю ширину листа —
+   и тогда она ложится ровно, как та, которую взяли в руки. */
+.album{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;align-items:flex-start;
+  padding:18px 8px 26px}
+.album .card{flex:0 0 auto;cursor:pointer;background:#e8e2d4;padding:7px 7px 4px;
+  border-radius:2px;box-shadow:0 12px 24px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.4);
+  transform:rotate(-.7deg);transition:transform .12s ease}
+.album .card:nth-child(2n){transform:rotate(.9deg)}
+.album .card:nth-child(3n){transform:rotate(-.3deg)}
+.album .card:hover{transform:rotate(0) translateY(-2px)}
+.album .card.big{flex:0 0 100%;transform:none;display:flex;flex-direction:column;align-items:center}
+.album .card canvas{display:block;border-radius:1px}
+.album .card s{display:block;text-decoration:none;color:#5d5342;font-size:10px;
+  letter-spacing:.06em;padding:6px 2px 2px;text-align:center}
+
 </style>
 </head>
 <body>
@@ -981,6 +1005,9 @@ body.afoot .ipod{display:none}
 <div id="console">
   <div id="rx"><input id="rxKnob" type="range" min="0" max="1" step="0.005" aria-label="приёмник"><div id="rxScale"><i style="left:21%">слухи</i><i style="left:49%">цены</i><i style="left:73%">погода</i><i style="left:94%">эфир</i></div><div id="rxOut"><b id="rxBand">ШУМ</b><s id="rxLine">…шшш…</s></div><button id="rxRec" style="display:none">ЗАПИСАТЬ</button></div>
   <div id="seat" style="display:none"><canvas id="seatcv" width="56" height="56"></canvas><div id="seatOut"><b id="seatName">—</b><s id="seatLine"></s></div></div>
+  <!-- ФОТО: появляется только там, где есть что снять — на грунте и на заходе.
+       Кнопка, которая висит всегда, перестаёт быть поводом (M188). -->
+  <button id="camBtn" style="display:none" aria-label="снимок">ФОТО</button>
   <button id="perch" style="display:none" aria-label="трепло"><canvas id="perchcv" width="44" height="44"></canvas></button>
 </div>
 
@@ -1044,6 +1071,7 @@ body.afoot .ipod{display:none}
     <button data-tab="hold">ТРЮМ</button>
     <button data-tab="prices">ЦЕНЫ</button>
     <button data-tab="record">КНИЖКА</button>
+    <button data-tab="album" style="display:none">АЛЬБОМ</button>
     <button data-tab="lore" style="display:none">ОТЧЁТ</button>
   </nav>
   <div class="body" id="tableBody"><div id="loglist"></div><div id="lorelist" style="display:none"></div></div>
@@ -1185,7 +1213,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.170.0";
+const VER="0.171.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -24379,7 +24407,7 @@ function snapshot(){
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
-    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,   /* M154–M195 */
+    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,   /* M154–M195 */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -24834,6 +24862,9 @@ function applySave(s){
   G.record=(s.record&&typeof s.record==="object"&&Array.isArray(s.record.e))?s.record:null;
   G.inst=(s.inst&&typeof s.inst==="object"&&s.inst.t)?s.inst:null;
   G.duty=(s.duty&&typeof s.duty==="object")?s.duty:null;          /* небесная вахта (M195) */
+  /* альбом — двенадцать снимков сцены по паре сотен байт (M188). Не пиксели:
+     иначе сохранение, которое ходит в облако, потяжелело бы на треть мегабайта */
+  G.album=Array.isArray(s.album)?s.album.slice(0,ALBUM_MAX):[];
   G.trainee=(s.trainee&&typeof s.trainee==="object"&&s.trainee.name)?s.trainee:null;
   G.zoo=(s.zoo&&typeof s.zoo==="object"&&Array.isArray(s.zoo.pen))?s.zoo:null;
   G.concert=(s.concert&&typeof s.concert==="object")?s.concert:null;
@@ -43663,6 +43694,42 @@ function drawPostcard(c,s,w,h){
     }
   }
 
+  /* ── 4а. облака ──
+     Их не было, и это было первое, чем карточка отличалась от живого кадра:
+     в игре над головой всегда идут облака, и без них небо на снимке читалось
+     нарисованным. Форма — гроздь мягких пятен на одной высоте, а не облако с
+     контуром: на карточке в ладонь всё, что имеет край, становится кляксой.
+     Проходят ПЕРЕД звездой, как в 19e: воздух ближе, чем светило. */
+  if(!airless){
+    const nC=2+Math.floor(rs()*3);
+    for(let i=0;i<nC;i++){
+      const cy=hy*(.10+rs()*rs()*.70), cw=w*(.14+rs()*.26);
+      const cx0=rs()*w*1.2-w*.1;
+      /* высокое облако бледнее — тот же воздух, что на грядах */
+      const dep=clamp(cy/hy,0,1);
+      const col=pcMix(dim([234,240,246],.55),skH,.26+(1-dep)*.38);
+      const a=(.16+dep*.26)*(1-night*.55);
+      /* КАЖДОЕ ПЯТНО — РАДИАЛЬНЫЙ ГРАДИЕНТ, а не залитый эллипс. Заливками
+         выходила цепочка одинаковых лепёшек с чётким краем: на этом размере
+         всё, что имеет контур, читается кляксой, а не облаком. Мягкий край
+         снимает и контур, и швы на перекрытиях. */
+      const nb=4+Math.floor(rs()*4);
+      for(let k=0;k<nb;k++){
+        const bx=cx0+(k-(nb-1)/2)*cw*.34+(rs()-.5)*cw*.20;
+        const by=cy+(rs()-.5)*cw*.10;
+        const br=cw*(.16+rs()*rs()*.26);
+        const g2=c.createRadialGradient(bx,by,0,bx,by,br);
+        g2.addColorStop(0,pcA(col,a));
+        g2.addColorStop(.55,pcA(col,a*.62));
+        g2.addColorStop(1,pcA(col,0));
+        c.save();c.translate(bx,by);c.scale(1,.42);c.translate(-bx,-by);
+        c.fillStyle=g2;
+        c.beginPath();c.arc(bx,by,br,0,TAU);c.fill();
+        c.restore();
+      }
+    }
+  }
+
   /* ── 5. дальние гряды ──
      Дымка — не прозрачность: далёкий склон СВЕТЛЕЕ неба у горизонта, а не
      виден насквозь. Поэтому цвет мешается к небу, а альфа остаётся единицей.
@@ -43801,35 +43868,41 @@ function drawPostcard(c,s,w,h){
     /* тень под ногами: без неё фигура висит над слоями, а не стоит на них */
     c.fillStyle="rgba(0,0,0,.30)";
     c.beginPath();c.ellipse(x,y+H0*.03,H0*.34,H0*.075,0,0,TAU);c.fill();
-    /* и обвод со стороны звезды: на каменистом мире ночью силуэт совпадал по
-       светлоте с грунтом и пропадал совсем — а это единственное мерило кадра */
-    c.strokeStyle=pcA(pcMix(star,[255,255,255],.35),up?.42:.26);
-    c.lineWidth=Math.max(1,H0*.055);
-    c.save();
-    c.translate(sunX>x?H0*.045:-H0*.045,-H0*.02);
-    c.beginPath();c.arc(x,y-H0+H0*.20,H0*.20,0,TAU);c.stroke();
-    c.beginPath();c.moveTo(x,y-H0+H0*.33);c.lineTo(x,y-H0*.40);c.stroke();
-    c.restore();
-    c.fillStyle=pcA(dark,.94);
-    if(s.m==="l"){
-      const bw=H0*.90,bh=H0*.55;
-      c.beginPath();
-      c.moveTo(x-bw*.40,y-H0);c.lineTo(x+bw*.40,y-H0);
-      c.lineTo(x+bw*.50,y-H0+bh);c.lineTo(x-bw*.50,y-H0+bh);c.closePath();c.fill();
-      c.strokeStyle=pcA(dark,.94);c.lineWidth=Math.max(1,H0*.085);
-      for(const k of [-1,0,1]){
-        c.beginPath();c.moveTo(x+k*bw*.33,y-H0+bh);c.lineTo(x+k*bw*.60,y);c.stroke();
+    /* ── обвод со стороны звезды ──
+       На каменистом мире ночью силуэт совпадал по светлоте с грунтом и пропадал
+       совсем — а это единственное мерило кадра. Обвод сделан не отдельными
+       линиями «по голове и хребту» (для аппарата такие линии просто не про
+       него), а тем же силуэтом, залитым светлым и сдвинутым к звезде: приём
+       работает для любой фигуры и не знает, что именно рисует. */
+    const body=(dx,dy)=>{
+      c.save();c.translate(dx,dy);
+      if(s.m==="l"){
+        const bw=H0*.90,bh=H0*.55;
+        c.beginPath();
+        c.moveTo(x-bw*.40,y-H0);c.lineTo(x+bw*.40,y-H0);
+        c.lineTo(x+bw*.50,y-H0+bh);c.lineTo(x-bw*.50,y-H0+bh);c.closePath();c.fill();
+        c.lineWidth=Math.max(1,H0*.085);
+        for(const k of [-1,0,1]){
+          c.beginPath();c.moveTo(x+k*bw*.33,y-H0+bh);c.lineTo(x+k*bw*.60,y);c.stroke();
+        }
+      }else{
+        const hd=H0*.20;
+        c.beginPath();c.arc(x,y-H0+hd,hd,0,TAU);c.fill();
+        c.beginPath();
+        c.moveTo(x-H0*.17,y-H0+hd*1.65);c.lineTo(x+H0*.17,y-H0+hd*1.65);
+        c.lineTo(x+H0*.12,y-H0*.40);c.lineTo(x-H0*.12,y-H0*.40);c.closePath();c.fill();
+        c.lineWidth=Math.max(1.1,H0*.095);
+        c.beginPath();c.moveTo(x-H0*.05,y-H0*.42);c.lineTo(x-H0*.14,y);
+        c.moveTo(x+H0*.05,y-H0*.42);c.lineTo(x+H0*.16,y);c.stroke();
       }
-    }else{
-      const hd=H0*.20;
-      c.beginPath();c.arc(x,y-H0+hd,hd,0,TAU);c.fill();
-      c.beginPath();
-      c.moveTo(x-H0*.17,y-H0+hd*1.65);c.lineTo(x+H0*.17,y-H0+hd*1.65);
-      c.lineTo(x+H0*.12,y-H0*.40);c.lineTo(x-H0*.12,y-H0*.40);c.closePath();c.fill();
-      c.strokeStyle=pcA(dark,.94);c.lineWidth=Math.max(1.1,H0*.095);
-      c.beginPath();c.moveTo(x-H0*.05,y-H0*.42);c.lineTo(x-H0*.14,y);
-      c.moveTo(x+H0*.05,y-H0*.42);c.lineTo(x+H0*.16,y);c.stroke();
-    }
+      c.restore();
+    };
+    const rim=pcA(pcMix(star,[255,255,255],.40),up?.55:.34);
+    const off=Math.max(1.2,H0*.075);
+    c.fillStyle=rim;c.strokeStyle=rim;
+    body(sunX>x?off:-off,-off*.7);
+    c.fillStyle=pcA(dark,.94);c.strokeStyle=pcA(dark,.94);
+    body(0,0);
   }
 
   /* ── 9. погода ──
@@ -43877,6 +43950,83 @@ function drawPostcard(c,s,w,h){
   }
   c.restore();
   return true;
+}
+
+/* ══════════════ камера и альбом ══════════════
+   Кнопка ФОТО живёт на пульте и появляется только там, где есть что снять:
+   на грунте и на заходе. Правило интерфейса — «только то, что нужно прямо
+   сейчас, висит над миром», и постоянная кнопка ФОТО была бы его нарушением,
+   а заодно и обещанием, которое в полёте не выполнить.
+
+   Альбом — двенадцать мест. Тринадцатый снимок вынимает самый старый и
+   говорит об этом вслух: молча терять чужую память нельзя, а спрашивать
+   разрешения на каждый кадр — значит превратить радость в диалог.
+
+   В снимке лежит VER. Он ни на что не влияет при рисовании — он показан в
+   подписи, когда движок с тех пор ушёл вперёд: «снято на 0.170.0». Старая
+   карточка и правда выходит теперь чуть другой, и это не баг, а то, что
+   делает со снимком время. */
+const ALBUM_MAX=12;
+function albumAll(){if(!Array.isArray(G.album))G.album=[];return G.album;}
+function postCanShoot(){
+  return !!(G.running&&((G.mode==="surface"&&G.surf&&G.surf.p)||
+                        (G.mode==="landing"&&G.land&&G.land.p)));
+}
+function postTake(){
+  const s=postSnap();
+  if(!s)return null;
+  const A=albumAll();
+  let out=null;
+  A.unshift(s);
+  while(A.length>ALBUM_MAX)out=A.pop();
+  /* затвор: один короткий щелчок с падением тона. Двух наложенных «ui» не
+     выйдет — у него нет задержки, и они сливаются в писк */
+  sfx("ui",{f:2400,to:820,d:.055,v:.22});
+  logAdd("good","Снимок: "+postCaption(s)+(out?" · место в альбоме кончилось, самый старый вынут":""));
+  tell("good","Снимок: "+postCaption(s),"СНИМОК\n"+postCaption(s).toUpperCase());
+  if(tableOpenNow&&tableTab==="album")tableRender();
+  return s;
+}
+/* кнопка на пульте: показать/скрыть. Зовётся из consoleTick (27j) */
+function camBtnTick(){
+  const b=document.getElementById("camBtn");
+  if(!b)return;
+  b.style.display=postCanShoot()?"":"none";
+}
+/* ── альбом на столе ──
+   Карточки рисуются в свои холсты тем же художником, что и у получателя
+   открытки: если альбом выглядит правильно, значит и чужая карточка выглядит
+   правильно. Тычок по карточке разворачивает её на всю ширину листа. */
+let albumOpen=-1;
+function renderAlbum(box){
+  const A=albumAll();
+  box.innerHTML="";
+  if(!A.length){
+    tableRow(box,"dim","","альбом пуст: кнопка ФОТО на пульте — на грунте и на заходе");
+    return;
+  }
+  const wrap=document.createElement("div");
+  wrap.className="album";
+  A.forEach((s,i)=>{
+    const big=(albumOpen===i);
+    const cell=document.createElement("div");
+    cell.className="card"+(big?" big":"");
+    const cw=big?Math.max(320,Math.min(880,box.clientWidth-24)):228;
+    const ch=Math.round(cw*.625);
+    const cv=document.createElement("canvas");
+    cv.width=Math.round(cw*2);cv.height=Math.round(ch*2);
+    cv.style.width=cw+"px";cv.style.height=ch+"px";
+    const cc=cv.getContext("2d");
+    cc.scale(2,2);
+    if(!drawPostcard(cc,s,cw,ch)){cc.fillStyle="#12161d";cc.fillRect(0,0,cw,ch);}
+    cell.appendChild(cv);
+    const cap=document.createElement("s");
+    cap.textContent=postCaption(s)+(s.ver&&s.ver!==VER?" · снято на "+s.ver:"");
+    cell.appendChild(cap);
+    cell.onclick=()=>{albumOpen=big?-1:i;tableRender();};
+    wrap.appendChild(cell);
+  });
+  box.appendChild(wrap);
 }
 
 /* ══════════════ станция: вкладка «дом и базы» ══════════════ */
@@ -48360,6 +48510,9 @@ function tableRender(){
   document.querySelectorAll("#tableTabs button").forEach(b=>{
     b.classList.toggle("on",b.dataset.tab===tableTab);
     if(b.dataset.tab==="lore")b.style.display=(typeof loreCount==="function"&&loreCount())?"":"none";
+    /* альбом заводится с первым снимком: пустая закладка обещает содержимое,
+       которого нет, и на телефоне отнимает место у тех, где что-то лежит */
+    if(b.dataset.tab==="album")b.style.display=(typeof albumAll==="function"&&albumAll().length)?"":"none";
     /* счётчик новостей на самой закладке: огонёк привёл к столу, закладка
        говорит, на какую полку смотреть. Подпись не переписываем — у неё своя
        ширина, и прыгающие вкладки читаются браком. */
@@ -48374,7 +48527,8 @@ function tableRender(){
   const SUB={ether:"эфир · что было услышано",bort:"борт · техника и деньги",folk:"люди · что вам сказали",
              deeds:"дела · что вы должны",strips:"ленты · оторванные полосы самописца",things:"вещи · письма, находки, бумаги",
              hold:"трюм · груз, разложенный по кучам",
-             prices:"цены · как их видели, по станциям",record:"трудовая книжка · записи чужими руками",lore:"отчёт «Долгого хода»"};
+             prices:"цены · как их видели, по станциям",record:"трудовая книжка · записи чужими руками",
+             album:"альбом · снимки мест, где вы стояли",lore:"отчёт «Долгого хода»"};
   if(sub)sub.textContent=SUB[tableTab]||"";
   if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
   if(wh){const mr=modeRu();
@@ -48385,7 +48539,8 @@ function tableRender(){
      Тетрадь, дела, цены и книжка — это записи, им место на бумаге. Ленты и
      вещи — предметы: письмо, накладная, вырезка, полоса самописца, — и лист
      под ними был бы ошибкой: бумага на бумаге не читается. */
-  box.classList.toggle("desk",tableTab==="things"||tableTab==="strips"||tableTab==="hold");
+  box.classList.toggle("desk",tableTab==="things"||tableTab==="strips"||tableTab==="hold"||
+    tableTab==="album");
   if(tableTab==="ether"||tableTab==="bort"||tableTab==="folk")renderLog(tableTab);
   else if(tableTab==="deeds")renderDeeds();
   else if(tableTab==="strips")renderStrips(box);
@@ -48395,6 +48550,7 @@ function tableRender(){
   else if(tableTab==="record"&&typeof renderRecord==="function")renderRecord(box);
   else if(tableTab==="prices"&&typeof renderPrices==="function")renderPrices(box);
   else if(tableTab==="record"&&typeof renderRecord==="function")renderRecord(box);
+  else if(tableTab==="album"&&typeof renderAlbum==="function")renderAlbum(box);
   else if(tableTab==="lore"&&typeof renderLoreBoard==="function")renderLoreBoard();
 }
 function tableRow(box,cls,em,text){
@@ -48552,6 +48708,7 @@ function consoleTick(dt){
   /* приёмник: если свежей строки нет — показываем то, что ловится на частоте */
   const RN=(typeof ringLine==="function")?ringLine():null;   /* Кольцо (M154): пока звучит — только оно */
   const rec=document.getElementById("rxRec");if(rec)rec.style.display=(RN&&G.ringNow&&!G.ringNow.rec)?"":"none";
+  if(typeof camBtnTick==="function")camBtnTick();
   if(RN&&line){band.textContent=RN.ru;line.textContent=RN.text;con.classList.remove("quiet");}
   else if(conFresh<=0&&line&&typeof radioTune==="function"){
     const f=(G.radioF==null?.05:G.radioF);
@@ -48624,6 +48781,9 @@ function consoleTick(dt){
   if(perch)perch.addEventListener("click",()=>{if(typeof toggleParrotWin==="function")toggleParrotWin(true);});
   const rec=document.getElementById("rxRec");
   if(rec)rec.addEventListener("click",()=>{if(typeof rxRecord==="function")rxRecord();});
+  /* ФОТО (M188): снимок сцены, а не пикселей — художник открытки в 25g */
+  const cam=document.getElementById("camBtn");
+  if(cam)cam.addEventListener("click",()=>{if(typeof postTake==="function")postTake();});
 })();
 
 /* ══════════════ трюм как раскладка (M179) ══════════════

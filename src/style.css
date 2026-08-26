@@ -645,6 +645,12 @@ body.screen #console{opacity:1}
 #seat canvas{width:56px;height:56px}
 #seatOut b{display:block;font-weight:400;color:var(--amber);font-size:10px;letter-spacing:.12em}
 #seatOut s{display:block;text-decoration:none;color:var(--dim);font-size:9px;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ФОТО (M188): собственная кнопка пульта, стеклом и высотой как жёрдочка —
+   на пульте не должно быть двух разных языков у соседних кнопок */
+#camBtn{-webkit-appearance:none;pointer-events:auto;background:var(--glass);border:1px solid var(--edge);
+  border-radius:var(--rad-p);color:var(--amber);font:inherit;font-size:9px;letter-spacing:.16em;
+  min-height:52px;padding:0 14px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);
+  box-shadow:var(--lift),var(--glass-hi)}
 #perch{-webkit-appearance:none;pointer-events:auto;background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);
   width:52px;height:52px;padding:4px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
 #perch canvas{width:44px;height:44px}
@@ -849,6 +855,7 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
   #rxOut b{flex:0 0 auto;white-space:nowrap}
   #rxOut s{flex:1}
   #rxRec{min-height:36px;padding:0 10px}
+  #camBtn{min-height:40px;padding:0 12px}
   #seat{padding:2px 8px 2px 2px;min-height:40px}
   #seat canvas{width:36px;height:36px}
   #seatOut s{max-width:70px}
@@ -920,3 +927,20 @@ body.afoot #vFuel:not(.crit),
 body.afoot #vHull:not(.crit),
 body.afoot #sgauge,
 body.afoot .ipod{display:none}
+
+/* ── альбом (M188) ──
+   Карточки лежат на столе как фотографии, а не как плитки интерфейса: белый
+   кант, тень, лёгкий разворот. Тычок разворачивает одну на всю ширину листа —
+   и тогда она ложится ровно, как та, которую взяли в руки. */
+.album{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;align-items:flex-start;
+  padding:18px 8px 26px}
+.album .card{flex:0 0 auto;cursor:pointer;background:#e8e2d4;padding:7px 7px 4px;
+  border-radius:2px;box-shadow:0 12px 24px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.4);
+  transform:rotate(-.7deg);transition:transform .12s ease}
+.album .card:nth-child(2n){transform:rotate(.9deg)}
+.album .card:nth-child(3n){transform:rotate(-.3deg)}
+.album .card:hover{transform:rotate(0) translateY(-2px)}
+.album .card.big{flex:0 0 100%;transform:none;display:flex;flex-direction:column;align-items:center}
+.album .card canvas{display:block;border-radius:1px}
+.album .card s{display:block;text-decoration:none;color:#5d5342;font-size:10px;
+  letter-spacing:.06em;padding:6px 2px 2px;text-align:center}

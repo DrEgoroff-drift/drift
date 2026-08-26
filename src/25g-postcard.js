@@ -217,6 +217,42 @@ function drawPostcard(c,s,w,h){
     }
   }
 
+  /* ── 4а. облака ──
+     Их не было, и это было первое, чем карточка отличалась от живого кадра:
+     в игре над головой всегда идут облака, и без них небо на снимке читалось
+     нарисованным. Форма — гроздь мягких пятен на одной высоте, а не облако с
+     контуром: на карточке в ладонь всё, что имеет край, становится кляксой.
+     Проходят ПЕРЕД звездой, как в 19e: воздух ближе, чем светило. */
+  if(!airless){
+    const nC=2+Math.floor(rs()*3);
+    for(let i=0;i<nC;i++){
+      const cy=hy*(.10+rs()*rs()*.70), cw=w*(.14+rs()*.26);
+      const cx0=rs()*w*1.2-w*.1;
+      /* высокое облако бледнее — тот же воздух, что на грядах */
+      const dep=clamp(cy/hy,0,1);
+      const col=pcMix(dim([234,240,246],.55),skH,.26+(1-dep)*.38);
+      const a=(.16+dep*.26)*(1-night*.55);
+      /* КАЖДОЕ ПЯТНО — РАДИАЛЬНЫЙ ГРАДИЕНТ, а не залитый эллипс. Заливками
+         выходила цепочка одинаковых лепёшек с чётким краем: на этом размере
+         всё, что имеет контур, читается кляксой, а не облаком. Мягкий край
+         снимает и контур, и швы на перекрытиях. */
+      const nb=4+Math.floor(rs()*4);
+      for(let k=0;k<nb;k++){
+        const bx=cx0+(k-(nb-1)/2)*cw*.34+(rs()-.5)*cw*.20;
+        const by=cy+(rs()-.5)*cw*.10;
+        const br=cw*(.16+rs()*rs()*.26);
+        const g2=c.createRadialGradient(bx,by,0,bx,by,br);
+        g2.addColorStop(0,pcA(col,a));
+        g2.addColorStop(.55,pcA(col,a*.62));
+        g2.addColorStop(1,pcA(col,0));
+        c.save();c.translate(bx,by);c.scale(1,.42);c.translate(-bx,-by);
+        c.fillStyle=g2;
+        c.beginPath();c.arc(bx,by,br,0,TAU);c.fill();
+        c.restore();
+      }
+    }
+  }
+
   /* ── 5. дальние гряды ──
      Дымка — не прозрачность: далёкий склон СВЕТЛЕЕ неба у горизонта, а не
      виден насквозь. Поэтому цвет мешается к небу, а альфа остаётся единицей.
@@ -355,35 +391,41 @@ function drawPostcard(c,s,w,h){
     /* тень под ногами: без неё фигура висит над слоями, а не стоит на них */
     c.fillStyle="rgba(0,0,0,.30)";
     c.beginPath();c.ellipse(x,y+H0*.03,H0*.34,H0*.075,0,0,TAU);c.fill();
-    /* и обвод со стороны звезды: на каменистом мире ночью силуэт совпадал по
-       светлоте с грунтом и пропадал совсем — а это единственное мерило кадра */
-    c.strokeStyle=pcA(pcMix(star,[255,255,255],.35),up?.42:.26);
-    c.lineWidth=Math.max(1,H0*.055);
-    c.save();
-    c.translate(sunX>x?H0*.045:-H0*.045,-H0*.02);
-    c.beginPath();c.arc(x,y-H0+H0*.20,H0*.20,0,TAU);c.stroke();
-    c.beginPath();c.moveTo(x,y-H0+H0*.33);c.lineTo(x,y-H0*.40);c.stroke();
-    c.restore();
-    c.fillStyle=pcA(dark,.94);
-    if(s.m==="l"){
-      const bw=H0*.90,bh=H0*.55;
-      c.beginPath();
-      c.moveTo(x-bw*.40,y-H0);c.lineTo(x+bw*.40,y-H0);
-      c.lineTo(x+bw*.50,y-H0+bh);c.lineTo(x-bw*.50,y-H0+bh);c.closePath();c.fill();
-      c.strokeStyle=pcA(dark,.94);c.lineWidth=Math.max(1,H0*.085);
-      for(const k of [-1,0,1]){
-        c.beginPath();c.moveTo(x+k*bw*.33,y-H0+bh);c.lineTo(x+k*bw*.60,y);c.stroke();
+    /* ── обвод со стороны звезды ──
+       На каменистом мире ночью силуэт совпадал по светлоте с грунтом и пропадал
+       совсем — а это единственное мерило кадра. Обвод сделан не отдельными
+       линиями «по голове и хребту» (для аппарата такие линии просто не про
+       него), а тем же силуэтом, залитым светлым и сдвинутым к звезде: приём
+       работает для любой фигуры и не знает, что именно рисует. */
+    const body=(dx,dy)=>{
+      c.save();c.translate(dx,dy);
+      if(s.m==="l"){
+        const bw=H0*.90,bh=H0*.55;
+        c.beginPath();
+        c.moveTo(x-bw*.40,y-H0);c.lineTo(x+bw*.40,y-H0);
+        c.lineTo(x+bw*.50,y-H0+bh);c.lineTo(x-bw*.50,y-H0+bh);c.closePath();c.fill();
+        c.lineWidth=Math.max(1,H0*.085);
+        for(const k of [-1,0,1]){
+          c.beginPath();c.moveTo(x+k*bw*.33,y-H0+bh);c.lineTo(x+k*bw*.60,y);c.stroke();
+        }
+      }else{
+        const hd=H0*.20;
+        c.beginPath();c.arc(x,y-H0+hd,hd,0,TAU);c.fill();
+        c.beginPath();
+        c.moveTo(x-H0*.17,y-H0+hd*1.65);c.lineTo(x+H0*.17,y-H0+hd*1.65);
+        c.lineTo(x+H0*.12,y-H0*.40);c.lineTo(x-H0*.12,y-H0*.40);c.closePath();c.fill();
+        c.lineWidth=Math.max(1.1,H0*.095);
+        c.beginPath();c.moveTo(x-H0*.05,y-H0*.42);c.lineTo(x-H0*.14,y);
+        c.moveTo(x+H0*.05,y-H0*.42);c.lineTo(x+H0*.16,y);c.stroke();
       }
-    }else{
-      const hd=H0*.20;
-      c.beginPath();c.arc(x,y-H0+hd,hd,0,TAU);c.fill();
-      c.beginPath();
-      c.moveTo(x-H0*.17,y-H0+hd*1.65);c.lineTo(x+H0*.17,y-H0+hd*1.65);
-      c.lineTo(x+H0*.12,y-H0*.40);c.lineTo(x-H0*.12,y-H0*.40);c.closePath();c.fill();
-      c.strokeStyle=pcA(dark,.94);c.lineWidth=Math.max(1.1,H0*.095);
-      c.beginPath();c.moveTo(x-H0*.05,y-H0*.42);c.lineTo(x-H0*.14,y);
-      c.moveTo(x+H0*.05,y-H0*.42);c.lineTo(x+H0*.16,y);c.stroke();
-    }
+      c.restore();
+    };
+    const rim=pcA(pcMix(star,[255,255,255],.40),up?.55:.34);
+    const off=Math.max(1.2,H0*.075);
+    c.fillStyle=rim;c.strokeStyle=rim;
+    body(sunX>x?off:-off,-off*.7);
+    c.fillStyle=pcA(dark,.94);c.strokeStyle=pcA(dark,.94);
+    body(0,0);
   }
 
   /* ── 9. погода ──
@@ -431,4 +473,81 @@ function drawPostcard(c,s,w,h){
   }
   c.restore();
   return true;
+}
+
+/* ══════════════ камера и альбом ══════════════
+   Кнопка ФОТО живёт на пульте и появляется только там, где есть что снять:
+   на грунте и на заходе. Правило интерфейса — «только то, что нужно прямо
+   сейчас, висит над миром», и постоянная кнопка ФОТО была бы его нарушением,
+   а заодно и обещанием, которое в полёте не выполнить.
+
+   Альбом — двенадцать мест. Тринадцатый снимок вынимает самый старый и
+   говорит об этом вслух: молча терять чужую память нельзя, а спрашивать
+   разрешения на каждый кадр — значит превратить радость в диалог.
+
+   В снимке лежит VER. Он ни на что не влияет при рисовании — он показан в
+   подписи, когда движок с тех пор ушёл вперёд: «снято на 0.170.0». Старая
+   карточка и правда выходит теперь чуть другой, и это не баг, а то, что
+   делает со снимком время. */
+const ALBUM_MAX=12;
+function albumAll(){if(!Array.isArray(G.album))G.album=[];return G.album;}
+function postCanShoot(){
+  return !!(G.running&&((G.mode==="surface"&&G.surf&&G.surf.p)||
+                        (G.mode==="landing"&&G.land&&G.land.p)));
+}
+function postTake(){
+  const s=postSnap();
+  if(!s)return null;
+  const A=albumAll();
+  let out=null;
+  A.unshift(s);
+  while(A.length>ALBUM_MAX)out=A.pop();
+  /* затвор: один короткий щелчок с падением тона. Двух наложенных «ui» не
+     выйдет — у него нет задержки, и они сливаются в писк */
+  sfx("ui",{f:2400,to:820,d:.055,v:.22});
+  logAdd("good","Снимок: "+postCaption(s)+(out?" · место в альбоме кончилось, самый старый вынут":""));
+  tell("good","Снимок: "+postCaption(s),"СНИМОК\n"+postCaption(s).toUpperCase());
+  if(tableOpenNow&&tableTab==="album")tableRender();
+  return s;
+}
+/* кнопка на пульте: показать/скрыть. Зовётся из consoleTick (27j) */
+function camBtnTick(){
+  const b=document.getElementById("camBtn");
+  if(!b)return;
+  b.style.display=postCanShoot()?"":"none";
+}
+/* ── альбом на столе ──
+   Карточки рисуются в свои холсты тем же художником, что и у получателя
+   открытки: если альбом выглядит правильно, значит и чужая карточка выглядит
+   правильно. Тычок по карточке разворачивает её на всю ширину листа. */
+let albumOpen=-1;
+function renderAlbum(box){
+  const A=albumAll();
+  box.innerHTML="";
+  if(!A.length){
+    tableRow(box,"dim","","альбом пуст: кнопка ФОТО на пульте — на грунте и на заходе");
+    return;
+  }
+  const wrap=document.createElement("div");
+  wrap.className="album";
+  A.forEach((s,i)=>{
+    const big=(albumOpen===i);
+    const cell=document.createElement("div");
+    cell.className="card"+(big?" big":"");
+    const cw=big?Math.max(320,Math.min(880,box.clientWidth-24)):228;
+    const ch=Math.round(cw*.625);
+    const cv=document.createElement("canvas");
+    cv.width=Math.round(cw*2);cv.height=Math.round(ch*2);
+    cv.style.width=cw+"px";cv.style.height=ch+"px";
+    const cc=cv.getContext("2d");
+    cc.scale(2,2);
+    if(!drawPostcard(cc,s,cw,ch)){cc.fillStyle="#12161d";cc.fillRect(0,0,cw,ch);}
+    cell.appendChild(cv);
+    const cap=document.createElement("s");
+    cap.textContent=postCaption(s)+(s.ver&&s.ver!==VER?" · снято на "+s.ver:"");
+    cell.appendChild(cap);
+    cell.onclick=()=>{albumOpen=big?-1:i;tableRender();};
+    wrap.appendChild(cell);
+  });
+  box.appendChild(wrap);
 }

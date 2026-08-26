@@ -731,7 +731,7 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
 - **Nothing a human types ever crosses.** The payload is a form id, a bitmask of crossings-out,
   glyphs, and a scene snapshot. This is what makes the whole feature need no moderation at all.
 
-- **M188 — the camera.** A photograph is not pixels but a **snapshot of the scene**: mode, world
+- **M188 — the camera** — **built (0.171.0), first pass.** A photograph is not pixels but a **snapshot of the scene**: mode, world
   seeds, hour, weather, camera point, `VER` — about 200 bytes, re-rendered by the receiver's own
   engine. Three reasons, in order: the server carries bytes instead of megabytes; nothing but the
   game's own world can physically cross the boundary; and an old card re-rendered by a newer engine
@@ -751,10 +751,23 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   480×300 JPEG is ~25 KB, twelve of them ~300 KB, and the album persists into a save that also goes
   to the cloud. That is not an album, that is a new save-format problem.
 
-  So the milestone's first pass is `drawPostcard(ctx, snap, w, h)`: sky by world type, hour and
-  weather; the terrain profile from the seed; the star from `sunSpot`; a subject silhouette. It is a
-  *view*, not a re-run of the mode, and it should be written as such from the start. Only after it
-  exists do the button, the album and the wire format mean anything.
+  So the milestone's first pass is `drawPostcard(ctx, snap, w, h)` — a *view*, not a re-run of the
+  mode. **BUILT (0.171.0):** `25g-postcard`, suite `91zzzi-postcard`, stands `docs/mkpost.ps1` and
+  `pageshot view -Q "?s=album"`. The painter owes `G` nothing and a test proves it (same snapshot,
+  pixel-identical frames before and after the live world is moved elsewhere). ФОТО on the console
+  where there is something to shoot, an album of twelve on the desk that only exists once there is
+  a first photograph; whole album under three kilobytes in the save (`G.album`).
+
+  Five passes on the card, each against the game's own frame: it had to be rebuilt around a **body
+  of ground with strata**, not a hazy distant ridge; the ground takes its colour from the upper
+  middle of `T.pal`, since the low steps of that ramp are ocean and an earthlike world came out
+  blue; the vertical scale is isotropic with the horizontal, because a card is a third the width of
+  the game frame and was stretching relief threefold; strata flatten with depth and reach the
+  bottom edge; and clouds went in as soft radial blobs — filled ellipses gave a chain of identical
+  lozenges, and at this size anything with a contour reads as a blot.
+
+  **Still open:** the wire format and the receiver's side, which belong to M190; modes other than
+  ground and approach (cave, mine, belt, system, scoop) are not photographable yet.
 - **M189 — the forms.** A form is a title plus lines; a line is a set of variants; tapping a
   variant crosses the others out. **Every line ships with a sensible default, so a card can be sent
   without a single tap** — that is what "чтобы не париться" means in practice. About thirty in this

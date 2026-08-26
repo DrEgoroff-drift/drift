@@ -59,6 +59,9 @@
 <div id="console">
   <div id="rx"><input id="rxKnob" type="range" min="0" max="1" step="0.005" aria-label="приёмник"><div id="rxScale"><i style="left:21%">слухи</i><i style="left:49%">цены</i><i style="left:73%">погода</i><i style="left:94%">эфир</i></div><div id="rxOut"><b id="rxBand">ШУМ</b><s id="rxLine">…шшш…</s></div><button id="rxRec" style="display:none">ЗАПИСАТЬ</button></div>
   <div id="seat" style="display:none"><canvas id="seatcv" width="56" height="56"></canvas><div id="seatOut"><b id="seatName">—</b><s id="seatLine"></s></div></div>
+  <!-- ФОТО: появляется только там, где есть что снять — на грунте и на заходе.
+       Кнопка, которая висит всегда, перестаёт быть поводом (M188). -->
+  <button id="camBtn" style="display:none" aria-label="снимок">ФОТО</button>
   <button id="perch" style="display:none" aria-label="трепло"><canvas id="perchcv" width="44" height="44"></canvas></button>
 </div>
 
@@ -122,6 +125,7 @@
     <button data-tab="hold">ТРЮМ</button>
     <button data-tab="prices">ЦЕНЫ</button>
     <button data-tab="record">КНИЖКА</button>
+    <button data-tab="album" style="display:none">АЛЬБОМ</button>
     <button data-tab="lore" style="display:none">ОТЧЁТ</button>
   </nav>
   <div class="body" id="tableBody"><div id="loglist"></div><div id="lorelist" style="display:none"></div></div>

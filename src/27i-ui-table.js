@@ -134,6 +134,9 @@ function tableRender(){
   document.querySelectorAll("#tableTabs button").forEach(b=>{
     b.classList.toggle("on",b.dataset.tab===tableTab);
     if(b.dataset.tab==="lore")b.style.display=(typeof loreCount==="function"&&loreCount())?"":"none";
+    /* альбом заводится с первым снимком: пустая закладка обещает содержимое,
+       которого нет, и на телефоне отнимает место у тех, где что-то лежит */
+    if(b.dataset.tab==="album")b.style.display=(typeof albumAll==="function"&&albumAll().length)?"":"none";
     /* счётчик новостей на самой закладке: огонёк привёл к столу, закладка
        говорит, на какую полку смотреть. Подпись не переписываем — у неё своя
        ширина, и прыгающие вкладки читаются браком. */
@@ -148,7 +151,8 @@ function tableRender(){
   const SUB={ether:"эфир · что было услышано",bort:"борт · техника и деньги",folk:"люди · что вам сказали",
              deeds:"дела · что вы должны",strips:"ленты · оторванные полосы самописца",things:"вещи · письма, находки, бумаги",
              hold:"трюм · груз, разложенный по кучам",
-             prices:"цены · как их видели, по станциям",record:"трудовая книжка · записи чужими руками",lore:"отчёт «Долгого хода»"};
+             prices:"цены · как их видели, по станциям",record:"трудовая книжка · записи чужими руками",
+             album:"альбом · снимки мест, где вы стояли",lore:"отчёт «Долгого хода»"};
   if(sub)sub.textContent=SUB[tableTab]||"";
   if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
   if(wh){const mr=modeRu();
@@ -159,7 +163,8 @@ function tableRender(){
      Тетрадь, дела, цены и книжка — это записи, им место на бумаге. Ленты и
      вещи — предметы: письмо, накладная, вырезка, полоса самописца, — и лист
      под ними был бы ошибкой: бумага на бумаге не читается. */
-  box.classList.toggle("desk",tableTab==="things"||tableTab==="strips"||tableTab==="hold");
+  box.classList.toggle("desk",tableTab==="things"||tableTab==="strips"||tableTab==="hold"||
+    tableTab==="album");
   if(tableTab==="ether"||tableTab==="bort"||tableTab==="folk")renderLog(tableTab);
   else if(tableTab==="deeds")renderDeeds();
   else if(tableTab==="strips")renderStrips(box);
@@ -169,6 +174,7 @@ function tableRender(){
   else if(tableTab==="record"&&typeof renderRecord==="function")renderRecord(box);
   else if(tableTab==="prices"&&typeof renderPrices==="function")renderPrices(box);
   else if(tableTab==="record"&&typeof renderRecord==="function")renderRecord(box);
+  else if(tableTab==="album"&&typeof renderAlbum==="function")renderAlbum(box);
   else if(tableTab==="lore"&&typeof renderLoreBoard==="function")renderLoreBoard();
 }
 function tableRow(box,cls,em,text){

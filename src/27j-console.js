@@ -37,6 +37,7 @@ function consoleTick(dt){
   /* приёмник: если свежей строки нет — показываем то, что ловится на частоте */
   const RN=(typeof ringLine==="function")?ringLine():null;   /* Кольцо (M154): пока звучит — только оно */
   const rec=document.getElementById("rxRec");if(rec)rec.style.display=(RN&&G.ringNow&&!G.ringNow.rec)?"":"none";
+  if(typeof camBtnTick==="function")camBtnTick();
   if(RN&&line){band.textContent=RN.ru;line.textContent=RN.text;con.classList.remove("quiet");}
   else if(conFresh<=0&&line&&typeof radioTune==="function"){
     const f=(G.radioF==null?.05:G.radioF);
@@ -109,4 +110,7 @@ function consoleTick(dt){
   if(perch)perch.addEventListener("click",()=>{if(typeof toggleParrotWin==="function")toggleParrotWin(true);});
   const rec=document.getElementById("rxRec");
   if(rec)rec.addEventListener("click",()=>{if(typeof rxRecord==="function")rxRecord();});
+  /* ФОТО (M188): снимок сцены, а не пикселей — художник открытки в 25g */
+  const cam=document.getElementById("camBtn");
+  if(cam)cam.addEventListener("click",()=>{if(typeof postTake==="function")postTake();});
 })();

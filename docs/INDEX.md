@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 277 · символов верхнего уровня: 2592
+Файлов: 278 · символов верхнего уровня: 2603
 
 ## СИМВОЛЫ
 
@@ -63,6 +63,9 @@ aiFace                       src/12d-mgr-face.js:210
 aiLearn                      src/12f-mgr-ai.js:107
 aiStage                      src/12f-mgr-ai.js:19
 aiUpkeep                     src/12f-mgr-ai.js:126
+ALBUM_MAX                    src/25g-postcard.js:492
+albumAll                     src/25g-postcard.js:493
+albumOpen                    src/25g-postcard.js:523
 allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:517
 ambK                         src/19c-light.js:39
@@ -203,6 +206,7 @@ builtKey                     src/21c-built.js:16
 builtSpot                    src/21c-built.js:34
 bWall                        src/21aa-base-rooms.js:187
 bWorker                      src/21aa-base-rooms.js:322
+camBtnTick                   src/25g-postcard.js:514
 camOffset                    src/19c-light.js:76
 camStep                      src/19c-light.js:62
 canPay                       src/21a-mode-base.js:51
@@ -567,7 +571,7 @@ drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:283
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:242
+drawThingIcon                src/27i-ui-table.js:248
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:96
 drawTrail                    src/16-flight.js:338
@@ -1543,7 +1547,11 @@ payCost                      src/21a-mode-base.js:52
 pcA                          src/25g-postcard.js:76
 pcC                          src/25g-postcard.js:73
 pcMix                        src/25g-postcard.js:75
+pcSame                       tests/91zzzi-postcard.js:23
 pcStar                       src/25g-postcard.js:78
+pcTestPixels                 tests/91zzzi-postcard.js:17
+pcTestPlanet                 tests/91zzzi-postcard.js:2
+pcTestSnap                   tests/91zzzi-postcard.js:12
 PEEP_LIT                     src/20c-peep.js:28
 PEEP_LOAD                    src/20c-peep.js:27
 PEEP_PASS                    src/20c-peep.js:25
@@ -1672,6 +1680,7 @@ POST_WHAT                    src/11e-post.js:19
 postAddrs                    src/11e-post.js:47
 postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113
+postCanShoot                 src/25g-postcard.js:494
 postCaption                  src/25g-postcard.js:64
 postDock                     src/11e-post.js:80
 postHolding                  src/11e-post.js:107
@@ -1679,6 +1688,7 @@ postItem                     src/11e-post.js:42
 postLinkHere                 src/11e-post.js:73
 postOpen                     src/11e-post.js:99
 postSnap                     src/25g-postcard.js:53
+postTake                     src/25g-postcard.js:498
 postTerrain                  src/25g-postcard.js:37
 postWorld                    src/25g-postcard.js:45
 prevAct                      src/08-state.js:40
@@ -1809,6 +1819,7 @@ relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07-planet.js:374
+renderAlbum                  src/25g-postcard.js:524
 renderBarge                  src/12l-barge.js:617
 renderBasesTab               src/26a-ui-station-home.js:4
 renderCantina                src/27c-ui-hq.js:45
@@ -1820,9 +1831,9 @@ renderOpts                   src/27-ui-ship.js:198
 renderPrices                 src/12aa-need.js:196
 renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
-renderStrips                 src/27i-ui-table.js:182
+renderStrips                 src/27i-ui-table.js:188
 renderTab                    src/26-ui-station.js:201
-renderThings                 src/27i-ui-table.js:213
+renderThings                 src/27i-ui-table.js:219
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -2333,7 +2344,7 @@ tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
 tableNoticeAll               src/27i-ui-table.js:68
 tableRender                  src/27i-ui-table.js:131
-tableRow                     src/27i-ui-table.js:174
+tableRow                     src/27i-ui-table.js:180
 tableSetTab                  src/27i-ui-table.js:101
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:84
@@ -3144,8 +3155,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25f-globus.js · 8 КБ
   · «Глобус» — указатель места полёта:1
 
-## src/25g-postcard.js · 25 КБ
+## src/25g-postcard.js · 32 КБ
   · открытка: снимок сцены, а не пиксели:1
+  · камера и альбом:478
 
 ## src/26a-ui-station-home.js · 12 КБ
   · станция: вкладка «дом и базы»:1
@@ -3475,5 +3487,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzh-told.js · 3 КБ
   · автотесты: ляпнул лишнего:1
+
+## tests/91zzzi-postcard.js · 6 КБ
+  · автотесты: открытка — снимок сцены (M188):1
 
 ## tests/99-run.js · 0 КБ
