@@ -39,6 +39,13 @@ jobs:
         shell: pwsh
         run: ./build.ps1
 
+      # Птица в объёме — своя сборка из bird/. Файл лежит в репозитории (его
+      # можно открыть двойным кликом из клона), но собирается заново и здесь:
+      # иначе однажды уедет вчерашняя птица от сегодняшних исходников.
+      - name: Собрать site/treplo3d.html
+        shell: pwsh
+        run: ./bird.ps1
+
       - name: Проверить, что сборка не пустая
         run: |
           test -s drift.html || { echo "drift.html пуст"; exit 1; }
@@ -110,9 +117,10 @@ jobs:
           code=$(hc -X POST 'https://drift-game.ru/api.php?a=me')
           [ "$code" = "401" ] || { echo "api.php отвечает $code вместо 401"; exit 1; }
           # страницы и их ассеты: битая картинка на заглавной — тоже поломка выкладки
-          for u in mechanics.html parrot.html reset.html treplo.html site.css sky.js planets.js \
+          for u in mechanics.html parrot.html reset.html treplo.html treplo3d.html site.css sky.js planets.js \
                    auth.js parrot.js favicon.svg og.jpg shots/world.webp shots/land.webp \
                    icons/parrot-512.png icons/fav-32.png parrot.webmanifest \
+                   treplo3d.webmanifest treplo3d-sw.js \
                    drift.webmanifest drift-sw.js; do
             c=$(hc "https://drift-game.ru/$u")
             [ "$c" = "200" ] || { echo "/$u отвечает $c"; exit 1; }

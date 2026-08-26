@@ -98,9 +98,18 @@ if (-not $Shots) {
   scp $file "$web/dev.html"
   if ($LASTEXITCODE -ne 0) { throw "scp сборки вернул $LASTEXITCODE" }
   ssh drift "cd drift-game.ru/docs && gzip -kf9 dev.html"
+  # Птица в объёме: своя сборка, свой адрес на стенде. Её надо смотреть
+  # руками и с телефона — по снимку не поймёшь ни движения, ни кадра.
+  $bird = Join-Path $root "site\treplo3d.html"
+  if (Test-Path $bird) {
+    & powershell -ExecutionPolicy Bypass -File (Join-Path $root "bird.ps1") | Out-Null
+    scp $bird "$web/dev/treplo3d.html"
+    if ($LASTEXITCODE -ne 0) { throw "scp птицы вернул $LASTEXITCODE" }
+  }
 }
 
 $kb = [math]::Round((Get-Item $file).Length / 1KB)
 "{0}  дев-стенд {1} · сборка {2} КБ · листов {3}" -f (Get-Date -Format "HH:mm:ss"), $ver, $kb, $sheets.Count
 "           https://drift-game.ru/dev/      — листы"
 "           https://drift-game.ru/dev.html  — играть эту сборку"
+"           https://drift-game.ru/dev/treplo3d.html — птица в объёме"

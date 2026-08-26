@@ -133,9 +133,12 @@ function layoutCoat(rows,dens){
       const d2=vNorm(vAdd(dir,vMul(p,lift)));
       const wid=len*mix(0.44,0.58,R());
       const col=bodyColor(t,a);
-      const cv=0.90+R()*0.20;
+      const cv=0.84+R()*0.28;
+      /* тёплый-холодный разброс по перьям: ровное поле одного цвета читается
+         краской, а не оперением. Сдвиг мелкий — породу он не трогает. */
+      const wc=(R()-0.5)*0.055;
       feaPush(out,vAdd(base,vMul(p,-0.006)),d2,p,len,wid,
-        [col[0]*cv,col[1]*cv,col[2]*cv],[1.0,0.5+R()*0.5,t,0.0]);
+        [col[0]*cv*(1+wc),col[1]*cv,col[2]*cv*(1-wc)],[1.0,0.5+R()*0.5,t,0.0]);
     }
   }
   return new Float32Array(out);
