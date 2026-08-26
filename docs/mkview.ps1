@@ -175,6 +175,16 @@ setTimeout(function(){
     G.cargo.organics=5;G.cargo.isotopes=1;G.cargo.volatiles=4;G.cargo.missile=3;
     G.cargo.folk=2;G.cargo.alloy=6;
     tableToggle(true,"hold");
+  }else if(scene==="winter"||scene==="winterlow"){
+    /* зимовка (M197): комната на середине месяца. `winterlow` — та же комната
+       с убавленным светом: баланс должен быть ВИДЕН, а не написан цифрой */
+    G.win={sx:2,sy:-3,pi:0,pname:"Тиун II",sysName:"Тиун",
+      day:17,days:30,pw:{heat:3,air:3,light:2,ant:1},
+      faults:[{k:"ice",day:12}],diary:[],wall:5,cold:1,dark:0,
+      home:{sx:G.sx,sy:G.sy},t0:Date.now(),done:0};
+    if(scene==="winterlow"){G.win.pw.light=0;G.win.pw.heat=1;G.win.faults.push({k:"pump",day:15});}
+    G.mode="winter";
+    for(var wf=0;wf<3;wf++){G.t+=.02;drawWinter();}
   }else if(scene==="ether"){
     /* ночной эфир (M191): вечера ждать нельзя, поэтому час подменяется, а
        вместо сервера подставляется своя карточка — путь при этом остаётся

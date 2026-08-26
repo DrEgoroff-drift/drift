@@ -176,6 +176,8 @@ function hud(){
     b="сбор летучих газов";}
   else if(G.mode==="base"){a="БАЗА · "+(G.base?G.base.p.name.toUpperCase():"");
     b="разрез грунта";}
+  else if(G.mode==="winter"&&G.win){a=G.win.pname.toUpperCase();
+    b="зимовка · сутки "+G.win.day+" из "+G.win.days;}
   else if(G.mode==="homein"){a="ДОМ";
     b=(G.home&&HOME_TIERS[G.home.tier-1]?HOME_TIERS[G.home.tier-1].ru:"угол")+" · "+
       ((G.hin&&G.hin.folk.length)?"дома "+G.hin.folk.length:"никого нет");}
@@ -300,7 +302,7 @@ function hud(){
      раз он и наполняется, — а топливо возвращается само, если стало
      критическим (класс .crit): тогда это и есть «нужно сейчас». */
   document.body.classList.toggle("afoot",
-    G.mode==="surface"||G.mode==="cave"||G.mode==="dig"||G.mode==="base"||G.mode==="homein"||G.mode==="raid");
+    G.mode==="surface"||G.mode==="cave"||G.mode==="dig"||G.mode==="base"||G.mode==="homein"||G.mode==="raid"||G.mode==="winter");
   /* колодка области — прибор кабины (A2): она показывается там, где по ней
      принимают решения, то есть в полёте и на карте */
   document.body.classList.toggle("inflight",
@@ -476,6 +478,7 @@ function frame(now){
     else if(G.mode==="base"&&G.base)updateBase(dt);
     else if(G.mode==="raid"&&G.raid)updateRaid(dt);
     else if(G.mode==="homein"&&G.hin)updateHomeIn(dt);   /* дом изнутри (M170) */
+    else if(G.mode==="winter"&&G.win)updateWinter(dt);   /* зимовка (M197) */
     if(typeof tapeTick==="function")tapeTick(dt);
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
@@ -499,6 +502,7 @@ function frame(now){
     else if(G.mode==="base"&&G.base)drawBase();
     else if(G.mode==="raid"&&G.raid)drawRaid();
     else if(G.mode==="homein"&&G.hin)drawHomeIn();
+    else if(G.mode==="winter"&&G.win)drawWinter();
     hud();
     /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой
        игрок повернулся. Рисуется последней, но до DOM-строки приборов */

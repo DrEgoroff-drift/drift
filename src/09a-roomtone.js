@@ -61,6 +61,13 @@ function rtWant(){
        &&typeof weatherPower==="function")wp=weatherPower(G.surf.p);
     return [wp*.016,160,.012,120];
   }
+  /* зимовка (M197): вентиляция станции плюс ветер за стеной — глухо, потому
+     что стена. Тона тем больше, чем ниже опущено тепло: холодная станция
+     звенит и щёлкает громче тёплой */
+  if(M==="winter"&&G.win){
+    const he=G.win.pw.heat|0;
+    return [.016+(3-he)*.004,470,.010+(3-he)*.003,90];
+  }
   if(M==="base"&&G.base)return [.014,520,.008,100];
   if(M==="raid"&&G.raid)return [.010,640,.010,70];
   if(M==="scoop"&&G.scoop)return [.030,300,.012,60];

@@ -854,10 +854,23 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
 
 ## Places (M197–M199)
 
-- **M197 — the wintering.** A contract off the board: a month alone on a far station — hold the
-  power balance, keep a diary in the form language, listen to the wall (`09a-roomtone` was built
-  for this), wait for the barge. A mode about solitude and routine; the reward is small in money
-  and large in the record book.
+- **M197 — the wintering** — **built (0.176.0).** `29f-winter` and `29g-winter-draw`, suite
+  `91zzzj-winter`, stands `pageshot view -Q "?s=winter"` and `"?s=winterlow"`. A contract off the
+  board: a month alone on a far station — hold the power balance, keep a diary in the form language
+  (the postcard blanks, 25h), listen to the wall (`09a-roomtone` got its `winter` tone), wait for
+  the barge. One room on purpose: solitude IS one room you do not leave for a month, and the rest
+  of the station lives in the instruments and the sound behind the wall.
+
+  The balance is a choice: the reactor gives less every week, four consumers all needed, and by the
+  end something living has to go off. Turning the lamp down makes the room genuinely harder to
+  see — three light sources, all of them the player's to set. A calendar on the wall carries the
+  days crossed off by hand, because the interface keeps no countdown. Faults cost the reactor a
+  unit each and a repair eats the day (no diary that evening). The wall talks iron early and almost
+  words by the end, with the explanation always available.
+
+  **Still open: the room wants another art pass** — the figure reads as a coat rather than a
+  person, the berth under the window is a plank with a pillow, and the stove's foot is lost in the
+  vignette.
 - **M198 — the observer's choice.** `12t-settle` already decides for itself what to raise. Add the
   fork: feed and watch, or step in with instructions. Step in and the settlement grows faster but
   loses its glyphs and its own path and becomes *yours* — and that is visible in the frame. Not one

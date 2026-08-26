@@ -1155,6 +1155,7 @@ body.afoot .ipod{display:none}
     <button data-tab="record">КНИЖКА</button>
     <button data-tab="album" style="display:none">АЛЬБОМ</button>
     <button data-tab="mail" style="display:none">ПОЧТА</button>
+    <button data-tab="diary" style="display:none">ДНЕВНИК</button>
     <button data-tab="lore" style="display:none">ОТЧЁТ</button>
   </nav>
   <div class="body" id="tableBody"><div id="loglist"></div><div id="lorelist" style="display:none"></div></div>
@@ -1296,7 +1297,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.175.0";
+const VER="0.176.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6368,6 +6369,13 @@ function rtWant(){
     if(G.surf&&G.surf.p&&G.surf.p.T.atm!=="отсутствует"
        &&typeof weatherPower==="function")wp=weatherPower(G.surf.p);
     return [wp*.016,160,.012,120];
+  }
+  /* зимовка (M197): вентиляция станции плюс ветер за стеной — глухо, потому
+     что стена. Тона тем больше, чем ниже опущено тепло: холодная станция
+     звенит и щёлкает громче тёплой */
+  if(M==="winter"&&G.win){
+    const he=G.win.pw.heat|0;
+    return [.016+(3-he)*.004,470,.010+(3-he)*.003,90];
   }
   if(M==="base"&&G.base)return [.014,520,.008,100];
   if(M==="raid"&&G.raid)return [.010,640,.010,70];
@@ -24490,7 +24498,7 @@ function snapshot(){
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
-    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,   /* M154–M196 */
+    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,win:G.win,   /* M154–M197 */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -24954,6 +24962,9 @@ function applySave(s){
   /* вымпелы (M196): только время запуска, срок и семя цели — полёт не
      моделируется, он считается от Date.now() в тот момент, когда спросят */
   G.probes=Array.isArray(s.probes)?s.probes.slice(0,PROBE_MAX):[];
+  /* зимовка (M197): месяц идёт по суткам, а не по часам, поэтому в сейве
+     лежит она целиком — прервать её и вернуться назавтра можно и нужно */
+  G.win=(s.win&&typeof s.win==="object"&&s.win.pw)?s.win:null;
   G.trainee=(s.trainee&&typeof s.trainee==="object"&&s.trainee.name)?s.trainee:null;
   G.zoo=(s.zoo&&typeof s.zoo==="object"&&Array.isArray(s.zoo.pen))?s.zoo:null;
   G.concert=(s.concert&&typeof s.concert==="object")?s.concert:null;
@@ -25231,6 +25242,8 @@ function navAction(){
   if(G.mode==="scoop"){exitScoop("Уход на орбиту");return;}
   if(G.mode==="base"){if(G.base.menu)G.base.menu=false;else exitBase();return;}
   if(G.mode==="homein"){exitHomeIn();return;}          /* из дома — во двор (M170) */
+  /* с зимовки не уходят: в этом она и есть. Баржа придёт сама (M197) */
+  if(G.mode==="winter"){say("Уйти нельзя. Баржа придёт за вами.",160);return;}
   if(G.mode==="system"){G.mode="map";G.sel.x=G.sx;G.sel.y=G.sy;}
   else if(G.mode==="map")G.mode="system";
   else say("Навигация недоступна\nвне свободного полёта");
@@ -25308,6 +25321,12 @@ function mouseWalkAt(clientX,clientY){
 }
 
 function tap(sxp,syp){
+  /* зимовка (M197): в комнате трогают вещи — рычаг, дневник, трубы, койку.
+     Экранные координаты, а не мировые: комната не ездит */
+  if(G.mode==="winter"&&typeof winTap==="function"){
+    const rc=cvs.getBoundingClientRect();
+    if(winTap((sxp-rc.left)*W/rc.width,(syp-rc.top)*H/rc.height))return;
+  }
   if(G.mode==="map"){
     const cell=Math.min(W,H)/9.2,R=5;
     let best=null,bd=1e9;
@@ -45815,6 +45834,7 @@ function renderTab(){
     if(typeof recordBlock==="function")recordBlock();       /* доска почёта, комиссия (M161) */
     if(typeof instBlock==="function")instBlock();           /* институт: темы и отчёты (M162) */
     if(typeof skyBlock==="function")skyBlock();             /* небесная вахта (M195) */
+    if(typeof winBlock==="function")winBlock();             /* зимовка: месяц одному (M197) */
     if(typeof traineeBlock==="function")traineeBlock();     /* диплом стажёру (M163) */
     if(typeof zooBlock==="function")zooBlock();             /* зоостанция (M164) */
     if(typeof wallBlock==="function")wallBlock();           /* стенгазета и заявки (M165) */
@@ -49542,6 +49562,8 @@ function tableRender(){
     if(b.dataset.tab==="album")b.style.display=(typeof albumAll==="function"&&albumAll().length)?"":"none";
     /* почта появляется, когда она есть: офлайн её нет вовсе, и пустая закладка
        обещала бы то, чего в этой сборке не бывает (M190) */
+    if(b.dataset.tab==="diary")b.style.display=
+      ((typeof winOn==="function"&&winOn())||thingsAll().some(t=>t.diary))?"":"none";
     if(b.dataset.tab==="mail")b.style.display=
       (typeof mailOn==="function"&&mailOn()&&(mailAll().st.length||albumAll().length))?"":"none";
     /* счётчик новостей на самой закладке: огонёк привёл к столу, закладка
@@ -49560,7 +49582,9 @@ function tableRender(){
              hold:"трюм · груз, разложенный по кучам",
              prices:"цены · как их видели, по станциям",record:"трудовая книжка · записи чужими руками",
              album:"альбом · снимки мест, где вы стояли",
-             mail:"почта · стопки карточек, скреплённые скрепкой",lore:"отчёт «Долгого хода»"};
+             mail:"почта · стопки карточек, скреплённые скрепкой",
+             diary:"дневник зимовки · бланками, потому что писать некому",
+             lore:"отчёт «Долгого хода»"};
   if(sub)sub.textContent=SUB[tableTab]||"";
   if(cr)cr.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
   if(wh){const mr=modeRu();
@@ -49572,7 +49596,7 @@ function tableRender(){
      вещи — предметы: письмо, накладная, вырезка, полоса самописца, — и лист
      под ними был бы ошибкой: бумага на бумаге не читается. */
   box.classList.toggle("desk",tableTab==="things"||tableTab==="strips"||tableTab==="hold"||
-    tableTab==="album"||tableTab==="mail");
+    tableTab==="album"||tableTab==="mail"||tableTab==="diary");
   if(tableTab==="ether"||tableTab==="bort"||tableTab==="folk")renderLog(tableTab);
   else if(tableTab==="deeds")renderDeeds();
   else if(tableTab==="strips")renderStrips(box);
@@ -49584,6 +49608,7 @@ function tableRender(){
   else if(tableTab==="record"&&typeof renderRecord==="function")renderRecord(box);
   else if(tableTab==="album"&&typeof renderAlbum==="function")renderAlbum(box);
   else if(tableTab==="mail"&&typeof renderMail==="function")renderMail(box);
+  else if(tableTab==="diary"&&typeof renderDiary==="function")renderDiary(box);
   else if(tableTab==="lore"&&typeof renderLoreBoard==="function")renderLoreBoard();
 }
 function tableRow(box,cls,em,text){
@@ -52259,6 +52284,8 @@ function hud(){
     b="сбор летучих газов";}
   else if(G.mode==="base"){a="БАЗА · "+(G.base?G.base.p.name.toUpperCase():"");
     b="разрез грунта";}
+  else if(G.mode==="winter"&&G.win){a=G.win.pname.toUpperCase();
+    b="зимовка · сутки "+G.win.day+" из "+G.win.days;}
   else if(G.mode==="homein"){a="ДОМ";
     b=(G.home&&HOME_TIERS[G.home.tier-1]?HOME_TIERS[G.home.tier-1].ru:"угол")+" · "+
       ((G.hin&&G.hin.folk.length)?"дома "+G.hin.folk.length:"никого нет");}
@@ -52383,7 +52410,7 @@ function hud(){
      раз он и наполняется, — а топливо возвращается само, если стало
      критическим (класс .crit): тогда это и есть «нужно сейчас». */
   document.body.classList.toggle("afoot",
-    G.mode==="surface"||G.mode==="cave"||G.mode==="dig"||G.mode==="base"||G.mode==="homein"||G.mode==="raid");
+    G.mode==="surface"||G.mode==="cave"||G.mode==="dig"||G.mode==="base"||G.mode==="homein"||G.mode==="raid"||G.mode==="winter");
   /* колодка области — прибор кабины (A2): она показывается там, где по ней
      принимают решения, то есть в полёте и на карте */
   document.body.classList.toggle("inflight",
@@ -52559,6 +52586,7 @@ function frame(now){
     else if(G.mode==="base"&&G.base)updateBase(dt);
     else if(G.mode==="raid"&&G.raid)updateRaid(dt);
     else if(G.mode==="homein"&&G.hin)updateHomeIn(dt);   /* дом изнутри (M170) */
+    else if(G.mode==="winter"&&G.win)updateWinter(dt);   /* зимовка (M197) */
     if(typeof tapeTick==="function")tapeTick(dt);
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
@@ -52582,6 +52610,7 @@ function frame(now){
     else if(G.mode==="base"&&G.base)drawBase();
     else if(G.mode==="raid"&&G.raid)drawRaid();
     else if(G.mode==="homein"&&G.hin)drawHomeIn();
+    else if(G.mode==="winter"&&G.win)drawWinter();
     hud();
     /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой
        игрок повернулся. Рисуется последней, но до DOM-строки приборов */
@@ -54136,6 +54165,955 @@ function hinUpWindow(x,fy,ceil,P,wide){
   ctx.moveTo(x-w*.5,y+h);ctx.lineTo(x+w*.5,y+h);
   ctx.lineTo(x+w*.9,fy);ctx.lineTo(x-w*.9,fy);ctx.closePath();ctx.fill();
   ctx.restore();
+}
+
+/* ══════════════ зимовка: месяц одному ══════════════
+   M197. Наряд с доски, каких в игре нет: не «привезти», не «убить», не
+   «найти», а ПРОСТОЯТЬ. Месяц на дальней станции, один. Держать баланс,
+   писать дневник, слушать стену, ждать баржу. Денег мало, книжка полна.
+
+   ПОЧЕМУ ЭТО ОДНА КОМНАТА. Соблазн был нарисовать станцию с отсеками и ходить
+   по ним. Но зимовка — про одиночество и распорядок, а одиночество — это как
+   раз одна комната, из которой месяц не выходят. Всё остальное живёт в
+   приборах на панели и в звуке за стеной: станция вокруг ЕСТЬ, её просто не
+   видно, и от этого её больше.
+
+   БАЛАНС — ЭТО ВЫБОР, А НЕ АРИФМЕТИКА. Реактор даёт меньше с каждой неделей
+   (лёд, износ), а потребителей четверо, и все нужны. К концу месяца выключать
+   приходится что-то живое: тепло, воздух, свет или антенну. Игра нигде не
+   говорит, что правильно.
+
+   ДНЕВНИК — ТЕ ЖЕ БЛАНКИ, ЧТО У ОТКРЫТКИ (25h). Это не экономия: зимовщик и
+   пишет бланками, потому что писать ему некому и не о чем, а форма — это то,
+   что остаётся, когда слова кончились. Страница дневника устроена как
+   открытка, которую никто не отправит.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Ни одной цифры «до конца осталось» крупно на кадре. День и месяц — да,
+      обратный отсчёт — нет: считать дни это дело зимовщика, а не интерфейса.
+   2. Сутки идут, только когда смена сдана. Время здесь не капает само.
+   3. Ничего не моделируется за кадром: всё состояние — в G.win. */
+const WIN_DAYS=30;                 /* месяц */
+const WIN_PAY=1400;                /* и это правда немного */
+const WIN_USE=["heat","air","light","ant"];
+const WIN_RU={heat:"ТЕПЛО",air:"ВОЗДУХ",light:"СВЕТ",ant:"АНТЕННА"};
+const WIN_MIN={heat:2,air:2,light:1,ant:1};       /* ниже — начинается плохое */
+const WIN_BAD={heat:"мёрз",air:"дышал тяжело",light:"сидел в темноте",ant:"остался без эфира"};
+/* поломки: каждая отнимает у реактора единицу, пока не починена */
+const WIN_FAULT=[
+  {k:"ice",  ru:"обледенел радиатор",      fix:"сбить лёд"},
+  {k:"pump", ru:"насос контура стучит",    fix:"перебрать насос"},
+  {k:"filt", ru:"фильтр забился пылью",    fix:"вытряхнуть фильтр"},
+  {k:"cell", ru:"просела батарея",         fix:"переставить банки"},
+  {k:"seal", ru:"свистит уплотнение шлюза",fix:"подтянуть уплотнение"}
+];
+const WIN_FAULT_BY={};WIN_FAULT.forEach(f=>WIN_FAULT_BY[f.k]=f);
+/* ── стена ──
+   Станция разговаривает: сначала железом, к концу месяца — почти словами.
+   Ничего сверхъестественного здесь нет и не будет: объяснение всегда в
+   первой половине списка, а к концу просто дольше слушаешь. */
+const WIN_WALL_EARLY=[
+  "…где-то капает. Считал капли, сбился на четырёхстах.",
+  "…вентиляция берёт ноту и держит. Всегда одну и ту же.",
+  "…металл щёлкает на морозе, будто кто-то ходит по коридору.",
+  "…под полом гудит насос. Ровно, как ему и положено.",
+  "…ветер снаружи трогает антенну, и это слышно через всю станцию.",
+  "…что-то шуршит в вентиляции. Пыль. Наверное, пыль."
+];
+const WIN_WALL_LATE=[
+  "…шаги в коридоре. Свои. Обернулся всё равно.",
+  "…в трубе голос. Слов нет, а интонация есть.",
+  "…станция вздохнула. Так вздыхают, когда собираются что-то сказать.",
+  "…показалось, что позвали по имени. Имени тут никто не знает.",
+  "…тишина стала плотной. Её теперь слышно отдельно от всего.",
+  "…кто-то дышит в стене. Это насос. Это насос."
+];
+function winAll(){return G.win||null;}
+function winOn(){return !!(G.win&&!G.win.done);}
+/* мощность реактора: падает с неделями и с каждой непочиненной поломкой */
+function winCap(W){
+  const wk=Math.floor((W.day||0)/7);
+  return Math.max(3,9-wk-(W.faults||[]).length);
+}
+function winDraw_(W){return WIN_USE.reduce((s,k)=>s+(W.pw[k]|0),0);}
+function winOver(W){return winDraw_(W)>winCap(W);}
+/* что сегодня плохо: список бед по недобору */
+function winBad(W){
+  return WIN_USE.filter(k=>(W.pw[k]|0)<WIN_MIN[k]).map(k=>WIN_BAD[k]);
+}
+/* ── взять наряд ── */
+function winOfferHere(){
+  if(winOn()||!G.st||!G.sys)return null;
+  /* далёкая станция: чем дальше от ядра, тем вероятнее, что зимовщик нужен */
+  const d=Math.hypot(G.sx,G.sy);
+  if(d<9)return null;
+  const r=rng(hashi(G.sx,G.sy,0x21A7+Math.floor(celDay()/9)));
+  if(r()>.42)return null;
+  /* место — соседняя система с планетой: станция стоит НЕ здесь, сюда её
+     только нанимают */
+  for(let i=0;i<40;i++){
+    const sx=G.sx+Math.round((r()-.5)*10), sy=G.sy+Math.round((r()-.5)*10);
+    if(!starAt(sx,sy))continue;
+    const S=getSystem(sx,sy);
+    const p=(S.planets||[]).find(q=>q.type!=="gas");
+    if(!p)continue;
+    return {sx,sy,pname:p.name,sysName:S.name,pi:p.idx};
+  }
+  return null;
+}
+function winTake(o){
+  if(!o||winOn())return false;
+  G.win={sx:o.sx,sy:o.sy,pi:o.pi|0,pname:o.pname,sysName:o.sysName,
+    day:1,days:WIN_DAYS,
+    pw:{heat:3,air:3,light:2,ant:1},
+    faults:[],diary:[],wall:0,cold:0,dark:0,
+    home:{sx:G.sx,sy:G.sy},
+    t0:Date.now(),done:0};
+  thingAdd("paper","Наряд на зимовку · "+o.pname,
+    "месяц один · держать баланс, вести дневник, дождаться баржи · оплата по возвращении");
+  recordAdd("станция "+(G.st.name||""),"нанят зимовщиком на "+o.pname);
+  logAdd("tech","Зимовка: "+o.pname+" · месяц · баржа придёт за вами");
+  enterWinter();
+  return true;
+}
+function enterWinter(){
+  if(!G.win)return;
+  for(const k in keys)keys[k]=false;
+  G.mode="winter";
+  G.win.zone=null;G.win.said=0;
+  say("Зимовка. Сутки "+G.win.day+" из "+G.win.days+
+      "\nтроньте панель, дневник или стену · ДЕЙСТВИЕ — сдать смену",260);
+}
+/* ── сутки ──
+   Идут только когда смена сдана. Тут и вся зимовка: тридцать раз сделать
+   одно и то же и тридцать раз это пережить. */
+function winShift(){
+  const W=winAll();if(!W||W.done)return false;
+  const bad=winBad(W);
+  const over=winOver(W);
+  /* итог суток пишется коротко и без выговоров */
+  if(over)logAdd("warn","Смена сдана с перегрузкой: реактор не тянет.");
+  for(const b of bad)logAdd("dim","Сутки "+W.day+": "+b+".");
+  if((W.pw.heat|0)<WIN_MIN.heat)W.cold=(W.cold|0)+1;
+  if((W.pw.light|0)<WIN_MIN.light)W.dark=(W.dark|0)+1;
+  W.day++;
+  G.t+=CEL_DAY;
+  /* новая поломка: не каждый день и не по расписанию */
+  const r=rng(hashi(W.day,W.sx*31+W.sy,0x0FA7));
+  if(r()<.22&&(W.faults||[]).length<3){
+    const free=WIN_FAULT.filter(f=>!W.faults.some(x=>x.k===f.k));
+    if(free.length){
+      const f=free[Math.floor(r()*free.length)];
+      W.faults.push({k:f.k,day:W.day});
+      logAdd("warn","Сутки "+W.day+": "+f.ru+".");
+      sfx("ui",{f:300,to:180,d:.12,v:.2});
+    }
+  }
+  if(W.day>W.days)return winEnd();
+  W.said=0;W.noDiary=0;   /* новый день — снова есть время писать */
+  return true;
+}
+function winFix(k){
+  const W=winAll();if(!W)return false;
+  const i=(W.faults||[]).findIndex(f=>f.k===k);
+  if(i<0)return false;
+  W.faults.splice(i,1);
+  /* починка съедает день целиком: писать дневник уже некогда, и это честная
+     цена — в сутках одно дело, а не список дел */
+  W.fixed=(W.fixed|0)+1;
+  W.noDiary=1;
+  logAdd("good","Починено: "+(WIN_FAULT_BY[k]?WIN_FAULT_BY[k].ru:k)+". День ушёл на это.");
+  return true;
+}
+/* ── стена ── */
+function winWall(){
+  const W=winAll();if(!W)return "";
+  W.wall=(W.wall|0)+1;
+  const late=W.day>W.days*.55;
+  const pool=late?WIN_WALL_LATE:WIN_WALL_EARLY;
+  const r=rng(hashi(W.day,W.wall,0x5A11));
+  const line=pool[Math.floor(r()*pool.length)];
+  if(typeof consoleHeard==="function")consoleHeard(line,"стена");
+  logAdd("ether",line);
+  return line;
+}
+/* ── дневник ──
+   Страница — та же карточка, что и открытка: бланк, вычёркивания, приписка.
+   Только отправлять её некому, и в этом вся разница. */
+function winDiaryToday(){
+  const W=winAll();if(!W)return null;
+  let d=(W.diary||[]).find(x=>x.day===W.day);
+  if(d)return d;
+  if(W.noDiary)return null;
+  const S=getSystem(W.sx,W.sy);
+  const p=(S.planets||[])[W.pi]||(S.planets||[])[0];
+  d={day:W.day,v:POST_V,m:"s",sx:W.sx,sy:W.sy,pi:p?p.idx:0,mi:-1,lon:null,
+     cx:0,t:Math.round(G.t),ver:VER};
+  /* бланк по умолчанию — зимовочный: игрок перелистает, если захочет */
+  d.f=["w1","w2","w3"][W.day%3];
+  d.c=postForm(d.f).l.map(()=>0);
+  d.g=[];
+  W.diary.push(d);
+  return d;
+}
+/* ── баржа ── */
+function winEnd(){
+  const W=winAll();if(!W||W.done)return false;
+  W.done=1;
+  const pay=Math.round(WIN_PAY*(1-Math.min(.35,(W.cold|0)*.012)));
+  earn(pay,"зимовка");
+  thingAdd("record","Дневник зимовки · "+W.pname,
+    (W.diary||[]).length+" страниц · месяц один · бланками, потому что писать было некому",
+    {diary:1});
+  recordAdd("зимовка","отстоял месяц на "+W.pname+" · смена сдана");
+  if((W.cold|0)>4)recordAdd("зимовка","мёрз "+W.cold+" суток и не сообщил");
+  if((W.fixed|0)>0)recordAdd("зимовка","починок за смену: "+W.fixed);
+  if((W.wall|0)>=W.days)recordAdd("зимовка","слушал стену каждый день");
+  logAdd("good","Баржа пришла. Зимовка окончена: +"+pay+" кр");
+  tell("good","Баржа пришла. Месяц отстоян","БАРЖА ПРИШЛА\nМЕСЯЦ ОТСТОЯН\n+"+pay+" КР");
+  exitWinter();
+  return true;
+}
+function exitWinter(){
+  const W=winAll();
+  for(const k in keys)keys[k]=false;
+  if(W&&W.home){G.sx=W.home.sx;G.sy=W.home.sy;G.sys=getSystem(G.sx,G.sy);}
+  G.mode="system";
+  if(W&&W.done)G.win=null;
+}
+
+/* ── дневник на столе ──
+   Сегодняшняя страница заполняется, прошлые только читаются. Ровно как с
+   настоящим дневником: вчерашнее уже написано. */
+function renderDiary(box){
+  box.innerHTML="";
+  const W=winAll();
+  const finished=(typeof thingsAll==="function")&&thingsAll().some(t=>t.diary);
+  if(!W&&!finished){tableRow(box,"dim","","дневника нет");return;}
+  if(!W){
+    tableRow(box,"dim","","дневник сдан вместе со сменой и лежит в вещах");
+    return;
+  }
+  const wrap=document.createElement("div");wrap.className="album mail";
+  const today=(W.diary||[]).find(x=>x.day===W.day);
+  if(!today&&W.noDiary)
+    tableRow(box,"dim","","сегодня день ушёл на починку — писать нечего");
+  const list=(W.diary||[]).slice().reverse();
+  for(const d of list){
+    const pack=document.createElement("div");
+    pack.className="pack open"+(d.day===W.day?"":" mute");
+    const hd=document.createElement("div");hd.className="ph";
+    hd.innerHTML="<b>СУТКИ "+d.day+"</b><s>"+(d.day===W.day?"сегодня":"уже написано")+"</s>";
+    pack.appendChild(hd);
+    const host=document.createElement("div");
+    host.className="card side";host.style.width="min(680px,100%)";
+    renderCardBack(host,d,()=>tableRender(),d.day!==W.day);
+    pack.appendChild(host);
+    wrap.appendChild(pack);
+  }
+  if(!list.length)tableRow(box,"dim","","страниц пока нет: тронь дневник на столе");
+  box.appendChild(wrap);
+}
+/* ── наряд на доске ──
+   Стоит среди прочих предложений и ничем себя не выделяет: это работа, а не
+   приключение. Ни слова про «испытание себя» — только срок и оплата. */
+function winBlock(){
+  const W=winAll();
+  if(W&&!W.done){
+    $body.appendChild(el("div","sec","ЗИМОВКА · СМЕНА ИДЁТ"));
+    $body.appendChild(el("div","row","<div class='nm'><b>"+W.pname+"</b><s>сутки "+
+      W.day+" из "+W.days+" · вернуться туда нельзя и не нужно: баржа придёт сама</s></div>"));
+    return;
+  }
+  const o=winOfferHere();
+  if(!o)return;
+  $body.appendChild(el("div","sec","ЗИМОВКА · МЕСЯЦ ОДНОМУ"));
+  const r=el("div","row","<div class='nm'><b>"+o.pname+" · "+WIN_DAYS+" суток</b><s>"+
+    "держать баланс, вести дневник, дождаться баржи · "+WIN_PAY+" кр по возвращении · "+
+    "уйти раньше нельзя</s></div>");
+  const b=el("button","act sm","ПОДПИСАТЬ");
+  b.onclick=()=>{winTake(o);};
+  r.appendChild(b);$body.appendChild(r);
+}
+
+/* ══════════════ зимовка: кадр ══════════════
+   Одна комната, снятая прямо. Мерило — человек: всё остальное меряется от его
+   роста, и потому койка, стол и панель сразу читаются койкой, столом и
+   панелью, а не прямоугольниками.
+
+   ПОРЯДОК СЛОЁВ, от дальнего к ближнему: стена с рёбрами — окно и то, что за
+   ним — трубы — панель — печь — стол — койка — человек — воздух комнаты
+   (пыль, виньетка). Каждый следующий темнее и резче предыдущего, и весь свет
+   в кадре из трёх источников, которые игрок сам и включает: лампа (СВЕТ),
+   печь (ТЕПЛО) и окно, которое не выключается никогда.
+
+   СВЕТ ЗДЕСЬ — ЭТО ПРИБОР. Убавил лампу ради антенны — и комнату видно хуже,
+   по-настоящему. Баланс не пишется цифрой в углу, он виден глазами.
+
+   ЧТО КЭШИРУЕТСЯ. Стена, трубы, панель, стол и койка не двигаются: они
+   кладутся в `screenLayer` с ключом по уровням света и тепла, и перерисовка
+   идёт только когда игрок дёрнул рычаг (правило «что не движется, красится
+   один раз»). Каждый кадр рисуются лишь люди, стрелки, пыль и окно. */
+const WIN_C={
+  wall:[38,44,48], wall2:[28,33,37], rib:[52,60,64],
+  panel:[30,36,40], panelHi:[74,84,88],
+  warm:[255,168,88], lamp:[255,224,168], cold:[128,168,204],
+  metal:[96,104,108], dark:[14,17,20]
+};
+function wcol(a,k){const m=k==null?1:k;
+  return "rgb("+Math.round(a[0]*m)+","+Math.round(a[1]*m)+","+Math.round(a[2]*m)+")";}
+function wrgba(a,al){return "rgba("+a[0]+","+a[1]+","+a[2]+","+al.toFixed(3)+")";}
+
+/* ── геометрия комнаты ──
+   Всё меряется ростом человека. Потолок — полторы его высоты: станционная
+   каюта низкая, и первый счёт с потолком в две с половиной головы читался
+   ангаром, а не жильём. Одна геометрия на картинку и на попадание пальцем:
+   `winGeom()` зовут и `drawWinter`, и `winHit` — иначе они разъедутся. */
+function winGeom(){
+  /* Комната занимает КАДР, а не его нижнюю половину: первый счёт вёл потолок
+     от роста человека вниз, и сверху оставалась треть пустой черноты. Считаем
+     наоборот — от кадра к человеку. Низ отдан пульту и пэдам, они и есть
+     нижняя кромка комнаты. */
+  const cei=H*0.085, flo=H*0.715;
+  const man=(flo-cei)/1.55;
+  return {
+    man,flo,cei,
+    panel:{x:W*0.045,y:cei+man*0.20,w:W*0.215,h:man*0.70},
+    stove:{x:W*0.065,y:flo-man*0.44,w:W*0.115,h:man*0.44},
+    table:{x:W*0.375,y:flo-man*0.42,w:W*0.235,h:man*0.42},
+    bunk :{x:W*0.635,y:flo-man*0.34,w:W*0.215,h:man*0.34},
+    win  :{x:W*0.630,y:cei+man*0.16,w:W*0.205,h:man*0.58},
+    pipes:{x:W*0.285,y:cei,w:W*0.042,h:flo-cei},
+    cal  :{x:W*0.880,y:cei+man*0.22,w:W*0.085,h:man*0.44},
+    manx :W*0.360
+  };
+}
+function winLevers(g){
+  const L=[],n=WIN_USE.length;
+  const pad=g.panel.w*0.045, w=(g.panel.w-pad*2)/n;
+  for(let i=0;i<n;i++)
+    L.push({k:WIN_USE[i],x:g.panel.x+pad+w*i,y:g.panel.y+g.panel.h*0.20,
+            w:w,h:g.panel.h*0.76});
+  return L;
+}
+/* ── свет ──
+   Три источника, и все три игрок сам и включает: лампа над столом, печь слева,
+   окно справа. `winLit` отвечает, сколько света приходит в точку — по нему
+   красится КАЖДОЕ тело в комнате. Без этого комната была ровной серой стеной с
+   предметами того же серого, и убавленный свет ничего не менял на вид. */
+function winLit(g,W0,x,y){
+  const li=W0.pw.light|0, he=W0.pw.heat|0;
+  let k=0.10;                                        /* дежурное свечение приборов */
+  if(li>0){
+    const lx=g.table.x+g.table.w*0.5, ly=g.cei+g.man*0.10;
+    const d=Math.hypot((x-lx)/(g.man*2.2),(y-ly)/(g.man*1.8));
+    k+=Math.min(1,li/3)*0.62/(1+d*d);
+  }
+  if(he>0){
+    const sx=g.stove.x+g.stove.w*0.5, sy=g.stove.y+g.stove.h*0.4;
+    const d=Math.hypot((x-sx)/(g.man*1.5),(y-sy)/(g.man*1.3));
+    k+=Math.min(1,he/3)*0.34/(1+d*d);
+  }
+  {
+    const wx=g.win.x+g.win.w*0.5, wy=g.win.y+g.win.h*0.6;
+    const d=Math.hypot((x-wx)/(g.man*2.0),(y-wy)/(g.man*1.6));
+    k+=0.26/(1+d*d);
+  }
+  return clamp(k,0.08,1.25);
+}
+/* тон света в точке: слева тёплый от печи, справа холодный от окна. Ровно
+   этот раскол и делает комнату комнатой, а не серым коробом */
+function winTone(g,W0,x,y){
+  const he=W0.pw.heat|0;
+  const warm=he>0?Math.min(1,he/3)*clamp(1-(x-g.stove.x)/(g.man*2.4),0,1):0;
+  const cold=clamp(1-Math.abs(x-(g.win.x+g.win.w*0.5))/(g.man*2.6),0,1);
+  return {warm,cold};
+}
+/* тело + обвод + касание: один приём на все предметы комнаты (правило
+   «много кусков — одно тело»). Обвод идёт со стороны ближнего света. */
+function winBody(c,g,W0,r,base,opt){
+  const o=opt||{};
+  const cx=r.x+r.w*0.5, cy=r.y+r.h*0.5;
+  const k=winLit(g,W0,cx,cy), t=winTone(g,W0,cx,cy);
+  let col=pcMix(base,WIN_C.warm,t.warm*0.22);
+  col=pcMix(col,WIN_C.cold,t.cold*0.16);
+  c.fillStyle=wcol(col,k);
+  c.fillRect(r.x,r.y,r.w,r.h);
+  if(o.edge!==false){
+    const fromLeft=cx<g.win.x;
+    c.fillStyle=wrgba(fromLeft?WIN_C.warm:WIN_C.cold,0.14+k*0.16);
+    if(fromLeft)c.fillRect(r.x+r.w-Math.max(1,r.w*0.03),r.y,Math.max(1,r.w*0.03),r.h);
+    else c.fillRect(r.x,r.y,Math.max(1,r.w*0.03),r.h);
+    c.fillStyle=wrgba([255,255,255],0.10+k*0.12);
+    c.fillRect(r.x,r.y,r.w,Math.max(1,H*0.0022));
+  }
+  if(o.floor){
+    c.fillStyle="rgba(0,0,0,.34)";
+    c.fillRect(r.x-r.w*0.02,g.flo,r.w*1.04,Math.max(2,H*0.012));
+  }
+}
+/* ── статика комнаты ──
+   Ключ слоя — только то, что её меняет: кадр, свет и тепло. Всё остальное
+   (стрелки, пыль, метель, человек) кладётся поверх каждый кадр. */
+function winRoomLayer(W0){
+  const li=W0.pw.light|0, he=W0.pw.heat|0;
+  return screenLayer("winroom"+li+"_"+he,(c)=>{
+    const g=winGeom();
+    /* ── 1. стена: панели с рёбрами, освещённые неровно ── */
+    for(let x=0;x<W;x+=W*0.055){
+      const k=winLit(g,W0,x+W*0.027,g.cei+g.man*0.7);
+      const t=winTone(g,W0,x,g.cei+g.man*0.7);
+      let col=pcMix(WIN_C.wall,WIN_C.warm,t.warm*0.20);
+      col=pcMix(col,WIN_C.cold,t.cold*0.14);
+      c.fillStyle=wcol(col,k);
+      c.fillRect(x,g.cei,W*0.055+1,g.flo-g.cei);
+      c.fillStyle=wrgba(WIN_C.dark,0.34);
+      c.fillRect(x,g.cei,Math.max(1,W*0.0025),g.flo-g.cei);
+      c.fillStyle=wrgba([255,255,255],0.05+k*0.06);
+      c.fillRect(x+Math.max(1,W*0.0025),g.cei,Math.max(1,W*0.002),g.flo-g.cei);
+    }
+    /* шов на высоте плеча — он и даёт стене масштаб */
+    c.fillStyle=wrgba(WIN_C.dark,0.30);
+    c.fillRect(0,g.flo-g.man*0.98,W,Math.max(2,H*0.005));
+    c.fillStyle=wrgba([255,255,255],0.06);
+    c.fillRect(0,g.flo-g.man*0.98+Math.max(2,H*0.005),W,Math.max(1,H*0.002));
+
+    /* ── 2. потолок: короб и труба поперёк ── */
+    c.fillStyle=wcol(WIN_C.dark,1);
+    c.fillRect(0,0,W,g.cei);
+    c.fillStyle=wcol(WIN_C.wall2,0.55);
+    c.fillRect(0,g.cei-H*0.022,W,H*0.022);
+    c.fillStyle=wrgba([255,255,255],0.07);
+    c.fillRect(0,g.cei-H*0.022,W,Math.max(1,H*0.002));
+    /* короб вентиляции: он и гудит за кадром */
+    c.fillStyle=wcol(WIN_C.metal,0.34);
+    c.fillRect(0,g.cei-H*0.070,W,H*0.046);
+    for(let x=0;x<W;x+=W*0.05){
+      c.fillStyle=wrgba(WIN_C.dark,0.35);
+      c.fillRect(x,g.cei-H*0.070,Math.max(2,W*0.004),H*0.046);
+    }
+    c.fillStyle=wrgba([255,255,255],0.06);
+    c.fillRect(0,g.cei-H*0.070,W,Math.max(1,H*0.002));
+
+    /* ── 3. пол ── */
+    c.fillStyle=wcol(WIN_C.wall2,0.42);
+    c.fillRect(0,g.flo,W,H-g.flo);
+    for(let x=0;x<W;x+=W*0.022){
+      const k=winLit(g,W0,x,g.flo+H*0.03);
+      c.fillStyle=wrgba(WIN_C.metal,0.10+k*0.10);
+      c.fillRect(x,g.flo+H*0.008,Math.max(1,W*0.009),H-g.flo);
+    }
+    c.fillStyle=wrgba(WIN_C.dark,0.45);
+    c.fillRect(0,g.flo,W,Math.max(2,H*0.005));
+
+    /* ── 4. трубы: их и слушают ── */
+    {
+      const p=g.pipes;
+      for(let i=0;i<3;i++){
+        const x=p.x+i*p.w*0.36, w=p.w*0.26;
+        const k=winLit(g,W0,x+w*0.5,p.y+p.h*0.5);
+        c.fillStyle=wcol(WIN_C.metal,k*0.9);
+        c.fillRect(x,p.y,w,p.h);
+        c.fillStyle=wrgba([255,255,255],0.10+k*0.14);
+        c.fillRect(x,p.y,Math.max(1,w*0.26),p.h);
+        c.fillStyle=wrgba(WIN_C.dark,0.34);
+        c.fillRect(x+w-Math.max(1,w*0.22),p.y,Math.max(1,w*0.22),p.h);
+        for(let y=p.y+p.h*0.14;y<p.y+p.h;y+=p.h*0.28){
+          c.fillStyle=wcol(WIN_C.rib,k);
+          c.fillRect(x-w*0.16,y,w*1.32,Math.max(2,H*0.008));
+          c.fillStyle=wrgba([255,255,255],0.10);
+          c.fillRect(x-w*0.16,y,w*1.32,Math.max(1,H*0.002));
+        }
+      }
+    }
+
+    /* ── 5. панель: плита, и на ней рамка под каждый прибор ── */
+    {
+      const p=g.panel;
+      winBody(c,g,W0,p,WIN_C.panel,{});
+      c.strokeStyle=wrgba(WIN_C.panelHi,0.5);
+      c.lineWidth=Math.max(1,H*0.002);
+      c.strokeRect(p.x+.5,p.y+.5,p.w-1,p.h-1);
+      for(const lv of winLevers(g)){
+        c.fillStyle=wrgba(WIN_C.dark,0.34);
+        c.fillRect(lv.x+lv.w*0.06,lv.y,lv.w*0.88,lv.h);
+        c.strokeStyle=wrgba(WIN_C.panelHi,0.30);
+        c.strokeRect(lv.x+lv.w*0.06+.5,lv.y+.5,lv.w*0.88-1,lv.h-1);
+      }
+      for(const dx of [0.025,0.975])for(const dy of [0.04,0.96]){
+        c.fillStyle=wrgba(WIN_C.panelHi,0.55);
+        c.beginPath();c.arc(p.x+p.w*dx,p.y+p.h*dy,Math.max(1.3,H*0.0035),0,TAU);c.fill();
+      }
+    }
+
+    /* ── 6. печь: короб, дверца, ножки ── */
+    {
+      const s=g.stove;
+      winBody(c,g,W0,s,WIN_C.metal,{floor:true});
+      c.fillStyle=wrgba(WIN_C.dark,0.55);
+      c.fillRect(s.x+s.w*0.14,s.y+s.h*0.16,s.w*0.72,s.h*0.42);
+      c.fillStyle=wcol(WIN_C.rib,0.8);
+      c.fillRect(s.x,s.y+s.h*0.66,s.w,Math.max(3,s.h*0.06));
+      c.fillRect(s.x+s.w*0.06,s.y+s.h*0.90,Math.max(3,s.w*0.08),s.h*0.10);
+      c.fillRect(s.x+s.w*0.86,s.y+s.h*0.90,Math.max(3,s.w*0.08),s.h*0.10);
+      /* труба от печи вверх — тепло куда-то уходит, и это видно */
+      c.fillStyle=wcol(WIN_C.metal,winLit(g,W0,s.x+s.w*0.5,s.y-g.man*0.3));
+      c.fillRect(s.x+s.w*0.42,g.cei,Math.max(3,s.w*0.16),s.y-g.cei);
+    }
+
+    /* ── 7. стол: столешница с кромкой и две ноги ── */
+    {
+      const t=g.table;
+      const top={x:t.x,y:t.y,w:t.w,h:Math.max(4,t.h*0.13)};
+      winBody(c,g,W0,top,WIN_C.metal,{});
+      const k=winLit(g,W0,t.x+t.w*0.5,t.y);
+      c.fillStyle=wrgba(WIN_C.dark,0.5);
+      c.fillRect(t.x,t.y+top.h,t.w,Math.max(2,t.h*0.05));
+      c.fillStyle=wcol(WIN_C.wall2,k*0.8);
+      c.fillRect(t.x+t.w*0.08,t.y+top.h,Math.max(3,t.w*0.035),g.flo-t.y-top.h);
+      c.fillRect(t.x+t.w*0.88,t.y+top.h,Math.max(3,t.w*0.035),g.flo-t.y-top.h);
+      c.fillStyle="rgba(0,0,0,.30)";
+      c.fillRect(t.x,g.flo,t.w,Math.max(2,H*0.010));
+    }
+
+    /* ── 8. койка: рама, матрас, одеяло складкой, подушка ── */
+    {
+      const b=g.bunk;
+      const k=winLit(g,W0,b.x+b.w*0.5,b.y);
+      c.fillStyle=wcol(WIN_C.metal,k*0.75);
+      c.fillRect(b.x,b.y,b.w,Math.max(4,b.h*0.10));
+      /* матрас */
+      c.fillStyle=wcol([72,74,72],k*0.9);
+      c.fillRect(b.x+b.w*0.03,b.y-b.h*0.13,b.w*0.94,b.h*0.15);
+      /* одеяло: единственное тёплое пятно в комнате, и складка на нём */
+      c.fillStyle=wcol([96,72,54],k);
+      c.beginPath();
+      c.moveTo(b.x+b.w*0.06,b.y-b.h*0.11);
+      c.lineTo(b.x+b.w*0.80,b.y-b.h*0.20);
+      c.lineTo(b.x+b.w*0.80,b.y-b.h*0.02);
+      c.lineTo(b.x+b.w*0.06,b.y+b.h*0.02);
+      c.closePath();c.fill();
+      c.fillStyle=wrgba(WIN_C.dark,0.30);
+      c.beginPath();
+      c.moveTo(b.x+b.w*0.34,b.y-b.h*0.16);
+      c.lineTo(b.x+b.w*0.40,b.y-b.h*0.17);
+      c.lineTo(b.x+b.w*0.38,b.y+b.h*0.01);
+      c.lineTo(b.x+b.w*0.32,b.y+b.h*0.02);
+      c.closePath();c.fill();
+      /* подушка */
+      c.fillStyle=wcol([158,152,140],k);
+      c.beginPath();
+      c.ellipse(b.x+b.w*0.87,b.y-b.h*0.18,b.w*0.11,b.h*0.09,-0.12,0,TAU);c.fill();
+      c.fillStyle=wrgba([255,255,255],0.10+k*0.10);
+      c.fillRect(b.x,b.y,b.w,Math.max(1,H*0.002));
+      /* спинка и ножки */
+      c.fillStyle=wcol(WIN_C.rib,k*0.8);
+      c.fillRect(b.x+b.w*0.96,b.y-b.h*0.62,Math.max(3,b.w*0.04),b.h*0.62);
+      c.fillRect(b.x+b.w*0.05,b.y+b.h*0.10,Math.max(3,b.w*0.03),g.flo-b.y-b.h*0.10);
+      c.fillRect(b.x+b.w*0.90,b.y+b.h*0.10,Math.max(3,b.w*0.03),g.flo-b.y-b.h*0.10);
+      c.fillStyle="rgba(0,0,0,.32)";
+      c.fillRect(b.x,g.flo,b.w,Math.max(2,H*0.011));
+    }
+  });
+}
+/* ── кадр ── */
+function drawWinter(){
+  const W0=winAll();if(!W0)return;
+  const g=winGeom();
+  const li=W0.pw.light|0, he=W0.pw.heat|0;
+  ctx.fillStyle=wcol(WIN_C.dark,1);ctx.fillRect(0,0,W,H);
+  ctx.drawImage(winRoomLayer(W0),0,0,W,H);
+
+  /* ── окно ── */
+  {
+    const w=g.win;
+    const sys=getSystem(W0.sx,W0.sy);
+    const p=(sys.planets||[])[W0.pi]||(sys.planets||[])[0];
+    const sk=(p&&p.T)?p.T:TYPES.ice;
+    const gr=ctx.createLinearGradient(0,w.y,0,w.y+w.h);
+    gr.addColorStop(0,wcol(sk.sky[1],0.60));
+    gr.addColorStop(1,wcol(sk.sky[0],0.46));
+    ctx.fillStyle=gr;ctx.fillRect(w.x,w.y,w.w,w.h);
+    ctx.save();ctx.beginPath();ctx.rect(w.x,w.y,w.w,w.h);ctx.clip();
+    /* дальняя гряда: у окна должен быть горизонт, иначе это лампа, а не окно */
+    ctx.fillStyle="rgba(16,24,34,.78)";
+    ctx.beginPath();ctx.moveTo(w.x,w.y+w.h);
+    for(let x=0;x<=w.w;x+=4)
+      ctx.lineTo(w.x+x,w.y+w.h*0.66-Math.sin(x*0.013+W0.sx)*w.h*0.09);
+    ctx.lineTo(w.x+w.w,w.y+w.h);ctx.closePath();ctx.fill();
+    /* метель: единственное, что за стеклом движется */
+    const rs=rng(hashi(W0.sx,W0.sy,0x5011));
+    ctx.strokeStyle="rgba(214,228,242,.34)";ctx.lineWidth=1;
+    ctx.beginPath();
+    for(let i=0;i<44;i++){
+      const sx=w.x+rs()*w.w, sy=w.y+((rs()*w.h+G.t*(0.5+rs()*1.5))%w.h);
+      ctx.moveTo(sx,sy);ctx.lineTo(sx-w.h*0.07,sy+w.h*0.13);
+    }
+    ctx.stroke();
+    /* иней по нижнему краю стекла */
+    /* иней: не частокол по низу стекла (первый счёт рисовал ровные белые
+       столбики), а мягкая корка от кромки внутрь */
+    const ig=ctx.createLinearGradient(0,w.y+w.h,0,w.y+w.h*0.72);
+    ig.addColorStop(0,"rgba(226,238,248,.26)");
+    ig.addColorStop(1,"rgba(226,238,248,0)");
+    ctx.fillStyle=ig;ctx.fillRect(w.x,w.y+w.h*0.72,w.w,w.h*0.28);
+    ctx.fillStyle="rgba(232,242,250,.20)";
+    for(let i=0;i<40;i++){
+      const fx=w.x+rs()*w.w, fy=w.y+w.h-rs()*rs()*w.h*0.30;
+      ctx.fillRect(fx,fy,w.w*0.012,w.w*0.012);
+    }
+    ctx.restore();
+    /* рама */
+    ctx.strokeStyle=wcol(WIN_C.metal,winLit(g,W0,w.x+w.w*0.5,w.y+w.h*0.5));
+    ctx.lineWidth=Math.max(4,H*0.010);
+    ctx.strokeRect(w.x,w.y,w.w,w.h);
+    ctx.lineWidth=Math.max(2,H*0.005);
+    ctx.beginPath();
+    ctx.moveTo(w.x+w.w*0.5,w.y);ctx.lineTo(w.x+w.w*0.5,w.y+w.h);
+    ctx.moveTo(w.x,w.y+w.h*0.5);ctx.lineTo(w.x+w.w,w.y+w.h*0.5);
+    ctx.stroke();
+    ctx.strokeStyle=wrgba([255,255,255],0.14);
+    ctx.lineWidth=Math.max(1,H*0.002);
+    ctx.strokeRect(w.x-Math.max(2,H*0.005),w.y-Math.max(2,H*0.005),
+      w.w+Math.max(4,H*0.010),w.h+Math.max(4,H*0.010));
+    /* холодный свет ложится на пол трапецией */
+    const fg=ctx.createLinearGradient(0,w.y+w.h,0,g.flo+H*0.05);
+    fg.addColorStop(0,wrgba(WIN_C.cold,0.13));
+    fg.addColorStop(1,wrgba(WIN_C.cold,0));
+    ctx.fillStyle=fg;
+    ctx.beginPath();
+    ctx.moveTo(w.x,w.y+w.h);ctx.lineTo(w.x+w.w,w.y+w.h);
+    ctx.lineTo(w.x+w.w*1.45,g.flo+H*0.05);ctx.lineTo(w.x-w.w*0.45,g.flo+H*0.05);
+    ctx.closePath();ctx.fill();
+  }
+
+  /* ── печь горит ── */
+  if(he>0){
+    const s=g.stove, k=Math.min(1,he/3);
+    const fl=0.72+Math.sin(G.t*0.09)*0.16+Math.sin(G.t*0.23)*0.07;
+    ctx.fillStyle=wrgba(WIN_C.warm,(0.42+0.45*k)*fl);
+    ctx.fillRect(s.x+s.w*0.14,s.y+s.h*0.16,s.w*0.72,s.h*0.42);
+    const gg=ctx.createRadialGradient(s.x+s.w*0.5,s.y+s.h*0.36,0,
+                                      s.x+s.w*0.5,s.y+s.h*0.36,g.man*2.0);
+    gg.addColorStop(0,wrgba(WIN_C.warm,0.26*k*fl));
+    gg.addColorStop(1,wrgba(WIN_C.warm,0));
+    ctx.fillStyle=gg;
+    ctx.fillRect(0,g.cei,g.man*3.4,H-g.cei);
+    /* пятно на полу под дверцей */
+    ctx.fillStyle=wrgba(WIN_C.warm,0.14*k*fl);
+    ctx.beginPath();
+    ctx.ellipse(s.x+s.w*0.5,g.flo+H*0.02,s.w*1.5,H*0.022,0,0,TAU);ctx.fill();
+  }
+
+  /* ── лампа над столом ── */
+  if(li>0){
+    const t=g.table, k=Math.min(1,li/3);
+    const lx=t.x+t.w*0.5, ly=g.cei+g.man*0.10;
+    ctx.strokeStyle=wcol(WIN_C.metal,0.55);
+    ctx.lineWidth=Math.max(1,H*0.002);
+    ctx.beginPath();ctx.moveTo(lx,g.cei);ctx.lineTo(lx,ly);ctx.stroke();
+    ctx.fillStyle=wcol(WIN_C.metal,0.75);
+    ctx.beginPath();
+    ctx.moveTo(lx-g.man*0.13,ly+g.man*0.07);
+    ctx.lineTo(lx+g.man*0.13,ly+g.man*0.07);
+    ctx.lineTo(lx+g.man*0.045,ly);ctx.lineTo(lx-g.man*0.045,ly);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle=wrgba(WIN_C.lamp,0.55+0.35*k);
+    ctx.beginPath();
+    ctx.ellipse(lx,ly+g.man*0.07,g.man*0.115,g.man*0.022,0,0,TAU);ctx.fill();
+    /* конус: он и есть весь свет комнаты */
+    const cg=ctx.createLinearGradient(0,ly+g.man*0.07,0,g.flo);
+    cg.addColorStop(0,wrgba(WIN_C.lamp,0.16*k));
+    cg.addColorStop(1,wrgba(WIN_C.lamp,0));
+    ctx.fillStyle=cg;
+    ctx.beginPath();
+    ctx.moveTo(lx-g.man*0.13,ly+g.man*0.07);
+    ctx.lineTo(lx+g.man*0.13,ly+g.man*0.07);
+    ctx.lineTo(lx+g.man*1.05,g.flo);ctx.lineTo(lx-g.man*1.05,g.flo);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle=wrgba(WIN_C.lamp,0.10*k);
+    ctx.beginPath();
+    ctx.ellipse(lx,g.flo+H*0.012,g.man*0.95,H*0.020,0,0,TAU);ctx.fill();
+  }
+
+  /* ── что лежит на столе ── */
+  {
+    const t=g.table, k=winLit(g,W0,t.x+t.w*0.5,t.y);
+    const bw=t.w*0.30,bh=t.h*0.20;
+    const bx=t.x+t.w*0.14,by=t.y-bh*0.75;
+    ctx.save();ctx.translate(bx,by);ctx.rotate(-0.045);
+    ctx.fillStyle="rgba(0,0,0,.30)";
+    ctx.fillRect(2,bh*0.72,bw,bh*0.16);
+    ctx.fillStyle=wcol([228,218,196],Math.min(1.05,k*1.05));
+    ctx.fillRect(0,0,bw,bh);
+    ctx.fillStyle=wrgba([140,128,104],0.55);
+    ctx.fillRect(bw*0.49,0,Math.max(1,bw*0.012),bh);
+    for(let i=1;i<4;i++){
+      ctx.fillStyle=wrgba([120,110,92],0.42);
+      ctx.fillRect(bw*0.06,bh*i/4,bw*0.36,Math.max(1,bh*0.035));
+      ctx.fillRect(bw*0.56,bh*i/4,bw*0.36,Math.max(1,bh*0.035));
+    }
+    ctx.restore();
+    /* кружка: тело, ручка, тень. Мелочь, но по ней читается, что тут живут */
+    const mx=t.x+t.w*0.70, my=t.y-t.h*0.02;
+    ctx.fillStyle="rgba(0,0,0,.28)";
+    ctx.beginPath();ctx.ellipse(mx+t.w*0.03,my+2,t.w*0.05,t.h*0.02,0,0,TAU);ctx.fill();
+    ctx.fillStyle=wcol([176,180,182],k);
+    ctx.fillRect(mx,my-t.h*0.14,t.w*0.055,t.h*0.14);
+    ctx.strokeStyle=wcol([176,180,182],k);
+    ctx.lineWidth=Math.max(1.4,t.w*0.012);
+    ctx.beginPath();
+    ctx.arc(mx+t.w*0.055,my-t.h*0.085,t.w*0.022,-1.2,1.2);ctx.stroke();
+    ctx.fillStyle=wrgba([255,255,255],0.16+k*0.14);
+    ctx.fillRect(mx,my-t.h*0.14,Math.max(1,t.w*0.012),t.h*0.14);
+  }
+
+  /* ── приборы на панели ── */
+  {
+    const p=g.panel, L=winLevers(g), cap=winCap(W0), dr=winDraw_(W0);
+    const pk=winLit(g,W0,p.x+p.w*0.5,p.y+p.h*0.5);
+    for(const lv of L){
+      const val=W0.pw[lv.k]|0, low=val<WIN_MIN[lv.k];
+      const cx=lv.x+lv.w*0.5;
+      /* циферблат */
+      const cy=lv.y+lv.h*0.20, rr=Math.min(lv.w*0.33,lv.h*0.17);
+      ctx.fillStyle=wcol(WIN_C.dark,1);
+      ctx.beginPath();ctx.arc(cx,cy,rr,0,TAU);ctx.fill();
+      ctx.strokeStyle=wrgba(WIN_C.panelHi,0.35+pk*0.3);
+      ctx.lineWidth=Math.max(1,H*0.0016);
+      ctx.beginPath();ctx.arc(cx,cy,rr,0,TAU);ctx.stroke();
+      for(let i=0;i<=3;i++){
+        const ta=-Math.PI*0.75+(i/3)*Math.PI*1.5;
+        ctx.strokeStyle=wrgba([190,204,212],0.35);
+        ctx.beginPath();
+        ctx.moveTo(cx+Math.cos(ta)*rr*0.72,cy+Math.sin(ta)*rr*0.72);
+        ctx.lineTo(cx+Math.cos(ta)*rr*0.92,cy+Math.sin(ta)*rr*0.92);ctx.stroke();
+      }
+      const a=-Math.PI*0.75+(val/3)*Math.PI*1.5;
+      ctx.strokeStyle=low?"rgba(255,120,96,.95)":wrgba(WIN_C.lamp,0.92);
+      ctx.lineWidth=Math.max(1.4,H*0.0026);
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+Math.cos(a)*rr*0.76,cy+Math.sin(a)*rr*0.76);ctx.stroke();
+      ctx.fillStyle=wrgba(WIN_C.panelHi,0.8);
+      ctx.beginPath();ctx.arc(cx,cy,Math.max(1.2,rr*0.12),0,TAU);ctx.fill();
+      /* рычаг под циферблатом: положение видно наклоном, а не числом */
+      const by=lv.y+lv.h*0.86, bh=lv.h*0.34;
+      ctx.fillStyle=wrgba(WIN_C.dark,0.55);
+      ctx.fillRect(cx-lv.w*0.24,by-Math.max(2,H*0.004),lv.w*0.48,Math.max(3,H*0.007));
+      const ta2=(val/3-0.5)*1.15;
+      const hx=cx+Math.sin(ta2)*bh*0.92, hy=by-Math.cos(ta2)*bh*0.92;
+      ctx.strokeStyle=wcol(WIN_C.metal,0.4+pk*0.7);
+      ctx.lineWidth=Math.max(2.4,H*0.0055);
+      ctx.beginPath();ctx.moveTo(cx,by);ctx.lineTo(hx,hy);ctx.stroke();
+      ctx.fillStyle=low?"rgb(206,98,80)":wcol(WIN_C.panelHi,0.5+pk*0.7);
+      ctx.beginPath();ctx.arc(hx,hy,Math.max(2.6,H*0.0068),0,TAU);ctx.fill();
+      ctx.fillStyle=wrgba([255,255,255],0.22);
+      ctx.beginPath();ctx.arc(hx-1,hy-1,Math.max(1,H*0.0022),0,TAU);ctx.fill();
+      /* подпись */
+      ctx.fillStyle=wrgba([196,208,216],0.55+pk*0.35);
+      ctx.font=Math.max(7,Math.round(H*0.0135))+"px ui-monospace,monospace";
+      ctx.textAlign="center";
+      ctx.fillText(WIN_RU[lv.k],cx,lv.y+lv.h*0.44);
+    }
+    /* реактор: полоса на всю ширину панели, делений ровно cap */
+    const bx=p.x+p.w*0.07, by=p.y+p.h*0.055, bw=p.w*0.86, bh=p.h*0.075;
+    ctx.fillStyle=wcol(WIN_C.dark,1);ctx.fillRect(bx,by,bw,bh);
+    ctx.strokeStyle=wrgba(WIN_C.panelHi,0.3);
+    ctx.lineWidth=1;ctx.strokeRect(bx+.5,by+.5,bw-1,bh-1);
+    const cw=bw/Math.max(1,cap);
+    for(let i=0;i<cap;i++){
+      ctx.fillStyle=i<dr?(dr>cap?"rgb(224,112,88)":wrgba(WIN_C.lamp,0.88))
+                        :wrgba([120,140,150],0.30);
+      ctx.fillRect(bx+cw*i+1.5,by+1.5,cw-3,bh-3);
+    }
+    ctx.fillStyle=wrgba([196,208,216],0.55+pk*0.3);
+    ctx.font=Math.max(7,Math.round(H*0.0125))+"px ui-monospace,monospace";
+    ctx.textAlign="left";
+    ctx.fillText(dr>cap?"РЕАКТОР · ПЕРЕГРУЗКА":"РЕАКТОР",bx,by-H*0.006);
+    ctx.textAlign="left";
+  }
+
+  /* ── календарь на стене ──
+     Единственная вещь, которая на зимовке обязана быть. Дни зачёркнуты рукой,
+     а не отпечатаны: интерфейс обратного отсчёта не ведёт (правило файла), а
+     зимовщик ведёт — это его дело, и оно висит на стене. */
+  {
+    const cl=g.cal, k=winLit(g,W0,cl.x+cl.w*0.5,cl.y+cl.h*0.5);
+    ctx.fillStyle="rgba(0,0,0,.30)";
+    ctx.fillRect(cl.x+2,cl.y+3,cl.w,cl.h);
+    ctx.fillStyle=wcol([224,216,196],Math.min(1.05,k*1.0));
+    ctx.fillRect(cl.x,cl.y,cl.w,cl.h);
+    ctx.fillStyle=wrgba([140,128,104],0.5);
+    ctx.fillRect(cl.x,cl.y+cl.h*0.14,cl.w,Math.max(1,H*0.0016));
+    /* сетка тридцати клеток, шесть на пять */
+    const c0=cl.x+cl.w*0.10, r0=cl.y+cl.h*0.24;
+    const cw=cl.w*0.80/6, ch=cl.h*0.66/5;
+    ctx.strokeStyle=wrgba([90,80,64],0.55);
+    ctx.lineWidth=Math.max(1,H*0.0022);
+    for(let i=0;i<30;i++){
+      const cx=c0+(i%6)*cw, cy=r0+Math.floor(i/6)*ch;
+      if(i<W0.day-1){
+        /* зачёркнуто крестом, и крест каждый раз чуть другой: рука */
+        const j=hashi(i,W0.sx,0x0C11)/2147483647;
+        ctx.beginPath();
+        ctx.moveTo(cx+cw*(0.12+j*0.1),cy+ch*0.16);
+        ctx.lineTo(cx+cw*(0.80-j*0.1),cy+ch*0.80);
+        ctx.moveTo(cx+cw*(0.80-j*0.1),cy+ch*0.16);
+        ctx.lineTo(cx+cw*(0.12+j*0.1),cy+ch*0.80);
+        ctx.stroke();
+      }else if(i===W0.day-1){
+        ctx.fillStyle=wrgba([190,90,60],0.55);
+        ctx.beginPath();ctx.arc(cx+cw*0.46,cy+ch*0.48,Math.min(cw,ch)*0.22,0,TAU);ctx.fill();
+      }else{
+        ctx.fillStyle=wrgba([120,110,92],0.30);
+        ctx.fillRect(cx+cw*0.40,cy+ch*0.42,Math.max(1.4,cw*0.14),Math.max(1.4,ch*0.14));
+      }
+    }
+    /* гвоздь */
+    ctx.fillStyle=wcol(WIN_C.metal,k);
+    ctx.beginPath();ctx.arc(cl.x+cl.w*0.5,cl.y-H*0.006,Math.max(1.6,H*0.004),0,TAU);ctx.fill();
+  }
+
+  /* ── лампочки поломок: их трогают, чтобы починить ── */
+  {
+    const p=g.panel, F=(W0.faults||[]);
+    for(let i=0;i<F.length;i++){
+      const x=p.x+p.w+H*0.026+i*H*0.038, y=p.y+p.h*0.14;
+      const bl=0.5+Math.sin(G.t*0.14+i*2)*0.38;
+      const rr=Math.max(3.4,H*0.0092);
+      const gg=ctx.createRadialGradient(x,y,0,x,y,rr*3.4);
+      gg.addColorStop(0,"rgba(255,120,84,"+(0.34*bl).toFixed(2)+")");
+      gg.addColorStop(1,"rgba(255,120,84,0)");
+      ctx.fillStyle=gg;ctx.beginPath();ctx.arc(x,y,rr*3.4,0,TAU);ctx.fill();
+      ctx.fillStyle=wcol(WIN_C.metal,0.5);
+      ctx.beginPath();ctx.arc(x,y,rr*1.35,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(255,128,92,"+(0.45+bl*0.5).toFixed(2)+")";
+      ctx.beginPath();ctx.arc(x,y,rr,0,TAU);ctx.fill();
+    }
+  }
+
+  /* ── зимовщик ──
+     Мерило кадра. Тёмный силуэт с тёплым обводом со стороны печи: без обвода
+     он совпадал по светлоте со стеной и пропадал, а мерило пропадать не может. */
+  {
+    const m=g.man, x=g.manx, y=g.flo;
+    const k=winLit(g,W0,x,y-m*0.6);
+    const body=pcMix([34,38,42],WIN_C.warm,0.10);
+    ctx.fillStyle="rgba(0,0,0,.36)";
+    ctx.beginPath();ctx.ellipse(x,y+m*0.012,m*0.17,m*0.028,0,0,TAU);ctx.fill();
+    /* обвод: тот же силуэт, сдвинутый к печи и залитый тёплым */
+    const off=m*0.013;
+    const draw=(dx,dy,col)=>{
+      ctx.fillStyle=col;ctx.strokeStyle=col;
+      ctx.save();ctx.translate(dx,dy);
+      ctx.fillRect(x-m*0.062,y-m*0.44,m*0.048,m*0.44);
+      ctx.fillRect(x+m*0.016,y-m*0.44,m*0.048,m*0.44);
+      /* ватник: плечи шире бёдер, но не вдвое — первый счёт давал квадрат */
+      ctx.beginPath();
+      ctx.moveTo(x-m*0.098,y-m*0.85);ctx.lineTo(x+m*0.098,y-m*0.85);
+      ctx.lineTo(x+m*0.082,y-m*0.42);ctx.lineTo(x-m*0.082,y-m*0.42);
+      ctx.closePath();ctx.fill();
+      ctx.lineWidth=Math.max(2,m*0.05);
+      ctx.beginPath();
+      ctx.moveTo(x-m*0.088,y-m*0.79);ctx.lineTo(x-m*0.155,y-m*0.60);ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x+m*0.088,y-m*0.79);ctx.lineTo(x+m*0.118,y-m*0.55);ctx.stroke();
+      /* шея: без неё голова — шар на ящике */
+      ctx.fillRect(x-m*0.022,y-m*0.885,m*0.044,m*0.045);
+      ctx.beginPath();ctx.arc(x,y-m*0.925,m*0.062,0,TAU);ctx.fill();
+      ctx.restore();
+    };
+    draw(-off,-off*0.5,wrgba(WIN_C.warm,0.16+k*0.14));
+    draw(0,0,wcol(body,0.55+k*0.5));
+    /* воротник ватника: одна светлая полоса, и фигура перестаёт быть плоской */
+    ctx.fillStyle=wrgba([255,255,255],0.10+k*0.10);
+    ctx.fillRect(x-m*0.098,y-m*0.85,m*0.196,Math.max(1.5,m*0.016));
+  }
+
+  /* ── воздух комнаты ── */
+  {
+    if(li>0){
+      const t=g.table, lx=t.x+t.w*0.5, ly=g.cei+g.man*0.20;
+      const rs=rng(hashi(1,2,0x0D05));
+      ctx.fillStyle="rgba(255,238,206,.20)";
+      for(let i=0;i<30;i++){
+        const px=lx+(rs()-.5)*g.man*1.7;
+        const py=ly+((rs()*g.man*1.3+G.t*(0.04+rs()*0.10))%(g.man*1.3));
+        ctx.fillRect(px,py,1.3,1.3);
+      }
+    }
+    const vg=ctx.createRadialGradient(W*.5,H*.52,Math.min(W,H)*.26,W*.5,H*.52,Math.max(W,H)*.70);
+    vg.addColorStop(0,"rgba(0,0,0,0)");
+    vg.addColorStop(1,"rgba(0,0,0,"+(0.44+(3-li)*0.07).toFixed(2)+")");
+    ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+  }
+
+  /* ── сутки: одна строка, и никакого обратного отсчёта ── */
+  {
+    ctx.fillStyle="rgba(196,208,216,.70)";
+    ctx.font=Math.max(9,Math.round(H*0.018))+"px ui-monospace,monospace";
+    ctx.textAlign="center";
+    ctx.fillText("СУТКИ "+W0.day+" ИЗ "+W0.days+" · "+W0.pname.toUpperCase(),W*.5,H*0.055);
+    const F=(W0.faults||[]);
+    if(F.length){
+      ctx.fillStyle="rgba(255,140,110,.72)";
+      ctx.font=Math.max(8,Math.round(H*0.0145))+"px ui-monospace,monospace";
+      ctx.fillText(F.map(f=>(WIN_FAULT_BY[f.k]||{}).ru||f.k).join(" · "),W*.5,H*0.078);
+    }
+    ctx.textAlign="left";
+  }
+}
+/* ── руки ──
+   Одна геометрия на кадр и на попадание: winGeom() зовётся и там, и тут. */
+function winHit(mx,my){
+  const W0=winAll();if(!W0)return null;
+  const g=winGeom();
+  const inR=(r)=>mx>=r.x&&mx<=r.x+r.w&&my>=r.y&&my<=r.y+r.h;
+  /* лампочки поломок: их и трогают, чтобы починить. Стоят выше рычагов в
+     списке проверок, потому что лежат вплотную к краю панели */
+  const F=(W0.faults||[]);
+  for(let i=0;i<F.length;i++){
+    const x=g.panel.x+g.panel.w+H*0.018+i*H*0.030, y=g.panel.y+g.panel.h*0.10;
+    if(Math.hypot(mx-x,my-y)<Math.max(14,H*0.024))return {k:"fix",id:F[i].k};
+  }
+  for(const lv of winLevers(g))if(inR(lv))return {k:"lever",id:lv.k};
+  if(inR(g.panel))return {k:"panel"};
+  if(inR(g.pipes)||(mx<g.pipes.x+g.pipes.w*3&&mx>g.pipes.x-g.pipes.w&&my<g.flo))return {k:"wall"};
+  if(inR(g.table)||(mx>g.table.x&&mx<g.table.x+g.table.w&&my>g.table.y-g.man*0.4&&my<g.table.y+g.table.h))
+    return {k:"diary"};
+  if(inR(g.bunk))return {k:"bunk"};
+  return null;
+}
+function winTap(mx,my){
+  const W0=winAll();if(!W0)return false;
+  const h=winHit(mx,my);
+  if(!h)return false;
+  if(h.k==="lever"){
+    const v=(W0.pw[h.id]|0);
+    W0.pw[h.id]=(v+1)%4;
+    sfx("ui",{f:420,to:300,d:.05,v:.16});
+    return true;
+  }
+  if(h.k==="fix"){winFix(h.id);return true;}
+  if(h.k==="wall"){winWall();return true;}
+  if(h.k==="diary"){
+    const d=winDiaryToday();
+    if(!d)say("Сегодня день ушёл на починку. Писать нечего.",180);
+    else tableToggle(true,"diary");
+    return true;
+  }
+  if(h.k==="bunk"){winShift();return true;}
+  return true;
+}
+function updateWinter(dt){
+  const W0=winAll();if(!W0){G.mode="system";return;}
+  /* ДЕЙСТВИЕ — сдать смену, то же, что лечь на койку. По фронту, а не по
+     удержанию: иначе зажатая клавиша прогоняет месяц за секунду */
+  if(actEdge)winShift();
+  const F=(W0.faults||[]);
+  G.prompt=F.length
+    ?("ДЕЙСТВИЕ — СДАТЬ СМЕНУ · ЛАМПОЧКА НА ПАНЕЛИ — ТРОНЬТЕ, ЧТОБЫ ПОЧИНИТЬ")
+    :"ДЕЙСТВИЕ — СДАТЬ СМЕНУ";
 }
 
 </script>

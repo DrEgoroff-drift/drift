@@ -7,6 +7,44 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.176.0 — the wintering: a month alone, and the light is an instrument (M197)
+
+A contract off the board unlike any other in the game: not fetch, not kill, not find — **stand it
+out**. A month on a far station, alone. Hold the power balance, keep a diary, listen to the wall,
+wait for the barge. `winter` is a mode of its own with its own frame.
+
+**It is one room, on purpose.** The temptation was a station with compartments to walk between,
+but a wintering is about solitude and routine, and solitude *is* one room you do not leave for a
+month. Everything else lives in the instruments on the panel and the sound behind the wall: the
+station around you exists, it simply is not visible, and it is larger for that.
+
+**The balance is a choice, not arithmetic.** The reactor gives less every week — ice, wear — and
+there are four consumers, all of them needed. By the end of the month you are switching off
+something living: heat, air, light or antenna. The game never says which is right. Turn the lamp
+down for the antenna and **the room is genuinely harder to see**: the balance is not a number in a
+corner, it is what you are looking at. Three light sources, all of them yours to set — the lamp
+over the table, the stove, and the window that never switches off.
+
+**The diary is the postcard's blanks** (`25h`). Not thrift: a winterer writes in forms *because*
+there is nobody to write to and nothing to say, and a form is what is left when the words run out.
+A diary page is built exactly like a postcard nobody will ever send.
+
+**A calendar hangs on the wall with the days crossed off by hand.** The interface keeps no
+countdown — counting the days is the winterer's business, not the interface's — so the counting is
+a thing on the wall instead.
+
+Faults arrive off schedule and each one costs the reactor a unit until it is fixed. Fixing one eats
+the whole day: no diary that evening, which is an honest price — a day holds one piece of work,
+not a list. The wall talks: iron early in the month, and by the end almost words. There is nothing
+supernatural about it and never will be; the explanation is always there, you have just been
+listening longer.
+
+The pay is small and the record book is full — several entries, including the ones you would rather
+it did not make: how many days you were cold and did not report it.
+
+**Still open:** the room wants another art pass. The figure reads as a coat rather than a person,
+the berth under the window is a plank with a pillow, and the stove's foot is lost in the vignette.
+
 ## 0.175.0 — the pennant: a probe you launch and are meant to forget (M196)
 
 An automatic probe is assembled in the lab and launched at a star no hull will ever reach. Then

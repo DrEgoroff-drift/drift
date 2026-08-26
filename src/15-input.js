@@ -214,6 +214,8 @@ function navAction(){
   if(G.mode==="scoop"){exitScoop("Уход на орбиту");return;}
   if(G.mode==="base"){if(G.base.menu)G.base.menu=false;else exitBase();return;}
   if(G.mode==="homein"){exitHomeIn();return;}          /* из дома — во двор (M170) */
+  /* с зимовки не уходят: в этом она и есть. Баржа придёт сама (M197) */
+  if(G.mode==="winter"){say("Уйти нельзя. Баржа придёт за вами.",160);return;}
   if(G.mode==="system"){G.mode="map";G.sel.x=G.sx;G.sel.y=G.sy;}
   else if(G.mode==="map")G.mode="system";
   else say("Навигация недоступна\nвне свободного полёта");
@@ -291,6 +293,12 @@ function mouseWalkAt(clientX,clientY){
 }
 
 function tap(sxp,syp){
+  /* зимовка (M197): в комнате трогают вещи — рычаг, дневник, трубы, койку.
+     Экранные координаты, а не мировые: комната не ездит */
+  if(G.mode==="winter"&&typeof winTap==="function"){
+    const rc=cvs.getBoundingClientRect();
+    if(winTap((sxp-rc.left)*W/rc.width,(syp-rc.top)*H/rc.height))return;
+  }
   if(G.mode==="map"){
     const cell=Math.min(W,H)/9.2,R=5;
     let best=null,bd=1e9;
