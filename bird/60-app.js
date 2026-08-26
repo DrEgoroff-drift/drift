@@ -4,7 +4,7 @@
 
    ОШИБКИ ВИДНО. Не собравшийся шейдер обязан сказать об этом на экране: без
    этого поиск опечатки в GLSL — чёрный прямоугольник без единой зацепки. */
-const CAM={az:0.62,el:0.16,dist:4.35,tgt:[0,1.16,0],azV:0,elV:0,distT:4.35};
+const CAM={az:0.62,el:0.10,dist:3.95,tgt:[0,1.08,0],azV:0,elV:0,distT:3.95};
 const MESH={};
 let birdRAF=0,birdT0=0,birdFPS=60;
 
@@ -26,7 +26,7 @@ function birdBoot(){
   MESH.parts =glMesh(buildParts());
   MESH.beads =glMesh(buildBeads());
   const IA=[["r0",4,0],["r1",4,4],["r2",4,8],["icol",3,12],["ipar",4,15]];
-  MESH.coat  =glMesh(buildFeather(5,7));
+  MESH.coat  =glMesh(buildFeather(7,8));
   glInstances(MESH.coat,layoutCoat(),IA,FEA_STRIDE);
   MESH.plumes=glMesh(buildFeather(7,11));
   glInstances(MESH.plumes,layoutPlumes(),IA,FEA_STRIDE);
@@ -51,6 +51,7 @@ function birdBoot(){
   birdSize();
   addEventListener("resize",birdSize);
   birdHands(cv);
+  uiInit();
   birdT0=performance.now();
   birdRAF=requestAnimationFrame(birdFrame);
 }
@@ -91,6 +92,7 @@ function birdHands(cv){
     if(!down)return;
     const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;
     moved+=Math.abs(dx)+Math.abs(dy);
+    if(moved>10)uiTouched();
     CAM.azV=-dx*0.09;CAM.elV=dy*0.06;
   });
   const up=e=>{
@@ -105,6 +107,7 @@ function birdHands(cv){
   },{passive:false});
 }
 function birdPoke(){
+  uiTouched();
   /* пока — общая реакция: птица вскидывается и распушается. Зоны появятся
      вместе с хохлом и крылом. */
   POSE.puff=0.035;POSE.ruffle=0.06;

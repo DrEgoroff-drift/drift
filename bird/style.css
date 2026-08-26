@@ -15,3 +15,33 @@ html,body{height:100%;background:var(--void);color:var(--text);font-family:var(-
 #boom{display:none;position:fixed;inset:auto 16px 16px 16px;max-height:60%;overflow:auto;
   padding:12px 14px;border:1px solid rgba(255,107,87,.5);background:rgba(8,13,22,.92);
   color:#ffb4a6;font-size:11px;line-height:1.5;white-space:pre-wrap}
+
+/* ── подписи и кнопки ──
+   Мелко, у кромки, полупрозрачно: страница про птицу, а не про интерфейс. */
+#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;font-size:10px;
+  letter-spacing:.14em;color:var(--dim);pointer-events:none;text-transform:uppercase;
+  transition:opacity 1.2s;opacity:.85}
+#hint.gone{opacity:0}
+#bar{position:fixed;right:14px;bottom:14px;display:flex;gap:8px;align-items:center}
+.btn{-webkit-appearance:none;font:inherit;font-size:10px;letter-spacing:.14em;cursor:pointer;
+  padding:9px 13px;min-height:34px;color:var(--phos);text-decoration:none;
+  background:rgba(8,13,22,.66);border:1px solid rgba(127,230,216,.28);border-radius:3px;
+  backdrop-filter:blur(10px);transition:border-color .2s,color .2s}
+.btn:hover{border-color:rgba(127,230,216,.7)}
+.btn:active{color:#fff}
+.btn.ghost{color:var(--dim);border-color:rgba(109,132,148,.3);padding:9px 12px}
+#about{position:fixed;right:14px;bottom:60px;width:min(340px,calc(100vw - 28px));
+  display:none;padding:14px 16px;font-size:11px;line-height:1.62;color:var(--text);
+  background:rgba(8,13,22,.86);border:1px solid rgba(127,230,216,.18);border-radius:4px;
+  backdrop-filter:blur(14px)}
+#about.on{display:block}
+#about p+p{margin-top:9px}
+#about b{color:var(--amber);font-weight:400}
+#about a{color:var(--phos)}
+/* установленное окно: только птица */
+body.pet #tag,body.pet #hint,body.pet #bar,body.pet #about{display:none}
+@media (max-width:760px){
+  #tag{left:12px;bottom:52px}
+  #hint{bottom:52px;font-size:9px;width:100%;text-align:center}
+  #bar{left:12px;right:12px;bottom:12px;justify-content:center}
+}

@@ -57,10 +57,12 @@ float shadowAt(vec3 wp,float NoL){
   vec3 q=lp.xyz/lp.w*0.5+0.5;
   if(q.z>1.0||q.x<0.0||q.x>1.0||q.y<0.0||q.y>1.0)return 1.0;
   float bias=uShadowTexel*(0.9+2.6*sqrt(1.0-NoL*NoL)/max(NoL,0.15));
+  /* шире, чем один тексель: тень между перьями должна быть мягкой, иначе
+     оперение выглядит вырезанным из бумаги и наклеенным */
   float s=0.0;
   for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++)
-    s+=texture(uShadow,vec3(q.xy+vec2(float(x),float(y))*uShadowTexel,q.z-bias));
-  return s/9.0;
+    s+=texture(uShadow,vec3(q.xy+vec2(float(x),float(y))*uShadowTexel*1.7,q.z-bias));
+  return mix(0.16,1.0,s/9.0);
 }
 
 /* Материал: альбедо, шероховатость, «пропускание» (перо и клюв просвечивают
@@ -97,6 +99,8 @@ vec3 lightPoint(vec3 wp,vec3 N,vec3 alb,float rough,float trans,vec3 tang,float 
   col+=uRimCol*pow(1.0-NoV,3.5)*(0.35+0.65*trans);
   /* полусфера: небо сверху, пол снизу */
   col+=alb*mix(uGndCol,uSkyCol,N.y*0.5+0.5);
+  /* тёплый отсвет снизу: под птицей ветка и стол, и они не чёрные */
+  col+=alb*uKeyCol*0.030*clamp(-N.y,0.0,1.0);
   return col;
 }`;
 
@@ -134,16 +138,33 @@ void main(){
        красится оно приглушённым своим цветом, а не цветом оперения */
     alb=vC*0.30;rough=0.72;trans=0.06;
   }else if(m<1.5){
-    /* клюв: рог. Гладкий, с продольными бороздками у основания и с блеском,
-       который и делает его роговым, а не пластмассовым */
-    float gr=smoothstep(0.6,0.0,abs(vTA.x-1.0))*0.0;
-    rough=0.20+0.16*abs(sin(vP.z*90.0))*smoothstep(0.30,0.10,abs(vP.z-0.18));
-    trans=0.45;alb=vC;
+    /* Клюв — рог, а не пластмасса: вдоль верха идёт киль, к концу рог темнеет
+       и уплотняется, у основания видны следы роста — поперечные бороздки.
+       Без них клюв читается леденцом: гладкая жёлтая масса и один блик. */
+    alb=vC;
+    float ridge=smoothstep(0.050,0.0,abs(vP.x))*clamp(N.y,0.0,1.0);
+    float tipk=smoothstep(1.66,1.54,vP.y)*smoothstep(0.30,0.40,vP.z);
+    alb*=mix(1.0,0.58,tipk);
+    alb*=0.94+0.12*ridge;
+    float grooves=sin(vP.y*54.0+vP.z*16.0)*0.5+0.5;
+    float bs=smoothstep(0.34,0.14,vP.z);
+    rough=0.26+0.20*grooves*bs+0.14*tipk;
+    trans=0.50*(1.0-tipk*0.55);
   }else if(m<2.5){
-    rough=0.06;trans=0.0;alb=vC*0.7;      /* глаз */
+    /* глаз: тёмный и мокрый. Кроме честного блика от ключа ему дан один
+       «поймай-свет» с постоянного направления — без него зрачок читается
+       дыркой, стоит ключу уйти за голову */
+    rough=0.06;trans=0.0;alb=vC*0.7;
+    float cl=pow(clamp(dot(normalize(N),normalize(vec3(-0.45,0.75,0.49))),0.0,1.0),120.0);
+    o=vec4(lightPoint(vP,N,alb,rough,trans,vec3(0.0,1.0,0.0),0.0)+vec3(2.6)*cl,1.0);
+    return;
   }else if(m<3.5){
     rough=0.88;trans=0.02;alb=vC;         /* дерево */
-    alb*=0.86+0.14*sin(vP.x*120.0);
+    /* кора: продольные волокна плюс крапина, иначе ветка — крашеная труба */
+    float ang=atan(vP.z+0.04,vP.y-0.305);
+    alb*=0.86+0.16*sin(ang*13.0+vP.x*2.1)*0.5+0.10*sin(ang*41.0+vP.x*7.0);
+    alb*=0.80+0.28*fract(sin(floor(vP.x*26.0)*12.9898+floor(ang*9.0)*4.1414)*43758.5453);
+    rough=0.92;
   }else if(m<4.5){
     float s=scales(vP);
     rough=0.48+0.22*s;trans=0.18;alb=vC*(0.82+0.30*s);
@@ -272,11 +293,11 @@ void main(){
      качают нормаль — иначе на движении получается муар. */
   /* частота бородок зависит от рода пера: на маховом длиной в полптицы
      редкие бородки читаются рёбрами жалюзи */
-  float bf=vKind>0.5?58.0:24.0;
+  float bf=vKind>0.5?92.0:58.0;
   float barb=sin((v*bf+abs(u)*9.0+vId*3.0)*3.14159);
   float barb2=sin((v*bf*2.4+abs(u)*21.0)*3.14159);
   vec3 side=normalize(cross(N,vT));
-  N=normalize(N+side*barb*0.055*sign(u)+vT*barb2*0.02);
+  N=normalize(N+side*barb*0.055*sign(u)+vT*barb2*0.022);
   /* стержень: светлее, глаже, чуть выпуклый */
   float rach=smoothstep(0.10,0.0,abs(u));
   N=normalize(N+side*sign(u)*rach*0.35);
@@ -293,10 +314,10 @@ void main(){
   float trans=mix(0.55,0.30,rach);
   if(vKind>2.5){                        /* хохол: к концу перо разогрето бусиной */
     alb+=uRimCol*0.0;
-    trans=0.75;
+    trans=0.42;
   }
   vec3 col=lightPoint(vP,N,alb,rough,trans,vT,0.75);
-  if(vKind>2.5)col+=vec3(0.10,0.42,0.50)*smoothstep(0.45,1.0,v)*0.55;
+  if(vKind>2.5)col+=vec3(0.06,0.26,0.32)*smoothstep(0.55,1.0,v)*0.40;
   o=vec4(col,1.0);
 }`;
 

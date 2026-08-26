@@ -5,12 +5,37 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070c">
 <title>Трепло — птица с корабля «Дрейф»</title>
-<meta name="description" content="Попугай из «Дрейфа» в объёме: настоящий трёхмерный свет, перья и повадки. Один файл, работает без интернета.">
+<meta name="description" content="Попугай из «Дрейфа» в объёме: настоящий трёхмерный свет, перья, повадки. Один файл, работает без интернета — заберите птицу себе.">
+<link rel="manifest" href="/treplo3d.webmanifest">
+<link rel="apple-touch-icon" href="/icons/parrot-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Трепло">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Трепло — птица с корабля «Дрейф»">
+<meta property="og:description" content="Заберите птицу себе: объёмный попугай в окне, живёт и без интернета.">
 <style>/*{{STYLE}}*/</style>
 </head>
 <body>
 <canvas id="cv"></canvas>
+
 <div id="tag"><b>Трепло</b>птица с корабля «Дрейф»</div>
+<div id="hint">потяните — обойдёте кругом · ткните — отзовётся</div>
+
+<div id="bar">
+  <button id="install" class="btn" style="display:none">УСТАНОВИТЬ</button>
+  <a id="grab" class="btn" href="#">ЗАБРАТЬ ФАЙЛОМ</a>
+  <button id="aboutBtn" class="btn ghost" aria-label="что это">?</button>
+</div>
+
+<div id="about">
+  <p><b>Трепло</b> — птица с борта из игры «Дрейф». В игре она сидит на пульте, повторяет
+  услышанное и понимает сказанное годы спустя. Здесь она просто живёт: её можно обойти,
+  потрогать и оставить себе.</p>
+  <p>Страница — один файл: ни сервера, ни библиотек, ни единой картинки снаружи. Скачайте
+  его — птица будет открываться двойным кликом и без интернета.</p>
+  <p><a href="/">про игру →</a></p>
+</div>
+
 <pre id="boom"></pre>
 <script>//{{SCRIPT}}
 </script>

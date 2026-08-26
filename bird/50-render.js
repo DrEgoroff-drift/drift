@@ -7,7 +7,7 @@
    Иначе бусины хохла и блик на клюве срезаются до тон-компрессии, и светиться
    им уже нечем. */
 
-const R={W:0,H:0,dpr:1,shadowSize:1536,bloomN:5,exposure:0.62};
+const R={W:0,H:0,dpr:1,shadowSize:1536,bloomN:5,exposure:0.55};
 
 function renderInit(){
   R.pSolid=glProg(VS_BODY,FS_SOLID,"твёрдое");
@@ -42,7 +42,7 @@ function renderSize(w,h){
 const LIGHT={
   key:vNorm([0.55,0.80,0.45]), keyCol:[2.05,1.72,1.30],
   fill:vNorm([-0.85,0.12,-0.25]), fillCol:[0.115,0.235,0.310],
-  rim:[0.045,0.135,0.175],
+  rim:[0.085,0.235,0.300],
   sky:[0.085,0.115,0.165], gnd:[0.022,0.024,0.032]
 };
 function lightVP(){

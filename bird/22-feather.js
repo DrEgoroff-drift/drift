@@ -14,15 +14,17 @@ function buildFeather(cols,rows){
   const P=[];
   /* кончик у контурного пера ЗАКРУГЛЁН, а не заострён: острые концы дают
      чешую, и первая сборка ушла именно в неё */
+  /* Лист, а не прямоугольник: самое широкое место — чуть ниже середины, к
+     концу опахало сходит плавно, и последняя четверть скругляется дугой.
+     Видно у пера всё равно только кончик, поэтому форма кончика и решает,
+     читается оперение перьями или кирпичной кладкой. */
   const wid=v=>{
-    const b=Math.pow(Math.sin(Math.pow(clamp(v,0,1),0.62)*Math.PI),0.42);
-    /* и ещё раз про кончик: он скругляется дугой на последней восьмой длины.
-       Без этого перо сходится в остриё, ряд читается чешуёй, а на силуэте
-       птица покрывается шипами */
-    const e=Math.max(0,(v-0.86)/0.14);
+    const x=clamp(v,0,1);
+    const b=Math.pow(Math.sin(Math.pow(x,0.55)*Math.PI),0.38);
+    const e=Math.max(0,(x-0.75)/0.25);
     return b*Math.sqrt(Math.max(0,1-e*e));
   };
-  const cup=(u,v)=>-0.16*u*u*wid(v)-0.10*v*v;      /* чашка опахала и выгиб стержня */
+  const cup=(u,v)=>-0.28*u*u*wid(v)-0.13*v*v;      /* чашка опахала и выгиб стержня */
   for(let i=0;i<rows;i++){
     const v=i/(rows-1),row=[];
     for(let j=0;j<cols;j++){
@@ -98,12 +100,12 @@ function layoutCoat(){
          больше всего, просто они там мелкие. Проверка идёт по РАССТОЯНИЮ до
          настоящих частей, а не по параметрам поверхности. */
       const base=bodyAt(t,a);
-      if(base[1]>1.50&&base[1]<1.80&&base[2]>0.19&&Math.abs(base[0])<0.12){COAT_STAT.cut++;continue;}   /* клюв */
-      if(base[1]>1.78&&base[1]<1.89&&base[2]>0.09&&Math.abs(base[0])<0.11){COAT_STAT.cut++;continue;} /* восковица */
+      if(base[1]>1.50&&base[1]<1.79&&base[2]>0.17&&Math.abs(base[0])<0.11){COAT_STAT.cut++;continue;}   /* клюв */
+      if(base[1]>1.77&&base[1]<1.87&&base[2]>0.075&&Math.abs(base[0])<0.10){COAT_STAT.cut++;continue;} /* восковица */
       let inEye=false;
       for(const sx of [-1,1]){
         const d=Math.hypot(base[0]-sx*0.248,base[1]-1.786,base[2]-0.100);
-        if(d<0.115){inEye=true;break;}
+        if(d<0.095){inEye=true;break;}
       }
       if(inEye){COAT_STAT.cut++;continue;}
       COAT_STAT.all++; if(base[1]>1.60)COAT_STAT.head++;
@@ -201,7 +203,7 @@ function layoutPlumes(){
     /* пёрышко хохла шире, чем кажется: узкая спица читается проволокой, а
        бусина на конце — лампочкой на проводе */
     feaPush(out,q.base,q.dir,normalAt(0.96,Math.PI*1.5),q.len,q.len*0.40,
-      vLerp(BIRD_C.amber,BIRD_C.blueL,0.42+Math.abs(q.k)*0.30),[0.9,1.1,1.0,3.0]);
+      vLerp(BIRD_C.blue,BIRD_C.blueL,0.30+Math.abs(q.k)*0.35),[0.9,1.1,1.0,3.0]);
   }
   return new Float32Array(out);
 }

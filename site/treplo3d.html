@@ -5,7 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#05070c">
 <title>Трепло — птица с корабля «Дрейф»</title>
-<meta name="description" content="Попугай из «Дрейфа» в объёме: настоящий трёхмерный свет, перья и повадки. Один файл, работает без интернета.">
+<meta name="description" content="Попугай из «Дрейфа» в объёме: настоящий трёхмерный свет, перья, повадки. Один файл, работает без интернета — заберите птицу себе.">
+<link rel="manifest" href="/treplo3d.webmanifest">
+<link rel="apple-touch-icon" href="/icons/parrot-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Трепло">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Трепло — птица с корабля «Дрейф»">
+<meta property="og:description" content="Заберите птицу себе: объёмный попугай в окне, живёт и без интернета.">
 <style>/* Птица занимает окно целиком: это не страница с птицей, это птица.
    Палитра — «Дрейфа», дословно. */
 :root{
@@ -23,11 +30,59 @@ html,body{height:100%;background:var(--void);color:var(--text);font-family:var(-
 #boom{display:none;position:fixed;inset:auto 16px 16px 16px;max-height:60%;overflow:auto;
   padding:12px 14px;border:1px solid rgba(255,107,87,.5);background:rgba(8,13,22,.92);
   color:#ffb4a6;font-size:11px;line-height:1.5;white-space:pre-wrap}
+
+/* ── подписи и кнопки ──
+   Мелко, у кромки, полупрозрачно: страница про птицу, а не про интерфейс. */
+#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;font-size:10px;
+  letter-spacing:.14em;color:var(--dim);pointer-events:none;text-transform:uppercase;
+  transition:opacity 1.2s;opacity:.85}
+#hint.gone{opacity:0}
+#bar{position:fixed;right:14px;bottom:14px;display:flex;gap:8px;align-items:center}
+.btn{-webkit-appearance:none;font:inherit;font-size:10px;letter-spacing:.14em;cursor:pointer;
+  padding:9px 13px;min-height:34px;color:var(--phos);text-decoration:none;
+  background:rgba(8,13,22,.66);border:1px solid rgba(127,230,216,.28);border-radius:3px;
+  backdrop-filter:blur(10px);transition:border-color .2s,color .2s}
+.btn:hover{border-color:rgba(127,230,216,.7)}
+.btn:active{color:#fff}
+.btn.ghost{color:var(--dim);border-color:rgba(109,132,148,.3);padding:9px 12px}
+#about{position:fixed;right:14px;bottom:60px;width:min(340px,calc(100vw - 28px));
+  display:none;padding:14px 16px;font-size:11px;line-height:1.62;color:var(--text);
+  background:rgba(8,13,22,.86);border:1px solid rgba(127,230,216,.18);border-radius:4px;
+  backdrop-filter:blur(14px)}
+#about.on{display:block}
+#about p+p{margin-top:9px}
+#about b{color:var(--amber);font-weight:400}
+#about a{color:var(--phos)}
+/* установленное окно: только птица */
+body.pet #tag,body.pet #hint,body.pet #bar,body.pet #about{display:none}
+@media (max-width:760px){
+  #tag{left:12px;bottom:52px}
+  #hint{bottom:52px;font-size:9px;width:100%;text-align:center}
+  #bar{left:12px;right:12px;bottom:12px;justify-content:center}
+}
 </style>
 </head>
 <body>
 <canvas id="cv"></canvas>
+
 <div id="tag"><b>Трепло</b>птица с корабля «Дрейф»</div>
+<div id="hint">потяните — обойдёте кругом · ткните — отзовётся</div>
+
+<div id="bar">
+  <button id="install" class="btn" style="display:none">УСТАНОВИТЬ</button>
+  <a id="grab" class="btn" href="#">ЗАБРАТЬ ФАЙЛОМ</a>
+  <button id="aboutBtn" class="btn ghost" aria-label="что это">?</button>
+</div>
+
+<div id="about">
+  <p><b>Трепло</b> — птица с борта из игры «Дрейф». В игре она сидит на пульте, повторяет
+  услышанное и понимает сказанное годы спустя. Здесь она просто живёт: её можно обойти,
+  потрогать и оставить себе.</p>
+  <p>Страница — один файл: ни сервера, ни библиотек, ни единой картинки снаружи. Скачайте
+  его — птица будет открываться двойным кликом и без интернета.</p>
+  <p><a href="/">про игру →</a></p>
+</div>
+
 <pre id="boom"></pre>
 <script>/* ===== 10-math.js ===== */
 /* ══════════════ математика ══════════════
@@ -488,7 +543,7 @@ const BIRD_C={
   foot:sRGB("#b4763f"), footD:sRGB("#6f431f"),
   glow:sRGB("#6ff0ff"),
   eye:sRGB("#120b16"),
-  perch:sRGB("#4a3a2c")
+  perch:sRGB("#3a2e24")
 };
 
 /* станция: [t, y, z, ширина, вынос вперёд, вынос назад]
@@ -496,17 +551,17 @@ const BIRD_C={
    бока сжаты. Первая сборка дала колобок — числа середины ужаты, а хребет
    удлинён, чтобы между лапами и головой было тело, а не мяч. */
 const BIRD_SPINE=[
-  [0.00, 0.58,-0.66, 0.08, 0.08, 0.08],
-  [0.10, 0.62,-0.52, 0.20, 0.19, 0.16],
-  [0.22, 0.69,-0.32, 0.31, 0.29, 0.25],
-  [0.35, 0.82,-0.15, 0.36, 0.38, 0.29],
-  [0.48, 1.01,-0.05, 0.37, 0.41, 0.30],
-  [0.60, 1.22,-0.02, 0.34, 0.36, 0.29],
-  [0.70, 1.41,-0.06, 0.27, 0.26, 0.26],
-  [0.78, 1.53,-0.06, 0.25, 0.24, 0.26],
-  [0.86, 1.66,-0.01, 0.29, 0.30, 0.29],
-  [0.94, 1.80, 0.04, 0.28, 0.28, 0.27],
-  [1.00, 1.93, 0.02, 0.08, 0.08, 0.08]
+  [0.00, 0.58,-0.66, 0.075,0.075,0.075],
+  [0.10, 0.62,-0.52, 0.175,0.170,0.145],
+  [0.22, 0.69,-0.32, 0.280,0.270,0.235],
+  [0.35, 0.82,-0.15, 0.345,0.375,0.285],
+  [0.48, 1.01,-0.05, 0.355,0.420,0.295],
+  [0.60, 1.22,-0.02, 0.320,0.350,0.285],
+  [0.70, 1.41,-0.06, 0.235,0.235,0.245],
+  [0.78, 1.53,-0.06, 0.215,0.215,0.240],
+  [0.86, 1.66,-0.01, 0.290,0.300,0.295],
+  [0.94, 1.80, 0.04, 0.300,0.300,0.290],
+  [1.00, 1.94, 0.02, 0.085,0.085,0.085]
 ];
 const SP_PTS=BIRD_SPINE.map(s=>s.slice(1));   /* для сплайна: без параметра t */
 
@@ -547,8 +602,8 @@ function bodyColor(t,a){
   /* подхвостье уходит в фиолетовый — единственное холодное пятно внизу */
   c=vLerp(c,BIRD_C.viol,smooth(.16,.02,t)*.7);
   /* щека: тёплое пятно под глазом, чтобы голова не была одноцветной */
-  const ch=smooth(.060,.010,Math.abs(t-.880))*smooth(.62,.90,side)*smooth(.34,.58,belly);
-  c=vLerp(c,BIRD_C.amber,clamp(ch,0,1)*.95);
+  const ch=smooth(.055,.012,Math.abs(t-.870))*smooth(.66,.92,side)*smooth(.46,.30,belly);
+  c=vLerp(c,BIRD_C.amber,clamp(ch,0,1));
   /* темя темнее лба: голова круглая, и без этого она читается шаром */
   c=vLerp(c,BIRD_C.blueD,smooth(.90,1.0,t)*.5*(1-belly*.4));
   return c;
@@ -640,31 +695,31 @@ function buildParts(){
      длинный клюв делает из попугая ворону. */
   const beakCol=(v)=>vLerp(C.beak,C.beakD,smooth(.10,.95,v));
   tube(M,[
-    {p:[0,1.790,0.150],r:[0.092,0.110]},
-    {p:[0,1.766,0.245],r:[0.090,0.106]},
-    {p:[0,1.728,0.328],r:[0.079,0.095]},
-    {p:[0,1.680,0.388],r:[0.060,0.078]},
-    {p:[0,1.624,0.418],r:[0.042,0.057]},
-    {p:[0,1.575,0.406],r:[0.026,0.038]},
-    {p:[0,1.548,0.374],r:[0.008,0.018]}
+    {p:[0,1.781,0.130],r:[0.090,0.107]},
+    {p:[0,1.757,0.220],r:[0.088,0.104]},
+    {p:[0,1.719,0.298],r:[0.077,0.092]},
+    {p:[0,1.672,0.355],r:[0.058,0.076]},
+    {p:[0,1.618,0.384],r:[0.041,0.055]},
+    {p:[0,1.569,0.372],r:[0.025,0.037]},
+    {p:[0,1.543,0.342],r:[0.007,0.018]}
   ],16,{m:1,t:1,up:[1,0,0],col:(v)=>beakCol(v)});
   /* подклювье: короче, тупее, шире — оно прячется в крючок надклювья */
   tube(M,[
-    {p:[0,1.668,0.150],r:[0.079,0.039]},
-    {p:[0,1.651,0.240],r:[0.075,0.039]},
-    {p:[0,1.634,0.312],r:[0.059,0.035]},
-    {p:[0,1.620,0.362],r:[0.033,0.026]},
-    {p:[0,1.615,0.386],r:[0.008,0.010]}
+    {p:[0,1.671,0.130],r:[0.077,0.038]},
+    {p:[0,1.654,0.213],r:[0.073,0.038]},
+    {p:[0,1.637,0.280],r:[0.057,0.034]},
+    {p:[0,1.623,0.327],r:[0.032,0.025]},
+    {p:[0,1.618,0.350],r:[0.007,0.010]}
   ],12,{m:1,t:1,up:[1,0,0],col:(v)=>vLerp(vLerp(C.beak,C.beakD,.50),C.beakD,smooth(.2,1,v))});
   /* восковица: валик у основания клюва, матовый и светлее рога */
   tube(M,[
-    {p:[0,1.848,0.075],r:[0.098,0.070]},
-    {p:[0,1.838,0.140],r:[0.104,0.078]},
-    {p:[0,1.816,0.192],r:[0.092,0.066]}
+    {p:[0,1.833,0.065],r:[0.090,0.064]},
+    {p:[0,1.824,0.121],r:[0.096,0.072]},
+    {p:[0,1.804,0.166],r:[0.085,0.061]}
   ],12,{m:5,t:1,up:[1,0,0],col:()=>vLerp(C.cream,C.creamD,.40)});
   /* ноздри: две тёмные точки на восковице — мелочь, которую замечают */
   for(const sx of [-1,1])
-    sphere(M,[sx*0.048,1.838,0.175],0.014,6,{m:2,t:1,col:()=>[0.02,0.02,0.03]});
+    sphere(M,[sx*0.044,1.824,0.152],0.013,6,{m:2,t:1,col:()=>[0.02,0.02,0.03]});
 
   /* ── глаза ──
      Тёмная бусина с голым кольцом вокруг. Кольцо — примета попугая не меньше
@@ -672,8 +727,10 @@ function buildParts(){
   for(const sx of [-1,1]){
     const p=[sx*0.248,1.786,0.100];
     const n=vNorm([sx*0.94,0.14,0.31]);
-    disc(M,vAdd(p,vMul(n,-0.015)),n,0.092,20,{m:5,t:1,ry:0.88,
-      col:(k)=>k?vLerp(C.creamD,C.blueD,.50):vLerp(C.cream,C.creamD,.35)});
+    /* голое кольцо: у попугая оно есть, но это узкий ободок, а не пол-головы.
+       0.092 давало оранжевое блюдце в треть черепа */
+    disc(M,vAdd(p,vMul(n,-0.012)),n,0.070,20,{m:5,t:1,ry:0.90,
+      col:(k)=>k?vLerp(C.creamD,C.blueD,.62):vLerp(C.cream,C.creamD,.20)});
     sphere(M,vAdd(p,vMul(n,0.010)),0.054,10,{m:2,t:1,col:()=>C.eye});
     disc(M,vAdd(p,vMul(n,0.048)),n,0.032,16,{m:2,t:1,
       col:(k)=>k?vLerp(C.amberD,C.eye,.40):C.eye});
@@ -682,26 +739,28 @@ function buildParts(){
   /* ── жёрдочка ──
      Ветка, а не палка: слегка гнётся, к концам тоньше, с одним сучком.
      t=-1 — эта геометрия не едет с птицей ни при каком её движении. */
+  /* волокно идёт ВДОЛЬ ветки, а не кольцами: кольца дают резьбу винта, и
+     первая сборка именно винт и нарисовала */
   const wood=(v,u)=>vLerp(C.perch,vLerp(C.perch,[0.02,0.02,0.03],.55),
-    .5+.5*Math.sin(u*TAU*3+v*9));
+    .5+.5*Math.sin(u*TAU*7+hashf(Math.round(u*64),3)*6.0));
   const per=[];
   for(let i=0;i<=10;i++){
     const k=i/10,x=mix(-1.45,1.45,k);
-    per.push({p:[x,0.33+Math.sin(k*Math.PI)*0.035,-0.04+Math.cos(k*3.1)*0.012],
+    per.push({p:[x,0.305+Math.sin(k*Math.PI)*0.035,-0.04+Math.cos(k*3.1)*0.012],
       r:[0.085+Math.sin(k*Math.PI)*0.022,0.082+Math.sin(k*Math.PI)*0.020],t:-1});
   }
   tube(M,per,14,{m:3,t:-1,up:[0,1,0],col:wood});
-  sphere(M,[0.42,0.38,-0.02],0.055,8,{m:3,t:-1,scale:[1.3,0.7,1.1],col:()=>vLerp(C.perch,[0.05,0.04,0.03],.4)});
+  sphere(M,[0.42,0.33,-0.02],0.055,8,{m:3,t:-1,scale:[1.3,0.7,1.1],col:()=>vLerp(C.perch,[0.05,0.04,0.03],.4)});
 
   /* ── лапы ──
      Цевка короткая: сидящий попугай почти лежит на ветке брюхом. */
   for(const sx of [-1,1]){
     const hipX=sx*0.135;
     tube(M,[
-      {p:[hipX,0.66,-0.06],r:[0.062,0.062],t:0.12},
-      {p:[hipX,0.56,-0.05],r:[0.050,0.050],t:0.06},
-      {p:[hipX*1.02,0.47,-0.035],r:[0.044,0.044],t:0},
-      {p:[hipX*1.04,0.418,-0.03],r:[0.042,0.042],t:0}
+      {p:[hipX,0.64,-0.06],r:[0.062,0.062],t:0.12},
+      {p:[hipX,0.53,-0.05],r:[0.050,0.050],t:0.06},
+      {p:[hipX*1.02,0.42,-0.035],r:[0.044,0.044],t:0},
+      {p:[hipX*1.04,0.368,-0.03],r:[0.042,0.042],t:0}
     ],10,{m:4,t:0,up:[1,0,0],col:(v)=>vLerp(C.foot,C.footD,smooth(0,1,v)*.7)});
     /* четыре пальца: два вперёд, два назад, все обнимают ветку */
     const toes=[[0.62,1],[0.30,1],[-0.55,-1],[-1.05,-1]];
@@ -710,16 +769,16 @@ function buildParts(){
       for(let i=0;i<n;i++){
         const k=i/(n-1);
         /* палец идёт по окружности ветки: от верха вниз по её боку */
-        const a=a0*k*1.35;
+        const a=a0*k*1.55;
         const rr=0.098+0.030*(1-k);
         path.push({p:[hipX*1.04+sx*0.010*k+dir*0.0,
-                      0.335+Math.cos(a)*rr,
+                      0.310+Math.cos(a)*rr,
                       -0.035+Math.sin(a)*rr],
-                   r:[0.030-0.014*k,0.028-0.013*k],t:0});
+                   r:[0.038-0.017*k,0.036-0.016*k],t:0});
       }
       tube(M,path,8,{m:4,t:0,up:[1,0,0],col:(v)=>vLerp(C.foot,C.footD,.25+v*.6)});
       /* коготь: маленький загнутый конус на конце пальца */
-      const e=path[n-1].p,a=a0*1.35;
+      const e=path[n-1].p,a=a0*1.55;
       const tip=[e[0],e[1]+Math.cos(a+0.5)*0.048,e[2]+Math.sin(a+0.5)*0.048];
       tube(M,[{p:e,r:[0.017,0.017],t:0},
               {p:vLerp(e,tip,.6),r:[0.011,0.011],t:0},
@@ -776,15 +835,17 @@ function buildFeather(cols,rows){
   const P=[];
   /* кончик у контурного пера ЗАКРУГЛЁН, а не заострён: острые концы дают
      чешую, и первая сборка ушла именно в неё */
+  /* Лист, а не прямоугольник: самое широкое место — чуть ниже середины, к
+     концу опахало сходит плавно, и последняя четверть скругляется дугой.
+     Видно у пера всё равно только кончик, поэтому форма кончика и решает,
+     читается оперение перьями или кирпичной кладкой. */
   const wid=v=>{
-    const b=Math.pow(Math.sin(Math.pow(clamp(v,0,1),0.62)*Math.PI),0.42);
-    /* и ещё раз про кончик: он скругляется дугой на последней восьмой длины.
-       Без этого перо сходится в остриё, ряд читается чешуёй, а на силуэте
-       птица покрывается шипами */
-    const e=Math.max(0,(v-0.86)/0.14);
+    const x=clamp(v,0,1);
+    const b=Math.pow(Math.sin(Math.pow(x,0.55)*Math.PI),0.38);
+    const e=Math.max(0,(x-0.75)/0.25);
     return b*Math.sqrt(Math.max(0,1-e*e));
   };
-  const cup=(u,v)=>-0.16*u*u*wid(v)-0.10*v*v;      /* чашка опахала и выгиб стержня */
+  const cup=(u,v)=>-0.28*u*u*wid(v)-0.13*v*v;      /* чашка опахала и выгиб стержня */
   for(let i=0;i<rows;i++){
     const v=i/(rows-1),row=[];
     for(let j=0;j<cols;j++){
@@ -860,12 +921,12 @@ function layoutCoat(){
          больше всего, просто они там мелкие. Проверка идёт по РАССТОЯНИЮ до
          настоящих частей, а не по параметрам поверхности. */
       const base=bodyAt(t,a);
-      if(base[1]>1.50&&base[1]<1.80&&base[2]>0.19&&Math.abs(base[0])<0.12){COAT_STAT.cut++;continue;}   /* клюв */
-      if(base[1]>1.78&&base[1]<1.89&&base[2]>0.09&&Math.abs(base[0])<0.11){COAT_STAT.cut++;continue;} /* восковица */
+      if(base[1]>1.50&&base[1]<1.79&&base[2]>0.17&&Math.abs(base[0])<0.11){COAT_STAT.cut++;continue;}   /* клюв */
+      if(base[1]>1.77&&base[1]<1.87&&base[2]>0.075&&Math.abs(base[0])<0.10){COAT_STAT.cut++;continue;} /* восковица */
       let inEye=false;
       for(const sx of [-1,1]){
         const d=Math.hypot(base[0]-sx*0.248,base[1]-1.786,base[2]-0.100);
-        if(d<0.115){inEye=true;break;}
+        if(d<0.095){inEye=true;break;}
       }
       if(inEye){COAT_STAT.cut++;continue;}
       COAT_STAT.all++; if(base[1]>1.60)COAT_STAT.head++;
@@ -963,7 +1024,7 @@ function layoutPlumes(){
     /* пёрышко хохла шире, чем кажется: узкая спица читается проволокой, а
        бусина на конце — лампочкой на проводе */
     feaPush(out,q.base,q.dir,normalAt(0.96,Math.PI*1.5),q.len,q.len*0.40,
-      vLerp(BIRD_C.amber,BIRD_C.blueL,0.42+Math.abs(q.k)*0.30),[0.9,1.1,1.0,3.0]);
+      vLerp(BIRD_C.blue,BIRD_C.blueL,0.30+Math.abs(q.k)*0.35),[0.9,1.1,1.0,3.0]);
   }
   return new Float32Array(out);
 }
@@ -1028,10 +1089,12 @@ float shadowAt(vec3 wp,float NoL){
   vec3 q=lp.xyz/lp.w*0.5+0.5;
   if(q.z>1.0||q.x<0.0||q.x>1.0||q.y<0.0||q.y>1.0)return 1.0;
   float bias=uShadowTexel*(0.9+2.6*sqrt(1.0-NoL*NoL)/max(NoL,0.15));
+  /* шире, чем один тексель: тень между перьями должна быть мягкой, иначе
+     оперение выглядит вырезанным из бумаги и наклеенным */
   float s=0.0;
   for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++)
-    s+=texture(uShadow,vec3(q.xy+vec2(float(x),float(y))*uShadowTexel,q.z-bias));
-  return s/9.0;
+    s+=texture(uShadow,vec3(q.xy+vec2(float(x),float(y))*uShadowTexel*1.7,q.z-bias));
+  return mix(0.16,1.0,s/9.0);
 }
 
 /* Материал: альбедо, шероховатость, «пропускание» (перо и клюв просвечивают
@@ -1068,6 +1131,8 @@ vec3 lightPoint(vec3 wp,vec3 N,vec3 alb,float rough,float trans,vec3 tang,float 
   col+=uRimCol*pow(1.0-NoV,3.5)*(0.35+0.65*trans);
   /* полусфера: небо сверху, пол снизу */
   col+=alb*mix(uGndCol,uSkyCol,N.y*0.5+0.5);
+  /* тёплый отсвет снизу: под птицей ветка и стол, и они не чёрные */
+  col+=alb*uKeyCol*0.030*clamp(-N.y,0.0,1.0);
   return col;
 }`;
 
@@ -1105,16 +1170,33 @@ void main(){
        красится оно приглушённым своим цветом, а не цветом оперения */
     alb=vC*0.30;rough=0.72;trans=0.06;
   }else if(m<1.5){
-    /* клюв: рог. Гладкий, с продольными бороздками у основания и с блеском,
-       который и делает его роговым, а не пластмассовым */
-    float gr=smoothstep(0.6,0.0,abs(vTA.x-1.0))*0.0;
-    rough=0.20+0.16*abs(sin(vP.z*90.0))*smoothstep(0.30,0.10,abs(vP.z-0.18));
-    trans=0.45;alb=vC;
+    /* Клюв — рог, а не пластмасса: вдоль верха идёт киль, к концу рог темнеет
+       и уплотняется, у основания видны следы роста — поперечные бороздки.
+       Без них клюв читается леденцом: гладкая жёлтая масса и один блик. */
+    alb=vC;
+    float ridge=smoothstep(0.050,0.0,abs(vP.x))*clamp(N.y,0.0,1.0);
+    float tipk=smoothstep(1.66,1.54,vP.y)*smoothstep(0.30,0.40,vP.z);
+    alb*=mix(1.0,0.58,tipk);
+    alb*=0.94+0.12*ridge;
+    float grooves=sin(vP.y*54.0+vP.z*16.0)*0.5+0.5;
+    float bs=smoothstep(0.34,0.14,vP.z);
+    rough=0.26+0.20*grooves*bs+0.14*tipk;
+    trans=0.50*(1.0-tipk*0.55);
   }else if(m<2.5){
-    rough=0.06;trans=0.0;alb=vC*0.7;      /* глаз */
+    /* глаз: тёмный и мокрый. Кроме честного блика от ключа ему дан один
+       «поймай-свет» с постоянного направления — без него зрачок читается
+       дыркой, стоит ключу уйти за голову */
+    rough=0.06;trans=0.0;alb=vC*0.7;
+    float cl=pow(clamp(dot(normalize(N),normalize(vec3(-0.45,0.75,0.49))),0.0,1.0),120.0);
+    o=vec4(lightPoint(vP,N,alb,rough,trans,vec3(0.0,1.0,0.0),0.0)+vec3(2.6)*cl,1.0);
+    return;
   }else if(m<3.5){
     rough=0.88;trans=0.02;alb=vC;         /* дерево */
-    alb*=0.86+0.14*sin(vP.x*120.0);
+    /* кора: продольные волокна плюс крапина, иначе ветка — крашеная труба */
+    float ang=atan(vP.z+0.04,vP.y-0.305);
+    alb*=0.86+0.16*sin(ang*13.0+vP.x*2.1)*0.5+0.10*sin(ang*41.0+vP.x*7.0);
+    alb*=0.80+0.28*fract(sin(floor(vP.x*26.0)*12.9898+floor(ang*9.0)*4.1414)*43758.5453);
+    rough=0.92;
   }else if(m<4.5){
     float s=scales(vP);
     rough=0.48+0.22*s;trans=0.18;alb=vC*(0.82+0.30*s);
@@ -1243,11 +1325,11 @@ void main(){
      качают нормаль — иначе на движении получается муар. */
   /* частота бородок зависит от рода пера: на маховом длиной в полптицы
      редкие бородки читаются рёбрами жалюзи */
-  float bf=vKind>0.5?58.0:24.0;
+  float bf=vKind>0.5?92.0:58.0;
   float barb=sin((v*bf+abs(u)*9.0+vId*3.0)*3.14159);
   float barb2=sin((v*bf*2.4+abs(u)*21.0)*3.14159);
   vec3 side=normalize(cross(N,vT));
-  N=normalize(N+side*barb*0.055*sign(u)+vT*barb2*0.02);
+  N=normalize(N+side*barb*0.055*sign(u)+vT*barb2*0.022);
   /* стержень: светлее, глаже, чуть выпуклый */
   float rach=smoothstep(0.10,0.0,abs(u));
   N=normalize(N+side*sign(u)*rach*0.35);
@@ -1264,10 +1346,10 @@ void main(){
   float trans=mix(0.55,0.30,rach);
   if(vKind>2.5){                        /* хохол: к концу перо разогрето бусиной */
     alb+=uRimCol*0.0;
-    trans=0.75;
+    trans=0.42;
   }
   vec3 col=lightPoint(vP,N,alb,rough,trans,vT,0.75);
-  if(vKind>2.5)col+=vec3(0.10,0.42,0.50)*smoothstep(0.45,1.0,v)*0.55;
+  if(vKind>2.5)col+=vec3(0.06,0.26,0.32)*smoothstep(0.55,1.0,v)*0.40;
   o=vec4(col,1.0);
 }`;
 
@@ -1394,7 +1476,7 @@ POSE.yawT=0;POSE.pitchT=0;POSE.rollT=0;POSE.nextLook=1.5;
    Иначе бусины хохла и блик на клюве срезаются до тон-компрессии, и светиться
    им уже нечем. */
 
-const R={W:0,H:0,dpr:1,shadowSize:1536,bloomN:5,exposure:0.62};
+const R={W:0,H:0,dpr:1,shadowSize:1536,bloomN:5,exposure:0.55};
 
 function renderInit(){
   R.pSolid=glProg(VS_BODY,FS_SOLID,"твёрдое");
@@ -1429,7 +1511,7 @@ function renderSize(w,h){
 const LIGHT={
   key:vNorm([0.55,0.80,0.45]), keyCol:[2.05,1.72,1.30],
   fill:vNorm([-0.85,0.12,-0.25]), fillCol:[0.115,0.235,0.310],
-  rim:[0.045,0.135,0.175],
+  rim:[0.085,0.235,0.300],
   sky:[0.085,0.115,0.165], gnd:[0.022,0.024,0.032]
 };
 function lightVP(){
@@ -1546,7 +1628,7 @@ function blit(src,dst,add){
 
    ОШИБКИ ВИДНО. Не собравшийся шейдер обязан сказать об этом на экране: без
    этого поиск опечатки в GLSL — чёрный прямоугольник без единой зацепки. */
-const CAM={az:0.62,el:0.16,dist:4.35,tgt:[0,1.16,0],azV:0,elV:0,distT:4.35};
+const CAM={az:0.62,el:0.10,dist:3.95,tgt:[0,1.08,0],azV:0,elV:0,distT:3.95};
 const MESH={};
 let birdRAF=0,birdT0=0,birdFPS=60;
 
@@ -1568,7 +1650,7 @@ function birdBoot(){
   MESH.parts =glMesh(buildParts());
   MESH.beads =glMesh(buildBeads());
   const IA=[["r0",4,0],["r1",4,4],["r2",4,8],["icol",3,12],["ipar",4,15]];
-  MESH.coat  =glMesh(buildFeather(5,7));
+  MESH.coat  =glMesh(buildFeather(7,8));
   glInstances(MESH.coat,layoutCoat(),IA,FEA_STRIDE);
   MESH.plumes=glMesh(buildFeather(7,11));
   glInstances(MESH.plumes,layoutPlumes(),IA,FEA_STRIDE);
@@ -1593,6 +1675,7 @@ function birdBoot(){
   birdSize();
   addEventListener("resize",birdSize);
   birdHands(cv);
+  uiInit();
   birdT0=performance.now();
   birdRAF=requestAnimationFrame(birdFrame);
 }
@@ -1633,6 +1716,7 @@ function birdHands(cv){
     if(!down)return;
     const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;
     moved+=Math.abs(dx)+Math.abs(dy);
+    if(moved>10)uiTouched();
     CAM.azV=-dx*0.09;CAM.elV=dy*0.06;
   });
   const up=e=>{
@@ -1647,6 +1731,7 @@ function birdHands(cv){
   },{passive:false});
 }
 function birdPoke(){
+  uiTouched();
   /* пока — общая реакция: птица вскидывается и распушается. Зоны появятся
      вместе с хохлом и крылом. */
   POSE.puff=0.035;POSE.ruffle=0.06;
@@ -1655,6 +1740,57 @@ function birdPoke(){
 }
 addEventListener("error",e=>fail("Сломалось: "+e.message+"\n"+(e.filename||"")+":"+(e.lineno||"")));
 if(document.readyState==="loading")addEventListener("DOMContentLoaded",birdBoot);else birdBoot();
+
+/* ===== 61-ui.js ===== */
+/* ══════════════ страница вокруг птицы ══════════════
+   Правило одно: птица главная. Всё остальное — мелкий шрифт у кромки, гаснет
+   само и не спорит с ней ни цветом, ни размером.
+
+   ТРИ ВЕЩИ, которые человек должен понять без объяснений: птицу можно
+   покрутить, её можно потрогать, её можно забрать себе. Первые две объясняет
+   одна строка, которая исчезает после первого прикосновения. Третью —
+   единственная кнопка. */
+const UI={hinted:false,idle:0,prompt:null};
+
+function uiInit(){
+  const Q=new URLSearchParams(location.search);
+  /* режим «только птица»: установленное окно, ни одной подписи */
+  if(Q.has("pet"))document.body.classList.add("pet");
+
+  /* установка. Кнопка появляется, только если браузер и вправду готов
+     поставить — обещать то, чего не будет, нельзя */
+  const btn=document.getElementById("install");
+  addEventListener("beforeinstallprompt",e=>{
+    e.preventDefault();UI.prompt=e;
+    if(btn)btn.style.display="";
+  });
+  if(btn)btn.addEventListener("click",async()=>{
+    if(!UI.prompt)return;
+    UI.prompt.prompt();
+    await UI.prompt.userChoice;
+    UI.prompt=null;btn.style.display="none";
+  });
+  /* «забрать файлом»: страница и есть птица, поэтому качается она сама */
+  const dl=document.getElementById("grab");
+  if(dl){
+    dl.href=location.pathname;
+    dl.setAttribute("download","треплo-3d.html");
+  }
+  const about=document.getElementById("aboutBtn"),box=document.getElementById("about");
+  if(about&&box)about.addEventListener("click",()=>box.classList.toggle("on"));
+
+  /* работает без сети: иначе «поставил на стол» — это ярлык на страницу,
+     которая однажды не откроется. На file:// работника нет и не надо. */
+  if("serviceWorker" in navigator&&location.protocol.startsWith("http"))
+    navigator.serviceWorker.register("/treplo3d-sw.js").catch(()=>{});
+}
+/* подсказка гаснет, как только птицу потрогали или покрутили */
+function uiTouched(){
+  if(UI.hinted)return;
+  UI.hinted=true;
+  const h=document.getElementById("hint");
+  if(h)h.classList.add("gone");
+}
 
 </script>
 </body>
