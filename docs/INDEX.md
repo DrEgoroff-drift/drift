@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 275 · символов верхнего уровня: 2559
+Файлов: 276 · символов верхнего уровня: 2580
 
 ## СИМВОЛЫ
 
@@ -24,7 +24,7 @@ $menu                        src/15-input.js:180
 $msg                         src/28-loop.js:44
 $msl                         src/28-loop.js:47
 $nav                         src/28-loop.js:46
-$opts                        src/26-ui-station.js:651
+$opts                        src/26-ui-station.js:652
 $padsEl                      src/15-input.js:4
 $place                       src/28-loop.js:43
 $sh                          src/28-loop.js:24
@@ -264,7 +264,7 @@ celDay                       src/06a-celest.js:28
 celDayF                      src/06a-celest.js:29
 celEclipse                   src/06a-celest.js:68
 celestAt                     src/06a-celest.js:125
-celEventNow                  src/06a-celest.js:154
+celEventNow                  src/06a-celest.js:159
 celHere                      src/06a-celest.js:130
 cellCenter                   src/24a-mode-raid.js:83
 celLine                      src/06a-celest.js:145
@@ -485,7 +485,7 @@ drawCaveGlow                 src/22a-cave-deco.js:308
 drawCaveRock                 src/22-mode-cave.js:404
 drawCaveSolid                src/22a-cave-deco.js:220
 drawCaveWater                src/22a-cave-deco.js:261
-drawCelest                   src/06a-celest.js:162
+drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:55
 drawClouds                   src/19e-clouds.js:169
 drawCockpit                  src/25-cockpit.js:400
@@ -1829,7 +1829,7 @@ RES_AUTO                     src/08-state.js:35
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:399
 resEma                       src/28-loop.js:398
-resetArm                     src/26-ui-station.js:650
+resetArm                     src/26-ui-station.js:651
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:6
 RET_BOARD                    src/11s-returners.js:29
@@ -2110,23 +2110,44 @@ shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:211
 shipZoneR                    src/19f-lander.js:14
 sixthGone                    src/12k-stories-d.js:75
+SKY_BULL                     src/11ak-skywatch.js:27
+SKY_HOR                      src/11ak-skywatch.js:80
+SKY_KINDS                    src/11ak-skywatch.js:29
+SKY_LAPSE                    src/11ak-skywatch.js:28
 SKY_LOUD                     src/19b-sky.js:13
+SKY_OFF                      src/11ak-skywatch.js:121
 SKY_QUIET                    src/19b-sky.js:14
 SKY_WORLD_KINDS              src/19b-sky.js:101
+skyAll                       src/11ak-skywatch.js:34
 skyAurora                    src/19b-sky.js:374
+skyBlock                     src/11ak-skywatch.js:234
+skyCanReport                 src/11ak-skywatch.js:202
 skyComet                     src/19b-sky.js:431
+skyCometName                 src/11ak-skywatch.js:198
+skyDrop                      src/11ak-skywatch.js:146
 skyField                     src/19b-sky.js:474
+skyFind                      src/11ak-skywatch.js:47
 skyGalaxy                    src/19b-sky.js:311
 skyGiant                     src/19b-sky.js:187
 skyGrad                      src/19-mode-landing.js:277
 skyHole                      src/19b-sky.js:334
 skyMoon                      src/19b-sky.js:400
+skyNameComet                 src/11ak-skywatch.js:184
 skyNeb                       src/19b-sky.js:421
 skyNebula                    src/19b-sky.js:49
+skyOfferHere                 src/11ak-skywatch.js:122
+skyOn                        src/11ak-skywatch.js:59
+skyPick                      src/11ak-skywatch.js:81
 skyPulsar                    src/19b-sky.js:452
+skyReport                    src/11ak-skywatch.js:206
 skyScene                     src/19b-sky.js:15
+skyTake                      src/11ak-skywatch.js:136
+skyTestRuns                  tests/91w-celest.js:83
+skyTestSci                   tests/91w-celest.js:74
+skyTick                      src/11ak-skywatch.js:155
 skyTint                      src/19b-sky.js:44
 skyU                         src/19b-sky.js:41
+skyWhere                     src/11ak-skywatch.js:39
 skyWorld                     src/19b-sky.js:156
 skyWorldTex                  src/19b-sky.js:110
 SLOT_CACHE                   src/05-parts.js:113
@@ -2681,6 +2702,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11aj-told.js · 5 КБ
   · ляпнул лишнего:1
 
+## src/11ak-skywatch.js · 16 КБ
+  · небесная вахта:1
+
 ## src/11a-quests.js · 6 КБ
   · журнал дел:1
 
@@ -3116,7 +3140,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/26-ui-station.js · 42 КБ
   · станция:1
-  · настройки:649
+  · настройки:650
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -3254,8 +3278,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91v-wear.js · 3 КБ
   · автотесты: корабль стареет:1
 
-## tests/91w-celest.js · 4 КБ
+## tests/91w-celest.js · 12 КБ
   · автотесты: календарь — небо считается:1
+  · небесная вахта (M195):73
 
 ## tests/91x-finds.js · 3 КБ
   · автотесты: находки в пустоте:1

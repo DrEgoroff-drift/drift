@@ -7,6 +7,44 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.170.0 — the sky watch: the calendar finally has somebody on duty (M195)
+
+`celestAt` has computed eclipses, parades and comets since 0.126.0, and the whole point of it was
+that the sky is a *function of time* — the same day in the same system always gives the same sky,
+so a meeting can be arranged by it. Nobody ever arranged one. The calendar was scenery.
+
+The institute (11ab) now hands out a **watch order** at a science counter: a place, a kind of
+event and a day. The day is not decorative — it is read out of the same functions the cockpit
+line reads, by stepping forward through them (`skyFind`) at a step matched to the width of the
+window: a comet hangs around perihelion for nine days, a parade holds for fractions of a day, an
+eclipse for a sixth of one. A daily step would have named days on which nothing happens.
+
+Be there and the tape writes itself — no button. For a parade or a comet, being in the system is
+enough; for an eclipse you have to be standing on that particular planet, which is the first time
+in the game that a task names a piece of ground and means it.
+
+**The horizon is a month, and that was learned the hard way.** A calendar day is a minute of play,
+so "in N days" reads as "in N minutes"; the first pass took the first event it found inside a
+hundred and fifty days and cheerfully posted a comet for day 123. Correct, unplayable. Orders now
+look thirty days ahead — sixty for a comet, which comes round rarely enough to be worth the wait —
+and the kind is drawn from the seed *before* the place is searched, because an eclipse is available
+around half the planets in the sky and would otherwise win the "soonest" contest every single time.
+
+**It is a race, not an errand.** The institute computes the same sky you do, and six days after
+the event it publishes its own bulletin — calculated, with no observer. Report before that and the
+observation is yours: full pay, science data, a line in the record book. Report after and it is
+still filed, at half pay, with «сверка тоже работа» from the person behind the counter.
+
+**A comet reported first takes a name — out of your record book.** The record book is written by
+other people (0.147.0, M161), which is the whole joke: the player cannot physically name a comet
+after himself. The name sticks to the system for good and the cockpit line uses it from then on —
+`КОМЕТА «ВАРЛАМОВА З.» · ЕЩЁ 4 СУТ`. Nothing is written across the sky itself: the loudness budget
+of 19b stands.
+
+The sky is still not saved. What persists is the order, the tally and the comet names
+(`G.duty`) — decisions and their consequences, never the ephemeral. The old celest suite's
+assertion that nothing sky-shaped reaches `snapshot()` is left in place, and still passes.
+
 ## 0.169.0 — ляпнул лишнего: the player becomes a source of rumours (M194)
 
 Third of the three squanders from the book, and the one the plan called cheapest and most

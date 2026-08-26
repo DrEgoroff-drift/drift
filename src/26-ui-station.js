@@ -321,6 +321,7 @@ function renderTab(){
     if(typeof islandBlock==="function")islandBlock();       /* письмо на Остров (M160) */
     if(typeof recordBlock==="function")recordBlock();       /* доска почёта, комиссия (M161) */
     if(typeof instBlock==="function")instBlock();           /* институт: темы и отчёты (M162) */
+    if(typeof skyBlock==="function")skyBlock();             /* небесная вахта (M195) */
     if(typeof traineeBlock==="function")traineeBlock();     /* диплом стажёру (M163) */
     if(typeof zooBlock==="function")zooBlock();             /* зоостанция (M164) */
     if(typeof wallBlock==="function")wallBlock();           /* стенгазета и заявки (M165) */

@@ -772,18 +772,25 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
 
 ## The world alive (M193–M196)
 
-- **M193 — beasts begin to live.** Biology gave fauna species (0.141.0) and no behaviour. Herds
+- **M193 — beasts begin to live** — **built (0.168.0).** Biology gave fauna species (0.141.0) and no behaviour. Herds
   that graze, a predator that walks the herd, bolting or staring at the walker by the species'
   temper, feeding on the plants they actually prefer, activity by the hour, tracks, burrows and
   nests as things in the world. On `20e-species` / `20f-fauna`, stand `docs/mkbio.ps1`, frame
   budget checked in every pass.
-- **M194 — marks in other places.** M171 left it open itself: the station counter, the settlement
-  wall, the cave mouth. One surface field in the same API; three times as many living people in the
-  game for very little.
-- **M195 — the sky watch.** `celestAt` already computes eclipses, parades and comets, and nobody
-  is on duty for them. An institute topic: observe the event from the right place, report it before
-  the institute's own bulletin, and the comet takes a name out of your record book. Entirely
-  offline.
+- **M194 — marks in other places** — **built (0.169.0) as «ляпнул лишнего»**: the player became a
+  source of rumours rather than a second surface field. Telling the counter where you dug buys a
+  named offer at three times the money now, and three days later a barge is working that place and
+  one line goes out on the air that never names you. **Still open from the original ask:** marks in
+  the places themselves — the settlement wall, the cave mouth — which M171 left open and this took
+  a different road around.
+- **M195 — the sky watch** — **built (0.170.0).** `11ak-skywatch`, suite `91w-celest`. The
+  institute hands out a watch order at a science counter — a place, a kind of event and a day read
+  out of `celestAt` itself by stepping forward at a step matched to the width of the window
+  (`skyFind`). Being there writes the tape; an eclipse means standing on that particular planet.
+  It is a race: six days after the event the institute publishes its own calculated bulletin, and
+  a report after that is half pay. A comet reported first takes a name out of the record book —
+  which other people write, so the player cannot name one after himself. Persisted in `G.duty`
+  (order, tally, comet names); the sky itself still reaches no save.
 - **M196 — the pennant.** Build an automatic probe in the lab, launch it at a star you will never
   reach, forget it. Weeks of real time later (lazily, from `Date.now()`) the receiver catches its
   weakening voice once — and the probe sends back a **snapshot photograph** of where it got to, so

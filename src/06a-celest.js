@@ -147,7 +147,12 @@ function celLine(){
   const out=[];
   if(C.ecl)out.push(C.ecl.full?"ЗАТМЕНИЕ":"ЧАСТНОЕ ЗАТМЕНИЕ");
   if(C.conj)out.push("ПАРАД "+C.conj.n+" ТЕЛ");
-  if(C.comet)out.push("КОМЕТА · ЕЩЁ "+C.comet.left+" СУТ");
+  /* названная комета зовётся по имени и в кабине, и в журнале: имя даётся раз
+     и живёт в системе навсегда (11ak). В небо оно НЕ пишется — бюджет громкости */
+  if(C.comet){
+    const nm=(typeof skyCometName==="function")?skyCometName(G.sys):"";
+    out.push("КОМЕТА"+(nm?" «"+nm.toUpperCase()+"»":"")+" · ЕЩЁ "+C.comet.left+" СУТ");
+  }
   return out.join(" · ");
 }
 /* Идёт ли сейчас событие, которым «Долгий Ход» датировал зарубки */
