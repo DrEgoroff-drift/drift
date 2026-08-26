@@ -7,6 +7,40 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.185.0 — the newcomer's first hour: a relief operator, not a tutorial (M207)
+
+The plan has been asking for this since before the release block existed: walk a fresh save, write
+down every "boring" and every "I don't understand", fix them as a list. The walkthrough is in
+`docs/DESIGN-first-hour.md`, measured in the running game rather than remembered.
+
+**The worst finding, and it is not difficulty.** `G.surf.suit` starts at 100 and counts down while
+you walk, and **nothing in the game ever names it**. The bar is drawn and silent. A newcomer's first
+death there is not the game being hard, it is the game not having spoken. Fuel is the same problem
+one step later: a tank worth about ten jumps, and nothing says that fuel is bought rather than
+found. Measured at a fresh start: no quest, no goal card, no story pin, no tutorial object of any
+kind — a ship, six hundred credits and no reason to move.
+
+**The fix is a person, not a tutorial.** No arrows, no modal windows, no "press here", no "skip
+tutorial" flag — the game does not speak that language and should not learn it. It uses the voice it
+already has: four lines in the ether, each said **once per save** and each tied to an occasion
+rather than a timer.
+
+- the pack you breathe from on the ground is not endless — first time you walk far from the ship
+- the tank is ten jumps and refuelling is bought — first time fuel drops below 86
+- there is always work on the board at a counter — first dock
+- if you are broke, dig; the station buys what is underfoot — first time you stand at a deposit
+  with under nine hundred credits
+
+Four and not five: more is a lecture, fewer does not cover the list. A fifth line about *data* was
+considered and dropped — nobody dies or gets bored for want of understanding data. They are said by
+people (диспетчер, стойка, старик у стойки), never by the game, and never twice, including across a
+reload.
+
+**Written down and deliberately not fixed:** the station board shows eight sections on a first dock,
+and thinning it is a decision about what the game is. And the first prompt on landing is
+«СКАНИРОВАТЬ ОРГАНИЗМ» when twenty-two deposits are underfoot — right sentence, wrong first
+sentence, and reordering that chain to save the first hour could cost every hour after it.
+
 ## 0.184.0 — the travelling pennant (M206)
 
 Once a quarter the best of your bases gets a banner on the wall and one line in the ether. That is

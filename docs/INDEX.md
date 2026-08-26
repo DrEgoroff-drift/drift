@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 304 · символов верхнего уровня: 2815
+Файлов: 306 · символов верхнего уровня: 2821
 
 ## СИМВОЛЫ
 
@@ -695,6 +695,12 @@ fireCool                     src/13-pirates.js:76
 fireMerc                     src/12a-crew.js:187
 fireMgr                      src/12c-mgr-core.js:356
 fireShot                     src/13-pirates.js:66
+FIRST_BY                     src/11ao-firsthour.js:35
+FIRST_LINES                  src/11ao-firsthour.js:25
+firstAll                     src/11ao-firsthour.js:36
+firstSaid                    src/11ao-firsthour.js:37
+firstSay                     src/11ao-firsthour.js:39
+firstTick                    src/11ao-firsthour.js:50
 fitMap                       src/05-parts.js:202
 fitPart                      src/05-parts.js:251
 fittedParts                  src/05-parts.js:207
@@ -2946,6 +2952,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11an-qsl.js · 12 КБ
   · QSL: стена карточек:1
 
+## src/11ao-firsthour.js · 5 КБ
+  · первый час: сменщик в эфире:1
+
 ## src/11a-quests.js · 6 КБ
   · журнал дел:1
 
@@ -3189,7 +3198,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:61
   · видимое состояние обмена:76
 
-## src/14-save.js · 46 КБ
+## src/14-save.js · 47 КБ
   · сохранение:1
 
 ## src/15-input.js · 24 КБ
@@ -3784,5 +3793,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzr-penn.js · 3 КБ
   · автотесты: переходящий вымпел (M206):1
+
+## tests/91zzzs-first.js · 4 КБ
+  · автотесты: первый час (M207):1
 
 ## tests/99-run.js · 0 КБ

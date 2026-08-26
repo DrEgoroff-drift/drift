@@ -1308,7 +1308,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.183.0";
+const VER="0.184.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -9165,6 +9165,76 @@ function renderQsl(box){
     wrap.appendChild(pack);
   }
   box.appendChild(wrap);
+}
+
+/* ══════════════ первый час: сменщик в эфире ══════════════
+   M207. Проход по свежему сохранению (docs/DESIGN-first-hour.md) показал одну
+   вещь, которую в игре на сто вех легко не заметить изнутри: у новичка есть
+   корабль, шестьсот кредитов, девять кнопок и НИ ОДНОГО СЛОВА о том, что
+   скафандр и топливо кончаются. Обе шкалы нарисованы, обе молчат, и первый
+   свой труп человек получает без предупреждения — не от трудности игры, а от
+   того, что ему не сказали.
+
+   ЭТО НЕ ОБУЧЕНИЕ. Ни стрелок, ни модальных окон, ни «нажмите сюда», ни флажка
+   «пройти обучение» — всё это игра не умеет говорить и не должна научиться.
+   Говорит то, что и так говорит: эфир. Диспетчер, который в этой игре
+   комментирует всё подряд, в первые минуты роняет четыре строки, каждая — про
+   одну вещь, которая иначе убьёт или наскучит. Сказал и забыл; повторять не
+   будет, потому что живые люди не повторяют.
+
+   ПОЧЕМУ ИМЕННО ЧЕТЫРЕ. Больше — это лекция. Меньше — не покрывает список из
+   разбора: воздух, топливо, деньги, работа. Пятой строки («что такое данные»)
+   в списке нет намеренно: без данных не умирают и не скучают.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Ни одной строки от лица игры. Только от лица человека в эфире.
+   2. Каждая строка говорится один раз за сохранение и по ПОВОДУ, а не по
+      таймеру: про воздух — когда вышел на грунт, про топливо — когда полетел.
+   3. Ничего не хранится, кроме того, что уже сказано. */
+const FIRST_LINES=[
+  {k:"air",  who:"диспетчер",
+   t:"…борт, свежий? Тогда одно: на грунте вы дышите ранцем, и он не бесконечный. Кончится — возвращайтесь к кораблю, там пополните."},
+  {k:"fuel", who:"диспетчер",
+   t:"…и бак у вас на сто. Это десяток прыжков, не больше. Заправка на любой станции, деньги берут вперёд."},
+  {k:"work", who:"стойка",
+   t:"…работа всегда на доске, у стойки. Кто ищет — находит, кто не ищет — сидит без денег."},
+  {k:"dig",  who:"старик у стойки",
+   t:"…а если совсем пусто — копайте. Что под ногами лежит, то на станции и берут. Все с этого начинали."}
+];
+const FIRST_BY={};FIRST_LINES.forEach(l=>FIRST_BY[l.k]=l);
+function firstAll(){if(!Array.isArray(G.first))G.first=[];return G.first;}
+function firstSaid(k){return firstAll().indexOf(k)>=0;}
+/* сказать один раз. Голос идёт тем же путём, что и всё остальное в эфире */
+function firstSay(k){
+  const L=FIRST_BY[k];
+  if(!L||firstSaid(k))return false;
+  firstAll().push(k);
+  if(typeof consoleHeard==="function")consoleHeard(L.t,L.who);
+  if(typeof logAdd==="function")logAdd("ether",L.who+": "+L.t);
+  return true;
+}
+/* ── поводы ──
+   Зовётся из кадра. Дёшево: четыре сравнения, и после того как всё сказано,
+   первая же проверка выходит по длине списка. */
+function firstTick(){
+  if(!G.running)return;
+  const F=firstAll();
+  if(F.length>=FIRST_LINES.length)return;
+  /* про воздух — когда впервые вышел на грунт и отошёл от корабля */
+  if(G.mode==="surface"&&G.surf&&!firstSaid("air")){
+    const d=Math.abs((G.surf.x||0)-(G.surf.shipX||0));
+    if(d>180)firstSay("air");
+  }
+  /* про топливо — когда впервые потратил заметную его долю */
+  if(!firstSaid("fuel")&&G.fuel<86)firstSay("fuel");
+  /* про работу — при первой стыковке */
+  if(G.mode==="dock"&&!firstSaid("work"))firstSay("work");
+  /* про копать — когда впервые встал рядом с залежью и ничего не сделал */
+  if(G.mode==="surface"&&G.surf&&!firstSaid("dig")&&G.credits<900){
+    const D=G.surf.deposits||[];
+    for(const dep of D)
+      if(Math.abs(dep.x-(G.surf.x||0))<70){firstSay("dig");break;}
+  }
 }
 
 /* ══════════════ журнал дел ══════════════ */
@@ -25240,7 +25310,7 @@ function snapshot(){
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
-    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,win:G.win,spa:G.spa,hol:G.hol,books:G.books,qsl:G.qsl,green:G.green,kino:G.kino,penn:G.penn,   /* M154–M206 */
+    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,win:G.win,spa:G.spa,hol:G.hol,books:G.books,qsl:G.qsl,green:G.green,kino:G.kino,penn:G.penn,first:G.first,   /* M154–M207 */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -25750,6 +25820,9 @@ function applySave(s){
      Кто его держит — считается от состава баз и квартала */
   /* «Number.isFinite(+x)» пропускает null: +null это ноль. Проверяем ТИП */
   G.penn=Array.isArray(s.penn)?s.penn.filter(x=>typeof x==="number"&&Number.isFinite(x)).map(x=>x|0).slice(-16):[];
+  /* первый час (M207): какие строки сменщика уже сказаны. Повторять их нельзя
+     ни при загрузке, ни при возвращении — живые люди не повторяют */
+  G.first=Array.isArray(s.first)?s.first.filter(x=>!!FIRST_BY[x]):[];
   G.trainee=(s.trainee&&typeof s.trainee==="object"&&s.trainee.name)?s.trainee:null;
   G.zoo=(s.zoo&&typeof s.zoo==="object"&&Array.isArray(s.zoo.pen))?s.zoo:null;
   G.concert=(s.concert&&typeof s.concert==="object")?s.concert:null;
@@ -53979,7 +54052,7 @@ function frame(now){
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
     if(typeof etherTick==="function")etherTick(dt);
-    beaconTick(dt);crewBtnTick();if(typeof handBtnTick==="function")handBtnTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof skyTick==="function")skyTick();if(typeof traineeTick==="function")traineeTick();if(typeof zooTick==="function")zooTick();wearTick(dt);
+    beaconTick(dt);crewBtnTick();if(typeof handBtnTick==="function")handBtnTick();if(typeof firstTick==="function")firstTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof skyTick==="function")skyTick();if(typeof traineeTick==="function")traineeTick();if(typeof zooTick==="function")zooTick();wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){

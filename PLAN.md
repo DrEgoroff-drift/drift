@@ -900,7 +900,11 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
   crossed legs and an armrest. The man at the rail wears a light shirt and trousers, has hair and
   the back of his head to us, and his forearms lie along the handrail.
 
-## Joys (one between milestones, an evening each)
+## Joys — ALL BUILT (0.179.0–0.184.0, M201–M206)
+
+The whole block went in on the night of 2026-08-26/27, one milestone per commit. Every one of them
+obeys the same rule and it is the point of the block: **none of them gives anything.** No money, no
+data, no reputation, no points, no completion award. They exist so that the game has evenings in it.
 
 - **Holidays on the real calendar** — **built (0.179.0, M201).** `11am-holiday`, suite
   `91zzzm-holiday`, stand `pageshot view -Q "?s=tree"`. New Year (31.12–02.01) and Cosmonautics
@@ -943,9 +947,16 @@ Rules of this block, settled by the author on 2026-08-26 and not to be re-opened
 
 ## To the release
 
-- **The newcomer's first hour.** A fresh save, an hour of play, every "boring" and every "I don't
-  understand" written down, then fixed as a list. There is a hundred milestones of content and one
-  way in; before the release look this matters more than any new feature.
+- **The newcomer's first hour** — **first pass done (0.185.0, M207).** The walkthrough is
+  `docs/DESIGN-first-hour.md`, measured in the running game. Worst finding: the suit and the fuel
+  are countdowns that kill and **neither was ever named** — the bars are drawn and silent. Fixed by
+  `11ao-firsthour` (suite `91zzzs-first`): four lines in the ether, each once per save and tied to
+  an occasion, said by people and never by the game. No arrows, no modals, no tutorial flag.
+
+  **Still open and written down:** the board shows eight sections on a first dock (author's call
+  whether to thin it); the landing prompt offers «СКАНИРОВАТЬ ОРГАНИЗМ» while twenty-two deposits
+  lie underfoot; and the hour AFTER the opening — first station screen in full, first hire, first
+  manager — has not been walked yet.
 - **v:5 and the last of the overlay**, in one go, now that the edge question is settled.
 - **A clean performance measurement** by the M169 rules (one window, nothing else running) as the
   release check.
