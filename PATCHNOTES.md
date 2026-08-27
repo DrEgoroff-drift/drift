@@ -7,6 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.213.0 — the bird has a voice (M228)
+
+The 3D bird's "still to do" list was audited and almost all of it turned out already built — the
+page around the bird, the ported behaviours, the down layer, the phone budget, the soft shadow
+between feathers. The one true gap was **sound: the bird was mute.**
+
+Now it cries like the animal it is. A parrot's voice is two-voiced — two carriers a minor third
+apart, both gliding — pushed through a bandpass «beak» and torn by hard amplitude modulation,
+which is the creaky throat. Pitch, length and the bend of the glide vary from cry to cry: the same
+cry twice in a row sounds like a doorbell, not an animal. A chirp goes with the speech bubble; a
+lower, falling grumble answers a poke at the crest — displeasure needs no translation.
+
+Synthesized in place, not a sample: the file stays self-contained and downloadable. The
+AudioContext is created lazily on the first gesture — until then the bubble works silently, as it
+did. And it is deliberately quiet, −33 dB: a bird on a desk, not in an ear. Volume and character
+are the author's to tune from here; the one refinement left on the module is true per-feather
+ambient occlusion.
+---
 ## 0.212.0 — v:5, and nobody's save burns (M227)
 
 The save format bump the plan had been holding, done the way that costs nothing. The game now

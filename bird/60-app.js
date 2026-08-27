@@ -205,7 +205,8 @@ function birdPoke(sx,sy){
      трогают, — это заводная игрушка. Дальше — ответ по зоне, ровно как в игре. */
   ACT.cur=null;ACT.next=POSE.t+0.9;
   POSE.sleep=0;
-  if(zone==="crest"){POSE.crestV+=26;POSE.mad=Math.min(1,POSE.mad+.5);POSE.blink=1;}
+  if(zone==="crest"){POSE.crestV+=26;POSE.mad=Math.min(1,POSE.mad+.5);POSE.blink=1;
+    if(typeof birdGrump==="function")try{birdGrump();}catch(e){}}
   else if(zone==="beak"){POSE.peck=1;POSE.flapV+=5;POSE.jawT=.4;
     POSE.mad=Math.min(1,POSE.mad+.35);birdSay();}
   else if(zone==="head"){POSE.crestV+=8;POSE.yawT=(Math.random()-0.5)*1.2;POSE.blink=1;}

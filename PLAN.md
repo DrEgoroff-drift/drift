@@ -729,9 +729,16 @@ bead, shadow-mapped warm key, HDR bloom on the beads, orbit camera, poke reactio
 - *The skin sits under the plumage*, 22 mm in. At the same surface the depth buffer fights itself
   and the coat comes through in torn patches.
 
-**Still to do:** softer light in the gaps (ambient occlusion between feathers), the down layer,
-the page around the bird (install/download, the same voice as `site/treplo.html`), behaviours
-from `12z-parrot-acts` ported to the rig, sound, and the frame budget on a phone.
+**Still to do — audited 2026-08-27, and almost all of it was already done:** the page around the
+bird exists (`61-ui`: install, «забрать файлом», the one hint line, offline service worker), the
+behaviours are ported (`41-acts`), the down layer is in (`22-feather`, `downy`), the phone budget
+is in (`60-app`: one quality set, DPR capped at two), and the soft light between feathers is
+approximated by the wide nine-tap PCF (`30-shade`). **Sound was the one true gap and is built
+(M228, 0.213.0):** `09-sound` — a two-voice siren through a bandpass «beak» with hard amplitude
+modulation for the creaky throat, pitch/length/bend varied per cry; a chirp with the speech
+bubble, a lower falling grumble when the crest is poked. Lazy AudioContext, first sound only
+after a gesture, −33 dB quiet: a bird on a desk, not in an ear. Volume and character are the
+author's ear from here. True per-feather AO remains the one open refinement.
 
 ## M200a…M200j, M201 — the bird's twenty-odd passes and the extras shelf
 

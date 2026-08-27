@@ -191,6 +191,8 @@ function birdSay(){
   if(!el)return;
   el.textContent=birdPick(BIRD_IDLE);
   el.classList.remove("on");void el.offsetWidth;el.classList.add("on");
+  /* и голосом (09-sound): пузырь без звука был последним молчанием птицы */
+  if(typeof birdChirp==="function")try{birdChirp();}catch(e){}
 }
 
 /* ── жеребьёвка ──
