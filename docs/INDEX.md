@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 326 · символов верхнего уровня: 2965
+Файлов: 327 · символов верхнего уровня: 2970
 
 ## СИМВОЛЫ
 
@@ -836,6 +836,11 @@ getSystem                    src/06-galaxy.js:46
 GIANT                        src/19a-mode-scoop.js:86
 GIANT_KEEP                   src/19a-mode-scoop.js:87
 giantTex                     src/19a-mode-scoop.js:88
+GIFT_DAY                     src/11at-gift.js:28
+GIFT_DEEDS                   src/11at-gift.js:26
+GIFT_W                       src/11at-gift.js:27
+giftArrive                   src/11at-gift.js:40
+giftDue                      src/11at-gift.js:30
 glassOutline                 src/25-cockpit.js:54
 GLOB                         src/25f-globus.js:44
 GLOB_STEP                    src/25f-globus.js:43
@@ -3116,6 +3121,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11ar-doors.js · 5 КБ
   · тишина: двери закрыты, мир предлагает:1
 
+## src/11at-gift.js · 4 КБ
+  · «Тихоня»: подарок, которого никто не считал:1
+
 ## src/11b-speech.js · 17 КБ
   · речь: очередь реплик и вещь на столе:1
 
@@ -3945,7 +3953,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzze-sync.js · 4 КБ
   · обмен с облаком: то, что раньше молчало:1
 
-## tests/91zzzf-offer.js · 15 КБ
+## tests/91zzzf-offer.js · 18 КБ
   · автотесты: возможность и тетрадь:1
 
 ## tests/91zzzg-globus.js · 4 КБ

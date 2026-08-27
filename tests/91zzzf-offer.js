@@ -253,3 +253,45 @@ TEST_SUITES.push(()=>suite("экспедиция: список — это стр
   const o2=offerAdd("carav",shutWho,true);
   eq(o2.named,0,"экспедиция не открывает закрытых дверей: этот человек не называет");
 }));
+
+/* ── M231: «Тихоня» — подарок, которого никто не считал ── */
+TEST_SUITES.push(()=>suite("Тихоня: приходит поздно, платит тетрадь, и никто не говорит за что",()=>{
+  resetWorld();
+  G.uniqueShips={};G.owned={strizh:true};G.ledger={n:0,w:0};G.home=null;G.log=[];
+  /* рано и не за что: ничего не происходит */
+  eq(giftDue(),false,"пустая тетрадь — никакой яхты");
+  /* полная тетрадь, но нет года и дома */
+  G.ledger={n:8,w:400};
+  eq(giftDue(),false,"без прожитого года — рано");
+  G.t=CEL_DAY*400;
+  eq(giftDue(),false,"без дома — некуда: её оставляют у причала");
+  G.home={tier:1,sx:2,sy:3,turn:0};
+  eq(giftDue(),true,"тетрадь, год и дом — пора");
+  /* застают по прилёте в родной сектор, и только там */
+  G.sx=5;G.sy=5;G.sys=getSystem(5,5);
+  eq(giftArrive(),false,"в чужом секторе её не будет");
+  G.sx=2;G.sy=3;G.sys=getSystem(2,3);
+  ok(giftArrive(),"дома — стоит у причала");
+  const S=shipData("gift1");
+  ok(!!S&&G.owned.gift1===true,"и она ваша");
+  eq(S.tier,"luxe","люкс по устройству — лак, тик, латунь");
+  eq(S.hcls,"yacht","и яхта по классу");
+  eq(S.price,0,"цены у подарка нет");
+  eq(hullClassOf("gift1",S),"yacht","корпус читает класс из неё самой");
+  /* правда не произносится */
+  const flat=G.log.map(e=>e.text||"").join(" ")+" "+S.note;
+  ok(!/добр|заслуж|за то|спасибо|награ/i.test(flat),"ни слова о том, за что она");
+  /* второй раз не приходит */
+  eq(giftDue(),false,"подарок один");
+  eq(giftArrive(),false,"и второго не будет");
+  /* продать нельзя: у корпусов в этой игре нет пути продажи — проверяем, что
+     строка ангара для неё не предлагает денег */
+  const row=shipRow("gift1",S);
+  ok(row.textContent.indexOf("кр")<0||row.textContent.indexOf("ПЕРЕСЕСТЬ")>=0,
+     "в ангаре — только пересесть, никаких кредитов");
+  /* и сейв её не теряет */
+  const snap=snapshot();
+  G.uniqueShips={};G.owned={strizh:true};
+  applySave(snap);
+  ok(!!shipData("gift1")&&G.owned.gift1,"пережила сохранение");
+}));

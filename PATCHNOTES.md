@@ -7,6 +7,33 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.216.0 — «Тихоня» (M231): the arc is complete
+
+The last piece of the through-line, held back until the middle had been lived with. One day, late —
+after a year of this life, with a home to have a pier at — you jump into your home sector and there
+is a yacht at your pier. The key is in the lock. There is no note. That is all.
+
+**What pays for it is the invisible ledger** — everything done for free and without witnesses,
+weighted by how poor you were at the moment of the deed. The player is never told this. Not a line,
+not a hint, not a «за что»: the truth of this game is not spoken, and if a phrase ever appears from
+which it follows that the yacht was left for kindness, it is to be deleted together with its scene.
+
+**The gift keeps the design's three rules by construction.** It has no price — none is shown
+anywhere, because there is none. It cannot be sold — hulls in this game have no sale path at all,
+and this is the one hull for which that is the way of the world rather than a limitation. And the
+world does not congratulate: the journal line is flat — «У причала стоит яхта. В замке ключ.
+Записки нет» — and the thing on the desk is a key with no name on it.
+
+She is called «Тихоня», which is the name of the book's last part, and she is a true luxe — lacquer,
+teak, brass and a name instead of a number, drawn by the same painter as every luxe hull.
+
+With her the arc queue closes end to end: the offers and the ledger (M189–M191), the three
+squanders (M194, M225), the kind word after the squandered name (M226), the expedition calling
+people by name (M229), the silence and the one who says it (M230), and now the gift nobody
+counted. The quiet second ending — the medical board and the pension — has been in since M161.
+
+11843 assertions in 379 suites.
+---
 ## 0.215.0 — the silence, and the one who says it (M230)
 
 Act IV of the arc, finishing what the kind word began. Doors already close one at a time and the

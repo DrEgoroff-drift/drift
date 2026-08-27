@@ -346,6 +346,8 @@ function jump(cost){
   /* мачта в этом секторе (M218): пришёл сам — увидел её своими глазами, и
      если там кто-то живёт, ему есть чем отблагодарить за привезённые новости */
   if(typeof relayArrive==="function")relayArrive();
+  /* «Тихоня» (11at, M231): если ей время — её застают у родного причала */
+  if(typeof giftArrive==="function")giftArrive();
   saveGame(true);
   logAdd("dim","Прыжок в "+G.sys.name+" ("+G.sx+":"+G.sy+") · −"+cost+" топлива"+
     (G.pirates.length?" · чужих сигнатур: "+G.pirates.length:""));

@@ -703,9 +703,11 @@ feeding the station's collection), naming runs at .70 instead of .45 — closed 
 and the deepest access of the act is «имя в список», paying nothing and turning the departure's
 greeting into «ЕСТЬ МЕСТО · ВАС НАЗЫВАЛИ». **Act IV is audible (M230, 0.215.0):** at three shut
 doors the queue sometimes names somebody who is not you, and once per game one man says «Вы просто
-не тянете» to your face — and the game confirms him with nothing, because he is wrong. What
-remains of the arc: **the yacht** — the ending's gift with no price that cannot be sold — held
-last on purpose: an ending cannot be built before the middle has been lived with.
+не тянете» to your face — and the game confirms him with nothing, because he is wrong. **And the
+yacht is built (M231, 0.216.0): the arc is complete end to end.** After a year of this life, with
+a home to have a pier at and the invisible ledger full of what nobody counted, «Тихоня» stands at
+your pier — key in the lock, no note, no price, no sale path, no word ever about why. The truth
+is not spoken anywhere, and `91zzzf-offer` guards exactly that.
 
 # QUEUE: Трепло in the round — a separate 3D module (M200)
 
