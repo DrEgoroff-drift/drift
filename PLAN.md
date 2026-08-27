@@ -538,7 +538,8 @@ action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
    gigabyte for a difference nobody can see. Measured cost: `?g11` reads 60 fps in every mode,
    errors empty.
 
-   **The ruler itself:** `surfScale()` = `clamp(H/560,1,2.4)`. 560 is where the game already sat, so
+   **The ruler itself:** `surfScale()` = `clamp(min(H/560, W/1000), 1, 2.4)` — the width half added by
+   M222 after the phone was asked and answered that height alone is not a ruler. 560 is where the game already sat, so
    small windows change by nothing; 2.4 is the ceiling, past which the road to a target stops
    fitting in the frame and the world becomes a room. The walker now holds ~4.6% of frame height on
    any screen. The cave is scaled by the same ruler (`22-mode-cave`): it is the same man in the same

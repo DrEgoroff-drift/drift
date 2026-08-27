@@ -618,7 +618,7 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:103
-drawSurface                  src/21e-surface-draw.js:488
+drawSurface                  src/21e-surface-draw.js:495
 drawSurfaceHud               src/21e-surface-draw.js:19
 drawSurfaceWorld             src/21e-surface-draw.js:97
 drawSurvey                   src/12w-survey.js:63
@@ -808,7 +808,7 @@ fuseCost                     src/03-ships.js:33
 fuseGen                      src/03-ships.js:32
 fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
-G                            src/08-state.js:58
+G                            src/08-state.js:61
 g11Fps                       src/28z-fps-probe.js:7
 genBeast                     src/20f-fauna.js:58
 genBeltPOI                   src/24b-belt-poi.js:20
@@ -944,7 +944,7 @@ heardReread                  src/12x-parrot.js:92
 heardUse                     src/12x-parrot.js:116
 heardWordsRu                 src/12x-parrot.js:79
 heardYours                   src/12x-parrot.js:71
-held                         src/08-state.js:180
+held                         src/08-state.js:183
 hex2rgb                      src/03-ships.js:145
 hexa                         src/12w-survey.js:91
 hexRGB                       src/24-mode-belt.js:80
@@ -1198,7 +1198,7 @@ keplerPos                    src/06-galaxy.js:39
 keyLabel                     src/15-input.js:118
 keyMap                       src/15-input.js:107
 keyRow                       src/27-ui-ship.js:188
-keys                         src/08-state.js:54
+keys                         src/08-state.js:57
 killPirate                   src/13-pirates.js:179
 killRock                     src/24-mode-belt.js:150
 KINO_EVERY                   src/27da-kino.js:20
@@ -1875,7 +1875,7 @@ postSnap                     src/25g-postcard.js:65
 postTake                     src/25g-postcard.js:601
 postTerrain                  src/25g-postcard.js:41
 postWorld                    src/25g-postcard.js:49
-prevAct                      src/08-state.js:56
+prevAct                      src/08-state.js:59
 pricesHeard                  src/12aa-need.js:209
 pricesSeen                   src/12aa-need.js:188
 prism                        src/21b-surface-deco.js:201
@@ -2096,13 +2096,13 @@ repRepairMul                 src/12k-rep.js:53
 repShipMul                   src/12k-rep.js:69
 repWord                      src/12k-rep.js:31
 RES                          src/02-world.js:2
-RES_AUTO                     src/08-state.js:51
+RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:403
 resEma                       src/28-loop.js:402
 resetArm                     src/26-ui-station.js:674
 resetWorld                   tests/90-harness.js:32
-resize                       src/08-state.js:19
+resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19
 retAll                       src/11s-returners.js:32
@@ -2271,7 +2271,7 @@ S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:6
 saveGame                     src/14a-cloud.js:38
-say                          src/08-state.js:181
+say                          src/08-state.js:184
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
 SCK                          src/18c-chunks.js:39
@@ -2501,7 +2501,7 @@ starRGB                      src/19c-light.js:23
 start                        src/15-input.js:434
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
-stat                         src/08-state.js:139
+stat                         src/08-state.js:142
 STAT_SHOW                    src/05-parts.js:280
 stationDeals                 src/27g-deals.js:134
 stationFleet                 src/04b-fleet.js:163
@@ -2593,7 +2593,7 @@ SURF_BASE                    src/21e-surface-draw.js:486
 SURF_HOR                     src/19c-light.js:124
 surfaceHint                  src/21e-surface-draw.js:4
 surfNight                    src/06a-celest.js:43
-surfScale                    src/21e-surface-draw.js:487
+surfScale                    src/21e-surface-draw.js:494
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -2767,7 +2767,7 @@ traineeTick                  src/11ac-trainee.js:59
 traitOf                      src/12a-crew.js:28
 TYPES                        src/02-world.js:70
 UIK                          src/08-state.js:13
-uiScale                      src/08-state.js:18
+uiScale                      src/08-state.js:21
 unfitPart                    src/05-parts.js:247
 UNIQUE_COLS                  src/03-ships.js:14
 UNIQUE_TAG                   src/03-ships.js:15
@@ -3888,7 +3888,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzw-economy.js · 10 КБ
   · автотесты: экономика без долга (M152e):1
 
-## tests/91zzx-mobile.js · 11 КБ
+## tests/91zzx-mobile.js · 12 КБ
   · автотесты: телефонный вид (M167):1
 
 ## tests/91zzy-road.js · 31 КБ

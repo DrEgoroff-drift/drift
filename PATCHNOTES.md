@@ -7,6 +7,26 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.207.0 — the ruler has to see both sides of the frame (M222)
+
+A defect of my own making, found by asking the phone instead of the monitor.
+
+M217 measured the world by frame **height** alone. A phone has a monitor's height and a third of its
+width: at 390×844 the ruler came out at 1.2, the world grew — and what a narrow screen has least of
+is width. There was less than three hundred units of world across the frame: not a road any more,
+a slot. The same mistake was in the interface's own ruler from M221, one day old.
+
+A frame has two dimensions, so a ruler that reads one of them is not a ruler. **Both now grow by
+whichever side is tighter.** The world's proportion — 1000 to 560 — is 16:9 on purpose: on an
+ordinary monitor both sides say the same thing and nothing changes, while a narrow screen gets its
+1 back and keeps every unit of width it had.
+
+The guard for it lives in the phone suite, because that is the only place it shows —
+`test.ps1 -Mobile`, which is only run if you ask for it. That is exactly why this slipped through
+for four days.
+
+11775 assertions in 370 suites on the desktop, 11866 on the phone.
+---
 ## 0.206.0 — the instruments grew with the window too (M221)
 
 M217 gave the world a ruler: on a big monitor it now *grows* instead of merely showing more. What
