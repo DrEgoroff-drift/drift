@@ -515,6 +515,24 @@ action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
    just shows more world and shrinks everyone in it. The fix is a camera scale tied to frame
    height — and it touches the world-x chunk cache, which is baked 1:1, so it is a milestone with
    its own passes, not a patch.
+
+   **Re-measured 27.08.2026 and the numbers hold.** The walker is ~26 px drawn 1:1 (`drawAstronaut`
+   is called under a bare `translate`, with no scale anywhere), so it is **3.6% of a 720-high frame,
+   3.0% of the tester's 840, and 1.8% on a 1440p monitor** — it gets worse the better your screen.
+   Two routes, and they trade against each other, which is why this wants the author's eye rather
+   than a silent overnight change:
+
+   - **Render the world into a smaller buffer and blit it up.** One change at the top of
+     `drawSurface`; every cull and every `W`/`H` inside stays correct because the code sees the
+     buffer's size (`withCtx` already does this trick for tiles), and it is *cheaper* to draw. The
+     price is softness: at ×1.4 the world is drawn at 914×514 and upscaled — on flat shapes that may
+     even read well, but it is the game's best screen and it would no longer be pixel-crisp.
+   - **Multiply every world→screen conversion by the scale.** Keeps full resolution and costs
+     nothing, but touches every cull, every `groundAt` reader and the chunk cache's baking — the
+     invasive version the note above already predicted.
+
+   Cheap and unrelated to either: the chunk key already includes `H`, so a scale can join it without
+   inventing anything.
 2. **A full-screen panel with a screenful of nothing.** The HQ is fixed by drawing its room, but
    the class remains: `.scr` is `inset:22px …`, so every screen is full height whatever it holds.
    Either panels shrink to their content, or every short screen needs something true to show.
