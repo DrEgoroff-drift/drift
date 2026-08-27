@@ -756,7 +756,8 @@ approximated by the wide nine-tap PCF (`30-shade`). **Sound was the one true gap
 modulation for the creaky throat, pitch/length/bend varied per cry; a chirp with the speech
 bubble, a lower falling grumble when the crest is poked. Lazy AudioContext, first sound only
 after a gesture, −33 dB quiet: a bird on a desk, not in an ear. Volume and character are the
-author's ear from here. True per-feather AO remains the one open refinement.
+author's ear from here. Per-feather AO — closed by the author (2026-08-27, «да хер с ним»):
+the root-shadow approximation in the feather shader is the final answer. The module is done.
 
 ## M200a…M200j, M201 — the bird's twenty-odd passes and the extras shelf
 
