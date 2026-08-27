@@ -454,7 +454,10 @@ M188–M206” — grep it there for any of them. What they left open, in the or
   release-look changes to the SHAPE of persisted fields ride `s.v===5` branches. **The last of
   the overlay** remains with the release look itself (M124/M125 note above): it rewrites the
   whole interface and its autotests, and is kept for the author to see, not done blind.
-- **A clean performance measurement** by the M169 rules (one window, nothing else running) as the
+- ~~**A clean performance measurement**~~ — passing at 0.213.0 (27.08.2026, machine quiet, one
+  window, dpr 2): **60 fps in all nine modes** with every change of the day in — the world scale,
+  the UI zoom, the soil profile, the relays, the splits. Earlier same-day dips were the busy
+  machine, proven by measuring the committed build. Re-run once more at the actual release as the
   release check.
 
 **Standing rule:** the Ring (M154) is never explained. An answer to it would kill it.
