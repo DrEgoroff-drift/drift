@@ -118,20 +118,39 @@ function drawHomeIn(){
     /* В проёме видно СОСЕДНЮЮ КОМНАТУ: стена в своей тени, полоска её пола и
        тёплый отсвет её лампы. Чёрный прямоугольник читался шкафом, а не
        проходом (самокритика M170). */
+    /* ── и это ПРОХОД, а не шкаф ──
+       Прошлая правка уже пробовала показать соседнюю комнату, но красила её
+       долями тёмной палитры (.5 стены, .55 пола) и подливала тепла на .10:
+       на тёмном доме проём всё равно выходил почти чёрным прямоугольником с
+       волоском рамки — той самой «дырой в бумаге», про которую автор говорил
+       на валуне. У соседней комнаты СВОЯ лампа, и в проёме её видно: дальняя
+       стена светлее ближней, пол за порогом заметно светлее стены, и тёплый
+       свет доходит до нашего пола лужей перед порогом. */
     ctx.save();
     ctx.beginPath();ctx.rect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,HIN_MAN*1.5);ctx.clip();
-    ctx.fillStyle="rgb("+P.wall.map(v=>v*.5|0).join(",")+")";
+    ctx.fillStyle="rgb("+P.wall.map(v=>Math.min(255,v*.92+10)|0).join(",")+")";
     ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,HIN_MAN*1.5);
-    ctx.fillStyle="rgb("+P.floor.map(v=>v*.55|0).join(",")+")";
-    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*.18,HIN_DOORW,HIN_MAN*.18);
+    ctx.fillStyle="rgb("+P.floor.map(v=>Math.min(255,v*1.15+14)|0).join(",")+")";
+    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*.20,HIN_DOORW,HIN_MAN*.20);
+    ctx.fillStyle="rgba(0,0,0,.30)";                 /* плинтус соседней комнаты */
+    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*.20,HIN_DOORW,2);
     const dg=ctx.createLinearGradient(0,fy-HIN_MAN*1.5,0,fy);
-    dg.addColorStop(0,"rgba(255,206,138,.03)");
-    dg.addColorStop(.75,"rgba(255,206,138,.10)");
-    dg.addColorStop(1,"rgba(255,206,138,.20)");
+    dg.addColorStop(0,"rgba(255,206,138,.06)");
+    dg.addColorStop(.70,"rgba(255,206,138,.22)");
+    dg.addColorStop(1,"rgba(255,206,138,.42)");
     ctx.fillStyle=dg;ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,HIN_MAN*1.5);
     ctx.fillStyle="rgba(0,0,0,.34)";                 /* тень косяка внутрь */
     ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,3,HIN_MAN*1.5);
     ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,3);
+    ctx.restore();
+    /* свет из проёма ложится на НАШ пол: без этого проход светится сам в себе,
+       а комната перед ним остаётся тёмной (закон 1) */
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const pg=ctx.createRadialGradient(x,fy,2,x,fy,HIN_DOORW*1.1);
+    pg.addColorStop(0,"rgba(255,206,138,.16)");
+    pg.addColorStop(1,"rgba(255,206,138,0)");
+    ctx.fillStyle=pg;
+    ctx.beginPath();ctx.ellipse(x,fy,HIN_DOORW*1.1,HIN_MAN*.16,0,0,TAU);ctx.fill();
     ctx.restore();
     ctx.strokeStyle="rgba(226,226,220,.16)";ctx.lineWidth=1.4;
     ctx.strokeRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,HIN_MAN*1.5);
@@ -172,7 +191,14 @@ function drawHomeIn(){
     hinFigure(0,0,f.col,f.face,f.pose,f.walk||0,f.name,f.look);
     ctx.restore();
   }
-  hinFigure(S.x,fy,[214,222,228],S.face,(keys.left||keys.right)?"walk":"stand",S.walk,null);
+  /* ── дома он не в скафандре ──
+     Хозяин рисовался почти белым (214,222,228) и на тёмной стене читался
+     КЛЯКСОЙ: руки той же светлоты тонули в корпусе, силуэт распадался на
+     белое пятно и две серые палки. Правило старое, из отсеков базы: одежда
+     средне-серая или цвета роли, белое пятно — брак. Дома человек в домашнем:
+     тёплый серо-синий, по нему видно и плечи, и руки. */
+  hinFigure(S.x,fy,[126,136,150],S.face,(keys.left||keys.right)?"walk":"stand",S.walk,null,
+            {skin:[206,172,142]});
   /* ── передний план (M173) ──
      Комната была одной плоскостью: стена, вещи у стены, человек — и всё на
      одной глубине. Пара предметов БЛИЖЕ человека, обрезанных нижней кромкой
@@ -559,7 +585,14 @@ function hinFigure(x,fy,col,face,pose,walk,name,look){
   }
   /* корпус с плечами и шеей; рука темнее корпуса, иначе она в нём тонет.
      У кого платье (Вега) — юбка от пояса: силуэт узнаётся раньше лица */
-  ctx.fillStyle=c;
+  /* корпус со светом: свет в доме идёт сверху от лампы, поэтому по плечам
+     идёт светлая грань, а низ уходит в тень. Плоская заливка одним тоном
+     держала фигуру аппликацией даже с правильным силуэтом (закон 3/4) */
+  const bodyG=ctx.createLinearGradient(0,shY-M*.06,0,hipY+M*.1);
+  bodyG.addColorStop(0,"rgb("+col.map(v=>Math.min(255,v*1.18+10)|0).join(",")+")");
+  bodyG.addColorStop(.55,c);
+  bodyG.addColorStop(1,"rgb("+col.map(v=>v*.72|0).join(",")+")");
+  ctx.fillStyle=bodyG;
   ctx.beginPath();
   ctx.moveTo(-M*.155,shY+M*.02);ctx.quadraticCurveTo(0,shY-M*.06,M*.155,shY+M*.02);
   if(look&&look.skirt){
@@ -568,6 +601,9 @@ function hinFigure(x,fy,col,face,pose,walk,name,look){
     ctx.lineTo(M*.12,hipY);ctx.lineTo(-M*.12,hipY);
   }
   ctx.closePath();ctx.fill();
+  /* теневая сторона корпуса: тело, а не плашка */
+  ctx.fillStyle="rgba(0,0,0,.16)";
+  ctx.fillRect(-M*.155,shY+M*.02,M*.06,hipY-shY);
   ctx.fillStyle="rgba(0,0,0,.22)";ctx.fillRect(-M*.12,hipY-M*.05,M*.24,M*.05);
   ctx.fillStyle="rgba(0,0,0,.16)";                 /* ворот */
   ctx.beginPath();

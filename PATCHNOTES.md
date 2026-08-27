@@ -7,7 +7,34 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.224.0 — M232 stage 6: the previous audit's six tails, and the queue is closed
+## 0.225.0 — M233: the screenshots were bad because the GAME was bad
+
+Reshooting the README found five real defects. Each is fixed in the game, not in the shot.
+
+- **A straight bright line ran across the sky.** The cloud-horizon haze ramped to half opacity
+  at the horizon and then simply STOPPED — on foot the ground hides that edge (it sits exactly
+  at `SURF_HOR`), but in flight the ground is elsewhere and the cut hung in mid-air across the
+  whole frame. It now fades out below the horizon as well, and takes its colour from today's
+  air (19c) instead of the night sky, so by day it is no longer a dark bar across a light sky.
+- **On approach you could not see what you were landing on.** The camera kept the ship at 42%
+  of the frame and looked nowhere else: at half a kilometre the ground was below the bottom
+  edge and the screen was an empty gradient. The camera now slides down far enough to keep the
+  ground's edge in frame, and no further than keeping the ship clear of the instrument pod.
+- **The far ridges flew up into the sky on approach.** Their offset was a fraction of the
+  camera's own `camy`, true only near the ground; from altitude they rose above the terrain and
+  their flat wash filled half the frame. Their rise above the near ground is now capped.
+- **The flight instrument pod was a ghost with five anonymous dials.** Muted blue-grey at .28
+  opacity over sky, and no captions at all — the cockpit had earned three-letter codes back in
+  M213, the pod never got them. Now: a dark field behind each dial, a shadowed needle, higher
+  contrast, and ХРН/КРС/МСС/ПРМ/АКТ under the scales. No colour, no alarm — as before.
+- **At home the owner was a white blot and the doorways were black holes.** He was drawn near
+  white (214,222,228): on a dark wall the arms vanished into the torso and the figure fell
+  apart into a bright smear and two grey sticks. At home he now wears house clothes with a
+  lit shoulder and a shadowed side. The openings into the next room were painted in fractions
+  of an already dark palette and read as cupboards; the neighbour's room now shows its own
+  lamp — lighter far wall, a clear floor strip, warm light reaching our floor in a pool.
+
+Tests: 379 suites green.
 
 - **HQ**: a free domain is a switched-OFF screen — grey glass, grey tape, grey label, not a
   single spark of the domain's colour. Colour is power, and an empty seat has none.

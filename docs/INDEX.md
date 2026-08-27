@@ -965,10 +965,10 @@ HIN_UP                       src/29e-home-up.js:20
 hinDrawHole                  src/29e-home-up.js:219
 hinDrawShell                 src/29e-home-up.js:59
 hinDrawStair                 src/29e-home-up.js:175
-hinFigure                    src/29d-home-draw.js:528
+hinFigure                    src/29d-home-draw.js:554
 hinFolkMake                  src/29c-home-in.js:84
 hinFolkTick                  src/29c-home-in.js:115
-hinFrontStuff                src/29d-home-draw.js:236
+hinFrontStuff                src/29d-home-draw.js:262
 hinGroundRooms               src/29c-home-in.js:28
 hinHasUp                     src/29e-home-up.js:22
 hinHoleX                     src/29e-home-up.js:41
@@ -976,7 +976,7 @@ hinNear                      src/29c-home-in.js:229
 hinPal                       src/29d-home-draw.js:6
 hinRoomAt                    src/29c-home-in.js:60
 hinRooms                     src/29c-home-in.js:42
-hinRoomStuff                 src/29d-home-draw.js:273
+hinRoomStuff                 src/29d-home-draw.js:299
 hinSpan                      src/29c-home-in.js:52
 hinStairX                    src/29e-home-up.js:36
 hinTalk                      src/29c-home-in.js:238
@@ -1140,7 +1140,7 @@ instrOffers                  src/05b-instr-kit.js:126
 instrPanel                   src/25a-instr.js:100
 instrPenWidth                src/05b-instr-kit.js:77
 instrPodDraw                 src/25c-instr-hud.js:19
-instrPodTick                 src/25c-instr-hud.js:64
+instrPodTick                 src/25c-instr-hud.js:84
 instrPrice                   src/05b-instr-kit.js:114
 instrQuality                 src/05b-instr-kit.js:65
 instrRead                    src/25a-instr.js:59
@@ -3429,13 +3429,13 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19d-weather.js · 13 КБ
   · погода:1
 
-## src/19e-clouds.js · 14 КБ
+## src/19e-clouds.js · 15 КБ
   · облака:1
 
 ## src/19f-lander.js · 21 КБ
   · посадочный корабль:1
 
-## src/19-mode-landing.js · 24 КБ
+## src/19-mode-landing.js · 26 КБ
   · посадка:1
 
 ## src/20aa-poi-shapes.js · 30 КБ
@@ -3558,7 +3558,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25b-tape.js · 12 КБ
   · самописец: бумага, пять перьев, память наблюдения:1
 
-## src/25c-instr-hud.js · 5 КБ
+## src/25c-instr-hud.js · 6 КБ
   · приборная колодка: те же приборы, но всегда под рукой:1
 
 ## src/25-cockpit.js · 34 КБ
@@ -3696,7 +3696,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29c-home-in.js · 16 КБ
   · дом изнутри: по нему ходят:1
 
-## src/29d-home-draw.js · 34 КБ
+## src/29d-home-draw.js · 38 КБ
   · дом изнутри: кадр:1
 
 ## src/29e-home-up.js · 22 КБ

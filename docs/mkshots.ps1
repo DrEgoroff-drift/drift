@@ -38,9 +38,33 @@ setTimeout(function(){
     },
     map:function(){G.mode="map";},
     belt:function(){var S=sysWhere(function(S){return !!S.belt;});if(S)goTo(S);G.shipId="obod";G.owned.obod=true;enterBelt();},
-    belt2:function(){var S=sysWhere(function(S){return !!S.belt;},3);if(S)goTo(S);G.shipId="igla";G.owned.igla=true;enterBelt();},
+    belt2:function(){
+      var S=sysWhere(function(S){return !!S.belt;},6);if(S)goTo(S);
+      G.shipId="igla";G.owned.igla=true;enterBelt();
+      /* Прицел не должен смотреть в пустоту — но и «ближайший камень» не
+         годится: он часто висит один в чёрном поле. Берём тот, вокруг
+         которого ГУЩЕ всего: цель в кадре и обжитой пояс за ней. */
+      var b=G.belt,best=null,bs=-1;
+      for(var i=0;i<b.ast.length;i++){var a=b.ast[i];
+        var d=Math.hypot(a.x-b.x,a.y-b.y,a.z-b.z);
+        if(d<260||d>820)continue;
+        var n=0;
+        for(var j=0;j<b.ast.length;j++){var o=b.ast[j];if(o===a)continue;
+          if(Math.hypot(o.x-a.x,o.y-a.y,o.z-a.z)<620)n++;}
+        var sc=n+a.r*.02;
+        if(sc>bs){bs=sc;best=a;}}
+      if(best){var bd=Math.hypot(best.x-b.x,best.y-b.y,best.z-b.z);
+               b.yaw=Math.atan2(best.x-b.x,best.z-b.z);
+               b.pitch=Math.asin(clamp((best.y-b.y)/bd,-1,1));}
+    },
     scoop:function(){var S=sysWhere(function(S){return S.planets.some(function(p){return p.type==="gas";});});if(S)goTo(S);startScoop(S.planets.find(function(p){return p.type==="gas";}));},
     landing:function(){var S=sysWhere(function(S){return !!solid(S,"terran");});if(S)goTo(S);land(solid(S,"terran"));G.land.y=G.land.y-40;},
+    /* тот же спуск у самой земли: камера на подходе и камера на касании — две
+       разные рамки, и вторую тоже надо видеть глазами (M233) */
+    landing2:function(){var S=sysWhere(function(S){return !!solid(S,"terran");});if(S)goTo(S);
+      var p=solid(S,"terran");land(p);
+      G.land.x=G.land.tr.padX+30;
+      G.land.y=groundAt(G.land.tr,G.land.x)-52;G.land.vy=.4;},
     surface:function(){var S=sysWhere(function(S){return !!solid(S,"jungle");});if(S)goTo(S);surf(solid(S,"jungle"));},
     surface2:function(){var S=sysWhere(function(S){return !!solid(S,"ice");},2);if(S)goTo(S);surf(solid(S,"ice"));},
     cave:function(){var S=sysWhere(function(S){return !!solid(S);});if(S)goTo(S);surf(solid(S));enterCave();G.cave.x=520;G.cave.y=caveFloor(G.cave,520);},
@@ -129,6 +153,10 @@ setTimeout(function(){
     }
   };
   try{(SC[scene]||SC.system)();}catch(e){document.title="ERR "+e.message;}
+  /* объявление say() у живого игрока гаснет за пару секунд; под виртуальным
+     временем rAF даёт лишь пару кадров, и плашка застревала посреди КАЖДОГО
+     кадра README. Снимаем её: кадр должен показывать игру, а не тост входа */
+  G.msg="";G.msgT=0;
 },800);
 </script>
 '@

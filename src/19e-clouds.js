@@ -237,10 +237,17 @@ function drawClouds(p,camx,camy){
   }
   ctx.globalAlpha=1;
   ctx.restore();
-  /* дымка у горизонта: дальний эшелон тонет в воздухе, а не обрывается */
-  const amb=p.T.sky[1];
-  const hg=ctx.createLinearGradient(0,yH-H*.18,0,yH+4);
+  /* ── дымка у горизонта не должна КОНЧАТЬСЯ ступенькой (M233) ──
+     Полоса набирала половинную непрозрачность к `yH` и там обрывалась. На
+     поверхности стык прятала земля — она ровно на этой высоте; в полёте на
+     посадке земля совсем в другом месте, и поперёк кадра шла ровная светлая
+     черта на треть экрана. Дымка теперь гаснет в обе стороны: сгущается к
+     горизонту и тает под ним, края нет вовсе. И цвет берётся из СЕГОДНЯШНЕГО
+     воздуха (19c), иначе днём это тёмная перемычка поперёк светлого неба. */
+  const amb=(typeof ambRGB==="function")?ambRGB(p):p.T.sky[1];
+  const hg=ctx.createLinearGradient(0,yH-H*.18,0,yH+H*.12);
   hg.addColorStop(0,"rgba("+amb.join(",")+",0)");
-  hg.addColorStop(1,"rgba("+amb.join(",")+",.5)");
-  ctx.fillStyle=hg;ctx.fillRect(0,yH-H*.18,W,H*.18+4);
+  hg.addColorStop(.60,"rgba("+amb.join(",")+",.34)");
+  hg.addColorStop(1,"rgba("+amb.join(",")+",0)");
+  ctx.fillStyle=hg;ctx.fillRect(0,yH-H*.18,W,H*.30);
 }

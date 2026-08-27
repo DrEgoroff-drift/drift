@@ -36,9 +36,9 @@ branching structure the galaxy was generated with.
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/system.png" alt="Flying through a system" width="100%">
-<b>System flight.</b> Orbits, nebula and a five-needle instrument panel in the corner: every
-region of the galaxy bends exactly one of those needles, and the misclosure grows toward the
-region's core.
+<b>System flight.</b> Orbits, a generated nebula and the five-needle instrument strip along the
+top: every region of the galaxy bends exactly one of those needles, and the misclosure grows
+toward the region's core.
 </td>
 </tr>
 <tr>
@@ -63,8 +63,8 @@ type so a crystal planet is never washed flat white by fog.
 <td width="50%" valign="top">
 <img src="docs/shots/surface.png" alt="Jungle world on foot" width="100%">
 <b>On foot.</b> Flora and fauna come from the planet's genome; the ground is one baked
-material tile holding three scales at once. The astronaut is the unit of scale: 26 px against a
-lander of 90–130.
+material tile holding three scales at once. The astronaut is the unit of scale — held at the
+same share of the frame on any monitor, so you never have to look for yourself on a big screen.
 </td>
 </tr>
 <tr>
@@ -89,8 +89,10 @@ is the only light unless the flora glows.
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/base.png" alt="Base cross-section cut into a hillside" width="100%">
-<b>Base cross-section.</b> Rooms are generated from a grid; each of the eight kinds has its own
-interior, workers walk between them, power runs along the yellow lines.
+<b>Base cross-section.</b> Rooms are generated from a grid; each kind has its own interior with
+its own work going on — the stoker drives his poker, the tallyman marks his slate, the lift cage
+travels the shaft, the shift walks between rooms, and the smelter's smoke is taken by the wind
+at the surface cap. Power runs in cable trays under the deck plating, a panel box per room.
 </td>
 </tr>
 <tr>
@@ -101,8 +103,9 @@ you fight through is the one you saw from outside.
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/cantina.png" alt="Station cantina" width="100%">
-<b>Station cantina.</b> The hall, its bottles and the people at the counter are procedural;
-who sits there depends on the station's kind. Managers are hired here, one per domain.
+<b>Station cantina.</b> The hall, its bottles and its patrons are procedural; who sits there
+depends on the station's kind. On this particular evening the travelling cinema has the wall —
+a newsreel plays and the hall watches. Managers are hired here, one per domain.
 </td>
 </tr>
 <tr>
@@ -489,9 +492,9 @@ Kilometres earn capped in-game credits, with a combo for riding without stopping
 ## Persistence
 
 Local autosave, portable base64 save codes for moving between devices, and optional cloud sync
-against your own server. The save format is `v4` and stays that way: every new feature is added
-with a safe default, so a save written before crews, bases, alloys or fusion existed still loads
-— it simply has none of them. Anything derivable from a seed (systems, orbits, belts, station
+against your own server. The save format writes `v5` and still reads `v4`: every new feature is
+added with a safe default, so a save written before crews, bases, alloys or fusion existed still
+loads — it simply has none of them. Anything derivable from a seed (systems, orbits, belts, station
 types, pirate bases, base geology) is regenerated on load; only your decisions and what you
 carried home persist.
 
@@ -500,11 +503,11 @@ carried home persist.
 | File | Purpose |
 |---|---|
 | [`drift.html`](drift.html) | The entire game in one self-contained file — open it directly to play. **Built from `src/`; do not edit by hand.** |
-| [`src/`](src) | Sources: `index.html` shell, `style.css`, and 94 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
-| [`tests/`](tests) | Test suites by topic (`90-harness`, then `91a-flight` … `91ze-parrot`). They drive the real game state through `resetWorld()` and mock nothing. |
+| [`src/`](src) | Sources: `index.html` shell, `style.css`, and ~220 JavaScript modules (core maths and RNG, galaxy, planets, ships, parts, audio, music, economy, crew, save, one per game mode, UI). Concatenated in filename order, since it all shares one scope. |
+| [`tests/`](tests) | A hundred-odd test suites by topic (`90-harness`, then `91a-flight` onward). They drive the real game state through `resetWorld()` and mock nothing. |
 | [`build.ps1`](build.ps1) | Rebuilds `drift.html` from `src/`. No dependencies — PowerShell, because Node is not assumed. `-Watch` rebuilds on save. |
-| [`server.js`](server.js) | Optional zero-dependency Node.js server (Node 18+) for self-hosting and persisting cloud saves to a `./saves` folder. |
-| [`worker.js`](worker.js) | Optional Cloudflare Worker alternative, storing saves in a KV namespace. |
+| [`site/`](site) | The [drift-game.ru](https://drift-game.ru) pages: front page, accounts and cloud saves (one small PHP endpoint, `api.php`), and the standalone 3D bird. Published automatically on push. |
+| [`bird/`](bird) | Sources of the 3D bird (WebGL2, `bird.ps1` builds them into one self-contained file). Not part of the game. |
 | [`CLAUDE.md`](CLAUDE.md) | House rules for working on the code: what lives where, what must not change, how to verify. |
 | [`PLAN.md`](PLAN.md) | The live plan: cross-cutting rules and the milestones still ahead. |
 | [`docs/PLAN-archive.md`](docs/PLAN-archive.md) | Design log — every finished milestone, what it solved and why it was built that way. |
@@ -522,24 +525,21 @@ powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
 The same build produces `tests.html` — open it in a browser and it runs the suites against the
-real game state (currently 6 340 assertions, nothing mocked) and prints the report on the page.
+real game state (currently ~11 800 assertions across 379 suites, nothing mocked) and prints the
+report on the page; `test.ps1` runs the same thing headless.
 
 Module order matters: the whole game shares one scope, so constants and tables must be declared
 before anything reads them at top level. A new module gets a new numeric prefix in the right
 place; fractional steps (`19a-`) avoid renaming neighbours.
 
-**To self-host with cloud saves:**
-
-```bash
-node server.js
-```
-
-Then point the `CLOUD` config inside `drift.html` at your server's `/save` endpoint to enable
-cross-device saves instead of manual codes. Set `PORT` to use something other than 8080.
+**To self-host with cloud saves:** put [`site/api.php`](site/api.php) on any PHP host and point
+the cloud config inside the game at it — accounts and cross-device saves need nothing more than
+that one file and a writable folder. Without it the game still saves locally and exports
+portable save codes.
 
 ## Status
 
-Version 0.136.0. Everything described above is built and playable, online at
+Version 0.224.0. Everything described above is built and playable, online at
 [drift-game.ru](https://drift-game.ru) with accounts and cloud saves, or offline from this file.
 
 Four development passes are behind it. The first finished the planned queue: celestial
@@ -563,8 +563,11 @@ game was looked at again screen by screen (the settlement, the mine, the cantina
 ground cross-section, the gas giant), and the home stopped being a panel and became a house you
 walk into.
 
-In progress: the graphics debt written down from looking, one fault at a time — the mine's
-shafts, the gas giant baked too soft, the machine-filled rooms of a base — and the passes the
-home may still want: furniture in the hall and at the dock, sounds indoors.
+Since then the game grew its through-line — an arc about access instead of credits, offers with
+faces and windows that close quietly, and an ending that is never explained — and went through
+a full cosmetic audit under eight laws (every light has a source, everything standing casts a
+shadow, work is visible, motion never blinks). Noon finally looks like noon: the sky, the
+shadows and the light all know the hour. The frame holds 60 fps in all nine modes.
 
+Nothing is queued. The game lives as a sandbox; new work starts from the author's eye.
 Balance is tuned against measurements, so the numbers move between versions.

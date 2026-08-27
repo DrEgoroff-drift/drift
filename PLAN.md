@@ -57,6 +57,22 @@ Here is only what is still live â cross-cutting rules, the visual queue and
 
 ---
 
+## M233 — the shots as an audit tool (live, 2026-08-28)
+
+The author, reshooting the README: «прикол не поймать кадр, а понять, что кадр говно из-за
+того, что в игре оно говно». So the shot is a probe, not a deliverable: when a frame looks
+wrong, the fix goes into the game and the frame is taken again. Loop: shoot → look → name the
+defect → fix the game → reshoot. **Goal: beautiful shots, beautiful game.**
+
+Closed so far (0.225.0): the cloud-horizon haze cutting a straight line across the sky; the
+landing camera that never showed the ground; far ridges climbing into the sky on approach; the
+ghost instrument pod without captions; the white-blot owner at home and the black-hole doorways.
+
+Rules learned here, worth keeping: **a screen-space band tied to `SURF_HOR` is a lie in any
+mode where the ground is elsewhere** — fade it both ways or anchor it to the real ground; and
+**a parallax offset written as a fraction of `camy` only holds near the ground** — cap it
+against the near terrain.
+
 ## M232 — cosmetics to the limit (the author's self-prompt, 2026-08-27) — CLOSED WHOLE (0.217.0–0.224.0)
 
 The author handed a full cosmetic audit; it subsumed the two "author's eye" items that were the
