@@ -7,7 +7,23 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.221.0 — M232 stage 4 (taken early): the walker is a body, not a mannequin
+## 0.222.0 — M232 stage 3: the raid speaks the base's language
+
+The mannequin half of this stage was already closed by 0.221.0 — the raid draws the same
+`drawAstronaut`. The environment half:
+
+- **The cable channel is alive.** The wall band that stood for it was mute. Now it carries the
+  home base's own signature: an amber power line along the trough — emissive, so the current
+  is visible even in the torch-lit dark and a corridor reads as an inhabited house broken
+  into, not a stage set; mounting clips near the eye; and on roughly every eighth wall a
+  panel box with a steady amber lamp and a feed dropping from the line.
+- **Sheet tone varies wall to wall** (law 4): one tone per room was paper even with seams.
+
+The plinth, sheet seams, rivets, ceiling beams, lamps with floor pools and the hangar paint
+were already in from G4/M180. The dark stays: corridors without lamps are the design — a
+stranger's base explored by head-lamp.
+
+Tests: 379 suites green.
 
 Done before the raid stage because the raid draws the SAME figure large —
 `drawAstronaut` is one body everywhere, so every fix lands on the surface, in the

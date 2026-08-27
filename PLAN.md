@@ -116,7 +116,12 @@ the drill's own pass in stage 2.** Openings between rooms already existed (the d
 - ~~**All:**~~ — furniture shadows swept across all nine rooms (0.218.0–0.220.0); lamp cones
   already varied by `dim`; shift-trace objects already stood (`fin.junk`).
 
-### Stage 3 — raid into the base's language, astronaut instead of a mannequin
+### Stage 3 — raid into the base's language, astronaut instead of a mannequin — DONE
+
+The astronaut half fell out of stage 4 (same `drawAstronaut`, 0.221.0). The environment half
+(0.222.0): the wall's cable channel carries the base's emissive amber line with clips and an
+occasional panel box; sheet tone varies per wall. Plinth/seams/rivets/beams/lamps were already
+there from G4/M180; the corridor dark is the design.
 
 ### Stage 4 — the walker — DONE (0.221.0, taken before stage 3)
 
