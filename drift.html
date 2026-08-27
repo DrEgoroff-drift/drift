@@ -1324,7 +1324,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.201.0";
+const VER="0.202.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -26564,14 +26564,18 @@ function mouseWalkAt(clientX,clientY){
        кадр был нарисован — иначе «идти сюда» уводит мимо на десятки единиц.
        drawSurface кладёт её в G.viewX. */
     const camx=(G.viewX!==undefined?G.viewX:G.surf.x-W/2);
-    G.surf.walkTarget=camx+sx;
+    /* и тот самый масштаб (M217): мир рисуется крупнее кадра, значит экранный
+       пиксель стоит меньше мирового, и без деления «идти сюда» уводит тем
+       дальше, чем больше окно */
+    G.surf.walkTarget=camx+sx/(G.viewK||1);
   }else if(G.mode==="dig"&&G.dig){
     const D=G.dig,px=D.col*DIG_CELL,py=D.row*DIG_CELL;
     const camx=px-W/2,camy=py-H*.5;
     D.walkTarget={col:Math.round((sx+camx)/DIG_CELL),row:Math.round((sy+camy)/DIG_CELL)};
   }else if(G.mode==="cave"&&G.cave){
-    const camx=G.cave.x-W/2;
-    G.cave.walkTarget=camx+sx;
+    const K=G.viewK||1;
+    const camx=G.cave.x-W/(2*K);
+    G.cave.walkTarget=camx+sx/K;
   }
 }
 
@@ -29553,26 +29557,54 @@ function drawStrata(tr,camx,camy,p,P){
 const CHUNK_W=512;        // ширина ломтя в мировых пикселях
 const CHUNK_KEEP=7;       // сколько ломтей держать (W/CW+2 на экран плюс запас)
 
+/* ── МАСШТАБ МИРА ПО РАЗМЕРУ ОКНА (M217) ──
+   Камера поверхности была приклеена к пикселю: чем больше окно, тем больше
+   мира в кадре и тем мельче всё, что в нём живёт. Человек — 26 px, то есть
+   3.6% кадра в 720 и 1.8% на 1440p: чем лучше монитор, тем труднее себя найти.
+   Мерка обязана быть долей кадра, а не пикселем.
+
+   Поэтому мир рисуется через ctx-масштаб, а W и H на время рисования
+   становятся тем, сколько мира видно (W/k, H/k). Ни одна функция внутри об
+   этом не знает: отсечения, SURF_HOR, «мерка экрана» дальней гряды — всё
+   считается по видимому миру и остаётся верным. Тот же приём, что у withCtx.
+
+   Растр при этом обязан печься ПЛОТНЕЕ, иначе весь выигрыш съедается мылом:
+   SCK — во сколько раз плотнее CSS-пикселя печётся кэш. Он входит в ключ
+   каждого хранилища, чтобы ломоть, испечённый под другой масштаб, не всплыл
+   растянутым. Плотность ограничена сверху (RAST_MAX): на ретине DPR уже даёт
+   вдвое, и печь вчетверо — это память гигабайтами за разницу, которой не
+   видно. */
+let SCK=1;
+const RAST_MAX=3;
+function withScale(k,fn){
+  if(!(k>1))return fn();
+  const pW=W,pH=H,pS=SCK;
+  ctx.save();ctx.scale(k,k);
+  W=W/k;H=H/k;SCK=pS*Math.min(k,Math.max(1,RAST_MAX/DPR));
+  try{fn();}finally{ctx.restore();W=pW;H=pH;SCK=pS;}
+}
+
 /* подмена холста: fn рисует так, будто экран размером w×h и начало — в
    мировой точке (ox,oy) */
 function withCtx(cn,w,h,ox,oy,fn){
   const pc=ctx,pW=W,pH=H;
   const g=cn.getContext("2d");
   ctx=g;W=w;H=h;
-  g.setTransform(DPR,0,0,DPR,0,0);
+  g.setTransform(DPR*SCK,0,0,DPR*SCK,0,0);
   g.clearRect(0,0,w,h);
   try{fn(g,ox,oy);}finally{ctx=pc;W=pW;H=pH;}
 }
 function mkCanvas(w,h){
   const cn=document.createElement("canvas");
-  cn.width=Math.max(1,Math.round(w*DPR));cn.height=Math.max(1,Math.round(h*DPR));
+  cn.width=Math.max(1,Math.round(w*DPR*SCK));cn.height=Math.max(1,Math.round(h*DPR*SCK));
   return cn;
 }
 /* хранилище ломтей: {key, top, ch, map:Map<k,canvas>, order:[k...]}.
    key — от чего зависит картинка (планета, DPR, высота); сменился — всё вон */
 function chunkStore(store,key,top,ch){
+  key+="~"+SCK;   /* испечённое под другой масштаб мира не переиспользуется */
   if(!store||store.key!==key||store.ch!==ch||store.top!==top)
-    store={key,top,ch,map:new Map(),order:[]};
+    store={key,top,ch,sck:SCK,map:new Map(),order:[]};
   return store;
 }
 function chunkAt(store,k,paint){
@@ -29597,7 +29629,7 @@ function drawChunks(store,camx,camy,paint){
 /* слои во весь экран: ключ описывает всё, от чего зависит картинка */
 const SCREEN_LAYERS=new Map();
 function screenLayer(key,paint){
-  const full=key+"|"+W+"x"+H+"@"+DPR;
+  const full=key+"|"+W+"x"+H+"@"+DPR+"~"+SCK;
   let cn=SCREEN_LAYERS.get(full);
   if(cn)return cn;
   cn=mkCanvas(W,H);
@@ -29614,7 +29646,8 @@ function screenLayer(key,paint){
    хватило на экран 1920 с запасом; старые вытесняются по порядку. */
 const TILE=512, TILE_KEEP=20;
 function tileStore(store,key){
-  if(!store||store.key!==key)store={key,map:new Map(),order:[]};
+  key+="~"+SCK;
+  if(!store||store.key!==key)store={key,sck:SCK,map:new Map(),order:[]};
   return store;
 }
 function tileAt(store,kx,ky,paint){
@@ -37930,7 +37963,8 @@ function surfaceHint(){
   }
   return null;
 }
-function drawSurfaceHud(camx,camy){
+function drawSurfaceHud(camx,camy,K){
+  K=K||1;
   const S=G.surf;
   ctx.textAlign="center";
   /* строка-подсказка сверху */
@@ -37979,7 +38013,7 @@ function drawSurfaceHud(camx,camy){
     const m=marks[mi];
     const d=m.x-S.x, ad=Math.abs(d);
     ctx.fillStyle=m.col;
-    if(ad>W*.45){                       // цель за краем — фишка у своей кромки
+    if(ad*K>W*.45){                       // цель за краем — фишка у своей кромки
       const dir=Math.sign(d);
       const label=m.ru+" "+Math.round(ad)+" м";
       const tw=ctx.measureText(label).width,cw=tw+24,ch=15;
@@ -37997,14 +38031,14 @@ function drawSurfaceHud(camx,camy){
       ctx.fillText(label,dir>0?rx+cw-14:rx+14,ry+11);
       ctx.textAlign=old;
     }else{
-      const sx=clamp(m.x-camx,64,W-RIGHT_PAD-14);
+      const sx=clamp((m.x-camx)*K,64,W-RIGHT_PAD-14);
       rowY+=13;
       ctx.fillRect(sx-1,rowY-5,2,10);
       ctx.fillText(m.ru,sx,rowY+16);
     }
   }
 }
-function drawSurface(){
+function drawSurfaceWorld(){
   const S=G.surf,tr=S.tr,p=S.p;
   tr.mat=planetMat(p);tr.p=p;
   drawSkyBase(p);
@@ -38378,7 +38412,30 @@ function drawSurface(){
   }
   lightShafts(p);
   gradePass(p);
-  drawSurfaceHud(camx,camy);
+}
+
+/* ── масштаб мира под размер окна (M217) ──
+   Жалоба внешнего плейтеста: «двадцать секунд не мог найти себя на поверхности».
+   Дело было не в рисунке ходока, а в мерке: камера шла ровно по пикселю, и
+   рост человека мерился монитором, а не кадром — 3.6% высоты в окне 720 и
+   1.8% на 1440p. Чем лучше экран, тем мельче человек.
+
+   Мерка — доля кадра. База 560: при ней 26 нарисованных пикселей ходока
+   держатся около 4.6% высоты на любом экране. Выше 2.4 не поднимаемся — за
+   этим пределом в кадр перестаёт помещаться дорога до цели, и мир становится
+   комнатой. Малое окно не ужимаем (k≥1): телефону и так достаётся мало мира.
+
+   Мир идёт через ctx-масштаб (withScale, 18c), приборы и фишки — нет: текст
+   обязан остаться того же роста и той же чёткости, чем бы ни был занят мир. */
+const SURF_BASE=560, SURF_KMAX=2.4;
+function surfScale(){return clamp(H/SURF_BASE,1,SURF_KMAX);}
+function drawSurface(){
+  const K=surfScale();
+  /* единственный источник правды о масштабе на кадр: по нему же 15-input
+     пересчитывает тычок в мировую координату */
+  G.viewK=K;
+  withScale(K,drawSurfaceWorld);
+  drawSurfaceHud(G.viewX,G.viewY,K);
 }
 
 /* ══════════════ дом снаружи ══════════════
@@ -40440,7 +40497,7 @@ function drawCaveFar(C,camx,camy){
   });
   ctx.drawImage(L,0,0,W,H);
 }
-function drawCave(){
+function drawCaveWorld(){
   const C=G.cave;
   if(C.cy==null)C.cy=C.y;
   const camx=C.x-W/2, camy=C.cy-H*.56;
@@ -40511,6 +40568,16 @@ function drawCave(){
   /* Показания больше не рисуются на канве в левом нижнем углу: там стоят
      DOM-пэды, и текст просвечивал сквозь кнопки (M178). Скафандр и ранец
      живут в строке состояния, галерея и глубина — в строке места (hud()). */
+}
+
+/* пещера меряется тем же, чем поверхность (M217): это тот же человек в том же
+   мире, и если наверху он занимает свою долю кадра, а под землёй сжимается до
+   пикселя, переход читается как смена игры. Приборов на канве здесь нет вовсе —
+   всё в DOM, — поэтому масштабируется кадр целиком. */
+function drawCave(){
+  const K=surfScale();
+  G.viewK=K;
+  withScale(K,drawCaveWorld);
 }
 
 /* ══════════════ шахта: порода ══════════════

@@ -7,6 +7,31 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.202.0 — the world is measured by the frame, not by the monitor (M217)
+
+An outside tester spent twenty seconds unable to find himself on the surface. Measured, and the
+number was worse than the complaint: the walker is ~26 px drawn one-to-one — 3.6% of a 720-high
+frame, 3.0% of the tester's 840, **1.8% on a 1440p monitor**. The better your screen, the smaller
+the person on it. The bug was never in the drawing; it was in the ruler. A bigger window did not
+show a bigger world, it showed *more* world, and everything alive in it shrank.
+
+**Now the world scales with the frame.** The surface — and the cave, because it is the same man in
+the same world and shrinking him on the way down would read as a change of game — is drawn through
+one context scale, `clamp(H/560,1,2.4)`. The walker holds about 4.6% of frame height on any screen.
+Small windows are untouched: 560 is where the game already sat.
+
+**And it stays crisp**, which is the half that took the work. While the world is being drawn, `W`
+and `H` become *how much world is visible*, so every cull, the horizon, the far ridge's
+"measured by the screen" rule and the camera's own arithmetic keep working without knowing anything
+happened — the trick tiles have used since 0.87. The cached raster is baked **denser** instead of
+being stretched: the scale enters the key of every store, so nothing baked for another size can
+surface blurred. Density is capped, because on a retina the pixel ratio already gives two and
+baking four times over is memory by the gigabyte for a difference nobody can see.
+
+The frame cost nothing: 60 fps in every mode, console empty. 11693 assertions in 362 suites,
+including both round trips — a tap at the 300th pixel walks to the point drawn there, above ground
+and below it.
+---
 ## 0.201.0 — heard on the air, written on the paper (playtest #5, the rest of it)
 
 0.200.0 let you lay a course from a price the desk remembered. But the desk only remembered stations

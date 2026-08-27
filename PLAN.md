@@ -516,30 +516,40 @@ action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
 
 ## Open, in the order I would take them
 
-1. **The walker is 3 % of the frame.** Measured: 25 px on an 840 px frame, and the tester spent
-   twenty seconds unable to find himself on the surface. The *ratio* to the lander is right; what
-   is wrong is that the surface camera does not scale with the window, so a bigger desktop window
-   just shows more world and shrinks everyone in it. The fix is a camera scale tied to frame
-   height — and it touches the world-x chunk cache, which is baked 1:1, so it is a milestone with
-   its own passes, not a patch.
+1. ~~**The walker is 3 % of the frame.**~~ — **closed by M217 (0.202.0).** The complaint was
+   measured twice and held: the walker is ~26 px drawn 1:1, i.e. 3.6% of a 720-high frame and 1.8%
+   on a 1440p monitor — the better the screen, the harder to find yourself. The cause was the
+   *ruler*: the surface camera went pixel-for-pixel, so a person's height was measured by the
+   monitor rather than by the frame.
 
-   **Re-measured 27.08.2026 and the numbers hold.** The walker is ~26 px drawn 1:1 (`drawAstronaut`
-   is called under a bare `translate`, with no scale anywhere), so it is **3.6% of a 720-high frame,
-   3.0% of the tester's 840, and 1.8% on a 1440p monitor** — it gets worse the better your screen.
-   Two routes, and they trade against each other, which is why this wants the author's eye rather
-   than a silent overnight change:
+   **The route taken (the author's call, 27.08.2026): the scale goes into the transform, and the
+   scale goes into the chunk key.** `withScale(k,fn)` (`18c-chunks`) scales the context and, for
+   the duration of the world's drawing, sets `W`/`H` to *how much world is visible* (`W/k`, `H/k`).
+   Nothing inside knows: every cull, `SURF_HOR`, the far ridge's "measured by the screen" rule and
+   the camera's own arithmetic are all computed against the visible world and stay correct — the
+   same trick `withCtx` has always used for tiles. The other two routes were rejected on their own
+   terms: a smaller buffer blitted up costs the game's best screen its crispness, and multiplying
+   every world→screen conversion by hand is the invasive version this note predicted.
 
-   - **Render the world into a smaller buffer and blit it up.** One change at the top of
-     `drawSurface`; every cull and every `W`/`H` inside stays correct because the code sees the
-     buffer's size (`withCtx` already does this trick for tiles), and it is *cheaper* to draw. The
-     price is softness: at ×1.4 the world is drawn at 914×514 and upscaled — on flat shapes that may
-     even read well, but it is the game's best screen and it would no longer be pixel-crisp.
-   - **Multiply every world→screen conversion by the scale.** Keeps full resolution and costs
-     nothing, but touches every cull, every `groundAt` reader and the chunk cache's baking — the
-     invasive version the note above already predicted.
+   **The raster is baked denser instead of stretched.** `SCK` is how much denser than a CSS pixel
+   a cached raster is baked; it multiplies `DPR` inside `mkCanvas`/`withCtx` and enters the key of
+   every store, so a slice baked for another scale can never surface stretched. Density is capped
+   (`RAST_MAX=3`): on a retina `DPR` already gives two, and baking four times over is memory by the
+   gigabyte for a difference nobody can see. Measured cost: `?g11` reads 60 fps in every mode,
+   errors empty.
 
-   Cheap and unrelated to either: the chunk key already includes `H`, so a scale can join it without
-   inventing anything.
+   **The ruler itself:** `surfScale()` = `clamp(H/560,1,2.4)`. 560 is where the game already sat, so
+   small windows change by nothing; 2.4 is the ceiling, past which the road to a target stops
+   fitting in the frame and the world becomes a room. The walker now holds ~4.6% of frame height on
+   any screen. The cave is scaled by the same ruler (`22-mode-cave`): it is the same man in the same
+   world, and having him shrink on the way down would read as a change of game. Input divides by the
+   same `G.viewK`, and both round trips are guarded in `91q-planet`.
+
+   **Still open:** the mine (`dig`) is left at 1:1 — its camera is a cell grid, tapping depends on
+   the cell's size on screen, and it deserves its own pass rather than a ride on this one. And the
+   change makes an old contrast louder: the world now grows with the window while the HUD — chips,
+   captions, the instrument row — stays at its 9 px whatever the monitor. That is the next question
+   of the same family, and it is a look-and-feel decision about every screen, not a defect.
 2. **A full-screen panel with a screenful of nothing.** The HQ is fixed by drawing its room, but
    the class remains: `.scr` is `inset:22px …`, so every screen is full height whatever it holds.
    Either panels shrink to their content, or every short screen needs something true to show.

@@ -288,14 +288,18 @@ function mouseWalkAt(clientX,clientY){
        кадр был нарисован — иначе «идти сюда» уводит мимо на десятки единиц.
        drawSurface кладёт её в G.viewX. */
     const camx=(G.viewX!==undefined?G.viewX:G.surf.x-W/2);
-    G.surf.walkTarget=camx+sx;
+    /* и тот самый масштаб (M217): мир рисуется крупнее кадра, значит экранный
+       пиксель стоит меньше мирового, и без деления «идти сюда» уводит тем
+       дальше, чем больше окно */
+    G.surf.walkTarget=camx+sx/(G.viewK||1);
   }else if(G.mode==="dig"&&G.dig){
     const D=G.dig,px=D.col*DIG_CELL,py=D.row*DIG_CELL;
     const camx=px-W/2,camy=py-H*.5;
     D.walkTarget={col:Math.round((sx+camx)/DIG_CELL),row:Math.round((sy+camy)/DIG_CELL)};
   }else if(G.mode==="cave"&&G.cave){
-    const camx=G.cave.x-W/2;
-    G.cave.walkTarget=camx+sx;
+    const K=G.viewK||1;
+    const camx=G.cave.x-W/(2*K);
+    G.cave.walkTarget=camx+sx/K;
   }
 }
 

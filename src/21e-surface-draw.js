@@ -16,7 +16,8 @@ function surfaceHint(){
   }
   return null;
 }
-function drawSurfaceHud(camx,camy){
+function drawSurfaceHud(camx,camy,K){
+  K=K||1;
   const S=G.surf;
   ctx.textAlign="center";
   /* строка-подсказка сверху */
@@ -65,7 +66,7 @@ function drawSurfaceHud(camx,camy){
     const m=marks[mi];
     const d=m.x-S.x, ad=Math.abs(d);
     ctx.fillStyle=m.col;
-    if(ad>W*.45){                       // цель за краем — фишка у своей кромки
+    if(ad*K>W*.45){                       // цель за краем — фишка у своей кромки
       const dir=Math.sign(d);
       const label=m.ru+" "+Math.round(ad)+" м";
       const tw=ctx.measureText(label).width,cw=tw+24,ch=15;
@@ -83,14 +84,14 @@ function drawSurfaceHud(camx,camy){
       ctx.fillText(label,dir>0?rx+cw-14:rx+14,ry+11);
       ctx.textAlign=old;
     }else{
-      const sx=clamp(m.x-camx,64,W-RIGHT_PAD-14);
+      const sx=clamp((m.x-camx)*K,64,W-RIGHT_PAD-14);
       rowY+=13;
       ctx.fillRect(sx-1,rowY-5,2,10);
       ctx.fillText(m.ru,sx,rowY+16);
     }
   }
 }
-function drawSurface(){
+function drawSurfaceWorld(){
   const S=G.surf,tr=S.tr,p=S.p;
   tr.mat=planetMat(p);tr.p=p;
   drawSkyBase(p);
@@ -464,5 +465,28 @@ function drawSurface(){
   }
   lightShafts(p);
   gradePass(p);
-  drawSurfaceHud(camx,camy);
+}
+
+/* ── масштаб мира под размер окна (M217) ──
+   Жалоба внешнего плейтеста: «двадцать секунд не мог найти себя на поверхности».
+   Дело было не в рисунке ходока, а в мерке: камера шла ровно по пикселю, и
+   рост человека мерился монитором, а не кадром — 3.6% высоты в окне 720 и
+   1.8% на 1440p. Чем лучше экран, тем мельче человек.
+
+   Мерка — доля кадра. База 560: при ней 26 нарисованных пикселей ходока
+   держатся около 4.6% высоты на любом экране. Выше 2.4 не поднимаемся — за
+   этим пределом в кадр перестаёт помещаться дорога до цели, и мир становится
+   комнатой. Малое окно не ужимаем (k≥1): телефону и так достаётся мало мира.
+
+   Мир идёт через ctx-масштаб (withScale, 18c), приборы и фишки — нет: текст
+   обязан остаться того же роста и той же чёткости, чем бы ни был занят мир. */
+const SURF_BASE=560, SURF_KMAX=2.4;
+function surfScale(){return clamp(H/SURF_BASE,1,SURF_KMAX);}
+function drawSurface(){
+  const K=surfScale();
+  /* единственный источник правды о масштабе на кадр: по нему же 15-input
+     пересчитывает тычок в мировую координату */
+  G.viewK=K;
+  withScale(K,drawSurfaceWorld);
+  drawSurfaceHud(G.viewX,G.viewY,K);
 }

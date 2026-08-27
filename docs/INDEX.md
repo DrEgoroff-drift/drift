@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 317 · символов верхнего уровня: 2903
+Файлов: 317 · символов верхнего уровня: 2910
 
 ## СИМВОЛЫ
 
@@ -332,8 +332,8 @@ chSq                         tests/91zzzt-chess.js:2
 chState                      src/25n-chess.js:184
 CHUNK_KEEP                   src/18c-chunks.js:20
 CHUNK_W                      src/18c-chunks.js:19
-chunkAt                      src/18c-chunks.js:44
-chunkStore                   src/18c-chunks.js:39
+chunkAt                      src/18c-chunks.js:72
+chunkStore                   src/18c-chunks.js:66
 chWhite                      src/25n-chess.js:36
 cirrusSprite                 src/19e-clouds.js:126
 CKPT                         src/25-cockpit.js:91
@@ -524,15 +524,16 @@ drawBeltRocks                src/17c-system-draw.js:41
 drawBuildMenu                src/21aa-base-rooms.js:492
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
-drawCave                     src/22-mode-cave.js:483
+drawCave                     src/22-mode-cave.js:560
 drawCaveDark                 src/22a-cave-deco.js:288
 drawCaveFar                  src/22-mode-cave.js:470
 drawCaveGlow                 src/22a-cave-deco.js:308
 drawCaveRock                 src/22-mode-cave.js:422
 drawCaveSolid                src/22a-cave-deco.js:220
 drawCaveWater                src/22a-cave-deco.js:261
+drawCaveWorld                src/22-mode-cave.js:483
 drawCelest                   src/06a-celest.js:167
-drawChunks                   src/18c-chunks.js:55
+drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:169
 drawCockpit                  src/25-cockpit.js:400
 drawCombat                   src/13-pirates.js:212
@@ -608,15 +609,16 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:103
-drawSurface                  src/21e-surface-draw.js:93
+drawSurface                  src/21e-surface-draw.js:485
 drawSurfaceHud               src/21e-surface-draw.js:19
+drawSurfaceWorld             src/21e-surface-draw.js:94
 drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:283
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:271
 drawTierTrim                 src/03b-hull-paint.js:62
-drawTiles                    src/18c-chunks.js:96
+drawTiles                    src/18c-chunks.js:125
 drawTrail                    src/16-flight.js:338
 drawWallPaper                src/11ae-concert.js:39
 drawWear                     src/12s-wear.js:70
@@ -1451,7 +1453,7 @@ mixc                         src/03-ships.js:150
 mixHex                       src/12x-suit.js:174
 mixNum                       src/02a-worldmix.js:43
 mixPal                       src/02a-worldmix.js:34
-mkCanvas                     src/18c-chunks.js:32
+mkCanvas                     src/18c-chunks.js:59
 mkMerc                       tests/91b-crew.js:3
 modCost                      src/11-log.js:129
 MODE_RU                      src/27i-ui-table.js:29
@@ -1976,6 +1978,7 @@ rareList                     src/12m-rare.js:103
 rareRender                   src/12m-rare.js:151
 rareSum                      src/12m-rare.js:140
 rareTake                     src/12m-rare.js:115
+RAST_MAX                     src/18c-chunks.js:40
 RD                           src/27k-road.js:183
 rebinding                    src/15-input.js:136
 RECORD_YEARS                 src/11aa-record.js:17
@@ -2236,12 +2239,13 @@ saveGame                     src/14a-cloud.js:38
 say                          src/08-state.js:165
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
+SCK                          src/18c-chunks.js:39
 SCOOP_BAND                   src/19a-mode-scoop.js:7
 scoopBand                    src/19a-mode-scoop.js:8
 scrapPart                    src/05-parts.js:314
 scrapYield                   src/05-parts.js:306
-SCREEN_LAYERS                src/18c-chunks.js:64
-screenLayer                  src/18c-chunks.js:65
+SCREEN_LAYERS                src/18c-chunks.js:92
+screenLayer                  src/18c-chunks.js:93
 SCRIP_BASE                   src/12u-scrip.js:28
 SCRIP_LOG                    src/12u-scrip.js:32
 SCRIP_MIN                    src/12u-scrip.js:29
@@ -2459,7 +2463,7 @@ STAR_CLASS                   src/02-world.js:94
 STAR_COLS                    src/16-flight.js:2
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:23
-start                        src/15-input.js:423
+start                        src/15-input.js:427
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
 stat                         src/08-state.js:123
@@ -2550,9 +2554,11 @@ suitHit                      src/23-mode-dig.js:101
 suitMax                      src/12x-suit.js:78
 SUN_DIR                      src/19c-light.js:11
 sunSpot                      src/19c-light.js:125
+SURF_BASE                    src/21e-surface-draw.js:483
 SURF_HOR                     src/19c-light.js:124
 surfaceHint                  src/21e-surface-draw.js:4
 surfNight                    src/06a-celest.js:43
+surfScale                    src/21e-surface-draw.js:484
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -2593,7 +2599,7 @@ tableWasNew                  src/27i-ui-table.js:75
 tabLive                      src/14a-cloud.js:36
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
-tap                          src/15-input.js:302
+tap                          src/15-input.js:306
 TAPE_ADAPT                   src/25b-tape.js:26
 TAPE_DT                      src/25b-tape.js:24
 TAPE_GAIN                    src/25b-tape.js:25
@@ -2628,9 +2634,9 @@ TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
 tierOf                       src/04b-fleet.js:157
-TILE                         src/18c-chunks.js:81
-tileAt                       src/18c-chunks.js:86
-tileStore                    src/18c-chunks.js:82
+TILE                         src/18c-chunks.js:109
+tileAt                       src/18c-chunks.js:115
+tileStore                    src/18c-chunks.js:110
 timeBucket                   src/03-ships.js:103
 TIN_BIN                      src/12ta-tin.js:31
 TIN_CAP                      src/12ta-tin.js:28
@@ -2883,7 +2889,8 @@ winTap                       src/29g-winter-draw.js:787
 winTestStart                 tests/91zzzj-winter.js:2
 winTone                      src/29g-winter-draw.js:89
 winWall                      src/29f-winter.js:160
-withCtx                      src/18c-chunks.js:24
+withCtx                      src/18c-chunks.js:51
+withScale                    src/18c-chunks.js:41
 WORLD_MOOD                   src/10-music.js:39
 WORLD_SPREAD                 src/10-music.js:99
 WORLD_VIB                    src/10-music.js:98
@@ -3286,7 +3293,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/14-save.js · 47 КБ
   · сохранение:1
 
-## src/15-input.js · 24 КБ
+## src/15-input.js · 25 КБ
   · экранные кнопки: авто-скрытие и размер:1
   · ввод:73
 
@@ -3322,7 +3329,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18b-geology.js · 13 КБ
   · геология:1
 
-## src/18c-chunks.js · 5 КБ
+## src/18c-chunks.js · 7 КБ
   · кэш статичного: чанки и слои:1
 
 ## src/18-mode-map.js · 22 КБ
@@ -3411,7 +3418,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 32 КБ
+## src/21e-surface-draw.js · 34 КБ
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21f-home-out.js · 13 КБ
@@ -3430,7 +3437,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
 
-## src/22-mode-cave.js · 29 КБ
+## src/22-mode-cave.js · 30 КБ
   · пещера: поле породы в двух измерениях:1
 
 ## src/23aa-dig-rock.js · 21 КБ
@@ -3670,7 +3677,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91p-lore.js · 10 КБ
   · отчёт «Долгого Хода»: сто кусков:1
 
-## tests/91q-planet.js · 9 КБ
+## tests/91q-planet.js · 13 КБ
   · планета за полный набор:1
 
 ## tests/91r-hunter.js · 3 КБ

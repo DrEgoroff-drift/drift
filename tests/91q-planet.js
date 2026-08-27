@@ -87,7 +87,7 @@ TEST_SUITES.push(()=>suite("растр: грунт и свод рисуются 
   G.surf.x+=CHUNK_W*3;drawSurface();
   ok(tr.chunks.map.size<=CHUNK_KEEP,"далёкие ломти вытесняются");
   for(const cn of tr.chunks.map.values())
-    eq(cn.height,Math.round(tr.chunks.ch*DPR),"высота ломтя одна на всю полосу — иначе шов в градиенте");
+    eq(cn.height,Math.round(tr.chunks.ch*DPR*tr.chunks.sck),"высота ломтя одна на всю полосу — иначе шов в градиенте");
   ok(typeof drawGroundGrass==="function","трава рисуется живой, поверх ломтей");
   /* пещера */
   if(!G.surf.cave)G.surf.cave={x:G.surf.x+80};
@@ -152,4 +152,62 @@ TEST_SUITES.push(()=>suite("дальняя гряда: свой рельеф, а
   const mid=s/tr.N;
   let fs=0;for(let i=0;i<tr.N;i++)fs+=A[i];
   ok(Math.abs(fs/tr.N-mid)<2,"средняя высота гряды совпадает со средней землёй");
+}));
+
+/* ── M217: мир меряется кадром, а не пикселем ── */
+TEST_SUITES.push(()=>suite("поверхность: рост человека — доля кадра, а не пиксель",()=>{
+  resetWorld();
+  landOnTestPlanet();
+  const pW=W,pH=H;
+  /* сама мерка */
+  H=480;  eq(surfScale(),1,"малое окно не ужимаем: телефону и так мало мира");
+  H=SURF_BASE*2; near(surfScale(),2,.001,"вдвое выше базы — вдвое крупнее мир");
+  H=4000; eq(surfScale(),SURF_KMAX,"выше потолка не поднимаемся: кадр перестанет быть миром");
+  /* и главное, ради чего всё: доля кадра одна и та же на любом экране */
+  H=720;  const s1=26*surfScale()/H;
+  H=1400; const s2=26*surfScale()/H;
+  ok(Math.abs(s1-s2)<.01,"ходок занимает ту же долю кадра в 720 и в 1400");
+  ok(s1>.04,"и эта доля больше прежних 3.6%");
+  W=pW;H=pH;
+
+  drawSurface();
+  eq(W,pW,"после кадра ширина возвращена: масштаб живёт только внутри мира");
+  eq(H,pH,"после кадра высота возвращена");
+  ok(G.viewK>=1,"кадр оставил свой масштаб для ввода");
+  near(G.viewK,surfScale(),.001,"и это тот самый масштаб, которым рисовали");
+
+  /* тычок попадает туда, куда кадр нарисовал: без деления на масштаб
+     «идти сюда» уводит тем дальше, чем больше окно */
+  const rc=cvs.getBoundingClientRect();
+  if(rc.width>0){
+    mouseWalkAt(rc.left+300*rc.width/W,rc.top+rc.height/2);
+    near((G.surf.walkTarget-G.viewX)*G.viewK,300,1.5,"тычок в 300-й пиксель ведёт в ту точку мира, что там нарисована");
+  }
+
+  /* растр печётся под ту плотность, с которой его положат */
+  const tr=G.surf.tr;
+  const want=Math.min(G.viewK,Math.max(1,RAST_MAX/DPR));
+  near(tr.chunks.sck,want,.001,"ломоть печётся под масштаб мира — иначе крупный план оборачивается мылом");
+  for(const cn of tr.chunks.map.values())
+    eq(cn.width,Math.max(1,Math.round(CHUNK_W*DPR*tr.chunks.sck)),"и ширина ломтя это подтверждает");
+  ok(tr.chunks.key.indexOf("~"+tr.chunks.sck)>0,"масштаб входит в ключ: ломоть чужого масштаба не всплывёт");
+}));
+
+/* ── M217: под землёй та же мерка ── */
+TEST_SUITES.push(()=>suite("пещера: человек не сжимается при спуске",()=>{
+  resetWorld();
+  landOnTestPlanet();
+  drawSurface();
+  const up=G.viewK;
+  if(!G.surf.cave)G.surf.cave={x:G.surf.x+80};
+  enterCave();drawCave();
+  near(G.viewK,up,.001,"наверху и под землёй масштаб один: иначе спуск читается как смена игры");
+  const rc=cvs.getBoundingClientRect();
+  if(rc.width>0){
+    mouseWalkAt(rc.left+200*rc.width/W,rc.top+rc.height/2);
+    const camx=G.cave.x-W/(2*G.viewK);
+    near((G.cave.walkTarget-camx)*G.viewK,200,1.5,"и тычок под землёй ведёт туда же, куда указан");
+  }
+  eq(W,Math.round(W),"ширина кадра не осталась дробной после масштаба");
+  G.cave=null;G.mode="surface";
 }));
