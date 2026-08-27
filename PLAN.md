@@ -378,7 +378,16 @@ things they left standing, and these are the graphics debt in its shortest form:
 
 - the **suit kit** is still a paperdoll on the ship screen, not objects on the same desk as the
   tray (M179);
-- the **pirate base**: the enemy bodies are blocky and the hangar wants dressing (M180 pass 2);
+- the **pirate base** (M180 pass 2) — **mostly closed (0.191.0).** Bodies: legs taper into boots and
+  stand in a seeded stance, the belt follows the body, a yoke marks the shoulders — but the thing
+  that actually read as "blocky" was that nothing on the figure was lit, so seven flat fills fell
+  apart on a dark deck; one rim along the crown and shoulders stitches them into a body. Hangar: it
+  was never empty (containers, trusses, gantry, wrecked shuttle, barrels were all there) — it was
+  one temperature, 46–80 on all three channels, and what a hangar has that a warehouse does not is
+  **paint**. Two things measured rather than argued: marking only along bulkheads yielded exactly one
+  yellow pixel in frame, and the line has to run across the bay because the camera looks down it.
+  **Still open there:** warm work lamps with pools on the deck, and rust or colour on some crates —
+  the room is still one temperature away from the paint. Stands `?s=raidfoe`, `?s=raidhangar`;
 - ~~the **far ridge** on the surface is flat (M186)~~ — **closed by M211 (0.190.0).** It was not
   flat, it was *familiar*: both layers were the local ground profile amplified about its mean, so
   the eye recognised the curve and stopped measuring distance with it. Now ridged noise with

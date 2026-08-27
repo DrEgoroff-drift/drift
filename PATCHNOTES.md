@@ -7,6 +7,46 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.191.0 — the pirate base, pass 2: bodies and floor paint (M180)
+
+M180's first pass fixed the projection, the horizon and the bulkheads, and wrote down what it left:
+*"the enemy bodies themselves are blocky, and the hangar wants dressing"*.
+
+**The bodies were blocky in three specific places.** Legs were two identical rectangles from hip to
+floor with a plate for a sole — which reads as a *post*, split down the middle, not a person. Three
+things separate a leg from a bar: it **tapers** toward the ankle, it ends in a **boot** (wider than
+the shin and darker), and two legs do not stand parallel. The stance now comes from the seed, so
+they are not all planted the same way. The belt was a rectangle spanning the full torso width and
+stuck out past its edges, reading as a shelf; it now follows the body and carries a buckle. And a
+dark yoke across the shoulders, because shoulders are the first thing the eye reads a figure by.
+
+**But the real problem was that nothing on the figure was lit.** It was seven flat fills and not one
+highlight, so on a dark deck it fell apart into patches — which is what "blocky" actually describes.
+The compartment's light comes from the ceiling, so the top edges catch it: crown of the helmet, line
+of the shoulders. One outline stitches seven pieces into one body — the same rule the parrot and the
+buildings are drawn by.
+
+**The hangar was never empty — it was one temperature.** Containers, trusses, a gantry, a wrecked
+shuttle and barrels were all already there, and it still read as a grey hall, because every piece of
+iron in it sits between 46 and 80 on all three channels. A real hangar has exactly one saturated
+thing in it and that is **paint**. Floor markings are not decoration: they are what distinguishes a
+hangar from a warehouse, and the only warm colour in a room where everything else is steel.
+
+Two things had to be measured rather than argued. Marking only along the bulkheads produced exactly
+**one yellow pixel** in the whole frame — the hangar cells in view are interior ones with no wall,
+and the cells that have one stand far enough away that the distance falloff has eaten the colour. And
+the line has to run *across* the bay even though ships taxi *along* it: the camera looks down that
+same axis, so a lengthwise line foreshortens to a couple of dashes at the frame edges. Floors are
+marked both ways in life; this projection can only show one of them.
+
+Stands `pageshot view -Q "?s=raidfoe"` and `"?s=raidhangar"` (the first stands you nose-to-nose with
+the nearest pirate — the existing `?s=raid` deliberately finds the room with the *most* visible
+enemies, which means it shows them at a distance and cannot judge a figure). 10732 assertions in 355
+suites.
+
+**Still open:** the room is still one temperature away from the paint — warm work lamps with pools
+on the deck, and rust or colour on some of the crates, would finish what the markings start.
+---
 ## 0.190.0 — the far ridge becomes a range (M211)
 
 M186's walkthrough left one line standing: *"still open: the flat far ridge"*. It has been behind

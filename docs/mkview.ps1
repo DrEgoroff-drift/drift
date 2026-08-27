@@ -196,6 +196,53 @@ setTimeout(function(){
     run(6,updateSurface,drawSurface);
     if(typeof consoleTick==="function")consoleTick(999);
     if(scene==="birdwin"&&typeof toggleParrotWin==="function")toggleParrotWin(true);
+  }else if(scene==="raidhangar"){
+    /* ангар с того места, где игрок оказывается сразу после стыковки: это
+       ПЕРВЫЙ кадр абордажа, и второй хвост M180 — «ангар хочет убранства» —
+       именно про него. Никуда не идём и ничего не двигаем */
+    var PBh=null;
+    for(var hx=-12;hx<12&&!PBh;hx++)for(var hy=-12;hy<12&&!PBh;hy++){
+      if(!starAt(hx,hy))continue;
+      var hs=getSystem(hx,hy),hb=pirateBaseOf(hs);
+      if(hb){G.sys=hs;G.sx=hx;G.sy=hy;PBh=hb;}
+    }
+    if(PBh){
+      enterRaid(PBh);
+      for(var f9=0;f9<6;f9++){G.t+=.02;updateRaid(1);drawRaid();}
+    }
+  }else if(scene==="raidfoe"){
+    /* тело противника крупно (хвост M180). Стенд `raid` ищет комнату, из
+       которой видно БОЛЬШЕ ВСЕГО живых, и потому показывает их издали —
+       судить о фигуре по трём точкам на дальней стене нельзя. Здесь наоборот:
+       встаём вплотную к ближайшему и смотрим ему в лицо. */
+    var PBf=null;
+    for(var fx=-12;fx<12&&!PBf;fx++)for(var fy=-12;fy<12&&!PBf;fy++){
+      if(!starAt(fx,fy))continue;
+      var fs2=getSystem(fx,fy),fb=pirateBaseOf(fs2);
+      if(fb){G.sys=fs2;G.sx=fx;G.sy=fy;PBf=fb;}
+    }
+    if(PBf){
+      enterRaid(PBf);
+      var Sf=G.raid;
+      /* барона — первым: он и есть самый нарядный, и по нему видно ранг */
+      var live=Sf.foes.filter(function(q){return q.hp>0;});
+      live.sort(function(p,q){return (q.baron?1:0)-(p.baron?1:0);});
+      var f6=live[0];
+      if(f6){
+        /* встаём в полутора клетках перед ним и смотрим на него. Сторону
+           выбираем ту, где не переборка, — иначе камера оказывается в стене
+           и кадр пуст. Тревогу НЕ поднимаем: она заливает отсек красным, и
+           судить о фигуре под этой заливкой нельзя */
+        var d6=RCELL*1.5, put=false;
+        [[0,-d6],[0,d6],[-d6,0],[d6,0]].forEach(function(o){
+          if(put)return;
+          if(raidSolidAt(Sf.R,f6.x+o[0],f6.z+o[1]))return;
+          Sf.x=f6.x+o[0];Sf.z=f6.z+o[1];put=true;
+        });
+        Sf.a=Math.atan2(f6.x-Sf.x,f6.z-Sf.z);
+      }
+      for(var f8=0;f8<8;f8++){G.t+=.02;updateRaid(1);drawRaid();}
+    }
   }else if(scene==="raid"){
     /* абордаж: настоящая база из галактики, тем же поиском, что в тестах */
     var PB=null;
