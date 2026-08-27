@@ -7,6 +7,31 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.214.0 — the expedition calls people by name (M229)
+
+The act of the expedition (M154–M161) was built before the offers existed, and the two systems did
+not know each other: for sixty days the whole world worked on one thing, and the counter kept
+offering peacetime runs. Now the circular is heard at the counter too, in three ways.
+
+**The column.** A new offer for the expedition's sixty days: «плечо в колонну» — cargo for her,
+taken without a queue, paying half again over a plain run because everything is going to one place
+and that place pays. Delivering it hands the station three units toward its collection over and
+above the money, and writes a line in the record book in someone else's hand.
+
+**They name you more often.** The world needs hands, and the ones they trust are called first: a
+named offer's chance rises from .45 to .70 — for exactly sixty days. Closed doors stay closed: the
+expedition opens nothing that a squandered name shut.
+
+**The name in the list.** The deepest access of the act, and it pays not one credit: you are
+entered into the expedition's list. A line in the record book — «внесён в список экспедиции · по
+представлению» — and on the day of departure the core counter says the two words the whole book
+turns on: **«ЕСТЬ МЕСТО · ВАС НАЗЫВАЛИ»** instead of «одно место, если кто хочет». The door is
+open either way; the difference is whether you are named in it. Why they named you is never said.
+
+11816 assertions in 376 suites, including: the column appears only during the expedition, the list
+writes the book and flips the departure's words, delivery feeds the collection, and a shut door
+stays shut even in the hot days.
+---
 ## 0.213.0 — the bird has a voice (M228)
 
 The 3D bird's "still to do" list was audited and almost all of it turned out already built — the

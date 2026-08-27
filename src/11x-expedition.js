@@ -230,8 +230,17 @@ function expEnd(){
 }
 function expOfferBlock(){
   if(!expOfferHere())return;
-  $body.appendChild(el("div","sec","ЕСТЬ МЕСТО"));
-  const r=el("div","row","<div class='nm'><b>Одно место. Предлагают один раз.</b><s>уйти — журнал закроется на этой строке · остаться — всё продолжится</s></div>");
+  /* ── назван или не назван (M229) ──
+     Дверь одна и та же, и открыта она любому, кто дошёл до стойки ядра в эти
+     два дня. Разница — в двух словах, которыми её открывают: внесённому в
+     список говорят «вас называли», случившемуся рядом — «если кто хочет».
+     Это вся дуга книги, сжатая до приветствия; и правда не произносится —
+     почему назвали, не объясняют. */
+  const listed=!!(G.exp&&G.exp.listed);
+  $body.appendChild(el("div","sec",listed?"ЕСТЬ МЕСТО · ВАС НАЗЫВАЛИ":"ЕСТЬ МЕСТО"));
+  const r=el("div","row","<div class='nm'><b>"+
+    (listed?"Место есть. Вы в списке — вас называли.":"Одно место. Если кто хочет.")+
+    "</b><s>уйти — журнал закроется на этой строке · остаться — всё продолжится</s></div>");
   const b=el("button","act sm gold","УЙТИ С НИМИ");b.onclick=()=>{expEnd();renderTab();};
   const b2=el("button","act sm","ОСТАТЬСЯ");b2.onclick=()=>{G.exp.offered=1;peopleLine("как знаете. Место займут.","стойка ядра",true);renderTab();};
   r.appendChild(b);r.appendChild(b2);$body.appendChild(r);

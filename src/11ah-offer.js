@@ -136,13 +136,20 @@ function offerVisit(){
   f.shift=shift;
   const r=rng(hashi(G.sx,G.sy,shift)>>>0);
   const kinds=["run","haul","topic","route","bay","word"];
+  /* экспедиция (M229): шестьдесят дней стойка живёт колонной — своё плечо в
+     наборе, именное зовут чаще, а раз за смену кладут «имя в список» */
+  const exp=(typeof expOn==="function")&&expOn();
+  if(exp)kinds.push("carav","carav");
+  const nmP=exp?.70:.45;
   const n=1+Math.floor(r()*2);
   for(let i=0;i<n;i++){
     const kind=kinds[Math.floor(r()*kinds.length)];
     /* Именное приходит только от того, кто помнит хорошо, и не каждый раз:
        иначе «вам» перестанет что-нибудь значить. */
-    offerAdd(kind,who,f.good&&r()<.45);
+    offerAdd(kind,who,f.good&&r()<nmP);
   }
+  if(exp&&f.good&&!((typeof expAll==="function"&&expAll().listed))&&r()<.5)
+    offerAdd("list",who,true);
 }
 function offerLive(){
   const t=G.t;
@@ -207,6 +214,7 @@ function offerTake(o){
   if(!dest){
     /* доступ, а не работа: бокс, имя, плечо. Берётся на месте и на месте же
        кончается — платить тут нечем и не надо */
+    if(typeof offerListTaken==="function")offerListTaken(o);
     return 0;
   }
   o.to=dest;o.carry=1;o.t0=G.t;
@@ -225,6 +233,7 @@ function offerDeliver(){
     if(!o.carry||!o.to)continue;
     if(o.to.sx!==G.sx||o.to.sy!==G.sy)continue;
     o.carry=0;o.done=1;
+    if(typeof offerCaravDone==="function")offerCaravDone(o);
     const pay=offerPay(o);
     /* деньги идут одной воронкой: `earn` (12j) считает оборот дома, и мимо неё
        доход в этой игре не заводится — за этим следит отдельный сторож */
@@ -273,4 +282,47 @@ function offerShutLine(){
   f.said=1;
   const r=rng(hashi(G.sx,G.sy,0x5AD)>>>0);
   return SHUT_LINES[Math.floor(r()*SHUT_LINES.length)];
+}
+
+/* ══════════════ возможности углубляются экспедицией (M229) ══════════════
+   Дуга («After those, in order»): акт экспедиции построен раньше возможностей,
+   и две системы не знали друг о друге. Шестьдесят дней мир работает на одно
+   дело — а стойка предлагала те же плечи, что в мирный день. Теперь циркуляр
+   слышен и здесь, тремя вещами:
+
+   1. КОЛОННА. Новый вид на время экспедиции: «плечо в колонну» — тот же груз,
+      но для неё; платит в полтора раза (всё уходит в одно место, и это место
+      платит), а доставка сверх денег сдаёт колонне три единицы её нужды и
+      пишется в книжку чужой рукой.
+   2. НАЗЫВАЮТ ЧАЩЕ. Миру нужны руки, и первыми зовут тех, кого помнят: шанс
+      именного на смену растёт с .45 до .70. Ровно на шестьдесят дней — дальше
+      как было. Закрытых дверей это не открывает: shut остаётся shut.
+   3. ИМЯ В СПИСОК. Самый глубокий доступ акта: именная возможность без единого
+      кредита — вас вносят в список экспедиции. Взял — строка в трудовой книжке
+      чужой рукой («внесён в список») и G.exp.listed; в день ухода стойка ядра
+      скажет «Вас называли», а не «есть место, если кто хочет». Дверь ухода
+      открыта и без списка — разница только в том, НАЗВАН ли ты в ней, потому
+      что вся дуга и есть эти два слова.
+
+   Правила прежние: ни маркера, ни срока на экране, ни напоминания. Окно
+   закрывается молча, именное — дверью. */
+OFFER_KIND.carav={ru:"плечо в колонну", note:"груз экспедиции · примут без очереди", pay:[90,220]};
+OFFER_KIND.list ={ru:"имя в список",    note:"экспедиции нужны люди, которых называют", pay:[0,0]};
+/* внесение в список: доступ, а не деньги. Пишется чужой рукой */
+function offerListTaken(o){
+  if(o.kind!=="list")return;
+  const E=(typeof expAll==="function")?expAll():null;
+  if(E)E.listed=1;
+  if(typeof recordAdd==="function")recordAdd("институт","внесён в список экспедиции · по представлению");
+  if(typeof peopleLine==="function")peopleLine("записал. Список уйдёт с циркуляром. Дальше — как решат.","стойка",true);
+}
+/* доставка колонне: сверх денег — сдача в счёт станции и строка в книжке */
+function offerCaravDone(o){
+  if(o.kind!=="carav"||!G.sys)return;
+  const E=(typeof expAll==="function")?expAll():null;
+  if(E&&typeof expDemandOf==="function"){
+    const D=expDemandOf(G.sys);
+    if(D)E.coll[D.k]=(E.coll[D.k]|0)+3;
+  }
+  if(typeof recordAdd==="function")recordAdd(G.sys.station?G.sys.station.name:"стойка","плечо в колонну · довёз");
 }

@@ -697,7 +697,12 @@ journal contains no reproach, and a save does not refill the counter.
 door already closed silently; now, one visit later, the person who used to name you says one kind
 line at the counter — ahead of the queue, ahead of story, once per door, ever — and never names
 you again. The truth is not in the line; the world keeps offering cold. «Никто не сердится — вот
-что тяжелее всего.» Next, in order: offers deepening through the expedition, Act IV, the yacht.
+что тяжелее всего.» **And the offers deepen through the expedition (M229, 0.214.0):** for the
+circular's sixty days the counter lives for the column («плечо в колонну», paying half again and
+feeding the station's collection), naming runs at .70 instead of .45 — closed doors stay closed —
+and the deepest access of the act is «имя в список», paying nothing and turning the departure's
+greeting into «ЕСТЬ МЕСТО · ВАС НАЗЫВАЛИ». Next, in order: Act IV (doors closed, the world still
+offering, nobody left to vouch), then the yacht.
 
 # QUEUE: Трепло in the round — a separate 3D module (M200)
 

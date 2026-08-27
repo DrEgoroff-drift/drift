@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 325 · символов верхнего уровня: 2958
+Файлов: 325 · символов верхнего уровня: 2960
 
 ## СИМВОЛЫ
 
@@ -1602,17 +1602,19 @@ OFFER_NAMED_K                src/11ah-offer.js:52
 OFFER_SHIFT                  src/11ah-offer.js:67
 OFFER_TTL                    src/11ah-offer.js:61
 offerAdd                     src/11ah-offer.js:103
-offerCarried                 src/11ah-offer.js:241
-offerDeliver                 src/11ah-offer.js:222
-offerDest                    src/11ah-offer.js:184
-offerHere                    src/11ah-offer.js:151
-offerLine                    src/11ah-offer.js:247
-offerLive                    src/11ah-offer.js:147
+offerCaravDone               src/11ah-offer.js:320
+offerCarried                 src/11ah-offer.js:250
+offerDeliver                 src/11ah-offer.js:230
+offerDest                    src/11ah-offer.js:191
+offerHere                    src/11ah-offer.js:158
+offerLine                    src/11ah-offer.js:256
+offerListTaken               src/11ah-offer.js:312
+offerLive                    src/11ah-offer.js:154
 offerPay                     src/11ah-offer.js:94
 offersAll                    src/11ah-offer.js:69
-offerShutLine                src/11ah-offer.js:269
-offerTake                    src/11ah-offer.js:202
-offerTick                    src/11ah-offer.js:159
+offerShutLine                src/11ah-offer.js:278
+offerTake                    src/11ah-offer.js:209
+offerTick                    src/11ah-offer.js:166
 offerVisit                   src/11ah-offer.js:124
 ok                           tests/90-harness.js:23
 openBarge                    src/12l-barge.js:582
@@ -2402,7 +2404,7 @@ shipThumb                    src/26-ui-station.js:154
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:211
 shipZoneR                    src/19f-lander.js:14
-SHUT_LINES                   src/11ah-offer.js:263
+SHUT_LINES                   src/11ah-offer.js:272
 sixthGone                    src/12k-stories-d.js:75
 SKY_BULL                     src/11ak-skywatch.js:27
 SKY_HOR                      src/11ak-skywatch.js:80
@@ -3071,8 +3073,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11ag-trace.js · 17 КБ
   · чужой след: одна метка на всю жизнь:1
 
-## src/11ah-offer.js · 17 КБ
+## src/11ah-offer.js · 22 КБ
   · возможность:1
+  · возможности углубляются экспедицией (M229):287
 
 ## src/11ah-wall.js · 15 КБ
   · стена, которая помнит:1
@@ -3175,7 +3178,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11w-vega.js · 19 КБ
   · Вега: жиличка, которую нельзя выгнать:1
 
-## src/11x-expedition.js · 15 КБ
+## src/11x-expedition.js · 16 КБ
   · циркуляр: мир работает на экспедицию:1
   · уход (M159):178
 
@@ -3934,7 +3937,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzze-sync.js · 4 КБ
   · обмен с облаком: то, что раньше молчало:1
 
-## tests/91zzzf-offer.js · 12 КБ
+## tests/91zzzf-offer.js · 15 КБ
   · автотесты: возможность и тетрадь:1
 
 ## tests/91zzzg-globus.js · 4 КБ

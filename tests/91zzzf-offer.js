@@ -198,3 +198,58 @@ TEST_SUITES.push(()=>suite("возможность: не довёз именно
   ok(OFFER_TTL[0]>=CEL_DAY*.5,"окно предложения — не меньше полусуток");
   eq(OFFER_SHIFT,CEL_DAY,"смена на станции равна суткам");
 }));
+
+/* ── M229: возможности углубляются экспедицией ── */
+TEST_SUITES.push(()=>suite("экспедиция: стойка живёт колонной и вносит в список",()=>{
+  resetWorld();
+  G.offers=[];G.folk={};
+  eq(!!OFFER_KIND.carav,true,"плечо в колонну есть в таблице");
+  eq(!!OFFER_KIND.list,true,"и имя в список тоже");
+  ok(OFFER_KIND.list.pay[1]===0,"список не платит ни кредита: это доступ, а не работа");
+  /* без экспедиции ни того ни другого не предлагают */
+  G.exp=null;
+  const who="st:"+G.sys.key;
+  folkOf(who);
+  for(let i=0;i<8;i++){G.t+=OFFER_SHIFT;offerVisit();}
+  ok(!offersAll().some(o=>o.kind==="carav"||o.kind==="list"),"в мирный день колонны на доске нет");
+  /* циркуляр звучит — и стойка меняется */
+  G.offers=[];G.folk={};folkOf(who);
+  G.exp={phase:1,day0:celDay(),coll:{},gone:[],gave:0,pax:null};
+  let sawCarav=false,sawList=false;
+  for(let i=0;i<40&&!(sawCarav&&sawList);i++){
+    G.t+=OFFER_SHIFT;offerVisit();
+    sawCarav=sawCarav||offersAll().some(o=>o.kind==="carav");
+    sawList=sawList||offersAll().some(o=>o.kind==="list");
+  }
+  ok(sawCarav,"за экспедицию колонна появляется на доске");
+  ok(sawList,"и имя в список предлагают");
+}));
+
+TEST_SUITES.push(()=>suite("экспедиция: список — это строка чужой рукой и два слова в день ухода",()=>{
+  resetWorld();
+  G.offers=[];G.folk={};G.record=null;
+  G.exp={phase:1,day0:celDay(),coll:{},gone:[],gave:0,pax:null};
+  const who="st:"+G.sys.key;
+  const o=offerAdd("list",who,true);
+  ok(o&&o.named===1,"имя в список — именное по устройству");
+  offerTake(o);
+  eq(G.exp.listed,1,"взял — внесён");
+  const R=(G.record&&G.record.entries)||G.record||[];
+  const flat=JSON.stringify(R);
+  ok(flat.indexOf("внесён в список")>=0,"и в книжке строка чужой рукой");
+  /* доставка колонне сдаёт станции сверх денег */
+  G.exp.coll={};
+  const oc=offerAdd("carav",who,false);
+  offerTake(oc);
+  if(oc.to){
+    G.sx=oc.to.sx;G.sy=oc.to.sy;G.sys=getSystem(G.sx,G.sy);
+    offerDeliver();
+    let tot=0;for(const k in G.exp.coll)tot+=G.exp.coll[k];
+    ok(tot>=3,"колонна получила свои три единицы сверх платы");
+  }
+  /* закрытая дверь остаётся закрытой и в горячие дни */
+  const shutWho="st:9,9";
+  const f=folkOf(shutWho);f.good=0;f.shut=1;
+  const o2=offerAdd("carav",shutWho,true);
+  eq(o2.named,0,"экспедиция не открывает закрытых дверей: этот человек не называет");
+}));
