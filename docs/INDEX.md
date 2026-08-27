@@ -6,38 +6,38 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 319 · символов верхнего уровня: 2947
+Файлов: 322 · символов верхнего уровня: 2947
 
 ## СИМВОЛЫ
 
 $bg                          src/12l-barge.js:580
-$bThr                        src/28-loop.js:45
+$bThr                        src/27z-telemetry.js:29
 $cv                          src/27b-ui-crew.js:6
-$f                           src/28-loop.js:22
-$fb                          src/28-loop.js:23
-$fn                          src/28-loop.js:27
+$f                           src/27z-telemetry.js:6
+$fb                          src/27z-telemetry.js:7
+$fn                          src/27z-telemetry.js:11
 $hq                          src/27c-ui-hq.js:4
-$hudp                        src/28-loop.js:58
+$hudp                        src/27z-telemetry.js:42
 $ipod                        src/25c-instr-hud.js:16
-$jn                          src/28-loop.js:42
+$jn                          src/27z-telemetry.js:26
 $menu                        src/15-input.js:180
-$msg                         src/28-loop.js:44
-$msl                         src/28-loop.js:47
-$nav                         src/28-loop.js:46
+$msg                         src/27z-telemetry.js:28
+$msl                         src/27z-telemetry.js:31
+$nav                         src/27z-telemetry.js:30
 $opts                        src/26-ui-station.js:675
 $padsEl                      src/15-input.js:4
-$place                       src/28-loop.js:43
-$sh                          src/28-loop.js:24
-$sn                          src/28-loop.js:28
+$place                       src/27z-telemetry.js:27
+$sh                          src/27z-telemetry.js:8
+$sn                          src/27z-telemetry.js:12
 $st                          src/26-ui-station.js:2
 $sv                          src/27-ui-ship.js:2
 $svCan                       src/27-ui-ship.js:3
-$un                          src/28-loop.js:40
-$vc                          src/28-loop.js:38
-$vf                          src/28-loop.js:37
-$vitals                      src/28-loop.js:36
-$vj                          src/28-loop.js:41
-$vs                          src/28-loop.js:39
+$un                          src/27z-telemetry.js:24
+$vc                          src/27z-telemetry.js:22
+$vf                          src/27z-telemetry.js:21
+$vitals                      src/27z-telemetry.js:20
+$vj                          src/27z-telemetry.js:25
+$vs                          src/27z-telemetry.js:23
 _mapDirty                    src/15-input.js:95
 _suite                       tests/90-harness.js:11
 ACTION_RU                    src/15-input.js:115
@@ -90,7 +90,7 @@ assignToBase                 src/12a-crew.js:172
 AST_N                        src/24-mode-belt.js:85
 audioHush                    src/09-audio.js:12
 audioOn                      src/09-audio.js:11
-audioTick                    src/28-loop.js:319
+audioTick                    src/28-loop.js:27
 autoLandInputs               src/19-mode-landing.js:33
 autosave                     src/14a-cloud.js:48
 b64dec                       src/14-save.js:29
@@ -219,19 +219,19 @@ camOffset                    src/19c-light.js:76
 camStep                      src/19c-light.js:62
 canPay                       src/21a-mode-base.js:51
 CANT_STYLE                   src/27d-ui-cantina.js:15
-cantBarkeep                  src/27d-ui-cantina.js:413
-cantCounter                  src/27d-ui-cantina.js:692
+cantBarkeep                  src/27d-ui-cantina-props.js:15
+cantCounter                  src/27d-ui-cantina-props.js:294
 cantFigure                   src/27d-ui-cantina.js:358
 cantinaPool                  src/12c-mgr-core.js:259
 cantinaScene                 src/27c-ui-hq.js:193
-cantProps                    src/27d-ui-cantina.js:539
+cantProps                    src/27d-ui-cantina-props.js:141
 cantRoomBody                 src/27d-ui-cantina.js:45
 cantSeats                    src/27d-ui-cantina.js:350
 cantSel                      src/27c-ui-hq.js:192
 cantStyle                    src/27d-ui-cantina.js:27
-cantTables                   src/27d-ui-cantina.js:627
-cantView                     src/27d-ui-cantina.js:480
-capIv                        src/28-loop.js:414
+cantTables                   src/27d-ui-cantina-props.js:229
+cantView                     src/27d-ui-cantina-props.js:82
+capIv                        src/28-loop.js:122
 capOf                        src/05-parts.js:108
 capUsed                      src/05-parts.js:219
 CAST                         src/12k-stories-a.js:19
@@ -448,7 +448,7 @@ CUE_PAD                      src/27m-scroll-cue.js:25
 curTok                       src/09-audio.js:83
 CUT_RANGE                    src/24-mode-belt.js:183
 cvs                          src/08-state.js:2
-dbg                          src/28-loop.js:572
+dbg                          src/28-loop.js:280
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -798,7 +798,7 @@ folkShut                     src/11ah-offer.js:90
 folkState                    src/12u-folk.js:83
 folkVisit                    src/12u-folk.js:104
 foundBase                    src/21a-mode-base.js:53
-frame                        src/28-loop.js:420
+frame                        src/28-loop.js:128
 freeVoice                    src/09-audio.js:91
 fuelPriceHere                src/12k-rep.js:63
 FUR_TONES                    src/20f-fauna.js:20
@@ -1073,11 +1073,11 @@ hqStations                   src/27f-hq-room.js:219
 hqTable                      src/27f-hq-room.js:373
 hqWallProps                  src/27f-hq-room.js:170
 hqWindowView                 src/27f-hq-room.js:612
-hud                          src/28-loop.js:81
-HUD_BAND                     src/28-loop.js:35
-HUD_PREV                     src/28-loop.js:57
-HUD_STEP                     src/28-loop.js:56
-hudWake                      src/28-loop.js:59
+hud                          src/27z-telemetry.js:65
+HUD_BAND                     src/27z-telemetry.js:19
+HUD_PREV                     src/27z-telemetry.js:41
+HUD_STEP                     src/27z-telemetry.js:40
+hudWake                      src/27z-telemetry.js:43
 HULL_CACHE                   src/03-ships.js:142
 HULL_CLASS                   src/03-ships.js:174
 HULL_ROLE                    src/03f-hull-role.js:17
@@ -1265,9 +1265,9 @@ landerInk                    tests/91j-art.js:154
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:328
 landOnTestPlanet             tests/90-harness.js:68
-last                         src/28-loop.js:374
+last                         src/28-loop.js:82
 LAST_RUN_DAY                 src/12k-letters.js:40
-lastDroneTick                src/28-loop.js:375
+lastDroneTick                src/28-loop.js:83
 lastRunDay                   src/12k-letters.js:44
 lastRunTick                  src/12k-letters.js:46
 launch                       src/21-mode-surface.js:599
@@ -1314,7 +1314,7 @@ logBtnLabel                  src/11-log.js:56
 logOpen                      src/11-log.js:14
 logPageOf                    src/11-log.js:13
 logTime                      src/11-log.js:50
-LOOP_OFF                     src/28-loop.js:419
+LOOP_OFF                     src/28-loop.js:127
 LORE                         src/12q-lore.js:67
 LORE_ACT                     src/12q-lore.js:47
 LORE_BY_CHAP                 src/12q-lore.js:69
@@ -1893,7 +1893,7 @@ probeShot                    src/25m-probe.js:85
 probeSpeak                   src/25m-probe.js:100
 probeTarget                  src/25m-probe.js:38
 probeVoice                   src/25m-probe.js:75
-prof                         src/28-loop.js:535
+prof                         src/28-loop.js:243
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
@@ -2098,8 +2098,8 @@ repWord                      src/12k-rep.js:31
 RES                          src/02-world.js:2
 RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:29
-resAuto                      src/28-loop.js:403
-resEma                       src/28-loop.js:402
+resAuto                      src/28-loop.js:111
+resEma                       src/28-loop.js:110
 resetArm                     src/26-ui-station.js:674
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:22
@@ -2306,34 +2306,34 @@ scrollCueAll                 src/27m-scroll-cue.js:32
 SD_KIND                      src/12tb-settle-draw.js:33
 SD_MAN                       src/12tb-settle-draw.js:31
 sdBody                       src/12tb-settle-draw.js:206
-sdCast                       src/12tb-settle-draw.js:651
+sdCast                       src/12tb-settle-draw2.js:257
 sdCut                        src/12tc-settle-crafts.js:144
 sdDoor                       src/12tb-settle-draw.js:366
-sdDwell                      src/12tb-settle-draw.js:405
+sdDwell                      src/12tb-settle-draw2.js:11
 sdFarPal                     src/12tb-settle-draw.js:72
-sdFence                      src/12tb-settle-draw.js:559
+sdFence                      src/12tb-settle-draw2.js:165
 sdField                      src/12tc-settle-crafts.js:10
 sdForge                      src/12tc-settle-crafts.js:171
 sdKiln                       src/12tc-settle-crafts.js:107
 sdMat                        src/12tb-settle-draw.js:40
 sdMix                        src/12tb-settle-draw.js:50
 sdPal                        src/12tb-settle-draw.js:53
-sdPerson                     src/12tb-settle-draw.js:592
-sdProps                      src/12tb-settle-draw.js:501
+sdPerson                     src/12tb-settle-draw2.js:198
+sdProps                      src/12tb-settle-draw2.js:107
 sdRGB                        src/12tb-settle-draw.js:49
 sdRoof                       src/12tb-settle-draw.js:263
 sdShadow                     src/12tb-settle-draw.js:218
-sdSmoke                      src/12tb-settle-draw.js:627
+sdSmoke                      src/12tb-settle-draw2.js:233
 sdStill                      src/12tc-settle-crafts.js:226
 sdTerrace                    src/12tb-settle-draw.js:134
 sdWallTex                    src/12tb-settle-draw.js:227
 sdWeir                       src/12tc-settle-crafts.js:49
 sdWindow                     src/12tb-settle-draw.js:328
 sdWoodpile                   src/12tb-settle-draw.js:385
-sdYard                       src/12tb-settle-draw.js:797
+sdYard                       src/12tb-settle-draw2.js:403
 sellCargo                    src/12-economy.js:26
 sellDroneYield               src/12-economy.js:37
-setSt                        src/28-loop.js:80
+setSt                        src/27z-telemetry.js:64
 SETTLE_BUILD                 src/12t-settle.js:31
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -2350,7 +2350,7 @@ settleAt                     src/12t-settle.js:46
 settleCanHand                src/12td-settle-hand.js:36
 settleCanLive                src/12t-settle.js:50
 settleDraw                   src/12t-settle.js:267
-settleDrawBody               src/12tb-settle-draw.js:662
+settleDrawBody               src/12tb-settle-draw2.js:268
 settleGive                   src/12t-settle.js:160
 settleHandLine               src/12td-settle-hand.js:65
 settleHandMast               src/12td-settle-hand.js:97
@@ -2376,7 +2376,7 @@ settleWallHereX              src/12t-settle.js:64
 settleWallX                  src/12t-settle.js:59
 settleWatch                  src/12t-settle.js:330
 settleWords                  src/12t-settle.js:198
-setTx                        src/28-loop.js:79
+setTx                        src/27z-telemetry.js:63
 setZoom                      src/15-input.js:241
 sfx                          src/09-audio.js:237
 SFX                          src/09-audio.js:97
@@ -2456,7 +2456,7 @@ slowSpotX                    src/11o-slow.js:44
 SMELT                        src/02-world.js:58
 snapshot                     src/14-save.js:42
 SND                          src/09-audio.js:4
-sndWalk                      src/28-loop.js:318
+sndWalk                      src/28-loop.js:26
 SPA_BY_K                     src/29h-spa.js:35
 SPA_C                        src/29i-spa-draw.js:15
 SPA_DAYS                     src/29h-spa.js:25
@@ -3277,8 +3277,11 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12tb-grok.js · 22 КБ
   · Грохотун: единственный, кто работает не за деньги:1
 
-## src/12tb-settle-draw.js · 45 КБ
+## src/12tb-settle-draw.js · 22 КБ
   · посёлок с земли:1
+
+## src/12tb-settle-draw2.js · 24 КБ
+  · посёлок: постройки, жители и сам посёлок:1
 
 ## src/12tc-settle-crafts.js · 14 КБ
   · посёлок: промыслы:1
@@ -3589,8 +3592,11 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27da-kino.js · 11 КБ
   · кинопередвижка:1
 
-## src/27d-ui-cantina.js · 46 КБ
+## src/27d-ui-cantina.js · 26 КБ
   · кантина: помещение, а не список:1
+
+## src/27d-ui-cantina-props.js · 22 КБ
+  · кантина: бармен, виды, реквизит, столики, стойка:1
 
 ## src/27e-ui-home.js · 44 КБ
   · дом: помещение, а не список:1
@@ -3634,14 +3640,16 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27-ui-ship.js · 28 КБ
   · экран корабля:1
 
-## src/28-loop.js · 47 КБ
+## src/27z-telemetry.js · 23 КБ
+  · телеметрия: приборы пишут в DOM:1
+
+## src/28-loop.js · 24 КБ
   · авария:1
-  · телеметрия:21
-  · звук по кадрам:315
-  · цикл:373
-  · авторазрешение:396
-  · prof() — на что уходит кадр:523
-  · dbg() — что держит корабль:563
+  · звук по кадрам:23
+  · цикл:81
+  · авторазрешение:104
+  · prof() — на что уходит кадр:231
+  · dbg() — что держит корабль:271
 
 ## src/28z-fps-probe.js · 9 КБ
   · пробник G11: ?g11:1

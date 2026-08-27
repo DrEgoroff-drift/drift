@@ -7,6 +7,25 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.209.0 — three split payments and the plan back under its guard (M224)
+
+Maintenance, before it stops being maintenance. The 40 KB guard was shouting about twelve modules
+on every build; three of them had clean seams and are paid: `28-loop` (47→25 KB — telemetry and
+`hud()` moved to `27z-telemetry`, the frame loop keeps the frame), `27d-ui-cantina` (46→26 KB —
+the barkeep, wall views, props, tables and counter moved to `27d-ui-cantina-props`; the hall and
+its people stayed), and `12tb-settle-draw` (45→23 KB — the buildings, villagers and the settlement
+body moved to `12tb-settle-draw2`; the palette and brushes stayed).
+
+`PLAN.md` itself had grown to 83 KB against its 60 guard: the bird's eleven closed passes
+(M200a–M200j, M201) and the M169 graphics campaign moved to `docs/PLAN-archive.md`, each leaving a
+one-paragraph pointer.
+
+What still shouts is inventoried in the plan's split-debt item with the reason each file is hard:
+they are single 400–600-line functions — a redesign each, not a cut. Next clean seam: the eight
+base compartments.
+
+11773 assertions in 370 suites.
+---
 ## 0.208.0 — the last screenful of nothing (M223)
 
 The playtest's second complaint, decided and applied. The choice was between shrinking panels to
