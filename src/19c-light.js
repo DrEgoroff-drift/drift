@@ -31,9 +31,38 @@ function starRGB(){
   const k=1-d;
   return [c[0]*k|0,c[1]*k|0,c[2]*k|0];
 }
+/* ── дневной ключ (M232, этап 5) ──
+   Полдень читался пасмурно на всех мирах, и причина была одна: небо и свет
+   вообще не знали часа. Зенит всегда красился ночным sky[1], заполняющий свет
+   был им же, а прямой свет грунта — константой. Теперь час входит в палитру:
+   dayK — сколько дня сейчас (0 ночь/заря, 1 высокий полдень), приглушённый на
+   мирах без воздуха (рассеивать нечем — чёрное небо и в полдень);
+   dayKq — он же квантованный, для ключей кэшей: ломоть, испечённый под один
+   свет, не должен всплывать под другим. */
+function dayK(p){
+  if(!p)return .5;
+  const s=(typeof celSun==="function")?celSun(p):{alt:.7};
+  const air=p.T.atm==="отсутствует"?.12:(p.T.atm.indexOf("разреженная")>=0?.6:1);
+  return clamp((s.alt+.12)*1.6,0,1)*air;
+}
+function dayKq(p){return Math.round(dayK(p)*6)/6;}
+/* дневное небо из палитры мира: зенит — светлее и насыщеннее ночного, но
+   глубже горизонта; горизонт уходит к светлому воздуху. Ни одного чужого
+   цвета: всё выведено из sky[0]/sky[1] самого мира. */
+function skyDay(p){
+  const k=dayKq(p),s0=p.T.sky[0],s1=p.T.sky[1];
+  const top=[0,1,2].map(i=>Math.round(lerp(s1[i],Math.min(255,s0[i]*.92+18),k)));
+  const bot=[0,1,2].map(i=>Math.round(lerp(s0[i],Math.min(255,s0[i]*1.30+34),k)));
+  return {top,bot,k};
+}
 /* небо как источник заполняющего света: у токсичного мира тени зелёные,
-   у ледяного — синие, и это читается сразу */
-function ambRGB(p){return p.T.sky[1];}
+   у ледяного — синие, и это читается сразу. Днём заполняющий — цвет
+   СЕГОДНЯШНЕГО неба: тени голубеют и оживают («тени цветнее» из аудита),
+   ночью прежний тёмный. */
+function ambRGB(p){
+  const D=skyDay(p);
+  return [0,1,2].map(i=>Math.round(lerp(p.T.sky[1][i],D.top[i],.85*D.k)));
+}
 /* сколько света вообще: у безвоздушного мира тень почти чёрная (нечему
    рассеивать), у плотной атмосферы — мягкая */
 function ambK(p){
@@ -42,13 +71,16 @@ function ambK(p){
   if(a.indexOf("разреженная")>=0)return .26;
   return .40;
 }
-/* освещённость склона: ламберт по нормали профиля плюс заполнение от неба */
-function litRGB(base,slope,p,sun,amb,k){
+/* освещённость склона: ламберт по нормали профиля плюс заполнение от неба.
+   df — сила прямого света (M232): в полдень ~.96, на заре ~.45, без df —
+   прежние .78. Прямой растёт с днём быстрее заполняющего, поэтому в полдень
+   тени РЕЗЧЕ, а не просто всё светлее. */
+function litRGB(base,slope,p,sun,amb,k,df){
   const nl=Math.hypot(slope,1);
   const nx=-slope/nl, ny=-1/nl;
   const d=clamp(nx*SUN_DIR.x+ny*SUN_DIR.y,0,1);
   /* мягкий переход у терминатора: жёсткий ламберт даёт «пластик» */
-  const I=Math.pow(d,.72)*.78;
+  const I=Math.pow(d,.72)*(df||.78);
   const r=base[0]*(k*amb[0]/255+I*sun[0]/255);
   const g=base[1]*(k*amb[1]/255+I*sun[1]/255);
   const b=base[2]*(k*amb[2]/255+I*sun[2]/255);
@@ -86,22 +118,31 @@ function camOffset(S){
    глаз мерит расстояние. Отдельная функция, потому что дальний слой рисуется
    тем же drawGround, что и близкий. */
 function hazeFar(p,k){
-  const s=p.T.sky[0],a=p.T.sky[1];
-  const c=[lerp(s[0],a[0],.5),lerp(s[1],a[1],.5),lerp(s[2],a[2],.5)];
+  /* воздух — сегодняшний: днём гряды выцветают в дневное небо, а не в ночное */
+  const D=skyDay(p);
+  const c=[lerp(D.bot[0],D.top[0],.5),lerp(D.bot[1],D.top[1],.5),lerp(D.bot[2],D.top[2],.5)];
   const pal=p.T.pal[1];
+  /* в осадки дальнее тонет в пелене СТУПЕНЯМИ (M232): дальний план моет
+     сильнее ближнего — две гряды дают две ступени воздуха, а не чёрные
+     силуэты. Сила квантована: этот цвет входит в ключ тайлов. */
+  const wq=Math.round(((typeof weatherPower==="function")?weatherPower(p):0)*5)/5;
+  const wf=wq*(k>.45?.50:.30);
   /* ── дальний план обязан быть виден ──
      Хребет выцветал точно в цвет неба, и на мирах, где грунт и воздух одного
      тона (вулканический, токсичный, джунглевый), он исчезал вовсе: у половины
      планет за спиной была пустая заливка вместо горизонта. Дальнее не только
      бледнеет — оно ещё и ТЕМНЕЕ неба на просвет, потому что смотришь на
      затенённый склон. Небольшой сдвиг в тень и возвращает горизонт всем. */
-  const v=[0,1,2].map(i=>lerp(pal[i]*.8,c[i],k)*(1-.13*(1-k)));
+  const v=[0,1,2].map(i=>{
+    const base=lerp(pal[i]*.8,c[i],k)*(1-.13*(1-k));
+    return lerp(base,c[i]*.82,wf);           /* пелена: к цвету воздуха, чуть в тень */
+  });
   return "rgb("+v.map(Math.round).join(",")+")";
 }
 /* дымка в низинах и у горизонта: одна полоса градиента, но она делает
    глубину сильнее, чем любой дополнительный слой рельефа */
 function hazeBand(p,y0,h){
-  const c=p.T.sky[1];
+  const c=ambRGB(p);                          /* дымка — сегодняшним воздухом */
   const g=ctx.createLinearGradient(0,y0-h,0,y0+h*.35);
   g.addColorStop(0,"rgba("+c.join(",")+",0)");
   g.addColorStop(.55,"rgba("+c.join(",")+","+(p.T.atm==="отсутствует"?.10:.34)+")");
@@ -136,6 +177,11 @@ function lightShafts(p){
   if(p.T.atm==="отсутствует")return;
   const S=sunSpot(p);
   if(!S.up)return;                    /* из-под горизонта клинья не идут */
+  /* осадки глушат снопы (M232): ливень и прямые клинья света вместе — брак
+     погоды. До половины силы клинья тают, дальше их нет вовсе. */
+  const wp=(typeof weatherPower==="function")?weatherPower(p):0;
+  if(wp>.5)return;
+  const wk=1-wp*2;
   const sx=S.x,sy=S.y;
   const sun=starRGB();
   /* один и тот же веер из пяти лучей под одним углом стоял на каждом мире
@@ -147,7 +193,7 @@ function lightShafts(p){
     const a=a0+i*spr+Math.sin(G.t*.0016+i)*.035;
     const wdt=.030+((i*7)%3)*.012;
     const len=H*1.25;
-    const al=(.020+((i*5)%3)*.010)*(1+Math.sin(G.t*.0021+i*2)*.35);
+    const al=(.020+((i*5)%3)*.010)*(1+Math.sin(G.t*.0021+i*2)*.35)*wk;
     const g=ctx.createLinearGradient(sx,sy,sx+Math.cos(a)*len,sy+Math.sin(a)*len);
     g.addColorStop(0,"rgba("+sun.join(",")+","+al.toFixed(3)+")");
     g.addColorStop(1,"rgba("+sun.join(",")+",0)");
@@ -182,11 +228,12 @@ function gradePass(p){
      в canvas 2D единица цены — полноэкранный проход, а градиент дороже
      заливки в пять раз. Картинка при этом не меняется от кадра к кадру —
      печётся один раз на планету и размер и кладётся одним drawImage (18c). */
-  const sun=starRGB(),amb=ambRGB(p);
-  ctx.drawImage(screenLayer("grade|"+sun.join(",")+"|"+amb.join(","),()=>{
+  const sun=starRGB(),amb=ambRGB(p),dk2=dayKq(p);
+  ctx.drawImage(screenLayer("grade|"+sun.join(",")+"|"+amb.join(",")+"|d"+dk2,()=>{
     const g=ctx.createRadialGradient(W*.5,H*.46,Math.min(W,H)*.30,W*.5,H*.46,Math.max(W,H)*.78);
     g.addColorStop(0,"rgba(0,0,0,0)");
-    g.addColorStop(1,"rgba(0,0,0,.34)");
+    /* виньетка днём легче: полуденный кадр не должен сидеть в сумеречной раме */
+    g.addColorStop(1,"rgba(0,0,0,"+lerp(.34,.22,dk2).toFixed(3)+")");
     ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
     /* холодная тень внизу, тёплый свет сверху — сдвиг маленький, но именно он
        не даёт кадру рассыпаться на «фон + фигуры». Раньше шёл в lighter;

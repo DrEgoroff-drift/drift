@@ -150,7 +150,18 @@ function cloudsOf(p){
   const sprites=[];
   for(let i=0;i<CLOUD_SPR;i++)
     sprites.push(cloudSprite(p,hashi(p.seed,i,0x0C10D),K.soft*(i%2?1:.78)));
-  p.clouds={K,sprites,cirrus:cirrusSprite(p,(p.seed^0xC1EE)>>>0)};
+  /* грозовой вариант каждого спрайта (M232): в ливень облака НЕ белые.
+     Печётся раз — тот же спрайт, притопленный в сизое поверх своей альфы */
+  const dark=sprites.map(s=>{
+    const cn=document.createElement("canvas");cn.width=s.width;cn.height=s.height;
+    const c2=cn.getContext("2d");
+    c2.drawImage(s,0,0);
+    c2.globalCompositeOperation="source-atop";
+    c2.fillStyle="rgba(56,62,74,.66)";
+    c2.fillRect(0,0,cn.width,cn.height);
+    return cn;
+  });
+  p.clouds={K,sprites,dark,cirrus:cirrusSprite(p,(p.seed^0xC1EE)>>>0)};
   return p.clouds;
 }
 
@@ -205,6 +216,14 @@ function drawClouds(p,camx,camy){
       if(x>W+40||x+w<-40)continue;
       ctx.globalAlpha=T.a*(.68+.32*((h>>>20)&7)/7)*(1-wp*.12);
       ctx.drawImage(spr,x,y,w,hgt);
+      /* в осадки облако тонет в сизом по силе непогоды — грозовое небо
+         тёмное, а не белое (M232) */
+      if(wp>.06){
+        const ga=ctx.globalAlpha;
+        ctx.globalAlpha=ga*Math.min(1,wp*1.15);
+        ctx.drawImage(C.dark[(h>>>2)%CLOUD_SPR],x,y,w,hgt);
+        ctx.globalAlpha=ga;
+      }
       /* у самого светила облако ещё и просвечивает: второй проход на
          сложении. Каёмка уже в спрайте, это общее свечение вокруг */
       const near=1-clamp(Math.hypot(x+w*.5-sunX,y+hgt*.5-sunY)/(W*.5),0,1);

@@ -1337,7 +1337,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.222.0";
+const VER="0.223.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -31832,9 +31832,38 @@ function starRGB(){
   const k=1-d;
   return [c[0]*k|0,c[1]*k|0,c[2]*k|0];
 }
+/* ── дневной ключ (M232, этап 5) ──
+   Полдень читался пасмурно на всех мирах, и причина была одна: небо и свет
+   вообще не знали часа. Зенит всегда красился ночным sky[1], заполняющий свет
+   был им же, а прямой свет грунта — константой. Теперь час входит в палитру:
+   dayK — сколько дня сейчас (0 ночь/заря, 1 высокий полдень), приглушённый на
+   мирах без воздуха (рассеивать нечем — чёрное небо и в полдень);
+   dayKq — он же квантованный, для ключей кэшей: ломоть, испечённый под один
+   свет, не должен всплывать под другим. */
+function dayK(p){
+  if(!p)return .5;
+  const s=(typeof celSun==="function")?celSun(p):{alt:.7};
+  const air=p.T.atm==="отсутствует"?.12:(p.T.atm.indexOf("разреженная")>=0?.6:1);
+  return clamp((s.alt+.12)*1.6,0,1)*air;
+}
+function dayKq(p){return Math.round(dayK(p)*6)/6;}
+/* дневное небо из палитры мира: зенит — светлее и насыщеннее ночного, но
+   глубже горизонта; горизонт уходит к светлому воздуху. Ни одного чужого
+   цвета: всё выведено из sky[0]/sky[1] самого мира. */
+function skyDay(p){
+  const k=dayKq(p),s0=p.T.sky[0],s1=p.T.sky[1];
+  const top=[0,1,2].map(i=>Math.round(lerp(s1[i],Math.min(255,s0[i]*.92+18),k)));
+  const bot=[0,1,2].map(i=>Math.round(lerp(s0[i],Math.min(255,s0[i]*1.30+34),k)));
+  return {top,bot,k};
+}
 /* небо как источник заполняющего света: у токсичного мира тени зелёные,
-   у ледяного — синие, и это читается сразу */
-function ambRGB(p){return p.T.sky[1];}
+   у ледяного — синие, и это читается сразу. Днём заполняющий — цвет
+   СЕГОДНЯШНЕГО неба: тени голубеют и оживают («тени цветнее» из аудита),
+   ночью прежний тёмный. */
+function ambRGB(p){
+  const D=skyDay(p);
+  return [0,1,2].map(i=>Math.round(lerp(p.T.sky[1][i],D.top[i],.85*D.k)));
+}
 /* сколько света вообще: у безвоздушного мира тень почти чёрная (нечему
    рассеивать), у плотной атмосферы — мягкая */
 function ambK(p){
@@ -31843,13 +31872,16 @@ function ambK(p){
   if(a.indexOf("разреженная")>=0)return .26;
   return .40;
 }
-/* освещённость склона: ламберт по нормали профиля плюс заполнение от неба */
-function litRGB(base,slope,p,sun,amb,k){
+/* освещённость склона: ламберт по нормали профиля плюс заполнение от неба.
+   df — сила прямого света (M232): в полдень ~.96, на заре ~.45, без df —
+   прежние .78. Прямой растёт с днём быстрее заполняющего, поэтому в полдень
+   тени РЕЗЧЕ, а не просто всё светлее. */
+function litRGB(base,slope,p,sun,amb,k,df){
   const nl=Math.hypot(slope,1);
   const nx=-slope/nl, ny=-1/nl;
   const d=clamp(nx*SUN_DIR.x+ny*SUN_DIR.y,0,1);
   /* мягкий переход у терминатора: жёсткий ламберт даёт «пластик» */
-  const I=Math.pow(d,.72)*.78;
+  const I=Math.pow(d,.72)*(df||.78);
   const r=base[0]*(k*amb[0]/255+I*sun[0]/255);
   const g=base[1]*(k*amb[1]/255+I*sun[1]/255);
   const b=base[2]*(k*amb[2]/255+I*sun[2]/255);
@@ -31887,22 +31919,31 @@ function camOffset(S){
    глаз мерит расстояние. Отдельная функция, потому что дальний слой рисуется
    тем же drawGround, что и близкий. */
 function hazeFar(p,k){
-  const s=p.T.sky[0],a=p.T.sky[1];
-  const c=[lerp(s[0],a[0],.5),lerp(s[1],a[1],.5),lerp(s[2],a[2],.5)];
+  /* воздух — сегодняшний: днём гряды выцветают в дневное небо, а не в ночное */
+  const D=skyDay(p);
+  const c=[lerp(D.bot[0],D.top[0],.5),lerp(D.bot[1],D.top[1],.5),lerp(D.bot[2],D.top[2],.5)];
   const pal=p.T.pal[1];
+  /* в осадки дальнее тонет в пелене СТУПЕНЯМИ (M232): дальний план моет
+     сильнее ближнего — две гряды дают две ступени воздуха, а не чёрные
+     силуэты. Сила квантована: этот цвет входит в ключ тайлов. */
+  const wq=Math.round(((typeof weatherPower==="function")?weatherPower(p):0)*5)/5;
+  const wf=wq*(k>.45?.50:.30);
   /* ── дальний план обязан быть виден ──
      Хребет выцветал точно в цвет неба, и на мирах, где грунт и воздух одного
      тона (вулканический, токсичный, джунглевый), он исчезал вовсе: у половины
      планет за спиной была пустая заливка вместо горизонта. Дальнее не только
      бледнеет — оно ещё и ТЕМНЕЕ неба на просвет, потому что смотришь на
      затенённый склон. Небольшой сдвиг в тень и возвращает горизонт всем. */
-  const v=[0,1,2].map(i=>lerp(pal[i]*.8,c[i],k)*(1-.13*(1-k)));
+  const v=[0,1,2].map(i=>{
+    const base=lerp(pal[i]*.8,c[i],k)*(1-.13*(1-k));
+    return lerp(base,c[i]*.82,wf);           /* пелена: к цвету воздуха, чуть в тень */
+  });
   return "rgb("+v.map(Math.round).join(",")+")";
 }
 /* дымка в низинах и у горизонта: одна полоса градиента, но она делает
    глубину сильнее, чем любой дополнительный слой рельефа */
 function hazeBand(p,y0,h){
-  const c=p.T.sky[1];
+  const c=ambRGB(p);                          /* дымка — сегодняшним воздухом */
   const g=ctx.createLinearGradient(0,y0-h,0,y0+h*.35);
   g.addColorStop(0,"rgba("+c.join(",")+",0)");
   g.addColorStop(.55,"rgba("+c.join(",")+","+(p.T.atm==="отсутствует"?.10:.34)+")");
@@ -31937,6 +31978,11 @@ function lightShafts(p){
   if(p.T.atm==="отсутствует")return;
   const S=sunSpot(p);
   if(!S.up)return;                    /* из-под горизонта клинья не идут */
+  /* осадки глушат снопы (M232): ливень и прямые клинья света вместе — брак
+     погоды. До половины силы клинья тают, дальше их нет вовсе. */
+  const wp=(typeof weatherPower==="function")?weatherPower(p):0;
+  if(wp>.5)return;
+  const wk=1-wp*2;
   const sx=S.x,sy=S.y;
   const sun=starRGB();
   /* один и тот же веер из пяти лучей под одним углом стоял на каждом мире
@@ -31948,7 +31994,7 @@ function lightShafts(p){
     const a=a0+i*spr+Math.sin(G.t*.0016+i)*.035;
     const wdt=.030+((i*7)%3)*.012;
     const len=H*1.25;
-    const al=(.020+((i*5)%3)*.010)*(1+Math.sin(G.t*.0021+i*2)*.35);
+    const al=(.020+((i*5)%3)*.010)*(1+Math.sin(G.t*.0021+i*2)*.35)*wk;
     const g=ctx.createLinearGradient(sx,sy,sx+Math.cos(a)*len,sy+Math.sin(a)*len);
     g.addColorStop(0,"rgba("+sun.join(",")+","+al.toFixed(3)+")");
     g.addColorStop(1,"rgba("+sun.join(",")+",0)");
@@ -31983,11 +32029,12 @@ function gradePass(p){
      в canvas 2D единица цены — полноэкранный проход, а градиент дороже
      заливки в пять раз. Картинка при этом не меняется от кадра к кадру —
      печётся один раз на планету и размер и кладётся одним drawImage (18c). */
-  const sun=starRGB(),amb=ambRGB(p);
-  ctx.drawImage(screenLayer("grade|"+sun.join(",")+"|"+amb.join(","),()=>{
+  const sun=starRGB(),amb=ambRGB(p),dk2=dayKq(p);
+  ctx.drawImage(screenLayer("grade|"+sun.join(",")+"|"+amb.join(",")+"|d"+dk2,()=>{
     const g=ctx.createRadialGradient(W*.5,H*.46,Math.min(W,H)*.30,W*.5,H*.46,Math.max(W,H)*.78);
     g.addColorStop(0,"rgba(0,0,0,0)");
-    g.addColorStop(1,"rgba(0,0,0,.34)");
+    /* виньетка днём легче: полуденный кадр не должен сидеть в сумеречной раме */
+    g.addColorStop(1,"rgba(0,0,0,"+lerp(.34,.22,dk2).toFixed(3)+")");
     ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
     /* холодная тень внизу, тёплый свет сверху — сдвиг маленький, но именно он
        не даёт кадру рассыпаться на «фон + фигуры». Раньше шёл в lighter;
@@ -32409,7 +32456,18 @@ function cloudsOf(p){
   const sprites=[];
   for(let i=0;i<CLOUD_SPR;i++)
     sprites.push(cloudSprite(p,hashi(p.seed,i,0x0C10D),K.soft*(i%2?1:.78)));
-  p.clouds={K,sprites,cirrus:cirrusSprite(p,(p.seed^0xC1EE)>>>0)};
+  /* грозовой вариант каждого спрайта (M232): в ливень облака НЕ белые.
+     Печётся раз — тот же спрайт, притопленный в сизое поверх своей альфы */
+  const dark=sprites.map(s=>{
+    const cn=document.createElement("canvas");cn.width=s.width;cn.height=s.height;
+    const c2=cn.getContext("2d");
+    c2.drawImage(s,0,0);
+    c2.globalCompositeOperation="source-atop";
+    c2.fillStyle="rgba(56,62,74,.66)";
+    c2.fillRect(0,0,cn.width,cn.height);
+    return cn;
+  });
+  p.clouds={K,sprites,dark,cirrus:cirrusSprite(p,(p.seed^0xC1EE)>>>0)};
   return p.clouds;
 }
 
@@ -32464,6 +32522,14 @@ function drawClouds(p,camx,camy){
       if(x>W+40||x+w<-40)continue;
       ctx.globalAlpha=T.a*(.68+.32*((h>>>20)&7)/7)*(1-wp*.12);
       ctx.drawImage(spr,x,y,w,hgt);
+      /* в осадки облако тонет в сизом по силе непогоды — грозовое небо
+         тёмное, а не белое (M232) */
+      if(wp>.06){
+        const ga=ctx.globalAlpha;
+        ctx.globalAlpha=ga*Math.min(1,wp*1.15);
+        ctx.drawImage(C.dark[(h>>>2)%CLOUD_SPR],x,y,w,hgt);
+        ctx.globalAlpha=ga;
+      }
       /* у самого светила облако ещё и просвечивает: второй проход на
          сложении. Каёмка уже в спрайте, это общее свечение вокруг */
       const near=1-clamp(Math.hypot(x+w*.5-sunX,y+hgt*.5-sunY)/(W*.5),0,1);
@@ -32961,7 +33027,10 @@ function drawGround(tr,camx,camy,fill,line,pal){
   if(pal&&tr.mat&&!GROUND_BAKING){
     if(tr.hMin==null){let a=1e9,b=-1e9;for(let i=0;i<tr.N;i++){if(tr.h[i]<a)a=tr.h[i];if(tr.h[i]>b)b=tr.h[i];}tr.hMin=a;tr.hMax=b;}
     const top=Math.floor(tr.hMin-90),ch=Math.ceil(tr.hMax-tr.hMin+H+120);
-    tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR,top,ch);
+    /* час суток входит в ключ (M232): свет в ломте дневной или ночной, и
+       ломоть, испечённый утром, не должен пережить полдень. Квантование в
+       шесть ступеней держит перепечку редкой */
+    tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR+"|d"+(tr.p?dayKq(tr.p):0),top,ch);
     drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>{
       GROUND_BAKING=true;
       /* валуны неподвижны и сложены из той же породы (два прохода материала
@@ -32994,12 +33063,15 @@ function drawGround(tr,camx,camy,fill,line,pal){
        синие, и планета опознаётся по освещению раньше, чем по форме */
     const P0=pal[Math.min(pal.length-1,3)];
     const sun=starRGB(), amb=tr.p?ambRGB(tr.p):pal[1], k=tr.p?ambK(tr.p):.3;
+    /* прямой свет по дневному ключу: полдень ~.96, заря ~.45 — в полдень
+       склоны к солнцу горят, а тени остаются цветными от неба */
+    const df=tr.p?(.40+.58*dayKq(tr.p)):.78;
     for(let i=i0;i<i1;i++){
       const x0=i*tr.step-camx,x1=(i+1)*tr.step-camx;
       if(x1<-4||x0>W+4)continue;
       const y0=tr.h[i]-camy,y1=tr.h[i+1]-camy;
       const slope=clamp((tr.h[i+1]-tr.h[i])/tr.step,-2.5,2.5);
-      const c=litRGB(P0,slope,null,sun,amb,k);
+      const c=litRGB(P0,slope,null,sun,amb,k,df);
       ctx.fillStyle="rgba("+c[0]+","+c[1]+","+c[2]+","+(tr.mat?.42:1)+")";
       ctx.beginPath();
       ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+stripD);ctx.lineTo(x0,y0+stripD);
@@ -33052,6 +33124,9 @@ function drawGroundGrass(tr,camx,camy){
   const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
   const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
   const dstep=Math.max(1,Math.round(14/tr.step));
+  /* три формы куста, а не одна былинка (M232): одиночная травинка, пучок
+     веером и низкий кустик дугой. Форма — от места, качаются все в один
+     ветер, но пучок сильнее одиночки */
   ctx.strokeStyle="rgba(255,255,255,.14)";ctx.lineWidth=1;
   ctx.beginPath();
   for(let i=i0;i<i1;i+=dstep){
@@ -33060,7 +33135,20 @@ function drawGroundGrass(tr,camx,camy){
     if((hh&7)===0||(hh&3)===0)continue;
     const y=tr.h[i]-camy,th=2+((hh>>>4)&3);
     const sw=WIND*(1.6+th*.5)*(.7+.3*Math.sin(G.t*.045+wx*.07));
-    ctx.moveTo(x,y);ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);
+    const form=(hh>>>8)&3;
+    if(form===1){                              // пучок веером
+      for(let b=-1;b<=1;b++){
+        ctx.moveTo(x+b*.8,y);
+        ctx.lineTo(x+b*2.2+sw*1.2,y-th+Math.abs(b));
+      }
+    }else if(form===2){                        // низкий кустик дугой
+      ctx.moveTo(x-2.2,y);
+      ctx.quadraticCurveTo(x-1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
+      ctx.moveTo(x+2.2,y);
+      ctx.quadraticCurveTo(x+1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
+    }else{                                     // одиночная былинка
+      ctx.moveTo(x,y);ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);
+    }
   }
   ctx.stroke();
 }
@@ -33117,10 +33205,13 @@ function drawRocks(tr,camx,camy,pal){
   }
 }
 function skyGrad(p){
-  const s=p.T.sky,g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,"rgb("+s[1].join(",")+")");
-  g.addColorStop(.62,"rgb("+s[0].map((v,i)=>Math.round(lerp(v,s[1][i],.25))).join(",")+")");
-  g.addColorStop(1,"rgb("+s[0].join(",")+")");
+  /* небо знает час (M232): в полдень зенит — светлый насыщенный цвет
+     собственной палитры мира, горизонт — светлый воздух; к ночи градиент
+     сходится к прежнему. Полдень перестаёт читаться пасмурным прямо здесь. */
+  const D=skyDay(p),g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,"rgb("+D.top.join(",")+")");
+  g.addColorStop(.62,"rgb("+D.top.map((v,i)=>Math.round(lerp(v,D.bot[i],.55))).join(",")+")");
+  g.addColorStop(1,"rgb("+D.bot.join(",")+")");
   return g;
 }
 /* тень-контакт: приплюснутый мягкий эллипс под ногами/стволом — единственное,
@@ -39658,9 +39749,12 @@ function drawSurfaceWorld(){
     tr.farK=FARK;
   }
   const stpK=.55+.45*FARK;
-  S.farA=tileStore(S.farA,"farA|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2));
+  /* час и погода входят в ключ гряд (M232): цвет воздуха в hazeFar теперь
+     живой, и тайл, испечённый утром или в ясную погоду, обязан перепечься */
+  const dwk="|d"+dayKq(p)+"|w"+Math.round(((typeof weatherPower==="function")?weatherPower(p):0)*5)/5;
+  S.farA=tileStore(S.farA,"farA|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
   drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.farH[0],N:tr.N,step:tr.step*3.6*stpK},wx0,wy0,hazeFar(p,.58),null));
-  S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2));
+  S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
   drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.farH[1],N:tr.N,step:tr.step*2.4*stpK},wx0,wy0,hazeFar(p,.32),null));
   hazeBand(p,H*(SURF_HOR-.06),H*.22);
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",

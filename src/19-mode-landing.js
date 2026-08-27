@@ -119,7 +119,10 @@ function drawGround(tr,camx,camy,fill,line,pal){
   if(pal&&tr.mat&&!GROUND_BAKING){
     if(tr.hMin==null){let a=1e9,b=-1e9;for(let i=0;i<tr.N;i++){if(tr.h[i]<a)a=tr.h[i];if(tr.h[i]>b)b=tr.h[i];}tr.hMin=a;tr.hMax=b;}
     const top=Math.floor(tr.hMin-90),ch=Math.ceil(tr.hMax-tr.hMin+H+120);
-    tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR,top,ch);
+    /* час суток входит в ключ (M232): свет в ломте дневной или ночной, и
+       ломоть, испечённый утром, не должен пережить полдень. Квантование в
+       шесть ступеней держит перепечку редкой */
+    tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR+"|d"+(tr.p?dayKq(tr.p):0),top,ch);
     drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>{
       GROUND_BAKING=true;
       /* валуны неподвижны и сложены из той же породы (два прохода материала
@@ -152,12 +155,15 @@ function drawGround(tr,camx,camy,fill,line,pal){
        синие, и планета опознаётся по освещению раньше, чем по форме */
     const P0=pal[Math.min(pal.length-1,3)];
     const sun=starRGB(), amb=tr.p?ambRGB(tr.p):pal[1], k=tr.p?ambK(tr.p):.3;
+    /* прямой свет по дневному ключу: полдень ~.96, заря ~.45 — в полдень
+       склоны к солнцу горят, а тени остаются цветными от неба */
+    const df=tr.p?(.40+.58*dayKq(tr.p)):.78;
     for(let i=i0;i<i1;i++){
       const x0=i*tr.step-camx,x1=(i+1)*tr.step-camx;
       if(x1<-4||x0>W+4)continue;
       const y0=tr.h[i]-camy,y1=tr.h[i+1]-camy;
       const slope=clamp((tr.h[i+1]-tr.h[i])/tr.step,-2.5,2.5);
-      const c=litRGB(P0,slope,null,sun,amb,k);
+      const c=litRGB(P0,slope,null,sun,amb,k,df);
       ctx.fillStyle="rgba("+c[0]+","+c[1]+","+c[2]+","+(tr.mat?.42:1)+")";
       ctx.beginPath();
       ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x1,y1+stripD);ctx.lineTo(x0,y0+stripD);
@@ -210,6 +216,9 @@ function drawGroundGrass(tr,camx,camy){
   const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
   const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
   const dstep=Math.max(1,Math.round(14/tr.step));
+  /* три формы куста, а не одна былинка (M232): одиночная травинка, пучок
+     веером и низкий кустик дугой. Форма — от места, качаются все в один
+     ветер, но пучок сильнее одиночки */
   ctx.strokeStyle="rgba(255,255,255,.14)";ctx.lineWidth=1;
   ctx.beginPath();
   for(let i=i0;i<i1;i+=dstep){
@@ -218,7 +227,20 @@ function drawGroundGrass(tr,camx,camy){
     if((hh&7)===0||(hh&3)===0)continue;
     const y=tr.h[i]-camy,th=2+((hh>>>4)&3);
     const sw=WIND*(1.6+th*.5)*(.7+.3*Math.sin(G.t*.045+wx*.07));
-    ctx.moveTo(x,y);ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);
+    const form=(hh>>>8)&3;
+    if(form===1){                              // пучок веером
+      for(let b=-1;b<=1;b++){
+        ctx.moveTo(x+b*.8,y);
+        ctx.lineTo(x+b*2.2+sw*1.2,y-th+Math.abs(b));
+      }
+    }else if(form===2){                        // низкий кустик дугой
+      ctx.moveTo(x-2.2,y);
+      ctx.quadraticCurveTo(x-1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
+      ctx.moveTo(x+2.2,y);
+      ctx.quadraticCurveTo(x+1.2+sw*.4,y-th*.9,x+sw*.6,y-th*.7);
+    }else{                                     // одиночная былинка
+      ctx.moveTo(x,y);ctx.lineTo(x+((hh>>>2)&1?1.4:-1.4)+sw,y-th);
+    }
   }
   ctx.stroke();
 }
@@ -275,10 +297,13 @@ function drawRocks(tr,camx,camy,pal){
   }
 }
 function skyGrad(p){
-  const s=p.T.sky,g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,"rgb("+s[1].join(",")+")");
-  g.addColorStop(.62,"rgb("+s[0].map((v,i)=>Math.round(lerp(v,s[1][i],.25))).join(",")+")");
-  g.addColorStop(1,"rgb("+s[0].join(",")+")");
+  /* небо знает час (M232): в полдень зенит — светлый насыщенный цвет
+     собственной палитры мира, горизонт — светлый воздух; к ночи градиент
+     сходится к прежнему. Полдень перестаёт читаться пасмурным прямо здесь. */
+  const D=skyDay(p),g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,"rgb("+D.top.join(",")+")");
+  g.addColorStop(.62,"rgb("+D.top.map((v,i)=>Math.round(lerp(v,D.bot[i],.55))).join(",")+")");
+  g.addColorStop(1,"rgb("+D.bot.join(",")+")");
   return g;
 }
 /* тень-контакт: приплюснутый мягкий эллипс под ногами/стволом — единственное,

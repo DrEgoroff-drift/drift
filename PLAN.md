@@ -131,19 +131,13 @@ bodies with a lit edge, two tanks with a valve (antenna light breathes, not blin
 brow highlight, the structural warm side, dust per step on dry worlds, body lean at a run, and
 the night lamp lighting the walker himself.
 
-### Stage 5 — planet and weather
+### Stage 5 — planet and weather — DONE (0.223.0)
 
-- **Noon reads overcast on every world** (the old verdict) — raise the day key: sky brighter at
-  zenith, shadows sharper and more coloured. *Diagnosed 2026-08-27:* the zenith IS `sky[1]`
-  (terran: 26,44,74 — near-night navy), `skyGrad` is baked per 48 day divisions but paints the
-  same picture for all of them, `ambRGB` feeds the same navy into `litRGB`, and the ground
-  chunk key carries no hour. Stand scenes `?s=noon`/`noonice`/`noontox` (weather pinned clear)
-  are in `docs/mkview.ps1`.
-- Downpour + straight light shafts coexist — a weather conflict: precipitation must kill the
-  shafts.
-- Far ridges in rain are black silhouettes with no steps of air — give two fade steps.
-- Edge grass is one form — 2–3 bush shapes.
-- Clouds in a downpour are too white.
+All five closed in one pass: the day key (`dayK`/`skyDay` in 19c — one source for sky, ambient,
+haze, direct light and grade; quantized hour in every cache key), shafts killed by
+precipitation, two fade steps for ridges in rain, three grass forms, storm-dark clouds.
+Measured at 60 fps in all nine modes after. Stand scenes `?s=noon`/`noonice`/`noontox` remain
+in `docs/mkview.ps1` for the author's eye.
 
 ### Stage 6 — the rest (the previous audit, still standing)
 

@@ -188,9 +188,12 @@ function drawSurfaceWorld(){
     tr.farK=FARK;
   }
   const stpK=.55+.45*FARK;
-  S.farA=tileStore(S.farA,"farA|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2));
+  /* час и погода входят в ключ гряд (M232): цвет воздуха в hazeFar теперь
+     живой, и тайл, испечённый утром или в ясную погоду, обязан перепечься */
+  const dwk="|d"+dayKq(p)+"|w"+Math.round(((typeof weatherPower==="function")?weatherPower(p):0)*5)/5;
+  S.farA=tileStore(S.farA,"farA|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
   drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.farH[0],N:tr.N,step:tr.step*3.6*stpK},wx0,wy0,hazeFar(p,.58),null));
-  S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2));
+  S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
   drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.farH[1],N:tr.N,step:tr.step*2.4*stpK},wx0,wy0,hazeFar(p,.32),null));
   hazeBand(p,H*(SURF_HOR-.06),H*.22);
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",

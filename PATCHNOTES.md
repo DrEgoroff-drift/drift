@@ -7,7 +7,37 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.222.0 — M232 stage 3: the raid speaks the base's language
+## 0.223.0 — M232 stage 5: noon is noon, and the weather stopped contradicting itself
+
+**The day palette.** The old verdict — «полдень читается пасмурно на всех мирах» — had one
+root: the sky and the light never knew the hour. The zenith was painted with the night colour
+`sky[1]` around the clock, the ambient fill was the same navy, and the ground's direct light
+was a constant. Now the hour enters the palette through one source (`dayK`/`skyDay`, 19c):
+
+- **The sky knows the hour**: at noon the zenith is a light saturated colour of the world's own
+  palette and the horizon goes to pale air; toward night the gradient returns to what it was.
+  Airless worlds keep a black sky at any hour — there is nothing to scatter.
+- **Shadows are coloured, not dead**: the ambient fill is TODAY's sky, so at noon shadows turn
+  live blue (or the world's own cast) instead of midnight navy.
+- **Direct light rises with the sun** faster than the fill (`df` in `litRGB`): at noon the lit
+  slopes burn at ~.96 against the old flat .78 while shadows stay coloured — «тени резче и
+  цветнее», both halves of the audit line.
+- The far ridges, the haze band, the vignette (lighter by day) and the final grade all read the
+  same day key. Everything cached got the quantized hour in its key — ground chunks, far-ridge
+  tiles, the grade layer — so nothing baked at dawn survives into noon.
+
+**Weather contradictions:**
+- Precipitation kills the light shafts (they fade to nothing by half strength — a downpour
+  with god-rays was a weather conflict).
+- Far ridges in rain sink into the veil in TWO steps of air — the far layer washes stronger
+  than the near one — instead of standing as black cutouts.
+- Clouds go slate in a downpour: each sprite has a pre-baked storm variant crossfaded in by
+  weather power. Storm sky is dark, not white.
+- Edge grass grew three bush forms (single blade, fan tuft, low arc bush), all bowing to the
+  same wind.
+
+Measured after: **60 fps in all nine modes** (`?g11`, dpr 2, clean run, errors empty).
+Tests: 379 suites green.
 
 The mannequin half of this stage was already closed by 0.221.0 — the raid draws the same
 `drawAstronaut`. The environment half:
