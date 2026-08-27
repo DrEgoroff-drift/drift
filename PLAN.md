@@ -91,8 +91,8 @@ flora and fauna, a living camera, station modules, weather.
    `21ab-base-interiors`; stands `docs/mkbase.ps1`, `docs/mkroom.ps1`) and a first ever pass on
    `scoop` (`19a-mode-scoop`, stand `docs/mkscoop.ps1`). The narrative of what each pass fixed is
    in [`docs/PLAN-archive.md`](docs/PLAN-archive.md) â grep it for `M55`. Open debt only, below.
-7. **Factions as a language of shapes** â only after ships and stations, or there is nothing to
-   tell apart.
+7. ~~**Factions as a language of shapes**~~ — closed 0.109.0 (`17d-house-shapes`); found stale in
+   this list 2026-08-27 — the Closed section below had recorded it all along.
 8. ~~**Redo the clouds.**~~ â DONE: `19e-clouds` is a density field in perspective, called from `drawSkyLayer`.
 9. ~~**The world on foot**~~ — DONE at M172 (0.138.0): `sunSpot`, night as a value structure, the
    lamp as a cone, far ridges with their own amplitude, `SURF_HOR`. Stand: `docs/mkfoot.ps1`.
@@ -231,39 +231,35 @@ order, and struck out as they close. This is the live queue — new finds go at 
 
 ### Graphics debt (open faults, one line each)
 
-Written down on 2026-08-16 so the picture stops being an open-ended errand: everything below is a
-**fault someone found by looking**, not a wish. The queue moves on to mechanics; these are taken
-one at a time when a pass is due, and nothing here blocks a milestone.
+Written down on 2026-08-16 so the picture stops being an open-ended errand; **audited against the
+code and the stands on 2026-08-27** — half had been paid by later passes and stood here stale.
+Everything left below is a fault someone found by looking, not a wish.
 
-- **base, tight rooms** â in the reactor, the quarters and the lab the machine fills wall and
-  floor, so neither the wall trace (`bDress`) nor the leftovers (`bJunk`) show at all. The fix is
-  a free strip in those rooms' own layout, not drawing things over the equipment.
-- **`scoop`, soft texture** â the giant is baked at 512Ã256 and stretched to one and a half
-  screens: not one crisp edge belongs to the cloud itself, and the shear edges are shadows laid
-  over that softness. Also: the floor is lighter than the design wants, and nothing but the
-  palette changes between types of giant.
-- **mine** â landings in the shaft barely read; a tub in a cell below the floor looks like a crate
-  in a pit; a long shaft is still a long shaft (niches and a change of section beat texture).
-  **Checked 27.08.2026 on the new stand `?s=shaft`: the landings part is STALE** — a later pass had
-  already rebuilt them into a proper landing (a beam across the shaft on brackets, a lamp that
-  really lights, a depth plate, a box on every other one), and they read. The other two stand, and
-  the landings every eighth row are the only rhythm a long shaft has.
-- **cantina** â ~~the counter is the same length and shape in every hall~~ done in 0.99.0
-  (`cantCounter`). Pass 2 (0.99.3): hall lifted, crowd in colour, floor with light pools. Next: a barkeep
-  who moves; glasses and bottles on the counter per type; a second window plane.
-- **Ð¿Ð¾Ð´Ð³Ð»ÑÐ´ÐºÐ°** (M118) â the walker's trail dissolves into the mat's glow; the mat is identical
+- **base, tight rooms** — in the reactor, the quarters and the lab the machine fills wall and
+  floor, so the wall trace (`bDress`) and the leftovers (`bJunk`) barely show. Looked at on
+  `docs/mkroom.ps1` today: the rooms read as places after the twelve base passes (sections, lamps,
+  props), so this is now a polish item, not a hole — the honest fix is still a declared free strip
+  in those rooms' own layouts.
+- ~~**`scoop`, soft texture**~~ — stale: the giant bakes at 768×384 (G5) and has three structural
+  kinds (striped/spotted/jet), not palette swaps. Left of it: the floor value and per-type feel are
+  art direction — the author's eye, not a fault.
+- **mine** — ~~landings~~ (stale: rebuilt with beam/lamp/plate/box and they read), ~~tub~~ (stale:
+  it is a trough with a lip and an ore heap since G3), ~~long shaft~~ (stale: the shaft changes
+  section — a chamber every eleventh row, tool niches — since G3).
+- ~~**cantina**~~ — counter per type (0.99.0), hall lifted (0.99.3), the barkeep moves with an
+  eight-second work cycle (M169), bottles per type. Left: a second window plane — polish.
+- **подглядка** (M118) — the walker's trail dissolves into the mat's glow; the mat is identical
   on every world; an arm at rest merges into the torso; the crate rides near the chin.
-- **ÐÐµÑÑÑÐ½ÐºÐ°** (M119) â the plume is three evenly spaced puffs; the plant is the same shape on
+- **Вертянка** (M119) — the plume is three evenly spaced puffs; the plant is the same shape on
   every world; the drum's hoops do not read as turning.
-- **ÐÑÐ¾ÑÐ¾ÑÑÐ½** (M120) â at 64 px, the size he is actually seen at, the three eyes merge into a
+- **Хтотун** (M120) — at 64 px, the size he is actually seen at, the three eyes merge into a
   smudge; the hide is flat khaki with no dust streaks; the working arms hide behind the torso.
-- **ships** â no faction language; it comes after stations by the queue above.
-- ~~**the world on foot**~~ — **closed in 0.138.0 (M172)**: the star got a place in the sky (`sunSpot`, one
-  source for glow/disc/clouds/shafts/rim), night became a value structure instead of a flat wash,
-  the suit lamp became a cone with a pool on the ground, the far ridges got their own amplitude,
-  the horizon moved to `SURF_HOR`. Stand `docs/mkfoot.ps1`. Left open: the day palette itself —
-  noon still reads overcast on every world, and that is art direction, not a fault.
-- **split debt** â `21a-mode-base` 52 KB, `23-mode-dig`, `27e-ui-home` (see item 10).
+- ~~**ships — no faction language**~~ — stale: closed 0.109.0 as `17d-house-shapes` (a mark per
+  house on stations and settlement walls), and the flying kinds read by their own bodies — welded
+  pirate hulls, barge bodies, the rogue's banner. The M55 queue item is struck with it.
+- ~~**the world on foot**~~ — closed in 0.138.0 (M172). Left open: the day palette itself — noon
+  still reads overcast on every world, and that is art direction, not a fault.
+- ~~**split debt**~~ — see item 10 above: four payments made 2026-08-27, the rest inventoried.
 
 ### The graphics & performance pass (G1–G12) — closed, moved to the archive 2026-08-26
 
@@ -480,22 +476,12 @@ An outside playtest arrived (`PLAYTEST-REPORT.md`, `PLAYTEST-01.md`; played on 0
 value is not the list — it is that someone who does not know the game looked at it. What follows
 is what survived checking, what did not, and what is still open.
 
-## Checked and did not reproduce — do not "fix" these again
+## Checked / closed early — moved to the archive 2026-08-27
 
-- **«ПРОДОЛЖИТЬ ПОЛЁТ» with no save.** The button is `display:none` in the markup and shown only
-  `if(hasSave())`; measured on a cleared browser, it is absent. Restoring also announces itself.
-  The tester had a save from their own first fifteen minutes.
-- **The instruments vanish in calm flight.** Measured after nine simulated seconds of nothing
-  changing: opacity 0.86, fully readable. True before 0.160.0, not since.
-- **The world stops living in a background tab.** Crew run off `Date.now()` with a 24-hour cap
-  (`CREW_OFFLINE_CAP`). The tab catching up on return is the design working.
-
-## Closed in 0.163.0
-
-The first minute (chips are buttons, a miss does not cancel the autopilot, hit-testing in screen
-pixels, the nearest planet in the compass); the empty HQ draws its own empty control room; the
-orphaned `#parrotwin`; the receiver docked into the panel header; the mine's doubled hint; the
-action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
+Three reports checked and did not reproduce (do not "fix" them again: «ПРОДОЛЖИТЬ ПОЛЁТ» shows
+only with a save; instruments stay at 0.86 in calm flight since 0.160.0; the background-tab world
+catching up is the design working). The first-minute batch was closed in 0.163.0. Details:
+grep `docs/PLAN-archive.md` for "did not reproduce".
 
 ## Open, in the order I would take them
 

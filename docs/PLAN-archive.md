@@ -5897,3 +5897,20 @@ after), stands rewritten to compare — `mksettle` (three stages plus night plus
   needs the author.
 
 
+## Checked and did not reproduce — do not "fix" these again
+
+- **«ПРОДОЛЖИТЬ ПОЛЁТ» with no save.** The button is `display:none` in the markup and shown only
+  `if(hasSave())`; measured on a cleared browser, it is absent. Restoring also announces itself.
+  The tester had a save from their own first fifteen minutes.
+- **The instruments vanish in calm flight.** Measured after nine simulated seconds of nothing
+  changing: opacity 0.86, fully readable. True before 0.160.0, not since.
+- **The world stops living in a background tab.** Crew run off `Date.now()` with a 24-hour cap
+  (`CREW_OFFLINE_CAP`). The tab catching up on return is the design working.
+
+## Closed in 0.163.0
+
+The first minute (chips are buttons, a miss does not cancel the autopilot, hit-testing in screen
+pixels, the nearest planet in the compass); the empty HQ draws its own empty control room; the
+orphaned `#parrotwin`; the receiver docked into the panel header; the mine's doubled hint; the
+action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
+
