@@ -3453,7 +3453,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/24-mode-belt.js · 31 КБ
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
-## src/25a-instr.js · 10 КБ
+## src/25a-instr.js · 12 КБ
   · приборы: пять стрелок и невязка:1
 
 ## src/25b-tape.js · 12 КБ
@@ -3465,7 +3465,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25-cockpit.js · 34 КБ
   · кабина: процедурная, статика в offscreen:1
 
-## src/25d-instr-rack.js · 26 КБ
+## src/25d-instr-rack.js · 28 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
 ## src/25e-receiver.js · 5 КБ

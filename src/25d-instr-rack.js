@@ -392,7 +392,24 @@ function rackDraw(){
   ctx.fillText("НЕВЯЗКА",g0.w-RACK_PAD,g0.gh+2);
   ctx.fillStyle="rgba(232,168,84,.9)";
   ctx.font="600 13px ui-monospace,monospace";
-  ctx.fillText(instrMisclose().toFixed(3),g0.w-RACK_PAD,g0.gh+18);
+  const mv=instrMisclose();
+  ctx.fillText(mv.toFixed(3),g0.w-RACK_PAD,g0.gh+18);
+  /* ── шкала под числом ──
+     Внешний тестировщик: «приборы, которые нельзя прочесть» — и про эту цифру
+     в частности: «0.000» без единицы. Единицы у невязки и нет, она безразмерна
+     (доля от размаха области), поэтому подписывать нечем — а вот ШКАЛУ дать
+     можно, и это честнее любой подписи: по ней сразу видно, что ноль — это
+     край хода, а не отсутствие показания. Прибору положено иметь шкалу; словам
+     тут делать нечего, область о себе ничего не объявляет (06b-region). */
+  {
+    const bw=54, bx=g0.w-RACK_PAD-bw, by=g0.gh+23;
+    ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(bx,by,bw,3);
+    ctx.fillStyle="rgba(232,168,84,.75)";
+    ctx.fillRect(bx,by,Math.max(1,bw*clamp(mv,0,1)),3);
+    /* засечки по краям и в середине: без них полоска — просто полоска */
+    ctx.fillStyle="rgba(196,206,210,.35)";
+    for(const t of [0,.5,1])ctx.fillRect(bx+(bw-1)*t,by-2,1,2);
+  }
 
   /* ── бумага: пять перьев пишут по-настоящему ── */
   const P=rackPaperBox(g0), Tp=tapeInit();

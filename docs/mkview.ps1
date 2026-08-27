@@ -286,6 +286,16 @@ setTimeout(function(){
       }
       for(var f5=0;f5<8;f5++){G.t+=.02;updateRaid(1);drawRaid();}
     }
+  }else if(scene==="cockpit"){
+    /* потолочная панель кабины: пять шкал и невязка. Внешний тестировщик:
+       «приборы, которые нельзя прочитать» — смотреть надо именно сюда, на
+       рейке (`rack`) приборы другие и подписи у них крупнее */
+    G.mode="system";
+    var plc=G.sys.planets[0];
+    if(plc)G.ap={kind:"planet",p:plc,phase:"fly"};
+    G.cockpit=1;
+    if(typeof cockpitOn==="function")cockpitOn(true);
+    for(var fc=0;fc<30;fc++){G.t+=.02;updateSystem(1);drawSystem();}
   }else if(scene==="rack"){
     /* Приборная стойка кабины: восемь стрелок, самописец и «Глобус» (25f).
        Скорость подкручивать бесполезно — игровой цикл гасит её сопротивлением,

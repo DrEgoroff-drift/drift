@@ -17,16 +17,16 @@
    4. Ничего не персистится: всё выводится из положения и таблиц. */
 
 const INSTR=[
-  {id:"chrono", ru:"ХРОНОМЕТР",  unit:"",     dig:3,
+  {id:"chrono", ru:"ХРОНОМЕТР",  ab:"ХРН", unit:"",     dig:3,
    /* сроки, длина местных суток, когда стемнеет */
    base:()=>1},
-  {id:"course", ru:"КУРСОГРАФ",  unit:"КМ",   dig:1,
+  {id:"course", ru:"КУРСОГРАФ",  ab:"КРС", unit:"КМ",   dig:1,
    /* счисление против звёздной обсервации: расхождение прокладки */
    base:()=>{
      const s=G.sys?Math.hypot(G.ship.vx||0,G.ship.vy||0):0;
      return .4+s*.03;
    }},
-  {id:"mass",   ru:"МАСС-ДЕТЕКТОР",unit:"КТ", dig:1,
+  {id:"mass",   ru:"МАСС-ДЕТЕКТОР",ab:"МСС", unit:"КТ", dig:1,
    /* масса вокруг: трюм, пояс, тела системы */
    base:()=>{
      let m=(typeof held==="function"?held():0)*.05;
@@ -36,13 +36,13 @@ const INSTR=[
      }
      return m;
    }},
-  {id:"radio",  ru:"ПРИЁМНИК",   unit:"ДБ",   dig:1,
+  {id:"radio",  ru:"ПРИЁМНИК",   ab:"ПРМ", unit:"ДБ",   dig:1,
    /* шумовая шкала: цены, движение, погода, слухи */
    base:()=>{
      const d=G.sys?(typeof sysDanger==="function"?sysDanger(G.sys.sx,G.sys.sy):.4):.4;
      return 12+d*9+(G.sys&&G.sys.station?4:0);
    }},
-  {id:"actino", ru:"АКТИНОМЕТР", unit:"ВТ",   dig:0,
+  {id:"actino", ru:"АКТИНОМЕТР", ab:"АКТ", unit:"ВТ",   dig:0,
    /* сколько света приходит: заряд, безопасность посадки, оранжерея */
    base:()=>{
      if(!G.sys)return 900;
@@ -77,7 +77,7 @@ function instrRead(sx,sy){
     /* отклонение — доля от собственного показания прибора: у хронометра это
        ход, у актинометра ватты. Одно число на всех сделало бы шкалы игрушечными */
     const val=I.id==="chrono"?base+dev*.22:base*(1+dev*.85);
-    return {id:I.id,ru:I.ru,unit:I.unit,dig:I.dig,val,dev,base};
+    return {id:I.id,ru:I.ru,ab:I.ab||I.ru,unit:I.unit,dig:I.dig,val,dev,base};
   });
 }
 /* положение показания на шкале: одна формула на стрелку и на перо
@@ -139,20 +139,43 @@ function instrPanel(P,FS){
     ctx.stroke();
     ctx.fillStyle=col+".85)";
     ctx.beginPath();ctx.arc(cx,y+h*.5,1.4,0,TAU);ctx.fill();
-    ctx.fillStyle=col+".45)";
-    ctx.font=Math.round(6*FS)+"px ui-monospace,monospace";
-    ctx.fillText(r.ru,cx,y+h*1.6);
+    /* ── подпись шкалы читаемая ──
+       Стояло `6*FS` при FS от единицы, то есть ШЕСТЬ ПИКСЕЛЕЙ на самом узком
+       окне, да ещё на .45 прозрачности. Внешний тестировщик про эту панель:
+       «приборы, которые нельзя прочитать» — и он прав буквально: подпись,
+       которую не разобрать, прибором не является, она узор. Девять пикселей
+       снизу как пол, и тон плотнее. Правило старшинства от размера и цвета
+       работает в обе стороны: то, что должно читаться, обязано быть крупным
+       достаточно, а не только не слишком крупным. */
+    ctx.fillStyle=col+".62)";
+    ctx.font=Math.max(9,Math.round(7.2*FS))+"px ui-monospace,monospace";
+    /* и СОКРАЩАЕТСЯ, а не мельчает. Полное имя влезает в ячейку широкой
+       панели и не влезает в узкую («МАСС-ДЕТЕКТОР» это 64 px при 9-м кегле,
+       а ячейка бывает и в сорок). Уменьшать кегль до нечитаемого — ровно та
+       беда, с которой всё началось; настоящая приборная панель в таком случае
+       ставит код из трёх букв, и он читается с любого расстояния. */
+    ctx.fillText(ctx.measureText(r.ru).width<=cw-4?r.ru:r.ab,cx,y+h*1.66);
   }
   /* невязка — в своём окне (хвост M122): утопленная рамка правее корытца,
      цифры внутри. Без подписи «внимание» и без цвета — как и было */
   {
-    const mt="НЕВЯЗКА "+instrMisclose().toFixed(3);
+    const mv=instrMisclose();
+    const mt="НЕВЯЗКА "+mv.toFixed(3);
     ctx.font=Math.round(7*FS)+"px ui-monospace,monospace";
     const mw=Math.ceil(ctx.measureText(mt).width)+14, mx=x0+w+14, my=y-h-2, mh=h+8;
     ctx.fillStyle="rgba(6,9,13,.55)";ctx.fillRect(mx,my,mw,mh);
     ctx.strokeStyle=col+".18)";ctx.lineWidth=1;ctx.strokeRect(mx+.5,my+.5,mw-1,mh-1);
     ctx.textAlign="center";ctx.fillStyle=col+".55)";
-    ctx.fillText(mt,mx+mw/2,my+mh/2+2.5);
+    ctx.fillText(mt,mx+mw/2,my+mh/2);
+    /* шкала под числом — та же, что на стойке (25d). Единицы у невязки нет,
+       она безразмерна, и подписать её нечем; а шкала показывает, что ноль —
+       это край хода, а не отсутствие показания */
+    {
+      const bw=mw-10, bx=mx+5, by=my+mh-4;
+      ctx.fillStyle="rgba(0,0,0,.40)";ctx.fillRect(bx,by,bw,2);
+      ctx.fillStyle=col+".55)";
+      ctx.fillRect(bx,by,Math.max(1,bw*clamp(mv,0,1)),2);
+    }
   }
   ctx.restore();
 }

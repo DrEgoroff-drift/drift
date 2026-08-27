@@ -503,9 +503,12 @@ action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
 3. **The mine is still the weakest screen** (M55 #1, G3 — known since long before this playtest,
    now confirmed by an outsider): pale, monotone, rock and dug space indistinguishable. It comes
    right after the surface, which is the game's best screen, and the contrast does the damage.
-4. **Instruments nobody can read.** The five-needle region pod carries no labels and its number
-   («0.000») has no unit; the belt cockpit's dial captions are too small to read at all. Either
-   they say what they are, or they are not instruments.
+4. ~~**Instruments nobody can read.**~~ — **closed by M213 (0.195.0).** The caption was six pixels
+   at 45%% opacity (`6*FS`, `FS` from 1) — not a label, a texture; nine now, and it SHORTENS to a
+   three-letter code when the cell is too narrow rather than shrinking further, measured per cell.
+   The misclosure got a scale bar rather than a unit, because it has no unit — it is dimensionless;
+   what it lacked was any way to see that zero is an end of a range and not a missing reading.
+   Stand `?s=cockpit`.
 5. **«Зачем лететь» lives inside the station.** The board (needs, tips, prices) is the game's
    motor and it only runs after landing, docking and switching a tab. **The fix must stay in the
    game's language:** the tester's own strongest praise was «ничто из этого не обращено к

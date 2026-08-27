@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.195.0 — instruments you can actually read (M213)
+
+From the outside playtest list, item 4: *"the five-needle region pod carries no labels and its number
+(«0.000») has no unit; the belt cockpit's dial captions are too small to read at all. Either they say
+what they are, or they are not instruments."*
+
+**The caption was six pixels.** `Math.round(6*FS)` with `FS` starting at 1 — six pixels, at 45%
+opacity, on the narrowest window. A caption you cannot make out is not a label, it is a texture. Nine
+pixels as a floor now, and a denser tone. The rule that hierarchy comes from size and colour cuts
+both ways: what must be read has to be *large enough*, not merely not too large.
+
+**And it shortens rather than shrinks.** «МАСС-ДЕТЕКТОР» is 64 px at that size and a panel cell can
+be forty. Shrinking the type until it fits is exactly the fault we started from; a real instrument
+panel puts a three-letter code there instead, and a code reads at any distance. The full name is
+drawn when it fits the cell, the code when it does not — measured per cell, not guessed.
+
+**«НЕВЯЗКА 0.000» got a scale instead of a unit,** because it does not have one: the misclosure is
+dimensionless, a fraction of the region's span (`06b-region`). There is nothing honest to write after
+it. What it lacked was any way to tell that zero is one *end of a range* rather than a missing
+reading — so there is a bar under the digits now, with ticks at nought, half and full. An instrument
+is entitled to a scale; words have no business here, since the region announces nothing about itself
+by design.
+
+New stand `pageshot view -Q "?s=cockpit"` — the ceiling panel is a different instrument from the
+survey rack, and only the rack had a stand. 11640 assertions in 357 suites.
+---
 ## 0.194.0 — two files split before they became a problem (upkeep)
 
 Housekeeping, taken while the reason was still fresh rather than left for whoever meets it next.
