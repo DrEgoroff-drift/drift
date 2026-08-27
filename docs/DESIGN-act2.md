@@ -148,5 +148,6 @@ second, quiet ending (M161).
 
 ## After the act (release look)
 
-The table as paper/bills/pile and the removal of the overlay HUD are made after M161, for an
-interface that fits the act — not before it.
+Closed by the author 2026-08-27 («сейчас того что есть достаточно»): the desk IS paper since A3
+(0.144.0), the overlay-HUD removal was superseded by his own M187 (instruments at the top,
+readable). The release look is what exists. Do not re-open without him.

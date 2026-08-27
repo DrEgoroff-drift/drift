@@ -161,12 +161,11 @@ order, and struck out as they close. This is the live queue — new finds go at 
 6. ~~**"Look at it from the dev stand, don't raise a local one"**~~ — done: `dev.ps1` publishes
    this build to `/dev.html` and the sheets to `/dev/`, and the four recurring tooling errors are
    fixed and written into `CLAUDE.md` (ssh noise, `.ps1` BOM, parameter shadowing, probe flags).
-7. **Release look, pass 1: the instruments stop hanging over every screen** — **done, on dev,
-   awaiting the author's eye.** On foot (surface, cave, dig, base, home, raid) fuel, hull and
-   shield are hidden — they are the ship's, and the ship is somewhere else; the hold stays,
-   because on foot it is exactly what fills up, and fuel comes back by itself when it goes
-   critical. The rest of the release look (the table as paper, the remaining overlay) is passes
-   2+; the author took it "in passes" on 2026-08-24.
+7. ~~**Release look**~~ — **finished as a whole (author, 2026-08-27: «сейчас того что есть
+   достаточно»).** Pass 1 (on foot the ship's instruments hide), A2 (0.143.0), A3 — the desk as
+   paper (0.144.0), then the author's own reversal M187 (0.160.0, instruments at the top and
+   readable). The two held-back halves are closed by decision, not deferred: overlay removal is
+   superseded by M187, and the paper language stops at the desk. See the M124 note in Closed.
 8. ~~**The plant body itself**~~ — done in 0.140.0, but only the skin. `stemC`/`leafC` stopped
    being flat colour strings and became gradients in the plant's own coordinates, so all twelve
    forms got light and shade in one edit, lit from where the star actually is (`sunSpot`); tone
@@ -297,7 +296,13 @@ tails ledger”. Nothing there is outstanding.
 - **Yacht railing below 3×, fully flat-on view** (archive, ships): the fleet is drawn flat-on by
   design; the hull now has a top light and one asymmetric boom, the rest is the reference-sheet
   richness a rotation pass would give.
-- **M124 spec remainder**: receiver with a knob — closed (0.110.0, `25e-receiver`); "pause is the engine off" — closed by fact (there is no pause menu to replace). Left by decision (2026-08-23, autonomous run): the table as paper/bills/pile and the removal of the overlay HUD — both rewrite the whole interface and its autotests for a release look the author has not seen; kept as the release design, not done blind.
+- **M124 spec remainder — CLOSED whole (author, 2026-08-27: «сейчас того что есть достаточно»).**
+  Receiver with a knob — 0.110.0; "pause is the engine off" — closed by fact. The two held-back
+  halves are now decided, not deferred: **the removal of the overlay HUD is superseded** by the
+  author's own M187 (0.160.0, «приборы сверху, сейчас очень плохо не видно» — instruments must be
+  visible and readable, the opposite of removing them); **the paper language stops at the desk** —
+  A3 (0.144.0) made the table paper and things objects, the station screens stay glass by the
+  author's call. Do not re-open either without him.
 - **M125**: rack as a surface inside the cockpit (it is an overlay), re-bake on resize, CH5
   saturation — cosmetic; the rack is not persisted by rule.
 - **M126**: the vanilla `SHIPS` ladder stays under the professions; passenger talk is one table
@@ -452,8 +457,8 @@ M188–M206” — grep it there for any of them. What they left open, in the or
   ghost: `server.js:95`/`worker.js:66` do not exist — the cloud is `site/api.php` and it checks
   only that `v` is present. The `v:4` legacy branches stay alive under their number; future
   release-look changes to the SHAPE of persisted fields ride `s.v===5` branches. **The last of
-  the overlay** remains with the release look itself (M124/M125 note above): it rewrites the
-  whole interface and its autotests, and is kept for the author to see, not done blind.
+  the overlay** — closed with the release look itself (author, 2026-08-27): see the M124 note
+  above. What exists is the release look.
 - ~~**A clean performance measurement**~~ — passing at 0.213.0 (27.08.2026, machine quiet, one
   window, dpr 2): **60 fps in all nine modes** with every change of the day in — the world scale,
   the UI zoom, the soil profile, the relays, the splits. Earlier same-day dips were the busy
