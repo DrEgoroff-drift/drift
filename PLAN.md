@@ -552,10 +552,14 @@ action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
    so layout and finger targets move together), deliberately slower than the world, and the canvas
    half of it — target chips, hint band, compass chips, the zoom readout — is drawn in that measure
    too. The phone is left alone.
-2. **A full-screen panel with a screenful of nothing.** The HQ is fixed by drawing its room, but
-   the class remains: `.scr` is `inset:22px …`, so every screen is full height whatever it holds.
-   Either panels shrink to their content, or every short screen needs something true to show.
-   Decide once, apply everywhere.
+2. ~~**A full-screen panel with a screenful of nothing.**~~ — **closed by M223 (0.208.0), the
+   decision made and applied.** Panels keep their full height — `.scr` carries the `91f-ui` overlap
+   guard and every station tab overflows anyway — and a short screen gives its true content the
+   height it actually has. The census: the only reachable short standalone screen was the HQ (the
+   empty crew screen exists but its button is hidden until crew exists). The HQ room now takes the
+   height the panel really offers instead of its old 270 px cap, leaving room for the rows below —
+   and it re-measures on window resize, because the first render often happens against an unlaid or
+   stale layout (in headless, against the 640×480 fallback the page starts from).
 
    **Measured 27.08.2026, and it narrows the choice a lot.** Every station tab already overflows
    its viewport — board 1229/452, yard 2094/407, cantina 2093/407, market 835, mods 990, instr 759,

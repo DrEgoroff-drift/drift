@@ -718,7 +718,7 @@ FACE_SKIN                    src/12d-mgr-face.js:10
 faceEl                       src/27c-ui-hq.js:6
 facePath                     src/12d-mgr-face.js:19
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:493
+factPrices                   src/27c-ui-hq.js:501
 FAUNA_RES                    src/02-world.js:38
 faunaOf                      src/20e-species.js:268
 fbm1                         src/01-core.js:19
@@ -1057,13 +1057,13 @@ HOUSES                       src/12u-scrip.js:21
 houseWallMark                src/17d-house-shapes.js:38
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
-hqAiOffer                    src/27c-ui-hq.js:391
+hqAiOffer                    src/27c-ui-hq.js:399
 hqBtnTick                    src/27c-ui-hq.js:237
 hqConsole                    src/27f-hq-room.js:228
 hqFigure                     src/27f-hq-room.js:509
-hqHover                      src/27f-hq-room.js:675
-hqJobCard                    src/27c-ui-hq.js:450
-hqRelicSlot                  src/27c-ui-hq.js:416
+hqHover                      src/27f-hq-room.js:683
+hqJobCard                    src/27c-ui-hq.js:458
+hqRelicSlot                  src/27c-ui-hq.js:424
 hqRender                     src/27c-ui-hq.js:244
 hqRoomBody                   src/27f-hq-room.js:32
 hqScene                      src/27f-hq-room.js:640
@@ -1395,7 +1395,7 @@ mgrCrewYield                 src/12c-mgr-core.js:203
 mgrCut                       src/12c-mgr-core.js:173
 mgrDefect                    src/12c-mgr-core.js:348
 mgrDomain                    src/12c-mgr-core.js:515
-mgrDomainLine                src/27c-ui-hq.js:512
+mgrDomainLine                src/27c-ui-hq.js:520
 mgrDroneRate                 src/12c-mgr-core.js:219
 mgrFace                      src/12d-mgr-face.js:29
 mgrFee                       src/12c-mgr-core.js:299
@@ -1607,7 +1607,7 @@ offerVisit                   src/11ah-offer.js:124
 ok                           tests/90-harness.js:23
 openBarge                    src/12l-barge.js:582
 openCrewView                 src/27b-ui-crew.js:198
-openHq                       src/27c-ui-hq.js:532
+openHq                       src/27c-ui-hq.js:540
 openShipView                 src/27-ui-ship.js:160
 openStation                  src/26-ui-station.js:5
 OPT_TABS                     src/27-ui-ship.js:443
@@ -2620,7 +2620,7 @@ TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:146
 tableBake                    src/27i-ui-table.js:103
-tableBlock                   src/27c-ui-hq.js:546
+tableBlock                   src/27c-ui-hq.js:558
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
@@ -3583,7 +3583,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
 
-## src/27c-ui-hq.js · 38 КБ
+## src/27c-ui-hq.js · 39 КБ
   · ШТАБ и кантина:1
 
 ## src/27da-kino.js · 11 КБ
@@ -3595,7 +3595,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27e-ui-home.js · 44 КБ
   · дом: помещение, а не список:1
 
-## src/27f-hq-room.js · 40 КБ
+## src/27f-hq-room.js · 41 КБ
   · ШТАБ: рубка, а не список:1
 
 ## src/27g-deals.js · 14 КБ

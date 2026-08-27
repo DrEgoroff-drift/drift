@@ -7,6 +7,25 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.208.0 — the last screenful of nothing (M223)
+
+The playtest's second complaint, decided and applied. The choice was between shrinking panels to
+their content and giving short screens something true to show; measuring settled it back in August —
+every station tab overflows its viewport anyway, so shrinking would change nothing — and the census
+of standalone screens found exactly one reachable short one: the HQ. (The crew screen can be short
+too, but its button does not exist until you have crew.)
+
+The HQ already had its true thing — the drawn control room — and it was capped at 270 px while the
+panel offered 580. **The room now takes the height the panel actually has**, leaving room for the
+rows beneath; empty or manned, the panel is full of room instead of full of nothing.
+
+One real bug under it: the first render after opening often measures an unlaid or stale layout —
+in headless, the 640×480 fallback the page starts from — so the room re-measures itself a frame
+later and again on every window resize. Resizing the window with the HQ open used to leave the room
+at its old size; that is fixed by the same listener.
+
+11775 assertions in 370 suites.
+---
 ## 0.207.0 — the ruler has to see both sides of the frame (M222)
 
 A defect of my own making, found by asking the phone instead of the monitor.

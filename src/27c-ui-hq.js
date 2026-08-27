@@ -242,6 +242,14 @@ function hqBtnTick(){
   b.classList.toggle("on",nag);
 }
 function hqRender(){
+  /* Первый рендер после открытия часто идёт по НЕ разложенной панели: класс
+     open только что поставлен, clientHeight ещё нулевой или вчерашний, и рубка
+     меряет высоту не того экрана (M223). Один повтор кадром позже — по уже
+     разложенной; дальше размеры стабильны и повторов нет. */
+  if(!hqRender._laid){
+    hqRender._laid=true;
+    requestAnimationFrame(()=>{if($hq.classList.contains("open"))hqRender();});
+  }
   mgrTick();
   document.getElementById("hqCr").textContent=G.credits.toLocaleString("ru")+" кр";
   document.getElementById("hqCap").textContent=G.mgrs.length+" / "+MGR_CAP+" мест";
@@ -533,9 +541,13 @@ function openHq(){
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
   toggleLog(false);
-  $hq.classList.add("open");hqRender();
+  $hq.classList.add("open");hqRender._laid=false;hqRender();
 }
 document.getElementById("hqbtn").addEventListener("click",openHq);
+/* окно поменялось — рубка перемеряется: без этого её высота остаётся от
+   прежнего окна (и в headless — от запасного 640×480, с которого страница
+   начинает жить, пока не пришёл настоящий размер) */
+addEventListener("resize",()=>{if($hq.classList.contains("open"))hqRender();});
 document.getElementById("hqClose").addEventListener("click",()=>{
   $hq.classList.remove("open");saveGame(true);});
 

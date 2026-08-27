@@ -642,7 +642,15 @@ function hqScene(){
   wrap.style.cssText="margin:2px 0 10px;line-height:0;position:relative";
   const cn=document.createElement("canvas");
   const cssW=Math.max(360,Math.min(($hqBody.clientWidth||640)-4,980));
-  const cssH=Math.round(clamp(cssW*.30,200,270));
+  /* ── рубка занимает ту высоту, которая у панели ЕСТЬ (M223) ──
+     Потолок в 270 px оставлял под двумя строками текста нижнюю треть панели
+     пустой — ровно тот «экран ни о чём», который плейтест назвал поломкой.
+     Меряем настоящую высоту тела и оставляем место под строки; правда этого
+     экрана — сама рубка, ей и отдаётся всё остальное. Пропорция комнаты при
+     этом не врёт: hqRoomBody считает от высоты канвы (HQ_H — её единицы). */
+  const bodyH=$hqBody.clientHeight||560;
+  const below=G.mgrs.length?300:136;      /* сколько займут строки под комнатой */
+  const cssH=Math.round(clamp(Math.max(cssW*.30,bodyH-below),200,520));
   const dpr=Math.min(window.devicePixelRatio||1,2);
   cn.width=Math.round(cssW*dpr);cn.height=Math.round(cssH*dpr);
   cn.style.cssText="width:100%;height:"+cssH+"px;display:block;border-radius:8px;"+

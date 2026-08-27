@@ -1337,7 +1337,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.207.0";
+const VER="0.208.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -51259,6 +51259,14 @@ function hqBtnTick(){
   b.classList.toggle("on",nag);
 }
 function hqRender(){
+  /* Первый рендер после открытия часто идёт по НЕ разложенной панели: класс
+     open только что поставлен, clientHeight ещё нулевой или вчерашний, и рубка
+     меряет высоту не того экрана (M223). Один повтор кадром позже — по уже
+     разложенной; дальше размеры стабильны и повторов нет. */
+  if(!hqRender._laid){
+    hqRender._laid=true;
+    requestAnimationFrame(()=>{if($hq.classList.contains("open"))hqRender();});
+  }
   mgrTick();
   document.getElementById("hqCr").textContent=G.credits.toLocaleString("ru")+" кр";
   document.getElementById("hqCap").textContent=G.mgrs.length+" / "+MGR_CAP+" мест";
@@ -51550,9 +51558,13 @@ function openHq(){
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
   toggleLog(false);
-  $hq.classList.add("open");hqRender();
+  $hq.classList.add("open");hqRender._laid=false;hqRender();
 }
 document.getElementById("hqbtn").addEventListener("click",openHq);
+/* окно поменялось — рубка перемеряется: без этого её высота остаётся от
+   прежнего окна (и в headless — от запасного 640×480, с которого страница
+   начинает жить, пока не пришёл настоящий размер) */
+addEventListener("resize",()=>{if($hq.classList.contains("open"))hqRender();});
 document.getElementById("hqClose").addEventListener("click",()=>{
   $hq.classList.remove("open");saveGame(true);});
 
@@ -53968,7 +53980,15 @@ function hqScene(){
   wrap.style.cssText="margin:2px 0 10px;line-height:0;position:relative";
   const cn=document.createElement("canvas");
   const cssW=Math.max(360,Math.min(($hqBody.clientWidth||640)-4,980));
-  const cssH=Math.round(clamp(cssW*.30,200,270));
+  /* ── рубка занимает ту высоту, которая у панели ЕСТЬ (M223) ──
+     Потолок в 270 px оставлял под двумя строками текста нижнюю треть панели
+     пустой — ровно тот «экран ни о чём», который плейтест назвал поломкой.
+     Меряем настоящую высоту тела и оставляем место под строки; правда этого
+     экрана — сама рубка, ей и отдаётся всё остальное. Пропорция комнаты при
+     этом не врёт: hqRoomBody считает от высоты канвы (HQ_H — её единицы). */
+  const bodyH=$hqBody.clientHeight||560;
+  const below=G.mgrs.length?300:136;      /* сколько займут строки под комнатой */
+  const cssH=Math.round(clamp(Math.max(cssW*.30,bodyH-below),200,520));
   const dpr=Math.min(window.devicePixelRatio||1,2);
   cn.width=Math.round(cssW*dpr);cn.height=Math.round(cssH*dpr);
   cn.style.cssText="width:100%;height:"+cssH+"px;display:block;border-radius:8px;"+
