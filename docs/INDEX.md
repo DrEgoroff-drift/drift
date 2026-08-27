@@ -81,7 +81,7 @@ angWrap                      src/01-core.js:35
 applyCrewEvent               src/12b-crew-events.js:214
 applyPadMode                 src/15-input.js:62
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:77
+applySave                    src/14-save.js:85
 applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:108
 arrive                       src/16-flight.js:154
@@ -3348,7 +3348,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:61
   · видимое состояние обмена:76
 
-## src/14-save.js · 48 КБ
+## src/14-save.js · 49 КБ
   · сохранение:1
 
 ## src/15-input.js · 25 КБ
@@ -3807,7 +3807,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zp-stories.js · 7 КБ
   · истории: следы, якорь, повороты, каналы:1
 
-## tests/91zq-regions.js · 5 КБ
+## tests/91zq-regions.js · 6 КБ
   · области: таблица, расстановка, память места:1
 
 ## tests/91zr-post.js · 3 КБ

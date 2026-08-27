@@ -1337,7 +1337,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.211.0";
+const VER="0.212.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -26342,7 +26342,15 @@ function prunePartsBought(){
   return out;
 }
 function snapshot(){
-  return {v:4,sx:G.sx,sy:G.sy,shipId:G.shipId,owned:G.owned,
+  /* ── v:5 (M227) ──
+     Пишем 5, читаем 4 и 5: ни один старый сейв не теряется — ни локальный, ни
+     облачный. Смысл номера: дверь для чисток релизного вида, которые поменяют
+     СОСТАВ сохраняемого; они лягут веткой s.v===5, а v:4-ветки (modsOwned из
+     mods) останутся жить под своим номером. Ключ localStorage не трогаем:
+     он адрес, а не формат, и смена имени осиротила бы каждый локальный сейв.
+     «server.js:95 и worker.js:66», которых боялось старое правило, не
+     существуют: облако — site/api.php, и он проверяет только наличие v. */
+  return {v:5,sx:G.sx,sy:G.sy,shipId:G.shipId,owned:G.owned,
     x:G.ship.x,y:G.ship.y,a:G.ship.a,fuel:G.fuel,hull:G.hull,
     cargo:G.cargo,credits:G.credits,data:G.data,mods:G.mods,modsOwned:G.modsOwned,
     inv:G.inv.map(packPart),fit:G.fit,partsBought:prunePartsBought(),
@@ -26377,7 +26385,7 @@ function snapshot(){
     ts:Date.now()};
 }
 function applySave(s){
-  if(!s||s.v!==4)return false;
+  if(!s||(s.v!==4&&s.v!==5))return false;
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
   G.uniqueShips=(s.uniqueShips&&typeof s.uniqueShips==="object")?s.uniqueShips:{};
   G.shipId=shipData(s.shipId)?s.shipId:"strizh";

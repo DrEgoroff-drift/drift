@@ -126,9 +126,12 @@ a family of functions), keep the concatenation order, and never split a `const` 
 
 ## Hard constraints
 
-- **Save format is `v:4` and must not change.** `server.js:95` and `worker.js:66` reject
-  anything else. A new persistent field gets a safe default in `applySave()`
-  (`G.foo = s.foo || {}`) so old saves keep loading.
+- **Save format: writes `v:5`, reads `v:4` and `v:5` (M227).** The old rule feared `server.js:95`
+  and `worker.js:66` — neither exists; the cloud is `site/api.php` and it checks only that `v` is
+  present. The localStorage key stays `drift_save_v4` — it is an address, not a format. A new
+  persistent field still gets a safe default in `applySave()` (`G.foo = s.foo || {}`) so old saves
+  keep loading; a change to the SHAPE of an existing field goes under an `s.v===5` branch, and the
+  `v:4` branches (`modsOwned` from `mods`) stay alive under their number.
 - **Never persist the ephemeral.** Anything derived deterministically from a seed (systems,
   orbits, belt, mine, pirates) is regenerated on load. Only what the player changed persists.
 - **Parts serialize compactly** — `{s,t,k,g,i}` plus regeneration through `genPart`. `PART_GEN`

@@ -69,11 +69,29 @@ TEST_SUITES.push(()=>suite("память места: три счётчика, о
   placeNote("hurt",2);
   const r2=placeMem(G.sys.key);ok(!!r2&&r2.hurt===2&&r2.n===0,"выстрел без посадки — на систему, посадок ноль");
   /* сейв: два поля, формат прежний, мусор отсекается */
-  const s=snapshot();eq(s.v,4,"формат v:4");
+  const s=snapshot();eq(s.v,5,"формат v:5 (M227): пишем 5");
   ok(s.place&&s.place[k]&&s.place[k].take===5,"память места в сейве");
   s.place.junk=null;s.place[k].take=-4;s.odo={lands:"x",jumps:7};
   applySave(s);
   ok(!G.place.junk,"мусор в памяти места отброшен");
   eq(G.place[k].take,0,"отрицательный счётчик обнулён");
   eq(G.odo.jumps,7,"одометр прыжков пережил сейв");eq(G.odo.lands,0,"нечисловой одометр — ноль");
+}));
+
+/* ── M227: v:5 пишется, v:4 читается, чужое — нет ── */
+TEST_SUITES.push(()=>suite("сейв: пишем v:5, старый v:4 живёт, чужой номер — нет",()=>{
+  resetWorld();
+  G.credits=4321;G.mods.engine=2;G.modsOwned.engine=3;
+  const s5=snapshot();
+  eq(s5.v,5,"снимок нового формата");
+  ok(applySave(s5),"и он же читается");
+  eq(G.credits,4321,"без потерь");
+  /* старый сейв: v:4 и только mods — ветка modsOwned из mods обязана жить */
+  const s4=JSON.parse(JSON.stringify(s5));
+  s4.v=4;delete s4.modsOwned;
+  ok(applySave(s4),"v:4 загружается: ни один старый сейв не потерян");
+  eq(G.modsOwned.engine,G.mods.engine,"и его ветка (modsOwned из mods) отработала");
+  /* незнакомый номер честно отвергается, а не читается наполовину */
+  const s9=JSON.parse(JSON.stringify(s5));s9.v=9;
+  eq(applySave(s9),false,"будущий формат не читаем: лучше отказ, чем половина мира");
 }));

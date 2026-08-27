@@ -7,6 +7,29 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.212.0 — v:5, and nobody's save burns (M227)
+
+The save format bump the plan had been holding, done the way that costs nothing. The game now
+**writes `v:5` and reads both 4 and 5**: every existing save — local or cloud — keeps loading, and
+the one v:4 legacy branch (`modsOwned` reconstructed from `mods`) stays alive under its own number.
+An unknown future version is refused whole rather than half-read. The localStorage key stays
+`drift_save_v4`: it is an address, not a format, and renaming it would orphan every local save.
+
+The investigation found the constraint that had guarded this for months was a ghost: the feared
+`server.js:95` and `worker.js:66` **do not exist in this project**. The cloud is `site/api.php`,
+and it checks only that a `v` field is present. The rule in CLAUDE.md now describes the real
+architecture.
+
+What v:5 buys: a versioned door. When the release look changes the shape of what is persisted,
+those changes ride `s.v===5` branches while the v:4 paths keep reading old records — instead of a
+single flag-day that eats everyone's progress.
+
+The only exposure: a stale-cached client (old service worker) pulling a fresh v:5 cloud save will
+refuse it until the page updates itself — a short window, and refusal is loud, not corrupting.
+
+11805 assertions in 374 suites, including: v:5 round-trips, v:4 loads with its branch working,
+v:9 is refused.
+---
 ## 0.211.0 — the kind word after the squandered name (M226)
 
 The door already closed silently: a named offer missed, and the person simply stops naming you —

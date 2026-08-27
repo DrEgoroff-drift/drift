@@ -251,7 +251,7 @@ TEST_SUITES.push(()=>suite("сохранение переживает новые
     shipId:"obod",pref:"iron",mods:{hold:2,armor:1,drill:0},earned:500,spent:100,
     tMs:Date.now(),paidMs:Date.now()}));
   const snap=snapshot();
-  eq(snap.v,4,"версия записи по-прежнему 4");
+  eq(snap.v,5,"версия записи — 5 (M227), и старые 4 читаются");
   const json=JSON.stringify(snap);
   resetWorld();
   applySave(JSON.parse(json));

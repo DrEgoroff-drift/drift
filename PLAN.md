@@ -18,8 +18,9 @@ half the tokens. The game itself, its UI and its code comments stay Russian.
   between frames; if not, it is a layer. `prof()` in the console (28-loop) tells where a frame goes,
   JS and raster apart; `prof(30,"drawGround")` tells what one function costs in raster.
 
-- **Save format is `v:4`.** `server.js:95` and `worker.js:66` reject anything else. A new
-  persistent field goes into `snapshot()` and gets a safe default in `applySave()` (`14-save`).
+- **Save format: writes `v:5`, reads 4 and 5 (M227).** The feared `server.js`/`worker.js` do not
+  exist; the cloud (`site/api.php`) checks only that `v` is present. New fields: `snapshot()` plus
+  a safe default in `applySave()` (`14-save`); shape changes ride an `s.v===5` branch.
 - **Never persist the ephemeral.** Whatever derives from a seed is regenerated. Only player
   decisions and carried loot persist.
 - **Sparse overlays** keyed `"sx,sy"`, like `G.market`. Bases and hired hands are stored the same way.
@@ -459,7 +460,13 @@ M188–M206” — grep it there for any of them. What they left open, in the or
   it — so it had been rendering the empty HQ, the same picture as `?s=hq`. Two more of the same were
   found and fixed (`crewPool`/`crewHire` in `?s=hire`, `cockpitOn` in `?s=cockpit`); the lesson is
   in CLAUDE.md.
-- **v:5 and the last of the overlay**, in one go, now that the edge question is settled.
+- ~~**v:5**~~ — **done without burning anyone (M227, 0.212.0).** The game writes `v:5` and reads
+  4 and 5; not one save is lost, local or cloud. Investigating the feared gate found it was a
+  ghost: `server.js:95`/`worker.js:66` do not exist — the cloud is `site/api.php` and it checks
+  only that `v` is present. The `v:4` legacy branches stay alive under their number; future
+  release-look changes to the SHAPE of persisted fields ride `s.v===5` branches. **The last of
+  the overlay** remains with the release look itself (M124/M125 note above): it rewrites the
+  whole interface and its autotests, and is kept for the author to see, not done blind.
 - **A clean performance measurement** by the M169 rules (one window, nothing else running) as the
   release check.
 
