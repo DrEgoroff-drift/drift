@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 317 · символов верхнего уровня: 2902
+Файлов: 317 · символов верхнего уровня: 2903
 
 ## СИМВОЛЫ
 
@@ -1864,6 +1864,7 @@ postTake                     src/25g-postcard.js:601
 postTerrain                  src/25g-postcard.js:41
 postWorld                    src/25g-postcard.js:49
 prevAct                      src/08-state.js:40
+pricesHeard                  src/12aa-need.js:209
 pricesSeen                   src/12aa-need.js:188
 prism                        src/21b-surface-deco.js:201
 PROBE_COST_CR                src/25m-probe.js:27
@@ -2036,7 +2037,7 @@ renderLog                    src/11-log.js:71
 renderLoreBoard              src/27h-ui-lore.js:26
 renderMail                   src/25k-post-mail.js:36
 renderOpts                   src/27-ui-ship.js:198
-renderPrices                 src/12aa-need.js:196
+renderPrices                 src/12aa-need.js:223
 renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
 renderRoute                  src/12r-route.js:225
@@ -3125,7 +3126,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11z-misclosure.js · 6 КБ
   · невязка: уезд, где счёт неба и счёт людей расходятся:1
 
-## src/12aa-need.js · 13 КБ
+## src/12aa-need.js · 16 КБ
   · нужда станции и наряд:1
 
 ## src/12a-crew.js · 38 КБ
@@ -3831,7 +3832,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzu-domino.js · 2 КБ
   · автотесты: домино (M166):1
 
-## tests/91zzv-table.js · 19 КБ
+## tests/91zzv-table.js · 21 КБ
   · автотесты: пульт и стол (M151a):1
   · огонёк: «пришло» ≠ «не прочитано»:190
 

@@ -7,6 +7,33 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.201.0 — heard on the air, written on the paper (playtest #5, the rest of it)
+
+0.200.0 let you lay a course from a price the desk remembered. But the desk only remembered stations
+you had **docked at**, and meanwhile the ЦЕНЫ band on the receiver has always named a real station and
+its best good, live, in flight — *«…Цициин: лёд берут по 22, топливо 7»*. Hearing it did nothing. You
+could not write it down, could not plot it, could not use it. The motor still only started inside a
+station.
+
+**Now the ether writes on the paper.** Tune the band, hear a station named, and it appears on the
+ЦЕНЫ tab — where the gesture added yesterday will plot a course to it. Nothing over the world, no
+prompt, no "new objective": a broadcast was heard and a note was made, which is what a person with a
+radio and a notebook does.
+
+**And it does not pretend to be more than hearsay.** Three rules, each guarded:
+
+- It records only **what was actually said** — one good and the fuel price, not a whole price list.
+  Overheard is not the same as seen.
+- The row is marked **«со слуха»** on the paper, and it carries no shortage, because shortages are not
+  broadcast on that band and inventing one would be a lie.
+- **Seen beats heard, always.** Docking rewrites the row in full and a later broadcast never
+  overwrites it. Nor does an overheard figure ever count as the *best price* in bold — one number
+  from the air must not outrank a price list you read on the spot.
+
+Written once per station per day (the dial can sit on the band indefinitely; the exchange has one
+piece of news), and only at a legible signal — at the edge of the band the words drop out anyway, and
+writing down noise would be its own kind of lie. 11673 assertions in 360 suites.
+---
 ## 0.200.0 — a course can be laid from the paper (playtest #5)
 
 From the outside playtest, item 5: *"«зачем лететь» lives inside the station. The board — needs,

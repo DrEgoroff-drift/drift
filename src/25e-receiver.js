@@ -37,7 +37,13 @@ function radioTune(f){
   else if(B.k==="price"){
     const st=(typeof nearestStation==="function")?nearestStation(G.sx,G.sy):null;
     const S=st?getSystem(st.sx,st.sy):(G.sys&&G.sys.station?G.sys:null);
-    if(S&&S.station){const P=marketFor(S);let best=null;for(const k of TRADE_KEYS)if(!best||P[k]>P[best])best=k;text="…"+S.station.name+": "+RES[best].ru.toLowerCase()+" берут по "+P[best]+", топливо "+S.station.fuelPrice+".";}
+    if(S&&S.station){const P=marketFor(S);let best=null;for(const k of TRADE_KEYS)if(!best||P[k]>P[best])best=k;text="…"+S.station.name+": "+RES[best].ru.toLowerCase()+" берут по "+P[best]+", топливо "+S.station.fuelPrice+".";
+      /* услышал — записал (плейтест, пункт 5). Биржа названа вслух, и с этого
+         мгновения она есть на бумаге: по ней можно проложить курс, не запоминая
+         координат ушами. Только при разборчивом приёме — на краю диапазона
+         слова и так выпадают, и записывать шум было бы враньём */
+      if(q>.55&&typeof pricesHeard==="function")pricesHeard(S,best,P[best],S.station.fuelPrice);
+    }
     else text="…биржа молчит: станций в радиусе нет";
   }else if(B.k==="weather"){
     const ps=((G.sys&&G.sys.planets)||[]).filter(p=>p.type!=="gas");

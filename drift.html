@@ -1324,7 +1324,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.200.0";
+const VER="0.201.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -13275,6 +13275,33 @@ function pricesSeen(sys){
   const keys=Object.keys(G.seenPrices);
   if(keys.length>24){keys.sort((a,b)=>G.seenPrices[a].day-G.seenPrices[b].day);delete G.seenPrices[keys[0]];}
 }
+/* ── и цены СО СЛУХА (плейтест, пункт 5, вторая половина) ──
+   На диапазоне ЦЕНЫ приёмник называет ближнюю станцию и её лучший товар —
+   живая биржа, в полёте, без всякой стыковки. И до сих пор услышать её можно
+   было только ушами: на бумагу не ложилось ничего, курс проложить было не по
+   чему, и мотор игры по-прежнему заводился только внутри станции.
+
+   Записывается ровно то, что СКАЗАЛИ, — один товар и топливо, а не весь
+   прейскурант: подслушанное не равно виденному. Строка помечена `heard`, и на
+   бумаге она так и выглядит; стыковка на том же месте перепишет её полной.
+   Нужду по эфиру не передают, и выдумывать её тут нельзя.
+
+   Раз в сутки на станцию: ручка стоит на диапазоне сколько угодно, а новость
+   у биржи одна. Без этого запись переписывалась бы каждый тик. */
+function pricesHeard(sys,res,val,fuel){
+  if(!sys||!sys.station||!RES[res])return null;
+  G.seenPrices=G.seenPrices||{};
+  const was=G.seenPrices[sys.key];
+  /* виденное своими глазами сильнее услышанного и не затирается */
+  if(was&&!was.heard)return null;
+  if(was&&was.heard&&was.day===celDay())return null;
+  const p={};p[res]=val|0;
+  G.seenPrices[sys.key]={name:sys.station.name,sx:sys.sx,sy:sys.sy,day:celDay(),
+                         p,need:null,heard:1,fuel:fuel|0};
+  const keys=Object.keys(G.seenPrices);
+  if(keys.length>24){keys.sort((a,b)=>G.seenPrices[a].day-G.seenPrices[b].day);delete G.seenPrices[keys[0]];}
+  return G.seenPrices[sys.key];
+}
 function renderPrices(box){
   box.textContent="";
   const S=G.seenPrices||{};
@@ -13282,14 +13309,23 @@ function renderPrices(box){
   if(!L.length){tableRow(box,"dim","","цен ещё не видели: они записываются при каждой стыковке");return;}
   tableRow(box,"head","","ЦЕНЫ, КАК ИХ ВИДЕЛИ · ДЕНЬ "+celDay()+
     " · ЖИРНЫМ — ЛУЧШАЯ ПО ТОВАРУ · ТЫЧОК — КУРС ТУДА");
+  /* «лучшая по товару» считается только по ВИДЕННОМУ: одна услышанная цифра
+     не должна перебивать полный прейскурант, снятый на месте */
   const best={};
-  for(const k of TRADE_KEYS){let b=null;for(const s of L)if(s.p[k]&&(!b||s.p[k]>b.p[k]))b=s;if(b)best[k]=b;}
+  for(const k of TRADE_KEYS){let b=null;for(const s of L){if(s.heard)continue;if(s.p[k]&&(!b||s.p[k]>b.p[k]))b=s;}if(b)best[k]=b;}
   for(const s of L){
     const row=document.createElement("div");row.className="li";
     const em=document.createElement("em");em.textContent=s.sx+":"+s.sy;
     const sp=document.createElement("span");
     const cells=TRADE_KEYS.filter(k=>s.p[k]).map(k=>(best[k]===s?"<b>":"")+RES[k].ru.toLowerCase()+" "+s.p[k]+(best[k]===s?"</b>":""));
-    sp.innerHTML="<b>"+s.name+"</b> · день "+s.day+(s.need?" · <b style='color:#f2b25c'>нужда: "+RES[s.need].ru.toLowerCase()+"</b>":"")+"<br>"+cells.join(" · ");
+    /* «со слуха» помечено, и это не украшение: подслушанная строка знает один
+       товар из эфира и не знает ни остального прейскуранта, ни нужды. Игрок
+       должен видеть разницу между «я там был» и «мне сказали» */
+    sp.innerHTML="<b>"+s.name+"</b> · день "+s.day+
+      (s.heard?" · <i style='color:#9fb3c2'>со слуха</i>":"")+
+      (s.need?" · <b style='color:#f2b25c'>нужда: "+RES[s.need].ru.toLowerCase()+"</b>":"")+
+      "<br>"+cells.join(" · ")+
+      (s.heard&&s.fuel?" · топливо "+s.fuel:"");
     row.appendChild(em);row.appendChild(sp);
     /* ── и по ней можно проложить курс (плейтест, пункт 5) ──
        Бумага помнила цены и нужды всех станций, где вы были, и не давала с
@@ -45331,7 +45367,13 @@ function radioTune(f){
   else if(B.k==="price"){
     const st=(typeof nearestStation==="function")?nearestStation(G.sx,G.sy):null;
     const S=st?getSystem(st.sx,st.sy):(G.sys&&G.sys.station?G.sys:null);
-    if(S&&S.station){const P=marketFor(S);let best=null;for(const k of TRADE_KEYS)if(!best||P[k]>P[best])best=k;text="…"+S.station.name+": "+RES[best].ru.toLowerCase()+" берут по "+P[best]+", топливо "+S.station.fuelPrice+".";}
+    if(S&&S.station){const P=marketFor(S);let best=null;for(const k of TRADE_KEYS)if(!best||P[k]>P[best])best=k;text="…"+S.station.name+": "+RES[best].ru.toLowerCase()+" берут по "+P[best]+", топливо "+S.station.fuelPrice+".";
+      /* услышал — записал (плейтест, пункт 5). Биржа названа вслух, и с этого
+         мгновения она есть на бумаге: по ней можно проложить курс, не запоминая
+         координат ушами. Только при разборчивом приёме — на краю диапазона
+         слова и так выпадают, и записывать шум было бы враньём */
+      if(q>.55&&typeof pricesHeard==="function")pricesHeard(S,best,P[best],S.station.fuelPrice);
+    }
     else text="…биржа молчит: станций в радиусе нет";
   }else if(B.k==="weather"){
     const ps=((G.sys&&G.sys.planets)||[]).filter(p=>p.type!=="gas");

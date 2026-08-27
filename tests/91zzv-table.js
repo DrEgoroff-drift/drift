@@ -290,3 +290,38 @@ TEST_SUITES.push(()=>suite("стол: по бумаге с адресом шту
   G.mode="system";
   tableToggle(false);
 }));
+TEST_SUITES.push(()=>suite("цены: услышанное ложится на бумагу, но не притворяется виденным",()=>{
+  resetWorld();
+  /* вторая половина пункта 5: приёмник называл станцию и её лучший товар в
+     полёте, а на бумагу не ложилось ничего — курс проложить было не по чему */
+  G.seenPrices={};
+  let F=null;
+  for(let dx=-8;dx<=8&&!F;dx++)for(let dy=-8;dy<=8&&!F;dy++){
+    if(!starAt(dx,dy))continue;
+    const s=getSystem(dx,dy);
+    if(s.station&&s.station.prices)F=s;
+  }
+  ok(!!F,"нашлась станция");
+  const rec=pricesHeard(F,"ice",44,9);
+  ok(!!rec,"услышанное записано");
+  ok(rec.heard,"и помечено как со слуха");
+  eq(Object.keys(rec.p).length,1,"записан ровно тот товар, который назвали");
+  eq(rec.need,null,"нужду по эфиру не передают — и не выдумываем");
+  /* дважды за сутки не переписывается: ручка стоит на диапазоне сколько угодно */
+  eq(pricesHeard(F,"iron",99,9),null,"второй раз за сутки — не пишем");
+  /* виденное своими глазами сильнее и не затирается слухом */
+  pricesSeen(F);
+  const seen=G.seenPrices[F.key];
+  ok(!seen.heard,"стыковка переписала строку полной");
+  eq(pricesHeard(F,"iron",999,9),null,"и слух её больше не трогает");
+  ok(Object.keys(seen.p).length>1,"у виденной строки весь прейскурант");
+  /* и «лучшая по товару» не считается по одной услышанной цифре */
+  G.seenPrices={};
+  G.seenPrices["a"]={sx:1,sy:1,name:"Виденная",day:celDay(),p:{ice:20},need:null};
+  G.seenPrices["b"]={sx:2,sy:2,name:"Слышанная",day:celDay(),p:{ice:900},need:null,heard:1};
+  tableToggle(true,"prices");
+  const box=document.getElementById("loglist");
+  const bold=[...box.querySelectorAll(".li b")].map(b=>b.textContent);
+  ok(!bold.some(t=>/900/.test(t)),"услышанная цифра не объявлена лучшей");
+  tableToggle(false);
+}));

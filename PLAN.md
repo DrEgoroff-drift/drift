@@ -575,9 +575,11 @@ action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
    navigator — the same gesture the journal has always had for a job, and the only button it has ever
    had. Nothing appears over the world: no arrow, no marker, the game never asks you to go. The move
    is `gotoSector(sx,sy,what)`, lifted out of `questGoto`, so the next addressed thing on the desk
-   gets it free. **Still open:** the receiver broadcasts prices and rumours in flight and they still
-   only become actionable once written to the desk — making what the ether says actionable *as it is
-   heard* is the rest of this item.
+   gets it free. **And the rest of it done (0.201.0):** the ЦЕНЫ band names a real station live, in flight, and
+   hearing it now writes a row on the paper — where yesterday's gesture plots the course. It stays
+   hearsay and is guarded as such: only the good actually named plus fuel, marked «со слуха», no
+   shortage (that is not broadcast), never overwriting a docked row, and never counted as the best
+   price in bold. Once per station per day, and only at a legible signal.
 
    Original wording: The board (needs, tips, prices) is the game's
    motor and it only runs after landing, docking and switching a tab. **The fix must stay in the
