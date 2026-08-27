@@ -426,8 +426,12 @@ M188–M206” — grep it there for any of them. What they left open, in the or
   than its retaining wall (measured: the terrace is a cut, not a fill — there is no face to carve,
   and M171 had already settled that a side-on world needs a vertical stone); the cave mouth needed
   no such thing. Twelve rather than twenty-four, because two dozen at world scale is scratch-noise.
-- **the winter frame** (M197): at street scale the wintering reads, but weakly. The frame could
-  say it louder.
+- ~~**the winter frame** (M197)~~ — **closed (0.193.0).** It was saying the right thing in a
+  whisper: the warm/cold split was mixed at .22/.16, so a surface moved toward its own light by a
+  fifth and the room came out flat brown, and the cold reached only 2.6 body-widths from the window.
+  Cold now carries more weight than warm (the room's general light is a lamp, and a lamp is warm, so
+  the cold must be louder to register at all), and the window's light is additive — it was tinting
+  the floor blue instead of lighting it.
 - **the release board** below is the live list; these five are debts against it, not blockers.
 
 ## To the release

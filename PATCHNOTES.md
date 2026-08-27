@@ -7,6 +7,31 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.193.0 — the wintering says it louder (M197)
+
+M197 built the month alone in one room and wrote down what it left: *"at street scale the wintering
+reads, but weakly. The frame could say it louder."*
+
+**It was already saying the right thing — in a whisper.** The room has three lights the player
+switches on themselves, and a `winTone` that splits the space: warm from the stove on the left, cold
+from the window on the right. That split is the whole feeling of a wintering. But it was mixed in at
+`0.22` and `0.16` — even at full tone a surface moved toward its own light by about a fifth, and the
+whole room came out one flat brown. The cold reached only 2.6 body-widths from the window, so most
+of the room never heard it at all.
+
+Cold now carries **more** weight than warm (`0.42` against `0.40`, and `0.40` against `0.36` on the
+wall), and that is not taste: the room's general light comes from a lamp, and a lamp is warm, so the
+cold has to be louder merely to register. Its reach went to 3.6 body-widths, warm to 3.0, so the
+middle of the room is contested instead of neutral.
+
+**And the window's light was tinting the floor, not lighting it.** A flat `0.13` fill of cold over
+the boards darkens them blue; light does the opposite. It is additive now, twice as strong, and it
+no longer stops at the sill — a soft cold wash falls on the wall around the window too. It is the
+only cold thing in a warm room, and it is what tells you there is night and frost on the other side
+of the glass. Without it the window is a picture, not a window.
+
+Stand `pageshot view -Q "?s=winter"`. 11640 assertions in 357 suites.
+---
 ## 0.192.0 — the hour after the opening, walked (M212)
 
 M207 walked a fresh save and left one item written down: *"the hour AFTER the opening — first

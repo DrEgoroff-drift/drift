@@ -88,8 +88,8 @@ function winLit(g,W0,x,y){
    этот раскол и делает комнату комнатой, а не серым коробом */
 function winTone(g,W0,x,y){
   const he=W0.pw.heat|0;
-  const warm=he>0?Math.min(1,he/3)*clamp(1-(x-g.stove.x)/(g.man*2.4),0,1):0;
-  const cold=clamp(1-Math.abs(x-(g.win.x+g.win.w*0.5))/(g.man*2.6),0,1);
+  const warm=he>0?Math.min(1,he/3)*clamp(1-(x-g.stove.x)/(g.man*3.0),0,1):0;
+  const cold=clamp(1-Math.abs(x-(g.win.x+g.win.w*0.5))/(g.man*3.6),0,1);
   return {warm,cold};
 }
 /* тело + обвод + касание: один приём на все предметы комнаты (правило
@@ -98,8 +98,14 @@ function winBody(c,g,W0,r,base,opt){
   const o=opt||{};
   const cx=r.x+r.w*0.5, cy=r.y+r.h*0.5;
   const k=winLit(g,W0,cx,cy), t=winTone(g,W0,cx,cy);
-  let col=pcMix(base,WIN_C.warm,t.warm*0.22);
-  col=pcMix(col,WIN_C.cold,t.cold*0.16);
+  /* ── раскол сказан ГРОМЧЕ (хвост M197) ──
+     Было .22 и .16 — то есть даже при полном тоне цвет уходил к своему свету
+     на пятую часть, и весь замысел «слева печь, справа мороз» проговаривался
+     шёпотом: на снимке комната читалась одним ровным бурым. Холоду вес дан
+     БОЛЬШЕ, чем теплу, и это не вкус: общий свет в комнате даёт лампа, а она
+     тёплая, — значит холодному, чтобы вообще прозвучать, надо громче. */
+  let col=pcMix(base,WIN_C.warm,t.warm*0.40);
+  col=pcMix(col,WIN_C.cold,t.cold*0.42);
   c.fillStyle=wcol(col,k);
   c.fillRect(r.x,r.y,r.w,r.h);
   if(o.edge!==false){
@@ -126,8 +132,8 @@ function winRoomLayer(W0){
     for(let x=0;x<W;x+=W*0.055){
       const k=winLit(g,W0,x+W*0.027,g.cei+g.man*0.7);
       const t=winTone(g,W0,x,g.cei+g.man*0.7);
-      let col=pcMix(WIN_C.wall,WIN_C.warm,t.warm*0.20);
-      col=pcMix(col,WIN_C.cold,t.cold*0.14);
+      let col=pcMix(WIN_C.wall,WIN_C.warm,t.warm*0.36);
+      col=pcMix(col,WIN_C.cold,t.cold*0.40);
       c.fillStyle=wcol(col,k);
       c.fillRect(x,g.cei,W*0.055+1,g.flo-g.cei);
       c.fillStyle=wrgba(WIN_C.dark,0.34);
@@ -384,15 +390,29 @@ function drawWinter(){
     ctx.lineWidth=Math.max(1,H*0.002);
     ctx.strokeRect(w.x-Math.max(2,H*0.005),w.y-Math.max(2,H*0.005),
       w.w+Math.max(4,H*0.010),w.h+Math.max(4,H*0.010));
-    /* холодный свет ложится на пол трапецией */
+    /* ── холодный свет ложится на пол трапецией ──
+       Аддитивно и вдвое сильнее прежнего (хвост M197). Полупрозрачная заливка
+       на .13 не читалась светом вовсе: она ПРИТЕНЯЛА пол синим, а свет должен
+       его высветлять. Это единственное холодное пятно в тёплой комнате, и по
+       нему видно, что за стеклом ночь и мороз, — иначе окно просто картинка. */
+    ctx.save();ctx.globalCompositeOperation="lighter";
     const fg=ctx.createLinearGradient(0,w.y+w.h,0,g.flo+H*0.05);
-    fg.addColorStop(0,wrgba(WIN_C.cold,0.13));
+    fg.addColorStop(0,wrgba(WIN_C.cold,0.26));
+    fg.addColorStop(0.55,wrgba(WIN_C.cold,0.10));
     fg.addColorStop(1,wrgba(WIN_C.cold,0));
     ctx.fillStyle=fg;
     ctx.beginPath();
     ctx.moveTo(w.x,w.y+w.h);ctx.lineTo(w.x+w.w,w.y+w.h);
     ctx.lineTo(w.x+w.w*1.45,g.flo+H*0.05);ctx.lineTo(w.x-w.w*0.45,g.flo+H*0.05);
     ctx.closePath();ctx.fill();
+    /* и на стену под окном: свет из окна не обрывается по подоконнику */
+    const wg=ctx.createRadialGradient(w.x+w.w*0.5,w.y+w.h*0.5,w.h*0.2,
+                                      w.x+w.w*0.5,w.y+w.h*0.5,w.w*1.5);
+    wg.addColorStop(0,wrgba(WIN_C.cold,0.16));
+    wg.addColorStop(1,wrgba(WIN_C.cold,0));
+    ctx.fillStyle=wg;
+    ctx.fillRect(w.x-w.w,w.y-w.h*0.5,w.w*3,w.h*2.4);
+    ctx.restore();
   }
 
   /* ── печь горит ── */

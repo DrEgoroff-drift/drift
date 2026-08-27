@@ -620,7 +620,7 @@ drawTrail                    src/16-flight.js:338
 drawWallPaper                src/11ae-concert.js:39
 drawWear                     src/12s-wear.js:70
 drawWeather                  src/19d-weather.js:92
-drawWinter                   src/29g-winter-draw.js:328
+drawWinter                   src/29g-winter-draw.js:334
 drawWreck                    src/20aa-poi-shapes.js:8
 drawWrecksSystem             src/12l-barge.js:347
 droneCapacity                src/12-economy.js:68
@@ -2737,7 +2737,7 @@ updateScoop                  src/19a-mode-scoop.js:28
 updateSpa                    src/29i-spa-draw.js:495
 updateSurface                src/21-mode-surface.js:179
 updateSystem                 src/17-mode-system.js:7
-updateWinter                 src/29g-winter-draw.js:788
+updateWinter                 src/29g-winter-draw.js:808
 useBeacon                    src/23-mode-dig.js:76
 VEGA_ABOARD                  src/12k-vega.js:35
 VEGA_BEAST                   src/12k-vega.js:42
@@ -2862,16 +2862,16 @@ winDraw_                     src/29f-winter.js:69
 winEnd                       src/29f-winter.js:191
 winFix                       src/29f-winter.js:147
 winGeom                      src/29g-winter-draw.js:34
-winHit                       src/29g-winter-draw.js:748
+winHit                       src/29g-winter-draw.js:768
 winLevers                    src/29g-winter-draw.js:54
 winLit                       src/29g-winter-draw.js:67
 winOfferHere                 src/29f-winter.js:76
 winOn                        src/29f-winter.js:63
 winOver                      src/29f-winter.js:70
-winRoomLayer                 src/29g-winter-draw.js:121
+winRoomLayer                 src/29g-winter-draw.js:127
 winShift                     src/29f-winter.js:121
 winTake                      src/29f-winter.js:95
-winTap                       src/29g-winter-draw.js:767
+winTap                       src/29g-winter-draw.js:787
 winTestStart                 tests/91zzzj-winter.js:2
 winTone                      src/29g-winter-draw.js:89
 winWall                      src/29f-winter.js:160
@@ -3593,7 +3593,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29f-winter.js · 15 КБ
   · зимовка: месяц одному:1
 
-## src/29g-winter-draw.js · 38 КБ
+## src/29g-winter-draw.js · 40 КБ
   · зимовка: кадр:1
 
 ## src/29h-spa.js · 8 КБ
