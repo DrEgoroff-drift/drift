@@ -504,6 +504,17 @@ action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
    the class remains: `.scr` is `inset:22px …`, so every screen is full height whatever it holds.
    Either panels shrink to their content, or every short screen needs something true to show.
    Decide once, apply everywhere.
+
+   **Measured 27.08.2026, and it narrows the choice a lot.** Every station tab already overflows
+   its viewport — board 1229/452, yard 2094/407, cantina 2093/407, market 835, mods 990, instr 759,
+   scrip 530, crew 441, barter 452, bases 452. Not one is short. So "panels shrink to content" would
+   change **nothing** on the screen the player spends most of their time in, and the whole question
+   is really about the handful of standalone panels (HQ and its kin). That makes "give the short
+   screens something true to show" the narrower and cheaper job of the two — and the HQ already
+   proved it works. Left for the author: this is a look-and-feel decision about every panel in the
+   game, and `.scr` sizing also carries the `91f-ui` overlap guard.
+   (Related, and already done: an overflowing list now *says* it continues — `27m-scroll-cue`,
+   M212. That was the half of this complaint that was a plain defect rather than a decision.)
 3. ~~**The mine is still the weakest screen**~~ — **largely closed by M214 (0.196.0).** It was not
    underbuilt but unlit and unbedded: one stratum fills the frame at shallow depth (where a player
    first arrives), so the rock came out a flat wash; and the massif had one brightness for the whole
