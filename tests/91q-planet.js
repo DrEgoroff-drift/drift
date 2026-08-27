@@ -194,6 +194,28 @@ TEST_SUITES.push(()=>suite("поверхность: рост человека �
 }));
 
 /* ── M217: под землёй та же мерка ── */
+TEST_SUITES.push(()=>suite("шахта: та же мерка, и клетка от неё только крупнее",()=>{
+  resetWorld();
+  landOnTestPlanet();
+  drawSurface();
+  const up=G.viewK;
+  enterDig();drawDig();
+  near(G.viewK,up,.001,"в шахте масштаб тот же, что наверху");
+  const rc=cvs.getBoundingClientRect();
+  if(rc.width>0){
+    /* тычок по клетке: экранный пиксель дешевле мирового, и без деления
+       на масштаб кирка бьёт мимо тем сильнее, чем больше окно */
+    const D=G.dig,K=G.viewK;
+    const camx=D.col*DIG_CELL-W/(2*K), camy=D.row*DIG_CELL-H/(2*K);
+    const want={col:D.col+2,row:D.row+1};
+    const px=(want.col*DIG_CELL+DIG_CELL/2-camx)*K, py=(want.row*DIG_CELL+DIG_CELL/2-camy)*K;
+    mouseWalkAt(rc.left+px*rc.width/W,rc.top+py*rc.height/H);
+    eq(D.walkTarget.col,want.col,"кирка идёт в ту клетку, по которой ткнули");
+    eq(D.walkTarget.row,want.row,"и в тот ряд");
+  }
+  G.dig=null;G.mode="surface";
+}));
+
 TEST_SUITES.push(()=>suite("пещера: человек не сжимается при спуске",()=>{
   resetWorld();
   landOnTestPlanet();

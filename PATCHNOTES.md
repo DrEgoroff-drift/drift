@@ -7,6 +7,38 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.204.0 — the mine gets a soil profile, and the workings get insides (M219)
+
+Two tails the playtest left on the mine, and the third that M217 parked.
+
+**The sky ended with a ruler.** A dead straight horizontal across the whole frame: sky above, rock
+below, nothing between. No ground on this planet is built that way, and the eye knows it instantly.
+Now the sky ends where the ground begins — along one gentle curve, computed by the same function on
+both sides, because if they ever disagreed a seam would run the width of the frame. Under it there
+is a real profile: turf, loose subsoil with stones and roots hanging down out of it, and below that
+a weathering crust — the bedrock's own top, broken into pieces with dark gaps between them, going
+over into fresh rock without a line anywhere.
+
+**And it comes from the world, not from taste.** The top tone is the planet's own palette, the one
+you see from orbit; the bottom is the first layer of its geology. On a world with no air there is
+no turf at all — up top lies regolith, lighter than the stone, and not one root. What stands *on*
+the line — clumps of grass, or gravel — is drawn in the frame rather than baked into the tile,
+because the sky is laid over the tiles and would paint it out.
+
+**The abandoned chambers were lit backwards.** Their gradient went dark at the roof to darker at the
+floor, so the blackest thing in the cavity was the heap of rubble on the ground — and the whole
+chamber read as a hole cut with scissors. In a real cavity the roof is darkest, a back wall stands
+behind, and the floor is the brightest thing there. Now it is those three, with grain on the back
+wall and a collapse pile whose slopes are broken out of the hash instead of drawn with a ruler.
+
+**The mine also scales with the window now**, like the surface and the cave. It was held back for
+one reason — tapping a cell — and measuring it argued the other way: a scaled cell is a *bigger*
+target. Measuring it also turned up a defect that had been there all along: the tap used `Math.round`,
+so each cell was owned by the half-cell band to its left, and aiming at the middle of a cell dug the
+one to the right and below it. It uses `Math.floor` now, and that is guarded.
+
+11754 assertions in 367 suites. 60 fps in every mode.
+---
 ## 0.203.0 — the receivers became places (M218)
 
 The author's own idea, from the day the question was only "where should the receiver sit when a

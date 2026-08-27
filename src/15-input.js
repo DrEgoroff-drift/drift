@@ -294,8 +294,15 @@ function mouseWalkAt(clientX,clientY){
     G.surf.walkTarget=camx+sx/(G.viewK||1);
   }else if(G.mode==="dig"&&G.dig){
     const D=G.dig,px=D.col*DIG_CELL,py=D.row*DIG_CELL;
-    const camx=px-W/2,camy=py-H*.5;
-    D.walkTarget={col:Math.round((sx+camx)/DIG_CELL),row:Math.round((sy+camy)/DIG_CELL)};
+    const K=G.viewK||1;
+    const camx=px-W/(2*K),camy=py-H/(2*K);
+    /* ── и по КЛЕТКЕ, а не мимо неё на полклетки (M219) ──
+       Здесь стоял Math.round: клетка col занимает мир от col*CELL до
+       col*CELL+CELL, значит её середина — col+.5, и round отдавал СЛЕДУЮЩУЮ.
+       Попасть в клетку можно было только по её левому верхнему углу, а тычок
+       в середину уводил кирку на клетку вправо-вниз. Правильный пересчёт —
+       floor: тычок в любое место нарисованной клетки берёт именно её. */
+    D.walkTarget={col:Math.floor((sx/K+camx)/DIG_CELL),row:Math.floor((sy/K+camy)/DIG_CELL)};
   }else if(G.mode==="cave"&&G.cave){
     const K=G.viewK||1;
     const camx=G.cave.x-W/(2*K);

@@ -42,7 +42,7 @@ function digVoidPath(D,camx,camy){
   }
   return P;
 }
-function drawDig(){
+function drawDigWorld(){
   const D=G.dig,p=D.p;
   const px=D.col*DIG_CELL,py=D.row*DIG_CELL;
   const camx=px-W/2,camy=py-H*.5;
@@ -483,8 +483,23 @@ function drawDig(){
       ctx.restore();
     }
   }
-  /* небо в устье шахты */
-  if(camy<0){ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,-camy);}
+  /* ── небо в устье шахты ──
+     Была заливка прямоугольником до y=0, то есть ЛИНЕЙКА во всю ширину кадра:
+     выше небо, ниже порода, между ними бритвенный горизонт. Теперь небо кончается
+     там же, где начинается земля, — по той самой кривой, по которой печётся
+     почвенный профиль (`digSurfY`, 23aa). Обе стороны обязаны считать её одной
+     функцией: разойдутся — вдоль всего кадра пойдёт щель или нахлёст. */
+  if(camy<40){
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(-2,-2);
+    for(let sx=-2;sx<=W+2;sx+=6)ctx.lineTo(sx,digSurfY(p,camx+sx)-camy);
+    ctx.lineTo(W+2,-2);ctx.closePath();
+    ctx.fillStyle=skyGrad(p);ctx.fill();
+    ctx.restore();
+    /* трава и щебень стоят НА линии, поэтому идут после неба (23aa) */
+    digSurfFringe(p,camx,camy);
+  }
   drawDigFauna(camx,camy);
   const sx=px-camx+DIG_CELL/2,sy=py-camy+DIG_CELL/2;
   const suit=G.surf.suit;
@@ -579,4 +594,15 @@ function mineSave(D,p){
   /* ствол растёт, и запись растёт вместе с ним; но она плоская и коротка —
      тысяча ячеек это тысяча строк "c,r", а не тысяча объектов */
   G.mines[mineKey(p)]={dug,deepest:D.deepest|0};
+}
+
+/* шахта меряется тем же, чем поверхность и пещера (M217): один и тот же человек
+   в одном и том же мире. Отдельно взвешено то, из-за чего её сперва оставили на
+   1:1 — тычок по клетке: клетка на экране становится КРУПНЕЕ, значит попасть в
+   неё легче, а не труднее; пересчёт делит на тот же G.viewK (15-input).
+   Приборов на канве здесь нет — всё в DOM, — поэтому масштабируется кадр целиком. */
+function drawDig(){
+  const K=surfScale();
+  G.viewK=K;
+  withScale(K,drawDigWorld);
 }

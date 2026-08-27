@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 319 · символов верхнего уровня: 2931
+Файлов: 319 · символов верхнего уровня: 2940
 
 ## СИМВОЛЫ
 
@@ -475,11 +475,19 @@ DESC_TAIL                    src/01-core.js:58
 dgy                          src/21b-surface-deco.js:131
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
-digBedding                   src/23aa-dig-rock.js:111
+DIG_TURF                     src/23aa-dig-rock.js:411
+digBedding                   src/23aa-dig-rock.js:114
 digCell                      src/23-mode-dig.js:29
 digFauna                     src/23-mode-dig.js:218
-digRockMass                  src/23aa-dig-rock.js:144
+digRGB                       src/23aa-dig-rock.js:413
+digRockMass                  src/23aa-dig-rock.js:147
 digRockPass                  src/23aa-dig-rock.js:26
+digSMix                      src/23aa-dig-rock.js:412
+digSoil                      src/23aa-dig-rock.js:447
+digSoilBand                  src/23aa-dig-rock.js:440
+digSoilCols                  src/23aa-dig-rock.js:421
+digSurfFringe                src/23aa-dig-rock.js:558
+digSurfY                     src/23aa-dig-rock.js:417
 digVoidPath                  src/23a-dig-draw.js:4
 DOM_GAME                     src/11af-domino.js:12
 dominoBlock                  src/11af-domino.js:58
@@ -542,8 +550,9 @@ drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
 drawDeposit                  src/21b-surface-deco.js:347
-drawDig                      src/23a-dig-draw.js:45
+drawDig                      src/23a-dig-draw.js:604
 drawDigFauna                 src/23-mode-dig.js:292
+drawDigWorld                 src/23a-dig-draw.js:45
 drawDustMotes                src/19-mode-landing.js:355
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:207
@@ -1425,10 +1434,10 @@ mgrWorkKeep                  src/12c-mgr-core.js:552
 mgrWorkSci                   src/12c-mgr-core.js:683
 midiHz                       src/10-music.js:106
 minedUnit                    src/11-log.js:136
-mineKey                      src/23a-dig-draw.js:564
-mineLoad                     src/23a-dig-draw.js:565
+mineKey                      src/23a-dig-draw.js:579
+mineLoad                     src/23a-dig-draw.js:580
 MINERAL                      src/18a-material.js:32
-mineSave                     src/23a-dig-draw.js:575
+mineSave                     src/23a-dig-draw.js:590
 MIRROR_CORE                  src/11f-mirror.js:22
 MIRROR_DELAY                 src/11f-mirror.js:21
 mirrorAck                    src/11f-mirror.js:33
@@ -2484,7 +2493,7 @@ STAR_CLASS                   src/02-world.js:94
 STAR_COLS                    src/16-flight.js:2
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:23
-start                        src/15-input.js:427
+start                        src/15-input.js:434
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
 stat                         src/08-state.js:123
@@ -2620,7 +2629,7 @@ tableWasNew                  src/27i-ui-table.js:75
 tabLive                      src/14a-cloud.js:36
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
-tap                          src/15-input.js:306
+tap                          src/15-input.js:313
 TAPE_ADAPT                   src/25b-tape.js:26
 TAPE_DT                      src/25b-tape.js:24
 TAPE_GAIN                    src/25b-tape.js:25
@@ -3464,10 +3473,11 @@ zooTick                      src/11ad-zoo.js:41
 ## src/22-mode-cave.js · 30 КБ
   · пещера: поле породы в двух измерениях:1
 
-## src/23aa-dig-rock.js · 21 КБ
+## src/23aa-dig-rock.js · 35 КБ
   · шахта: порода:1
+  · почвенный профиль: небо кончается не линейкой:397
 
-## src/23a-dig-draw.js · 35 КБ
+## src/23a-dig-draw.js · 37 КБ
   · шахта: отрисовка:1
 
 ## src/23-mode-dig.js · 16 КБ
@@ -3701,7 +3711,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91p-lore.js · 10 КБ
   · отчёт «Долгого Хода»: сто кусков:1
 
-## tests/91q-planet.js · 13 КБ
+## tests/91q-planet.js · 14 КБ
   · планета за полный набор:1
 
 ## tests/91r-hunter.js · 3 КБ

@@ -80,6 +80,9 @@ function digRockPass(D,p,camx,camy){
      невидимости (самокритика M169) */
   digBedding(G0,camx,camy);
   digRockMass(p,camx,camy);
+  /* профиль почвы у самой поверхности: до потемнения глубиной, чтобы верх
+     разреза жил по тем же правилам света, что и всё остальное */
+  digSoil(p,camx,camy);
   /* Глубина: чем ниже, тем меньше света. Плоская чёрная заливка поверх гасила
      не только яркость, но и разницу тонов — камень становился одноцветным.
      Умножение темнит пропорционально: тёмное темнеет сильнее светлого, и весь
@@ -245,14 +248,30 @@ function digRockMass(p,camx,camy){
       ctx.lineTo(sx-aw*.46+aw*.92*t,sy+ah*.5-((hh&7)/7)*4);
     }
     ctx.closePath();
-    /* нутро не чёрное: сверху чуть теплее (пыль ловит свет фонарей), вглубь
-       гаснет — плоская заливка .92 черноты читалась дырой без кромки, и автор
-       ткнул в неё на скрине (M178, то же правило, что у валуна и устья) */
+    /* ── у полости есть ЗАДНЯЯ СТЕНКА (хвост M214: «нутро выработок плоское») ──
+       Нутро красилось градиентом от тёмного вверху к ещё более тёмному внизу —
+       то есть пол выходил самым чёрным местом камеры, и вся она читалась
+       плоской вырезкой. В пещере свет так не лежит никогда: темнее всего
+       КРОВЛЯ (она отвёрнута от всего, что светит), а ниже видна задняя стенка,
+       и пол — самое светлое, потому что на него всё и осыпалось.
+
+       Поэтому здесь три вещи, а не заливка: кровля почти чёрная, задняя стенка
+       той же породы, что вокруг, но втрое темнее, и на ней — своё зерно. */
+    const back=digSMix((geologyOf(p)[0]||{col:[90,88,86]}).col,[0,0,0],.72);
     const vg=ctx.createLinearGradient(sx,sy-ah,sx,sy+ah*.5);
-    vg.addColorStop(0,"rgba(34,32,30,.94)");
-    vg.addColorStop(.5,"rgba(18,18,19,.94)");
-    vg.addColorStop(1,"rgba(10,11,13,.94)");
+    vg.addColorStop(0,"rgba(7,7,9,.96)");
+    vg.addColorStop(.42,digRGB(back,.96));
+    vg.addColorStop(1,digRGB(digSMix(back,[255,240,214],.14),.96));
     ctx.fillStyle=vg;ctx.fill();
+    /* зерно на задней стенке: без него она ровная краска, а не камень в тени */
+    ctx.save();ctx.clip();
+    for(let i=0;i<22;i++){
+      const hh=hashi(k*41+i,7,0x2A9E);
+      const gx=sx-aw*.48+((hh&63)/63)*aw*.96, gy=sy-ah*.5+((hh>>>6)&63)/63*ah;
+      ctx.fillStyle=(hh>>>13&1)?"rgba(255,246,228,.05)":"rgba(0,0,0,.16)";
+      ctx.fillRect(gx,gy,2+((hh>>>14)&3),1.2);
+    }
+    ctx.restore();
     /* кромка, поймавшая свет: верхняя дуга заметно светлее нижней */
     ctx.save();ctx.clip();
     ctx.strokeStyle="rgba(226,222,206,.30)";ctx.lineWidth=2.2;
@@ -268,12 +287,39 @@ function digRockMass(p,camx,camy){
     ctx.restore();
     ctx.strokeStyle="rgba(226,222,206,.10)";ctx.lineWidth=1;ctx.stroke();
     ctx.clip();
-    /* обрушение из кровли: конус светлее полости, иначе его нет */
-    ctx.fillStyle="rgba(58,54,48,.95)";
-    ctx.beginPath();
-    ctx.moveTo(sx-aw*.06,sy-ah*.85);ctx.lineTo(sx+aw*.30,sy+ah*.5);
-    ctx.lineTo(sx-aw*.38,sy+ah*.5);ctx.closePath();ctx.fill();
-    ctx.fillStyle="rgba(84,78,68,.75)";
+    /* обрушение из кровли: конус светлее полости, иначе его нет. Теперь под ним
+       стоит задняя стенка, и он обязан быть светлее уже ЕЁ */
+    /* Склоны у осыпи не прямые: это груда обломков под своим углом, а ровный
+       треугольник читался вырезанным ножницами — той же ошибкой, что когда-то
+       гладкий купол полости. Ведём оба склона ломаной из хеша. */
+    {
+      const apx=sx-aw*.06, apy=sy-ah*.85, fy=sy+ah*.5;
+      const jit=(i,sd)=>((hashi(k*53+i,sd,0x6C0E)&15)/15-.5);
+      ctx.fillStyle=digRGB(digSMix(back,[255,244,220],.26),.95);
+      ctx.beginPath();
+      ctx.moveTo(apx,apy);
+      for(let i=1;i<=5;i++){
+        const t=i/5;
+        ctx.lineTo(apx+(sx+aw*.30-apx)*t+jit(i,3)*7,apy+(fy-apy)*t+jit(i,5)*4);
+      }
+      ctx.lineTo(sx-aw*.38,fy);
+      for(let i=4;i>=1;i--){
+        const t=i/5;
+        ctx.lineTo(apx+(sx-aw*.38-apx)*t+jit(i,7)*7,apy+(fy-apy)*t+jit(i,11)*4);
+      }
+      ctx.closePath();ctx.fill();
+      /* свет ложится на верх осыпи: без этого груда — плоское пятно */
+      ctx.strokeStyle=digRGB(digSMix(back,[255,246,226],.5),.5);
+      ctx.lineWidth=1.4;
+      ctx.beginPath();
+      ctx.moveTo(apx,apy);
+      for(let i=1;i<=3;i++){
+        const t=i/5;
+        ctx.lineTo(apx+(sx+aw*.30-apx)*t+jit(i,3)*7,apy+(fy-apy)*t+jit(i,5)*4);
+      }
+      ctx.stroke();
+    }
+    ctx.fillStyle=digRGB(digSMix(back,[255,244,220],.42),.8);
     for(let i=0;i<14;i++){
       const hh=hashi(k*17+i,5,0x0B0B);
       ctx.beginPath();
@@ -347,3 +393,206 @@ function digRockMass(p,camx,camy){
   ctx.restore();
 }
 /* пустота: один путь на всю выработку */
+
+/* ══════════════ почвенный профиль: небо кончается не линейкой ══════════════
+   Хвост M214. Шахта начиналась с ЛИНЕЙКИ: ровная горизонталь во всю ширину
+   кадра, выше — небо, ниже — сплошная порода. Так земля не устроена нигде.
+   У любого разреза сверху лежит профиль, и по нему глаз мгновенно понимает,
+   что смотрит на землю, а не на заливку: дёрн, под ним рыхлое с камнями и
+   корнями, ещё ниже — разбитая выветриванием кровля коренной породы, и только
+   потом свежий камень. Плюс сама поверхность не линейка: она гуляет.
+
+   ПРОФИЛЬ ИДЁТ ОТ МИРА, А НЕ ОТ ВКУСА. Верхний тон берётся из палитры планеты
+   (той же, которой она видна с орбиты), нижний — из первого пласта геологии.
+   На мире без воздуха дёрна не бывает: там сверху не почва, а рыхлый развал
+   обломков — реголит, светлее и без единого корня.
+
+   Печётся в тайл вместе с породой: камера его только двигает. */
+const DIG_TURF=9, DIG_SUB=27, DIG_WEA=66;
+function digSMix(a,b,t){return [Math.round(lerp(a[0],b[0],t)),Math.round(lerp(a[1],b[1],t)),Math.round(lerp(a[2],b[2],t))];}
+function digRGB(c,a){return "rgba("+c[0]+","+c[1]+","+c[2]+","+(a===undefined?1:a)+")";}
+/* линия поверхности: две волны, обе от посева планеты. Больше двенадцати
+   пикселей размаха брать нельзя — верхний ряд клеток стоит от нуля, и рельеф
+   не должен выедать его наполовину */
+function digSurfY(p,wx){
+  const s=(p&&p.seed)|0;
+  return (noise1(wx*.0085,s^0x50A1)-.5)*23+(noise1(wx*.038,s^0x11B2)-.5)*8;
+}
+function digSoilCols(p){
+  const pal=(p&&p.T&&p.T.pal)||[[70,70,74]];
+  const top=pal[Math.min(3,pal.length-1)];
+  const G0=(typeof geologyOf==="function")?geologyOf(p):null;
+  const rock=(G0&&G0[0]&&G0[0].col)||[90,88,86];
+  const air=!!(p&&p.T&&p.T.atm!=="отсутствует");
+  return {
+    air,
+    /* дёрн: тот же тон, что виден сверху, но втоптанный в органику. Без
+       воздуха вместо него реголит — светлее камня, а не темнее */
+    turf: air?digSMix(top,[24,20,13],.60):digSMix(top,[150,148,150],.42),
+    /* подпочва БУРАЯ: она темнее и теплее и камня, и того, что видно сверху.
+       Первый счёт мешал только эти два тона и на зелёном мире выходил зелёным —
+       то есть тем же камнем, только светлее, и профиля в кадре не было */
+    sub:  digSMix(digSMix(top,rock,.5),[96,68,38],.46),
+    rock
+  };
+}
+/* полоса между двумя кривыми: верхняя слева направо, нижняя обратно */
+function digSoilBand(camx,camy,fy0,fy1,fill){
+  ctx.beginPath();
+  for(let sx=-12;sx<=W+12;sx+=6)ctx.lineTo(sx,fy0(camx+sx)-camy);
+  for(let sx=W+12;sx>=-12;sx-=6)ctx.lineTo(sx,fy1(camx+sx)-camy);
+  ctx.closePath();
+  ctx.fillStyle=fill;ctx.fill();
+}
+function digSoil(p,camx,camy){
+  const hi=-16, lo=DIG_TURF+DIG_SUB+DIG_WEA+16;
+  if(camy>lo||camy+H<hi)return;                    /* тайл не задевает профиль */
+  const C=digSoilCols(p);
+  const s=(p&&p.seed)|0;
+  const y0=wx=>digSurfY(p,wx);
+  const y1=wx=>digSurfY(p,wx)+DIG_TURF+(noise1(wx*.05,s^0x7711)-.5)*4;
+  const y2=wx=>digSurfY(p,wx)+DIG_TURF+DIG_SUB+(noise1(wx*.032,s^0x3391)-.5)*9;
+  const y3=wx=>digSurfY(p,wx)+DIG_TURF+DIG_SUB+DIG_WEA+(noise1(wx*.021,s^0x2255)-.5)*16;
+  ctx.save();
+  /* 1. кора выветривания: коренная порода, разбитая сверху. Тон уходит в ржавь
+        (в этой полосе всё окислено) и растворяется книзу — граница со свежим
+        камнем не линия, а сход на нет */
+  const wg=ctx.createLinearGradient(0,DIG_TURF+DIG_SUB-camy,0,DIG_TURF+DIG_SUB+DIG_WEA-camy);
+  const wea=digSMix(C.rock,[132,88,42],.42);
+  wg.addColorStop(0,digRGB(wea,.92));
+  wg.addColorStop(1,digRGB(wea,0));
+  digSoilBand(camx,camy,y2,y3,wg);
+  /* и она РАЗБИТА, а не подкрашена: сверху камень уже развалился на отдельные
+     куски, и между ними видны тёмные щели. Без этого «кора выветривания» —
+     просто ржавый оттенок, которого в кадре никто не заметит */
+  for(let wx=Math.floor((camx-60)/26)*26;wx<camx+W+60;wx+=26){
+    const hh=hashi(Math.floor(wx/26),s,0x8B10);
+    const bw=14+((hh>>>3)&15), bh=7+((hh>>>7)&7);
+    const t=((hh>>>11)&7)/7;
+    const yy=lerp(y2(wx),y3(wx),t*t*.8)-camy;
+    ctx.fillStyle="rgba(0,0,0,"+(.20*(1-t)+.04).toFixed(3)+")";
+    ctx.beginPath();
+    ctx.moveTo(wx-camx,yy);
+    ctx.lineTo(wx-camx+bw,yy-1.5+((hh>>>15)&3));
+    ctx.lineTo(wx-camx+bw-2,yy+bh);
+    ctx.lineTo(wx-camx-1,yy+bh-2);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(255,246,228,"+(.09*(1-t)).toFixed(3)+")";
+    ctx.fillRect(wx-camx,yy-1,bw-3,1.1);
+  }
+  /* 2. рыхлое: подпочва с камнями */
+  digSoilBand(camx,camy,y1,y2,digRGB(C.sub));
+  /* 3. дёрн (или реголит) */
+  digSoilBand(camx,camy,y0,y1,digRGB(C.turf));
+  /* ── камни в рыхлом ──
+     Обломки лежат гуще к низу: наверху их вымыло, внизу они ещё не окатались */
+  for(let wx=Math.floor((camx-40)/9)*9;wx<camx+W+40;wx+=9){
+    const hh=hashi(Math.floor(wx/9),s,0x51F5);
+    if((hh&7)<4)continue;
+    const t=((hh>>>3)&15)/15;
+    const yy=lerp(y1(wx),y2(wx),.15+t*.8)-camy;
+    const rr=1.2+((hh>>>7)&3)*.7;
+    ctx.fillStyle=digRGB(digSMix(C.sub,C.rock,.55+t*.3),.85);
+    ctx.beginPath();ctx.ellipse(wx-camx,yy,rr*1.5,rr,((hh>>>9)&7)/7*1.2,0,TAU);ctx.fill();
+    /* у камня своя верхняя кромка — иначе это пятно, а не камень */
+    ctx.fillStyle="rgba(255,250,238,.13)";
+    ctx.beginPath();ctx.ellipse(wx-camx-rr*.3,yy-rr*.45,rr*.8,rr*.3,0,0,TAU);ctx.fill();
+  }
+  /* ── трещины в коре выветривания ──
+     Их тем больше, чем ближе к поверхности: сверху камень уже развалился на
+     отдельные куски, глубже он ещё цел. Это и читается как «кора» */
+  for(let wx=Math.floor((camx-60)/17)*17;wx<camx+W+60;wx+=17){
+    const hh=hashi(Math.floor(wx/17),s,0xC7A5);
+    const n=1+((hh>>>2)&1);
+    for(let i=0;i<n;i++){
+      const h2=hashi(Math.floor(wx/17)*7+i,s,0x0F1E);
+      const t=((h2>>>4)&15)/15;
+      const yy=lerp(y2(wx),y3(wx),t*t)-camy;      /* квадрат: гуще вверху */
+      const ln=5+((h2>>>8)&7), ang=1.05+((h2>>>11)&7)/7*.9;
+      ctx.strokeStyle="rgba(0,0,0,"+(.30*(1-t)+.06).toFixed(3)+")";
+      ctx.lineWidth=1+((h2>>>14)&1)*.6;
+      ctx.beginPath();ctx.moveTo(wx-camx,yy);
+      ctx.lineTo(wx-camx+Math.cos(ang)*ln,yy+Math.sin(ang)*ln);ctx.stroke();
+    }
+  }
+  /* ── корни ──
+     Только там, где есть чему расти. Корень идёт из дёрна вниз, сужается и
+     ветвится один раз: две расходящиеся нитки читаются корнем, прямая —
+     царапиной */
+  if(C.air){
+    for(let wx=Math.floor((camx-60)/34)*34;wx<camx+W+60;wx+=34){
+      const hh=hashi(Math.floor(wx/34),s,0x0B00);
+      if((hh&3)===0)continue;
+      const x0=wx-camx+((hh>>>2)&7), yA=y1(wx)-camy-2;
+      const dep=10+((hh>>>5)&15);
+      ctx.strokeStyle="rgba(28,22,14,.55)";
+      ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(x0,yA);
+      ctx.quadraticCurveTo(x0+((hh>>>9)&7)-3,yA+dep*.6,x0+((hh>>>12)&15)-7,yA+dep);
+      ctx.stroke();
+      ctx.lineWidth=.9;
+      ctx.beginPath();ctx.moveTo(x0,yA+dep*.45);
+      ctx.quadraticCurveTo(x0-4,yA+dep*.7,x0-7-((hh>>>16)&7),yA+dep*.85);
+      ctx.stroke();
+    }
+  }
+  /* ── кромка, поймавшая небо ──
+     То же правило, что у устья пещеры и у валуна: у силуэта обязана быть
+     кромка, иначе он наклейка. Здесь это дневной свет, лежащий на самой земле */
+  ctx.beginPath();
+  for(let sx=-12;sx<=W+12;sx+=6)ctx.lineTo(sx,y0(camx+sx)-camy+.7);
+  ctx.strokeStyle=C.air?"rgba(255,247,226,.40)":"rgba(226,232,240,.34)";
+  ctx.lineWidth=1.6;ctx.stroke();
+  ctx.restore();
+}
+
+/* ── что стоит НА земле ──
+   Профиль печётся в тайл, а небо кладётся поверх тайлов — значит всё, что
+   торчит выше линии, тайл нарисовать не может: небо его закрасит. Поэтому
+   кромка рисуется в кадре, сразу после неба, и это единственное, что здесь
+   считается каждый кадр: полсотни штрихов на всю ширину.
+
+   Мелочь, а решает: пучки травы (или щебень на мире без воздуха) на линии
+   мгновенно говорят, что это ЗЕМЛЯ, а не граница двух заливок. Плюс полоска
+   воздуха у самого горизонта — свет, лежащий на пыли над грунтом. */
+function digSurfFringe(p,camx,camy){
+  if(camy>60||camy+H<-40)return;
+  const C=digSoilCols(p), s=(p&&p.seed)|0;
+  ctx.save();
+  /* воздух над грунтом: у земли он всегда светлее самого неба */
+  {
+    const yh=digSurfY(p,camx+W*.5)-camy;
+    const hg=ctx.createLinearGradient(0,yh-46,0,yh+2);
+    const sky=(p.T&&p.T.sky&&p.T.sky[0])||[90,120,150];
+    hg.addColorStop(0,"rgba("+sky.join(",")+",0)");
+    hg.addColorStop(1,"rgba("+sky.map(v=>Math.min(255,v+38)).join(",")+",.30)");
+    ctx.fillStyle=hg;ctx.fillRect(0,yh-46,W,48);
+  }
+  for(let wx=Math.floor((camx-30)/13)*13;wx<camx+W+30;wx+=13){
+    const hh=hashi(Math.floor(wx/13),s,0x7A5E);
+    if((hh&3)===0||((hh>>>17)&7)<2)continue;   /* трава растёт клочьями, а не гребёнкой */
+    const x=wx-camx+((hh>>>2)&7)-3, y=digSurfY(p,wx)-camy+.5;
+    if(C.air){
+      /* пучок: три-четыре травины из одной точки, разной длины и наклона */
+      const n=2+((hh>>>5)&3);
+      ctx.strokeStyle="rgba(26,34,18,.62)";
+      for(let i=0;i<n;i++){
+        const h2=hashi(Math.floor(wx/13)*5+i,s,0x3C1D);
+        const ln=2.5+((h2>>>2)&7)*1.15, an=-1.57+(((h2>>>6)&15)/15-.5)*1.5;
+        ctx.lineWidth=1+((h2>>>10)&1)*.4;
+        ctx.beginPath();ctx.moveTo(x+i*.9-1,y);
+        ctx.quadraticCurveTo(x+Math.cos(an)*ln*.6,y+Math.sin(an)*ln*.7,
+                             x+Math.cos(an)*ln,y+Math.sin(an)*ln);
+        ctx.stroke();
+      }
+    }else{
+      /* без воздуха расти нечему: на линии лежит щебень */
+      const rr=1.3+((hh>>>5)&3)*.6;
+      ctx.fillStyle=digRGB(digSMix(C.turf,[210,210,214],.35),.9);
+      ctx.beginPath();ctx.ellipse(x,y-rr*.35,rr*1.4,rr*.8,0,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(0,0,0,.25)";
+      ctx.fillRect(x-rr*1.3,y,rr*2.6,1);
+    }
+  }
+  ctx.restore();
+}

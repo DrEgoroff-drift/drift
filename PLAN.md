@@ -545,8 +545,8 @@ action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
    world, and having him shrink on the way down would read as a change of game. Input divides by the
    same `G.viewK`, and both round trips are guarded in `91q-planet`.
 
-   **Still open:** the mine (`dig`) is left at 1:1 — its camera is a cell grid, tapping depends on
-   the cell's size on screen, and it deserves its own pass rather than a ride on this one. And the
+   **The mine followed in M219** (0.204.0) — the reason for holding it back argued the other way
+   once measured: a scaled cell is a bigger target, not a smaller one. And the
    change makes an old contrast louder: the world now grows with the window while the HUD — chips,
    captions, the instrument row — stays at its 9 px whatever the monitor. That is the next question
    of the same family, and it is a look-and-feel decision about every screen, not a defect.
@@ -571,8 +571,29 @@ action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
    frame, so the screen had no centre. Partings inside a layer, following its own wave — laid AFTER
    `fillMaterial`, which ate them on the first attempt exactly as it once ate the cracks. Plus a
    falloff from the walker, per frame, measured at 0.4%% of a 0.92 ms frame. Stand `?s=dig`.
-   **Still open:** the boundary with the sky is a hard cut with no soil profile, and the insides of
-   the workings are flat.
+   **The two tails are closed by M219 (0.204.0).** The sky boundary was a RULER: a dead straight
+   horizontal across the whole frame, sky above, rock below. It now ends where the ground begins —
+   one curve (`digSurfY`), and both sides compute it with the same function, because if they ever
+   disagree a seam runs the width of the frame. Under it a real profile: turf, loose subsoil with
+   stones and roots, then a weathering crust that is BROKEN rather than merely tinted, dissolving
+   into fresh rock. It comes from the world, not from taste — the top tone is the planet's own
+   palette, the bottom the first geological layer, and on an airless world there is no turf at all,
+   only regolith and gravel with not one root. What stands ON the line — tufts of grass, or gravel —
+   is drawn in the frame after the sky, because the tile cannot: the sky is laid over the tiles and
+   would paint it out.
+
+   The abandoned chambers had their gradient running dark-at-top to darker-at-bottom, i.e. the FLOOR
+   was the blackest thing in the cavity, which is exactly backwards and read as a paper cutout. Now
+   the roof is nearly black, a back wall of the same rock three times darker stands behind, with its
+   own grain, and the collapse pile is the lightest thing there — with slopes broken out of the hash
+   instead of a scissor-cut triangle.
+
+   **And the mine now scales like the rest of the world** (the tail M217 left open). The reason it
+   was held back — tapping a cell — turned out to argue the other way: the cell gets BIGGER on
+   screen, so it is easier to hit, and the conversion divides by the same `G.viewK`. Measuring it
+   found a real defect underneath: the tap used `Math.round`, so a cell was owned by the half-cell
+   band to its left — aiming at the middle of a drawn cell dug the one to the right and below.
+   `Math.floor` now, and it is guarded.
 4. ~~**Instruments nobody can read.**~~ — **closed by M213 (0.195.0).** The caption was six pixels
    at 45%% opacity (`6*FS`, `FS` from 1) — not a label, a texture; nine now, and it SHORTENS to a
    three-letter code when the cell is too narrow rather than shrinking further, measured per cell.
