@@ -7,6 +7,35 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.198.0 — the kit laid out on the desk (M216, M179's tail)
+
+M179 put the hold on the table as **piles** — the author's ask after showing the inventory from The
+Forest: everything you carry laid out as objects, so one glance tells you what you have too much of,
+too little of, and none of. It wrote itself one line of debt: *"the suit kit as objects on the same
+desk (it lives in the ship screen's paperdoll today)."*
+
+**A doll and a layout answer different questions.** A doll answers *how do I look*; things laid out
+answer *what have I got* — and the second is the inventory question. A mannequin is a poor way to
+answer it, because on a mannequin the boots are under the torso, the pack is behind the back and the
+gloves merge into the sleeves: half the kit is invisible precisely *because* it is worn. On the desk
+all six lie side by side and whole.
+
+**One canvas, not six cards.** The hold gives a card per resource because resources are independent —
+three kinds today, eight tomorrow. The kit is always the same six places, and it is **one** thing
+taken apart. Six cards would read as six unrelated objects; one layout reads as one person's gear
+laid out before going out.
+
+Nothing about it is new invention: the colour of every piece comes from `kitColOf` — the same one
+that paints the doll and the walker on the ground — so model and wear-layer show through, class makes
+a piece larger and adds it a detail, and wear draws as scuffs or as patches rather than as a number.
+It sits above the cargo, because what is on you is not what you are carrying; and it stays there when
+the hold is empty, because you are still wearing a suit.
+
+Two passes. The first drew shadows wider than the objects casting them, so six grey ovals read as
+things floating above their own blots; and the layout was squeezed into the narrow per-resource card
+column. `27j-ui-kitlay`, one `.thing.wide` rule, guards updated in `91zzv-table` to state the new
+rule rather than the old count. 11656 assertions in 358 suites, 11746 on the phone.
+---
 ## 0.197.0 — the third hour, walked (M215)
 
 M212's walkthrough left *"the third hour — first run given to a hired hand, the wait, and what comes

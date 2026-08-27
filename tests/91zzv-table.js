@@ -166,7 +166,11 @@ TEST_SUITES.push(()=>suite("стол: трюм разложен кучами",()
   tableToggle(true,"hold");
   const box=document.getElementById("loglist");
   ok(box.classList.contains("desk"),"трюм лежит на дереве");
-  const cards=box.querySelectorAll(".thing");
+  /* раскладка комплекта (M216) — своя, широкая карточка, и она НЕ ресурс:
+     считаем груз отдельно от того, что на себе */
+  const wide=box.querySelectorAll(".thing.wide");
+  eq(wide.length,1,"комплект лежит одной раскладкой, а не шестью карточками");
+  const cards=box.querySelectorAll(".thing:not(.wide)");
   eq(cards.length,3,"карточка на каждый ненулевой ресурс");
   let okAll=true;
   cards.forEach(cd=>{
@@ -176,7 +180,10 @@ TEST_SUITES.push(()=>suite("стол: трюм разложен кучами",()
   ok([...cards].some(cd=>/Лёд × 9/.test(cd.textContent)),"число единиц в подписи");
   G.cargo.ice=0;G.cargo.crystal=0;G.cargo.missile=0;
   tableRender();
-  eq(box.querySelectorAll(".thing").length,0,"пустой трюм — пустой стол");
+  /* пустой трюм — пустых карточек груза нет. А комплект остаётся: скафандр на
+     тебе и тогда, когда везти нечего, и «на себе» это не про груз (M216) */
+  eq(box.querySelectorAll(".thing:not(.wide)").length,0,"пустой трюм — ни одной карточки груза");
+  eq(box.querySelectorAll(".thing.wide").length,1,"а комплект на месте: он не груз");
   tableToggle(false);
 }));
 

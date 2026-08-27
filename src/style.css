@@ -770,6 +770,12 @@ body.table #loglist.desk .thing{flex:0 0 auto;width:250px;display:block;padding:
   transform:rotate(-.8deg)}
 body.table #loglist.desk .thing:nth-child(even){transform:rotate(1deg)}
 body.table #loglist.desk .thing canvas{width:auto;height:84px;display:block;margin:0 auto 9px}
+/* раскладка комплекта (M216) — одна широкая карточка, а не куча в ряду: это
+   один предмет, разобранный на части, и шесть вещей должны лежать рядом, а не
+   тесниться в колонку шириной с горсть кремния */
+body.table #loglist.desk .thing.wide{width:min(392px,calc(100vw - 96px));transform:rotate(-.4deg)}
+body.table #loglist.desk .thing.wide canvas{height:auto;width:100%;margin:0 auto 10px}
+body.table #loglist.desk .thing.wide .nm{columns:2;column-gap:16px;font-size:11px;line-height:1.5}
 body.table #loglist.desk .thing .nm b{color:#2c2418;font-size:12px}
 body.table #loglist.desk .thing .nm s{color:#6a5a3e;font-size:10px}
 /* «новое» на столе — не фосфорная обводка, а сургучная точка в углу: на бумаге

@@ -380,8 +380,12 @@ Written from the author's own crops; finished over 0.147.0–0.162.1 and moved t
 [`docs/PLAN-archive.md`](docs/PLAN-archive.md) on 2026-08-27. Grep it there for M178–M186. Five
 things they left standing, and these are the graphics debt in its shortest form:
 
-- the **suit kit** is still a paperdoll on the ship screen, not objects on the same desk as the
-  tray (M179);
+- ~~the **suit kit** is still a paperdoll on the ship screen~~ — **closed by M216 (0.198.0).**
+  `27j-ui-kitlay`: one wide layout above the cargo on the ТРЮМ tab. A doll answers *how do I look*
+  and a layout answers *what have I got*, and on a mannequin half the kit is invisible precisely
+  because it is worn. One canvas rather than six cards — the kit is one thing taken apart, not six
+  independent ones — and every piece is coloured by `kitColOf`, so model and wear-layer show through
+  exactly as they do on the doll and on the walker;
 - the **pirate base** (M180 pass 2) — **mostly closed (0.191.0).** Bodies: legs taper into boots and
   stand in a seeded stance, the belt follows the body, a yoke marks the shoulders — but the thing
   that actually read as "blocky" was that nothing on the figure was lit, so seven flat fills fell

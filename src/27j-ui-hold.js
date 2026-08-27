@@ -177,6 +177,27 @@ function renderHold(box){
   box.textContent="";
   const st=stat();
   const keys2=RES_KEYS.filter(k=>(G.cargo[k]|0)>0);
+  /* ── комплект лежит на том же столе (M216, хвост M179) ──
+     Груз лёг сюда кучами, а комплект оставался куклой на экране корабля: на
+     манекене половина вещей не видна ровно потому, что она надета. Раскладка
+     идёт ПЕРВОЙ — это то, что на тебе, а трюм это то, что везёшь. */
+  if(typeof kitLayDraw==="function"){
+    tableRow(box,"head","","НА СЕБЕ · "+(typeof kitLine==="function"?kitLine():""));
+    const row=document.createElement("div");row.className="thing wide";
+    const cv=document.createElement("canvas");cv.width=420;cv.height=300;
+    cv.style.cssText="width:100%;height:auto";
+    kitLayDraw(cv.getContext("2d"),420,300);
+    const nm=document.createElement("div");nm.className="nm";
+    const K=kitAll();
+    nm.innerHTML=KIT_PLACES.map(p=>{
+      const x=K[p];
+      return "<b>"+KIT_RU[p]+"</b> <span style='color:var(--dim)'>"+kitName(x)+
+        " "+kitRoman(x.cls)+(x.wear?" · "+KIT_WEAR[x.wear]:"")+
+        (x.mods&&x.mods.length?" · "+x.mods.length+" дор.":"")+"</span>";
+    }).join("<br>");
+    row.appendChild(cv);row.appendChild(nm);
+    box.appendChild(row);
+  }
   tableRow(box,"head","","ТРЮМ · "+held()+"/"+st.cargoMax+
     (keys2.length?"":" · ПУСТО"));
   if(!keys2.length){

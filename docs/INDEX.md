@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 316 · символов верхнего уровня: 2896
+Файлов: 317 · символов верхнего уровня: 2901
 
 ## СИМВОЛЫ
 
@@ -1222,6 +1222,11 @@ kitFromHulk                  src/12x-suit.js:118
 kitGive                      src/12x-suit.js:87
 kitHasMod                    src/12x-suit.js:58
 kitHeatMul                   src/12x-suit.js:286
+KITLAY                       src/27j-ui-kitlay.js:31
+kitLayDraw                   src/27j-ui-kitlay.js:136
+kitLayPiece                  src/27j-ui-kitlay.js:74
+kitLayShadow                 src/27j-ui-kitlay.js:41
+kitLayWear                   src/27j-ui-kitlay.js:49
 kitLine                      src/12x-suit.js:80
 kitName                      src/12x-suit.js:54
 kitPalette                   src/12x-suit.js:178
@@ -3554,8 +3559,11 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27j-console.js · 7 КБ
   · пульт: приёмник, подсказка, кресло:1
 
-## src/27j-ui-hold.js · 9 КБ
+## src/27j-ui-hold.js · 10 КБ
   · трюм как раскладка (M179):1
+
+## src/27j-ui-kitlay.js · 9 КБ
+  · комплект, разложенный на столе:1
 
 ## src/27k-road.js · 47 КБ
   · дорожный спутник:1
@@ -3822,9 +3830,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzu-domino.js · 2 КБ
   · автотесты: домино (M166):1
 
-## tests/91zzv-table.js · 16 КБ
+## tests/91zzv-table.js · 17 КБ
   · автотесты: пульт и стол (M151a):1
-  · огонёк: «пришло» ≠ «не прочитано»:183
+  · огонёк: «пришло» ≠ «не прочитано»:190
 
 ## tests/91zzw-economy.js · 10 КБ
   · автотесты: экономика без долга (M152e):1
