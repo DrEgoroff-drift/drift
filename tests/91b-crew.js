@@ -325,3 +325,30 @@ TEST_SUITES.push(()=>suite("наём: опыт не спорит с подпис
   eq(a.xp,b.xp,"тот же номер — тот же человек");
   ok(crewSkill({xp:0})<crewSkill({xp:80}),"опытный работает лучше");
 }));
+TEST_SUITES.push(()=>suite("наём: репутация меняет, КТО пришёл, а не кем он вдруг стал",()=>{
+  resetWorld();
+  /* M212 убрал спор «неопытен · опыт 22» из genMerc — и он тут же возвращался
+     через надбавку за репутацию в stationMercs, на любой станции, где игрока
+     знают. Проверка идёт по тому же правилу, но через ВЕСЬ путь до экрана */
+  const sys=getSystem(0,0);
+  const chk=(where)=>{
+    for(const m of stationMercs(sys)){
+      const g=m.traits.indexOf("green")>=0, v=m.traits.indexOf("vet")>=0;
+      ok(m.xp>=0&&m.xp<160,where+": опыт в пределах ("+m.xp+")");
+      if(g&&!v)ok(m.xp<=20,where+": зелёный остался зелёным ("+m.xp+")");
+      if(v&&!g)ok(m.xp>=30,where+": ветеран остался ветераном ("+m.xp+")");
+    }
+  };
+  chk("без репутации");
+  /* там, где знают хорошо */
+  if(typeof repAdd==="function"){
+    for(let i=0;i<40;i++)repAdd(1,sys);
+    ok(repAt(sys)>=4,"репутация и правда поднялась: "+repAt(sys));
+    chk("где знают хорошо");
+    for(let i=0;i<120;i++)repAdd(-1,sys);
+    ok(repAt(sys)<=-4,"и опустилась: "+repAt(sys));
+    chk("где помнят нехорошо");
+  }else{
+    ok(true,"repAdd не заведён — проверена только нулевая репутация");
+  }
+}));

@@ -1,4 +1,6 @@
-# The hour after the opening — walkthrough
+# The newcomer's hours — walkthroughs
+
+## The second hour
 
 M207 walked a fresh save and fixed what it found (`DESIGN-first-hour.md`). It left one item
 explicitly: *"the hour AFTER the opening — first station screen in full, first hire, first manager —
@@ -86,3 +88,64 @@ not part of it — it is about the world, and the world is currently behind a pa
   for the first "jump straight to this tab" feature anyone adds.
 - **The third hour** — first run given to a hired hand, first order, the wait, and what comes back —
   has not been walked.
+
+---
+
+# The third hour — walked 2026-08-27 (0.196.0)
+
+The section above left *"the third hour — first run given to a hired hand, the wait, and what comes
+back — has not been walked."* Walked now; shipped as **M215 (0.197.0)**. Two findings, both about the
+same screen, and both of the same family as the second hour's: **the game contradicting itself or
+staying silent at the exact moment money changes hands.**
+
+## 1. The contradiction M212 fixed came straight back, through the side door — **fixed**
+
+M212 made a candidate's experience follow the traits printed beside it, and guarded `genMerc` over
+900 seeds. But the station does not show what `genMerc` returns. `stationMercs` post-processes the
+list by reputation:
+
+```js
+if (rv >= 2) for (…) out[i].xp = Math.max(out[i].xp, 40 + (rv >= 4 ? 60 : 25));
+```
+
+— with no regard for who the person is. So on any station where the player is known, a candidate
+tagged *«необстрелянный — дёшев и НЕОПЫТЕН»* is stamped **опыт 65**, or 100 further up. The same two
+adjacent lines arguing with each other, only now switched on by reputation instead of by a stray
+`Math.random`. The M212 guard could not see it: it tested the generator, and the bug lives one call
+downstream of it.
+
+The bump's own stated intent is *who came*, not *who they suddenly are* — where you are known, a man
+with a record is sitting at the table. So it now lifts only candidates who can plausibly have one and
+leaves a green hand alone: green is green everywhere. The same in the other direction — a veteran's
+service does not shrink because your name is bad here. Guarded through the whole path this time
+(`stationMercs`, not `genMerc`), at both ends of the reputation scale; reverting the fix makes the
+new test fail with *«зелёный остался зелёным (100)»*.
+
+## 2. You pay for a person, then find out he cannot work — **fixed**
+
+The first hire costs a newcomer about a third of everything they own. Only afterwards does the crew
+row say:
+
+```
+приказ: на приколе · рейсов 0
+корабль: не выдан
+Выдать корабль — свободных корпусов нет: купите или пересядьте
+```
+
+A hired hand needs a **hull of his own**, and nothing on the hire screen said so — not the header,
+not the speciality's description, not the candidate's row. The money is spent and there is nothing
+to undo it with. That is the second hour's lesson repeated: the screen where money changes hands is
+the screen that must not stay silent.
+
+The crew header now carries it — *«свободных корпусов нет: наёмнику нужен свой корабль»* — and only
+while it is true. For a player who already has a spare hull it is noise, and the standing rule is
+that only what is needed right now hangs over the world.
+
+## Still open
+
+- **The run itself.** With no second hull there is no order to give and nothing to wait for, so the
+  back half of the third hour — the order, the wait, the return — needs a save with two ships and has
+  not been walked. That is where `CREW_YIELD` (a hand recovers ~85% of wages; the profit lives in the
+  tails of the event table) meets the player for the first time, and it is the most likely place for
+  a "he loses money, is he broken?" reading.
+- **The fourth hour** — first manager actually appointed, first domain — is untouched.

@@ -7,6 +7,39 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.197.0 — the third hour, walked (M215)
+
+M212's walkthrough left *"the third hour — first run given to a hired hand, the wait, and what comes
+back — has not been walked."* Walked. Both findings are the same family as the second hour's: **the
+game contradicting itself, or staying silent, at the exact moment money changes hands.** Written up
+in [`docs/DESIGN-hours.md`](docs/DESIGN-hours.md), which now covers both hours.
+
+**The contradiction M212 fixed came straight back, through the side door.** M212 made a candidate's
+experience follow the traits printed beside it and guarded `genMerc` over 900 seeds — but the station
+does not show what `genMerc` returns. `stationMercs` post-processes the list by reputation with
+`xp = Math.max(xp, 65)`, taking no account of who the person is. So on any station where the player
+is known, a candidate tagged *«необстрелянный — дёшев и НЕОПЫТЕН»* was stamped **опыт 65**, or 100
+further up: the same two adjacent lines arguing, only now switched on by reputation. The M212 guard
+could not see it — it tested the generator, and the bug lives one call downstream.
+
+That bump's own intent is *who came*, not *who they suddenly are*: where you are known, a man with a
+record is at the table. It now lifts only candidates who could plausibly have one, and leaves a green
+hand alone — green is green everywhere; likewise a veteran's service does not shrink because your
+name is bad here. Guarded through the whole path this time, at both ends of the scale: reverting the
+fix makes the new test fail with *«зелёный остался зелёным (100)»*.
+
+**And you pay for a person before learning he cannot work.** The first hire costs a newcomer about a
+third of everything they own, and only afterwards does the crew row say *«корабль: не выдан ·
+свободных корпусов нет — купите или пересядьте»*. A hired hand needs a **hull of his own**, and
+nothing on the hire screen said so — not the header, not the speciality, not the candidate's row. The
+money is spent and there is nothing to undo it with. The crew header carries it now, and only while
+it is true; for a player who already has a spare hull it would be noise.
+
+**Still open there:** with no second hull there is no order to give and nothing to wait for, so the
+back half of that hour — the order, the wait, the return — needs a save with two ships. That is where
+`CREW_YIELD` first meets the player, and the likeliest place for a *"he loses money, is he broken?"*
+reading. 11656 assertions in 358 suites.
+---
 ## 0.196.0 — the mine stops being the weakest screen (M55 #1, M214)
 
 The oldest item on the visual queue, and the one the outside playtester picked out unprompted:
@@ -115,7 +148,7 @@ Stand `pageshot view -Q "?s=winter"`. 11640 assertions in 357 suites.
 
 M207 walked a fresh save and left one item written down: *"the hour AFTER the opening — first
 station screen in full, first hire, first manager — has not been walked yet."* This is that walk.
-It is in [`docs/DESIGN-second-hour.md`](docs/DESIGN-second-hour.md), measured in the running game
+It is in [`docs/DESIGN-hours.md`](docs/DESIGN-hours.md), measured in the running game
 rather than remembered. Three findings, all fixed.
 
 **Every long screen ended in a lie.** The board on a first dock renders eight sections — measured
