@@ -670,20 +670,20 @@ stake in the arc lives in the gap between those two ledgers.
 berth, a name to drop, a route nobody works, a bay in a garage, an introduction. Always attached
 to a person, always with a real window that closes.
 
-## First three, and only these — they turn the present sandbox into Act I
+## First three — built; they turned the present sandbox into Act I
 
-- **M189 — возможность.** The offer as an entity: kind, person, place, window, taken/lost. Arrives
-  the way everything arrives here (ether line, counter queue, letter on the table), never marked
-  on a map, expires without comment. Nothing else in the arc can be built before it.
-- **M190 — игрок как источник слухов.** The rumour pipes (`11t`) exist and run one way: he only
-  receives. Make him a source — what he says at the counter travels and comes back days later
-  wearing someone else's face. The cheapest of the three squanders, and the one that teaches
-  fastest that this world remembers.
-- **M191 — тетрадь доброты.** Invisible, write-only, never displayed, never confirmed. It must
-  exist early or the ending cannot pay. First entry is already in the game: leaving cargo at a
-  mark for a stranger who will never know it was you (`11ag`, M171). Three guards: never shown; it
-  must cost at the moment of the deed; and calculated kindness weighs less than kindness while
-  broke.
+All three organs exist and are guarded (found stale in this list on 27.08.2026 and checked
+against `src/` — the queue below is what actually remains):
+
+- ~~**M189 — возможность.**~~ Built: `11ah-offer` — the offer as an entity with a face and a
+  silent window, named offers three times richer than cold ones, folk memory as two booleans and
+  never a number. Arrives through the counter and the ether, never marked, expires without
+  comment. Guarded in `91zzzf-offer`.
+- ~~**M190 — игрок как источник слухов.**~~ Built as «ляпнул лишнего» (M194, 0.169.0): what he
+  says at a counter travels and comes back days later wearing someone else's face.
+- ~~**M191 — тетрадь доброты.**~~ Built: `11ai-ledger` — write-only, never shown anywhere,
+  `deedAdd` refuses a deed without a cost, and helping while broke weighs more. Writers already
+  live in `11ag-trace` (cargo left at a mark) and `12l-barge` (souls off a dying hull).
 
 ## After those, in order
 
@@ -691,9 +691,19 @@ Act II (the first real loss, by his own hand, everyone kind about it) → the of
 through the expedition → Act IV (doors closed, the world still offering, nobody left to vouch) →
 the yacht last, because an ending cannot be built before the middle.
 
-**Held back on purpose:** none of this goes in before the first hour works. The playtest put the
-game's weakest point at minute two, and this arc lives on a scale of hours — building it first
-would be building the roof.
+**The first move into Act II is made (M225, 0.210.0): the three squanders now all exist.**
+«Ляпнул лишнего» was built as M194; `11aq-late` adds the other two. Staying at the counter is a
+real choice that buys something real — a line that exists nowhere else, occasionally a *named*
+offer («некоторые вещи говорят только поздно и только там») — and it costs real hours: `G.t`
+jumps, and every window in the game (offers, shifts, needs, the sky's calendar) ages silently.
+The wrong person costs an hour and ten and gives exactly nothing but the conversation itself,
+and nobody is ever angry. Three sits per shift, then the counter empties — the only refusal the
+place ever makes. Guards in `91zzzx-late`: the hours are real, the offer windows narrow, the
+journal contains no reproach, and a save does not refill the counter.
+
+**Held back on purpose:** the rest of Act II — the loss itself arriving later by the human line —
+wants the offers to have been lived with first. Next after that, in order: offers deepening
+through the expedition, Act IV, the yacht.
 
 # QUEUE: Трепло in the round — a separate 3D module (M200)
 

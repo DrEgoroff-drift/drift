@@ -380,6 +380,12 @@ setTimeout(function(){
     if(st9){G.ship.x=st9.x+40;G.ship.y=st9.y;openStation();}
     var cb=document.querySelector("#stTabs button[data-tab=cantina]");
     if(cb)cb.click();
+  }else if(scene==="late"){
+    /* поздний час (M225): кантина, стойка ещё наливает */
+    var stl=G.sys.station;
+    if(stl){G.ship.x=stl.x+40;G.ship.y=stl.y;openStation();}
+    var lb=document.querySelector("#stTabs button[data-tab=cantina]");
+    if(lb)lb.click();
   }else if(scene==="spa"){
     /* санаторий (M199): второй день, часть распорядка уже вычеркнута */
     G.spa={day:2,days:3,slot:0,done:0,took:{"2:bath":1,"2:cock":1},talked:0,

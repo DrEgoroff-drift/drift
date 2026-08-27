@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.210.0 — the late hour at the counter (M225)
+
+The first move into the arc's Act II, and with it all three of the book's squanders exist in the
+game. «Ляпнул лишнего» has been built since M194. This adds the other two.
+
+**Забухал.** The counter is honestly the best place to learn things: some things are said only late
+and only there. Staying is a button in the cantina, it never warns and never asks twice, and each
+sit buys something real — a line that exists nowhere else, with a real address or a real price in
+half of them, and occasionally a *named* offer leaned across the counter. The price is hours:
+`G.t` actually jumps, and every window in the game — offers, shifts, needs, the sky's calendar —
+ages silently. Nothing tells you. That is the whole point.
+
+**Пристал не к тому.** Sometimes the person next to you is simply good to sit with and asks for
+nothing. Nothing bad happens. An hour and ten is gone, the conversation was the best in a month,
+and that is all you get. Nobody is angry — which is what makes it the book's squander and not a
+game's penalty.
+
+Three sits per shift, then the counter empties and the barman stacks the stools — the only refusal
+this place will ever make. A save does not refill it.
+
+Guarded by what the arc's rules demand rather than what the feature does: the hours are real, an
+offer's window measurably narrows while you sit, the journal contains not one word of reproach,
+and the truth is never spoken anywhere. 11785 assertions in 372 suites.
+---
 ## 0.209.1 — the fourth payment (M224, tail)
 
 `21ab-base-interiors` 42→26+18 KB. The eight compartments are one `const` table, and tables are

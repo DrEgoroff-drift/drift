@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 323 · символов верхнего уровня: 2947
+Файлов: 325 · символов верхнего уровня: 2956
 
 ## СИМВОЛЫ
 
@@ -223,11 +223,11 @@ cantBarkeep                  src/27d-ui-cantina-props.js:15
 cantCounter                  src/27d-ui-cantina-props.js:294
 cantFigure                   src/27d-ui-cantina.js:358
 cantinaPool                  src/12c-mgr-core.js:259
-cantinaScene                 src/27c-ui-hq.js:193
+cantinaScene                 src/27c-ui-hq.js:196
 cantProps                    src/27d-ui-cantina-props.js:141
 cantRoomBody                 src/27d-ui-cantina.js:45
 cantSeats                    src/27d-ui-cantina.js:350
-cantSel                      src/27c-ui-hq.js:192
+cantSel                      src/27c-ui-hq.js:195
 cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina-props.js:229
 cantView                     src/27d-ui-cantina-props.js:82
@@ -718,7 +718,7 @@ FACE_SKIN                    src/12d-mgr-face.js:10
 faceEl                       src/27c-ui-hq.js:6
 facePath                     src/12d-mgr-face.js:19
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:501
+factPrices                   src/27c-ui-hq.js:504
 FAUNA_RES                    src/02-world.js:38
 faunaOf                      src/20e-species.js:268
 fbm1                         src/01-core.js:19
@@ -883,7 +883,7 @@ GROK_DIRT                    src/12tb-grok.js:29
 GROK_LIKE                    src/12tb-grok.js:28
 GROK_MIN                     src/12tb-grok.js:27
 GROK_NAME                    src/12tb-grok.js:26
-grokBlock                    src/27c-ui-hq.js:141
+grokBlock                    src/27c-ui-hq.js:144
 grokBusy                     src/12tb-grok.js:68
 grokCanTeach                 src/12tb-grok.js:136
 grokFace                     src/12tb-grok.js:173
@@ -1057,14 +1057,14 @@ HOUSES                       src/12u-scrip.js:21
 houseWallMark                src/17d-house-shapes.js:38
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
-hqAiOffer                    src/27c-ui-hq.js:399
-hqBtnTick                    src/27c-ui-hq.js:237
+hqAiOffer                    src/27c-ui-hq.js:402
+hqBtnTick                    src/27c-ui-hq.js:240
 hqConsole                    src/27f-hq-room.js:228
 hqFigure                     src/27f-hq-room.js:509
 hqHover                      src/27f-hq-room.js:683
-hqJobCard                    src/27c-ui-hq.js:458
-hqRelicSlot                  src/27c-ui-hq.js:424
-hqRender                     src/27c-ui-hq.js:244
+hqJobCard                    src/27c-ui-hq.js:461
+hqRelicSlot                  src/27c-ui-hq.js:427
+hqRender                     src/27c-ui-hq.js:247
 hqRoomBody                   src/27f-hq-room.js:32
 hqScene                      src/27f-hq-room.js:640
 hqScreenData                 src/27f-hq-room.js:312
@@ -1264,12 +1264,21 @@ landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:154
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:328
-landOnTestPlanet             tests/90-harness.js:68
+landOnTestPlanet             tests/90-harness.js:69
 last                         src/28-loop.js:82
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:83
 lastRunDay                   src/12k-letters.js:44
 lastRunTick                  src/12k-letters.js:46
+LATE_CAP                     src/11aq-late.js:30
+LATE_LINES                   src/11aq-late.js:34
+LATE_LONG                    src/11aq-late.js:29
+LATE_SIT                     src/11aq-late.js:28
+LATE_WRONG                   src/11aq-late.js:45
+lateAll                      src/11aq-late.js:52
+lateBlock                    src/11aq-late.js:118
+lateLeft                     src/11aq-late.js:57
+lateSit                      src/11aq-late.js:65
 launch                       src/21-mode-surface.js:599
 launchHold                   src/21-mode-surface.js:544
 layerLevel                   src/10-music.js:326
@@ -1395,7 +1404,7 @@ mgrCrewYield                 src/12c-mgr-core.js:203
 mgrCut                       src/12c-mgr-core.js:173
 mgrDefect                    src/12c-mgr-core.js:348
 mgrDomain                    src/12c-mgr-core.js:515
-mgrDomainLine                src/27c-ui-hq.js:520
+mgrDomainLine                src/27c-ui-hq.js:523
 mgrDroneRate                 src/12c-mgr-core.js:219
 mgrFace                      src/12d-mgr-face.js:29
 mgrFee                       src/12c-mgr-core.js:299
@@ -1607,7 +1616,7 @@ offerVisit                   src/11ah-offer.js:124
 ok                           tests/90-harness.js:23
 openBarge                    src/12l-barge.js:582
 openCrewView                 src/27b-ui-crew.js:198
-openHq                       src/27c-ui-hq.js:540
+openHq                       src/27c-ui-hq.js:543
 openShipView                 src/27-ui-ship.js:160
 openStation                  src/26-ui-station.js:5
 OPT_TABS                     src/27-ui-ship.js:443
@@ -2265,7 +2274,7 @@ rumourEtherLine              src/11t-rumours.js:57
 rumourSeedHere               src/11t-rumours.js:32
 rumoursHere                  src/11t-rumours.js:36
 runAutopilot                 src/16-flight.js:109
-runTests                     tests/90-harness.js:78
+runTests                     tests/90-harness.js:79
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
@@ -2515,7 +2524,7 @@ stationViz                   src/17c-system-draw.js:111
 statPreview                  src/05-parts.js:271
 stCore                       src/17c-system-draw.js:128
 stDel                        src/14-save.js:26
-steps                        tests/90-harness.js:76
+steps                        tests/90-harness.js:77
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:75
 stGroupOf                    src/26-ui-station.js:74
@@ -2620,7 +2629,7 @@ TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:146
 tableBake                    src/27i-ui-table.js:103
-tableBlock                   src/27c-ui-hq.js:558
+tableBlock                   src/27c-ui-hq.js:561
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
@@ -2659,7 +2668,7 @@ tell                         src/11-log.js:45
 TELL_SFX                     src/11-log.js:43
 TEST                         tests/90-harness.js:10
 TEST_ONLY                    tests/90-harness.js:14
-TEST_SUITES                  tests/90-harness.js:111
+TEST_SUITES                  tests/90-harness.js:112
 tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
@@ -3087,6 +3096,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11ap-relay.js · 28 КБ
   · приёмники как места:1
   · у мачты есть тело:274
+
+## src/11aq-late.js · 9 КБ
+  · поздний час у стойки:1
 
 ## src/11a-quests.js · 8 КБ
   · журнал дел:1
@@ -3979,5 +3991,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzw-relay.js · 10 КБ
   · M218: приёмники как места:1
+
+## tests/91zzzx-late.js · 3 КБ
+  · M225: поздний час у стойки:1
 
 ## tests/99-run.js · 0 КБ

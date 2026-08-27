@@ -132,6 +132,9 @@ function renderCantina(){
   if(typeof chartsBlock==="function")chartsBlock();     /* их карта (11m) */
   if(typeof quietBlock==="function")quietBlock();       /* открытая дверь (11n) */
   if(typeof putOnTable==="function")tableBlock();
+  /* поздний час (11aq, M225): последний ряд зала — остаться можно всегда,
+     а вот что из этого выйдет, знает только стойка */
+  if(typeof lateBlock==="function")lateBlock();
   $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
 }
 /* ── строка Грохотуна ──
