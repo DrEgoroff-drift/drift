@@ -78,7 +78,7 @@ function snapshot(){
     tableSeen:G.tableSeen|0,
     /* главный квест: возможности живут недолго, а память людей и тетрадь —
        навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
-    offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,late:G.late,   /* M225 */
+    offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,late:G.late,toldOff:G.toldOff|0,   /* M225, M230 */
     told:G.told,lastDig:G.lastDig,
     ts:Date.now()};
 }
@@ -643,6 +643,8 @@ function applySave(s){
   G.folkSay=(s.folkSay&&typeof s.folkSay==="object")?s.folkSay:{};
   /* поздний час (M225): счётчик посиделок смены — иначе сейв обнуляет стойку */
   G.late=(s.late&&typeof s.late==="object")?{shift:s.late.shift|0,n:s.late.n|0}:null;
+  /* тот один (M230): сказал — сказано навсегда */
+  G.toldOff=s.toldOff?1:0;
   /* рассказанное не забывается: место, про которое он проговорился, выработают
      и без него, сколько бы раз он ни перезагрузился (11aj) */
   G.told=Array.isArray(s.told)?s.told.slice(-24):[];

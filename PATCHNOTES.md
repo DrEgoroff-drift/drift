@@ -7,6 +7,31 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.215.0 — the silence, and the one who says it (M230)
+
+Act IV of the arc, finishing what the kind word began. Doors already close one at a time and the
+world already keeps offering — what was missing was the two things that make the state *audible*,
+both straight from the book.
+
+**The silence.** «Не назван никем. Работы столько же.» When three doors and more are shut, the
+counter queue sometimes names somebody — and it is not you: «— Петровича борт? Не Петровича.
+Ладно, жду Петровича». You hear naming happen next to you. Not a number, not a reproach, not one
+word about you — and none of it sounds while fewer than three doors are shut, because loneliness
+has the right to exist only in its own part of the book.
+
+**The one who says it.** The arc's rule: nobody reproaches him; exactly one character says it to
+his face, and he is wrong. Once per game, in a cantina, when the world has gone quiet: «Вы просто
+не тянете. Я таких видел» — pays and leaves. The game confirms him with nothing: no number moves,
+no offer changes, no line follows. Whether he was right is something you can only learn by living
+five more years.
+
+The door count is stored nowhere and shown nowhere — it is counted off people's memory when
+needed. Guarded in `91zzzx-late`: two doors are not yet silence, the quiet lines contain not one
+word about you, the one line fires exactly once and survives the save, and the world offers
+afterwards exactly as before.
+
+11827 assertions in 378 suites.
+---
 ## 0.214.0 — the expedition calls people by name (M229)
 
 The act of the expedition (M154–M161) was built before the offers existed, and the two systems did

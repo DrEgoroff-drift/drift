@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 325 · символов верхнего уровня: 2960
+Файлов: 326 · символов верхнего уровня: 2965
 
 ## СИМВОЛЫ
 
@@ -223,11 +223,11 @@ cantBarkeep                  src/27d-ui-cantina-props.js:15
 cantCounter                  src/27d-ui-cantina-props.js:294
 cantFigure                   src/27d-ui-cantina.js:358
 cantinaPool                  src/12c-mgr-core.js:259
-cantinaScene                 src/27c-ui-hq.js:196
+cantinaScene                 src/27c-ui-hq.js:198
 cantProps                    src/27d-ui-cantina-props.js:141
 cantRoomBody                 src/27d-ui-cantina.js:45
 cantSeats                    src/27d-ui-cantina.js:350
-cantSel                      src/27c-ui-hq.js:195
+cantSel                      src/27c-ui-hq.js:197
 cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina-props.js:229
 cantView                     src/27d-ui-cantina-props.js:82
@@ -513,6 +513,7 @@ doomLine                     src/12v-doom.js:170
 doomMins                     src/12v-doom.js:35
 doomStanding                 src/12v-doom.js:38
 doomTick                     src/12v-doom.js:137
+doorsShut                    src/11ar-doors.js:27
 drawAccel                    src/20aa-poi-shapes.js:143
 drawAccountShelf             src/12w-survey.js:99
 drawAllies                   src/12a-crew.js:607
@@ -718,7 +719,7 @@ FACE_SKIN                    src/12d-mgr-face.js:10
 faceEl                       src/27c-ui-hq.js:6
 facePath                     src/12d-mgr-face.js:19
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:504
+factPrices                   src/27c-ui-hq.js:506
 FAUNA_RES                    src/02-world.js:38
 faunaOf                      src/20e-species.js:268
 fbm1                         src/01-core.js:19
@@ -883,7 +884,7 @@ GROK_DIRT                    src/12tb-grok.js:29
 GROK_LIKE                    src/12tb-grok.js:28
 GROK_MIN                     src/12tb-grok.js:27
 GROK_NAME                    src/12tb-grok.js:26
-grokBlock                    src/27c-ui-hq.js:144
+grokBlock                    src/27c-ui-hq.js:146
 grokBusy                     src/12tb-grok.js:68
 grokCanTeach                 src/12tb-grok.js:136
 grokFace                     src/12tb-grok.js:173
@@ -1057,14 +1058,14 @@ HOUSES                       src/12u-scrip.js:21
 houseWallMark                src/17d-house-shapes.js:38
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
-hqAiOffer                    src/27c-ui-hq.js:402
-hqBtnTick                    src/27c-ui-hq.js:240
+hqAiOffer                    src/27c-ui-hq.js:404
+hqBtnTick                    src/27c-ui-hq.js:242
 hqConsole                    src/27f-hq-room.js:228
 hqFigure                     src/27f-hq-room.js:509
 hqHover                      src/27f-hq-room.js:683
-hqJobCard                    src/27c-ui-hq.js:461
-hqRelicSlot                  src/27c-ui-hq.js:427
-hqRender                     src/27c-ui-hq.js:247
+hqJobCard                    src/27c-ui-hq.js:463
+hqRelicSlot                  src/27c-ui-hq.js:429
+hqRender                     src/27c-ui-hq.js:249
 hqRoomBody                   src/27f-hq-room.js:32
 hqScene                      src/27f-hq-room.js:640
 hqScreenData                 src/27f-hq-room.js:312
@@ -1264,7 +1265,7 @@ landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:154
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:328
-landOnTestPlanet             tests/90-harness.js:69
+landOnTestPlanet             tests/90-harness.js:70
 last                         src/28-loop.js:82
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:83
@@ -1404,7 +1405,7 @@ mgrCrewYield                 src/12c-mgr-core.js:203
 mgrCut                       src/12c-mgr-core.js:173
 mgrDefect                    src/12c-mgr-core.js:348
 mgrDomain                    src/12c-mgr-core.js:515
-mgrDomainLine                src/27c-ui-hq.js:523
+mgrDomainLine                src/27c-ui-hq.js:525
 mgrDroneRate                 src/12c-mgr-core.js:219
 mgrFace                      src/12d-mgr-face.js:29
 mgrFee                       src/12c-mgr-core.js:299
@@ -1619,7 +1620,7 @@ offerVisit                   src/11ah-offer.js:124
 ok                           tests/90-harness.js:23
 openBarge                    src/12l-barge.js:582
 openCrewView                 src/27b-ui-crew.js:198
-openHq                       src/27c-ui-hq.js:543
+openHq                       src/27c-ui-hq.js:545
 openShipView                 src/27-ui-ship.js:160
 openStation                  src/26-ui-station.js:5
 OPT_TABS                     src/27-ui-ship.js:443
@@ -1912,7 +1913,7 @@ prunePartsBought             src/14-save.js:33
 psPlanet                     tests/91zzzu-post-scenes.js:6
 psSnap                       tests/91zzzu-post-scenes.js:17
 ptr                          src/15-input.js:245
-putOnTable                   src/11b-speech.js:213
+putOnTable                   src/11b-speech.js:216
 QSL_BY                       src/11an-qsl.js:46
 QSL_OPS                      src/11an-qsl.js:24
 QSL_SPREAD                   src/11an-qsl.js:23
@@ -1940,12 +1941,14 @@ questInit                    src/11a-quests.js:16
 questLeft                    src/11a-quests.js:84
 questOpen                    src/11a-quests.js:18
 questSync                    src/11a-quests.js:93
+QUIET_LINES                  src/11ar-doors.js:34
 quietAfterLeave              src/11n-quiet.js:54
 quietAll                     src/11n-quiet.js:21
 quietBlock                   src/11n-quiet.js:60
 quietDepthAt                 src/11n-quiet.js:22
 quietDepthHere               src/11n-quiet.js:28
 quietDock                    src/11n-quiet.js:34
+quietDoorLine                src/11ar-doors.js:43
 quietLeave                   src/11n-quiet.js:46
 quietMute                    src/11n-quiet.js:33
 quietNoPirates               src/11n-quiet.js:30
@@ -2277,7 +2280,7 @@ rumourEtherLine              src/11t-rumours.js:57
 rumourSeedHere               src/11t-rumours.js:32
 rumoursHere                  src/11t-rumours.js:36
 runAutopilot                 src/16-flight.js:109
-runTests                     tests/90-harness.js:79
+runTests                     tests/90-harness.js:80
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
@@ -2528,7 +2531,7 @@ stationViz                   src/17c-system-draw.js:111
 statPreview                  src/05-parts.js:271
 stCore                       src/17c-system-draw.js:128
 stDel                        src/14-save.js:26
-steps                        tests/90-harness.js:77
+steps                        tests/90-harness.js:78
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:75
 stGroupOf                    src/26-ui-station.js:74
@@ -2584,10 +2587,10 @@ STRIP_CHUNK                  src/07-planet.js:73
 STRIP_JOB                    src/07-planet.js:76
 STRIP_MS                     src/07-planet.js:72
 STRIP_PEND                   src/07-planet.js:78
-STRIPS_MAX                   src/11b-speech.js:184
-stripsAll                    src/11b-speech.js:185
-stripSell                    src/11b-speech.js:223
-stripValue                   src/11b-speech.js:186
+STRIPS_MAX                   src/11b-speech.js:187
+stripsAll                    src/11b-speech.js:188
+stripSell                    src/11b-speech.js:226
+stripValue                   src/11b-speech.js:189
 stSet                        src/14-save.js:14
 stTabFuse                    src/26b-ui-station-work.js:201
 stTabInstr                   src/26b-ui-station-work.js:108
@@ -2631,9 +2634,9 @@ tab                          src/26-ui-station.js:3
 TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
-TABLE_REPLY                  src/11b-speech.js:151
+TABLE_REPLY                  src/11b-speech.js:154
 tableBake                    src/27i-ui-table.js:103
-tableBlock                   src/27c-ui-hq.js:561
+tableBlock                   src/27c-ui-hq.js:563
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
@@ -2660,7 +2663,7 @@ tapeRate                     src/25b-tape.js:75
 tapeSample                   src/25b-tape.js:54
 tapeScroll                   src/25b-tape.js:97
 tapeStrip                    src/25b-tape.js:187
-tapeTear                     src/11b-speech.js:189
+tapeTear                     src/11b-speech.js:192
 tapeTick                     src/25b-tape.js:79
 tapeUnpack                   src/25b-tape.js:39
 targetPos                    src/16-flight.js:97
@@ -2672,7 +2675,7 @@ tell                         src/11-log.js:45
 TELL_SFX                     src/11-log.js:43
 TEST                         tests/90-harness.js:10
 TEST_ONLY                    tests/90-harness.js:14
-TEST_SUITES                  tests/90-harness.js:112
+TEST_SUITES                  tests/90-harness.js:113
 tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
@@ -2727,6 +2730,7 @@ toldDo                       src/11aj-told.js:58
 toldEther                    src/11aj-told.js:78
 toldKey                      src/11aj-told.js:35
 toldOf                       src/11aj-told.js:36
+toldOffBlock                 src/11ar-doors.js:53
 toldWorked                   src/11aj-told.js:41
 toldWorth                    src/11aj-told.js:49
 totalLoss                    src/21-mode-surface.js:576
@@ -2945,6 +2949,7 @@ WORLD_MOOD                   src/10-music.js:39
 WORLD_SPREAD                 src/10-music.js:99
 WORLD_VIB                    src/10-music.js:98
 WORLD_VOICE                  src/10-music.js:57
+worldQuiet                   src/11ar-doors.js:32
 worldRes                     src/02a-worldmix.js:119
 worldTables                  src/02a-worldmix.js:86
 wrapLeft                     src/18-mode-map.js:3
@@ -3107,6 +3112,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/11a-quests.js · 8 КБ
   · журнал дел:1
+
+## src/11ar-doors.js · 5 КБ
+  · тишина: двери закрыты, мир предлагает:1
 
 ## src/11b-speech.js · 17 КБ
   · речь: очередь реплик и вещь на столе:1
@@ -3997,7 +4005,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzw-relay.js · 10 КБ
   · M218: приёмники как места:1
 
-## tests/91zzzx-late.js · 5 КБ
+## tests/91zzzx-late.js · 7 КБ
   · M225: поздний час у стойки:1
 
 ## tests/99-run.js · 0 КБ

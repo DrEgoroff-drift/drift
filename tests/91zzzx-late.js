@@ -77,3 +77,49 @@ TEST_SUITES.push(()=>suite("просёр именного: дверь закры
   ok(!!o2,"а холодные идут как шли");
   void f2;
 }));
+
+/* ── M230: тишина, и тот один ── */
+TEST_SUITES.push(()=>suite("тишина: называют рядом, а не тебя — и только когда мир затих",()=>{
+  resetWorld();
+  G.folk={};G.speech={};
+  /* две двери — рано: одиночество имеет право быть только в своей части */
+  folkOf("st:1,1").shut=1;folkOf("st:2,2").shut=1;
+  eq(worldQuiet(),false,"две двери — ещё не тишина");
+  eq(quietDoorLine(),null,"и у стойки о ней ни слова");
+  /* третья закрылась */
+  folkOf("st:3,3").shut=1;
+  eq(worldQuiet(),true,"три — тишина");
+  /* реплика приходит не каждую посадку, но приходит */
+  G.st=G.sys.station;
+  let heard=null;
+  for(let v=0;v<6&&!heard;v++){
+    G.visits=G.visits||{};G.visits[G.sys.key]=v;
+    heard=quietDoorLine();
+  }
+  ok(!!heard,"у стойки называют — не тебя: "+heard);
+  ok(QUIET_LINES.indexOf(heard)>=0,"строка из своего набора");
+  ok(!/вы |вас |тебя|не тянете/i.test(heard),"и в ней ни слова о тебе");
+}));
+
+TEST_SUITES.push(()=>suite("тот один: говорит прямо ровно раз, и игра его не подтверждает",()=>{
+  resetWorld();
+  G.folk={};G.toldOff=0;
+  folkOf("st:1,1").shut=1;folkOf("st:2,2").shut=1;folkOf("st:3,3").shut=1;
+  /* $body — настоящий элемент станции: модуль читает свою константу, а не окно */
+  const box=$body;const keep=box.innerHTML;box.textContent="";
+  toldOffBlock();
+  eq(G.toldOff,1,"сказал");
+  ok(box.textContent.indexOf("не тянете")>0,"и сказал прямо");
+  const n1=box.children.length;
+  toldOffBlock();
+  eq(box.children.length,n1,"второго раза не будет никогда");
+  box.innerHTML=keep;
+  /* игра не подтверждает: ни возможностям, ни ценам, ни людям от этого ничего */
+  const o=offerAdd("run","st:9,9",false);
+  ok(!!o,"мир предлагает как предлагал");
+  /* и сейв помнит, что сказано */
+  const snap=snapshot();
+  G.toldOff=0;
+  applySave(snap);
+  eq(G.toldOff,1,"сказанное не забывается");
+}));

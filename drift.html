@@ -1337,7 +1337,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.214.0";
+const VER="0.215.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -10323,6 +10323,68 @@ function questSync(){
   return list;
 }
 
+/* ══════════════ тишина: двери закрыты, мир предлагает ══════════════
+   M230, часть IV/VII дуги («Счёт», «Тишина»): доигрывание того, что M226
+   начал. Двери закрываются по одной (folkShut), мир продолжает предлагать
+   холодное — это уже так. Не хватало ДВУХ вещей, которыми это состояние
+   слышно, и обе — по книге (docs/saga/ДУГА.md §6):
+
+   ТИШИНА. «Не назван никем. Работы столько же.» Когда закрыты три двери и
+   больше, у стойки изредка называют — но не тебя: «Петровича борт? Нет?
+   Ладно, жду Петровича». Игрок слышит, как именование происходит РЯДОМ, и
+   в этом всё: ни числа, ни упрёка, ни слова о нём самом. Одиночество имеет
+   право быть только в этой части — поэтому строки не звучат, пока дверей
+   меньше трёх.
+
+   ОДИН, КТО СКАЖЕТ ПРЯМО. Правило дуги: «Никто не упрекает. Ровно один
+   персонаж говорит это в лицо, и он неправ». Часть VI, «Раскол»: раз за всю
+   игру, в кантине, человек у стойки говорит: «Вы просто не тянете». Игра
+   его не подтверждает НИЧЕМ: ни числом, ни последствием, ни строкой в
+   журнале — потому что он неправ, а узнать это можно, только прожив ещё
+   лет пять.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Правда не произносится: нигде не написано «вас перестали называть».
+   2. Счётчик дверей не показывается никому и нигде.
+   3. Хранится только G.toldOff — что тот один уже сказал. */
+
+/* сколько дверей закрыто: считается по памяти людей, не хранится */
+function doorsShut(){
+  const F=(typeof folkAll==="function")?folkAll():{};
+  let n=0;for(const k in F)if(F[k]&&F[k].shut)n++;
+  return n;
+}
+function worldQuiet(){return doorsShut()>=3;}
+/* строки, в которых называют не тебя. Никогда — о тебе */
+const QUIET_LINES=[
+  "— Петровича борт? Не Петровича. Ладно, жду Петровича.",
+  "— Соболеву скажи, что его ждут на третьем. Соболеву, говорю. А, вы не к нему.",
+  "— Кто от Тарасова — без очереди. Остальные по списку.",
+  "— «Крапиву» ждём. Она обещала. Она всегда обещала — и всегда приходила.",
+  "— Это не тот борт. Тот придёт позже, его встретят."
+];
+/* реплика тишины: втискивается в очередь у стойки не чаще каждой третьей
+   посадки, и только когда мир затих. Возвращает null, если говорить не время */
+function quietDoorLine(){
+  if(!worldQuiet())return null;
+  const v=(typeof visitHere==="function")?visitHere():0;
+  if(v%3!==1)return null;
+  const r=rng(hashi(G.sx,G.sy,0xD00A+v)>>>0);
+  return QUIET_LINES[Math.floor(r()*QUIET_LINES.length)];
+}
+/* ── тот один ──
+   Раз за игру, в кантине, при затихшем мире. Строка стоит рядом с залом и
+   исчезает навсегда после первого показа. Игра не подтверждает его ничем. */
+function toldOffBlock(){
+  if(typeof $body==="undefined"||!$body)return;
+  if(G.toldOff||!worldQuiet())return;
+  G.toldOff=1;
+  $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
+    "Человек у стойки допил, поставил стакан и сказал, не поворачиваясь: "+
+    "«Вы просто не тянете. Я таких видел». Заплатил и вышел.</s></div>"));
+  if(typeof logAdd==="function")logAdd("talk","«Вы просто не тянете. Я таких видел»");
+}
+
 /* ══════════════ речь: очередь реплик и вещь на столе ══════════════
    M128. Разговоров в игре нет и не будет: диалог требует ветвления, ветвление
    требует письма на сто часов, а на выходе получается меню. Здесь другое.
@@ -10442,7 +10504,7 @@ function speechHere(){
   const S=speechAll(), key=G.sys.key;
   const st=S[key]||(S[key]={i:0,v:-1});
   const v=visitHere();
-  if(st.v!==v){st.v=v;st.i=(st.i+1)%LOCAL.length;st.sq=undefined;st.shutSq=undefined;}
+  if(st.v!==v){st.v=v;st.i=(st.i+1)%LOCAL.length;st.sq=undefined;st.shutSq=undefined;st.qd=undefined;}
   /* доброе слово после закрывшейся именной двери (11ah, M226): раньше реплик
      истории — оно случается один раз на дверь, и человек важнее сюжета.
      Решение раз на посадку, строка стоит всю посадку; f.said ставит сам */
@@ -10451,6 +10513,9 @@ function speechHere(){
   /* реплика истории (11c) вклинивается перед общей; решение держится всю посадку */
   if(st.sq===undefined)st.sq=(typeof storyQueueLine==="function")?storyQueueLine():null;
   if(st.sq)return {line:st.sq.line,silent:st.sq.silent,addr:addrForm()};
+  /* тишина (11ar, M230): когда мир затих, у стойки изредка называют — не тебя */
+  if(st.qd===undefined)st.qd=(typeof quietDoorLine==="function")?quietDoorLine():null;
+  if(st.qd)return {line:st.qd,silent:false,addr:addrForm()};
   let line=LOCAL[st.i];
   /* дом и характер места (хвосты M113, M128): каждая четвёртая реплика — про
      дом, которому принадлежит станция, и его боны; каждая вторая из
@@ -26441,7 +26506,7 @@ function snapshot(){
     tableSeen:G.tableSeen|0,
     /* главный квест: возможности живут недолго, а память людей и тетрадь —
        навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
-    offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,late:G.late,   /* M225 */
+    offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,late:G.late,toldOff:G.toldOff|0,   /* M225, M230 */
     told:G.told,lastDig:G.lastDig,
     ts:Date.now()};
 }
@@ -27006,6 +27071,8 @@ function applySave(s){
   G.folkSay=(s.folkSay&&typeof s.folkSay==="object")?s.folkSay:{};
   /* поздний час (M225): счётчик посиделок смены — иначе сейв обнуляет стойку */
   G.late=(s.late&&typeof s.late==="object")?{shift:s.late.shift|0,n:s.late.n|0}:null;
+  /* тот один (M230): сказал — сказано навсегда */
+  G.toldOff=s.toldOff?1:0;
   /* рассказанное не забывается: место, про которое он проговорился, выработают
      и без него, сколько бы раз он ни перезагрузился (11aj) */
   G.told=Array.isArray(s.told)?s.told.slice(-24):[];
@@ -51409,6 +51476,8 @@ function renderCantina(){
   if(typeof chartsBlock==="function")chartsBlock();     /* их карта (11m) */
   if(typeof quietBlock==="function")quietBlock();       /* открытая дверь (11n) */
   if(typeof putOnTable==="function")tableBlock();
+  /* тот один (11ar, M230): скажет прямо ровно раз, и он неправ */
+  if(typeof toldOffBlock==="function")toldOffBlock();
   /* поздний час (11aq, M225): последний ряд зала — остаться можно всегда,
      а вот что из этого выйдет, знает только стойка */
   if(typeof lateBlock==="function")lateBlock();

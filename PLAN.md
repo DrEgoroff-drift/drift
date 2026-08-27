@@ -701,8 +701,11 @@ you again. The truth is not in the line; the world keeps offering cold. «Ник
 circular's sixty days the counter lives for the column («плечо в колонну», paying half again and
 feeding the station's collection), naming runs at .70 instead of .45 — closed doors stay closed —
 and the deepest access of the act is «имя в список», paying nothing and turning the departure's
-greeting into «ЕСТЬ МЕСТО · ВАС НАЗЫВАЛИ». Next, in order: Act IV (doors closed, the world still
-offering, nobody left to vouch), then the yacht.
+greeting into «ЕСТЬ МЕСТО · ВАС НАЗЫВАЛИ». **Act IV is audible (M230, 0.215.0):** at three shut
+doors the queue sometimes names somebody who is not you, and once per game one man says «Вы просто
+не тянете» to your face — and the game confirms him with nothing, because he is wrong. What
+remains of the arc: **the yacht** — the ending's gift with no price that cannot be sold — held
+last on purpose: an ending cannot be built before the middle has been lived with.
 
 # QUEUE: Трепло in the round — a separate 3D module (M200)
 

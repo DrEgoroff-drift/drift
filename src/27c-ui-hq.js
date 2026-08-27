@@ -132,6 +132,8 @@ function renderCantina(){
   if(typeof chartsBlock==="function")chartsBlock();     /* их карта (11m) */
   if(typeof quietBlock==="function")quietBlock();       /* открытая дверь (11n) */
   if(typeof putOnTable==="function")tableBlock();
+  /* тот один (11ar, M230): скажет прямо ровно раз, и он неправ */
+  if(typeof toldOffBlock==="function")toldOffBlock();
   /* поздний час (11aq, M225): последний ряд зала — остаться можно всегда,
      а вот что из этого выйдет, знает только стойка */
   if(typeof lateBlock==="function")lateBlock();

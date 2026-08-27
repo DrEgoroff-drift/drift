@@ -117,7 +117,7 @@ function speechHere(){
   const S=speechAll(), key=G.sys.key;
   const st=S[key]||(S[key]={i:0,v:-1});
   const v=visitHere();
-  if(st.v!==v){st.v=v;st.i=(st.i+1)%LOCAL.length;st.sq=undefined;st.shutSq=undefined;}
+  if(st.v!==v){st.v=v;st.i=(st.i+1)%LOCAL.length;st.sq=undefined;st.shutSq=undefined;st.qd=undefined;}
   /* доброе слово после закрывшейся именной двери (11ah, M226): раньше реплик
      истории — оно случается один раз на дверь, и человек важнее сюжета.
      Решение раз на посадку, строка стоит всю посадку; f.said ставит сам */
@@ -126,6 +126,9 @@ function speechHere(){
   /* реплика истории (11c) вклинивается перед общей; решение держится всю посадку */
   if(st.sq===undefined)st.sq=(typeof storyQueueLine==="function")?storyQueueLine():null;
   if(st.sq)return {line:st.sq.line,silent:st.sq.silent,addr:addrForm()};
+  /* тишина (11ar, M230): когда мир затих, у стойки изредка называют — не тебя */
+  if(st.qd===undefined)st.qd=(typeof quietDoorLine==="function")?quietDoorLine():null;
+  if(st.qd)return {line:st.qd,silent:false,addr:addrForm()};
   let line=LOCAL[st.i];
   /* дом и характер места (хвосты M113, M128): каждая четвёртая реплика — про
      дом, которому принадлежит станция, и его боны; каждая вторая из
