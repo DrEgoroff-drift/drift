@@ -7,7 +7,28 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.218.0 — M232 stage 2, pass 1: reactor, solar, drill
+## 0.219.0 — M232 stage 2, pass 2: warehouse, living quarters, smelter
+
+- **Warehouse.** The floor was empty and the shelf crates all one height. A front row now:
+  stacks of differing height, one under a tarpaulin with tie-downs, one still in its slings —
+  not yet unpacked; and a tallyman with a slate whose hand makes a mark every few seconds.
+- **Living quarters.** Helmets are OFF — `bWorker` grew a bare head (skin, hair, an eye toward
+  the gaze), and the living room is the one place that uses it: the sleeper's head is skin on
+  the pillow, the man at the table has a face. The desk lamp's cone now falls ON the table and
+  the sitter (law 1: under a cone something must get brighter). Laundry sags on a line between
+  the bunk post and the lockers, swaying faintly. The generic crowd is capped at one (`calm`)
+  — the room stopped being a lift full of people facing a screen.
+- **Smelter.** The shift DOES: a stoker at the hearth drives a poker into the fire on a slow
+  cycle (rare sparks answer the thrust), a carrier walks half the room from the molds to the
+  rack with a glowing ingot and returns empty. The flame's glow pulses slowly over the whole
+  shop's walls. The slag-watcher statue is gone; the remaining crowd stands at the rack.
+  Furnace, rack, slag tank and the floor stacks all got contact shadows (law 2).
+
+The first four-in-a-row draft of the smelter shift was caught by its own frame and re-laid:
+the carrier's path had degenerated to eight pixels because the molds already stand at the
+rack. A walk must be half a room long or the walker is a statue with moving legs.
+
+Tests: 379 suites green.
 
 - **Reactor.** The vessel was a frame around a full-height light column — a prison grille. Now
   it is IRON: a rounded barrel with a domed top and hoops, and only a small bolted viewing

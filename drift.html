@@ -1337,7 +1337,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.218.0";
+const VER="0.219.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -35693,8 +35693,8 @@ const ROOM_FIN={
   solar   :{wall:"panel",tint:"40,64,74", lamp:"202,238,246", ln:3, floor:"plate", warn:0, work:.18, dress:["board","stencil"],   junk:["canister","drum"]},
   drill   :{wall:"rock", tint:"46,40,33", lamp:"246,212,148", ln:2, dim:.85, floor:"dirt",warn:1, work:.46, dress:["hooks","stencil"],  junk:["ore","ore"]},
   storage :{wall:"rock", tint:"40,46,52", lamp:"198,218,228", ln:2, dim:.60, floor:"dirt",warn:0, work:.40, dress:["stencil","board"],  junk:["drum","bag"]},
-  habitat :{wall:"soft", tint:"54,49,46", lamp:"250,220,168", ln:3, floor:"soft", warn:0, work:.60, dress:["personal","personal"], junk:["bag","bottles"]},
-  refinery:{wall:"rib",  tint:"48,41,37", lamp:"248,196,130", ln:2, floor:"plate", warn:1, work:.32, dress:["hooks","cable"],     junk:["ingot","ore"]},
+  habitat :{wall:"soft", tint:"54,49,46", lamp:"250,220,168", ln:3, floor:"soft", warn:0, work:.34, bare:1, calm:1, dress:["personal","personal"], junk:["bag","bottles"]},
+  refinery:{wall:"rib",  tint:"48,41,37", lamp:"248,196,130", ln:2, floor:"plate", warn:1, work:.82, calm:1, dress:["hooks","cable"],     junk:["ingot","ore"]},
   pad     :{wall:"panel",tint:"34,46,56", lamp:"228,244,250", ln:3, floor:"plate", warn:1, work:.50, dress:["hooks","board"],     junk:["spool","drum"]},
   lab     :{wall:"tile", tint:"42,62,70", lamp:"226,248,252", ln:3, dim:1.15, floor:"clean",warn:0, work:.52, dress:["board","samples"], junk:["bottles","canister"]},
   battery :{wall:"rib",  tint:"44,44,50", lamp:"236,206,150", ln:2, dim:.9,  floor:"plate", warn:1, work:.38, dress:["stencil","hooks"],  junk:["canister","spool"]}
@@ -35964,7 +35964,7 @@ function bGlow(cx,cy,r,col,a){
    освещённом отсеке — самый плотный предмет кадра, сквозь него не видно ни
    станка, ни стены. Читается он тремя тонами: тёмный комбинезон, светлый
    шлем, один цветной блик на стекле. */
-function bWorker(x,fy,lit,sit,phase,face){
+function bWorker(x,fy,lit,sit,phase,face,bare){
   const d=face===-1?-1:1;
   const L=.55+lit*.45;                                  // общая освещённость фигуры
   const mix=(a,b,t)=>Math.round(a+(b-a)*t);
@@ -36005,13 +36005,23 @@ function bWorker(x,fy,lit,sit,phase,face){
   ctx.beginPath();ctx.moveTo(2.6,shY+1.4);
   ctx.lineTo(5.4,shY+4.4+sw);ctx.lineTo(sit?8.4:7.4,shY+7+sw*1.4);ctx.stroke();
   /* шлем: голова в шестую часть роста, светлый — по нему глаз и собирает
-     фигуру. Стекло тёмное, повёрнуто по ходу взгляда, блик один */
-  ctx.fillStyle="rgb("+mix(120,206,L)+","+mix(134,222,L)+","+mix(150,236,L)+")";
-  ctx.beginPath();ctx.arc(.2,headY,2.9,0,TAU);ctx.fill();
-  ctx.fillStyle="rgb(16,22,30)";
-  ctx.beginPath();ctx.arc(1.1,headY,2.1,-1.45,1.45);ctx.fill();
-  ctx.fillStyle="rgba("+BM_COOL+","+(.35+lit*.45).toFixed(2)+")";
-  ctx.fillRect(1.6,headY-1.5,1.1,1.1);
+     фигуру. Стекло тёмное, повёрнуто по ходу взгляда, блик один.
+     В жилом отсеке шлемы СНЯТЫ (закон 8, M232): люди дома, и впервые
+     видно лица — тепло дешевле любого света. */
+  if(bare){
+    ctx.fillStyle="rgb("+mix(128,214,L)+","+mix(100,174,L)+","+mix(78,138,L)+")";  // кожа
+    ctx.beginPath();ctx.arc(.2,headY,2.7,0,TAU);ctx.fill();
+    ctx.fillStyle="rgb(36,31,28)";                          // волосы
+    ctx.beginPath();ctx.arc(0,headY-.6,2.6,Math.PI*1.02,Math.PI*1.98);ctx.fill();
+    ctx.fillStyle="rgb(22,18,16)";ctx.fillRect(1.3,headY-.6,1,1);   // глаз по ходу взгляда
+  }else{
+    ctx.fillStyle="rgb("+mix(120,206,L)+","+mix(134,222,L)+","+mix(150,236,L)+")";
+    ctx.beginPath();ctx.arc(.2,headY,2.9,0,TAU);ctx.fill();
+    ctx.fillStyle="rgb(16,22,30)";
+    ctx.beginPath();ctx.arc(1.1,headY,2.1,-1.45,1.45);ctx.fill();
+    ctx.fillStyle="rgba("+BM_COOL+","+(.35+lit*.45).toFixed(2)+")";
+    ctx.fillRect(1.6,headY-1.5,1.1,1.1);
+  }
   ctx.fillStyle=suit(.34);ctx.fillRect(-1.4,headY+2.4,3.2,1.8);   // шея-ворот
   ctx.restore();ctx.lineCap="butt";
 }
@@ -36086,7 +36096,9 @@ function drawModule(k,x,y,lit,c,r,B){
   const staff=(typeof baseStaff==="function"&&B)?baseStaff(B).length:0;
   if(staff>0){
     const hh=hashi(c+3,r+5,(B&&B.idx|0)+11);
-    const room=Math.min(3,Math.round(staff/2)+((hh>>>4)&1));
+    /* calm: в отсеках, где работа уже нарисована своими руками (кочегар,
+       подносчик, спящий), массовка сведена к одному — иначе музей возвращается */
+    const room=Math.min(fin.calm?1:3,Math.round(staff/2)+((hh>>>4)&1));
     for(let i=0;i<room;i++){
       /* смена стояла по помещению через равные шаги, как расставленные фигурки.
          Люди собираются у рабочего места отсека (`work`) и расходятся от него
@@ -36097,7 +36109,7 @@ function drawModule(k,x,y,lit,c,r,B){
       /* тень под ногами: без неё человек висит в воздухе над настилом */
       ctx.fillStyle="rgba(0,0,0,.34)";
       ctx.beginPath();ctx.ellipse(px,fy-1,7,2,0,0,TAU);ctx.fill();
-      bWorker(px,fy,lit,sit,G.t*(.028+i*.006)+seed+i*2.1,((hh>>>(i+13))&1)?1:-1);
+      bWorker(px,fy,lit,sit,G.t*(.028+i*.006)+seed+i*2.1,((hh>>>(i+13))&1)?1:-1,fin.bare);
     }
   }
   /* ── настил ──
@@ -36566,6 +36578,60 @@ storage(x0,y0,w,h,cx,fy,lit,seed,B,P){
   ctx.beginPath();ctx.moveTo(tx+21,fy-13);ctx.lineTo(tx+25,fy-22);ctx.stroke();
   ctx.fillStyle="rgba(30,36,44,.95)";
   ctx.beginPath();ctx.arc(tx+4,fy-2,3,0,TAU);ctx.arc(tx+17,fy-2,3,0,TAU);ctx.fill();
+  /* ── штабели на полу (M232) ──
+     Ящики стояли только на полках и все одного роста. Склад узнают по полу:
+     штабели РАЗНОЙ высоты в переднем ряду, один накрыт брезентом с оттяжками,
+     на другом стропы — его ещё не разобрали после подъёма. */
+  const stx=[x0+20,x0+46,x0+96];
+  for(let s2=0;s2<3;s2++){
+    const n=1+((seed>>>(s2*2+3))&1)+(s2===1?1:0);
+    const sxx=stx[s2],bw3=16+((seed>>>(s2*3))&3)*2;
+    ctx.fillStyle="rgba(0,0,0,.30)";
+    ctx.beginPath();ctx.ellipse(sxx+bw3/2,fy-1,bw3*.62,2.2,0,0,TAU);ctx.fill();
+    let hy2=fy;
+    for(let k=0;k<n;k++){
+      const bh3=9+((seed>>>(k*4+s2))&3)*1.5, off=((seed>>>(k*5+s2*7))&3)-1.5;
+      bCrate(sxx+off,hy2-bh3,bw3,bh3,"58,52,44",lit,k===0&&!!((seed>>>9)&1));
+      hy2-=bh3;
+    }
+    if(s2===1){                     // брезент: ткань со складкой и оттяжками
+      ctx.fillStyle="rgba(62,72,68,"+(.85+lit*.1).toFixed(2)+")";
+      ctx.beginPath();
+      ctx.moveTo(sxx-4,fy-2);
+      ctx.quadraticCurveTo(sxx-2,hy2-4,sxx+bw3*.4,hy2-5);
+      ctx.quadraticCurveTo(sxx+bw3,hy2-2,sxx+bw3+4,fy-4);
+      ctx.lineTo(sxx+bw3+1,fy);ctx.lineTo(sxx-1,fy);ctx.closePath();ctx.fill();
+      ctx.strokeStyle="rgba(150,168,186,"+(.14+lit*.12).toFixed(2)+")";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(sxx+bw3*.42,hy2-5);ctx.lineTo(sxx+bw3*.30,fy);ctx.stroke();
+      ctx.strokeStyle="rgba(178,160,120,"+(.4+lit*.2).toFixed(2)+")";
+      ctx.beginPath();ctx.moveTo(sxx-4,fy-2);ctx.lineTo(sxx-7,fy);
+      ctx.moveTo(sxx+bw3+4,fy-4);ctx.lineTo(sxx+bw3+7,fy);ctx.stroke();
+    }
+    if(s2===2){                     // стропы: две ленты и петля — не разобран
+      ctx.strokeStyle="rgba(178,150,96,"+(.5+lit*.25).toFixed(2)+")";ctx.lineWidth=1.4;
+      ctx.beginPath();
+      ctx.moveTo(sxx+bw3*.25,fy);ctx.lineTo(sxx+bw3*.25,hy2);
+      ctx.moveTo(sxx+bw3*.75,fy);ctx.lineTo(sxx+bw3*.75,hy2);
+      ctx.moveTo(sxx+bw3*.25,hy2);ctx.quadraticCurveTo(sxx+bw3/2,hy2-7,sxx+bw3*.75,hy2);
+      ctx.stroke();
+    }
+  }
+  /* учётчик: планшет в дальней руке, ближняя раз в несколько секунд ставит
+     отметку — работа видна (закон 5), а не поза */
+  {
+    const ux=x0+118;
+    ctx.fillStyle="rgba(0,0,0,.32)";
+    ctx.beginPath();ctx.ellipse(ux,fy-1,7,2,0,0,TAU);ctx.fill();
+    bWorker(ux,fy,lit,false,G.t*.02+seed,-1);
+    ctx.fillStyle="rgba(206,210,204,"+(.5+lit*.3).toFixed(2)+")";
+    ctx.fillRect(ux-9.5,fy-16.5,5,7);                       // планшет
+    ctx.fillStyle="rgba(60,64,60,.8)";
+    for(let i=0;i<3;i++)ctx.fillRect(ux-8.5,fy-15+i*2,3,.8);
+    const tk=Math.max(0,Math.sin(G.t*.018+seed));           // рука к планшету
+    ctx.strokeStyle="rgb(52,62,78)";ctx.lineWidth=1.8;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(ux-2.6,fy-17.6);
+    ctx.lineTo(ux-5-tk*3,fy-15.5-tk*1.5);ctx.stroke();ctx.lineCap="butt";
+  }
   bLamp(cx,y0+4,30,fy,"255,232,196",.25+lit*.35);
 },
 /* ── ЖИЛОЙ ОТСЕК: койки, стол, шкафчики, зелень, иллюминатор ── */
@@ -36584,8 +36650,10 @@ habitat(x0,y0,w,h,cx,fy,lit,seed,B,P){
     ctx.beginPath();ctx.ellipse(bx+bw-10,by-6,7,3.4,0,0,TAU);ctx.fill();
     if(t===0){                                                          // на нижней спят
       const br=Math.sin(G.t*.03)*.6;
-      ctx.fillStyle="rgba(158,168,180,"+(.32+lit*.28).toFixed(2)+")";  // затылок спящего
+      ctx.fillStyle="rgba(196,158,122,"+(.40+lit*.28).toFixed(2)+")";  // затылок: без шлема, кожа
       ctx.beginPath();ctx.arc(bx+bw-13,by-9,3.2,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(40,34,30,"+(.5+lit*.2).toFixed(2)+")";       // волосы на подушке
+      ctx.beginPath();ctx.arc(bx+bw-14,by-10,2.4,Math.PI*.9,Math.PI*1.9);ctx.fill();
       ctx.fillStyle="rgba(96,74,60,"+(.7+lit*.2).toFixed(2)+")";
       ctx.beginPath();ctx.ellipse(bx+bw*.4,by-8+br,bw*.32,3.4,0,0,TAU);ctx.fill();
     }
@@ -36610,7 +36678,38 @@ habitat(x0,y0,w,h,cx,fy,lit,seed,B,P){
   ctx.fillStyle="rgba(255,220,160,"+(.7*warm+.2).toFixed(2)+")";
   ctx.beginPath();ctx.arc(tx+35,fy-32,2.6,0,TAU);ctx.fill();
   bGlow(tx+35,fy-30,34,"255,206,150",.10+lit*.10);
-  bWorker(tx+2,fy,lit,true,G.t*.03+seed);
+  bWorker(tx+2,fy,lit,true,G.t*.03+seed,1,1);
+  /* конус лампы падает НА стол и сидящего, а не мимо (закон 1): под конусом
+     что-то посветлело — иначе это плёнка, а не свет */
+  {
+    const lg2=ctx.createLinearGradient(tx+35,fy-32,tx+10,fy-14);
+    lg2.addColorStop(0,"rgba(255,220,160,"+(.15+lit*.09).toFixed(3)+")");
+    lg2.addColorStop(1,"rgba(255,220,160,0)");
+    ctx.fillStyle=lg2;
+    ctx.beginPath();ctx.moveTo(tx+32,fy-31);ctx.lineTo(tx+38,fy-33);
+    ctx.lineTo(tx+30,fy-13);ctx.lineTo(tx-1,fy-13);ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(255,220,160,"+(.09+lit*.07).toFixed(3)+")";
+    ctx.beginPath();ctx.ellipse(tx+19,fy-15.3,15,1.8,0,0,TAU);ctx.fill();
+  }
+  /* бельё на верёвке (M232): провис от стойки коек к шкафчикам, ткань чуть
+     ходит от вентиляции — жильё, а не выставка коек */
+  {
+    const lx0=bx+bw-2,ly0=fy-49,lx1=x0+w-27,ly1=y0+31,mid=ly0+9;
+    ctx.strokeStyle="rgba(200,206,214,"+(.20+lit*.14).toFixed(2)+")";ctx.lineWidth=.9;
+    ctx.beginPath();ctx.moveTo(lx0,ly0);
+    ctx.quadraticCurveTo((lx0+lx1)/2,mid+6,lx1,ly1);ctx.stroke();
+    const hang=[[.28,8,7,"156,142,120"],[.52,7,9,"118,132,146"],[.74,5,5,"168,152,134"]];
+    for(const hg of hang){
+      const q=hg[0],iq=1-q;
+      const hx2=iq*iq*lx0+2*q*iq*(lx0+lx1)/2+q*q*lx1;
+      const hy3=iq*iq*ly0+2*q*iq*(mid+6)+q*q*ly1;
+      ctx.save();ctx.translate(hx2,hy3);ctx.rotate(Math.sin(G.t*.012+q*6)*.07);
+      ctx.fillStyle="rgba("+hg[3]+","+(.55+lit*.2).toFixed(2)+")";
+      ctx.fillRect(-hg[1]/2,0,hg[1],hg[2]);
+      ctx.fillStyle="rgba(255,255,255,.10)";ctx.fillRect(-hg[1]/2,0,hg[1],1);
+      ctx.restore();
+    }
+  }
   /* шкафчики и зелень: жильё узнаётся по мелочам, а не по койкам */
   const lx=x0+w-26;
   for(let i=0;i<3;i++)bBox(lx,y0+16+i*18,22,16,"rgba(34,42,52,.96)",lit,"rgba(130,150,170,.25)");
@@ -36657,8 +36756,15 @@ Object.assign(BASE_ROOM,{
 refinery(x0,y0,w,h,cx,fy,lit,seed,B,P){
   const hot=P.eff,fl=(.65+Math.sin(G.t*.13)*.2+Math.sin(G.t*.31)*.1)*hot;
   bHazard(x0+6,fy-4,w-12,4,.5);
+  /* отблеск пламени МЕДЛЕННО пульсирует по всему цеху (M232): печь дышит на
+     стены и лица, а не только в своём пятне. Цикл секунд в шесть, не блинк. */
+  const wp=(.5+.5*Math.sin(G.t*.016+1))*(.6+.4*fl);
+  ctx.fillStyle="rgba(255,150,60,"+(.05*wp*hot).toFixed(3)+")";
+  ctx.fillRect(x0,y0,w,h-6);
   /* печь: корпус, арочная топка, свет из неё бьёт вперёд */
   const ox=x0+10,oy=fy-52,ow=54,oh=52;
+  ctx.fillStyle="rgba(0,0,0,.32)";                          // печь стоит на полу
+  ctx.beginPath();ctx.ellipse(ox+ow/2,fy-1,ow*.58,2.6,0,0,TAU);ctx.fill();
   bBox(ox,oy,ow,oh,"rgba(34,30,28,.98)",lit,"rgba(160,120,80,.35)");
   ctx.fillStyle="rgba(20,16,14,.95)";
   ctx.beginPath();ctx.moveTo(ox+10,fy-6);ctx.lineTo(ox+10,oy+22);
@@ -36711,6 +36817,8 @@ refinery(x0,y0,w,h,cx,fy,lit,seed,B,P){
   /* правая половина цеха: стеллаж готовых слитков, бак шлака и плавильщик.
      Без них половина отсека стояла пустой, и печь висела в вакууме */
   const rx=x0+w-40;
+  ctx.fillStyle="rgba(0,0,0,.28)";
+  ctx.beginPath();ctx.ellipse(rx+17,fy-1,19,2.2,0,0,TAU);ctx.fill();
   bBox(rx,fy-34,34,3,"rgba(44,54,66,.98)",lit,"rgba(0,0,0,.4)");
   bBox(rx,fy-16,34,3,"rgba(44,54,66,.98)",lit,"rgba(0,0,0,.4)");
   bBox(rx-2,fy-36,3,36,"rgba(40,50,62,.98)",lit,null);
@@ -36722,10 +36830,49 @@ refinery(x0,y0,w,h,cx,fy,lit,seed,B,P){
     ctx.fillStyle="rgba(190,200,212,"+(.10+lit*.14).toFixed(2)+")";ctx.fillRect(ix,iy,8,1);
   }
   const sbx=rx-24;                                        // бак шлака: тёмная корка, снизу тлеет
+  ctx.fillStyle="rgba(0,0,0,.30)";
+  ctx.beginPath();ctx.ellipse(sbx+10,fy-1,12,2.2,0,0,TAU);ctx.fill();
   bBox(sbx,fy-14,20,14,"rgba(26,24,24,.98)",lit,"rgba(90,70,54,.4)");
   ctx.fillStyle="rgba(60,50,46,.95)";ctx.fillRect(sbx+2,fy-12,16,5);
   ctx.fillStyle="rgba(255,120,40,"+(.25*hot).toFixed(2)+")";ctx.fillRect(sbx+3,fy-7,14,2);
-  bWorker(sbx-12,fy,lit,false,G.t*.04+seed,-1);
+  /* ── смена ДЕЛАЕТ, а не смотрит (закон 5, M232) ──
+     Кочегар шурует в топке: кочерга раз в несколько секунд уходит в огонь,
+     на выпаде из зева отвечают редкие искры. */
+  {
+    /* кочегар стоит У ЗЕВА, а не в общем ряду: по месту и видно, чья работа */
+    const stx2=ox+ow-2;
+    const pk=Math.max(0,Math.sin(G.t*.014+seed));
+    ctx.fillStyle="rgba(0,0,0,.32)";
+    ctx.beginPath();ctx.ellipse(stx2,fy-1,7,2,0,0,TAU);ctx.fill();
+    bWorker(stx2,fy,lit,false,G.t*.05+seed+2,-1);
+    ctx.strokeStyle="rgb(40,36,34)";ctx.lineWidth=1.6;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(stx2-2,fy-13);
+    ctx.lineTo(ox+ow-24-pk*14,fy-9-pk*2);ctx.stroke();ctx.lineCap="butt";
+    if(pk>.85&&hot>.2)for(let i=0;i<3;i++){
+      const t=(G.t*.09+i*.31)%1;
+      ctx.fillStyle="rgba(255,210,120,"+((1-t)*.7).toFixed(2)+")";
+      ctx.beginPath();ctx.arc(ox+ow-26+Math.cos(i*2.1)*t*10,fy-12-t*10,1,0,TAU);ctx.fill();
+    }
+  }
+  /* подносчик: от изложниц к стеллажу со слитком в руке, обратно порожняком.
+     Путь настоящий — полкомнаты, иначе он «идёт», стоя на месте */
+  {
+    const c2=(G.t*.0032+seed*.7)%1, wxA=ox+ow+14, wxB=rx+2;
+    let wx=null,carry=false,fc=1;
+    if(c2<.34){wx=wxA+(wxB-wxA)*(c2/.34);carry=true;fc=1;}
+    else if(c2<.46){wx=wxB;fc=-1;}
+    else if(c2<.80){wx=wxB-(wxB-wxA)*((c2-.46)/.34);fc=-1;}
+    if(wx!=null){
+      ctx.fillStyle="rgba(0,0,0,.32)";
+      ctx.beginPath();ctx.ellipse(wx,fy-1,7,2,0,0,TAU);ctx.fill();
+      bWorker(wx,fy,lit,false,G.t*.3,fc);
+      if(carry){
+        ctx.fillStyle="rgba(214,196,158,"+(.6+lit*.2).toFixed(2)+")";
+        ctx.fillRect(wx+4*fc-3.5,fy-13,7,3.4);
+        bGlow(wx+4*fc,fy-11,10,"255,160,70",.10*hot);
+      }
+    }
+  }
   /* марево над печью: дешёвая подделка, но без него горячий цех выглядит холодным */
   ctx.save();ctx.globalCompositeOperation="lighter";
   for(let i=0;i<3;i++){

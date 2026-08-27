@@ -412,6 +412,60 @@ storage(x0,y0,w,h,cx,fy,lit,seed,B,P){
   ctx.beginPath();ctx.moveTo(tx+21,fy-13);ctx.lineTo(tx+25,fy-22);ctx.stroke();
   ctx.fillStyle="rgba(30,36,44,.95)";
   ctx.beginPath();ctx.arc(tx+4,fy-2,3,0,TAU);ctx.arc(tx+17,fy-2,3,0,TAU);ctx.fill();
+  /* ── штабели на полу (M232) ──
+     Ящики стояли только на полках и все одного роста. Склад узнают по полу:
+     штабели РАЗНОЙ высоты в переднем ряду, один накрыт брезентом с оттяжками,
+     на другом стропы — его ещё не разобрали после подъёма. */
+  const stx=[x0+20,x0+46,x0+96];
+  for(let s2=0;s2<3;s2++){
+    const n=1+((seed>>>(s2*2+3))&1)+(s2===1?1:0);
+    const sxx=stx[s2],bw3=16+((seed>>>(s2*3))&3)*2;
+    ctx.fillStyle="rgba(0,0,0,.30)";
+    ctx.beginPath();ctx.ellipse(sxx+bw3/2,fy-1,bw3*.62,2.2,0,0,TAU);ctx.fill();
+    let hy2=fy;
+    for(let k=0;k<n;k++){
+      const bh3=9+((seed>>>(k*4+s2))&3)*1.5, off=((seed>>>(k*5+s2*7))&3)-1.5;
+      bCrate(sxx+off,hy2-bh3,bw3,bh3,"58,52,44",lit,k===0&&!!((seed>>>9)&1));
+      hy2-=bh3;
+    }
+    if(s2===1){                     // брезент: ткань со складкой и оттяжками
+      ctx.fillStyle="rgba(62,72,68,"+(.85+lit*.1).toFixed(2)+")";
+      ctx.beginPath();
+      ctx.moveTo(sxx-4,fy-2);
+      ctx.quadraticCurveTo(sxx-2,hy2-4,sxx+bw3*.4,hy2-5);
+      ctx.quadraticCurveTo(sxx+bw3,hy2-2,sxx+bw3+4,fy-4);
+      ctx.lineTo(sxx+bw3+1,fy);ctx.lineTo(sxx-1,fy);ctx.closePath();ctx.fill();
+      ctx.strokeStyle="rgba(150,168,186,"+(.14+lit*.12).toFixed(2)+")";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(sxx+bw3*.42,hy2-5);ctx.lineTo(sxx+bw3*.30,fy);ctx.stroke();
+      ctx.strokeStyle="rgba(178,160,120,"+(.4+lit*.2).toFixed(2)+")";
+      ctx.beginPath();ctx.moveTo(sxx-4,fy-2);ctx.lineTo(sxx-7,fy);
+      ctx.moveTo(sxx+bw3+4,fy-4);ctx.lineTo(sxx+bw3+7,fy);ctx.stroke();
+    }
+    if(s2===2){                     // стропы: две ленты и петля — не разобран
+      ctx.strokeStyle="rgba(178,150,96,"+(.5+lit*.25).toFixed(2)+")";ctx.lineWidth=1.4;
+      ctx.beginPath();
+      ctx.moveTo(sxx+bw3*.25,fy);ctx.lineTo(sxx+bw3*.25,hy2);
+      ctx.moveTo(sxx+bw3*.75,fy);ctx.lineTo(sxx+bw3*.75,hy2);
+      ctx.moveTo(sxx+bw3*.25,hy2);ctx.quadraticCurveTo(sxx+bw3/2,hy2-7,sxx+bw3*.75,hy2);
+      ctx.stroke();
+    }
+  }
+  /* учётчик: планшет в дальней руке, ближняя раз в несколько секунд ставит
+     отметку — работа видна (закон 5), а не поза */
+  {
+    const ux=x0+118;
+    ctx.fillStyle="rgba(0,0,0,.32)";
+    ctx.beginPath();ctx.ellipse(ux,fy-1,7,2,0,0,TAU);ctx.fill();
+    bWorker(ux,fy,lit,false,G.t*.02+seed,-1);
+    ctx.fillStyle="rgba(206,210,204,"+(.5+lit*.3).toFixed(2)+")";
+    ctx.fillRect(ux-9.5,fy-16.5,5,7);                       // планшет
+    ctx.fillStyle="rgba(60,64,60,.8)";
+    for(let i=0;i<3;i++)ctx.fillRect(ux-8.5,fy-15+i*2,3,.8);
+    const tk=Math.max(0,Math.sin(G.t*.018+seed));           // рука к планшету
+    ctx.strokeStyle="rgb(52,62,78)";ctx.lineWidth=1.8;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(ux-2.6,fy-17.6);
+    ctx.lineTo(ux-5-tk*3,fy-15.5-tk*1.5);ctx.stroke();ctx.lineCap="butt";
+  }
   bLamp(cx,y0+4,30,fy,"255,232,196",.25+lit*.35);
 },
 /* ── ЖИЛОЙ ОТСЕК: койки, стол, шкафчики, зелень, иллюминатор ── */
@@ -430,8 +484,10 @@ habitat(x0,y0,w,h,cx,fy,lit,seed,B,P){
     ctx.beginPath();ctx.ellipse(bx+bw-10,by-6,7,3.4,0,0,TAU);ctx.fill();
     if(t===0){                                                          // на нижней спят
       const br=Math.sin(G.t*.03)*.6;
-      ctx.fillStyle="rgba(158,168,180,"+(.32+lit*.28).toFixed(2)+")";  // затылок спящего
+      ctx.fillStyle="rgba(196,158,122,"+(.40+lit*.28).toFixed(2)+")";  // затылок: без шлема, кожа
       ctx.beginPath();ctx.arc(bx+bw-13,by-9,3.2,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(40,34,30,"+(.5+lit*.2).toFixed(2)+")";       // волосы на подушке
+      ctx.beginPath();ctx.arc(bx+bw-14,by-10,2.4,Math.PI*.9,Math.PI*1.9);ctx.fill();
       ctx.fillStyle="rgba(96,74,60,"+(.7+lit*.2).toFixed(2)+")";
       ctx.beginPath();ctx.ellipse(bx+bw*.4,by-8+br,bw*.32,3.4,0,0,TAU);ctx.fill();
     }
@@ -456,7 +512,38 @@ habitat(x0,y0,w,h,cx,fy,lit,seed,B,P){
   ctx.fillStyle="rgba(255,220,160,"+(.7*warm+.2).toFixed(2)+")";
   ctx.beginPath();ctx.arc(tx+35,fy-32,2.6,0,TAU);ctx.fill();
   bGlow(tx+35,fy-30,34,"255,206,150",.10+lit*.10);
-  bWorker(tx+2,fy,lit,true,G.t*.03+seed);
+  bWorker(tx+2,fy,lit,true,G.t*.03+seed,1,1);
+  /* конус лампы падает НА стол и сидящего, а не мимо (закон 1): под конусом
+     что-то посветлело — иначе это плёнка, а не свет */
+  {
+    const lg2=ctx.createLinearGradient(tx+35,fy-32,tx+10,fy-14);
+    lg2.addColorStop(0,"rgba(255,220,160,"+(.15+lit*.09).toFixed(3)+")");
+    lg2.addColorStop(1,"rgba(255,220,160,0)");
+    ctx.fillStyle=lg2;
+    ctx.beginPath();ctx.moveTo(tx+32,fy-31);ctx.lineTo(tx+38,fy-33);
+    ctx.lineTo(tx+30,fy-13);ctx.lineTo(tx-1,fy-13);ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(255,220,160,"+(.09+lit*.07).toFixed(3)+")";
+    ctx.beginPath();ctx.ellipse(tx+19,fy-15.3,15,1.8,0,0,TAU);ctx.fill();
+  }
+  /* бельё на верёвке (M232): провис от стойки коек к шкафчикам, ткань чуть
+     ходит от вентиляции — жильё, а не выставка коек */
+  {
+    const lx0=bx+bw-2,ly0=fy-49,lx1=x0+w-27,ly1=y0+31,mid=ly0+9;
+    ctx.strokeStyle="rgba(200,206,214,"+(.20+lit*.14).toFixed(2)+")";ctx.lineWidth=.9;
+    ctx.beginPath();ctx.moveTo(lx0,ly0);
+    ctx.quadraticCurveTo((lx0+lx1)/2,mid+6,lx1,ly1);ctx.stroke();
+    const hang=[[.28,8,7,"156,142,120"],[.52,7,9,"118,132,146"],[.74,5,5,"168,152,134"]];
+    for(const hg of hang){
+      const q=hg[0],iq=1-q;
+      const hx2=iq*iq*lx0+2*q*iq*(lx0+lx1)/2+q*q*lx1;
+      const hy3=iq*iq*ly0+2*q*iq*(mid+6)+q*q*ly1;
+      ctx.save();ctx.translate(hx2,hy3);ctx.rotate(Math.sin(G.t*.012+q*6)*.07);
+      ctx.fillStyle="rgba("+hg[3]+","+(.55+lit*.2).toFixed(2)+")";
+      ctx.fillRect(-hg[1]/2,0,hg[1],hg[2]);
+      ctx.fillStyle="rgba(255,255,255,.10)";ctx.fillRect(-hg[1]/2,0,hg[1],1);
+      ctx.restore();
+    }
+  }
   /* шкафчики и зелень: жильё узнаётся по мелочам, а не по койкам */
   const lx=x0+w-26;
   for(let i=0;i<3;i++)bBox(lx,y0+16+i*18,22,16,"rgba(34,42,52,.96)",lit,"rgba(130,150,170,.25)");

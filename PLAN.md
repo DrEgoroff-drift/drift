@@ -101,13 +101,14 @@ the drill's own pass in stage 2.** Openings between rooms already existed (the d
   mast panel already tracked slowly.
 - ~~**Drill.**~~ — done (0.218.0): lump sizes vary per lump, hop on the rollers; the auger
   already turned, the dust at the face already stood.
-- **Warehouse.** Crates all one height — stacks of differing height, tarpaulin, slings; a
-  tallyman with a slate makes a mark.
-- **Living.** The crowd stands before the screen like in a lift; the desk lamp's cone misses
-  everyone. Spread them: one asleep (blanket breathes), one at the table with a mug, laundry on
-  a line. Helmets off.
-- **Smelter.** Give them work: one stokes with a poker, another carries an ingot to the rack;
-  the flame's glow pulses slowly on wall and faces; sparks occasionally.
+- ~~**Warehouse.**~~ — done (0.219.0): floor stacks of differing height, tarpaulin with
+  tie-downs, slings, tallyman marking a slate.
+- ~~**Living.**~~ — done (0.219.0): helmets off (`bWorker` bare head), lamp cone falls on
+  table and sitter, laundry on a sagging line, crowd capped (`calm`). The sleeper and the mug
+  already existed.
+- ~~**Smelter.**~~ — done (0.219.0): stoker with a poker on a slow cycle, carrier walks the
+  molds→rack half-room with a glowing ingot, wall-wide slow flame pulse, sparks on the
+  thrust; the slag-watcher statue removed.
 - **Pad.** The green mass on the left is illegible — an explicit shuttle nose with a marker
   light; the crane hook travels the beam.
 - **Battery.** The row of sharp teeth reads as a trap — insulators with balls; every 8–12 s one

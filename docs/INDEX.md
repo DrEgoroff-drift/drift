@@ -530,7 +530,7 @@ drawBelt                     src/24-mode-belt.js:366
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17c-system-draw.js:94
 drawBeltRocks                src/17c-system-draw.js:41
-drawBuildMenu                src/21aa-base-rooms.js:492
+drawBuildMenu                src/21aa-base-rooms.js:504
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
 drawCave                     src/22-mode-cave.js:560
@@ -583,7 +583,7 @@ drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
 drawMap                      src/18-mode-map.js:42
 drawMisFigure                src/11z-misclosure.js:63
-drawModule                   src/21aa-base-rooms.js:374
+drawModule                   src/21aa-base-rooms.js:384
 drawMonolith                 src/20aa-poi-shapes.js:193
 drawNebula                   src/16-flight.js:67
 drawNodeIcon                 src/05a-nodes.js:264
@@ -3463,14 +3463,14 @@ zooTick                      src/11ad-zoo.js:41
   · астронавт:1
   · флора:105
 
-## src/21aa-base-rooms.js · 35 КБ
+## src/21aa-base-rooms.js · 36 КБ
   · база: внутренности отсеков:1
   · внутренности отсеков:5
 
-## src/21ab-base-interiors.js · 32 КБ
+## src/21ab-base-interiors.js · 37 КБ
   · база: восемь отсеков изнутри:1
 
-## src/21ab-base-interiors2.js · 17 КБ
+## src/21ab-base-interiors2.js · 20 КБ
   · отсеки базы: вторая половина:1
 
 ## src/21ac-base-draw.js · 50 КБ

@@ -48,8 +48,8 @@ const ROOM_FIN={
   solar   :{wall:"panel",tint:"40,64,74", lamp:"202,238,246", ln:3, floor:"plate", warn:0, work:.18, dress:["board","stencil"],   junk:["canister","drum"]},
   drill   :{wall:"rock", tint:"46,40,33", lamp:"246,212,148", ln:2, dim:.85, floor:"dirt",warn:1, work:.46, dress:["hooks","stencil"],  junk:["ore","ore"]},
   storage :{wall:"rock", tint:"40,46,52", lamp:"198,218,228", ln:2, dim:.60, floor:"dirt",warn:0, work:.40, dress:["stencil","board"],  junk:["drum","bag"]},
-  habitat :{wall:"soft", tint:"54,49,46", lamp:"250,220,168", ln:3, floor:"soft", warn:0, work:.60, dress:["personal","personal"], junk:["bag","bottles"]},
-  refinery:{wall:"rib",  tint:"48,41,37", lamp:"248,196,130", ln:2, floor:"plate", warn:1, work:.32, dress:["hooks","cable"],     junk:["ingot","ore"]},
+  habitat :{wall:"soft", tint:"54,49,46", lamp:"250,220,168", ln:3, floor:"soft", warn:0, work:.34, bare:1, calm:1, dress:["personal","personal"], junk:["bag","bottles"]},
+  refinery:{wall:"rib",  tint:"48,41,37", lamp:"248,196,130", ln:2, floor:"plate", warn:1, work:.82, calm:1, dress:["hooks","cable"],     junk:["ingot","ore"]},
   pad     :{wall:"panel",tint:"34,46,56", lamp:"228,244,250", ln:3, floor:"plate", warn:1, work:.50, dress:["hooks","board"],     junk:["spool","drum"]},
   lab     :{wall:"tile", tint:"42,62,70", lamp:"226,248,252", ln:3, dim:1.15, floor:"clean",warn:0, work:.52, dress:["board","samples"], junk:["bottles","canister"]},
   battery :{wall:"rib",  tint:"44,44,50", lamp:"236,206,150", ln:2, dim:.9,  floor:"plate", warn:1, work:.38, dress:["stencil","hooks"],  junk:["canister","spool"]}
@@ -319,7 +319,7 @@ function bGlow(cx,cy,r,col,a){
    освещённом отсеке — самый плотный предмет кадра, сквозь него не видно ни
    станка, ни стены. Читается он тремя тонами: тёмный комбинезон, светлый
    шлем, один цветной блик на стекле. */
-function bWorker(x,fy,lit,sit,phase,face){
+function bWorker(x,fy,lit,sit,phase,face,bare){
   const d=face===-1?-1:1;
   const L=.55+lit*.45;                                  // общая освещённость фигуры
   const mix=(a,b,t)=>Math.round(a+(b-a)*t);
@@ -360,13 +360,23 @@ function bWorker(x,fy,lit,sit,phase,face){
   ctx.beginPath();ctx.moveTo(2.6,shY+1.4);
   ctx.lineTo(5.4,shY+4.4+sw);ctx.lineTo(sit?8.4:7.4,shY+7+sw*1.4);ctx.stroke();
   /* шлем: голова в шестую часть роста, светлый — по нему глаз и собирает
-     фигуру. Стекло тёмное, повёрнуто по ходу взгляда, блик один */
-  ctx.fillStyle="rgb("+mix(120,206,L)+","+mix(134,222,L)+","+mix(150,236,L)+")";
-  ctx.beginPath();ctx.arc(.2,headY,2.9,0,TAU);ctx.fill();
-  ctx.fillStyle="rgb(16,22,30)";
-  ctx.beginPath();ctx.arc(1.1,headY,2.1,-1.45,1.45);ctx.fill();
-  ctx.fillStyle="rgba("+BM_COOL+","+(.35+lit*.45).toFixed(2)+")";
-  ctx.fillRect(1.6,headY-1.5,1.1,1.1);
+     фигуру. Стекло тёмное, повёрнуто по ходу взгляда, блик один.
+     В жилом отсеке шлемы СНЯТЫ (закон 8, M232): люди дома, и впервые
+     видно лица — тепло дешевле любого света. */
+  if(bare){
+    ctx.fillStyle="rgb("+mix(128,214,L)+","+mix(100,174,L)+","+mix(78,138,L)+")";  // кожа
+    ctx.beginPath();ctx.arc(.2,headY,2.7,0,TAU);ctx.fill();
+    ctx.fillStyle="rgb(36,31,28)";                          // волосы
+    ctx.beginPath();ctx.arc(0,headY-.6,2.6,Math.PI*1.02,Math.PI*1.98);ctx.fill();
+    ctx.fillStyle="rgb(22,18,16)";ctx.fillRect(1.3,headY-.6,1,1);   // глаз по ходу взгляда
+  }else{
+    ctx.fillStyle="rgb("+mix(120,206,L)+","+mix(134,222,L)+","+mix(150,236,L)+")";
+    ctx.beginPath();ctx.arc(.2,headY,2.9,0,TAU);ctx.fill();
+    ctx.fillStyle="rgb(16,22,30)";
+    ctx.beginPath();ctx.arc(1.1,headY,2.1,-1.45,1.45);ctx.fill();
+    ctx.fillStyle="rgba("+BM_COOL+","+(.35+lit*.45).toFixed(2)+")";
+    ctx.fillRect(1.6,headY-1.5,1.1,1.1);
+  }
   ctx.fillStyle=suit(.34);ctx.fillRect(-1.4,headY+2.4,3.2,1.8);   // шея-ворот
   ctx.restore();ctx.lineCap="butt";
 }
@@ -441,7 +451,9 @@ function drawModule(k,x,y,lit,c,r,B){
   const staff=(typeof baseStaff==="function"&&B)?baseStaff(B).length:0;
   if(staff>0){
     const hh=hashi(c+3,r+5,(B&&B.idx|0)+11);
-    const room=Math.min(3,Math.round(staff/2)+((hh>>>4)&1));
+    /* calm: в отсеках, где работа уже нарисована своими руками (кочегар,
+       подносчик, спящий), массовка сведена к одному — иначе музей возвращается */
+    const room=Math.min(fin.calm?1:3,Math.round(staff/2)+((hh>>>4)&1));
     for(let i=0;i<room;i++){
       /* смена стояла по помещению через равные шаги, как расставленные фигурки.
          Люди собираются у рабочего места отсека (`work`) и расходятся от него
@@ -452,7 +464,7 @@ function drawModule(k,x,y,lit,c,r,B){
       /* тень под ногами: без неё человек висит в воздухе над настилом */
       ctx.fillStyle="rgba(0,0,0,.34)";
       ctx.beginPath();ctx.ellipse(px,fy-1,7,2,0,0,TAU);ctx.fill();
-      bWorker(px,fy,lit,sit,G.t*(.028+i*.006)+seed+i*2.1,((hh>>>(i+13))&1)?1:-1);
+      bWorker(px,fy,lit,sit,G.t*(.028+i*.006)+seed+i*2.1,((hh>>>(i+13))&1)?1:-1,fin.bare);
     }
   }
   /* ── настил ──

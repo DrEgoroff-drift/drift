@@ -8,8 +8,15 @@ Object.assign(BASE_ROOM,{
 refinery(x0,y0,w,h,cx,fy,lit,seed,B,P){
   const hot=P.eff,fl=(.65+Math.sin(G.t*.13)*.2+Math.sin(G.t*.31)*.1)*hot;
   bHazard(x0+6,fy-4,w-12,4,.5);
+  /* отблеск пламени МЕДЛЕННО пульсирует по всему цеху (M232): печь дышит на
+     стены и лица, а не только в своём пятне. Цикл секунд в шесть, не блинк. */
+  const wp=(.5+.5*Math.sin(G.t*.016+1))*(.6+.4*fl);
+  ctx.fillStyle="rgba(255,150,60,"+(.05*wp*hot).toFixed(3)+")";
+  ctx.fillRect(x0,y0,w,h-6);
   /* печь: корпус, арочная топка, свет из неё бьёт вперёд */
   const ox=x0+10,oy=fy-52,ow=54,oh=52;
+  ctx.fillStyle="rgba(0,0,0,.32)";                          // печь стоит на полу
+  ctx.beginPath();ctx.ellipse(ox+ow/2,fy-1,ow*.58,2.6,0,0,TAU);ctx.fill();
   bBox(ox,oy,ow,oh,"rgba(34,30,28,.98)",lit,"rgba(160,120,80,.35)");
   ctx.fillStyle="rgba(20,16,14,.95)";
   ctx.beginPath();ctx.moveTo(ox+10,fy-6);ctx.lineTo(ox+10,oy+22);
@@ -62,6 +69,8 @@ refinery(x0,y0,w,h,cx,fy,lit,seed,B,P){
   /* правая половина цеха: стеллаж готовых слитков, бак шлака и плавильщик.
      Без них половина отсека стояла пустой, и печь висела в вакууме */
   const rx=x0+w-40;
+  ctx.fillStyle="rgba(0,0,0,.28)";
+  ctx.beginPath();ctx.ellipse(rx+17,fy-1,19,2.2,0,0,TAU);ctx.fill();
   bBox(rx,fy-34,34,3,"rgba(44,54,66,.98)",lit,"rgba(0,0,0,.4)");
   bBox(rx,fy-16,34,3,"rgba(44,54,66,.98)",lit,"rgba(0,0,0,.4)");
   bBox(rx-2,fy-36,3,36,"rgba(40,50,62,.98)",lit,null);
@@ -73,10 +82,49 @@ refinery(x0,y0,w,h,cx,fy,lit,seed,B,P){
     ctx.fillStyle="rgba(190,200,212,"+(.10+lit*.14).toFixed(2)+")";ctx.fillRect(ix,iy,8,1);
   }
   const sbx=rx-24;                                        // бак шлака: тёмная корка, снизу тлеет
+  ctx.fillStyle="rgba(0,0,0,.30)";
+  ctx.beginPath();ctx.ellipse(sbx+10,fy-1,12,2.2,0,0,TAU);ctx.fill();
   bBox(sbx,fy-14,20,14,"rgba(26,24,24,.98)",lit,"rgba(90,70,54,.4)");
   ctx.fillStyle="rgba(60,50,46,.95)";ctx.fillRect(sbx+2,fy-12,16,5);
   ctx.fillStyle="rgba(255,120,40,"+(.25*hot).toFixed(2)+")";ctx.fillRect(sbx+3,fy-7,14,2);
-  bWorker(sbx-12,fy,lit,false,G.t*.04+seed,-1);
+  /* ── смена ДЕЛАЕТ, а не смотрит (закон 5, M232) ──
+     Кочегар шурует в топке: кочерга раз в несколько секунд уходит в огонь,
+     на выпаде из зева отвечают редкие искры. */
+  {
+    /* кочегар стоит У ЗЕВА, а не в общем ряду: по месту и видно, чья работа */
+    const stx2=ox+ow-2;
+    const pk=Math.max(0,Math.sin(G.t*.014+seed));
+    ctx.fillStyle="rgba(0,0,0,.32)";
+    ctx.beginPath();ctx.ellipse(stx2,fy-1,7,2,0,0,TAU);ctx.fill();
+    bWorker(stx2,fy,lit,false,G.t*.05+seed+2,-1);
+    ctx.strokeStyle="rgb(40,36,34)";ctx.lineWidth=1.6;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(stx2-2,fy-13);
+    ctx.lineTo(ox+ow-24-pk*14,fy-9-pk*2);ctx.stroke();ctx.lineCap="butt";
+    if(pk>.85&&hot>.2)for(let i=0;i<3;i++){
+      const t=(G.t*.09+i*.31)%1;
+      ctx.fillStyle="rgba(255,210,120,"+((1-t)*.7).toFixed(2)+")";
+      ctx.beginPath();ctx.arc(ox+ow-26+Math.cos(i*2.1)*t*10,fy-12-t*10,1,0,TAU);ctx.fill();
+    }
+  }
+  /* подносчик: от изложниц к стеллажу со слитком в руке, обратно порожняком.
+     Путь настоящий — полкомнаты, иначе он «идёт», стоя на месте */
+  {
+    const c2=(G.t*.0032+seed*.7)%1, wxA=ox+ow+14, wxB=rx+2;
+    let wx=null,carry=false,fc=1;
+    if(c2<.34){wx=wxA+(wxB-wxA)*(c2/.34);carry=true;fc=1;}
+    else if(c2<.46){wx=wxB;fc=-1;}
+    else if(c2<.80){wx=wxB-(wxB-wxA)*((c2-.46)/.34);fc=-1;}
+    if(wx!=null){
+      ctx.fillStyle="rgba(0,0,0,.32)";
+      ctx.beginPath();ctx.ellipse(wx,fy-1,7,2,0,0,TAU);ctx.fill();
+      bWorker(wx,fy,lit,false,G.t*.3,fc);
+      if(carry){
+        ctx.fillStyle="rgba(214,196,158,"+(.6+lit*.2).toFixed(2)+")";
+        ctx.fillRect(wx+4*fc-3.5,fy-13,7,3.4);
+        bGlow(wx+4*fc,fy-11,10,"255,160,70",.10*hot);
+      }
+    }
+  }
   /* марево над печью: дешёвая подделка, но без него горячий цех выглядит холодным */
   ctx.save();ctx.globalCompositeOperation="lighter";
   for(let i=0;i<3;i++){
