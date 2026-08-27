@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.206.0 — the instruments grew with the window too (M221)
+
+M217 gave the world a ruler: on a big monitor it now *grows* instead of merely showing more. What
+it did not touch was the interface — and after four days that contrast had become the loudest thing
+on a 1080p screen. Measured on 1920×1080: the world is nearly twice its old size, while the
+instruments, the pads, the rail, the console and every panel stayed at the pixel sizes they were
+laid out with. The interface had turned into a thin frill around the edges of a huge frame.
+
+**Now it has its own ruler, taken from the same frame.** `--ui` scales with window height —
+`clamp(H/760, 1, 1.75)` — and it deliberately grows *slower* than the world: text doubled in size
+stops being text and becomes a poster. A phone is left exactly as it was: its layout was measured
+for a narrow screen and has nothing to gain here.
+
+**It is `zoom`, not `transform: scale`,** and that is the whole reason it works: a transform
+stretches the picture while leaving the layout and the hit-testing at the old coordinates — a button
+would look big and still be pressed by its old, small rectangle. `zoom` changes the used lengths, so
+the interface's own rule — *nothing you poke with a finger is under 44 px* — stays true at every
+size, and the guard that measures it now measures real pixels.
+
+**And the half of the interface that lives on canvas came along.** The target chips on the surface,
+the hint band, the compass chips at the edge of the system view and the zoom readout are drawn in
+the same UI measure now — leaving them in raw pixels would have split one interface in two, half of
+it grown and half not. Their world coordinates are converted by dividing by that same measure, and
+a chip's tap zone is handed back to the input layer in real pixels, which knows nothing of zoom.
+
+Rasters baked inside panels — the desk's boards, the road canvases — are baked that much denser, so
+the magnified interface does not come out soft.
+
+11771 assertions in 369 suites, 60 fps in every mode, and the phone layout suite is still green.
+---
 ## 0.205.0 — the mast has a body (M220)
 
 Yesterday's receivers were a line on paper and a voice in the noise. Fly to the address they gave

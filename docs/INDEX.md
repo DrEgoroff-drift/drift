@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 319 · символов верхнего уровня: 2944
+Файлов: 319 · символов верхнего уровня: 2947
 
 ## СИМВОЛЫ
 
@@ -618,14 +618,15 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:103
-drawSurface                  src/21e-surface-draw.js:485
+drawSurface                  src/21e-surface-draw.js:488
 drawSurfaceHud               src/21e-surface-draw.js:19
-drawSurfaceWorld             src/21e-surface-draw.js:94
+drawSurfaceWorld             src/21e-surface-draw.js:97
 drawSurvey                   src/12w-survey.js:63
+drawSysHud                   src/17-mode-system.js:459
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:285
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:275
+drawThingIcon                src/27i-ui-table.js:277
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:125
 drawTrail                    src/16-flight.js:338
@@ -807,7 +808,7 @@ fuseCost                     src/03-ships.js:33
 fuseGen                      src/03-ships.js:32
 fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
-G                            src/08-state.js:42
+G                            src/08-state.js:58
 g11Fps                       src/28z-fps-probe.js:7
 genBeast                     src/20f-fauna.js:58
 genBeltPOI                   src/24b-belt-poi.js:20
@@ -943,7 +944,7 @@ heardReread                  src/12x-parrot.js:92
 heardUse                     src/12x-parrot.js:116
 heardWordsRu                 src/12x-parrot.js:79
 heardYours                   src/12x-parrot.js:71
-held                         src/08-state.js:164
+held                         src/08-state.js:180
 hex2rgb                      src/03-ships.js:145
 hexa                         src/12w-survey.js:91
 hexRGB                       src/24-mode-belt.js:80
@@ -1197,7 +1198,7 @@ keplerPos                    src/06-galaxy.js:39
 keyLabel                     src/15-input.js:118
 keyMap                       src/15-input.js:107
 keyRow                       src/27-ui-ship.js:188
-keys                         src/08-state.js:38
+keys                         src/08-state.js:54
 killPirate                   src/13-pirates.js:179
 killRock                     src/24-mode-belt.js:150
 KINO_EVERY                   src/27da-kino.js:20
@@ -1874,7 +1875,7 @@ postSnap                     src/25g-postcard.js:65
 postTake                     src/25g-postcard.js:601
 postTerrain                  src/25g-postcard.js:41
 postWorld                    src/25g-postcard.js:49
-prevAct                      src/08-state.js:40
+prevAct                      src/08-state.js:56
 pricesHeard                  src/12aa-need.js:209
 pricesSeen                   src/12aa-need.js:188
 prism                        src/21b-surface-deco.js:201
@@ -2078,9 +2079,9 @@ renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
 renderRelays                 src/11ap-relay.js:242
 renderRoute                  src/12r-route.js:225
-renderStrips                 src/27i-ui-table.js:215
+renderStrips                 src/27i-ui-table.js:217
 renderTab                    src/26-ui-station.js:208
-renderThings                 src/27i-ui-table.js:246
+renderThings                 src/27i-ui-table.js:248
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -2095,13 +2096,13 @@ repRepairMul                 src/12k-rep.js:53
 repShipMul                   src/12k-rep.js:69
 repWord                      src/12k-rep.js:31
 RES                          src/02-world.js:2
-RES_AUTO                     src/08-state.js:35
+RES_AUTO                     src/08-state.js:51
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:403
 resEma                       src/28-loop.js:402
 resetArm                     src/26-ui-station.js:674
 resetWorld                   tests/90-harness.js:32
-resize                       src/08-state.js:6
+resize                       src/08-state.js:19
 RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19
 retAll                       src/11s-returners.js:32
@@ -2270,7 +2271,7 @@ S1                           src/01-core.js:39
 S2                           src/01-core.js:40
 SAVE_KEY                     src/14-save.js:6
 saveGame                     src/14a-cloud.js:38
-say                          src/08-state.js:165
+say                          src/08-state.js:181
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
 SCK                          src/18c-chunks.js:39
@@ -2500,7 +2501,7 @@ starRGB                      src/19c-light.js:23
 start                        src/15-input.js:434
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
-stat                         src/08-state.js:123
+stat                         src/08-state.js:139
 STAT_SHOW                    src/05-parts.js:280
 stationDeals                 src/27g-deals.js:134
 stationFleet                 src/04b-fleet.js:163
@@ -2588,11 +2589,11 @@ suitHit                      src/23-mode-dig.js:101
 suitMax                      src/12x-suit.js:78
 SUN_DIR                      src/19c-light.js:11
 sunSpot                      src/19c-light.js:125
-SURF_BASE                    src/21e-surface-draw.js:483
+SURF_BASE                    src/21e-surface-draw.js:486
 SURF_HOR                     src/19c-light.js:124
 surfaceHint                  src/21e-surface-draw.js:4
 surfNight                    src/06a-celest.js:43
-surfScale                    src/21e-surface-draw.js:484
+surfScale                    src/21e-surface-draw.js:487
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -2624,8 +2625,8 @@ tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
 tableNoticeAll               src/27i-ui-table.js:68
-tableRender                  src/27i-ui-table.js:131
-tableRow                     src/27i-ui-table.js:207
+tableRender                  src/27i-ui-table.js:133
+tableRow                     src/27i-ui-table.js:209
 tableSetTab                  src/27i-ui-table.js:101
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:84
@@ -2765,6 +2766,8 @@ traineeSeat                  src/11ac-trainee.js:34
 traineeTick                  src/11ac-trainee.js:59
 traitOf                      src/12a-crew.js:28
 TYPES                        src/02-world.js:70
+UIK                          src/08-state.js:13
+uiScale                      src/08-state.js:18
 unfitPart                    src/05-parts.js:247
 UNIQUE_COLS                  src/03-ships.js:14
 UNIQUE_TAG                   src/03-ships.js:15
@@ -3024,7 +3027,7 @@ zooTick                      src/11ad-zoo.js:41
   · рельеф:369
   · где сел — то и видел:393
 
-## src/08-state.js · 12 КБ
+## src/08-state.js · 14 КБ
   · состояние:1
 
 ## src/09a-roomtone.js · 6 КБ
@@ -3358,7 +3361,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17d-house-shapes.js · 4 КБ
   · дома как язык форм:1
 
-## src/17-mode-system.js · 33 КБ
+## src/17-mode-system.js · 34 КБ
   · режим: система:1
 
 ## src/18a-material.js · 21 КБ
@@ -3456,7 +3459,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 34 КБ
+## src/21e-surface-draw.js · 35 КБ
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21f-home-out.js · 13 КБ
@@ -3601,7 +3604,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27i-ui-table.js · 22 КБ
+## src/27i-ui-table.js · 23 КБ
   · стол: одно место для всего, что читают:1
 
 ## src/27j-console.js · 7 КБ
@@ -3716,7 +3719,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91p-lore.js · 10 КБ
   · отчёт «Долгого Хода»: сто кусков:1
 
-## tests/91q-planet.js · 14 КБ
+## tests/91q-planet.js · 16 КБ
   · планета за полный набор:1
 
 ## tests/91r-hunter.js · 3 КБ

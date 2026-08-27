@@ -546,10 +546,11 @@ action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
    same `G.viewK`, and both round trips are guarded in `91q-planet`.
 
    **The mine followed in M219** (0.204.0) — the reason for holding it back argued the other way
-   once measured: a scaled cell is a bigger target, not a smaller one. And the
-   change makes an old contrast louder: the world now grows with the window while the HUD — chips,
-   captions, the instrument row — stays at its 9 px whatever the monitor. That is the next question
-   of the same family, and it is a look-and-feel decision about every screen, not a defect.
+   once measured: a scaled cell is a bigger target, not a smaller one. **And the interface followed
+   in M221** (0.206.0): it now has a ruler of its own off the same frame (`--ui`, applied with `zoom`
+   so layout and finger targets move together), deliberately slower than the world, and the canvas
+   half of it — target chips, hint band, compass chips, the zoom readout — is drawn in that measure
+   too. The phone is left alone.
 2. **A full-screen panel with a screenful of nothing.** The HQ is fixed by drawing its room, but
    the class remains: `.scr` is `inset:22px …`, so every screen is full height whatever it holds.
    Either panels shrink to their content, or every short screen needs something true to show.

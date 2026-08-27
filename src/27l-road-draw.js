@@ -36,7 +36,7 @@ function roadOpen(){
   if(roadAll().mic)roadMicOn();          /* выбор помнится: включали — включаем снова */
   RD.pingIv=setInterval(roadPing,30000);
   const cv=document.getElementById("roadcv");
-  cv.width=cv.clientWidth*Math.min(2,devicePixelRatio||1);
+  cv.width=cv.clientWidth*Math.min(2,devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
   cv.height=cv.clientHeight*Math.min(2,devicePixelRatio||1);
   RD.raf=requestAnimationFrame(roadFrame);
 }
@@ -660,7 +660,7 @@ function roadFullscreen(){
   addEventListener("resize",()=>{
     if(!RD)return;
     const cv2=document.getElementById("roadcv");
-    cv2.width=cv2.clientWidth*Math.min(2,devicePixelRatio||1);
+    cv2.width=cv2.clientWidth*Math.min(2,devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
     cv2.height=cv2.clientHeight*Math.min(2,devicePixelRatio||1);
   });
 })();

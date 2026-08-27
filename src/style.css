@@ -53,6 +53,18 @@ html,body{height:100%;overflow:hidden;background:var(--void);
   color:var(--phos);user-select:none;-webkit-user-select:none;touch-action:none}
 #c{position:fixed;inset:0;width:100%;height:100%;display:block}
 
+/* ══════════════ одна мерка на весь интерфейс (M221) ══════════════
+   Мир с M217 растёт вместе с окном. Приборы, пульт, пэды, борт и экраны
+   остались в пикселях вёрстки — и на большом мониторе весь интерфейс стал
+   мелкой каймой по краям огромного кадра. `--ui` считает 08-state от высоты
+   кадра (на телефоне всегда 1: там своя вёрстка).
+
+   Именно `zoom`, а не `transform:scale`: transform растягивает картинку, но
+   оставляет раскладку и попадание пальцем в прежних координатах — кнопка
+   выглядела бы крупной, а нажималась бы по старому месту. zoom меняет
+   используемые длины, поэтому и правило «не меньше 44 px» остаётся верным. */
+.hud,#msg,#prompt,#console,.rail,#menu,.pads,.scr,#parrotwin,#intro{zoom:var(--ui,1)}
+
 /* подпись: то, что опознают, а не читают */
 .lbl{font-size:8px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
 

@@ -27,7 +27,10 @@ function drawSurfaceHud(camx,camy,K){
      экрану (скафандр, ранец, критическое топливо), и 58 px, посчитанные под
      три строки, под пятью оказывались внутри полосы. `HUD_BAND` (28-loop)
      меряет её по DOM, здесь только отступ. */
-  const TOP=Math.max(58,(typeof HUD_BAND==="number"?HUD_BAND:58)+10), RIGHT_PAD=118;
+  /* HUD_BAND измерен по DOM, то есть в настоящих пикселях экрана; здесь мы
+     рисуем в UI-мерке, поэтому его надо в неё же и перевести (M221) */
+  const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
+  const TOP=Math.max(58,(typeof HUD_BAND==="number"?HUD_BAND/U:58)+10), RIGHT_PAD=118;
   const hint=surfaceHint();
   if(hint){
     ctx.font="10px ui-monospace,monospace";
@@ -488,5 +491,12 @@ function drawSurface(){
      пересчитывает тычок в мировую координату */
   G.viewK=K;
   withScale(K,drawSurfaceWorld);
-  drawSurfaceHud(G.viewX,G.viewY,K);
+  /* ── приборы живут в мерке ИНТЕРФЕЙСА, а не мира (M221) ──
+     Фишки целей и строка-подсказка рисуются на канве, а рядом с ними лежит
+     DOM, который с M221 растёт вместе с окном (`--ui`). Оставить их в пикселях
+     значило бы развести надвое один и тот же интерфейс: половина выросла,
+     половина нет. Рисуем их в UI-мерке; мировая координата попадает туда
+     делением на неё же — отсюда K/U. */
+  const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
+  withScale(U,()=>drawSurfaceHud(G.viewX,G.viewY,K/U));
 }

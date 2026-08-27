@@ -103,7 +103,9 @@ function tableSetTab(t){tableTab=t;tableRender();}
 function tableBake(){
   const cv=document.getElementById("tablecv");if(!cv)return;
   const W=cv.clientWidth||innerWidth,H=cv.clientHeight||innerHeight;
-  const dpr=Math.min(2,window.devicePixelRatio||1);
+  /* панель увеличена zoom-ом (M221), значит и печь её надо во столько же раз
+     плотнее: иначе доски стола расплываются ровно на большом мониторе */
+  const dpr=Math.min(2,window.devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
   if(tableBaked&&tableBaked.W===W&&tableBaked.H===H)return;
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   const c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);

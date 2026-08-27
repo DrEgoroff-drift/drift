@@ -445,6 +445,18 @@ function drawSystem(){
      масштабу и пропадали, глазу не за что было зацепиться. Теперь эффекты идут
      в масштабе корпуса и корабль виден по своему выхлопу — а нарисованный
      поверх мира кружок читался как элемент интерфейса, а не как корабль. */
+  /* ── приборная часть кадра идёт в мерке интерфейса (M221) ──
+     Масштаб, компас и фишки у кромки — это приборы, а не мир: рядом с ними
+     лежит DOM, который растёт вместе с окном. Оставить их в пикселях значило
+     бы развести один интерфейс надвое. Мировые координаты попадают в UI-мерку
+     делением на неё же, а зона нажатия фишки возвращается в настоящие
+     пиксели — её читает 15-input, который ни про какой zoom не знает. */
+  {
+    const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
+    withScale(U,()=>drawSysHud(v=>zx(v)/U,v=>zy(v)/U,sh,sys,U));
+  }
+}
+function drawSysHud(zx,zy,sh,sys,U){
   /* масштаб — над пэдом, а не под ним: внизу слева его закрывал руль */
   ctx.fillStyle="rgba(93,115,130,.75)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
   ctx.fillText("МАСШТАБ ×"+G.zoom.toFixed(2),14,H-108);
@@ -504,7 +516,7 @@ function drawSystem(){
        фишка ростом 16. Растим её вокруг центра, не трогая рисунок. */
     if(m.t){
       const PAD=Math.max(0,(44-ch)/2);
-      SYS_CHIPS.push({x:rx-6,y:ry-PAD,w:cw+12,h:ch+PAD*2,t:m.t});
+      SYS_CHIPS.push({x:(rx-6)*U,y:(ry-PAD)*U,w:(cw+12)*U,h:(ch+PAD*2)*U,t:m.t});
     }
     ctx.fillStyle="rgba(5,7,12,.72)";ctx.fillRect(rx,ry,cw,ch);
     ctx.strokeStyle=m.c;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.strokeRect(rx+.5,ry+.5,cw-1,ch-1);ctx.globalAlpha=1;
