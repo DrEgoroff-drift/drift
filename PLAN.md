@@ -229,37 +229,28 @@ order, and struck out as they close. This is the live queue — new finds go at 
    One frame is not a diagnosis: reproduce it on the stand (`docs/mkview.ps1`, `?s=raid`), and fix
    the reading of the space — a horizon the floor alone owns — before touching anything else.
 
-### Graphics debt (open faults, one line each)
+### Graphics debt — audited 2026-08-27, and the ledger is EMPTY
 
-Written down on 2026-08-16 so the picture stops being an open-ended errand; **audited against the
-code and the stands on 2026-08-27** — half had been paid by later passes and stood here stale.
-Everything left below is a fault someone found by looking, not a wish.
+Written down on 2026-08-16 so the picture stops being an open-ended errand. Audited today entry by
+entry against the code and the stands, and every line had already been paid by a later pass, each
+fix carrying the original complaint as its comment:
 
-- **base, tight rooms** — in the reactor, the quarters and the lab the machine fills wall and
-  floor, so the wall trace (`bDress`) and the leftovers (`bJunk`) barely show. Looked at on
-  `docs/mkroom.ps1` today: the rooms read as places after the twelve base passes (sections, lamps,
-  props), so this is now a polish item, not a hole — the honest fix is still a declared free strip
-  in those rooms' own layouts.
-- ~~**`scoop`, soft texture**~~ — stale: the giant bakes at 768×384 (G5) and has three structural
-  kinds (striped/spotted/jet), not palette swaps. Left of it: the floor value and per-type feel are
-  art direction — the author's eye, not a fault.
-- **mine** — ~~landings~~ (stale: rebuilt with beam/lamp/plate/box and they read), ~~tub~~ (stale:
-  it is a trough with a lip and an ore heap since G3), ~~long shaft~~ (stale: the shaft changes
-  section — a chamber every eleventh row, tool niches — since G3).
-- ~~**cantina**~~ — counter per type (0.99.0), hall lifted (0.99.3), the barkeep moves with an
-  eight-second work cycle (M169), bottles per type. Left: a second window plane — polish.
-- **подглядка** (M118) — the walker's trail dissolves into the mat's glow; the mat is identical
-  on every world; an arm at rest merges into the torso; the crate rides near the chin.
-- **Вертянка** (M119) — the plume is three evenly spaced puffs; the plant is the same shape on
-  every world; the drum's hoops do not read as turning.
-- **Хтотун** (M120) — at 64 px, the size he is actually seen at, the three eyes merge into a
-  smudge; the hide is flat khaki with no dust streaks; the working arms hide behind the torso.
-- ~~**ships — no faction language**~~ — stale: closed 0.109.0 as `17d-house-shapes` (a mark per
-  house on stations and settlement walls), and the flying kinds read by their own bodies — welded
-  pirate hulls, barge bodies, the rogue's banner. The M55 queue item is struck with it.
-- ~~**the world on foot**~~ — closed in 0.138.0 (M172). Left open: the day palette itself — noon
-  still reads overcast on every world, and that is art direction, not a fault.
-- ~~**split debt**~~ — see item 10 above: four payments made 2026-08-27, the rest inventoried.
+- ~~scoop~~ — 768×384 bake, three structural giant kinds (G5). ~~mine~~ — landings rebuilt, the
+  tub a trough with an ore heap, the shaft changes section (G3). ~~cantina~~ — counter per type,
+  barkeep with a work cycle (M169). ~~ships/factions~~ — closed 0.109.0 (`17d-house-shapes`).
+  ~~the world on foot~~ — M172. ~~split debt~~ — item 10.
+- ~~подглядка (M118)~~ — the mat is mixed on the planet's rock, the trail is a band warmer and
+  brighter than the mat, the crate is at the waist, the resting arm hangs outside the torso —
+  each закрыт as «хвост M118» in `20c-peep`.
+- ~~Вертянка (M119)~~ — plant proportions from the planet's seed, hoops with a highlight and a
+  crawling rivet, smoke as ragged clumps leaning with the wind — «хвост M119» in `12ta-tin`.
+- ~~Хтотун (M120)~~ — eyes spread with light hide bridges between them (the middle one larger and
+  higher), dust streaking down the hide with worn patches and old scars, the working arms broken
+  at the elbow so the forearm stands clear of the silhouette — all in `grokFace` (`12tb-grok`).
+
+Genuinely open, and both are the author's eye rather than faults: **the day palette** (noon reads
+overcast on every world) and **base free-strip polish** (the rooms read as places; a declared free
+strip for wall dress would be a refinement).
 
 ### The graphics & performance pass (G1–G12) — closed, moved to the archive 2026-08-26
 
