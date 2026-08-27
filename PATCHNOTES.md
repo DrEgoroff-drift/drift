@@ -7,6 +7,29 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.199.0 — the hangar gets its temperature (M180 pass 2, tail)
+
+0.191.0 closed most of M180's second pass and wrote down what it left: *"warm work lamps with pools
+on the deck, and rust or colour on some of the crates, would finish what the markings start."* Both
+done.
+
+**The lamp was visible and lit nothing.** A ceiling strip was drawn in every corridor, reactor bay
+and hangar, but the deck beneath it stayed exactly the tone of the corner behind the containers. A
+light that lands nowhere is a film over the frame, not a light — the same finding the mine's helmet
+lamp produced two versions ago. The pool now lies on the plate, on the warm end of the scale, and it
+takes the **shape of the fixture**: a narrow strip overhead means a strip underfoot. The first count
+laid a square over the whole cell, which at the camera's own cell filled the entire foreground and
+read as a brown rug rather than as light.
+
+**And the containers are no longer all the same iron.** They sat at 56–80 on every channel, like
+everything else in the room, so they added volume but no colour and the floor paint stayed the only
+saturated thing in the hall. Crates on a real base are painted, and not in the colour of the
+bulkhead. The tint comes from the cell's own seed, so one stack does not match its neighbour, and
+rust turns up rarer than paint — rust is a mark, not a fill.
+
+Between the markings, the pools and the crates, the room finally has a temperature instead of one
+grey. 11656 assertions in 358 suites.
+---
 ## 0.198.0 — the kit laid out on the desk (M216, M179's tail)
 
 M179 put the hold on the table as **piles** — the author's ask after showing the inventory from The

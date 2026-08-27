@@ -394,8 +394,11 @@ things they left standing, and these are the graphics debt in its shortest form:
   one temperature, 46–80 on all three channels, and what a hangar has that a warehouse does not is
   **paint**. Two things measured rather than argued: marking only along bulkheads yielded exactly one
   yellow pixel in frame, and the line has to run across the bay because the camera looks down it.
-  **Still open there:** warm work lamps with pools on the deck, and rust or colour on some crates —
-  the room is still one temperature away from the paint. Stands `?s=raidfoe`, `?s=raidhangar`;
+  ~~**Still open there:** warm work lamps with pools on the deck, and rust or colour on some
+  crates~~ — **done (0.199.0).** The ceiling strip was visible and lit nothing; its pool now lies on
+  the plate and takes the shape of the fixture (a square over the whole cell filled the camera's own
+  foreground and read as a brown rug). Crates take a tint from the cell seed, with rust rarer than
+  paint. The room has a temperature now instead of one grey. Stands `?s=raidfoe`, `?s=raidhangar`;
 - ~~the **far ridge** on the surface is flat (M186)~~ — **closed by M211 (0.190.0).** It was not
   flat, it was *familiar*: both layers were the local ground profile amplified about its mean, so
   the eye recognised the curve and stopped measuring distance with it. Now ridged noise with
