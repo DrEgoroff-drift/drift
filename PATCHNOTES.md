@@ -7,7 +7,28 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.223.0 — M232 stage 5: noon is noon, and the weather stopped contradicting itself
+## 0.224.0 — M232 stage 6: the previous audit's six tails, and the queue is closed
+
+- **HQ**: a free domain is a switched-OFF screen — grey glass, grey tape, grey label, not a
+  single spark of the domain's colour. Colour is power, and an empty seat has none.
+- **The attic**: the window now throws a defined light pool on the floor with the mullion's
+  shadow in it, the light falls off along the brickwork around the frame, and two framed
+  photographs hang over the bed — sky over dark ground in each, memories of somewhere landed.
+- **The shaft's minerals catch the lamp**: ore stays "not a lamp" by the standing decision, but
+  grains now flare their glints near the walker and go back to stone three cells away — the
+  light answers movement, not a blink.
+- **The sanatorium sea**: two coherent surf bands over the glint scatter, and the railing's
+  shadow grate flipped to fall AWAY from the sun — it was arguing with the board's shadow.
+  The horizon haze was already there.
+- **Instrument needles cast shadows** on their dials — the needle is a thing above the scale.
+- **The trade cantina's window**: the moored ship is a ship — hull sweep, superstructure, a
+  warm row of lit portholes, a breathing marker light — someone's home stands behind the
+  glass, not a grey crate.
+
+**The M232 queue is closed whole.** The eight laws stay as the standing checklist for every
+future visual pass.
+
+Tests: 379 suites green.
 
 **The day palette.** The old verdict — «полдень читается пасмурно на всех мирах» — had one
 root: the sky and the light never knew the hour. The zenith was painted with the night colour

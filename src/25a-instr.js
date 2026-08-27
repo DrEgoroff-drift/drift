@@ -132,6 +132,14 @@ function instrPanel(P,FS){
        отклонение. Шкала у каждого прибора своя, потому и делений всего пять */
     const t=instrTrack(r);
     const a=Math.PI*1.12+Math.PI*.76*t;
+    /* тень стрелки на циферблате (аудит M232): стрелка — вещь НАД шкалой,
+       и смещённая тень возвращает прибору глубину, которой у плоской черты
+       не было */
+    ctx.strokeStyle="rgba(0,0,0,.42)";ctx.lineWidth=1.6;
+    ctx.beginPath();
+    ctx.moveTo(cx+1,y+h*.5+1.6);
+    ctx.lineTo(cx+1+Math.cos(a)*h*.76,y+h*.5+1.6+Math.sin(a)*h*.76);
+    ctx.stroke();
     ctx.strokeStyle=col+".85)";ctx.lineWidth=1.4;
     ctx.beginPath();
     ctx.moveTo(cx,y+h*.5);

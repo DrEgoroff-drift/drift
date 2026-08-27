@@ -237,13 +237,17 @@ function hqConsole(c,x,cy,fy,role,m,sel,hover){
   c.fillStyle="rgba(255,255,255,.03)";c.fillRect(sx-8,sy-8,w+16,1.4);
   /* корпус экрана */
   c.fillStyle="rgba(16,20,27,.98)";c.fillRect(sx,sy,w,h);
-  c.strokeStyle=rgba(col,live?.5:.16);c.lineWidth=1.4;c.strokeRect(sx+.5,sy+.5,w-1,h-1);
+  /* выключенный экран БЕСЦВЕТЕН (аудит M232): цвет роли — это питание, и у
+     пустого домена его нет. Серое стекло, серый кант, ни искры доменного тона */
+  c.strokeStyle=live?rgba(col,.5):"rgba(138,148,162,.13)";
+  c.lineWidth=1.4;c.strokeRect(sx+.5,sy+.5,w-1,h-1);
   /* заливка экрана: развёртка сверху вниз, а не ровный цвет */
   const g=c.createLinearGradient(0,sy,0,sy+h);
-  g.addColorStop(0,rgba(col,live?.20:.05));g.addColorStop(1,rgba(col,live?.06:.02));
+  if(live){g.addColorStop(0,rgba(col,.20));g.addColorStop(1,rgba(col,.06));}
+  else{g.addColorStop(0,"rgba(150,158,170,.04)");g.addColorStop(1,"rgba(150,158,170,.015)");}
   c.fillStyle=g;c.fillRect(sx,sy,w,h);
   c.save();c.beginPath();c.rect(sx+3,sy+3,w-6,h-6);c.clip();
-  c.strokeStyle=rgba(col,live?.10:.04);c.lineWidth=1;   // сетка
+  c.strokeStyle=live?rgba(col,.10):"rgba(150,158,170,.03)";c.lineWidth=1;   // сетка
   for(let gx=sx+8;gx<sx+w;gx+=12){c.beginPath();c.moveTo(gx,sy);c.lineTo(gx,sy+h);c.stroke();}
   for(let gy=sy+8;gy<sy+h;gy+=10){c.beginPath();c.moveTo(sx,gy);c.lineTo(sx+w,gy);c.stroke();}
   if(live)hqScreenData(c,role,m,sx+6,sy+6,w-12,h-12,col);
@@ -258,9 +262,9 @@ function hqConsole(c,x,cy,fy,role,m,sel,hover){
     for(let i=0;i<6;i++){                             // складки чехла
       c.fillStyle="rgba(0,0,0,.16)";c.fillRect(sx+6+i*17,sy,1.6,h*.72);
     }
-    c.strokeStyle=rgba(col,.35);c.lineWidth=2;
+    c.strokeStyle="rgba(122,130,142,.30)";c.lineWidth=2;
     c.beginPath();c.moveTo(sx+6,sy+h-6);c.lineTo(sx+w-6,sy+6);c.stroke();
-    c.fillStyle=rgba(col,.6);c.font="8px ui-monospace,monospace";c.textAlign="center";
+    c.fillStyle="rgba(150,158,170,.45)";c.font="8px ui-monospace,monospace";c.textAlign="center";
     c.fillText("ДОМЕН СВОБОДЕН",sx+w/2,sy+h-6);c.textAlign="left";
   }
   /* строка развёртки ползёт вниз — экран живой, но не мигает */

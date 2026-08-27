@@ -104,11 +104,23 @@ function cantView(c,kind,x,y,w,h,seed,acc){
     /* створ дока: фермы, огни и чужой корабль на приколе */
     c.strokeStyle="rgba(120,140,160,.35)";c.lineWidth=2;
     for(let i=0;i<4;i++){c.beginPath();c.moveTo(x+i*w/4,y);c.lineTo(x+i*w/4+10,y+h);c.stroke();}
+    /* корабль у причала — корабль, а не серый ящик с треугольником (аудит
+       M232, «окно торговой кантины»): обвод корпуса, надстройка, тёплый ряд
+       иллюминаторов — за стеклом стоит ЧЕЙ-ТО дом, и это видно */
     c.fillStyle="rgba(40,50,64,.95)";
-    c.fillRect(x+w*.18,y+h*.42,w*.5,h*.26);
+    c.beginPath();
+    c.moveTo(x+w*.16,y+h*.60);
+    c.lineTo(x+w*.22,y+h*.42);c.lineTo(x+w*.60,y+h*.40);
+    c.lineTo(x+w*.80,y+h*.52);c.lineTo(x+w*.68,y+h*.66);
+    c.lineTo(x+w*.20,y+h*.68);c.closePath();c.fill();
     c.fillStyle="rgba(56,68,84,.95)";
-    c.beginPath();c.moveTo(x+w*.68,y+h*.42);c.lineTo(x+w*.86,y+h*.55);
-    c.lineTo(x+w*.68,y+h*.68);c.closePath();c.fill();
+    c.fillRect(x+w*.30,y+h*.30,w*.14,h*.12);          // надстройка
+    c.fillStyle="rgba(255,255,255,.10)";
+    c.fillRect(x+w*.21,y+h*.41,w*.42,1.5);            // кромка ловит свет дока
+    c.fillStyle="rgba(255,214,150,.75)";
+    for(let i=0;i<5;i++)c.fillRect(x+w*.24+i*w*.075,y+h*.52,2.2,2.2);
+    c.fillStyle="rgba(140,235,190,"+(.5+.4*Math.sin(G.t*.02)).toFixed(2)+")";
+    c.beginPath();c.arc(x+w*.79,y+h*.51,1.6,0,TAU);c.fill();   // габарит дышит
     for(let i=0;i<6;i++){
       const on=((G.t*.1|0)%6)===i;
       c.fillStyle=on?rgba(acc,.9):rgba(acc,.25);

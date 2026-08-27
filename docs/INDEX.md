@@ -220,16 +220,16 @@ camStep                      src/19c-light.js:94
 canPay                       src/21a-mode-base.js:51
 CANT_STYLE                   src/27d-ui-cantina.js:15
 cantBarkeep                  src/27d-ui-cantina-props.js:15
-cantCounter                  src/27d-ui-cantina-props.js:294
+cantCounter                  src/27d-ui-cantina-props.js:306
 cantFigure                   src/27d-ui-cantina.js:358
 cantinaPool                  src/12c-mgr-core.js:259
 cantinaScene                 src/27c-ui-hq.js:198
-cantProps                    src/27d-ui-cantina-props.js:141
+cantProps                    src/27d-ui-cantina-props.js:153
 cantRoomBody                 src/27d-ui-cantina.js:45
 cantSeats                    src/27d-ui-cantina.js:350
 cantSel                      src/27c-ui-hq.js:197
 cantStyle                    src/27d-ui-cantina.js:27
-cantTables                   src/27d-ui-cantina-props.js:229
+cantTables                   src/27d-ui-cantina-props.js:241
 cantView                     src/27d-ui-cantina-props.js:82
 capIv                        src/28-loop.js:122
 capOf                        src/05-parts.js:108
@@ -553,7 +553,7 @@ drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
 drawDeposit                  src/21b-surface-deco.js:347
-drawDig                      src/23a-dig-draw.js:604
+drawDig                      src/23a-dig-draw.js:609
 drawDigFauna                 src/23-mode-dig.js:292
 drawDigWorld                 src/23a-dig-draw.js:45
 drawDustMotes                src/19-mode-landing.js:380
@@ -983,7 +983,7 @@ hinTalk                      src/29c-home-in.js:238
 hinUpBounds                  src/29e-home-up.js:46
 hinUpRooms                   src/29e-home-up.js:24
 hinUpStuff                   src/29e-home-up.js:243
-hinUpWindow                  src/29e-home-up.js:356
+hinUpWindow                  src/29e-home-up.js:367
 hinWidth                     src/29c-home-in.js:50
 hireMerc                     src/12a-crew.js:204
 hireMgr                      src/12c-mgr-core.js:301
@@ -1068,19 +1068,19 @@ HQ_ORDER                     src/27f-hq-room.js:21
 hqAiOffer                    src/27c-ui-hq.js:404
 hqBtnTick                    src/27c-ui-hq.js:242
 hqConsole                    src/27f-hq-room.js:228
-hqFigure                     src/27f-hq-room.js:509
-hqHover                      src/27f-hq-room.js:683
+hqFigure                     src/27f-hq-room.js:513
+hqHover                      src/27f-hq-room.js:687
 hqJobCard                    src/27c-ui-hq.js:463
 hqRelicSlot                  src/27c-ui-hq.js:429
 hqRender                     src/27c-ui-hq.js:249
 hqRoomBody                   src/27f-hq-room.js:32
-hqScene                      src/27f-hq-room.js:640
-hqScreenData                 src/27f-hq-room.js:312
+hqScene                      src/27f-hq-room.js:644
+hqScreenData                 src/27f-hq-room.js:316
 hqSel                        src/27c-ui-hq.js:5
 hqStations                   src/27f-hq-room.js:219
-hqTable                      src/27f-hq-room.js:373
+hqTable                      src/27f-hq-room.js:377
 hqWallProps                  src/27f-hq-room.js:170
-hqWindowView                 src/27f-hq-room.js:612
+hqWindowView                 src/27f-hq-room.js:616
 hud                          src/27z-telemetry.js:65
 HUD_BAND                     src/27z-telemetry.js:19
 HUD_PREV                     src/27z-telemetry.js:41
@@ -1452,10 +1452,10 @@ mgrWorkKeep                  src/12c-mgr-core.js:552
 mgrWorkSci                   src/12c-mgr-core.js:683
 midiHz                       src/10-music.js:106
 minedUnit                    src/11-log.js:136
-mineKey                      src/23a-dig-draw.js:579
-mineLoad                     src/23a-dig-draw.js:580
+mineKey                      src/23a-dig-draw.js:584
+mineLoad                     src/23a-dig-draw.js:585
 MINERAL                      src/18a-material.js:32
-mineSave                     src/23a-dig-draw.js:590
+mineSave                     src/23a-dig-draw.js:595
 MIRROR_CORE                  src/11f-mirror.js:22
 MIRROR_DELAY                 src/11f-mirror.js:21
 mirrorAck                    src/11f-mirror.js:33
@@ -2491,13 +2491,13 @@ spaBoardRows                 src/29i-spa-draw.js:38
 spaCanHere                   src/29h-spa.js:47
 spaEnd                       src/29h-spa.js:103
 spaGeom                      src/29i-spa-draw.js:24
-spaHit                       src/29i-spa-draw.js:469
+spaHit                       src/29i-spa-draw.js:484
 spaOn                        src/29h-spa.js:46
 spareModLv                   src/12a-crew.js:277
 spaSleep                     src/29h-spa.js:95
 spaTake                      src/29h-spa.js:67
 spaTalk                      src/29h-spa.js:85
-spaTap                       src/29i-spa-draw.js:488
+spaTap                       src/29i-spa-draw.js:503
 spaTestStart                 tests/91zzzl-spa.js:2
 spaTookToday                 src/29i-spa-draw.js:39
 spawnAllies                  src/12a-crew.js:539
@@ -2810,7 +2810,7 @@ updateHomeIn                 src/29c-home-in.js:160
 updateLanding                src/19-mode-landing.js:45
 updateRaid                   src/24a-mode-raid.js:215
 updateScoop                  src/19a-mode-scoop.js:28
-updateSpa                    src/29i-spa-draw.js:495
+updateSpa                    src/29i-spa-draw.js:510
 updateSurface                src/21-mode-surface.js:179
 updateSystem                 src/17-mode-system.js:7
 updateWinter                 src/29g-winter-draw.js:808
@@ -3552,7 +3552,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/24-mode-belt.js · 31 КБ
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
-## src/25a-instr.js · 12 КБ
+## src/25a-instr.js · 13 КБ
   · приборы: пять стрелок и невязка:1
 
 ## src/25b-tape.js · 12 КБ
@@ -3640,7 +3640,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27e-ui-home.js · 44 КБ
   · дом: помещение, а не список:1
 
-## src/27f-hq-room.js · 41 КБ
+## src/27f-hq-room.js · 42 КБ
   · ШТАБ: рубка, а не список:1
 
 ## src/27g-deals.js · 14 КБ
@@ -3699,7 +3699,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29d-home-draw.js · 34 КБ
   · дом изнутри: кадр:1
 
-## src/29e-home-up.js · 20 КБ
+## src/29e-home-up.js · 22 КБ
   · второй этаж жилой части (M178-9):1
   · оболочка дома (M178-9):52
 
@@ -3712,7 +3712,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29h-spa.js · 8 КБ
   · санаторий: три дня, и ничего не происходит:1
 
-## src/29i-spa-draw.js · 23 КБ
+## src/29i-spa-draw.js · 24 КБ
   · санаторий: веранда:1
 
 ## tests/90-harness.js · 8 КБ

@@ -1337,7 +1337,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.223.0";
+const VER="0.224.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -42944,6 +42944,11 @@ function drawDigWorld(){
     if(!cell.res)continue;
     const col2=RES[cell.res].col;
     const vis=clamp((scanAll?1:1.15-dist/8),0,1);
+    /* «ископаемые ствола не светятся» (аудит M232). Руда по-прежнему не
+       лампа — но зерно ЛОВИТ ФОНАРЬ: рядом с ходоком блики вспыхивают,
+       в трёх клетках гаснут до прежнего камня. Отклик на движение, не
+       мигание: свет меняется потому, что игрок идёт. */
+    const lampK=clamp(1.25-dist/3.5,0,1);
     /* зёрна: линзы, наклонённые по пласту, размер и густота от количества */
     const n=3+Math.min(5,cell.amount);
     for(let i=0;i<n;i++){
@@ -42952,11 +42957,11 @@ function drawDigWorld(){
       const rr=1.1+((hh>>>10)&3)*.55, el=1.7+((hh>>>13)&3)*.5;
       ctx.save();
       ctx.translate(x+ox,y+oy);ctx.rotate(.35+((hh>>>16)&7)/7*.5);
-      ctx.globalAlpha=(.30+((hh>>>19)&7)/7*.35)*vis;
+      ctx.globalAlpha=(.30+((hh>>>19)&7)/7*.35)*vis*(0.85+lampK*.35);
       ctx.fillStyle=col2;
       ctx.beginPath();ctx.ellipse(0,0,rr*el,rr,0,0,TAU);ctx.fill();
       /* блик на зерне — то, из-за чего руду замечают в темноте */
-      ctx.globalAlpha=(.22+((hh>>>22)&3)/3*.3)*vis;
+      ctx.globalAlpha=Math.min(1,(.22+((hh>>>22)&3)/3*.3)*vis*(0.7+lampK*1.5));
       ctx.fillStyle="rgba(255,250,235,1)";
       ctx.beginPath();ctx.ellipse(-rr*.3,-rr*.35,rr*.5,rr*.28,0,0,TAU);ctx.fill();
       ctx.restore();
@@ -45881,6 +45886,14 @@ function instrPanel(P,FS){
        отклонение. Шкала у каждого прибора своя, потому и делений всего пять */
     const t=instrTrack(r);
     const a=Math.PI*1.12+Math.PI*.76*t;
+    /* тень стрелки на циферблате (аудит M232): стрелка — вещь НАД шкалой,
+       и смещённая тень возвращает прибору глубину, которой у плоской черты
+       не было */
+    ctx.strokeStyle="rgba(0,0,0,.42)";ctx.lineWidth=1.6;
+    ctx.beginPath();
+    ctx.moveTo(cx+1,y+h*.5+1.6);
+    ctx.lineTo(cx+1+Math.cos(a)*h*.76,y+h*.5+1.6+Math.sin(a)*h*.76);
+    ctx.stroke();
     ctx.strokeStyle=col+".85)";ctx.lineWidth=1.4;
     ctx.beginPath();
     ctx.moveTo(cx,y+h*.5);
@@ -53512,11 +53525,23 @@ function cantView(c,kind,x,y,w,h,seed,acc){
     /* створ дока: фермы, огни и чужой корабль на приколе */
     c.strokeStyle="rgba(120,140,160,.35)";c.lineWidth=2;
     for(let i=0;i<4;i++){c.beginPath();c.moveTo(x+i*w/4,y);c.lineTo(x+i*w/4+10,y+h);c.stroke();}
+    /* корабль у причала — корабль, а не серый ящик с треугольником (аудит
+       M232, «окно торговой кантины»): обвод корпуса, надстройка, тёплый ряд
+       иллюминаторов — за стеклом стоит ЧЕЙ-ТО дом, и это видно */
     c.fillStyle="rgba(40,50,64,.95)";
-    c.fillRect(x+w*.18,y+h*.42,w*.5,h*.26);
+    c.beginPath();
+    c.moveTo(x+w*.16,y+h*.60);
+    c.lineTo(x+w*.22,y+h*.42);c.lineTo(x+w*.60,y+h*.40);
+    c.lineTo(x+w*.80,y+h*.52);c.lineTo(x+w*.68,y+h*.66);
+    c.lineTo(x+w*.20,y+h*.68);c.closePath();c.fill();
     c.fillStyle="rgba(56,68,84,.95)";
-    c.beginPath();c.moveTo(x+w*.68,y+h*.42);c.lineTo(x+w*.86,y+h*.55);
-    c.lineTo(x+w*.68,y+h*.68);c.closePath();c.fill();
+    c.fillRect(x+w*.30,y+h*.30,w*.14,h*.12);          // надстройка
+    c.fillStyle="rgba(255,255,255,.10)";
+    c.fillRect(x+w*.21,y+h*.41,w*.42,1.5);            // кромка ловит свет дока
+    c.fillStyle="rgba(255,214,150,.75)";
+    for(let i=0;i<5;i++)c.fillRect(x+w*.24+i*w*.075,y+h*.52,2.2,2.2);
+    c.fillStyle="rgba(140,235,190,"+(.5+.4*Math.sin(G.t*.02)).toFixed(2)+")";
+    c.beginPath();c.arc(x+w*.79,y+h*.51,1.6,0,TAU);c.fill();   // габарит дышит
     for(let i=0;i<6;i++){
       const on=((G.t*.1|0)%6)===i;
       c.fillStyle=on?rgba(acc,.9):rgba(acc,.25);
@@ -54719,13 +54744,17 @@ function hqConsole(c,x,cy,fy,role,m,sel,hover){
   c.fillStyle="rgba(255,255,255,.03)";c.fillRect(sx-8,sy-8,w+16,1.4);
   /* корпус экрана */
   c.fillStyle="rgba(16,20,27,.98)";c.fillRect(sx,sy,w,h);
-  c.strokeStyle=rgba(col,live?.5:.16);c.lineWidth=1.4;c.strokeRect(sx+.5,sy+.5,w-1,h-1);
+  /* выключенный экран БЕСЦВЕТЕН (аудит M232): цвет роли — это питание, и у
+     пустого домена его нет. Серое стекло, серый кант, ни искры доменного тона */
+  c.strokeStyle=live?rgba(col,.5):"rgba(138,148,162,.13)";
+  c.lineWidth=1.4;c.strokeRect(sx+.5,sy+.5,w-1,h-1);
   /* заливка экрана: развёртка сверху вниз, а не ровный цвет */
   const g=c.createLinearGradient(0,sy,0,sy+h);
-  g.addColorStop(0,rgba(col,live?.20:.05));g.addColorStop(1,rgba(col,live?.06:.02));
+  if(live){g.addColorStop(0,rgba(col,.20));g.addColorStop(1,rgba(col,.06));}
+  else{g.addColorStop(0,"rgba(150,158,170,.04)");g.addColorStop(1,"rgba(150,158,170,.015)");}
   c.fillStyle=g;c.fillRect(sx,sy,w,h);
   c.save();c.beginPath();c.rect(sx+3,sy+3,w-6,h-6);c.clip();
-  c.strokeStyle=rgba(col,live?.10:.04);c.lineWidth=1;   // сетка
+  c.strokeStyle=live?rgba(col,.10):"rgba(150,158,170,.03)";c.lineWidth=1;   // сетка
   for(let gx=sx+8;gx<sx+w;gx+=12){c.beginPath();c.moveTo(gx,sy);c.lineTo(gx,sy+h);c.stroke();}
   for(let gy=sy+8;gy<sy+h;gy+=10){c.beginPath();c.moveTo(sx,gy);c.lineTo(sx+w,gy);c.stroke();}
   if(live)hqScreenData(c,role,m,sx+6,sy+6,w-12,h-12,col);
@@ -54740,9 +54769,9 @@ function hqConsole(c,x,cy,fy,role,m,sel,hover){
     for(let i=0;i<6;i++){                             // складки чехла
       c.fillStyle="rgba(0,0,0,.16)";c.fillRect(sx+6+i*17,sy,1.6,h*.72);
     }
-    c.strokeStyle=rgba(col,.35);c.lineWidth=2;
+    c.strokeStyle="rgba(122,130,142,.30)";c.lineWidth=2;
     c.beginPath();c.moveTo(sx+6,sy+h-6);c.lineTo(sx+w-6,sy+6);c.stroke();
-    c.fillStyle=rgba(col,.6);c.font="8px ui-monospace,monospace";c.textAlign="center";
+    c.fillStyle="rgba(150,158,170,.45)";c.font="8px ui-monospace,monospace";c.textAlign="center";
     c.fillText("ДОМЕН СВОБОДЕН",sx+w/2,sy+h-6);c.textAlign="left";
   }
   /* строка развёртки ползёт вниз — экран живой, но не мигает */
@@ -60346,6 +60375,17 @@ function hinUpStuff(r,fy,ceil,P){
     ctx.beginPath();ctx.ellipse(bx-bw*.34,fy-bh-M*.16,M*.30,M*.13,-.08,0,TAU);ctx.fill();
     ctx.fillStyle="rgba(0,0,0,.10)";
     ctx.beginPath();ctx.ellipse(bx-bw*.34,fy-bh-M*.10,M*.28,M*.06,-.08,0,TAU);ctx.fill();
+    /* две фотографии в рамах над изголовьем (аудит M232): рама без фото —
+       упрёк, рама с фото — жизнь. Внутри не лица, а две полосы — небо и
+       тёмный силуэт: память о месте, снятая на грунте */
+    for(let i=0;i<2;i++){
+      const px2=at(.16+i*.13), py2=fy-M*(1.18-i*.09), fw=M*(.16+i*.04), fh=M*(.20-i*.03);
+      ctx.fillStyle=woodD;ctx.fillRect(px2-1.5,py2-1.5,fw+3,fh+3);
+      ctx.fillStyle="rgba(178,164,138,.9)";ctx.fillRect(px2,py2,fw,fh);
+      ctx.fillStyle="rgba(112,128,146,.9)";ctx.fillRect(px2+1,py2+1,fw-2,fh*.5);
+      ctx.fillStyle="rgba(56,50,44,.9)";ctx.fillRect(px2+1,py2+fh*.5,fw-2,fh*.5-1);
+      ctx.fillStyle="rgba(255,238,206,.10)";ctx.fillRect(px2-1.5,py2-1.5,fw+3,1);
+    }
     /* тумбочка с лампой: единственный тёплый огонь наверху */
     const tx=at(.52);
     ctx.fillStyle=wood;ctx.fillRect(tx-M*.20,fy-M*.42,M*.40,M*.42);
@@ -60462,6 +60502,20 @@ function hinUpWindow(x,fy,ceil,P,wide){
   ctx.beginPath();
   ctx.moveTo(x-w*.5,y+h);ctx.lineTo(x+w*.5,y+h);
   ctx.lineTo(x+w*.9,fy);ctx.lineTo(x-w*.9,fy);ctx.closePath();ctx.fill();
+  /* и явное ПЯТНО на полу (аудит M232): проекция окна — светлый
+     параллелограмм с перекладиной переплёта, а не только дымка в воздухе */
+  ctx.fillStyle="rgba(150,186,220,.09)";
+  ctx.beginPath();
+  ctx.moveTo(x-w*.44,fy);ctx.lineTo(x+w*.44,fy);
+  ctx.lineTo(x+w*.62,fy+M*.10);ctx.lineTo(x-w*.62,fy+M*.10);ctx.closePath();ctx.fill();
+  ctx.fillStyle="rgba(10,14,20,.20)";
+  ctx.fillRect(x-1.2,fy,2.4,M*.10);                       /* тень переплёта в пятне */
+  /* спад света по стене: кладка у проёма ловит небо и гаснет в стороны */
+  const wg=ctx.createRadialGradient(x,y+h*.5,w*.4,x,y+h*.5,w*1.7);
+  wg.addColorStop(0,"rgba(150,186,220,.06)");
+  wg.addColorStop(1,"rgba(150,186,220,0)");
+  ctx.fillStyle=wg;
+  ctx.fillRect(x-w*1.7,y-M*.3,w*3.4,h+M*.6);
   ctx.restore();
 }
 
@@ -61753,6 +61807,18 @@ function drawSpa(){
       ctx.fillStyle="rgba(226,240,246,"+(0.06+q*0.20).toFixed(3)+")";
       ctx.fillRect(x,y,w,Math.max(1,(0.6+q*2.2)));
     }
+    /* две полосы наката (аудит M232): поверх россыпи бликов — два когерентных
+       гребня пены, каждый на своей глубине; дышат и тянутся вдоль, как накат */
+    for(const bw2 of [[.42,0],[.72,2.1]]){
+      const q=bw2[0],ph=bw2[1];
+      const y=g.hor+Math.pow(q,1.8)*(g.deck-g.hor);
+      ctx.fillStyle="rgba(232,244,250,"+(0.15+q*0.14).toFixed(3)+")";
+      for(let x=-40;x<W+40;x+=26){
+        const wob=Math.sin(x*0.016+t*0.5+ph)*H*0.004;
+        const ln=14+Math.sin(x*0.07+ph)*6;
+        ctx.fillRect(x+((t*6+ph*40)%26),y+wob,ln,Math.max(1,1+q*1.6));
+      }
+    }
     /* солнечная дорожка */
     const pg=ctx.createLinearGradient(0,g.hor,0,g.deck);
     pg.addColorStop(0,sprgba(SPA_C.sun,0.24));
@@ -61806,13 +61872,16 @@ function drawSpa(){
     const rr=g.rail, sl=W*0.11;
     ctx.save();
     ctx.beginPath();ctx.rect(0,g.deck,W,H-g.deck);ctx.clip();
+    /* солнце СЛЕВА сверху — значит, тень стойки уходит ВПРАВО: раньше
+       решётка падала влево и спорила с тенью щита (аудит M232: тени в одну
+       сторону) */
     ctx.fillStyle=sprgba([30,44,58],0.16);
     for(let x=-sl;x<W;x+=W*0.075){
       ctx.beginPath();
-      ctx.moveTo(x+sl,g.deck);
-      ctx.lineTo(x+sl+W*0.010,g.deck);
-      ctx.lineTo(x+W*0.014,H);
-      ctx.lineTo(x,H);
+      ctx.moveTo(x,g.deck);
+      ctx.lineTo(x+W*0.010,g.deck);
+      ctx.lineTo(x+sl+W*0.014,H);
+      ctx.lineTo(x+sl,H);
       ctx.closePath();ctx.fill();
     }
     /* и две продольные тени от поручней */

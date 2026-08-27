@@ -57,13 +57,14 @@ Here is only what is still live â cross-cutting rules, the visual queue and
 
 ---
 
-## M232 — cosmetics to the limit (the author's self-prompt, 2026-08-27) — LIVE QUEUE
+## M232 — cosmetics to the limit (the author's self-prompt, 2026-08-27) — CLOSED WHOLE (0.217.0–0.224.0)
 
-The author handed a full cosmetic audit. It subsumes the two "author's eye" items that were the
-whole remaining queue (the day palette; base free-strip polish). Work in the author's order:
-**base cross-section → compartments (2–3 per pass, before/after shots) → raid → walker →
-planet/weather → the rest.** Every pass: draft → self-critique by eye → perf check (`prof()`,
-"painted once is baked once": static into tiles, animation is the only live layer).
+The author handed a full cosmetic audit; it subsumed the two "author's eye" items that were the
+whole remaining queue (the day palette; base free-strip polish). Worked in the author's order —
+base cross-section → compartments → raid → walker → planet/weather → the rest — one stage per
+version, each pass: draft → self-critique by eye → perf check. Closed entirely on 2026-08-28;
+the final measurement read 60 fps in all nine modes. **The eight laws below are not closed and
+never will be: they are the standing checklist for every future visual pass.**
 
 ### The eight laws (breaking any = a defect; hunt them on every screen)
 
@@ -139,13 +140,14 @@ precipitation, two fade steps for ridges in rain, three grass forms, storm-dark 
 Measured at 60 fps in all nine modes after. Stand scenes `?s=noon`/`noonice`/`noontox` remain
 in `docs/mkview.ps1` for the author's eye.
 
-### Stage 6 — the rest (the previous audit, still standing)
+### Stage 6 — the rest (the previous audit) — DONE (0.224.0)
 
-Raid in the base's language + astronaut instead of a mannequin · HQ: «ДОМЕН СВОБОДЕН» as a
-switched-off screen, not a coloured placeholder · attic: window light on the floor, falloff
-along the brick, frames with photos or none · trunk fossils must not glow · sanatorium sea:
-two wave bands, horizon with haze, shadows one way · needle shadows on instruments · the
-trade cantina's window.
+All six tails closed: the dead-grey free-domain screen, the attic's light pool + brick
+falloff + photos in frames, the shaft ore catching the lamp (still not a lamp itself — the
+standing decision holds), the sanatorium's two surf bands + the railing shadow flipped to
+agree with the sun, needle shadows on the instrument dials, and the trade cantina's moored
+ship became a ship. «Ископаемые ствола не светятся» was read as "make them answer the
+light" — if the author meant something else, the line is one edit away.
 
 ---
 

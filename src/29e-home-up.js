@@ -272,6 +272,17 @@ function hinUpStuff(r,fy,ceil,P){
     ctx.beginPath();ctx.ellipse(bx-bw*.34,fy-bh-M*.16,M*.30,M*.13,-.08,0,TAU);ctx.fill();
     ctx.fillStyle="rgba(0,0,0,.10)";
     ctx.beginPath();ctx.ellipse(bx-bw*.34,fy-bh-M*.10,M*.28,M*.06,-.08,0,TAU);ctx.fill();
+    /* две фотографии в рамах над изголовьем (аудит M232): рама без фото —
+       упрёк, рама с фото — жизнь. Внутри не лица, а две полосы — небо и
+       тёмный силуэт: память о месте, снятая на грунте */
+    for(let i=0;i<2;i++){
+      const px2=at(.16+i*.13), py2=fy-M*(1.18-i*.09), fw=M*(.16+i*.04), fh=M*(.20-i*.03);
+      ctx.fillStyle=woodD;ctx.fillRect(px2-1.5,py2-1.5,fw+3,fh+3);
+      ctx.fillStyle="rgba(178,164,138,.9)";ctx.fillRect(px2,py2,fw,fh);
+      ctx.fillStyle="rgba(112,128,146,.9)";ctx.fillRect(px2+1,py2+1,fw-2,fh*.5);
+      ctx.fillStyle="rgba(56,50,44,.9)";ctx.fillRect(px2+1,py2+fh*.5,fw-2,fh*.5-1);
+      ctx.fillStyle="rgba(255,238,206,.10)";ctx.fillRect(px2-1.5,py2-1.5,fw+3,1);
+    }
     /* тумбочка с лампой: единственный тёплый огонь наверху */
     const tx=at(.52);
     ctx.fillStyle=wood;ctx.fillRect(tx-M*.20,fy-M*.42,M*.40,M*.42);
@@ -388,5 +399,19 @@ function hinUpWindow(x,fy,ceil,P,wide){
   ctx.beginPath();
   ctx.moveTo(x-w*.5,y+h);ctx.lineTo(x+w*.5,y+h);
   ctx.lineTo(x+w*.9,fy);ctx.lineTo(x-w*.9,fy);ctx.closePath();ctx.fill();
+  /* и явное ПЯТНО на полу (аудит M232): проекция окна — светлый
+     параллелограмм с перекладиной переплёта, а не только дымка в воздухе */
+  ctx.fillStyle="rgba(150,186,220,.09)";
+  ctx.beginPath();
+  ctx.moveTo(x-w*.44,fy);ctx.lineTo(x+w*.44,fy);
+  ctx.lineTo(x+w*.62,fy+M*.10);ctx.lineTo(x-w*.62,fy+M*.10);ctx.closePath();ctx.fill();
+  ctx.fillStyle="rgba(10,14,20,.20)";
+  ctx.fillRect(x-1.2,fy,2.4,M*.10);                       /* тень переплёта в пятне */
+  /* спад света по стене: кладка у проёма ловит небо и гаснет в стороны */
+  const wg=ctx.createRadialGradient(x,y+h*.5,w*.4,x,y+h*.5,w*1.7);
+  wg.addColorStop(0,"rgba(150,186,220,.06)");
+  wg.addColorStop(1,"rgba(150,186,220,0)");
+  ctx.fillStyle=wg;
+  ctx.fillRect(x-w*1.7,y-M*.3,w*3.4,h+M*.6);
   ctx.restore();
 }

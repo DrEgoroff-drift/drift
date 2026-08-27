@@ -73,6 +73,18 @@ function drawSpa(){
       ctx.fillStyle="rgba(226,240,246,"+(0.06+q*0.20).toFixed(3)+")";
       ctx.fillRect(x,y,w,Math.max(1,(0.6+q*2.2)));
     }
+    /* две полосы наката (аудит M232): поверх россыпи бликов — два когерентных
+       гребня пены, каждый на своей глубине; дышат и тянутся вдоль, как накат */
+    for(const bw2 of [[.42,0],[.72,2.1]]){
+      const q=bw2[0],ph=bw2[1];
+      const y=g.hor+Math.pow(q,1.8)*(g.deck-g.hor);
+      ctx.fillStyle="rgba(232,244,250,"+(0.15+q*0.14).toFixed(3)+")";
+      for(let x=-40;x<W+40;x+=26){
+        const wob=Math.sin(x*0.016+t*0.5+ph)*H*0.004;
+        const ln=14+Math.sin(x*0.07+ph)*6;
+        ctx.fillRect(x+((t*6+ph*40)%26),y+wob,ln,Math.max(1,1+q*1.6));
+      }
+    }
     /* солнечная дорожка */
     const pg=ctx.createLinearGradient(0,g.hor,0,g.deck);
     pg.addColorStop(0,sprgba(SPA_C.sun,0.24));
@@ -126,13 +138,16 @@ function drawSpa(){
     const rr=g.rail, sl=W*0.11;
     ctx.save();
     ctx.beginPath();ctx.rect(0,g.deck,W,H-g.deck);ctx.clip();
+    /* солнце СЛЕВА сверху — значит, тень стойки уходит ВПРАВО: раньше
+       решётка падала влево и спорила с тенью щита (аудит M232: тени в одну
+       сторону) */
     ctx.fillStyle=sprgba([30,44,58],0.16);
     for(let x=-sl;x<W;x+=W*0.075){
       ctx.beginPath();
-      ctx.moveTo(x+sl,g.deck);
-      ctx.lineTo(x+sl+W*0.010,g.deck);
-      ctx.lineTo(x+W*0.014,H);
-      ctx.lineTo(x,H);
+      ctx.moveTo(x,g.deck);
+      ctx.lineTo(x+W*0.010,g.deck);
+      ctx.lineTo(x+sl+W*0.014,H);
+      ctx.lineTo(x+sl,H);
       ctx.closePath();ctx.fill();
     }
     /* и две продольные тени от поручней */

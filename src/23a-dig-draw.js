@@ -104,6 +104,11 @@ function drawDigWorld(){
     if(!cell.res)continue;
     const col2=RES[cell.res].col;
     const vis=clamp((scanAll?1:1.15-dist/8),0,1);
+    /* «ископаемые ствола не светятся» (аудит M232). Руда по-прежнему не
+       лампа — но зерно ЛОВИТ ФОНАРЬ: рядом с ходоком блики вспыхивают,
+       в трёх клетках гаснут до прежнего камня. Отклик на движение, не
+       мигание: свет меняется потому, что игрок идёт. */
+    const lampK=clamp(1.25-dist/3.5,0,1);
     /* зёрна: линзы, наклонённые по пласту, размер и густота от количества */
     const n=3+Math.min(5,cell.amount);
     for(let i=0;i<n;i++){
@@ -112,11 +117,11 @@ function drawDigWorld(){
       const rr=1.1+((hh>>>10)&3)*.55, el=1.7+((hh>>>13)&3)*.5;
       ctx.save();
       ctx.translate(x+ox,y+oy);ctx.rotate(.35+((hh>>>16)&7)/7*.5);
-      ctx.globalAlpha=(.30+((hh>>>19)&7)/7*.35)*vis;
+      ctx.globalAlpha=(.30+((hh>>>19)&7)/7*.35)*vis*(0.85+lampK*.35);
       ctx.fillStyle=col2;
       ctx.beginPath();ctx.ellipse(0,0,rr*el,rr,0,0,TAU);ctx.fill();
       /* блик на зерне — то, из-за чего руду замечают в темноте */
-      ctx.globalAlpha=(.22+((hh>>>22)&3)/3*.3)*vis;
+      ctx.globalAlpha=Math.min(1,(.22+((hh>>>22)&3)/3*.3)*vis*(0.7+lampK*1.5));
       ctx.fillStyle="rgba(255,250,235,1)";
       ctx.beginPath();ctx.ellipse(-rr*.3,-rr*.35,rr*.5,rr*.28,0,0,TAU);ctx.fill();
       ctx.restore();
