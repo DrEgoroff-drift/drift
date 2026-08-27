@@ -296,6 +296,21 @@ setTimeout(function(){
     G.cockpit=1;
     if(typeof cockpitOn==="function")cockpitOn(true);
     for(var fc=0;fc<30;fc++){G.t+=.02;updateSystem(1);drawSystem();}
+  }else if(scene==="dig"){
+    /* шахта: M55 #1, «самый слабый экран». Копаем несколько клеток, чтобы в
+       кадре была и выработка, и нетронутый массив, — иначе судить не о чем */
+    land("terran");
+    G.surf.x=G.surf.tr.W*.5;
+    enterDig();
+    var D=G.dig;
+    for(var q3=0;q3<9;q3++){
+      D.col+= (q3%3===2)?-1:0;
+      D.row+= (q3%3===2)?1:0;
+      if(q3%3!==2)D.col+=1;
+      digCell(D,D.col,D.row).dug=true;
+    }
+    D.col=2;D.row=2;
+    for(var f4=0;f4<8;f4++){G.t+=.02;updateDig(1);drawDig();}
   }else if(scene==="rack"){
     /* Приборная стойка кабины: восемь стрелок, самописец и «Глобус» (25f).
        Скорость подкручивать бесполезно — игровой цикл гасит её сопротивлением,

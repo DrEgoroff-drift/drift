@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 316 · символов верхнего уровня: 2895
+Файлов: 316 · символов верхнего уровня: 2896
 
 ## СИМВОЛЫ
 
@@ -475,9 +475,10 @@ DESC_TAIL                    src/01-core.js:58
 dgy                          src/21b-surface-deco.js:131
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
+digBedding                   src/23aa-dig-rock.js:111
 digCell                      src/23-mode-dig.js:29
 digFauna                     src/23-mode-dig.js:218
-digRockMass                  src/23aa-dig-rock.js:99
+digRockMass                  src/23aa-dig-rock.js:144
 digRockPass                  src/23aa-dig-rock.js:26
 digVoidPath                  src/23a-dig-draw.js:4
 DOM_GAME                     src/11af-domino.js:12
@@ -1416,10 +1417,10 @@ mgrWorkKeep                  src/12c-mgr-core.js:552
 mgrWorkSci                   src/12c-mgr-core.js:683
 midiHz                       src/10-music.js:106
 minedUnit                    src/11-log.js:136
-mineKey                      src/23a-dig-draw.js:542
-mineLoad                     src/23a-dig-draw.js:543
+mineKey                      src/23a-dig-draw.js:564
+mineLoad                     src/23a-dig-draw.js:565
 MINERAL                      src/18a-material.js:32
-mineSave                     src/23a-dig-draw.js:553
+mineSave                     src/23a-dig-draw.js:575
 MIRROR_CORE                  src/11f-mirror.js:22
 MIRROR_DELAY                 src/11f-mirror.js:21
 mirrorAck                    src/11f-mirror.js:33
@@ -3425,10 +3426,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/22-mode-cave.js · 29 КБ
   · пещера: поле породы в двух измерениях:1
 
-## src/23aa-dig-rock.js · 18 КБ
+## src/23aa-dig-rock.js · 21 КБ
   · шахта: порода:1
 
-## src/23a-dig-draw.js · 34 КБ
+## src/23a-dig-draw.js · 35 КБ
   · шахта: отрисовка:1
 
 ## src/23-mode-dig.js · 16 КБ

@@ -500,9 +500,14 @@ action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
    the class remains: `.scr` is `inset:22px …`, so every screen is full height whatever it holds.
    Either panels shrink to their content, or every short screen needs something true to show.
    Decide once, apply everywhere.
-3. **The mine is still the weakest screen** (M55 #1, G3 — known since long before this playtest,
-   now confirmed by an outsider): pale, monotone, rock and dug space indistinguishable. It comes
-   right after the surface, which is the game's best screen, and the contrast does the damage.
+3. ~~**The mine is still the weakest screen**~~ — **largely closed by M214 (0.196.0).** It was not
+   underbuilt but unlit and unbedded: one stratum fills the frame at shallow depth (where a player
+   first arrives), so the rock came out a flat wash; and the massif had one brightness for the whole
+   frame, so the screen had no centre. Partings inside a layer, following its own wave — laid AFTER
+   `fillMaterial`, which ate them on the first attempt exactly as it once ate the cracks. Plus a
+   falloff from the walker, per frame, measured at 0.4%% of a 0.92 ms frame. Stand `?s=dig`.
+   **Still open:** the boundary with the sky is a hard cut with no soil profile, and the insides of
+   the workings are flat.
 4. ~~**Instruments nobody can read.**~~ — **closed by M213 (0.195.0).** The caption was six pixels
    at 45%% opacity (`6*FS`, `FS` from 1) — not a label, a texture; nine now, and it SHORTENS to a
    three-letter code when the cell is too narrow rather than shrinking further, measured per cell.

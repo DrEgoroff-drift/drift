@@ -7,6 +7,38 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.196.0 — the mine stops being the weakest screen (M55 #1, M214)
+
+The oldest item on the visual queue, and the one the outside playtester picked out unprompted:
+*"the mine is still the weakest screen — pale, monotone, rock and dug space indistinguishable. It
+comes right after the surface, which is the game's best screen, and the contrast does the damage."*
+
+**It was not underbuilt — it was unlit and unbedded.** The rock painter already had strata with
+contacts, mineral veins, a crack-and-block system, dykes and planet material. Two things were
+missing, and both are the same two that fixed the postcard's mine earlier this week.
+
+*Bedding inside a stratum.* Layers give bands of colour — but only where several are in frame. At
+shallow depth, which is exactly where a player arrives the **first** time, one layer fills the whole
+screen and the rock comes out as a single flat wash. Sediment is never one tone: it is laid down in
+partings, each a little lighter or darker than its neighbour. They follow the layer's own wave, not
+the screen's horizontal — along it, or it is striped wallpaper rather than stone.
+
+That pass has to go **after** `fillMaterial`, and the first attempt did not: the material ate the
+partings exactly as it once ate the cracks. The same lesson, twice, in the same file — now written
+at the top of the function so it is the third time only for someone who does not read.
+
+*Light that falls off.* The massif had one brightness for the whole frame: depth darkens evenly, but
+the rock knew nothing of distance from the lamp. So the mine had **no centre** — stone at the edge of
+the screen burned as bright as stone underfoot, and the whole frame read flat however much drawing
+was in it. Underground you see exactly as far as the light reaches. It also reconciles the workings
+with the massif: far away they darken together, and the black gallery stops being a hole in paper.
+Computed per frame rather than baked, since the tile is fixed to the world and the walker is not —
+measured at 0.4% of a 0.92 ms frame, which is to say free.
+
+New stand `pageshot view -Q "?s=dig"`. **Still open there:** the boundary with the sky is a hard
+horizontal cut with no soil profile above it, and the insides of the workings are still flat.
+11640 assertions in 357 suites.
+---
 ## 0.195.0 — instruments you can actually read (M213)
 
 From the outside playtest list, item 4: *"the five-needle region pod carries no labels and its number
