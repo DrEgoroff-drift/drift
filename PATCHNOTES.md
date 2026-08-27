@@ -7,6 +7,27 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.194.0 — two files split before they became a problem (upkeep)
+
+Housekeeping, taken while the reason was still fresh rather than left for whoever meets it next.
+
+`25ga-post-scenes` reached **52 KB in one night** — the largest module in the project and past the
+40 KB line, which is the size at which a file stops being readable in one go. Split along the seam
+that was already in the design: `25g-post-under` (cave, mine — lit from inside, depth inverted) and
+`25g-post-void` (belt, orbit, gas-giant air — one hard light, no depth to borrow, only size).
+
+The names matter and the header says why: `Sort-Object Name` does not see the hyphen, so a
+`25ga-…` sorts *before* `25g-postcard` (it compares `25gapostscenes` against `25gpostcard`, and `a`
+precedes `p`). Extending the stem rather than the letter gives card → under → void, which is also
+the order they should be read in. That trap cost a build in M209 and is written into `CLAUDE.md`.
+
+`24aa-raid-draw` had grown to 51 KB; `drawFoeBody` moved out to `24ab-raid-foe`. It was the only
+clean seam in the file — a compartment and the person standing in it are different things — and
+everything else there is closed over `proj`, `quad` and `polys` inside `drawRaid`, so cutting it
+would mean hauling half the projection into the open. 44 KB and 9 KB now.
+
+No behaviour changed: 11640 assertions in 357 suites, and both stands redrawn to confirm it.
+---
 ## 0.193.0 — the wintering says it louder (M197)
 
 M197 built the month alone in one room and wrote down what it left: *"at street scale the wintering

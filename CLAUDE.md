@@ -110,14 +110,14 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `25j-post-wire` `25k-post-mail` | the post: a card into a global pool, caught by a stranger, replies routed by the server so neither end ever learns the other; stacks on the table, one request per docking |
 | `25h-post-forms` `25h-post-forms2` `25i-post-back` | a hundred printed blanks in ten kinds and the card's back: a line is a set of variants, tapping one strikes the others out, and the struck-out ones stay visible; postscript of up to three settlement glyphs, no addressee anywhere. The default blank comes from where the *photograph* was taken, never from `G.mode` |
 | `25g-postcard` | the postcard's own painter: `drawPostcard(c,snap,w,h)` redraws a ~200-byte snapshot of a scene owing nothing to `G`; ФОТО on the console, the album of twelve on the desk. It paints ground and approach itself and dispatches the rest |
-| `25ga-post-scenes` | the other five places a card can come from — cave, mine, belt, orbit, gas-giant air. One light kit passed in as an argument, an object of known size in every frame, and the two underground ones lit from inside |
+| `25g-post-under` `25g-post-void` | the other five places a card can come from: cave and mine, then belt, orbit and gas-giant air. One light kit passed in as an argument, an object of known size in every frame; the two underground ones are lit from inside, the three in vacuum by one hard star |
 | `17b-finds` | four finds in the void: capsule, satellite, container, hulk — the satellite is theirs |
 | `19a-mode-scoop` | scooping volatiles from a gas giant's atmosphere |
 | `21a-mode-base` | the base in cross-section: cell grid, power balance, base network |
 | `21ac-base-draw` | the base frame: mountain, gate, tunnel, rooms path, lights |
 | `21aa-base-rooms` | the brushes (`bBox`/`bWorker`/…), the finish table `ROOM_FIN`, `drawModule` |
 | `21ab-base-interiors` | the eight compartments themselves: `BASE_ROOM`, one function per kind |
-| `24a-mode-raid` | boarding a pirate base: grid + polygons, projected from the belt |
+| `24a-mode-raid` | boarding a pirate base: grid + polygons, projected from the belt. Drawing is `24aa-raid-draw` (the compartment) and `24ab-raid-foe` (the body that stands in it) |
 | `26-ui-station` `27-ui-ship` | station with sections, ship screen with hull slots |
 | `26a-ui-station-home` | the station home tab: goal card, home, bases |
 | `27c-ui-hq` | the HQ and cantina screens: portraits, perk tree, order slots, domain summary |

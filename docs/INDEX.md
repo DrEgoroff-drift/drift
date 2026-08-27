@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 314 · символов верхнего уровня: 2895
+Файлов: 316 · символов верхнего уровня: 2895
 
 ## СИМВОЛЫ
 
@@ -549,7 +549,7 @@ drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:240
 drawFindsSystem              src/17b-finds.js:152
 drawFlame                    src/03b-hull-paint.js:10
-drawFoeBody                  src/24aa-raid-draw.js:597
+drawFoeBody                  src/24ab-raid-foe.js:10
 drawForeground               src/21b-surface-deco.js:248
 drawGlassHUD                 src/24-mode-belt.js:593
 drawGround                   src/19-mode-landing.js:109
@@ -1672,20 +1672,20 @@ passTell                     src/11p-pass.js:55
 PAX_KEYS                     src/02-world.js:35
 payCost                      src/21a-mode-base.js:52
 pcA                          src/25g-postcard.js:144
-pcBelt                       src/25ga-post-scenes.js:418
+pcBelt                       src/25g-post-void.js:58
 pcC                          src/25g-postcard.js:141
-pcCave                       src/25ga-post-scenes.js:106
-pcMan                        src/25ga-post-scenes.js:29
-pcMine                       src/25ga-post-scenes.js:226
+pcCave                       src/25g-post-under.js:110
+pcMan                        src/25g-post-under.js:33
+pcMine                       src/25g-post-under.js:230
 pcMix                        src/25g-postcard.js:143
-pcOre                        src/25ga-post-scenes.js:79
+pcOre                        src/25g-post-under.js:83
 pcPrint                      src/25g-postcard.js:130
 pcSame                       tests/91zzzi-postcard.js:23
-pcScoop                      src/25ga-post-scenes.js:755
-pcShip                       src/25ga-post-scenes.js:383
+pcScoop                      src/25g-post-void.js:395
+pcShip                       src/25g-post-void.js:23
 pcStar                       src/25g-postcard.js:146
-pcStrata                     src/25ga-post-scenes.js:64
-pcSystem                     src/25ga-post-scenes.js:588
+pcStrata                     src/25g-post-under.js:68
+pcSystem                     src/25g-post-void.js:228
 pcTestPixels                 tests/91zzzi-postcard.js:17
 pcTestPlanet                 tests/91zzzi-postcard.js:2
 pcTestSnap                   tests/91zzzi-postcard.js:12
@@ -3434,9 +3434,12 @@ zooTick                      src/11ad-zoo.js:41
 ## src/23-mode-dig.js · 16 КБ
   · шахта: спуск вглубь планеты:1
 
-## src/24aa-raid-draw.js · 51 КБ
+## src/24aa-raid-draw.js · 43 КБ
   · рейд: отрисовка:1
   · рисование: пол → стены → объекты → эффекты:13
+
+## src/24ab-raid-foe.js · 9 КБ
+  · рейд: тело противника:1
 
 ## src/24a-mode-raid.js · 20 КБ
   · рейд на пиратскую базу: полигональный интерьер:1
@@ -3471,17 +3474,20 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25f-globus.js · 8 КБ
   · «Глобус» — указатель места полёта:1
 
-## src/25ga-post-scenes.js · 52 КБ
-  · открытка: пять других мест:1
-  · пещера:91
-  · шахта:210
-  · пояс:409
-  · орбита:580
-  · атмосфера газового гиганта:747
-
 ## src/25g-postcard.js · 41 КБ
   · открытка: снимок сцены, а не пиксели:1
   · камера и альбом:564
+
+## src/25g-post-under.js · 23 КБ
+  · открытка: два места под землёй:1
+  · пещера:95
+  · шахта:214
+
+## src/25g-post-void.js · 31 КБ
+  · открытка: три места в пустоте:1
+  · пояс:49
+  · орбита:220
+  · атмосфера газового гиганта:387
 
 ## src/25h-post-forms.js · 20 КБ
   · бланки открытки:1
