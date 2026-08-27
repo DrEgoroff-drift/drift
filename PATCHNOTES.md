@@ -7,6 +7,14 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.209.1 — the fourth payment (M224, tail)
+
+`21ab-base-interiors` 42→26+18 KB. The eight compartments are one `const` table, and tables are
+not cut — so the table is not cut: the second file continues it with `Object.assign`, and every
+reader still sees one whole `BASE_ROOM`. Concatenation order becomes load-bearing (the second half
+must follow the declared const), which the file's header says out loud. The base stand renders all
+eight kinds, smelter fire to battery, unchanged.
+---
 ## 0.209.0 — three split payments and the plan back under its guard (M224)
 
 Maintenance, before it stops being maintenance. The 40 KB guard was shouting about twelve modules

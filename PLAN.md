@@ -103,9 +103,10 @@ flora and fauna, a living camera, station modules, weather.
    **Still shouting**, in size order: `14-save` 48 (one 590-line `applySave`, no seam short of
    redesigning it), `27k-road` 47 and `27l-road-draw` 44 (each one long function), `24aa-raid-draw`
    46 (`drawRaid` is 600 lines), `26-ui-station` 45 (`renderTab` is 460), `27e-ui-home` 44,
-   `12y-parrot-face` 42, `21ab-base-interiors` 42 (eight compartments — the one clean 4/4 seam
-   left), `27f-hq-room` 41, `25g-postcard` 41. The single-function giants are a redesign each, not
-   a cut; take `21ab` next.
+   `12y-parrot-face` 42, `27f-hq-room` 41, `25g-postcard` 41. The fourth payment (0.209.1):
+   `21ab-base-interiors` 42→26+18 — the table is not cut, it is CONTINUED (`Object.assign` in
+   `21ab-base-interiors2`), so readers still see one whole `BASE_ROOM`. The single-function giants
+   that remain are a redesign each, not a cut.
 
 ### M169 — the graphics campaign of 2026-08-24 — closed, moved to the archive 2026-08-27
 
