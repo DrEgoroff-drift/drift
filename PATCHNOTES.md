@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.205.0 — the mast has a body (M220)
+
+Yesterday's receivers were a line on paper and a voice in the noise. Fly to the address they gave
+you and there was **nothing there**. A place with nothing to see in it never becomes a place — it
+stays a coordinate, and the paper starts to feel like a lie.
+
+**Now the mast stands in the system.** Its own point, on a fragment of rock, with a silhouette per
+kind: a lattice tower with a lamp that blinks, a buoy with fins, a dish on a frame, an observation
+box with its tube out, a weather hut, a wintering with crates stacked by the door. The rule is the
+one every assembled thing here follows — dark mass first, everything hung inside the outline, one
+light last, and the edge that catches the star, because the star is in the middle of the system and
+the light always comes from there.
+
+**The inhabited ones you know at a glance, and not from a caption: their window is lit.**
+
+**Payment moved from the jump to the visit.** While it landed on arrival it was a tax on travel;
+news is brought to a person by hand, so now you fly up and hand it over — «ДЕЙСТВИЕ — ПРИВЕЗТИ
+НОВОСТИ», once in three days, and the unmanned ones simply get listened to.
+
+One defect found by measuring rather than by looking: masts were placed 900–2600 from the star,
+while the system's edge is computed from the belt and in a system with a tight belt sits closer
+than that. Such a mast stood **outside the gravitational anchor** — the ship turns back before it
+and can never arrive. Now the distance is clamped inside the anchor.
+
+11762 assertions in 368 suites.
+---
 ## 0.204.0 — the mine gets a soil profile, and the workings get insides (M219)
 
 Two tails the playtest left on the mine, and the third that M217 parked.

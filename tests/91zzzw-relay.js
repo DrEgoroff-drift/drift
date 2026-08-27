@@ -69,13 +69,17 @@ TEST_SUITES.push(()=>suite("приёмники: что они дают — до�
   if(P){
     G.sx=P.sx;G.sy=P.sy;G.sys=getSystem(G.sx,G.sy);
     const c0=G.credits,q0=G.quests.length,sel0=JSON.stringify(G.sel||null);
-    const sum=relayArrive();
-    ok(sum>0,"пришёл — заплатили за новости: "+sum);
-    eq(G.credits,c0+sum,"и ровно столько, сколько сказали");
+    /* прилёт только записывает: мачту видно с порога системы */
+    relayArrive();
     ok(relayKnown(P.key),"пришёл сам — мачта записана и без эфира");
+    eq(G.credits,c0,"но за один прыжок никто не платит: это был бы налог на перелёт");
+    /* платят за визит — новости привозят человеку в руки */
+    const sum=relayServe(P);
+    ok(sum>0,"подошёл и привёз новости — заплатили: "+sum);
+    eq(G.credits,c0+sum,"и ровно столько, сколько сказали");
     eq(G.quests.length,q0,"никакого дела при этом не заводится");
     eq(JSON.stringify(G.sel||null),sel0,"и никакой цели над миром: курс прокладывает игрок, а не игра");
-    eq(relayArrive(),null,"второй раз в то же окно не платят: это работа, а не кран");
+    eq(relayServe(P),0,"второй раз в то же окно не платят: это работа, а не кран");
   }
   /* необитаемая не платит никогда */
   const N=relayFind(r=>r.give==="none",20);
@@ -83,7 +87,8 @@ TEST_SUITES.push(()=>suite("приёмники: что они дают — до�
   if(N){
     G.sx=N.sx;G.sy=N.sy;G.sys=getSystem(G.sx,G.sy);
     const c1=G.credits;
-    eq(relayArrive(),null,"маяку платить нечем и некому");
+    relayArrive();
+    eq(relayServe(N),0,"маяку платить нечем и некому");
     eq(G.credits,c1,"и касса не шевельнулась");
     ok(relayKnown(N.key),"но записана и она: мачту видно с порога");
   }
@@ -132,4 +137,22 @@ TEST_SUITES.push(()=>suite("приёмники: бумага, курс и сох
   applySave(snap);
   ok(relayKnown(R.key),"услышанное пережило сохранение");
   ok(!relayKnown("999,999"),"а мачта неизвестной породы из сейва не заводится");
+}));
+
+/* ── M220: у мачты есть тело ── */
+TEST_SUITES.push(()=>suite("приёмники: у мачты есть тело, и к ней подходят",()=>{
+  resetWorld();
+  const R=relayFind(null,20);
+  G.sx=R.sx;G.sy=R.sy;G.sys=getSystem(G.sx,G.sy);G.mode="system";
+  const P=relaySpot(R), P2=relaySpot(R);
+  eq(P.x,P2.x,"точка мачты та же от кадра к кадру: она считается, а не бросается");
+  ok(Math.hypot(P.x,P.y)>800,"и стоит не в самой звезде");
+  G.prompt="";
+  ok(!relayInteract({x:P.x+4000,y:P.y}),"издали к мачте не подойти");
+  ok(relayInteract({x:P.x+40,y:P.y+20}),"вблизи она отвечает подсказкой");
+  ok(G.prompt.indexOf(R.call)===0,"и в подсказке её позывной: "+G.prompt.split("\n")[0]);
+  ok(G.prompt.indexOf("ДЕЙСТВИЕ")>0||G.prompt.indexOf("уже")>0,"и то, что с ней можно сделать");
+  /* рисуется и ничего не роняет */
+  relayDrawSystem(v=>v*.1+W/2,v=>v*.1+H/2,1);
+  ok(true,"кадр с мачтой рисуется");
 }));

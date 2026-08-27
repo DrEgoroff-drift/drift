@@ -238,6 +238,8 @@ function updateSystem(dt){
   if(typeof wreckInteract==="function"&&wreckInteract(sh))return;
   /* находка в пустоте: капсула, спутник, контейнер, остов разведчика (17b) */
   if(typeof findInteract==="function"&&findInteract(sh))return;
+  /* мачта приёмника: к ней подходят, ей везут новости (11ap, M220) */
+  if(typeof relayInteract==="function"&&relayInteract(sh))return;
   let near=null,nd=1e9;
   for(const p of sys.planets){
     const d=Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius;
@@ -407,6 +409,7 @@ function drawSystem(){
   drawCombat(zx,zy,Z);
   if(typeof drawWrecksSystem==="function")drawWrecksSystem(zx,zy,Z);
   if(typeof drawFindsSystem==="function")drawFindsSystem(zx,zy,Z);
+  if(typeof relayDrawSystem==="function")relayDrawSystem(zx,zy,Z);
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);

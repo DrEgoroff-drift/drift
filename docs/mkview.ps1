@@ -486,6 +486,23 @@ setTimeout(function(){
       logAdd("talk","Крапива: «мешок отдал, а расписки не взял»");
     }
     tableToggle(true,scene==="table"?"ether":scene);
+  }else if(scene==="mast"||scene==="masthut"){
+    /* мачта приёмника вблизи (M220): встаём в её систему и подводим корабль
+       к самой мачте — стенд показывает силуэт и подсказку, а не карту */
+    G.mode="system";
+    var mR=null;
+    for(var mx=-16;mx<16&&!mR;mx++)for(var my=-16;my<16&&!mR;my++){
+      var rr2=(typeof relayOf==="function")?relayOf(mx,my):null;
+      if(rr2&&scene==="masthut"&&rr2.give!=="pay")rr2=null;   /* обитаемая: у неё горит окно */
+      if(rr2)mR=rr2;
+    }
+    if(mR){
+      G.sx=mR.sx;G.sy=mR.sy;G.sys=getSystem(G.sx,G.sy);
+      var sp=relaySpot(mR);
+      G.ship.x=sp.x+120;G.ship.y=sp.y+60;G.ship.vx=0;G.ship.vy=0;
+      G.zoom=2.2;
+    }
+    run(6,updateSystem,drawSystem);
   }else if(scene==="relay"||scene==="relayair"){
     /* приёмники (M218): встаём туда, где мачты рядом, и ловим их СОБСТВЕННЫМИ
        частотами через настоящий radioTune — записи не подкладываются руками,

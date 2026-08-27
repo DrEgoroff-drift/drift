@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 319 · символов верхнего уровня: 2940
+Файлов: 319 · символов верхнего уровня: 2944
 
 ## СИМВОЛЫ
 
@@ -623,7 +623,7 @@ drawSurfaceHud               src/21e-surface-draw.js:19
 drawSurfaceWorld             src/21e-surface-draw.js:94
 drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
-drawSystem                   src/17-mode-system.js:283
+drawSystem                   src/17-mode-system.js:285
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:275
 drawTierTrim                 src/03b-hull-paint.js:62
@@ -2027,17 +2027,21 @@ RELAY_NEAR                   src/11ap-relay.js:106
 RELAY_PAY_WIN                src/11ap-relay.js:75
 RELAY_REACH                  src/11ap-relay.js:73
 relayAll                     src/11ap-relay.js:148
-relayArrive                  src/11ap-relay.js:177
+relayArrive                  src/11ap-relay.js:178
 relayAtFreq                  src/11ap-relay.js:133
-relayDial                    src/11ap-relay.js:220
+relayDial                    src/11ap-relay.js:206
+relayDrawSystem              src/11ap-relay.js:347
 relayEar                     src/11ap-relay.js:125
 relayFind                    tests/91zzzw-relay.js:6
 relayFreq                    src/11ap-relay.js:98
+relayInteract                src/11ap-relay.js:329
 relayKnown                   src/11ap-relay.js:152
-relayList                    src/11ap-relay.js:202
+relayList                    src/11ap-relay.js:188
 relayOf                      src/11ap-relay.js:81
+relayServe                   src/11ap-relay.js:305
 relaysNear                   src/11ap-relay.js:107
 relaySpeak                   src/11ap-relay.js:166
+relaySpot                    src/11ap-relay.js:288
 relayWrite                   src/11ap-relay.js:155
 releaseAllKeys               src/15-input.js:167
 RELIC_KEYS                   src/12h-relic.js:64
@@ -2072,7 +2076,7 @@ renderOpts                   src/27-ui-ship.js:198
 renderPrices                 src/12aa-need.js:223
 renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
-renderRelays                 src/11ap-relay.js:256
+renderRelays                 src/11ap-relay.js:242
 renderRoute                  src/12r-route.js:225
 renderStrips                 src/27i-ui-table.js:215
 renderTab                    src/26-ui-station.js:208
@@ -3077,8 +3081,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11ao-firsthour.js · 5 КБ
   · первый час: сменщик в эфире:1
 
-## src/11ap-relay.js · 18 КБ
+## src/11ap-relay.js · 28 КБ
   · приёмники как места:1
+  · у мачты есть тело:274
 
 ## src/11a-quests.js · 8 КБ
   · журнал дел:1
@@ -3958,7 +3963,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
 
-## tests/91zzzw-relay.js · 8 КБ
+## tests/91zzzw-relay.js · 10 КБ
   · M218: приёмники как места:1
 
 ## tests/99-run.js · 0 КБ

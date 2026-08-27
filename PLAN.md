@@ -655,9 +655,18 @@ screen can show is where to look for the next one.
 Nothing appears over the world: no arrow, no marker, no "new objective". Guarded in
 `91zzzw-relay`, including that last part.
 
-**Still open:** a mast has no body in flight yet — you arrive in its sector and are paid, but there
-is nothing to fly up to and look at. The `17b-finds` machinery is the natural home for that, and it
-is a pass of its own.
+**And it got a body the same day (M220, 0.205.0).** A place with nothing to see in it never becomes
+a place — it stays a coordinate. The mast now stands on its own point in the system, on a fragment,
+with a silhouette per kind: a lattice tower with a lamp, a buoy with fins, a dish on a frame, an
+observation box with its tube, a weather hut, a wintering with crates. The manned ones are known at
+a glance and not by a caption: **their window is lit.**
+
+Two things that measuring found. **Payment moved from the jump to the visit** — while it landed on
+arrival it was a tax on travel; news is brought to a person by hand, so you have to fly up to them.
+And the first placement put masts at 900–2600 from the star, while the system's edge is computed
+from the belt (`(belt.orbit||2400)*1.6`) and in a system with a tight belt sits closer than 2400:
+the mast then stood *outside the gravitational anchor*, where the ship turns back and can never
+reach it. It is clamped inside now.
 
 ---
 

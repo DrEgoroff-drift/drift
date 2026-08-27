@@ -1325,7 +1325,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.204.0";
+const VER="0.205.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -9650,28 +9650,14 @@ function relaySpeak(R,q){
   }
   return R.line;
 }
-/* ── платит тот, кто там живёт ──
-   На приход в сектор: не за проезд, а за привезённые новости. Раз в трое
-   суток, немного, и говорит это человек, а не игра. */
+/* ── прилёт в сектор ──
+   Мачту видно с порога системы: она нарисована и стоит на своей точке, значит
+   делать вид, что игрок о ней не знает, было бы ложью — записываем. Платят же
+   не за прыжок, а за визит: новости привозят человеку в руки (relayServe). */
 function relayArrive(){
   const R=relayOf(G.sx,G.sy);
   if(!R)return null;
-  relayWrite(R);                     /* пришёл сам — увидел мачту своими глазами */
-  if(R.give!=="pay")return null;
-  const rec=relayAll()[R.key],day=(typeof celDay==="function"?celDay():0);
-  if(!rec)return null;
-  if(rec.paid!=null&&day-rec.paid<RELAY_PAY_WIN)return null;
-  const sum=30+Math.round(70*sysDanger(R.sx,R.sy));
-  rec.paid=day;
-  /* через единственную воронку дохода (12j-home): дом растёт ровно с того,
-     что заработал игрок, и источник, заведённый мимо неё, не был бы учтён */
-  earn(sum,"приёмник");
-  const who=R.k==="winter"?"зимовка":"метеопост";
-  if(typeof logAdd==="function")
-    logAdd("good",R.call+" · "+who+" «"+R.name+"»: «Спасибо, что зашли. За новости — "+
-           sum+" кр, у нас на это статья есть»");
-  if(typeof say==="function")say(R.call+" · за новости "+sum+" кр");
-  return sum;
+  return relayWrite(R)?R:null;
 }
 
 /* ── панель ──
@@ -9762,6 +9748,202 @@ function renderRelays(box){
     }
     box.appendChild(row);
   }
+}
+
+/* ══════════════ у мачты есть тело ══════════════
+   M220, хвост M218. Приёмник был строкой на бумаге и голосом в шуме: прилетев
+   на его адрес, игрок не находил там НИЧЕГО. Место, в котором нечего увидеть,
+   местом не становится — оно так и остаётся координатой.
+
+   Теперь в системе стоит сама мачта: своя точка на орбите, свой силуэт по роду
+   и своё дело, если к ней подойти. Правило то же, что у находок и у всего
+   собранного из кусков: сперва тёмная масса, всё навесное внутри обвода, один
+   свет последним — и опознаётся оно формой, а не подписью.
+
+   ПЛАТЯТ ТЕПЕРЬ ЗА ВИЗИТ, А НЕ ЗА ПРЫЖОК. Пока денег хватало долететь до
+   сектора, это был налог на перемещение; новости привозят человеку в руки,
+   значит к нему надо подойти. Прилёт по-прежнему записывает мачту на бумагу:
+   её видно с порога системы, и делать вид, что нет, было бы ложью. */
+function relaySpot(R){
+  const r=rng(hashi(R.sx|0,R.sy|0,0x7B0D));
+  const a=r()*TAU;
+  /* ── и обязательно ВНУТРИ гравитационного якоря ──
+     Первый счёт ставил мачту на 900…2600, а край системы считается от пояса
+     (`(belt.orbit||2400)*1.6`, 17-mode-system) и в системе с тесным поясом
+     оказывается ближе 2400. Мачта тогда стоит за краем: корабль доворачивает
+     к звезде и до неё не доходит НИКОГДА. Место, до которого нельзя долететь,
+     хуже, чем никакого места. */
+  const sys=getSystem(R.sx|0,R.sy|0);
+  const rEdge=((sys&&sys.belt&&sys.belt.orbit)||2400)*1.6;
+  const rad=Math.min(900+r()*1700,rEdge*.78);
+  return {x:Math.cos(a)*rad,y:Math.sin(a)*rad};
+}
+/* ── дело у мачты ──
+   Обитаемой везут новости, у необитаемой просто стоят и слушают. И то и другое
+   кончается одной строкой в тетради: больше там ничего не происходит. */
+function relayServe(R){
+  relayWrite(R);
+  const rec=relayAll()[R.key],day=(typeof celDay==="function"?celDay():0);
+  if(!rec)return 0;
+  if(R.give!=="pay"){
+    if(typeof logAdd==="function")logAdd("ether",R.call+" · "+R.line);
+    if(typeof say==="function")say(R.call+"\n"+R.line,240);
+    return 0;
+  }
+  if(rec.paid!=null&&day-rec.paid<RELAY_PAY_WIN){
+    if(typeof say==="function")say(R.call+" · новости уже привозили",200);
+    return 0;
+  }
+  const sum=30+Math.round(70*sysDanger(R.sx,R.sy));
+  rec.paid=day;
+  /* через единственную воронку дохода (12j-home) */
+  earn(sum,"приёмник");
+  const who=R.k==="winter"?"зимовка":"метеопост";
+  if(typeof logAdd==="function")
+    logAdd("good",R.call+" · "+who+" «"+R.name+"»: «Спасибо, что зашли. За новости — "+
+           sum+" кр, у нас на это статья есть»");
+  if(typeof say==="function")say(R.call+" · за новости "+sum+" кр",240);
+  return sum;
+}
+function relayInteract(sh){
+  const R=relayOf(G.sx,G.sy);
+  if(!R)return false;
+  const P=relaySpot(R);
+  if(Math.hypot(sh.x-P.x,sh.y-P.y)>250)return false;
+  const rec=relayAll()[R.key],day=(typeof celDay==="function"?celDay():0);
+  const fresh=!!(rec&&rec.paid!=null&&day-rec.paid<RELAY_PAY_WIN);
+  G.prompt=R.call+" · "+R.ru.toUpperCase()+" «"+R.name.toUpperCase()+"»"+
+    (R.give==="pay"
+      ?(fresh?"\nновости здесь уже слышали":"\nДЕЙСТВИЕ — ПРИВЕЗТИ НОВОСТИ")
+      :"\nДЕЙСТВИЕ — ПОСЛУШАТЬ");
+  if(actEdge)relayServe(R);
+  return true;
+}
+/* ── силуэт ──
+   Шесть родов, шесть форм. Обитаемые узнаются мгновенно и не по подписи: у них
+   горит окно. Всё остальное — тёмная масса на фоне пустоты с одной кромкой,
+   пойманной от звезды: она в центре системы, значит свет всегда с той стороны. */
+function relayDrawSystem(zx,zy,Z){
+  const R=relayOf(G.sx,G.sy);
+  if(!R)return;
+  const P=relaySpot(R);
+  const x=zx(P.x),y=zy(P.y);
+  if(x<-90||x>W+90||y<-90||y>H+90)return;
+  const s=clamp(Z,.5,1.5);
+  const lit=P.x<0?1:-1;                       /* с какой стороны звезда */
+  const blink=(Math.sin(G.t*.06+(R.sx*7+R.sy*13))>.2);
+  ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+  const dark="rgba(20,23,29,.96)", edge="rgba(0,0,0,.55)";
+  const rim="rgba(196,206,220,.55)";
+  ctx.lineWidth=.9;
+  /* основание: обломок, на котором всё стоит. Мачта в пустоте сама по себе
+     висела бы ни на чём, и весь силуэт читался бы значком */
+  ctx.fillStyle=dark;ctx.strokeStyle=edge;
+  ctx.beginPath();
+  ctx.moveTo(-15,6);ctx.lineTo(-9,1);ctx.lineTo(2,0);ctx.lineTo(13,4);
+  ctx.lineTo(16,9);ctx.lineTo(-11,11);ctx.closePath();
+  ctx.fill();ctx.stroke();
+  /* кромка обломка со стороны звезды: без неё тёмная масса на чёрном не видна
+     вовсе, и мачта висит ни на чём */
+  ctx.strokeStyle=rim;ctx.lineWidth=1.2;
+  ctx.beginPath();
+  if(lit>0){ctx.moveTo(-15,6);ctx.lineTo(-9,1);ctx.lineTo(2,0);}
+  else{ctx.moveTo(2,0);ctx.lineTo(13,4);ctx.lineTo(16,9);}
+  ctx.stroke();ctx.lineWidth=.9;
+  const mast=(h,w)=>{                          /* решётчатая мачта */
+    ctx.strokeStyle="rgba(96,104,116,.9)";ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(-w,0);ctx.lineTo(-w*.4,-h);
+    ctx.moveTo(w,0);ctx.lineTo(w*.4,-h);ctx.stroke();
+    ctx.lineWidth=.7;ctx.beginPath();
+    for(let i=1;i<5;i++){
+      const t=i/5, yy=-h*t, ww=w*(1-.6*t);
+      ctx.moveTo(-ww,yy);ctx.lineTo(ww,yy);
+    }
+    ctx.stroke();
+  };
+  const lamp=(px,py,col)=>{
+    if(!blink)return;
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g=ctx.createRadialGradient(px,py,0,px,py,9);
+    g.addColorStop(0,col);g.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,9,0,TAU);ctx.fill();
+    ctx.restore();
+  };
+  const hut=(w,h,win)=>{                       /* жилой блок с окном */
+    ctx.fillStyle=dark;ctx.strokeStyle=edge;
+    ctx.beginPath();ctx.rect(-w/2,-h,w,h);ctx.fill();ctx.stroke();
+    ctx.fillStyle=rim;ctx.fillRect(lit<0?w/2-1:-w/2,-h,1,h);   /* кромка от звезды */
+    if(win){
+      ctx.fillStyle="rgba(255,206,132,.92)";
+      ctx.fillRect(-w*.24,-h*.72,w*.2,h*.28);
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      const g=ctx.createRadialGradient(-w*.14,-h*.58,0,-w*.14,-h*.58,16);
+      g.addColorStop(0,"rgba(255,196,120,.35)");g.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(-w*.14,-h*.58,16,0,TAU);ctx.fill();
+      ctx.restore();
+    }
+  };
+  if(R.k==="beacon"){
+    mast(30,5);
+    ctx.fillStyle=dark;ctx.strokeStyle=edge;ctx.lineWidth=.9;
+    ctx.beginPath();ctx.ellipse(0,-32,4.4,3.4,0,0,TAU);ctx.fill();ctx.stroke();
+    lamp(0,-32,"rgba(255,168,120,.85)");
+  }else if(R.k==="buoy"){
+    ctx.fillStyle=dark;ctx.strokeStyle=edge;
+    ctx.beginPath();ctx.rect(-6,-16,12,16);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-6,-13);ctx.lineTo(-13,-9);ctx.lineTo(-6,-6);ctx.closePath();
+    ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(6,-13);ctx.lineTo(13,-9);ctx.lineTo(6,-6);ctx.closePath();
+    ctx.fill();ctx.stroke();
+    ctx.fillStyle=rim;ctx.fillRect(lit<0?5:-6,-16,1,16);
+    lamp(0,-18,"rgba(180,230,255,.8)");
+  }else if(R.k==="relay"){
+    mast(20,4.5);
+    ctx.save();ctx.translate(0,-21);ctx.rotate(lit*.5);
+    ctx.fillStyle=dark;ctx.strokeStyle=edge;
+    ctx.beginPath();ctx.ellipse(0,0,11,4.5,0,Math.PI,TAU);ctx.fill();ctx.stroke();
+    ctx.strokeStyle="rgba(150,164,180,.75)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-6);ctx.stroke();
+    ctx.beginPath();ctx.arc(0,-6,1.6,0,TAU);ctx.stroke();
+    ctx.restore();
+  }else if(R.k==="obs"){
+    ctx.fillStyle=dark;ctx.strokeStyle=edge;
+    ctx.beginPath();ctx.rect(-7,-13,14,13);ctx.fill();ctx.stroke();
+    ctx.save();ctx.rotate(-.6*lit);
+    ctx.beginPath();ctx.rect(-3,-26,6,16);ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(120,150,180,.5)";ctx.fillRect(-2.4,-26,4.8,1.6);
+    ctx.restore();
+    ctx.fillStyle="rgba(40,58,86,.9)";ctx.strokeStyle=edge;
+    ctx.beginPath();ctx.rect(7,-11,9,6);ctx.fill();ctx.stroke();
+    ctx.fillStyle=rim;ctx.fillRect(lit<0?6:-7,-13,1,13);
+  }else if(R.k==="met"){
+    hut(16,12,true);
+    ctx.save();ctx.translate(9,-11);
+    mast(14,2.4);
+    ctx.strokeStyle="rgba(150,164,180,.8)";ctx.lineWidth=.9;
+    ctx.beginPath();ctx.moveTo(-5,-14);ctx.lineTo(5,-14);ctx.stroke();
+    for(let i=-1;i<2;i+=2){ctx.beginPath();ctx.arc(i*5,-14,2,0,TAU);ctx.stroke();}
+    ctx.restore();
+  }else{                                       /* зимовка: жильё, и это видно */
+    hut(24,15,true);
+    ctx.fillStyle="rgba(255,206,132,.92)";ctx.fillRect(4,-11.5,4.6,3.6);
+    ctx.save();ctx.translate(-13,-8);
+    ctx.fillStyle=dark;ctx.strokeStyle=edge;
+    ctx.beginPath();ctx.rect(-5,-6,10,6);ctx.fill();ctx.stroke();  /* сложенные ящики */
+    ctx.beginPath();ctx.rect(-3,-10,7,4);ctx.fill();ctx.stroke();
+    ctx.restore();
+    ctx.save();ctx.translate(11,-15);ctx.rotate(lit*.35);
+    ctx.fillStyle=dark;ctx.strokeStyle=edge;
+    ctx.beginPath();ctx.ellipse(0,0,7,3,0,Math.PI,TAU);ctx.fill();ctx.stroke();
+    ctx.restore();
+  }
+  /* подпись — только пока мачта не записана: дальше она живёт на бумаге */
+  if(!relayKnown(R.key)&&s>.7){
+    ctx.fillStyle="rgba(150,168,182,.75)";
+    ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText(R.call,0,22);
+  }
+  ctx.restore();
 }
 
 /* ══════════════ журнал дел ══════════════ */
@@ -29065,6 +29247,8 @@ function updateSystem(dt){
   if(typeof wreckInteract==="function"&&wreckInteract(sh))return;
   /* находка в пустоте: капсула, спутник, контейнер, остов разведчика (17b) */
   if(typeof findInteract==="function"&&findInteract(sh))return;
+  /* мачта приёмника: к ней подходят, ей везут новости (11ap, M220) */
+  if(typeof relayInteract==="function"&&relayInteract(sh))return;
   let near=null,nd=1e9;
   for(const p of sys.planets){
     const d=Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius;
@@ -29234,6 +29418,7 @@ function drawSystem(){
   drawCombat(zx,zy,Z);
   if(typeof drawWrecksSystem==="function")drawWrecksSystem(zx,zy,Z);
   if(typeof drawFindsSystem==="function")drawFindsSystem(zx,zy,Z);
+  if(typeof relayDrawSystem==="function")relayDrawSystem(zx,zy,Z);
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);
