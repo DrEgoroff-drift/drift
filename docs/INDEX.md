@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 317 · символов верхнего уровня: 2901
+Файлов: 317 · символов верхнего уровня: 2902
 
 ## СИМВОЛЫ
 
@@ -850,6 +850,7 @@ glowSprite                   src/16a-space.js:275
 glowTier                     src/11i-glow.js:122
 goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
+gotoSector                   src/11a-quests.js:68
 gradePass                    src/19c-light.js:165
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
@@ -1909,11 +1910,11 @@ questClose                   src/11a-quests.js:36
 questDone                    src/11a-quests.js:44
 questFail                    src/11a-quests.js:48
 questFind                    src/11a-quests.js:35
-questGoto                    src/11a-quests.js:53
+questGoto                    src/11a-quests.js:79
 questInit                    src/11a-quests.js:16
-questLeft                    src/11a-quests.js:62
+questLeft                    src/11a-quests.js:84
 questOpen                    src/11a-quests.js:18
-questSync                    src/11a-quests.js:71
+questSync                    src/11a-quests.js:93
 quietAfterLeave              src/11n-quiet.js:54
 quietAll                     src/11n-quiet.js:21
 quietBlock                   src/11n-quiet.js:60
@@ -3038,7 +3039,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11ao-firsthour.js · 5 КБ
   · первый час: сменщик в эфире:1
 
-## src/11a-quests.js · 6 КБ
+## src/11a-quests.js · 8 КБ
   · журнал дел:1
 
 ## src/11b-speech.js · 16 КБ
@@ -3124,7 +3125,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11z-misclosure.js · 6 КБ
   · невязка: уезд, где счёт неба и счёт людей расходятся:1
 
-## src/12aa-need.js · 12 КБ
+## src/12aa-need.js · 13 КБ
   · нужда станции и наряд:1
 
 ## src/12a-crew.js · 38 КБ
@@ -3830,7 +3831,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzu-domino.js · 2 КБ
   · автотесты: домино (M166):1
 
-## tests/91zzv-table.js · 17 КБ
+## tests/91zzv-table.js · 19 КБ
   · автотесты: пульт и стол (M151a):1
   · огонёк: «пришло» ≠ «не прочитано»:190
 

@@ -262,3 +262,31 @@ TEST_SUITES.push(()=>suite("стол: в шапке нет ключей из к�
   G.mode=was;
   eq(leaks.join(", "),"","ни одно имя не содержит латиницы");
 }));
+TEST_SUITES.push(()=>suite("стол: по бумаге с адресом штурман кладёт курс",()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  /* внешний плейтест, пункт 5: «зачем лететь» жило внутри станции. Стол помнит
+     цены и нужды, но с ними нельзя было ничего сделать — адрес приходилось
+     запоминать глазами. Тот же жест, что у дел: тычок по строке ставит курс */
+  G.seenPrices={};
+  G.seenPrices["3,-2"]={sx:3,sy:-2,name:"Проверочная",day:celDay(),
+                        p:{ice:22,iron:15},need:"ice"};
+  tableToggle(true,"prices");
+  const box=document.getElementById("loglist");
+  const rows=[...box.querySelectorAll(".li")].filter(r=>r.onclick);
+  ok(rows.length>=1,"у строки с адресом есть ход");
+  G.mode="system";G.sel={x:0,y:0};
+  rows[0].onclick();
+  eq(G.sel.x,3,"курс лёг на тот сектор");
+  eq(G.sel.y,-2,"и по второй оси");
+  eq(G.mode,"map","и штурман открыт");
+  /* и НИЧЕГО над миром: маркеров плейтест как раз просил не заводить */
+  ok(!G.quests||!G.quests.some(q=>q.ru==="Проверочная"),"курс не завёл дела");
+  ok(!document.querySelector("#prompt")||
+     !/ЦЕН|ПРОВЕРОЧН/i.test(document.getElementById("prompt").textContent||""),
+     "и подсказка над миром не позвала");
+  /* запись без адреса не роняет и не врёт */
+  ok(gotoSector(null,null,"без адреса")===false,"без адреса курс не кладётся");
+  G.mode="system";
+  tableToggle(false);
+}));

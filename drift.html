@@ -1324,7 +1324,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.199.0";
+const VER="0.200.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -9528,13 +9528,35 @@ function questFail(key,note){return questClose(key,"failed",note);}
    Ткнули по строке — карта открылась с выбранной системой. Это единственная
    кнопка журнала, и она делает ровно то, чего от журнала хотят: «отвези меня
    туда, где это надо делать». */
-function questGoto(q){
-  if(q.sx===null||q.sy===null){say("У этого дела нет адреса");return false;}
-  G.sel={x:q.sx,y:q.sy};
+/* ── курс по бумаге ──
+   Общий ход для всего, у чего на столе есть адрес. Вынесен из `questGoto`,
+   когда выяснилось, что дел он касается меньше всего.
+
+   ЗАЧЕМ (внешний плейтест, пункт 5): «зачем лететь» живёт внутри станции —
+   доска с нуждами и ценами и есть мотор игры, но заводится он только после
+   посадки, стыковки и переключения вкладки. При этом стол ПОМНИТ цены и
+   нужды всех станций, где вы были, — и до сих пор это была бумага, с которой
+   нельзя ничего сделать: адрес приходилось запоминать глазами и набирать на
+   карте руками.
+
+   Почему это не квестовый маркер, которого плейтест как раз просил избежать:
+   над миром ничего не появляется, стрелок нет, игра ни к чему не зовёт. Есть
+   бумага с адресом и штурман, который по ней прокладывает курс, — ровно тот
+   жест, который уже был у дел (единственная кнопка журнала). */
+function gotoSector(sx,sy,what){
+  if(sx===null||sx===undefined||sy===null||sy===undefined){
+    say("У этой записи нет адреса");return false;
+  }
+  G.sel={x:sx,y:sy};
   G.mode="map";
   toggleLog(false);
-  say("Курс на «"+(getSystem(q.sx,q.sy).name||"сектор "+q.sx+":"+q.sy)+"»");
+  const nm=getSystem(sx,sy).name||("сектор "+sx+":"+sy);
+  say("Курс на «"+nm+"»"+(what?"\n"+what:""));
   return true;
+}
+function questGoto(q){
+  if(q.sx===null||q.sy===null){say("У этого дела нет адреса");return false;}
+  return gotoSector(q.sx,q.sy,null);
 }
 /* сколько осталось по сроку, словами: точное число секунд игроку не нужно */
 function questLeft(q){
@@ -13258,7 +13280,8 @@ function renderPrices(box){
   const S=G.seenPrices||{};
   const L=Object.keys(S).map(k=>S[k]).sort((a,b)=>b.day-a.day);
   if(!L.length){tableRow(box,"dim","","цен ещё не видели: они записываются при каждой стыковке");return;}
-  tableRow(box,"head","","ЦЕНЫ, КАК ИХ ВИДЕЛИ · ДЕНЬ "+celDay()+" · ЖИРНЫМ — ЛУЧШАЯ ПО ТОВАРУ");
+  tableRow(box,"head","","ЦЕНЫ, КАК ИХ ВИДЕЛИ · ДЕНЬ "+celDay()+
+    " · ЖИРНЫМ — ЛУЧШАЯ ПО ТОВАРУ · ТЫЧОК — КУРС ТУДА");
   const best={};
   for(const k of TRADE_KEYS){let b=null;for(const s of L)if(s.p[k]&&(!b||s.p[k]>b.p[k]))b=s;if(b)best[k]=b;}
   for(const s of L){
@@ -13267,7 +13290,18 @@ function renderPrices(box){
     const sp=document.createElement("span");
     const cells=TRADE_KEYS.filter(k=>s.p[k]).map(k=>(best[k]===s?"<b>":"")+RES[k].ru.toLowerCase()+" "+s.p[k]+(best[k]===s?"</b>":""));
     sp.innerHTML="<b>"+s.name+"</b> · день "+s.day+(s.need?" · <b style='color:#f2b25c'>нужда: "+RES[s.need].ru.toLowerCase()+"</b>":"")+"<br>"+cells.join(" · ");
-    row.appendChild(em);row.appendChild(sp);box.appendChild(row);
+    row.appendChild(em);row.appendChild(sp);
+    /* ── и по ней можно проложить курс (плейтест, пункт 5) ──
+       Бумага помнила цены и нужды всех станций, где вы были, и не давала с
+       ними сделать ничего: адрес приходилось запоминать глазами и набирать на
+       карте руками. Тот же жест, что у дел, — тычок по строке ставит курс.
+       Над миром при этом не появляется ничего: ни стрелки, ни маркера. */
+    if(typeof gotoSector==="function"&&s.sx!==undefined){
+      row.style.cursor="pointer";
+      row.onclick=()=>{gotoSector(s.sx,s.sy,
+        s.need?("нужда: "+RES[s.need].ru.toLowerCase()):null);};
+    }
+    box.appendChild(row);
   }
 }
 

@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.200.0 — a course can be laid from the paper (playtest #5)
+
+From the outside playtest, item 5: *"«зачем лететь» lives inside the station. The board — needs,
+tips, prices — is the game's motor, and it only runs after landing, docking and switching a tab."*
+With the tester's own warning attached, which is the hard part: his strongest praise for the game was
+*«ничто из этого не обращено к игроку — и поэтому работает»*, so quest markers and objective banners
+would buy the metric and sell the game.
+
+**The paper already knew where.** The desk remembers the prices and shortages of every station you
+have docked at — the ЦЕНЫ tab, best price per good in bold, a shortage called out in amber. And there
+was nothing you could do with any of it: the address sat there as two numbers, to be memorised by eye
+and typed into the navigator by hand. The motor was running and not connected to the wheels.
+
+**So the paper gets the gesture the journal already had.** Tapping a price row lays a course to that
+sector and opens the navigator — exactly what `questGoto` has done since M-whenever for a job, and
+deliberately the *only* button the journal has ever had: *"take me where this needs doing"*. Nothing
+appears over the world: no arrow, no marker, no banner, and the game never asks you to go. There is a
+piece of paper with an address on it, and a navigator that will plot it. That is the whole feature.
+
+The move is now `gotoSector(sx,sy,what)` — lifted out of `questGoto`, which turned out to be the case
+it mattered to least — so the next thing on the desk that has an address gets it for free. Guarded in
+`91zzv-table`, including the half that matters most: the course starts no job and puts no line over
+the world. 11663 assertions in 359 suites.
+---
 ## 0.199.0 — the hangar gets its temperature (M180 pass 2, tail)
 
 0.191.0 closed most of M180's second pass and wrote down what it left: *"warm work lamps with pools

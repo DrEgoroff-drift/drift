@@ -198,7 +198,8 @@ function renderPrices(box){
   const S=G.seenPrices||{};
   const L=Object.keys(S).map(k=>S[k]).sort((a,b)=>b.day-a.day);
   if(!L.length){tableRow(box,"dim","","цен ещё не видели: они записываются при каждой стыковке");return;}
-  tableRow(box,"head","","ЦЕНЫ, КАК ИХ ВИДЕЛИ · ДЕНЬ "+celDay()+" · ЖИРНЫМ — ЛУЧШАЯ ПО ТОВАРУ");
+  tableRow(box,"head","","ЦЕНЫ, КАК ИХ ВИДЕЛИ · ДЕНЬ "+celDay()+
+    " · ЖИРНЫМ — ЛУЧШАЯ ПО ТОВАРУ · ТЫЧОК — КУРС ТУДА");
   const best={};
   for(const k of TRADE_KEYS){let b=null;for(const s of L)if(s.p[k]&&(!b||s.p[k]>b.p[k]))b=s;if(b)best[k]=b;}
   for(const s of L){
@@ -207,6 +208,17 @@ function renderPrices(box){
     const sp=document.createElement("span");
     const cells=TRADE_KEYS.filter(k=>s.p[k]).map(k=>(best[k]===s?"<b>":"")+RES[k].ru.toLowerCase()+" "+s.p[k]+(best[k]===s?"</b>":""));
     sp.innerHTML="<b>"+s.name+"</b> · день "+s.day+(s.need?" · <b style='color:#f2b25c'>нужда: "+RES[s.need].ru.toLowerCase()+"</b>":"")+"<br>"+cells.join(" · ");
-    row.appendChild(em);row.appendChild(sp);box.appendChild(row);
+    row.appendChild(em);row.appendChild(sp);
+    /* ── и по ней можно проложить курс (плейтест, пункт 5) ──
+       Бумага помнила цены и нужды всех станций, где вы были, и не давала с
+       ними сделать ничего: адрес приходилось запоминать глазами и набирать на
+       карте руками. Тот же жест, что у дел, — тычок по строке ставит курс.
+       Над миром при этом не появляется ничего: ни стрелки, ни маркера. */
+    if(typeof gotoSector==="function"&&s.sx!==undefined){
+      row.style.cursor="pointer";
+      row.onclick=()=>{gotoSector(s.sx,s.sy,
+        s.need?("нужда: "+RES[s.need].ru.toLowerCase()):null);};
+    }
+    box.appendChild(row);
   }
 }

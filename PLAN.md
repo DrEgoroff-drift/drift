@@ -569,7 +569,17 @@ action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
    The misclosure got a scale bar rather than a unit, because it has no unit — it is dimensionless;
    what it lacked was any way to see that zero is an end of a range and not a missing reading.
    Stand `?s=cockpit`.
-5. **«Зачем лететь» lives inside the station.** The board (needs, tips, prices) is the game's
+5. **«Зачем лететь» lives inside the station** — **first move made (0.200.0).** The desk already
+   remembered every station's prices and shortages and let you do nothing with them: the address sat
+   there as two numbers to be memorised by eye. Tapping a price row now lays a course and opens the
+   navigator — the same gesture the journal has always had for a job, and the only button it has ever
+   had. Nothing appears over the world: no arrow, no marker, the game never asks you to go. The move
+   is `gotoSector(sx,sy,what)`, lifted out of `questGoto`, so the next addressed thing on the desk
+   gets it free. **Still open:** the receiver broadcasts prices and rumours in flight and they still
+   only become actionable once written to the desk — making what the ether says actionable *as it is
+   heard* is the rest of this item.
+
+   Original wording: The board (needs, tips, prices) is the game's
    motor and it only runs after landing, docking and switching a tab. **The fix must stay in the
    game's language:** the tester's own strongest praise was «ничто из этого не обращено к
    игроку — и поэтому работает». Quest markers and objective banners would buy the metric and
