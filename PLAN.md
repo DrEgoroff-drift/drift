@@ -379,7 +379,13 @@ things they left standing, and these are the graphics debt in its shortest form:
 - the **suit kit** is still a paperdoll on the ship screen, not objects on the same desk as the
   tray (M179);
 - the **pirate base**: the enemy bodies are blocky and the hangar wants dressing (M180 pass 2);
-- the **far ridge** on the surface is flat (M186);
+- ~~the **far ridge** on the surface is flat (M186)~~ — **closed by M211 (0.190.0).** It was not
+  flat, it was *familiar*: both layers were the local ground profile amplified about its mean, so
+  the eye recognised the curve and stopped measuring distance with it. Now ridged noise with
+  octave-weighted detail and a separate seed per layer — peaks instead of waves. Two things the
+  first count got wrong and the second measured: the frequency must be reckoned from the layer's
+  on-screen step (a period of ~20 samples), and the field's mean must be subtracted or the whole
+  range lifts by a third of its amplitude and covers the sky. Guarded in `91q-planet`;
 - the **receiver console** sits over an open panel's title bar — put there deliberately by M151a,
   so it wants the author's eye rather than a silent change;
 - **perf**: the night probe read system 43 / surface 39, the same as 0.144 — see the perf note in

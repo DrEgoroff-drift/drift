@@ -3399,7 +3399,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 28 КБ
+## src/21e-surface-draw.js · 32 КБ
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21f-home-out.js · 13 КБ
@@ -3646,7 +3646,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91p-lore.js · 10 КБ
   · отчёт «Долгого Хода»: сто кусков:1
 
-## tests/91q-planet.js · 6 КБ
+## tests/91q-planet.js · 9 КБ
   · планета за полный набор:1
 
 ## tests/91r-hunter.js · 3 КБ

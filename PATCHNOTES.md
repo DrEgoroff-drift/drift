@@ -7,6 +7,39 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.190.0 — the far ridge becomes a range (M211)
+
+M186's walkthrough left one line standing: *"still open: the flat far ridge"*. It has been behind
+every outdoor frame in the game since, which makes it the highest-frequency piece of debt on the
+list.
+
+**It was not flat — it was familiar.** Both distant layers took the profile of the ground under
+your feet and multiplied it about its mean by 2.3 and 1.6. A ridge built that way is self-similar
+to the earth you are standing on: the same curve, only louder. The eye recognises that instantly
+and stops measuring distance with it, which reads exactly like flatness.
+
+**A mountain is built differently from a hill, and the difference is one line.** Ordinary noise
+gives rounded crests; *ridged* noise — `1−|2n−1|` — gives sharp summits and broad soft valleys.
+That is what a range is: peaks, not waves. Each octave is weighted by the one above it, so small
+teeth sit **on** the flanks of large peaks instead of sprinkling evenly along the whole length. The
+two layers get different seeds, because two ranges echoing each other through parallax is the most
+visible lie available — the eye catches repetition before it catches anything else.
+
+**Two things the first count got wrong, both measured rather than eyeballed.** The frequency was
+taken by feel (`.0016`) and worked out to one hump per thirteen thousand world units — a ridge
+*straighter* than the one it replaced. It has to be reckoned from the screen: the layer is drawn at
+`step*3.6`, about twenty-two pixels per sample, so three or four summits in frame means a period of
+roughly twenty samples. And the field's mean has to be subtracted: ridged noise averages about a
+third of its range, so an unshifted field lifts the whole range by a third of its amplitude — peaks
+leave the top of the frame and the valleys cover the sky as a solid wall. That is precisely what
+the first attempt drew.
+
+Cost is unchanged: the profile is baked into the parallax tiles once per planet, and the frame
+still only does `drawImage`. Guarded in `91q-planet` by the properties that actually matter — the
+range does not correlate with the local ground or with the other layer, there are at least two
+summits across a screen width, its median sits below mid-range (valleys outnumber peaks: a ridge,
+not a wave), and its mean height matches the ground's. 10730 assertions in 355 suites.
+---
 ## 0.189.0 — the stone that remembers: marks in the places themselves (M210)
 
 M171 put the first thing left by a *living* player into the game — a mark cut beside your ship with

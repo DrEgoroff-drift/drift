@@ -102,3 +102,54 @@ TEST_SUITES.push(()=>suite("растр: грунт и свод рисуются 
   /* авторазрешение */
   ok([0,1,1.5,2].includes(G.opts.gfx.res),"gfx.res имеет допустимое значение");
 }));
+TEST_SUITES.push(()=>suite("дальняя гряда: свой рельеф, а не растянутый здешний",()=>{
+  resetWorld();
+  /* найдём планету с грунтом и встанем на неё: farH строится отрисовкой */
+  let F=null;
+  for(let dx=-8;dx<=8&&!F;dx++)for(let dy=-8;dy<=8&&!F;dy++){
+    if(!starAt(dx,dy))continue;
+    const s=getSystem(dx,dy);
+    for(const p of s.planets)if(p.type!=="gas"){F={s,p};break;}
+  }
+  ok(!!F,"нашлась планета с грунтом");
+  const tr=genTerrain(F.p,null);
+  G.sx=F.s.sx;G.sy=F.s.sy;G.sys=F.s;
+  /* мир заводится как в игре: drawSurface читает флору, фауну и погоду,
+     и слепленный руками G.surf на них падает */
+  G.land={p:F.p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};
+  enterSurface();
+  G.running=true;
+  drawSurface();
+  ok(!!(tr.farH&&tr.farH[0]&&tr.farH[1]),"дальние профили построены");
+  const A=tr.farH[0], B=tr.farH[1];
+  /* 1. гряда НЕ повторяет землю под ногами. Пока она была `mid+(h-mid)*k`,
+     связь была идеальной — и глаз узнавал её мгновенно */
+  const corr=(u,v)=>{
+    let mu=0,mv=0;for(let i=0;i<tr.N;i++){mu+=u[i];mv+=v[i];}
+    mu/=tr.N;mv/=tr.N;
+    let su=0,sv=0,c=0;
+    for(let i=0;i<tr.N;i++){const a=u[i]-mu,b=v[i]-mv;c+=a*b;su+=a*a;sv+=b*b;}
+    return c/Math.sqrt(Math.max(1e-9,su*sv));
+  };
+  ok(Math.abs(corr(A,tr.h))<.5,"дальний хребет не копия земли ("+corr(A,tr.h).toFixed(2)+")");
+  ok(Math.abs(corr(A,B))<.5,"и два слоя не копии друг друга ("+corr(A,B).toFixed(2)+")");
+  /* 2. в кадре стоят ВЕРШИНЫ, а не один склон. Слой рисуется с шагом
+     step*3.6, значит на ширину экрана приходится около шестидесяти отсчётов;
+     первый счёт брал частоту в тридцать раз ниже, и гряда вышла прямой */
+  const win=Math.max(20,Math.round(1280/(tr.step*3.6)));
+  let peaks=0;
+  for(let i=1;i<win-1;i++)if(A[i]<A[i-1]&&A[i]<A[i+1])peaks++;   /* меньше y = выше */
+  ok(peaks>=2,"на ширину экрана — не меньше двух вершин ("+peaks+" на "+win+" отсчётах)");
+  /* 3. и вершины ОСТРЫЕ, а долины широкие: это и отличает хребет от волн.
+     У гребневого шума медиана лежит НИЖЕ середины размаха */
+  let lo=1e9,hi=-1e9;
+  for(let i=0;i<tr.N;i++){if(A[i]<lo)lo=A[i];if(A[i]>hi)hi=A[i];}
+  const sorted=Array.from(A).sort((a,b)=>a-b);
+  const med=sorted[tr.N>>1];
+  ok(med>(lo+hi)/2,"долин больше, чем вершин — это хребет, а не волна");
+  /* 4. и он не уезжает за верх кадра: среднее вычтено */
+  let s=0;for(let i=0;i<tr.N;i++)s+=tr.h[i];
+  const mid=s/tr.N;
+  let fs=0;for(let i=0;i<tr.N;i++)fs+=A[i];
+  ok(Math.abs(fs/tr.N-mid)<2,"средняя высота гряды совпадает со средней землёй");
+}));
