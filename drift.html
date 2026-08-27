@@ -1337,7 +1337,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.210.0";
+const VER="0.211.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -8412,6 +8412,31 @@ function offerLine(o){
   return (o.named?"вам":"кто рядом")+" · "+K.ru+(pay>0?" · "+pay+" кр":"");
 }
 
+/* ── доброе слово после просёра (M226, часть III дуги: «Соседи») ──
+   Именное окно закрылось — дверь затворилась молча (folkShut). Но в книге у
+   этого места есть ровно ОДИН человеческий такт: в следующий раз за стойкой
+   тот, кто тебя называл, говорит что-то доброе — и больше не называет никогда.
+   «Никто не сердится — вот что тяжелее всего.»
+
+   Правила той же секции DESIGN-arc.md, из-за которых строка устроена так:
+   ни упрёка, ни слова «долг», ни объяснения, ЧТО именно ушло, — правда не
+   произносится. Единственный, кто скажет прямо, появится в части VI, и он
+   будет неправ. Здесь все добры. Одна строка на одну закрытую дверь. */
+const SHUT_LINES=[
+  "— А, это вы. Ну — как вышло, так вышло. Заправка у третьего причала.",
+  "— Видел ваш борт на подходе. Держится ровно. Это главное.",
+  "— Погода нынче лётная. Кому лётная, а кому и так. Проходите.",
+  "— Всё нормально. У всех дела, у всех рейсы. Садитесь, чего стоять."
+];
+function offerShutLine(){
+  if(!G.sys)return null;
+  const f=folkAll()["st:"+G.sys.key];
+  if(!f||!f.shut||f.said)return null;
+  f.said=1;
+  const r=rng(hashi(G.sx,G.sy,0x5AD)>>>0);
+  return SHUT_LINES[Math.floor(r()*SHUT_LINES.length)];
+}
+
 /* ══════════════ стена, которая помнит ══════════════
    M210. M171 положил в игру первую вещь, оставленную ЖИВЫМ человеком, — знак
    у корабля и груз под ним. И записал себе в долг: «только поверхность несёт
@@ -10365,7 +10390,12 @@ function speechHere(){
   const S=speechAll(), key=G.sys.key;
   const st=S[key]||(S[key]={i:0,v:-1});
   const v=visitHere();
-  if(st.v!==v){st.v=v;st.i=(st.i+1)%LOCAL.length;st.sq=undefined;}
+  if(st.v!==v){st.v=v;st.i=(st.i+1)%LOCAL.length;st.sq=undefined;st.shutSq=undefined;}
+  /* доброе слово после закрывшейся именной двери (11ah, M226): раньше реплик
+     истории — оно случается один раз на дверь, и человек важнее сюжета.
+     Решение раз на посадку, строка стоит всю посадку; f.said ставит сам */
+  if(st.shutSq===undefined)st.shutSq=(typeof offerShutLine==="function")?offerShutLine():null;
+  if(st.shutSq)return {line:st.shutSq,silent:false,addr:addrForm()};
   /* реплика истории (11c) вклинивается перед общей; решение держится всю посадку */
   if(st.sq===undefined)st.sq=(typeof storyQueueLine==="function")?storyQueueLine():null;
   if(st.sq)return {line:st.sq.line,silent:st.sq.silent,addr:addrForm()};

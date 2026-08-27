@@ -701,9 +701,11 @@ and nobody is ever angry. Three sits per shift, then the counter empties — the
 place ever makes. Guards in `91zzzx-late`: the hours are real, the offer windows narrow, the
 journal contains no reproach, and a save does not refill the counter.
 
-**Held back on purpose:** the rest of Act II — the loss itself arriving later by the human line —
-wants the offers to have been lived with first. Next after that, in order: offers deepening
-through the expedition, Act IV, the yacht.
+**And the loss arrives by the human line (M226, 0.211.0).** When a named offer dies untaken the
+door already closed silently; now, one visit later, the person who used to name you says one kind
+line at the counter — ahead of the queue, ahead of story, once per door, ever — and never names
+you again. The truth is not in the line; the world keeps offering cold. «Никто не сердится — вот
+что тяжелее всего.» Next, in order: offers deepening through the expedition, Act IV, the yacht.
 
 # QUEUE: Трепло in the round — a separate 3D module (M200)
 

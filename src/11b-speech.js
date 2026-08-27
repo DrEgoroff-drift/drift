@@ -117,7 +117,12 @@ function speechHere(){
   const S=speechAll(), key=G.sys.key;
   const st=S[key]||(S[key]={i:0,v:-1});
   const v=visitHere();
-  if(st.v!==v){st.v=v;st.i=(st.i+1)%LOCAL.length;st.sq=undefined;}
+  if(st.v!==v){st.v=v;st.i=(st.i+1)%LOCAL.length;st.sq=undefined;st.shutSq=undefined;}
+  /* доброе слово после закрывшейся именной двери (11ah, M226): раньше реплик
+     истории — оно случается один раз на дверь, и человек важнее сюжета.
+     Решение раз на посадку, строка стоит всю посадку; f.said ставит сам */
+  if(st.shutSq===undefined)st.shutSq=(typeof offerShutLine==="function")?offerShutLine():null;
+  if(st.shutSq)return {line:st.shutSq,silent:false,addr:addrForm()};
   /* реплика истории (11c) вклинивается перед общей; решение держится всю посадку */
   if(st.sq===undefined)st.sq=(typeof storyQueueLine==="function")?storyQueueLine():null;
   if(st.sq)return {line:st.sq.line,silent:st.sq.silent,addr:addrForm()};

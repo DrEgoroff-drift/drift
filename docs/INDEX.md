@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 325 · символов верхнего уровня: 2956
+Файлов: 325 · символов верхнего уровня: 2958
 
 ## СИМВОЛЫ
 
@@ -1610,6 +1610,7 @@ offerLine                    src/11ah-offer.js:247
 offerLive                    src/11ah-offer.js:147
 offerPay                     src/11ah-offer.js:94
 offersAll                    src/11ah-offer.js:69
+offerShutLine                src/11ah-offer.js:269
 offerTake                    src/11ah-offer.js:202
 offerTick                    src/11ah-offer.js:159
 offerVisit                   src/11ah-offer.js:124
@@ -1909,7 +1910,7 @@ prunePartsBought             src/14-save.js:33
 psPlanet                     tests/91zzzu-post-scenes.js:6
 psSnap                       tests/91zzzu-post-scenes.js:17
 ptr                          src/15-input.js:245
-putOnTable                   src/11b-speech.js:208
+putOnTable                   src/11b-speech.js:213
 QSL_BY                       src/11an-qsl.js:46
 QSL_OPS                      src/11an-qsl.js:24
 QSL_SPREAD                   src/11an-qsl.js:23
@@ -2401,6 +2402,7 @@ shipThumb                    src/26-ui-station.js:154
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:211
 shipZoneR                    src/19f-lander.js:14
+SHUT_LINES                   src/11ah-offer.js:263
 sixthGone                    src/12k-stories-d.js:75
 SKY_BULL                     src/11ak-skywatch.js:27
 SKY_HOR                      src/11ak-skywatch.js:80
@@ -2580,10 +2582,10 @@ STRIP_CHUNK                  src/07-planet.js:73
 STRIP_JOB                    src/07-planet.js:76
 STRIP_MS                     src/07-planet.js:72
 STRIP_PEND                   src/07-planet.js:78
-STRIPS_MAX                   src/11b-speech.js:179
-stripsAll                    src/11b-speech.js:180
-stripSell                    src/11b-speech.js:218
-stripValue                   src/11b-speech.js:181
+STRIPS_MAX                   src/11b-speech.js:184
+stripsAll                    src/11b-speech.js:185
+stripSell                    src/11b-speech.js:223
+stripValue                   src/11b-speech.js:186
 stSet                        src/14-save.js:14
 stTabFuse                    src/26b-ui-station-work.js:201
 stTabInstr                   src/26b-ui-station-work.js:108
@@ -2627,7 +2629,7 @@ tab                          src/26-ui-station.js:3
 TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
-TABLE_REPLY                  src/11b-speech.js:146
+TABLE_REPLY                  src/11b-speech.js:151
 tableBake                    src/27i-ui-table.js:103
 tableBlock                   src/27c-ui-hq.js:561
 tableIsOpen                  src/27i-ui-table.js:23
@@ -2656,7 +2658,7 @@ tapeRate                     src/25b-tape.js:75
 tapeSample                   src/25b-tape.js:54
 tapeScroll                   src/25b-tape.js:97
 tapeStrip                    src/25b-tape.js:187
-tapeTear                     src/11b-speech.js:184
+tapeTear                     src/11b-speech.js:189
 tapeTick                     src/25b-tape.js:79
 tapeUnpack                   src/25b-tape.js:39
 targetPos                    src/16-flight.js:97
@@ -3069,7 +3071,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11ag-trace.js · 17 КБ
   · чужой след: одна метка на всю жизнь:1
 
-## src/11ah-offer.js · 15 КБ
+## src/11ah-offer.js · 17 КБ
   · возможность:1
 
 ## src/11ah-wall.js · 15 КБ
@@ -3103,7 +3105,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11a-quests.js · 8 КБ
   · журнал дел:1
 
-## src/11b-speech.js · 16 КБ
+## src/11b-speech.js · 17 КБ
   · речь: очередь реплик и вещь на столе:1
 
 ## src/11c-stories.js · 19 КБ
@@ -3992,7 +3994,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzw-relay.js · 10 КБ
   · M218: приёмники как места:1
 
-## tests/91zzzx-late.js · 3 КБ
+## tests/91zzzx-late.js · 5 КБ
   · M225: поздний час у стойки:1
 
 ## tests/99-run.js · 0 КБ

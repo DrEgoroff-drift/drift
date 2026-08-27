@@ -7,6 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.211.0 — the kind word after the squandered name (M226)
+
+The door already closed silently: a named offer missed, and the person simply stops naming you —
+`folkShut`, built with the offers themselves. What the book has and the game did not was the one
+human beat that follows: **the next time you stand at that counter, the person who used to name
+you says something kind — and never names you again.** «Никто не сердится — вот что тяжелее всего.»
+
+One line per closed door, ever. It comes ahead of the queue and ahead of story lines — a person
+matters more than a plot — and stands for the whole visit. It is kind, it never explains, and the
+words «имя», «окно», «долг» do not appear in it: the truth of this game is not spoken. The world
+keeps offering — cold offers come as they always did; it is only the naming that has ended.
+
+Guarded in `91zzzx-late`: the journal holds not one word of reproach, the line is one of the kind
+ones and none of the forbidden words are in it, it stands the visit, it never repeats, and the
+next offer from that person arrives un-named.
+
+11799 assertions in 373 suites.
+---
 ## 0.210.0 — the late hour at the counter (M225)
 
 The first move into the arc's Act II, and with it all three of the book's squanders exist in the
