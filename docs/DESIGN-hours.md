@@ -141,11 +141,26 @@ The crew header now carries it — *«свободных корпусов нет
 while it is true. For a player who already has a spare hull it is noise, and the standing rule is
 that only what is needed right now hangs over the world.
 
-## Still open
+## 3. The run itself — walked, and it is HEALTHY
 
-- **The run itself.** With no second hull there is no order to give and nothing to wait for, so the
-  back half of the third hour — the order, the wait, the return — needs a save with two ships and has
-  not been walked. That is where `CREW_YIELD` (a hand recovers ~85% of wages; the profit lives in the
-  tails of the event table) meets the player for the first time, and it is the most likely place for
-  a "he loses money, is he broken?" reading.
+With a second hull granted, the order given and the clock advanced, the back half of the hour holds
+up. Measured: a trip closes in about **9 minutes of real time**, at most three per tick; the journal
+names every event as it happens — damage, lost cargo, a hangover, a wage rise, and *«подобрал в
+обломках: Импульсный двигательный блок XT»*. Capture is real and it is announced twice, in the
+journal and as a pop-up (`applyCrewEvent` logs every event and `say`s the catastrophes).
+
+The *"he loses money, is he broken?"* reading I predicted above **does not survive contact**. It is
+true that wages outrun the money a hand brings in — `CREW_YIELD` is 0.85 and that is deliberate, a
+hand is a bet and not an income stream — but the journal is already showing where the profit lives
+while it happens: a salvaged part, a trophy hull, rare stock. The answer to the fear is on screen
+before the fear can form. Nothing to fix.
+
+One caution for whoever walks this next, because it cost twenty minutes: **`crewTick` runs on the
+wall clock, not on game time.** Advancing `G.t` does nothing. Stub `Date.now`, and set `c.tMs` to the
+fake "now" before you start — a single real-clock tick beforehand leaves `c.tMs` in the future once
+you restore the clock, `dtMs` goes negative, and the hand silently stops working. That artefact
+looked exactly like "the journal never receives crew events", and it is not true: it receives all of
+them.
+
+## Still open
 - **The fourth hour** — first manager actually appointed, first domain — is untouched.

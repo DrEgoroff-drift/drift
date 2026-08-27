@@ -462,9 +462,13 @@ M188–M206” — grep it there for any of them. What they left open, in the or
   calling `syncTabs()` — not reachable today, but a trap for the first "jump to this tab" feature.
   The third hour was walked in M215 (0.197.0): the same contradiction came back through
   `stationMercs` (reputation stamped `xp` over the traits), and a newcomer paid for a hand before
-  learning he needs a hull of his own. Its own tail: with no second hull there is no order to give,
-  so the order-wait-return half needs a save with two ships — that is where `CREW_YIELD` first meets
-  the player.
+  learning he needs a hull of his own. **Its back half was walked too and is healthy:** a trip closes
+  in ~9 min of real time, the journal names every event as it happens, and the *"he loses money, is
+  he broken?"* reading does not survive contact — the journal shows where the profit lives (a
+  salvaged part, a trophy hull) while it happens. Caution for the next walker: `crewTick` runs on the
+  **wall clock**, not `G.t`; stub `Date.now` and set `c.tMs` to the fake now, or the hand silently
+  stops and it looks exactly like "crew events never reach the journal" (they do, all sixteen).
+  **Unwalked:** the fourth hour — a manager actually appointed, and a domain.
 - **v:5 and the last of the overlay**, in one go, now that the edge question is settled.
 - **A clean performance measurement** by the M169 rules (one window, nothing else running) as the
   release check.
