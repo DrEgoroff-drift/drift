@@ -592,8 +592,8 @@ drawObserv                   src/20aa-poi-shapes.js:491
 drawPirate                   src/12i-pirate-hull.js:320
 drawPirateBase               src/24a-mode-raid.js:103
 drawPirateSkin               src/03d-hull-marks.js:99
-drawPlant                    src/20-life.js:346
-drawPlantAlien               src/20-life.js:160
+drawPlant                    src/20-life.js:383
+drawPlantAlien               src/20-life.js:197
 drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
 drawPostcard                 src/25g-postcard.js:165
@@ -619,7 +619,7 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:103
-drawSurface                  src/21e-surface-draw.js:495
+drawSurface                  src/21e-surface-draw.js:504
 drawSurfaceHud               src/21e-surface-draw.js:19
 drawSurfaceWorld             src/21e-surface-draw.js:97
 drawSurvey                   src/12w-survey.js:63
@@ -673,7 +673,7 @@ etherTick                    src/11b-speech.js:39
 ethOn                        src/25l-post-ether.js:52
 ethReset                     src/25l-post-ether.js:106
 ethTick                      src/25l-post-ether.js:59
-evacuate                     src/21-mode-surface.js:559
+evacuate                     src/21-mode-surface.js:573
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:82
 exitBelt                     src/24-mode-belt.js:174
@@ -819,7 +819,7 @@ genMerc                      src/12a-crew.js:59
 genMgr                       src/12c-mgr-core.js:236
 genName                      src/01-core.js:42
 genPart                      src/05-parts.js:70
-genPlant                     src/20-life.js:151
+genPlant                     src/20-life.js:188
 genPOI                       src/20a-poi.js:32
 genRaid                      src/24a-mode-raid.js:30
 genTerrain                   src/07-planet.js:431
@@ -1285,8 +1285,8 @@ lateAll                      src/11aq-late.js:52
 lateBlock                    src/11aq-late.js:118
 lateLeft                     src/11aq-late.js:57
 lateSit                      src/11aq-late.js:65
-launch                       src/21-mode-surface.js:599
-launchHold                   src/21-mode-surface.js:544
+launch                       src/21-mode-surface.js:613
+launchHold                   src/21-mode-surface.js:558
 layerLevel                   src/10-music.js:326
 ledgerAll                    src/11ai-ledger.js:36
 ledgerNeed                   src/11ai-ledger.js:44
@@ -1749,7 +1749,7 @@ pennTestBase                 tests/91zzzr-penn.js:2
 pennTick                     src/21h-pennant.js:65
 peopleLine                   src/11-log.js:36
 pick                         src/01-core.js:17
-pickKindByBias               src/20-life.js:142
+pickKindByBias               src/20-life.js:179
 pickShare                    src/20e-species.js:125
 pickStType                   src/06-galaxy.js:30
 PICKUPS                      src/24a-mode-raid.js:24
@@ -1796,7 +1796,7 @@ PLANET_RES                   src/07-planet.js:71
 PLANET_SPIN                  src/07-planet.js:32
 planetBargeLoad              src/12n-planet.js:108
 planetBargeRow               src/12n-planet.js:145
-planetBiome                  src/20-life.js:123
+planetBiome                  src/20-life.js:160
 planetCols                   src/07-planet.js:229
 planetDraw                   src/07-planet.js:324
 planetGrant                  src/12n-planet.js:25
@@ -1832,8 +1832,8 @@ planIsCore                   src/11r-plan.js:41
 planIsCoreT                  src/11r-plan.js:42
 PLANT_FORM_K                 src/20e-species.js:20
 PLANT_H_K                    src/20e-species.js:24
-PLANT_KINDS                  src/20-life.js:122
-plantGrad                    src/20-life.js:339
+PLANT_KINDS                  src/20-life.js:159
+plantGrad                    src/20-life.js:376
 plantLitter                  src/20e-species.js:196
 planTook                     src/11r-plan.js:59
 plantSpeciesName             src/20e-species.js:86
@@ -2610,11 +2610,11 @@ suitHit                      src/23-mode-dig.js:101
 suitMax                      src/12x-suit.js:78
 SUN_DIR                      src/19c-light.js:11
 sunSpot                      src/19c-light.js:125
-SURF_BASE                    src/21e-surface-draw.js:486
+SURF_BASE                    src/21e-surface-draw.js:495
 SURF_HOR                     src/19c-light.js:124
 surfaceHint                  src/21e-surface-draw.js:4
 surfNight                    src/06a-celest.js:43
-surfScale                    src/21e-surface-draw.js:494
+surfScale                    src/21e-surface-draw.js:503
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -2685,7 +2685,7 @@ tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
 tickDrones                   src/12-economy.js:82
-tickLaunchHold               src/21-mode-surface.js:545
+tickLaunchHold               src/21-mode-surface.js:559
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
@@ -2738,7 +2738,7 @@ toldOf                       src/11aj-told.js:36
 toldOffBlock                 src/11ar-doors.js:53
 toldWorked                   src/11aj-told.js:41
 toldWorth                    src/11aj-told.js:49
-totalLoss                    src/21-mode-surface.js:576
+totalLoss                    src/21-mode-surface.js:590
 towShare                     src/03f-hull-role.js:87
 TRACE_CAP_DAY                src/11ag-trace.js:46
 TRACE_MARK                   src/11ag-trace.js:32
@@ -3459,9 +3459,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/20f-fauna.js · 17 КБ
   · фауна:1
 
-## src/20-life.js · 29 КБ
+## src/20-life.js · 32 КБ
   · астронавт:1
-  · флора:105
+  · флора:142
 
 ## src/21aa-base-rooms.js · 36 КБ
   · база: внутренности отсеков:1
@@ -3498,7 +3498,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 35 КБ
+## src/21e-surface-draw.js · 36 КБ
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21f-home-out.js · 13 КБ
@@ -3512,7 +3512,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/21-mode-surface.js · 40 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:615
+  · навигатор и подсказки сверху:629
 
 ## src/22a-cave-deco.js · 20 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1

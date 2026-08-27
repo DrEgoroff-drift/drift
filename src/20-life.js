@@ -21,26 +21,44 @@ function drawAstronaut(o){
     ctx.fillStyle=g;
     ctx.beginPath();ctx.moveTo(-3.4,4);ctx.lineTo(0,4+f);ctx.lineTo(3.4,4);ctx.closePath();ctx.fill();
   }
-  /* ноги */
+  /* ── ноги с коленом (аудит M232: «две палки без колен, ступней нет») ──
+     В переносе нога сгибается — колено уходит вперёд-вверх, в опоре почти
+     прямая. Ботинок — тело с мыском по ходу, а не третья чёрточка. */
   ctx.strokeStyle=suitD;ctx.lineWidth=2.6;ctx.lineCap="round";
   const knee=air?3:0;
   for(const [sw,sx] of [[walk,-1],[walk2,1]]){
-    const kx=sx*1.2+sw*2.6, ky=6+ (air?1:0);
+    const flex=(1-Math.abs(sw))*amp*1.8+(air?2.2:0);
+    const kx=sx*1.2+sw*2.6+flex*.9, ky=6-flex*.5+(air?1:0);
     const fx=sx*1.6+sw*4.6, fy=air?9.5-knee:11.5;
     ctx.beginPath();ctx.moveTo(sx*1.4,2.5);ctx.lineTo(kx,ky);ctx.lineTo(fx,fy);ctx.stroke();
-    ctx.strokeStyle=dark;ctx.lineWidth=3.2;
-    ctx.beginPath();ctx.moveTo(fx-1.6,fy);ctx.lineTo(fx+1.8,fy);ctx.stroke();  // ботинок
-    ctx.strokeStyle=suitD;ctx.lineWidth=2.6;
+    ctx.fillStyle=dark;                                     // ботинок телом
+    ctx.beginPath();
+    ctx.moveTo(fx-1.9,fy-1.5);ctx.lineTo(fx+1.1,fy-1.5);
+    ctx.lineTo(fx+2.5,fy-.4);ctx.lineTo(fx+2.5,fy+.4);ctx.lineTo(fx-1.9,fy+.4);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.14)";                  // кромка ловит свет (закон 3)
+    ctx.fillRect(fx-1.9,fy-1.5,3,.5);
   }
-  /* ранец */
-  ctx.fillStyle=KP?KP.pack.dark:"#2b3846";
-  ctx.beginPath();ctx.roundRect?ctx.roundRect(-5.4,-4.2,4.2,7.6,1.4):ctx.rect(-5.4,-4.2,4.2,7.6);
-  ctx.fill();
-  ctx.strokeStyle=rgba(acc,.75);ctx.lineWidth=.9;ctx.stroke();
-  ctx.strokeStyle=rgba(acc,.5);
-  ctx.beginPath();ctx.moveTo(-4.4,-5.6);ctx.lineTo(-4.4,-4.2);ctx.stroke();     // антенна
-  ctx.fillStyle=Math.sin(G.t*.12)>0?"#7fe6d8":"rgba(127,230,216,.25)";
-  ctx.beginPath();ctx.arc(-4.4,-6.1,1,0,TAU);ctx.fill();
+  /* наклон корпуса на бегу: верх тела подаётся по ходу движения */
+  ctx.save();
+  ctx.translate(0,2.2);ctx.rotate(-amp*.09);ctx.translate(0,-2.2);
+  /* ── ранец: не серая плита, а два баллона с вентилем ── */
+  const packD=KP?KP.pack.dark:"#2b3846";
+  ctx.fillStyle=packD;
+  ctx.beginPath();ctx.roundRect(-5.6,-4.4,2.3,7.4,1.1);ctx.fill();   // внешний баллон
+  ctx.beginPath();ctx.roundRect(-3.6,-4.0,2.1,6.6,1.0);ctx.fill();   // внутренний
+  ctx.fillStyle="rgba(255,255,255,.14)";
+  ctx.fillRect(-5.1,-3.8,.7,6.0);                                    // блик по баллону
+  ctx.strokeStyle=rgba(acc,.75);ctx.lineWidth=.9;
+  ctx.beginPath();ctx.moveTo(-5.6,-1.2);ctx.lineTo(-1.5,-1.2);ctx.stroke();  // стяжка
+  ctx.fillStyle="#8fa2b2";ctx.fillRect(-5.3,-5.3,1.2,1.0);           // вентиль
+  ctx.strokeStyle="#8fa2b2";ctx.lineWidth=.6;
+  ctx.beginPath();ctx.moveTo(-4.7,-5.3);ctx.lineTo(-4.7,-6.0);ctx.stroke();
+  ctx.strokeStyle=rgba(acc,.5);ctx.lineWidth=.9;
+  ctx.beginPath();ctx.moveTo(-6.0,-4.6);ctx.lineTo(-6.0,-6.0);ctx.stroke();  // антенна
+  /* огонёк антенны дышит, а не мигает (закон 6) */
+  ctx.fillStyle="rgba(127,230,216,"+(.35+.35*Math.sin(G.t*.03)).toFixed(2)+")";
+  ctx.beginPath();ctx.arc(-6.0,-6.5,1,0,TAU);ctx.fill();
   /* корпус скафандра */
   const bg=ctx.createLinearGradient(-3,-4,3,4);
   bg.addColorStop(0,suit);bg.addColorStop(1,suitD);
@@ -70,6 +88,10 @@ function drawAstronaut(o){
   vg.addColorStop(0,"rgba(160,235,255,.75)");vg.addColorStop(1,"rgba(120,200,230,0)");
   ctx.fillStyle=vg;
   ctx.beginPath();ctx.ellipse(.9,-6.7,3,2.5,-.12,0,TAU);ctx.fill();
+  /* блик-козырёк: одна жёсткая дуга по верхней кромке забрала (M232) —
+     без неё стекло читалось точкой, а не сферой */
+  ctx.strokeStyle="rgba(224,246,255,.85)";ctx.lineWidth=.7;
+  ctx.beginPath();ctx.arc(.9,-6.9,2.5,-2.5,-.7);ctx.stroke();
   ctx.fillStyle=KP?KP.lamp.acc:rgba(acc,.9);
   ctx.beginPath();ctx.arc(-2.9,-7.6,1.1,0,TAU);ctx.fill();                      // фонарь
   /* ── ободок со стороны звезды (M172) ──
@@ -80,13 +102,23 @@ function drawAstronaut(o){
      1 справа, 0 — нет её (под землёй, ночью). */
   if(o.sun){
     const sd=o.sun*(o.face||1)>0?1:-1;      /* в системе координат фигуры */
+    const sk=Math.min(1,Math.abs(o.sun));
     ctx.save();
-    ctx.strokeStyle="rgba(255,247,226,"+(.5*Math.min(1,Math.abs(o.sun))).toFixed(2)+")";
+    /* тёплый БОК, а не только линия (M232): освещённая половина торса и шлема
+       заметно теплее — солнце строит объём фигуры, rim лишь дорисовывает край */
+    ctx.fillStyle="rgba(255,238,206,"+(.13*sk).toFixed(3)+")";
+    ctx.beginPath();
+    ctx.moveTo(sd*1.0,-4);ctx.lineTo(sd*3.2,-4);ctx.lineTo(sd*3.6,2.2);ctx.lineTo(sd*1.4,2.2);
+    ctx.closePath();ctx.fill();
+    ctx.strokeStyle="rgba(255,238,206,"+(.22*sk).toFixed(3)+")";ctx.lineWidth=1.7;
+    ctx.beginPath();ctx.arc(.2,-6.6,3.4,sd>0?-1.2:1.9,sd>0?.6:3.7);ctx.stroke();
+    ctx.strokeStyle="rgba(255,247,226,"+(.5*sk).toFixed(2)+")";
     ctx.lineWidth=1;ctx.lineCap="round";
     ctx.beginPath();ctx.arc(.2,-6.6,4.1,sd>0?-1.5:1.6,sd>0?.6:3.7);ctx.stroke();
     ctx.beginPath();ctx.moveTo(sd*3.3,-3.6);ctx.lineTo(sd*3.7,1.8);ctx.stroke();
     ctx.restore();
   }
+  ctx.restore();      /* наклон корпуса */
   ctx.restore();
   /* луч фонаря — только под землёй */
   if(o.lamp){
@@ -98,6 +130,11 @@ function drawAstronaut(o){
     ctx.beginPath();ctx.moveTo(f*2,-8.6);
     ctx.lineTo(f*62,-30);ctx.lineTo(f*62,20);ctx.lineTo(f*2,-5);
     ctx.closePath();ctx.fill();
+    /* фонарь освещает И САМОГО ходока (M232): грудь и ближняя рука ловят
+       отражённый свет — ночью человек не должен быть чёрным под своим лучом */
+    const gs=ctx.createRadialGradient(f*2.4,-6.6,.5,f*2.4,-6.6,7.5);
+    gs.addColorStop(0,"rgba(255,238,190,.30)");gs.addColorStop(1,"rgba(255,238,190,0)");
+    ctx.fillStyle=gs;ctx.beginPath();ctx.arc(f*1.6,-3.6,7,0,TAU);ctx.fill();
     ctx.restore();
   }
 }

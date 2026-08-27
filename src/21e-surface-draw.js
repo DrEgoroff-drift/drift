@@ -337,6 +337,15 @@ function drawSurfaceWorld(){
       ctx.fillRect(tx-2.6,ty+.4,5.2,.8);
     }
   }
+  /* клубы пыли из-под ног (M232): расходятся и тают за спиной ходока */
+  if(S.dust)for(const dp of S.dust){
+    const age=(G.t-dp.t)/46;if(age>=1)continue;
+    const dx2=dp.x-camx;if(dx2<-20||dx2>W+20)continue;
+    const dy2=groundAt(tr,dp.x)-camy;
+    ctx.fillStyle="rgba(214,198,172,"+((1-age)*.22).toFixed(3)+")";
+    ctx.beginPath();
+    ctx.ellipse(dx2-dp.f*age*5,dy2-1-age*4,1.5+age*4.5,1+age*2.6,0,0,TAU);ctx.fill();
+  }
   if(S.on)groundShadow(x,y+1,7,2);
   ctx.save();ctx.translate(x,y-1);
   /* ободок берётся из положения звезды: слева она или справа и высоко ли (M172) */

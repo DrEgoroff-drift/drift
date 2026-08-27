@@ -7,7 +7,29 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.220.0 — M232 stage 2, pass 3: pad, battery, and shadows for the rest
+## 0.221.0 — M232 stage 4 (taken early): the walker is a body, not a mannequin
+
+Done before the raid stage because the raid draws the SAME figure large —
+`drawAstronaut` is one body everywhere, so every fix lands on the surface, in the
+cave, the mine, the base cut and the boarding at once.
+
+- **Knees.** In the swing phase the leg bends — the knee moves forward and up; in stance it is
+  nearly straight. Before, the mid-point rode a line and the legs were two sticks.
+- **Boots as bodies**: wider than the shin, dark, with a toe cap toward the gaze and a light
+  top edge (law 3) — not a third dash.
+- **The pack is two tanks with a valve** and a strap, a highlight along the near cylinder; the
+  antenna moved outboard and its light breathes instead of blinking (law 6).
+- **The visor got its brow highlight** — one hard arc along the top of the glass; without it
+  the glass read as a dot.
+- **The warm side is structural** (audit: «тёплый бок от солнца — rim усилить структурно»):
+  the sun-facing half of the torso and helmet takes a warm fill, the rim line stays as the
+  edge. **At night the head-lamp lights the walker himself** — chest and near arm catch the
+  reflected light instead of standing black under their own beam.
+- **Body lean at a run**: the upper body pitches forward with walk amplitude.
+- **Dust from underfoot on dry worlds** (vacuum, thin air, deserts): a puff per step, drifting
+  back and dissolving; ephemeral, never persisted.
+
+Tests: 379 suites green.
 
 - **Pad.** The illegible green mass at the left is now the NOSE of a docked shuttle looking in
   from the side bay: hull sweep catching the lamp, glazing, a gear strut on the deck, and a

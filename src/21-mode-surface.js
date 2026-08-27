@@ -209,6 +209,20 @@ function updateSurface(dt){
   const walking=S.on&&(keys.left||keys.right||S.walkTarget!=null);
   S.walkAmp=clamp(S.walkAmp+(walking?1:-1)*.12*dt,0,1);
   if(walking)S.walkPhase+=dt*.22;
+  /* пыльца из-под ног на сухих мирах (M232): клуб на каждый шаг — по нему
+     видно и сам шаг, и что грунт сухой. Эфемерно, в сейв не пишется. */
+  if(walking&&S.on){
+    const stp=Math.floor(S.walkPhase/Math.PI);
+    if(stp!==S.lastStep){
+      S.lastStep=stp;
+      const pw=S.p;
+      if(pw&&(pw.T.atm==="отсутствует"||pw.T.atm.indexOf("разреженная")>=0||pw.type==="desert")){
+        S.dust=S.dust||[];
+        S.dust.push({x:S.x-S.face*2,t:G.t,f:S.face});
+        if(S.dust.length>8)S.dust.shift();
+      }
+    }
+  }
   /* следы: мир пешком не помнил, что по нему шли (G12). Пишем точку через
      каждые тринадцать пикселей пути по земле, храним полторы сотни. */
   if(walking&&S.on){

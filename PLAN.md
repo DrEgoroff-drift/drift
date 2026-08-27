@@ -118,13 +118,13 @@ the drill's own pass in stage 2.** Openings between rooms already existed (the d
 
 ### Stage 3 — raid into the base's language, astronaut instead of a mannequin
 
-### Stage 4 — the walker
+### Stage 4 — the walker — DONE (0.221.0, taken before stage 3)
 
-After M217 he is large — and visibly: legs are two sticks without knees, no feet, the pack a
-grey slab, the visor a dot. Give him: boots (2–3 px), a knee in the step phase, two tanks with
-a valve on the pack, a visor highlight, a warm side from the star (the rim exists — make it
-structural), dust from underfoot on dry worlds, body lean at a run. At night the lamp lights
-HIM too — chest and arms.
+Taken early because the raid draws the same `drawAstronaut` large — the mannequin complaint
+and the walker complaint were one body. All eight items in: knees in the step phase, boots as
+bodies with a lit edge, two tanks with a valve (antenna light breathes, not blinks), the visor
+brow highlight, the structural warm side, dust per step on dry worlds, body lean at a run, and
+the night lamp lighting the walker himself.
 
 ### Stage 5 — planet and weather
 
