@@ -149,6 +149,14 @@ a family of functions), keep the concatenation order, and never split a `const` 
   right now hangs over the world. Two permanent buttons on the right edge, the rest lives in
   `#menu` or arrives when there's a reason. An action button names the action, and takes its verb
   from the prompt rather than a second table. Autotests guard all of this.
+- **The interface has one ruler, and it is the frame** (M221). `--ui` = `clamp(H/760,1,1.75)` is set
+  by `resize()` and applied with `zoom` — never `transform: scale`, which would move the picture and
+  leave layout and hit-testing behind. Sizes in `style.css` stay in the pixels the layout was drawn
+  in; they are multiplied at display time. Two consequences for new code: a raster baked inside a
+  panel multiplies its density by `UIK` or it comes out soft, and anything the canvas draws as
+  *interface* (chips, hint bands, compass) is drawn inside `withScale(UIK,…)` with its world
+  coordinates divided by the same number — while tap zones are handed back to `15-input` in real
+  pixels, because input knows nothing of zoom. A phone (`W<=760`) keeps `1`.
 - **A perk without code is a lie.** The player sees the whole perk tree and spends level points
   for real. Before adding a perk to `MGR_PERKS`, wire it to something; before closing a
   milestone, check that every `id` in the tree is read by someone via `mgrPerk`/`mgrPerkOf`.
