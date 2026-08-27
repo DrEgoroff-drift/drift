@@ -7,7 +7,23 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.217.0 — M232 stage 1: the base cross-section lives (the author's audit of 27.08)
+## 0.218.0 — M232 stage 2, pass 1: reactor, solar, drill
+
+- **Reactor.** The vessel was a frame around a full-height light column — a prison grille. Now
+  it is IRON: a rounded barrel with a domed top and hoops, and only a small bolted viewing
+  hatch shows the core burning behind glass, rods in front of it. A relief valve on the dome
+  exhales steam once in ten seconds (eased, not a blink); the console gained a needle gauge
+  that trembles; the operator's forearm slides along the board; the tank casts its shadow on
+  the wall and stands on the floor (law 2).
+- **Solar.** The battery bays read as shower stalls with people inside — a bright charge fill
+  behind an open niche. They are cabinets now: two shelves of cells with terminal jumpers and
+  a narrow creeping charge strip per cabinet; the generic shift moved to the switchboard, and
+  a technician with a probe wire to a terminal does a measurement at the far cabinet.
+- **Drill.** The conveyor carried six identical beads; lumps now vary in size (a new size for
+  every new lump) and hop on the rollers — the belt visibly RUNS. Portal shoes, control post
+  and the solar switchboard got contact shadows.
+
+Tests: 379 suites green.
 
 The author handed a full cosmetic audit («КОСМЕТИКА ДО ПРЕДЕЛА», eight laws + a screen-by-screen
 list); it is now the live queue in PLAN.md, and this is its first stage — the base frame.

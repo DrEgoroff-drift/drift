@@ -3467,7 +3467,7 @@ zooTick                      src/11ad-zoo.js:41
   · база: внутренности отсеков:1
   · внутренности отсеков:5
 
-## src/21ab-base-interiors.js · 26 КБ
+## src/21ab-base-interiors.js · 32 КБ
   · база: восемь отсеков изнутри:1
 
 ## src/21ab-base-interiors2.js · 17 КБ

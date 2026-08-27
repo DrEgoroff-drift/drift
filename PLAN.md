@@ -93,14 +93,14 @@ the drill's own pass in stage 2.** Openings between rooms already existed (the d
 
 ### Stage 2 — compartments, one at a time
 
-- **Reactor.** The vessel reads as a prison window: a bright full-height grille. Rounded tank,
-  SMALLER viewing hatch, rods behind glass; steam from the valve every N seconds; needle
-  trembles; tank's shadow on the wall. The operator's hand moves along the console.
-- **Solar.** Three "shower stalls" with people inside — actually battery cabinets? Make them
-  cabinets: rows of cells, terminals, creeping charge bars; a technician with a probe. The
-  panel on the mast slowly tracks.
-- **Drill (the best one).** Conveyor: six identical discs like beads — vary the size, lumps hop
-  at the joint; auger turns; dust at the face.
+- ~~**Reactor.**~~ — done (0.218.0): rounded tank with dome and hoops, small bolted hatch with
+  rods behind glass, steam exhale once in ten seconds, trembling needle, wall shadow, the
+  operator's forearm sliding along the board.
+- ~~**Solar.**~~ — done (0.218.0): battery cabinets with shelves of cells, terminal jumpers,
+  creeping charge strips; the shift moved to the switchboard; a technician with a probe. The
+  mast panel already tracked slowly.
+- ~~**Drill.**~~ — done (0.218.0): lump sizes vary per lump, hop on the rollers; the auger
+  already turned, the dust at the face already stood.
 - **Warehouse.** Crates all one height — stacks of differing height, tarpaulin, slings; a
   tallyman with a slate makes a mark.
 - **Living.** The crowd stands before the screen like in a lift; the desk lamp's cone misses
