@@ -5914,3 +5914,114 @@ pixels, the nearest planet in the compass); the empty HQ draws its own empty con
 orphaned `#parrotwin`; the receiver docked into the panel header; the mine's doubled hint; the
 action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
 
+
+# Moved out of PLAN.md on 2026-08-27, evening — closed whole: M218 receivers, M200 the 3D bird
+
+## The author's receivers — confirmed and built (M218, 0.203.0)
+
+Asked where the receiver should sit when a screen is open, the author answered with something
+larger: «давай отдельную панель приемники и они дают доход или бонусы или нихуя не дают, просто
+ты знаешь где они и можешь как в навигаторе проложить маршрут». My reading — *receivers become
+places* — was **confirmed by the author on 27.08.2026** and built the same day (`11ap-relay`).
+
+**Where they are.** Masts stand in the world by seed: beacons, buoys, relays, observation posts,
+weather posts, winterings — never where a station already is, and denser the further out you go
+(the settled middle gets by on wires; the edge has only the air). Nothing is stored but what the
+player did: heard, and when they were last paid.
+
+**How you find them — the dial, not a list.** Each mast has its own frequency, and it lies **in the
+noise between the fixed bands**, where until now there was only «…шшш…». Turn the knob slowly and
+you catch a far mast; turn it fast and you go straight past. Heard clearly once, it names itself
+and its sector — and that is the whole write-down; there is no "record" button, exactly as with the
+distant correspondents' call signs (`11an-qsl`).
+
+**What they give — all three of the author's answers, honestly.** Nothing (a beacon burns, a buoy
+blinks, a post counts what flies by — the use is that you know where they are); a clearer ether
+(a relay lifts legibility in its own two sectors, so words stop dropping at the band edges and the
+overheard exchange writes further from mid-scale — it transmits whether you know of it or not, and
+the panel explains *why* reception is clean there); or money (the manned ones — weather post,
+wintering — pay for the news you bring, once in three days, through `earn()` and in a person's own
+words).
+
+**The panel** is a desk tab, ПРИЁМНИКИ, and a tapped row lays a course — the same and only gesture
+the journal has ever had. Above the list is the **scale itself**: the fixed bands as blocks, the
+caught masts as ticks between them, the knob where it now stands. That was deliberate: a panel of
+four rows would have been exactly the playtest's "screenful of nothing", and the truest thing this
+screen can show is where to look for the next one.
+
+Nothing appears over the world: no arrow, no marker, no "new objective". Guarded in
+`91zzzw-relay`, including that last part.
+
+**And it got a body the same day (M220, 0.205.0).** A place with nothing to see in it never becomes
+a place — it stays a coordinate. The mast now stands on its own point in the system, on a fragment,
+with a silhouette per kind: a lattice tower with a lamp, a buoy with fins, a dish on a frame, an
+observation box with its tube, a weather hut, a wintering with crates. The manned ones are known at
+a glance and not by a caption: **their window is lit.**
+
+Two things that measuring found. **Payment moved from the jump to the visit** — while it landed on
+arrival it was a tax on travel; news is brought to a person by hand, so you have to fly up to them.
+And the first placement put masts at 900–2600 from the star, while the system's edge is computed
+from the belt (`(belt.orbit||2400)*1.6`) and in a system with a tight belt sits closer than 2400:
+the mast then stood *outside the gravitational anchor*, where the ship turns back and can never
+reach it. It is clamped inside now.
+
+# QUEUE: Трепло in the round — a separate 3D module (M200)
+
+The author, 2026-08-26: the in-game parrot stays exactly as it is; the site's "take the bird
+home" page gets a **separate module** with real 3D — shaders, pixels, no self-imposed limits,
+"as beautiful as it can be". It is not part of the game and never talks to it: the only things
+it borrows are the breed (cobalt back, cream breast, amber shoulder, swept crest with cold
+beads) and the lighting rule (warm key above, cold fill from the left, rim behind).
+
+**Where it lives.** Sources in `bird/`, built by `bird.ps1` into **one** self-contained file,
+`site/treplo3d.html` — no server, no dependencies, not one external image, so the bird can be
+downloaded as a single file and kept on a desktop. Same rules as the game's own build: modules
+in filename order, one scope, 40 KB guard.
+
+- `10-math` vectors/matrices/splines · `11-gl` WebGL2 wrappers · `15-geom` mesh box, tube,
+  sphere, disc · `20-body` the breed: eleven spine stations, colour as a function of (t,a),
+  the skin lofted 22 mm *under* the plumage · `21-parts` beak, cere, eyes, perch, zygodactyl
+  feet, crest beads · `22-feather` one feather mesh, ~2000 instances laid out as a coat plus
+  wing, tail and crest · `30-shade` GLSL · `40-pose` springs · `50-render` shadow → HDR →
+  bloom → ACES · `60-app` camera, hands, error overlay.
+
+**Built (first pass, 2026-08-26).** A parrot on a branch: hooked beak, ringed eye, folded wing
+whose primaries converge behind the tail, layered tail, crest quills each carrying a glowing
+bead, shadow-mapped warm key, HDR bloom on the beads, orbit camera, poke reaction.
+
+**The traps that cost time, written down so they are not repeated:**
+- *Sampler precision.* `sampler2DShadow` without an explicit `precision` is a compile error and
+  the page goes black; the preamble in `11-gl` now declares it.
+- *Frame transport.* A swept tube must carry its **X** axis along the path, not Y — carrying Y
+  swaps the axes at the first bend and the beak came out a flat plate turned sideways.
+- *One normal for skin and feathers.* They were computed twice, disagreed in sign on the crown,
+  the skin turned inside out over the plumage and the head rendered bald. `bodyNormal` is now
+  the single source, and "outward" is measured from a point pulled back along the spine —
+  measuring it from the section axis is unstable exactly at the crown.
+- *A feather is longer than its row spacing*, by about three times: a bird shows feather **tips**,
+  not feathers. Equal length and spacing reads as a mosaic of paper chips.
+- *The skin sits under the plumage*, 22 mm in. At the same surface the depth buffer fights itself
+  and the coat comes through in torn patches.
+
+**Still to do — audited 2026-08-27, and almost all of it was already done:** the page around the
+bird exists (`61-ui`: install, «забрать файлом», the one hint line, offline service worker), the
+behaviours are ported (`41-acts`), the down layer is in (`22-feather`, `downy`), the phone budget
+is in (`60-app`: one quality set, DPR capped at two), and the soft light between feathers is
+approximated by the wide nine-tap PCF (`30-shade`). **Sound was the one true gap and is built
+(M228, 0.213.0):** `09-sound` — a two-voice siren through a bandpass «beak» with hard amplitude
+modulation for the creaky throat, pitch/length/bend varied per cry; a chirp with the speech
+bubble, a lower falling grumble when the crest is poked. Lazy AudioContext, first sound only
+after a gesture, −33 dB quiet: a bird on a desk, not in an ear. Volume and character are the
+author's ear from here. Per-feather AO — closed by the author (2026-08-27, «да хер с ним»):
+the root-shadow approximation in the feather shader is the final answer. The module is done.
+
+## M200a…M200j, M201 — the bird's twenty-odd passes and the extras shelf
+
+Closed 2026-08-26 and moved to `docs/PLAN-archive.md` (grep it for `M200a`…`M200j`, `M201`).
+The short of it: the breed sheet driven through twenty render-compare-fix passes; joints and the
+game's habits on the rig; the art director's silhouette pass with its census of what exists and
+what is missing; the ruler against a real macaw; the wing's own axes; the pole plugged and the
+feathers multiplied by seven; the author's six notes; the iris off the photograph; the eye that
+stopped being a sticker; and the front page's shelf of three — flat bird, bird in the round, the
+road. What remains live for the bird is the M200 header above: AO between feathers, the down
+layer, the page around the bird, behaviours, sound, a phone frame budget.

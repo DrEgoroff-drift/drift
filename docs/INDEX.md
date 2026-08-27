@@ -3473,7 +3473,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21ab-base-interiors2.js · 17 КБ
   · отсеки базы: вторая половина:1
 
-## src/21ac-base-draw.js · 38 КБ
+## src/21ac-base-draw.js · 50 КБ
   · база: рисование разреза:1
 
 ## src/21a-mode-base.js · 23 КБ
@@ -3507,7 +3507,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21g-greenhouse.js · 10 КБ
   · грядка у дома:1
 
-## src/21h-pennant.js · 6 КБ
+## src/21h-pennant.js · 7 КБ
   · переходящий вымпел:1
 
 ## src/21-mode-surface.js · 40 КБ

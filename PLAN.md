@@ -57,6 +57,97 @@ Here is only what is still live â cross-cutting rules, the visual queue and
 
 ---
 
+## M232 — cosmetics to the limit (the author's self-prompt, 2026-08-27) — LIVE QUEUE
+
+The author handed a full cosmetic audit. It subsumes the two "author's eye" items that were the
+whole remaining queue (the day palette; base free-strip polish). Work in the author's order:
+**base cross-section → compartments (2–3 per pass, before/after shots) → raid → walker →
+planet/weather → the rest.** Every pass: draft → self-critique by eye → perf check (`prof()`,
+"painted once is baked once": static into tiles, animation is the only live layer).
+
+### The eight laws (breaking any = a defect; hunt them on every screen)
+
+1. Every bright patch has a source; every source has something lit. A cone under which nothing
+   got brighter is film, not light.
+2. Everything that stands casts a shadow. On the base only people have them — the furniture
+   FLOATS. The game's most widespread defect.
+3. A silhouette has an edge: the top rim catches the lamp or the sky.
+4. A flat fill is an unfinished job. Wall, floor, iron, rock — each has its own grain.
+5. Work is visible. A man in a compartment DOES, not stands. The standard is the barkeep's
+   8-second cycle. Four men at the smelter stand WATCHING the fire — a museum, not a shift.
+6. Motion, not blinking. Slow mechanical cycles: belt runs, flywheel turns, lift cage travels.
+   Blinking is forbidden except the alarm lamp.
+7. Cold key + warm accent in every scene. Thin out the green.
+8. One astronaut everywhere a suit is worn. In the living quarters helmets are OFF — people are
+   home, and faces show for the first time. Warmth cheaper than any light.
+
+### Stage 1 — base cross-section (`21ac-base-draw`, `21aa`, `21ab`) — DONE (0.217.0)
+
+All four defects closed and five of six animations in: cable out of the rooms (channel under
+the deck, risers up partitions, a panel box with a steady lamp per room), partitions as
+concrete (chipped top, cast flaw, bolted plates), the soil profile along the silhouette with
+the scar of cutting above the top row, corridor walkers (the shift, only where a shift
+exists), the lift cage + counterweight + floor light, smelter smoke to a wind-blown surface
+cap, the flag's travelling wave, room light into the tunnel. **The drill conveyor moves with
+the drill's own pass in stage 2.** Openings between rooms already existed (the doors).
+
+### Stage 2 — compartments, one at a time
+
+- **Reactor.** The vessel reads as a prison window: a bright full-height grille. Rounded tank,
+  SMALLER viewing hatch, rods behind glass; steam from the valve every N seconds; needle
+  trembles; tank's shadow on the wall. The operator's hand moves along the console.
+- **Solar.** Three "shower stalls" with people inside — actually battery cabinets? Make them
+  cabinets: rows of cells, terminals, creeping charge bars; a technician with a probe. The
+  panel on the mast slowly tracks.
+- **Drill (the best one).** Conveyor: six identical discs like beads — vary the size, lumps hop
+  at the joint; auger turns; dust at the face.
+- **Warehouse.** Crates all one height — stacks of differing height, tarpaulin, slings; a
+  tallyman with a slate makes a mark.
+- **Living.** The crowd stands before the screen like in a lift; the desk lamp's cone misses
+  everyone. Spread them: one asleep (blanket breathes), one at the table with a mug, laundry on
+  a line. Helmets off.
+- **Smelter.** Give them work: one stokes with a poker, another carries an ingot to the rack;
+  the flame's glow pulses slowly on wall and faces; sparks occasionally.
+- **Pad.** The green mass on the left is illegible — an explicit shuttle nose with a marker
+  light; the crane hook travels the beam.
+- **Battery.** The row of sharp teeth reads as a trap — insulators with balls; every 8–12 s one
+  quiet arc run between two (not a blink — ONE run); flywheel turns slowly.
+- **All:** furniture shadows, lamp cones varying by `dim`, 1–2 objects of shift-trace.
+
+### Stage 3 — raid into the base's language, astronaut instead of a mannequin
+
+### Stage 4 — the walker
+
+After M217 he is large — and visibly: legs are two sticks without knees, no feet, the pack a
+grey slab, the visor a dot. Give him: boots (2–3 px), a knee in the step phase, two tanks with
+a valve on the pack, a visor highlight, a warm side from the star (the rim exists — make it
+structural), dust from underfoot on dry worlds, body lean at a run. At night the lamp lights
+HIM too — chest and arms.
+
+### Stage 5 — planet and weather
+
+- **Noon reads overcast on every world** (the old verdict) — raise the day key: sky brighter at
+  zenith, shadows sharper and more coloured. *Diagnosed 2026-08-27:* the zenith IS `sky[1]`
+  (terran: 26,44,74 — near-night navy), `skyGrad` is baked per 48 day divisions but paints the
+  same picture for all of them, `ambRGB` feeds the same navy into `litRGB`, and the ground
+  chunk key carries no hour. Stand scenes `?s=noon`/`noonice`/`noontox` (weather pinned clear)
+  are in `docs/mkview.ps1`.
+- Downpour + straight light shafts coexist — a weather conflict: precipitation must kill the
+  shafts.
+- Far ridges in rain are black silhouettes with no steps of air — give two fade steps.
+- Edge grass is one form — 2–3 bush shapes.
+- Clouds in a downpour are too white.
+
+### Stage 6 — the rest (the previous audit, still standing)
+
+Raid in the base's language + astronaut instead of a mannequin · HQ: «ДОМЕН СВОБОДЕН» as a
+switched-off screen, not a coloured placeholder · attic: window light on the floor, falloff
+along the brick, frames with photos or none · trunk fossils must not glow · sanatorium sea:
+two wave bands, horizon with haze, shadows one way · needle shadows on instruments · the
+trade cantina's window.
+
+---
+
 ## M55. Visual work queue (live)
 
 Where we stopped. Everything above the line is built, tested and pushed; everything below is
@@ -101,10 +192,12 @@ flora and fauna, a living camera, station modules, weather.
    46→26 KB (barkeep, views, props, tables, counter → `27d-ui-cantina-props`), `12tb-settle-draw`
    45→23 KB (buildings, villagers, `settleDrawBody` → `12tb-settle-draw2`). `PLAN.md` itself was
    archived from 83 KB back under the 60 guard (M200a–M201 and M169 → `docs/PLAN-archive.md`).
-   **Still shouting**, in size order: `14-save` 48 (one 590-line `applySave`, no seam short of
-   redesigning it), `27k-road` 47 and `27l-road-draw` 44 (each one long function), `24aa-raid-draw`
-   46 (`drawRaid` is 600 lines), `26-ui-station` 45 (`renderTab` is 460), `27e-ui-home` 44,
-   `12y-parrot-face` 42, `27f-hq-room` 41, `25g-postcard` 41. The fourth payment (0.209.1):
+   **Still shouting**, in size order: `21ac-base-draw` 50 (grew with M232 stage 1; `drawBase` is
+   one long function — same class as `drawRaid`, a redesign rather than a cut; the stated seam if
+   it ever must split: the mountain/surface half vs the rooms half), `14-save` 48 (one 590-line
+   `applySave`, no seam short of redesigning it), `27k-road` 47 and `27l-road-draw` 44 (each one
+   long function), `24aa-raid-draw` 46 (`drawRaid` is 600 lines), `26-ui-station` 45 (`renderTab`
+   is 460), `27e-ui-home` 44, `12y-parrot-face` 42, `27f-hq-room` 41, `25g-postcard` 41. The fourth payment (0.209.1):
    `21ab-base-interiors` 42→26+18 — the table is not cut, it is CONTINUED (`Object.assign` in
    `21ab-base-interiors2`), so readers still see one whole `BASE_ROOM`. The single-function giants
    that remain are a redesign each, not a cut.
@@ -247,9 +340,8 @@ fix carrying the original complaint as its comment:
   higher), dust streaking down the hide with worn patches and old scars, the working arms broken
   at the elbow so the forearm stands clear of the silhouette — all in `grokFace` (`12tb-grok`).
 
-Genuinely open, and both are the author's eye rather than faults: **the day palette** (noon reads
-overcast on every world) and **base free-strip polish** (the rooms read as places; a declared free
-strip for wall dress would be a refinement).
+Genuinely open were **the day palette** and **base free-strip polish** — both subsumed by the
+author's own audit of 2026-08-27, the M232 queue above.
 
 ### The graphics & performance pass (G1–G12) — closed, moved to the archive 2026-08-26
 
@@ -594,53 +686,9 @@ grep `docs/PLAN-archive.md` for "did not reproduce".
    actionable, and let the navigator act on what was overheard. This is also where the author's
    own idea belongs (below).
 
-## The author's receivers — confirmed and built (M218, 0.203.0)
+## The author's receivers — confirmed and built (M218, 0.203.0) — moved to the archive 2026-08-27
 
-Asked where the receiver should sit when a screen is open, the author answered with something
-larger: «давай отдельную панель приемники и они дают доход или бонусы или нихуя не дают, просто
-ты знаешь где они и можешь как в навигаторе проложить маршрут». My reading — *receivers become
-places* — was **confirmed by the author on 27.08.2026** and built the same day (`11ap-relay`).
-
-**Where they are.** Masts stand in the world by seed: beacons, buoys, relays, observation posts,
-weather posts, winterings — never where a station already is, and denser the further out you go
-(the settled middle gets by on wires; the edge has only the air). Nothing is stored but what the
-player did: heard, and when they were last paid.
-
-**How you find them — the dial, not a list.** Each mast has its own frequency, and it lies **in the
-noise between the fixed bands**, where until now there was only «…шшш…». Turn the knob slowly and
-you catch a far mast; turn it fast and you go straight past. Heard clearly once, it names itself
-and its sector — and that is the whole write-down; there is no "record" button, exactly as with the
-distant correspondents' call signs (`11an-qsl`).
-
-**What they give — all three of the author's answers, honestly.** Nothing (a beacon burns, a buoy
-blinks, a post counts what flies by — the use is that you know where they are); a clearer ether
-(a relay lifts legibility in its own two sectors, so words stop dropping at the band edges and the
-overheard exchange writes further from mid-scale — it transmits whether you know of it or not, and
-the panel explains *why* reception is clean there); or money (the manned ones — weather post,
-wintering — pay for the news you bring, once in three days, through `earn()` and in a person's own
-words).
-
-**The panel** is a desk tab, ПРИЁМНИКИ, and a tapped row lays a course — the same and only gesture
-the journal has ever had. Above the list is the **scale itself**: the fixed bands as blocks, the
-caught masts as ticks between them, the knob where it now stands. That was deliberate: a panel of
-four rows would have been exactly the playtest's "screenful of nothing", and the truest thing this
-screen can show is where to look for the next one.
-
-Nothing appears over the world: no arrow, no marker, no "new objective". Guarded in
-`91zzzw-relay`, including that last part.
-
-**And it got a body the same day (M220, 0.205.0).** A place with nothing to see in it never becomes
-a place — it stays a coordinate. The mast now stands on its own point in the system, on a fragment,
-with a silhouette per kind: a lattice tower with a lamp, a buoy with fins, a dish on a frame, an
-observation box with its tube, a weather hut, a wintering with crates. The manned ones are known at
-a glance and not by a caption: **their window is lit.**
-
-Two things that measuring found. **Payment moved from the jump to the visit** — while it landed on
-arrival it was a tax on travel; news is brought to a person by hand, so you have to fly up to them.
-And the first placement put masts at 900–2600 from the star, while the system's edge is computed
-from the belt (`(belt.orbit||2400)*1.6`) and in a system with a tight belt sits closer than 2400:
-the mast then stood *outside the gravitational anchor*, where the ship turns back and can never
-reach it. It is clamped inside now.
+Masts as places on the dial, all three of the author's answers honest (nothing / cleaner ether / money at the manned ones), the ПРИЁМНИКИ desk tab with the scale itself, and the mast bodies with lit windows (M220). Payment moved from the jump to the visit; masts clamped inside the gravitational anchor. Grep docs/PLAN-archive.md for M218.
 
 ---
 
@@ -709,63 +757,6 @@ a home to have a pier at and the invisible ledger full of what nobody counted, �
 your pier — key in the lock, no note, no price, no sale path, no word ever about why. The truth
 is not spoken anywhere, and `91zzzf-offer` guards exactly that.
 
-# QUEUE: Трепло in the round — a separate 3D module (M200)
+# QUEUE: Трепло in the round (M200) — DONE whole, moved to the archive 2026-08-27
 
-The author, 2026-08-26: the in-game parrot stays exactly as it is; the site's "take the bird
-home" page gets a **separate module** with real 3D — shaders, pixels, no self-imposed limits,
-"as beautiful as it can be". It is not part of the game and never talks to it: the only things
-it borrows are the breed (cobalt back, cream breast, amber shoulder, swept crest with cold
-beads) and the lighting rule (warm key above, cold fill from the left, rim behind).
-
-**Where it lives.** Sources in `bird/`, built by `bird.ps1` into **one** self-contained file,
-`site/treplo3d.html` — no server, no dependencies, not one external image, so the bird can be
-downloaded as a single file and kept on a desktop. Same rules as the game's own build: modules
-in filename order, one scope, 40 KB guard.
-
-- `10-math` vectors/matrices/splines · `11-gl` WebGL2 wrappers · `15-geom` mesh box, tube,
-  sphere, disc · `20-body` the breed: eleven spine stations, colour as a function of (t,a),
-  the skin lofted 22 mm *under* the plumage · `21-parts` beak, cere, eyes, perch, zygodactyl
-  feet, crest beads · `22-feather` one feather mesh, ~2000 instances laid out as a coat plus
-  wing, tail and crest · `30-shade` GLSL · `40-pose` springs · `50-render` shadow → HDR →
-  bloom → ACES · `60-app` camera, hands, error overlay.
-
-**Built (first pass, 2026-08-26).** A parrot on a branch: hooked beak, ringed eye, folded wing
-whose primaries converge behind the tail, layered tail, crest quills each carrying a glowing
-bead, shadow-mapped warm key, HDR bloom on the beads, orbit camera, poke reaction.
-
-**The traps that cost time, written down so they are not repeated:**
-- *Sampler precision.* `sampler2DShadow` without an explicit `precision` is a compile error and
-  the page goes black; the preamble in `11-gl` now declares it.
-- *Frame transport.* A swept tube must carry its **X** axis along the path, not Y — carrying Y
-  swaps the axes at the first bend and the beak came out a flat plate turned sideways.
-- *One normal for skin and feathers.* They were computed twice, disagreed in sign on the crown,
-  the skin turned inside out over the plumage and the head rendered bald. `bodyNormal` is now
-  the single source, and "outward" is measured from a point pulled back along the spine —
-  measuring it from the section axis is unstable exactly at the crown.
-- *A feather is longer than its row spacing*, by about three times: a bird shows feather **tips**,
-  not feathers. Equal length and spacing reads as a mosaic of paper chips.
-- *The skin sits under the plumage*, 22 mm in. At the same surface the depth buffer fights itself
-  and the coat comes through in torn patches.
-
-**Still to do — audited 2026-08-27, and almost all of it was already done:** the page around the
-bird exists (`61-ui`: install, «забрать файлом», the one hint line, offline service worker), the
-behaviours are ported (`41-acts`), the down layer is in (`22-feather`, `downy`), the phone budget
-is in (`60-app`: one quality set, DPR capped at two), and the soft light between feathers is
-approximated by the wide nine-tap PCF (`30-shade`). **Sound was the one true gap and is built
-(M228, 0.213.0):** `09-sound` — a two-voice siren through a bandpass «beak» with hard amplitude
-modulation for the creaky throat, pitch/length/bend varied per cry; a chirp with the speech
-bubble, a lower falling grumble when the crest is poked. Lazy AudioContext, first sound only
-after a gesture, −33 dB quiet: a bird on a desk, not in an ear. Volume and character are the
-author's ear from here. Per-feather AO — closed by the author (2026-08-27, «да хер с ним»):
-the root-shadow approximation in the feather shader is the final answer. The module is done.
-
-## M200a…M200j, M201 — the bird's twenty-odd passes and the extras shelf
-
-Closed 2026-08-26 and moved to `docs/PLAN-archive.md` (grep it for `M200a`…`M200j`, `M201`).
-The short of it: the breed sheet driven through twenty render-compare-fix passes; joints and the
-game's habits on the rig; the art director's silhouette pass with its census of what exists and
-what is missing; the ruler against a real macaw; the wing's own axes; the pole plugged and the
-feathers multiplied by seven; the author's six notes; the iris off the photograph; the eye that
-stopped being a sticker; and the front page's shelf of three — flat bird, bird in the round, the
-road. What remains live for the bird is the M200 header above: AO between feathers, the down
-layer, the page around the bird, behaviours, sound, a phone frame budget.
+The site's 3D bird: sources in bird/, built by bird.ps1 into site/treplo3d.html. Twenty-odd passes, sound (M228), down layer, page, behaviours, phone budget; per-feather AO closed by the author. The traps that cost time are in the archive - grep it for M200. Stand: docs/bird.html, /dev/treplo3d.html.

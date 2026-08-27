@@ -91,29 +91,31 @@ function pennDraw(x,y,w,h){
   ctx.translate(x,y);ctx.rotate(-0.22);
   ctx.fillRect(-w*0.03,0,Math.max(2,w*0.05),h*1.15);
   ctx.restore();
-  /* полотнище: слегка ходит, как ткань у стены под вентиляцией */
+  /* полотнище: бегущая волна от древка к свободной кромке (M232) — у древка
+     ткань закреплена и не ходит, к кромке ход растёт. Медленный цикл, не
+     мигание: волна ЕДЕТ по ткани, глаз читает ветер, а не дрожь. */
+  const wv=q=>Math.sin(t*1.35-q*4.6)*h*.045*q;
   ctx.fillStyle="rgba(168,44,40,.95)";
   ctx.beginPath();
   ctx.moveTo(x,y);
-  ctx.lineTo(x+w,y+h*0.06+Math.sin(t)*h*0.02);
-  ctx.lineTo(x+w,y+h*0.86+Math.sin(t+1)*h*0.02);
-  ctx.lineTo(x,y+h*0.94);
+  for(let i=1;i<=6;i++){const q=i/6;ctx.lineTo(x+w*q,y+h*0.06*q+wv(q));}
+  for(let i=6;i>=0;i--){const q=i/6;ctx.lineTo(x+w*q,y+h*(0.94-0.08*q)+wv(q)*1.15);}
   ctx.closePath();ctx.fill();
   ctx.fillStyle="rgba(255,255,255,.10)";
   ctx.beginPath();
-  ctx.moveTo(x,y);ctx.lineTo(x+w*0.42,y+h*0.03);
-  ctx.lineTo(x+w*0.42,y+h*0.92);ctx.lineTo(x,y+h*0.94);
+  ctx.moveTo(x,y);ctx.lineTo(x+w*0.42,y+h*0.03+wv(.42));
+  ctx.lineTo(x+w*0.42,y+h*0.92+wv(.42)*1.15);ctx.lineTo(x,y+h*0.94);
   ctx.closePath();ctx.fill();
-  /* бахрома по нижней кромке */
+  /* бахрома идёт той же волной, что и кромка, — иначе она отрывается от ткани */
   ctx.fillStyle="rgba(226,190,96,.9)";
   for(let i=0;i<10;i++){
     const q=i/9;
-    const bx=x+w*q, by=y+h*(0.94-0.08*q)+Math.sin(t+q*2)*h*0.015;
+    const bx=x+w*q, by=y+h*(0.94-0.08*q)+wv(q)*1.15;
     ctx.fillRect(bx,by,Math.max(1.5,w*0.02),h*0.10);
   }
   /* звезда посередине — ничего не значит, и в этом всё дело */
   ctx.fillStyle="rgba(240,222,150,.95)";
-  const cx=x+w*0.56, cy=y+h*0.46, rr=Math.min(w,h)*0.22;
+  const cx=x+w*0.56, cy=y+h*0.46+wv(0.56)*0.9, rr=Math.min(w,h)*0.22;
   ctx.beginPath();
   for(let i=0;i<10;i++){
     const a=-Math.PI/2+i*Math.PI/5, q=i%2?rr*0.44:rr;

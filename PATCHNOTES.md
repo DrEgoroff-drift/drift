@@ -7,7 +7,31 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.216.0 — «Тихоня» (M231): the arc is complete
+## 0.217.0 — M232 stage 1: the base cross-section lives (the author's audit of 27.08)
+
+The author handed a full cosmetic audit («КОСМЕТИКА ДО ПРЕДЕЛА», eight laws + a screen-by-screen
+list); it is now the live queue in PLAN.md, and this is its first stage — the base frame.
+
+- **The amber "network" lines are gone from the rooms.** They ran through every room at one
+  height, over furniture and people — debug markup, not cable. The cable now lives like a real
+  one: a channel UNDER the deck plating with mounting clips, a riser up each partition, and in
+  the room only a panel box with a steady lamp. The tunnel run lies on its floor the same way.
+- **Partitions are concrete, not a spreadsheet grid**: grey body, shaded far edge, a light
+  chipped top edge with a cast flaw, bolted plates where they meet the slabs.
+- **The ground got a soil profile** (the mine's language, M219): turf → subsoil with stones →
+  broken weathering-crust fragments, all following the mountain's silhouette; roots only where
+  the air is breathable, regolith and gravel where it is not. The top row of rooms now shows
+  the scar of its cutting — crush and pale chips above the ceilings.
+- **The base lives as an organism**: occasionally someone walks the tier from one room to
+  another, through the doors, behind the partitions. Nobody is invented — it is the shift
+  walking, and only where a shift exists.
+- **The lift works**: the cage travels the shaft in a slow continuous cycle, ropes above it,
+  the counterweight running opposite along the lining; the platform edge nearest the cage
+  warms — a floor light without a blink. The smelter got its smoke: a pipe up the partition
+  line to a surface cap, where the wind takes it. The pennant flag carries a travelling wave
+  (everywhere pennDraw is used). Room light falls into the tunnel at its junction.
+
+Law 6 held throughout: everything moves, nothing blinks. Tests: 379 suites green.
 
 The last piece of the through-line, held back until the middle had been lived with. One day, late —
 after a year of this life, with a home to have a pier at — you jump into your home sector and there

@@ -136,6 +136,12 @@ setTimeout(function(){
   }else if(scene==="night"){
     var p=land("terran");hour(p,.78);G.mode="surface";
     G.prompt="";run(6,updateSurface,drawSurface);
+  }else if(scene==="noon"||scene==="noonice"||scene==="noontox"){
+    /* дневная палитра: ясный полдень, погода прижата — жалоба «полдень
+       читается пасмурно» проверяется только на чистом небе */
+    var tN={noon:"terran",noonice:"ice",noontox:"toxic"}[scene];
+    var pN=land(tN);hour(pN,.25);pN.wx={kind:null};G.mode="surface";
+    G.prompt="";run(6,updateSurface,drawSurface);
   }else if(scene==="lowsuit"){
     var p2=land("terran");hour(p2,.30);G.mode="surface";G.surf.suit=14;
     G.fuel=Math.max(1,G.fuel*.06);
