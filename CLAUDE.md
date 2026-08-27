@@ -201,6 +201,16 @@ through, waited out until night, or opened on a phone.
   initialization" — the table has not been declared yet. To land *after* an existing module, extend
   its stem rather than its letter: `25h-post-forms2.js`, not `25ha-post-forms2.js`. (Alphabetical
   intuition is wrong here, and the build gives no warning: the page simply throws.)
+- **`typeof foo==="function"` around a call you know must exist turns your own typo into silence.**
+  It is the right guard for a genuinely optional cross-module call — the pattern the game is full of,
+  and it earns its keep there. It is the wrong guard in a stand or a caller that *requires* the
+  function: the name is never checked, the `else` branch runs, and the page looks plausible while
+  showing something else entirely. `docs/mkview.ps1` had `mgrHire(mgrRoll(…))` — neither function
+  exists (they are `hireMgr` and `genMgr`) — wrapped in exactly that guard, so `?s=hqfull` had been
+  quietly rendering the **empty** HQ, i.e. the same picture as `?s=hq`, with nothing to compare.
+  Two more of the same were introduced the same night (`crewPool`/`crewHire`, `cockpitOn`). To audit
+  a file: pull every guarded name and check it against `src/`:
+  `grep -o 'typeof [A-Za-z_][A-Za-z0-9_]*==="function"' file | sed 's/typeof //;s/==="function"//' | sort -u`
 - **A script parameter shadows a variable of the same name, case-insensitively.**
   `param([switch]$Shots)` plus a later `$shots = Get-ChildItem …` fails with
   "Cannot convert System.Object[] to SwitchParameter".

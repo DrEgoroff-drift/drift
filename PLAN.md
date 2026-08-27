@@ -468,7 +468,14 @@ M188–M206” — grep it there for any of them. What they left open, in the or
   salvaged part, a trophy hull) while it happens. Caution for the next walker: `crewTick` runs on the
   **wall clock**, not `G.t`; stub `Date.now` and set `c.tMs` to the fake now, or the hand silently
   stops and it looks exactly like "crew events never reach the journal" (they do, all sixteen).
-  **Unwalked:** the fourth hour — a manager actually appointed, and a domain.
+  **The fourth hour was walked too, 27.08.2026, and the screen is healthy:** two managers at their
+  consoles with their domain boards («ЗВЕНО 0/0», «ПЛЕЧ 0/2 — маршрут не собран»), a portrait card
+  with level, loyalty, cut and salary, and a header that answers the newcomer's fear outright —
+  «оклады 134 кр/мин — из долей доменов, не из вашей кассы». What was broken was the STAND: `hqfull`
+  called `mgrHire(mgrRoll(…))`, neither of which exists, wrapped in a `typeof` guard that swallowed
+  it — so it had been rendering the empty HQ, the same picture as `?s=hq`. Two more of the same were
+  found and fixed (`crewPool`/`crewHire` in `?s=hire`, `cockpitOn` in `?s=cockpit`); the lesson is
+  in CLAUDE.md.
 - **v:5 and the last of the overlay**, in one go, now that the edge question is settled.
 - **A clean performance measurement** by the M169 rules (one window, nothing else running) as the
   release check.

@@ -164,3 +164,44 @@ them.
 
 ## Still open
 - **The fourth hour** — first manager actually appointed, first domain — is untouched.
+
+---
+
+# The fourth hour — walked 2026-08-27 (0.197.0)
+
+A manager actually appointed, and a domain. **The screen is healthy; what was broken was the stand
+we look at it through.**
+
+## The screen
+
+Two managers stand at their consoles with their domain boards above them — «ЗВЕНО 0/0» for the
+commander, «ПЛЕЧ 0/2 · маршрут не собран» for the factor. Tapping one opens a portrait card: level,
+progress to the next, a loyalty bar reading «ровно», the cut, the salary, the traits. Below it the
+domain summary says plainly what is missing — *«звено пустое: наймите людей на станции и выдайте
+корабли»* — and what has moved through it: taken in cut, handed to you, eaten in salary, all three at
+zero on the first day.
+
+The header answers the newcomer's fear before it forms: **«оклады 134 кр/мин — из долей доменов, не
+из вашей кассы»**. That is the single most important sentence on the screen, and it is already the
+first one. Nothing to fix.
+
+Hiring is honest too: a candidate's traits are hidden until you pay to talk («черты видны после
+разговора» → «чистый лист — других черт нет — растёт быстрее всех»), which makes the talk worth its
+price instead of being a formality.
+
+## The stand was showing the wrong picture — **fixed**
+
+`?s=hqfull` exists so the full HQ can be compared against the empty one. It called
+`mgrHire(mgrRoll(…))`. Neither function exists — the game hires with `hireMgr` and rolls a candidate
+with `genMgr` — and both calls sat inside `if (… typeof mgrHire === "function")`, so the mistake was
+swallowed and the `else` branch ran: **`G.mgrs=[]`**. The stand had been rendering the *empty* HQ,
+which is to say exactly the same picture as `?s=hq`, for as long as it has existed.
+
+Auditing the rest of `mkview.ps1` for the same shape turned up two more, both introduced the same
+night: `?s=hire` called `crewPool`/`crewHire` (they are `stationMercs`/`hireMerc`) and so never hired
+anyone, and `?s=cockpit` called an invented `cockpitOn`. All three fixed, and the guards removed
+where the call is not optional.
+
+The lesson is now in `CLAUDE.md`: `typeof foo === "function"` is the right guard for a genuinely
+optional cross-module call, and the wrong one anywhere the function is required — it does not check
+the name, it hides that you got it wrong, and the page still looks plausible.

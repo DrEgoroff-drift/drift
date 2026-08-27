@@ -178,8 +178,17 @@ setTimeout(function(){
     /* Штаб. По умолчанию — ПУСТОЙ, потому что именно пустым его видит новый
        игрок и именно там плейтестер решил, что «что-то сломал». `hqfull`
        показывает его же с людьми, чтобы было с чем сравнивать. */
-    if(scene==="hqfull"&&typeof mgrHire==="function"){
-      try{ mgrHire(mgrRoll(1,"crew")); mgrHire(mgrRoll(2,"trade")); }catch(e){}
+    /* ИМЕНА ФУНКЦИЙ ЗДЕСЬ БЫЛИ ВЫДУМАНЫ. Стояло `mgrHire(mgrRoll(...))` — ни
+       той, ни другой в игре нет (нанимает `hireMgr`, кандидата делает
+       `genMgr`), а `typeof ... === "function"` проглатывал это молча и уводил
+       в ветку `else`: стенд `hqfull` показывал ПУСТОЙ штаб, то есть ровно то
+       же, что `hq`, и сравнивать было не с чем. Проверка на `typeof` вокруг
+       своего же кода — не осторожность, а способ не заметить опечатку;
+       поэтому здесь её больше нет, и промах сразу виден в консоли. */
+    if(scene==="hqfull"){
+      G.credits=200000;
+      hireMgr(genMgr(1,["cmd"]));
+      hireMgr(genMgr(2,["fact"]));
     }else G.mgrs=[];
     document.getElementById("hqbtn").click();
   }else if(scene==="bird"||scene==="birdwin"){
@@ -202,9 +211,15 @@ setTimeout(function(){
        человека. `hire` — тот же экран после найма: что игрок получил взамен */
     var stc=G.sys.station;
     if(stc){G.ship.x=stc.x+40;G.ship.y=stc.y;openStation();}
-    if(scene==="hire"&&typeof crewPool==="function"){
-      var pool=crewPool();
-      if(pool&&pool.length&&typeof crewHire==="function")crewHire(pool[0]);
+    /* НАСТОЯЩИЕ ИМЕНА, БЕЗ `typeof`. Здесь стояло `crewPool`/`crewHire` —
+       таких функций в игре нет (список даёт `stationMercs`, нанимает
+       `hireMerc`), и оба вызова были обёрнуты в проверку на `typeof`, которая
+       молча их проглотила: стенд `hire` не нанимал никого и показывал ровно
+       то же, что `crew`. Та же ошибка, что жила в `hqfull`. */
+    if(scene==="hire"){
+      G.credits=20000;
+      var pool=stationMercs(G.sys);
+      if(pool&&pool.length)hireMerc(pool[0]);
     }
     tab="crew";syncTabs();renderTab();
   }else if(scene==="raidhangar"){
@@ -293,8 +308,9 @@ setTimeout(function(){
     G.mode="system";
     var plc=G.sys.planets[0];
     if(plc)G.ap={kind:"planet",p:plc,phase:"fly"};
-    G.cockpit=1;
-    if(typeof cockpitOn==="function")cockpitOn(true);
+    /* панель рисуется в полёте сама (`instrPanel` из drawSystem): отдельного
+       переключателя у кабины нет, и выдуманный `cockpitOn` тут только
+       притворялся, что что-то делает */
     for(var fc=0;fc<30;fc++){G.t+=.02;updateSystem(1);drawSystem();}
   }else if(scene==="shaft"){
     /* ствол сверху вниз: площадки стоят на каждом восьмом ряду, и чтобы
