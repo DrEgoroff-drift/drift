@@ -154,6 +154,8 @@ pad(x0,y0,w,h,cx,fy,lit,seed,B,P){
   /* гидравлика: два цилиндра со штоками — по ним и видно, что платформа едет */
   for(let i=0;i<2;i++){
     const px=cx-20+i*40;
+    ctx.fillStyle="rgba(0,0,0,.28)";
+    ctx.beginPath();ctx.ellipse(px,fy-1,7,2,0,0,TAU);ctx.fill();
     bBox(px-4,fy-16,8,16,"rgba(36,45,56,.98)",lit,"rgba(0,0,0,.4)");
     ctx.fillStyle="rgba(170,186,200,"+(.25+lit*.3).toFixed(2)+")";
     ctx.fillRect(px-2,fy-16-lift,4,lift+2);
@@ -176,29 +178,69 @@ pad(x0,y0,w,h,cx,fy,lit,seed,B,P){
     ctx.beginPath();ctx.arc(x0+14+i*((w-28)/5),fy-7,2.2,0,TAU);ctx.fill();
     if(on)bGlow(x0+14+i*((w-28)/5),fy-7,14,BM_COOL,.20);
   }
-  /* кран-балка под потолком: рельс, тележка ездит, крюк на тросе качается */
+  /* кран-балка под потолком: тележка ХОДИТ по балке туда-обратно (M232) —
+     пила с телепортом в начало читалась не ездой, а сбоем */
   bBox(x0+6,y0+10,w-12,4,"rgba(38,48,60,.97)",lit,"rgba(0,0,0,.4)");
-  const trx=x0+20+((G.t*.15+seed*13)%(w-52));
+  const trper=(w-52)*2, trph=(G.t*.15+seed*13)%trper;
+  const trx=x0+20+(trph<(w-52)?trph:trper-trph);
   bBox(trx,y0+13,16,6,"rgba(52,62,76,.98)",lit,"rgba(150,170,190,.3)");
   const hl=16+Math.sin(G.t*.02+seed)*5;
   ctx.strokeStyle="rgba(160,178,196,"+(.25+lit*.25).toFixed(2)+")";ctx.lineWidth=1;
   ctx.beginPath();ctx.moveTo(trx+8,y0+19);ctx.lineTo(trx+8,y0+19+hl);ctx.stroke();
   ctx.lineWidth=1.8;ctx.beginPath();
   ctx.arc(trx+8,y0+21+hl,3,-.4,Math.PI+.4);ctx.stroke();
-  /* груз в очереди у стены, пульт причала и приёмщик */
-  bCrate(x0+8,fy-18,20,18,"52,46,40",lit,false);
-  bCrate(x0+8,fy-32,16,14,"44,50,58",lit,true);
+  /* ── нос челнока (M232) ──
+     Слева стояла зелёная масса ящиков и не читалась ничем. Площадка — причал:
+     из левого бокса в отсек заглядывает НОС пришвартованного челнока — обвод,
+     остекление, стойка шасси и габаритный огонь. Огонь дышит, не мигает. */
+  {
+    const ny=fy-16;
+    ctx.fillStyle="rgba(0,0,0,.30)";
+    ctx.beginPath();ctx.ellipse(x0+14,fy-1,16,2.4,0,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(58,66,78,.98)";
+    ctx.beginPath();
+    ctx.moveTo(x0-2,ny-16);
+    ctx.quadraticCurveTo(x0+26,ny-14,x0+30,ny-2);
+    ctx.quadraticCurveTo(x0+26,ny+8,x0-2,ny+10);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(150,170,190,"+(.16+lit*.14).toFixed(3)+")";   // обвод ловит лампу
+    ctx.beginPath();
+    ctx.moveTo(x0-2,ny-15);ctx.quadraticCurveTo(x0+24,ny-13,x0+29,ny-3);
+    ctx.lineTo(x0+27,ny-2);ctx.quadraticCurveTo(x0+22,ny-11,x0-2,ny-13);
+    ctx.closePath();ctx.fill();
+    ctx.fillStyle="rgba(14,20,28,.95)";                                // остекление
+    ctx.beginPath();
+    ctx.moveTo(x0+10,ny-12);ctx.quadraticCurveTo(x0+22,ny-10,x0+25,ny-4);
+    ctx.lineTo(x0+18,ny-4);ctx.lineTo(x0+10,ny-8);ctx.closePath();ctx.fill();
+    ctx.strokeStyle="rgba(120,138,156,.35)";ctx.lineWidth=1;           // стык обшивки
+    ctx.beginPath();ctx.moveTo(x0+6,ny-14);ctx.lineTo(x0+6,ny+9);ctx.stroke();
+    const gb=.6+.4*Math.sin(G.t*.01+seed);                             // габаритный огонь
+    ctx.fillStyle="rgba(120,255,170,"+(.5+.4*gb).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(x0+29,ny-2,1.8,0,TAU);ctx.fill();
+    bGlow(x0+29,ny-2,12,"120,255,170",.10+.10*gb);
+    ctx.strokeStyle="rgba(90,104,120,.9)";ctx.lineWidth=2;             // стойка шасси
+    ctx.beginPath();ctx.moveTo(x0+14,ny+9);ctx.lineTo(x0+14,fy-3);ctx.stroke();
+    ctx.fillStyle="rgba(30,36,44,.95)";
+    ctx.beginPath();ctx.arc(x0+14,fy-3,3,0,TAU);ctx.fill();
+  }
   const dx=x0+w-24;
+  ctx.fillStyle="rgba(0,0,0,.28)";
+  ctx.beginPath();ctx.ellipse(dx+9,fy-1,11,2.2,0,0,TAU);ctx.fill();
   bBox(dx,fy-30,18,30,"rgba(30,38,48,.96)",lit,"rgba(140,160,180,.3)");
   bScreen(dx+3,fy-27,12,10,BM_COOL,lit,seed+9);
   ctx.fillStyle="rgba("+BM_WARM+","+(.3+lit*.3).toFixed(2)+")";     // кнопки пульта
   for(let i=0;i<3;i++)ctx.fillRect(dx+3+i*5,fy-13,3,3);
+  ctx.fillStyle="rgba(0,0,0,.32)";
+  ctx.beginPath();ctx.ellipse(dx-11,fy-1,7,2,0,0,TAU);ctx.fill();
   bWorker(dx-11,fy,lit,false,G.t*.035+seed,1);
 },
 /* ── ЛАБОРАТОРИЯ: образцы, голограмма, центрифуга, находка на подставке ── */
 lab(x0,y0,w,h,cx,fy,lit,seed,B,P){
   const on=P.eff>.15;
   /* верстак вдоль всей стены */
+  ctx.fillStyle="rgba(0,0,0,.26)";
+  ctx.beginPath();ctx.ellipse(x0+12,fy-1,6,1.8,0,0,TAU);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x0+w-14,fy-1,6,1.8,0,0,TAU);ctx.fill();
   bBox(x0+6,fy-20,w-12,4,"rgba(46,54,64,.98)",lit,"rgba(150,170,190,.28)");
   ctx.fillStyle="rgba(28,34,42,.9)";ctx.fillRect(x0+10,fy-16,4,16);ctx.fillRect(x0+w-16,fy-16,4,16);
   /* колбы с образцами: стекло, среда, пузырьки — каждая своего цвета */
@@ -255,6 +297,8 @@ lab(x0,y0,w,h,cx,fy,lit,seed,B,P){
   ctx.beginPath();ctx.moveTo(ax,fy-42);ctx.lineTo(ax+5,fy-35);ctx.lineTo(ax,fy-30);ctx.lineTo(ax-5,fy-35);
   ctx.closePath();ctx.stroke();
   bGlow(ax,fy-36,22,"190,160,255",.12*glow*2);
+  ctx.fillStyle="rgba(0,0,0,.32)";
+  ctx.beginPath();ctx.ellipse(cx-16,fy-1,7,2,0,0,TAU);ctx.fill();
   bWorker(cx-18,fy,lit,true,G.t*.04+seed);
   bLamp(cx,y0+4,40,fy,"200,232,255",.30+lit*.35);
 },
@@ -293,24 +337,80 @@ battery(x0,y0,w,h,cx,fy,lit,seed,B,P){
   const sx2=x0+w*.60,sw2=w-(sx2-x0)-12;
   /* мерило — человек: выстрел ему по бедро, иначе погреб выглядит складом
      торпед. Восемь мест вместо шести: их носят руками, значит они мелкие. */
-  const sn=8,cw2=sw2/sn;
+  /* ── изоляторы, а не зубья (M232) ──
+     Ряд острых головок читался капканом. Питание орудия — высоковольтная
+     сборка: стопки керамических тарелок со стержнем и шариком наверху, шина
+     поверху. Раз в 8–12 секунд между двумя соседними шариками ОДИН тихий
+     пробег дуги — не мигание, а событие. */
+  /* пять, а не восемь: у мелких стопок тарелки распадались на сетку точек —
+     изолятор читается, когда тарелки перекрываются и виден стержень */
+  const sn=5,cw2=sw2/sn,tops=[];
+  ctx.fillStyle="rgba(0,0,0,.26)";
+  ctx.beginPath();ctx.ellipse(sx2+sw2/2,fy-1,sw2*.55,2.2,0,0,TAU);ctx.fill();
+  ctx.fillStyle="rgba(44,54,66,"+(.8+lit*.2).toFixed(2)+")";       // плита-основание
+  ctx.fillRect(sx2-3,fy-4.5,sw2+6,3);
   for(let i=0;i<sn;i++){
-    const bx=sx2+i*cw2;
-    if(R()<.16)continue;                                   // расстрелянные места пустуют
-    ctx.fillStyle="rgba(76,72,58,"+(.75+lit*.25).toFixed(2)+")";
-    ctx.fillRect(bx+1,fy-20,cw2-4,16);
-    ctx.fillStyle="rgba(214,168,64,"+(.30+lit*.3).toFixed(2)+")";  // поясок
-    ctx.fillRect(bx+1,fy-10,cw2-4,1.8);
-    ctx.fillStyle="rgba(180,196,210,"+(.2+lit*.25).toFixed(2)+")"; // головка
-    ctx.beginPath();ctx.moveTo(bx+1,fy-20);ctx.lineTo(bx+1+(cw2-4)/2,fy-25);
-    ctx.lineTo(bx+cw2-3,fy-20);ctx.closePath();ctx.fill();
+    const bx=sx2+i*cw2+cw2/2;
+    if(R()<.16)continue;                                   // пустые места — сборка живая
+    ctx.fillStyle="rgba(60,68,80,.95)";ctx.fillRect(bx-1.4,fy-21,2.8,17);
+    for(let d=0;d<4;d++){
+      const dy2=fy-6-d*3.6;
+      ctx.fillStyle="rgba(178,186,198,"+(.5+lit*.25).toFixed(2)+")";
+      ctx.beginPath();ctx.ellipse(bx,dy2,cw2*.34,2.4,0,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(0,0,0,.30)";
+      ctx.beginPath();ctx.ellipse(bx,dy2+1,cw2*.34,1.7,0,Math.PI*.08,Math.PI*.92);ctx.fill();
+    }
+    ctx.fillStyle="rgba(210,216,226,"+(.6+lit*.3).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(bx,fy-22.5,2.5,0,TAU);ctx.fill();     // шарик
+    ctx.fillStyle="rgba(255,255,255,.35)";ctx.fillRect(bx-1.3,fy-23.8,1.2,1);
+    tops.push(bx);
   }
-  /* рама держит их поперёк, на высоте пояса: видно, что это стеллаж */
-  ctx.fillStyle="rgba(44,54,66,"+(.8+lit*.2).toFixed(2)+")";
-  ctx.fillRect(sx2-3,fy-15,sw2+6,2.4);
-  ctx.fillRect(sx2-3,fy-19,3,15);ctx.fillRect(sx2+sw2,fy-19,3,15);
+  if(tops.length>1){
+    ctx.strokeStyle="rgba(120,132,148,"+(.30+lit*.2).toFixed(2)+")";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(tops[0],fy-24.5);
+    for(let i=1;i<tops.length;i++)ctx.lineTo(tops[i],fy-24.5);
+    ctx.stroke();
+    const per=520+(seed%5)*50;
+    const ph2=(G.t%per)/per;
+    if(ph2<.05){
+      const k=Math.sin(ph2/.05*Math.PI), n2=Math.floor(G.t/per);
+      const a0=hashi(n2+1,seed,0xA5C)%(tops.length-1);
+      const xa=tops[a0],xb=tops[a0+1],ay=fy-22.5;
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      ctx.strokeStyle="rgba(190,220,255,"+(.55*k).toFixed(2)+")";ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(xa,ay);
+      for(let q=1;q<4;q++)
+        ctx.lineTo(xa+(xb-xa)*q/4,ay-3+((hashi(q,n2,0x77)&7)-3.5)*1.1);
+      ctx.lineTo(xb,ay);ctx.stroke();
+      bGlow((xa+xb)/2,ay-2,10,"190,220,255",.14*k);
+      ctx.restore();
+    }
+  }
+  /* маховик накопителя: медленно крутится — в погребе есть запасённый ход
+     (закон 6: движение, а не мигание) */
+  {
+    const fx2=x0+70,fyc=fy-12;
+    ctx.fillStyle="rgba(0,0,0,.30)";
+    ctx.beginPath();ctx.ellipse(fx2,fy-1,10,2.2,0,0,TAU);ctx.fill();
+    bBox(fx2-9,fy-8,18,8,"rgba(30,38,48,.96)",lit,"rgba(0,0,0,.4)");
+    ctx.fillStyle="rgba(40,48,60,.98)";
+    ctx.beginPath();ctx.arc(fx2,fyc,8,0,TAU);ctx.fill();
+    ctx.strokeStyle="rgba(150,168,186,"+(.30+lit*.25).toFixed(2)+")";ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.arc(fx2,fyc,8,0,TAU);ctx.stroke();
+    const fa=G.t*.012;
+    ctx.lineWidth=1.2;
+    for(let i=0;i<3;i++){
+      const a=fa+i*TAU/3;
+      ctx.beginPath();ctx.moveTo(fx2-Math.cos(a)*6.5,fyc-Math.sin(a)*6.5);
+      ctx.lineTo(fx2+Math.cos(a)*6.5,fyc+Math.sin(a)*6.5);ctx.stroke();
+    }
+    ctx.fillStyle="rgba(200,214,228,"+(.25+lit*.2).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(fx2,fyc,1.6,0,TAU);ctx.fill();
+  }
   /* пульт наводки: экран и лампа «огонь» — единственное, что светится сильно */
   const px=x0+8,py=fy-34;
+  ctx.fillStyle="rgba(0,0,0,.28)";
+  ctx.beginPath();ctx.ellipse(px+17,fy-1,19,2.3,0,0,TAU);ctx.fill();
   bBox(px,py,34,34,"rgba(28,36,46,.97)",lit,"rgba(150,170,190,.32)");
   ctx.fillStyle="rgba(12,18,26,.95)";ctx.fillRect(px+4,py+5,26,18);
   ctx.strokeStyle="rgba("+BM_COOL+","+(.25+lit*.4).toFixed(2)+")";ctx.lineWidth=1;

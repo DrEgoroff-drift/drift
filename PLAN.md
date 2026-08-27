@@ -109,11 +109,12 @@ the drill's own pass in stage 2.** Openings between rooms already existed (the d
 - ~~**Smelter.**~~ — done (0.219.0): stoker with a poker on a slow cycle, carrier walks the
   molds→rack half-room with a glowing ingot, wall-wide slow flame pulse, sparks on the
   thrust; the slag-watcher statue removed.
-- **Pad.** The green mass on the left is illegible — an explicit shuttle nose with a marker
-  light; the crane hook travels the beam.
-- **Battery.** The row of sharp teeth reads as a trap — insulators with balls; every 8–12 s one
-  quiet arc run between two (not a blink — ONE run); flywheel turns slowly.
-- **All:** furniture shadows, lamp cones varying by `dim`, 1–2 objects of shift-trace.
+- ~~**Pad.**~~ — done (0.220.0): shuttle nose with a breathing marker light in place of the
+  green mass; the crane trolley ping-pongs the beam instead of the sawtooth teleport.
+- ~~**Battery.**~~ — done (0.220.0): five insulator stacks with ball tops under a bus, ONE
+  quiet arc run per 8–12 s, a slowly turning flywheel.
+- ~~**All:**~~ — furniture shadows swept across all nine rooms (0.218.0–0.220.0); lamp cones
+  already varied by `dim`; shift-trace objects already stood (`fin.junk`).
 
 ### Stage 3 — raid into the base's language, astronaut instead of a mannequin
 

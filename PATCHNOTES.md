@@ -7,7 +7,23 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.219.0 — M232 stage 2, pass 2: warehouse, living quarters, smelter
+## 0.220.0 — M232 stage 2, pass 3: pad, battery, and shadows for the rest
+
+- **Pad.** The illegible green mass at the left is now the NOSE of a docked shuttle looking in
+  from the side bay: hull sweep catching the lamp, glazing, a gear strut on the deck, and a
+  breathing green marker light. The crane trolley now travels the beam back and forth — the
+  old sawtooth teleported home at the end of each run and read as a glitch, not motion.
+- **Battery.** The row of sharp shell heads read as a trap's teeth. The magazine now feeds a
+  high-voltage assembly: five insulator stacks — overlapping ceramic discs on a rod with a
+  ball top — under a common bus, one slot empty. Once in 8–12 seconds ONE quiet arc runs
+  between two neighbouring balls (an event, not a blink). A storage flywheel turns slowly on
+  its mount (law 6). The first draft had eight small stacks and they dissolved into a grid of
+  dots — an insulator only reads when its discs overlap and the rod shows.
+- **Law 2 sweep for the remaining rooms:** contact shadows under the pad's hydraulic
+  cylinders, control pult and dispatcher; the battery's pult and assembly plate; the lab's
+  bench legs, seated researcher and centrifuge bench neighbours.
+
+Tests: 379 suites green.
 
 - **Warehouse.** The floor was empty and the shelf crates all one height. A front row now:
   stacks of differing height, one under a tarpaulin with tie-downs, one still in its slings —
