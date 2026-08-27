@@ -56,7 +56,7 @@ function snapshot(){
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
-    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,win:G.win,spa:G.spa,hol:G.hol,books:G.books,qsl:G.qsl,green:G.green,kino:G.kino,penn:G.penn,first:G.first,chess:G.chess,   /* M154–M207, M192 */
+    ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,win:G.win,spa:G.spa,hol:G.hol,books:G.books,qsl:G.qsl,relay:G.relay,green:G.green,kino:G.kino,penn:G.penn,first:G.first,chess:G.chess,   /* M154–M207, M192 */
     seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
@@ -546,6 +546,21 @@ function applySave(s){
       if(src&&typeof src==="object")for(const id in src)if(QSL_BY[id])Q[k][id]=src[id];
     }
     G.qsl=Q;
+  }
+  /* приёмники (M218): что поймано ушами и когда там платили. Где стоят и
+     какого рода — считается от посева сектора и не хранится вовсе. Род
+     сверяется с таблицей: чужой в сейве не заведёт мачту неизвестной породы */
+  G.relay=null;
+  if(s.relay&&typeof s.relay==="object"){
+    const R={};
+    for(const k in s.relay){
+      const a=s.relay[k];
+      if(!a||typeof a!=="object"||!RELAY_BY[a.k])continue;
+      R[k]={k:a.k,call:String(a.call||""),name:String(a.name||""),
+            sx:a.sx|0,sy:a.sy|0,day:a.day|0};
+      if(a.paid!=null)R[k].paid=a.paid|0;
+    }
+    G.relay=R;
   }
   /* грядка (M204): имя вида и время посева, больше ничего. Рост считается от
      Date.now() в тот момент, когда на грядку смотрят */

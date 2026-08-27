@@ -29,8 +29,22 @@ function radioBand(f){
 function radioTune(f){
   f=clamp(+f||0,0,1);G.radioF=f;
   const B=radioBand(f);
-  if(!B)return {k:"noise",q:0,text:"…шшш… "+"".padEnd(3+Math.floor(f*9),"·")};
-  const mid=(B.lo+B.hi)/2,q=clamp(1-Math.abs(f-mid)/((B.hi-B.lo)/2),0,1);
+  if(!B){
+    /* ── в шуме живут дальние мачты (M218) ──
+       Между постоянными диапазонами до сих пор было только «шшш». Теперь там
+       стоят приёмники мира: у каждого своя частота, всегда на одном месте, и
+       поймать его можно только медленной ручкой. Услышал разборчиво — записал;
+       кнопки «записать» нет, как и у позывных дальних корреспондентов. */
+    const V=(typeof relayAtFreq==="function")?relayAtFreq(f):null;
+    if(V&&V.q>0)return {k:"relay",ru:V.R.call,q:V.q,text:relaySpeak(V.R,V.q)};
+    return {k:"noise",q:0,text:"…шшш… "+"".padEnd(3+Math.floor(f*9),"·")};
+  }
+  /* ретранслятор по соседству чистит эфир (M218): по краям диапазона слова
+     перестают выпадать, и биржа со слуха пишется дальше от середины шкалы.
+     Он передаёт независимо от того, знает о нём игрок или нет */
+  const mid=(B.lo+B.hi)/2;
+  const q=clamp(1-Math.abs(f-mid)/((B.hi-B.lo)/2)+
+                (typeof relayEar==="function"?relayEar():0),0,1);
   const r=rng(hashi(Math.round(f*200),Math.floor(celDay()/3),0xAD10));
   let text="";
   if(B.k==="rumour"){const L=(typeof rumoursHere==="function")?rumoursHere():[];text=L.length?"…говорят, "+L[Math.floor(r()*L.length)].text:"…тихо";}

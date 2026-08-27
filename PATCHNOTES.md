@@ -7,6 +7,38 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.203.0 — the receivers became places (M218)
+
+The author's own idea, from the day the question was only "where should the receiver sit when a
+screen is open": «давай отдельную панель приемники и они дают доход или бонусы или нихуя не дают,
+просто ты знаешь где они и можешь как в навигаторе проложить маршрут». Confirmed, and built.
+
+**There are masts in the world now.** Beacons, buoys, relays, observation posts, weather posts,
+winterings — standing by seed where no station is, and thicker the further out you go: the settled
+middle gets by on wires, the edge has only the air.
+
+**You find them with the knob, not with a list.** Every mast has its own frequency, and it lies **in
+the noise between the fixed bands** — where the receiver has always said only «…шшш…». Turn slowly
+and you catch a far mast; turn quickly and you go straight past it. Heard clearly once, it names
+itself and its sector, and that is the entire act of writing it down: there is no "record" button
+here, any more than there is one for a distant operator's call sign.
+
+**What they give — all three answers, and each is true.** *Nothing*: a beacon burns, a buoy blinks,
+a post counts what flies past; the use is that you know where they are. *A clearer ether*: a relay
+lifts legibility in its own two sectors, so words stop dropping out at the edges of the bands — it
+transmits whether or not you know it exists, and the panel is what explains why reception is good
+here. *Money*: the manned ones — a weather post, a wintering — pay for the news you bring, once in
+three days, in their own words and never much.
+
+**And there is a panel: ПРИЁМНИКИ, on the desk.** A tapped row lays a course, the same and only
+gesture the journal has ever had. Above the list is the scale itself — the fixed bands as blocks,
+your caught masts as ticks in the gaps between them, the knob where it stands right now — because
+four rows and half a sheet of nothing is exactly the complaint the playtest already made, and the
+truest thing this page can show is where to look for the next one.
+
+Nothing appears over the world. No arrow, no marker, nobody asks you to go. 11751 assertions in
+366 suites.
+---
 ## 0.202.0 — the world is measured by the frame, not by the monitor (M217)
 
 An outside tester spent twenty seconds unable to find himself on the surface. Measured, and the

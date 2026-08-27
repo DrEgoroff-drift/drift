@@ -343,6 +343,9 @@ function jump(cost){
   /* Жестянка (12z) слышна с порога: она передаёт свою просьбу в пустоту и не
      знает, что её некому исполнить. Работающая смена молчит */
   if(typeof tinSignal==="function")tinSignal();
+  /* мачта в этом секторе (M218): пришёл сам — увидел её своими глазами, и
+     если там кто-то живёт, ему есть чем отблагодарить за привезённые новости */
+  if(typeof relayArrive==="function")relayArrive();
   saveGame(true);
   logAdd("dim","Прыжок в "+G.sys.name+" ("+G.sx+":"+G.sy+") · −"+cost+" топлива"+
     (G.pirates.length?" · чужих сигнатур: "+G.pirates.length:""));

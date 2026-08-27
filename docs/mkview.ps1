@@ -5,7 +5,7 @@
 # в нужное состояние и остаётся стоять; снимает её docs\pageshot.ps1.
 #
 # Режим и обстановка задаются через ?s=  :
-#   surface (по умолчанию) · system · cave · night · lowsuit · dock
+#   surface (по умолчанию) · system · cave · night · lowsuit · dock · relay
 param([string]$Scene = "surface")
 $src = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot "..\drift.html")
 $cut = $src.LastIndexOf("</body>")
@@ -486,6 +486,23 @@ setTimeout(function(){
       logAdd("talk","Крапива: «мешок отдал, а расписки не взял»");
     }
     tableToggle(true,scene==="table"?"ether":scene);
+  }else if(scene==="relay"||scene==="relayair"){
+    /* приёмники (M218): встаём туда, где мачты рядом, и ловим их СОБСТВЕННЫМИ
+       частотами через настоящий radioTune — записи не подкладываются руками,
+       иначе стенд показывал бы не то, что делает игра. Потом открываем панель */
+    G.mode="system";
+    var found=null;
+    for(var rx=-14;rx<14&&!found;rx++)for(var ry=-14;ry<14&&!found;ry++){
+      var rr=(typeof relayOf==="function")?relayOf(rx,ry):null;
+      if(rr)found=rr;
+    }
+    if(found){G.sx=found.sx;G.sy=found.sy;G.sys=getSystem(G.sx,G.sy);}
+    for(var f7=0;f7<2;f7++){G.t+=.02;drawSystem();}
+    if(typeof relaysNear==="function"){
+      var LR=relaysNear(G.sx,G.sy);
+      for(var i7=0;i7<LR.length&&i7<8;i7++)radioTune(LR[i7].f);
+    }
+    if(scene==="relay")tableToggle(true,"relay");
   }else{
     var p3=land("terran");hour(p3,.30);G.mode="surface";atPlant();
     run(6,updateSurface,drawSurface);

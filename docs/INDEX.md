@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 317 · символов верхнего уровня: 2910
+Файлов: 319 · символов верхнего уровня: 2931
 
 ## СИМВОЛЫ
 
@@ -616,7 +616,7 @@ drawSurvey                   src/12w-survey.js:63
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:283
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:271
+drawThingIcon                src/27i-ui-table.js:275
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:125
 drawTrail                    src/16-flight.js:338
@@ -1254,7 +1254,7 @@ landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:154
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:328
-landOnTestPlanet             tests/90-harness.js:67
+landOnTestPlanet             tests/90-harness.js:68
 last                         src/28-loop.js:374
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:375
@@ -2010,6 +2010,26 @@ regionOfTheme                src/06c-regions.js:90
 regionPlace                  src/06c-regions.js:44
 regionPlainSys               src/06c-regions.js:77
 regionThemeAt                src/06c-regions.js:88
+RELAY_BY                     src/11ap-relay.js:70
+RELAY_EAR                    src/11ap-relay.js:74
+RELAY_GAPS                   src/11ap-relay.js:72
+RELAY_KINDS                  src/11ap-relay.js:38
+RELAY_NEAR                   src/11ap-relay.js:106
+RELAY_PAY_WIN                src/11ap-relay.js:75
+RELAY_REACH                  src/11ap-relay.js:73
+relayAll                     src/11ap-relay.js:148
+relayArrive                  src/11ap-relay.js:177
+relayAtFreq                  src/11ap-relay.js:133
+relayDial                    src/11ap-relay.js:220
+relayEar                     src/11ap-relay.js:125
+relayFind                    tests/91zzzw-relay.js:6
+relayFreq                    src/11ap-relay.js:98
+relayKnown                   src/11ap-relay.js:152
+relayList                    src/11ap-relay.js:202
+relayOf                      src/11ap-relay.js:81
+relaysNear                   src/11ap-relay.js:107
+relaySpeak                   src/11ap-relay.js:166
+relayWrite                   src/11ap-relay.js:155
 releaseAllKeys               src/15-input.js:167
 RELIC_KEYS                   src/12h-relic.js:64
 relicDeep                    src/12h-relic.js:76
@@ -2043,10 +2063,11 @@ renderOpts                   src/27-ui-ship.js:198
 renderPrices                 src/12aa-need.js:223
 renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
+renderRelays                 src/11ap-relay.js:256
 renderRoute                  src/12r-route.js:225
-renderStrips                 src/27i-ui-table.js:211
+renderStrips                 src/27i-ui-table.js:215
 renderTab                    src/26-ui-station.js:208
-renderThings                 src/27i-ui-table.js:242
+renderThings                 src/27i-ui-table.js:246
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -2230,7 +2251,7 @@ rumourEtherLine              src/11t-rumours.js:57
 rumourSeedHere               src/11t-rumours.js:32
 rumoursHere                  src/11t-rumours.js:36
 runAutopilot                 src/16-flight.js:109
-runTests                     tests/90-harness.js:77
+runTests                     tests/90-harness.js:78
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:39
 S2                           src/01-core.js:40
@@ -2480,7 +2501,7 @@ stationViz                   src/17c-system-draw.js:111
 statPreview                  src/05-parts.js:271
 stCore                       src/17c-system-draw.js:128
 stDel                        src/14-save.js:26
-steps                        tests/90-harness.js:75
+steps                        tests/90-harness.js:76
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:75
 stGroupOf                    src/26-ui-station.js:74
@@ -2591,7 +2612,7 @@ tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
 tableNoticeAll               src/27i-ui-table.js:68
 tableRender                  src/27i-ui-table.js:131
-tableRow                     src/27i-ui-table.js:203
+tableRow                     src/27i-ui-table.js:207
 tableSetTab                  src/27i-ui-table.js:101
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:84
@@ -2624,7 +2645,7 @@ tell                         src/11-log.js:45
 TELL_SFX                     src/11-log.js:43
 TEST                         tests/90-harness.js:10
 TEST_ONLY                    tests/90-harness.js:14
-TEST_SUITES                  tests/90-harness.js:110
+TEST_SUITES                  tests/90-harness.js:111
 tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
@@ -3047,6 +3068,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11ao-firsthour.js · 5 КБ
   · первый час: сменщик в эфире:1
 
+## src/11ap-relay.js · 18 КБ
+  · приёмники как места:1
+
 ## src/11a-quests.js · 8 КБ
   · журнал дел:1
 
@@ -3290,7 +3314,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:61
   · видимое состояние обмена:76
 
-## src/14-save.js · 47 КБ
+## src/14-save.js · 48 КБ
   · сохранение:1
 
 ## src/15-input.js · 25 КБ
@@ -3483,7 +3507,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25d-instr-rack.js · 28 КБ
   · приборная стойка: настоящие стрелочные приборы и самописец:1
 
-## src/25e-receiver.js · 5 КБ
+## src/25e-receiver.js · 7 КБ
   · приёмник: частота крутится рукой:1
 
 ## src/25f-globus.js · 8 КБ
@@ -3626,7 +3650,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29i-spa-draw.js · 23 КБ
   · санаторий: веранда:1
 
-## tests/90-harness.js · 7 КБ
+## tests/90-harness.js · 8 КБ
   · автотесты: каркас:1
 
 ## tests/91a-flight.js · 15 КБ
@@ -3794,7 +3818,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzg-kit.js · 7 КБ
   · автотесты: скафандр как комплект (M152):1
 
-## tests/91zzh-receiver.js · 1 КБ
+## tests/91zzh-receiver.js · 2 КБ
   · приёмник: диапазоны на одном месте, между ними шум, на краю слова выпадают:1
 
 ## tests/91zzh-vega.js · 9 КБ
@@ -3923,5 +3947,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzv-wall.js · 7 КБ
   · автотесты: стена, которая помнит (M210):1
+
+## tests/91zzzw-relay.js · 8 КБ
+  · M218: приёмники как места:1
 
 ## tests/99-run.js · 0 КБ

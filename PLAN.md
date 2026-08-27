@@ -599,21 +599,44 @@ action button naming hold-actions. See `PATCHNOTES.md` 0.163.0.
    actionable, and let the navigator act on what was overheard. This is also where the author's
    own idea belongs (below).
 
-## The author's receivers, 2026-08-26 — needs one confirmation before building
+## The author's receivers — confirmed and built (M218, 0.203.0)
 
 Asked where the receiver should sit when a screen is open, the author answered with something
 larger: «давай отдельную панель приемники и они дают доход или бонусы или нихуя не дают, просто
-ты знаешь где они и можешь как в навигаторе проложить маршрут».
+ты знаешь где они и можешь как в навигаторе проложить маршрут». My reading — *receivers become
+places* — was **confirmed by the author on 27.08.2026** and built the same day (`11ap-relay`).
 
-**My reading, to be confirmed:** receivers become *places*. Relays, beacons, far stations and
-wintering posts that you have heard on the air get a panel of their own; each has a location, and
-from that panel you can send it to the navigator exactly like a station. Some pay a little for
-being serviced, some improve reception in their region, some only ever give a voice. That would
-also answer finding 5 above without a single objective marker: you fly somewhere because you
-heard something, not because the game told you to.
+**Where they are.** Masts stand in the world by seed: beacons, buoys, relays, observation posts,
+weather posts, winterings — never where a station already is, and denser the further out you go
+(the settled middle gets by on wires; the edge has only the air). Nothing is stored but what the
+player did: heard, and when they were last paid.
 
-If that is the wrong reading, say so before it is built — everything else in this section can
-proceed without it.
+**How you find them — the dial, not a list.** Each mast has its own frequency, and it lies **in the
+noise between the fixed bands**, where until now there was only «…шшш…». Turn the knob slowly and
+you catch a far mast; turn it fast and you go straight past. Heard clearly once, it names itself
+and its sector — and that is the whole write-down; there is no "record" button, exactly as with the
+distant correspondents' call signs (`11an-qsl`).
+
+**What they give — all three of the author's answers, honestly.** Nothing (a beacon burns, a buoy
+blinks, a post counts what flies by — the use is that you know where they are); a clearer ether
+(a relay lifts legibility in its own two sectors, so words stop dropping at the band edges and the
+overheard exchange writes further from mid-scale — it transmits whether you know of it or not, and
+the panel explains *why* reception is clean there); or money (the manned ones — weather post,
+wintering — pay for the news you bring, once in three days, through `earn()` and in a person's own
+words).
+
+**The panel** is a desk tab, ПРИЁМНИКИ, and a tapped row lays a course — the same and only gesture
+the journal has ever had. Above the list is the **scale itself**: the fixed bands as blocks, the
+caught masts as ticks between them, the knob where it now stands. That was deliberate: a panel of
+four rows would have been exactly the playtest's "screenful of nothing", and the truest thing this
+screen can show is where to look for the next one.
+
+Nothing appears over the world: no arrow, no marker, no "new objective". Guarded in
+`91zzzw-relay`, including that last part.
+
+**Still open:** a mast has no body in flight yet — you arrive in its sector and are paid, but there
+is nothing to fly up to and look at. The `17b-finds` machinery is the natural home for that, and it
+is a pass of its own.
 
 ---
 
