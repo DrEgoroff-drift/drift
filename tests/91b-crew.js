@@ -304,3 +304,24 @@ TEST_SUITES.push(()=>suite("даровой наёмник приходит на 
   eq(crewGift(2),false,"без места — отказ");
   eq(G.crew.length,full,"и никто не появился");
 }));
+TEST_SUITES.push(()=>suite("наём: опыт не спорит с подписью",()=>{
+  resetWorld();
+  /* Экран найма показывает подряд черту и число: «необстрелянный — дёшев и
+     НЕОПЫТЕН · опыт 22» — и игрок перестаёт верить обеим строкам. Число
+     обязано следовать чертам, которыми человек описан */
+  let green=0,vet=0,mid=0,bad=[];
+  for(let s=1;s<=900;s++){
+    const c=genMerc(s);
+    const g=c.traits.indexOf("green")>=0, v=c.traits.indexOf("vet")>=0;
+    if(g&&!v){green++;if(c.xp>20)bad.push("зелёный с опытом "+c.xp);}
+    else if(v&&!g){vet++;if(c.xp<30)bad.push("ветеран с опытом "+c.xp);}
+    else mid++;
+    ok(c.xp>=0&&c.xp<100,"опыт в разумных пределах: "+c.xp);
+  }
+  ok(green>20&&vet>20,"выборка застала и зелёных, и ветеранов ("+green+"/"+vet+")");
+  eq(bad.length,0,"ни одного противоречия"+(bad.length?": "+bad.slice(0,3).join(", "):""));
+  /* и опыт по-прежнему что-то значит: он идёт и в жалованье, и в умение */
+  const a=genMerc(11),b=genMerc(11);
+  eq(a.xp,b.xp,"тот же номер — тот же человек");
+  ok(crewSkill({xp:0})<crewSkill({xp:80}),"опытный работает лучше");
+}));

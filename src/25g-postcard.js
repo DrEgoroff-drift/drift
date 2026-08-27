@@ -582,6 +582,12 @@ function albumAll(){if(!Array.isArray(G.album))G.album=[];return G.album;}
    снимок был бы кадром интерфейса, а не мира. */
 function postCanShoot(){
   if(!G.running)return false;
+  /* открыт экран — снимать нечего: мир за ним, и игрок на него не смотрит.
+     До M208 это выходило само (в системе камера не работала вовсе), а стоило
+     открыть камеру в полёте — и ФОТО повисло над штабом, рынком и верфью.
+     Пульт над экраном оставлен нарочно (M151a), но кнопка съёмки к нему не
+     относится: она про мир, а мир сейчас закрыт */
+  if(document.body.classList.contains("screen"))return false;
   const M=G.mode;
   if(M==="surface")return !!(G.surf&&G.surf.p);
   if(M==="landing")return !!(G.land&&G.land.p);

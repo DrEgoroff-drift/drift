@@ -7,6 +7,46 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.192.0 — the hour after the opening, walked (M212)
+
+M207 walked a fresh save and left one item written down: *"the hour AFTER the opening — first
+station screen in full, first hire, first manager — has not been walked yet."* This is that walk.
+It is in [`docs/DESIGN-second-hour.md`](docs/DESIGN-second-hour.md), measured in the running game
+rather than remembered. Three findings, all fixed.
+
+**Every long screen ended in a lie.** The board on a first dock renders eight sections — measured
+live, **1229 px of content in a 407 px window**. The cantina is **2086 in 408**, five screens. Nothing
+said so: the last visible row ended flush with the panel edge, exactly as a final row would, so two
+thirds of the board and four fifths of the cantina did not exist for a player who did not think to
+drag. This is not the question of whether eight sections is too many — that is the author's call and
+nothing was removed — it is a missing affordance. The bottom of any overflowing list now fades out,
+and the fade goes the moment you reach the end: no arrow, no "more below", no scrollbar, the same
+haze this game measures distance with everywhere else. It is a mask rather than an overlay, because
+an overlay is another element to position, it catches taps, and it does not know about the panel's
+rounded corners. Applies to every screen — a list running past the fold was never only the board's
+problem.
+
+**The hire screen argued with itself.** Two candidates, read top to bottom: *«необстрелянный — дёшев
+и НЕОПЫТЕН · опыт 22»* and, right below, *«ВЕТЕРАН — дороже, но выходит живым · опыт 7»*. `genMerc`
+set `xp: Math.floor(r()*40)`, a number bound to nothing, while the traits printed beside it came
+from a separate roll. A player who catches that stops trusting both lines — on the first screen
+where they are asked to spend a third of everything they own on a stranger. Experience now follows
+the traits it is printed next to: green 0–6, veteran 46–89, everyone else 8–37. The spread stays,
+its sign no longer argues with the caption. Guarded in `91b-crew` across 900 seeds.
+
+**And a one-day-old regression of my own.** M208 made flight photographable; the console stays over
+an open screen deliberately (M151a); so from yesterday the ФОТО button hung over the HQ, the market
+and the shipyard, offering to photograph a world the player is not looking at. `postCanShoot` now
+refuses while a screen is open — the console rule stands, the shutter is not part of it.
+
+Three things were checked and are **not** defects, written down so a later pass does not "fix" them:
+the empty HQ (which says what a manager is *and that you do not need one yet* — the best-written
+empty state in the game), the unaffordable candidate whose button dims rather than hides, and a
+manager's 70 кр/мин being out of reach in the second hour.
+
+`27m-scroll-cue`, suites `91b-crew` and `91zzzu-post-scenes`. 11642 assertions in 357 suites; 11732
+on the phone.
+---
 ## 0.191.0 — the pirate base, pass 2: bodies and floor paint (M180)
 
 M180's first pass fixed the projection, the horizon and the bulkheads, and wrote down what it left:

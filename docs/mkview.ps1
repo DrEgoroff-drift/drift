@@ -196,6 +196,17 @@ setTimeout(function(){
     run(6,updateSurface,drawSurface);
     if(typeof consoleTick==="function")consoleTick(999);
     if(scene==="birdwin"&&typeof toggleParrotWin==="function")toggleParrotWin(true);
+  }else if(scene==="crew"||scene==="hire"){
+    /* НАЁМНИКИ глазами новичка (M212, обход второго часа): экипаж пуст, денег
+       шестьсот, и надо решить, стоит ли отдать половину за незнакомого
+       человека. `hire` — тот же экран после найма: что игрок получил взамен */
+    var stc=G.sys.station;
+    if(stc){G.ship.x=stc.x+40;G.ship.y=stc.y;openStation();}
+    if(scene==="hire"&&typeof crewPool==="function"){
+      var pool=crewPool();
+      if(pool&&pool.length&&typeof crewHire==="function")crewHire(pool[0]);
+    }
+    tab="crew";syncTabs();renderTab();
   }else if(scene==="raidhangar"){
     /* ангар с того места, где игрок оказывается сразу после стыковки: это
        ПЕРВЫЙ кадр абордажа, и второй хвост M180 — «ангар хочет убранства» —

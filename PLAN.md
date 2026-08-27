@@ -438,10 +438,21 @@ M188–M206” — grep it there for any of them. What they left open, in the or
   `11ao-firsthour` (suite `91zzzs-first`): four lines in the ether, each once per save and tied to
   an occasion, said by people and never by the game. No arrows, no modals, no tutorial flag.
 
-  **Still open and written down:** the board shows eight sections on a first dock (author's call
-  whether to thin it); the landing prompt offers «СКАНИРОВАТЬ ОРГАНИЗМ» while twenty-two deposits
-  lie underfoot; and the hour AFTER the opening — first station screen in full, first hire, first
-  manager — has not been walked yet.
+  **Second pass done (0.192.0, M212)** — the hour AFTER the opening, walked; findings and
+  non-findings in [`docs/DESIGN-second-hour.md`](docs/DESIGN-second-hour.md). Three fixes: every
+  overflowing list now shows that it continues (`27m-scroll-cue` — measured: the board is 1229 px in
+  a 407 px window, the cantina 2086 in 408, and nothing said so); the hire screen stopped arguing
+  with itself (`xp` was `Math.floor(r()*40)`, bound to nothing, so «неопытен · опыт 22» stood beside
+  «ветеран · опыт 7» — it now follows the traits it is printed next to); and ФОТО stopped hanging
+  over open screens, a one-day-old regression from M208 widening the camera to flight.
+
+  **Still open:** the board's eight sections on a first dock — untouched, thinning it is the
+  author's call; what changed is only that the player can now see there is more. The landing prompt
+  offering «СКАНИРОВАТЬ ОРГАНИЗМ» beside twenty-two deposits was checked and is **not** a priority
+  bug — `dep` is tested before `plant`; it only happens when no deposit is within reach and a plant
+  is. The station's group row can fall out of step with its tab if future code sets `tab` without
+  calling `syncTabs()` — not reachable today, but a trap for the first "jump to this tab" feature.
+  And the third hour — first run given to a hired hand, the wait, and what comes back — is unwalked.
 - **v:5 and the last of the overlay**, in one go, now that the edge question is settled.
 - **A clean performance measurement** by the M169 rules (one window, nothing else running) as the
   release check.

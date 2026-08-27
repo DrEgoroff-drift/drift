@@ -65,7 +65,22 @@ function genMerc(seed,specPool){
     const t=pick(CREW_TRAITS,r);
     if(traits.indexOf(t.id)<0)traits.push(t.id);
   }
-  const c={id:"c"+seed,seed,name:genName(r),spec,traits,xp:Math.floor(r()*40),
+  /* ── опыт следует ЧЕРТАМ (M212, обход второго часа) ──
+     Стоял `Math.floor(r()*40)` — просто случайное число, ни с чем не
+     связанное. На экране найма это выходило прямым противоречием, и первый же
+     обход его поймал: у человека с чертой «необстрелянный — дёшев и НЕОПЫТЕН»
+     стояло «опыт 22», а у соседнего «ветеран — дороже, но выходит живым» —
+     «опыт 7». Игрок читает подряд две строки, которые спорят друг с другом, и
+     верить перестаёт обеим.
+
+     Число теперь выводится из тех же черт, которыми человек описан: у зелёного
+     он мал, у ветерана велик, у прочих посередине. Разброс остаётся — люди
+     разные, — но знак разброса больше не спорит с подписью. */
+  const xpLo=traits.indexOf("green")>=0, xpHi=traits.indexOf("vet")>=0;
+  const xp=xpLo&&!xpHi ? Math.floor(r()*7)          /* необстрелянный: 0…6 */
+         : xpHi&&!xpLo ? 46+Math.floor(r()*44)      /* ветеран: 46…89 */
+         :               8+Math.floor(r()*30);      /* прочие: 8…37 */
+  const c={id:"c"+seed,seed,name:genName(r),spec,traits,xp,
     shipId:null,order:null,hull:100,hullMax:100,cargo:{},debt:0,morale:1,
     tMs:0,paidMs:0,fee:0};
   c.fee=Math.round((260+r()*420)*crewMul(c,"pay"));   // разовая плата за наём

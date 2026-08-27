@@ -132,3 +132,26 @@ TEST_SUITES.push(()=>suite("подпись: под землёй нет часа,
   for(const m of ["s","l","c","d","b","y","g"])
     ok(!/\d/.test(cap(m).replace(F.p.name,"")),"«"+m+"»: в подписи нет цифр");
 }));
+TEST_SUITES.push(()=>suite("камера: над открытым экраном ФОТО не висит",()=>{
+  resetWorld();
+  G.running=true;
+  const F=psPlanet("rock");
+  G.sx=F.s.sx;G.sy=F.s.sy;G.sys=F.s;
+  G.mode="system";
+  G.ship.x=(F.p.x||0)+40;G.ship.y=(F.p.y||0)+40;
+  ok(postCanShoot(),"в полёте снимать есть что");
+  /* M208 открыл камеру в системе — и ФОТО повисло над штабом и рынком:
+     пульт над экраном оставлен нарочно, но кнопка съёмки к нему не относится */
+  document.body.classList.add("screen");
+  ok(!postCanShoot(),"над открытым экраном — нет");
+  ok(postSnap()!==null,"снимок при этом собрать всё ещё можно: запрет на кнопке");
+  document.body.classList.remove("screen");
+  ok(postCanShoot(),"экран закрыли — кнопка вернулась");
+  /* и то же на грунте: правило про экран сильнее правила про место */
+  const tr=genTerrain(F.p,null);
+  G.mode="surface";G.surf={p:F.p,tr,x:tr.W*.5};
+  ok(postCanShoot(),"на грунте снимают");
+  document.body.classList.add("screen");
+  ok(!postCanShoot(),"а с открытым столом — нет");
+  document.body.classList.remove("screen");
+}));
