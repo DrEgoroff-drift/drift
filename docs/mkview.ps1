@@ -296,6 +296,17 @@ setTimeout(function(){
     G.cockpit=1;
     if(typeof cockpitOn==="function")cockpitOn(true);
     for(var fc=0;fc<30;fc++){G.t+=.02;updateSystem(1);drawSystem();}
+  }else if(scene==="shaft"){
+    /* ствол сверху вниз: площадки стоят на каждом восьмом ряду, и чтобы
+       судить, читаются ли они, нужен именно вертикальный ход, а не штрек */
+    land("terran");
+    G.surf.x=G.surf.tr.W*.5;
+    enterDig();
+    var Ds=G.dig;
+    for(var q4=0;q4<22;q4++)digCell(Ds,0,q4).dug=true;
+    for(var q5=6;q5<11;q5++)digCell(Ds,q5-6+1,8).dug=true;
+    Ds.col=0;Ds.row=8;
+    for(var f6=0;f6<8;f6++){G.t+=.02;updateDig(1);drawDig();}
   }else if(scene==="dig"){
     /* шахта: M55 #1, «самый слабый экран». Копаем несколько клеток, чтобы в
        кадре была и выработка, и нетронутый массив, — иначе судить не о чем */

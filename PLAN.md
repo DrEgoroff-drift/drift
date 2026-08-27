@@ -267,6 +267,10 @@ one at a time when a pass is due, and nothing here blocks a milestone.
   palette changes between types of giant.
 - **mine** â landings in the shaft barely read; a tub in a cell below the floor looks like a crate
   in a pit; a long shaft is still a long shaft (niches and a change of section beat texture).
+  **Checked 27.08.2026 on the new stand `?s=shaft`: the landings part is STALE** — a later pass had
+  already rebuilt them into a proper landing (a beam across the shaft on brackets, a lamp that
+  really lights, a depth plate, a box on every other one), and they read. The other two stand, and
+  the landings every eighth row are the only rhythm a long shaft has.
 - **cantina** â ~~the counter is the same length and shape in every hall~~ done in 0.99.0
   (`cantCounter`). Pass 2 (0.99.3): hall lifted, crowd in colour, floor with light pools. Next: a barkeep
   who moves; glasses and bottles on the counter per type; a second window plane.
