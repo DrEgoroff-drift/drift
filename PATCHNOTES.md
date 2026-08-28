@@ -7,6 +7,18 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.229.0 — ВЗЛЁТ has one owner
+
+- **The launch button stayed on screen after the launch.** It was shown AND hidden by
+  `updateSurface` — code that does not run in any other mode — so the moment the mode changed
+  (took off, went down a shaft, entered a base) the button was left hanging over space with
+  nothing to hide it. Showing it is still the surface's job: it alone knows whether you are
+  standing by the ship. Hiding it is the frame's, from every mode except the surface — the same
+  rule ОГОНЬ and РАКЕТА already follow: a button has one owner.
+
+Tests: 383 suites green (one new: the button lives only on the surface).
+
+---
 ## 0.228.0 — M234: five things the author's phone found in one evening
 
 The author played on a phone and sent four screenshots and five lines. Every one of them was a

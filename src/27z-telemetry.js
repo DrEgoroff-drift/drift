@@ -29,6 +29,7 @@ const $msg=document.getElementById("msg"),$prompt=document.getElementById("promp
 const $bThr=document.querySelector("[data-k=thrust]"),$bBrk=document.querySelector("[data-k=brake]");
 const $nav=document.getElementById("navbtn"),$fire=document.getElementById("firebtn");
 const $msl=document.getElementById("mslbtn");
+const $launch=document.getElementById("launchbtn");
 /* ── пробуждение приборов ──
    Сравниваем не значения по одному, а строку показаний: любое изменение
    будит панель на пару секунд. Тревога держит её открытой, пока не пройдёт.
@@ -294,4 +295,11 @@ function hud(){
   document.body.classList.toggle("inflight",
     G.mode==="system"||G.mode==="map"||G.mode==="belt"||G.mode==="scoop"||G.mode==="landing");
   document.body.classList.toggle("mobile",innerWidth<=760);   /* телефон (M167) */
+  /* ── ВЗЛЁТ гасит кадр, а не поверхность (M234, второй заход) ──
+     Кнопку показывал и прятал `updateSurface`, то есть код, который в других
+     режимах не работает вовсе: взлетел, ушёл в шахту, спустился в базу — и она
+     осталась висеть над космосом. Показывает её по-прежнему поверхность (она
+     одна знает, стоишь ли ты у корабля), а гасит кадр — отовсюду, кроме
+     поверхности. То же правило, что у ОГНЯ и РАКЕТЫ: у кнопки один хозяин. */
+  if($launch&&G.mode!=="surface")setSt($launch,"display","none");
 }

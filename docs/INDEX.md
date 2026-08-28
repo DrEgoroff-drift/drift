@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 327 · символов верхнего уровня: 2983
+Файлов: 327 · символов верхнего уровня: 2984
 
 ## СИМВОЛЫ
 
@@ -17,9 +17,10 @@ $f                           src/27z-telemetry.js:6
 $fb                          src/27z-telemetry.js:7
 $fn                          src/27z-telemetry.js:11
 $hq                          src/27c-ui-hq.js:4
-$hudp                        src/27z-telemetry.js:42
+$hudp                        src/27z-telemetry.js:43
 $ipod                        src/25c-instr-hud.js:16
 $jn                          src/27z-telemetry.js:26
+$launch                      src/27z-telemetry.js:32
 $menu                        src/15-input.js:180
 $msg                         src/27z-telemetry.js:28
 $msl                         src/27z-telemetry.js:31
@@ -1084,11 +1085,11 @@ hqStations                   src/27f-hq-room.js:219
 hqTable                      src/27f-hq-room.js:377
 hqWallProps                  src/27f-hq-room.js:170
 hqWindowView                 src/27f-hq-room.js:616
-hud                          src/27z-telemetry.js:65
+hud                          src/27z-telemetry.js:66
 HUD_BAND                     src/27z-telemetry.js:19
-HUD_PREV                     src/27z-telemetry.js:41
-HUD_STEP                     src/27z-telemetry.js:40
-hudWake                      src/27z-telemetry.js:43
+HUD_PREV                     src/27z-telemetry.js:42
+HUD_STEP                     src/27z-telemetry.js:41
+hudWake                      src/27z-telemetry.js:44
 HULL_CACHE                   src/03-ships.js:142
 HULL_CLASS                   src/03-ships.js:174
 HULL_ROLE                    src/03f-hull-role.js:17
@@ -2363,7 +2364,7 @@ sdWoodpile                   src/12tb-settle-draw.js:385
 sdYard                       src/12tb-settle-draw2.js:410
 sellCargo                    src/12-economy.js:26
 sellDroneYield               src/12-economy.js:37
-setSt                        src/27z-telemetry.js:64
+setSt                        src/27z-telemetry.js:65
 SETTLE_BUILD                 src/12t-settle.js:31
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
@@ -2406,7 +2407,7 @@ settleWallHereX              src/12t-settle.js:64
 settleWallX                  src/12t-settle.js:59
 settleWatch                  src/12t-settle.js:330
 settleWords                  src/12t-settle.js:198
-setTx                        src/27z-telemetry.js:63
+setTx                        src/27z-telemetry.js:64
 setZoom                      src/15-input.js:241
 sfx                          src/09-audio.js:237
 SFX                          src/09-audio.js:97
@@ -3689,7 +3690,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27-ui-ship.js · 28 КБ
   · экран корабля:1
 
-## src/27z-telemetry.js · 23 КБ
+## src/27z-telemetry.js · 24 КБ
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 27 КБ
@@ -3729,11 +3730,12 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/90-harness.js · 8 КБ
   · автотесты: каркас:1
 
-## tests/91a-flight.js · 18 КБ
+## tests/91a-flight.js · 20 КБ
   · автотесты: наборы:1
   · первая минута: цель, которую нельзя потерять:243
   · M234: ранец — запас, а не декорация:289
   · M234: сбой кадра не убивает игру:320
+  · M234: ВЗЛЁТ гаснет вместе с поверхностью:338
 
 ## tests/91b-crew.js · 18 КБ
   · автотесты: наёмники: убыток по кредитам, удача, плен, рейсы, сохранение:1

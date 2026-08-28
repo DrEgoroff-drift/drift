@@ -334,3 +334,26 @@ TEST_SUITES.push(()=>suite("кадр переживает исключение",
   ok(crashN>0,"сбой посчитан");
   ok(/проверка/.test(crashLast),"и назван: "+crashLast);
 }));
+
+/* ══════════════ M234: ВЗЛЁТ гаснет вместе с поверхностью ══════════════
+   Кнопку показывала и прятала поверхность — то есть код, который в других
+   режимах не работает: взлетел, и кнопка осталась висеть над космосом. */
+TEST_SUITES.push(()=>suite("ВЗЛЁТ живёт только на поверхности",()=>{
+  resetWorld();
+  landOnTestPlanet();
+  const lb=document.getElementById("launchbtn");
+  ok(!!lb,"кнопка есть в разметке");
+  G.surf.x=G.surf.shipX;
+  updateSurface(1);
+  eq(lb.style.display,"","у корабля кнопка видна");
+  ok(!!lb.querySelector("span"),"полоса удержания внутри кнопки цела");
+  /* ушли с поверхности любым способом — кнопки нет */
+  G.mode="system";G.surf=null;
+  hud();
+  eq(lb.style.display,"none","в полёте кнопки нет");
+  /* и в шахте её тоже нет: это не режим поверхности */
+  landOnTestPlanet();G.surf.x=G.surf.shipX;updateSurface(1);
+  enterDig();hud();
+  eq(lb.style.display,"none","в шахте кнопки нет");
+  exitDig();
+}));
