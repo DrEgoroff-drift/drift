@@ -57,6 +57,22 @@ Here is only what is still live â cross-cutting rules, the visual queue and
 
 ---
 
+## M235 — the yard has a floor (author, 2026-08-28) — CLOSED (0.229.0–0.230.0)
+
+The author's second evening. Two things, one of them a design hole:
+
+- **ВЗЛЁТ did not go away** after the launch (0.229.0). It was shown and hidden by the same
+  function — `updateSurface` — which does not run in any other mode, so nothing hid it once the
+  mode changed. Rule: **a button has one owner, and hiding it belongs to whoever runs everywhere.**
+  Showing stays with the mode that knows the context; hiding goes in `hud()`.
+- **The wear economy was for sale** (0.230.0). Halving on a button that can be pressed again is
+  not a limit, it is a price list: five presses cleaned the hull and cancelled the point of the
+  whole mechanic. Chosen fix (author picked it out of four): **a floor at the yard**, set by where
+  you docked (Верфь 18%, trade node 32%, combine 38%, plus up to 18 points for a frontier system),
+  never crossed for any money; home still takes it to zero for free. Rule worth keeping:
+  **a limit expressed as a fraction is not a limit — express it as a floor, a stock or a clock.**
+  Anything that halves can be pressed twice.
+
 ## M234 — the author's phone (live, 2026-08-28) — CLOSED (0.228.0)
 
 Four screenshots and five lines from an evening of play on a phone. Not an audit by eye this

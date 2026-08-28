@@ -419,24 +419,37 @@ function renderTab(){
        Верфь берёт деньги и снимает половину: работа сменная, корабль ждать
        не будет. До чистого доводят только дома, в своём гараже (12s-wear). */
     $body.appendChild(el("div","sec",wearLine()));
-    if(wearOf()>.05){
-      const cost=wearYardCost();
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b>Обслуживание корпуса</b><s>"+
-        "снимут половину налёта: пескоструй, промывка сопел, подкраска.<br>"+
-        "до чистого доводят только в своём гараже</s>"));
-      r.appendChild(el("div","qt",cost.toLocaleString("ru")+"<s>кр</s>"));
-      const b=el("button","act","ОБСЛУЖИТЬ");
-      b.disabled=G.credits<cost;
-      b.onclick=()=>{
-        if(G.credits<cost)return;
-        G.credits-=cost;
-        const got=wearService(.5);
-        tell("tech","Обслуживание на «"+G.st.name+"» · снято "+Math.round(got*100)+"% налёта",
-             "Корпус обслужен\nналёт "+Math.round(wearOf()*100)+"%");
-        renderTab();
-      };
-      r.appendChild(b);$body.appendChild(r);
+    {
+      /* ── у верфи есть пол (M235) ──
+         Он назван числом прямо в строке: игрок должен видеть, ЧТО именно
+         купит, и почему второй раз нажимать бессмысленно. Ниже пола налёт
+         снимают только дома, и об этом сказано здесь же. */
+      const floor=wearFloor();
+      const w=wearOf();
+      if(w>floor+.02){
+        const cost=wearYardCost();
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b>Обслуживание корпуса</b><s>"+
+          "пескоструй, промывка сопел, подкраска: снимут налёт до "+Math.round(floor*100)+"%.<br>"+
+          "ниже верфь не берётся — до чистого доводят только в своём гараже</s>"));
+        r.appendChild(el("div","qt",cost.toLocaleString("ru")+"<s>кр</s>"));
+        const b=el("button","act","ОБСЛУЖИТЬ");
+        b.disabled=G.credits<cost;
+        b.onclick=()=>{
+          if(G.credits<cost)return;
+          G.credits-=cost;
+          const got=wearServiceTo(floor);
+          tell("tech","Обслуживание на «"+G.st.name+"» · снято "+Math.round(got*100)+"% налёта",
+               "Корпус обслужен\nналёт "+Math.round(wearOf()*100)+"% · это пол этой верфи\n"+
+               "до чистого — только гараж дома");
+          renderTab();
+        };
+        r.appendChild(b);$body.appendChild(r);
+      }else if(w>.02){
+        $body.appendChild(el("div","row","<div class='nm'><s>налёт "+Math.round(w*100)+
+          "% — это пол здешней верфи ("+Math.round(floor*100)+"%), ниже она не берётся. "+
+          "На настоящей верфи снимают больше, дома — всё и бесплатно.</s></div>"));
+      }
     }
     const yard=stationFleet(G.sys);
     $body.appendChild(el("div","sec","КОРПУСА В ЭТОМ ДОКЕ · РЯД МЕНЯЕТСЯ САМ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));

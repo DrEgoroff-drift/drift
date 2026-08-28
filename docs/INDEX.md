@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 327 · символов верхнего уровня: 2984
+Файлов: 327 · символов верхнего уровня: 2986
 
 ## СИМВОЛЫ
 
@@ -25,7 +25,7 @@ $menu                        src/15-input.js:180
 $msg                         src/27z-telemetry.js:28
 $msl                         src/27z-telemetry.js:31
 $nav                         src/27z-telemetry.js:30
-$opts                        src/26-ui-station.js:675
+$opts                        src/26-ui-station.js:688
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:27
 $sh                          src/27z-telemetry.js:8
@@ -637,7 +637,7 @@ drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:125
 drawTrail                    src/16-flight.js:338
 drawWallPaper                src/11ae-concert.js:39
-drawWear                     src/12s-wear.js:70
+drawWear                     src/12s-wear.js:99
 drawWeather                  src/19d-weather.js:92
 drawWinter                   src/29g-winter-draw.js:334
 drawWreck                    src/20aa-poi-shapes.js:8
@@ -2131,7 +2131,7 @@ RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:111
 resEma                       src/28-loop.js:110
-resetArm                     src/26-ui-station.js:674
+resetArm                     src/26-ui-station.js:687
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
@@ -2913,13 +2913,15 @@ WEAR_FULL                    src/12s-wear.js:16
 WEAR_RATE                    src/12s-wear.js:18
 WEAR_RU                      src/12s-wear.js:37
 wearAll                      src/12s-wear.js:20
+wearFloor                    src/12s-wear.js:69
 wearLine                     src/12s-wear.js:43
 wearMul                      src/12s-wear.js:36
 wearOf                       src/12s-wear.js:23
 wearRu                       src/12s-wear.js:38
 wearService                  src/12s-wear.js:50
+wearServiceTo                src/12s-wear.js:78
 wearTick                     src/12s-wear.js:26
-wearYardCost                 src/12s-wear.js:59
+wearYardCost                 src/12s-wear.js:88
 WEATHER                      src/19d-weather.js:15
 WEATHER_BY_TYPE              src/19d-weather.js:28
 WEATHER_CAP                  src/19d-weather.js:52
@@ -3315,7 +3317,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12r-route.js · 16 КБ
   · свой торговый маршрут:1
 
-## src/12s-wear.js · 9 КБ
+## src/12s-wear.js · 12 КБ
   · корабль стареет:1
 
 ## src/12ta-tin.js · 23 КБ
@@ -3629,9 +3631,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26b-ui-station-work.js · 15 КБ
   · станция: мастерская и наука:1
 
-## src/26-ui-station.js · 45 КБ
+## src/26-ui-station.js · 46 КБ
   · станция:1
-  · настройки:673
+  · настройки:686
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -3797,8 +3799,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91u-route.js · 6 КБ
   · автотесты: свой торговый маршрут:1
 
-## tests/91v-wear.js · 3 КБ
+## tests/91v-wear.js · 6 КБ
   · автотесты: корабль стареет:1
+  · M235: у верфи есть пол:58
 
 ## tests/91w-celest.js · 12 КБ
   · автотесты: календарь — небо считается:1

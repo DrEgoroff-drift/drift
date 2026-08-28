@@ -45,8 +45,8 @@ function wearLine(id){
   return"НАЛЁТ "+Math.round(w*100)+"% · "+wearRu(w).toUpperCase()+
     (w>.12?" · РУЛЬ И ТЯГА −"+Math.round(12*w)+"%":"");
 }
-/* Обслуживание. `part` — доля, которую снимают: верфь берёт полдела и деньги,
-   гараж дома снимает всё и не берёт ничего. */
+/* Обслуживание. `part` — доля, которую снимают: гараж дома снимает всё и не
+   берёт ничего. Верфь работает не долей, а ПОЛОМ — `wearServiceTo` ниже. */
 function wearService(part,id){
   id=id||G.shipId;
   const W=wearAll(),before=wearOf(id);
@@ -54,11 +54,40 @@ function wearService(part,id){
   W[id]=Math.max(0,(W[id]||0)*(1-clamp(part,0,1)));
   return before-wearOf(id);
 }
+/* ── пол верфи (M235) ──
+   Верфь снимала ПОЛОВИНУ налёта, а нажать можно было сколько угодно раз:
+   100 → 50 → 25 → 12 → 6, пять кнопок и пять с половиной тысяч кредитов —
+   и корабль чист. То есть правило «до чистого доводят только дома» покупалось
+   деньгами, а вместе с ним пропадал и повод возвращаться домой (автор поймал
+   это на второй вечер игры). Теперь у верфи есть ПОЛ: ниже него она не берётся
+   никогда, сколько ни плати. Пол зависит от того, куда ты пришёл: настоящая
+   верфь доводит почти до свежего, торговый узел — до трети, а в глуши руки
+   хуже везде — тот же градиент, на котором в игре стоит всё остальное.
+   Полом же снимается и второй страх: летать облезлым не придётся — на 30%
+   налёта руль и тяга теряют 3.6%, это не наказание, а повод однажды заехать
+   домой, где снимут до нуля и не возьмут денег. */
+function wearFloor(sys){
+  sys=sys||G.sys;
+  const st=(G.st&&G.st.stype)||(sys&&sys.station&&sys.station.stype)||"trade";
+  const base=(st==="yard")?.18:(st==="indust"?.38:.32);
+  const d=(typeof sysDanger==="function"&&sys)?sysDanger(sys.sx,sys.sy):0;
+  return clamp(base+d*.18,.15,.5);
+}
+/* Снять налёт до пола: возвращает снятое. Ниже пола не идёт — второе нажатие
+   не делает ничего и поэтому кнопки под него уже нет. */
+function wearServiceTo(floor,id){
+  id=id||G.shipId;
+  const W=wearAll(),before=wearOf(id);
+  floor=clamp(floor,0,1);
+  if(before<=floor)return 0;
+  W[id]=floor*WEAR_FULL;
+  return before-floor;
+}
 /* Цена верфи считается от того, сколько налёта снимут: платить за полировку
    свежего корабля игрок не должен, и кнопка это показывает числом. */
 function wearYardCost(){
-  const w=wearOf();
-  return w<=.05?0:Math.round(140+w*2600*(typeof repShipMul==="function"?repShipMul(G.sys):1));
+  const w=wearOf(),f=wearFloor();
+  return w<=f+.02?0:Math.round(140+(w-f)*2600*(typeof repShipMul==="function"?repShipMul(G.sys):1));
 }
 /* ── налёт на кадре ──
    Рисуется ВНУТРИ обрезки по корпусу (`drawHull`), поэтому ни одна царапина не

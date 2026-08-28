@@ -1347,7 +1347,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.229.0";
+const VER="0.230.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -20823,8 +20823,8 @@ function wearLine(id){
   return"НАЛЁТ "+Math.round(w*100)+"% · "+wearRu(w).toUpperCase()+
     (w>.12?" · РУЛЬ И ТЯГА −"+Math.round(12*w)+"%":"");
 }
-/* Обслуживание. `part` — доля, которую снимают: верфь берёт полдела и деньги,
-   гараж дома снимает всё и не берёт ничего. */
+/* Обслуживание. `part` — доля, которую снимают: гараж дома снимает всё и не
+   берёт ничего. Верфь работает не долей, а ПОЛОМ — `wearServiceTo` ниже. */
 function wearService(part,id){
   id=id||G.shipId;
   const W=wearAll(),before=wearOf(id);
@@ -20832,11 +20832,40 @@ function wearService(part,id){
   W[id]=Math.max(0,(W[id]||0)*(1-clamp(part,0,1)));
   return before-wearOf(id);
 }
+/* ── пол верфи (M235) ──
+   Верфь снимала ПОЛОВИНУ налёта, а нажать можно было сколько угодно раз:
+   100 → 50 → 25 → 12 → 6, пять кнопок и пять с половиной тысяч кредитов —
+   и корабль чист. То есть правило «до чистого доводят только дома» покупалось
+   деньгами, а вместе с ним пропадал и повод возвращаться домой (автор поймал
+   это на второй вечер игры). Теперь у верфи есть ПОЛ: ниже него она не берётся
+   никогда, сколько ни плати. Пол зависит от того, куда ты пришёл: настоящая
+   верфь доводит почти до свежего, торговый узел — до трети, а в глуши руки
+   хуже везде — тот же градиент, на котором в игре стоит всё остальное.
+   Полом же снимается и второй страх: летать облезлым не придётся — на 30%
+   налёта руль и тяга теряют 3.6%, это не наказание, а повод однажды заехать
+   домой, где снимут до нуля и не возьмут денег. */
+function wearFloor(sys){
+  sys=sys||G.sys;
+  const st=(G.st&&G.st.stype)||(sys&&sys.station&&sys.station.stype)||"trade";
+  const base=(st==="yard")?.18:(st==="indust"?.38:.32);
+  const d=(typeof sysDanger==="function"&&sys)?sysDanger(sys.sx,sys.sy):0;
+  return clamp(base+d*.18,.15,.5);
+}
+/* Снять налёт до пола: возвращает снятое. Ниже пола не идёт — второе нажатие
+   не делает ничего и поэтому кнопки под него уже нет. */
+function wearServiceTo(floor,id){
+  id=id||G.shipId;
+  const W=wearAll(),before=wearOf(id);
+  floor=clamp(floor,0,1);
+  if(before<=floor)return 0;
+  W[id]=floor*WEAR_FULL;
+  return before-floor;
+}
 /* Цена верфи считается от того, сколько налёта снимут: платить за полировку
    свежего корабля игрок не должен, и кнопка это показывает числом. */
 function wearYardCost(){
-  const w=wearOf();
-  return w<=.05?0:Math.round(140+w*2600*(typeof repShipMul==="function"?repShipMul(G.sys):1));
+  const w=wearOf(),f=wearFloor();
+  return w<=f+.02?0:Math.round(140+(w-f)*2600*(typeof repShipMul==="function"?repShipMul(G.sys):1));
 }
 /* ── налёт на кадре ──
    Рисуется ВНУТРИ обрезки по корпусу (`drawHull`), поэтому ни одна царапина не
@@ -51979,24 +52008,37 @@ function renderTab(){
        Верфь берёт деньги и снимает половину: работа сменная, корабль ждать
        не будет. До чистого доводят только дома, в своём гараже (12s-wear). */
     $body.appendChild(el("div","sec",wearLine()));
-    if(wearOf()>.05){
-      const cost=wearYardCost();
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b>Обслуживание корпуса</b><s>"+
-        "снимут половину налёта: пескоструй, промывка сопел, подкраска.<br>"+
-        "до чистого доводят только в своём гараже</s>"));
-      r.appendChild(el("div","qt",cost.toLocaleString("ru")+"<s>кр</s>"));
-      const b=el("button","act","ОБСЛУЖИТЬ");
-      b.disabled=G.credits<cost;
-      b.onclick=()=>{
-        if(G.credits<cost)return;
-        G.credits-=cost;
-        const got=wearService(.5);
-        tell("tech","Обслуживание на «"+G.st.name+"» · снято "+Math.round(got*100)+"% налёта",
-             "Корпус обслужен\nналёт "+Math.round(wearOf()*100)+"%");
-        renderTab();
-      };
-      r.appendChild(b);$body.appendChild(r);
+    {
+      /* ── у верфи есть пол (M235) ──
+         Он назван числом прямо в строке: игрок должен видеть, ЧТО именно
+         купит, и почему второй раз нажимать бессмысленно. Ниже пола налёт
+         снимают только дома, и об этом сказано здесь же. */
+      const floor=wearFloor();
+      const w=wearOf();
+      if(w>floor+.02){
+        const cost=wearYardCost();
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b>Обслуживание корпуса</b><s>"+
+          "пескоструй, промывка сопел, подкраска: снимут налёт до "+Math.round(floor*100)+"%.<br>"+
+          "ниже верфь не берётся — до чистого доводят только в своём гараже</s>"));
+        r.appendChild(el("div","qt",cost.toLocaleString("ru")+"<s>кр</s>"));
+        const b=el("button","act","ОБСЛУЖИТЬ");
+        b.disabled=G.credits<cost;
+        b.onclick=()=>{
+          if(G.credits<cost)return;
+          G.credits-=cost;
+          const got=wearServiceTo(floor);
+          tell("tech","Обслуживание на «"+G.st.name+"» · снято "+Math.round(got*100)+"% налёта",
+               "Корпус обслужен\nналёт "+Math.round(wearOf()*100)+"% · это пол этой верфи\n"+
+               "до чистого — только гараж дома");
+          renderTab();
+        };
+        r.appendChild(b);$body.appendChild(r);
+      }else if(w>.02){
+        $body.appendChild(el("div","row","<div class='nm'><s>налёт "+Math.round(w*100)+
+          "% — это пол здешней верфи ("+Math.round(floor*100)+"%), ниже она не берётся. "+
+          "На настоящей верфи снимают больше, дома — всё и бесплатно.</s></div>"));
+      }
     }
     const yard=stationFleet(G.sys);
     $body.appendChild(el("div","sec","КОРПУСА В ЭТОМ ДОКЕ · РЯД МЕНЯЕТСЯ САМ · МОДУЛИ ПЕРЕСТАВЛЯЮТСЯ БЕСПЛАТНО"));

@@ -7,6 +7,28 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.230.0 — M235: the yard has a floor
+
+- **Money bought a clean ship.** The yard removed HALF the wear for a price, and nothing stopped
+  the player from pressing again: 100 → 50 → 25 → 12 → 6, five buttons and about 5 700 credits,
+  and the hull was as good as new. The rule the whole mechanic rests on — "only your own garage
+  takes it down to nothing" — was for sale, and with it went the reason to fly home. The author
+  found it on his second evening.
+
+  The yard now has a FLOOR and never goes below it, whatever you pay. Where you docked decides
+  how low: a real Верфь takes the hull almost to fresh (18%), a trade node to a third (32%), an
+  industrial combine to 38% — and everywhere out on the frontier the hands are worse (`sysDanger`
+  adds up to 18 points). One press does the whole job; the price is charged for what is actually
+  removed, and the row names the floor in the text, so a second press is visibly pointless.
+
+  The floor answers the other half of the worry as well — that a capped yard means flying dirty
+  forever. At 30% wear the steering and thrust lose 3.6%: not a punishment, just a reason to
+  drop in at home one day, where the garage takes it to zero and charges nothing.
+
+Tests: 384 suites green (one new: the floor holds against twenty presses, a real yard's floor is
+lower than a trade node's, home still cleans to nothing).
+
+---
 ## 0.229.0 — ВЗЛЁТ has one owner
 
 - **The launch button stayed on screen after the launch.** It was shown AND hidden by
