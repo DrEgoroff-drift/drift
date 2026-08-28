@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 327 · символов верхнего уровня: 2973
+Файлов: 327 · символов верхнего уровня: 2974
 
 ## СИМВОЛЫ
 
@@ -450,7 +450,7 @@ CUT_RANGE                    src/24-mode-belt.js:183
 cvs                          src/08-state.js:2
 dayK                         src/19c-light.js:42
 dayKq                        src/19c-light.js:48
-dbg                          src/28-loop.js:280
+dbg                          src/28-loop.js:286
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -621,7 +621,7 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:103
-drawSurface                  src/21e-surface-draw.js:507
+drawSurface                  src/21e-surface-draw.js:509
 drawSurfaceHud               src/21e-surface-draw.js:19
 drawSurfaceWorld             src/21e-surface-draw.js:97
 drawSurvey                   src/12w-survey.js:63
@@ -801,7 +801,7 @@ folkShut                     src/11ah-offer.js:90
 folkState                    src/12u-folk.js:83
 folkVisit                    src/12u-folk.js:104
 foundBase                    src/21a-mode-base.js:53
-frame                        src/28-loop.js:128
+frame                        src/28-loop.js:134
 freeVoice                    src/09-audio.js:91
 fuelPriceHere                src/12k-rep.js:63
 FUR_TONES                    src/20f-fauna.js:20
@@ -1913,7 +1913,7 @@ probeShot                    src/25m-probe.js:85
 probeSpeak                   src/25m-probe.js:100
 probeTarget                  src/25m-probe.js:38
 probeVoice                   src/25m-probe.js:75
-prof                         src/28-loop.js:243
+prof                         src/28-loop.js:249
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
@@ -2414,6 +2414,7 @@ shipThumb                    src/26-ui-station.js:154
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:211
 shipZoneR                    src/19f-lander.js:14
+SHOT_CLEAN                   src/28-loop.js:133
 SHUT_LINES                   src/11ah-offer.js:272
 sixthGone                    src/12k-stories-d.js:75
 SKY_BULL                     src/11ak-skywatch.js:27
@@ -2613,11 +2614,11 @@ suitHit                      src/23-mode-dig.js:101
 suitMax                      src/12x-suit.js:78
 SUN_DIR                      src/19c-light.js:11
 sunSpot                      src/19c-light.js:166
-SURF_BASE                    src/21e-surface-draw.js:498
+SURF_BASE                    src/21e-surface-draw.js:500
 SURF_HOR                     src/19c-light.js:165
 surfaceHint                  src/21e-surface-draw.js:4
 surfNight                    src/06a-celest.js:43
-surfScale                    src/21e-surface-draw.js:506
+surfScale                    src/21e-surface-draw.js:508
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -3462,7 +3463,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/20f-fauna.js · 17 КБ
   · фауна:1
 
-## src/20-life.js · 32 КБ
+## src/20-life.js · 33 КБ
   · астронавт:1
   · флора:142
 
@@ -3501,7 +3502,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 36 КБ
+## src/21e-surface-draw.js · 37 КБ
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21f-home-out.js · 13 КБ
@@ -3682,13 +3683,13 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27z-telemetry.js · 23 КБ
   · телеметрия: приборы пишут в DOM:1
 
-## src/28-loop.js · 24 КБ
+## src/28-loop.js · 25 КБ
   · авария:1
   · звук по кадрам:23
   · цикл:81
   · авторазрешение:104
-  · prof() — на что уходит кадр:231
-  · dbg() — что держит корабль:271
+  · prof() — на что уходит кадр:237
+  · dbg() — что держит корабль:277
 
 ## src/28z-fps-probe.js · 9 КБ
   · пробник G11: ?g11:1
@@ -3696,7 +3697,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29c-home-in.js · 16 КБ
   · дом изнутри: по нему ходят:1
 
-## src/29d-home-draw.js · 38 КБ
+## src/29d-home-draw.js · 39 КБ
   · дом изнутри: кадр:1
 
 ## src/29e-home-up.js · 22 КБ

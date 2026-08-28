@@ -380,12 +380,23 @@ function plantGrad(col,h,ux,k0,k1){
   g.addColorStop(1,"rgb("+col.map(v=>clamp(v*k0,0,255)|0).join(",")+")");
   return g;
 }
-function drawPlant(pl,x,y){
+function drawPlant(pl,x,y,haze){
   const sc=pl.scanned;
   /* сосед не близнец: тон гуляет на ±12% по хэшу места, куртина перестаёт
      быть одним пятном краски */
   const jt=(((hashi(Math.round(pl.x),Math.round(pl.h),0x9E11)>>>9)&255)/255-.5)*.24;
-  const tone=c=>[c[0]*(1+jt),c[1]*(1+jt*.8),c[2]*(1+jt*1.2)];
+  /* ── дальнее выцветает В ВОЗДУХ, а не в прозрачность (M233) ──
+     Глубина куртины была, но красилась одной globalAlpha: на зелёном мире
+     полупрозрачный зелёный лист поверх зелёного неба — тот же зелёный, и вся
+     чаща оставалась одним кислотным пятном без переднего и заднего плана.
+     Цвет самого растения уводится к цвету воздуха тем сильнее, чем оно
+     дальше, — тогда планы расходятся по светлоте, а не по прозрачности. */
+  const AIR=(haze>0&&typeof ambRGB==="function"&&G.surf&&G.surf.p)?ambRGB(G.surf.p):null;
+  const hz=AIR?clamp(haze,0,.8):0;
+  const tone=c=>{
+    const v=[c[0]*(1+jt),c[1]*(1+jt*.8),c[2]*(1+jt*1.2)];
+    return hz?[lerp(v[0],AIR[0],hz),lerp(v[1],AIR[1],hz),lerp(v[2],AIR[2],hz)]:v;
+  };
   const SP=(typeof sunSpot==="function"&&G.surf&&G.surf.p)?sunSpot(G.surf.p):null;
   const ux=SP?clamp((SP.x-(W*.5))/(W*.5),-1,1)||.6:.6;
   const H0=Math.max(8,pl.h||20);

@@ -737,7 +737,9 @@ function drawBase(){
   ctx.save();ctx.translate(X(S.x),Y(S.y)+26);ctx.scale(.9,.9);
   drawAstronaut({phase:S.walkPhase,amp:Math.abs(cellX(S.cur)-S.x)>2?1:0,walk:false,air:false});
   ctx.restore();
-  /* место под застройку: не рамка на каждой клетке, а метка только на выбранной */
+  /* место под застройку: не рамка на каждой клетке, а метка только на выбранной.
+     На снимке заглавной курсора нет: там показывают базу, а не выбор (M233) */
+  if(SHOT_CLEAN){if(S.menu)drawBuildMenu(S);return;}
   const sx=X(BASE_OX+S.cur*BCELL_W),sy=Y(BASE_OY+S.row*BCELL_H);
   const on=Math.sin(G.t*.12)>0;
   ctx.strokeStyle=on?"rgba(127,230,216,.95)":"rgba(127,230,216,.4)";

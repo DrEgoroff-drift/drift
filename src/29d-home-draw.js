@@ -608,18 +608,39 @@ function hinFigure(x,fy,col,face,pose,walk,name,look){
   ctx.fillStyle="rgba(0,0,0,.16)";                 /* ворот */
   ctx.beginPath();
   ctx.moveTo(-M*.06,shY);ctx.lineTo(M*.06,shY);ctx.lineTo(0,shY+M*.07);ctx.closePath();ctx.fill();
-  ctx.strokeStyle="rgb("+col.map(v=>v*.78|0).join(",")+")";ctx.lineWidth=M*.075;
+  /* ── руки должны ЧИТАТЬСЯ (M233) ──
+     Обе рисовались одним тоном `col*.78` поверх корпуса того же цвета: на
+     крупном плане (кадр заглавной) у человека просто не было рук — серая
+     плашка с головой и ногами. Правило то же, что у ног: дальняя темнее,
+     ближняя светлее корпуса, и на конце ближней — кисть. */
+  const armF="rgb("+col.map(v=>v*.52|0).join(",")+")";
+  const armN="rgb("+col.map(v=>Math.min(255,v*1.16+14)|0).join(",")+")";
+  ctx.lineWidth=M*.075;ctx.lineCap="round";
+  let handX=0,handY=0;
   if(pose==="work"){
-    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(M*.3,shY+M*.3);ctx.stroke();
+    ctx.strokeStyle=armF;
     ctx.beginPath();ctx.moveTo(-M*.1,shY+M*.06);ctx.lineTo(M*.22,shY+M*.34);ctx.stroke();
+    ctx.strokeStyle=armN;
+    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(M*.3,shY+M*.3);ctx.stroke();
+    handX=M*.3;handY=shY+M*.3;
   }else if(sit){
-    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(M*.24,hipY-M*.02);ctx.stroke();
+    ctx.strokeStyle=armF;
     ctx.beginPath();ctx.moveTo(-M*.1,shY+M*.06);ctx.lineTo(-M*.16,hipY-M*.04);ctx.stroke();
+    ctx.strokeStyle=armN;
+    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(M*.24,hipY-M*.02);ctx.stroke();
+    handX=M*.24;handY=hipY-M*.02;
   }else{
     const sw=pose==="walk"?Math.sin(walk+Math.PI)*M*.16:M*.04;
-    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(sw+M*.06,shY+M*.34);ctx.stroke();
+    ctx.strokeStyle=armF;
     ctx.beginPath();ctx.moveTo(-M*.1,shY+M*.06);ctx.lineTo(-sw-M*.06,shY+M*.34);ctx.stroke();
+    ctx.strokeStyle=armN;
+    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(sw+M*.06,shY+M*.34);ctx.stroke();
+    handX=sw+M*.06;handY=shY+M*.34;
   }
+  ctx.lineCap="butt";
+  ctx.fillStyle=(look&&look.skin)?"rgb("+look.skin.join(",")+")"
+    :"rgb("+col.map(v=>Math.min(255,v*1.05+18)|0).join(",")+")";
+  ctx.beginPath();ctx.arc(handX,handY,M*.042,0,TAU);ctx.fill();   // кисть
   /* шея и голова. Голова была в четверть роста — кукольная (самокритика M170):
      теперь одна восьмая с небольшим, как у человека, и стоит на шее */
   ctx.fillStyle="rgb("+col.map(v=>v*.8|0).join(",")+")";

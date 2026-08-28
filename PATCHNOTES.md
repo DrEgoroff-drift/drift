@@ -7,7 +7,23 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.226.0 — M233 pass 2: the mine's black sky, the empty gauge, the hangar's tablecloth
+## 0.227.0 — M233 pass 3: the thicket gets depth, the home gets arms, the front page gets the world
+
+- **A jungle was one flat green.** Plants had depth — far ones smaller and faded — but the fade
+  was `globalAlpha`: a translucent green leaf over a green sky is the same green, so the whole
+  thicket stayed one acid patch with no front and no back. Distance now moves the plant's own
+  colour toward the air (`ambRGB`), and the planes separate by value the way air actually
+  separates them. Measured before: sky 112,146,121 / plants 103,207,113 / ground 36,65,41 —
+  three greens within ten degrees of hue.
+- **At home the man had no arms.** Both were stroked in one tone over a torso of the same
+  colour; at front-page magnification the figure was a slab with a head and legs. Same rule as
+  the legs: the far arm darker, the near one lighter than the body, and a hand at the end of it.
+- **The front page showed the interface instead of the world.** Since M221 the target chips,
+  the hint band and the base's build cursor are drawn on the CANVAS, so the site frames caught
+  «ЦВЕТНЫЕ КРИСТАЛЛЫ — ЗАЛЕЖИ…» and a cyan selection bracket across the picture. A stand flag
+  (`SHOT_CLEAN`, false in the game always) drops the canvas UI for those captures.
+
+Tests: 379 suites green.
 
 - **Half the mine screen was a black hole.** The sky over the pit was drawn only while
   `camy<40` — a number with nothing to do with whether the mouth is visible; one step down the

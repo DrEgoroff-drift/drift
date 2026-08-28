@@ -1337,7 +1337,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.226.0";
+const VER="0.227.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -35636,12 +35636,23 @@ function plantGrad(col,h,ux,k0,k1){
   g.addColorStop(1,"rgb("+col.map(v=>clamp(v*k0,0,255)|0).join(",")+")");
   return g;
 }
-function drawPlant(pl,x,y){
+function drawPlant(pl,x,y,haze){
   const sc=pl.scanned;
   /* сосед не близнец: тон гуляет на ±12% по хэшу места, куртина перестаёт
      быть одним пятном краски */
   const jt=(((hashi(Math.round(pl.x),Math.round(pl.h),0x9E11)>>>9)&255)/255-.5)*.24;
-  const tone=c=>[c[0]*(1+jt),c[1]*(1+jt*.8),c[2]*(1+jt*1.2)];
+  /* ── дальнее выцветает В ВОЗДУХ, а не в прозрачность (M233) ──
+     Глубина куртины была, но красилась одной globalAlpha: на зелёном мире
+     полупрозрачный зелёный лист поверх зелёного неба — тот же зелёный, и вся
+     чаща оставалась одним кислотным пятном без переднего и заднего плана.
+     Цвет самого растения уводится к цвету воздуха тем сильнее, чем оно
+     дальше, — тогда планы расходятся по светлоте, а не по прозрачности. */
+  const AIR=(haze>0&&typeof ambRGB==="function"&&G.surf&&G.surf.p)?ambRGB(G.surf.p):null;
+  const hz=AIR?clamp(haze,0,.8):0;
+  const tone=c=>{
+    const v=[c[0]*(1+jt),c[1]*(1+jt*.8),c[2]*(1+jt*1.2)];
+    return hz?[lerp(v[0],AIR[0],hz),lerp(v[1],AIR[1],hz),lerp(v[2],AIR[2],hz)]:v;
+  };
   const SP=(typeof sunSpot==="function"&&G.surf&&G.surf.p)?sunSpot(G.surf.p):null;
   const ux=SP?clamp((SP.x-(W*.5))/(W*.5),-1,1)||.6:.6;
   const H0=Math.max(8,pl.h||20);
@@ -38089,7 +38100,9 @@ function drawBase(){
   ctx.save();ctx.translate(X(S.x),Y(S.y)+26);ctx.scale(.9,.9);
   drawAstronaut({phase:S.walkPhase,amp:Math.abs(cellX(S.cur)-S.x)>2?1:0,walk:false,air:false});
   ctx.restore();
-  /* место под застройку: не рамка на каждой клетке, а метка только на выбранной */
+  /* место под застройку: не рамка на каждой клетке, а метка только на выбранной.
+     На снимке заглавной курсора нет: там показывают базу, а не выбор (M233) */
+  if(SHOT_CLEAN){if(S.menu)drawBuildMenu(S);return;}
   const sx=X(BASE_OX+S.cur*BCELL_W),sy=Y(BASE_OY+S.row*BCELL_H);
   const on=Math.sin(G.t*.12)>0;
   ctx.strokeStyle=on?"rgba(127,230,216,.95)":"rgba(127,230,216,.4)";
@@ -39899,8 +39912,10 @@ function drawSurfaceWorld(){
     /* глубина куртины (автор, 24.08.2026): дальние мельче, ближние крупнее.
        Одного размера мало — дальнее ещё и выцветает в воздух, поэтому сверху
        ложится вуаль цвета неба. Без неё заросли остаются плоской аппликацией */
-    if(z){ctx.scale(1-z*.22,1-z*.22);ctx.globalAlpha=1-z*.30;}
-    drawPlant(pl,0,0);
+    /* вуаль воздуха теперь в самом цвете растения (20-life), альфа остаётся
+       лишь лёгкой добавкой: прозрачность на однотонном мире ничего не делит */
+    if(z){ctx.scale(1-z*.22,1-z*.22);ctx.globalAlpha=1-z*.12;}
+    drawPlant(pl,0,0,z*.62);
     ctx.restore();
   }
   for(const b of S.fauna||[]){
@@ -58947,6 +58962,12 @@ let capIv=16.667, capPrev=0, capN=0;
    а в headless с виртуальным временем непрерывный rAF не давал странице
    дойти до отчёта вовсе (M170). Ставится в tests/90-harness. */
 let LOOP_OFF=false;
+/* ── кадр без интерфейса (M233) ──
+   Стенды заглавной снимают МИР: с M221 часть интерфейса (фишки целей, строка
+   подсказки, рамка выбранной ячейки на базе) рисуется на канве, и на снимках
+   она читается отладочной разметкой. Игра его не выключает никогда — флаг
+   поднимают только стенды, и в самой игре он всегда false. */
+let SHOT_CLEAN=false;
 function frame(now){
   if(LOOP_OFF)return;
   /* Скрытая страница не рисует. Обычно её и так не будят — rAF стоит, — но в
@@ -60203,18 +60224,39 @@ function hinFigure(x,fy,col,face,pose,walk,name,look){
   ctx.fillStyle="rgba(0,0,0,.16)";                 /* ворот */
   ctx.beginPath();
   ctx.moveTo(-M*.06,shY);ctx.lineTo(M*.06,shY);ctx.lineTo(0,shY+M*.07);ctx.closePath();ctx.fill();
-  ctx.strokeStyle="rgb("+col.map(v=>v*.78|0).join(",")+")";ctx.lineWidth=M*.075;
+  /* ── руки должны ЧИТАТЬСЯ (M233) ──
+     Обе рисовались одним тоном `col*.78` поверх корпуса того же цвета: на
+     крупном плане (кадр заглавной) у человека просто не было рук — серая
+     плашка с головой и ногами. Правило то же, что у ног: дальняя темнее,
+     ближняя светлее корпуса, и на конце ближней — кисть. */
+  const armF="rgb("+col.map(v=>v*.52|0).join(",")+")";
+  const armN="rgb("+col.map(v=>Math.min(255,v*1.16+14)|0).join(",")+")";
+  ctx.lineWidth=M*.075;ctx.lineCap="round";
+  let handX=0,handY=0;
   if(pose==="work"){
-    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(M*.3,shY+M*.3);ctx.stroke();
+    ctx.strokeStyle=armF;
     ctx.beginPath();ctx.moveTo(-M*.1,shY+M*.06);ctx.lineTo(M*.22,shY+M*.34);ctx.stroke();
+    ctx.strokeStyle=armN;
+    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(M*.3,shY+M*.3);ctx.stroke();
+    handX=M*.3;handY=shY+M*.3;
   }else if(sit){
-    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(M*.24,hipY-M*.02);ctx.stroke();
+    ctx.strokeStyle=armF;
     ctx.beginPath();ctx.moveTo(-M*.1,shY+M*.06);ctx.lineTo(-M*.16,hipY-M*.04);ctx.stroke();
+    ctx.strokeStyle=armN;
+    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(M*.24,hipY-M*.02);ctx.stroke();
+    handX=M*.24;handY=hipY-M*.02;
   }else{
     const sw=pose==="walk"?Math.sin(walk+Math.PI)*M*.16:M*.04;
-    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(sw+M*.06,shY+M*.34);ctx.stroke();
+    ctx.strokeStyle=armF;
     ctx.beginPath();ctx.moveTo(-M*.1,shY+M*.06);ctx.lineTo(-sw-M*.06,shY+M*.34);ctx.stroke();
+    ctx.strokeStyle=armN;
+    ctx.beginPath();ctx.moveTo(M*.1,shY+M*.06);ctx.lineTo(sw+M*.06,shY+M*.34);ctx.stroke();
+    handX=sw+M*.06;handY=shY+M*.34;
   }
+  ctx.lineCap="butt";
+  ctx.fillStyle=(look&&look.skin)?"rgb("+look.skin.join(",")+")"
+    :"rgb("+col.map(v=>Math.min(255,v*1.05+18)|0).join(",")+")";
+  ctx.beginPath();ctx.arc(handX,handY,M*.042,0,TAU);ctx.fill();   // кисть
   /* шея и голова. Голова была в четверть роста — кукольная (самокритика M170):
      теперь одна восьмая с небольшим, как у человека, и стоит на шее */
   ctx.fillStyle="rgb("+col.map(v=>v*.8|0).join(",")+")";
