@@ -1213,10 +1213,10 @@ KINO_EVERY                   src/27da-kino.js:20
 KINO_REEL                    src/27da-kino.js:23
 KINO_TITLES                  src/27da-kino.js:31
 kinoAt                       src/27da-kino.js:39
-kinoBeam                     src/27da-kino.js:158
+kinoBeam                     src/27da-kino.js:176
 kinoFrame                    src/27da-kino.js:63
 kinoHere                     src/27da-kino.js:46
-kinoOverlay                  src/27da-kino.js:174
+kinoOverlay                  src/27da-kino.js:192
 kinoScreen                   src/27da-kino.js:72
 kinoSeen                     src/27da-kino.js:36
 kinoWatch                    src/27da-kino.js:51
@@ -3629,7 +3629,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27c-ui-hq.js · 39 КБ
   · ШТАБ и кантина:1
 
-## src/27da-kino.js · 11 КБ
+## src/27da-kino.js · 12 КБ
   · кинопередвижка:1
 
 ## src/27d-ui-cantina.js · 26 КБ

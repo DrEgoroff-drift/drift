@@ -100,11 +100,29 @@ function kinoScreen(c,x,y,w,h,K,seed){
     c.fillStyle=pale;
     c.fillRect(cx-w*.30,cy-h*.02,w*.10,h*.04);
   }else if(F&&F.k==="crowd"){
-    c.fillStyle=ink;
-    for(let i=0;i<7;i++){
-      const px=cx+(i-3)*w*.10;
-      c.fillRect(px-w*.024,cy-h*.16,w*.048,h*.30);
-      c.beginPath();c.arc(px,cy-h*.20,Math.max(1.8,h*.030),0,TAU);c.fill();
+    /* ── смена, а не семь леденцов (M233) ──
+       Семь одинаковых кругов на одинаковых прямоугольниках через равный шаг
+       читались узором, а подпись под кадром говорит «так работают все» — то
+       есть в кадре должны стоять ЛЮДИ. Рост, ширина и шаг гуляют по хэшу,
+       у каждого плечи и ноги врозь, задний ряд бледнее и мельче: в две
+       глубины строй перестаёт быть орнаментом. Ничего не движется — это
+       кинокадр, а не сцена. */
+    for(let row=0;row<2;row++){
+      const back=row===0;
+      c.fillStyle=back?pale:ink;
+      const n=back?6:7;
+      for(let i=0;i<n;i++){
+        const hs=hashi(i+1,row+3,(seed|0)+0x0C1D);
+        const sp=w*(back?.115:.104), jx=((hs&7)/7-.5)*w*.022;
+        const px=cx+(i-(n-1)/2)*sp+jx+(back?w*.03:0);
+        const k=(back?.80:1)*(.88+((hs>>>3)&7)/7*.24);
+        const by=cy-h*(back?.20:.16), bh=h*.30*k, bw=w*.050*k;
+        c.fillRect(px-bw/2,by,bw,bh*.62);                       // корпус
+        c.fillRect(px-bw*.62,by,bw*1.24,bh*.16);                // плечи
+        c.fillRect(px-bw*.34,by+bh*.62,bw*.26,bh*.38);          // ноги врозь
+        c.fillRect(px+bw*.08,by+bh*.62,bw*.26,bh*.38);
+        c.beginPath();c.arc(px,by-h*.034*k,Math.max(1.6,h*.030*k),0,TAU);c.fill();
+      }
     }
   }else if(F&&F.k==="plant"){
     c.strokeStyle=ink;c.lineWidth=Math.max(1.4,h*.018);
