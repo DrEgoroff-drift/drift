@@ -57,6 +57,30 @@ Here is only what is still live â cross-cutting rules, the visual queue and
 
 ---
 
+## M234 — the author's phone (live, 2026-08-28) — CLOSED (0.228.0)
+
+Four screenshots and five lines from an evening of play on a phone. Not an audit by eye this
+time: things that BROKE. All five are closed in 0.228.0 (see PATCHNOTES), and three of them left
+a rule worth keeping:
+
+- **A frame that can throw must not carry the loop.** Every `requestAnimationFrame(frame)` call
+  belongs OUTSIDE the body that can fail — otherwise one exception is a permanent freeze with no
+  message and no way back. Any long-running loop added later follows the same shape: a body that
+  may throw, a wrapper that reschedules and names the failure.
+- **A resource whose refill outruns its drain is not a resource.** The jetpack read 100% for an
+  entire evening; the numbers had said so since M152 and nobody looked at the gauge while playing.
+  Before shipping a meter, play with it in view for a few minutes: a needle that never moves is a
+  lie in the interface, not a balance question.
+- **Two glass panels at the same height are one button.** `#launchbtn` and the console were both
+  fixed to the bottom, 4 px apart, and the one with `z-index` took the taps — the planet became
+  impossible to leave. The phone's floors (pads → console → prompt) are a stack, and anything new
+  that lives at the bottom either joins the stack or goes to the other board. The layout suite now
+  measures ВЗЛЁТ too; it measured everything else and would have caught this a milestone earlier.
+
+Also worth remembering: **what persists needs an address on screen.** The mine had been persistent
+since M186 and invisible from the surface ever since — the player could not tell where they had
+dug, because there was nothing to see. Anything the world remembers should be visible in the world.
+
 ## M233 — the shots as an audit tool (live, 2026-08-28)
 
 The author, reshooting the README: «прикол не поймать кадр, а понять, что кадр говно из-за

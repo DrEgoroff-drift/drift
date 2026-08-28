@@ -1,4 +1,9 @@
 /* ══════════════ поверхность ══════════════ */
+/* с какого расстояния устье шахты считается «здесь»: тот же порядок, что у
+   входа в пещеру (34), чуть шире — копёр и отвал занимают место (M234) */
+const MINE_MOUTH_R=40;
+/* сколько живёт след: полминуты держится, полминуты гаснет (21e рисует) */
+const TRACK_LIFE=2400;
 function enterSurface(){
   const L=G.land,tr=L.tr,p=L.p,r=rng(p.seed^0x1234);
   /* залежи берутся из профиля ПЛАНЕТЫ (у смешанного мира он свой), а не из
@@ -227,7 +232,15 @@ function updateSurface(dt){
      каждые тринадцать пикселей пути по земле, храним полторы сотни. */
   if(walking&&S.on){
     S.tracks=S.tracks||[];
-    if(S.lastTrackX==null||Math.abs(S.x-S.lastTrackX)>=13){S.tracks.push({x:S.x,t:G.t,f:S.face});S.lastTrackX=S.x;if(S.tracks.length>150)S.tracks.shift();}
+    if(S.lastTrackX==null||Math.abs(S.x-S.lastTrackX)>=13){S.tracks.push({x:S.x,t:G.t,f:S.face});S.lastTrackX=S.x;}
+  }
+  /* след уходит по возрасту, а не по счёту (M234): сотня с полтиной кончалась
+     раньше, чем след успевал выцвести, и дальний конец тропы пропадал целой
+     пачкой — автор увидел это как «следы мигают». Порог по счёту остаётся
+     страховкой от бесконечного списка, но стоит выше времени жизни. */
+  if(S.tracks&&S.tracks.length){
+    while(S.tracks.length&&G.t-S.tracks[0].t>TRACK_LIFE)S.tracks.shift();
+    while(S.tracks.length>260)S.tracks.shift();
   }
   /* пока стоим на земле — жёстко следуем рельефу, а не догоняем его свободным
      падением: на склоне гравитация отставала от подъёма/спуска на один-два
@@ -240,7 +253,7 @@ function updateSurface(dt){
   if(S.on){
     S.y=gy;S.vy=0;S.jetOn=false;
     jetTick(S,S.g,dt,false);
-    if(keys.thrust&&jetCanLift()){S.vy=-1.6;S.on=false;S.jetOn=true;}
+    if(keys.thrust&&jetCanLift()&&jetKick()){S.vy=-1.6;S.on=false;S.jetOn=true;}
   }else{
     S.vy+=S.g*dt;
     jetTick(S,S.g,dt,true);
@@ -535,8 +548,21 @@ function updateSurface(dt){
     G.prompt="ДЕЙСТВИЕ — ЗАЛОЖИТЬ БАЗУ · 2500 КР + 10 СПЛАВОВ";
     if(actEdge&&foundBase(S.p)){enterBase(S.p);return;}
   }else if(S.on){
-    G.prompt="ДЕЙСТВИЕ — ЗАЛОЖИТЬ ШАХТУ · ВГЛУБЬ ПОРОДА БОГАЧЕ\n▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
-    if(actEdge){enterDig();return;}
+    /* ── шахта у планеты одна, и теперь у неё есть адрес (M234) ──
+       «Заложить» работало где угодно, а ствол под всеми точками был один и тот
+       же: спустился в другом конце карты — и попал в свою же выработку. Автор
+       сказал прямо: непонятно, где копал. Устье стоит на месте: рядом с ним —
+       спуск, вдали — расстояние до него, и второй ствол не закладывается. */
+    const mx=(typeof mineSpotX==="function")?mineSpotX(S.p):null;
+    if(mx!=null&&Math.abs(mx-S.x)>=MINE_MOUTH_R){
+      G.prompt="ШАХТА ЭТОЙ ПЛАНЕТЫ — "+Math.round(Math.abs(mx-S.x))+" м "+(mx>S.x?"▶":"◀")+
+        "\nГЛУБИНА "+mineDeep(S.p)+" · ВТОРОЙ СТВОЛ НЕ ЗАКЛАДЫВАЮТ";
+    }else{
+      G.prompt=(mx!=null?("ДЕЙСТВИЕ — СПУСТИТЬСЯ В ШАХТУ · ГЛУБИНА "+mineDeep(S.p)):
+                         "ДЕЙСТВИЕ — ЗАЛОЖИТЬ ШАХТУ · ВГЛУБЬ ПОРОДА БОГАЧЕ")+
+        "\n▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
+      if(actEdge){enterDig();return;}
+    }
   }else if(dShip<shipZoneR()){
     G.prompt=(G.fuel<8?"НЕТ ТОПЛИВА · КНОПКА ВЗЛЁТА — ЭВАКУАЦИЯ":"КНОПКА ВЗЛЁТА — УДЕРЖАТЬ")+
       "\nТРЮМ "+held()+"/"+st.cargoMax+" · СКАФАНДР "+Math.round(S.suit)+"/"+suitMax()+(S.suit<suitMax()?" · ЗАРЯДКА":" · ГОТОВ");
@@ -551,7 +577,11 @@ function updateSurface(dt){
   if(lbtn){
     if(dShip<shipZoneR()){
       lbtn.style.display="";
-      lbtn.textContent=G.fuel<8?"ЭВАКУАЦИЯ":"ВЗЛЁТ";
+      /* подпись живёт в span: textContent на самой кнопке стирал <i> — полосу
+         удержания, — и держать кнопку было нечем видно (M234) */
+      const lab=lbtn.querySelector("span")||lbtn;
+      const t=G.fuel<8?"ЭВАКУАЦИЯ":"ВЗЛЁТ";
+      if(lab.textContent!==t)lab.textContent=t;
     }else lbtn.style.display="none";
   }
 }

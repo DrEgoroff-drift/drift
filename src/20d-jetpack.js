@@ -5,9 +5,28 @@
    набирается за полторы, в воздухе еле-еле. Запас один на выход (лежит на
    G.surf рядом со скафандром), телом может быть и астронавт на поверхности,
    и он же в пещере: функция получает объект со скоростью и тяготение. */
-const JET_BURN=1/150, JET_REGEN_GROUND=1/90, JET_REGEN_AIR=1/1100, JET_VMAX=-2.1;
+/* ── запас, который виден (M234) ──
+   Автор играл вечер и прислал скрин: «РАНЕЦ 100%» на каждом кадре — «ранец
+   бесконечный». Так и было: на земле запас набирался ВТРОЕ быстрее, чем горел
+   (1/90 против 1/150), набирался даже в тот кадр, когда игрок уже жал тягу, а
+   сам отрыв от земли не стоил ничего. Прыжок с прыжка перекрывал любой расход,
+   и шкала стояла на сотне всю игру — то есть механики не было вовсе.
+   Теперь: земля наполняет за пять секунд, а не за полторы; с зажатой тягой не
+   наполняет вовсе; отрыв откусывает JET_KICK. Полёт по-прежнему две с
+   половиной секунды — расход не тронут, тронута только даровая сдача. */
+const JET_BURN=1/150, JET_REGEN_GROUND=1/300, JET_REGEN_AIR=1/1100, JET_VMAX=-2.1;
+/* толчок от земли: двенадцать прыжков на полном запасе, и это видно на шкале */
+const JET_KICK=.08;
 function jetFuel(){const S=G.surf;if(!S)return 1;if(S.jet==null)S.jet=1;return S.jet;}
-function jetCanLift(){return jetFuel()>.05;}
+function jetCanLift(){return jetFuel()>JET_KICK;}
+/* отрыв: списывает толчок и возвращает false, если платить нечем */
+function jetKick(){
+  const S=G.surf;if(!S)return false;
+  if(S.jet==null)S.jet=1;
+  if(S.jet<=JET_KICK)return false;
+  S.jet=Math.max(0,S.jet-JET_KICK);
+  return true;
+}
 /* air — тело в воздухе: тогда тяга жжёт запас и толкает тело; на земле запас
    копится. Возвращает true, пока ранец горит — по этому рисуется факел */
 function jetTick(body,g,dt,air){
@@ -24,7 +43,11 @@ function jetTick(body,g,dt,air){
     fire=true;
     S.jetSfx=(S.jetSfx||0)-dt;
     if(S.jetSfx<=0){S.jetSfx=9;sfx("ui",{f:140+Math.random()*40,to:90,d:.16,v:.05});}
-  }else S.jet=Math.min(1,S.jet+(air?JET_REGEN_AIR:JET_REGEN_GROUND)*regenMul*dt);
+  }else if(!(keys.thrust&&!air)){
+    /* на земле с зажатой тягой запас не копится: иначе игрок стоит на кнопке
+       и качает шкалу быстрее, чем тратит её в воздухе */
+    S.jet=Math.min(1,S.jet+(air?JET_REGEN_AIR:JET_REGEN_GROUND)*regenMul*dt);
+  }
   body.jetOn=fire;
   return fire;
 }

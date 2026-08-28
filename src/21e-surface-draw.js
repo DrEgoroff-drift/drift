@@ -10,6 +10,8 @@ function surfaceHint(){
     if(S.p.type!=="gas")return "У КОРАБЛЯ МОЖНО ЗАЛОЖИТЬ БАЗУ · ДЕЙСТВИЕ · 2500 КР + 10 СПЛАВОВ";
   }
   if(S.cave&&Math.abs(S.cave.x-S.x)<34)return "ВХОД В ПЕЩЕРУ · ДЕЙСТВИЕ — ВНУТРЬ";
+  {const mx=(typeof mineSpotX==="function")?mineSpotX(S.p):null;
+   if(mx!=null&&Math.abs(mx-S.x)<MINE_MOUTH_R)return "ВАША ШАХТА · ДЕЙСТВИЕ — ВНИЗ";}
   if(!G.surfTipShown||G.t-G.surfTipShown<900){
     if(!G.surfTipShown)G.surfTipShown=G.t;
     return "ЦВЕТНЫЕ КРИСТАЛЛЫ — ЗАЛЕЖИ · СТРЕЛКИ СВЕРХУ ВЕДУТ К ПЕЩЕРЕ И КОРАБЛЮ";
@@ -49,6 +51,10 @@ function drawSurfaceHud(camx,camy,K){
   const marks=[];
   marks.push({x:S.shipX,ru:"КОРАБЛЬ",col:"rgba(242,178,92,.9)"});
   if(S.cave)marks.push({x:S.cave.x,ru:"ПЕЩЕРА",col:"rgba(150,225,255,.9)"});
+  /* своя шахта ведётся так же, как пещера: до неё идут ногами, значит её надо
+     найти. Цвет — рабочего железа, не природы (M234) */
+  {const mx=(typeof mineSpotX==="function")?mineSpotX(S.p):null;
+   if(mx!=null)marks.push({x:mx,ru:"ШАХТА",col:"rgba(214,198,172,.9)"});}
   if(typeof lightsOpen==="function"&&lightsOpen(S.p))marks.push({x:lightsEntryX(S.tr,S.p),ru:"ВХОД",col:"rgba(255,236,190,.9)"});
   /* дом (M170): до него надо дойти, значит его надо и найти — свой маркер,
      тёплого цвета, чтобы не путать с кораблём */
@@ -279,6 +285,81 @@ function drawSurfaceWorld(){
       ctx.fillText("ПЕЩЕРА",cx,cy-24);
     }
   }
+  /* ── устье своей шахты (M234) ──
+     Ствол оставался в сохранении, но на грунте от него не было ни следа: автор
+     ходил по планете и не мог сказать, где копал. Устье теперь СТОИТ на своём
+     месте — по тем же правилам, что вход в пещеру: не чёрная наклейка, а дыра
+     с губой, поймавшей небо, отвал породы рядом (её же оттуда и вынули) и
+     копёр над ней — вещь, которая отбрасывает тень и ловит свет сверху. */
+  {
+    const mx=(typeof mineSpotX==="function")?mineSpotX(p):null;
+    const sx=mx!=null?mx-camx:null;
+    if(sx!=null&&sx>-70&&sx<W+70){
+      const sy=groundAt(tr,mx)-camy;
+      const amb=ambRGB(p);
+      /* железо копра — не грунт: своя, холодная светлота, иначе на тёмной
+         планете вся постройка сходится в один чёрный силуэт (закон 4) */
+      const iron=(k,a)=>"rgba("+(amb[0]*.4+34*k|0)+","+(amb[1]*.4+38*k|0)+","+(amb[2]*.4+44*k|0)+","+a+")";
+      /* отвал: то, что вынесли наверх, лежит горкой сбоку — с тенью под ней */
+      groundShadow(sx+22,sy+1,13,3);
+      /* отвал и яма сделаны из ТОГО ЖЕ грунта, что под ними: цвет не задаётся,
+         а гасится умножением по уже нарисованной земле. Палитра планеты для
+         этого не годится — видимый грунт складывается ещё и из материала со
+         светом, и любой «свой» цвет садится рядом чужим пятном. */
+      ctx.save();ctx.globalCompositeOperation="multiply";
+      ctx.fillStyle="rgba(124,122,126,1)";
+      ctx.beginPath();ctx.moveTo(sx+8,sy+1);ctx.quadraticCurveTo(sx+22,sy-11,sx+36,sy+1);ctx.fill();
+      ctx.restore();
+      ctx.fillStyle="rgba(255,255,255,.16)";
+      ctx.beginPath();ctx.moveTo(sx+13,sy-2.5);ctx.quadraticCurveTo(sx+22,sy-10,sx+30,sy-2.5);
+      ctx.quadraticCurveTo(sx+22,sy-6.5,sx+13,sy-2.5);ctx.fill();
+      /* ствол: яма, а не чёрный ящик. Прямоугольник в 22 px на склоне торчал
+         из грунта коробкой — дыра идёт полуэллипсом ВНИЗ от линии земли, как
+         устье пещеры идёт полуэллипсом вверх, и на любом уклоне остаётся ямой.
+         Сверху ещё видно породу, ко дну она гаснет — но не в общую черноту, а
+         в свою же (та же ошибка, что чинили в пещере на 0.226.0). */
+      ctx.save();ctx.globalCompositeOperation="multiply";
+      const gg=ctx.createLinearGradient(sx,sy-2,sx,sy+11);
+      gg.addColorStop(0,"rgba(150,148,154,1)");
+      gg.addColorStop(.5,"rgba(74,72,78,1)");
+      gg.addColorStop(1,"rgba(38,37,42,1)");
+      ctx.fillStyle=gg;
+      ctx.beginPath();ctx.ellipse(sx,sy-1,12,10,0,0,Math.PI);ctx.fill();
+      ctx.restore();
+      /* срез породы по краю: две светлые засечки на самой линии земли — по ним
+         яма и читается ямой, а не пятном (закон 3) */
+      ctx.strokeStyle="rgba(255,255,255,.22)";
+      ctx.lineWidth=1.6;ctx.beginPath();
+      ctx.moveTo(sx-13.5,sy-1.3);ctx.lineTo(sx-5,sy-1.3);
+      ctx.moveTo(sx+5,sy-1.3);ctx.lineTo(sx+13.5,sy-1.3);ctx.stroke();
+      /* копёр: две ноги и балка, тень от него на грунте */
+      groundShadow(sx-2,sy+1,16,2.6);
+      ctx.strokeStyle=iron(1,1);ctx.lineWidth=2.2;
+      ctx.beginPath();
+      ctx.moveTo(sx-12,sy-3);ctx.lineTo(sx-6,sy-25);
+      ctx.moveTo(sx+12,sy-3);ctx.lineTo(sx+6,sy-25);
+      ctx.moveTo(sx-7.4,sy-25);ctx.lineTo(sx+7.4,sy-25);
+      /* распорка: без неё две ноги читаются циркулем, а не станком */
+      ctx.moveTo(sx-9.4,sy-14);ctx.lineTo(sx+9.4,sy-14);
+      ctx.stroke();
+      /* верхняя кромка балки и ноги, обращённой к небу, ловит свет (закон 3) */
+      ctx.strokeStyle=iron(2.1,.75);ctx.lineWidth=1;
+      ctx.beginPath();
+      ctx.moveTo(sx-7.4,sy-26.1);ctx.lineTo(sx+7.4,sy-26.1);
+      ctx.moveTo(sx-11,sy-3.6);ctx.lineTo(sx-5.2,sy-24.4);ctx.stroke();
+      /* шкив и трос: трос покачивается от ветра — движение, а не мигание */
+      ctx.fillStyle=iron(1.3,1);
+      ctx.beginPath();ctx.arc(sx,sy-25,3,0,TAU);ctx.fill();
+      ctx.strokeStyle="rgba(255,255,255,.16)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(sx,sy-25,3,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
+      const sw=Math.sin(G.t*.012+mx*.01)*WIND*.5;
+      ctx.strokeStyle=iron(.8,.85);ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(sx,sy-22);
+      ctx.quadraticCurveTo(sx+sw,sy-13,sx+sw*.4,sy-2);ctx.stroke();
+      ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText("ШАХТА",sx,sy-32);
+    }
+  }
   for(const pl of S.plants){
     const x=pl.x-camx;if(x<-70||x>W+70)continue;
     groundShadow(x,pl.y-camy+1,Math.min(22,pl.h*.32),3.2);
@@ -331,15 +412,23 @@ function drawSurfaceWorld(){
   const x=S.x-camx,y=S.y-camy;
   /* следы гаснут за минуту: пыль оседает, и тропа остаётся только там, где
      ходили только что — так видно, откуда пришёл */
+  /* ── след — вдавленность, а не чёрточка поверх кромки (M234) ──
+     Отпечаток рисовался ВЫШЕ линии земли и перекрывал светлую кромку грунта:
+     по гребню шла пунктирная дыра, и на ходу она читалась как мигание (закон 3
+     — у силуэта есть кромка, и рвать её нечем). Теперь ямка лежит НИЖЕ линии,
+     в самом грунте, а сверху её держит светлая губа — как у настоящего следа
+     в пыли. И гаснет он ровно: полжизни держится, полжизни выцветает, поэтому
+     свежий след не появляется полупрозрачным призраком. */
   if(S.tracks&&S.tracks.length){
     for(const tk of S.tracks){
-      const age=G.t-tk.t;if(age>2400)continue;
+      const age=G.t-tk.t;if(age>TRACK_LIFE)continue;
       const tx=tk.x-camx;if(tx<-10||tx>W+10)continue;
+      const a=clamp(1-(age-TRACK_LIFE*.5)/(TRACK_LIFE*.5),0,1);
       const ty=groundAt(tr,tk.x)-camy;
-      ctx.fillStyle="rgba(0,0,0,"+(.45*(1-age/2400)).toFixed(3)+")";
-      ctx.fillRect(tx-2.6,ty-1.2,5.2,1.6);
-      ctx.fillStyle="rgba(255,255,255,"+(.08*(1-age/2400)).toFixed(3)+")";
-      ctx.fillRect(tx-2.6,ty+.4,5.2,.8);
+      ctx.fillStyle="rgba(0,0,0,"+(.34*a).toFixed(3)+")";
+      ctx.fillRect(tx-2.4,ty+.3,4.8,1.5);
+      ctx.fillStyle="rgba(255,255,255,"+(.10*a).toFixed(3)+")";
+      ctx.fillRect(tx-2.4,ty-.4,4.8,.7);
     }
   }
   /* клубы пыли из-под ног (M232): расходятся и тают за спиной ходока */

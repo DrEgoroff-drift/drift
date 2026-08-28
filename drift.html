@@ -292,6 +292,7 @@ body:not(.inflight) .ipod{display:none}
   box-shadow:0 0 18px rgba(255,143,106,.3),inset 0 0 14px rgba(255,143,106,.2)}
 .pads button[data-k=msl].empty{opacity:.4}
 #launchbtn{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom) + 100px);
+  z-index:6;
   width:88px;height:44px;border-radius:var(--rad-b);background:var(--glass);
   border:1px solid rgba(242,178,92,.5);color:var(--amber);font-family:inherit;font-size:10px;
   letter-spacing:.08em;overflow:hidden;-webkit-appearance:none;
@@ -939,6 +940,15 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
      оно не панель, оно проходит. */
   #msg{top:20%;bottom:auto;white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis;max-width:calc(100vw - 24px);font-size:11px;line-height:1.4}
+  /* ── ВЗЛЁТ на телефоне стоял поверх ФОТО (M234) ──
+     Кнопка висела на 100 px от низа — ровно на пульте (96 px), у которого
+     собственный z-index 5 и живые нажатия у ФОТО. Стёкла наложились, палец
+     попадал в ФОТО, и улететь с планеты было НЕЛЬЗЯ: автор поймал это первым
+     же вечером. Этажей внизу и так три (пэды → пульт → подсказка), четвёртый
+     не влезет — поэтому ВЗЛЁТ уходит на левый борт, напротив правого:
+     подсказка кончается на 128 px от правого края, там ему и место. */
+  #launchbtn{right:auto;left:14px;bottom:calc(env(safe-area-inset-bottom) + 250px);
+    width:96px;height:46px}
   /* подсказка не заходит под правый борт: та же зона, что у строки состояния */
   #prompt{bottom:calc(env(safe-area-inset-bottom) + 204px);white-space:nowrap;overflow:hidden;
     left:10px;right:128px;transform:none;
@@ -1337,7 +1347,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.227.0";
+const VER="0.228.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -34555,9 +34565,28 @@ function peepGhosts(camx,camy){
    набирается за полторы, в воздухе еле-еле. Запас один на выход (лежит на
    G.surf рядом со скафандром), телом может быть и астронавт на поверхности,
    и он же в пещере: функция получает объект со скоростью и тяготение. */
-const JET_BURN=1/150, JET_REGEN_GROUND=1/90, JET_REGEN_AIR=1/1100, JET_VMAX=-2.1;
+/* ── запас, который виден (M234) ──
+   Автор играл вечер и прислал скрин: «РАНЕЦ 100%» на каждом кадре — «ранец
+   бесконечный». Так и было: на земле запас набирался ВТРОЕ быстрее, чем горел
+   (1/90 против 1/150), набирался даже в тот кадр, когда игрок уже жал тягу, а
+   сам отрыв от земли не стоил ничего. Прыжок с прыжка перекрывал любой расход,
+   и шкала стояла на сотне всю игру — то есть механики не было вовсе.
+   Теперь: земля наполняет за пять секунд, а не за полторы; с зажатой тягой не
+   наполняет вовсе; отрыв откусывает JET_KICK. Полёт по-прежнему две с
+   половиной секунды — расход не тронут, тронута только даровая сдача. */
+const JET_BURN=1/150, JET_REGEN_GROUND=1/300, JET_REGEN_AIR=1/1100, JET_VMAX=-2.1;
+/* толчок от земли: двенадцать прыжков на полном запасе, и это видно на шкале */
+const JET_KICK=.08;
 function jetFuel(){const S=G.surf;if(!S)return 1;if(S.jet==null)S.jet=1;return S.jet;}
-function jetCanLift(){return jetFuel()>.05;}
+function jetCanLift(){return jetFuel()>JET_KICK;}
+/* отрыв: списывает толчок и возвращает false, если платить нечем */
+function jetKick(){
+  const S=G.surf;if(!S)return false;
+  if(S.jet==null)S.jet=1;
+  if(S.jet<=JET_KICK)return false;
+  S.jet=Math.max(0,S.jet-JET_KICK);
+  return true;
+}
 /* air — тело в воздухе: тогда тяга жжёт запас и толкает тело; на земле запас
    копится. Возвращает true, пока ранец горит — по этому рисуется факел */
 function jetTick(body,g,dt,air){
@@ -34574,7 +34603,11 @@ function jetTick(body,g,dt,air){
     fire=true;
     S.jetSfx=(S.jetSfx||0)-dt;
     if(S.jetSfx<=0){S.jetSfx=9;sfx("ui",{f:140+Math.random()*40,to:90,d:.16,v:.05});}
-  }else S.jet=Math.min(1,S.jet+(air?JET_REGEN_AIR:JET_REGEN_GROUND)*regenMul*dt);
+  }else if(!(keys.thrust&&!air)){
+    /* на земле с зажатой тягой запас не копится: иначе игрок стоит на кнопке
+       и качает шкалу быстрее, чем тратит её в воздухе */
+    S.jet=Math.min(1,S.jet+(air?JET_REGEN_AIR:JET_REGEN_GROUND)*regenMul*dt);
+  }
   body.jetOn=fire;
   return fire;
 }
@@ -39632,6 +39665,8 @@ function surfaceHint(){
     if(S.p.type!=="gas")return "У КОРАБЛЯ МОЖНО ЗАЛОЖИТЬ БАЗУ · ДЕЙСТВИЕ · 2500 КР + 10 СПЛАВОВ";
   }
   if(S.cave&&Math.abs(S.cave.x-S.x)<34)return "ВХОД В ПЕЩЕРУ · ДЕЙСТВИЕ — ВНУТРЬ";
+  {const mx=(typeof mineSpotX==="function")?mineSpotX(S.p):null;
+   if(mx!=null&&Math.abs(mx-S.x)<MINE_MOUTH_R)return "ВАША ШАХТА · ДЕЙСТВИЕ — ВНИЗ";}
   if(!G.surfTipShown||G.t-G.surfTipShown<900){
     if(!G.surfTipShown)G.surfTipShown=G.t;
     return "ЦВЕТНЫЕ КРИСТАЛЛЫ — ЗАЛЕЖИ · СТРЕЛКИ СВЕРХУ ВЕДУТ К ПЕЩЕРЕ И КОРАБЛЮ";
@@ -39671,6 +39706,10 @@ function drawSurfaceHud(camx,camy,K){
   const marks=[];
   marks.push({x:S.shipX,ru:"КОРАБЛЬ",col:"rgba(242,178,92,.9)"});
   if(S.cave)marks.push({x:S.cave.x,ru:"ПЕЩЕРА",col:"rgba(150,225,255,.9)"});
+  /* своя шахта ведётся так же, как пещера: до неё идут ногами, значит её надо
+     найти. Цвет — рабочего железа, не природы (M234) */
+  {const mx=(typeof mineSpotX==="function")?mineSpotX(S.p):null;
+   if(mx!=null)marks.push({x:mx,ru:"ШАХТА",col:"rgba(214,198,172,.9)"});}
   if(typeof lightsOpen==="function"&&lightsOpen(S.p))marks.push({x:lightsEntryX(S.tr,S.p),ru:"ВХОД",col:"rgba(255,236,190,.9)"});
   /* дом (M170): до него надо дойти, значит его надо и найти — свой маркер,
      тёплого цвета, чтобы не путать с кораблём */
@@ -39901,6 +39940,81 @@ function drawSurfaceWorld(){
       ctx.fillText("ПЕЩЕРА",cx,cy-24);
     }
   }
+  /* ── устье своей шахты (M234) ──
+     Ствол оставался в сохранении, но на грунте от него не было ни следа: автор
+     ходил по планете и не мог сказать, где копал. Устье теперь СТОИТ на своём
+     месте — по тем же правилам, что вход в пещеру: не чёрная наклейка, а дыра
+     с губой, поймавшей небо, отвал породы рядом (её же оттуда и вынули) и
+     копёр над ней — вещь, которая отбрасывает тень и ловит свет сверху. */
+  {
+    const mx=(typeof mineSpotX==="function")?mineSpotX(p):null;
+    const sx=mx!=null?mx-camx:null;
+    if(sx!=null&&sx>-70&&sx<W+70){
+      const sy=groundAt(tr,mx)-camy;
+      const amb=ambRGB(p);
+      /* железо копра — не грунт: своя, холодная светлота, иначе на тёмной
+         планете вся постройка сходится в один чёрный силуэт (закон 4) */
+      const iron=(k,a)=>"rgba("+(amb[0]*.4+34*k|0)+","+(amb[1]*.4+38*k|0)+","+(amb[2]*.4+44*k|0)+","+a+")";
+      /* отвал: то, что вынесли наверх, лежит горкой сбоку — с тенью под ней */
+      groundShadow(sx+22,sy+1,13,3);
+      /* отвал и яма сделаны из ТОГО ЖЕ грунта, что под ними: цвет не задаётся,
+         а гасится умножением по уже нарисованной земле. Палитра планеты для
+         этого не годится — видимый грунт складывается ещё и из материала со
+         светом, и любой «свой» цвет садится рядом чужим пятном. */
+      ctx.save();ctx.globalCompositeOperation="multiply";
+      ctx.fillStyle="rgba(124,122,126,1)";
+      ctx.beginPath();ctx.moveTo(sx+8,sy+1);ctx.quadraticCurveTo(sx+22,sy-11,sx+36,sy+1);ctx.fill();
+      ctx.restore();
+      ctx.fillStyle="rgba(255,255,255,.16)";
+      ctx.beginPath();ctx.moveTo(sx+13,sy-2.5);ctx.quadraticCurveTo(sx+22,sy-10,sx+30,sy-2.5);
+      ctx.quadraticCurveTo(sx+22,sy-6.5,sx+13,sy-2.5);ctx.fill();
+      /* ствол: яма, а не чёрный ящик. Прямоугольник в 22 px на склоне торчал
+         из грунта коробкой — дыра идёт полуэллипсом ВНИЗ от линии земли, как
+         устье пещеры идёт полуэллипсом вверх, и на любом уклоне остаётся ямой.
+         Сверху ещё видно породу, ко дну она гаснет — но не в общую черноту, а
+         в свою же (та же ошибка, что чинили в пещере на 0.226.0). */
+      ctx.save();ctx.globalCompositeOperation="multiply";
+      const gg=ctx.createLinearGradient(sx,sy-2,sx,sy+11);
+      gg.addColorStop(0,"rgba(150,148,154,1)");
+      gg.addColorStop(.5,"rgba(74,72,78,1)");
+      gg.addColorStop(1,"rgba(38,37,42,1)");
+      ctx.fillStyle=gg;
+      ctx.beginPath();ctx.ellipse(sx,sy-1,12,10,0,0,Math.PI);ctx.fill();
+      ctx.restore();
+      /* срез породы по краю: две светлые засечки на самой линии земли — по ним
+         яма и читается ямой, а не пятном (закон 3) */
+      ctx.strokeStyle="rgba(255,255,255,.22)";
+      ctx.lineWidth=1.6;ctx.beginPath();
+      ctx.moveTo(sx-13.5,sy-1.3);ctx.lineTo(sx-5,sy-1.3);
+      ctx.moveTo(sx+5,sy-1.3);ctx.lineTo(sx+13.5,sy-1.3);ctx.stroke();
+      /* копёр: две ноги и балка, тень от него на грунте */
+      groundShadow(sx-2,sy+1,16,2.6);
+      ctx.strokeStyle=iron(1,1);ctx.lineWidth=2.2;
+      ctx.beginPath();
+      ctx.moveTo(sx-12,sy-3);ctx.lineTo(sx-6,sy-25);
+      ctx.moveTo(sx+12,sy-3);ctx.lineTo(sx+6,sy-25);
+      ctx.moveTo(sx-7.4,sy-25);ctx.lineTo(sx+7.4,sy-25);
+      /* распорка: без неё две ноги читаются циркулем, а не станком */
+      ctx.moveTo(sx-9.4,sy-14);ctx.lineTo(sx+9.4,sy-14);
+      ctx.stroke();
+      /* верхняя кромка балки и ноги, обращённой к небу, ловит свет (закон 3) */
+      ctx.strokeStyle=iron(2.1,.75);ctx.lineWidth=1;
+      ctx.beginPath();
+      ctx.moveTo(sx-7.4,sy-26.1);ctx.lineTo(sx+7.4,sy-26.1);
+      ctx.moveTo(sx-11,sy-3.6);ctx.lineTo(sx-5.2,sy-24.4);ctx.stroke();
+      /* шкив и трос: трос покачивается от ветра — движение, а не мигание */
+      ctx.fillStyle=iron(1.3,1);
+      ctx.beginPath();ctx.arc(sx,sy-25,3,0,TAU);ctx.fill();
+      ctx.strokeStyle="rgba(255,255,255,.16)";ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(sx,sy-25,3,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
+      const sw=Math.sin(G.t*.012+mx*.01)*WIND*.5;
+      ctx.strokeStyle=iron(.8,.85);ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(sx,sy-22);
+      ctx.quadraticCurveTo(sx+sw,sy-13,sx+sw*.4,sy-2);ctx.stroke();
+      ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText("ШАХТА",sx,sy-32);
+    }
+  }
   for(const pl of S.plants){
     const x=pl.x-camx;if(x<-70||x>W+70)continue;
     groundShadow(x,pl.y-camy+1,Math.min(22,pl.h*.32),3.2);
@@ -39953,15 +40067,23 @@ function drawSurfaceWorld(){
   const x=S.x-camx,y=S.y-camy;
   /* следы гаснут за минуту: пыль оседает, и тропа остаётся только там, где
      ходили только что — так видно, откуда пришёл */
+  /* ── след — вдавленность, а не чёрточка поверх кромки (M234) ──
+     Отпечаток рисовался ВЫШЕ линии земли и перекрывал светлую кромку грунта:
+     по гребню шла пунктирная дыра, и на ходу она читалась как мигание (закон 3
+     — у силуэта есть кромка, и рвать её нечем). Теперь ямка лежит НИЖЕ линии,
+     в самом грунте, а сверху её держит светлая губа — как у настоящего следа
+     в пыли. И гаснет он ровно: полжизни держится, полжизни выцветает, поэтому
+     свежий след не появляется полупрозрачным призраком. */
   if(S.tracks&&S.tracks.length){
     for(const tk of S.tracks){
-      const age=G.t-tk.t;if(age>2400)continue;
+      const age=G.t-tk.t;if(age>TRACK_LIFE)continue;
       const tx=tk.x-camx;if(tx<-10||tx>W+10)continue;
+      const a=clamp(1-(age-TRACK_LIFE*.5)/(TRACK_LIFE*.5),0,1);
       const ty=groundAt(tr,tk.x)-camy;
-      ctx.fillStyle="rgba(0,0,0,"+(.45*(1-age/2400)).toFixed(3)+")";
-      ctx.fillRect(tx-2.6,ty-1.2,5.2,1.6);
-      ctx.fillStyle="rgba(255,255,255,"+(.08*(1-age/2400)).toFixed(3)+")";
-      ctx.fillRect(tx-2.6,ty+.4,5.2,.8);
+      ctx.fillStyle="rgba(0,0,0,"+(.34*a).toFixed(3)+")";
+      ctx.fillRect(tx-2.4,ty+.3,4.8,1.5);
+      ctx.fillStyle="rgba(255,255,255,"+(.10*a).toFixed(3)+")";
+      ctx.fillRect(tx-2.4,ty-.4,4.8,.7);
     }
   }
   /* клубы пыли из-под ног (M232): расходятся и тают за спиной ходока */
@@ -40701,6 +40823,11 @@ function pennDraw(x,y,w,h){
 }
 
 /* ══════════════ поверхность ══════════════ */
+/* с какого расстояния устье шахты считается «здесь»: тот же порядок, что у
+   входа в пещеру (34), чуть шире — копёр и отвал занимают место (M234) */
+const MINE_MOUTH_R=40;
+/* сколько живёт след: полминуты держится, полминуты гаснет (21e рисует) */
+const TRACK_LIFE=2400;
 function enterSurface(){
   const L=G.land,tr=L.tr,p=L.p,r=rng(p.seed^0x1234);
   /* залежи берутся из профиля ПЛАНЕТЫ (у смешанного мира он свой), а не из
@@ -40929,7 +41056,15 @@ function updateSurface(dt){
      каждые тринадцать пикселей пути по земле, храним полторы сотни. */
   if(walking&&S.on){
     S.tracks=S.tracks||[];
-    if(S.lastTrackX==null||Math.abs(S.x-S.lastTrackX)>=13){S.tracks.push({x:S.x,t:G.t,f:S.face});S.lastTrackX=S.x;if(S.tracks.length>150)S.tracks.shift();}
+    if(S.lastTrackX==null||Math.abs(S.x-S.lastTrackX)>=13){S.tracks.push({x:S.x,t:G.t,f:S.face});S.lastTrackX=S.x;}
+  }
+  /* след уходит по возрасту, а не по счёту (M234): сотня с полтиной кончалась
+     раньше, чем след успевал выцвести, и дальний конец тропы пропадал целой
+     пачкой — автор увидел это как «следы мигают». Порог по счёту остаётся
+     страховкой от бесконечного списка, но стоит выше времени жизни. */
+  if(S.tracks&&S.tracks.length){
+    while(S.tracks.length&&G.t-S.tracks[0].t>TRACK_LIFE)S.tracks.shift();
+    while(S.tracks.length>260)S.tracks.shift();
   }
   /* пока стоим на земле — жёстко следуем рельефу, а не догоняем его свободным
      падением: на склоне гравитация отставала от подъёма/спуска на один-два
@@ -40942,7 +41077,7 @@ function updateSurface(dt){
   if(S.on){
     S.y=gy;S.vy=0;S.jetOn=false;
     jetTick(S,S.g,dt,false);
-    if(keys.thrust&&jetCanLift()){S.vy=-1.6;S.on=false;S.jetOn=true;}
+    if(keys.thrust&&jetCanLift()&&jetKick()){S.vy=-1.6;S.on=false;S.jetOn=true;}
   }else{
     S.vy+=S.g*dt;
     jetTick(S,S.g,dt,true);
@@ -41237,8 +41372,21 @@ function updateSurface(dt){
     G.prompt="ДЕЙСТВИЕ — ЗАЛОЖИТЬ БАЗУ · 2500 КР + 10 СПЛАВОВ";
     if(actEdge&&foundBase(S.p)){enterBase(S.p);return;}
   }else if(S.on){
-    G.prompt="ДЕЙСТВИЕ — ЗАЛОЖИТЬ ШАХТУ · ВГЛУБЬ ПОРОДА БОГАЧЕ\n▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
-    if(actEdge){enterDig();return;}
+    /* ── шахта у планеты одна, и теперь у неё есть адрес (M234) ──
+       «Заложить» работало где угодно, а ствол под всеми точками был один и тот
+       же: спустился в другом конце карты — и попал в свою же выработку. Автор
+       сказал прямо: непонятно, где копал. Устье стоит на месте: рядом с ним —
+       спуск, вдали — расстояние до него, и второй ствол не закладывается. */
+    const mx=(typeof mineSpotX==="function")?mineSpotX(S.p):null;
+    if(mx!=null&&Math.abs(mx-S.x)>=MINE_MOUTH_R){
+      G.prompt="ШАХТА ЭТОЙ ПЛАНЕТЫ — "+Math.round(Math.abs(mx-S.x))+" м "+(mx>S.x?"▶":"◀")+
+        "\nГЛУБИНА "+mineDeep(S.p)+" · ВТОРОЙ СТВОЛ НЕ ЗАКЛАДЫВАЮТ";
+    }else{
+      G.prompt=(mx!=null?("ДЕЙСТВИЕ — СПУСТИТЬСЯ В ШАХТУ · ГЛУБИНА "+mineDeep(S.p)):
+                         "ДЕЙСТВИЕ — ЗАЛОЖИТЬ ШАХТУ · ВГЛУБЬ ПОРОДА БОГАЧЕ")+
+        "\n▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
+      if(actEdge){enterDig();return;}
+    }
   }else if(dShip<shipZoneR()){
     G.prompt=(G.fuel<8?"НЕТ ТОПЛИВА · КНОПКА ВЗЛЁТА — ЭВАКУАЦИЯ":"КНОПКА ВЗЛЁТА — УДЕРЖАТЬ")+
       "\nТРЮМ "+held()+"/"+st.cargoMax+" · СКАФАНДР "+Math.round(S.suit)+"/"+suitMax()+(S.suit<suitMax()?" · ЗАРЯДКА":" · ГОТОВ");
@@ -41253,7 +41401,11 @@ function updateSurface(dt){
   if(lbtn){
     if(dShip<shipZoneR()){
       lbtn.style.display="";
-      lbtn.textContent=G.fuel<8?"ЭВАКУАЦИЯ":"ВЗЛЁТ";
+      /* подпись живёт в span: textContent на самой кнопке стирал <i> — полосу
+         удержания, — и держать кнопку было нечем видно (M234) */
+      const lab=lbtn.querySelector("span")||lbtn;
+      const t=G.fuel<8?"ЭВАКУАЦИЯ":"ВЗЛЁТ";
+      if(lab.textContent!==t)lab.textContent=t;
     }else lbtn.style.display="none";
   }
 }
@@ -41992,7 +42144,7 @@ function updateCave(dt){
   if(C.on){
     C.vy=0;C.jetOn=false;
     jetTick(C,g,dt,false);
-    if(keys.thrust&&jetCanLift()){C.vy=-1.6;C.on=false;C.jetOn=true;}
+    if(keys.thrust&&jetCanLift()&&jetKick()){C.vy=-1.6;C.on=false;C.jetOn=true;}
     else{
       /* под уклон — держимся пола, а не падаем по ступеньке за шаг */
       let s=1;for(;s<=6;s++)if(!caveBoxFree(C,C.x,C.y+s))break;
@@ -43510,6 +43662,20 @@ function drawDigWorld(){
    сохраняется ТОЛЬКО то, что игрок изменил, то есть список выкопанных ячеек.
    Всё остальное (руда, твёрдость, жилы) по-прежнему выводится из seed. */
 function mineKey(p){return G.sx+","+G.sy+":"+(p&&p.idx!==undefined?p.idx:0);}
+/* ── где на этой планете уже копали (M234) ──
+   Запись шахты знала «сколько выкопано», но не «где»: устье не имело адреса,
+   и на поверхности не было видно ничего. Игрок ходил по грунту и не мог
+   отличить исхоженное от нетронутого — а копал всё время в один и тот же
+   ствол. Адрес пишется рядом с выработкой; у сохранений до M234 его нет, и
+   тогда ответ — null: ствол ещё не привязан, первый спуск его и поставит. */
+function mineSpotX(p){
+  const rec=G.mines&&G.mines[mineKey(p)];
+  return (rec&&typeof rec.x==="number")?rec.x:null;
+}
+function mineDeep(p){
+  const rec=G.mines&&G.mines[mineKey(p)];
+  return rec?(rec.deepest|0):0;
+}
 function mineLoad(D,p){
   const rec=G.mines&&G.mines[mineKey(p)];
   if(!rec)return;
@@ -43526,7 +43692,9 @@ function mineSave(D,p){
   for(const key in D.cells)if(D.cells[key].dug)dug.push(key);
   /* ствол растёт, и запись растёт вместе с ним; но она плоская и коротка —
      тысяча ячеек это тысяча строк "c,r", а не тысяча объектов */
-  G.mines[mineKey(p)]={dug,deepest:D.deepest|0};
+  const was=mineSpotX(p);
+  G.mines[mineKey(p)]={dug,deepest:D.deepest|0,
+    x:(typeof D.x0==="number")?D.x0:(was!=null?was:0)};
 }
 
 /* шахта меряется тем же, чем поверхность и пещера (M217): один и тот же человек
@@ -43591,7 +43759,13 @@ function digCell(D,col,row){
 }
 function enterDig(){
   const S=G.surf;
+  /* устье шахты стоит на своём месте (M234): пока его не записывали, ствол
+     был у планеты один, а «заложить» — в любой точке, и игрок не мог понять,
+     где копал. Старые сохранения адреса не имеют — тогда его назначает первый
+     же спуск, и дальше ствол там и стоит. */
+  const was=(typeof mineSpotX==="function")?mineSpotX(S.p):null;
   G.dig={p:S.p,col:0,row:0,cells:{},nodes:{},target:null,move:0,deepest:0,face:1,
+    x0:(was!=null?was:(S.x|0)),
     bugs:[],zap:0,zapT:0,walkAmp:0,walkPhase:0};
   G.dig.cells["0,0"]={dug:true,res:null,amount:0,prog:0,hard:0,tint:0};
   /* то, что уже выкопано в этой шахте, остаётся выкопанным */
@@ -58986,21 +59160,21 @@ let LOOP_OFF=false;
    она читается отладочной разметкой. Игра его не выключает никогда — флаг
    поднимают только стенды, и в самой игре он всегда false. */
 let SHOT_CLEAN=false;
-function frame(now){
+function frameBody(now){
   if(LOOP_OFF)return;
   /* Скрытая страница не рисует. Обычно её и так не будят — rAF стоит, — но в
      headless с виртуальным временем кадры идут как из пулемёта, и полная
      отрисовка в невидимую канву съедала весь бюджет: прогон тестов вставал
      намертво (M170). Стенды рисуют своими вызовами и этой ветки не касаются. */
-  if(document.hidden){requestAnimationFrame(frame);return;}
+  if(document.hidden){return;}
   /* дорожный спутник рисует свой кадр сам и занимает весь экран: мир под ним
      не виден, а батарею ест вдвое — а именно батарея и есть заявленная цена
      режима. Плюс это единственный путь, которым мировой холст мог просочиться
      поверх заставки (стенд M168k). Цепочка кадров не рвётся: выйдут — поедет. */
-  if(RD&&document.body.classList.contains("road")){requestAnimationFrame(frame);return;}
+  if(RD&&document.body.classList.contains("road")){return;}
   /* канва нулевого размера (страница поднялась скрытой) — чинится здесь же:
      иначе кадр падает на drawImage и игра стоит до первого resize */
-  if(W<2||H<2){resize();if(W<2||H<2){requestAnimationFrame(frame);return;}}
+  if(W<2||H<2){resize();if(W<2||H<2){return;}}
   if(capPrev){
     const d=now-capPrev;
     /* «самый короткий за последнее время»: медленно отпускаем оценку вверх,
@@ -59012,7 +59186,7 @@ function frame(now){
   const cap=G.opts.gfx.fps;
   if(cap){
     const stride=Math.max(1,Math.ceil(1000/cap/capIv-.15));
-    if(++capN%stride){requestAnimationFrame(frame);return;}
+    if(++capN%stride){return;}
     capN=0;
   }else capN=0;
   resAuto(now-last);
@@ -59084,8 +59258,36 @@ function frame(now){
     ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
     G.t=now*.06;drawNebula(now*.004,0,1);drawStars(now*.004,0,1);
   }
+}
+/* ══════════════ кадр, который не убивает игру (M234) ══════════════
+   Одно исключение внутри кадра рвало цепочку rAF навсегда: кнопки живы,
+   мир мёртв, ничего не сделать — и никакого следа, потому что консоль на
+   телефоне никто не открывает. Автор поймал это осмотром памятника.
+   Теперь исключение ловится здесь: цепочка кадров продолжается, игрок видит
+   ЧТО сломалось и успевает уйти в меню и сохраниться. Ошибка называется
+   вслух ОДИН раз — повтор той же строки только считается, иначе сообщение
+   встанет стеной на каждом кадре. */
+let crashN=0,crashLast="",crashSaid=0;
+function crashSay(e,where){
+  crashN++;
+  let m="";
+  try{m=(e&&e.message)||String(e);}catch(_){m="?";}
+  if(where)m+=" · "+where;
+  if(m===crashLast)return;
+  crashLast=m;
+  if(crashSaid++<3){try{console.error("DRIFT:",e);}catch(_){}}
+  try{say("СБОЙ · "+m+"\nигра идёт дальше — сохранитесь");}catch(_){}
+  try{logAdd("warn","Сбой кадра: "+m);}catch(_){}
+}
+function frame(now){
+  if(LOOP_OFF)return;
+  try{frameBody(now);}catch(e){crashSay(e,G&&G.mode);}
   requestAnimationFrame(frame);
 }
+/* то же для ошибок вне кадра: обработчик нажатия, ответ сервера, таймер.
+   Они кадр не рвут, но молчат так же — а молчащая ошибка живёт годами. */
+addEventListener("error",e=>{if(e&&(e.error||e.message))crashSay(e.error||e.message,"вне кадра");});
+addEventListener("unhandledrejection",e=>crashSay(e&&e.reason,"обещание"));
 applyPadMode();applyPadSize();
 requestAnimationFrame(frame);
 

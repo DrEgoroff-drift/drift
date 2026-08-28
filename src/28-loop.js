@@ -131,21 +131,21 @@ let LOOP_OFF=false;
    она читается отладочной разметкой. Игра его не выключает никогда — флаг
    поднимают только стенды, и в самой игре он всегда false. */
 let SHOT_CLEAN=false;
-function frame(now){
+function frameBody(now){
   if(LOOP_OFF)return;
   /* Скрытая страница не рисует. Обычно её и так не будят — rAF стоит, — но в
      headless с виртуальным временем кадры идут как из пулемёта, и полная
      отрисовка в невидимую канву съедала весь бюджет: прогон тестов вставал
      намертво (M170). Стенды рисуют своими вызовами и этой ветки не касаются. */
-  if(document.hidden){requestAnimationFrame(frame);return;}
+  if(document.hidden){return;}
   /* дорожный спутник рисует свой кадр сам и занимает весь экран: мир под ним
      не виден, а батарею ест вдвое — а именно батарея и есть заявленная цена
      режима. Плюс это единственный путь, которым мировой холст мог просочиться
      поверх заставки (стенд M168k). Цепочка кадров не рвётся: выйдут — поедет. */
-  if(RD&&document.body.classList.contains("road")){requestAnimationFrame(frame);return;}
+  if(RD&&document.body.classList.contains("road")){return;}
   /* канва нулевого размера (страница поднялась скрытой) — чинится здесь же:
      иначе кадр падает на drawImage и игра стоит до первого resize */
-  if(W<2||H<2){resize();if(W<2||H<2){requestAnimationFrame(frame);return;}}
+  if(W<2||H<2){resize();if(W<2||H<2){return;}}
   if(capPrev){
     const d=now-capPrev;
     /* «самый короткий за последнее время»: медленно отпускаем оценку вверх,
@@ -157,7 +157,7 @@ function frame(now){
   const cap=G.opts.gfx.fps;
   if(cap){
     const stride=Math.max(1,Math.ceil(1000/cap/capIv-.15));
-    if(++capN%stride){requestAnimationFrame(frame);return;}
+    if(++capN%stride){return;}
     capN=0;
   }else capN=0;
   resAuto(now-last);
@@ -229,8 +229,36 @@ function frame(now){
     ctx.fillStyle="#05070c";ctx.fillRect(0,0,W,H);
     G.t=now*.06;drawNebula(now*.004,0,1);drawStars(now*.004,0,1);
   }
+}
+/* ══════════════ кадр, который не убивает игру (M234) ══════════════
+   Одно исключение внутри кадра рвало цепочку rAF навсегда: кнопки живы,
+   мир мёртв, ничего не сделать — и никакого следа, потому что консоль на
+   телефоне никто не открывает. Автор поймал это осмотром памятника.
+   Теперь исключение ловится здесь: цепочка кадров продолжается, игрок видит
+   ЧТО сломалось и успевает уйти в меню и сохраниться. Ошибка называется
+   вслух ОДИН раз — повтор той же строки только считается, иначе сообщение
+   встанет стеной на каждом кадре. */
+let crashN=0,crashLast="",crashSaid=0;
+function crashSay(e,where){
+  crashN++;
+  let m="";
+  try{m=(e&&e.message)||String(e);}catch(_){m="?";}
+  if(where)m+=" · "+where;
+  if(m===crashLast)return;
+  crashLast=m;
+  if(crashSaid++<3){try{console.error("DRIFT:",e);}catch(_){}}
+  try{say("СБОЙ · "+m+"\nигра идёт дальше — сохранитесь");}catch(_){}
+  try{logAdd("warn","Сбой кадра: "+m);}catch(_){}
+}
+function frame(now){
+  if(LOOP_OFF)return;
+  try{frameBody(now);}catch(e){crashSay(e,G&&G.mode);}
   requestAnimationFrame(frame);
 }
+/* то же для ошибок вне кадра: обработчик нажатия, ответ сервера, таймер.
+   Они кадр не рвут, но молчат так же — а молчащая ошибка живёт годами. */
+addEventListener("error",e=>{if(e&&(e.error||e.message))crashSay(e.error||e.message,"вне кадра");});
+addEventListener("unhandledrejection",e=>crashSay(e&&e.reason,"обещание"));
 applyPadMode();applyPadSize();
 requestAnimationFrame(frame);
 

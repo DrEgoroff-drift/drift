@@ -49,7 +49,13 @@ function digCell(D,col,row){
 }
 function enterDig(){
   const S=G.surf;
+  /* устье шахты стоит на своём месте (M234): пока его не записывали, ствол
+     был у планеты один, а «заложить» — в любой точке, и игрок не мог понять,
+     где копал. Старые сохранения адреса не имеют — тогда его назначает первый
+     же спуск, и дальше ствол там и стоит. */
+  const was=(typeof mineSpotX==="function")?mineSpotX(S.p):null;
   G.dig={p:S.p,col:0,row:0,cells:{},nodes:{},target:null,move:0,deepest:0,face:1,
+    x0:(was!=null?was:(S.x|0)),
     bugs:[],zap:0,zapT:0,walkAmp:0,walkPhase:0};
   G.dig.cells["0,0"]={dug:true,res:null,amount:0,prog:0,hard:0,tint:0};
   /* то, что уже выкопано в этой шахте, остаётся выкопанным */

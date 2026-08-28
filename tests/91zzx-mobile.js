@@ -150,7 +150,12 @@ TEST_SUITES.push(()=>suite("телефон: этажи внизу не нале�
   }else{
     const box=s=>{const e=document.querySelector(s);if(!e)return null;
       const r=e.getBoundingClientRect();return r.width?{s,x:r.x,y:r.y,w:r.width,h:r.height}:null;};
-    const items=[".vitals",".locus","#prompt","#console",".rail",
+    /* ВЗЛЁТ — та же обязанность, что у остальных этажей (M234). Он появляется
+       только у корабля, поэтому в проверке его показывают руками: на телефоне
+       он висел ровно на пульте, поверх ФОТО, и улететь было нельзя. */
+    const lb=document.getElementById("launchbtn");
+    if(lb)lb.style.display="";
+    const items=[".vitals",".locus","#prompt","#console",".rail","#launchbtn",
                  ".pads>div:first-child",".pads>div:last-child"].map(box).filter(Boolean);
     const hit=(a,b)=>!(a.x+a.w<=b.x||b.x+b.w<=a.x||a.y+a.h<=b.y||b.y+b.h<=a.y);
     const clash=[];
@@ -160,6 +165,7 @@ TEST_SUITES.push(()=>suite("телефон: этажи внизу не нале�
     const out=items.filter(i=>i.x<-1||i.x+i.w>innerWidth+1);
     eq(out.map(i=>i.s).join(", "),"","и ничто не уехало за край");
   }
+  const lb2=document.getElementById("launchbtn");if(lb2)lb2.style.display="none";
   G.prompt="";G.surf=null;G.mode="system";hud();
 }));
 

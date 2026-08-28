@@ -7,6 +7,47 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.228.0 — M234: five things the author's phone found in one evening
+
+The author played on a phone and sent four screenshots and five lines. Every one of them was a
+real defect, and two made the game unplayable rather than ugly.
+
+- **Inspecting a landmark froze the game dead.** Not the inspection: the FRAME. `frame()` had no
+  guard of any kind, and the chain of `requestAnimationFrame` calls lived inside the frame body —
+  so one exception anywhere (a mode's update, a draw, a tick) ended the chain forever. The buttons
+  stayed alive, the world stopped, and nothing said why: nobody opens a console on a phone. The
+  frame now catches its own exception, keeps the chain running, names the failure once on screen
+  (`СБОЙ · …`) and writes it to the journal; `error` and `unhandledrejection` are caught the same
+  way for everything that runs outside the frame. `CLAUDE.md` had listed "crash handling" under
+  `28-loop` for a long time — there was none.
+- **The jetpack was infinite.** The gauge read 100% all evening because the ground refilled it
+  three times faster than flight burned it (1/90 against 1/150), refilled it even in the frame the
+  player was already holding thrust, and the push off the ground cost nothing at all. Flight is
+  untouched — two and a half seconds — but the ground now takes five, holding thrust on the ground
+  fills nothing, and lifting off bites `JET_KICK` (8%): twelve hops on a full tank, and the needle
+  moves while you use it.
+- **ВЗЛЁТ could not be pressed.** On a phone the button sat 100 px off the bottom — exactly on the
+  console strip (96 px), whose ФОТО button takes the taps at `z-index:5`. Leaving the planet was
+  impossible. There is no room for a fourth floor at the bottom, so it moves to the left board,
+  opposite the right rail. Its label also stopped erasing the hold bar: `textContent` on the
+  button killed the `<i>` inside it, so holding showed nothing at all.
+- **The shaft was invisible from the surface.** The mine persisted, but nothing on the ground said
+  where it was — and "lay a shaft" worked anywhere, dropping the player into that same single
+  mine. The mouth now has an address (`x` beside the workings), a headframe standing on it with a
+  shadow, a spoil heap next to it and a target chip like the cave's; up close the prompt is
+  "СПУСТИТЬСЯ В ШАХТУ", far away it says how many metres back. Saves from before this have no
+  address — the next descent assigns it. The pit and the heap are painted by MULTIPLYING over the
+  ground already drawn, not in a colour of their own: the visible soil is material plus light, and
+  any "own" colour sits next to it as a foreign patch.
+- **The footprints blinked.** Two reasons: they were capped at 150 by count while fading by time,
+  so the far end of the trail vanished in a batch, and each print was drawn ABOVE the ground line,
+  cutting the lit rim of the soil into a dashed hole (law 3). They expire by age now, hold for
+  half their life before fading, and lie IN the soil with a light lip on top.
+
+Tests: 382 suites green (three new: the jetpack's economy, the frame surviving an exception, the
+shaft's address), plus the phone-layout suite, which now measures ВЗЛЁТ along with the rest.
+
+---
 ## 0.227.0 — M233 pass 3: the thicket gets depth, the home gets arms, the front page gets the world
 
 - **A jungle was one flat green.** Plants had depth — far ones smaller and faded — but the fade

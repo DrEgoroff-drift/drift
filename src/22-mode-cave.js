@@ -243,7 +243,7 @@ function updateCave(dt){
   if(C.on){
     C.vy=0;C.jetOn=false;
     jetTick(C,g,dt,false);
-    if(keys.thrust&&jetCanLift()){C.vy=-1.6;C.on=false;C.jetOn=true;}
+    if(keys.thrust&&jetCanLift()&&jetKick()){C.vy=-1.6;C.on=false;C.jetOn=true;}
     else{
       /* под уклон — держимся пола, а не падаем по ступеньке за шаг */
       let s=1;for(;s<=6;s++)if(!caveBoxFree(C,C.x,C.y+s))break;

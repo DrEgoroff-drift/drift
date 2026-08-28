@@ -172,3 +172,42 @@ TEST_SUITES.push(()=>suite("постройки видны с земли",()=>{
   G.home.sx=G.sx+3;
   eq(builtHere().length,1,"чужая система — дома здесь нет");
 }));
+
+
+/* ══════════════ M234: у шахты есть адрес ══════════════
+   Ствол оставался в сохранении, но на поверхности от него не было ни следа, и
+   «заложить шахту» работало где угодно — попадая в ту же самую выработку.
+   Автор: «непонятно, где копал». Устье теперь стоит на месте. */
+TEST_SUITES.push(()=>suite("шахта видна с поверхности",()=>{
+  resetWorld();landOnTestPlanet();
+  const p=G.surf.p;
+  /* пустой участок: залежь, куст или зверь рядом отвечают своей подсказкой —
+     проверяем ветку шахты, а не порядок ветвей */
+  const clear=x=>{const S=G.surf;S.x=x;S.on=true;S.plants=[];S.fauna=[];S.deposits=[];S.mining=null;};
+  eq(mineSpotX(p),null,"пока не копали — устья нет");
+  const where=G.surf.shipX+600;
+  clear(where);
+  enterDig();
+  eq(G.dig.x0,where|0,"устье встало там, где заложили");
+  exitDig();
+  near(mineSpotX(p),where|0,1,"и записалось в сохранение");
+  /* рядом — спуск; вдали — расстояние и запрет на второй ствол */
+  clear(where+5);G.prompt="";
+  updateSurface(1);
+  ok(/СПУСТИТЬСЯ В ШАХТУ/.test(G.prompt),"у устья зовут вниз: "+G.prompt.split("\n")[0]);
+  clear(where+400);G.prompt="";
+  updateSurface(1);
+  ok(/ШАХТА ЭТОЙ ПЛАНЕТЫ/.test(G.prompt),"вдали сказано, где она: "+G.prompt.split("\n")[0]);
+  actEdge=true;updateSurface(1);actEdge=false;
+  eq(G.mode,"surface","и второй ствол не закладывается");
+  /* сохранение до M234 адреса не знает — первый же спуск его назначает */
+  G.mines[mineKey(p)]={dug:["0,0"],deepest:1};
+  eq(mineSpotX(p),null,"у старой записи адреса нет");
+  clear(where+400);
+  enterDig();exitDig();
+  near(mineSpotX(p),where+400,1,"и его ставит первый спуск");
+  /* адрес переживает запись и загрузку (после неё поверхности уже нет) */
+  const snap=JSON.parse(JSON.stringify(snapshot()));
+  G.mines={};applySave(snap);
+  near(mineSpotX(p),where+400,1,"устье пережило сохранение");
+}));

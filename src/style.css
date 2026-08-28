@@ -278,6 +278,7 @@ body:not(.inflight) .ipod{display:none}
   box-shadow:0 0 18px rgba(255,143,106,.3),inset 0 0 14px rgba(255,143,106,.2)}
 .pads button[data-k=msl].empty{opacity:.4}
 #launchbtn{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom) + 100px);
+  z-index:6;
   width:88px;height:44px;border-radius:var(--rad-b);background:var(--glass);
   border:1px solid rgba(242,178,92,.5);color:var(--amber);font-family:inherit;font-size:10px;
   letter-spacing:.08em;overflow:hidden;-webkit-appearance:none;
@@ -925,6 +926,15 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
      оно не панель, оно проходит. */
   #msg{top:20%;bottom:auto;white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis;max-width:calc(100vw - 24px);font-size:11px;line-height:1.4}
+  /* ── ВЗЛЁТ на телефоне стоял поверх ФОТО (M234) ──
+     Кнопка висела на 100 px от низа — ровно на пульте (96 px), у которого
+     собственный z-index 5 и живые нажатия у ФОТО. Стёкла наложились, палец
+     попадал в ФОТО, и улететь с планеты было НЕЛЬЗЯ: автор поймал это первым
+     же вечером. Этажей внизу и так три (пэды → пульт → подсказка), четвёртый
+     не влезет — поэтому ВЗЛЁТ уходит на левый борт, напротив правого:
+     подсказка кончается на 128 px от правого края, там ему и место. */
+  #launchbtn{right:auto;left:14px;bottom:calc(env(safe-area-inset-bottom) + 250px);
+    width:96px;height:46px}
   /* подсказка не заходит под правый борт: та же зона, что у строки состояния */
   #prompt{bottom:calc(env(safe-area-inset-bottom) + 204px);white-space:nowrap;overflow:hidden;
     left:10px;right:128px;transform:none;

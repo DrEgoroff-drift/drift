@@ -597,6 +597,20 @@ function drawDigWorld(){
    сохраняется ТОЛЬКО то, что игрок изменил, то есть список выкопанных ячеек.
    Всё остальное (руда, твёрдость, жилы) по-прежнему выводится из seed. */
 function mineKey(p){return G.sx+","+G.sy+":"+(p&&p.idx!==undefined?p.idx:0);}
+/* ── где на этой планете уже копали (M234) ──
+   Запись шахты знала «сколько выкопано», но не «где»: устье не имело адреса,
+   и на поверхности не было видно ничего. Игрок ходил по грунту и не мог
+   отличить исхоженное от нетронутого — а копал всё время в один и тот же
+   ствол. Адрес пишется рядом с выработкой; у сохранений до M234 его нет, и
+   тогда ответ — null: ствол ещё не привязан, первый спуск его и поставит. */
+function mineSpotX(p){
+  const rec=G.mines&&G.mines[mineKey(p)];
+  return (rec&&typeof rec.x==="number")?rec.x:null;
+}
+function mineDeep(p){
+  const rec=G.mines&&G.mines[mineKey(p)];
+  return rec?(rec.deepest|0):0;
+}
 function mineLoad(D,p){
   const rec=G.mines&&G.mines[mineKey(p)];
   if(!rec)return;
@@ -613,7 +627,9 @@ function mineSave(D,p){
   for(const key in D.cells)if(D.cells[key].dug)dug.push(key);
   /* ствол растёт, и запись растёт вместе с ним; но она плоская и коротка —
      тысяча ячеек это тысяча строк "c,r", а не тысяча объектов */
-  G.mines[mineKey(p)]={dug,deepest:D.deepest|0};
+  const was=mineSpotX(p);
+  G.mines[mineKey(p)]={dug,deepest:D.deepest|0,
+    x:(typeof D.x0==="number")?D.x0:(was!=null?was:0)};
 }
 
 /* шахта меряется тем же, чем поверхность и пещера (M217): один и тот же человек

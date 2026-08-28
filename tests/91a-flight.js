@@ -285,3 +285,52 @@ TEST_SUITES.push(()=>suite("система: по метке можно ткну�
   ok(G.ap&&G.ap.kind==="planet","тычок в 20 px от края диска — попадание");
   G.ap=null;G.ship.x=0;G.ship.y=-760;
 }));
+
+/* ══════════════ M234: ранец — запас, а не декорация ══════════════
+   Автор прислал скрин с «РАНЕЦ 100%» после вечера игры: на земле запас
+   набирался втрое быстрее, чем горел, а сам отрыв не стоил ничего, и шкала
+   стояла на сотне всегда. Проверяем ЭКОНОМИКУ, а не числа: прыжок тратит,
+   земля возвращает медленнее, чем воздух жжёт, и с зажатой тягой не копит. */
+TEST_SUITES.push(()=>suite("ранец: прыжок стоит, земля возвращает медленно",()=>{
+  resetWorld();
+  landOnTestPlanet();
+  const S=G.surf;
+  S.jet=1;S.on=true;
+  keys.thrust=true;updateSurface(1);keys.thrust=false;
+  ok(S.jet<1,"отрыв откусил запас: "+S.jet.toFixed(3));
+  ok(!S.on,"и оторвал от земли");
+  const afterKick=S.jet;
+  /* полёт с зажатой тягой жжёт быстрее, чем земля возвращает */
+  keys.thrust=true;steps(20,updateSurface);keys.thrust=false;
+  const burned=afterKick-S.jet;
+  ok(burned>0,"в воздухе тяга жжёт запас");
+  S.on=true;S.jet=.5;
+  keys.thrust=true;jetTick(S,S.g,20,false);keys.thrust=false;
+  near(S.jet,.5,1e-6,"на земле с зажатой тягой запас не копится");
+  jetTick(S,S.g,20,false);
+  const gained=S.jet-.5;
+  ok(gained>0,"отпустил — копится");
+  ok(gained*20<burned*20+1,"но не быстрее, чем горит");
+  /* пустой ранец не поднимает */
+  S.jet=0;S.on=true;
+  keys.thrust=true;updateSurface(1);keys.thrust=false;
+  ok(S.on,"на пустом ранце с земли не оторваться");
+}));
+
+/* ══════════════ M234: сбой кадра не убивает игру ══════════════
+   Одно исключение внутри кадра рвало цепочку rAF навсегда: мир вставал, кнопки
+   жили, и ни строки о причине. Кадр обязан пережить чужую ошибку. */
+TEST_SUITES.push(()=>suite("кадр переживает исключение",()=>{
+  resetWorld();
+  /* стенд не знает, видима ли страница (в headless — нет), поэтому ломаем
+     сам кадр: проверяется договор обёртки, а не путь внутри него */
+  const wasOff=LOOP_OFF, wasBody=frameBody;
+  LOOP_OFF=false;
+  frameBody=function(){throw new Error("проверка");};
+  let threw=false;
+  try{frame(performance.now());}catch(e){threw=true;}
+  frameBody=wasBody;LOOP_OFF=wasOff;
+  ok(!threw,"исключение не вышло наружу — цепочка кадров цела");
+  ok(crashN>0,"сбой посчитан");
+  ok(/проверка/.test(crashLast),"и назван: "+crashLast);
+}));
