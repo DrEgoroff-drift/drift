@@ -57,14 +57,16 @@ the contrast stretch crosses a palette stop. Hull heat climbs the deeper you dip
 <tr>
 <td width="50%" valign="top">
 <img src="docs/shots/landing.png" alt="Lander descending through rain" width="100%">
-<b>Landing.</b> The lander silhouette is derived from the hull; weather is capped per world
-type so a crystal planet is never washed flat white by fog.
+<b>Landing.</b> The lander silhouette is derived from the hull; the camera keeps the ground you
+are descending onto in frame the whole way down, and weather is capped per world type so a
+crystal planet is never washed flat white by fog.
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/surface.png" alt="Jungle world on foot" width="100%">
 <b>On foot.</b> Flora and fauna come from the planet's genome; the ground is one baked
-material tile holding three scales at once. The astronaut is the unit of scale — held at the
-same share of the frame on any monitor, so you never have to look for yourself on a big screen.
+material tile holding three scales at once, and the thicket has a front and a back — distance
+moves a plant's colour into the air, the way air actually separates planes. The astronaut is
+the unit of scale, held at the same share of the frame on any monitor.
 </td>
 </tr>
 <tr>
@@ -99,7 +101,8 @@ at the surface cap. Power runs in cable trays under the deck plating, a panel bo
 <td width="50%" valign="top">
 <img src="docs/shots/raid.png" alt="Boarding a pirate base" width="100%">
 <b>Boarding a pirate base.</b> Corridors are projected from the belt's own polygons; the base
-you fight through is the one you saw from outside.
+you fight through is the one you saw from outside. It speaks the same language as your own
+base — an amber power line along the cable trough, panel boxes, work lamps over the bays.
 </td>
 <td width="50%" valign="top">
 <img src="docs/shots/cantina.png" alt="Station cantina" width="100%">
@@ -459,6 +462,11 @@ Kilometres earn capped in-game credits, with a combo for riding without stopping
 
 ## Graphics and sound
 
+- **The light knows the hour.** One day key feeds the sky gradient, the ambient fill, the
+  strength of direct light, the air on the far ridges and the final grade: at noon the zenith is
+  a luminous colour of the world's own palette and shadows are sharp and coloured, toward night
+  it all returns. Airless worlds keep a black sky at any hour — there is nothing to scatter —
+  and the stars stand in it, over the surface and over a mine shaft alike.
 - Every hull is generated from its seed: multi-station fuselage profile, swept wings, nacelles,
   canopy, panel lines, greebles, livery, blinking navigation lights. Banking is a real roll —
   the silhouette squashes and a shaded belly shows.

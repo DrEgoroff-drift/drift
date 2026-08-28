@@ -74,13 +74,20 @@ caption outside it; the pirate hangar's brown checkerboard (two light pools per 
 in the lamp's colour at low light); the settlement staying dark in a downpour; the cave's
 darkness painted in a cold black that erased the rock.
 
+Closed in pass 3 (0.227.0): the jungle as one flat green (plant depth faded with alpha, which
+over a green sky does nothing — distance now moves the plant's own colour into the air); the
+armless figure at home; and the front page catching canvas UI (`SHOT_CLEAN`, a stand-only flag
+that drops the hint band, target chips and the base's build cursor).
+
 Rules learned here, worth keeping: **a screen-space band tied to `SURF_HOR` is a lie in any
 mode where the ground is elsewhere** — fade it both ways or anchor it to the real ground;
 **a parallax offset written as a fraction of `camy` only holds near the ground** — cap it
 against the near terrain; **a threshold on a raw camera value (`camy<40`) is not a question
 about visibility** — ask whether the thing is in frame; and **in a renderer without an
 additive pass a light pool must be painted as lit FLOOR, never as the lamp's colour at low
-brightness** — the latter is mud.
+brightness** — the latter is mud; and **fading a far object with `globalAlpha` is not aerial
+perspective** — on a world whose air is the same hue as the object it changes nothing, the
+object's own colour has to move toward the air.
 
 ## M232 — cosmetics to the limit (the author's self-prompt, 2026-08-27) — CLOSED WHOLE (0.217.0–0.224.0)
 
