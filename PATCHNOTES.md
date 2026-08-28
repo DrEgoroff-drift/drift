@@ -7,7 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.225.0 — M233: the screenshots were bad because the GAME was bad
+## 0.226.0 — M233 pass 2: the mine's black sky, the empty gauge, the hangar's tablecloth
+
+- **Half the mine screen was a black hole.** The sky over the pit was drawn only while
+  `camy<40` — a number with nothing to do with whether the mouth is visible; one step down the
+  shaft and the sky stopped being drawn while the rock had not yet begun. It is now asked
+  directly whether the surface line is in frame. And the sky over an airless world is nearly
+  black BY PALETTE — up top the stars hold that black, in the shaft they were never drawn, so
+  the same starfield now stands over the pit (and at night on worlds with air).
+- **The scoop's heat gauge was an empty frame with a stray caption.** The plate was 20 px tall
+  and the caption printed 2 px BELOW its bottom edge; at zero heat there was no fill at all, so
+  the main instrument of the mode read as an unfinished box. Now it has a groove (a scale is
+  visible when empty), quarter ticks, a marked fire threshold at 80%, and the caption inside.
+- **The pirate hangar floor was a brown checkerboard.** Two "light pools" were drawn per cell —
+  an old full-cell square and the newer fixture-shaped strip — and the pool was painted in the
+  LAMP's colour at low light, which in this renderer (no additive pass) means a flat brown
+  rectangle, not light. The square is gone; the remaining pool is floor colour mixed toward the
+  lamp and lifted in value — a plate that is lighter under the fixture. Lamps in the hangar now
+  hang every other bay instead of one per plate.
+- **In a downpour the settlement stayed dark.** Windows and yard lamps hung on `surfNight`
+  alone, so on a green world in the rain there was not one warm patch in the frame (law 7).
+  Bad weather darkens the day and people switch the light on: dusk now counts weather.
+- **The cave's darkness is made of the cave's own rock**: it was killed with a cold near-black
+  (1,4,10) everywhere, taking the material with it. The dark is now the planet's palette driven
+  almost to zero — still dark, but this cave's dark.
+
+Measured after: 60 fps in all nine modes, errors empty. Tests: 379 suites green.
 
 Reshooting the README found five real defects. Each is fixed in the game, not in the shot.
 

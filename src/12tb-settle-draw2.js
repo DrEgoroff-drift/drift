@@ -270,7 +270,14 @@ function settleDrawBody(S,tr,camx,camy,p){
   if(P.x1-camx<-160||P.x0-camx>W+160)return;
   const pal=sdPal(p),M=sdMat(p);
   const warm=(S.mood>=34);
-  const nite=(typeof surfNight==="function")?surfNight(p):0;
+  /* ── свет зажигают, когда ТЕМНО, а не когда ночь (M233) ──
+     Окна и фонари посёлка висели на одном `surfNight`: в ливень средь бела дня
+     посёлок стоял тёмной кучкой силуэтов на зелёном мире, где и без того всё
+     одного тона, — во всём кадре не оставалось ни одного тёплого пятна (закон
+     7). Непогода темнит день, и люди включают свет: сумерки считаются как ночь
+     пополам с силой погоды. */
+  const wp=(typeof weatherPower==="function")?weatherPower(p):0;
+  const nite=clamp(((typeof surfNight==="function")?surfNight(p):0)+wp*.55,0,1);
   const wind=(typeof WIND==="number")?WIND*2:0;
   const r=rng(hashi(P.seed,3,0x5EED));
   sdTerrace(P,tr,camx,camy,pal,p);

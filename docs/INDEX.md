@@ -538,7 +538,7 @@ drawCantinaRoom              src/27d-ui-cantina.js:32
 drawCave                     src/22-mode-cave.js:560
 drawCaveDark                 src/22a-cave-deco.js:288
 drawCaveFar                  src/22-mode-cave.js:470
-drawCaveGlow                 src/22a-cave-deco.js:308
+drawCaveGlow                 src/22a-cave-deco.js:318
 drawCaveRock                 src/22-mode-cave.js:422
 drawCaveSolid                src/22a-cave-deco.js:220
 drawCaveWater                src/22a-cave-deco.js:261
@@ -553,7 +553,7 @@ drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
 drawDeposit                  src/21b-surface-deco.js:347
-drawDig                      src/23a-dig-draw.js:609
+drawDig                      src/23a-dig-draw.js:624
 drawDigFauna                 src/23-mode-dig.js:292
 drawDigWorld                 src/23a-dig-draw.js:45
 drawDustMotes                src/19-mode-landing.js:380
@@ -1452,10 +1452,10 @@ mgrWorkKeep                  src/12c-mgr-core.js:552
 mgrWorkSci                   src/12c-mgr-core.js:683
 midiHz                       src/10-music.js:106
 minedUnit                    src/11-log.js:136
-mineKey                      src/23a-dig-draw.js:584
-mineLoad                     src/23a-dig-draw.js:585
+mineKey                      src/23a-dig-draw.js:599
+mineLoad                     src/23a-dig-draw.js:600
 MINERAL                      src/18a-material.js:32
-mineSave                     src/23a-dig-draw.js:595
+mineSave                     src/23a-dig-draw.js:610
 MIRROR_CORE                  src/11f-mirror.js:22
 MIRROR_DELAY                 src/11f-mirror.js:21
 mirrorAck                    src/11f-mirror.js:33
@@ -2352,7 +2352,7 @@ sdWallTex                    src/12tb-settle-draw.js:227
 sdWeir                       src/12tc-settle-crafts.js:49
 sdWindow                     src/12tb-settle-draw.js:328
 sdWoodpile                   src/12tb-settle-draw.js:385
-sdYard                       src/12tb-settle-draw2.js:403
+sdYard                       src/12tb-settle-draw2.js:410
 sellCargo                    src/12-economy.js:26
 sellDroneYield               src/12-economy.js:37
 setSt                        src/27z-telemetry.js:64
@@ -3316,7 +3316,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12tb-settle-draw.js · 22 КБ
   · посёлок с земли:1
 
-## src/12tb-settle-draw2.js · 24 КБ
+## src/12tb-settle-draw2.js · 25 КБ
   · посёлок: постройки, жители и сам посёлок:1
 
 ## src/12tc-settle-crafts.js · 14 КБ
@@ -3416,7 +3416,7 @@ zooTick                      src/11ad-zoo.js:41
   · карта:1
   · карта: ночное небо, а не схема молекулы:12
 
-## src/19a-mode-scoop.js · 24 КБ
+## src/19a-mode-scoop.js · 25 КБ
   · сбор летучих газов: заход в атмосферу гиганта:1
   · небо гиганта: полосы, а не лепёшки:71
 
@@ -3517,7 +3517,7 @@ zooTick                      src/11ad-zoo.js:41
   · поверхность:1
   · навигатор и подсказки сверху:629
 
-## src/22a-cave-deco.js · 20 КБ
+## src/22a-cave-deco.js · 21 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
 
 ## src/22-mode-cave.js · 30 КБ
@@ -3527,13 +3527,13 @@ zooTick                      src/11ad-zoo.js:41
   · шахта: порода:1
   · почвенный профиль: небо кончается не линейкой:397
 
-## src/23a-dig-draw.js · 37 КБ
+## src/23a-dig-draw.js · 39 КБ
   · шахта: отрисовка:1
 
 ## src/23-mode-dig.js · 16 КБ
   · шахта: спуск вглубь планеты:1
 
-## src/24aa-raid-draw.js · 48 КБ
+## src/24aa-raid-draw.js · 50 КБ
   · рейд: отрисовка:1
   · рисование: пол → стены → объекты → эффекты:13
 

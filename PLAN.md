@@ -68,10 +68,19 @@ Closed so far (0.225.0): the cloud-horizon haze cutting a straight line across t
 landing camera that never showed the ground; far ridges climbing into the sky on approach; the
 ghost instrument pod without captions; the white-blot owner at home and the black-hole doorways.
 
+Closed in pass 2 (0.226.0): the mine's black half-screen (the sky was gated on `camy<40` and
+airless skies were never given their stars); the scoop's heat gauge as an empty frame with the
+caption outside it; the pirate hangar's brown checkerboard (two light pools per cell, painted
+in the lamp's colour at low light); the settlement staying dark in a downpour; the cave's
+darkness painted in a cold black that erased the rock.
+
 Rules learned here, worth keeping: **a screen-space band tied to `SURF_HOR` is a lie in any
-mode where the ground is elsewhere** — fade it both ways or anchor it to the real ground; and
+mode where the ground is elsewhere** — fade it both ways or anchor it to the real ground;
 **a parallax offset written as a fraction of `camy` only holds near the ground** — cap it
-against the near terrain.
+against the near terrain; **a threshold on a raw camera value (`camy<40`) is not a question
+about visibility** — ask whether the thing is in frame; and **in a renderer without an
+additive pass a light pool must be painted as lit FLOOR, never as the lamp's colour at low
+brightness** — the latter is mud.
 
 ## M232 — cosmetics to the limit (the author's self-prompt, 2026-08-27) — CLOSED WHOLE (0.217.0–0.224.0)
 

@@ -353,17 +353,28 @@ function drawScoop(){
   }
   ctx.restore();
   /* приборы: нагрев — главный, он же и убивает */
+  /* ── прибор, а не пустая рамка (M233) ──
+     Плашка была на 20 px, а подпись печаталась на by+16 — то есть НА нижней
+     кромке рамки, наполовину снаружи; при нуле нагрева заливки нет вовсе, и
+     весь прибор читался пустым прямоугольником с приблудной строкой. У шкалы
+     обязан быть жёлоб (видно, что это шкала, даже когда пусто) и порог, за
+     которым горит корпус, — тогда ноль означает «холодно», а не «сломано». */
   const bw=Math.min(W-40,300),bx=W/2-bw/2,by=H*.145;   /* ниже угловых панелей: на 26 полоса налезала на них */
-  ctx.fillStyle="rgba(6,10,16,.72)";ctx.fillRect(bx-6,by-6,bw+12,20);
-  ctx.strokeStyle="rgba(242,178,92,.5)";ctx.lineWidth=1;ctx.strokeRect(bx-6,by-6,bw+12,20);
+  ctx.fillStyle="rgba(6,10,16,.72)";ctx.fillRect(bx-8,by-7,bw+16,30);
+  ctx.strokeStyle="rgba(242,178,92,.5)";ctx.lineWidth=1;ctx.strokeRect(bx-8.5,by-7.5,bw+17,31);
   const hk=clamp(S.heat/100,0,1);
+  ctx.fillStyle="rgba(0,0,0,.45)";ctx.fillRect(bx,by,bw,8);          // жёлоб шкалы
+  ctx.fillStyle="rgba(242,178,92,.16)";ctx.fillRect(bx,by,bw,1);
+  ctx.fillStyle="rgba(255,80,60,.18)";ctx.fillRect(bx+bw*.8,by,bw*.2,8);  // порог пожара
   ctx.fillStyle=hk>.8?"rgba(255,80,60,.95)":(hk>.5?"rgba(255,180,80,.9)":"rgba(127,224,200,.85)");
   ctx.fillRect(bx,by,bw*hk,8);
+  ctx.fillStyle="rgba(242,178,92,.35)";                              // деления по четвертям
+  for(let i=1;i<4;i++)ctx.fillRect(bx+bw*i/4,by,1,8);
   ctx.fillStyle="rgba(242,178,92,.85)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText("НАГРЕВ КОРПУСА "+Math.round(S.heat)+"%",W/2,by+16);
+  ctx.fillText("НАГРЕВ КОРПУСА "+Math.round(S.heat)+"%",W/2,by+19);
   if(S.heat>=100){
     ctx.fillStyle=(Math.sin(G.t*.3)>0)?"rgba(255,70,50,.9)":"rgba(255,70,50,.3)";
     ctx.textAlign="center";ctx.font="12px ui-monospace,monospace";
-    ctx.fillText("ПЕРЕГРЕВ · КОРПУС ГОРИТ",W/2,by+34);
+    ctx.fillText("ПЕРЕГРЕВ · КОРПУС ГОРИТ",W/2,by+42);   /* под выросшей плашкой */
   }
 }

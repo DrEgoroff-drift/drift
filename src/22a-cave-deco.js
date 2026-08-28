@@ -290,15 +290,25 @@ function drawCaveDark(C,px,py){
      градиент стоил ~15 мс на ×2 (G0). Круг света кладётся одним drawImage,
      углы за ним добираются четырьмя плоскими заливками. */
   const R=Math.max(W,H)*.52*kitStat().lamp,cx=px,cy=py-14;   /* фонарь комплекта (M152) */
-  const SP=glowSprite("cavedark",()=>{
+  /* ── темнота тоже из чего-то сделана (M233) ──
+     Гасили холодным (1,4,10) на всё: дальняя порода уходила в мёртвый синий
+     чёрный, и материал, ради которого её пекли, пропадал вместе со светом.
+     Тон темноты берётся от САМОЙ породы, уведённой почти в ноль: за кругом
+     фонаря по-прежнему темно, но темнота этой пещеры, а не любой. */
+  /* планета берётся у поверхности: пещера — её пещера, своего поля `p` у C нет */
+  const cpl=(G.surf&&G.surf.p)||null;
+  const pcv=(cpl&&cpl.T&&cpl.T.pal)?cpl.T.pal[Math.min(cpl.T.pal.length-1,1)]:[26,30,42];
+  const dk=[0,1,2].map(i=>Math.round(Math.min(14,pcv[i]*.10+2)));
+  const dkey=dk.join(",");
+  const SP=glowSprite("cavedark|"+dkey,()=>{
     const g=ctx.createRadialGradient(0,0,R>0?Math.min(.5,40/R):.06,0,0,1);   // при W=0 (стенд) R=0 — не делить
     g.addColorStop(0,"rgba(0,0,0,0)");
-    g.addColorStop(.45,"rgba(2,5,10,.30)");
-    g.addColorStop(1,"rgba(1,4,10,.76)");
+    g.addColorStop(.45,"rgba("+dkey+",.30)");
+    g.addColorStop(1,"rgba("+dkey+",.76)");
     ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
   });
   glowBlit(SP,cx,cy,R);
-  ctx.fillStyle="rgba(1,4,10,.76)";
+  ctx.fillStyle="rgba("+dkey+",.76)";
   const x0=cx-R,x1=cx+R,y0=cy-R,y1=cy+R;
   if(x0>0)ctx.fillRect(0,0,x0,H);
   if(x1<W)ctx.fillRect(x1,0,W-x1,H);
