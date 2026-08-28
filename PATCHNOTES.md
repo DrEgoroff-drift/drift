@@ -7,6 +7,19 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.231.0 — the wheel turns the world only over the world
+
+- **Scrolling a list zoomed the map behind it.** The wheel handler hangs on `window` and asked one
+  question — `G.mode==="system"` — so paging through the desk's journal with the wheel drove the
+  system view into zoom behind the open screen: the list scrolled, the world was mangled, and
+  nothing on screen connected the two. A wheel over any DOM (a screen, the console, a panel) does
+  not belong to the world: the zoom is taken only from the canvas itself, and only when no screen
+  is open over it.
+
+Tests: 385 suites green (one new: the wheel zooms from the canvas, not from a panel, and not at
+all while a screen is open).
+
+---
 ## 0.230.0 — M235: the yard has a floor
 
 - **Money bought a clean ship.** The yard removed HALF the wear for a price, and nothing stopped

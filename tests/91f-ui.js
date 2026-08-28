@@ -252,3 +252,28 @@ TEST_SUITES.push(()=>suite("интерфейс: на чистом старте �
   const pw=document.getElementById("parrotwin");
   if(pw)eq(getComputedStyle(pw).display,"none","окно трепла закрыто, пока его не открыли");
 }));
+
+/* ══════════════ M236: колесо крутит мир только над миром ══════════════
+   Обработчик колеса висит на окне и спрашивал один G.mode: игрок листал колесом
+   тетрадь на столе, а карта за спиной уезжала в зум. */
+TEST_SUITES.push(()=>suite("колесо: зум берётся только с канвы",()=>{
+  resetWorld();
+  G.mode="system";
+  const wheel=(target)=>target.dispatchEvent(new WheelEvent("wheel",{deltaY:-120,bubbles:true}));
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  /* над миром — крутит */
+  G.zoom=1;
+  wheel(cvs);
+  ok(G.zoom>1,"над канвой колесо приближает: "+G.zoom.toFixed(2));
+  /* над любым DOM — не крутит */
+  G.zoom=1;
+  wheel(document.getElementById("prompt")||document.body);
+  eq(G.zoom,1,"над панелью колесо мир не трогает");
+  /* открытый экран закрывает зум даже над канвой */
+  const scr=document.querySelector(".scr");
+  scr.classList.add("open");
+  G.zoom=1;
+  wheel(cvs);
+  eq(G.zoom,1,"пока открыт экран, мир не зумится вовсе");
+  scr.classList.remove("open");
+}));

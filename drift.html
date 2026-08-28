@@ -1347,7 +1347,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.230.0";
+const VER="0.231.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -27454,7 +27454,18 @@ document.getElementById("routebtn").addEventListener("click",()=>{
   sfx("ui",{f:520,to:820,d:.12,v:.28});
 });
 function setZoom(z){G.zoom=clamp(z,.16,2.4);}
-addEventListener("wheel",e=>{if(G.mode==="system")setZoom(G.zoom*(e.deltaY<0?1.12:.89));},{passive:true});
+/* ── колесо крутит мир только НАД миром (M236) ──
+   Обработчик висит на окне и спрашивал один G.mode: пока игрок листал колесом
+   тетрадь на столе, карта за спиной уезжала в зум — список прокручен, мир
+   изуродован, и связи между этими двумя вещами не видно никакой. Колесо над
+   любым DOM (экран, пульт, панель) миру не принадлежит: зум берётся только с
+   самой канвы и только когда поверх неё не открыт экран. */
+addEventListener("wheel",e=>{
+  if(G.mode!=="system")return;
+  if(e.target!==cvs)return;
+  if(document.querySelector(".scr.open"))return;
+  setZoom(G.zoom*(e.deltaY<0?1.12:.89));
+},{passive:true});
 
 /* указатели: тап, щипок, обзор в поясе */
 const ptr=new Map();
