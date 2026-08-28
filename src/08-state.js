@@ -78,7 +78,7 @@ const G={
     gfx:{draw:1,detail:1,particles:1,plants:1,fps:0,res:0},
     audio:{on:true,music:.6,sfx:.6,engine:.4}},
   sel:{x:0,y:0},msg:"",msgT:0,prompt:"",running:false,t:0,
-  market:{},uniqueShips:{},drones:[],droneInventory:0,
+  market:{},uniqueShips:{},drones:[],droneInventory:0,droneIds:[],
   /* свой торговый маршрут: 2–4 станции, порядок обхода и накатанные круги */
   trade:{legs:[],loops:0,cursor:0,sold:0},
   /* налёт часов по корпусам: ключ — id корабля, значение — кадры в полёте */

@@ -73,34 +73,83 @@ let droneTarget=null;
 function deployDrone(){
   if(G.droneInventory<=0||!droneTarget)return;
   G.droneInventory--;
-  G.drones.push({sx:G.sx,sy:G.sy,res:droneTarget,rate:DRONES.miner.ratePerMin*stat().droneRate,
-    pool:droneCapacity(droneTarget),soldAtMs:Date.now()});
-  say("Дрон размещён\nработает на "+RES[droneTarget].ru);
-  logAdd("","Дрон развёрнут в системе "+G.sys.name+" · "+RES[droneTarget].ru.toLowerCase());
+  /* адрес точки, а не только системы (M237): дрону теперь есть откуда лететь.
+     На грунте это планета, в поясе — кольцо (pi=-1). Без адреса рейса нет. */
+  const pi=(G.mode==="surface"&&G.surf&&G.surf.p)?(G.surf.p.idx|0):
+           (G.mode==="dig"&&G.dig&&G.dig.p)?(G.dig.p.idx|0):-1;
+  const now=Date.now();
+  const d={id:droneNextId(),sx:G.sx,sy:G.sy,pi,res:droneTarget,
+    rate:DRONES.miner.ratePerMin*stat().droneRate,
+    pool:droneCapacity(droneTarget),soldAtMs:now,t0:now,lastMs:now,bornMs:now,
+    trips:0,down:0,sold:0,earned:0};
+  G.drones.push(d);
+  say("Дрон "+droneName(d)+" размещён\nработает на "+RES[droneTarget].ru);
+  logAdd("","Дрон "+droneName(d)+" развёрнут в системе "+G.sys.name+" · "+RES[droneTarget].ru.toLowerCase());
   document.getElementById("dronebtn").style.display="none";
 }
+/* ── такт дронов: рейсами, а не ручейком (M237) ──
+   Раньше такт брал прошедшее время и превращал его в деньги и в строку журнала
+   прямо здесь — по строке на каждую сдачу, отчего БОРТ и превращался в ленту
+   «Дрон сдал 1 титан». Теперь единица работы — КРУГ: дрон грузится, идёт,
+   разгружается, идёт обратно. Деньги приходят на разгрузке, доход за час тот
+   же (груз круга = rate × длительность круга), а журнал молчит до тех пор,
+   пока не случится то, о чём стоит рассказать: точка кончилась, дрон встал,
+   дрон починился. Догон офлайна — тот же ленивый расчёт по Date.now(). */
 function tickDrones(){
   const now=Date.now(),cap=24*3600*1000;
   for(let i=G.drones.length-1;i>=0;i--){
-    const d=G.drones[i];
-    const elapsedMs=Math.min(Math.max(0,now-d.soldAtMs),cap);
-    /* «Авто-сбыт» смотрителя: дрон не ждёт полного трюма, а сдаёт по мере
-       выработки — быстрее оборот и меньше потерь, если точка кончится раньше */
+    const d=droneNormalize(G.drones[i],now);
+    /* под блокадой дрону некуда сдавать: круги стоят, время не копится */
+    if(occLvl(d.sx,d.sy)>=2){d.lastMs=now;d.t0=now;continue;}
+    const T=droneTripMs(d);
+    /* «Авто-сбыт» смотрителя: тот же множитель, что и был — быстрее оборот */
     const rate=d.rate*(mgrPerkOf("keep","sell")?1.35:1);
-    const yieldN=Math.floor(Math.min(d.pool,rate*elapsedMs/60000));
-    /* под блокадой дрону некуда сдавать: он копит, но не продаёт */
-    if(occLvl(d.sx,d.sy)>=2){d.soldAtMs=now;continue;}
-    if(yieldN>0){
-      const home=nearestStation(d.sx,d.sy);
-      const rev=sellDroneYield(home,d.res,yieldN);
-      earn(rev,"drone");d.pool-=yieldN;d.soldAtMs=now;
-      say("Дрон продал "+yieldN+" "+RES[d.res].ru.toLowerCase()+" на «"+home.name+"»\n+"+rev.toLocaleString("ru")+" кр");
-      logAdd("money","Дрон сдал "+yieldN+" "+RES[d.res].ru.toLowerCase()+" на «"+home.name+
-        "» · +"+rev.toLocaleString("ru")+" кр");
+    const capMs=Math.max(0,Math.min(now-(d.lastMs||now),cap));
+    const from=now-capMs;                 /* дальше суток не догоняем */
+    if(d.t0<from)d.t0=from;
+    if(d.down&&d.down<from)d.down=0;
+    let guard=DRONE_MAX_CATCHUP,fixed=false;
+    while(guard-->0){
+      if(d.down){
+        if(d.down>now)break;              /* ещё стоит в доке */
+        d.t0=d.down;d.down=0;fixed=true;  /* починился сам и пошёл дальше */
+      }
+      const done=d.t0+T;
+      if(done>now)break;                  /* круг ещё в пути */
+      /* разгрузка: груз круга уходит на станцию, деньги приходят разом.
+         Бункер дробный: на коротком круге дрон выносит меньше штуки, и
+         округление вниз съело бы весь доход — руда лежит в нём, пока не
+         наберётся на единицу. Так час работы стоит ровно столько же, сколько
+         стоил при ручейке, и ни кредитом меньше. */
+      d.carry=(d.carry||0)+rate*T/60000;
+      const n=Math.floor(Math.min(d.pool,d.carry));
+      if(n>0){
+        const home=nearestStation(d.sx,d.sy);
+        const rev=sellDroneYield(home,d.res,n);
+        earn(rev,"drone");
+        d.pool-=n;d.carry-=n;d.sold=(d.sold|0)+n;d.earned=(d.earned|0)+rev;
+      }
+      d.trips=(d.trips|0)+1;d.soldAtMs=done;
+      if(d.pool<=0){d.t0=done;break;}
+      /* ломается дрон на разгрузке — у станции, где его и чинить */
+      if(droneBreaks(d)){
+        d.down=done+droneFixMs(d);
+        logAdd("warn","Дрон "+droneName(d)+" встал на «"+nearestStation(d.sx,d.sy).name+
+          "» · чинится сам, "+Math.round(droneFixMs(d)/60000)+" мин");
+      }else d.t0=done;
     }
+    if(fixed&&!d.down&&d.pool>0)logAdd("dim","Дрон "+droneName(d)+" починился и вернулся на маршрут");
     if(d.pool<=0){
+      const hrs=Math.max(1,Math.round((now-(d.bornMs||now))/3600000));
       G.drones.splice(i,1);G.droneInventory++;
-      logAdd("dim","Точка выработана, дрон вернулся в трюм");
+      logAdd("money","Дрон "+droneName(d)+" выработал точку: "+(d.sold|0)+" "+
+        RES[d.res].ru.toLowerCase()+" · "+(d.earned|0).toLocaleString("ru")+" кр за "+hrs+" ч");
+      say("Дрон "+droneName(d)+" вернулся в трюм\nточка выработана · "+
+        (d.earned|0).toLocaleString("ru")+" кр");
+      /* номер остаётся за машиной, даже когда она в трюме */
+      if(!G.droneIds)G.droneIds=[];
+      if(G.droneIds.indexOf(d.id)<0)G.droneIds.push(d.id);
     }
+    d.lastMs=now;
   }
 }

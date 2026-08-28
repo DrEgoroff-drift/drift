@@ -219,6 +219,8 @@ function drawMap(){
   /* свой маршрут — поверх маршрута домена: это намерение игрока, и оно главнее */
   if(typeof drawRouteMap==="function")drawRouteMap(vis);
   if(typeof drawBargesMap==="function")drawBargesMap(vis);
+  /* сколько машин работает на тебя в этой системе (M237) */
+  if(typeof drawDronesMap==="function")drawDronesMap(vis);
   /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
   const cost=Math.round((9+dsel*13)*((typeof keepersJumpK==="function")?keepersJumpK():1));
   const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0;

@@ -149,6 +149,10 @@ function tableRender(){
       (typeof relayAll==="function"&&Object.keys(relayAll()).length)?"":"none";
     if(b.dataset.tab==="qsl")b.style.display=
       (typeof qslAll==="function"&&Object.keys(qslAll().heard).length)?"":"none";
+    /* рейсы заводятся с первым дроном: пустая закладка обещала бы список,
+       которого у новичка нет (M237) */
+    if(b.dataset.tab==="fleet")b.style.display=
+      ((G.drones&&G.drones.length)||(G.droneInventory|0))?"":"none";
     if(b.dataset.tab==="books")b.style.display=
       (typeof bookCount==="function"&&bookCount())?"":"none";
     if(b.dataset.tab==="diary")b.style.display=
@@ -169,6 +173,7 @@ function tableRender(){
   const SUB={ether:"эфир · что было услышано",bort:"борт · техника и деньги",folk:"люди · что вам сказали",
              deeds:"дела · что вы должны",strips:"ленты · оторванные полосы самописца",things:"вещи · письма, находки, бумаги",
              hold:"трюм · груз, разложенный по кучам",
+             fleet:"рейсы · кто на вас работает и что возит",
              prices:"цены · как их видели, по станциям",record:"трудовая книжка · записи чужими руками",
              album:"альбом · снимки мест, где вы стояли",
              mail:"почта · стопки карточек, скреплённые скрепкой",
@@ -195,6 +200,7 @@ function tableRender(){
   else if(tableTab==="strips")renderStrips(box);
   else if(tableTab==="things")renderThings(box);
   else if(tableTab==="hold"&&typeof renderHold==="function")renderHold(box);
+  else if(tableTab==="fleet"&&typeof renderFleetRuns==="function")renderFleetRuns(box);
   else if(tableTab==="prices"&&typeof renderPrices==="function")renderPrices(box);
   else if(tableTab==="record"&&typeof renderRecord==="function")renderRecord(box);
   else if(tableTab==="album"&&typeof renderAlbum==="function")renderAlbum(box);

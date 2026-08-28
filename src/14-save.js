@@ -55,7 +55,7 @@ function snapshot(){
     tech:[...G.tech],techLvl:G.techLvl,barter:[...G.barter],found:[...G.found],
     species:[...G.species],bioV:2,
     opts:G.opts,zoom:G.zoom,market:G.market,uniqueShips:G.uniqueShips,
-    drones:G.drones,droneInventory:G.droneInventory,crew:G.crew,bases:G.bases,
+    drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
@@ -333,6 +333,12 @@ function applySave(s){
     xp:Math.max(0,p.xp|0),fee:Math.max(0,p.fee|0),story:String(p.story||"")}));
   G.drones=Array.isArray(s.drones)?s.drones:[];
   G.droneInventory=Math.max(0,s.droneInventory|0);
+  /* номера бортов живут отдельно от самих машин: дрон в трюме своего номера
+     не теряет (M237). Старая запись их не знает — список пуст, номера выдаст
+     первая же покупка. */
+  G.droneIds=Array.isArray(s.droneIds)?s.droneIds.map(n=>n|0):[];
+  /* записи до M237 знают четыре поля: круг, номер и часы дописываются здесь */
+  if(typeof droneNormalize==="function"){const nw=Date.now();for(const d of G.drones)droneNormalize(d,nw);}
   /* новое поле с безопасным дефолтом: старые записи грузятся как «экипажа нет».
      Момент последнего начисления подтягиваем к текущему времени, иначе после
      долгого перерыва зарплата и добыча начислились бы задним числом дважды. */

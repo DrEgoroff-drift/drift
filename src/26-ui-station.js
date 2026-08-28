@@ -485,11 +485,14 @@ function renderTab(){
            "Дрон куплен\nв запасе: "+G.droneInventory);
       renderTab();};
     rd.appendChild(bd);$body.appendChild(rd);
+    /* машина, а не строка списка (M237): номер, состояние, круги. Весь
+       список маршрутов живёт на столе, здесь — что стоит в этой системе */
     for(const d of G.drones){
       const home=nearestStation(d.sx,d.sy);
       const r=el("div","row");
-      r.appendChild(el("div","nm","<b style='color:"+RES[d.res].col+"'>"+RES[d.res].ru+"</b><s>сектор "+d.sx+":"+d.sy+
-        " · везёт на «"+home.name+"» · осталось "+d.pool+"</s>"));
+      r.appendChild(el("div","nm","<b style='color:"+RES[d.res].col+"'>"+droneName(d)+" · "+RES[d.res].ru+
+        "</b><s>сектор "+d.sx+":"+d.sy+" · возит на «"+home.name+"» · "+droneStateRu(d)+
+        " · осталось "+d.pool+"</s>"));
       $body.appendChild(r);
     }
   }

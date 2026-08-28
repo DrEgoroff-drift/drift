@@ -411,6 +411,8 @@ function drawSystem(){
   if(typeof drawFindsSystem==="function")drawFindsSystem(zx,zy,Z);
   if(typeof relayDrawSystem==="function")relayDrawSystem(zx,zy,Z);
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
+  /* дроны идут своими кругами между точкой и станцией (12e-drone-flight) */
+  if(typeof drawDronesSystem==="function")drawDronesSystem(zx,zy,Z);
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);
   ctx.save();ctx.translate(zx(sh.x),zy(sh.y));ctx.rotate(sh.a);

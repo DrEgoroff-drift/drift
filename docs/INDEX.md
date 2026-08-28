@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 327 · символов верхнего уровня: 2986
+Файлов: 329 · символов верхнего уровня: 3009
 
 ## СИМВОЛЫ
 
@@ -25,7 +25,7 @@ $menu                        src/15-input.js:180
 $msg                         src/27z-telemetry.js:28
 $msl                         src/27z-telemetry.js:31
 $nav                         src/27z-telemetry.js:30
-$opts                        src/26-ui-station.js:688
+$opts                        src/26-ui-station.js:691
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:27
 $sh                          src/27z-telemetry.js:8
@@ -559,6 +559,8 @@ drawDeposit                  src/21b-surface-deco.js:347
 drawDig                      src/23a-dig-draw.js:640
 drawDigFauna                 src/23-mode-dig.js:298
 drawDigWorld                 src/23a-dig-draw.js:45
+drawDronesMap                src/12e-drone-flight.js:249
+drawDronesSystem             src/12e-drone-flight.js:181
 drawDustMotes                src/19-mode-landing.js:380
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:207
@@ -628,11 +630,11 @@ drawSurface                  src/21e-surface-draw.js:598
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:459
+drawSysHud                   src/17-mode-system.js:461
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:285
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:277
+drawThingIcon                src/27i-ui-table.js:283
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:125
 drawTrail                    src/16-flight.js:338
@@ -642,9 +644,28 @@ drawWeather                  src/19d-weather.js:92
 drawWinter                   src/29g-winter-draw.js:334
 drawWreck                    src/20aa-poi-shapes.js:8
 drawWrecksSystem             src/12l-barge.js:347
+DRONE_BREAK_P                src/12e-drone-flight.js:21
+DRONE_FIX_MS                 src/12e-drone-flight.js:24
+DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
+DRONE_TAIL                   src/12e-drone-flight.js:180
+DRONE_TRIP_BASE              src/12e-drone-flight.js:18
+droneBreakP                  src/12e-drone-flight.js:126
+droneBreaks                  src/12e-drone-flight.js:130
 droneCapacity                src/12-economy.js:68
+droneFixMs                   src/12e-drone-flight.js:131
+droneHome                    src/12e-drone-flight.js:73
+droneName                    src/12e-drone-flight.js:38
+droneNextId                  src/12e-drone-flight.js:32
+droneNormalize               src/12e-drone-flight.js:44
+dronePhase                   src/12e-drone-flight.js:93
+dronePoint                   src/12e-drone-flight.js:65
+dronePos                     src/12e-drone-flight.js:105
+droneRoutes                  src/12e-drone-flight.js:153
 DRONES                       src/04-mods.js:57
+droneStateRu                 src/12e-drone-flight.js:142
+droneSys                     src/12e-drone-flight.js:62
 droneTarget                  src/12-economy.js:72
+droneTripMs                  src/12e-drone-flight.js:83
 DUST_COL                     src/16a-space.js:143
 DUST_TAB                     src/16a-space.js:144
 dustTable                    src/16a-space.js:145
@@ -958,6 +979,7 @@ heardWordsRu                 src/12x-parrot.js:79
 heardYours                   src/12x-parrot.js:71
 held                         src/08-state.js:183
 hex2rgb                      src/03-ships.js:145
+hexA                         src/12e-drone-flight.js:239
 hexa                         src/12w-survey.js:91
 hexRGB                       src/24-mode-belt.js:80
 HIN_DOORW                    src/29c-home-in.js:24
@@ -1189,7 +1211,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:326
+jump                         src/18-mode-map.js:328
 jumpToBase                   src/21a-mode-base.js:305
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -2100,6 +2122,7 @@ renderCardBack               src/25i-post-back.js:88
 renderChess                  src/25n-chess.js:285
 renderDeeds                  src/11-log.js:92
 renderDiary                  src/29f-winter.js:219
+renderFleetRuns              src/12e-drone-flight.js:269
 renderHold                   src/27j-ui-hold.js:176
 renderLog                    src/11-log.js:71
 renderLoreBoard              src/27h-ui-lore.js:26
@@ -2110,9 +2133,9 @@ renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
 renderRelays                 src/11ap-relay.js:242
 renderRoute                  src/12r-route.js:225
-renderStrips                 src/27i-ui-table.js:217
+renderStrips                 src/27i-ui-table.js:223
 renderTab                    src/26-ui-station.js:208
-renderThings                 src/27i-ui-table.js:248
+renderThings                 src/27i-ui-table.js:254
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -2131,7 +2154,7 @@ RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:111
 resEma                       src/28-loop.js:110
-resetArm                     src/26-ui-station.js:687
+resetArm                     src/26-ui-station.js:690
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
@@ -2660,7 +2683,7 @@ tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
 tableNoticeAll               src/27i-ui-table.js:68
 tableRender                  src/27i-ui-table.js:133
-tableRow                     src/27i-ui-table.js:209
+tableRow                     src/27i-ui-table.js:215
 tableSetTab                  src/27i-ui-table.js:101
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:84
@@ -2697,7 +2720,7 @@ TEST_SUITES                  tests/90-harness.js:113
 tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
-tickDrones                   src/12-economy.js:82
+tickDrones                   src/12-economy.js:98
 tickLaunchHold               src/21-mode-surface.js:589
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
@@ -3245,9 +3268,14 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12d-mgr-face.js · 13 КБ
   · портреты управляющих:1
 
-## src/12-economy.js · 6 КБ
+## src/12-economy.js · 9 КБ
   · живой рынок:1
   · дроны:44
+
+## src/12e-drone-flight.js · 17 КБ
+  · дроны летают:1
+  · дрон в кадре:174
+  · вкладка РЕЙСЫ:264
 
 ## src/12e-mgr-jobs.js · 19 КБ
   · поручения управляющих:1
@@ -3383,7 +3411,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:61
   · видимое состояние обмена:76
 
-## src/14-save.js · 49 КБ
+## src/14-save.js · 50 КБ
   · сохранение:1
 
 ## src/15-input.js · 26 КБ
@@ -3633,7 +3661,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/26-ui-station.js · 46 КБ
   · станция:1
-  · настройки:686
+  · настройки:689
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -4038,5 +4066,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzx-late.js · 7 КБ
   · M225: поздний час у стойки:1
+
+## tests/91zzzy-drones.js · 5 КБ
+  · автотесты: рейсы дронов (M237):1
 
 ## tests/99-run.js · 0 КБ

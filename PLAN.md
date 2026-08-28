@@ -57,6 +57,33 @@ Here is only what is still live â cross-cutting rules, the visual queue and
 
 ---
 
+## M237 — the drones fly (author, 2026-08-28) — CLOSED (0.232.0)
+
+The author asked for two things and got a third for free: dots with tails flying between planet
+and station, so you can see who works for you and on what; grouping by route, Transport-Tycoon
+style; and breakdowns that repair themselves in time rather than money. Closed in 0.232.0.
+
+The three decisions he left to me, and how they went: **visible in the system view, a number on
+the galaxy map** (a one-pixel dot on the map is litter — there the question is "where does someone
+work for me", and a digit answers it); **the destination stays the nearest station** (choosing it
+is a route editor, and that belongs to a manager holding the domain, not to the player's
+fingers); **no permanent losses** — he asked for machines that break and mend, not for attrition,
+and the milestone deliberately changed no economy.
+
+Rules worth keeping:
+
+- **Anything that moves in the world can be a function of the clock.** Position, leg, tail: all
+  derived from `(now − t0) % T`. Nothing per-frame, nothing saved, offline catch-up for free. The
+  same shape fits any future traffic — couriers, tugs, patrol boats.
+- **A log line per transaction is a broken interface.** The journal remembers results, not
+  bookkeeping: a point worked out, a machine stopped, a machine back on the route. If a system
+  writes a line every three seconds, the line is not news.
+- **A limit made of time is felt without a number.** The repair clock needs no price, no button
+  and no explanation — the amber blink at the station says everything, and the wait is the cost.
+
+Left open on purpose: choosing the selling station (a manager's job when the domain has one), and
+attrition. Both are additions, not corrections.
+
 ## M235 — the yard has a floor (author, 2026-08-28) — CLOSED (0.229.0–0.230.0)
 
 The author's second evening. Two things, one of them a design hole:

@@ -7,6 +7,46 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.232.0 — M237: the drones fly
+
+Until now a drone was not a machine but a piggy bank: `{sx,sy,res,rate,pool}` — a system, an ore
+and a number. It had no place, no path and no trip, and the three-second tick turned "how much has
+accrued" straight into credits and a journal line. Both of the author's complaints came from that
+one fact: there was nothing to look at, and the desk's БОРТ tab filled with fifty lines of "Дрон
+сдал 1 титан · +51 кр" (he sent a screenshot with 54 unread).
+
+- **A drone now works in round trips.** It loads at the point, flies to the station, unloads, flies
+  back. The money arrives at the unload, not as a trickle — the same credits per hour, but the
+  payment finally has a place and a moment, which is what makes a moving dot worth drawing.
+  A fractional hopper carries the remainder between trips, so a short leg still earns exactly what
+  it earned before instead of rounding down to nothing.
+- **Position is never stored — it is derived.** `phase = ((now − t0) % T) / T`, and from the phase
+  come the leg, the point on the arc and the tail. The save keeps only the start of the trip and
+  the repair clock; the frame simulates nothing, and the offline catch-up is the same lazy
+  `Date.now()` arithmetic as the rest of the background world.
+- **What you see.** A dot in the colour of its cargo with a tail that fades along its length,
+  loaded bright and coloured, empty dim and grey — the direction of the trade reads without a
+  single caption. The arc bends by itself as the planet moves along its orbit. Names appear only
+  when the camera is close. On the galaxy map there are no dots at all, only a number by the star:
+  how many machines are working for you there.
+- **Routes, not drones.** A new desk tab, РЕЙСЫ: one row per route (`ТИТАН · Нейэль II → «Цициин»
+  · 2 дрона · в точке осталось 360`), the machines under it with their state, and a header with
+  the whole fleet and its credits per minute. The journal stops writing every sale: it now writes
+  only what is worth remembering — a point worked out, a drone stopped, a drone back on the route.
+- **Breakdowns repair themselves, in time and not in money.** About 1.5% per trip, more in a
+  dangerous sector and more for a drone that has flown a lot. It stops at the station where it
+  unloads, blinks amber (the alarm lamp is the one blink the game allows) and stands in the dock
+  for eight to twenty minutes of real time — twice as fast at a Верфь, faster again under a keeper
+  with the sell perk — then goes back on its own. No button, no credit. While it stands, its trips
+  do not run.
+- **Nothing about the economy changed:** the price of a drone, the rate, the size of a point and
+  the credits per hour are what they were. This is a change of spectacle and of limits.
+
+Measured: fourteen drones in frame cost 0.52 ms — about 0.04 ms each. Tests: 389 suites green
+(four new: the trip model, an hour's income matching the old trickle to within a tenth, breakdown
+and self-repair including offline, routes and pre-M237 saves).
+
+---
 ## 0.231.0 — the wheel turns the world only over the world
 
 - **Scrolling a list zoomed the map behind it.** The wheel handler hangs on `window` and asked one

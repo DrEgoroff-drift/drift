@@ -82,6 +82,7 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `12d-mgr-face` | procedural manager portraits (grow with level, darken with loyalty) |
 | `12g-mgr-rogue` | the manager who left: renegade in his own sector, exile in the cantina |
 | `12h-relic` | the lab as a building, seven artifacts, the slot and the second effect line |
+| `12e-drone-flight` | drones fly: a round trip derived from the clock (no position is ever stored), a dot with a tail between the point and the station, routes as rows, breakdowns that repair themselves by time |
 | `12l-barge` | trade barges: real routes, a barge in distress, wrecks, passengers |
 | `12m-rare` | the hundred rarities: a table of addresses, not a roulette |
 | `12r-route` | the player's own trade ring: legs off the live market, sold or handed to the factor |
