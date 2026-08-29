@@ -48,6 +48,16 @@ function padsFit(){
   w=clamp(w,44,56);
   $padsEl.style.setProperty("--padw",Math.round(w)+"px");
   $padsEl.style.setProperty("--padgap",gap+"px");
+  /* ── высота ряда — не константа, а измерение (M239) ──
+     Этажи внизу телефона (пульт, подсказка, правый борт) стояли на числах,
+     посчитанных под ОДИН ряд кнопок: пэды 0–86, пульт 96. В поясе левая группа
+     складывается в крестовину, ряд становится вдвое выше — и пульт садился
+     прямо на кнопки. Числа в CSS остались те же, но считаются они теперь от
+     измеренной высоты ряда: `--padsh`. Меряем в мерке интерфейса (UIK), в
+     которой стоят и сами этажи, иначе на большом экране всё уедет вдвое. */
+  const U=(typeof UIK==="number"&&UIK>0)?UIK:1;
+  const h=Math.round($padsEl.getBoundingClientRect().height/U);
+  document.documentElement.style.setProperty("--padsh",(h>20?h:86)+"px");
 }
 addEventListener("resize",padsFit);
 /* ── на телефоне пэды не гаснут никогда (автор, 25.08.2026) ──

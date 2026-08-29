@@ -7,6 +7,28 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.235.0 — M239: the phone measured in every mode, not just on the ground
+
+The phone layout had been checked in ONE mode — standing on a planet. The pad row changes from
+mode to mode (eight buttons in the belt, others in the mine, others again at home), and ВЗЛЁТ sat
+on top of the console precisely because nobody looked at the bottom floors anywhere else. The
+suite now measures every mode, using the fuzzer's scene list — one list for both, or they drift
+apart. It found two things immediately:
+
+- **In the belt the console sat on the pads.** There the left group folds into a cross — two rows
+  instead of one — and the row is nearly half again as tall, while the floors above it stood on
+  numbers measured under a single row (pads 0–86, console 96). The numbers are the same, but they
+  now count from the MEASURED height of the row: `padsFit` writes `--padsh`, and console, prompt,
+  right rail and ВЗЛЁТ are offsets from it.
+- **The belt's warning lamps printed over each other.** Their spacing comes from the width of the
+  board, but the width of the word «СБЛИЖЕНИЕ» does not: at 375 px the three captions landed on
+  top of one another and read as mush. When the step will not hold the longest word, only the LIT
+  lamp is named — a dark lamp means nothing anyway — and if two are lit the caption changes
+  between them every two and a half seconds. Motion, not blinking.
+
+Tests: 395 suites green, the phone pass included (`test.ps1 -Mobile`).
+
+---
 ## 0.234.0 — M238: the fuzzer, and one dispatch table instead of three
 
 The freeze the author hit on inspecting a landmark was never reproduced by hand: four thousand

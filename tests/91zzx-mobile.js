@@ -186,3 +186,45 @@ TEST_SUITES.push(()=>suite("телефон: мир не зажимают в ще
   /* и на телефоне мир не крупнее, чем был до M217: там своя мерка у всего */
   near(k,1,.001,"на узком экране мерка остаётся единицей");
 }));
+
+/* ══════════════ телефон: КАЖДЫЙ режим, а не только поверхность (M239) ══════════════
+   Раскладку на телефоне до сих пор мерили в одном режиме — на грунте. А набор
+   кнопок меняется от режима к режиму (в поясе их восемь, в шахте другие, дома
+   третьи), и ВЗЛЁТ, который автор не мог нажать, висел на пульте именно потому,
+   что никто не смотрел на нижние этажи в других режимах. Сцены берём из
+   фуззера (91zzzz): один список сцен на всю проверку — второй бы разошёлся. */
+TEST_SUITES.push(()=>suite("телефон: этажи не налезают ни в одном режиме",()=>{
+  if(!document.body.classList.contains("mobile")){
+    resetWorld();ok(true,"окно не телефонное — проверку пропускаем");return;
+  }
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  const box=s=>{const e=document.querySelector(s);if(!e)return null;
+    const r=e.getBoundingClientRect();
+    return (r.width&&r.height&&getComputedStyle(e).display!=="none")?{s,x:r.x,y:r.y,w:r.width,h:r.height}:null;};
+  const hit=(a,b)=>!(a.x+a.w<=b.x+.5||b.x+b.w<=a.x+.5||a.y+a.h<=b.y+.5||b.y+b.h<=a.y+.5);
+  const SEL=[".vitals",".locus","#prompt","#console",".rail","#launchbtn",
+             ".pads>div:first-child",".pads>div:last-child"];
+  const bad=[],seen=[];
+  for(const sc of fuzzScenes()){
+    if(sc.id==="map")continue;                 /* карта — свой экран без пультов */
+    let ok0=true;
+    try{ok0=sc.set()!==false;}catch(e){bad.push(sc.id+" · сцена: "+e.message);continue;}
+    if(!ok0)continue;
+    /* подсказка подлиннее: на телефоне именно длинная строка выдавливает этажи */
+    G.prompt="ДЕЙСТВИЕ — ЗАЛОЖИТЬ БАЗУ · 2500 КР + 10 СПЛАВОВ\nТРЮМ 12/40 · СКАФАНДР 88/100";
+    try{hud();}catch(e){bad.push(sc.id+" · hud: "+e.message);continue;}
+    /* ВЗЛЁТ показываем руками там, где он бывает: у корабля на поверхности */
+    const lb=document.getElementById("launchbtn");
+    if(lb)lb.style.display=(G.mode==="surface")?"":"none";
+    const items=SEL.map(box).filter(Boolean);
+    seen.push(sc.id+":"+items.length);
+    for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++)
+      if(hit(items[i],items[j]))bad.push(sc.id+" · "+items[i].s+"×"+items[j].s);
+    for(const it of items)
+      if(it.x<-1||it.x+it.w>innerWidth+1)bad.push(sc.id+" · за кромкой: "+it.s);
+    if(lb)lb.style.display="none";
+  }
+  G.prompt="";resetWorld();hud();
+  eq(bad.slice(0,5).join(" ;; "),"","этажи не пересекаются ни в одном режиме");
+  ok(seen.length>=8,"режимов промерено: "+seen.length+" ("+seen.join(" ")+")");
+}));

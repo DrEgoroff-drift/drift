@@ -528,18 +528,37 @@ function drawCockpit(b,st){
      экранные кнопки режима, и там лампы просто не видно */
   ctx.textAlign="left";ctx.font=fnt(8);
   const ly=pad+UH-10, lstep=Math.min(92,(rcx-rr-lx-10)/3);
+  /* ── на телефоне подписи ламп налезали друг на друга (M239) ──
+     Шаг ряда считается от ширины доски, а ширина слова «СБЛИЖЕНИЕ» — нет: на
+     375 px три подписи ложились одна поверх другой и читались кашей. Если шаг
+     не держит самое длинное слово, подпись остаётся только у ГОРЯЩЕЙ лампы —
+     погашенная и так ничего не значит, а над миром висит только нужное сейчас. */
+  const need=Math.max(...lamps.map(L=>ctx.measureText(L[0]).width))+14;
+  const tight=lstep<need;
+  const step=tight?16:lstep;
+  /* горящих может быть две: подпись медленно чередуется между ними — движение,
+     а не мигание, и каждая беда успевает назваться */
+  const litAll=[];
   lamps.forEach((L,i)=>{
-    const x=lx+i*lstep;
+    const x=lx+i*step;
     const on=L[1]&&(L[0]!=="СБЛИЖЕНИЕ"||Math.sin(G.t*.25)>-.2);
+    if(on)litAll.push(L);
     ctx.fillStyle=on?L[2]:"rgba(255,255,255,.05)";
     ctx.fillRect(x,ly-6,6,6);
     if(on){   // горящая лампа подсвечивает раму вокруг себя
       ctx.save();ctx.globalCompositeOperation="lighter";ctx.globalAlpha=.25;
       ctx.beginPath();ctx.arc(x+3,ly-3,8,0,TAU);ctx.fill();ctx.restore();
     }
-    ctx.fillStyle=on?L[2]:"rgba(93,115,130,.4)";
-    ctx.fillText(L[0],x+9,ly);
+    if(!tight){
+      ctx.fillStyle=on?L[2]:"rgba(93,115,130,.4)";
+      ctx.fillText(L[0],x+9,ly);
+    }
   });
+  if(tight&&litAll.length){
+    const L=litAll[Math.floor(G.t/150)%litAll.length];
+    ctx.fillStyle=L[2];
+    ctx.fillText(L[0],lx+lamps.length*step+6,ly);
+  }
 
   /* ── держатель под приборами (M101) ──
      Узлы и венцы жили строчками в экране наборов и полоской вдоль борта,

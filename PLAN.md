@@ -57,6 +57,24 @@ Here is only what is still live â cross-cutting rules, the visual queue and
 
 ---
 
+## M239 — the phone in every mode (2026-08-28) — CLOSED (0.235.0)
+
+The phone half of the interface was measured in one mode and assumed in the rest. Now the layout
+suite walks the fuzzer's scene list, so every mode is measured — and it found the belt's console
+sitting on the pads within a minute, plus warning lamps printing over each other at 375 px.
+
+Rules worth keeping:
+
+- **A layout number measured under one state is a guess about the others.** The floors on the
+  phone stood on constants taken when the pad row was one line high; the belt folds it into two.
+  Anything stacked above something whose size can change reads that size (`--padsh`), it does not
+  remember it.
+- **When a row of captions will not fit, name only what is lit.** Shrinking type or truncating
+  words both make the row unreadable; dropping the labels of lamps that mean nothing makes it
+  readable and says the same thing. Two lit at once take turns — slowly.
+- **Share the scene list.** The fuzzer's eleven setups now serve the layout suite too. A second,
+  parallel list would have drifted within a month.
+
 ## M238 — the fuzzer (2026-08-28) — CLOSED (0.234.0)
 
 The author's freeze could not be reproduced by hand, so the game got a net instead of a guess:

@@ -875,7 +875,7 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
    удалены (жест — щипок), призрачных кнопок нет: кнопка либо работает,
    либо отсутствует. Подсказка и сообщение — один слот над пультом. */
 @media (max-width:760px){
-  #console{left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom) + 96px);transform:none;max-width:none;gap:6px}
+  #console{left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 10px);transform:none;max-width:none;gap:6px}
   #rx{flex:1;min-width:0;width:auto;flex-direction:row;align-items:center;gap:8px;padding:6px 10px}
   #rx #rxKnob,#rx #rxScale{display:none}
   #rx.sheet{flex-direction:column;align-items:stretch}
@@ -896,8 +896,11 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
      шкалами съедают полосу, которой там и так нет. Остаются числа в одну
      строку над пультом, между зонами больших пальцев: слева состояние,
      справа место. Ни под пэды, ни под правый борт она не заходит. */
-  /* Этажи снизу вверх: пэды (0–86) → пульт (96, до ~80 высоты) →
-     подсказка (204). Строка состояния из этой стопки ушла наверх: внизу на
+  /* Этажи снизу вверх: пэды (высота МЕРЯЕТСЯ, --padsh) → пульт (+10) →
+     правый борт (+98) → подсказка (+118) → ВЗЛЁТ (+164). Числа те же, что
+     были при одном ряде кнопок, но считаются от измеренной высоты ряда: в
+     поясе он складывается в крестовину и становится вдвое выше (M239).
+     Строка состояния из этой стопки ушла наверх: внизу на
      телефоне и без неё три этажа, и она садилась в самый тесный кадр.
      Наверху же на телефоне свободно — там только вырез и небо. */
   .hud{top:calc(env(safe-area-inset-top) + 8px);bottom:auto;padding:0 10px;
@@ -917,7 +920,7 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
   .locus s{display:none}
   .locus em{font-size:10px;margin-top:2px}
   /* зона большого пальца: КАРТА и МЕНЮ спускаются к правому краю снизу */
-  .rail{top:auto;bottom:calc(env(safe-area-inset-bottom) + 184px)}
+  .rail{top:auto;bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 98px)}
   #zin,#zout{display:none!important}   /* зум — щипком */
   /* Сообщение вернулось наверх (A2). Его спустили вниз в M167, когда верх был
      занят приборами и место там стоило дорого; теперь приборы внизу, наверху
@@ -933,10 +936,10 @@ body.road .scr footer .act.gold{background:linear-gradient(180deg,rgba(242,178,9
      же вечером. Этажей внизу и так три (пэды → пульт → подсказка), четвёртый
      не влезет — поэтому ВЗЛЁТ уходит на левый борт, напротив правого:
      подсказка кончается на 128 px от правого края, там ему и место. */
-  #launchbtn{right:auto;left:14px;bottom:calc(env(safe-area-inset-bottom) + 250px);
+  #launchbtn{right:auto;left:14px;bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 164px);
     width:96px;height:46px}
   /* подсказка не заходит под правый борт: та же зона, что у строки состояния */
-  #prompt{bottom:calc(env(safe-area-inset-bottom) + 204px);white-space:nowrap;overflow:hidden;
+  #prompt{bottom:calc(env(safe-area-inset-bottom) + var(--padsh,86px) + 118px);white-space:nowrap;overflow:hidden;
     left:10px;right:128px;transform:none;
     text-overflow:ellipsis;max-width:none;line-height:1.4}
 }
