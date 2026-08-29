@@ -102,3 +102,33 @@ TEST_SUITES.push(()=>suite("истории: связи через seenOf и сл
   eq(heardAll().length,n,"повторный показ не дублирует запись");
   G.parrot=null;G.heard=[];G.st=null;G.mode="system";
 }));
+
+/* ══════════════ M259: поворот читает руку игрока ══════════════
+   when ждёт условия, unless тихо отменяет и ставит else-флаг; развилка не
+   предъявляется — это проверяют не тексты, а сама механика флагов. */
+TEST_SUITES.push(()=>suite("повороты: рука игрока, развилка молчит",()=>{
+  resetWorld();
+  const day=storyDay();
+  const mk=(id)=>({id,traces:[],turns:[{after:"seen:t1",days:2,set:"gone",unless:{parrot:true},else:"met"}]});
+  const S1=mk("~turnA");
+  storySeen()["~turnA.t1"]=day;
+  G.t+=STORY_DAY*3;
+  G.parrot=null;
+  storyTurns(S1,storyCtx());
+  ok(storyFlag(S1,"gone")&&!storyFlag(S1,"met"),"без поступка — прежний ход мира");
+  const S2=mk("~turnB");
+  storySeen()["~turnB.t1"]=storyDay()-3;
+  G.parrot={ok:1};
+  storyTurns(S2,storyCtx());
+  ok(storyFlag(S2,"met")&&!storyFlag(S2,"gone"),"с поступком — другой исход, молча");
+  const S3={id:"~turnC",traces:[],turns:[{after:"seen:t1",days:0,set:"go",when:{parrot:false}}]};
+  storySeen()["~turnC.t1"]=storyDay()-5;
+  storyTurns(S3,storyCtx());
+  ok(!storyFlag(S3,"go"),"when ложно — поворот ждёт, не сгорает");
+  G.parrot=null;
+  storyTurns(S3,storyCtx());
+  ok(storyFlag(S3,"go"),"when истинно — сработал");
+  /* и данные ста историй по-прежнему чисты: else-флаги читаются, ключи есть */
+  eq(storyLint().length,0,"storyLint пуст после развилок M259");
+  resetWorld();
+}));

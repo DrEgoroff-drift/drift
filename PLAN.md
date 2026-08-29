@@ -122,6 +122,14 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M259 — a turn can read the player's hand (2026-08-29) — CLOSED (0.255.0)
+
+P6's mechanism and first two forks (второй стакан, лампа на площадке). The turn engine takes
+`when`/`unless`/`else` over the shared `STORY_WHEN`; new deed keys `hand` and `seams`. The
+remaining calendar-only turns (16) are a content pass: each wants its own deed found in the
+story's fabric, not forced — queue them a few per session. Lint lesson kept: a story has a
+trace budget, and a fork often needs NO new scene — не ставить флаг уже меняет мир.
+
 ## M258 — the stranger's lamp casts shadows (2026-08-29) — CLOSED (0.254.0)
 
 P5 opened ahead of P4 (named reason: P4's payoff is architectural and wants its own careful

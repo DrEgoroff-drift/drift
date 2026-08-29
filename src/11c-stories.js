@@ -105,19 +105,39 @@ function storyPlace(S,c){
   return key;
 }
 
-/* ── повороты ── перемена мира по часам, без игрока. Считаются лениво. */
-function storyTurns(S){
+/* ── повороты ── перемена мира по часам И ПО РУКЕ ИГРОКА (M259). Лениво.
+   До M259 поворот умел только «увидел + прошли дни»: ни один из 18 поворотов
+   в ста историях не зависел от того, что игрок СДЕЛАЛ (замер по 12k-*, разбор
+   docs/DESIGN-story-craft.md §1). Теперь у поворота есть:
+     when   — срабатывает только когда условие истинно (ждёт, не сгорает);
+     unless — если в срок условие истинно, поворот НЕ происходит: ставится
+              else-флаг, а если его нет — немой маркер «~set», и мир просто
+              остаётся прежним.
+   ЖЕЛЕЗНОЕ ПРАВИЛО ЯЗЫКА: развилка не предъявляется никогда. Ни один текст
+   не говорит «потому что вы…» — игрок видит другое и не знает, что бывало
+   иначе. Словарь условий тот же, что у следов (STORY_WHEN): поступки — это
+   то, что игра и так помнит (визиты, открытка отсюда, посёлок под рукой,
+   швы на корпусе), а не новая бухгалтерия. */
+function storyTurns(S,c){
   if(!S.turns)return;
   for(const T of S.turns){
-    if(storyFlag(S,T.set))continue;
+    if(storyFlag(S,T.set)||(T.else&&storyFlag(S,T.else))||storyFlag(S,"~"+T.set))continue;
     const d=storyDay();
-    if(T.day!=null){if(d>=T.day)storySetFlag(S,T.set);continue;}
-    if(T.after){
+    let due=false;
+    if(T.day!=null)due=d>=T.day;
+    else if(T.after){
       const k=T.after.slice(0,5)==="seen:"?T.after.slice(5):null;
       const from=k?storySeen()[S.id+"."+k]:null;
       if(from==null)continue;
-      if(d-from>=(T.days|0))storySetFlag(S,T.set);
+      due=d-from>=(T.days|0);
     }
+    if(!due)continue;
+    if(T.when&&!storyWhen(S,{when:T.when},c))continue;
+    if(T.unless&&storyWhen(S,{when:T.unless},c)){
+      if(T.else)storySetFlag(S,T.else);else storySetFlag(S,"~"+T.set);
+      continue;
+    }
+    storySetFlag(S,T.set);
   }
 }
 
@@ -144,7 +164,13 @@ const STORY_WHEN={
   mode:(v)=>G.mode===v,
   /* связь как данные: след чужой истории виден — "story.trace" */
   seenOf:(v)=>storySeen()[v]!=null,
-  unseenOf:(v)=>storySeen()[v]==null
+  unseenOf:(v)=>storySeen()[v]==null,
+  /* ── поступки (M259): только то, что игра и так помнит ── */
+  /* посёлок этой системы под рукой наблюдателя (12td) */
+  hand:(v,S,c)=>{const st=(typeof settleAt==="function")?settleAt(c.sx,c.sy):null;
+    return !!(st&&st.handAt)===!!v;},
+  /* швов на текущем корпусе не меньше v (12s, M256): биографию видно и людям */
+  seams:(v)=>((typeof seamsOf==="function")?seamsOf():0)>=v
 };
 function storyWhen(S,t,c){
   const w=t.when;if(!w)return true;
@@ -166,8 +192,10 @@ function storyTraces(via,c){
   for(const S of storyAll()){
     const key=via==="news"?storyPins()[S.id]:storyPlace(S,c);
     if(!key)continue;
-    storyTurns(S);
     const cc=via==="news"?Object.assign({},c,{key}):c;
+    /* повороту нужен контекст МЕСТА истории (cc, не c): слух через news не
+       должен мерить визиты игрока по чужому адресу */
+    storyTurns(S,cc);
     for(const t of S.traces){
       if(t.via!==via)continue;
       if(!storyWhen(S,t,cc))continue;
@@ -323,6 +351,12 @@ function storyLint(){
     for(const T of (S.turns||[])){
       const read=S.traces.some(t=>t.when&&(t.when.flag===T.set||t.when.noflag===T.set));
       if(!read)bad.push(S.id+": флаг "+T.set+" никто не читает");
+      if(T.else){
+        const r2=S.traces.some(t=>t.when&&(t.when.flag===T.else||t.when.noflag===T.else));
+        if(!r2)bad.push(S.id+": флаг "+T.else+" никто не читает");
+      }
+      for(const w of [T.when,T.unless])if(w)
+        for(const k in w)if(!STORY_WHEN[k])bad.push(S.id+" turn:"+k);
     }
     const at=S.at||"any";
     if(!/^(any|planet|settle|tin|hours:core|danger:far|fixed:\d+|stype:\w+|world:\w+)$/.test(at))bad.push(S.id+": адрес "+at);

@@ -7,7 +7,26 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.254.0 — M258: the stranger's lamp casts shadows
+## 0.255.0 — M259: a turn can read the player's hand
+
+P6 opens (`DESIGN-story-craft.md` §1). Measured before the work: 108 stories, 18 turns, and
+every single turn had the same shape — *seen it, days passed*. No story in the game ever turned
+because of something the player **did**.
+
+A turn now takes `when` (fires only while true — waits, never burns) and `unless` (if true at
+the due date, the turn quietly does not happen: an `else` flag is set, or a mute marker). The
+condition dictionary is the traces' own `STORY_WHEN` — deeds are what the game already
+remembers, not new bookkeeping — plus two new keys: `hand` (this system's settlement taken
+under the observer's hand) and `seams` (the hull's repair biography, M256 — people can see it).
+
+**The iron rule of the language: a fork is never shown.** No text says "because you did X" —
+the player finds things other than they would have been, and cannot know it.
+
+Two forks live already: «Второй стакан» — keep returning to that node (four visits) and
+Ноль-семь is waited out: the two glasses stay, the queue starts bringing two; «Лампа на
+площадке» — a postcard mailed *from this place* means someone saw the lamp, and the dispatcher
+keeps lighting it. Suite 400 guards the mechanics; the story lint checks else-flags are read
+and turn conditions exist.
 
 P5's first slice (DESIGN-craft §4). The lamp somebody left on the cave floor glowed in a
 circle straight through stone — the far side of a column lit up the same as the near. Its glow

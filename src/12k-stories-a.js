@@ -49,9 +49,13 @@ const STORIES=[
   {id:"t3",via:"queue",when:{visits:2,noflag:"gone"},text:"— Туда не садитесь. Занято."},
   {id:"t4",via:"cant",when:{flag:"gone"},scene:{seat:"corner",figure:0,props:["glass"]}},
   {id:"t5",via:"queue",when:{flag:"gone"},text:"— Дождался, наверное. Или перестал."},
-  {id:"t6",via:"table",item:"strip",when:{item:"strip",flag:"gone"},text:null}
+  {id:"t6",via:"table",item:"strip",when:{item:"strip",flag:"gone"},text:null},
+  /* развилка (M259): если игрок ВОЗВРАЩАЛСЯ — четыре захода на этот узел, —
+     Ноль-семь дождался: флаг gone не ставится, и стаканы на t2 стоят дальше
+     сами собой. Никто не говорит игроку, что это из-за него */
+  {id:"t7",via:"queue",when:{flag:"met"},text:"— Теперь носим два. И оба полные недолго стоят."}
  ],
- turns:[{after:"seen:t2",days:6,set:"gone"}],
+ turns:[{after:"seen:t2",days:6,set:"gone",unless:{visits:4},else:"met"}],
  links:["parrot_callsign"]},
 
 /* ── 2. Лампа на площадке ── привычка · форпост, фиксированная */
@@ -61,9 +65,13 @@ const STORIES=[
   {id:"t2",via:"queue",when:{noflag:"off"},text:"— Зажигаю. В расписании плечо есть — значит, зажигаю. Кто там по расписанию, не спрашивайте."},
   {id:"t3",via:"queue",when:{visits:3,noflag:"off"},text:"— Лампу? Нет, не помню, кто её первый зажёг. Я её тушить не буду, это точно."},
   {id:"t4",via:"queue",when:{flag:"off"},text:null},
-  {id:"t5",via:"ether",when:{flag:"off"},text:"…площадка тёмная. Садитесь по приборам, как все."}
+  {id:"t5",via:"ether",when:{flag:"off"},text:"…площадка тёмная. Садитесь по приборам, как все."},
+  /* развилка (M259): открытка, отправленная С ЭТОГО места, — значит, лампу
+     кто-то видел и запомнил. Диспетчер продолжает зажигать. Связь не
+     называется: игрок в лучшем случае почувствует, что край его помнит */
+  {id:"t6",via:"queue",when:{flag:"kept"},text:"— Лампу? Горит. Пока на неё идут — горит."}
  ],
- turns:[{after:"seen:t2",days:14,set:"off"}]},
+ turns:[{after:"seen:t2",days:14,set:"off",unless:{strip:"here"},else:"kept"}]},
 
 /* ── 3. Смена не придёт ── версии · три типа станций */
 {id:"no_shift",form:"versions",at:"stype:indust",cast:[],
