@@ -122,6 +122,13 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M258 — the stranger's lamp casts shadows (2026-08-29) — CLOSED (0.254.0)
+
+P5 opened ahead of P4 (named reason: P4's payoff is architectural and wants its own careful
+run; P5 lands in the game's weakest scene). Silhouette-edge shadow mask for the cave's static
+lamp, baked once per cave; the player's moving headlamp stays shadowless by budget, named in
+the patch notes. P5 remaining: static lamps of the base interiors and the raid, same recipe.
+
 ## M257 — the drops catch the light (2026-08-29) — CLOSED (0.253.0)
 
 P3 closed. Движки in the cave: counted hard glints on horizontal wet edges (floor puddles,

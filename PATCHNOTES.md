@@ -7,7 +7,18 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.253.0 — M257: the drops catch the light
+## 0.254.0 — M258: the stranger's lamp casts shadows
+
+P5's first slice (DESIGN-craft §4). The lamp somebody left on the cave floor glowed in a
+circle straight through stone — the far side of a column lit up the same as the near. Its glow
+is now a **baked mask**: the same gradient, with shadows eaten out by `destination-out` — a
+quad projected from the lamp past every marching-squares edge within radius. O(edges), and
+since neither the lamp nor the rock ever moves, the mask bakes once per cave; the light's
+breathing is a globalAlpha at blit time.
+
+Named cost, kept deliberately: the player's own headlamp still shines without shadows — it
+moves every frame, and a per-frame mask would cost the frame more than the shadows are worth.
+The мох glow is a surface patch, not a beam; it needs no occlusion.
 
 Движки reach the live game (P3, DESIGN-craft §1). The cave's wet rim was one uniform stroke
 along every contour — a gradient's kind of light, stretched instead of counted. Now the

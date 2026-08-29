@@ -467,12 +467,19 @@ function drawCaveOwnLight(C,camx,camy){
   const lx=L.x-camx, ly=L.y-camy;
   if(lx>-80&&lx<W+80&&ly>-80&&ly<H+80){
     const pu=.78+.22*Math.sin(G.t*.011+L.ph);
+    /* ── свет не проходит сквозь камень (M258, DESIGN-craft §4) ──
+       Зарево было кругом поверх всего: сквозь колонну, сквозь стену — по ту
+       сторону породы светилось так же. Маска: тот же градиент, из которого
+       destination-out выедает тени — четырёхугольники, спроецированные от
+       лампы за каждое ребро марширующих квадратов в радиусе. O(рёбра), и
+       лампа с породой неподвижны, значит маска печётся ОДИН РАЗ на пещеру;
+       дыхание света — глобальной прозрачностью при кладке. Фонарь игрока
+       остаётся без теней сознательно: он движется каждый кадр, и его маска
+       стоила бы кадру то, чего тени не стоят. */
     ctx.save();ctx.globalCompositeOperation="lighter";
-    const g=ctx.createRadialGradient(lx,ly-5,0,lx,ly-5,86);
-    g.addColorStop(0,"rgba(255,206,138,"+(.24*pu).toFixed(3)+")");
-    g.addColorStop(.5,"rgba(255,190,120,"+(.08*pu).toFixed(3)+")");
-    g.addColorStop(1,"rgba(255,190,120,0)");
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(lx,ly-5,86,0,TAU);ctx.fill();
+    ctx.globalAlpha=pu;
+    ctx.drawImage(caveLampMask(C),L.x-90-camx,L.y-5-90-camy);
+    ctx.globalAlpha=1;
     ctx.restore();
     /* сама вещь: корпус, дужка и стекло — вещь, а не пятно */
     ctx.fillStyle="rgba(46,52,60,.95)";
@@ -483,4 +490,52 @@ function drawCaveOwnLight(C,camx,camy){
     ctx.fillRect(lx-2.2,ly-7.6,4.4,4.4);
     groundShadow(lx,ly+1,7,2.2);
   }
+}
+/* ── маска света лампы (M258): зарево минус тени от рёбер породы ──
+   Печётся один раз на пещеру (C.lampMask): и лампа, и порода статичны.
+   Рёбра — те же случаи марширующих квадратов, что в caveContour; каждое
+   даёт четырёхугольник «ребро + его проекция от лампы за край маски». */
+function caveLampMask(C){
+  if(C.lampMask)return C.lampMask;
+  const L=caveLampSpot(C),R=90,S=R*2;
+  const cv=document.createElement("canvas");cv.width=cv.height=S;
+  const c=cv.getContext("2d");
+  const lxw=L.x, lyw=L.y-5;                       /* центр света — чуть над полом */
+  const g=c.createRadialGradient(R,R,0,R,R,86);
+  g.addColorStop(0,"rgba(255,206,138,.24)");
+  g.addColorStop(.5,"rgba(255,190,120,.08)");
+  g.addColorStop(1,"rgba(255,190,120,0)");
+  c.fillStyle=g;c.beginPath();c.arc(R,R,86,0,TAU);c.fill();
+  const CS=CAVE_CS,NX=CAVE_NX,NY=CAVE_NY,gr=C.g;
+  const at=(cx,cy)=>(cx<0||cx>=NX||cy<0||cy>=NY)?1:gr[cy*NX+cx];
+  c.globalCompositeOperation="destination-out";
+  c.fillStyle="#000";
+  const shade=(a,b)=>{
+    const k=4;                                    /* проекция заведомо за край */
+    c.beginPath();
+    c.moveTo(a[0]-lxw+R,a[1]-lyw+R);
+    c.lineTo(b[0]-lxw+R,b[1]-lyw+R);
+    c.lineTo(b[0]+(b[0]-lxw)*k-lxw+R,b[1]+(b[1]-lyw)*k-lyw+R);
+    c.lineTo(a[0]+(a[0]-lxw)*k-lxw+R,a[1]+(a[1]-lyw)*k-lyw+R);
+    c.closePath();c.fill();
+  };
+  const cx0=Math.floor((lxw-R)/CS)-1,cx1=Math.floor((lxw+R)/CS)+1;
+  const cy0=Math.floor((lyw-R-CAVE_Y0)/CS)-1,cy1=Math.floor((lyw+R-CAVE_Y0)/CS)+1;
+  for(let cy=cy0;cy<=cy1;cy++)for(let cx=cx0;cx<=cx1;cx++){
+    const k=(at(cx,cy)<<3)|(at(cx+1,cy)<<2)|(at(cx+1,cy+1)<<1)|at(cx,cy+1);
+    if(k===0||k===15)continue;
+    const X=(cx+.5)*CS,Y=(cy+.5)*CS+CAVE_Y0,h=CS*.5;
+    const T=[X+h,Y],Rr=[X+CS,Y+h],B=[X+h,Y+CS],Lt=[X,Y+h];
+    switch(k){
+      case 1:case 14:shade(Lt,B);break;
+      case 2:case 13:shade(B,Rr);break;
+      case 3:case 12:shade(Lt,Rr);break;
+      case 4:case 11:shade(T,Rr);break;
+      case 5:shade(T,Lt);shade(B,Rr);break;
+      case 6:case 9:shade(T,B);break;
+      case 7:case 8:shade(T,Lt);break;
+      case 10:shade(T,Rr);shade(Lt,B);break;
+    }
+  }
+  return C.lampMask=cv;
 }

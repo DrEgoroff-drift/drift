@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3053
+Файлов: 333 · символов верхнего уровня: 3054
 
 ## СИМВОЛЫ
 
@@ -261,6 +261,7 @@ caveFloorOf                  src/22-mode-cave.js:71
 caveFloraOf                  src/20e-species.js:111
 caveGalR                     src/22-mode-cave.js:22
 caveGalY                     src/22-mode-cave.js:17
+caveLampMask                 src/22a-cave-deco.js:498
 caveLampSpot                 src/22a-cave-deco.js:440
 caveLowY                     src/22-mode-cave.js:24
 caveMossSpots                src/22a-cave-deco.js:427
@@ -3607,7 +3608,7 @@ zooTick                      src/11ad-zoo.js:41
   · поверхность:1
   · навигатор и подсказки сверху:659
 
-## src/22a-cave-deco.js · 25 КБ
+## src/22a-cave-deco.js · 28 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
   · свой свет пещеры (M248):419
 
