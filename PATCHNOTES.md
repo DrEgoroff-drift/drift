@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.264.0 — M267: strata lie flat, the mine learns the brush, the wall remembers a hand
+
+Second leg of the marathon (П4 · С2).
+
+**П4 — rock is a body, not wallpaper.** The oldest debt in Loose ends: surface strata were
+drawn at a fixed depth below the terrain of each column — geology followed the relief like
+wallpaper, and a cliff read as a striped wall. Strata now lie on a near-horizontal datum (four
+fifths flat, a fifth of the profile left as drape) and the relief CUTS them: valleys shave the
+upper layers off, the full column lies under the peaks. Mineral veins moved to the same datum.
+And the mine learned the 皴 brush table (`digCun`): the same CUN grammar the cave got in M263 —
+hemp-fibre strokes on sedimentary worlds, axe-cut on volcanic, ribbon on ice, rain-dot on sand —
+along the direction field, baked into the rock tiles for free.
+
+**С2 — the wall remembers the hand.** New deed key `wall`: signing a stone (`wallSign`) now
+also writes `G.walled[place]` into the save — «я здесь расписался» is a player decision and
+persists locally, while the wall itself stays on the server. First reader: *commission* — the
+commission that stares at walls and writes lines now leaves a paper that contains, among the
+lines, one sign like the one on the stone by the counter — if the player's mark stood there
+before they left. Nobody says «because you»; the player recognises their own hand, or doesn't.
+Refusals named in place: *null_cabin* (Гедеван is reserved by P7 — the paid shortcut to the
+glyphs), *semyon_walk* (the game doesn't remember long walks; a memory for one story is the
+kim_debt class). Deed-turn count 8, suite floor raised.
+
+---
 ## 0.263.0 — M266: the census of circles (П3)
 
 The album (all scenes, headless) was walked looking for every naked circle. Three offenders

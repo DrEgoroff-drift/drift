@@ -83,6 +83,7 @@ function digRockPass(D,p,camx,camy){
      невидимости (самокритика M169) */
   digBedding(G0,camx,camy);
   digRockMass(p,camx,camy);
+  digCun(p,camx,camy);
   /* профиль почвы у самой поверхности: до потемнения глубиной, чтобы верх
      разреза жил по тем же правилам света, что и всё остальное */
   digSoil(p,camx,camy);
@@ -147,6 +148,38 @@ function digBedding(G0,camx,camy){
    именно поэтому массив читается массивом, а не текстурой. Ячейка сетки
    трещин берёт свой наклон и свою длину из хеша координат, так что рисунок
    не повторяется и не дрожит при движении камеры. */
+/* ── 皴法 в шахте (П4 марафона; таблица CUN — 22-mode-cave, DESIGN-craft §5) ──
+   Пещера уже знает манеру штриха по породе, шахта резала тот же камень без
+   неё: массив давал форму и тон, но не МАТЕРИАЛ. Тот же грамматический ход:
+   штрихи вдоль поля направлений (dirAt — залегание), манера из CUN — пенька
+   на осадочных, топор на вулканите, лента на льду, крошка на песке. Один и
+   тот же разрез на разных мирах теперь сделан из разного. Всё от мировых
+   координат — печётся в тайл, кадру бесплатно. */
+function digCun(p,camx,camy){
+  const M=CUN[p.type]||CUN.rocky;
+  const stp=24,sd=(p.seed|0)^0xD16;
+  const gx0=Math.floor(camx/stp)*stp, gy0=Math.floor(camy/stp)*stp;
+  for(let gy=gy0;gy<camy+H+stp;gy+=stp)for(let gx=gx0;gx<camx+W+stp;gx+=stp){
+    const hh=hashi(gx/stp,gy/stp,sd);
+    if((hh&7)<3)continue;
+    const jx=gx+((hh>>>3)&15)/15*stp-camx, jy=gy+((hh>>>7)&15)/15*stp-camy;
+    const light=((hh>>>14)&1);
+    if(M.dot){
+      ctx.fillStyle=light?"rgba(190,205,215,"+M.la+")":"rgba(0,0,0,"+M.da+")";
+      const q=1+((hh>>>11)&1);
+      ctx.fillRect(jx,jy,q,q);
+      continue;
+    }
+    const ang=dirAt(gx,gy,sd+0x11,1/300)+(((hh>>>16)&15)/15-.5)*M.jig;
+    const ln=(6+((hh>>>11)&7))*M.ln;
+    ctx.strokeStyle=light?"rgba(170,190,210,"+M.la+")":"rgba(0,0,0,"+M.da+")";
+    ctx.lineWidth=M.w;
+    ctx.beginPath();
+    ctx.moveTo(jx-Math.cos(ang)*ln,jy-Math.sin(ang)*ln);
+    ctx.lineTo(jx+Math.cos(ang)*ln,jy+Math.sin(ang)*ln);
+    ctx.stroke();
+  }
+}
 function digRockMass(p,camx,camy){
   const S=600;                                   /* ячейка, из которой растут трещины */
   const x0=Math.floor((camx-S)/S)*S, y0=Math.floor((camy-S)/S)*S;

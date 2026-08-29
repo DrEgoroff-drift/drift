@@ -160,8 +160,10 @@ the stand anyway.
   written in the patchnote so the census doesn't reopen: star glare ring, cave lamp ellipse,
   day giant (author's decree after six reworks), glow-world lamp dots. Flake noted for P0:
   «смотритель…излишек» suite failed once, green twice on rerun.
-- **P4 — surface rock and material.** The 皴 table out of the cave onto mine and cliff strata;
-  strata direction on cuts; edge; cast shadows for standing boulders.
+- **P4 — surface rock and material.** ~~Done (M267, 0.264.0)~~: CUN into the mine (`digCun`),
+  strata on a near-horizontal datum cut by relief (the Loose-ends debt). Checked and left:
+  boulders/plants/ship already cast groundShadow (the law holds); the postcard already carries
+  stroke-along-bedding (M252) — typing it by CUN would be a second system on one canvas.
 - **P5 — buildings and POI.** Factory, mine, wrecks: one body, one light, «работа видна».
 - **P6 — ship, astronaut, landing.** Ship's ground shadow, engine light as an ellipse, silhouette
   edge, the astronaut readable on any background; the landing corridor stops being CAD.
@@ -182,8 +184,12 @@ calendar; only 3 deed-forks live after P6):
   law: **a fork is never shown.** Refusals in writing (as two_on_orbit, kim_debt). Criterion:
   the deed is already in the log AND inevitability is not the story's point.
   ~~S1 done (M265)~~: tin_feeders (tinfed), shoal (strip), baker_oven (seen:t5),
-  forty_two (visits gate); refusals named at twins and busy_freq. Deed-turn count 7,
-  guarded by the suite; S2 raises it.
+  forty_two (visits gate); refusals named at twins and busy_freq.
+  ~~S2 done (M267)~~: `wall` deed key backed by `G.walled` in the save; commission fork;
+  refusals at null_cabin (reserved by P7) and semyon_walk (no substrate). Count 8.
+  S3 needs new authored stories or the `sat`/`card` keys — check the cantina seat and
+  postcard-wire sources first; forecast_same, foreign_tape, report_nothing are already
+  de-facto deed-turns (their `after` trace requires a shown item).
 - **S4 — the clock engine (P8 of the codex).** Hidden dials over endings; a segment advances
   only by deed + spaced days; an ending fires only in its window. Медкомиссия first. Fuzzer
   long-run must not reach an ending early.

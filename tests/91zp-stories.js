@@ -23,7 +23,7 @@ TEST_SUITES.push(()=>suite("истории: данные здоровы, сло�
   const deed=[];
   for(const S of STORIES)for(const T of (S.turns||[]))
     if(T.when||T.unless)deed.push(S.id);
-  ok(deed.length>=7,"поворотов-поступков не меньше семи (есть "+deed.length+": "+deed.join(", ")+")");
+  ok(deed.length>=8,"поворотов-поступков не меньше восьми (есть "+deed.length+": "+deed.join(", ")+")");
 }));
 
 TEST_SUITES.push(()=>suite("истории: якорь при первой встрече и выдача по каналам",()=>{

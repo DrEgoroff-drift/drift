@@ -104,6 +104,10 @@ function wallSign(kind){
   const mine={m:traceMarkOf(),h:traceHand(),me:true};
   w.list=w.list.concat([mine]).slice(-WALL_MAX);
   w.mine=true;
+  /* поступок остаётся в журнале игрока (С2, ключ wall у историй): правда о
+     чужой стене живёт на сервере, но «я здесь расписался» — решение игрока,
+     и оно хранится локально, как visits. Ставится сразу, снимается с отказом. */
+  (G.walled||(G.walled={}))[key]=1;
   sfx("ui",{f:180,to:120,d:.14,v:.20});
   logAdd("good","Свой знак — на "+(WALL_KIND_RU[kind]||"стене"));
   wallCall("sign",{key:key,w:kind,m:mine.m,h:mine.h}).then(j=>{
@@ -111,6 +115,7 @@ function wallSign(kind){
       /* отказ — знак снимаем молча: врать про чужую стену нельзя */
       const cur=WALL_CACHE.get(ck);
       if(cur){cur.list=cur.list.filter(t=>t!==mine);cur.mine=cur.list.some(t=>t.me);}
+      if(G.walled)delete G.walled[key];
       return;
     }
     if(Array.isArray(j.w))wallStore(ck,j.w);

@@ -105,6 +105,16 @@ function drawStrata(tr,camx,camy,p,P){
   const fseed=(p.seed^0x5F17)>>>0;
   const i0=clamp(Math.floor((camx-40)/tr.step),0,tr.N-1);
   const i1=clamp(Math.ceil((camx+W+40)/tr.step),0,tr.N-1);
+  /* ── пласты лежат ГОРИЗОНТАЛЬНО, рельеф их режет (П4; долг из Loose ends) ──
+     Глубина слоя считалась от высоты грунта в каждой колонке — геология
+     повторяла профиль рельефа, как обои, и обрыв читался не скалой, а
+     полосатой стеной. Настоящий разрез: залегание почти горизонтально
+     (датум — средняя высота мира; пятая часть профиля остаётся на лёгкую
+     драпировку), и рельеф ОБНАЖАЕТ пласты — в долинах верхние срезаны,
+     под пиками лежит вся колонна. Это и делает скалу скалой. */
+  if(tr.hMin==null){let a=1e9,b=-1e9;for(let i=0;i<tr.N;i++){if(tr.h[i]<a)a=tr.h[i];if(tr.h[i]>b)b=tr.h[i];}tr.hMin=a;tr.hMax=b;}
+  const datum=(tr.hMin+tr.hMax)*.5, FLAT=.8;
+  const bedY=(hCol)=>lerp(hCol,datum,FLAT);
   ctx.save();ctx.clip(P);
   for(let k=0;k<G0.length;k++){
     const L=G0[k];
@@ -112,7 +122,7 @@ function drawStrata(tr,camx,camy,p,P){
     let started=false;
     for(let i=i0;i<=i1;i++){
       const wx=i*tr.step;
-      const y=tr.h[i]+L.d0+geoWob(L,wx)+geoFaultAt(wx,fseed)-camy;
+      const y=bedY(tr.h[i])+L.d0+geoWob(L,wx)+geoFaultAt(wx,fseed)-camy;
       if(!started){LP.moveTo(wx-camx,y);started=true;}
       else LP.lineTo(wx-camx,y);
     }
@@ -145,7 +155,7 @@ function drawStrata(tr,camx,camy,p,P){
         const hh=hashi(Math.floor(wx/stepv),L.seed,0x5EED);
         if((hh&255)/255>L.vein*.55)continue;
         const dy=L.d0+((hh>>>8)&63)/63*L.th*.8;
-        const sx=wx-camx, sy=groundAt(tr,wx)+dy+geoWob(L,wx)-camy;
+        const sx=wx-camx, sy=bedY(groundAt(tr,wx))+dy+geoWob(L,wx)-camy;
         const ln=8+((hh>>>14)&15), ang=((hh>>>18)&15)/15*1.1-.55;
         ctx.strokeStyle="rgba("+mn.join(",")+","+(.18+((hh>>>22)&7)/7*.3).toFixed(2)+")";
         ctx.lineWidth=1+((hh>>>25)&1);

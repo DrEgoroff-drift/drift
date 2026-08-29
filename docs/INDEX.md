@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3061
+Файлов: 333 · символов верхнего уровня: 3062
 
 ## СИМВОЛЫ
 
@@ -82,7 +82,7 @@ angWrap                      src/01-core.js:81
 applyCrewEvent               src/12b-crew-events.js:214
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:85
+applySave                    src/14-save.js:86
 applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:108
 arrive                       src/16-flight.js:154
@@ -489,19 +489,20 @@ DESC_TAIL                    src/01-core.js:104
 dgy                          src/21b-surface-deco.js:131
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
-DIG_TURF                     src/23aa-dig-rock.js:414
-digBedding                   src/23aa-dig-rock.js:117
+DIG_TURF                     src/23aa-dig-rock.js:447
+digBedding                   src/23aa-dig-rock.js:118
 digCell                      src/23-mode-dig.js:29
+digCun                       src/23aa-dig-rock.js:158
 digFauna                     src/23-mode-dig.js:224
-digRGB                       src/23aa-dig-rock.js:416
-digRockMass                  src/23aa-dig-rock.js:150
+digRGB                       src/23aa-dig-rock.js:449
+digRockMass                  src/23aa-dig-rock.js:183
 digRockPass                  src/23aa-dig-rock.js:26
-digSMix                      src/23aa-dig-rock.js:415
-digSoil                      src/23aa-dig-rock.js:450
-digSoilBand                  src/23aa-dig-rock.js:443
-digSoilCols                  src/23aa-dig-rock.js:424
-digSurfFringe                src/23aa-dig-rock.js:561
-digSurfY                     src/23aa-dig-rock.js:420
+digSMix                      src/23aa-dig-rock.js:448
+digSoil                      src/23aa-dig-rock.js:483
+digSoilBand                  src/23aa-dig-rock.js:476
+digSoilCols                  src/23aa-dig-rock.js:457
+digSurfFringe                src/23aa-dig-rock.js:594
+digSurfY                     src/23aa-dig-rock.js:453
 digVoidPath                  src/23a-dig-draw.js:4
 dirAt                        src/01-core.js:68
 DOM_GAME                     src/11af-domino.js:12
@@ -2629,40 +2630,40 @@ STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:311
+STORY_SEAT                   src/11c-stories.js:316
 STORY_WHEN                   src/11c-stories.js:147
 storyAddrMatch               src/11c-stories.js:69
 storyAll                     src/11c-stories.js:32
 storyAnchorRoll              src/11c-stories.js:87
 storyById                    src/11c-stories.js:33
-storyCantFigures             src/11c-stories.js:318
-storyCantProps               src/11c-stories.js:327
-storyCantScene               src/11c-stories.js:312
-storyCheckWhen               src/11c-stories.js:200
+storyCantFigures             src/11c-stories.js:323
+storyCantProps               src/11c-stories.js:332
+storyCantScene               src/11c-stories.js:317
+storyCheckWhen               src/11c-stories.js:205
 storyCtx                     src/11c-stories.js:39
 storyDay                     src/11c-stories.js:28
-storyEtherLine               src/11c-stories.js:251
-storyFindLine                src/11c-stories.js:279
+storyEtherLine               src/11c-stories.js:256
+storyFindLine                src/11c-stories.js:284
 storyFixedAddr               src/11c-stories.js:55
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:392
+storyGroundLine              src/11c-stories.js:397
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:359
-storyNewsItem                src/11c-stories.js:286
-storyNote                    src/11c-stories.js:404
-storyPickOne                 src/11c-stories.js:242
+storyLint                    src/11c-stories.js:364
+storyNewsItem                src/11c-stories.js:291
+storyNote                    src/11c-stories.js:409
+storyPickOne                 src/11c-stories.js:247
 storyPins                    src/11c-stories.js:30
 storyPlace                   src/11c-stories.js:93
-storyProp                    src/11c-stories.js:335
-storyQueueLine               src/11c-stories.js:259
+storyProp                    src/11c-stories.js:340
+storyQueueLine               src/11c-stories.js:264
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
-storyShow                    src/11c-stories.js:228
-storyTableLine               src/11c-stories.js:271
-storyTraces                  src/11c-stories.js:209
+storyShow                    src/11c-stories.js:233
+storyTableLine               src/11c-stories.js:276
+storyTraces                  src/11c-stories.js:214
 storyTurns                   src/11c-stories.js:121
-storyWhen                    src/11c-stories.js:195
+storyWhen                    src/11c-stories.js:200
 stPanels                     src/17c-system-draw.js:118
 stRing                       src/17c-system-draw.js:144
 STRIP_CHUNK                  src/07-planet.js:73
@@ -2956,7 +2957,7 @@ vRopeAt                      src/18d-verlet.js:125
 vStep                        src/18d-verlet.js:53
 W                            src/08-state.js:5
 WALL_CACHE                   src/11ah-wall.js:44
-WALL_COLS                    src/11ah-wall.js:126
+WALL_COLS                    src/11ah-wall.js:131
 WALL_KIND_RU                 src/11ah-wall.js:42
 WALL_MAX                     src/11ah-wall.js:40
 WALL_POEMS                   src/11ae-concert.js:16
@@ -2967,8 +2968,8 @@ wallBusy                     src/11ah-wall.js:45
 wallCacheKey                 src/11ah-wall.js:56
 wallCall                     src/11ah-wall.js:48
 wallCanSign                  src/11ah-wall.js:94
-wallCount                    src/11ah-wall.js:219
-wallDraw                     src/11ah-wall.js:147
+wallCount                    src/11ah-wall.js:224
+wallDraw                     src/11ah-wall.js:152
 wallFake                     tests/91zzzv-wall.js:10
 wallFlash                    src/11ae-concert.js:31
 wallHere                     src/11ah-wall.js:57
@@ -2977,8 +2978,8 @@ wallKeyHere                  src/11ah-wall.js:53
 wallOn                       src/11ah-wall.js:47
 wallReset                    tests/91zzzv-wall.js:6
 wallSign                     src/11ah-wall.js:98
-wallSpot                     src/11ah-wall.js:127
-wallStone                    src/11ah-wall.js:184
+wallSpot                     src/11ah-wall.js:132
+wallStone                    src/11ah-wall.js:189
 wallStore                    src/11ah-wall.js:81
 wallWrap                     src/11ae-concert.js:72
 wasBlurred                   src/15-input.js:180
@@ -3220,7 +3221,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/11c-stories.js · 24 КБ
   · истории: следы, а не задания:1
-  · каналы:249
+  · каналы:254
 
 ## src/11d-place.js · 4 КБ
   · память места: три счётчика и одометр:1
@@ -3356,7 +3357,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12k-rep.js · 4 КБ
   · репутация: вас помнят там, где вы бывали:1
 
-## src/12k-stories-a.js · 31 КБ
+## src/12k-stories-a.js · 32 КБ
   · истории, часть первая:1
   · длинные — в духе институтской фантастики:241
 
@@ -3499,7 +3500,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18a-material.js · 21 КБ
   · материал грунта:1
 
-## src/18b-geology.js · 13 КБ
+## src/18b-geology.js · 14 КБ
   · геология:1
 
 ## src/18c-chunks.js · 7 КБ
@@ -3622,9 +3623,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/22-mode-cave.js · 41 КБ
   · пещера: поле породы в двух измерениях:1
 
-## src/23aa-dig-rock.js · 36 КБ
+## src/23aa-dig-rock.js · 37 КБ
   · шахта: порода:1
-  · почвенный профиль: небо кончается не линейкой:400
+  · почвенный профиль: небо кончается не линейкой:433
 
 ## src/23a-dig-draw.js · 40 КБ
   · шахта: отрисовка:1

@@ -61,6 +61,7 @@ function snapshot(){
     occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,seams:G.seams,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
+    walled:G.walled,   /* где расписался на камне (С2): решение игрока — хранится */
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
@@ -482,6 +483,7 @@ function applySave(s){
      всё это память об игроке, а не о мире, и поэтому персистится */
   G.speech=(s.speech&&typeof s.speech==="object")?s.speech:{};
   G.visits=(s.visits&&typeof s.visits==="object")?s.visits:{};
+  G.walled=(s.walled&&typeof s.walled==="object")?s.walled:{};
   /* истории (11c): только то, что игрок видел, якоря и повороты */
   G.seen=(s.seen&&typeof s.seen==="object")?s.seen:{};
   G.storyPin=(s.storyPin&&typeof s.storyPin==="object")?s.storyPin:{};
