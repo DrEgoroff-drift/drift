@@ -132,9 +132,14 @@ function pcPrint(c,s,w,h,p){
   vg.addColorStop(0,"rgba(0,0,0,0)");
   vg.addColorStop(1,"rgba(0,0,0,.38)");
   c.fillStyle=vg;c.fillRect(0,0,w,h);
-  const rg=rng(hashi(p.seed,s.cx|0,0x6247));
-  c.globalAlpha=.05;c.fillStyle="#fff";
-  for(let i=0;i<Math.round(w*h/1000);i++)c.fillRect(rg()*w,rg()*h,1,1);
+  /* Зерно печати — синий шум, не белый (M250, DESIGN-craft §7): белая россыпь
+     сбивалась в пары и пятнышки — на ровном небе это читалось пылью на
+     плёнке, а не фактурой бумаги. Плитка одна на все карточки — печать
+     НАМЕРЕННО одинаковая (см. шапку), и прежняя россыпь от p.seed этому
+     правилу, строго говоря, противоречила. */
+  c.globalAlpha=.05;
+  c.fillStyle=c.createPattern(pcGrainTile(),"repeat");
+  c.fillRect(0,0,w,h);
   c.globalAlpha=1;
 }
 /* ── цвет ── */
@@ -330,24 +335,16 @@ function drawPostcard(c,s,w,h){
       const dep=clamp(cy/hy,0,1);
       const col=pcMix(dim([234,240,246],.55),skH,.26+(1-dep)*.38);
       const a=(.16+dep*.26)*(1-night*.55);
-      /* КАЖДОЕ ПЯТНО — РАДИАЛЬНЫЙ ГРАДИЕНТ, а не залитый эллипс. Заливками
-         выходила цепочка одинаковых лепёшек с чётким краем: на этом размере
-         всё, что имеет контур, читается кляксой, а не облаком. Мягкий край
-         снимает и контур, и швы на перекрытиях. */
-      const nb=4+Math.floor(rs()*4);
-      for(let k=0;k<nb;k++){
-        const bx=cx0+(k-(nb-1)/2)*cw*.34+(rs()-.5)*cw*.20;
-        const by=cy+(rs()-.5)*cw*.10;
-        const br=cw*(.16+rs()*rs()*.26);
-        const g2=c.createRadialGradient(bx,by,0,bx,by,br);
-        g2.addColorStop(0,pcA(col,a));
-        g2.addColorStop(.55,pcA(col,a*.62));
-        g2.addColorStop(1,pcA(col,0));
-        c.save();c.translate(bx,by);c.scale(1,.42);c.translate(-bx,-by);
-        c.fillStyle=g2;
-        c.beginPath();c.arc(bx,by,br,0,TAU);c.fill();
-        c.restore();
-      }
+      /* АКВАРЕЛЬ, НЕ ГРАДИЕНТ (M250). Гроздь радиальных пятен была починкой
+         прежней беды — «всё, что имеет контур, читается кляксой», — но мягкий
+         край у неё был везде ОДИНАКОВО мягкий, и облако выходило ватой.
+         Стопка полупрозрачных деформаций одного многоугольника (pcWash) даёт
+         край переменной твёрдости: наружные слои рассыпаются широко и рыхло,
+         сердцевина собирается плотнее. Правило прежней починки живо: слой в
+         4–6% плотности контура не имеет. */
+      c.save();c.translate(cx0,cy);c.scale(1,.40);c.translate(-cx0,-cy);
+      pcWash(c,rs,cx0,cy,cw*.52,cw*.42,pcA(col,a*.16),9);
+      c.restore();
     }
   }
 
@@ -421,6 +418,33 @@ function drawPostcard(c,s,w,h){
        эллипс не читается геологией, он читается чёрным пятном поверх слоёв —
        на ледяном и вулканическом мире это выглядело браком печати. Всё, что
        мельче слоя, на этом размере лишнее. */
+    /* ── сухая кисть по залеганию (M250, DESIGN-craft §5) ──
+       Короткие штрихи ВДОЛЬ слоёв: направление зерна и говорит, что это
+       порода, а не заливка. Направление то же, что у кровли слоёв: у
+       поверхности штрих повторяет рельеф, с глубиной выпрямляется — тем же
+       follow. Штрихи тонкие и почти прозрачные: это фактура, не рисунок. */
+    {
+      const rT=rng(hashi(p.seed,0x2C4E,Math.floor(s.cx)|0));
+      c.lineWidth=1.3;
+      for(let i=0;i<56;i++){
+        const x=8+rT()*(w-16);
+        const y=gy(x)+4+rT()*(h-gy(x)-6);
+        if(y>=h)continue;
+        const k=clamp((y-hy)/(h-hy),0,1);
+        const follow=Math.pow(1-k,1.6);
+        const slope=(gy(x+6)-gy(x-6))/12*follow;
+        const len=(5+rT()*9),dxl=len/Math.sqrt(1+slope*slope);
+        /* штрихи двух тонов: тёмные — трещина, светлые — блик залегания;
+           у полутона не хватало сил против собственных слоёв породы */
+        const tone=rT();
+        c.strokeStyle=tone<.5
+          ?pcA(dim(GC.deep,.6),.16+tone*.10)
+          :pcA(dim(pcMix(GC.body,GC.lit,.7),.35),.10+(tone-.5)*.14);
+        c.beginPath();
+        c.moveTo(x-dxl,y-dxl*slope);c.lineTo(x+dxl,y+dxl*slope);
+        c.stroke();
+      }
+    }
     c.restore();
   }
   /* кромка по свету: без неё грунт — плоская заливка, и весь рельеф держится
@@ -433,6 +457,31 @@ function drawPostcard(c,s,w,h){
     c.beginPath();
     for(let x=0;x<=w;x+=2){const y=gy(x);x?c.lineTo(x,y):c.moveTo(x,y);}
     c.stroke();
+    /* ── движки (M250, DESIGN-craft §1) ──
+       Последний свет кладётся ПО СЧЁТУ — несколько резких мазков по гребням,
+       обращённым к звезде, — а не растяжкой. Кромка выше говорит «здесь
+       профиль», движок говорит «здесь грань ловит свет»: иконописная пара
+       отборка/движки. Мазков мало намеренно: до семи на карточку. */
+    if(up){
+      const rD=rng(hashi(p.seed,Math.floor(s.cx)|0,0xD11));
+      const dirS=sunX>w*.5?1:-1;
+      /* приподнят над кромкой и заметно ярче её: движок, совпавший с кромкой
+         по месту и тону, — это не движок, а утолщение линии (проба M250) */
+      const mv=pcA(pcMix(pcMix(GC.lit,star,.4),[255,255,255],.55),.92);
+      c.strokeStyle=mv;c.lineWidth=Math.max(1.4,h*.006);
+      let put=0;
+      for(let x=10;x<=w-10&&put<7;x+=4){
+        const y0=gy(x-4),y1=gy(x),y2=gy(x+4);
+        if(!(y1<y0&&y1<=y2))continue;          /* гребень */
+        if((y0-y2)*dirS<=0)continue;           /* склон к звезде */
+        if(rD()<.5)continue;                   /* не каждый — по счёту */
+        const len=4+rD()*6;
+        c.beginPath();
+        c.moveTo(x-dirS*len,gy(x-dirS*len)-1.8);c.lineTo(x,y1-1.8);
+        c.stroke();
+        put++;x+=Math.floor(w*.05);
+      }
+    }
   }
 
   /* ── 7. что стоит на кромке ──

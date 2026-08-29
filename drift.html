@@ -1351,7 +1351,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.245.0";
+const VER="0.246.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -1375,6 +1375,34 @@ function noise2(x,y,s){
 }
 function fbm2(x,y,s,oct){let v=0,a=.5,f=1,n=0;oct=oct||5;
   for(let i=0;i<oct;i++){v+=a*noise2(x*f,y*f,s+i*97);n+=a;a*=.5;f*=2;}return v/n;}
+/* ── синий шум: плитка порогов 64×64 (M250, DESIGN-craft §7) ──
+   У белого шума есть низкие частоты — комки: точки сбиваются в пятна, и на
+   ровной заливке это читается грязью. Синий комков не имеет ПО ПОСТРОЕНИЮ.
+   Метод — последовательное заполнение «в самую большую пустоту»: каждая
+   следующая точка ставится туда, где суммарная энергия уже поставленных
+   минимальна (гаусс по тору, σ≈1.9), её ранг запоминается. Порог по рангу
+   отбирает равномерную россыпь любой плотности. Считается один раз, лениво:
+   ~17 млн сравнений, десятки миллисекунд. Детерминирован — открытка обязана
+   рисоваться попиксельно одинаково. */
+let BLUE_TAB=null;
+function blueNoise(){
+  if(BLUE_TAB)return BLUE_TAB;
+  const S=64,N=S*S,E=new Float64Array(N),rank=new Float32Array(N),
+        taken=new Uint8Array(N);
+  const r=rng(hashi(0xB1DE,0x0157,1));
+  for(let i=0;i<N;i++)E[i]=r()*1e-6;          /* посев рвёт ничьи, не форму */
+  const R=6,K=[];
+  for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++)
+    K.push([dx,dy,Math.exp(-(dx*dx+dy*dy)/(2*1.9*1.9))]);
+  for(let n=0;n<N;n++){
+    let bi=0,be=Infinity;
+    for(let i=0;i<N;i++)if(!taken[i]&&E[i]<be){be=E[i];bi=i;}
+    taken[bi]=1;rank[bi]=n/N;
+    const bx=bi%S,by=(bi/S)|0;
+    for(const q of K)E[((by+q[1]+S)%S)*S+((bx+q[0]+S)%S)]+=q[2];
+  }
+  return BLUE_TAB=rank;
+}
 /* Разница углов, кратчайшей дугой. Прежняя формула — ((a-b+3π)%TAU)-π — верна
    ровно до тех пор, пока a-b не меньше -3π: остаток в JS берёт знак делимого,
    и на больших отрицательных разностях ответ уезжает и по знаку, и за пределы
@@ -49081,9 +49109,14 @@ function pcPrint(c,s,w,h,p){
   vg.addColorStop(0,"rgba(0,0,0,0)");
   vg.addColorStop(1,"rgba(0,0,0,.38)");
   c.fillStyle=vg;c.fillRect(0,0,w,h);
-  const rg=rng(hashi(p.seed,s.cx|0,0x6247));
-  c.globalAlpha=.05;c.fillStyle="#fff";
-  for(let i=0;i<Math.round(w*h/1000);i++)c.fillRect(rg()*w,rg()*h,1,1);
+  /* Зерно печати — синий шум, не белый (M250, DESIGN-craft §7): белая россыпь
+     сбивалась в пары и пятнышки — на ровном небе это читалось пылью на
+     плёнке, а не фактурой бумаги. Плитка одна на все карточки — печать
+     НАМЕРЕННО одинаковая (см. шапку), и прежняя россыпь от p.seed этому
+     правилу, строго говоря, противоречила. */
+  c.globalAlpha=.05;
+  c.fillStyle=c.createPattern(pcGrainTile(),"repeat");
+  c.fillRect(0,0,w,h);
   c.globalAlpha=1;
 }
 /* ── цвет ── */
@@ -49279,24 +49312,16 @@ function drawPostcard(c,s,w,h){
       const dep=clamp(cy/hy,0,1);
       const col=pcMix(dim([234,240,246],.55),skH,.26+(1-dep)*.38);
       const a=(.16+dep*.26)*(1-night*.55);
-      /* КАЖДОЕ ПЯТНО — РАДИАЛЬНЫЙ ГРАДИЕНТ, а не залитый эллипс. Заливками
-         выходила цепочка одинаковых лепёшек с чётким краем: на этом размере
-         всё, что имеет контур, читается кляксой, а не облаком. Мягкий край
-         снимает и контур, и швы на перекрытиях. */
-      const nb=4+Math.floor(rs()*4);
-      for(let k=0;k<nb;k++){
-        const bx=cx0+(k-(nb-1)/2)*cw*.34+(rs()-.5)*cw*.20;
-        const by=cy+(rs()-.5)*cw*.10;
-        const br=cw*(.16+rs()*rs()*.26);
-        const g2=c.createRadialGradient(bx,by,0,bx,by,br);
-        g2.addColorStop(0,pcA(col,a));
-        g2.addColorStop(.55,pcA(col,a*.62));
-        g2.addColorStop(1,pcA(col,0));
-        c.save();c.translate(bx,by);c.scale(1,.42);c.translate(-bx,-by);
-        c.fillStyle=g2;
-        c.beginPath();c.arc(bx,by,br,0,TAU);c.fill();
-        c.restore();
-      }
+      /* АКВАРЕЛЬ, НЕ ГРАДИЕНТ (M250). Гроздь радиальных пятен была починкой
+         прежней беды — «всё, что имеет контур, читается кляксой», — но мягкий
+         край у неё был везде ОДИНАКОВО мягкий, и облако выходило ватой.
+         Стопка полупрозрачных деформаций одного многоугольника (pcWash) даёт
+         край переменной твёрдости: наружные слои рассыпаются широко и рыхло,
+         сердцевина собирается плотнее. Правило прежней починки живо: слой в
+         4–6% плотности контура не имеет. */
+      c.save();c.translate(cx0,cy);c.scale(1,.40);c.translate(-cx0,-cy);
+      pcWash(c,rs,cx0,cy,cw*.52,cw*.42,pcA(col,a*.16),9);
+      c.restore();
     }
   }
 
@@ -49370,6 +49395,33 @@ function drawPostcard(c,s,w,h){
        эллипс не читается геологией, он читается чёрным пятном поверх слоёв —
        на ледяном и вулканическом мире это выглядело браком печати. Всё, что
        мельче слоя, на этом размере лишнее. */
+    /* ── сухая кисть по залеганию (M250, DESIGN-craft §5) ──
+       Короткие штрихи ВДОЛЬ слоёв: направление зерна и говорит, что это
+       порода, а не заливка. Направление то же, что у кровли слоёв: у
+       поверхности штрих повторяет рельеф, с глубиной выпрямляется — тем же
+       follow. Штрихи тонкие и почти прозрачные: это фактура, не рисунок. */
+    {
+      const rT=rng(hashi(p.seed,0x2C4E,Math.floor(s.cx)|0));
+      c.lineWidth=1.3;
+      for(let i=0;i<56;i++){
+        const x=8+rT()*(w-16);
+        const y=gy(x)+4+rT()*(h-gy(x)-6);
+        if(y>=h)continue;
+        const k=clamp((y-hy)/(h-hy),0,1);
+        const follow=Math.pow(1-k,1.6);
+        const slope=(gy(x+6)-gy(x-6))/12*follow;
+        const len=(5+rT()*9),dxl=len/Math.sqrt(1+slope*slope);
+        /* штрихи двух тонов: тёмные — трещина, светлые — блик залегания;
+           у полутона не хватало сил против собственных слоёв породы */
+        const tone=rT();
+        c.strokeStyle=tone<.5
+          ?pcA(dim(GC.deep,.6),.16+tone*.10)
+          :pcA(dim(pcMix(GC.body,GC.lit,.7),.35),.10+(tone-.5)*.14);
+        c.beginPath();
+        c.moveTo(x-dxl,y-dxl*slope);c.lineTo(x+dxl,y+dxl*slope);
+        c.stroke();
+      }
+    }
     c.restore();
   }
   /* кромка по свету: без неё грунт — плоская заливка, и весь рельеф держится
@@ -49382,6 +49434,31 @@ function drawPostcard(c,s,w,h){
     c.beginPath();
     for(let x=0;x<=w;x+=2){const y=gy(x);x?c.lineTo(x,y):c.moveTo(x,y);}
     c.stroke();
+    /* ── движки (M250, DESIGN-craft §1) ──
+       Последний свет кладётся ПО СЧЁТУ — несколько резких мазков по гребням,
+       обращённым к звезде, — а не растяжкой. Кромка выше говорит «здесь
+       профиль», движок говорит «здесь грань ловит свет»: иконописная пара
+       отборка/движки. Мазков мало намеренно: до семи на карточку. */
+    if(up){
+      const rD=rng(hashi(p.seed,Math.floor(s.cx)|0,0xD11));
+      const dirS=sunX>w*.5?1:-1;
+      /* приподнят над кромкой и заметно ярче её: движок, совпавший с кромкой
+         по месту и тону, — это не движок, а утолщение линии (проба M250) */
+      const mv=pcA(pcMix(pcMix(GC.lit,star,.4),[255,255,255],.55),.92);
+      c.strokeStyle=mv;c.lineWidth=Math.max(1.4,h*.006);
+      let put=0;
+      for(let x=10;x<=w-10&&put<7;x+=4){
+        const y0=gy(x-4),y1=gy(x),y2=gy(x+4);
+        if(!(y1<y0&&y1<=y2))continue;          /* гребень */
+        if((y0-y2)*dirS<=0)continue;           /* склон к звезде */
+        if(rD()<.5)continue;                   /* не каждый — по счёту */
+        const len=4+rD()*6;
+        c.beginPath();
+        c.moveTo(x-dirS*len,gy(x-dirS*len)-1.8);c.lineTo(x,y1-1.8);
+        c.stroke();
+        put++;x+=Math.floor(w*.05);
+      }
+    }
   }
 
   /* ── 7. что стоит на кромке ──
@@ -49636,6 +49713,62 @@ function renderAlbum(box){
     wrap.appendChild(cell);
   });
   box.appendChild(wrap);
+}
+
+/* ══════════════ ателье открытки: ремесленные кисти (M250) ══════════════
+   Вынесено из 25g-postcard по шву «печать»: сама открытка рисует места, а
+   здесь живут приёмы, которыми она заканчивается, — зерно печати на синем
+   шуме и акварельное пятно. Разбор приёмов — docs/DESIGN-craft.md §6–7.
+   Правило то же, что у художника: ни G, ни собственной случайности. */
+/* плитка зерна: ранги ниже порога → равномерная россыпь белых точек */
+let PC_GRAIN=null;
+function pcGrainTile(){
+  if(PC_GRAIN)return PC_GRAIN;
+  const S=64,t=blueNoise(),cv=document.createElement("canvas");
+  cv.width=cv.height=S;
+  const g=cv.getContext("2d"),im=g.createImageData(S,S);
+  for(let i=0;i<S*S;i++){
+    im.data[i*4]=im.data[i*4+1]=im.data[i*4+2]=255;
+    im.data[i*4+3]=t[i]<.012?255:0;
+  }
+  g.putImageData(im,0,0);
+  return PC_GRAIN=cv;
+}
+/* ── акварель: пятно из полупрозрачных слоёв (M250, DESIGN-craft §6) ──
+   Форма не заливается — она складывается из стопки слоёв по 4–6% плотности,
+   каждый — своя деформация ОДНОГО базового многоугольника: середина ребра
+   сдвигается гауссом, ребро делится надвое, дисперсия наследуется с
+   убыванием. Даёт край, который где-то мягче, где-то твёрже — у заливки и у
+   радиального градиента такого края не бывает. Вся случайность — из
+   переданного генератора: открытка обязана рисоваться одинаково. */
+function pcDeform(pts,vs,r,rounds){
+  for(let t=0;t<rounds;t++){
+    const np=[],nv=[];
+    for(let i=0;i<pts.length;i++){
+      const a=pts[i],b=pts[(i+1)%pts.length],v=vs[i];
+      const gx=(r()+r()+r())/1.5-1,gy2=(r()+r()+r())/1.5-1;
+      np.push(a,[(a[0]+b[0])/2+gx*v,(a[1]+b[1])/2+gy2*v]);
+      nv.push(v*(.35+r()*.35),v*(.35+r()*.35));
+    }
+    pts=np;vs=nv;
+  }
+  return pts;
+}
+function pcWash(c,r,cx,cy,rx,ry,fill,layers){
+  const n0=8,base=[],vs0=[];
+  for(let i=0;i<n0;i++){
+    const a=i/n0*TAU;
+    base.push([cx+Math.cos(a)*rx*(.75+r()*.5),cy+Math.sin(a)*ry*(.75+r()*.5)]);
+    vs0.push(rx*(.10+r()*.16));
+  }
+  const bp=pcDeform(base,vs0,r,3);
+  for(let L=0;L<layers;L++){
+    const pts=pcDeform(bp,bp.map(()=>rx*.05+r()*rx*.05),r,2);
+    c.fillStyle=fill;
+    c.beginPath();
+    for(let i=0;i<pts.length;i++)i?c.lineTo(pts[i][0],pts[i][1]):c.moveTo(pts[i][0],pts[i][1]);
+    c.closePath();c.fill();
+  }
 }
 
 /* ══════════════ открытка: два места под землёй ══════════════

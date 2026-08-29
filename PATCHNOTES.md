@@ -7,7 +7,29 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.245.0 — M249: the meter judges masses, not emptiness
+## 0.246.0 — M250: the postcard atelier — four craft brushes proved on the card
+
+P1 of the combined plan: new techniques are proved in `drawPostcard` first — isolated, seeded,
+cheap, measured — before any live mode gets them. Four went in (helpers split to
+`25g-post-craft` along the печать seam):
+
+- **Blue-noise print grain** (`blueNoise()` in `01-core`, void-and-cluster style sequential
+  fill): the white-noise sprinkle clumped into pairs and read as dust on film; the blue tile is
+  an even scatter, and one tile for every card — the print was *meant* to be identical across
+  the album, and per-seed dust quietly wasn't.
+- **Watercolour clouds** (`pcWash`): a stack of low-alpha deformations of one polygon replaces
+  the radial-blob cluster. The old fix's rule stands — a 4–6% layer has no contour — but the
+  edge now varies from soft to firm instead of being uniformly wool.
+- **Движки** (icon painting, DESIGN-craft §1): up to seven hard bright strokes on sun-facing
+  crests, lifted off the кромка line — placed by count, not by gradient. First cut merged into
+  the кромка and vanished; brighter, thicker, offset.
+- **Dry brush along the bedding** (§5, 皴-lite): short strokes that follow the strata's own
+  `follow` law — relief at the surface, flat at depth. Two tones (crack-dark, bedding-light);
+  a single mid-tone had no strength against the strata fills.
+
+Warm card: 5.2 ms measured (budget was 17). Determinism suite green — the card still draws
+pixel-identical twice. The five underground/vacuum kits keep the shared print; their washes are
+the next atelier pass.
 
 `look()` gains the notan measure (research: `docs/DESIGN-craft.md` §3): value is quantised to
 three steps inside the same pixel walk; `mass` is the share of the second-largest step — does

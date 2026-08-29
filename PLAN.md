@@ -122,6 +122,25 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M250 — the postcard atelier (2026-08-29) — CLOSED (0.246.0)
+
+P1 of the combined plan (`docs/DESIGN-story-craft.md`): the postcard is the proving ground —
+its painter owes nothing to `G`, is seeded end to end, and is measured. Four brushes proved:
+blue-noise print grain (`blueNoise` in `01-core` — P3 will reuse it for `grainPass`),
+watercolour clouds (`pcWash` in the new `25g-post-craft`, split along the печать seam),
+движки on sun-facing crests, dry brush along the bedding. Two passes of self-critique on the
+stand: first cut had движки merging into the кромка and the mid-tone dry brush drowning in the
+strata — both named, both fixed. Warm card 5.2 ms against the 17 ms budget.
+
+Rules that came out of the pass:
+
+- **A brush is proved on the card before any mode gets it.** The card is palm-sized: what
+  survives at that size survives anywhere; what needs a full screen to read was decoration.
+- **A движок that coincides with the кромка is not a движок** — it is a thicker line. The
+  final light must sit apart from the edge it crowns, or it adds nothing.
+- Next atelier pass: washes for the five underground/vacuum kits (`25ga`), then promotion —
+  blue noise into `grainPass` (P3), washes into the nebula (P5).
+
 ## M249 — the meter judges masses, not emptiness (2026-08-29) — CLOSED (0.245.0)
 
 P0 of the research plan (`docs/DESIGN-story-craft.md`, combined plan; rationale in

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 332 · символов верхнего уровня: 3041
+Файлов: 333 · символов верхнего уровня: 3047
 
 ## СИМВОЛЫ
 
@@ -64,9 +64,9 @@ aiFace                       src/12d-mgr-face.js:210
 aiLearn                      src/12f-mgr-ai.js:107
 aiStage                      src/12f-mgr-ai.js:19
 aiUpkeep                     src/12f-mgr-ai.js:126
-ALBUM_MAX                    src/25g-postcard.js:578
-albumAll                     src/25g-postcard.js:579
-albumOpen                    src/25g-postcard.js:628
+ALBUM_MAX                    src/25g-postcard.js:627
+albumAll                     src/25g-postcard.js:628
+albumOpen                    src/25g-postcard.js:677
 allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:553
 ambK                         src/19c-light.js:115
@@ -77,8 +77,8 @@ AMMO_KEYS                    src/02-world.js:32
 ammoBatch                    src/16b-missile.js:27
 ammoRow                      src/16b-missile.js:41
 ANCHOR_CACHE                 src/05-parts.js:140
-angDiff                      src/01-core.js:36
-angWrap                      src/01-core.js:35
+angDiff                      src/01-core.js:64
+angWrap                      src/01-core.js:63
 applyCrewEvent               src/12b-crew-events.js:214
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
@@ -191,6 +191,8 @@ bLamp                        src/21aa-base-rooms.js:279
 BLOOM_CV                     src/19c-light.js:336
 BLOOM_K                      src/19c-light.js:337
 bloomPass                    src/19c-light.js:339
+BLUE_TAB                     src/01-core.js:37
+blueNoise                    src/01-core.js:38
 BLUEPRINTS                   src/12c-mgr-core.js:662
 BM_WARM                      src/21aa-base-rooms.js:20
 bodyInSystem                 src/16-flight.js:85
@@ -218,7 +220,7 @@ builtKey                     src/21c-built.js:16
 builtSpot                    src/21c-built.js:34
 bWall                        src/21aa-base-rooms.js:187
 bWorker                      src/21aa-base-rooms.js:322
-camBtnTick                   src/25g-postcard.js:617
+camBtnTick                   src/25g-postcard.js:666
 camOffset                    src/19c-light.js:155
 camStep                      src/19c-light.js:141
 canPay                       src/21a-mode-base.js:51
@@ -480,8 +482,8 @@ deltaHtml                    src/05-parts.js:293
 depKind                      src/21b-surface-deco.js:337
 deployDrone                  src/12-economy.js:73
 DEPTH_TIERS                  src/04-mods.js:51
-DESC_MOOD                    src/01-core.js:52
-DESC_TAIL                    src/01-core.js:58
+DESC_MOOD                    src/01-core.js:80
+DESC_TAIL                    src/01-core.js:86
 dgy                          src/21b-surface-deco.js:131
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
@@ -609,7 +611,7 @@ drawPlant                    src/20-life.js:383
 drawPlantAlien               src/20-life.js:197
 drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
-drawPostcard                 src/25g-postcard.js:165
+drawPostcard                 src/25g-postcard.js:170
 drawRaid                     src/24aa-raid-draw.js:14
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:107
@@ -853,10 +855,10 @@ g11Fps                       src/28z-fps-probe.js:7
 genBeast                     src/20f-fauna.js:58
 genBeltPOI                   src/24b-belt-poi.js:20
 genDeco                      src/21b-surface-deco.js:37
-genDesc                      src/01-core.js:59
+genDesc                      src/01-core.js:87
 genMerc                      src/12a-crew.js:59
 genMgr                       src/12c-mgr-core.js:236
-genName                      src/01-core.js:42
+genName                      src/01-core.js:70
 genPart                      src/05-parts.js:70
 genPlant                     src/20-life.js:188
 genPOI                       src/20a-poi.js:32
@@ -1761,24 +1763,28 @@ passShipX                    src/11p-pass.js:34
 passTell                     src/11p-pass.js:55
 PAX_KEYS                     src/02-world.js:35
 payCost                      src/21a-mode-base.js:52
-pcA                          src/25g-postcard.js:144
+PC_GRAIN                     src/25g-post-craft.js:7
+pcA                          src/25g-postcard.js:149
 pcBelt                       src/25g-post-void.js:58
-pcC                          src/25g-postcard.js:141
+pcC                          src/25g-postcard.js:146
 pcCave                       src/25g-post-under.js:110
+pcDeform                     src/25g-post-craft.js:27
+pcGrainTile                  src/25g-post-craft.js:8
 pcMan                        src/25g-post-under.js:33
 pcMine                       src/25g-post-under.js:230
-pcMix                        src/25g-postcard.js:143
+pcMix                        src/25g-postcard.js:148
 pcOre                        src/25g-post-under.js:83
 pcPrint                      src/25g-postcard.js:130
 pcSame                       tests/91zzzi-postcard.js:23
 pcScoop                      src/25g-post-void.js:395
 pcShip                       src/25g-post-void.js:23
-pcStar                       src/25g-postcard.js:146
+pcStar                       src/25g-postcard.js:151
 pcStrata                     src/25g-post-under.js:68
 pcSystem                     src/25g-post-void.js:228
 pcTestPixels                 tests/91zzzi-postcard.js:17
 pcTestPlanet                 tests/91zzzi-postcard.js:2
 pcTestSnap                   tests/91zzzi-postcard.js:12
+pcWash                       src/25g-post-craft.js:40
 PEEP_LIT                     src/20c-peep.js:28
 PEEP_LOAD                    src/20c-peep.js:27
 PEEP_PASS                    src/20c-peep.js:25
@@ -1925,7 +1931,7 @@ POST_WHERE                   src/25g-postcard.js:113
 postAddrs                    src/11e-post.js:47
 postAll                      src/11e-post.js:41
 postBlock                    src/11e-post.js:113
-postCanShoot                 src/25g-postcard.js:583
+postCanShoot                 src/25g-postcard.js:632
 postCaption                  src/25g-postcard.js:114
 postChoose                   src/25i-post-back.js:48
 postDock                     src/11e-post.js:80
@@ -1943,7 +1949,7 @@ postSetForm                  src/25i-post-back.js:44
 postSign                     src/25i-post-back.js:35
 postSigned                   src/25i-post-back.js:32
 postSnap                     src/25g-postcard.js:65
-postTake                     src/25g-postcard.js:601
+postTake                     src/25g-postcard.js:650
 postTerrain                  src/25g-postcard.js:41
 postWorld                    src/25g-postcard.js:49
 prevAct                      src/08-state.js:59
@@ -2133,7 +2139,7 @@ relicSynth                   src/12h-relic.js:113
 relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07-planet.js:374
-renderAlbum                  src/25g-postcard.js:629
+renderAlbum                  src/25g-postcard.js:678
 renderBarge                  src/12l-barge.js:617
 renderBasesTab               src/26a-ui-station-home.js:4
 renderBooks                  src/12ub-books.js:141
@@ -2311,7 +2317,7 @@ roleFromStats                src/03f-hull-role.js:37
 roleOf                       src/03f-hull-role.js:46
 rollCrewEvent                src/12b-crew-events.js:70
 rollWorld                    src/02a-worldmix.js:67
-ROMAN                        src/01-core.js:41
+ROMAN                        src/01-core.js:69
 ROOM_FIN                     src/21aa-base-rooms.js:46
 roomToneTick                 src/09a-roomtone.js:79
 ROUTE_MAX                    src/12r-route.js:16
@@ -2341,8 +2347,8 @@ rumoursHere                  src/11t-rumours.js:36
 runAutopilot                 src/16-flight.js:109
 runTests                     tests/90-harness.js:80
 rxRecord                     src/11x-ring.js:64
-S1                           src/01-core.js:39
-S2                           src/01-core.js:40
+S1                           src/01-core.js:67
+S2                           src/01-core.js:68
 SAVE_KEY                     src/14-save.js:6
 saveGame                     src/14a-cloud.js:38
 say                          src/08-state.js:184
@@ -2690,8 +2696,8 @@ syncTabs                     src/26-ui-station.js:77
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
 SYS_EXOTIC                   src/16a-space.js:14
-sysDanger                    src/01-core.js:46
-sysJitter                    src/01-core.js:47
+sysDanger                    src/01-core.js:74
+sysJitter                    src/01-core.js:75
 sysNebulaTex                 src/16a-space.js:53
 sysPirateBase                src/24a-mode-raid.js:98
 sysStyle                     src/16a-space.js:21
@@ -3054,10 +3060,10 @@ zooTick                      src/11ad-zoo.js:41
 
 ## ФАЙЛЫ И РАЗДЕЛЫ
 
-## src/01-core.js · 5 КБ
+## src/01-core.js · 7 КБ
   · математика:5
-  · имена:38
-  · удалённость и настрой сектора:45
+  · имена:66
+  · удалённость и настрой сектора:73
 
 ## src/02a-worldmix.js · 8 КБ
   · смешанные миры:1
@@ -3652,9 +3658,12 @@ zooTick                      src/11ad-zoo.js:41
 ## src/25f-globus.js · 8 КБ
   · «Глобус» — указатель места полёта:1
 
-## src/25g-postcard.js · 41 КБ
+## src/25g-postcard.js · 45 КБ
   · открытка: снимок сцены, а не пиксели:1
-  · камера и альбом:564
+  · камера и альбом:613
+
+## src/25g-post-craft.js · 3 КБ
+  · ателье открытки: ремесленные кисти (M250):1
 
 ## src/25g-post-under.js · 23 КБ
   · открытка: два места под землёй:1
