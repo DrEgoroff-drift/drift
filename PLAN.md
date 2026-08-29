@@ -122,6 +122,13 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M263 — the wheel owns the world; the brush knows the rock (2026-08-30) — CLOSED (0.260.0)
+
+Wheel/pinch page-zoom suppressed over the game (author caught it live: instruments "vanished"
+— it was browser zoom); world zoom gets the gesture in system view. And the 皴法 table `CUN`:
+cave grain manner now keyed by planet type — the §5 law's core finally in ("texture says what
+the thing is made of"). Next for CUN: the mine's `pcStrata`/`digRockPass` and the postcard.
+
 ## M262 — the lichen is grown, not drawn (2026-08-29) — CLOSED (0.258.0)
 
 P9 opened: differential growth (`growLichen` in 22a) — the first grown organic in the game,

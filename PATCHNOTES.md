@@ -7,6 +7,27 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.260.0 — M263: the wheel owns the world; the brush knows the rock
+
+Two fixes, both author-driven.
+
+**The wheel.** Ctrl+wheel and the touchpad pinch (the browser sends it as the same event with
+ctrlKey) triggered **page zoom**: the whole interface scaled away and the player saw a bare
+world with no instruments — caught live on the prod by the author. The old handler was
+`passive:true` and could not block it. Now browser zoom is suppressed everywhere over the game;
+the gesture is handed to the world where the world can zoom (system view), and world zoom by
+design never touches the instruments (M221 — the DOM lives on its own ruler). A plain wheel
+over DOM stays with the browser: lists must scroll. If a browser is already stuck at page
+zoom, Ctrl+0 resets it once — the game cannot do that for it.
+
+**皴法.** The cave grain (M253) was laid in one manner on every world. Mountain painting has
+kept a table "rock → brush" for centuries and it fits as-is (`CUN`): sedimentary worlds get
+long soft fibres (披麻), volcanic — short chopped strokes with scatter (斧劈), ice — even light
+ribbons (折带), sand — stippled grit (雨点). The same rock mass on different worlds is now
+*made of different stuff*, with no caption anywhere.
+---
+## 0.259.0 — stories: `hand` reads the story's place, not the player's (author-caught hole)
+---
 ## 0.258.0 — M262: the lichen is grown, not drawn
 
 P9's first piece (DESIGN-craft §10, inconvergent's differential growth). Every organic thing in

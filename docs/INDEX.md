@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3059
+Файлов: 333 · символов верхнего уровня: 3060
 
 ## СИМВОЛЫ
 
@@ -248,29 +248,29 @@ CAVE_W                       src/22-mode-cave.js:11
 CAVE_WALL_X0                 src/22-mode-cave.js:13
 CAVE_ZONE                    src/22a-cave-deco.js:17
 CAVE_ZONE_MIX                src/22a-cave-deco.js:26
-caveBoxFree                  src/22-mode-cave.js:219
-caveBuild                    src/22-mode-cave.js:87
-caveCeil                     src/22-mode-cave.js:49
-caveCeilLow                  src/22-mode-cave.js:64
-caveCeilOf                   src/22-mode-cave.js:72
-caveContour                  src/22-mode-cave.js:403
+caveBoxFree                  src/22-mode-cave.js:237
+caveBuild                    src/22-mode-cave.js:105
+caveCeil                     src/22-mode-cave.js:67
+caveCeilLow                  src/22-mode-cave.js:82
+caveCeilOf                   src/22-mode-cave.js:90
+caveContour                  src/22-mode-cave.js:421
 caveDeco                     src/22a-cave-deco.js:94
-caveFloor                    src/22-mode-cave.js:43
-caveFloorLow                 src/22-mode-cave.js:57
-caveFloorOf                  src/22-mode-cave.js:71
+caveFloor                    src/22-mode-cave.js:61
+caveFloorLow                 src/22-mode-cave.js:75
+caveFloorOf                  src/22-mode-cave.js:89
 caveFloraOf                  src/20e-species.js:111
-caveGalR                     src/22-mode-cave.js:22
-caveGalY                     src/22-mode-cave.js:17
+caveGalR                     src/22-mode-cave.js:40
+caveGalY                     src/22-mode-cave.js:35
 caveLampMask                 src/22a-cave-deco.js:537
 caveLampSpot                 src/22a-cave-deco.js:479
-caveLowY                     src/22-mode-cave.js:24
+caveLowY                     src/22-mode-cave.js:42
 caveMossSpots                src/22a-cave-deco.js:466
-caveMoveX                    src/22-mode-cave.js:225
+caveMoveX                    src/22-mode-cave.js:243
 cavePool                     src/22a-cave-deco.js:76
-caveScanDown                 src/22-mode-cave.js:31
-caveScanUp                   src/22-mode-cave.js:37
-caveSolidAt                  src/22-mode-cave.js:25
-caveStamp                    src/22-mode-cave.js:74
+caveScanDown                 src/22-mode-cave.js:49
+caveScanUp                   src/22-mode-cave.js:55
+caveSolidAt                  src/22-mode-cave.js:43
+caveStamp                    src/22-mode-cave.js:92
 caveTip                      src/22a-cave-deco.js:233
 caveVault                    src/22a-cave-deco.js:64
 caveWet                      src/22a-cave-deco.js:88
@@ -456,6 +456,7 @@ CSW                          src/19e-clouds.js:53
 ctx                          src/08-state.js:3
 CUE_EPS                      src/27m-scroll-cue.js:26
 CUE_PAD                      src/27m-scroll-cue.js:25
+CUN                          src/22-mode-cave.js:22
 curTok                       src/09-audio.js:83
 CUT_RANGE                    src/24-mode-belt.js:183
 cvs                          src/08-state.js:2
@@ -547,15 +548,15 @@ drawBeltRocks                src/17c-system-draw.js:41
 drawBuildMenu                src/21aa-base-rooms.js:504
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
-drawCave                     src/22-mode-cave.js:669
+drawCave                     src/22-mode-cave.js:697
 drawCaveDark                 src/22a-cave-deco.js:327
-drawCaveFar                  src/22-mode-cave.js:538
+drawCaveFar                  src/22-mode-cave.js:566
 drawCaveGlow                 src/22a-cave-deco.js:361
 drawCaveOwnLight             src/22a-cave-deco.js:485
-drawCaveRock                 src/22-mode-cave.js:433
+drawCaveRock                 src/22-mode-cave.js:451
 drawCaveSolid                src/22a-cave-deco.js:241
 drawCaveWater                src/22a-cave-deco.js:300
-drawCaveWorld                src/22-mode-cave.js:563
+drawCaveWorld                src/22-mode-cave.js:591
 drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:180
@@ -687,11 +688,11 @@ earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
 el                           src/26-ui-station.js:145
-endPtr                       src/15-input.js:293
+endPtr                       src/15-input.js:306
 engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:88
-enterCave                    src/22-mode-cave.js:155
+enterCave                    src/22-mode-cave.js:173
 enterDig                     src/23-mode-dig.js:50
 enterHomeIn                  src/29c-home-in.js:65
 enterRaid                    src/24a-mode-raid.js:134
@@ -717,7 +718,7 @@ evacuate                     src/21-mode-surface.js:603
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:82
 exitBelt                     src/24-mode-belt.js:174
-exitCave                     src/22-mode-cave.js:213
+exitCave                     src/22-mode-cave.js:231
 exitDig                      src/23-mode-dig.js:70
 exitHomeIn                   src/29c-home-in.js:74
 exitScoop                    src/19a-mode-scoop.js:19
@@ -1547,7 +1548,7 @@ modCost                      src/11-log.js:131
 MODE_RU                      src/27i-ui-table.js:29
 modeRu                       src/27i-ui-table.js:32
 MODS                         src/04-mods.js:2
-mouseWalkAt                  src/15-input.js:303
+mouseWalkAt                  src/15-input.js:316
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
 MSL_DMG                      src/16b-missile.js:14
@@ -1821,7 +1822,7 @@ pickKindByBias               src/20-life.js:179
 pickShare                    src/20e-species.js:125
 pickStType                   src/06-galaxy.js:30
 PICKUPS                      src/24a-mode-raid.js:24
-pinch0                       src/15-input.js:267
+pinch0                       src/15-input.js:280
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20
 PIR_SS                       src/12i-pirate-hull.js:17
@@ -1985,7 +1986,7 @@ profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
 psPlanet                     tests/91zzzu-post-scenes.js:6
 psSnap                       tests/91zzzu-post-scenes.js:17
-ptr                          src/15-input.js:266
+ptr                          src/15-input.js:279
 putOnTable                   src/11b-speech.js:216
 QSL_BY                       src/11an-qsl.js:46
 QSL_OPS                      src/11an-qsl.js:24
@@ -2593,7 +2594,7 @@ STAR_CLASS                   src/02-world.js:94
 STAR_COLS                    src/16-flight.js:2
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:49
-start                        src/15-input.js:455
+start                        src/15-input.js:468
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
 stat                         src/08-state.js:142
@@ -2733,7 +2734,7 @@ tableWasNew                  src/27i-ui-table.js:75
 tabLive                      src/14a-cloud.js:36
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
-tap                          src/15-input.js:334
+tap                          src/15-input.js:347
 TAPE_ADAPT                   src/25b-tape.js:26
 TAPE_DT                      src/25b-tape.js:24
 TAPE_GAIN                    src/25b-tape.js:25
@@ -2878,7 +2879,7 @@ updateAllies                 src/12a-crew.js:573
 updateBarges                 src/12l-barge.js:156
 updateBase                   src/21a-mode-base.js:334
 updateBelt                   src/24-mode-belt.js:184
-updateCave                   src/22-mode-cave.js:231
+updateCave                   src/22-mode-cave.js:249
 updateCaveDeco               src/22a-cave-deco.js:205
 updateCombat                 src/13-pirates.js:77
 updateDig                    src/23-mode-dig.js:123
@@ -3464,7 +3465,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/14-save.js · 50 КБ
   · сохранение:1
 
-## src/15-input.js · 27 КБ
+## src/15-input.js · 28 КБ
   · экранные кнопки: авто-скрытие и размер:1
   · ввод:83
 
@@ -3617,7 +3618,7 @@ zooTick                      src/11ad-zoo.js:41
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
   · свой свет пещеры (M248):458
 
-## src/22-mode-cave.js · 38 КБ
+## src/22-mode-cave.js · 40 КБ
   · пещера: поле породы в двух измерениях:1
 
 ## src/23aa-dig-rock.js · 36 КБ

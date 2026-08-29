@@ -256,11 +256,24 @@ function setZoom(z){G.zoom=clamp(z,.16,2.4);}
    любым DOM (экран, пульт, панель) миру не принадлежит: зум берётся только с
    самой канвы и только когда поверх неё не открыт экран. */
 addEventListener("wheel",e=>{
+  /* Ctrl+колесо и щипок тачпада (браузер шлёт его тем же событием с ctrlKey)
+     — это МАСШТАБ СТРАНИЦЫ: интерфейс уезжает целиком, и игрок видит голый
+     мир без приборов (автор поймал на проде, 30.08). Над игрой браузерный
+     зум глушится ВСЕГДА; миру жест отдаётся там, где мир умеет зум, — и зум
+     мира по устройству не трогает приборы (M221: DOM живёт своей линейкой).
+     Обычное колесо без Ctrl над DOM остаётся браузеру: списки должны
+     скроллиться. Отсюда passive:false — иначе preventDefault не работает. */
+  if(e.ctrlKey){
+    e.preventDefault();
+    if(G.mode==="system"&&!document.querySelector(".scr.open"))
+      setZoom(G.zoom*(e.deltaY<0?1.12:.89));
+    return;
+  }
   if(G.mode!=="system")return;
   if(e.target!==cvs)return;
   if(document.querySelector(".scr.open"))return;
   setZoom(G.zoom*(e.deltaY<0?1.12:.89));
-},{passive:true});
+},{passive:false});
 
 /* указатели: тап, щипок, обзор в поясе */
 const ptr=new Map();
