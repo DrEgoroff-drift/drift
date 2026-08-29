@@ -3535,7 +3535,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19d-weather.js · 13 КБ
   · погода:1
 
-## src/19e-clouds.js · 15 КБ
+## src/19e-clouds.js · 16 КБ
   · облака:1
 
 ## src/19f-lander.js · 22 КБ
@@ -3582,7 +3582,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21ab-base-interiors2.js · 25 КБ
   · отсеки базы: вторая половина:1
 
-## src/21ac-base-draw.js · 50 КБ
+## src/21ac-base-draw.js · 52 КБ
   · база: рисование разреза:1
 
 ## src/21a-mode-base.js · 25 КБ

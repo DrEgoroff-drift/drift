@@ -215,22 +215,32 @@ function drawClouds(p,camx,camy){
       const y=yH*(T.y-((h>>>12)&7)/7*.12*K.hi/.3)-camy*T.par*.5-hgt*.62;
       if(x>W+40||x+w<-40)continue;
       ctx.globalAlpha=T.a*(.68+.32*((h>>>20)&7)/7)*(1-wp*.12);
-      ctx.drawImage(spr,x,y,w,hgt);
+      /* ── скос по ветру (матрица «закон × поверхность», андаменто §2) ──
+         Кучевое дрейфует по ветру, но тело стояло прямоугольным — единственная
+         вещь неба, не знавшая направления. Лёгкий сдвиг верха по WIND роднит
+         облако с травой, пылью и дымом; сдвиг — тем же transform, спрайту
+         перепекаться не надо. */
+      const sh=WIND*.22;
+      ctx.save();
+      ctx.transform(1,0,-sh,1,x+sh*(y+hgt),y);
+      ctx.drawImage(spr,0,0,w,hgt);
       /* в осадки облако тонет в сизом по силе непогоды — грозовое небо
          тёмное, а не белое (M232) */
       if(wp>.06){
         const ga=ctx.globalAlpha;
         ctx.globalAlpha=ga*Math.min(1,wp*1.15);
-        ctx.drawImage(C.dark[(h>>>2)%CLOUD_SPR],x,y,w,hgt);
+        ctx.drawImage(C.dark[(h>>>2)%CLOUD_SPR],0,0,w,hgt);
         ctx.globalAlpha=ga;
       }
+      ctx.restore();
       /* у самого светила облако ещё и просвечивает: второй проход на
          сложении. Каёмка уже в спрайте, это общее свечение вокруг */
       const near=1-clamp(Math.hypot(x+w*.5-sunX,y+hgt*.5-sunY)/(W*.5),0,1);
       if(near>.25){
         ctx.save();ctx.globalCompositeOperation="lighter";
         ctx.globalAlpha=(near-.25)*.5;
-        ctx.drawImage(spr,x,y,w,hgt);
+        ctx.transform(1,0,-sh,1,x+sh*(y+hgt),y);
+        ctx.drawImage(spr,0,0,w,hgt);
         ctx.restore();
       }
     }

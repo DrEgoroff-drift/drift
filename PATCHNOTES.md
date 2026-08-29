@@ -7,6 +7,25 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.276.0 — M279: the law × surface matrix — no more exhibition pieces
+
+The author's charge: a rule living in three places out of ten is an exhibition, not a law. The
+whole game was walked as a matrix of rule × surface; gaps closed or priced.
+
+- **CUN reaches the base rock.** The base cross-section's «сор вдоль слоя» was flat directionless
+  specks while the mine NEXT DOOR cuts the same stone with the 皴 brush. The base's grain now
+  strokes along the direction field with the world's own manner.
+- **Room light bleeds into the rock.** The base read as one dark mass (ledger: mass 7%) — the
+  excavation's contour now carries a warm rim, light from windows and seams staining the stone;
+  the rooms bind into one luminous body (empty 86→82, and the eye confirms more than the bins).
+- **Clouds lean with the wind.** The cumulus drifted along WIND but stood upright — the only
+  thing in the sky that ignored direction. A shear transform tilts the body downwind, kin to the
+  grass, the dust and the smoke. (On close reading the clouds were otherwise acquitted:
+  metaballs with two-scale erosion and a silver rim — not эллипсы.)
+- **Priced, not smeared:** the raid's rock walls live in a pseudo-3D quad pipeline — brushing
+  them means projecting strokes in wall UV space, a session of its own. Named in the plan.
+
+---
 ## 0.275.0 — M278: five more frames off the ledger
 
 Working the frame ledger top-down, judged by ?look before and after.

@@ -234,9 +234,25 @@ function drawBase(){
     for(let i=0;i<gn;i++){
       const px=GR()*W, py=gy0+GR()*gh;
       const t=GR();
-      if(t<.72){                                  // сор вдоль слоя
-        ctx.fillStyle="rgba(0,0,0,"+(.22+GR()*.22).toFixed(3)+")";
-        ctx.fillRect(px,py,1+GR()*2.4,.8);
+      if(t<.72){                                  // сор — теперь МАНЕРОЙ породы (皴)
+        /* матрица «закон × поверхность» (аудит 30.08): пещера, шахта и обрыв
+           получили кисть CUN, а порода базы сорила плоскими чёрточками без
+           направления и без типа мира. Тот же штрих: угол из поля, манера из
+           таблицы — база стоит в ТОЙ ЖЕ породе, что шахта рядом. */
+        const M=(typeof CUN!=="undefined"&&pl)?(CUN[pl.type]||CUN.rocky):null;
+        if(M&&!M.dot){
+          const ang=dirAt(px+camx,py+camy,(pl.seed|0)^0xBA5E,1/300)+(GR()-.5)*M.jig;
+          const ln=(2.2+GR()*3.4)*M.ln;
+          ctx.strokeStyle="rgba(0,0,0,"+(.20+GR()*.20).toFixed(3)+")";
+          ctx.lineWidth=Math.min(1.2,M.w);
+          ctx.beginPath();
+          ctx.moveTo(px-Math.cos(ang)*ln,py-Math.sin(ang)*ln);
+          ctx.lineTo(px+Math.cos(ang)*ln,py+Math.sin(ang)*ln);
+          ctx.stroke();
+        }else{
+          ctx.fillStyle="rgba(0,0,0,"+(.22+GR()*.22).toFixed(3)+")";
+          ctx.fillRect(px,py,1+GR()*1.6,.9);
+        }
       }else if(t<.94){                            // крупинка, поймавшая свет
         ctx.fillStyle="rgba(226,206,176,"+(.12+GR()*.13).toFixed(3)+")";
         ctx.fillRect(px,py,.9,.9);
@@ -417,6 +433,15 @@ function drawBase(){
   }
   /* грань выработки: свет сверху, тень снизу — та же фаска, что у проёма кабины */
   ctx.strokeStyle="rgba(0,0,0,.55)";ctx.lineWidth=9;ctx.stroke(RP);
+  /* ── свет комнат сочится в породу (леджер кадров: база mass 7%) ──
+     Тёмная тень примыкания сажала комнаты в грунт, но кадр оставался одной
+     тёмной массой: свет жилых отсеков не покидал их рамок. Тёплая кайма по
+     контуру выработки — свет из окон и щелей на камне — даёт разрезу вторую
+     ступень и вяжет комнаты в одно светящееся тело. Два штриха на кадр. */
+  ctx.save();ctx.globalCompositeOperation="lighter";
+  ctx.strokeStyle="rgba(255,204,140,.055)";ctx.lineWidth=34;ctx.stroke(RP);
+  ctx.strokeStyle="rgba(255,214,156,.08)";ctx.lineWidth=14;ctx.stroke(RP);
+  ctx.restore();
   /* ── врез с переходом (M232) ──
      Верхний ряд комнат сидел в склоне без следа проходки: чистая кромка на
      нетронутой породе. Над потолком верхнего яруса — крошка и светлые сколы,
