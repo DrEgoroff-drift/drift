@@ -218,5 +218,17 @@ phases (P6–P8), so the two can interleave or run in parallel sessions.
 Dependencies: P1 needs P0 (measuring the prototypes). P3–P5 want P2's primitive but only P3's
 皴 half hard-requires it. P8 needs P6's deed vocabulary. P9 is last by cost and risk.
 
+**Marathon ledger (2026-08-29, M264–M270).** The deed-turn rewrite (§1) is complete as far as
+the hundred allows: 9 turns read deeds (стакан, лампа, Крапива, tin_feeders, shoal, baker_oven,
+forty_two, commission, bench_view), every remaining calendar turn carries a written refusal at
+the story itself (inevitability class or no substrate), and three more turn on a shown item.
+New deed keys with real sources: `tinfed` (12ta `T.last`), `wall` (`G.walled`, written by
+`wallSign`, saved), `card` (`G.mailed`, written by `mailSend`, saved), plus `any` mirroring
+`none`. The deed-count floor lives in the suite (91zp) and must rise with new stories.
+§4 (clocks): **not built, correctly** — the contract's own clause 5 forbids the engine before
+the first act-2 ending; медкомиссия already serves as the reference. §3 (усталость): blocked on
+a real fork — mercs have no figure to show it in; either merc portraits (new surface) or the
+axis lands on managers (faces exist). Author's call, price named in PLAN.md.
+
 Session discipline while research mode lasts (author, 29.08.2026): **commit locally, no push**;
 a second session works this repo in parallel — `git add` own files by name only, never `-A`.

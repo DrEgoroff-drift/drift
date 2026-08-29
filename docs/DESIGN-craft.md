@@ -309,6 +309,25 @@ ordering wins where the two differ. Kept below as the raster-only view.*
 Not yet examined: Persian miniature (no single light source, pattern density in place of
 modelling) and Dutch glazing over grisaille.
 
+## Marathon addendum (2026-08-29, M264–M270)
+
+The author's verdict on the first application run: the craft went where the eye rarely goes;
+the loudest pixels stayed untouched («кругов дохуя»). The critique marathon carried the laws to
+the everyday screens; the ledger, so the next reader knows what is DONE versus designed:
+
+- §1 (light grown from dark ground): the surface **sun** is now a body — power-curve glow (no
+  plateau ring), limb darkening, horizon extinction and flattening, vacuum corona (M265, M266).
+- §4 (shadow volumes): cave lamp done earlier (M258); base rooms need none — their clip *is*
+  the mask (checked, M269); ship shadow grows toward touchdown (M268).
+- §5 (皴): the CUN table serves cave (M263) **and mine** (`digCun`, M267); surface strata now
+  lie near-horizontal and are CUT by relief (M267) — the wallpaper debt closed.
+- Movement over twinkle: the starfield finally obeys — streaks under way, twinkle at anchor
+  (M269).
+- One body for assemblies: station hull plate under modules; one orbit — one line, on the true
+  ellipse (M265).
+- Still open by design: system-frame notan (needs nebula+traffic content), grisaille (P4 —
+  its own session), settlement recursion (P9b — by intent).
+
 ## Sources
 
 - Icon painting: *Личное письмо (иконопись)*, ru.wikipedia; Murom museum, technique of личное

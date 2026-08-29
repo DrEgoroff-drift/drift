@@ -122,7 +122,12 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
-## The critique marathon (agreed with the author 2026-08-29) — LIVE
+## The critique marathon (agreed with the author 2026-08-29) — DONE (M264–M270, 0.261→0.267)
+
+Every pass below is closed — done, measured, or acquitted with the reason written where the
+next session will look (patchnote, codex ledger, or the story file itself). The remainder is
+the **Needs the author** list at the bottom plus three P0 tails: the quiet-machine re-measure
+of `?g11`, the «home» stand scene hanging headless Chrome, and the «смотритель…излишек» flake.
 
 The author's verdict on the craft run 0.245→0.260: the research was good and **nothing visibly
 changed**. Diagnosis accepted by both sides: M249–M263 went into fine grain (blue noise, seams,
@@ -178,8 +183,9 @@ the stand anyway.
   content item (nebula + traffic), not a pass item.
 - **P9 — HUD and typography.** ~~Measured (M269)~~: mobile suite green at 390×844. No churn
   without an author's gripe; the flaky «смотритель» suite stays on the P0 list.
-- **P10 — the through-pass.** Full album of every scene day/night, check against 8+10 laws,
-  `?g11` vs эталон, the honest remainder into the queue with reasons, both codices updated.
+- **P10 — the through-pass.** ~~Done (M270, 0.267.0)~~: 20-scene album walked, codex ledgers
+  written (`DESIGN-craft.md` marathon addendum, `DESIGN-story-craft.md` marathon ledger),
+  probes recorded with the honest verdict «ambient, re-measure quiet» in P0.
 
 Story passes (see `docs/DESIGN-story-craft.md`; measured gap: 108 stories, 18 turns, all
 calendar; only 3 deed-forks live after P6):
@@ -197,14 +203,19 @@ calendar; only 3 deed-forks live after P6):
   report_nothing already turn on a shown item (de-facto deeds). Count 9. The remaining
   calendar turns are all named refusals — the S-passes' rewrite half is complete; further
   growth is new stories, written a few at a time.
-- **S4 — the clock engine (P8 of the codex).** Hidden dials over endings; a segment advances
-  only by deed + spaced days; an ending fires only in its window. Медкомиссия first. Fuzzer
-  long-run must not reach an ending early.
-- **S5 — a body for the crew.** One axis — усталость: slower walk, lower shoulders, shorter
-  answers. Visible in the figure and the speech, never as a number.
+- **S4 — the clock engine (P8 of the codex).** ~~Closed by the contract itself (M270)~~:
+  clause 5 of `DESIGN-arc.md` forbids an engine before the first act-2 ending exists;
+  медкомиссия already satisfies the contract and is the reference. The engine lands WITH that
+  ending, not before — building it now would be the perk without code.
+- **S5 — a body for the crew.** **Blocked on an author fork, price named:** the codex wants
+  усталость «in the figure, never a number» — but mercs have no figure anywhere (they are text
+  rows in the crew tab). Either (a) mercs get portraits (a new UI surface, the mgr-face
+  brushes could serve), or (b) the axis lands on managers, who already have faces and jobs.
+  Both honest; the choice shapes a system — author's call.
 
 Needs the author: the glyph notebook (P7b — what the player writes down, what «дошло» looks
-like) and whether «неделя счисления» becomes S6.
+like); whether «неделя счисления» becomes S6; and the S5 fork above (mercs' figure vs
+managers' axis).
 
 ## M264 — the button hears the whole prompt; the mouse reveals the pads (2026-08-29) — CLOSED (0.261.0)
 

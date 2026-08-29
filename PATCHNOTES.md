@@ -7,6 +7,29 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.267.0 — M270: the through-pass closes the marathon (П10)
+
+The full album (20 scenes, headless) was walked against the eight audit laws and the ten craft
+laws; both codices got a marathon ledger so the next session knows DONE from designed.
+
+What the album showed: the verb-buttons of M264 live everywhere (ПРЫЖОК on the map, УХОД С
+ДОБЫЧЕЙ in the raid hangar); the wide system frame carries one line per orbit and a station
+with a body; the sun is a body on approach. No new circle offenders found in map, station,
+cantina, HQ, raid, mine, base, belt.
+
+Measured, honestly: `?g11` on this loaded dev machine read 35–60 across modes, lower than the
+morning's 43–60; the deep probe (`-Deep`, pass-by-pass noop) decomposed NONE of it into any
+single pass — variance ±5 fps, no outlier. Verdict: ambient load, not a regression; **re-measure
+on a quiet machine** goes to P0 (the probe's own doc warns exactly about this). Two more P0
+tails from the walk: the «home» stand scene hangs headless Chrome reliably (worth one deliberate
+hunt — something may spin under virtual time), and the «смотритель…излишек» suite flake from
+M266 still stands.
+
+Left for the author, with prices named in PLAN.md: the glyph notebook (P7b), «неделя счисления»
+as S6, and the S5 fork — mercs have no figure for усталость; either portraits or the axis goes
+to managers.
+
+---
 ## 0.266.0 — M269: stars streak under way; a postcard makes a place visited
 
 Fourth leg of the marathon (П7 · П8 · П9 · С3).
