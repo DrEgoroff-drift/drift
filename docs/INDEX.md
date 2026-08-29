@@ -559,8 +559,8 @@ drawDeposit                  src/21b-surface-deco.js:347
 drawDig                      src/23a-dig-draw.js:640
 drawDigFauna                 src/23-mode-dig.js:298
 drawDigWorld                 src/23a-dig-draw.js:45
-drawDronesMap                src/12e-drone-flight.js:249
-drawDronesSystem             src/12e-drone-flight.js:181
+drawDronesMap                src/12e-drone-flight.js:262
+drawDronesSystem             src/12e-drone-flight.js:185
 drawDustMotes                src/19-mode-landing.js:380
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:207
@@ -647,25 +647,25 @@ drawWrecksSystem             src/12l-barge.js:347
 DRONE_BREAK_P                src/12e-drone-flight.js:21
 DRONE_FIX_MS                 src/12e-drone-flight.js:24
 DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
-DRONE_TAIL                   src/12e-drone-flight.js:180
+DRONE_TAIL                   src/12e-drone-flight.js:184
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
-droneBreakP                  src/12e-drone-flight.js:126
-droneBreaks                  src/12e-drone-flight.js:130
+droneBreakP                  src/12e-drone-flight.js:130
+droneBreaks                  src/12e-drone-flight.js:134
 droneCapacity                src/12-economy.js:68
-droneFixMs                   src/12e-drone-flight.js:131
+droneFixMs                   src/12e-drone-flight.js:135
 droneHome                    src/12e-drone-flight.js:73
 droneName                    src/12e-drone-flight.js:38
 droneNextId                  src/12e-drone-flight.js:32
 droneNormalize               src/12e-drone-flight.js:44
-dronePhase                   src/12e-drone-flight.js:93
+dronePhase                   src/12e-drone-flight.js:97
 dronePoint                   src/12e-drone-flight.js:65
-dronePos                     src/12e-drone-flight.js:105
-droneRoutes                  src/12e-drone-flight.js:153
+dronePos                     src/12e-drone-flight.js:109
+droneRoutes                  src/12e-drone-flight.js:157
 DRONES                       src/04-mods.js:57
-droneStateRu                 src/12e-drone-flight.js:142
+droneStateRu                 src/12e-drone-flight.js:146
 droneSys                     src/12e-drone-flight.js:62
 droneTarget                  src/12-economy.js:72
-droneTripMs                  src/12e-drone-flight.js:83
+droneTripMs                  src/12e-drone-flight.js:87
 DUST_COL                     src/16a-space.js:143
 DUST_TAB                     src/16a-space.js:144
 dustTable                    src/16a-space.js:145
@@ -979,7 +979,7 @@ heardWordsRu                 src/12x-parrot.js:79
 heardYours                   src/12x-parrot.js:71
 held                         src/08-state.js:183
 hex2rgb                      src/03-ships.js:145
-hexA                         src/12e-drone-flight.js:239
+hexA                         src/12e-drone-flight.js:252
 hexa                         src/12w-survey.js:91
 hexRGB                       src/24-mode-belt.js:80
 HIN_DOORW                    src/29c-home-in.js:24
@@ -2122,7 +2122,7 @@ renderCardBack               src/25i-post-back.js:88
 renderChess                  src/25n-chess.js:285
 renderDeeds                  src/11-log.js:92
 renderDiary                  src/29f-winter.js:219
-renderFleetRuns              src/12e-drone-flight.js:269
+renderFleetRuns              src/12e-drone-flight.js:287
 renderHold                   src/27j-ui-hold.js:176
 renderLog                    src/11-log.js:71
 renderLoreBoard              src/27h-ui-lore.js:26
@@ -3272,10 +3272,10 @@ zooTick                      src/11ad-zoo.js:41
   · живой рынок:1
   · дроны:44
 
-## src/12e-drone-flight.js · 17 КБ
+## src/12e-drone-flight.js · 19 КБ
   · дроны летают:1
-  · дрон в кадре:174
-  · вкладка РЕЙСЫ:264
+  · дрон в кадре:178
+  · вкладка РЕЙСЫ:282
 
 ## src/12e-mgr-jobs.js · 19 КБ
   · поручения управляющих:1
@@ -4067,7 +4067,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzx-late.js · 7 КБ
   · M225: поздний час у стойки:1
 
-## tests/91zzzy-drones.js · 5 КБ
+## tests/91zzzy-drones.js · 7 КБ
   · автотесты: рейсы дронов (M237):1
 
 ## tests/99-run.js · 0 КБ

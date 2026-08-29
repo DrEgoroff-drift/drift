@@ -96,3 +96,25 @@ TEST_SUITES.push(()=>suite("дроны: маршруты и старые зап�
   G.drones=[];applySave(snap);
   ok(G.drones.length===1&&G.drones[0].id>0,"номер пережил сохранение");
 }));
+
+/* ── второй проход: то, что нашлось глазами ── */
+TEST_SUITES.push(()=>suite("дроны: без станции в системе — не в звезду",()=>{
+  resetWorld();
+  /* система без своей станции: раньше droneHome возвращал (0,0), а в нуле
+     стоит ЗВЕЗДА — дрон возил руду прямо в неё */
+  let ns=null;
+  for(let r=0;r<10&&!ns;r++)for(let x=-r;x<=r&&!ns;x++)for(let y=-r;y<=r&&!ns;y++){
+    if(!starAt(x,y))continue;const S=getSystem(x,y);
+    if(!S.station&&(S.planets||[]).length)ns=S;
+  }
+  if(!ns){ok(true,"поблизости нет системы без станции — проверку пропускаем");return;}
+  const now=Date.now();
+  const d={id:1,sx:ns.sx,sy:ns.sy,pi:0,res:"iron",rate:.6,pool:100,t0:now,lastMs:now,
+           bornMs:now,trips:0,down:0,sold:0,earned:0,carry:0};
+  const b=droneHome(d,ns);
+  ok(Math.hypot(b.x,b.y)>200,"конец маршрута вынесен из центра, а не в звезду: "+
+    Math.round(Math.hypot(b.x,b.y)));
+  ok(!!b.name,"и у него есть имя станции, куда всё это уходит: «"+b.name+"»");
+  const T=droneTripMs(d,ns);
+  ok(T>=25000&&T<=240000,"круг всё равно конечен: "+Math.round(T/1000)+" с");
+}));

@@ -81,6 +81,12 @@ Rules worth keeping:
 - **A limit made of time is felt without a number.** The repair clock needs no price, no button
   and no explanation — the amber blink at the station says everything, and the wait is the cost.
 
+Pass 2 (0.233.0), by eye and not by test: a drone in a station-less system flew INTO the star
+(`droneHome` fell back to (0,0), which is where the star is drawn); the name sank into the
+corona without a shadow; the dots did not grow with the camera, so an empty one was invisible at
+any zoom; and the map badge sat exactly on the selection ring of your own system. Rule from it:
+**a fallback coordinate is a place too** — (0,0) is not "nowhere", it is the middle of the map.
+
 Left open on purpose: choosing the selling station (a manager's job when the domain has one), and
 attrition. Both are additions, not corrections.
 

@@ -7,6 +7,28 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.233.0 — M237 pass 2: four things the drones only showed once they flew
+
+The milestone shipped as a draft; this is the self-critique pass the project owes every design.
+Each of these was found by looking at the frame, not by a test.
+
+- **A drone in a system with no station flew into the star.** `droneHome` fell back to (0,0) —
+  and (0,0) is where the star is drawn. Now it leaves toward the edge of the system in the
+  direction of the sector its station actually sits in: it reads as "gone to the neighbours",
+  which is what is happening.
+- **The name sank into the star's corona.** The caption was drawn in the cargo's own colour with
+  nothing behind it; over the glare "Д-1 · ЖЕЛЕЗО" was a smudge. A one-pixel dark shadow under
+  the letters costs nothing and holds the text on any background — the rim law, applied to type.
+- **The dots did not grow with the camera.** A fixed 2.6 px meant that zooming in on a route gave
+  you a bigger world and the same crumbs; an empty drone (1.8 px, grey) was invisible at any
+  zoom. The radius now follows the camera between 0.7 and 1.8.
+- **The map badge sat on the selection ring.** On your own system the count landed exactly on the
+  reticle and could not be read at all. It moved out past the rings and got the same shadow.
+
+Tests: 390 suites green (one new: with no station in the system the end of the route is nowhere
+near the star, and the trip stays finite).
+
+---
 ## 0.232.0 — M237: the drones fly
 
 Until now a drone was not a machine but a piggy bank: `{sx,sy,res,rate,pool}` — a system, an ore

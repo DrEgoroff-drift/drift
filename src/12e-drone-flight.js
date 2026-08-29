@@ -74,9 +74,13 @@ function droneHome(d,sys){
   sys=sys||droneSys(d);
   if(sys.station)return {x:sys.station.x,y:sys.station.y,name:sys.station.name};
   const h=nearestStation(d.sx,d.sy);
-  /* станции в системе нет — дрон возит «за угол»: путь короткий и условный,
-     но точка всё равно откуда-то куда-то летит, а не висит */
-  return {x:0,y:0,name:h?h.name:"—"};
+  /* ── станции в этой системе нет ──
+     Возвращать (0,0) было нельзя: в нуле стоит ЗВЕЗДА, и дрон возил руду прямо
+     в неё (второй проход, поймано глазами). Он уходит за край системы в ту
+     сторону, где станция на самом деле, — и это читается как «ушёл к соседям». */
+  const ang=Math.atan2((h?h.sy:0)-d.sy,(h?h.sx:0)-d.sx);
+  const r=(((sys.belt&&sys.belt.orbit)||1400)*1.35);
+  return {x:Math.cos(ang)*r,y:Math.sin(ang)*r,name:h?h.name:"—"};
 }
 /* Длина круга: туда и обратно по нынешнему положению концов. Считается на месте
    и не сохраняется — концы ведь движутся. */
@@ -218,19 +222,28 @@ function drawDronesSystem(zx,zy,Z){
       prev=[qx,qy];
     }
     /* сама машина: гружёная — цветная точка с искрой, порожняя — серая крупинка */
+    /* размер идёт за камерой: на общем плане это крупинка, вблизи — машина.
+       Постоянные 2.6 px делали порожний дрон невидимым на любом приближении */
+    const k=clamp(Z,.7,1.8);
     if(P.loaded){
       ctx.fillStyle=hexA(col,.9);
-      ctx.beginPath();ctx.arc(x,y,2.6,0,TAU);ctx.fill();
+      ctx.beginPath();ctx.arc(x,y,2.6*k,0,TAU);ctx.fill();
       ctx.fillStyle=hexA(col,.22);
-      ctx.beginPath();ctx.arc(x,y,5.2,0,TAU);ctx.fill();
+      ctx.beginPath();ctx.arc(x,y,5.2*k,0,TAU);ctx.fill();
     }else{
       ctx.fillStyle="rgba(170,186,196,.75)";
-      ctx.beginPath();ctx.arc(x,y,1.8,0,TAU);ctx.fill();
+      ctx.beginPath();ctx.arc(x,y,2*k,0,TAU);ctx.fill();
     }
     /* имя и груз — только когда камера подошла близко */
     if(Z>1.15){
-      ctx.fillStyle=hexA(col,.75);ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText(droneName(d)+" · "+RES[d.res].ru.toUpperCase(),x,y-9);
+      /* подпись тонет в свете звезды: над короной цвет груза читался пятном.
+         Тень под буквой стоит копейки и держит текст на любом фоне (закон 3
+         про кромку — та же мысль, только для шрифта) */
+      const t=droneName(d)+" · "+RES[d.res].ru.toUpperCase();
+      const ly=y-9-5*(k-1);
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillStyle="rgba(4,6,10,.8)";ctx.fillText(t,x+1,ly+1);
+      ctx.fillStyle=hexA(col,.92);ctx.fillText(t,x,ly);
     }
   }
 }
@@ -255,9 +268,14 @@ function drawDronesMap(vis){
   for(const v of vis){
     const n=by[v.gx+","+v.gy];
     if(!n)continue;
-    ctx.fillStyle="rgba(127,230,216,.85)";
-    ctx.beginPath();ctx.arc(v.x+9,v.y-7,1.7,0,TAU);ctx.fill();
-    ctx.fillText(String(n),v.x+13,v.y-4);
+    /* значок уходит от звезды дальше, чем прицел и кольца системы: на своей
+       же системе он ложился ровно на рамку выбора и не читался (второй проход) */
+    const bx=v.x+15,by2=v.y-13;
+    ctx.fillStyle="rgba(4,6,10,.75)";
+    ctx.fillText(String(n),bx+5,by2+4);
+    ctx.fillStyle="rgba(127,230,216,.9)";
+    ctx.beginPath();ctx.arc(bx,by2+1,1.8,0,TAU);ctx.fill();
+    ctx.fillText(String(n),bx+4,by2+3);
   }
 }
 
