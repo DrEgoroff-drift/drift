@@ -1072,3 +1072,5 @@ body.afoot .ipod{display:none}
    выглядит подписью к кнопке. */
 .album.mail .bookfrag{color:#d6c8a6;font-size:13px;line-height:1.75;max-width:56ch;
   padding:10px 4px 4px;letter-spacing:.01em}
+/* знак пиджина (M261): канва в строке текста, сидит по базовой линии */
+.glyphc{display:inline-block;vertical-align:-2px}

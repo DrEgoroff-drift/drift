@@ -7,7 +7,21 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.256.0 — M260: Крапива and the mended hull
+## 0.257.0 — M261: signs, not letters
+
+P7's first half. `SETTLE_GLYPH` was the Elder Futhark — a real alphabet with known sounds, and
+any player who had seen runes read the settlement pidgin as f-u-þ; the constant violated its
+own comment ("знаки, а не буквы"). The runes stay in the strings as **carriers** (indices —
+saves and the wire don't change), but they no longer reach the eye: every sign is now **drawn
+by a grammar** — six asymmetric radicals × four operations (identity, mirror, half-turn,
+underline) = 24 signs, the Siromoney/kolam construction. The eye picks out families and
+operations — the language visibly has a structure — and there is nothing to pronounce.
+
+The bridge sits in the one door all DOM text passes through — `setTx` — plus the journal line,
+the postcard back (dark ink on paper, its own colour) and its glyph picker. Glyph canvases bake
+at ×DPR×UIK per the panel-raster rule. Full suite and the mobile layout guards both green.
+Second half of P7 — the notebook that collects sightings, understanding as player state — is a
+design pass with the author, queued.
 
 The third deed-fork, and the first one that reads the hull's biography. Мадам Крапива sits at
 the door with a ticket and watches pilots; a hull carrying four repair seams (M256) is living

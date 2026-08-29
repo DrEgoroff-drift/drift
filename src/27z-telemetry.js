@@ -61,7 +61,20 @@ function hudWake(vals,alarm){
    память о «том, что мы писали в прошлый раз» после этого врёт — кнопка
    остаётся видимой там, где кадр обязан был её убрать. Чтение inline-стиля
    и текста узла вёрстку не пересчитывает и стоит копейки. */
-function setTx(el,v){if(el&&el.textContent!==v)el.textContent=v;}
+/* Строка с рунами пиджина рисуется знаками (M261): setTx — единственная
+   дверь, через которую текст попадает в DOM, поэтому мост стоит здесь.
+   Обычный текст идёт прежним дешёвым путём; кэш глиф-строки отдельный
+   (el.__gtx), чтобы не перерисовывать канвы на каждый кадр. */
+function setTx(el,v){
+  if(!el)return;
+  if(typeof glyphHasRunes==="function"&&glyphHasRunes(v)){
+    if(el.__gtx===v)return;
+    el.__gtx=v;el.textContent="";el.appendChild(glyphNodes(v));
+  }else{
+    if(el.__gtx!=null)el.__gtx=null;
+    if(el.textContent!==v)el.textContent=v;
+  }
+}
 function setSt(el,k,v){v=""+v;if(el&&el.style[k]!==v)el.style[k]=v;}
 function hud(){
   const st=stat();

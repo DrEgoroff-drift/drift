@@ -122,6 +122,11 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M261 — signs, not letters (2026-08-29) — CLOSED (0.257.0)
+
+The futhark no longer reaches the eye: 24 signs drawn by a 6×4 grammar, runes kept as string
+carriers, the bridge in `setTx`/journal/card-back. P7's notebook half needs the author.
+
 ## M260 — Крапива and the mended hull (2026-08-29) — CLOSED (0.256.0)
 
 Third fork (`seams` as a deed the world can see), key `none:[...]`, and two named negative

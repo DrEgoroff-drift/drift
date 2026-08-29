@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3054
+Файлов: 333 · символов верхнего уровня: 3058
 
 ## СИМВОЛЫ
 
@@ -45,7 +45,7 @@ ACTION_RU                    src/15-input.js:125
 actionKey                    src/15-input.js:140
 addPart                      src/05-parts.js:227
 addPath                      src/25-cockpit.js:154
-addRes                       src/11-log.js:130
+addRes                       src/11-log.js:132
 addrForm                     src/11b-speech.js:92
 adjTo                        src/05-parts.js:23
 AFFIX                        src/05-parts.js:29
@@ -581,6 +581,7 @@ drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24ab-raid-foe.js:10
 drawForeground               src/21b-surface-deco.js:248
 drawGlassHUD                 src/24-mode-belt.js:593
+drawGlyph                    src/12t-settle.js:59
 drawGround                   src/19-mode-landing.js:109
 drawGroundCrumbs             src/19-mode-landing.js:206
 drawGroundGrass              src/19-mode-landing.js:219
@@ -910,6 +911,9 @@ glowPatches                  src/11i-glow.js:73
 glowScan                     src/11i-glow.js:64
 glowSprite                   src/16a-space.js:323
 glowTier                     src/11i-glow.js:122
+glyphEl                      src/12t-settle.js:79
+glyphHasRunes                src/12t-settle.js:52
+glyphNodes                   src/12t-settle.js:92
 goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
 gotoSector                   src/11a-quests.js:68
@@ -1126,7 +1130,7 @@ hqStations                   src/27f-hq-room.js:219
 hqTable                      src/27f-hq-room.js:377
 hqWallProps                  src/27f-hq-room.js:170
 hqWindowView                 src/27f-hq-room.js:616
-hud                          src/27z-telemetry.js:66
+hud                          src/27z-telemetry.js:79
 HUD_BAND                     src/27z-telemetry.js:19
 HUD_PREV                     src/27z-telemetry.js:42
 HUD_STEP                     src/27z-telemetry.js:41
@@ -1506,7 +1510,7 @@ mgrWorkSci                   src/12c-mgr-core.js:683
 midiHz                       src/10-music.js:106
 MINE_MOUTH_R                 src/21-mode-surface.js:4
 mineDeep                     src/23a-dig-draw.js:610
-minedUnit                    src/11-log.js:136
+minedUnit                    src/11-log.js:138
 mineKey                      src/23a-dig-draw.js:599
 mineLoad                     src/23a-dig-draw.js:614
 MINERAL                      src/18a-material.js:32
@@ -1538,7 +1542,7 @@ mixNum                       src/02a-worldmix.js:43
 mixPal                       src/02a-worldmix.js:34
 mkCanvas                     src/18c-chunks.js:59
 mkMerc                       tests/91b-crew.js:3
-modCost                      src/11-log.js:129
+modCost                      src/11-log.js:131
 MODE_RU                      src/27i-ui-table.js:29
 modeRu                       src/27i-ui-table.js:32
 MODS                         src/04-mods.js:2
@@ -2085,7 +2089,7 @@ recordHonour                 src/11aa-record.js:35
 recordPilot                  src/11aa-record.js:39
 recordTick                   src/11aa-record.js:41
 recordYears                  src/11aa-record.js:32
-refineBank                   src/11-log.js:135
+refineBank                   src/11-log.js:137
 REGION_A                     src/06b-region.js:22
 REGION_B                     src/06b-region.js:24
 REGION_GAP                   src/06c-regions.js:36
@@ -2150,7 +2154,7 @@ renderBooks                  src/12ub-books.js:141
 renderCantina                src/27c-ui-hq.js:45
 renderCardBack               src/25i-post-back.js:88
 renderChess                  src/25n-chess.js:285
-renderDeeds                  src/11-log.js:92
+renderDeeds                  src/11-log.js:94
 renderDiary                  src/29f-winter.js:219
 renderFleetRuns              src/12e-drone-flight.js:287
 renderHold                   src/27j-ui-hold.js:176
@@ -2420,50 +2424,50 @@ seamsAll                     src/12s-wear.js:178
 seamsOf                      src/12s-wear.js:180
 sellCargo                    src/12-economy.js:26
 sellDroneYield               src/12-economy.js:37
-setSt                        src/27z-telemetry.js:65
+setSt                        src/27z-telemetry.js:78
 SETTLE_BUILD                 src/12t-settle.js:31
 SETTLE_BY_K                  src/12t-settle.js:39
 SETTLE_CAP                   src/12t-settle.js:20
 SETTLE_EAT                   src/12t-settle.js:21
 SETTLE_GIVE                  src/12t-settle.js:24
-SETTLE_GLYPH                 src/12t-settle.js:42
+SETTLE_GLYPH                 src/12t-settle.js:51
 SETTLE_ON                    src/12t-settle.js:27
 SETTLE_STEP                  src/12t-settle.js:22
 SETTLE_STOCK                 src/12t-settle.js:23
 SETTLE_WAIT                  src/12t-settle.js:25
-SETTLE_WORD                  src/12t-settle.js:196
-settleAsk                    src/12t-settle.js:203
-settleAt                     src/12t-settle.js:46
+SETTLE_WORD                  src/12t-settle.js:256
+settleAsk                    src/12t-settle.js:263
+settleAt                     src/12t-settle.js:106
 settleCanHand                src/12td-settle-hand.js:36
-settleCanLive                src/12t-settle.js:50
-settleDraw                   src/12t-settle.js:267
+settleCanLive                src/12t-settle.js:110
+settleDraw                   src/12t-settle.js:327
 settleDrawBody               src/12tb-settle-draw2.js:268
-settleGive                   src/12t-settle.js:160
+settleGive                   src/12t-settle.js:220
 settleHandLine               src/12td-settle-hand.js:65
 settleHandMast               src/12td-settle-hand.js:97
 settleHandPick               src/12td-settle-hand.js:56
 settleHandPlan               src/12td-settle-hand.js:73
-settleHere                   src/12t-settle.js:47
-settleKeyOf                  src/12t-settle.js:44
-settleLeftBehind             src/12t-settle.js:358
-settleLine                   src/12t-settle.js:236
-settleMake                   src/12t-settle.js:77
-settleMakes                  src/12t-settle.js:183
-settleMap                    src/12t-settle.js:45
+settleHere                   src/12t-settle.js:107
+settleKeyOf                  src/12t-settle.js:104
+settleLeftBehind             src/12t-settle.js:418
+settleLine                   src/12t-settle.js:296
+settleMake                   src/12t-settle.js:137
+settleMakes                  src/12t-settle.js:243
+settleMap                    src/12t-settle.js:105
 settleMine                   src/12td-settle-hand.js:35
 settlePlan                   src/12tb-settle-draw.js:83
-settleRaid                   src/12t-settle.js:341
-settleRaise                  src/12t-settle.js:119
-settleSpotX                  src/12t-settle.js:71
-settleStockSum               src/12t-settle.js:177
-settleStop                   src/12t-settle.js:372
+settleRaid                   src/12t-settle.js:401
+settleRaise                  src/12t-settle.js:179
+settleSpotX                  src/12t-settle.js:131
+settleStockSum               src/12t-settle.js:237
+settleStop                   src/12t-settle.js:432
 settleTakeHand               src/12td-settle-hand.js:40
-settleTick                   src/12t-settle.js:93
-settleWallHereX              src/12t-settle.js:64
-settleWallX                  src/12t-settle.js:59
-settleWatch                  src/12t-settle.js:330
-settleWords                  src/12t-settle.js:198
-setTx                        src/27z-telemetry.js:64
+settleTick                   src/12t-settle.js:153
+settleWallHereX              src/12t-settle.js:124
+settleWallX                  src/12t-settle.js:119
+settleWatch                  src/12t-settle.js:390
+settleWords                  src/12t-settle.js:258
+setTx                        src/27z-telemetry.js:68
 setZoom                      src/15-input.js:251
 sfx                          src/09-audio.js:237
 SFX                          src/09-audio.js:97
@@ -2798,7 +2802,7 @@ tinStrip                     src/12ta-tin.js:194
 tinTakeOut                   src/12ta-tin.js:155
 tinTick                      src/12ta-tin.js:118
 tnoise                       src/18a-material.js:16
-toggleLog                    src/11-log.js:124
+toggleLog                    src/11-log.js:126
 toggleLoreBoard              src/27h-ui-lore.js:81
 toggleMenu                   src/15-input.js:191
 toggleParrotWin              src/12y-parrot-face.js:693
@@ -3411,7 +3415,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12td-settle-hand.js · 8 КБ
   · посёлок под рукой:1
 
-## src/12t-settle.js · 24 КБ
+## src/12t-settle.js · 28 КБ
   · посёлок: вы даёте, решают они:1
 
 ## src/12ua-flea.js · 12 КБ
@@ -3774,7 +3778,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27-ui-ship.js · 28 КБ
   · экран корабля:1
 
-## src/27z-telemetry.js · 24 КБ
+## src/27z-telemetry.js · 25 КБ
   · телеметрия: приборы пишут в DOM:1
 
 ## src/28-loop.js · 28 КБ

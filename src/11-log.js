@@ -84,7 +84,9 @@ function renderLog(page){
     const it=rows[i];
     const row=document.createElement("div");row.className="li "+(it.k||"");
     const em=document.createElement("em");em.textContent=logTime(it.t);
-    const sp=document.createElement("span");sp.textContent=it.s;
+    const sp=document.createElement("span");
+    if(typeof glyphHasRunes==="function"&&glyphHasRunes(it.s))sp.appendChild(glyphNodes(it.s));
+    else sp.textContent=it.s;
     row.appendChild(em);row.appendChild(sp);box.appendChild(row);
   }
 }

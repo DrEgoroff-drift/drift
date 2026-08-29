@@ -38,8 +38,68 @@ const SETTLE_BUILD=[
 ];
 const SETTLE_BY_K={};SETTLE_BUILD.forEach(b=>SETTLE_BY_K[b.k]=b);
 /* глифы пиджина: рисуются как знаки, а не как буквы — иначе игрок прочитает
-   чужую речь родными словами и словарь потеряет смысл */
+   чужую речь родными словами и словарь потеряет смысл.
+   С M261 это правило наконец выполняется БУКВАЛЬНО: руны ниже — только
+   носитель в строках (индексы, ходят через сохранение и провод как один
+   символ), а до глаза они не доходят — каждый знак РИСУЕТСЯ грамматикой:
+   шесть радикалов × четыре операции (тождество, отражение, полуоборот,
+   подчёрк) = 24 знака. Семейства и операции глаз выхватывает — «у языка есть
+   строение», — а прочитать нельзя, потому что читать нечего (колам,
+   Сиромони; DESIGN-story-craft §2). До M261 тут стоял старший футарк, и
+   игрок, видевший руны, читал пиджин как f-u-þ — константа нарушала
+   собственный комментарий. */
 const SETTLE_GLYPH="ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛟᛞ";
+function glyphHasRunes(s){
+  if(typeof s!=="string")return false;
+  for(let i=0;i<s.length;i++)if(SETTLE_GLYPH.indexOf(s[i])>=0)return true;
+  return false;
+}
+/* знак: радикалы нарочно несимметричны по обеим осям, иначе отражение и
+   полуоборот дают тот же рисунок и 24 знака слипаются в дюжину */
+function drawGlyph(c,i,x,y,s){
+  const rad=i%6, op=(i/6)|0;
+  c.save();c.translate(x+s*.4,y+s*.5);
+  if(op===1)c.scale(-1,1);
+  if(op===2)c.rotate(Math.PI);
+  const w=s*.34,h=s*.42;
+  c.beginPath();
+  switch(rad){
+    case 0: c.moveTo(0,-h);c.lineTo(0,h);c.lineTo(w*.8,h*.7);break;            /* столб с ножкой */
+    case 1: c.moveTo(-w,h*.6);c.quadraticCurveTo(0,-h*1.3,w,h*.2);break;       /* дуга с перекосом */
+    case 2: c.moveTo(-w,-h);c.lineTo(0,0);c.lineTo(w*.7,-h*.5);c.moveTo(0,0);c.lineTo(0,h);break; /* вилка */
+    case 3: c.moveTo(-w,-h*.5);c.lineTo(w,-h*.5);c.moveTo(w*.3,-h);c.lineTo(w*.3,h);break;        /* перекладина со стойкой */
+    case 4: c.moveTo(-w*.7,-h);c.lineTo(-w*.7,h*.3);c.quadraticCurveTo(-w*.7,h,w*.5,h*.7);break;  /* крюк */
+    case 5: c.moveTo(-w,-h*.8);c.lineTo(w,h*.8);c.moveTo(-w,-h*.8);c.lineTo(w*.1,-h*.8);break;    /* косая с крышкой */
+  }
+  c.stroke();
+  if(op===3){c.beginPath();c.moveTo(-w,h*1.15);c.lineTo(w,h*1.15);c.stroke();}
+  c.restore();
+}
+/* канва-знак для DOM: плотность ×DPR×UIK (M221 — растр в панели иначе мылится) */
+function glyphEl(i,ink){
+  const px=11,d=Math.min(2,devicePixelRatio||1)*(typeof UIK==="number"?UIK:1);
+  const cv=document.createElement("canvas");
+  cv.width=Math.round(px*.82*d);cv.height=Math.round(px*1.2*d);
+  cv.style.width=(px*.82)+"px";cv.style.height=(px*1.2)+"px";
+  cv.className="glyphc";
+  const c=cv.getContext("2d");c.scale(d,d);
+  /* чернила: в эфире и журнале — светлые, на бумаге открытки — тёмные */
+  c.strokeStyle=ink||"rgba(210,218,226,.92)";c.lineWidth=1.25;c.lineCap="round";
+  drawGlyph(c,i,0,1,px);
+  return cv;
+}
+/* строка с рунами → фрагмент: текст остаётся текстом, руны становятся знаками */
+function glyphNodes(s){
+  const fr=document.createDocumentFragment();
+  let buf="";
+  const flush=()=>{if(buf){fr.appendChild(document.createTextNode(buf));buf="";}};
+  for(const ch of s){
+    const gi=SETTLE_GLYPH.indexOf(ch);
+    if(gi<0){buf+=ch;continue;}
+    flush();fr.appendChild(glyphEl(gi));
+  }
+  flush();return fr;
+}
 
 function settleKeyOf(sx,sy){return sx+","+sy;}
 function settleMap(){return (G.settle||(G.settle={}));}

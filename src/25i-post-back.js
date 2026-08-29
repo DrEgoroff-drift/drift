@@ -135,16 +135,22 @@ function renderCardBack(host,s,onChange,ro){
   const ps=el("div","ps");
   ps.appendChild(el("em",null,"приписка"));
   const slots=el("span","slots");
-  for(let i=0;i<POST_PS_MAX;i++)
-    slots.appendChild(el("i",(s.g&&s.g[i]!=null)?"g":"g e",
-      (s.g&&s.g[i]!=null)?SETTLE_GLYPH[s.g[i]%SETTLE_GLYPH.length]:"·"));
+  for(let i=0;i<POST_PS_MAX;i++){
+    const has=s.g&&s.g[i]!=null;
+    const slot=el("i",has?"g":"g e");
+    /* знак рисуется, а не набирается (M261); чернила — цвет бумаги открытки */
+    if(has)slot.appendChild(glyphEl(s.g[i]%SETTLE_GLYPH.length,"#3c352a"));
+    else slot.textContent="·";
+    slots.appendChild(slot);
+  }
   ps.appendChild(slots);
   back.appendChild(ps);
   if(!ro){
     const alph=el("div","alph");
     for(let gi=0;gi<SETTLE_GLYPH.length;gi++){
       const on=(s.g||[]).indexOf(gi)>=0;
-      const b=el("button","gl"+(on?" on":""),SETTLE_GLYPH[gi]);
+      const b=el("button","gl"+(on?" on":""));
+      b.appendChild(glyphEl(gi,"#3c352a"));
       b.onclick=e=>{e.stopPropagation();postGlyph(s,gi);onChange&&onChange();};
       alph.appendChild(b);
     }
