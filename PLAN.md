@@ -148,11 +148,13 @@ the stand anyway.
   M264 (the dead ДЕЙСТВИЕ class). Still to check: whether desktop prompts ever name the key
   (Space/Enter) anywhere a newcomer will find it; dead states in station/desk tabs; the /dev
   stand page serving a stale build (0.216.0 while prod is 0.261.0).
-- **P1 — the surface sun and sky.** The sun grown from a dark ground, not laid as a disc: limb,
-  the atmosphere eating the lower edge, halo rings die. Sky gets depth and a haze band.
-  (`06a-celest`, `19c-light`, `11g-lights`; light azimuth is honest since M242 — now the form.)
-- **P2 — the system map.** Orbit circles → arcs fading away from the planet; the map sun speaks
-  the same body language as the surface one; Цицион reads as one body, not orange confetti.
+- **P1 — the surface sun and sky.** ~~First iteration done (M265, 0.262.0)~~: glow's ring
+  plateau killed, limb-darkened altitude-baked disc, horizon extinction, vacuum corona.
+  Left open: the big pale MOON circle seen edge-cut on the landing frame (goes to P3);
+  sky depth beyond the existing haze band — judge on the next album.
+- **P2 — the system map.** ~~First iteration done (M265)~~: one orbit one line (tail on the
+  true ellipse, circle approximation removed), station ring whisper+tail, hull plate under
+  station modules. Left open: judge Цицион-type clutter at more zoom levels on the album.
 - **P3 — the census of every remaining circle.** `GLOW_CACHE`/`11i-glow`, `poiGlow`, the landing
   spot, the пещера/корабль markers. Each circle either earns its form (ellipse on the ground,
   grain, direction, silhouette clipping) or dies. Close the class, not instances.
@@ -177,6 +179,9 @@ calendar; only 3 deed-forks live after P6):
   (`sat`, `card`, `took`, `named`, `wall`) as needed — sources of truth already exist. The hard
   law: **a fork is never shown.** Refusals in writing (as two_on_orbit, kim_debt). Criterion:
   the deed is already in the log AND inevitability is not the story's point.
+  ~~S1 done (M265)~~: tin_feeders (tinfed), shoal (strip), baker_oven (seen:t5),
+  forty_two (visits gate); refusals named at twins and busy_freq. Deed-turn count 7,
+  guarded by the suite; S2 raises it.
 - **S4 — the clock engine (P8 of the codex).** Hidden dials over endings; a segment advances
   only by deed + spaced days; an ending fires only in its window. Медкомиссия first. Fuzzer
   long-run must not reach an ending early.

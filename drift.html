@@ -1353,7 +1353,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.261.0";
+const VER="0.262.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -10927,9 +10927,20 @@ const STORY_WHEN={
     return !!(st&&st.handAt)===!!v;},
   /* швов на текущем корпусе не меньше v (12s, M256): биографию видно и людям */
   seams:(v)=>((typeof seamsOf==="function")?seamsOf():0)>=v,
+  /* Жестянку ЭТОГО места игрок хоть раз ставил на смену: T.last пишется
+     только полным нарядом из рук игрока (12ta). Координаты — из ключа места,
+     по той же причине, что у hand: через news c.sx/c.sy — это игрок */
+  tinfed:(v,S,c)=>{
+    let sx=c.sx,sy=c.sy;
+    if(c.key){const m=/^(-?\d+),(-?\d+)/.exec(String(c.key));if(m){sx=+m[1];sy=+m[2];}}
+    const T=(typeof tinAt==="function")?tinAt(sx,sy):null;
+    return !!(T&&T.last)===!!v;},
   /* ни один из флагов не стоит: нужен следам историй, у чьих поворотов есть
      else-исход — «до поворота» это теперь два не-состояния, а не одно */
-  none:(v,S)=>v.every(f=>!storyFlag(S,f))
+  none:(v,S)=>v.every(f=>!storyFlag(S,f)),
+  /* хотя бы один стоит — зеркало none: «после поворота» с else-исходом это
+     тоже два состояния, а след, общий для обеих ветвей, один (потолок следов) */
+  any:(v,S)=>v.some(f=>storyFlag(S,f))
 };
 function storyWhen(S,t,c){
   const w=t.when;if(!w)return true;
@@ -11108,12 +11119,12 @@ function storyLint(){
     for(const t of S.traces)if(!["ether","queue","table","find","news","cant","land","cave","settle","tin"].includes(t.via))bad.push(S.id+"."+t.id+": канал "+t.via);
     for(const id of (S.cast||[]))if(!CASTT[id])bad.push(S.id+": нет в труппе "+id);
     for(const T of (S.turns||[])){
-      const read=S.traces.some(t=>t.when&&(t.when.flag===T.set||t.when.noflag===T.set));
-      if(!read)bad.push(S.id+": флаг "+T.set+" никто не читает");
-      if(T.else){
-        const r2=S.traces.some(t=>t.when&&(t.when.flag===T.else||t.when.noflag===T.else));
-        if(!r2)bad.push(S.id+": флаг "+T.else+" никто не читает");
-      }
+      /* флаг «читается» и списками none/any: у поворота с else-исходом общий
+         для обеих ветвей след держит их через any, а до-поворотные — через none */
+      const reads=f=>S.traces.some(t=>t.when&&(t.when.flag===f||t.when.noflag===f
+        ||(t.when.none||[]).includes(f)||(t.when.any||[]).includes(f)));
+      if(!reads(T.set))bad.push(S.id+": флаг "+T.set+" никто не читает");
+      if(T.else&&!reads(T.else))bad.push(S.id+": флаг "+T.else+" никто не читает");
       for(const w of [T.when,T.unless])if(w)
         for(const k in w)if(!STORY_WHEN[k])bad.push(S.id+" turn:"+k);
     }
@@ -18260,16 +18271,21 @@ const STORIES=[
  ]},
 
 /* ── 4. Пекарь не печёт ── соперник · дом Пекаря */
+/* Развилка С1 (не показывается): если игрок хоть раз выкладывал груз на его
+   стол (seen:t5 — поступок, который игра уже помнит), дверца нашлась в
+   принесённом; если нет — на барахолке, где всё находится. Никто не говорит
+   игроку, из чьих рук она пришла. */
 {id:"baker_oven",form:"thing",at:"fixed:7",cast:["baker"],
  traces:[
-  {id:"t1",via:"cant",when:{noflag:"door"},scene:{seat:"end",figure:0,props:["bread","bread"]}},
+  {id:"t1",via:"cant",when:{none:["door","brought"]},scene:{seat:"end",figure:0,props:["bread","bread"]}},
   {id:"t2",via:"queue",text:"— Пекарь? Он не пёк никогда. Прозвище — за то, что встаёт рано. Всё остальное люди выдумали."},
   {id:"t3",via:"queue",when:{visits:2},text:"— Пёк. Ещё как пёк. Потом печь увезли, а он остался. Теперь собирает что попало."},
   {id:"t4",via:"news",when:{visits:2},text:"Пекарь ищет дверцу от печи. Обожжённую. Платит как за редкость."},
-  {id:"t5",via:"table",item:"cargo",when:{item:"cargo",visits:3},text:"— Не то. Я узнаю, когда будет то."},
-  {id:"t6",via:"cant",when:{flag:"door"},scene:{seat:"end",figure:1,props:[]}}
+  {id:"t5",via:"table",item:"cargo",when:{item:"cargo",visits:3,none:["door","brought"]},text:"— Не то. Я узнаю, когда будет то."},
+  {id:"t6",via:"cant",when:{any:["door","brought"]},scene:{seat:"end",figure:1,props:[]}},
+  {id:"t7",via:"queue",when:{flag:"brought"},text:"— Нашёл. В грузе, что выкладывали ему на стол. Говорит, узнал по ожогу, сразу."}
  ],
- turns:[{after:"seen:t4",days:20,set:"door"}]},
+ turns:[{after:"seen:t4",days:20,set:"door",unless:{seen:"t5"},else:"brought"}]},
 
 /* ── 5. Трепло знает слово ── переносчик · любой торговый узел, с птицей */
 {id:"parrot_callsign",form:"pair",at:"stype:trade",cast:["zero7"],
@@ -18535,26 +18551,38 @@ const STORIES_B=[
 /* ══ земля ══ */
 
 /* ── 27. Кто кормит Жестянку ── зверь · мир с машиной и посёлком */
+/* Развилка С1 (не показывается): носивший перестаёт через 22 дня — но если
+   игрок сам хоть раз ставил машину на смену (tinfed, 12ta: T.last пишется
+   только полным нарядом из рук), дорожка не зарастает: машина работает, к
+   работающей ходят. Связь живёт в голове игрока или нигде. */
 {id:"tin_feeders",form:"beast",at:"tin",cast:["tinkeeper"],
  traces:[
   {id:"t1",via:"land",text:"От посёлка к машине натоптана дорожка. Не ваша."},
-  {id:"t2",via:"tin",when:{noflag:"stalled"},text:"у бункера кучка, свежая. Кто-то носит сюда. Не вы."},
-  {id:"t3",via:"settle",when:{noflag:"stalled"},text:"в сторону машины они показывают так же, как на еду"},
+  {id:"t2",via:"tin",when:{none:["stalled","kept"]},text:"у бункера кучка, свежая. Кто-то носит сюда. Не вы."},
+  {id:"t3",via:"settle",when:{none:["stalled","kept"]},text:"в сторону машины они показывают так же, как на еду"},
   {id:"t4",via:"tin",when:{flag:"stalled"},text:"кучек больше нет. Дорожка зарастает."},
-  {id:"t5",via:"settle",when:{flag:"stalled"},text:"в сторону машины больше не показывают"}
+  {id:"t5",via:"settle",when:{flag:"stalled"},text:"в сторону машины больше не показывают"},
+  {id:"t6",via:"tin",when:{flag:"kept"},text:"кучек нет, а дорожка не зарастает: машина ходит — к ней ходят."},
+  {id:"t7",via:"settle",when:{flag:"kept"},text:"в сторону машины показывают, как показывают на очаг"}
  ],
- turns:[{after:"seen:t2",days:22,set:"stalled"}]},
+ turns:[{after:"seen:t2",days:22,set:"stalled",unless:{tinfed:true},else:"kept"}]},
 
 /* ── 28. Косяк ── зверь · океанический мир */
+/* Развилка С1 (не показывается): охотник платит за точное время — а слепок
+   сцены с временем это и есть открытка (strip). Снял этот берег — время
+   ушло к охотнику, стаю выбили; не снимал — он уехал ни с чем. Игроку
+   никто никогда этого не скажет. */
 {id:"shoal",form:"beast",at:"world:ocean",cast:["hunter"],
  traces:[
-  {id:"t1",via:"land",when:{noflag:"hunted"},text:"Вдоль берега идёт стая. Каждые сутки в одно время, по словам тех, кто тут живёт."},
-  {id:"t2",via:"settle",when:{noflag:"hunted"},text:"на берег они показывают и ждут. Стая для них — часы."},
-  {id:"t3",via:"news",when:{noflag:"hunted"},text:"Охотник спрашивает, где ходят стаи по берегу. Платит за точное время."},
+  {id:"t1",via:"land",when:{none:["hunted","missed"]},text:"Вдоль берега идёт стая. Каждые сутки в одно время, по словам тех, кто тут живёт."},
+  {id:"t2",via:"settle",when:{none:["hunted","missed"]},text:"на берег они показывают и ждут. Стая для них — часы."},
+  {id:"t3",via:"news",when:{none:["hunted","missed"]},text:"Охотник спрашивает, где ходят стаи по берегу. Платит за точное время."},
   {id:"t4",via:"land",when:{flag:"hunted"},text:"Стая идёт. Меньше, чем была. Кто-то здесь уже побывал."},
-  {id:"t5",via:"settle",when:{flag:"hunted"},text:"на берег больше не показывают"}
+  {id:"t5",via:"settle",when:{flag:"hunted"},text:"на берег больше не показывают"},
+  {id:"t6",via:"land",when:{flag:"missed"},text:"Стая идёт, как шла. Охотник уехал: точного времени ему никто не назвал."},
+  {id:"t7",via:"settle",when:{flag:"missed"},text:"на берег показывают и ждут, как ждали"}
  ],
- turns:[{after:"seen:t3",days:12,set:"hunted"}]},
+ turns:[{after:"seen:t3",days:12,set:"missed",unless:{strip:"here"},else:"hunted"}]},
 
 /* ── 29. Ракушка ── вещь · барахолка, потом океанический мир */
 {id:"shell",form:"thing",at:"world:ocean",cast:["shellman"],
@@ -18650,6 +18678,9 @@ const STORIES_B=[
  ]},
 
 /* ── 40. Близнецы Абашевы ── двое · верфь, фиксированная */
+/* ОТКАЗ развилки (С1): «который остался — не решил сам» — вопрос истории.
+   Поступок игрока, выбирающий, кто уехал, отнял бы у неё ровно это. Класс
+   two_on_orbit: неотвратимость — смысл, не недоработка. */
 {id:"twins",form:"pair",at:"fixed:16",cast:["twins"],
  traces:[
   {id:"t1",via:"cant",when:{noflag:"one"},scene:{seat:"far",figure:1,col:[88,76,62],props:["cup","cup"]}},
@@ -18772,6 +18803,8 @@ const STORIES_B=[
  ]},
 
 /* ── 54. Занятая частота ── идёт само · любая станция */
+/* ОТКАЗ развилки (С1): двенадцать лет занятой частоты кончаются не из-за
+   прохожего с приёмником. Неотвратимость времени — класс two_on_orbit. */
 {id:"busy_freq",form:"ongoing",at:"any",cast:[],
  traces:[
   {id:"t1",via:"ether",when:{noflag:"free"},text:"…частота занята. Частота занята. Частота зан…"},
@@ -19052,7 +19085,10 @@ const STORIES_C=[
   {id:"t4",via:"cant",when:{flag:"landed"},scene:{seat:"door",figure:1,col:[90,96,110],props:["cap","glass"]}},
   {id:"t5",via:"queue",when:{flag:"landed"},text:"— Села. Сидит у двери, молчит. Мы тоже молчим. Три года готовились, что сказать, — и молчим."}
  ],
- turns:[{after:"seen:t2",days:26,set:"landed"}]},
+ /* Развилка С1 (не показывается): «мы ей свет оставляем» — и садится она
+    только там, где садятся при ней. Ворота when: поворот ждёт второго
+    прилёта игрока; кто прочёл слух и исчез — оставил её кружить. */
+ turns:[{after:"seen:t2",days:26,set:"landed",when:{visits:2}}]},
 
 /* ── 85. Собака, которая не собака ── зверь · любая станция */
 {id:"not_dog",form:"beast",at:"any",cast:["dog"],
@@ -29908,6 +29944,22 @@ function drawStation(x,y,Z){
     ctx.fillStyle=gg;ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.fill();ctx.restore();
   }
   ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+  /* ── одно тело под всеми кусками (П2 марафона) ──
+     На малом зуме станция рассыпалась в конфетти из ярких прямоугольников:
+     модули и панели видны, а корпуса — нет. Правило сборок «много кусков —
+     одно тело»: тёмная корпусная плита с обводом идёт ПОД модулями, куски
+     держатся одного силуэта на любом масштабе, а щели между ними перестают
+     светиться небом. Восьмиугольник, не эллипс — кругов и так дохуя. */
+  {
+    const bw=26*(V.a||1),bh=17*(V.b||1);
+    ctx.fillStyle="rgba(13,18,26,.92)";
+    ctx.strokeStyle="rgba(242,178,92,.30)";ctx.lineWidth=1.2;
+    ctx.beginPath();
+    ctx.moveTo(-bw*.55,-bh);ctx.lineTo(bw*.55,-bh);ctx.lineTo(bw,-bh*.3);
+    ctx.lineTo(bw,bh*.3);ctx.lineTo(bw*.55,bh);ctx.lineTo(-bw*.55,bh);
+    ctx.lineTo(-bw,bh*.3);ctx.lineTo(-bw,-bh*.3);
+    ctx.closePath();ctx.fill();ctx.stroke();
+  }
   /* модули идут первым слоем: они висят на штангах вокруг ядра, и ядро типа
      должно перекрывать их, а не наоборот (17a-station-mod) */
   drawStationMods(G.sys);
@@ -30432,6 +30484,20 @@ function updateSystem(dt){
     }
   }
 }
+/* Сорок девять точек эллипса не меняются никогда: орбита, эксцентриситет и
+   наклон большой оси заданы при рождении системы. Контур считается один раз
+   и лежит на самой планете; в кадре остаётся перевод в экранные координаты. */
+function orbPathOf(p){
+  let O=p._orbPath;
+  if(!O){
+    O=p._orbPath=new Float64Array(98);
+    for(let k=0;k<=48;k++){
+      const pos=keplerPos(p.orbit,p.ecc,k/48*TAU,p.argp);
+      O[k*2]=pos.x;O[k*2+1]=pos.y;
+    }
+  }
+  return O;
+}
 function drawSystem(){
   const sh=G.ship,sys=G.sys,Z=G.zoom;
   /* режим наблюдения за наёмником: двигается только камера, корабль игрока
@@ -30460,27 +30526,52 @@ function drawSystem(){
   const ox=zx(0),oy=zy(0);
   ctx.lineWidth=1;
   /* орбиты гаснут с расстоянием: ровные кольца одной яркости делали систему чертежом (G10) */
-  /* ── орбита ведёт к своему телу (M242) ──
-     Ровные яркие кольца по всему кадру при том, что планета — точка в три
-     пикселя или вовсе за краем: автор сказал «орбит много, планет мало».
-     Кольцо теперь хвост кометы: еле видное полное кольцо держит форму
-     системы, а яркая дуга догорает ровно у планеты — и каждая линия
-     показывает, где её тело. */
+  /* ── одна орбита — одна линия (П2 марафона) ──
+     M242 сделал «кольцо ведёт к телу», но хвост рисовался по ОКРУЖНОСТИ
+     радиуса p.orbit, а ниже вторым проходом шёл честный кеплеров эллипс — у
+     планеты с эксцентриситетом линии расходились, и каждая планета возила ДВА
+     кольца (автор, 29.08.2026: «кругов опять дохуя»). Окружность-приближение
+     убрана: еле видный полный контур держит форму системы, а хвост кометы
+     догорает у планеты — по её собственному эллипсу. */
   for(const p of sys.planets){
-    const rr=p.orbit*Z, fade=clamp(1-p.orbit*Z/(W*1.6),.3,1);
+    const O=orbPathOf(p);
+    const fade=clamp(1-p.orbit*Z/(W*1.6),.3,1);
     ctx.strokeStyle="rgba(120,190,210,"+(.05*fade).toFixed(3)+")";
-    ctx.beginPath();ctx.arc(ox,oy,rr,0,TAU);ctx.stroke();
-    const ang=Math.atan2(p.y,p.x);
-    const SEG=6, span=1.15;
+    ctx.beginPath();
+    ctx.moveTo(zx(O[0]),zy(O[1]));
+    for(let k=1;k<=48;k++)ctx.lineTo(zx(O[k*2]),zy(O[k*2+1]));
+    ctx.stroke();
+    /* ближайшая к телу точка контура — голова хвоста; сзади по ходу движения
+       (растущая аномалия) сегменты гаснут квадратично */
+    let k0=0,bd=1e18;
+    for(let k=0;k<48;k++){
+      const dx=O[k*2]-p.x,dy=O[k*2+1]-p.y,d=dx*dx+dy*dy;
+      if(d<bd){bd=d;k0=k;}
+    }
+    const SEG=9;
     for(let i=0;i<SEG;i++){
-      const a0=ang-span*(1-i/SEG), a1=ang-span*(1-(i+1)/SEG);
-      const al=.05+.22*((i+1)/SEG)*(i+1)/SEG;
-      ctx.strokeStyle="rgba(120,190,210,"+(al*fade).toFixed(3)+")";
-      ctx.beginPath();ctx.arc(ox,oy,rr,a0,a1);ctx.stroke();
+      const ka=((k0-i-1)%48+48)%48, kb=((k0-i)%48+48)%48;
+      const t=1-i/SEG;
+      ctx.strokeStyle="rgba(120,190,210,"+((.05+.24*t*t)*fade).toFixed(3)+")";
+      ctx.beginPath();
+      ctx.moveTo(zx(O[ka*2]),zy(O[ka*2+1]));
+      ctx.lineTo(zx(O[kb*2]),zy(O[kb*2+1]));
+      ctx.stroke();
     }
   }
-  if(sys.station){ctx.strokeStyle="rgba(242,178,92,.13)";
-    ctx.beginPath();ctx.arc(ox,oy,sys.station.orbit*Z,0,TAU);ctx.stroke();}
+  /* станция говорит тем же языком: еле видное кольцо и дуга, догорающая у неё */
+  if(sys.station){
+    const st=sys.station, sr=st.orbit*Z, sa=Math.atan2(st.y,st.x);
+    ctx.strokeStyle="rgba(242,178,92,.04)";
+    ctx.beginPath();ctx.arc(ox,oy,sr,0,TAU);ctx.stroke();
+    const SEG=7, span=.9;
+    for(let i=0;i<SEG;i++){
+      const t=(i+1)/SEG;
+      ctx.strokeStyle="rgba(242,178,92,"+(.04+.15*t*t).toFixed(3)+")";
+      ctx.beginPath();ctx.arc(ox,oy,sr,sa-span*(1-i/SEG),sa-span*(1-(i+1)/SEG));
+      ctx.stroke();
+    }
+  }
   if(sys.belt)drawBeltRing(ox,oy,sys.belt,Z);
   const R=sys.radius*Z;
   /* светило по своему типу: двойная, красный гигант, белый карлик, нейтронная,
@@ -30495,27 +30586,6 @@ function drawSystem(){
        g.addColorStop(0,"rgba("+c.join(",")+",.34)");g.addColorStop(.5,"rgba("+c.join(",")+",.10)");g.addColorStop(1,"rgba(0,0,0,0)");
        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);});
      ctx.save();ctx.globalCompositeOperation="lighter";glowBlit(BL,ox,oy,dd+Math.max(W,H)*.55);ctx.restore();}}
-  /* эллиптическая орбита — тонкий контур по формуле Кеплера, не окружность.
-     Сорок девять точек эллипса не меняются никогда: орбита, эксцентриситет и
-     наклон большой оси заданы при рождении системы. Считать их заново каждый
-     кадр — двести вызовов Кеплера в секунду на четыре планеты; поэтому кольцо
-     считается один раз и лежит на самой планете, а в кадре остаётся только
-     перевод в экранные координаты. */
-  ctx.strokeStyle="rgba(120,190,210,.08)";ctx.lineWidth=1;
-  for(const p of sys.planets){
-    let O=p._orbPath;
-    if(!O){
-      O=p._orbPath=new Float64Array(98);
-      for(let k=0;k<=48;k++){
-        const pos=keplerPos(p.orbit,p.ecc,k/48*TAU,p.argp);
-        O[k*2]=pos.x;O[k*2+1]=pos.y;
-      }
-    }
-    ctx.beginPath();
-    ctx.moveTo(zx(O[0]),zy(O[1]));
-    for(let k=1;k<=48;k++)ctx.lineTo(zx(O[k*2]),zy(O[k*2+1]));
-    ctx.stroke();
-  }
   for(const p of sys.planets){
     const x=zx(p.x),y=zy(p.y),r=p.radius*Z;
     if(x<-r-60||x>W+r+60||y<-r-60||y>H+r+60)continue;
@@ -34306,37 +34376,77 @@ function drawSkyLayer(p,camx,camy){
   const SS=sunSpot(p);
   const sunX=SS.x,sunY=SS.y;
   const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a";
-  /* зарево печётся спрайтом в единичных координатах и кладётся одним
-     drawImage: полноэкранный слой (18c) пришлось бы перепекать на каждый шаг
-     светила, а спрайт ездит бесплатно. Под горизонтом остаётся зарево заката */
+  /* ── звезда как тело, а не круг из ящика canvas (П1 марафона) ──
+     Прежний вид — идеальный круг с обрывом альфы на кромке плюс радиальный
+     градиент поверх готового неба: ровно тот «naked radial gradient», который
+     DESIGN-craft §1 называет грехом. Три поимённо:
+     1. плато на стопе .12 у зарева рисовало концентрическое КОЛЬЦО — автор
+        ткнул в него пальцем («кругов дохуя», 29.08.2026);
+     2. кромка диска обрывалась на альфе .55 — круг-наклейка;
+     3. зарево светилось и в вакууме, где рассеивать нечего (закону «в вакууме
+        лучей не бывает» шафты уже подчинялись, а зарево — нет).
+     Зарево печётся спрайтом в единичных координатах и кладётся одним
+     drawImage; падение — гладкая степенная кривая без плато. Под горизонтом
+     остаётся зарево заката. */
   {
     const under=clamp((SS.alt+.42)/.5,0,1);        /* 0 — глубокая ночь */
     const a=SS.up?1:under*.7;
     if(a>.02){
-      const GS=glowSprite("sunglow|"+sc,()=>{
+      const GS=glowSprite("sunglow2|"+sc+"|"+hasAtm,()=>{
         const g=ctx.createRadialGradient(0,0,0,0,0,1);
-        g.addColorStop(0,rgba(hex2rgb(sc),.55));
-        g.addColorStop(.12,rgba(hex2rgb(sc),.16));
-        g.addColorStop(1,"rgba(0,0,0,0)");
+        /* восемь стопов по степенной кривой: воздух рассеивает широко и мягко,
+           вакуум — только тесная корона у самого тела */
+        const a0=hasAtm?.50:.38, pw=hasAtm?2.6:5.5;
+        for(let i=0;i<=8;i++){const t=i/8;
+          g.addColorStop(t,rgba(hex2rgb(sc),a0*Math.pow(1-t,pw)));}
         ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
       });
       ctx.save();ctx.globalAlpha=a;
-      glowBlit(GS,sunX,sunY,W*.5);
+      glowBlit(GS,sunX,sunY,hasAtm?W*.5:W*.16);
       ctx.restore();
     }
   }
   /* небесные тела идут между заревом звезды и облаками: за облаками, но
      перед общим градиентом — так они и оказываются «в небе», а не поверх него */
   drawSkyBodies(p,camx,camy);
-  /* диск — цветом звезды, к центру белее: раньше он брался тоном неба (sky[1],
-     тёмным), и с грунта любая звезда читалась как затмение с короной */
+  /* ── диск: потемнение к лимбу, у горизонта — экстинкция ──
+     Цветом звезды, к центру белее (раньше он брался тоном неба и любая звезда
+     читалась затмением). Тело печётся спрайтом от высоты (12 делений): в
+     зените кромка мягкая и к краю темнее (лимб), у горизонта диск сплюснут,
+     покраснел и снизу съеден дымкой — атмосферная экстинкция. В вакууме
+     кромка резкая: смягчать её нечему. */
   if(SS.up){
-    const c=hex2rgb(sc),sr=H*.045;
-    const dg=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,sr);
-    dg.addColorStop(0,"rgba(255,252,240,.95)");
-    dg.addColorStop(.55,rgba(c,.92));
-    dg.addColorStop(1,rgba(c,.55));
-    ctx.fillStyle=dg;ctx.beginPath();ctx.arc(sunX,sunY,sr,0,TAU);ctx.fill();
+    const sr=H*.045;
+    const low=hasAtm?clamp(1-SS.alt*2.2,0,1):0;    /* 1 — у самого горизонта */
+    const altQ=Math.round(low*12);
+    const sp=glowSprite("sundisc|"+sc+"|"+hasAtm+"|"+altQ,()=>{
+      const c=hex2rgb(sc), lo=altQ/12;
+      /* к горизонту тон уходит в красную медь: воздух крадёт синее первым */
+      const cr=[lerp(c[0],205,lo*.45),lerp(c[1],84,lo*.45),lerp(c[2],40,lo*.55)].map(Math.round);
+      const g=ctx.createRadialGradient(0,0,0,0,0,1);
+      g.addColorStop(0,"rgba(255,252,240,"+(.95-lo*.25).toFixed(2)+")");
+      g.addColorStop(.55,rgba(cr,.92));
+      if(hasAtm){
+        g.addColorStop(.84,rgba(cr.map(v=>Math.round(v*.82)),.88));  /* лимб темнее кромки */
+        g.addColorStop(1,rgba(cr,0));                                /* кромку доедает воздух */
+      }else{
+        g.addColorStop(.90,rgba(cr.map(v=>Math.round(v*.86)),.94));
+        g.addColorStop(.985,rgba(cr,.92));
+        g.addColorStop(1,rgba(cr,0));                                /* полпикселя сглаживания */
+      }
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,1,0,TAU);ctx.fill();
+      /* экстинкция: дымка съедает нижний край тем сильнее, чем звезда ниже */
+      if(lo>.05){
+        const e=ctx.createLinearGradient(0,-1,0,1);
+        e.addColorStop(0,"rgba(0,0,0,0)");
+        e.addColorStop(.55,"rgba(0,0,0,0)");
+        e.addColorStop(1,"rgba(0,0,0,"+(.62*lo).toFixed(2)+")");
+        ctx.globalCompositeOperation="destination-out";
+        ctx.fillStyle=e;ctx.fillRect(-1,-1,2,2);
+      }
+    });
+    const ry=sr*(1-.20*low);                       /* у горизонта диск сплюснут */
+    ctx.drawImage(sp,sunX-sr,sunY-ry,sr*2,ry*2);
   }
   /* календарь неба поверх звезды: диск спутника наезжает на неё, комета и парад
      идут своим чередом (06a-celest). Ниже облаков — они всё равно главнее */

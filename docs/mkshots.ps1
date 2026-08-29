@@ -36,6 +36,12 @@ setTimeout(function(){
       var p=(S||G.sys).planets.slice().sort(function(a,b){return b.radius-a.radius;})[0];
       G.ship.a=.6;G.orbit={p:p,r:p.radius+150,ang:2.4,w:.0012};G.orbit.sys=G.sx+","+G.sy;
     },
+    /* весь чертёж системы: тот масштаб, на котором автор ткнул в «кругов
+       дохуя» (П2 марафона) — орбиты, станция, светило одним кадром */
+    system2:function(){
+      var S=sysWhere(function(S){return S.planets.length>=4&&S.station;});if(S)goTo(S);
+      G.zoom=.16;G.ship.a=.6;G.orbit=null;
+    },
     map:function(){G.mode="map";},
     belt:function(){var S=sysWhere(function(S){return !!S.belt;});if(S)goTo(S);G.shipId="obod";G.owned.obod=true;enterBelt();},
     belt2:function(){
@@ -165,7 +171,7 @@ $out=$head+$add+"</body></html>"
 Write-Output "docs/shots.html собран"
 if($Shoot){
   $chrome="C:\Program Files\Google\Chrome\Application\chrome.exe"
-  $scenes=@("system","map","belt","belt2","scoop","landing","surface","surface2","cave","mine","base","raid","station","cantina","hq","hours","lights","home","rooms")
+  $scenes=@("system","system2","map","belt","belt2","scoop","landing","surface","surface2","cave","mine","base","raid","station","cantina","hq","hours","lights","home","rooms")
   $dir=Join-Path $root "docs\shots"
   foreach($s in $scenes){
     $png=Join-Path $dir "$s.png"

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3060
+Файлов: 333 · символов верхнего уровня: 3061
 
 ## СИМВОЛЫ
 
@@ -572,7 +572,7 @@ drawDigFauna                 src/23-mode-dig.js:298
 drawDigWorld                 src/23a-dig-draw.js:45
 drawDronesMap                src/12e-drone-flight.js:262
 drawDronesSystem             src/12e-drone-flight.js:185
-drawDustMotes                src/19-mode-landing.js:395
+drawDustMotes                src/19-mode-landing.js:435
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:255
 drawFactory                  src/20aa-poi-shapes.js:378
@@ -596,7 +596,7 @@ drawHullMarks                src/03b-hull-paint.js:173
 drawKitFigure                src/12x-suit.js:188
 drawLander                   src/19f-lander.js:52
 drawLandGear                 src/19f-lander.js:26
-drawLanding                  src/19-mode-landing.js:409
+drawLanding                  src/19-mode-landing.js:449
 drawLoreMarks                src/12q-lore.js:235
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
@@ -643,9 +643,9 @@ drawSurface                  src/21e-surface-draw.js:630
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:479
+drawSysHud                   src/17-mode-system.js:497
 drawSysNebula                src/16a-space.js:120
-drawSystem                   src/17-mode-system.js:285
+drawSystem                   src/17-mode-system.js:299
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:283
 drawTierTrim                 src/03b-hull-paint.js:62
@@ -1695,6 +1695,7 @@ openStation                  src/26-ui-station.js:5
 OPT_TABS                     src/27-ui-ship.js:443
 optGroups                    src/27-ui-ship.js:446
 optTab                       src/27-ui-ship.js:445
+orbPathOf                    src/17-mode-system.js:288
 ORDER_WIN                    src/12aa-need.js:69
 orderDeliver                 src/12aa-need.js:108
 orderHere                    src/12aa-need.js:104
@@ -2628,40 +2629,40 @@ STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:300
+STORY_SEAT                   src/11c-stories.js:311
 STORY_WHEN                   src/11c-stories.js:147
 storyAddrMatch               src/11c-stories.js:69
 storyAll                     src/11c-stories.js:32
 storyAnchorRoll              src/11c-stories.js:87
 storyById                    src/11c-stories.js:33
-storyCantFigures             src/11c-stories.js:307
-storyCantProps               src/11c-stories.js:316
-storyCantScene               src/11c-stories.js:301
-storyCheckWhen               src/11c-stories.js:189
+storyCantFigures             src/11c-stories.js:318
+storyCantProps               src/11c-stories.js:327
+storyCantScene               src/11c-stories.js:312
+storyCheckWhen               src/11c-stories.js:200
 storyCtx                     src/11c-stories.js:39
 storyDay                     src/11c-stories.js:28
-storyEtherLine               src/11c-stories.js:240
-storyFindLine                src/11c-stories.js:268
+storyEtherLine               src/11c-stories.js:251
+storyFindLine                src/11c-stories.js:279
 storyFixedAddr               src/11c-stories.js:55
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:381
+storyGroundLine              src/11c-stories.js:392
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:348
-storyNewsItem                src/11c-stories.js:275
-storyNote                    src/11c-stories.js:393
-storyPickOne                 src/11c-stories.js:231
+storyLint                    src/11c-stories.js:359
+storyNewsItem                src/11c-stories.js:286
+storyNote                    src/11c-stories.js:404
+storyPickOne                 src/11c-stories.js:242
 storyPins                    src/11c-stories.js:30
 storyPlace                   src/11c-stories.js:93
-storyProp                    src/11c-stories.js:324
-storyQueueLine               src/11c-stories.js:248
+storyProp                    src/11c-stories.js:335
+storyQueueLine               src/11c-stories.js:259
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
-storyShow                    src/11c-stories.js:217
-storyTableLine               src/11c-stories.js:260
-storyTraces                  src/11c-stories.js:198
+storyShow                    src/11c-stories.js:228
+storyTableLine               src/11c-stories.js:271
+storyTraces                  src/11c-stories.js:209
 storyTurns                   src/11c-stories.js:121
-storyWhen                    src/11c-stories.js:184
+storyWhen                    src/11c-stories.js:195
 stPanels                     src/17c-system-draw.js:118
 stRing                       src/17c-system-draw.js:144
 STRIP_CHUNK                  src/07-planet.js:73
@@ -3217,9 +3218,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11b-speech.js · 17 КБ
   · речь: очередь реплик и вещь на столе:1
 
-## src/11c-stories.js · 23 КБ
+## src/11c-stories.js · 24 КБ
   · истории: следы, а не задания:1
-  · каналы:238
+  · каналы:249
 
 ## src/11d-place.js · 4 КБ
   · память места: три счётчика и одометр:1
@@ -3355,14 +3356,14 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12k-rep.js · 4 КБ
   · репутация: вас помнят там, где вы бывали:1
 
-## src/12k-stories-a.js · 30 КБ
+## src/12k-stories-a.js · 31 КБ
   · истории, часть первая:1
-  · длинные — в духе институтской фантастики:236
+  · длинные — в духе институтской фантастики:241
 
-## src/12k-stories-b.js · 34 КБ
+## src/12k-stories-b.js · 37 КБ
   · истории, часть вторая:1
 
-## src/12k-stories-c.js · 21 КБ
+## src/12k-stories-c.js · 22 КБ
   · истории, часть третья:1
 
 ## src/12k-stories-d.js · 8 КБ
@@ -3486,13 +3487,13 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17b-finds.js · 15 КБ
   · находки в полёте:1
 
-## src/17c-system-draw.js · 20 КБ
+## src/17c-system-draw.js · 21 КБ
   · система: кольца, пояс и станция в кадре:1
 
 ## src/17d-house-shapes.js · 4 КБ
   · дома как язык форм:1
 
-## src/17-mode-system.js · 35 КБ
+## src/17-mode-system.js · 36 КБ
   · режим: система:1
 
 ## src/18a-material.js · 21 КБ
@@ -3532,7 +3533,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19f-lander.js · 21 КБ
   · посадочный корабль:1
 
-## src/19-mode-landing.js · 28 КБ
+## src/19-mode-landing.js · 31 КБ
   · посадка:1
 
 ## src/20aa-poi-shapes.js · 30 КБ
@@ -3943,8 +3944,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zp-stories.js · 10 КБ
   · истории: следы, якорь, повороты, каналы:1
-  · M259: поворот читает руку игрока:106
-  · дыра контекста (автор, 30.08): hand меряет место ИСТОРИИ:136
+  · M259: поворот читает руку игрока:112
+  · дыра контекста (автор, 30.08): hand меряет место ИСТОРИИ:142
 
 ## tests/91zq-regions.js · 6 КБ
   · области: таблица, расстановка, память места:1

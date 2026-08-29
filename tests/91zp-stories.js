@@ -18,6 +18,12 @@ TEST_SUITES.push(()=>suite("истории: данные здоровы, сло�
   /* треть необъяснимого: истории без поворота и без «развязки» — их не меньше четверти */
   const open=STORIES.filter(S=>!S.turns||!S.turns.length).length;
   ok(open>=STORIES.length/4,"без поворота не меньше четверти историй ("+open+" из "+STORIES.length+")");
+  /* С1-пересчёт (марафон): повороты, читающие поступок — с when или unless.
+     Число обязано расти партиями С1–С3, иначе проход не засчитан. */
+  const deed=[];
+  for(const S of STORIES)for(const T of (S.turns||[]))
+    if(T.when||T.unless)deed.push(S.id);
+  ok(deed.length>=7,"поворотов-поступков не меньше семи (есть "+deed.length+": "+deed.join(", ")+")");
 }));
 
 TEST_SUITES.push(()=>suite("истории: якорь при первой встрече и выдача по каналам",()=>{

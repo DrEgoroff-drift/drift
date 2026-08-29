@@ -125,7 +125,10 @@ const STORIES_C=[
   {id:"t4",via:"cant",when:{flag:"landed"},scene:{seat:"door",figure:1,col:[90,96,110],props:["cap","glass"]}},
   {id:"t5",via:"queue",when:{flag:"landed"},text:"— Села. Сидит у двери, молчит. Мы тоже молчим. Три года готовились, что сказать, — и молчим."}
  ],
- turns:[{after:"seen:t2",days:26,set:"landed"}]},
+ /* Развилка С1 (не показывается): «мы ей свет оставляем» — и садится она
+    только там, где садятся при ней. Ворота when: поворот ждёт второго
+    прилёта игрока; кто прочёл слух и исчез — оставил её кружить. */
+ turns:[{after:"seen:t2",days:26,set:"landed",when:{visits:2}}]},
 
 /* ── 85. Собака, которая не собака ── зверь · любая станция */
 {id:"not_dog",form:"beast",at:"any",cast:["dog"],

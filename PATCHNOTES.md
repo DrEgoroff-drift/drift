@@ -7,6 +7,40 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.262.0 — M265: the sun becomes a body, an orbit becomes one line, five turns hear the deed
+
+First leg of the critique marathon (П1 · П2 · С1).
+
+**П1 — the star from the ground.** The sun was a perfect circle with an alpha cliff at the
+edge plus a three-stop radial glow whose .12 plateau drew a concentric RING — the exact circles
+the author pointed at. Now: the glow falls by a smooth power curve (and in vacuum shrinks to a
+tight corona — nothing scatters there); the disc is baked per altitude step with limb darkening,
+a soft edge where there is air, a crisp one where there is none; near the horizon it flattens,
+reddens and its lower edge is eaten by haze (extinction).
+
+**П2 — one orbit, one line.** M242's comet-tail arc was drawn on a CIRCLE of radius `p.orbit`
+while a second pass drew the true Kepler ellipse — every eccentric planet dragged two mismatched
+rings. The circle is gone; the fade and the tail now live on the ellipse itself
+(`orbPathOf`). The station ring speaks the same language: a whisper of a ring, a tail dying at
+the station. The station itself got a hull plate — a dark octagon with an outline under the
+modules («много кусков — одно тело»), so at map zoom it reads as a thing, not orange confetti.
+
+**С1 — five turns read deeds (fork never shown).** New condition key `tinfed` (the Tin's
+`T.last` is written only by a full order from the player's hands) and a mirror key `any`.
+Reworked: *tin_feeders* — the path to the machine overgrows unless the player ever set it
+running; *shoal* — the hunter pays for exact times, and a postcard strip of this shore IS one:
+photographed — the shoal gets hunted, didn't — he leaves with nothing; *baker_oven* — if the
+player ever laid cargo on the Baker's table, the oven door arrives in what was brought;
+*forty_two* — she lands only where the player kept landing («мы ей свет оставляем»). Refusals
+named in place: *twins* and *busy_freq* stay calendar — inevitability is their point
+(two_on_orbit class). Lint now understands flags read through `none`/`any`; the suite counts
+deed-turns (7) and the number must grow with С2–С3.
+
+`?g11` after the leg: 43–60 fps across modes on a loaded dev machine, no regression expected —
+the system view strokes strictly less than before, the sun is a sprite blit instead of a
+per-frame gradient.
+
+---
 ## 0.261.0 — M264: the button hears the whole prompt; the mouse reveals the pads
 
 Two first-five-minutes bugs, both caught by the author on one screenshot.

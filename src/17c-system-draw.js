@@ -181,6 +181,22 @@ function drawStation(x,y,Z){
     ctx.fillStyle=gg;ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.fill();ctx.restore();
   }
   ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+  /* ── одно тело под всеми кусками (П2 марафона) ──
+     На малом зуме станция рассыпалась в конфетти из ярких прямоугольников:
+     модули и панели видны, а корпуса — нет. Правило сборок «много кусков —
+     одно тело»: тёмная корпусная плита с обводом идёт ПОД модулями, куски
+     держатся одного силуэта на любом масштабе, а щели между ними перестают
+     светиться небом. Восьмиугольник, не эллипс — кругов и так дохуя. */
+  {
+    const bw=26*(V.a||1),bh=17*(V.b||1);
+    ctx.fillStyle="rgba(13,18,26,.92)";
+    ctx.strokeStyle="rgba(242,178,92,.30)";ctx.lineWidth=1.2;
+    ctx.beginPath();
+    ctx.moveTo(-bw*.55,-bh);ctx.lineTo(bw*.55,-bh);ctx.lineTo(bw,-bh*.3);
+    ctx.lineTo(bw,bh*.3);ctx.lineTo(bw*.55,bh);ctx.lineTo(-bw*.55,bh);
+    ctx.lineTo(-bw,bh*.3);ctx.lineTo(-bw,-bh*.3);
+    ctx.closePath();ctx.fill();ctx.stroke();
+  }
   /* модули идут первым слоем: они висят на штангах вокруг ядра, и ядро типа
      должно перекрывать их, а не наоборот (17a-station-mod) */
   drawStationMods(G.sys);

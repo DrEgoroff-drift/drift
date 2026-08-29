@@ -282,6 +282,20 @@ function updateSystem(dt){
     }
   }
 }
+/* Сорок девять точек эллипса не меняются никогда: орбита, эксцентриситет и
+   наклон большой оси заданы при рождении системы. Контур считается один раз
+   и лежит на самой планете; в кадре остаётся перевод в экранные координаты. */
+function orbPathOf(p){
+  let O=p._orbPath;
+  if(!O){
+    O=p._orbPath=new Float64Array(98);
+    for(let k=0;k<=48;k++){
+      const pos=keplerPos(p.orbit,p.ecc,k/48*TAU,p.argp);
+      O[k*2]=pos.x;O[k*2+1]=pos.y;
+    }
+  }
+  return O;
+}
 function drawSystem(){
   const sh=G.ship,sys=G.sys,Z=G.zoom;
   /* режим наблюдения за наёмником: двигается только камера, корабль игрока
@@ -310,27 +324,52 @@ function drawSystem(){
   const ox=zx(0),oy=zy(0);
   ctx.lineWidth=1;
   /* орбиты гаснут с расстоянием: ровные кольца одной яркости делали систему чертежом (G10) */
-  /* ── орбита ведёт к своему телу (M242) ──
-     Ровные яркие кольца по всему кадру при том, что планета — точка в три
-     пикселя или вовсе за краем: автор сказал «орбит много, планет мало».
-     Кольцо теперь хвост кометы: еле видное полное кольцо держит форму
-     системы, а яркая дуга догорает ровно у планеты — и каждая линия
-     показывает, где её тело. */
+  /* ── одна орбита — одна линия (П2 марафона) ──
+     M242 сделал «кольцо ведёт к телу», но хвост рисовался по ОКРУЖНОСТИ
+     радиуса p.orbit, а ниже вторым проходом шёл честный кеплеров эллипс — у
+     планеты с эксцентриситетом линии расходились, и каждая планета возила ДВА
+     кольца (автор, 29.08.2026: «кругов опять дохуя»). Окружность-приближение
+     убрана: еле видный полный контур держит форму системы, а хвост кометы
+     догорает у планеты — по её собственному эллипсу. */
   for(const p of sys.planets){
-    const rr=p.orbit*Z, fade=clamp(1-p.orbit*Z/(W*1.6),.3,1);
+    const O=orbPathOf(p);
+    const fade=clamp(1-p.orbit*Z/(W*1.6),.3,1);
     ctx.strokeStyle="rgba(120,190,210,"+(.05*fade).toFixed(3)+")";
-    ctx.beginPath();ctx.arc(ox,oy,rr,0,TAU);ctx.stroke();
-    const ang=Math.atan2(p.y,p.x);
-    const SEG=6, span=1.15;
+    ctx.beginPath();
+    ctx.moveTo(zx(O[0]),zy(O[1]));
+    for(let k=1;k<=48;k++)ctx.lineTo(zx(O[k*2]),zy(O[k*2+1]));
+    ctx.stroke();
+    /* ближайшая к телу точка контура — голова хвоста; сзади по ходу движения
+       (растущая аномалия) сегменты гаснут квадратично */
+    let k0=0,bd=1e18;
+    for(let k=0;k<48;k++){
+      const dx=O[k*2]-p.x,dy=O[k*2+1]-p.y,d=dx*dx+dy*dy;
+      if(d<bd){bd=d;k0=k;}
+    }
+    const SEG=9;
     for(let i=0;i<SEG;i++){
-      const a0=ang-span*(1-i/SEG), a1=ang-span*(1-(i+1)/SEG);
-      const al=.05+.22*((i+1)/SEG)*(i+1)/SEG;
-      ctx.strokeStyle="rgba(120,190,210,"+(al*fade).toFixed(3)+")";
-      ctx.beginPath();ctx.arc(ox,oy,rr,a0,a1);ctx.stroke();
+      const ka=((k0-i-1)%48+48)%48, kb=((k0-i)%48+48)%48;
+      const t=1-i/SEG;
+      ctx.strokeStyle="rgba(120,190,210,"+((.05+.24*t*t)*fade).toFixed(3)+")";
+      ctx.beginPath();
+      ctx.moveTo(zx(O[ka*2]),zy(O[ka*2+1]));
+      ctx.lineTo(zx(O[kb*2]),zy(O[kb*2+1]));
+      ctx.stroke();
     }
   }
-  if(sys.station){ctx.strokeStyle="rgba(242,178,92,.13)";
-    ctx.beginPath();ctx.arc(ox,oy,sys.station.orbit*Z,0,TAU);ctx.stroke();}
+  /* станция говорит тем же языком: еле видное кольцо и дуга, догорающая у неё */
+  if(sys.station){
+    const st=sys.station, sr=st.orbit*Z, sa=Math.atan2(st.y,st.x);
+    ctx.strokeStyle="rgba(242,178,92,.04)";
+    ctx.beginPath();ctx.arc(ox,oy,sr,0,TAU);ctx.stroke();
+    const SEG=7, span=.9;
+    for(let i=0;i<SEG;i++){
+      const t=(i+1)/SEG;
+      ctx.strokeStyle="rgba(242,178,92,"+(.04+.15*t*t).toFixed(3)+")";
+      ctx.beginPath();ctx.arc(ox,oy,sr,sa-span*(1-i/SEG),sa-span*(1-(i+1)/SEG));
+      ctx.stroke();
+    }
+  }
   if(sys.belt)drawBeltRing(ox,oy,sys.belt,Z);
   const R=sys.radius*Z;
   /* светило по своему типу: двойная, красный гигант, белый карлик, нейтронная,
@@ -345,27 +384,6 @@ function drawSystem(){
        g.addColorStop(0,"rgba("+c.join(",")+",.34)");g.addColorStop(.5,"rgba("+c.join(",")+",.10)");g.addColorStop(1,"rgba(0,0,0,0)");
        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);});
      ctx.save();ctx.globalCompositeOperation="lighter";glowBlit(BL,ox,oy,dd+Math.max(W,H)*.55);ctx.restore();}}
-  /* эллиптическая орбита — тонкий контур по формуле Кеплера, не окружность.
-     Сорок девять точек эллипса не меняются никогда: орбита, эксцентриситет и
-     наклон большой оси заданы при рождении системы. Считать их заново каждый
-     кадр — двести вызовов Кеплера в секунду на четыре планеты; поэтому кольцо
-     считается один раз и лежит на самой планете, а в кадре остаётся только
-     перевод в экранные координаты. */
-  ctx.strokeStyle="rgba(120,190,210,.08)";ctx.lineWidth=1;
-  for(const p of sys.planets){
-    let O=p._orbPath;
-    if(!O){
-      O=p._orbPath=new Float64Array(98);
-      for(let k=0;k<=48;k++){
-        const pos=keplerPos(p.orbit,p.ecc,k/48*TAU,p.argp);
-        O[k*2]=pos.x;O[k*2+1]=pos.y;
-      }
-    }
-    ctx.beginPath();
-    ctx.moveTo(zx(O[0]),zy(O[1]));
-    for(let k=1;k<=48;k++)ctx.lineTo(zx(O[k*2]),zy(O[k*2+1]));
-    ctx.stroke();
-  }
   for(const p of sys.planets){
     const x=zx(p.x),y=zy(p.y),r=p.radius*Z;
     if(x<-r-60||x>W+r+60||y<-r-60||y>H+r+60)continue;

@@ -177,9 +177,20 @@ const STORY_WHEN={
     return !!(st&&st.handAt)===!!v;},
   /* швов на текущем корпусе не меньше v (12s, M256): биографию видно и людям */
   seams:(v)=>((typeof seamsOf==="function")?seamsOf():0)>=v,
+  /* Жестянку ЭТОГО места игрок хоть раз ставил на смену: T.last пишется
+     только полным нарядом из рук игрока (12ta). Координаты — из ключа места,
+     по той же причине, что у hand: через news c.sx/c.sy — это игрок */
+  tinfed:(v,S,c)=>{
+    let sx=c.sx,sy=c.sy;
+    if(c.key){const m=/^(-?\d+),(-?\d+)/.exec(String(c.key));if(m){sx=+m[1];sy=+m[2];}}
+    const T=(typeof tinAt==="function")?tinAt(sx,sy):null;
+    return !!(T&&T.last)===!!v;},
   /* ни один из флагов не стоит: нужен следам историй, у чьих поворотов есть
      else-исход — «до поворота» это теперь два не-состояния, а не одно */
-  none:(v,S)=>v.every(f=>!storyFlag(S,f))
+  none:(v,S)=>v.every(f=>!storyFlag(S,f)),
+  /* хотя бы один стоит — зеркало none: «после поворота» с else-исходом это
+     тоже два состояния, а след, общий для обеих ветвей, один (потолок следов) */
+  any:(v,S)=>v.some(f=>storyFlag(S,f))
 };
 function storyWhen(S,t,c){
   const w=t.when;if(!w)return true;
@@ -358,12 +369,12 @@ function storyLint(){
     for(const t of S.traces)if(!["ether","queue","table","find","news","cant","land","cave","settle","tin"].includes(t.via))bad.push(S.id+"."+t.id+": канал "+t.via);
     for(const id of (S.cast||[]))if(!CASTT[id])bad.push(S.id+": нет в труппе "+id);
     for(const T of (S.turns||[])){
-      const read=S.traces.some(t=>t.when&&(t.when.flag===T.set||t.when.noflag===T.set));
-      if(!read)bad.push(S.id+": флаг "+T.set+" никто не читает");
-      if(T.else){
-        const r2=S.traces.some(t=>t.when&&(t.when.flag===T.else||t.when.noflag===T.else));
-        if(!r2)bad.push(S.id+": флаг "+T.else+" никто не читает");
-      }
+      /* флаг «читается» и списками none/any: у поворота с else-исходом общий
+         для обеих ветвей след держит их через any, а до-поворотные — через none */
+      const reads=f=>S.traces.some(t=>t.when&&(t.when.flag===f||t.when.noflag===f
+        ||(t.when.none||[]).includes(f)||(t.when.any||[]).includes(f)));
+      if(!reads(T.set))bad.push(S.id+": флаг "+T.set+" никто не читает");
+      if(T.else&&!reads(T.else))bad.push(S.id+": флаг "+T.else+" никто не читает");
       for(const w of [T.when,T.unless])if(w)
         for(const k in w)if(!STORY_WHEN[k])bad.push(S.id+" turn:"+k);
     }

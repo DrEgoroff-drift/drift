@@ -84,16 +84,21 @@ const STORIES=[
  ]},
 
 /* ── 4. Пекарь не печёт ── соперник · дом Пекаря */
+/* Развилка С1 (не показывается): если игрок хоть раз выкладывал груз на его
+   стол (seen:t5 — поступок, который игра уже помнит), дверца нашлась в
+   принесённом; если нет — на барахолке, где всё находится. Никто не говорит
+   игроку, из чьих рук она пришла. */
 {id:"baker_oven",form:"thing",at:"fixed:7",cast:["baker"],
  traces:[
-  {id:"t1",via:"cant",when:{noflag:"door"},scene:{seat:"end",figure:0,props:["bread","bread"]}},
+  {id:"t1",via:"cant",when:{none:["door","brought"]},scene:{seat:"end",figure:0,props:["bread","bread"]}},
   {id:"t2",via:"queue",text:"— Пекарь? Он не пёк никогда. Прозвище — за то, что встаёт рано. Всё остальное люди выдумали."},
   {id:"t3",via:"queue",when:{visits:2},text:"— Пёк. Ещё как пёк. Потом печь увезли, а он остался. Теперь собирает что попало."},
   {id:"t4",via:"news",when:{visits:2},text:"Пекарь ищет дверцу от печи. Обожжённую. Платит как за редкость."},
-  {id:"t5",via:"table",item:"cargo",when:{item:"cargo",visits:3},text:"— Не то. Я узнаю, когда будет то."},
-  {id:"t6",via:"cant",when:{flag:"door"},scene:{seat:"end",figure:1,props:[]}}
+  {id:"t5",via:"table",item:"cargo",when:{item:"cargo",visits:3,none:["door","brought"]},text:"— Не то. Я узнаю, когда будет то."},
+  {id:"t6",via:"cant",when:{any:["door","brought"]},scene:{seat:"end",figure:1,props:[]}},
+  {id:"t7",via:"queue",when:{flag:"brought"},text:"— Нашёл. В грузе, что выкладывали ему на стол. Говорит, узнал по ожогу, сразу."}
  ],
- turns:[{after:"seen:t4",days:20,set:"door"}]},
+ turns:[{after:"seen:t4",days:20,set:"door",unless:{seen:"t5"},else:"brought"}]},
 
 /* ── 5. Трепло знает слово ── переносчик · любой торговый узел, с птицей */
 {id:"parrot_callsign",form:"pair",at:"stype:trade",cast:["zero7"],
