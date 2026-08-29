@@ -7,6 +7,28 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.263.0 — M266: the census of circles (П3)
+
+The album (all scenes, headless) was walked looking for every naked circle. Three offenders
+fixed; the rest acquitted by name.
+
+- **Weather now silences the sky bodies.** The shafts' law («в вакууме лучей не бывает; осадки
+  глушат») never reached `drawSkyBodies`: in a rainstorm the neighbour giant stayed a pale
+  circle whose atmosphere rim outlived its body — a bare ring in the sky. Sky bodies now fade
+  with `weatherPower` and vanish past heavy weather.
+- **The star's off-screen bleed** (system view) had a mid-stop kink drawing a faint ring — the
+  same disease as the old sun glow. Power-curve stops now (`bleed2`).
+- **The surface sun glow** got 12 stops instead of 8 — piecewise-linear alpha was still able to
+  gather into faint banding rings on clean skies.
+
+Acquitted, with reasons written here so the next census doesn't reopen them: the space star's
+glare ring (deliberate «очень ярко» sign, 16a), the cave lamp's ellipse (M258's language),
+the day-sky giant (six author-driven reworks settled on «тело обязано отличаться от воздуха» —
+it stays visible by decree), lamp dots of the glow worlds (lamps are round).
+
+Also noted for P0: the «смотритель: энергия…излишек» suite flaked once (green on rerun, twice).
+
+---
 ## 0.262.0 — M265: the sun becomes a body, an orbit becomes one line, five turns hear the deed
 
 First leg of the critique marathon (П1 · П2 · С1).

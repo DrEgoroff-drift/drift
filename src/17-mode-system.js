@@ -380,8 +380,11 @@ function drawSystem(){
      иначе системный вид без звезды выглядел экраном загрузки (G10) */
   {const dx=ox<0?-ox:(ox>W?ox-W:0), dy=oy<0?-oy:(oy>H?oy-H:0), dd=Math.hypot(dx,dy);
    if(dd>0){const col=sys.cls.col,c=hex2rgb(col);
-     const BL=glowSprite("bleed|"+col,()=>{const g=ctx.createRadialGradient(0,0,0,0,0,1);
-       g.addColorStop(0,"rgba("+c.join(",")+",.34)");g.addColorStop(.5,"rgba("+c.join(",")+",.10)");g.addColorStop(1,"rgba(0,0,0,0)");
+     /* падение — степенная кривая: излом на среднем стопе рисовал еле видное
+        кольцо, тот же грех, что у зарева звезды с поверхности (П1) */
+     const BL=glowSprite("bleed2|"+col,()=>{const g=ctx.createRadialGradient(0,0,0,0,0,1);
+       for(let i=0;i<=8;i++){const t=i/8;
+         g.addColorStop(t,"rgba("+c.join(",")+","+(.34*Math.pow(1-t,2.2)).toFixed(3)+")");}
        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);});
      ctx.save();ctx.globalCompositeOperation="lighter";glowBlit(BL,ox,oy,dd+Math.max(W,H)*.55);ctx.restore();}}
   for(const p of sys.planets){

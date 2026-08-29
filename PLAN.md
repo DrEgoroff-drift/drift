@@ -155,9 +155,11 @@ the stand anyway.
 - **P2 — the system map.** ~~First iteration done (M265)~~: one orbit one line (tail on the
   true ellipse, circle approximation removed), station ring whisper+tail, hull plate under
   station modules. Left open: judge Цицион-type clutter at more zoom levels on the album.
-- **P3 — the census of every remaining circle.** `GLOW_CACHE`/`11i-glow`, `poiGlow`, the landing
-  spot, the пещера/корабль markers. Each circle either earns its form (ellipse on the ground,
-  grain, direction, silhouette clipping) or dies. Close the class, not instances.
+- **P3 — the census of every remaining circle.** ~~Done (M266, 0.263.0)~~: weather silences sky
+  bodies (the rim outliving the giant), bleed glow de-ringed, sun glow 12 stops. Acquittals
+  written in the patchnote so the census doesn't reopen: star glare ring, cave lamp ellipse,
+  day giant (author's decree after six reworks), glow-world lamp dots. Flake noted for P0:
+  «смотритель…излишек» suite failed once, green twice on rerun.
 - **P4 — surface rock and material.** The 皴 table out of the cave onto mine and cliff strata;
   strata direction on cuts; edge; cast shadows for standing boulders.
 - **P5 — buildings and POI.** Factory, mine, wrecks: one body, one light, «работа видна».

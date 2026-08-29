@@ -1353,7 +1353,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.262.0";
+const VER="0.263.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -30582,8 +30582,11 @@ function drawSystem(){
      иначе системный вид без звезды выглядел экраном загрузки (G10) */
   {const dx=ox<0?-ox:(ox>W?ox-W:0), dy=oy<0?-oy:(oy>H?oy-H:0), dd=Math.hypot(dx,dy);
    if(dd>0){const col=sys.cls.col,c=hex2rgb(col);
-     const BL=glowSprite("bleed|"+col,()=>{const g=ctx.createRadialGradient(0,0,0,0,0,1);
-       g.addColorStop(0,"rgba("+c.join(",")+",.34)");g.addColorStop(.5,"rgba("+c.join(",")+",.10)");g.addColorStop(1,"rgba(0,0,0,0)");
+     /* падение — степенная кривая: излом на среднем стопе рисовал еле видное
+        кольцо, тот же грех, что у зарева звезды с поверхности (П1) */
+     const BL=glowSprite("bleed2|"+col,()=>{const g=ctx.createRadialGradient(0,0,0,0,0,1);
+       for(let i=0;i<=8;i++){const t=i/8;
+         g.addColorStop(t,"rgba("+c.join(",")+","+(.34*Math.pow(1-t,2.2)).toFixed(3)+")");}
        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);});
      ctx.save();ctx.globalCompositeOperation="lighter";glowBlit(BL,ox,oy,dd+Math.max(W,H)*.55);ctx.restore();}}
   for(const p of sys.planets){
@@ -32348,7 +32351,12 @@ function skyNebula(p,seed){
 function drawSkyBodies(p,camx,camy){
   const S=skyScene(p);if(!S.length)return;
   const atm=p.T.atm!=="отсутствует";
-  const dim=atm?.42:1;                       // воздух гасит небо
+  /* осадки и туман глушат небесное — тот же закон, что у клиньев света (19c):
+     в ливень далёкого тела не видно, и его светящаяся кромка не должна
+     переживать его тело — иначе в небе остаётся голый контур круга (П3) */
+  const wp=(atm&&typeof weatherPower==="function")?weatherPower(p):0;
+  const dim=(atm?.42:1)*(1-wp*.75);          // воздух гасит небо
+  if(dim<.04)return;
   /* ── параллакс без зажима (автор: «дыра следует за кораблём», M178) ──
      Сдвиг был зажат в десятую экрана, и на подлёте через всю полосу тело
      ехало вместе с кораблём, как приклеенное к стеклу. Теперь ход свободный
@@ -34394,10 +34402,11 @@ function drawSkyLayer(p,camx,camy){
     if(a>.02){
       const GS=glowSprite("sunglow2|"+sc+"|"+hasAtm,()=>{
         const g=ctx.createRadialGradient(0,0,0,0,0,1);
-        /* восемь стопов по степенной кривой: воздух рассеивает широко и мягко,
-           вакуум — только тесная корона у самого тела */
+        /* двенадцать стопов по степенной кривой: воздух рассеивает широко и
+           мягко, вакуум — только тесная корона у самого тела. Стопов много,
+           чтобы кусочно-линейная альфа не собиралась в еле видные кольца */
         const a0=hasAtm?.50:.38, pw=hasAtm?2.6:5.5;
-        for(let i=0;i<=8;i++){const t=i/8;
+        for(let i=0;i<=12;i++){const t=i/12;
           g.addColorStop(t,rgba(hex2rgb(sc),a0*Math.pow(1-t,pw)));}
         ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
       });

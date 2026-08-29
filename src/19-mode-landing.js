@@ -368,10 +368,11 @@ function drawSkyLayer(p,camx,camy){
     if(a>.02){
       const GS=glowSprite("sunglow2|"+sc+"|"+hasAtm,()=>{
         const g=ctx.createRadialGradient(0,0,0,0,0,1);
-        /* восемь стопов по степенной кривой: воздух рассеивает широко и мягко,
-           вакуум — только тесная корона у самого тела */
+        /* двенадцать стопов по степенной кривой: воздух рассеивает широко и
+           мягко, вакуум — только тесная корона у самого тела. Стопов много,
+           чтобы кусочно-линейная альфа не собиралась в еле видные кольца */
         const a0=hasAtm?.50:.38, pw=hasAtm?2.6:5.5;
-        for(let i=0;i<=8;i++){const t=i/8;
+        for(let i=0;i<=12;i++){const t=i/12;
           g.addColorStop(t,rgba(hex2rgb(sc),a0*Math.pow(1-t,pw)));}
         ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
       });
