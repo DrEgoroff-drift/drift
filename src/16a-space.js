@@ -56,10 +56,18 @@ function sysNebulaTex(sys){
     const st=sysStyle(sys),S=160;
     const cn=document.createElement("canvas");cn.width=cn.height=S;
     const c=cn.getContext("2d");
+    /* поле направлений для волокон (M255): грубая сетка 9×9, посчитанная раз
+       на выпечку — правило M253, попиксельно поле не зовётся. Храним cos/sin,
+       а не угол: угол через ±π билинейно не интерполируется */
+    const GN=9,dirs=new Float32Array(GN*GN*2),nsd=st.nseed>>>0;
+    for(let gy=0;gy<GN;gy++)for(let gx=0;gx<GN;gx++){
+      const a=dirAt(gx/(GN-1)*820,gy/(GN-1)*820,nsd^0xA9,1/300);
+      dirs[(gy*GN+gx)*2]=Math.cos(a);dirs[(gy*GN+gx)*2+1]=Math.sin(a);
+    }
     NEB_JOB={sys,S,cn,c,img:c.createImageData(S,S),y:0,
-      sd:st.nseed>>>0,c1:st.neb[0],c2:st.neb[1]};
+      sd:nsd,c1:st.neb[0],c2:st.neb[1],dirs,GN};
   }
-  const J=NEB_JOB,S=J.S,d=J.img.data,sd=J.sd,c1=J.c1,c2=J.c2;
+  const J=NEB_JOB,S=J.S,d=J.img.data,sd=J.sd,c1=J.c1,c2=J.c2,dirs=J.dirs,GN=J.GN;
   const t0=performance.now();
   while(J.y<S){
     const y=J.y++;
@@ -68,8 +76,18 @@ function sysNebulaTex(sys){
       const a=clamp((tfbm(u,v,3,sd,5)-.45)*2.7,0,1);
       const b=clamp((tfbm(u,v,6,sd+91,4)-.48)*2.5,0,1);
       /* волокна: третий слой с высокой частотой и узкой маской — без них
-         туманность выглядит размытым пятном, а не облаком газа */
-      const f=ridged(tfbm(u,v,9,sd+53,3),9);
+         туманность выглядит размытым пятном, а не облаком газа.
+         С M255 они ТЕКУТ (андаменто, DESIGN-craft §2): координата волокна
+         повёрнута по местному направлению из сетки, частота поперёк потока
+         выше, чем вдоль, — газ расчёсан течением, а не рассыпан. */
+      const gxf=u*(GN-1),gyf=v*(GN-1);
+      const gi=Math.min(GN-2,gxf|0),gj=Math.min(GN-2,gyf|0),fx=gxf-gi,fy=gyf-gj;
+      const i00=(gj*GN+gi)*2,i10=i00+2,i01=i00+GN*2,i11=i01+2;
+      let cs=(dirs[i00]*(1-fx)+dirs[i10]*fx)*(1-fy)+(dirs[i01]*(1-fx)+dirs[i11]*fx)*fy;
+      let sn=(dirs[i00+1]*(1-fx)+dirs[i10+1]*fx)*(1-fy)+(dirs[i01+1]*(1-fx)+dirs[i11+1]*fx)*fy;
+      const nm=Math.hypot(cs,sn)||1;cs/=nm;sn/=nm;
+      const pu=(u-.5)*cs+(v-.5)*sn+.5, qv=-(u-.5)*sn+(v-.5)*cs+.5;
+      const f=ridged(tfbm(pu*.42+.29,qv*1.9,9,sd+53,3),9);
       d[o]  =clamp(c1[0]*a+c2[0]*b*.8+f*90,0,255);
       d[o+1]=clamp(c1[1]*a+c2[1]*b*.8+f*70,0,255);
       d[o+2]=clamp(c1[2]*a+c2[2]*b*.9+f*120,0,255);

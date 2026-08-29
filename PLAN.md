@@ -122,6 +122,16 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M255 — the nebula's fibres flow (2026-08-29) — CLOSED (0.251.0)
+
+P2's raster half is done: rock grain (M253), dust current (M254), nebula fibres combed by a
+9×9 direction grid at bake. The grass-wind consumer turned out to exist already
+(`21e-surface-draw`: a travelling lean wave plus individual flutter) — checked, named, left
+alone. P2's remaining idea — the andamento background (the ground behind a subject continuing
+its movement) — waits for a scene that needs it rather than being forced somewhere.
+Next per the combined plan: **P3, the finish pass** — движки/отборка on hull metal and wet
+surfaces in the live game, kintsugi seams in `12s-wear`.
+
 ## M254 — the dust flows (2026-08-29) — CLOSED (0.250.0)
 
 Second consumer of `dirAt`: grain flow angles baked into `dustTable`, one slow world current,

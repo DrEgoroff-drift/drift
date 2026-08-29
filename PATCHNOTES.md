@@ -7,7 +7,20 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.250.0 — M254: the dust flows
+## 0.251.0 — M255: the nebula's fibres flow
+
+Third consumer of the direction field, and the close of P2's raster half. The system nebula's
+fibre layer (the ridged pass that keeps it from being a blurred blob) was isotropic — combed by
+nothing. Now a coarse 9×9 direction grid is computed once per bake (cos/sin stored — an angle
+does not interpolate across ±π), and each pixel's fibre coordinate is rotated to the local
+flow, with a higher frequency across the stream than along it: the gas is combed by a current
+(andamento, DESIGN-craft §2). The budgeted bake keeps its 2 ms slices; the per-pixel cost is
+one bilinear lookup and a rotation.
+
+Also found on inspection, recorded rather than redone: the grass already bends to **one wind**
+— `21e-surface-draw` leans every plant by a travelling wave (`G.t*.028+pl.x*.05`), and the
+per-plant phase is individual flutter on top. That P2 consumer was satisfied before the plan
+named it.
 
 The second consumer of the direction field: each dust grain bakes its flow angle from `dirAt`
 into `dustTable` (the M253 rule holds — the field is never sampled in the frame), and the draw

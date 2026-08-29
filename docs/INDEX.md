@@ -572,7 +572,7 @@ drawDronesMap                src/12e-drone-flight.js:262
 drawDronesSystem             src/12e-drone-flight.js:185
 drawDustMotes                src/19-mode-landing.js:395
 drawElevator                 src/20aa-poi-shapes.js:91
-drawExhaust                  src/16a-space.js:237
+drawExhaust                  src/16a-space.js:255
 drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:240
 drawFindsSystem              src/17b-finds.js:152
@@ -624,12 +624,12 @@ drawSkyBase                  src/19c-light.js:296
 drawSkyBodies                src/19b-sky.js:66
 drawSkyLayer                 src/19-mode-landing.js:336
 drawSpa                      src/29i-spa-draw.js:41
-drawSpaceDust                src/16a-space.js:166
-drawStarBody                 src/16a-space.js:323
-drawStarHole                 src/16a-space.js:426
-drawStarNeutron              src/16a-space.js:399
+drawSpaceDust                src/16a-space.js:184
+drawStarBody                 src/16a-space.js:341
+drawStarHole                 src/16a-space.js:444
+drawStarNeutron              src/16a-space.js:417
 drawStars                    src/16-flight.js:20
-drawStarSingle               src/16a-space.js:340
+drawStarSingle               src/16a-space.js:358
 drawStation                  src/17c-system-draw.js:164
 drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
@@ -640,7 +640,7 @@ drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
 drawSysHud                   src/17-mode-system.js:479
-drawSysNebula                src/16a-space.js:102
+drawSysNebula                src/16a-space.js:120
 drawSystem                   src/17-mode-system.js:285
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:283
@@ -676,10 +676,10 @@ droneStateRu                 src/12e-drone-flight.js:146
 droneSys                     src/12e-drone-flight.js:62
 droneTarget                  src/12-economy.js:72
 droneTripMs                  src/12e-drone-flight.js:87
-DUST_COL                     src/16a-space.js:143
-DUST_LAYERS                  src/16a-space.js:165
-DUST_TAB                     src/16a-space.js:144
-dustTable                    src/16a-space.js:145
+DUST_COL                     src/16a-space.js:161
+DUST_LAYERS                  src/16a-space.js:183
+DUST_TAB                     src/16a-space.js:162
+dustTable                    src/16a-space.js:163
 earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
@@ -820,7 +820,7 @@ FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16
 fleetColor                   src/04b-fleet.js:95
 fleetUniqueName              src/04b-fleet.js:100
-flightCam                    src/16a-space.js:207
+flightCam                    src/16a-space.js:225
 floraOf                      src/20e-species.js:91
 FOE_KINDS                    src/24a-mode-raid.js:17
 FOLK                         src/12u-folk.js:31
@@ -890,10 +890,10 @@ globusAim                    src/25f-globus.js:49
 globusDraw                   src/25f-globus.js:81
 globusSys                    tests/91zzzg-globus.js:7
 globusTick                   src/25f-globus.js:70
-GLOW_CACHE                   src/16a-space.js:304
-GLOW_SP                      src/16a-space.js:303
+GLOW_CACHE                   src/16a-space.js:322
+GLOW_SP                      src/16a-space.js:321
 GLOW_TIERS                   src/11i-glow.js:121
-glowBlit                     src/16a-space.js:319
+glowBlit                     src/16a-space.js:337
 glowCaveX                    src/11i-glow.js:139
 glowCorePlanet               src/11i-glow.js:33
 glowDepthAt                  src/11i-glow.js:24
@@ -906,7 +906,7 @@ glowGroundLine               src/11i-glow.js:110
 glowIsCore                   src/11i-glow.js:38
 glowPatches                  src/11i-glow.js:73
 glowScan                     src/11i-glow.js:64
-glowSprite                   src/16a-space.js:305
+glowSprite                   src/16a-space.js:323
 glowTier                     src/11i-glow.js:122
 goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
@@ -1580,7 +1580,7 @@ navAction                    src/15-input.js:222
 near                         tests/90-harness.js:29
 nearestPOI                   src/20a-poi.js:236
 nearestStation               src/12-economy.js:45
-NEB_COMP                     src/16a-space.js:101
+NEB_COMP                     src/16a-space.js:119
 NEB_JOB                      src/16a-space.js:52
 NEB_MS                       src/16a-space.js:51
 NEBULA                       src/16-flight.js:50
@@ -3458,7 +3458,7 @@ zooTick                      src/11ad-zoo.js:41
   · экранные кнопки: авто-скрытие и размер:1
   · ввод:83
 
-## src/16a-space.js · 29 КБ
+## src/16a-space.js · 30 КБ
   · облик системы:1
 
 ## src/16b-missile.js · 9 КБ
