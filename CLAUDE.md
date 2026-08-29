@@ -47,6 +47,7 @@ Documents work the same way — in parts, not whole:
 | what changed in a version | `PATCHNOTES.md` — newest first, the first 40 lines usually suffice |
 | where a symbol is declared | `docs/INDEX.md` — grep only |
 | craft laws behind the visual queue | `docs/DESIGN-craft.md` — rules taken from painting traditions, each tied to a module |
+| narrative research + the combined craft plan | `docs/DESIGN-story-craft.md` — deed turns, glyph grammar, pacing clocks; its last section orders all craft work |
 
 Never read whole: `docs/PLAN-archive.md`, `docs/INDEX.md`, `drift.html`, `tests.html`
 (the last two are build artifacts — there is nothing to find in them that is not in

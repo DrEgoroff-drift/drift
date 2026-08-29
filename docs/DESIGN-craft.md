@@ -290,6 +290,9 @@ through stone. This is also stage 点 of §5: dotting laid over finished texture
 
 ## Order of work
 
+*Superseded by the combined plan in [`DESIGN-story-craft.md`](DESIGN-story-craft.md) — that
+ordering wins where the two differ. Kept below as the raster-only view.*
+
 1. **Notan measure in `look()`** — first, because without a truthful instrument nothing else can
    be judged, and the current `empty` target is wrong for the reason the file itself documents.
 2. **Blue noise tile** — an hour, no risk, visible in every scene.
