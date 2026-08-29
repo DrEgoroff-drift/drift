@@ -7,6 +7,33 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.237.0 — M241: the frame is measured now, not argued about
+
+The author on the graphics: "something about all of it bothers me". Looking at it by eye produced
+eleven complaints — that is, nothing anyone can verify. So the frame gets a meter, the way speed
+got `prof()`.
+
+- **`look()`** reads the canvas actually on screen and prints four numbers: warm % (warm pixels
+  against cold), empty % (16×16 blocks holding no detail at all), contrast (p95 − p5 of value)
+  and tones (hue buckets holding at least 5% of the coloured pixels). **`lookAll()`** walks every
+  scene and prints the table, then puts the world back exactly as it was — a diagnostic tool has
+  no right to move the player's save.
+- **The targets** are declared in `LOOK_TARGET` and written into PLAN.md beside the eight laws:
+  warm 25–75%, empty ≤45%, contrast ≥0.30, tones ≥5.
+- **What the meter says today** (this is the baseline the work will be measured against): warm is
+  0–6% or 81–99% in nine scenes out of ten — the picture is monochrome nearly everywhere; empty
+  runs 26–86%; contrast 0.07–0.77; tones 2–8 of 36. The cave is the worst frame in the game
+  (warm 0, empty 86, contrast 0.10), the gas-giant dive the best (empty 26, contrast 0.59).
+- **Two more rules go in beside the numbers**: five passes for a THING (silhouette, break-up,
+  material, light with a ground shadow, a trace of life) and the rule of origin — anything that
+  occurs more than once is built by a seeded generator, never by a formula. Scored on the day:
+  a hull 5/5, the house on a planet 2/5.
+- The scene list moved into `28y-look` and the fuzzer now takes it from there: one list for the
+  meter and the tests, or they drift apart within a month.
+
+Tests: 396 suites green (one new: the meter measures, the sweep restores the save).
+
+---
 ## 0.236.0 — M240: the economy counted, and the second hole of the same kind closed
 
 The yard's floor (M235) suggested there were siblings: places where repetition plus credits beats

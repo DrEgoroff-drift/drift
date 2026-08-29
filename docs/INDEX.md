@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 330 · символов верхнего уровня: 3015
+Файлов: 331 · символов верхнего уровня: 3021
 
 ## СИМВОЛЫ
 
@@ -839,8 +839,8 @@ fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
 FUZZ_KEYS                    tests/91zzzz-fuzz.js:16
 fuzzN                        tests/91zzzz-fuzz.js:17
-fuzzRich                     tests/91zzzz-fuzz.js:97
-fuzzScenes                   tests/91zzzz-fuzz.js:23
+fuzzRich                     tests/91zzzz-fuzz.js:66
+fuzzScenes                   tests/91zzzz-fuzz.js:26
 G                            src/08-state.js:61
 g11Fps                       src/28z-fps-probe.js:7
 genBeast                     src/20f-fauna.js:58
@@ -1364,6 +1364,12 @@ logBtnLabel                  src/11-log.js:56
 logOpen                      src/11-log.js:14
 logPageOf                    src/11-log.js:13
 logTime                      src/11-log.js:50
+look                         src/28y-look.js:144
+LOOK_TARGET                  src/28y-look.js:13
+lookAll                      src/28y-look.js:123
+lookFrame                    src/28y-look.js:18
+lookScenes                   src/28y-look.js:77
+lookVerdict                  src/28y-look.js:64
 LOOP_OFF                     src/28-loop.js:127
 LORE                         src/12q-lore.js:67
 LORE_ACT                     src/12q-lore.js:47
@@ -3739,6 +3745,9 @@ zooTick                      src/11ad-zoo.js:41
   · prof() — на что уходит кадр:278
   · dbg() — что держит корабль:318
 
+## src/28y-look.js · 8 КБ
+  · look() — прибор кадра:1
+
 ## src/28z-fps-probe.js · 9 КБ
   · пробник G11: ?g11:1
 
@@ -4078,10 +4087,11 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzy-drones.js · 7 КБ
   · автотесты: рейсы дронов (M237):1
 
-## tests/91zzzz-fuzz.js · 13 КБ
+## tests/91zzzz-fuzz.js · 14 КБ
   · фуззер: режим под случайными руками (M238):1
-  · прожитый мир:92
-  · все вкладки рисуются:156
-  · тычок в каждую кнопку:189
+  · прожитый мир:61
+  · все вкладки рисуются:125
+  · тычок в каждую кнопку:158
+  · прибор кадра работает:200
 
 ## tests/99-run.js · 0 КБ

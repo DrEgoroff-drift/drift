@@ -38,6 +38,44 @@ half the tokens. The game itself, its UI and its code comments stay Russian.
   pass finds nothing. Optimisation is part of every pass, not an afterthought — check the
   raster/JS budget (`prof()`, the "painted once" rule) before calling a pass clean.
 
+## How a frame is judged (M241) — the meter, and the rules under it
+
+"I don't like the look of it" is not something anyone can act on. Since M241 the frame is
+measured, the way speed is: `look()` in the console reads the canvas that is actually on screen
+and prints four numbers; `lookAll()` walks every scene and prints the table. The scene list lives
+in `28y-look` and is shared with the fuzzer — one list, or the two drift apart.
+
+**Four numbers for a FRAME** (`LOOK_TARGET`):
+
+| number | target | what it catches |
+|---|---|---|
+| warm % (warm pixels of warm+cold) | 25–75 | a monochrome frame. Measured before the work: 0–6% or 81–99% in nine scenes out of ten |
+| empty % (16×16 blocks with no detail) | ≤ 45 | nothing to look at. Measured: 26–86% |
+| contrast (p95 − p5 of value) | ≥ 0.30 | everything sitting in one narrow band. Measured: 0.07–0.77 |
+| tones (hue buckets holding ≥5%) | ≥ 5 | one hue doing all the work. Measured: 2–8 of 36 |
+
+**Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
+as a placeholder:
+
+1. **Silhouette** — recognisable at 20 px, not a rectangle, not symmetrical.
+2. **Break-up** — three to seven parts of different sizes; no part over 40% of the area.
+3. **Material** — every part has grain. A flat fill is an unfinished job (law 4).
+4. **Light** — a lit side, a dark side, a rim, and **a shadow on the ground** (law 2).
+5. **A trace of life** — one detail that did not have to be there: a stain, a number, a patch, a
+   worn path, a curtain.
+
+Scored on the day the rules were written: a hull 5/5, the house on a planet 2/5, the woodpile
+1/5, the mast 1/5, the boulders 1/5.
+
+**The rule of origin.** Anything that occurs in the game more than once is built by a GENERATOR
+with seeded variation, never by a formula. Hulls obey it — form, break-up, paint, markings, wear,
+each seeded — and that is exactly why they read as machines while the house reads as a diagram of
+a house.
+
+**The rule of the question.** For every thing in frame: who made this, and why. A house a person
+built has a path to its door, a woodpile stacked by hand, a patch on the roof. No answer means
+the thing is scenery.
+
 ## Done
 
 M1âM32 â the base game (see git history). M33 parts and total rig capacity Â· M34 ship screen with

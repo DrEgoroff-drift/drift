@@ -18,44 +18,13 @@ function fuzzN(){
   const m=/[?&]fuzz=(\d+)/.exec(location.search);
   return m?Math.min(20000,Math.max(20,+m[1])):260;
 }
-/* один режим: постановка сцены, ход, отрисовка. Сцену ставим сами, а не через
-   меню: цель — прогнать МИР, а не путь до него. */
+/* ── сцены берём у прибора кадра (28y-look) ──
+   Список сцен один на всех: им пользуется и `lookAll`, и фуззер. Свой список
+   здесь уже был и уже разошёлся бы — правило то же, что у развилки режимов:
+   у вещи один хозяин. Изоляция у каждого своя: прибор снимает и возвращает
+   сохранение, тесты чистят мир `resetWorld`. */
 function fuzzScenes(){
-  const find=pred=>{
-    for(let r0=0;r0<12;r0++)for(let x=-r0;x<=r0;x++)for(let y=-r0;y<=r0;y++){
-      if(Math.max(Math.abs(x),Math.abs(y))!==r0)continue;
-      if(!starAt(x,y))continue;
-      const s=getSystem(x,y);if(pred(s))return s;
-    }
-    return null;
-  };
-  const jump=s=>{if(!s)return false;G.sx=s.sx;G.sy=s.sy;G.sys=s;G.ap=null;G.orbit=null;return true;};
-  return [
-    {id:"system",set:()=>{resetWorld();}},
-    {id:"map",set:()=>{resetWorld();G.mode="map";}},
-    {id:"landing",set:()=>{resetWorld();
-      const s=find(s=>s.planets.some(p=>p.type!=="gas"));if(!jump(s))return false;
-      startLanding(s.planets.find(p=>p.type!=="gas"));return true;},},
-    {id:"surface",set:()=>{resetWorld();landOnTestPlanet();return true;},},
-    {id:"dig",set:()=>{resetWorld();landOnTestPlanet();enterDig();return true;},},
-    {id:"cave",set:()=>{resetWorld();landOnTestPlanet();enterCave();return !!G.cave;},},
-    {id:"belt",set:()=>{resetWorld();
-      const s=find(s=>!!s.belt);if(!jump(s))return false;enterBelt();return true;},},
-    {id:"scoop",set:()=>{resetWorld();
-      const s=find(s=>s.planets.some(p=>p.type==="gas"));if(!jump(s))return false;
-      startScoop(s.planets.find(p=>p.type==="gas"));return true;},},
-    {id:"base",set:()=>{resetWorld();landOnTestPlanet();
-      G.credits=99999;G.cargo.alloy=99;
-      if(!foundBase(G.surf.p))return false;
-      enterBase(G.surf.p);return !!G.base;},},
-    {id:"raid",set:()=>{resetWorld();
-      const s=find(s=>typeof pirateBaseOf==="function"&&pirateBaseOf(s));
-      if(!jump(s))return false;
-      enterRaid(pirateBaseOf(s));return !!G.raid;},},
-    {id:"homein",set:()=>{resetWorld();
-      G.home=homeInit();G.home.tier=8;G.home.sx=G.sx;G.home.sy=G.sy;
-      landOnTestPlanet();enterHomeIn();return !!G.hin;},}
-  ];
+  return lookScenes().map(sc=>({id:sc.id,set:()=>{resetWorld();return sc.set();}}));
 }
 TEST_SUITES.push(()=>suite("фуззер: режимы под случайными руками",()=>{
   const N=fuzzN(),bad=[];
@@ -226,4 +195,31 @@ TEST_SUITES.push(()=>suite("тычок в каждую кнопку стола �
   resetWorld();
   ok(clicks>40,"нажатий сделано: "+clicks);
   eq(bad.slice(0,4).join(" ;; "),"","ни одно нажатие не бросило исключение");
+}));
+
+/* ══════════════ прибор кадра работает ══════════════
+   `look()` — то же для картинки, что `prof()` для скорости: он не судит, он
+   меряет. Тест проверяет не красоту (её числа сейчас и не сходятся), а что
+   прибор считает и что прогон по всем сценам возвращает мир на место. */
+TEST_SUITES.push(()=>suite("look(): прибор кадра меряет и не портит мир",()=>{
+  resetWorld();
+  const scenes=lookScenes();
+  ok(scenes.length>=8,"сцен в списке: "+scenes.length);
+  /* меряем текущий кадр */
+  G.mode="system";drawWorld();
+  const m=lookFrame();
+  ok(m.tones>=0&&m.tones<=36,"тонов в пределах шкалы: "+m.tones);
+  ok(m.warm>=0&&m.warm<=100,"тепло в процентах: "+m.warm);
+  ok(m.contrast>=0&&m.contrast<=1,"контраст 0…1: "+m.contrast);
+  ok(m.empty>=0&&m.empty<=100,"пусто в процентах: "+m.empty);
+  ok(/тепло/.test(lookVerdict(m)),"приговор печатается: "+lookVerdict(m));
+  /* мишени объявлены и разумны */
+  ok(LOOK_TARGET.warm[0]<LOOK_TARGET.warm[1]&&LOOK_TARGET.tones>=3,"мишени заданы");
+  /* прогон по всем сценам возвращает сохранение на место */
+  G.credits=4242;G.sx=3;G.sy=-2;G.sys=getSystem(3,-2);
+  const rows=lookAll(2);
+  ok(rows.length>=6,"прогон прошёл по сценам: "+rows.length);
+  eq(Math.round(G.credits),4242,"кошелёк на месте после прогона");
+  eq(G.sx+","+G.sy,"3,-2","и сектор тоже");
+  resetWorld();
 }));
