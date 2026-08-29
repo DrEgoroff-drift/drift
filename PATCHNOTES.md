@@ -7,6 +7,25 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.243.0 — M247: the home gets a window, and the doorways stop being panels
+
+Two things in the one room the game calls yours.
+
+- **There were no windows on the ground floor at all** — "upstairs a window, downstairs none". So
+  the house had no cold source anywhere: the meter read 99% warm and a pair of 1%, a room lit by
+  a lamp and nothing else. It also contradicted the outside, where the ground-floor windows are
+  lit from the yard. Every second room now has one: night sky, stars, and a cold spill on the
+  floor beside the lamp's warm one.
+- **The doorways read as pale panels.** The previous pass honestly drew the neighbouring room
+  through the opening, but filled the whole thing with ONE light tone and washed it with warm to
+  the ceiling — at normal zoom that is a slab with a hairline frame, not a passage. Through a door
+  you see a wall in shade, so the far wall is now DARKER than the near one; the floor past the
+  threshold is clearly lighter; the warm from next door reaches only the bottom; the reveal of the
+  wall's own thickness gives depth, and the hairline frame is now a wooden jamb with a lintel.
+
+Tests: 398 suites green.
+
+---
 ## 0.242.0 — M246: the cave's far wall moves, and one of my complaints was wrong
 
 - **The far wall of the cave was glued to the glass.** `drawCaveFar` painted a screen-space layer:

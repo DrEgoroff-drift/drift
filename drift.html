@@ -1351,7 +1351,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.242.0";
+const VER="0.243.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -61141,6 +61141,18 @@ function drawHomeIn(){
     ctx.beginPath();ctx.ellipse(lx,0,HIN_MAN*1.7,HIN_MAN*.32,0,0,TAU);ctx.fill();
   }
   ctx.restore();
+  /* ── окно на первом этаже (M247) ──
+     Внизу окон не было вовсе — «наверху окно, внизу нет». Из-за этого в доме
+     не оказывалось ни одного холодного источника: прибор мерил 99% тепла и
+     пару в 1%, то есть комнату, освещённую только лампой. А снаружи у дома
+     окна первого этажа горят — то есть рисунок ещё и противоречил сам себе.
+     Ставим по окну в каждой второй комнате: холодное небо, отсвет на полу и
+     вторая температура в кадре. */
+  if(typeof hinUpWindow==="function")for(let i=0;i<R.length;i+=2){
+    const r=R[i];
+    if(r.x+r.w<camx-60||r.x>camx+vw+60)continue;
+    hinUpWindow(r.x+r.w*.68,fy,ceil,P,1.05);
+  }
   /* ── обстановка ── */
   for(const r of R){
     if(r.x+r.w<camx-60||r.x>camx+vw+60)continue;
@@ -61165,20 +61177,32 @@ function drawHomeIn(){
        свет доходит до нашего пола лужей перед порогом. */
     ctx.save();
     ctx.beginPath();ctx.rect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,HIN_MAN*1.5);ctx.clip();
-    ctx.fillStyle="rgb("+P.wall.map(v=>Math.min(255,v*.92+10)|0).join(",")+")";
+    /* ── проём читался светлой плитой (M247) ──
+       Прошлая правка честно показывала соседнюю комнату, но заливала весь
+       проём ОДНИМ светлым тоном и мыла его тёплым градиентом во всю высоту:
+       на общем плане это панель, а не проход. Соседняя стена теперь ТЕМНЕЕ
+       нашей (в дверь видно стену в тени, а не освещённую), пол за порогом
+       заметно светлее, тепло доходит только до низа, а глубину даёт откос. */
+    ctx.fillStyle="rgb("+P.wall.map(v=>Math.max(0,v*.62-4)|0).join(",")+")";
     ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,HIN_MAN*1.5);
-    ctx.fillStyle="rgb("+P.floor.map(v=>Math.min(255,v*1.15+14)|0).join(",")+")";
-    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*.20,HIN_DOORW,HIN_MAN*.20);
-    ctx.fillStyle="rgba(0,0,0,.30)";                 /* плинтус соседней комнаты */
-    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*.20,HIN_DOORW,2);
-    const dg=ctx.createLinearGradient(0,fy-HIN_MAN*1.5,0,fy);
-    dg.addColorStop(0,"rgba(255,206,138,.06)");
-    dg.addColorStop(.70,"rgba(255,206,138,.22)");
-    dg.addColorStop(1,"rgba(255,206,138,.42)");
-    ctx.fillStyle=dg;ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,HIN_MAN*1.5);
-    ctx.fillStyle="rgba(0,0,0,.34)";                 /* тень косяка внутрь */
-    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,3,HIN_MAN*1.5);
-    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,3);
+    ctx.fillStyle="rgb("+P.floor.map(v=>Math.min(255,v*1.25+16)|0).join(",")+")";
+    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*.26,HIN_DOORW,HIN_MAN*.26);
+    ctx.fillStyle="rgba(0,0,0,.34)";
+    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*.26,HIN_DOORW,2);
+    /* тепло соседней лампы — только у пола: во всю высоту оно и делало плиту */
+    const dg=ctx.createLinearGradient(0,fy-HIN_MAN*.75,0,fy);
+    dg.addColorStop(0,"rgba(255,206,138,0)");
+    dg.addColorStop(1,"rgba(255,206,138,.30)");
+    ctx.fillStyle=dg;ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*.75,HIN_DOORW,HIN_MAN*.75);
+    /* откос: у стены есть толщина, и в проёме это первое, что видно */
+    const jg=ctx.createLinearGradient(x-HIN_DOORW*.5,0,x-HIN_DOORW*.5+7,0);
+    jg.addColorStop(0,"rgba(0,0,0,.55)");jg.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=jg;ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,7,HIN_MAN*1.5);
+    const jg2=ctx.createLinearGradient(x+HIN_DOORW*.5,0,x+HIN_DOORW*.5-7,0);
+    jg2.addColorStop(0,"rgba(0,0,0,.45)");jg2.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=jg2;ctx.fillRect(x+HIN_DOORW*.5-7,fy-HIN_MAN*1.5,7,HIN_MAN*1.5);
+    ctx.fillStyle="rgba(0,0,0,.42)";
+    ctx.fillRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,4);
     ctx.restore();
     /* свет из проёма ложится на НАШ пол: без этого проход светится сам в себе,
        а комната перед ним остаётся тёмной (закон 1) */
@@ -61189,8 +61213,14 @@ function drawHomeIn(){
     ctx.fillStyle=pg;
     ctx.beginPath();ctx.ellipse(x,fy,HIN_DOORW*1.1,HIN_MAN*.16,0,0,TAU);ctx.fill();
     ctx.restore();
-    ctx.strokeStyle="rgba(226,226,220,.16)";ctx.lineWidth=1.4;
-    ctx.strokeRect(x-HIN_DOORW*.5,fy-HIN_MAN*1.5,HIN_DOORW,HIN_MAN*1.5);
+    /* косяк ДЕРЕВЯННЫЙ, а не волосок обводки: рамка в один пиксель вокруг
+       светлого поля и делала из прохода панель (M247) */
+    ctx.fillStyle="rgb("+P.wood.map(v=>v*.52|0).join(",")+")";
+    ctx.fillRect(x-HIN_DOORW*.5-3,fy-HIN_MAN*1.5,3,HIN_MAN*1.5);
+    ctx.fillRect(x+HIN_DOORW*.5,fy-HIN_MAN*1.5,3,HIN_MAN*1.5);
+    ctx.fillRect(x-HIN_DOORW*.5-3,fy-HIN_MAN*1.5-3,HIN_DOORW+6,3.4);
+    ctx.fillStyle="rgba(255,236,200,.10)";
+    ctx.fillRect(x-HIN_DOORW*.5-3,fy-HIN_MAN*1.5-3,HIN_DOORW+6,1);
   }
   /* входная дверь слева — только на первом этаже: наверху выхода во двор нет */
   if(!S.up){

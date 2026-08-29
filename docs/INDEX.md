@@ -1002,10 +1002,10 @@ HIN_UP                       src/29e-home-up.js:20
 hinDrawHole                  src/29e-home-up.js:219
 hinDrawShell                 src/29e-home-up.js:59
 hinDrawStair                 src/29e-home-up.js:175
-hinFigure                    src/29d-home-draw.js:554
+hinFigure                    src/29d-home-draw.js:584
 hinFolkMake                  src/29c-home-in.js:84
 hinFolkTick                  src/29c-home-in.js:115
-hinFrontStuff                src/29d-home-draw.js:262
+hinFrontStuff                src/29d-home-draw.js:292
 hinGroundRooms               src/29c-home-in.js:28
 hinHasUp                     src/29e-home-up.js:22
 hinHoleX                     src/29e-home-up.js:41
@@ -1013,7 +1013,7 @@ hinNear                      src/29c-home-in.js:229
 hinPal                       src/29d-home-draw.js:6
 hinRoomAt                    src/29c-home-in.js:60
 hinRooms                     src/29c-home-in.js:42
-hinRoomStuff                 src/29d-home-draw.js:299
+hinRoomStuff                 src/29d-home-draw.js:329
 hinSpan                      src/29c-home-in.js:52
 hinStairX                    src/29e-home-up.js:36
 hinTalk                      src/29c-home-in.js:238
@@ -3776,7 +3776,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29c-home-in.js · 16 КБ
   · дом изнутри: по нему ходят:1
 
-## src/29d-home-draw.js · 39 КБ
+## src/29d-home-draw.js · 41 КБ
   · дом изнутри: кадр:1
 
 ## src/29e-home-up.js · 22 КБ

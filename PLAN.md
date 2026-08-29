@@ -57,6 +57,25 @@ in `28y-look` and is shared with the fuzzer — one list, or the two drift apart
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
+## M247 — the home from inside (2026-08-28) — CLOSED (0.243.0)
+
+A window on the ground floor (there were none, so the room had no cold source and contradicted
+the lit windows seen from the yard) and doorways that read as passages rather than panels.
+
+Rules worth keeping:
+
+- **A room with one temperature is a lamp, not a room.** The interior had warm light only; the
+  window is not decoration, it is the second source the eight laws ask for.
+- **What you see through a door is a wall IN SHADE.** Painting the far room lighter than the near
+  one is what turned an opening into a glowing slab. Depth came from three cheap things: a darker
+  far wall, a lighter floor past the threshold, and a reveal showing the wall's thickness.
+- **A hairline frame turns anything into a panel.** A wooden jamb with a lintel costs four fills
+  and reads as carpentry.
+
+Still open in this scene: the furniture is flat boxes without material, and the floor is plain
+planks. That is the five-passes work for the interior, and it is next when the graphics queue
+comes back to the house.
+
 ## M246 — the cave, and what measuring saved (2026-08-28) — CLOSED (0.242.0)
 
 The far wall of the cave moves now (it was a screen-space layer glued to the glass) and the

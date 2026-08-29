@@ -46,6 +46,7 @@ Documents work the same way — in parts, not whole:
 | why something was done this way | `docs/PLAN-archive.md` (~370 KB) — **grep by milestone only** |
 | what changed in a version | `PATCHNOTES.md` — newest first, the first 40 lines usually suffice |
 | where a symbol is declared | `docs/INDEX.md` — grep only |
+| craft laws behind the visual queue | `docs/DESIGN-craft.md` — rules taken from painting traditions, each tied to a module |
 
 Never read whole: `docs/PLAN-archive.md`, `docs/INDEX.md`, `drift.html`, `tests.html`
 (the last two are build artifacts — there is nothing to find in them that is not in
