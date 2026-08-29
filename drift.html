@@ -1353,7 +1353,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.267.0";
+const VER="0.268.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -28025,6 +28025,17 @@ function actionKey(section,action){
   for(const c in m)if(m[c]===action)return c;
   return null;
 }
+/* ── подсказка называет ЖИВОЕ управление (второй круг марафона, П0) ──
+   Пещера писала «A D — ИДТИ · W — РАНЕЦ», шахта — «W A S D», зверьё —
+   «ОГОНЬ (F)». На телефоне этих клавиш НЕ СУЩЕСТВУЕТ — игрок с пэдами читал
+   чужую инструкцию; а на компьютере после переназначения буква в скобках
+   врала. Помощник: на телефоне — имя пэда, на компьютере — клавиша текущей
+   раскладки (actionKey/keyLabel уже умеют переназначение). */
+function ctlHint(action,padRu){
+  if(document.body.classList.contains("mobile"))return padRu;
+  const c=actionKey("main",action);
+  return c?keyLabel(c):padRu;
+}
 let rebinding=null;   // {section,action} пока ждём следующую клавишу
 addEventListener("keydown",e=>{
   if(rebinding){
@@ -32596,6 +32607,19 @@ function skyGiant(p,e,x,y,dim,ringy){
     return c.map(v=>clamp(v+k,0,255)|0);
   };
   lit=sep(lit,34);shd=sep(shd,18);
+  /* ── СЕДЬМАЯ переделка: терминатор переживает пол (второй круг марафона) ──
+     Пол «не темнее неба» днём поднимал обе стороны к воздуху, и свет с тенью
+     схлопывались в тридцать единиц: диск оставался «отличным от воздуха», но
+     ПЛОСКИМ — водяной знак, а не шар (крап автора «кругов дохуя» — это он).
+     Тело узнаётся не отличием от неба, а СВОИМ терминатором: после всех
+     полов день обязан быть светлее ночи хотя бы на сорок. */
+  {
+    /* порог считает ВНУТРЕННИЙ контраст: тело кладётся с альфой dim (≈.42 в
+       воздухе), и сорока внутренних на экране оставалось семнадцать — мало.
+       Семьдесят два внутренних ≈ тридцать на экране: шар, а не знак. */
+    const dLS=(lit[0]+lit[1]+lit[2])/3-(shd[0]+shd[1]+shd[2])/3;
+    if(dLS<72){const add=72-dLS;lit=lit.map(v=>clamp(v+add,0,255)|0);}
+  }
   const SS=(typeof sunSpot==="function")?sunSpot(p):{x:x-R,y:y-R};
   let ux=SS.x-x, uy=SS.y-y;
   const ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;
@@ -43896,14 +43920,25 @@ function updateCave(dt){
       if(isNew&&typeof heardAdd==="function")heardAdd("ground",{sx:G.sx,sy:G.sy,note:"в пещере: "+plant.name},null);   // птица слышит и на планете (хвост M117)
     }
   }else if(C.fauna.some(b=>b.stun<=0&&b.flee<=0&&Math.abs(b.y-C.y)<120)){
+    /* клавиша в скобках — живая (ctlHint): на телефоне её нет вовсе, на
+       компьютере после переназначения буква врала */
+    const fk=(typeof ctlHint==="function")?ctlHint("fire",""):"F";
     G.prompt=(C.watch>0?"КУСАЧИЕ ДЕРЖАТСЯ ПООДАЛЬ · ЗДЕСЬ ИХ ГОНЯЮТ\n":"КУСАЧИЕ РЯДОМ · ")+
-      "ОГОНЬ (F) — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
+      "ОГОНЬ"+(fk?" ("+fk+")":"")+" — ИМПУЛЬС\nОГЛУШЁННОГО ЗАБРАТЬ — ПОДОЙТИ ВПЛОТНУЮ";
   }else if(jetFuel()<.2&&!C.on)G.prompt="РАНЕЦ НА ИСХОДЕ · СЯДЬТЕ, ЗАПАС НАБЕРЁТСЯ";
-  else if(C.y>caveGalY(C,C.x)+260)G.prompt="A D — ИДТИ · W — РАНЕЦ · НАХОДКА В ЛЕВОМ КОНЦЕ НИЖНЕЙ ГАЛЕРЕИ";
-  /* «У УСТЬЯ ДЕЙСТВИЕ — НАРУЖУ» здесь было справкой, а не действием, но кнопка
-     ДЕЙСТВИЕ теперь ищет глагол по всей подсказке — справка зажигала бы её в
-     глубине, где жать нечего. Порядок слов переставлен, чтобы образец не совпал. */
-  else G.prompt="A D — ИДТИ · W — РАНЕЦ · ШАХТЫ ВЕДУТ ВНИЗ · НАРУЖУ — ДЕЙСТВИЕ У УСТЬЯ";
+  else{
+    /* ходьба и ранец называются по-разному на разных руках: клавиши — только
+       там, где они есть; пэды зовутся своими стрелками */
+    const walk=(typeof ctlHint==="function")
+      ?ctlHint("left","◀")+" "+ctlHint("right","▶"):"A D";
+    const jet=(typeof ctlHint==="function")?ctlHint("thrust","▲"):"W";
+    if(C.y>caveGalY(C,C.x)+260)
+      G.prompt=walk+" — ИДТИ · "+jet+" — РАНЕЦ · НАХОДКА В ЛЕВОМ КОНЦЕ НИЖНЕЙ ГАЛЕРЕИ";
+    /* «У УСТЬЯ ДЕЙСТВИЕ — НАРУЖУ» здесь было справкой, а не действием, но кнопка
+       ДЕЙСТВИЕ теперь ищет глагол по всей подсказке — справка зажигала бы её в
+       глубине, где жать нечего. Порядок слов переставлен, чтобы образец не совпал. */
+    else G.prompt=walk+" — ИДТИ · "+jet+" — РАНЕЦ · ШАХТЫ ВЕДУТ ВНИЗ · НАРУЖУ — ДЕЙСТВИЕ У УСТЬЯ";
+  }
 }
 /* ── порода тайлом: клетки поля в прямоугольники, контур по «марширующим
    квадратам» для скоса углов и мокрого блика, материал планеты, темнота к
@@ -45635,10 +45670,20 @@ function updateDig(dt){
   let head="ГЛУБИНА "+depth+" м · "+DEPTH_TIERS[tierAt(D.row)].ru.toUpperCase()+
     " · "+geoAt(D.p,D.row*DIG_CELL*DIG_GEO_K).ru.toUpperCase()+
     "\nСКАФАНДР "+Math.round(S.suit)+"% · ТРЮМ "+held()+"/"+st.cargoMax;
-  if(D.bugs.some(b=>b.stun<=0&&b.flee<=0))
-    head+="\nКУСАЧИЕ РЯДОМ · ОГОНЬ (F) — ИМПУЛЬС, ПОТОМ ПОДОЙТИ ЗА ОБРАЗЦОМ";
+  if(D.bugs.some(b=>b.stun<=0&&b.flee<=0)){
+    const fk=(typeof ctlHint==="function")?ctlHint("fire",""):"F";
+    head+="\nКУСАЧИЕ РЯДОМ · ОГОНЬ"+(fk?" ("+fk+")":"")+" — ИМПУЛЬС, ПОТОМ ПОДОЙТИ ЗА ОБРАЗЦОМ";
+  }
   if(!dx&&!dy){D.target=null;
-    G.prompt=head+"\nW A S D — КОПАТЬ ВВЕРХ / ВБОК / ВНИЗ";return;}
+    /* на телефоне W A S D не существует — там копают пэдами ВВЕРХ/ВНИЗ и
+       стрелками; на компьютере клавиши берутся из живой раскладки (П0) */
+    const mob=document.body.classList.contains("mobile");
+    G.prompt=head+(mob
+      ?"\nВВЕРХ · ВНИЗ · ◀ ▶ — КОПАТЬ"
+      :"\n"+[["thrust","W"],["left","A"],["brake","S"],["right","D"]]
+        .map(q=>(typeof ctlHint==="function")?ctlHint(q[0],q[1]):q[1]).join(" ")+
+        " — КОПАТЬ ВВЕРХ / ВБОК / ВНИЗ");
+    return;}
 
   const tc=D.col+dx,tr2=D.row+dy;
   if(tr2<0||Math.abs(tc)>DIG_HALF){D.target=null;G.prompt=head;return;}
@@ -45720,7 +45765,7 @@ function digFauna(dt,st){
         b.r=6+r()*6;b.hostile=true;b.stun=0;b.bite=0;b.flee=0;
         b.x=px+side*(120+r()*90);b.y=py+(r()-.5)*90;
         D.bugs.push(b);
-        say("В породе кто-то есть\nОГОНЬ (F) — импульсный разрядник\nоглушённого можно забрать, подойдя вплотную");
+        say("В породе кто-то есть\nОГОНЬ"+((typeof ctlHint==="function"&&ctlHint("fire",""))?" ("+ctlHint("fire","")+")":"")+" — импульсный разрядник\nоглушённого можно забрать, подойдя вплотную");
       }
     }
   }

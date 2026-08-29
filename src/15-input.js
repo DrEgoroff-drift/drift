@@ -147,6 +147,17 @@ function actionKey(section,action){
   for(const c in m)if(m[c]===action)return c;
   return null;
 }
+/* ── подсказка называет ЖИВОЕ управление (второй круг марафона, П0) ──
+   Пещера писала «A D — ИДТИ · W — РАНЕЦ», шахта — «W A S D», зверьё —
+   «ОГОНЬ (F)». На телефоне этих клавиш НЕ СУЩЕСТВУЕТ — игрок с пэдами читал
+   чужую инструкцию; а на компьютере после переназначения буква в скобках
+   врала. Помощник: на телефоне — имя пэда, на компьютере — клавиша текущей
+   раскладки (actionKey/keyLabel уже умеют переназначение). */
+function ctlHint(action,padRu){
+  if(document.body.classList.contains("mobile"))return padRu;
+  const c=actionKey("main",action);
+  return c?keyLabel(c):padRu;
+}
 let rebinding=null;   // {section,action} пока ждём следующую клавишу
 addEventListener("keydown",e=>{
   if(rebinding){

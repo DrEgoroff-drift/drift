@@ -17,8 +17,11 @@ setTimeout(function(){
   var scene=(location.search.match(/scene=([a-z0-9]+)/)||[])[1]||"system";
   var i=document.getElementById("intro"); if(i)i.style.display="none";
   G.running=true;G.t=200000;   // не ноль: на нуле фазы лун сходятся и на каждой планете затмение
-  function sysWhere(test,r0){
-    for(var r=(r0||1);r<40;r++)for(var x=-r;x<=r;x++)for(var y=-r;y<=r;y++){
+  /* rMax: редкий предикат на полном скане 40 колец генерил ТЫСЯЧИ систем
+     синхронно — виртуальное время стояло, и headless ждал вечно (это и было
+     «home вешает съёмку», M270). Ищем ограниченно и отступаем к простому. */
+  function sysWhere(test,r0,rMax){
+    for(var r=(r0||1);r<(rMax||40);r++)for(var x=-r;x<=r;x++)for(var y=-r;y<=r;y++){
       if(Math.max(Math.abs(x),Math.abs(y))!==r||!starAt(x,y))continue;
       var S=getSystem(x,y);if(test(S,x,y))return S;
     }
@@ -126,9 +129,11 @@ setTimeout(function(){
       for(var i=0;i<(n||240);i++){G.t+=1;M[0](1);M[1]();}
     },
     home:function(){
-      var S=sysWhere(function(S){var f=SC.firstSolid(S);return f&&f.type==="terran";});
+      var S=sysWhere(function(S){var f=SC.firstSolid(S);return f&&f.type==="terran";},1,9)
+           ||sysWhere(function(S){return !!solid(S,"terran");},1,9)
+           ||sysWhere(function(S){return !!SC.firstSolid(S);},1,6);
       if(S)goTo(S);
-      var p=SC.firstSolid(S);
+      var p=solid(S,"terran")||SC.firstSolid(S);
       G.home=homeInit();G.home.tier=8;G.home.sx=G.sx;G.home.sy=G.sy;
       G.home.trophies=[{k:"a"},{k:"b"},{k:"c"},{k:"d"}];
       G.owned.skat=1;G.home.garage=["skat"];
@@ -143,7 +148,11 @@ setTimeout(function(){
       G.home.trophies=[{k:"a"},{k:"b"},{k:"c"}];
       G.owned.skat=1;G.home.garage=["skat"];
       G.vega={stage:2,aboard:1,att:0,mood:1,offend:-1,calls:0,said:0};
-      G.crew=[{name:genName(rng(11)),role:"pilot"},{name:genName(rng(22)),role:"tech"}];
+      /* НАСТОЯЩИЕ наёмники, не муляжи: голый {name,role} без traits ронял
+         crewHas → «СБОЙ · reading 'some'» на каждом кадре сцены (второй
+         круг марафона). В игре такое невозможно — найм и сейв всегда дают
+         массив; муляж обязан держать тот же договор. */
+      G.crew=[genMerc(11),genMerc(22)];
       surf(p);enterHomeIn();
       var st=hinRooms().find(function(v){return v.key==="study";});
       G.hin.x=st?st.x+st.w*.5:hinWidth()*.5;

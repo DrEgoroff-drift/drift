@@ -157,10 +157,20 @@ function updateDig(dt){
   let head="ГЛУБИНА "+depth+" м · "+DEPTH_TIERS[tierAt(D.row)].ru.toUpperCase()+
     " · "+geoAt(D.p,D.row*DIG_CELL*DIG_GEO_K).ru.toUpperCase()+
     "\nСКАФАНДР "+Math.round(S.suit)+"% · ТРЮМ "+held()+"/"+st.cargoMax;
-  if(D.bugs.some(b=>b.stun<=0&&b.flee<=0))
-    head+="\nКУСАЧИЕ РЯДОМ · ОГОНЬ (F) — ИМПУЛЬС, ПОТОМ ПОДОЙТИ ЗА ОБРАЗЦОМ";
+  if(D.bugs.some(b=>b.stun<=0&&b.flee<=0)){
+    const fk=(typeof ctlHint==="function")?ctlHint("fire",""):"F";
+    head+="\nКУСАЧИЕ РЯДОМ · ОГОНЬ"+(fk?" ("+fk+")":"")+" — ИМПУЛЬС, ПОТОМ ПОДОЙТИ ЗА ОБРАЗЦОМ";
+  }
   if(!dx&&!dy){D.target=null;
-    G.prompt=head+"\nW A S D — КОПАТЬ ВВЕРХ / ВБОК / ВНИЗ";return;}
+    /* на телефоне W A S D не существует — там копают пэдами ВВЕРХ/ВНИЗ и
+       стрелками; на компьютере клавиши берутся из живой раскладки (П0) */
+    const mob=document.body.classList.contains("mobile");
+    G.prompt=head+(mob
+      ?"\nВВЕРХ · ВНИЗ · ◀ ▶ — КОПАТЬ"
+      :"\n"+[["thrust","W"],["left","A"],["brake","S"],["right","D"]]
+        .map(q=>(typeof ctlHint==="function")?ctlHint(q[0],q[1]):q[1]).join(" ")+
+        " — КОПАТЬ ВВЕРХ / ВБОК / ВНИЗ");
+    return;}
 
   const tc=D.col+dx,tr2=D.row+dy;
   if(tr2<0||Math.abs(tc)>DIG_HALF){D.target=null;G.prompt=head;return;}
@@ -242,7 +252,7 @@ function digFauna(dt,st){
         b.r=6+r()*6;b.hostile=true;b.stun=0;b.bite=0;b.flee=0;
         b.x=px+side*(120+r()*90);b.y=py+(r()-.5)*90;
         D.bugs.push(b);
-        say("В породе кто-то есть\nОГОНЬ (F) — импульсный разрядник\nоглушённого можно забрать, подойдя вплотную");
+        say("В породе кто-то есть\nОГОНЬ"+((typeof ctlHint==="function"&&ctlHint("fire",""))?" ("+ctlHint("fire","")+")":"")+" — импульсный разрядник\nоглушённого можно забрать, подойдя вплотную");
       }
     }
   }

@@ -7,6 +7,35 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.268.0 — M271: the second circle of critique
+
+The whole pass again, harsher. Four catches, one acquittal.
+
+**The day giant was a watermark, not a sphere (seventh rework).** The «пол по небу» clamps
+lifted both lit and shaded sides toward the air and the terminator collapsed to ~30 internal
+units — under the .42 daylight alpha that is seventeen on screen, i.e. a flat pale circle with
+an edge (the author's «кругов дохуя» in its purest form, caught on the lights scene). After all
+the floors, the day side must now beat the night side by 72 internal (≈30 on screen): the disc
+reads as a lit body again, its light facing the drawn sun.
+
+**СБОЙ in the rooms scene — the stand broke the crew contract.** The shots stand built crew as
+bare `{name,role}`; `crewHas` read `c.traits.some` and the frame guard printed «СБОЙ · reading
+'some' · HOMEIN» on every frame. In the game this is impossible (hire and load always produce
+the array); the stand now hires real mercs (`genMerc`). The M270 «home hangs headless» tail is
+also closed: not a hang — a rare predicate («первый твёрдый — землеподобная») scanning 40 rings
+generated thousands of systems synchronously while virtual time stood still. The scan is capped
+and falls back.
+
+**Prompts name controls that exist (П0).** The cave said «A D — ИДТИ · W — РАНЕЦ», the mine
+«W A S D — КОПАТЬ», the fauna «ОГОНЬ (F)» — on a phone none of those keys exist, and on desktop
+a rebound key made the bracket lie. New `ctlHint`: pads by their own names on mobile
+(«◀ ▶ — ИДТИ · ▲ — РАНЕЦ», «ВВЕРХ · ВНИЗ · ◀ ▶ — КОПАТЬ»), live-bound key labels on desktop.
+
+**Acquitted:** the scoop's dashed «ПОЛОСА СБОРА» — its file already records the argument and
+the verdict («линейка или газ — спор решается в пользу читаемости»), and the dashes run with
+the flight. A decided design is not re-litigated by taste.
+
+---
 ## 0.267.0 — M270: the through-pass closes the marathon (П10)
 
 The full album (20 scenes, headless) was walked against the eight audit laws and the ten craft

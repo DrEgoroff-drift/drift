@@ -126,8 +126,14 @@ the day they are found; this is work that was deliberately not done, or that nee
 
 Every pass below is closed — done, measured, or acquitted with the reason written where the
 next session will look (patchnote, codex ledger, or the story file itself). The remainder is
-the **Needs the author** list at the bottom plus three P0 tails: the quiet-machine re-measure
-of `?g11`, the «home» stand scene hanging headless Chrome, and the «смотритель…излишек» flake.
+the **Needs the author** list at the bottom plus two P0 tails: the quiet-machine re-measure
+of `?g11` and the «смотритель…излишек» flake.
+
+**Second circle (M271, 0.268.0)** re-walked the whole album harsher and caught: the day giant
+as a watermark (seventh rework — terminator survives the floors), the rooms-scene СБОЙ (stand
+broke the crew data contract), the «home hangs» tail (a 40-ring synchronous scan, not a hang —
+capped), and key-name prompts that lied to phones and rebound keyboards (`ctlHint`). The scoop
+band was acquitted — its file records the decided argument.
 
 The author's verdict on the craft run 0.245→0.260: the research was good and **nothing visibly
 changed**. Diagnosis accepted by both sides: M249–M263 went into fine grain (blue noise, seams,

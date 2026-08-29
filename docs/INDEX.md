@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3063
+Файлов: 333 · символов верхнего уровня: 3064
 
 ## СИМВОЛЫ
 
@@ -21,7 +21,7 @@ $hudp                        src/27z-telemetry.js:43
 $ipod                        src/25c-instr-hud.js:16
 $jn                          src/27z-telemetry.js:26
 $launch                      src/27z-telemetry.js:32
-$menu                        src/15-input.js:194
+$menu                        src/15-input.js:205
 $msg                         src/27z-telemetry.js:28
 $msl                         src/27z-telemetry.js:31
 $nav                         src/27z-telemetry.js:30
@@ -253,7 +253,7 @@ caveBuild                    src/22-mode-cave.js:105
 caveCeil                     src/22-mode-cave.js:67
 caveCeilLow                  src/22-mode-cave.js:82
 caveCeilOf                   src/22-mode-cave.js:90
-caveContour                  src/22-mode-cave.js:424
+caveContour                  src/22-mode-cave.js:435
 caveDeco                     src/22a-cave-deco.js:94
 caveFloor                    src/22-mode-cave.js:61
 caveFloorLow                 src/22-mode-cave.js:75
@@ -453,6 +453,7 @@ crownHas                     src/05a-nodes.js:171
 crownOwned                   src/05a-nodes.js:159
 crownReady                   src/05a-nodes.js:158
 CSW                          src/19e-clouds.js:53
+ctlHint                      src/15-input.js:156
 ctx                          src/08-state.js:3
 CUE_EPS                      src/27m-scroll-cue.js:26
 CUE_PAD                      src/27m-scroll-cue.js:25
@@ -493,7 +494,7 @@ DIG_TURF                     src/23aa-dig-rock.js:447
 digBedding                   src/23aa-dig-rock.js:118
 digCell                      src/23-mode-dig.js:29
 digCun                       src/23aa-dig-rock.js:158
-digFauna                     src/23-mode-dig.js:224
+digFauna                     src/23-mode-dig.js:234
 digRGB                       src/23aa-dig-rock.js:449
 digRockMass                  src/23aa-dig-rock.js:183
 digRockPass                  src/23aa-dig-rock.js:26
@@ -549,15 +550,15 @@ drawBeltRocks                src/17c-system-draw.js:41
 drawBuildMenu                src/21aa-base-rooms.js:504
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
-drawCave                     src/22-mode-cave.js:700
+drawCave                     src/22-mode-cave.js:711
 drawCaveDark                 src/22a-cave-deco.js:327
-drawCaveFar                  src/22-mode-cave.js:569
+drawCaveFar                  src/22-mode-cave.js:580
 drawCaveGlow                 src/22a-cave-deco.js:361
 drawCaveOwnLight             src/22a-cave-deco.js:485
-drawCaveRock                 src/22-mode-cave.js:454
+drawCaveRock                 src/22-mode-cave.js:465
 drawCaveSolid                src/22a-cave-deco.js:241
 drawCaveWater                src/22a-cave-deco.js:300
-drawCaveWorld                src/22-mode-cave.js:594
+drawCaveWorld                src/22-mode-cave.js:605
 drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:180
@@ -569,7 +570,7 @@ drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
 drawDeposit                  src/21b-surface-deco.js:347
 drawDig                      src/23a-dig-draw.js:640
-drawDigFauna                 src/23-mode-dig.js:298
+drawDigFauna                 src/23-mode-dig.js:308
 drawDigWorld                 src/23a-dig-draw.js:45
 drawDronesMap                src/12e-drone-flight.js:262
 drawDronesSystem             src/12e-drone-flight.js:185
@@ -689,7 +690,7 @@ earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
 el                           src/26-ui-station.js:145
-endPtr                       src/15-input.js:310
+endPtr                       src/15-input.js:321
 engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:88
@@ -1549,7 +1550,7 @@ modCost                      src/11-log.js:131
 MODE_RU                      src/27i-ui-table.js:29
 modeRu                       src/27i-ui-table.js:32
 MODS                         src/04-mods.js:2
-mouseWalkAt                  src/15-input.js:320
+mouseWalkAt                  src/15-input.js:331
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
 MSL_DMG                      src/16b-missile.js:14
@@ -1585,7 +1586,7 @@ namesFor                     src/11u-names.js:17
 namesMangle                  src/11u-names.js:39
 namesToldAll                 src/11u-names.js:16
 nameTell                     src/11u-names.js:32
-navAction                    src/15-input.js:226
+navAction                    src/15-input.js:237
 near                         tests/90-harness.js:29
 nearestPOI                   src/20a-poi.js:236
 nearestStation               src/12-economy.js:45
@@ -1824,7 +1825,7 @@ pickKindByBias               src/20-life.js:179
 pickShare                    src/20e-species.js:125
 pickStType                   src/06-galaxy.js:30
 PICKUPS                      src/24a-mode-raid.js:24
-pinch0                       src/15-input.js:284
+pinch0                       src/15-input.js:295
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20
 PIR_SS                       src/12i-pirate-hull.js:17
@@ -1988,7 +1989,7 @@ profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
 psPlanet                     tests/91zzzu-post-scenes.js:6
 psSnap                       tests/91zzzu-post-scenes.js:17
-ptr                          src/15-input.js:283
+ptr                          src/15-input.js:294
 putOnTable                   src/11b-speech.js:216
 QSL_BY                       src/11an-qsl.js:46
 QSL_OPS                      src/11an-qsl.js:24
@@ -2081,7 +2082,7 @@ rareSum                      src/12m-rare.js:140
 rareTake                     src/12m-rare.js:115
 RAST_MAX                     src/18c-chunks.js:40
 RD                           src/27k-road.js:183
-rebinding                    src/15-input.js:150
+rebinding                    src/15-input.js:161
 RECORD_YEARS                 src/11aa-record.js:17
 recordAdd                    src/11aa-record.js:22
 recordAll                    src/11aa-record.js:18
@@ -2135,7 +2136,7 @@ relaysNear                   src/11ap-relay.js:107
 relaySpeak                   src/11ap-relay.js:166
 relaySpot                    src/11ap-relay.js:288
 relayWrite                   src/11ap-relay.js:155
-releaseAllKeys               src/15-input.js:181
+releaseAllKeys               src/15-input.js:192
 RELIC_KEYS                   src/12h-relic.js:64
 relicDeep                    src/12h-relic.js:76
 relicEquip                   src/12h-relic.js:78
@@ -2472,7 +2473,7 @@ settleWallX                  src/12t-settle.js:119
 settleWatch                  src/12t-settle.js:390
 settleWords                  src/12t-settle.js:258
 setTx                        src/27z-telemetry.js:68
-setZoom                      src/15-input.js:255
+setZoom                      src/15-input.js:266
 sfx                          src/09-audio.js:237
 SFX                          src/09-audio.js:97
 SH_DX                        src/03b-hull-paint.js:164
@@ -2499,27 +2500,27 @@ SKY_OFF                      src/11ak-skywatch.js:121
 SKY_QUIET                    src/19b-sky.js:14
 SKY_WORLD_KINDS              src/19b-sky.js:106
 skyAll                       src/11ak-skywatch.js:34
-skyAurora                    src/19b-sky.js:392
+skyAurora                    src/19b-sky.js:405
 skyBlock                     src/11ak-skywatch.js:234
 skyCanReport                 src/11ak-skywatch.js:202
-skyComet                     src/19b-sky.js:449
+skyComet                     src/19b-sky.js:462
 skyCometName                 src/11ak-skywatch.js:198
 skyDay                       src/19c-light.js:78
 skyDrop                      src/11ak-skywatch.js:146
-skyField                     src/19b-sky.js:492
+skyField                     src/19b-sky.js:505
 skyFind                      src/11ak-skywatch.js:47
-skyGalaxy                    src/19b-sky.js:329
+skyGalaxy                    src/19b-sky.js:342
 skyGiant                     src/19b-sky.js:192
 skyGrad                      src/19-mode-landing.js:303
-skyHole                      src/19b-sky.js:352
-skyMoon                      src/19b-sky.js:418
+skyHole                      src/19b-sky.js:365
+skyMoon                      src/19b-sky.js:431
 skyNameComet                 src/11ak-skywatch.js:184
-skyNeb                       src/19b-sky.js:439
+skyNeb                       src/19b-sky.js:452
 skyNebula                    src/19b-sky.js:49
 skyOfferHere                 src/11ak-skywatch.js:122
 skyOn                        src/11ak-skywatch.js:59
 skyPick                      src/11ak-skywatch.js:81
-skyPulsar                    src/19b-sky.js:470
+skyPulsar                    src/19b-sky.js:483
 skyReport                    src/11ak-skywatch.js:206
 skyScene                     src/19b-sky.js:15
 skyTake                      src/11ak-skywatch.js:136
@@ -2597,7 +2598,7 @@ STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:49
-start                        src/15-input.js:472
+start                        src/15-input.js:483
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
 stat                         src/08-state.js:142
@@ -2737,7 +2738,7 @@ tableWasNew                  src/27i-ui-table.js:75
 tabLive                      src/14a-cloud.js:36
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
-tap                          src/15-input.js:351
+tap                          src/15-input.js:362
 TAPE_ADAPT                   src/25b-tape.js:26
 TAPE_DT                      src/25b-tape.js:24
 TAPE_GAIN                    src/25b-tape.js:25
@@ -2809,7 +2810,7 @@ tinTick                      src/12ta-tin.js:118
 tnoise                       src/18a-material.js:16
 toggleLog                    src/11-log.js:126
 toggleLoreBoard              src/27h-ui-lore.js:81
-toggleMenu                   src/15-input.js:195
+toggleMenu                   src/15-input.js:206
 toggleParrotWin              src/12y-parrot-face.js:693
 TOLD_LAG                     src/11aj-told.js:32
 toldAll                      src/11aj-told.js:34
@@ -2983,7 +2984,7 @@ wallSpot                     src/11ah-wall.js:132
 wallStone                    src/11ah-wall.js:189
 wallStore                    src/11ah-wall.js:81
 wallWrap                     src/11ae-concert.js:72
-wasBlurred                   src/15-input.js:180
+wasBlurred                   src/15-input.js:191
 watchCrew                    src/27b-ui-crew.js:34
 wcol                         src/29g-winter-draw.js:25
 WEAR_FULL                    src/12s-wear.js:16
@@ -3059,7 +3060,7 @@ wtab                         src/02a-worldmix.js:85
 yachtMoraleMul               src/12j-home.js:255
 yachtOwned                   src/12j-home.js:248
 YARD_CHANCE                  src/04b-fleet.js:162
-ZAP_COOL                     src/23-mode-dig.js:223
+ZAP_COOL                     src/23-mode-dig.js:233
 ZOO_PEN_CAP                  src/11ad-zoo.js:14
 zooAll                       src/11ad-zoo.js:15
 zooBlock                     src/11ad-zoo.js:72
@@ -3468,7 +3469,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/14-save.js · 51 КБ
   · сохранение:1
 
-## src/15-input.js · 29 КБ
+## src/15-input.js · 30 КБ
   · экранные кнопки: авто-скрытие и размер:1
   · ввод:87
 
@@ -3518,7 +3519,7 @@ zooTick                      src/11ad-zoo.js:41
   · сбор летучих газов: заход в атмосферу гиганта:1
   · небо гиганта: полосы, а не лепёшки:71
 
-## src/19b-sky.js · 29 КБ
+## src/19b-sky.js · 30 КБ
   · небо:1
 
 ## src/19c-light.js · 28 КБ
@@ -3631,7 +3632,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/23a-dig-draw.js · 40 КБ
   · шахта: отрисовка:1
 
-## src/23-mode-dig.js · 16 КБ
+## src/23-mode-dig.js · 17 КБ
   · шахта: спуск вглубь планеты:1
 
 ## src/24aa-raid-draw.js · 50 КБ
