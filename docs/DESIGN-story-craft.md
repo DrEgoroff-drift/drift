@@ -120,9 +120,10 @@ milestone doesn't helpfully attach a reward to any of them.
 
 ## 6. Dead reckoning is the engine's own name
 
-The English working title (*Dead Reckoning: The Long Drift*) turns out to name the codebase's
-first principle. Счисление пути — position derived from the log when the sky cannot be asked —
-is exactly how the game is built: drone positions derived from the clock, never stored
+*Dead Reckoning: The Long Drift* (Garan Lorn, 2026) is **someone else's game** — see §8 — and
+our title is not in question. But the navigation term in its name happens to describe our
+codebase's first principle. Счисление пути — position derived from the log when the sky cannot
+be asked — is exactly how the game is built: drone positions derived from the clock, never stored
 (`12e-drone-flight`); the chess board replayed from the move list, never stored (`25n-chess`);
 the sky computed from `celestAt`, never stored (`06a-celest`); the whole «never persist the
 ephemeral» constraint. The world is a log plus a clock.
@@ -154,6 +155,44 @@ not drift. (`18c-chunks`, `07-planet`, `18a-material`.)
 forms, the station screens — the miniature's rule applies: hierarchy is carried by **pattern
 density**, not shading. The UI law (size and colour, never caps) gains a third legal channel:
 what matters is dense, what rests is sparse. (`27*-ui`, `25h-post-forms`.)
+
+## 8. The generation-ship shelf
+
+**Dead Reckoning: The Long Drift** (Garan Lorn / Selenodrome, EA 25.06.2026, ~€11, "mostly
+positive"): a generation-ship strategy after John Ayliff's *Seedship*. Three resources (food,
+power, hull), centuries of transit, and **five erosion axes** — genetic drift, ideological
+fracture, AI integration, technological regression, class stratification. Chain events build
+across decades; the developers' line is the load-bearing one: *"the faction that rises in year
+200 was built from decisions you made in year 40. Every choice nudges the needle. None of them
+reset."* Five endings shaped by the run. *Seedship* itself (Twine, 2017): an AI weighs planets,
+push-your-luck, and the **degradation of the science/culture databases decides the quality of
+the final colony** — the epilogue is scored from what survived the voyage.
+
+Same theme as Drift — смена — but the opposite camera: they play the institution from above
+across generations; we play one pair of hands inside real days. Their erosion is five numbers;
+ours is «наряд, который некому отменить», shown as things and speech. Their forks are visible
+decisions that compound; ours are hidden deed-turns. Three things worth taking, all in our
+forms:
+
+- **Blind chains** — the year-40→year-200 trick in salience form: a deed key set by one story
+  may sit in another story's `when` months later, never shown, never reset. The `links` field
+  exists and is never load-bearing; a chain is `links` made real. One rule: a chain never
+  *reveals* itself — the player at most feels that this region remembers him.
+- **Language drift as visible erosion** — the pidgin ages: the glyph grammar (§2) takes a time
+  parameter, so signs cut into old walls differ slightly from current speech, and a returner
+  (`11s`) speaks yesterday's pidgin — вернувшиеся моложе своих внуков, now audible. Erosion the
+  player *sees*, no number anywhere.
+- **The epilogue is what survived** — Seedship scores its ending from the databases; our
+  endings should assemble their text from the record book, the QSL wall, the books shelf — the
+  things others wrote and the player carried. An ending «reflects the specific shape of the
+  run» because it is literally built from the run's things (feeds P8).
+
+Also on this shelf, for the map: *IXION* (station city-builder, chapters, hull as clock),
+*Frostpunk* (the Book of Laws — decisions that rewrite who the society is), *King of Dragon
+Pass* (event pool + long arc), *Wildermyth* (procedural biography), *RimWorld* (the storyteller
+as drama manager — prior art for P8's clocks), *Heaven's Vault* (a script deciphered over a
+whole game — prior art for §2). The AI-integration axis needs nothing from us: the AI core
+taking a manager's seat is already a hard constraint in `CLAUDE.md`.
 
 ---
 
