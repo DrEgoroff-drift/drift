@@ -166,3 +166,31 @@ function drawWear(h,w){
   ctx.lineCap="butt";
   ctx.restore();
 }
+/* ── швы: кинцуги (M256, DESIGN-story-craft §7) ──
+   Станция латает пробоину — и заплатка ОСТАЁТСЯ ВИДНА: светлый сварной шов с
+   тёмным подбоем. Обслуживание снимает налёт, швы не смывает никто и никогда:
+   чинить и обслуживать — разные вещи (шапка файла), а шов — третья: биография.
+   Корабль, прошедший десять починок, читается ветераном даже вымытый.
+   Хранится ЧИСЛО починок на корпус: место пробоины эфемерно и не хранится
+   (правило игры), рисунок же шва детерминирован от seed корпуса и НОМЕРА шва —
+   старые швы не переезжают, когда появляется новый. Потолок девять: дальше
+   новые ложатся по старым, сеткой корпус не зарастает. */
+function seamsAll(){if(!G.seams||typeof G.seams!=="object")G.seams={};return G.seams;}
+function seamAdd(id){const S=seamsAll(),k=id||G.shipId;S[k]=Math.min(9,(S[k]||0)+1);}
+function seamsOf(id){return seamsAll()[id||G.shipId]||0;}
+function drawSeams(h,n){
+  if(!n)return;
+  const L=h.len,bw=h.bw;
+  ctx.lineCap="round";
+  for(let i=0;i<n;i++){
+    const r=rng(hashi(h.seed||1,0x5EA7,i));
+    const x=h.tail+(.08+r()*.84)*L, y=(r()*2-1)*bw*.68;
+    const ln=L*(.035+r()*.05), a=r()*TAU;
+    const x1=x+Math.cos(a)*ln, y1=y+Math.sin(a)*ln;
+    const xm=(x+x1)/2+(r()-.5)*ln*.5, ym=(y+y1)/2+(r()-.5)*ln*.5;
+    ctx.strokeStyle="rgba(10,12,14,.45)";ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(xm,ym);ctx.lineTo(x1,y1);ctx.stroke();
+    ctx.strokeStyle="rgba(208,218,226,.55)";ctx.lineWidth=.55;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(xm,ym);ctx.lineTo(x1,y1);ctx.stroke();
+  }
+}

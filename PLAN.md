@@ -122,6 +122,13 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M256 — the patch stays a seam (2026-08-29) — CLOSED (0.252.0)
+
+P3 opened with kintsugi: station repairs leave permanent weld seams on the hull (count per
+hull, cap 9, deterministic pattern, new save field with safe default, suite 399). Verified by
+pixel diff: nine seams change ~1000 px at 6× — visible up close, quiet at flight scale.
+P3 remaining: движки/отборка on hull metal and wet rock in live modes.
+
 ## M255 — the nebula's fibres flow (2026-08-29) — CLOSED (0.251.0)
 
 P2's raster half is done: rock grain (M253), dust current (M254), nebula fibres combed by a

@@ -58,7 +58,7 @@ function snapshot(){
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
-    occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
+    occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,seams:G.seams,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
@@ -132,6 +132,7 @@ function applySave(s){
   /* налёт часов по корпусам: старая запись приходит без него — корабль просто
      считается свежим, и это честнее, чем задним числом состарить его */
   G.wear=(s.wear&&typeof s.wear==="object")?s.wear:{};
+  G.seams=(s.seams&&typeof s.seams==="object")?s.seams:{};
   /* свой маршрут: старые сохранения приходят без него — заводим пустой */
   G.trade=(s.trade&&Array.isArray(s.trade.legs))
     ?{legs:s.trade.legs.slice(0,ROUTE_MAX),loops:s.trade.loops|0,

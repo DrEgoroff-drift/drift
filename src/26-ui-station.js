@@ -140,6 +140,7 @@ document.getElementById("bRepair").addEventListener("click",()=>{
   if(can<=0){say("Не хватает кредитов");return;}
   G.credits-=can*per;G.hull+=can;renderTab();
   if(typeof placeNote==="function")placeNote("care",1);   // починка здесь — забота о месте (11d)
+  if(typeof seamAdd==="function")seamAdd();               // заплатка остаётся швом (12s, M256)
 });
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;
   /* правило 1 оформления: капслок — подписям, а не тексту. Длинный заголовок

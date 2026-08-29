@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3049
+Файлов: 333 · символов верхнего уровня: 3053
 
 ## СИМВОЛЫ
 
@@ -25,7 +25,7 @@ $menu                        src/15-input.js:190
 $msg                         src/27z-telemetry.js:28
 $msl                         src/27z-telemetry.js:31
 $nav                         src/27z-telemetry.js:30
-$opts                        src/26-ui-station.js:691
+$opts                        src/26-ui-station.js:692
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:27
 $sh                          src/27z-telemetry.js:8
@@ -620,6 +620,7 @@ drawRoad                     src/27l-road-draw.js:87
 drawRocks                    src/19-mode-landing.js:252
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:163
+drawSeams                    src/12s-wear.js:181
 drawSkyBase                  src/19c-light.js:296
 drawSkyBodies                src/19b-sky.js:66
 drawSkyLayer                 src/19-mode-landing.js:336
@@ -683,7 +684,7 @@ dustTable                    src/16a-space.js:163
 earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
-el                           src/26-ui-station.js:144
+el                           src/26-ui-station.js:145
 endPtr                       src/15-input.js:293
 engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
@@ -2162,7 +2163,7 @@ renderRecord                 src/11aa-record.js:80
 renderRelays                 src/11ap-relay.js:242
 renderRoute                  src/12r-route.js:225
 renderStrips                 src/27i-ui-table.js:223
-renderTab                    src/26-ui-station.js:208
+renderTab                    src/26-ui-station.js:209
 renderThings                 src/27i-ui-table.js:254
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
@@ -2182,7 +2183,7 @@ RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:111
 resEma                       src/28-loop.js:110
-resetArm                     src/26-ui-station.js:690
+resetArm                     src/26-ui-station.js:691
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
@@ -2413,6 +2414,9 @@ sdWeir                       src/12tc-settle-crafts.js:49
 sdWindow                     src/12tb-settle-draw.js:334
 sdWoodpile                   src/12tb-settle-draw.js:391
 sdYard                       src/12tb-settle-draw2.js:410
+seamAdd                      src/12s-wear.js:179
+seamsAll                     src/12s-wear.js:178
+seamsOf                      src/12s-wear.js:180
 sellCargo                    src/12-economy.js:26
 sellDroneYield               src/12-economy.js:37
 setSt                        src/27z-telemetry.js:65
@@ -2468,9 +2472,9 @@ SHIFT_TALK                   src/03f-hull-role.js:63
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:167
+shipRow                      src/26-ui-station.js:168
 SHIPS                        src/03-ships.js:2
-shipThumb                    src/26-ui-station.js:154
+shipThumb                    src/26-ui-station.js:155
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:211
 shipZoneR                    src/19f-lander.js:14
@@ -3385,7 +3389,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12r-route.js · 16 КБ
   · свой торговый маршрут:1
 
-## src/12s-wear.js · 12 КБ
+## src/12s-wear.js · 14 КБ
   · корабль стареет:1
 
 ## src/12ta-tin.js · 23 КБ
@@ -3710,7 +3714,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/26-ui-station.js · 46 КБ
   · станция:1
-  · настройки:689
+  · настройки:690
 
 ## src/27b-ui-crew.js · 12 КБ
   · экран экипажа:1
@@ -3883,9 +3887,10 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91u-route.js · 6 КБ
   · автотесты: свой торговый маршрут:1
 
-## tests/91v-wear.js · 6 КБ
+## tests/91v-wear.js · 7 КБ
   · автотесты: корабль стареет:1
   · M235: у верфи есть пол:58
+  · M256: заплатка остаётся швом:93
 
 ## tests/91w-celest.js · 12 КБ
   · автотесты: календарь — небо считается:1

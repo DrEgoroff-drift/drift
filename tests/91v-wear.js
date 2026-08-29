@@ -89,3 +89,25 @@ TEST_SUITES.push(()=>suite("верфь: пол, ниже которого не �
   ok(fYard<fTrade,"на верфи пол ниже, чем на торговом узле: "+
     Math.round(fYard*100)+"% против "+Math.round(fTrade*100)+"%");
 }));
+
+/* ══════════════ M256: заплатка остаётся швом ══════════════
+   Чинить, обслуживать, носить — три разные вещи: обслуживание снимает налёт,
+   а швы не смывает никто. Число швов живёт на корпусе, переживает запись,
+   растёт по починке и упирается в потолок. */
+TEST_SUITES.push(()=>suite("швы: биография корпуса не смывается",()=>{
+  resetWorld();
+  eq(seamsOf(),0,"новый корпус без швов");
+  seamAdd();seamAdd();
+  eq(seamsOf(),2,"две починки — два шва");
+  const mine=G.shipId;
+  G.owned.igla=true;G.shipId="igla";
+  eq(seamsOf(),0,"второй корпус чист");
+  eq(seamsOf(mine),2,"первый помнит свои");
+  for(let i=0;i<20;i++)seamAdd();
+  eq(seamsOf(),9,"потолок девять");
+  applySave(JSON.parse(JSON.stringify(snapshot())));
+  eq(seamsOf(mine),2,"швы пережили snapshot/applySave");
+  const s=snapshot();delete s.seams;
+  applySave(JSON.parse(JSON.stringify(s)));
+  eq(seamsOf(mine),0,"старая запись без поля — чистые корпуса");
+}));

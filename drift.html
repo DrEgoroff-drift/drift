@@ -1351,7 +1351,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.251.0";
+const VER="0.252.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -3549,6 +3549,8 @@ function drawHull(id,thrusting,braking,lvl,bank){
   /* налёт прожитых часов — последним слоем и внутри обрезки по корпусу, чтобы
      ни одна царапина не вылезла за силуэт (12s-wear) */
   if(typeof drawWear==="function")drawWear(h,wearOf(id));
+  /* швы починок — поверх налёта и тоже в обрезке: биография не смывается (12s) */
+  if(typeof drawSeams==="function")drawSeams(h,typeof seamsOf==="function"?seamsOf(id):0);
   ctx.restore();
   /* ── грань корпуса ──
      Полупрозрачная линия в цвет корпуса — не грань, а ореол: вблизи она
@@ -21362,6 +21364,34 @@ function drawWear(h,w){
   ctx.lineCap="butt";
   ctx.restore();
 }
+/* ── швы: кинцуги (M256, DESIGN-story-craft §7) ──
+   Станция латает пробоину — и заплатка ОСТАЁТСЯ ВИДНА: светлый сварной шов с
+   тёмным подбоем. Обслуживание снимает налёт, швы не смывает никто и никогда:
+   чинить и обслуживать — разные вещи (шапка файла), а шов — третья: биография.
+   Корабль, прошедший десять починок, читается ветераном даже вымытый.
+   Хранится ЧИСЛО починок на корпус: место пробоины эфемерно и не хранится
+   (правило игры), рисунок же шва детерминирован от seed корпуса и НОМЕРА шва —
+   старые швы не переезжают, когда появляется новый. Потолок девять: дальше
+   новые ложатся по старым, сеткой корпус не зарастает. */
+function seamsAll(){if(!G.seams||typeof G.seams!=="object")G.seams={};return G.seams;}
+function seamAdd(id){const S=seamsAll(),k=id||G.shipId;S[k]=Math.min(9,(S[k]||0)+1);}
+function seamsOf(id){return seamsAll()[id||G.shipId]||0;}
+function drawSeams(h,n){
+  if(!n)return;
+  const L=h.len,bw=h.bw;
+  ctx.lineCap="round";
+  for(let i=0;i<n;i++){
+    const r=rng(hashi(h.seed||1,0x5EA7,i));
+    const x=h.tail+(.08+r()*.84)*L, y=(r()*2-1)*bw*.68;
+    const ln=L*(.035+r()*.05), a=r()*TAU;
+    const x1=x+Math.cos(a)*ln, y1=y+Math.sin(a)*ln;
+    const xm=(x+x1)/2+(r()-.5)*ln*.5, ym=(y+y1)/2+(r()-.5)*ln*.5;
+    ctx.strokeStyle="rgba(10,12,14,.45)";ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(xm,ym);ctx.lineTo(x1,y1);ctx.stroke();
+    ctx.strokeStyle="rgba(208,218,226,.55)";ctx.lineWidth=.55;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(xm,ym);ctx.lineTo(x1,y1);ctx.stroke();
+  }
+}
 
 /* ══════════════ Жестянка: смена, которую некому снять ══════════════
    Мир, выбранный до дна и брошенный: воздух кислый, руды нет, жить незачем.
@@ -27017,7 +27047,7 @@ function snapshot(){
     drones:G.drones,droneInventory:G.droneInventory,droneIds:G.droneIds,crew:G.crew,bases:G.bases,
     mgrs:G.mgrs,blueprints:G.blueprints,aiRift:G.aiRift,rogues:G.rogues,exiles:G.exiles,
     relics:G.relics,relicHint:G.relicHint,bio:G.bio,home:G.home,
-    occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,
+    occ:G.occ,freed:G.freed,occCalm:G.occCalm,trade:G.trade,wear:G.wear,seams:G.seams,
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
@@ -27091,6 +27121,7 @@ function applySave(s){
   /* налёт часов по корпусам: старая запись приходит без него — корабль просто
      считается свежим, и это честнее, чем задним числом состарить его */
   G.wear=(s.wear&&typeof s.wear==="object")?s.wear:{};
+  G.seams=(s.seams&&typeof s.seams==="object")?s.seams:{};
   /* свой маршрут: старые сохранения приходят без него — заводим пустой */
   G.trade=(s.trade&&Array.isArray(s.trade.legs))
     ?{legs:s.trade.legs.slice(0,ROUTE_MAX),loops:s.trade.loops|0,
@@ -53022,6 +53053,7 @@ document.getElementById("bRepair").addEventListener("click",()=>{
   if(can<=0){say("Не хватает кредитов");return;}
   G.credits-=can*per;G.hull+=can;renderTab();
   if(typeof placeNote==="function")placeNote("care",1);   // починка здесь — забота о месте (11d)
+  if(typeof seamAdd==="function")seamAdd();               // заплатка остаётся швом (12s, M256)
 });
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;
   /* правило 1 оформления: капслок — подписям, а не тексту. Длинный заголовок

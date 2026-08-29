@@ -7,7 +7,20 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.251.0 — M255: the nebula's fibres flow
+## 0.252.0 — M256: the patch stays a seam (kintsugi)
+
+Repairing and servicing were two different things; now there is a third — wearing. A hull
+patched at a station keeps a **visible weld seam**: a light bead over a dark underlay, bent in
+two, drawn inside the hull clip on top of the налёт. Servicing strips the grime; nothing ever
+strips the seams. A ship through ten repairs reads as a veteran even washed clean — the hull
+wears its biography openly, the way the record book is written by others (kintsugi;
+`DESIGN-story-craft.md` §7).
+
+Stored per hull as a repair **count** (cap nine — after that new seams lie over old): the
+hole's position is ephemeral and is not persisted, per the game's rule; the seam pattern is
+deterministic from the hull seed and the seam's number, so old seams never move when a new one
+appears. New save field `seams` with a safe default — old saves load with clean hulls. Suite
+399 guards the contract: counts per hull, the cap, survival through snapshot/applySave.
 
 Third consumer of the direction field, and the close of P2's raster half. The system nebula's
 fibre layer (the ridged pass that keeps it from being a blurred blob) was isotropic — combed by

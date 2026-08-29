@@ -464,6 +464,8 @@ function drawHull(id,thrusting,braking,lvl,bank){
   /* налёт прожитых часов — последним слоем и внутри обрезки по корпусу, чтобы
      ни одна царапина не вылезла за силуэт (12s-wear) */
   if(typeof drawWear==="function")drawWear(h,wearOf(id));
+  /* швы починок — поверх налёта и тоже в обрезке: биография не смывается (12s) */
+  if(typeof drawSeams==="function")drawSeams(h,typeof seamsOf==="function"?seamsOf(id):0);
   ctx.restore();
   /* ── грань корпуса ──
      Полупрозрачная линия в цвет корпуса — не грань, а ореол: вблизи она
