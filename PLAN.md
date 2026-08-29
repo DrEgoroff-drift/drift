@@ -122,6 +122,13 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M251 — blue noise under every scene (2026-08-29) — CLOSED (0.247.0)
+
+The atelier's first promotion: `grainPass` takes its tile from `blueNoise()` ranks. One rule
+worth keeping: **a lazy bake lands on the worst possible frame** — 77 ms of void-and-cluster
+would have hit the first gameplay frame, a stutter exactly at СТАРТ; pre-baked in the title
+screen's idle instead.
+
 ## M250 — the postcard atelier (2026-08-29) — CLOSED (0.246.0)
 
 P1 of the combined plan (`docs/DESIGN-story-craft.md`): the postcard is the proving ground —

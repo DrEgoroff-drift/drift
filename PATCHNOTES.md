@@ -7,6 +7,16 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.247.0 — M251: blue noise under every scene
+
+The first promotion out of the atelier: `grainPass` (19c) bakes its 64×64 tile from
+`blueNoise()` ranks instead of white `h01`. White noise has low-frequency clumps — neighbouring
+grain dots gathered into specks, and on a flat fill the film grain read as dirt; blue-noise
+ranks are evenly spread by construction, which also makes a better anti-banding matrix for the
+star's corona (the original reason the grain doubles as dither). Same cost — the tile bakes
+once — but the cold bake is 77 ms, so it now runs in the title screen's idle half-second after
+load instead of landing on the first gameplay frame as a stutter at СТАРТ.
+---
 ## 0.246.0 — M250: the postcard atelier — four craft brushes proved on the card
 
 P1 of the combined plan: new techniques are proved in `drawPostcard` first — isolated, seeded,

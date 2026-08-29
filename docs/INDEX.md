@@ -77,8 +77,8 @@ AMMO_KEYS                    src/02-world.js:32
 ammoBatch                    src/16b-missile.js:27
 ammoRow                      src/16b-missile.js:41
 ANCHOR_CACHE                 src/05-parts.js:140
-angDiff                      src/01-core.js:64
-angWrap                      src/01-core.js:63
+angDiff                      src/01-core.js:69
+angWrap                      src/01-core.js:68
 applyCrewEvent               src/12b-crew-events.js:214
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
@@ -482,8 +482,8 @@ deltaHtml                    src/05-parts.js:293
 depKind                      src/21b-surface-deco.js:337
 deployDrone                  src/12-economy.js:73
 DEPTH_TIERS                  src/04-mods.js:51
-DESC_MOOD                    src/01-core.js:80
-DESC_TAIL                    src/01-core.js:86
+DESC_MOOD                    src/01-core.js:85
+DESC_TAIL                    src/01-core.js:91
 dgy                          src/21b-surface-deco.js:131
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
@@ -855,10 +855,10 @@ g11Fps                       src/28z-fps-probe.js:7
 genBeast                     src/20f-fauna.js:58
 genBeltPOI                   src/24b-belt-poi.js:20
 genDeco                      src/21b-surface-deco.js:37
-genDesc                      src/01-core.js:87
+genDesc                      src/01-core.js:92
 genMerc                      src/12a-crew.js:59
 genMgr                       src/12c-mgr-core.js:236
-genName                      src/01-core.js:70
+genName                      src/01-core.js:75
 genPart                      src/05-parts.js:70
 genPlant                     src/20-life.js:188
 genPOI                       src/20a-poi.js:32
@@ -911,8 +911,8 @@ goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
 gotoSector                   src/11a-quests.js:68
 gradePass                    src/19c-light.js:258
-GRAIN_PAT                    src/19c-light.js:370
-grainPass                    src/19c-light.js:371
+GRAIN_PAT                    src/19c-light.js:376
+grainPass                    src/19c-light.js:377
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
 GREEN_SP                     src/21g-greenhouse.js:68
@@ -2317,7 +2317,7 @@ roleFromStats                src/03f-hull-role.js:37
 roleOf                       src/03f-hull-role.js:46
 rollCrewEvent                src/12b-crew-events.js:70
 rollWorld                    src/02a-worldmix.js:67
-ROMAN                        src/01-core.js:69
+ROMAN                        src/01-core.js:74
 ROOM_FIN                     src/21aa-base-rooms.js:46
 roomToneTick                 src/09a-roomtone.js:79
 ROUTE_MAX                    src/12r-route.js:16
@@ -2347,8 +2347,8 @@ rumoursHere                  src/11t-rumours.js:36
 runAutopilot                 src/16-flight.js:109
 runTests                     tests/90-harness.js:80
 rxRecord                     src/11x-ring.js:64
-S1                           src/01-core.js:67
-S2                           src/01-core.js:68
+S1                           src/01-core.js:72
+S2                           src/01-core.js:73
 SAVE_KEY                     src/14-save.js:6
 saveGame                     src/14a-cloud.js:38
 say                          src/08-state.js:184
@@ -2696,8 +2696,8 @@ syncTabs                     src/26-ui-station.js:77
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
 SYS_EXOTIC                   src/16a-space.js:14
-sysDanger                    src/01-core.js:74
-sysJitter                    src/01-core.js:75
+sysDanger                    src/01-core.js:79
+sysJitter                    src/01-core.js:80
 sysNebulaTex                 src/16a-space.js:53
 sysPirateBase                src/24a-mode-raid.js:98
 sysStyle                     src/16a-space.js:21
@@ -3062,8 +3062,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/01-core.js · 7 КБ
   · математика:5
-  · имена:66
-  · удалённость и настрой сектора:73
+  · имена:71
+  · удалённость и настрой сектора:78
 
 ## src/02a-worldmix.js · 8 КБ
   · смешанные миры:1
@@ -3505,7 +3505,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19b-sky.js · 29 КБ
   · небо:1
 
-## src/19c-light.js · 27 КБ
+## src/19c-light.js · 28 КБ
   · свет и воздух:1
   · свечение (bloom) — M243:329
   · зерно и виньетка — один слой на все сцены (M244):364

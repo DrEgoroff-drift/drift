@@ -366,17 +366,23 @@ function bloomPass(k){
    ничего. Зерно: запечённый тайл шума 64×64, положенный плиткой в режиме
    `overlay`. Это ещё и дизеринг — прибор ловил кольца на короне звезды, и это
    классический бэндинг восьмибитного градиента; шум разбивает ступени.
-   Виньетка: только там, где нет своей (на грунте её кладёт gradePass). */
+   Виньетка: только там, где нет своей (на грунте её кладёт gradePass).
+   С M251 плитка — СИНИЙ шум (blueNoise, 01-core; разбор DESIGN-craft §7).
+   У белого есть низкие частоты — комки: соседние точки сбивались в пятнышки,
+   и на ровной заливке зерно читалось грязью, а не фактурой. Ранги синего
+   распределены равномерно по построению — это заодно и лучшая матрица против
+   бэндинга: у белого пороги толпились, и ступень рвалась неровно. Доказано
+   на открытке (M250), стоимость та же — плитка печётся один раз. */
 let GRAIN_PAT=null;
 function grainPass(vig){
   if(G.opts&&G.opts.gfx&&G.opts.gfx.draw===0)return;
   if(W<8||H<8)return;
   if(!GRAIN_PAT){
     const cv=document.createElement("canvas");cv.width=cv.height=64;
-    const g=cv.getContext("2d"),im=g.createImageData(64,64);
-    for(let y=0;y<64;y++)for(let x=0;x<64;x++){
-      const i=(y*64+x)*4, v=110+Math.round(h01(x,y,0x9E71)*36);
-      im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=255;
+    const g=cv.getContext("2d"),im=g.createImageData(64,64),bt=blueNoise();
+    for(let i=0;i<64*64;i++){
+      const v=110+Math.round(bt[i]*36);
+      im.data[i*4]=im.data[i*4+1]=im.data[i*4+2]=v;im.data[i*4+3]=255;
     }
     g.putImageData(im,0,0);
     GRAIN_PAT=ctx.createPattern(cv,"repeat");
