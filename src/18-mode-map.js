@@ -47,6 +47,31 @@ function drawMap(){
   ctx.globalAlpha=.55;
   ctx.drawImage(N,-ex/2-((G.sx*11)%ex),-ey/2-((G.sy*11)%ey),W+ex,H+ey);
   ctx.globalAlpha=1;
+  /* ── полоса Галактики (леджер кадров: карта mass 0%, contrast .07) ──
+     Точки на тьме не собирались ни в одну массу: смотреть было не на что.
+     Карта звёзд обязана показывать, ЧАСТЬЮ ЧЕГО они являются — молочная
+     полоса галактической плоскости наискось через лист. Печётся один раз
+     на размер экрана, кадру — один drawImage. */
+  ctx.drawImage(screenLayer("mapband|"+W+"|"+H,()=>{
+    ctx.save();
+    ctx.translate(W/2,H/2);ctx.rotate(-.34);
+    const L=Math.hypot(W,H);
+    ctx.globalCompositeOperation="lighter";
+    const BW=[.46,.34,.22,.12],BA=[.05,.06,.08,.10];
+    for(let i=0;i<BW.length;i++){
+      const g=ctx.createLinearGradient(0,-H*BW[i]/2,0,H*BW[i]/2);
+      g.addColorStop(0,"rgba(150,180,220,0)");
+      g.addColorStop(.5,"rgba(178,200,228,"+BA[i]+")");
+      g.addColorStop(1,"rgba(150,180,220,0)");
+      ctx.fillStyle=g;ctx.fillRect(-L/2,-H*BW[i]/2,L,H*BW[i]);
+    }
+    /* тёплое ядро полосы — вторая температура листа */
+    const cg=ctx.createRadialGradient(-W*.18,0,0,-W*.18,0,W*.34);
+    cg.addColorStop(0,"rgba(236,206,160,.10)");
+    cg.addColorStop(1,"rgba(236,206,160,0)");
+    ctx.fillStyle=cg;ctx.fillRect(-L/2,-H/2,L,H);
+    ctx.restore();
+  }),0,0,W,H);
   drawStars(G.sx*140,G.sy*140,.35);
   const cell=Math.min(W,H)/9.2,R=5;
   const jr=(st.jump+.02)*cell;

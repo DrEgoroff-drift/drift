@@ -157,7 +157,13 @@ function wcBlots(c2,st,Wc,Hc){
       vr0.push(R*(r()<.3?.06:(.3+r()*.7)));
     }
     const skel=wcDeform(base,vr0,3,r,.7);
-    const c1=st.neb[0],c2c=st.neb[1];
+    const c1=st.neb[0];
+    /* холодный акцент кадра (леджер: система — тепла 99%, пары нет): второй
+       цвет чередования всегда уводится в холод. У тёплой туманности слои
+       перемежаются остывшим газом — и кадр получает вторую температуру. */
+    const cw=st.neb[1];
+    const c2c=[Math.round(cw[0]*.48),Math.round(cw[1]*.72),
+               Math.round(Math.min(255,cw[2]*1.12+42))];
     const nL=12+((st.nseed>>>7)&3);
     for(let li=0;li<nL;li++){
       const L=wcDeform(skel.p.slice(),skel.v.slice(),3,r,.62);

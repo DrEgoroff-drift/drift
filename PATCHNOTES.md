@@ -7,6 +7,27 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.275.0 — M278: five more frames off the ledger
+
+Working the frame ledger top-down, judged by ?look before and after.
+
+- **Карта**: the star chart was dots on darkness (mass 0, contrast .07) — the sheet now shows
+  what the stars are PART OF: a milky band of the galactic plane runs aslant the map, with a
+  warm core as the sheet's second temperature. Baked once per screen size. Contrast .07→.21.
+- **Шахта**: the vignette gave light a place but no temperature — a saturated warm glow at the
+  headlamp itself, same move as the cave. Pair 1→4.
+- **Грунт ночь**: the headlamp's ground-light was near-white — neither the instrument nor the
+  eye read it as warm. An incandescent tone against the blue night is the temperature pair the
+  law asks for. Mass 9→12.
+- **Заход**: the braking flame existed but cast NO light — the descending ship is the frame's
+  one honest warm source at any hour. A thrust glow now paints the nozzles' zone and the hull
+  bottom (источник у света и освещённое у источника). The staged judge misses it (its frame
+  catches a non-burning moment) — the note stays in the ledger, the light stays in the game.
+- **Система**: the watercolour blots' alternating colour is now always cooled — a warm nebula
+  interleaves with its own cooled gas, giving the all-warm frame (тепла 99%) its second
+  temperature by construction.
+
+---
 ## 0.274.0 — M277: every frame gets a judge — and the belt gets its Milky Way
 
 The author's standing order (30.08): the rules now judge WHOLE FRAMES, not elements — and the

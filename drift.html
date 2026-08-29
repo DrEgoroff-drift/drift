@@ -1353,7 +1353,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.274.0";
+const VER="0.275.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -28552,7 +28552,13 @@ function wcBlots(c2,st,Wc,Hc){
       vr0.push(R*(r()<.3?.06:(.3+r()*.7)));
     }
     const skel=wcDeform(base,vr0,3,r,.7);
-    const c1=st.neb[0],c2c=st.neb[1];
+    const c1=st.neb[0];
+    /* холодный акцент кадра (леджер: система — тепла 99%, пары нет): второй
+       цвет чередования всегда уводится в холод. У тёплой туманности слои
+       перемежаются остывшим газом — и кадр получает вторую температуру. */
+    const cw=st.neb[1];
+    const c2c=[Math.round(cw[0]*.48),Math.round(cw[1]*.72),
+               Math.round(Math.min(255,cw[2]*1.12+42))];
     const nL=12+((st.nseed>>>7)&3);
     for(let li=0;li<nL;li++){
       const L=wcDeform(skel.p.slice(),skel.v.slice(),3,r,.62);
@@ -31775,6 +31781,31 @@ function drawMap(){
   ctx.globalAlpha=.55;
   ctx.drawImage(N,-ex/2-((G.sx*11)%ex),-ey/2-((G.sy*11)%ey),W+ex,H+ey);
   ctx.globalAlpha=1;
+  /* ── полоса Галактики (леджер кадров: карта mass 0%, contrast .07) ──
+     Точки на тьме не собирались ни в одну массу: смотреть было не на что.
+     Карта звёзд обязана показывать, ЧАСТЬЮ ЧЕГО они являются — молочная
+     полоса галактической плоскости наискось через лист. Печётся один раз
+     на размер экрана, кадру — один drawImage. */
+  ctx.drawImage(screenLayer("mapband|"+W+"|"+H,()=>{
+    ctx.save();
+    ctx.translate(W/2,H/2);ctx.rotate(-.34);
+    const L=Math.hypot(W,H);
+    ctx.globalCompositeOperation="lighter";
+    const BW=[.46,.34,.22,.12],BA=[.05,.06,.08,.10];
+    for(let i=0;i<BW.length;i++){
+      const g=ctx.createLinearGradient(0,-H*BW[i]/2,0,H*BW[i]/2);
+      g.addColorStop(0,"rgba(150,180,220,0)");
+      g.addColorStop(.5,"rgba(178,200,228,"+BA[i]+")");
+      g.addColorStop(1,"rgba(150,180,220,0)");
+      ctx.fillStyle=g;ctx.fillRect(-L/2,-H*BW[i]/2,L,H*BW[i]);
+    }
+    /* тёплое ядро полосы — вторая температура листа */
+    const cg=ctx.createRadialGradient(-W*.18,0,0,-W*.18,0,W*.34);
+    cg.addColorStop(0,"rgba(236,206,160,.10)");
+    cg.addColorStop(1,"rgba(236,206,160,0)");
+    ctx.fillStyle=cg;ctx.fillRect(-L/2,-H/2,L,H);
+    ctx.restore();
+  }),0,0,W,H);
   drawStars(G.sx*140,G.sy*140,.35);
   const cell=Math.min(W,H)/9.2,R=5;
   const jr=(st.jump+.02)*cell;
@@ -34184,6 +34215,22 @@ function drawLander(broken,fire,opt){
      коротких факела, и они же поднимают пыль. */
   if(fire){
     const lvl=1+(G.mods.engine||0)*.22;
+    /* ── зарево тяги: источник у света и освещённое у источника ──
+       Леджер кадров: «заход» — pair 0%, тонов 2, холодный монохром. Пламя
+       было, а СВЕТА от него не было: тормозящий корабль — единственный
+       честный тёплый источник кадра на любой высоте и в любой час. Тёплое
+       зарево под соплами красит и низ корпуса — закон §1. */
+    {
+      const FG=glowSprite("thrustglow",()=>{
+        const g=ctx.createRadialGradient(0,0,0,0,0,1);
+        for(let i=0;i<=8;i++){const t=i/8;
+          g.addColorStop(t,"rgba(255,178,92,"+(.34*Math.pow(1-t,2.4)).toFixed(3)+")");}
+        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
+      });
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      glowBlit(FG,0,bY+bodyH*.34,half*2.2*lvl);
+      ctx.restore();
+    }
     for(const bx of [-half*.5,-half*.05,half*.42]){
       const by=bY-bodyH*.02, br=bodyH*.13;
       ctx.fillStyle=rgba(h.dark,1);
@@ -41711,12 +41758,15 @@ function drawSurfaceWorld(){
         /* затухание по дальности от ног, а не от края экрана; на обоих концах
            ноль, иначе полоса обрывается ступенькой */
         const paint=(d,k)=>{
+          /* тон насыщеннее (леджер кадров: грунт ночь pair 0%): почти белый
+             свет прибор не считал тёплым — и глаз тоже; лампа накаливания
+             против синей ночи — та самая пара температур */
           const gl=ctx.createLinearGradient(x-f*30,y,x+f*reach,y+40);
-          gl.addColorStop(0,"rgba(255,238,206,0)");
-          gl.addColorStop(.20,"rgba(255,238,206,"+(.34*K*k).toFixed(3)+")");
-          gl.addColorStop(.42,"rgba(255,234,196,"+(.44*K*k).toFixed(3)+")");
-          gl.addColorStop(.78,"rgba(255,228,182,"+(.14*K*k).toFixed(3)+")");
-          gl.addColorStop(1,"rgba(255,224,170,0)");
+          gl.addColorStop(0,"rgba(255,222,164,0)");
+          gl.addColorStop(.20,"rgba(255,222,164,"+(.36*K*k).toFixed(3)+")");
+          gl.addColorStop(.42,"rgba(255,212,148,"+(.46*K*k).toFixed(3)+")");
+          gl.addColorStop(.78,"rgba(255,204,138,"+(.15*K*k).toFixed(3)+")");
+          gl.addColorStop(1,"rgba(255,198,130,0)");
           ctx.save();ctx.clip(band(d));
           ctx.fillStyle=gl;
           ctx.fillRect(Math.min(x-f*30,x+f*reach)-8,y-90,reach+46,H);
@@ -45159,6 +45209,21 @@ function drawDigWorld(){
     ctx.save();ctx.globalCompositeOperation="multiply";
     ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
     ctx.restore();
+    /* ── тёплый воздух у налобника (леджер кадров: шахта pair 1%) ──
+       Виньетка давала свету место, но не температуру: кадр шахты жил одной
+       холодной гаммой. Тот же ход, что в пещере: слабое насыщенно-тёплое
+       зарево у самой лампы — тёплый акцент против холодной породы. */
+    {
+      const WP=glowSprite("digwarm",()=>{
+        const g=ctx.createRadialGradient(0,0,0,0,0,1);
+        for(let i=0;i<=8;i++){const t=i/8;
+          g.addColorStop(t,"rgba(255,198,128,"+(.20*Math.pow(1-t,2.2)).toFixed(3)+")");}
+        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
+      });
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      glowBlit(WP,lx,ly,R0*.34);
+      ctx.restore();
+    }
   }
   /* ── рудное тело ──
      Светилось радиальным пятном на клетку и читалось бесформенной кляксой,

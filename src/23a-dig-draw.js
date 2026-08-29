@@ -73,6 +73,21 @@ function drawDigWorld(){
     ctx.save();ctx.globalCompositeOperation="multiply";
     ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
     ctx.restore();
+    /* ── тёплый воздух у налобника (леджер кадров: шахта pair 1%) ──
+       Виньетка давала свету место, но не температуру: кадр шахты жил одной
+       холодной гаммой. Тот же ход, что в пещере: слабое насыщенно-тёплое
+       зарево у самой лампы — тёплый акцент против холодной породы. */
+    {
+      const WP=glowSprite("digwarm",()=>{
+        const g=ctx.createRadialGradient(0,0,0,0,0,1);
+        for(let i=0;i<=8;i++){const t=i/8;
+          g.addColorStop(t,"rgba(255,198,128,"+(.20*Math.pow(1-t,2.2)).toFixed(3)+")");}
+        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
+      });
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      glowBlit(WP,lx,ly,R0*.34);
+      ctx.restore();
+    }
   }
   /* ── рудное тело ──
      Светилось радиальным пятном на клетку и читалось бесформенной кляксой,

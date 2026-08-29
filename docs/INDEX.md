@@ -570,14 +570,14 @@ drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
 drawDeposit                  src/21b-surface-deco.js:347
-drawDig                      src/23a-dig-draw.js:640
+drawDig                      src/23a-dig-draw.js:655
 drawDigFauna                 src/23-mode-dig.js:308
 drawDigWorld                 src/23a-dig-draw.js:45
 drawDronesMap                src/12e-drone-flight.js:262
 drawDronesSystem             src/12e-drone-flight.js:185
 drawDustMotes                src/19-mode-landing.js:527
 drawElevator                 src/20aa-poi-shapes.js:91
-drawExhaust                  src/16a-space.js:310
+drawExhaust                  src/16a-space.js:316
 drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:240
 drawFindsSystem              src/17b-finds.js:152
@@ -631,23 +631,23 @@ drawSkyBase                  src/19c-light.js:296
 drawSkyBodies                src/19b-sky.js:79
 drawSkyLayer                 src/19-mode-landing.js:427
 drawSpa                      src/29i-spa-draw.js:41
-drawSpaceDust                src/16a-space.js:239
-drawStarBody                 src/16a-space.js:396
-drawStarHole                 src/16a-space.js:499
-drawStarNeutron              src/16a-space.js:472
+drawSpaceDust                src/16a-space.js:245
+drawStarBody                 src/16a-space.js:402
+drawStarHole                 src/16a-space.js:505
+drawStarNeutron              src/16a-space.js:478
 drawStars                    src/16-flight.js:28
-drawStarSingle               src/16a-space.js:413
+drawStarSingle               src/16a-space.js:419
 drawStation                  src/17c-system-draw.js:164
 drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:103
-drawSurface                  src/21e-surface-draw.js:630
+drawSurface                  src/21e-surface-draw.js:633
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
 drawSysHud                   src/17-mode-system.js:500
-drawSysNebula                src/16a-space.js:172
+drawSysNebula                src/16a-space.js:178
 drawSystem                   src/17-mode-system.js:299
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:283
@@ -683,10 +683,10 @@ droneStateRu                 src/12e-drone-flight.js:146
 droneSys                     src/12e-drone-flight.js:62
 droneTarget                  src/12-economy.js:72
 droneTripMs                  src/12e-drone-flight.js:87
-DUST_COL                     src/16a-space.js:216
-DUST_LAYERS                  src/16a-space.js:238
-DUST_TAB                     src/16a-space.js:217
-dustTable                    src/16a-space.js:218
+DUST_COL                     src/16a-space.js:222
+DUST_LAYERS                  src/16a-space.js:244
+DUST_TAB                     src/16a-space.js:223
+dustTable                    src/16a-space.js:224
 earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
@@ -827,7 +827,7 @@ FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16
 fleetColor                   src/04b-fleet.js:95
 fleetUniqueName              src/04b-fleet.js:100
-flightCam                    src/16a-space.js:280
+flightCam                    src/16a-space.js:286
 floraOf                      src/20e-species.js:91
 FOE_KINDS                    src/24a-mode-raid.js:17
 FOLK                         src/12u-folk.js:31
@@ -897,10 +897,10 @@ globusAim                    src/25f-globus.js:49
 globusDraw                   src/25f-globus.js:81
 globusSys                    tests/91zzzg-globus.js:7
 globusTick                   src/25f-globus.js:70
-GLOW_CACHE                   src/16a-space.js:377
-GLOW_SP                      src/16a-space.js:376
+GLOW_CACHE                   src/16a-space.js:383
+GLOW_SP                      src/16a-space.js:382
 GLOW_TIERS                   src/11i-glow.js:121
-glowBlit                     src/16a-space.js:392
+glowBlit                     src/16a-space.js:398
 glowCaveX                    src/11i-glow.js:139
 glowCorePlanet               src/11i-glow.js:33
 glowDepthAt                  src/11i-glow.js:24
@@ -913,7 +913,7 @@ glowGroundLine               src/11i-glow.js:110
 glowIsCore                   src/11i-glow.js:38
 glowPatches                  src/11i-glow.js:73
 glowScan                     src/11i-glow.js:64
-glowSprite                   src/16a-space.js:378
+glowSprite                   src/16a-space.js:384
 glowTier                     src/11i-glow.js:122
 glyphEl                      src/12t-settle.js:79
 glyphHasRunes                src/12t-settle.js:52
@@ -1239,7 +1239,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:328
+jump                         src/18-mode-map.js:353
 jumpToBase                   src/21a-mode-base.js:315
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -1327,7 +1327,7 @@ LAND_GY                      src/19f-lander.js:10
 landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:154
 landerLen                    src/19f-lander.js:11
-landingDust                  src/19f-lander.js:328
+landingDust                  src/19f-lander.js:344
 landOnTestPlanet             tests/90-harness.js:70
 last                         src/28-loop.js:82
 LAST_RUN_DAY                 src/12k-letters.js:40
@@ -1514,13 +1514,13 @@ mgrWorkKeep                  src/12c-mgr-core.js:552
 mgrWorkSci                   src/12c-mgr-core.js:683
 midiHz                       src/10-music.js:106
 MINE_MOUTH_R                 src/21-mode-surface.js:4
-mineDeep                     src/23a-dig-draw.js:610
+mineDeep                     src/23a-dig-draw.js:625
 minedUnit                    src/11-log.js:138
-mineKey                      src/23a-dig-draw.js:599
-mineLoad                     src/23a-dig-draw.js:614
+mineKey                      src/23a-dig-draw.js:614
+mineLoad                     src/23a-dig-draw.js:629
 MINERAL                      src/18a-material.js:32
-mineSave                     src/23a-dig-draw.js:624
-mineSpotX                    src/23a-dig-draw.js:606
+mineSave                     src/23a-dig-draw.js:639
+mineSpotX                    src/23a-dig-draw.js:621
 MIRROR_CORE                  src/11f-mirror.js:22
 MIRROR_DELAY                 src/11f-mirror.js:21
 mirrorAck                    src/11f-mirror.js:33
@@ -2695,11 +2695,11 @@ SUN_DIR_FLAT                 src/19c-light.js:23
 sunAzQ                       src/19c-light.js:26
 sunDirSet                    src/19c-light.js:30
 sunSpot                      src/19c-light.js:213
-SURF_BASE                    src/21e-surface-draw.js:621
+SURF_BASE                    src/21e-surface-draw.js:624
 SURF_HOR                     src/19c-light.js:212
 surfaceHint                  src/21e-surface-draw.js:4
 surfNight                    src/06a-celest.js:43
-surfScale                    src/21e-surface-draw.js:629
+surfScale                    src/21e-surface-draw.js:632
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -3478,7 +3478,7 @@ zooTick                      src/11ad-zoo.js:41
   · экранные кнопки: авто-скрытие и размер:1
   · ввод:87
 
-## src/16a-space.js · 33 КБ
+## src/16a-space.js · 34 КБ
   · облик системы:1
 
 ## src/16b-missile.js · 9 КБ
@@ -3516,7 +3516,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
-## src/18-mode-map.js · 22 КБ
+## src/18-mode-map.js · 24 КБ
   · карта:1
   · карта: ночное небо, а не схема молекулы:12
 
@@ -3538,7 +3538,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19e-clouds.js · 15 КБ
   · облака:1
 
-## src/19f-lander.js · 21 КБ
+## src/19f-lander.js · 22 КБ
   · посадочный корабль:1
 
 ## src/19-mode-landing.js · 38 КБ
@@ -3634,7 +3634,7 @@ zooTick                      src/11ad-zoo.js:41
   · шахта: порода:1
   · почвенный профиль: небо кончается не линейкой:433
 
-## src/23a-dig-draw.js · 40 КБ
+## src/23a-dig-draw.js · 41 КБ
   · шахта: отрисовка:1
 
 ## src/23-mode-dig.js · 17 КБ

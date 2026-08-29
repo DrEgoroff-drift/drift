@@ -558,12 +558,15 @@ function drawSurfaceWorld(){
         /* затухание по дальности от ног, а не от края экрана; на обоих концах
            ноль, иначе полоса обрывается ступенькой */
         const paint=(d,k)=>{
+          /* тон насыщеннее (леджер кадров: грунт ночь pair 0%): почти белый
+             свет прибор не считал тёплым — и глаз тоже; лампа накаливания
+             против синей ночи — та самая пара температур */
           const gl=ctx.createLinearGradient(x-f*30,y,x+f*reach,y+40);
-          gl.addColorStop(0,"rgba(255,238,206,0)");
-          gl.addColorStop(.20,"rgba(255,238,206,"+(.34*K*k).toFixed(3)+")");
-          gl.addColorStop(.42,"rgba(255,234,196,"+(.44*K*k).toFixed(3)+")");
-          gl.addColorStop(.78,"rgba(255,228,182,"+(.14*K*k).toFixed(3)+")");
-          gl.addColorStop(1,"rgba(255,224,170,0)");
+          gl.addColorStop(0,"rgba(255,222,164,0)");
+          gl.addColorStop(.20,"rgba(255,222,164,"+(.36*K*k).toFixed(3)+")");
+          gl.addColorStop(.42,"rgba(255,212,148,"+(.46*K*k).toFixed(3)+")");
+          gl.addColorStop(.78,"rgba(255,204,138,"+(.15*K*k).toFixed(3)+")");
+          gl.addColorStop(1,"rgba(255,198,130,0)");
           ctx.save();ctx.clip(band(d));
           ctx.fillStyle=gl;
           ctx.fillRect(Math.min(x-f*30,x+f*reach)-8,y-90,reach+46,H);

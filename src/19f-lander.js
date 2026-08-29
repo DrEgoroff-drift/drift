@@ -291,6 +291,22 @@ function drawLander(broken,fire,opt){
      коротких факела, и они же поднимают пыль. */
   if(fire){
     const lvl=1+(G.mods.engine||0)*.22;
+    /* ── зарево тяги: источник у света и освещённое у источника ──
+       Леджер кадров: «заход» — pair 0%, тонов 2, холодный монохром. Пламя
+       было, а СВЕТА от него не было: тормозящий корабль — единственный
+       честный тёплый источник кадра на любой высоте и в любой час. Тёплое
+       зарево под соплами красит и низ корпуса — закон §1. */
+    {
+      const FG=glowSprite("thrustglow",()=>{
+        const g=ctx.createRadialGradient(0,0,0,0,0,1);
+        for(let i=0;i<=8;i++){const t=i/8;
+          g.addColorStop(t,"rgba(255,178,92,"+(.34*Math.pow(1-t,2.4)).toFixed(3)+")");}
+        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
+      });
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      glowBlit(FG,0,bY+bodyH*.34,half*2.2*lvl);
+      ctx.restore();
+    }
     for(const bx of [-half*.5,-half*.05,half*.42]){
       const by=bY-bodyH*.02, br=bodyH*.13;
       ctx.fillStyle=rgba(h.dark,1);
