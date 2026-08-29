@@ -122,6 +122,17 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M262 — the lichen is grown, not drawn (2026-08-29) — CLOSED (0.258.0)
+
+P9 opened: differential growth (`growLichen` in 22a) — the first grown organic in the game,
+stage 点 over the rock's fresh grain. Remaining from the research plan, each with its named
+reason to wait: **P4 grisaille** (an architectural refactor — its own careful session);
+**P9b settlement recursion** (touches a loved scene — wants eye passes across many settlements);
+**P5-2 base/raid lamps** (verify first whether room clipping already occludes); **~15 content
+turns** (a few per session, each deed found in the story's fabric); **P7b the notebook**
+(understanding as player state — needs the author); **P8 engine** (lands with the second act's
+first ending, per the contract in DESIGN-arc). The pacing-guard contract itself is written.
+
 ## M261 — signs, not letters (2026-08-29) — CLOSED (0.257.0)
 
 The futhark no longer reaches the eye: 24 signs drawn by a 6×4 grammar, runes kept as string

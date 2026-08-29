@@ -7,7 +7,17 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.257.0 — M261: signs, not letters
+## 0.258.0 — M262: the lichen is grown, not drawn
+
+P9's first piece (DESIGN-craft §10, inconvergent's differential growth). Every organic thing in
+the game is parametric — a formula swaying on a sine. The cave lichen is the first thing that
+is **grown**: a closed ring of eight points iterates three rules — long edges split, close
+points repel, every point creeps outward against a bounding disc — and crumples itself into
+lobes the way a real lichen does. Nobody draws the folds; they emerge. Ten rosettes per cave,
+computed once at entry (deterministic from the cave seed), drawn as three passes of one
+contour — matte body, brighter rim, condensed heart — flattened against vault or floor. This is
+stage 点 of the four-stage rock: dots of growth over finished texture, inside the cave's
+loudness budget — the lichen does not glow.
 
 P7's first half. `SETTLE_GLYPH` was the Elder Futhark — a real alphabet with known sounds, and
 any player who had seen runes read the settlement pidgin as f-u-þ; the constant violated its

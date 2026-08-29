@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3058
+Файлов: 333 · символов верхнего уровня: 3059
 
 ## СИМВОЛЫ
 
@@ -261,17 +261,17 @@ caveFloorOf                  src/22-mode-cave.js:71
 caveFloraOf                  src/20e-species.js:111
 caveGalR                     src/22-mode-cave.js:22
 caveGalY                     src/22-mode-cave.js:17
-caveLampMask                 src/22a-cave-deco.js:498
-caveLampSpot                 src/22a-cave-deco.js:440
+caveLampMask                 src/22a-cave-deco.js:537
+caveLampSpot                 src/22a-cave-deco.js:479
 caveLowY                     src/22-mode-cave.js:24
-caveMossSpots                src/22a-cave-deco.js:427
+caveMossSpots                src/22a-cave-deco.js:466
 caveMoveX                    src/22-mode-cave.js:225
 cavePool                     src/22a-cave-deco.js:76
 caveScanDown                 src/22-mode-cave.js:31
 caveScanUp                   src/22-mode-cave.js:37
 caveSolidAt                  src/22-mode-cave.js:25
 caveStamp                    src/22-mode-cave.js:74
-caveTip                      src/22a-cave-deco.js:212
+caveTip                      src/22a-cave-deco.js:233
 caveVault                    src/22a-cave-deco.js:64
 caveWet                      src/22a-cave-deco.js:88
 caveZoneAt                   src/22a-cave-deco.js:57
@@ -548,13 +548,13 @@ drawBuildMenu                src/21aa-base-rooms.js:504
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
 drawCave                     src/22-mode-cave.js:669
-drawCaveDark                 src/22a-cave-deco.js:288
+drawCaveDark                 src/22a-cave-deco.js:327
 drawCaveFar                  src/22-mode-cave.js:538
-drawCaveGlow                 src/22a-cave-deco.js:322
-drawCaveOwnLight             src/22a-cave-deco.js:446
+drawCaveGlow                 src/22a-cave-deco.js:361
+drawCaveOwnLight             src/22a-cave-deco.js:485
 drawCaveRock                 src/22-mode-cave.js:433
-drawCaveSolid                src/22a-cave-deco.js:220
-drawCaveWater                src/22a-cave-deco.js:261
+drawCaveSolid                src/22a-cave-deco.js:241
+drawCaveWater                src/22a-cave-deco.js:300
 drawCaveWorld                src/22-mode-cave.js:563
 drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
@@ -968,6 +968,7 @@ groveOnKill                  src/11j-grove.js:105
 groveSys                     src/11j-grove.js:39
 groveTick                    src/11j-grove.js:85
 groveVisit                   src/11j-grove.js:116
+growLichen                   src/22a-cave-deco.js:586
 GROWN_LINES                  src/11q-grown.js:48
 grownAll                     src/11q-grown.js:19
 grownDepthAt                 src/11q-grown.js:20
@@ -2878,7 +2879,7 @@ updateBarges                 src/12l-barge.js:156
 updateBase                   src/21a-mode-base.js:334
 updateBelt                   src/24-mode-belt.js:184
 updateCave                   src/22-mode-cave.js:231
-updateCaveDeco               src/22a-cave-deco.js:184
+updateCaveDeco               src/22a-cave-deco.js:205
 updateCombat                 src/13-pirates.js:77
 updateDig                    src/23-mode-dig.js:123
 updateHomeIn                 src/29c-home-in.js:160
@@ -3612,9 +3613,9 @@ zooTick                      src/11ad-zoo.js:41
   · поверхность:1
   · навигатор и подсказки сверху:659
 
-## src/22a-cave-deco.js · 28 КБ
+## src/22a-cave-deco.js · 32 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
-  · свой свет пещеры (M248):419
+  · свой свет пещеры (M248):458
 
 ## src/22-mode-cave.js · 38 КБ
   · пещера: поле породы в двух измерениях:1
