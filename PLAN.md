@@ -122,6 +122,14 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M257 — the drops catch the light (2026-08-29) — CLOSED (0.253.0)
+
+P3 closed. Движки in the cave: counted hard glints on horizontal wet edges (floor puddles,
+hanging drops), collected during the marching-squares pass, baked per tile. The hull was
+judged and left alone — it already has three discrete lights, a fourth is decoration.
+Next: **P4 grisaille chunks** (bake form in grayscale once, tint per palette) and
+**P5 shadow masks** by silhouette edges, cave first, direction from `celSun`.
+
 ## M256 — the patch stays a seam (2026-08-29) — CLOSED (0.252.0)
 
 P3 opened with kintsugi: station repairs leave permanent weld seams on the hull (count per

@@ -7,7 +7,19 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.252.0 — M256: the patch stays a seam (kintsugi)
+## 0.253.0 — M257: the drops catch the light
+
+Движки reach the live game (P3, DESIGN-craft §1). The cave's wet rim was one uniform stroke
+along every contour — a gradient's kind of light, stretched instead of counted. Now the
+marching-squares pass also collects horizontal edges by orientation (floor k=3, ceiling k=12),
+and a counted few of them get a hard two-tone glint: a puddle's spark on the floor, a hanging
+drop under the vault. World-keyed, baked into the tile, capped per tile — sparks, not a
+garland. The uniform rim stays underneath as the отборка layer; the pair is exactly the icon
+rule: a soft pass, then a few hard marks.
+
+Named and skipped: the hull does NOT get движки — it already carries three discrete lights
+(the spine gleam, the light kant of the edge, the greeble lamps), and a fourth would be
+decoration, not need.
 
 Repairing and servicing were two different things; now there is a third — wearing. A hull
 patched at a station keeps a **visible weld seam**: a light bead over a dark underlay, bent in

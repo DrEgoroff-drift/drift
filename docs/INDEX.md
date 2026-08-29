@@ -546,15 +546,15 @@ drawBeltRocks                src/17c-system-draw.js:41
 drawBuildMenu                src/21aa-base-rooms.js:504
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
-drawCave                     src/22-mode-cave.js:639
+drawCave                     src/22-mode-cave.js:669
 drawCaveDark                 src/22a-cave-deco.js:288
-drawCaveFar                  src/22-mode-cave.js:508
+drawCaveFar                  src/22-mode-cave.js:538
 drawCaveGlow                 src/22a-cave-deco.js:322
 drawCaveOwnLight             src/22a-cave-deco.js:446
-drawCaveRock                 src/22-mode-cave.js:428
+drawCaveRock                 src/22-mode-cave.js:433
 drawCaveSolid                src/22a-cave-deco.js:220
 drawCaveWater                src/22a-cave-deco.js:261
-drawCaveWorld                src/22-mode-cave.js:533
+drawCaveWorld                src/22-mode-cave.js:563
 drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:180
@@ -3611,7 +3611,7 @@ zooTick                      src/11ad-zoo.js:41
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
   · свой свет пещеры (M248):419
 
-## src/22-mode-cave.js · 37 КБ
+## src/22-mode-cave.js · 38 КБ
   · пещера: поле породы в двух измерениях:1
 
 ## src/23aa-dig-rock.js · 36 КБ
