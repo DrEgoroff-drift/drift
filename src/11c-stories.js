@@ -166,8 +166,14 @@ const STORY_WHEN={
   seenOf:(v)=>storySeen()[v]!=null,
   unseenOf:(v)=>storySeen()[v]==null,
   /* ── поступки (M259): только то, что игра и так помнит ── */
-  /* посёлок этой системы под рукой наблюдателя (12td) */
-  hand:(v,S,c)=>{const st=(typeof settleAt==="function")?settleAt(c.sx,c.sy):null;
+  /* посёлок СИСТЕМЫ ИСТОРИИ под рукой наблюдателя (12td). Координаты берутся
+     из ключа места ("sx,sy" или "sx,sy/pi"), как у strip, а не из c.sx/c.sy:
+     через news поворот считается издалека, и там c.sx/c.sy — это координаты
+     ИГРОКА. Дыру назвал автор (30.08): развилка мерялась бы по чужому адресу. */
+  hand:(v,S,c)=>{
+    let sx=c.sx,sy=c.sy;
+    if(c.key){const m=/^(-?\d+),(-?\d+)/.exec(String(c.key));if(m){sx=+m[1];sy=+m[2];}}
+    const st=(typeof settleAt==="function")?settleAt(sx,sy):null;
     return !!(st&&st.handAt)===!!v;},
   /* швов на текущем корпусе не меньше v (12s, M256): биографию видно и людям */
   seams:(v)=>((typeof seamsOf==="function")?seamsOf():0)>=v,

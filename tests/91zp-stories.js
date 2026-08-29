@@ -132,3 +132,16 @@ TEST_SUITES.push(()=>suite("повороты: рука игрока, разви�
   eq(storyLint().length,0,"storyLint пуст после развилок M259");
   resetWorld();
 }));
+
+/* ══════════════ дыра контекста (автор, 30.08): hand меряет место ИСТОРИИ ══════════════
+   Через news поворот считается издалека: c.sx/c.sy — игрок, а адрес места
+   лежит в ключе. hand обязан читать ключ, как strip. */
+TEST_SUITES.push(()=>suite("hand: адрес из ключа места, не игрока",()=>{
+  resetWorld();
+  settleMap()["5,7"]={handAt:3,name:"тест"};
+  const far={sx:0,sy:0,key:"5,7/2"};       /* игрок в 0,0 — история в 5,7 */
+  ok(STORY_WHEN.hand(true,null,far),"под рукой — по адресу истории");
+  ok(!STORY_WHEN.hand(true,null,{sx:0,sy:0,key:"0,0"}),"чужое место — не под рукой");
+  ok(STORY_WHEN.hand(false,null,{sx:0,sy:0,key:"0,0"}),"и hand:false там истинен");
+  resetWorld();
+}));
