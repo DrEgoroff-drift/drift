@@ -57,6 +57,31 @@ in `28y-look` and is shared with the fuzzer — one list, or the two drift apart
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
+## M246 — the cave, and what measuring saved (2026-08-28) — CLOSED (0.242.0)
+
+The far wall of the cave moves now (it was a screen-space layer glued to the glass) and the
+darkness lets a little through. The numbers, though, barely moved: empty 86 → 85, contrast
+0.15 → 0.13.
+
+**That is the finding.** The cave's emptiness is not a lighting bug and cannot be lit away: the
+galleries are wide, the camera sits far back, and most of the frame is rock no light will reach.
+Three ways out, all design decisions for the author rather than something to guess at:
+
+1. **Narrower galleries** — cut `CAVE_CS` or the carving radius so walls are always in frame.
+2. **A closer camera** — the walker is 17 px in a 720 px frame; a tighter view makes the cave a
+   place you are inside rather than a map you look at.
+3. **Light that belongs to the cave** — glowing moss, crystal clusters, a lamp left by someone,
+   so the frame has sources other than the one on your helmet.
+
+Two more rules earned here:
+
+- **Measure before rebuilding.** I had written in the audit that the plants are "one silhouette
+  repeated eight times" and planned an L-system. The count says four to five species per planet,
+  the commonest at 29% — the generator was already right, and the impression came from two large
+  specimens near the camera in one screenshot. A day of work saved by one measurement.
+- **A backdrop that does not move is not a backdrop.** Parallax is not decoration: without it the
+  eye reads the whole scene as one flat plane, however well the layers are painted.
+
 ## M245 — rope and cloth (2026-08-28) — CLOSED (0.241.0)
 
 The author's links to CodePen demos, taken as methods rather than as demos. Verlet integration

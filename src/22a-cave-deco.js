@@ -298,17 +298,21 @@ function drawCaveDark(C,px,py){
   /* планета берётся у поверхности: пещера — её пещера, своего поля `p` у C нет */
   const cpl=(G.surf&&G.surf.p)||null;
   const pcv=(cpl&&cpl.T&&cpl.T.pal)?cpl.T.pal[Math.min(cpl.T.pal.length-1,1)]:[26,30,42];
-  const dk=[0,1,2].map(i=>Math.round(Math.min(14,pcv[i]*.10+2)));
+  /* тьма стала чуть прозрачнее (M246): при .76 и потолке в 14 она хоронила
+     всё, что за кругом фонаря, — дальняя стена, колонны и материал просто не
+     доживали до экрана, и прибор честно мерил 86% пустоты. Пещера обязана
+     быть тёмной, но не пустой: за светом должно угадываться то, куда идёшь. */
+  const dk=[0,1,2].map(i=>Math.round(Math.min(22,pcv[i]*.16+3)));
   const dkey=dk.join(",");
   const SP=glowSprite("cavedark|"+dkey,()=>{
     const g=ctx.createRadialGradient(0,0,R>0?Math.min(.5,40/R):.06,0,0,1);   // при W=0 (стенд) R=0 — не делить
     g.addColorStop(0,"rgba(0,0,0,0)");
-    g.addColorStop(.45,"rgba("+dkey+",.30)");
-    g.addColorStop(1,"rgba("+dkey+",.76)");
+    g.addColorStop(.45,"rgba("+dkey+",.26)");
+    g.addColorStop(1,"rgba("+dkey+",.66)");
     ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
   });
   glowBlit(SP,cx,cy,R);
-  ctx.fillStyle="rgba("+dkey+",.76)";
+  ctx.fillStyle="rgba("+dkey+",.66)";
   const x0=cx-R,x1=cx+R,y0=cy-R,y1=cy+R;
   if(x0>0)ctx.fillRect(0,0,x0,H);
   if(x1<W)ctx.fillRect(x1,0,W-x1,H);

@@ -467,18 +467,37 @@ function drawCaveRock(C,cp,wx0,wy0){
 }
 /* дальняя стена: пустота пещеры не чёрная — за проходом вторая стенка, темнее
    и без блика. Слой на весь экран, пятна от шума */
+/* ── дальняя стена ДВИЖЕТСЯ (M246) ──
+   Слой был экранным: гроздь пятен, приклеенная к стеклу и не двигавшаяся
+   вообще. Из-за этого у пещеры не было ни глубины, ни ощущения хода — идёшь,
+   а задник стоит. Теперь это мировой слой в тайлах со своим параллаксом (как
+   дальние гряды на поверхности): он ползёт вчетверо медленнее камеры, сложен
+   из той же породы, что и стены, и уходит в холод — тёплый фонарь на его фоне
+   и даёт кадру вторую температуру. */
 function drawCaveFar(C,camx,camy){
-  const L=screenLayer("cavefar|"+(C.seed&0xff),()=>{
-    const g=ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,"#090d13");g.addColorStop(1,"#030408");
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-    ctx.fillStyle="rgba(14,20,28,.45)";
-    for(let i=0;i<40;i++){
-      const x=((i*173)%W),y=((i*251)%H),r=40+(i*37)%90;
-      ctx.beginPath();ctx.ellipse(x,y,r,r*.55,(i%7)*.4,0,TAU);ctx.fill();
+  const cp=(G.surf&&G.surf.p)||null;
+  C.farT=tileStore(C.farT,"cavefar|"+(C.seed&0xff)+"|"+(cp?cp.seed:0)+"|"+DPR);
+  drawTiles(C.farT,camx*.38,camy*.38,(g,wx0,wy0)=>{
+    ctx.fillStyle="#070b11";ctx.fillRect(0,0,TILE,TILE);
+    const R=rng(hashi(Math.floor(wx0/TILE),Math.floor(wy0/TILE),0xCA7E));
+    /* дальние массивы породы: крупные силуэты, а не равномерная сыпь */
+    for(let i=0;i<7;i++){
+      const x=R()*TILE,y=R()*TILE,r=60+R()*140;
+      ctx.fillStyle="rgba(15,21,31,"+(.35+R()*.3).toFixed(2)+")";
+      ctx.beginPath();ctx.ellipse(x,y,r,r*(.4+R()*.35),R()*3,0,TAU);ctx.fill();
     }
+    /* колонны от пола до свода: по ним и читается, что там ещё пещера */
+    for(let i=0;i<3;i++){
+      const x=R()*TILE, w2=8+R()*22;
+      ctx.fillStyle="rgba(11,16,24,.55)";
+      ctx.beginPath();
+      ctx.moveTo(x-w2,0);ctx.lineTo(x+w2,0);
+      ctx.lineTo(x+w2*.55,TILE);ctx.lineTo(x-w2*.55,TILE);
+      ctx.closePath();ctx.fill();
+    }
+    if(cp&&typeof planetMat==="function"&&typeof fillMaterial==="function")
+      fillMaterial(planetMat(cp),wx0,wy0,.10,.10);
   });
-  ctx.drawImage(L,0,0,W,H);
 }
 function drawCaveWorld(){
   const C=G.cave;

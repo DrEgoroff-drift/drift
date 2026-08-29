@@ -7,6 +7,31 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.242.0 — M246: the cave's far wall moves, and one of my complaints was wrong
+
+- **The far wall of the cave was glued to the glass.** `drawCaveFar` painted a screen-space layer:
+  a cluster of blobs that never moved, whatever the player did. Walking through a cave with a
+  motionless backdrop is why the mode felt like a drawing. It is a world-space tiled layer now,
+  drifting at 38% of the camera, built from the same rock as the walls, with distant masses and
+  columns running floor to ceiling.
+- **The darkness lets a little through.** At 0.76 alpha with a ceiling of 14 on the tint it buried
+  everything outside the lamp — the far wall, the columns and the material never reached the
+  screen. A cave must be dark, not empty: you should be able to guess at where you are going.
+- **A correction to my own audit.** I had written that the plants are "one silhouette repeated
+  eight times" and proposed an L-system. Measured before building it: four to five species per
+  planet, the commonest at 29%. The generator already obeys the rule of origin; the impression
+  came from two big specimens standing near the camera in one screenshot. No L-system was needed
+  and none was written.
+
+Honest result: the cave's numbers barely moved (empty 86 → 85, contrast 0.15 → 0.13). That is
+the finding, not a failure of the fix — **the cave's emptiness is composition, not lighting**: the
+galleries are wide, the camera is far, and most of the frame is rock that no light will ever
+reach. Fixing it means narrower galleries or a closer camera, which is a design decision and is
+written up in PLAN for the author rather than guessed at here.
+
+Tests: 398 suites green.
+
+---
 ## 0.241.0 — M245: rope and cloth on Verlet, dust in three planes
 
 The author sent links to other people's demos — cloth you can pull with the mouse, smoke, orbital
