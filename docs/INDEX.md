@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 329 · символов верхнего уровня: 3009
+Файлов: 330 · символов верхнего уровня: 3015
 
 ## СИМВОЛЫ
 
@@ -389,8 +389,8 @@ CRAFT_TIERS                  src/03-ships.js:80
 craftAffordable              src/03-ships.js:85
 craftAmmo                    src/16b-missile.js:28
 craftPart                    src/03-ships.js:90
-crashN                       src/28-loop.js:241
-crashSay                     src/28-loop.js:242
+crashN                       src/28-loop.js:254
+crashSay                     src/28-loop.js:255
 CREW_EV_BASE                 src/12b-crew-events.js:69
 CREW_EVENTS                  src/12b-crew-events.js:97
 CREW_MODS                    src/12a-crew.js:270
@@ -453,7 +453,7 @@ CUT_RANGE                    src/24-mode-belt.js:183
 cvs                          src/08-state.js:2
 dayK                         src/19c-light.js:42
 dayKq                        src/19c-light.js:48
-dbg                          src/28-loop.js:314
+dbg                          src/28-loop.js:327
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -642,6 +642,7 @@ drawWallPaper                src/11ae-concert.js:39
 drawWear                     src/12s-wear.js:99
 drawWeather                  src/19d-weather.js:92
 drawWinter                   src/29g-winter-draw.js:334
+drawWorld                    src/28-loop.js:155
 drawWreck                    src/20aa-poi-shapes.js:8
 drawWrecksSystem             src/12l-barge.js:347
 DRONE_BREAK_P                src/12e-drone-flight.js:21
@@ -825,8 +826,8 @@ folkShut                     src/11ah-offer.js:90
 folkState                    src/12u-folk.js:83
 folkVisit                    src/12u-folk.js:104
 foundBase                    src/21a-mode-base.js:53
-frame                        src/28-loop.js:253
-frameBody                    src/28-loop.js:134
+frame                        src/28-loop.js:266
+frameBody                    src/28-loop.js:170
 freeVoice                    src/09-audio.js:91
 fuelPriceHere                src/12k-rep.js:63
 FUR_TONES                    src/20f-fauna.js:20
@@ -836,6 +837,10 @@ fuseCost                     src/03-ships.js:33
 fuseGen                      src/03-ships.js:32
 fuseSel                      src/26-ui-station.js:4
 fuseShips                    src/03-ships.js:42
+FUZZ_KEYS                    tests/91zzzz-fuzz.js:16
+fuzzN                        tests/91zzzz-fuzz.js:17
+fuzzRich                     tests/91zzzz-fuzz.js:97
+fuzzScenes                   tests/91zzzz-fuzz.js:23
 G                            src/08-state.js:61
 g11Fps                       src/28z-fps-probe.js:7
 genBeast                     src/20f-fauna.js:58
@@ -1944,7 +1949,7 @@ probeShot                    src/25m-probe.js:85
 probeSpeak                   src/25m-probe.js:100
 probeTarget                  src/25m-probe.js:38
 probeVoice                   src/25m-probe.js:75
-prof                         src/28-loop.js:277
+prof                         src/28-loop.js:290
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
@@ -2573,6 +2578,7 @@ statPreview                  src/05-parts.js:271
 stCore                       src/17c-system-draw.js:128
 stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:78
+stepWorld                    src/28-loop.js:141
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:75
 stGroupOf                    src/26-ui-station.js:74
@@ -3723,14 +3729,15 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27z-telemetry.js · 24 КБ
   · телеметрия: приборы пишут в DOM:1
 
-## src/28-loop.js · 27 КБ
+## src/28-loop.js · 28 КБ
   · авария:1
   · звук по кадрам:23
   · цикл:81
   · авторазрешение:104
-  · кадр, который не убивает игру (M234):233
-  · prof() — на что уходит кадр:265
-  · dbg() — что держит корабль:305
+  · развилка режимов — одна на всех (M238):134
+  · кадр, который не убивает игру (M234):246
+  · prof() — на что уходит кадр:278
+  · dbg() — что держит корабль:318
 
 ## src/28z-fps-probe.js · 9 КБ
   · пробник G11: ?g11:1
@@ -4069,5 +4076,11 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzy-drones.js · 7 КБ
   · автотесты: рейсы дронов (M237):1
+
+## tests/91zzzz-fuzz.js · 13 КБ
+  · фуззер: режим под случайными руками (M238):1
+  · прожитый мир:92
+  · все вкладки рисуются:156
+  · тычок в каждую кнопку:189
 
 ## tests/99-run.js · 0 КБ

@@ -4,6 +4,7 @@
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -NoBuild   # run the existing tests.html
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Only роща # suites whose name contains the text
 #   powershell -ExecutionPolicy Bypass -File test.ps1 -Mobile    # same, in a 390x844 window
+#   powershell -ExecutionPolicy Bypass -File test.ps1 -Fuzz 4000 # long fuzz over every mode
 #
 # Prints only the head line and the FAILURES block; exit code 1 on any failure.
 # Window must be 1280x800: at Chrome's default 800x600 the UI-overlap suite
@@ -11,7 +12,7 @@
 # -Mobile runs the same suites in a phone window instead: the layout guards are
 # written to skip themselves when the window is not a phone, so without this
 # switch the phone half of the interface is never actually measured.
-param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile)
+param([switch]$NoBuild, [string]$Only = "", [switch]$Mobile, [int]$Fuzz = 0)
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -24,6 +25,14 @@ if (-not $chrome) { throw "no headless browser found (Chrome/Edge)" }
 
 $url = "file:///" + ((Join-Path $root "tests.html") -replace "\\", "/")
 if ($Only) { $url += "?only=" + [uri]::EscapeDataString($Only) }
+# Фуззер (91zzzz-fuzz) на сборке гоняет короткий прогон — иначе он один стоит
+# дороже всех остальных наборов. -Fuzz 4000 включает длинный: его запускают
+# руками, когда ищут падение, и seed у него постоянный, так что провал
+# повторяется точь-в-точь.
+if ($Fuzz -gt 0) {
+  $sep = if ($url -match "\?") { "&" } else { "?" }
+  $url += "$sep" + "fuzz=$Fuzz"
+}
 $dom = Join-Path $env:TEMP "drift-tests-dom.html"
 $err = Join-Path $env:TEMP "drift-tests-err.txt"
 $win = if ($Mobile) { "390,844" } else { "1280,800" }

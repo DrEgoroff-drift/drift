@@ -57,6 +57,31 @@ Here is only what is still live â cross-cutting rules, the visual queue and
 
 ---
 
+## M238 — the fuzzer (2026-08-28) — CLOSED (0.234.0)
+
+The author's freeze could not be reproduced by hand, so the game got a net instead of a guess:
+random input over every mode, on a fresh world and on a lived-in one, plus a sweep that renders
+every desk and station tab and clicks every button in them. All of it seeded, so a failure
+repeats. 33 000 frames came back clean — which is itself the finding: the world under random
+hands does not throw, and the freeze lives somewhere the fuzzer does not yet reach (a save with
+history behind it, or a path through the DOM that only a real session takes).
+
+Rules worth keeping:
+
+- **A dispatch table written inside the loop will be copied wrong by everyone else.** `stepWorld`
+  and `drawWorld` exist because the fuzzer's own copy of "which update runs in which mode" gave
+  three false crashes in ten minutes. Anything a second runner needs belongs in a function, not
+  inside `frame()`.
+- **A fuzzer's value is the scene list, not the randomness.** Writing the eleven setups was the
+  work; the random keys are four lines. The same list is now the cheapest way to ask "does the
+  whole game still start?" after any cross-cutting change.
+- **A screen that throws while drawing is a freeze to the player.** Rendering every tab is worth
+  more than any single assertion about one of them.
+
+Next, if nobody says otherwise: a phone pass by hand (the author's two evenings gave five
+defects; half were catchable that way) and an economy sweep for holes like the yard's, where
+repetition plus credits defeats a rule.
+
 ## M237 — the drones fly (author, 2026-08-28) — CLOSED (0.232.0)
 
 The author asked for two things and got a third for free: dots with tails flying between planet

@@ -7,6 +7,37 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.234.0 — M238: the fuzzer, and one dispatch table instead of three
+
+The freeze the author hit on inspecting a landmark was never reproduced by hand: four thousand
+`poiInspect` runs came back clean, which means it lived in a combination of state nobody types on
+purpose. So instead of guessing at it, the game now gets a net.
+
+- **A fuzzer over every mode.** `tests/91zzzz-fuzz` sets up eleven scenes — system, map, landing,
+  surface, mine, cave, belt, scoop, base, raid, home — and drives each one with random input for
+  hundreds of frames, drawing every eighth. It does not check correctness; it checks that nothing
+  THROWS. The randomness is seeded, so a failure repeats exactly, and the message carries the
+  mode and the frame number. `test.ps1 -Fuzz 4000` runs the long version by hand; the build runs
+  a short one. Measured: 33 000 frames over eleven modes, clean.
+- **The same on a lived-in world.** A fresh world is nearly inert — no home, no rarities, no
+  report, no drones — so half the code never runs. The second pass builds a played-in state
+  (home at tier 6, forty rarities, thirty chapters, a dozen nodes, every landmark inspected, a
+  manager hired, three drones in flight, one of them under repair) and fuzzes the modes the
+  author actually plays. Clean too.
+- **Every tab renders, every button is pressed.** A screen that throws while drawing looks exactly
+  like a freeze to the player — he tapped and got nothing. Today the РЕЙСЫ row did precisely that
+  on an unknown cargo key and took the whole desk with it. The suite now renders every desk and
+  station tab on the lived-in world and then clicks every button inside them, catching whatever
+  they throw.
+- **One dispatch table.** Which update runs in which mode was written out inside `frame()`, so
+  every other runner — stand, probe, fuzzer — repeated the table by hand and repeated it WRONG:
+  the fuzzer called `updateDig` after the player had already climbed out to the surface and got
+  three "crashes" that do not exist in the game. `stepWorld(dt)` and `drawWorld()` are now that
+  table, and the frame calls them like everyone else. A button has one owner; so does a mode.
+
+Tests: 394 suites green.
+
+---
 ## 0.233.0 — M237 pass 2: four things the drones only showed once they flew
 
 The milestone shipped as a draft; this is the self-critique pass the project owes every design.

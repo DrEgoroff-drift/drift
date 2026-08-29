@@ -131,6 +131,42 @@ let LOOP_OFF=false;
    она читается отладочной разметкой. Игра его не выключает никогда — флаг
    поднимают только стенды, и в самой игре он всегда false. */
 let SHOT_CLEAN=false;
+/* ══════════════ развилка режимов — одна на всех (M238) ══════════════
+   Кто ходит и кто рисуется в этом режиме, знал только кадр. Из-за этого любой
+   ДРУГОЙ прогон мира — стенд, пробник, фуззер — повторял ту же таблицу своими
+   руками и повторял её НЕТОЧНО: звал `updateDig`, когда игрок уже вышел на
+   поверхность, и получал падение, которого в игре нет. Таблица теперь одна:
+   кадр зовёт её, и все остальные тоже. Правило то же, что у кнопки, — у вещи
+   один хозяин. */
+function stepWorld(dt){
+  if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")updateSystem(dt);
+  else if(G.mode==="landing")updateLanding(dt);
+  else if(G.mode==="surface"){updateSurface(dt);tickLaunchHold(dt);}
+  else if(G.mode==="dig"&&G.dig)updateDig(dt);
+  else if(G.mode==="cave"&&G.cave)updateCave(dt);
+  else if(G.mode==="belt"&&G.belt)updateBelt(dt);
+  else if(G.mode==="scoop"&&G.scoop)updateScoop(dt);
+  else if(G.mode==="base"&&G.base)updateBase(dt);
+  else if(G.mode==="raid"&&G.raid)updateRaid(dt);
+  else if(G.mode==="homein"&&G.hin)updateHomeIn(dt);   /* дом изнутри (M170) */
+  else if(G.mode==="winter"&&G.win)updateWinter(dt);   /* зимовка (M197) */
+  else if(G.mode==="spa"&&G.spa)updateSpa(dt);         /* санаторий (M199) */
+}
+function drawWorld(){
+  if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")drawSystem();
+  else if(G.mode==="map")drawMap();
+  else if(G.mode==="landing")drawLanding();
+  else if(G.mode==="surface")drawSurface();
+  else if(G.mode==="dig"&&G.dig)drawDig();
+  else if(G.mode==="cave"&&G.cave)drawCave();
+  else if(G.mode==="belt"&&G.belt)drawBelt();
+  else if(G.mode==="scoop"&&G.scoop)drawScoop();
+  else if(G.mode==="base"&&G.base)drawBase();
+  else if(G.mode==="raid"&&G.raid)drawRaid();
+  else if(G.mode==="homein"&&G.hin)drawHomeIn();
+  else if(G.mode==="winter"&&G.win)drawWinter();
+  else if(G.mode==="spa"&&G.spa)drawSpa();
+}
 function frameBody(now){
   if(LOOP_OFF)return;
   /* Скрытая страница не рисует. Обычно её и так не будят — rAF стоит, — но в
@@ -184,18 +220,7 @@ function frameBody(now){
       if(typeof toldEther==="function")toldEther();}
     if(G.msgT>0)G.msgT-=dt;
     if(G.mode==="system")autosave();
-    if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")updateSystem(dt);
-    else if(G.mode==="landing")updateLanding(dt);
-    else if(G.mode==="surface"){updateSurface(dt);tickLaunchHold(dt);}
-    else if(G.mode==="dig"&&G.dig)updateDig(dt);
-    else if(G.mode==="cave"&&G.cave)updateCave(dt);
-    else if(G.mode==="belt"&&G.belt)updateBelt(dt);
-    else if(G.mode==="scoop"&&G.scoop)updateScoop(dt);
-    else if(G.mode==="base"&&G.base)updateBase(dt);
-    else if(G.mode==="raid"&&G.raid)updateRaid(dt);
-    else if(G.mode==="homein"&&G.hin)updateHomeIn(dt);   /* дом изнутри (M170) */
-    else if(G.mode==="winter"&&G.win)updateWinter(dt);   /* зимовка (M197) */
-    else if(G.mode==="spa"&&G.spa)updateSpa(dt);         /* санаторий (M199) */
+    stepWorld(dt);
     if(typeof tapeTick==="function")tapeTick(dt);
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
@@ -208,19 +233,7 @@ function frameBody(now){
     }
     if(G.mode==="barge"&&!document.querySelector(".scr.open"))G.mode="system";
     audioTick(dt);
-    if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")drawSystem();
-    else if(G.mode==="map")drawMap();
-    else if(G.mode==="landing")drawLanding();
-    else if(G.mode==="surface")drawSurface();
-    else if(G.mode==="dig"&&G.dig)drawDig();
-    else if(G.mode==="cave"&&G.cave)drawCave();
-    else if(G.mode==="belt"&&G.belt)drawBelt();
-    else if(G.mode==="scoop"&&G.scoop)drawScoop();
-    else if(G.mode==="base"&&G.base)drawBase();
-    else if(G.mode==="raid"&&G.raid)drawRaid();
-    else if(G.mode==="homein"&&G.hin)drawHomeIn();
-    else if(G.mode==="winter"&&G.win)drawWinter();
-    else if(G.mode==="spa"&&G.spa)drawSpa();
+    drawWorld();
     hud();
     /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой
        игрок повернулся. Рисуется последней, но до DOM-строки приборов */

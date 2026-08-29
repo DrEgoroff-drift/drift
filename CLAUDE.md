@@ -249,6 +249,12 @@ through, waited out until night, or opened on a phone.
 
 ## How to verify
 
+**A fuzzer sits in the suite** (`tests/91zzzz-fuzz`, M238): eleven scenes driven by seeded random
+input, a second pass over a lived-in world, and a sweep that renders every desk/station tab and
+clicks every button in them. The build runs a short version; `test.ps1 -Fuzz 4000` runs the long
+one by hand when hunting a crash. Its scene list is also the cheapest way to ask whether the
+whole game still starts after a cross-cutting change.
+
 **Autotests first, headless.** `build.ps1` also builds `tests.html` — the same game plus
 `tests/*.js` at the end. Run it without the browser pane:
 
