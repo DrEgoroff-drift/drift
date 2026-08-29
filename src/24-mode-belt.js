@@ -50,6 +50,7 @@ function subdivide(verts,faces){
 const SPHERE=subdivide(ICO_V,ICO_F);
 const SPHERE2=subdivide(SPHERE.verts,SPHERE.faces);
 
+let BELT_STROKES=0;      /* потолок штрихов зерна на кадр (§5 в поясе) */
 function makeRock(seed,rad){
   const r=rng(seed);
   const o1=[r()*40,r()*40,r()*40], o2=[r()*40,r()*40,r()*40];
@@ -488,7 +489,7 @@ function drawBelt(){
       const vl=Math.hypot(vw,vw2,vw3)||1;
       const rim=Math.pow(1-Math.abs(nx*vw/vl+ny*vw2/vl+nz*vw3/vl),3.2);
       polys.push({A,B:B2,C,d:(A.z+B2.z+C.z)/3,li,rim,ore:L.ore[fi],
-        oreCol,rock,locked,alpha,edge:lod===2});
+        oreCol,rock,locked,alpha,edge:lod===2,fi});
     }
   }
   for(const a of b.ast){
@@ -517,6 +518,7 @@ function drawBelt(){
     polys.push({spr:q,px:p.x,py:p.y,sc,d:p.z});
   }
   polys.sort((p,q)=>q.d-p.d);
+  BELT_STROKES=0;
   for(const p of polys){
     if(p.spr){
       drawBeltPOISprite(p.spr,p.px,p.py,p.sc,clamp(1-p.d/3400,.12,1));
@@ -540,6 +542,43 @@ function drawBelt(){
     if(p.edge&&vein){
       ctx.strokeStyle="rgba("+(base[0]|0)+","+(base[1]|0)+","+(base[2]|0)+",.4)";
       ctx.lineWidth=1;ctx.stroke();
+    }
+    /* ── зерно и движок на грани (§5 + §1; переделка стиля по правилам) ──
+       Грань была пустой заливкой — камень читался пластиком. Ближним крупным
+       освещённым граням кладётся сухой штрих вдоль их длинного ребра (грань
+       сама говорит направление кладки — андаменто §2), самой яркой — один
+       жёсткий блик. Потолок штрихов на кадр держит бюджет пояса. */
+    if(p.edge&&BELT_STROKES<140){
+      const abx=p.B.x-p.A.x,aby=p.B.y-p.A.y;
+      const acx=p.C.x-p.A.x,acy=p.C.y-p.A.y;
+      const area=Math.abs(abx*acy-aby*acx)*.5;
+      if(area>150&&p.li>.34){
+        const cx3=(p.A.x+p.B.x+p.C.x)/3, cy3=(p.A.y+p.B.y+p.C.y)/3;
+        /* длинное ребро — направление штриха */
+        const e1=abx*abx+aby*aby, e2=acx*acx+acy*acy,
+              bcx=p.C.x-p.B.x,bcy=p.C.y-p.B.y, e3=bcx*bcx+bcy*bcy;
+        let dx=abx,dy=aby;if(e2>e1&&e2>=e3){dx=acx;dy=acy;}else if(e3>e1){dx=bcx;dy=bcy;}
+        const el=Math.hypot(dx,dy)||1;dx/=el;dy/=el;
+        const hh=hashi(p.fi,(p.d*7)|0,0xB317);
+        const ln=clamp(el*.22,3,13);
+        ctx.strokeStyle="rgba(0,0,0,"+(p.li>.7?.20:.13).toFixed(2)+")";
+        ctx.lineWidth=1;
+        for(let s2=0;s2<2;s2++){
+          const ox2=((hh>>>(s2*5))&15)/15-.5, oy2=((hh>>>(s2*5+8))&15)/15-.5;
+          ctx.beginPath();
+          ctx.moveTo(cx3+ox2*el*.3-dx*ln*.5,cy3+oy2*el*.22-dy*ln*.5);
+          ctx.lineTo(cx3+ox2*el*.3+dx*ln*.5,cy3+oy2*el*.22+dy*ln*.5);
+          ctx.stroke();
+          BELT_STROKES++;
+        }
+        if(p.li>.84){                      /* движок: одна жёсткая отметина */
+          ctx.strokeStyle="rgba(255,250,236,.42)";ctx.lineWidth=1.4;
+          ctx.beginPath();
+          ctx.moveTo(cx3-dx*3.5,cy3-dy*3.5);ctx.lineTo(cx3+dx*3.5,cy3+dy*3.5);
+          ctx.stroke();
+          BELT_STROKES++;
+        }
+      }
     }
     if(p.alpha<1)ctx.globalAlpha=1;
   }

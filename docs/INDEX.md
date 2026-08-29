@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3068
+Файлов: 333 · символов верхнего уровня: 3069
 
 ## СИМВОЛЫ
 
@@ -88,7 +88,7 @@ apVel                        src/16-flight.js:132
 arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
 assignToBase                 src/12a-crew.js:172
-AST_N                        src/24-mode-belt.js:85
+AST_N                        src/24-mode-belt.js:86
 audioHush                    src/09-audio.js:12
 audioOn                      src/09-audio.js:11
 audioTick                    src/28-loop.js:27
@@ -170,14 +170,15 @@ BEAST_SHAPES                 src/20f-fauna.js:37
 beastBias                    src/20f-fauna.js:46
 beastFormWord                src/20e-species.js:215
 beastTraitWord               src/20e-species.js:224
-BELT_AVLIM                   src/24-mode-belt.js:86
-BELT_HALF                    src/24-mode-belt.js:84
+BELT_AVLIM                   src/24-mode-belt.js:87
+BELT_HALF                    src/24-mode-belt.js:85
 BELT_POI                     src/24b-belt-poi.js:13
 BELT_RES                     src/02-world.js:62
-beltBasis                    src/24-mode-belt.js:163
+BELT_STROKES                 src/24-mode-belt.js:53
+beltBasis                    src/24-mode-belt.js:164
 beltDots                     src/17c-system-draw.js:88
-beltFwd                      src/24-mode-belt.js:158
-beltIcy                      src/24-mode-belt.js:87
+beltFwd                      src/24-mode-belt.js:159
+beltIcy                      src/24-mode-belt.js:88
 BG                           src/16-flight.js:3
 BG_BRIGHT                    src/16-flight.js:17
 BG_GROUP                     src/16-flight.js:11
@@ -459,7 +460,7 @@ CUE_EPS                      src/27m-scroll-cue.js:26
 CUE_PAD                      src/27m-scroll-cue.js:25
 CUN                          src/22-mode-cave.js:22
 curTok                       src/09-audio.js:83
-CUT_RANGE                    src/24-mode-belt.js:183
+CUT_RANGE                    src/24-mode-belt.js:184
 cvs                          src/08-state.js:2
 dayK                         src/19c-light.js:68
 dayKq                        src/19c-light.js:74
@@ -543,7 +544,7 @@ drawBase                     src/21ac-base-draw.js:43
 drawBaseBuilding             src/21c-built.js:99
 drawBeast                    src/20f-fauna.js:231
 drawBeastAlien               src/20f-fauna.js:65
-drawBelt                     src/24-mode-belt.js:366
+drawBelt                     src/24-mode-belt.js:367
 drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17c-system-draw.js:94
 drawBeltRocks                src/17c-system-draw.js:41
@@ -583,7 +584,7 @@ drawFindsSystem              src/17b-finds.js:152
 drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24ab-raid-foe.js:10
 drawForeground               src/21b-surface-deco.js:248
-drawGlassHUD                 src/24-mode-belt.js:593
+drawGlassHUD                 src/24-mode-belt.js:632
 drawGlyph                    src/12t-settle.js:59
 drawGround                   src/19-mode-landing.js:109
 drawGroundCrumbs             src/19-mode-landing.js:269
@@ -693,7 +694,7 @@ el                           src/26-ui-station.js:145
 endPtr                       src/15-input.js:321
 engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
-enterBelt                    src/24-mode-belt.js:88
+enterBelt                    src/24-mode-belt.js:89
 enterCave                    src/22-mode-cave.js:173
 enterDig                     src/23-mode-dig.js:50
 enterHomeIn                  src/29c-home-in.js:65
@@ -719,7 +720,7 @@ ethTick                      src/25l-post-ether.js:59
 evacuate                     src/21-mode-surface.js:603
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:82
-exitBelt                     src/24-mode-belt.js:174
+exitBelt                     src/24-mode-belt.js:175
 exitCave                     src/22-mode-cave.js:231
 exitDig                      src/23-mode-dig.js:70
 exitHomeIn                   src/29c-home-in.js:74
@@ -1008,7 +1009,7 @@ held                         src/08-state.js:183
 hex2rgb                      src/03-ships.js:145
 hexA                         src/12e-drone-flight.js:252
 hexa                         src/12w-survey.js:91
-hexRGB                       src/24-mode-belt.js:80
+hexRGB                       src/24-mode-belt.js:81
 HIN_DOORW                    src/29c-home-in.js:24
 HIN_MAN                      src/29c-home-in.js:20
 HIN_ROOM_H                   src/29c-home-in.js:21
@@ -1263,7 +1264,7 @@ keyMap                       src/15-input.js:121
 keyRow                       src/27-ui-ship.js:188
 keys                         src/08-state.js:57
 killPirate                   src/13-pirates.js:179
-killRock                     src/24-mode-belt.js:150
+killRock                     src/24-mode-belt.js:151
 KINO_EVERY                   src/27da-kino.js:20
 KINO_REEL                    src/27da-kino.js:23
 KINO_TITLES                  src/27da-kino.js:31
@@ -1446,7 +1447,7 @@ mailWire                     src/25j-post-wire.js:55
 MAIN_CTX                     src/08-state.js:4
 makeIR                       src/10-music.js:109
 makePhrase                   src/10-music.js:344
-makeRock                     src/24-mode-belt.js:53
+makeRock                     src/24-mode-belt.js:54
 makeWorld                    src/02a-worldmix.js:47
 MAPBG                        src/18-mode-map.js:22
 mapNebula                    src/18-mode-map.js:23
@@ -2478,7 +2479,7 @@ setZoom                      src/15-input.js:266
 sfx                          src/09-audio.js:237
 SFX                          src/09-audio.js:97
 SH_DX                        src/03b-hull-paint.js:164
-shatter                      src/24-mode-belt.js:135
+shatter                      src/24-mode-belt.js:136
 SHIFT_TALK                   src/03f-hull-role.js:63
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
@@ -2883,7 +2884,7 @@ unpackPart                   src/05-parts.js:323
 updateAllies                 src/12a-crew.js:573
 updateBarges                 src/12l-barge.js:156
 updateBase                   src/21a-mode-base.js:334
-updateBelt                   src/24-mode-belt.js:184
+updateBelt                   src/24-mode-belt.js:185
 updateCave                   src/22-mode-cave.js:249
 updateCaveDeco               src/22a-cave-deco.js:205
 updateCombat                 src/13-pirates.js:77
@@ -3655,7 +3656,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/24b-belt-poi.js · 9 КБ
   · ориентиры в поясе:1
 
-## src/24-mode-belt.js · 31 КБ
+## src/24-mode-belt.js · 34 КБ
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
 ## src/25a-instr.js · 13 КБ

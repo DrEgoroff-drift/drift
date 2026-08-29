@@ -7,6 +7,17 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.273.0 — M276: the belt rock stops being plastic
+
+Style rework, second leg. A belt facet was a flat fill — the codex's own words about what makes
+stone read as plastic. Close, large, lit facets now carry dry grain strokes laid along their own
+longest edge (the facet dictates the direction of laying — andamento seen facet-wise), and the
+single brightest facet takes one hard движок glint (§1 stage 5). Distance keeps its LOD
+discipline: far rocks stay clean fills, and a per-frame stroke ceiling (140) protects the belt
+budget. Deterministic per facet — no shimmer under rotation beyond what the turning facet
+itself does.
+
+---
 ## 0.272.0 — M275: the style rework begins — watercolour clouds, hard light by count
 
 The author lifted the old brake («по правилам весь стиль переделывай») and called out the truth:
