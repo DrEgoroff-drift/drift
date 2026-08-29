@@ -7,6 +7,26 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.261.0 — M264: the button hears the whole prompt; the mouse reveals the pads
+
+Two first-five-minutes bugs, both caught by the author on one screenshot.
+
+**The dead ДЕЙСТВИЕ button.** The button lit up only when the prompt *started* with the word
+ДЕЙСТВИЕ (`^`-anchored regex in `27z-telemetry`). Half the game writes the verb elsewhere:
+«СИГНАЛ БЕДСТВИЯ⏎ДЕЙСТВИЕ — ПРИНЯТЬ СИГНАЛ», «САНАТОРИЙ · ДЕЙСТВИЕ — …» — distress signals,
+gas-giant scooping, boarding, the barge, the relay, the map jump, the cave mouth, the mine, the
+greenhouse, the raid hangar, the base build prompts. In every one of those states the keyboard
+worked (Space bypasses the button) while phone and mouse players stared at a prompt inviting
+them to press a button that was greyed out and click-dead. The verb is now recognised anywhere
+in the prompt. One prompt mentioned an action as *reference* («у устья ДЕЙСТВИЕ — наружу», shown
+deep in the cave) — reworded so information doesn't light the button. Suite grew the exact
+regression cases.
+
+**Pads faded under the cursor.** On desktop, `mousemove` faded the pad row out — so a mouse
+player literally could not click a pad: approaching it made it vanish (opacity .14). Author:
+«кнопки пусть не исчезают». Now the mouse *reveals* the pads and only the keyboard fades them:
+took the keys — clean screen; touched the mouse — buttons are back. The phone behaviour
+(never fade) is untouched.
 ## 0.260.0 — M263: the wheel owns the world; the brush knows the rock
 
 Two fixes, both author-driven.

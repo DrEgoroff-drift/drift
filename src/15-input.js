@@ -79,7 +79,11 @@ addEventListener("keydown",padsFadeOut,{capture:true});
 /* первый же ввод любого рода снимает блокировку автоплея — раньше нельзя */
 for(const ev of ["pointerdown","keydown","touchstart"])
   addEventListener(ev,unlockAudio,{capture:true});
-addEventListener("mousemove",padsFadeOut);
+/* Мышь кнопки ВОЗВРАЩАЕТ, а не гасит (автор, 29.08.2026: «кнопки пусть не
+   исчезают»). Раньше mousemove гасил ряд — и мышиный игрок не мог нажать
+   кнопку в принципе: подводишь курсор — она тает под ним. Гасит экран только
+   клавиатура: взялся за клавиши — тебе кнопки не нужны; тронул мышь — нужны. */
+addEventListener("mousemove",padsFadeIn);
 /* ══════════════ ввод ══════════════ */
 document.querySelectorAll("[data-k]").forEach(b=>{
   const k=b.dataset.k;

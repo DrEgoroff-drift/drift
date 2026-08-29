@@ -122,6 +122,83 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## The critique marathon (agreed with the author 2026-08-29) — LIVE
+
+The author's verdict on the craft run 0.245→0.260: the research was good and **nothing visibly
+changed**. Diagnosis accepted by both sides: M249–M263 went into fine grain (blue noise, seams,
+lichen, cave shadows) — places the eye visits rarely and closely — while the loudest pixels of
+the everyday screens (the sun, the sky, the system map, glow markers, HUD) were not touched.
+Second verdict, verbatim: «кругов дохуя» — the circle is canvas's default shape and it stands
+everywhere a form was never earned (sun disc + concentric halo, orbit rings, glow sprites,
+landing spot, markers).
+
+**Method, every pass = one release:** album of screenshots of a fixed scene set on the stand →
+written critique against the eight audit laws + the ten craft laws (`docs/DESIGN-craft.md`) →
+fixes in the game, never in the shot → repeat album → `?g11` vs эталон 0.136.0 → build, green
+suite, push. Story passes swap the album for a **recount** (how many stories can hear a deed —
+the number must grow or the pass didn't happen). Every reworked frame holds the settled visual
+language; refusals are named in writing.
+
+Order: P1–P3 first (the author's own screenshots — change must reach the site immediately),
+then alternating P4, S1, P5, S2, … Playability sweeps (P0) run whenever a session starts at
+the stand anyway.
+
+- **P0 — playability of the first hour** (rolling). Play as a newcomer; every prompt state must
+  offer a *working* control on all three inputs (keys, mouse, touch). First sweep done →
+  M264 (the dead ДЕЙСТВИЕ class). Still to check: whether desktop prompts ever name the key
+  (Space/Enter) anywhere a newcomer will find it; dead states in station/desk tabs; the /dev
+  stand page serving a stale build (0.216.0 while prod is 0.261.0).
+- **P1 — the surface sun and sky.** The sun grown from a dark ground, not laid as a disc: limb,
+  the atmosphere eating the lower edge, halo rings die. Sky gets depth and a haze band.
+  (`06a-celest`, `19c-light`, `11g-lights`; light azimuth is honest since M242 — now the form.)
+- **P2 — the system map.** Orbit circles → arcs fading away from the planet; the map sun speaks
+  the same body language as the surface one; Цицион reads as one body, not orange confetti.
+- **P3 — the census of every remaining circle.** `GLOW_CACHE`/`11i-glow`, `poiGlow`, the landing
+  spot, the пещера/корабль markers. Each circle either earns its form (ellipse on the ground,
+  grain, direction, silhouette clipping) or dies. Close the class, not instances.
+- **P4 — surface rock and material.** The 皴 table out of the cave onto mine and cliff strata;
+  strata direction on cuts; edge; cast shadows for standing boulders.
+- **P5 — buildings and POI.** Factory, mine, wrecks: one body, one light, «работа видна».
+- **P6 — ship, astronaut, landing.** Ship's ground shadow, engine light as an ellipse, silhouette
+  edge, the astronaut readable on any background; the landing corridor stops being CAD.
+- **P7 — cave and mine: finish what's started.** Base/boarding lamps (P5-2 — check the room clip
+  first), CUN into `pcStrata`/`digRockPass`.
+- **P8 — space in flight.** Stars stretch under way (verify the law lives), palette not sliding
+  to green, notan of the frame.
+- **P9 — HUD and typography.** Arrow markers, frames, the radio band density, ma; edges measured
+  in the browser, not on PNGs.
+- **P10 — the through-pass.** Full album of every scene day/night, check against 8+10 laws,
+  `?g11` vs эталон, the honest remainder into the queue with reasons, both codices updated.
+
+Story passes (see `docs/DESIGN-story-craft.md`; measured gap: 108 stories, 18 turns, all
+calendar; only 3 deed-forks live after P6):
+
+- **S1–S3 — turns read deeds, three batches of ~5.** The ~15 content turns; new deed keys
+  (`sat`, `card`, `took`, `named`, `wall`) as needed — sources of truth already exist. The hard
+  law: **a fork is never shown.** Refusals in writing (as two_on_orbit, kim_debt). Criterion:
+  the deed is already in the log AND inevitability is not the story's point.
+- **S4 — the clock engine (P8 of the codex).** Hidden dials over endings; a segment advances
+  only by deed + spaced days; an ending fires only in its window. Медкомиссия first. Fuzzer
+  long-run must not reach an ending early.
+- **S5 — a body for the crew.** One axis — усталость: slower walk, lower shoulders, shorter
+  answers. Visible in the figure and the speech, never as a number.
+
+Needs the author: the glyph notebook (P7b — what the player writes down, what «дошло» looks
+like) and whether «неделя счисления» becomes S6.
+
+## M264 — the button hears the whole prompt; the mouse reveals the pads (2026-08-29) — CLOSED (0.261.0)
+
+The P0 sweep's first catch, from the author's screenshot: the distress signal invited
+«ДЕЙСТВИЕ — ПРИНЯТЬ СИГНАЛ» while the ДЕЙСТВИЕ pad stood greyed and click-dead. The
+`^`-anchored verb regex in `27z-telemetry` only lit the button when the prompt *began* with
+ДЕЙСТВИЕ; a dozen states write the verb mid-prompt (finds, gas giant, boarding, barge, relay,
+map jump, cave mouth, mine, greenhouse, raid hangar, base building). Un-anchored now; the one
+*reference* mention («у устья ДЕЙСТВИЕ — наружу») reworded so information doesn't light the
+button; regression cases in `91f-ui`. Second half: on desktop `mousemove` faded the pads —
+approaching a pad with the cursor made it vanish, so a mouse player could never click one.
+Author's rule: «кнопки пусть не исчезают» — the mouse now reveals the pads, only the keyboard
+fades them; the phone never fades (M181 stands). Suite 401/11961 green.
+
 ## M263 — the wheel owns the world; the brush knows the rock (2026-08-30) — CLOSED (0.260.0)
 
 Wheel/pinch page-zoom suppressed over the game (author caught it live: instruments "vanished"
