@@ -57,6 +57,23 @@ in `28y-look` and is shared with the fuzzer — one list, or the two drift apart
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
+## M248 — the cave: narrower, and with a light of its own (2026-08-28) — CLOSED (0.244.0)
+
+Two of the three options went in — narrower galleries (44–70 → 30–52, rock threshold 0.47 → 0.53)
+and the cave's own light (cold moss on the vault, a lamp somebody left on the floor). The third,
+a closer camera, was deliberately left alone.
+
+**The rule that stopped it, and why it stood.** M217: the measure of this world is a man, and one
+of his heights means the same in the mine, on the surface and in the cave; a test guards it. A
+1.45× view in the cave alone would have made him bigger there than anywhere else — the comparison
+between modes is worth more than one scene's comfort. The same tightness came from the gallery
+instead. **Cost named, rule kept** — and the author sees both in the patch notes rather than
+finding a silently broken rule later.
+
+What the cave still needs, and it is not light: things inside the rock. Side passages worth
+walking into, water, bones, other people's marks. Emptiness at 83% is a content number now, not a
+lighting one.
+
 ## M247 — the home from inside (2026-08-28) — CLOSED (0.243.0)
 
 A window on the ground floor (there were none, so the room had no cold source and contradicted

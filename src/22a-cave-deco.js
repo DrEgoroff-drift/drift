@@ -415,3 +415,72 @@ function drawCaveGlow(C,camx,camy,px,py){
   }
   ctx.restore();
 }
+
+/* ══════════════ свой свет пещеры (M248) ══════════════
+   У пещеры не было ни одного источника, кроме фонаря на шлеме: отсюда и
+   «0% пары», и ощущение, что мир кончается за кругом света. Теперь у неё есть
+   собственная жизнь и собственный свет — холодный мох по стенам и чужой
+   фонарь, оставленный тем, кто был здесь раньше. Второе — ещё и след человека:
+   пещеру кто-то проходил до тебя.
+   Всё сеяно от C.seed и ничего не сохраняется: место одно и то же при каждом
+   спуске, но в сейве его нет. */
+function caveMossSpots(C){
+  if(C.moss)return C.moss;
+  const r=rng(C.seed^0x3055), out=[];
+  for(let i=0;i<16;i++){
+    const low=r()<.4;
+    const x=low?340+r()*(CAVE_W-560):160+r()*(CAVE_W-320);
+    const y=low?caveLowY(C,x):caveGalY(C,x);
+    /* мох садится на СВОД и на стены, а не на пол: ему нужна сырость сверху */
+    out.push({x,y:y-(6+r()*22),n:3+Math.floor(r()*5),ph:r()*TAU,
+              rr:10+r()*16,col:r()<.5?[120,200,180]:[150,190,230]});
+  }
+  return C.moss=out;
+}
+function caveLampSpot(C){
+  if(C.lamp!==undefined)return C.lamp;
+  const r=rng(C.seed^0x1A77);
+  const x=CAVE_W*(.35+r()*.4);
+  return C.lamp={x,y:caveFloor(C,x),ph:r()*TAU};
+}
+function drawCaveOwnLight(C,camx,camy){
+  /* мох: холодное пятно, медленно дышит — движение, а не мигание */
+  ctx.save();ctx.globalCompositeOperation="lighter";
+  for(const m of caveMossSpots(C)){
+    const x=m.x-camx, y=m.y-camy;
+    if(x<-60||x>W+60||y<-60||y>H+60)continue;
+    const pu=.62+.38*Math.sin(G.t*.006+m.ph);
+    const g=ctx.createRadialGradient(x,y,0,x,y,m.rr*2.2);
+    g.addColorStop(0,"rgba("+m.col.join(",")+","+(.16*pu).toFixed(3)+")");
+    g.addColorStop(1,"rgba("+m.col.join(",")+",0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,m.rr*2.2,0,TAU);ctx.fill();
+    /* сами пятна: несколько мелких, разной величины — не одна клякса */
+    for(let i=0;i<m.n;i++){
+      const a=m.ph+i*2.1, rx=Math.cos(a)*m.rr*.6, ry=Math.sin(a)*m.rr*.35;
+      ctx.fillStyle="rgba("+m.col.join(",")+","+(.20+.14*pu).toFixed(3)+")";
+      ctx.beginPath();ctx.ellipse(x+rx,y+ry,2.2+i*.7,1.4+i*.4,a,0,TAU);ctx.fill();
+    }
+  }
+  ctx.restore();
+  /* чужой фонарь: он тёплый, и он тут не сам по себе — кто-то его поставил */
+  const L=caveLampSpot(C);
+  const lx=L.x-camx, ly=L.y-camy;
+  if(lx>-80&&lx<W+80&&ly>-80&&ly<H+80){
+    const pu=.78+.22*Math.sin(G.t*.011+L.ph);
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g=ctx.createRadialGradient(lx,ly-5,0,lx,ly-5,86);
+    g.addColorStop(0,"rgba(255,206,138,"+(.24*pu).toFixed(3)+")");
+    g.addColorStop(.5,"rgba(255,190,120,"+(.08*pu).toFixed(3)+")");
+    g.addColorStop(1,"rgba(255,190,120,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(lx,ly-5,86,0,TAU);ctx.fill();
+    ctx.restore();
+    /* сама вещь: корпус, дужка и стекло — вещь, а не пятно */
+    ctx.fillStyle="rgba(46,52,60,.95)";
+    ctx.fillRect(lx-3.4,ly-9,6.8,7.5);
+    ctx.strokeStyle="rgba(70,78,88,.95)";ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.arc(lx,ly-9.5,3.2,Math.PI,TAU);ctx.stroke();
+    ctx.fillStyle="rgba(255,226,170,"+(.75*pu).toFixed(2)+")";
+    ctx.fillRect(lx-2.2,ly-7.6,4.4,4.4);
+    groundShadow(lx,ly+1,7,2.2);
+  }
+}

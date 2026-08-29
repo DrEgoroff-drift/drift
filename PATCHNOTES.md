@@ -7,6 +7,33 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.244.0 — M248: the cave gets narrower, and gets a light of its own
+
+Three ways out of the cave's emptiness were written up for the author; he said do all three. Two
+are in, and the third is deliberately not — with the reason.
+
+- **Narrower galleries.** The corridor was 44–70 units wide with a man 17 tall: the walls never
+  reached the frame together and the cave read as a map rather than a place. It is 30–52 now, and
+  the rock threshold went up (0.47 → 0.53), so the halls between the carved passages are smaller.
+  Passage is not at risk: galleries, shafts and the mouth are cut AFTER the noise, as they always
+  were.
+- **A light of its own.** The cave had exactly one source — the lamp on your helmet — which is why
+  the world seemed to end at the edge of its circle. Now there is cold moss on the vault, breathing
+  slowly, and a lamp someone left on the floor: warm, with a pool, a body, a bail and a lit glass.
+  The second is also a trace of a person — somebody walked here before you.
+- **The camera was NOT moved closer**, and that is the honest part. Bringing it in ran straight
+  into the rule from M217: the measure of this world is a man, and one of his heights means the
+  same thing in the mine, on the surface and in the cave. A test guards it. Breaking that rule for
+  one scene costs more than the scene gains — the tighter feeling came from the narrower gallery
+  instead.
+
+The numbers moved little (empty 85 → 83, contrast 0.14). The cave is still the emptiest frame in
+the game, and the next step there is not lighting but what fills the rock: side passages worth
+walking into, water, bones, another person's marks.
+
+Tests: 398 suites green, phone pass included.
+
+---
 ## 0.243.0 — M247: the home gets a window, and the doorways stop being panels
 
 Two things in the one room the game calls yours.

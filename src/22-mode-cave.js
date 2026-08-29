@@ -15,7 +15,11 @@ const CAVE_NX=Math.ceil(CAVE_W/CAVE_CS), CAVE_NY=Math.ceil((CAVE_Y1-CAVE_Y0)/CAV
 /* ось верхней галереи: тот же шум, что и прежний пол, так что залы (22a)
    легли туда же, куда ложились */
 function caveGalY(C,x){return fbm1(x*C.freq+11,C.seed,4)*C.amp-46-caveVault(C,x)*.3;}
-function caveGalR(C,x){return 44+caveVault(C,x)*.45;}
+/* ── галерея уже (M248) ──
+   Ход был в 44–70 единиц при росте человека в 17: стены никогда не попадали в
+   кадр вместе, и пещера читалась картой, а не местом. Сузили до 30–52 — свод
+   и пол видно разом, и своды перестали быть краем экрана. */
+function caveGalR(C,x){return 30+caveVault(C,x)*.32;}
 /* нижняя галерея: глубже на шесть сотен, идёт справа налево */
 function caveLowY(C,x){return 640+fbm1(x*.003+5,C.seed+7,3)*160-80;}
 function caveSolidAt(C,x,y){
@@ -88,7 +92,9 @@ function caveBuild(C){
   for(let cy=0;cy<NY;cy++){
     const y=cy*CS+CAVE_Y0;
     const depth=clamp((y-40)/1100,0,1);
-    const thr=.47+.09*Math.sin(Math.PI*depth);
+    /* порог выше — породы больше, залы мельче (M248). Проход при этом не
+       зависит от шума: галереи, шахты и устье прорубаются ПОСЛЕ сглаживания */
+    const thr=.53+.08*Math.sin(Math.PI*depth);
     for(let cx=0;cx<NX;cx++){
       const x=cx*CS;
       const n=fbm2(x*.0052,y*.0052,C.seed^0xC4,4);
@@ -562,6 +568,8 @@ function drawCaveWorld(){
     ctx.restore();
   }
   drawCaveGlow(C,camx,camy,px,py);
+  /* свой свет пещеры (M248): мох по своду и чужой фонарь на полу */
+  if(typeof drawCaveOwnLight==="function")drawCaveOwnLight(C,camx,camy);
   /* дозорные посёлка у устья (хвост M110): их видно, а не только читается
      в подсказке. Те же силуэты с шестом, что на поверхности, и факел */
   if(C.watch>0)for(let i=0;i<2;i++){
@@ -604,6 +612,12 @@ function drawCaveWorld(){
    пикселя, переход читается как смена игры. Приборов на канве здесь нет вовсе —
    всё в DOM, — поэтому масштабируется кадр целиком. */
 function drawCave(){
+  /* ── камеру ближе НЕ придвинули, и это осознанно (M248) ──
+     Третьим пунктом плана было «ближе камера», и она сразу упёрлась в правило
+     M217: мерило мира — человек, и один его рост значит одно и то же в шахте,
+     на поверхности и в пещере. Набор это сторожит. Ломать правило ради одной
+     сцены дороже, чем оно стоит: тесноты добились иначе — сузили галерею
+     (44–70 → 30–52), и стены теперь попадают в кадр вместе со сводом. */
   const K=surfScale();
   G.viewK=K;
   withScale(K,drawCaveWorld);

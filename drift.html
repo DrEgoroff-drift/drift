@@ -1351,7 +1351,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.243.0";
+const VER="0.244.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -42805,6 +42805,75 @@ function drawCaveGlow(C,camx,camy,px,py){
   ctx.restore();
 }
 
+/* ══════════════ свой свет пещеры (M248) ══════════════
+   У пещеры не было ни одного источника, кроме фонаря на шлеме: отсюда и
+   «0% пары», и ощущение, что мир кончается за кругом света. Теперь у неё есть
+   собственная жизнь и собственный свет — холодный мох по стенам и чужой
+   фонарь, оставленный тем, кто был здесь раньше. Второе — ещё и след человека:
+   пещеру кто-то проходил до тебя.
+   Всё сеяно от C.seed и ничего не сохраняется: место одно и то же при каждом
+   спуске, но в сейве его нет. */
+function caveMossSpots(C){
+  if(C.moss)return C.moss;
+  const r=rng(C.seed^0x3055), out=[];
+  for(let i=0;i<16;i++){
+    const low=r()<.4;
+    const x=low?340+r()*(CAVE_W-560):160+r()*(CAVE_W-320);
+    const y=low?caveLowY(C,x):caveGalY(C,x);
+    /* мох садится на СВОД и на стены, а не на пол: ему нужна сырость сверху */
+    out.push({x,y:y-(6+r()*22),n:3+Math.floor(r()*5),ph:r()*TAU,
+              rr:10+r()*16,col:r()<.5?[120,200,180]:[150,190,230]});
+  }
+  return C.moss=out;
+}
+function caveLampSpot(C){
+  if(C.lamp!==undefined)return C.lamp;
+  const r=rng(C.seed^0x1A77);
+  const x=CAVE_W*(.35+r()*.4);
+  return C.lamp={x,y:caveFloor(C,x),ph:r()*TAU};
+}
+function drawCaveOwnLight(C,camx,camy){
+  /* мох: холодное пятно, медленно дышит — движение, а не мигание */
+  ctx.save();ctx.globalCompositeOperation="lighter";
+  for(const m of caveMossSpots(C)){
+    const x=m.x-camx, y=m.y-camy;
+    if(x<-60||x>W+60||y<-60||y>H+60)continue;
+    const pu=.62+.38*Math.sin(G.t*.006+m.ph);
+    const g=ctx.createRadialGradient(x,y,0,x,y,m.rr*2.2);
+    g.addColorStop(0,"rgba("+m.col.join(",")+","+(.16*pu).toFixed(3)+")");
+    g.addColorStop(1,"rgba("+m.col.join(",")+",0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,m.rr*2.2,0,TAU);ctx.fill();
+    /* сами пятна: несколько мелких, разной величины — не одна клякса */
+    for(let i=0;i<m.n;i++){
+      const a=m.ph+i*2.1, rx=Math.cos(a)*m.rr*.6, ry=Math.sin(a)*m.rr*.35;
+      ctx.fillStyle="rgba("+m.col.join(",")+","+(.20+.14*pu).toFixed(3)+")";
+      ctx.beginPath();ctx.ellipse(x+rx,y+ry,2.2+i*.7,1.4+i*.4,a,0,TAU);ctx.fill();
+    }
+  }
+  ctx.restore();
+  /* чужой фонарь: он тёплый, и он тут не сам по себе — кто-то его поставил */
+  const L=caveLampSpot(C);
+  const lx=L.x-camx, ly=L.y-camy;
+  if(lx>-80&&lx<W+80&&ly>-80&&ly<H+80){
+    const pu=.78+.22*Math.sin(G.t*.011+L.ph);
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g=ctx.createRadialGradient(lx,ly-5,0,lx,ly-5,86);
+    g.addColorStop(0,"rgba(255,206,138,"+(.24*pu).toFixed(3)+")");
+    g.addColorStop(.5,"rgba(255,190,120,"+(.08*pu).toFixed(3)+")");
+    g.addColorStop(1,"rgba(255,190,120,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(lx,ly-5,86,0,TAU);ctx.fill();
+    ctx.restore();
+    /* сама вещь: корпус, дужка и стекло — вещь, а не пятно */
+    ctx.fillStyle="rgba(46,52,60,.95)";
+    ctx.fillRect(lx-3.4,ly-9,6.8,7.5);
+    ctx.strokeStyle="rgba(70,78,88,.95)";ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.arc(lx,ly-9.5,3.2,Math.PI,TAU);ctx.stroke();
+    ctx.fillStyle="rgba(255,226,170,"+(.75*pu).toFixed(2)+")";
+    ctx.fillRect(lx-2.2,ly-7.6,4.4,4.4);
+    groundShadow(lx,ly+1,7,2.2);
+  }
+}
+
 /* ══════════════ пещера: поле породы в двух измерениях ══════════════ */
 /* Была щелью: свод и пол по шуму, между ними две тысячи пикселей хода.
    Теперь пещера — ПОЛЕ: сетка клеток по 5 px, порода или пустота, вырезанная
@@ -42822,7 +42891,11 @@ const CAVE_NX=Math.ceil(CAVE_W/CAVE_CS), CAVE_NY=Math.ceil((CAVE_Y1-CAVE_Y0)/CAV
 /* ось верхней галереи: тот же шум, что и прежний пол, так что залы (22a)
    легли туда же, куда ложились */
 function caveGalY(C,x){return fbm1(x*C.freq+11,C.seed,4)*C.amp-46-caveVault(C,x)*.3;}
-function caveGalR(C,x){return 44+caveVault(C,x)*.45;}
+/* ── галерея уже (M248) ──
+   Ход был в 44–70 единиц при росте человека в 17: стены никогда не попадали в
+   кадр вместе, и пещера читалась картой, а не местом. Сузили до 30–52 — свод
+   и пол видно разом, и своды перестали быть краем экрана. */
+function caveGalR(C,x){return 30+caveVault(C,x)*.32;}
 /* нижняя галерея: глубже на шесть сотен, идёт справа налево */
 function caveLowY(C,x){return 640+fbm1(x*.003+5,C.seed+7,3)*160-80;}
 function caveSolidAt(C,x,y){
@@ -42895,7 +42968,9 @@ function caveBuild(C){
   for(let cy=0;cy<NY;cy++){
     const y=cy*CS+CAVE_Y0;
     const depth=clamp((y-40)/1100,0,1);
-    const thr=.47+.09*Math.sin(Math.PI*depth);
+    /* порог выше — породы больше, залы мельче (M248). Проход при этом не
+       зависит от шума: галереи, шахты и устье прорубаются ПОСЛЕ сглаживания */
+    const thr=.53+.08*Math.sin(Math.PI*depth);
     for(let cx=0;cx<NX;cx++){
       const x=cx*CS;
       const n=fbm2(x*.0052,y*.0052,C.seed^0xC4,4);
@@ -43369,6 +43444,8 @@ function drawCaveWorld(){
     ctx.restore();
   }
   drawCaveGlow(C,camx,camy,px,py);
+  /* свой свет пещеры (M248): мох по своду и чужой фонарь на полу */
+  if(typeof drawCaveOwnLight==="function")drawCaveOwnLight(C,camx,camy);
   /* дозорные посёлка у устья (хвост M110): их видно, а не только читается
      в подсказке. Те же силуэты с шестом, что на поверхности, и факел */
   if(C.watch>0)for(let i=0;i<2;i++){
@@ -43411,6 +43488,12 @@ function drawCaveWorld(){
    пикселя, переход читается как смена игры. Приборов на канве здесь нет вовсе —
    всё в DOM, — поэтому масштабируется кадр целиком. */
 function drawCave(){
+  /* ── камеру ближе НЕ придвинули, и это осознанно (M248) ──
+     Третьим пунктом плана было «ближе камера», и она сразу упёрлась в правило
+     M217: мерило мира — человек, и один его рост значит одно и то же в шахте,
+     на поверхности и в пещере. Набор это сторожит. Ломать правило ради одной
+     сцены дороже, чем оно стоит: тесноты добились иначе — сузили галерею
+     (44–70 → 30–52), и стены теперь попадают в кадр вместе со сводом. */
   const K=surfScale();
   G.viewK=K;
   withScale(K,drawCaveWorld);
