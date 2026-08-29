@@ -7,6 +7,25 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.265.0 — M268: the corridor is light, the shadow rises to meet the ship
+
+Third leg of the marathon (П5 · П6).
+
+**П6 — the approach stops being CAD.** The landing guide was a 3000-px dotted vertical — a
+draughtsman's line. Now the landing system is *light*: a narrow column over the pad, wider and
+fainter with height; a runner light descends the axis toward the pad (movement, not blinking —
+and the movement itself says where down is); the pad is a body with a warm edge and two slow
+edge beacons. One narrow trapezoid fill — the frame pays nothing. And the ship's shadow now
+**rises to meet it**: during descent a ground shadow grows under the lander with altitude, so
+height is felt through the ground, not the altimeter.
+
+**П5 — acquitted with evidence.** The factory already smokes from its one живая труба, tanks
+are polygonal cylinders with hoops (the file itself wars on perfect circles), towers carry
+crowns, ribs and ladders; POI glow is a designed light source. «Работа видна» holds. No churn
+for churn's sake — the pass closes on inspection, and the smelter's curl-noise smoke stays on
+the author's effects list where it was.
+
+---
 ## 0.264.0 — M267: strata lie flat, the mine learns the brush, the wall remembers a hand
 
 Second leg of the marathon (П4 · С2).

@@ -1353,7 +1353,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.264.0";
+const VER="0.265.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -34557,12 +34557,45 @@ function drawLanding(){
   drawDeco(tr,camx,camy,p);
   drawRocks(tr,camx,camy,p.T.pal);
   drawDustMotes(camx,camy,p);
+  /* ── коридор — это свет, а не чертёж (П6 марафона; долг «approach = CAD») ──
+     Пунктирная вертикаль в три тысячи пикселей была линией из чертёжника.
+     Посадочную систему видно иначе: узкий столб света над плитой, шире и
+     бледнее кверху; по оси вниз бежит огонёк-«заяц» — движение, а не мигание,
+     и оно само показывает, куда садиться; плита — тело с тёплой кромкой и
+     двумя огнями по краям. Столб — одна узкая трапеция, кадру дёшево. */
   const px=tr.padX-camx,py=tr.padY-camy;
-  ctx.strokeStyle="rgba(242,178,92,.85)";ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(px-46,py);ctx.lineTo(px+46,py);ctx.stroke();
-  ctx.setLineDash([3,5]);ctx.globalAlpha=.5;
-  ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py-3000);ctx.stroke();
-  ctx.setLineDash([]);ctx.globalAlpha=1;
+  {
+    const hUp=H*.85;
+    const g=ctx.createLinearGradient(0,py,0,py-hUp);
+    g.addColorStop(0,"rgba(242,178,92,.11)");
+    g.addColorStop(1,"rgba(242,178,92,0)");
+    ctx.fillStyle=g;
+    ctx.beginPath();
+    ctx.moveTo(px-10,py);ctx.lineTo(px+10,py);
+    ctx.lineTo(px+36,py-hUp);ctx.lineTo(px-36,py-hUp);
+    ctx.closePath();ctx.fill();
+    const u=(G.t*.22)%1;
+    const ry=py-hUp*(1-u);
+    ctx.fillStyle="rgba(255,220,150,"+(.10+.5*u*u).toFixed(2)+")";
+    ctx.beginPath();ctx.arc(px,ry,1.5+u*1.5,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(16,20,26,.9)";
+    ctx.fillRect(px-46,py,92,4);
+    ctx.strokeStyle="rgba(242,178,92,.85)";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(px-46,py);ctx.lineTo(px+46,py);ctx.stroke();
+    for(const sx of [-46,46]){
+      const bl=.5+.5*Math.sin(G.t*.05+(sx>0?0:Math.PI));
+      ctx.fillStyle="rgba(255,214,150,"+(.35+.5*bl).toFixed(2)+")";
+      ctx.beginPath();ctx.arc(px+sx,py-2,1.8,0,TAU);ctx.fill();
+    }
+  }
+  /* тень растёт навстречу кораблю: высоту чувствуешь землёй, а не альтиметром
+     (П6) — у самой земли тень собирается в полный размер под брюхом */
+  {
+    const gy=groundAt(tr,L.x);
+    const alt=clamp((gy-L.y)/620,0,1);
+    if(alt<.96)groundShadow(L.x-camx,gy-camy+1,
+      landerLen(G.shipId)*.46*(1-alt*.62),8*(1-alt*.55));
+  }
   ctx.save();ctx.translate(L.x-camx,L.y-camy);ctx.rotate(L.a);
   drawLander(L.over>0&&!L.ok,L.thrOn&&L.over<=0,
     {gear:L.gear,sq:L.sq,hot:L.hot,landed:L.over>0&&L.ok,tr:tr,gx:L.x});

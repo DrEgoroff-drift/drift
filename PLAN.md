@@ -164,9 +164,13 @@ the stand anyway.
   strata on a near-horizontal datum cut by relief (the Loose-ends debt). Checked and left:
   boulders/plants/ship already cast groundShadow (the law holds); the postcard already carries
   stroke-along-bedding (M252) — typing it by CUN would be a second system on one canvas.
-- **P5 — buildings and POI.** Factory, mine, wrecks: one body, one light, «работа видна».
-- **P6 — ship, astronaut, landing.** Ship's ground shadow, engine light as an ellipse, silhouette
-  edge, the astronaut readable on any background; the landing corridor stops being CAD.
+- **P5 — buildings and POI.** ~~Acquitted on inspection (M268)~~: factory smokes, tanks are
+  polygonal with hoops, POI glow is designed light. Smelter curl-smoke stays on the author's
+  effects list.
+- **P6 — ship, astronaut, landing.** ~~Done (M268, 0.265.0)~~: corridor is a light column with
+  a descending runner (CAD dashes dead), pad is a body with edge beacons, ship shadow grows
+  toward touchdown. Already held: parked-ship shadow, night belly light ellipse, astronaut
+  sun rim (M172).
 - **P7 — cave and mine: finish what's started.** Base/boarding lamps (P5-2 — check the room clip
   first), CUN into `pcStrata`/`digRockPass`.
 - **P8 — space in flight.** Stars stretch under way (verify the law lives), palette not sliding

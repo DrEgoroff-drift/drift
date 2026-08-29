@@ -3534,7 +3534,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19f-lander.js · 21 КБ
   · посадочный корабль:1
 
-## src/19-mode-landing.js · 31 КБ
+## src/19-mode-landing.js · 33 КБ
   · посадка:1
 
 ## src/20aa-poi-shapes.js · 30 КБ
