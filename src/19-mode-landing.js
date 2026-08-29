@@ -161,18 +161,23 @@ function drawGround(tr,camx,camy,fill,line,pal){
     const gx0=Math.floor(camx/stp)*stp, gy0=Math.floor(camy/stp)*stp;
     for(let gy=gy0;gy<camy+H+stp;gy+=stp)for(let gx=gx0;gx<camx+W+stp;gx+=stp){
       const hh=hashi(gx/stp,gy/stp,sd);
-      if((hh&7)<4)continue;                       /* на свету штрих реже, чем под землёй */
+      if((hh&7)<3)continue;
+      /* сила штриха — от глубины под кромкой: свет бьёт по верху разреза, и
+         там манера видна В ПОЛНЫЙ ГОЛОС; с глубиной гаснет вместе с породой.
+         Первая кладка была ровной и робкой — штриха не было видно вовсе
+         (автор: «изменения не вижу» — и был прав). */
+      const kd=clamp(1.5-(gy-groundAt(tr,gx))/420,.35,1.5);
       const jx=gx+((hh>>>3)&15)/15*stp-camx, jy=gy+((hh>>>7)&15)/15*stp-camy;
       const light=((hh>>>14)&1);
       if(M.dot){
-        ctx.fillStyle=light?"rgba(255,246,226,"+(M.la*.9).toFixed(3)+")":"rgba(0,0,0,"+(M.da*.8).toFixed(3)+")";
+        ctx.fillStyle=light?"rgba(255,246,226,"+(M.la*kd).toFixed(3)+")":"rgba(0,0,0,"+(M.da*kd).toFixed(3)+")";
         const q=1+((hh>>>11)&1);
         ctx.fillRect(jx,jy,q,q);
         continue;
       }
       const ang=dirAt(gx,gy,sd+0x11,1/300)+(((hh>>>16)&15)/15-.5)*M.jig;
-      const ln=(5+((hh>>>11)&7))*M.ln;
-      ctx.strokeStyle=light?"rgba(255,246,226,"+(M.la*.9).toFixed(3)+")":"rgba(0,0,0,"+(M.da*.8).toFixed(3)+")";
+      const ln=(6+((hh>>>11)&7))*M.ln;
+      ctx.strokeStyle=light?"rgba(255,246,226,"+(M.la*kd).toFixed(3)+")":"rgba(0,0,0,"+(M.da*kd).toFixed(3)+")";
       ctx.lineWidth=M.w;
       ctx.beginPath();
       ctx.moveTo(jx-Math.cos(ang)*ln,jy-Math.sin(ang)*ln);
@@ -231,6 +236,32 @@ function drawGround(tr,camx,camy,fill,line,pal){
     for(let i=i0;i<=i1;i++)ctx.lineTo(i*tr.step-camx,tr.h[i]-camy+4);
     ctx.stroke();
     ctx.restore();
+    /* ── движки (§1, стадия 5 иконописи; переделка стиля по правилам) ──
+       Финальный свет — не растяжка, а несколько ЖЁСТКИХ отметин по счёту.
+       Кладутся только на склоны, смотрящие на солнце, короткими штрихами по
+       самой кромке — камень начинает блестеть, а не светиться равномерно.
+       Днём ярче, к сумеркам гаснут. Печётся в ломоть. */
+    if(tr.p){
+      const sunx=(typeof SUN_DIR==="object")?SUN_DIR.x:.7;
+      const dk=dayKq(tr.p);
+      if(dk>.12&&Math.abs(sunx)>.05){
+        ctx.strokeStyle="rgba(255,248,228,"+(.18+.34*dk).toFixed(2)+")";
+        ctx.lineWidth=1.6;
+        for(let i=i0;i<i1;i++){
+          const hh=hashi(i,tr.p.seed|0,0x3D9);
+          if((hh&7)<5)continue;
+          const slope=(tr.h[i+1]-tr.h[i])/tr.step;
+          if(slope*sunx>-.07)continue;
+          const x0=i*tr.step-camx,y0=tr.h[i]-camy;
+          const x1=(i+1)*tr.step-camx,y1=tr.h[i+1]-camy;
+          const t0=.15+((hh>>>4)&7)/7*.4, t1=Math.min(1,t0+.16+((hh>>>8)&3)/3*.2);
+          ctx.beginPath();
+          ctx.moveTo(lerp(x0,x1,t0),lerp(y0,y1,t0)+.7);
+          ctx.lineTo(lerp(x0,x1,t1),lerp(y0,y1,t1)+.7);
+          ctx.stroke();
+        }
+      }
+    }
   }
 }
 let GROUND_BAKING=false;

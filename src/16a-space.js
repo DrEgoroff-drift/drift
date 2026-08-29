@@ -117,6 +117,58 @@ function sysNebulaTex(sys){
    Тайл делается по размеру экрана плюс тот запас, в пределах которого гуляет
    сдвиг, и пересобирается только при смене системы или размера окна. */
 let NEB_COMP=null;
+/* ── акварель: у облака появляются КРОМКИ (DESIGN-craft §6, проход дизайна) ──
+   Диагноз свода дословно: «честный шум, но у него нет краёв — облако мягкое
+   везде одинаково, потому что его мягкость из одной функции». Лекарство
+   Хоббса: пятно — не заливка, а стопка слоёв малой альфы, каждый — своя
+   деформация ОДНОГО полигона; разброс задаётся НА СЕГМЕНТ и наследуется —
+   поэтому один край пятна резкий, другой рыхлый. Цвета не смешиваются, а
+   чередуются по слоям. Печётся в NEB_COMP раз на систему — кадру даром. */
+function wcGauss(r){return (r()+r()+r())/1.5-1;}
+function wcDeform(pts,vr,rounds,r,k){
+  for(let q=0;q<rounds;q++){
+    const np=[],nv=[];
+    for(let i=0;i<pts.length;i++){
+      const a=pts[i],b=pts[(i+1)%pts.length],vv=vr[i];
+      np.push(a);nv.push(vv*k);
+      np.push([(a[0]+b[0])*.5+wcGauss(r)*vv,(a[1]+b[1])*.5+wcGauss(r)*vv]);
+      nv.push(vv*k);
+    }
+    pts=np;vr=nv;
+  }
+  return {p:pts,v:vr};
+}
+function wcBlots(c2,st,Wc,Hc){
+  /* Первая кладка была гуашью: 24 слоя по .04 в lighter складываются в
+     непрозрачную кляксу на полкадра, а слои почти совпадали — кромка резкая
+     ВЕЗДЕ. Самокритика прохода: втрое тише, вдвое меньше, и разброс слоёв
+     настоящий — тогда рыхлый край складывается из вееров слоёв сам. */
+  const r=rng((st.nseed^0xACA7)>>>0);
+  const nB=2+((st.nseed>>>3)&1);
+  for(let bi=0;bi<nB;bi++){
+    const cxp=Wc*(.14+r()*.72), cyp=Hc*(.16+r()*.64);
+    const R=Math.min(Wc,Hc)*(.09+r()*.09);
+    let base=[],vr0=[];
+    for(let i=0;i<6;i++){
+      const a=i/6*TAU+r()*.4;
+      base.push([cxp+Math.cos(a)*R*(.6+r()*.6),cyp+Math.sin(a)*R*(.5+r()*.6)]);
+      /* карта мягкости: у одного-двух рёбер разброс крошечный (край будет
+         резким), у остальных — большой (край растает веером слоёв) */
+      vr0.push(R*(r()<.3?.06:(.3+r()*.7)));
+    }
+    const skel=wcDeform(base,vr0,3,r,.7);
+    const c1=st.neb[0],c2c=st.neb[1];
+    const nL=12+((st.nseed>>>7)&3);
+    for(let li=0;li<nL;li++){
+      const L=wcDeform(skel.p.slice(),skel.v.slice(),3,r,.62);
+      const col=(li%2)?c1:c2c;                    /* чередование, не смешивание */
+      c2.fillStyle="rgba("+col[0]+","+col[1]+","+col[2]+",.013)";
+      c2.beginPath();c2.moveTo(L.p[0][0],L.p[0][1]);
+      for(let i=1;i<L.p.length;i++)c2.lineTo(L.p[i][0],L.p[i][1]);
+      c2.closePath();c2.fill();
+    }
+  }
+}
 function drawSysNebula(sys,cx,cy){
   const N=sysNebulaTex(sys);
   if(!N)return;               // ещё печётся — этот кадр обойдётся без неё
@@ -138,6 +190,9 @@ function drawSysNebula(sys,cx,cy){
     /* второй проход крупнее и смещённый — граница тайла перестаёт читаться */
     c2.globalAlpha=.22;
     c2.drawImage(N,-W*.3,-H*.2,(W+ex)*1.9,(H+ey)*1.9);
+    /* акварельные пятна — структура с кромками поверх ровного газа */
+    c2.globalAlpha=1;
+    wcBlots(c2,sysStyle(sys),W+ex,H+ey);
     NEB_COMP={cv,src:N,w:W,h:H,dpr:DPR};
   }
   ctx.drawImage(NEB_COMP.cv,ox,oy,W+ex,H+ey);

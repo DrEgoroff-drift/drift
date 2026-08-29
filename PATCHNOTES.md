@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.272.0 — M275: the style rework begins — watercolour clouds, hard light by count
+
+The author lifted the old brake («по правилам весь стиль переделывай») and called out the truth:
+the loudest research findings had never reached the frame. This leg carries two of them, with
+the draft→critique→redo passes recorded honestly.
+
+**§6 — the nebula gets edges (watercolour).** The codex diagnosis verbatim: «честный шум, но у
+него нет краёв». Now the system nebula's baked composition carries Hobbs blot stacks: one
+skeleton polygon per blot, each layer its own deformation, variance assigned PER SEGMENT and
+inherited — so one edge of a cloud is crisp and another dissolves in a fan of layers; colours
+interleave instead of blending. **The first laying failed its own critique**: 24 layers at .04
+in lighter piled into two opaque pink gouache slabs across half the frame — notan killed, the
+sky's loudness budget trampled. Redone three times quieter and half the size, with real
+per-layer scatter; now they read as dense gas masses sitting IN the sky. Baked once per system —
+the frame pays nothing.
+
+**§1 stage 5 — движки on the terrain edge.** The most-looked-at line in the game — the ground
+edge the astronaut walks — carried one uniform white glow. Final light is not a stretch: hard
+bright marks laid BY COUNT, only on slopes that face the drawn sun, brighter at noon, gone by
+dusk. The rock edge glints instead of glowing. And the cliff's 皴 strokes finally speak at full
+voice near the lit rim (the first laying was uniformly timid — the author said «изменения не
+вижу» and was right), fading with depth like the rock itself.
+
+---
 ## 0.271.0 — M274: the polish circle — three modes join the album, the language learns to count
 
 The polish pass went where no album had looked.
