@@ -530,7 +530,18 @@ function drawSysHud(zx,zy,sh,sys,U){
      посреди сцены, наезжая друг на друга и на солнце. Теперь метка — плашка,
      прижатая к краю прямоугольника кадра (с отступами под приборы и пульт),
      а наложение снимается сдвигом вдоль кромки. */
-  const inset={x0:10,x1:W-10,y0:76,y1:H-(innerWidth<=760?150:120)};
+  /* нижняя кромка — над живой строкой подсказки, а не по константе: чип
+     «ЗВЕЗДА» ложился ровно на «МОЖНО ПРОСТО УЙТИ ИЛИ ПРЫГНУТЬ» (полировочный
+     круг). Меряем сам DOM (правило 27z: не пересчитывать CSS в JS). */
+  let inY1=H-(innerWidth<=760?150:120);
+  {
+    const pe=document.getElementById("prompt");
+    if(pe&&pe.textContent){
+      const r=pe.getBoundingClientRect();
+      if(r.height>0)inY1=Math.min(inY1,r.top/U-8);
+    }
+  }
+  const inset={x0:10,x1:W-10,y0:76,y1:inY1};
   const placed=[];
   ctx.font="8px ui-monospace,monospace";
   for(const m of marks){

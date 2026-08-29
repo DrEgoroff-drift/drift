@@ -304,7 +304,7 @@ function renderFleetRuns(box){
        не имеет права падать из-за этого вместе со всем экраном */
     const res=RES[r.res]||{ru:String(r.res||"груз"),col:"#cfe3ea"};
     const row=tableRow(box,"","",r.from+" → «"+r.to+"» · "+r.drones.length+
-      (r.drones.length===1?" дрон":r.drones.length<5?" дрона":" дронов")+
+      " "+pl3(r.drones.length,"дрон","дрона","дронов")+
       " · в точке осталось "+r.pool+(r.down?(" · "+r.down+" в ремонте"):""));
     const em=row.querySelector("em");
     if(em){em.textContent=res.ru.toUpperCase();em.style.color=res.col;}

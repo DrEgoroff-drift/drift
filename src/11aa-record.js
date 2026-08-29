@@ -80,7 +80,7 @@ function recordBlock(){
 function renderRecord(box){
   box.textContent="";
   const R=recordAll();
-  tableRow(box,"head","","ТРУДОВАЯ КНИЖКА · "+recordPilot().toUpperCase()+" · СТАЖ "+recordYears()+" "+(recordYears()===1?"ГОД":(recordYears()>=2&&recordYears()<=4?"ГОДА":"ЛЕТ"))+(R.grounded?" · ПЕНСИЯ":""));
+  tableRow(box,"head","","ТРУДОВАЯ КНИЖКА · "+recordPilot().toUpperCase()+" · СТАЖ "+recordYears()+" "+pl3(recordYears(),"ГОД","ГОДА","ЛЕТ")+(R.grounded?" · ПЕНСИЯ":""));
   const H=recordHonour();
   if(H.length)tableRow(box,"sec","","НА ДОСКЕ ПОЧЁТА: "+H.join(", "));
   if(!R.e.length){tableRow(box,"dim","","записей нет: их делают другие — станции, институт, люди");return;}

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3064
+Файлов: 333 · символов верхнего уровня: 3065
 
 ## СИМВОЛЫ
 
@@ -77,8 +77,8 @@ AMMO_KEYS                    src/02-world.js:32
 ammoBatch                    src/16b-missile.js:27
 ammoRow                      src/16b-missile.js:41
 ANCHOR_CACHE                 src/05-parts.js:140
-angDiff                      src/01-core.js:82
-angWrap                      src/01-core.js:81
+angDiff                      src/01-core.js:93
+angWrap                      src/01-core.js:92
 applyCrewEvent               src/12b-crew-events.js:214
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
@@ -191,8 +191,8 @@ bLamp                        src/21aa-base-rooms.js:279
 BLOOM_CV                     src/19c-light.js:336
 BLOOM_K                      src/19c-light.js:337
 bloomPass                    src/19c-light.js:339
-BLUE_TAB                     src/01-core.js:37
-blueNoise                    src/01-core.js:38
+BLUE_TAB                     src/01-core.js:48
+blueNoise                    src/01-core.js:49
 BLUEPRINTS                   src/12c-mgr-core.js:662
 BM_WARM                      src/21aa-base-rooms.js:20
 bodyInSystem                 src/16-flight.js:109
@@ -485,8 +485,8 @@ deltaHtml                    src/05-parts.js:293
 depKind                      src/21b-surface-deco.js:337
 deployDrone                  src/12-economy.js:73
 DEPTH_TIERS                  src/04-mods.js:51
-DESC_MOOD                    src/01-core.js:98
-DESC_TAIL                    src/01-core.js:104
+DESC_MOOD                    src/01-core.js:109
+DESC_TAIL                    src/01-core.js:115
 dgy                          src/21b-surface-deco.js:131
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
@@ -505,7 +505,7 @@ digSoilCols                  src/23aa-dig-rock.js:457
 digSurfFringe                src/23aa-dig-rock.js:594
 digSurfY                     src/23aa-dig-rock.js:453
 digVoidPath                  src/23a-dig-draw.js:4
-dirAt                        src/01-core.js:68
+dirAt                        src/01-core.js:79
 DOM_GAME                     src/11af-domino.js:12
 dominoBlock                  src/11af-domino.js:58
 dominoEnd                    src/11af-domino.js:23
@@ -765,8 +765,8 @@ faceRnd                      src/12d-mgr-face.js:16
 factPrices                   src/27c-ui-hq.js:506
 FAUNA_RES                    src/02-world.js:38
 faunaOf                      src/20e-species.js:268
-fbm1                         src/01-core.js:19
-fbm2                         src/01-core.js:26
+fbm1                         src/01-core.js:30
+fbm2                         src/01-core.js:37
 fbm3                         src/24-mode-belt.js:16
 fillMaterial                 src/18a-material.js:257
 FIN_DEF                      src/21aa-base-rooms.js:184
@@ -862,10 +862,10 @@ g11Fps                       src/28z-fps-probe.js:7
 genBeast                     src/20f-fauna.js:58
 genBeltPOI                   src/24b-belt-poi.js:20
 genDeco                      src/21b-surface-deco.js:37
-genDesc                      src/01-core.js:105
+genDesc                      src/01-core.js:116
 genMerc                      src/12a-crew.js:59
 genMgr                       src/12c-mgr-core.js:236
-genName                      src/01-core.js:88
+genName                      src/01-core.js:99
 genPart                      src/05-parts.js:70
 genPlant                     src/20-life.js:188
 genPOI                       src/20a-poi.js:32
@@ -1638,8 +1638,8 @@ NODES                        src/05a-nodes.js:70
 nodesHave                    src/05a-nodes.js:102
 nodesRender                  src/05a-nodes.js:177
 noise                        src/09-audio.js:66
-noise1                       src/01-core.js:18
-noise2                       src/01-core.js:21
+noise1                       src/01-core.js:29
+noise2                       src/01-core.js:32
 noise3                       src/24-mode-belt.js:7
 noiseBuf                     src/09-audio.js:65
 NPC_SHIPS                    src/03-ships.js:144
@@ -1837,6 +1837,7 @@ pirateBaseOf                 src/24a-mode-raid.js:87
 pirateBuild                  src/12i-pirate-hull.js:33
 pirateClass                  src/12i-pirate-hull.js:26
 pirateShipId                 src/13-pirates.js:17
+pl3                          src/01-core.js:22
 PLACE_KINDS                  src/11d-place.js:22
 placeAge                     src/11d-place.js:53
 placeAll                     src/11d-place.js:27
@@ -2330,7 +2331,7 @@ roleFromStats                src/03f-hull-role.js:37
 roleOf                       src/03f-hull-role.js:46
 rollCrewEvent                src/12b-crew-events.js:70
 rollWorld                    src/02a-worldmix.js:67
-ROMAN                        src/01-core.js:87
+ROMAN                        src/01-core.js:98
 ROOM_FIN                     src/21aa-base-rooms.js:46
 roomToneTick                 src/09a-roomtone.js:79
 ROUTE_MAX                    src/12r-route.js:16
@@ -2360,8 +2361,8 @@ rumoursHere                  src/11t-rumours.js:36
 runAutopilot                 src/16-flight.js:133
 runTests                     tests/90-harness.js:80
 rxRecord                     src/11x-ring.js:64
-S1                           src/01-core.js:85
-S2                           src/01-core.js:86
+S1                           src/01-core.js:96
+S2                           src/01-core.js:97
 SAVE_KEY                     src/14-save.js:6
 saveGame                     src/14a-cloud.js:38
 say                          src/08-state.js:184
@@ -2713,8 +2714,8 @@ syncTabs                     src/26-ui-station.js:77
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
 SYS_EXOTIC                   src/16a-space.js:14
-sysDanger                    src/01-core.js:92
-sysJitter                    src/01-core.js:93
+sysDanger                    src/01-core.js:103
+sysJitter                    src/01-core.js:104
 sysNebulaTex                 src/16a-space.js:53
 sysPirateBase                src/24a-mode-raid.js:98
 sysStyle                     src/16a-space.js:21
@@ -3077,10 +3078,10 @@ zooTick                      src/11ad-zoo.js:41
 
 ## ФАЙЛЫ И РАЗДЕЛЫ
 
-## src/01-core.js · 8 КБ
+## src/01-core.js · 9 КБ
   · математика:5
-  · имена:84
-  · удалённость и настрой сектора:91
+  · имена:95
+  · удалённость и настрой сектора:102
 
 ## src/02a-worldmix.js · 8 КБ
   · смешанные миры:1
@@ -3496,7 +3497,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17d-house-shapes.js · 4 КБ
   · дома как язык форм:1
 
-## src/17-mode-system.js · 36 КБ
+## src/17-mode-system.js · 37 КБ
   · режим: система:1
 
 ## src/18a-material.js · 21 КБ
@@ -3757,7 +3758,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27i-ui-table.js · 23 КБ
   · стол: одно место для всего, что читают:1
 
-## src/27j-console.js · 7 КБ
+## src/27j-console.js · 8 КБ
   · пульт: приёмник, подсказка, кресло:1
 
 ## src/27j-ui-hold.js · 10 КБ
@@ -3847,11 +3848,11 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91e-rogue.js · 6 КБ
   · автотесты: ушедший управляющий: ультиматум, ренегат, изгнанник:1
 
-## tests/91f-ui.js · 20 КБ
+## tests/91f-ui.js · 21 КБ
   · автотесты: интерфейс: 44 px, непересечение, кнопка называет действие, разделы:1
-  · ключи из кода не показываются игроку:190
-  · на чистом старте в кадре нет лишнего:235
-  · M236: колесо крутит мир только над миром:266
+  · ключи из кода не показываются игроку:204
+  · на чистом старте в кадре нет лишнего:249
+  · M236: колесо крутит мир только над миром:280
 
 ## tests/91g-relic.js · 8 КБ
   · автотесты: лаборатория и артефакты: слот, эффекты, дерево перков без пустот:1

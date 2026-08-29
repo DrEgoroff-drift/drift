@@ -288,7 +288,7 @@ function vegaAmbientTick(){
   if(V.chartDay!==d&&typeof needsNear==="function"){
     V.chartDay=d;
     const L=needsNear(6);
-    if(L.length)peopleLine("Я карты читала: на "+L[0].sys.station.name+" нет "+L[0].need.ru+". Это "+L[0].d+" прыжк"+(L[0].d===1?"а":"ов")+".","Вега");
+    if(L.length)peopleLine("Я карты читала: на "+L[0].sys.station.name+" нет "+L[0].need.ru+". Это "+L[0].d+" "+pl3(L[0].d,"прыжок","прыжка","прыжков")+".","Вега");
   }
 }
 /* фигура дома: в жилой части, косынка; обиженная — спиной */

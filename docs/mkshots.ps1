@@ -158,6 +158,36 @@ setTimeout(function(){
       G.hin.x=st?st.x+st.w*.5:hinWidth()*.5;
       SC.settle("homein");
     },
+    /* ── три режима, которых альбом не видел ни разу (полировочный круг) ──
+       Дорога, зимовка и санаторий жили только в пробнике fps: их кадр никто
+       не проверял глазами. Входы честные: winTake строит наряд по своему же
+       договору, спа собирается полями enterSpa, дорога — как в пробнике. */
+    road:function(){
+      roadOpen();
+      roadAudio=function(){if(typeof RD==="undefined"||!RD)return;
+        RD.kmh=72;RD.energy=.7;RD.bright=.5;
+        for(var k=0;k<28;k++)RD.wave[k]=.25+.2*Math.sin(k);};
+    },
+    winter:function(){
+      var S=sysWhere(function(S){return S.station&&Math.hypot(S.sx,S.sy)>9;},9,14);
+      if(!S)S=sysWhere(function(S){return !!S.station;},1,8);
+      goTo(S);G.st=S.station;
+      var T=null;
+      for(var i=1;i<12&&!T;i++){
+        var q=sysWhere(function(Q){return (Q.planets||[]).some(function(p){return p.type!=="gas";});},i,i+1);
+        if(q){var p=q.planets.filter(function(p){return p.type!=="gas";})[0];
+          T={sx:q.sx,sy:q.sy,pname:p.name,sysName:q.name,pi:p.idx};}
+      }
+      if(T){winTake(T);enterWinter();}
+    },
+    spa:function(){
+      var S=sysWhere(function(S){return !!solid(S);});if(S)goTo(S);
+      var p=solid(S);surf(p);
+      G.spa={day:1,days:SPA_DAYS,slot:0,done:0,took:{},talked:0,
+        pname:(G.surf&&G.surf.p&&G.surf.p.name)||"",
+        home:{sx:G.sx,sy:G.sy},seed:hashi(G.sx,G.sy,0x5A9)};
+      G.mode="spa";
+    },
     lights:function(){
       var at=regionOfTheme("lights"),R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);
       var S=getSystem(R.core.sx,R.core.sy);goTo(S);

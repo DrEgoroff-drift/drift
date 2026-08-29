@@ -1,7 +1,7 @@
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.270.0";
+const VER="0.271.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -15,6 +15,17 @@ const h01=(x,y,s)=>hashi(x,y,s)/4294967296;
 function rng(seed){let a=seed>>>0;return function(){a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);
   t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
 const pick=(arr,r)=>arr[Math.floor(r()*arr.length)];
+/* ── русское согласование числительных (полировочный круг) ──
+   По коду жило четыре самодельных склонения, и три врали: «1 прыжка»,
+   «1 станция получили», стаж «21 ЛЕТ». Одна честная функция на всех:
+   pl3(21,"прыжок","прыжка","прыжков") → «прыжок»; 11–14 — всегда много. */
+function pl3(n,one,few,many){
+  const m=Math.abs(n)%100,d=m%10;
+  if(m>=11&&m<=14)return many;
+  if(d===1)return one;
+  if(d>=2&&d<=4)return few;
+  return many;
+}
 function noise1(x,s){const i=Math.floor(x),f=x-i,t=f*f*(3-2*f);return lerp(h01(i,0,s),h01(i+1,0,s),t);}
 function fbm1(x,s,oct){let v=0,a=.5,f=1,n=0;oct=oct||5;
   for(let i=0;i<oct;i++){v+=a*noise1(x*f,s+i*131);n+=a;a*=.5;f*=2;}return v/n;}
@@ -109,7 +120,7 @@ function genDesc(r,sys){
   const tail=pick(DESC_TAIL,r);
   const bits=[mood[0].toUpperCase()+mood.slice(1)+" "+tail];
   const kinds=sys.planets.map(p=>p.T.ru).filter((v,i,a)=>a.indexOf(v)===i);
-  if(kinds.length)bits.push(kinds.length+" тип"+(kinds.length===1?"":(kinds.length<5?"а":"ов"))+" миров: "+kinds.join(", "));
+  if(kinds.length)bits.push(kinds.length+" "+pl3(kinds.length,"тип","типа","типов")+" миров: "+kinds.join(", "));
   if(sys.belt)bits.push("пояс богат "+sys.belt.res.map(k=>RES[k].ru.toLowerCase()).join(", "));
   if(sys.station)bits.push(sys.station.kind.toLowerCase());
   return bits.join(" · ");

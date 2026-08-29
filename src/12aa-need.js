@@ -133,7 +133,7 @@ function needBlock(){
   if(N||near.length){
     $body.appendChild(el("div","sec","НУЖДА · ПРИВОЗ ВДВОЕ, ОДИН РАЗ"));
     if(N)$body.appendChild(el("div","row","<div class='nm'><b>Здесь кончилось: "+N.ru+"</b><s>берут "+marketFor(G.sys)[N.k]+" кр за единицу — пока не привезут</s></div>"));
-    for(const n of near)$body.appendChild(el("div","row","<div class='nm'><b>"+n.sys.station.name+" · "+n.need.ru+"</b><s>"+n.d+" прыжк"+(n.d===1?"а":"ов")+" · сектор "+n.sys.sx+":"+n.sys.sy+"</s></div>"));
+    for(const n of near)$body.appendChild(el("div","row","<div class='nm'><b>"+n.sys.station.name+" · "+n.need.ru+"</b><s>"+n.d+" "+pl3(n.d,"прыжок","прыжка","прыжков")+" · сектор "+n.sys.sx+":"+n.sys.sy+"</s></div>"));
   }
   const O=orderOf(G.sys),H=orderHere();
   if(H){

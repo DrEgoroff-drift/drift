@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.271.0 — M274: the polish circle — three modes join the album, the language learns to count
+
+The polish pass went where no album had looked.
+
+**Road, winter and spa enter the stand.** Three whole modes had never been screenshot — only
+the fps probe visited them. They join `shots.html` through their own honest entries (`winTake`
+builds a real contract, spa assembles `enterSpa`'s fields, the road matches the probe). The
+frames themselves acquitted: the winter room's lamp cones and panel, the spa deck with railing
+shadows, the road's aurora field all hold the laws — and the M264 verb-buttons show everywhere
+(СДАТЬ СМЕНУ, СПАТЬ).
+
+**Two collisions caught on the new frames.** The «ЗВЕЗДА · 700» edge chip sat exactly on
+«МОЖНО ПРОСТО УЙТИ ИЛИ ПРЫГНУТЬ» — the chip inset now measures the live prompt DOM and stays
+above it. And on a Vega-squeezed receiver the scale read «НОЧНАЯ ПОЧТАСЛУХИ» — the night-mail
+label shortens to «почта» when the strip is under 300 px.
+
+**The language learns to count.** Four hand-rolled pluralisations, three of them wrong:
+«1 прыжка» (needs board and Vega's own line), «1 станция получили», a 21-year record reading
+«21 ЛЕТ». One honest `pl3()` in the core now serves jumps, stations, years, world types and
+drones — with the 11–14 and 21 cases under test. A typo sweep over every player-facing string
+(missing ё, double spaces, hyphen dialogue, homoglyphs, double dots) found nothing else — the
+texts were clean.
+
+---
 ## 0.270.0 — M273: the 10×10 audit closes — the boulders grow their lichen
 
 Second half of the ten-by-ten audit. The last law with an open, solo-closable gap was §10

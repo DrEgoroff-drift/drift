@@ -32,7 +32,7 @@ function wallFlash(){
   const E=G.exp;
   if(E&&E.phase===1){const total=Object.keys(E.coll||{}).reduce((a,k)=>a+E.coll[k],0);if(total>0)return "план по сбору перевыполнен: сдано "+total+" единиц. Так держать.";}
   const closed=Object.keys(G.need||{}).length;
-  if(closed)return "нужда закрыта: "+closed+" станц"+(closed===1?"ия":"ии")+" получили своё вовремя.";
+  if(closed)return "нужда закрыта: "+closed+" "+pl3(closed,"станция получила","станции получили","станций получили")+" своё вовремя.";
   return "план выполняется. Подробности — у стойки.";
 }
 /* лист: бумага, три клетки, кнопки-гвозди */

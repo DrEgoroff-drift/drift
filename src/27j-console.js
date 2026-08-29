@@ -41,7 +41,17 @@ function consoleTick(dt){
   /* ночная почта (M191): подпись на шкале зажигается сама, когда диапазон
      появляется. Шкала — это и есть всё уведомление, другого не будет */
   const nb=document.getElementById("rxNight");
-  if(nb)nb.style.display=(typeof ethOn==="function"&&ethOn())?"":"none";
+  if(nb){
+    nb.style.display=(typeof ethOn==="function"&&ethOn())?"":"none";
+    /* на зажатой пультом Веги шкале «ночная почта» въезжала в «слухи»
+       («НОЧНАЯ ПОЧТАСЛУХИ», полировочный круг): длинной подписи нужно
+       ~300 px полосы, уже — остаётся короткое «почта». Меряем сам DOM. */
+    if(nb.style.display!=="none"&&nb.parentElement){
+      const wide=nb.parentElement.getBoundingClientRect().width>300;
+      const want=wide?"ночная почта":"почта";
+      if(nb.textContent!==want)nb.textContent=want;
+    }
+  }
   if(RN&&line){band.textContent=RN.ru;line.textContent=RN.text;con.classList.remove("quiet");}
   else if(conFresh<=0&&line&&typeof radioTune==="function"){
     const f=(G.radioF==null?.05:G.radioF);

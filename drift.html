@@ -1353,7 +1353,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.270.0";
+const VER="0.271.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -1367,6 +1367,17 @@ const h01=(x,y,s)=>hashi(x,y,s)/4294967296;
 function rng(seed){let a=seed>>>0;return function(){a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);
   t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
 const pick=(arr,r)=>arr[Math.floor(r()*arr.length)];
+/* ── русское согласование числительных (полировочный круг) ──
+   По коду жило четыре самодельных склонения, и три врали: «1 прыжка»,
+   «1 станция получили», стаж «21 ЛЕТ». Одна честная функция на всех:
+   pl3(21,"прыжок","прыжка","прыжков") → «прыжок»; 11–14 — всегда много. */
+function pl3(n,one,few,many){
+  const m=Math.abs(n)%100,d=m%10;
+  if(m>=11&&m<=14)return many;
+  if(d===1)return one;
+  if(d>=2&&d<=4)return few;
+  return many;
+}
 function noise1(x,s){const i=Math.floor(x),f=x-i,t=f*f*(3-2*f);return lerp(h01(i,0,s),h01(i+1,0,s),t);}
 function fbm1(x,s,oct){let v=0,a=.5,f=1,n=0;oct=oct||5;
   for(let i=0;i<oct;i++){v+=a*noise1(x*f,s+i*131);n+=a;a*=.5;f*=2;}return v/n;}
@@ -1461,7 +1472,7 @@ function genDesc(r,sys){
   const tail=pick(DESC_TAIL,r);
   const bits=[mood[0].toUpperCase()+mood.slice(1)+" "+tail];
   const kinds=sys.planets.map(p=>p.T.ru).filter((v,i,a)=>a.indexOf(v)===i);
-  if(kinds.length)bits.push(kinds.length+" тип"+(kinds.length===1?"":(kinds.length<5?"а":"ов"))+" миров: "+kinds.join(", "));
+  if(kinds.length)bits.push(kinds.length+" "+pl3(kinds.length,"тип","типа","типов")+" миров: "+kinds.join(", "));
   if(sys.belt)bits.push("пояс богат "+sys.belt.res.map(k=>RES[k].ru.toLowerCase()).join(", "));
   if(sys.station)bits.push(sys.station.kind.toLowerCase());
   return bits.join(" · ");
@@ -7381,7 +7392,7 @@ function recordBlock(){
 function renderRecord(box){
   box.textContent="";
   const R=recordAll();
-  tableRow(box,"head","","ТРУДОВАЯ КНИЖКА · "+recordPilot().toUpperCase()+" · СТАЖ "+recordYears()+" "+(recordYears()===1?"ГОД":(recordYears()>=2&&recordYears()<=4?"ГОДА":"ЛЕТ"))+(R.grounded?" · ПЕНСИЯ":""));
+  tableRow(box,"head","","ТРУДОВАЯ КНИЖКА · "+recordPilot().toUpperCase()+" · СТАЖ "+recordYears()+" "+pl3(recordYears(),"ГОД","ГОДА","ЛЕТ")+(R.grounded?" · ПЕНСИЯ":""));
   const H=recordHonour();
   if(H.length)tableRow(box,"sec","","НА ДОСКЕ ПОЧЁТА: "+H.join(", "));
   if(!R.e.length){tableRow(box,"dim","","записей нет: их делают другие — станции, институт, люди");return;}
@@ -7763,7 +7774,7 @@ function wallFlash(){
   const E=G.exp;
   if(E&&E.phase===1){const total=Object.keys(E.coll||{}).reduce((a,k)=>a+E.coll[k],0);if(total>0)return "план по сбору перевыполнен: сдано "+total+" единиц. Так держать.";}
   const closed=Object.keys(G.need||{}).length;
-  if(closed)return "нужда закрыта: "+closed+" станц"+(closed===1?"ия":"ии")+" получили своё вовремя.";
+  if(closed)return "нужда закрыта: "+closed+" "+pl3(closed,"станция получила","станции получили","станций получили")+" своё вовремя.";
   return "план выполняется. Подробности — у стойки.";
 }
 /* лист: бумага, три клетки, кнопки-гвозди */
@@ -13545,7 +13556,7 @@ function vegaAmbientTick(){
   if(V.chartDay!==d&&typeof needsNear==="function"){
     V.chartDay=d;
     const L=needsNear(6);
-    if(L.length)peopleLine("Я карты читала: на "+L[0].sys.station.name+" нет "+L[0].need.ru+". Это "+L[0].d+" прыжк"+(L[0].d===1?"а":"ов")+".","Вега");
+    if(L.length)peopleLine("Я карты читала: на "+L[0].sys.station.name+" нет "+L[0].need.ru+". Это "+L[0].d+" "+pl3(L[0].d,"прыжок","прыжка","прыжков")+".","Вега");
   }
 }
 /* фигура дома: в жилой части, косынка; обиженная — спиной */
@@ -14217,7 +14228,7 @@ function needBlock(){
   if(N||near.length){
     $body.appendChild(el("div","sec","НУЖДА · ПРИВОЗ ВДВОЕ, ОДИН РАЗ"));
     if(N)$body.appendChild(el("div","row","<div class='nm'><b>Здесь кончилось: "+N.ru+"</b><s>берут "+marketFor(G.sys)[N.k]+" кр за единицу — пока не привезут</s></div>"));
-    for(const n of near)$body.appendChild(el("div","row","<div class='nm'><b>"+n.sys.station.name+" · "+n.need.ru+"</b><s>"+n.d+" прыжк"+(n.d===1?"а":"ов")+" · сектор "+n.sys.sx+":"+n.sys.sy+"</s></div>"));
+    for(const n of near)$body.appendChild(el("div","row","<div class='nm'><b>"+n.sys.station.name+" · "+n.need.ru+"</b><s>"+n.d+" "+pl3(n.d,"прыжок","прыжка","прыжков")+" · сектор "+n.sys.sx+":"+n.sys.sy+"</s></div>"));
   }
   const O=orderOf(G.sys),H=orderHere();
   if(H){
@@ -16683,7 +16694,7 @@ function renderFleetRuns(box){
        не имеет права падать из-за этого вместе со всем экраном */
     const res=RES[r.res]||{ru:String(r.res||"груз"),col:"#cfe3ea"};
     const row=tableRow(box,"","",r.from+" → «"+r.to+"» · "+r.drones.length+
-      (r.drones.length===1?" дрон":r.drones.length<5?" дрона":" дронов")+
+      " "+pl3(r.drones.length,"дрон","дрона","дронов")+
       " · в точке осталось "+r.pool+(r.down?(" · "+r.down+" в ремонте"):""));
     const em=row.querySelector("em");
     if(em){em.textContent=res.ru.toUpperCase();em.style.color=res.col;}
@@ -30829,7 +30840,18 @@ function drawSysHud(zx,zy,sh,sys,U){
      посреди сцены, наезжая друг на друга и на солнце. Теперь метка — плашка,
      прижатая к краю прямоугольника кадра (с отступами под приборы и пульт),
      а наложение снимается сдвигом вдоль кромки. */
-  const inset={x0:10,x1:W-10,y0:76,y1:H-(innerWidth<=760?150:120)};
+  /* нижняя кромка — над живой строкой подсказки, а не по константе: чип
+     «ЗВЕЗДА» ложился ровно на «МОЖНО ПРОСТО УЙТИ ИЛИ ПРЫГНУТЬ» (полировочный
+     круг). Меряем сам DOM (правило 27z: не пересчитывать CSS в JS). */
+  let inY1=H-(innerWidth<=760?150:120);
+  {
+    const pe=document.getElementById("prompt");
+    if(pe&&pe.textContent){
+      const r=pe.getBoundingClientRect();
+      if(r.height>0)inY1=Math.min(inY1,r.top/U-8);
+    }
+  }
+  const inset={x0:10,x1:W-10,y0:76,y1:inY1};
   const placed=[];
   ctx.font="8px ui-monospace,monospace";
   for(const m of marks){
@@ -58285,7 +58307,17 @@ function consoleTick(dt){
   /* ночная почта (M191): подпись на шкале зажигается сама, когда диапазон
      появляется. Шкала — это и есть всё уведомление, другого не будет */
   const nb=document.getElementById("rxNight");
-  if(nb)nb.style.display=(typeof ethOn==="function"&&ethOn())?"":"none";
+  if(nb){
+    nb.style.display=(typeof ethOn==="function"&&ethOn())?"":"none";
+    /* на зажатой пультом Веги шкале «ночная почта» въезжала в «слухи»
+       («НОЧНАЯ ПОЧТАСЛУХИ», полировочный круг): длинной подписи нужно
+       ~300 px полосы, уже — остаётся короткое «почта». Меряем сам DOM. */
+    if(nb.style.display!=="none"&&nb.parentElement){
+      const wide=nb.parentElement.getBoundingClientRect().width>300;
+      const want=wide?"ночная почта":"почта";
+      if(nb.textContent!==want)nb.textContent=want;
+    }
+  }
   if(RN&&line){band.textContent=RN.ru;line.textContent=RN.text;con.classList.remove("quiet");}
   else if(conFresh<=0&&line&&typeof radioTune==="function"){
     const f=(G.radioF==null?.05:G.radioF);
