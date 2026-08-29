@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 331 · символов верхнего уровня: 3021
+Файлов: 331 · символов верхнего уровня: 3024
 
 ## СИМВОЛЫ
 
@@ -69,8 +69,8 @@ albumAll                     src/25g-postcard.js:579
 albumOpen                    src/25g-postcard.js:628
 allyOf                       src/27b-ui-crew.js:8
 allyWork                     src/12a-crew.js:553
-ambK                         src/19c-light.js:68
-ambRGB                       src/19c-light.js:62
+ambK                         src/19c-light.js:94
+ambRGB                       src/19c-light.js:88
 AMMO_BATCH                   src/16b-missile.js:26
 AMMO_COST                    src/16b-missile.js:25
 AMMO_KEYS                    src/02-world.js:32
@@ -216,8 +216,8 @@ builtSpot                    src/21c-built.js:34
 bWall                        src/21aa-base-rooms.js:187
 bWorker                      src/21aa-base-rooms.js:322
 camBtnTick                   src/25g-postcard.js:617
-camOffset                    src/19c-light.js:108
-camStep                      src/19c-light.js:94
+camOffset                    src/19c-light.js:134
+camStep                      src/19c-light.js:120
 canPay                       src/21a-mode-base.js:51
 CANT_STYLE                   src/27d-ui-cantina.js:15
 cantBarkeep                  src/27d-ui-cantina-props.js:15
@@ -451,8 +451,8 @@ CUE_PAD                      src/27m-scroll-cue.js:25
 curTok                       src/09-audio.js:83
 CUT_RANGE                    src/24-mode-belt.js:183
 cvs                          src/08-state.js:2
-dayK                         src/19c-light.js:42
-dayKq                        src/19c-light.js:48
+dayK                         src/19c-light.js:68
+dayKq                        src/19c-light.js:74
 dbg                          src/28-loop.js:327
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
@@ -561,7 +561,7 @@ drawDigFauna                 src/23-mode-dig.js:298
 drawDigWorld                 src/23a-dig-draw.js:45
 drawDronesMap                src/12e-drone-flight.js:262
 drawDronesSystem             src/12e-drone-flight.js:185
-drawDustMotes                src/19-mode-landing.js:380
+drawDustMotes                src/19-mode-landing.js:384
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:207
 drawFactory                  src/20aa-poi-shapes.js:378
@@ -572,11 +572,11 @@ drawFoeBody                  src/24ab-raid-foe.js:10
 drawForeground               src/21b-surface-deco.js:248
 drawGlassHUD                 src/24-mode-belt.js:593
 drawGround                   src/19-mode-landing.js:109
-drawGroundCrumbs             src/19-mode-landing.js:202
-drawGroundGrass              src/19-mode-landing.js:215
+drawGroundCrumbs             src/19-mode-landing.js:206
+drawGroundGrass              src/19-mode-landing.js:219
 drawHomeBuilding             src/21c-built.js:134
 drawHomeIn                   src/29d-home-draw.js:9
-drawHomeOut                  src/21f-home-out.js:66
+drawHomeOut                  src/21f-home-out.js:73
 drawHomeRoom                 src/27e-ui-home.js:42
 drawHqRoom                   src/27f-hq-room.js:22
 drawHull                     src/03e-hull-draw.js:1
@@ -584,7 +584,7 @@ drawHullMarks                src/03b-hull-paint.js:173
 drawKitFigure                src/12x-suit.js:188
 drawLander                   src/19f-lander.js:52
 drawLandGear                 src/19f-lander.js:26
-drawLanding                  src/19-mode-landing.js:394
+drawLanding                  src/19-mode-landing.js:398
 drawLoreMarks                src/12q-lore.js:235
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
@@ -608,12 +608,12 @@ drawRaid                     src/24aa-raid-draw.js:14
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:107
 drawRoad                     src/27l-road-draw.js:87
-drawRocks                    src/19-mode-landing.js:248
+drawRocks                    src/19-mode-landing.js:252
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:163
-drawSkyBase                  src/19c-light.js:249
+drawSkyBase                  src/19c-light.js:275
 drawSkyBodies                src/19b-sky.js:66
-drawSkyLayer                 src/19-mode-landing.js:321
+drawSkyLayer                 src/19-mode-landing.js:325
 drawSpa                      src/29i-spa-draw.js:41
 drawSpaceDust                src/16a-space.js:154
 drawStarBody                 src/16a-space.js:293
@@ -626,11 +626,11 @@ drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:103
-drawSurface                  src/21e-surface-draw.js:598
+drawSurface                  src/21e-surface-draw.js:601
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:461
+drawSysHud                   src/17-mode-system.js:479
 drawSysNebula                src/16a-space.js:102
 drawSystem                   src/17-mode-system.js:285
 drawTemple                   src/20aa-poi-shapes.js:50
@@ -640,7 +640,7 @@ drawTiles                    src/18c-chunks.js:125
 drawTrail                    src/16-flight.js:338
 drawWallPaper                src/11ae-concert.js:39
 drawWear                     src/12s-wear.js:99
-drawWeather                  src/19d-weather.js:92
+drawWeather                  src/19d-weather.js:96
 drawWinter                   src/29g-winter-draw.js:334
 drawWorld                    src/28-loop.js:155
 drawWreck                    src/20aa-poi-shapes.js:8
@@ -901,7 +901,7 @@ glowTier                     src/11i-glow.js:122
 goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
 gotoSector                   src/11a-quests.js:68
-gradePass                    src/19c-light.js:211
+gradePass                    src/19c-light.js:237
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
 GREEN_SP                     src/21g-greenhouse.js:68
@@ -935,9 +935,9 @@ grokTake                     src/12tb-grok.js:100
 grokTeach                    src/12tb-grok.js:144
 grokTick                     src/12tb-grok.js:75
 grokWant                     src/12tb-grok.js:41
-GROUND_BAKING                src/19-mode-landing.js:200
+GROUND_BAKING                src/19-mode-landing.js:204
 groundAt                     src/07-planet.js:540
-groundShadow                 src/19-mode-landing.js:311
+groundShadow                 src/19-mode-landing.js:315
 GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
 groveDepthAt                 src/11j-grove.js:30
@@ -968,8 +968,8 @@ hashi                        src/01-core.js:9
 hashi3                       src/24-mode-belt.js:2
 hasSave                      src/14a-cloud.js:56
 hazardBand                   src/25-cockpit.js:166
-hazeBand                     src/19c-light.js:144
-hazeFar                      src/19c-light.js:120
+hazeBand                     src/19c-light.js:170
+hazeFar                      src/19c-light.js:146
 HEARD_MAX                    src/12x-parrot.js:23
 heardAdd                     src/12x-parrot.js:42
 heardAll                     src/12x-parrot.js:26
@@ -1034,7 +1034,7 @@ holNow                       src/11am-holiday.js:61
 holTree                      src/11am-holiday.js:127
 holTreeUp                    src/11am-holiday.js:75
 HOME_HIT                     src/27e-ui-home.js:33
-HOME_MAN                     src/21f-home-out.js:48
+HOME_MAN                     src/21f-home-out.js:55
 HOME_MATE                    src/12j-home.js:79
 HOME_ROOM_H                  src/27e-ui-home.js:14
 HOME_STEP_W                  src/27e-ui-home.js:20
@@ -1045,7 +1045,7 @@ homeBeaconCost               src/12j-home.js:170
 homeCanRebuild               src/12j-home.js:226
 homeCanRevive                src/12j-home.js:146
 homeCrewFigure               src/27e-ui-home.js:680
-homeDoorX                    src/21f-home-out.js:233
+homeDoorX                    src/21f-home-out.js:250
 homeFigure                   src/27e-ui-home.js:613
 homeHas                      src/12j-home.js:24
 homeHereP                    src/21f-home-out.js:26
@@ -1057,7 +1057,7 @@ homeMateTake                 src/12j-home.js:92
 homeMoraleMul                src/12j-home.js:213
 homeNext                     src/12j-home.js:29
 homeOrderBonus               src/12j-home.js:210
-homeOutPal                   src/21f-home-out.js:50
+homeOutPal                   src/21f-home-out.js:57
 homePlanet                   src/21f-home-out.js:18
 homeProgress                 src/12j-home.js:132
 homeRebuild                  src/12j-home.js:227
@@ -1346,7 +1346,7 @@ lightsDrawReveal             src/11g-lights.js:137
 lightsEnter                  src/11g-lights.js:172
 lightsEntryX                 src/11g-lights.js:83
 lightsGroundLine             src/11g-lights.js:90
-lightShafts                  src/19c-light.js:176
+lightShafts                  src/19c-light.js:202
 lightsIsCore                 src/11g-lights.js:45
 lightsNight                  src/11g-lights.js:68
 lightsOpen                   src/11g-lights.js:79
@@ -1354,7 +1354,7 @@ lightsPeriod                 src/11g-lights.js:34
 lightsShut                   src/11g-lights.js:73
 lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
-litRGB                       src/19c-light.js:78
+litRGB                       src/19c-light.js:104
 loadGame                     src/14a-cloud.js:52
 LOCAL                        src/11b-speech.js:99
 LOG_MAX                      src/11-log.js:11
@@ -2469,27 +2469,27 @@ SKY_OFF                      src/11ak-skywatch.js:121
 SKY_QUIET                    src/19b-sky.js:14
 SKY_WORLD_KINDS              src/19b-sky.js:101
 skyAll                       src/11ak-skywatch.js:34
-skyAurora                    src/19b-sky.js:374
+skyAurora                    src/19b-sky.js:387
 skyBlock                     src/11ak-skywatch.js:234
 skyCanReport                 src/11ak-skywatch.js:202
-skyComet                     src/19b-sky.js:431
+skyComet                     src/19b-sky.js:444
 skyCometName                 src/11ak-skywatch.js:198
-skyDay                       src/19c-light.js:52
+skyDay                       src/19c-light.js:78
 skyDrop                      src/11ak-skywatch.js:146
-skyField                     src/19b-sky.js:474
+skyField                     src/19b-sky.js:487
 skyFind                      src/11ak-skywatch.js:47
-skyGalaxy                    src/19b-sky.js:311
+skyGalaxy                    src/19b-sky.js:324
 skyGiant                     src/19b-sky.js:187
-skyGrad                      src/19-mode-landing.js:299
-skyHole                      src/19b-sky.js:334
-skyMoon                      src/19b-sky.js:400
+skyGrad                      src/19-mode-landing.js:303
+skyHole                      src/19b-sky.js:347
+skyMoon                      src/19b-sky.js:413
 skyNameComet                 src/11ak-skywatch.js:184
-skyNeb                       src/19b-sky.js:421
+skyNeb                       src/19b-sky.js:434
 skyNebula                    src/19b-sky.js:49
 skyOfferHere                 src/11ak-skywatch.js:122
 skyOn                        src/11ak-skywatch.js:59
 skyPick                      src/11ak-skywatch.js:81
-skyPulsar                    src/19b-sky.js:452
+skyPulsar                    src/19b-sky.js:465
 skyReport                    src/11ak-skywatch.js:206
 skyScene                     src/19b-sky.js:15
 skyTake                      src/11ak-skywatch.js:136
@@ -2565,7 +2565,7 @@ ST_TYPES                     src/06-galaxy.js:8
 STAR_CLASS                   src/02-world.js:94
 STAR_COLS                    src/16-flight.js:2
 starAt                       src/06-galaxy.js:2
-starRGB                      src/19c-light.js:23
+starRGB                      src/19c-light.js:49
 start                        src/15-input.js:455
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
@@ -2656,13 +2656,16 @@ suite                        tests/90-harness.js:15
 suitFailure                  src/23-mode-dig.js:114
 suitHit                      src/23-mode-dig.js:107
 suitMax                      src/12x-suit.js:78
-SUN_DIR                      src/19c-light.js:11
-sunSpot                      src/19c-light.js:166
-SURF_BASE                    src/21e-surface-draw.js:589
-SURF_HOR                     src/19c-light.js:165
+SUN_DIR                      src/19c-light.js:22
+SUN_DIR_FLAT                 src/19c-light.js:23
+sunAzQ                       src/19c-light.js:26
+sunDirSet                    src/19c-light.js:30
+sunSpot                      src/19c-light.js:192
+SURF_BASE                    src/21e-surface-draw.js:592
+SURF_HOR                     src/19c-light.js:191
 surfaceHint                  src/21e-surface-draw.js:4
 surfNight                    src/06a-celest.js:43
-surfScale                    src/21e-surface-draw.js:597
+surfScale                    src/21e-surface-draw.js:600
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -2979,9 +2982,9 @@ winBad                       src/29f-winter.js:72
 winBlock                     src/29f-winter.js:251
 winBody                      src/29g-winter-draw.js:97
 winCap                       src/29f-winter.js:65
-WIND                         src/19c-light.js:15
+WIND                         src/19c-light.js:41
 winDiaryToday                src/29f-winter.js:174
-windOf                       src/19c-light.js:16
+windOf                       src/19c-light.js:42
 winDraw_                     src/29f-winter.js:69
 winEnd                       src/29f-winter.js:191
 winFix                       src/29f-winter.js:147
@@ -3447,13 +3450,13 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17b-finds.js · 15 КБ
   · находки в полёте:1
 
-## src/17c-system-draw.js · 18 КБ
+## src/17c-system-draw.js · 19 КБ
   · система: кольца, пояс и станция в кадре:1
 
 ## src/17d-house-shapes.js · 4 КБ
   · дома как язык форм:1
 
-## src/17-mode-system.js · 34 КБ
+## src/17-mode-system.js · 35 КБ
   · режим: система:1
 
 ## src/18a-material.js · 21 КБ
@@ -3473,10 +3476,10 @@ zooTick                      src/11ad-zoo.js:41
   · сбор летучих газов: заход в атмосферу гиганта:1
   · небо гиганта: полосы, а не лепёшки:71
 
-## src/19b-sky.js · 28 КБ
+## src/19b-sky.js · 29 КБ
   · небо:1
 
-## src/19c-light.js · 20 КБ
+## src/19c-light.js · 22 КБ
   · свет и воздух:1
 
 ## src/19d-weather.js · 13 КБ
@@ -3488,7 +3491,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19f-lander.js · 21 КБ
   · посадочный корабль:1
 
-## src/19-mode-landing.js · 26 КБ
+## src/19-mode-landing.js · 27 КБ
   · посадка:1
 
 ## src/20aa-poi-shapes.js · 30 КБ
@@ -3554,10 +3557,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 43 КБ
+## src/21e-surface-draw.js · 44 КБ
   · поверхность: подсказка, HUD и кадр:1
 
-## src/21f-home-out.js · 13 КБ
+## src/21f-home-out.js · 14 КБ
   · дом снаружи:1
 
 ## src/21g-greenhouse.js · 10 КБ
@@ -3829,8 +3832,10 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91p-lore.js · 10 КБ
   · отчёт «Долгого Хода»: сто кусков:1
 
-## tests/91q-planet.js · 16 КБ
+## tests/91q-planet.js · 19 КБ
   · планета за полный набор:1
+  · M242: свет идёт оттуда, где нарисовано солнце:261
+  · M242: дом не стоит на посадочной площадке:293
 
 ## tests/91r-hunter.js · 3 КБ
   · охотник: приходит только за долгом:1

@@ -1351,7 +1351,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.237.0";
+const VER="0.238.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -29620,7 +29620,11 @@ function stRing(V,rx,ry){          /* вращающийся тор с жилы�
   ctx.restore();
 }
 function drawStation(x,y,Z){
-  const s=clamp(Z,.4,1.5),S=G.sys.station,V=stationViz(S),ty=S.stype||"trade";
+  /* ── станция крупнее корабля, потому что корабль в неё заходит (M242) ──
+     На увеличении торговый узел с шестью модулями был 170 px, а корабль рядом
+     140: внутрь такой станции лендер не влезет, и масштаб мира разваливался.
+     Полтора — не «чтобы красивее», а чтобы отношение размеров не врало. */
+  const s=clamp(Z,.4,1.5)*1.7,S=G.sys.station,V=stationViz(S),ty=S.stype||"trade";
   ctx.save();ctx.translate(x,y);ctx.scale(s,s);
   /* модули идут первым слоем: они висят на штангах вокруг ядра, и ядро типа
      должно перекрывать их, а не наоборот (17a-station-mod) */
@@ -29803,8 +29807,10 @@ function drawStation(x,y,Z){
   }
   if(typeof houseMark==="function"&&typeof houseOf==="function")houseMark(houseOf(G.sys),V);   /* знак дома (17d) */
   ctx.restore();
+  /* подпись уходит НИЖЕ корпуса: сорок пикселей — это внутри станции, и имя
+     читалось поверх её же переборок (M242) */
   ctx.fillStyle="rgba(242,178,92,.6)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText(S.name.toUpperCase(),x,y+40);
+  ctx.fillText(S.name.toUpperCase(),x,y+42*s+12);
 }
 
 /* ══════════════ дома как язык форм ══════════════
@@ -30172,7 +30178,25 @@ function drawSystem(){
   const ox=zx(0),oy=zy(0);
   ctx.lineWidth=1;
   /* орбиты гаснут с расстоянием: ровные кольца одной яркости делали систему чертежом (G10) */
-  for(const p of sys.planets){ctx.strokeStyle="rgba(120,190,210,"+(.17*clamp(1-p.orbit*Z/(W*1.6),.3,1)).toFixed(3)+")";ctx.beginPath();ctx.arc(ox,oy,p.orbit*Z,0,TAU);ctx.stroke();}
+  /* ── орбита ведёт к своему телу (M242) ──
+     Ровные яркие кольца по всему кадру при том, что планета — точка в три
+     пикселя или вовсе за краем: автор сказал «орбит много, планет мало».
+     Кольцо теперь хвост кометы: еле видное полное кольцо держит форму
+     системы, а яркая дуга догорает ровно у планеты — и каждая линия
+     показывает, где её тело. */
+  for(const p of sys.planets){
+    const rr=p.orbit*Z, fade=clamp(1-p.orbit*Z/(W*1.6),.3,1);
+    ctx.strokeStyle="rgba(120,190,210,"+(.05*fade).toFixed(3)+")";
+    ctx.beginPath();ctx.arc(ox,oy,rr,0,TAU);ctx.stroke();
+    const ang=Math.atan2(p.y,p.x);
+    const SEG=6, span=1.15;
+    for(let i=0;i<SEG;i++){
+      const a0=ang-span*(1-i/SEG), a1=ang-span*(1-(i+1)/SEG);
+      const al=.05+.22*((i+1)/SEG)*(i+1)/SEG;
+      ctx.strokeStyle="rgba(120,190,210,"+(al*fade).toFixed(3)+")";
+      ctx.beginPath();ctx.arc(ox,oy,rr,a0,a1);ctx.stroke();
+    }
+  }
   if(sys.station){ctx.strokeStyle="rgba(242,178,92,.13)";
     ctx.beginPath();ctx.arc(ox,oy,sys.station.orbit*Z,0,TAU);ctx.stroke();}
   if(sys.belt)drawBeltRing(ox,oy,sys.belt,Z);
@@ -31988,6 +32012,19 @@ function skyGiant(p,e,x,y,dim,ringy){
   const airF=[0,1,2].map(i=>lerp(p.T.sky[0][i],p.T.sky[1][i],nite)|0);
   lit=lit.map((v,i)=>clamp(Math.max(v,airF[i]+42),0,255)|0);
   shd=shd.map((v,i)=>clamp(Math.max(v,airF[i]+12),0,255)|0);
+  /* ── ШЕСТАЯ переделка: тело должно ОТЛИЧАТЬСЯ от воздуха (M242) ──
+     Пол «не темнее неба» на светлом дневном небе означал «ровно как небо»:
+     диск совпадал с воздухом и от гиганта оставалось одно кольцо, висящее в
+     пустоте (скрин автора). Требование теперь не «не темнее», а «отличается
+     не меньше чем на столько-то» — в ту сторону, куда тело и так шло. */
+  const airM=(airF[0]+airF[1]+airF[2])/3;
+  const sep=(c,mn)=>{
+    const d=(c[0]+c[1]+c[2])/3-airM;
+    if(Math.abs(d)>=mn)return c;
+    const k=(d>=0?1:-1)*(mn-Math.abs(d));
+    return c.map(v=>clamp(v+k,0,255)|0);
+  };
+  lit=sep(lit,34);shd=sep(shd,18);
   const SS=(typeof sunSpot==="function")?sunSpot(p):{x:x-R,y:y-R};
   let ux=SS.x-x, uy=SS.y-y;
   const ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;
@@ -32269,7 +32306,33 @@ function skyField(p,e,x,y,dim){
    направленный свет звезды своего цвета;
    цветной подсвет от неба в тенях (главный приём — без него тень мёртвая);
    воздушная перспектива: далёкое уводится к цвету неба, а не просто гасится. */
-const SUN_DIR={x:.55,y:-.83};                 // солнце в drawSkyLayer справа сверху
+/* ── солнце светит оттуда, где оно нарисовано (M242) ──
+   Здесь годами стояла КОНСТАНТА «справа сверху», и по ней освещались рельеф,
+   облака, посёлок, дом и все тени. А диск в небе рисуется по настоящей высоте
+   и азимуту (`sunSpot`→`celSun`) и ходит по небу. То есть в игре было два
+   солнца: одно видно, другое светит. На закате это видно сразу — светило у
+   левой кромки, а склоны и облака подсвечены справа.
+   Теперь вектор пересчитывается на кадр из того же `celSun`, что и диск.
+   Знак по горизонтали обратный азимуту: `sunSpot` кладёт диск в
+   `W*(.5-az*.40)`, значит при az>0 солнце ЛЕВЕЕ центра, и свет идёт слева.
+   По вертикали к высоте добавлена четверть: у самого горизонта свет почти
+   горизонтальный, но не строго — иначе плоская земля разом гаснет. */
+const SUN_DIR={x:.55,y:-.83};
+const SUN_DIR_FLAT={x:.55,y:-.83};            /* запасной: режимы без своего неба */
+/* сторона солнца, огрублённая до восьми ступеней: этим ключуются ломти
+   земли — печь их на каждый градус азимута никто не будет */
+function sunAzQ(p){
+  if(!p||typeof celSun!=="function")return 0;
+  return Math.round(celSun(p).az*4);
+}
+function sunDirSet(p){
+  if(!p||typeof celSun!=="function"){SUN_DIR.x=SUN_DIR_FLAT.x;SUN_DIR.y=SUN_DIR_FLAT.y;return SUN_DIR;}
+  const s=celSun(p);
+  const vx=-s.az, vy=-(.25+clamp(s.alt,-.2,1)*1.1);
+  const L=Math.hypot(vx,vy)||1;
+  SUN_DIR.x=vx/L;SUN_DIR.y=vy/L;
+  return SUN_DIR;
+}
 /* ветер живёт в общей переменной: его читают трава в drawGround, пыль и
    растения, и все они должны качаться в одну сторону — рассинхрон читается
    как брак быстрее, чем полное отсутствие движения */
@@ -32631,7 +32694,11 @@ function weatherName(p){
 /* ── отрисовка ──
    Частицы идут в экранных координатах со сносом от камеры: в мировых они
    выглядели бы приклеенными к земле, а осадки должны идти мимо. */
-function drawWeather(p,camx,camy){
+/* layer: "far" — за миром, "near" — перед ним, пусто — всё разом (M242).
+   Дождь шёл одним слоем поверх ВСЕГО, включая корабль и подписи, отчего
+   корабль казался прозрачным. Дальние капли теперь падают до мира, ближние
+   после: у осадков появляется глубина, а силуэты остаются целыми. */
+function drawWeather(p,camx,camy,layer){
   const w=weatherOf(p);
   if(!w.kind)return;
   const k=weatherPower(p);
@@ -32679,6 +32746,8 @@ function drawWeather(p,camx,camy){
     /* две глубины: ближние капли крупнее, быстрее и ярче, дальние — тонкая
        сетка. Одним слоем дождь читался помехами на стекле (G7) */
     const near=r2>.74;
+    if(layer==="far"&&near)continue;
+    if(layer==="near"&&!near)continue;
     /* Скорость своя у КАЖДОЙ капли, а не у слоя. Слоя было два, и это уже
        давало глубину, но внутри ближнего все капли падали ровно в 1.75 — и
        слой читался ползущей текстурой, а не водой: глаз ловит одинаковый
@@ -33497,7 +33566,11 @@ function drawGround(tr,camx,camy,fill,line,pal){
     /* час суток входит в ключ (M232): свет в ломте дневной или ночной, и
        ломоть, испечённый утром, не должен пережить полдень. Квантование в
        шесть ступеней держит перепечку редкой */
-    tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR+"|d"+(tr.p?dayKq(tr.p):0),top,ch);
+    /* в ключ ломтя входит и СТОРОНА солнца (M242): свет теперь идёт оттуда,
+       где диск, а ломоть печётся один раз — без азимута в ключе земля весь
+       день держала бы утреннюю подсветку склонов */
+    tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR+
+      "|d"+(tr.p?dayKq(tr.p):0)+"|a"+(tr.p?sunAzQ(tr.p):0),top,ch);
     drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>{
       GROUND_BAKING=true;
       /* валуны неподвижны и сложены из той же породы (два прохода материала
@@ -33769,6 +33842,7 @@ function drawDustMotes(camx,camy,p){
 function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
   tr.mat=planetMat(p);tr.p=p;
+  sunDirSet(p);            /* свет идёт оттуда, где нарисован диск (M242) */
   WIND=windOf(p);
   drawSkyBase(p);
   if(p.T.atm==="отсутствует")drawStars(L.x*.1,0,1);
@@ -33800,6 +33874,8 @@ function drawLanding(){
      которой шахту лечили в M219. Дымка живёт там, где земля встречается с
      воздухом: у кромки грунта, а если та ушла ниже кадра — у нижней кромки. */
   hazeBand(p,clamp(groundAt(tr,L.x)-camy,H*.30,H*1.02),H*.20);
+  /* дальние капли — за грядой и за кораблём, ближние поверх (M242) */
+  drawWeather(p,camx,camy,"far");
   drawGround(tr,camx,camy,"rgb("+p.T.pal[2].map(v=>Math.round(v*.6)).join(",")+")",
     "rgba(180,230,240,.35)",p.T.pal);
   drawPOI(tr,camx,camy,p);
@@ -33819,7 +33895,7 @@ function drawLanding(){
   /* пыль из-под струи на подходе: чем ниже, тем гуще. Без неё грунт до самого
      касания оставался нетронутым, и посадка не чувствовалась тяжёлой */
   landingDust(L,tr,camx,camy);
-  drawWeather(p,camx,camy);
+  drawWeather(p,camx,camy,"near");
   lightShafts(p);
   gradePass(p);
 }
@@ -40200,6 +40276,7 @@ function drawSurfaceHud(camx,camy,K){
 function drawSurfaceWorld(){
   const S=G.surf,tr=S.tr,p=S.p;
   tr.mat=planetMat(p);tr.p=p;
+  sunDirSet(p);            /* свет идёт оттуда, где нарисован диск (M242) */
   drawSkyBase(p);
   /* звёзды — до небесных тел: нарисованные после, они просвечивают сквозь
      диск гиганта и убивают его объём */
@@ -40299,6 +40376,8 @@ function drawSurfaceWorld(){
   S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
   drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.farH[1],N:tr.N,step:tr.step*2.4*stpK},wx0,wy0,hazeFar(p,.32),null));
   hazeBand(p,H*(SURF_HOR-.06),H*.22);
+  /* дальние капли — ДО мира: они падают за грядой и за кораблём (M242) */
+  drawWeather(p,camx,camy,"far");
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
     "rgba(200,240,246,.4)",p.T.pal);
   /* нижняя треть уходит в тень неба: ближний грунт темнее дальнего, и по
@@ -40555,7 +40634,7 @@ function drawSurfaceWorld(){
   /* погода поверх мира, но под лучами и свёрткой: осадки идут перед игроком,
      а свет и цветокоррекция ложатся уже на всё вместе */
   drawForeground(tr,camx,camy,p);
-  drawWeather(p,camx,camy);
+  drawWeather(p,camx,camy,"near");
   /* ── ночь (хвост G12) ──
      Кадр уходит в тень неба, и единственный свет — фонарь скафандра: спрайт
      один на игру, кладётся одним drawImage, чуть впереди по взгляду */
@@ -40746,14 +40825,21 @@ function homeSpotX(p,tr){
   const W2=(tr&&tr.W)||4000;
   const r=rng(hashi(G.sx,G.sy,0x40E7));
   let x=420+r()*Math.max(240,W2-900);
-  if(Math.abs(x-tr.padX)<520)x+=x<tr.padX?-520:520;   /* не на посадочной площадке */
+  /* не на посадочной площадке: лендер садится сюда же и закрывал полдома
+     собой (скрин автора, M242). Разъезд стал шире, и — главное — проверяется
+     ПОСЛЕ зажима в границы мира: раньше зажим мог вернуть дом обратно на пад */
+  const APART=760;
+  if(Math.abs(x-tr.padX)<APART)x+=x<tr.padX?-APART:APART;
   /* и не вплотную к посёлку: оба места считаются своими зёрнами и однажды
      сошлись двор во двор — дом стоял прямо в чужой улице (самокритика M170) */
   if(typeof settleSpotX==="function"&&typeof settleCanLive==="function"&&settleCanLive(p)){
     const s=settleSpotX(p,tr);
     if(s!=null&&Math.abs(x-s)<620)x=s+(x<s?-620:620);
   }
-  return clamp(x,220,W2-220);
+  x=clamp(x,220,W2-220);
+  if(Math.abs(x-tr.padX)<APART)
+    x=clamp(tr.padX+(tr.padX>W2*.5?-APART:APART),220,W2-220);
+  return x;
 }
 const HOME_MAN=17;                                    /* тот же человек, что везде */
 /* палитра дома: местный камень и дерево, но теплее — это жильё, а не порода */
@@ -40848,12 +40934,22 @@ function drawHomeOut(tr,camx,camy,p){
   sdWallTex(sx-w/2,gy-wallH,w,wallH,"log",0x40E9,pal.wall);
   sdRoof(sx-w/2,gy-wallH,w,roofH,"plank",{roof:pal.roof,
     roofLit:sdMix(pal.roof,[236,214,170],.34),roofDark:sdMix(pal.roof,[12,16,24],.4)},0x40EA);
-  /* труба и дым: дом живой, пока в нём кто-то есть */
+  /* ── труба и дым: дом живой, пока в нём кто-то есть ──
+     Труба стояла от КОНЬКА (`gy-wallH-roofH`), а сидит она на скате, и на её
+     собственном x скат ниже конька — на двускатной крыше это всегда промах
+     вверх, и труба висела в воздухе отдельным кубиком (скрин автора, M242).
+     Считаем высоту ската в точке трубы и сажаем её туда, с посадкой в кровлю. */
+  const chX=sx+w*.24, chW=M*.34, chH=M*.6;
+  const roofY=gy-wallH-roofH*(1-Math.min(1,Math.abs(chX-sx)/(w*.5)));
+  const chTop=roofY-chH+3;                    /* +3: труба входит В кровлю, а не стоит на ней */
   ctx.fillStyle=sdRGB(pal.stone);
-  ctx.fillRect(sx+w*.24,gy-wallH-roofH-M*.28,M*.34,M*.6);
-  ctx.fillStyle="rgba(255,246,220,.16)";ctx.fillRect(sx+w*.24,gy-wallH-roofH-M*.28,M*.17,M*.6);
+  ctx.fillRect(chX,chTop,chW,chH);
+  ctx.fillStyle="rgba(255,246,220,.16)";ctx.fillRect(chX,chTop,chW*.5,chH);
+  /* оголовок: без него труба — просто кирпич, а с ним она труба */
+  ctx.fillStyle=sdRGB(sdMix(pal.stone,[0,0,0],.25));
+  ctx.fillRect(chX-1.5,chTop-2,chW+3,2.5);
   if(typeof sdSmoke==="function")
-    sdSmoke(sx+w*.24+M*.17,gy-wallH-roofH-M*.34,wind,.7,3,9);
+    sdSmoke(chX+chW*.5,chTop-3,wind,.7,3,9);
   /* окно: главный признак жилья — в нём свет */
   const ww=w*.26,wh=wallH*.30,wx=sx+w*.10,wy=gy-wallH*.70;
   sdWindow(wx,wy,ww,wh,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},

@@ -36,14 +36,21 @@ function homeSpotX(p,tr){
   const W2=(tr&&tr.W)||4000;
   const r=rng(hashi(G.sx,G.sy,0x40E7));
   let x=420+r()*Math.max(240,W2-900);
-  if(Math.abs(x-tr.padX)<520)x+=x<tr.padX?-520:520;   /* не на посадочной площадке */
+  /* не на посадочной площадке: лендер садится сюда же и закрывал полдома
+     собой (скрин автора, M242). Разъезд стал шире, и — главное — проверяется
+     ПОСЛЕ зажима в границы мира: раньше зажим мог вернуть дом обратно на пад */
+  const APART=760;
+  if(Math.abs(x-tr.padX)<APART)x+=x<tr.padX?-APART:APART;
   /* и не вплотную к посёлку: оба места считаются своими зёрнами и однажды
      сошлись двор во двор — дом стоял прямо в чужой улице (самокритика M170) */
   if(typeof settleSpotX==="function"&&typeof settleCanLive==="function"&&settleCanLive(p)){
     const s=settleSpotX(p,tr);
     if(s!=null&&Math.abs(x-s)<620)x=s+(x<s?-620:620);
   }
-  return clamp(x,220,W2-220);
+  x=clamp(x,220,W2-220);
+  if(Math.abs(x-tr.padX)<APART)
+    x=clamp(tr.padX+(tr.padX>W2*.5?-APART:APART),220,W2-220);
+  return x;
 }
 const HOME_MAN=17;                                    /* тот же человек, что везде */
 /* палитра дома: местный камень и дерево, но теплее — это жильё, а не порода */
@@ -138,12 +145,22 @@ function drawHomeOut(tr,camx,camy,p){
   sdWallTex(sx-w/2,gy-wallH,w,wallH,"log",0x40E9,pal.wall);
   sdRoof(sx-w/2,gy-wallH,w,roofH,"plank",{roof:pal.roof,
     roofLit:sdMix(pal.roof,[236,214,170],.34),roofDark:sdMix(pal.roof,[12,16,24],.4)},0x40EA);
-  /* труба и дым: дом живой, пока в нём кто-то есть */
+  /* ── труба и дым: дом живой, пока в нём кто-то есть ──
+     Труба стояла от КОНЬКА (`gy-wallH-roofH`), а сидит она на скате, и на её
+     собственном x скат ниже конька — на двускатной крыше это всегда промах
+     вверх, и труба висела в воздухе отдельным кубиком (скрин автора, M242).
+     Считаем высоту ската в точке трубы и сажаем её туда, с посадкой в кровлю. */
+  const chX=sx+w*.24, chW=M*.34, chH=M*.6;
+  const roofY=gy-wallH-roofH*(1-Math.min(1,Math.abs(chX-sx)/(w*.5)));
+  const chTop=roofY-chH+3;                    /* +3: труба входит В кровлю, а не стоит на ней */
   ctx.fillStyle=sdRGB(pal.stone);
-  ctx.fillRect(sx+w*.24,gy-wallH-roofH-M*.28,M*.34,M*.6);
-  ctx.fillStyle="rgba(255,246,220,.16)";ctx.fillRect(sx+w*.24,gy-wallH-roofH-M*.28,M*.17,M*.6);
+  ctx.fillRect(chX,chTop,chW,chH);
+  ctx.fillStyle="rgba(255,246,220,.16)";ctx.fillRect(chX,chTop,chW*.5,chH);
+  /* оголовок: без него труба — просто кирпич, а с ним она труба */
+  ctx.fillStyle=sdRGB(sdMix(pal.stone,[0,0,0],.25));
+  ctx.fillRect(chX-1.5,chTop-2,chW+3,2.5);
   if(typeof sdSmoke==="function")
-    sdSmoke(sx+w*.24+M*.17,gy-wallH-roofH-M*.34,wind,.7,3,9);
+    sdSmoke(chX+chW*.5,chTop-3,wind,.7,3,9);
   /* окно: главный признак жилья — в нём свет */
   const ww=w*.26,wh=wallH*.30,wx=sx+w*.10,wy=gy-wallH*.70;
   sdWindow(wx,wy,ww,wh,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},

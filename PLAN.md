@@ -57,6 +57,28 @@ in `28y-look` and is shared with the fuzzer — one list, or the two drift apart
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
+## M242 — the drawing stops contradicting the world (2026-08-28) — CLOSED (0.238.0)
+
+Stage one of the graphics work, and deliberately not about taste: seven places where the picture
+said one thing and the model another. Two suns (the disc on real mechanics, the light on a
+constant), a ring with no planet in it, a chimney above its own roof, orbits leading the eye into
+nothing, the lander parked on the house, rain in front of the ship, a station the size of the ship
+that docks inside it. All seven closed in 0.238.0 — see PATCHNOTES for what each one was.
+
+Rules worth keeping:
+
+- **If the model computes it, the drawing must read it.** A constant standing in for something the
+  world already simulates is a lie that grows with the game: `SUN_DIR` was written when there was
+  no day cycle, and it survived three milestones of celestial mechanics.
+- **A floor is not a difference.** "No darker than the air" made the sky body EQUAL to the air on a
+  bright day. When something must be legible against a background, the requirement is a distance,
+  in whichever direction it was already going.
+- **Anything baked carries its light in its key.** The ground chunk knew the hour but not the
+  side; the moment light acquired a direction, the key needed the direction too.
+- **A thing sits where its own surface is.** The chimney was placed from the ridge because the
+  ridge is one number and the slope is a formula. One line of arithmetic is cheaper than a
+  screenshot from the author.
+
 1. **Silhouette** — recognisable at 20 px, not a rectangle, not symmetrical.
 2. **Break-up** — three to seven parts of different sizes; no part over 40% of the area.
 3. **Material** — every part has grain. A flat fill is an unfinished job (law 4).

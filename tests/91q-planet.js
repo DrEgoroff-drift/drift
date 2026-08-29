@@ -257,3 +257,59 @@ TEST_SUITES.push(()=>suite("интерфейс: растёт вместе с о�
   near(parseFloat(css),UIK,.01,"и это та же мерка, что в коде");
   near(UIK,uiScale(W,H),.001,"а сама мерка посчитана по нынешнему окну");
 }));
+
+/* ══════════════ M242: свет идёт оттуда, где нарисовано солнце ══════════════
+   В игре было два солнца: диск ходил по небу по механике (`sunSpot`→`celSun`),
+   а рельеф, облака, посёлок и тени освещались КОНСТАНТОЙ «справа сверху».
+   Проверяем договор: сторона диска и сторона света совпадают в любой час. */
+TEST_SUITES.push(()=>suite("солнце светит оттуда, где нарисовано",()=>{
+  resetWorld();
+  const p=landOnTestPlanet();
+  let checked=0,bad=[];
+  const t0=G.t;
+  for(let k=0;k<40;k++){
+    G.t=t0+k*900;
+    const c=celSun(p);
+    if(c.alt<.05)continue;                    /* ночью светить нечему */
+    sunDirSet(p);
+    const S=sunSpot(p);
+    const diskLeft=S.x<W/2, lightLeft=SUN_DIR.x<0;
+    if(diskLeft!==lightLeft)bad.push("час "+k+": диск "+(diskLeft?"слева":"справа")+
+      ", свет "+(lightLeft?"слева":"справа"));
+    checked++;
+  }
+  ok(checked>4,"проверено часов: "+checked);
+  eq(bad.slice(0,3).join(" ;; "),"","диск и свет всегда с одной стороны");
+  /* вектор нормирован и всегда направлен вверх: свет из-под земли не идёт */
+  G.t=t0;sunDirSet(p);
+  near(Math.hypot(SUN_DIR.x,SUN_DIR.y),1,.01,"вектор света нормирован");
+  ok(SUN_DIR.y<0,"и направлен вверх, а не в землю");
+  /* сторона солнца входит в ключ ломтей: иначе земля весь день держит утренний свет */
+  const a1=sunAzQ(p);G.t=t0+3000;const a2=sunAzQ(p);
+  ok(a1!==a2||Math.abs(celSun(p).az-celSun(p,t0).az)<.2,"азимут квантуется для ключа");
+  G.t=t0;
+}));
+
+/* ══════════════ M242: дом не стоит на посадочной площадке ══════════════
+   Лендер садится на площадку, дом считался своим зерном — и закрывал полдома
+   собой (скрин автора). Разъезд теперь проверяется и ПОСЛЕ зажима в границы. */
+TEST_SUITES.push(()=>suite("дом не на посадочной площадке",()=>{
+  resetWorld();
+  let bad=[],checked=0;
+  for(let i=0;i<12;i++){
+    G.sx=i-6;G.sy=(i*3)%5-2;
+    if(!starAt(G.sx,G.sy))continue;
+    G.sys=getSystem(G.sx,G.sy);
+    const p=G.sys.planets.find(q=>q.type!=="gas");
+    if(!p)continue;
+    G.home=homeInit();G.home.tier=4;G.home.sx=G.sx;G.home.sy=G.sy;
+    const tr=genTerrain(p);
+    const hx=homeSpotX(p,tr);
+    if(hx==null)continue;
+    checked++;
+    if(Math.abs(hx-tr.padX)<700)bad.push(G.sx+","+G.sy+": "+Math.round(Math.abs(hx-tr.padX))+" px");
+  }
+  ok(checked>2,"проверено миров: "+checked);
+  eq(bad.slice(0,3).join(" ;; "),"","дом всюду поодаль от площадки");
+  resetWorld();
+}));

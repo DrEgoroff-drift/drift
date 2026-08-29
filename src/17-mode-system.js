@@ -310,7 +310,25 @@ function drawSystem(){
   const ox=zx(0),oy=zy(0);
   ctx.lineWidth=1;
   /* орбиты гаснут с расстоянием: ровные кольца одной яркости делали систему чертежом (G10) */
-  for(const p of sys.planets){ctx.strokeStyle="rgba(120,190,210,"+(.17*clamp(1-p.orbit*Z/(W*1.6),.3,1)).toFixed(3)+")";ctx.beginPath();ctx.arc(ox,oy,p.orbit*Z,0,TAU);ctx.stroke();}
+  /* ── орбита ведёт к своему телу (M242) ──
+     Ровные яркие кольца по всему кадру при том, что планета — точка в три
+     пикселя или вовсе за краем: автор сказал «орбит много, планет мало».
+     Кольцо теперь хвост кометы: еле видное полное кольцо держит форму
+     системы, а яркая дуга догорает ровно у планеты — и каждая линия
+     показывает, где её тело. */
+  for(const p of sys.planets){
+    const rr=p.orbit*Z, fade=clamp(1-p.orbit*Z/(W*1.6),.3,1);
+    ctx.strokeStyle="rgba(120,190,210,"+(.05*fade).toFixed(3)+")";
+    ctx.beginPath();ctx.arc(ox,oy,rr,0,TAU);ctx.stroke();
+    const ang=Math.atan2(p.y,p.x);
+    const SEG=6, span=1.15;
+    for(let i=0;i<SEG;i++){
+      const a0=ang-span*(1-i/SEG), a1=ang-span*(1-(i+1)/SEG);
+      const al=.05+.22*((i+1)/SEG)*(i+1)/SEG;
+      ctx.strokeStyle="rgba(120,190,210,"+(al*fade).toFixed(3)+")";
+      ctx.beginPath();ctx.arc(ox,oy,rr,a0,a1);ctx.stroke();
+    }
+  }
   if(sys.station){ctx.strokeStyle="rgba(242,178,92,.13)";
     ctx.beginPath();ctx.arc(ox,oy,sys.station.orbit*Z,0,TAU);ctx.stroke();}
   if(sys.belt)drawBeltRing(ox,oy,sys.belt,Z);

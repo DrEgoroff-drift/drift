@@ -162,7 +162,11 @@ function stRing(V,rx,ry){          /* вращающийся тор с жилы�
   ctx.restore();
 }
 function drawStation(x,y,Z){
-  const s=clamp(Z,.4,1.5),S=G.sys.station,V=stationViz(S),ty=S.stype||"trade";
+  /* ── станция крупнее корабля, потому что корабль в неё заходит (M242) ──
+     На увеличении торговый узел с шестью модулями был 170 px, а корабль рядом
+     140: внутрь такой станции лендер не влезет, и масштаб мира разваливался.
+     Полтора — не «чтобы красивее», а чтобы отношение размеров не врало. */
+  const s=clamp(Z,.4,1.5)*1.7,S=G.sys.station,V=stationViz(S),ty=S.stype||"trade";
   ctx.save();ctx.translate(x,y);ctx.scale(s,s);
   /* модули идут первым слоем: они висят на штангах вокруг ядра, и ядро типа
      должно перекрывать их, а не наоборот (17a-station-mod) */
@@ -345,6 +349,8 @@ function drawStation(x,y,Z){
   }
   if(typeof houseMark==="function"&&typeof houseOf==="function")houseMark(houseOf(G.sys),V);   /* знак дома (17d) */
   ctx.restore();
+  /* подпись уходит НИЖЕ корпуса: сорок пикселей — это внутри станции, и имя
+     читалось поверх её же переборок (M242) */
   ctx.fillStyle="rgba(242,178,92,.6)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-  ctx.fillText(S.name.toUpperCase(),x,y+40);
+  ctx.fillText(S.name.toUpperCase(),x,y+42*s+12);
 }

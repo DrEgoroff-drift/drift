@@ -103,6 +103,7 @@ function drawSurfaceHud(camx,camy,K){
 function drawSurfaceWorld(){
   const S=G.surf,tr=S.tr,p=S.p;
   tr.mat=planetMat(p);tr.p=p;
+  sunDirSet(p);            /* свет идёт оттуда, где нарисован диск (M242) */
   drawSkyBase(p);
   /* звёзды — до небесных тел: нарисованные после, они просвечивают сквозь
      диск гиганта и убивают его объём */
@@ -202,6 +203,8 @@ function drawSurfaceWorld(){
   S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
   drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.farH[1],N:tr.N,step:tr.step*2.4*stpK},wx0,wy0,hazeFar(p,.32),null));
   hazeBand(p,H*(SURF_HOR-.06),H*.22);
+  /* дальние капли — ДО мира: они падают за грядой и за кораблём (M242) */
+  drawWeather(p,camx,camy,"far");
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
     "rgba(200,240,246,.4)",p.T.pal);
   /* нижняя треть уходит в тень неба: ближний грунт темнее дальнего, и по
@@ -458,7 +461,7 @@ function drawSurfaceWorld(){
   /* погода поверх мира, но под лучами и свёрткой: осадки идут перед игроком,
      а свет и цветокоррекция ложатся уже на всё вместе */
   drawForeground(tr,camx,camy,p);
-  drawWeather(p,camx,camy);
+  drawWeather(p,camx,camy,"near");
   /* ── ночь (хвост G12) ──
      Кадр уходит в тень неба, и единственный свет — фонарь скафандра: спрайт
      один на игру, кладётся одним drawImage, чуть впереди по взгляду */

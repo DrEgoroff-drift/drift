@@ -214,6 +214,19 @@ function skyGiant(p,e,x,y,dim,ringy){
   const airF=[0,1,2].map(i=>lerp(p.T.sky[0][i],p.T.sky[1][i],nite)|0);
   lit=lit.map((v,i)=>clamp(Math.max(v,airF[i]+42),0,255)|0);
   shd=shd.map((v,i)=>clamp(Math.max(v,airF[i]+12),0,255)|0);
+  /* ── ШЕСТАЯ переделка: тело должно ОТЛИЧАТЬСЯ от воздуха (M242) ──
+     Пол «не темнее неба» на светлом дневном небе означал «ровно как небо»:
+     диск совпадал с воздухом и от гиганта оставалось одно кольцо, висящее в
+     пустоте (скрин автора). Требование теперь не «не темнее», а «отличается
+     не меньше чем на столько-то» — в ту сторону, куда тело и так шло. */
+  const airM=(airF[0]+airF[1]+airF[2])/3;
+  const sep=(c,mn)=>{
+    const d=(c[0]+c[1]+c[2])/3-airM;
+    if(Math.abs(d)>=mn)return c;
+    const k=(d>=0?1:-1)*(mn-Math.abs(d));
+    return c.map(v=>clamp(v+k,0,255)|0);
+  };
+  lit=sep(lit,34);shd=sep(shd,18);
   const SS=(typeof sunSpot==="function")?sunSpot(p):{x:x-R,y:y-R};
   let ux=SS.x-x, uy=SS.y-y;
   const ul=Math.hypot(ux,uy)||1; ux/=ul; uy/=ul;

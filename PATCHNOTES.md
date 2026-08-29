@@ -7,6 +7,40 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.238.0 — M242: seven places where the drawing contradicted the world
+
+The graphics pass began not with taste but with lies — places where the picture says one thing
+and the model another. Seven of them, found by walking the game with the meter and the eye.
+
+- **The game had two suns.** The disc moves across the sky on real mechanics (`sunSpot`→`celSun`),
+  while the terrain, the clouds, the settlement, the house and every shadow were lit by a
+  CONSTANT — up and to the right, always. At sunset the star sat at the left edge and the slopes
+  were still lit from the right. `SUN_DIR` is now recomputed each frame from the same `celSun`,
+  and the quantised azimuth went into the ground-chunk key: a slice baked at dawn no longer keeps
+  dawn's light at noon. This one fix moves the light in every scene on the ground.
+- **A ring with no planet inside it.** The floor under a sky body's colour was "no darker than the
+  air", which on a bright day means "exactly the air": the disc vanished and only the ring hung
+  there. The requirement is now a DIFFERENCE, not a floor — at least 34 units away from the air
+  in whichever direction the body was already going. Measured after: body 121,104,96 against sky
+  80,75,67.
+- **The chimney floated above the roof.** It was placed from the ridge, but it stands on a slope,
+  and on a gable roof that is always a miss upward. It now sits at the roof's height at its own x,
+  set three pixels into the roofing, with a cap — and the smoke starts where the chimney is.
+- **Orbits led the eye into nothing.** Full bright rings everywhere while the planet is a dot or
+  off-screen entirely. The ring is now a comet tail: a barely-there full circle holds the shape of
+  the system, and a bright arc burns out exactly at the planet.
+- **The lander parked on the house.** The house avoided the pad by 520 px, but the clamp into the
+  world's bounds could push it straight back. The gap is 760 now and it is checked AFTER the clamp.
+- **The rain fell in front of everything**, ship and captions included, which made the ship look
+  transparent. It has two planes now: the far drops fall before the world is drawn, the near ones
+  after.
+- **The station was the size of the ship** that docks inside it, and its name was printed under
+  its own hull. It is 1.7× bigger, and the caption sits below the structure.
+
+Tests: 398 suites green (two new: the disc and the light are always on the same side, at every
+hour and on every world; the house is never on the pad).
+
+---
 ## 0.237.0 — M241: the frame is measured now, not argued about
 
 The author on the graphics: "something about all of it bothers me". Looking at it by eye produced

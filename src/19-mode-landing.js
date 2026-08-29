@@ -122,7 +122,11 @@ function drawGround(tr,camx,camy,fill,line,pal){
     /* час суток входит в ключ (M232): свет в ломте дневной или ночной, и
        ломоть, испечённый утром, не должен пережить полдень. Квантование в
        шесть ступеней держит перепечку редкой */
-    tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR+"|d"+(tr.p?dayKq(tr.p):0),top,ch);
+    /* в ключ ломтя входит и СТОРОНА солнца (M242): свет теперь идёт оттуда,
+       где диск, а ломоть печётся один раз — без азимута в ключе земля весь
+       день держала бы утреннюю подсветку склонов */
+    tr.chunks=chunkStore(tr.chunks,(tr.p?tr.p.seed:0)+"|"+fill+"|"+line+"|"+H+"|"+DPR+
+      "|d"+(tr.p?dayKq(tr.p):0)+"|a"+(tr.p?sunAzQ(tr.p):0),top,ch);
     drawChunks(tr.chunks,camx,camy,(g,wx0,wy0)=>{
       GROUND_BAKING=true;
       /* валуны неподвижны и сложены из той же породы (два прохода материала
@@ -394,6 +398,7 @@ function drawDustMotes(camx,camy,p){
 function drawLanding(){
   const L=G.land,tr=L.tr,p=L.p;
   tr.mat=planetMat(p);tr.p=p;
+  sunDirSet(p);            /* свет идёт оттуда, где нарисован диск (M242) */
   WIND=windOf(p);
   drawSkyBase(p);
   if(p.T.atm==="отсутствует")drawStars(L.x*.1,0,1);
@@ -425,6 +430,8 @@ function drawLanding(){
      которой шахту лечили в M219. Дымка живёт там, где земля встречается с
      воздухом: у кромки грунта, а если та ушла ниже кадра — у нижней кромки. */
   hazeBand(p,clamp(groundAt(tr,L.x)-camy,H*.30,H*1.02),H*.20);
+  /* дальние капли — за грядой и за кораблём, ближние поверх (M242) */
+  drawWeather(p,camx,camy,"far");
   drawGround(tr,camx,camy,"rgb("+p.T.pal[2].map(v=>Math.round(v*.6)).join(",")+")",
     "rgba(180,230,240,.35)",p.T.pal);
   drawPOI(tr,camx,camy,p);
@@ -444,7 +451,7 @@ function drawLanding(){
   /* пыль из-под струи на подходе: чем ниже, тем гуще. Без неё грунт до самого
      касания оставался нетронутым, и посадка не чувствовалась тяжёлой */
   landingDust(L,tr,camx,camy);
-  drawWeather(p,camx,camy);
+  drawWeather(p,camx,camy,"near");
   lightShafts(p);
   gradePass(p);
 }
