@@ -17,19 +17,37 @@ const BG_GROUP=STAR_COLS.map((c,i)=>({css:"rgb("+c[0]+","+c[1]+","+c[2]+")",
 const BG_BRIGHT=[];
 for(let i=0;i<14;i++)BG_BRIGHT.push({x:Math.random(),y:Math.random(),z:.86+Math.random()*.14,
   ph:Math.random()*TAU,css:i%3?"rgb(255,150,92)":"rgb(130,176,255)"});
+/* ── движение, а не мигание (П8; правило записано автором 27.08.2026) ──
+   Звёзды всегда мерцали и никогда не тянулись: на полном ходу поле стояло и
+   моргало, как на стоянке. Теперь звезда на ходу — прочерк вдоль вектора
+   движения камеры (длина по слою параллакса: ближние тянутся сильнее), а
+   мерцание гаснет с разгоном и остаётся стоянке. Вектор берётся разницей
+   входа между кадрами — сигнатура не меняется, все режимы получают закон
+   даром; скачок камеры (смена режима) прочерков не даёт. */
+let STAR_LX=null,STAR_LY=null,STAR_LT=-1;
 function drawStars(cx,cy,par){
+  let dx=0,dy=0;
+  if(STAR_LT>=0&&G.t-STAR_LT<1.5){dx=cx-STAR_LX;dy=cy-STAR_LY;}
+  STAR_LX=cx;STAR_LY=cy;STAR_LT=G.t;
+  if(Math.hypot(dx,dy)>60){dx=0;dy=0;}
+  const KX=W/1600*2.6, KY=H/1200*2.6;            /* прочерк ~ пары кадров пути */
+  const mov=clamp(Math.hypot(dx*KX,dy*KY)*par,0,6)/6;
   const a0=ctx.globalAlpha;
   for(const g of BG_GROUP){
-    ctx.fillStyle=g.css;
+    ctx.fillStyle=g.css;ctx.strokeStyle=g.css;
     for(const s of g.list){
       const px=((s.x*1600-cx*par*s.z)%1600+1600)%1600/1600*W;
       const py=((s.y*1200-cy*par*s.z)%1200+1200)%1200/1200*H;
-      const tw=.76+.24*Math.sin(G.t*.045*(.4+s.z)+s.ph);
+      const tw=.76+.24*Math.sin(G.t*.045*(.4+s.z)+s.ph)*(1-mov);
       const a=(.11+s.z*.55)*tw;
       ctx.globalAlpha=a0*a;
       const sz=s.z>.85?2.1:(s.z>.5?1.4:1);
-      ctx.fillRect(px,py,sz,sz);
-      if(s.z>.9){   // самые яркие получают крестик-ореол
+      const lx=dx*KX*par*s.z, ly=dy*KY*par*s.z;
+      if(mov>.04&&s.z>.4&&Math.hypot(lx,ly)>1.2){
+        ctx.lineWidth=sz*.72;
+        ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+lx,py+ly);ctx.stroke();
+      }else ctx.fillRect(px,py,sz,sz);
+      if(s.z>.9&&mov<.2){   // крестик-ореол — украшение стоянки
         ctx.globalAlpha=a0*a*.3;
         ctx.fillRect(px-2.4,py+.35,5.8,.8);ctx.fillRect(px+.35,py-2.4,.8,5.8);
       }
@@ -38,11 +56,17 @@ function drawStars(cx,cy,par){
   for(const s of BG_BRIGHT){
     const px=((s.x*1600-cx*par*s.z)%1600+1600)%1600/1600*W;
     const py=((s.y*1200-cy*par*s.z)%1200+1200)%1200/1200*H;
-    const a=(.55+.25*Math.sin(G.t*.03+s.ph));
+    const a=(.55+.25*Math.sin(G.t*.03+s.ph)*(1-mov));
     ctx.fillStyle=s.css;ctx.globalAlpha=a0*a;
-    ctx.fillRect(px-1.2,py-1.2,2.6,2.6);
-    ctx.globalAlpha=a0*a*.35;
-    ctx.fillRect(px-3.4,py+.1,7.6,1);ctx.fillRect(px+.1,py-3.4,1,7.6);
+    const lx=dx*KX*par*s.z, ly=dy*KY*par*s.z;
+    if(mov>.04&&Math.hypot(lx,ly)>1.2){
+      ctx.strokeStyle=s.css;ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+lx,py+ly);ctx.stroke();
+    }else ctx.fillRect(px-1.2,py-1.2,2.6,2.6);
+    if(mov<.2){
+      ctx.globalAlpha=a0*a*.35;
+      ctx.fillRect(px-3.4,py+.1,7.6,1);ctx.fillRect(px+.1,py-3.4,1,7.6);
+    }
   }
   ctx.globalAlpha=a0;
 }

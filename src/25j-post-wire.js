@@ -100,6 +100,14 @@ function mailSend(s,ch,mv){
       return false;
     }
     M.sent=(M.sent|0)+1;
+    /* поступок — в журнал игрока (С3, ключ card у историй): «отправил
+       карточку этого места». Пишутся оба ключа места — системный и, если
+       снимок с планеты, планетный: истории прибиты и так, и так. */
+    if(s&&s.sx!=null){
+      const KK=(G.mailed||(G.mailed={}));
+      KK[(s.sx|0)+","+(s.sy|0)]=1;
+      if(s.pi!=null&&s.pi>=0)KK[(s.sx|0)+","+(s.sy|0)+"/"+(s.pi|0)]=1;
+    }
     const id=ch||String(j.ch||"");
     if(id)mailPush(id,Object.assign({},mailWire(s)),true);
     sfx("ui",{f:900,to:1500,d:.07,v:.18});

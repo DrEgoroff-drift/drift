@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3062
+Файлов: 333 · символов верхнего уровня: 3063
 
 ## СИМВОЛЫ
 
@@ -82,10 +82,10 @@ angWrap                      src/01-core.js:81
 applyCrewEvent               src/12b-crew-events.js:214
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:86
+applySave                    src/14-save.js:87
 applyVolumes                 src/09-audio.js:40
-apVel                        src/16-flight.js:108
-arrive                       src/16-flight.js:154
+apVel                        src/16-flight.js:132
+arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
 assignToBase                 src/12a-crew.js:172
 AST_N                        src/24-mode-belt.js:85
@@ -195,7 +195,7 @@ BLUE_TAB                     src/01-core.js:37
 blueNoise                    src/01-core.js:38
 BLUEPRINTS                   src/12c-mgr-core.js:662
 BM_WARM                      src/21aa-base-rooms.js:20
-bodyInSystem                 src/16-flight.js:85
+bodyInSystem                 src/16-flight.js:109
 bookAll                      src/12ub-books.js:106
 bookCount                    src/12ub-books.js:108
 bookFind                     src/12ub-books.js:113
@@ -605,7 +605,7 @@ drawMap                      src/18-mode-map.js:42
 drawMisFigure                src/11z-misclosure.js:63
 drawModule                   src/21aa-base-rooms.js:384
 drawMonolith                 src/20aa-poi-shapes.js:193
-drawNebula                   src/16-flight.js:67
+drawNebula                   src/16-flight.js:91
 drawNodeIcon                 src/05a-nodes.js:264
 drawObelisk                  src/20aa-poi-shapes.js:276
 drawObserv                   src/20aa-poi-shapes.js:491
@@ -633,7 +633,7 @@ drawSpaceDust                src/16a-space.js:184
 drawStarBody                 src/16a-space.js:341
 drawStarHole                 src/16a-space.js:444
 drawStarNeutron              src/16a-space.js:417
-drawStars                    src/16-flight.js:20
+drawStars                    src/16-flight.js:28
 drawStarSingle               src/16a-space.js:358
 drawStation                  src/17c-system-draw.js:164
 drawStationMods              src/17a-station-mod.js:178
@@ -651,7 +651,7 @@ drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:283
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:125
-drawTrail                    src/16-flight.js:338
+drawTrail                    src/16-flight.js:362
 drawWallPaper                src/11ae-concert.js:39
 drawWear                     src/12s-wear.js:99
 drawWeather                  src/19d-weather.js:96
@@ -1427,12 +1427,12 @@ mailAll                      src/25j-post-wire.js:31
 mailBusy                     src/25j-post-wire.js:46
 mailCall                     src/25j-post-wire.js:47
 mailCard                     src/25k-post-mail.js:19
-mailDock                     src/25j-post-wire.js:116
-mailDrop                     src/25j-post-wire.js:143
+mailDock                     src/25j-post-wire.js:124
+mailDrop                     src/25j-post-wire.js:151
 mailEve                      src/25l-post-ether.js:41
-mailFresh                    src/25j-post-wire.js:148
+mailFresh                    src/25j-post-wire.js:156
 mailLeft                     src/25j-post-wire.js:41
-mailMute                     src/25j-post-wire.js:136
+mailMute                     src/25j-post-wire.js:144
 mailNight                    src/25l-post-ether.js:34
 mailNightLeft                src/25l-post-ether.js:46
 mailOn                       src/25j-post-wire.js:36
@@ -1592,8 +1592,8 @@ nearestStation               src/12-economy.js:45
 NEB_COMP                     src/16a-space.js:119
 NEB_JOB                      src/16a-space.js:52
 NEB_MS                       src/16a-space.js:51
-NEBULA                       src/16-flight.js:50
-nebula                       src/16-flight.js:51
+NEBULA                       src/16-flight.js:74
+nebula                       src/16-flight.js:75
 NEED_WIN                     src/12aa-need.js:19
 needAll                      src/12aa-need.js:21
 needBlock                    src/12aa-need.js:129
@@ -2356,7 +2356,7 @@ rumourBlock                  src/11t-rumours.js:63
 rumourEtherLine              src/11t-rumours.js:57
 rumourSeedHere               src/11t-rumours.js:32
 rumoursHere                  src/11t-rumours.js:36
-runAutopilot                 src/16-flight.js:109
+runAutopilot                 src/16-flight.js:133
 runTests                     tests/90-harness.js:80
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:85
@@ -2485,7 +2485,7 @@ shipRow                      src/26-ui-station.js:168
 SHIPS                        src/03-ships.js:2
 shipThumb                    src/26-ui-station.js:155
 shipTier                     src/04b-fleet.js:156
-shipZ                        src/16-flight.js:211
+shipZ                        src/16-flight.js:235
 shipZoneR                    src/19f-lander.js:14
 SHOT_CLEAN                   src/28-loop.js:133
 SHUT_LINES                   src/11ah-offer.js:272
@@ -2594,6 +2594,7 @@ ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:8
 STAR_CLASS                   src/02-world.js:94
 STAR_COLS                    src/16-flight.js:2
+STAR_LX                      src/16-flight.js:27
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:49
 start                        src/15-input.js:472
@@ -2630,40 +2631,40 @@ STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:316
+STORY_SEAT                   src/11c-stories.js:321
 STORY_WHEN                   src/11c-stories.js:147
 storyAddrMatch               src/11c-stories.js:69
 storyAll                     src/11c-stories.js:32
 storyAnchorRoll              src/11c-stories.js:87
 storyById                    src/11c-stories.js:33
-storyCantFigures             src/11c-stories.js:323
-storyCantProps               src/11c-stories.js:332
-storyCantScene               src/11c-stories.js:317
-storyCheckWhen               src/11c-stories.js:205
+storyCantFigures             src/11c-stories.js:328
+storyCantProps               src/11c-stories.js:337
+storyCantScene               src/11c-stories.js:322
+storyCheckWhen               src/11c-stories.js:210
 storyCtx                     src/11c-stories.js:39
 storyDay                     src/11c-stories.js:28
-storyEtherLine               src/11c-stories.js:256
-storyFindLine                src/11c-stories.js:284
+storyEtherLine               src/11c-stories.js:261
+storyFindLine                src/11c-stories.js:289
 storyFixedAddr               src/11c-stories.js:55
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:397
+storyGroundLine              src/11c-stories.js:402
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:364
-storyNewsItem                src/11c-stories.js:291
-storyNote                    src/11c-stories.js:409
-storyPickOne                 src/11c-stories.js:247
+storyLint                    src/11c-stories.js:369
+storyNewsItem                src/11c-stories.js:296
+storyNote                    src/11c-stories.js:414
+storyPickOne                 src/11c-stories.js:252
 storyPins                    src/11c-stories.js:30
 storyPlace                   src/11c-stories.js:93
-storyProp                    src/11c-stories.js:340
-storyQueueLine               src/11c-stories.js:264
+storyProp                    src/11c-stories.js:345
+storyQueueLine               src/11c-stories.js:269
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
-storyShow                    src/11c-stories.js:233
-storyTableLine               src/11c-stories.js:276
-storyTraces                  src/11c-stories.js:214
+storyShow                    src/11c-stories.js:238
+storyTableLine               src/11c-stories.js:281
+storyTraces                  src/11c-stories.js:219
 storyTurns                   src/11c-stories.js:121
-storyWhen                    src/11c-stories.js:200
+storyWhen                    src/11c-stories.js:205
 stPanels                     src/17c-system-draw.js:118
 stRing                       src/17c-system-draw.js:144
 STRIP_CHUNK                  src/07-planet.js:73
@@ -2752,7 +2753,7 @@ tapeStrip                    src/25b-tape.js:187
 tapeTear                     src/11b-speech.js:192
 tapeTick                     src/25b-tape.js:79
 tapeUnpack                   src/25b-tape.js:39
-targetPos                    src/16-flight.js:97
+targetPos                    src/16-flight.js:121
 TAU                          src/01-core.js:6
 TECH                         src/04-mods.js:11
 techCost                     src/04-mods.js:46
@@ -2849,13 +2850,13 @@ traceTake                    src/11ag-trace.js:120
 traceToday                   src/11ag-trace.js:72
 TRACK_LIFE                   src/21-mode-surface.js:6
 TRADE_KEYS                   src/02-world.js:40
-TRAIL                        src/16-flight.js:212
-TRAIL_CHAR                   src/16-flight.js:220
-TRAIL_TINT                   src/16-flight.js:229
-trailBurst                   src/16-flight.js:213
-trailChar                    src/16-flight.js:228
-trailStep                    src/16-flight.js:247
-trailTint                    src/16-flight.js:234
+TRAIL                        src/16-flight.js:236
+TRAIL_CHAR                   src/16-flight.js:244
+TRAIL_TINT                   src/16-flight.js:253
+trailBurst                   src/16-flight.js:237
+trailChar                    src/16-flight.js:252
+trailStep                    src/16-flight.js:271
+trailTint                    src/16-flight.js:258
 TRAINEE_LINES                src/11ac-trainee.js:14
 TRAINEE_NAMES                src/11ac-trainee.js:13
 traineeAboard                src/11ac-trainee.js:19
@@ -3219,9 +3220,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11b-speech.js · 17 КБ
   · речь: очередь реплик и вещь на столе:1
 
-## src/11c-stories.js · 24 КБ
+## src/11c-stories.js · 25 КБ
   · истории: следы, а не задания:1
-  · каналы:254
+  · каналы:259
 
 ## src/11d-place.js · 4 КБ
   · память места: три счётчика и одометр:1
@@ -3364,7 +3365,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12k-stories-b.js · 37 КБ
   · истории, часть вторая:1
 
-## src/12k-stories-c.js · 22 КБ
+## src/12k-stories-c.js · 23 КБ
   · истории, часть третья:1
 
 ## src/12k-stories-d.js · 8 КБ
@@ -3464,7 +3465,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:61
   · видимое состояние обмена:76
 
-## src/14-save.js · 50 КБ
+## src/14-save.js · 51 КБ
   · сохранение:1
 
 ## src/15-input.js · 29 КБ
@@ -3477,10 +3478,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/16b-missile.js · 9 КБ
   · ракеты: боеприпас — это груз:1
 
-## src/16-flight.js · 27 КБ
+## src/16-flight.js · 28 КБ
   · фон:1
-  · автопилот:96
-  · шлейф двигателей и струи ориентации:194
+  · автопилот:120
+  · шлейф двигателей и струи ориентации:218
 
 ## src/17a-station-mod.js · 10 КБ
   · модули станции:1

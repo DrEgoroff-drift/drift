@@ -171,12 +171,13 @@ the stand anyway.
   a descending runner (CAD dashes dead), pad is a body with edge beacons, ship shadow grows
   toward touchdown. Already held: parked-ship shadow, night belly light ellipse, astronaut
   sun rim (M172).
-- **P7 — cave and mine: finish what's started.** Base/boarding lamps (P5-2 — check the room clip
-  first), CUN into `pcStrata`/`digRockPass`.
-- **P8 — space in flight.** Stars stretch under way (verify the law lives), palette not sliding
-  to green, notan of the frame.
-- **P9 — HUD and typography.** Arrow markers, frames, the radio band density, ma; edges measured
-  in the browser, not on PNGs.
+- **P7 — cave and mine: finish what's started.** ~~Closed by inspection (M269)~~: the room clip
+  masks lamp glow for free (21aa:389), rooms lit since M247; CUN went into the mine at M267.
+- **P8 — space in flight.** ~~Done (M269, 0.266.0)~~: stars streak along their parallax vector
+  under way, twinkle stays at anchor. Notan of the system frame (66% empty) remains a Loose-ends
+  content item (nebula + traffic), not a pass item.
+- **P9 — HUD and typography.** ~~Measured (M269)~~: mobile suite green at 390×844. No churn
+  without an author's gripe; the flaky «смотритель» suite stays on the P0 list.
 - **P10 — the through-pass.** Full album of every scene day/night, check against 8+10 laws,
   `?g11` vs эталон, the honest remainder into the queue with reasons, both codices updated.
 
@@ -191,9 +192,11 @@ calendar; only 3 deed-forks live after P6):
   forty_two (visits gate); refusals named at twins and busy_freq.
   ~~S2 done (M267)~~: `wall` deed key backed by `G.walled` in the save; commission fork;
   refusals at null_cabin (reserved by P7) and semyon_walk (no substrate). Count 8.
-  S3 needs new authored stories or the `sat`/`card` keys — check the cantina seat and
-  postcard-wire sources first; forecast_same, foreign_tape, report_nothing are already
-  de-facto deed-turns (their `after` trace requires a shown item).
+  ~~S3 done (M269)~~: `card` key backed by `G.mailed`; new story bench_view (№108) reads it.
+  `sat` refused — sitting is shown, not remembered. forecast_same, foreign_tape,
+  report_nothing already turn on a shown item (de-facto deeds). Count 9. The remaining
+  calendar turns are all named refusals — the S-passes' rewrite half is complete; further
+  growth is new stories, written a few at a time.
 - **S4 — the clock engine (P8 of the codex).** Hidden dials over endings; a segment advances
   only by deed + spaced days; an ending fires only in its window. Медкомиссия first. Fuzzer
   long-run must not reach an ending early.

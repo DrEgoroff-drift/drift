@@ -1353,7 +1353,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.265.0";
+const VER="0.266.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -10932,6 +10932,11 @@ const STORY_WHEN={
     return !!(st&&st.handAt)===!!v;},
   /* швов на текущем корпусе не меньше v (12s, M256): биографию видно и людям */
   seams:(v)=>((typeof seamsOf==="function")?seamsOf():0)>=v,
+  /* игрок отправил открытку ЭТОГО места (25j → G.mailed): слепок сцены ушёл
+     в общую почту, и мир его видел. Ключ — из якоря истории */
+  card:(v,S,c)=>{
+    const k=(storyPins()[S.id])||c.key;
+    return !!(G.mailed&&k&&G.mailed[k])===!!v;},
   /* игрок расписался на камне ЭТОГО места (11ah → G.walled: журнал поступка,
      хранится с сейвом). Ключ места — из якоря истории, не из положения игрока */
   wall:(v,S,c)=>{
@@ -19253,7 +19258,22 @@ const STORIES_C=[
   {id:"t1",via:"queue",when:{seenOf:"named_crystal.t1"},text:"— Кристалл с именем? Это её имя. Она здесь работала. Улетела на кристаллический и не вернулась — не пропала, а не вернулась. Разница есть."},
   {id:"t2",via:"cant",when:{seenOf:"named_crystal.t1"},scene:{seat:"end",figure:0,props:["paper","glass_empty"]}}
  ],
- links:["named_crystal"]}
+ links:["named_crystal"]},
+
+/* ── 108. Смотровая скамейка ── место · научная, плавающая ──
+   Развилка С3 (не показывается): открытка — слепок сцены, ушедший в общую
+   почту, и мир его видел (ключ card, G.mailed). Отправил карточку отсюда —
+   к скамейке начали приезжать; не отправил — её снимут за ненадобностью.
+   Никто никогда не скажет «после вашей карточки»: игрок сам сложит, или нет. */
+{id:"bench_view",form:"place",at:"stype:sci",cast:[],
+ traces:[
+  {id:"t1",via:"queue",when:{none:["quiet","known"]},text:"— Со смотровой видно то же, что отовсюду. Но скамейка хорошая. Сидите, если хотите."},
+  {id:"t2",via:"ether",when:{none:["quiet","known"]},text:"…смотровая закрыта на уборку. Открыта. Закрыта. Да сидите уже, кому вы мешаете."},
+  {id:"t3",via:"queue",when:{flag:"quiet"},text:"— Скамейку со смотровой снимут. Не сидит никто, а метизы — дефицит."},
+  {id:"t4",via:"queue",when:{flag:"known"},text:"— На смотровой теперь люди. Говорят: где-то это место видели. Где видели — не говорят. Сидят."},
+  {id:"t5",via:"ether",when:{flag:"known"},text:"…к смотровой не подниматься группами больше трёх. Больше трёх! Никогда такого не было."}
+ ],
+ turns:[{after:"seen:t1",days:15,set:"quiet",unless:{card:true},else:"known"}]}
 ];
 for(const S of STORIES_C)STORIES.push(S);
 
@@ -27229,6 +27249,7 @@ function snapshot(){
     instrKit:G.instrKit,instrShelf:G.instrShelf,
     speech:G.speech,visits:G.visits,strips:G.strips,
     walled:G.walled,   /* где расписался на камне (С2): решение игрока — хранится */
+    mailed:G.mailed,   /* откуда отправлял открытки (С3): тот же журнал поступков */
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
@@ -27651,6 +27672,7 @@ function applySave(s){
   G.speech=(s.speech&&typeof s.speech==="object")?s.speech:{};
   G.visits=(s.visits&&typeof s.visits==="object")?s.visits:{};
   G.walled=(s.walled&&typeof s.walled==="object")?s.walled:{};
+  G.mailed=(s.mailed&&typeof s.mailed==="object")?s.mailed:{};
   /* истории (11c): только то, что игрок видел, якоря и повороты */
   G.seen=(s.seen&&typeof s.seen==="object")?s.seen:{};
   G.storyPin=(s.storyPin&&typeof s.storyPin==="object")?s.storyPin:{};
@@ -28990,19 +29012,37 @@ const BG_GROUP=STAR_COLS.map((c,i)=>({css:"rgb("+c[0]+","+c[1]+","+c[2]+")",
 const BG_BRIGHT=[];
 for(let i=0;i<14;i++)BG_BRIGHT.push({x:Math.random(),y:Math.random(),z:.86+Math.random()*.14,
   ph:Math.random()*TAU,css:i%3?"rgb(255,150,92)":"rgb(130,176,255)"});
+/* ── движение, а не мигание (П8; правило записано автором 27.08.2026) ──
+   Звёзды всегда мерцали и никогда не тянулись: на полном ходу поле стояло и
+   моргало, как на стоянке. Теперь звезда на ходу — прочерк вдоль вектора
+   движения камеры (длина по слою параллакса: ближние тянутся сильнее), а
+   мерцание гаснет с разгоном и остаётся стоянке. Вектор берётся разницей
+   входа между кадрами — сигнатура не меняется, все режимы получают закон
+   даром; скачок камеры (смена режима) прочерков не даёт. */
+let STAR_LX=null,STAR_LY=null,STAR_LT=-1;
 function drawStars(cx,cy,par){
+  let dx=0,dy=0;
+  if(STAR_LT>=0&&G.t-STAR_LT<1.5){dx=cx-STAR_LX;dy=cy-STAR_LY;}
+  STAR_LX=cx;STAR_LY=cy;STAR_LT=G.t;
+  if(Math.hypot(dx,dy)>60){dx=0;dy=0;}
+  const KX=W/1600*2.6, KY=H/1200*2.6;            /* прочерк ~ пары кадров пути */
+  const mov=clamp(Math.hypot(dx*KX,dy*KY)*par,0,6)/6;
   const a0=ctx.globalAlpha;
   for(const g of BG_GROUP){
-    ctx.fillStyle=g.css;
+    ctx.fillStyle=g.css;ctx.strokeStyle=g.css;
     for(const s of g.list){
       const px=((s.x*1600-cx*par*s.z)%1600+1600)%1600/1600*W;
       const py=((s.y*1200-cy*par*s.z)%1200+1200)%1200/1200*H;
-      const tw=.76+.24*Math.sin(G.t*.045*(.4+s.z)+s.ph);
+      const tw=.76+.24*Math.sin(G.t*.045*(.4+s.z)+s.ph)*(1-mov);
       const a=(.11+s.z*.55)*tw;
       ctx.globalAlpha=a0*a;
       const sz=s.z>.85?2.1:(s.z>.5?1.4:1);
-      ctx.fillRect(px,py,sz,sz);
-      if(s.z>.9){   // самые яркие получают крестик-ореол
+      const lx=dx*KX*par*s.z, ly=dy*KY*par*s.z;
+      if(mov>.04&&s.z>.4&&Math.hypot(lx,ly)>1.2){
+        ctx.lineWidth=sz*.72;
+        ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+lx,py+ly);ctx.stroke();
+      }else ctx.fillRect(px,py,sz,sz);
+      if(s.z>.9&&mov<.2){   // крестик-ореол — украшение стоянки
         ctx.globalAlpha=a0*a*.3;
         ctx.fillRect(px-2.4,py+.35,5.8,.8);ctx.fillRect(px+.35,py-2.4,.8,5.8);
       }
@@ -29011,11 +29051,17 @@ function drawStars(cx,cy,par){
   for(const s of BG_BRIGHT){
     const px=((s.x*1600-cx*par*s.z)%1600+1600)%1600/1600*W;
     const py=((s.y*1200-cy*par*s.z)%1200+1200)%1200/1200*H;
-    const a=(.55+.25*Math.sin(G.t*.03+s.ph));
+    const a=(.55+.25*Math.sin(G.t*.03+s.ph)*(1-mov));
     ctx.fillStyle=s.css;ctx.globalAlpha=a0*a;
-    ctx.fillRect(px-1.2,py-1.2,2.6,2.6);
-    ctx.globalAlpha=a0*a*.35;
-    ctx.fillRect(px-3.4,py+.1,7.6,1);ctx.fillRect(px+.1,py-3.4,1,7.6);
+    const lx=dx*KX*par*s.z, ly=dy*KY*par*s.z;
+    if(mov>.04&&Math.hypot(lx,ly)>1.2){
+      ctx.strokeStyle=s.css;ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+lx,py+ly);ctx.stroke();
+    }else ctx.fillRect(px-1.2,py-1.2,2.6,2.6);
+    if(mov<.2){
+      ctx.globalAlpha=a0*a*.35;
+      ctx.fillRect(px-3.4,py+.1,7.6,1);ctx.fillRect(px+.1,py-3.4,1,7.6);
+    }
   }
   ctx.globalAlpha=a0;
 }
@@ -52294,6 +52340,14 @@ function mailSend(s,ch,mv){
       return false;
     }
     M.sent=(M.sent|0)+1;
+    /* поступок — в журнал игрока (С3, ключ card у историй): «отправил
+       карточку этого места». Пишутся оба ключа места — системный и, если
+       снимок с планеты, планетный: истории прибиты и так, и так. */
+    if(s&&s.sx!=null){
+      const KK=(G.mailed||(G.mailed={}));
+      KK[(s.sx|0)+","+(s.sy|0)]=1;
+      if(s.pi!=null&&s.pi>=0)KK[(s.sx|0)+","+(s.sy|0)+"/"+(s.pi|0)]=1;
+    }
     const id=ch||String(j.ch||"");
     if(id)mailPush(id,Object.assign({},mailWire(s)),true);
     sfx("ui",{f:900,to:1500,d:.07,v:.18});

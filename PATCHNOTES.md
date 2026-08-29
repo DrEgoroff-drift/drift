@@ -7,6 +7,35 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.266.0 — M269: stars streak under way; a postcard makes a place visited
+
+Fourth leg of the marathon (П7 · П8 · П9 · С3).
+
+**П8 — the law finally reaches the starfield.** «Движение, а не мигание» was written into the
+rules on 27.08 and never implemented: stars twinkled at full thrust exactly as at anchor. Now a
+moving camera stretches every star into a streak along its own parallax vector (near layers
+stretch more), twinkle dies with speed and stays a property of standing still. The motion
+vector is taken as the frame-to-frame difference of the existing arguments — every mode gets
+the law for free, and a mode switch (camera jump) is guarded from painting streaks.
+
+**П7 — checked and acquitted.** The named precondition held the pass: do the base rooms clip?
+They do («ничего не вылезает в породу», 21aa:389) — which means the room clip already masks any
+lamp glow, no destination-out volumes needed, and the rooms have carried their own lamps since
+M247. The cave's CUN moved into the mine a leg ago. Nothing left to do under П7 but write this
+down.
+
+**П9 — measured, not styled.** The phone half of the interface is the risk zone; the mobile
+suite (390×844) runs green — 12054 checks. No taste-driven HUD churn without an author's gripe.
+
+**С3 — the postcard deed.** New key `card` backed by `G.mailed` (written on a successful
+`mailSend`, both system and planet keys, persisted): «отправил карточку этого места» — the
+snapshot went to the common mail, and the world saw it. Its story: *bench_view* (№108) — a
+viewing bench on a science station; mail a card from there and people start coming («говорят,
+где-то это место видели»), never mail one and the bench gets removed for want of sitters.
+Nobody ever says «после вашей карточки». Deed-turn count 9, suite floor raised. `sat` refused:
+sitting is a scene the game shows, not a deed it remembers.
+
+---
 ## 0.265.0 — M268: the corridor is light, the shadow rises to meet the ship
 
 Third leg of the marathon (П5 · П6).
