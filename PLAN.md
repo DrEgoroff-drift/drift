@@ -57,6 +57,54 @@ Here is only what is still live â cross-cutting rules, the visual queue and
 
 ---
 
+## M240 — the economy counted (2026-08-28) — CLOSED (0.236.0)
+
+Measured, not argued. Everything below is a number the game produced, at the starting hull
+(hold 40, drill 1), prices from the live market around the origin.
+
+### What earns, per hour
+
+| channel | credits/hour | attention | bounded by |
+|---|---|---|---|
+| hand drilling + selling | 10 000–70 000 | full | the planet's deposits (237 units, mostly cheap), hold 40, flight time |
+| trade run | 3 000–50 000 | full | capital, the spread (≤96% within three jumps), price pressure (−0.5%/unit, floor −35%) |
+| drone, iron → crystals | 576 → 5 220 each | none | the point: 362 units / 117 units, i.e. 5 800 / 17 000 credits, then it comes home |
+| base "surplus" BEFORE | 2 856 per base | none | **nothing at all** — the hole |
+| base "surplus" AFTER | ~420 per working base | none | the base's own consumption |
+| the road (companion mode) | ≤2 200 a day × rank | driving | a daily bank, 14 000 ceiling |
+| a hired hand's run | negative (~85% of wages back) | none | by design (CLAUDE.md) |
+
+### What costs
+
+Fuel 11 a unit (1 100 a tank) · repair 14 a hull point · drone 2 200 · founding a base 2 500 +
+10 alloys · reactor 1 800 + 6 · solar panel 700 + 2 · drill 1 400 + 4 · evacuation 800 + 220 per
+parsec, capped at 4 000 · yard service 140 + (wear − floor) × 2 600.
+
+### Rates that set the pace
+
+Drilling by hand: 90 units/min on the ground, 108 in the belt, 68 in the mine. A hold is 40, so
+it fills in about 25 seconds — **the drill has never been the limit; the hold and the flight are.**
+A full hold is 640 credits of iron, 5 800 of crystals.
+
+### The hole, and the rule behind it
+
+The base paid for spare capacity without asking whether the base worked, so the most profitable
+base was one that did nothing: reactor + four panels, 4 600 credits in, 2 856 an hour out, payback
+1.6 hours, unlimited copies. Fixed the way the yard was: a station buys the SPILL of a working
+base — at least one consumer, and never more than the base eats itself.
+
+**Rule (second sighting): an idle income with no ceiling is a bug, whatever gates it.** The perk
+gate hid this one for a long time; a gate delays the exploit, it does not bound it. Every passive
+channel needs a bound that is part of its own fiction — the drone has its point, the road has its
+day's bank, the base now has its own consumption.
+
+### Left standing on purpose
+
+A drone returns 2.6× its price on iron and 7.7× on crystals, so buying drones is always correct;
+the only question is where to put them. That is a mild absence of trade-off rather than a hole —
+the bound (the point runs out, and deposits must be found on foot) holds. Flagged for the author
+rather than changed.
+
 ## M239 — the phone in every mode (2026-08-28) — CLOSED (0.235.0)
 
 The phone half of the interface was measured in one mode and assumed in the rest. Now the layout

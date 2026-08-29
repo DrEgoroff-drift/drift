@@ -7,6 +7,35 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.236.0 — M240: the economy counted, and the second hole of the same kind closed
+
+The yard's floor (M235) suggested there were siblings: places where repetition plus credits beats
+a design rule. So the whole economy was measured rather than argued about — every income channel
+in credits per hour, every price, every payback. The table is in PLAN.md; here is what it found.
+
+- **The base sold power it never made use of.** "Surplus" paid for any spare capacity and never
+  asked whether the base was working at all. The best build was therefore a base that did NOTHING:
+  a reactor and four solar panels, no consumers — 4 600 credits and 14 alloys in, **2 856 credits
+  an hour out, forever, offline, with no attention**, paid back in an hour and a half, and nothing
+  capped the number of such farms. That is the yard's hole again, one system over.
+
+  A station now buys the SPILL of a working base: at least one live consumer is required, and it
+  buys no more than the base consumes itself (`min(surplus, cons)`). The solar farm sells nothing —
+  nobody runs a power line to an empty rock — and a real base earns a few hundred an hour as a
+  by-product, which is what "surplus" was always supposed to mean. The perk gate (keeper, "grid")
+  is unchanged.
+
+Measured while counting (all at the starting hull, hold 40): hand drilling 90 units/min on the
+ground, 108 in the belt, 68 in the mine — the hold fills in about 25 seconds, so the limit is the
+hold and the flight, never the drill. A full hold is 640 credits of iron or 5 800 of crystals. The
+best trade spread within three jumps is 96% (crystals 74 → 145), i.e. 2 840 credits a run. A drone
+earns 576 credits an hour on iron and 5 220 on crystals, and its point holds 5 800 / 17 000 credits
+before it comes home. Fuel is 11 a unit (1 100 for a full tank), repair 14 a point of hull.
+
+Tests: 395 suites green; the base suite now asserts that a plant without consumers sells nothing
+and that a working base is paid no more than it consumes.
+
+---
 ## 0.235.0 — M239: the phone measured in every mode, not just on the ground
 
 The phone layout had been checked in ONE mode — standing on a planet. The pad row changes from

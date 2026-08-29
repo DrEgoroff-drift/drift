@@ -131,25 +131,25 @@ BASE_ROLES                   src/12a-crew.js:154
 BASE_ROOM                    src/21ab-base-interiors.js:9
 baseAt                       src/21a-mode-base.js:43
 baseCell                     src/21a-mode-base.js:88
-baseCollect                  src/21a-mode-base.js:282
+baseCollect                  src/21a-mode-base.js:292
 baseCost                     src/21a-mode-base.js:46
-baseFixTick                  src/21a-mode-base.js:271
+baseFixTick                  src/21a-mode-base.js:281
 baseGrowCheck                src/21a-mode-base.js:14
-baseJumpCost                 src/21a-mode-base.js:301
+baseJumpCost                 src/21a-mode-base.js:311
 baseKey                      src/21a-mode-base.js:42
-baseList                     src/21a-mode-base.js:295
+baseList                     src/21a-mode-base.js:305
 baseNeighbors                src/21a-mode-base.js:93
-basePads                     src/21a-mode-base.js:300
+basePads                     src/21a-mode-base.js:310
 basePoolHeld                 src/21a-mode-base.js:145
 basePower                    src/21a-mode-base.js:103
-baseRaid                     src/21a-mode-base.js:209
+baseRaid                     src/21a-mode-base.js:219
 baseRoleForce                src/12a-crew.js:168
 baseRoomPath                 src/21ac-base-draw.js:14
 baseRows                     src/21a-mode-base.js:13
 baseSet                      src/21a-mode-base.js:89
 baseSlots                    src/12a-crew.js:163
 baseStaff                    src/12a-crew.js:164
-baseStorm                    src/21a-mode-base.js:247
+baseStorm                    src/21a-mode-base.js:257
 baseTick                     src/21a-mode-base.js:147
 BATT_COOL                    src/21d-battery.js:13
 BATT_DMG                     src/21d-battery.js:14
@@ -1217,7 +1217,7 @@ jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
 jump                         src/18-mode-map.js:328
-jumpToBase                   src/21a-mode-base.js:305
+jumpToBase                   src/21a-mode-base.js:315
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
 KEEP_LAST                    src/11k-keepers.js:84
@@ -2589,7 +2589,7 @@ STORIES                      src/12k-stories-a.js:42
 STORIES_B                    src/12k-stories-b.js:27
 STORIES_C                    src/12k-stories-c.js:23
 STORIES_D                    src/12k-stories-d.js:15
-STORM_WORLDS                 src/21a-mode-base.js:246
+STORM_WORLDS                 src/21a-mode-base.js:256
 STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
@@ -2840,7 +2840,7 @@ unlockAudio                  src/09-audio.js:48
 unpackPart                   src/05-parts.js:323
 updateAllies                 src/12a-crew.js:573
 updateBarges                 src/12l-barge.js:156
-updateBase                   src/21a-mode-base.js:324
+updateBase                   src/21a-mode-base.js:334
 updateBelt                   src/24-mode-belt.js:184
 updateCave                   src/22-mode-cave.js:225
 updateCaveDeco               src/22a-cave-deco.js:184
@@ -3526,14 +3526,14 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21ac-base-draw.js · 50 КБ
   · база: рисование разреза:1
 
-## src/21a-mode-base.js · 23 КБ
+## src/21a-mode-base.js · 25 КБ
   · база на планете: вид в разрезе:1
   · энергия и соседство:90
   · ленивое время базы:146
-  · налёты пиратов на базу:205
-  · буря:241
-  · сеть баз:292
-  · обновление сцены:323
+  · налёты пиратов на базу:215
+  · буря:251
+  · сеть баз:302
+  · обновление сцены:333
 
 ## src/21ba-deco-shapes.js · 18 КБ
   · приметы места: формы:1
@@ -3795,7 +3795,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91g-relic.js · 8 КБ
   · автотесты: лаборатория и артефакты: слот, эффекты, дерево перков без пустот:1
 
-## tests/91h-base.js · 11 КБ
+## tests/91h-base.js · 12 КБ
   · автотесты: база: энергия и стройка, смотритель, буря, перки фактора:1
 
 ## tests/91i-cockpit.js · 3 КБ
