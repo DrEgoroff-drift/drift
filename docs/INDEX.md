@@ -2622,40 +2622,40 @@ STORY_DAY                    src/11c-stories.js:24
 STORY_ETHER_SHARE            src/11c-stories.js:26
 STORY_FIX                    src/11c-stories.js:54
 STORY_PIN_CAP                src/11c-stories.js:25
-STORY_SEAT                   src/11c-stories.js:291
+STORY_SEAT                   src/11c-stories.js:294
 STORY_WHEN                   src/11c-stories.js:147
 storyAddrMatch               src/11c-stories.js:69
 storyAll                     src/11c-stories.js:32
 storyAnchorRoll              src/11c-stories.js:87
 storyById                    src/11c-stories.js:33
-storyCantFigures             src/11c-stories.js:298
-storyCantProps               src/11c-stories.js:307
-storyCantScene               src/11c-stories.js:292
-storyCheckWhen               src/11c-stories.js:180
+storyCantFigures             src/11c-stories.js:301
+storyCantProps               src/11c-stories.js:310
+storyCantScene               src/11c-stories.js:295
+storyCheckWhen               src/11c-stories.js:183
 storyCtx                     src/11c-stories.js:39
 storyDay                     src/11c-stories.js:28
-storyEtherLine               src/11c-stories.js:231
-storyFindLine                src/11c-stories.js:259
+storyEtherLine               src/11c-stories.js:234
+storyFindLine                src/11c-stories.js:262
 storyFixedAddr               src/11c-stories.js:55
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:372
+storyGroundLine              src/11c-stories.js:375
 storyHasSeen                 src/11c-stories.js:34
-storyLint                    src/11c-stories.js:339
-storyNewsItem                src/11c-stories.js:266
-storyNote                    src/11c-stories.js:384
-storyPickOne                 src/11c-stories.js:222
+storyLint                    src/11c-stories.js:342
+storyNewsItem                src/11c-stories.js:269
+storyNote                    src/11c-stories.js:387
+storyPickOne                 src/11c-stories.js:225
 storyPins                    src/11c-stories.js:30
 storyPlace                   src/11c-stories.js:93
-storyProp                    src/11c-stories.js:315
-storyQueueLine               src/11c-stories.js:239
+storyProp                    src/11c-stories.js:318
+storyQueueLine               src/11c-stories.js:242
 storySeen                    src/11c-stories.js:29
 storySetFlag                 src/11c-stories.js:36
-storyShow                    src/11c-stories.js:208
-storyTableLine               src/11c-stories.js:251
-storyTraces                  src/11c-stories.js:189
+storyShow                    src/11c-stories.js:211
+storyTableLine               src/11c-stories.js:254
+storyTraces                  src/11c-stories.js:192
 storyTurns                   src/11c-stories.js:121
-storyWhen                    src/11c-stories.js:175
+storyWhen                    src/11c-stories.js:178
 stPanels                     src/17c-system-draw.js:118
 stRing                       src/17c-system-draw.js:144
 STRIP_CHUNK                  src/07-planet.js:73
@@ -3213,7 +3213,7 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/11c-stories.js · 22 КБ
   · истории: следы, а не задания:1
-  · каналы:229
+  · каналы:232
 
 ## src/11d-place.js · 4 КБ
   · память места: три счётчика и одометр:1
@@ -3349,9 +3349,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12k-rep.js · 4 КБ
   · репутация: вас помнят там, где вы бывали:1
 
-## src/12k-stories-a.js · 29 КБ
+## src/12k-stories-a.js · 30 КБ
   · истории, часть первая:1
-  · длинные — в духе институтской фантастики:230
+  · длинные — в духе институтской фантастики:236
 
 ## src/12k-stories-b.js · 34 КБ
   · истории, часть вторая:1

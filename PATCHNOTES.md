@@ -7,7 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.255.0 — M259: a turn can read the player's hand
+## 0.256.0 — M260: Крапива and the mended hull
+
+The third deed-fork, and the first one that reads the hull's biography. Мадам Крапива sits at
+the door with a ticket and watches pilots; a hull carrying four repair seams (M256) is living
+proof that people fall and come back. Then she does not buy a ship — one day she simply asks a
+barge to take her. The ticket stays on the empty seat, and that is the whole text; the
+connection is never named.
+
+New condition key `none:[...]` — "before the turn" is now two non-states when a turn has an
+else-outcome, so the waiting traces gate on both. Two decisions of the same pass, recorded:
+«Двое на одной орбите» stays calendar-driven **deliberately** — it is a story about
+inevitability, and a deed would spoil exactly that; Ким's debt got no fork — no deed in the
+story's fabric reaches it, and forcing one is worse than none.
+
+Reconnaissance for the glyph grammar (P7), written down for the next session: the runes flow
+through `settleLine` into `say`/`tell`/`hud` as plain text — the fix needs a glyph painter plus
+a text-to-fragment bridge in those three renderers, and a narrow-screen check; not an
+end-of-day edit.
 
 P6 opens (`DESIGN-story-craft.md` §1). Measured before the work: 108 stories, 18 turns, and
 every single turn had the same shape — *seen it, days passed*. No story in the game ever turned

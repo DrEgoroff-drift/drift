@@ -122,6 +122,15 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M260 — Крапива and the mended hull (2026-08-29) — CLOSED (0.256.0)
+
+Third fork (`seams` as a deed the world can see), key `none:[...]`, and two named negative
+decisions: two_on_orbit stays calendar (inevitability is the point), kim_debt unforked (no
+substrate). **P7 recon:** runes reach the player through `settleLine` → `say`/`tell`/`hud`
+plain text (plus `25i-post-back` DOM buttons and the parrot's `heardGlyph`); the grammar fix
+needs a canvas glyph painter (6 radicals × 4 operations = 24 signs, Siromoney ops) and a
+text→fragment bridge in the three renderers — its own session, with `test.ps1 -Mobile`.
+
 ## M259 — a turn can read the player's hand (2026-08-29) — CLOSED (0.255.0)
 
 P6's mechanism and first two forks (второй стакан, лампа на площадке). The turn engine takes

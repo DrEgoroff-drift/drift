@@ -170,7 +170,10 @@ const STORY_WHEN={
   hand:(v,S,c)=>{const st=(typeof settleAt==="function")?settleAt(c.sx,c.sy):null;
     return !!(st&&st.handAt)===!!v;},
   /* швов на текущем корпусе не меньше v (12s, M256): биографию видно и людям */
-  seams:(v)=>((typeof seamsOf==="function")?seamsOf():0)>=v
+  seams:(v)=>((typeof seamsOf==="function")?seamsOf():0)>=v,
+  /* ни один из флагов не стоит: нужен следам историй, у чьих поворотов есть
+     else-исход — «до поворота» это теперь два не-состояния, а не одно */
+  none:(v,S)=>v.every(f=>!storyFlag(S,f))
 };
 function storyWhen(S,t,c){
   const w=t.when;if(!w)return true;

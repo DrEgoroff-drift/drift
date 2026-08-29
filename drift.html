@@ -1351,7 +1351,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.255.0";
+const VER="0.256.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -10918,7 +10918,10 @@ const STORY_WHEN={
   hand:(v,S,c)=>{const st=(typeof settleAt==="function")?settleAt(c.sx,c.sy):null;
     return !!(st&&st.handAt)===!!v;},
   /* швов на текущем корпусе не меньше v (12s, M256): биографию видно и людям */
-  seams:(v)=>((typeof seamsOf==="function")?seamsOf():0)>=v
+  seams:(v)=>((typeof seamsOf==="function")?seamsOf():0)>=v,
+  /* ни один из флагов не стоит: нужен следам историй, у чьих поворотов есть
+     else-исход — «до поворота» это теперь два не-состояния, а не одно */
+  none:(v,S)=>v.every(f=>!storyFlag(S,f))
 };
 function storyWhen(S,t,c){
   const w=t.when;if(!w)return true;
@@ -18269,13 +18272,19 @@ const STORIES=[
 /* ── 6. Мадам Крапива не летает ── привычка · дом Крапивы */
 {id:"krapiva_suitcase",form:"habit",at:"fixed:9",cast:["krapiva"],
  traces:[
-  {id:"t1",via:"cant",when:{noflag:"ship"},scene:{seat:"door",figure:1,col:[92,70,96],props:["paper"]}},
-  {id:"t2",via:"queue",when:{noflag:"ship"},text:"— Это Крапива. Она не летает. Она сидит с билетом и ждёт баржу, а баржа её не берёт. Уже который год."},
-  {id:"t3",via:"queue",when:{visits:3,noflag:"ship"},text:"— Говорит: я не летаю, я еду. Разницу не объясняет."},
+  {id:"t1",via:"cant",when:{none:["ship","rode"]},scene:{seat:"door",figure:1,col:[92,70,96],props:["paper"]}},
+  {id:"t2",via:"queue",when:{none:["ship","rode"]},text:"— Это Крапива. Она не летает. Она сидит с билетом и ждёт баржу, а баржа её не берёт. Уже который год."},
+  {id:"t3",via:"queue",when:{visits:3,none:["ship","rode"]},text:"— Говорит: я не летаю, я еду. Разницу не объясняет."},
   {id:"t4",via:"news",when:{flag:"ship"},text:"Мадам Крапива купила корабль. Целиком, с экипажем. Куда — не сказала."},
-  {id:"t5",via:"cant",when:{flag:"ship"},scene:{seat:"door",figure:0,props:["paper"]}}
+  {id:"t5",via:"cant",when:{flag:"ship"},scene:{seat:"door",figure:0,props:["paper"]}},
+  /* развилка (M259/M260): она сидит У ДВЕРИ и смотрит на пилотов. Корпус в
+     швах — живое доказательство, что падают и возвращаются. Тогда она не
+     покупает корабль — она однажды просто просится на баржу. Связь не
+     называется: билет остаётся лежать, и это весь текст */
+  {id:"t6",via:"news",when:{flag:"rode"},text:"Мадам Крапива уехала. Баржей, палубной. Говорят, сама подошла и попросилась."},
+  {id:"t7",via:"cant",when:{flag:"rode"},scene:{seat:"door",figure:0,props:["paper"]}}
  ],
- turns:[{after:"seen:t2",days:24,set:"ship"}]},
+ turns:[{after:"seen:t2",days:24,set:"ship",unless:{seams:4},else:"rode"}]},
 
 /* ── 7. Ефимово место ── место · везде, где есть стойка */
 {id:"efim_stool",form:"place",at:"any",cast:["efim"],
