@@ -72,6 +72,26 @@ function drawMap(){
     ctx.fillStyle=cg;ctx.fillRect(-L/2,-H/2,L,H);
     ctx.restore();
   }),0,0,W,H);
+  /* ── сеть пеленгов (экспедиция-2, свод §14: портуланы) ──
+     На морской карте каждая линия — пеленг, по которому можно идти; красота
+     заработана управляемостью. Шестнадцать румбов из ТЕКУЩЕЙ системы (она в
+     центре листа) — курс читается направлением с одного взгляда. Главные
+     четыре чуть громче. Печётся раз на размер экрана. */
+  ctx.drawImage(screenLayer("maprhumb|"+W+"|"+H,()=>{
+    const L=Math.hypot(W,H);
+    ctx.save();ctx.translate(W/2,H/2);
+    for(let i=0;i<16;i++){
+      const a=i/16*TAU;
+      ctx.strokeStyle="rgba(150,182,212,"+((i%4===0)?.075:.04)+")";
+      ctx.lineWidth=(i%4===0)?1:.7;
+      ctx.beginPath();ctx.moveTo(0,0);
+      ctx.lineTo(Math.cos(a)*L,Math.sin(a)*L);ctx.stroke();
+    }
+    /* скрытая окружность построения — как процарапанная на пергаменте */
+    ctx.strokeStyle="rgba(150,182,212,.05)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(0,0,Math.min(W,H)*.42,0,TAU);ctx.stroke();
+    ctx.restore();
+  }),0,0,W,H);
   drawStars(G.sx*140,G.sy*140,.35);
   const cell=Math.min(W,H)/9.2,R=5;
   const jr=(st.jump+.02)*cell;

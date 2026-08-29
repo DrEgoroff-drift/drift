@@ -508,6 +508,23 @@ function drawSurfaceWorld(){
       ng.addColorStop(.66,"rgba(3,5,14,"+(nite*.74).toFixed(3)+")");
       ng.addColorStop(1,"rgba(2,3,10,"+(nite*.90).toFixed(3)+")");
       ctx.fillStyle=ng;ctx.fillRect(0,0,W,H);
+      /* ── контровая кромка (экспедиция-2, свод §15: day-for-night) ──
+         Кино снимает ночь по правилам: контровой свет рисует РИМ на силуэтах,
+         иначе они тают. Холодный волосок неба по кромке рельефа — «лунная»
+         каёмка; леджер давал ночи contrast .21 — это её недостающий край. */
+      if(nite>.25){
+        const st=tr.step;
+        const iA=clamp(Math.floor(camx/st)-1,0,tr.N-1),
+              iB=clamp(Math.ceil((camx+W)/st)+1,0,tr.N-1);
+        ctx.strokeStyle="rgba(168,198,232,"+(.24*nite).toFixed(3)+")";
+        ctx.lineWidth=1.1;
+        ctx.beginPath();
+        for(let i=iA;i<=iB;i++){
+          const x=i*st-camx,y=tr.h[i]-camy;
+          if(i===iA)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+        }
+        ctx.stroke();
+      }
       /* след севшей звезды у горизонта с её стороны: полоса, по которой видно,
          куда именно она ушла, — иначе ночь одинакова во все стороны */
       const SS=sunSpot(p);

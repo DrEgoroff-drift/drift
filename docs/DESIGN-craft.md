@@ -309,6 +309,63 @@ ordering wins where the two differ. Kept below as the raster-only view.*
 Not yet examined: Persian miniature (no single light source, pattern density in place of
 modelling) and Dutch glazing over grisaille.
 
+## 11. Even light and pattern density — Persian miniature
+
+The second research expedition (2026-08-30). Persian miniature is the codified OPPOSITE light
+regime: figures cast no shadows, light is even, the composition sits in a single plane with
+«simultaneous perspective», and colours build light→dark in layers. Form is carried not by
+modelling but by **pattern density** — a carpet reads as a carpet by its ornament, not its
+shading.
+
+The law for Drift: *where one light would be a lie, even light + pattern is the honest regime.*
+Our interiors (home rooms, HQ, station cards) have many small lamps, no sun — they are
+miniatures, not landscapes. The furniture-as-flat-boxes debt (Loose ends) should be paid NOT
+with fake shading but with pattern: woven blankets, panel seams, tiled floors. Bearing:
+`29d-home-draw`, `27f-hq-room`, зимовка.
+
+## 12. The dead layer — Dutch glazing over grisaille
+
+Doodverf: a monochrome value layer settles ALL form and light first (skipping it was a finable
+offence in the guilds); colour arrives only as transparent glazes that let the values shine
+through. Rembrandt's drama is a brown dead layer under glazes. This is the P4 grisaille-chunks
+plan confirmed from outside: bake grayscale FORM once per chunk, glaze per palette — and it
+explains why `gradePass` works: it is the final glaze. Bearing: `18c-chunks`, `07-planet`, P4.
+
+## 13. Bokashi and the key block — ukiyo-e
+
+The key block (black outline cut first, everything hangs off it) is our «тело, обвод» confirmed
+as a printmaking law. The transferable find is **ichimonji bokashi**: the horizon gradient is
+laid at the WIDTH OF ONE BRUSH on a wetted block — a fixed-width band, not a half-screen wash.
+Hokusai's sky is a stripe of Prussian blue exactly one brush wide. Law: *a horizon gradient has
+a width, and the width is a tool, not a percentage of the frame.* Bearing: `hazeBand`,
+`drawSkyBase` (проверить ширины полос против «полэкрана»).
+
+## 14. The chart is an instrument — portolan rhumb networks
+
+Portolans criss-cross the sea with rhumb lines from a hidden 16-vertex circle: every line IS a
+bearing a sailor can steer by; the wind rose is the instrument's face. Nothing on the chart is
+decoration. Law: *a map earns its beauty by being steerable.* Bearing: `18-mode-map` — the
+galaxy chart gets a rhumb web from the current system (16 bearings off a hidden circle), so a
+course reads as a bearing, ONE glance, like ДЕЙСТВИЕ reads as a verb. Done first (M280).
+
+## 15. Day-for-night — the codified fake
+
+Cinema's night is shot by rules: underexpose ~two stops, tint blue (Purkinje, not physics),
+keep the sun out of frame, let backlight draw a RIM on silhouettes, and treat the sky
+separately from the ground (skies are pulled down or replaced — never darkened with the rest).
+Drift's night (M172 «строй значений») already splits sky from ground; the missing piece was
+the **rim**: night silhouettes need a cold back-light edge or they melt. Done (M280): the
+terrain edge carries a cold contour at night. Bearing: `21e` night block, `19-mode-landing`.
+
+## 16. The zone system — previsualisation with numbers
+
+Ansel Adams split tone into eleven zones and металл his scenes before shooting: «expose for
+the shadows, develop for the highlights». This is `look()`'s philosophy stated 80 years
+earlier: judge the frame as discrete controllable steps, not as taste. The transferable rule:
+dark scenes are exposed FOR THE SHADOWS — the cave's blacks must keep detail (zone II–III, not
+0) while highlights are developed separately. LOOK_TARGET's три ступени — это зоны; расти
+стоит до пяти, не до одиннадцати.
+
 ## Marathon addendum (2026-08-29, M264–M270)
 
 The author's verdict on the first application run: the craft went where the eye rarely goes;
@@ -329,6 +386,20 @@ the everyday screens; the ledger, so the next reader knows what is DONE versus d
   its own session), settlement recursion (P9b — by intent).
 
 ## Sources
+
+Second expedition (2026-08-30):
+- Persian miniature: worldhistory.org *Persian Miniature Painting*; bips.ac.uk *Materials and
+  Techniques*; saadatrent.com *Introduction to Iranian Miniatures*.
+- Doodverf/glazing: kojoart.com *Grisaille Underpainting*; durhldavis.com *Dutch Masters
+  Technique*; jonathan-brier.com *Grisaille & Underpainting Guide*.
+- Bokashi/key block: en.wikipedia *Bokashi (printing)*; britishmuseum.org blog *How to make a
+  woodblock print like Hiroshige*; takahashi-kobo.com *Edo woodblock technique*.
+- Portolans: cartographyunchained.com *Wind rose construction on a portolan*; Library of
+  Congress research guide *Portolan Charts*; Yale Beinecke highlights.
+- Day-for-night: en.wikipedia *Day for night*; definitionmagazine.com *Technique: Day for
+  night*; B&H eXplora *Basics of Day for Night*.
+- Zone system: photographyicon.com *The Zone System*; nerdyphotographer.com *Zone System
+  Explained*; fstoppers.com *Zone System in the Digital World*.
 
 - Icon painting: *Личное письмо (иконопись)*, ru.wikipedia; Murom museum, technique of личное
   письмо in 16th–18th c. icons.

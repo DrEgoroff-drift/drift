@@ -7,6 +7,28 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.277.0 — M280: the second expedition — six new laws, two brought home
+
+A new research run outside the project (`DESIGN-craft.md` §11–16, sources listed): Persian
+miniature (even light + pattern density is the honest regime for interiors — the furniture debt
+should be paid with pattern, not fake shading), Dutch doodverf (the P4 grisaille plan confirmed
+as guild law: values first, colour as glazes — gradePass is our final glaze), ukiyo-e bokashi
+(a horizon gradient has the width of a brush, not a percentage of the frame) and the key block
+(«тело, обвод» confirmed as printmaking law), portolan charts (a map earns beauty by being
+steerable), day-for-night cinema (underexpose two stops, blue by Purkinje, sky separate, RIM on
+silhouettes), and Adams' zone system (look()'s philosophy, 80 years early: judge tone as
+controllable steps; expose dark scenes for the shadows).
+
+Two laws went straight into the game:
+- **The chart is an instrument (§14).** The galaxy map now carries a portolan rhumb web —
+  sixteen bearings radiating from the current system (the four cardinals a touch louder) over
+  a hidden construction circle, under the stars, over the galactic band. A course reads as a
+  bearing at one glance.
+- **The night rim (§15).** Night silhouettes melted (ledger: contrast .21) — cinema's
+  day-for-night answer is the back-light rim. A cold hairline of sky now runs along the terrain
+  edge at night, scaled by darkness.
+
+---
 ## 0.276.0 — M279: the law × surface matrix — no more exhibition pieces
 
 The author's charge: a rule living in three places out of ten is an exhibition, not a law. The
