@@ -7,7 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.248.0 — M252: the atelier reaches the other five places
+## 0.249.0 — M253: direction becomes a primitive, and the cave rock gets its grain
+
+`dirAt(x,y,seed,scale)` lands in `01-core` (DESIGN-craft §2/§5): the angle of flow at a point,
+taken from the *isolines* of fbm — the gradient turned a quarter — so streamlines never cross
+and flow coherently, combed rather than scattered. Every noise in the game was isotropic; a
+fibre, a scratch, bedding could not be expressed at all.
+
+First consumers:
+
+- **The cave rock** (`drawCaveRock`): short two-tone strokes along the field, world-keyed and
+  seeded by the planet — tiles join, nothing swims, and it bakes into the tile so the frame
+  pays nothing. The stone had form and light but no *material*; now it has a lie of the rock.
+  Laid before the depth blue-black, so depth dims the grain too — down there it is dark.
+- **The mine's mineral veins** (`digRockPass`): the angle comes from the field instead of a
+  fresh random per stroke — veins of one seam flow together, with a small scatter kept.
+
+Queue for the primitive, per the combined plan: dust flow in `16a`, one wind for the grass in
+`20`, nebula strata, the andamento background.
 
 The postcard's underground and vacuum kits get their craft brushes, completing P1:
 

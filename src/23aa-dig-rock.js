@@ -58,7 +58,10 @@ function digRockPass(D,p,camx,camy){
         const dy=L.d0+((hh>>>8)&63)/63*L.th*.8;
         const sx=wx-camx, sy=(dy+geoWob(L,wx))/DIG_GEO_K-camy;
         if(sy<-20||sy>H+20)continue;
-        const ln=9+((hh>>>14)&15), ang=((hh>>>18)&15)/15*1.1-.55;
+        /* угол жилы — от поля направлений, а не свой на каждый штрих (M253):
+           жилы одного пласта текут согласованно, лёгкий разброс остаётся */
+        const ln=9+((hh>>>14)&15),
+              ang=dirAt(wx,dy,L.seed,1/340)+(((hh>>>18)&15)/15-.5)*.3;
         ctx.strokeStyle="rgba("+mn.join(",")+","+(.16+((hh>>>22)&7)/7*.26).toFixed(2)+")";
         ctx.lineWidth=1+((hh>>>25)&1);
         ctx.beginPath();ctx.moveTo(sx,sy);

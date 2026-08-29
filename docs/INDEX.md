@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3048
+Файлов: 333 · символов верхнего уровня: 3049
 
 ## СИМВОЛЫ
 
@@ -77,8 +77,8 @@ AMMO_KEYS                    src/02-world.js:32
 ammoBatch                    src/16b-missile.js:27
 ammoRow                      src/16b-missile.js:41
 ANCHOR_CACHE                 src/05-parts.js:140
-angDiff                      src/01-core.js:69
-angWrap                      src/01-core.js:68
+angDiff                      src/01-core.js:82
+angWrap                      src/01-core.js:81
 applyCrewEvent               src/12b-crew-events.js:214
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
@@ -482,25 +482,26 @@ deltaHtml                    src/05-parts.js:293
 depKind                      src/21b-surface-deco.js:337
 deployDrone                  src/12-economy.js:73
 DEPTH_TIERS                  src/04-mods.js:51
-DESC_MOOD                    src/01-core.js:85
-DESC_TAIL                    src/01-core.js:91
+DESC_MOOD                    src/01-core.js:98
+DESC_TAIL                    src/01-core.js:104
 dgy                          src/21b-surface-deco.js:131
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
-DIG_TURF                     src/23aa-dig-rock.js:411
-digBedding                   src/23aa-dig-rock.js:114
+DIG_TURF                     src/23aa-dig-rock.js:414
+digBedding                   src/23aa-dig-rock.js:117
 digCell                      src/23-mode-dig.js:29
 digFauna                     src/23-mode-dig.js:224
-digRGB                       src/23aa-dig-rock.js:413
-digRockMass                  src/23aa-dig-rock.js:147
+digRGB                       src/23aa-dig-rock.js:416
+digRockMass                  src/23aa-dig-rock.js:150
 digRockPass                  src/23aa-dig-rock.js:26
-digSMix                      src/23aa-dig-rock.js:412
-digSoil                      src/23aa-dig-rock.js:447
-digSoilBand                  src/23aa-dig-rock.js:440
-digSoilCols                  src/23aa-dig-rock.js:421
-digSurfFringe                src/23aa-dig-rock.js:558
-digSurfY                     src/23aa-dig-rock.js:417
+digSMix                      src/23aa-dig-rock.js:415
+digSoil                      src/23aa-dig-rock.js:450
+digSoilBand                  src/23aa-dig-rock.js:443
+digSoilCols                  src/23aa-dig-rock.js:424
+digSurfFringe                src/23aa-dig-rock.js:561
+digSurfY                     src/23aa-dig-rock.js:420
 digVoidPath                  src/23a-dig-draw.js:4
+dirAt                        src/01-core.js:68
 DOM_GAME                     src/11af-domino.js:12
 dominoBlock                  src/11af-domino.js:58
 dominoEnd                    src/11af-domino.js:23
@@ -545,15 +546,15 @@ drawBeltRocks                src/17c-system-draw.js:41
 drawBuildMenu                src/21aa-base-rooms.js:504
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
-drawCave                     src/22-mode-cave.js:614
+drawCave                     src/22-mode-cave.js:639
 drawCaveDark                 src/22a-cave-deco.js:288
-drawCaveFar                  src/22-mode-cave.js:483
+drawCaveFar                  src/22-mode-cave.js:508
 drawCaveGlow                 src/22a-cave-deco.js:322
 drawCaveOwnLight             src/22a-cave-deco.js:446
 drawCaveRock                 src/22-mode-cave.js:428
 drawCaveSolid                src/22a-cave-deco.js:220
 drawCaveWater                src/22a-cave-deco.js:261
-drawCaveWorld                src/22-mode-cave.js:508
+drawCaveWorld                src/22-mode-cave.js:533
 drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:180
@@ -855,10 +856,10 @@ g11Fps                       src/28z-fps-probe.js:7
 genBeast                     src/20f-fauna.js:58
 genBeltPOI                   src/24b-belt-poi.js:20
 genDeco                      src/21b-surface-deco.js:37
-genDesc                      src/01-core.js:92
+genDesc                      src/01-core.js:105
 genMerc                      src/12a-crew.js:59
 genMgr                       src/12c-mgr-core.js:236
-genName                      src/01-core.js:75
+genName                      src/01-core.js:88
 genPart                      src/05-parts.js:70
 genPlant                     src/20-life.js:188
 genPOI                       src/20a-poi.js:32
@@ -2318,7 +2319,7 @@ roleFromStats                src/03f-hull-role.js:37
 roleOf                       src/03f-hull-role.js:46
 rollCrewEvent                src/12b-crew-events.js:70
 rollWorld                    src/02a-worldmix.js:67
-ROMAN                        src/01-core.js:74
+ROMAN                        src/01-core.js:87
 ROOM_FIN                     src/21aa-base-rooms.js:46
 roomToneTick                 src/09a-roomtone.js:79
 ROUTE_MAX                    src/12r-route.js:16
@@ -2348,8 +2349,8 @@ rumoursHere                  src/11t-rumours.js:36
 runAutopilot                 src/16-flight.js:109
 runTests                     tests/90-harness.js:80
 rxRecord                     src/11x-ring.js:64
-S1                           src/01-core.js:72
-S2                           src/01-core.js:73
+S1                           src/01-core.js:85
+S2                           src/01-core.js:86
 SAVE_KEY                     src/14-save.js:6
 saveGame                     src/14a-cloud.js:38
 say                          src/08-state.js:184
@@ -2697,8 +2698,8 @@ syncTabs                     src/26-ui-station.js:77
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
 SYS_EXOTIC                   src/16a-space.js:14
-sysDanger                    src/01-core.js:79
-sysJitter                    src/01-core.js:80
+sysDanger                    src/01-core.js:92
+sysJitter                    src/01-core.js:93
 sysNebulaTex                 src/16a-space.js:53
 sysPirateBase                src/24a-mode-raid.js:98
 sysStyle                     src/16a-space.js:21
@@ -3061,10 +3062,10 @@ zooTick                      src/11ad-zoo.js:41
 
 ## ФАЙЛЫ И РАЗДЕЛЫ
 
-## src/01-core.js · 7 КБ
+## src/01-core.js · 8 КБ
   · математика:5
-  · имена:71
-  · удалённость и настрой сектора:78
+  · имена:84
+  · удалённость и настрой сектора:91
 
 ## src/02a-worldmix.js · 8 КБ
   · смешанные миры:1
@@ -3606,12 +3607,12 @@ zooTick                      src/11ad-zoo.js:41
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
   · свой свет пещеры (M248):419
 
-## src/22-mode-cave.js · 35 КБ
+## src/22-mode-cave.js · 37 КБ
   · пещера: поле породы в двух измерениях:1
 
-## src/23aa-dig-rock.js · 35 КБ
+## src/23aa-dig-rock.js · 36 КБ
   · шахта: порода:1
-  · почвенный профиль: небо кончается не линейкой:397
+  · почвенный профиль: небо кончается не линейкой:400
 
 ## src/23a-dig-draw.js · 40 КБ
   · шахта: отрисовка:1

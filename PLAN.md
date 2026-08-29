@@ -122,6 +122,14 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M253 — direction as a primitive; the cave rock's grain (2026-08-29) — CLOSED (0.249.0)
+
+P2 opened: `dirAt` in `01-core` (curl of fbm — coherent, non-crossing flow), first consumers
+the cave rock (baked two-tone grain along the field; the "no material" gap of DESIGN-craft §5)
+and the mine's veins (coherent per seam). Remaining P2 consumers, in order of payoff: dust
+flow (`16a`), one wind for the grass (`20`), nebula strata (`16`), andamento background.
+Rule: the field is sampled at bake time — a chunk or tile — never in the frame.
+
 ## M252 — the atelier reaches the other five places (2026-08-29) — CLOSED (0.248.0)
 
 P1 complete: dry brush along the bedding in `pcStrata` (cave+mine), the galaxy as watercolour

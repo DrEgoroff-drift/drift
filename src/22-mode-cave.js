@@ -461,6 +461,31 @@ function drawCaveRock(C,cp,wx0,wy0){
        светит как днём и убивает единственное, что есть у пещеры — темноту */
     ctx.fillStyle="rgba(2,4,9,.30)";ctx.fill(P);
     ctx.strokeStyle="rgba(2,4,9,.30)";ctx.lineWidth=CS;ctx.stroke(K);
+    /* ── зерно по массиву (M253, DESIGN-craft §5) ──
+       У камня была форма и был свет, но не было МАТЕРИАЛА: по картинке не
+       сказать, твёрдый он или рыхлый. Короткие штрихи двух тонов вдоль поля
+       направлений (dirAt) дают залегание: зерно согласовано на весь массив,
+       как расчёсанное, а не случайное. Всё от мировых координат и посева
+       планеты — тайлы стыкуются, при движении не плывёт; печётся в тайл,
+       кадру бесплатно. Кладётся до глубинной сини: глубина гасит и зерно,
+       и это правильно — внизу темно. */
+    ctx.save();ctx.clip(P);
+    const stp=24,sd=(cp.seed|0);
+    const gx0=Math.floor(wx0/stp)*stp, gy0=Math.floor(wy0/stp)*stp;
+    for(let gy=gy0;gy<wy0+TILE+stp;gy+=stp)for(let gx=gx0;gx<wx0+TILE+stp;gx+=stp){
+      const hh=hashi(gx/stp,gy/stp,sd^0x5C4E);
+      if((hh&7)<3)continue;
+      const jx=gx+((hh>>>3)&15)/15*stp-wx0, jy=gy+((hh>>>7)&15)/15*stp-wy0;
+      const ang=dirAt(gx,gy,sd+0x11,1/300);
+      const ln=6+((hh>>>11)&7);
+      ctx.strokeStyle=((hh>>>14)&1)?"rgba(170,190,210,.09)":"rgba(0,0,0,.22)";
+      ctx.lineWidth=1.2;
+      ctx.beginPath();
+      ctx.moveTo(jx-Math.cos(ang)*ln,jy-Math.sin(ang)*ln);
+      ctx.lineTo(jx+Math.cos(ang)*ln,jy+Math.sin(ang)*ln);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
   /* с глубиной порода уходит в синюю черноту: по ней видно, насколько ты
      ниже устья, без всяких цифр */

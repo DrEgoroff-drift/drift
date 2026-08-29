@@ -1351,7 +1351,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.248.0";
+const VER="0.249.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -1408,6 +1408,19 @@ function blueNoise(){
    момент СТАРТ. Полсекунды после load хватает, чтобы не мешать открытию. */
 if(typeof addEventListener==="function")
   addEventListener("load",()=>setTimeout(blueNoise,500));
+/* ── поле направлений (M253, DESIGN-craft §2/§5) ──
+   Угол потока в точке. Весь шум игры изотропен — у него нет направления, и
+   волокно, царапину, залегание из него не получить в принципе. Поле берёт
+   не сам fbm, а его ИЗОЛИНИИ: градиент повёрнут на четверть, линии тока идут
+   вдоль изолиний — не пересекаются и текут согласованно, как причёсанные.
+   sc — крупность (1/период в мировых px). Считается на точку при выпечке
+   тайла или чанка, в кадре его звать незачем. */
+function dirAt(x,y,s,sc){
+  const f=(sc==null?1/240:sc),E=6;
+  const a=fbm2((x+E)*f,y*f,s,4)-fbm2((x-E)*f,y*f,s,4);
+  const b=fbm2(x*f,(y+E)*f,s,4)-fbm2(x*f,(y-E)*f,s,4);
+  return Math.atan2(-a,b);
+}
 /* Разница углов, кратчайшей дугой. Прежняя формула — ((a-b+3π)%TAU)-π — верна
    ровно до тех пор, пока a-b не меньше -3π: остаток в JS берёт знак делимого,
    и на больших отрицательных разностях ответ уезжает и по знаку, и за пределы
@@ -43376,6 +43389,31 @@ function drawCaveRock(C,cp,wx0,wy0){
        светит как днём и убивает единственное, что есть у пещеры — темноту */
     ctx.fillStyle="rgba(2,4,9,.30)";ctx.fill(P);
     ctx.strokeStyle="rgba(2,4,9,.30)";ctx.lineWidth=CS;ctx.stroke(K);
+    /* ── зерно по массиву (M253, DESIGN-craft §5) ──
+       У камня была форма и был свет, но не было МАТЕРИАЛА: по картинке не
+       сказать, твёрдый он или рыхлый. Короткие штрихи двух тонов вдоль поля
+       направлений (dirAt) дают залегание: зерно согласовано на весь массив,
+       как расчёсанное, а не случайное. Всё от мировых координат и посева
+       планеты — тайлы стыкуются, при движении не плывёт; печётся в тайл,
+       кадру бесплатно. Кладётся до глубинной сини: глубина гасит и зерно,
+       и это правильно — внизу темно. */
+    ctx.save();ctx.clip(P);
+    const stp=24,sd=(cp.seed|0);
+    const gx0=Math.floor(wx0/stp)*stp, gy0=Math.floor(wy0/stp)*stp;
+    for(let gy=gy0;gy<wy0+TILE+stp;gy+=stp)for(let gx=gx0;gx<wx0+TILE+stp;gx+=stp){
+      const hh=hashi(gx/stp,gy/stp,sd^0x5C4E);
+      if((hh&7)<3)continue;
+      const jx=gx+((hh>>>3)&15)/15*stp-wx0, jy=gy+((hh>>>7)&15)/15*stp-wy0;
+      const ang=dirAt(gx,gy,sd+0x11,1/300);
+      const ln=6+((hh>>>11)&7);
+      ctx.strokeStyle=((hh>>>14)&1)?"rgba(170,190,210,.09)":"rgba(0,0,0,.22)";
+      ctx.lineWidth=1.2;
+      ctx.beginPath();
+      ctx.moveTo(jx-Math.cos(ang)*ln,jy-Math.sin(ang)*ln);
+      ctx.lineTo(jx+Math.cos(ang)*ln,jy+Math.sin(ang)*ln);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
   /* с глубиной порода уходит в синюю черноту: по ней видно, насколько ты
      ниже устья, без всяких цифр */
@@ -43598,7 +43636,10 @@ function digRockPass(D,p,camx,camy){
         const dy=L.d0+((hh>>>8)&63)/63*L.th*.8;
         const sx=wx-camx, sy=(dy+geoWob(L,wx))/DIG_GEO_K-camy;
         if(sy<-20||sy>H+20)continue;
-        const ln=9+((hh>>>14)&15), ang=((hh>>>18)&15)/15*1.1-.55;
+        /* угол жилы — от поля направлений, а не свой на каждый штрих (M253):
+           жилы одного пласта текут согласованно, лёгкий разброс остаётся */
+        const ln=9+((hh>>>14)&15),
+              ang=dirAt(wx,dy,L.seed,1/340)+(((hh>>>18)&15)/15-.5)*.3;
         ctx.strokeStyle="rgba("+mn.join(",")+","+(.16+((hh>>>22)&7)/7*.26).toFixed(2)+")";
         ctx.lineWidth=1+((hh>>>25)&1);
         ctx.beginPath();ctx.moveTo(sx,sy);
