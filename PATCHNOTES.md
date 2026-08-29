@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.269.0 — M272: the 10×10 audit — the cliff learns the brush, the sky seam is caught
+
+First half of the ten-passes-by-ten-laws audit (graphics passes + the full text/fork audit).
+
+**§5 reaches the cliff.** The cut under the relief — the largest area of a daytime frame — was
+the last rock without the 皴 brush: cave (M263) and mine (M267) had it, the surface didn't.
+`drawGround` now lays CUN strokes along the direction field in the chunk bake, free per frame.
+
+**The rectangular sky seam — hunted down.** Loose ends carried «rectangular seams of the sky
+layer, seen on two screenshots, never chased» — it surfaced on the ice-storm album frame: the
+sky-nebula tile (`skyNeb`) is drawn as a stretched square whose fbm alpha never reaches zero at
+the borders, so a pale RECTANGLE hung right of the sun. Two sins in one body: the tile now bakes
+an oval fade into its own alpha (no seam anywhere, one-off cost), and its hardcoded alpha now
+multiplies `dim` — the «weather silences the sky» law (M266) had never reached the nebula, which
+glowed through a dust storm as on a clear night.
+
+**The full text-and-fork audit (все 108 историй, каждая развилка).** Verdicts: every fork obeys
+the hard law (no trace names the player as cause), the kim-relay cross-confirms kim_paid_by
+honestly. Fixed: relay_kim's scene sat on an undocumented `seat:"mid"` silently falling to
+centre (now "far", and the lint validates seats); the a-file format header never documented
+`when`/`unless`/`else`; d-file story numbers 101–106 collided with c-file's 101–102 (renumbered
+103–108, bench_view is 109); two_window got its named refusal (pair-inevitability class). And
+the fork law is now MECHANICAL: `storyLint` rejects any trace text matching «потому что вы…» /
+«из-за вас» — the suite guards what was until now a discipline.
+
+---
 ## 0.268.0 — M271: the second circle of critique
 
 The whole pass again, harsher. Four catches, one acquittal.

@@ -149,6 +149,38 @@ function drawGround(tr,camx,camy,fill,line,pal){
   /* порода: бесшовный тайл-материал вместо плоской заливки (18a-material).
      Заливка под ним остаётся — она держит силуэт, если материала ещё нет. */
   if(tr.mat)fillMaterial(tr.mat,camx,camy,tr.p?.5:.92,.22,P);
+  /* ── 皴 на обрыве (аудит 10×10, §5): манера штриха дошла до поверхности ──
+     Пещера и шахта режут ту же породу с манерой (CUN), а срез под рельефом —
+     самая большая площадь дневного кадра — оставался материалом без кисти.
+     Тот же ход: штрих вдоль поля направлений, манера из таблицы по типу
+     мира. В ломоть, кадру бесплатно. */
+  if(pal&&tr.p&&tr.mat&&typeof CUN!=="undefined"){
+    ctx.save();ctx.clip(P);
+    const M=CUN[tr.p.type]||CUN.rocky;
+    const stp=26,sd=((tr.p.seed|0)^0x51F);
+    const gx0=Math.floor(camx/stp)*stp, gy0=Math.floor(camy/stp)*stp;
+    for(let gy=gy0;gy<camy+H+stp;gy+=stp)for(let gx=gx0;gx<camx+W+stp;gx+=stp){
+      const hh=hashi(gx/stp,gy/stp,sd);
+      if((hh&7)<4)continue;                       /* на свету штрих реже, чем под землёй */
+      const jx=gx+((hh>>>3)&15)/15*stp-camx, jy=gy+((hh>>>7)&15)/15*stp-camy;
+      const light=((hh>>>14)&1);
+      if(M.dot){
+        ctx.fillStyle=light?"rgba(255,246,226,"+(M.la*.9).toFixed(3)+")":"rgba(0,0,0,"+(M.da*.8).toFixed(3)+")";
+        const q=1+((hh>>>11)&1);
+        ctx.fillRect(jx,jy,q,q);
+        continue;
+      }
+      const ang=dirAt(gx,gy,sd+0x11,1/300)+(((hh>>>16)&15)/15-.5)*M.jig;
+      const ln=(5+((hh>>>11)&7))*M.ln;
+      ctx.strokeStyle=light?"rgba(255,246,226,"+(M.la*.9).toFixed(3)+")":"rgba(0,0,0,"+(M.da*.8).toFixed(3)+")";
+      ctx.lineWidth=M.w;
+      ctx.beginPath();
+      ctx.moveTo(jx-Math.cos(ang)*ln,jy-Math.sin(ang)*ln);
+      ctx.lineTo(jx+Math.cos(ang)*ln,jy+Math.sin(ang)*ln);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
   /* склон, обращённый к солнцу (вправо-вверх), светлее; в тень — темнее.
      Простое псевдо-освещение по наклону вместо одной плоской заливки.
      Полосы полупрозрачные: непрозрачные закрашивали материал обратно в фигуру. */

@@ -1353,7 +1353,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.268.0";
+const VER="0.269.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -11146,6 +11146,16 @@ function storyLint(){
     const at=S.at||"any";
     if(!/^(any|planet|settle|tin|hours:core|danger:far|fixed:\d+|stype:\w+|world:\w+)$/.test(at))bad.push(S.id+": адрес "+at);
     const ids=new Set();for(const t of S.traces){if(ids.has(t.id))bad.push(S.id+": след "+t.id+" дважды");ids.add(t.id);}
+    for(const t of S.traces){
+      /* сиденье сцены — только из STORY_SEAT: неизвестное молча падало в
+         центр, и сцена вставала не туда (relay_kim возил seat:"mid") */
+      if(t.scene&&t.scene.seat!=null&&STORY_SEAT[t.scene.seat]==null)
+        bad.push(S.id+"."+t.id+": сиденье "+t.scene.seat);
+      /* ЗАКОН РАЗВИЛКИ — механически: ни один след не называет причастность
+         игрока причиной. «Потому что вы…», «из-за вас» — запрещённые слова */
+      if(t.text&&/потому что в[ыа]|из-за ва[cс]/i.test(t.text))
+        bad.push(S.id+"."+t.id+": след предъявляет развилку игроку");
+    }
   }
   return bad.concat(storyCheckWhen());
 }
@@ -18211,7 +18221,10 @@ function repShipMul(sys){return 1-repAt(sys)*.02;}
                text:null — молчание (полноправная реплика).
                scene (cant): {seat:corner|far|end|door, figure:0|1, props:[…]}.
      when    — условия из словаря STORY_WHEN (11c). Порядок следов свободен.
-     turns   — повороты: {after:"seen:t2",days:N,set:"flag"} или {day:N,set}.
+     turns   — повороты: {after:"seen:t2",days:N,set:"flag"} или {day:N,set};
+               развилка (M259): when — поворот ждёт условия; unless — тихо
+               отменяет и ставит else-флаг. Закон: развилка НЕ предъявляется
+               никогда, ни один след не говорит «потому что вы» (линт стережёт).
      form    — главная форма: habit pair after ongoing versions thing place
                beast ether witness.
      links   — связи с другими историями; никогда не обязательны.
@@ -18769,6 +18782,8 @@ const STORIES_B=[
  ]},
 
 /* ── 47. Двое у окна ── двое · научная, плавающая */
+/* ОТКАЗ развилки (аудит 10×10): пара, у которой всё сказано, расстаётся не
+   из-за прохожего — класс two_on_orbit/twins: неотвратимость пар — смысл. */
 {id:"two_window",form:"pair",at:"stype:sci",cast:["quiet"],
  traces:[
   {id:"t1",via:"cant",when:{noflag:"apart"},scene:{seat:"far",figure:1,col:[80,90,100],props:["glass","glass"]}},
@@ -19260,7 +19275,7 @@ const STORIES_C=[
  ],
  links:["named_crystal"]},
 
-/* ── 108. Смотровая скамейка ── место · научная, плавающая ──
+/* ── 109. Смотровая скамейка ── место · научная, плавающая ──
    Развилка С3 (не показывается): открытка — слепок сцены, ушедший в общую
    почту, и мир его видел (ключ card, G.mailed). Отправил карточку отсюда —
    к скамейке начали приезжать; не отправил — её снимут за ненадобностью.
@@ -19293,7 +19308,7 @@ for(const S of STORIES_C)STORIES.push(S);
 CAST.sixth={name:"Зоя Варламова",role:"хронометрист",home:"hours:core"};
 const STORIES_D=[
 
-/* ── 101. Пекарь на научной ── эстафета 1 · любая научная станция */
+/* ── 103. Пекарь на научной ── эстафета 1 · любая научная станция */
 {id:"relay_baker",form:"relay",at:"stype:sci",cast:["baker"],
  traces:[
   {id:"t1",via:"queue",text:"— Пекарь тут был. Сдал дверцу. Обожжённую. Сказал: «не моя, но ей туда». Спрашивал, где теперь Крапива. Ей на комбинат, я сказал."},
@@ -19302,7 +19317,7 @@ const STORIES_D=[
  ],
  links:["relay_krapiva"]},
 
-/* ── 102. Крапива на комбинате ── эстафета 2 · промышленный комбинат */
+/* ── 104. Крапива на комбинате ── эстафета 2 · промышленный комбинат */
 {id:"relay_krapiva",form:"relay",at:"stype:indust",cast:["krapiva"],
  traces:[
   {id:"t1",via:"queue",when:{seenOf:"relay_baker.t1"},text:"— Мадам Крапива? Прилетала. Сама. Без чемодана. Отдала чемодан Долгому Киму — на верфь, сказала, ему нужнее."},
@@ -19311,16 +19326,18 @@ const STORIES_D=[
  ],
  links:["relay_kim"]},
 
-/* ── 103. Ким на верфи ── эстафета 3 · верфь */
+/* ── 105. Ким на верфи ── эстафета 3 · верфь */
 {id:"relay_kim",form:"relay",at:"stype:yard",cast:["kim"],
  traces:[
   {id:"t1",via:"queue",when:{seenOf:"relay_krapiva.t1"},text:"— Долгий Ким закрыл долг. Весь. Чемоданом Крапивы. И ушёл на аванпост — Штофу, говорит, счёт вести некому будет."},
   {id:"t2",via:"news",when:{seenOf:"relay_krapiva.t1"},text:"Долгий Ким расплатился. В книге долг без имени погашен. Кто — не пишет."},
-  {id:"t3",via:"cant",when:{seenOf:"relay_krapiva.t1"},scene:{seat:"mid",figure:1,col:[88,96,110],props:["paper","jar"]}}
+  /* seat был "mid" — значения нет в STORY_SEAT, сцена молча падала в центр;
+     линт теперь такое ловит (аудит 10×10) */
+  {id:"t3",via:"cant",when:{seenOf:"relay_krapiva.t1"},scene:{seat:"far",figure:1,col:[88,96,110],props:["paper","jar"]}}
  ],
  links:["relay_shtof"]},
 
-/* ── 104. Штоф на аванпосте ── эстафета 4 · пограничный аванпост */
+/* ── 106. Штоф на аванпосте ── эстафета 4 · пограничный аванпост */
 {id:"relay_shtof",form:"relay",at:"stype:outpost",cast:["shtof"],
  traces:[
   {id:"t1",via:"queue",when:{seenOf:"relay_kim.t1"},text:"— Штоф? Вёл счёт. Потом перестал. Сказал: считать будет Совеня, на торговом. Она ночами не спит, ей всё равно."},
@@ -19329,7 +19346,7 @@ const STORIES_D=[
  ],
  links:["relay_sovenya"]},
 
-/* ── 105. Совеня на торговом ── эстафета 5 · торговый узел */
+/* ── 107. Совеня на торговом ── эстафета 5 · торговый узел */
 {id:"relay_sovenya",form:"relay",at:"stype:trade",cast:["sovenya"],
  traces:[
   {id:"t1",via:"queue",when:{seenOf:"relay_shtof.t1"},text:"— Совеня сидела всю ночь. Считала. Утром сказала: «сходится». И назвала уезд, где часы не сходятся. Ядро. Там хронометрист. Зоя."},
@@ -19338,7 +19355,7 @@ const STORIES_D=[
  ],
  links:["sixth_report"]},
 
-/* ── 106. Отчёт о хронометристе ── длинная · ядро уезда, где часы не сходятся */
+/* ── 108. Отчёт о хронометристе ── длинная · ядро уезда, где часы не сходятся */
 {id:"sixth_report",form:"report",at:"hours:core",cast:["sixth"],
  traces:[
   {id:"t1",via:"queue",when:{seenOf:"relay_sovenya.t1"},text:"— Варламова. Зоя. Хронометрист. Да, она здесь. Пока. Ленты принимала она — все, что сдавали. Сказала: «сходится». Больше ничего не сказала."},
@@ -32436,7 +32453,20 @@ function skyNebula(p,seed){
     d[o+2]=clamp(t1[2]*a+t2[2]*b*.9+40*b,0,255);
     d[o+3]=clamp((Math.pow(a,1.9)*.66+Math.pow(b,2.2)*.4)*255,0,255);
   }
-  c.putImageData(img,0,0);p.neb=cn;return cn;
+  c.putImageData(img,0,0);
+  /* ── кромка гаснет в ноль (аудит 10×10) ──
+     Тайл рисуется растянутым квадратом, а fbm по краям не нулевой — на
+     светлом небе проступал БЛЕДНЫЙ ПРЯМОУГОЛЬНИК: тот самый «прямоугольный
+     шов неба», за которым Loose ends охотились с двух скринов. Овальная
+     маска destination-in печётся вместе с тайлом — шва больше нет нигде. */
+  const fg=c.createRadialGradient(S/2,S/2,S*.30,S/2,S/2,S*.5);
+  fg.addColorStop(0,"rgba(0,0,0,1)");
+  fg.addColorStop(.72,"rgba(0,0,0,1)");
+  fg.addColorStop(1,"rgba(0,0,0,0)");
+  c.globalCompositeOperation="destination-in";
+  c.fillStyle=fg;c.fillRect(0,0,S,S);
+  c.globalCompositeOperation="source-over";
+  p.neb=cn;return cn;
 }
 function drawSkyBodies(p,camx,camy){
   const S=skyScene(p);if(!S.length)return;
@@ -32829,7 +32859,11 @@ function skyNeb(p,e,x,y,dim){
   const w=W*(.5+e.s*.6), h=H*(.28+e.s*.3);
   ctx.save();
   ctx.globalCompositeOperation="lighter";
-  ctx.globalAlpha=(p.T.atm==="отсутствует"?.55:.28);
+  /* альфа была захардкожена и ИГНОРИРОВАЛА dim: закон «осадки глушат
+     небесное» (M266) до туманности не доходил — в бурю она светилась как в
+     ясную ночь. Теперь тот же множитель, что у всех тел: .55 в вакууме
+     (dim=1), ~.23 в воздухе (dim=.42), в бурю тает вместе со всеми. */
+  ctx.globalAlpha=.55*dim;
   ctx.drawImage(N,x-w*.5,y-h*.4,w,h);
   ctx.restore();
 }
@@ -34286,6 +34320,38 @@ function drawGround(tr,camx,camy,fill,line,pal){
   /* порода: бесшовный тайл-материал вместо плоской заливки (18a-material).
      Заливка под ним остаётся — она держит силуэт, если материала ещё нет. */
   if(tr.mat)fillMaterial(tr.mat,camx,camy,tr.p?.5:.92,.22,P);
+  /* ── 皴 на обрыве (аудит 10×10, §5): манера штриха дошла до поверхности ──
+     Пещера и шахта режут ту же породу с манерой (CUN), а срез под рельефом —
+     самая большая площадь дневного кадра — оставался материалом без кисти.
+     Тот же ход: штрих вдоль поля направлений, манера из таблицы по типу
+     мира. В ломоть, кадру бесплатно. */
+  if(pal&&tr.p&&tr.mat&&typeof CUN!=="undefined"){
+    ctx.save();ctx.clip(P);
+    const M=CUN[tr.p.type]||CUN.rocky;
+    const stp=26,sd=((tr.p.seed|0)^0x51F);
+    const gx0=Math.floor(camx/stp)*stp, gy0=Math.floor(camy/stp)*stp;
+    for(let gy=gy0;gy<camy+H+stp;gy+=stp)for(let gx=gx0;gx<camx+W+stp;gx+=stp){
+      const hh=hashi(gx/stp,gy/stp,sd);
+      if((hh&7)<4)continue;                       /* на свету штрих реже, чем под землёй */
+      const jx=gx+((hh>>>3)&15)/15*stp-camx, jy=gy+((hh>>>7)&15)/15*stp-camy;
+      const light=((hh>>>14)&1);
+      if(M.dot){
+        ctx.fillStyle=light?"rgba(255,246,226,"+(M.la*.9).toFixed(3)+")":"rgba(0,0,0,"+(M.da*.8).toFixed(3)+")";
+        const q=1+((hh>>>11)&1);
+        ctx.fillRect(jx,jy,q,q);
+        continue;
+      }
+      const ang=dirAt(gx,gy,sd+0x11,1/300)+(((hh>>>16)&15)/15-.5)*M.jig;
+      const ln=(5+((hh>>>11)&7))*M.ln;
+      ctx.strokeStyle=light?"rgba(255,246,226,"+(M.la*.9).toFixed(3)+")":"rgba(0,0,0,"+(M.da*.8).toFixed(3)+")";
+      ctx.lineWidth=M.w;
+      ctx.beginPath();
+      ctx.moveTo(jx-Math.cos(ang)*ln,jy-Math.sin(ang)*ln);
+      ctx.lineTo(jx+Math.cos(ang)*ln,jy+Math.sin(ang)*ln);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
   /* склон, обращённый к солнцу (вправо-вверх), светлее; в тень — темнее.
      Простое псевдо-освещение по наклону вместо одной плоской заливки.
      Полосы полупрозрачные: непрозрачные закрашивали материал обратно в фигуру. */

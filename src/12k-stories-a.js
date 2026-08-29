@@ -9,7 +9,10 @@
                text:null — молчание (полноправная реплика).
                scene (cant): {seat:corner|far|end|door, figure:0|1, props:[…]}.
      when    — условия из словаря STORY_WHEN (11c). Порядок следов свободен.
-     turns   — повороты: {after:"seen:t2",days:N,set:"flag"} или {day:N,set}.
+     turns   — повороты: {after:"seen:t2",days:N,set:"flag"} или {day:N,set};
+               развилка (M259): when — поворот ждёт условия; unless — тихо
+               отменяет и ставит else-флаг. Закон: развилка НЕ предъявляется
+               никогда, ни один след не говорит «потому что вы» (линт стережёт).
      form    — главная форма: habit pair after ongoing versions thing place
                beast ether witness.
      links   — связи с другими историями; никогда не обязательны.

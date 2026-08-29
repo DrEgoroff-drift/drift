@@ -61,7 +61,20 @@ function skyNebula(p,seed){
     d[o+2]=clamp(t1[2]*a+t2[2]*b*.9+40*b,0,255);
     d[o+3]=clamp((Math.pow(a,1.9)*.66+Math.pow(b,2.2)*.4)*255,0,255);
   }
-  c.putImageData(img,0,0);p.neb=cn;return cn;
+  c.putImageData(img,0,0);
+  /* ── кромка гаснет в ноль (аудит 10×10) ──
+     Тайл рисуется растянутым квадратом, а fbm по краям не нулевой — на
+     светлом небе проступал БЛЕДНЫЙ ПРЯМОУГОЛЬНИК: тот самый «прямоугольный
+     шов неба», за которым Loose ends охотились с двух скринов. Овальная
+     маска destination-in печётся вместе с тайлом — шва больше нет нигде. */
+  const fg=c.createRadialGradient(S/2,S/2,S*.30,S/2,S/2,S*.5);
+  fg.addColorStop(0,"rgba(0,0,0,1)");
+  fg.addColorStop(.72,"rgba(0,0,0,1)");
+  fg.addColorStop(1,"rgba(0,0,0,0)");
+  c.globalCompositeOperation="destination-in";
+  c.fillStyle=fg;c.fillRect(0,0,S,S);
+  c.globalCompositeOperation="source-over";
+  p.neb=cn;return cn;
 }
 function drawSkyBodies(p,camx,camy){
   const S=skyScene(p);if(!S.length)return;
@@ -454,7 +467,11 @@ function skyNeb(p,e,x,y,dim){
   const w=W*(.5+e.s*.6), h=H*(.28+e.s*.3);
   ctx.save();
   ctx.globalCompositeOperation="lighter";
-  ctx.globalAlpha=(p.T.atm==="отсутствует"?.55:.28);
+  /* альфа была захардкожена и ИГНОРИРОВАЛА dim: закон «осадки глушат
+     небесное» (M266) до туманности не доходил — в бурю она светилась как в
+     ясную ночь. Теперь тот же множитель, что у всех тел: .55 в вакууме
+     (dim=1), ~.23 в воздухе (dim=.42), в бурю тает вместе со всеми. */
+  ctx.globalAlpha=.55*dim;
   ctx.drawImage(N,x-w*.5,y-h*.4,w,h);
   ctx.restore();
 }

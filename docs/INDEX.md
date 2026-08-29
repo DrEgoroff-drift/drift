@@ -240,7 +240,7 @@ cantView                     src/27d-ui-cantina-props.js:82
 capIv                        src/28-loop.js:122
 capOf                        src/05-parts.js:108
 capUsed                      src/05-parts.js:219
-CAST                         src/12k-stories-a.js:19
+CAST                         src/12k-stories-a.js:22
 CAST_B                       src/12k-stories-b.js:7
 CAST_C                       src/12k-stories-c.js:7
 CAVE_NX                      src/22-mode-cave.js:14
@@ -574,7 +574,7 @@ drawDigFauna                 src/23-mode-dig.js:308
 drawDigWorld                 src/23a-dig-draw.js:45
 drawDronesMap                src/12e-drone-flight.js:262
 drawDronesSystem             src/12e-drone-flight.js:185
-drawDustMotes                src/19-mode-landing.js:436
+drawDustMotes                src/19-mode-landing.js:468
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:255
 drawFactory                  src/20aa-poi-shapes.js:378
@@ -586,8 +586,8 @@ drawForeground               src/21b-surface-deco.js:248
 drawGlassHUD                 src/24-mode-belt.js:593
 drawGlyph                    src/12t-settle.js:59
 drawGround                   src/19-mode-landing.js:109
-drawGroundCrumbs             src/19-mode-landing.js:206
-drawGroundGrass              src/19-mode-landing.js:219
+drawGroundCrumbs             src/19-mode-landing.js:238
+drawGroundGrass              src/19-mode-landing.js:251
 drawHomeBuilding             src/21c-built.js:134
 drawHomeIn                   src/29d-home-draw.js:9
 drawHomeOut                  src/21f-home-out.js:73
@@ -598,7 +598,7 @@ drawHullMarks                src/03b-hull-paint.js:173
 drawKitFigure                src/12x-suit.js:188
 drawLander                   src/19f-lander.js:52
 drawLandGear                 src/19f-lander.js:26
-drawLanding                  src/19-mode-landing.js:450
+drawLanding                  src/19-mode-landing.js:482
 drawLoreMarks                src/12q-lore.js:235
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
@@ -622,13 +622,13 @@ drawRaid                     src/24aa-raid-draw.js:14
 drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:107
 drawRoad                     src/27l-road-draw.js:87
-drawRocks                    src/19-mode-landing.js:252
+drawRocks                    src/19-mode-landing.js:284
 drawRouteMap                 src/12r-route.js:159
 drawScoop                    src/19a-mode-scoop.js:163
 drawSeams                    src/12s-wear.js:181
 drawSkyBase                  src/19c-light.js:296
-drawSkyBodies                src/19b-sky.js:66
-drawSkyLayer                 src/19-mode-landing.js:336
+drawSkyBodies                src/19b-sky.js:79
+drawSkyLayer                 src/19-mode-landing.js:368
 drawSpa                      src/29i-spa-draw.js:41
 drawSpaceDust                src/16a-space.js:184
 drawStarBody                 src/16a-space.js:341
@@ -956,9 +956,9 @@ grokTake                     src/12tb-grok.js:100
 grokTeach                    src/12tb-grok.js:144
 grokTick                     src/12tb-grok.js:75
 grokWant                     src/12tb-grok.js:41
-GROUND_BAKING                src/19-mode-landing.js:204
+GROUND_BAKING                src/19-mode-landing.js:236
 groundAt                     src/07-planet.js:540
-groundShadow                 src/19-mode-landing.js:320
+groundShadow                 src/19-mode-landing.js:352
 GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
 groveDepthAt                 src/11j-grove.js:30
@@ -2490,7 +2490,7 @@ shipZ                        src/16-flight.js:235
 shipZoneR                    src/19f-lander.js:14
 SHOT_CLEAN                   src/28-loop.js:133
 SHUT_LINES                   src/11ah-offer.js:272
-sixthGone                    src/12k-stories-d.js:75
+sixthGone                    src/12k-stories-d.js:77
 SKY_BULL                     src/11ak-skywatch.js:27
 SKY_HOR                      src/11ak-skywatch.js:80
 SKY_KINDS                    src/11ak-skywatch.js:29
@@ -2498,29 +2498,29 @@ SKY_LAPSE                    src/11ak-skywatch.js:28
 SKY_LOUD                     src/19b-sky.js:13
 SKY_OFF                      src/11ak-skywatch.js:121
 SKY_QUIET                    src/19b-sky.js:14
-SKY_WORLD_KINDS              src/19b-sky.js:106
+SKY_WORLD_KINDS              src/19b-sky.js:119
 skyAll                       src/11ak-skywatch.js:34
-skyAurora                    src/19b-sky.js:405
+skyAurora                    src/19b-sky.js:418
 skyBlock                     src/11ak-skywatch.js:234
 skyCanReport                 src/11ak-skywatch.js:202
-skyComet                     src/19b-sky.js:462
+skyComet                     src/19b-sky.js:479
 skyCometName                 src/11ak-skywatch.js:198
 skyDay                       src/19c-light.js:78
 skyDrop                      src/11ak-skywatch.js:146
-skyField                     src/19b-sky.js:505
+skyField                     src/19b-sky.js:522
 skyFind                      src/11ak-skywatch.js:47
-skyGalaxy                    src/19b-sky.js:342
-skyGiant                     src/19b-sky.js:192
-skyGrad                      src/19-mode-landing.js:303
-skyHole                      src/19b-sky.js:365
-skyMoon                      src/19b-sky.js:431
+skyGalaxy                    src/19b-sky.js:355
+skyGiant                     src/19b-sky.js:205
+skyGrad                      src/19-mode-landing.js:335
+skyHole                      src/19b-sky.js:378
+skyMoon                      src/19b-sky.js:444
 skyNameComet                 src/11ak-skywatch.js:184
-skyNeb                       src/19b-sky.js:452
+skyNeb                       src/19b-sky.js:465
 skyNebula                    src/19b-sky.js:49
 skyOfferHere                 src/11ak-skywatch.js:122
 skyOn                        src/11ak-skywatch.js:59
 skyPick                      src/11ak-skywatch.js:81
-skyPulsar                    src/19b-sky.js:483
+skyPulsar                    src/19b-sky.js:500
 skyReport                    src/11ak-skywatch.js:206
 skyScene                     src/19b-sky.js:15
 skyTake                      src/11ak-skywatch.js:136
@@ -2530,8 +2530,8 @@ skyTick                      src/11ak-skywatch.js:155
 skyTint                      src/19b-sky.js:44
 skyU                         src/19b-sky.js:41
 skyWhere                     src/11ak-skywatch.js:39
-skyWorld                     src/19b-sky.js:161
-skyWorldTex                  src/19b-sky.js:115
+skyWorld                     src/19b-sky.js:174
+skyWorldTex                  src/19b-sky.js:128
 SLOT_CACHE                   src/05-parts.js:113
 slotAnchors                  src/05-parts.js:141
 slotsOf                      src/05-parts.js:114
@@ -2623,7 +2623,7 @@ stGroupOf                    src/26-ui-station.js:74
 stopEngine                   src/09-audio.js:269
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
-STORIES                      src/12k-stories-a.js:42
+STORIES                      src/12k-stories-a.js:45
 STORIES_B                    src/12k-stories-b.js:27
 STORIES_C                    src/12k-stories-c.js:23
 STORIES_D                    src/12k-stories-d.js:15
@@ -2649,11 +2649,11 @@ storyFindLine                src/11c-stories.js:289
 storyFixedAddr               src/11c-stories.js:55
 storyFlag                    src/11c-stories.js:35
 storyFlags                   src/11c-stories.js:31
-storyGroundLine              src/11c-stories.js:402
+storyGroundLine              src/11c-stories.js:412
 storyHasSeen                 src/11c-stories.js:34
 storyLint                    src/11c-stories.js:369
 storyNewsItem                src/11c-stories.js:296
-storyNote                    src/11c-stories.js:414
+storyNote                    src/11c-stories.js:424
 storyPickOne                 src/11c-stories.js:252
 storyPins                    src/11c-stories.js:30
 storyPlace                   src/11c-stories.js:93
@@ -3359,9 +3359,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12k-rep.js · 4 КБ
   · репутация: вас помнят там, где вы бывали:1
 
-## src/12k-stories-a.js · 32 КБ
+## src/12k-stories-a.js · 33 КБ
   · истории, часть первая:1
-  · длинные — в духе институтской фантастики:241
+  · длинные — в духе институтской фантастики:244
 
 ## src/12k-stories-b.js · 37 КБ
   · истории, часть вторая:1
@@ -3519,7 +3519,7 @@ zooTick                      src/11ad-zoo.js:41
   · сбор летучих газов: заход в атмосферу гиганта:1
   · небо гиганта: полосы, а не лепёшки:71
 
-## src/19b-sky.js · 30 КБ
+## src/19b-sky.js · 32 КБ
   · небо:1
 
 ## src/19c-light.js · 28 КБ
@@ -3536,7 +3536,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19f-lander.js · 21 КБ
   · посадочный корабль:1
 
-## src/19-mode-landing.js · 33 КБ
+## src/19-mode-landing.js · 35 КБ
   · посадка:1
 
 ## src/20aa-poi-shapes.js · 30 КБ

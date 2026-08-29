@@ -221,6 +221,8 @@ const STORIES_B=[
  ]},
 
 /* ── 47. Двое у окна ── двое · научная, плавающая */
+/* ОТКАЗ развилки (аудит 10×10): пара, у которой всё сказано, расстаётся не
+   из-за прохожего — класс two_on_orbit/twins: неотвратимость пар — смысл. */
 {id:"two_window",form:"pair",at:"stype:sci",cast:["quiet"],
  traces:[
   {id:"t1",via:"cant",when:{noflag:"apart"},scene:{seat:"far",figure:1,col:[80,90,100],props:["glass","glass"]}},

@@ -391,6 +391,16 @@ function storyLint(){
     const at=S.at||"any";
     if(!/^(any|planet|settle|tin|hours:core|danger:far|fixed:\d+|stype:\w+|world:\w+)$/.test(at))bad.push(S.id+": адрес "+at);
     const ids=new Set();for(const t of S.traces){if(ids.has(t.id))bad.push(S.id+": след "+t.id+" дважды");ids.add(t.id);}
+    for(const t of S.traces){
+      /* сиденье сцены — только из STORY_SEAT: неизвестное молча падало в
+         центр, и сцена вставала не туда (relay_kim возил seat:"mid") */
+      if(t.scene&&t.scene.seat!=null&&STORY_SEAT[t.scene.seat]==null)
+        bad.push(S.id+"."+t.id+": сиденье "+t.scene.seat);
+      /* ЗАКОН РАЗВИЛКИ — механически: ни один след не называет причастность
+         игрока причиной. «Потому что вы…», «из-за вас» — запрещённые слова */
+      if(t.text&&/потому что в[ыа]|из-за ва[cс]/i.test(t.text))
+        bad.push(S.id+"."+t.id+": след предъявляет развилку игроку");
+    }
   }
   return bad.concat(storyCheckWhen());
 }
