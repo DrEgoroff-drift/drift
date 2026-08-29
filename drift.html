@@ -1351,7 +1351,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.238.0";
+const VER="0.239.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -22274,11 +22274,17 @@ function sdBody(path,fill,lit,alpha){
   ctx.restore();
 }
 /* тень на землю: одна, в сторону от света, мягкая */
+/* тень постройки: смещение и длина — от того же SUN_DIR, что и свет (M243).
+   Было жёстко «чуть влево» независимо от часа: на закате дом стоял на пятне,
+   а не отбрасывал тень. */
 function sdShadow(x,y,w,h){
+  const sx=(typeof SUN_DIR==="object")?SUN_DIR.x:.55;
+  const sy=(typeof SUN_DIR==="object")?SUN_DIR.y:-.83;
+  const low=clamp(1-Math.abs(sy),0,1);
   ctx.save();
-  ctx.fillStyle="rgba(0,0,0,.30)";
+  ctx.fillStyle="rgba(0,0,0,"+(.30*(1-low*.35)).toFixed(3)+")";
   ctx.beginPath();
-  ctx.ellipse(x-w*.18,y-1,w*.62,Math.max(2.5,h*.09),0,0,TAU);
+  ctx.ellipse(x-sx*w*(.18+low*.75),y-1,w*(.62+low*.5),Math.max(2.5,h*.09),0,0,TAU);
   ctx.fill();
   ctx.restore();
 }
@@ -29625,6 +29631,19 @@ function drawStation(x,y,Z){
      140: внутрь такой станции лендер не влезет, и масштаб мира разваливался.
      Полтора — не «чтобы красивее», а чтобы отношение размеров не врало. */
   const s=clamp(Z,.4,1.5)*1.7,S=G.sys.station,V=stationViz(S),ty=S.stype||"trade";
+  /* ── станция светит (M243) ──
+     Самая яркая рукотворная вещь в системе не давала вокруг себя ничего:
+     ни ореола, ни отблеска. Мягкое пятно её собственного света кладётся ДО
+     корпуса — тогда оно читается свечением окон и прожекторов, а не нимбом. */
+  {
+    const R=70*s;
+    const gg=ctx.createRadialGradient(x,y,0,x,y,R);
+    gg.addColorStop(0,"rgba(255,214,150,.16)");
+    gg.addColorStop(.45,"rgba(255,200,130,.06)");
+    gg.addColorStop(1,"rgba(255,200,130,0)");
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.fill();ctx.restore();
+  }
   ctx.save();ctx.translate(x,y);ctx.scale(s,s);
   /* модули идут первым слоем: они висят на штангах вокруг ядра, и ядро типа
      должно перекрывать их, а не наоборот (17a-station-mod) */
@@ -32375,8 +32394,20 @@ function dayKq(p){return Math.round(dayK(p)*6)/6;}
    цвета: всё выведено из sky[0]/sky[1] самого мира. */
 function skyDay(p){
   const k=dayKq(p),s0=p.T.sky[0],s1=p.T.sky[1];
-  const top=[0,1,2].map(i=>Math.round(lerp(s1[i],Math.min(255,s0[i]*.92+18),k)));
+  let top=[0,1,2].map(i=>Math.round(lerp(s1[i],Math.min(255,s0[i]*.92+18),k)));
   const bot=[0,1,2].map(i=>Math.round(lerp(s0[i],Math.min(255,s0[i]*1.30+34),k)));
+  /* ── зенит ХОЛОДНЕЕ горизонта (M243) ──
+     Прибор показал главное: восемь сцен из десяти одноцветны — у пустынной,
+     вулканической и токсичной планеты небо и грунт одного семейства, и в
+     кадре просто нет второй температуры. Между тем короткие волны рассеивает
+     любая атмосфера: даже над марсианской пустыней зенит холоднее горизонта,
+     а тени синеют. Двигаем к холоду ЗЕНИТ (и через ambRGB — заполняющий свет),
+     оставляя горизонту цвет мира: планета себя не теряет, а пара появляется. */
+  const air=p.T.atm==="отсутствует"?0:(p.T.atm.indexOf("разреженная")>=0?.55:1);
+  if(air>0){
+    const COLD=[86,128,190];
+    top=top.map((v,i)=>Math.round(lerp(v,v*.52+COLD[i]*.48,.38*air*k)));
+  }
   return {top,bot,k};
 }
 /* небо как источник заполняющего света: у токсичного мира тени зелёные,
@@ -32385,7 +32416,16 @@ function skyDay(p){
    ночью прежний тёмный. */
 function ambRGB(p){
   const D=skyDay(p);
-  return [0,1,2].map(i=>Math.round(lerp(p.T.sky[1][i],D.top[i],.85*D.k)));
+  const base=[0,1,2].map(i=>Math.round(lerp(p.T.sky[1][i],D.top[i],.85*D.k)));
+  /* ── заполняющий свет ХОЛОДНЕЕ ключевого (M243) ──
+     Небо рассеивает короткие волны, поэтому тень на любом мире с воздухом
+     синеет — это и есть второй источник, которого игре не хватало. Без него
+     палитра планеты растекалась по всему кадру: прибор мерил 95% тепла днём и
+     3% ночью, то есть два монохрома вместо картины. Мир без воздуха остаётся
+     как был: рассеивать нечем. */
+  const air=p.T.atm==="отсутствует"?.06:(p.T.atm.indexOf("разреженная")>=0?.5:1);
+  const COLD=[104,146,196];
+  return base.map((v,i)=>Math.round(lerp(v,Math.max(v*.86,COLD[i]*.62),.34*air)));
 }
 /* сколько света вообще: у безвоздушного мира тень почти чёрная (нечему
    рассеивать), у плотной атмосферы — мягкая */
@@ -32601,6 +32641,41 @@ function drawSkyBase(p){
     }
     if(nite>0){ctx.fillStyle="rgba(4,6,14,"+(nite*.9).toFixed(3)+")";ctx.fillRect(0,0,W,H);}
   }),0,0,W,H);
+}
+
+/* ══════════════ свечение (bloom) — M243 ══════════════
+   «Свет не светит» — общая претензия ко всем сценам: лампа рисовалась пятном,
+   но вокруг неё ничего не происходило. Настоящий ореол вокруг ярких мест —
+   самый дешёвый способ сделать источник источником: кадр уменьшается вчетверо,
+   из него выбивается тёмное (умножение на себя — это квадрат яркости, серое
+   гаснет, яркое остаётся), размывается и кладётся обратно сложением.
+   Три drawImage на кадр, без единого чтения пикселей. */
+let BLOOM_CV=null;
+const BLOOM_K={system:.34,map:0,landing:.16,surface:.16,dig:.20,cave:.24,
+               belt:.24,scoop:.20,base:.18,raid:.18,homein:.22,winter:.20,spa:.18};
+function bloomPass(k){
+  if(!(k>0)||W<8||H<8)return;
+  if(G.opts&&G.opts.gfx&&G.opts.gfx.draw===0)return;
+  const w=Math.max(2,Math.round(W/4)),h=Math.max(2,Math.round(H/4));
+  if(!BLOOM_CV||BLOOM_CV.width!==w||BLOOM_CV.height!==h){
+    BLOOM_CV=document.createElement("canvas");BLOOM_CV.width=w;BLOOM_CV.height=h;
+  }
+  const g=BLOOM_CV.getContext("2d");
+  g.globalCompositeOperation="source-over";
+  g.clearRect(0,0,w,h);
+  g.drawImage(cvs,0,0,w,h);
+  /* порог без чтения пикселей: кадр, умноженный сам на себя */
+  g.globalCompositeOperation="multiply";
+  g.drawImage(BLOOM_CV,0,0);
+  g.globalCompositeOperation="source-over";
+  ctx.save();
+  ctx.globalCompositeOperation="lighter";
+  ctx.globalAlpha=k;
+  const hasF=("filter" in ctx);
+  if(hasF)ctx.filter="blur(7px)";
+  ctx.drawImage(BLOOM_CV,0,0,w,h,0,0,W,H);
+  if(hasF)ctx.filter="none";
+  ctx.restore();
 }
 
 /* ══════════════ погода ══════════════ */
@@ -33756,12 +33831,23 @@ function skyGrad(p){
 }
 /* тень-контакт: приплюснутый мягкий эллипс под ногами/стволом — единственное,
    что реально "приклеивает" объект к рельефу, а не даёт ему висеть на глаз */
+/* ── тень ложится ОТ света, а не строго под предметом (M243) ──
+   Пятно под ногами одинаково в полдень и на закате — это не тень, а подставка.
+   Направление берётся у того же SUN_DIR, которым освещаются склоны, длина —
+   у высоты светила: чем ниже солнце, тем длиннее и слабее тень. Функция одна
+   на всю игру, поэтому чинит разом ходока, корабль, валуны, растения и копёр. */
 function groundShadow(x,y,rx,ry){
+  const sx=(typeof SUN_DIR==="object")?SUN_DIR.x:0;
+  const sy=(typeof SUN_DIR==="object")?SUN_DIR.y:-1;
+  const low=clamp(1-Math.abs(sy),0,1);          /* 0 в зените, 1 у горизонта */
+  const off=-sx*rx*(.35+low*1.6);
+  const kx=1+low*1.2;
+  const a=.32*(1-low*.40);
   ctx.save();
-  const g=ctx.createRadialGradient(x,y,0,x,y,rx);
-  g.addColorStop(0,"rgba(0,0,0,.32)");g.addColorStop(1,"rgba(0,0,0,0)");
+  const g=ctx.createRadialGradient(x+off,y,0,x+off,y,rx*kx);
+  g.addColorStop(0,"rgba(0,0,0,"+a.toFixed(3)+")");g.addColorStop(1,"rgba(0,0,0,0)");
   ctx.fillStyle=g;
-  ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,TAU);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x+off,y,rx*kx,ry,0,0,TAU);ctx.fill();
   ctx.restore();
 }
 /* небо: солнечное марево + процедурные облака для миров с атмосферой —
@@ -40424,6 +40510,28 @@ function drawSurfaceWorld(){
   drawLander(false,false,{gear:1,sq:0,landed:true,tr:S.tr,gx:S.shipX,
     hot:Math.max(0,1-(G.t-(S.t0||0))/700)});
   ctx.restore();
+  /* ── ночью корабль живой, а не белое пятно (M243) ──
+     На ночных кадрах лендер оставался дневным: самая светлая вещь в кадре без
+     единого источника. Теперь в темноте у него горит окно кабины и лежит
+     тёплое пятно под брюхом — «внутри кто-то есть», а заодно вторая, тёплая
+     температура в холодном кадре. */
+  {
+    const nite=(typeof surfNight==="function")?surfNight(p):0;
+    if(nite>.18){
+      const lx=S.shipX-camx, ly=S.shipY-camy;
+      const k=clamp((nite-.18)/.35,0,1);
+      const gp=ctx.createRadialGradient(lx,ly+13,0,lx,ly+13,52);
+      gp.addColorStop(0,"rgba(255,206,138,"+(.20*k).toFixed(3)+")");
+      gp.addColorStop(1,"rgba(255,206,138,0)");
+      ctx.fillStyle=gp;ctx.beginPath();ctx.ellipse(lx,ly+13,52,15,0,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(255,224,170,"+(.62*k).toFixed(3)+")";
+      ctx.fillRect(lx-4,ly-6,9,5);
+      const gw=ctx.createRadialGradient(lx,ly-4,0,lx,ly-4,26);
+      gw.addColorStop(0,"rgba(255,214,150,"+(.26*k).toFixed(3)+")");
+      gw.addColorStop(1,"rgba(255,214,150,0)");
+      ctx.fillStyle=gw;ctx.beginPath();ctx.arc(lx,ly-4,26,0,TAU);ctx.fill();
+    }
+  }
   drawDustMotes(camx,camy,p);
   /* три света (11g): дороги, фундаменты и вход — видны только в соединение */
   if(typeof lightsDrawReveal==="function")lightsDrawReveal(tr,camx,camy,p);
@@ -40926,6 +41034,9 @@ function drawHomeOut(tr,camx,camy,p){
     ctx.fillStyle=sdRGB(sdMix(pal.stone,[0,0,0],.14+fr()*.22));
     ctx.fillRect(xx,gy-fh+fr()*1.4,4+fr()*3,fh-1);
   }
+  /* дом отбрасывает тень: до M243 её не было вовсе — единственная постройка
+     в игре, которая стояла на земле и ничего на неё не клала (закон 2) */
+  if(typeof sdShadow==="function")sdShadow(sx,gy,w*1.15,wallH+roofH);
   sdBody(()=>ctx.rect(sx-w/2,gy-wallH,w,wallH-fh*.4),sdRGB(pal.wall),null,.24);
   const lg=ctx.createLinearGradient(sx-w/2,0,sx+w/2,0);
   lg.addColorStop(0,"rgba(0,0,0,.34)");lg.addColorStop(.55,"rgba(0,0,0,0)");
@@ -59769,6 +59880,10 @@ function stepWorld(dt){
   else if(G.mode==="spa"&&G.spa)updateSpa(dt);         /* санаторий (M199) */
 }
 function drawWorld(){
+  /* у сцен без своего неба свет постоянный (M243): SUN_DIR не должен нести
+     сюда азимут планеты, с которой игрок только что ушёл, — иначе тени в
+     комнатах ложатся по вчерашнему закату */
+  if(!(G.mode==="surface"||G.mode==="landing")&&typeof sunDirSet==="function")sunDirSet(null);
   if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")drawSystem();
   else if(G.mode==="map")drawMap();
   else if(G.mode==="landing")drawLanding();
@@ -59782,6 +59897,8 @@ function drawWorld(){
   else if(G.mode==="homein"&&G.hin)drawHomeIn();
   else if(G.mode==="winter"&&G.win)drawWinter();
   else if(G.mode==="spa"&&G.spa)drawSpa();
+  /* ореол вокруг яркого — последним по миру и до приборов (M243) */
+  if(typeof bloomPass==="function")bloomPass(BLOOM_K[G.mode]||0);
 }
 function frameBody(now){
   if(LOOP_OFF)return;
@@ -60025,7 +60142,14 @@ window.dbg=dbg;
 
    Прибор меряет ТО, ЧТО НАРИСОВАНО, а не то, что задумано: читает канву.
    Поэтому он одинаково честен к любому режиму и к любой правке. */
-const LOOK_TARGET={warm:[25,75],empty:45,contrast:.30,tones:5};
+/* ── мишени ──
+   «Тепло 25–75%» оказалось неверной мишенью: ледяной мир обязан быть холодным,
+   и требовать от него половины тепла — значит красить все планеты одинаково.
+   Меряем не долю тепла, а ПАРУ: доля меньшего из двух температур. Она отвечает
+   на настоящий вопрос — есть ли в кадре второй источник, — и работает на любой
+   палитре (закон 7: холодный ключ + тёплый АКЦЕНТ; акцент по определению
+   меньшинство). warm остаётся в отчёте как справка. */
+const LOOK_TARGET={pair:15,empty:45,contrast:.30,tones:5};
 /* ── замер одного кадра ──
    Считаем по каждому четвёртому пикселю: точность та же, стоимость вчетверо
    меньше. Тон учитывается только у насыщенных и не чёрных пикселей — у серого
@@ -60049,7 +60173,12 @@ function lookFrame(){
     sat.push(s);val.push(v);
     if(s>.12&&v>.06){
       hue[Math.floor(h/10)%36]++;
-      if(h>=10&&h<70)warm++;else if(h>=170&&h<280)cold++;
+      /* тепло/холод — по разнице красного и синего, а не по секторам круга.
+       Сектора оставляли зелёное (треть палитры этой игры) вообще без ответа,
+       и на зелёной планете прибор считал, что цвета нет. Художник различает
+       так же: жёлто-зелёное тёплое, сине-зелёное холодное. */
+      const rb=(r-b)*255;
+      if(rb>8)warm++;else if(rb<-8)cold++;
     }
   }
   sat.sort((a,b)=>a-b);val.sort((a,b)=>a-b);
@@ -60066,9 +60195,11 @@ function lookFrame(){
     }
     blocks++;if(hi-lo<10)empty++;
   }
+  const wpct=Math.round(100*warm/Math.max(1,warm+cold));
   return {
     tones:hue.filter(v=>v/tot>=.05).length,          /* сколько тонов держат кадр */
-    warm:Math.round(100*warm/Math.max(1,warm+cold)), /* тёплых против холодных, % */
+    warm:wpct,                                       /* тёплых против холодных, % */
+    pair:Math.min(wpct,100-wpct),                    /* доля меньшинства: есть ли вторая температура */
     contrast:+(val[Math.floor(n*.95)]-val[Math.floor(n*.05)]).toFixed(2),
     empty:Math.round(100*empty/Math.max(1,blocks)),
     sat:+sat[Math.floor(n/2)].toFixed(2),
@@ -60079,7 +60210,7 @@ function lookFrame(){
 function lookVerdict(m){
   const T=LOOK_TARGET;
   const ok=[];
-  ok.push((m.warm>=T.warm[0]&&m.warm<=T.warm[1]?"✓":"×")+"тепло "+m.warm+"%");
+  ok.push((m.pair>=T.pair?"✓":"×")+"пара "+m.pair+"% (тепла "+m.warm+"%)");
   ok.push((m.empty<=T.empty?"✓":"×")+"пусто "+m.empty+"%");
   ok.push((m.contrast>=T.contrast?"✓":"×")+"контраст "+m.contrast);
   ok.push((m.tones>=T.tones?"✓":"×")+"тонов "+m.tones);
@@ -60105,13 +60236,28 @@ function lookScenes(){
     G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};enterSurface();return true;
   };
   const day=p=>p.type!=="gas"&&p.T.atm!=="отсутствует";
+  /* ── час назначается, а не как выйдет (M243) ──
+     Прибор мерил сцену в тот час, в какой попал: «грунт» выходил то дневным,
+     то ночным, и числа гуляли между прогонами. Час теперь ставится явно —
+     день это день, ночь это ночь, и день с ночью меряются отдельно. */
+  const setHour=(p,wantDay)=>{
+    const t0=G.t;let best=null;
+    for(let k=0;k<240;k++){
+      const t=t0+k*900;
+      const s=celSun(p,t);
+      const score=wantDay?s.alt:-s.alt;
+      if(!best||score>best.score)best={score,t};
+    }
+    if(best)G.t=best.t;
+  };
   return [
     {id:"система",set:()=>{const s=find(q=>q.station&&(q.planets||[]).length>=3);if(!jump(s))return false;
       G.mode="system";G.ship.x=s.planets[1].x+380;G.ship.y=s.planets[1].y+220;G.zoom=.7;return true;}},
     {id:"карта",set:()=>{G.mode="map";return true;}},
     {id:"заход",set:()=>{const s=find(q=>(q.planets||[]).some(p=>p.type!=="gas"));if(!jump(s))return false;
       startLanding(s.planets.find(p=>p.type!=="gas"));return true;}},
-    {id:"грунт",set:()=>land(day)},
+    {id:"грунт день",set:()=>{if(!land(day))return false;setHour(G.surf.p,true);return true;}},
+    {id:"грунт ночь",set:()=>{if(!land(day))return false;setHour(G.surf.p,false);return true;}},
     {id:"шахта",set:()=>{if(!land(day))return false;enterDig();return true;}},
     {id:"пещера",set:()=>{if(!land(day))return false;enterCave();return !!G.cave;}},
     {id:"пояс",set:()=>{const s=find(q=>!!q.belt);if(!jump(s))return false;enterBelt();return true;}},

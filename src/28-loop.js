@@ -153,6 +153,10 @@ function stepWorld(dt){
   else if(G.mode==="spa"&&G.spa)updateSpa(dt);         /* санаторий (M199) */
 }
 function drawWorld(){
+  /* у сцен без своего неба свет постоянный (M243): SUN_DIR не должен нести
+     сюда азимут планеты, с которой игрок только что ушёл, — иначе тени в
+     комнатах ложатся по вчерашнему закату */
+  if(!(G.mode==="surface"||G.mode==="landing")&&typeof sunDirSet==="function")sunDirSet(null);
   if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")drawSystem();
   else if(G.mode==="map")drawMap();
   else if(G.mode==="landing")drawLanding();
@@ -166,6 +170,8 @@ function drawWorld(){
   else if(G.mode==="homein"&&G.hin)drawHomeIn();
   else if(G.mode==="winter"&&G.win)drawWinter();
   else if(G.mode==="spa"&&G.spa)drawSpa();
+  /* ореол вокруг яркого — последним по миру и до приборов (M243) */
+  if(typeof bloomPass==="function")bloomPass(BLOOM_K[G.mode]||0);
 }
 function frameBody(now){
   if(LOOP_OFF)return;

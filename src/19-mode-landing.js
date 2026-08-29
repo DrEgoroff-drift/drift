@@ -312,12 +312,23 @@ function skyGrad(p){
 }
 /* тень-контакт: приплюснутый мягкий эллипс под ногами/стволом — единственное,
    что реально "приклеивает" объект к рельефу, а не даёт ему висеть на глаз */
+/* ── тень ложится ОТ света, а не строго под предметом (M243) ──
+   Пятно под ногами одинаково в полдень и на закате — это не тень, а подставка.
+   Направление берётся у того же SUN_DIR, которым освещаются склоны, длина —
+   у высоты светила: чем ниже солнце, тем длиннее и слабее тень. Функция одна
+   на всю игру, поэтому чинит разом ходока, корабль, валуны, растения и копёр. */
 function groundShadow(x,y,rx,ry){
+  const sx=(typeof SUN_DIR==="object")?SUN_DIR.x:0;
+  const sy=(typeof SUN_DIR==="object")?SUN_DIR.y:-1;
+  const low=clamp(1-Math.abs(sy),0,1);          /* 0 в зените, 1 у горизонта */
+  const off=-sx*rx*(.35+low*1.6);
+  const kx=1+low*1.2;
+  const a=.32*(1-low*.40);
   ctx.save();
-  const g=ctx.createRadialGradient(x,y,0,x,y,rx);
-  g.addColorStop(0,"rgba(0,0,0,.32)");g.addColorStop(1,"rgba(0,0,0,0)");
+  const g=ctx.createRadialGradient(x+off,y,0,x+off,y,rx*kx);
+  g.addColorStop(0,"rgba(0,0,0,"+a.toFixed(3)+")");g.addColorStop(1,"rgba(0,0,0,0)");
   ctx.fillStyle=g;
-  ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,TAU);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x+off,y,rx*kx,ry,0,0,TAU);ctx.fill();
   ctx.restore();
 }
 /* небо: солнечное марево + процедурные облака для миров с атмосферой —

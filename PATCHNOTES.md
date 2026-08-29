@@ -7,6 +7,44 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.239.0 — M243: light as a system, and the meter tells the truth about it
+
+Stage two of the graphics work. The meter said the frames were monochrome; this is the pass that
+gives every scene a second temperature and gives light somewhere to fall.
+
+- **Shadows fall AWAY from the light.** `groundShadow` — one function under the astronaut, the
+  ship, the boulders, the plants and the headframe — drew the same symmetric blob at noon and at
+  sunset, which is a plinth, not a shadow. Direction and length now come from the same `SUN_DIR`
+  that lights the slopes: low sun, long faint shadow; noon, a tight pool. The same for buildings
+  (`sdShadow`), and **the house on a planet finally has one at all** — it was the one structure in
+  the game standing on the ground and putting nothing on it.
+- **A glow around the bright places (bloom).** The frame is scaled down four times, multiplied by
+  itself (a threshold without reading a single pixel), blurred and added back. Three `drawImage`
+  calls, measured at 0.16 ms. Lamps, windows, exhausts and stars finally light something.
+- **The zenith is colder than the horizon**, and the fill light with it. Eight scenes in ten had
+  one temperature because on a desert or volcanic world the sky and the ground come from the same
+  family. Any atmosphere scatters the short wavelengths — even over a Martian desert the zenith is
+  cooler and the shadows go blue. The horizon keeps the world's own colour, so nothing loses its
+  identity.
+- **At night the parked ship is alive**: a lit cabin window and a warm pool under its belly. It
+  used to be the brightest thing in a night frame with no source at all.
+- **The station glows.** The brightest man-made object in the system gave off nothing; now its own
+  soft light lies under the hull, so it reads as windows and floodlights rather than a halo.
+- **The meter's temperature test was wrong and is fixed.** Hue sectors left green — a third of
+  this game's palette — unclassified, so on a green world the meter reported no colour at all.
+  Warm and cold are now decided by red against blue, the way a painter decides. And the target is
+  no longer "25–75% warm" (which would demand half a fire on an ice world) but the PAIR: the share
+  of the smaller of the two temperatures, at least 15%. An ice world may be cold — but it may not
+  be one-temperature.
+
+Measured after the stage (contrast, p95−p5): the ground by day 0.17 → 0.48, the mine 0.26 → 0.36,
+the base 0.22 → 0.41, the home 0.42 → 0.46, the gas dive 0.59 → 0.68, the system 0.09 → 0.95. The
+pair now reads 40% in the base and the gas dive; the cave and the home are still one-temperature
+and are the next scenes to get their own light. Frame cost: system 1.87 ms, ground 3.41, cave 0.56.
+
+Tests: 398 suites green.
+
+---
 ## 0.238.0 — M242: seven places where the drawing contradicted the world
 
 The graphics pass began not with taste but with lies — places where the picture says one thing

@@ -77,8 +77,20 @@ function dayKq(p){return Math.round(dayK(p)*6)/6;}
    цвета: всё выведено из sky[0]/sky[1] самого мира. */
 function skyDay(p){
   const k=dayKq(p),s0=p.T.sky[0],s1=p.T.sky[1];
-  const top=[0,1,2].map(i=>Math.round(lerp(s1[i],Math.min(255,s0[i]*.92+18),k)));
+  let top=[0,1,2].map(i=>Math.round(lerp(s1[i],Math.min(255,s0[i]*.92+18),k)));
   const bot=[0,1,2].map(i=>Math.round(lerp(s0[i],Math.min(255,s0[i]*1.30+34),k)));
+  /* ── зенит ХОЛОДНЕЕ горизонта (M243) ──
+     Прибор показал главное: восемь сцен из десяти одноцветны — у пустынной,
+     вулканической и токсичной планеты небо и грунт одного семейства, и в
+     кадре просто нет второй температуры. Между тем короткие волны рассеивает
+     любая атмосфера: даже над марсианской пустыней зенит холоднее горизонта,
+     а тени синеют. Двигаем к холоду ЗЕНИТ (и через ambRGB — заполняющий свет),
+     оставляя горизонту цвет мира: планета себя не теряет, а пара появляется. */
+  const air=p.T.atm==="отсутствует"?0:(p.T.atm.indexOf("разреженная")>=0?.55:1);
+  if(air>0){
+    const COLD=[86,128,190];
+    top=top.map((v,i)=>Math.round(lerp(v,v*.52+COLD[i]*.48,.38*air*k)));
+  }
   return {top,bot,k};
 }
 /* небо как источник заполняющего света: у токсичного мира тени зелёные,
@@ -87,7 +99,16 @@ function skyDay(p){
    ночью прежний тёмный. */
 function ambRGB(p){
   const D=skyDay(p);
-  return [0,1,2].map(i=>Math.round(lerp(p.T.sky[1][i],D.top[i],.85*D.k)));
+  const base=[0,1,2].map(i=>Math.round(lerp(p.T.sky[1][i],D.top[i],.85*D.k)));
+  /* ── заполняющий свет ХОЛОДНЕЕ ключевого (M243) ──
+     Небо рассеивает короткие волны, поэтому тень на любом мире с воздухом
+     синеет — это и есть второй источник, которого игре не хватало. Без него
+     палитра планеты растекалась по всему кадру: прибор мерил 95% тепла днём и
+     3% ночью, то есть два монохрома вместо картины. Мир без воздуха остаётся
+     как был: рассеивать нечем. */
+  const air=p.T.atm==="отсутствует"?.06:(p.T.atm.indexOf("разреженная")>=0?.5:1);
+  const COLD=[104,146,196];
+  return base.map((v,i)=>Math.round(lerp(v,Math.max(v*.86,COLD[i]*.62),.34*air)));
 }
 /* сколько света вообще: у безвоздушного мира тень почти чёрная (нечему
    рассеивать), у плотной атмосферы — мягкая */
@@ -303,4 +324,39 @@ function drawSkyBase(p){
     }
     if(nite>0){ctx.fillStyle="rgba(4,6,14,"+(nite*.9).toFixed(3)+")";ctx.fillRect(0,0,W,H);}
   }),0,0,W,H);
+}
+
+/* ══════════════ свечение (bloom) — M243 ══════════════
+   «Свет не светит» — общая претензия ко всем сценам: лампа рисовалась пятном,
+   но вокруг неё ничего не происходило. Настоящий ореол вокруг ярких мест —
+   самый дешёвый способ сделать источник источником: кадр уменьшается вчетверо,
+   из него выбивается тёмное (умножение на себя — это квадрат яркости, серое
+   гаснет, яркое остаётся), размывается и кладётся обратно сложением.
+   Три drawImage на кадр, без единого чтения пикселей. */
+let BLOOM_CV=null;
+const BLOOM_K={system:.34,map:0,landing:.16,surface:.16,dig:.20,cave:.24,
+               belt:.24,scoop:.20,base:.18,raid:.18,homein:.22,winter:.20,spa:.18};
+function bloomPass(k){
+  if(!(k>0)||W<8||H<8)return;
+  if(G.opts&&G.opts.gfx&&G.opts.gfx.draw===0)return;
+  const w=Math.max(2,Math.round(W/4)),h=Math.max(2,Math.round(H/4));
+  if(!BLOOM_CV||BLOOM_CV.width!==w||BLOOM_CV.height!==h){
+    BLOOM_CV=document.createElement("canvas");BLOOM_CV.width=w;BLOOM_CV.height=h;
+  }
+  const g=BLOOM_CV.getContext("2d");
+  g.globalCompositeOperation="source-over";
+  g.clearRect(0,0,w,h);
+  g.drawImage(cvs,0,0,w,h);
+  /* порог без чтения пикселей: кадр, умноженный сам на себя */
+  g.globalCompositeOperation="multiply";
+  g.drawImage(BLOOM_CV,0,0);
+  g.globalCompositeOperation="source-over";
+  ctx.save();
+  ctx.globalCompositeOperation="lighter";
+  ctx.globalAlpha=k;
+  const hasF=("filter" in ctx);
+  if(hasF)ctx.filter="blur(7px)";
+  ctx.drawImage(BLOOM_CV,0,0,w,h,0,0,W,H);
+  if(hasF)ctx.filter="none";
+  ctx.restore();
 }

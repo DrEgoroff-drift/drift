@@ -137,6 +137,9 @@ function drawHomeOut(tr,camx,camy,p){
     ctx.fillStyle=sdRGB(sdMix(pal.stone,[0,0,0],.14+fr()*.22));
     ctx.fillRect(xx,gy-fh+fr()*1.4,4+fr()*3,fh-1);
   }
+  /* дом отбрасывает тень: до M243 её не было вовсе — единственная постройка
+     в игре, которая стояла на земле и ничего на неё не клала (закон 2) */
+  if(typeof sdShadow==="function")sdShadow(sx,gy,w*1.15,wallH+roofH);
   sdBody(()=>ctx.rect(sx-w/2,gy-wallH,w,wallH-fh*.4),sdRGB(pal.wall),null,.24);
   const lg=ctx.createLinearGradient(sx-w/2,0,sx+w/2,0);
   lg.addColorStop(0,"rgba(0,0,0,.34)");lg.addColorStop(.55,"rgba(0,0,0,0)");

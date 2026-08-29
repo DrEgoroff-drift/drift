@@ -10,7 +10,14 @@
 
    Прибор меряет ТО, ЧТО НАРИСОВАНО, а не то, что задумано: читает канву.
    Поэтому он одинаково честен к любому режиму и к любой правке. */
-const LOOK_TARGET={warm:[25,75],empty:45,contrast:.30,tones:5};
+/* ── мишени ──
+   «Тепло 25–75%» оказалось неверной мишенью: ледяной мир обязан быть холодным,
+   и требовать от него половины тепла — значит красить все планеты одинаково.
+   Меряем не долю тепла, а ПАРУ: доля меньшего из двух температур. Она отвечает
+   на настоящий вопрос — есть ли в кадре второй источник, — и работает на любой
+   палитре (закон 7: холодный ключ + тёплый АКЦЕНТ; акцент по определению
+   меньшинство). warm остаётся в отчёте как справка. */
+const LOOK_TARGET={pair:15,empty:45,contrast:.30,tones:5};
 /* ── замер одного кадра ──
    Считаем по каждому четвёртому пикселю: точность та же, стоимость вчетверо
    меньше. Тон учитывается только у насыщенных и не чёрных пикселей — у серого
@@ -34,7 +41,12 @@ function lookFrame(){
     sat.push(s);val.push(v);
     if(s>.12&&v>.06){
       hue[Math.floor(h/10)%36]++;
-      if(h>=10&&h<70)warm++;else if(h>=170&&h<280)cold++;
+      /* тепло/холод — по разнице красного и синего, а не по секторам круга.
+       Сектора оставляли зелёное (треть палитры этой игры) вообще без ответа,
+       и на зелёной планете прибор считал, что цвета нет. Художник различает
+       так же: жёлто-зелёное тёплое, сине-зелёное холодное. */
+      const rb=(r-b)*255;
+      if(rb>8)warm++;else if(rb<-8)cold++;
     }
   }
   sat.sort((a,b)=>a-b);val.sort((a,b)=>a-b);
@@ -51,9 +63,11 @@ function lookFrame(){
     }
     blocks++;if(hi-lo<10)empty++;
   }
+  const wpct=Math.round(100*warm/Math.max(1,warm+cold));
   return {
     tones:hue.filter(v=>v/tot>=.05).length,          /* сколько тонов держат кадр */
-    warm:Math.round(100*warm/Math.max(1,warm+cold)), /* тёплых против холодных, % */
+    warm:wpct,                                       /* тёплых против холодных, % */
+    pair:Math.min(wpct,100-wpct),                    /* доля меньшинства: есть ли вторая температура */
     contrast:+(val[Math.floor(n*.95)]-val[Math.floor(n*.05)]).toFixed(2),
     empty:Math.round(100*empty/Math.max(1,blocks)),
     sat:+sat[Math.floor(n/2)].toFixed(2),
@@ -64,7 +78,7 @@ function lookFrame(){
 function lookVerdict(m){
   const T=LOOK_TARGET;
   const ok=[];
-  ok.push((m.warm>=T.warm[0]&&m.warm<=T.warm[1]?"✓":"×")+"тепло "+m.warm+"%");
+  ok.push((m.pair>=T.pair?"✓":"×")+"пара "+m.pair+"% (тепла "+m.warm+"%)");
   ok.push((m.empty<=T.empty?"✓":"×")+"пусто "+m.empty+"%");
   ok.push((m.contrast>=T.contrast?"✓":"×")+"контраст "+m.contrast);
   ok.push((m.tones>=T.tones?"✓":"×")+"тонов "+m.tones);
@@ -90,13 +104,28 @@ function lookScenes(){
     G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};enterSurface();return true;
   };
   const day=p=>p.type!=="gas"&&p.T.atm!=="отсутствует";
+  /* ── час назначается, а не как выйдет (M243) ──
+     Прибор мерил сцену в тот час, в какой попал: «грунт» выходил то дневным,
+     то ночным, и числа гуляли между прогонами. Час теперь ставится явно —
+     день это день, ночь это ночь, и день с ночью меряются отдельно. */
+  const setHour=(p,wantDay)=>{
+    const t0=G.t;let best=null;
+    for(let k=0;k<240;k++){
+      const t=t0+k*900;
+      const s=celSun(p,t);
+      const score=wantDay?s.alt:-s.alt;
+      if(!best||score>best.score)best={score,t};
+    }
+    if(best)G.t=best.t;
+  };
   return [
     {id:"система",set:()=>{const s=find(q=>q.station&&(q.planets||[]).length>=3);if(!jump(s))return false;
       G.mode="system";G.ship.x=s.planets[1].x+380;G.ship.y=s.planets[1].y+220;G.zoom=.7;return true;}},
     {id:"карта",set:()=>{G.mode="map";return true;}},
     {id:"заход",set:()=>{const s=find(q=>(q.planets||[]).some(p=>p.type!=="gas"));if(!jump(s))return false;
       startLanding(s.planets.find(p=>p.type!=="gas"));return true;}},
-    {id:"грунт",set:()=>land(day)},
+    {id:"грунт день",set:()=>{if(!land(day))return false;setHour(G.surf.p,true);return true;}},
+    {id:"грунт ночь",set:()=>{if(!land(day))return false;setHour(G.surf.p,false);return true;}},
     {id:"шахта",set:()=>{if(!land(day))return false;enterDig();return true;}},
     {id:"пещера",set:()=>{if(!land(day))return false;enterCave();return !!G.cave;}},
     {id:"пояс",set:()=>{const s=find(q=>!!q.belt);if(!jump(s))return false;enterBelt();return true;}},

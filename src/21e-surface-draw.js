@@ -251,6 +251,28 @@ function drawSurfaceWorld(){
   drawLander(false,false,{gear:1,sq:0,landed:true,tr:S.tr,gx:S.shipX,
     hot:Math.max(0,1-(G.t-(S.t0||0))/700)});
   ctx.restore();
+  /* ── ночью корабль живой, а не белое пятно (M243) ──
+     На ночных кадрах лендер оставался дневным: самая светлая вещь в кадре без
+     единого источника. Теперь в темноте у него горит окно кабины и лежит
+     тёплое пятно под брюхом — «внутри кто-то есть», а заодно вторая, тёплая
+     температура в холодном кадре. */
+  {
+    const nite=(typeof surfNight==="function")?surfNight(p):0;
+    if(nite>.18){
+      const lx=S.shipX-camx, ly=S.shipY-camy;
+      const k=clamp((nite-.18)/.35,0,1);
+      const gp=ctx.createRadialGradient(lx,ly+13,0,lx,ly+13,52);
+      gp.addColorStop(0,"rgba(255,206,138,"+(.20*k).toFixed(3)+")");
+      gp.addColorStop(1,"rgba(255,206,138,0)");
+      ctx.fillStyle=gp;ctx.beginPath();ctx.ellipse(lx,ly+13,52,15,0,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(255,224,170,"+(.62*k).toFixed(3)+")";
+      ctx.fillRect(lx-4,ly-6,9,5);
+      const gw=ctx.createRadialGradient(lx,ly-4,0,lx,ly-4,26);
+      gw.addColorStop(0,"rgba(255,214,150,"+(.26*k).toFixed(3)+")");
+      gw.addColorStop(1,"rgba(255,214,150,0)");
+      ctx.fillStyle=gw;ctx.beginPath();ctx.arc(lx,ly-4,26,0,TAU);ctx.fill();
+    }
+  }
   drawDustMotes(camx,camy,p);
   /* три света (11g): дороги, фундаменты и вход — видны только в соединение */
   if(typeof lightsDrawReveal==="function")lightsDrawReveal(tr,camx,camy,p);

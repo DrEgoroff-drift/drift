@@ -167,6 +167,19 @@ function drawStation(x,y,Z){
      140: внутрь такой станции лендер не влезет, и масштаб мира разваливался.
      Полтора — не «чтобы красивее», а чтобы отношение размеров не врало. */
   const s=clamp(Z,.4,1.5)*1.7,S=G.sys.station,V=stationViz(S),ty=S.stype||"trade";
+  /* ── станция светит (M243) ──
+     Самая яркая рукотворная вещь в системе не давала вокруг себя ничего:
+     ни ореола, ни отблеска. Мягкое пятно её собственного света кладётся ДО
+     корпуса — тогда оно читается свечением окон и прожекторов, а не нимбом. */
+  {
+    const R=70*s;
+    const gg=ctx.createRadialGradient(x,y,0,x,y,R);
+    gg.addColorStop(0,"rgba(255,214,150,.16)");
+    gg.addColorStop(.45,"rgba(255,200,130,.06)");
+    gg.addColorStop(1,"rgba(255,200,130,0)");
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.fill();ctx.restore();
+  }
   ctx.save();ctx.translate(x,y);ctx.scale(s,s);
   /* модули идут первым слоем: они висят на штангах вокруг ядра, и ядро типа
      должно перекрывать их, а не наоборот (17a-station-mod) */

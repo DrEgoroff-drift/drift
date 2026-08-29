@@ -57,6 +57,31 @@ in `28y-look` and is shared with the fuzzer — one list, or the two drift apart
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
+## M243 — light as a system (2026-08-28) — CLOSED (0.239.0)
+
+Stage two of the graphics work: every scene gets a second temperature and light gets somewhere to
+fall. Directional shadows from `SUN_DIR` (one function serves the astronaut, the ship, the rocks,
+the plants, the headframe; buildings got the same, and the house got a shadow at all), a cheap
+bloom (frame ÷4, multiplied by itself as a threshold, blurred, added back — 0.16 ms), a zenith
+colder than the horizon so shadows go blue on any world with air, a lit cabin window on the parked
+ship at night, and a station that gives off its own light.
+
+The meter's temperature test was rewritten mid-stage, and that is the lesson worth keeping:
+
+- **A metric that cannot classify a third of your palette is not measuring your game.** Hue
+  sectors (10–70° warm, 170–280° cold) left green unlabelled, and on a green world the meter said
+  "no colour". Warm against cold is red against blue, per pixel — the way a painter decides.
+- **Do not demand a ratio where the world has a right to a bias.** "25–75% warm" would order an
+  ice world to burn. The target is the PAIR — the smaller of the two temperatures, ≥15%: a frame
+  may lean cold, it may not be single-temperature.
+- **Multiplicative light cannot recolour a surface.** The first attempt tinted the ambient blue
+  and nothing moved: `base × amb` keeps the base's hue. The colour had to come from the SKY the
+  frame actually shows — hence the cold zenith, which is both physically true and visible.
+
+Numbers after the stage: contrast on the ground by day 0.17 → 0.48, the mine 0.26 → 0.36, the base
+0.22 → 0.41, the system 0.09 → 0.95. Pair: base and gas dive 40%, cave and home still 0–1% — those
+two are next, and they need their own light rather than the sky's.
+
 ## M242 — the drawing stops contradicting the world (2026-08-28) — CLOSED (0.238.0)
 
 Stage one of the graphics work, and deliberately not about taste: seven places where the picture

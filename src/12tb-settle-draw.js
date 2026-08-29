@@ -215,11 +215,17 @@ function sdBody(path,fill,lit,alpha){
   ctx.restore();
 }
 /* тень на землю: одна, в сторону от света, мягкая */
+/* тень постройки: смещение и длина — от того же SUN_DIR, что и свет (M243).
+   Было жёстко «чуть влево» независимо от часа: на закате дом стоял на пятне,
+   а не отбрасывал тень. */
 function sdShadow(x,y,w,h){
+  const sx=(typeof SUN_DIR==="object")?SUN_DIR.x:.55;
+  const sy=(typeof SUN_DIR==="object")?SUN_DIR.y:-.83;
+  const low=clamp(1-Math.abs(sy),0,1);
   ctx.save();
-  ctx.fillStyle="rgba(0,0,0,.30)";
+  ctx.fillStyle="rgba(0,0,0,"+(.30*(1-low*.35)).toFixed(3)+")";
   ctx.beginPath();
-  ctx.ellipse(x-w*.18,y-1,w*.62,Math.max(2.5,h*.09),0,0,TAU);
+  ctx.ellipse(x-sx*w*(.18+low*.75),y-1,w*(.62+low*.5),Math.max(2.5,h*.09),0,0,TAU);
   ctx.fill();
   ctx.restore();
 }
