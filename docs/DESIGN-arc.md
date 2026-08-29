@@ -95,3 +95,23 @@ never know it was you (`11ag`, M171).
 
 None of this goes in before the first hour works. The playtest put the game's weakest point at
 minute two; this arc lives on a scale of hours. Building it first would be building the roof.
+
+## The pacing guard: clocks over the endings (P8, designed 2026-08-29)
+
+The known disease of salience architecture (Short): the player plays along for an act and then
+*more or less accidentally* satisfies all the preconditions for a badly-timed ending. The cure
+is a layer that only **withholds**. Contract, for whenever an ending is wired:
+
+1. **Every ending owns a clock.** A clock advances only on *deed + time*: named deed keys from
+   the turns' vocabulary (M259 — `STORY_WHEN` plus `hand`/`seams`/…), each advance separated by
+   a minimum count of real sky-days. Observation alone never advances a clock.
+2. **An ending fires only inside its window** — its own clock full AND the act's clock at
+   least N. Preconditions met early simply wait, invisibly; nothing expires.
+3. **The guard writes nothing.** No text, no journal line, no hint that a window exists. It is
+   not a story; it is a doorman.
+4. The медкомиссия (M161, `11aa-record`) already satisfies the contract and is the reference:
+   its clock is 12 years of стаж (`recordYears`), its place-gate is the core counter, and it
+   fires as an offer, not an ambush. New endings copy this shape.
+5. **No engine before consumers.** A clocks engine with no second ending wired would be a perk
+   without code. The engine lands together with the first ending of the second act (M159–M161
+   queue), not before.
