@@ -147,7 +147,12 @@ function dustTable(n){
   const t=new Array(n);
   for(let i=0;i<n;i++){
     const r=rng(hashi(i,7,0xD057));
-    t[i]={u:r(),v:r(),s:.6+r()*1.6,a:.05+r()*.16};
+    const u=r(),v=r();
+    /* направление течения (M254): угол из поля dirAt, запечён в таблицу —
+       правило M253, в кадре поле не зовётся. Соседние пылинки текут вместе:
+       у пустоты появляется ход, а не дрожь */
+    const ang=dirAt(u*900,v*900,0xF10,1/420);
+    t[i]={u,v,s:.6+r()*1.6,a:.05+r()*.16,dx:Math.cos(ang),dy:Math.sin(ang)};
   }
   return DUST_TAB=t;
 }
@@ -179,10 +184,14 @@ function drawSpaceDust(cx,cy,Z,dens){
        globalAlpha — состояние контекста, и триста смен на кадр стоили
        три с половиной миллисекунды (замер) */
     ctx.globalAlpha=a0*LY.a*.62;
+    /* пыль ТЕЧЁТ (M254): медленный снос вдоль запечённого направления, той же
+       мировой скоростью на всех слоях — параллакс сам делит её по глубине.
+       Ход медленный (~4 px/с у ближнего слоя): на стоянке пустота живёт, а
+       скорость полёта он не путает — она на порядок больше */
     for(let i=0;i<n;i++){
       const d=T[(i+L*37)%base];
-      const px=((d.u*span+L*211-cx*LY.par)%span+span)%span/span*sw-20;
-      const py=((d.v*span+L*137-cy*LY.par)%span+span)%span/span*sh-20;
+      const px=((d.u*span+L*211+(d.dx*G.t*.09-cx)*LY.par)%span+span)%span/span*sw-20;
+      const py=((d.v*span+L*137+(d.dy*G.t*.09-cy)*LY.par)%span+span)%span/span*sh-20;
       ctx.fillRect(px,py,d.s*LY.s,d.s*LY.s);
     }
   }

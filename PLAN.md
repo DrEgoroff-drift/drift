@@ -122,6 +122,11 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M254 — the dust flows (2026-08-29) — CLOSED (0.250.0)
+
+Second consumer of `dirAt`: grain flow angles baked into `dustTable`, one slow world current,
+parallax divides it by depth. P2 remaining: one wind for the grass, nebula strata, andamento.
+
 ## M253 — direction as a primitive; the cave rock's grain (2026-08-29) — CLOSED (0.249.0)
 
 P2 opened: `dirAt` in `01-core` (curl of fbm — coherent, non-crossing flow), first consumers

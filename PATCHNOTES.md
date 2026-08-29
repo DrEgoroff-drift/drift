@@ -7,7 +7,14 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.249.0 — M253: direction becomes a primitive, and the cave rock gets its grain
+## 0.250.0 — M254: the dust flows
+
+The second consumer of the direction field: each dust grain bakes its flow angle from `dirAt`
+into `dustTable` (the M253 rule holds — the field is never sampled in the frame), and the draw
+adds a slow drift along it, the same world current on all three layers so parallax divides it
+by depth on its own. About 4 px/s at the near layer: parked, the void now lives — neighbouring
+grains travel together, a current rather than a shimmer — while flight speed is an order louder
+and cannot be confused with it. Motion, not twinkle.
 
 `dirAt(x,y,seed,scale)` lands in `01-core` (DESIGN-craft §2/§5): the angle of flow at a point,
 taken from the *isolines* of fbm — the gradient turned a quarter — so streamlines never cross
