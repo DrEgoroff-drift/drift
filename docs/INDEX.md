@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 331 · символов верхнего уровня: 3027
+Файлов: 331 · символов верхнего уровня: 3029
 
 ## СИМВОЛЫ
 
@@ -392,8 +392,8 @@ CRAFT_TIERS                  src/03-ships.js:80
 craftAffordable              src/03-ships.js:85
 craftAmmo                    src/16b-missile.js:28
 craftPart                    src/03-ships.js:90
-crashN                       src/28-loop.js:260
-crashSay                     src/28-loop.js:261
+crashN                       src/28-loop.js:263
+crashSay                     src/28-loop.js:264
 CREW_EV_BASE                 src/12b-crew-events.js:69
 CREW_EVENTS                  src/12b-crew-events.js:97
 CREW_MODS                    src/12a-crew.js:270
@@ -456,7 +456,7 @@ CUT_RANGE                    src/24-mode-belt.js:183
 cvs                          src/08-state.js:2
 dayK                         src/19c-light.js:68
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:333
+dbg                          src/28-loop.js:336
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:156
@@ -541,7 +541,7 @@ drawBeltRocks                src/17c-system-draw.js:41
 drawBuildMenu                src/21aa-base-rooms.js:504
 drawBuilt                    src/21c-built.js:57
 drawCantinaRoom              src/27d-ui-cantina.js:32
-drawCave                     src/22-mode-cave.js:560
+drawCave                     src/22-mode-cave.js:587
 drawCaveDark                 src/22a-cave-deco.js:288
 drawCaveFar                  src/22-mode-cave.js:470
 drawCaveGlow                 src/22a-cave-deco.js:318
@@ -829,8 +829,8 @@ folkShut                     src/11ah-offer.js:90
 folkState                    src/12u-folk.js:83
 folkVisit                    src/12u-folk.js:104
 foundBase                    src/21a-mode-base.js:53
-frame                        src/28-loop.js:272
-frameBody                    src/28-loop.js:176
+frame                        src/28-loop.js:275
+frameBody                    src/28-loop.js:179
 freeVoice                    src/09-audio.js:91
 fuelPriceHere                src/12k-rep.js:63
 FUR_TONES                    src/20f-fauna.js:20
@@ -905,6 +905,8 @@ goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
 gotoSector                   src/11a-quests.js:68
 gradePass                    src/19c-light.js:258
+GRAIN_PAT                    src/19c-light.js:370
+grainPass                    src/19c-light.js:371
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
 GREEN_SP                     src/21g-greenhouse.js:68
@@ -1958,7 +1960,7 @@ probeShot                    src/25m-probe.js:85
 probeSpeak                   src/25m-probe.js:100
 probeTarget                  src/25m-probe.js:38
 probeVoice                   src/25m-probe.js:75
-prof                         src/28-loop.js:296
+prof                         src/28-loop.js:299
 PROFILE                      src/02-world.js:43
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
@@ -3482,9 +3484,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19b-sky.js · 29 КБ
   · небо:1
 
-## src/19c-light.js · 26 КБ
+## src/19c-light.js · 27 КБ
   · свет и воздух:1
   · свечение (bloom) — M243:329
+  · зерно и виньетка — один слой на все сцены (M244):364
 
 ## src/19d-weather.js · 13 КБ
   · погода:1
@@ -3580,7 +3583,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/22a-cave-deco.js · 21 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
 
-## src/22-mode-cave.js · 30 КБ
+## src/22-mode-cave.js · 32 КБ
   · пещера: поле породы в двух измерениях:1
 
 ## src/23aa-dig-rock.js · 35 КБ
@@ -3748,9 +3751,9 @@ zooTick                      src/11ad-zoo.js:41
   · цикл:81
   · авторазрешение:104
   · развилка режимов — одна на всех (M238):134
-  · кадр, который не убивает игру (M234):252
-  · prof() — на что уходит кадр:284
-  · dbg() — что держит корабль:324
+  · кадр, который не убивает игру (M234):255
+  · prof() — на что уходит кадр:287
+  · dbg() — что держит корабль:327
 
 ## src/28y-look.js · 11 КБ
   · look() — прибор кадра:1

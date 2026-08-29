@@ -515,6 +515,33 @@ function drawCaveWorld(){
       wallDraw(WALL_C,wx0,wx1,fy-50,fy-8,"rgba(236,232,214,.66)");
     }
   }
+  /* ── свет фонаря на ПОРОДЕ, а не в воздухе (M244) ──
+     Пещера была самым мёртвым кадром игры: прибор мерил 0% пары, контраст
+     0.11 и 86% пустоты. Причина простая — единственный источник светил в
+     пустоту: клин в воздухе, а пол и стены оставались чёрными. Кладём тёплое
+     пятно на пол перед ходоком (видно ОСВЕЩЁННОЕ, а не луч) и редкие пылинки
+     в самом луче: они и дают воздуху объём. Кристаллы рядом дают холодную
+     половину пары — оба источника оказываются в одном кадре. */
+  {
+    const f=C.face||1, lk=kitStat().lamp;
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const pg=ctx.createRadialGradient(px+f*46,py+8,0,px+f*46,py+8,120*lk);
+    pg.addColorStop(0,"rgba(255,214,150,.26)");
+    pg.addColorStop(.45,"rgba(255,196,120,.10)");
+    pg.addColorStop(1,"rgba(255,190,110,0)");
+    ctx.fillStyle=pg;
+    ctx.beginPath();ctx.ellipse(px+f*46,py+8,120*lk,44*lk,0,0,TAU);ctx.fill();
+    /* пыль в луче: восемь крупинок по кругу — воздух виден только так */
+    for(let i=0;i<8;i++){
+      const ph=(G.t*.004+i*.79)%1;
+      const dx=f*(16+ph*96*lk), dy=-14+Math.sin(i*2.1+G.t*.006)*13+ph*20;
+      const a=(1-Math.abs(ph-.5)*2)*.22;
+      if(a<=0)continue;
+      ctx.fillStyle="rgba(255,232,190,"+a.toFixed(3)+")";
+      ctx.beginPath();ctx.arc(px+dx,py+dy,.9+ph*1.4,0,TAU);ctx.fill();
+    }
+    ctx.restore();
+  }
   drawCaveGlow(C,camx,camy,px,py);
   /* дозорные посёлка у устья (хвост M110): их видно, а не только читается
      в подсказке. Те же силуэты с шестом, что на поверхности, и факел */

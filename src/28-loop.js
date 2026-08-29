@@ -172,6 +172,9 @@ function drawWorld(){
   else if(G.mode==="spa"&&G.spa)drawSpa();
   /* ореол вокруг яркого — последним по миру и до приборов (M243) */
   if(typeof bloomPass==="function")bloomPass(BLOOM_K[G.mode]||0);
+  /* зерно на все сцены, виньетка — где своей нет (M244) */
+  if(typeof grainPass==="function"&&G.mode!=="map")
+    grainPass(!(G.mode==="surface"||G.mode==="landing"));
 }
 function frameBody(now){
   if(LOOP_OFF)return;

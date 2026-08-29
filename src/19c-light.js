@@ -360,3 +360,39 @@ function bloomPass(k){
   if(hasF)ctx.filter="none";
   ctx.restore();
 }
+
+/* ══════════════ зерно и виньетка — один слой на все сцены (M244) ══════════════
+   Две вещи, которые связывают девять разных сцен в одну игру и стоят почти
+   ничего. Зерно: запечённый тайл шума 64×64, положенный плиткой в режиме
+   `overlay`. Это ещё и дизеринг — прибор ловил кольца на короне звезды, и это
+   классический бэндинг восьмибитного градиента; шум разбивает ступени.
+   Виньетка: только там, где нет своей (на грунте её кладёт gradePass). */
+let GRAIN_PAT=null;
+function grainPass(vig){
+  if(G.opts&&G.opts.gfx&&G.opts.gfx.draw===0)return;
+  if(W<8||H<8)return;
+  if(!GRAIN_PAT){
+    const cv=document.createElement("canvas");cv.width=cv.height=64;
+    const g=cv.getContext("2d"),im=g.createImageData(64,64);
+    for(let y=0;y<64;y++)for(let x=0;x<64;x++){
+      const i=(y*64+x)*4, v=110+Math.round(h01(x,y,0x9E71)*36);
+      im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=255;
+    }
+    g.putImageData(im,0,0);
+    GRAIN_PAT=ctx.createPattern(cv,"repeat");
+  }
+  ctx.save();
+  ctx.globalCompositeOperation="overlay";
+  ctx.globalAlpha=.075;
+  ctx.fillStyle=GRAIN_PAT;
+  ctx.fillRect(0,0,W,H);
+  ctx.restore();
+  if(vig){
+    ctx.drawImage(screenLayer("vigg|"+W+"|"+H,()=>{
+      const g=ctx.createRadialGradient(W*.5,H*.48,Math.min(W,H)*.34,W*.5,H*.48,Math.max(W,H)*.76);
+      g.addColorStop(0,"rgba(0,0,0,0)");
+      g.addColorStop(1,"rgba(0,0,0,.40)");
+      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    }),0,0,W,H);
+  }
+}

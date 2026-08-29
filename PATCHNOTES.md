@@ -7,6 +7,23 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.240.0 — M244: grain over everything, and light on the rock in the cave
+
+- **One film over nine scenes.** A baked 64×64 noise tile laid as a pattern in `overlay` — grain,
+  and dithering at the same time: the meter had caught banding rings on the star's corona, which
+  is plain eight-bit gradient banding, and noise breaks the steps. Scenes without a vignette of
+  their own (system, belt, mine, cave, base, home) get one here; the ground keeps the one
+  `gradePass` gives it. Measured cost: within noise of zero.
+- **In the cave the lamp lights the ROCK, not the air.** It was the deadest frame in the game —
+  the meter read 0% pair, contrast 0.11, 86% empty — because the only source in the scene shone
+  into nothing: a wedge in the air while the floor and the walls stayed black. Now a warm pool
+  lies on the floor ahead of the walker (what you see is the LIT THING, not the beam) with dust
+  turning slowly inside the beam, and the cold daylight from the mouth gives the frame its second
+  temperature.
+
+Tests: 398 suites green.
+
+---
 ## 0.239.0 — M243: light as a system, and the meter tells the truth about it
 
 Stage two of the graphics work. The meter said the frames were monochrome; this is the pass that
