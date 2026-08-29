@@ -262,10 +262,10 @@ caveFloorOf                  src/22-mode-cave.js:89
 caveFloraOf                  src/20e-species.js:111
 caveGalR                     src/22-mode-cave.js:40
 caveGalY                     src/22-mode-cave.js:35
-caveLampMask                 src/22a-cave-deco.js:537
-caveLampSpot                 src/22a-cave-deco.js:479
+caveLampMask                 src/22a-cave-deco.js:553
+caveLampSpot                 src/22a-cave-deco.js:495
 caveLowY                     src/22-mode-cave.js:42
-caveMossSpots                src/22a-cave-deco.js:466
+caveMossSpots                src/22a-cave-deco.js:482
 caveMoveX                    src/22-mode-cave.js:243
 cavePool                     src/22a-cave-deco.js:76
 caveScanDown                 src/22-mode-cave.js:49
@@ -554,8 +554,8 @@ drawCantinaRoom              src/27d-ui-cantina.js:32
 drawCave                     src/22-mode-cave.js:711
 drawCaveDark                 src/22a-cave-deco.js:327
 drawCaveFar                  src/22-mode-cave.js:580
-drawCaveGlow                 src/22a-cave-deco.js:361
-drawCaveOwnLight             src/22a-cave-deco.js:485
+drawCaveGlow                 src/22a-cave-deco.js:377
+drawCaveOwnLight             src/22a-cave-deco.js:501
 drawCaveRock                 src/22-mode-cave.js:465
 drawCaveSolid                src/22a-cave-deco.js:241
 drawCaveWater                src/22a-cave-deco.js:300
@@ -584,7 +584,7 @@ drawFindsSystem              src/17b-finds.js:152
 drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24ab-raid-foe.js:10
 drawForeground               src/21b-surface-deco.js:248
-drawGlassHUD                 src/24-mode-belt.js:632
+drawGlassHUD                 src/24-mode-belt.js:709
 drawGlyph                    src/12t-settle.js:59
 drawGround                   src/19-mode-landing.js:109
 drawGroundCrumbs             src/19-mode-landing.js:269
@@ -972,7 +972,7 @@ groveOnKill                  src/11j-grove.js:105
 groveSys                     src/11j-grove.js:39
 groveTick                    src/11j-grove.js:85
 groveVisit                   src/11j-grove.js:116
-growLichen                   src/22a-cave-deco.js:586
+growLichen                   src/22a-cave-deco.js:602
 GROWN_LINES                  src/11q-grown.js:48
 grownAll                     src/11q-grown.js:19
 grownDepthAt                 src/11q-grown.js:20
@@ -3623,9 +3623,9 @@ zooTick                      src/11ad-zoo.js:41
   · поверхность:1
   · навигатор и подсказки сверху:659
 
-## src/22a-cave-deco.js · 32 КБ
+## src/22a-cave-deco.js · 33 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
-  · свой свет пещеры (M248):458
+  · свой свет пещеры (M248):474
 
 ## src/22-mode-cave.js · 41 КБ
   · пещера: поле породы в двух измерениях:1
@@ -3656,7 +3656,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/24b-belt-poi.js · 9 КБ
   · ориентиры в поясе:1
 
-## src/24-mode-belt.js · 34 КБ
+## src/24-mode-belt.js · 39 КБ
   · ПОЯС АСТЕРОИДОВ · ВИД ИЗ КАБИНЫ:1
 
 ## src/25a-instr.js · 13 КБ
@@ -3802,7 +3802,7 @@ zooTick                      src/11ad-zoo.js:41
   · prof() — на что уходит кадр:287
   · dbg() — что держит корабль:327
 
-## src/28y-look.js · 14 КБ
+## src/28y-look.js · 15 КБ
   · look() — прибор кадра:1
 
 ## src/28z-fps-probe.js · 9 КБ

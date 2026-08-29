@@ -7,6 +7,34 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.274.0 — M277: every frame gets a judge — and the belt gets its Milky Way
+
+The author's standing order (30.08): the rules now judge WHOLE FRAMES, not elements — and the
+critic must flog his own work hardest. This leg builds the judge and fixes the two worst frames.
+
+**?look — the frame judge without hands.** `lookAll()` existed but only in a live console. Now
+`drift.html?look` runs the full scene tour and POSTs the verdict table to the stand (same
+discipline as ?g11 — no virtual time for a heavy sync pass), and `docs/lookrun.ps1` prints the
+JSON. First full table, honest and ugly: 8 of 11 frames fail «холодный ключ + тёплый акцент»
+(pair 0–8%), пещера and пояс fail four of five laws, карта has mass 0%. The one exemplary frame:
+черпак газов. The table is the per-frame work ledger now (PLAN.md).
+
+**The cave gets warm air.** The lamp's circle was a neutral hole in the darkness — the frame had
+no second temperature and no middle mass. A warm glow inside the light radius gives both at once
+(pair 0→5, mass 2→8, contrast .14→.23 — direction confirmed, more to come).
+
+**The belt sees its own ring.** The frame was a black field with rocks: mass 3%, pair 0%. Now —
+the law that already governed the system view (M242: an off-screen star still bleeds its light
+into the frame) reaches the belt, lit facets add the star's warmth quadratically, and the belt
+itself is VISIBLE as a band across the sky — from inside the ring you see the ring, like the
+Milky Way, warm toward the star and nebula-cold away. Four recorded self-critique failures on
+the way: a thread instead of a band (wrong model — far arc, not the plane's horizon), a garland
+of discs (round caps on fat segments — literally «кругов дохуя»), total invisibility (a
+zero-length gradient when the star sits on the view axis), a three-striped flag (hard-edged
+passes). The fifth laying — seven soft steps — stands. Belt contrast .20→.34 ✓; rocks now
+silhouette against the glowing band.
+
+---
 ## 0.273.0 — M276: the belt rock stops being plastic
 
 Style rework, second leg. A belt facet was a flat fill — the codex's own words about what makes

@@ -135,6 +135,24 @@ broke the crew data contract), the «home hangs» tail (a 40-ring synchronous sc
 capped), and key-name prompts that lied to phones and rebound keyboards (`ctlHint`). The scoop
 band was acquitted — its file records the decided argument.
 
+**The frame ledger (M277, 0.274.0) — the author's standing order: rules judge WHOLE FRAMES.**
+`docs/lookrun.ps1` (→ `drift.html?look`) prints the table; this is the queue, worst first.
+Baseline 30.08 after the first two frame fixes (targets: pair≥15, mass≥14, contrast≥.30, tones≥5):
+
+| frame | pair | mass | contrast | tones | worst sin |
+|---|---|---|---|---|---|
+| пояс | 0 | 4 | .34✓ | 4 | судья смотрит мимо полосы — proверить постановку сцены прибора |
+| заход | 0 | 45✓ | .21 | 2 | холодный монохром: тёплому акценту неоткуда взяться |
+| грунт ночь | 0 | 9 | .21 | 5✓ | ночь без тёплого окна в кадре |
+| пещера | 5 | 8 | .23 | 3 | тёплый воздух дан (0→5), нужен ещё шаг + вторая ступень |
+| шахта | 1 | 45✓ | .35✓ | 5✓ | одна температура — ламп в шахте нет |
+| карта | 2 | 0 | .07 | 6✓ | точки на тьме: нет второй массы вовсе |
+| система | 1 (тепла 99!) | 14✓ | .88✓ | 5✓ | обратный провал: нет ХОЛОДНОГО акцента |
+| дом | 4 (тепла 96) | 16✓ | .43✓ | 3 | тот же обратный провал + бедные тона |
+| база | 39✓ | 7 | .35✓ | 6✓ | одна масса: порода топит комнаты |
+| грунт день | 12 | 27✓ | .50✓ | 3 | почти пара (движки дали 5→12); тона бедны |
+| черпак | 39✓ | 43✓ | .64✓ | 8✓ | эталон — не трогать |
+
 **The 10×10 audit (M272–M273, 0.269–0.270)** held every game surface and all 108 stories
 against all ten codex laws. Closed: §5 on the cliff cut (`drawGround` CUN), the rectangular sky
 seam (nebula tile edge + it ignored `dim` — weather never silenced it), §10 on the boulders

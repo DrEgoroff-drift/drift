@@ -422,6 +422,77 @@ function drawBelt(){
     ctx.fillStyle=g;ctx.fillRect(sunP.x-R*7,sunP.y-R*7,R*14,R*14);
     ctx.fillStyle="rgba(255,250,236,.92)";
     ctx.beginPath();ctx.arc(sunP.x,sunP.y,R,0,TAU);ctx.fill();
+  }else{
+    /* ── светило за кадром: зарево входит со своей стороны (закон G10/M242,
+       теперь и в поясе). Прибор давал поясу pair 0% всякий раз, когда звезда
+       оказывалась за спиной, — тёплый ключ кадра не имеет права исчезать от
+       поворота головы. Направление берётся честной камерой (right/up/fwd). */
+    const dx=SUN[0]*right[0]+SUN[1]*right[1]+SUN[2]*right[2];
+    const dy=-(SUN[0]*up[0]+SUN[1]*up[1]+SUN[2]*up[2]);
+    const dl=Math.hypot(dx,dy);
+    if(dl>.05){
+      const nx=dx/dl,ny=dy/dl;
+      const ex=W/2+nx*W*.62, ey=H/2+ny*H*.62;
+      const R2=Math.max(W,H)*.7;
+      const g=ctx.createRadialGradient(ex,ey,0,ex,ey,R2);
+      for(let i=0;i<=8;i++){const t=i/8;
+        g.addColorStop(t,"rgba("+scol.join(",")+","+(.30*Math.pow(1-t,2.4)).toFixed(3)+")");}
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      ctx.fillStyle=g;ctx.fillRect(ex-R2,ey-R2,R2*2,R2*2);
+      ctx.restore();
+    }
+  }
+  /* ── сам пояс виден как ПОЛОСА (нотан кадра; прибор 30.08: mass 3%) ──
+     Кадр пояса был чёрным полем с камнями: ни второй массы, ни второй
+     температуры. Изнутри кольца видно кольцо — как Млечный Путь: полоса
+     пояса на небесной сфере, к звезде тёплая её светом, от звезды —
+     холодная в тон туманности. Кольцо проецируется честной камерой,
+     три прохода разной ширины дают мягкую толщу. */
+  {
+    /* Направления из камеры вдоль плоскости пояса: изнутри тора видна
+       полоса-горизонт, большой круг по всей сфере (дальняя дуга кольца —
+       нитка, её не видно; а сегменты с круглыми концами складывались в
+       гирлянду шайб — буквально «кругов дохуя». Оба провала — самокритика
+       двух первых кладок). Теперь: ОДИН непрерывный штрих на проход,
+       температура — градиентом кисти к экранной стороне звезды. */
+    const NPT=40;
+    const sdx=SUN[0]*right[0]+SUN[1]*right[1]+SUN[2]*right[2];
+    const sdy=-(SUN[0]*up[0]+SUN[1]*up[1]+SUN[2]*up[2]);
+    const sl=Math.hypot(sdx,sdy)||1;
+    const gx=W/2+sdx/sl*W*.7, gy=H/2+sdy/sl*H*.7;
+    ctx.save();ctx.globalCompositeOperation="lighter";ctx.lineCap="butt";ctx.lineJoin="round";
+    /* звезда почти по оси взгляда → экранное направление вырождено, и
+       градиент нулевой длины не красит штрих ВООБЩЕ (третья кладка ушла в
+       невидимость именно так). Страховка: вырожденный — сплошной средний тон */
+    const gdeg=Math.hypot(gx*2-W,gy*2-H)<90;
+    /* три прохода читались тремя лентами с жёсткими краями — флаг, не Млечный
+       Путь (самокритика четвёртой кладки). Семь ступеней малой альфы дают
+       мягкий спад, лесенку дотирает зерно кадра. */
+    const BW=[.30,.25,.20,.155,.115,.08,.05],BA=[.05,.055,.06,.065,.07,.075,.08];
+    for(let pass=0;pass<BW.length;pass++){
+      const wPix=H*BW[pass], al=BA[pass];
+      let stroke;
+      if(gdeg){
+        stroke="rgba("+Math.round((neb0[0]+scol[0])/2)+","+Math.round((neb0[1]+scol[1])/2)+
+               ","+Math.round((neb0[2]+scol[2])/2)+","+(al*.85).toFixed(3)+")";
+      }else{
+        const g=ctx.createLinearGradient(W-gx,H-gy,gx,gy);
+        g.addColorStop(0,"rgba("+neb0[0]+","+neb0[1]+","+neb0[2]+","+(al*.6).toFixed(3)+")");
+        g.addColorStop(1,"rgba("+scol[0]+","+scol[1]+","+scol[2]+","+(al*1.15).toFixed(3)+")");
+        stroke=g;
+      }
+      ctx.strokeStyle=stroke;ctx.lineWidth=wPix;
+      let open=false;
+      ctx.beginPath();
+      for(let i=0;i<=NPT;i++){
+        const th=i/NPT*TAU;
+        const p=proj(b.x+Math.sin(th)*9000,b.y,b.z+Math.cos(th)*9000);
+        if(!p){open=false;continue;}
+        if(open)ctx.lineTo(p.x,p.y);else{ctx.moveTo(p.x,p.y);open=true;}
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
   }
   /* звёздная сфера */
   ctx.fillStyle="rgba(185,212,235,.5)";
@@ -531,9 +602,15 @@ function drawBelt(){
     /* три составляющих вместо одной: свет звезды своего цвета, холодный
        подсвет от туманности в тенях и кромочный блик. Одна давала камень
        либо белым, либо чёрным */
-    let r=(base[0]*k*(scol[0]/230)+neb0[0]*.22+p.rim*52)*fog,
-        g=(base[1]*k*(scol[1]/230)+neb0[1]*.22+p.rim*55)*fog,
-        bl=(base[2]*k*(scol[2]/230)+neb0[2]*.28+p.rim*62)*fog;
+    /* тёплая компонента звезды на освещённых гранях (прибор 30.08: пояс
+       pair 0% — кадр без второй температуры). Свет звезды и раньше входил
+       множителем, но на тёмном камне терялся; теперь освещённая грань
+       ДОБАВЛЯЕТ тепло звезды квадратично к li — холодные тени с подсветом
+       туманности остаются ключом, тёплые грани становятся акцентом. */
+    const wl=p.li*p.li*(vein?.16:.11);
+    let r=(base[0]*k*(scol[0]/230)+neb0[0]*.22+p.rim*52+scol[0]*wl)*fog,
+        g=(base[1]*k*(scol[1]/230)+neb0[1]*.22+p.rim*55+scol[1]*wl*.82)*fog,
+        bl=(base[2]*k*(scol[2]/230)+neb0[2]*.28+p.rim*62+scol[2]*wl*.55)*fog;
     if(p.locked){r=r*.82+26;g=g*.82+52;bl=bl*.82+50;}   // подсветка цели, но камень остаётся камнем
     if(p.alpha<1)ctx.globalAlpha=p.alpha;
     ctx.fillStyle="rgb("+(r|0)+","+(g|0)+","+(bl|0)+")";

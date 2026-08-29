@@ -351,6 +351,22 @@ function drawCaveDark(C,px,py){
     ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
   });
   glowBlit(SP,cx,cy,R);
+  /* ── тёплый воздух у фонаря (прибор 30.08: пещера pair 0%, mass 2%) ──
+     Кадр пещеры не имел ни второй температуры, ни второй ступени света:
+     круг фонаря был нейтральной дырой в темноте. Слабое тёплое зарево внутри
+     круга даёт обе разом — тёплый акцент против холодной флоры и среднюю
+     ступень масс вокруг человека. Спрайт, кадру один drawImage. */
+  {
+    const WP=glowSprite("cavewarm",()=>{
+      const g=ctx.createRadialGradient(0,0,0,0,0,1);
+      for(let i=0;i<=8;i++){const t=i/8;
+        g.addColorStop(t,"rgba(255,200,132,"+(.26*Math.pow(1-t,2.2)).toFixed(3)+")");}
+      ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
+    });
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    glowBlit(WP,cx,cy,R*.72);
+    ctx.restore();
+  }
   ctx.fillStyle="rgba("+dkey+",.66)";
   const x0=cx-R,x1=cx+R,y0=cy-R,y1=cy+R;
   if(x0>0)ctx.fillRect(0,0,x0,H);

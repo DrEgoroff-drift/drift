@@ -208,3 +208,20 @@ function look(){
   console.log(G.mode+" · "+lookVerdict(m));
   return m;
 }
+/* ── ?look: прогон прибора без рук (свод: кадр судится числами) ──
+   Как ?g11 (28z): после загрузки — lookAll по всем сценам и POST таблицы на
+   стенд (docs/stand.ps1 → docs/shots/look.png); docs/lookrun.ps1 запускает и
+   печатает JSON. Правило автора 30.08: правила применяются к КАЖДОМУ КАДРУ —
+   значит, у кадров должен быть безрукий судья. */
+if(/[?&]look\b/.test(location.search)){
+  addEventListener("load",()=>setTimeout(async()=>{
+    const i=document.getElementById("intro");if(i)i.style.display="none";
+    G.running=true;
+    let rows;try{rows=lookAll(10);}catch(e){rows=[{err:String(e&&e.message||e)}];}
+    const body=JSON.stringify(rows.map(r=>Object.assign({},r,{verdict:r.pair!=null?lookVerdict(r):undefined})));
+    /* стенд ждёт base64 (как у g11); кириллицу btoa не берёт — тот же трюк */
+    try{await fetch("/shot?n=look",{method:"POST",
+      body:btoa(unescape(encodeURIComponent(body)))});}catch(e){}
+    document.title="LOOKDONE";
+  },900));
+}
