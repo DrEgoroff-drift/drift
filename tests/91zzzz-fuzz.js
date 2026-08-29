@@ -212,9 +212,13 @@ TEST_SUITES.push(()=>suite("look(): прибор кадра меряет и не
   ok(m.warm>=0&&m.warm<=100,"тепло в процентах: "+m.warm);
   ok(m.contrast>=0&&m.contrast<=1,"контраст 0…1: "+m.contrast);
   ok(m.empty>=0&&m.empty<=100,"пусто в процентах: "+m.empty);
-  ok(/пара/.test(lookVerdict(m)),"приговор печатается: "+lookVerdict(m));
+  ok(m.mass>=0&&m.mass<=50,"вторая масса — доля площади: "+m.mass);
+  ok(m.edge>=0&&m.edge<=100,"кромка в процентах: "+m.edge);
+  ok(/пара/.test(lookVerdict(m))&&/массы/.test(lookVerdict(m)),
+     "приговор печатается: "+lookVerdict(m));
   /* мишени объявлены и разумны */
-  ok(LOOK_TARGET.pair>0&&LOOK_TARGET.tones>=3,"мишени заданы");
+  ok(LOOK_TARGET.pair>0&&LOOK_TARGET.tones>=3&&LOOK_TARGET.mass>0&&LOOK_TARGET.edge>0,
+     "мишени заданы");
   ok(m.pair>=0&&m.pair<=50,"пара — доля меньшинства: "+m.pair);
   /* прогон по всем сценам возвращает сохранение на место */
   G.credits=4242;G.sx=3;G.sy=-2;G.sys=getSystem(3,-2);

@@ -45,14 +45,18 @@ measured, the way speed is: `look()` in the console reads the canvas that is act
 and prints four numbers; `lookAll()` walks every scene and prints the table. The scene list lives
 in `28y-look` and is shared with the fuzzer — one list, or the two drift apart.
 
-**Four numbers for a FRAME** (`LOOK_TARGET`):
+**Five numbers for a FRAME** (`LOOK_TARGET`, updated M249):
 
 | number | target | what it catches |
 |---|---|---|
-| warm % (warm pixels of warm+cold) | 25–75 | a monochrome frame. Measured before the work: 0–6% or 81–99% in nine scenes out of ten |
-| empty % (16×16 blocks with no detail) | ≤ 45 | nothing to look at. Measured: 26–86% |
+| pair % (minority of warm vs cold) | ≥ 15 | a single-temperature frame; warm % stays as reference. For natural daylight this is arguable — see loose ends |
+| mass % (second-largest of three value steps) | ≥ 14 | no counter-mass: one value doing the whole frame. Measured 0.245.0: 6–43; fails map/belt/cave, passes the empty-but-shaped |
+| edge % (step transitions between samples) | ≤ 18 | crumble — a guard, not a goal; today 3–11 everywhere |
 | contrast (p95 − p5 of value) | ≥ 0.30 | everything sitting in one narrow band. Measured: 0.07–0.77 |
 | tones (hue buckets holding ≥5%) | ≥ 5 | one hue doing all the work. Measured: 2–8 of 36 |
+
+`empty %` stays in the table as a **reference column about content** (M248: the cave is empty
+of *things*), not a target about light.
 
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
@@ -117,6 +121,22 @@ the day they are found; this is work that was deliberately not done, or that nee
 - **Push only after a green run.** One push in this session (0.238.0) went out while the base suite
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
+
+## M249 — the meter judges masses, not emptiness (2026-08-29) — CLOSED (0.245.0)
+
+P0 of the research plan (`docs/DESIGN-story-craft.md`, combined plan; rationale in
+`DESIGN-craft.md` §3 — notan). The `empty` target measured the wrong thing for the reason
+`28y-look`'s own header documents about the warm target: a scene can be *obliged* to be empty.
+The question is whether the frame reads as two-three shaped masses.
+
+Done: `mass` (share of the second-largest of three value steps) and `edge` (share of step
+transitions between neighbouring samples) computed in the same pixel walk; `empty` demoted to a
+reference column. Calibrated live on eleven scenes: the mass watershed at 14 fails exactly the
+scenes the loose-ends list already named by eye (map 6, belt 6, cave 10) and passes the
+empty-but-shaped ones (system 17, home 20). `edge` is a guard (≤18; today 3–11 everywhere) —
+macro-crumble trips it, sub-pixel star grit does not reach the samples and is not judged.
+
+The pair-for-natural-daylight question in the loose ends stays with the author — untouched.
 
 ## M248 — the cave: narrower, and with a light of its own (2026-08-28) — CLOSED (0.244.0)
 

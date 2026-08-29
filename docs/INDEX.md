@@ -1373,12 +1373,12 @@ logBtnLabel                  src/11-log.js:56
 logOpen                      src/11-log.js:14
 logPageOf                    src/11-log.js:13
 logTime                      src/11-log.js:50
-look                         src/28y-look.js:173
-LOOK_TARGET                  src/28y-look.js:20
-lookAll                      src/28y-look.js:152
-lookFrame                    src/28y-look.js:25
-lookScenes                   src/28y-look.js:91
-lookVerdict                  src/28y-look.js:78
+look                         src/28y-look.js:206
+LOOK_TARGET                  src/28y-look.js:41
+lookAll                      src/28y-look.js:185
+lookFrame                    src/28y-look.js:46
+lookScenes                   src/28y-look.js:124
+lookVerdict                  src/28y-look.js:110
 LOOP_OFF                     src/28-loop.js:127
 LORE                         src/12q-lore.js:67
 LORE_ACT                     src/12q-lore.js:47
@@ -3771,7 +3771,7 @@ zooTick                      src/11ad-zoo.js:41
   · prof() — на что уходит кадр:287
   · dbg() — что держит корабль:327
 
-## src/28y-look.js · 11 КБ
+## src/28y-look.js · 14 КБ
   · look() — прибор кадра:1
 
 ## src/28z-fps-probe.js · 9 КБ

@@ -7,6 +7,18 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.245.0 — M249: the meter judges masses, not emptiness
+
+`look()` gains the notan measure (research: `docs/DESIGN-craft.md` §3): value is quantised to
+three steps inside the same pixel walk; `mass` is the share of the second-largest step — does
+the frame have a counter-mass — and `edge` is the share of transitions between neighbouring
+samples — shapes or grit. The `empty ≤45` target repeated the warm-target mistake one line
+below that mistake's own post-mortem: open space is *obliged* to be empty, as an ice world is
+obliged to be cold. Measured across eleven scenes (mass 6–43, edge 3–11): a mass target at the
+watershed, 14, fails exactly the scenes the eye had already named in the loose ends — the map,
+the belt, the cave — and passes the empty-but-shaped system and home. `edge ≤18` is a guard
+against crumble, not a goal; `empty` stays in the table as a content number (M248).
+---
 ## 0.244.0 — M248: the cave gets narrower, and gets a light of its own
 
 Three ways out of the cave's emptiness were written up for the author; he said do all three. Two
