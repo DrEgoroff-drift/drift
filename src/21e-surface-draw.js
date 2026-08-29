@@ -377,10 +377,17 @@ function drawSurfaceWorld(){
       ctx.beginPath();ctx.arc(sx,sy-25,3,0,TAU);ctx.fill();
       ctx.strokeStyle="rgba(255,255,255,.16)";ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(sx,sy-25,3,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
-      const sw=Math.sin(G.t*.012+mx*.01)*WIND*.5;
-      ctx.strokeStyle=iron(.8,.85);ctx.lineWidth=1.2;
-      ctx.beginPath();ctx.moveTo(sx,sy-22);
-      ctx.quadraticCurveTo(sx+sw,sy-13,sx+sw*.4,sy-2);ctx.stroke();
+      /* ── трос висит, а не нарисован (M245) ──
+         Была парабола с синусом — то есть верёвка, у которой нет ни веса, ни
+         инерции: качается ровно, как метроном. Теперь это верёвка на Верле
+         (18d): семь точек, верхняя прибита к шкиву, остальные висят и ловят
+         тот же WIND, что качает траву. Состояние живёт на G.surf и не
+         сохраняется — эфемерное не хранят. */
+      if(!S.vMine||S.vMineX!==Math.round(mx)){
+        S.vMine=vRope(7,0,0,3.4,{grav:.14,wind:.9});S.vMineX=Math.round(mx);
+      }
+      vStep(S.vMine,1);
+      vDrawRope(S.vMine,sx,sy-22,iron(.8,.85),1.4);
       ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText("ШАХТА",sx,sy-32);
     }

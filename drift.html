@@ -1351,7 +1351,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.240.0";
+const VER="0.241.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -28211,19 +28211,40 @@ function dustTable(n){
   }
   return DUST_TAB=t;
 }
+/* ── пыль в ТРИ плана (M245) ──
+   Прибор мерил в системе 68% пустоты: чёрное поле, в котором корабль — крошка
+   на сорок пикселей. Один слой пыли глубины не давал — он двигался как
+   наклейка на стекле. Три слоя с разным ходом (ближний летит, дальний почти
+   стоит), с разным размером и яркостью, дают то, ради чего пыль и нужна:
+   по ней видно, что ты ЛЕТИШЬ и что пространство имеет глубину. */
+const DUST_LAYERS=[{par:.22,s:1.7,a:.5,n:.45},{par:.55,s:1,a:1,n:1},{par:.95,s:.7,a:.75,n:.7}];
 function drawSpaceDust(cx,cy,Z,dens){
-  const n=Math.round(70*dens*G.opts.gfx.particles);
-  if(n<=0)return;
-  const span=900,T=dustTable(n);
+  /* всего крупинок стало меньше, чем было: три слоя по прежней плотности
+     стоили лишнюю миллисекунду, а пустоты убирали три процента — глубину
+     даёт РАЗНЫЙ ХОД слоёв, а не количество точек */
+  const base=Math.round(46*dens*G.opts.gfx.particles);
+  if(base<=0)return;
+  const span=900;
   const sw=W+40,sh=H+40;
   const a0=ctx.globalAlpha;
   ctx.fillStyle=DUST_COL;
-  for(let i=0;i<n;i++){
-    const d=T[i];
-    const px=((d.u*span-cx*.55)%span+span)%span/span*sw-20;
-    const py=((d.v*span-cy*.55)%span+span)%span/span*sh-20;
-    ctx.globalAlpha=a0*d.a;
-    ctx.fillRect(px,py,d.s,d.s);
+  /* ОДНА таблица на все три слоя: `dustTable` кэширует ровно одну длину, и
+     три разных запроса перестраивали её каждый кадр — пять миллисекунд на
+     ровном месте (поймано замером сразу после правки) */
+  const T=dustTable(base);
+  for(let L=0;L<DUST_LAYERS.length;L++){
+    const LY=DUST_LAYERS[L], n=Math.round(base*LY.n);
+    if(n<=0)continue;
+    /* прозрачность ставится РАЗ на слой, а не на каждую крупинку: смена
+       globalAlpha — состояние контекста, и триста смен на кадр стоили
+       три с половиной миллисекунды (замер) */
+    ctx.globalAlpha=a0*LY.a*.62;
+    for(let i=0;i<n;i++){
+      const d=T[(i+L*37)%base];
+      const px=((d.u*span+L*211-cx*LY.par)%span+span)%span/span*sw-20;
+      const py=((d.v*span+L*137-cy*LY.par)%span+span)%span/span*sh-20;
+      ctx.fillRect(px,py,d.s*LY.s,d.s*LY.s);
+    }
   }
   ctx.globalAlpha=a0;
 }
@@ -31072,6 +31093,138 @@ function drawTiles(store,camx,camy,paint){
     const cn=tileAt(store,kx,ky,paint);
     ctx.drawImage(cn,kx*TILE-camx,ky*TILE-camy,TILE,TILE);
   }
+}
+
+/* ══════════════ верле: верёвки и ткань ══════════════
+   M245. Автор прислал ссылки на чужие демо — ткань, которую тянут мышкой, дым,
+   частицы — со словами «люди уже придумали за нас». Правильно; брать надо не
+   демо, а ПРИЁМ, и вешать его на вещи мира, а не на чёрный фон.
+
+   Здесь самый полезный из них: интегрирование по Верле. Точка помнит своё
+   прошлое положение, скорость нигде не хранится, связь между точками —
+   одно вычитание в цикле. Тридцать точек и три прохода связей стоят
+   микросекунды, а дают то, чего в игре не было ни у одной вещи: провис,
+   инерцию и отклик на ветер.
+
+   ЧТО ЭТО ЧИНИТ. Прямые линии там, где должна быть рука: трос копра шёл
+   синусом, растяжки мачты были палками, флаг базы качался формулой, а бельё
+   на верёвке в жилом отсеке просто висело. Верёвка теперь провисает под своим
+   весом и качается от общего WIND — того же, что качает траву и пыль.
+
+   ПРАВИЛА ФАЙЛА:
+   1. Состояние живёт в объекте, который создали, и НИКОГДА не сохраняется:
+      это чистая эфемерность (правило проекта). Пропал кадр — пересоздали.
+   2. Ветер один на мир (WIND). Своего ветра здесь нет и быть не должно.
+   3. Шаг ограничен: dt из кадра может прийти втрое больше обычного, и
+      верёвку разносит. Считаем не больше двух подшагов. */
+const VER_ITER=3;                       /* проходов по связям за шаг */
+/* ── верёвка ──
+   n точек от (x,y) вниз/вбок, длина сегмента seg. `pin` — какие точки прибиты
+   (по умолчанию первая). */
+function vRope(n,x,y,seg,opt){
+  opt=opt||{};
+  const P=[];
+  for(let i=0;i<n;i++){
+    const px=x+(opt.dx||0)*i, py=y+(opt.dy!==undefined?opt.dy:seg)*i;
+    P.push({x:px,y:py,px:px,py:py,pin:i===0||(opt.pinLast&&i===n-1)});
+  }
+  return {p:P,seg,grav:opt.grav===undefined?.16:opt.grav,
+          drag:opt.drag===undefined?.985:opt.drag,wind:opt.wind===undefined?1:opt.wind,
+          cols:1,rows:n};
+}
+/* ── ткань ──
+   Сетка cols×rows, прибитая по верхнему краю: флаг, бельё, занавеска, брезент.
+   Связи только по решётке — диагоналей нет намеренно: ткань должна мяться. */
+function vCloth(cols,rows,x,y,seg,opt){
+  opt=opt||{};
+  const P=[];
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    const px=x+c*seg, py=y+r*seg;
+    P.push({x:px,y:py,px:px,py:py,pin:r===0&&(opt.pinAll||c===0||c===cols-1||(opt.pinTop!==false))});
+  }
+  return {p:P,seg,cols,rows,grav:opt.grav===undefined?.10:opt.grav,
+          drag:opt.drag===undefined?.98:opt.drag,wind:opt.wind===undefined?1:opt.wind};
+}
+/* шаг: тяготение, ветер, инерция, потом связи. Ветер берётся общий и слегка
+   рвётся по высоте — ровный поток глаз не замечает */
+function vStep(B,dt){
+  if(!B||!B.p.length)return B;
+  const steps=Math.min(2,Math.max(1,Math.round(dt)));
+  const wind=(typeof WIND==="number"?WIND:0)*B.wind;
+  for(let s=0;s<steps;s++){
+    for(let i=0;i<B.p.length;i++){
+      const q=B.p[i];
+      if(q.pin){q.px=q.x;q.py=q.y;continue;}
+      const vx=(q.x-q.px)*B.drag, vy=(q.y-q.py)*B.drag;
+      q.px=q.x;q.py=q.y;
+      const gust=wind*(.6+.4*Math.sin(G.t*.012+i*.5));
+      q.x+=vx+gust*.16;
+      q.y+=vy+B.grav;
+    }
+    for(let it=0;it<VER_ITER;it++){
+      const C=B.cols,R=B.rows;
+      for(let r=0;r<R;r++)for(let c=0;c<C;c++){
+        const i=r*C+c;
+        if(c+1<C)vLink(B,i,i+1);
+        if(r+1<R)vLink(B,i,i+C);
+      }
+    }
+  }
+  return B;
+}
+function vLink(B,a,b){
+  const A=B.p[a],Z=B.p[b];
+  let dx=Z.x-A.x, dy=Z.y-A.y;
+  const d=Math.hypot(dx,dy)||1e-6;
+  const k=(d-B.seg)/d*.5;
+  dx*=k;dy*=k;
+  if(!A.pin){A.x+=dx;A.y+=dy;}
+  if(!Z.pin){Z.x-=dx;Z.y-=dy;}
+}
+/* ── верёвка на экран ──
+   Толщина сходит на нет к свободному концу, и это половина впечатления:
+   ровная линия по всей длине снова читается палкой. */
+function vDrawRope(B,ox,oy,col,w){
+  if(!B||B.p.length<2)return;
+  ctx.save();ctx.lineCap="round";
+  for(let i=1;i<B.p.length;i++){
+    const a=B.p[i-1],z=B.p[i];
+    ctx.strokeStyle=col;
+    ctx.lineWidth=(w||1.4)*(1-i/B.p.length*.55);
+    ctx.beginPath();ctx.moveTo(a.x+ox,a.y+oy);ctx.lineTo(z.x+ox,z.y+oy);ctx.stroke();
+  }
+  ctx.restore();
+}
+/* ── ткань на экран ──
+   Клетками, а не одной фигурой: у каждой своя светлота по наклону — так видно
+   складку. Свет берётся сверху-сбоку от SUN_DIR, если он есть. */
+function vDrawCloth(B,ox,oy,base,alpha){
+  if(!B)return;
+  const C=B.cols,R=B.rows;
+  const sx=(typeof SUN_DIR==="object")?SUN_DIR.x:.55;
+  ctx.save();
+  for(let r=0;r+1<R;r++)for(let c=0;c+1<C;c++){
+    const a=B.p[r*C+c],b=B.p[r*C+c+1],d=B.p[(r+1)*C+c+1],e=B.p[(r+1)*C+c];
+    /* наклон клетки к свету: горизонтальная разница даёт складку */
+    const tilt=clamp(((b.x-a.x)/B.seg-1)*1.6*(sx>0?1:-1),-.5,.5);
+    const k=clamp(1+tilt,.55,1.45);
+    ctx.fillStyle="rgba("+Math.round(base[0]*k)+","+Math.round(base[1]*k)+","+
+      Math.round(base[2]*k)+","+(alpha===undefined?1:alpha)+")";
+    ctx.beginPath();
+    ctx.moveTo(a.x+ox,a.y+oy);ctx.lineTo(b.x+ox,b.y+oy);
+    ctx.lineTo(d.x+ox,d.y+oy);ctx.lineTo(e.x+ox,e.y+oy);ctx.closePath();ctx.fill();
+  }
+  ctx.restore();
+}
+
+/* точка на верёвке по доле длины (0…1): чтобы вешать на неё вещи так, как
+   вешают на настоящую — с равными промежутками, а не «через две точки» */
+function vRopeAt(B,t){
+  const n=B.p.length;
+  const f=clamp(t,0,1)*(n-1);
+  const i=Math.min(n-2,Math.floor(f)), k=f-i;
+  const a=B.p[i],b=B.p[i+1];
+  return {x:a.x+(b.x-a.x)*k, y:a.y+(b.y-a.y)*k};
 }
 
 /* ══════════════ карта ══════════════ */
@@ -40672,10 +40825,17 @@ function drawSurfaceWorld(){
       ctx.beginPath();ctx.arc(sx,sy-25,3,0,TAU);ctx.fill();
       ctx.strokeStyle="rgba(255,255,255,.16)";ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(sx,sy-25,3,Math.PI*1.1,Math.PI*1.9);ctx.stroke();
-      const sw=Math.sin(G.t*.012+mx*.01)*WIND*.5;
-      ctx.strokeStyle=iron(.8,.85);ctx.lineWidth=1.2;
-      ctx.beginPath();ctx.moveTo(sx,sy-22);
-      ctx.quadraticCurveTo(sx+sw,sy-13,sx+sw*.4,sy-2);ctx.stroke();
+      /* ── трос висит, а не нарисован (M245) ──
+         Была парабола с синусом — то есть верёвка, у которой нет ни веса, ни
+         инерции: качается ровно, как метроном. Теперь это верёвка на Верле
+         (18d): семь точек, верхняя прибита к шкиву, остальные висят и ловят
+         тот же WIND, что качает траву. Состояние живёт на G.surf и не
+         сохраняется — эфемерное не хранят. */
+      if(!S.vMine||S.vMineX!==Math.round(mx)){
+        S.vMine=vRope(7,0,0,3.4,{grav:.14,wind:.9});S.vMineX=Math.round(mx);
+      }
+      vStep(S.vMine,1);
+      vDrawRope(S.vMine,sx,sy-22,iron(.8,.85),1.4);
       ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
       ctx.fillText("ШАХТА",sx,sy-32);
     }
@@ -41154,6 +41314,26 @@ function drawHomeOut(tr,camx,camy,p){
       ctx.beginPath();ctx.moveTo(mx-4,yy+4);ctx.lineTo(mx+4,yy-1);ctx.stroke();
       ctx.beginPath();ctx.moveTo(mx+4,yy+4);ctx.lineTo(mx-4,yy-1);ctx.stroke();
     }
+    /* ── растяжки: мачта не палка (M245) ──
+       Была вертикаль в два пикселя с тремя крестиками — «схема мачты». Две
+       растяжки на Верле (18d) дают ей вес и ветер: они провисают и качаются
+       вместе с бельём и тросом шахты, потому что WIND в игре один. */
+    {
+      const H0=M*4.4;
+      if(!G.surf.vMast){
+        G.surf.vMast=[-1,1].map(sgn=>{
+          const R=vRope(6,0,0,H0*.24,{grav:.10,wind:.5,pinLast:true});
+          R.p[R.p.length-1].x=sgn*M*1.5;R.p[R.p.length-1].y=H0;
+          return {R,sgn};
+        });
+      }
+      for(const g of G.surf.vMast){
+        const last=g.R.p[g.R.p.length-1];
+        last.x=g.sgn*M*1.5;last.y=H0;         /* нижний конец прибит к земле */
+        vStep(g.R,1);
+        vDrawRope(g.R,mx,myy-H0,sdRGB(sdMix(pal.metal,[0,0,0],.34)),1.1);
+      }
+    }
     const bl=(Math.sin(G.t*.06)+1)*.5;
     ctx.fillStyle="rgba(255,150,90,"+(.35+bl*.6).toFixed(2)+")";
     ctx.beginPath();ctx.arc(mx,myy-M*4.6,3.2,0,TAU);ctx.fill();
@@ -41167,6 +41347,43 @@ function drawHomeOut(tr,camx,camy,p){
   /* ── двор: поленница, бочка, верёвка — то же, чем живёт посёлок ── */
   if(typeof sdWoodpile==="function")
     sdWoodpile(sx+w*.62,gy,M*.7,M*.8,pal.wood,0x40EB);
+  /* ── бельё на верёвке (M245) ──
+     Первая настоящая ткань в игре: три полотнища на Верле (18d), подвешенные
+     к верёвке, которая сама провисает. Ветер один и тот же — тот, что качает
+     траву, растяжки мачты и трос шахты. Это и «одно движение» в кадре, и тот
+     самый след жизни, которого дому не хватало по пяти проходам: бельё вешает
+     человек, и по нему видно, что в доме живут. */
+  if(homeHas("living")){
+    /* место: чистый двор справа от дома, между стеной и мачтой — слева
+       верёвка ложилась на крышу гаража и читалась пятном */
+    const ax=sx+w*.58, ay=gy-M*2.25, dx=w*.62, dy=M*.30;
+    if(!G.surf.vLine){
+      G.surf.vLine=vRope(9,0,0,Math.hypot(dx,dy)/8*.97,
+        {grav:.05,wind:.5,pinLast:true,dx:dx/8,dy:dy/8});
+      /* мерило — человек: полотнище должно быть заметной долей роста (17 px),
+         иначе три тряпки по пять пикселей читаются одним пятном. Их два, они
+         крупные и висят, а не летят: ветер приглушён, тяжесть поднята */
+      G.surf.vWash=[0,1].map(()=>vCloth(4,5,0,0,3.6,{grav:.20,wind:.30}));
+    }
+    const L=G.surf.vLine;
+    L.p[0].x=0;L.p[0].y=0;L.p[8].x=dx;L.p[8].y=dy;
+    vStep(L,1);
+    ctx.strokeStyle=sdRGB(sdMix(pal.wood,[0,0,0],.3));ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(ax+dx,ay+dy);ctx.lineTo(ax+dx,gy);ctx.stroke();
+    vDrawRope(L,ax,ay,"rgba(226,220,200,.45)",1);
+    const WCOL=[[196,202,212],[186,158,124]];
+    /* каждое полотнище занимает свою пятую часть верёвки и висит на ней
+       точками, взятыми по длине: иначе три ткани сходились в одно пятно */
+    G.surf.vWash.forEach((C,i)=>{
+      const t0=.10+i*.46;
+      for(let c=0;c<C.cols;c++){
+        const rp=vRopeAt(L,t0+(c/(C.cols-1))*.26);
+        const q=C.p[c];q.x=rp.x;q.y=rp.y;q.pin=true;
+      }
+      vStep(C,1);
+      vDrawCloth(C,ax,ay,WCOL[i],.96);
+    });
+  }
   if(homeHas("shop")){                                /* мастерская — верстак во дворе */
     const tx=sx-w*.95, tyy=gy;
     ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.28));

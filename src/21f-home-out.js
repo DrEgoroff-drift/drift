@@ -221,6 +221,26 @@ function drawHomeOut(tr,camx,camy,p){
       ctx.beginPath();ctx.moveTo(mx-4,yy+4);ctx.lineTo(mx+4,yy-1);ctx.stroke();
       ctx.beginPath();ctx.moveTo(mx+4,yy+4);ctx.lineTo(mx-4,yy-1);ctx.stroke();
     }
+    /* ── растяжки: мачта не палка (M245) ──
+       Была вертикаль в два пикселя с тремя крестиками — «схема мачты». Две
+       растяжки на Верле (18d) дают ей вес и ветер: они провисают и качаются
+       вместе с бельём и тросом шахты, потому что WIND в игре один. */
+    {
+      const H0=M*4.4;
+      if(!G.surf.vMast){
+        G.surf.vMast=[-1,1].map(sgn=>{
+          const R=vRope(6,0,0,H0*.24,{grav:.10,wind:.5,pinLast:true});
+          R.p[R.p.length-1].x=sgn*M*1.5;R.p[R.p.length-1].y=H0;
+          return {R,sgn};
+        });
+      }
+      for(const g of G.surf.vMast){
+        const last=g.R.p[g.R.p.length-1];
+        last.x=g.sgn*M*1.5;last.y=H0;         /* нижний конец прибит к земле */
+        vStep(g.R,1);
+        vDrawRope(g.R,mx,myy-H0,sdRGB(sdMix(pal.metal,[0,0,0],.34)),1.1);
+      }
+    }
     const bl=(Math.sin(G.t*.06)+1)*.5;
     ctx.fillStyle="rgba(255,150,90,"+(.35+bl*.6).toFixed(2)+")";
     ctx.beginPath();ctx.arc(mx,myy-M*4.6,3.2,0,TAU);ctx.fill();
@@ -234,6 +254,43 @@ function drawHomeOut(tr,camx,camy,p){
   /* ── двор: поленница, бочка, верёвка — то же, чем живёт посёлок ── */
   if(typeof sdWoodpile==="function")
     sdWoodpile(sx+w*.62,gy,M*.7,M*.8,pal.wood,0x40EB);
+  /* ── бельё на верёвке (M245) ──
+     Первая настоящая ткань в игре: три полотнища на Верле (18d), подвешенные
+     к верёвке, которая сама провисает. Ветер один и тот же — тот, что качает
+     траву, растяжки мачты и трос шахты. Это и «одно движение» в кадре, и тот
+     самый след жизни, которого дому не хватало по пяти проходам: бельё вешает
+     человек, и по нему видно, что в доме живут. */
+  if(homeHas("living")){
+    /* место: чистый двор справа от дома, между стеной и мачтой — слева
+       верёвка ложилась на крышу гаража и читалась пятном */
+    const ax=sx+w*.58, ay=gy-M*2.25, dx=w*.62, dy=M*.30;
+    if(!G.surf.vLine){
+      G.surf.vLine=vRope(9,0,0,Math.hypot(dx,dy)/8*.97,
+        {grav:.05,wind:.5,pinLast:true,dx:dx/8,dy:dy/8});
+      /* мерило — человек: полотнище должно быть заметной долей роста (17 px),
+         иначе три тряпки по пять пикселей читаются одним пятном. Их два, они
+         крупные и висят, а не летят: ветер приглушён, тяжесть поднята */
+      G.surf.vWash=[0,1].map(()=>vCloth(4,5,0,0,3.6,{grav:.20,wind:.30}));
+    }
+    const L=G.surf.vLine;
+    L.p[0].x=0;L.p[0].y=0;L.p[8].x=dx;L.p[8].y=dy;
+    vStep(L,1);
+    ctx.strokeStyle=sdRGB(sdMix(pal.wood,[0,0,0],.3));ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(ax+dx,ay+dy);ctx.lineTo(ax+dx,gy);ctx.stroke();
+    vDrawRope(L,ax,ay,"rgba(226,220,200,.45)",1);
+    const WCOL=[[196,202,212],[186,158,124]];
+    /* каждое полотнище занимает свою пятую часть верёвки и висит на ней
+       точками, взятыми по длине: иначе три ткани сходились в одно пятно */
+    G.surf.vWash.forEach((C,i)=>{
+      const t0=.10+i*.46;
+      for(let c=0;c<C.cols;c++){
+        const rp=vRopeAt(L,t0+(c/(C.cols-1))*.26);
+        const q=C.p[c];q.x=rp.x;q.y=rp.y;q.pin=true;
+      }
+      vStep(C,1);
+      vDrawCloth(C,ax,ay,WCOL[i],.96);
+    });
+  }
   if(homeHas("shop")){                                /* мастерская — верстак во дворе */
     const tx=sx-w*.95, tyy=gy;
     ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.28));

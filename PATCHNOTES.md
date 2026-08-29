@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.241.0 — M245: rope and cloth on Verlet, dust in three planes
+
+The author sent links to other people's demos — cloth you can pull with the mouse, smoke, orbital
+particles — with "people have already invented this for us". Right; what you take is the METHOD,
+and you hang it on things in the world rather than on a black background.
+
+- **Verlet integration** (`18d-verlet`): a point remembers where it was, velocity is stored
+  nowhere, a link is one subtraction. Thirty points and three constraint passes cost microseconds
+  and give what nothing in this game had: sag, inertia and an answer to the wind — the same `WIND`
+  that bends the grass, so nothing swings out of step.
+- **What it replaced.** The headframe's cable was a parabola with a sine — a rope with no weight,
+  swinging like a metronome; it hangs now. The home's mast was a two-pixel stick with three
+  crosses; it has two guy-wires that sag and sway. And there is **laundry on a line** in the yard:
+  the first real cloth in the game, and the trace of life the house was missing — the five passes
+  scored it 2/5, and washing is hung by a person.
+- **Dust in three planes** in the system view: near motes fly, far ones barely move. Depth comes
+  from the different parallax, not from the number of particles — the count was cut from 70 per
+  layer to 46 after the first version cost a millisecond for three percent less emptiness.
+
+Two lessons from the measurements, both written into PLAN: one cache keyed by length is a trap
+when three callers want three lengths (the dust table was rebuilt every frame — five milliseconds
+out of nowhere), and `globalAlpha` per particle is a context state change: set it once per layer.
+
+Tests: 398 suites green, phone pass included.
+
+---
 ## 0.240.0 — M244: grain over everything, and light on the rock in the cave
 
 - **One film over nine scenes.** A baked 64×64 noise tile laid as a pattern in `overlay` — grain,

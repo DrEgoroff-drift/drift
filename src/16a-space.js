@@ -151,19 +151,40 @@ function dustTable(n){
   }
   return DUST_TAB=t;
 }
+/* ── пыль в ТРИ плана (M245) ──
+   Прибор мерил в системе 68% пустоты: чёрное поле, в котором корабль — крошка
+   на сорок пикселей. Один слой пыли глубины не давал — он двигался как
+   наклейка на стекле. Три слоя с разным ходом (ближний летит, дальний почти
+   стоит), с разным размером и яркостью, дают то, ради чего пыль и нужна:
+   по ней видно, что ты ЛЕТИШЬ и что пространство имеет глубину. */
+const DUST_LAYERS=[{par:.22,s:1.7,a:.5,n:.45},{par:.55,s:1,a:1,n:1},{par:.95,s:.7,a:.75,n:.7}];
 function drawSpaceDust(cx,cy,Z,dens){
-  const n=Math.round(70*dens*G.opts.gfx.particles);
-  if(n<=0)return;
-  const span=900,T=dustTable(n);
+  /* всего крупинок стало меньше, чем было: три слоя по прежней плотности
+     стоили лишнюю миллисекунду, а пустоты убирали три процента — глубину
+     даёт РАЗНЫЙ ХОД слоёв, а не количество точек */
+  const base=Math.round(46*dens*G.opts.gfx.particles);
+  if(base<=0)return;
+  const span=900;
   const sw=W+40,sh=H+40;
   const a0=ctx.globalAlpha;
   ctx.fillStyle=DUST_COL;
-  for(let i=0;i<n;i++){
-    const d=T[i];
-    const px=((d.u*span-cx*.55)%span+span)%span/span*sw-20;
-    const py=((d.v*span-cy*.55)%span+span)%span/span*sh-20;
-    ctx.globalAlpha=a0*d.a;
-    ctx.fillRect(px,py,d.s,d.s);
+  /* ОДНА таблица на все три слоя: `dustTable` кэширует ровно одну длину, и
+     три разных запроса перестраивали её каждый кадр — пять миллисекунд на
+     ровном месте (поймано замером сразу после правки) */
+  const T=dustTable(base);
+  for(let L=0;L<DUST_LAYERS.length;L++){
+    const LY=DUST_LAYERS[L], n=Math.round(base*LY.n);
+    if(n<=0)continue;
+    /* прозрачность ставится РАЗ на слой, а не на каждую крупинку: смена
+       globalAlpha — состояние контекста, и триста смен на кадр стоили
+       три с половиной миллисекунды (замер) */
+    ctx.globalAlpha=a0*LY.a*.62;
+    for(let i=0;i<n;i++){
+      const d=T[(i+L*37)%base];
+      const px=((d.u*span+L*211-cx*LY.par)%span+span)%span/span*sw-20;
+      const py=((d.v*span+L*137-cy*LY.par)%span+span)%span/span*sh-20;
+      ctx.fillRect(px,py,d.s*LY.s,d.s*LY.s);
+    }
   }
   ctx.globalAlpha=a0;
 }

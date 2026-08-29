@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 331 · символов верхнего уровня: 3029
+Файлов: 332 · символов верхнего уровня: 3038
 
 ## СИМВОЛЫ
 
@@ -566,7 +566,7 @@ drawDronesMap                src/12e-drone-flight.js:262
 drawDronesSystem             src/12e-drone-flight.js:185
 drawDustMotes                src/19-mode-landing.js:395
 drawElevator                 src/20aa-poi-shapes.js:91
-drawExhaust                  src/16a-space.js:207
+drawExhaust                  src/16a-space.js:228
 drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:240
 drawFindsSystem              src/17b-finds.js:152
@@ -618,18 +618,18 @@ drawSkyBase                  src/19c-light.js:296
 drawSkyBodies                src/19b-sky.js:66
 drawSkyLayer                 src/19-mode-landing.js:336
 drawSpa                      src/29i-spa-draw.js:41
-drawSpaceDust                src/16a-space.js:154
-drawStarBody                 src/16a-space.js:293
-drawStarHole                 src/16a-space.js:396
-drawStarNeutron              src/16a-space.js:369
+drawSpaceDust                src/16a-space.js:161
+drawStarBody                 src/16a-space.js:314
+drawStarHole                 src/16a-space.js:417
+drawStarNeutron              src/16a-space.js:390
 drawStars                    src/16-flight.js:20
-drawStarSingle               src/16a-space.js:310
+drawStarSingle               src/16a-space.js:331
 drawStation                  src/17c-system-draw.js:164
 drawStationMods              src/17a-station-mod.js:178
 drawStencils                 src/03d-hull-marks.js:1
 drawStModule                 src/17a-station-mod.js:66
 drawStrata                   src/18b-geology.js:103
-drawSurface                  src/21e-surface-draw.js:623
+drawSurface                  src/21e-surface-draw.js:630
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
@@ -671,6 +671,7 @@ droneSys                     src/12e-drone-flight.js:62
 droneTarget                  src/12-economy.js:72
 droneTripMs                  src/12e-drone-flight.js:87
 DUST_COL                     src/16a-space.js:143
+DUST_LAYERS                  src/16a-space.js:160
 DUST_TAB                     src/16a-space.js:144
 dustTable                    src/16a-space.js:145
 earn                         src/12j-home.js:38
@@ -813,7 +814,7 @@ FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16
 fleetColor                   src/04b-fleet.js:95
 fleetUniqueName              src/04b-fleet.js:100
-flightCam                    src/16a-space.js:177
+flightCam                    src/16a-space.js:198
 floraOf                      src/20e-species.js:91
 FOE_KINDS                    src/24a-mode-raid.js:17
 FOLK                         src/12u-folk.js:31
@@ -883,10 +884,10 @@ globusAim                    src/25f-globus.js:49
 globusDraw                   src/25f-globus.js:81
 globusSys                    tests/91zzzg-globus.js:7
 globusTick                   src/25f-globus.js:70
-GLOW_CACHE                   src/16a-space.js:274
-GLOW_SP                      src/16a-space.js:273
+GLOW_CACHE                   src/16a-space.js:295
+GLOW_SP                      src/16a-space.js:294
 GLOW_TIERS                   src/11i-glow.js:121
-glowBlit                     src/16a-space.js:289
+glowBlit                     src/16a-space.js:310
 glowCaveX                    src/11i-glow.js:139
 glowCorePlanet               src/11i-glow.js:33
 glowDepthAt                  src/11i-glow.js:24
@@ -899,7 +900,7 @@ glowGroundLine               src/11i-glow.js:110
 glowIsCore                   src/11i-glow.js:38
 glowPatches                  src/11i-glow.js:73
 glowScan                     src/11i-glow.js:64
-glowSprite                   src/16a-space.js:275
+glowSprite                   src/16a-space.js:296
 glowTier                     src/11i-glow.js:122
 goalCard                     src/13b-occupy.js:170
 goalOwnYacht                 src/13b-occupy.js:163
@@ -1050,7 +1051,7 @@ homeBeaconCost               src/12j-home.js:170
 homeCanRebuild               src/12j-home.js:226
 homeCanRevive                src/12j-home.js:146
 homeCrewFigure               src/27e-ui-home.js:680
-homeDoorX                    src/21f-home-out.js:253
+homeDoorX                    src/21f-home-out.js:310
 homeFigure                   src/27e-ui-home.js:613
 homeHas                      src/12j-home.js:24
 homeHereP                    src/21f-home-out.js:26
@@ -2666,11 +2667,11 @@ SUN_DIR_FLAT                 src/19c-light.js:23
 sunAzQ                       src/19c-light.js:26
 sunDirSet                    src/19c-light.js:30
 sunSpot                      src/19c-light.js:213
-SURF_BASE                    src/21e-surface-draw.js:614
+SURF_BASE                    src/21e-surface-draw.js:621
 SURF_HOR                     src/19c-light.js:212
 surfaceHint                  src/21e-surface-draw.js:4
 surfNight                    src/06a-celest.js:43
-surfScale                    src/21e-surface-draw.js:622
+surfScale                    src/21e-surface-draw.js:629
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -2869,6 +2870,9 @@ updateSurface                src/21-mode-surface.js:184
 updateSystem                 src/17-mode-system.js:7
 updateWinter                 src/29g-winter-draw.js:808
 useBeacon                    src/23-mode-dig.js:82
+vCloth                       src/18d-verlet.js:41
+vDrawCloth                   src/18d-verlet.js:104
+vDrawRope                    src/18d-verlet.js:90
 VEGA_ABOARD                  src/12k-vega.js:35
 VEGA_BEAST                   src/12k-vega.js:42
 VEGA_BROKEN                  src/12k-vega.js:56
@@ -2916,12 +2920,17 @@ vegaTestHome                 tests/91zzh-vega.js:2
 vegaTick                     src/11w-vega.js:187
 vegaWish                     src/11w-vega.js:41
 VER                          src/01-core.js:4
+VER_ITER                     src/18d-verlet.js:23
 visitHere                    src/11b-speech.js:83
 visitMark                    src/11b-speech.js:87
 visitsAll                    src/11b-speech.js:82
+vLink                        src/18d-verlet.js:78
 voice                        src/09-audio.js:84
 VOICE_KEYS                   src/02a-worldmix.js:81
 VOICE_MAX                    src/09-audio.js:5
+vRope                        src/18d-verlet.js:27
+vRopeAt                      src/18d-verlet.js:125
+vStep                        src/18d-verlet.js:53
 W                            src/08-state.js:5
 WALL_CACHE                   src/11ah-wall.js:44
 WALL_COLS                    src/11ah-wall.js:126
@@ -3438,7 +3447,7 @@ zooTick                      src/11ad-zoo.js:41
   · экранные кнопки: авто-скрытие и размер:1
   · ввод:83
 
-## src/16a-space.js · 26 КБ
+## src/16a-space.js · 28 КБ
   · облик системы:1
 
 ## src/16b-missile.js · 9 КБ
@@ -3472,6 +3481,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/18c-chunks.js · 7 КБ
   · кэш статичного: чанки и слои:1
+
+## src/18d-verlet.js · 7 КБ
+  · верле: верёвки и ткань:1
 
 ## src/18-mode-map.js · 22 КБ
   · карта:1
@@ -3564,10 +3576,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 45 КБ
+## src/21e-surface-draw.js · 46 КБ
   · поверхность: подсказка, HUD и кадр:1
 
-## src/21f-home-out.js · 14 КБ
+## src/21f-home-out.js · 18 КБ
   · дом снаружи:1
 
 ## src/21g-greenhouse.js · 10 КБ

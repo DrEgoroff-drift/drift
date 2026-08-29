@@ -57,6 +57,31 @@ in `28y-look` and is shared with the fuzzer — one list, or the two drift apart
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
+## M245 — rope and cloth (2026-08-28) — CLOSED (0.241.0)
+
+The author's links to CodePen demos, taken as methods rather than as demos. Verlet integration
+lives in `18d-verlet` and serves the mine's cable, the home's mast guy-wires and the laundry on a
+line in the yard; the system view got dust in three parallax planes.
+
+Rules worth keeping:
+
+- **Take the method, hang it on a thing.** A cloth simulation on a black background is a demo; the
+  same solver on a washing line is a house where someone lives. Every effect from now on answers
+  "whose is it and why is it here" before it answers "how does it look".
+- **One wind for the world.** The rope, the cloth, the grass, the dust and the smoke all read
+  `WIND`. Two generators of wind desynchronise within seconds and the eye catches it faster than
+  it catches no motion at all.
+- **A cache keyed by length is a trap.** `dustTable` kept exactly one table and rebuilt it whenever
+  a caller asked for a different size: three layers with three sizes rebuilt it three times a
+  frame — five milliseconds appeared out of nowhere. Either key the cache properly or share one
+  table and offset the index.
+- **`globalAlpha` per particle is a state change.** Three hundred of them a frame cost more than
+  the particles do. Set it once per layer and vary size instead.
+- **Depth comes from different motion, not from more things.** Three dust layers at 46 particles
+  read deeper than one layer at 70, and the emptiness number barely moved either way — filling a
+  frame with dots is not the same as filling it with structure. The system view still needs its
+  nebula and its traffic, not more specks.
+
 ## M243 — light as a system (2026-08-28) — CLOSED (0.239.0)
 
 Stage two of the graphics work: every scene gets a second temperature and light gets somewhere to

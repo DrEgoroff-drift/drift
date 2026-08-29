@@ -123,6 +123,7 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `26-ui-station` `27-ui-ship` | station with sections, ship screen with hull slots |
 | `26a-ui-station-home` | the station home tab: goal card, home, bases |
 | `27c-ui-hq` | the HQ and cantina screens: portraits, perk tree, order slots, domain summary |
+| `18d-verlet` | Verlet ropes and cloth: sag, inertia and one shared wind. The mine cable, the mast guy-wires, the laundry on a line |
 | `28y-look` | the frame meter: `look()` reads the canvas on screen and prints four numbers (warm %, empty %, contrast, tones), `lookAll()` walks every scene. The scene list here is shared with the fuzzer |
 | `28-loop` | the frame guard (an exception never breaks the rAF chain; M234), telemetry, `audioTick`, `frame()` |
 
