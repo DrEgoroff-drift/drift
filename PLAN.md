@@ -135,6 +135,15 @@ broke the crew data contract), the «home hangs» tail (a 40-ring synchronous sc
 capped), and key-name prompts that lied to phones and rebound keyboards (`ctlHint`). The scoop
 band was acquitted — its file records the decided argument.
 
+**The 10×10 audit (M272–M273, 0.269–0.270)** held every game surface and all 108 stories
+against all ten codex laws. Closed: §5 on the cliff cut (`drawGround` CUN), the rectangular sky
+seam (nebula tile edge + it ignored `dim` — weather never silenced it), §10 on the boulders
+(grown lichen), the story-file text audit (undocumented seat silently mis-placing a scene — now
+linted; duplicated numbering; format header; two_window refusal named) and the fork law made
+MECHANICAL: `storyLint` rejects «потому что вы…»/«из-за вас» in any trace. Standing refusals
+with prices: §8 recursion (P9b), §4 raid-prop masks (bakeable, own session), §6 menu backdrop
+(title card), §9 notebook (author).
+
 The author's verdict on the craft run 0.245→0.260: the research was good and **nothing visibly
 changed**. Diagnosis accepted by both sides: M249–M263 went into fine grain (blue noise, seams,
 lichen, cave shadows) — places the eye visits rarely and closely — while the loudest pixels of

@@ -574,7 +574,7 @@ drawDigFauna                 src/23-mode-dig.js:308
 drawDigWorld                 src/23a-dig-draw.js:45
 drawDronesMap                src/12e-drone-flight.js:262
 drawDronesSystem             src/12e-drone-flight.js:185
-drawDustMotes                src/19-mode-landing.js:468
+drawDustMotes                src/19-mode-landing.js:496
 drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:255
 drawFactory                  src/20aa-poi-shapes.js:378
@@ -598,7 +598,7 @@ drawHullMarks                src/03b-hull-paint.js:173
 drawKitFigure                src/12x-suit.js:188
 drawLander                   src/19f-lander.js:52
 drawLandGear                 src/19f-lander.js:26
-drawLanding                  src/19-mode-landing.js:482
+drawLanding                  src/19-mode-landing.js:510
 drawLoreMarks                src/12q-lore.js:235
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
@@ -628,7 +628,7 @@ drawScoop                    src/19a-mode-scoop.js:163
 drawSeams                    src/12s-wear.js:181
 drawSkyBase                  src/19c-light.js:296
 drawSkyBodies                src/19b-sky.js:79
-drawSkyLayer                 src/19-mode-landing.js:368
+drawSkyLayer                 src/19-mode-landing.js:396
 drawSpa                      src/29i-spa-draw.js:41
 drawSpaceDust                src/16a-space.js:184
 drawStarBody                 src/16a-space.js:341
@@ -958,7 +958,7 @@ grokTick                     src/12tb-grok.js:75
 grokWant                     src/12tb-grok.js:41
 GROUND_BAKING                src/19-mode-landing.js:236
 groundAt                     src/07-planet.js:540
-groundShadow                 src/19-mode-landing.js:352
+groundShadow                 src/19-mode-landing.js:380
 GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
 groveDepthAt                 src/11j-grove.js:30
@@ -2511,7 +2511,7 @@ skyField                     src/19b-sky.js:522
 skyFind                      src/11ak-skywatch.js:47
 skyGalaxy                    src/19b-sky.js:355
 skyGiant                     src/19b-sky.js:205
-skyGrad                      src/19-mode-landing.js:335
+skyGrad                      src/19-mode-landing.js:363
 skyHole                      src/19b-sky.js:378
 skyMoon                      src/19b-sky.js:444
 skyNameComet                 src/11ak-skywatch.js:184
@@ -3536,7 +3536,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19f-lander.js · 21 КБ
   · посадочный корабль:1
 
-## src/19-mode-landing.js · 35 КБ
+## src/19-mode-landing.js · 36 КБ
   · посадка:1
 
 ## src/20aa-poi-shapes.js · 30 КБ

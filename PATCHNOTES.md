@@ -7,6 +7,21 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.270.0 — M273: the 10×10 audit closes — the boulders grow their lichen
+
+Second half of the ten-by-ten audit. The last law with an open, solo-closable gap was §10
+(grown, not parameterised): the cave grows lichen since M262, while the boulders upstairs — by
+light and moisture — stayed bare. Large boulders on living worlds (terran, jungle, ocean,
+toxic) now grow 1–2 differential-growth lichen patches (`growLichen` reused from 22a), clipped
+to the boulder body, tinted by the world palette, flattened along the upper face. Baked into the
+ground chunks — the frame pays nothing.
+
+The full pass-by-law verdict table lives in the session report and PLAN.md; the codex ledgers
+already carry the summary. Standing refusals after two full circles: §8 recursion (P9b — needs
+eyes over many settlements), §4 raid-prop shadow masks (bakeable per entry; a session of its
+own), §6 menu backdrop nebula (a title card, not a scene), §9 notebook (needs the author).
+
+---
 ## 0.269.0 — M272: the 10×10 audit — the cliff learns the brush, the sky seam is caught
 
 First half of the ten-passes-by-ten-laws audit (graphics passes + the full text/fork audit).

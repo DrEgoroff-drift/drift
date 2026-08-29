@@ -329,6 +329,34 @@ function drawRocks(tr,camx,camy,pal){
       ctx.strokeStyle="rgba(255,255,255,.10)";
       ctx.beginPath();ctx.moveTo(P[1][0],P[1][1]);ctx.lineTo(P[3][0]*.3,P[3][1]*.3);ctx.stroke();
     }
+    /* ── лишайник на валуне ВЫРАЩЕН (аудит 10×10, §10) ──
+       Живые миры зарастают: пещера растит лишайник с M262, а валун наверху —
+       у самого света и влаги — оставался голым. Тот же дифференциальный рост
+       (growLichen, 22a), контур сплюснут по верхней грани камня, клип по
+       телу валуна; красится палитрой мира. Печётся в ломоть — кадру даром. */
+    if(k.rad>8&&tr.p&&["terran","jungle","ocean","toxic"].indexOf(tr.p.type)>=0
+       &&typeof growLichen==="function"){
+      const rl=rng(hashi(Math.floor(k.x),0x11C4,tr.p.seed|0));
+      if(rl()<.6){
+        ctx.save();ctx.clip(RP);
+        const n=1+(rl()<.35?1:0);
+        for(let li=0;li<n;li++){
+          const pts=growLichen(rl,4+rl()*4,26);
+          const lx=(rl()-.5)*k.rad*.9, ly=-k.rad*(.35+rl()*.4);
+          const gcol=[Math.round(lerp(pal[3][0],96,.5)),
+                      Math.round(lerp(pal[3][1],132,.35)),
+                      Math.round(lerp(pal[3][2],96,.5))];
+          ctx.save();ctx.translate(lx,ly);ctx.scale(1,.55);
+          ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+          for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
+          ctx.closePath();
+          ctx.fillStyle="rgba("+gcol.join(",")+",.26)";ctx.fill();
+          ctx.strokeStyle="rgba("+gcol.join(",")+",.4)";ctx.lineWidth=.8;ctx.stroke();
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+    }
     ctx.restore();
   }
 }
