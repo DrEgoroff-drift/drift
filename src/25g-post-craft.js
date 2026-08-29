@@ -53,3 +53,21 @@ function pcWash(c,r,cx,cy,rx,ry,fill,layers){
     c.closePath();c.fill();
   }
 }
+/* ── туманность вакуумных карточек (M252) ──
+   Пустота «не чёрная — за спиной галактика» (правило pcBelt): теперь галактика
+   и рисуется — два-три акварельных сгущения в глухом сине-ржавом, вытянутые по
+   одной диагонали. Слой в 3–4% плотности края не имеет: это сгущение, а не
+   предмет. Генератор свой — звёзды существующих карточек не должны сдвинуться. */
+function pcNebula(c,seed,w,h){
+  const r=rng(hashi(seed,0x4EB,9));
+  const ang=(r()-.5)*.9;
+  const tints=[[46,52,96],[96,54,44],[58,42,84]];
+  const n=2+(r()<.4?1:0);
+  for(let i=0;i<n;i++){
+    const cx=w*(.18+r()*.64), cy=h*(.15+r()*.55);
+    const rx=w*(.22+r()*.20), ry=rx*(.28+r()*.20);
+    c.save();c.translate(cx,cy);c.rotate(ang);c.translate(-cx,-cy);
+    pcWash(c,r,cx,cy,rx,ry,pcA(tints[i%3],.042),7);
+    c.restore();
+  }
+}

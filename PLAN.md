@@ -122,6 +122,15 @@ the day they are found; this is work that was deliberately not done, or that nee
   was flaking once in three runs; caught and fixed immediately after, but the lesson is to keep the
   test run and the push in separate commands.
 
+## M252 — the atelier reaches the other five places (2026-08-29) — CLOSED (0.248.0)
+
+P1 complete: dry brush along the bedding in `pcStrata` (cave+mine), the galaxy as watercolour
+thickenings under the stars (belt+orbit, `pcNebula` in `25g-post-craft`), cloud banks between
+the gas giant's bands. Every kit's own recorded rule was kept and named in the code: grey stone,
+no edges in air, void not black. Next per the combined plan: **P2, direction as a core
+primitive** (`dirAt`), whose first consumer is the live cave rock — the postcard's strata brush
+is its proof at card scale.
+
 ## M251 — blue noise under every scene (2026-08-29) — CLOSED (0.247.0)
 
 The atelier's first promotion: `grainPass` takes its tile from `blueNoise()` ranks. One rule

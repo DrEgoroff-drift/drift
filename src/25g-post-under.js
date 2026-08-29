@@ -66,7 +66,7 @@ function pcMan(c,x,y,hh,col,lamp){
    осязаемым. Пласт НЕ горизонтален: горизонтальная полоса читается фоном,
    наклонная — породой. */
 function pcStrata(c,x0,y0,x1,y1,base,r,n){
-  const N=n||9, hgt=y1-y0;
+  const N=n||9, hgt=y1-y0, bands=[];
   for(let i=0;i<N;i++){
     const t=i/N, k=.55+t*.55+(r()-.5)*.14;
     c.fillStyle=pcC(base,k);
@@ -76,6 +76,25 @@ function pcStrata(c,x0,y0,x1,y1,base,r,n){
     c.moveTo(x0,yy+tilt);c.lineTo(x1,yy-tilt);
     c.lineTo(x1,yy-tilt+hh);c.lineTo(x0,yy+tilt+hh);
     c.closePath();c.fill();
+    bands.push({yy,hh,tilt});
+  }
+  /* сухая кисть по пласту (M252, DESIGN-craft §5): короткий штрих ВДОЛЬ
+     наклона своего пласта — направление зерна и говорит «порода», а не
+     «полосатая заливка». Два тона, как на грунте (M250): тёмный — трещина,
+     светлый — блик залегания; полутон тонул в самих пластах. */
+  const L=x1-x0;
+  for(let j=0;j<N*4;j++){
+    const b=bands[Math.floor(r()*N)];
+    const u=r(), x=x0+u*L;
+    const y=b.yy+b.tilt*(1-2*u)+r()*b.hh;
+    const slope=-2*b.tilt/L;
+    const len=L*(.025+r()*.045), dx=len/Math.sqrt(1+slope*slope);
+    const tone=r();
+    c.strokeStyle=tone<.5
+      ?pcA(pcMix(base,[0,0,0],.55),.16+tone*.12)
+      :pcA(pcMix(base,[255,255,255],.28),.09+(tone-.5)*.12);
+    c.lineWidth=1.2;
+    c.beginPath();c.moveTo(x-dx,y-dx*slope);c.lineTo(x+dx,y+dx*slope);c.stroke();
   }
 }
 /* зёрна руды: не «блёстки», а вкрапления гнёздами — ровный дождь точек

@@ -72,6 +72,9 @@ function pcBelt(c,s,w,h,K){
     g.addColorStop(1,"rgb(4,4,9)");
     c.fillStyle=g;c.fillRect(0,0,w,h);
   }
+  /* 1а. галактика за спиной (M252): та, из-за которой пустота не чёрная, —
+     видна как акварельные сгущения ПОД звёздами */
+  pcNebula(c,(p&&p.seed)||1,w,h);
   /* 2. звёзды: в вакууме они всегда, и они точки без ореола */
   c.fillStyle="#e8f0ff";
   for(let i=0;i<190;i++){
@@ -231,8 +234,9 @@ function pcSystem(c,s,w,h,K){
   const ang=((s.cx|0)%360)*Math.PI/180;
   const far=Math.max(12,Math.min(999,s.cy|0))/10;   /* в радиусах планеты */
   const star=K.star;
-  /* 1. пустота и звёзды */
+  /* 1. пустота и звёзды; галактика (M252) — под ними, как в поясе */
   c.fillStyle="rgb(5,6,12)";c.fillRect(0,0,w,h);
+  pcNebula(c,p.seed,w,h);
   c.fillStyle="#e8f0ff";
   for(let i=0;i<170;i++){
     const x=r()*w,y=r()*h,q=r();
@@ -443,6 +447,21 @@ function pcScoop(c,s,w,h,K){
       c.lineTo(x,y+th*1.5+Math.sin(x/w*1.7+ph*.8)*amp);
     }
     c.closePath();c.fill();
+  }
+  /* 2а. облачные валы (M252): акварельные сгущения между полосами. Правило
+     полос живо — у воздуха резких краёв не бывает: слой в 4–5% плотности
+     края не имеет, вал — сгущение, а не предмет. Свой генератор: полосы и
+     перья существующих карточек не должны сдвинуться. */
+  {
+    const rw=rng(hashi(p.seed,s.cy|0,0x6A6));
+    for(let i=0;i<3;i++){
+      const cy2=h*(.22+rw()*.62), cx2=w*rw();
+      const rx=w*(.18+rw()*.16);
+      const col=pcMix(P[Math.min(P.length-1,1+Math.floor(rw()*3))],deep,.35);
+      c.save();c.translate(cx2,cy2);c.scale(1,.30);c.translate(-cx2,-cy2);
+      pcWash(c,rw,cx2,cy2,rx,rx*.8,pcA(col,.040),8);
+      c.restore();
+    }
   }
   /* и перья: тонкие вытянутые клочья поперёк полос. Они и говорят, что это
      движущийся газ, а не крашеные слои */

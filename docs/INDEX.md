@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3047
+Файлов: 333 · символов верхнего уровня: 3048
 
 ## СИМВОЛЫ
 
@@ -1767,20 +1767,21 @@ PC_GRAIN                     src/25g-post-craft.js:7
 pcA                          src/25g-postcard.js:149
 pcBelt                       src/25g-post-void.js:58
 pcC                          src/25g-postcard.js:146
-pcCave                       src/25g-post-under.js:110
+pcCave                       src/25g-post-under.js:129
 pcDeform                     src/25g-post-craft.js:27
 pcGrainTile                  src/25g-post-craft.js:8
 pcMan                        src/25g-post-under.js:33
-pcMine                       src/25g-post-under.js:230
+pcMine                       src/25g-post-under.js:249
 pcMix                        src/25g-postcard.js:148
-pcOre                        src/25g-post-under.js:83
+pcNebula                     src/25g-post-craft.js:61
+pcOre                        src/25g-post-under.js:102
 pcPrint                      src/25g-postcard.js:130
 pcSame                       tests/91zzzi-postcard.js:23
-pcScoop                      src/25g-post-void.js:395
+pcScoop                      src/25g-post-void.js:399
 pcShip                       src/25g-post-void.js:23
 pcStar                       src/25g-postcard.js:151
 pcStrata                     src/25g-post-under.js:68
-pcSystem                     src/25g-post-void.js:228
+pcSystem                     src/25g-post-void.js:231
 pcTestPixels                 tests/91zzzi-postcard.js:17
 pcTestPlanet                 tests/91zzzi-postcard.js:2
 pcTestSnap                   tests/91zzzi-postcard.js:12
@@ -3662,19 +3663,19 @@ zooTick                      src/11ad-zoo.js:41
   · открытка: снимок сцены, а не пиксели:1
   · камера и альбом:613
 
-## src/25g-post-craft.js · 3 КБ
+## src/25g-post-craft.js · 4 КБ
   · ателье открытки: ремесленные кисти (M250):1
 
-## src/25g-post-under.js · 23 КБ
+## src/25g-post-under.js · 24 КБ
   · открытка: два места под землёй:1
-  · пещера:95
-  · шахта:214
+  · пещера:114
+  · шахта:233
 
-## src/25g-post-void.js · 31 КБ
+## src/25g-post-void.js · 32 КБ
   · открытка: три места в пустоте:1
   · пояс:49
-  · орбита:220
-  · атмосфера газового гиганта:387
+  · орбита:223
+  · атмосфера газового гиганта:391
 
 ## src/25h-post-forms.js · 20 КБ
   · бланки открытки:1

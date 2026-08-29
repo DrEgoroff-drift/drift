@@ -7,7 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.247.0 — M251: blue noise under every scene
+## 0.248.0 — M252: the atelier reaches the other five places
+
+The postcard's underground and vacuum kits get their craft brushes, completing P1:
+
+- **Dry brush along the bedding in `pcStrata`** (cave and mine share it): short two-tone
+  strokes that follow each band's own tilt — the grain's direction is what says "rock" instead
+  of "striped fill". The cave's rule holds: stone underground is grey, the strokes are mixes of
+  the same base.
+- **The galaxy behind the void** (`pcNebula`, shared): the belt's own comment always said the
+  void is not black because the galaxy is at your back — now it is visible: two-three
+  watercolour thickenings in deep blue and rust along one diagonal, under the stars. Belt and
+  orbit cards both. A layer at 4% has no edge, so it reads as a thickening, not smoke.
+- **Cloud banks in the gas giant's air**: three washes between the bands. The kit's hard rule
+  survives — air has no sharp edges anywhere — because the wash's layers don't have any.
+
+Own seeded generators everywhere: the stars, bands and feathers of already-taken cards do not
+move. First cut measured too faint in the belt (raised to 4.2%) and too loud over the bands
+(cut to 4.0%) — judged by eye on a five-card sheet, two passes.
 
 The first promotion out of the atelier: `grainPass` (19c) bakes its 64×64 tile from
 `blueNoise()` ranks instead of white `h01`. White noise has low-frequency clumps — neighbouring

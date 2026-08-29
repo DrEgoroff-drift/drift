@@ -1351,7 +1351,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.247.0";
+const VER="0.248.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -49781,6 +49781,24 @@ function pcWash(c,r,cx,cy,rx,ry,fill,layers){
     c.closePath();c.fill();
   }
 }
+/* ── туманность вакуумных карточек (M252) ──
+   Пустота «не чёрная — за спиной галактика» (правило pcBelt): теперь галактика
+   и рисуется — два-три акварельных сгущения в глухом сине-ржавом, вытянутые по
+   одной диагонали. Слой в 3–4% плотности края не имеет: это сгущение, а не
+   предмет. Генератор свой — звёзды существующих карточек не должны сдвинуться. */
+function pcNebula(c,seed,w,h){
+  const r=rng(hashi(seed,0x4EB,9));
+  const ang=(r()-.5)*.9;
+  const tints=[[46,52,96],[96,54,44],[58,42,84]];
+  const n=2+(r()<.4?1:0);
+  for(let i=0;i<n;i++){
+    const cx=w*(.18+r()*.64), cy=h*(.15+r()*.55);
+    const rx=w*(.22+r()*.20), ry=rx*(.28+r()*.20);
+    c.save();c.translate(cx,cy);c.rotate(ang);c.translate(-cx,-cy);
+    pcWash(c,r,cx,cy,rx,ry,pcA(tints[i%3],.042),7);
+    c.restore();
+  }
+}
 
 /* ══════════════ открытка: два места под землёй ══════════════
    M208. Пустотные места (пояс, орбита, атмосфера) живут в 25g-post-void:
@@ -49850,7 +49868,7 @@ function pcMan(c,x,y,hh,col,lamp){
    осязаемым. Пласт НЕ горизонтален: горизонтальная полоса читается фоном,
    наклонная — породой. */
 function pcStrata(c,x0,y0,x1,y1,base,r,n){
-  const N=n||9, hgt=y1-y0;
+  const N=n||9, hgt=y1-y0, bands=[];
   for(let i=0;i<N;i++){
     const t=i/N, k=.55+t*.55+(r()-.5)*.14;
     c.fillStyle=pcC(base,k);
@@ -49860,6 +49878,25 @@ function pcStrata(c,x0,y0,x1,y1,base,r,n){
     c.moveTo(x0,yy+tilt);c.lineTo(x1,yy-tilt);
     c.lineTo(x1,yy-tilt+hh);c.lineTo(x0,yy+tilt+hh);
     c.closePath();c.fill();
+    bands.push({yy,hh,tilt});
+  }
+  /* сухая кисть по пласту (M252, DESIGN-craft §5): короткий штрих ВДОЛЬ
+     наклона своего пласта — направление зерна и говорит «порода», а не
+     «полосатая заливка». Два тона, как на грунте (M250): тёмный — трещина,
+     светлый — блик залегания; полутон тонул в самих пластах. */
+  const L=x1-x0;
+  for(let j=0;j<N*4;j++){
+    const b=bands[Math.floor(r()*N)];
+    const u=r(), x=x0+u*L;
+    const y=b.yy+b.tilt*(1-2*u)+r()*b.hh;
+    const slope=-2*b.tilt/L;
+    const len=L*(.025+r()*.045), dx=len/Math.sqrt(1+slope*slope);
+    const tone=r();
+    c.strokeStyle=tone<.5
+      ?pcA(pcMix(base,[0,0,0],.55),.16+tone*.12)
+      :pcA(pcMix(base,[255,255,255],.28),.09+(tone-.5)*.12);
+    c.lineWidth=1.2;
+    c.beginPath();c.moveTo(x-dx,y-dx*slope);c.lineTo(x+dx,y+dx*slope);c.stroke();
   }
 }
 /* зёрна руды: не «блёстки», а вкрапления гнёздами — ровный дождь точек
@@ -50236,6 +50273,9 @@ function pcBelt(c,s,w,h,K){
     g.addColorStop(1,"rgb(4,4,9)");
     c.fillStyle=g;c.fillRect(0,0,w,h);
   }
+  /* 1а. галактика за спиной (M252): та, из-за которой пустота не чёрная, —
+     видна как акварельные сгущения ПОД звёздами */
+  pcNebula(c,(p&&p.seed)||1,w,h);
   /* 2. звёзды: в вакууме они всегда, и они точки без ореола */
   c.fillStyle="#e8f0ff";
   for(let i=0;i<190;i++){
@@ -50395,8 +50435,9 @@ function pcSystem(c,s,w,h,K){
   const ang=((s.cx|0)%360)*Math.PI/180;
   const far=Math.max(12,Math.min(999,s.cy|0))/10;   /* в радиусах планеты */
   const star=K.star;
-  /* 1. пустота и звёзды */
+  /* 1. пустота и звёзды; галактика (M252) — под ними, как в поясе */
   c.fillStyle="rgb(5,6,12)";c.fillRect(0,0,w,h);
+  pcNebula(c,p.seed,w,h);
   c.fillStyle="#e8f0ff";
   for(let i=0;i<170;i++){
     const x=r()*w,y=r()*h,q=r();
@@ -50607,6 +50648,21 @@ function pcScoop(c,s,w,h,K){
       c.lineTo(x,y+th*1.5+Math.sin(x/w*1.7+ph*.8)*amp);
     }
     c.closePath();c.fill();
+  }
+  /* 2а. облачные валы (M252): акварельные сгущения между полосами. Правило
+     полос живо — у воздуха резких краёв не бывает: слой в 4–5% плотности
+     края не имеет, вал — сгущение, а не предмет. Свой генератор: полосы и
+     перья существующих карточек не должны сдвинуться. */
+  {
+    const rw=rng(hashi(p.seed,s.cy|0,0x6A6));
+    for(let i=0;i<3;i++){
+      const cy2=h*(.22+rw()*.62), cx2=w*rw();
+      const rx=w*(.18+rw()*.16);
+      const col=pcMix(P[Math.min(P.length-1,1+Math.floor(rw()*3))],deep,.35);
+      c.save();c.translate(cx2,cy2);c.scale(1,.30);c.translate(-cx2,-cy2);
+      pcWash(c,rw,cx2,cy2,rx,rx*.8,pcA(col,.040),8);
+      c.restore();
+    }
   }
   /* и перья: тонкие вытянутые клочья поперёк полос. Они и говорят, что это
      движущийся газ, а не крашеные слои */
