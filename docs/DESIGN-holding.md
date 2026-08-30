@@ -503,7 +503,195 @@ the same way.
 
 ---
 
-## 18. Order of work
+## 18. The fleet — ships that cannot be bought
+
+Settled with the author 2026-08-31. The dividing line first, because without it the fleet and the
+barges become the same thing:
+
+> **A barge trades. The fleet hauls and serves.**
+
+The factor's barges (`12l-barge`) are private traders with a spread; you haggle with them. The
+state fleet does not trade at all: it tows, refuels, treats, teaches, carries the mail and stands
+on the line. It cannot be bought for the same reason a scheduled bus cannot.
+
+### 18.1 The department
+
+Not a state — a **directorate**, on the model of Главсевморпуть, which ran ships, ports, polar
+stations, aviation and settlements at once. That is exactly what this layer is about.
+
+> **ГЛАВТРАССА** — Главное управление дальних трасс.
+> **Главк** — its district office, and rung 26 of the ladder.
+
+Where the real ships carried «СССР», these carry **ГЛАВТРАССА**. The author's instruction was
+«наш сеттинг, не СССР, но что-то близкое и похожее»: the grammar of the Soviet arms is kept, the
+arms themselves are not.
+
+**Герб:** a spanner and a surveyor's staff crossed — to make and to measure — inside a ring, a
+star above them. Three colours: red, white, black. It stencils onto a hull and reads at twenty
+pixels. The ring is the Кольцо of rung 30: the arms are a promise.
+
+### 18.2 The marks have a grammar (§9 of the craft codex)
+
+The codex is explicit that signs generated as a scatter read as squiggles and signs generated from
+a grammar read as a writing system. The departmental marks therefore have one:
+
+- **frame** — a circle, one stroke weight for every mark;
+- **figure** — one primitive from a closed alphabet, centred, occupying 0.62 of the circle:
+  рожок (почта) · крест (медицина) · якорь с цепью (буксир) · звезда и циркуль (наука) ·
+  щит (сторож) · раскрытая ладонь (спасение) · капля (топливо) · кайло (руда) ·
+  раскрытая книга (учебное) · кольцо с четырьмя лучами (плавбаза);
+- **operations** — rotation by 0°, 45°, 90° and reflection, nothing else;
+- **one solid** — every mark has exactly one filled element, and it is the thing that names it.
+  Everything else is line.
+
+Ten marks made this way look like one office drew them, which is the whole point.
+
+### 18.3 The classes and their donors
+
+Real hardware, because Soviet spacecraft have silhouettes recognisable from the contour alone.
+
+| class | donor | what is seen |
+|---|---|---|
+| **Почтовик** | **«Союз»** | sphere, bell, instrument cylinder, two panel wings, docking probe |
+| **Рефрижератор** | **«Прогресс»** | the same nose and a long ribbed refrigerated bay |
+| **Танкер** | **«Протон»** | fat body, six strap-on tanks around it, a ring of fill necks |
+| **Буксир** | **ядерный буксир** | a spine: reactor forward on a boom, two huge flat radiators as wings, a bell aft |
+| **Рудовоз** | **«Энергия»** | a barrel with four containers strapped along it — the packet, loaded |
+| **Лихтеровоз** | **«семёрка»** | the Korolev cross assembled out of four other people's barges |
+| **Паром** | **«Буран»** | delta wing, black belly, white back. Carries people down from orbit — and stands on the strip at a settlement |
+| **Сторожевик** | **«Спираль»** + **«Алмаз»** | lifting body with an upturned nose, short wings, a cannon under the cheek |
+| **Спасатель** | **«Луна-9»** | a sphere that opens on four petals — a flower airlock for taking people aboard |
+| **Госпитальное** | **ТКС** | a large body with a returnable capsule on the nose |
+| **Учебное** | **«Восток»** ×6 | a cluster of spherical capsules on a common truss, each with its own hatch |
+| **Экспедиционное** | **«Салют»** | cylinder, a truss of dishes, probes on outriggers |
+| **Плавбаза** | **«Мир»** | cylinders of unequal diameter, a node module, panels at odd angles — a cluster that grew over years |
+
+The wing went to the ferry and not to the patrol on purpose: a wing belongs to whoever lands. It
+then appears in two scenes — in orbit and on the ground, a white delta on a settlement's strip,
+which is also what explains the landing strip in §13.
+
+### 18.4 The places
+
+**Узловая станция трассы — «МКС».** At rung 25 (Узел трасс) a real truss station stands in the
+system: a lattice spine the full length, rotating panel wings across it, modules clustered
+amidships. A silhouette that exists nowhere else in the game, and it means one thing — the lines
+meet here.
+
+**Your station grows by modules, and the modules are named in the same row:**
+**Заря** (first, cargo) · **Звезда** (habitation) · **Причал** (docking) · **Поиск** (airlock) ·
+**Рассвет** (store) · **Наука** (laboratory) · **Кристалл** (processing) · **Спектр**
+(observatory) · **Квант** (power). Then the summary reads like a real one — `САРДРАЗЛЬ · ступень
+19 · модули: Заря, Причал, Кристалл, Квант` — and the silhouette grows asymmetrically, the way
+«Мир» grew: bolted on, and sticking out.
+
+**«Полюс».** A black blind cylinder with no markings — a battle station that never arrived. It
+does not fly, answer or trade. A rare find in the far sectors: it lies and is silent, and on its
+hull there is neither arms nor number, only the painted-over place where they were. The same voice
+as the ruins of the «Долгий ход».
+
+### 18.5 Paint, lettering, wear
+
+Grey-white hull, a **red band** the full length, black numerals a third of the hull high, burnt
+copper at the nozzles. The name large along the body, the way «СОЮЗ» ran along a fairing; below
+it, small: department, number, line.
+
+```
+«МОЛНИЯ»
+ГЛАВТРАССА · Л-1425 · ТРАССА 4
+```
+
+Wear is compulsory — this fleet has been running for decades: patches in the wrong shade · soot
+fanned back from the manoeuvring jets · the band burnt to pink on the sunward side and still red
+on the shadow side · the outline of a knocked-off mark nobody painted over · a number over a
+number in a different typeface.
+
+### 18.6 Held against the craft codex
+
+Checked before anything is drawn, because the author asked for it to be checked and because the
+almanac exists for exactly this.
+
+- **§1 layer order, light only ever added.** The paint pass has one order and it is not
+  negotiable: **санкирь** — a dark ground over the whole hull, zone III → the body in greys, panels
+  and seams and the shadow of the trusses → **glazes**: the red band, burnt copper, the gold
+  crinkle of insulation → **wear**: patches, burn-out, soot, the painted-over mark → **движки**,
+  the last specular ticks on the sunward edges, and only then. Wear goes *under* the highlights,
+  never over them — over them it reads as dirt on glass rather than as a repaired ship.
+- **§12 the dead layer.** Values first, colour as a glaze. The ship is built entirely in greys and
+  only then is the red laid over it. That is what keeps the band from being a flat sticker, and it
+  is the same rule that already governs the postcard atelier.
+- **§3 emptiness is not a defect.** One large ship in the frame, never a squadron; and the hull
+  keeps its quiet areas — the blank plate between the name and the band is the *ma* and must not be
+  filled with greebles. The frame ledger (`28y-look`) applies to these frames like any other.
+- **§5 texture says what a thing is made of.** Four materials, four treatments, never one grey:
+  painted steel plate · foil-wrapped insulation, the gold crinkle · radiator ceramic · scorched
+  refractory at the nozzles. A ship where everything is the same metal reads as a toy.
+- **§8 one rule at every scale.** The joint repeats: a truss holds the cadet capsules, a truss
+  holds the tug's radiators, a truss is the spine of the МКС node, and the same node bolts your
+  station's modules together. One grammar of joints from a six-metre boom to a station.
+- **§13 the key block.** Every class is drawn contour first — one confident outline — and the
+  gradients live inside it. «тело, обвод, один свет».
+- **§14 the chart is an instrument.** A trace on the map must be steerable: tapping a ship or a
+  line has to mean something, or the line has not earned its place.
+- **§15 day-for-night.** Ships on a system's night side take a cold rim and a warm lamp from the
+  shared night block; the sun is kept out of the frame.
+- **§16 the zone system.** A white hull against black space blows out at once: the white sits in
+  zones VII–VIII and keeps its panel detail; the ferry's black belly sits in II–III and never goes
+  to zero. Measured with the same instrument as every other scene.
+
+### 18.7 Twelve ways to interact — none of them a shop
+
+1. **Позывной** — you hail them and they answer in the voice of their class.
+2. **Груз в попутную** — hand cargo to a freighter on your line; it delivers and leaves you a
+   receipt. **A route without a barge of your own**, from the first hour of the game.
+3. **Заправка под расписку** — a tanker fills you in the void. Not for money: you sign, and you owe.
+4. **Буксир** — a hull that will not make it is towed to a yard. Expensive, humiliating, better
+   than abandoning it.
+5. **Почта** — hand your postcards to the mail ship and they travel further and faster; it brings
+   yours. Lands straight onto what the game already has.
+6. **Караван** — fly in formation to the next system and pirates leave you alone. Slow, because
+   they keep their own speed. Speed against safety, honestly.
+7. **Плавбаза** — a walking station: repair, shop, bunk, cantina — but only while it is in your
+   system. It leaves. You have to keep up.
+8. **Госпитальное** — heals the crew twice as fast, ransoms a captive cheaper, takes away those you
+   evacuated. It asks for what you never have: time and hold space.
+9. **Учебное** — takes your hire aboard for a run and returns him grown; or asks you to show the
+   cadets a real landing.
+10. **Сторожевик** — with a good reputation it escorts you; with a bad one it inspects your hold.
+    Contraband becomes a thing that has somewhere to live.
+11. **Спасатель** — answers someone else's distress call and asks you along. Go, and you are
+    remembered. One day they come to yours.
+12. **Заявка** — the upper rungs: you file with the Главк and a tug, a tanker for your line or a
+    patrol for a blockaded system arrives. Not a purchase. A right.
+
+### 18.8 The fleet is the visible reward of the ladder
+
+- **Пусто** — nobody. Emptiness is emptiness.
+- **Автомат** (5) — a mail ship passes once a week.
+- **Стыковочный узел** (16) — transports call; cargo can be handed over.
+- **Причальная ферма** (19) — a плавбаза puts in.
+- **Управление** (21) — the right to file: a tug.
+- **Узел трасс** (25) — two lines cross here; the МКС node stands.
+- **Трасса** (27) — a scheduled line with its own number.
+- **Кольцо** (30) — they hail you first, by name.
+
+Your holding does not merely give numbers. It **populates the sky** — the other half of the answer
+to «прям видно должно быть, что система прокачана»: not the station's silhouette but the traffic
+around it.
+
+### 18.9 Drawing order
+
+Each class is its own drawing — thirteen, plus the node station and «Полюс». Not recipes from a
+kit: «Буран» and a nuclear tug have nothing in common, and pretending otherwise lies to the eye.
+**The paint pass, however, is one for all of them**, in the order of §18.6 — which is how a real
+fleet looks: different ships, painted in one office to one instruction.
+
+Order, by whom the player meets first: почтовик → танкер → буксир → сторожевик → плавбаза → паром
+→ спасатель → рудовоз → госпитальное → учебное → экспедиционное → рефрижератор → лихтеровоз, then
+the node station and «Полюс».
+
+---
+
+## 19. Order of work
 
 Each step ships on its own and is playable on its own.
 
@@ -518,3 +706,9 @@ Each step ships on its own and is playable on its own.
 7. **The station grows a body** — the visible half of §13; the map ring and the summary come with
    step 3, the silhouette comes here.
 8. **КУРС** — the route and a rumour as one thing on the map; news with a cause; the plan.
+
+9. **The fleet** — in three layers, each shipping on its own: the meetings (§18.7 as scenes
+   with voices), then the lines and the schedule, then the right to file a заявка. The drawings
+   go in the order of §18.9, and **every one of them is held against the craft codex before it
+   is called done** — the almanac gets an issue for the fleet the way it got one for the
+   interface.

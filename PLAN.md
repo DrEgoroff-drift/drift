@@ -32,6 +32,16 @@ half the tokens. The game itself, its UI and its code comments stay Russian.
   real-time simulation â the model is `tickDrones()` (`12-economy`).
 - **After every milestone:** parse check, empty console, a manual scenario, loading an old save.
   Canvas screenshots are not trusted.
+- **Every drawn thing is held against the craft codex before it is called done** (author,
+  2026-08-31: «сверь с альманахом по графике, надо чтобы красиво было. С ним надо все сверять
+  когда делать будем»). `docs/DESIGN-craft.md` holds the laws, `docs/ALMANAC.md` the dated
+  verdicts. The pass is not decoration and not taste: the laws are numbered, the frame ledger
+  (`28y-look`) supplies the numbers, and a piece that fails one is named in the almanac rather
+  than argued about. A new visual system gets its own almanac issue the way the interface got
+  issue II. The order that keeps recurring, and the one to start from: §1 layer order (dark ground
+  → body in greys → glazes → wear → highlights, and wear goes *under* the highlights), §12 values
+  before colour, §13 body-outline-one-light, §3 keep the empty, §16 expose for the shadows.
+
 - **Design in passes, not in one shot** (author, 2026-08-23). Any design — a screen, a
   component, a drawn thing — gets a draft and then several self-critique passes along the way:
   look at the result as a user/with the art direction, name what is wrong, redo, repeat until a
@@ -1133,6 +1143,16 @@ each shipping on its own. The naming register was chosen by the author on 2026-0
    A developed system reads by silhouette, with no figure anywhere.
 8. **КУРС** — the route and a rumour as one thing on the map; news with a cause; the monthly plan
    from the заводоуправление.
+9. **The fleet** — `DESIGN-holding.md` §18. Ships that cannot be bought: **ГЛАВТРАССА**, a
+   directorate on the model of Главсевморпуть, its arms a spanner and a surveyor's staff crossed
+   in a ring. Thirteen classes, each off a real Soviet donor — Союз, Прогресс, Протон, the nuclear
+   tug, Энергия, the seven, **Буран** (the ferry, because a wing belongs to whoever lands),
+   Спираль+Алмаз, Луна-9, ТКС, Восток×6, Салют, Мир — plus the **МКС** truss station at rung 25
+   and the silent «Полюс» as a derelict. Your own station grows by modules named Заря, Звезда,
+   Причал, Поиск, Рассвет, Наука, Кристалл, Спектр, Квант. Twelve interactions, none of them a
+   shop; the fleet is the visible reward of the ladder. Three shippable layers: meetings → lines
+   and schedule → the right to file a заявка. Every drawing is held against the codex first
+   (§18.6), and the almanac gets an issue for the fleet.
 
 ## Small tails from almanac issue II
 

@@ -182,3 +182,19 @@ in words rather than in markup, because a queue that only grows is not a queue.
   card 250×110 over the reach circle (И3). Designed in `DESIGN-ui.md`.
 - ❑ the 44 px guard walks every screen, not only the two it was taught (И2) — `91zzzzc`
   covers ДЕЛО and ЭКИПАЖ by hand; the sweep is still to write.
+
+---
+
+## Reserved — issue III: the fleet
+
+Not written yet, because nothing is drawn yet. `DESIGN-holding.md` §18 designs the state fleet of
+**ГЛАВТРАССА** — thirteen classes off real Soviet donors, the truss node station, the silent
+«Полюс» — and §18.6 already holds the whole system against the codex before a line is drawn: §1
+the paint order (dark ground → greys → glazes → wear → highlights, wear *under* the highlights),
+§12 values before colour, §3 one ship in the frame and the hull keeps its quiet, §5 four materials
+and four treatments, §8 one joint grammar from a boom to a station, §13 contour first, §14 a trace
+on the map must be steerable, §15 the shared night block, §16 white in zones VII–VIII and the
+ferry's black belly never at zero.
+
+Issue III opens when the first three classes exist and can be looked at. By the author's standing
+order of 2026-08-31, every drawing of the fleet is checked here before it is called done.
