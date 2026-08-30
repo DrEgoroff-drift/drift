@@ -101,7 +101,7 @@ function snapshot(){
    Мегабайт — это уже не «много всего», это ошибка, и сказать о ней надо
    до того, как она станет смертельной. */
 const SAVE_BUDGET=1000000;
-let saveFatSaid="";
+let saveFatSaid="",saveCutSaid="";
 /* кто именно весит: поле за полем, самые тяжёлые вперёд */
 function saveWeigh(s){
   const rows=[];
@@ -150,17 +150,52 @@ function saveText(){
     const rows=saveWeigh(s),bad=rows[0];
     if(!bad)return null;
     delete s[bad[0]];
-    if(typeof logAdd==="function")
-      logAdd("warn","Запись не влезла в строку: раздел «"+bad[0]+"» вынут · "+saveTop(rows));
-    if(typeof say==="function")
-      say("ЗАПИСЬ ПОЧИНЕНА\nраздел «"+bad[0]+"» разросся и вынут\nостальное записано",420);
+    /* про один и тот же раздел — один раз. Автосейв идёт каждые десять
+       секунд, и четыре одинаковые строки подряд автор увидел раньше, чем
+       успел прочитать первую (скрин 30.08.2026, 23:23) */
+    if(saveCutSaid!==bad[0]){
+      saveCutSaid=bad[0];
+      if(typeof logAdd==="function")
+        logAdd("warn","Запись не влезла в строку: раздел «"+bad[0]+"» вынут · "+saveTop(rows));
+      if(typeof say==="function")
+        say("ЗАПИСЬ ПОЧИНЕНА\nраздел «"+bad[0]+"» разросся и вынут\nостальное записано",420);
+    }
   }
   return null;
+}
+/* ══════════════ пустая карта возвращается из облака СПИСКОМ ══════════════
+   Автор, 30.08.2026, второй заход: журнал сказал вслух то, чего не смог сказать
+   первый раз — «раздел «poiSeen» вынут · poiSeen через край». Дальше уже видно
+   всё.
+
+   Облако — это PHP (site/api.php): `json_decode($raw, true)` превращает и
+   объекты, и списки в один и тот же тип, а `json_encode` обратно печатает
+   ПУСТУЮ карту как `[]`. То есть любой `{}` в снимке, слетав в облако и
+   вернувшись, приезжает МАССИВОМ. Проверка `typeof x==="object"` его пропускает
+   — массив тоже объект, — и G.poiSeen становится массивом.
+
+   Дальше достаточно одного осмотра памятника. Ключ там — `q.seed`, а это
+   `hashi(...)>>>0`, то есть беззнаковое 32-битное число: `arr[3000000000]=1`
+   ставит массиву length в три миллиарда, и следующий же JSON.stringify честно
+   печатает три миллиарда `null` — RangeError «Invalid string length» прямо в
+   кадре. Оба сбоя автора (кристаллы 30.08 в 20:36, ускоритель в 23:23) шли
+   ровно за строкой «Осмотр: …», и это не совпадение.
+
+   Тише и хуже: у любой другой карты, приехавшей списком, строковые ключи
+   ложатся мимо индексов, и JSON.stringify массива их НЕ ПЕЧАТАЕТ — рынок,
+   репутация, шахты молча теряли записи после каждого входа с другого
+   устройства. Поэтому лечим не один поиск, а все карты сразу и на входе. */
+function asMap(v){
+  if(!v||typeof v!=="object")return {};
+  if(!Array.isArray(v))return v;
+  const o={};
+  for(const k in v)if(k!=="length")o[k]=v[k];   /* и индексы, и именованные */
+  return o;
 }
 function applySave(s){
   if(!s||(s.v!==4&&s.v!==5))return false;
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
-  G.uniqueShips=(s.uniqueShips&&typeof s.uniqueShips==="object")?s.uniqueShips:{};
+  G.uniqueShips=asMap(s.uniqueShips);
   G.shipId=shipData(s.shipId)?s.shipId:"strizh";
   G.owned=Object.assign({strizh:true},s.owned||{});
   /* старое сохранение знает только s.mods — считаем, что всё купленное и установлено.
@@ -185,7 +220,7 @@ function applySave(s){
       G.fit[sid]=dst;
     }
   invalidateParts();
-  G.partsBought=(s.partsBought&&typeof s.partsBought==="object")?s.partsBought:{};
+  G.partsBought=asMap(s.partsBought);
   G.tech=new Set(Array.isArray(s.tech)?s.tech.filter(k=>TECH[k]):[]);
   G.techLvl={};
   if(s.techLvl&&typeof s.techLvl==="object")
@@ -200,28 +235,28 @@ function applySave(s){
   G.species=new Set((s.bioV|0)>=2?(s.species||[]):[]);
   Object.assign(G.opts,s.opts||{});
   G.zoom=clamp(s.zoom||1,.16,2.4);
-  G.market=(s.market&&typeof s.market==="object")?s.market:{};
+  G.market=asMap(s.market);
   /* фронт пиратов: разреженный объект по ключу "sx,sy", как всё привязанное
      к системе. Старые записи грузятся с пустым фронтом — он нарастёт сам */
-  G.occ=(s.occ&&typeof s.occ==="object")?s.occ:{};
+  G.occ=asMap(s.occ);
   /* налёт часов по корпусам: старая запись приходит без него — корабль просто
      считается свежим, и это честнее, чем задним числом состарить его */
-  G.wear=(s.wear&&typeof s.wear==="object")?s.wear:{};
-  G.seams=(s.seams&&typeof s.seams==="object")?s.seams:{};
+  G.wear=asMap(s.wear);
+  G.seams=asMap(s.seams);
   /* свой маршрут: старые сохранения приходят без него — заводим пустой */
   G.trade=(s.trade&&Array.isArray(s.trade.legs))
     ?{legs:s.trade.legs.slice(0,ROUTE_MAX),loops:s.trade.loops|0,
       cursor:s.trade.cursor|0,sold:s.trade.sold|0}
     :routeInit();
   G.freed=s.freed|0;
-  G.occCalm=(s.occCalm&&typeof s.occCalm==="object")?s.occCalm:{};
+  G.occCalm=asMap(s.occCalm);
   /* выработка шахт: только список выкопанных ячеек, порода выводится из seed */
-  G.mines=(s.mines&&typeof s.mines==="object")?s.mines:{};
+  G.mines=asMap(s.mines);
   /* журнал дел: обещания игрока переживают перезаход */
   G.quests=Array.isArray(s.quests)?s.quests:[];
   /* найденные узлы и собранные венцы: в записи только номера */
-  G.nodes=(s.nodes&&typeof s.nodes==="object")?s.nodes:{};
-  G.crowns=(s.crowns&&typeof s.crowns==="object")?s.crowns:{};
+  G.nodes=asMap(s.nodes);
+  G.crowns=asMap(s.crowns);
   /* что стоит в держателе рубки: только настоящий и только свой узел */
   G.nodeShow=(typeof s.nodeShow==="string"&&G.nodes[s.nodeShow])?s.nodeShow:null;
   /* редкости: только список унесённых id (12m-rare) */
@@ -230,7 +265,7 @@ function applySave(s){
      состоянии мира, поэтому они переживают перезагрузку вместе с ним. Соперник
      хранится обязательно: иначе унесённая редкость потеряла бы адрес. */
   G.news=Array.isArray(s.news)?s.news.filter(n=>n&&typeof n==="object").slice(-NEWS_KEEP):[];
-  G.newsMarks=(s.newsMarks&&typeof s.newsMarks==="object")?s.newsMarks:{};
+  G.newsMarks=asMap(s.newsMarks);
   G.newsT=+s.newsT||0;
   G.rivals={};
   if(s.rivals&&typeof s.rivals==="object")
@@ -362,7 +397,7 @@ function applySave(s){
       to:(d.to&&typeof d.to==="object")?{sx:d.to.sx|0,sy:d.to.sy|0}:null,
       over:!!d.over,warned:Array.isArray(d.warned)?d.warned.filter(x=>+x>0):[]};
   }
-  G.doomDead=(s.doomDead&&typeof s.doomDead==="object")?s.doomDead:{};
+  G.doomDead=asMap(s.doomDead);
   /* трепло (12x-parrot): сама птица и то, что она помнит. Строки чинятся по
      месту — вид обязателен, слова обязаны быть номерами: строка без события
      здесь такая же ложь, как перк без кода, и загрузка её не заводит. */
@@ -383,14 +418,14 @@ function applySave(s){
   G.loreFound=Array.isArray(s.loreFound)?s.loreFound.filter(x=>typeof x==="string"):[];
   G.loreMarks=Array.isArray(s.loreMarks)?s.loreMarks.filter(m=>m&&typeof m==="object"):[];
   /* дела кантины: отвеченные и те, чей исход ещё не пришёл */
-  G.dealsDone=(s.dealsDone&&typeof s.dealsDone==="object")?s.dealsDone:{};
+  G.dealsDone=asMap(s.dealsDone);
   G.dealsWait=Array.isArray(s.dealsWait)?s.dealsWait:[];
   /* репутация: своя у каждой станции, только от поступков */
-  G.rep=(s.rep&&typeof s.rep==="object")?s.rep:{};
+  G.rep=asMap(s.rep);
   /* осмотренные памятники: помнятся, чтобы не ходить к ним дважды */
-  G.poiSeen=(s.poiSeen&&typeof s.poiSeen==="object")?s.poiSeen:{};
+  G.poiSeen=asMap(s.poiSeen);
   /* осмотренные находки в пустоте: только то, что игрок забрал (17b) */
-  G.findsSeen=(s.findsSeen&&typeof s.findsSeen==="object")?s.findsSeen:{};
+  G.findsSeen=asMap(s.findsSeen);
   /* обломки барж: разреженный оверлей по "sx,sy", каждый — список остовов.
      Новое поле с безопасным дефолтом (сквозное правило). */
   G.wrecks={};
@@ -558,14 +593,14 @@ function applySave(s){
   G.tapeLong=s.tapeLong|0;
   /* речь (M128): очередь реплик по местам, счётчик посадок и оторванные ленты —
      всё это память об игроке, а не о мире, и поэтому персистится */
-  G.speech=(s.speech&&typeof s.speech==="object")?s.speech:{};
-  G.visits=(s.visits&&typeof s.visits==="object")?s.visits:{};
-  G.walled=(s.walled&&typeof s.walled==="object")?s.walled:{};
-  G.mailed=(s.mailed&&typeof s.mailed==="object")?s.mailed:{};
+  G.speech=asMap(s.speech);
+  G.visits=asMap(s.visits);
+  G.walled=asMap(s.walled);
+  G.mailed=asMap(s.mailed);
   /* истории (11c): только то, что игрок видел, якоря и повороты */
-  G.seen=(s.seen&&typeof s.seen==="object")?s.seen:{};
-  G.storyPin=(s.storyPin&&typeof s.storyPin==="object")?s.storyPin:{};
-  G.storyFlags=(s.storyFlags&&typeof s.storyFlags==="object")?s.storyFlags:{};
+  G.seen=asMap(s.seen);
+  G.storyPin=asMap(s.storyPin);
+  G.storyFlags=asMap(s.storyFlags);
   /* память места и одометр (11d): объекты с дефолтами, формат v:4 не менялся */
   G.place={};
   if(s.place&&typeof s.place==="object")for(const k in s.place){
@@ -593,19 +628,19 @@ function applySave(s){
   /* почтовый круг (11e): три числа */
   G.post={stage:clamp((s.post&&s.post.stage)|0,0,POST_LINKS.length-1),opened:(s.post&&s.post.opened)?1:0,done:(s.post&&s.post.done)?1:0};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
-  G.need=(s.need&&typeof s.need==="object")?s.need:{};
+  G.need=asMap(s.need);
   G.order=(s.order&&typeof s.order==="object"&&s.order.to)?s.order:null;
   G.things=Array.isArray(s.things)?s.things.slice(0,40):[];
-  G.ratios=(s.ratios&&typeof s.ratios==="object")?s.ratios:{};
-  G.seenPrices=(s.seenPrices&&typeof s.seenPrices==="object")?s.seenPrices:{};
+  G.ratios=asMap(s.ratios);
+  G.seenPrices=asMap(s.seenPrices);
   /* комплект (M152): шесть мест, каждая вещь проверяется по месту и классу */
   G.kit=null;if(s.kit&&typeof s.kit==="object"){G.kit={};for(const p of KIT_PLACES){const x=s.kit[p];G.kit[p]=(x&&x.p===p)?kitPiece(p,x.cls,x.wear,x.seed):kitPiece(p,1,0,0);if(x&&Array.isArray(x.mods))G.kit[p].mods=x.mods.filter(id=>KIT_MODS[id]).slice(0,2);if(x)G.kit[p].model=clamp(x.model|0,0,2);}}
   G.kitShelf=Array.isArray(s.kitShelf)?s.kitShelf.filter(x=>x&&KIT_PLACES.indexOf(x.p)>=0).map(x=>{const y=kitPiece(x.p,x.cls,x.wear,x.seed);y.model=clamp(x.model|0,0,2);y.mods=Array.isArray(x.mods)?x.mods.filter(id=>KIT_MODS[id]).slice(0,2):[];return y;}).slice(0,12):[];
-  G.kitDepot=(s.kitDepot&&typeof s.kitDepot==="object")?s.kitDepot:{};
+  G.kitDepot=asMap(s.kitDepot);
   G.vega=(s.vega&&typeof s.vega==="object"&&s.vega.stage)?Object.assign({broken:[],out:{}},s.vega):null;G.wishDevice=s.wishDevice|0;G.seat=null;
   G.ring=(s.ring&&typeof s.ring==="object")?Object.assign({heard:0,tapes:[],left:RING_FIRST,jumps:0},s.ring):null;G.ringNow=null;
   G.exp=(s.exp&&typeof s.exp==="object")?Object.assign({phase:0,day0:0,coll:{},gone:[],gave:0,pax:null},s.exp):null;
-  G.letters=(s.letters&&typeof s.letters==="object")?s.letters:{};
+  G.letters=asMap(s.letters);
   G.island=(s.island&&typeof s.island==="object"&&s.island.letters)?s.island:{letters:{}};
   G.record=(s.record&&typeof s.record==="object"&&Array.isArray(s.record.e))?s.record:null;
   G.inst=(s.inst&&typeof s.inst==="object"&&s.inst.t)?s.inst:null;
@@ -723,11 +758,11 @@ function applySave(s){
      память людей и тетрадь переносятся как есть, потому что закрытая дверь
      обязана пережить и загрузку, и время. */
   G.offers=Array.isArray(s.offers)?s.offers.filter(o=>o&&o.kind&&o.who).slice(-24):[];
-  G.folk=(s.folk&&typeof s.folk==="object")?s.folk:{};
+  G.folk=asMap(s.folk);
   G.ledger=(s.ledger&&typeof s.ledger==="object")?s.ledger:{n:0,w:0};
   /* докуда дошли реплики своих: иначе после загрузки они начнут с начала и
      повторят то, что игрок уже слышал */
-  G.folkSay=(s.folkSay&&typeof s.folkSay==="object")?s.folkSay:{};
+  G.folkSay=asMap(s.folkSay);
   /* поздний час (M225): счётчик посиделок смены — иначе сейв обнуляет стойку */
   G.late=(s.late&&typeof s.late==="object")?{shift:s.late.shift|0,n:s.late.n|0}:null;
   /* тот один (M230): сказал — сказано навсегда */

@@ -36,3 +36,42 @@ TEST_SUITES.push(()=>suite("запись: не бросает и называе�
   ok(/разбухла/.test(fat)||/log/.test(fat),"о разбухании сказано в журнале");
   G.log=wasLog;
 }));
+
+/* ══════════════ пустая карта, вернувшаяся из облака списком ══════════════
+   Настоящая причина обоих сбоев автора (30.08.2026, 20:36 и 23:23). PHP в
+   site/api.php декодирует снимок в ассоциативные массивы и печатает ПУСТУЮ
+   карту как `[]`. Значит `G.poiSeen`, слетав в облако пустым, возвращается
+   массивом; первый же осмотр памятника кладёт в него ключ `hashi(...)>>>0` —
+   беззнаковое 32-битное число, — и массив получает длину в миллиарды. Записи
+   после этого нет вовсе: JSON.stringify печатает миллиарды `null`.
+   Здесь воспроизводится ровно этот путь, шаг за шагом. */
+TEST_SUITES.push(()=>suite("запись: пустая карта из облака приезжает списком",()=>{
+  resetWorld();
+  /* так выглядит снимок ПОСЛЕ облака: пустые карты стали списками */
+  const s=snapshot();
+  const cloud=JSON.parse(JSON.stringify(s));
+  let turned=0;
+  for(const k in cloud)
+    if(cloud[k]&&typeof cloud[k]==="object"&&!Array.isArray(cloud[k])&&
+       Object.keys(cloud[k]).length===0){cloud[k]=[];turned++;}
+  ok(turned>0,"в снимке есть пустые карты, которым облако меняет тип ("+turned+")");
+  ok(applySave(cloud),"такой снимок загружается");
+  ok(!Array.isArray(G.poiSeen),"и poiSeen приходит картой, а не списком");
+  ok(!Array.isArray(G.market)&&!Array.isArray(G.rep)&&!Array.isArray(G.mines),
+     "рынок, репутация и шахты — тоже");
+
+  /* и та самая запись по 32-битному ключу больше не растягивает ничего */
+  G.poiSeen[hashi(12345,7,0x50E1)]=1;
+  const t=saveText();
+  ok(typeof t==="string"&&t.length<400000,"запись собирается и весит по-людски ("+
+    (t?t.length:0)+")");
+  ok(JSON.parse(t).poiSeen&&!Array.isArray(JSON.parse(t).poiSeen),"poiSeen остался картой");
+
+  /* а если массив всё-таки попал в живое состояние — осмотр его чинит сам */
+  G.poiSeen=[];
+  const q={k:"anomaly",ru:"аномалия",seed:hashi(999,3,0x50E1)};
+  poiInspect(q);
+  ok(!Array.isArray(G.poiSeen),"осмотр не пишет в список, а превращает его в карту");
+  const t2=saveText();
+  ok(typeof t2==="string"&&t2.length<400000,"и запись после осмотра цела");
+}));

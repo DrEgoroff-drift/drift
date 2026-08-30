@@ -7,6 +7,47 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.284.0 - M287: an empty map comes back from the cloud as a list
+
+The M285 guard did its job: the author reloaded, played, and the journal said out loud what
+the first crash could not - "Запись не влезла в строку: раздел «poiSeen» вынут · poiSeen
+через край · log 13 КБ · tape 10 КБ". With the section named, the whole chain is visible.
+
+**The chain.** The cloud is PHP (`site/api.php`): `json_decode($raw, true)` turns objects and
+lists into the same type, and `json_encode` prints an **empty** map back as `[]`. So every
+`{}` in the snapshot - and there are dozens - returns from a cloud round-trip as an **array**.
+`applySave` waved it through, because `typeof [] === "object"`. After that one look at a
+monument is enough: `poiInspect` writes `G.poiSeen[q.seed]`, and `q.seed` is `hashi(...)>>>0`,
+an unsigned 32-bit number. `arr[3000000000] = 1` sets the array's length to three billion, and
+the next `JSON.stringify` honestly prints three billion `null`s - `RangeError: Invalid string
+length`, thrown inside the frame. Both of the author's crashes (crystals at 20:36, the
+accelerator ring at 23:23) came directly after a line reading "Осмотр: …". That is not a
+coincidence; it is the mechanism.
+
+**The quieter half of the same bug.** Any other map that came back as a list kept working -
+`arr["ключ"] = 1` sets a property - but `JSON.stringify` of an array does **not print
+non-index properties**. Prices seen, station reputation, mine shafts, bought parts, deals
+done: everything written after a cloud round-trip was dropped from the next save without a
+word. Nobody would ever have found this by looking; it only reads as "the game forgets
+things sometimes".
+
+- `asMap()` (14-save) turns a list back into a map on load, and all thirty map-shaped fields
+  go through it. One place, on the way in, so nothing downstream has to know.
+- `poiInspect` heals a live session too: a run that started before this build does not have to
+  be restarted for the write to be safe.
+- A cloud pull now stores **our** normalised snapshot locally instead of the shape that
+  arrived.
+- The rescue message names a section once, not once per autosave - the author's screen carried
+  four identical lines within seconds.
+- `91zzzzb-save` walks the whole path: it turns the empty maps of a real snapshot into lists,
+  loads that, examines a monument, and checks both that the map is a map and that the save is
+  a save. It fails on the old code.
+
+Left standing, on purpose: the server still re-encodes `{}` as `[]`. Fixing that means either
+storing the save as an opaque string or decoding it twice, and `api.php` holds live accounts -
+the client is now proof against it either way. Written down in `docs/DEPLOY.md`.
+
+---
 ## 0.283.0 - M286: ДЕЛО - one screen for everything that works for you
 
 Chosen by the author from the forks of almanac issue II: one screen, not four places; the

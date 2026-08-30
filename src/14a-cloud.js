@@ -157,7 +157,11 @@ function cloudPull(){
     .then(d=>{
       if(!d||!d.ok){say("В облаке нет записи");return;}
       /* забрали чужое-новое — спор исчерпан, метка снимается */
-      if(applySave(d.save)){stSet(SAVE_KEY,JSON.stringify(d.save));cloudMark("");CLOUD_ST.said="";say("Загружено из облака");}
+      /* в местное хранилище кладём НАШ снимок, а не то, что приехало: облако
+         возвращает пустые карты списками (14-save, asMap), и хранить эту форму
+         у себя незачем — applySave её уже выправил */
+      if(applySave(d.save)){const t=saveText();if(t!==null)stSet(SAVE_KEY,t);
+        cloudMark("");CLOUD_ST.said="";say("Загружено из облака");}
       else say("Запись из облака не подошла");
     })
     .catch(()=>say("Облако недоступно"));

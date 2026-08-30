@@ -104,7 +104,13 @@ function poiMemo(seed){
 function poiInspect(q){
   if(!q)return false;
   if(poiMemo(q.seed))return false;
-  if(!G.poiSeen)G.poiSeen={};
+  /* ключ здесь — беззнаковое 32-битное число (hashi), и если G.poiSeen приехал
+     из облака массивом (14-save, asMap), запись по такому индексу растянет ему
+     длину на миллиарды и убьёт следующее же сохранение. Загрузка это чинит, но
+     чинить надо и на ходу: сеанс, начавшийся до правки, не должен ждать входа
+     заново. */
+  if(!G.poiSeen||Array.isArray(G.poiSeen))
+    G.poiSeen=(typeof asMap==="function")?asMap(G.poiSeen):{};
   G.poiSeen[q.seed]=1;
   const F=POI_FIND[q.k]||POI_FIND.anomaly;
   const r=rng(hashi(q.seed,0xF17D,3)),d=sysDanger(G.sx,G.sy);

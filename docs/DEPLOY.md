@@ -147,3 +147,26 @@ a request for `play.html` to `play.html.gz` when the browser accepts gzip and se
 (`gzip -kf9 play.html`, in both `deploy.yml` and `deploy.ps1`). The workflow prints the
 compressed size and warns — does not fail — if it still sees the raw one. `Cache-Control` is a
 minute for pages and scripts, a week for images.
+
+## The cloud changes the shape of an empty map (found 2026-08-30, M287)
+
+`api.php` decodes a pushed save with `json_decode($raw, true)` and writes it back with
+`json_encode`. PHP has one array type for both JSON shapes, so an **empty object comes back as
+an empty list**: `{"poiSeen":{}}` in, `{"poiSeen":[]}` out. The snapshot has dozens of empty
+maps, and every one of them changes type on a cloud round-trip.
+
+That cost a save. `applySave` accepted the list (`typeof [] === "object"`), `poiInspect` then
+wrote `G.poiSeen[q.seed]` with an unsigned 32-bit hash for a key, the array's length became
+three billion, and `JSON.stringify` threw `Invalid string length` inside the frame — the game
+stopped writing entirely and said nothing until the M285 guard was built. Quieter and wider:
+string keys written onto such a list are simply not printed by `JSON.stringify`, so anything
+recorded after a round-trip vanished from the next save.
+
+**The client is now proof against it**: `asMap()` in `14-save` turns a list back into a map on
+the way in, for every map-shaped field, and `91zzzzb-save` reproduces the whole path.
+
+**The server is not fixed.** To stop it at the source the save would have to be stored as an
+opaque string (both `push` and `pull`, since `pull` re-encodes on the way out too) or decoded
+twice — once assoc for the logic, once as objects for storage. `api.php` holds live accounts and
+there is no staging for it, so this is written down rather than done. If it is ever touched, an
+old client must keep working: it sends an object and expects an object back.

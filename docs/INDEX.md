@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 336 · символов верхнего уровня: 3096
+Файлов: 336 · символов верхнего уровня: 3097
 
 ## СИМВОЛЫ
 
@@ -83,11 +83,12 @@ angWrap                      src/01-core.js:92
 applyCrewEvent               src/12b-crew-events.js:214
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:160
+applySave                    src/14-save.js:195
 applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:132
 arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
+asMap                        src/14-save.js:188
 assignToBase                 src/12a-crew.js:172
 AST_N                        src/24-mode-belt.js:86
 audioHush                    src/09-audio.js:12
@@ -360,7 +361,7 @@ CLOUD_KIND                   src/19e-clouds.js:35
 CLOUD_SPR                    src/19e-clouds.js:52
 CLOUD_ST                     src/14a-cloud.js:91
 CLOUD_TIER                   src/19e-clouds.js:172
-cloudBoot                    src/14a-cloud.js:168
+cloudBoot                    src/14a-cloud.js:172
 cloudBusy                    src/14a-cloud.js:79
 cloudCall                    src/14a-cloud.js:72
 cloudForget                  src/14a-cloud.js:77
@@ -3498,9 +3499,10 @@ zooTick                      src/11ad-zoo.js:41
   · облако:65
   · видимое состояние обмена:80
 
-## src/14-save.js · 55 КБ
+## src/14-save.js · 57 КБ
   · сохранение:1
   · запись не имеет права убить полёт:87
+  · пустая карта возвращается из облака СПИСКОМ:166
 
 ## src/15-input.js · 31 КБ
   · экранные кнопки: авто-скрытие и размер:1
@@ -3580,7 +3582,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/20a-poi.js · 16 КБ
   · точки интереса:1
 
-## src/20b-poi-find.js · 10 КБ
+## src/20b-poi-find.js · 11 КБ
   · осмотр достопримечательности:1
   · память памятника:92
 
@@ -4182,8 +4184,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzy-drones.js · 7 КБ
   · автотесты: рейсы дронов (M237):1
 
-## tests/91zzzzb-save.js · 3 КБ
+## tests/91zzzzb-save.js · 5 КБ
   · запись, которая не убивает полёт:1
+  · пустая карта, вернувшаяся из облака списком:40
 
 ## tests/91zzzzc-deal.js · 5 КБ
   · ДЕЛО: один ответ на «что на меня работает»:1
