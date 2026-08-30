@@ -169,6 +169,9 @@ function tableRender(){
       dot.textContent=n>99?"99+":n;
     }else if(dot)dot.remove();
   });
+  /* выбранная закладка — под глаз: у стола их тринадцать, и на телефоне
+     активная вполне может стоять за краем полосы (15-input, tabsSync) */
+  if(typeof tabsSync==="function")tabsSync(document.getElementById("tableTabs"));
   const sub=document.getElementById("tableSub"),cr=document.getElementById("tableCr"),wh=document.getElementById("tableWhere");
   const SUB={ether:"эфир · что было услышано",bort:"борт · техника и деньги",folk:"люди · что вам сказали",
              deeds:"дела · что вы должны",strips:"ленты · оторванные полосы самописца",things:"вещи · письма, находки, бумаги",

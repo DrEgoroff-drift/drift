@@ -268,10 +268,31 @@ function frameBody(now){
    вслух ОДИН раз — повтор той же строки только считается, иначе сообщение
    встанет стеной на каждом кадре. */
 let crashN=0,crashLast="",crashSaid=0;
+/* ГДЕ именно сломалось. Сообщение без адреса чинить нечем: «Invalid string
+   length · surface» (журнал автора, 30.08.2026) не говорит ни строки, ни
+   функции, и на поиск виновника уходит сессия. Стек в кадре есть всегда —
+   берём из него два первых своих имени, мимо самого сторожа. */
+function crashAt(e){
+  let st="";
+  try{st=String((e&&e.stack)||"");}catch(_){return "";}
+  if(!st)return "";
+  const out=[];
+  for(const L of st.split(/[\r\n]+/)){
+    const m=/at\s+(?:new\s+)?([A-Za-z0-9_$.]+)\s*[\(@]/.exec(L);
+    if(!m)continue;
+    const n=m[1];
+    if(n==="crashAt"||n==="crashSay"||n==="frame"||n==="frameBody")continue;
+    out.push(n);
+    if(out.length>=2)break;
+  }
+  return out.join("←");
+}
 function crashSay(e,where){
   crashN++;
   let m="";
   try{m=(e&&e.message)||String(e);}catch(_){m="?";}
+  const at=crashAt(e);
+  if(at)m+=" · "+at;
   if(where)m+=" · "+where;
   if(m===crashLast)return;
   crashLast=m;

@@ -17,6 +17,16 @@ const $sn=document.getElementById("snum"),$cn=document.getElementById("cnum");
    Число в CSS-пикселях: холст масштабируется через setTransform(DPR), так что
    координаты рисования и есть CSS-пиксели. */
 let HUD_BAND=72;
+/* ── и где она кончается снизу ──
+   Та же беда с другого конца кадра, и она стоила автору целого экрана. Карта
+   рисует карточку системы и строки прыжка от констант (`PAD_SAFE=104`), а
+   подсказка, эфирная строка и пульт — это DOM со своей вёрсткой. Два счёта
+   одного и того же места неизбежно расходятся: на телефоне 393×830 подсказка
+   легла ровно поперёк описания системы, эфирная строка накрыла «ТЕЛ · ВИДОВ ·
+   кр», а правый борт въехал в угол карточки (замер 30.08.2026).
+   HUD_FLOOR — верх самого верхнего из нижних наложений, HUD_RAIL — левый край
+   правого борта. Обе величины в CSS-пикселях, как и координаты рисования. */
+let HUD_FLOOR=0, HUD_RAIL=0;
 const $vitals=document.querySelector(".vitals"),$locusEl=document.querySelector(".locus");
 const $vf=document.getElementById("vFuel"),$vh=document.getElementById("vHull");
 const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse");
@@ -215,6 +225,26 @@ function hud(){
     const band=Math.max(vb,lb);
     if(band>0)HUD_BAND=Math.round(band);
   }
+  /* пол и правый борт — тем же одним чтением на кадр. Пустая подсказка в счёт
+     не идёт: у неё нет текста, а место она занимать не должна. */
+  {let fl=innerHeight,rl=innerWidth;
+   /* видимость проверяем по прямоугольнику, а не по offsetParent: пульт,
+      подсказка и правый борт стоят position:fixed, а у таких offsetParent
+      всегда null — первая версия этой мерки поэтому не находила НИЧЕГО и
+      честно возвращала высоту экрана */
+   const under=[$prompt,document.getElementById("console"),$padsEl];
+   for(const e of under){
+     if(!e)continue;
+     if(e===$prompt&&!(e.textContent||"").trim())continue;
+     const r=e.getBoundingClientRect();
+     if(r.height>0&&r.width>0&&r.top>0)fl=Math.min(fl,r.top);
+   }
+   const rail=document.querySelector(".rail");
+   if(rail){
+     const r=rail.getBoundingClientRect();
+     if(r.width>0&&r.height>0)rl=Math.min(rl,r.left);
+   }
+   HUD_FLOOR=Math.round(fl);HUD_RAIL=Math.round(rl);}
   setTx($msg,G.msgT>0?G.msg:"");
   setSt($msg,"opacity",G.msgT>0?clamp(G.msgT/40,0,1):0);
   setTx($prompt,G.mode==="dock"?"":G.prompt);

@@ -97,10 +97,24 @@ function deployDrone(){
    дрон починился. Догон офлайна — тот же ленивый расчёт по Date.now(). */
 function tickDrones(){
   const now=Date.now(),cap=24*3600*1000;
+  /* ── блокада останавливает круги, и делала она это МОЛЧА ──
+     Автор развернул в системе тринадцать машин, улетел, и потом сказал:
+     «дроны никуда не летали, непонятно» (30.08.2026). Они и правда стояли —
+     пираты закрыли систему, — но об этом не было сказано ни слова: доход
+     просто переставал идти, а списка, где это видно, игрок не открывал.
+     Теперь про остановку и про возвращение говорится один раз на СИСТЕМУ,
+     а не на машину: тринадцать одинаковых строк — это не сообщение, а стена. */
+  const stopped={},started={};
   for(let i=G.drones.length-1;i>=0;i--){
     const d=droneNormalize(G.drones[i],now);
+    const key=d.sx+","+d.sy;
     /* под блокадой дрону некуда сдавать: круги стоят, время не копится */
-    if(occLvl(d.sx,d.sy)>=2){d.lastMs=now;d.t0=now;continue;}
+    if(occLvl(d.sx,d.sy)>=2){
+      d.lastMs=now;d.t0=now;
+      if(!d.stuck){d.stuck=1;stopped[key]=(stopped[key]|0)+1;}
+      continue;
+    }
+    if(d.stuck){d.stuck=0;started[key]=(started[key]|0)+1;}
     const T=droneTripMs(d);
     /* «Авто-сбыт» смотрителя: тот же множитель, что и был — быстрее оборот */
     const rate=d.rate*(mgrPerkOf("keep","sell")?1.35:1);
@@ -151,5 +165,15 @@ function tickDrones(){
       if(G.droneIds.indexOf(d.id)<0)G.droneIds.push(d.id);
     }
     d.lastMs=now;
+  }
+  for(const k in stopped){
+    const p=k.split(",").map(Number),n=stopped[k];
+    logAdd("warn","Блокада в системе «"+getSystem(p[0],p[1]).name+"»: "+n+" "+
+      pl3(n,"дрон встал","дрона встали","дронов встали")+" · круги не идут, пока пираты там");
+  }
+  for(const k in started){
+    const p=k.split(",").map(Number),n=started[k];
+    logAdd("good","Система «"+getSystem(p[0],p[1]).name+"» открыта: "+n+" "+
+      pl3(n,"дрон снова возит","дрона снова возят","дронов снова возят"));
   }
 }

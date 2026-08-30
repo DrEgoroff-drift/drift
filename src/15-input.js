@@ -197,6 +197,28 @@ addEventListener("blur",releaseAllKeys);
 addEventListener("pagehide",releaseAllKeys);
 document.addEventListener("visibilitychange",()=>{if(document.hidden)releaseAllKeys();});
 
+/* ══════════════ полоса вкладок шире экрана ══════════════
+   У стола тринадцать закладок, а в телефон влезает шесть. Полоса
+   прокручивалась и раньше, но молча: активная вкладка могла стоять за краем —
+   игрок видел содержимое РЕЙСОВ и ни одной подсвеченной закладки, то есть не
+   понимал, где он. Здесь две вещи: подвести выбранную под глаз и снять
+   затенение правого края, когда прокручивать больше некуда. */
+function tabsSync(strip){
+  if(!strip)return;
+  const on=strip.querySelector("button.on");
+  if(on){
+    const r=on.getBoundingClientRect(),s=strip.getBoundingClientRect();
+    if(r.left<s.left+8)strip.scrollLeft+=r.left-s.left-16;
+    else if(r.right>s.right-8)strip.scrollLeft+=r.right-s.right+16;
+  }
+  strip.classList.toggle("tail",strip.scrollLeft>=strip.scrollWidth-strip.clientWidth-2);
+  if(!strip.dataset.tail){
+    strip.dataset.tail="1";
+    strip.addEventListener("scroll",()=>{
+      strip.classList.toggle("tail",strip.scrollLeft>=strip.scrollWidth-strip.clientWidth-2);
+    });
+  }
+}
 /* ── ящик бортовых систем ──
    Раньше на правом борту стояло до девяти кнопок по 27 px: половина из них
    нужна раз за полёт, а мажешь по ним всё время. Постоянными остались КАРТА

@@ -1,13 +1,52 @@
 /* ══════════════ карта ══════════════ */
-const PAD_SAFE=104;   // полоса экранных кнопок снизу: туда ничего не пишем
+const PAD_SAFE=104;   // полоса экранных кнопок снизу: запасной ответ, см. mapDeck
+/* ══════════════ где у карты пол и где правый борт ══════════════
+   Карта рисует карточку системы и строки прыжка на канве, а подсказка,
+   эфирная строка, пульт и правый борт — это DOM со своей вёрсткой. Пока карта
+   считала своё место константой (`PAD_SAFE`), два счёта одного и того же
+   расходились: на телефоне 393×830 подсказка легла поперёк описания системы,
+   эфирная строка накрыла «ТЕЛ · ВИДОВ · кр», а угол карточки уехал под кнопки
+   КАРТА и МЕНЮ. Автор прислал этот кадр 30.08.2026 словами «всё сбилось и
+   наезжает» — и был прав: константа врала, потому что вёрстка меняется, а она
+   нет. HUD_FLOOR и HUD_RAIL мерятся по самому DOM раз в кадр (27z-telemetry);
+   константа осталась запасным ответом на первый кадр и на стенды без пульта. */
+function mapDeck(){
+  const fl=(typeof HUD_FLOOR==="number"&&HUD_FLOOR>40)?HUD_FLOOR:(H-PAD_SAFE);
+  return Math.round(clamp(fl-12,H*.4,H-14));
+}
+function mapRail(){
+  const rl=(typeof HUD_RAIL==="number"&&HUD_RAIL>60)?HUD_RAIL:(W-16);
+  return Math.round(clamp(rl-8,180,W-16));
+}
+/* ── что карта нарисовала как интерфейс ──
+   Канва и DOM — две разные вёрстки, и наезжают они ровно там, куда не смотрит
+   ни один сторож: тест 91f-ui умеет сравнивать DOM с DOM, а карточку системы
+   он не видит вовсе, потому что её нет в разметке. Поэтому карта СООБЩАЕТ свои
+   прямоугольники — одна запись в кадр, — и тест сравнивает их с вёрсткой так
+   же, как сравнивает панели между собой. */
+let MAP_BOX=[];
+function mapBox(name,x,y,w,h){MAP_BOX.push({s:name,x,y,w,h});}
 function wrapLeft(text,x,y,maxW,lh){
-  const words=text.split(" ");let line="",ly=y;
+  const words=text.split(" ");let line="",ly=y,n=1;
   for(const w of words){
     const t=line?line+" "+w:w;
-    if(ctx.measureText(t).width>maxW&&line){ctx.fillText(line,x,ly);line=w;ly+=lh;}
+    if(ctx.measureText(t).width>maxW&&line){ctx.fillText(line,x,ly);line=w;ly+=lh;n++;}
     else line=t;
   }
   if(line)ctx.fillText(line,x,ly);
+  return n;                       /* сколько строк вышло: карточка растёт по ним */
+}
+/* ── сколько строк займёт, если ещё не рисовать ──
+   Карточка системы должна знать свою высоту ДО того, как её обвели рамкой:
+   иначе описание в четыре строки вылезает из плашки, посчитанной под три. */
+function wrapCount(text,maxW){
+  const words=String(text||"").split(" ");let line="",n=1;
+  for(const w of words){
+    const t=line?line+" "+w:w;
+    if(ctx.measureText(t).width>maxW&&line){line=w;n++;}
+    else line=t;
+  }
+  return n;
 }
 /* ══════════════ карта: ночное небо, а не схема молекулы ══════════════ */
 /* Прежняя карта рисовала шесть десятков одинаковых кружков одного размера,
@@ -269,6 +308,39 @@ function drawMap(){
   /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
   const cost=Math.round((9+dsel*13)*((typeof keepersJumpK==="function")?keepersJumpK():1));
   const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0;
+  /* ── подвал карты: сначала расклад, потом рисование ──
+     Слева — про прыжок (цена, расстояние, маршрут), справа — итоги (тела,
+     виды, деньги, фронт). На широком экране это две колонки в одну строку;
+     на телефоне они не помещаются рядом и раньше просто наезжали друг на
+     друга посередине («СЕКТОР 1:0 · 0.00 из 3.00 пкзанято систем: 8»), а
+     правая вдобавок уходила под кнопки правого борта. Здесь решается, влезут
+     они рядом или встанут столбиком, — и только потом что-то рисуется. */
+  MAP_BOX=[];
+  const foot=(()=>{
+    const RX=mapRail();
+    const L=[],Rr=[];
+    L.push([bad?"rgba(255,107,87,.85)":"#f2b25c",
+      dsel===0?"ТЕКУЩАЯ СИСТЕМА":
+      (dsel>st.jump+.02?"ВНЕ РАДИУСА — НУЖЕН ГИПЕРДРАЙВ":
+       "ПРЫЖОК: "+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":""))]);
+    L.push(["rgba(127,230,216,.55)",
+      "СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   "+dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк"]);
+    if(typeof routeOf==="function"&&routeOf().legs.length>=2)
+      L.push(["rgba(127,230,216,.75)",routeLine()]);
+    Rr.push(["rgba(93,115,130,.85)","ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
+      Math.round(G.credits).toLocaleString("ru")+" кр"]);
+    const occN=G.occ?Object.keys(G.occ).length:0;
+    if(occN||(G.freed|0))
+      Rr.push([occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)",occSummary()]);
+    /* влезут ли рядом: меряем самые длинные из обеих колонок */
+    ctx.font="10px ui-monospace,monospace";
+    const wid=a=>a.reduce((m,r)=>Math.max(m,ctx.measureText(r[1]).width),0);
+    const side=wid(L)+wid(Rr)+24<=RX-16-16;
+    const rows=[];
+    if(side)for(let i=0;i<Math.max(L.length,Rr.length);i++)rows.push([L[i]||null,Rr[i]||null]);
+    else{for(const r of L)rows.push([r,null]);for(const r of Rr)rows.push([r,null]);}
+    return {rows,side,RX};
+  })();
   /* ── курс прыжка ──
      Раньше отсюда к карточке шёл волосок «вот о какой звезде речь». Он не
      сообщал ничего, чего не сказали бы кольцо и уголки прицела, зато на дальней
@@ -322,9 +394,17 @@ function drawMap(){
       ctx.lineTo(x+Math.cos(a)*r1,y+Math.sin(a)*r1);
     }
     ctx.stroke();
-    const cw=Math.min(300,W-32), cx=16, cy=H-PAD_SAFE-158;   // выше строк прыжка: они налезали на карточку
-    ctx.fillStyle="rgba(6,10,16,.62)";ctx.fillRect(cx,cy,cw,104);
-    ctx.strokeStyle="rgba(127,230,216,.18)";ctx.strokeRect(cx+.5,cy+.5,cw,104);
+    /* ширину карточка берёт до правого борта, а не до края экрана: кнопки
+       КАРТА и МЕНЮ стоят там всегда, и угол карточки уезжал под них */
+    const cw=Math.min(300,mapRail()-32), cx=16;
+    ctx.font="9px ui-monospace,monospace";
+    /* высота — по числу строк описания, а не константой 104: у длинного
+       описания четвёртая строка вылезала за плашку */
+    const dn=wrapCount(s.desc,cw-24), ch=54+dn*11+8;
+    const cy=Math.round(mapDeck()-16*(foot.rows.length-1)-12-ch);
+    ctx.fillStyle="rgba(6,10,16,.62)";ctx.fillRect(cx,cy,cw,ch);
+    ctx.strokeStyle="rgba(127,230,216,.18)";ctx.strokeRect(cx+.5,cy+.5,cw,ch);
+    mapBox("карточка системы",cx,cy,cw,ch);
     ctx.textAlign="left";
     ctx.fillStyle="#f2b25c";ctx.font="13px ui-monospace,monospace";
     ctx.fillText(((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),cx+12,cy+22);   /* ваше имя (11u) */
@@ -333,37 +413,17 @@ function drawMap(){
     ctx.fillStyle="rgba(160,182,192,.62)";
     wrapLeft(s.desc,cx+12,cy+54,cw-24,11);
   }
-  /* строка прыжка — над карточкой и над кнопками; PAD_SAFE держит её выше
-     экранных пэдов, на которые она налезала в нижних углах */
-  ctx.textAlign="left";ctx.font="10px ui-monospace,monospace";
-  ctx.fillStyle="rgba(127,230,216,.55)";
-  ctx.fillText("СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   "+dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк",
-    16,H-PAD_SAFE-30);
-  ctx.fillStyle=bad?"rgba(255,107,87,.85)":"#f2b25c";
-  ctx.fillText(dsel===0?"ТЕКУЩАЯ СИСТЕМА":
-    (dsel>st.jump+.02?"ВНЕ РАДИУСА — НУЖЕН ГИПЕРДРАЙВ":
-     "ПРЫЖОК: "+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":"")),16,H-PAD_SAFE-14);
-  ctx.fillStyle="rgba(93,115,130,.85)";ctx.textAlign="right";
-  ctx.fillText("ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
-    Math.round(G.credits).toLocaleString("ru")+" кр",W-16,H-PAD_SAFE-14);
-  /* фронт одной строкой: цель игры должна быть видна там, где на неё смотрят,
-     то есть на карте, а не в меню */
-  const occN=G.occ?Object.keys(G.occ).length:0;
-  if(occN||(G.freed|0)){
-    ctx.fillStyle=occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)";
-    ctx.fillText(occSummary(),W-16,H-PAD_SAFE-30);
-  }
-  /* сводка своего маршрута — там же, где фронт: карта отвечает на оба вопроса,
-     «куда лететь драться» и «куда лететь возить» */
-  if(typeof routeOf==="function"&&routeOf().legs.length>=2){
-    /* слева, в столбце прыжка: справа на этой высоте стоит подсказка по центру,
-       и сводка налезала на неё серединой экрана. Здесь же она читается вместе
-       с ценой прыжка — оба числа про «сколько это стоит». */
-    ctx.textAlign="left";
-    ctx.fillStyle="rgba(127,230,216,.75)";
-    ctx.fillText(routeLine(),16,H-PAD_SAFE-46);
-    ctx.textAlign="right";
-  }
+  /* ── подвал: одним циклом, снизу вверх ── */
+  {const deck=mapDeck();
+   ctx.font="10px ui-monospace,monospace";
+   foot.rows.forEach((row,i)=>{
+     const y=deck-i*16;
+     if(row[0]){ctx.textAlign="left";ctx.fillStyle=row[0][0];ctx.fillText(row[0][1],16,y);
+       mapBox("подвал слева",16,y-9,ctx.measureText(row[0][1]).width,12);}
+     if(row[1]){ctx.textAlign="right";ctx.fillStyle=row[1][0];ctx.fillText(row[1][1],foot.RX,y);
+       const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9,w,12);}
+   });
+   ctx.textAlign="right";}
   G.prompt="ТАП ПО ЗВЕЗДЕ — ВЫБОР · ДЕЙСТВИЕ — ПРЫЖОК";
   if(actEdge){
     if(!bad)jump(cost);

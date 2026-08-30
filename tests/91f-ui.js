@@ -301,3 +301,67 @@ TEST_SUITES.push(()=>suite("колесо: зум берётся только с 
   eq(G.zoom,1,"пока открыт экран, мир не зумится вовсе");
   scr.classList.remove("open");
 }));
+
+/* ── канва против вёрстки ──
+   Всё, что выше, сравнивает DOM с DOM. Но половина интерфейса «Дрейфа»
+   нарисована на канве, и вёрстка о ней ничего не знает: карточка системы на
+   карте стояла по константе PAD_SAFE, а подсказка, эфирная строка и правый
+   борт — по CSS. На телефоне 393×830 они сошлись в одном месте, и автор
+   прислал этот кадр со словами «всё сбилось и наезжает» (30.08.2026).
+   Карта теперь СООБЩАЕТ свои прямоугольники (MAP_BOX), и сторож сравнивает
+   их с вёрсткой так же, как панели между собой. */
+TEST_SUITES.push(()=>suite("интерфейс: нарисованное на канве не лезет в вёрстку",()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  G.running=true;G.mode="map";G.sel={x:G.sx,y:G.sy};
+  /* панели меряются по вёрстке — им нужен свой такт; карту рисуем прямо,
+     чтобы не зависеть от того, как кадр решает, что ему рисовать */
+  hud();
+  drawMap();
+  ok(typeof MAP_BOX!=="undefined"&&MAP_BOX.length>0,"карта сообщила свои прямоугольники ("+
+    (typeof MAP_BOX!=="undefined"?MAP_BOX.length:0)+")");
+  const dom=[];
+  for(const sel of ["#prompt","#console",".pads",".rail",".vitals",".locus"]){
+    const e=document.querySelector(sel);if(!e)continue;
+    if(sel==="#prompt"&&!(e.textContent||"").trim())continue;
+    const r=e.getBoundingClientRect();
+    if(r.width>0&&r.height>0)dom.push({s:sel,x:r.x,y:r.y,w:r.width,h:r.height});
+  }
+  ok(dom.length>=3,"вёрстка на месте ("+dom.length+")");
+  const hit=(a,b)=>!(a.x+a.w<=b.x||b.x+b.w<=a.x||a.y+a.h<=b.y||b.y+b.h<=a.y);
+  const clash=[];
+  for(const c of MAP_BOX)for(const d of dom)if(hit(c,d))clash.push(c.s+"×"+d.s);
+  eq(clash.join(", "),"","карта не наезжает на вёрстку");
+  const out=MAP_BOX.filter(c=>c.x<-1||c.x+c.w>innerWidth+1||c.y+c.h>innerHeight+1);
+  eq(out.map(c=>c.s).join(", "),"","и ничего не уехало за край кадра");
+  G.mode="system";
+}));
+
+/* ── выбранную закладку видно ──
+   У стола тринадцать закладок, полоса — 777 px, окно телефона — 393. РЕЙСЫ
+   стоят восьмыми, то есть за краем: игрок видел содержимое вкладки и ни одной
+   подсвеченной закладки — и не понимал, где он (замер 30.08.2026). */
+TEST_SUITES.push(()=>suite("интерфейс: выбранная закладка не стоит за краем",()=>{
+  resetWorld();
+  G.drones=[{id:1,sx:G.sx,sy:G.sy,pi:0,res:"titan",rate:1,pool:100,t0:Date.now(),
+             lastMs:Date.now(),bornMs:Date.now(),trips:0,down:0,sold:0,earned:0}];
+  /* берём самую дальнюю живую закладку: она заведомо за краем, если полоса
+     длиннее окна, — иначе проверка проходит сама собой и ничего не сторожит */
+  tableToggle(true,"ether");
+  const strip=document.getElementById("tableTabs");
+  const live=[...strip.querySelectorAll("button")].filter(b=>b.style.display!=="none");
+  const last=live[live.length-1];
+  ok(!!last,"закладки есть ("+live.length+")");
+  const wide=strip.scrollWidth>strip.clientWidth+2;
+  if(wide&&last){
+    tableSetTab(last.dataset.tab);
+    const on=strip.querySelector("button.on");
+    eq(on&&on.dataset.tab,last.dataset.tab,"выбранная закладка помечена");
+    const r=last.getBoundingClientRect(),s=strip.getBoundingClientRect();
+    ok(r.left>=s.left-2&&r.right<=s.right+2,
+      "и подведена под глаз ("+Math.round(r.left)+".."+Math.round(r.right)+
+      " в "+Math.round(s.left)+".."+Math.round(s.right)+")");
+  }else ok(true,"полоса влезает целиком — подводить нечего");
+  tableToggle(false);
+  G.drones=[];
+}));

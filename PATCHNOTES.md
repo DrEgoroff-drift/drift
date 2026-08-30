@@ -7,6 +7,64 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.282.0 - M285: a save that cannot kill the flight, a star that dims as you leave, a footer that measures the frame
+
+Playtest 30.08.2026, from the author's phone: a journal line reading "Сбой кадра: Invalid
+string length · surface"; "the interfaces are all shifted and overlapping"; "check how the
+drones work, how the mercenaries work - on my save they never flew anywhere, it is not
+clear"; "when you fly away from the star it is bright, like a halo, and when you fly
+towards it, it dims".
+
+- **A save can no longer take the world down with it.** `saveGame` called
+  `JSON.stringify(snapshot())` bare, from inside the frame (autosave, and `rareTake` after
+  a rarity is found). One over-grown field therefore threw `RangeError` *in the frame*: the
+  frame guard (M234) caught it and the game walked on, but from that second it wrote
+  **nothing** and said nothing about it. `saveText` (14-save) never throws. It weighs the
+  snapshot field by field, drops the one that will not serialise, names it in the journal
+  and in a message, and writes the rest; above a megabyte it warns once with the three
+  heaviest sections by name. The cloud push went through the same bare stringify inside
+  `fetch` and now shares the guarded text. Guarded by `91zzzzb-save`, which poisons a field
+  with the author's exact error and checks the flight still lands on disk.
+- **A crash now says where it happened.** `crashSay` printed the message and the mode -
+  "Invalid string length · surface" names neither a function nor a line, and finding the
+  culprit costs a session. It now lifts the two innermost named frames off the stack, so
+  the journal line carries an address.
+- **The star's glow no longer flashes when the star leaves the frame.** The off-screen
+  bleed switched on the moment the star crossed the edge, and switched on at full strength:
+  measured mean frame luminance at zoom 0.16 was 17.4 up to 12 star radii and **25.4** at
+  20 - a 46% step exactly where the player expects darkness, and a hole when flying back
+  in. The threshold was the bug: light has no thresholds. The bleed is now a very wide,
+  very weak corona in world coordinates with a hollow centre (the real corona already
+  lights that part), so it cannot trip over the edge of the screen: 19.2 / 19.0 / 18.2 /
+  16.9 / 16.5 across the same distances, and the near-star frame is within 2% of what it
+  was.
+- **The map footer is measured, not guessed.** The system card and the jump lines were laid
+  out from `PAD_SAFE=104`, while the prompt, the ether line, the pads and the right rail
+  are DOM with their own layout. On a 393x830 phone the prompt lay across the system
+  description, the ether bar covered "ТЕЛ · ВИДОВ · кр", and the card's corner ran under
+  КАРТА and МЕНЮ. `HUD_FLOOR` and `HUD_RAIL` are now read off the DOM once a frame, beside
+  `HUD_BAND`; the footer stacks upward from them, the card takes its height from its own
+  wrapped text, and the two columns drop into one when they will not fit side by side. The
+  map publishes its rectangles (`MAP_BOX`) so `91f-ui` can compare canvas against markup -
+  the guard that could not exist before, because half the interface is painted, not marked
+  up.
+- **The chosen tab is no longer parked off-screen.** The desk carries thirteen tabs: 777 px
+  of strip in a 393 px window, six visible. РЕЙСЫ is the eighth, so a player looking at
+  the fleet saw no highlighted tab at all. `tabsSync` scrolls the chosen tab into view on
+  the desk and the station, and the strip fades at its right edge while there is more to
+  the right.
+- **Drones stop under a blockade, and they used to stop silently.** Thirteen machines
+  deployed, the system taken by pirates, and the only signal was that the money stopped.
+  The stop and the restart are now said once per **system**, not per machine, and a stalled
+  drone says why in РЕЙСЫ instead of pretending to be under way.
+- **A hired hand who cannot work says so.** A mercenary needs a spare hull; with none, the
+  hire buys a person who sits in the list forever. The hiring board now counts free hulls
+  before the money is taken, and after five minutes of idling the man himself says once
+  that he has no ship, no order, or a broken hull.
+- **"ОСМОТРЕНО · КРИСТАЛЛЫ КРИСТАЛЛЫ x7"** - the place named itself twice when the find
+  repeated its name. Named once now.
+
+---
 ## 0.281.0 - M284: one house, a marker that tells the truth, and grass at human scale
 
 Playtest 30.08.2026: "the house is drawn like crap... check the markers, the house is

@@ -84,6 +84,79 @@ function snapshot(){
     told:G.told,lastDig:G.lastDig,
     ts:Date.now()};
 }
+/* ══════════════ запись не имеет права убить полёт ══════════════
+   30.08.2026 автор прислал журнал с поверхности: «Сбой кадра: Invalid string
+   length · surface». Так падает JSON.stringify, когда результат длиннее
+   предельной строки движка, — а зовётся он из кадра (autosave и rareTake).
+   Значит, одно раздувшееся поле роняло не запись, а мир: сторож кадра
+   (28-loop) ловит исключение и игра идёт дальше — но с этой секунды она
+   НИЧЕГО НЕ ПИШЕТ и молчит об этом. Хуже этого нет ничего.
+
+   Правило теперь такое: сохранение либо записывается целиком, либо без того
+   куска, который сошёл с ума, — и в обоих случаях называет виновника
+   вслух. Потерять один раздел всегда лучше, чем потерять полёт.
+
+   Порог — не догадка: налётанный сейв на деве весит 23 КБ (замер 30.08.2026),
+   самое тяжёлое в нём — лента самописца, 9 КБ, и она ограничена кольцом.
+   Мегабайт — это уже не «много всего», это ошибка, и сказать о ней надо
+   до того, как она станет смертельной. */
+const SAVE_BUDGET=1000000;
+let saveFatSaid="";
+/* кто именно весит: поле за полем, самые тяжёлые вперёд */
+function saveWeigh(s){
+  const rows=[];
+  for(const k in s){
+    let n=0;
+    /* JSON.stringify(undefined) отдаёт undefined, а не строку: без этой
+       проверки любое незаполненное поле весило «через край» и первым шло под
+       нож вместо настоящего виновника (поймано тестом 91zzzzb) */
+    try{const t=JSON.stringify(s[k]);n=(typeof t==="string")?t.length:0;}
+    catch(e){n=Infinity;}
+    rows.push([k,n]);
+  }
+  return rows.sort((a,b)=>b[1]-a[1]);
+}
+function saveTop(rows,n){
+  return rows.slice(0,n||3).map(r=>r[0]+" "+
+    (r[1]===Infinity?"через край":Math.round(r[1]/1024)+" КБ")).join(" · ");
+}
+/* Строка сохранения. Никогда не бросает: в худшем случае отдаёт запись
+   без взбесившегося поля, в самом худшем — null. */
+function saveText(){
+  let s;
+  try{s=snapshot();}
+  catch(e){
+    if(typeof logAdd==="function")logAdd("warn","Запись не собралась: "+((e&&e.message)||e));
+    return null;
+  }
+  for(let pass=0;pass<4;pass++){
+    let t=null;
+    try{t=JSON.stringify(s);}catch(e){t=null;}
+    if(t!==null){
+      /* растёт — говорим один раз на каждый новый состав виновников,
+         а не каждые десять секунд — строка в журнале не напоминание */
+      if(t.length>SAVE_BUDGET){
+        const top=saveTop(saveWeigh(s));
+        if(saveFatSaid!==top){
+          saveFatSaid=top;
+          if(typeof logAdd==="function")
+            logAdd("warn","Запись разбухла: "+Math.round(t.length/1024)+
+              " КБ · тяжелее всего "+top);
+        }
+      }
+      return t;
+    }
+    /* в строку не собралось: выбрасываем самое тяжёлое поле и пробуем снова */
+    const rows=saveWeigh(s),bad=rows[0];
+    if(!bad)return null;
+    delete s[bad[0]];
+    if(typeof logAdd==="function")
+      logAdd("warn","Запись не влезла в строку: раздел «"+bad[0]+"» вынут · "+saveTop(rows));
+    if(typeof say==="function")
+      say("ЗАПИСЬ ПОЧИНЕНА\nраздел «"+bad[0]+"» разросся и вынут\nостальное записано",420);
+  }
+  return null;
+}
 function applySave(s){
   if(!s||(s.v!==4&&s.v!==5))return false;
   G.sx=s.sx|0;G.sy=s.sy|0;G.sys=getSystem(G.sx,G.sy);
@@ -364,6 +437,9 @@ function applySave(s){
     /* рейсы, скрытая удача и события: сама удача не сохраняется — она выводится
        из seed, поэтому у одного и того же человека всегда одна и та же */
     risk:(c.risk==="safe"||c.risk==="bold")?c.risk:"norm",
+    /* простой переживает загрузку: иначе напоминание «сидит без дела»
+       приходило бы заново при каждом входе в игру (12a-crew, crewTick) */
+    idleMs:Math.max(0,+c.idleMs||0),idleSaid:c.idleSaid?1:0,
     trips:Math.max(0,c.trips|0),tripMin:Math.max(0,+c.tripMin||0),
     hist:Array.isArray(c.hist)?c.hist.slice(0,12).map(h=>({cat:String(h.cat||""),
       id:String(h.id||""),ru:String(h.ru||""),t:+h.t||0})):[],

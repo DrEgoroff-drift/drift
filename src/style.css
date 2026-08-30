@@ -413,8 +413,18 @@ nav.groups button{flex:1 0 auto;-webkit-appearance:none;background:none;border:0
 nav.groups button.on{color:var(--phos)}
 nav.groups button.on::after{content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:2px;
   background:var(--phos);box-shadow:0 0 10px var(--phos)}
+/* Полоса вкладок шире экрана — обычное дело на телефоне: у стола их
+   тринадцать, и в 393 px влезает шесть. Полоса и раньше прокручивалась, но
+   выглядела законченной: ни полосы прокрутки (её прячут нарочно), ни намёка,
+   что справа есть ещё. Игрок про РЕЙСЫ, ЦЕНЫ и КНИЖКУ просто не знал.
+   Тень у правого края — тот же приём, что у кромки в кадре: край,
+   который не кончается, обязан выглядеть незаконченным. */
 nav.tabs{display:flex;border-bottom:1px solid var(--edge);overflow-x:auto;
-  -webkit-overflow-scrolling:touch;scrollbar-width:none;background:rgba(127,230,216,.03)}
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;background:rgba(127,230,216,.03);
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent 100%);
+  mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent 100%)}
+/* докрутили до конца — маска не нужна, иначе последняя вкладка вечно бледная */
+nav.tabs.tail{-webkit-mask-image:none;mask-image:none}
 nav.tabs::-webkit-scrollbar{display:none}
 nav.tabs button{flex:0 0 auto;-webkit-appearance:none;background:none;border:0;
   color:var(--dim);font-family:inherit;font-size:9px;letter-spacing:.1em;padding:0 16px;

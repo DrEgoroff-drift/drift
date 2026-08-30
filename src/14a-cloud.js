@@ -40,7 +40,11 @@ function saveGame(quiet){
     if(!quiet)say("Здесь запись остановлена\nигра открыта в другой вкладке");
     return false;
   }
-  const ok=stSet(SAVE_KEY,JSON.stringify(snapshot()));
+  /* строка собирается через saveText (14-save): она не бросает и сама
+     называет виновника, если состояние разбухло. Раньше здесь стоял голый
+     JSON.stringify, и его исключение уходило в сторож кадра. */
+  const txt=saveText();
+  const ok=(txt!==null)&&stSet(SAVE_KEY,txt);
   if(!quiet)say(ok?"Полёт записан":"Хранилище недоступно\nвоспользуйтесь кодом");
   if(ok)cloudPush(false);
   return ok;
@@ -54,7 +58,7 @@ function loadGame(){
   try{return applySave(JSON.parse(raw));}catch(e){return false;}
 }
 function hasSave(){return !!stGet(SAVE_KEY);}
-function exportCode(){return b64enc(JSON.stringify(snapshot()));}
+function exportCode(){const t=saveText();return t?b64enc(t):"";}
 function importCode(c){
   try{return applySave(JSON.parse(b64dec(c)));}catch(e){return false;}
 }
@@ -130,8 +134,12 @@ function cloudPush(loud){
   const now=Date.now();
   if(!loud&&now-cloudBusy<20000)return;
   cloudBusy=now;
-  const snap=snapshot();
-  cloudCall("push",{save:snap})
+  /* та же охраняемая строка, что и у местной записи: голый snapshot() уходил
+     в fetch, а тот сериализует тело сам — и падал бы ровно там же, только
+     уже внутри отправки (14-save, saveText) */
+  const txt=saveText();
+  if(txt===null){if(loud)say("Запись не собралась\nв облако не отправлена");return;}
+  cloudCall("push",{save:JSON.parse(txt)})
     .then(d=>{
       if(d&&d.ok){cloudLastTs=d.ts;cloudMark("");CLOUD_ST.said="";if(loud)say("Отправлено в облако");}
       else if(d&&d.reason){cloudMark("conflict");if(loud)say("В облаке запись новее\nсначала заберите её");}

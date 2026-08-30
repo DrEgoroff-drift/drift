@@ -105,6 +105,8 @@ function syncTabs(){
   });
   /* одна вкладка в разделе — вторая ступень только мешает */
   document.getElementById("stTabs").classList.toggle("solo",shown<2);
+  /* и обе полосы подводят выбранное под глаз (15-input) */
+  if(typeof tabsSync==="function"){tabsSync($g);tabsSync(document.getElementById("stTabs"));}
 }
 function repairCost(){
   /* репутация станции идёт в цену работы: чинят руки, а не рынок (12k-rep) */
@@ -638,7 +640,21 @@ function renderTabBody(){
         $body.appendChild(rb);
       }
     });
-    $body.appendChild(el("div","sec","ИЩУТ РАБОТУ ЗДЕСЬ · СОСТАВ МЕНЯЕТСЯ СО ВРЕМЕНЕМ"));
+    /* ── честно ДО найма, а не после ──
+       Наёмник работает только на своём корпусе. Свободных корпусов может не
+       быть вовсе — и тогда найм покупает человека, который не сможет сделать
+       ничего: он сядет в список, а игра об этом промолчит. Автор так и
+       написал: «наёмники никуда не летали, непонятно» (30.08.2026). Кнопку не
+       гасим — второй корпус можно купить и завтра, — но цену выбора называем
+       здесь, а не на карточке, куда ещё надо догадаться зайти. */
+    const freeHulls=Object.keys(G.owned).filter(id=>id!==G.shipId&&
+      !G.crew.some(c=>c.shipId===id)).length;
+    $body.appendChild(el("div","sec","ИЩУТ РАБОТУ ЗДЕСЬ · СОСТАВ МЕНЯЕТСЯ СО ВРЕМЕНЕМ"+
+      (freeHulls?(" · СВОБОДНЫХ КОРПУСОВ "+freeHulls):" · СВОБОДНЫХ КОРПУСОВ НЕТ")));
+    if(!freeHulls)
+      $body.appendChild(el("div","row","<div class='nm'><s>наёмник летает на своём "+
+        "корабле, а все ваши заняты. Нанять можно и сейчас, но до второго корпуса "+
+        "с верфи он будет сидеть на станции: ни рейсов, ни жалованья, ни денег.</s></div>"));
     for(const m of stationMercs(G.sys)){
       if(G.crew.some(c=>c.id===m.id))continue;
       const r=el("div","row");

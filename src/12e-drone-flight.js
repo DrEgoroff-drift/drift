@@ -145,6 +145,10 @@ function droneFixMs(d){
 /* ── строка состояния для списков ── */
 function droneStateRu(d,now){
   now=now||Date.now();
+  /* стоящая машина обязана сказать, ПОЧЕМУ она стоит: под блокадой круги не
+     идут вовсе, и без этой строки список показывал бы «идёт гружёным» у
+     дрона, который не двигался вторые сутки (12-economy, tickDrones) */
+  if(d.stuck)return "стоит: систему закрыли пираты";
   if(d.down>now)return "чинится "+Math.max(1,Math.round((d.down-now)/60000))+" мин";
   const P=dronePhase(d,now);
   return P.leg==="load"?"грузится":P.leg==="out"?"идёт гружёным":
@@ -164,12 +168,13 @@ function droneRoutes(){
       const P=(sys.planets||[])[d.pi];
       by[k]={key:k,res:d.res,sx:d.sx,sy:d.sy,pi:d.pi,
              from:P?P.name:(sys.name+", пояс"),to:droneHome(d,sys).name,
-             sys:sys.name,drones:[],pool:0,perMin:0,down:0};
+             sys:sys.name,drones:[],pool:0,perMin:0,down:0,stuck:0};
     }
     const R=by[k];
     R.drones.push(d);
     R.pool+=d.pool|0;
-    if(!d.down||d.down<=Date.now())R.perMin+=d.rate*(RES[d.res]?RES[d.res].price:10);
+    if(d.stuck)R.stuck++;
+    else if(!d.down||d.down<=Date.now())R.perMin+=d.rate*(RES[d.res]?RES[d.res].price:10);
     else R.down++;
   }
   return Object.keys(by).map(k=>by[k]);
@@ -305,7 +310,8 @@ function renderFleetRuns(box){
     const res=RES[r.res]||{ru:String(r.res||"груз"),col:"#cfe3ea"};
     const row=tableRow(box,"","",r.from+" → «"+r.to+"» · "+r.drones.length+
       " "+pl3(r.drones.length,"дрон","дрона","дронов")+
-      " · в точке осталось "+r.pool+(r.down?(" · "+r.down+" в ремонте"):""));
+      " · в точке осталось "+r.pool+(r.down?(" · "+r.down+" в ремонте"):"")+
+      (r.stuck?(" · "+r.stuck+" стоит под блокадой"):""));
     const em=row.querySelector("em");
     if(em){em.textContent=res.ru.toUpperCase();em.style.color=res.col;}
     for(const d of r.drones){

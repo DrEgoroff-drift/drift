@@ -427,8 +427,18 @@ nav.groups button{flex:1 0 auto;-webkit-appearance:none;background:none;border:0
 nav.groups button.on{color:var(--phos)}
 nav.groups button.on::after{content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:2px;
   background:var(--phos);box-shadow:0 0 10px var(--phos)}
+/* Полоса вкладок шире экрана — обычное дело на телефоне: у стола их
+   тринадцать, и в 393 px влезает шесть. Полоса и раньше прокручивалась, но
+   выглядела законченной: ни полосы прокрутки (её прячут нарочно), ни намёка,
+   что справа есть ещё. Игрок про РЕЙСЫ, ЦЕНЫ и КНИЖКУ просто не знал.
+   Тень у правого края — тот же приём, что у кромки в кадре: край,
+   который не кончается, обязан выглядеть незаконченным. */
 nav.tabs{display:flex;border-bottom:1px solid var(--edge);overflow-x:auto;
-  -webkit-overflow-scrolling:touch;scrollbar-width:none;background:rgba(127,230,216,.03)}
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;background:rgba(127,230,216,.03);
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent 100%);
+  mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent 100%)}
+/* докрутили до конца — маска не нужна, иначе последняя вкладка вечно бледная */
+nav.tabs.tail{-webkit-mask-image:none;mask-image:none}
 nav.tabs::-webkit-scrollbar{display:none}
 nav.tabs button{flex:0 0 auto;-webkit-appearance:none;background:none;border:0;
   color:var(--dim);font-family:inherit;font-size:9px;letter-spacing:.1em;padding:0 16px;
@@ -1368,7 +1378,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.281.0";
+const VER="0.282.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -14808,8 +14818,24 @@ function crewTick(){
        За простой не платят — иначе первый же нанятый уходил в долг ни за что. */
     const needsShip=c.order&&c.order.kind!=="home"&&c.order.kind!=="base";
     if(!c.order||c.order.kind==="home"||(needsShip&&!c.shipId)||c.hull<=0){
+      /* ── праздный человек виден ──
+         Наёмник без корпуса или без приказа не работает вовсе — и молчал об
+         этом вечно. Автор нанял такого, улетел и через много часов сказал:
+         «наёмники никуда не летали, непонятно» (30.08.2026). И правда: найм
+         списался, человек появился в списке — и на этом игра замолчала
+         навсегда. Через несколько минут простоя он напоминает о себе ОДИН
+         раз и снова замолкает; отметка снимается, как только он поехал, —
+         значит, второй раз она придёт только после второго простоя. */
+      c.idleMs=(c.idleMs||0)+dtMs;
+      if(c.idleMs>5*60000&&!c.idleSaid){
+        c.idleSaid=1;
+        logAdd("warn",c.name+" сидит без дела: "+
+          (!c.shipId?"ему не выдан корабль":(c.hull<=0?"его корпус разбит":"у него нет приказа"))+
+          " · МЕНЮ → ЭКИПАЖ");
+      }
       crewRest(c,min);continue;
     }
+    c.idleMs=0;c.idleSaid=0;
     if(c.order.kind==="base"){crewRest(c,min);c.xp=(c.xp||0)+min*.6;continue;}
     /* копим отработанное время и закрываем им рейсы */
     const tm=crewTripMinutes(c);
@@ -16410,10 +16436,24 @@ function deployDrone(){
    дрон починился. Догон офлайна — тот же ленивый расчёт по Date.now(). */
 function tickDrones(){
   const now=Date.now(),cap=24*3600*1000;
+  /* ── блокада останавливает круги, и делала она это МОЛЧА ──
+     Автор развернул в системе тринадцать машин, улетел, и потом сказал:
+     «дроны никуда не летали, непонятно» (30.08.2026). Они и правда стояли —
+     пираты закрыли систему, — но об этом не было сказано ни слова: доход
+     просто переставал идти, а списка, где это видно, игрок не открывал.
+     Теперь про остановку и про возвращение говорится один раз на СИСТЕМУ,
+     а не на машину: тринадцать одинаковых строк — это не сообщение, а стена. */
+  const stopped={},started={};
   for(let i=G.drones.length-1;i>=0;i--){
     const d=droneNormalize(G.drones[i],now);
+    const key=d.sx+","+d.sy;
     /* под блокадой дрону некуда сдавать: круги стоят, время не копится */
-    if(occLvl(d.sx,d.sy)>=2){d.lastMs=now;d.t0=now;continue;}
+    if(occLvl(d.sx,d.sy)>=2){
+      d.lastMs=now;d.t0=now;
+      if(!d.stuck){d.stuck=1;stopped[key]=(stopped[key]|0)+1;}
+      continue;
+    }
+    if(d.stuck){d.stuck=0;started[key]=(started[key]|0)+1;}
     const T=droneTripMs(d);
     /* «Авто-сбыт» смотрителя: тот же множитель, что и был — быстрее оборот */
     const rate=d.rate*(mgrPerkOf("keep","sell")?1.35:1);
@@ -16464,6 +16504,16 @@ function tickDrones(){
       if(G.droneIds.indexOf(d.id)<0)G.droneIds.push(d.id);
     }
     d.lastMs=now;
+  }
+  for(const k in stopped){
+    const p=k.split(",").map(Number),n=stopped[k];
+    logAdd("warn","Блокада в системе «"+getSystem(p[0],p[1]).name+"»: "+n+" "+
+      pl3(n,"дрон встал","дрона встали","дронов встали")+" · круги не идут, пока пираты там");
+  }
+  for(const k in started){
+    const p=k.split(",").map(Number),n=started[k];
+    logAdd("good","Система «"+getSystem(p[0],p[1]).name+"» открыта: "+n+" "+
+      pl3(n,"дрон снова возит","дрона снова возят","дронов снова возят"));
   }
 }
 
@@ -16614,6 +16664,10 @@ function droneFixMs(d){
 /* ── строка состояния для списков ── */
 function droneStateRu(d,now){
   now=now||Date.now();
+  /* стоящая машина обязана сказать, ПОЧЕМУ она стоит: под блокадой круги не
+     идут вовсе, и без этой строки список показывал бы «идёт гружёным» у
+     дрона, который не двигался вторые сутки (12-economy, tickDrones) */
+  if(d.stuck)return "стоит: систему закрыли пираты";
   if(d.down>now)return "чинится "+Math.max(1,Math.round((d.down-now)/60000))+" мин";
   const P=dronePhase(d,now);
   return P.leg==="load"?"грузится":P.leg==="out"?"идёт гружёным":
@@ -16633,12 +16687,13 @@ function droneRoutes(){
       const P=(sys.planets||[])[d.pi];
       by[k]={key:k,res:d.res,sx:d.sx,sy:d.sy,pi:d.pi,
              from:P?P.name:(sys.name+", пояс"),to:droneHome(d,sys).name,
-             sys:sys.name,drones:[],pool:0,perMin:0,down:0};
+             sys:sys.name,drones:[],pool:0,perMin:0,down:0,stuck:0};
     }
     const R=by[k];
     R.drones.push(d);
     R.pool+=d.pool|0;
-    if(!d.down||d.down<=Date.now())R.perMin+=d.rate*(RES[d.res]?RES[d.res].price:10);
+    if(d.stuck)R.stuck++;
+    else if(!d.down||d.down<=Date.now())R.perMin+=d.rate*(RES[d.res]?RES[d.res].price:10);
     else R.down++;
   }
   return Object.keys(by).map(k=>by[k]);
@@ -16774,7 +16829,8 @@ function renderFleetRuns(box){
     const res=RES[r.res]||{ru:String(r.res||"груз"),col:"#cfe3ea"};
     const row=tableRow(box,"","",r.from+" → «"+r.to+"» · "+r.drones.length+
       " "+pl3(r.drones.length,"дрон","дрона","дронов")+
-      " · в точке осталось "+r.pool+(r.down?(" · "+r.down+" в ремонте"):""));
+      " · в точке осталось "+r.pool+(r.down?(" · "+r.down+" в ремонте"):"")+
+      (r.stuck?(" · "+r.stuck+" стоит под блокадой"):""));
     const em=row.querySelector("em");
     if(em){em.textContent=res.ru.toUpperCase();em.style.color=res.col;}
     for(const d of r.drones){
@@ -27171,7 +27227,11 @@ function saveGame(quiet){
     if(!quiet)say("Здесь запись остановлена\nигра открыта в другой вкладке");
     return false;
   }
-  const ok=stSet(SAVE_KEY,JSON.stringify(snapshot()));
+  /* строка собирается через saveText (14-save): она не бросает и сама
+     называет виновника, если состояние разбухло. Раньше здесь стоял голый
+     JSON.stringify, и его исключение уходило в сторож кадра. */
+  const txt=saveText();
+  const ok=(txt!==null)&&stSet(SAVE_KEY,txt);
   if(!quiet)say(ok?"Полёт записан":"Хранилище недоступно\nвоспользуйтесь кодом");
   if(ok)cloudPush(false);
   return ok;
@@ -27185,7 +27245,7 @@ function loadGame(){
   try{return applySave(JSON.parse(raw));}catch(e){return false;}
 }
 function hasSave(){return !!stGet(SAVE_KEY);}
-function exportCode(){return b64enc(JSON.stringify(snapshot()));}
+function exportCode(){const t=saveText();return t?b64enc(t):"";}
 function importCode(c){
   try{return applySave(JSON.parse(b64dec(c)));}catch(e){return false;}
 }
@@ -27261,8 +27321,12 @@ function cloudPush(loud){
   const now=Date.now();
   if(!loud&&now-cloudBusy<20000)return;
   cloudBusy=now;
-  const snap=snapshot();
-  cloudCall("push",{save:snap})
+  /* та же охраняемая строка, что и у местной записи: голый snapshot() уходил
+     в fetch, а тот сериализует тело сам — и падал бы ровно там же, только
+     уже внутри отправки (14-save, saveText) */
+  const txt=saveText();
+  if(txt===null){if(loud)say("Запись не собралась\nв облако не отправлена");return;}
+  cloudCall("push",{save:JSON.parse(txt)})
     .then(d=>{
       if(d&&d.ok){cloudLastTs=d.ts;cloudMark("");CLOUD_ST.said="";if(loud)say("Отправлено в облако");}
       else if(d&&d.reason){cloudMark("conflict");if(loud)say("В облаке запись новее\nсначала заберите её");}
@@ -27387,6 +27451,79 @@ function snapshot(){
     offers:G.offers,folk:G.folk,ledger:G.ledger,folkSay:G.folkSay,late:G.late,toldOff:G.toldOff|0,   /* M225, M230 */
     told:G.told,lastDig:G.lastDig,
     ts:Date.now()};
+}
+/* ══════════════ запись не имеет права убить полёт ══════════════
+   30.08.2026 автор прислал журнал с поверхности: «Сбой кадра: Invalid string
+   length · surface». Так падает JSON.stringify, когда результат длиннее
+   предельной строки движка, — а зовётся он из кадра (autosave и rareTake).
+   Значит, одно раздувшееся поле роняло не запись, а мир: сторож кадра
+   (28-loop) ловит исключение и игра идёт дальше — но с этой секунды она
+   НИЧЕГО НЕ ПИШЕТ и молчит об этом. Хуже этого нет ничего.
+
+   Правило теперь такое: сохранение либо записывается целиком, либо без того
+   куска, который сошёл с ума, — и в обоих случаях называет виновника
+   вслух. Потерять один раздел всегда лучше, чем потерять полёт.
+
+   Порог — не догадка: налётанный сейв на деве весит 23 КБ (замер 30.08.2026),
+   самое тяжёлое в нём — лента самописца, 9 КБ, и она ограничена кольцом.
+   Мегабайт — это уже не «много всего», это ошибка, и сказать о ней надо
+   до того, как она станет смертельной. */
+const SAVE_BUDGET=1000000;
+let saveFatSaid="";
+/* кто именно весит: поле за полем, самые тяжёлые вперёд */
+function saveWeigh(s){
+  const rows=[];
+  for(const k in s){
+    let n=0;
+    /* JSON.stringify(undefined) отдаёт undefined, а не строку: без этой
+       проверки любое незаполненное поле весило «через край» и первым шло под
+       нож вместо настоящего виновника (поймано тестом 91zzzzb) */
+    try{const t=JSON.stringify(s[k]);n=(typeof t==="string")?t.length:0;}
+    catch(e){n=Infinity;}
+    rows.push([k,n]);
+  }
+  return rows.sort((a,b)=>b[1]-a[1]);
+}
+function saveTop(rows,n){
+  return rows.slice(0,n||3).map(r=>r[0]+" "+
+    (r[1]===Infinity?"через край":Math.round(r[1]/1024)+" КБ")).join(" · ");
+}
+/* Строка сохранения. Никогда не бросает: в худшем случае отдаёт запись
+   без взбесившегося поля, в самом худшем — null. */
+function saveText(){
+  let s;
+  try{s=snapshot();}
+  catch(e){
+    if(typeof logAdd==="function")logAdd("warn","Запись не собралась: "+((e&&e.message)||e));
+    return null;
+  }
+  for(let pass=0;pass<4;pass++){
+    let t=null;
+    try{t=JSON.stringify(s);}catch(e){t=null;}
+    if(t!==null){
+      /* растёт — говорим один раз на каждый новый состав виновников,
+         а не каждые десять секунд — строка в журнале не напоминание */
+      if(t.length>SAVE_BUDGET){
+        const top=saveTop(saveWeigh(s));
+        if(saveFatSaid!==top){
+          saveFatSaid=top;
+          if(typeof logAdd==="function")
+            logAdd("warn","Запись разбухла: "+Math.round(t.length/1024)+
+              " КБ · тяжелее всего "+top);
+        }
+      }
+      return t;
+    }
+    /* в строку не собралось: выбрасываем самое тяжёлое поле и пробуем снова */
+    const rows=saveWeigh(s),bad=rows[0];
+    if(!bad)return null;
+    delete s[bad[0]];
+    if(typeof logAdd==="function")
+      logAdd("warn","Запись не влезла в строку: раздел «"+bad[0]+"» вынут · "+saveTop(rows));
+    if(typeof say==="function")
+      say("ЗАПИСЬ ПОЧИНЕНА\nраздел «"+bad[0]+"» разросся и вынут\nостальное записано",420);
+  }
+  return null;
 }
 function applySave(s){
   if(!s||(s.v!==4&&s.v!==5))return false;
@@ -27668,6 +27805,9 @@ function applySave(s){
     /* рейсы, скрытая удача и события: сама удача не сохраняется — она выводится
        из seed, поэтому у одного и того же человека всегда одна и та же */
     risk:(c.risk==="safe"||c.risk==="bold")?c.risk:"norm",
+    /* простой переживает загрузку: иначе напоминание «сидит без дела»
+       приходило бы заново при каждом входе в игру (12a-crew, crewTick) */
+    idleMs:Math.max(0,+c.idleMs||0),idleSaid:c.idleSaid?1:0,
     trips:Math.max(0,c.trips|0),tripMin:Math.max(0,+c.tripMin||0),
     hist:Array.isArray(c.hist)?c.hist.slice(0,12).map(h=>({cat:String(h.cat||""),
       id:String(h.id||""),ru:String(h.ru||""),t:+h.t||0})):[],
@@ -28192,6 +28332,28 @@ addEventListener("blur",releaseAllKeys);
 addEventListener("pagehide",releaseAllKeys);
 document.addEventListener("visibilitychange",()=>{if(document.hidden)releaseAllKeys();});
 
+/* ══════════════ полоса вкладок шире экрана ══════════════
+   У стола тринадцать закладок, а в телефон влезает шесть. Полоса
+   прокручивалась и раньше, но молча: активная вкладка могла стоять за краем —
+   игрок видел содержимое РЕЙСОВ и ни одной подсвеченной закладки, то есть не
+   понимал, где он. Здесь две вещи: подвести выбранную под глаз и снять
+   затенение правого края, когда прокручивать больше некуда. */
+function tabsSync(strip){
+  if(!strip)return;
+  const on=strip.querySelector("button.on");
+  if(on){
+    const r=on.getBoundingClientRect(),s=strip.getBoundingClientRect();
+    if(r.left<s.left+8)strip.scrollLeft+=r.left-s.left-16;
+    else if(r.right>s.right-8)strip.scrollLeft+=r.right-s.right+16;
+  }
+  strip.classList.toggle("tail",strip.scrollLeft>=strip.scrollWidth-strip.clientWidth-2);
+  if(!strip.dataset.tail){
+    strip.dataset.tail="1";
+    strip.addEventListener("scroll",()=>{
+      strip.classList.toggle("tail",strip.scrollLeft>=strip.scrollWidth-strip.clientWidth-2);
+    });
+  }
+}
 /* ── ящик бортовых систем ──
    Раньше на правом борту стояло до девяти кнопок по 27 px: половина из них
    нужна раз за полёт, а мажешь по ним всё время. Постоянными остались КАРТА
@@ -30867,17 +31029,40 @@ function drawSystem(){
      редко чёрная дыра (16a-space). Освещение и опасность по-прежнему считаются
      от sys.cls — экзотика меняет только вид. */
   drawStarBody(ox,oy,R,sys);
-  /* светило за кадром: его зарево всё равно входит в кадр со своей стороны —
-     иначе системный вид без звезды выглядел экраном загрузки (G10) */
-  {const dx=ox<0?-ox:(ox>W?ox-W:0), dy=oy<0?-oy:(oy>H?oy-H:0), dd=Math.hypot(dx,dy);
-   if(dd>0){const col=sys.cls.col,c=hex2rgb(col);
-     /* падение — степенная кривая: излом на среднем стопе рисовал еле видное
-        кольцо, тот же грех, что у зарева звезды с поверхности (П1) */
-     const BL=glowSprite("bleed2|"+col,()=>{const g=ctx.createRadialGradient(0,0,0,0,0,1);
-       for(let i=0;i<=8;i++){const t=i/8;
-         g.addColorStop(t,"rgba("+c.join(",")+","+(.34*Math.pow(1-t,2.2)).toFixed(3)+")");}
+  /* ── зарево светила ──
+     Здесь стояло «светило за кадром»: широкая заливка, которая ВКЛЮЧАЛАСЬ в
+     тот миг, когда звезда уходила за край, и включалась сразу на полную.
+     Замер на деве (30.08.2026, средняя яркость кадра, зум 0.16): до 12R —
+     17.4, на 20R — 25.4, на 35R — 22.5. То есть отлетая, игрок получал
+     вспышку ровно там, где ждал темноты, а подлетая — провал: заливка гасла,
+     как только светило входило в кадр. Автор сказал это так: «отлетаешь —
+     яркая, подлетаешь — тускнеет».
+
+     Причина не в числах, а в устройстве: у заливки был порог, а у света
+     порогов не бывает. Теперь это просто очень широкая и очень слабая корона
+     в МИРОВЫХ координатах. Она стоит вокруг звезды и не знает ни про край
+     кадра, ни про то, где корабль, — значит, и споткнуться ей не обо что:
+     ближе к светилу её на экране больше, дальше меньше, и нигде нет мига, в
+     который что-то включается. Отсечение по кадру осталось, но оно ничего не
+     меняет в картинке: за пределом досягаемости спрайт и так прозрачен. */
+  {const BLEED_R=30, BLEED_A=.115, BLEED_IN=.24;
+   const col=sys.cls.col,c=hex2rgb(col),reach=R*BLEED_R;
+   const dx=ox<0?-ox:(ox>W?ox-W:0), dy=oy<0?-oy:(oy>H?oy-H:0);
+   if(Math.hypot(dx,dy)<reach){
+     /* Внутри зарево ПУСТОЕ: до BLEED_IN (это как раз радиус короны) его нет
+        вовсе. Иначе оно ложилось молочной пеленой на весь кадр вблизи
+        светила — замер показал рост средней яркости на 72%, и чёрное небо со
+        звёздами становилось серым. Корона там и так своё делает; зарево
+        начинается ровно там, где она кончается, и потому одно продолжает
+        другое, а не удваивает. Падение — степенная кривая: излом на среднем
+        стопе рисовал еле видное кольцо, тот же грех, что у зарева звезды с
+        поверхности (П1). */
+     const BL=glowSprite("bleed3|"+col,()=>{const g=ctx.createRadialGradient(0,0,0,0,0,1);
+       for(let i=0;i<=16;i++){const t=i/16;
+         const inn=Math.min(1,t/BLEED_IN), a=BLEED_A*inn*inn*Math.pow(1-t,2.2);
+         g.addColorStop(t,"rgba("+c.join(",")+","+a.toFixed(4)+")");}
        ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);});
-     ctx.save();ctx.globalCompositeOperation="lighter";glowBlit(BL,ox,oy,dd+Math.max(W,H)*.55);ctx.restore();}}
+     ctx.save();ctx.globalCompositeOperation="lighter";glowBlit(BL,ox,oy,reach);ctx.restore();}}
   for(const p of sys.planets){
     const x=zx(p.x),y=zy(p.y),r=p.radius*Z;
     if(x<-r-60||x>W+r+60||y<-r-60||y>H+r+60)continue;
@@ -31853,15 +32038,54 @@ function vRopeAt(B,t){
 }
 
 /* ══════════════ карта ══════════════ */
-const PAD_SAFE=104;   // полоса экранных кнопок снизу: туда ничего не пишем
+const PAD_SAFE=104;   // полоса экранных кнопок снизу: запасной ответ, см. mapDeck
+/* ══════════════ где у карты пол и где правый борт ══════════════
+   Карта рисует карточку системы и строки прыжка на канве, а подсказка,
+   эфирная строка, пульт и правый борт — это DOM со своей вёрсткой. Пока карта
+   считала своё место константой (`PAD_SAFE`), два счёта одного и того же
+   расходились: на телефоне 393×830 подсказка легла поперёк описания системы,
+   эфирная строка накрыла «ТЕЛ · ВИДОВ · кр», а угол карточки уехал под кнопки
+   КАРТА и МЕНЮ. Автор прислал этот кадр 30.08.2026 словами «всё сбилось и
+   наезжает» — и был прав: константа врала, потому что вёрстка меняется, а она
+   нет. HUD_FLOOR и HUD_RAIL мерятся по самому DOM раз в кадр (27z-telemetry);
+   константа осталась запасным ответом на первый кадр и на стенды без пульта. */
+function mapDeck(){
+  const fl=(typeof HUD_FLOOR==="number"&&HUD_FLOOR>40)?HUD_FLOOR:(H-PAD_SAFE);
+  return Math.round(clamp(fl-12,H*.4,H-14));
+}
+function mapRail(){
+  const rl=(typeof HUD_RAIL==="number"&&HUD_RAIL>60)?HUD_RAIL:(W-16);
+  return Math.round(clamp(rl-8,180,W-16));
+}
+/* ── что карта нарисовала как интерфейс ──
+   Канва и DOM — две разные вёрстки, и наезжают они ровно там, куда не смотрит
+   ни один сторож: тест 91f-ui умеет сравнивать DOM с DOM, а карточку системы
+   он не видит вовсе, потому что её нет в разметке. Поэтому карта СООБЩАЕТ свои
+   прямоугольники — одна запись в кадр, — и тест сравнивает их с вёрсткой так
+   же, как сравнивает панели между собой. */
+let MAP_BOX=[];
+function mapBox(name,x,y,w,h){MAP_BOX.push({s:name,x,y,w,h});}
 function wrapLeft(text,x,y,maxW,lh){
-  const words=text.split(" ");let line="",ly=y;
+  const words=text.split(" ");let line="",ly=y,n=1;
   for(const w of words){
     const t=line?line+" "+w:w;
-    if(ctx.measureText(t).width>maxW&&line){ctx.fillText(line,x,ly);line=w;ly+=lh;}
+    if(ctx.measureText(t).width>maxW&&line){ctx.fillText(line,x,ly);line=w;ly+=lh;n++;}
     else line=t;
   }
   if(line)ctx.fillText(line,x,ly);
+  return n;                       /* сколько строк вышло: карточка растёт по ним */
+}
+/* ── сколько строк займёт, если ещё не рисовать ──
+   Карточка системы должна знать свою высоту ДО того, как её обвели рамкой:
+   иначе описание в четыре строки вылезает из плашки, посчитанной под три. */
+function wrapCount(text,maxW){
+  const words=String(text||"").split(" ");let line="",n=1;
+  for(const w of words){
+    const t=line?line+" "+w:w;
+    if(ctx.measureText(t).width>maxW&&line){line=w;n++;}
+    else line=t;
+  }
+  return n;
 }
 /* ══════════════ карта: ночное небо, а не схема молекулы ══════════════ */
 /* Прежняя карта рисовала шесть десятков одинаковых кружков одного размера,
@@ -32123,6 +32347,39 @@ function drawMap(){
   /* погасший рукав смотрителей (11k): прокладка стоит больше топлива */
   const cost=Math.round((9+dsel*13)*((typeof keepersJumpK==="function")?keepersJumpK():1));
   const bad=dsel>st.jump+.02||cost>G.fuel||dsel===0;
+  /* ── подвал карты: сначала расклад, потом рисование ──
+     Слева — про прыжок (цена, расстояние, маршрут), справа — итоги (тела,
+     виды, деньги, фронт). На широком экране это две колонки в одну строку;
+     на телефоне они не помещаются рядом и раньше просто наезжали друг на
+     друга посередине («СЕКТОР 1:0 · 0.00 из 3.00 пкзанято систем: 8»), а
+     правая вдобавок уходила под кнопки правого борта. Здесь решается, влезут
+     они рядом или встанут столбиком, — и только потом что-то рисуется. */
+  MAP_BOX=[];
+  const foot=(()=>{
+    const RX=mapRail();
+    const L=[],Rr=[];
+    L.push([bad?"rgba(255,107,87,.85)":"#f2b25c",
+      dsel===0?"ТЕКУЩАЯ СИСТЕМА":
+      (dsel>st.jump+.02?"ВНЕ РАДИУСА — НУЖЕН ГИПЕРДРАЙВ":
+       "ПРЫЖОК: "+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":""))]);
+    L.push(["rgba(127,230,216,.55)",
+      "СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   "+dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк"]);
+    if(typeof routeOf==="function"&&routeOf().legs.length>=2)
+      L.push(["rgba(127,230,216,.75)",routeLine()]);
+    Rr.push(["rgba(93,115,130,.85)","ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
+      Math.round(G.credits).toLocaleString("ru")+" кр"]);
+    const occN=G.occ?Object.keys(G.occ).length:0;
+    if(occN||(G.freed|0))
+      Rr.push([occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)",occSummary()]);
+    /* влезут ли рядом: меряем самые длинные из обеих колонок */
+    ctx.font="10px ui-monospace,monospace";
+    const wid=a=>a.reduce((m,r)=>Math.max(m,ctx.measureText(r[1]).width),0);
+    const side=wid(L)+wid(Rr)+24<=RX-16-16;
+    const rows=[];
+    if(side)for(let i=0;i<Math.max(L.length,Rr.length);i++)rows.push([L[i]||null,Rr[i]||null]);
+    else{for(const r of L)rows.push([r,null]);for(const r of Rr)rows.push([r,null]);}
+    return {rows,side,RX};
+  })();
   /* ── курс прыжка ──
      Раньше отсюда к карточке шёл волосок «вот о какой звезде речь». Он не
      сообщал ничего, чего не сказали бы кольцо и уголки прицела, зато на дальней
@@ -32176,9 +32433,17 @@ function drawMap(){
       ctx.lineTo(x+Math.cos(a)*r1,y+Math.sin(a)*r1);
     }
     ctx.stroke();
-    const cw=Math.min(300,W-32), cx=16, cy=H-PAD_SAFE-158;   // выше строк прыжка: они налезали на карточку
-    ctx.fillStyle="rgba(6,10,16,.62)";ctx.fillRect(cx,cy,cw,104);
-    ctx.strokeStyle="rgba(127,230,216,.18)";ctx.strokeRect(cx+.5,cy+.5,cw,104);
+    /* ширину карточка берёт до правого борта, а не до края экрана: кнопки
+       КАРТА и МЕНЮ стоят там всегда, и угол карточки уезжал под них */
+    const cw=Math.min(300,mapRail()-32), cx=16;
+    ctx.font="9px ui-monospace,monospace";
+    /* высота — по числу строк описания, а не константой 104: у длинного
+       описания четвёртая строка вылезала за плашку */
+    const dn=wrapCount(s.desc,cw-24), ch=54+dn*11+8;
+    const cy=Math.round(mapDeck()-16*(foot.rows.length-1)-12-ch);
+    ctx.fillStyle="rgba(6,10,16,.62)";ctx.fillRect(cx,cy,cw,ch);
+    ctx.strokeStyle="rgba(127,230,216,.18)";ctx.strokeRect(cx+.5,cy+.5,cw,ch);
+    mapBox("карточка системы",cx,cy,cw,ch);
     ctx.textAlign="left";
     ctx.fillStyle="#f2b25c";ctx.font="13px ui-monospace,monospace";
     ctx.fillText(((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),cx+12,cy+22);   /* ваше имя (11u) */
@@ -32187,37 +32452,17 @@ function drawMap(){
     ctx.fillStyle="rgba(160,182,192,.62)";
     wrapLeft(s.desc,cx+12,cy+54,cw-24,11);
   }
-  /* строка прыжка — над карточкой и над кнопками; PAD_SAFE держит её выше
-     экранных пэдов, на которые она налезала в нижних углах */
-  ctx.textAlign="left";ctx.font="10px ui-monospace,monospace";
-  ctx.fillStyle="rgba(127,230,216,.55)";
-  ctx.fillText("СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   "+dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк",
-    16,H-PAD_SAFE-30);
-  ctx.fillStyle=bad?"rgba(255,107,87,.85)":"#f2b25c";
-  ctx.fillText(dsel===0?"ТЕКУЩАЯ СИСТЕМА":
-    (dsel>st.jump+.02?"ВНЕ РАДИУСА — НУЖЕН ГИПЕРДРАЙВ":
-     "ПРЫЖОК: "+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":"")),16,H-PAD_SAFE-14);
-  ctx.fillStyle="rgba(93,115,130,.85)";ctx.textAlign="right";
-  ctx.fillText("ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
-    Math.round(G.credits).toLocaleString("ru")+" кр",W-16,H-PAD_SAFE-14);
-  /* фронт одной строкой: цель игры должна быть видна там, где на неё смотрят,
-     то есть на карте, а не в меню */
-  const occN=G.occ?Object.keys(G.occ).length:0;
-  if(occN||(G.freed|0)){
-    ctx.fillStyle=occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)";
-    ctx.fillText(occSummary(),W-16,H-PAD_SAFE-30);
-  }
-  /* сводка своего маршрута — там же, где фронт: карта отвечает на оба вопроса,
-     «куда лететь драться» и «куда лететь возить» */
-  if(typeof routeOf==="function"&&routeOf().legs.length>=2){
-    /* слева, в столбце прыжка: справа на этой высоте стоит подсказка по центру,
-       и сводка налезала на неё серединой экрана. Здесь же она читается вместе
-       с ценой прыжка — оба числа про «сколько это стоит». */
-    ctx.textAlign="left";
-    ctx.fillStyle="rgba(127,230,216,.75)";
-    ctx.fillText(routeLine(),16,H-PAD_SAFE-46);
-    ctx.textAlign="right";
-  }
+  /* ── подвал: одним циклом, снизу вверх ── */
+  {const deck=mapDeck();
+   ctx.font="10px ui-monospace,monospace";
+   foot.rows.forEach((row,i)=>{
+     const y=deck-i*16;
+     if(row[0]){ctx.textAlign="left";ctx.fillStyle=row[0][0];ctx.fillText(row[0][1],16,y);
+       mapBox("подвал слева",16,y-9,ctx.measureText(row[0][1]).width,12);}
+     if(row[1]){ctx.textAlign="right";ctx.fillStyle=row[1][0];ctx.fillText(row[1][1],foot.RX,y);
+       const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9,w,12);}
+   });
+   ctx.textAlign="right";}
   G.prompt="ТАП ПО ЗВЕЗДЕ — ВЫБОР · ДЕЙСТВИЕ — ПРЫЖОК";
   if(actEdge){
     if(!bad)jump(cost);
@@ -43183,8 +43428,15 @@ function updateSurface(dt){
        срабатывала ни разу, хотя тесты её проверяли.
        Осмотренный камень теперь не молчит: он показывает, что отдал. */
     const memo=poiMemo(q.seed);
-    G.prompt=memo?("ОСМОТРЕНО · "+q.ru+(memo.got?"\n"+String(memo.got).toUpperCase():""))
-                 :("ДЕЙСТВИЕ — ОСМОТРЕТЬ · "+q.ru);
+    /* «ОСМОТРЕНО · КРИСТАЛЛЫ / КРИСТАЛЛЫ ×7» — одно и то же слово дважды
+       подряд: имя места и добыча совпадали, и подсказка читалась заиканием
+       (скрин автора 30.08.2026). Место называем один раз. */
+    const got=(memo&&memo.got)?String(memo.got):"";
+    const same=got&&got.toLowerCase().indexOf(String(q.ru||"").toLowerCase())===0;
+    G.prompt=memo
+      ?("ОСМОТРЕНО · "+(same?got.toUpperCase()
+                            :q.ru+(got?"\n"+got.toUpperCase():"")))
+      :("ДЕЙСТВИЕ — ОСМОТРЕТЬ · "+q.ru);
     if(actEdge&&!memo)poiInspect(q);
   }
   else if(dep){
@@ -54280,6 +54532,8 @@ function syncTabs(){
   });
   /* одна вкладка в разделе — вторая ступень только мешает */
   document.getElementById("stTabs").classList.toggle("solo",shown<2);
+  /* и обе полосы подводят выбранное под глаз (15-input) */
+  if(typeof tabsSync==="function"){tabsSync($g);tabsSync(document.getElementById("stTabs"));}
 }
 function repairCost(){
   /* репутация станции идёт в цену работы: чинят руки, а не рынок (12k-rep) */
@@ -54813,7 +55067,21 @@ function renderTabBody(){
         $body.appendChild(rb);
       }
     });
-    $body.appendChild(el("div","sec","ИЩУТ РАБОТУ ЗДЕСЬ · СОСТАВ МЕНЯЕТСЯ СО ВРЕМЕНЕМ"));
+    /* ── честно ДО найма, а не после ──
+       Наёмник работает только на своём корпусе. Свободных корпусов может не
+       быть вовсе — и тогда найм покупает человека, который не сможет сделать
+       ничего: он сядет в список, а игра об этом промолчит. Автор так и
+       написал: «наёмники никуда не летали, непонятно» (30.08.2026). Кнопку не
+       гасим — второй корпус можно купить и завтра, — но цену выбора называем
+       здесь, а не на карточке, куда ещё надо догадаться зайти. */
+    const freeHulls=Object.keys(G.owned).filter(id=>id!==G.shipId&&
+      !G.crew.some(c=>c.shipId===id)).length;
+    $body.appendChild(el("div","sec","ИЩУТ РАБОТУ ЗДЕСЬ · СОСТАВ МЕНЯЕТСЯ СО ВРЕМЕНЕМ"+
+      (freeHulls?(" · СВОБОДНЫХ КОРПУСОВ "+freeHulls):" · СВОБОДНЫХ КОРПУСОВ НЕТ")));
+    if(!freeHulls)
+      $body.appendChild(el("div","row","<div class='nm'><s>наёмник летает на своём "+
+        "корабле, а все ваши заняты. Нанять можно и сейчас, но до второго корпуса "+
+        "с верфи он будет сидеть на станции: ни рейсов, ни жалованья, ни денег.</s></div>"));
     for(const m of stationMercs(G.sys)){
       if(G.crew.some(c=>c.id===m.id))continue;
       const r=el("div","row");
@@ -58685,6 +58953,9 @@ function tableRender(){
       dot.textContent=n>99?"99+":n;
     }else if(dot)dot.remove();
   });
+  /* выбранная закладка — под глаз: у стола их тринадцать, и на телефоне
+     активная вполне может стоять за краем полосы (15-input, tabsSync) */
+  if(typeof tabsSync==="function")tabsSync(document.getElementById("tableTabs"));
   const sub=document.getElementById("tableSub"),cr=document.getElementById("tableCr"),wh=document.getElementById("tableWhere");
   const SUB={ether:"эфир · что было услышано",bort:"борт · техника и деньги",folk:"люди · что вам сказали",
              deeds:"дела · что вы должны",strips:"ленты · оторванные полосы самописца",things:"вещи · письма, находки, бумаги",
@@ -61484,6 +61755,16 @@ const $sn=document.getElementById("snum"),$cn=document.getElementById("cnum");
    Число в CSS-пикселях: холст масштабируется через setTransform(DPR), так что
    координаты рисования и есть CSS-пиксели. */
 let HUD_BAND=72;
+/* ── и где она кончается снизу ──
+   Та же беда с другого конца кадра, и она стоила автору целого экрана. Карта
+   рисует карточку системы и строки прыжка от констант (`PAD_SAFE=104`), а
+   подсказка, эфирная строка и пульт — это DOM со своей вёрсткой. Два счёта
+   одного и того же места неизбежно расходятся: на телефоне 393×830 подсказка
+   легла ровно поперёк описания системы, эфирная строка накрыла «ТЕЛ · ВИДОВ ·
+   кр», а правый борт въехал в угол карточки (замер 30.08.2026).
+   HUD_FLOOR — верх самого верхнего из нижних наложений, HUD_RAIL — левый край
+   правого борта. Обе величины в CSS-пикселях, как и координаты рисования. */
+let HUD_FLOOR=0, HUD_RAIL=0;
 const $vitals=document.querySelector(".vitals"),$locusEl=document.querySelector(".locus");
 const $vf=document.getElementById("vFuel"),$vh=document.getElementById("vHull");
 const $vc=document.getElementById("vHold"),$purse=document.getElementById("purse");
@@ -61682,6 +61963,26 @@ function hud(){
     const band=Math.max(vb,lb);
     if(band>0)HUD_BAND=Math.round(band);
   }
+  /* пол и правый борт — тем же одним чтением на кадр. Пустая подсказка в счёт
+     не идёт: у неё нет текста, а место она занимать не должна. */
+  {let fl=innerHeight,rl=innerWidth;
+   /* видимость проверяем по прямоугольнику, а не по offsetParent: пульт,
+      подсказка и правый борт стоят position:fixed, а у таких offsetParent
+      всегда null — первая версия этой мерки поэтому не находила НИЧЕГО и
+      честно возвращала высоту экрана */
+   const under=[$prompt,document.getElementById("console"),$padsEl];
+   for(const e of under){
+     if(!e)continue;
+     if(e===$prompt&&!(e.textContent||"").trim())continue;
+     const r=e.getBoundingClientRect();
+     if(r.height>0&&r.width>0&&r.top>0)fl=Math.min(fl,r.top);
+   }
+   const rail=document.querySelector(".rail");
+   if(rail){
+     const r=rail.getBoundingClientRect();
+     if(r.width>0&&r.height>0)rl=Math.min(rl,r.left);
+   }
+   HUD_FLOOR=Math.round(fl);HUD_RAIL=Math.round(rl);}
   setTx($msg,G.msgT>0?G.msg:"");
   setSt($msg,"opacity",G.msgT>0?clamp(G.msgT/40,0,1):0);
   setTx($prompt,G.mode==="dock"?"":G.prompt);
@@ -62060,10 +62361,31 @@ function frameBody(now){
    вслух ОДИН раз — повтор той же строки только считается, иначе сообщение
    встанет стеной на каждом кадре. */
 let crashN=0,crashLast="",crashSaid=0;
+/* ГДЕ именно сломалось. Сообщение без адреса чинить нечем: «Invalid string
+   length · surface» (журнал автора, 30.08.2026) не говорит ни строки, ни
+   функции, и на поиск виновника уходит сессия. Стек в кадре есть всегда —
+   берём из него два первых своих имени, мимо самого сторожа. */
+function crashAt(e){
+  let st="";
+  try{st=String((e&&e.stack)||"");}catch(_){return "";}
+  if(!st)return "";
+  const out=[];
+  for(const L of st.split(/[\r\n]+/)){
+    const m=/at\s+(?:new\s+)?([A-Za-z0-9_$.]+)\s*[\(@]/.exec(L);
+    if(!m)continue;
+    const n=m[1];
+    if(n==="crashAt"||n==="crashSay"||n==="frame"||n==="frameBody")continue;
+    out.push(n);
+    if(out.length>=2)break;
+  }
+  return out.join("←");
+}
 function crashSay(e,where){
   crashN++;
   let m="";
   try{m=(e&&e.message)||String(e);}catch(_){m="?";}
+  const at=crashAt(e);
+  if(at)m+=" · "+at;
   if(where)m+=" · "+where;
   if(m===crashLast)return;
   crashLast=m;

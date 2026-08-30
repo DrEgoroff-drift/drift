@@ -501,8 +501,15 @@ function updateSurface(dt){
        срабатывала ни разу, хотя тесты её проверяли.
        Осмотренный камень теперь не молчит: он показывает, что отдал. */
     const memo=poiMemo(q.seed);
-    G.prompt=memo?("ОСМОТРЕНО · "+q.ru+(memo.got?"\n"+String(memo.got).toUpperCase():""))
-                 :("ДЕЙСТВИЕ — ОСМОТРЕТЬ · "+q.ru);
+    /* «ОСМОТРЕНО · КРИСТАЛЛЫ / КРИСТАЛЛЫ ×7» — одно и то же слово дважды
+       подряд: имя места и добыча совпадали, и подсказка читалась заиканием
+       (скрин автора 30.08.2026). Место называем один раз. */
+    const got=(memo&&memo.got)?String(memo.got):"";
+    const same=got&&got.toLowerCase().indexOf(String(q.ru||"").toLowerCase())===0;
+    G.prompt=memo
+      ?("ОСМОТРЕНО · "+(same?got.toUpperCase()
+                            :q.ru+(got?"\n"+got.toUpperCase():"")))
+      :("ДЕЙСТВИЕ — ОСМОТРЕТЬ · "+q.ru);
     if(actEdge&&!memo)poiInspect(q);
   }
   else if(dep){
