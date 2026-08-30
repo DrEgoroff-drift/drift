@@ -590,7 +590,9 @@ function openHq(){
   toggleLog(false);
   $hq.classList.add("open");hqRender._laid=false;hqRender();
 }
-document.getElementById("hqbtn").addEventListener("click",openHq);
+/* Кнопки ШТАБ в ящике больше нет: управляющие — это тоже те, кто на вас
+   работает, и попадают сюда строкой из ДЕЛА (27n). Слушатель условный. */
+{const hb=document.getElementById("hqbtn");if(hb)hb.addEventListener("click",openHq);}
 /* окно поменялось — рубка перемеряется: без этого её высота остаётся от
    прежнего окна (и в headless — от запасного 640×480, с которого страница
    начинает жить, пока не пришёл настоящий размер) */

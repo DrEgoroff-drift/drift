@@ -86,8 +86,14 @@ TEST_SUITES.push(()=>suite("меню: пять дверей, журнал/отч
   const ids=[...document.querySelectorAll("#menu button")].map(b=>b.id);
   ok(ids.indexOf("tablebtn")>=0,"СТОЛ в меню");
   ok(ids.indexOf("logbtn")<0&&ids.indexOf("lorebtn")<0&&ids.indexOf("parrotbtn")<0,"ЖУРНАЛ, ОТЧЁТ и ТРЕПЛО из меню убраны");
-  eq(ids.length,6,"в меню шесть дверей — прибавилась дорога (M168)");
+  /* Пять — как и назвал замысел M151a. Их было шесть: дорога прибавилась в
+     M168, а ЭКИПАЖ и ШТАБ разъехались двумя дверьми ещё раньше. В M286 обе
+     свелись в одну — ДЕЛО: и наёмник, и управляющий, и дрон, и база отвечают
+     на один вопрос игрока, и спрашивать его в двух ящиках незачем. */
+  eq(ids.length,5,"в меню пять дверей (M286: ЭКИПАЖ и ШТАБ свелись в ДЕЛО)");
   ok(ids.indexOf("roadbtn")>=0,"В ДОРОГУ на месте");
+  ok(ids.indexOf("dealbtn")>=0,"ДЕЛО на месте");
+  ok(ids.indexOf("crewbtn")<0&&ids.indexOf("hqbtn")<0,"а двух прежних дверей нет");
   ok(!document.getElementById("logwin")&&!document.getElementById("lorewin"),"старых окон нет");
   ok(!!document.getElementById("perch"),"жёрдочка для трепла на пульте");
 }));

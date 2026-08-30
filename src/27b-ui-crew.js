@@ -42,20 +42,33 @@ function watchCrew(c){
   say(G.watch?"Наблюдение: "+c.name+"\nповторное нажатие ЭКИПАЖ — обратно"
              :"Камера вернулась к кораблю");
 }
+/* ── экран одного человека ──
+   Здесь был список ВСЕХ наёмников подряд, и каждый нёс свою карточку целиком:
+   приказ, риск, история рейсов, выдача корабля, четыре модуля с объяснениями.
+   На телефоне один человек занимал больше экрана, а четверо превращали
+   ЭКИПАЖ в свиток, по которому нельзя ответить на простой вопрос «кто из них
+   стоит». Список переехал в ДЕЛО (27n) — там строка на человека и состояние;
+   сюда приходят РАСПОРЯЖАТЬСЯ одним, и он тут один. */
+let crewSel=null;
+function crewOne(){
+  if(crewSel&&G.crew.indexOf(crewSel)>=0)return crewSel;
+  crewSel=G.crew[0]||null;
+  return crewSel;
+}
 function crewRender(){
   crewTick();
   document.getElementById("cvCr").textContent=G.credits.toLocaleString("ru")+" кр";
   document.getElementById("cvCap").textContent=G.crew.length+" / "+crewCap()+" мест";
-  const hs=crewHostages();
-  document.getElementById("cvSub").textContent=hs.length
-    ? "в плену: "+hs.map(c=>c.name).join(", ")
-    : "сектор "+G.sx+","+G.sy+" · платите за риск, а не за доход";
+  const one=crewOne();
+  document.getElementById("cvSub").textContent=one
+    ? (CREW_SPEC[one.spec].ru+" · сектор "+G.sx+","+G.sy+" · платите за риск, а не за доход")
+    : "сектор "+G.sx+","+G.sy;
   $cvBody.textContent="";
   if(!G.crew.length){
     $cvBody.appendChild(el("div","sec","ПОКА НИКОГО · НАЙМИТЕ НА СТАНЦИИ, ВКЛАДКА ЭКИПАЖ"));
     return;
   }
-  for(const c of G.crew){
+  for(const c of [one]){
     const S=c.shipId?shipData(c.shipId):null;
     const hold=crewHold(c),cap=crewCargoMax(c);
     const here=!!allyOf(c.id);
@@ -76,11 +89,14 @@ function crewRender(){
       (bal>=0?"+":"")+bal.toLocaleString("ru")+" кр</b>"+
       (c.debt>0?" · <b style='color:#ff6b57'>долг "+Math.round(c.debt)+" кр</b>":"")+
       luckLine(c)+"</s>"));
-    const bw=el("button","act sm"+(G.watch===c.id?"":" gold"),
-      G.watch===c.id?"НЕ СЛЕДИТЬ":"СЛЕДИТЬ");
-    bw.disabled=!here;
-    bw.onclick=()=>watchCrew(c);
-    r.appendChild(bw);
+    /* кнопка либо работает, либо её нет (И10): погашенная «СЛЕДИТЬ» стояла
+       на экране всегда и всегда серая — человек в этой системе бывает редко */
+    if(here){
+      const bw=el("button","act sm"+(G.watch===c.id?"":" gold"),
+        G.watch===c.id?"НЕ СЛЕДИТЬ":"СЛЕДИТЬ");
+      bw.onclick=()=>watchCrew(c);
+      r.appendChild(bw);
+    }
     $cvBody.appendChild(r);
 
     /* ── плен: выкуп или штурм ── */
@@ -176,36 +192,62 @@ function crewRender(){
       $cvBody.appendChild(rp);
     }
 
-    /* передача модулей: снятые уровни игрока работают у наёмника */
-    for(const k in CREW_MODS){
+    /* ── передача модулей ──
+       Три строки с длинными объяснениями занимали половину экрана даже тогда,
+       когда отдавать нечего и взять неоткуда: у человека нули и у вас нули.
+       Тогда это не выбор, а справка о невозможности, и ей хватает строки. */
+    let anyMod=false;
+    for(const k in CREW_MODS)if(crewModLv(c,k)>0||spareModLv(k)>0)anyMod=true;
+    if(!anyMod){
+      $cvBody.appendChild(el("div","row","<div class='nm'><b>Модули</b><s>отдать нечего: "+
+        "у него нулевые уровни, и у вас нет свободных. Снимите уровень на станции "+
+        "(МОДУЛИ, кнопка −) — и его можно будет отдать сюда</s></div>"));
+    }
+    else for(const k in CREW_MODS){
       const M=CREW_MODS[k],lv=crewModLv(c,k),spare=spareModLv(k);
       const rm=el("div","row");
       rm.appendChild(el("div","nm","<b>"+M.ru+"</b><s>"+M.note+
         " · у него уровень "+lv+" · свободно у вас "+spare+
         (spare===0&&lv===0?"<br>снимите уровень на станции (МОДУЛИ, кнопка −) — и его можно отдать":"")+
         "</s>"));
-      const bm=el("button","act sm","−");
-      bm.disabled=lv<=0;
-      bm.onclick=()=>{crewGiveMod(c,k,-1);crewRender();};
-      const bp=el("button","act sm"+(spare>0?" gold":""),"+");
-      bp.disabled=spare<=0;
-      bp.onclick=()=>{crewGiveMod(c,k,1);crewRender();};
-      rm.appendChild(bm);rm.appendChild(bp);
+      /* та же мысль, что у «СЛЕДИТЬ»: у человека без корабля и без свободных
+         уровней все шесть кнопок стояли погашенными — семь призраков из восьми
+         на весь экран (замер 30.08.2026) */
+      if(lv>0){
+        const bm=el("button","act sm","−");
+        bm.onclick=()=>{crewGiveMod(c,k,-1);crewRender();};
+        rm.appendChild(bm);
+      }
+      if(spare>0){
+        const bp=el("button","act sm gold","+");
+        bp.onclick=()=>{crewGiveMod(c,k,1);crewRender();};
+        rm.appendChild(bp);
+      }
       $cvBody.appendChild(rm);
     }
   }
 }
-function openCrewView(){
+function openCrewView(c){
+  crewSel=(c&&G.crew.indexOf(c)>=0)?c:null;
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
   toggleLog(false);
   $cv.classList.add("open");crewRender();
 }
-document.getElementById("crewbtn").addEventListener("click",()=>{
-  /* кнопка работает и как выход из наблюдения — так из режима камеры
-     всегда есть очевидный путь назад */
-  if(G.watch){G.watch=null;say("Камера вернулась к кораблю");return;}
-  openCrewView();
-});
+/* Кнопки ЭКИПАЖ в ящике больше нет: список людей и машин живёт в ДЕЛЕ (27n),
+   а сюда приходят по строке оттуда. Слушатель остаётся условным — разметка
+   старых сборок может ещё нести кнопку. */
+{
+  const cb=document.getElementById("crewbtn");
+  if(cb)cb.addEventListener("click",()=>{
+    if(G.watch){G.watch=null;say("Камера вернулась к кораблю");return;}
+    openCrewView();
+  });
+  const bk=document.getElementById("cvBack");
+  if(bk)bk.addEventListener("click",()=>{
+    $cv.classList.remove("open");
+    if(typeof openDeal==="function")openDeal();
+  });
+}
 document.getElementById("cvClose").addEventListener("click",()=>{
   $cv.classList.remove("open");saveGame(true);});

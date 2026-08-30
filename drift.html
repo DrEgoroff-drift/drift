@@ -499,7 +499,10 @@ nav.tabs.solo{display:none}
   background:linear-gradient(180deg,rgba(242,178,92,.16),rgba(242,178,92,.05))}
 .act.gold:active{background:linear-gradient(180deg,rgba(242,178,92,.28),rgba(242,178,92,.10));
   box-shadow:0 0 20px rgba(242,178,92,.26),var(--glass-hi)}
-.act.sm{padding:0 12px;min-height:40px;font-size:9px}
+/* 40 px и ширина в один символ давали кнопку 31×40 на экране экипажа — под
+   законом в 44 (замер 30.08.2026). Закон один для всех кнопок, а не только для
+   пульта и ящика, которые сторожил 91f-ui. */
+.act.sm{padding:0 12px;min-height:44px;min-width:44px;font-size:9px}
 .scr footer{display:flex;gap:10px;padding:12px var(--pad) 12px;border-top:1px solid var(--edge);
   background:linear-gradient(0deg,rgba(127,230,216,.04),transparent)}
 .scr footer .act{flex:1;text-align:center;padding:0 6px;min-height:48px}
@@ -1190,8 +1193,7 @@ body.afoot .ipod{display:none}
 <div id="menu">
   <b>БОРТОВЫЕ СИСТЕМЫ<span id="menuclose">×</span></b>
   <button id="shipbtn"><svg viewBox="0 0 16 16"><path d="M8 1.5 11 8l-3 6.5L5 8z"/><path d="M5 9.5 2.5 12M11 9.5 13.5 12"/></svg><span class="tx"><em>КОРАБЛЬ</em><s>корпус, слоты, части</s></span></button>
-  <button id="crewbtn" style="display:none"><svg viewBox="0 0 16 16"><circle cx="6" cy="5.5" r="2.4"/><path d="M1.8 13.5c0-2.4 1.9-4 4.2-4s4.2 1.6 4.2 4"/><path d="M11 4.2a2.4 2.4 0 0 1 0 4.6M12 13.5c0-1.7-.6-3-1.6-3.8"/></svg><span class="tx"><em>ЭКИПАЖ</em><s>наёмники и их рейсы</s></span></button>
-  <button id="hqbtn" style="display:none"><svg viewBox="0 0 16 16"><path d="M8 1.6 14 5v6l-6 3.4L2 11V5z"/><circle cx="8" cy="8" r="2.2"/></svg><span class="tx"><em>ШТАБ</em><s>управляющие и домены</s></span></button>
+  <button id="dealbtn" style="display:none"><svg viewBox="0 0 16 16"><circle cx="5.4" cy="5" r="2.1"/><path d="M1.6 13c0-2.2 1.7-3.6 3.8-3.6S9.2 10.8 9.2 13"/><circle cx="11.6" cy="4.2" r="1.5"/><path d="M11.6 7.2v5.6M9.4 9.4h4.4"/></svg><span class="tx"><em>ДЕЛО</em><s>кто и что на вас работает</s></span></button>
   <button id="tablebtn"><svg viewBox="0 0 16 16"><path d="M2 6h12M3 6v7M13 6v7"/><path d="M5 3.5h6l1 2.5H4z"/></svg><span class="tx"><em>СТОЛ</em><s>тетрадь, ленты, письма, вещи</s></span></button>
   <button id="roadbtn"><svg viewBox="0 0 16 16"><path d="M2 12c3-1 5-6 12-7"/><circle cx="13" cy="5" r="1.6"/><path d="M2.5 14h11"/></svg><span class="tx"><em>В ДОРОГУ</em><s>едете? корабль полетит с вами</s></span></button>
   <button id="optbtn"><svg viewBox="0 0 16 16"><path d="M2.5 5h11M2.5 11h11"/><circle cx="6" cy="5" r="1.9"/><circle cx="10.5" cy="11" r="1.9"/></svg><span class="tx"><em>НАСТРОЙКИ</em><s>звук, управление, запись</s></span></button>
@@ -1310,13 +1312,24 @@ body.afoot .ipod{display:none}
   <footer><button class="act gold" id="svClose">ЗАКРЫТЬ</button></footer>
 </div>
 
+<!-- ══ ДЕЛО (M286) ══ один ответ на вопрос «что на меня сейчас работает»:
+     наёмники, управляющие, дроны и базы одним списком; строка ведёт в свой экран -->
+<div class="scr" id="dealview">
+  <header>
+    <div class="ttl"><b>ДЕЛО</b><s id="dlSub">—</s></div>
+    <div class="wallet"><em id="dlCr">0 кр</em><i id="dlCap">—</i></div>
+  </header>
+  <div class="body" id="dlBody"></div>
+  <footer><button class="act gold" id="dlClose">ЗАКРЫТЬ</button></footer>
+</div>
+
 <div class="scr" id="crewview">
   <header>
     <div class="ttl"><b>ЭКИПАЖ</b><s id="cvSub">—</s></div>
     <div class="wallet"><em id="cvCr">0 кр</em><i id="cvCap">—</i></div>
   </header>
   <div class="body" id="cvBody"></div>
-  <footer><button class="act gold" id="cvClose">ЗАКРЫТЬ</button></footer>
+  <footer><button class="act" id="cvBack">← ДЕЛО</button><button class="act gold" id="cvClose">ЗАКРЫТЬ</button></footer>
 </div>
 
 <div class="scr" id="hqview">
@@ -1378,7 +1391,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.282.0";
+const VER="0.283.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -55213,20 +55226,33 @@ function watchCrew(c){
   say(G.watch?"Наблюдение: "+c.name+"\nповторное нажатие ЭКИПАЖ — обратно"
              :"Камера вернулась к кораблю");
 }
+/* ── экран одного человека ──
+   Здесь был список ВСЕХ наёмников подряд, и каждый нёс свою карточку целиком:
+   приказ, риск, история рейсов, выдача корабля, четыре модуля с объяснениями.
+   На телефоне один человек занимал больше экрана, а четверо превращали
+   ЭКИПАЖ в свиток, по которому нельзя ответить на простой вопрос «кто из них
+   стоит». Список переехал в ДЕЛО (27n) — там строка на человека и состояние;
+   сюда приходят РАСПОРЯЖАТЬСЯ одним, и он тут один. */
+let crewSel=null;
+function crewOne(){
+  if(crewSel&&G.crew.indexOf(crewSel)>=0)return crewSel;
+  crewSel=G.crew[0]||null;
+  return crewSel;
+}
 function crewRender(){
   crewTick();
   document.getElementById("cvCr").textContent=G.credits.toLocaleString("ru")+" кр";
   document.getElementById("cvCap").textContent=G.crew.length+" / "+crewCap()+" мест";
-  const hs=crewHostages();
-  document.getElementById("cvSub").textContent=hs.length
-    ? "в плену: "+hs.map(c=>c.name).join(", ")
-    : "сектор "+G.sx+","+G.sy+" · платите за риск, а не за доход";
+  const one=crewOne();
+  document.getElementById("cvSub").textContent=one
+    ? (CREW_SPEC[one.spec].ru+" · сектор "+G.sx+","+G.sy+" · платите за риск, а не за доход")
+    : "сектор "+G.sx+","+G.sy;
   $cvBody.textContent="";
   if(!G.crew.length){
     $cvBody.appendChild(el("div","sec","ПОКА НИКОГО · НАЙМИТЕ НА СТАНЦИИ, ВКЛАДКА ЭКИПАЖ"));
     return;
   }
-  for(const c of G.crew){
+  for(const c of [one]){
     const S=c.shipId?shipData(c.shipId):null;
     const hold=crewHold(c),cap=crewCargoMax(c);
     const here=!!allyOf(c.id);
@@ -55247,11 +55273,14 @@ function crewRender(){
       (bal>=0?"+":"")+bal.toLocaleString("ru")+" кр</b>"+
       (c.debt>0?" · <b style='color:#ff6b57'>долг "+Math.round(c.debt)+" кр</b>":"")+
       luckLine(c)+"</s>"));
-    const bw=el("button","act sm"+(G.watch===c.id?"":" gold"),
-      G.watch===c.id?"НЕ СЛЕДИТЬ":"СЛЕДИТЬ");
-    bw.disabled=!here;
-    bw.onclick=()=>watchCrew(c);
-    r.appendChild(bw);
+    /* кнопка либо работает, либо её нет (И10): погашенная «СЛЕДИТЬ» стояла
+       на экране всегда и всегда серая — человек в этой системе бывает редко */
+    if(here){
+      const bw=el("button","act sm"+(G.watch===c.id?"":" gold"),
+        G.watch===c.id?"НЕ СЛЕДИТЬ":"СЛЕДИТЬ");
+      bw.onclick=()=>watchCrew(c);
+      r.appendChild(bw);
+    }
     $cvBody.appendChild(r);
 
     /* ── плен: выкуп или штурм ── */
@@ -55347,37 +55376,63 @@ function crewRender(){
       $cvBody.appendChild(rp);
     }
 
-    /* передача модулей: снятые уровни игрока работают у наёмника */
-    for(const k in CREW_MODS){
+    /* ── передача модулей ──
+       Три строки с длинными объяснениями занимали половину экрана даже тогда,
+       когда отдавать нечего и взять неоткуда: у человека нули и у вас нули.
+       Тогда это не выбор, а справка о невозможности, и ей хватает строки. */
+    let anyMod=false;
+    for(const k in CREW_MODS)if(crewModLv(c,k)>0||spareModLv(k)>0)anyMod=true;
+    if(!anyMod){
+      $cvBody.appendChild(el("div","row","<div class='nm'><b>Модули</b><s>отдать нечего: "+
+        "у него нулевые уровни, и у вас нет свободных. Снимите уровень на станции "+
+        "(МОДУЛИ, кнопка −) — и его можно будет отдать сюда</s></div>"));
+    }
+    else for(const k in CREW_MODS){
       const M=CREW_MODS[k],lv=crewModLv(c,k),spare=spareModLv(k);
       const rm=el("div","row");
       rm.appendChild(el("div","nm","<b>"+M.ru+"</b><s>"+M.note+
         " · у него уровень "+lv+" · свободно у вас "+spare+
         (spare===0&&lv===0?"<br>снимите уровень на станции (МОДУЛИ, кнопка −) — и его можно отдать":"")+
         "</s>"));
-      const bm=el("button","act sm","−");
-      bm.disabled=lv<=0;
-      bm.onclick=()=>{crewGiveMod(c,k,-1);crewRender();};
-      const bp=el("button","act sm"+(spare>0?" gold":""),"+");
-      bp.disabled=spare<=0;
-      bp.onclick=()=>{crewGiveMod(c,k,1);crewRender();};
-      rm.appendChild(bm);rm.appendChild(bp);
+      /* та же мысль, что у «СЛЕДИТЬ»: у человека без корабля и без свободных
+         уровней все шесть кнопок стояли погашенными — семь призраков из восьми
+         на весь экран (замер 30.08.2026) */
+      if(lv>0){
+        const bm=el("button","act sm","−");
+        bm.onclick=()=>{crewGiveMod(c,k,-1);crewRender();};
+        rm.appendChild(bm);
+      }
+      if(spare>0){
+        const bp=el("button","act sm gold","+");
+        bp.onclick=()=>{crewGiveMod(c,k,1);crewRender();};
+        rm.appendChild(bp);
+      }
       $cvBody.appendChild(rm);
     }
   }
 }
-function openCrewView(){
+function openCrewView(c){
+  crewSel=(c&&G.crew.indexOf(c)>=0)?c:null;
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
   toggleLog(false);
   $cv.classList.add("open");crewRender();
 }
-document.getElementById("crewbtn").addEventListener("click",()=>{
-  /* кнопка работает и как выход из наблюдения — так из режима камеры
-     всегда есть очевидный путь назад */
-  if(G.watch){G.watch=null;say("Камера вернулась к кораблю");return;}
-  openCrewView();
-});
+/* Кнопки ЭКИПАЖ в ящике больше нет: список людей и машин живёт в ДЕЛЕ (27n),
+   а сюда приходят по строке оттуда. Слушатель остаётся условным — разметка
+   старых сборок может ещё нести кнопку. */
+{
+  const cb=document.getElementById("crewbtn");
+  if(cb)cb.addEventListener("click",()=>{
+    if(G.watch){G.watch=null;say("Камера вернулась к кораблю");return;}
+    openCrewView();
+  });
+  const bk=document.getElementById("cvBack");
+  if(bk)bk.addEventListener("click",()=>{
+    $cv.classList.remove("open");
+    if(typeof openDeal==="function")openDeal();
+  });
+}
 document.getElementById("cvClose").addEventListener("click",()=>{
   $cv.classList.remove("open");saveGame(true);});
 
@@ -55973,7 +56028,9 @@ function openHq(){
   toggleLog(false);
   $hq.classList.add("open");hqRender._laid=false;hqRender();
 }
-document.getElementById("hqbtn").addEventListener("click",openHq);
+/* Кнопки ШТАБ в ящике больше нет: управляющие — это тоже те, кто на вас
+   работает, и попадают сюда строкой из ДЕЛА (27n). Слушатель условный. */
+{const hb=document.getElementById("hqbtn");if(hb)hb.addEventListener("click",openHq);}
 /* окно поменялось — рубка перемеряется: без этого её высота остаётся от
    прежнего окна (и в headless — от запасного 640×480, с которого страница
    начинает жить, пока не пришёл настоящий размер) */
@@ -59146,6 +59203,11 @@ function consoleHeard(text,who){
 function consoleTick(dt){
   conT-=dt;
   if(conFresh>0){conFresh-=dt/60;if(conFresh<=0){const rx=document.getElementById("rx");if(rx)rx.classList.remove("fresh");}}
+  /* ФОТО — мимо загрубления: остальное на пульте меняется раз в секунду, и
+     это правильно (строка эфира не должна дёргаться), но кнопка съёмки должна
+     исчезать В ТОТ ЖЕ КАДР, когда над миром открылся экран. Иначе она секунду
+     висит поверх ДЕЛА или СТОЛА — единственная кнопка мира на чужом листе. */
+  if(typeof camBtnTick==="function")camBtnTick();
   if(conT>0)return;
   conT=70;  /* ~секунда с небольшим при 60 к/с */
   const con=document.getElementById("console");if(!con)return;
@@ -59154,7 +59216,6 @@ function consoleTick(dt){
   /* приёмник: если свежей строки нет — показываем то, что ловится на частоте */
   const RN=(typeof ringLine==="function")?ringLine():null;   /* Кольцо (M154): пока звучит — только оно */
   const rec=document.getElementById("rxRec");if(rec)rec.style.display=(RN&&G.ringNow&&!G.ringNow.rec)?"":"none";
-  if(typeof camBtnTick==="function")camBtnTick();
   /* ночная почта (M191): подпись на шкале зажигается сама, когда диапазон
      появляется. Шкала — это и есть всё уведомление, другого не будет */
   const nb=document.getElementById("rxNight");
@@ -61257,6 +61318,169 @@ document.addEventListener("scroll",(e)=>{
   window.addEventListener("resize",scrollCueAll);
 })();
 
+/* ══════════════ ДЕЛО — одно место для всего, что на вас работает ══════════════
+   Один вопрос игрока — «что на меня сейчас работает?» — до сих пор отвечался в
+   четырёх разных местах: наёмники в ЭКИПАЖе, управляющие в ШТАБе, дроны в
+   СТОЛ → РЕЙСЫ, базы в станции → ВЛАДЕНИЯ. Каждое из четырёх было право, когда
+   его заводили; вместе они и есть то, что автор назвал «кашей»: «наёмники
+   никуда не летали, непонятно», «проверь, как работают дроны» (30.08.2026).
+   Ни одно из тех мест не врало — просто ни одно не отвечало целиком, а игрок
+   не обязан знать, в каком ящике лежит какая часть его хозяйства.
+
+   ДЕЛО не управляет ничем. Это СВОДКА: строка на каждого, кто на вас работает,
+   с состоянием и деньгами, — и дорога в тот экран, где им и правда командуют.
+   Поэтому здесь нет ни одной кнопки, меняющей мир: строка ведёт в карточку
+   человека, в ШТАБ, в РЕЙСЫ. Список отвечает, экраны распоряжаются.
+
+   Порядок разделов — по тому, кто чаще встаёт: люди, машины, места. */
+const $dl=document.getElementById("dealview"),$dlBody=document.getElementById("dlBody");
+
+/* ── сколько всего в деле ── одно число для кнопки и для шапки */
+function dealCount(){
+  return (G.crew?G.crew.length:0)+(G.mgrs?G.mgrs.length:0)+
+         (G.drones?G.drones.length:0)+
+         ((typeof baseList==="function")?baseList().length:0);
+}
+/* ── кто простаивает ── ради точки на кнопке: хозяйство, которое встало,
+   обязано быть видно из полёта, а не только из открытого экрана */
+function dealIdle(){
+  let n=0;
+  for(const c of (G.crew||[]))
+    if(!c.shipId||!c.order||c.order.kind==="home"||c.hull<=0)n++;
+  for(const d of (G.drones||[]))if(d.stuck)n++;
+  return n;
+}
+function dealBtnTick(){
+  const b=document.getElementById("dealbtn");if(!b)return;
+  b.style.display=(dealCount()&&G.mode!=="dock")?"":"none";
+  /* наблюдение за наёмником живёт здесь же: этот экран его и включает */
+  if(G.watch&&typeof allyOf==="function"&&!allyOf(G.watch))G.watch=null;
+  b.classList.toggle("on",!!G.watch||dealIdle()>0);
+}
+/* ── строка ── имя, состояние, деньги; вся строка и есть кнопка */
+function dealRow(nm,state,money,col,go){
+  const r=el("div","row");
+  r.appendChild(el("div","nm","<b"+(col?" style='color:"+col+"'":"")+">"+nm+"</b><s>"+state+"</s>"));
+  if(money)r.appendChild(el("div","qt",money[0]+"<s>"+money[1]+"</s>"));
+  if(go){r.style.cursor="pointer";r.onclick=()=>{sfx("ui");go();};}
+  $dlBody.appendChild(r);
+  return r;
+}
+function dealRender(){
+  if(typeof crewTick==="function")crewTick();
+  document.getElementById("dlCr").textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
+  document.getElementById("dlCap").textContent="в деле "+dealCount();
+  $dlBody.textContent="";
+  const idle=dealIdle();
+  document.getElementById("dlSub").textContent=
+    idle?("простаивает: "+idle):"кто и что на вас работает";
+
+  /* ── деньги одной строкой ──
+     Она и есть ответ. Считаем только то, что игра считает сама: рейсы дронов —
+     по маршрутам, жалованье — по людям. База копит руду, а не кредиты, и
+     приписывать ей кр/мин было бы враньём. */
+  let perMin=0,pay=0;
+  const runs=(typeof droneRoutes==="function")?droneRoutes():[];
+  for(const r of runs)perMin+=r.perMin;
+  for(const c of (G.crew||[]))if(typeof crewPay==="function")pay+=crewPay(c);
+  for(const m of (G.mgrs||[]))if(typeof mgrPay==="function")pay+=mgrPay(m);
+  if(perMin||pay)
+    $dlBody.appendChild(el("div","sec",
+      "МАШИНЫ ПРИНОСЯТ ≈ "+Math.round(perMin).toLocaleString("ru")+" КР/МИН · "+
+      "ЛЮДЯМ ПЛАТИТЕ "+Math.round(pay).toLocaleString("ru")+" КР/МИН"));
+
+  /* ── люди ── */
+  const crew=G.crew||[],mgrs=G.mgrs||[];
+  if(crew.length||mgrs.length){
+    $dlBody.appendChild(el("div","sec","ЛЮДИ · "+(crew.length+mgrs.length)));
+    for(const c of crew){
+      const S=c.shipId?shipData(c.shipId):null;
+      const bal=(c.earned||0)-(c.spent||0);
+      let st,col="";
+      if(c.state==="hostage"){st="в плену · выкуп "+(c.ransom||0).toLocaleString("ru")+" кр";col="#ff6b57";}
+      else if(c.state==="away"){st="в загуле · жалованье не идёт";col="#f2b25c";}
+      else if(!c.shipId){st="не выдан корабль — не работает и не получает";col="#ff9d7a";}
+      else if(!c.order||c.order.kind==="home"){st="на приколе — приказа нет";col="#ff9d7a";}
+      else if(c.hull<=0){st="корпус разбит — стоит";col="#ff9d7a";}
+      else st=ORDERS[c.order.kind].ru.toLowerCase()+" · сектор "+c.order.sx+","+c.order.sy+
+              " · «"+(S?S.ru:"—")+"» "+Math.round(c.hull)+"/"+Math.round(c.hullMax);
+      dealRow(c.name+" · "+CREW_SPEC[c.spec].ru,st,
+        [(bal>=0?"+":"")+bal.toLocaleString("ru"),"кр итог"],col,
+        ()=>{closeDeal();openCrewView(c);});
+    }
+    for(const m of mgrs){
+      const R=(typeof MGR_ROLES!=="undefined")?MGR_ROLES[m.role]:null;
+      const loy=m.loy|0;
+      const st=(R?R.ru:"управляющий")+" · верность "+loy+
+        ((typeof mgrPoints==="function"&&mgrPoints(m)>0)?" · есть невыбранное очко":"")+
+        (loy<35?" · мрачнеет":"");
+      dealRow(m.name,st,
+        [(typeof mgrPay==="function")?("−"+mgrPay(m)):"—","кр/мин"],
+        loy<35?"#ff9d7a":"",
+        ()=>{closeDeal();if(typeof openHq==="function")openHq();});
+    }
+  }
+
+  /* ── машины ── маршрутами, а не поштучно: так на них и смотрят */
+  if(runs.length||(G.droneInventory|0)){
+    $dlBody.appendChild(el("div","sec","МАШИНЫ · "+((G.drones||[]).length)+
+      ((G.droneInventory|0)?(" · В ЗАПАСЕ "+(G.droneInventory|0)):"")));
+    runs.sort((a,b)=>b.perMin-a.perMin);
+    for(const r of runs){
+      const res=RES[r.res]||{ru:String(r.res||"груз")};
+      const st=res.ru.toLowerCase()+" · в точке осталось "+r.pool+
+        (r.stuck?(" · "+r.stuck+" стоит: систему закрыли пираты"):"")+
+        (r.down?(" · "+r.down+" в ремонте"):"");
+      dealRow(r.from+" → «"+r.to+"» · "+r.drones.length+" "+
+        pl3(r.drones.length,"дрон","дрона","дронов"),st,
+        ["≈"+Math.round(r.perMin).toLocaleString("ru"),"кр/мин"],
+        r.stuck?"#ff9d7a":"",
+        ()=>{closeDeal();if(typeof tableToggle==="function")tableToggle(true,"fleet");});
+    }
+    if(!runs.length)
+      $dlBody.appendChild(el("div","row","<div class='nm'><s>в рейсе никого: дрон ставят "+
+        "на залежь с грунта или на астероид в поясе — кнопка ДРОН появляется, "+
+        "когда стоишь у точки</s></div>"));
+  }
+
+  /* ── места ── база копит руду, а не деньги: так и говорим */
+  const bases=(typeof baseList==="function")?baseList():[];
+  if(bases.length){
+    $dlBody.appendChild(el("div","sec","МЕСТА · "+bases.length));
+    for(const B of bases){
+      const staff=(typeof baseStaff==="function")?baseStaff(B).length:0;
+      const held=(typeof basePoolHeld==="function")?basePoolHeld(B):0;
+      dealRow("База «"+B.name+"»",
+        "сектор "+B.sx+","+B.sy+" · людей "+staff+" · в закромах "+held+
+        (B.quiet?" · батарея обесточена, оборона молчит":""),
+        null,B.quiet?"#ff9d7a":"",null);
+    }
+  }
+
+  if(!crew.length&&!mgrs.length&&!runs.length&&!bases.length&&!(G.droneInventory|0))
+    $dlBody.appendChild(el("div","row","<div class='nm'><s>на вас пока никто не работает. "+
+      "Наёмник ищет работу на станции (ЛЮДИ → ЭКИПАЖ), управляющий сидит в кантине, "+
+      "дрона покупают на верфи, база строится с грунта.</s></div>"));
+}
+function openDeal(){
+  for(const k in keys)keys[k]=false;
+  document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
+  if(typeof toggleLog==="function")toggleLog(false);
+  $dl.classList.add("open");dealRender();
+}
+function closeDeal(){$dl.classList.remove("open");}
+{
+  const b=document.getElementById("dealbtn");
+  if(b)b.addEventListener("click",()=>{
+    /* кнопка работает и как выход из наблюдения — из режима камеры всегда есть
+       очевидный путь назад (перешло от ЭКИПАЖа вместе с самим наблюдением) */
+    if(G.watch){G.watch=null;say("Камера вернулась к кораблю");return;}
+    openDeal();
+  });
+  const c=document.getElementById("dlClose");
+  if(c)c.addEventListener("click",()=>{closeDeal();saveGame(true);});
+}
+
 /* ══════════════ экран корабля ══════════════ */
 const $sv=document.getElementById("shipview"),$svBody=document.getElementById("svBody");
 const $svCan=document.getElementById("svcan"),$svFil=document.getElementById("svfilter");
@@ -62334,7 +62558,7 @@ function frameBody(now){
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);
     if(typeof instrAgeTick==="function")instrAgeTick(dt);
     if(typeof etherTick==="function")etherTick(dt);
-    beaconTick(dt);crewBtnTick();if(typeof handBtnTick==="function")handBtnTick();if(typeof firstTick==="function")firstTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof skyTick==="function")skyTick();if(typeof traineeTick==="function")traineeTick();if(typeof zooTick==="function")zooTick();wearTick(dt);
+    beaconTick(dt);crewBtnTick();if(typeof dealBtnTick==="function")dealBtnTick();if(typeof handBtnTick==="function")handBtnTick();if(typeof firstTick==="function")firstTick();hqBtnTick();loreBtnTick();parrotBtnTick();consoleTick(dt);orderTick();if(typeof vegaTick==="function")vegaTick(dt);if(typeof ringTick==="function")ringTick();if(typeof expDayTick==="function")expDayTick();if(typeof expDepartTick==="function")expDepartTick();if(typeof lastRunTick==="function")lastRunTick();if(typeof recordTick==="function")recordTick();if(typeof instTick==="function")instTick();if(typeof skyTick==="function")skyTick();if(typeof traineeTick==="function")traineeTick();if(typeof zooTick==="function")zooTick();wearTick(dt);
     /* страховка от «зависания на стыковке»: режим dock без единой открытой панели
        означал бы, что игрок смотрит на космос и не может двигаться */
     if(G.mode==="dock"&&!document.querySelector(".scr.open")){

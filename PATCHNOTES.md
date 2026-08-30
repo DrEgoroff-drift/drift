@@ -7,6 +7,39 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.283.0 - M286: ДЕЛО - one screen for everything that works for you
+
+Chosen by the author from the forks of almanac issue II: one screen, not four places; the
+crew screen as a roster leading to a card.
+
+- **One question, one address.** "What is working for me right now?" was answered in four
+  places - mercenaries in ЭКИПАЖ, managers in ШТАБ, drones in СТОЛ → РЕЙСЫ, bases in
+  станция → ВЛАДЕНИЯ. Each was right when it was added; together they were what the author
+  called porridge. **ДЕЛО** (`27n-ui-deal`) is a summary, not a control panel: one line per
+  worker with its state and its money, and the line leads to the screen that actually
+  commands it. It opens with the money answer - "МАШИНЫ ПРИНОСЯТ ≈ N КР/МИН · ЛЮДЯМ
+  ПЛАТИТЕ M КР/МИН" - counting only what the game already computes; bases hoard ore, not
+  credits, so no credits are invented for them.
+- **The drawer is five doors again**, the number the release design (M151a) named: КОРАБЛЬ ·
+  ДЕЛО · СТОЛ · В ДОРОГУ · НАСТРОЙКИ. ЭКИПАЖ and ШТАБ were two of the six; they are one now.
+  The door carries a mark when something has stopped - an idle hand, a drone under blockade -
+  so a stalled holding is visible from flight and not only from an opened screen.
+- **ЭКИПАЖ is one man's card.** It used to render every mercenary in full, one after another:
+  order, risk, trip history, hull assignment, four module rows with explanations. One man was
+  more than a phone screen and four made a scroll in which "which of them is idle" could not
+  be answered. The roster moved to ДЕЛО; here you command one, and there is one.
+- **No ghosts, and 44 px.** Measured before: with one hired hand and no spare hull the crew
+  screen had eight buttons, seven of them disabled, all seven 31×40 px - under the law, and
+  all dead. СЛЕДИТЬ is now absent unless the man is in this system; a module's − and + are
+  absent unless they can move a level; if nothing can move at all the three rows collapse to
+  one line that says so. `.act.sm` is 44×44. Guarded by `91zzzzc-deal`, which checks both
+  screens for disabled and undersized buttons - the 44 px guard used to walk only the pads,
+  the rail and the drawer, which is how this stood.
+- **ФОТО no longer lingers over a screen.** The console throttles itself to about one update
+  a second, which is right for the ether line and wrong for a world button that must vanish
+  the frame a screen opens over it.
+
+---
 ## 0.282.0 - M285: a save that cannot kill the flight, a star that dims as you leave, a footer that measures the frame
 
 Playtest 30.08.2026, from the author's phone: a journal line reading "Сбой кадра: Invalid

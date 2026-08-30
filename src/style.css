@@ -485,7 +485,10 @@ nav.tabs.solo{display:none}
   background:linear-gradient(180deg,rgba(242,178,92,.16),rgba(242,178,92,.05))}
 .act.gold:active{background:linear-gradient(180deg,rgba(242,178,92,.28),rgba(242,178,92,.10));
   box-shadow:0 0 20px rgba(242,178,92,.26),var(--glass-hi)}
-.act.sm{padding:0 12px;min-height:40px;font-size:9px}
+/* 40 px и ширина в один символ давали кнопку 31×40 на экране экипажа — под
+   законом в 44 (замер 30.08.2026). Закон один для всех кнопок, а не только для
+   пульта и ящика, которые сторожил 91f-ui. */
+.act.sm{padding:0 12px;min-height:44px;min-width:44px;font-size:9px}
 .scr footer{display:flex;gap:10px;padding:12px var(--pad) 12px;border-top:1px solid var(--edge);
   background:linear-gradient(0deg,rgba(127,230,216,.04),transparent)}
 .scr footer .act{flex:1;text-align:center;padding:0 6px;min-height:48px}

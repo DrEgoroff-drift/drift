@@ -92,8 +92,7 @@
 <div id="menu">
   <b>БОРТОВЫЕ СИСТЕМЫ<span id="menuclose">×</span></b>
   <button id="shipbtn"><svg viewBox="0 0 16 16"><path d="M8 1.5 11 8l-3 6.5L5 8z"/><path d="M5 9.5 2.5 12M11 9.5 13.5 12"/></svg><span class="tx"><em>КОРАБЛЬ</em><s>корпус, слоты, части</s></span></button>
-  <button id="crewbtn" style="display:none"><svg viewBox="0 0 16 16"><circle cx="6" cy="5.5" r="2.4"/><path d="M1.8 13.5c0-2.4 1.9-4 4.2-4s4.2 1.6 4.2 4"/><path d="M11 4.2a2.4 2.4 0 0 1 0 4.6M12 13.5c0-1.7-.6-3-1.6-3.8"/></svg><span class="tx"><em>ЭКИПАЖ</em><s>наёмники и их рейсы</s></span></button>
-  <button id="hqbtn" style="display:none"><svg viewBox="0 0 16 16"><path d="M8 1.6 14 5v6l-6 3.4L2 11V5z"/><circle cx="8" cy="8" r="2.2"/></svg><span class="tx"><em>ШТАБ</em><s>управляющие и домены</s></span></button>
+  <button id="dealbtn" style="display:none"><svg viewBox="0 0 16 16"><circle cx="5.4" cy="5" r="2.1"/><path d="M1.6 13c0-2.2 1.7-3.6 3.8-3.6S9.2 10.8 9.2 13"/><circle cx="11.6" cy="4.2" r="1.5"/><path d="M11.6 7.2v5.6M9.4 9.4h4.4"/></svg><span class="tx"><em>ДЕЛО</em><s>кто и что на вас работает</s></span></button>
   <button id="tablebtn"><svg viewBox="0 0 16 16"><path d="M2 6h12M3 6v7M13 6v7"/><path d="M5 3.5h6l1 2.5H4z"/></svg><span class="tx"><em>СТОЛ</em><s>тетрадь, ленты, письма, вещи</s></span></button>
   <button id="roadbtn"><svg viewBox="0 0 16 16"><path d="M2 12c3-1 5-6 12-7"/><circle cx="13" cy="5" r="1.6"/><path d="M2.5 14h11"/></svg><span class="tx"><em>В ДОРОГУ</em><s>едете? корабль полетит с вами</s></span></button>
   <button id="optbtn"><svg viewBox="0 0 16 16"><path d="M2.5 5h11M2.5 11h11"/><circle cx="6" cy="5" r="1.9"/><circle cx="10.5" cy="11" r="1.9"/></svg><span class="tx"><em>НАСТРОЙКИ</em><s>звук, управление, запись</s></span></button>
@@ -212,13 +211,24 @@
   <footer><button class="act gold" id="svClose">ЗАКРЫТЬ</button></footer>
 </div>
 
+<!-- ══ ДЕЛО (M286) ══ один ответ на вопрос «что на меня сейчас работает»:
+     наёмники, управляющие, дроны и базы одним списком; строка ведёт в свой экран -->
+<div class="scr" id="dealview">
+  <header>
+    <div class="ttl"><b>ДЕЛО</b><s id="dlSub">—</s></div>
+    <div class="wallet"><em id="dlCr">0 кр</em><i id="dlCap">—</i></div>
+  </header>
+  <div class="body" id="dlBody"></div>
+  <footer><button class="act gold" id="dlClose">ЗАКРЫТЬ</button></footer>
+</div>
+
 <div class="scr" id="crewview">
   <header>
     <div class="ttl"><b>ЭКИПАЖ</b><s id="cvSub">—</s></div>
     <div class="wallet"><em id="cvCr">0 кр</em><i id="cvCap">—</i></div>
   </header>
   <div class="body" id="cvBody"></div>
-  <footer><button class="act gold" id="cvClose">ЗАКРЫТЬ</button></footer>
+  <footer><button class="act" id="cvBack">← ДЕЛО</button><button class="act gold" id="cvClose">ЗАКРЫТЬ</button></footer>
 </div>
 
 <div class="scr" id="hqview">

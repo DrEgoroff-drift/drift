@@ -29,6 +29,11 @@ function consoleHeard(text,who){
 function consoleTick(dt){
   conT-=dt;
   if(conFresh>0){conFresh-=dt/60;if(conFresh<=0){const rx=document.getElementById("rx");if(rx)rx.classList.remove("fresh");}}
+  /* ФОТО — мимо загрубления: остальное на пульте меняется раз в секунду, и
+     это правильно (строка эфира не должна дёргаться), но кнопка съёмки должна
+     исчезать В ТОТ ЖЕ КАДР, когда над миром открылся экран. Иначе она секунду
+     висит поверх ДЕЛА или СТОЛА — единственная кнопка мира на чужом листе. */
+  if(typeof camBtnTick==="function")camBtnTick();
   if(conT>0)return;
   conT=70;  /* ~секунда с небольшим при 60 к/с */
   const con=document.getElementById("console");if(!con)return;
@@ -37,7 +42,6 @@ function consoleTick(dt){
   /* приёмник: если свежей строки нет — показываем то, что ловится на частоте */
   const RN=(typeof ringLine==="function")?ringLine():null;   /* Кольцо (M154): пока звучит — только оно */
   const rec=document.getElementById("rxRec");if(rec)rec.style.display=(RN&&G.ringNow&&!G.ringNow.rec)?"":"none";
-  if(typeof camBtnTick==="function")camBtnTick();
   /* ночная почта (M191): подпись на шкале зажигается сама, когда диапазон
      появляется. Шкала — это и есть всё уведомление, другого не будет */
   const nb=document.getElementById("rxNight");

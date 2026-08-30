@@ -6,13 +6,14 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 334 · символов верхнего уровня: 3086
+Файлов: 336 · символов верхнего уровня: 3096
 
 ## СИМВОЛЫ
 
 $bg                          src/12l-barge.js:586
 $bThr                        src/27z-telemetry.js:39
 $cv                          src/27b-ui-crew.js:6
+$dl                          src/27n-ui-deal.js:16
 $f                           src/27z-telemetry.js:6
 $fb                          src/27z-telemetry.js:7
 $fn                          src/27z-telemetry.js:11
@@ -351,6 +352,7 @@ CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
 closeBarge                   src/12l-barge.js:598
+closeDeal                    src/27n-ui-deal.js:151
 closeStation                 src/26-ui-station.js:115
 CLOUD                        src/14-save.js:5
 CLOUD_KEYS                   src/02a-worldmix.js:80
@@ -433,15 +435,17 @@ crewHullPay                  src/12a-crew.js:55
 crewLuck                     src/12a-crew.js:35
 crewModLv                    src/12a-crew.js:275
 crewMul                      src/12a-crew.js:45
+crewOne                      src/27b-ui-crew.js:53
 crewOrder                    src/12a-crew.js:245
 crewPay                      src/12a-crew.js:56
 crewPayload                  src/12a-crew.js:547
 crewPayroll                  src/12a-crew.js:427
-crewRender                   src/27b-ui-crew.js:45
+crewRender                   src/27b-ui-crew.js:58
 crewRepair                   src/12a-crew.js:473
 crewRepairCost               src/12a-crew.js:472
 crewRest                     src/12a-crew.js:481
 crewSectorPool               src/12a-crew.js:504
+crewSel                      src/27b-ui-crew.js:52
 crewSeverance                src/12a-crew.js:222
 crewSkill                    src/12a-crew.js:51
 crewSwing                    src/12a-crew.js:44
@@ -470,6 +474,11 @@ dbg                          src/28-loop.js:364
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:163
+dealBtnTick                  src/27n-ui-deal.js:33
+dealCount                    src/27n-ui-deal.js:19
+dealIdle                     src/27n-ui-deal.js:26
+dealRender                   src/27n-ui-deal.js:49
+dealRow                      src/27n-ui-deal.js:41
 dealsTick                    src/27g-deals.js:201
 dealTaken                    src/27g-deals.js:159
 DECO_KINDS                   src/21b-surface-deco.js:24
@@ -1699,7 +1708,8 @@ offerTick                    src/11ah-offer.js:166
 offerVisit                   src/11ah-offer.js:124
 ok                           tests/90-harness.js:23
 openBarge                    src/12l-barge.js:588
-openCrewView                 src/27b-ui-crew.js:198
+openCrewView                 src/27b-ui-crew.js:230
+openDeal                     src/27n-ui-deal.js:145
 openHq                       src/27c-ui-hq.js:587
 openShipView                 src/27-ui-ship.js:160
 openStation                  src/26-ui-station.js:5
@@ -2741,7 +2751,7 @@ TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:154
 tableBake                    src/27i-ui-table.js:103
-tableBlock                   src/27c-ui-hq.js:605
+tableBlock                   src/27c-ui-hq.js:607
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
@@ -3752,10 +3762,10 @@ zooTick                      src/11ad-zoo.js:41
   · станция:1
   · настройки:734
 
-## src/27b-ui-crew.js · 12 КБ
+## src/27b-ui-crew.js · 15 КБ
   · экран экипажа:1
 
-## src/27c-ui-hq.js · 44 КБ
+## src/27c-ui-hq.js · 43 КБ
   · ШТАБ и кантина:1
 
 ## src/27da-kino.js · 12 КБ
@@ -3805,6 +3815,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/27m-scroll-cue.js · 4 КБ
   · «внизу ещё есть»:1
+
+## src/27n-ui-deal.js · 10 КБ
+  · ДЕЛО — одно место для всего, что на вас работает:1
 
 ## src/27-ui-ship.js · 28 КБ
   · экран корабля:1
@@ -4074,9 +4087,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzu-domino.js · 2 КБ
   · автотесты: домино (M166):1
 
-## tests/91zzv-table.js · 21 КБ
+## tests/91zzv-table.js · 22 КБ
   · автотесты: пульт и стол (M151a):1
-  · огонёк: «пришло» ≠ «не прочитано»:190
+  · огонёк: «пришло» ≠ «не прочитано»:196
 
 ## tests/91zzw-economy.js · 10 КБ
   · автотесты: экономика без долга (M152e):1
@@ -4171,6 +4184,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzb-save.js · 3 КБ
   · запись, которая не убивает полёт:1
+
+## tests/91zzzzc-deal.js · 5 КБ
+  · ДЕЛО: один ответ на «что на меня работает»:1
 
 ## tests/91zzzz-fuzz.js · 14 КБ
   · фуззер: режим под случайными руками (M238):1

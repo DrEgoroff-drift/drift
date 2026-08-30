@@ -157,10 +157,20 @@ answered in four different places: наёмники in ЭКИПАЖ, управ�
 together they are the thing the author called illogical. This is the fork worth deciding before
 any pixel moves.
 
-**Queue extracted from issue II** (forks marked ❓ are the author's to settle):
-❓ one screen for everything that works for you (mercenaries, managers, drones, bases) vs. four
-places kept and cross-linked → ❓ the desk: sections like the station, or the drawn table of the
-release design → ЭКИПАЖ as roster→card, so a man's state is one line and not a screen (И1) →
-44 px guard extended inside the screens, and a ghost-button guard beside it (И2/И10) → target
-chips in system view measured against the ether bar (И11) → the drawer back to five doors, or В
-ДОРОГУ argued into it on the record (И4).
+**Queue extracted from issue II.** Both forks were put to the author the same evening and
+settled the same evening; what they chose is recorded here, and what is done is struck through
+in words rather than in markup, because a queue that only grows is not a queue.
+
+- ✔ **one screen for everything that works for you** — chosen over keeping four places.
+  Built as ДЕЛО (M286, `27n-ui-deal`): a summary with one line per worker, leading to the
+  screen that commands it. The drawer went back to five doors on the same move.
+- ✔ **ЭКИПАЖ as roster→card** (И1) — the roster is ДЕЛО, the card is one man.
+- ✔ **no ghosts, 44 px inside the screens** (И2/И10) — measured 31×40 and seven disabled of
+  eight; both guarded now by `91zzzzc-deal`.
+- ❑ **the desk as the drawn table of M151a** — chosen over sections-like-the-station. The
+  table itself, with the notebook (three tabs) and the objects lying beside it: tapes,
+  letters, things, album, record book. The top level becomes a picture, not a strip of
+  thirteen tabs. Next milestone, and the largest of the issue.
+- ❑ target chips in system view measured against the ether bar (И11).
+- ❑ the 44 px guard walks every screen, not only the two it was taught (И2) — `91zzzzc`
+  covers ДЕЛО and ЭКИПАЖ by hand; the sweep is still to write.
