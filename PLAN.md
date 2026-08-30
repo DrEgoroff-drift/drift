@@ -135,6 +135,11 @@ broke the crew data contract), the «home hangs» tail (a 40-ring synchronous sc
 capped), and key-name prompts that lied to phones and rebound keyboards (`ctlHint`). The scoop
 band was acquitted — its file records the decided argument.
 
+**The Almanac (`docs/ALMANAC.md`)** — dated design audits of every screen against the newest
+codex laws; issue I (30.08) audited all 18 screens against §11–16 and extracted the queue:
+cave shadows to zone II–III, furniture pattern, home cold window, sky-band width measurement,
+map second value step, belt judge staging check.
+
 **The frame ledger (M277, 0.274.0) — the author's standing order: rules judge WHOLE FRAMES.**
 `docs/lookrun.ps1` (→ `drift.html?look`) prints the table; this is the queue, worst first.
 Baseline 30.08 after the first two frame fixes (targets: pair≥15, mass≥14, contrast≥.30, tones≥5):
