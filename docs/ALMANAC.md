@@ -79,3 +79,88 @@ M250). Holds.
 **Queue extracted from issue I:** cave shadows to zone II–III (§16) → furniture pattern (§11)
 → home cold window (§15/§16) → sky-band width measurements (§13) → map second value step
 (§16) → belt judge staging check (§16) → P4 grisaille session (§12, standing).
+
+---
+
+## Issue II — 2026-08-30 (0.282.0) — the INTERFACE
+
+Ordered by the author the same day, in the same words as issue I but pointed elsewhere: "the
+interfaces are all shifted and overlapping"; "there is porridge there now, you cannot tell what
+is going on"; "we kept adding things and now it feels illogical". Issue I judged the picture;
+this one judges the machine the picture is served through. Same form: per screen — what holds,
+what fails, what is queued — with measured numbers, because an interface complaint that is not a
+number is a matter of taste and will be argued about forever.
+
+Laws used in issue II. None are invented here; they are the project's own, and the source is
+named so the verdicts can be checked:
+И1 hierarchy comes from size and colour, not caps (`style.css`) ·
+И2 anything poked with a finger is ≥44 px (`style.css`, `91f-ui`) ·
+И3 only what is needed right now hangs over the world (`style.css`) ·
+И4 two permanent buttons on the right edge, the rest in the drawer or on a reason (`CLAUDE.md`) ·
+И5 a button names the action, and takes its verb from the prompt (`CLAUDE.md`) ·
+И6 the frame is the only ruler — `--ui`, never `transform: scale` (M221) ·
+И7 three voices on the console: what is heard, what lies, who is beside you (`DESIGN-ui`, M151a) ·
+И8 the table is a table: a notebook with three tabs, and objects lying on it (`DESIGN-ui`, M151a) ·
+И9 one slot for the hint, always in the same place (`DESIGN-ui`, M167) ·
+И10 a button either works or is absent — no ghosts (`DESIGN-ui`, M167) ·
+И11 painted and marked-up interface share one layout: the canvas measures, it does not guess
+(M285, this issue).
+
+**Пульт (console, prompt, pads, rail).** И7 ✓ the three zones exist and are built. И9 ✓ one
+slot, fixed to the bottom. И4 ✓ two permanent buttons; the rest arrives on a reason. И2 ✓ every
+flight and drawer button clears 44 px, and `91f-ui` holds it. Open: the drawer is six doors, not
+the five the release design named — В ДОРОГУ was added later and never re-argued.
+
+**Карта галактики.** И11 was FAILING and is fixed in this issue: the system card and the jump
+lines were laid out from `PAD_SAFE=104` while the prompt, the ether line, the pads and the rail
+are DOM. Measured on a 393×830 phone: the prompt (612..626) lay inside the card (568..672), the
+ether bar (705..734) covered the status rows (baselines 696 and 712), and the rail (x291) cut the
+card's corner (x16..316). Now `HUD_FLOOR`/`HUD_RAIL` are read off the DOM once a frame and the
+footer stacks upward from them; the map publishes `MAP_BOX` and `91f-ui` compares canvas against
+markup. Holds.
+
+**Система (полёт).** И3 ✓ nothing hangs over the middle. Open (measurement, not a change): the
+target chips are canvas and now have a way to be checked (`MAP_BOX`), but only the map uses it —
+the chips near the ether bar in system view have not been measured yet.
+
+**Грунт.** И9 ✓ one hint band, its top measured off `HUD_BAND` rather than guessed — the
+oldest instance of И11 done right, and the model the map now copies. Fixed here: the hint said
+the place's name twice when the find repeated it ("ОСМОТРЕНО · КРИСТАЛЛЫ КРИСТАЛЛЫ ×7").
+
+**СТОЛ.** И8 FAIL — the flagship debt of this issue. The release design (M151a) put a NOTEBOOK
+with three tabs on the table, and objects lying beside it: tapes, letters, things, the record
+book, clippings. What exists is one flat strip of **18 tabs** (13 live in a played save), 777 px
+of strip inside a 393 px window: six visible, and the chosen one could sit off the edge — a
+player looking at РЕЙСЫ saw no highlighted tab at all and could not tell where he was. The two
+levels of the design collapsed into one, one tab at a time, exactly as the author described.
+Half-fixed here: `tabsSync` brings the chosen tab into view and the strip fades where it
+continues. The structure itself is queued below as a fork for the author.
+
+**Станция.** И8 ✓✓ the same problem, already solved and the model for the desk: 14 tabs live
+under 6 sections (`ST_GROUPS`), never more than five in a strip, dead sections not drawn.
+`91f-ui` guards it. Holds.
+
+**ЭКИПАЖ.** И10 FAIL, И2 FAIL, И1 open. Measured with one hired hand and no spare hull: **eight
+buttons, seven of them disabled, and those seven are 31×40 px** — under the 44 px law, and all
+of them ghosts. The screen's whole answer is one red line in the middle of a wall of small grey
+text ("не выдан — он не может работать"), while the three module rows with their long explanations
+take the rest. The 44 px guard never looks inside a screen — it walks `.pads`, `.rail`, `#menu`
+only; that hole is what let this stand. Fixed here: the hiring board counts free hulls before the
+money is taken, and an idle hand says once, in the journal, that he has no ship or no order.
+Queued: the shape of the screen itself, below.
+
+**ШТАБ · КОРАБЛЬ · НАСТРОЙКИ.** Hold within their price: one strip, few tabs, no ghosts.
+
+**Where the porridge actually is.** One question — "what is working for me while I fly?" — is
+answered in four different places: наёмники in ЭКИПАЖ, управляющие in ШТАБ, дроны in
+СТОЛ → РЕЙСЫ, базы in станция → ВЛАДЕНИЯ. Each of the four was right when it was added, and
+together they are the thing the author called illogical. This is the fork worth deciding before
+any pixel moves.
+
+**Queue extracted from issue II** (forks marked ❓ are the author's to settle):
+❓ one screen for everything that works for you (mercenaries, managers, drones, bases) vs. four
+places kept and cross-linked → ❓ the desk: sections like the station, or the drawn table of the
+release design → ЭКИПАЖ as roster→card, so a man's state is one line and not a screen (И1) →
+44 px guard extended inside the screens, and a ghost-button guard beside it (И2/И10) → target
+chips in system view measured against the ether bar (И11) → the drawer back to five doors, or В
+ДОРОГУ argued into it on the record (И4).
