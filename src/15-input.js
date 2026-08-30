@@ -206,6 +206,9 @@ const $menu=document.getElementById("menu");
 function toggleMenu(on){
   const open=on===undefined?!$menu.classList.contains("open"):on;
   $menu.classList.toggle("open",open);
+  /* правый борт глушится, пока меню открыто: сквозь стекло панели
+     просвечивала половинка КАРТЫ (аудит интерфейсов) */
+  document.body.classList.toggle("menuopen",open);
   if(open)toggleLog(false);
 }
 document.getElementById("menubtn").addEventListener("click",()=>toggleMenu());

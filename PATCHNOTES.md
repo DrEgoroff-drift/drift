@@ -7,6 +7,29 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.278.0 — M281: the interface audit — every screen against the rules
+
+All screens walked (station tabs, СТОЛ, оснастка, штаб, доска, кантина, Вега, radio, menu,
+settings, intro) with three overlay scenes added to the stand (uimenu/uiopts/uikeys — overlays
+are frames too). Findings and fixes:
+
+- **The intro was honest only to keyboards.** The controls table showed «Q E», «ПРОБЕЛ · C»,
+  «R · F» to every hand — on a phone those keys don't exist. Now the phone sees its own pads
+  («▲ · ТОРМОЗ», «РЕЗАК · ОГОНЬ»), and the roll row — which has no pad — isn't shown there at
+  all (no ghost instructions).
+- **The open menu dimmed nothing.** Half of КАРТА glowed through the panel's glass — dirt.
+  Opening БОРТОВЫЕ СИСТЕМЫ now silences the right rail (opacity .12, no pointer events), the
+  same «экран чистый» discipline the pads follow.
+- **The settings glass was a shopwindow over a shopwindow.** At .93 opacity a bright station
+  bled orange through the option rows. Desktop screen glass raised to .965–.985 — the sheet is
+  a sheet (§3), identity kept.
+- **Acquitted with reasons:** ВКЛ/ВЫКЛ toggles name the state, not the deed — they are cockpit
+  switches, and a switch shows its position (the verb law governs action buttons, not levers);
+  hidden ЭКИПАЖ/ШТАБ menu rows before unlock are progression, not ghost buttons; СТОЛ, оснастка,
+  штаб, доска and radio passed as built (M264 verbs live everywhere; money stays gold-right;
+  the band labels got their squeeze fix in M274).
+
+---
 ## 0.277.0 — M280: the second expedition — six new laws, two brought home
 
 A new research run outside the project (`DESIGN-craft.md` §11–16, sources listed): Persian

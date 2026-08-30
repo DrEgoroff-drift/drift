@@ -691,7 +691,7 @@ earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
 el                           src/26-ui-station.js:145
-endPtr                       src/15-input.js:321
+endPtr                       src/15-input.js:324
 engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:89
@@ -1551,7 +1551,7 @@ modCost                      src/11-log.js:131
 MODE_RU                      src/27i-ui-table.js:29
 modeRu                       src/27i-ui-table.js:32
 MODS                         src/04-mods.js:2
-mouseWalkAt                  src/15-input.js:331
+mouseWalkAt                  src/15-input.js:334
 MSL_ARM                      src/16b-missile.js:20
 MSL_COOL                     src/16b-missile.js:16
 MSL_DMG                      src/16b-missile.js:14
@@ -1587,7 +1587,7 @@ namesFor                     src/11u-names.js:17
 namesMangle                  src/11u-names.js:39
 namesToldAll                 src/11u-names.js:16
 nameTell                     src/11u-names.js:32
-navAction                    src/15-input.js:237
+navAction                    src/15-input.js:240
 near                         tests/90-harness.js:29
 nearestPOI                   src/20a-poi.js:236
 nearestStation               src/12-economy.js:45
@@ -1826,7 +1826,7 @@ pickKindByBias               src/20-life.js:179
 pickShare                    src/20e-species.js:125
 pickStType                   src/06-galaxy.js:30
 PICKUPS                      src/24a-mode-raid.js:24
-pinch0                       src/15-input.js:295
+pinch0                       src/15-input.js:298
 PIR_ART                      src/12i-pirate-hull.js:18
 PIR_CLASS                    src/12i-pirate-hull.js:20
 PIR_SS                       src/12i-pirate-hull.js:17
@@ -1991,7 +1991,7 @@ profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
 psPlanet                     tests/91zzzu-post-scenes.js:6
 psSnap                       tests/91zzzu-post-scenes.js:17
-ptr                          src/15-input.js:294
+ptr                          src/15-input.js:297
 putOnTable                   src/11b-speech.js:216
 QSL_BY                       src/11an-qsl.js:46
 QSL_OPS                      src/11an-qsl.js:24
@@ -2475,7 +2475,7 @@ settleWallX                  src/12t-settle.js:119
 settleWatch                  src/12t-settle.js:390
 settleWords                  src/12t-settle.js:258
 setTx                        src/27z-telemetry.js:68
-setZoom                      src/15-input.js:266
+setZoom                      src/15-input.js:269
 sfx                          src/09-audio.js:237
 SFX                          src/09-audio.js:97
 SH_DX                        src/03b-hull-paint.js:164
@@ -2600,7 +2600,7 @@ STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:49
-start                        src/15-input.js:483
+start                        src/15-input.js:486
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
 stat                         src/08-state.js:142
@@ -2740,7 +2740,7 @@ tableWasNew                  src/27i-ui-table.js:75
 tabLive                      src/14a-cloud.js:36
 TALE_DRINK                   src/12b-crew-events.js:13
 TALE_JOB                     src/12b-crew-events.js:15
-tap                          src/15-input.js:362
+tap                          src/15-input.js:365
 TAPE_ADAPT                   src/25b-tape.js:26
 TAPE_DT                      src/25b-tape.js:24
 TAPE_GAIN                    src/25b-tape.js:25

@@ -188,6 +188,20 @@ setTimeout(function(){
         home:{sx:G.sx,sy:G.sy},seed:hashi(G.sx,G.sy,0x5A9)};
       G.mode="spa";
     },
+    /* ── интерфейсные экраны (аудит интерфейсов): оверлеи — тоже кадры ── */
+    uimenu:function(){
+      var S=sysWhere(function(S){return !!S.station;});if(S)goTo(S);
+      toggleMenu(true);   /* честный путь: он же ставит body.menuopen */
+    },
+    uiopts:function(){
+      var S=sysWhere(function(S){return !!S.station;});if(S)goTo(S);
+      document.getElementById("optbtn").click();
+    },
+    uikeys:function(){
+      var i2=document.getElementById("intro");if(i2)i2.style.display="";
+      G.running=false;
+      var kb=document.getElementById("introKeys");if(kb)kb.click();
+    },
     lights:function(){
       var at=regionOfTheme("lights"),R=regionAt(at.rx*REGION_SPAN,at.ry*REGION_SPAN);
       var S=getSystem(R.core.sx,R.core.sy);goTo(S);
