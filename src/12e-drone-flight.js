@@ -284,41 +284,9 @@ function drawDronesMap(vis){
   }
 }
 
-/* ══════════════ вкладка РЕЙСЫ ══════════════
-   Список не дронов, а МАРШРУТОВ: «титан · Нейэль II → Нейэль · 3 дрона». Так
-   отвечают на вопрос, который автор и задал: сколько машин на тебя работает и
-   что они возят. Внутри маршрута — строки машин с их состоянием: идёт гружёным,
-   на разгрузке, чинится шесть минут. Ни одной кнопки: смотреть, а не крутить. */
-function renderFleetRuns(box){
-  box.textContent="";
-  const R=droneRoutes();
-  const inv=G.droneInventory|0;
-  if(!R.length){
-    tableRow(box,"dim","","в рейсе никого. Дрон ставят на залежь с грунта или на астероид в поясе — "+
-      "кнопка ДРОН появляется, когда стоишь у точки"+(inv?(". В запасе: "+inv):""));
-    return;
-  }
-  const now=Date.now();
-  const total=R.reduce((a,r)=>a+r.drones.length,0);
-  const perMin=R.reduce((a,r)=>a+r.perMin,0);
-  tableRow(box,"head","","В РЕЙСЕ "+total+" · МАРШРУТОВ "+R.length+
-    " · ОКОЛО "+Math.round(perMin).toLocaleString("ru")+" КР/МИН"+(inv?(" · В ЗАПАСЕ "+inv):""));
-  R.sort((a,b)=>b.perMin-a.perMin);
-  for(const r of R){
-    /* груза с таким ключом может не оказаться у чужой записи — строка списка
-       не имеет права падать из-за этого вместе со всем экраном */
-    const res=RES[r.res]||{ru:String(r.res||"груз"),col:"#cfe3ea"};
-    const row=tableRow(box,"","",r.from+" → «"+r.to+"» · "+r.drones.length+
-      " "+pl3(r.drones.length,"дрон","дрона","дронов")+
-      " · в точке осталось "+r.pool+(r.down?(" · "+r.down+" в ремонте"):"")+
-      (r.stuck?(" · "+r.stuck+" стоит под блокадой"):""));
-    const em=row.querySelector("em");
-    if(em){em.textContent=res.ru.toUpperCase();em.style.color=res.col;}
-    for(const d of r.drones){
-      tableRow(box,"dim","",droneName(d)+" · "+droneStateRu(d,now)+
-        " · кругов "+(d.trips|0)+" · заработал "+(d.earned|0).toLocaleString("ru")+" кр");
-    }
-  }
-  tableRow(box,"dim","","дрон ломается сам и чинится сам — временем, не деньгами; "+
-    "на верфи вдвое быстрее. Пока стоит, круги не идут");
-}
+/* ══════════════ куда делась вкладка РЕЙСЫ ══════════════
+   Была вкладкой на столе (M237) и показывала маршруты со строками машин.
+   В M286 то же самое стало разделом МАШИНЫ в ДЕЛЕ, а в M288 стол вернулся к
+   замыслу M151a — «то, что читают», — и рейсам там места нет: дрон не бумага.
+   Список маршрутов строит `droneRoutes()` выше, а печатает его 27n-ui-deal;
+   отдельный печатник тут остался бы кодом без входа. */

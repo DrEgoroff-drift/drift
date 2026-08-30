@@ -9,11 +9,15 @@
 
    ДЕЛО не управляет ничем. Это СВОДКА: строка на каждого, кто на вас работает,
    с состоянием и деньгами, — и дорога в тот экран, где им и правда командуют.
-   Поэтому здесь нет ни одной кнопки, меняющей мир: строка ведёт в карточку
-   человека, в ШТАБ, в РЕЙСЫ. Список отвечает, экраны распоряжаются.
+   Поэтому здесь нет ни одной кнопки, меняющей мир: строка человека ведёт в его
+   карточку, строка управляющего — в ШТАБ, а строка маршрута раскрывается тут
+   же машинами (M288: со стола рейсы ушли, стол — для того, что читают).
+   Список отвечает, экраны распоряжаются.
 
    Порядок разделов — по тому, кто чаще встаёт: люди, машины, места. */
 const $dl=document.getElementById("dealview"),$dlBody=document.getElementById("dlBody");
+/* какой маршрут раскрыт по машинам; null — все свёрнуты */
+let dealRun=null;
 
 /* ── сколько всего в деле ── одно число для кнопки и для шапки */
 function dealCount(){
@@ -111,11 +115,19 @@ function dealRender(){
       const st=res.ru.toLowerCase()+" · в точке осталось "+r.pool+
         (r.stuck?(" · "+r.stuck+" стоит: систему закрыли пираты"):"")+
         (r.down?(" · "+r.down+" в ремонте"):"");
+      const open=(dealRun===r.key);
       dealRow(r.from+" → «"+r.to+"» · "+r.drones.length+" "+
         pl3(r.drones.length,"дрон","дрона","дронов"),st,
         ["≈"+Math.round(r.perMin).toLocaleString("ru"),"кр/мин"],
         r.stuck?"#ff9d7a":"",
-        ()=>{closeDeal();if(typeof tableToggle==="function")tableToggle(true,"fleet");});
+        ()=>{dealRun=open?null:r.key;dealRender();});
+      /* машины маршрута — здесь же, а не на столе: раньше строка уводила в
+         СТОЛ → РЕЙСЫ, то есть ровно в то разбегание по экранам, ради которого
+         ДЕЛО и заводили (M286). Стол — для того, что читают. */
+      if(open)for(const d of r.drones)
+        $dlBody.appendChild(el("div","row","<div class='nm'><s>"+droneName(d)+" · "+
+          droneStateRu(d)+" · кругов "+(d.trips|0)+" · заработал "+
+          (d.earned|0).toLocaleString("ru")+" кр</s></div>"));
     }
     if(!runs.length)
       $dlBody.appendChild(el("div","row","<div class='nm'><s>в рейсе никого: дрон ставят "+

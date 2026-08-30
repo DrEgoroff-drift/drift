@@ -167,10 +167,10 @@ in words rather than in markup, because a queue that only grows is not a queue.
 - ✔ **ЭКИПАЖ as roster→card** (И1) — the roster is ДЕЛО, the card is one man.
 - ✔ **no ghosts, 44 px inside the screens** (И2/И10) — measured 31×40 and seven disabled of
   eight; both guarded now by `91zzzzc-deal`.
-- ❑ **the desk as the drawn table of M151a** — chosen over sections-like-the-station. The
-  table itself, with the notebook (three tabs) and the objects lying beside it: tapes,
-  letters, things, album, record book. The top level becomes a picture, not a strip of
-  thirteen tabs. Next milestone, and the largest of the issue.
+- ✔ **the desk as the drawn table of M151a** — chosen over sections-like-the-station, built
+  as M288. Thirteen things lie on the boards and are tapped; a thing's own tabs live inside
+  it, and the notebook wears its three bookmarks on the top edge. The lamp went back to being
+  a pool, so the boards read as boards. РЕЙСЫ left the desk for ДЕЛО on the same move.
 - ❑ target chips in system view measured against the ether bar (И11).
 - ❑ the 44 px guard walks every screen, not only the two it was taught (И2) — `91zzzzc`
   covers ДЕЛО and ЭКИПАЖ by hand; the sweep is still to write.

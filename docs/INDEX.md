@@ -6,14 +6,14 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 336 · символов верхнего уровня: 3097
+Файлов: 338 · символов верхнего уровня: 3105
 
 ## СИМВОЛЫ
 
 $bg                          src/12l-barge.js:586
 $bThr                        src/27z-telemetry.js:39
 $cv                          src/27b-ui-crew.js:6
-$dl                          src/27n-ui-deal.js:16
+$dl                          src/27n-ui-deal.js:18
 $f                           src/27z-telemetry.js:6
 $fb                          src/27z-telemetry.js:7
 $fn                          src/27z-telemetry.js:11
@@ -353,7 +353,7 @@ CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
 closeBarge                   src/12l-barge.js:598
-closeDeal                    src/27n-ui-deal.js:151
+closeDeal                    src/27n-ui-deal.js:163
 closeStation                 src/26-ui-station.js:115
 CLOUD                        src/14-save.js:5
 CLOUD_KEYS                   src/02a-worldmix.js:80
@@ -475,11 +475,12 @@ dbg                          src/28-loop.js:364
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:163
-dealBtnTick                  src/27n-ui-deal.js:33
-dealCount                    src/27n-ui-deal.js:19
-dealIdle                     src/27n-ui-deal.js:26
-dealRender                   src/27n-ui-deal.js:49
-dealRow                      src/27n-ui-deal.js:41
+dealBtnTick                  src/27n-ui-deal.js:37
+dealCount                    src/27n-ui-deal.js:23
+dealIdle                     src/27n-ui-deal.js:30
+dealRender                   src/27n-ui-deal.js:53
+dealRow                      src/27n-ui-deal.js:45
+dealRun                      src/27n-ui-deal.js:20
 dealsTick                    src/27g-deals.js:201
 dealTaken                    src/27g-deals.js:159
 DECO_KINDS                   src/21b-surface-deco.js:24
@@ -500,6 +501,10 @@ deployDrone                  src/12-economy.js:73
 DEPTH_TIERS                  src/04-mods.js:51
 DESC_MOOD                    src/01-core.js:109
 DESC_TAIL                    src/01-core.js:115
+DESK_DRAW                    src/27ia-desk-top.js:58
+DESK_ITEMS                   src/27ia-desk-top.js:308
+deskItemNew                  src/27ia-desk-top.js:347
+deskItemOf                   src/27ia-desk-top.js:341
 dgy                          src/21b-surface-deco.js:131
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
@@ -519,6 +524,9 @@ digSurfFringe                src/23aa-dig-rock.js:594
 digSurfY                     src/23aa-dig-rock.js:453
 digVoidPath                  src/23a-dig-draw.js:4
 dirAt                        src/01-core.js:79
+dkPaper                      src/27ia-desk-top.js:37
+dkRule                       src/27ia-desk-top.js:46
+dkShadow                     src/27ia-desk-top.js:30
 DOM_GAME                     src/11af-domino.js:12
 dominoBlock                  src/11af-domino.js:58
 dominoEnd                    src/11af-domino.js:23
@@ -661,7 +669,7 @@ drawSysHud                   src/17-mode-system.js:523
 drawSysNebula                src/16a-space.js:178
 drawSystem                   src/17-mode-system.js:299
 drawTemple                   src/20aa-poi-shapes.js:50
-drawThingIcon                src/27i-ui-table.js:286
+drawThingIcon                src/27i-ui-table.js:321
 drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:125
 drawTrail                    src/16-flight.js:362
@@ -1710,7 +1718,7 @@ offerVisit                   src/11ah-offer.js:124
 ok                           tests/90-harness.js:23
 openBarge                    src/12l-barge.js:588
 openCrewView                 src/27b-ui-crew.js:230
-openDeal                     src/27n-ui-deal.js:145
+openDeal                     src/27n-ui-deal.js:157
 openHq                       src/27c-ui-hq.js:587
 openShipView                 src/27-ui-ship.js:160
 openStation                  src/26-ui-station.js:5
@@ -2181,8 +2189,8 @@ renderCantina                src/27c-ui-hq.js:66
 renderCardBack               src/25i-post-back.js:88
 renderChess                  src/25n-chess.js:285
 renderDeeds                  src/11-log.js:94
+renderDeskTop                src/27ia-desk-top.js:353
 renderDiary                  src/29f-winter.js:219
-renderFleetRuns              src/12e-drone-flight.js:292
 renderHold                   src/27j-ui-hold.js:176
 renderLog                    src/11-log.js:71
 renderLoreBoard              src/27h-ui-lore.js:26
@@ -2193,10 +2201,10 @@ renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
 renderRelays                 src/11ap-relay.js:242
 renderRoute                  src/12r-route.js:225
-renderStrips                 src/27i-ui-table.js:226
+renderStrips                 src/27i-ui-table.js:261
 renderTab                    src/26-ui-station.js:226
 renderTabBody                src/26-ui-station.js:236
-renderThings                 src/27i-ui-table.js:257
+renderThings                 src/27i-ui-table.js:292
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
 repAdd                       src/12k-rep.js:36
@@ -2751,15 +2759,15 @@ TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:154
-tableBake                    src/27i-ui-table.js:103
+tableBake                    src/27i-ui-table.js:107
 tableBlock                   src/27c-ui-hq.js:607
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
 tableNoticeAll               src/27i-ui-table.js:68
-tableRender                  src/27i-ui-table.js:133
-tableRow                     src/27i-ui-table.js:218
-tableSetTab                  src/27i-ui-table.js:101
+tableRender                  src/27i-ui-table.js:145
+tableRow                     src/27i-ui-table.js:253
+tableSetTab                  src/27i-ui-table.js:105
 tableTab                     src/27i-ui-table.js:22
 tableToggle                  src/27i-ui-table.js:84
 tableWasNew                  src/27i-ui-table.js:75
@@ -3360,10 +3368,10 @@ zooTick                      src/11ad-zoo.js:41
   · живой рынок:1
   · дроны:44
 
-## src/12e-drone-flight.js · 19 КБ
+## src/12e-drone-flight.js · 17 КБ
   · дроны летают:1
   · дрон в кадре:183
-  · вкладка РЕЙСЫ:287
+  · куда делась вкладка РЕЙСЫ:287
 
 ## src/12e-mgr-jobs.js · 19 КБ
   · поручения управляющих:1
@@ -3791,7 +3799,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27h-ui-lore.js · 6 КБ
   · доска отчёта: место, где собранное можно прочесть:1
 
-## src/27i-ui-table.js · 23 КБ
+## src/27ia-desk-top.js · 21 КБ
+  · стол как стол: предметы, а не тринадцать закладок:1
+
+## src/27i-ui-table.js · 26 КБ
   · стол: одно место для всего, что читают:1
 
 ## src/27j-console.js · 8 КБ
@@ -3818,7 +3829,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27m-scroll-cue.js · 4 КБ
   · «внизу ещё есть»:1
 
-## src/27n-ui-deal.js · 10 КБ
+## src/27n-ui-deal.js · 11 КБ
   · ДЕЛО — одно место для всего, что на вас работает:1
 
 ## src/27-ui-ship.js · 28 КБ
@@ -4190,6 +4201,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzc-deal.js · 5 КБ
   · ДЕЛО: один ответ на «что на меня работает»:1
+
+## tests/91zzzzd-desk.js · 5 КБ
+  · стол как стол:1
 
 ## tests/91zzzz-fuzz.js · 14 КБ
   · фуззер: режим под случайными руками (M238):1

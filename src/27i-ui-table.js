@@ -83,8 +83,12 @@ function tableNewBy(tab){
 }
 function tableToggle(open,tab){
   const w=document.getElementById("tablewin");if(!w)return;
+  const was=tableOpenNow;
   tableOpenNow=open===undefined?!tableOpenNow:!!open;
+  /* стол открывается СТОЛОМ. Возвращать последнюю закладку значило бы, что
+     игрок видит содержимое, а не место, — и не знает, что рядом лежит ещё */
   if(tab)tableTab=tab;
+  else if(tableOpenNow&&!was)tableTab="top";
   w.classList.toggle("open",tableOpenNow);
   document.body.classList.toggle("table",tableOpenNow);
   logOpen=tableOpenNow;
@@ -111,7 +115,7 @@ function tableBake(){
   const c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);
   /* доски: четыре полосы с лёгкой разницей тона и стыками */
   const base=c.createLinearGradient(0,0,0,H);
-  base.addColorStop(0,"#1a120b");base.addColorStop(.5,"#241810");base.addColorStop(1,"#150e08");
+  base.addColorStop(0,"#150f09");base.addColorStop(.5,"#1e140d");base.addColorStop(1,"#100b06");
   c.fillStyle=base;c.fillRect(0,0,W,H);
   const r=rng(0x7AB1E);
   const n=Math.max(4,Math.round(W/190));
@@ -125,15 +129,52 @@ function tableBake(){
     c.fillStyle="rgba(0,0,0,.35)";c.fillRect(x0+w-1.5,0,1.5,H);
   }
   /* свет лампы сверху — тёплое пятно, края уходят в тень */
-  const g=c.createRadialGradient(W*.5,-H*.1,20,W*.5,H*.25,Math.max(W,H)*.9);
-  g.addColorStop(0,"rgba(255,214,150,.22)");g.addColorStop(.45,"rgba(255,190,120,.06)");g.addColorStop(1,"rgba(0,0,0,.55)");
+  /* Свет лампы — ПЯТНО, а не общая засветка. Было `.22` в центре и `.06` на
+     середине радиуса: доски выходили ровно-коричневыми во всю панель, и стол
+     читался картоном. Лампа висит низко и близко: под ней тепло и видно
+     волокно, к краям всё уходит в темноту — тогда вещь на досках отделяется
+     от них тоном, а не только обводом (§16 альманаха: тон ступенями). */
+  const g=c.createRadialGradient(W*.5,H*.08,10,W*.5,H*.3,Math.max(W,H)*.62);
+  g.addColorStop(0,"rgba(255,216,152,.30)");
+  g.addColorStop(.28,"rgba(255,198,128,.12)");
+  g.addColorStop(.62,"rgba(20,12,6,.28)");
+  g.addColorStop(1,"rgba(0,0,0,.72)");
   c.fillStyle=g;c.fillRect(0,0,W,H);
   tableBaked={W,H};
 }
 function tableRender(){
   const box=document.getElementById("loglist"),lore=document.getElementById("lorelist");
   if(!box)return;
+  /* ── верхний уровень: сам стол ──
+     Не список закладок, а вещи на досках (27ia). Внутрь вещи ходят тычком по
+     ней, обратно — кнопкой «← СТОЛ» в подвале. Лента закладок остаётся, но
+     показывает только закладки ОТКРЫТОЙ вещи: у тетради их три, у накладной
+     две, у прочих одна — и тогда ленты нет вовсе. */
+  const top=(tableTab==="top");
+  const strip=document.getElementById("tableTabs");
+  const back=document.getElementById("tableBack");
+  const item=top?null:((typeof deskItemOf==="function")?deskItemOf(tableTab):null);
+  if(back)back.style.display=top?"none":"";
+  if(strip)strip.style.display=(top||!item||item.tabs.length<2)?"none":"";
+  if(top){
+    document.getElementById("tableSub").textContent="что лежит на столе";
+    const cr0=document.getElementById("tableCr"),wh0=document.getElementById("tableWhere");
+    if(cr0)cr0.textContent=Math.round(G.credits).toLocaleString("ru")+" кр";
+    if(wh0){const mr=modeRu();
+      wh0.textContent=(G.sys&&G.sys.name?G.sys.name:"—")+(mr?" · "+mr:"");}
+    if(lore)lore.style.display="none";
+    box.style.display="";
+    box.className="top";
+    if(typeof renderDeskTop==="function")renderDeskTop(box);
+    return;
+  }
+  box.className="";
   document.querySelectorAll("#tableTabs button").forEach(b=>{
+    /* чужие закладки в ленте не стоят: вещь открыта одна. Свои — наоборот,
+       возвращаются из «none», в который их положил прошлый показ другой вещи;
+       ниже свои правила могут снова их спрятать, и это их право */
+    if(item&&item.tabs.indexOf(b.dataset.tab)<0){b.style.display="none";return;}
+    b.style.display="";
     b.classList.toggle("on",b.dataset.tab===tableTab);
     if(b.dataset.tab==="lore")b.style.display=(typeof loreCount==="function"&&loreCount())?"":"none";
     /* альбом заводится с первым снимком: пустая закладка обещает содержимое,
@@ -149,10 +190,6 @@ function tableRender(){
       (typeof relayAll==="function"&&Object.keys(relayAll()).length)?"":"none";
     if(b.dataset.tab==="qsl")b.style.display=
       (typeof qslAll==="function"&&Object.keys(qslAll().heard).length)?"":"none";
-    /* рейсы заводятся с первым дроном: пустая закладка обещала бы список,
-       которого у новичка нет (M237) */
-    if(b.dataset.tab==="fleet")b.style.display=
-      ((G.drones&&G.drones.length)||(G.droneInventory|0))?"":"none";
     if(b.dataset.tab==="books")b.style.display=
       (typeof bookCount==="function"&&bookCount())?"":"none";
     if(b.dataset.tab==="diary")b.style.display=
@@ -176,7 +213,6 @@ function tableRender(){
   const SUB={ether:"эфир · что было услышано",bort:"борт · техника и деньги",folk:"люди · что вам сказали",
              deeds:"дела · что вы должны",strips:"ленты · оторванные полосы самописца",things:"вещи · письма, находки, бумаги",
              hold:"трюм · груз, разложенный по кучам",
-             fleet:"рейсы · кто на вас работает и что возит",
              prices:"цены · как их видели, по станциям",record:"трудовая книжка · записи чужими руками",
              album:"альбом · снимки мест, где вы стояли",
              mail:"почта · стопки карточек, скреплённые скрепкой",
@@ -203,7 +239,6 @@ function tableRender(){
   else if(tableTab==="strips")renderStrips(box);
   else if(tableTab==="things")renderThings(box);
   else if(tableTab==="hold"&&typeof renderHold==="function")renderHold(box);
-  else if(tableTab==="fleet"&&typeof renderFleetRuns==="function")renderFleetRuns(box);
   else if(tableTab==="prices"&&typeof renderPrices==="function")renderPrices(box);
   else if(tableTab==="record"&&typeof renderRecord==="function")renderRecord(box);
   else if(tableTab==="album"&&typeof renderAlbum==="function")renderAlbum(box);
@@ -324,9 +359,15 @@ function drawThingIcon(c,k,W,H){
   const b=document.getElementById("tablebtn"),x=document.getElementById("tableClose");
   if(b)b.addEventListener("click",()=>tableToggle(true));
   if(x)x.addEventListener("click",()=>tableToggle(false));
+  const bk=document.getElementById("tableBack");
+  if(bk)bk.addEventListener("click",()=>tableSetTab("top"));
   document.querySelectorAll("#tableTabs button").forEach(bt=>bt.addEventListener("click",()=>tableSetTab(bt.dataset.tab)));
   addEventListener("resize",()=>{if(tableOpenNow){tableBaked=null;tableBake();}});
   addEventListener("keydown",e=>{
-    if(e.code==="Escape"&&tableOpenNow){tableToggle(false);e.preventDefault();}
+    /* Escape поднимает на ступень: из вещи — на стол, со стола — из стола */
+    if(e.code==="Escape"&&tableOpenNow){
+      if(tableTab!=="top")tableSetTab("top");else tableToggle(false);
+      e.preventDefault();
+    }
   });
 })();

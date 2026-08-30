@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.285.0 - M288: the desk is a desk again
+
+The last of the three forks the author settled from almanac issue II, and the largest: not
+sections like the station, but the drawn table the release design named in M151a.
+
+- **The top level of СТОЛ is a picture, not a strip.** Eighteen tabs in one row were not a
+  decision but a sediment - one per milestone, each right on its own: 777 px of strip inside a
+  393 px window, six visible, and the chosen one could sit off the edge. Now things lie on the
+  boards: the notebook, the folder of cases, the clipboard, the torn recorder strips, the
+  papers, the record book, the album, the postcards, the shelf, the winter diary, the
+  receivers, the game, the report. Each is drawn, each is tapped, and a thing the player has
+  not got yet does not lie there at all.
+- **The notebook carries its own three bookmarks** - ЭФИР, БОРТ, ЛЮДИ - poking out of the top
+  edge, because that is exactly what they are. Inside a thing the strip shows only that
+  thing's tabs: three for the notebook, two for the clipboard, none for the rest, where a strip
+  of one button would be a lie about there being a choice. `← СТОЛ` in the footer goes back to
+  the table; Escape climbs one step rather than closing everything.
+- **The lamp is a pool again.** Baking the boards at `.22` in the centre and `.06` at
+  mid-radius lit the whole panel evenly and the table read as cardboard. Low and close now:
+  warm under the lamp with the grain visible, dark at the edges - so a thing separates from
+  the boards by tone and not only by its outline (§16 of the almanac).
+- **РЕЙСЫ left the desk.** A drone is not paper. The routes were already in ДЕЛО (M286); now a
+  route opens its machines there, in place, instead of sending the player to a table on the
+  other side of the interface. `renderFleetRuns` is gone with its tab - a renderer with no way
+  in is the same debt as a perk with no code.
+- `91zzzzd-desk` guards it: the desk opens as itself, a thing that is not there does not lie
+  there, a thing's own tabs and no others, the way back, and every one of the twelve drawings
+  surviving a call.
+
+---
 ## 0.284.0 - M287: an empty map comes back from the cloud as a list
 
 The M285 guard did its job: the author reloaded, played, and the journal said out loud what
