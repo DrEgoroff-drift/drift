@@ -244,6 +244,17 @@ through, waited out until night, or opened on a phone.
 - **Long shell one-liners with quotes get mangled.** Write a script to the
   scratchpad and run it instead — a `Remove-Item` once received `"C:\Program`
   as its path.
+- **A heredoc through the Bash tool eats backslash escapes.** `<<'EOF'` should pass the
+  body through literally, but by the time Python sees it, `\\n` has become `\n` and `\b`
+  has become a literal 0x08 byte — which then lands in a source file and is invisible in
+  every editor and in `sed` output. Cost a green-looking regex that could never match
+  (`/\bон\b/` arrived as `/он/` with control characters around it). When a patch script needs a
+  backslash, build it as `chr(92)` instead of typing it, and grep the result for control
+  characters before trusting it:
+  `any(ord(c)<9 or 10<ord(c)<32 for c in text)`.
+- Python **is** installed (3.12) despite the line below; `python -` with a heredoc is the
+  cheapest way to patch a UTF-8 source file. `.ps1` files must be rewritten **with** their
+  BOM (`codecs.BOM_UTF8`), or PowerShell 5.1 turns every Cyrillic literal to mojibake.
 - There is **no `node` and no `python`** on this machine. PowerShell, or the
   game itself in a browser.
 - `ssh drift` prints a post-quantum key-exchange warning on every connection.
