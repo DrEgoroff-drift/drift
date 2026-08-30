@@ -1096,8 +1096,11 @@ from the playtest of 2026-08-30/31»:
    the reach circle. Fix: the card becomes a footer line with details on a second tap, it stands
    where the view is empty, and a double tap on empty space clears the sky.
 
-**4. The holding — a full economic layer.** Designed in `docs/DESIGN-holding.md`, seven steps,
-each shipping on its own:
+**4. The holding — a full economic layer.** Designed in `docs/DESIGN-holding.md`, eight steps,
+each shipping on its own. The naming register was chosen by the author on 2026-08-31 —
+**Б+А**: the launch-complex vocabulary of the Strugatskys below (Вымпел, Купол, Монтажный корпус,
+Стыковочный узел) and Efremov's above (Трасса, Полдень, Кольцо); the frontier register (Заимка,
+Шурф, Прииск, Барак) was heard and rejected as «не космическое».
 
 1. **The route as an order** — a leg only where you have seen the prices (`G.seenPrices`); «В
    МАРШРУТ» means «I am going there» and is visible from the first leg; the station carries a «ПО
@@ -1106,18 +1109,30 @@ each shipping on its own:
 2. **Demand upward** — every player-side price move is clamped `[-0.35, 0]` today; only news lifts
    a price. Lift the ceiling and bound it with a **daily quota**: the first N units a day at +X%,
    the rest as now.
-3. **System development** — a 0–4 scale fed by everything done in a system (drilling, drones, base
-   cells, sectors retaken, monuments, names, cargo, settlements, a home, a beacon); shown as a ring
-   on the map and in the arrival summary. Level 2 opens the building site.
-4. **The site and the first seven buildings** — добыча and передел. Плавильня makes **сплавы**,
-   кузня makes **техкомпоненты**, which today come only from smelting for money and from boarding
-   pirates.
-5. **The player's own barge and its pilot** — стапель, учебка, причал; the pilot is an ordinary
-   hire with an order kind `barge`.
-6. **The remaining families** — торговля, флот, люди, оборона, знание, жизнь. Thirty-five
-   buildings in all. The rule that makes it a strategy: **no building eats what its own system
-   makes**, so a self-sufficient node cannot exist and the shortage is the route.
-7. **КУРС** — the route and a rumour as one thing on the map; news with a cause.
+3. **The ladder** — **thirty rungs in six five-year plans**, from Засечка to Кольцо, fed by
+   everything done in a system (drilling, drones, base cells, sectors retaken, monuments, names,
+   cargo, settlements, a home, a beacon). Rung 11 (Монтажная площадка) opens the building site.
+   Comes with the summary line, the ring on the map and the forms of address that change with the
+   rung (наблюдатель → монтажник → начальник участка → управляющий → начальник трассы → by name
+   and patronymic at thirty).
+4. **The site, ПАЙ, and the first tier.** ПАЙ is the mechanic the author asked for — «не по
+   рецептам, а если ты возишь, то тебе производят»: feeding a building *is* selling to it, the
+   game remembers whose share of the intake was whose, and the same share of the output accrues
+   under your name at that station up to a three-day ceiling. No new verb, and a reason to come
+   back.
+5. **The player's own barge and its pilot** — монтажный корпус, учебный пункт, причальная ферма;
+   the pilot is an ordinary hire with an order kind `barge`. Hull names in the cargo register:
+   Лихтер, Паром, Тягач, Сухогруз, Транспорт, Караван, Кряж.
+6. **The remaining families and the instrument row** — приборы (радиолампа, реле, сельсин,
+   термопара, гироскоп, which feed the cockpit kit), флот, люди, оборона, знание, жизнь. Around
+   eighty buildings and a material tree of three tiers. The rule that makes it a strategy: **no
+   building eats what its own system makes**, so a self-sufficient node cannot exist below rung 29
+   and the shortage is the route.
+7. **The station grows a body** — the visible half: every building hangs its own piece on the
+   procedurally drawn station, the planet gets a dump, domes and night lights, and traffic appears.
+   A developed system reads by silhouette, with no figure anywhere.
+8. **КУРС** — the route and a rumour as one thing on the map; news with a cause; the monthly plan
+   from the заводоуправление.
 
 ## Small tails from almanac issue II
 
@@ -1136,3 +1151,6 @@ each shipping on its own:
 - **Only the player builds.** The factor and other people's barges haul along what exists.
 - **`api.php` is left alone**; the client is proof against its `{}` → `[]`, and the conditions for
   ever touching it are written in `docs/DEPLOY.md`.
+- **Naming register Б+А** (2026-08-31). Two earthly words stay on purpose — «Красный уголок» and
+  «Столовая», with «Дружина» beside them: in a module at the edge of the galaxy they read as home,
+  and that seam is what Soviet science fiction was made of.
