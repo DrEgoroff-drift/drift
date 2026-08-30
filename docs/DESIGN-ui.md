@@ -151,3 +151,84 @@ Order of work: receiver ticker → button column down + pinch + no ghosts → fi
 split and row fixes → the doll → hint slot + edge markers → site CSS. Each step re-runs
 the design loop from the cross-cutting rule: draft, then critique passes, with the raster
 budget checked before shipping.
+
+
+---
+
+# Three fixes queued from the playtest of 2026-08-30/31
+
+Ordered by the author, measured, designed, **not built yet**. Each is small and independent of
+the holding layer (`DESIGN-holding.md`); they are meant to be done first, in this order.
+
+## 1. The table in the cantina: you put a thing down and nothing happens
+
+> «вот слухи есть, назвать имя, продать сведения о маршруте, ты тыкаешь и ничего не
+> происходит, не очень понятно как с этим взаимодействовать»
+
+**What is there.** The block «СТОЛ · ПОЛОЖИТЕ ВЕЩЬ — ОТВЕТЯТ НА НЕЁ, А НЕ НА СЛОВА»
+(`27c-ui-hq`, `tableBlock`) with four rows: ЛЕНТА, ИЗ ТРЮМА, СЛУХ, ВАШЕ ИМЯ. Pressing calls
+`putOnTable(kind, idx)` (`11b-speech`), which picks a line out of a pool of four or five.
+
+**Why it reads as broken**, all three at once:
+
+- **One reply in five is `null`** — deliberate silence, printed as a small italic «посмотрел на
+  это и промолчал». Honest by design, indistinguishable from a dead button in practice.
+- **The seed is constant within a visit**: `hashi(sys.key.length + visitHere(), idx, kind.length)`.
+  Ten presses give the same line ten times; if it landed on silence, the button is dead until the
+  next station.
+- **The answer is printed into a separate row below**, small, grey, without motion. The eye is on
+  the button.
+
+And the consequences that *do* happen are invisible: `placeNote("care",1)` — the place remembers
+you — and `peopleLine(...)` — the line goes into the notebook, page ЛЮДИ.
+
+**The fix.** The reply replaces the button, in the same row, in the speaker's colour; the button
+is gone afterwards, because it is a move for this visit and repeat presses into nothing end.
+Silence is shown as an answer, not as nothing. Each row says what the move is *for* («НАЗВАТЬ
+ИМЯ — вас начнут узнавать на этой станции»), because the header explains the mechanic and not the
+reason. Under the answer, one quiet line for the trace: «место вас запомнило» / «записано в
+тетрадь · ЛЮДИ».
+
+## 2. A rumour's address: you cannot tell where to fly
+
+> «адреса тож не понятны, если там слух. Ты ХЗ не понимаешь куда лететь допустим»
+
+**What is there.** `rumourWhere` (`11t-rumours`) says «искать у сектора −9:18, в 4 секторах
+вокруг». The design forbids markers on purpose — «маркеров нет», the player checks it on foot —
+and that is right. But there is no way to *aim* either: the sector is off the map at the current
+zoom, it cannot be selected, coordinates cannot be entered, and the jump range is about 3 pc. The
+game names an address in a coordinate system the map will not take you to.
+
+**The fix**, keeping «no marker on the wonder itself»:
+
+- **The notebook holds it and counts.** On page ЛЮДИ a rumour is a row: «сектор −9:18 · 4 сектора
+  вокруг · отсюда 19 секторов, примерно 7 прыжков · со слов механика с «Прибоя»». It is already
+  written there by `peopleLine`; what is missing is the distance, the number of jumps and an action.
+- **The map can take a course to a sector.** The action «НА КАРТУ» does not mark the wonder — it
+  moves the map's viewport to the named sector and draws the search circle. You still do not know
+  which star is yours; you know where to look.
+- **The rumour speaks like a person.** Not «сектор −9:18» but «отсюда — восемь прыжков на закат»;
+  the absolute address stays in the notebook for those who like charts. This needs the map to have
+  consistent compass directions, which it does not yet.
+
+## 3. The map: the interface covers the sky
+
+> «На карте тож половину планет не видно из за UI там все загораживается»
+
+**Measured** on a 393×830 phone with a system selected: **31.7% of the screen is interface**. The
+system card alone is 250×110 and sits over the lower left, exactly where the reach circle and the
+near stars are. Add the rail 87×114, the pads 393×86, the ether bar 377×29 and four footer rows.
+
+**The fix.**
+
+- **The card becomes a line.** The first tap on a star gives one footer row — «ОМУРОН · красный
+  карлик · 2 планеты · станция · 0.00 пк». The full description opens on a second tap or a
+  «ПОДРОБНЕЕ» chip. That is ~110 px of sky back, and the first question («what is it and can I
+  reach it») is answered instantly.
+- **The card stands where it is empty.** The map knows where the stars are; put the card in the
+  emptiest corner of the current view instead of always bottom-left.
+- **Clean sky on a double tap** on an empty spot: the whole interface hides until the next touch.
+  Common practice in map applications and one of the few things a player finds without being told.
+
+Not to be done: removing the ether line from the map. It stays visible on every screen by design
+(M151a).

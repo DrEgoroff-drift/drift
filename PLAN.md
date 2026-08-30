@@ -1052,3 +1052,87 @@ is not spoken anywhere, and `91zzzf-offer` guards exactly that.
 # QUEUE: Трепло in the round (M200) — DONE whole, moved to the archive 2026-08-27
 
 The site's 3D bird: sources in bird/, built by bird.ps1 into site/treplo3d.html. Twenty-odd passes, sound (M228), down layer, page, behaviours, phone budget; per-feather AO closed by the author. The traps that cost time are in the archive - grep it for M200. Stand: docs/bird.html, /dev/treplo3d.html.
+
+
+# QUEUE: the evening of 2026-08-30/31 — what is built, what is designed, what is next
+
+One long session with the author, from a phone screenshot of a crash to a full economic layer on
+paper. Written out because the next session starts cold.
+
+## Built and in production
+
+- **M285 (0.282.0)** — a save that cannot kill the flight (`saveText` never throws, names the
+  guilty section, writes the rest); a crash line now carries an address; the star's glow made
+  continuous (measured 17.4 → 25.4 step, now a monotone fall); the map footer laid out from
+  `HUD_FLOOR`/`HUD_RAIL` read off the DOM, with `MAP_BOX` so `91f-ui` can compare canvas against
+  markup; `tabsSync`; drones under a blockade say so; an idle hire says so; the «КРИСТАЛЛЫ
+  КРИСТАЛЛЫ» stutter.
+- **M286 (0.283.0)** — **ДЕЛО** (`27n-ui-deal`): one screen for everything that works for you,
+  the drawer back to five doors, ЭКИПАЖ as one man's card, seven 31×40 ghost buttons gone.
+- **M287 (0.284.0)** — the actual cause of the crash: the cloud (PHP) returns an empty `{}` as
+  `[]`, `poiSeen` became an array, a `hashi>>>0` key stretched it to three billion. `asMap` on
+  load for all thirty map-shaped fields; `poiInspect` heals a live session; the quiet half of the
+  same bug (string keys on an array are never printed by `JSON.stringify`) is closed with it.
+- **M288 (0.285.0)** — **the desk is a desk**: things on the boards, a thing's own tabs only
+  inside it, the lamp a pool again, РЕЙСЫ moved into ДЕЛО and `renderFleetRuns` deleted.
+- **Almanac issue II** (`docs/ALMANAC.md`) — the interface audited screen by screen against the
+  project's own laws (И1…И11), with measurements and a queue.
+
+## Next, in this order — designed, not built
+
+**1–3. Three interface fixes** — spelled out in `docs/DESIGN-ui.md`, section «Three fixes queued
+from the playtest of 2026-08-30/31»:
+
+1. **The table in the cantina.** `putOnTable` gives the same line all visit (the seed holds
+   `visitHere()`), one reply in five is deliberate silence, and the answer prints into a small grey
+   row below the button. The consequences (`placeNote("care")`, `peopleLine`) are invisible. Fix:
+   the reply replaces the button, silence looks like an answer, each row says what the move is for,
+   and the trace is shown.
+2. **Rumour addresses.** «искать у сектора −9:18» cannot be aimed at: off-map, unselectable, no
+   coordinate entry, jump range ~3 pc. Fix: the notebook counts distance and jumps and offers «НА
+   КАРТУ» (which moves the viewport and draws the search circle, never marks the wonder), and the
+   rumour speaks in directions and jumps.
+3. **The map.** Measured 31.7% of a 393×830 phone is interface; the system card is 250×110 over
+   the reach circle. Fix: the card becomes a footer line with details on a second tap, it stands
+   where the view is empty, and a double tap on empty space clears the sky.
+
+**4. The holding — a full economic layer.** Designed in `docs/DESIGN-holding.md`, seven steps,
+each shipping on its own:
+
+1. **The route as an order** — a leg only where you have seen the prices (`G.seenPrices`); «В
+   МАРШРУТ» means «I am going there» and is visible from the first leg; the station carries a «ПО
+   МАРШРУТУ · взять/сдать» row with one button; only a walked route can be sold, for a share of
+   what it earned you, and the same pair will not buy twice.
+2. **Demand upward** — every player-side price move is clamped `[-0.35, 0]` today; only news lifts
+   a price. Lift the ceiling and bound it with a **daily quota**: the first N units a day at +X%,
+   the rest as now.
+3. **System development** — a 0–4 scale fed by everything done in a system (drilling, drones, base
+   cells, sectors retaken, monuments, names, cargo, settlements, a home, a beacon); shown as a ring
+   on the map and in the arrival summary. Level 2 opens the building site.
+4. **The site and the first seven buildings** — добыча and передел. Плавильня makes **сплавы**,
+   кузня makes **техкомпоненты**, which today come only from smelting for money and from boarding
+   pirates.
+5. **The player's own barge and its pilot** — стапель, учебка, причал; the pilot is an ordinary
+   hire with an order kind `barge`.
+6. **The remaining families** — торговля, флот, люди, оборона, знание, жизнь. Thirty-five
+   buildings in all. The rule that makes it a strategy: **no building eats what its own system
+   makes**, so a self-sufficient node cannot exist and the shortage is the route.
+7. **КУРС** — the route and a rumour as one thing on the map; news with a cause.
+
+## Small tails from almanac issue II
+
+- Target chips in the system view have never been measured against the ether bar — the last seam
+  of «canvas against markup».
+- The 44 px guard walks the pads, the rail and the drawer only; screens are covered by hand in two
+  suites. A sweep over every screen is still to write.
+- «В ДОРОГУ» was never argued into the five doors of the M151a design: justify it on the record or
+  remove it.
+
+## Decisions taken on the author's behalf, so they are not re-litigated
+
+- The buyer of a route pays a **share of what it earned you**, not of a theoretical spread.
+- **What is built is never for sale** — knowledge of a road can be, your mark on the world cannot.
+- **Stale price notes are shown as a widening fork**: «титан 41…58 · записи шесть дней».
+- **Only the player builds.** The factor and other people's barges haul along what exists.
+- **`api.php` is left alone**; the client is proof against its `{}` → `[]`, and the conditions for
+  ever touching it are written in `docs/DEPLOY.md`.

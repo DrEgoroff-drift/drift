@@ -172,5 +172,13 @@ in words rather than in markup, because a queue that only grows is not a queue.
   it, and the notebook wears its three bookmarks on the top edge. The lamp went back to being
   a pool, so the boards read as boards. РЕЙСЫ left the desk for ДЕЛО on the same move.
 - ❑ target chips in system view measured against the ether bar (И11).
+- ❑ **the table in the cantina answers where the hand is** — `putOnTable` gives one line all
+  visit and prints it into a small grey row below the button; one reply in five is deliberate
+  silence and reads as a dead button (И10 by another road). Designed in `DESIGN-ui.md`.
+- ❑ **a rumour's address can be aimed at** — «сектор −9:18» is off-map, unselectable and beyond
+  the jump range, and the notebook does not count the distance. Designed in `DESIGN-ui.md`; the
+  rule «no marker on the wonder» stands.
+- ❑ **the map gives the sky back** — measured 31.7% of a 393×830 phone is interface, the system
+  card 250×110 over the reach circle (И3). Designed in `DESIGN-ui.md`.
 - ❑ the 44 px guard walks every screen, not only the two it was taught (И2) — `91zzzzc`
   covers ДЕЛО and ЭКИПАЖ by hand; the sweep is still to write.
