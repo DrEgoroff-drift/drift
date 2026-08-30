@@ -244,6 +244,9 @@ function updateBelt(dt){
       G.hull=Math.max(0,G.hull-dmg*dt*.5);
       b.vx-=dx/d*.6;b.vy-=dy/d*.6;b.vz-=dz/d*.6;
       b.hit=14;
+      /* касание слышно: вспышка на .22 альфы — единственный сигнал, и корпус
+         стирался о камень молча, 45→28 мелкими тычками (плейтест 30.08.2026) */
+      if(G.t-(b.hitWarn||0)>45){b.hitWarn=G.t;sfx("hit");}
       if(G.hull<=0){wreck();G.belt=null;return;}
     }
   }
@@ -336,6 +339,10 @@ function updateBelt(dt){
   if(best&&G.droneInventory>0&&RARE_RES.indexOf(best.res)<0){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
   else{droneTarget=null;dbtn.style.display="none";}
 
+  /* контакт с камнем перекрывает разговоры о прицеле: пока борт скребёт
+     породу, единственная нужная подсказка — что корпус тратится и как это
+     прекратить (плейтест 30.08.2026: 45→28 молча) */
+  if(b.hit>10){G.prompt="БОРТ СКРЕБЁТ О КАМЕНЬ · КОРПУС "+Math.round(G.hull)+"\nТОРМОЗ И ОТВЕРНИТЕ";return;}
   if(!best){G.prompt="НАВЕДИТЕ ПРИЦЕЛ НА АСТЕРОИД";return;}
   const td=Math.hypot(best.x-b.x,best.y-b.y,best.z-b.z)-best.r;
   if(td>CUT_RANGE){

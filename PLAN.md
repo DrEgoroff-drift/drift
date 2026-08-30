@@ -255,6 +255,18 @@ Needs the author: the glyph notebook (P7b — what the player writes down, what 
 like); whether «неделя счисления» becomes S6; and the S5 fork above (mercs' figure vs
 managers' axis).
 
+## M282 — the playtest pass: nine wounds from two hours of play (2026-08-30) — CLOSED (0.279.0)
+
+A full player session (fresh start → landing → mining → wreck/anomaly rarities → station →
+jump → SOS rescue → belt → broke) played through the production build. Fixes: autosave in
+dock/surface plus a save on undock (docked transactions used to vanish on reload); scoop
+burn prompt names both exits and auto-aborts at 18% hull; wreck message explains repair is
+paid in cargo; rarity find-cards name the actual place, not the bucket («на памятнике»);
+NEED_WIN 3→15 and ORDER_WIN 2→6 so a board goal outlives the flight to it; hire cards state
+severance up front; «N РУК» declines properly; belt contact gets a sound and a prompt
+override. Verified-as-designed: per-individual scan rewards, idle mercs eating nothing.
+Details in PATCHNOTES 0.279.0.
+
 ## M264 — the button hears the whole prompt; the mouse reveals the pads (2026-08-29) — CLOSED (0.261.0)
 
 The P0 sweep's first catch, from the author's screenshot: the distress signal invited

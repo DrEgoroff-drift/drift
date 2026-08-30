@@ -383,10 +383,10 @@ function updateCave(dt){
     const n=wallCount(WALL_C);
     if(wallCanSign(WALL_C)){
       G.prompt="ДЕЙСТВИЕ — ОСТАВИТЬ СВОЙ ЗНАК У УСТЬЯ"+
-        (n>0?"\nТУТ УЖЕ "+n+" ЧУЖИХ РУК":(n===0?"\nКАМЕНЬ ЧИСТ":""));
+        (n>0?"\nТУТ УЖЕ "+n+" "+pl3(n,"ЧУЖАЯ РУКА","ЧУЖИЕ РУКИ","ЧУЖИХ РУК"):(n===0?"\nКАМЕНЬ ЧИСТ":""));
       if(actEdge){wallSign(WALL_C);return;}
     }else if(n>0){
-      G.prompt="УСТЬЕ · "+n+" РУК"+(wallHere(WALL_C)&&wallHere(WALL_C).mine?", СРЕДИ НИХ ВАША":"");
+      G.prompt="УСТЬЕ · "+n+" "+pl3(n,"РУКА","РУКИ","РУК")+(wallHere(WALL_C)&&wallHere(WALL_C).mine?", СРЕДИ НИХ ВАША":"");
     }
   }
   else if(!C.found&&Math.hypot(C.x-C.findX,C.y-C.findY)<44){

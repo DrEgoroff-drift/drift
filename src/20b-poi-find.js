@@ -121,8 +121,11 @@ function poiInspect(q){
      отдаёт свою, отдельную ветку — это и есть закрытый хвост M92 «храм молчит
      при известной координате»: он не отмалчивается, он отдаёт редкость плит. */
   if(typeof rareTake==="function"){
-    if(q.k==="temple"&&G.relicHint)rareTake("temple",q.seed);
-    else rareTake("poi",q.seed);
+    /* карточке находки — фактическое место: «здесь: остов корабля», а не
+       родовое «на памятнике» (падежи не склоняем — двоеточие вместо предлога) */
+    const at="здесь: "+String(q.ru||F.ru).toLowerCase();
+    if(q.k==="temple"&&G.relicHint)rareTake("temple",q.seed,at);
+    else rareTake("poi",q.seed,at);
   }
   return true;
 }

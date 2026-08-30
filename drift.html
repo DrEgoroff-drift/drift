@@ -1368,7 +1368,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.278.0";
+const VER="0.279.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -14126,7 +14126,11 @@ function drawMisFigure(c,W,H){
    1. Ничего не сочиняется: товар — из цен станции, получатель — соседняя
       станция, цена — от рынка. Детерминизм по посеву: перезаход не перебирает.
    2. Никаких списков: одна нужда и один наряд на станцию, один наряд на руках. */
-const NEED_WIN=3,NEED_P=.3,NEED_MUL=2;   /* замер 91zzw: при .42 нужда была у 44% станций — слишком буднично */
+/* Окно было 3 «дня», а сутки — минута (CEL_DAY): нужда жила три минуты и
+   перекатывалась прямо на глазах у пристыкованного — записал «Энтурикс · лёд»,
+   поднял глаза, а там уже кристаллы (плейтест 30.08.2026). Цель обязана жить
+   дольше, чем перелёт к ней: прыжок плюс подлёт — минут пять и больше. */
+const NEED_WIN=15,NEED_P=.3,NEED_MUL=2;   /* замер 91zzw: при .42 нужда была у 44% станций — слишком буднично */
 function needWin(){return Math.floor(celDay()/NEED_WIN);}
 function needAll(){return (G.need||(G.need={}));}
 function needOf(sys){
@@ -14175,8 +14179,9 @@ function needEtherLine(r){
                "…передайте по цепочке: на "+n.sys.station.name+" нет "+ru+".",
                "…"+n.sys.station.name+" просит "+ru+". Срочно, говорят."],r);
 }
-/* ── наряд ── */
-const ORDER_WIN=2;
+/* ── наряд ── (окно расширено той же правкой, что у нужды: два «дня» — это две
+   минуты, наряд через полкарты за такой срок не возится) */
+const ORDER_WIN=6;
 function orderWin(){return Math.floor(celDay()/ORDER_WIN);}
 function orderOf(sys){
   if(!sys||!sys.station||!sys.station.prices)return null;
@@ -20246,8 +20251,11 @@ function rareAtPlace(where,key){
   const h=hashi((key>>>0)||1,RARE_SALT,RARE_WHERE_IX[where]||1);
   return pool[(h%pool.length+pool.length)%pool.length];
 }
-/* забрать, если она тут есть и ещё не унесена. Возвращает запись либо null. */
-function rareTake(where,key){
+/* забрать, если она тут есть и ещё не унесена. Возвращает запись либо null.
+   placeRu — фактическое место находки: «на памятнике» — адрес ветки, и у
+   остова корабля он читался опечаткой (плейтест 30.08.2026). Витрина и
+   раскладка по-прежнему живут на whereRu, карточка находки — на месте. */
+function rareTake(where,key,placeRu){
   const R=rareAtPlace(where,key);
   if(!R||rareHas(R.id))return null;
   /* её унесли раньше вас (12p): место пусто, но предмет не потерян — сменился
@@ -20260,10 +20268,11 @@ function rareTake(where,key){
   }
   rareList().push(R.id);
   const c=rareCount();
+  const at=placeRu||R.whereRu;
   tell("tech","Редкость: «"+R.ru+"» · "+c+"/100",
-       "«"+R.ru+"»\n"+R.grade+", "+R.note+"\n"+R.whereRu+"\nэффект: "+R.fx.ru+
+       "«"+R.ru+"»\n"+R.grade+", "+R.note+"\n"+at+"\nэффект: "+R.fx.ru+
        "\n\nсобрано редкостей: "+c+" из 100");
-  logAdd("tech","Найдена редкость «"+R.ru+"» ("+R.whereRu+") · "+c+"/100");
+  logAdd("tech","Найдена редкость «"+R.ru+"» ("+at+") · "+c+"/100");
   /* сотая редкость — единственный вход в планету (12n): не покупка и не выбор,
      а следствие полноты. Стоим там, где нашли, — эта планета и станет узлом. */
   if(c>=100&&typeof planetGrant==="function")planetGrant();
@@ -32207,6 +32216,11 @@ function updateScoop(dt){
   if(S.heat>=100){
     G.hull-=.5*dt;
     if(G.t-S.lastWarn>90){S.lastWarn=G.t;sfx("hit");}
+    /* автомат прерывает заход раньше гибели: сцена входится одним нажатием,
+       и первый же неудачный урок стоил ВЕСЬ корпус и груз (плейтест
+       30.08.2026). Ожог до пятой части корпуса остаётся уроком, аварийный
+       ремонт приберегается для настоящих аварий. */
+    if(G.hull<=st.hullMax*.18){exitScoop("Автомат прервал заход\nкорпус на пределе");return;}
     if(G.hull<=0){G.scoop=null;G.mode="system";wreck();return;}
   }
   /* сбор идёт только в коридоре и только пока есть место в трюме */
@@ -32219,7 +32233,10 @@ function updateScoop(dt){
   if(keys.left)S.vy-=.006*dt;      // мелкая доводка рулями, чтобы удержание было точнее
   if(keys.right)S.vy+=.006*dt;
   const heat=Math.round(S.heat);
-  G.prompt=(full?"ТРЮМ ПОЛОН · ВЫХОД — УХОД НА ОРБИТУ":
+  /* горящий корпус называет оба выхода: «нагрев растёт» — это прогноз погоды,
+     а игроку в пожаре нужна инструкция (плейтест 30.08.2026) */
+  G.prompt=(S.heat>=100?"КОРПУС ГОРИТ · ТЯГА — ВВЕРХ\nВЫХОД — УХОД НА ОРБИТУ":
+      full?"ТРЮМ ПОЛОН · ВЫХОД — УХОД НА ОРБИТУ":
       inBand?"СБОР ИДЁТ · ДЕРЖИТЕ ВЫСОТУ":
       S.y<bt?"ВЫШЕ КОРИДОРА · СБОРНИК ХВАТАЕТ ПУСТОТУ":"НИЖЕ КОРИДОРА · НАГРЕВ РАСТЁТ")+
     "\nНАГРЕВ "+heat+"% · ГАЗЫ "+G.cargo.volatiles+" · ТРЮМ "+held()+"/"+st.cargoMax;
@@ -35866,8 +35883,11 @@ function poiInspect(q){
      отдаёт свою, отдельную ветку — это и есть закрытый хвост M92 «храм молчит
      при известной координате»: он не отмалчивается, он отдаёт редкость плит. */
   if(typeof rareTake==="function"){
-    if(q.k==="temple"&&G.relicHint)rareTake("temple",q.seed);
-    else rareTake("poi",q.seed);
+    /* карточке находки — фактическое место: «здесь: остов корабля», а не
+       родовое «на памятнике» (падежи не склоняем — двоеточие вместо предлога) */
+    const at="здесь: "+String(q.ru||F.ru).toLowerCase();
+    if(q.k==="temple"&&G.relicHint)rareTake("temple",q.seed,at);
+    else rareTake("poi",q.seed,at);
   }
   return true;
 }
@@ -43020,12 +43040,13 @@ function updateSurface(dt){
     const n=wallCount(WALL_S);
     if(wallCanSign(WALL_S)){
       G.prompt="ДЕЙСТВИЕ — ОСТАВИТЬ СВОЙ ЗНАК НА СТЕНЕ"+
-        (n>0?"\nТУТ УЖЕ "+n+" ЧУЖИХ РУК":(n===0?"\nСТЕНА ПУСТА":""));
+        (n>0?"\nТУТ УЖЕ "+n+" "+pl3(n,"ЧУЖАЯ РУКА","ЧУЖИЕ РУКИ","ЧУЖИХ РУК"):(n===0?"\nСТЕНА ПУСТА":""));
       if(actEdge){wallSign(WALL_S);return;}
     }else if(n>0){
       /* расписался — больше сказать нечего, и просить нечего. Кнопки нет,
          строка есть: место должно уметь молчать, но не притворяться пустым */
-      G.prompt="СТЕНА ПОСЁЛКА · "+n+" РУК"+(wallHere(WALL_S)&&wallHere(WALL_S).mine?", СРЕДИ НИХ ВАША":"");
+      /* «1 РУК» — счёт без языка (плейтест 30.08.2026): числительное склоняется */
+      G.prompt="СТЕНА ПОСЁЛКА · "+n+" "+pl3(n,"РУКА","РУКИ","РУК")+(wallHere(WALL_S)&&wallHere(WALL_S).mine?", СРЕДИ НИХ ВАША":"");
     }
   }
   else if(settleCanLive(S.p)&&Math.abs(S.x-settleSpotX(S.p,tr))<44){
@@ -44252,10 +44273,10 @@ function updateCave(dt){
     const n=wallCount(WALL_C);
     if(wallCanSign(WALL_C)){
       G.prompt="ДЕЙСТВИЕ — ОСТАВИТЬ СВОЙ ЗНАК У УСТЬЯ"+
-        (n>0?"\nТУТ УЖЕ "+n+" ЧУЖИХ РУК":(n===0?"\nКАМЕНЬ ЧИСТ":""));
+        (n>0?"\nТУТ УЖЕ "+n+" "+pl3(n,"ЧУЖАЯ РУКА","ЧУЖИЕ РУКИ","ЧУЖИХ РУК"):(n===0?"\nКАМЕНЬ ЧИСТ":""));
       if(actEdge){wallSign(WALL_C);return;}
     }else if(n>0){
-      G.prompt="УСТЬЕ · "+n+" РУК"+(wallHere(WALL_C)&&wallHere(WALL_C).mine?", СРЕДИ НИХ ВАША":"");
+      G.prompt="УСТЬЕ · "+n+" "+pl3(n,"РУКА","РУКИ","РУК")+(wallHere(WALL_C)&&wallHere(WALL_C).mine?", СРЕДИ НИХ ВАША":"");
     }
   }
   else if(!C.found&&Math.hypot(C.x-C.findX,C.y-C.findY)<44){
@@ -47783,6 +47804,9 @@ function updateBelt(dt){
       G.hull=Math.max(0,G.hull-dmg*dt*.5);
       b.vx-=dx/d*.6;b.vy-=dy/d*.6;b.vz-=dz/d*.6;
       b.hit=14;
+      /* касание слышно: вспышка на .22 альфы — единственный сигнал, и корпус
+         стирался о камень молча, 45→28 мелкими тычками (плейтест 30.08.2026) */
+      if(G.t-(b.hitWarn||0)>45){b.hitWarn=G.t;sfx("hit");}
       if(G.hull<=0){wreck();G.belt=null;return;}
     }
   }
@@ -47875,6 +47899,10 @@ function updateBelt(dt){
   if(best&&G.droneInventory>0&&RARE_RES.indexOf(best.res)<0){droneTarget=best.res;dbtn.style.display="";dbtn.textContent="ДРОН → "+RES[best.res].ru.toUpperCase();}
   else{droneTarget=null;dbtn.style.display="none";}
 
+  /* контакт с камнем перекрывает разговоры о прицеле: пока борт скребёт
+     породу, единственная нужная подсказка — что корпус тратится и как это
+     прекратить (плейтест 30.08.2026: 45→28 молча) */
+  if(b.hit>10){G.prompt="БОРТ СКРЕБЁТ О КАМЕНЬ · КОРПУС "+Math.round(G.hull)+"\nТОРМОЗ И ОТВЕРНИТЕ";return;}
   if(!best){G.prompt="НАВЕДИТЕ ПРИЦЕЛ НА АСТЕРОИД";return;}
   const td=Math.hypot(best.x-b.x,best.y-b.y,best.z-b.z)-best.r;
   if(td>CUT_RANGE){
@@ -54176,6 +54204,9 @@ function closeStation(){
   G.ship.x=S.x+dx/d*150;G.ship.y=S.y+dy/d*150;
   G.ship.vx=S.vx;G.ship.vy=S.vy;
   say("Отстыковка");
+  /* запись на выходе — парой к записи на входе (плейтест 30.08.2026): вход
+     сохранял 428 кр до ремонта, а всё купленное в доке жило лишь до перезагрузки */
+  saveGame(true);
 }
 document.querySelectorAll("#stTabs button").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll("#stTabs button").forEach(x=>x.classList.remove("on"));
@@ -54678,7 +54709,10 @@ function renderTab(){
         (m.pax&&m.story?"<i style='color:var(--phos)'>"+m.story+"</i><br>":"")+
         CREW_SPEC[m.spec].note+
         "<br>"+m.traits.map(t=>traitOf(t).ru+" — "+traitOf(t).note).join("<br>")+
-        "<br>жалованье "+crewPay(m)+" кр/мин · опыт "+m.xp+"</s>"));
+        "<br>жалованье "+crewPay(m)+" кр/мин · опыт "+m.xp+
+        /* цена расставания называется ДО найма: «РАСЧЁТ 298» при найме за 176
+           читался ловушкой, когда открывался уже на карточке (плейтест 30.08.2026) */
+        " · расчёт при увольнении "+crewSeverance(m).toLocaleString("ru")+" кр</s>"));
       r.appendChild(el("div","qt",m.fee.toLocaleString("ru")+"<s>кр найм</s>"));
       const b=el("button","act gold","НАНЯТЬ");
       b.disabled=G.credits<m.fee||G.crew.length>=crewCap();
@@ -61600,7 +61634,10 @@ function wreck(){
   saveGame(true);
   if(pax)logAdd("warn","С кораблём погибли вывезенные · "+pax+" человек");
   logAdd("warn","Корабль разбит · аварийный ремонт"+(lost?" · груз потерян ("+lost+" ед)":""));
-  say("Аварийный ремонт\n"+(lost?"груз потерян ("+lost+")":"трюм был пуст"));
+  /* «трюм был пуст» без глагола читался загадкой: ремонт оплачивается грузом,
+     и когда груза нет — надо сказать, что расплачиваться было нечем */
+  say("Аварийный ремонт\nкорпус собран наспех"+
+    (lost?"\nгруз потерян ("+lost+" ед)":"\nтрюм был пуст — терять было нечего"));
 }
 
 /* телеметрия и hud() переехали в 27z-telemetry (распил 0.209.0) */
@@ -61813,7 +61850,11 @@ function frameBody(now){
       /* и однажды рассказанное возвращается чужим голосом (11aj) */
       if(typeof toldEther==="function")toldEther();}
     if(G.msgT>0)G.msgT-=dt;
-    if(G.mode==="system")autosave();
+    /* запись и в доке, и на земле: полчаса торговли или бурения, закрытые
+       крестиком браузера, откатывались к последнему полёту — деньги со сделок
+       и руда исчезали молча (плейтест 30.08.2026). Оба режима стабильны, их
+       снимок честен: восстановление ставит корабль в свободный полёт там же. */
+    if(G.mode==="system"||G.mode==="dock"||G.mode==="surface")autosave();
     stepWorld(dt);
     if(typeof tapeTick==="function")tapeTick(dt);
     if(typeof shiftTalkTick==="function")shiftTalkTick(dt);

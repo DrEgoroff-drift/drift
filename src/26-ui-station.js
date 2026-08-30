@@ -120,6 +120,9 @@ function closeStation(){
   G.ship.x=S.x+dx/d*150;G.ship.y=S.y+dy/d*150;
   G.ship.vx=S.vx;G.ship.vy=S.vy;
   say("Отстыковка");
+  /* запись на выходе — парой к записи на входе (плейтест 30.08.2026): вход
+     сохранял 428 кр до ремонта, а всё купленное в доке жило лишь до перезагрузки */
+  saveGame(true);
 }
 document.querySelectorAll("#stTabs button").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll("#stTabs button").forEach(x=>x.classList.remove("on"));
@@ -622,7 +625,10 @@ function renderTab(){
         (m.pax&&m.story?"<i style='color:var(--phos)'>"+m.story+"</i><br>":"")+
         CREW_SPEC[m.spec].note+
         "<br>"+m.traits.map(t=>traitOf(t).ru+" — "+traitOf(t).note).join("<br>")+
-        "<br>жалованье "+crewPay(m)+" кр/мин · опыт "+m.xp+"</s>"));
+        "<br>жалованье "+crewPay(m)+" кр/мин · опыт "+m.xp+
+        /* цена расставания называется ДО найма: «РАСЧЁТ 298» при найме за 176
+           читался ловушкой, когда открывался уже на карточке (плейтест 30.08.2026) */
+        " · расчёт при увольнении "+crewSeverance(m).toLocaleString("ru")+" кр</s>"));
       r.appendChild(el("div","qt",m.fee.toLocaleString("ru")+"<s>кр найм</s>"));
       const b=el("button","act gold","НАНЯТЬ");
       b.disabled=G.credits<m.fee||G.crew.length>=crewCap();

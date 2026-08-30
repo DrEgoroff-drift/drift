@@ -111,8 +111,11 @@ function rareAtPlace(where,key){
   const h=hashi((key>>>0)||1,RARE_SALT,RARE_WHERE_IX[where]||1);
   return pool[(h%pool.length+pool.length)%pool.length];
 }
-/* забрать, если она тут есть и ещё не унесена. Возвращает запись либо null. */
-function rareTake(where,key){
+/* забрать, если она тут есть и ещё не унесена. Возвращает запись либо null.
+   placeRu — фактическое место находки: «на памятнике» — адрес ветки, и у
+   остова корабля он читался опечаткой (плейтест 30.08.2026). Витрина и
+   раскладка по-прежнему живут на whereRu, карточка находки — на месте. */
+function rareTake(where,key,placeRu){
   const R=rareAtPlace(where,key);
   if(!R||rareHas(R.id))return null;
   /* её унесли раньше вас (12p): место пусто, но предмет не потерян — сменился
@@ -125,10 +128,11 @@ function rareTake(where,key){
   }
   rareList().push(R.id);
   const c=rareCount();
+  const at=placeRu||R.whereRu;
   tell("tech","Редкость: «"+R.ru+"» · "+c+"/100",
-       "«"+R.ru+"»\n"+R.grade+", "+R.note+"\n"+R.whereRu+"\nэффект: "+R.fx.ru+
+       "«"+R.ru+"»\n"+R.grade+", "+R.note+"\n"+at+"\nэффект: "+R.fx.ru+
        "\n\nсобрано редкостей: "+c+" из 100");
-  logAdd("tech","Найдена редкость «"+R.ru+"» ("+R.whereRu+") · "+c+"/100");
+  logAdd("tech","Найдена редкость «"+R.ru+"» ("+at+") · "+c+"/100");
   /* сотая редкость — единственный вход в планету (12n): не покупка и не выбор,
      а следствие полноты. Стоим там, где нашли, — эта планета и станет узлом. */
   if(c>=100&&typeof planetGrant==="function")planetGrant();

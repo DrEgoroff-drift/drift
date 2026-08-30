@@ -7,7 +7,39 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.278.0 — M281: the interface audit — every screen against the rules
+## 0.279.0 — M282: the playtest pass — what two hours as a player found
+
+A full player session (menu → land → mine → wreck → anomaly → station → jump → SOS →
+belt → broke) surfaced nine wounds; all fixed:
+
+- **The dock forgot everything.** Autosave ran only in free flight, so repairs, refuels,
+  sales and hand-ins made while docked vanished if the game was closed at a station
+  (reproduced: −416 кр repair rolled back on reload). Autosave now also runs docked and
+  on the surface, and undocking writes a save to pair with the one docking already wrote.
+- **The gas giant killed the ignorant.** A ship left alone sank and burned from 100 to
+  wreck with no instruction. At 100% heat the prompt now names both exits («ТЯГА — ВВЕРХ /
+  ВЫХОД»), and an automatic abort surfaces the ship at 18% hull — the burn stays a lesson,
+  the wreck is reserved for real crashes.
+- **The wreck message was a riddle.** «Аварийный ремонт · трюм был пуст» never said the
+  repair is *paid in cargo*; now it does («терять было нечего» / «груз потерян (N ед)»).
+- **Rarities lied about where they were.** Any surface POI granted its rarity «на
+  памятнике» — found at a ship wreck or an anomaly, the card read like a bug. The find
+  card now names the actual place («здесь: остов корабля»); the collection keeps bucket
+  addresses.
+- **Board needs flickered away.** A need window was 3 in-game days — three real minutes
+  (CEL_DAY=60 s), so «Энтурикс · лёд» became «кристаллы» while the player was still
+  docked, and no need could outlive the flight to it. NEED_WIN 3→15, ORDER_WIN 2→6.
+- **Severance was a surprise.** РАСЧЁТ (fee×.5 + 15 min wages) exceeded the hire fee and
+  showed up only after hiring; the hire card now states «расчёт при увольнении N кр».
+- **«1 РУК».** Wall/cave hand counts now decline properly (pl3) in all four strings.
+- **The belt ground hulls in silence.** Contact damage had a .22-alpha flash and nothing
+  else; 45→28 went unnoticed. A hit now sounds (throttled sfx) and ongoing contact
+  overrides the prompt: «БОРТ СКРЕБЁТ О КАМЕНЬ · КОРПУС N — ТОРМОЗ И ОТВЕРНИТЕ».
+- **Acquitted:** repeat organism scans are per-individual (each pays once — checked, by
+  design), an idle merc eats no wages (confirmed «итог 0»), and the dev stand being six
+  versions behind prod is deploy hygiene, not code (republished).
+
+
 
 All screens walked (station tabs, СТОЛ, оснастка, штаб, доска, кантина, Вега, radio, menu,
 settings, intro) with three overlay scenes added to the stand (uimenu/uiopts/uikeys — overlays
