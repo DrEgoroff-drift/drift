@@ -41,70 +41,104 @@ function mgrHead(m){
 /* ── кантина ──
    Не список найма, а место: те же 2–4 человека держатся на seed станции и
    временном бакете. Разговор бесплатен, но кандидат после него занят до
-   следующего бакета — «подумать и вернуться» стоит именно этого. */
+   следующего бакета — «подумать и вернуться» стоит именно этого.
+
+   ПОРЯДОК ЭКРАНА. Плейтест 30.08.2026: «в кантине вообще непонятно: скролишь
+   вниз, вверху надо тыкать, внизу что-то выбираешь, непонятно, что
+   происходит». Экран набирал до пятнадцати блоков подряд одинаковыми строками
+   — найм, дела, копщик, домино, почта, смотритель, чужая карта, стол, поздний
+   час, — и НОВОСТИ МИРА стояли перед залом, то есть первым, что читал вошедший.
+   Ни одна секция не говорила, что она такое и сколько в ней строк.
+
+   Теперь экран отвечает сверху вниз на три вопроса: КТО ЗДЕСЬ (зал), КОГО МОЖНО
+   НАНЯТЬ (стойка), ЧТО ЗДЕСЬ ПРЕДЛАГАЮТ (столики). Ниже — то, что в кантине
+   делают руками: копщик, игра, стол. Новости ушли в самый низ: это чтение, а не
+   действие, и очередь у них последняя.
+
+   ВЫБОР В ЗАЛЕ БОЛЬШЕ НЕ ПРЯЧЕТ ОСТАЛЬНЫХ. Он подсвечивает строку, и только.
+   Фильтр экономил высоту, но отвечал на нажатие исчезновением двух третей
+   экрана: игрок тыкал в зал и терял из виду то, что читал минуту назад. И
+   наоборот — строку теперь можно нажать саму: зал и список это одни и те же
+   люди, и любой открывается с любой стороны.
+
+   ПРОКРУТКА НЕ СБРАСЫВАЕТСЯ — это уже не здесь, а в `renderTab` (26-ui-station):
+   любое нажатие перебирало $body заново и уносило экран в шапку. */
 function renderCantina(){
   mgrTick();
   const T=stTypeOf(G.st.stype);
-  $body.appendChild(el("div","sec","КАНТИНА «"+G.st.name.toUpperCase()+"» · МЕСТ "+
-    G.mgrs.length+" / "+MGR_CAP+" · ОДИН ДОМЕН — ОДИН УПРАВЛЯЮЩИЙ"));
-  $body.appendChild(el("div","row","<div class='nm'><s>здесь сидят те, кто берёт домен целиком, "+
-    "а не приказ на рейс. Они дороже наёмника втрое и берут долю с того, что приносит "+
-    "их домен — зато рутину держат сами.<br>кто сюда заходит, зависит от станции: "+
-    T.ru.toLowerCase()+" собирает своих</s></div>"));
-  /* новости слышны там, где их и слышат: мир двигался, пока вас не было (12p) */
-  if(typeof newsRender==="function")newsRender();
   G.cantina=G.cantina&&G.cantina.key===G.sys.key?G.cantina:{key:G.sys.key,list:stationMgrs(G.sys),talked:{}};
   const free=G.cantina.list.filter(m=>!G.mgrs.some(x=>x.seed===m.seed));
-  if(free.length)$body.appendChild(el("div","sec",
-    cantSel?"ТКНИТЕ ПО НЕМУ ЕЩЁ РАЗ ИЛИ ПО ДРУГОМУ — ВЕРНЁТЕСЬ В ЗАЛ"
-           :"ТКНИТЕ ПО ЧЕЛОВЕКУ В ЗАЛЕ — ОТКРОЕТСЯ ЕГО КАРТОЧКА"));
-  /* ── зал ──
-     Кандидаты у стойки, дела за столиками: рисуются одной сценой, потому что
-     это одно помещение. Выбор в зале фильтрует то, что раскрывается ниже. */
   const deals=stationDeals(G.sys).filter(d=>!dealTaken(d.key));
-  const dealSel=cantSel&&cantSel.indexOf("deal:")===0?cantSel.slice(5):null;
-  if(free.length||deals.length)cantinaScene(free,deals);
+  /* ── зал ──
+     Кандидаты у стойки, дела за столиками: одной сценой, потому что это одно
+     помещение. Стоит первым — на вопрос «где я» отвечает картинка, а не заголовок. */
+  if(free.length||deals.length){
+    cantinaScene(free,deals);
+    $body.appendChild(el("div","sec","Тыкните по человеку в зале — или по его строке ниже: "+
+      "это одни и те же люди. Нажатие подсвечивает, а не прячет остальных."));
+  }
+  /* ── у стойки: найм ── */
+  $body.appendChild(el("div","sec","У СТОЙКИ · КОГО МОЖНО НАНЯТЬ · МЕСТ "+
+    G.mgrs.length+" / "+MGR_CAP));
+  $body.appendChild(el("div","sec","Здесь сидят управляющие: такой берёт домен целиком — "+
+    "звено, базы, маршрут или лабораторию, — а не приказ на один рейс. Дороже наёмника втрое "+
+    "и берёт долю с того, что приносит его домен, зато рутину держит сам. Один домен — один "+
+    "управляющий. Кто сюда заходит, зависит от станции: "+T.ru.toLowerCase()+" собирает своих."));
   for(const m of free){
-    if(dealSel)break;                          // выбрали столик — люди у стойки ждут
-    if(cantSel&&m.id!==cantSel)continue;      // выбрали человека — показываем его
     const R=MGR_ROLES[m.role],taken=mgrTaken(m.role),fee=mgrFee(m);
     const spoke=!!G.cantina.talked[m.id];
     const known=spoke||mgrPerkOf("cmd","read")||relicDeep("ledger");
-    const r=el("div","row");
+    const r=el("div","row"+(cantSel===m.id?" on":""));
+    r.style.cursor="pointer";
+    /* строка — тот же выбор, что и фигура в зале: нажали мимо кнопок — выбрали */
+    r.onclick=ev=>{
+      if(ev.target.closest("button"))return;
+      cantSel=(cantSel===m.id)?null:m.id;sfx("ui");renderTab();
+    };
     r.appendChild(faceEl(m,64));
     r.appendChild(el("div","nm","<b style='color:"+R.col+"'>"+m.name+"</b><s>"+
       R.ru.toLowerCase()+" · "+R.note+
       "<br>уровень "+mgrLevel(m)+" · оклад "+mgrPay(m)+" кр/мин · доля "+(mgrCut(m)*100).toFixed(1)+"%"+
       "<br>"+(known
         ? "черты: "+m.traits.map(t=>"<b>"+mgrTrait(t).ru+"</b> — "+mgrTrait(t).note).join("<br>черты: ")
-        : "черты видны после разговора"+(m.traits.length>2?" (их у него три)":""))+
+        : "чем он хорош и чем плох — видно только после разговора"+
+          (m.traits.length>2?" (черт у него три)":""))+
       (taken?"<br><b style='color:#ff9d7a'>домен занят: "+mgrOf(m.role).name+"</b>":"")+"</s>"));
-    if(!spoke&&!mgrPerkOf("cmd","read")&&!relicDeep("ledger")){
-      const bt=el("button","act sm","ПОГОВОРИТЬ");
+    if(!known){
+      const bt=el("button","act sm","РАССПРОСИТЬ");
       bt.onclick=()=>{G.cantina.talked[m.id]=1;renderTab();};
       r.appendChild(bt);
     }
-    const b=el("button","act"+(taken?"":" gold"),fee.toLocaleString("ru")+" кр");
+    /* кнопка называет действие, а не сумму: голая цифра в кнопке не говорит,
+       что случится, если по ней нажать */
+    const b=el("button","act"+(taken?"":" gold"),"НАНЯТЬ · "+fee.toLocaleString("ru")+" кр");
     b.disabled=taken||G.credits<fee||G.mgrs.length>=MGR_CAP;
     b.onclick=()=>{if(hireMgr(m)){hqSel=m.id;renderTab();}};
     r.appendChild(b);
     $body.appendChild(r);
   }
   if(!free.length)
-    $body.appendChild(el("div","row","<div class='nm'><s>зал пуст: всех, кто тут сидел, "+
+    $body.appendChild(el("div","row","<div class='nm'><s>у стойки никого: всех, кто тут сидел, "+
       "вы уже наняли. Состав меняется сам — загляните позже или на другой станции.</s></div>"));
   /* ── за столиками ──
      Не найм и не поручение: люди со своими делами. Всё, что здесь делает игрок, —
      отвечает; работа уже сделана кем-то другим (27g-deals). */
   if(deals.length){
-    $body.appendChild(el("div","sec","ЗА СТОЛИКАМИ · ЛЮДИ СО СВОИМИ ДЕЛАМИ · "+
-      "ОТВЕТ СТОИТ ДЕНЕГ, ВРЕМЕНИ ИЛИ ЧУЖОЙ СУДЬБЫ"));
+    $body.appendChild(el("div","sec","ЗА СТОЛИКАМИ · ЧУЖИЕ ДЕЛА · "+deals.length));
+    $body.appendChild(el("div","sec","Везти и добывать тут не просят: вам предлагают, "+
+      "вы отвечаете. Ответ стоит денег, времени или чужой судьбы, и бесплатного ответа нет "+
+      "ни у одного дела — «отказать» тоже ответ."));
     for(const d of deals){
-      if(dealSel&&d.key!==dealSel)continue;   // подошли к столику — говорим с ним
-      const D=d.def;
-      $body.appendChild(el("div","row","<div class='nm'><b style='color:#f2b25c'>"+
-        D.ru+"</b><s>"+d.name+" · "+D.who+
-        "<br><span style='color:#cfe3ea;line-height:1.8'>— "+D.text+"</span></s></div>"));
+      const D=d.def,sel=cantSel==="deal:"+d.key;
+      const c=el("div","row"+(sel?" on":""));
+      c.style.cursor="pointer";
+      c.onclick=ev=>{
+        if(ev.target.closest("button"))return;
+        cantSel=sel?null:"deal:"+d.key;sfx("ui");renderTab();
+      };
+      c.appendChild(el("div","nm","<b style='color:#f2b25c'>"+D.ru+"</b><s>"+d.name+" · "+D.who+
+        "<br><span style='color:#cfe3ea;line-height:1.8'>— "+D.text+"</span></s>"));
+      $body.appendChild(c);
       const rr=el("div","row");
       D.opts.forEach((o,i)=>{
         const b=el("button","act sm"+(o.free?"":" gold"),
@@ -124,20 +158,25 @@ function renderCantina(){
   if(typeof vegaCantinaBlock==="function")vegaCantinaBlock();   /* Вега за столиком (M153) */
   /* домино (M166): в кантине — со случайным из зала или соперником */
   if(typeof dominoBlock==="function"){const RIV=["Пекарь","Совеня","Долгий Ким","Штоф"];dominoBlock((typeof vegaAboard==="function"&&vegaAboard())?"Вега":RIV[Math.abs(hashi(G.sx,G.sy,celDay()))%RIV.length]);}
-  /* стол (M128): вещь вместо слов. Стоит после людей — сначала зал, потом то,
-     что вы на него выкладываете */
   /* посылка почтового круга (M133, 11e): лежит рядом со столом, пока вы её везёте */
   if(typeof postBlock==="function")postBlock();
   if(typeof keepersBlock==="function")keepersBlock();   /* смотритель и список на переборке (11k) */
   if(typeof chartsBlock==="function")chartsBlock();     /* их карта (11m) */
   if(typeof quietBlock==="function")quietBlock();       /* открытая дверь (11n) */
+  /* стол (M128): вещь вместо слов. Стоит после людей — сначала зал, потом то,
+     что вы на него выкладываете */
   if(typeof putOnTable==="function")tableBlock();
   /* тот один (11ar, M230): скажет прямо ровно раз, и он неправ */
   if(typeof toldOffBlock==="function")toldOffBlock();
   /* поздний час (11aq, M225): последний ряд зала — остаться можно всегда,
      а вот что из этого выйдет, знает только стойка */
   if(typeof lateBlock==="function")lateBlock();
-  $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
+  /* новости (12p): мир двигался, пока вас не было. Стояли ПЕРВЫМ блоком экрана —
+     то есть вошедший читал сводку раньше, чем видел, кто в зале. Это чтение, а
+     не действие: его место после всего, что здесь можно сделать руками */
+  if(typeof newsRender==="function")newsRender();
+  $body.appendChild(el("div","sec","Состав кантины меняется сам: пришли через час — "+
+    "другие люди и другие дела. Перки и приказы нанятым раздают на экране ШТАБ."));
 }
 /* ── строка Грохотуна ──
    Одна карточка со своим состоянием и списком площадок из СВОЕГО слоя карты.
@@ -174,17 +213,20 @@ function grokBlock(){
   if(R.state!=="idle")return;
   const sites=grokSites();
   if(!sites.length){
-    $body.appendChild(el("div","row","<div class='nm'><s>копать пока нечего: "+
-      "площадки берутся из вашего слоя карты — адресов отчёта и их съёмки. "+
-      "Нет ни одного — значит, вы ещё не собрали ни одного свидетельства.</s></div>"));
+    $body.appendChild(el("div","row","<div class='nm'><b>Копать пока негде</b><s>"+
+      "он копает только там, где вы уже что-то нашли: площадки берутся из адресов "+
+      "отчёта и их съёмки. Соберите первое свидетельство — и здесь появится список секторов"+
+      "</s></div>"));
     return;
   }
   for(const s of sites.slice(0,6)){
     const rr=el("div","row");
     rr.appendChild(el("div","nm","<b>сектор "+s.sx+":"+s.sy+"</b><s>"+s.why+
-      " · копка поднимет там занятость на ступень</s>"));
+      " · уйдёт туда с вашим "+RES[want].ru.toLowerCase()+" и вернётся с тем, что выкопал"+
+      "</s>"));
+    /* кнопка называет действие, а не цену: «ЛЁД ×120» не говорит, что случится */
     const b=el("button","act"+(have>=price?" gold":""),
-      RES[want].ru.toUpperCase()+" ×"+price);
+      "ОТПРАВИТЬ · "+RES[want].ru.toUpperCase()+" ×"+price);
     b.disabled=have<price;
     b.onclick=()=>{if(grokSend(s.sx,s.sy))renderTab();};
     rr.appendChild(b);

@@ -56,6 +56,8 @@ function openStation(){
   document.getElementById("stKind").textContent=
     G.st.kind+" · система "+G.sys.name+"\n"+stationModsLine(G.sys);
   syncTabs();
+  /* новая стыковка — новый экран: высоту прошлого захода не помним */
+  renderTab._tab=null;
   $st.classList.add("open");renderTab();saveGame(true);
 }
 /* ── навигация станции: раздел, потом вкладка ──
@@ -209,7 +211,27 @@ function shipRow(id,S){
   }
   return r;
 }
+/* ── экран не прыгает вверх ──
+   Плейтест 30.08.2026: «в кантине скролишь вниз, а вверху надо тыкать; нажал —
+   экран прыгает вверх». Причина не в кантине: любое нажатие внутри вкладки
+   перебирает $body заново, а вместе с ним обнуляется и прокрутка. Игрок
+   ответил человеку в пятом ряду — и смотрит на шапку, заново ищет, где был.
+
+   Место чтения принадлежит игроку, а не рендеру. Та же вкладка возвращается на
+   ту же высоту; смена вкладки и новая стыковка — в начало, потому что это уже
+   другой экран. Восстанавливаем и кадром позже: канвы зала и рубки меряют себя
+   по разложенной панели, и высота списка на первом кадре ещё не окончательная. */
 function renderTab(){
+  const same=renderTab._tab===tab;
+  const keep=same?$body.scrollTop:0;
+  renderTab._tab=tab;
+  renderTabBody();
+  if(keep>0){
+    const put=()=>{$body.scrollTop=Math.min(keep,Math.max(0,$body.scrollHeight-$body.clientHeight));};
+    put();requestAnimationFrame(put);
+  }
+}
+function renderTabBody(){
   const st=stat();
   document.getElementById("wCr").textContent=G.credits.toLocaleString("ru")+" кр";
   document.getElementById("wDt").textContent=G.data+" данных";

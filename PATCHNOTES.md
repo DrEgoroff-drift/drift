@@ -7,6 +7,45 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.280.0 - M283: the cantina you can read, and a rumour that is a sentence
+
+Playtest 30.08.2026, verbatim: "in the cantina nothing is clear at all - you scroll down,
+the thing you have to poke is up top, down below you pick something, no idea what is
+happening. The screen jumps to the top when you click." And: "the rumour text makes no
+damn sense."
+
+- **The screen no longer jumps.** Every click inside a station tab rebuilt `$body` from
+  scratch and the scroll went back to zero with it: answer a person in the fifth row and
+  you are staring at the header again. `renderTab` now keeps the scroll offset for the
+  same tab and only resets it on a tab switch or a new docking. This is a station-wide
+  fix, not a cantina one - the market, the board and the crew tab had it too.
+- **Selecting someone in the hall no longer hides everyone else.** The pick used to filter
+  the list down to one card, so a tap answered by removing two thirds of the screen. It
+  highlights the row instead - and the row itself is now clickable, because the hall and
+  the list are the same people.
+- **The cantina has an order.** It ran up to fifteen identical-looking blocks in a row,
+  with the world news *before* the hall - the first thing a visitor read. Now it answers
+  three questions top-down: who is here (the hall), who can be hired (the counter), what
+  is on offer (the tables); then what you do with your hands - the digger, dominoes, the
+  desk; news last, because it is reading, not doing.
+- **Buttons name the action.** A bare `4 141 кр` became `НАНЯТЬ · 4 141 кр`, `ЛЁД ×120`
+  became `ОТПРАВИТЬ · ЛЁД ×120`, `ПОГОВОРИТЬ` became `РАССПРОСИТЬ`.
+- **A rumour is a sentence now.** It used to read as four fragments glued by full stops,
+  each starting lower-case, with the source signed at the end like a painting and the
+  address written `-9:18` - which reads as a time. It now follows the order people
+  actually speak in: WHO said it, ABOUT WHAT, WHERE to look, WHY you would believe them.
+  The address always carries the word `сектор`, the spread is words (`в 3 секторах
+  вокруг`) rather than a `±` that appears nowhere else in the game, and the teller's
+  gender no longer contradicts the detail (a barmaid used to "swear on his mug").
+- **A rumour is written down.** Reading the board logs it once per station and three-day
+  bucket to the desk, page ЛЮДИ - the player no longer has to copy a sector onto paper.
+- **"A rumour for a drink" now buys a rumour.** The deal charged 500 and gave one
+  decorative line about "strangers in the next arm" with no place and no sector behind it;
+  its `intel:1` was dead code and its button printed the price twice (`КУПИТЬ СЛУХ · 500
+  · 500 кр`). The dispatcher now names a real place out of the station's rumours, and it
+  lands on the ЛЮДИ page like anything else a person says.
+
+---
 ## 0.279.0 — M282: the playtest pass — what two hours as a player found
 
 A full player session (menu → land → mine → wreck → anomaly → station → jump → SOS →

@@ -46,7 +46,7 @@ function dominoSettle(){
     if(r()<.3){const p=genPart(hashi(G.sx,G.sy,D.day*13),1);G.inv.push(p);D.line="проиграл — держите: «"+p.name+"». Лежала без дела.";logAdd("good","Домино: выигрыш — «"+p.name+"»");}
     else{
       const L=(typeof rumoursHere==="function")?rumoursHere():[];
-      D.line=L.length?"с меня слух: "+L[Math.floor(r()*L.length)].text:"с меня слух, но нечего рассказать. Тут тихо.";
+      D.line=L.length?"с меня слух. "+L[Math.floor(r()*L.length)].text:"с меня слух, но нечего рассказать. Тут тихо.";
       if(L.length)logAdd("dim","Домино: выигран слух");
     }
   }else D.line=D.me===D.him?"ничья. Стол вытираем, никто не видел.":"вы стучали чаще, чем ходили. Бывает.";
@@ -59,10 +59,13 @@ function dominoBlock(who){
   if(!who)return;
   const played=DOM_GAME&&DOM_GAME.over&&DOM_GAME.day===celDay()&&DOM_GAME.key===G.sx+","+G.sy;
   const D=(DOM_GAME&&DOM_GAME.day===celDay()&&DOM_GAME.key===G.sx+","+G.sy)?DOM_GAME:null;
-  $body.appendChild(el("div","sec","ДОМИНО · ТРИ ХОДА · СТАВКА — СЛУХ ИЛИ ЧАСТЬ"+(who==="Вега"?" · С ВЕГОЙ ЛЮБОЙ ИСХОД — ССОРА":"")));
+  $body.appendChild(el("div","sec","ЗА ДАЛЬНИМ СТОЛОМ · ДОМИНО"));
+  $body.appendChild(el("div","sec","Три хода, ставка не деньгами: выиграли — с вас слух "+
+    "(место и сектор, куда стоит слетать) или запасная часть; проиграли — подначка."+
+    (who==="Вега"?" С Вегой любой исход — ссора, и это её правила.":"")));
   if(!D){
     const r=el("div","row","<div class='nm'><b>"+who+" двигает кости</b><s>«садись. Три хода. Кто больше положил, тот и прав»</s></div>");
-    const b=el("button","act sm","СЕСТЬ");b.onclick=()=>{dominoStart(who);renderTab();};
+    const b=el("button","act sm","СЫГРАТЬ");b.onclick=()=>{dominoStart(who);renderTab();};
     r.appendChild(b);$body.appendChild(r);
     /* шахматы шестой: доска стоит, никто не садится */
     if(typeof sixthGone==="function"&&sixthGone())
@@ -70,7 +73,9 @@ function dominoBlock(who){
     return;
   }
   const tile=t=>"["+t[0]+"|"+t[1]+"]";
-  const r=el("div","row","<div class='nm'><b>Цепочка: …"+tile(D.chain)+"</b><s>счёт "+D.me+":"+D.him+" · ход "+Math.min(D.turn+1,3)+" из 3"+
+  const r=el("div","row","<div class='nm'><b>Цепочка: …"+tile(D.chain)+"</b><s>кладут ту кость, у "+
+    "которой половинка совпала с концом цепочки; нечего положить — стучат"+
+    "<br>счёт "+D.me+":"+D.him+" · ход "+Math.min(D.turn+1,3)+" из 3"+
     (D.over?"<br>"+D.who+": «"+D.line+"»":"")+"</s></div>");
   if(!D.over){
     D.hand.forEach((t,i)=>{

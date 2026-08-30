@@ -20,7 +20,32 @@ TEST_SUITES.push(()=>suite("возвращение: хронометр обма�
 TEST_SUITES.push(()=>suite("слухи: область, не точка; образ, деталь, источник; пятнадцать процентов врут",()=>{
   resetWorld();G.st=G.sys.station;
   const L=rumoursHere();eq(L.length,2,"два слуха на станции");
-  for(const q of L){ok(q.rad>=3&&q.rad<=5,"область в "+q.rad+" систем");ok(/—/.test(q.text)&&/±/.test(q.text),"образ, источник, разброс");}
+  for(const q of L){
+    ok(q.rad>=3&&q.rad<=5,"область в "+q.rad+" систем");
+    /* порядок фразы: КТО — ПРО ЧТО — ГДЕ — ПОЧЕМУ верить */
+    eq(q.text.indexOf(capRu(q.src)),0,"слух начинается с того, кто его рассказал");
+    ok(q.text.indexOf(q.img)>0,"в слухе есть образ места");
+    ok(/сектора -?\d+:-?\d+/.test(q.text),"адрес со словом «сектор»: без него «-9:18» читается временем");
+    ok(q.text.indexOf("в "+q.rad+" секторах вокруг")>0,"разброс словами, а не знаком");
+    ok(!/±/.test(q.text),"знака ± в слухе нет — он нигде больше в игре не встречается");
+    eq(q.lines.length,3,"на экран — три строки: что, где, с чьих слов");
+    ok(q.short.indexOf("сектора")>0,"короткая форма для приёмника знает место");
+  }
+  /* пол рассказчика и пол в детали — один: раньше буфетчица «клялся кружкой» */
+  let bad=0,seen=0;
+  const sys0=G.sys;
+  for(let i=0;i<80;i++){
+    G.sys={sx:i*7,sy:i,key:i*7+","+i};
+    for(const q of rumoursHere()){
+      const f=RUMOUR_SRC.some(S=>S.ru===q.src&&S.f);seen++;
+      /* граница слова в JS знает только латиницу — разбираем на слова сами */
+      const w=q.det.toLowerCase().split(/[^а-яё]+/);
+      if(f&&["он","его","ему"].some(x=>w.indexOf(x)>=0))bad++;
+      if(!f&&["она","её","ей"].some(x=>w.indexOf(x)>=0))bad++;
+    }
+  }
+  ok(seen>50&&bad===0,"деталь не спорит с полом рассказчика ("+bad+" из "+seen+")");
+  G.sys=sys0;
   const L2=rumoursHere();eq(L2[0].text,L[0].text,"те же три дня — те же слухи");
   G.t+=CEL_DAY*3;ok(rumoursHere()[0].text!==L[0].text||rumoursHere()[1].text!==L[1].text,"через три дня — другие");
   /* доля неверных — около пятнадцати процентов по многим станциям */

@@ -1368,7 +1368,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.279.0";
+const VER="0.280.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -7932,7 +7932,7 @@ function dominoSettle(){
     if(r()<.3){const p=genPart(hashi(G.sx,G.sy,D.day*13),1);G.inv.push(p);D.line="проиграл — держите: «"+p.name+"». Лежала без дела.";logAdd("good","Домино: выигрыш — «"+p.name+"»");}
     else{
       const L=(typeof rumoursHere==="function")?rumoursHere():[];
-      D.line=L.length?"с меня слух: "+L[Math.floor(r()*L.length)].text:"с меня слух, но нечего рассказать. Тут тихо.";
+      D.line=L.length?"с меня слух. "+L[Math.floor(r()*L.length)].text:"с меня слух, но нечего рассказать. Тут тихо.";
       if(L.length)logAdd("dim","Домино: выигран слух");
     }
   }else D.line=D.me===D.him?"ничья. Стол вытираем, никто не видел.":"вы стучали чаще, чем ходили. Бывает.";
@@ -7945,10 +7945,13 @@ function dominoBlock(who){
   if(!who)return;
   const played=DOM_GAME&&DOM_GAME.over&&DOM_GAME.day===celDay()&&DOM_GAME.key===G.sx+","+G.sy;
   const D=(DOM_GAME&&DOM_GAME.day===celDay()&&DOM_GAME.key===G.sx+","+G.sy)?DOM_GAME:null;
-  $body.appendChild(el("div","sec","ДОМИНО · ТРИ ХОДА · СТАВКА — СЛУХ ИЛИ ЧАСТЬ"+(who==="Вега"?" · С ВЕГОЙ ЛЮБОЙ ИСХОД — ССОРА":"")));
+  $body.appendChild(el("div","sec","ЗА ДАЛЬНИМ СТОЛОМ · ДОМИНО"));
+  $body.appendChild(el("div","sec","Три хода, ставка не деньгами: выиграли — с вас слух "+
+    "(место и сектор, куда стоит слетать) или запасная часть; проиграли — подначка."+
+    (who==="Вега"?" С Вегой любой исход — ссора, и это её правила.":"")));
   if(!D){
     const r=el("div","row","<div class='nm'><b>"+who+" двигает кости</b><s>«садись. Три хода. Кто больше положил, тот и прав»</s></div>");
-    const b=el("button","act sm","СЕСТЬ");b.onclick=()=>{dominoStart(who);renderTab();};
+    const b=el("button","act sm","СЫГРАТЬ");b.onclick=()=>{dominoStart(who);renderTab();};
     r.appendChild(b);$body.appendChild(r);
     /* шахматы шестой: доска стоит, никто не садится */
     if(typeof sixthGone==="function"&&sixthGone())
@@ -7956,7 +7959,9 @@ function dominoBlock(who){
     return;
   }
   const tile=t=>"["+t[0]+"|"+t[1]+"]";
-  const r=el("div","row","<div class='nm'><b>Цепочка: …"+tile(D.chain)+"</b><s>счёт "+D.me+":"+D.him+" · ход "+Math.min(D.turn+1,3)+" из 3"+
+  const r=el("div","row","<div class='nm'><b>Цепочка: …"+tile(D.chain)+"</b><s>кладут ту кость, у "+
+    "которой половинка совпала с концом цепочки; нечего положить — стучат"+
+    "<br>счёт "+D.me+":"+D.him+" · ход "+Math.min(D.turn+1,3)+" из 3"+
     (D.over?"<br>"+D.who+": «"+D.line+"»":"")+"</s></div>");
   if(!D.over){
     D.hand.forEach((t,i)=>{
@@ -13103,7 +13108,21 @@ function retBlock(){
    ПРАВИЛА ФАЙЛА:
    1. Слух считается от станции и трёх суток: на той же станции через три дня
       расскажут другое. Ничего не хранится.
-   2. Имя, данное игроком ядру (11u), слух подхватывает — слегка искажённым. */
+   2. Имя, данное игроком ядру (11u), слух подхватывает — слегка искажённым.
+   3. СЛУХ — ФРАЗА, А НЕ СТРОКА ПОЛЕЙ. Плейтест 30.08.2026: «сам текст слуха
+      прям нихрена не понятно». Читалось так:
+        «долина, где что-то выкладывают в ответ. он клялся кружкой. — механик
+         с «Прибоя», где-то у -9:18, ±3»
+      Четыре обломка через точку, каждый начат со строчной, подпись источника
+      висит в конце как под картиной, а адрес набран так, что «-9:18» читается
+      временем, а не местом. Игрок не понимает даже, ЧТО ему сказали, — не то
+      что куда лететь.
+      Теперь у слуха есть порядок, в котором люди и говорят: КТО сказал, ПРО
+      ЧТО, ГДЕ ИСКАТЬ, ПОЧЕМУ ему верить. Адрес — всегда со словом «сектор»
+      (так он записан во всей игре), разброс — словами «в N секторах вокруг»,
+      а не знаком «±», который нигде больше не встречается.
+   4. Пол рассказчика и пол в детали — один. Раньше они тянулись из двух
+      независимых бросков, и буфетчица «клялся кружкой». */
 
 const RUMOUR_IMG={
   post:"свёрток, который передают из рук в руки полвека",mirror:"эфир, где всё повторяется дважды",
@@ -13115,12 +13134,26 @@ const RUMOUR_IMG={
   grown:"посёлки одного народа, только разные",plan:"комбинат, который работает двести лет",
   tin:"станция, где деды моложе внуков"
 };
-const RUMOUR_DETAIL=["у рассказчика дрожали руки","он показывал ленту, и на ней был горб",
-  "она сказала это и сразу сменила тему","он клялся кружкой","рассказчик был трезв, что редкость",
-  "она там родилась, говорит","у него на куртке была их нашивка"];
-const RUMOUR_SRC=["механик с «Прибоя»","буфетчица","старик у стойки","диспетчер на смене","пассажир барж","женщина в платке"];
+/* деталь — то, ПОЧЕМУ рассказчику верят или не верят. Разложена по полу: пол
+   в детали и пол рассказчика тянулись из разных бросков, и выходила
+   «буфетчица … он клялся кружкой» */
+const RUMOUR_DETAIL={
+  any:["у рассказчика дрожали руки","рассказчик был трезв, а это тут редкость"],
+  m:["он показывал ленту, и на ней был горб","он клялся кружкой",
+     "у него на куртке была их нашивка"],
+  f:["она сказала это и сразу сменила тему","она там родилась, говорит",
+     "она назвала это место, будто оно у всех на слуху"]
+};
+const RUMOUR_SRC=[{ru:"механик с «Прибоя»"},{ru:"буфетчица",f:1},{ru:"старик у стойки"},
+  {ru:"диспетчер на смене"},{ru:"пассажир барж"},{ru:"женщина в платке",f:1}];
 function rumourSeedHere(){
   return hashi(G.sys?(G.sys.sx*131+G.sys.sy*7):0,Math.floor(celDay()/3),0x5A5A);
+}
+function capRu(s){return s?s[0].toLocaleUpperCase("ru")+s.slice(1):s;}
+/* адрес слуха. Всегда со словом «сектор»: без него «-9:18» читается временем.
+   Разброс — словами и в тех же секторах, в каких набрана вся игра. */
+function rumourWhere(q){
+  return "искать у сектора "+q.sx+":"+q.sy+", в "+q.rad+" секторах вокруг";
 }
 /* слухи этой станции на эти три дня: два, и один из них может врать */
 function rumoursHere(){
@@ -13135,11 +13168,22 @@ function rumoursHere(){
     if(wrong){cx=Math.round((r()-.5)*60);cy=Math.round((r()-.5)*60);}   /* просто неверен */
     const rad=3+Math.floor(r()*3);
     const img=RUMOUR_IMG[T.id]||T.ru.toLowerCase();
+    const S=pick(RUMOUR_SRC,r);
+    const det=pick(RUMOUR_DETAIL.any.concat(S.f?RUMOUR_DETAIL.f:RUMOUR_DETAIL.m),r);
     /* имя игрока (11u): слух подхватывает его, слегка искажённым */
     let nm="";
-    if(typeof namesFor==="function"){const n=namesFor(R.core.sx+","+R.core.sy);if(n)nm=" — называют «"+namesMangle(n)+"»";}
-    out.push({id:T.id,sx:cx,sy:cy,rad,wrong,
-      text:img+nm+". "+pick(RUMOUR_DETAIL,r)+". — "+pick(RUMOUR_SRC,r)+", где-то у "+cx+":"+cy+", ±"+rad});
+    if(typeof namesFor==="function"){const n=namesFor(R.core.sx+","+R.core.sy);if(n)nm="; называют «"+namesMangle(n)+"»";}
+    const q={id:T.id,sx:cx,sy:cy,rad,wrong,img:img+nm,src:S.ru,det};
+    q.where=rumourWhere(q);
+    /* порядок, в котором это и рассказывают: КТО — ПРО ЧТО — ГДЕ — ПОЧЕМУ верить.
+       Одним куском: в тетради строка идёт сплошняком, переносов там нет */
+    q.text=capRu(S.ru)+" рассказывал про место: "+q.img+". "+
+           capRu(q.where)+". "+capRu(det)+".";
+    /* три строки для экрана: что, где, с чьих слов */
+    q.lines=[capRu(q.img),capRu(q.where),"со слов: "+S.ru+" — "+det];
+    /* короткая форма для приёмника: место и сторона, без рассказчика */
+    q.short=q.img+" — где-то у сектора "+cx+":"+cy;
+    out.push(q);
   }
   return out;
 }
@@ -13147,14 +13191,29 @@ function rumoursHere(){
 function rumourEtherLine(r){
   if(!G.sys||r()>.12)return null;
   const L=rumoursHere();
-  return L.length?"…говорят, "+L[Math.floor(r()*L.length)].text:null;
+  return L.length?"…говорят, есть "+L[Math.floor(r()*L.length)].short:null;
 }
-/* блок в кантине: два слуха, без карты и без маркера */
+/* ── блок на доске ──
+   Два слуха, без карты и без маркера: проверять их игрок будет ногами. Но
+   помнить их за него должна тетрадь, а не он сам, — иначе адрес приходится
+   переписывать на бумажку рядом с монитором. Записываем один раз на станцию и
+   трёхсуточный бакет: слух услышан, а не «обновляется». */
 function rumourBlock(){
   const L=rumoursHere();
   if(!L.length)return;
-  $body.appendChild(el("div","sec","СЛУХИ"));
-  for(const q of L)$body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.8'>"+q.text+"</s></div>"));
+  $body.appendChild(el("div","sec","О ЧЁМ ЗДЕСЬ ГОВОРЯТ · МЕСТА, КОТОРЫХ НЕТ НИ НА ОДНОЙ КАРТЕ"));
+  $body.appendChild(el("div","row","<div class='nm'><s>ни метки, ни стрелки не будет: "+
+    "слух — это адрес с промахом и человек, которому вы либо верите, либо нет. "+
+    "Записан в тетрадь, страница ЛЮДИ</s></div>"));
+  for(const q of L)
+    $body.appendChild(el("div","row","<div class='nm'>"+
+      "<b style='color:#cfe3ea'>"+q.lines[0]+"</b>"+
+      "<s style='line-height:1.8'>"+q.lines[1]+"<br>"+q.lines[2]+"</s></div>"));
+  const tag=G.sys.key+"#"+rumourSeedHere();
+  if(G.rumLogged!==tag){
+    G.rumLogged=tag;
+    for(const q of L)peopleLine(q.text,"слух на «"+G.st.name+"»");
+  }
 }
 
 /* ══════════════ имена расходятся: вы — источник, по которому учат карту ══════════════
@@ -54140,6 +54199,8 @@ function openStation(){
   document.getElementById("stKind").textContent=
     G.st.kind+" · система "+G.sys.name+"\n"+stationModsLine(G.sys);
   syncTabs();
+  /* новая стыковка — новый экран: высоту прошлого захода не помним */
+  renderTab._tab=null;
   $st.classList.add("open");renderTab();saveGame(true);
 }
 /* ── навигация станции: раздел, потом вкладка ──
@@ -54293,7 +54354,27 @@ function shipRow(id,S){
   }
   return r;
 }
+/* ── экран не прыгает вверх ──
+   Плейтест 30.08.2026: «в кантине скролишь вниз, а вверху надо тыкать; нажал —
+   экран прыгает вверх». Причина не в кантине: любое нажатие внутри вкладки
+   перебирает $body заново, а вместе с ним обнуляется и прокрутка. Игрок
+   ответил человеку в пятом ряду — и смотрит на шапку, заново ищет, где был.
+
+   Место чтения принадлежит игроку, а не рендеру. Та же вкладка возвращается на
+   ту же высоту; смена вкладки и новая стыковка — в начало, потому что это уже
+   другой экран. Восстанавливаем и кадром позже: канвы зала и рубки меряют себя
+   по разложенной панели, и высота списка на первом кадре ещё не окончательная. */
 function renderTab(){
+  const same=renderTab._tab===tab;
+  const keep=same?$body.scrollTop:0;
+  renderTab._tab=tab;
+  renderTabBody();
+  if(keep>0){
+    const put=()=>{$body.scrollTop=Math.min(keep,Math.max(0,$body.scrollHeight-$body.clientHeight));};
+    put();requestAnimationFrame(put);
+  }
+}
+function renderTabBody(){
   const st=stat();
   document.getElementById("wCr").textContent=G.credits.toLocaleString("ru")+" кр";
   document.getElementById("wDt").textContent=G.data+" данных";
@@ -55043,70 +55124,104 @@ function mgrHead(m){
 /* ── кантина ──
    Не список найма, а место: те же 2–4 человека держатся на seed станции и
    временном бакете. Разговор бесплатен, но кандидат после него занят до
-   следующего бакета — «подумать и вернуться» стоит именно этого. */
+   следующего бакета — «подумать и вернуться» стоит именно этого.
+
+   ПОРЯДОК ЭКРАНА. Плейтест 30.08.2026: «в кантине вообще непонятно: скролишь
+   вниз, вверху надо тыкать, внизу что-то выбираешь, непонятно, что
+   происходит». Экран набирал до пятнадцати блоков подряд одинаковыми строками
+   — найм, дела, копщик, домино, почта, смотритель, чужая карта, стол, поздний
+   час, — и НОВОСТИ МИРА стояли перед залом, то есть первым, что читал вошедший.
+   Ни одна секция не говорила, что она такое и сколько в ней строк.
+
+   Теперь экран отвечает сверху вниз на три вопроса: КТО ЗДЕСЬ (зал), КОГО МОЖНО
+   НАНЯТЬ (стойка), ЧТО ЗДЕСЬ ПРЕДЛАГАЮТ (столики). Ниже — то, что в кантине
+   делают руками: копщик, игра, стол. Новости ушли в самый низ: это чтение, а не
+   действие, и очередь у них последняя.
+
+   ВЫБОР В ЗАЛЕ БОЛЬШЕ НЕ ПРЯЧЕТ ОСТАЛЬНЫХ. Он подсвечивает строку, и только.
+   Фильтр экономил высоту, но отвечал на нажатие исчезновением двух третей
+   экрана: игрок тыкал в зал и терял из виду то, что читал минуту назад. И
+   наоборот — строку теперь можно нажать саму: зал и список это одни и те же
+   люди, и любой открывается с любой стороны.
+
+   ПРОКРУТКА НЕ СБРАСЫВАЕТСЯ — это уже не здесь, а в `renderTab` (26-ui-station):
+   любое нажатие перебирало $body заново и уносило экран в шапку. */
 function renderCantina(){
   mgrTick();
   const T=stTypeOf(G.st.stype);
-  $body.appendChild(el("div","sec","КАНТИНА «"+G.st.name.toUpperCase()+"» · МЕСТ "+
-    G.mgrs.length+" / "+MGR_CAP+" · ОДИН ДОМЕН — ОДИН УПРАВЛЯЮЩИЙ"));
-  $body.appendChild(el("div","row","<div class='nm'><s>здесь сидят те, кто берёт домен целиком, "+
-    "а не приказ на рейс. Они дороже наёмника втрое и берут долю с того, что приносит "+
-    "их домен — зато рутину держат сами.<br>кто сюда заходит, зависит от станции: "+
-    T.ru.toLowerCase()+" собирает своих</s></div>"));
-  /* новости слышны там, где их и слышат: мир двигался, пока вас не было (12p) */
-  if(typeof newsRender==="function")newsRender();
   G.cantina=G.cantina&&G.cantina.key===G.sys.key?G.cantina:{key:G.sys.key,list:stationMgrs(G.sys),talked:{}};
   const free=G.cantina.list.filter(m=>!G.mgrs.some(x=>x.seed===m.seed));
-  if(free.length)$body.appendChild(el("div","sec",
-    cantSel?"ТКНИТЕ ПО НЕМУ ЕЩЁ РАЗ ИЛИ ПО ДРУГОМУ — ВЕРНЁТЕСЬ В ЗАЛ"
-           :"ТКНИТЕ ПО ЧЕЛОВЕКУ В ЗАЛЕ — ОТКРОЕТСЯ ЕГО КАРТОЧКА"));
-  /* ── зал ──
-     Кандидаты у стойки, дела за столиками: рисуются одной сценой, потому что
-     это одно помещение. Выбор в зале фильтрует то, что раскрывается ниже. */
   const deals=stationDeals(G.sys).filter(d=>!dealTaken(d.key));
-  const dealSel=cantSel&&cantSel.indexOf("deal:")===0?cantSel.slice(5):null;
-  if(free.length||deals.length)cantinaScene(free,deals);
+  /* ── зал ──
+     Кандидаты у стойки, дела за столиками: одной сценой, потому что это одно
+     помещение. Стоит первым — на вопрос «где я» отвечает картинка, а не заголовок. */
+  if(free.length||deals.length){
+    cantinaScene(free,deals);
+    $body.appendChild(el("div","sec","Тыкните по человеку в зале — или по его строке ниже: "+
+      "это одни и те же люди. Нажатие подсвечивает, а не прячет остальных."));
+  }
+  /* ── у стойки: найм ── */
+  $body.appendChild(el("div","sec","У СТОЙКИ · КОГО МОЖНО НАНЯТЬ · МЕСТ "+
+    G.mgrs.length+" / "+MGR_CAP));
+  $body.appendChild(el("div","sec","Здесь сидят управляющие: такой берёт домен целиком — "+
+    "звено, базы, маршрут или лабораторию, — а не приказ на один рейс. Дороже наёмника втрое "+
+    "и берёт долю с того, что приносит его домен, зато рутину держит сам. Один домен — один "+
+    "управляющий. Кто сюда заходит, зависит от станции: "+T.ru.toLowerCase()+" собирает своих."));
   for(const m of free){
-    if(dealSel)break;                          // выбрали столик — люди у стойки ждут
-    if(cantSel&&m.id!==cantSel)continue;      // выбрали человека — показываем его
     const R=MGR_ROLES[m.role],taken=mgrTaken(m.role),fee=mgrFee(m);
     const spoke=!!G.cantina.talked[m.id];
     const known=spoke||mgrPerkOf("cmd","read")||relicDeep("ledger");
-    const r=el("div","row");
+    const r=el("div","row"+(cantSel===m.id?" on":""));
+    r.style.cursor="pointer";
+    /* строка — тот же выбор, что и фигура в зале: нажали мимо кнопок — выбрали */
+    r.onclick=ev=>{
+      if(ev.target.closest("button"))return;
+      cantSel=(cantSel===m.id)?null:m.id;sfx("ui");renderTab();
+    };
     r.appendChild(faceEl(m,64));
     r.appendChild(el("div","nm","<b style='color:"+R.col+"'>"+m.name+"</b><s>"+
       R.ru.toLowerCase()+" · "+R.note+
       "<br>уровень "+mgrLevel(m)+" · оклад "+mgrPay(m)+" кр/мин · доля "+(mgrCut(m)*100).toFixed(1)+"%"+
       "<br>"+(known
         ? "черты: "+m.traits.map(t=>"<b>"+mgrTrait(t).ru+"</b> — "+mgrTrait(t).note).join("<br>черты: ")
-        : "черты видны после разговора"+(m.traits.length>2?" (их у него три)":""))+
+        : "чем он хорош и чем плох — видно только после разговора"+
+          (m.traits.length>2?" (черт у него три)":""))+
       (taken?"<br><b style='color:#ff9d7a'>домен занят: "+mgrOf(m.role).name+"</b>":"")+"</s>"));
-    if(!spoke&&!mgrPerkOf("cmd","read")&&!relicDeep("ledger")){
-      const bt=el("button","act sm","ПОГОВОРИТЬ");
+    if(!known){
+      const bt=el("button","act sm","РАССПРОСИТЬ");
       bt.onclick=()=>{G.cantina.talked[m.id]=1;renderTab();};
       r.appendChild(bt);
     }
-    const b=el("button","act"+(taken?"":" gold"),fee.toLocaleString("ru")+" кр");
+    /* кнопка называет действие, а не сумму: голая цифра в кнопке не говорит,
+       что случится, если по ней нажать */
+    const b=el("button","act"+(taken?"":" gold"),"НАНЯТЬ · "+fee.toLocaleString("ru")+" кр");
     b.disabled=taken||G.credits<fee||G.mgrs.length>=MGR_CAP;
     b.onclick=()=>{if(hireMgr(m)){hqSel=m.id;renderTab();}};
     r.appendChild(b);
     $body.appendChild(r);
   }
   if(!free.length)
-    $body.appendChild(el("div","row","<div class='nm'><s>зал пуст: всех, кто тут сидел, "+
+    $body.appendChild(el("div","row","<div class='nm'><s>у стойки никого: всех, кто тут сидел, "+
       "вы уже наняли. Состав меняется сам — загляните позже или на другой станции.</s></div>"));
   /* ── за столиками ──
      Не найм и не поручение: люди со своими делами. Всё, что здесь делает игрок, —
      отвечает; работа уже сделана кем-то другим (27g-deals). */
   if(deals.length){
-    $body.appendChild(el("div","sec","ЗА СТОЛИКАМИ · ЛЮДИ СО СВОИМИ ДЕЛАМИ · "+
-      "ОТВЕТ СТОИТ ДЕНЕГ, ВРЕМЕНИ ИЛИ ЧУЖОЙ СУДЬБЫ"));
+    $body.appendChild(el("div","sec","ЗА СТОЛИКАМИ · ЧУЖИЕ ДЕЛА · "+deals.length));
+    $body.appendChild(el("div","sec","Везти и добывать тут не просят: вам предлагают, "+
+      "вы отвечаете. Ответ стоит денег, времени или чужой судьбы, и бесплатного ответа нет "+
+      "ни у одного дела — «отказать» тоже ответ."));
     for(const d of deals){
-      if(dealSel&&d.key!==dealSel)continue;   // подошли к столику — говорим с ним
-      const D=d.def;
-      $body.appendChild(el("div","row","<div class='nm'><b style='color:#f2b25c'>"+
-        D.ru+"</b><s>"+d.name+" · "+D.who+
-        "<br><span style='color:#cfe3ea;line-height:1.8'>— "+D.text+"</span></s></div>"));
+      const D=d.def,sel=cantSel==="deal:"+d.key;
+      const c=el("div","row"+(sel?" on":""));
+      c.style.cursor="pointer";
+      c.onclick=ev=>{
+        if(ev.target.closest("button"))return;
+        cantSel=sel?null:"deal:"+d.key;sfx("ui");renderTab();
+      };
+      c.appendChild(el("div","nm","<b style='color:#f2b25c'>"+D.ru+"</b><s>"+d.name+" · "+D.who+
+        "<br><span style='color:#cfe3ea;line-height:1.8'>— "+D.text+"</span></s>"));
+      $body.appendChild(c);
       const rr=el("div","row");
       D.opts.forEach((o,i)=>{
         const b=el("button","act sm"+(o.free?"":" gold"),
@@ -55126,20 +55241,25 @@ function renderCantina(){
   if(typeof vegaCantinaBlock==="function")vegaCantinaBlock();   /* Вега за столиком (M153) */
   /* домино (M166): в кантине — со случайным из зала или соперником */
   if(typeof dominoBlock==="function"){const RIV=["Пекарь","Совеня","Долгий Ким","Штоф"];dominoBlock((typeof vegaAboard==="function"&&vegaAboard())?"Вега":RIV[Math.abs(hashi(G.sx,G.sy,celDay()))%RIV.length]);}
-  /* стол (M128): вещь вместо слов. Стоит после людей — сначала зал, потом то,
-     что вы на него выкладываете */
   /* посылка почтового круга (M133, 11e): лежит рядом со столом, пока вы её везёте */
   if(typeof postBlock==="function")postBlock();
   if(typeof keepersBlock==="function")keepersBlock();   /* смотритель и список на переборке (11k) */
   if(typeof chartsBlock==="function")chartsBlock();     /* их карта (11m) */
   if(typeof quietBlock==="function")quietBlock();       /* открытая дверь (11n) */
+  /* стол (M128): вещь вместо слов. Стоит после людей — сначала зал, потом то,
+     что вы на него выкладываете */
   if(typeof putOnTable==="function")tableBlock();
   /* тот один (11ar, M230): скажет прямо ровно раз, и он неправ */
   if(typeof toldOffBlock==="function")toldOffBlock();
   /* поздний час (11aq, M225): последний ряд зала — остаться можно всегда,
      а вот что из этого выйдет, знает только стойка */
   if(typeof lateBlock==="function")lateBlock();
-  $body.appendChild(el("div","sec","СОСТАВ КАНТИНЫ МЕНЯЕТСЯ САМ · ЭКРАН ШТАБ — ПЕРКИ И ПРИКАЗЫ"));
+  /* новости (12p): мир двигался, пока вас не было. Стояли ПЕРВЫМ блоком экрана —
+     то есть вошедший читал сводку раньше, чем видел, кто в зале. Это чтение, а
+     не действие: его место после всего, что здесь можно сделать руками */
+  if(typeof newsRender==="function")newsRender();
+  $body.appendChild(el("div","sec","Состав кантины меняется сам: пришли через час — "+
+    "другие люди и другие дела. Перки и приказы нанятым раздают на экране ШТАБ."));
 }
 /* ── строка Грохотуна ──
    Одна карточка со своим состоянием и списком площадок из СВОЕГО слоя карты.
@@ -55176,17 +55296,20 @@ function grokBlock(){
   if(R.state!=="idle")return;
   const sites=grokSites();
   if(!sites.length){
-    $body.appendChild(el("div","row","<div class='nm'><s>копать пока нечего: "+
-      "площадки берутся из вашего слоя карты — адресов отчёта и их съёмки. "+
-      "Нет ни одного — значит, вы ещё не собрали ни одного свидетельства.</s></div>"));
+    $body.appendChild(el("div","row","<div class='nm'><b>Копать пока негде</b><s>"+
+      "он копает только там, где вы уже что-то нашли: площадки берутся из адресов "+
+      "отчёта и их съёмки. Соберите первое свидетельство — и здесь появится список секторов"+
+      "</s></div>"));
     return;
   }
   for(const s of sites.slice(0,6)){
     const rr=el("div","row");
     rr.appendChild(el("div","nm","<b>сектор "+s.sx+":"+s.sy+"</b><s>"+s.why+
-      " · копка поднимет там занятость на ступень</s>"));
+      " · уйдёт туда с вашим "+RES[want].ru.toLowerCase()+" и вернётся с тем, что выкопал"+
+      "</s>"));
+    /* кнопка называет действие, а не цену: «ЛЁД ×120» не говорит, что случится */
     const b=el("button","act"+(have>=price?" gold":""),
-      RES[want].ru.toUpperCase()+" ×"+price);
+      "ОТПРАВИТЬ · "+RES[want].ru.toUpperCase()+" ×"+price);
     b.disabled=have<price;
     b.onclick=()=>{if(grokSend(s.sx,s.sy))renderTab();};
     rr.appendChild(b);
@@ -58168,19 +58291,26 @@ const DEAL_KINDS=[
         odds:.65}},
      {ru:"ОТКАЗАТЬ",said:"Понимаю. Все отказывают.",free:1}
    ]},
+  /* единственное дело, которое платит не деньгами, а АДРЕСОМ: диспетчер
+     называет настоящее место из слухов станции (11t), и оно ложится в тетрадь
+     на страницу ЛЮДИ. Раньше кнопка звалась «КУПИТЬ СЛУХ · 500» — цена в ней
+     печаталась дважды («· 500 · 500 кр»: подпись дорисовывает её сама), а
+     взамен приходила декоративная фраза про «чужих в соседнем рукаве», за
+     которой не стояло ни места, ни сектора. Игрок платил за слово «слух». */
   {id:"rumor", ru:"Слух за выпивку",
    who:"диспетчер дока, отработавший смену",
-   text:"Я слышу все переговоры в этом секторе. Могу рассказать, где сейчас "+
-        "спокойно, а где лучше не садиться. Стоит одну выпивку и немного сверху.",
+   text:"Я тут слышу все переговоры. Возьмёшь мне налить — назову место: что "+
+        "про него рассказывают, у какого сектора искать и с чьих слов. "+
+        "Сам не полечу, стар.",
    opts:[
-     {ru:"КУПИТЬ СЛУХ · 500",cost:500,intel:1,
-      said:"Записывайте: в соседнем рукаве встали чужие. И это не патруль.",
-      later:{mins:12,ru:"Проверить слух диспетчера",
-        note:"он сказал, где встали чужие. Проверять — вам",
-        good:{credits:2400,say:"Слух был верный: вы успели раньше других"},
-        bad:{say:"Слух оказался вчерашним"},
+     {ru:"УГОСТИТЬ · ОН НАЗОВЁТ МЕСТО",cost:500,rumour:1,
+      said:"Наливайте и записывайте.",
+      later:{mins:12,ru:"Слетать туда, куда послал диспетчер",
+        note:"место и сектор он назвал; смотреть — вам. Сам слух записан в тетради, страница ЛЮДИ",
+        good:{credits:2400,say:"Диспетчер не соврал: вы дошли туда раньше других"},
+        bad:{say:"Слух оказался вчерашним: там уже всё перерыли"},
         odds:.6}},
-     {ru:"НЕ ПИТЬ",said:"И правильно. Я бы тоже не стал.",free:1}
+     {ru:"НЕ УГОЩАТЬ",said:"И правильно. Я бы себе тоже не наливал.",free:1}
    ]}
 ];
 /* ── кто сегодня за столиками ──
@@ -58218,7 +58348,18 @@ function dealAnswer(d,i){
   if(opt.data){G.data+=opt.data;}
   /* поступок стоит отношения: поручиться — рискнуть именем, отказать — ничего */
   if(opt.rep)repAdd(opt.rep);
-  tell("","«"+d.name+"»: "+opt.said,d.name+"\n— "+opt.said);
+  /* ── что он на самом деле сказал ──
+     Слух за выпивку берёт НАСТОЯЩЕЕ место из слухов станции: иначе «купить
+     слух» — кнопка, после которой не появилось ничего, кроме минуса в кассе.
+     И реплика такого дела идёт на страницу ЛЮДИ, где лежит всё сказанное
+     вслух, а не в БОРТ к деньгам и поломкам: искать её будут там. */
+  let said=opt.said;
+  if(opt.rumour){
+    const L=(typeof rumoursHere==="function")?rumoursHere():[];
+    said=L.length?opt.said+" "+L[Math.abs(hashi(d.seed,7,0x51))%L.length].text
+                 :"а нечего рассказывать. Тихо тут, как в пустом трюме.";
+    peopleLine(said,d.name,true);
+  }else tell("","«"+d.name+"»: "+said,d.name+"\n— "+said);
   if(opt.later){
     const L=opt.later;
     if(!G.dealsWait)G.dealsWait=[];
