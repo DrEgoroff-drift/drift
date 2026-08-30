@@ -124,6 +124,16 @@ function findTake(f){
   if(typeof repAdd==="function")repAdd(2,G.sys);
   return "экипаж подобран"+(fu>0?" · топливо ×"+fu:"")+" · о вас здесь будут помнить";
 }
+/* планета (или луна), у которой уже разрешена посадка: 110 единиц от
+   поверхности — тот же порог, по которому её предлагает `17-mode-system` */
+function findLandingNear(sh){
+  const sys=G.sys;if(!sys)return false;
+  for(const p of sys.planets){
+    if(Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius<110)return true;
+    for(const m of p.moons)if(Math.hypot(sh.x-m.x,sh.y-m.y)-m.radius<110)return true;
+  }
+  return false;
+}
 function findInteract(sh){
   const list=findsHere();
   if(!list.length)return false;
@@ -131,7 +141,25 @@ function findInteract(sh){
   for(const f of list){const d=Math.hypot(sh.x-f.x,sh.y-f.y);if(d<nd){nd=d;near=f;}}
   if(!near||nd>240)return false;
   const K=FIND_KINDS[near.k];
-  if(findSeen(near)){G.prompt=K.ru.toUpperCase()+" · УЖЕ ОСМОТРЕН";return true;}
+  /* ── пустая находка не держит ДЕЙСТВИЕ ──
+     Плейтест 30.08.2026: «поймал сигнал бедствия, мимо пролетает планета, а
+     сесть нельзя: пишет, что сигнал бедствия уже взят». Находка перехватывала
+     подсказку в радиусе 240 единиц и возвращала «занято» ДАЖЕ КОГДА ПРЕДЛОЖИТЬ
+     ЕЙ БЫЛО НЕЧЕГО, а проверка планеты стоит ниже по списку — до неё просто не
+     доходило. Осмотренная теперь только подписывается и уступает: она уже
+     ничего не даст, а планета даёт всё.
+     И даже НЕосмотренная уступает планете, у которой уже можно садиться: она
+     никуда не денется, её видно в кадре и она подписана, — а посадка это то,
+     ради чего сюда летели, и отгонять корабль от планеты ради разрешения
+     сесть игрок не обязан. */
+  if(findSeen(near)){
+    if(!G.prompt)G.prompt=K.ru.toUpperCase()+" · УЖЕ ОСМОТРЕН";
+    return false;
+  }
+  if(findLandingNear(sh)){
+    if(!G.prompt)G.prompt=K.ru.toUpperCase()+" РЯДОМ";
+    return false;
+  }
   G.prompt=K.ru.toUpperCase()+"\nДЕЙСТВИЕ — "+K.act;
   if(actEdge){
     const got=findTake(near);

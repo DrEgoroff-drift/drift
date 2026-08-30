@@ -1368,7 +1368,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.280.0";
+const VER="0.281.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -19846,7 +19846,13 @@ function wreckInteract(sh){
   let near=null,nd=1e9;
   for(const w of list){const d=Math.hypot(sh.x-w.x,sh.y-w.y);if(d<nd){nd=d;near=w;}}
   if(!near||nd>240)return false;
-  if(near.seen){G.prompt="ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"» · УЖЕ ОБЫСКАН";return true;}
+  /* обысканный остов ничего не предлагает и не держит ДЕЙСТВИЕ: та же беда,
+     что у находок (17b) — он перехватывал подсказку у планеты, рядом с которой
+     оказался, и садиться было нельзя */
+  if(near.seen){
+    if(!G.prompt)G.prompt="ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"» · УЖЕ ОБЫСКАН";
+    return false;
+  }
   G.prompt="ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"»\nДЕЙСТВИЕ — ОБЫСКАТЬ ОБЛОМКИ";
   if(actEdge){
     near.seen=1;
@@ -29907,6 +29913,16 @@ function findTake(f){
   if(typeof repAdd==="function")repAdd(2,G.sys);
   return "экипаж подобран"+(fu>0?" · топливо ×"+fu:"")+" · о вас здесь будут помнить";
 }
+/* планета (или луна), у которой уже разрешена посадка: 110 единиц от
+   поверхности — тот же порог, по которому её предлагает `17-mode-system` */
+function findLandingNear(sh){
+  const sys=G.sys;if(!sys)return false;
+  for(const p of sys.planets){
+    if(Math.hypot(sh.x-p.x,sh.y-p.y)-p.radius<110)return true;
+    for(const m of p.moons)if(Math.hypot(sh.x-m.x,sh.y-m.y)-m.radius<110)return true;
+  }
+  return false;
+}
 function findInteract(sh){
   const list=findsHere();
   if(!list.length)return false;
@@ -29914,7 +29930,25 @@ function findInteract(sh){
   for(const f of list){const d=Math.hypot(sh.x-f.x,sh.y-f.y);if(d<nd){nd=d;near=f;}}
   if(!near||nd>240)return false;
   const K=FIND_KINDS[near.k];
-  if(findSeen(near)){G.prompt=K.ru.toUpperCase()+" · УЖЕ ОСМОТРЕН";return true;}
+  /* ── пустая находка не держит ДЕЙСТВИЕ ──
+     Плейтест 30.08.2026: «поймал сигнал бедствия, мимо пролетает планета, а
+     сесть нельзя: пишет, что сигнал бедствия уже взят». Находка перехватывала
+     подсказку в радиусе 240 единиц и возвращала «занято» ДАЖЕ КОГДА ПРЕДЛОЖИТЬ
+     ЕЙ БЫЛО НЕЧЕГО, а проверка планеты стоит ниже по списку — до неё просто не
+     доходило. Осмотренная теперь только подписывается и уступает: она уже
+     ничего не даст, а планета даёт всё.
+     И даже НЕосмотренная уступает планете, у которой уже можно садиться: она
+     никуда не денется, её видно в кадре и она подписана, — а посадка это то,
+     ради чего сюда летели, и отгонять корабль от планеты ради разрешения
+     сесть игрок не обязан. */
+  if(findSeen(near)){
+    if(!G.prompt)G.prompt=K.ru.toUpperCase()+" · УЖЕ ОСМОТРЕН";
+    return false;
+  }
+  if(findLandingNear(sh)){
+    if(!G.prompt)G.prompt=K.ru.toUpperCase()+" РЯДОМ";
+    return false;
+  }
   G.prompt=K.ru.toUpperCase()+"\nДЕЙСТВИЕ — "+K.act;
   if(actEdge){
     const got=findTake(near);
@@ -40847,6 +40881,7 @@ function prism(w,hgt,lean,pal,tr,ox,oy,i){
    тёмные силуэты у самого края кадра, идущие быстрее камеры, и без деталей —
    вблизи глаз не фокусируется, и силуэт работает значением, не фактурой.
    Цвет — тень неба этой планеты, поэтому он принадлежит кадру, а не наклейке. */
+const FG_MAN=17;                  /* тот же человек, что и на всей поверхности */
 function drawForeground(tr,camx,camy,p){
   const K=1.24, SLOT=560;
   const amb=ambRGB(p);
@@ -40868,9 +40903,25 @@ function drawForeground(tr,camx,camy,p){
     const wx=s*SLOT+((h>>>2)&511), sx=wx-fx;
     const gy=groundAt(tr,clamp(sx+camx,0,tr.W-1))-camy;
     const kind=(h>>>11)&3, r=48+((h>>>13)&63);
-    const y=Math.max(gy+r*.8+40,H-r*.5);   // ближе — ниже в кадре: у самой кромки, срезан ею
-    if(y-r>H+10||sx+r<-20||sx-r>W+20)continue;
-    if(kind<2||!hasAir){
+    const grass=kind>=2&&hasAir;
+    /* ── трава переднего плана держится человеком, как и всё остальное ──
+       Плейтест 30.08.2026: «трава какая-то на переднем плане огромная». Была:
+       пучок в 178 пикселей при росте астронавта в 17 — растение в десять
+       человеческих ростов, чёрное, поперёк всего кадра и ровно посередине, где
+       стоит подсказка и идёт сам игрок. Глубина переднего плана здесь K=1.24,
+       то есть предмет ближе камеры на четверть, — значит и крупнее он вправе
+       быть на четверть, а не в десять раз.
+       Теперь пучок ростом в два-четыре человека, корнями НИЖЕ кромки кадра
+       (у объектива видно верхушки, а не всё растение) и только по краям кадра:
+       середина принадлежит игроку и подсказке, а не декорации. */
+    const y=grass?H-4:Math.max(gy+r*.8+40,H-r*.5);
+    if(!grass&&(y-r>H+10||sx+r<-20||sx-r>W+20))continue;
+    if(grass&&(sx<-40||sx>W+40))continue;
+    /* Отбирать место по экранному x бессмысленно: пучок стоит в мире, а кадр
+       едет — сегодня он сбоку, завтра посреди экрана. Значит ограничивать надо
+       не место, а ВЫСОТУ: пучок живёт в нижней сотне пикселей кадра и не
+       достаёт ни до человека, ни до подсказки, куда бы ни приехала камера. */
+    if(!grass){
       /* валун: рваный круг, верх чуть светлее — ловит небо */
       const pts=[];
       for(let i=0;i<11;i++){
@@ -40910,15 +40961,28 @@ function drawForeground(tr,camx,camy,p){
       ctx.fillStyle="rgba("+amb.join(",")+",.10)";
       ctx.beginPath();ctx.ellipse(sx-r*.2,y-r*.55,r*.7,r*.16,-.2,0,TAU);ctx.fill();
     }else{
-      /* куст/трава: пучок лезвий, кланяется ветру */
-      ctx.strokeStyle=c+".92)";ctx.lineCap="round";
-      const n=6+((h>>>19)&5), bow=(WIND||0)*6+Math.sin(G.t*.02+s)*3;
+      /* ── куст/трава: пучок лезвий, кланяется ветру ──
+         У КАЖДОГО лезвия есть кромка, поймавшая небо, — тот же закон, ради
+         которого переделан валун двумя десятками строк выше. Без неё пучок
+         читался не растением, а чёрными палками поперёк кадра. */
+      const bow=(WIND||0)*6+Math.sin(G.t*.02+s)*3;
+      const n=10+((h>>>19)&7);              /* пучок, а не три нитки */
+      ctx.lineCap="round";
       for(let i=0;i<n;i++){
-        const hh=hashi(s,i*7,0x6A55), bx=sx+((hh&63)-32)*1.2, len=r*(.8+((hh>>>6)&15)/15*.8);
+        const hh=hashi(s,i*7,0x6A55), bx=sx+((hh&63)-32)*1.5;
+        const len=FG_MAN*(3.6+((hh>>>6)&15)/15*2.6);      /* три с половиной — шесть ростов, не больше сотни пикселей */
         const lean=((hh>>>10)&15)/15-.5;
-        ctx.lineWidth=2.2+((hh>>>14)&3);
+        const tipx=bx+lean*len+bow, tipy=y-len;
+        ctx.lineWidth=2.0+((hh>>>14)&3)*.6;
+        ctx.strokeStyle=c+".88)";
         ctx.beginPath();ctx.moveTo(bx,y+10);
-        ctx.quadraticCurveTo(bx+lean*len*.4,y-len*.55,bx+lean*len+bow,y-len);
+        ctx.quadraticCurveTo(bx+lean*len*.4,y-len*.55,tipx,tipy);
+        ctx.stroke();
+        /* верхняя треть светлее: лезвие поворачивается к небу и ловит его */
+        ctx.strokeStyle=rim+".30)";ctx.lineWidth=1.1;
+        ctx.beginPath();
+        ctx.moveTo(bx+lean*len*.62+bow*.5,y-len*.62);
+        ctx.quadraticCurveTo(bx+lean*len*.82+bow*.75,y-len*.82,tipx,tipy);
         ctx.stroke();
       }
     }
@@ -41102,21 +41166,22 @@ function drawDeposit(x,y,res,left,near,seed,pal){
   ctx.restore();
 }
 
-/* ══════════════ ваши постройки видны с земли ══════════════ */
-/* База и дом существовали строчками в меню: чтобы понять, что они у вас есть,
-   нужно было зайти в раздел. Сели на планету, где стоит ваша база, — на горизонте
-   ничего. Теперь постройки стоят там, где стоят: с земли их видно, к ним идут
-   ногами, и вход в них — это подойти, а не найти пункт в списке.
+/* ══════════════ ваша база видна с земли ══════════════ */
+/* База существовала строчкой в меню: чтобы понять, что она у вас есть, нужно
+   было зайти в раздел. Сели на планету, где стоит ваша база, — на горизонте
+   ничего. Теперь она стоит там, где стоит: с земли её видно, к ней идут ногами,
+   и вход — это подойти, а не найти пункт в списке.
+
+   Дом отсюда ушёл: у него свой модуль (`21f-home-out`), см. `builtHere`.
 
    ПРАВИЛА:
    1. Строение рисуется тем же слоем, что и POI (`21b-surface-deco`): сначала
       тень на грунте, потом тело с клипом по профилю — иначе оно висит в воздухе
       или врастает в скалу.
-   2. Ничего не персистится сверх уже имеющегося: где база — знает `G.bases`,
-      где дом — `G.home`. Место на поверхности выводится из seed планеты, как
-      и всё остальное в мире.
-   3. Масштаб держится человеком: ангар базы вдвое выше астронавта, дом —
-      в полтора. Постройка, которую видно от горизонта, врёт о размере мира. */
+   2. Ничего не персистится сверх уже имеющегося: где база — знает `G.bases`.
+      Место на поверхности выводится из seed планеты, как и всё остальное в мире.
+   3. Масштаб держится человеком: ангар базы вдвое выше астронавта. Постройка,
+      которую видно от горизонта, врёт о размере мира. */
 function builtKey(sx,sy){return sx+","+sy;}
 /* что стоит в этой системе на этой планете */
 function builtHere(){
@@ -41128,18 +41193,26 @@ function builtHere(){
      игрок садился первой, — иначе она «телепортируется» вслед за игроком */
   if(B&&(B.pIdx===undefined||B.pIdx===S.p.idx))
     out.push({kind:"base",ru:"ВАША БАЗА",lvl:(B.cells?Object.keys(B.cells).length:1)});
-  const H=G.home;
-  if(H&&H.tier&&H.sx===G.sx&&H.sy===G.sy&&(H.pIdx===undefined||H.pIdx===S.p.idx))
-    out.push({kind:"home",ru:"ВАШ ДОМ",lvl:H.tier});
+  /* ── дома здесь больше нет, и это не потеря ──
+     Плейтест 30.08.2026: «дом как говно нарисован… и тут получается в дом не
+     зайти… проверь метки: дом рядом, а показывает 2000 метров».
+     Все три жалобы — про одно: дом рисовался ДВАЖДЫ и в РАЗНЫХ местах. Здесь,
+     на `builtSpot`, стояла коробка со скатом и подписью «ВАШ ДОМ · ступеней N»
+     — заготовка тех времён, когда дома снаружи ещё не было; а настоящий дом с
+     террасой, двором, гаражом и светом в окне (M170, `21f-home-out`) стоял на
+     своём `homeSpotX`, за пару тысяч метров отсюда. Маркер навигатора и дверь
+     считаются от НАСТОЯЩЕГО дома — поэтому у коробки не было двери, а стрелка
+     звала прочь от неё.
+     Это место дома не знает и знать не должно: у него свой модуль. Здесь
+     остаётся только база — снаружи её больше никто не рисует. */
   return out;
 }
 /* место постройки на профиле: детерминировано от seed планеты, поэтому
-   возвращаться к своему дому всегда приходится в одно и то же место */
+   возвращаться к своей базе всегда приходится в одно и то же место */
 function builtSpot(tr,p,kind){
   const r=rng(hashi(p.seed,kind==="home"?0x40E:0xBA5,11));
-  /* Ровное место, а не случайный индекс: на склоне у дома половина двери
-     оказывалась в грунте, а база висела над обрывом. Ищем участок с наименьшим
-     перепадом на ширине постройки — так строят и в жизни. */
+  /* Ровное место, а не случайный индекс: база висела над обрывом. Ищем участок
+     с наименьшим перепадом на ширине постройки — так строят и в жизни. */
   const half=Math.max(3,Math.round(70/tr.step));
   const from=Math.floor(tr.N*.14),to=Math.floor(tr.N*.86);
   let best=null;
@@ -41164,7 +41237,7 @@ function drawBuilt(tr,camx,camy,p){
     const sp=builtSpot(tr,p,b.kind);
     const x=sp.x-camx,y=sp.y-camy;
     if(x<-360||x>W+360)continue;
-    const hgt=b.kind==="base"?150:110;
+    const hgt=150;
     ctx.save();ctx.globalAlpha=.7;
     groundShadow(x-60,y+2,140,7);
     ctx.restore();
@@ -41178,15 +41251,14 @@ function drawBuilt(tr,camx,camy,p){
     SKY.closePath();
     ctx.save();ctx.clip(SKY);
     ctx.translate(x,y);
-    if(b.kind==="base")drawBaseBuilding(b,hgt);
-    else drawHomeBuilding(b,hgt);
+    drawBaseBuilding(b,hgt);
     ctx.restore();
     /* подпись: постройку видно издалека, но чья она — только по метке */
     /* подпись на подложке и выше конька: голый текст тонул в небе и налезал
        на строку планеты */
-    const col=b.kind==="home"?"242,178,92":"143,208,138";
+    const col="143,208,138";
     ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-    const lab=b.ru+" · "+(b.kind==="home"?("ступеней "+b.lvl):("ячеек "+b.lvl));
+    const lab=b.ru+" · ячеек "+b.lvl;
     const tw=ctx.measureText(lab).width;
     const ly=y-hgt-30;
     ctx.fillStyle="rgba(6,10,16,.8)";ctx.fillRect(x-tw/2-6,ly-10,tw+12,15);
@@ -41230,46 +41302,6 @@ function drawBaseBuilding(b,hgt){
   for(let i=0;i<3;i++){
     ctx.beginPath();
     ctx.moveTo(-w*.5-6-i*11,-h*.3);ctx.lineTo(-w*.5-2-i*11,-h*.52);ctx.stroke();
-  }
-}
-/* ── дом ──
-   Не куб, а жильё: скат крыши, тёплые окна, труба, флажок причала на верхних
-   ступенях. Дом должен читаться домом с первого взгляда, иначе он не награда. */
-function drawHomeBuilding(b,hgt){
-  const w=88,h=hgt,tier=b.lvl|0;
-  const g=ctx.createLinearGradient(0,-h,0,0);
-  g.addColorStop(0,"rgba(74,62,52,1)");g.addColorStop(1,"rgba(34,28,26,1)");
-  ctx.fillStyle=g;
-  ctx.fillRect(-w/2,-h*.62,w,h*.62);
-  ctx.strokeStyle="rgba(242,178,92,.35)";ctx.lineWidth=1.4;
-  ctx.strokeRect(-w/2,-h*.62,w,h*.62);
-  ctx.fillStyle="rgba(52,44,38,1)";                    // скат крыши
-  ctx.beginPath();
-  ctx.moveTo(-w*.58,-h*.62);ctx.lineTo(0,-h*.95);ctx.lineTo(w*.58,-h*.62);
-  ctx.closePath();ctx.fill();
-  ctx.strokeStyle="rgba(255,214,150,.25)";ctx.stroke();
-  /* окна: их столько, сколько ступеней построено — дом растёт на глазах */
-  const wins=Math.max(2,Math.min(8,tier+1));
-  for(let i=0;i<wins;i++){
-    const wx=-w*.38+(i%4)*w*.25,wy=-h*.5+Math.floor(i/4)*h*.24;
-    ctx.fillStyle="rgba(255,226,180,.8)";ctx.fillRect(wx,wy,13,10);
-    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(wx+6.5,wy);ctx.lineTo(wx+6.5,wy+10);ctx.stroke();
-  }
-  ctx.fillStyle="rgba(18,14,12,1)";ctx.fillRect(-11,-h*.22,22,h*.22);  // дверь
-  ctx.fillStyle="rgba(255,226,180,.5)";ctx.fillRect(-11,-h*.22,22,2);
-  ctx.fillStyle="rgba(44,38,34,1)";ctx.fillRect(w*.2,-h*1.06,12,h*.16); // труба
-  /* дым: тёплая ниточка вверх — то, что делает дом обитаемым */
-  ctx.strokeStyle="rgba(220,214,206,.20)";ctx.lineWidth=3;
-  ctx.beginPath();
-  for(let i=0;i<5;i++)
-    ctx.lineTo(w*.26+Math.sin(G.t*.05+i)*4,-h*1.08-i*9);
-  ctx.stroke();
-  if(tier>=8){                                          // причал с маяком
-    ctx.strokeStyle="rgba(242,178,92,.6)";ctx.lineWidth=1.6;
-    ctx.beginPath();ctx.moveTo(-w*.62,-h*.2);ctx.lineTo(-w*.62,-h*.75);ctx.stroke();
-    ctx.fillStyle=(Math.sin(G.t*.16)>0)?"rgba(255,226,180,.95)":"rgba(255,226,180,.3)";
-    ctx.beginPath();ctx.arc(-w*.62,-h*.78,3.2,0,TAU);ctx.fill();
   }
 }
 

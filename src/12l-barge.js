@@ -327,7 +327,13 @@ function wreckInteract(sh){
   let near=null,nd=1e9;
   for(const w of list){const d=Math.hypot(sh.x-w.x,sh.y-w.y);if(d<nd){nd=d;near=w;}}
   if(!near||nd>240)return false;
-  if(near.seen){G.prompt="ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"» · УЖЕ ОБЫСКАН";return true;}
+  /* обысканный остов ничего не предлагает и не держит ДЕЙСТВИЕ: та же беда,
+     что у находок (17b) — он перехватывал подсказку у планеты, рядом с которой
+     оказался, и садиться было нельзя */
+  if(near.seen){
+    if(!G.prompt)G.prompt="ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"» · УЖЕ ОБЫСКАН";
+    return false;
+  }
   G.prompt="ОСТОВ БАРЖИ «"+String(near.name).toUpperCase()+"»\nДЕЙСТВИЕ — ОБЫСКАТЬ ОБЛОМКИ";
   if(actEdge){
     near.seen=1;

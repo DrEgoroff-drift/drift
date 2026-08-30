@@ -161,16 +161,19 @@ TEST_SUITES.push(()=>suite("постройки видны с земли",()=>{
   const b=builtHere();
   eq(b.length,1,"база видна на планете");
   eq(b[0].kind,"base","это база");
+  /* место постройки детерминировано: база не бегает по планете */
+  const s1=builtSpot(G.surf.tr,G.surf.p,"base");
+  const s2=builtSpot(G.surf.tr,G.surf.p,"base");
+  eq(s1.x,s2.x,"база всегда на одном месте");
+  /* ── дом здесь не рисуется ВООБЩЕ ──
+     Он рисовался и тут коробкой с подписью, и в 21f-home-out по-настоящему, —
+     в двух разных точках планеты. Маркер навигатора и дверь считались от
+     настоящего, поэтому у коробки не было двери, а стрелка звала за две
+     тысячи метров. Владелец дома снаружи ровно один. */
   G.home={turn:0,tier:3,sx:G.sx,sy:G.sy,made:0,garage:[],showcase:{},trophies:[]};
-  eq(builtHere().length,2,"и дом рядом");
-  /* место постройки детерминировано: дом не бегает по планете */
-  const s1=builtSpot(G.surf.tr,G.surf.p,"home");
-  const s2=builtSpot(G.surf.tr,G.surf.p,"home");
-  eq(s1.x,s2.x,"дом всегда на одном месте");
-  ok(builtSpot(G.surf.tr,G.surf.p,"base").x!==s1.x,"база стоит не там же, где дом");
-  /* дом в другой системе на этой планете не показывается */
-  G.home.sx=G.sx+3;
-  eq(builtHere().length,1,"чужая система — дома здесь нет");
+  eq(builtHere().length,1,"дом сюда не добавился: у него свой модуль");
+  ok(!builtHere().some(x=>x.kind==="home"),"коробки-дома больше нет");
+  ok(typeof drawHomeBuilding==="undefined","и мёртвая рисовалка удалена");
 }));
 
 

@@ -6,11 +6,11 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 333 · символов верхнего уровня: 3072
+Файлов: 333 · символов верхнего уровня: 3073
 
 ## СИМВОЛЫ
 
-$bg                          src/12l-barge.js:580
+$bg                          src/12l-barge.js:586
 $bThr                        src/27z-telemetry.js:29
 $cv                          src/27b-ui-crew.js:6
 $f                           src/27z-telemetry.js:6
@@ -97,19 +97,19 @@ autosave                     src/14a-cloud.js:48
 b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
 bankTransform                src/03b-hull-paint.js:48
-BARGE_ART                    src/12l-barge.js:382
+BARGE_ART                    src/12l-barge.js:388
 BARGE_CAP                    src/12l-barge.js:13
 BARGE_CAPNAMES               src/12l-barge.js:23
 BARGE_PERIOD                 src/12l-barge.js:12
-BARGE_SS                     src/12l-barge.js:381
+BARGE_SS                     src/12l-barge.js:387
 BARGE_TEMPER                 src/12l-barge.js:17
 BARGE_TKEYS                  src/12l-barge.js:22
-bargeArtOf                   src/12l-barge.js:383
+bargeArtOf                   src/12l-barge.js:389
 bargeAttackers               src/12l-barge.js:153
 bargeBuyPrice                src/12l-barge.js:94
-bargeCur                     src/12l-barge.js:581
+bargeCur                     src/12l-barge.js:587
 bargeDestPrice               src/12l-barge.js:79
-bargeElRow                   src/12l-barge.js:607
+bargeElRow                   src/12l-barge.js:613
 bargeEscortAccept            src/12l-barge.js:289
 bargeEscortAdvance           src/12l-barge.js:288
 bargeEscortEnd               src/12l-barge.js:304
@@ -119,7 +119,7 @@ bargeMarkup                  src/12l-barge.js:87
 bargeMineHit                 src/12l-barge.js:189
 bargeNearOther               src/12l-barge.js:67
 bargePaxDeliver              src/12l-barge.js:250
-bargeRepNudge                src/12l-barge.js:603
+bargeRepNudge                src/12l-barge.js:609
 bargeRescued                 src/12l-barge.js:203
 bargeSellPrice               src/12l-barge.js:91
 bargeSunk                    src/12l-barge.js:226
@@ -216,9 +216,9 @@ bScreen                      src/21aa-base-rooms.js:256
 BUILD                        src/21a-mode-base.js:22
 BUILD_KEYS                   src/21a-mode-base.js:41
 buildAi                      src/12f-mgr-ai.js:29
-builtHere                    src/21c-built.js:18
-builtKey                     src/21c-built.js:16
-builtSpot                    src/21c-built.js:34
+builtHere                    src/21c-built.js:19
+builtKey                     src/21c-built.js:17
+builtSpot                    src/21c-built.js:44
 bWall                        src/21aa-base-rooms.js:187
 bWorker                      src/21aa-base-rooms.js:322
 camBtnTick                   src/25g-postcard.js:666
@@ -350,7 +350,7 @@ cirrusSprite                 src/19e-clouds.js:126
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
-closeBarge                   src/12l-barge.js:592
+closeBarge                   src/12l-barge.js:598
 closeStation                 src/26-ui-station.js:113
 CLOUD                        src/14-save.js:5
 CLOUD_KEYS                   src/02a-worldmix.js:80
@@ -484,7 +484,7 @@ decoWall                     src/21ba-deco-shapes.js:147
 deedAdd                      src/11ai-ledger.js:53
 DEEDS                        src/11ai-ledger.js:25
 deltaHtml                    src/05-parts.js:293
-depKind                      src/21b-surface-deco.js:337
+depKind                      src/21b-surface-deco.js:367
 deployDrone                  src/12-economy.js:73
 DEPTH_TIERS                  src/04-mods.js:51
 DESC_MOOD                    src/01-core.js:109
@@ -538,11 +538,11 @@ drawAccountShelf             src/12w-survey.js:99
 drawAllies                   src/12a-crew.js:607
 drawAnomaly                  src/20aa-poi-shapes.js:168
 drawAstronaut                src/20-life.js:4
-drawBarge                    src/12l-barge.js:500
-drawBarges                   src/12l-barge.js:531
-drawBargesMap                src/12l-barge.js:556
+drawBarge                    src/12l-barge.js:506
+drawBarges                   src/12l-barge.js:537
+drawBargesMap                src/12l-barge.js:562
 drawBase                     src/21ac-base-draw.js:43
-drawBaseBuilding             src/21c-built.js:99
+drawBaseBuilding             src/21c-built.js:107
 drawBeast                    src/20f-fauna.js:231
 drawBeastAlien               src/20f-fauna.js:65
 drawBelt                     src/24-mode-belt.js:374
@@ -550,7 +550,7 @@ drawBeltPOISprite            src/24b-belt-poi.js:50
 drawBeltRing                 src/17c-system-draw.js:94
 drawBeltRocks                src/17c-system-draw.js:41
 drawBuildMenu                src/21aa-base-rooms.js:504
-drawBuilt                    src/21c-built.js:57
+drawBuilt                    src/21c-built.js:66
 drawCantinaRoom              src/27d-ui-cantina.js:32
 drawCave                     src/22-mode-cave.js:711
 drawCaveDark                 src/22a-cave-deco.js:327
@@ -570,7 +570,7 @@ drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
-drawDeposit                  src/21b-surface-deco.js:347
+drawDeposit                  src/21b-surface-deco.js:377
 drawDig                      src/23a-dig-draw.js:655
 drawDigFauna                 src/23-mode-dig.js:308
 drawDigWorld                 src/23a-dig-draw.js:45
@@ -581,16 +581,15 @@ drawElevator                 src/20aa-poi-shapes.js:91
 drawExhaust                  src/16a-space.js:316
 drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:240
-drawFindsSystem              src/17b-finds.js:152
+drawFindsSystem              src/17b-finds.js:180
 drawFlame                    src/03b-hull-paint.js:10
 drawFoeBody                  src/24ab-raid-foe.js:10
-drawForeground               src/21b-surface-deco.js:248
+drawForeground               src/21b-surface-deco.js:249
 drawGlassHUD                 src/24-mode-belt.js:716
 drawGlyph                    src/12t-settle.js:59
 drawGround                   src/19-mode-landing.js:109
 drawGroundCrumbs             src/19-mode-landing.js:269
 drawGroundGrass              src/19-mode-landing.js:282
-drawHomeBuilding             src/21c-built.js:134
 drawHomeIn                   src/29d-home-draw.js:9
 drawHomeOut                  src/21f-home-out.js:73
 drawHomeRoom                 src/27e-ui-home.js:42
@@ -661,7 +660,7 @@ drawWeather                  src/19d-weather.js:96
 drawWinter                   src/29g-winter-draw.js:334
 drawWorld                    src/28-loop.js:158
 drawWreck                    src/20aa-poi-shapes.js:8
-drawWrecksSystem             src/12l-barge.js:347
+drawWrecksSystem             src/12l-barge.js:353
 DRONE_BREAK_P                src/12e-drone-flight.js:21
 DRONE_FIX_MS                 src/12e-drone-flight.js:24
 DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
@@ -770,13 +769,15 @@ faunaOf                      src/20e-species.js:268
 fbm1                         src/01-core.js:30
 fbm2                         src/01-core.js:37
 fbm3                         src/24-mode-belt.js:16
+FG_MAN                       src/21b-surface-deco.js:248
 fillMaterial                 src/18a-material.js:257
 FIN_DEF                      src/21aa-base-rooms.js:184
 FIND_BUCKET                  src/17b-finds.js:17
 FIND_CACHE                   src/17b-finds.js:26
 FIND_KINDS                   src/17b-finds.js:19
 findBucket                   src/17b-finds.js:18
-findInteract                 src/17b-finds.js:127
+findInteract                 src/17b-finds.js:137
+findLandingNear              src/17b-finds.js:129
 findsBlock                   src/12aa-need.js:164
 findSeen                     src/17b-finds.js:54
 findsHere                    src/17b-finds.js:53
@@ -1691,7 +1692,7 @@ offerTake                    src/11ah-offer.js:209
 offerTick                    src/11ah-offer.js:166
 offerVisit                   src/11ah-offer.js:124
 ok                           tests/90-harness.js:23
-openBarge                    src/12l-barge.js:582
+openBarge                    src/12l-barge.js:588
 openCrewView                 src/27b-ui-crew.js:198
 openHq                       src/27c-ui-hq.js:587
 openShipView                 src/27-ui-ship.js:160
@@ -2156,7 +2157,7 @@ relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07-planet.js:374
 renderAlbum                  src/25g-postcard.js:678
-renderBarge                  src/12l-barge.js:617
+renderBarge                  src/12l-barge.js:623
 renderBasesTab               src/26a-ui-station-home.js:4
 renderBooks                  src/12ub-books.js:141
 renderCantina                src/27c-ui-hq.js:66
@@ -3383,12 +3384,12 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12k-vega.js · 7 КБ
   · Вега: реплики:1
 
-## src/12l-barge.js · 38 КБ
+## src/12l-barge.js · 39 КБ
   · торговые баржи:1
   · контракт охраны:284
   · остовы погибших барж:321
-  · корпус баржи:375
-  · торг с баржой:579
+  · корпус баржи:381
+  · торг с баржой:585
 
 ## src/12m-rare.js · 13 КБ
   · редкости: сто адресов, а не рулетка:1
@@ -3495,7 +3496,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17a-station-mod.js · 10 КБ
   · модули станции:1
 
-## src/17b-finds.js · 15 КБ
+## src/17b-finds.js · 17 КБ
   · находки в полёте:1
 
 ## src/17c-system-draw.js · 21 КБ
@@ -3600,12 +3601,12 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21ba-deco-shapes.js · 18 КБ
   · приметы места: формы:1
 
-## src/21b-surface-deco.js · 29 КБ
+## src/21b-surface-deco.js · 32 КБ
   · крупная форма на поверхности:1
-  · залежь как выход породы (M169):326
+  · залежь как выход породы (M169):356
 
-## src/21c-built.js · 10 КБ
-  · ваши постройки видны с земли:1
+## src/21c-built.js · 9 КБ
+  · ваша база видна с земли:1
 
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
@@ -3876,9 +3877,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91k-home.js · 11 КБ
   · автотесты: дом и деньги: ступени, одна воронка дохода, маршрут фактора, дрон:1
 
-## tests/91l-fleet.js · 13 КБ
+## tests/91l-fleet.js · 14 КБ
   · автотесты: флот и фронт: сто корпусов, занятые системы, ранги, следы на земле:1
-  · M234: у шахты есть адрес:177
+  · M234: у шахты есть адрес:180
 
 ## tests/91m-nodes.js · 20 КБ
   · автотесты: журнал, тысяча узлов и венцы, кантина, репутация, памятники:1
@@ -3915,7 +3916,7 @@ zooTick                      src/11ad-zoo.js:41
   · автотесты: календарь — небо считается:1
   · небесная вахта (M195):73
 
-## tests/91x-finds.js · 3 КБ
+## tests/91x-finds.js · 6 КБ
   · автотесты: находки в пустоте:1
 
 ## tests/91y-settle.js · 10 КБ

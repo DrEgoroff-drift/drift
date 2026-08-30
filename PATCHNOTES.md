@@ -7,6 +7,38 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.281.0 - M284: one house, a marker that tells the truth, and grass at human scale
+
+Playtest 30.08.2026: "the house is drawn like crap... check the markers, the house is
+right there and it says 2000-something metres... and it turns out you can't get into the
+house"; "when you have picked up a distress signal and a planet drifts past, you can't
+land - it says the signal is already taken"; "some grass in the foreground is enormous".
+
+- **The house was drawn twice, in two different places.** `21c-built` still had the old
+  placeholder - a brown box with a pitched roof and a `ВАШ ДОМ · ступеней N` label - while
+  the real house with its terrace, yard, garage and lit window (M170, `21f-home-out`) stood
+  at its own spot a couple of thousand metres away. The navigator marker and the door are
+  both computed from the *real* one, which is why the box had no door and the arrow pointed
+  away from it. All three complaints were one bug. The placeholder and its drawing code are
+  gone; the house outside now has exactly one owner. (The old block also showed the house on
+  *any* planet of the home system, since `G.home.pIdx` is never set by anything.)
+- **A spent find no longer holds the ДЕЙСТВИЕ prompt hostage.** `findInteract` claimed the
+  prompt within 240 units and returned "taken" even when it had nothing left to offer, and
+  the planet check sits below it in the list, so landing was unreachable. An examined find
+  now only labels itself and yields. An unexamined one yields too when a planet is already
+  within landing range - it is not going anywhere, and the player should not have to fly the
+  ship away from a planet to be allowed to land on it. Same fix for a searched barge wreck.
+- **Foreground grass is measured by a human again.** A tuft was up to 178 px of blade against
+  a 17 px astronaut - a plant ten human heights tall, black, across the middle of the frame
+  where the player and the prompt live. The foreground here is 1.24x closer than the camera,
+  so it is entitled to be a quarter bigger, not ten times. Blades are now three and a half to
+  six human heights, rooted at the bottom edge, and they never reach the player or the hint.
+  Each blade also got the lit rim the file's own law demands of every silhouette - without it
+  the tuft read as black sticks rather than a plant.
+- Two new stand scenes for looking at exactly these: `?s=homeout` (the house from outside)
+  and `?s=fgrass` (the stand hunts down a foreground tuft instead of hoping one shows up).
+
+---
 ## 0.280.0 - M283: the cantina you can read, and a rumour that is a sentence
 
 Playtest 30.08.2026, verbatim: "in the cantina nothing is clear at all - you scroll down,

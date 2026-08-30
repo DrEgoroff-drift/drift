@@ -5,7 +5,7 @@
 # в нужное состояние и остаётся стоять; снимает её docs\pageshot.ps1.
 #
 # Режим и обстановка задаются через ?s=  :
-#   surface (по умолчанию) · system · cave · night · lowsuit · dock · relay
+#   surface (по умолчанию) · system · cave · night · lowsuit · dock · relay · homeout · fgrass
 param([string]$Scene = "surface")
 $src = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot "..\drift.html")
 $cut = $src.LastIndexOf("</body>")
@@ -142,6 +142,42 @@ setTimeout(function(){
     var tN={noon:"terran",noonice:"ice",noontox:"toxic"}[scene];
     var pN=land(tN);hour(pN,.25);pN.wx={kind:null};G.mode="surface";
     G.prompt="";run(6,updateSurface,drawSurface);
+  }else if(scene==="homeout"){
+    /* ДОМ СНАРУЖИ. С 0.281.0 дом на поверхности рисует ровно один модуль
+       (21f-home-out): коробка с подписью из 21c-built убрана, она стояла в
+       другой точке планеты и врала и маркеру, и двери. Стенд ставит игрока на
+       крыльцо — иначе дом окажется за пару тысяч метров от площадки. */
+    var ph=land("terran");hour(ph,.30);G.mode="surface";
+    G.home=G.home||homeInit();
+    G.home.tier=HOME_TIERS.length;G.home.sx=G.sx;G.home.sy=G.sy;
+    var hxs=homeSpotX(G.surf.p,G.surf.tr);
+    if(hxs!=null){
+      G.surf.x=hxs;G.surf.y=groundAt(G.surf.tr,hxs)-10;
+      G.surf.cam={x:G.surf.x,y:G.surf.y};      /* камеру заводим сами: она догоняет лерпом */
+    }
+    G.prompt="";run(8,updateSurface,drawSurface);
+  }else if(scene==="fgrass"){
+    /* ТРАВА ПЕРЕДНЕГО ПЛАНА. Пучок редок — один слот из восьми, — и стенд ищет
+       его сам, а не надеется на удачу: сцену завели ровно потому, что «трава
+       огромная» нельзя проверить кадром, в который она не попала. Берётся
+       первый слот, для которого камера остаётся ВНУТРИ мира, иначе зажим
+       вернул бы её на середину и в кадре опять не было бы ничего. */
+    var pg=land("terran");hour(pg,.34);G.mode="surface";
+    var Kf=1.24,SLOTf=560,xg=null;
+    for(var sg=0;sg<40&&xg===null;sg++){
+      var hg=hashi(sg,pg.seed,0xF06E);
+      if((hg&3)!==0)continue;
+      if(((hg>>>11)&3)<2)continue;                     // это валун, а не трава
+      var wxg=sg*SLOTf+((hg>>>2)&511);
+      var cwg=(wxg-W*.16)/Kf+W/2;                      // пучок встанет в левой шестой
+      if(cwg>W*.5&&cwg<G.surf.tr.W-W*.5)xg=cwg;
+    }
+    if(xg!==null){
+      G.surf.x=xg;G.surf.y=groundAt(G.surf.tr,xg)-10;
+      G.surf.cam={x:xg,y:G.surf.y};
+    }
+    G.prompt=(xg===null)?"ПУЧКА НА ЭТОЙ ПЛАНЕТЕ НЕ НАШЛОСЬ":"";
+    run(8,updateSurface,drawSurface);
   }else if(scene==="lowsuit"){
     var p2=land("terran");hour(p2,.30);G.mode="surface";G.surf.suit=14;
     G.fuel=Math.max(1,G.fuel*.06);

@@ -62,3 +62,45 @@ TEST_SUITES.push(()=>suite("находки: взятое помнится, сп�
     ok(loreMarks().length>marks,"спутник передал пеленг: на карте появилась метка");
   }else ok(true,"спутников в округе не нашлось — редкая находка, так и задумано");
 }));
+
+/* ── пустая находка уступает планете ──
+   Плейтест 30.08.2026: «поймал сигнал бедствия, мимо пролетает планета — сесть
+   нельзя, пишет, что сигнал бедствия уже взят». findInteract возвращал true в
+   радиусе 240 единиц ДАЖЕ КОГДА ПРЕДЛОЖИТЬ БЫЛО НЕЧЕГО, а проверка планеты
+   стоит ниже по списку и до неё не доходило. */
+TEST_SUITES.push(()=>suite("находка не держит ДЕЙСТВИЕ, когда ей нечего дать",()=>{
+  resetWorld();
+  let sys=null,f=null;
+  for(let dx=-9;dx<=9&&!f;dx++)for(let dy=-9;dy<=9&&!f;dy++){
+    if(!starAt(dx,dy))continue;
+    const q=getSystem(dx,dy);
+    const hit=findsIn(q).find(x=>x.k!=="echo");
+    if(hit){sys=q;f=hit;}
+  }
+  ok(!!f,"нашлась хоть одна находка в округе");
+  if(!f)return;
+  G.sx=sys.sx;G.sy=sys.sy;G.sys=sys;
+  const sh={x:f.x,y:f.y};
+  G.prompt="";
+  ok(findInteract(sh)===true,"нетронутая находка рядом — держит подсказку");
+  ok(/ДЕЙСТВИЕ/.test(G.prompt),"и предлагает действие: "+G.prompt);
+  findTake(f);
+  G.prompt="";
+  ok(findInteract(sh)===false,"осмотренная — уступает: проверки ниже по списку доходят");
+  ok(G.prompt.indexOf("УЖЕ")>0,"но подписывается, чтобы не пропасть из кадра");
+  /* и не затирает чужую подсказку, если та уже стоит */
+  G.prompt="ДЕЙСТВИЕ — ПОСАДКА";
+  findInteract(sh);
+  eq(G.prompt,"ДЕЙСТВИЕ — ПОСАДКА","чужую подсказку осмотренная находка не трогает");
+  /* нетронутая тоже уступает планете, у которой уже можно садиться */
+  const pl=sys.planets[0];
+  if(pl){
+    G.findsSeen={};
+    const near={x:pl.x+pl.radius+40,y:pl.y};
+    ok(findLandingNear(near),"у поверхности планеты посадка уже разрешена");
+    const f2=findsIn(sys).find(x=>x.k!=="echo");
+    f2.x=near.x+30;f2.y=near.y;
+    G.prompt="";
+    ok(findInteract(near)===false,"находка у самой планеты пропускает посадку вперёд");
+  }
+}));
