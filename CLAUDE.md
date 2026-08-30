@@ -252,11 +252,10 @@ through, waited out until night, or opened on a phone.
   backslash, build it as `chr(92)` instead of typing it, and grep the result for control
   characters before trusting it:
   `any(ord(c)<9 or 10<ord(c)<32 for c in text)`.
-- Python **is** installed (3.12) despite the line below; `python -` with a heredoc is the
-  cheapest way to patch a UTF-8 source file. `.ps1` files must be rewritten **with** their
-  BOM (`codecs.BOM_UTF8`), or PowerShell 5.1 turns every Cyrillic literal to mojibake.
-- There is **no `node` and no `python`** on this machine. PowerShell, or the
-  game itself in a browser.
+- There is **no `node`** on this machine — hence the PowerShell build. Python 3.12 **is**
+  there (the older "no python" note was wrong): `python -` with a heredoc is the cheapest
+  way to patch a UTF-8 source file. A `.ps1` must be rewritten **with** its BOM
+  (`codecs.BOM_UTF8`), or PowerShell 5.1 turns every Cyrillic literal to mojibake.
 - `ssh drift` prints a post-quantum key-exchange warning on every connection.
   That is the shared host being old; it is not an error. The louder
   `client_global_hostkeys_prove_confirm` line was silenced with
