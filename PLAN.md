@@ -1106,6 +1106,15 @@ from the playtest of 2026-08-30/31»:
    the reach circle. Fix: the card becomes a footer line with details on a second tap, it stands
    where the view is empty, and a double tap on empty space clears the sky.
 
+**⚠ Before step 4: the critique.** `docs/CRITIQUE-holding.md` (2026-08-31, six lenses, 37
+surviving findings) rebuilds the order below: the smelter already exists on every combine (the
+SMELT tab), feeding is paid twice, the layer has no clock (CEL_DAY is a minute), the barge pilot
+would be a hire in steady profit against the law, 30 rungs are 30 promises without code, and the
+fleet is the most expensive section and the only one the brief does not need. Its «Пересобранный
+план» (paper → route → «БЕРЁТ» → core of ~8 buildings → visible ladder → MEASURE → barge → the
+rest) replaces the eight steps below once the author settles the four forks at its end. The
+steps below are kept as the record of the evening.
+
 **4. The holding — a full economic layer.** Designed in `docs/DESIGN-holding.md`, eight steps,
 each shipping on its own. The naming register was chosen by the author on 2026-08-31 —
 **Б+А**: the launch-complex vocabulary of the Strugatskys below (Вымпел, Купол, Монтажный корпус,

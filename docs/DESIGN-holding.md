@@ -2,7 +2,15 @@
 
 Design, 2026-08-31, worked out with the author across one long evening and settled the same
 night. Nothing here is built yet: this file exists so the reasoning survives the session that
-produced it. Written in English like the rest of `docs/`; the in-game names stay Russian because
+produced it.
+
+> **Read `CRITIQUE-holding.md` first.** The same night a six-lens adversarial review found 37
+> real problems in this text — four self-contradictions, an unmeasurable balance target, an order
+> of work that does not stand, ~200 names for a core of eight buildings, and a fleet section that
+> is the most expensive part and the only one the brief does not need. This document is the
+> *record of the evening*; the critique is the *correction*, and the design will be revised
+> against it once the author settles its four forks. Until then, build nothing from §8–§18 as
+> written. Written in English like the rest of `docs/`; the in-game names stay Russian because
 they are game text, and the register they are in was chosen deliberately — see §7.
 
 The author's brief, in his own words and in the order they came:
