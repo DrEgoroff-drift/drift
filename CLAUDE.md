@@ -35,15 +35,15 @@ grep -n "^rareTake " docs/INDEX.md      # where a symbol is declared → file:li
 grep -rn "rareTake(" src                # who calls it
 ```
 
-Then read only the part you need (`Read` with an offset), not a 110 KB file. That way a fresh
+Then read only the part you need (`Read` with an offset), not a 200 KB file. That way a fresh
 session reaches the code in two cheap calls instead of reading half of `src/`.
 
 Documents work the same way — in parts, not whole:
 
 | What you need | Where to go |
 |---|---|
-| what to do next | `PLAN.md` (~33 KB) — live queue only, safe to read whole |
-| why something was done this way | `docs/PLAN-archive.md` (~370 KB) — **grep by milestone only** |
+| what to do next | `PLAN.md` (≤60 KB, guarded by `build.ps1`) — rules, loose ends, open queues; safe to read whole |
+| why something was done this way | `docs/PLAN-archive.md` (~600 KB) — **grep by milestone only** |
 | what changed in a version | `PATCHNOTES.md` — newest first, the first 40 lines usually suffice |
 | where a symbol is declared | `docs/INDEX.md` — grep only |
 | craft laws behind the visual queue | `docs/DESIGN-craft.md` — rules taken from painting traditions, each tied to a module |
@@ -59,76 +59,42 @@ Never read whole: `docs/PLAN-archive.md`, `docs/INDEX.md`, `drift.html`, `tests.
 `PLAN.md` passes **60 KB**. It is a reminder, not an error: past that size a file can no longer
 be read whole cheaply, and the next milestone inside it costs more than splitting it would.
 
-The rule looks forward, not back. Three modules are already over the threshold for good reason
-(`12c-mgr-core`, `26-ui-station`, `27f-hq-room`); they are listed in
-`build.ps1` with their measured size and stay silent until they **grow**. A new module crossing
+The rule looks forward, not back. The modules already over the threshold for good reason are listed in `build.ps1` (`$BULK_OLD`)
+with their measured size and stay silent until they **grow**. A new module crossing
 the line is flagged immediately. When splitting: cut along an existing seam (a section header,
 a family of functions), keep the concatenation order, and never split a `const` table.
 
 ## Where things live
 
+One phrase per module; the module's own header says the rest. Grep `docs/INDEX.md` for a symbol.
+
 | File | What's inside |
 |---|---|
-| `01-core` | math, seeded RNG (`hashi`/`rng`/`fbm`), name generation, `sysDanger` |
-| `06a-celest` | the sky's calendar: eclipse, parade, comet — `celestAt(sys,t)`, computed, never stored |
-| `02-world` `06-galaxy` `07-planet` | resources, world types, `starAt`/`getSystem`, planet textures and relief |
-| `03-ships` `04-mods` `05-parts` | hulls (`hullOf`/`drawHull`), modules and science, part and slot generation |
-| `08-state` `14-save` | the `G` object, `snapshot()`/`applySave()` |
-| `14a-cloud` | account, push/pull, the visible state of the exchange, the one-tab rule. The online risk register — what the server can and cannot know, and what is deliberately left open — is [`docs/DESIGN-online-risks.md`](docs/DESIGN-online-risks.md) |
-| `09-audio` `10-music` | sound synthesis, generative music |
+| `01-core` | math, seeded RNG (`hashi`/`rng`/`fbm`), names, `sysDanger`, `VER` |
+| `02-world` `06-galaxy` `06a-celest` `07-planet` | resources, world types, `starAt`/`getSystem`, the sky calendar `celestAt`, planet textures |
+| `03-ships` `04-mods` `05-parts` | hulls (`hullOf`/`drawHull`), modules and science, parts and slots |
+| `08-state` `14-save` `14a-cloud` | the `G` object, `snapshot()`/`applySave()`, account and push/pull (risks: `docs/DESIGN-online-risks.md`) |
+| `09-audio` `10-music` `09a-roomtone` | sound synthesis, generative music, room tone |
 | `11-log` `12-economy` `13-pirates` | journal, live market and drones, pirates |
-| `11c-stories` `12k-stories-*` | the hundred: traces pulled by channels (ether, counter, table, finds, rumours, cantina), lazy turns, anchoring; data in `12k-*` |
-| `12a-crew` | hired hands: traits, orders, runs, hidden luck, wages, roles on a base |
-| `12b-crew-events` | run event table, benders, capture and ransom |
-| `12c-mgr-core` | managers: four domains, cut, traits, perks, standing orders, loyalty, blueprints |
-| `12d-mgr-face` | procedural manager portraits (grow with level, darken with loyalty) |
-| `12g-mgr-rogue` | the manager who left: renegade in his own sector, exile in the cantina |
-| `12h-relic` | the lab as a building, seven artifacts, the slot and the second effect line |
-| `12e-drone-flight` | drones fly: a round trip derived from the clock (no position is ever stored), a dot with a tail between the point and the station, routes as rows, breakdowns that repair themselves by time |
-| `12l-barge` | trade barges: real routes, a barge in distress, wrecks, passengers |
-| `12m-rare` | the hundred rarities: a table of addresses, not a roulette |
-| `12r-route` | the player's own trade ring: legs on the player's own price notes, walked before sold or handed to the factor |
-| `12ab-hold` `12ac-bld` `12ad-site` `12ae-ladder` `12af-barge` `12ag-holdfx` `12ah-holdnews` `17e-station-body` `26c-ui-station-site` | the holding (`docs/DESIGN-holding.md`): the layer's clock and the station's appetite; the `BLD` table (families A–D, 56 shops on one mechanism); the site, the hopper and the share, the rung of a system from its counters; the ladder's thirty names, six ★ effects read only through `rungHas`, the ring on the map and the moments at docking; the player's barge — a hire on a hauler hull with the `barge` order that feeds the hoppers along the walked route and brings no money; the 26 non-cargo buildings (families E–I), each one hook in another module read only through `bldHas` — a test holds that every id is asked; the body — a family form per building on the station's outer ring, the barge moored at a Причал, warm lights on the planet's night side; news with a cause when a shop is laid, rumours in other people's words (the уклад, where a промысел would stand), rival barges on a sold road eating the appetite; the СТРОЙКА tab under ВЛАДЕНИЯ |
-| `12s-wear` | the hull ages by hours flown: the look of it, −12% to the hands, service at the yard or at home |
-| `12t-settle` | the settlement: you feed it, they decide what to raise; pays in goods, speaks in glyphs |
+| `11c-stories` `12k-stories-*` | the hundred stories: traces by channel, lazy turns, anchoring; data in `12k-*` |
+| `11g`–`11v` | the thirteenth pass, one module per region (lights, hours, glow, grove, keepers, county, charts, quiet, slow, pass, grown, plan, returners); rules in `docs/PASSPORTS.md` |
+| `11ah-wall` `11ah-offer` `11ai-ledger` `11ak-skywatch` `11am-holiday` `11an-qsl` `11ao-firsthour` | the stone that remembers; the offer; the kindness ledger; the sky watch; real-calendar holidays; QSL cards; the first hour's four ether lines |
+| `12a-crew` `12b-crew-events` | hired hands: traits, orders, runs, wages; the run event table, capture and ransom |
+| `12c-mgr-core` `12d-mgr-face` `12g-mgr-rogue` | managers (four domains, cut, perks, loyalty), their portraits, the one who left |
+| `12e-drone-flight` `12l-barge` `12m-rare` `12h-relic` | drones derived from the clock; trade barges and wrecks; the hundred rarities; the lab and seven artifacts |
+| `12r-route` `12ab-hold` `12ac-bld` `12ad-site` `12ae-ladder` `12af-barge` `12ag-holdfx` `12ah-holdnews` `17e-station-body` `26c-ui-station-site` | the holding (`docs/DESIGN-holding.md`): the route as an order; the station's appetite; `BLD` families A–D; the site, hopper and share; the ladder (`rungHas`); the own barge; families E–I (`bldHas`); the station body; news and rival barges; the СТРОЙКА tab |
+| `12s-wear` `12t-settle` `12tb`–`12td` | hull wear; the settlement (glyphs, crafts, the hand-over button) |
+| `12ub-books` | forty books out of wreckage |
 | `15-input` `16-flight` | keys/pads/mouse, starfield, autopilot, trail |
-| `18c-chunks` | raster cache: world-x chunks for ground and cave rock, full-screen layers for sky glow and weather veil |
-| `17`–`25` `mode-*` | modes: system, map, landing, surface, cave, mine, belt, cockpit; `20-life` — astronaut and flora, `20f-fauna` — the beasts. Draw halves split off on 0.108.x: `17c-system-draw`, `19f-lander`, `21e-surface-draw`, `23a-dig-draw`, `24aa-raid-draw`; on 0.153.0: `23aa-dig-rock` (the mountain), `21ba-deco-shapes` (the eight landmark forms), `12tc-settle-crafts` (the six trades), `26b-ui-station-work` (the ОСНАСТКА/ПРИБОРЫ/ЛАБОРАТОРИЯ/СПЛАВ tabs) |
-| `11g`–`11v` | the thirteenth pass, one module per region: lights, hours, glow, grove, keepers, county, charts, quiet, slow, pass, grown, plan, returners; rumours, names, places; rules in `docs/PASSPORTS.md` |
-| `27m-scroll-cue` | a list that continues past the fold looks like it continues: the bottom of any overflowing `.body` fades, and the fade goes at the end. One mask, one capture-phase listener, one observer — every screen, no arrows |
-| `11ah-wall` | the stone that remembers: a boundary stone at a settlement's edge and the rock by a cave mouth accumulate up to twelve strangers' marks. The opposite of `11ag-trace` — nothing to take, nothing to leave, one mark per person, and it never touches the save |
-| `11ao-firsthour` | four lines in the ether that name the suit, the fuel, the board and digging — once each, by people, never by the game |
-| `21h-pennant` | the travelling pennant: once a quarter, a banner on the best base's wall and a line in the ether, giving nothing |
-| `27da-kino` | the travelling cinema: for one evening the cantina goes dark, a newsreel on the wall, rows of heads in front |
-| `21g-greenhouse` | four beds by the house: a described species sown for one sample, grown by real days, watered by Vega, giving nothing |
-| `11an-qsl` | QSL: twenty distant operators caught by ear on the dial, a card sent, an answer weeks later, a wall at home that fills up |
-| `12ub-books` | forty books out of wreckage: a title, an imprint and one hand-written paragraph each, on a shelf read from the chair |
-| `11am-holiday` | New Year and Cosmonautics Day on the player's real calendar: a tree, mandarins, and radiograms from whoever wrote in the record book |
-| `11ak-skywatch` | the sky watch: an institute order names a place, an event and a day out of `celestAt`; a report before the institute's own bulletin, and a comet named from the record book |
-| `29h-spa` `29i-spa-draw` | the sanatorium: three days on a veranda where nothing happens — the only place in the game where resting is allowed |
-| `12td-settle-hand` | the observer's choice: one irreversible button that makes a settlement yours — better by every number, and it stops speaking in glyphs |
-| `29f-winter` `29g-winter-draw` | the wintering: a month alone in one room — power balance you can see by the light, a diary in postcard blanks, a wall that talks, a calendar crossed off by hand |
-| `25m-probe` | the pennant: a probe launched at a star nobody reaches, silent for weeks, then one voice on the ether and a photograph of where it got to |
-| `25n-chess` | chess by post: a move is three numbers, the board is replayed from the list of moves and never stored; full rules, шах/мат/пат, the tab ПАРТИЯ on the desk |
-| `25l-post-ether` | the fifth band: night post, present only after nine by the real clock, reading a caught card a line at a time |
-| `25j-post-wire` `25k-post-mail` | the post: a card into a global pool, caught by a stranger, replies routed by the server so neither end ever learns the other; stacks on the table, one request per docking |
-| `25h-post-forms` `25h-post-forms2` `25i-post-back` | a hundred printed blanks in ten kinds and the card's back: a line is a set of variants, tapping one strikes the others out, and the struck-out ones stay visible; postscript of up to three settlement glyphs, no addressee anywhere. The default blank comes from where the *photograph* was taken, never from `G.mode` |
-| `25g-postcard` | the postcard's own painter: `drawPostcard(c,snap,w,h)` redraws a ~200-byte snapshot of a scene owing nothing to `G`; ФОТО on the console, the album of twelve on the desk. It paints ground and approach itself and dispatches the rest |
-| `27j-ui-hold` `27j-ui-kitlay` | the hold as piles on the desk and the kit laid out beside it: what you carry answers "how much" by the size of the heap, what you wear answers "what have I got" by lying there whole — a doll hides half of it precisely because it is worn |
-| `25g-post-under` `25g-post-void` | the other five places a card can come from: cave and mine, then belt, orbit and gas-giant air. One light kit passed in as an argument, an object of known size in every frame; the two underground ones are lit from inside, the three in vacuum by one hard star |
-| `17b-finds` | four finds in the void: capsule, satellite, container, hulk — the satellite is theirs |
-| `19a-mode-scoop` | scooping volatiles from a gas giant's atmosphere |
-| `21a-mode-base` | the base in cross-section: cell grid, power balance, base network |
-| `21ac-base-draw` | the base frame: mountain, gate, tunnel, rooms path, lights |
-| `21aa-base-rooms` | the brushes (`bBox`/`bWorker`/…), the finish table `ROOM_FIN`, `drawModule` |
-| `21ab-base-interiors` | the eight compartments themselves: `BASE_ROOM`, one function per kind |
-| `24a-mode-raid` | boarding a pirate base: grid + polygons, projected from the belt. Drawing is `24aa-raid-draw` (the compartment) and `24ab-raid-foe` (the body that stands in it) |
-| `26-ui-station` `27-ui-ship` | station with sections, ship screen with hull slots |
-| `26a-ui-station-home` | the station home tab: goal card, home, bases |
-| `27c-ui-hq` | the HQ and cantina screens: portraits, perk tree, order slots, domain summary |
-| `18d-verlet` | Verlet ropes and cloth: sag, inertia and one shared wind. The mine cable, the mast guy-wires, the laundry on a line |
-| `28y-look` | the frame meter: `look()` reads the canvas on screen and prints four numbers (warm %, empty %, contrast, tones), `lookAll()` walks every scene. The scene list here is shared with the fuzzer |
-| `28-loop` | the frame guard (an exception never breaks the rAF chain; M234), telemetry, `audioTick`, `frame()` |
+| `17`–`25` `mode-*` | modes: system, map, landing, surface, cave, mine, belt, cockpit, scoop; draw halves in `*-draw`; `20-life` astronaut and flora, `20f-fauna` beasts, `17b-finds` finds in the void, `17d-house-shapes` faction marks |
+| `18c-chunks` `18d-verlet` | raster cache (world-x chunks, `screenLayer`); ropes and cloth |
+| `21a-mode-base` `21aa-base-rooms` `21ab-base-interiors` `21ac-base-draw` | the base in cross-section: grid and power, brushes and `drawModule`, the eight rooms, the frame |
+| `21g-greenhouse` `21h-pennant` `27da-kino` `29f/29g-winter` `29h/29i-spa` `25m-probe` `25n-chess` | the quiet features: greenhouse, travelling pennant, cinema, wintering, sanatorium, the probe, chess by post |
+| `24a-mode-raid` `24aa-raid-draw` `24ab-raid-foe` | boarding a pirate base: grid and polygons, the compartment, the foe |
+| `25g-postcard` `25g-post-under` `25g-post-void` `25h-post-forms*` `25i-post-back` `25j-post-wire` `25k-post-mail` `25l-post-ether` | the postcard painter (`drawPostcard` from a ~200-byte snapshot), the eight places, a hundred blanks, the card's back, the global pool and replies, the night band |
+| `26-ui-station` `26a-ui-station-home` `26b-ui-station-work` | station screens: sections, home tab, ОСНАСТКА/ПРИБОРЫ/ЛАБОРАТОРИЯ tabs |
+| `27-ui-ship` `27c-ui-hq` `27e-ui-home` `27j-ui-hold` `27j-ui-kitlay` `27n-ui-deal` `27k-road` `27m-scroll-cue` | ship screen, HQ and cantina, the home desk, the hold as piles, the kit laid out, ДЕЛО, the road companion, the fold fade |
+| `28-loop` `28y-look` `27z-telemetry` | the frame guard and `frame()`; the frame meter `look()`/`lookAll()`; telemetry |
 
 ## Hard constraints
 
@@ -338,8 +304,8 @@ throws, so wrap in an IIFE.
 The game version is the `VER` constant in `01-core`, also shown on the title screen. What changed
 and when is in [`PATCHNOTES.md`](PATCHNOTES.md), one entry per version.
 
-The live plan is [`PLAN.md`](PLAN.md): cross-cutting rules, the visual work queue and the
-milestone queue M94→M115. Completed milestones are moved to
+The live plan is [`PLAN.md`](PLAN.md): cross-cutting rules, the loose ends and the open queues. Completed milestones are moved to
 [`docs/PLAN-archive.md`](docs/PLAN-archive.md) as documentation of decisions — grep it for a
 specific milestone, don't read it through. New work is written into `PLAN.md`, one milestone per
-commit; a closed milestone is eventually moved to the archive so the live plan stays short.
+commit; when a milestone closes, its body moves to the archive **in the same commit** and one
+line stays — the live plan must stay under 60 KB, or every session pays for the history.
