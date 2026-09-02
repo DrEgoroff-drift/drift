@@ -7,6 +7,14 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.298.0 - M301: person cards in the HQ and the crew tab
+
+- The manager card and the hired hand's row follow the cantina's pattern (`DESIGN-screens` §3):
+  words first - role, mood, what he does and on what, traits - and the figures in a block under
+  them (level and experience, share and pay; for the hand: the net result first, then wages,
+  experience, trips, hull and hold). No more «уровень 2 · до следующего 65 оп · доля 3.0% · оклад
+  68 кр/мин из доли» inside a sentence.
+
 ## 0.297.0 - M300: the tails of the screens pass
 
 - **Heading cap 24.** `secTidy` splits anything longer at the first « · »; the suite asserts

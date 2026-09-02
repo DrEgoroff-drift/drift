@@ -80,10 +80,9 @@ Left:
 
 1. **§9 walkthrough as a phone acceptance run** after each interface milestone — six steps, the
    test being "no step needs a paragraph on screen".
-2. `secTidy` does not reach the home desk (`27e-ui-home`) or the HQ manager cards; call it there
-   when those screens are next touched.
-3. Board rows that still wrap to two lines on 393 px (need/appetite notes) — shorten the `note`
-   fields in `12aa-need`/`12ab-hold`.
+2. Person cards (M301): HQ manager and crew rows are words first, figures in a `.fig` block. The
+   home desk has no section headings, nothing to tidy there. Need/appetite notes are split by
+   `secTidy` into head + note; rows there fit one line.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 

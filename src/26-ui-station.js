@@ -713,20 +713,20 @@ function renderTabBody(){
         ? "<br><b style='color:#ff6b57'>В ПЛЕНУ · выкуп "+(c.ransom||0).toLocaleString("ru")+
           " кр — платить или штурмовать базу в секторе "+c.ransomSx+","+c.ransomSy+"</b>"
         : (c.state==="away"?"<br><b style='color:#f2b25c'>В ЗАГУЛЕ</b>":"");
-      r.appendChild(el("div","nm","<b>"+c.name+"</b> <span style='color:var(--dim)'>"+
-        CREW_SPEC[c.spec].ru+"</span><s>"+c.traits.map(t=>traitOf(t).ru).join(" · ")+st8+
-        "<br>приказ: "+ORDERS[c.order.kind].ru+" · сектор "+c.order.sx+","+c.order.sy+
-        " · рейсов "+(c.trips||0)+
-        "<br>корабль: "+(S?"«"+S.ru+"» корпус "+Math.round(c.hull)+"/"+Math.round(c.hullMax):"не выдан")+
-        (cap?" · трюм "+hold+"/"+cap:"")+
-        "<br>жалованье "+crewPay(c)+" кр/мин · опыт "+Math.round(c.xp)+
-        " · настрой "+Math.round(c.morale*100)+"%"+
-        /* главный вопрос к наёмнику — окупается ли он; ответ должен быть на виду */
-        "<br>заработал "+(c.earned||0).toLocaleString("ru")+" кр · съел "+
-        (c.spent||0).toLocaleString("ru")+" кр · итог <b style='color:"+
-        (((c.earned||0)-(c.spent||0))>=0?"#8fd08a":"#ff6b57")+"'>"+
-        ((c.earned||0)-(c.spent||0)).toLocaleString("ru")+" кр</b>"+
-        (c.debt>0?" · <b style='color:#ff6b57'>долг "+Math.round(c.debt)+" кр</b>":"")+"</s>"));
+      /* карточка человека (M301, DESIGN-screens §3): словами — кто, что делает,
+         на чём и в каком духе; цифры блоком ниже. Главный вопрос — окупается ли —
+         остаётся на виду первой строкой цифр */
+      const net=(c.earned||0)-(c.spent||0);
+      const mood=c.morale>=.7?"в духе":(c.morale>=.4?"ровно":"мрачен");
+      /* <b> внутри .nm — блок; внутри строки цифр цвет даёт span, иначе строка ломается */
+      r.appendChild(el("div","nm","<b>"+c.name+"</b><s>"+CREW_SPEC[c.spec].ru+" · "+ORDERS[c.order.kind].ru+" · сектор "+c.order.sx+","+c.order.sy+
+        " · "+(S?"на «"+S.ru+"»":"корабль не выдан")+" · "+mood+st8+
+        "<br>"+c.traits.map(t=>traitOf(t).ru).join(" · ")+"</s>"+
+        "<s class='fig'>итог <span style='color:"+(net>=0?"#8fd08a":"#ff6b57")+"'>"+net.toLocaleString("ru")+" кр</span>"+
+        " · заработал "+(c.earned||0).toLocaleString("ru")+" · съел "+(c.spent||0).toLocaleString("ru")+
+        (c.debt>0?" · <span style='color:#ff6b57'>долг "+Math.round(c.debt)+"</span>":"")+
+        "<br>жалованье "+crewPay(c)+" кр/мин · опыт "+Math.round(c.xp)+" · рейсов "+(c.trips||0)+
+        (S?"<br>корпус "+Math.round(c.hull)+"/"+Math.round(c.hullMax)+(cap?" · трюм "+hold+"/"+cap:""):"")+"</s>"));
       const box=el("div","qt","");
       r.appendChild(box);
       /* ремонт: сам идёт медленно и бесплатно на приколе, за деньги — сразу */

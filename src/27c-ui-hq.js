@@ -33,10 +33,12 @@ function mgrHead(m){
       "</b> — "+st.note+
       "<br>доли не берёт · обслуживание "+mgrPay(m)+" кр/мин · перки выбирает само</s>";
   }
-  return "<b style='color:"+R.col+"'>"+m.name+"</b><s>"+R.ru.toLowerCase()+" · уровень "+lv+
-    (nx?" · до следующего "+Math.max(0,Math.round(nx-(m.xp||0)))+" оп":" · потолок")+
-    "<br>"+loyBar(m)+" · доля "+(mgrCut(m)*100).toFixed(1)+"% · оклад "+mgrPay(m)+" кр/мин из доли"+
-    "<br>"+m.traits.map(t=>mgrTrait(t).ru).join(" · ")+"</s>";
+  /* карточка человека (M301, DESIGN-screens §3): сначала слова — роль,
+     настроение, черты; цифры отдельным блоком под ними, а не внутри фразы */
+  return "<b style='color:"+R.col+"'>"+m.name+"</b><s>"+R.ru.toLowerCase()+" · "+loyBar(m)+
+    "<br>"+m.traits.map(t=>mgrTrait(t).ru).join(" · ")+"</s>"+
+    "<s class='fig'>уровень "+lv+(nx?" · до следующего "+Math.max(0,Math.round(nx-(m.xp||0)))+" оп":" · потолок")+
+    "<br>доля "+(mgrCut(m)*100).toFixed(1)+"% · оклад "+mgrPay(m)+" кр/мин из доли</s>";
 }
 /* ── кантина ──
    Не список найма, а место: те же 2–4 человека держатся на seed станции и
