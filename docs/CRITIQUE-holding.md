@@ -5,8 +5,10 @@ Six independent lenses (economy, systems, identity, engineering, player, setting
 and the live `src/`. 60 findings, 39 after merge, 37 survived a skeptic's check against the
 documents and the code. The author asked for it on a fresh model: «проанализируй все что мы тут
 напридумывали, пойми что плохо, предложи как лучше». The text below is the synthesis, in Russian,
-unedited; the design itself (`DESIGN-holding.md`) is NOT yet revised against it — that is the next
-step, and the four forks at the end are the author's to settle first.
+unedited. **Settled 2026-09-02:** the author chose **1(б)**, **2(б)**, **3(б)** and put fork 4 off
+(«давай потом»); `DESIGN-holding.md` was revised against this text the same day — each overturned
+paragraph there cites the finding as `[F..]`, and its §19 is the rebuilt plan of §4 below with the
+forks filled in. This file is now the record of *why*; the design is the record of *what*.
 
 ---
 

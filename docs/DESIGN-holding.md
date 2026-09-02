@@ -1,17 +1,19 @@
 # The holding — routes, share, development, buildings
 
-Design, 2026-08-31, worked out with the author across one long evening and settled the same
-night. Nothing here is built yet: this file exists so the reasoning survives the session that
-produced it.
+Design, 2026-08-31, worked out with the author across one long evening. **Revised 2026-09-02**
+against `CRITIQUE-holding.md` (six lenses, 37 findings) after the author settled its forks:
 
-> **Read `CRITIQUE-holding.md` first.** The same night a six-lens adversarial review found 37
-> real problems in this text — four self-contradictions, an unmeasurable balance target, an order
-> of work that does not stand, ~200 names for a core of eight buildings, and a fleet section that
-> is the most expensive part and the only one the brief does not need. This document is the
-> *record of the evening*; the critique is the *correction*, and the design will be revised
-> against it once the author settles its four forks. Until then, build nothing from §8–§18 as
-> written. Written in English like the rest of `docs/`; the in-game names stay Russian because
-they are game text, and the register they are in was chosen deliberately — see §7.
+| fork | the author's choice | what it means below |
+|---|---|---|
+| 1 · how feeding pays | **(б)** the +X% stays *and* the share exists, but the share is never paid for the surcharged units | the station's own appetite pays +35% in money; a building pays a share; one unit is never paid twice (§3, §4) |
+| 2 · the ПЕРЕПЛАВКА tab | **(б)** the recipes go | `SMELT` and the smelt tab are deleted the day the first Плавильный цех can pay alloy; «nobody hands out recipes» becomes true (§10.3) |
+| 3 · scope | **(б)** everything at once, with numbers | all 82 buildings and 48 materials are in the tables below with quota, intake→output, cost and effect; a row without them does not exist (§9, §10) |
+| 4 · the fleet | **later** | §18 is kept as the record of the evening and bracketed until the measurement of step 5; its names are undecided (§18, §19) |
+
+Nothing here is built yet; the order of work is §19. Written in English like the rest of `docs/`;
+the in-game names stay Russian because they are game text, and the register they are in was
+chosen deliberately — see §7. Where this revision overturns the 08-31 text, the finding that did
+it is cited as `[F..]`.
 
 The author's brief, in his own words and in the order they came:
 
@@ -34,6 +36,23 @@ The author's brief, in his own words and in the order they came:
 
 ---
 
+## 0. The clock of the layer — one unit, the shift [F01]
+
+`CEL_DAY` is a minute of play and ticks only in an open tab; drones, hires and settlements run on
+`Date.now()` with a 24-hour ceiling. Neither is a «day» a building can eat by. The layer therefore
+has **one unit of its own**:
+
+```
+HOLD_SHIFT = 20 min of real time          // one refill is seen inside one visit
+```
+
+Everything in this document that says *shift* means that constant. Nothing in the layer ticks:
+every building stores `{t0, …}` and is brought up to date lazily when read, from
+`Date.now() − t0`, with the same 24-hour (72-shift) ceiling as `tickDrones`. A closed game does not
+run the world; it settles the arrears once, on return, and only up to the ceilings below.
+
+---
+
 ## 1. What is in the code today — two measured findings
 
 ### 1.1 Every price move the player can make points down
@@ -49,20 +68,18 @@ All the writers of `pressure`, the only term that bends a station's price (`mark
 | **news** (`12p-news:98,106`) | **+0.35…+0.65** | `[-0.6, +0.8]` |
 
 Everything the player does is capped at zero from above. The only thing that lifts a price is a
-random news event. The world can get poorer from the player and never richer. That is the whole of
-«цены только падают», and it is one clamp.
+random news event. That is the whole of «цены только падают», and it is one clamp.
 
 ### 1.2 A route can be sold without ever being flown
 
-`routeSell()` (`12r-route:128`) asks for `legs.length >= 2` and `routeValue() > 0`.
-`routeValue()` = `(loop gross − fuel) × 3.2 × 0.82^loops`, and `loops` is reset by the sale itself.
-`routeLegs()` prices every leg through `marketFor(getSystem(sx,sy))` — **for any station, visited
-or not**. Tap two unseen stations on the map, sell, repeat, without leaving the map.
+`routeSell()` asks for `legs.length >= 2` and `routeValue() > 0`; `routeValue()` is a multiple of
+the *live* spread for any station, visited or not. Tap two unseen stations on the map, sell,
+repeat, without leaving the map.
 
 ### 1.3 And the button lies about the first leg
 
-`drawRouteMap` returns when `legs.length < 2` (`12r-route:161`) and `routeLine()` is gated the
-same way. After marking the **first** station the map changes by nothing at all.
+`drawRouteMap` and `routeLine()` return when `legs.length < 2`. After marking the **first** station
+the map changes by nothing at all.
 
 ---
 
@@ -71,14 +88,20 @@ same way. After marking the **first** station the map changes by nothing at all.
 Its life has three parts — *found it yourself → walked it yourself → handed it on* — and today
 only the third exists and can be entered directly.
 
-**R1. A leg only where you have seen the prices with your own eyes.** `G.seenPrices` already
-exists, is written on docking and remembers the day. The route shows **your note with its date**:
-«титан 41 · видел 6 дней назад». At an unvisited station the map button says «цен этой станции вы
-не видели».
+**R1. A leg only where you have seen the prices with your own eyes.** `G.seenPrices` is written on
+docking and remembers the day. A leg **copies the note into itself** — `{key, day, p}` — so that a
+later eviction from the 24-slot paper, or a fresher note overwriting it, does not change a route
+already laid [F18]. The route shows *your* note with its date, and a stale note as a widening fork:
+«титан 41…58 · записи шесть дней» (±3% per day, ±40% at most). A note **heard** on the air does not
+found a leg: «слышал, не видел» — it takes a docking. At an unvisited station the map button reads
+«ЦЕН НЕ ВИДЕЛИ» before it is pressed, and says so after.
 
-**R2. «В МАРШРУТ» means «I am going there».** Marked stars carry a number, the next one in the
-ring is lit, the footer says «СЛЕДУЮЩЕЕ ПЛЕЧО · «Сардразль» · 2 прыжка · везём титан», and the
-jump button becomes «ПРЫЖОК ПО МАРШРУТУ». Visible **from the first leg**.
+**R2. «В МАРШРУТ» means «I am going there»** — and it is a different verb from flying [F32]. The
+map keeps its jump as **КУРС**: tap a star, jump, no conditions, because *going somewhere* must
+never be refused. **В МАРШРУТ** is the order: marked stars carry a number, the next one in the
+ring is lit, the footer says «СЛЕДУЮЩЕЕ ПЛЕЧО · «Сардразль» · 2 прыжка · везём титан», and when
+the selected star *is* the next leg the jump line reads «ПРЫЖОК ПО МАРШРУТУ». Visible **from the
+first leg**.
 
 **R3. The station knows about the route.** First row of ТОРГОВЛЯ:
 
@@ -88,12 +111,22 @@ and at the selling end «ПО МАРШРУТУ · сдать титан ×18». 
 find titan, press buy eighteen times". It tells the truth when it cannot: «денег хватит на 11 из
 18».
 
-**R4. Only a walked route can be sold**, for a share of what it earned **you**. Zero loops, zero
-price, and the button says why. The same pair will not buy the same route twice.
+**R4. Only a walked route can be sold**, for a share of what it earned **you** — and *earned* is a
+number the game keeps, not a spread it imagines [F08]: `G.trade.earned` accumulates the net of
+every ПО МАРШРУТУ sale (sale minus what the leg's note says the goods cost), **excluding** a sale
+that closed a need at ×2 — luck is not a road. Not before two loops. Price = two average loops.
+Zero loops, zero price, and the button says why. **The same road is not bought twice**: a route's
+identity is its set of legs, and a new route sharing two or more legs with one already sold is the
+same road [F08]. The sold sets are kept (`G.trade.soldSets`), which is also what step 6 needs: a
+sold road grows a barge on those legs, and it eats your quotas — you sold a road and bought a
+competitor you can see.
 
 **R5. Handing it to the factor stays the other ending.** `routeToFactor` already exists and is the
 real prize. Selling is money now; handing on is a holding. Both close a route and both now require
-it to have been real.
+it to have been walked at least once.
+
+**ROUTE_MAX = 6** [F18]: §16.4 asks a full chain to span five stations, and a ring of four could
+never hold one. `mgrRouteMax` is untouched — the factor's ceiling is his own.
 
 ---
 
@@ -101,57 +134,123 @@ it to have been real.
 
 The author's own formulation: «не по рецептам, а если ты возишь, то тебе производят».
 
-A building eats a daily quota. Anyone may feed it — the factor's barges, other people's traffic,
-you. **Feeding is simply selling that good at that station.** No new verb: the player already
-knows how to sell.
+A building eats a **quota per shift**. Feeding it is **selling that good at that station** — no
+new verb. The game remembers **what you fed**, and the same share of what the building made is
+yours, under your name, at that station.
 
-The game remembers **whose share** of what it ate over the last day. The same share of what it
-made is yours.
+**Fork 1(б), as settled:** a unit is paid **once**. The station's own *appetite* (§4) pays +35% in
+money and no share. A *building* pays the normal price **and** a share. Where both want the same
+good, the appetite is served first, then the building; the row says so before the button is
+pressed:
 
 ```
-ПЛАВИЛЬНЫЙ ПЕРЕДЕЛ ×2 · ест 6 железа и 2 кварца в сутки
-вы кормите 4 из 6 · ваша доля 67%
-ВАШ ПАЙ: 14 сплавов · накопитель держит до 18        [ЗАБРАТЬ]
+КОМБИНАТ БЕРЁТ железо · 6 из 18 по +35%
+ПЛАВИЛЬНЫЙ ЦЕХ ×2 БЕРЁТ ещё 12 · ваша доля станет 67%
+ВАШ ПАЙ: 14 сплавов · лежит до 18                                   [ЗАБРАТЬ]
 ```
 
-The share accrues at that station under your name and **stops at three days of output**. Not
-coming back does not stop production — it stops being yours. That is the reason to return, and the
-reason a barge exists: a hold empties a quota in one drop, a quota is filled evenly.
+### 3.1 The hopper — how the share is kept [F22]
+
+There is no simulation of other people's traffic. A building runs whether or not you come; what it
+lacks, the world fills. What is stored is **only yours**:
+
+```
+G.hold["sx,sy"].bld[id] = { lvl, my, t0, got }
+   my   units of yours in the hopper, waiting to be eaten
+   t0   when the hopper was last brought up to date (Date.now())
+   got  output accrued to you and not yet collected
+```
+
+On every read the building catches up: for each whole shift since `t0`, it eats
+`eat = min(my, Q)` of yours, credits you `O × eat / Q` of output, and empties `my` by `eat`.
+Then `got` is clipped to **three shifts of output**, `my` to **three shifts of intake**, and
+`t0` advances. That is the whole model:
+
+- **«Others feed it too»** is the `Q − eat` the world supplied — a number, not a fleet.
+- **«Your share melts»** is the hopper running dry: three shifts after your last drop the output is
+  nobody's, and production goes on.
+- **A hold empties a quota in one drop, a quota is filled evenly**: the hopper takes at most three
+  shifts of intake at once — «БЕРЁТ 6 из 18 · возьмёт ещё 12 в запас» — the rest is an ordinary
+  sale at the ordinary price. That is why a barge exists.
+- **The ceiling is the reason to return**, and it is modified **once** per system, ≤ ×2 [F07]: the
+  Накопитель building doubles both clips. Nothing else touches them; nothing shows or hands out a
+  share from afar except the barge, which costs hold and time.
 
 Three consequences that make this a strategy rather than a farm:
 
-- **Feeding is not selling.** The iron you fed to the smelter is iron you did not carry to market.
-  The price of a share is **cargo space** — the scarcest thing you own.
-- **Others feed it too.** Disappear for a week and your share melts. A holding is held, not
-  founded.
-- **Nobody hands out recipes.** You do not "craft an alloy". You haul iron to «Сардразль» and they
-  issue you alloy. Those are different games.
+- **Feeding is not carrying to market.** The iron you fed to the smelter is iron you did not carry
+  where it was +35%. The price of a share is **cargo space** — the scarcest thing you own.
+- **Disappear for a week and the hopper is empty.** A holding is held, not founded.
+- **Nobody hands out recipes** — and with fork 2(б) that sentence is finally true: the ПЕРЕПЛАВКА
+  tab is deleted (§10.3). You do not "craft an alloy". You haul iron to «Сардразль» and they issue
+  you alloy. Those are different games.
+
+### 3.2 Sources — the buildings that eat nothing [F04]
+
+A добыча building makes **M per shift** into a stock that is yours to buy at **0.7× the local
+price**, clipped at three shifts. Beyond the stock, the market — and buying **pushes pressure up**
+(+0.005 per unit, ceiling +0.35): that is «цены растут» from the author's brief, for free, in the
+same term that already exists. The share of a source is the discount; the ceiling is the same
+three shifts; the reason to return is the same.
 
 ---
 
-## 4. Demand instead of a pit
+## 4. «БЕРЁТ» — one object called demand [F14, F26]
 
-Lift the ceiling at zero, but not into a well. A place that **eats** something pays more for it —
-**up to what it eats in a day**:
+After the layer lands, a counter could be asked for the same good by five mechanics at once: the
+need (×2, `12aa-need`), the errand, a building's quota, a monthly plan, and a settlement's diet.
+There is **one** object instead — a *norm*:
 
-- the first N units a day at +X%;
-- the (N+1)-th and everything after at the normal price, and then down as now.
+```
+{ k, nPerShift, add, source }     source: "need" | "station" | "building"
+```
 
-This one rule keeps the layer from being a printing press: income becomes a **rate per hour**, and
-a big hold cannot drain it in one call.
+- The **need** stays what it is: a norm for one delivery with a deadline, `add = +1.0`.
+- The **station's appetite** [F26] is a norm without a deadline, from `ST_TYPES`, ephemeral, no
+  building required — so «цены растут» happens in the **first hour** and step 2 ships on its own:
+
+| type | eats per shift | pays |
+|---|---|---|
+| Торговый узел | органика 6 · лёд 8 | +35% on those units |
+| Промышленный комбинат | железо 10 · кремний 6 · титан 4 | +35% |
+| Верфь | титан 6 · иридий 2 | +35% |
+| Научная станция | кристаллы 3 · изотопы 4 | +35% |
+| Пограничный аванпост | лёд 6 · органика 4 | +35% |
+| Блошинец | кремний 4 | +35% |
+| Заправочная | — (no market) | — |
+
+Only goods the station actually lists. What was sold into the appetite this shift is stored in
+the same map (`G.hold[key].ate[k] = [n, shift]`), nothing else.
+
+- A **building** adds norms of `source:"building"` at the normal price with a share (§3).
+- The **monthly plan** (§14) is bracketed; the settlement's diet stays a settlement thing and is
+  named in §15 as the second feeder it is.
+
+**The surcharge adds, never multiplies** [F02]: it enters `marketFor` as an addend inside the
+same clamp as `pressure` — `clamp(1 + pressure + appetite, .4, 1.8)` — so it stacks with the need
+and the factor's monopoly the way `12c-mgr-core:626` demands, and the 1.8 ceiling still holds.
+
+One line on the ДОСКА and on the air: «БЕРЁТ железо · 6 в смену · +35% · сдано 4». The «выгодно»
+tag in a hold row says «выгодно первые 6», because it is true for six units and false for the
+seventh, and the player presses ПРОДАТЬ ВСЁ.
 
 ---
 
 ## 5. The industrial market exists only where you made it
 
-Tier 1 and above are **not taken by the ordinary market**. Rolled steel is bought where there is
+Tier 1 and above are **not taken by the ordinary market**: `RES[k].ind = tier`, `price: 0`, so
+`TRADE_KEYS`, the drones and the fuzzer never see them. Rolled steel is bought where there is
 something to eat it — a station with the matching building. So:
 
 - **you create the market yourself.** A forge three sectors away turns dead cargo into money;
-- **other people start hauling it too**: the factor's barges smell the demand. The world comes
-  alive around your building, not only around you;
-- **money cannot cut the corner.** Techcomps are not for sale: either you take them off pirates or
-  you feed the instrument shop.
+- **the hold row knows where** [F15]: «прокат ×12 · едят на Сардразли · 3 прыжка» — the nearest
+  eater in `G.hold`, so an industrial good is never a row with a zero and a question;
+- **money cannot cut the corner.** Techcomps are not on the market: you take them off pirates or
+  you feed the Приборный цех.
+
+A **shadow price** exists for every industrial good — `(Σ inputs × 1.5 + fee) / output`, fee 20 /
+60 / 200 by tier — and it is used for exactly two things: the сводка's «на … кр» and the
+`91zzw` printout. The market never reads it.
 
 ---
 
@@ -160,10 +259,32 @@ something to eat it — a station with the matching building. So:
 **A station grows by buildings** — each ×1…×3, the author's «завод х3».
 **A system grows up thirty rungs** — fed by everything the player does there, not only by cargo.
 
-What counts towards a rung: a drilled deposit and a worked shaft, a drone that finished its point,
-a cell of a built base, a sector taken back from pirates and a pirate base boarded, a monument
-examined and a node taken, a name given to the system, cargo delivered (by volume), a settlement
-grown, a home or a wintering put down, a beacon set.
+What counts, **with weights** [F30], all read from counters that already exist (`placeNote`,
+`visits`, `rep`, `bases`, `settle.stage`, `mines`, `hold`) — no second register [F16]:
+
+| deed | points | cap |
+|---|---|---|
+| a deposit drilled | 1 | 4 |
+| a shaft worked (`G.mines`) | 2 | 2 |
+| a drone that finished its point | 1 | 6 |
+| a cell of a built base | 1 | 8 |
+| a sector taken back from pirates | 3 | 3 |
+| a pirate base boarded | 3 | 3 |
+| a monument examined | 1 | 3 |
+| a node taken | 1 | 3 |
+| a name given to the system | 2 | 2 |
+| cargo **you docked with**, per 50 units — never a barge's [F12] | 1 | 6 |
+| a settlement grown, per stage | 2 | 6 |
+| a home or a wintering put down | 3 | 3 |
+| a beacon set | 1 | 1 |
+| a building, per level | 2 | 24 |
+| a pennant left (`21h-pennant`) [F13] | 1 | 1 |
+
+The rung is **a function of the points** (`rungOf(sx,sy)`), derived, never stored; `G.step` does
+not exist. Thresholds: 1, 2, 3, 5, 7 · 9, 11, 13, 15, 18 · 21, 24, 27, 30, 34 · 38, 42, 46, 50, 55 ·
+60, 65, 70, 75, 81 · 87, 93, 99, 105, 112. Four hard gates on top of the points, because a rung is
+named after what stands there: 6 needs a landing, 11 needs a drilled deposit *and* a drone, 16 needs a
+building, 21 needs three.
 
 ---
 
@@ -171,9 +292,9 @@ grown, a home or a wintering put down, a beacon set.
 
 Three registers were written out and heard against each other:
 
-- **А · ЭФЕМЕРИДА** — Efremov, the great science: Засечка, Керн, Спираль, Кольцо. Beautiful, but
-  speaks from above; a first probe has no «обитаемый горизонт».
-- **Б · МОНТАЖ** — the Strugatskys and a real launch complex: Вымпел, Купол, Монтажный корпус,
+- **А · ЭФЕМЕРИДА** — Efremov, the great science: Керн, Спираль, Кольцо. Beautiful, but speaks
+  from above; a first probe has no «обитаемый горизонт».
+- **Б · МОНТАЖ** — the Strugatskys and a real launch complex: Вымпел, Монтажная площадка,
   Стыковочный узел, Трасса. Dry words used by people doing the work.
 - **В · ФРОНТИР** — Заимка, Шурф, Прииск, Барак, Пакгауз. Warm, but it is Siberia, not space. The
   author's verdict: «че то какие то не космические названия».
@@ -183,205 +304,389 @@ from a pennant to the Ring. Two earthly words are kept on purpose — «Крас
 «Столовая», and «Дружина» beside them: in a module at the edge of the galaxy they read as home,
 and that seam is what Soviet science fiction was made of.
 
+**Three laws of naming, applied throughout** [F13, F33, F37, F39]:
+
+1. **One word, one column.** A rung is a *state of the system*, a building is a *shop*, a material
+   is a *thing*. No word appears in two columns, and nothing already in the base's `BUILD` table
+   (Реактор, Солнечная панель, Буровая, Склад, Жилой отсек, Плавильня, Площадка, Батарея,
+   Лаборатория) is reused on a station.
+2. **A rung is named after what now stands in the system** — not after an event, a procedure or a
+   document. The one permitted exception is 30, Кольцо: a status, not a place, and named as such.
+3. **One grammar per family**: передел — «X-ный цех»; узлы — «X-ный цех» too (a shop is a shop);
+   добыча — «X-ный промысел» / «X-ная разработка»; крупное — «X-ный участок»; the offices are two,
+   Контора and Диспетчерская; the укладов are adjectives.
+
 ---
 
 ## 8. The ladder — thirty rungs in six five-year plans
 
 **0 · ПУСТО** — a star and nothing else.
 
+Six starred rungs carry an **effect**; the other twenty-four are **moments** [F16, F30]: one line
+on the air when you arrive («Тегра · КЕРН — залежи видны без бурения»), the ring growing on the
+map, a different word at the counter — and **no code in any other module**. The word «ступень» is
+not used in the interface [F30]: the player sees a five-year plan in Roman numerals and hears the
+moments; the number lives in the summary on a second tap.
+
 ### I · РАЗВЕДКА — the automatics work
 
-| № | rung | what it gives |
+| № | rung | what stands |
 |---|---|---|
-| 1 | **Засечка** | the system gets its mark on the map and a line in the summary |
-| 2 | **Эфемерида** | orbits computed — the jump here is cheaper |
-| 3 | **Облёт** | flown through under your own power; a thin arc at the star |
+| 1 | **Отметка** | the system's mark on the map and a line in the summary |
+| 2 | **Расчёт** | the orbits computed and filed |
+| 3 | **Створ** | flown through under your own power; the star gets its arc |
 | 4 | **Вымпел** | a sign left: the system is yours by right of first |
-| 5 | **Автомат** ★ | an automatic station works here: heard on the air, mail reaches it |
+| 5 | **Буй** ★ | an automatic beacon works here: **heard on the air, mail reaches it** (`11ap-relay`, `25k-post-mail`) |
 
 ### II · ПРИСУТСТВИЕ — a human arrives
 
-| № | rung | what it gives |
+| № | rung | what stands |
 |---|---|---|
-| 6 | **Посадка** | you have stood on the ground |
-| 7 | **Проба грунта** | deposits show their content without drilling |
-| 8 | **Полигон** | the work area is laid out: twice as many drones |
-| 9 | **Купол** | first pressure; ore is richer |
-| 10 | **Замкнутый цикл** ★ | air and water of its own — one can stay, and need not haul them |
+| 6 | **Полоса** | a landing strip: you have stood on the ground, and the line where straight lines do not occur (§13) |
+| 7 | **Керн** | a core sample: deposits show their content without drilling |
+| 8 | **Полигон** | the work area laid out |
+| 9 | **Шлюз** | first pressure |
+| 10 | **Замкнутый цикл** ★ | air and water of its own: **a hire rests here for nothing** (`crewRest` free) |
 
 ### III · МОНТАЖ — the metal goes up
 
-| № | rung | what it gives |
+| № | rung | what stands |
 |---|---|---|
-| 11 | **Монтажная площадка** ★ | **the building site opens** |
-| 12 | **Жилой отсек** | there are hands: building goes a quarter faster |
-| 13 | **Накопитель** | the share ceiling doubles |
-| 14 | **Обогатитель** | tier 1 buildings may be laid down |
-| 15 | **Литейный модуль** ★ | a second site |
+| 11 | **Монтажная площадка** ★ | **the building site opens** — one site |
+| 12 | **Жилой модуль** | there are hands |
+| 13 | **Хранилище** | a store stands: the share is *shown* on the ДОСКА from here (the ceiling is the Накопитель's, §3.1) |
+| 14 | **Обогатитель** | the ore goes through a plant |
+| 15 | **Литейный модуль** ★ | **a second site** |
 
 ### IV · УЗЕЛ — other people come
 
-| № | rung | what it gives |
+| № | rung | what stands |
 |---|---|---|
 | 16 | **Стыковочный узел** | not only your ships dock here |
-| 17 | **Грузовой терминал** | demand holds up without you |
-| 18 | **Городок** | people live in families: artel, scrip, holidays |
-| 19 | **Причальная ферма** | your own barge stands and loads |
-| 20 | **Промышленный узел** ★ | tier 2 buildings and a third site |
+| 17 | **Грузовой терминал** | the goods have a place to wait |
+| 18 | **Городок** | people live in families |
+| 19 | **Причальная ферма** | a barge can stand and load (the Причал building is what loads it) |
+| 20 | **Промышленный узел** ★ | **tier 2 buildings and a third site** |
 
-### V · УПРАВЛЕНИЕ — the system decides for itself
+### V · ХОЗЯЙСТВО — the system decides for itself
 
-| № | rung | what it gives |
+| № | rung | what stands |
 |---|---|---|
-| 21 | **Управление** | its own summary and its own plan |
-| 22 | **Монтажный корпус** | hulls and barges are assembled here |
-| 23 | **Институт** | teaches and computes: tech cheaper, recipes of its own |
-| 24 | **Заслон** | a pirate focus does not grow here |
-| 25 | **Узел трасс** ★ | the lines meet; the factor's domain moves in; tier 3 |
+| 21 | **Правление** | its own summary |
+| 22 | **Стапельная** | a slipway hall: the Стапель building may be laid down |
+| 23 | **Кафедра** | a chair of the institute teaches here |
+| 24 | **Рубеж** | a pirate focus does not grow here (moment: the ring gets a notch on the map) |
+| 25 | **Узел трасс** ★ | **the lines meet; the factor's domain moves in; tier 3** |
 
 ### VI · КОЛЬЦО — a civilisation
 
-| № | rung | what it gives |
+| № | rung | what stands |
 |---|---|---|
-| 26 | **Главк** | the whole holding in one summary, without flying |
-| 27 | **Трасса** | a regular line to a neighbour: the jump along it is half price |
-| 28 | **Пояс огней** | the planet's night side is lit all the way round |
-| 29 | **Полдень** | the system feeds itself: its buildings eat its own output |
-| 30 | **Кольцо** ★ | it has entered the ring; others are named after it, and people come by themselves |
+| 26 | **Округ** | the district office |
+| 27 | **Трасса** | a regular line to a neighbour |
+| 28 | **Пояс огней** | the planet's night side lit all the way round |
+| 29 | **Полдень** | the system feeds itself: its buildings eat its own output (the only rung where §10.1 is lifted) |
+| 30 | **Кольцо** ★ | **they hail you first, by the name you gave the system** |
 
-Six starred rungs are real thresholds; the other twenty-four are an even climb, so that every
-return moves something.
+The twenty-four unstarred rungs may acquire effects later — **one at a time, each with its code
+and a test that `rungHas(sx,sy,id)` is read somewhere** [F16]. Not before.
 
-### 8.1 What you are called
+### 8.1 What you are called [F35]
 
-The rung changes how you are addressed at the counter — the game already has forms of address:
+The rung changes how you are addressed at the counter, and the address is **tied to the place**:
+«на Тегре вас зовут монтажником».
 
 **никак** → **наблюдатель** (5) → **монтажник** (11) → **начальник участка** (15) →
-**управляющий** (20) → **начальник трассы** (25) → **по имени-отчеству** (30)
+**начальник узла** (20) → **начальник трассы** (25) → at thirty, **by the word you gave the
+system**: «— А, это вы… с „Сардразли“».
 
-The last is the best prize in the ladder: at thirty they stop calling you by your post.
+«Управляющий» is not in the row: it is a protected word (`12c-mgr-core:303`, one domain — one
+manager), and the player does not stand in line with the people he seats. A patronymic is a
+feature of its own (the player has no name in the game) and goes to the queue, not the ladder.
 
 ---
 
-## 9. The material tree
+## 9. The material tree — 48 goods, each with its maker, its eater and a shadow price
+
+Tier n eats tier n−1 as its main input and anything below as a secondary. `ind` is the tier; a
+good with `ind` has `price: 0` and is invisible to the market, the drones and the errands. The
+shadow price is §5's number. «ест» names the family of eaters; the buildings are in §10.
 
 ### Tier 0 — raw (exists)
-Лёд 7 · Железо 11 · Кремний 17 · Органика 29 · Углерод 46 · Титан 38 · Изотопы 55 · Иридий 74 ·
-Кристаллы 105 · Ксенобиом 190 · Летучие газы · Кристаллы льда
 
-### Tier 1 — передел
-**Прокат** · **Обшивка** · **Арматура** · **Огнеупор** · **Реголитобетон** · **Кварц** ·
-**Диэлектрик** · **Кабель** · **Смола** · **Изолятор** · **Углеволокно** · **Графит** ·
-**Карбид** · **Спирт** · **Синтебелок** · **Сплавы** · **Ферросплав** · **Тяжёлая вода** ·
-**Кислород** · **Гидразин** · **Криоген** · **Теплозащита**
+Лёд 7 · Железо 11 · Кремний 17 · Органика 29 · Титан 38 · Изотопы 55 · Иридий 74 · Кристаллы
+105 · Углерод 46 · Ксенобиом 190 · Летучие газы (shadow 30) · Кристаллы льда (shadow 40).
+Сплавы and Техкомпоненты, today `rare`, move to tiers 1 and 2 and keep their keys.
 
-### Tier 2 — узлы
-**Подшипник** · **Насос** · **Оптика** · **Радиолампа** · **Реле** · **Сельсин** · **Термопара** ·
-**Гироскоп** · **Полупроводники** · **Сверхпроводник** · **Техкомпоненты** · **Реакторный блок** ·
-**Аккумулятор** · **Регенератор** · **Консервы** · **Гермоткань** · **Гермоплёнка** ·
-**Люминофор**
+### Tier 1 — передел (22) · ×1 quota per shift · intake → output
 
-### Tier 3 — крупное
-**Секция корпуса** · **Станочная линия** · **Жилой блок** · **Купол** · **Мачта** ·
-**Причальная балка** · **Стартовая ферма** · **Солнечная панель**
+| key | good | made by | eats → makes | shadow |
+|---|---|---|---|---|
+| `alloy` | **Сплавы** | Плавильный цех | железо 8 + кремний 4 → 2 | 127 |
+| `ferro` | **Ферросплав** | Ферросплавный цех | железо 6 + титан 2 → 2 | 116 |
+| `roll` | **Прокат** | Прокатный цех | железо 8 + кремний 2 → 3 | 68 |
+| `plate` | **Обшивка** | Обшивочный цех | титан 6 + железо 2 → 2 | 198 |
+| `rebar` | **Арматура** | Арматурный цех | железо 10 → 3 | 62 |
+| `refr` | **Огнеупор** | Огнеупорный цех | кремний 6 + титан 2 → 2 | 144 |
+| `concrete` | **Реголитобетон** | Бетонный цех | кремний 6 + лёд 4 → 4 | 54 |
+| `quartz` | **Кварц** | Кварцевый цех | кремний 8 → 2 | 112 |
+| `dielec` | **Диэлектрик** | Диэлектрический цех | кремний 4 + органика 4 → 2 | 148 |
+| `cable` | **Кабель** | Кабельный цех | железо 4 + иридий 1 + органика 2 → 2 | 142 |
+| `resin` | **Смола** | Смоляной цех | органика 8 → 3 | 123 |
+| `insul` | **Изолятор** | Изоляторный цех | кремний 4 + органика 2 → 2 | 104 |
+| `cfiber` | **Углеволокно** | Углеволоконный цех | углерод 3 + органика 3 → 2 | 179 |
+| `graphite` | **Графит** | Графитовый цех | углерод 4 → 2 | 148 |
+| `carbide` | **Карбид** | Карбидный цех | углерод 2 + кремний 4 → 2 | 130 |
+| `spirit` | **Спирт** | Спиртовой цех | органика 6 + лёд 4 → 4 | 81 |
+| `protein` | **Синтебелок** | Белковый цех | органика 8 → 3 | 123 |
+| `heavyw` | **Тяжёлая вода** | Изотопный цех | лёд 8 + изотопы 1 → 2 | 93 |
+| `oxygen` | **Кислород** | Кислородный цех | лёд 8 → 4 | 26 |
+| `hydrazine` | **Гидразин** | Гидразиновый цех | лёд 4 + органика 4 → 2 | 118 |
+| `cryo` | **Криоген** | Криогенный цех | летучие газы 4 + лёд 2 → 2 | 110 |
+| `thermo` | **Теплозащита** | Теплозащитный цех | кремний 4 + углерод 2 → 2 | 130 |
 
-The instrument row — радиолампа, реле, сельсин, термопара, гироскоп — feeds what the game already
-has: the kit of instruments in the cockpit (`25a-instr`, `05b-instr-kit`). Your own shops start
-making the dials in front of your face.
+### Tier 2 — узлы (18)
+
+| key | good | made by | eats → makes | shadow |
+|---|---|---|---|---|
+| `bearing` | **Подшипник** | Подшипниковый цех | прокат 4 + графит 1 → 2 | 345 |
+| `pump` | **Насос** | Насосный цех | прокат 3 + сплавы 2 + изолятор 1 → 2 | 452 |
+| `optics` | **Оптика** | Оптический цех | кварц 4 + диэлектрик 1 → 2 | 477 |
+| `tube` | **Радиолампа** | Ламповый цех | кварц 2 + кабель 1 + сплавы 1 → 3 | 266 |
+| `relay` | **Реле** | Релейный цех | кабель 2 + изолятор 2 + сплавы 1 → 3 | 330 |
+| `selsyn` | **Сельсин** | Сельсинный цех | кабель 3 + прокат 1 + сплавы 1 → 2 | 496 |
+| `thermoc` | **Термопара** | Термопарный цех | ферросплав 2 + изолятор 1 → 3 | 188 |
+| `gyro` | **Гироскоп** | Гироскопный цех | прокат 2 + сплавы 2 + кабель 1 → 1 | 858 |
+| `semi` | **Полупроводники** | Полупроводниковый цех | кварц 3 + диэлектрик 2 + графит 1 → 2 | 615 |
+| `supercon` | **Сверхпроводник** | Сверхпроводниковый цех | криоген 2 + кабель 2 + карбид 1 → 1 | 1011 |
+| `techcomp` | **Техкомпоненты** | Приборный цех | сплавы 2 + кабель 2 + кварц 1 → 2 | 518 |
+| `reactorb` | **Реакторный блок** | Реакторный цех | тяжёлая вода 2 + огнеупор 2 + ферросплав 2 → 1 | 1119 |
+| `accum` | **Аккумулятор** | Аккумуляторный цех | диэлектрик 2 + кабель 1 + графит 1 → 2 | 470 |
+| `regen` | **Регенератор** | Регенераторный цех | кислород 2 + изолятор 1 + сплавы 1 → 2 | 242 |
+| `canned` | **Консервы** | Консервный цех | синтебелок 4 + спирт 1 → 4 | 230 |
+| `fabric` | **Гермоткань** | Ткацкий цех | углеволокно 2 + смола 2 → 2 | 483 |
+| `film` | **Гермоплёнка** | Плёночный цех | смола 3 + диэлектрик 1 → 3 | 278 |
+| `phosphor` | **Люминофор** | Люминофорный цех | кварц 2 + изотопы 1 + диэлектрик 1 → 2 | 350 |
+
+The instrument row — радиолампа, реле, сельсин, термопара, гироскоп — feeds what the game
+already has: the kit of instruments in the cockpit (`25a-instr`, `05b-instr-kit`). Your own shops
+start making the dials in front of your face. Techcomps stop being pirate loot only: the raid
+still gives them, and now so does the Приборный цех — a fight speeds up, it does not unlock [F09].
+
+### Tier 3 — крупное (8) · eaten by the site, not by the market
+
+| key | good | made by | eats → makes | shadow |
+|---|---|---|---|---|
+| `hullsec` | **Секция корпуса** | Стапель | обшивка 4 + арматура 2 + подшипник 1 → 1 | 2092 |
+| `mline` | **Станочная линия** | Станочный участок | подшипник 2 + реле 2 + прокат 2 → 1 | 2429 |
+| `habblock` | **Жилой блок** | Блочный участок | реголитобетон 4 + гермоплёнка 2 + регенератор 1 → 1 | 1721 |
+| `shell` | **Гермооболочка** | Купольный участок | гермоткань 3 + арматура 2 + оптика 1 → 1 | 3275 |
+| `mast` | **Мачта** | Мачтовый участок | арматура 3 + кабель 2 + углеволокно 1 → 1 | 1174 |
+| `beam` | **Причальная балка** | Балочный участок | прокат 4 + ферросплав 2 + подшипник 1 → 1 | 1474 |
+| `launchf` | **Стартовая ферма** | Стартовый участок | огнеупор 3 + арматура 2 + гидразин 2 → 1 | 1388 |
+| `panel` | **Фотопанель** | Панельный участок | полупроводники 2 + гермоплёнка 1 + кабель 1 → 1 | 2675 |
+
+Tier 3 is cargo like everything else (a barge hauls it), but nothing *eats* it except
+construction: level ×2 of any shop wants a Станочная линия, ×3 two and a Жилой блок; the
+non-cargo families (§10, D–H) each want one large thing; a barge hull is four Секции корпуса at a
+Стапель (§12). What the site eats shows on the building's card, never in a market row [F15].
 
 Спирт stays out of the cosmic dictionary on purpose: on a frontier it is solvent, antifreeze and
 currency at once, and that is the truth of the place.
 
 ---
 
-## 10. The buildings
+## 10. The buildings — 82 rows, one constant
 
-Every building eats a **daily quota**, never a stock, and pays a **пай** in proportion. Levels
-×1/×2/×3 scale the quota and the effect. Where one may stand is decided by the station type
-(`ST_TYPES`, `06-galaxy:8`) and by what the system physically has — a solid world, a belt, a gas
-giant, fauna.
+```
+BLD[id] = { ru, note, fam, tier, at, eats, makes, cost, fx, sh }
+```
 
-**Добыча.** Реголитовая разработка · Буровой комплекс · Ледодобыча · Драга · Газовый промысел ·
-Оранжерея · Биостанция · Отвальное хозяйство
+`at` — where it may stand: the station type (`ST_TYPES`) and what the system physically has
+(a solid world, a belt, a gas giant, fauna, a worked shaft). `eats`/`makes` — per shift at ×1;
+×2 doubles them, ×3 triples. `cost` — what the site eats before the thing stands, **haulable by
+hold** for tier 1 [F09]; the build takes 2 / 4 / 6 shifts by tier, and the truss is visible on
+the station while it grows. `fx` — the one hook the row is wired to; **a row whose `fx` is read
+by nobody is not shipped** (test: every `fx` id is read through `bldHas(sx,sy,id)` at least once).
+`sh` — the piece it hangs on the station's body, out of the vocabulary of `17a-station-mod`
+(§13).
 
-**Передел.** Плавильный передел · Прокатный стан · Обшивочный цех · Арматурный · Огнеупорная печь ·
-Бетонный узел · Стекловарня · Диэлектрический цех · Кабельный цех · Смолокурня · Изоляторный цех ·
-Углеволоконный цех · Графитовый цех · Карбидная печь · Биосинтез · Синтезатор белка · Изотопная
-колонна · Кислородная станция · Гидразиновый завод · Криогенный цех · Теплозащитный цех
+**Cost by level:** ×1 as in the table; **×2** = ×1 again + 1 Станочная линия; **×3** = ×1 twice
++ 2 Станочные линии + 1 Жилой блок. The hopper and the share ceiling scale with the level
+(§3.1), the effect of a non-cargo building does not — its level is its silhouette.
 
-**Приборы и узлы.** Приборный цех · Ламповый цех · Релейная мастерская · Гироскопная ·
-Полупроводниковая лаборатория · Подшипниковый · Насосный · Оптическая мастерская · Кристаллорезка ·
-Реакторная сборка · Консервный · Ткацкая · Регенераторный
+### A · Добыча (8) — make M per shift into a stock sold to you at 0.7× [§3.2]
 
-**Крупное.** Стапель · Станкозавод · Домостроительный · Купольный участок · Мачтовая бригада ·
-Стартовая ферма · Панельный цех
+| id | building | at | makes / shift | cost ×1 |
+|---|---|---|---|---|
+| `regolith` | **Реголитовая разработка** | a solid world with железо in `PROFILE` | железо 12 · кремний 6 | 1 600 кр · сплавы 10 · железо 24 |
+| `deepdrill` | **Буровой комплекс** | rocky · metal · volcanic · desert | титан 4 · иридий 1 | 2 400 кр · сплавы 14 · железо 30 |
+| `icefield` | **Ледовый промысел** | ice · ocean · terran | лёд 16 | 1 200 кр · сплавы 8 · железо 20 |
+| `beltmine` | **Поясной промысел** | a belt in the system | кристаллы 2 · изотопы 3 | 2 800 кр · сплавы 16 · титан 12 |
+| `gasfield` | **Газовый промысел** | a gas giant | летучие газы 6 | 2 200 кр · сплавы 12 · титан 8 |
+| `greenhouse` | **Оранжерея** | terran · jungle · ocean | органика 10 | 1 400 кр · сплавы 8 · кремний 20 |
+| `biostation` | **Биостанция** | fauna in the system | углерод 4 · ксенобиом 1 | 3 000 кр · сплавы 16 · органика 24 |
+| `dumpworks` | **Отвальный промысел** | a worked shaft here (`G.mines`) | железо 6 · кремний 4 | 1 000 кр · сплавы 6 · железо 12 |
 
-**Хозяйство и порядок.** Накопитель · Товарная контора (neighbours' prices) · Расчётная касса
-(scrip) · Грузовой причал · Сортировочная (the share may be collected in any of your systems) ·
-Диспетчерская (all your quotas and shares without flying) · Грузовой двор (others feed your
-buildings more readily) · Холодильник (the share ceiling ×3) · Заводоуправление (posts the plan)
+### B · Передел (22) — tier 1, eats tier 0 [recipes in §9]
 
-**Флот.** Ремонтный док · Заправочный узел · Механические мастерские · Ангар · Отстойник
+Every row: `at` = any station with a site, **not** in a system whose `PROFILE` makes its main
+input (§10.1); `cost ×1` = **1 200 кр · сплавы 8 · 24 of its main input**; `fx` = the share;
+`sh` = the family's stack. The twenty-two are the makers of the tier-1 column of §9:
+Плавильный · Ферросплавный · Прокатный · Обшивочный · Арматурный · Огнеупорный · Бетонный ·
+Кварцевый · Диэлектрический · Кабельный · Смоляной · Изоляторный · Углеволоконный · Графитовый ·
+Карбидный · Спиртовой · Белковый · Изотопный · Кислородный · Гидразиновый · Криогенный ·
+Теплозащитный **цех**.
 
-**Люди.** Дом приезжих · Учебный пункт · Медпункт · Отдел кадров · Артель · Красный уголок ·
-Столовая
+### C · Узлы (18) — tier 2, eats tier 1, from rung 20
 
-**Оборона.** Оборонная батарея · Наблюдательный пост · Дружина · Заграждение
+Every row: `cost ×1` = **2 400 кр · сплавы 12 · прокат 6 · 12 of its main input**; `fx` = the
+share. The eighteen are the makers of the tier-2 column: Подшипниковый · Насосный · Оптический ·
+Ламповый · Релейный · Сельсинный · Термопарный · Гироскопный · Полупроводниковый ·
+Сверхпроводниковый · Приборный · Реакторный · Аккумуляторный · Регенераторный · Консервный ·
+Ткацкий · Плёночный · Люминофорный **цех**.
 
-**Знание и жизнь.** Обсерватория · Лаборатория · Архив экспедиции · Городок · Личный причал ·
-Радиомачта · Метеостанция · Пункт связи
+### D · Крупное (8) — tier 3, from rung 25 (the Стапель from 22)
+
+Every row: `cost ×1` = **4 800 кр · прокат 12 · арматура 8 · подшипник 2**; `fx` = the share.
+The eight makers of the tier-3 column: Стапель · Станочный · Блочный · Купольный · Мачтовый ·
+Балочный · Стартовый · Панельный **участок**.
+
+### E · Хозяйство (5)
+
+| id | building | fx (the hook) | cost ×1 |
+|---|---|---|---|
+| `nakop` | **Накопитель** | both clips of §3.1 ×2 for every building at this station — the *one* ceiling modifier [F07] | 2 000 кр · сплавы 10 · реголитобетон 8 |
+| `kontora` | **Контора** | the prices of stations within 4 pc are written to the paper as «со слуха» notes at every docking (`pricesHeard`) | 1 800 кр · сплавы 6 · кабель 4 |
+| `kassa` | **Касса** | scrip changes at par here (the `scrip` tab's rate = 1) | 1 200 кр · сплавы 4 · реле 2 |
+| `prichal` | **Причал** | your barge may take this station as a leg; a moored barge is drawn | 3 000 кр · сплавы 8 · причальная балка 1 |
+| `dispatch` | **Диспетчерская** | only with the factor seated [F21]: ДЕЛО lists every quota and share of the holding without flying | 2 600 кр · сплавы 8 · реле 4 · радиолампа 2 |
+
+### F · Флот (4)
+
+| id | building | fx | cost ×1 |
+|---|---|---|---|
+| `dock` | **Ремонтный док** | `repairCost()` −30% here | 2 400 кр · сплавы 12 · прокат 8 |
+| `fuelnode` | **Заправочный узел** | fuel −25% here | 2 000 кр · сплавы 8 · насос 2 |
+| `workshop` | **Мастерская** | hull service (`12s-wear`) here as at a yard | 2 200 кр · сплавы 10 · подшипник 2 |
+| `hangar` | **Ангар** | drones of this system never break down (`12e`) | 2 800 кр · сплавы 12 · обшивка 6 |
+
+### G · Люди (7)
+
+| id | building | fx | cost ×1 |
+|---|---|---|---|
+| `guesthouse` | **Дом приезжих** | +2 candidates in the hire list here | 2 000 кр · сплавы 8 · жилой блок 1 |
+| `school` | **Учебный пункт** | the good tails of the run table ×1.5 for a hire sent from here (`12b`) | 2 200 кр · сплавы 8 · консервы 4 |
+| `medpoint` | **Медпункт** | `crewRest` twice as fast; a ransom −25% | 2 000 кр · сплавы 6 · регенератор 2 |
+| `personnel` | **Отдел кадров** | the HQ candidate pool refreshes at every docking here (`12c`) | 1 800 кр · сплавы 6 · радиолампа 2 |
+| `artel` | **Артель** | the errand (`12aa`) is always posted here and pays +25% | 2 400 кр · сплавы 10 · консервы 6 |
+| `redcorner` | **Красный уголок** | a manager's loyalty does not fall while you are docked here, +1 per visit | 1 600 кр · сплавы 4 · люминофор 2 |
+| `canteen` | **Столовая** | benders (`12b`) −50% for hires on runs from here | 1 400 кр · сплавы 4 · консервы 8 |
+
+### H · Оборона (4)
+
+| id | building | fx | cost ×1 |
+|---|---|---|---|
+| `guns` | **Орудийная батарея** | a blockade (`13b`) of this system lifts by itself within 2 shifts | 3 600 кр · сплавы 16 · огнеупор 6 · реле 2 |
+| `lookout` | **Дозор** | pirate foci within 5 pc shown on the map | 1 800 кр · сплавы 6 · оптика 2 |
+| `druzhina` | **Дружина** | boarding a base in this sector: +2 hands | 2 400 кр · сплавы 8 · гермоткань 4 |
+| `barrier` | **Заграждение** | a pirate ambush on approach −50% | 2 800 кр · сплавы 12 · мачта 2 |
+
+### I · Знание и жизнь (6)
+
+| id | building | fx | cost ×1 |
+|---|---|---|---|
+| `observatory` | **Обсерватория** | skywatch orders (`11ak`) for this system pay ×2; its sky events named a day ahead | 3 200 кр · сплавы 10 · оптика 4 |
+| `branch` | **Филиал** | the `lab` tab −15% here (a science station only) | 4 000 кр · сплавы 14 · полупроводники 4 |
+| `archive` | **Архив** | the hundred's traces of this system readable from the desk | 1 600 кр · сплавы 4 · гермоплёнка 4 |
+| `ownpier` | **Личный причал** | docking here adds no hours to the hull (`12s`) | 2 000 кр · сплавы 8 · причальная балка 1 |
+| `radiomast` | **Радиомачта** | the system becomes a relay (`11ap`): the ether reaches 1.5× as far | 2 400 кр · сплавы 8 · мачта 1 · кабель 4 |
+| `meteo` | **Метеостанция** | the surface weather known before landing | 1 400 кр · сплавы 4 · термопара 4 |
+
+**Struck from the 08-31 list, and why:** Холодильник (a second ceiling, F07) · Сортировочная and
+Грузовой двор (show-without-flying and a base-rate knob, F07/F21) · Заводоуправление and the
+five offices (the plan is bracketed, F24; two offices remain, F39) · Отстойник (no effect) ·
+Городок (a rung and an уклад already, F13) · Стартовая ферма as a building (the material keeps
+the word; the shop is the Стартовый участок) · Лаборатория and Оборонная батарея (the base's
+`BUILD` has them, F13) · Институт (11ab has the one institute, F39; Филиал) · Пункт связи (=
+Радиомачта) · Наблюдательный пост (= Дозор, 11ap's НП) · Биосинтез (= Белковый цех) · Драга,
+Стекловарня, Смолокурня, Ткацкая, Отвальное хозяйство, Домостроительный (register В or a
+comic word in orbit, F39 — renamed under the family grammar).
 
 ### 10.1 The rule that makes it a strategy
 
-**No building eats what its own system makes.** A smelter wants quartz, and quartz comes off rocky
+**No building eats what its own system makes.** A smelter wants iron, and iron comes off rocky
 worlds; a forge wants alloy from the smelter; a slipway wants both. A self-sufficient node
 **cannot** be built below rung 29 — something is always missing, and that shortage *is* the route.
 
-### 10.2 A worked example
+Written as a test [F15]: for every system below 29, `(PROFILE ∪ makes of its buildings) ∩ eats of
+any building there = ∅`; the site refuses the row with one line: «здесь это и так делают».
 
-1. **«Тегра»**, a frontier station. You drilled, left a drone, cleared the focus — rung 11, the
-   **монтажная площадка** opens.
-2. You lay down a **реголитовая разработка**: 60 техкомпонентов, 30 сплавов. You haul it. It
-   stands, and «Тегра» makes iron 30% under the market.
-3. Cheap iron has to go somewhere. Three sectors away you put a **плавильный передел**; it eats
-   iron at +35% up to the quota and pays you a share of the alloy.
-4. The alloy is wanted back at «Тегра» — and a **накопитель** so the leg is not drained. The ring
-   closes, and you made it.
-5. A quota fills evenly, a hold empties in one drop. So: a **монтажный корпус** for a barge and an
-   **учебный пункт** for its pilot.
-6. Then a **приборный цех**: техкомпоненты, which until now came only off a boarded pirate base.
-7. Pirates close the system and all of it stops. You build a **батарея** and a **дружина**, or you
-   go and fight.
+### 10.2 A worked example — the first share inside forty minutes [F09]
+
+1. **«Тегра»**, a frontier station over an ice world. You drilled, left a drone, cleared the focus —
+   rung 11, the **монтажная площадка** opens.
+2. You lay down a **Ледовый промысел**: 1 200 кр, 8 сплавы (the base's Плавильня or the lab made
+   them), 20 железо hauled in the hold. Two shifts later it stands; «Тегра» sells you 16 ice a
+   shift at 0.7×.
+3. Cheap ice has to go somewhere. Two jumps away, at «Сардразль» over a rocky world, you put a
+   **Кислородный цех** (1 200 кр · сплавы 8 · лёд 24): it eats 8 ice a shift and pays you oxygen
+   in proportion. First drop, first share — about half an hour after rung 11.
+4. Oxygen is wanted where a **Регенераторный цех** stands, and that is rung 20 — so for now it is
+   the Накопитель at «Тегра» so the leg is not drained, and a Прокатный цех at a third station for
+   the tier-1 goods the Станочный участок will one day want. The ring closes, and you made it.
+5. A quota fills evenly, a hold empties in one drop. So: the barge (§12).
+6. Then a **Приборный цех**: техкомпоненты, which until now came only off a boarded pirate base.
+7. Pirates close the system and all of it stops. You build an **Орудийная батарея** and a
+   **Дружина**, or you go and fight.
+
+### 10.3 The ПЕРЕПЛАВКА tab goes [fork 2(б), F03]
+
+`SMELT` (`02-world:58`), the `smelt` tab on the industrial station (`26-ui-station:677`) and its
+рацпредложение premium are deleted **in the same milestone that ships the Плавильный цех** —
+never a day earlier, so alloy always has a source: until then the base's Плавильня, the lab's
+premium and the perk; from then, the share. The «сплавы нигде не добываются — только здесь»
+comment becomes untrue and goes with it. `G.ratios` keeps loading (old saves) and is read by
+nothing.
 
 ---
 
-## 11. Уклады — what a system becomes
+## 11. Уклады — what a system becomes [F37]
 
 The уклад forms by itself out of what stands there, and goes into the news and the rumours in
-other people's words.
+other people's words — as an **adjective**, never as a station type:
 
-**РУДНИК** · **КОМБИНАТ** · **ПРИБОРНЫЙ** · **ХИМИЧЕСКИЙ** · **ЭНЕРГЕТИЧЕСКИЙ** · **ВЕРФЬ** ·
-**ТРАНСПОРТНЫЙ УЗЕЛ** · **НАУЧНЫЙ ПОСТ** · **ГОРОДОК** · **УКРЕПРАЙОН**
+**горная** · **заводская** · **приборная** · **химическая** · **энергетическая** · **судовая** ·
+**узловая** · **учёная** · **жилая** · **крепостная**
+
+«Сардразль-то заводская, туда железо возят.»
 
 ---
 
-## 12. The barge and the pilot
+## 12. The barge and the pilot [F05, F06, F26, F36]
 
 The barge already exists (`12l-barge`) — but as the factor's: a route given a body, ephemeral,
-`BARGE_CAP=6` in the galaxy. The player's own is assembled from parts already in the game:
+`BARGE_CAP=6` in the galaxy. The player's own is assembled from parts already in the game — and it
+**feeds, it does not trade**:
 
-- **hull** — at a **монтажный корпус** (or on your own base), out of секции корпуса, not in one
-  visit;
-- **pilot** — an ordinary hire with a new order kind `barge`: he already has a ship, an order,
-  runs, wear, hidden luck and a history;
-- **route** — the one you walked yourself.
+- **hull** — first by allocation at a yard (a hull of class `barge`, the «Вьюк по разнарядке»
+  pattern of `DESIGN-economy` §4), later four Секции корпуса at a Стапель (rung 22);
+- **pilot** — an ordinary hire with a new order kind `barge` (`ORDERS.barge` in `12a`, the logic
+  in `12ab-hold`): he already has a ship, an order, runs, wear, hidden luck and a history;
+- **route** — the one you walked yourself, and only between stations with a Причал.
 
-Ten times your hold, slow, trades without docking, empties a quota evenly, and is a target for
-pirates — which already works, and a blockade stops it along with the building.
+Its **only** output is the share: it drops your goods into hoppers on its legs, evenly, once a
+shift; it brings no money. The pilot's run is paid as any `haul` — by `CREW_YIELD`, a minus in his
+own line — so the law of the hired hand holds: he is a bet, not an income. Under a blockade
+(`occLvl ≥ 2`) the barge stops with one line, like the drones. In ДЕЛО the two lines cannot be
+confused: «фактор возит на продажу · срез 7%» / «„Тюк“ кормит печь на Сардразли · пай растёт».
+Measured in §16: the barge's credits-per-minute never above the factor's domain.
 
-Hull names, in the cargo register rather than the cruiser one: **«Лихтер»** · **«Паром»** ·
-**«Тягач»** · **«Сухогруз»** · **«Транспорт»** · **«Караван»** · **«Кряж»**. Other people's barge
-captains are already Тук, Барма, Овод, Севрюга, Ушкуй; yours stand in the same row.
+**One barge** [F06]: «груз в попутную» (§18.7 p.2) is struck; the fleet's cargo handover, if it
+ever exists, is a reward of Трасса (27) and only along a leg you walked.
+
+The class is «лихтер»; the names, in the row of Вьюк and Тук: **«Тюк»** · **«Куль»** ·
+**«Кладь»** · **«Волокуша»** · **«Шаланда»** · **«Плашкоут»** · **«Дощаник»**.
 
 ---
 
@@ -390,78 +695,89 @@ captains are already Тук, Барма, Овод, Севрюга, Ушкуй; y
 A number in the corner is not an answer. A developed system must read **by silhouette**, before
 any text. The author: «прям видно должно быть что там строятся станции планеты».
 
-### On the galaxy map
+### On the galaxy map [F19, F22, F30]
 
-- A ring at the star: a thin arc at Вымпел, a closed ring at Монтажная площадка, a double ring at
-  Управление, a ring with a notch at Кольцо.
-- **The ring's colour is the уклад**: рудник ochre, комбинат orange with smoke in it, верфь steel,
-  научный пост phosphor, городок warm yellow, укрепрайон red.
+- **A ring at the star only from Буй (★5)** — «there is someone there» — growing by **six
+  segments**, one per five-year plan I–VI; a notch at Рубеж (24); closed at Кольцо. Stars merely
+  flown through stay bare, so the map does not grow over with arcs.
+- **One colour.** Only the player builds, so there is nothing else to colour: the ring is yours or
+  it is not there. The уклад is a word in the footer and the rumours, not a hue — ten categorical
+  colours on a phone are noise.
 - Beside it, a **column of lights** by the number of buildings. Not a figure — lights.
-- Someone else's development (rivals, `12p`) is the same in another colour. One look at a sector
-  says what is yours, what is theirs and what is empty.
 
-### In the system — the main thing
+### In the system — the main thing, and it comes with the first building [F28]
 
-**The station grows a body.** It is already drawn procedurally out of parts, so every building
-hangs its own on it:
+**The station grows a body.** It is drawn procedurally out of parts, and every `BLD` row carries
+`sh` — one of about seven family forms from `17a-station-mod`'s vocabulary (rack, drum, pods,
+hangar, tank, dish, mast), in three sizes for the three levels; not eighty drawings:
 
-| building | what is seen on the station |
+| family | what is seen on the station |
 |---|---|
-| Плавильный передел | a stack and a slow flare, the smoke drawn off along the orbit |
-| Прокатный стан | a long shop down the hull, bands of light in its windows |
+| передел | a stack and a slow flare; ×3 — the smoke drawn off along the orbit |
+| узлы | a long shop down the hull, bands of light in its windows |
 | Накопитель | rows of containers on the outer deck |
 | Стапель | a truss with a hull inside it, growing from visit to visit |
-| Оборонная батарея | turrets that turn to follow you |
-| Городок / Жилой блок | lit windows, and more of them each time |
-| Обсерватория | a dish turning towards its own star |
-| Грузовой причал | a barge moored |
+| Орудийная батарея | turrets — still, until `prof()` says they may turn |
+| Дом приезжих · Жилой блок | lit windows, and more of them each time |
+| Обсерватория | a dish, turned towards its own star |
+| Причал | a barge moored |
 
-An empty station is a can in orbit. A Главк is a town you see on approach. **No figure is needed.**
+What does not move is **baked once** into an offscreen keyed by the station's built set, like
+`BARGE_ART`; at most **two** moving things per station (the flare, the moored barge); the town's
+lights are one `screenLayer`. Turrets that track and tugs that run come after a measurement, not
+before.
+
+An empty station is a can in orbit. A system at Округ is a town you see on approach. **No figure
+is needed.**
 
 ### The planet changes too
 
-A dump beside the shaft as a pale patch on the day side · **the lights of a городок on the night
-side**, and more of them · a greenhouse dome catching the sun · a landing field, a straight line
-where straight lines do not occur.
-
-### Movement
-
-At Засечка it is empty. At Узел трасс tugs run between the station and the planet, a barge loads
-at the pier, drones draw their arcs. Alive is what moves.
+A dump beside the shaft as a pale patch on the day side · **the lights on the night side**, and
+more of them · a greenhouse dome catching the sun · the Полоса (6): a straight line where straight
+lines do not occur.
 
 ### On the ground
 
 You walk past what you built: a headframe over the shaft, a dome, cable masts, an antenna. The
-game already draws player structures (`21c-built`); they only need tying to the buildings.
+game already draws player structures (`21c-built`); they only need tying to the rows.
 
 ### On the air and at the counter
 
-At Автомат the receiver picks up dispatch traffic — «…третий, приняли двести проката, сдавайте на
+At Буй the receiver picks up dispatch traffic — «…третий, приняли двести проката, сдавайте на
 четвёртый…»; at ПУСТО, only noise. And at the counter they say it themselves: «— У нас теперь
 печь. Год назад тут, кроме ветра, ничего не было».
 
+### The summary fits the footer [F29]
+
+On the map: the name, the Roman numeral, the ring. «построек 7» is the column of lights; «план
+закрыт» belongs to the station's board. The rung's name is on the second tap, ПОДРОБНЕЕ. The
+footer is ≤ 2 lines on a phone, and `91f-ui` measures it through `MAP_BOX`.
+
 ---
 
-## 14. The plan, and the vocabulary of order
+## 14. The vocabulary of order — and what was bracketed [F24, F38]
 
-**Заводоуправление** posts a **план** once a month: «прокат — 200». Closing it does not pay money
-— it pays what money cannot buy: a **станочная линия** free, a person for the artel, a name on the
-board, a line in the округ's news. Missing it is not punished. Next month the plan is simply
-smaller, and that stings more.
-
-**План** — what the заводоуправление posts for the month.
 **Наряд** — a one-off errand (already in the game).
 **Пай** — your share of the output for what you supplied.
-**Сводка** — the line about a system: rung, уклад, buildings, plan.
+**Сводка** — the line about a system: plan, уклад, buildings.
 **Отоварка** — collecting the share.
-**Главк** — a rung, a building, and what you become.
 
-And the floor under all of it: **you build among someone else's ruins.** The «Долгий ход» was
-unrolling the same thing here and did not finish. A monument in the system gives a bonus to the
-building whose drawing is on its slabs — «на плитах записано, как они ставили этот купол». The
-pieces of the report are their summaries for a month just like yours. You are not developing an
-emptiness; you are finishing what others did not reach, and one day someone will read your summary
-the same way.
+The **monthly план** of a Заводоуправление is bracketed: it re-introduced a debt («you sign, and
+you owe») and paid in a Станочная линия, i.e. in money. If it returns it is a **Наряд-заказ** that
+pays what money cannot buy — a line in the notebook, a name on the board, trust — and never a
+thing. Not before step 5 is measured.
+
+Every term is first met **in a consequence, in the player's words** [F32]: «ПЕЧЬ ВЗЯЛА 6 ЖЕЛЕЗА —
+ЗА ВАМИ ЗАПИСАНЫ СПЛАВЫ», «СИСТЕМА ПЕРЕШЛА В III ПЯТИЛЕТКУ — ОТКРЫЛАСЬ СТРОЙКА». Пай, уклад and
+the five-year plan live in the mouths of people and in the notebook, not on buttons.
+
+And the floor under all of it: **you build among someone else's ruins.** The name is introduced
+here for the first time — it exists nowhere in the code or the docs yet [F38] — and its home in
+the code is the monument texts of `20aa-poi` and the pieces of the report: the **«Долгий волок»**
+was unrolling the same thing here and did not finish. A monument in the system gives a bonus to
+the building whose drawing is on its slabs — «на плитах записано, как они ставили этот купол».
+You are not developing an emptiness; you are finishing what others did not reach, and one day
+someone will read your summary the same way.
 
 ---
 
@@ -471,32 +787,38 @@ the same way.
 - **Новости** stop being random wind: half of them are about what was built. «+0.35 on crystals»
   acquires a cause.
 - **Цены** are the raw material of a route (R1), and a note ages.
-- **Нужда** (`12aa-need`: `NEED_WIN=15`, `NEED_P=.3`, ×2 for one delivery) is the doorway — the
-  same idea for one visit; a building is that need made permanent.
-- **Скрип** and **посёлки** already grow; now they have something to grow from.
+- **Нужда** (`12aa-need`) is the doorway — the same norm for one visit; a building is that norm
+  made permanent, and both are one object (§4).
+- **Посёлки** (`12t-settle`, `SETTLE_GIVE=.34`) are the second feeder, and are named as such: a
+  settlement's diet is a share in the small, on the ground, and it is left as it is.
 - **Блокада** (`13b-occupy`) stops a system eating and making: the economy becomes a weapon against
   you, and a reason to take a sector back.
 - **Приборы в рубке** (`25a-instr`) are made by the instrument row of your own industry.
 
 ---
 
-## 16. Balance targets, and what to measure
+## 16. Balance targets — numbers, and what measures them [F11]
 
-1. **No printing press.** Demand is a daily quota, never a stock. Income per hour before and after
-   a building: the fork must be 1.5–2×, not 10×.
-2. **The share against plain trade**: 1.3–1.8× per hour. Any more and trading dies.
-3. **Payback** of a building 4–6 loops; ×2 twice that, ×3 four times.
-4. **A full chain bottom to top spans at least five stations.** Otherwise one cluster closes the
-   game.
-5. **Not compulsory.** The game without buildings stays playable. This is a layer for whoever wants
-   to play economics.
+All measured by a «холдинг» profile in `tests/91zzw-economy`; nothing past step 3 is accepted
+without its printout.
+
+1. **No printing press.** Income per hour before and after a building: **1.5–2×**, never 10×.
+2. **The share against plain trade**: **1.3–1.8× per hour**, at the shadow price. Any more and
+   trading dies.
+3. **Payback** of a ×1 shop: **4–6 loops** of its ring (a loop ≈ two shifts); ×2 twice that, ×3
+   four times.
+4. **A full chain bottom to top spans at least five stations** — hence `ROUTE_MAX = 6`.
+5. **Not compulsory.** The game without buildings stays playable.
 6. **No runaway.** One site per station until rung 15, a window, real materials to haul.
 7. **Only the player builds.** The factor and other people's barges haul along what exists but
    raise nothing. The world changes where you have been — the same thought as names, the trace and
    the wall.
-8. **Save shape.** `G.built = {"sx,sy": {plav:2, nakop:1}}`, `G.pai = {"sx,sy": {alloy:14}}`,
-   `G.fed = {"sx,sy": {iron:.67}}`, `G.step = {"sx,sy": 19}` — sparse maps, pennies. Safe since
-   M287 (`asMap`).
+8. **First share ≤ 40 min after rung 11**, in one system with one building.
+9. **The barge's credits-per-minute never above the factor's domain.**
+10. **Save shape — one map** [F27]:
+    `G.hold = {"sx,sy": {ate:{k:[n,shift]}, bld:{id:{lvl,my,t0,got}}, src:{id:{t0,stock}}}}` —
+    one `asMap`, one default, one version branch; a barge pilot's `step` in the manager/hire
+    whitelist with a save-load test.
 
 ---
 
@@ -506,12 +828,19 @@ the same way.
 - **What is built is not for sale.** Knowledge of a road can be sold; your mark on the world cannot.
 - **Stale price notes are shown as a widening fork**: «титан 41…58 · записи шесть дней».
 - **Only the player builds.**
-- **Register Б+А**, settled by the author 2026-08-31.
+- **Register Б+А**, settled by the author 2026-08-31; the three naming laws of §7 on top of it.
 - **The server is left alone.** Conditions for ever touching `api.php` are in `docs/DEPLOY.md`.
+- **Forks 1(б), 2(б), 3(б)** settled by the author 2026-09-02; **fork 4 — later.**
 
 ---
 
-## 18. The fleet — ships that cannot be bought
+## 18. The fleet — bracketed until the measurement of step 5
+
+> **Status (2026-09-02):** the author said «давай потом». What follows is the record of the
+> evening of 08-31, kept whole because it will be wanted; **nothing in it is queued** (§19). The
+> critique's findings against it stand unanswered on purpose: the class names off real ISS/«Мир»
+> modules and the «Полюс» [F23], the price of thirteen drawings [F17], the debt in «заправка под
+> расписку» [F24] — those are the fork the author will settle when the ladder exists to reward.
 
 Settled with the author 2026-08-31. The dividing line first, because without it the fleet and the
 barges become the same thing:
@@ -528,7 +857,7 @@ Not a state — a **directorate**, on the model of Главсевморпуть,
 stations, aviation and settlements at once. That is exactly what this layer is about.
 
 > **ГЛАВТРАССА** — Главное управление дальних трасс.
-> **Главк** — its district office, and rung 26 of the ladder.
+> **Главк** — its district office. (The rung is Округ; «Главк» is only the office — F13.)
 
 Where the real ships carried «СССР», these carry **ГЛАВТРАССА**. The author's instruction was
 «наш сеттинг, не СССР, но что-то близкое и похожее»: the grammar of the Soviet arms is kept, the
@@ -540,9 +869,6 @@ pixels. The ring is the Кольцо of rung 30: the arms are a promise.
 
 ### 18.2 The marks have a grammar (§9 of the craft codex)
 
-The codex is explicit that signs generated as a scatter read as squiggles and signs generated from
-a grammar read as a writing system. The departmental marks therefore have one:
-
 - **frame** — a circle, one stroke weight for every mark;
 - **figure** — one primitive from a closed alphabet, centred, occupying 0.62 of the circle:
   рожок (почта) · крест (медицина) · якорь с цепью (буксир) · звезда и циркуль (наука) ·
@@ -550,173 +876,138 @@ a grammar read as a writing system. The departmental marks therefore have one:
   раскрытая книга (учебное) · кольцо с четырьмя лучами (плавбаза);
 - **operations** — rotation by 0°, 45°, 90° and reflection, nothing else;
 - **one solid** — every mark has exactly one filled element, and it is the thing that names it.
-  Everything else is line.
-
-Ten marks made this way look like one office drew them, which is the whole point.
 
 ### 18.3 The classes and their donors
 
-Real hardware, because Soviet spacecraft have silhouettes recognisable from the contour alone.
-
 | class | donor | what is seen |
 |---|---|---|
-| **Почтовик** | **«Союз»** | sphere, bell, instrument cylinder, two panel wings, docking probe |
-| **Рефрижератор** | **«Прогресс»** | the same nose and a long ribbed refrigerated bay |
-| **Танкер** | **«Протон»** | fat body, six strap-on tanks around it, a ring of fill necks |
-| **Буксир** | **ядерный буксир** | a spine: reactor forward on a boom, two huge flat radiators as wings, a bell aft |
-| **Рудовоз** | **«Энергия»** | a barrel with four containers strapped along it — the packet, loaded |
-| **Лихтеровоз** | **«семёрка»** | the Korolev cross assembled out of four other people's barges |
-| **Паром** | **«Буран»** | delta wing, black belly, white back. Carries people down from orbit — and stands on the strip at a settlement |
-| **Сторожевик** | **«Спираль»** + **«Алмаз»** | lifting body with an upturned nose, short wings, a cannon under the cheek |
-| **Спасатель** | **«Луна-9»** | a sphere that opens on four petals — a flower airlock for taking people aboard |
-| **Госпитальное** | **ТКС** | a large body with a returnable capsule on the nose |
-| **Учебное** | **«Восток»** ×6 | a cluster of spherical capsules on a common truss, each with its own hatch |
-| **Экспедиционное** | **«Салют»** | cylinder, a truss of dishes, probes on outriggers |
-| **Плавбаза** | **«Мир»** | cylinders of unequal diameter, a node module, panels at odd angles — a cluster that grew over years |
+| **Почтовик** | «Союз» | sphere, bell, instrument cylinder, two panel wings, docking probe |
+| **Рефрижератор** | «Прогресс» | the same nose and a long ribbed refrigerated bay |
+| **Танкер** | «Протон» | fat body, six strap-on tanks around it, a ring of fill necks |
+| **Буксир** | ядерный буксир | a spine: reactor forward on a boom, two huge flat radiators as wings, a bell aft |
+| **Рудовоз** | «Энергия» | a barrel with four containers strapped along it — the packet, loaded |
+| **Лихтеровоз** | «семёрка» | the Korolev cross assembled out of four other people's barges |
+| **Паром** | «Буран» | delta wing, black belly, white back. Carries people down from orbit — and stands on the strip at a settlement |
+| **Сторожевик** | «Спираль» + «Алмаз» | lifting body with an upturned nose, short wings, a cannon under the cheek |
+| **Спасатель** | «Луна-9» | a sphere that opens on four petals — a flower airlock for taking people aboard |
+| **Госпитальное** | ТКС | a large body with a returnable capsule on the nose |
+| **Учебное** | «Восток» ×6 | a cluster of spherical capsules on a common truss, each with its own hatch |
+| **Экспедиционное** | «Салют» | cylinder, a truss of dishes, probes on outriggers |
+| **Плавбаза** | «Мир» | cylinders of unequal diameter, a node module, panels at odd angles |
 
-The wing went to the ferry and not to the patrol on purpose: a wing belongs to whoever lands. It
-then appears in two scenes — in orbit and on the ground, a white delta on a settlement's strip,
-which is also what explains the landing strip in §13.
+The wing went to the ferry and not to the patrol on purpose: a wing belongs to whoever lands.
 
-### 18.4 The places
+### 18.4 The places — names undecided (fork 4)
 
-**Узловая станция трассы — «МКС».** At rung 25 (Узел трасс) a real truss station stands in the
-system: a lattice spine the full length, rotating panel wings across it, modules clustered
-amidships. A silhouette that exists nowhere else in the game, and it means one thing — the lines
-meet here.
-
-**Your station grows by modules, and the modules are named in the same row:**
-**Заря** (first, cargo) · **Звезда** (habitation) · **Причал** (docking) · **Поиск** (airlock) ·
-**Рассвет** (store) · **Наука** (laboratory) · **Кристалл** (processing) · **Спектр**
-(observatory) · **Квант** (power). Then the summary reads like a real one — `САРДРАЗЛЬ · ступень
-19 · модули: Заря, Причал, Кристалл, Квант` — and the silhouette grows asymmetrically, the way
-«Мир» grew: bolted on, and sticking out.
-
-**«Полюс».** A black blind cylinder with no markings — a battle station that never arrived. It
-does not fly, answer or trade. A rare find in the far sectors: it lies and is silent, and on its
-hull there is neither arms nor number, only the painted-over place where they were. The same voice
-as the ruins of the «Долгий ход».
+A truss station of the lines at rung 25; your own station growing by modules; a black blind
+derelict in the far sectors. The 08-31 names (Заря, Звезда, Причал, Поиск, Рассвет, Наука,
+Кристалл, Спектр, Квант; «МКС»; «Полюс») are real ISS and «Мир» names and read as pastiche next
+to Сардразль and Тук [F23]; the silhouettes are the donors, the words will be ours — Короб, Кубрик,
+Воротник (`03b-hull-paint` already calls the node that), Тамбур, Погреб — or the buildings' own
+names from §10. The node station by call-sign («УЗ-1», after `11an-qsl`); the derelict without a
+name at all: a black hull, which is its voice. To be settled with the author.
 
 ### 18.5 Paint, lettering, wear
 
 Grey-white hull, a **red band** the full length, black numerals a third of the hull high, burnt
-copper at the nozzles. The name large along the body, the way «СОЮЗ» ran along a fairing; below
-it, small: department, number, line.
+copper at the nozzles. The name large along the body; below it, small: department, number, line.
 
 ```
-«МОЛНИЯ»
+«ЗАРНИЦА»
 ГЛАВТРАССА · Л-1425 · ТРАССА 4
 ```
 
-Wear is compulsory — this fleet has been running for decades: patches in the wrong shade · soot
-fanned back from the manoeuvring jets · the band burnt to pink on the sunward side and still red
-on the shadow side · the outline of a knocked-off mark nobody painted over · a number over a
-number in a different typeface.
+Wear is compulsory: patches in the wrong shade · soot fanned back from the manoeuvring jets · the
+band burnt to pink on the sunward side · the outline of a knocked-off mark nobody painted over ·
+a number over a number in a different typeface.
 
 ### 18.6 Held against the craft codex
 
-Checked before anything is drawn, because the author asked for it to be checked and because the
-almanac exists for exactly this.
-
-- **§1 layer order, light only ever added.** The paint pass has one order and it is not
-  negotiable: **санкирь** — a dark ground over the whole hull, zone III → the body in greys, panels
-  and seams and the shadow of the trusses → **glazes**: the red band, burnt copper, the gold
-  crinkle of insulation → **wear**: patches, burn-out, soot, the painted-over mark → **движки**,
-  the last specular ticks on the sunward edges, and only then. Wear goes *under* the highlights,
-  never over them — over them it reads as dirt on glass rather than as a repaired ship.
-- **§12 the dead layer.** Values first, colour as a glaze. The ship is built entirely in greys and
-  only then is the red laid over it. That is what keeps the band from being a flat sticker, and it
-  is the same rule that already governs the postcard atelier.
-- **§3 emptiness is not a defect.** One large ship in the frame, never a squadron; and the hull
-  keeps its quiet areas — the blank plate between the name and the band is the *ma* and must not be
-  filled with greebles. The frame ledger (`28y-look`) applies to these frames like any other.
-- **§5 texture says what a thing is made of.** Four materials, four treatments, never one grey:
-  painted steel plate · foil-wrapped insulation, the gold crinkle · radiator ceramic · scorched
-  refractory at the nozzles. A ship where everything is the same metal reads as a toy.
-- **§8 one rule at every scale.** The joint repeats: a truss holds the cadet capsules, a truss
-  holds the tug's radiators, a truss is the spine of the МКС node, and the same node bolts your
-  station's modules together. One grammar of joints from a six-metre boom to a station.
-- **§13 the key block.** Every class is drawn contour first — one confident outline — and the
-  gradients live inside it. «тело, обвод, один свет».
-- **§14 the chart is an instrument.** A trace on the map must be steerable: tapping a ship or a
-  line has to mean something, or the line has not earned its place.
-- **§15 day-for-night.** Ships on a system's night side take a cold rim and a warm lamp from the
-  shared night block; the sun is kept out of the frame.
-- **§16 the zone system.** A white hull against black space blows out at once: the white sits in
-  zones VII–VIII and keeps its panel detail; the ferry's black belly sits in II–III and never goes
-  to zero. Measured with the same instrument as every other scene.
+Checked before anything is drawn: §1 layer order (санкирь → greys → glazes → wear → движки, wear
+*under* the highlights) · §12 the dead layer · §3 emptiness is not a defect, one ship in the frame
+· §5 four materials, four treatments · §8 one joint at every scale · §13 contour first · §14 a trace
+on the map must be steerable · §15 day-for-night · §16 the zone system, white in VII–VIII, the
+ferry's belly in II–III.
 
 ### 18.7 Twelve ways to interact — none of them a shop
 
 1. **Позывной** — you hail them and they answer in the voice of their class.
-2. **Груз в попутную** — hand cargo to a freighter on your line; it delivers and leaves you a
-   receipt. **A route without a barge of your own**, from the first hour of the game.
-3. **Заправка под расписку** — a tanker fills you in the void. Not for money: you sign, and you owe.
-4. **Буксир** — a hull that will not make it is towed to a yard. Expensive, humiliating, better
-   than abandoning it.
-5. **Почта** — hand your postcards to the mail ship and they travel further and faster; it brings
-   yours. Lands straight onto what the game already has.
-6. **Караван** — fly in formation to the next system and pirates leave you alone. Slow, because
-   they keep their own speed. Speed against safety, honestly.
-7. **Плавбаза** — a walking station: repair, shop, bunk, cantina — but only while it is in your
-   system. It leaves. You have to keep up.
-8. **Госпитальное** — heals the crew twice as fast, ransoms a captive cheaper, takes away those you
-   evacuated. It asks for what you never have: time and hold space.
-9. **Учебное** — takes your hire aboard for a run and returns him grown; or asks you to show the
-   cadets a real landing.
+2. ~~Груз в попутную~~ — struck [F06]; if ever, a reward of Трасса (27).
+3. **Заправка** — a tanker fills you in the void: for money, for a service remembered by `12k-rep`,
+   or «по норме» — a volume for nothing once in N shifts, **no book of debt** [F24].
+4. **Буксир** — a hull that will not make it is towed to a yard.
+5. **Почта** — hand your postcards to the mail ship; it brings yours.
+6. **Караван** — fly in formation and pirates leave you alone. Slow.
+7. **Плавбаза** — a walking station, only while it is in your system.
+8. **Госпитальное** — heals twice as fast, ransoms cheaper, takes away the evacuated.
+9. **Учебное** — takes your hire for a run and returns him grown.
 10. **Сторожевик** — with a good reputation it escorts you; with a bad one it inspects your hold.
-    Contraband becomes a thing that has somewhere to live.
-11. **Спасатель** — answers someone else's distress call and asks you along. Go, and you are
-    remembered. One day they come to yours.
-12. **Заявка** — the upper rungs: you file with the Главк and a tug, a tanker for your line or a
-    patrol for a blockaded system arrives. Not a purchase. A right.
+11. **Спасатель** — answers someone else's distress and asks you along.
+12. **Заявка** — the errand in reverse: the fleet lends a hull for one run, you lead it. Not a
+    right, not a purchase [F24].
 
-### 18.8 The fleet is the visible reward of the ladder
+### 18.8 The fleet as the visible reward of the ladder
 
-- **Пусто** — nobody. Emptiness is emptiness.
-- **Автомат** (5) — a mail ship passes once a week.
-- **Стыковочный узел** (16) — transports call; cargo can be handed over.
-- **Причальная ферма** (19) — a плавбаза puts in.
-- **Управление** (21) — the right to file: a tug.
-- **Узел трасс** (25) — two lines cross here; the МКС node stands.
-- **Трасса** (27) — a scheduled line with its own number.
-- **Кольцо** (30) — they hail you first, by name.
+Буй (5) — a mail ship passes · Стыковочный узел (16) — transports call · Причальная ферма (19) —
+a плавбаза puts in · Правление (21) — a заявка · Узел трасс (25) — the node station · Трасса
+(27) — a scheduled line with a number · Кольцо (30) — they hail you first.
 
-Your holding does not merely give numbers. It **populates the sky** — the other half of the answer
-to «прям видно должно быть, что система прокачана»: not the station's silhouette but the traffic
-around it.
+### 18.9 Drawing order and cost
 
-### 18.9 Drawing order
-
-Each class is its own drawing — thirteen, plus the node station and «Полюс». Not recipes from a
-kit: «Буран» and a nuclear tug have nothing in common, and pretending otherwise lies to the eye.
-**The paint pass, however, is one for all of them**, in the order of §18.6 — which is how a real
-fleet looks: different ships, painted in one office to one instruction.
-
-Order, by whom the player meets first: почтовик → танкер → буксир → сторожевик → плавбаза → паром
-→ спасатель → рудовоз → госпитальное → учебное → экспедиционное → рефрижератор → лихтеровоз, then
-the node station and «Полюс».
+Each class is its own drawing; the paint pass is one for all. Order by whom the player meets
+first: почтовик → танкер → буксир → сторожевик → плавбаза → паром → спасатель → рудовоз →
+госпитальное → учебное → экспедиционное → рефрижератор → лихтеровоз, then the node station and
+the derelict. Estimate [F17]: one class plus the paint pipeline 2–3 sessions, each next 1–1.5, the
+interactions 6–10. Movement, when it comes, as `spawnBarges`: position = f(line, seed, `Date.now()`),
+only consequences stored.
 
 ---
 
-## 19. Order of work
+## 19. Order of work — the rebuilt plan, with the forks settled
 
-Each step ships on its own and is playable on its own.
+Each step ships on its own and is playable on its own. The core that proves the loop
+«возишь → берёт → построил → пай → вернулся» is steps 1–3; everything after is only by the
+printout of step 5. Modules: **`12ab-hold`** (BLD, appetite, hopper, share), **`12ac-ladder`**
+(rungs, points, addresses), **`17e-station-body`** (the silhouette); the barge order in `12a`,
+its logic in `12ab`.
 
-1. **The route as an order** — R1…R5. The foundation.
-2. **Demand upward** — lift the clamp at zero, introduce the daily quota. Delivers «цены растут» by
-   itself.
-3. **The ladder** — thirty rungs, the summary line, the ring on the map, the forms of address. No
-   buildings yet: just seeing where you have lived.
-4. **The site, пай, and the first tier** — добыча and передел. Already a full loop.
-5. **The player's barge and its pilot** — монтажный корпус, учебный пункт, причальная ферма.
-6. **The remaining families and the instrument row** — приборы, флот, люди, оборона, знание, жизнь.
-7. **The station grows a body** — the visible half of §13; the map ring and the summary come with
-   step 3, the silhouette comes here.
-8. **КУРС** — the route and a rumour as one thing on the map; news with a cause; the plan.
+**0. Paper — done in this revision.** One clock (§0); one sentence on feeding (§3, fork 1б); the
+tables with numbers (§4, §9, §10; fork 3б); one map (§16.10); the naming pass (§7–§11); the
+ПЕРЕПЛАВКА verdict (§10.3, fork 2б); the fleet bracketed (§18; fork 4 later).
 
-9. **The fleet** — in three layers, each shipping on its own: the meetings (§18.7 as scenes
-   with voices), then the lines and the schedule, then the right to file a заявка. The drawings
-   go in the order of §18.9, and **every one of them is held against the craft codex before it
-   is called done** — the almanac gets an issue for the fleet the way it got one for the
-   interface.
+**1. The route as an order** — R1…R5; КУРС and В МАРШРУТ as two verbs; a leg carries its own
+note and fork; `ROUTE_MAX = 6`; heard notes do not found a leg; `earned` and `soldSets` in
+`G.trade`; the road not bought twice. `91u-route` grows with it.
+
+**2. «БЕРЁТ»** — the station's appetite by type (§4) and one norm object; `HOLD_SHIFT` and the
+lazy catch-up; the surcharge as an addend; buying pushes pressure up; the ДОСКА line and the
+honest «выгодно первые 6». «Цены растут» happens in the first hour. The «холдинг» profile in
+`91zzw`.
+
+**3. The site, the hopper and all the cargo families** — rung 11 computed from the counters
+(§6); `BLD` with families A–D whole (56 rows: they are data on one mechanism, and shipping 56
+costs what shipping 8 would); tier gates by rung; `RES` gets the 46 industrial keys with `ind`;
+the hold row names the nearest eater; the body's `sh` with the first building (§13); the share and
+the stock as rows in ДЕЛО — **no new screen** (`91f-ui` keeps six sections); **`SMELT` and the
+smelt tab deleted here** (§10.3). Target: the first share ≤ 40 min after rung 11.
+
+**4. The ladder visible** — `RUNGS` with `fx` at ★ only and the addresses; the ring from ★5 by
+five-year plans; the moments on the air; the footer ≤ 2 lines; the address tied to the place.
+
+**5. Measure.** `91zzw` «холдинг» against §16 with numbers: payback, share against trade, time to
+first share, income before/after. Nothing below ships without this printout.
+
+**6. Your own barge** — feeds, does not trade; the pilot by `CREW_YIELD`; the hull by allocation
+at a yard; `ORDERS.barge`; a sold road spawns a barge on its legs (§2 R4). One barge.
+
+**7. The non-cargo families E–I** — 26 rows, each with its hook and a `bldHas` test; the
+instrument row first (it already has a consumer); the Стапель and tier 3 (rung 22/25).
+
+**8. The station's body — the codex pass** over what step 3 made visible; the planet; the ground.
+
+**9. КУРС, rumours, news** — the route and a rumour as one thing on the map; news with a cause;
+the Наряд-заказ if the printout of step 5 asks for it.
+
+**Bracketed:** §18 (the author: later) · the monthly plan and the offices [F24] · contraband,
+refuelling on a receipt, the заявка as a right [F24] · rivals' rings and the ten colours [F19,
+F22] · rungs that multiply drones or ore [F12] · the twenty-four unstarred effects [F16].

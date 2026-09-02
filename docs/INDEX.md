@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 338 · символов верхнего уровня: 3105
+Файлов: 338 · символов верхнего уровня: 3120
 
 ## СИМВОЛЫ
 
@@ -221,6 +221,9 @@ buildAi                      src/12f-mgr-ai.js:29
 builtHere                    src/21c-built.js:19
 builtKey                     src/21c-built.js:17
 builtSpot                    src/21c-built.js:44
+BUY_SPREAD                   src/12-economy.js:33
+buyCargo                     src/12-economy.js:39
+buyPriceFor                  src/12-economy.js:34
 bWall                        src/21aa-base-rooms.js:187
 bWorker                      src/21aa-base-rooms.js:322
 camBtnTick                   src/25g-postcard.js:666
@@ -497,7 +500,7 @@ deedAdd                      src/11ai-ledger.js:53
 DEEDS                        src/11ai-ledger.js:25
 deltaHtml                    src/05-parts.js:293
 depKind                      src/21b-surface-deco.js:367
-deployDrone                  src/12-economy.js:73
+deployDrone                  src/12-economy.js:99
 DEPTH_TIERS                  src/04-mods.js:51
 DESC_MOOD                    src/01-core.js:109
 DESC_TAIL                    src/01-core.js:115
@@ -643,7 +646,7 @@ drawRing                     src/17c-system-draw.js:4
 drawRingTape                 src/11x-ring.js:107
 drawRoad                     src/27l-road-draw.js:87
 drawRocks                    src/19-mode-landing.js:315
-drawRouteMap                 src/12r-route.js:159
+drawRouteMap                 src/12r-route.js:267
 drawScoop                    src/19a-mode-scoop.js:171
 drawSeams                    src/12s-wear.js:181
 drawSkyBase                  src/19c-light.js:296
@@ -687,7 +690,7 @@ DRONE_TAIL                   src/12e-drone-flight.js:189
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
 droneBreakP                  src/12e-drone-flight.js:130
 droneBreaks                  src/12e-drone-flight.js:134
-droneCapacity                src/12-economy.js:68
+droneCapacity                src/12-economy.js:94
 droneFixMs                   src/12e-drone-flight.js:135
 droneHome                    src/12e-drone-flight.js:73
 droneName                    src/12e-drone-flight.js:38
@@ -700,7 +703,7 @@ droneRoutes                  src/12e-drone-flight.js:161
 DRONES                       src/04-mods.js:57
 droneStateRu                 src/12e-drone-flight.js:146
 droneSys                     src/12e-drone-flight.js:62
-droneTarget                  src/12-economy.js:72
+droneTarget                  src/12-economy.js:98
 droneTripMs                  src/12e-drone-flight.js:87
 DUST_COL                     src/16a-space.js:222
 DUST_LAYERS                  src/16a-space.js:244
@@ -1261,7 +1264,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:433
+jump                         src/18-mode-map.js:436
 jumpToBase                   src/21a-mode-base.js:315
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -1616,7 +1619,7 @@ nameTell                     src/11u-names.js:32
 navAction                    src/15-input.js:262
 near                         tests/90-harness.js:29
 nearestPOI                   src/20a-poi.js:236
-nearestStation               src/12-economy.js:45
+nearestStation               src/12-economy.js:71
 NEB_COMP                     src/16a-space.js:119
 NEB_JOB                      src/16a-space.js:52
 NEB_MS                       src/16a-space.js:51
@@ -1995,8 +1998,9 @@ postTake                     src/25g-postcard.js:650
 postTerrain                  src/25g-postcard.js:41
 postWorld                    src/25g-postcard.js:49
 prevAct                      src/08-state.js:59
-pricesHeard                  src/12aa-need.js:214
+pricesHeard                  src/12aa-need.js:222
 pricesSeen                   src/12aa-need.js:193
+pricesTrim                   src/12aa-need.js:202
 prism                        src/21b-surface-deco.js:201
 PROBE_COST_CR                src/25m-probe.js:27
 PROBE_COST_DATA              src/25m-probe.js:26
@@ -2196,11 +2200,11 @@ renderLog                    src/11-log.js:71
 renderLoreBoard              src/27h-ui-lore.js:26
 renderMail                   src/25k-post-mail.js:36
 renderOpts                   src/27-ui-ship.js:198
-renderPrices                 src/12aa-need.js:228
+renderPrices                 src/12aa-need.js:235
 renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
 renderRelays                 src/11ap-relay.js:242
-renderRoute                  src/12r-route.js:225
+renderRoute                  src/12r-route.js:349
 renderStrips                 src/27i-ui-table.js:261
 renderTab                    src/26-ui-station.js:226
 renderTabBody                src/26-ui-station.js:236
@@ -2363,20 +2367,31 @@ rollWorld                    src/02a-worldmix.js:67
 ROMAN                        src/01-core.js:98
 ROOM_FIN                     src/21aa-base-rooms.js:46
 roomToneTick                 src/09a-roomtone.js:79
-ROUTE_MAX                    src/12r-route.js:16
-routeHas                     src/12r-route.js:19
-routeInit                    src/12r-route.js:17
-routeLegs                    src/12r-route.js:54
-routeLine                    src/12r-route.js:212
-routeOf                      src/12r-route.js:18
-routeSell                    src/12r-route.js:128
-routeSum                     src/12r-route.js:91
-routeSys                     src/12r-route.js:38
+ROUTE_MAX                    src/12r-route.js:29
+routeEarn                    src/12r-route.js:196
+routeFork                    src/12r-route.js:64
+routeForkTxt                 src/12r-route.js:68
+routeHas                     src/12r-route.js:39
+routeInit                    src/12r-route.js:30
+routeLegs                    src/12r-route.js:113
+routeLine                    src/12r-route.js:327
+routeNext                    src/12r-route.js:165
+routeNote                    src/12r-route.js:53
+routeNoteFor                 src/12r-route.js:45
+routeOf                      src/12r-route.js:31
+routePl                      src/12r-route.js:40
+routeSell                    src/12r-route.js:233
+routeSoldBefore              src/12r-route.js:209
+routeSum                     src/12r-route.js:152
+routeSumLine                 src/12r-route.js:338
+routeSys                     src/12r-route.js:95
+routeTestSee                 tests/91u-route.js:13
 routeTestStations            tests/91u-route.js:3
-routeToFactor                src/12r-route.js:143
-routeToggle                  src/12r-route.js:23
-routeValue                   src/12r-route.js:120
-routeVisit                   src/12r-route.js:103
+routeToFactor                src/12r-route.js:250
+routeToggle                  src/12r-route.js:76
+routeValue                   src/12r-route.js:224
+routeVisit                   src/12r-route.js:179
+routeWhyNoPrice              src/12r-route.js:216
 rtInit                       src/09a-roomtone.js:23
 RTONE                        src/09a-roomtone.js:22
 rtWant                       src/09a-roomtone.js:42
@@ -2463,8 +2478,8 @@ sdYard                       src/12tb-settle-draw2.js:410
 seamAdd                      src/12s-wear.js:179
 seamsAll                     src/12s-wear.js:178
 seamsOf                      src/12s-wear.js:180
-sellCargo                    src/12-economy.js:26
-sellDroneYield               src/12-economy.js:37
+sellCargo                    src/12-economy.js:50
+sellDroneYield               src/12-economy.js:63
 setSt                        src/27z-telemetry.js:88
 SETTLE_BUILD                 src/12t-settle.js:31
 SETTLE_BY_K                  src/12t-settle.js:39
@@ -2804,7 +2819,7 @@ TEST_SUITES                  tests/90-harness.js:113
 tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
-tickDrones                   src/12-economy.js:98
+tickDrones                   src/12-economy.js:124
 tickLaunchHold               src/21-mode-surface.js:597
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
@@ -3364,9 +3379,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12d-mgr-face.js · 13 КБ
   · портреты управляющих:1
 
-## src/12-economy.js · 11 КБ
+## src/12-economy.js · 13 КБ
   · живой рынок:1
-  · дроны:44
+  · дроны:70
 
 ## src/12e-drone-flight.js · 17 КБ
   · дроны летают:1
@@ -3438,7 +3453,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12q-lore.js · 18 КБ
   · отчёт «Долгого Хода»: сто кусков:1
 
-## src/12r-route.js · 16 КБ
+## src/12r-route.js · 28 КБ
   · свой торговый маршрут:1
 
 ## src/12s-wear.js · 14 КБ
@@ -3946,7 +3961,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91t-home-live.js · 4 КБ
   · обжитой дом:1
 
-## tests/91u-route.js · 6 КБ
+## tests/91u-route.js · 12 КБ
   · автотесты: свой торговый маршрут:1
 
 ## tests/91v-wear.js · 7 КБ

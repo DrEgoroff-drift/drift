@@ -209,7 +209,9 @@ function hud(){
   if(G.mode==="map"&&typeof routeHas==="function"){
     const ss=getSystem(G.sel.x,G.sel.y),inR=routeHas(G.sel.x,G.sel.y);
     setSt(rbtn,"display",(ss&&ss.station)||inR?"":"none");
-    setTx(rbtn,inR?"ИЗ МАРШРУТА":"В МАРШРУТ");
+    /* плечо ставится по виденным ценам (R1): кнопка говорит это до нажатия */
+    const seen=typeof routeNoteFor==="function"&&!!routeNoteFor(G.sel.x,G.sel.y);
+    setTx(rbtn,inR?"ИЗ МАРШРУТА":(seen?"В МАРШРУТ":"ЦЕН НЕ ВИДЕЛИ"));
   }else setSt(rbtn,"display","none");
   /* приборная колодка (25c): рисуется каждым кадром, гаснет вместе со строкой */
   if(typeof instrPodTick==="function")instrPodTick();

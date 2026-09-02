@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.286.0 - M289: the route is an order, not a calculator
+
+Step 1 of the rebuilt holding plan (`docs/DESIGN-holding.md` §2, revised the same day against
+`docs/CRITIQUE-holding.md` after the author settled its forks: 1б, 2б, 3б, the fleet later).
+
+- **A leg only where you saw the prices.** `В МАРШРУТ` refuses a station whose price list you
+  have not taken on docking, and the map button says `ЦЕН НЕ ВИДЕЛИ` before it is pressed. A
+  note heard on the air does not found a leg. The leg **copies the note into itself** and is
+  priced by it - not by the live market of any star on the map - and a stale note shows as a
+  widening fork: «титан 41…58 · записи 6 дн.». The price paper no longer evicts a station that
+  is a leg of the live route.
+- **The map changes from the first leg.** A number on the star after the first tap, the next leg
+  filled and its line brighter, the footer «СЛЕДУЮЩЕЕ ПЛЕЧО · «Сардразль» · 2 прыжка · везём
+  титан», and when that star is selected the jump line reads `ПРЫЖОК ПО МАРШРУТУ`. Flying stays
+  unconditional: КУРС and В МАРШРУТ are two verbs.
+- **The station knows.** First rows of ТОРГОВЛЯ on a route station: «ПО МАРШРУТУ · сдать титан
+  ×18» and «ПО МАРШРУТУ · взять титан ×18 - 41 кр/ед · трюм 18/32», one button each, honest when
+  short: «денег хватит на 11 из 18». Goods can now be **bought** at a counter (`buyCargo`): at a
+  6% spread over what the station pays, always at least one credit dearer, and every purchase
+  raises the station's *ask* (`m.ask`, decays with pressure) - the buy price only, so
+  sell-buy-sell at one counter loses and «цены растут» where you take from.
+- **Only a walked road is sold.** The price is two average loops of what the route actually
+  **earned you** (`G.trade.earned`, written on every sale of a leg's good at its station, never
+  under a ×2 need), not before two loops; the factor takes a route only after one. A sold road is
+  remembered as its set of legs and is not bought twice (two shared legs = the same road).
+- `ROUTE_MAX` 4 → 6, so a chain of five stations can exist. Old saves load: a leg without a note
+  writes itself one from the paper or from today's price.
+- Tests: `91u-route` rewritten - refusal without a note, the heard note, the first-leg footer,
+  the fork, the paper's eviction rule, earned/loops/sold-sets, the counter's spread and ask.
+
 ## 0.285.0 - M288: the desk is a desk again
 
 The last of the three forks the author settled from almanac issue II, and the largest: not

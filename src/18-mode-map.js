@@ -319,13 +319,16 @@ function drawMap(){
   const foot=(()=>{
     const RX=mapRail();
     const L=[],Rr=[];
+    /* выбрана станция следующего плеча — прыжок так и называется (M289, R2) */
+    const NX=(typeof routeNext==="function"&&routeOf().legs.length>=2)?routeNext():null;
+    const onRoute=NX&&NX.sys.sx===G.sel.x&&NX.sys.sy===G.sel.y;
     L.push([bad?"rgba(255,107,87,.85)":"#f2b25c",
       dsel===0?"ТЕКУЩАЯ СИСТЕМА":
       (dsel>st.jump+.02?"ВНЕ РАДИУСА — НУЖЕН ГИПЕРДРАЙВ":
-       "ПРЫЖОК: "+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":""))]);
+       (onRoute?"ПРЫЖОК ПО МАРШРУТУ: ":"ПРЫЖОК: ")+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":""))]);
     L.push(["rgba(127,230,216,.55)",
       "СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   "+dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк"]);
-    if(typeof routeOf==="function"&&routeOf().legs.length>=2)
+    if(typeof routeOf==="function"&&routeOf().legs.length>=1)
       L.push(["rgba(127,230,216,.75)",routeLine()]);
     Rr.push(["rgba(93,115,130,.85)","ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+
       Math.round(G.credits).toLocaleString("ru")+" кр"]);

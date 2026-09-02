@@ -1106,62 +1106,43 @@ from the playtest of 2026-08-30/31»:
    the reach circle. Fix: the card becomes a footer line with details on a second tap, it stands
    where the view is empty, and a double tap on empty space clears the sky.
 
-**⚠ Before step 4: the critique.** `docs/CRITIQUE-holding.md` (2026-08-31, six lenses, 37
-surviving findings) rebuilds the order below: the smelter already exists on every combine (the
-SMELT tab), feeding is paid twice, the layer has no clock (CEL_DAY is a minute), the barge pilot
-would be a hire in steady profit against the law, 30 rungs are 30 promises without code, and the
-fleet is the most expensive section and the only one the brief does not need. Its «Пересобранный
-план» (paper → route → «БЕРЁТ» → core of ~8 buildings → visible ladder → MEASURE → barge → the
-rest) replaces the eight steps below once the author settles the four forks at its end. The
-steps below are kept as the record of the evening.
+**4. The holding — the rebuilt plan.** `docs/CRITIQUE-holding.md` (2026-08-31, six lenses, 37
+findings) rebuilt the evening's eight steps; on 2026-09-02 the author settled its forks —
+**1(б)** the +X% stays and the share exists but is never paid for surcharged units, **2(б)** the
+ПЕРЕПЛАВКА recipes go, **3(б)** all 82 buildings and 48 materials designed at once with numbers,
+**4 — later** (the fleet stays bracketed) — and `docs/DESIGN-holding.md` was revised against the
+critique the same day. Its §19 is the queue; the numbers are in §4, §9, §10 and §16 there. The
+order, each step shipping on its own:
 
-**4. The holding — a full economic layer.** Designed in `docs/DESIGN-holding.md`, eight steps,
-each shipping on its own. The naming register was chosen by the author on 2026-08-31 —
-**Б+А**: the launch-complex vocabulary of the Strugatskys below (Вымпел, Купол, Монтажный корпус,
-Стыковочный узел) and Efremov's above (Трасса, Полдень, Кольцо); the frontier register (Заимка,
-Шурф, Прииск, Барак) was heard and rejected as «не космическое».
+0. **Paper** — done 2026-09-02 (the revision itself).
+1. **The route as an order** — R1…R5; КУРС and В МАРШРУТ as two verbs; a leg carries its own
+   price note and shows a stale one as a fork; `ROUTE_MAX = 6`; a heard note does not found a leg;
+   `earned` and `soldSets` in `G.trade`; the road is not bought twice; only a walked route is sold
+   or handed on.
+2. **«БЕРЁТ»** — the station's appetite by type, one norm object in place of five mechanics,
+   `HOLD_SHIFT = 20 min` with lazy catch-up, the surcharge as an addend in the pressure clamp,
+   buying pushes pressure up. «Цены растут» in the first hour.
+3. **The site, the hopper and the cargo families** — rung 11 from existing counters; `BLD`
+   families A–D (56 rows on one mechanism); `RES` gets 46 industrial keys with `ind`; the hold
+   row names the nearest eater; the station's body with the first building; share and stock as
+   rows in ДЕЛО, no new screen; **`SMELT` and the smelt tab deleted here.** First share ≤ 40 min
+   after rung 11.
+4. **The ladder visible** — `RUNGS` with effects at ★ only; the ring from ★5 by five-year plans;
+   the moments on the air; the footer ≤ 2 lines; the address tied to the place.
+5. **Measure** — `91zzw` «холдинг» against §16 with numbers. Nothing below ships without it.
+6. **Your own barge** — feeds, does not trade; the pilot by `CREW_YIELD`; the hull by allocation.
+7. **The non-cargo families E–I** — 26 rows, each with its hook and a `bldHas` test.
+8. **The station's body — the codex pass.**
+9. **КУРС, rumours, news.**
 
-1. **The route as an order** — a leg only where you have seen the prices (`G.seenPrices`); «В
-   МАРШРУТ» means «I am going there» and is visible from the first leg; the station carries a «ПО
-   МАРШРУТУ · взять/сдать» row with one button; only a walked route can be sold, for a share of
-   what it earned you, and the same pair will not buy twice.
-2. **Demand upward** — every player-side price move is clamped `[-0.35, 0]` today; only news lifts
-   a price. Lift the ceiling and bound it with a **daily quota**: the first N units a day at +X%,
-   the rest as now.
-3. **The ladder** — **thirty rungs in six five-year plans**, from Засечка to Кольцо, fed by
-   everything done in a system (drilling, drones, base cells, sectors retaken, monuments, names,
-   cargo, settlements, a home, a beacon). Rung 11 (Монтажная площадка) opens the building site.
-   Comes with the summary line, the ring on the map and the forms of address that change with the
-   rung (наблюдатель → монтажник → начальник участка → управляющий → начальник трассы → by name
-   and patronymic at thirty).
-4. **The site, ПАЙ, and the first tier.** ПАЙ is the mechanic the author asked for — «не по
-   рецептам, а если ты возишь, то тебе производят»: feeding a building *is* selling to it, the
-   game remembers whose share of the intake was whose, and the same share of the output accrues
-   under your name at that station up to a three-day ceiling. No new verb, and a reason to come
-   back.
-5. **The player's own barge and its pilot** — монтажный корпус, учебный пункт, причальная ферма;
-   the pilot is an ordinary hire with an order kind `barge`. Hull names in the cargo register:
-   Лихтер, Паром, Тягач, Сухогруз, Транспорт, Караван, Кряж.
-6. **The remaining families and the instrument row** — приборы (радиолампа, реле, сельсин,
-   термопара, гироскоп, which feed the cockpit kit), флот, люди, оборона, знание, жизнь. Around
-   eighty buildings and a material tree of three tiers. The rule that makes it a strategy: **no
-   building eats what its own system makes**, so a self-sufficient node cannot exist below rung 29
-   and the shortage is the route.
-7. **The station grows a body** — the visible half: every building hangs its own piece on the
-   procedurally drawn station, the planet gets a dump, domes and night lights, and traffic appears.
-   A developed system reads by silhouette, with no figure anywhere.
-8. **КУРС** — the route and a rumour as one thing on the map; news with a cause; the monthly plan
-   from the заводоуправление.
-9. **The fleet** — `DESIGN-holding.md` §18. Ships that cannot be bought: **ГЛАВТРАССА**, a
-   directorate on the model of Главсевморпуть, its arms a spanner and a surveyor's staff crossed
-   in a ring. Thirteen classes, each off a real Soviet donor — Союз, Прогресс, Протон, the nuclear
-   tug, Энергия, the seven, **Буран** (the ferry, because a wing belongs to whoever lands),
-   Спираль+Алмаз, Луна-9, ТКС, Восток×6, Салют, Мир — plus the **МКС** truss station at rung 25
-   and the silent «Полюс» as a derelict. Your own station grows by modules named Заря, Звезда,
-   Причал, Поиск, Рассвет, Наука, Кристалл, Спектр, Квант. Twelve interactions, none of them a
-   shop; the fleet is the visible reward of the ladder. Three shippable layers: meetings → lines
-   and schedule → the right to file a заявка. Every drawing is held against the codex first
-   (§18.6), and the almanac gets an issue for the fleet.
+The evening's own eight-step text and the fleet section are kept in the design as the record;
+nothing from §18 is queued.
+
+**M289 (0.286.0) — step 1 built 2026-09-02:** a leg only on a seen note, copied into the leg
+and shown as a fork when stale; the map from the first leg with the next leg lit and «ПРЫЖОК ПО
+МАРШРУТУ»; «ПО МАРШРУТУ · взять/сдать» rows with `buyCargo` (6% spread, an ask that rises with
+purchases and touches the buy price only); a walked road sold for two average loops of what it
+earned, never twice; `ROUTE_MAX = 6`. Next: **step 2, «БЕРЁТ»**.
 
 ## Small tails from almanac issue II
 

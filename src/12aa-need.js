@@ -195,8 +195,16 @@ function pricesSeen(sys){
   G.seenPrices=G.seenPrices||{};
   const P=marketFor(sys),N=needOf(sys);
   G.seenPrices[sys.key]={name:sys.station.name,sx:sys.sx,sy:sys.sy,day:celDay(),p:Object.assign({},P),need:N?N.k:null};
+  pricesTrim();
+}
+/* бумага держит 24 станции; плечо действующего маршрута с неё не вытесняется —
+   иначе «посмотрел ещё ценники — маршрут потерял цену» (M289, F18) */
+function pricesTrim(){
   const keys=Object.keys(G.seenPrices);
-  if(keys.length>24){keys.sort((a,b)=>G.seenPrices[a].day-G.seenPrices[b].day);delete G.seenPrices[keys[0]];}
+  if(keys.length<=24)return;
+  const legs=(typeof routeOf==="function")?routeOf().legs:[];
+  const old=keys.filter(k=>legs.indexOf(k)<0).sort((a,b)=>G.seenPrices[a].day-G.seenPrices[b].day);
+  if(old.length)delete G.seenPrices[old[0]];
 }
 /* ── и цены СО СЛУХА (плейтест, пункт 5, вторая половина) ──
    На диапазоне ЦЕНЫ приёмник называет ближнюю станцию и её лучший товар —
@@ -221,8 +229,7 @@ function pricesHeard(sys,res,val,fuel){
   const p={};p[res]=val|0;
   G.seenPrices[sys.key]={name:sys.station.name,sx:sys.sx,sy:sys.sy,day:celDay(),
                          p,need:null,heard:1,fuel:fuel|0};
-  const keys=Object.keys(G.seenPrices);
-  if(keys.length>24){keys.sort((a,b)=>G.seenPrices[a].day-G.seenPrices[b].day);delete G.seenPrices[keys[0]];}
+  pricesTrim();
   return G.seenPrices[sys.key];
 }
 function renderPrices(box){

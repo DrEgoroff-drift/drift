@@ -3,10 +3,11 @@ function marketFor(sys){
   const base=sys.station.prices;
   let m=G.market[sys.key];
   if(!m){m={pressure:{},t:G.t};G.market[sys.key]=m;}
+  if(!m.ask)m.ask={};   /* наценка прилавка от ваших покупок (M289) — живёт в той же записи */
   const secs=Math.max(0,(G.t-m.t)/60);
   if(secs>0){
     const decay=Math.pow(.5,secs/10800);   /* давление держится часами, а не полчаса (M152e): дальше лететь выгоднее, чем туда-сюда */
-    for(const k of TRADE_KEYS)m.pressure[k]=(m.pressure[k]||0)*decay;
+    for(const k of TRADE_KEYS){m.pressure[k]=(m.pressure[k]||0)*decay;if(m.ask[k])m.ask[k]*=decay;}
     m.t=G.t;
   }
   const prices={},mul=stTypeOf(sys.station.stype).mkt;   /* торговый узел платит больше, аванпост — меньше */
@@ -23,11 +24,36 @@ function marketFor(sys){
                                     clamp(1+(m.pressure[k]||0),.4,1.8)));
   return prices;
 }
+/* ── взять товар с прилавка (M289) ──
+   Станция продаёт дороже, чем берёт: BUY_SPREAD поверх её же закупочной цены,
+   и каждая ваша покупка поднимает её ЗАПРОС (m.ask) — только цену взятия, не
+   цену сдачи. Иначе «продал — купил — продал» у одного прилавка печатало бы
+   деньги: сдача идёт по цене до продажи, а давление двигает обе стороны разом.
+   Запрос — это и есть «цены растут» из брифа: там, откуда возят, дорожает. */
+const BUY_SPREAD=1.06;
+function buyPriceFor(sys,k){
+  const p=marketFor(sys)[k],m=G.market[sys.key];
+  /* у дешёвого товара наценка округлялась в ноль (6 → 6): взять всегда хотя бы на кредит дороже */
+  return Math.max(p+1,Math.round(p*BUY_SPREAD*(1+((m&&m.ask&&m.ask[k])||0))));
+}
+function buyCargo(sys,k,qty){
+  if(!RES[k]||TRADE_KEYS.indexOf(k)<0)return 0;
+  const ask=buyPriceFor(sys,k);
+  const free=stat().cargoMax-held();
+  qty=Math.max(0,Math.min(qty|0,free,Math.floor(G.credits/Math.max(1,ask))));
+  if(qty<=0)return 0;
+  G.credits-=qty*ask;G.cargo[k]=(G.cargo[k]||0)+qty;
+  const m=G.market[sys.key];
+  m.ask[k]=Math.min(.35,(m.ask[k]||0)+qty*.005);
+  return qty;
+}
 function sellCargo(sys,k,qty){
   qty=Math.min(qty,G.cargo[k]);
   if(qty<=0)return 0;
   const price=marketFor(sys)[k],revenue=qty*price;
+  const N=(typeof needOf==="function")?needOf(sys):null;   /* до закрытия: нужда ×2 в заработок маршрута не идёт (M289) */
   earn(revenue,"trade");G.cargo[k]-=qty;
+  if(typeof routeEarn==="function")routeEarn(sys,k,qty,revenue,!!(N&&N.k===k));
   if(typeof needClose==="function")needClose(sys,k);   /* нужда закрыта этим привозом (M152e) */
   G.soldTotal=(G.soldTotal|0)+revenue;   // «пузырь» смотрит на выручку, а не на штуки
   const m=G.market[sys.key];

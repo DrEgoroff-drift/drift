@@ -246,7 +246,11 @@ function applySave(s){
   /* свой маршрут: старые сохранения приходят без него — заводим пустой */
   G.trade=(s.trade&&Array.isArray(s.trade.legs))
     ?{legs:s.trade.legs.slice(0,ROUTE_MAX),loops:s.trade.loops|0,
-      cursor:s.trade.cursor|0,sold:s.trade.sold|0}
+      cursor:s.trade.cursor|0,sold:s.trade.sold|0,
+      /* M289: заметки плеч, заработок и проданные дороги; запись до M289
+         приходит без них — плечи допишут себе заметки со стола (routeNote) */
+      notes:asMap(s.trade.notes),earned:+s.trade.earned||0,
+      soldSets:Array.isArray(s.trade.soldSets)?s.trade.soldSets.filter(Array.isArray):[]}
     :routeInit();
   G.freed=s.freed|0;
   G.occCalm=asMap(s.occCalm);
