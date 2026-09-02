@@ -1169,8 +1169,14 @@ first share lands inside forty minutes.
 hauler hull, the walked route with your shops on it, a shift-by-shift tick that tips her cargo into
 hoppers (blockade skipped), loading and unloading at the counter, the row in ЭКИПАЖ and in ДЕЛО,
 the hire whitelist. A sold road does not yet spawn a rival barge on its legs (§2 R4) — that joins
-step 9 with the rumours. Next: **step 7, the non-cargo families E–I** (26 rows, each with its hook
-and a `bldHas` test; the Причал first, so the barge's legs get their rule).
+step 9 with the rumours.
+
+**M295 (0.292.0) — step 7, families E–I, 2026-09-02:** `12ag-holdfx` — `bldHas` as the one door,
+26 hooks in 19 modules, a test that every id is asked; four effects replaced by honest ones where
+the code had nothing to hook (Дружина, Архив, Личный причал, Диспетчерская) and the design says so.
+Next: **step 8, the station's body — the codex pass** (bake the built forms once, the moored barge
+at a Причал, the planet's dump and lights), then **step 9, КУРС, rumours, news** (a sold road
+spawns a rival barge; rumours name where a building is wanted; news with a cause).
 
 ## Small tails from almanac issue II
 

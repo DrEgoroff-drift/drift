@@ -78,6 +78,7 @@ function rollCrewEvent(c,r,danger){
   w.norm*=Math.max(.35,2-S);
   /* опасность сектора — та же ручка, только явная и на виду у игрока */
   w.cat*=1+danger*2.2;w.bad*=1+danger;w.jack*=1+danger*.9;
+  if(typeof holdEventWeights==="function")holdEventWeights(c,w);   /* Учебный пункт и Столовая (G2, G7) */
   /* и наконец собственная ставка игрока */
   if(risk==="safe"){w.cat*=.4;w.bad*=.7;w.jack*=.5;w.good*=.8;w.norm*=1.9;}
   if(risk==="bold"){w.cat*=1.9;w.bad*=1.3;w.jack*=2.2;w.good*=1.3;w.norm*=.5;}

@@ -77,7 +77,8 @@ function orderOf(sys){
   if(!sys||!sys.station||!sys.station.prices)return null;
   const win=orderWin();
   const r=rng(hashi(sys.sx,sys.sy,0x0A9D+win));
-  if(r()>.6)return null;
+  const artel=(typeof holdArtel==="function")&&holdArtel(sys);   /* Артель (G5): наряд есть всегда и платит больше */
+  if(r()>.6&&!artel)return null;
   /* получатель — станция в радиусе 2–8, не эта */
   let to=null;
   for(let i=0;i<24&&!to;i++){
@@ -93,7 +94,7 @@ function orderOf(sys){
   const k=keys[Math.floor(r()*keys.length)];
   const qty=10+Math.floor(r()*5)*5;                    /* 10–30 */
   const d=Math.max(Math.abs(to.sx-sys.sx),Math.abs(to.sy-sys.sy));
-  const pay=Math.round((qty*RES[k].price*1.5+d*120)/10)*10;
+  const pay=Math.round((qty*RES[k].price*1.5+d*120)*(artel?1.25:1)/10)*10;
   const due=(win+1)*ORDER_WIN+2;                        /* до конца окна плюс два дня */
   return {key:sys.key,from:sys.station.name,k,ru:RES[k].ru.toLowerCase(),qty,to:{sx:to.sx,sy:to.sy,name:to.station.name},pay,due,win};
 }

@@ -564,8 +564,8 @@ The eight makers of the tier-3 column: Стапель · Станочный · �
 | `nakop` | **Накопитель** | both clips of §3.1 ×2 for every building at this station — the *one* ceiling modifier [F07] | 2 000 кр · сплавы 10 · реголитобетон 8 |
 | `kontora` | **Контора** | the prices of stations within 4 pc are written to the paper as «со слуха» notes at every docking (`pricesHeard`) | 1 800 кр · сплавы 6 · кабель 4 |
 | `kassa` | **Касса** | scrip changes at par here (the `scrip` tab's rate = 1) | 1 200 кр · сплавы 4 · реле 2 |
-| `prichal` | **Причал** | your barge may take this station as a leg; a moored barge is drawn | 3 000 кр · сплавы 8 · причальная балка 1 |
-| `dispatch` | **Диспетчерская** | only with the factor seated [F21]: ДЕЛО lists every quota and share of the holding without flying | 2 600 кр · сплавы 8 · реле 4 · радиолампа 2 |
+| `prichal` | **Причал** | your barge loads herself here from your промыслы at this station, at 0.7× (built M295; the moored silhouette waits for step 8) | 3 000 кр · сплавы 8 · причальная балка 1 |
+| `dispatch` | **Диспетчерская** | only with the factor seated [F21]: the ether reports your empty hoppers and your uncollected share (ДЕЛО already lists everything, so the office got a voice, not a screen) | 2 600 кр · сплавы 8 · реле 4 · радиолампа 2 |
 
 ### F · Флот (4)
 
@@ -594,7 +594,7 @@ The eight makers of the tier-3 column: Стапель · Станочный · �
 |---|---|---|---|
 | `guns` | **Орудийная батарея** | a blockade (`13b`) of this system lifts by itself within 2 shifts | 3 600 кр · сплавы 16 · огнеупор 6 · реле 2 |
 | `lookout` | **Дозор** | pirate foci within 5 pc shown on the map | 1 800 кр · сплавы 6 · оптика 2 |
-| `druzhina` | **Дружина** | boarding a base in this sector: +2 hands | 2 400 кр · сплавы 8 · гермоткань 4 |
+| `druzhina` | **Дружина** | boarding a base in this sector: one fewer in every room — the дружина holds the approaches (the player boards alone in the code; there are no hands to add) | 2 400 кр · сплавы 8 · гермоткань 4 |
 | `barrier` | **Заграждение** | a pirate ambush on approach −50% | 2 800 кр · сплавы 12 · мачта 2 |
 
 ### I · Знание и жизнь (6)
@@ -603,8 +603,8 @@ The eight makers of the tier-3 column: Стапель · Станочный · �
 |---|---|---|---|
 | `observatory` | **Обсерватория** | skywatch orders (`11ak`) for this system pay ×2; its sky events named a day ahead | 3 200 кр · сплавы 10 · оптика 4 |
 | `branch` | **Филиал** | the `lab` tab −15% here (a science station only) | 4 000 кр · сплавы 14 · полупроводники 4 |
-| `archive` | **Архив** | the hundred's traces of this system readable from the desk | 1 600 кр · сплавы 4 · гермоплёнка 4 |
-| `ownpier` | **Личный причал** | docking here adds no hours to the hull (`12s`) | 2 000 кр · сплавы 8 · причальная балка 1 |
+| `archive` | **Архив** | the board carries the system's chronicle: every rung it has passed, with its line (the hundred's traces are per landing and server-side, nothing lists them by system) | 1 600 кр · сплавы 4 · гермоплёнка 4 |
+| `ownpier` | **Личный причал** | hours of wear come *off* the hull while you stand docked here (docking never added any) | 2 000 кр · сплавы 8 · причальная балка 1 |
 | `radiomast` | **Радиомачта** | the system becomes a relay (`11ap`): the ether reaches 1.5× as far | 2 400 кр · сплавы 8 · мачта 1 · кабель 4 |
 | `meteo` | **Метеостанция** | the surface weather known before landing | 1 400 кр · сплавы 4 · термопара 4 |
 

@@ -30,6 +30,7 @@ function spawnPirates(){
   /* под пиратами система держит патруль сверх обычного случайного налёта */
   let n=(r()<danger*.85?1+Math.floor(r()*(1+danger*2)):0)+occExtraPirates(G.sx,G.sy);
   if(typeof quietNoPirates==="function"&&quietNoPirates())n=0;   /* тихий уезд (11n): никто не грабит */
+  if(typeof holdAmbushMul==="function")n=Math.floor(n*holdAmbushMul());   /* Заграждение (H4) */
   for(let i=0;i<n;i++){
     const a=r()*TAU,rad=2200+r()*1600;
     const seed=hashi(G.sx,G.sy,i*977);

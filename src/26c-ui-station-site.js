@@ -24,6 +24,7 @@ function renderSiteTab(){
     const row=el("div","row");
     let st;
     if(!bldReady(B,now))st="монтаж · готово через "+Math.max(1,Math.ceil((B.ready-now)/60000))+" мин";
+    else if(!bldIsShop(def)&&def.fam!=="A")st="работает · "+def.note;
     else if(def.fam==="A")st="делает "+Object.keys(def.makes).map(k=>RES[k].ru.toLowerCase()+" "+def.makes[k]*B.lvl).join(", ")+" в смену";
     else{
       const Q=bldQuota(def,B.lvl);
@@ -43,7 +44,7 @@ function renderSiteTab(){
       row.appendChild(b);
     }
     $body.appendChild(row);
-    if(!bldReady(B,now))continue;
+    if(!bldReady(B,now)||(!bldIsShop(def)&&def.fam!=="A"))continue;
     if(def.fam==="A"){
       /* запас промысла — продаётся вам со скидкой */
       for(const k in def.makes){

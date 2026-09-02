@@ -79,6 +79,7 @@ function occTick(){
   const from=keys[(r()*keys.length)|0].split(",").map(Number);
   /* рядом с подавленным очагом наступление замирает: разбитая база должна
      что-то ЗНАЧИТЬ, иначе отбивать системы можно только бесконечно */
+  if(typeof holdGunsTick==="function"&&holdGunsTick(from[0],from[1]))return;   /* Орудийная батарея (H1) */
   if(occCalmNear(from[0],from[1]))return;
   const o=G.occ[occKey(from[0],from[1])];
   /* сперва укрепляются там, где уже стоят, и только потом ползут дальше:

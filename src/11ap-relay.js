@@ -81,6 +81,7 @@ const RELAY_PAY_WIN=3;      /* платят раз в трое суток: эт�
 function relayOf(sx,sy){
   sx|=0;sy|=0;
   if(!starAt(sx,sy))return null;
+  if(typeof holdRelay==="function"){const H=holdRelay(sx,sy);if(H)return H;}   /* Радиомачта (I5): своя мачта */
   const r=rng(hashi(sx,sy,0x9EA1));
   const far=sysDanger(sx,sy);
   if(r()>=.09+.23*far)return null;

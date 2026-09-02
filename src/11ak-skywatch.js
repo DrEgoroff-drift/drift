@@ -207,7 +207,7 @@ function skyReport(){
   const S=skyAll(),o=S.o;
   if(!skyCanReport())return false;
   const K=SKY_KINDS[o.kind], first=!o.bull;
-  const pay=Math.round(K.pay*(first?1:.5)), dat=first?K.data:1;
+  const pay=Math.round(K.pay*(first?1:.5)*((typeof holdSkyMul==="function")?holdSkyMul():1)), dat=first?K.data:1;   /* Обсерватория (I1) */
   earn(pay,"наблюдение");G.data=(G.data|0)+dat;
   if(first){
     S.n=(S.n|0)+1;

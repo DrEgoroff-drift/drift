@@ -33,6 +33,7 @@ function holdDock(sys){
   const n=held();if(n>0)holdDeed(sys.sx,sys.sy,"cargo",n);
   const H=G.hold&&G.hold[sys.key];
   if(H&&H.bld)for(const id in H.bld)bldTick(sys.key,id);
+  if(typeof holdKontoraNotes==="function")holdKontoraNotes(sys);   /* Контора (E2): цены соседей на бумагу */
   /* лестница (M292): момент о том, что здесь теперь стоит; ★10 — у причала латают */
   if(typeof rungMoments==="function")rungMoments(sys);
   if(typeof rungHas==="function"&&rungHas(sys.sx,sys.sy,"cycle")){
@@ -121,6 +122,8 @@ function bldAtWhy(sys,def){
     return P.some(p=>p.type!=="gas"&&(PROFILE[p.type]||[]).indexOf(k)>=0)?"":"нужен твёрдый мир с "+RES[k].ru.toLowerCase();}
   if(rule.indexOf("world:")===0){const L=rule.slice(6).split(",");
     return types.some(t=>L.indexOf(t)>=0)?"":"нужен мир: "+L.map(t=>TYPES[t]?TYPES[t].ru:t).join(" / ");}
+  if(rule.indexOf("stype:")===0){const L=rule.slice(6).split(",");
+    return (sys.station&&L.indexOf(sys.station.stype)>=0)?"":"нужна станция: "+L.map(t=>stTypeOf(t).ru.toLowerCase()).join(" / ");}
   if(rule==="belt")return sys.belt?"":"в системе нет пояса";
   if(rule==="gas")return types.indexOf("gas")>=0?"":"в системе нет газового гиганта";
   if(rule==="fauna")return sysHasFauna(sys)?"":"в системе нет фауны";
@@ -200,7 +203,7 @@ function bldUpgrade(sys,id){
 }
 function bldEntry(key,id){const H=G.hold&&G.hold[key];return H&&H.bld?H.bld[id]||null:null;}
 function bldReady(B,now){return !!B&&(now||Date.now())>=(B.ready||0);}
-function holdCapMul(key){return 1;}   /* Накопитель (семья E, шаг 7) вернёт 2 */
+function holdCapMul(key){const[sx,sy]=String(key).split(",").map(Number);return (typeof bldHas==="function"&&bldHas(sx,sy,"nakop"))?2:1;}   /* Накопитель (E1) */
 /* ── бункер: догнать по сменам ── */
 function bldTick(key,id,now){
   const B=bldEntry(key,id),def=BLD[id];
@@ -208,6 +211,7 @@ function bldTick(key,id,now){
   now=now||Date.now();
   B.my=B.my||{};B.got=B.got||{};
   if(now<(B.ready||0))return;
+  if(!Object.keys(def.makes).length){B.t0=now;return;}   /* семьи E–I ничего не копят */
   const t0=Math.max(B.t0||now,B.ready||0);
   let s=Math.floor((now-t0)/HOLD_SHIFT);
   if(s<=0)return;
@@ -323,6 +327,7 @@ function holdDealList(){
       bldTick(key,id,now);
       let state;
       if(!bldReady(B,now))state="монтаж · готово через "+Math.max(1,Math.ceil((B.ready-now)/60000))+" мин";
+      else if(!Object.keys(def.makes).length)state="работает · "+def.note;
       else if(def.fam==="A"){state="в запасе: "+Object.keys(B.got).map(k=>RES[k].ru.toLowerCase()+" "+Math.floor(B.got[k]||0)).join(", ");}
       else{
         const my=Object.keys(def.eats).map(k=>RES[k].ru.toLowerCase()+" "+(B.my[k]|0)).join(", ");

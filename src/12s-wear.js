@@ -24,6 +24,7 @@ function wearOf(id){
   return clamp((wearAll()[id||G.shipId]||0)/WEAR_FULL,0,1);
 }
 function wearTick(dt){
+  if(G.mode==="dock"&&typeof holdPierHeal==="function"&&holdPierHeal(dt))return;   /* Личный причал (I4) */
   const r=WEAR_RATE[G.mode];
   if(!r)return;
   if(typeof quietNoWear==="function"&&quietNoWear())return;   /* тихий уезд (11n): машины не ломаются */
@@ -69,7 +70,8 @@ function wearService(part,id){
 function wearFloor(sys){
   sys=sys||G.sys;
   const st=(G.st&&G.st.stype)||(sys&&sys.station&&sys.station.stype)||"trade";
-  const base=(st==="yard")?.18:(st==="indust"?.38:.32);
+  let base=(st==="yard")?.18:(st==="indust"?.38:.32);
+  if(typeof bldHas==="function"&&sys&&bldHas(sys.sx,sys.sy,"workshop"))base=.18;   /* Мастерская (F3): как на верфи */
   const d=(typeof sysDanger==="function"&&sys)?sysDanger(sys.sx,sys.sy):0;
   return clamp(base+d*.18,.15,.5);
 }

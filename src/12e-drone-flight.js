@@ -128,6 +128,7 @@ function dronePos(d,now,sys){
    случайность. Ломается дрон на РАЗГРУЗКЕ — то есть у станции, где и стоит
    потом в доке: чинить его посреди пустоты было бы некому. */
 function droneBreakP(d){
+  if(typeof bldHas==="function"&&bldHas(d.sx,d.sy,"hangar"))return 0;   /* Ангар (F4) */
   const dg=(typeof sysDanger==="function")?sysDanger(d.sx,d.sy):0;
   return clamp(DRONE_BREAK_P*(1+dg*1.6)+(d.trips|0)*DRONE_BREAK_WEAR,0,.2);
 }

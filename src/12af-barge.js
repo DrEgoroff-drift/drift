@@ -65,6 +65,7 @@ function bargeTick(c,now){
       continue;
     }
     B.stopped=0;
+    if(typeof bargeAutoLoad==="function")bargeAutoLoad(c,sys);   /* Причал (E4): грузится сама с промыслов */
     for(const k in c.cargo){
       const q=c.cargo[k]|0;if(q<=0)continue;
       const n=bldFeed(sys,k,q);

@@ -60,7 +60,7 @@ TEST_SUITES.push(()=>suite("холдинг: ступень от дел, площ
   const bad=BLD_KEYS.map(id=>BLD[id]).find(d=>d.fam==="B"&&Object.keys(d.eats).some(k=>M[k]));
   if(bad)ok(/и так делают/.test(bldWhy(s,bad)),bad.ru+" здесь не поставить: "+bldWhy(s,bad));
   const A=bldAvailable(s);
-  ok(A.ok.every(x=>x.def.fam==="A"||x.def.fam==="B"),"на ступени 11 открыт только первый ярус");
+  ok(A.ok.every(x=>x.def.fam!=="C"&&x.def.fam!=="D"),"на ступени 11 второй и третий ярус закрыты");
   ok(A.no.every(x=>x.why.length>0),"у каждой недоступной строки есть причина");
   const good=A.ok.find(x=>x.def.fam==="B");
   if(!good){ok(true,"в этой системе нечего заложить из передела — пропущено");return;}

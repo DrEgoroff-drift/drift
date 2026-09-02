@@ -267,7 +267,7 @@ function stationMgrs(sys){
   if(!sys.station)return [];
   const T=stTypeOf(sys.station.stype);
   const r=rng(hashi(sys.seed,0x4A17,timeBucket()));
-  const n=2+Math.floor(r()*3);
+  const n=2+Math.floor(r()*3)+((typeof holdExtraMgrs==="function")?holdExtraMgrs(sys):0);   /* Отдел кадров (G4) */
   const out=[];
   for(let i=0;i<n;i++){
     const m=genMgr(hashi(sys.seed,i*3313+71,timeBucket()),cantinaPool(T.id));
@@ -500,7 +500,7 @@ function mgrPayroll(m,min){
   /* вторая строка «Пустого контракта»: деньгами его больше не обидеть */
   if(short>0&&relicDeep("blank")){m.warnPay=0;return;}
   if(short>0){
-    m.loy=Math.max(0,m.loy-min*.5*drop);
+    m.loy=Math.max(0,m.loy-min*.5*drop*((typeof holdLoyaltyHold==="function"&&holdLoyaltyHold())?0:1));   /* Красный уголок (G6) */
     if(!m.warnPay&&m.loy<45){
       m.warnPay=1;mgrSay(m,"Домен пустой — сижу на голом проценте. Я это помню.","warn");
       logAdd("warn",m.name+" на голом проценте: домен ничего не принёс — лояльность подтаивает");

@@ -117,6 +117,9 @@ function rungBoardBlock(){
   $body.appendChild(el("div","sec",nm.toUpperCase()+" · "+rungRoman(rungPlanOf(r))+" ПЯТИЛЕТКА · "+d.ru.toUpperCase()));
   $body.appendChild(el("div","row","<div class='nm'><b>"+d.note+"</b><s>здесь вас зовут: "+rungAddress(r,sys.sx,sys.sy)+
     (r<30?" · дальше — "+RUNGS[r+1].ru.toLowerCase():"")+"</s></div>"));
+  /* Архив (I3): летопись — всё, что здесь стояло */
+  const AL=(typeof holdArchiveLines==="function")?holdArchiveLines(sys):[];
+  if(AL.length)$body.appendChild(el("div","row","<div class='nm'><b>Летопись</b><s>"+AL.join("<br>")+"</s></div>"));
 }
 /* эфир (11b): буй отвечает — в системах с ★5 автомат слышен */
 function buoyEtherLine(r){

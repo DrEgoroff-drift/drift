@@ -43,8 +43,9 @@ function scripRate(id){
   return R[id];
 }
 function scripHeld(id){return (G.scrip&&G.scrip[id])|0;}
-function scripBuyPrice(id){return Math.max(1,Math.round(scripRate(id)*(1+SCRIP_SPREAD)));}
-function scripSellPrice(id){return Math.max(1,Math.round(scripRate(id)*(1-SCRIP_SPREAD)));}
+function scripSpread(){return (typeof holdScripSpread==="function")?holdScripSpread():SCRIP_SPREAD;}   /* Касса (E3) снимает спред */
+function scripBuyPrice(id){return Math.max(1,Math.round(scripRate(id)*(1+scripSpread())));}
+function scripSellPrice(id){return Math.max(1,Math.round(scripRate(id)*(1-scripSpread())));}
 /* единственная дверь, через которую курс вообще меняется: без причины сюда не
    входят, и причина уезжает в журнал вместе с движением */
 function scripMove(id,d,why){

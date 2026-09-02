@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.292.0 - M295: the twenty-six that change one thing each
+
+Step 7 of the holding plan (`docs/DESIGN-holding.md` §10, families E–I). Every building that
+does not eat or make cargo is wired to exactly one hook in another module, read through one
+door - `bldHas(sx,sy,id)` - and a test holds that each of the twenty-six is asked.
+
+- **Хозяйство:** Накопитель doubles the hopper and the share ceiling (the one ceiling modifier);
+  Контора writes the neighbours' prices within four sectors to the paper «со слуха» at docking;
+  Касса changes scrip without a spread; Причал lets the barge load herself from your промыслы at
+  that leg, at 0.7×; Диспетчерская, with the factor seated, gives the ether a voice about empty
+  hoppers and uncollected share.
+- **Флот:** Ремонтный док −30% on repair; Заправочный узел −25% on fuel (the market header now
+  prints the real price); Мастерская services wear to a yard's floor on trade and yard stations;
+  Ангар - the system's drones never break down.
+- **Люди:** Дом приезжих +2 hire candidates; Учебный пункт ×1.5 on the good tails of a run from
+  here; Медпункт - rest twice as fast, ransom a quarter cheaper; Отдел кадров +2 manager
+  candidates; Артель - the errand is always posted and pays +25%; Красный уголок - loyalty does
+  not fall while you are docked here; Столовая halves the bad tails.
+- **Оборона:** Орудийная батарея - the blockade drops a level at every check; Дозор marks the
+  pirate foci that have not yet flared within five sectors on the map; Дружина - one fewer foe in
+  every room of a boarding here; Заграждение halves the ambush on approach.
+- **Знание:** Обсерватория doubles a sky report filed here; Филиал −15% on tech at a science
+  station; Архив puts the system's chronicle on the board; Личный причал works the hours off the
+  hull while you stand; Радиомачта makes the system a relay of your own («МАЧТА-N»);
+  Метеостанция names the weather on every body before you land.
+- Where the design asked for what the code does not have - hands at a boarding, traces per
+  system, hours at docking - the effect was replaced by the nearest honest one and the design
+  says so. СТРОЙКА shows these rows by what they do; ДЕЛО lists them as «работает».
+- Tests: `91x-hold-fx`.
+
 ## 0.291.0 - M294: your own barge
 
 Step 6 of the holding plan (`docs/DESIGN-holding.md` §12). The author's «собрать баржу, нанять

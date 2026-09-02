@@ -17,14 +17,23 @@ const BLD_FAM={
   A:{ru:"Добыча",  sh:"tank",  note:"делает в смену и продаёт вам по 0.7 цены"},
   B:{ru:"Передел", sh:"drum",  note:"ест сырьё, платит паем"},
   C:{ru:"Узлы",    sh:"rack",  note:"ест передел, платит паем"},
-  D:{ru:"Крупное", sh:"hangar",note:"ест узлы, делает то, что ест стройка"}
+  D:{ru:"Крупное", sh:"hangar",note:"ест узлы, делает то, что ест стройка"},
+  E:{ru:"Хозяйство",sh:"pods",  note:"меняет одно в этой станции"},
+  F:{ru:"Флот",    sh:"hangar",note:"служба кораблю и машинам"},
+  G:{ru:"Люди",    sh:"drum",  note:"людям здесь лучше"},
+  H:{ru:"Оборона", sh:"cage",  note:"пиратам здесь хуже"},
+  I:{ru:"Знание",  sh:"dish",  note:"здесь знают больше"}
 };
 const BLD_SHIFTS={1:1,2:3,3:5};        /* монтаж по ярусу, в сменах — ярус 1 за смену, иначе первый пай не успевает в 40 минут (§16.8, замер M293) */
-const BLD_FAM_KEYS=["A","B","C","D"];
+const BLD_FAM_KEYS=["A","B","C","D","E","F","G","H","I"];
 const BLD={};
 function bldAdd(fam,id,ru,eats,makes,cost,at){
   const tier=fam==="C"?2:(fam==="D"?3:1);
   BLD[id]={id,fam,tier,ru,eats:eats||{},makes:makes||{},cost,at:at||"any",note:BLD_FAM[fam].note,fx:"share",sh:BLD_FAM[fam].sh};
+}
+/* семьи E–I (M295): не едят и не делают — меняют одно; fx — id крючка (12ag-holdfx), note — что именно */
+function bldAddFx(fam,id,ru,cost,at,note){
+  BLD[id]={id,fam,tier:1,ru,eats:{},makes:{},cost,at:at||"any",note,fx:id,sh:BLD_FAM[fam].sh};
 }
 /* A · добыча — делает M в смену в запас, продаёт по 0.7; ест ничего */
 bldAdd("A","regolith",  "Реголитовая разработка",null,{iron:12,silicon:6},   {credits:1600,alloy:10,iron:24},    "solid:iron");
@@ -101,9 +110,40 @@ bldD("panelyard",  "Панельный участок",  {semi:2,film:1,cable:1}
    только для сводки, замера и сдачи в цех; рынок её не читает */
 const IND_FEE={1:20,2:60,3:200};
 const _indPrice={};
+/* E · хозяйство */
+bldAddFx("E","nakop",    "Накопитель",        {credits:2000,alloy:10,concrete:8},        "any",        "бункер и пай здесь держат шесть смен вместо трёх");
+bldAddFx("E","kontora",  "Контора",           {credits:1800,alloy:6,cable:4},            "any",        "при стыковке цены соседей в четырёх секторах ложатся на бумагу «со слуха»");
+bldAddFx("E","kassa",    "Касса",             {credits:1200,alloy:4,relay:2},            "any",        "боны меняются здесь без спреда");
+bldAddFx("E","prichal",  "Причал",            {credits:3000,alloy:8,beam:1},             "any",        "баржа грузится здесь сама — с ваших промыслов, по 0.7 цены");
+bldAddFx("E","dispatch", "Диспетчерская",     {credits:2600,alloy:8,relay:4,tube:2},     "any",        "с фактором в кресле эфир докладывает о пустых бункерах и лежащем пае");
+/* F · флот */
+bldAddFx("F","dock",     "Ремонтный док",     {credits:2400,alloy:12,roll:8},            "any",        "ремонт здесь на 30% дешевле");
+bldAddFx("F","fuelnode", "Заправочный узел",  {credits:2000,alloy:8,pump:2},             "any",        "топливо здесь на 25% дешевле");
+bldAddFx("F","workshop", "Мастерская",        {credits:2200,alloy:10,bearing:2},         "stype:trade,yard","износ здесь снимают до заводского — как на верфи");
+bldAddFx("F","hangar",   "Ангар",             {credits:2800,alloy:12,plate:6},           "any",        "дроны этой системы не ломаются");
+/* G · люди */
+bldAddFx("G","guesthouse","Дом приезжих",     {credits:2000,alloy:8,habblock:1},         "any",        "в найме здесь на два кандидата больше");
+bldAddFx("G","school",   "Учебный пункт",     {credits:2200,alloy:8,canned:4},           "any",        "рейсы отсюда чаще кончаются добром: удачные исходы ×1.5");
+bldAddFx("G","medpoint", "Медпункт",          {credits:2000,alloy:6,regen:2},            "any",        "наёмники отсюда отдыхают вдвое быстрее, выкуп на четверть дешевле");
+bldAddFx("G","personnel","Отдел кадров",      {credits:1800,alloy:6,tube:2},             "any",        "в кантине на два управляющих больше");
+bldAddFx("G","artel",    "Артель",            {credits:2400,alloy:10,canned:6},          "any",        "наряд здесь есть всегда и платит на четверть больше");
+bldAddFx("G","redcorner","Красный уголок",    {credits:1600,alloy:4,phosphor:2},         "any",        "верность управляющих не падает, пока вы стоите здесь");
+bldAddFx("G","canteen",  "Столовая",          {credits:1400,alloy:4,canned:8},           "any",        "рейсы отсюда вдвое реже кончаются худом");
+/* H · оборона */
+bldAddFx("H","guns",     "Орудийная батарея", {credits:3600,alloy:16,refr:6,relay:2},    "any",        "блокада этой системы спадает сама, по уровню за проверку");
+bldAddFx("H","lookout",  "Дозор",             {credits:1800,alloy:6,optics:2},           "any",        "очаги пиратов в пяти секторах отсюда видны на карте");
+bldAddFx("H","druzhina", "Дружина",           {credits:2400,alloy:8,fabric:4},           "any",        "на абордаже в этом секторе гарнизон реже: дружина держит подходы");
+bldAddFx("H","barrier",  "Заграждение",       {credits:2800,alloy:12,mast:2},            "any",        "засада на подходе к системе вдвое реже");
+/* I · знание и жизнь */
+bldAddFx("I","observatory","Обсерватория",    {credits:3200,alloy:10,optics:4},          "any",        "доклад о небе, поданный здесь, платит вдвое");
+bldAddFx("I","branch",   "Филиал",            {credits:4000,alloy:14,semi:4},            "stype:sci",  "техника здесь на 15% дешевле");
+bldAddFx("I","archive",  "Архив",             {credits:1600,alloy:4,film:4},             "any",        "на доске — летопись системы: всё, что здесь стояло");
+bldAddFx("I","ownpier",  "Личный причал",     {credits:2000,alloy:8,beam:1},             "any",        "часы износа сходят с корпуса, пока вы стоите здесь");
+bldAddFx("I","radiomast","Радиомачта",        {credits:2400,alloy:8,mast:1,cable:4},     "any",        "система слышна как ретранслятор — ваша мачта в эфире");
+bldAddFx("I","meteo",    "Метеостанция",      {credits:1400,alloy:4,thermoc:4},          "any",        "погода на телах известна до посадки — на доске");
 const BLD_KEYS=Object.keys(BLD);
 /* кредитная часть — после всей таблицы: теневая цена выпуска ищет делателя в BLD */
-for(const id of BLD_KEYS)if(BLD[id].fam!=="A")BLD[id].cost.credits=bldCredits(id,BLD[id].cost);
+for(const id of BLD_KEYS)if(BLD[id].fam!=="A"&&Object.keys(BLD[id].makes).length)BLD[id].cost.credits=bldCredits(id,BLD[id].cost);
 /* норма и выпуск по уровню */
 function bldScale(o,lvl){const out={};for(const k in o)out[k]=o[k]*(lvl|0||1);return out;}
 function bldQuota(def,lvl){return bldScale(def.eats,lvl);}
@@ -134,7 +174,9 @@ function bldCostTxt(cost){
   return L.join(" · ");
 }
 function bldIoTxt(def){
+  if(!Object.keys(def.makes).length)return def.note;
   const e=Object.keys(def.eats).map(k=>RES[k].ru.toLowerCase()+" "+def.eats[k]).join(" + ");
   const m=Object.keys(def.makes).map(k=>RES[k].ru.toLowerCase()+" "+def.makes[k]).join(" + ");
   return (e?"ест "+e+" → ":"делает ")+m+" в смену";
 }
+function bldIsShop(def){return def.fam==="B"||def.fam==="C"||def.fam==="D";}

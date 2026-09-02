@@ -111,7 +111,7 @@ function syncTabs(){
 }
 function repairCost(){
   /* репутация станции идёт в цену работы: чинят руки, а не рынок (12k-rep) */
-  return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep*repRepairMul()));
+  return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep*repRepairMul()*(typeof holdRepairMul==="function"?holdRepairMul():1)));   /* Ремонтный док (F1) */
 }
 function closeStation(){
   if(typeof vegaLaunchHold==="function"&&vegaLaunchHold())return;   /* зеркало (M153): раз в день — «вы обещали остаться» */
@@ -348,6 +348,9 @@ function renderTabBody(){
     if(typeof needBlock==="function")needBlock();         /* нужда и наряд (M152e) */
     if(typeof appetiteBlock==="function")appetiteBlock();  /* что станция берёт с надбавкой (M290) */
     if(typeof rungBoardBlock==="function")rungBoardBlock();  /* пятилетка и что здесь стоит (M292) */
+    if(typeof holdMeteoLines==="function"){const ML=holdMeteoLines(G.sys);   /* Метеостанция (I6) */
+      if(ML.length){$body.appendChild(el("div","sec","МЕТЕОСТАНЦИЯ · ПОГОДА НА ТЕЛАХ"));
+        for(const l of ML)$body.appendChild(el("div","row","<div class='nm'><s>"+l+"</s></div>"));}}
     if(typeof findsBlock==="function")findsBlock();       /* находки: институту или с рук (M152e) */
     if(typeof kitDepotBlock==="function")kitDepotBlock();   /* склад института: комплект (M152) */
     if(typeof vegaFleaBlock==="function")vegaFleaBlock();   /* дед с лотка (M153) */
@@ -373,7 +376,7 @@ function renderTabBody(){
   if(tab==="market"){
     const prices=marketFor(G.sys),mkt=G.market[G.sys.key];
     $body.appendChild(el("div","sec","ТРЮМ "+held()+" / "+st.cargoMax+
-      " · ТОПЛИВО "+G.st.fuelPrice+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
+      " · ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед"));
     /* Маршрут переехал в конец вкладки (проход «дорога»). Он стоял вторым
        блоком сверху, и у игрока без маршрута — то есть у всякого, кто открыл
        рынок впервые, — первая цена оказывалась ниже середины экрана: шапка,

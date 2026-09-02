@@ -243,6 +243,9 @@ function drawMap(){
       ctx.beginPath();ctx.arc(x,y,rr+10,-.9,2.4);ctx.stroke();}
     /* кольцо освоения (M292): с ★5, по сегменту на пятилетку, столбик огней по постройкам */
     if(typeof drawRungRing==="function")drawRungRing(x,y,rr,gx,gy);
+    /* Дозор (H2): очаг пиратов, который ещё не разгорелся, — красная зарубка */
+    if(typeof lookoutSees==="function"&&lookoutSees(gx,gy)){ctx.strokeStyle="rgba(255,107,87,.8)";ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(x+rr+4,y-rr-4);ctx.lineTo(x+rr+9,y-rr-9);ctx.stroke();}
     ctx.globalAlpha=1;
     if(here){
       ctx.strokeStyle="rgba(127,230,216,"+(.5+.25*Math.sin(G.t*.06)).toFixed(2)+")";

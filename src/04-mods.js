@@ -45,7 +45,7 @@ const TECH={
 const techLv=k=>(G.tech.has(k)?1:0)+(G.techLvl[k]|0);
 function techCost(k){
   const T=TECH[k];
-  return Math.round(T.cost*Math.pow(1.65,techLv(k)));
+  return Math.round(T.cost*Math.pow(1.65,techLv(k))*((typeof holdTechMul==="function")?holdTechMul():1));   /* Филиал (I2) */
 }
 /* пласты шахты: чем глубже, тем богаче и опаснее */
 const DEPTH_TIERS=[

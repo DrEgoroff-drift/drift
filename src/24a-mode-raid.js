@@ -152,7 +152,7 @@ function enterRaid(PB){
   const r=rng(hashi(PB.seed,77,0x0E));
   for(const rm of R.rooms){
     if(rm.k==="hangar")continue;
-    const n=(rm.k==="bridge"?2:1)+Math.floor(r()*(1+PB.level));
+    const n=Math.max(1,(rm.k==="bridge"?2:1)+Math.floor(r()*(1+PB.level))-((typeof holdRaidThin==="function")?holdRaidThin():0));   /* Дружина (H3) */
     for(let i=0;i<n;i++){
       const c=rm.c0+Math.floor(r()*(rm.c1-rm.c0)),rr=rm.r0+Math.floor(r()*(rm.r1-rm.r0));
       const [x,z]=cellCenter(c,rr);

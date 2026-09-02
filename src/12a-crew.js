@@ -96,7 +96,7 @@ function stationMercs(sys){
              T.id==="trade"?["haul","haul","mine"]:
              T.id==="indust"?["mine","haul"]:["mine","haul","fight"];
   const r=rng(hashi(sys.seed,0xC5EE,timeBucket()));
-  const n=1+Math.floor(r()*3);
+  const n=1+Math.floor(r()*3)+((typeof holdExtraMercs==="function")?holdExtraMercs(sys):0);   /* Дом приезжих (G1) */
   const out=[];
   for(let i=0;i<n;i++)out.push(genMerc(hashi(sys.seed,i*7717+13,timeBucket()),pool));
   /* ── у своих ищут работу те, за кем есть налёт (M102) ──
@@ -364,7 +364,7 @@ function crewTick(){
         /* «Переговорщик» командира: он торгуется, и выкуп выходит вдвое дешевле.
            Считаем здесь, а не при выплате, — цену игрок должен видеть заранее. */
         c.ransom=Math.round(c.ransomBase*(1+Math.min(2.5,h*.35))*
-          (mgrPerkOf("cmd","ransom")?.5:1));
+          (mgrPerkOf("cmd","ransom")?.5:1)*((typeof holdRansomMul==="function")?holdRansomMul(c):1));   /* Медпункт (G3) */
       }
       continue;
     }
@@ -485,7 +485,7 @@ function crewRepair(c){
 }
 function crewRest(c,min){
   /* на приколе корпус чинится сам — медленно и бесплатно */
-  if(c.hull<c.hullMax)c.hull=Math.min(c.hullMax,c.hull+min*.6);
+  if(c.hull<c.hullMax)c.hull=Math.min(c.hullMax,c.hull+min*.6*((typeof holdRestMul==="function")?holdRestMul(c):1));   /* Медпункт (G3) */
 }
 function crewDamage(c,amount){
   c.hull-=amount;
