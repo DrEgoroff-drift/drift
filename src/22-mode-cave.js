@@ -150,6 +150,7 @@ function caveBuild(C){
   /* ответвления: от галерей в стороны, тупиковые — ради них и летают. Куда
      ведёт ход, заранее не видно, это и делает пещеру пещерой */
   const br=rng(C.seed^0xB4A);
+  C.branchEnds=[];
   for(let i=0;i<6;i++){
     const fromLow=br()<.4;
     let x=fromLow?400+br()*(CAVE_W-700):200+br()*(CAVE_W-500);
@@ -162,6 +163,7 @@ function caveBuild(C){
       if(y<30||y>CAVE_Y1-80)break;
       caveStamp(C,x,y,16+fbm1(t*.03,C.seed+50+i,2)*10);
     }
+    C.branchEnds.push({x,y});
   }
   /* устье: столб пустоты к поверхности, по нему и выходят; стенки гуляют,
      иначе он читается коробом */
@@ -463,24 +465,15 @@ function caveContour(C,wx0,wy0){
   return P;
 }
 function drawCaveRock(C,cp,wx0,wy0){
-  const CS=CAVE_CS,NX=CAVE_NX,NY=CAVE_NY,g=C.g;
-  const P=new Path2D();
-  const cx0=Math.floor(wx0/CS),cx1=Math.floor((wx0+TILE-1)/CS);
-  const cy0=Math.floor((wy0-CAVE_Y0)/CS),cy1=Math.floor((wy0+TILE-1-CAVE_Y0)/CS);
-  for(let cy=cy0;cy<=cy1;cy++){
-    let run=null;
-    for(let cx=cx0;cx<=cx1+1;cx++){
-      const s=cx<=cx1&&((cx<0||cx>=NX||cy<0||cy>=NY)?1:g[cy*NX+cx]);
-      if(s&&run===null)run=cx;
-      if(!s&&run!==null){P.rect(run*CS-wx0,cy*CS+CAVE_Y0-wy0,(cx-run)*CS,CS);run=null;}
-    }
-  }
-  const K=caveContour(C,wx0,wy0);
+  const CS=CAVE_CS;
+  /* тело и обвод — один гладкий путь (M305, 22b): клеточная лесенка ушла,
+     камень округлён сглаженным полем; nonzero-заливка сама держит дыры */
+  const K=caveSmoothPath(C,wx0,wy0), P=K;
   ctx.lineJoin="round";ctx.lineCap="round";
   /* тело породы (M304): #0c1016 держало массив в зоне 0 — под тайлом и двумя
      гашениями от него оставалась тьма, и структуру давал один обвод */
-  ctx.fillStyle="#151b25";ctx.fill(P);
-  ctx.strokeStyle="#151b25";ctx.lineWidth=CS;ctx.stroke(K);
+  ctx.fillStyle="#202a38";ctx.fill(P);
+  ctx.strokeStyle="#202a38";ctx.lineWidth=CS;ctx.stroke(K);
   /* порода той же планеты: без неё пещера — чёрные силуэты, и по ним не
      понять, в чьих недрах игрок находится */
   if(cp){
@@ -511,7 +504,7 @@ function drawCaveRock(C,cp,wx0,wy0){
        СДЕЛАН ИЗ РАЗНОГО, и это видно без единой подписи.
        Всё от мировых координат и посева — тайлы стыкуются; печётся в тайл. */
     ctx.save();ctx.clip(P);
-    const stp=24,sd=(cp.seed|0);
+    const stp=14,sd=(cp.seed|0);
     const M=CUN[cp.type]||CUN.rocky;
     const gx0=Math.floor(wx0/stp)*stp, gy0=Math.floor(wy0/stp)*stp;
     for(let gy=gy0;gy<wy0+TILE+stp;gy+=stp)for(let gx=gx0;gx<wx0+TILE+stp;gx+=stp){
@@ -539,8 +532,8 @@ function drawCaveRock(C,cp,wx0,wy0){
   /* с глубиной порода уходит в синюю черноту: по ней видно, насколько ты
      ниже устья, без всяких цифр */
   const dg=ctx.createLinearGradient(0,-wy0,0,CAVE_Y1-wy0);
-  dg.addColorStop(0,"rgba(0,1,5,0)");dg.addColorStop(.5,"rgba(0,1,5,.18)");
-  dg.addColorStop(1,"rgba(0,1,5,.45)");
+  dg.addColorStop(0,"rgba(0,1,5,0)");dg.addColorStop(.5,"rgba(0,1,5,.10)");
+  dg.addColorStop(1,"rgba(0,1,5,.26)");
   ctx.fillStyle=dg;ctx.fill(P);ctx.strokeStyle=dg;ctx.lineWidth=CS;ctx.stroke(K);
   /* ── холодные лессировки (M304, DESIGN-craft §16): свет мха лежит НА КАМНЕ ──
      Мох, кристаллы и жилы светились точками в пустоту: ореол lighter поверх
@@ -618,25 +611,37 @@ function drawCaveFar(C,camx,camy){
   const cp=(G.surf&&G.surf.p)||null;
   C.farT=tileStore(C.farT,"cavefar|"+(C.seed&0xff)+"|"+(cp?cp.seed:0)+"|"+DPR);
   drawTiles(C.farT,camx*.38,camy*.38,(g,wx0,wy0)=>{
-    ctx.fillStyle="#070b11";ctx.fillRect(0,0,TILE,TILE);
+    /* задняя стена — ТЕЛО (M305): при #070b11 пустота между глыбами была
+       чёрной, и глыбы висели в ничём. Стена зоны I: темнее ближней породы,
+       но с массой и трещинами — пещера стала полостью В камне */
+    ctx.fillStyle="#080c12";ctx.fillRect(0,0,TILE,TILE);
     const R=rng(hashi(Math.floor(wx0/TILE),Math.floor(wy0/TILE),0xCA7E));
     /* дальние массивы породы: крупные силуэты, а не равномерная сыпь */
     for(let i=0;i<7;i++){
       const x=R()*TILE,y=R()*TILE,r=60+R()*140;
-      ctx.fillStyle="rgba(15,21,31,"+(.35+R()*.3).toFixed(2)+")";
+      ctx.fillStyle="rgba(17,23,34,"+(.35+R()*.3).toFixed(2)+")";
       ctx.beginPath();ctx.ellipse(x,y,r,r*(.4+R()*.35),R()*3,0,TAU);ctx.fill();
+    }
+    /* трещины: пять блуждающих тёмных линий — рука, а не сетка */
+    ctx.lineCap="round";
+    for(let i=0;i<5;i++){
+      let x=R()*TILE,y=R()*TILE,a=R()*TAU;
+      ctx.strokeStyle="rgba(4,6,10,"+(.4+R()*.3).toFixed(2)+")";ctx.lineWidth=1.2+R()*2.2;
+      ctx.beginPath();ctx.moveTo(x,y);
+      for(let t=0;t<40;t++){a+=(R()-.5)*.9;x+=Math.cos(a)*7;y+=Math.sin(a)*7;ctx.lineTo(x,y);}
+      ctx.stroke();
     }
     /* колонны от пола до свода: по ним и читается, что там ещё пещера */
     for(let i=0;i<3;i++){
       const x=R()*TILE, w2=8+R()*22;
-      ctx.fillStyle="rgba(11,16,24,.55)";
+      ctx.fillStyle="rgba(14,19,28,.6)";
       ctx.beginPath();
       ctx.moveTo(x-w2,0);ctx.lineTo(x+w2,0);
       ctx.lineTo(x+w2*.55,TILE);ctx.lineTo(x-w2*.55,TILE);
       ctx.closePath();ctx.fill();
     }
     if(cp&&typeof planetMat==="function"&&typeof fillMaterial==="function")
-      fillMaterial(planetMat(cp),wx0,wy0,.10,.10);
+      fillMaterial(planetMat(cp),wx0,wy0,.09,.08);
   });
 }
 function drawCaveWorld(){
@@ -653,6 +658,8 @@ function drawCaveWorld(){
      тут только их силуэт и вода, а свет пойдёт после темноты */
   drawCaveSolid(C,camx,camy);
   drawCaveWater(C,camx,camy);
+  /* то, что лежит в пещере (M305, 22b): до темноты — фонарь это освещает */
+  drawCaveProps(C,camx,camy);
   drawCaveDark(C,px,py);
   /* дневной свет в устье: единственный холодный свет сверху, по нему видно,
      где выход, даже отвернувшись */
@@ -685,7 +692,7 @@ function drawCaveWorld(){
     const f=C.face||1, lk=kitStat().lamp;
     ctx.save();ctx.globalCompositeOperation="lighter";
     const pg=ctx.createRadialGradient(px+f*46,py+8,0,px+f*46,py+8,120*lk);
-    pg.addColorStop(0,"rgba(255,214,150,.26)");
+    pg.addColorStop(0,"rgba(255,214,150,.18)");
     pg.addColorStop(.45,"rgba(255,196,120,.10)");
     pg.addColorStop(1,"rgba(255,190,110,0)");
     ctx.fillStyle=pg;

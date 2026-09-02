@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 356 · символов верхнего уровня: 3299
+Файлов: 358 · символов верхнего уровня: 3307
 
 ## СИМВОЛЫ
 
@@ -329,13 +329,18 @@ CAVE_W                       src/22-mode-cave.js:11
 CAVE_WALL_X0                 src/22-mode-cave.js:13
 CAVE_ZONE                    src/22a-cave-deco.js:17
 CAVE_ZONE_MIX                src/22a-cave-deco.js:26
-caveBoxFree                  src/22-mode-cave.js:237
+caveBoxFree                  src/22-mode-cave.js:239
 caveBuild                    src/22-mode-cave.js:105
 caveCeil                     src/22-mode-cave.js:67
 caveCeilLow                  src/22-mode-cave.js:82
 caveCeilOf                   src/22-mode-cave.js:90
-caveContour                  src/22-mode-cave.js:435
+caveContour                  src/22-mode-cave.js:437
 caveDeco                     src/22a-cave-deco.js:94
+caveDrawBones                src/22b-cave-props.js:141
+caveDrawCamp                 src/22b-cave-props.js:175
+caveDrawCrate                src/22b-cave-props.js:167
+caveDrawRope                 src/22b-cave-props.js:210
+caveDrawTally                src/22b-cave-props.js:198
 caveFloor                    src/22-mode-cave.js:61
 caveFloorLow                 src/22-mode-cave.js:75
 caveFloorOf                  src/22-mode-cave.js:89
@@ -346,10 +351,12 @@ caveLampMask                 src/22a-cave-deco.js:556
 caveLampSpot                 src/22a-cave-deco.js:498
 caveLowY                     src/22-mode-cave.js:42
 caveMossSpots                src/22a-cave-deco.js:485
-caveMoveX                    src/22-mode-cave.js:243
+caveMoveX                    src/22-mode-cave.js:245
 cavePool                     src/22a-cave-deco.js:76
+caveProps                    src/22b-cave-props.js:105
 caveScanDown                 src/22-mode-cave.js:49
 caveScanUp                   src/22-mode-cave.js:55
+caveSmoothPath               src/22b-cave-props.js:27
 caveSolidAt                  src/22-mode-cave.js:43
 caveStamp                    src/22-mode-cave.js:92
 caveTip                      src/22a-cave-deco.js:233
@@ -649,15 +656,16 @@ drawBeltRocks                src/17c-system-draw.js:41
 drawBuildMenu                src/21aa-base-rooms.js:504
 drawBuilt                    src/21c-built.js:66
 drawCantinaRoom              src/27d-ui-cantina.js:32
-drawCave                     src/22-mode-cave.js:748
+drawCave                     src/22-mode-cave.js:755
 drawCaveDark                 src/22a-cave-deco.js:327
-drawCaveFar                  src/22-mode-cave.js:617
+drawCaveFar                  src/22-mode-cave.js:610
 drawCaveGlow                 src/22a-cave-deco.js:380
 drawCaveOwnLight             src/22a-cave-deco.js:504
-drawCaveRock                 src/22-mode-cave.js:465
+drawCaveProps                src/22b-cave-props.js:233
+drawCaveRock                 src/22-mode-cave.js:467
 drawCaveSolid                src/22a-cave-deco.js:241
 drawCaveWater                src/22a-cave-deco.js:300
-drawCaveWorld                src/22-mode-cave.js:642
+drawCaveWorld                src/22-mode-cave.js:647
 drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:180
@@ -799,7 +807,7 @@ endPtr                       src/15-input.js:362
 engineLoop                   src/09-audio.js:245
 enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:89
-enterCave                    src/22-mode-cave.js:173
+enterCave                    src/22-mode-cave.js:175
 enterDig                     src/23-mode-dig.js:50
 enterHomeIn                  src/29c-home-in.js:65
 enterRaid                    src/24a-mode-raid.js:134
@@ -825,7 +833,7 @@ evacuate                     src/21-mode-surface.js:612
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:82
 exitBelt                     src/24-mode-belt.js:175
-exitCave                     src/22-mode-cave.js:231
+exitCave                     src/22-mode-cave.js:233
 exitDig                      src/23-mode-dig.js:70
 exitHomeIn                   src/29c-home-in.js:74
 exitScoop                    src/19a-mode-scoop.js:19
@@ -3114,7 +3122,7 @@ updateAllies                 src/12a-crew.js:604
 updateBarges                 src/12l-barge.js:160
 updateBase                   src/21a-mode-base.js:334
 updateBelt                   src/24-mode-belt.js:185
-updateCave                   src/22-mode-cave.js:249
+updateCave                   src/22-mode-cave.js:251
 updateCaveDeco               src/22a-cave-deco.js:205
 updateCombat                 src/13-pirates.js:78
 updateDig                    src/23-mode-dig.js:123
@@ -3885,7 +3893,10 @@ zooTick                      src/11ad-zoo.js:41
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
   · свой свет пещеры (M248):477
 
-## src/22-mode-cave.js · 44 КБ
+## src/22b-cave-props.js · 13 КБ
+  · пещера: гладкий обвод и то, что в ней лежит (M305):1
+
+## src/22-mode-cave.js · 45 КБ
   · пещера: поле породы в двух измерениях:1
 
 ## src/23aa-dig-rock.js · 37 КБ
@@ -4363,6 +4374,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzy-screens.js · 13 КБ
   · автотесты: экраны M299 — заголовки, подгляд карты, зал как ввод:1
+
+## tests/91zzza-cave-props.js · 2 КБ
+  · пещера M305: гладкий обвод и содержимое:1
 
 ## tests/91zzza-trace.js · 5 КБ
 

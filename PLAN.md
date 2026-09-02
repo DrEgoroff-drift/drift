@@ -126,10 +126,10 @@ over the station** (§13: dump, dome, strip) now has a sprite to draw into.
 
 ### Graphics still open
 
-- **The cave is 83% empty and it is now a CONTENT number, not a lighting one.** What it needs is
-  things inside the rock: side passages worth turning into, water, bones, another person's marks.
-- **The cave's outline is a cell grid** — visible right angles at 90°. Marching squares or metaballs
-  over the same field would round it; the tiles are baked, so the cost is one-time.
+- ~~The cave is 83% empty~~ / ~~the cave's outline is a cell grid~~ — M305 (0.302.0): round rock,
+  a back wall, bones, ropes, tallies, a camp, branch-end finds. Left: the lower lake hall is still
+  79% empty by the meter — a vault of 78 over a flat floor; if it needs more, it needs a second
+  floor level or a lake that fills the frame, not more props.
 - **The home's furniture is flat boxes** with no material, and the floor is plain planks. The house
   scored 2/5 on the five passes; the outside got its chimney, shadow, laundry and guy-wires, the
   inside got a window and honest doorways — the furniture is the rest of that work.
@@ -188,6 +188,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M305** (0.302.0) — the cave as a place: round rock by smoothed marching squares, a back wall with a body, bones/ropes/tally/camp/branch-end finds; `docs/shot.py` for headless frames and meter numbers.
 - **M304** (0.301.0) — the picture queue as one release: cave to zone I–II with cold glazes baked into the tile, sky brush and `hueToward`, landing horizon and altitude zenith, home panels/boards/study window, station sprite with one light, base halo, rain on the ground.
 - **M303** (0.300.0) — playtest tails of 02.09: the cantina's ВЫСЛУШАТЬ works, station rumours persist as logged, the desk opens over a station (СТОЛ in the header), the home beacon undocks first, the desk lamp ignores grey and ether lines, the parrot's feather layer is sized by the bird box and the perch is off the screens.
 
@@ -436,6 +437,15 @@ monuments, nodes) join the rung score when their hooks are written.
   the door stays.
 
 ## Decisions taken on the author's behalf, so they are not re-litigated
+
+- **2026-09-03, the author: «по остальным реши сам».** The cave keeps M217 (one height for the man
+  everywhere; the camera stays); the drones keep selling at the nearest station and are never
+  lost; `pair` for scenes lit by natural daylight is reported without a verdict (per-scene targets
+  in `LOOK_TARGET`, M308); the fleet's names are our own — Короб, Кубрик, Воротник, a call-sign
+  for the node, no name for the derelict (CRITIQUE-holding fork 4), «под расписку» rewritten
+  without a book of debt, «груз в попутную» struck. Order after M305: M306 station body (§13),
+  M307 home as a generator, M308 landing/day sky + map band + small tails, M309 system nebula and
+  traffic, M310+ the fleet.
 
 - The buyer of a route pays a **share of what it earned you**, not of a theoretical spread.
 - **What is built is never for sale** — knowledge of a road can be, your mark on the world cannot.

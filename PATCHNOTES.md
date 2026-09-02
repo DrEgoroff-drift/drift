@@ -7,6 +7,41 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.302.0 - M305: the cave as a place — round rock, a back wall, and things that lie in it
+
+Three findings after M304 (PLAN «Graphics still open»): the cave was 75–83% empty by the meter
+and that was a CONTENT number; its outline was a 5 px cell grid with visible right angles; and
+between the rock masses there was nothing — blobs hanging in black.
+
+- **Round rock** (`22b-cave-props`, `caveSmoothPath`). The same cell field, blurred 3×3 and traced
+  by marching squares with interpolation at .5, one Chaikin pass on top. Edges are oriented
+  «rock on the right», so every loop goes into one `Path2D` and nonzero fill carves the holes by
+  itself; a tile is traced with a 3-cell margin of fake rock so loops close along the window and
+  the tile's own bounds trim the excess. The grid under it (collision, floor, ceiling) is untouched
+  — the picture and the physics differ by at most half a cell. `caveContour` stays for the lamp
+  mask only.
+- **A back wall with a body** (`drawCaveFar`). The far layer was `#070b11` — black with faint
+  blobs, so the cave read as rocks in space. Now a zone-I wall: darker than the near rock but with
+  mass, five wandering fissures («a hand, not a grid»), columns, and the planet's own material at
+  .09. The near body went `#151b25` → `#202a38`, the depth gradient .45 → .26, the grain step
+  24 → 14 so the rock has a surface in every 16 px block.
+- **What lies in the cave** (`caveProps`/`drawCaveProps`, drawn before the darkness so the lamp
+  lights it): three animal skeletons on the floors (spine, ribs, skull with an eye hole, scatter);
+  a rope down each shaft with a stake at the lip and knots every seven points — the shaft's own
+  «this leads down, and someone knew»; tally scratches with a scratched arrow beside each shaft
+  mouth; an abandoned camp by the stranger's lamp (crate, cold fire ring with ash, pick, cup);
+  and at the end of each of the six blind branches — bones, a crate, or nothing, at 45/30/25.
+- Lamp: the warm pool centre .26 → .18 and the warm air .34 → .24 — the two stacked into a white
+  hole at 1× DPR.
+- Meter, 1280×800 at three spots (mouth gallery / deep gallery / lower gallery), before → after:
+  mass 8 → 11 / 20 / 5, empty 83 → 63 / 51 / 79, contrast .23 → .35 / .36 / .19. The lower lake
+  hall stays the honest shortfall: a vault of 78 over a flat floor, the darkness is its material.
+- Tooling: `docs/shot.py` — headless frame shots and `lookFrame()` numbers from `file://`, no
+  server, no pane: `python docs/shot.py cave --look --js "G.cave.x=900"`. Stand scenes come from
+  `docs/mkview.ps1` unchanged.
+- Suite `91zzza-cave-props`.
+
+---
 ## 0.301.0 - M304: the picture queue, one release
 
 The seven items of the picture queue (PLAN, «re-ordered by the second look», 2026-09-02), built

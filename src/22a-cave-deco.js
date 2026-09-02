@@ -363,7 +363,7 @@ function drawCaveDark(C,px,py){
     const WP=glowSprite("cavewarm",()=>{
       const g=ctx.createRadialGradient(0,0,0,0,0,1);
       for(let i=0;i<=8;i++){const t=i/8;
-        g.addColorStop(t,"rgba(255,200,132,"+(.34*Math.pow(1-t,2.2)).toFixed(3)+")");}
+        g.addColorStop(t,"rgba(255,200,132,"+(.24*Math.pow(1-t,2.2)).toFixed(3)+")");}
       ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
     });
     ctx.save();ctx.globalCompositeOperation="lighter";
