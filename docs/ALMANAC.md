@@ -185,6 +185,55 @@ in words rather than in markup, because a queue that only grows is not a queue.
 
 ---
 
+## Issue I — addendum, 2026-09-02 (0.295.0) — a second look at the picture
+
+One pass over the frame sheet by the author's order ("look once, propose, compare with the
+almanac"). Method: the twelve frames the issues name, held against issue I's verdicts and the
+patchnotes since 0.278. Finding first: **nothing from issue I's picture queue has moved.**
+M282–M298 were all interface and economy (ДЕЛО, the desk, the holding, the station body); the
+seven queued picture items stand exactly where issue I left them. So this addendum does not
+re-argue the laws — it re-orders the queue by what the eye finds worst today.
+
+**Пещера.** §16 still FAIL, and it is the worst frame on the sheet: the lamp pool is the only
+midtone; everything else sits in zone 0–I, and the *interface* net of grey rock outlines is the
+only structure the eye can hold. Unchanged since 0.278. Stays first.
+
+**Грунт день.** §13 confirmed by eye, not only by number: the haze covers a third of the sheet
+and the far planet disc is the same olive as the flora and the ground — one hue, three values
+(tones 3). §12 holds under it, which is why it does not look broken, only poor. Second.
+
+**Заход.** Issue I said "holds"; this frame does not. At 549 m the sheet is one value of blue
+edge to edge — no ground, no corridor, the lander a stamp in the middle. §16 has no zone below
+V here. Either the ground silhouette must enter earlier or the haze needs a floor. New item.
+
+**Станция (тело, M296).** Not in issue I — it did not exist. First exhibit for issue III: an
+orange **wire diagram**, no fill, no shadow side, cyan and blue accents without a source. It
+fails «тело, обвод, один свет» before any of §18.6's ten checks. Acknowledged as a first pass;
+it opens issue III as soon as it gets a body.
+
+**Дом снаружи (M284 grass).** Human scale reads now ✓. The ground is one flat olive band, and
+the white diagonals across it (wires? rain?) are unexplained lines — §14 says a line earns its
+place. Small item.
+
+**Грунт ночь · Шахта · Система · Пояс · База · Черпак.** Hold as issue I judged. Belt note:
+the rocks are one value each, the crosshair target the only brighter one — acceptable, the
+frame glass seams carry the depth. Base note: the rock around the rooms is still a flat wash —
+the queued value step (§16) is visible as a lack.
+
+**Карта.** M298 turned the card into a footer line — И3 item ✔. The §16 second value step for
+the galactic band remains queued.
+
+**Queue, re-ordered by this look (picture only):**
+1. cave shadows to zone II–III (§16) — lift ambient, cold fill from the flora, keep the lamp warm
+2. surface day: narrow the air band to a brush (§13) and give the sky and the disc a second hue (§12, palette)
+3. landing: ground or haze floor before 600 m (§16) — new
+4. home interior furniture pattern (§11) — unchanged flagship debt, not re-viewed today
+5. station body: fill + shadow side + one light (opens issue III)
+6. base rock value step, map band value step (§16)
+7. home outside: the white diagonals (§14), sky-band width measurements (§13)
+
+---
+
 ## Reserved — issue III: the fleet
 
 Not written yet, because nothing is drawn yet. `DESIGN-holding.md` §18 designs the state fleet of
