@@ -845,7 +845,8 @@ without its printout.
 
 ## 18. The fleet — bracketed until the measurement of step 5
 
-> **Status (2026-09-02):** the author said «давай потом». What follows is the record of the
+> **Status (2026-09-02):** the author said «давай потом», and the same evening «флот запиши в
+> беклог» — it is in `PLAN.md` under «Open by design». What follows is the record of the
 > evening of 08-31, kept whole because it will be wanted; **nothing in it is queued** (§19). The
 > critique's findings against it stand unanswered on purpose: the class names off real ISS/«Мир»
 > modules and the «Полюс» [F23], the price of thirteen drawings [F17], the debt in «заправка под

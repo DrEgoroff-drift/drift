@@ -711,6 +711,20 @@ tails ledger”. Nothing there is outstanding.
 
 ## Open by design (not defects; each needs the author or a pass of its own)
 
+- **The fleet — ГЛАВТРАССА** (author, 2026-09-02: «флот запиши в беклог»). Ships that cannot be
+  bought: a directorate on the model of Главсевморпуть, thirteen classes off real Soviet donors
+  (Союз, Прогресс, Протон, the nuclear tug, Энергия, the seven, Буран as the ferry, Спираль+Алмаз,
+  Луна-9, ТКС, Восток×6, Салют, Мир), a truss node station at Узел трасс (25), a silent black
+  derelict, twelve interactions none of which is a shop, the fleet as the visible reward of the
+  ladder. All of it is in [`docs/DESIGN-holding.md`](docs/DESIGN-holding.md) §18, held against
+  the craft codex in §18.6. **Open before a line is drawn:** fork 4 of
+  [`docs/CRITIQUE-holding.md`](docs/CRITIQUE-holding.md) — the names (the 08-31 text uses real
+  ISS/«Мир» module names, «МКС» and «Полюс»; the critique asks for our own: Короб, Кубрик,
+  Воротник…, a call-sign for the node, no name for the derelict); the refuelling «под расписку»
+  rewritten without a book of debt; «груз в попутную» struck. Estimate from the critique: one
+  class plus the paint pipeline 2–3 sessions, each next class 1–1.5, the interactions 6–10; the
+  order of drawing is §18.9, the first meeting the почтовик. Not queued.
+
 - **The road companion** (author, 2026-08-23): phone mode where a real car trip flies your ship —
   GPS speed extrapolated to cosmic, accelerometer banks the hull, mic-driven equalizer, real
   distance → a capped in-game bonus synced through the site accounts. Captured in
