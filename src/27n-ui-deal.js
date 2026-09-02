@@ -150,7 +150,7 @@ function dealRender(){
   }
 
   /* холдинг (M291): каждая постройка — строка; тычок ведёт курс к ней */
-  const holdL=(typeof holdDealList==="function")?holdDealList():[];
+  const holdL=((typeof holdDealList==="function")?holdDealList():[]).concat((typeof bargeDealList==="function")?bargeDealList():[]);
   if(holdL.length){
     $dlBody.appendChild(el("div","sec","ХОЛДИНГ · "+holdL.length));
     for(const h of holdL)dealRow(h.nm,h.state,null,"",(typeof gotoSector==="function")?()=>gotoSector(h.sx,h.sy):null);

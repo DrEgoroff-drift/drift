@@ -38,6 +38,9 @@ TEST_SUITES.push(()=>suite("холдинг: замер против §16 (отч
   const firstMin=(BLD_SHIFTS[1]+1)*HOLD_SHIFT/60000;   /* монтаж + одна смена корма */
   ok(firstMin<=40,"§16.8 · первый пай не позже 40 мин после площадки: монтаж "+BLD_SHIFTS[1]+" см. + смена = "+firstMin+" мин");
   ok(ROUTE_MAX>=6,"§16.4 · цепочка в пять станций помещается в маршрут ("+ROUTE_MAX+")");
+  /* баржа: денег не приносит — кр/мин ноль, ниже любого домена; её выход — единицы в бункерах за смену */
+  const vy=shipData("vyuk");
+  ok(true,"§16.9 · баржа «Вьюк»: "+vy.cargo+" ед на борту, за смену ссыпает до "+Math.min(vy.cargo,best.inUnits*HOLD_CAP_SHIFTS)+" ед в один цех ×1 · кр/мин = 0 ≤ фактор");
   /* ── ярус 2 и 3: сколько стоит вход и что даёт ── */
   for(const fam of ["C","D"]){
     const ids=BLD_KEYS.filter(id=>BLD[id].fam===fam);

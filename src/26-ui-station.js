@@ -644,6 +644,7 @@ function renderTabBody(){
           ro.appendChild(b);
         }
         $body.appendChild(ro);
+        if(typeof bargeCrewRow==="function")bargeCrewRow(c);   /* погрузить/выгрузить баржу (M294) */
       }
       /* на базу берут и без корабля: там живут, а не летают */
       const localBase=baseList().find(B=>B.sx===G.sx&&B.sy===G.sy);

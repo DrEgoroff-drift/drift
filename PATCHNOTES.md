@@ -7,6 +7,27 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.291.0 - M294: your own barge
+
+Step 6 of the holding plan (`docs/DESIGN-holding.md` §12). The author's «собрать баржу, нанять
+туда пилота и сделать маршрут», out of parts the game already had.
+
+- **A barge is a hire on a hauler hull with the order «баржа».** The hull is any `hauler` - the
+  «Вьюк» by allocation or a yard's; the route is your own, walked at least once, with at least one
+  of your shops on it. Otherwise the order is refused in words: what hull, what road, whom to feed.
+- **She feeds, she does not trade.** Once a shift she reaches the next leg and tips what she
+  carries into your shops' hoppers there, up to three shifts of their quota; a blockaded system
+  she skips with one line. She brings no money: the pilot's wages run as any hire's, a minus in
+  his line, and the return is the share that grows while you are elsewhere. Nothing is simulated:
+  elapsed shifts in, units in hoppers out, no position stored.
+- **You load her at the counter.** ПОГРУЗИТЬ takes from your hold what the shops on her legs
+  eat, up to her hull's capacity (150 on a «Вьюк»); ВЫГРУЗИТЬ gives it back. An empty barge says
+  so once. Her name is from the cargo row - «Тюк», «Куль», «Кладь», «Волокуша», «Шаланда»,
+  «Плашкоут», «Дощаник».
+- ДЕЛО lists her with the holding, not with the hires: what she carries, where she goes next,
+  how much she has fed. The hire whitelist in the save gains her legs, cursor, shift mark and name.
+- Tests: `91x-hold-barge`; `91zzw-holding` prints §16.9.
+
 ## 0.290.0 - M293: the measurement
 
 Step 5 of the holding plan: `tests/91zzw-holding` prints the layer against §16 of the design and

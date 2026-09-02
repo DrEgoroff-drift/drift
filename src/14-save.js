@@ -487,6 +487,11 @@ function applySave(s){
     stateUntil:+c.stateUntil||0,hangover:c.hangover?1:0,
     ransom:Math.max(0,c.ransom|0),ransomBase:Math.max(0,c.ransomBase|0),
     ransomAt:+c.ransomAt||0,ransomSx:c.ransomSx|0,ransomSy:c.ransomSy|0,
+    /* баржа (M294): плечи, курсор, отметка смены, скормлено, имя */
+    barge:(c.barge&&Array.isArray(c.barge.legs))
+      ?{legs:c.barge.legs.filter(k=>typeof k==="string").slice(0,ROUTE_MAX),cursor:c.barge.cursor|0,
+        t0:+c.barge.t0||Date.now(),fed:c.barge.fed|0,name:String(c.barge.name||"")}
+      :null,
     tMs:Date.now(),paidMs:Date.now()
   })).slice(0,8);
   G.allies=[];

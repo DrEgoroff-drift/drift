@@ -1163,8 +1163,14 @@ board's line, the buoy's ether line; ★10 patches the hull at docking.
 
 **M293 (0.290.0) — step 5, the measurement, 2026-09-02:** `91zzw-holding` prints the layer
 against §16 and holds three targets as rules; tier-1 assembly cut from two shifts to one so the
-first share lands inside forty minutes. Next: **step 6, the barge** (feeds, does not trade; the
-pilot by `CREW_YIELD`; the hull by allocation at a yard; `ORDERS.barge`).
+first share lands inside forty minutes.
+
+**M294 (0.291.0) — step 6, the barge, 2026-09-02:** `12af-barge` — `ORDERS.barge`, a hire on a
+hauler hull, the walked route with your shops on it, a shift-by-shift tick that tips her cargo into
+hoppers (blockade skipped), loading and unloading at the counter, the row in ЭКИПАЖ and in ДЕЛО,
+the hire whitelist. A sold road does not yet spawn a rival barge on its legs (§2 R4) — that joins
+step 9 with the rumours. Next: **step 7, the non-cargo families E–I** (26 rows, each with its hook
+and a `bldHas` test; the Причал first, so the barge's legs get their rule).
 
 ## Small tails from almanac issue II
 

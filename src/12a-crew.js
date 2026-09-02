@@ -254,6 +254,9 @@ function crewOrder(c,kind,sx,sy){
   c.balked=false;
   crewTick();                       // закрываем прошлый отрезок по старому приказу
   if(crewBusy(c)==="hostage"){say(c.name+" в плену\nсначала выкуп или штурм базы");return false;}
+  /* баржа (M294): грузовой корпус и прохоженный маршрут с вашими цехами, иначе отказ словами */
+  if(kind==="barge"&&typeof bargeStart==="function"){const why=bargeStart(c);if(why){say(why);return false;}}
+  if(kind!=="barge")delete c.barge;
   c.order={kind,sx:sx!=null?sx:G.sx,sy:sy!=null?sy:G.sy};
   c.tMs=Date.now();c.tripMin=0;                 // смена района начинает рейс заново
   G.orderStamp=(G.orderStamp|0)+1;    // «тишина в эфире» считает именно вмешательства
@@ -392,6 +395,8 @@ function crewTick(){
     }
     c.idleMs=0;c.idleSaid=0;
     if(c.order.kind==="base"){crewRest(c,min);c.xp=(c.xp||0)+min*.6;continue;}
+    /* баржа (M294): оклад идёт, рейсов нет — смены ссыпают груз в бункеры цехов */
+    if(c.order.kind==="barge"){crewPayroll(c,min);if(typeof bargeTick==="function")bargeTick(c,now);crewRest(c,min);c.xp=(c.xp||0)+min*.4;continue;}
     /* копим отработанное время и закрываем им рейсы */
     const tm=crewTripMinutes(c);
     c.tripMin=(c.tripMin||0)+min;

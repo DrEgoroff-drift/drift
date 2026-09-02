@@ -674,11 +674,14 @@ The barge already exists (`12l-barge`) — but as the factor's: a route given a 
 `BARGE_CAP=6` in the galaxy. The player's own is assembled from parts already in the game — and it
 **feeds, it does not trade**:
 
-- **hull** — first by allocation at a yard (a hull of class `barge`, the «Вьюк по разнарядке»
-  pattern of `DESIGN-economy` §4), later four Секции корпуса at a Стапель (rung 22);
-- **pilot** — an ordinary hire with a new order kind `barge` (`ORDERS.barge` in `12a`, the logic
-  in `12ab-hold`): he already has a ship, an order, runs, wear, hidden luck and a history;
-- **route** — the one you walked yourself, and only between stations with a Причал.
+- **hull** — any hull of class `hauler` (`SHIPS.hcls`): the «Вьюк» by allocation or bought at a
+  yard; later four Секции корпуса at a Стапель (rung 22);
+- **pilot** — an ordinary hire with the order kind `barge` (`ORDERS.barge`, logic in
+  `12af-barge`): he already has a ship, an order, wear, hidden luck and a history;
+- **route** — the one you walked yourself (one loop at least), with at least one of your shops on
+  it. «Only between stations with a Причал» waits for family E (step 7).
+- **loading** — you load her yourself at the counter: ПОГРУЗИТЬ takes from your hold what the
+  shops on her legs eat, up to her hull's capacity; ВЫГРУЗИТЬ gives it back.
 
 Its **only** output is the share: it drops your goods into hoppers on its legs, evenly, once a
 shift; it brings no money. The pilot's run is paid as any `haul` — by `CREW_YIELD`, a minus in his
