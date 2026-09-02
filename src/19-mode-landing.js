@@ -564,7 +564,21 @@ function drawLanding(){
      уезжали НАД кромкой грунта, и их плоская заливка закрывала пол-неба
      ровной горизонтальной чертой. Подъём над ближней землёй ограничен:
      дальнее стоит у горизонта, как ему и положено. */
-  const fA=Math.min(camy*.46+110,camy+H*.20), fB=Math.min(camy*.55+60,camy+H*.11);
+  /* ── земля или дымка до 600 м (M304, §16) ──
+     На 549 м кадр был одним значением синего от края до края: земля ниже
+     кромки, гряды привязаны к земле и ушли с ней. Дальние гряды держатся
+     ГОРИЗОНТА кадра — не выше .72H/.80H, — а над ними, с высотой, зенит
+     темнеет: сверху тёмный воздух, снизу светлый пол дымки, между ними
+     корабль. Две массы вместо одной. */
+  const alt=Math.max(0,gyw-L.y-11);
+  const fA=Math.max(Math.min(camy*.46+110,camy+H*.20),gyw-H*.72), fB=Math.max(Math.min(camy*.55+60,camy+H*.11),gyw-H*.80);
+  if(alt>160&&p.T.atm!=="отсутствует"){
+    const hi=clamp((alt-160)/1400,0,1)*.42, s1=p.T.sky[1];
+    const zg=ctx.createLinearGradient(0,0,0,H*.62);
+    zg.addColorStop(0,"rgba("+s1.join(",")+","+hi.toFixed(3)+")");
+    zg.addColorStop(1,"rgba("+s1.join(",")+",0)");
+    ctx.fillStyle=zg;ctx.fillRect(0,0,W,H*.62);
+  }
   drawGround({h:tr.h,N:tr.N,step:tr.step*3.6},camx*.26,fA,hazeFar(p,.58),null);
   drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.4,fB,hazeFar(p,.32),null);
   /* ── дымка ложится на ГОРИЗОНТ, а не на 46% кадра (M233) ──
@@ -572,7 +586,7 @@ function drawLanding(){
      ровной горизонтальной чертой посреди пустого неба — та самая линейка, от
      которой шахту лечили в M219. Дымка живёт там, где земля встречается с
      воздухом: у кромки грунта, а если та ушла ниже кадра — у нижней кромки. */
-  hazeBand(p,clamp(groundAt(tr,L.x)-camy,H*.30,H*1.02),H*.20);
+  hazeBand(p,clamp(groundAt(tr,L.x)-camy,H*.30,H*.86),H*.20);   /* пол дымки не ниже .86H (M304) */
   /* дальние капли — за грядой и за кораблём, ближние поверх (M242) */
   drawWeather(p,camx,camy,"far");
   drawGround(tr,camx,camy,"rgb("+p.T.pal[2].map(v=>Math.round(v*.6)).join(",")+")",

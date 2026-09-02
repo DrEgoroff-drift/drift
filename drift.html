@@ -1479,7 +1479,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.300.0";
+const VER="0.301.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -31562,20 +31562,38 @@ function stationModsLine(sys){
 /* ── силуэты модулей ──
    Каждый рисуется в своей системе координат у конца штанги. Формы намеренно
    простые: на масштабе станции в системе читается только силуэт. */
-function drawStModule(q,S){
+const ST_MOD_FILL={drum:"#22303e",rack:"#212832",pods:"#262d38",hangar:"#1c2531",
+  tank:"#212936",dish:"#202939",cross:"#242c38",cage:"#1f2731",farm:"#202b39",mast:"#212832"};
+/* ── штанга больше не золотая линия поверх всего (M304-II) ──
+   Золотые штанги шли ПОВЕРХ плиты и перечёркивали модули — от них станция и
+   читалась чертежом. Теперь это тёмная распорка с чёрной кромкой, и кладётся
+   она первым слоем, до плиты и корпусов. */
+function drawStRod(q){
+  ctx.save();ctx.rotate(q.ang);ctx.translate(q.d,0);
+  ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=2.6;
+  ctx.beginPath();ctx.moveTo(-q.d+6,0);ctx.lineTo(-4*q.s,0);ctx.stroke();
+  ctx.strokeStyle="#232c38";ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.moveTo(-q.d+6,0);ctx.lineTo(-4*q.s,0);ctx.stroke();
+  ctx.restore();
+}
+function drawStModule(q,S,skipRod){
   const s=q.s;
   ctx.save();
   ctx.rotate(q.ang);
   ctx.translate(q.d,0);
-  /* штанга к ядру: без неё модуль висит в пустоте */
-  ctx.strokeStyle="rgba(242,178,92,.5)";ctx.lineWidth=1.4;
-  ctx.beginPath();ctx.moveTo(-q.d+6,0);ctx.lineTo(-4*s,0);ctx.stroke();
+  if(!skipRod)drawStRod(q);                 /* штанга сама по себе, тёмная (M304-II) */
   ctx.rotate(-q.ang);                       // сам модуль не заваливается вместе со штангой
-  ctx.strokeStyle="rgba(242,178,92,.7)";ctx.lineWidth=1.2;
-  ctx.fillStyle="#0b1119";
+  /* ── материал вместо обвода (M304) ──
+     Модуль был золотым контуром по почти чёрной заливке: на кадре 84% пикселей
+     внутри силуэта сидели в яркости 0–.2, и станция читалась чертежом, а не
+     вещью. Теперь у каждой формы свой тон корпуса, а золото опущено до шва;
+     светят только окна и лампы — свет у станции один, свой. */
+  ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.7;   /* обвод тёмный, как у баржи */
+  const F=ST_MOD_FILL[q.sh]||"#1b2230";
+  ctx.fillStyle=F;
   if(q.sh==="drum"){
     ctx.beginPath();ctx.rect(-5*s,-7*s,10*s,14*s);ctx.fill();ctx.stroke();
-    ctx.strokeStyle="rgba(242,178,92,.28)";
+    ctx.strokeStyle="rgba(0,0,0,.32)";
     for(let i=1;i<4;i++){
       ctx.beginPath();ctx.moveTo(-5*s,-7*s+i*3.5*s);ctx.lineTo(5*s,-7*s+i*3.5*s);ctx.stroke();
     }
@@ -31600,14 +31618,14 @@ function drawStModule(q,S){
       ctx.beginPath();ctx.ellipse(px,py,3*s,2.4*s,0,0,TAU);ctx.fill();ctx.stroke();
       ctx.fillStyle=(Math.sin(G.t*.045+i*2+q.ph)>0)?"rgba(255,150,90,.8)":"rgba(255,150,90,.2)";
       ctx.beginPath();ctx.arc(px,py,.9*s,0,TAU);ctx.fill();
-      ctx.fillStyle="#0b1119";
+      ctx.fillStyle=F;
     }
   }else if(q.sh==="hangar"){
     /* открытый док: створки и пустой зев, куда заходит корабль */
     ctx.beginPath();ctx.rect(-8*s,-6*s,16*s,12*s);ctx.fill();ctx.stroke();
-    ctx.fillStyle="#04070c";
+    ctx.fillStyle="#0a1018";
     ctx.beginPath();ctx.rect(-2*s,-5*s,9*s,10*s);ctx.fill();
-    ctx.strokeStyle="rgba(150,220,255,.55)";
+    ctx.strokeStyle="rgba(150,220,255,.4)";
     ctx.beginPath();ctx.moveTo(7*s,-5*s);ctx.lineTo(7*s,5*s);ctx.stroke();
     /* сварка внутри дока вспыхивает */
     if(Math.sin(G.t*.4+q.ph)>.72){
@@ -31619,17 +31637,17 @@ function drawStModule(q,S){
     for(let i=0;i<2;i++){
       const px=(i-.5)*7*s;
       const g=ctx.createRadialGradient(px-2*s,-2*s,0,px,0,5*s);
-      g.addColorStop(0,"#26313d");g.addColorStop(1,"#0b1119");
+      g.addColorStop(0,"#2e3a48");g.addColorStop(1,"#161d27");
       ctx.fillStyle=g;
       ctx.beginPath();ctx.arc(px,0,4.4*s,0,TAU);ctx.fill();ctx.stroke();
     }
-    ctx.strokeStyle="rgba(242,178,92,.35)";
+    ctx.strokeStyle="rgba(0,0,0,.34)";
     ctx.beginPath();ctx.moveTo(-8*s,0);ctx.lineTo(8*s,0);ctx.stroke();
   }else if(q.sh==="dish"){
     /* тарелка, медленно ведущая цель */
     ctx.save();ctx.rotate(Math.sin(G.t*.004+q.ph)*.6);
     ctx.beginPath();ctx.ellipse(0,0,7*s,3*s,0,0,TAU);
-    ctx.fillStyle="rgba(40,70,90,.85)";ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(52,84,104,.95)";ctx.fill();ctx.stroke();
     ctx.strokeStyle="rgba(150,200,220,.5)";
     ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-5*s);ctx.stroke();
     ctx.restore();
@@ -31642,7 +31660,7 @@ function drawStModule(q,S){
   }else if(q.sh==="cage"){
     /* глухой блок с решёткой и одиноким огнём */
     ctx.beginPath();ctx.rect(-6*s,-5*s,12*s,10*s);ctx.fill();ctx.stroke();
-    ctx.strokeStyle="rgba(242,178,92,.3)";
+    ctx.strokeStyle="rgba(0,0,0,.32)";
     for(let i=1;i<5;i++){
       ctx.beginPath();ctx.moveTo(-6*s+i*2.4*s,-5*s);ctx.lineTo(-6*s+i*2.4*s,5*s);ctx.stroke();
     }
@@ -31651,19 +31669,19 @@ function drawStModule(q,S){
   }else if(q.sh==="farm"){
     /* оранжерея: прозрачный купол с зеленью внутри */
     ctx.beginPath();ctx.ellipse(0,2*s,8*s,7*s,0,Math.PI,TAU);
-    ctx.fillStyle="rgba(120,190,160,.18)";ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(128,196,166,.26)";ctx.fill();ctx.stroke();
     ctx.fillStyle="rgba(90,200,120,.55)";
     for(let i=0;i<4;i++){
       const px=(i-1.5)*3.4*s;
       ctx.beginPath();ctx.ellipse(px,0,1.6*s,2.6*s+Math.sin(q.ph+i)*s,0,0,TAU);ctx.fill();
     }
-    ctx.strokeStyle="rgba(242,178,92,.5)";
+    ctx.strokeStyle="rgba(0,0,0,.34)";
     ctx.beginPath();ctx.moveTo(-8*s,2*s);ctx.lineTo(8*s,2*s);ctx.stroke();
   }else{
     /* мачта связи: решётчатая стрела с проблесковым огнём на конце */
     ctx.beginPath();ctx.moveTo(-2*s,0);ctx.lineTo(2*s,0);ctx.lineTo(1*s,-12*s);ctx.lineTo(-1*s,-12*s);
     ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.strokeStyle="rgba(242,178,92,.3)";
+    ctx.strokeStyle="rgba(0,0,0,.32)";
     for(let i=1;i<5;i++){
       const yy=-i*2.4*s, w=2*s-i*.2*s;
       ctx.beginPath();ctx.moveTo(-w,yy);ctx.lineTo(w,yy-1.4*s);ctx.stroke();
@@ -31674,9 +31692,12 @@ function drawStModule(q,S){
   }
   ctx.restore();
 }
-function drawStationMods(sys){
+/* два прохода: сперва все штанги, потом все корпуса — иначе распорка соседа
+   ложится поверх модуля и сборка снова рассыпается на линии */
+function drawStRods(list){for(const q of list)drawStRod(q);}
+function drawStationMods(sys,skipRod){
   const m=stationMods(sys);
-  for(const q of m)drawStModule(q,sys.station);
+  for(const q of m)drawStModule(q,sys.station,skipRod);
 }
 
 /* ══════════════ находки в полёте ══════════════
@@ -32058,9 +32079,12 @@ function stationViz(S){
   S.viz={a:.75+r()*.55,b:.8+r()*.5,n:3+Math.floor(r()*3),ph:r()*TAU,f:r()};
   return S.viz;
 }
-const ST_GOLD="rgba(242,178,92,.75)";
+/* ── золото опущено до шва (M304) ──
+   Обвод в .75 был ярче всего, что он обводил: станция читалась проволочной
+   схемой. Тон корпуса теперь несут заливки, золоту оставлен стык. */
+const ST_GOLD="rgba(242,178,92,.22)";
 function stPanels(len,wid){        /* солнечные панели — неподвижны относительно звезды */
-  ctx.fillStyle="rgba(40,72,110,.85)";ctx.strokeStyle="rgba(130,190,230,.5)";ctx.lineWidth=1;
+  ctx.fillStyle="rgba(52,88,128,.95)";ctx.strokeStyle="rgba(130,190,230,.4)";ctx.lineWidth=1;
   for(const s of [-1,1]){
     const y0=s>0?18:-18-len;
     ctx.beginPath();ctx.rect(-wid/2,y0,wid,len);ctx.fill();ctx.stroke();
@@ -32071,13 +32095,13 @@ function stPanels(len,wid){        /* солнечные панели — неп
 }
 function stCore(w,h,seams){        /* центральный ствол с причальным раструбом наверху */
   const bg=ctx.createLinearGradient(-w,0,w,0);
-  bg.addColorStop(0,"#182636");bg.addColorStop(.45,"#0a1119");bg.addColorStop(1,"#05080d");
-  ctx.fillStyle=bg;ctx.strokeStyle=ST_GOLD;ctx.lineWidth=2;
+  bg.addColorStop(0,"#2a3a48");bg.addColorStop(.45,"#1d2734");bg.addColorStop(1,"#141b25");
+  ctx.fillStyle=bg;ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;
   ctx.beginPath();ctx.rect(-w,-h,w*2,h*2);ctx.fill();ctx.stroke();
   if(seams){
-    ctx.strokeStyle="rgba(242,178,92,.3)";ctx.lineWidth=1;
+    ctx.strokeStyle="rgba(242,178,92,.24)";ctx.lineWidth=1;
     for(let i=-h+4;i<h;i+=6){ctx.beginPath();ctx.moveTo(-w,i);ctx.lineTo(w,i);ctx.stroke();}
-    ctx.strokeStyle=ST_GOLD;ctx.lineWidth=2;
+    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;
   }
   ctx.beginPath();ctx.moveTo(-w+2,-h);ctx.lineTo(-w-1,-h-6);ctx.lineTo(w+1,-h-6);ctx.lineTo(w-2,-h);ctx.stroke();
   ctx.fillStyle=(Math.sin(G.t*.09)>0)?"#7fe6d8":"rgba(127,230,216,.2)";
@@ -32086,7 +32110,7 @@ function stCore(w,h,seams){        /* центральный ствол с пр�
   ctx.beginPath();ctx.arc(0,h+2,1.8,0,TAU);ctx.fill();
 }
 function stRing(V,rx,ry){          /* вращающийся тор с жилыми модулями на ободе */
-  ctx.strokeStyle=ST_GOLD;ctx.lineWidth=2;ctx.fillStyle="#0a1119";
+  ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.7;ctx.fillStyle="#20293a";
   ctx.save();ctx.rotate(G.t*.006+V.ph);
   ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,TAU);ctx.stroke();
   ctx.beginPath();ctx.ellipse(0,0,rx*.66,ry*.7,0,0,TAU);ctx.stroke();
@@ -32095,36 +32119,35 @@ function stRing(V,rx,ry){          /* вращающийся тор с жилы�
     ctx.beginPath();ctx.moveTo(Math.cos(t)*rx*.66,Math.sin(t)*ry*.7);
     ctx.lineTo(Math.cos(t)*rx,Math.sin(t)*ry);ctx.stroke();
   }
-  ctx.fillStyle="#101a26";
+  ctx.fillStyle="#212b3a";
   for(let i=0;i<6;i++){
     const t=i*Math.PI/3+.4,bx=Math.cos(t)*rx,by=Math.sin(t)*ry;
     ctx.beginPath();ctx.rect(bx-2.4,by-1.8,4.8,3.6);ctx.fill();ctx.stroke();
     ctx.fillStyle=(Math.sin(G.t*.05+i)>.2)?"rgba(255,230,170,.9)":"rgba(255,230,170,.25)";
     ctx.fillRect(bx-1,by-.7,2,1.4);
-    ctx.fillStyle="#101a26";
+    ctx.fillStyle="#212b3a";
   }
   ctx.restore();
 }
-function drawStation(x,y,Z){
-  /* ── станция крупнее корабля, потому что корабль в неё заходит (M242) ──
-     На увеличении торговый узел с шестью модулями был 170 px, а корабль рядом
-     140: внутрь такой станции лендер не влезет, и масштаб мира разваливался.
-     Полтора — не «чтобы красивее», а чтобы отношение размеров не врало. */
-  const s=clamp(Z,.4,1.5)*1.7,S=G.sys.station,V=stationViz(S),ty=S.stype||"trade";
-  /* ── станция светит (M243) ──
-     Самая яркая рукотворная вещь в системе не давала вокруг себя ничего:
-     ни ореола, ни отблеска. Мягкое пятно её собственного света кладётся ДО
-     корпуса — тогда оно читается свечением окон и прожекторов, а не нимбом. */
-  {
-    const R=70*s;
-    const gg=ctx.createRadialGradient(x,y,0,x,y,R);
-    gg.addColorStop(0,"rgba(255,214,150,.16)");
-    gg.addColorStop(.45,"rgba(255,200,130,.06)");
-    gg.addColorStop(1,"rgba(255,200,130,0)");
-    ctx.save();ctx.globalCompositeOperation="lighter";
-    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.fill();ctx.restore();
+/* тело станции в своих координатах: плита, модули, постройки, куски типа.
+   Ни один кусок не знает ни экрана, ни зума — потому всю сборку можно испечь
+   в отдельный холст и положить на неё один свет (M304). */
+function stPlatePath(V){
+  const bw=26*(V.a||1),bh=17*(V.b||1);
+  ctx.beginPath();
+  ctx.moveTo(-bw*.55,-bh);ctx.lineTo(bw*.55,-bh);ctx.lineTo(bw,-bh*.3);
+  ctx.lineTo(bw,bh*.3);ctx.lineTo(bw*.55,bh);ctx.lineTo(-bw*.55,bh);
+  ctx.lineTo(-bw,bh*.3);ctx.lineTo(-bw,-bh*.3);
+  ctx.closePath();
+}
+function drawStationBody(V,S,ty){
+  /* ── штанги первым слоем (M304-II) ──
+     Золотые штанги поверх всего и делали чертёж: они перечёркивали и плиту, и
+     модули. Теперь тёмные распорки уходят вниз, под корпуса. */
+  if(typeof drawStRods==="function"){
+    if(typeof stationMods==="function")drawStRods(stationMods(G.sys));
+    if(typeof holdMods==="function")drawStRods(holdMods(G.sys));
   }
-  ctx.save();ctx.translate(x,y);ctx.scale(s,s);
   /* ── одно тело под всеми кусками (П2 марафона) ──
      На малом зуме станция рассыпалась в конфетти из ярких прямоугольников:
      модули и панели видны, а корпуса — нет. Правило сборок «много кусков —
@@ -32132,24 +32155,20 @@ function drawStation(x,y,Z){
      держатся одного силуэта на любом масштабе, а щели между ними перестают
      светиться небом. Восьмиугольник, не эллипс — кругов и так дохуя. */
   {
-    const bw=26*(V.a||1),bh=17*(V.b||1);
-    ctx.fillStyle="rgba(13,18,26,.92)";
-    ctx.strokeStyle="rgba(242,178,92,.30)";ctx.lineWidth=1.2;
-    ctx.beginPath();
-    ctx.moveTo(-bw*.55,-bh);ctx.lineTo(bw*.55,-bh);ctx.lineTo(bw,-bh*.3);
-    ctx.lineTo(bw,bh*.3);ctx.lineTo(bw*.55,bh);ctx.lineTo(-bw*.55,bh);
-    ctx.lineTo(-bw,bh*.3);ctx.lineTo(-bw,-bh*.3);
-    ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle="#1e2836";
+    ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=.8;
+    stPlatePath(V);ctx.fill();ctx.stroke();
   }
   /* модули идут первым слоем: они висят на штангах вокруг ядра, и ядро типа
      должно перекрывать их, а не наоборот (17a-station-mod) */
-  drawStationMods(G.sys);
-  if(typeof drawHoldMods==="function")drawHoldMods(G.sys);   /* что построил игрок (M291) */
+  drawStationMods(G.sys,1);                                  /* штанги уже положены */
+  if(typeof holdMods==="function"&&typeof drawStModule==="function")
+    for(const q of holdMods(G.sys))drawStModule(q,G.sys.station,1);   /* что построил игрок (M291) */
   if(ty==="trade"){
     /* раздутые склады и гроздь причалов: контейнеры висят на штангах по бортам */
     stPanels(12,6);
     stRing(V,30*V.a,10*V.b);
-    ctx.strokeStyle=ST_GOLD;ctx.lineWidth=1.4;
+    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=1.8;
     for(let i=0;i<V.n+1;i++){
       const yy=-10+i*8,sx=(i%2?1:-1);
       ctx.beginPath();ctx.moveTo(sx*6,yy);ctx.lineTo(sx*20,yy);ctx.stroke();
@@ -32162,20 +32181,20 @@ function drawStation(x,y,Z){
   }else if(ty==="indust"){
     /* домны и факел: переработка видна снаружи — конвейеры, дым, огонь */
     stPanels(9,5);
-    ctx.strokeStyle="rgba(210,140,80,.8)";ctx.lineWidth=2;ctx.fillStyle="#14161a";
+    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;ctx.fillStyle="#242c36";
     for(const sx of [-1,1]){
       ctx.beginPath();
       ctx.moveTo(sx*9,-8);ctx.lineTo(sx*24*V.a,-13);ctx.lineTo(sx*24*V.a,9);ctx.lineTo(sx*9,6);
       ctx.closePath();ctx.fill();ctx.stroke();
       ctx.fillStyle=(Math.sin(G.t*.04+(sx>0?0:1.7))>0)?"rgba(255,150,60,.75)":"rgba(255,150,60,.3)";
       ctx.fillRect(sx*14-3,-4,6,7);
-      ctx.fillStyle="#14161a";
+      ctx.fillStyle="#242c36";
     }
-    ctx.strokeStyle="rgba(242,178,92,.45)";ctx.lineWidth=1;
+    ctx.strokeStyle="rgba(242,178,92,.32)";ctx.lineWidth=1;
     for(let i=-6;i<=6;i+=4){ctx.beginPath();ctx.moveTo(-24*V.a,i+2);ctx.lineTo(24*V.a,i+2);ctx.stroke();}
     stCore(7,15,false);
     /* факельная труба: пламя пляшет, дым сносит вбок */
-    ctx.strokeStyle="rgba(210,140,80,.8)";ctx.lineWidth=2;ctx.fillStyle="#0a1119";
+    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;ctx.fillStyle="#222a35";
     ctx.beginPath();ctx.rect(-3,-28,6,12);ctx.fill();ctx.stroke();
     const fl=1.4+Math.abs(Math.sin(G.t*.13+V.ph))*3.4;
     ctx.fillStyle="rgba(255,170,70,.85)";
@@ -32185,7 +32204,7 @@ function drawStation(x,y,Z){
   }else if(ty==="yard"){
     /* открытый эллинг: рама, а внутри шпангоуты строящегося корпуса и кран */
     stPanels(10,5);
-    ctx.strokeStyle=ST_GOLD;ctx.lineWidth=2;
+    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=2;
     ctx.beginPath();
     ctx.moveTo(-22,-20);ctx.lineTo(-22,20);ctx.lineTo(22,20);ctx.lineTo(22,-20);ctx.stroke();
     ctx.lineWidth=1.2;ctx.strokeStyle="rgba(242,178,92,.4)";
@@ -32209,7 +32228,7 @@ function drawStation(x,y,Z){
     stCore(5,10,false);
   }else if(ty==="sci"){
     /* тонкий силуэт: мачта, тарелки антенн и решётки радиаторов */
-    ctx.strokeStyle="rgba(130,200,220,.6)";ctx.lineWidth=1;ctx.fillStyle="rgba(30,60,80,.7)";
+    ctx.strokeStyle="rgba(0,0,0,.4)";ctx.lineWidth=.7;ctx.fillStyle="rgba(46,82,104,.95)";
     for(const sx of [-1,1]){
       ctx.beginPath();ctx.rect(sx>0?9:-25,-4,16,8);ctx.fill();ctx.stroke();
       for(let i=1;i<5;i++){
@@ -32217,7 +32236,7 @@ function drawStation(x,y,Z){
         ctx.beginPath();ctx.moveTo(xx,-4);ctx.lineTo(xx,4);ctx.stroke();
       }
     }
-    ctx.strokeStyle=ST_GOLD;ctx.lineWidth=1.6;ctx.fillStyle="#0a1119";
+    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;ctx.fillStyle="#212b3a";
     for(const sy of [-1,1]){
       const dy=sy*22,ang=G.t*.004*sy+V.ph;
       ctx.beginPath();ctx.moveTo(0,sy*12);ctx.lineTo(0,dy);ctx.stroke();
@@ -32231,7 +32250,7 @@ function drawStation(x,y,Z){
     ctx.beginPath();ctx.arc(0,0,2,0,TAU);ctx.fill();
   }else if(ty==="outpost"){
     /* угловатый броневой блок с турелями: панелей нет, только красные огни */
-    ctx.strokeStyle="rgba(220,120,90,.8)";ctx.lineWidth=2;ctx.fillStyle="#141a20";
+    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;ctx.fillStyle="#242d38";
     ctx.beginPath();
     for(let i=0;i<6;i++){
       const t=i*Math.PI/3+.3,rx=Math.cos(t)*20*V.a,ry=Math.sin(t)*17*V.b;
@@ -32242,7 +32261,7 @@ function drawStation(x,y,Z){
     ctx.beginPath();ctx.moveTo(-14,-6);ctx.lineTo(14,-6);ctx.stroke();
     ctx.beginPath();ctx.moveTo(-14,6);ctx.lineTo(14,6);ctx.stroke();
     /* турели поводят стволами — станция явно сторожевая */
-    ctx.strokeStyle="rgba(255,160,120,.9)";ctx.lineWidth=2.4;ctx.fillStyle="#1b2229";
+    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=1.2;ctx.fillStyle="#2a333e";
     for(let i=0;i<3;i++){
       const t=i*TAU/3+V.ph,bx=Math.cos(t)*17*V.a,by=Math.sin(t)*15*V.b;
       const ga=t+Math.sin(G.t*.012+i)*.5;
@@ -32265,7 +32284,7 @@ function drawStation(x,y,Z){
       ctx.beginPath();ctx.rect(s[0]*V.a,s[1]*V.b,s[2]*V.a,s[3]*V.b);ctx.fill();
       ctx.strokeStyle="rgba(150,144,126,.5)";ctx.lineWidth=1;ctx.stroke();   // шов
     }
-    ctx.strokeStyle="rgba(226,176,104,.75)";ctx.lineWidth=1.8;
+    ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=1.2;
     ctx.beginPath();                                     // обвод один на весь ком
     for(let i=0;i<9;i++){
       const t=i*TAU/9+V.ph*.3,rr=(i%3?16:20)+((i*5)%4)*1.4;
@@ -32281,7 +32300,7 @@ function drawStation(x,y,Z){
     ctx.restore();
     /* навесы: короткие козырьки над бортами, и разные — симметричная пара
        читалась крыльями, а блошинец собран несимметрично, как и всё тут */
-    ctx.strokeStyle="rgba(212,150,96,.9)";ctx.lineJoin="round";
+    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineJoin="round";
     ctx.lineWidth=2;
     ctx.beginPath();ctx.moveTo(-6,-11);ctx.lineTo(-19*V.a,-7);ctx.lineTo(-17*V.a,-2);ctx.stroke();
     ctx.lineWidth=2.6;
@@ -32294,7 +32313,7 @@ function drawStation(x,y,Z){
       ctx.strokeStyle="rgba(176,192,212,.55)";ctx.lineWidth=1;
       ctx.beginPath();ctx.moveTo(bx,by-6);ctx.lineTo(bx,by);ctx.stroke();
       ctx.fillStyle=i%3?"#3b4f68":"#5a4c36";
-      ctx.strokeStyle="rgba(246,198,124,.8)";ctx.lineWidth=1.2;
+      ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.7;
       ctx.beginPath();ctx.rect(bx-w/2,by,w,w*.9);ctx.fill();ctx.stroke();
     }
     stCore(5,13,false);
@@ -32306,12 +32325,12 @@ function drawStation(x,y,Z){
     }
   }else{
     /* заправочная: бак с причалом, ничего лишнего */
-    ctx.strokeStyle=ST_GOLD;ctx.lineWidth=2;
+    ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;
     const g=ctx.createLinearGradient(-16,0,16,0);
-    g.addColorStop(0,"#1b2a38");g.addColorStop(.5,"#0c141c");g.addColorStop(1,"#070b10");
+    g.addColorStop(0,"#2b3c4d");g.addColorStop(.5,"#1c2530");g.addColorStop(1,"#151c25");
     ctx.fillStyle=g;
     ctx.beginPath();ctx.ellipse(0,2,15*V.a,19*V.b,0,0,TAU);ctx.fill();ctx.stroke();
-    ctx.strokeStyle="rgba(242,178,92,.35)";ctx.lineWidth=1;
+    ctx.strokeStyle="rgba(242,178,92,.3)";ctx.lineWidth=1;
     for(const yy of [-6,2,10]){
       ctx.beginPath();ctx.ellipse(0,yy,15*V.a*.94,4,0,0,Math.PI);ctx.stroke();
     }
@@ -32322,7 +32341,69 @@ function drawStation(x,y,Z){
     stCore(4,12,false);
   }
   if(typeof houseMark==="function"&&typeof houseOf==="function")houseMark(houseOf(G.sys),V);   /* знак дома (17d) */
-  ctx.restore();
+}
+/* ── один свет на всю станцию (M304) ──
+   Куски рисовались по одному прямо на экран, и света не было ни у кого: плоский
+   золотой чертёж. Теперь сборка печётся в холст, и последним слоем по ней идёт
+   один градиент — светлый борт со стороны звезды, тень с обратной. Кэш мелкий,
+   ключ ловит зум и время: мигающие окна, факел и кран живут дальше. */
+const ST_ART=new Map();
+function stationArt(key,s,V,S,ty,lx,ly){
+  let art=ST_ART.get(key);
+  if(art)return art;
+  const R=Math.max(24,80*s),cn=mkCanvas(R*2,R*2);
+  withCtx(cn,R*2,R*2,0,0,function(g){
+    ctx.save();ctx.translate(R,R);ctx.scale(s,s);
+    drawStationBody(V,S,ty);
+    ctx.restore();
+    ctx.globalCompositeOperation="source-atop";
+    const lg=ctx.createLinearGradient(R+lx*R,R+ly*R,R-lx*R,R-ly*R);
+    lg.addColorStop(0,"rgba(255,236,208,.44)");
+    lg.addColorStop(.42,"rgba(255,230,200,0)");
+    lg.addColorStop(1,"rgba(0,0,0,.62)");
+    ctx.fillStyle=lg;ctx.fillRect(0,0,R*2,R*2);
+    ctx.globalCompositeOperation="source-over";
+    /* кромка со стороны звезды: по ней силуэт отделяется от космоса */
+    ctx.save();ctx.translate(R,R);ctx.scale(s,s);
+    ctx.beginPath();                                   // полуплоскость света
+    const px=-ly*R*4/s,py=lx*R*4/s,qx=lx*R*4/s,qy=ly*R*4/s;
+    ctx.moveTo(px,py);ctx.lineTo(-px,-py);ctx.lineTo(-px+qx,-py+qy);ctx.lineTo(px+qx,py+qy);
+    ctx.closePath();ctx.clip();
+    ctx.strokeStyle="rgba(255,238,216,.45)";ctx.lineWidth=.8/s;
+    stPlatePath(V);ctx.stroke();
+    ctx.restore();
+  });
+  art={cn,R};
+  if(ST_ART.size>=6)ST_ART.delete(ST_ART.keys().next().value);
+  ST_ART.set(key,art);
+  return art;
+}
+function drawStation(x,y,Z){
+  /* ── станция крупнее корабля, потому что корабль в неё заходит (M242) ──
+     На увеличении торговый узел с шестью модулями был 170 px, а корабль рядом
+     140: внутрь такой станции лендер не влезет, и масштаб мира разваливался.
+     Полтора — не «чтобы красивее», а чтобы отношение размеров не врало. */
+  const s=clamp(Z,.4,1.5)*1.7,S=G.sys.station,V=stationViz(S),ty=S.stype||"trade";
+  /* ── станция светит (M243) ──
+     Самая яркая рукотворная вещь в системе не давала вокруг себя ничего:
+     ни ореола, ни отблеска. Мягкое пятно её собственного света кладётся ДО
+     корпуса — тогда оно читается свечением окон и прожекторов, а не нимбом. */
+  {
+    const R=70*s;
+    const gg=ctx.createRadialGradient(x,y,0,x,y,R);
+    gg.addColorStop(0,"rgba(255,214,150,.16)");
+    gg.addColorStop(.45,"rgba(255,200,130,.06)");
+    gg.addColorStop(1,"rgba(255,200,130,0)");
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.fill();ctx.restore();
+  }
+  /* сторона света — от станции к светилу: звезда системы стоит в (0,0) */
+  let lx=-(S.x||0),ly=-(S.y||0);const ln=Math.hypot(lx,ly);
+  if(ln<1e-6){lx=-.86;ly=-.51;}else{lx/=ln;ly/=ln;}   /* пока станция не встала на орбиту — свет слева сверху */
+  const nb=(typeof bldBuiltHere==="function")?bldBuiltHere(G.sys).length:0;
+  const key=(G.sys.key||"?")+"|"+ty+"|"+nb+"|"+(Math.round(s*4)/4)+"|"+Math.floor(G.t/18)+"|"+SCK;
+  const art=stationArt(key,s,V,S,ty,lx,ly);
+  ctx.drawImage(art.cn,x-art.R,y-art.R,art.R*2,art.R*2);
   /* подпись уходит НИЖЕ корпуса: сорок пикселей — это внутри станции, и имя
      читалось поверх её же переборок (M242) */
   ctx.fillStyle="rgba(242,178,92,.6)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
@@ -34845,6 +34926,23 @@ function skyTint(p,i){
   const c=p.T.pal[clamp(i,0,p.T.pal.length-1)];
   return c;
 }
+/* ── тон по кругу, короткой дугой (M304, DESIGN-craft §12; свод «богатая палитра») ──
+   Всё небесное мешалось линейно по RGB из одного рампа планеты, и прибор мерил
+   одно семейство: зенит 162°, полоса 154°, диск 149°, флора 145°. Диск на небе
+   освещён ЗВЕЗДОЙ — его тон уводится к тону звезды на долю короткой дуги, s и v
+   остаются свои: планета себя не теряет, а второй тон в кадре появляется. */
+function hueToward(rgb,to,k){
+  const hsv=c=>{const r=c[0]/255,g=c[1]/255,b=c[2]/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+    let h=0;if(d){if(mx===r)h=60*(((g-b)/d)%6);else if(mx===g)h=60*((b-r)/d+2);else h=60*((r-g)/d+4);if(h<0)h+=360;}
+    return [h,mx?d/mx:0,mx];};
+  const a=hsv(rgb),b=hsv(to);
+  if(a[1]<.02)return rgb;
+  let dh=b[0]-a[0];if(dh>180)dh-=360;if(dh<-180)dh+=360;
+  const h=((a[0]+dh*k)%360+360)%360,s=a[1],v=a[2];
+  const c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c;
+  const q=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];
+  return q.map(u=>Math.round((u+m)*255));
+}
 /* туманность: тайл считается один раз на планету, дальше только растягивается */
 function skyNebula(p,seed){
   if(p.neb)return p.neb;
@@ -35015,8 +35113,9 @@ function skyGiant(p,e,x,y,dim,ringy){
         оттуда, где звезда действительно стоит (sunSpot, 19c-light, M172).
      3. Кольцо было двумя тонкими дугами одной яркости спереди и сзади, без
         тени планеты на них и без деления. Это и давало обруч. */
-  const c1=skyTint(p,3),c2=skyTint(p,1);
   const st=hex2rgb((G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a");
+  /* тон тела уведён к звезде короткой дугой (M304): не та же ячейка, что флора */
+  const c1=hueToward(skyTint(p,3),st,.30),c2=skyTint(p,1);
   /* тело подмешивает свет звезды: планета в небе освещена ею, а не собой */
   let lit=c1.map((v,i)=>clamp(v*.55+st[i]*.42+26,0,255)|0);
   let shd=c2.map((v,i)=>clamp(v*.34+st[i]*.06+10,0,255)|0);
@@ -35243,7 +35342,9 @@ function skyAurora(p,e,x,y,dim){
 /* ── луна: фаза, кратеры, лёгкое свечение ── */
 function skyMoon(p,e,x,y,dim){
   const R=skyU()*.035*e.s, r=rng(e.seed);
-  const c=skyTint(p,4);
+  /* диск — не ячейка флоры: тон уведён к звезде на треть дуги (M304) */
+  const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a";
+  const c=hueToward(skyTint(p,4),hex2rgb(sc),.34);
   ctx.save();ctx.globalAlpha=dim*.95;
   ctx.save();
   ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.clip();
@@ -35424,7 +35525,7 @@ function skyDay(p){
   const air=p.T.atm==="отсутствует"?0:(p.T.atm.indexOf("разреженная")>=0?.55:1);
   if(air>0){
     const COLD=[86,128,190];
-    top=top.map((v,i)=>Math.round(lerp(v,v*.52+COLD[i]*.48,.38*air*k)));
+    top=top.map((v,i)=>Math.round(lerp(v,v*.52+COLD[i]*.48,.50*air*k)));   /* .38→.50 (M304): зенит дальше от флоры */
   }
   return {top,bot,k};
 }
@@ -35638,11 +35739,13 @@ function drawSkyBase(p){
     ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
     if(hasAir){
       const c=hex2rgb(sc), day=clamp(1+sun.alt*2.2,0,1);
-      const g=ctx.createLinearGradient(0,H*.42,0,H*.78);
+      /* полоса зарева — кисть у горизонта, не треть листа (M304, §13):
+         была H*.42→.78, стала H*.54→.74 */
+      const g=ctx.createLinearGradient(0,H*.54,0,H*.74);
       g.addColorStop(0,"rgba("+c.join(",")+",0)");
       g.addColorStop(.7,"rgba("+c.join(",")+","+(.10*day).toFixed(3)+")");
       g.addColorStop(1,"rgba("+c.join(",")+","+(.16*day).toFixed(3)+")");
-      ctx.fillStyle=g;ctx.fillRect(0,H*.42,W,H*.36);
+      ctx.fillStyle=g;ctx.fillRect(0,H*.54,W,H*.20);
       /* наклонное зарево: пятно у горизонта там, где звезда, сильнее всего
          на восходе и закате — это и есть «гнётся по высоте» */
       const low=clamp(1-Math.abs(sun.alt)*1.4,0,1)*day;
@@ -35902,10 +36005,14 @@ function drawWeather(p,camx,camy,layer){
          у пыли почти горизонтальный */
       const dr=W0.dir||0;
       const sgn=wind<0?-1:1;
-      const lk=near?1.6:.8;
+      /* штрих по земле — не штрих по небу (§14): одна и та же белая нить над
+         небом читается дождём, а на грунте и на стене дома — царапиной.
+         Ниже линии горизонта (SURF_HOR) капля глуше и короче */
+      const gnd=y>H*SURF_HOR;
+      const lk=(near?1.6:.8)*(gnd?.7:1);
       const vx=sgn*W0.len*lk*(dr*3.4+Math.abs(wind)*.4);
       const vy=W0.len*lk*(1-dr*.82);
-      ctx.strokeStyle="rgba("+c.join(",")+","+(a*(near?1.25:.85)).toFixed(3)+")";
+      ctx.strokeStyle="rgba("+c.join(",")+","+(a*(near?1.25:.85)*(gnd?.45:1)).toFixed(3)+")";
       ctx.lineWidth=(w.kind==="rain"?1:1.4)*(near?1.8:.9);
       ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+vx,y+vy);ctx.stroke();
     }else{
@@ -37169,7 +37276,21 @@ function drawLanding(){
      уезжали НАД кромкой грунта, и их плоская заливка закрывала пол-неба
      ровной горизонтальной чертой. Подъём над ближней землёй ограничен:
      дальнее стоит у горизонта, как ему и положено. */
-  const fA=Math.min(camy*.46+110,camy+H*.20), fB=Math.min(camy*.55+60,camy+H*.11);
+  /* ── земля или дымка до 600 м (M304, §16) ──
+     На 549 м кадр был одним значением синего от края до края: земля ниже
+     кромки, гряды привязаны к земле и ушли с ней. Дальние гряды держатся
+     ГОРИЗОНТА кадра — не выше .72H/.80H, — а над ними, с высотой, зенит
+     темнеет: сверху тёмный воздух, снизу светлый пол дымки, между ними
+     корабль. Две массы вместо одной. */
+  const alt=Math.max(0,gyw-L.y-11);
+  const fA=Math.max(Math.min(camy*.46+110,camy+H*.20),gyw-H*.72), fB=Math.max(Math.min(camy*.55+60,camy+H*.11),gyw-H*.80);
+  if(alt>160&&p.T.atm!=="отсутствует"){
+    const hi=clamp((alt-160)/1400,0,1)*.42, s1=p.T.sky[1];
+    const zg=ctx.createLinearGradient(0,0,0,H*.62);
+    zg.addColorStop(0,"rgba("+s1.join(",")+","+hi.toFixed(3)+")");
+    zg.addColorStop(1,"rgba("+s1.join(",")+",0)");
+    ctx.fillStyle=zg;ctx.fillRect(0,0,W,H*.62);
+  }
   drawGround({h:tr.h,N:tr.N,step:tr.step*3.6},camx*.26,fA,hazeFar(p,.58),null);
   drawGround({h:tr.h,N:tr.N,step:tr.step*2.4},camx*.4,fB,hazeFar(p,.32),null);
   /* ── дымка ложится на ГОРИЗОНТ, а не на 46% кадра (M233) ──
@@ -37177,7 +37298,7 @@ function drawLanding(){
      ровной горизонтальной чертой посреди пустого неба — та самая линейка, от
      которой шахту лечили в M219. Дымка живёт там, где земля встречается с
      воздухом: у кромки грунта, а если та ушла ниже кадра — у нижней кромки. */
-  hazeBand(p,clamp(groundAt(tr,L.x)-camy,H*.30,H*1.02),H*.20);
+  hazeBand(p,clamp(groundAt(tr,L.x)-camy,H*.30,H*.86),H*.20);   /* пол дымки не ниже .86H (M304) */
   /* дальние капли — за грядой и за кораблём, ближние поверх (M242) */
   drawWeather(p,camx,camy,"far");
   drawGround(tr,camx,camy,"rgb("+p.T.pal[2].map(v=>Math.round(v*.6)).join(",")+")",
@@ -41398,6 +41519,37 @@ function drawBase(){
   ctx.globalCompositeOperation="multiply";
   ctx.fillStyle="rgb(126,94,64)";ctx.fill(GP);
   ctx.globalCompositeOperation="source-over";
+  /* ── порода у выработки сжата (§16) ──
+     Вокруг отсеков стоял один тон: камень у кромки и камень в двадцати метрах
+     от неё — одна краска, ступень значения в кадре ровно одна. Первый заход
+     клал прямоугольную рамку из четырёх градиентов, и она читалась именно
+     рамкой: углы прямые, порода тут ни при чём. Ореол идёт ОТ ЯЧЕЕК: у каждой
+     краевой ячейки своё круглое затухание, круги наслаиваются и дают мягкий
+     обвод по форме выработки. Заливок не больше дюжины — краевые прореживаются. */
+  {
+    const edge=[];
+    for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
+      if(!baseCell(B,c,r))continue;
+      /* внутренние ячейки ореола не дают: их всё равно перекроют соседи */
+      const nb=(c2,r2)=>c2>=0&&c2<BASE_COLS&&r2>=0&&r2<baseRows(B)&&!!baseCell(B,c2,r2);
+      if(nb(c-1,r)&&nb(c+1,r)&&nb(c,r-1)&&nb(c,r+1))continue;
+      edge.push([c,r]);
+    }
+    if(edge.length){
+      const step=Math.max(1,Math.ceil(edge.length/12));
+      const r0=Math.hypot(BCELL_W,BCELL_H)*.5, r1=r0+BCELL_H*1.2;
+      ctx.save();ctx.clip(GP);
+      for(let i2=0;i2<edge.length;i2+=step){
+        const cx=X(BASE_OX+edge[i2][0]*BCELL_W+BCELL_W*.5);
+        const cy=Y(BASE_OY+edge[i2][1]*BCELL_H+BCELL_H*.5);
+        if(cx+r1<0||cx-r1>W||cy+r1<0||cy-r1>H)continue;
+        const g2=ctx.createRadialGradient(cx,cy,r0,cx,cy,r1);
+        g2.addColorStop(0,"rgba(0,0,0,.30)");g2.addColorStop(1,"rgba(0,0,0,0)");
+        ctx.fillStyle=g2;ctx.fillRect(cx-r1,cy-r1,r1*2,r1*2);
+      }
+      ctx.restore();
+    }
+  }
   /* ── почвенный профиль (M232) ──
      Верхний слой был одной тёмной полосой — линией среза, а не землёй. Язык
      взят у шахты (M219): дёрн → подпочва с камнями → кора выветривания,
@@ -43744,7 +43896,8 @@ function drawSurfaceWorld(){
   drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.farH[0],N:tr.N,step:tr.step*3.6*stpK},wx0,wy0,hazeFar(p,.58),null));
   S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
   drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.farH[1],N:tr.N,step:tr.step*2.4*stpK},wx0,wy0,hazeFar(p,.32),null));
-  hazeBand(p,H*(SURF_HOR-.06),H*.22);
+  /* дымка шириной в кисть (M304, §13): была H*.36→.66, стала H*.52→.64 */
+  hazeBand(p,H*(SURF_HOR-.03),H*.09);
   /* дальние капли — ДО мира: они падают за грядой и за кораблём (M242) */
   drawWeather(p,camx,camy,"far");
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",
@@ -45853,13 +46006,16 @@ function drawCaveDark(C,px,py){
      всё, что за кругом фонаря, — дальняя стена, колонны и материал просто не
      доживали до экрана, и прибор честно мерил 86% пустоты. Пещера обязана
      быть тёмной, но не пустой: за светом должно угадываться то, куда идёшь. */
-  const dk=[0,1,2].map(i=>Math.round(Math.min(22,pcv[i]*.16+3)));
+  /* потолок тьмы 22→34 и холодно-синий (M304): при 22 всё за фонарём сидело в
+     зоне 0, и структуру давал один обвод. Дальняя порода теперь зона I —
+     видна как масса, но фонарь по-прежнему единственное тёплое. */
+  const dk=[Math.min(30,Math.round(pcv[0]*.20+6)),Math.min(32,Math.round(pcv[1]*.22+8)),Math.min(38,Math.round(pcv[2]*.28+14))];
   const dkey=dk.join(",");
   const SP=glowSprite("cavedark|"+dkey,()=>{
     const g=ctx.createRadialGradient(0,0,R>0?Math.min(.5,40/R):.06,0,0,1);   // при W=0 (стенд) R=0 — не делить
     g.addColorStop(0,"rgba(0,0,0,0)");
-    g.addColorStop(.45,"rgba("+dkey+",.26)");
-    g.addColorStop(1,"rgba("+dkey+",.66)");
+    g.addColorStop(.45,"rgba("+dkey+",.18)");
+    g.addColorStop(1,"rgba("+dkey+",.42)");
     ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
   });
   glowBlit(SP,cx,cy,R);
@@ -45872,14 +46028,14 @@ function drawCaveDark(C,px,py){
     const WP=glowSprite("cavewarm",()=>{
       const g=ctx.createRadialGradient(0,0,0,0,0,1);
       for(let i=0;i<=8;i++){const t=i/8;
-        g.addColorStop(t,"rgba(255,200,132,"+(.26*Math.pow(1-t,2.2)).toFixed(3)+")");}
+        g.addColorStop(t,"rgba(255,200,132,"+(.34*Math.pow(1-t,2.2)).toFixed(3)+")");}
       ctx.fillStyle=g;ctx.fillRect(-1,-1,2,2);
     });
     ctx.save();ctx.globalCompositeOperation="lighter";
     glowBlit(WP,cx,cy,R*.72);
     ctx.restore();
   }
-  ctx.fillStyle="rgba("+dkey+",.66)";
+  ctx.fillStyle="rgba("+dkey+",.42)";
   const x0=cx-R,x1=cx+R,y0=cy-R,y1=cy+R;
   if(x0>0)ctx.fillRect(0,0,x0,H);
   if(x1<W)ctx.fillRect(x1,0,W-x1,H);
@@ -46624,8 +46780,10 @@ function drawCaveRock(C,cp,wx0,wy0){
   }
   const K=caveContour(C,wx0,wy0);
   ctx.lineJoin="round";ctx.lineCap="round";
-  ctx.fillStyle="#0c1016";ctx.fill(P);
-  ctx.strokeStyle="#0c1016";ctx.lineWidth=CS;ctx.stroke(K);
+  /* тело породы (M304): #0c1016 держало массив в зоне 0 — под тайлом и двумя
+     гашениями от него оставалась тьма, и структуру давал один обвод */
+  ctx.fillStyle="#151b25";ctx.fill(P);
+  ctx.strokeStyle="#151b25";ctx.lineWidth=CS;ctx.stroke(K);
   /* порода той же планеты: без неё пещера — чёрные силуэты, и по ним не
      понять, в чьих недрах игрок находится */
   if(cp){
@@ -46643,8 +46801,8 @@ function drawCaveRock(C,cp,wx0,wy0){
     }
     /* и сразу гасим: тайл рассчитан на освещённую поверхность, под землёй он
        светит как днём и убивает единственное, что есть у пещеры — темноту */
-    ctx.fillStyle="rgba(2,4,9,.30)";ctx.fill(P);
-    ctx.strokeStyle="rgba(2,4,9,.30)";ctx.lineWidth=CS;ctx.stroke(K);
+    ctx.fillStyle="rgba(2,4,9,.15)";ctx.fill(P);
+    ctx.strokeStyle="rgba(2,4,9,.15)";ctx.lineWidth=CS;ctx.stroke(K);
     /* ── зерно по массиву (M253), манера — по породе (M263, 皴法) ──
        У камня была форма и был свет, но не было МАТЕРИАЛА. Штрихи вдоль поля
        направлений (dirAt) дают залегание — а МАНЕРА штриха берётся из
@@ -46684,9 +46842,44 @@ function drawCaveRock(C,cp,wx0,wy0){
   /* с глубиной порода уходит в синюю черноту: по ней видно, насколько ты
      ниже устья, без всяких цифр */
   const dg=ctx.createLinearGradient(0,-wy0,0,CAVE_Y1-wy0);
-  dg.addColorStop(0,"rgba(0,1,5,0)");dg.addColorStop(.5,"rgba(0,1,5,.26)");
-  dg.addColorStop(1,"rgba(0,1,5,.6)");
+  dg.addColorStop(0,"rgba(0,1,5,0)");dg.addColorStop(.5,"rgba(0,1,5,.18)");
+  dg.addColorStop(1,"rgba(0,1,5,.45)");
   ctx.fillStyle=dg;ctx.fill(P);ctx.strokeStyle=dg;ctx.lineWidth=CS;ctx.stroke(K);
+  /* ── холодные лессировки (M304, DESIGN-craft §16): свет мха лежит НА КАМНЕ ──
+     Мох, кристаллы и жилы светились точками в пустоту: ореол lighter поверх
+     всего, а порода рядом оставалась чёрной — свет без освещённого. Свет
+     каждого источника кладётся в сам тайл, source-atop: тайл прозрачен, где
+     пустота, и краска ложится только на тело породы и её кромку. Радиус
+     втрое больше пятна, альфа .10–.14 — лессировка, не второй фонарь; тон
+     холодный, чтобы фонарь остался единственным тёплым. Печётся в тайл. */
+  {
+    const src=[];
+    if(typeof caveMossSpots==="function")
+      for(const m of caveMossSpots(C))src.push({x:m.x,y:m.y,r:m.rr*5,col:m.col,a:.44});
+    const D=C.deco;
+    if(D){
+      for(const c of D.crystals){
+        const y=c.up?caveFloorOf(C,c.x,c.low):caveCeilOf(C,c.x,c.low);
+        src.push({x:c.x,y:y+(c.up?-10:10),r:Math.max(80,c.rad*4),col:c.col,a:.40});
+      }
+      for(const v of D.veins){
+        const p=v.pts[Math.floor(v.pts.length/2)];
+        const y=(v.up?caveCeilOf(C,p[0],v.low):caveFloorOf(C,p[0],v.low))+p[1];
+        src.push({x:p[0],y,r:100,col:v.col,a:.28});
+      }
+    }
+    ctx.save();ctx.globalCompositeOperation="source-atop";
+    for(const s of src){
+      const x=s.x-wx0,y=s.y-wy0;
+      if(x<-s.r||x>TILE+s.r||y<-s.r||y>TILE+s.r)continue;
+      const g=ctx.createRadialGradient(x,y,0,x,y,s.r);
+      g.addColorStop(0,"rgba("+s.col.join(",")+","+s.a+")");
+      g.addColorStop(.5,"rgba("+s.col.join(",")+","+(s.a*.5).toFixed(3)+")");
+      g.addColorStop(1,"rgba("+s.col.join(",")+",0)");
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,s.r,0,TAU);ctx.fill();
+    }
+    ctx.restore();
+  }
   /* влажный блик по кромке — единственный источник формы в темноте */
   ctx.strokeStyle="rgba(150,200,230,.15)";ctx.lineWidth=1.6;ctx.stroke(K);
   /* ── капли ловят свет (M257, движки — DESIGN-craft §1) ──
@@ -66113,12 +66306,20 @@ function drawHomeIn(){
   wg.addColorStop(.6,"rgb("+P.wall.join(",")+")");
   wg.addColorStop(1,"rgb("+P.wall.map(v=>v*.82|0).join(",")+")");
   ctx.fillStyle=wg;ctx.fillRect(camx-40,ceil,vw+80,HIN_ROOM_H);
-  const rr=rng(0x40F5);
+  /* M304. Стена была крашеным градиентом с крапом: секции есть, а панели нет.
+     Горизонтальный шов на трети высоты и заглушки по углам секций — и стена
+     читается обшивкой, как в штабе (27f). Крапа вдвое меньше: он был вместо
+     рисунка, а теперь при рисунке. */
+  const rr=rng(0x40F5), wsy=ceil+HIN_ROOM_H*.45;
   for(let x=Math.floor((camx-40)/64)*64;x<camx+vw+64;x+=64){
     ctx.fillStyle="rgba(255,255,255,.015)";ctx.fillRect(x,ceil+6,60,HIN_ROOM_H-6);
     ctx.fillStyle="rgba(0,0,0,.22)";ctx.fillRect(x+60,ceil+6,2,HIN_ROOM_H-6);
+    ctx.fillStyle="rgba(200,214,228,.06)";
+    for(const cx0 of [x+4,x+54])for(const cy0 of [ceil+11,wsy-6,wsy+8])
+      ctx.fillRect(cx0,cy0,2,2);
   }
-  for(let i=0;i<70;i++){
+  ctx.fillStyle="rgba(0,0,0,.18)";ctx.fillRect(camx-40,wsy,vw+80,1.5);
+  for(let i=0;i<30;i++){
     ctx.fillStyle="rgba(0,0,0,"+(.03+rr()*.05).toFixed(3)+")";
     ctx.fillRect(camx-40+rr()*(vw+80),ceil+8+rr()*(HIN_ROOM_H-16),1.4,1.4);
   }
@@ -66153,9 +66354,26 @@ function drawHomeIn(){
   fg.addColorStop(0,"rgb("+P.floor.map(v=>Math.min(255,v*1.15)|0).join(",")+")");
   fg.addColorStop(1,"rgb("+P.floor.map(v=>v*.7|0).join(",")+")");
   ctx.fillStyle=fg;ctx.fillRect(camx-40,fy,vw+80,HIN_MAN*.9);
-  ctx.strokeStyle="rgba(0,0,0,.30)";ctx.lineWidth=1;
-  for(let x=Math.floor((camx-40)/26)*26;x<camx+vw+40;x+=26){
-    ctx.beginPath();ctx.moveTo(x,fy);ctx.lineTo(x-6,fy+HIN_MAN*.9);ctx.stroke();
+  /* M304. Косые чёрточки через 26 px были ничем: ни доской, ни плиткой — просто
+     штриховка «под перспективу». Пол дощатый: ряды идут ВДОЛЬ комнаты, стыки
+     торцов вразбежку, по доске две волосяные жилки. Разбежка от hashi — иначе
+     пол мерцает между кадрами. */
+  {
+    const bs=HIN_MAN*.16, x0=camx-40, x1=camx+vw+40;
+    for(let ri=0,by=fy+bs;by<fy+HIN_MAN*.92;ri++,by+=bs){
+      ctx.fillStyle="rgba(0,0,0,.28)";ctx.fillRect(x0,by,x1-x0,1);
+      /* жилки вдоль доски */
+      ctx.fillStyle="rgba(0,0,0,.06)";ctx.fillRect(x0,by-bs*.66,x1-x0,1);
+      ctx.fillStyle="rgba(255,255,255,.04)";ctx.fillRect(x0,by-bs*.3,x1-x0,1);
+      /* торцы: шаг гуляет от ряда и от места, ряды не совпадают стыками */
+      const st=HIN_MAN*1.4;
+      for(let j=Math.floor(x0/st);j<x1/st+1;j++){
+        const h=hashi(j,ri,0x40F9);
+        const jx=j*st+(h>>>4)%((st*.55)|0);
+        if(jx<x0||jx>x1)continue;
+        ctx.fillStyle="rgba(0,0,0,.22)";ctx.fillRect(jx,by-bs+1,1,bs-1);
+      }
+    }
   }
   ctx.fillStyle="rgba(0,0,0,.34)";ctx.fillRect(camx-40,fy,vw+80,2.4);
   /* ── свет ДО обстановки ──
@@ -66188,10 +66406,29 @@ function drawHomeIn(){
      окна первого этажа горят — то есть рисунок ещё и противоречил сам себе.
      Ставим по окну в каждой второй комнате: холодное небо, отсвет на полу и
      вторая температура в кадре. */
-  if(typeof hinUpWindow==="function")for(let i=0;i<R.length;i+=2){
+  /* M304. Кабинет по чётности пролетал мимо и оставался комнатой без единого
+     холодного пикселя — прибор мерил там 99% тепла. Окно ему положено отдельно. */
+  if(typeof hinUpWindow==="function")for(let i=0;i<R.length;i++){
     const r=R[i];
+    if(i%2&&r.key!=="study")continue;
     if(r.x+r.w<camx-60||r.x>camx+vw+60)continue;
-    hinUpWindow(r.x+r.w*.68,fy,ceil,P,1.05);
+    /* в кабинете справа висит экран, а слева стол: окно встаёт между ними */
+    const wx=r.x+r.w*(r.key==="study"?.50:.68);
+    hinUpWindow(wx,fy,ceil,P,1.05);
+    /* M304. Окно светило только себе: прибор мерил на полу 99% тепла и
+       ни одного холодного пикселя. Лужа под окном и подмес по стене под
+       подоконником — до обстановки, чтобы вещи стояли В нём, как и в тёплом конусе. */
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const ww=HIN_MAN*1.05;
+    const pg=ctx.createRadialGradient(wx,fy,2,wx,fy,HIN_MAN*1.3);
+    pg.addColorStop(0,"rgba(150,190,240,.16)");
+    pg.addColorStop(1,"rgba(150,190,240,0)");
+    ctx.fillStyle=pg;
+    ctx.save();ctx.translate(wx,fy);ctx.scale(1,HIN_MAN*.30/(HIN_MAN*1.3));
+    ctx.beginPath();ctx.arc(0,0,HIN_MAN*1.3,0,TAU);ctx.fill();ctx.restore();
+    ctx.fillStyle="rgba(150,190,240,.05)";
+    ctx.fillRect(wx-ww*.5,fy-HIN_MAN*.56,ww,HIN_MAN*.56);
+    ctx.restore();
   }
   /* ── обстановка ── */
   for(const r of R){
@@ -66403,6 +66640,15 @@ function hinFrontStuff(r,fy,P){
 /* ── обстановка комнаты ──
    Каждая ступень — свои вещи на своих местах; координаты те же, что у зон
    внимания (HIN_THINGS в 29c), иначе подойти можно к пустому месту. */
+/* M304, §11: орнамент вместо поддельной светотени. Ящик, залитый одним тоном,
+   читается пятном; членение филёнками и волосок света по верхней кромке дают
+   вещи вид сделанной, ничего не двигая. */
+function hinSeams(x,y,w,h,step){
+  ctx.fillStyle="rgba(0,0,0,.22)";
+  for(let sx=x+step;sx<x+w-1;sx+=step)ctx.fillRect(sx,y+1,1,h-2);
+  ctx.fillRect(x,y+h*.4,w,1);
+  ctx.fillStyle="rgba(255,255,255,.07)";ctx.fillRect(x,y,w,1);
+}
 function hinRoomStuff(r,fy,ceil,P){
   /* верхние комнаты обставляет свой модуль (29e): здесь он зовётся первым и
      на ключах первого этажа ничего не трогает */
@@ -66449,6 +66695,7 @@ function hinRoomStuff(r,fy,ceil,P){
     ctx.fillStyle="rgba(226,220,206,.35)";
     ctx.fillRect(at(.30)-M*.6,fy-M*.26,M*1.2,M*.07);
     ctx.fillStyle=woodD;ctx.fillRect(at(.72)-M*.22,fy-M*.42,M*.44,M*.42);
+    hinSeams(at(.72)-M*.22,fy-M*.42,M*.44,M*.42,M*.22);
     ctx.fillStyle="rgba(226,236,240,.5)";ctx.fillRect(at(.72)-3,fy-M*.5,6,M*.09);
   }else if(r.key==="hall"){
     ctx.fillStyle=woodD;ctx.fillRect(at(.35)-M*.5,fy-M*1.5,M*1.0,3);
@@ -66576,6 +66823,7 @@ function hinRoomStuff(r,fy,ceil,P){
     const mx2=at(.74);
     ctx.fillStyle="rgb(64,68,74)";                     /* станина на ногах */
     ctx.fillRect(mx2-M*.44,fy-M*.5,M*.88,M*.5);
+    hinSeams(mx2-M*.44,fy-M*.5,M*.88,M*.5,M*.29);
     ctx.fillStyle="rgb(52,56,62)";
     ctx.fillRect(mx2-M*.4,fy-M*.06,M*.12,M*.06);ctx.fillRect(mx2+M*.28,fy-M*.06,M*.12,M*.06);
     ctx.fillStyle="rgb(84,90,96)";                     /* стол станка */
@@ -66596,6 +66844,7 @@ function hinRoomStuff(r,fy,ceil,P){
   }else if(r.key==="study"){
     ctx.fillStyle=wood;ctx.fillRect(at(.34)-M*.8,fy-M*.62,M*1.6,M*.12);
     ctx.fillStyle=woodD;ctx.fillRect(at(.34)-M*.7,fy-M*.5,M*1.4,M*.5);
+    hinSeams(at(.34)-M*.7,fy-M*.5,M*1.4,M*.5,M*.35);
     ctx.fillStyle="rgba(226,226,214,.8)";
     for(let i=0;i<3;i++)ctx.fillRect(at(.34)-M*.5+i*M*.3,fy-M*.68,M*.22,M*.06);
     ctx.fillStyle="rgba(150,196,224,.5)";ctx.fillRect(at(.34)+M*.3,fy-M*.74,M*.22,M*.12);

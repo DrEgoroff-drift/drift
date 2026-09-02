@@ -7,6 +7,51 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.301.0 - M304: the picture queue, one release
+
+The seven items of the picture queue (PLAN, «re-ordered by the second look», 2026-09-02), built
+as one milestone and measured with the stands in `docs/x-scout-*.html` and `lookAll()`. Laws in
+`docs/DESIGN-craft.md`.
+
+- **Cave shadows to zone I–II (§16).** The rock body in the baked tile was `#0c1016` under two
+  darkening washes: everything outside the lamp pool sat in zone 0 and the grey outline was the
+  only structure. Body lifted to `#151b25`, the washes halved, the depth gradient softened; the
+  darkness sprite has a ceiling of ~34 instead of 22 and is cold blue, edge alpha .66 → .42. New:
+  cold glazes in the tile itself — the light of moss, crystals and veins is laid `source-atop` on
+  the rock (radius 3–5× the spot), so the stone next to a source is lit and the void is not; the
+  lamp stays the one warm source (warm sprite .26 → .34). Measured outside the pool: median
+  luminance .093 → .148, pixels under .1 56% → 12%; meter mass 8 → 21, contrast .23 → .35.
+- **Surface day: air band and a second hue (§13, §12).** The haze band ran H*.36→.66 and the
+  glow band H*.42→.78 — a third of the sheet; both are a brush at the horizon now (H*.52→.64,
+  H*.54→.74). `hueToward()` (19b): the disc in the sky and the planet body take their hue a third
+  of the short arc toward the star's colour, s and v kept — no longer the flora's palette cell;
+  the zenith mixes .50 toward cold instead of .38. Raora II: zenith 158° → 164°, disc reads olive
+  against a cyan-green sky.
+- **Landing: ground or a haze floor before 600 m (§16).** At 549 m the frame was one value of
+  blue. The far ridges hold the frame's horizon (never below .72H/.80H) instead of following the
+  ground out of the frame; the haze floor sits no lower than .86H; above 160 m the zenith darkens
+  with altitude (up to .42 of the night sky colour). Contrast at 550 m .18 → .30, at 2000 m
+  .18 → .27.
+- **Home interior furniture pattern (§11).** Wall: horizontal panel seam and plugs at the section
+  corners, dirt dots 70 → 30; floor: boards along the room with staggered end-joints and grain
+  instead of slanted ticks; `hinSeams()` on the corner cabinet, the study cabinet and the shop
+  bench; the study gets a window and a cold pool on the floor under every window.
+- **Station body: fill, shadow side, one light.** The station was an orange wire diagram drawn
+  as vectors every frame. `drawStationBody()` is now baked by `stationArt()` into a sprite (key:
+  system, type, buildings, zoom step, an 18-frame time step so windows and the flare still move)
+  with the barge's convention: material fills per piece, dark edges, gold only on real lights, and
+  one light last — `source-atop` gradient along the vector station → star, with a lit rim on the
+  plate. `ST_GOLD` is an accent now.
+- **Value steps (§16).** The rock around the base rooms gets a soft halo of compressed rock per
+  built cell — a second value step where there was one wash. The galactic band on the map stays
+  open.
+- **Small (§14).** Rain strokes below the horizon are drawn at .45 of the alpha and .7 of the
+  length: no more white diagonals across the ground by the house.
+
+Guarded by nothing new: the suite is green (12 846 checks); the frame meter table is in the
+milestone body in `PLAN.md`.
+
+---
 ## 0.300.0 - M303: playtest tails of 2026-09-02
 
 Seven small things a phone playtest (0.299.0) tripped over, fixed the same evening.

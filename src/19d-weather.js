@@ -162,10 +162,14 @@ function drawWeather(p,camx,camy,layer){
          у пыли почти горизонтальный */
       const dr=W0.dir||0;
       const sgn=wind<0?-1:1;
-      const lk=near?1.6:.8;
+      /* штрих по земле — не штрих по небу (§14): одна и та же белая нить над
+         небом читается дождём, а на грунте и на стене дома — царапиной.
+         Ниже линии горизонта (SURF_HOR) капля глуше и короче */
+      const gnd=y>H*SURF_HOR;
+      const lk=(near?1.6:.8)*(gnd?.7:1);
       const vx=sgn*W0.len*lk*(dr*3.4+Math.abs(wind)*.4);
       const vy=W0.len*lk*(1-dr*.82);
-      ctx.strokeStyle="rgba("+c.join(",")+","+(a*(near?1.25:.85)).toFixed(3)+")";
+      ctx.strokeStyle="rgba("+c.join(",")+","+(a*(near?1.25:.85)*(gnd?.45:1)).toFixed(3)+")";
       ctx.lineWidth=(w.kind==="rain"?1:1.4)*(near?1.8:.9);
       ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+vx,y+vy);ctx.stroke();
     }else{

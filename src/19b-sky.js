@@ -45,6 +45,23 @@ function skyTint(p,i){
   const c=p.T.pal[clamp(i,0,p.T.pal.length-1)];
   return c;
 }
+/* ── тон по кругу, короткой дугой (M304, DESIGN-craft §12; свод «богатая палитра») ──
+   Всё небесное мешалось линейно по RGB из одного рампа планеты, и прибор мерил
+   одно семейство: зенит 162°, полоса 154°, диск 149°, флора 145°. Диск на небе
+   освещён ЗВЕЗДОЙ — его тон уводится к тону звезды на долю короткой дуги, s и v
+   остаются свои: планета себя не теряет, а второй тон в кадре появляется. */
+function hueToward(rgb,to,k){
+  const hsv=c=>{const r=c[0]/255,g=c[1]/255,b=c[2]/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+    let h=0;if(d){if(mx===r)h=60*(((g-b)/d)%6);else if(mx===g)h=60*((b-r)/d+2);else h=60*((r-g)/d+4);if(h<0)h+=360;}
+    return [h,mx?d/mx:0,mx];};
+  const a=hsv(rgb),b=hsv(to);
+  if(a[1]<.02)return rgb;
+  let dh=b[0]-a[0];if(dh>180)dh-=360;if(dh<-180)dh+=360;
+  const h=((a[0]+dh*k)%360+360)%360,s=a[1],v=a[2];
+  const c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c;
+  const q=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];
+  return q.map(u=>Math.round((u+m)*255));
+}
 /* туманность: тайл считается один раз на планету, дальше только растягивается */
 function skyNebula(p,seed){
   if(p.neb)return p.neb;
@@ -215,8 +232,9 @@ function skyGiant(p,e,x,y,dim,ringy){
         оттуда, где звезда действительно стоит (sunSpot, 19c-light, M172).
      3. Кольцо было двумя тонкими дугами одной яркости спереди и сзади, без
         тени планеты на них и без деления. Это и давало обруч. */
-  const c1=skyTint(p,3),c2=skyTint(p,1);
   const st=hex2rgb((G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a");
+  /* тон тела уведён к звезде короткой дугой (M304): не та же ячейка, что флора */
+  const c1=hueToward(skyTint(p,3),st,.30),c2=skyTint(p,1);
   /* тело подмешивает свет звезды: планета в небе освещена ею, а не собой */
   let lit=c1.map((v,i)=>clamp(v*.55+st[i]*.42+26,0,255)|0);
   let shd=c2.map((v,i)=>clamp(v*.34+st[i]*.06+10,0,255)|0);
@@ -443,7 +461,9 @@ function skyAurora(p,e,x,y,dim){
 /* ── луна: фаза, кратеры, лёгкое свечение ── */
 function skyMoon(p,e,x,y,dim){
   const R=skyU()*.035*e.s, r=rng(e.seed);
-  const c=skyTint(p,4);
+  /* диск — не ячейка флоры: тон уведён к звезде на треть дуги (M304) */
+  const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)||"#ffe08a";
+  const c=hueToward(skyTint(p,4),hex2rgb(sc),.34);
   ctx.save();ctx.globalAlpha=dim*.95;
   ctx.save();
   ctx.beginPath();ctx.arc(x,y,R,0,TAU);ctx.clip();

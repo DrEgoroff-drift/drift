@@ -36,12 +36,20 @@ function drawHomeIn(){
   wg.addColorStop(.6,"rgb("+P.wall.join(",")+")");
   wg.addColorStop(1,"rgb("+P.wall.map(v=>v*.82|0).join(",")+")");
   ctx.fillStyle=wg;ctx.fillRect(camx-40,ceil,vw+80,HIN_ROOM_H);
-  const rr=rng(0x40F5);
+  /* M304. Стена была крашеным градиентом с крапом: секции есть, а панели нет.
+     Горизонтальный шов на трети высоты и заглушки по углам секций — и стена
+     читается обшивкой, как в штабе (27f). Крапа вдвое меньше: он был вместо
+     рисунка, а теперь при рисунке. */
+  const rr=rng(0x40F5), wsy=ceil+HIN_ROOM_H*.45;
   for(let x=Math.floor((camx-40)/64)*64;x<camx+vw+64;x+=64){
     ctx.fillStyle="rgba(255,255,255,.015)";ctx.fillRect(x,ceil+6,60,HIN_ROOM_H-6);
     ctx.fillStyle="rgba(0,0,0,.22)";ctx.fillRect(x+60,ceil+6,2,HIN_ROOM_H-6);
+    ctx.fillStyle="rgba(200,214,228,.06)";
+    for(const cx0 of [x+4,x+54])for(const cy0 of [ceil+11,wsy-6,wsy+8])
+      ctx.fillRect(cx0,cy0,2,2);
   }
-  for(let i=0;i<70;i++){
+  ctx.fillStyle="rgba(0,0,0,.18)";ctx.fillRect(camx-40,wsy,vw+80,1.5);
+  for(let i=0;i<30;i++){
     ctx.fillStyle="rgba(0,0,0,"+(.03+rr()*.05).toFixed(3)+")";
     ctx.fillRect(camx-40+rr()*(vw+80),ceil+8+rr()*(HIN_ROOM_H-16),1.4,1.4);
   }
@@ -76,9 +84,26 @@ function drawHomeIn(){
   fg.addColorStop(0,"rgb("+P.floor.map(v=>Math.min(255,v*1.15)|0).join(",")+")");
   fg.addColorStop(1,"rgb("+P.floor.map(v=>v*.7|0).join(",")+")");
   ctx.fillStyle=fg;ctx.fillRect(camx-40,fy,vw+80,HIN_MAN*.9);
-  ctx.strokeStyle="rgba(0,0,0,.30)";ctx.lineWidth=1;
-  for(let x=Math.floor((camx-40)/26)*26;x<camx+vw+40;x+=26){
-    ctx.beginPath();ctx.moveTo(x,fy);ctx.lineTo(x-6,fy+HIN_MAN*.9);ctx.stroke();
+  /* M304. Косые чёрточки через 26 px были ничем: ни доской, ни плиткой — просто
+     штриховка «под перспективу». Пол дощатый: ряды идут ВДОЛЬ комнаты, стыки
+     торцов вразбежку, по доске две волосяные жилки. Разбежка от hashi — иначе
+     пол мерцает между кадрами. */
+  {
+    const bs=HIN_MAN*.16, x0=camx-40, x1=camx+vw+40;
+    for(let ri=0,by=fy+bs;by<fy+HIN_MAN*.92;ri++,by+=bs){
+      ctx.fillStyle="rgba(0,0,0,.28)";ctx.fillRect(x0,by,x1-x0,1);
+      /* жилки вдоль доски */
+      ctx.fillStyle="rgba(0,0,0,.06)";ctx.fillRect(x0,by-bs*.66,x1-x0,1);
+      ctx.fillStyle="rgba(255,255,255,.04)";ctx.fillRect(x0,by-bs*.3,x1-x0,1);
+      /* торцы: шаг гуляет от ряда и от места, ряды не совпадают стыками */
+      const st=HIN_MAN*1.4;
+      for(let j=Math.floor(x0/st);j<x1/st+1;j++){
+        const h=hashi(j,ri,0x40F9);
+        const jx=j*st+(h>>>4)%((st*.55)|0);
+        if(jx<x0||jx>x1)continue;
+        ctx.fillStyle="rgba(0,0,0,.22)";ctx.fillRect(jx,by-bs+1,1,bs-1);
+      }
+    }
   }
   ctx.fillStyle="rgba(0,0,0,.34)";ctx.fillRect(camx-40,fy,vw+80,2.4);
   /* ── свет ДО обстановки ──
@@ -111,10 +136,29 @@ function drawHomeIn(){
      окна первого этажа горят — то есть рисунок ещё и противоречил сам себе.
      Ставим по окну в каждой второй комнате: холодное небо, отсвет на полу и
      вторая температура в кадре. */
-  if(typeof hinUpWindow==="function")for(let i=0;i<R.length;i+=2){
+  /* M304. Кабинет по чётности пролетал мимо и оставался комнатой без единого
+     холодного пикселя — прибор мерил там 99% тепла. Окно ему положено отдельно. */
+  if(typeof hinUpWindow==="function")for(let i=0;i<R.length;i++){
     const r=R[i];
+    if(i%2&&r.key!=="study")continue;
     if(r.x+r.w<camx-60||r.x>camx+vw+60)continue;
-    hinUpWindow(r.x+r.w*.68,fy,ceil,P,1.05);
+    /* в кабинете справа висит экран, а слева стол: окно встаёт между ними */
+    const wx=r.x+r.w*(r.key==="study"?.50:.68);
+    hinUpWindow(wx,fy,ceil,P,1.05);
+    /* M304. Окно светило только себе: прибор мерил на полу 99% тепла и
+       ни одного холодного пикселя. Лужа под окном и подмес по стене под
+       подоконником — до обстановки, чтобы вещи стояли В нём, как и в тёплом конусе. */
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const ww=HIN_MAN*1.05;
+    const pg=ctx.createRadialGradient(wx,fy,2,wx,fy,HIN_MAN*1.3);
+    pg.addColorStop(0,"rgba(150,190,240,.16)");
+    pg.addColorStop(1,"rgba(150,190,240,0)");
+    ctx.fillStyle=pg;
+    ctx.save();ctx.translate(wx,fy);ctx.scale(1,HIN_MAN*.30/(HIN_MAN*1.3));
+    ctx.beginPath();ctx.arc(0,0,HIN_MAN*1.3,0,TAU);ctx.fill();ctx.restore();
+    ctx.fillStyle="rgba(150,190,240,.05)";
+    ctx.fillRect(wx-ww*.5,fy-HIN_MAN*.56,ww,HIN_MAN*.56);
+    ctx.restore();
   }
   /* ── обстановка ── */
   for(const r of R){
@@ -326,6 +370,15 @@ function hinFrontStuff(r,fy,P){
 /* ── обстановка комнаты ──
    Каждая ступень — свои вещи на своих местах; координаты те же, что у зон
    внимания (HIN_THINGS в 29c), иначе подойти можно к пустому месту. */
+/* M304, §11: орнамент вместо поддельной светотени. Ящик, залитый одним тоном,
+   читается пятном; членение филёнками и волосок света по верхней кромке дают
+   вещи вид сделанной, ничего не двигая. */
+function hinSeams(x,y,w,h,step){
+  ctx.fillStyle="rgba(0,0,0,.22)";
+  for(let sx=x+step;sx<x+w-1;sx+=step)ctx.fillRect(sx,y+1,1,h-2);
+  ctx.fillRect(x,y+h*.4,w,1);
+  ctx.fillStyle="rgba(255,255,255,.07)";ctx.fillRect(x,y,w,1);
+}
 function hinRoomStuff(r,fy,ceil,P){
   /* верхние комнаты обставляет свой модуль (29e): здесь он зовётся первым и
      на ключах первого этажа ничего не трогает */
@@ -372,6 +425,7 @@ function hinRoomStuff(r,fy,ceil,P){
     ctx.fillStyle="rgba(226,220,206,.35)";
     ctx.fillRect(at(.30)-M*.6,fy-M*.26,M*1.2,M*.07);
     ctx.fillStyle=woodD;ctx.fillRect(at(.72)-M*.22,fy-M*.42,M*.44,M*.42);
+    hinSeams(at(.72)-M*.22,fy-M*.42,M*.44,M*.42,M*.22);
     ctx.fillStyle="rgba(226,236,240,.5)";ctx.fillRect(at(.72)-3,fy-M*.5,6,M*.09);
   }else if(r.key==="hall"){
     ctx.fillStyle=woodD;ctx.fillRect(at(.35)-M*.5,fy-M*1.5,M*1.0,3);
@@ -499,6 +553,7 @@ function hinRoomStuff(r,fy,ceil,P){
     const mx2=at(.74);
     ctx.fillStyle="rgb(64,68,74)";                     /* станина на ногах */
     ctx.fillRect(mx2-M*.44,fy-M*.5,M*.88,M*.5);
+    hinSeams(mx2-M*.44,fy-M*.5,M*.88,M*.5,M*.29);
     ctx.fillStyle="rgb(52,56,62)";
     ctx.fillRect(mx2-M*.4,fy-M*.06,M*.12,M*.06);ctx.fillRect(mx2+M*.28,fy-M*.06,M*.12,M*.06);
     ctx.fillStyle="rgb(84,90,96)";                     /* стол станка */
@@ -519,6 +574,7 @@ function hinRoomStuff(r,fy,ceil,P){
   }else if(r.key==="study"){
     ctx.fillStyle=wood;ctx.fillRect(at(.34)-M*.8,fy-M*.62,M*1.6,M*.12);
     ctx.fillStyle=woodD;ctx.fillRect(at(.34)-M*.7,fy-M*.5,M*1.4,M*.5);
+    hinSeams(at(.34)-M*.7,fy-M*.5,M*1.4,M*.5,M*.35);
     ctx.fillStyle="rgba(226,226,214,.8)";
     for(let i=0;i<3;i++)ctx.fillRect(at(.34)-M*.5+i*M*.3,fy-M*.68,M*.22,M*.06);
     ctx.fillStyle="rgba(150,196,224,.5)";ctx.fillRect(at(.34)+M*.3,fy-M*.74,M*.22,M*.12);

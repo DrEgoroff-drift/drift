@@ -63,20 +63,38 @@ function stationModsLine(sys){
 /* ── силуэты модулей ──
    Каждый рисуется в своей системе координат у конца штанги. Формы намеренно
    простые: на масштабе станции в системе читается только силуэт. */
-function drawStModule(q,S){
+const ST_MOD_FILL={drum:"#22303e",rack:"#212832",pods:"#262d38",hangar:"#1c2531",
+  tank:"#212936",dish:"#202939",cross:"#242c38",cage:"#1f2731",farm:"#202b39",mast:"#212832"};
+/* ── штанга больше не золотая линия поверх всего (M304-II) ──
+   Золотые штанги шли ПОВЕРХ плиты и перечёркивали модули — от них станция и
+   читалась чертежом. Теперь это тёмная распорка с чёрной кромкой, и кладётся
+   она первым слоем, до плиты и корпусов. */
+function drawStRod(q){
+  ctx.save();ctx.rotate(q.ang);ctx.translate(q.d,0);
+  ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=2.6;
+  ctx.beginPath();ctx.moveTo(-q.d+6,0);ctx.lineTo(-4*q.s,0);ctx.stroke();
+  ctx.strokeStyle="#232c38";ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.moveTo(-q.d+6,0);ctx.lineTo(-4*q.s,0);ctx.stroke();
+  ctx.restore();
+}
+function drawStModule(q,S,skipRod){
   const s=q.s;
   ctx.save();
   ctx.rotate(q.ang);
   ctx.translate(q.d,0);
-  /* штанга к ядру: без неё модуль висит в пустоте */
-  ctx.strokeStyle="rgba(242,178,92,.5)";ctx.lineWidth=1.4;
-  ctx.beginPath();ctx.moveTo(-q.d+6,0);ctx.lineTo(-4*s,0);ctx.stroke();
+  if(!skipRod)drawStRod(q);                 /* штанга сама по себе, тёмная (M304-II) */
   ctx.rotate(-q.ang);                       // сам модуль не заваливается вместе со штангой
-  ctx.strokeStyle="rgba(242,178,92,.7)";ctx.lineWidth=1.2;
-  ctx.fillStyle="#0b1119";
+  /* ── материал вместо обвода (M304) ──
+     Модуль был золотым контуром по почти чёрной заливке: на кадре 84% пикселей
+     внутри силуэта сидели в яркости 0–.2, и станция читалась чертежом, а не
+     вещью. Теперь у каждой формы свой тон корпуса, а золото опущено до шва;
+     светят только окна и лампы — свет у станции один, свой. */
+  ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.7;   /* обвод тёмный, как у баржи */
+  const F=ST_MOD_FILL[q.sh]||"#1b2230";
+  ctx.fillStyle=F;
   if(q.sh==="drum"){
     ctx.beginPath();ctx.rect(-5*s,-7*s,10*s,14*s);ctx.fill();ctx.stroke();
-    ctx.strokeStyle="rgba(242,178,92,.28)";
+    ctx.strokeStyle="rgba(0,0,0,.32)";
     for(let i=1;i<4;i++){
       ctx.beginPath();ctx.moveTo(-5*s,-7*s+i*3.5*s);ctx.lineTo(5*s,-7*s+i*3.5*s);ctx.stroke();
     }
@@ -101,14 +119,14 @@ function drawStModule(q,S){
       ctx.beginPath();ctx.ellipse(px,py,3*s,2.4*s,0,0,TAU);ctx.fill();ctx.stroke();
       ctx.fillStyle=(Math.sin(G.t*.045+i*2+q.ph)>0)?"rgba(255,150,90,.8)":"rgba(255,150,90,.2)";
       ctx.beginPath();ctx.arc(px,py,.9*s,0,TAU);ctx.fill();
-      ctx.fillStyle="#0b1119";
+      ctx.fillStyle=F;
     }
   }else if(q.sh==="hangar"){
     /* открытый док: створки и пустой зев, куда заходит корабль */
     ctx.beginPath();ctx.rect(-8*s,-6*s,16*s,12*s);ctx.fill();ctx.stroke();
-    ctx.fillStyle="#04070c";
+    ctx.fillStyle="#0a1018";
     ctx.beginPath();ctx.rect(-2*s,-5*s,9*s,10*s);ctx.fill();
-    ctx.strokeStyle="rgba(150,220,255,.55)";
+    ctx.strokeStyle="rgba(150,220,255,.4)";
     ctx.beginPath();ctx.moveTo(7*s,-5*s);ctx.lineTo(7*s,5*s);ctx.stroke();
     /* сварка внутри дока вспыхивает */
     if(Math.sin(G.t*.4+q.ph)>.72){
@@ -120,17 +138,17 @@ function drawStModule(q,S){
     for(let i=0;i<2;i++){
       const px=(i-.5)*7*s;
       const g=ctx.createRadialGradient(px-2*s,-2*s,0,px,0,5*s);
-      g.addColorStop(0,"#26313d");g.addColorStop(1,"#0b1119");
+      g.addColorStop(0,"#2e3a48");g.addColorStop(1,"#161d27");
       ctx.fillStyle=g;
       ctx.beginPath();ctx.arc(px,0,4.4*s,0,TAU);ctx.fill();ctx.stroke();
     }
-    ctx.strokeStyle="rgba(242,178,92,.35)";
+    ctx.strokeStyle="rgba(0,0,0,.34)";
     ctx.beginPath();ctx.moveTo(-8*s,0);ctx.lineTo(8*s,0);ctx.stroke();
   }else if(q.sh==="dish"){
     /* тарелка, медленно ведущая цель */
     ctx.save();ctx.rotate(Math.sin(G.t*.004+q.ph)*.6);
     ctx.beginPath();ctx.ellipse(0,0,7*s,3*s,0,0,TAU);
-    ctx.fillStyle="rgba(40,70,90,.85)";ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(52,84,104,.95)";ctx.fill();ctx.stroke();
     ctx.strokeStyle="rgba(150,200,220,.5)";
     ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-5*s);ctx.stroke();
     ctx.restore();
@@ -143,7 +161,7 @@ function drawStModule(q,S){
   }else if(q.sh==="cage"){
     /* глухой блок с решёткой и одиноким огнём */
     ctx.beginPath();ctx.rect(-6*s,-5*s,12*s,10*s);ctx.fill();ctx.stroke();
-    ctx.strokeStyle="rgba(242,178,92,.3)";
+    ctx.strokeStyle="rgba(0,0,0,.32)";
     for(let i=1;i<5;i++){
       ctx.beginPath();ctx.moveTo(-6*s+i*2.4*s,-5*s);ctx.lineTo(-6*s+i*2.4*s,5*s);ctx.stroke();
     }
@@ -152,19 +170,19 @@ function drawStModule(q,S){
   }else if(q.sh==="farm"){
     /* оранжерея: прозрачный купол с зеленью внутри */
     ctx.beginPath();ctx.ellipse(0,2*s,8*s,7*s,0,Math.PI,TAU);
-    ctx.fillStyle="rgba(120,190,160,.18)";ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(128,196,166,.26)";ctx.fill();ctx.stroke();
     ctx.fillStyle="rgba(90,200,120,.55)";
     for(let i=0;i<4;i++){
       const px=(i-1.5)*3.4*s;
       ctx.beginPath();ctx.ellipse(px,0,1.6*s,2.6*s+Math.sin(q.ph+i)*s,0,0,TAU);ctx.fill();
     }
-    ctx.strokeStyle="rgba(242,178,92,.5)";
+    ctx.strokeStyle="rgba(0,0,0,.34)";
     ctx.beginPath();ctx.moveTo(-8*s,2*s);ctx.lineTo(8*s,2*s);ctx.stroke();
   }else{
     /* мачта связи: решётчатая стрела с проблесковым огнём на конце */
     ctx.beginPath();ctx.moveTo(-2*s,0);ctx.lineTo(2*s,0);ctx.lineTo(1*s,-12*s);ctx.lineTo(-1*s,-12*s);
     ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.strokeStyle="rgba(242,178,92,.3)";
+    ctx.strokeStyle="rgba(0,0,0,.32)";
     for(let i=1;i<5;i++){
       const yy=-i*2.4*s, w=2*s-i*.2*s;
       ctx.beginPath();ctx.moveTo(-w,yy);ctx.lineTo(w,yy-1.4*s);ctx.stroke();
@@ -175,7 +193,10 @@ function drawStModule(q,S){
   }
   ctx.restore();
 }
-function drawStationMods(sys){
+/* два прохода: сперва все штанги, потом все корпуса — иначе распорка соседа
+   ложится поверх модуля и сборка снова рассыпается на линии */
+function drawStRods(list){for(const q of list)drawStRod(q);}
+function drawStationMods(sys,skipRod){
   const m=stationMods(sys);
-  for(const q of m)drawStModule(q,sys.station);
+  for(const q of m)drawStModule(q,sys.station,skipRod);
 }

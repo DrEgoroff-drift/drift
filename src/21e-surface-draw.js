@@ -202,7 +202,8 @@ function drawSurfaceWorld(){
   drawTiles(S.farA,camx*.22,camy*.42+130,(g,wx0,wy0)=>drawGround({h:tr.farH[0],N:tr.N,step:tr.step*3.6*stpK},wx0,wy0,hazeFar(p,.58),null));
   S.farB=tileStore(S.farB,"farB|"+p.seed+"|"+DPR+"|"+FARK.toFixed(2)+dwk);
   drawTiles(S.farB,camx*.35,camy*.5+80,(g,wx0,wy0)=>drawGround({h:tr.farH[1],N:tr.N,step:tr.step*2.4*stpK},wx0,wy0,hazeFar(p,.32),null));
-  hazeBand(p,H*(SURF_HOR-.06),H*.22);
+  /* дымка шириной в кисть (M304, §13): была H*.36→.66, стала H*.52→.64 */
+  hazeBand(p,H*(SURF_HOR-.03),H*.09);
   /* дальние капли — ДО мира: они падают за грядой и за кораблём (M242) */
   drawWeather(p,camx,camy,"far");
   drawGround(tr,camx,camy,"rgb("+p.T.pal[3].map(v=>Math.round(v*.5)).join(",")+")",

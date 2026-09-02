@@ -108,30 +108,21 @@ the day they are found; this is work that was deliberately not done, or that nee
   hands have no figure, so either portraits (the `mgr-face` brushes) or an axis on managers. P9b
   settlement recursion (Eglash) — by eye over many settlements.
 
-### Picture queue, re-ordered by the second look (2026-09-02, almanac issue I addendum)
+### Picture queue — built as M304 (0.301.0, 2026-09-03)
 
-Nothing from issue I's picture queue moved between 0.278 and 0.295 — all of that stretch was
-interface and economy. Order below is by what the eye finds worst on the sheet today; laws in
-`docs/DESIGN-craft.md`, verdicts in `docs/ALMANAC.md`.
+All seven items of the 2026-09-02 order shipped in one release; bodies in `PATCHNOTES.md` 0.301.0.
+What the meter still says after it (lookAll, 1280×800, 10 frames):
 
-1. **Cave shadows to zone II–III (§16).** The lamp pool is the only midtone; the rest sits in
-   zone 0–I and the grey rock outlines are the only structure. Lift ambient, cold fill from the
-   flora, keep the lamp the warm source.
-2. **Surface day: air band and a second hue (§13, §12).** The haze covers a third of the sheet
-   (`drawSkyBase`, H*.36) — narrow it to a brush; the far disc is the same olive as flora and
-   ground — give sky and disc their own hue (see the palette rule: mix around the wheel).
-3. **Landing: ground or a haze floor before 600 m (§16).** At 549 m the frame is one value of
-   blue edge to edge, no ground, no corridor. Either the silhouette enters earlier or the haze
-   ends. New item — issue I had marked the frame as holding.
-4. **Home interior furniture pattern (§11).** Unchanged flagship debt: blankets, panel seams,
-   floor tiles — ornament, not fake shading.
-5. **Station body: fill, shadow side, one light.** M296's first pass is an orange wire diagram
-   with cyan accents without a source; it fails «тело, обвод, один свет» before §18.6's checks.
-   Doing it opens almanac issue III.
-6. **Value steps (§16):** the rock around the base rooms is a flat wash; the galactic band on
-   the map needs its second step.
-7. **Small:** the white diagonals across the ground by the house (§14 — a line earns its place);
-   the sky-band width measurements (§13).
+| scene | tones | pair | contrast | mass | note |
+|---|---|---|---|---|---|
+| пещера | 3 | 6 | .35 | 21 | mass and contrast pass; pair/tones are the honest shortfall of a cave |
+| грунт день | — | <10 | — | — | pair still short: the disc is the only second hue |
+| заход | 3 | 0 | .27–.31 | 42–49 | two masses now; a terran world at altitude has no warm source |
+| дом | 3 | 4 | — | — | one cold pool per window is not yet a pair |
+| система | 8 | 25 | .20 | 4 | the station body is measured against a nebula; see «Open by design» |
+
+Left from the queue: the **galactic band's second step on the map** (item 6b); the **codex pass
+over the station** (§13: dump, dome, strip) now has a sprite to draw into.
 
 ### Graphics still open
 
@@ -197,6 +188,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M304** (0.301.0) — the picture queue as one release: cave to zone I–II with cold glazes baked into the tile, sky brush and `hueToward`, landing horizon and altitude zenith, home panels/boards/study window, station sprite with one light, base halo, rain on the ground.
 - **M303** (0.300.0) — playtest tails of 02.09: the cantina's ВЫСЛУШАТЬ works, station rumours persist as logged, the desk opens over a station (СТОЛ in the header), the home beacon undocks first, the desk lamp ignores grey and ether lines, the parrot's feather layer is sized by the bird box and the perch is off the screens.
 
 ## Done

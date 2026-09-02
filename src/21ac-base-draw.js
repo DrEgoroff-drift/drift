@@ -148,6 +148,37 @@ function drawBase(){
   ctx.globalCompositeOperation="multiply";
   ctx.fillStyle="rgb(126,94,64)";ctx.fill(GP);
   ctx.globalCompositeOperation="source-over";
+  /* ── порода у выработки сжата (§16) ──
+     Вокруг отсеков стоял один тон: камень у кромки и камень в двадцати метрах
+     от неё — одна краска, ступень значения в кадре ровно одна. Первый заход
+     клал прямоугольную рамку из четырёх градиентов, и она читалась именно
+     рамкой: углы прямые, порода тут ни при чём. Ореол идёт ОТ ЯЧЕЕК: у каждой
+     краевой ячейки своё круглое затухание, круги наслаиваются и дают мягкий
+     обвод по форме выработки. Заливок не больше дюжины — краевые прореживаются. */
+  {
+    const edge=[];
+    for(let r=0;r<baseRows(B);r++)for(let c=0;c<BASE_COLS;c++){
+      if(!baseCell(B,c,r))continue;
+      /* внутренние ячейки ореола не дают: их всё равно перекроют соседи */
+      const nb=(c2,r2)=>c2>=0&&c2<BASE_COLS&&r2>=0&&r2<baseRows(B)&&!!baseCell(B,c2,r2);
+      if(nb(c-1,r)&&nb(c+1,r)&&nb(c,r-1)&&nb(c,r+1))continue;
+      edge.push([c,r]);
+    }
+    if(edge.length){
+      const step=Math.max(1,Math.ceil(edge.length/12));
+      const r0=Math.hypot(BCELL_W,BCELL_H)*.5, r1=r0+BCELL_H*1.2;
+      ctx.save();ctx.clip(GP);
+      for(let i2=0;i2<edge.length;i2+=step){
+        const cx=X(BASE_OX+edge[i2][0]*BCELL_W+BCELL_W*.5);
+        const cy=Y(BASE_OY+edge[i2][1]*BCELL_H+BCELL_H*.5);
+        if(cx+r1<0||cx-r1>W||cy+r1<0||cy-r1>H)continue;
+        const g2=ctx.createRadialGradient(cx,cy,r0,cx,cy,r1);
+        g2.addColorStop(0,"rgba(0,0,0,.30)");g2.addColorStop(1,"rgba(0,0,0,0)");
+        ctx.fillStyle=g2;ctx.fillRect(cx-r1,cy-r1,r1*2,r1*2);
+      }
+      ctx.restore();
+    }
+  }
   /* ── почвенный профиль (M232) ──
      Верхний слой был одной тёмной полосой — линией среза, а не землёй. Язык
      взят у шахты (M219): дёрн → подпочва с камнями → кора выветривания,

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 356 · символов верхнего уровня: 3290
+Файлов: 356 · символов верхнего уровня: 3299
 
 ## СИМВОЛЫ
 
@@ -258,9 +258,9 @@ bldUpgrade                   src/12ad-site.js:193
 bldUpgradeCost               src/12ac-bld.js:152
 bldWant                      src/12ad-site.js:240
 bldWhy                       src/12ad-site.js:147
-BLOOM_CV                     src/19c-light.js:336
-BLOOM_K                      src/19c-light.js:337
-bloomPass                    src/19c-light.js:339
+BLOOM_CV                     src/19c-light.js:338
+BLOOM_K                      src/19c-light.js:339
+bloomPass                    src/19c-light.js:341
 BLUE_TAB                     src/01-core.js:48
 blueNoise                    src/01-core.js:49
 BLUEPRINTS                   src/12c-mgr-core.js:662
@@ -342,10 +342,10 @@ caveFloorOf                  src/22-mode-cave.js:89
 caveFloraOf                  src/20e-species.js:111
 caveGalR                     src/22-mode-cave.js:40
 caveGalY                     src/22-mode-cave.js:35
-caveLampMask                 src/22a-cave-deco.js:553
-caveLampSpot                 src/22a-cave-deco.js:495
+caveLampMask                 src/22a-cave-deco.js:556
+caveLampSpot                 src/22a-cave-deco.js:498
 caveLowY                     src/22-mode-cave.js:42
-caveMossSpots                src/22a-cave-deco.js:482
+caveMossSpots                src/22a-cave-deco.js:485
 caveMoveX                    src/22-mode-cave.js:243
 cavePool                     src/22a-cave-deco.js:76
 caveScanDown                 src/22-mode-cave.js:49
@@ -649,15 +649,15 @@ drawBeltRocks                src/17c-system-draw.js:41
 drawBuildMenu                src/21aa-base-rooms.js:504
 drawBuilt                    src/21c-built.js:66
 drawCantinaRoom              src/27d-ui-cantina.js:32
-drawCave                     src/22-mode-cave.js:711
+drawCave                     src/22-mode-cave.js:748
 drawCaveDark                 src/22a-cave-deco.js:327
-drawCaveFar                  src/22-mode-cave.js:580
-drawCaveGlow                 src/22a-cave-deco.js:377
-drawCaveOwnLight             src/22a-cave-deco.js:501
+drawCaveFar                  src/22-mode-cave.js:617
+drawCaveGlow                 src/22a-cave-deco.js:380
+drawCaveOwnLight             src/22a-cave-deco.js:504
 drawCaveRock                 src/22-mode-cave.js:465
 drawCaveSolid                src/22a-cave-deco.js:241
 drawCaveWater                src/22a-cave-deco.js:300
-drawCaveWorld                src/22-mode-cave.js:605
+drawCaveWorld                src/22-mode-cave.js:642
 drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:180
@@ -729,7 +729,7 @@ drawRungRing                 src/12ae-ladder.js:73
 drawScoop                    src/19a-mode-scoop.js:171
 drawSeams                    src/12s-wear.js:183
 drawSkyBase                  src/19c-light.js:296
-drawSkyBodies                src/19b-sky.js:79
+drawSkyBodies                src/19b-sky.js:96
 drawSkyLayer                 src/19-mode-landing.js:427
 drawSpa                      src/29i-spa-draw.js:41
 drawSpaceDust                src/16a-space.js:245
@@ -738,12 +738,15 @@ drawStarHole                 src/16a-space.js:505
 drawStarNeutron              src/16a-space.js:478
 drawStars                    src/16-flight.js:28
 drawStarSingle               src/16a-space.js:419
-drawStation                  src/17c-system-draw.js:164
-drawStationMods              src/17a-station-mod.js:178
+drawStation                  src/17c-system-draw.js:416
+drawStationBody              src/17c-system-draw.js:178
+drawStationMods              src/17a-station-mod.js:199
 drawStencils                 src/03d-hull-marks.js:1
-drawStModule                 src/17a-station-mod.js:66
+drawStModule                 src/17a-station-mod.js:80
 drawStrata                   src/18b-geology.js:103
-drawSurface                  src/21e-surface-draw.js:650
+drawStRod                    src/17a-station-mod.js:72
+drawStRods                   src/17a-station-mod.js:198
+drawSurface                  src/21e-surface-draw.js:651
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
@@ -1026,8 +1029,8 @@ goalCard                     src/13b-occupy.js:171
 goalOwnYacht                 src/13b-occupy.js:164
 gotoSector                   src/11a-quests.js:68
 gradePass                    src/19c-light.js:258
-GRAIN_PAT                    src/19c-light.js:376
-grainPass                    src/19c-light.js:377
+GRAIN_PAT                    src/19c-light.js:378
+grainPass                    src/19c-light.js:379
 GREEN_BEDS                   src/21g-greenhouse.js:23
 GREEN_FULL                   src/21g-greenhouse.js:24
 GREEN_SP                     src/21g-greenhouse.js:68
@@ -1076,7 +1079,7 @@ groveOnKill                  src/11j-grove.js:105
 groveSys                     src/11j-grove.js:39
 groveTick                    src/11j-grove.js:85
 groveVisit                   src/11j-grove.js:116
-growLichen                   src/22a-cave-deco.js:602
+growLichen                   src/22a-cave-deco.js:605
 GROWN_LINES                  src/11q-grown.js:48
 grownAll                     src/11q-grown.js:19
 grownDepthAt                 src/11q-grown.js:20
@@ -1123,10 +1126,10 @@ HIN_UP                       src/29e-home-up.js:20
 hinDrawHole                  src/29e-home-up.js:219
 hinDrawShell                 src/29e-home-up.js:59
 hinDrawStair                 src/29e-home-up.js:175
-hinFigure                    src/29d-home-draw.js:584
+hinFigure                    src/29d-home-draw.js:640
 hinFolkMake                  src/29c-home-in.js:84
 hinFolkTick                  src/29c-home-in.js:115
-hinFrontStuff                src/29d-home-draw.js:292
+hinFrontStuff                src/29d-home-draw.js:336
 hinGroundRooms               src/29c-home-in.js:28
 hinHasUp                     src/29e-home-up.js:22
 hinHoleX                     src/29e-home-up.js:41
@@ -1134,7 +1137,8 @@ hinNear                      src/29c-home-in.js:229
 hinPal                       src/29d-home-draw.js:6
 hinRoomAt                    src/29c-home-in.js:60
 hinRooms                     src/29c-home-in.js:42
-hinRoomStuff                 src/29d-home-draw.js:329
+hinRoomStuff                 src/29d-home-draw.js:382
+hinSeams                     src/29d-home-draw.js:376
 hinSpan                      src/29c-home-in.js:52
 hinStairX                    src/29e-home-up.js:36
 hinTalk                      src/29c-home-in.js:238
@@ -1282,6 +1286,7 @@ HUD_FLOOR                    src/27z-telemetry.js:29
 HUD_PREV                     src/27z-telemetry.js:52
 HUD_STEP                     src/27z-telemetry.js:51
 hudWake                      src/27z-telemetry.js:54
+hueToward                    src/19b-sky.js:53
 HULL_CACHE                   src/03-ships.js:142
 HULL_CLASS                   src/03-ships.js:174
 HULL_ROLE                    src/03f-hull-role.js:17
@@ -2716,29 +2721,29 @@ SKY_LAPSE                    src/11ak-skywatch.js:28
 SKY_LOUD                     src/19b-sky.js:13
 SKY_OFF                      src/11ak-skywatch.js:121
 SKY_QUIET                    src/19b-sky.js:14
-SKY_WORLD_KINDS              src/19b-sky.js:119
+SKY_WORLD_KINDS              src/19b-sky.js:136
 skyAll                       src/11ak-skywatch.js:34
-skyAurora                    src/19b-sky.js:418
+skyAurora                    src/19b-sky.js:436
 skyBlock                     src/11ak-skywatch.js:234
 skyCanReport                 src/11ak-skywatch.js:202
-skyComet                     src/19b-sky.js:479
+skyComet                     src/19b-sky.js:499
 skyCometName                 src/11ak-skywatch.js:198
 skyDay                       src/19c-light.js:78
 skyDrop                      src/11ak-skywatch.js:146
-skyField                     src/19b-sky.js:522
+skyField                     src/19b-sky.js:542
 skyFind                      src/11ak-skywatch.js:47
-skyGalaxy                    src/19b-sky.js:355
-skyGiant                     src/19b-sky.js:205
+skyGalaxy                    src/19b-sky.js:373
+skyGiant                     src/19b-sky.js:222
 skyGrad                      src/19-mode-landing.js:394
-skyHole                      src/19b-sky.js:378
-skyMoon                      src/19b-sky.js:444
+skyHole                      src/19b-sky.js:396
+skyMoon                      src/19b-sky.js:462
 skyNameComet                 src/11ak-skywatch.js:184
-skyNeb                       src/19b-sky.js:465
-skyNebula                    src/19b-sky.js:49
+skyNeb                       src/19b-sky.js:485
+skyNebula                    src/19b-sky.js:66
 skyOfferHere                 src/11ak-skywatch.js:122
 skyOn                        src/11ak-skywatch.js:59
 skyPick                      src/11ak-skywatch.js:81
-skyPulsar                    src/19b-sky.js:500
+skyPulsar                    src/19b-sky.js:520
 skyReport                    src/11ak-skywatch.js:206
 skyScene                     src/19b-sky.js:15
 skyTake                      src/11ak-skywatch.js:136
@@ -2748,8 +2753,8 @@ skyTick                      src/11ak-skywatch.js:155
 skyTint                      src/19b-sky.js:44
 skyU                         src/19b-sky.js:41
 skyWhere                     src/11ak-skywatch.js:39
-skyWorld                     src/19b-sky.js:174
-skyWorldTex                  src/19b-sky.js:128
+skyWorld                     src/19b-sky.js:191
+skyWorldTex                  src/19b-sky.js:145
 SLOT_CACHE                   src/05-parts.js:113
 slotAnchors                  src/05-parts.js:141
 slotsOf                      src/05-parts.js:114
@@ -2808,8 +2813,10 @@ SPHERE2                      src/24-mode-belt.js:51
 sprgba                       src/29i-spa-draw.js:22
 SRC_DISCOUNT                 src/12ad-site.js:22
 srcPrice                     src/12ad-site.js:291
-ST_GOLD                      src/17c-system-draw.js:117
+ST_ART                       src/17c-system-draw.js:385
+ST_GOLD                      src/17c-system-draw.js:120
 ST_GROUPS                    src/26-ui-station.js:69
+ST_MOD_FILL                  src/17a-station-mod.js:66
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:8
 STAR_CLASS                   src/02-world.js:141
@@ -2822,6 +2829,7 @@ startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
 stat                         src/08-state.js:142
 STAT_SHOW                    src/05-parts.js:280
+stationArt                   src/17c-system-draw.js:386
 stationDeals                 src/27g-deals.js:141
 stationFleet                 src/04b-fleet.js:163
 stationMercs                 src/12a-crew.js:91
@@ -2832,7 +2840,7 @@ stationParts                 src/03-ships.js:116
 stationUniqueOffer           src/03-ships.js:107
 stationViz                   src/17c-system-draw.js:111
 statPreview                  src/05-parts.js:271
-stCore                       src/17c-system-draw.js:128
+stCore                       src/17c-system-draw.js:131
 stDel                        src/14-save.js:26
 steps                        tests/90-harness.js:79
 stepWorld                    src/28-loop.js:144
@@ -2885,8 +2893,9 @@ storyTableLine               src/11c-stories.js:281
 storyTraces                  src/11c-stories.js:219
 storyTurns                   src/11c-stories.js:121
 storyWhen                    src/11c-stories.js:205
-stPanels                     src/17c-system-draw.js:118
-stRing                       src/17c-system-draw.js:144
+stPanels                     src/17c-system-draw.js:121
+stPlatePath                  src/17c-system-draw.js:170
+stRing                       src/17c-system-draw.js:147
 STRIP_CHUNK                  src/07-planet.js:73
 STRIP_JOB                    src/07-planet.js:76
 STRIP_MS                     src/07-planet.js:72
@@ -2912,11 +2921,11 @@ SUN_DIR_FLAT                 src/19c-light.js:23
 sunAzQ                       src/19c-light.js:26
 sunDirSet                    src/19c-light.js:30
 sunSpot                      src/19c-light.js:213
-SURF_BASE                    src/21e-surface-draw.js:641
+SURF_BASE                    src/21e-surface-draw.js:642
 SURF_HOR                     src/19c-light.js:212
 surfaceHint                  src/21e-surface-draw.js:4
 surfNight                    src/06a-celest.js:43
-surfScale                    src/21e-surface-draw.js:649
+surfScale                    src/21e-surface-draw.js:650
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -3734,13 +3743,13 @@ zooTick                      src/11ad-zoo.js:41
   · автопилот:120
   · шлейф двигателей и струи ориентации:218
 
-## src/17a-station-mod.js · 10 КБ
+## src/17a-station-mod.js · 12 КБ
   · модули станции:1
 
 ## src/17b-finds.js · 17 КБ
   · находки в полёте:1
 
-## src/17c-system-draw.js · 21 КБ
+## src/17c-system-draw.js · 25 КБ
   · система: кольца, пояс и станция в кадре:1
 
 ## src/17d-house-shapes.js · 4 КБ
@@ -3773,15 +3782,15 @@ zooTick                      src/11ad-zoo.js:41
   · сбор летучих газов: заход в атмосферу гиганта:1
   · небо гиганта: полосы, а не лепёшки:79
 
-## src/19b-sky.js · 32 КБ
+## src/19b-sky.js · 33 КБ
   · небо:1
 
 ## src/19c-light.js · 28 КБ
   · свет и воздух:1
-  · свечение (bloom) — M243:329
-  · зерно и виньетка — один слой на все сцены (M244):364
+  · свечение (bloom) — M243:331
+  · зерно и виньетка — один слой на все сцены (M244):366
 
-## src/19d-weather.js · 13 КБ
+## src/19d-weather.js · 14 КБ
   · погода:1
 
 ## src/19e-clouds.js · 16 КБ
@@ -3790,7 +3799,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19f-lander.js · 22 КБ
   · посадочный корабль:1
 
-## src/19-mode-landing.js · 38 КБ
+## src/19-mode-landing.js · 39 КБ
   · посадка:1
 
 ## src/20aa-poi-shapes.js · 30 КБ
@@ -3831,7 +3840,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21ab-base-interiors2.js · 25 КБ
   · отсеки базы: вторая половина:1
 
-## src/21ac-base-draw.js · 52 КБ
+## src/21ac-base-draw.js · 54 КБ
   · база: рисование разреза:1
 
 ## src/21a-mode-base.js · 25 КБ
@@ -3872,11 +3881,11 @@ zooTick                      src/11ad-zoo.js:41
   · поверхность:1
   · навигатор и подсказки сверху:668
 
-## src/22a-cave-deco.js · 33 КБ
+## src/22a-cave-deco.js · 34 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
-  · свой свет пещеры (M248):474
+  · свой свет пещеры (M248):477
 
-## src/22-mode-cave.js · 41 КБ
+## src/22-mode-cave.js · 44 КБ
   · пещера: поле породы в двух измерениях:1
 
 ## src/23aa-dig-rock.js · 37 КБ
@@ -4070,7 +4079,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29c-home-in.js · 16 КБ
   · дом изнутри: по нему ходят:1
 
-## src/29d-home-draw.js · 41 КБ
+## src/29d-home-draw.js · 46 КБ
   · дом изнутри: кадр:1
 
 ## src/29e-home-up.js · 22 КБ

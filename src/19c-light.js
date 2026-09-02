@@ -89,7 +89,7 @@ function skyDay(p){
   const air=p.T.atm==="отсутствует"?0:(p.T.atm.indexOf("разреженная")>=0?.55:1);
   if(air>0){
     const COLD=[86,128,190];
-    top=top.map((v,i)=>Math.round(lerp(v,v*.52+COLD[i]*.48,.38*air*k)));
+    top=top.map((v,i)=>Math.round(lerp(v,v*.52+COLD[i]*.48,.50*air*k)));   /* .38→.50 (M304): зенит дальше от флоры */
   }
   return {top,bot,k};
 }
@@ -303,11 +303,13 @@ function drawSkyBase(p){
     ctx.fillStyle=skyGrad(p);ctx.fillRect(0,0,W,H);
     if(hasAir){
       const c=hex2rgb(sc), day=clamp(1+sun.alt*2.2,0,1);
-      const g=ctx.createLinearGradient(0,H*.42,0,H*.78);
+      /* полоса зарева — кисть у горизонта, не треть листа (M304, §13):
+         была H*.42→.78, стала H*.54→.74 */
+      const g=ctx.createLinearGradient(0,H*.54,0,H*.74);
       g.addColorStop(0,"rgba("+c.join(",")+",0)");
       g.addColorStop(.7,"rgba("+c.join(",")+","+(.10*day).toFixed(3)+")");
       g.addColorStop(1,"rgba("+c.join(",")+","+(.16*day).toFixed(3)+")");
-      ctx.fillStyle=g;ctx.fillRect(0,H*.42,W,H*.36);
+      ctx.fillStyle=g;ctx.fillRect(0,H*.54,W,H*.20);
       /* наклонное зарево: пятно у горизонта там, где звезда, сильнее всего
          на восходе и закате — это и есть «гнётся по высоте» */
       const low=clamp(1-Math.abs(sun.alt)*1.4,0,1)*day;
