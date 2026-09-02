@@ -58,7 +58,15 @@ function capRu(s){return s?s[0].toLocaleUpperCase("ru")+s.slice(1):s;}
 /* адрес слуха. Всегда со словом «сектор»: без него «-9:18» читается временем.
    Разброс — словами и в тех же секторах, в каких набрана вся игра. */
 function rumourWhere(q){
-  return "искать у сектора "+q.sx+":"+q.sy+", в "+q.rad+" секторах вокруг";
+  /* и сколько это отсюда (M298): сектор в чужой системе координат ничего не говорил о том, куда лететь */
+  const d=Math.max(Math.abs(q.sx-G.sx),Math.abs(q.sy-G.sy));
+  const j=Math.max(1,Math.ceil(d/Math.max(.5,(typeof stat==="function")?stat().jump:3)));
+  return "искать у сектора "+q.sx+":"+q.sy+", в "+q.rad+" секторах вокруг · отсюда "+d+" "+pl3(d,"сектор","сектора","секторов")+", примерно "+j+" "+pl3(j,"прыжок","прыжка","прыжков");
+}
+/* на карту: не метка на чуде, а окно карты на названном секторе и круг поиска (M298) */
+function rumourToMap(q){
+  G.mapSearch={sx:q.sx,sy:q.sy,rad:q.rad};
+  if(typeof gotoSector==="function")gotoSector(q.sx,q.sy,"слух · искать в "+q.rad+" "+pl3(q.rad,"секторе","секторах","секторах")+" вокруг");
 }
 /* слухи этой станции на эти три дня: два, и один из них может врать */
 function rumoursHere(){
@@ -110,10 +118,14 @@ function rumourBlock(){
   $body.appendChild(el("div","row","<div class='nm'><s>ни метки, ни стрелки не будет: "+
     "слух — это адрес с промахом и человек, которому вы либо верите, либо нет. "+
     "Записан в тетрадь, страница ЛЮДИ</s></div>"));
-  for(const q of L)
-    $body.appendChild(el("div","row","<div class='nm'>"+
-      "<b style='color:#cfe3ea'>"+q.lines[0]+"</b>"+
-      "<s style='line-height:1.8'>"+q.lines[1]+"<br>"+q.lines[2]+"</s></div>"));
+  for(const q of L){
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b style='color:#cfe3ea'>"+q.lines[0]+"</b>"+
+      "<s style='line-height:1.8'>"+q.lines[1]+"<br>"+q.lines[2]+"</s>"));
+    const b=el("button","act sm","НА КАРТУ");
+    b.onclick=()=>{rumourToMap(q);};
+    r.appendChild(b);$body.appendChild(r);
+  }
   const tag=G.sys.key+"#"+rumourSeedHere();
   if(G.rumLogged!==tag){
     G.rumLogged=tag;

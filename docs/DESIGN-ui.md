@@ -157,8 +157,8 @@ budget checked before shipping.
 
 # Three fixes queued from the playtest of 2026-08-30/31
 
-Ordered by the author, measured, designed, **not built yet**. Each is small and independent of
-the holding layer (`DESIGN-holding.md`); they are meant to be done first, in this order.
+Ordered by the author, measured, designed, **built 2026-09-02 as M298 (0.295.0)** after the
+holding layer landed. What was built against each section is noted at its end.
 
 ## 1. The table in the cantina: you put a thing down and nothing happens
 
@@ -189,6 +189,11 @@ Silence is shown as an answer, not as nothing. Each row says what the move is *f
 reason. Under the answer, one quiet line for the trace: «место вас запомнило» / «записано в
 тетрадь · ЛЮДИ».
 
+*Built (M298):* `tableBlock` rows carry the reason under the title; the reply replaces the
+button in the same row in the speaker's colour, silence reads «посмотрел и промолчал — это тоже
+ответ», the trace line follows; one move per thing per visit (`G.tableUsed`, ephemeral); the
+seed of `putOnTable` moves with each press (`G.tableN`).
+
 ## 2. A rumour's address: you cannot tell where to fly
 
 > «адреса тож не понятны, если там слух. Ты ХЗ не понимаешь куда лететь допустим»
@@ -211,6 +216,11 @@ game names an address in a coordinate system the map will not take you to.
   the absolute address stays in the notebook for those who like charts. This needs the map to have
   consistent compass directions, which it does not yet.
 
+*Built (M298):* `rumourWhere` appends «отсюда N секторов, примерно J прыжков»; the board's rumour
+rows get «НА КАРТУ» (`rumourToMap`) — the map window moves to the named sector (`G.mapView`,
+`mapViewC`) and a dashed search circle of the rumour's radius is drawn with «ИСКАТЬ ЗДЕСЬ»; no
+marker on the wonder. Compass words wait for a compass.
+
 ## 3. The map: the interface covers the sky
 
 > «На карте тож половину планет не видно из за UI там все загораживается»
@@ -232,3 +242,9 @@ near stars are. Add the rail 87×114, the pads 393×86, the ether bar 377×29 an
 
 Not to be done: removing the ether line from the map. It stays visible on every screen by design
 (M151a).
+
+*Built (M298):* the card is a footer line — «ОМУРОН · красный карлик · 2 планеты · станция ·
+0.00 из 3.00 пк · III» — in place of the sector line, so the footer keeps two rows; the full
+card opens on a second tap of the same star (`G.mapMore`); a double tap on empty sky hides the
+instruments, pads, console and prompt (`body.mapclean`) until the next touch — the rail and the
+ether line stay. The «emptiest corner» placement is not needed while the card is on demand.

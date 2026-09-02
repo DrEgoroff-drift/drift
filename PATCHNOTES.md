@@ -7,6 +7,25 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.295.0 - M298: three interface fixes from the playtest of 30.08
+
+`docs/DESIGN-ui.md`, «Three fixes queued from the playtest» - measured then, built now.
+
+- **The table in the cantina answers.** Each row says what the move is for («НАЗВАТЬ ИМЯ — вас
+  начнут узнавать на этой станции»); the reply replaces the button in the same row, in the
+  speaker's colour; silence reads as an answer («посмотрел и промолчал — это тоже ответ»); under
+  it, the trace that used to be invisible: «место вас запомнило · записано в тетрадь, ЛЮДИ». One
+  move per thing per visit, and the reply's seed moves with each press instead of repeating.
+- **A rumour can be aimed at.** Its address now says «отсюда 19 секторов, примерно 7 прыжков»,
+  and the board's rumour rows have «НА КАРТУ»: the map window moves to the named sector and draws
+  a dashed search circle of the rumour's radius - «ИСКАТЬ ЗДЕСЬ». No marker on the wonder itself.
+  A course from the notebook to a far sector moves the window the same way.
+- **The map gives the sky back.** The system card is a footer line - name, class, planets,
+  station, distance, the plan's numeral - in place of the sector line, so the footer keeps two
+  rows; the full description opens on a second tap of the same star; a double tap on empty sky
+  hides the instruments, pads, console and prompt until the next touch, and the rail and the
+  ether line stay.
+
 ## 0.294.0 - M297: news with a cause, rumours in other people's words, rivals on a sold road
 
 Step 9 of the holding plan (`docs/DESIGN-holding.md` §2, §11, §15) - the layer speaks through

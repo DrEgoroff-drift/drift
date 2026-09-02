@@ -269,7 +269,7 @@ function navAction(){
   /* из санатория уйти можно в любую минуту, и за это ничего не будет (M199) */
   if(G.mode==="spa"){exitSpa();return;}
   if(G.mode==="system"){G.mode="map";G.sel.x=G.sx;G.sel.y=G.sy;}
-  else if(G.mode==="map")G.mode="system";
+  else if(G.mode==="map"){G.mode="system";if(typeof mapReset==="function")mapReset();}
   else say("Навигация недоступна\nвне свободного полёта");
 }
 document.getElementById("zin").addEventListener("click",()=>setZoom(G.zoom*1.35));
@@ -397,15 +397,27 @@ function tap(sxp,syp){
   }
   if(G.mode==="map"){
     const cell=Math.min(W,H)/9.2,R=5;
+    const V=(typeof mapViewC==="function")?mapViewC():{x:G.sx,y:G.sy};
     let best=null,bd=1e9;
-    for(let gy=G.sy-R;gy<=G.sy+R;gy++)for(let gx=G.sx-R;gx<=G.sx+R;gx++){
+    for(let gy=V.y-R;gy<=V.y+R;gy++)for(let gx=V.x-R;gx<=V.x+R;gx++){
       if(!starAt(gx,gy))continue;
       const[jx,jy]=sysJitter(gx,gy);
-      const x=W/2+(gx-G.sx+jx)*cell,y=H/2+(gy-G.sy+jy)*cell;
+      const x=W/2+(gx-V.x+jx)*cell,y=H/2+(gy-V.y+jy)*cell;
       const d=Math.hypot(sxp-x,syp-y);
       if(d<bd){bd=d;best={gx,gy};}
     }
-    if(best&&bd<cell*.6){G.sel.x=best.gx;G.sel.y=best.gy;}
+    const now=Date.now();
+    if(best&&bd<cell*.6){
+      /* тап по звезде — выбор; ещё раз по той же — подробнее (M298) */
+      if(G.sel.x===best.gx&&G.sel.y===best.gy)G.mapMore=!G.mapMore;
+      else{G.sel.x=best.gx;G.sel.y=best.gy;G.mapMore=false;}
+      if(G.mapClean&&typeof mapCleanSet==="function")mapCleanSet(false);
+    }else{
+      /* двойной тап по пустому — чистое небо: интерфейс уходит до следующего касания (M298) */
+      if(now-(G.mapTapT||0)<380&&typeof mapCleanSet==="function")mapCleanSet(!G.mapClean);
+      else if(G.mapClean&&typeof mapCleanSet==="function")mapCleanSet(false);
+    }
+    G.mapTapT=now;
     return;
   }
   if(G.mode!=="system")return;

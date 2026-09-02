@@ -78,6 +78,11 @@ function mapNebula(){
   }
   c.putImageData(img,0,0);MAPBG.tex=cn;return cn;
 }
+/* окно карты (M298): обычно вокруг вас; по слуху — вокруг названного сектора */
+function mapViewC(){return G.mapView||{x:G.sx,y:G.sy};}
+function mapReset(){G.mapView=null;G.mapMore=false;G.mapClean=false;G.mapSearch=null;
+  if(typeof document!=="undefined"&&document.body)document.body.classList.remove("mapclean");}
+function mapCleanSet(on){G.mapClean=!!on;if(typeof document!=="undefined"&&document.body)document.body.classList.toggle("mapclean",G.mapClean);}
 function drawMap(){
   const st=stat();
   ctx.fillStyle="#03040a";ctx.fillRect(0,0,W,H);
@@ -133,24 +138,34 @@ function drawMap(){
   }),0,0,W,H);
   drawStars(G.sx*140,G.sy*140,.35);
   const cell=Math.min(W,H)/9.2,R=5;
+  const V=mapViewC(),vx=V.x,vy=V.y;              /* окно карты: обычно вы, по слуху — названный сектор (M298) */
+  const px=W/2+(G.sx-vx)*cell,py=H/2+(G.sy-vy)*cell;
   const jr=(st.jump+.02)*cell;
   /* круг прыжка: не окружность-волосок, а освещённая область — сразу видно,
      докуда рука дотягивается */
-  const jg=ctx.createRadialGradient(W/2,H/2,jr*.55,W/2,H/2,jr);
+  const jg=ctx.createRadialGradient(px,py,jr*.55,px,py,jr);
   jg.addColorStop(0,"rgba(127,230,216,0)");
   jg.addColorStop(1,"rgba(127,230,216,.055)");
-  ctx.fillStyle=jg;ctx.beginPath();ctx.arc(W/2,H/2,jr,0,TAU);ctx.fill();
+  ctx.fillStyle=jg;ctx.beginPath();ctx.arc(px,py,jr,0,TAU);ctx.fill();
   ctx.strokeStyle="rgba(127,230,216,.22)";ctx.lineWidth=1;
-  ctx.beginPath();ctx.arc(W/2,H/2,jr,0,TAU);ctx.stroke();
+  ctx.beginPath();ctx.arc(px,py,jr,0,TAU);ctx.stroke();
+  /* круг поиска по слуху: где смотреть, а не что нашли */
+  if(G.mapSearch){
+    const S=G.mapSearch,sxp=W/2+(S.sx-vx)*cell,syp=H/2+(S.sy-vy)*cell;
+    ctx.strokeStyle="rgba(207,227,234,.45)";ctx.lineWidth=1;ctx.setLineDash([4,5]);
+    ctx.beginPath();ctx.arc(sxp,syp,Math.max(6,S.rad*cell),0,TAU);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="rgba(207,227,234,.7)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText("ИСКАТЬ ЗДЕСЬ · "+S.rad+" "+pl3(S.rad,"СЕКТОР","СЕКТОРА","СЕКТОРОВ").toUpperCase(),sxp,syp-S.rad*cell-6);
+  }
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
   const vis=[];
-  for(let gy=G.sy-R;gy<=G.sy+R;gy++)for(let gx=G.sx-R;gx<=G.sx+R;gx++){
+  for(let gy=vy-R;gy<=vy+R;gy++)for(let gx=vx-R;gx<=vx+R;gx++){
     if(!starAt(gx,gy))continue;
     if(typeof chartsHidden==="function"&&chartsHidden(gx,gy))continue;   /* несогласие карт (11m) */
     let [jx,jy]=sysJitter(gx,gy);
     if(typeof chartsJitter==="function"){const cj=chartsJitter(gx,gy);jx+=cj[0];jy+=cj[1];}
     const d=Math.hypot(gx-G.sx+jx,gy-G.sy+jy);
-    vis.push({gx,gy,s:getSystem(gx,gy),x:W/2+(gx-G.sx+jx)*cell,y:H/2+(gy-G.sy+jy)*cell,
+    vis.push({gx,gy,s:getSystem(gx,gy),x:W/2+(gx-vx+jx)*cell,y:H/2+(gy-vy+jy)*cell,
       d, near:d<=st.jump+.02});
   }
   /* связи только между достижимыми: паутина «каждый к двум соседям» тянулась
@@ -331,8 +346,13 @@ function drawMap(){
       dsel===0?"ТЕКУЩАЯ СИСТЕМА":
       (dsel>st.jump+.02?"ВНЕ РАДИУСА — НУЖЕН ГИПЕРДРАЙВ":
        (onRoute?"ПРЫЖОК ПО МАРШРУТУ: ":"ПРЫЖОК: ")+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":""))]);
+    /* карточка стала строкой (M298): первый вопрос — «что это и дотянусь ли» — отвечается тут;
+       описание — вторым тапом по той же звезде. На телефоне 31.7% экрана было интерфейсом */
+    const ss=sel?sel.s:null;
     L.push(["rgba(127,230,216,.55)",
-      "СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   "+dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк"+
+      (ss?((typeof nameOf==="function")?nameOf(ss):ss.name).toUpperCase()+" · "+ss.cls.ru+" · "+ss.planets.length+" "+pl3(ss.planets.length,"планета","планеты","планет")+
+          (ss.station?" · станция":"")+(ss.belt?" · пояс":"")+" · ":"СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   ")+
+      dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк"+
       ((typeof rungFootTxt==="function")?rungFootTxt(G.sel.x,G.sel.y):"")]);   /* пятилетка римской цифрой (M292) */
     if(typeof routeOf==="function"&&routeOf().legs.length>=1)
       L.push(["rgba(127,230,216,.75)",routeLine()]);
@@ -392,7 +412,7 @@ function drawMap(){
      Раньше подпись висела прямо под звездой и на нижнем ряду секторов уезжала
      под экранные кнопки. Теперь это карточка в углу: место у неё постоянное,
      а со звездой её связывает волосок. */
-  if(sel){
+  if(sel&&!G.mapClean){
     const{s,x,y}=sel,rr=1.8+s.cls.t*2.2;
     ctx.strokeStyle="#f2b25c";ctx.lineWidth=1.2;
     ctx.beginPath();ctx.arc(x,y,rr+11,0,TAU);ctx.stroke();
@@ -405,6 +425,8 @@ function drawMap(){
     ctx.stroke();
     /* ширину карточка берёт до правого борта, а не до края экрана: кнопки
        КАРТА и МЕНЮ стоят там всегда, и угол карточки уезжал под них */
+    if(!G.mapMore){ctx.stroke();}   /* карточка — только по второму тапу (M298) */
+    if(G.mapMore){
     const cw=Math.min(300,mapRail()-32), cx=16;
     ctx.font="9px ui-monospace,monospace";
     /* высота — по числу строк описания, а не константой 104: у длинного
@@ -421,9 +443,10 @@ function drawMap(){
     ctx.fillText(s.cls.ru+" · "+s.planets.length+" планет"+(s.station?" · СТАНЦИЯ":"")+(s.belt?" · ПОЯС":""),cx+12,cy+38);
     ctx.fillStyle="rgba(160,182,192,.62)";
     wrapLeft(s.desc,cx+12,cy+54,cw-24,11);
+    }
   }
   /* ── подвал: одним циклом, снизу вверх ── */
-  {const deck=mapDeck();
+  if(!G.mapClean){const deck=mapDeck();
    ctx.font="10px ui-monospace,monospace";
    foot.rows.forEach((row,i)=>{
      const y=deck-i*16;
@@ -433,7 +456,7 @@ function drawMap(){
        const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9,w,12);}
    });
    ctx.textAlign="right";}
-  G.prompt="ТАП ПО ЗВЕЗДЕ — ВЫБОР · ДЕЙСТВИЕ — ПРЫЖОК";
+  G.prompt=G.mapClean?"":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК";
   if(actEdge){
     if(!bad)jump(cost);
     else if(dsel>0)say("Прыжок невозможен");

@@ -613,12 +613,38 @@ function tableBlock(){
       "</s><s>следующая реплика — в следующий заход</s></div>"));
   }
   $body.appendChild(el("div","sec","СТОЛ · ПОЛОЖИТЕ ВЕЩЬ — ОТВЕТЯТ НА НЕЁ, А НЕ НА СЛОВА"));
-  const say1=(res,r)=>{
-    if(res&&typeof placeNote==="function")placeNote("care",1);   // вещь на столе — место помнит (хвост M132)
-    if(res&&!res.silent&&typeof peopleLine==="function")peopleLine(res.line,G.st?G.st.name:"");   /* в ЛЮДИ (M151a) */
-    r.innerHTML="<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
-      (!res?"<i>вещь лежит, на неё не смотрят</i>":
-       res.silent?"<i>посмотрел на это и промолчал</i>":res.line)+"</s></div>";
+  /* ── один ход на вещь за заход (M298) ──
+     Плейтест 30.08: «тыкаешь и ничего не происходит». Ответ печатался мелко в
+     отдельный ряд ниже, молчание — как пустота, а зерно держалось на весь заход,
+     так что десять нажатий давали одну и ту же строку. Теперь ответ встаёт в
+     ТОТ ЖЕ ряд на место кнопки, цветом говорящего; молчание показано как ответ;
+     каждый ряд говорит, ЗАЧЕМ этот ход; под ответом — след, который раньше был
+     невидим: место запомнило, в тетрадь записано. Кнопка после хода уходит —
+     это ход на этот заход, и повторные нажатия в пустоту кончились. */
+  const tag=(G.sys?G.sys.key:"")+"#"+visitHere();
+  if(!G.tableUsed||G.tableUsed.tag!==tag)G.tableUsed={tag};
+  const row=(key,title,sub,why,btnTxt,kind,idx,extra)=>{
+    const r=el("div","row"),u=G.tableUsed[key];
+    if(u){
+      r.appendChild(el("div","nm","<b>"+title+"</b><s>"+sub+"</s><s style='color:#cfe3ea;line-height:1.8'>"+
+        (u.silent?"<i>посмотрел и промолчал — это тоже ответ</i>":u.line)+"</s>"+
+        "<s>место вас запомнило"+(u.silent?"":" · записано в тетрадь, ЛЮДИ")+"</s>"));
+    }else{
+      r.appendChild(el("div","nm","<b>"+title+"</b><s>"+sub+"</s><s>"+why+"</s>"));
+      const bt=el("button","act sm",btnTxt);
+      bt.disabled=!!(extra&&extra.disabled);
+      bt.onclick=()=>{
+        G.tableN=(G.tableN|0)+1;
+        const res=putOnTable(kind,idx)||{line:null,silent:true};
+        if(typeof placeNote==="function")placeNote("care",1);   // вещь на столе — место помнит (хвост M132)
+        if(!res.silent&&typeof peopleLine==="function")peopleLine(res.line,G.st?G.st.name:"");   /* в ЛЮДИ (M151a) */
+        G.tableUsed[key]={line:res.line,silent:!!res.silent};
+        renderTab();
+      };
+      r.appendChild(bt);
+    }
+    if(extra&&extra.btn)r.appendChild(extra.btn);
+    $body.appendChild(r);
   };
   /* ленты: их можно показать, а можно продать. Хорошая продаётся хорошо */
   const strips=(typeof stripsAll==="function")?stripsAll():[];
@@ -626,45 +652,23 @@ function tableBlock(){
     $body.appendChild(el("div","row","<div class='nm'><s>лент нет. Оторвать полосу — клавиша T "+
       "в полёте, когда на бумаге уже что-то записано</s></div>"));
   strips.forEach((s,k)=>{
-    const r=el("div","row");
-    r.appendChild(el("div","nm","<b>ЛЕНТА · сектор "+s.sx+":"+s.sy+"</b><s>невязка "+
-      (s.mis||0).toFixed(3)+" · длина записи "+(s.span|0)+"</s>"));
-    const bt=el("button","act sm","НА СТОЛ");
-    const out=el("div","row");
-    bt.onclick=()=>{say1(putOnTable("strip",k),out);};
-    r.appendChild(bt);
     const bs=el("button","act sm gold",stripValue(s).toLocaleString("ru")+" кр");
     bs.title="продать ленту";
     bs.onclick=()=>{stripSell(k);renderTab();};
-    r.appendChild(bs);
-    $body.appendChild(r);$body.appendChild(out);
+    row("strip"+k,"ЛЕНТА · сектор "+s.sx+":"+s.sy,"невязка "+(s.mis||0).toFixed(3)+" · длина записи "+(s.span|0),
+        "ПОКАЗАТЬ ЛЕНТУ — расскажут, что видели в тех же секторах","НА СТОЛ","strip",k,{btn:bs});
   });
   /* груз и слух: то же движение, другой предмет */
   const holdKey=RES_KEYS.filter(k=>G.cargo[k]>0)[0];
-  const rr=el("div","row"),out2=el("div","row");
-  rr.appendChild(el("div","nm","<b>ИЗ ТРЮМА</b><s>"+
-    (holdKey?RES[holdKey].ru+" · "+G.cargo[holdKey]+" ед":"трюм пуст")+"</s>"));
-  const b2=el("button","act sm","НА СТОЛ");
-  b2.disabled=!holdKey;
-  b2.onclick=()=>{say1(putOnTable("cargo",RES_KEYS.indexOf(holdKey)),out2);};
-  rr.appendChild(b2);
-  $body.appendChild(rr);$body.appendChild(out2);
+  row("cargo","ИЗ ТРЮМА",holdKey?RES[holdKey].ru+" · "+G.cargo[holdKey]+" ед":"трюм пуст",
+      "ПОКАЗАТЬ ТОВАР — скажут, кому он тут нужен","НА СТОЛ","cargo",RES_KEYS.indexOf(holdKey),{disabled:!holdKey});
   const news=(typeof newsAll==="function")?newsAll():[];
   const last=news.length?news[news.length-1]:null;
-  const r3=el("div","row"),out3=el("div","row");
-  r3.appendChild(el("div","nm","<b>СЛУХ</b><s>"+(last?last.ru:"вы ничего не слышали")+"</s>"));
-  const b3=el("button","act sm","НА СТОЛ");
-  b3.disabled=!last;
-  b3.onclick=()=>{say1(putOnTable("rumour",news.length),out3);};
-  r3.appendChild(b3);
-  $body.appendChild(r3);$body.appendChild(out3);
+  row("rumour","СЛУХ",last?last.ru:"вы ничего не слышали",
+      "ПЕРЕСКАЗАТЬ СЛУХ — его подтвердят или высмеют","НА СТОЛ","rumour",news.length,{disabled:!last});
   /* имя (хвост M128): то же движение, предмет — вы сами */
-  const r4=el("div","row"),out4=el("div","row");
-  r4.appendChild(el("div","nm","<b>ВАШЕ ИМЯ</b><s>"+(G.name||"капитан")+"</s>"));
-  const b4=el("button","act sm","НАЗВАТЬ");
-  b4.onclick=()=>{say1(putOnTable("name",visitHere()),out4);};
-  r4.appendChild(b4);
-  $body.appendChild(r4);$body.appendChild(out4);
+  row("name","ВАШЕ ИМЯ",G.name||"капитан",
+      "НАЗВАТЬ ИМЯ — вас начнут узнавать на этой станции","НАЗВАТЬ","name",visitHere());
   /* пеленг зеркала (хвост M134): отметку можно снять с карты */
   if(typeof mirrorAll==="function"&&mirrorAll().bearing===1){
     const r5=el("div","row");

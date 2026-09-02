@@ -1148,6 +1148,10 @@ body.afoot .ipod{display:none}
 /* знак пиджина (M261): канва в строке текста, сидит по базовой линии */
 .glyphc{display:inline-block;vertical-align:-2px}
 
+/* чистое небо на карте (M298): двойной тап по пустому прячет приборы, пады, пульт и подсказку;
+   рейка с двумя кнопками и эфирная строка остаются — таков закон экрана */
+body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #prompt{opacity:0;pointer-events:none}
+
 </style>
 </head>
 <body>
@@ -1424,7 +1428,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.294.0";
+const VER="0.295.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -10469,6 +10473,9 @@ function gotoSector(sx,sy,what){
     say("У этой записи нет адреса");return false;
   }
   G.sel={x:sx,y:sy};
+  /* далёкий сектор — окно карты едет к нему (M298): раньше адрес за краем карты нельзя было даже выбрать */
+  G.mapView=(Math.max(Math.abs(sx-G.sx),Math.abs(sy-G.sy))>4)?{x:sx,y:sy}:null;
+  G.mapMore=false;
   G.mode="map";
   toggleLog(false);
   const nm=getSystem(sx,sy).name||("сектор "+sx+":"+sy);
@@ -10875,7 +10882,8 @@ function putOnTable(kind,idx){
   if(sr)return sr;                       // история отвечает на вещь раньше общей таблицы (11c)
   const pool=TABLE_REPLY[kind];
   if(!pool)return null;
-  const r=rng(hashi((G.sys?G.sys.key.length:1)+visitHere(),idx|0,kind.length));
+  /* зерно — и от хода (M298): один заход давал одну и ту же строку на все нажатия */
+  const r=rng(hashi((G.sys?G.sys.key.length:1)+visitHere()+(G.tableN|0)*31,idx|0,kind.length));
   const line=pick(pool,r);
   return {line,silent:line===null};
 }
@@ -13261,7 +13269,15 @@ function capRu(s){return s?s[0].toLocaleUpperCase("ru")+s.slice(1):s;}
 /* адрес слуха. Всегда со словом «сектор»: без него «-9:18» читается временем.
    Разброс — словами и в тех же секторах, в каких набрана вся игра. */
 function rumourWhere(q){
-  return "искать у сектора "+q.sx+":"+q.sy+", в "+q.rad+" секторах вокруг";
+  /* и сколько это отсюда (M298): сектор в чужой системе координат ничего не говорил о том, куда лететь */
+  const d=Math.max(Math.abs(q.sx-G.sx),Math.abs(q.sy-G.sy));
+  const j=Math.max(1,Math.ceil(d/Math.max(.5,(typeof stat==="function")?stat().jump:3)));
+  return "искать у сектора "+q.sx+":"+q.sy+", в "+q.rad+" секторах вокруг · отсюда "+d+" "+pl3(d,"сектор","сектора","секторов")+", примерно "+j+" "+pl3(j,"прыжок","прыжка","прыжков");
+}
+/* на карту: не метка на чуде, а окно карты на названном секторе и круг поиска (M298) */
+function rumourToMap(q){
+  G.mapSearch={sx:q.sx,sy:q.sy,rad:q.rad};
+  if(typeof gotoSector==="function")gotoSector(q.sx,q.sy,"слух · искать в "+q.rad+" "+pl3(q.rad,"секторе","секторах","секторах")+" вокруг");
 }
 /* слухи этой станции на эти три дня: два, и один из них может врать */
 function rumoursHere(){
@@ -13313,10 +13329,14 @@ function rumourBlock(){
   $body.appendChild(el("div","row","<div class='nm'><s>ни метки, ни стрелки не будет: "+
     "слух — это адрес с промахом и человек, которому вы либо верите, либо нет. "+
     "Записан в тетрадь, страница ЛЮДИ</s></div>"));
-  for(const q of L)
-    $body.appendChild(el("div","row","<div class='nm'>"+
-      "<b style='color:#cfe3ea'>"+q.lines[0]+"</b>"+
-      "<s style='line-height:1.8'>"+q.lines[1]+"<br>"+q.lines[2]+"</s></div>"));
+  for(const q of L){
+    const r=el("div","row");
+    r.appendChild(el("div","nm","<b style='color:#cfe3ea'>"+q.lines[0]+"</b>"+
+      "<s style='line-height:1.8'>"+q.lines[1]+"<br>"+q.lines[2]+"</s>"));
+    const b=el("button","act sm","НА КАРТУ");
+    b.onclick=()=>{rumourToMap(q);};
+    r.appendChild(b);$body.appendChild(r);
+  }
   const tag=G.sys.key+"#"+rumourSeedHere();
   if(G.rumLogged!==tag){
     G.rumLogged=tag;
@@ -29964,7 +29984,7 @@ function navAction(){
   /* из санатория уйти можно в любую минуту, и за это ничего не будет (M199) */
   if(G.mode==="spa"){exitSpa();return;}
   if(G.mode==="system"){G.mode="map";G.sel.x=G.sx;G.sel.y=G.sy;}
-  else if(G.mode==="map")G.mode="system";
+  else if(G.mode==="map"){G.mode="system";if(typeof mapReset==="function")mapReset();}
   else say("Навигация недоступна\nвне свободного полёта");
 }
 document.getElementById("zin").addEventListener("click",()=>setZoom(G.zoom*1.35));
@@ -30092,15 +30112,27 @@ function tap(sxp,syp){
   }
   if(G.mode==="map"){
     const cell=Math.min(W,H)/9.2,R=5;
+    const V=(typeof mapViewC==="function")?mapViewC():{x:G.sx,y:G.sy};
     let best=null,bd=1e9;
-    for(let gy=G.sy-R;gy<=G.sy+R;gy++)for(let gx=G.sx-R;gx<=G.sx+R;gx++){
+    for(let gy=V.y-R;gy<=V.y+R;gy++)for(let gx=V.x-R;gx<=V.x+R;gx++){
       if(!starAt(gx,gy))continue;
       const[jx,jy]=sysJitter(gx,gy);
-      const x=W/2+(gx-G.sx+jx)*cell,y=H/2+(gy-G.sy+jy)*cell;
+      const x=W/2+(gx-V.x+jx)*cell,y=H/2+(gy-V.y+jy)*cell;
       const d=Math.hypot(sxp-x,syp-y);
       if(d<bd){bd=d;best={gx,gy};}
     }
-    if(best&&bd<cell*.6){G.sel.x=best.gx;G.sel.y=best.gy;}
+    const now=Date.now();
+    if(best&&bd<cell*.6){
+      /* тап по звезде — выбор; ещё раз по той же — подробнее (M298) */
+      if(G.sel.x===best.gx&&G.sel.y===best.gy)G.mapMore=!G.mapMore;
+      else{G.sel.x=best.gx;G.sel.y=best.gy;G.mapMore=false;}
+      if(G.mapClean&&typeof mapCleanSet==="function")mapCleanSet(false);
+    }else{
+      /* двойной тап по пустому — чистое небо: интерфейс уходит до следующего касания (M298) */
+      if(now-(G.mapTapT||0)<380&&typeof mapCleanSet==="function")mapCleanSet(!G.mapClean);
+      else if(G.mapClean&&typeof mapCleanSet==="function")mapCleanSet(false);
+    }
+    G.mapTapT=now;
     return;
   }
   if(G.mode!=="system")return;
@@ -33745,6 +33777,11 @@ function mapNebula(){
   }
   c.putImageData(img,0,0);MAPBG.tex=cn;return cn;
 }
+/* окно карты (M298): обычно вокруг вас; по слуху — вокруг названного сектора */
+function mapViewC(){return G.mapView||{x:G.sx,y:G.sy};}
+function mapReset(){G.mapView=null;G.mapMore=false;G.mapClean=false;G.mapSearch=null;
+  if(typeof document!=="undefined"&&document.body)document.body.classList.remove("mapclean");}
+function mapCleanSet(on){G.mapClean=!!on;if(typeof document!=="undefined"&&document.body)document.body.classList.toggle("mapclean",G.mapClean);}
 function drawMap(){
   const st=stat();
   ctx.fillStyle="#03040a";ctx.fillRect(0,0,W,H);
@@ -33800,24 +33837,34 @@ function drawMap(){
   }),0,0,W,H);
   drawStars(G.sx*140,G.sy*140,.35);
   const cell=Math.min(W,H)/9.2,R=5;
+  const V=mapViewC(),vx=V.x,vy=V.y;              /* окно карты: обычно вы, по слуху — названный сектор (M298) */
+  const px=W/2+(G.sx-vx)*cell,py=H/2+(G.sy-vy)*cell;
   const jr=(st.jump+.02)*cell;
   /* круг прыжка: не окружность-волосок, а освещённая область — сразу видно,
      докуда рука дотягивается */
-  const jg=ctx.createRadialGradient(W/2,H/2,jr*.55,W/2,H/2,jr);
+  const jg=ctx.createRadialGradient(px,py,jr*.55,px,py,jr);
   jg.addColorStop(0,"rgba(127,230,216,0)");
   jg.addColorStop(1,"rgba(127,230,216,.055)");
-  ctx.fillStyle=jg;ctx.beginPath();ctx.arc(W/2,H/2,jr,0,TAU);ctx.fill();
+  ctx.fillStyle=jg;ctx.beginPath();ctx.arc(px,py,jr,0,TAU);ctx.fill();
   ctx.strokeStyle="rgba(127,230,216,.22)";ctx.lineWidth=1;
-  ctx.beginPath();ctx.arc(W/2,H/2,jr,0,TAU);ctx.stroke();
+  ctx.beginPath();ctx.arc(px,py,jr,0,TAU);ctx.stroke();
+  /* круг поиска по слуху: где смотреть, а не что нашли */
+  if(G.mapSearch){
+    const S=G.mapSearch,sxp=W/2+(S.sx-vx)*cell,syp=H/2+(S.sy-vy)*cell;
+    ctx.strokeStyle="rgba(207,227,234,.45)";ctx.lineWidth=1;ctx.setLineDash([4,5]);
+    ctx.beginPath();ctx.arc(sxp,syp,Math.max(6,S.rad*cell),0,TAU);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="rgba(207,227,234,.7)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText("ИСКАТЬ ЗДЕСЬ · "+S.rad+" "+pl3(S.rad,"СЕКТОР","СЕКТОРА","СЕКТОРОВ").toUpperCase(),sxp,syp-S.rad*cell-6);
+  }
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
   const vis=[];
-  for(let gy=G.sy-R;gy<=G.sy+R;gy++)for(let gx=G.sx-R;gx<=G.sx+R;gx++){
+  for(let gy=vy-R;gy<=vy+R;gy++)for(let gx=vx-R;gx<=vx+R;gx++){
     if(!starAt(gx,gy))continue;
     if(typeof chartsHidden==="function"&&chartsHidden(gx,gy))continue;   /* несогласие карт (11m) */
     let [jx,jy]=sysJitter(gx,gy);
     if(typeof chartsJitter==="function"){const cj=chartsJitter(gx,gy);jx+=cj[0];jy+=cj[1];}
     const d=Math.hypot(gx-G.sx+jx,gy-G.sy+jy);
-    vis.push({gx,gy,s:getSystem(gx,gy),x:W/2+(gx-G.sx+jx)*cell,y:H/2+(gy-G.sy+jy)*cell,
+    vis.push({gx,gy,s:getSystem(gx,gy),x:W/2+(gx-vx+jx)*cell,y:H/2+(gy-vy+jy)*cell,
       d, near:d<=st.jump+.02});
   }
   /* связи только между достижимыми: паутина «каждый к двум соседям» тянулась
@@ -33998,8 +34045,13 @@ function drawMap(){
       dsel===0?"ТЕКУЩАЯ СИСТЕМА":
       (dsel>st.jump+.02?"ВНЕ РАДИУСА — НУЖЕН ГИПЕРДРАЙВ":
        (onRoute?"ПРЫЖОК ПО МАРШРУТУ: ":"ПРЫЖОК: ")+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":""))]);
+    /* карточка стала строкой (M298): первый вопрос — «что это и дотянусь ли» — отвечается тут;
+       описание — вторым тапом по той же звезде. На телефоне 31.7% экрана было интерфейсом */
+    const ss=sel?sel.s:null;
     L.push(["rgba(127,230,216,.55)",
-      "СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   "+dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк"+
+      (ss?((typeof nameOf==="function")?nameOf(ss):ss.name).toUpperCase()+" · "+ss.cls.ru+" · "+ss.planets.length+" "+pl3(ss.planets.length,"планета","планеты","планет")+
+          (ss.station?" · станция":"")+(ss.belt?" · пояс":"")+" · ":"СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   ")+
+      dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк"+
       ((typeof rungFootTxt==="function")?rungFootTxt(G.sel.x,G.sel.y):"")]);   /* пятилетка римской цифрой (M292) */
     if(typeof routeOf==="function"&&routeOf().legs.length>=1)
       L.push(["rgba(127,230,216,.75)",routeLine()]);
@@ -34059,7 +34111,7 @@ function drawMap(){
      Раньше подпись висела прямо под звездой и на нижнем ряду секторов уезжала
      под экранные кнопки. Теперь это карточка в углу: место у неё постоянное,
      а со звездой её связывает волосок. */
-  if(sel){
+  if(sel&&!G.mapClean){
     const{s,x,y}=sel,rr=1.8+s.cls.t*2.2;
     ctx.strokeStyle="#f2b25c";ctx.lineWidth=1.2;
     ctx.beginPath();ctx.arc(x,y,rr+11,0,TAU);ctx.stroke();
@@ -34072,6 +34124,8 @@ function drawMap(){
     ctx.stroke();
     /* ширину карточка берёт до правого борта, а не до края экрана: кнопки
        КАРТА и МЕНЮ стоят там всегда, и угол карточки уезжал под них */
+    if(!G.mapMore){ctx.stroke();}   /* карточка — только по второму тапу (M298) */
+    if(G.mapMore){
     const cw=Math.min(300,mapRail()-32), cx=16;
     ctx.font="9px ui-monospace,monospace";
     /* высота — по числу строк описания, а не константой 104: у длинного
@@ -34088,9 +34142,10 @@ function drawMap(){
     ctx.fillText(s.cls.ru+" · "+s.planets.length+" планет"+(s.station?" · СТАНЦИЯ":"")+(s.belt?" · ПОЯС":""),cx+12,cy+38);
     ctx.fillStyle="rgba(160,182,192,.62)";
     wrapLeft(s.desc,cx+12,cy+54,cw-24,11);
+    }
   }
   /* ── подвал: одним циклом, снизу вверх ── */
-  {const deck=mapDeck();
+  if(!G.mapClean){const deck=mapDeck();
    ctx.font="10px ui-monospace,monospace";
    foot.rows.forEach((row,i)=>{
      const y=deck-i*16;
@@ -34100,7 +34155,7 @@ function drawMap(){
        const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9,w,12);}
    });
    ctx.textAlign="right";}
-  G.prompt="ТАП ПО ЗВЕЗДЕ — ВЫБОР · ДЕЙСТВИЕ — ПРЫЖОК";
+  G.prompt=G.mapClean?"":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК";
   if(actEdge){
     if(!bad)jump(cost);
     else if(dsel>0)say("Прыжок невозможен");
@@ -57805,12 +57860,38 @@ function tableBlock(){
       "</s><s>следующая реплика — в следующий заход</s></div>"));
   }
   $body.appendChild(el("div","sec","СТОЛ · ПОЛОЖИТЕ ВЕЩЬ — ОТВЕТЯТ НА НЕЁ, А НЕ НА СЛОВА"));
-  const say1=(res,r)=>{
-    if(res&&typeof placeNote==="function")placeNote("care",1);   // вещь на столе — место помнит (хвост M132)
-    if(res&&!res.silent&&typeof peopleLine==="function")peopleLine(res.line,G.st?G.st.name:"");   /* в ЛЮДИ (M151a) */
-    r.innerHTML="<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
-      (!res?"<i>вещь лежит, на неё не смотрят</i>":
-       res.silent?"<i>посмотрел на это и промолчал</i>":res.line)+"</s></div>";
+  /* ── один ход на вещь за заход (M298) ──
+     Плейтест 30.08: «тыкаешь и ничего не происходит». Ответ печатался мелко в
+     отдельный ряд ниже, молчание — как пустота, а зерно держалось на весь заход,
+     так что десять нажатий давали одну и ту же строку. Теперь ответ встаёт в
+     ТОТ ЖЕ ряд на место кнопки, цветом говорящего; молчание показано как ответ;
+     каждый ряд говорит, ЗАЧЕМ этот ход; под ответом — след, который раньше был
+     невидим: место запомнило, в тетрадь записано. Кнопка после хода уходит —
+     это ход на этот заход, и повторные нажатия в пустоту кончились. */
+  const tag=(G.sys?G.sys.key:"")+"#"+visitHere();
+  if(!G.tableUsed||G.tableUsed.tag!==tag)G.tableUsed={tag};
+  const row=(key,title,sub,why,btnTxt,kind,idx,extra)=>{
+    const r=el("div","row"),u=G.tableUsed[key];
+    if(u){
+      r.appendChild(el("div","nm","<b>"+title+"</b><s>"+sub+"</s><s style='color:#cfe3ea;line-height:1.8'>"+
+        (u.silent?"<i>посмотрел и промолчал — это тоже ответ</i>":u.line)+"</s>"+
+        "<s>место вас запомнило"+(u.silent?"":" · записано в тетрадь, ЛЮДИ")+"</s>"));
+    }else{
+      r.appendChild(el("div","nm","<b>"+title+"</b><s>"+sub+"</s><s>"+why+"</s>"));
+      const bt=el("button","act sm",btnTxt);
+      bt.disabled=!!(extra&&extra.disabled);
+      bt.onclick=()=>{
+        G.tableN=(G.tableN|0)+1;
+        const res=putOnTable(kind,idx)||{line:null,silent:true};
+        if(typeof placeNote==="function")placeNote("care",1);   // вещь на столе — место помнит (хвост M132)
+        if(!res.silent&&typeof peopleLine==="function")peopleLine(res.line,G.st?G.st.name:"");   /* в ЛЮДИ (M151a) */
+        G.tableUsed[key]={line:res.line,silent:!!res.silent};
+        renderTab();
+      };
+      r.appendChild(bt);
+    }
+    if(extra&&extra.btn)r.appendChild(extra.btn);
+    $body.appendChild(r);
   };
   /* ленты: их можно показать, а можно продать. Хорошая продаётся хорошо */
   const strips=(typeof stripsAll==="function")?stripsAll():[];
@@ -57818,45 +57899,23 @@ function tableBlock(){
     $body.appendChild(el("div","row","<div class='nm'><s>лент нет. Оторвать полосу — клавиша T "+
       "в полёте, когда на бумаге уже что-то записано</s></div>"));
   strips.forEach((s,k)=>{
-    const r=el("div","row");
-    r.appendChild(el("div","nm","<b>ЛЕНТА · сектор "+s.sx+":"+s.sy+"</b><s>невязка "+
-      (s.mis||0).toFixed(3)+" · длина записи "+(s.span|0)+"</s>"));
-    const bt=el("button","act sm","НА СТОЛ");
-    const out=el("div","row");
-    bt.onclick=()=>{say1(putOnTable("strip",k),out);};
-    r.appendChild(bt);
     const bs=el("button","act sm gold",stripValue(s).toLocaleString("ru")+" кр");
     bs.title="продать ленту";
     bs.onclick=()=>{stripSell(k);renderTab();};
-    r.appendChild(bs);
-    $body.appendChild(r);$body.appendChild(out);
+    row("strip"+k,"ЛЕНТА · сектор "+s.sx+":"+s.sy,"невязка "+(s.mis||0).toFixed(3)+" · длина записи "+(s.span|0),
+        "ПОКАЗАТЬ ЛЕНТУ — расскажут, что видели в тех же секторах","НА СТОЛ","strip",k,{btn:bs});
   });
   /* груз и слух: то же движение, другой предмет */
   const holdKey=RES_KEYS.filter(k=>G.cargo[k]>0)[0];
-  const rr=el("div","row"),out2=el("div","row");
-  rr.appendChild(el("div","nm","<b>ИЗ ТРЮМА</b><s>"+
-    (holdKey?RES[holdKey].ru+" · "+G.cargo[holdKey]+" ед":"трюм пуст")+"</s>"));
-  const b2=el("button","act sm","НА СТОЛ");
-  b2.disabled=!holdKey;
-  b2.onclick=()=>{say1(putOnTable("cargo",RES_KEYS.indexOf(holdKey)),out2);};
-  rr.appendChild(b2);
-  $body.appendChild(rr);$body.appendChild(out2);
+  row("cargo","ИЗ ТРЮМА",holdKey?RES[holdKey].ru+" · "+G.cargo[holdKey]+" ед":"трюм пуст",
+      "ПОКАЗАТЬ ТОВАР — скажут, кому он тут нужен","НА СТОЛ","cargo",RES_KEYS.indexOf(holdKey),{disabled:!holdKey});
   const news=(typeof newsAll==="function")?newsAll():[];
   const last=news.length?news[news.length-1]:null;
-  const r3=el("div","row"),out3=el("div","row");
-  r3.appendChild(el("div","nm","<b>СЛУХ</b><s>"+(last?last.ru:"вы ничего не слышали")+"</s>"));
-  const b3=el("button","act sm","НА СТОЛ");
-  b3.disabled=!last;
-  b3.onclick=()=>{say1(putOnTable("rumour",news.length),out3);};
-  r3.appendChild(b3);
-  $body.appendChild(r3);$body.appendChild(out3);
+  row("rumour","СЛУХ",last?last.ru:"вы ничего не слышали",
+      "ПЕРЕСКАЗАТЬ СЛУХ — его подтвердят или высмеют","НА СТОЛ","rumour",news.length,{disabled:!last});
   /* имя (хвост M128): то же движение, предмет — вы сами */
-  const r4=el("div","row"),out4=el("div","row");
-  r4.appendChild(el("div","nm","<b>ВАШЕ ИМЯ</b><s>"+(G.name||"капитан")+"</s>"));
-  const b4=el("button","act sm","НАЗВАТЬ");
-  b4.onclick=()=>{say1(putOnTable("name",visitHere()),out4);};
-  r4.appendChild(b4);
-  $body.appendChild(r4);$body.appendChild(out4);
+  row("name","ВАШЕ ИМЯ",G.name||"капитан",
+      "НАЗВАТЬ ИМЯ — вас начнут узнавать на этой станции","НАЗВАТЬ","name",visitHere());
   /* пеленг зеркала (хвост M134): отметку можно снять с карты */
   if(typeof mirrorAll==="function"&&mirrorAll().bearing===1){
     const r5=el("div","row");

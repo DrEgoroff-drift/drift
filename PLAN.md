@@ -1183,8 +1183,10 @@ raising a shop (+0.2 on its inputs, a map pin), rumours of the уклад and of
 would stand, rival barges on a sold road eating the appetite once a shift. «КУРС as the route and
 a rumour in one» is the interface fix 2 (rumour addresses → НА КАРТУ). The holding plan's nine
 steps are built; the codex pass over the body (step 8) waits for the author's eye on `/dev`.
-Next: **the three interface fixes** of `docs/DESIGN-ui.md` — the table in the cantina, rumour
-addresses, the map.
+**M298 (0.295.0) — the three interface fixes, 2026-09-02:** the table answers in the row and
+says why; rumours carry distance and jumps and «НА КАРТУ» with a search circle (`G.mapView`,
+`G.mapSearch`); the map card is a footer line, the description on a second tap, a double tap on
+empty sky clears it (`body.mapclean`). The playtest queue of 30–31.08 is closed.
 
 ## Small tails from almanac issue II
 

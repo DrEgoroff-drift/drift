@@ -1133,3 +1133,7 @@ body.afoot .ipod{display:none}
   padding:10px 4px 4px;letter-spacing:.01em}
 /* знак пиджина (M261): канва в строке текста, сидит по базовой линии */
 .glyphc{display:inline-block;vertical-align:-2px}
+
+/* чистое небо на карте (M298): двойной тап по пустому прячет приборы, пады, пульт и подсказку;
+   рейка с двумя кнопками и эфирная строка остаются — таков закон экрана */
+body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #prompt{opacity:0;pointer-events:none}

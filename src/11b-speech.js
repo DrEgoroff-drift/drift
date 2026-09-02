@@ -223,7 +223,8 @@ function putOnTable(kind,idx){
   if(sr)return sr;                       // история отвечает на вещь раньше общей таблицы (11c)
   const pool=TABLE_REPLY[kind];
   if(!pool)return null;
-  const r=rng(hashi((G.sys?G.sys.key.length:1)+visitHere(),idx|0,kind.length));
+  /* зерно — и от хода (M298): один заход давал одну и ту же строку на все нажатия */
+  const r=rng(hashi((G.sys?G.sys.key.length:1)+visitHere()+(G.tableN|0)*31,idx|0,kind.length));
   const line=pick(pool,r);
   return {line,silent:line===null};
 }

@@ -70,6 +70,9 @@ function gotoSector(sx,sy,what){
     say("У этой записи нет адреса");return false;
   }
   G.sel={x:sx,y:sy};
+  /* далёкий сектор — окно карты едет к нему (M298): раньше адрес за краем карты нельзя было даже выбрать */
+  G.mapView=(Math.max(Math.abs(sx-G.sx),Math.abs(sy-G.sy))>4)?{x:sx,y:sy}:null;
+  G.mapMore=false;
   G.mode="map";
   toggleLog(false);
   const nm=getSystem(sx,sy).name||("сектор "+sx+":"+sy);

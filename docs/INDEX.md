@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 354 · символов верхнего уровня: 3265
+Файлов: 355 · символов верхнего уровня: 3269
 
 ## СИМВОЛЫ
 
@@ -694,7 +694,7 @@ drawLanding                  src/19-mode-landing.js:541
 drawLoreMarks                src/12q-lore.js:235
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
-drawMap                      src/18-mode-map.js:81
+drawMap                      src/18-mode-map.js:86
 drawMisFigure                src/11z-misclosure.js:63
 drawModule                   src/21aa-base-rooms.js:384
 drawMonolith                 src/20aa-poi-shapes.js:193
@@ -1376,7 +1376,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:442
+jump                         src/18-mode-map.js:465
 jumpToBase                   src/21a-mode-base.js:315
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -1590,9 +1590,12 @@ makeWorld                    src/02a-worldmix.js:47
 MAP_BOX                      src/18-mode-map.js:27
 MAPBG                        src/18-mode-map.js:61
 mapBox                       src/18-mode-map.js:28
+mapCleanSet                  src/18-mode-map.js:85
 mapDeck                      src/18-mode-map.js:13
 mapNebula                    src/18-mode-map.js:62
 mapRail                      src/18-mode-map.js:17
+mapReset                     src/18-mode-map.js:83
+mapViewC                     src/18-mode-map.js:82
 marketCtx                    src/12-economy.js:18
 marketFor                    src/12-economy.js:2
 marketPrice                  src/12-economy.js:38
@@ -2164,11 +2167,11 @@ questClose                   src/11a-quests.js:36
 questDone                    src/11a-quests.js:44
 questFail                    src/11a-quests.js:48
 questFind                    src/11a-quests.js:35
-questGoto                    src/11a-quests.js:79
+questGoto                    src/11a-quests.js:82
 questInit                    src/11a-quests.js:16
-questLeft                    src/11a-quests.js:84
+questLeft                    src/11a-quests.js:87
 questOpen                    src/11a-quests.js:18
-questSync                    src/11a-quests.js:93
+questSync                    src/11a-quests.js:96
 QUIET_LINES                  src/11ar-doors.js:34
 quietAfterLeave              src/11n-quiet.js:54
 quietAll                     src/11n-quiet.js:21
@@ -2518,10 +2521,11 @@ rtWant                       src/09a-roomtone.js:42
 RUMOUR_DETAIL                src/11t-rumours.js:45
 RUMOUR_IMG                   src/11t-rumours.js:32
 RUMOUR_SRC                   src/11t-rumours.js:52
-rumourBlock                  src/11t-rumours.js:106
-rumourEtherLine              src/11t-rumours.js:96
+rumourBlock                  src/11t-rumours.js:114
+rumourEtherLine              src/11t-rumours.js:104
 rumourSeedHere               src/11t-rumours.js:54
-rumoursHere                  src/11t-rumours.js:64
+rumoursHere                  src/11t-rumours.js:72
+rumourToMap                  src/11t-rumours.js:67
 rumourWhere                  src/11t-rumours.js:60
 runAutopilot                 src/16-flight.js:133
 RUNG_PLAN                    src/12ae-ladder.js:12
@@ -2792,7 +2796,7 @@ STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
 starAt                       src/06-galaxy.js:2
 starRGB                      src/19c-light.js:49
-start                        src/15-input.js:508
+start                        src/15-input.js:520
 startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
 stat                         src/08-state.js:142
@@ -2868,7 +2872,7 @@ STRIP_MS                     src/07-planet.js:72
 STRIP_PEND                   src/07-planet.js:78
 STRIPS_MAX                   src/11b-speech.js:191
 stripsAll                    src/11b-speech.js:192
-stripSell                    src/11b-speech.js:230
+stripSell                    src/11b-speech.js:231
 stripValue                   src/11b-speech.js:193
 stSet                        src/14-save.js:14
 stTabFuse                    src/26b-ui-station-work.js:201
@@ -3419,7 +3423,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11at-gift.js · 4 КБ
   · «Тихоня»: подарок, которого никто не считал:1
 
-## src/11b-speech.js · 17 КБ
+## src/11b-speech.js · 18 КБ
   · речь: очередь реплик и вещь на столе:1
 
 ## src/11c-stories.js · 25 КБ
@@ -3477,7 +3481,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11s-returners.js · 5 КБ
   · возвращение: люди моложе своих внуков:1
 
-## src/11t-rumours.js · 10 КБ
+## src/11t-rumours.js · 11 КБ
   · слухи: как вообще узнают, что место есть:1
 
 ## src/11u-names.js · 4 КБ
@@ -3693,7 +3697,7 @@ zooTick                      src/11ad-zoo.js:41
   · запись не имеет права убить полёт:88
   · пустая карта возвращается из облака СПИСКОМ:167
 
-## src/15-input.js · 31 КБ
+## src/15-input.js · 32 КБ
   · экранные кнопки: авто-скрытие и размер:1
   · ввод:87
   · полоса вкладок шире экрана:200
@@ -3739,7 +3743,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
-## src/18-mode-map.js · 31 КБ
+## src/18-mode-map.js · 33 КБ
   · карта:1
   · где у карты пол и где правый борт:3
   · карта: ночное небо, а не схема молекулы:51
@@ -3962,7 +3966,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27b-ui-crew.js · 15 КБ
   · экран экипажа:1
 
-## src/27c-ui-hq.js · 43 КБ
+## src/27c-ui-hq.js · 44 КБ
   · ШТАБ и кантина:1
 
 ## src/27da-kino.js · 12 КБ
@@ -4165,6 +4169,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91x-hold-site.js · 12 КБ
   · автотесты: холдинг · постройки, площадка, бункер (M291):1
+
+## tests/91x-ui-fixes.js · 3 КБ
+  · автотесты: три правки интерфейса с плейтеста 30.08 (M298):1
 
 ## tests/91y-settle.js · 10 КБ
   · посёлок: дар, а не приказ:1
