@@ -87,4 +87,10 @@ TEST_SUITES.push(()=>suite("холдинг: 26 построек E–I — одн
   /* стройка показывает их словом, а не бункером */
   ok(BLD_FAM_KEYS.length===9&&!bldIsShop(BLD.nakop)&&bldIoTxt(BLD.nakop)===BLD.nakop.note,"в стройке строка E–I говорит, что делает");
   ok(/нужна станция/.test(bldAtWhy(getSystem(s.sx,s.sy),BLD.branch))||s.station.stype==="sci","филиал — только на научной станции");
+  /* тело (M296): огни на планете по постройкам, вся ночная сторона с Пояса огней; формы — на внешнем кольце */
+  const nb=Object.keys(H.bld).length;
+  ok(planetLightsN(s)===Math.min(24,nb*3),"огней на планете — по три на постройку ("+planetLightsN(s)+")");
+  const mods=holdMods(s);
+  ok(mods.length===nb&&mods.every(q=>q.d>=40&&q.d<=50&&q.s>=.55),"формы построек висят на внешнем кольце, штанги 40–50, готовые — крупнее");
+  ok(typeof drawMooredBarge==="function"&&typeof drawPlanetLights==="function","причаленная баржа и огни планеты рисуются");
 }));

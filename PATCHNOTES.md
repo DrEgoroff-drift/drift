@@ -7,6 +7,26 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.293.0 - M296: the body - a first pass
+
+Step 8 of the holding plan (`docs/DESIGN-holding.md` §13), taken as far as a stand and a
+screenshot can take it; the codex pass proper wants the author's eye on `/dev`.
+
+- **The station grows a body.** Every building hangs a form of its family on the station's outer
+  ring (booms 40–50 against the standard modules' 22–38), drawn by the same brush and in the
+  same gold as the standard modules, sized by level, smaller while under assembly - one body,
+  one light, as the codex asks.
+- **The barge stands at the Причал.** At a station with a Причал that lies on your barge's legs,
+  she is drawn moored off the hull with a mooring line and the caption «„ТЮК“ · У ПРИЧАЛА» - the
+  same art as the factor's barges, unmoving.
+- **The planet has lights.** The system's first solid world gets warm points on its night side:
+  three per building up to twenty-four, the whole night side from Пояс огней (28). They stand,
+  they do not twinkle, and they live outside the cached disc.
+- A `hold` scene in `docs/mkview.ps1` seeds a station with six buildings, a moored barge and the
+  lights for `pageshot` (`?s=hold`, `&z=` for the zoom).
+- Not yet: the dump by the shaft, the greenhouse dome and the landing strip on the planet;
+  baking the built forms into an offscreen.
+
 ## 0.292.0 - M295: the twenty-six that change one thing each
 
 Step 7 of the holding plan (`docs/DESIGN-holding.md` §10, families E–I). Every building that

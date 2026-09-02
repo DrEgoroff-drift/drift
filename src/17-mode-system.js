@@ -421,6 +421,7 @@ function drawSystem(){
     }
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,-1);
     planetDraw(p,x,y,r);
+    if(typeof drawPlanetLights==="function")drawPlanetLights(sys,p,x,y,r);   /* огни ваших построек (M296) */
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,1);
     /* конец света виден с орбиты (хвост M114): у обречённой планеты рыжий
        ореол, а когда срок вышел — серая пелена поверх диска и потухший цвет.
@@ -473,6 +474,7 @@ function drawSystem(){
   if(typeof drawFindsSystem==="function")drawFindsSystem(zx,zy,Z);
   if(typeof relayDrawSystem==="function")relayDrawSystem(zx,zy,Z);
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
+  if(typeof drawMooredBarge==="function")drawMooredBarge(zx,zy,Z);   /* своя баржа у Причала (M296) */
   /* дроны идут своими кругами между точкой и станцией (12e-drone-flight) */
   if(typeof drawDronesSystem==="function")drawDronesSystem(zx,zy,Z);
   drawAllies(zx,zy,Z);

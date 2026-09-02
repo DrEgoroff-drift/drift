@@ -1174,9 +1174,13 @@ step 9 with the rumours.
 **M295 (0.292.0) — step 7, families E–I, 2026-09-02:** `12ag-holdfx` — `bldHas` as the one door,
 26 hooks in 19 modules, a test that every id is asked; four effects replaced by honest ones where
 the code had nothing to hook (Дружина, Архив, Личный причал, Диспетчерская) and the design says so.
-Next: **step 8, the station's body — the codex pass** (bake the built forms once, the moored barge
-at a Причал, the planet's dump and lights), then **step 9, КУРС, rumours, news** (a sold road
-spawns a rival barge; rumours name where a building is wanted; news with a cause).
+**M296 (0.293.0) — step 8, the body, a first pass, 2026-09-02:** `17e-station-body` — the
+moored barge at a Причал, warm lights on the planet's night side; the built forms on the outer
+ring judged on the `hold` stand (`docs/shots/hold.png`). Still open in §13: the dump, the dome,
+the strip; baking the forms; the codex pass with the author's eye on `/dev`.
+Next: **step 9, КУРС, rumours, news** (a sold road spawns a rival barge that eats the appetite;
+rumours name where a промысел would stand and speak the уклад; news with a cause when a shop is
+laid), then the three interface fixes.
 
 ## Small tails from almanac issue II
 

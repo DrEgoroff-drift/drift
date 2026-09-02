@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 351 · символов верхнего уровня: 3256
+Файлов: 352 · символов верхнего уровня: 3259
 
 ## СИМВОЛЫ
 
@@ -698,6 +698,7 @@ drawMap                      src/18-mode-map.js:81
 drawMisFigure                src/11z-misclosure.js:63
 drawModule                   src/21aa-base-rooms.js:384
 drawMonolith                 src/20aa-poi-shapes.js:193
+drawMooredBarge              src/17e-station-body.js:17
 drawNebula                   src/16-flight.js:91
 drawNodeIcon                 src/05a-nodes.js:264
 drawObelisk                  src/20aa-poi-shapes.js:276
@@ -705,6 +706,7 @@ drawObserv                   src/20aa-poi-shapes.js:491
 drawPirate                   src/12i-pirate-hull.js:320
 drawPirateBase               src/24a-mode-raid.js:103
 drawPirateSkin               src/03d-hull-marks.js:99
+drawPlanetLights             src/17e-station-body.js:45
 drawPlant                    src/20-life.js:383
 drawPlantAlien               src/20-life.js:197
 drawPOI                      src/20a-poi.js:173
@@ -738,7 +740,7 @@ drawSurface                  src/21e-surface-draw.js:650
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:523
+drawSysHud                   src/17-mode-system.js:525
 drawSysNebula                src/16a-space.js:178
 drawSystem                   src/17-mode-system.js:299
 drawTemple                   src/20aa-poi-shapes.js:50
@@ -2020,6 +2022,7 @@ planetHeightAt               src/07-planet.js:423
 planetHere                   src/12n-planet.js:61
 planEtherLine                src/11r-plan.js:43
 planetLight                  src/07-planet.js:193
+planetLightsN                src/17e-station-body.js:39
 planetLoadSum                src/12n-planet.js:122
 planetMat                    src/18a-material.js:63
 planetPaint                  src/07-planet.js:246
@@ -3709,6 +3712,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17d-house-shapes.js · 4 КБ
   · дома как язык форм:1
 
+## src/17e-station-body.js · 4 КБ
+  · тело станции и планеты: что построил игрок, видно:1
+
 ## src/17-mode-system.js · 39 КБ
   · режим: система:1
 
@@ -4139,7 +4145,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91x-hold-barge.js · 5 КБ
   · автотесты: холдинг · своя баржа (M294):1
 
-## tests/91x-hold-fx.js · 7 КБ
+## tests/91x-hold-fx.js · 8 КБ
   · автотесты: холдинг · семьи E–I, каждый крючок спрошен (M295):1
 
 ## tests/91x-hold-ladder.js · 3 КБ

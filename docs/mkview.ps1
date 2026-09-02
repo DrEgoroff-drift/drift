@@ -54,7 +54,20 @@ setTimeout(function(){
     G.t=period*((ph-(p.seed%100)/100+1)%1);
   }
   function run(n,u,d){for(var f=0;f<n;f++){G.t+=.01;u(1);d();}}
-  if(scene==="system"){
+  if(scene==="hold"){
+    /* холдинг (M296): станция с постройками, своей баржей у Причала и огнями на планете */
+    var K=G.sys.key,HH=holdOf(K),now=Date.now();HH.bld={};
+    ["alloyshop","regolith","nakop","guns","prichal","observatory"].forEach(function(id){
+      HH.bld[id]={lvl:id==="alloyshop"?2:1,t0:now,ready:now-1,my:{},got:{}};});
+    G.place=G.place||{};G.place[K+"/0"]={f:0,l:0,n:2,take:0,hurt:0,care:0};
+    holdDeed(G.sx,G.sy,"drill",4);holdDeed(G.sx,G.sy,"drone",6);
+    var hc=genMerc(7,["haul"]);hc.cargo={};hc.traits=[];G.crew.push(hc);G.owned.vyuk=true;crewAssignShip(hc,"vyuk");
+    hc.order={kind:"barge",sx:G.sx,sy:G.sy};hc.barge={legs:[K],cursor:0,t0:now,fed:0,name:"Тюк"};
+    G.mode="system";G.zoom=(location.search.indexOf("z=")>=0?+location.search.split("z=")[1]:1.3)||1.3;G.prompt="ДЕЙСТВИЕ — СТЫКОВКА";
+    run(3,updateSystem,drawSystem);   /* положение станции считается в обновлении — сперва оно, потом парковка */
+    G.ship.x=G.sys.station.x-40;G.ship.y=G.sys.station.y+90;G.ship.a=-.4;G.ship.vx=0;G.ship.vy=0;
+    run(40,updateSystem,drawSystem);   /* камера догоняет корабль плавно (flightCam) */
+  }else if(scene==="system"){
     G.mode="system";G.zoom=.5;G.prompt="ДЕЙСТВИЕ — СТЫКОВКА · ТОРГОВЫЙ УЗЕЛ";
     for(var f=0;f<3;f++){G.t+=.02;drawSystem();}
   }else if(scene==="cave"){
