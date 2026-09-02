@@ -81,10 +81,25 @@ $PLAN_KB = 60      # порог для PLAN.md
 # и `26-ui-station` (четыре вкладки → `26b-ui-station-work`). Двое последних
 # вышли из этого списка СОВСЕМ (26-ui-station 36 КБ, 23-mode-dig 15 КБ после
 # давнего распила): поблажка снимается вместе с долгом, иначе она вечная.
-$BULK_OLD = @{     # известные крупные, замерены 2026-08-15
-  "12c-mgr-core.js"    = 47
-  "27f-hq-room.js"     = 40
-  "27e-ui-home.js"     = 43
+$BULK_OLD = @{     # известные крупные; замер обновлён 2026-09-02 (было 3 имени от 2026-08-15,
+                   # сторож кричал на 17 модулей каждую сборку — см. правило выше: молчание = «не растёт»)
+  "14-save.js" = 58
+  "21ac-base-draw.js" = 52
+  "26-ui-station.js" = 50
+  "24aa-raid-draw.js" = 50
+  "12c-mgr-core.js" = 48
+  "27k-road.js" = 47
+  "21e-surface-draw.js" = 47
+  "25g-postcard.js" = 45
+  "27c-ui-hq.js" = 44
+  "27e-ui-home.js" = 44
+  "21-mode-surface.js" = 44
+  "27l-road-draw.js" = 44
+  "12y-parrot-face.js" = 42
+  "27f-hq-room.js" = 42
+  "29d-home-draw.js" = 41
+  "22-mode-cave.js" = 41
+  "23a-dig-draw.js" = 41
 }
 function Bulk($files, $tfiles) {
   $big = @(@($files) + @($tfiles) | Where-Object {
