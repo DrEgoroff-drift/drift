@@ -7,6 +7,18 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.297.0 - M300: the tails of the screens pass
+
+- **Heading cap 24.** `secTidy` splits anything longer at the first « · »; the suite asserts
+  24 on every station tab; the ship screen goes through the same pass.
+- **One line per compact card.** The cantina's compact hire row says role and level; the
+  role's long note («держит наёмников: приказы, ремонт…») lives in the full card only.
+- **The map footer stays left of the rail.** A footer line wider than the rail is split at
+  « · » into as many rows as fit, instead of running under КАРТА and МЕНЮ.
+- **The hauler shuttles.** A hired hand on «перевозка» flies station → planet → station on a
+  slow triangle wave, instead of circling the pier at 180 units; the label still names the
+  order.
+
 ## 0.296.0 - M299: the screens pass — five surfaces, headings, the map that keeps you in frame
 
 `docs/DESIGN-screens.md`: the phone playtest of 02.09 read as one defect - a press with no

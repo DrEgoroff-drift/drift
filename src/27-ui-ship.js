@@ -155,6 +155,7 @@ function svRender(){
     r.appendChild(box);
     $svBody.appendChild(r);
   }
+  if(typeof secTidy==="function")secTidy($svBody);   /* заголовки по §1a (M300) */
   /* скафандр — своя вкладка СКАФАНДР (M167) */
 }
 function openShipView(){

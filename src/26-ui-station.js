@@ -153,7 +153,11 @@ document.getElementById("bRepair").addEventListener("click",()=>{
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;
   /* правило 1 оформления: капслок — подписям, а не тексту. Длинный заголовок
      секции — это фраза, которую читают, и она набирается обычным текстом */
-  if(cls==="sec"&&typeof html==="string"&&(html.length>48||html.indexOf(" — ")>=0)){
+  /* цепочка «ИМЯ · объяснение» с короткой головой остаётся заголовком (M300):
+     secTidy разделит её на заголовок и заметку; иначе секция теряла начало и
+     на доске уезжала в чужую полосу */
+  const chain=cls==="sec"&&typeof html==="string"&&html.indexOf(" · ")>0&&html.split(" · ")[0].trim().length<=SEC_CAP&&html.indexOf("<")<0;
+  if(cls==="sec"&&typeof html==="string"&&!chain&&(html.length>48||html.indexOf(" — ")>=0)){
     e.className="sec note";
     /* исходники набраны капслоком под прежний стиль; фраза переводится в
        обычный регистр с заглавной в начале предложения */
@@ -215,7 +219,7 @@ foldBlock.open={};
    знаков делится по первому « · » — голова остаётся заголовком, хвост уходит
    заметкой обычным регистром, цифра на конце — счётчиком справа. Заголовок без
    « · » длиннее 32 целиком становится заметкой (как делает el при 48). */
-const SEC_CAP=32;
+const SEC_CAP=24;   /* было 32 (0.296.0); §1a просит 24 */
 function secTidy(root){
   root=root||$body;
   const lc=t=>t.toLocaleLowerCase("ru").replace(/(^|[.!?]\s+)([а-яёa-z])/g,(m,a,b)=>a+b.toUpperCase());

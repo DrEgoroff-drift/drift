@@ -114,10 +114,10 @@ function rumourEtherLine(r){
 function rumourBlock(){
   const L=rumoursHere();
   if(!L.length)return;
-  $body.appendChild(el("div","sec","О ЧЁМ ЗДЕСЬ ГОВОРЯТ · МЕСТА, КОТОРЫХ НЕТ НИ НА ОДНОЙ КАРТЕ"));
-  $body.appendChild(el("div","row","<div class='nm'><s>ни метки, ни стрелки не будет: "+
-    "слух — это адрес с промахом и человек, которому вы либо верите, либо нет. "+
-    "Записан в тетрадь, страница ЛЮДИ</s></div>"));
+  /* заголовок называет, заметка объясняет один раз (M300); блок идёт в полосу ДАЛЕКО */
+  if(typeof secHead==="function")secHead("СЛУХИ",{count:L.length,key:"rumours",
+    note:"адрес с промахом и человек, которому вы либо верите, либо нет; метки на карте не будет — записано в тетрадь, ЛЮДИ"});
+  else $body.appendChild(el("div","sec","СЛУХИ"));
   for(const q of L){
     const r=el("div","row");
     r.appendChild(el("div","nm","<b style='color:#cfe3ea'>"+q.lines[0]+"</b>"+

@@ -1467,7 +1467,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.296.0";
+const VER="0.297.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -13368,10 +13368,10 @@ function rumourEtherLine(r){
 function rumourBlock(){
   const L=rumoursHere();
   if(!L.length)return;
-  $body.appendChild(el("div","sec","О ЧЁМ ЗДЕСЬ ГОВОРЯТ · МЕСТА, КОТОРЫХ НЕТ НИ НА ОДНОЙ КАРТЕ"));
-  $body.appendChild(el("div","row","<div class='nm'><s>ни метки, ни стрелки не будет: "+
-    "слух — это адрес с промахом и человек, которому вы либо верите, либо нет. "+
-    "Записан в тетрадь, страница ЛЮДИ</s></div>"));
+  /* заголовок называет, заметка объясняет один раз (M300); блок идёт в полосу ДАЛЕКО */
+  if(typeof secHead==="function")secHead("СЛУХИ",{count:L.length,key:"rumours",
+    note:"адрес с промахом и человек, которому вы либо верите, либо нет; метки на карте не будет — записано в тетрадь, ЛЮДИ"});
+  else $body.appendChild(el("div","sec","СЛУХИ"));
   for(const q of L){
     const r=el("div","row");
     r.appendChild(el("div","nm","<b style='color:#cfe3ea'>"+q.lines[0]+"</b>"+
@@ -15541,7 +15541,17 @@ function allyWork(A){
     const p=sys.planets[(A.c.seed>>>3)%Math.max(1,sys.planets.length)];
     if(p)return around(p.x,p.y,p.radius+120);
   }
-  if(kind==="haul"&&sys.station)return around(sys.station.x,sys.station.y,180);
+  /* перевозка — челнок (M300): станция → планета → станция, а не круг у
+     причала. Плейтест 02.09: «чувак у станции не летает, просто вокруг».
+     Треугольная волна: у концов плеча он замедляется сам — цель стоит */
+  if(kind==="haul"&&sys.station){
+    const S=sys.station;
+    const p=sys.planets.length?sys.planets[(A.c.seed>>>3)%sys.planets.length]:null;
+    if(!p)return around(S.x,S.y,180);
+    const ph=(A.wt*.35+(A.c.seed%100)/100)%1,t=ph<.5?ph*2:2-ph*2;
+    const ex=p.x+(p.radius||0)+140,ey=p.y;
+    return {x:S.x+(ex-S.x)*t,y:S.y+(ey-S.y)*t};
+  }
   if(kind==="hunt"){
     const r=(sys.belt?sys.belt.orbit:2000)*.8;
     const a=A.wt*1.6+(A.c.seed%50)/50*TAU;
@@ -34217,6 +34227,16 @@ function drawMap(){
       Rr.push([occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)",occSummary()]);
     /* влезут ли рядом: меряем самые длинные из обеих колонок */
     ctx.font="10px ui-monospace,monospace";
+    /* строка длиннее борта делится по « · » (M300): на телефоне описание
+       системы уходило под кнопки КАРТА и МЕНЮ и обрывалось на «10.82 из 3.0» */
+    const avail=RX-32;
+    for(let i=0;i<L.length;i++){
+      if(ctx.measureText(L[i][1]).width<=avail)continue;
+      const segs=L[i][1].split(" · "),rows=[];let cur0="";
+      for(const sg of segs){const t=cur0?cur0+" · "+sg:sg;if(cur0&&ctx.measureText(t).width>avail){rows.push(cur0);cur0=sg;}else cur0=t;}
+      if(cur0)rows.push(cur0);
+      L.splice(i,1,...rows.map(t=>[L[i][0],t]));i+=rows.length-1;
+    }
     const wid=a=>a.reduce((m,r)=>Math.max(m,ctx.measureText(r[1]).width),0);
     const side=wid(L)+wid(Rr)+24<=RX-16-16;
     const rows=[];
@@ -34319,7 +34339,7 @@ function drawMap(){
        const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9,w,12);}
    });
    ctx.textAlign="right";}
-  G.prompt=G.mapClean?"":(G.mapPeek?"ТАП — ВЫБОР · ПАЛЬЦЕМ — ДВИГАТЬ · НАЗАД — НА СТАНЦИЮ":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК");
+  G.prompt=G.mapClean?"":(G.mapPeek?"ТАП — ВЫБОР · НАЗАД — НА СТАНЦИЮ":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК");
   if(actEdge){
     if(G.mapPeek)say("Сначала отстыкуйтесь");
     else if(!bad)jump(cost);
@@ -56575,7 +56595,11 @@ document.getElementById("bRepair").addEventListener("click",()=>{
 function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;
   /* правило 1 оформления: капслок — подписям, а не тексту. Длинный заголовок
      секции — это фраза, которую читают, и она набирается обычным текстом */
-  if(cls==="sec"&&typeof html==="string"&&(html.length>48||html.indexOf(" — ")>=0)){
+  /* цепочка «ИМЯ · объяснение» с короткой головой остаётся заголовком (M300):
+     secTidy разделит её на заголовок и заметку; иначе секция теряла начало и
+     на доске уезжала в чужую полосу */
+  const chain=cls==="sec"&&typeof html==="string"&&html.indexOf(" · ")>0&&html.split(" · ")[0].trim().length<=SEC_CAP&&html.indexOf("<")<0;
+  if(cls==="sec"&&typeof html==="string"&&!chain&&(html.length>48||html.indexOf(" — ")>=0)){
     e.className="sec note";
     /* исходники набраны капслоком под прежний стиль; фраза переводится в
        обычный регистр с заглавной в начале предложения */
@@ -56637,7 +56661,7 @@ foldBlock.open={};
    знаков делится по первому « · » — голова остаётся заголовком, хвост уходит
    заметкой обычным регистром, цифра на конце — счётчиком справа. Заголовок без
    « · » длиннее 32 целиком становится заметкой (как делает el при 48). */
-const SEC_CAP=32;
+const SEC_CAP=24;   /* было 32 (0.296.0); §1a просит 24 */
 function secTidy(root){
   root=root||$body;
   const lc=t=>t.toLocaleLowerCase("ru").replace(/(^|[.!?]\s+)([а-яёa-z])/g,(m,a,b)=>a+b.toUpperCase());
@@ -57660,7 +57684,8 @@ function cantHireRow(m,full){
     cantSel=full?null:m.id;sfx("ui");renderTab();
   };
   r.appendChild(faceEl(m,full?64:44));
-  const line=R.ru.toLowerCase()+" · "+R.note;
+  /* сжатый ряд — одна строка (M300): роль и уровень; чем он занят — в полной карточке */
+  const line=full?R.ru.toLowerCase()+" · "+R.note:R.ru.toLowerCase()+" · уровень "+mgrLevel(m)+(taken?" · домен занят":"");
   let html="<b style='color:"+R.col+"'>"+m.name+"</b><s>"+line+"</s>";
   if(full){
     html+="<s class='fig'>уровень "+mgrLevel(m)+" · оклад "+mgrPay(m)+" кр/мин · доля "+(mgrCut(m)*100).toFixed(1)+"%</s>"+
@@ -57870,6 +57895,7 @@ function hqRender(){
      чем домен занят прямо сейчас (`27f-hq-room`). */
   hqScene();
   $hqBody.appendChild(el("div","sec note","тыкните по человеку у пульта · пустой пульт — свободный домен"));
+  if(typeof secTidy==="function")requestAnimationFrame(()=>secTidy($hqBody));   /* после карточек (M300) */
   const m=G.mgrs.find(x=>x.id===hqSel);
   const R=MGR_ROLES[m.role];
   $hqBody.appendChild(el("div","sec",m.name.toUpperCase()+" · "+R.ru.toUpperCase()+
@@ -64230,6 +64256,7 @@ function svRender(){
     r.appendChild(box);
     $svBody.appendChild(r);
   }
+  if(typeof secTidy==="function")secTidy($svBody);   /* заголовки по §1a (M300) */
   /* скафандр — своя вкладка СКАФАНДР (M167) */
 }
 function openShipView(){

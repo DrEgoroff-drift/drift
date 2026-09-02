@@ -131,7 +131,8 @@ function cantHireRow(m,full){
     cantSel=full?null:m.id;sfx("ui");renderTab();
   };
   r.appendChild(faceEl(m,full?64:44));
-  const line=R.ru.toLowerCase()+" · "+R.note;
+  /* сжатый ряд — одна строка (M300): роль и уровень; чем он занят — в полной карточке */
+  const line=full?R.ru.toLowerCase()+" · "+R.note:R.ru.toLowerCase()+" · уровень "+mgrLevel(m)+(taken?" · домен занят":"");
   let html="<b style='color:"+R.col+"'>"+m.name+"</b><s>"+line+"</s>";
   if(full){
     html+="<s class='fig'>уровень "+mgrLevel(m)+" · оклад "+mgrPay(m)+" кр/мин · доля "+(mgrCut(m)*100).toFixed(1)+"%</s>"+
@@ -341,6 +342,7 @@ function hqRender(){
      чем домен занят прямо сейчас (`27f-hq-room`). */
   hqScene();
   $hqBody.appendChild(el("div","sec note","тыкните по человеку у пульта · пустой пульт — свободный домен"));
+  if(typeof secTidy==="function")requestAnimationFrame(()=>secTidy($hqBody));   /* после карточек (M300) */
   const m=G.mgrs.find(x=>x.id===hqSel);
   const R=MGR_ROLES[m.role];
   $hqBody.appendChild(el("div","sec",m.name.toUpperCase()+" · "+R.ru.toUpperCase()+

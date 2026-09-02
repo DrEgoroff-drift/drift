@@ -583,7 +583,17 @@ function allyWork(A){
     const p=sys.planets[(A.c.seed>>>3)%Math.max(1,sys.planets.length)];
     if(p)return around(p.x,p.y,p.radius+120);
   }
-  if(kind==="haul"&&sys.station)return around(sys.station.x,sys.station.y,180);
+  /* перевозка — челнок (M300): станция → планета → станция, а не круг у
+     причала. Плейтест 02.09: «чувак у станции не летает, просто вокруг».
+     Треугольная волна: у концов плеча он замедляется сам — цель стоит */
+  if(kind==="haul"&&sys.station){
+    const S=sys.station;
+    const p=sys.planets.length?sys.planets[(A.c.seed>>>3)%sys.planets.length]:null;
+    if(!p)return around(S.x,S.y,180);
+    const ph=(A.wt*.35+(A.c.seed%100)/100)%1,t=ph<.5?ph*2:2-ph*2;
+    const ex=p.x+(p.radius||0)+140,ey=p.y;
+    return {x:S.x+(ex-S.x)*t,y:S.y+(ey-S.y)*t};
+  }
   if(kind==="hunt"){
     const r=(sys.belt?sys.belt.orbit:2000)*.8;
     const a=A.wt*1.6+(A.c.seed%50)/50*TAU;

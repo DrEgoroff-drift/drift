@@ -8,7 +8,7 @@ TEST_SUITES.push(()=>suite("экраны M299: заголовок называе
   ok(!!S,"станция есть");
   G.ship.x=S.x+40;G.ship.y=S.y;
   openStation();
-  const CAP=32;
+  const CAP=24;
   let worst="",worstN=0,heads=0;
   for(const t of stTabsHere()){
     tab=t;renderTab();

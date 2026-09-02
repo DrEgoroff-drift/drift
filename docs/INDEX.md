@@ -26,7 +26,7 @@ $menu                        src/15-input.js:227
 $msg                         src/27z-telemetry.js:38
 $msl                         src/27z-telemetry.js:41
 $nav                         src/27z-telemetry.js:40
-$opts                        src/26-ui-station.js:845
+$opts                        src/26-ui-station.js:849
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:37
 $sh                          src/27z-telemetry.js:8
@@ -265,7 +265,7 @@ BLUE_TAB                     src/01-core.js:48
 blueNoise                    src/01-core.js:49
 BLUEPRINTS                   src/12c-mgr-core.js:662
 BM_WARM                      src/21aa-base-rooms.js:20
-boardLanes                   src/26-ui-station.js:249
+boardLanes                   src/26-ui-station.js:253
 bodyInSystem                 src/16-flight.js:109
 bookAll                      src/12ub-books.js:106
 bookCount                    src/12ub-books.js:108
@@ -301,19 +301,19 @@ camStep                      src/19c-light.js:141
 canPay                       src/21a-mode-base.js:51
 CANT_STYLE                   src/27d-ui-cantina.js:15
 cantBarkeep                  src/27d-ui-cantina-props.js:15
-cantBubble                   src/27c-ui-hq.js:246
+cantBubble                   src/27c-ui-hq.js:247
 cantCounter                  src/27d-ui-cantina-props.js:306
-cantDealRow                  src/27c-ui-hq.js:156
+cantDealRow                  src/27c-ui-hq.js:157
 cantFigure                   src/27d-ui-cantina.js:391
-cantFolkRow                  src/27c-ui-hq.js:180
+cantFolkRow                  src/27c-ui-hq.js:181
 cantHireRow                  src/27c-ui-hq.js:123
 cantinaPool                  src/12c-mgr-core.js:259
-cantinaScene                 src/27c-ui-hq.js:252
+cantinaScene                 src/27c-ui-hq.js:253
 cantProps                    src/27d-ui-cantina-props.js:153
 cantRoomBody                 src/27d-ui-cantina.js:45
-cantSay                      src/27c-ui-hq.js:247
+cantSay                      src/27c-ui-hq.js:248
 cantSeats                    src/27d-ui-cantina.js:383
-cantSel                      src/27c-ui-hq.js:251
+cantSel                      src/27c-ui-hq.js:252
 cantStyle                    src/27d-ui-cantina.js:27
 cantTables                   src/27d-ui-cantina-props.js:241
 cantView                     src/27d-ui-cantina-props.js:82
@@ -632,7 +632,7 @@ doomTick                     src/12v-doom.js:137
 doorsShut                    src/11ar-doors.js:27
 drawAccel                    src/20aa-poi-shapes.js:143
 drawAccountShelf             src/12w-survey.js:99
-drawAllies                   src/12a-crew.js:628
+drawAllies                   src/12a-crew.js:638
 drawAnomaly                  src/20aa-poi-shapes.js:168
 drawAstronaut                src/20-life.js:4
 drawBarge                    src/12l-barge.js:510
@@ -864,7 +864,7 @@ FACE_SKIN                    src/12d-mgr-face.js:10
 faceEl                       src/27c-ui-hq.js:6
 facePath                     src/12d-mgr-face.js:19
 faceRnd                      src/12d-mgr-face.js:16
-factPrices                   src/27c-ui-hq.js:561
+factPrices                   src/27c-ui-hq.js:563
 FAUNA_RES                    src/02-world.js:88
 faunaOf                      src/20e-species.js:268
 fbm1                         src/01-core.js:30
@@ -933,7 +933,7 @@ fleetUniqueName              src/04b-fleet.js:100
 flightCam                    src/16a-space.js:286
 floraOf                      src/20e-species.js:91
 FOE_KINDS                    src/24a-mode-raid.js:17
-foldBlock                    src/26-ui-station.js:195
+foldBlock                    src/26-ui-station.js:199
 FOLK                         src/12u-folk.js:31
 FOLK_IDS                     src/12u-folk.js:81
 folkAll                      src/11ah-offer.js:76
@@ -1047,7 +1047,7 @@ GROK_DIRT                    src/12tb-grok.js:29
 GROK_LIKE                    src/12tb-grok.js:28
 GROK_MIN                     src/12tb-grok.js:27
 GROK_NAME                    src/12tb-grok.js:26
-grokBlock                    src/27c-ui-hq.js:193
+grokBlock                    src/27c-ui-hq.js:194
 grokBusy                     src/12tb-grok.js:68
 grokCanTeach                 src/12tb-grok.js:136
 grokFace                     src/12tb-grok.js:173
@@ -1260,14 +1260,14 @@ HOUSES                       src/12u-scrip.js:21
 houseWallMark                src/17d-house-shapes.js:38
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
-hqAiOffer                    src/27c-ui-hq.js:459
-hqBtnTick                    src/27c-ui-hq.js:297
+hqAiOffer                    src/27c-ui-hq.js:461
+hqBtnTick                    src/27c-ui-hq.js:298
 hqConsole                    src/27f-hq-room.js:228
 hqFigure                     src/27f-hq-room.js:513
 hqHover                      src/27f-hq-room.js:687
-hqJobCard                    src/27c-ui-hq.js:518
-hqRelicSlot                  src/27c-ui-hq.js:484
-hqRender                     src/27c-ui-hq.js:304
+hqJobCard                    src/27c-ui-hq.js:520
+hqRelicSlot                  src/27c-ui-hq.js:486
+hqRender                     src/27c-ui-hq.js:305
 hqRoomBody                   src/27f-hq-room.js:32
 hqScene                      src/27f-hq-room.js:644
 hqScreenData                 src/27f-hq-room.js:316
@@ -1384,7 +1384,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:530
+jump                         src/18-mode-map.js:540
 jumpToBase                   src/21a-mode-base.js:315
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -1406,7 +1406,7 @@ keepersSign                  src/11k-keepers.js:114
 keplerPos                    src/06-galaxy.js:39
 keyLabel                     src/15-input.js:132
 keyMap                       src/15-input.js:121
-keyRow                       src/27-ui-ship.js:188
+keyRow                       src/27-ui-ship.js:189
 keys                         src/08-state.js:57
 killPirate                   src/13-pirates.js:180
 killRock                     src/24-mode-belt.js:151
@@ -1430,9 +1430,9 @@ KIT_RU                       src/12x-suit.js:22
 KIT_WEAR                     src/12x-suit.js:32
 kitAddMod                    src/12x-suit.js:148
 kitAll                       src/12x-suit.js:47
-kitAnimRAF                   src/27-ui-ship.js:465
-kitAnimStart                 src/27-ui-ship.js:466
-kitAnimStop                  src/27-ui-ship.js:477
+kitAnimRAF                   src/27-ui-ship.js:466
+kitAnimStart                 src/27-ui-ship.js:467
+kitAnimStop                  src/27-ui-ship.js:478
 kitBlock                     src/12x-suit.js:296
 kitCanMod                    src/12x-suit.js:141
 kitColOf                     src/12x-suit.js:167
@@ -1474,8 +1474,8 @@ landerInk                    tests/91j-art.js:154
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344
 landOnTestPlanet             tests/90-harness.js:71
-LANE_RU                      src/26-ui-station.js:248
-LANE_RX                      src/26-ui-station.js:244
+LANE_RU                      src/26-ui-station.js:252
+LANE_RX                      src/26-ui-station.js:248
 last                         src/28-loop.js:85
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:86
@@ -1639,7 +1639,7 @@ mgrCrewYield                 src/12c-mgr-core.js:203
 mgrCut                       src/12c-mgr-core.js:173
 mgrDefect                    src/12c-mgr-core.js:348
 mgrDomain                    src/12c-mgr-core.js:515
-mgrDomainLine                src/27c-ui-hq.js:580
+mgrDomainLine                src/27c-ui-hq.js:582
 mgrDroneRate                 src/12c-mgr-core.js:219
 mgrFace                      src/12d-mgr-face.js:29
 mgrFee                       src/12c-mgr-core.js:299
@@ -1860,12 +1860,12 @@ ok                           tests/90-harness.js:23
 openBarge                    src/12l-barge.js:592
 openCrewView                 src/27b-ui-crew.js:230
 openDeal                     src/27n-ui-deal.js:163
-openHq                       src/27c-ui-hq.js:600
-openShipView                 src/27-ui-ship.js:160
+openHq                       src/27c-ui-hq.js:602
+openShipView                 src/27-ui-ship.js:161
 openStation                  src/26-ui-station.js:5
-OPT_TABS                     src/27-ui-ship.js:443
-optGroups                    src/27-ui-ship.js:446
-optTab                       src/27-ui-ship.js:445
+OPT_TABS                     src/27-ui-ship.js:444
+optGroups                    src/27-ui-ship.js:447
+optTab                       src/27-ui-ship.js:446
 orbPathOf                    src/17-mode-system.js:288
 ORDER_WIN                    src/12aa-need.js:74
 orderDeliver                 src/12aa-need.js:114
@@ -2338,7 +2338,7 @@ renderHold                   src/27j-ui-hold.js:176
 renderLog                    src/11-log.js:71
 renderLoreBoard              src/27h-ui-lore.js:26
 renderMail                   src/25k-post-mail.js:36
-renderOpts                   src/27-ui-ship.js:198
+renderOpts                   src/27-ui-ship.js:199
 renderPrices                 src/12aa-need.js:236
 renderQsl                    src/11an-qsl.js:160
 renderRecord                 src/11aa-record.js:80
@@ -2346,8 +2346,8 @@ renderRelays                 src/11ap-relay.js:243
 renderRoute                  src/12r-route.js:349
 renderSiteTab                src/26c-ui-station-site.js:7
 renderStrips                 src/27i-ui-table.js:261
-renderTab                    src/26-ui-station.js:340
-renderTabBody                src/26-ui-station.js:351
+renderTab                    src/26-ui-station.js:344
+renderTabBody                src/26-ui-station.js:355
 renderThings                 src/27i-ui-table.js:292
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
@@ -2367,7 +2367,7 @@ RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:79
 resAuto                      src/28-loop.js:114
 resEma                       src/28-loop.js:113
-resetArm                     src/26-ui-station.js:844
+resetArm                     src/26-ui-station.js:848
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
@@ -2639,9 +2639,9 @@ sdYard                       src/12tb-settle-draw2.js:410
 seamAdd                      src/12s-wear.js:181
 seamsAll                     src/12s-wear.js:180
 seamsOf                      src/12s-wear.js:182
-SEC_CAP                      src/26-ui-station.js:218
-secHead                      src/26-ui-station.js:168
-secTidy                      src/26-ui-station.js:219
+SEC_CAP                      src/26-ui-station.js:222
+secHead                      src/26-ui-station.js:172
+secTidy                      src/26-ui-station.js:223
 sellCargo                    src/12-economy.js:65
 sellDroneYield               src/12-economy.js:86
 sellQuote                    src/12ab-hold.js:83
@@ -2698,9 +2698,9 @@ SHIFT_TALK                   src/03f-hull-role.js:63
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:289
+shipRow                      src/26-ui-station.js:293
 SHIPS                        src/03-ships.js:2
-shipThumb                    src/26-ui-station.js:276
+shipThumb                    src/26-ui-station.js:280
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:235
 shipZoneR                    src/19f-lander.js:14
@@ -2945,7 +2945,7 @@ TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
 TABLE_REPLY                  src/11b-speech.js:158
 tableBake                    src/27i-ui-table.js:107
-tableBlock                   src/27c-ui-hq.js:620
+tableBlock                   src/27c-ui-hq.js:622
 tableIsOpen                  src/27i-ui-table.js:23
 tableNewBy                   src/27i-ui-table.js:76
 tableNewThings               src/27i-ui-table.js:73
@@ -3101,7 +3101,7 @@ UNIQUE_COLS                  src/03-ships.js:14
 UNIQUE_TAG                   src/03-ships.js:15
 unlockAudio                  src/09-audio.js:48
 unpackPart                   src/05-parts.js:323
-updateAllies                 src/12a-crew.js:594
+updateAllies                 src/12a-crew.js:604
 updateBarges                 src/12l-barge.js:160
 updateBase                   src/21a-mode-base.js:334
 updateBelt                   src/24-mode-belt.js:185
@@ -3536,7 +3536,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ac-bld.js · 18 КБ
   · холдинг · постройки (BLD):1
 
-## src/12a-crew.js · 41 КБ
+## src/12a-crew.js · 42 КБ
   · наёмники: флот, которым не управляешь напрямую:1
   · приказы:144
   · переданные модули:269
@@ -3764,7 +3764,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
-## src/18-mode-map.js · 37 КБ
+## src/18-mode-map.js · 38 КБ
   · карта:1
   · где у карты пол и где правый борт:3
   · карта: ночное небо, а не схема молекулы:51
@@ -3980,10 +3980,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26c-ui-station-site.js · 9 КБ
   · станция · вкладка СТРОЙКА (ВЛАДЕНИЯ):1
 
-## src/26-ui-station.js · 57 КБ
+## src/26-ui-station.js · 58 КБ
   · станция:1
-  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):163
-  · настройки:843
+  · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):167
+  · настройки:847
 
 ## src/27b-ui-crew.js · 15 КБ
   · экран экипажа:1

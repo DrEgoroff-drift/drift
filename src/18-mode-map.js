@@ -418,6 +418,16 @@ function drawMap(){
       Rr.push([occN?"rgba(255,107,87,.75)":"rgba(143,208,138,.75)",occSummary()]);
     /* влезут ли рядом: меряем самые длинные из обеих колонок */
     ctx.font="10px ui-monospace,monospace";
+    /* строка длиннее борта делится по « · » (M300): на телефоне описание
+       системы уходило под кнопки КАРТА и МЕНЮ и обрывалось на «10.82 из 3.0» */
+    const avail=RX-32;
+    for(let i=0;i<L.length;i++){
+      if(ctx.measureText(L[i][1]).width<=avail)continue;
+      const segs=L[i][1].split(" · "),rows=[];let cur0="";
+      for(const sg of segs){const t=cur0?cur0+" · "+sg:sg;if(cur0&&ctx.measureText(t).width>avail){rows.push(cur0);cur0=sg;}else cur0=t;}
+      if(cur0)rows.push(cur0);
+      L.splice(i,1,...rows.map(t=>[L[i][0],t]));i+=rows.length-1;
+    }
     const wid=a=>a.reduce((m,r)=>Math.max(m,ctx.measureText(r[1]).width),0);
     const side=wid(L)+wid(Rr)+24<=RX-16-16;
     const rows=[];
@@ -520,7 +530,7 @@ function drawMap(){
        const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9,w,12);}
    });
    ctx.textAlign="right";}
-  G.prompt=G.mapClean?"":(G.mapPeek?"ТАП — ВЫБОР · ПАЛЬЦЕМ — ДВИГАТЬ · НАЗАД — НА СТАНЦИЮ":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК");
+  G.prompt=G.mapClean?"":(G.mapPeek?"ТАП — ВЫБОР · НАЗАД — НА СТАНЦИЮ":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК");
   if(actEdge){
     if(G.mapPeek)say("Сначала отстыкуйтесь");
     else if(!bad)jump(cost);
