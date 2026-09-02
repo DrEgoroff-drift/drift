@@ -37,7 +37,8 @@ TEST_SUITES.push(()=>suite("холдинг: таблица построек и �
   ok(fam.A===8&&fam.B===22&&fam.C===18&&fam.D===8,"семьи: 8 · 22 · 18 · 8 ("+fam.A+" "+fam.B+" "+fam.C+" "+fam.D+")");
   ok(indPrice("alloy")===127&&indPrice("roll")===68&&indPrice("bearing")===345&&indPrice("hullsec")===2092,"теневые цены сходятся с замыслом (127 · 68 · 345 · 2092)");
   const up=bldUpgradeCost(BLD.alloyshop,3);
-  ok(up.credits===2400&&up.mline===2&&up.habblock===1,"×3 — дважды ×1, две линии и жилой блок");
+  ok(up.credits===BLD.alloyshop.cost.credits*2&&up.mline===2&&up.habblock===1,"×3 — дважды ×1, две линии и жилой блок");
+  ok(BLD.alloyshop.cost.credits>=1200&&BLD.oxyshop.cost.credits===400,"кредиты цеха — по его паю: плавильный дороже кислородного ("+BLD.alloyshop.cost.credits+" / "+BLD.oxyshop.cost.credits+")");
 }));
 TEST_SUITES.push(()=>suite("холдинг: ступень от дел, площадка и правило §10.1",()=>{
   resetWorld();

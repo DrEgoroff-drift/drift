@@ -7,6 +7,20 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.290.0 - M293: the measurement
+
+Step 5 of the holding plan: `tests/91zzw-holding` prints the layer against §16 of the design and
+holds three of its targets as rules - the first share no later than forty minutes after the site
+opens, no tier-1 shop paying back faster than two loops or slower than nine, a route long enough
+for a chain of five stations. What the printout said, and what changed because of it:
+
+- **Assembly of a tier-1 shop is one shift, not two.** Two shifts of assembly plus one of feeding
+  was an hour; §16.8 asks for forty minutes. Tiers 2 and 3 take three and five.
+- The rest is a report, per line: plain trade in credits per minute on a «Стриж», the best and
+  the worst tier-1 shop per shift and per unit of hold, the share against trade per unit and per
+  hour, payback in loops by tier, the промысел's discount, the station's own appetite against the
+  best share. Numbers are printed so the curve is turned by a printout and not by feel.
+
 ## 0.289.0 - M292: the ladder visible
 
 Step 4 of the holding plan (`docs/DESIGN-holding.md` §8, §13). The number existed since M291;

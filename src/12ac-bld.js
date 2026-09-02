@@ -19,7 +19,7 @@ const BLD_FAM={
   C:{ru:"Узлы",    sh:"rack",  note:"ест передел, платит паем"},
   D:{ru:"Крупное", sh:"hangar",note:"ест узлы, делает то, что ест стройка"}
 };
-const BLD_SHIFTS={1:2,2:4,3:6};        /* монтаж по ярусу, в сменах */
+const BLD_SHIFTS={1:1,2:3,3:5};        /* монтаж по ярусу, в сменах — ярус 1 за смену, иначе первый пай не успевает в 40 минут (§16.8, замер M293) */
 const BLD_FAM_KEYS=["A","B","C","D"];
 const BLD={};
 function bldAdd(fam,id,ru,eats,makes,cost,at){
@@ -35,8 +35,16 @@ bldAdd("A","gasfield",  "Газовый промысел",      null,{volatiles:
 bldAdd("A","greenhouse","Оранжерея",             null,{organics:10},         {credits:1400,alloy:8,silicon:20},  "world:terran,jungle,ocean");
 bldAdd("A","biostation","Биостанция",            null,{carbon:4,xeno:1},     {credits:3000,alloy:16,organics:24},"fauna");
 bldAdd("A","dumpworks", "Отвальный промысел",    null,{iron:6,silicon:4},    {credits:1000,alloy:6,iron:12},     "mine");
-/* B · передел — ярус 1: цена 1 200 кр · сплавы 8 · 24 главного входа */
-function bldB(id,ru,eats,makes){const main=Object.keys(eats)[0];const cost={credits:1200,alloy:8};cost[main]=24;bldAdd("B",id,ru,eats,makes,cost,"any");}
+/* Кредитная часть цены (замер M293, §16.3): десять смен пая цеха в теневой цене
+   минус материалы, не меньше 400 — так всякий цех окупается примерно за пять
+   кругов, а не Кислородный за одиннадцать при Плавильном за пять */
+function bldCredits(id,cost){
+  const d=BLD[id],out=Object.keys(d.makes)[0],share=d.makes[out]*indPrice(out);
+  let mat=0;for(const k in cost)if(k!=="credits")mat+=cost[k]*indPrice(k);
+  return Math.max(400,Math.round((10*share-mat)/100)*100);
+}
+/* B · передел — ярус 1: сплавы 8 · 24 главного входа · кредиты по пая */
+function bldB(id,ru,eats,makes){const main=Object.keys(eats)[0];const cost={alloy:8};cost[main]=24;bldAdd("B",id,ru,eats,makes,cost,"any");}
 bldB("alloyshop",  "Плавильный цех",      {iron:8,silicon:4},           {alloy:2});
 bldB("ferroshop",  "Ферросплавный цех",   {iron:6,titan:2},             {ferro:2});
 bldB("rollshop",   "Прокатный цех",       {iron:8,silicon:2},           {roll:3});
@@ -59,8 +67,8 @@ bldB("oxyshop",    "Кислородный цех",     {ice:8},                
 bldB("hydrshop",   "Гидразиновый цех",    {ice:4,organics:4},           {hydrazine:2});
 bldB("cryoshop",   "Криогенный цех",      {volatiles:4,ice:2},          {cryo:2});
 bldB("thermoshop", "Теплозащитный цех",   {silicon:4,carbon:2},         {thermo:2});
-/* C · узлы — ярус 2 (со ступени 20): 2 400 кр · сплавы 12 · прокат 6 · 12 главного входа */
-function bldC(id,ru,eats,makes){const main=Object.keys(eats)[0];const cost={credits:2400,alloy:12,roll:6};cost[main]=(cost[main]|0)+12;bldAdd("C",id,ru,eats,makes,cost,"any");}
+/* C · узлы — ярус 2 (со ступени 20): сплавы 12 · прокат 6 · 12 главного входа · кредиты по паю */
+function bldC(id,ru,eats,makes){const main=Object.keys(eats)[0];const cost={alloy:12,roll:6};cost[main]=(cost[main]|0)+12;bldAdd("C",id,ru,eats,makes,cost,"any");}
 bldC("bearingshop", "Подшипниковый цех",      {roll:4,graphite:1},         {bearing:2});
 bldC("pumpshop",    "Насосный цех",           {roll:3,alloy:2,insul:1},    {pump:2});
 bldC("opticshop",   "Оптический цех",         {quartz:4,dielec:1},         {optics:2});
@@ -79,8 +87,8 @@ bldC("cannedshop",  "Консервный цех",         {protein:4,spirit:1},
 bldC("fabricshop",  "Ткацкий цех",            {cfiber:2,resin:2},          {fabric:2});
 bldC("filmshop",    "Плёночный цех",          {resin:3,dielec:1},          {film:3});
 bldC("phosphorshop","Люминофорный цех",       {quartz:2,isotopes:1,dielec:1},{phosphor:2});
-/* D · крупное — ярус 3 (со ступени 25, Стапель — с 22): 4 800 кр · прокат 12 · арматура 8 · подшипник 2 */
-function bldD(id,ru,eats,makes){bldAdd("D",id,ru,eats,makes,{credits:4800,roll:12,rebar:8,bearing:2},"any");}
+/* D · крупное — ярус 3 (со ступени 25, Стапель — с 22): прокат 12 · арматура 8 · подшипник 2 · кредиты по паю */
+function bldD(id,ru,eats,makes){const cost={roll:12,rebar:8,bearing:2};bldAdd("D",id,ru,eats,makes,cost,"any");}
 bldD("slipway",    "Стапель",            {plate:4,rebar:2,bearing:1},  {hullsec:1});
 bldD("mlineyard",  "Станочный участок",  {bearing:2,relay:2,roll:2},   {mline:1});
 bldD("blockyard",  "Блочный участок",    {concrete:4,film:2,regen:1},  {habblock:1});
@@ -89,7 +97,13 @@ bldD("mastyard",   "Мачтовый участок",   {rebar:3,cable:2,cfiber:
 bldD("beamyard",   "Балочный участок",   {roll:4,ferro:2,bearing:1},   {beam:1});
 bldD("launchyard", "Стартовый участок",  {refr:3,rebar:2,hydrazine:2}, {launchf:1});
 bldD("panelyard",  "Панельный участок",  {semi:2,film:1,cable:1},      {panel:1});
+/* теневая цена промышленного товара (§5): (Σ входов × 1.5 + плата) / выпуск —
+   только для сводки, замера и сдачи в цех; рынок её не читает */
+const IND_FEE={1:20,2:60,3:200};
+const _indPrice={};
 const BLD_KEYS=Object.keys(BLD);
+/* кредитная часть — после всей таблицы: теневая цена выпуска ищет делателя в BLD */
+for(const id of BLD_KEYS)if(BLD[id].fam!=="A")BLD[id].cost.credits=bldCredits(id,BLD[id].cost);
 /* норма и выпуск по уровню */
 function bldScale(o,lvl){const out={};for(const k in o)out[k]=o[k]*(lvl|0||1);return out;}
 function bldQuota(def,lvl){return bldScale(def.eats,lvl);}
@@ -103,15 +117,11 @@ function bldUpgradeCost(def,toLvl){
   if(toLvl===3)c.habblock=(c.habblock|0)+1;
   return c;
 }
-/* теневая цена промышленного товара (§5): (Σ входов × 1.5 + плата) / выпуск —
-   только для сводки, замера и сдачи в цех; рынок её не читает */
-const IND_FEE={1:20,2:60,3:200};
-const _indPrice={};
 function indPrice(k){
   if(!RES[k])return 0;
   if(!RES[k].ind)return RES[k].price||(k==="volatiles"?30:(k==="icecrys"?40:0));
   if(_indPrice[k])return _indPrice[k];
-  const def=BLD_KEYS.map(id=>BLD[id]).find(d=>d.makes[k]);
+  let def=null;for(const id in BLD)if(BLD[id].makes[k]){def=BLD[id];break;}
   if(!def)return 0;
   let s=0;for(const i in def.eats)s+=indPrice(i)*def.eats[i];
   const out=def.makes[k]||1;

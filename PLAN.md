@@ -1159,8 +1159,12 @@ nodes — they join the score when their hooks are written.
 **M292 (0.289.0) — step 4 built 2026-09-02:** `12ae-ladder` — RUNGS (30 names, six ★),
 `rungHas` as the one door to an effect with a test that every ★ is asked, the ring on the map by
 five-year plans with the lights column, the Roman numeral in the footer, moments at docking, the
-board's line, the buoy's ether line; ★10 patches the hull at docking. Next: **step 5, measure**
-(`91zzw` «холдинг» against §16), then the barge.
+board's line, the buoy's ether line; ★10 patches the hull at docking.
+
+**M293 (0.290.0) — step 5, the measurement, 2026-09-02:** `91zzw-holding` prints the layer
+against §16 and holds three targets as rules; tier-1 assembly cut from two shifts to one so the
+first share lands inside forty minutes. Next: **step 6, the barge** (feeds, does not trade; the
+pilot by `CREW_YIELD`; the hull by allocation at a yard; `ORDERS.barge`).
 
 ## Small tails from almanac issue II
 

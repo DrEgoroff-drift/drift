@@ -505,8 +505,9 @@ BLD[id] = { ru, note, fam, tier, at, eats, makes, cost, fx, sh }
 `at` — where it may stand: the station type (`ST_TYPES`) and what the system physically has
 (a solid world, a belt, a gas giant, fauna, a worked shaft). `eats`/`makes` — per shift at ×1;
 ×2 doubles them, ×3 triples. `cost` — what the site eats before the thing stands, **haulable by
-hold** for tier 1 [F09]; the build takes 2 / 4 / 6 shifts by tier, and the truss is visible on
-the station while it grows. `fx` — the one hook the row is wired to; **a row whose `fx` is read
+hold** for tier 1 [F09]; the build takes **1 / 3 / 5** shifts by tier (2 / 4 / 6 in the 08-31 text;
+the measurement of step 5 showed two shifts of assembly plus one of feeding is an hour, and §16.8
+asks for forty minutes), and the truss is visible on the station while it grows. `fx` — the one hook the row is wired to; **a row whose `fx` is read
 by nobody is not shipped** (test: every `fx` id is read through `bldHas(sx,sy,id)` at least once).
 `sh` — the piece it hangs on the station's body, out of the vocabulary of `17a-station-mod`
 (§13).
@@ -531,7 +532,10 @@ by nobody is not shipped** (test: every `fx` id is read through `bldHas(sx,sy,id
 ### B · Передел (22) — tier 1, eats tier 0 [recipes in §9]
 
 Every row: `at` = any station with a site, **not** in a system whose `PROFILE` makes its main
-input (§10.1); `cost ×1` = **1 200 кр · сплавы 8 · 24 of its main input**; `fx` = the share;
+input (§10.1); `cost ×1` = **сплавы 8 · 24 of its main input · credits = ten shifts of the shop's
+share at the shadow price less the materials, never under 400** (the measurement of step 5: a flat
+1 200 кр paid back in five loops for the Плавильный цех and eleven for the Кислородный — the
+credits now follow the share, and every shop pays back in about five loops); `fx` = the share;
 `sh` = the family's stack. The twenty-two are the makers of the tier-1 column of §9:
 Плавильный · Ферросплавный · Прокатный · Обшивочный · Арматурный · Огнеупорный · Бетонный ·
 Кварцевый · Диэлектрический · Кабельный · Смоляной · Изоляторный · Углеволоконный · Графитовый ·
@@ -540,15 +544,16 @@ input (§10.1); `cost ×1` = **1 200 кр · сплавы 8 · 24 of its main in
 
 ### C · Узлы (18) — tier 2, eats tier 1, from rung 20
 
-Every row: `cost ×1` = **2 400 кр · сплавы 12 · прокат 6 · 12 of its main input**; `fx` = the
-share. The eighteen are the makers of the tier-2 column: Подшипниковый · Насосный · Оптический ·
+Every row: `cost ×1` = **сплавы 12 · прокат 6 · 12 of its main input · credits by the share, as
+in B**; `fx` = the share. The eighteen are the makers of the tier-2 column: Подшипниковый · Насосный · Оптический ·
 Ламповый · Релейный · Сельсинный · Термопарный · Гироскопный · Полупроводниковый ·
 Сверхпроводниковый · Приборный · Реакторный · Аккумуляторный · Регенераторный · Консервный ·
 Ткацкий · Плёночный · Люминофорный **цех**.
 
 ### D · Крупное (8) — tier 3, from rung 25 (the Стапель from 22)
 
-Every row: `cost ×1` = **4 800 кр · прокат 12 · арматура 8 · подшипник 2**; `fx` = the share.
+Every row: `cost ×1` = **прокат 12 · арматура 8 · подшипник 2 · credits by the share, as in B**;
+`fx` = the share.
 The eight makers of the tier-3 column: Стапель · Станочный · Блочный · Купольный · Мачтовый ·
 Балочный · Стартовый · Панельный **участок**.
 
@@ -813,7 +818,8 @@ without its printout.
 7. **Only the player builds.** The factor and other people's barges haul along what exists but
    raise nothing. The world changes where you have been — the same thought as names, the trace and
    the wall.
-8. **First share ≤ 40 min after rung 11**, in one system with one building.
+8. **First share ≤ 40 min after rung 11**, in one system with one building — one shift of
+   assembly plus one shift of feeding, measured in `91zzw-holding`.
 9. **The barge's credits-per-minute never above the factor's domain.**
 10. **Save shape — one map** [F27]:
     `G.hold = {"sx,sy": {ate:{k:[n,shift]}, bld:{id:{lvl,my,t0,got}}, src:{id:{t0,stock}}}}` —

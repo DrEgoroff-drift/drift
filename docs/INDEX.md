@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 346 · символов верхнего уровня: 3216
+Файлов: 347 · символов верхнего уровня: 3217
 
 ## СИМВОЛЫ
 
@@ -40,7 +40,7 @@ $vf                          src/27z-telemetry.js:31
 $vitals                      src/27z-telemetry.js:30
 $vj                          src/27z-telemetry.js:35
 $vs                          src/27z-telemetry.js:33
-_indPrice                    src/12ac-bld.js:109
+_indPrice                    src/12ac-bld.js:103
 _mapDirty                    src/15-input.js:109
 _suite                       tests/90-harness.js:11
 ACTION_RU                    src/15-input.js:129
@@ -205,31 +205,32 @@ bLamp                        src/21aa-base-rooms.js:279
 BLD                          src/12ac-bld.js:24
 BLD_FAM                      src/12ac-bld.js:16
 BLD_FAM_KEYS                 src/12ac-bld.js:23
-BLD_KEYS                     src/12ac-bld.js:92
+BLD_KEYS                     src/12ac-bld.js:104
 BLD_SHIFTS                   src/12ac-bld.js:22
 bldAdd                       src/12ac-bld.js:25
 bldAtWhy                     src/12ad-site.js:117
 bldAvailable                 src/12ad-site.js:155
-bldB                         src/12ac-bld.js:39
+bldB                         src/12ac-bld.js:47
 bldBuiltHere                 src/12ad-site.js:152
 bldBuySrc                    src/12ad-site.js:289
-bldC                         src/12ac-bld.js:63
+bldC                         src/12ac-bld.js:71
 bldCanPay                    src/12ad-site.js:161
 bldCollect                   src/12ad-site.js:272
-bldCostTxt                   src/12ac-bld.js:120
-bldD                         src/12ac-bld.js:83
+bldCostTxt                   src/12ac-bld.js:130
+bldCredits                   src/12ac-bld.js:41
+bldD                         src/12ac-bld.js:91
 bldEntry                     src/12ad-site.js:201
 bldFeed                      src/12ad-site.js:246
 bldFreeSites                 src/12ad-site.js:153
-bldIoTxt                     src/12ac-bld.js:126
+bldIoTxt                     src/12ac-bld.js:136
 bldLack                      src/12ad-site.js:166
 bldLay                       src/12ad-site.js:177
-bldOut                       src/12ac-bld.js:96
+bldOut                       src/12ac-bld.js:110
 bldPay                       src/12ad-site.js:172
-bldQuota                     src/12ac-bld.js:95
+bldQuota                     src/12ac-bld.js:109
 bldReady                     src/12ad-site.js:202
 bldRuleWhy                   src/12ad-site.js:138
-bldScale                     src/12ac-bld.js:94
+bldScale                     src/12ac-bld.js:108
 bldSellInd                   src/12ad-site.js:262
 bldSites                     src/12ad-site.js:97
 bldSitesAt                   src/12ad-site.js:99
@@ -237,7 +238,7 @@ bldTick                      src/12ad-site.js:205
 bldTierOpenAt                src/12ad-site.js:103
 bldTierPlanTxt               src/12ad-site.js:108
 bldUpgrade                   src/12ad-site.js:189
-bldUpgradeCost               src/12ac-bld.js:98
+bldUpgradeCost               src/12ac-bld.js:112
 bldWant                      src/12ad-site.js:234
 bldWhy                       src/12ad-site.js:144
 BLOOM_CV                     src/19c-light.js:336
@@ -1252,9 +1253,9 @@ huntTierOf                   src/12o-hunter.js:28
 ICO_F                        src/24-mode-belt.js:28
 ICO_V                        src/24-mode-belt.js:22
 importCode                   src/14a-cloud.js:62
-IND_FEE                      src/12ac-bld.js:108
+IND_FEE                      src/12ac-bld.js:102
 IND_KEYS                     src/02-world.js:91
-indPrice                     src/12ac-bld.js:110
+indPrice                     src/12ac-bld.js:120
 initAudio                    src/09-audio.js:19
 INST_TOPICS                  src/11ab-institute.js:17
 instAll                      src/11ab-institute.js:25
@@ -3459,7 +3460,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ab-hold.js · 8 КБ
   · холдинг · часы слоя и «БЕРЁТ»:1
 
-## src/12ac-bld.js · 11 КБ
+## src/12ac-bld.js · 12 КБ
   · холдинг · постройки (BLD):1
 
 ## src/12a-crew.js · 39 КБ
@@ -4093,7 +4094,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91x-hold-ladder.js · 3 КБ
   · автотесты: холдинг · лестница видимая (M292):1
 
-## tests/91x-hold-site.js · 11 КБ
+## tests/91x-hold-site.js · 12 КБ
   · автотесты: холдинг · постройки, площадка, бункер (M291):1
 
 ## tests/91y-settle.js · 10 КБ
@@ -4241,6 +4242,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzw-economy.js · 10 КБ
   · автотесты: экономика без долга (M152e):1
+
+## tests/91zzw-holding.js · 6 КБ
+  · замер: холдинг против целей §16 (M293, шаг 5):1
 
 ## tests/91zzx-mobile.js · 16 КБ
   · автотесты: телефонный вид (M167):1
