@@ -29,7 +29,7 @@ function cantStyle(){
   return S;
 }
 /* ── сцена ── */
-function drawCantinaRoom(cn,list,sel,hover,deals){
+function drawCantinaRoom(cn,list,sel,hover,deals,folk){
   const c=cn.getContext("2d");
   /* Рисуем в СВОИХ единицах: комната высотой 200, ширина — сколько дала панель.
      Без этого на широком экране зал растягивался в ленту, а люди в нём
@@ -37,12 +37,12 @@ function drawCantinaRoom(cn,list,sel,hover,deals){
   c.clearRect(0,0,cn.width,cn.height);
   const k=cn.height/200, H2=200, W2=cn.width/k;
   c.save();c.scale(k,k);
-  const hits=cantRoomBody(c,W2,H2,list,sel,hover,deals);
+  const hits=cantRoomBody(c,W2,H2,list,sel,hover,deals,folk);
   c.restore();
   for(const h of hits){h.x*=k;h.y*=k;h.w*=k;h.h*=k;}
   return hits;
 }
-function cantRoomBody(c,W2,H2,list,sel,hover,deals){
+function cantRoomBody(c,W2,H2,list,sel,hover,deals,folk){
   const S=cantStyle(),seed=(G.sys.seed^0xCA47)>>>0,R=rng(seed);
   const acc=hex2rgb(S.acc);
   const fy=H2-20;                                  // пол
@@ -206,6 +206,24 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   cantBarkeep(c,bmx,cy,fy,acc,seed,back);
   const seats=cantSeats(list.length,W2);
   const hits=[];
+  /* стойка и дверь — тоже точки нажатия (M299): бармен открывает стол,
+     завсегдатай у двери — свою строку */
+  if(sel==="counter"||hover==="counter"){
+    const g0=c.createRadialGradient(bmx,cy-46,2,bmx,cy-46,44);
+    g0.addColorStop(0,rgba(acc,sel==="counter"?.30:.16));g0.addColorStop(1,rgba(acc,0));
+    c.fillStyle=g0;c.beginPath();c.arc(bmx,cy-46,44,0,TAU);c.fill();
+  }
+  hits.push({id:"counter",x:bmx-30,y:cy-96,w:60,h:100});
+  if(folk&&typeof FOLK!=="undefined"&&FOLK[folk.id]){
+    const fx=clamp(W2*.07,28,60),fid="folk:"+folk.id,fon=sel===fid||hover===fid;
+    if(fon){
+      const g1=c.createRadialGradient(fx,cy-46,2,fx,cy-46,44);
+      g1.addColorStop(0,rgba(acc,sel===fid?.30:.16));g1.addColorStop(1,rgba(acc,0));
+      c.fillStyle=g1;c.beginPath();c.arc(fx,cy-46,44,0,TAU);c.fill();
+    }
+    cantFigure(c,fx,fy-40,[122,112,98],G.t*.02+3.1,null,0,false,2);
+    hits.push({id:fid,x:fx-26,y:cy-78,w:52,h:86});
+  }
   list.forEach((m,i)=>{
     const x=seats[i], on=sel===m.id, hv=hover===m.id;
     const R2=MGR_ROLES[m.role];
@@ -339,6 +357,21 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
      туда, где она никому не мешает и всем видна, и рисовать её надо так же. */
   if(typeof holTreeUp==="function"&&holTreeUp()&&typeof holTree==="function")
     holTree(c,W2*0.93,fy+H2*0.10,fy*0.72,rgba(acc,.5));
+  /* пузырь бармена (M299) */
+  if(typeof cantBubble!=="undefined"&&cantBubble&&performance.now()-cantBubble.t<5200){
+    const age=(performance.now()-cantBubble.t)/1000,al=age<.2?age/.2:(age>4.4?Math.max(0,(5.2-age)/.8):1);
+    c.save();c.globalAlpha=al;
+    c.font="9px ui-monospace,monospace";c.textAlign="left";
+    const words=cantBubble.line.split(" "),lines=[];let cur0="";
+    for(const w of words){const t=cur0?cur0+" "+w:w;if(c.measureText(t).width>W2*.46&&cur0){lines.push(cur0);cur0=w;}else cur0=t;}
+    if(cur0)lines.push(cur0);
+    const bw=lines.reduce((m,l)=>Math.max(m,c.measureText(l).width),0)+18,bh=lines.length*12+12;
+    const bx=clamp(bmx+22,8,W2-bw-8),by=Math.max(8,cy-118-bh);
+    c.fillStyle="rgba(8,12,18,.88)";c.fillRect(bx,by,bw,bh);
+    c.strokeStyle=rgba(acc,.55);c.lineWidth=1;c.strokeRect(bx+.5,by+.5,bw,bh);
+    c.fillStyle="#e6eef2";lines.forEach((l,i)=>c.fillText(l,bx+9,by+14+i*12));
+    c.restore();
+  }
   const vg=c.createRadialGradient(W2/2,H2/2,H2*.35,W2/2,H2/2,H2*1.05);
   vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.36)");   // виньетка в .55 топила зал
   c.fillStyle=vg;c.fillRect(0,0,W2,H2);

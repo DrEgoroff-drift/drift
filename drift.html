@@ -673,7 +673,43 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
   background:rgba(127,230,216,.18);border-radius:3px}
 .body,#loglist,#lorelist{scrollbar-width:thin;scrollbar-color:rgba(127,230,216,.18) transparent}
 /* длинная «секция» — это фраза, а не подпись: обычный регистр, читаемый кегль */
-.sec.note{text-transform:none;letter-spacing:.02em;font-size:11px;line-height:1.6;color:var(--dim)}
+.sec.note{text-transform:none;letter-spacing:.02em;font-size:11px;line-height:1.6;color:var(--dim);display:block;padding-top:0}
+/* ── заголовки и полосы (M299) ── */
+.sec{display:flex;align-items:baseline;gap:10px}
+.sec>span:first-child{flex:1 1 auto;min-width:0}
+.sec .cnt{flex:0 0 auto;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:var(--dim)}
+.sec .q{flex:0 0 auto;min-height:0;min-width:0;height:22px;padding:0 9px;font:inherit;font-size:9px;letter-spacing:.08em;
+  color:var(--dim);background:rgba(127,230,216,.06);border:1px solid rgba(127,230,216,.22);border-radius:11px;cursor:pointer}
+.sec .q:hover{color:var(--text)}
+.sec.lane{margin-top:14px;padding-top:26px;border-top:1px solid rgba(127,230,216,.12);font-size:11px;letter-spacing:.26em;color:var(--text)}
+.sec.lane:first-child{margin-top:0;border-top:0}
+.sec.fold{cursor:pointer}
+.sec.fold.on .cnt{color:var(--text)}
+.row .nm s.fig{color:var(--text);opacity:.8;font-variant-numeric:tabular-nums}
+/* окно одной строки (11u askText) */
+#askwin{position:fixed;inset:0;background:rgba(3,5,10,.72);display:none;align-items:center;justify-content:center;z-index:80}
+#askwin.open{display:flex}
+.askbox{background:#0b1016;border:1px solid #2a3a44;padding:6px 16px 16px;width:min(92vw,360px);border-radius:8px}
+.askbox .sec{padding-left:0;padding-right:0}
+.askbox input{width:100%;box-sizing:border-box;background:#070b10;color:var(--text);border:1px solid #2a3a44;
+  padding:10px 12px;font:inherit;font-size:16px;margin:4px 0 12px;border-radius:4px}
+.askrow{display:flex;gap:10px;justify-content:flex-end}
+/* шапка полёта под открытым экраном (плейтест 02.09): строка места и колодка
+   просвечивали сквозь стеклянный заголовок ШТАБа и налезали на текст */
+body:has(.scr.open) .hud,body:has(.scr.open) #instrpod,body:has(#askwin.open) .hud{visibility:hidden}
+/* и подсказка say() под открытым экраном — не поперёк его шапки, а плашкой
+   над нижними кнопками: «ПРИШЁЛ ОТВЕТ» шла по имени станции */
+/* приёмник над экраном на телефоне (плейтест 02.09): правило «сверху по
+   центру, в .78» складывалось с телефонным left:8px и уезжало в левый угол
+   поперёк имени станции. На телефоне — во всю ширину поверх экрана, а экран
+   отступает под него на строку */
+@media (max-width:760px){
+  body.screen #console{left:8px;right:8px;top:calc(env(safe-area-inset-top) + 6px);bottom:auto;transform:none;justify-content:center}
+  body.screen .scr.open{padding-top:26px}
+}
+body:has(.scr.open) #msg{top:auto;bottom:calc(env(safe-area-inset-bottom) + 96px);left:12px;right:12px;transform:none;
+  background:rgba(8,12,18,.94);border:1px solid rgba(127,230,216,.22);border-radius:8px;padding:8px 12px;z-index:26;
+  white-space:normal;text-transform:none;letter-spacing:.04em;font-size:12px;text-align:left;overflow:hidden}
 @media (min-width:900px){.sec.note{font-size:12px;max-width:72ch}}
 
 /* ══════════════ пульт (M151a) ══════════════
@@ -1216,6 +1252,9 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
     <!-- посёлок под руку (M198): необратимо, и кнопка говорит только действие -->
     <button id="handbtn" style="display:none">ВЗЯТЬ ПОД РУКУ</button>
     <button id="routebtn" style="display:none">В МАРШРУТ</button>
+    <!-- карта (M299): «к себе», когда окно уехало; «назвать» — на раскрытой карточке -->
+    <button id="mebtn" style="display:none">К СЕБЕ</button>
+    <button id="namebtn" style="display:none">НАЗВАТЬ</button>
   </div>
   <!-- Иконки тонкой линией и все из одного набора: круг-орбита, три полосы
        систем, плюс и минус одной толщины. Значок опознают быстрее слова,
@@ -1428,7 +1467,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.295.0";
+const VER="0.296.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -10473,11 +10512,15 @@ function gotoSector(sx,sy,what){
     say("У этой записи нет адреса");return false;
   }
   G.sel={x:sx,y:sy};
-  /* далёкий сектор — окно карты едет к нему (M298): раньше адрес за краем карты нельзя было даже выбрать */
-  G.mapView=(Math.max(Math.abs(sx-G.sx),Math.abs(sy-G.sy))>4)?{x:sx,y:sy}:null;
+  /* далёкий сектор — окно так, чтобы в кадре были и вы, и он (M299): раньше
+     окно уезжало к сектору, а игрок оставался за краем и не видел, откуда лететь */
+  if(typeof mapFit==="function")mapFit(sx,sy);
+  else G.mapView=(Math.max(Math.abs(sx-G.sx),Math.abs(sy-G.sy))>4)?{x:sx,y:sy}:null;
   G.mapMore=false;
-  G.mode="map";
+  /* со станции — подглядом: экран станции прячется, НАЗАД возвращает (M299) */
+  if(!(typeof mapPeek==="function"&&mapPeek()))G.mode="map";
   toggleLog(false);
+  if(typeof tableToggle==="function")tableToggle(false);
   const nm=getSystem(sx,sy).name||("сектор "+sx+":"+sy);
   say("Курс на «"+nm+"»"+(what?"\n"+what:""));
   return true;
@@ -13398,6 +13441,39 @@ function namesEtherLine(){
   }
   return null;
 }
+/* ── окно ввода одной строки (M299) ──
+   Поле в ряду доски читалось как «ваше имя» и туда вписывали позывной
+   капитана. Имя теперь спрашивают там, где оно относится к вещи: система —
+   с карты, капитан — со стола в кантине. Одно окно на оба случая. */
+function askText(title,val,cb,btn){
+  let d=document.getElementById("askwin");
+  if(!d){
+    d=document.createElement("div");d.id="askwin";d.className="scr";
+    d.innerHTML='<div class="askbox"><div class="sec"></div><input type="text" maxlength="18" autocomplete="off">'+
+      '<div class="askrow"><button class="act sm" data-a="no">ОТМЕНА</button><button class="act sm gold" data-a="ok">НАЗВАТЬ</button></div></div>';
+    document.body.appendChild(d);
+    d.addEventListener("click",ev=>{if(ev.target===d)d._close(null);});
+  }
+  const inp=d.querySelector("input"),ok=d.querySelector("[data-a=ok]"),no=d.querySelector("[data-a=no]");
+  d.querySelector(".sec").textContent=title;
+  inp.value=val||"";ok.textContent=btn||"НАЗВАТЬ";
+  d._close=v=>{d.classList.remove("open");if(v!==null)cb(v);};
+  ok.onclick=()=>d._close(inp.value);
+  no.onclick=()=>d._close(null);
+  inp.onkeydown=ev=>{if(ev.key==="Enter")d._close(inp.value);else if(ev.key==="Escape")d._close(null);};
+  d.classList.add("open");
+  setTimeout(()=>{try{inp.focus();inp.select();}catch(e){}},30);
+}
+/* имя системы — с карты, по раскрытой карточке */
+function nameAskSystem(sys){
+  if(!sys)return;
+  const key=sys.key||(sys.sx+","+sys.sy);
+  askText("ИМЯ СИСТЕМЫ · "+sys.name.toUpperCase(),namesFor(key)||"",v=>{
+    if(nameSet(sys,v))say("Названо: «"+namesFor(key)+"»\nна карте — оно");
+    else say("Имя снято: снова "+sys.name);
+    sfx("ui");
+  });
+}
 /* блок в кантине: поле и две кнопки. Подсказки нет — поле пустое */
 function namesBlock(){
   if(!G.sys)return;
@@ -15515,8 +15591,14 @@ function drawAllies(zx,zy,Z){
     ctx.save();ctx.translate(x,y);ctx.scale(clamp(Z,.3,1.4),clamp(Z,.3,1.4));ctx.rotate(A.a);
     drawHull(A.c.shipId,A.thrust,false,0);
     ctx.restore();
+    /* имя И дело (M299): плейтест 02.09 — «чувак у станции не летает, просто
+       вокруг». Это наёмник на перевозке, и он кружит у станции по приказу;
+       без слова «перевозка» под именем это читалось сломанным ИИ */
+    const K=A.c.order&&ORDERS[A.c.order.kind];
     ctx.fillStyle="rgba(127,230,216,.75)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText(A.c.name.toUpperCase(),x,y-26*clamp(Z,.3,1.4)-6);
+    ctx.fillText(A.c.name.toUpperCase()+(K?" · "+K.ru.toUpperCase():""),x,y-26*clamp(Z,.3,1.4)-6);
+    ctx.fillStyle="rgba(127,230,216,.45)";ctx.font="7px ui-monospace,monospace";
+    ctx.fillText("ВАШ ЭКИПАЖ",x,y+26*clamp(Z,.3,1.4)+10);
   }
 }
 
@@ -28970,7 +29052,7 @@ function snapshot(){
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
     ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,win:G.win,spa:G.spa,hol:G.hol,books:G.books,qsl:G.qsl,relay:G.relay,green:G.green,kino:G.kino,penn:G.penn,first:G.first,chess:G.chess,   /* M154–M207, M192 */
-    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,
+    seen:G.seen,storyPin:G.storyPin,storyFlags:G.storyFlags,place:G.place,odo:G.odo,post:G.post,mirror:G.mirror,lights:G.lights,hours:G.hours,grove:G.grove,keepers:G.keepers,county:G.county,charts:G.charts,quiet:G.quiet,slow:G.slow,pass:G.pass,grown:G.grown,plan:G.plan,ret:G.ret,names:G.names,namesTold:G.namesTold,name:G.name||"",
     tape:(typeof tapePack==="function")?tapePack():null,tapeLong:G.tapeLong|0,
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
@@ -29535,6 +29617,7 @@ function applySave(s){
   G.grown={recip:Math.max(0,(s.grown&&s.grown.recip)|0)};   /* другое взросление (11q) */
   {const c=s.plan||{};G.plan={took:Math.max(0,c.took|0),hauled:Math.max(0,c.hauled|0)};}   /* план (11r) */
   G.ret={seen:(s.ret&&s.ret.seen)?1:0};   /* возвращение (11s) */
+  G.name=(typeof s.name==="string")?s.name.slice(0,18):"";   /* имя капитана (M299) */
   G.names={};if(s.names&&typeof s.names==="object")for(const k in s.names)if(typeof s.names[k]==="string")G.names[k]=s.names[k].slice(0,18);   /* имена (11u) */
   G.namesTold={};if(s.namesTold&&typeof s.namesTold==="object")for(const k in s.namesTold)G.namesTold[k]=s.namesTold[k]|0;
   /* почтовый круг (11e): три числа */
@@ -29984,7 +30067,7 @@ function navAction(){
   /* из санатория уйти можно в любую минуту, и за это ничего не будет (M199) */
   if(G.mode==="spa"){exitSpa();return;}
   if(G.mode==="system"){G.mode="map";G.sel.x=G.sx;G.sel.y=G.sy;}
-  else if(G.mode==="map"){G.mode="system";if(typeof mapReset==="function")mapReset();}
+  else if(G.mode==="map"){if(typeof mapBack==="function"&&mapBack())return;G.mode="system";if(typeof mapReset==="function")mapReset();}
   else say("Навигация недоступна\nвне свободного полёта");
 }
 document.getElementById("zin").addEventListener("click",()=>setZoom(G.zoom*1.35));
@@ -29998,6 +30081,14 @@ document.getElementById("handbtn").addEventListener("click",()=>{
 });
 /* плечо маршрута ставится там же, где выбирается цель прыжка: маршрут — это
    карта, а не пункт меню */
+document.getElementById("mebtn").addEventListener("click",()=>{
+  if(G.mode!=="map")return;
+  G.mapView=null;G.mapZoom=1;sfx("ui");
+});
+document.getElementById("namebtn").addEventListener("click",()=>{
+  if(G.mode!=="map"||typeof nameAskSystem!=="function")return;
+  nameAskSystem(getSystem(G.sel.x,G.sel.y));
+});
 document.getElementById("routebtn").addEventListener("click",()=>{
   if(G.mode!=="map")return;
   say(routeToggle(G.sel.x,G.sel.y));
@@ -30024,20 +30115,22 @@ addEventListener("wheel",e=>{
       setZoom(G.zoom*(e.deltaY<0?1.12:.89));
     return;
   }
-  if(G.mode!=="system")return;
   if(e.target!==cvs)return;
   if(document.querySelector(".scr.open"))return;
+  /* колесо над картой — её масштаб (M299) */
+  if(G.mode==="map"&&typeof mapZoomSet==="function"){mapZoomSet(mapZoomK()*(e.deltaY<0?.89:1.12));return;}
+  if(G.mode!=="system")return;
   setZoom(G.zoom*(e.deltaY<0?1.12:.89));
 },{passive:false});
 
 /* указатели: тап, щипок, обзор в поясе */
 const ptr=new Map();
-let pinch0=0,zoom0=1;
+let pinch0=0,zoom0=1,mzoom0=1;
 cvs.addEventListener("pointerdown",e=>{
   ptr.set(e.pointerId,{x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,t0:performance.now(),moved:false});
   if(ptr.size===2){
     const [a,b]=[...ptr.values()];
-    pinch0=Math.hypot(a.x-b.x,a.y-b.y)||1;zoom0=G.zoom;
+    pinch0=Math.hypot(a.x-b.x,a.y-b.y)||1;zoom0=G.zoom;mzoom0=(typeof mapZoomK==="function")?mapZoomK():1;
   }
   if(ptr.size===1&&(G.mode==="surface"||G.mode==="dig"||G.mode==="cave"))mouseWalkAt(e.clientX,e.clientY);
 });
@@ -30050,6 +30143,12 @@ cvs.addEventListener("pointermove",e=>{
     const [a,b]=[...ptr.values()];
     const d=Math.hypot(a.x-b.x,a.y-b.y)||1;
     if(G.mode==="system")setZoom(zoom0*d/pinch0);
+    else if(typeof mapZoomSet==="function")mapZoomSet(mzoom0*pinch0/d);   /* щипок на карте (M299) */
+  }else if(ptr.size===1&&G.mode==="map"&&p.moved&&typeof mapCell==="function"){
+    /* протяжка листа (M299): карту двигают пальцем, как любую карту.
+       Окно становится дробным — сектора остаются целыми (drawMap округляет) */
+    const rc=cvs.getBoundingClientRect(),k=W/rc.width,cell=mapCell();
+    const V=mapViewC();G.mapView={x:V.x-dx*k/cell,y:V.y-dy*k/cell};
   }else if(ptr.size===1&&G.mode==="belt"&&G.belt){
     const k=.0036*G.opts.lookSens;
     G.belt.pitch=clamp(G.belt.pitch+(G.opts.invY?dy:-dy)*k,-1.35,1.35);
@@ -30111,10 +30210,11 @@ function tap(sxp,syp){
     if(spaTap((sxp-rc.left)*W/rc.width,(syp-rc.top)*H/rc.height))return;
   }
   if(G.mode==="map"){
-    const cell=Math.min(W,H)/9.2,R=5;
+    const cell=mapCell(),R=mapRange();
     const V=(typeof mapViewC==="function")?mapViewC():{x:G.sx,y:G.sy};
     let best=null,bd=1e9;
-    for(let gy=V.y-R;gy<=V.y+R;gy++)for(let gx=V.x-R;gx<=V.x+R;gx++){
+    const vx0=Math.round(V.x),vy0=Math.round(V.y);
+    for(let gy=vy0-R;gy<=vy0+R;gy++)for(let gx=vx0-R;gx<=vx0+R;gx++){
       if(!starAt(gx,gy))continue;
       const[jx,jy]=sysJitter(gx,gy);
       const x=W/2+(gx-V.x+jx)*cell,y=H/2+(gy-V.y+jy)*cell;
@@ -33779,7 +33879,45 @@ function mapNebula(){
 }
 /* окно карты (M298): обычно вокруг вас; по слуху — вокруг названного сектора */
 function mapViewC(){return G.mapView||{x:G.sx,y:G.sy};}
-function mapReset(){G.mapView=null;G.mapMore=false;G.mapClean=false;G.mapSearch=null;
+/* ── масштаб и клетка карты (M299) ──
+   Один счёт клетки на всех: рисование, тап и протяжка считали её каждый сам,
+   и любое расхождение уводило тап мимо звезды. Зум карты — отдельный от зума
+   системы: 1 — как раньше, больше — дальше видно, меньше — крупнее. */
+function mapZoomK(){return clamp(G.mapZoom||1,.6,5);}
+function mapCell(){return Math.min(W,H)/9.2/mapZoomK();}
+function mapRange(){return Math.ceil(5*mapZoomK())+1;}
+function mapZoomSet(z){G.mapZoom=clamp(z,.6,5);}
+/* окно так, чтобы в кадре были И вы, И названный сектор: по слуху карта
+   раньше уезжала к сектору, а игрок оставался за краем и не понимал, откуда лететь */
+function mapFit(sx,sy){
+  const dx=sx-G.sx,dy=sy-G.sy,d=Math.max(Math.abs(dx),Math.abs(dy));
+  if(d<=4){G.mapView=null;G.mapZoom=1;return;}
+  G.mapView={x:G.sx+dx/2,y:G.sy+dy/2};
+  G.mapZoom=clamp((d/2+1.5)/4.2,1,5);
+}
+/* ── подгляд со станции (M299) ──
+   «НА КАРТУ» с доски открывало карту ПОД экраном станции: режим менялся, а
+   оверлей оставался, и игрок тыкал в кнопку, которая «ничего не делает».
+   Теперь станция прячется, карта видна, НАЗАД возвращает на ту же вкладку;
+   стыковка не рвётся, прыжок отсюда невозможен. */
+function mapPeek(){
+  if(G.mode!=="dock")return false;
+  G.mapPeek={tab:(typeof tab!=="undefined")?tab:null};
+  if(typeof $st!=="undefined"&&$st)$st.classList.remove("open");
+  G.mode="map";
+  return true;
+}
+function mapBack(){
+  if(!G.mapPeek)return false;
+  const pk=G.mapPeek;G.mapPeek=null;
+  mapReset();
+  G.mode="dock";
+  if(pk.tab&&typeof tab!=="undefined")tab=pk.tab;
+  if(typeof $st!=="undefined"&&$st)$st.classList.add("open");
+  if(typeof renderTab==="function")renderTab();
+  return true;
+}
+function mapReset(){G.mapView=null;G.mapZoom=1;G.mapMore=false;G.mapClean=false;G.mapSearch=null;
   if(typeof document!=="undefined"&&document.body)document.body.classList.remove("mapclean");}
 function mapCleanSet(on){G.mapClean=!!on;if(typeof document!=="undefined"&&document.body)document.body.classList.toggle("mapclean",G.mapClean);}
 function drawMap(){
@@ -33836,7 +33974,7 @@ function drawMap(){
     ctx.restore();
   }),0,0,W,H);
   drawStars(G.sx*140,G.sy*140,.35);
-  const cell=Math.min(W,H)/9.2,R=5;
+  const cell=mapCell(),R=mapRange();
   const V=mapViewC(),vx=V.x,vy=V.y;              /* окно карты: обычно вы, по слуху — названный сектор (M298) */
   const px=W/2+(G.sx-vx)*cell,py=H/2+(G.sy-vy)*cell;
   const jr=(st.jump+.02)*cell;
@@ -33858,7 +33996,8 @@ function drawMap(){
   }
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
   const vis=[];
-  for(let gy=vy-R;gy<=vy+R;gy++)for(let gx=vx-R;gx<=vx+R;gx++){
+  const vx0=Math.round(vx),vy0=Math.round(vy);   /* окно дробное после протяжки, сектора целые */
+  for(let gy=vy0-R;gy<=vy0+R;gy++)for(let gx=vx0-R;gx<=vx0+R;gx++){
     if(!starAt(gx,gy))continue;
     if(typeof chartsHidden==="function"&&chartsHidden(gx,gy))continue;   /* несогласие карт (11m) */
     let [jx,jy]=sysJitter(gx,gy);
@@ -33961,13 +34100,17 @@ function drawMap(){
     if(typeof lookoutSees==="function"&&lookoutSees(gx,gy)){ctx.strokeStyle="rgba(255,107,87,.8)";ctx.lineWidth=1.2;
       ctx.beginPath();ctx.moveTo(x+rr+4,y-rr-4);ctx.lineTo(x+rr+9,y-rr-9);ctx.stroke();}
     ctx.globalAlpha=1;
+    /* «вы» — одна метка, и не того цвета, что выбор (M299): два бирюзовых
+       кольца в пиксель друг от друга читались одним, и на карте не было «где я» */
     if(here){
-      ctx.strokeStyle="rgba(127,230,216,"+(.5+.25*Math.sin(G.t*.06)).toFixed(2)+")";
-      ctx.lineWidth=1.2;
+      ctx.strokeStyle="rgba(127,230,216,"+(.6+.3*Math.sin(G.t*.06)).toFixed(2)+")";
+      ctx.lineWidth=1.4;
       ctx.beginPath();ctx.arc(x,y,rr+14,0,TAU);ctx.stroke();
+      ctx.fillStyle="#7fe6d8";
+      ctx.beginPath();ctx.moveTo(x,y-rr-24);ctx.lineTo(x-4,y-rr-17);ctx.lineTo(x+4,y-rr-17);ctx.closePath();ctx.fill();
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText("ВЫ · "+((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),x,y-rr-28);
     }
-    if(gx===G.sx&&gy===G.sy){ctx.strokeStyle="#7fe6d8";ctx.lineWidth=1.2;
-      ctx.beginPath();ctx.arc(x,y,rr+13,0,TAU);ctx.stroke();}
     /* ушедший управляющий и разошедшееся ядро — единственные метки на карте,
        которые поставил не мир, а сам игрок. Без них до них не долететь. */
     if((G.rogues||[]).some(R=>R.sx===gx&&R.sy===gy)){
@@ -34017,6 +34160,18 @@ function drawMap(){
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
     if(here)cur=v;
   }
+  /* вы за краем листа (M299): стрелка у кромки говорит, откуда лететь, пока
+     окно уехало к слуху или протянуто пальцем; курс считается от вас всегда */
+  if(!cur){
+    cur={x:px,y:py,s:G.sys,edge:true};
+    const cx=W/2,cyy=H/2,ddx=px-cx,ddy=py-cyy,m=Math.max(Math.abs(ddx)/(W/2-26),Math.abs(ddy)/(H/2-26),1e-6);
+    const ex=cx+ddx/m,ey=cyy+ddy/m,an=Math.atan2(ddy,ddx);
+    ctx.save();ctx.translate(ex,ey);ctx.rotate(an);
+    ctx.fillStyle="#7fe6d8";ctx.beginPath();ctx.moveTo(8,0);ctx.lineTo(-6,-6);ctx.lineTo(-6,6);ctx.closePath();ctx.fill();
+    ctx.restore();
+    ctx.fillStyle="#7fe6d8";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText("ВЫ",ex-Math.cos(an)*16,ey-Math.sin(an)*16+3);
+  }
   /* маршрут домена — под курсом игрока: мир под намерением, а не наоборот */
   drawFactRoute(vis);
   /* свой маршрут — поверх маршрута домена: это намерение игрока, и оно главнее */
@@ -34043,7 +34198,7 @@ function drawMap(){
     const onRoute=NX&&NX.sys.sx===G.sel.x&&NX.sys.sy===G.sel.y;
     L.push([bad?"rgba(255,107,87,.85)":"#f2b25c",
       dsel===0?"ТЕКУЩАЯ СИСТЕМА":
-      (dsel>st.jump+.02?"ВНЕ РАДИУСА — НУЖЕН ГИПЕРДРАЙВ":
+      (dsel>st.jump+.02?"ВНЕ РАДИУСА · примерно "+Math.ceil(dsel/Math.max(.5,st.jump))+" "+pl3(Math.ceil(dsel/Math.max(.5,st.jump)),"прыжок","прыжка","прыжков"):
        (onRoute?"ПРЫЖОК ПО МАРШРУТУ: ":"ПРЫЖОК: ")+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":""))]);
     /* карточка стала строкой (M298): первый вопрос — «что это и дотянусь ли» — отвечается тут;
        описание — вторым тапом по той же звезде. На телефоне 31.7% экрана было интерфейсом */
@@ -34086,6 +34241,15 @@ function drawMap(){
     ctx.strokeStyle=col;ctx.lineWidth=far?1:1.4;
     ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
     ctx.setLineDash([]);
+    /* точки прыжков по курсу (M299): сколько раз придётся прыгать — видно по
+       линии, а не по цифре в подвале */
+    if(far&&st.jump>.5){
+      const n=Math.floor(dsel/st.jump);
+      for(let i=1;i<=n;i++){
+        const t=i*st.jump/dsel,hx=x0+(x1-x0)*t,hy=y0+(y1-y0)*t;
+        ctx.fillStyle="rgba(242,178,92,.85)";ctx.beginPath();ctx.arc(hx,hy,2.6,0,TAU);ctx.fill();
+      }
+    }
     /* подпись на середине курса, на своей подложке — поверх звёзд и туманности
        голый текст не читается */
     const mx=(x0+x1)/2,my=(y0+y1)/2;
@@ -34155,9 +34319,10 @@ function drawMap(){
        const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9,w,12);}
    });
    ctx.textAlign="right";}
-  G.prompt=G.mapClean?"":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК";
+  G.prompt=G.mapClean?"":(G.mapPeek?"ТАП — ВЫБОР · ПАЛЬЦЕМ — ДВИГАТЬ · НАЗАД — НА СТАНЦИЮ":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК");
   if(actEdge){
-    if(!bad)jump(cost);
+    if(G.mapPeek)say("Сначала отстыкуйтесь");
+    else if(!bad)jump(cost);
     else if(dsel>0)say("Прыжок невозможен");
   }
 }
@@ -56417,6 +56582,119 @@ function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className
     if(!/[а-яёa-z]/.test(html))html=html.toLocaleLowerCase("ru").replace(/(^|[.!?]\s+)([а-яёa-z])/g,(m,a,b)=>a+b.toUpperCase());
   }
   if(html!=null)e.innerHTML=html;return e;}
+/* ══════════════ заголовки и полосы (M299, docs/DESIGN-screens.md §1a) ══════════════
+   Заголовок называет, а не объясняет: три слова, счётчик справа отдельной
+   цифрой, объяснение — заметкой в одну строку при первом заходе, потом за
+   чипом «?». Раньше .sec делал обе работы разом, и страница читалась одной
+   серой массой без начал. */
+function secHead(title,opt){
+  opt=opt||{};
+  const h=el("div","sec"+(opt.lane?" lane":"")+(opt.cls?" "+opt.cls:""),"");
+  const t=document.createElement("span");t.textContent=title;h.appendChild(t);
+  if(opt.back){
+    const b=document.createElement("button");b.className="cnt q";b.textContent="В ЗАЛ";
+    b.onclick=ev=>{ev.stopPropagation();opt.back();};h.appendChild(b);
+  }else if(opt.count!=null){
+    const c=document.createElement("span");c.className="cnt";c.textContent=opt.count;h.appendChild(c);
+  }
+  let n=null;
+  if(opt.note){
+    const key="sec:"+(opt.key||title);
+    G.seen=G.seen||{};
+    if(!G.seen[key]){G.seen[key]=1;secHead.open[key]=true;}
+    const q=document.createElement("button");q.className="q";q.textContent="?";
+    h.appendChild(q);
+    n=el("div","sec note",opt.note);
+    if(!secHead.open[key])n.style.display="none";
+    q.onclick=ev=>{ev.stopPropagation();secHead.open[key]=!secHead.open[key];n.style.display=secHead.open[key]?"":"none";};
+  }
+  (opt.into||$body).appendChild(h);
+  if(n)(opt.into||$body).appendChild(n);
+  return h;
+}
+secHead.open={};
+/* блок за сгибом: содержимое рисуется всегда (счётчик честный), показывается по нажатию */
+function foldBlock(title,fn,key){
+  key=key||title;
+  const open=!!foldBlock.open[key];
+  const n0=$body.children.length;
+  fn();
+  const nodes=[...$body.children].slice(n0);
+  if(!nodes.length)return;
+  const box=el("div","foldbox","");
+  for(const x of nodes)box.appendChild(x);
+  const secs=nodes.filter(x=>x.classList.contains("sec")&&!x.classList.contains("note")).length||1;
+  const h=secHead(title,{count:(open?"СВЕРНУТЬ":"ЕЩЁ · "+secs),cls:"fold"+(open?" on":"")});
+  h.style.cursor="pointer";
+  h.onclick=()=>{foldBlock.open[key]=!open;renderTab();};
+  if(!open)box.style.display="none";
+  $body.appendChild(box);
+}
+foldBlock.open={};
+/* ── пост-проход по заголовкам (M299) ──
+   Тридцать модулей набирали заголовки цепочкой «НАЗВАНИЕ · ОБЪЯСНЕНИЕ · СЧЁТ».
+   Не переписывать тридцать модулей: после рендера каждая .sec длиннее 32
+   знаков делится по первому « · » — голова остаётся заголовком, хвост уходит
+   заметкой обычным регистром, цифра на конце — счётчиком справа. Заголовок без
+   « · » длиннее 32 целиком становится заметкой (как делает el при 48). */
+const SEC_CAP=32;
+function secTidy(root){
+  root=root||$body;
+  const lc=t=>t.toLocaleLowerCase("ru").replace(/(^|[.!?]\s+)([а-яёa-z])/g,(m,a,b)=>a+b.toUpperCase());
+  for(const h of [...root.querySelectorAll(".sec")]){
+    if(h.classList.contains("note")||h.classList.contains("lane")||h.querySelector(".q,.cnt"))continue;
+    const sp=h.querySelector("span");
+    const txt=(sp?sp.textContent:h.textContent).trim();
+    if(txt.length<=SEC_CAP)continue;
+    const segs=txt.split(" · ").map(x=>x.trim()).filter(Boolean);
+    let cnt=null;
+    if(segs.length>1&&/\d/.test(segs[segs.length-1])&&segs[segs.length-1].length<=14)cnt=segs.pop();
+    let head=segs.shift(),rest=segs.join(" · ");
+    if(head.length>SEC_CAP){rest=rest?head+" · "+rest:head;head="";}
+    if(!head){h.className="sec note";h.textContent=lc(rest);continue;}
+    h.textContent="";
+    const s1=document.createElement("span");s1.textContent=head;h.appendChild(s1);
+    if(cnt){const c=document.createElement("span");c.className="cnt";c.textContent=cnt;h.appendChild(c);}
+    if(rest){const n=el("div","sec note",lc(rest));h.parentNode.insertBefore(n,h.nextSibling);}
+  }
+}
+/* ── доска в три полосы ──
+   Тридцать блоков в порядке вех — это changelog, а не стена. Секции (заголовок
+   и всё до следующего) раскладываются по трём вопросам: что обращено к вам,
+   что есть здесь, что далеко. Внутри полосы первыми идут секции с кнопкой;
+   сверх семи — за сгибом. Модули не трогаются: сортировка по заголовку. */
+const LANE_RX=[
+  [/^(ОЧЕРЕДЬ|У ДОКА|В ЗАЛЕ|У СТОЙКИ|ВЕЗЁТЕ|ЧТО ПРЕДЛАГАЮТ|ДЕЛА ЗДЕСЬ|ПИСЬМ|ПОСЫЛКА|ЭКСПЕДИЦИЯ|ЕСТЬ МЕСТО|ТАБЛО|ДОСКА ПОЧЁТА|ДИПЛОМ|ЗИМОВКА|ЧТО РАССКАЗЫВАЮТ|У КОГО|ВАМ)/i,"you"],
+  [/^(О ЧЁМ|СЛУХ|ИМЯ СИСТЕМЫ|ДАЛЕКО)/i,"far"]
+];
+const LANE_RU={you:"К ВАМ",here:"ЗДЕСЬ",far:"ДАЛЕКО"};
+function boardLanes(from){
+  const nodes=[...$body.children].slice(from||0);
+  if(!nodes.length)return;
+  const secs=[];let cur=null;
+  for(const x of nodes){
+    const isHead=x.classList.contains("sec")&&!x.classList.contains("note")&&!x.classList.contains("lane");
+    if(isHead||!cur){cur={head:isHead?x:null,nodes:[],lane:"here"};secs.push(cur);
+      if(isHead){const t=(x.querySelector("span")||x).textContent.trim();
+        for(const [rx,l] of LANE_RX)if(rx.test(t)){cur.lane=l;break;}}}
+    cur.nodes.push(x);
+  }
+  for(const x of nodes)x.remove();
+  for(const lane of ["you","here","far"]){
+    const L=secs.filter(s=>s.lane===lane);
+    if(!L.length)continue;
+    L.sort((a,b)=>(b.nodes.some(n=>n.querySelector&&n.querySelector("button"))?1:0)-(a.nodes.some(n=>n.querySelector&&n.querySelector("button"))?1:0));
+    secHead(LANE_RU[lane],{lane:1,count:L.length>1?L.length:null});
+    const key="lane:"+lane,open=!!foldBlock.open[key];
+    L.forEach((s,i)=>{
+      if(i<7||open){for(const n of s.nodes)$body.appendChild(n);}
+    });
+    if(L.length>7){
+      const h=secHead(open?"СВЕРНУТЬ":"ЕЩЁ · "+(L.length-7),{cls:"fold"+(open?" on":"")});
+      h.style.cursor="pointer";h.onclick=()=>{foldBlock.open[key]=!open;renderTab();};
+    }
+  }
+}
 function shipThumb(id,w,h){
   const cn=document.createElement("canvas");cn.width=w;cn.height=h;
   const c=cn.getContext("2d");
@@ -56486,6 +56764,7 @@ function renderTab(){
   const keep=same?$body.scrollTop:0;
   renderTab._tab=tab;
   renderTabBody();
+  secTidy($body);   /* заголовки по закону §1a (M299) */
   if(keep>0){
     const put=()=>{$body.scrollTop=Math.min(keep,Math.max(0,$body.scrollHeight-$body.clientHeight));};
     put();requestAnimationFrame(put);
@@ -56512,7 +56791,7 @@ function renderTabBody(){
       $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
     const sp=(typeof speechHere==="function")?speechHere():null;
     if(sp){
-      $body.appendChild(el("div","sec","ОЧЕРЕДЬ У СТОЙКИ · "+sp.addr.toUpperCase()));
+      secHead("ОЧЕРЕДЬ У СТОЙКИ",{count:sp.addr});
       $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
         (sp.silent?"<i>смотрит и ничего не говорит</i>":sp.line)+"</s><s>следующая реплика — в следующий заход</s></div>"));
       const tag=G.sys.key+"#"+visitHere();
@@ -56525,9 +56804,10 @@ function renderTabBody(){
     if(typeof folkShown==="function"){
       const fs=folkShown();
       if(fs&&FOLK[fs.id]){
-        $body.appendChild(el("div","sec",FOLK[fs.id].ru.toUpperCase()));
-        $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
-          fs.line+"</s></div>"));
+        /* подпись, кто это (M299): голое «РЫБА» с цитатой читалось сбоем */
+        secHead(FOLK[fs.id].where==="dock"?"У ДОКА":"В ЗАЛЕ");
+        $body.appendChild(el("div","row","<div class='nm'><b>"+FOLK[fs.id].ru+" · завсегдатай</b>"+
+          "<s style='color:#cfe3ea;line-height:1.8'>"+fs.line+"</s></div>"));
       }
     }
     /* ── рассказать, где взяли (11aj) ──
@@ -56626,7 +56906,9 @@ function renderTabBody(){
     if(typeof wallBlock==="function")wallBlock();           /* стенгазета и заявки (M165) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
-    if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
+    /* имя системы ушло с доски на карту (M299): поле «ваше имя. На карте — оно»
+       читалось как имя капитана, и туда вписывали позывной */
+    boardLanes(0);
     $body.appendChild(el("div","sec","ПРИЁМНИК — НА ПУЛЬТЕ ВНИЗУ · У СТОЙКИ ЛОВИТ ЛУЧШЕ"));
     return;
   }
@@ -57312,118 +57594,126 @@ function mgrHead(m){
    любое нажатие перебирало $body заново и уносило экран в шапку. */
 function renderCantina(){
   mgrTick();
-  const T=stTypeOf(G.st.stype);
   G.cantina=G.cantina&&G.cantina.key===G.sys.key?G.cantina:{key:G.sys.key,list:stationMgrs(G.sys),talked:{}};
   const free=G.cantina.list.filter(m=>!G.mgrs.some(x=>x.seed===m.seed));
   const deals=stationDeals(G.sys).filter(d=>!dealTaken(d.key));
-  /* ── зал ──
-     Кандидаты у стойки, дела за столиками: одной сценой, потому что это одно
-     помещение. Стоит первым — на вопрос «где я» отвечает картинка, а не заголовок. */
-  if(free.length||deals.length){
-    cantinaScene(free,deals);
-    $body.appendChild(el("div","sec","Тыкните по человеку в зале — или по его строке ниже: "+
-      "это одни и те же люди. Нажатие подсвечивает, а не прячет остальных."));
+  const folk=(typeof folkShown==="function")?folkShown():null;
+  /* ── зал — всегда, и зал — это ввод (M299) ──
+     Раньше сцена рисовалась только при кандидатах, а под ней всё равно шёл
+     список из четырнадцати блоков. Теперь стойка, люди и дверь — точки
+     нажатия; ниже рисуется только то, во что ткнули. */
+  cantinaScene(free,deals,folk);
+  const isDeal=!!cantSel&&cantSel.indexOf("deal:")===0, isFolk=!!cantSel&&cantSel.indexOf("folk:")===0;
+  if(cantSel&&cantSel!=="counter"&&!isDeal&&!isFolk&&!free.some(m=>m.id===cantSel))cantSel=null;
+  if(isDeal&&!deals.some(d=>"deal:"+d.key===cantSel))cantSel=null;
+  if(isFolk&&!(folk&&FOLK[folk.id]&&"folk:"+folk.id===cantSel))cantSel=null;
+  const back=()=>{cantSel=null;sfx("ui");renderTab();};
+  if(!cantSel){
+    secHead("В ЗАЛЕ",{count:free.length+deals.length+(folk?1:0)+1,
+      note:"тыкните по человеку или по стойке — или по строке ниже: это те же люди",key:"cant"});
+    const rc=el("div","row");rc.style.cursor="pointer";
+    rc.onclick=()=>{cantSel="counter";sfx("ui");renderTab();};
+    rc.appendChild(el("div","nm","<b>Бармен</b><s>у стойки: слушают, отвечают на вещь, наливают допоздна</s>"));
+    const bc=el("button","act sm","К СТОЙКЕ");bc.onclick=rc.onclick;rc.appendChild(bc);
+    $body.appendChild(rc);
+    for(const m of free)cantHireRow(m,false);
+    for(const d of deals)cantDealRow(d,false);
+    if(folk&&FOLK[folk.id])cantFolkRow(folk,false);
+  }else if(cantSel==="counter"){
+    secHead("У СТОЙКИ",{back});
+    if(typeof putOnTable==="function")tableBlock();
+    if(typeof lateBlock==="function")lateBlock();
+    if(typeof toldOffBlock==="function")toldOffBlock();
+  }else if(isDeal){
+    const d=deals.find(x=>"deal:"+x.key===cantSel);
+    secHead("ЗА СТОЛИКОМ",{back});
+    cantDealRow(d,true);
+  }else if(isFolk){
+    secHead(FOLK[folk.id].where==="dock"?"У ДОКА":"В ЗАЛЕ",{back});
+    cantFolkRow(folk,true);
+  }else{
+    const m=free.find(x=>x.id===cantSel);
+    secHead("У СТОЙКИ",{back,note:"управляющий берёт домен целиком — звено, базы, маршрут или лабораторию — и долю с того, что домен приносит",key:"hire"});
+    cantHireRow(m,true);
   }
-  /* ── у стойки: найм ── */
-  $body.appendChild(el("div","sec","У СТОЙКИ · КОГО МОЖНО НАНЯТЬ · МЕСТ "+
-    G.mgrs.length+" / "+MGR_CAP));
-  $body.appendChild(el("div","sec","Здесь сидят управляющие: такой берёт домен целиком — "+
-    "звено, базы, маршрут или лабораторию, — а не приказ на один рейс. Дороже наёмника втрое "+
-    "и берёт долю с того, что приносит его домен, зато рутину держит сам. Один домен — один "+
-    "управляющий. Кто сюда заходит, зависит от станции: "+T.ru.toLowerCase()+" собирает своих."));
-  for(const m of free){
-    const R=MGR_ROLES[m.role],taken=mgrTaken(m.role),fee=mgrFee(m);
-    const spoke=!!G.cantina.talked[m.id];
-    const known=spoke||mgrPerkOf("cmd","read")||relicDeep("ledger");
-    const r=el("div","row"+(cantSel===m.id?" on":""));
-    r.style.cursor="pointer";
-    /* строка — тот же выбор, что и фигура в зале: нажали мимо кнопок — выбрали */
-    r.onclick=ev=>{
-      if(ev.target.closest("button"))return;
-      cantSel=(cantSel===m.id)?null:m.id;sfx("ui");renderTab();
-    };
-    r.appendChild(faceEl(m,64));
-    r.appendChild(el("div","nm","<b style='color:"+R.col+"'>"+m.name+"</b><s>"+
-      R.ru.toLowerCase()+" · "+R.note+
-      "<br>уровень "+mgrLevel(m)+" · оклад "+mgrPay(m)+" кр/мин · доля "+(mgrCut(m)*100).toFixed(1)+"%"+
-      "<br>"+(known
-        ? "черты: "+m.traits.map(t=>"<b>"+mgrTrait(t).ru+"</b> — "+mgrTrait(t).note).join("<br>черты: ")
-        : "чем он хорош и чем плох — видно только после разговора"+
-          (m.traits.length>2?" (черт у него три)":""))+
-      (taken?"<br><b style='color:#ff9d7a'>домен занят: "+mgrOf(m.role).name+"</b>":"")+"</s>"));
-    if(!known){
-      const bt=el("button","act sm","РАССПРОСИТЬ");
-      bt.onclick=()=>{G.cantina.talked[m.id]=1;renderTab();};
-      r.appendChild(bt);
-    }
-    /* кнопка называет действие, а не сумму: голая цифра в кнопке не говорит,
-       что случится, если по ней нажать */
-    const b=el("button","act"+(taken?"":" gold"),"НАНЯТЬ · "+fee.toLocaleString("ru")+" кр");
-    b.disabled=taken||G.credits<fee||G.mgrs.length>=MGR_CAP;
-    b.onclick=()=>{if(hireMgr(m)){hqSel=m.id;renderTab();}};
-    r.appendChild(b);
-    $body.appendChild(r);
+  /* всё остальное, что живёт в зале: за сгибом, но с честным счётом */
+  foldBlock("ЕЩЁ В ЗАЛЕ",()=>{
+    grokBlock();
+    if(typeof vegaCantinaBlock==="function")vegaCantinaBlock();   /* Вега за столиком (M153) */
+    if(typeof dominoBlock==="function"){const RIV=["Пекарь","Совеня","Долгий Ким","Штоф"];dominoBlock((typeof vegaAboard==="function"&&vegaAboard())?"Вега":RIV[Math.abs(hashi(G.sx,G.sy,celDay()))%RIV.length]);}
+    if(typeof postBlock==="function")postBlock();
+    if(typeof keepersBlock==="function")keepersBlock();
+    if(typeof chartsBlock==="function")chartsBlock();
+    if(typeof quietBlock==="function")quietBlock();
+    if(typeof newsRender==="function")newsRender();
+  },"cantMore");
+}
+/* карточка кандидата: сжатая — имя, роль, одна строка, НАНЯТЬ; полная — с цифрами и чертами */
+function cantHireRow(m,full){
+  const R=MGR_ROLES[m.role],taken=mgrTaken(m.role),fee=mgrFee(m);
+  const spoke=!!G.cantina.talked[m.id];
+  const known=spoke||mgrPerkOf("cmd","read")||relicDeep("ledger");
+  const r=el("div","row"+(full?" on":""));
+  r.style.cursor="pointer";
+  r.onclick=ev=>{
+    if(ev.target.closest("button"))return;
+    cantSel=full?null:m.id;sfx("ui");renderTab();
+  };
+  r.appendChild(faceEl(m,full?64:44));
+  const line=R.ru.toLowerCase()+" · "+R.note;
+  let html="<b style='color:"+R.col+"'>"+m.name+"</b><s>"+line+"</s>";
+  if(full){
+    html+="<s class='fig'>уровень "+mgrLevel(m)+" · оклад "+mgrPay(m)+" кр/мин · доля "+(mgrCut(m)*100).toFixed(1)+"%</s>"+
+      "<s>"+(known
+        ? m.traits.map(t=>"<b>"+mgrTrait(t).ru+"</b> — "+mgrTrait(t).note).join("<br>")
+        : "чем хорош и чем плох — видно после разговора"+(m.traits.length>2?" (черт три)":""))+"</s>"+
+      (taken?"<s style='color:#ff9d7a'>домен занят: "+mgrOf(m.role).name+"</s>":"");
   }
-  if(!free.length)
-    $body.appendChild(el("div","row","<div class='nm'><s>у стойки никого: всех, кто тут сидел, "+
-      "вы уже наняли. Состав меняется сам — загляните позже или на другой станции.</s></div>"));
-  /* ── за столиками ──
-     Не найм и не поручение: люди со своими делами. Всё, что здесь делает игрок, —
-     отвечает; работа уже сделана кем-то другим (27g-deals). */
-  if(deals.length){
-    $body.appendChild(el("div","sec","ЗА СТОЛИКАМИ · ЧУЖИЕ ДЕЛА · "+deals.length));
-    $body.appendChild(el("div","sec","Везти и добывать тут не просят: вам предлагают, "+
-      "вы отвечаете. Ответ стоит денег, времени или чужой судьбы, и бесплатного ответа нет "+
-      "ни у одного дела — «отказать» тоже ответ."));
-    for(const d of deals){
-      const D=d.def,sel=cantSel==="deal:"+d.key;
-      const c=el("div","row"+(sel?" on":""));
-      c.style.cursor="pointer";
-      c.onclick=ev=>{
-        if(ev.target.closest("button"))return;
-        cantSel=sel?null:"deal:"+d.key;sfx("ui");renderTab();
-      };
-      c.appendChild(el("div","nm","<b style='color:#f2b25c'>"+D.ru+"</b><s>"+d.name+" · "+D.who+
-        "<br><span style='color:#cfe3ea;line-height:1.8'>— "+D.text+"</span></s>"));
-      $body.appendChild(c);
-      const rr=el("div","row");
-      D.opts.forEach((o,i)=>{
-        const b=el("button","act sm"+(o.free?"":" gold"),
-          o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" кр":""));
-        b.disabled=!!(o.cost&&G.credits<o.cost);
-        b.onclick=()=>{if(dealAnswer(d,i))renderTab();};
-        rr.appendChild(b);
-      });
-      $body.appendChild(rr);
-    }
+  r.appendChild(el("div","nm",html));
+  if(full&&!known){
+    const bt=el("button","act sm","РАССПРОСИТЬ");
+    bt.onclick=()=>{G.cantina.talked[m.id]=1;renderTab();};
+    r.appendChild(bt);
   }
-  /* ── Грохотун (12tb) ──
-     Он не в списке зала и не за столиком: он сам по себе, приходит к вам и
-     занимает место ровно на одну строку. В экипаж не входит, кресла не
-     занимает, кредитов не берёт — платят ему едой. */
-  grokBlock();
-  if(typeof vegaCantinaBlock==="function")vegaCantinaBlock();   /* Вега за столиком (M153) */
-  /* домино (M166): в кантине — со случайным из зала или соперником */
-  if(typeof dominoBlock==="function"){const RIV=["Пекарь","Совеня","Долгий Ким","Штоф"];dominoBlock((typeof vegaAboard==="function"&&vegaAboard())?"Вега":RIV[Math.abs(hashi(G.sx,G.sy,celDay()))%RIV.length]);}
-  /* посылка почтового круга (M133, 11e): лежит рядом со столом, пока вы её везёте */
-  if(typeof postBlock==="function")postBlock();
-  if(typeof keepersBlock==="function")keepersBlock();   /* смотритель и список на переборке (11k) */
-  if(typeof chartsBlock==="function")chartsBlock();     /* их карта (11m) */
-  if(typeof quietBlock==="function")quietBlock();       /* открытая дверь (11n) */
-  /* стол (M128): вещь вместо слов. Стоит после людей — сначала зал, потом то,
-     что вы на него выкладываете */
-  if(typeof putOnTable==="function")tableBlock();
-  /* тот один (11ar, M230): скажет прямо ровно раз, и он неправ */
-  if(typeof toldOffBlock==="function")toldOffBlock();
-  /* поздний час (11aq, M225): последний ряд зала — остаться можно всегда,
-     а вот что из этого выйдет, знает только стойка */
-  if(typeof lateBlock==="function")lateBlock();
-  /* новости (12p): мир двигался, пока вас не было. Стояли ПЕРВЫМ блоком экрана —
-     то есть вошедший читал сводку раньше, чем видел, кто в зале. Это чтение, а
-     не действие: его место после всего, что здесь можно сделать руками */
-  if(typeof newsRender==="function")newsRender();
-  $body.appendChild(el("div","sec","Состав кантины меняется сам: пришли через час — "+
-    "другие люди и другие дела. Перки и приказы нанятым раздают на экране ШТАБ."));
+  const b=el("button","act"+(taken?"":" gold")+(full?"":" sm"),"НАНЯТЬ · "+fee.toLocaleString("ru")+" кр");
+  b.disabled=taken||G.credits<fee||G.mgrs.length>=MGR_CAP;
+  b.onclick=()=>{if(hireMgr(m)){hqSel=m.id;cantSel=null;renderTab();}};
+  r.appendChild(b);
+  $body.appendChild(r);
+}
+/* чужое дело: сжатое — что и кто; полное — текст и ответы */
+function cantDealRow(d,full){
+  const D=d.def;
+  const c=el("div","row"+(full?" on":""));
+  c.style.cursor="pointer";
+  c.onclick=ev=>{
+    if(ev.target.closest("button"))return;
+    cantSel=full?null:"deal:"+d.key;sfx("ui");renderTab();
+  };
+  c.appendChild(el("div","nm","<b style='color:#f2b25c'>"+D.ru+"</b><s>"+d.name+" · "+D.who+"</s>"+
+    (full?"<s style='color:#cfe3ea;line-height:1.8'>— "+D.text+"</s>":"")));
+  if(!full){const b=el("button","act sm","ВЫСЛУШАТЬ");b.onclick=c.onclick;c.appendChild(b);}
+  $body.appendChild(c);
+  if(full){
+    const rr=el("div","row");
+    D.opts.forEach((o,i)=>{
+      const b=el("button","act sm"+(o.free?"":" gold"),o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" кр":""));
+      b.disabled=!!(o.cost&&G.credits<o.cost);
+      b.onclick=()=>{if(dealAnswer(d,i)){cantSel=null;renderTab();}};
+      rr.appendChild(b);
+    });
+    $body.appendChild(rr);
+  }
+}
+/* завсегдатай (12u-folk): человек, а не кнопка — говорит своё, попросить не может */
+function cantFolkRow(f,full){
+  const F=FOLK[f.id];
+  const r=el("div","row"+(full?" on":""));
+  r.style.cursor="pointer";
+  r.onclick=ev=>{if(ev.target.closest("button"))return;cantSel=full?null:"folk:"+f.id;sfx("ui");renderTab();};
+  r.appendChild(el("div","nm","<b>"+F.ru+" · завсегдатай</b><s>"+(F.where==="dock"?"у дока":"в зале")+(F.note?" · "+F.note:"")+"</s>"+
+    (full?"<s style='color:#cfe3ea;line-height:1.8'>"+f.line+"</s><s>говорит своё; попросить о чём-то не может</s>":"")));
+  $body.appendChild(r);
 }
 /* ── строка Грохотуна ──
    Одна карточка со своим состоянием и списком площадок из СВОЕГО слоя карты.
@@ -57480,11 +57770,15 @@ function grokBlock(){
     $body.appendChild(rr);
   }
 }
+/* реплика бармена над стойкой (M299): ответ на вещь произносится в зале,
+   а не только меняет строку списка */
+let cantBubble=null;
+function cantSay(line){cantBubble={line:String(line||"").replace(/^—\s*/,""),t:performance.now()};}
 /* Зал: канва во всю ширину панели, по сидящему тыкают. Перерисовывается своим
    rAF, пока канва жива и вкладка та же, — иначе цикл продолжал бы крутиться
    после ухода со вкладки и жёг бы кадр впустую. */
 let cantSel=null, cantHover=null;
-function cantinaScene(list,deals){
+function cantinaScene(list,deals,folk){
   const wrap=el("div","");
   wrap.style.cssText="margin:6px 0 10px;line-height:0;position:relative";
   const cn=document.createElement("canvas");
@@ -57498,7 +57792,8 @@ function cantinaScene(list,deals){
   $body.appendChild(wrap);
   /* выбор мог указывать на человека, которого уже наняли, или на дело,
      на которое уже ответили: и то и другое просто снимается */
-  if(cantSel&&cantSel.indexOf("deal:")!==0&&!list.some(m=>m.id===cantSel))cantSel=null;
+  /* стойка и завсегдатай — тоже выбор (M299); сверка с залом делается в renderCantina */
+  if(cantSel&&cantSel!=="counter"&&cantSel.indexOf("folk:")!==0&&cantSel.indexOf("deal:")!==0&&!list.some(m=>m.id===cantSel))cantSel=null;
   if(cantSel&&cantSel.indexOf("deal:")===0&&
      !(deals||[]).some(d=>("deal:"+d.key)===cantSel))cantSel=null;
   let hits=[];
@@ -57522,7 +57817,7 @@ function cantinaScene(list,deals){
     const c=cn.getContext("2d");
     c.setTransform(dpr,0,0,dpr,0,0);
     hits=drawCantinaRoom({width:cn.width/dpr,height:cn.height/dpr,getContext:()=>c},
-                          list,cantSel,cantHover,deals);
+                          list,cantSel,cantHover,deals,folk);
     requestAnimationFrame(frame);
   };
   frame();
@@ -57574,7 +57869,7 @@ function hqRender(){
      Полоска портретов была плоской вырезкой — здесь видно и место, и то,
      чем домен занят прямо сейчас (`27f-hq-room`). */
   hqScene();
-  $hqBody.appendChild(el("div","sec","ТКНИТЕ ПО ЧЕЛОВЕКУ У ПУЛЬТА · ПУСТОЙ ПУЛЬТ — СВОБОДНЫЙ ДОМЕН"));
+  $hqBody.appendChild(el("div","sec note","тыкните по человеку у пульта · пустой пульт — свободный домен"));
   const m=G.mgrs.find(x=>x.id===hqSel);
   const R=MGR_ROLES[m.role];
   $hqBody.appendChild(el("div","sec",m.name.toUpperCase()+" · "+R.ru.toUpperCase()+
@@ -57854,12 +58149,11 @@ document.getElementById("hqClose").addEventListener("click",()=>{
 function tableBlock(){
   const sp=(typeof speechHere==="function")?speechHere():null;
   if(sp){
-    $body.appendChild(el("div","sec","ЗА СТОЙКОЙ · К ВАМ ОБРАЩАЮТСЯ: "+sp.addr.toUpperCase()));
-    $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
+    $body.appendChild(el("div","row","<div class='nm'><b>"+sp.addr+"</b><s style='color:#cfe3ea;line-height:1.9'>"+
       (sp.silent?"<i>смотрит и ничего не говорит</i>":sp.line)+
       "</s><s>следующая реплика — в следующий заход</s></div>"));
   }
-  $body.appendChild(el("div","sec","СТОЛ · ПОЛОЖИТЕ ВЕЩЬ — ОТВЕТЯТ НА НЕЁ, А НЕ НА СЛОВА"));
+  secHead("СТОЛ",{note:"положите вещь — ответят на неё, а не на слова",key:"table"});
   /* ── один ход на вещь за заход (M298) ──
      Плейтест 30.08: «тыкаешь и ничего не происходит». Ответ печатался мелко в
      отдельный ряд ниже, молчание — как пустота, а зерно держалось на весь заход,
@@ -57880,14 +58174,17 @@ function tableBlock(){
       r.appendChild(el("div","nm","<b>"+title+"</b><s>"+sub+"</s><s>"+why+"</s>"));
       const bt=el("button","act sm",btnTxt);
       bt.disabled=!!(extra&&extra.disabled);
-      bt.onclick=()=>{
+      const go=()=>{
         G.tableN=(G.tableN|0)+1;
         const res=putOnTable(kind,idx)||{line:null,silent:true};
         if(typeof placeNote==="function")placeNote("care",1);   // вещь на столе — место помнит (хвост M132)
         if(!res.silent&&typeof peopleLine==="function")peopleLine(res.line,G.st?G.st.name:"");   /* в ЛЮДИ (M151a) */
         G.tableUsed[key]={line:res.line,silent:!!res.silent};
+        if(typeof cantSay==="function"&&!res.silent)cantSay(res.line);   /* бармен говорит в зале (M299) */
+        sfx("ui");
         renderTab();
       };
+      bt.onclick=()=>{if(extra&&extra.ask)extra.ask(go);else go();};
       r.appendChild(bt);
     }
     if(extra&&extra.btn)r.appendChild(extra.btn);
@@ -57895,27 +58192,40 @@ function tableBlock(){
   };
   /* ленты: их можно показать, а можно продать. Хорошая продаётся хорошо */
   const strips=(typeof stripsAll==="function")?stripsAll():[];
-  if(!strips.length)
-    $body.appendChild(el("div","row","<div class='nm'><s>лент нет. Оторвать полосу — клавиша T "+
-      "в полёте, когда на бумаге уже что-то записано</s></div>"));
+  /* пустые ряды не рисуются (M299): «лент нет», «трюм пуст» — не вещи */
   strips.forEach((s,k)=>{
     const bs=el("button","act sm gold",stripValue(s).toLocaleString("ru")+" кр");
     bs.title="продать ленту";
     bs.onclick=()=>{stripSell(k);renderTab();};
-    row("strip"+k,"ЛЕНТА · сектор "+s.sx+":"+s.sy,"невязка "+(s.mis||0).toFixed(3)+" · длина записи "+(s.span|0),
+    row("strip"+k,"Лента · сектор "+s.sx+":"+s.sy,"невязка "+(s.mis||0).toFixed(3)+" · длина записи "+(s.span|0),
         "ПОКАЗАТЬ ЛЕНТУ — расскажут, что видели в тех же секторах","НА СТОЛ","strip",k,{btn:bs});
   });
   /* груз и слух: то же движение, другой предмет */
   const holdKey=RES_KEYS.filter(k=>G.cargo[k]>0)[0];
-  row("cargo","ИЗ ТРЮМА",holdKey?RES[holdKey].ru+" · "+G.cargo[holdKey]+" ед":"трюм пуст",
-      "ПОКАЗАТЬ ТОВАР — скажут, кому он тут нужен","НА СТОЛ","cargo",RES_KEYS.indexOf(holdKey),{disabled:!holdKey});
+  if(holdKey)row("cargo","Из трюма",RES[holdKey].ru+" · "+G.cargo[holdKey]+" ед",
+      "показать товар — скажут, кому он тут нужен","НА СТОЛ","cargo",RES_KEYS.indexOf(holdKey));
+  /* новость из эфира, не «слух»: слух на доске — это место с промахом, а тут
+     строка приёмника; одно слово на две вещи путало (M299) */
   const news=(typeof newsAll==="function")?newsAll():[];
   const last=news.length?news[news.length-1]:null;
-  row("rumour","СЛУХ",last?last.ru:"вы ничего не слышали",
-      "ПЕРЕСКАЗАТЬ СЛУХ — его подтвердят или высмеют","НА СТОЛ","rumour",news.length,{disabled:!last});
-  /* имя (хвост M128): то же движение, предмет — вы сами */
-  row("name","ВАШЕ ИМЯ",G.name||"капитан",
-      "НАЗВАТЬ ИМЯ — вас начнут узнавать на этой станции","НАЗВАТЬ","name",visitHere());
+  if(last)row("rumour","Новость из эфира",last.ru,
+      "пересказать — её подтвердят или высмеют","НА СТОЛ","rumour",news.length);
+  /* имя (хвост M128): то же движение, предмет — вы сами. Спрашивается окном (M299) */
+  row("name","Ваше имя",G.name||"капитан — имени пока нет",
+      G.name?"назваться ещё раз — вас узнают":"назваться — вас начнут узнавать на этой станции","НАЗВАТЬ","name",visitHere(),
+      {ask:go=>{if(typeof askText!=="function")return go();
+        askText("ВАШЕ ИМЯ",G.name||"",v=>{v=(v||"").replace(/[<>]/g,"").trim().slice(0,18);if(!v)return;G.name=v;go();});}});
+  /* имя системы, если дали своё, кладут на стол же: с этого прыжка оно пойдёт по рукам (11u) */
+  if(typeof namesFor==="function"&&G.sys){
+    const nk=G.sys.key,cur=namesFor(nk);
+    if(cur&&namesToldAll()[nk]==null){
+      const r6=el("div","row");
+      r6.appendChild(el("div","nm","<b>Имя системы · «"+cur+"»</b><s>рассказать — и через прыжки его повторит чужой диспетчер</s>"));
+      const b6=el("button","act sm","РАССКАЗАТЬ");
+      b6.onclick=()=>{nameTell(G.sys);sfx("ui");renderTab();};
+      r6.appendChild(b6);$body.appendChild(r6);
+    }
+  }
   /* пеленг зеркала (хвост M134): отметку можно снять с карты */
   if(typeof mirrorAll==="function"&&mirrorAll().bearing===1){
     const r5=el("div","row");
@@ -58196,7 +58506,7 @@ function cantStyle(){
   return S;
 }
 /* ── сцена ── */
-function drawCantinaRoom(cn,list,sel,hover,deals){
+function drawCantinaRoom(cn,list,sel,hover,deals,folk){
   const c=cn.getContext("2d");
   /* Рисуем в СВОИХ единицах: комната высотой 200, ширина — сколько дала панель.
      Без этого на широком экране зал растягивался в ленту, а люди в нём
@@ -58204,12 +58514,12 @@ function drawCantinaRoom(cn,list,sel,hover,deals){
   c.clearRect(0,0,cn.width,cn.height);
   const k=cn.height/200, H2=200, W2=cn.width/k;
   c.save();c.scale(k,k);
-  const hits=cantRoomBody(c,W2,H2,list,sel,hover,deals);
+  const hits=cantRoomBody(c,W2,H2,list,sel,hover,deals,folk);
   c.restore();
   for(const h of hits){h.x*=k;h.y*=k;h.w*=k;h.h*=k;}
   return hits;
 }
-function cantRoomBody(c,W2,H2,list,sel,hover,deals){
+function cantRoomBody(c,W2,H2,list,sel,hover,deals,folk){
   const S=cantStyle(),seed=(G.sys.seed^0xCA47)>>>0,R=rng(seed);
   const acc=hex2rgb(S.acc);
   const fy=H2-20;                                  // пол
@@ -58373,6 +58683,24 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
   cantBarkeep(c,bmx,cy,fy,acc,seed,back);
   const seats=cantSeats(list.length,W2);
   const hits=[];
+  /* стойка и дверь — тоже точки нажатия (M299): бармен открывает стол,
+     завсегдатай у двери — свою строку */
+  if(sel==="counter"||hover==="counter"){
+    const g0=c.createRadialGradient(bmx,cy-46,2,bmx,cy-46,44);
+    g0.addColorStop(0,rgba(acc,sel==="counter"?.30:.16));g0.addColorStop(1,rgba(acc,0));
+    c.fillStyle=g0;c.beginPath();c.arc(bmx,cy-46,44,0,TAU);c.fill();
+  }
+  hits.push({id:"counter",x:bmx-30,y:cy-96,w:60,h:100});
+  if(folk&&typeof FOLK!=="undefined"&&FOLK[folk.id]){
+    const fx=clamp(W2*.07,28,60),fid="folk:"+folk.id,fon=sel===fid||hover===fid;
+    if(fon){
+      const g1=c.createRadialGradient(fx,cy-46,2,fx,cy-46,44);
+      g1.addColorStop(0,rgba(acc,sel===fid?.30:.16));g1.addColorStop(1,rgba(acc,0));
+      c.fillStyle=g1;c.beginPath();c.arc(fx,cy-46,44,0,TAU);c.fill();
+    }
+    cantFigure(c,fx,fy-40,[122,112,98],G.t*.02+3.1,null,0,false,2);
+    hits.push({id:fid,x:fx-26,y:cy-78,w:52,h:86});
+  }
   list.forEach((m,i)=>{
     const x=seats[i], on=sel===m.id, hv=hover===m.id;
     const R2=MGR_ROLES[m.role];
@@ -58506,6 +58834,21 @@ function cantRoomBody(c,W2,H2,list,sel,hover,deals){
      туда, где она никому не мешает и всем видна, и рисовать её надо так же. */
   if(typeof holTreeUp==="function"&&holTreeUp()&&typeof holTree==="function")
     holTree(c,W2*0.93,fy+H2*0.10,fy*0.72,rgba(acc,.5));
+  /* пузырь бармена (M299) */
+  if(typeof cantBubble!=="undefined"&&cantBubble&&performance.now()-cantBubble.t<5200){
+    const age=(performance.now()-cantBubble.t)/1000,al=age<.2?age/.2:(age>4.4?Math.max(0,(5.2-age)/.8):1);
+    c.save();c.globalAlpha=al;
+    c.font="9px ui-monospace,monospace";c.textAlign="left";
+    const words=cantBubble.line.split(" "),lines=[];let cur0="";
+    for(const w of words){const t=cur0?cur0+" "+w:w;if(c.measureText(t).width>W2*.46&&cur0){lines.push(cur0);cur0=w;}else cur0=t;}
+    if(cur0)lines.push(cur0);
+    const bw=lines.reduce((m,l)=>Math.max(m,c.measureText(l).width),0)+18,bh=lines.length*12+12;
+    const bx=clamp(bmx+22,8,W2-bw-8),by=Math.max(8,cy-118-bh);
+    c.fillStyle="rgba(8,12,18,.88)";c.fillRect(bx,by,bw,bh);
+    c.strokeStyle=rgba(acc,.55);c.lineWidth=1;c.strokeRect(bx+.5,by+.5,bw,bh);
+    c.fillStyle="#e6eef2";lines.forEach((l,i)=>c.fillText(l,bx+9,by+14+i*12));
+    c.restore();
+  }
   const vg=c.createRadialGradient(W2/2,H2/2,H2*.35,W2/2,H2/2,H2*1.05);
   vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.36)");   // виньетка в .55 топила зал
   c.fillStyle=vg;c.fillRect(0,0,W2,H2);
@@ -64424,6 +64767,10 @@ function hud(){
     const seen=typeof routeNoteFor==="function"&&!!routeNoteFor(G.sel.x,G.sel.y);
     setTx(rbtn,inR?"ИЗ МАРШРУТА":(seen?"В МАРШРУТ":"ЦЕН НЕ ВИДЕЛИ"));
   }else setSt(rbtn,"display","none");
+  /* «К СЕБЕ» — когда лист уехал от вас; «НАЗВАТЬ» — на раскрытой карточке (M299) */
+  const mb=document.getElementById("mebtn"),nb=document.getElementById("namebtn");
+  if(mb)setSt(mb,"display",(G.mode==="map"&&(G.mapView||(G.mapZoom&&G.mapZoom!==1)))?"":"none");
+  if(nb)setSt(nb,"display",(G.mode==="map"&&G.mapMore)?"":"none");
   /* приборная колодка (25c): рисуется каждым кадром, гаснет вместе со строкой */
   if(typeof instrPodTick==="function")instrPodTick();
   setTx($place,a);setTx($sub,b);

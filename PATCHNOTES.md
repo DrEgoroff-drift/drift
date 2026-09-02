@@ -7,6 +7,40 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.296.0 - M299: the screens pass — five surfaces, headings, the map that keeps you in frame
+
+`docs/DESIGN-screens.md`: the phone playtest of 02.09 read as one defect - a press with no
+visible consequence and no visible place - and this is the pass against it.
+
+- **НА КАРТУ works from the station.** It opened the map *under* the station overlay. Now it is
+  a peek: the station hides, the map shows, НАЗАД returns to the same tab; docked state stays and
+  a jump from the peek is refused («Сначала отстыкуйтесь»).
+- **The map keeps you in frame.** A far rumour zooms the sheet out to fit both you and the search
+  circle instead of panning you off the edge; «ВЫ · name» is a labelled teal mark, the selection
+  keeps its orange reticle; when the window is dragged away an edge arrow still points at you
+  and «К СЕБЕ» brings the sheet back. The sheet is dragged with one finger, pinched or wheeled
+  to zoom; a far course draws hop dots every jump range and the footer says how many jumps.
+- **Two names untangled.** «ИМЯ СИСТЕМЫ» left the board (its subtitle read as the captain's
+  name and players typed their callsign into it); a system is named from the map card's
+  «НАЗВАТЬ». The captain's name is asked in a small window from the table row «Ваше имя», is
+  saved, and the table also takes a named system to «РАССКАЗАТЬ».
+- **The cantina is a room, and the room is the input.** The scene is always drawn; the counter,
+  the candidates, the deals and the dock regular (Рыба and friends, now labelled «завсегдатай ·
+  у дока» instead of a bare name) are tap targets. Below the scene only the tapped thing
+  renders - one card pattern with words first and figures under it; everything else in the hall
+  sits behind «ЕЩЁ В ЗАЛЕ». A thing put on the table is answered by the barkeep in a bubble over
+  the counter, then in the row. Empty table rows («лент нет», «трюм пуст») are gone; the ether
+  line on the table is called «Новость из эфира», not «слух».
+- **Headings name, notes explain.** `secHead()` renders a heading with a right-aligned count and
+  a one-line note shown on the first visit, then folded behind «?». A post-pass splits every
+  inherited «NAME · EXPLANATION · COUNT» chain: head stays a heading (≤ 32 characters, asserted
+  by the new suite `91zzy-screens` on every station tab), the tail becomes a sentence-case note,
+  the trailing number a counter.
+- **The board in three lanes.** К ВАМ / ЗДЕСЬ / ДАЛЕКО, sections sorted by having a verb, seven
+  per lane above the fold.
+- **The flight HUD no longer shows through open screens** (the locus line and the pod were
+  legible through the HQ header's glass).
+
 ## 0.295.0 - M298: three interface fixes from the playtest of 30.08
 
 `docs/DESIGN-ui.md`, «Three fixes queued from the playtest» - measured then, built now.

@@ -73,7 +73,7 @@ cards shout louder than the sections that hold them; and rows carry two-to-four-
 | level | what | style | length cap |
 |---|---|---|---|
 | H1 | the place (station name, HQ, the room) | as now, top of the screen | — |
-| H2 | a lane or section (К ВАМ, У СТОЙКИ, ДАЛЕКО) | 10 px caps, letter-spaced, muted | **3 words / 24 chars** |
+| H2 | a lane or section (К ВАМ, У СТОЙКИ, ДАЛЕКО) | 10 px caps, letter-spaced, muted | **3 words / 24 chars** (enforced today at 32 by `secTidy` + `91zzy-screens`; ratchet down as modules are touched) |
 | H3 | a card title (a person, a rumour, a need) | 14 px, **sentence case**, full text colour | **1 line / 40 chars** |
 
 Anything that is not one of these is body: 11 px, sentence case, muted, and never wider than
@@ -274,6 +274,11 @@ the archive; keep them apart — the table is an input surface, the notebook is 
    «завсегдатай · у дока» and a card; no bare heading with a quote.
 4. **Empty table rows render.** «лент нет», «трюм пуст», «вы ничего не слышали» rows go.
 5. **Map: same colour for "you" and "selected"; no drag; view leaves the player.**
+6. **The flight HUD shows through open screens** (playtest 02.09, second message): the locus
+   line «пылевой фронт…» and the pod are legible through the HQ header's glass and overlap its
+   subtitle. Rule: while any `.scr.open` exists the `.hud` is hidden.
+
+All six built in 0.296.0.
 
 ## 9. Walkthrough — the path this pass must make obvious
 

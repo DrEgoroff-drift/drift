@@ -659,7 +659,43 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
   background:rgba(127,230,216,.18);border-radius:3px}
 .body,#loglist,#lorelist{scrollbar-width:thin;scrollbar-color:rgba(127,230,216,.18) transparent}
 /* длинная «секция» — это фраза, а не подпись: обычный регистр, читаемый кегль */
-.sec.note{text-transform:none;letter-spacing:.02em;font-size:11px;line-height:1.6;color:var(--dim)}
+.sec.note{text-transform:none;letter-spacing:.02em;font-size:11px;line-height:1.6;color:var(--dim);display:block;padding-top:0}
+/* ── заголовки и полосы (M299) ── */
+.sec{display:flex;align-items:baseline;gap:10px}
+.sec>span:first-child{flex:1 1 auto;min-width:0}
+.sec .cnt{flex:0 0 auto;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:var(--dim)}
+.sec .q{flex:0 0 auto;min-height:0;min-width:0;height:22px;padding:0 9px;font:inherit;font-size:9px;letter-spacing:.08em;
+  color:var(--dim);background:rgba(127,230,216,.06);border:1px solid rgba(127,230,216,.22);border-radius:11px;cursor:pointer}
+.sec .q:hover{color:var(--text)}
+.sec.lane{margin-top:14px;padding-top:26px;border-top:1px solid rgba(127,230,216,.12);font-size:11px;letter-spacing:.26em;color:var(--text)}
+.sec.lane:first-child{margin-top:0;border-top:0}
+.sec.fold{cursor:pointer}
+.sec.fold.on .cnt{color:var(--text)}
+.row .nm s.fig{color:var(--text);opacity:.8;font-variant-numeric:tabular-nums}
+/* окно одной строки (11u askText) */
+#askwin{position:fixed;inset:0;background:rgba(3,5,10,.72);display:none;align-items:center;justify-content:center;z-index:80}
+#askwin.open{display:flex}
+.askbox{background:#0b1016;border:1px solid #2a3a44;padding:6px 16px 16px;width:min(92vw,360px);border-radius:8px}
+.askbox .sec{padding-left:0;padding-right:0}
+.askbox input{width:100%;box-sizing:border-box;background:#070b10;color:var(--text);border:1px solid #2a3a44;
+  padding:10px 12px;font:inherit;font-size:16px;margin:4px 0 12px;border-radius:4px}
+.askrow{display:flex;gap:10px;justify-content:flex-end}
+/* шапка полёта под открытым экраном (плейтест 02.09): строка места и колодка
+   просвечивали сквозь стеклянный заголовок ШТАБа и налезали на текст */
+body:has(.scr.open) .hud,body:has(.scr.open) #instrpod,body:has(#askwin.open) .hud{visibility:hidden}
+/* и подсказка say() под открытым экраном — не поперёк его шапки, а плашкой
+   над нижними кнопками: «ПРИШЁЛ ОТВЕТ» шла по имени станции */
+/* приёмник над экраном на телефоне (плейтест 02.09): правило «сверху по
+   центру, в .78» складывалось с телефонным left:8px и уезжало в левый угол
+   поперёк имени станции. На телефоне — во всю ширину поверх экрана, а экран
+   отступает под него на строку */
+@media (max-width:760px){
+  body.screen #console{left:8px;right:8px;top:calc(env(safe-area-inset-top) + 6px);bottom:auto;transform:none;justify-content:center}
+  body.screen .scr.open{padding-top:26px}
+}
+body:has(.scr.open) #msg{top:auto;bottom:calc(env(safe-area-inset-bottom) + 96px);left:12px;right:12px;transform:none;
+  background:rgba(8,12,18,.94);border:1px solid rgba(127,230,216,.22);border-radius:8px;padding:8px 12px;z-index:26;
+  white-space:normal;text-transform:none;letter-spacing:.04em;font-size:12px;text-align:left;overflow:hidden}
 @media (min-width:900px){.sec.note{font-size:12px;max-width:72ch}}
 
 /* ══════════════ пульт (M151a) ══════════════

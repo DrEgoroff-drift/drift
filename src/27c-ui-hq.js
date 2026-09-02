@@ -65,118 +65,126 @@ function mgrHead(m){
    любое нажатие перебирало $body заново и уносило экран в шапку. */
 function renderCantina(){
   mgrTick();
-  const T=stTypeOf(G.st.stype);
   G.cantina=G.cantina&&G.cantina.key===G.sys.key?G.cantina:{key:G.sys.key,list:stationMgrs(G.sys),talked:{}};
   const free=G.cantina.list.filter(m=>!G.mgrs.some(x=>x.seed===m.seed));
   const deals=stationDeals(G.sys).filter(d=>!dealTaken(d.key));
-  /* ── зал ──
-     Кандидаты у стойки, дела за столиками: одной сценой, потому что это одно
-     помещение. Стоит первым — на вопрос «где я» отвечает картинка, а не заголовок. */
-  if(free.length||deals.length){
-    cantinaScene(free,deals);
-    $body.appendChild(el("div","sec","Тыкните по человеку в зале — или по его строке ниже: "+
-      "это одни и те же люди. Нажатие подсвечивает, а не прячет остальных."));
+  const folk=(typeof folkShown==="function")?folkShown():null;
+  /* ── зал — всегда, и зал — это ввод (M299) ──
+     Раньше сцена рисовалась только при кандидатах, а под ней всё равно шёл
+     список из четырнадцати блоков. Теперь стойка, люди и дверь — точки
+     нажатия; ниже рисуется только то, во что ткнули. */
+  cantinaScene(free,deals,folk);
+  const isDeal=!!cantSel&&cantSel.indexOf("deal:")===0, isFolk=!!cantSel&&cantSel.indexOf("folk:")===0;
+  if(cantSel&&cantSel!=="counter"&&!isDeal&&!isFolk&&!free.some(m=>m.id===cantSel))cantSel=null;
+  if(isDeal&&!deals.some(d=>"deal:"+d.key===cantSel))cantSel=null;
+  if(isFolk&&!(folk&&FOLK[folk.id]&&"folk:"+folk.id===cantSel))cantSel=null;
+  const back=()=>{cantSel=null;sfx("ui");renderTab();};
+  if(!cantSel){
+    secHead("В ЗАЛЕ",{count:free.length+deals.length+(folk?1:0)+1,
+      note:"тыкните по человеку или по стойке — или по строке ниже: это те же люди",key:"cant"});
+    const rc=el("div","row");rc.style.cursor="pointer";
+    rc.onclick=()=>{cantSel="counter";sfx("ui");renderTab();};
+    rc.appendChild(el("div","nm","<b>Бармен</b><s>у стойки: слушают, отвечают на вещь, наливают допоздна</s>"));
+    const bc=el("button","act sm","К СТОЙКЕ");bc.onclick=rc.onclick;rc.appendChild(bc);
+    $body.appendChild(rc);
+    for(const m of free)cantHireRow(m,false);
+    for(const d of deals)cantDealRow(d,false);
+    if(folk&&FOLK[folk.id])cantFolkRow(folk,false);
+  }else if(cantSel==="counter"){
+    secHead("У СТОЙКИ",{back});
+    if(typeof putOnTable==="function")tableBlock();
+    if(typeof lateBlock==="function")lateBlock();
+    if(typeof toldOffBlock==="function")toldOffBlock();
+  }else if(isDeal){
+    const d=deals.find(x=>"deal:"+x.key===cantSel);
+    secHead("ЗА СТОЛИКОМ",{back});
+    cantDealRow(d,true);
+  }else if(isFolk){
+    secHead(FOLK[folk.id].where==="dock"?"У ДОКА":"В ЗАЛЕ",{back});
+    cantFolkRow(folk,true);
+  }else{
+    const m=free.find(x=>x.id===cantSel);
+    secHead("У СТОЙКИ",{back,note:"управляющий берёт домен целиком — звено, базы, маршрут или лабораторию — и долю с того, что домен приносит",key:"hire"});
+    cantHireRow(m,true);
   }
-  /* ── у стойки: найм ── */
-  $body.appendChild(el("div","sec","У СТОЙКИ · КОГО МОЖНО НАНЯТЬ · МЕСТ "+
-    G.mgrs.length+" / "+MGR_CAP));
-  $body.appendChild(el("div","sec","Здесь сидят управляющие: такой берёт домен целиком — "+
-    "звено, базы, маршрут или лабораторию, — а не приказ на один рейс. Дороже наёмника втрое "+
-    "и берёт долю с того, что приносит его домен, зато рутину держит сам. Один домен — один "+
-    "управляющий. Кто сюда заходит, зависит от станции: "+T.ru.toLowerCase()+" собирает своих."));
-  for(const m of free){
-    const R=MGR_ROLES[m.role],taken=mgrTaken(m.role),fee=mgrFee(m);
-    const spoke=!!G.cantina.talked[m.id];
-    const known=spoke||mgrPerkOf("cmd","read")||relicDeep("ledger");
-    const r=el("div","row"+(cantSel===m.id?" on":""));
-    r.style.cursor="pointer";
-    /* строка — тот же выбор, что и фигура в зале: нажали мимо кнопок — выбрали */
-    r.onclick=ev=>{
-      if(ev.target.closest("button"))return;
-      cantSel=(cantSel===m.id)?null:m.id;sfx("ui");renderTab();
-    };
-    r.appendChild(faceEl(m,64));
-    r.appendChild(el("div","nm","<b style='color:"+R.col+"'>"+m.name+"</b><s>"+
-      R.ru.toLowerCase()+" · "+R.note+
-      "<br>уровень "+mgrLevel(m)+" · оклад "+mgrPay(m)+" кр/мин · доля "+(mgrCut(m)*100).toFixed(1)+"%"+
-      "<br>"+(known
-        ? "черты: "+m.traits.map(t=>"<b>"+mgrTrait(t).ru+"</b> — "+mgrTrait(t).note).join("<br>черты: ")
-        : "чем он хорош и чем плох — видно только после разговора"+
-          (m.traits.length>2?" (черт у него три)":""))+
-      (taken?"<br><b style='color:#ff9d7a'>домен занят: "+mgrOf(m.role).name+"</b>":"")+"</s>"));
-    if(!known){
-      const bt=el("button","act sm","РАССПРОСИТЬ");
-      bt.onclick=()=>{G.cantina.talked[m.id]=1;renderTab();};
-      r.appendChild(bt);
-    }
-    /* кнопка называет действие, а не сумму: голая цифра в кнопке не говорит,
-       что случится, если по ней нажать */
-    const b=el("button","act"+(taken?"":" gold"),"НАНЯТЬ · "+fee.toLocaleString("ru")+" кр");
-    b.disabled=taken||G.credits<fee||G.mgrs.length>=MGR_CAP;
-    b.onclick=()=>{if(hireMgr(m)){hqSel=m.id;renderTab();}};
-    r.appendChild(b);
-    $body.appendChild(r);
+  /* всё остальное, что живёт в зале: за сгибом, но с честным счётом */
+  foldBlock("ЕЩЁ В ЗАЛЕ",()=>{
+    grokBlock();
+    if(typeof vegaCantinaBlock==="function")vegaCantinaBlock();   /* Вега за столиком (M153) */
+    if(typeof dominoBlock==="function"){const RIV=["Пекарь","Совеня","Долгий Ким","Штоф"];dominoBlock((typeof vegaAboard==="function"&&vegaAboard())?"Вега":RIV[Math.abs(hashi(G.sx,G.sy,celDay()))%RIV.length]);}
+    if(typeof postBlock==="function")postBlock();
+    if(typeof keepersBlock==="function")keepersBlock();
+    if(typeof chartsBlock==="function")chartsBlock();
+    if(typeof quietBlock==="function")quietBlock();
+    if(typeof newsRender==="function")newsRender();
+  },"cantMore");
+}
+/* карточка кандидата: сжатая — имя, роль, одна строка, НАНЯТЬ; полная — с цифрами и чертами */
+function cantHireRow(m,full){
+  const R=MGR_ROLES[m.role],taken=mgrTaken(m.role),fee=mgrFee(m);
+  const spoke=!!G.cantina.talked[m.id];
+  const known=spoke||mgrPerkOf("cmd","read")||relicDeep("ledger");
+  const r=el("div","row"+(full?" on":""));
+  r.style.cursor="pointer";
+  r.onclick=ev=>{
+    if(ev.target.closest("button"))return;
+    cantSel=full?null:m.id;sfx("ui");renderTab();
+  };
+  r.appendChild(faceEl(m,full?64:44));
+  const line=R.ru.toLowerCase()+" · "+R.note;
+  let html="<b style='color:"+R.col+"'>"+m.name+"</b><s>"+line+"</s>";
+  if(full){
+    html+="<s class='fig'>уровень "+mgrLevel(m)+" · оклад "+mgrPay(m)+" кр/мин · доля "+(mgrCut(m)*100).toFixed(1)+"%</s>"+
+      "<s>"+(known
+        ? m.traits.map(t=>"<b>"+mgrTrait(t).ru+"</b> — "+mgrTrait(t).note).join("<br>")
+        : "чем хорош и чем плох — видно после разговора"+(m.traits.length>2?" (черт три)":""))+"</s>"+
+      (taken?"<s style='color:#ff9d7a'>домен занят: "+mgrOf(m.role).name+"</s>":"");
   }
-  if(!free.length)
-    $body.appendChild(el("div","row","<div class='nm'><s>у стойки никого: всех, кто тут сидел, "+
-      "вы уже наняли. Состав меняется сам — загляните позже или на другой станции.</s></div>"));
-  /* ── за столиками ──
-     Не найм и не поручение: люди со своими делами. Всё, что здесь делает игрок, —
-     отвечает; работа уже сделана кем-то другим (27g-deals). */
-  if(deals.length){
-    $body.appendChild(el("div","sec","ЗА СТОЛИКАМИ · ЧУЖИЕ ДЕЛА · "+deals.length));
-    $body.appendChild(el("div","sec","Везти и добывать тут не просят: вам предлагают, "+
-      "вы отвечаете. Ответ стоит денег, времени или чужой судьбы, и бесплатного ответа нет "+
-      "ни у одного дела — «отказать» тоже ответ."));
-    for(const d of deals){
-      const D=d.def,sel=cantSel==="deal:"+d.key;
-      const c=el("div","row"+(sel?" on":""));
-      c.style.cursor="pointer";
-      c.onclick=ev=>{
-        if(ev.target.closest("button"))return;
-        cantSel=sel?null:"deal:"+d.key;sfx("ui");renderTab();
-      };
-      c.appendChild(el("div","nm","<b style='color:#f2b25c'>"+D.ru+"</b><s>"+d.name+" · "+D.who+
-        "<br><span style='color:#cfe3ea;line-height:1.8'>— "+D.text+"</span></s>"));
-      $body.appendChild(c);
-      const rr=el("div","row");
-      D.opts.forEach((o,i)=>{
-        const b=el("button","act sm"+(o.free?"":" gold"),
-          o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" кр":""));
-        b.disabled=!!(o.cost&&G.credits<o.cost);
-        b.onclick=()=>{if(dealAnswer(d,i))renderTab();};
-        rr.appendChild(b);
-      });
-      $body.appendChild(rr);
-    }
+  r.appendChild(el("div","nm",html));
+  if(full&&!known){
+    const bt=el("button","act sm","РАССПРОСИТЬ");
+    bt.onclick=()=>{G.cantina.talked[m.id]=1;renderTab();};
+    r.appendChild(bt);
   }
-  /* ── Грохотун (12tb) ──
-     Он не в списке зала и не за столиком: он сам по себе, приходит к вам и
-     занимает место ровно на одну строку. В экипаж не входит, кресла не
-     занимает, кредитов не берёт — платят ему едой. */
-  grokBlock();
-  if(typeof vegaCantinaBlock==="function")vegaCantinaBlock();   /* Вега за столиком (M153) */
-  /* домино (M166): в кантине — со случайным из зала или соперником */
-  if(typeof dominoBlock==="function"){const RIV=["Пекарь","Совеня","Долгий Ким","Штоф"];dominoBlock((typeof vegaAboard==="function"&&vegaAboard())?"Вега":RIV[Math.abs(hashi(G.sx,G.sy,celDay()))%RIV.length]);}
-  /* посылка почтового круга (M133, 11e): лежит рядом со столом, пока вы её везёте */
-  if(typeof postBlock==="function")postBlock();
-  if(typeof keepersBlock==="function")keepersBlock();   /* смотритель и список на переборке (11k) */
-  if(typeof chartsBlock==="function")chartsBlock();     /* их карта (11m) */
-  if(typeof quietBlock==="function")quietBlock();       /* открытая дверь (11n) */
-  /* стол (M128): вещь вместо слов. Стоит после людей — сначала зал, потом то,
-     что вы на него выкладываете */
-  if(typeof putOnTable==="function")tableBlock();
-  /* тот один (11ar, M230): скажет прямо ровно раз, и он неправ */
-  if(typeof toldOffBlock==="function")toldOffBlock();
-  /* поздний час (11aq, M225): последний ряд зала — остаться можно всегда,
-     а вот что из этого выйдет, знает только стойка */
-  if(typeof lateBlock==="function")lateBlock();
-  /* новости (12p): мир двигался, пока вас не было. Стояли ПЕРВЫМ блоком экрана —
-     то есть вошедший читал сводку раньше, чем видел, кто в зале. Это чтение, а
-     не действие: его место после всего, что здесь можно сделать руками */
-  if(typeof newsRender==="function")newsRender();
-  $body.appendChild(el("div","sec","Состав кантины меняется сам: пришли через час — "+
-    "другие люди и другие дела. Перки и приказы нанятым раздают на экране ШТАБ."));
+  const b=el("button","act"+(taken?"":" gold")+(full?"":" sm"),"НАНЯТЬ · "+fee.toLocaleString("ru")+" кр");
+  b.disabled=taken||G.credits<fee||G.mgrs.length>=MGR_CAP;
+  b.onclick=()=>{if(hireMgr(m)){hqSel=m.id;cantSel=null;renderTab();}};
+  r.appendChild(b);
+  $body.appendChild(r);
+}
+/* чужое дело: сжатое — что и кто; полное — текст и ответы */
+function cantDealRow(d,full){
+  const D=d.def;
+  const c=el("div","row"+(full?" on":""));
+  c.style.cursor="pointer";
+  c.onclick=ev=>{
+    if(ev.target.closest("button"))return;
+    cantSel=full?null:"deal:"+d.key;sfx("ui");renderTab();
+  };
+  c.appendChild(el("div","nm","<b style='color:#f2b25c'>"+D.ru+"</b><s>"+d.name+" · "+D.who+"</s>"+
+    (full?"<s style='color:#cfe3ea;line-height:1.8'>— "+D.text+"</s>":"")));
+  if(!full){const b=el("button","act sm","ВЫСЛУШАТЬ");b.onclick=c.onclick;c.appendChild(b);}
+  $body.appendChild(c);
+  if(full){
+    const rr=el("div","row");
+    D.opts.forEach((o,i)=>{
+      const b=el("button","act sm"+(o.free?"":" gold"),o.ru+(o.cost?" · "+o.cost.toLocaleString("ru")+" кр":""));
+      b.disabled=!!(o.cost&&G.credits<o.cost);
+      b.onclick=()=>{if(dealAnswer(d,i)){cantSel=null;renderTab();}};
+      rr.appendChild(b);
+    });
+    $body.appendChild(rr);
+  }
+}
+/* завсегдатай (12u-folk): человек, а не кнопка — говорит своё, попросить не может */
+function cantFolkRow(f,full){
+  const F=FOLK[f.id];
+  const r=el("div","row"+(full?" on":""));
+  r.style.cursor="pointer";
+  r.onclick=ev=>{if(ev.target.closest("button"))return;cantSel=full?null:"folk:"+f.id;sfx("ui");renderTab();};
+  r.appendChild(el("div","nm","<b>"+F.ru+" · завсегдатай</b><s>"+(F.where==="dock"?"у дока":"в зале")+(F.note?" · "+F.note:"")+"</s>"+
+    (full?"<s style='color:#cfe3ea;line-height:1.8'>"+f.line+"</s><s>говорит своё; попросить о чём-то не может</s>":"")));
+  $body.appendChild(r);
 }
 /* ── строка Грохотуна ──
    Одна карточка со своим состоянием и списком площадок из СВОЕГО слоя карты.
@@ -233,11 +241,15 @@ function grokBlock(){
     $body.appendChild(rr);
   }
 }
+/* реплика бармена над стойкой (M299): ответ на вещь произносится в зале,
+   а не только меняет строку списка */
+let cantBubble=null;
+function cantSay(line){cantBubble={line:String(line||"").replace(/^—\s*/,""),t:performance.now()};}
 /* Зал: канва во всю ширину панели, по сидящему тыкают. Перерисовывается своим
    rAF, пока канва жива и вкладка та же, — иначе цикл продолжал бы крутиться
    после ухода со вкладки и жёг бы кадр впустую. */
 let cantSel=null, cantHover=null;
-function cantinaScene(list,deals){
+function cantinaScene(list,deals,folk){
   const wrap=el("div","");
   wrap.style.cssText="margin:6px 0 10px;line-height:0;position:relative";
   const cn=document.createElement("canvas");
@@ -251,7 +263,8 @@ function cantinaScene(list,deals){
   $body.appendChild(wrap);
   /* выбор мог указывать на человека, которого уже наняли, или на дело,
      на которое уже ответили: и то и другое просто снимается */
-  if(cantSel&&cantSel.indexOf("deal:")!==0&&!list.some(m=>m.id===cantSel))cantSel=null;
+  /* стойка и завсегдатай — тоже выбор (M299); сверка с залом делается в renderCantina */
+  if(cantSel&&cantSel!=="counter"&&cantSel.indexOf("folk:")!==0&&cantSel.indexOf("deal:")!==0&&!list.some(m=>m.id===cantSel))cantSel=null;
   if(cantSel&&cantSel.indexOf("deal:")===0&&
      !(deals||[]).some(d=>("deal:"+d.key)===cantSel))cantSel=null;
   let hits=[];
@@ -275,7 +288,7 @@ function cantinaScene(list,deals){
     const c=cn.getContext("2d");
     c.setTransform(dpr,0,0,dpr,0,0);
     hits=drawCantinaRoom({width:cn.width/dpr,height:cn.height/dpr,getContext:()=>c},
-                          list,cantSel,cantHover,deals);
+                          list,cantSel,cantHover,deals,folk);
     requestAnimationFrame(frame);
   };
   frame();
@@ -327,7 +340,7 @@ function hqRender(){
      Полоска портретов была плоской вырезкой — здесь видно и место, и то,
      чем домен занят прямо сейчас (`27f-hq-room`). */
   hqScene();
-  $hqBody.appendChild(el("div","sec","ТКНИТЕ ПО ЧЕЛОВЕКУ У ПУЛЬТА · ПУСТОЙ ПУЛЬТ — СВОБОДНЫЙ ДОМЕН"));
+  $hqBody.appendChild(el("div","sec note","тыкните по человеку у пульта · пустой пульт — свободный домен"));
   const m=G.mgrs.find(x=>x.id===hqSel);
   const R=MGR_ROLES[m.role];
   $hqBody.appendChild(el("div","sec",m.name.toUpperCase()+" · "+R.ru.toUpperCase()+
@@ -607,12 +620,11 @@ document.getElementById("hqClose").addEventListener("click",()=>{
 function tableBlock(){
   const sp=(typeof speechHere==="function")?speechHere():null;
   if(sp){
-    $body.appendChild(el("div","sec","ЗА СТОЙКОЙ · К ВАМ ОБРАЩАЮТСЯ: "+sp.addr.toUpperCase()));
-    $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
+    $body.appendChild(el("div","row","<div class='nm'><b>"+sp.addr+"</b><s style='color:#cfe3ea;line-height:1.9'>"+
       (sp.silent?"<i>смотрит и ничего не говорит</i>":sp.line)+
       "</s><s>следующая реплика — в следующий заход</s></div>"));
   }
-  $body.appendChild(el("div","sec","СТОЛ · ПОЛОЖИТЕ ВЕЩЬ — ОТВЕТЯТ НА НЕЁ, А НЕ НА СЛОВА"));
+  secHead("СТОЛ",{note:"положите вещь — ответят на неё, а не на слова",key:"table"});
   /* ── один ход на вещь за заход (M298) ──
      Плейтест 30.08: «тыкаешь и ничего не происходит». Ответ печатался мелко в
      отдельный ряд ниже, молчание — как пустота, а зерно держалось на весь заход,
@@ -633,14 +645,17 @@ function tableBlock(){
       r.appendChild(el("div","nm","<b>"+title+"</b><s>"+sub+"</s><s>"+why+"</s>"));
       const bt=el("button","act sm",btnTxt);
       bt.disabled=!!(extra&&extra.disabled);
-      bt.onclick=()=>{
+      const go=()=>{
         G.tableN=(G.tableN|0)+1;
         const res=putOnTable(kind,idx)||{line:null,silent:true};
         if(typeof placeNote==="function")placeNote("care",1);   // вещь на столе — место помнит (хвост M132)
         if(!res.silent&&typeof peopleLine==="function")peopleLine(res.line,G.st?G.st.name:"");   /* в ЛЮДИ (M151a) */
         G.tableUsed[key]={line:res.line,silent:!!res.silent};
+        if(typeof cantSay==="function"&&!res.silent)cantSay(res.line);   /* бармен говорит в зале (M299) */
+        sfx("ui");
         renderTab();
       };
+      bt.onclick=()=>{if(extra&&extra.ask)extra.ask(go);else go();};
       r.appendChild(bt);
     }
     if(extra&&extra.btn)r.appendChild(extra.btn);
@@ -648,27 +663,40 @@ function tableBlock(){
   };
   /* ленты: их можно показать, а можно продать. Хорошая продаётся хорошо */
   const strips=(typeof stripsAll==="function")?stripsAll():[];
-  if(!strips.length)
-    $body.appendChild(el("div","row","<div class='nm'><s>лент нет. Оторвать полосу — клавиша T "+
-      "в полёте, когда на бумаге уже что-то записано</s></div>"));
+  /* пустые ряды не рисуются (M299): «лент нет», «трюм пуст» — не вещи */
   strips.forEach((s,k)=>{
     const bs=el("button","act sm gold",stripValue(s).toLocaleString("ru")+" кр");
     bs.title="продать ленту";
     bs.onclick=()=>{stripSell(k);renderTab();};
-    row("strip"+k,"ЛЕНТА · сектор "+s.sx+":"+s.sy,"невязка "+(s.mis||0).toFixed(3)+" · длина записи "+(s.span|0),
+    row("strip"+k,"Лента · сектор "+s.sx+":"+s.sy,"невязка "+(s.mis||0).toFixed(3)+" · длина записи "+(s.span|0),
         "ПОКАЗАТЬ ЛЕНТУ — расскажут, что видели в тех же секторах","НА СТОЛ","strip",k,{btn:bs});
   });
   /* груз и слух: то же движение, другой предмет */
   const holdKey=RES_KEYS.filter(k=>G.cargo[k]>0)[0];
-  row("cargo","ИЗ ТРЮМА",holdKey?RES[holdKey].ru+" · "+G.cargo[holdKey]+" ед":"трюм пуст",
-      "ПОКАЗАТЬ ТОВАР — скажут, кому он тут нужен","НА СТОЛ","cargo",RES_KEYS.indexOf(holdKey),{disabled:!holdKey});
+  if(holdKey)row("cargo","Из трюма",RES[holdKey].ru+" · "+G.cargo[holdKey]+" ед",
+      "показать товар — скажут, кому он тут нужен","НА СТОЛ","cargo",RES_KEYS.indexOf(holdKey));
+  /* новость из эфира, не «слух»: слух на доске — это место с промахом, а тут
+     строка приёмника; одно слово на две вещи путало (M299) */
   const news=(typeof newsAll==="function")?newsAll():[];
   const last=news.length?news[news.length-1]:null;
-  row("rumour","СЛУХ",last?last.ru:"вы ничего не слышали",
-      "ПЕРЕСКАЗАТЬ СЛУХ — его подтвердят или высмеют","НА СТОЛ","rumour",news.length,{disabled:!last});
-  /* имя (хвост M128): то же движение, предмет — вы сами */
-  row("name","ВАШЕ ИМЯ",G.name||"капитан",
-      "НАЗВАТЬ ИМЯ — вас начнут узнавать на этой станции","НАЗВАТЬ","name",visitHere());
+  if(last)row("rumour","Новость из эфира",last.ru,
+      "пересказать — её подтвердят или высмеют","НА СТОЛ","rumour",news.length);
+  /* имя (хвост M128): то же движение, предмет — вы сами. Спрашивается окном (M299) */
+  row("name","Ваше имя",G.name||"капитан — имени пока нет",
+      G.name?"назваться ещё раз — вас узнают":"назваться — вас начнут узнавать на этой станции","НАЗВАТЬ","name",visitHere(),
+      {ask:go=>{if(typeof askText!=="function")return go();
+        askText("ВАШЕ ИМЯ",G.name||"",v=>{v=(v||"").replace(/[<>]/g,"").trim().slice(0,18);if(!v)return;G.name=v;go();});}});
+  /* имя системы, если дали своё, кладут на стол же: с этого прыжка оно пойдёт по рукам (11u) */
+  if(typeof namesFor==="function"&&G.sys){
+    const nk=G.sys.key,cur=namesFor(nk);
+    if(cur&&namesToldAll()[nk]==null){
+      const r6=el("div","row");
+      r6.appendChild(el("div","nm","<b>Имя системы · «"+cur+"»</b><s>рассказать — и через прыжки его повторит чужой диспетчер</s>"));
+      const b6=el("button","act sm","РАССКАЗАТЬ");
+      b6.onclick=()=>{nameTell(G.sys);sfx("ui");renderTab();};
+      r6.appendChild(b6);$body.appendChild(r6);
+    }
+  }
   /* пеленг зеркала (хвост M134): отметку можно снять с карты */
   if(typeof mirrorAll==="function"&&mirrorAll().bearing===1){
     const r5=el("div","row");

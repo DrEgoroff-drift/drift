@@ -71,25 +71,27 @@ of *things*), not a target about light.
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
-## Next — M299 screens pass (phone playtest 2026-09-02)
+## Next — after M299 (screens pass built in 0.296.0, 2026-09-02)
 
-Spec: `docs/DESIGN-screens.md` (five surfaces, seven laws, the hypotheses memo re-examined, a
-walkthrough). Order, each step shippable on its own:
+Spec: `docs/DESIGN-screens.md`. Built: the peek map from the station, the map that keeps you in
+frame (drag, pinch/wheel zoom, «ВЫ · name», edge arrow, «К СЕБЕ», hop dots), the two names
+untangled (system from the map card, captain from the table via `askText`), the cantina as
+hotspots with one person-card, the table without empty rows and with the barkeep's bubble,
+`secHead`/`secTidy`/`foldBlock`/`boardLanes` in `26-ui-station`, the flight HUD and the console
+strip hidden or reseated under open screens, the ally ship labelled with its order. Suite:
+`tests/91zzy-screens`. Left open, in order:
 
-1. **Bugs first** (§8): НА КАРТУ from the board opens the map under the station overlay (peek
-   mode: hide `$st`, НАЗАД returns); two naming features read as one (ИМЯ СИСТЕМЫ off the
-   board, input for ВАШЕ ИМЯ); folk regulars (РЫБА) unlabelled; empty table rows render.
-2. **Map** (§4): you ≠ selected in colour and mark, drag pans, «К СЕБЕ» when off-screen, route
-   line with hop dots, rumour fits you + circle instead of panning away.
-3. **Cantina as hotspots** (§3): the room is the input, below it only the tapped hotspot; one
-   person-card component for cantina/HQ/crew/folk; table answers via the barkeep's bubble.
-4. **Headings and layout** (§1a): `.sec` for H2 only, `.note` for explanation (one line, first
-   visit, then a «?» chip), sentence case for card titles, numbers out of prose, length caps
-   24/40/55 asserted by the station-tab autotest.
-5. **Board triage** (§2): three lanes К ВАМ / ЗДЕСЬ / ДАЛЕКО, cards of two lines and one verb,
-   seven above the fold, newness dot.
-6. Identify the ship circling the station in the game (§5) — barge, «Сорок-два» or an orbit
-   capture — and give it a visible cycle or a spoken reason.
+1. **Ratchet the heading cap** from 32 to 24 characters as modules are touched; `secTidy` covers
+   the station tabs and the HQ scene note, not the home desk or the ship screen — call it there.
+2. **Card lines over one line** on 393 px: the manager role note («держит наёмников: приказы,
+   ремонт, дисциплина, трофеи») and several board rows still wrap to two; shorten the `note`
+   fields or fold them.
+3. **The map footer under the rail**: the system line («красный карлик · 2 планеты · станция ·
+   пояс · 10.82 из 3.00») is clipped by the right-edge buttons on the phone (pre-M299).
+4. **The haul order reads as circling**: the hired hand on «перевозка» orbits the station at
+   180 units by design (`allyWork`); the label now says the order, but a real shuttle leg
+   (station → planet → station) would say it without words.
+5. Five player-goal scenarios as acceptance tests (§9 walkthrough) — run on the phone.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 

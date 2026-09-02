@@ -52,6 +52,39 @@ function namesEtherLine(){
   }
   return null;
 }
+/* ── окно ввода одной строки (M299) ──
+   Поле в ряду доски читалось как «ваше имя» и туда вписывали позывной
+   капитана. Имя теперь спрашивают там, где оно относится к вещи: система —
+   с карты, капитан — со стола в кантине. Одно окно на оба случая. */
+function askText(title,val,cb,btn){
+  let d=document.getElementById("askwin");
+  if(!d){
+    d=document.createElement("div");d.id="askwin";d.className="scr";
+    d.innerHTML='<div class="askbox"><div class="sec"></div><input type="text" maxlength="18" autocomplete="off">'+
+      '<div class="askrow"><button class="act sm" data-a="no">ОТМЕНА</button><button class="act sm gold" data-a="ok">НАЗВАТЬ</button></div></div>';
+    document.body.appendChild(d);
+    d.addEventListener("click",ev=>{if(ev.target===d)d._close(null);});
+  }
+  const inp=d.querySelector("input"),ok=d.querySelector("[data-a=ok]"),no=d.querySelector("[data-a=no]");
+  d.querySelector(".sec").textContent=title;
+  inp.value=val||"";ok.textContent=btn||"НАЗВАТЬ";
+  d._close=v=>{d.classList.remove("open");if(v!==null)cb(v);};
+  ok.onclick=()=>d._close(inp.value);
+  no.onclick=()=>d._close(null);
+  inp.onkeydown=ev=>{if(ev.key==="Enter")d._close(inp.value);else if(ev.key==="Escape")d._close(null);};
+  d.classList.add("open");
+  setTimeout(()=>{try{inp.focus();inp.select();}catch(e){}},30);
+}
+/* имя системы — с карты, по раскрытой карточке */
+function nameAskSystem(sys){
+  if(!sys)return;
+  const key=sys.key||(sys.sx+","+sys.sy);
+  askText("ИМЯ СИСТЕМЫ · "+sys.name.toUpperCase(),namesFor(key)||"",v=>{
+    if(nameSet(sys,v))say("Названо: «"+namesFor(key)+"»\nна карте — оно");
+    else say("Имя снято: снова "+sys.name);
+    sfx("ui");
+  });
+}
 /* блок в кантине: поле и две кнопки. Подсказки нет — поле пустое */
 function namesBlock(){
   if(!G.sys)return;

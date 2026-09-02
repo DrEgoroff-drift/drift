@@ -160,6 +160,119 @@ function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className
     if(!/[а-яёa-z]/.test(html))html=html.toLocaleLowerCase("ru").replace(/(^|[.!?]\s+)([а-яёa-z])/g,(m,a,b)=>a+b.toUpperCase());
   }
   if(html!=null)e.innerHTML=html;return e;}
+/* ══════════════ заголовки и полосы (M299, docs/DESIGN-screens.md §1a) ══════════════
+   Заголовок называет, а не объясняет: три слова, счётчик справа отдельной
+   цифрой, объяснение — заметкой в одну строку при первом заходе, потом за
+   чипом «?». Раньше .sec делал обе работы разом, и страница читалась одной
+   серой массой без начал. */
+function secHead(title,opt){
+  opt=opt||{};
+  const h=el("div","sec"+(opt.lane?" lane":"")+(opt.cls?" "+opt.cls:""),"");
+  const t=document.createElement("span");t.textContent=title;h.appendChild(t);
+  if(opt.back){
+    const b=document.createElement("button");b.className="cnt q";b.textContent="В ЗАЛ";
+    b.onclick=ev=>{ev.stopPropagation();opt.back();};h.appendChild(b);
+  }else if(opt.count!=null){
+    const c=document.createElement("span");c.className="cnt";c.textContent=opt.count;h.appendChild(c);
+  }
+  let n=null;
+  if(opt.note){
+    const key="sec:"+(opt.key||title);
+    G.seen=G.seen||{};
+    if(!G.seen[key]){G.seen[key]=1;secHead.open[key]=true;}
+    const q=document.createElement("button");q.className="q";q.textContent="?";
+    h.appendChild(q);
+    n=el("div","sec note",opt.note);
+    if(!secHead.open[key])n.style.display="none";
+    q.onclick=ev=>{ev.stopPropagation();secHead.open[key]=!secHead.open[key];n.style.display=secHead.open[key]?"":"none";};
+  }
+  (opt.into||$body).appendChild(h);
+  if(n)(opt.into||$body).appendChild(n);
+  return h;
+}
+secHead.open={};
+/* блок за сгибом: содержимое рисуется всегда (счётчик честный), показывается по нажатию */
+function foldBlock(title,fn,key){
+  key=key||title;
+  const open=!!foldBlock.open[key];
+  const n0=$body.children.length;
+  fn();
+  const nodes=[...$body.children].slice(n0);
+  if(!nodes.length)return;
+  const box=el("div","foldbox","");
+  for(const x of nodes)box.appendChild(x);
+  const secs=nodes.filter(x=>x.classList.contains("sec")&&!x.classList.contains("note")).length||1;
+  const h=secHead(title,{count:(open?"СВЕРНУТЬ":"ЕЩЁ · "+secs),cls:"fold"+(open?" on":"")});
+  h.style.cursor="pointer";
+  h.onclick=()=>{foldBlock.open[key]=!open;renderTab();};
+  if(!open)box.style.display="none";
+  $body.appendChild(box);
+}
+foldBlock.open={};
+/* ── пост-проход по заголовкам (M299) ──
+   Тридцать модулей набирали заголовки цепочкой «НАЗВАНИЕ · ОБЪЯСНЕНИЕ · СЧЁТ».
+   Не переписывать тридцать модулей: после рендера каждая .sec длиннее 32
+   знаков делится по первому « · » — голова остаётся заголовком, хвост уходит
+   заметкой обычным регистром, цифра на конце — счётчиком справа. Заголовок без
+   « · » длиннее 32 целиком становится заметкой (как делает el при 48). */
+const SEC_CAP=32;
+function secTidy(root){
+  root=root||$body;
+  const lc=t=>t.toLocaleLowerCase("ru").replace(/(^|[.!?]\s+)([а-яёa-z])/g,(m,a,b)=>a+b.toUpperCase());
+  for(const h of [...root.querySelectorAll(".sec")]){
+    if(h.classList.contains("note")||h.classList.contains("lane")||h.querySelector(".q,.cnt"))continue;
+    const sp=h.querySelector("span");
+    const txt=(sp?sp.textContent:h.textContent).trim();
+    if(txt.length<=SEC_CAP)continue;
+    const segs=txt.split(" · ").map(x=>x.trim()).filter(Boolean);
+    let cnt=null;
+    if(segs.length>1&&/\d/.test(segs[segs.length-1])&&segs[segs.length-1].length<=14)cnt=segs.pop();
+    let head=segs.shift(),rest=segs.join(" · ");
+    if(head.length>SEC_CAP){rest=rest?head+" · "+rest:head;head="";}
+    if(!head){h.className="sec note";h.textContent=lc(rest);continue;}
+    h.textContent="";
+    const s1=document.createElement("span");s1.textContent=head;h.appendChild(s1);
+    if(cnt){const c=document.createElement("span");c.className="cnt";c.textContent=cnt;h.appendChild(c);}
+    if(rest){const n=el("div","sec note",lc(rest));h.parentNode.insertBefore(n,h.nextSibling);}
+  }
+}
+/* ── доска в три полосы ──
+   Тридцать блоков в порядке вех — это changelog, а не стена. Секции (заголовок
+   и всё до следующего) раскладываются по трём вопросам: что обращено к вам,
+   что есть здесь, что далеко. Внутри полосы первыми идут секции с кнопкой;
+   сверх семи — за сгибом. Модули не трогаются: сортировка по заголовку. */
+const LANE_RX=[
+  [/^(ОЧЕРЕДЬ|У ДОКА|В ЗАЛЕ|У СТОЙКИ|ВЕЗЁТЕ|ЧТО ПРЕДЛАГАЮТ|ДЕЛА ЗДЕСЬ|ПИСЬМ|ПОСЫЛКА|ЭКСПЕДИЦИЯ|ЕСТЬ МЕСТО|ТАБЛО|ДОСКА ПОЧЁТА|ДИПЛОМ|ЗИМОВКА|ЧТО РАССКАЗЫВАЮТ|У КОГО|ВАМ)/i,"you"],
+  [/^(О ЧЁМ|СЛУХ|ИМЯ СИСТЕМЫ|ДАЛЕКО)/i,"far"]
+];
+const LANE_RU={you:"К ВАМ",here:"ЗДЕСЬ",far:"ДАЛЕКО"};
+function boardLanes(from){
+  const nodes=[...$body.children].slice(from||0);
+  if(!nodes.length)return;
+  const secs=[];let cur=null;
+  for(const x of nodes){
+    const isHead=x.classList.contains("sec")&&!x.classList.contains("note")&&!x.classList.contains("lane");
+    if(isHead||!cur){cur={head:isHead?x:null,nodes:[],lane:"here"};secs.push(cur);
+      if(isHead){const t=(x.querySelector("span")||x).textContent.trim();
+        for(const [rx,l] of LANE_RX)if(rx.test(t)){cur.lane=l;break;}}}
+    cur.nodes.push(x);
+  }
+  for(const x of nodes)x.remove();
+  for(const lane of ["you","here","far"]){
+    const L=secs.filter(s=>s.lane===lane);
+    if(!L.length)continue;
+    L.sort((a,b)=>(b.nodes.some(n=>n.querySelector&&n.querySelector("button"))?1:0)-(a.nodes.some(n=>n.querySelector&&n.querySelector("button"))?1:0));
+    secHead(LANE_RU[lane],{lane:1,count:L.length>1?L.length:null});
+    const key="lane:"+lane,open=!!foldBlock.open[key];
+    L.forEach((s,i)=>{
+      if(i<7||open){for(const n of s.nodes)$body.appendChild(n);}
+    });
+    if(L.length>7){
+      const h=secHead(open?"СВЕРНУТЬ":"ЕЩЁ · "+(L.length-7),{cls:"fold"+(open?" on":"")});
+      h.style.cursor="pointer";h.onclick=()=>{foldBlock.open[key]=!open;renderTab();};
+    }
+  }
+}
 function shipThumb(id,w,h){
   const cn=document.createElement("canvas");cn.width=w;cn.height=h;
   const c=cn.getContext("2d");
@@ -229,6 +342,7 @@ function renderTab(){
   const keep=same?$body.scrollTop:0;
   renderTab._tab=tab;
   renderTabBody();
+  secTidy($body);   /* заголовки по закону §1a (M299) */
   if(keep>0){
     const put=()=>{$body.scrollTop=Math.min(keep,Math.max(0,$body.scrollHeight-$body.clientHeight));};
     put();requestAnimationFrame(put);
@@ -255,7 +369,7 @@ function renderTabBody(){
       $body.appendChild(el("div","sec","ТОПЛИВО "+fuelPriceHere()+" кр/ед · РЕМОНТ "+repairCost()+" кр/ед · "+repLine(G.sys).toUpperCase()));
     const sp=(typeof speechHere==="function")?speechHere():null;
     if(sp){
-      $body.appendChild(el("div","sec","ОЧЕРЕДЬ У СТОЙКИ · "+sp.addr.toUpperCase()));
+      secHead("ОЧЕРЕДЬ У СТОЙКИ",{count:sp.addr});
       $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
         (sp.silent?"<i>смотрит и ничего не говорит</i>":sp.line)+"</s><s>следующая реплика — в следующий заход</s></div>"));
       const tag=G.sys.key+"#"+visitHere();
@@ -268,9 +382,10 @@ function renderTabBody(){
     if(typeof folkShown==="function"){
       const fs=folkShown();
       if(fs&&FOLK[fs.id]){
-        $body.appendChild(el("div","sec",FOLK[fs.id].ru.toUpperCase()));
-        $body.appendChild(el("div","row","<div class='nm'><s style='color:#cfe3ea;line-height:1.9'>"+
-          fs.line+"</s></div>"));
+        /* подпись, кто это (M299): голое «РЫБА» с цитатой читалось сбоем */
+        secHead(FOLK[fs.id].where==="dock"?"У ДОКА":"В ЗАЛЕ");
+        $body.appendChild(el("div","row","<div class='nm'><b>"+FOLK[fs.id].ru+" · завсегдатай</b>"+
+          "<s style='color:#cfe3ea;line-height:1.8'>"+fs.line+"</s></div>"));
       }
     }
     /* ── рассказать, где взяли (11aj) ──
@@ -369,7 +484,9 @@ function renderTabBody(){
     if(typeof wallBlock==="function")wallBlock();           /* стенгазета и заявки (M165) */
     if(typeof retBlock==="function")retBlock();           /* табло прибытий (11s) */
     if(typeof rumourBlock==="function")rumourBlock();     /* слухи (11t) */
-    if(typeof namesBlock==="function")namesBlock();       /* имя системы (11u) */
+    /* имя системы ушло с доски на карту (M299): поле «ваше имя. На карте — оно»
+       читалось как имя капитана, и туда вписывали позывной */
+    boardLanes(0);
     $body.appendChild(el("div","sec","ПРИЁМНИК — НА ПУЛЬТЕ ВНИЗУ · У СТОЙКИ ЛОВИТ ЛУЧШЕ"));
     return;
   }

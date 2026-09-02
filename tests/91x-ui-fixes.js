@@ -12,9 +12,11 @@ TEST_SUITES.push(()=>suite("интерфейс: стол отвечает, сл�
   const w=rumourWhere(q);
   ok(/отсюда 19 секторов/.test(w)&&/прыжк/.test(w),"адрес слуха говорит, сколько это отсюда: "+w);
   G.mode="system";rumourToMap(q);
-  ok(G.mode==="map"&&G.mapView&&G.mapView.x===q.sx&&G.mapView.y===q.sy,"НА КАРТУ: окно карты уехало к сектору слуха");
+  /* M299: окно не уезжает к слуху, а вмещает и вас, и сектор — иначе неясно, откуда лететь */
+  const fits=(x,y)=>Math.abs(x-mapViewC().x)<=mapRange()&&Math.abs(y-mapViewC().y)<=mapRange();
+  ok(G.mode==="map"&&G.mapView&&fits(q.sx,q.sy)&&fits(G.sx,G.sy),"НА КАРТУ: в кадре и вы, и сектор слуха");
   ok(G.mapSearch&&G.mapSearch.rad===4&&G.sel.x===q.sx,"круг поиска поставлен, сектор выбран");
-  ok(mapViewC().x===q.sx,"карта рисует вокруг окна, а не вокруг корабля");
+  ok(mapZoomK()>1,"дальний слух — лист отдалён, а не увезён");
   /* курс на ближний сектор окно не двигает */
   gotoSector(G.sx+1,G.sy,"");
   ok(G.mapView===null&&mapViewC().x===G.sx,"ближний курс — окно остаётся на корабле");

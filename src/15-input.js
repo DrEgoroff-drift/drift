@@ -269,7 +269,7 @@ function navAction(){
   /* из санатория уйти можно в любую минуту, и за это ничего не будет (M199) */
   if(G.mode==="spa"){exitSpa();return;}
   if(G.mode==="system"){G.mode="map";G.sel.x=G.sx;G.sel.y=G.sy;}
-  else if(G.mode==="map"){G.mode="system";if(typeof mapReset==="function")mapReset();}
+  else if(G.mode==="map"){if(typeof mapBack==="function"&&mapBack())return;G.mode="system";if(typeof mapReset==="function")mapReset();}
   else say("Навигация недоступна\nвне свободного полёта");
 }
 document.getElementById("zin").addEventListener("click",()=>setZoom(G.zoom*1.35));
@@ -283,6 +283,14 @@ document.getElementById("handbtn").addEventListener("click",()=>{
 });
 /* плечо маршрута ставится там же, где выбирается цель прыжка: маршрут — это
    карта, а не пункт меню */
+document.getElementById("mebtn").addEventListener("click",()=>{
+  if(G.mode!=="map")return;
+  G.mapView=null;G.mapZoom=1;sfx("ui");
+});
+document.getElementById("namebtn").addEventListener("click",()=>{
+  if(G.mode!=="map"||typeof nameAskSystem!=="function")return;
+  nameAskSystem(getSystem(G.sel.x,G.sel.y));
+});
 document.getElementById("routebtn").addEventListener("click",()=>{
   if(G.mode!=="map")return;
   say(routeToggle(G.sel.x,G.sel.y));
@@ -309,20 +317,22 @@ addEventListener("wheel",e=>{
       setZoom(G.zoom*(e.deltaY<0?1.12:.89));
     return;
   }
-  if(G.mode!=="system")return;
   if(e.target!==cvs)return;
   if(document.querySelector(".scr.open"))return;
+  /* колесо над картой — её масштаб (M299) */
+  if(G.mode==="map"&&typeof mapZoomSet==="function"){mapZoomSet(mapZoomK()*(e.deltaY<0?.89:1.12));return;}
+  if(G.mode!=="system")return;
   setZoom(G.zoom*(e.deltaY<0?1.12:.89));
 },{passive:false});
 
 /* указатели: тап, щипок, обзор в поясе */
 const ptr=new Map();
-let pinch0=0,zoom0=1;
+let pinch0=0,zoom0=1,mzoom0=1;
 cvs.addEventListener("pointerdown",e=>{
   ptr.set(e.pointerId,{x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,t0:performance.now(),moved:false});
   if(ptr.size===2){
     const [a,b]=[...ptr.values()];
-    pinch0=Math.hypot(a.x-b.x,a.y-b.y)||1;zoom0=G.zoom;
+    pinch0=Math.hypot(a.x-b.x,a.y-b.y)||1;zoom0=G.zoom;mzoom0=(typeof mapZoomK==="function")?mapZoomK():1;
   }
   if(ptr.size===1&&(G.mode==="surface"||G.mode==="dig"||G.mode==="cave"))mouseWalkAt(e.clientX,e.clientY);
 });
@@ -335,6 +345,12 @@ cvs.addEventListener("pointermove",e=>{
     const [a,b]=[...ptr.values()];
     const d=Math.hypot(a.x-b.x,a.y-b.y)||1;
     if(G.mode==="system")setZoom(zoom0*d/pinch0);
+    else if(typeof mapZoomSet==="function")mapZoomSet(mzoom0*pinch0/d);   /* щипок на карте (M299) */
+  }else if(ptr.size===1&&G.mode==="map"&&p.moved&&typeof mapCell==="function"){
+    /* протяжка листа (M299): карту двигают пальцем, как любую карту.
+       Окно становится дробным — сектора остаются целыми (drawMap округляет) */
+    const rc=cvs.getBoundingClientRect(),k=W/rc.width,cell=mapCell();
+    const V=mapViewC();G.mapView={x:V.x-dx*k/cell,y:V.y-dy*k/cell};
   }else if(ptr.size===1&&G.mode==="belt"&&G.belt){
     const k=.0036*G.opts.lookSens;
     G.belt.pitch=clamp(G.belt.pitch+(G.opts.invY?dy:-dy)*k,-1.35,1.35);
@@ -396,10 +412,11 @@ function tap(sxp,syp){
     if(spaTap((sxp-rc.left)*W/rc.width,(syp-rc.top)*H/rc.height))return;
   }
   if(G.mode==="map"){
-    const cell=Math.min(W,H)/9.2,R=5;
+    const cell=mapCell(),R=mapRange();
     const V=(typeof mapViewC==="function")?mapViewC():{x:G.sx,y:G.sy};
     let best=null,bd=1e9;
-    for(let gy=V.y-R;gy<=V.y+R;gy++)for(let gx=V.x-R;gx<=V.x+R;gx++){
+    const vx0=Math.round(V.x),vy0=Math.round(V.y);
+    for(let gy=vy0-R;gy<=vy0+R;gy++)for(let gx=vx0-R;gx<=vx0+R;gx++){
       if(!starAt(gx,gy))continue;
       const[jx,jy]=sysJitter(gx,gy);
       const x=W/2+(gx-V.x+jx)*cell,y=H/2+(gy-V.y+jy)*cell;

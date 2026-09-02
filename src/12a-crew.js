@@ -633,7 +633,13 @@ function drawAllies(zx,zy,Z){
     ctx.save();ctx.translate(x,y);ctx.scale(clamp(Z,.3,1.4),clamp(Z,.3,1.4));ctx.rotate(A.a);
     drawHull(A.c.shipId,A.thrust,false,0);
     ctx.restore();
+    /* имя И дело (M299): плейтест 02.09 — «чувак у станции не летает, просто
+       вокруг». Это наёмник на перевозке, и он кружит у станции по приказу;
+       без слова «перевозка» под именем это читалось сломанным ИИ */
+    const K=A.c.order&&ORDERS[A.c.order.kind];
     ctx.fillStyle="rgba(127,230,216,.75)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
-    ctx.fillText(A.c.name.toUpperCase(),x,y-26*clamp(Z,.3,1.4)-6);
+    ctx.fillText(A.c.name.toUpperCase()+(K?" · "+K.ru.toUpperCase():""),x,y-26*clamp(Z,.3,1.4)-6);
+    ctx.fillStyle="rgba(127,230,216,.45)";ctx.font="7px ui-monospace,monospace";
+    ctx.fillText("ВАШ ЭКИПАЖ",x,y+26*clamp(Z,.3,1.4)+10);
   }
 }

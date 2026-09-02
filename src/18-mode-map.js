@@ -80,7 +80,45 @@ function mapNebula(){
 }
 /* окно карты (M298): обычно вокруг вас; по слуху — вокруг названного сектора */
 function mapViewC(){return G.mapView||{x:G.sx,y:G.sy};}
-function mapReset(){G.mapView=null;G.mapMore=false;G.mapClean=false;G.mapSearch=null;
+/* ── масштаб и клетка карты (M299) ──
+   Один счёт клетки на всех: рисование, тап и протяжка считали её каждый сам,
+   и любое расхождение уводило тап мимо звезды. Зум карты — отдельный от зума
+   системы: 1 — как раньше, больше — дальше видно, меньше — крупнее. */
+function mapZoomK(){return clamp(G.mapZoom||1,.6,5);}
+function mapCell(){return Math.min(W,H)/9.2/mapZoomK();}
+function mapRange(){return Math.ceil(5*mapZoomK())+1;}
+function mapZoomSet(z){G.mapZoom=clamp(z,.6,5);}
+/* окно так, чтобы в кадре были И вы, И названный сектор: по слуху карта
+   раньше уезжала к сектору, а игрок оставался за краем и не понимал, откуда лететь */
+function mapFit(sx,sy){
+  const dx=sx-G.sx,dy=sy-G.sy,d=Math.max(Math.abs(dx),Math.abs(dy));
+  if(d<=4){G.mapView=null;G.mapZoom=1;return;}
+  G.mapView={x:G.sx+dx/2,y:G.sy+dy/2};
+  G.mapZoom=clamp((d/2+1.5)/4.2,1,5);
+}
+/* ── подгляд со станции (M299) ──
+   «НА КАРТУ» с доски открывало карту ПОД экраном станции: режим менялся, а
+   оверлей оставался, и игрок тыкал в кнопку, которая «ничего не делает».
+   Теперь станция прячется, карта видна, НАЗАД возвращает на ту же вкладку;
+   стыковка не рвётся, прыжок отсюда невозможен. */
+function mapPeek(){
+  if(G.mode!=="dock")return false;
+  G.mapPeek={tab:(typeof tab!=="undefined")?tab:null};
+  if(typeof $st!=="undefined"&&$st)$st.classList.remove("open");
+  G.mode="map";
+  return true;
+}
+function mapBack(){
+  if(!G.mapPeek)return false;
+  const pk=G.mapPeek;G.mapPeek=null;
+  mapReset();
+  G.mode="dock";
+  if(pk.tab&&typeof tab!=="undefined")tab=pk.tab;
+  if(typeof $st!=="undefined"&&$st)$st.classList.add("open");
+  if(typeof renderTab==="function")renderTab();
+  return true;
+}
+function mapReset(){G.mapView=null;G.mapZoom=1;G.mapMore=false;G.mapClean=false;G.mapSearch=null;
   if(typeof document!=="undefined"&&document.body)document.body.classList.remove("mapclean");}
 function mapCleanSet(on){G.mapClean=!!on;if(typeof document!=="undefined"&&document.body)document.body.classList.toggle("mapclean",G.mapClean);}
 function drawMap(){
@@ -137,7 +175,7 @@ function drawMap(){
     ctx.restore();
   }),0,0,W,H);
   drawStars(G.sx*140,G.sy*140,.35);
-  const cell=Math.min(W,H)/9.2,R=5;
+  const cell=mapCell(),R=mapRange();
   const V=mapViewC(),vx=V.x,vy=V.y;              /* окно карты: обычно вы, по слуху — названный сектор (M298) */
   const px=W/2+(G.sx-vx)*cell,py=H/2+(G.sy-vy)*cell;
   const jr=(st.jump+.02)*cell;
@@ -159,7 +197,8 @@ function drawMap(){
   }
   const dsel=Math.hypot(G.sel.x-G.sx,G.sel.y-G.sy);
   const vis=[];
-  for(let gy=vy-R;gy<=vy+R;gy++)for(let gx=vx-R;gx<=vx+R;gx++){
+  const vx0=Math.round(vx),vy0=Math.round(vy);   /* окно дробное после протяжки, сектора целые */
+  for(let gy=vy0-R;gy<=vy0+R;gy++)for(let gx=vx0-R;gx<=vx0+R;gx++){
     if(!starAt(gx,gy))continue;
     if(typeof chartsHidden==="function"&&chartsHidden(gx,gy))continue;   /* несогласие карт (11m) */
     let [jx,jy]=sysJitter(gx,gy);
@@ -262,13 +301,17 @@ function drawMap(){
     if(typeof lookoutSees==="function"&&lookoutSees(gx,gy)){ctx.strokeStyle="rgba(255,107,87,.8)";ctx.lineWidth=1.2;
       ctx.beginPath();ctx.moveTo(x+rr+4,y-rr-4);ctx.lineTo(x+rr+9,y-rr-9);ctx.stroke();}
     ctx.globalAlpha=1;
+    /* «вы» — одна метка, и не того цвета, что выбор (M299): два бирюзовых
+       кольца в пиксель друг от друга читались одним, и на карте не было «где я» */
     if(here){
-      ctx.strokeStyle="rgba(127,230,216,"+(.5+.25*Math.sin(G.t*.06)).toFixed(2)+")";
-      ctx.lineWidth=1.2;
+      ctx.strokeStyle="rgba(127,230,216,"+(.6+.3*Math.sin(G.t*.06)).toFixed(2)+")";
+      ctx.lineWidth=1.4;
       ctx.beginPath();ctx.arc(x,y,rr+14,0,TAU);ctx.stroke();
+      ctx.fillStyle="#7fe6d8";
+      ctx.beginPath();ctx.moveTo(x,y-rr-24);ctx.lineTo(x-4,y-rr-17);ctx.lineTo(x+4,y-rr-17);ctx.closePath();ctx.fill();
+      ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+      ctx.fillText("ВЫ · "+((typeof nameOf==="function")?nameOf(s):s.name).toUpperCase(),x,y-rr-28);
     }
-    if(gx===G.sx&&gy===G.sy){ctx.strokeStyle="#7fe6d8";ctx.lineWidth=1.2;
-      ctx.beginPath();ctx.arc(x,y,rr+13,0,TAU);ctx.stroke();}
     /* ушедший управляющий и разошедшееся ядро — единственные метки на карте,
        которые поставил не мир, а сам игрок. Без них до них не долететь. */
     if((G.rogues||[]).some(R=>R.sx===gx&&R.sy===gy)){
@@ -318,6 +361,18 @@ function drawMap(){
     if(gx===G.sel.x&&gy===G.sel.y)sel=v;
     if(here)cur=v;
   }
+  /* вы за краем листа (M299): стрелка у кромки говорит, откуда лететь, пока
+     окно уехало к слуху или протянуто пальцем; курс считается от вас всегда */
+  if(!cur){
+    cur={x:px,y:py,s:G.sys,edge:true};
+    const cx=W/2,cyy=H/2,ddx=px-cx,ddy=py-cyy,m=Math.max(Math.abs(ddx)/(W/2-26),Math.abs(ddy)/(H/2-26),1e-6);
+    const ex=cx+ddx/m,ey=cyy+ddy/m,an=Math.atan2(ddy,ddx);
+    ctx.save();ctx.translate(ex,ey);ctx.rotate(an);
+    ctx.fillStyle="#7fe6d8";ctx.beginPath();ctx.moveTo(8,0);ctx.lineTo(-6,-6);ctx.lineTo(-6,6);ctx.closePath();ctx.fill();
+    ctx.restore();
+    ctx.fillStyle="#7fe6d8";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
+    ctx.fillText("ВЫ",ex-Math.cos(an)*16,ey-Math.sin(an)*16+3);
+  }
   /* маршрут домена — под курсом игрока: мир под намерением, а не наоборот */
   drawFactRoute(vis);
   /* свой маршрут — поверх маршрута домена: это намерение игрока, и оно главнее */
@@ -344,7 +399,7 @@ function drawMap(){
     const onRoute=NX&&NX.sys.sx===G.sel.x&&NX.sys.sy===G.sel.y;
     L.push([bad?"rgba(255,107,87,.85)":"#f2b25c",
       dsel===0?"ТЕКУЩАЯ СИСТЕМА":
-      (dsel>st.jump+.02?"ВНЕ РАДИУСА — НУЖЕН ГИПЕРДРАЙВ":
+      (dsel>st.jump+.02?"ВНЕ РАДИУСА · примерно "+Math.ceil(dsel/Math.max(.5,st.jump))+" "+pl3(Math.ceil(dsel/Math.max(.5,st.jump)),"прыжок","прыжка","прыжков"):
        (onRoute?"ПРЫЖОК ПО МАРШРУТУ: ":"ПРЫЖОК: ")+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":""))]);
     /* карточка стала строкой (M298): первый вопрос — «что это и дотянусь ли» — отвечается тут;
        описание — вторым тапом по той же звезде. На телефоне 31.7% экрана было интерфейсом */
@@ -387,6 +442,15 @@ function drawMap(){
     ctx.strokeStyle=col;ctx.lineWidth=far?1:1.4;
     ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
     ctx.setLineDash([]);
+    /* точки прыжков по курсу (M299): сколько раз придётся прыгать — видно по
+       линии, а не по цифре в подвале */
+    if(far&&st.jump>.5){
+      const n=Math.floor(dsel/st.jump);
+      for(let i=1;i<=n;i++){
+        const t=i*st.jump/dsel,hx=x0+(x1-x0)*t,hy=y0+(y1-y0)*t;
+        ctx.fillStyle="rgba(242,178,92,.85)";ctx.beginPath();ctx.arc(hx,hy,2.6,0,TAU);ctx.fill();
+      }
+    }
     /* подпись на середине курса, на своей подложке — поверх звёзд и туманности
        голый текст не читается */
     const mx=(x0+x1)/2,my=(y0+y1)/2;
@@ -456,9 +520,10 @@ function drawMap(){
        const w=ctx.measureText(row[1][1]).width;mapBox("подвал справа",foot.RX-w,y-9,w,12);}
    });
    ctx.textAlign="right";}
-  G.prompt=G.mapClean?"":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК";
+  G.prompt=G.mapClean?"":(G.mapPeek?"ТАП — ВЫБОР · ПАЛЬЦЕМ — ДВИГАТЬ · НАЗАД — НА СТАНЦИЮ":"ТАП — ВЫБОР · ЕЩЁ РАЗ — ПОДРОБНЕЕ · ДЕЙСТВИЕ — ПРЫЖОК");
   if(actEdge){
-    if(!bad)jump(cost);
+    if(G.mapPeek)say("Сначала отстыкуйтесь");
+    else if(!bad)jump(cost);
     else if(dsel>0)say("Прыжок невозможен");
   }
 }

@@ -70,11 +70,15 @@ function gotoSector(sx,sy,what){
     say("У этой записи нет адреса");return false;
   }
   G.sel={x:sx,y:sy};
-  /* далёкий сектор — окно карты едет к нему (M298): раньше адрес за краем карты нельзя было даже выбрать */
-  G.mapView=(Math.max(Math.abs(sx-G.sx),Math.abs(sy-G.sy))>4)?{x:sx,y:sy}:null;
+  /* далёкий сектор — окно так, чтобы в кадре были и вы, и он (M299): раньше
+     окно уезжало к сектору, а игрок оставался за краем и не видел, откуда лететь */
+  if(typeof mapFit==="function")mapFit(sx,sy);
+  else G.mapView=(Math.max(Math.abs(sx-G.sx),Math.abs(sy-G.sy))>4)?{x:sx,y:sy}:null;
   G.mapMore=false;
-  G.mode="map";
+  /* со станции — подглядом: экран станции прячется, НАЗАД возвращает (M299) */
+  if(!(typeof mapPeek==="function"&&mapPeek()))G.mode="map";
   toggleLog(false);
+  if(typeof tableToggle==="function")tableToggle(false);
   const nm=getSystem(sx,sy).name||("сектор "+sx+":"+sy);
   say("Курс на «"+nm+"»"+(what?"\n"+what:""));
   return true;

@@ -213,6 +213,10 @@ function hud(){
     const seen=typeof routeNoteFor==="function"&&!!routeNoteFor(G.sel.x,G.sel.y);
     setTx(rbtn,inR?"ИЗ МАРШРУТА":(seen?"В МАРШРУТ":"ЦЕН НЕ ВИДЕЛИ"));
   }else setSt(rbtn,"display","none");
+  /* «К СЕБЕ» — когда лист уехал от вас; «НАЗВАТЬ» — на раскрытой карточке (M299) */
+  const mb=document.getElementById("mebtn"),nb=document.getElementById("namebtn");
+  if(mb)setSt(mb,"display",(G.mode==="map"&&(G.mapView||(G.mapZoom&&G.mapZoom!==1)))?"":"none");
+  if(nb)setSt(nb,"display",(G.mode==="map"&&G.mapMore)?"":"none");
   /* приборная колодка (25c): рисуется каждым кадром, гаснет вместе со строкой */
   if(typeof instrPodTick==="function")instrPodTick();
   setTx($place,a);setTx($sub,b);
