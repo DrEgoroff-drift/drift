@@ -42,10 +42,10 @@ function bargeSysAt(key){
    есть спред. */
 function bargeLegs(){
   const legs=[];const seen={};
-  const push=(a,b)=>{
+  const push=(a,b,sold)=>{
     if(!a||!b||a.key===b.key)return;
     const id=a.key<b.key?a.key+"|"+b.key:b.key+"|"+a.key;
-    if(seen[id])return;seen[id]=1;legs.push([a,b]);
+    if(seen[id])return;seen[id]=1;legs.push(sold?[a,b,1]:[a,b]);
   };
   const F=typeof mgrOf==="function"?mgrOf("fact"):null;
   if(F&&!F.stalled&&Array.isArray(F.route)&&F.route.length>=2){
@@ -54,6 +54,9 @@ function bargeLegs(){
   }
   /* узел игрока (12n) входит в маршрут на равных со станцией: раз он родит
      товар, у фактора есть причина туда заходить */
+  /* проданные дороги (M297): по ним теперь возят чужие — и выбирают аппетит станций */
+  for(const set of ((G.trade&&Array.isArray(G.trade.soldSets))?G.trade.soldSets:[]))
+    if(Array.isArray(set))for(let i=0;i<set.length-1;i++)push(bargeSysAt(set[i]),bargeSysAt(set[i+1]),1);
   const P=typeof planetStop==="function"?planetStop():null;
   if(P)push(P,bargeNearOther(P));
   if(!legs.length){
@@ -147,6 +150,7 @@ function spawnBarges(){
     });
     /* зашла на ваш узел по дороге — значит, везёт и ваш товар (12n) */
     if(typeof planetBargeLoad==="function")planetBargeLoad(G.barges[G.barges.length-1]);
+    if(leg[2]&&typeof rivalEat==="function")rivalEat(to,good,cap);   /* соперник с проданной дороги (M297) */
     made++;
   }
 }

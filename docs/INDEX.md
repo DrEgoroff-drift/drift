@@ -6,11 +6,11 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 352 · символов верхнего уровня: 3259
+Файлов: 354 · символов верхнего уровня: 3265
 
 ## СИМВОЛЫ
 
-$bg                          src/12l-barge.js:586
+$bg                          src/12l-barge.js:590
 $bThr                        src/27z-telemetry.js:39
 $cv                          src/27b-ui-crew.js:6
 $dl                          src/27n-ui-deal.js:18
@@ -48,7 +48,7 @@ actionKey                    src/15-input.js:144
 addPart                      src/05-parts.js:227
 addPath                      src/25-cockpit.js:154
 addRes                       src/11-log.js:132
-addrForm                     src/11b-speech.js:95
+addrForm                     src/11b-speech.js:96
 adjTo                        src/05-parts.js:23
 AFFIX                        src/05-parts.js:29
 AFFIX_BAD                    src/05-parts.js:46
@@ -110,42 +110,42 @@ autosave                     src/14a-cloud.js:52
 b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
 bankTransform                src/03b-hull-paint.js:48
-BARGE_ART                    src/12l-barge.js:388
+BARGE_ART                    src/12l-barge.js:392
 BARGE_CAP                    src/12l-barge.js:13
 BARGE_CAPNAMES               src/12l-barge.js:23
 BARGE_NAMES                  src/12af-barge.js:20
 BARGE_PERIOD                 src/12l-barge.js:12
-BARGE_SS                     src/12l-barge.js:387
+BARGE_SS                     src/12l-barge.js:391
 BARGE_TEMPER                 src/12l-barge.js:17
 BARGE_TKEYS                  src/12l-barge.js:22
-bargeArtOf                   src/12l-barge.js:389
-bargeAttackers               src/12l-barge.js:153
+bargeArtOf                   src/12l-barge.js:393
+bargeAttackers               src/12l-barge.js:157
 bargeAutoLoad                src/12ag-holdfx.js:35
-bargeBuyPrice                src/12l-barge.js:94
+bargeBuyPrice                src/12l-barge.js:97
 bargeCrewRow                 src/12af-barge.js:136
-bargeCur                     src/12l-barge.js:587
+bargeCur                     src/12l-barge.js:591
 bargeDealList                src/12af-barge.js:121
-bargeDestPrice               src/12l-barge.js:79
-bargeElRow                   src/12l-barge.js:613
-bargeEscortAccept            src/12l-barge.js:289
-bargeEscortAdvance           src/12l-barge.js:288
-bargeEscortEnd               src/12l-barge.js:304
+bargeDestPrice               src/12l-barge.js:82
+bargeElRow                   src/12l-barge.js:617
+bargeEscortAccept            src/12l-barge.js:293
+bargeEscortAdvance           src/12l-barge.js:292
+bargeEscortEnd               src/12l-barge.js:308
 bargeHullOk                  src/12af-barge.js:21
-bargeInteract                src/12l-barge.js:262
+bargeInteract                src/12l-barge.js:266
 bargeLegs                    src/12l-barge.js:43
 bargeLine                    src/12af-barge.js:115
 bargeLoad                    src/12af-barge.js:84
-bargeMarkup                  src/12l-barge.js:87
-bargeMineHit                 src/12l-barge.js:189
+bargeMarkup                  src/12l-barge.js:90
+bargeMineHit                 src/12l-barge.js:193
 bargeName                    src/12af-barge.js:25
-bargeNearOther               src/12l-barge.js:67
+bargeNearOther               src/12l-barge.js:70
 bargeNextName                src/12af-barge.js:108
-bargePaxDeliver              src/12l-barge.js:250
-bargeRepNudge                src/12l-barge.js:609
-bargeRescued                 src/12l-barge.js:203
-bargeSellPrice               src/12l-barge.js:91
+bargePaxDeliver              src/12l-barge.js:254
+bargeRepNudge                src/12l-barge.js:613
+bargeRescued                 src/12l-barge.js:207
+bargeSellPrice               src/12l-barge.js:94
 bargeStart                   src/12af-barge.js:37
-bargeSunk                    src/12l-barge.js:226
+bargeSunk                    src/12l-barge.js:230
 bargeSysAt                   src/12l-barge.js:25
 bargeTick                    src/12af-barge.js:49
 bargeUnload                  src/12af-barge.js:99
@@ -226,15 +226,15 @@ bldAtWhy                     src/12ad-site.js:118
 bldAvailable                 src/12ad-site.js:158
 bldB                         src/12ac-bld.js:56
 bldBuiltHere                 src/12ad-site.js:155
-bldBuySrc                    src/12ad-site.js:293
+bldBuySrc                    src/12ad-site.js:295
 bldC                         src/12ac-bld.js:80
 bldCanPay                    src/12ad-site.js:164
-bldCollect                   src/12ad-site.js:276
+bldCollect                   src/12ad-site.js:278
 bldCostTxt                   src/12ac-bld.js:170
 bldCredits                   src/12ac-bld.js:50
 bldD                         src/12ac-bld.js:100
-bldEntry                     src/12ad-site.js:204
-bldFeed                      src/12ad-site.js:250
+bldEntry                     src/12ad-site.js:206
+bldFeed                      src/12ad-site.js:252
 bldFreeSites                 src/12ad-site.js:156
 bldHas                       src/12ag-holdfx.js:13
 bldIoTxt                     src/12ac-bld.js:176
@@ -244,18 +244,18 @@ bldLay                       src/12ad-site.js:180
 bldOut                       src/12ac-bld.js:150
 bldPay                       src/12ad-site.js:175
 bldQuota                     src/12ac-bld.js:149
-bldReady                     src/12ad-site.js:205
+bldReady                     src/12ad-site.js:207
 bldRuleWhy                   src/12ad-site.js:141
 bldScale                     src/12ac-bld.js:148
-bldSellInd                   src/12ad-site.js:266
+bldSellInd                   src/12ad-site.js:268
 bldSites                     src/12ad-site.js:98
 bldSitesAt                   src/12ad-site.js:100
-bldTick                      src/12ad-site.js:208
+bldTick                      src/12ad-site.js:210
 bldTierOpenAt                src/12ad-site.js:104
 bldTierPlanTxt               src/12ad-site.js:109
-bldUpgrade                   src/12ad-site.js:192
+bldUpgrade                   src/12ad-site.js:193
 bldUpgradeCost               src/12ac-bld.js:152
-bldWant                      src/12ad-site.js:238
+bldWant                      src/12ad-site.js:240
 bldWhy                       src/12ad-site.js:147
 BLOOM_CV                     src/19c-light.js:336
 BLOOM_K                      src/19c-light.js:337
@@ -422,7 +422,7 @@ cirrusSprite                 src/19e-clouds.js:126
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
-closeBarge                   src/12l-barge.js:598
+closeBarge                   src/12l-barge.js:602
 closeDeal                    src/27n-ui-deal.js:169
 closeStation                 src/26-ui-station.js:116
 CLOUD                        src/14-save.js:5
@@ -628,9 +628,9 @@ drawAccountShelf             src/12w-survey.js:99
 drawAllies                   src/12a-crew.js:628
 drawAnomaly                  src/20aa-poi-shapes.js:168
 drawAstronaut                src/20-life.js:4
-drawBarge                    src/12l-barge.js:506
-drawBarges                   src/12l-barge.js:537
-drawBargesMap                src/12l-barge.js:562
+drawBarge                    src/12l-barge.js:510
+drawBarges                   src/12l-barge.js:541
+drawBargesMap                src/12l-barge.js:566
 drawBase                     src/21ac-base-draw.js:43
 drawBaseBuilding             src/21c-built.js:107
 drawBeast                    src/20f-fauna.js:231
@@ -680,7 +680,7 @@ drawGlyph                    src/12t-settle.js:59
 drawGround                   src/19-mode-landing.js:109
 drawGroundCrumbs             src/19-mode-landing.js:269
 drawGroundGrass              src/19-mode-landing.js:282
-drawHoldMods                 src/12ad-site.js:357
+drawHoldMods                 src/12ad-site.js:359
 drawHomeIn                   src/29d-home-draw.js:9
 drawHomeOut                  src/21f-home-out.js:73
 drawHomeRoom                 src/27e-ui-home.js:42
@@ -754,7 +754,7 @@ drawWeather                  src/19d-weather.js:96
 drawWinter                   src/29g-winter-draw.js:334
 drawWorld                    src/28-loop.js:158
 drawWreck                    src/20aa-poi-shapes.js:8
-drawWrecksSystem             src/12l-barge.js:353
+drawWrecksSystem             src/12l-barge.js:357
 DRONE_BREAK_P                src/12e-drone-flight.js:21
 DRONE_FIX_MS                 src/12e-drone-flight.js:24
 DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
@@ -1143,12 +1143,14 @@ HOL_ETHER                    src/11am-holiday.js:28
 HOL_GREET                    src/11am-holiday.js:45
 HOLD_CAP_SHIFTS              src/12ad-site.js:21
 HOLD_SHIFT                   src/12ab-hold.js:23
+HOLD_SRC_LINES               src/12ah-holdnews.js:39
+HOLD_UKLAD                   src/12ah-holdnews.js:18
 holdAll                      src/12ab-hold.js:35
 holdAmbushMul                src/12ag-holdfx.js:115
 holdArchiveLines             src/12ag-holdfx.js:121
 holdArtel                    src/12ag-holdfx.js:94
-holdCapMul                   src/12ad-site.js:206
-holdDealList                 src/12ad-site.js:319
+holdCapMul                   src/12ad-site.js:208
+holdDealList                 src/12ad-site.js:321
 holdDeed                     src/12ad-site.js:25
 holdDock                     src/12ad-site.js:31
 holdDrawPile                 src/27j-ui-hold.js:151
@@ -1160,8 +1162,9 @@ holdGunsTick                 src/12ag-holdfx.js:98
 holdKontoraNotes             src/12ag-holdfx.js:20
 holdLoyaltyHold              src/12ag-holdfx.js:96
 holdMeteoLines               src/12ag-holdfx.js:144
-holdMods                     src/12ad-site.js:345
-holdNearestEater             src/12ad-site.js:305
+holdMods                     src/12ad-site.js:347
+holdNearestEater             src/12ad-site.js:307
+holdNews                     src/12ah-holdnews.js:26
 holDock                      src/11am-holiday.js:87
 holdOf                       src/12ab-hold.js:36
 holdPiece                    src/27j-ui-hold.js:26
@@ -1172,11 +1175,13 @@ holdRansomMul                src/12ag-holdfx.js:92
 holdRelay                    src/12ag-holdfx.js:135
 holdRepairMul                src/12ag-holdfx.js:78
 holdRestMul                  src/12ag-holdfx.js:91
+holdRumourLine               src/12ah-holdnews.js:49
 holdScripSpread              src/12ag-holdfx.js:33
 holdShift                    src/12ab-hold.js:34
 holdSkyMul                   src/12ag-holdfx.js:117
 holdTechMul                  src/12ag-holdfx.js:119
 holdTestStation              tests/91x-hold.js:2
+holdUklad                    src/12ah-holdnews.js:19
 holEtherLine                 src/11am-holiday.js:77
 HOLIDAYS                     src/11am-holiday.js:22
 holIs                        src/11am-holiday.js:74
@@ -1511,7 +1516,7 @@ lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:125
 loadGame                     src/14a-cloud.js:56
-LOCAL                        src/11b-speech.js:102
+LOCAL                        src/11b-speech.js:103
 LOG_MAX                      src/11-log.js:11
 LOG_PAGE                     src/11-log.js:12
 logAdd                       src/11-log.js:15
@@ -1831,7 +1836,7 @@ offerTake                    src/11ah-offer.js:209
 offerTick                    src/11ah-offer.js:166
 offerVisit                   src/11ah-offer.js:124
 ok                           tests/90-harness.js:23
-openBarge                    src/12l-barge.js:588
+openBarge                    src/12l-barge.js:592
 openCrewView                 src/27b-ui-crew.js:230
 openDeal                     src/27n-ui-deal.js:163
 openHq                       src/27c-ui-hq.js:587
@@ -2136,7 +2141,7 @@ prunePartsBought             src/14-save.js:33
 psPlanet                     tests/91zzzu-post-scenes.js:6
 psSnap                       tests/91zzzu-post-scenes.js:17
 ptr                          src/15-input.js:319
-putOnTable                   src/11b-speech.js:219
+putOnTable                   src/11b-speech.js:220
 QSL_BY                       src/11an-qsl.js:46
 QSL_OPS                      src/11an-qsl.js:24
 QSL_SPREAD                   src/11an-qsl.js:23
@@ -2299,7 +2304,7 @@ relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07-planet.js:374
 renderAlbum                  src/25g-postcard.js:678
-renderBarge                  src/12l-barge.js:623
+renderBarge                  src/12l-barge.js:627
 renderBasesTab               src/26a-ui-station-home.js:4
 renderBooks                  src/12ub-books.js:141
 renderCantina                src/27c-ui-hq.js:66
@@ -2371,6 +2376,7 @@ ringNow                      src/11x-ring.js:35
 ringStrength                 src/11x-ring.js:30
 ringTick                     src/11x-ring.js:41
 rivalDefeated                src/12p-news.js:84
+rivalEat                     src/12ah-holdnews.js:76
 rivalHere                    src/12p-news.js:66
 rivalHolds                   src/12p-news.js:45
 rivalOf                      src/12p-news.js:44
@@ -2762,7 +2768,7 @@ spaTap                       src/29i-spa-draw.js:503
 spaTestStart                 tests/91zzzl-spa.js:2
 spaTookToday                 src/29i-spa-draw.js:39
 spawnAllies                  src/12a-crew.js:560
-spawnBarges                  src/12l-barge.js:102
+spawnBarges                  src/12l-barge.js:105
 spawnPirates                 src/13-pirates.js:25
 spcol                        src/29i-spa-draw.js:20
 SPEC_KEYS                    src/12a-crew.js:17
@@ -2770,13 +2776,13 @@ speciesBeast                 src/20e-species.js:234
 speciesPlant                 src/20e-species.js:40
 specimenBeast                src/20e-species.js:285
 specimenPlant                src/20e-species.js:134
-speechAll                    src/11b-speech.js:116
-speechHere                   src/11b-speech.js:118
+speechAll                    src/11b-speech.js:117
+speechHere                   src/11b-speech.js:119
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
 sprgba                       src/29i-spa-draw.js:22
 SRC_DISCOUNT                 src/12ad-site.js:22
-srcPrice                     src/12ad-site.js:289
+srcPrice                     src/12ad-site.js:291
 ST_GOLD                      src/17c-system-draw.js:117
 ST_GROUPS                    src/26-ui-station.js:69
 ST_MODULES                   src/17a-station-mod.js:14
@@ -2860,10 +2866,10 @@ STRIP_CHUNK                  src/07-planet.js:73
 STRIP_JOB                    src/07-planet.js:76
 STRIP_MS                     src/07-planet.js:72
 STRIP_PEND                   src/07-planet.js:78
-STRIPS_MAX                   src/11b-speech.js:190
-stripsAll                    src/11b-speech.js:191
-stripSell                    src/11b-speech.js:229
-stripValue                   src/11b-speech.js:192
+STRIPS_MAX                   src/11b-speech.js:191
+stripsAll                    src/11b-speech.js:192
+stripSell                    src/11b-speech.js:230
+stripValue                   src/11b-speech.js:193
 stSet                        src/14-save.js:14
 stTabFuse                    src/26b-ui-station-work.js:201
 stTabInstr                   src/26b-ui-station-work.js:108
@@ -2912,7 +2918,7 @@ tab                          src/26-ui-station.js:3
 TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
-TABLE_REPLY                  src/11b-speech.js:157
+TABLE_REPLY                  src/11b-speech.js:158
 tableBake                    src/27i-ui-table.js:107
 tableBlock                   src/27c-ui-hq.js:607
 tableIsOpen                  src/27i-ui-table.js:23
@@ -2942,7 +2948,7 @@ tapeRate                     src/25b-tape.js:75
 tapeSample                   src/25b-tape.js:54
 tapeScroll                   src/25b-tape.js:97
 tapeStrip                    src/25b-tape.js:187
-tapeTear                     src/11b-speech.js:195
+tapeTear                     src/11b-speech.js:196
 tapeTick                     src/25b-tape.js:79
 tapeUnpack                   src/25b-tape.js:39
 targetPos                    src/16-flight.js:121
@@ -3071,7 +3077,7 @@ UNIQUE_TAG                   src/03-ships.js:15
 unlockAudio                  src/09-audio.js:48
 unpackPart                   src/05-parts.js:323
 updateAllies                 src/12a-crew.js:594
-updateBarges                 src/12l-barge.js:156
+updateBarges                 src/12l-barge.js:160
 updateBase                   src/21a-mode-base.js:334
 updateBelt                   src/24-mode-belt.js:185
 updateCave                   src/22-mode-cave.js:249
@@ -3138,9 +3144,9 @@ vegaTick                     src/11w-vega.js:187
 vegaWish                     src/11w-vega.js:41
 VER                          src/01-core.js:4
 VER_ITER                     src/18d-verlet.js:23
-visitHere                    src/11b-speech.js:86
-visitMark                    src/11b-speech.js:90
-visitsAll                    src/11b-speech.js:85
+visitHere                    src/11b-speech.js:87
+visitMark                    src/11b-speech.js:91
+visitsAll                    src/11b-speech.js:86
 vLink                        src/18d-verlet.js:78
 voice                        src/09-audio.js:84
 VOICE_KEYS                   src/02a-worldmix.js:81
@@ -3248,8 +3254,8 @@ worldTables                  src/02a-worldmix.js:86
 wrapCount                    src/18-mode-map.js:42
 wrapLeft                     src/18-mode-map.js:29
 wreck                        src/28-loop.js:2
-wreckInteract                src/12l-barge.js:325
-wrecksHere                   src/12l-barge.js:322
+wreckInteract                src/12l-barge.js:329
+wrecksHere                   src/12l-barge.js:326
 wrgba                        src/29g-winter-draw.js:27
 wtab                         src/02a-worldmix.js:85
 yachtMoraleMul               src/12j-home.js:255
@@ -3525,6 +3531,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ag-holdfx.js · 9 КБ
   · холдинг · эффекты семей E–I:1
 
+## src/12ah-holdnews.js · 6 КБ
+  · холдинг · слухи, новости и чужие на проданной дороге:1
+
 ## src/12b-crew-events.js · 17 КБ
   · наёмники: рейс как раздача карт:1
 
@@ -3590,10 +3599,10 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/12l-barge.js · 39 КБ
   · торговые баржи:1
-  · контракт охраны:284
-  · остовы погибших барж:321
-  · корпус баржи:381
-  · торг с баржой:585
+  · контракт охраны:288
+  · остовы погибших барж:325
+  · корпус баржи:385
+  · торг с баржой:589
 
 ## src/12m-rare.js · 13 КБ
   · редкости: сто адресов, а не рулетка:1
@@ -4150,6 +4159,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91x-hold-ladder.js · 3 КБ
   · автотесты: холдинг · лестница видимая (M292):1
+
+## tests/91x-hold-news.js · 3 КБ
+  · автотесты: холдинг · слухи, новости, чужие на проданной дороге (M297):1
 
 ## tests/91x-hold-site.js · 12 КБ
   · автотесты: холдинг · постройки, площадка, бункер (M291):1

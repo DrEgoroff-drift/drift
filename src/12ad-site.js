@@ -187,6 +187,7 @@ function bldLay(sys,id){
   const now=Date.now();
   H.bld[id]={lvl:1,t0:now,ready:now+BLD_SHIFTS[def.tier]*HOLD_SHIFT,my:{},got:{}};
   if(typeof recordAdd==="function")recordAdd(sys.station.name,"заложен: "+def.ru);
+  if(typeof holdNews==="function")holdNews(sys,def,"laid");   /* новость с причиной (M297) */
   return"";
 }
 function bldUpgrade(sys,id){
@@ -199,6 +200,7 @@ function bldUpgrade(sys,id){
   bldPay(cost);
   bldTick(sys.key,id);
   B.lvl++;B.ready=Date.now()+BLD_SHIFTS[def.tier]*HOLD_SHIFT;
+  if(typeof holdNews==="function")holdNews(sys,def,"up");
   return"";
 }
 function bldEntry(key,id){const H=G.hold&&G.hold[key];return H&&H.bld?H.bld[id]||null:null;}

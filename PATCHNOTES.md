@@ -7,6 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.294.0 - M297: news with a cause, rumours in other people's words, rivals on a sold road
+
+Step 9 of the holding plan (`docs/DESIGN-holding.md` §2, §11, §15) - the layer speaks through
+the world instead of a summary line.
+
+- **News with a cause.** Laying or raising a shop is an event with an address: «„Сардразль“:
+  заложен плавильный цех — железо и кремний здесь в цене», in the news and on the map pin, and
+  the shop's inputs rise +0.2 at that station - the second way, after the appetite, that what
+  you do lifts a price.
+- **Rumours.** Once in five the ether speaks of the holding in other people's words: a system
+  with two or more buildings of a family has an уклад, an adjective - «„Сардразль“-то заводская,
+  туда железо возят»; and where a промысел would stand, the receiver says so - «на „Тегре“
+  реголит богатый — разработку бы туда».
+- **You sold a road, you bought a rival.** The legs of a sold route join the barge lanes: strange
+  barges fly them, and at the destination each one takes part of the station's appetite for the
+  shift - the surcharge you would have had goes to her, and the log says so.
+- Tests: `91x-hold-news`.
+
 ## 0.293.0 - M296: the body - a first pass
 
 Step 8 of the holding plan (`docs/DESIGN-holding.md` §13), taken as far as a stand and a

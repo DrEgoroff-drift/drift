@@ -1178,9 +1178,13 @@ the code had nothing to hook (Дружина, Архив, Личный прич�
 moored barge at a Причал, warm lights on the planet's night side; the built forms on the outer
 ring judged on the `hold` stand (`docs/shots/hold.png`). Still open in §13: the dump, the dome,
 the strip; baking the forms; the codex pass with the author's eye on `/dev`.
-Next: **step 9, КУРС, rumours, news** (a sold road spawns a rival barge that eats the appetite;
-rumours name where a промысел would stand and speak the уклад; news with a cause when a shop is
-laid), then the three interface fixes.
+**M297 (0.294.0) — step 9, 2026-09-02:** `12ah-holdnews` — news with a cause on laying and
+raising a shop (+0.2 on its inputs, a map pin), rumours of the уклад and of where a промысел
+would stand, rival barges on a sold road eating the appetite once a shift. «КУРС as the route and
+a rumour in one» is the interface fix 2 (rumour addresses → НА КАРТУ). The holding plan's nine
+steps are built; the codex pass over the body (step 8) waits for the author's eye on `/dev`.
+Next: **the three interface fixes** of `docs/DESIGN-ui.md` — the table in the cantina, rumour
+addresses, the map.
 
 ## Small tails from almanac issue II
 
