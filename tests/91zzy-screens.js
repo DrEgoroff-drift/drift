@@ -146,3 +146,68 @@ TEST_SUITES.push(()=>suite("экраны M299: зал — ввод; стол б�
   closeStation();
   G.name="";
 }));
+
+/* ── два хвоста альманаха II (M302) ──
+   1. Закон 44 px ходил по пэдам, борту и меню; экраны были покрыты руками в
+      двух наборах. Здесь — обход всех экранов: каждая видимая кнопка не меньше 44.
+   2. Метки целей у края системного вида (SYS_CHIPS) никогда не мерялись против
+      эфирной строки и пэдов — последний шов «канва против вёрстки». */
+TEST_SUITES.push(()=>suite("экраны M302: 44 px на каждом экране, а не только на пульте",()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  const small=[];let seen=0;
+  const sweep=(where,root)=>{
+    for(const b of root.querySelectorAll("button")){
+      const r=b.getBoundingClientRect();
+      if(!r.width||!r.height)continue;
+      seen++;
+      if(r.width<44-.5||r.height<44-.5)small.push(where+": «"+(b.textContent||b.id).trim().slice(0,18)+"» "+Math.round(r.width)+"×"+Math.round(r.height));
+    }
+  };
+  /* станция — каждая вкладка */
+  const S=G.sys.station;G.ship.x=S.x+40;G.ship.y=S.y;
+  openStation();G.credits=90000;
+  for(const t of stTabsHere()){tab=t;syncTabs();renderTab();sweep("станция/"+t,$st);}
+  /* кантина с выбранной стойкой и человеком: там свои кнопки */
+  tab="cantina";syncTabs();cantSel="counter";renderTab();sweep("кантина/стойка",$st);
+  const free=(G.cantina&&G.cantina.list||[]).filter(m=>!G.mgrs.some(x=>x.seed===m.seed));
+  if(free.length){cantSel=free[0].id;renderTab();sweep("кантина/кандидат",$st);}
+  cantSel=null;closeStation();
+  /* штаб с управляющим */
+  if(free.length)hireMgr(free[0]);
+  G.mode="system";$hq.classList.add("open");hqRender();sweep("штаб",$hq);$hq.classList.remove("open");
+  /* корабль */
+  openShipView();sweep("корабль",document.getElementById("shipview"));
+  document.querySelector('#svTabs button[data-tab="suit"]').click();sweep("скафандр",document.getElementById("shipview"));
+  kitAnimStop();document.getElementById("shipview").classList.remove("open");
+  /* стол */
+  tableToggle(true);sweep("стол",document.getElementById("tablewin"));tableToggle(false);
+  ok(seen>40,"кнопок обойдено: "+seen);
+  eq(small.join(" | "),"","на экранах нет кнопок меньше 44 px");
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  G.mode="system";
+}));
+
+TEST_SUITES.push(()=>suite("экраны M302: метки целей у края не наезжают на эфирную строку и пульт",()=>{
+  resetWorld();
+  document.querySelectorAll(".scr.open").forEach(e=>e.classList.remove("open"));
+  G.mode="system";
+  /* улететь так, чтобы звезда и станция оказались за кадром — тогда метки на краю */
+  G.ship.x=9000;G.ship.y=-7000;G.ship.vx=0;G.ship.vy=0;G.ap=null;G.orbit=null;
+  hud();
+  let okDraw=true;try{drawSystem();}catch(e){okDraw=false;}
+  ok(okDraw,"системный вид рисуется");
+  ok(SYS_CHIPS.length>0,"метки у края есть: "+SYS_CHIPS.length);
+  const dom=[];
+  for(const sel of ["#console",".pads",".rail",".vitals",".locus","#prompt"]){
+    const e=document.querySelector(sel);if(!e)continue;
+    if(sel==="#prompt"&&!(e.textContent||"").trim())continue;
+    const r=e.getBoundingClientRect();
+    if(r.width>0&&r.height>0)dom.push({s:sel,x:r.x,y:r.y,w:r.width,h:r.height});
+  }
+  const hit=(a,b)=>!(a.x+a.w<=b.x||b.x+b.w<=a.x||a.y+a.h<=b.y||b.y+b.h<=a.y);
+  const clash=[];
+  for(const c of SYS_CHIPS)for(const d of dom)if(hit(c,d))clash.push(Math.round(c.x)+","+Math.round(c.y)+"×"+d.s);
+  eq(clash.join(", "),"","метки целей не наезжают на вёрстку");
+  G.ship.x=0;G.ship.y=0;
+}));

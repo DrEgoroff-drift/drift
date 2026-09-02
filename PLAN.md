@@ -308,12 +308,12 @@ never touches arithmetic; station modules don't unlock services.
   «ветеран · опыт 7» — it now follows the traits it is printed next to); and ФОТО stopped hanging
   over open screens, a one-day-old regression from M208 widening the camera to flight.
 
-  **Still open:** the board's eight sections on a first dock — untouched, thinning it is the
-  author's call; what changed is only that the player can now see there is more. The landing prompt
+  **Closed by M299 (0.296.0):** the board's sections on a first dock are now three lanes with a
+  fold at seven per lane, and every heading is capped at 24 characters (`boardLanes`, `secTidy`). The landing prompt
   offering «СКАНИРОВАТЬ ОРГАНИЗМ» beside twenty-two deposits was checked and is **not** a priority
   bug — `dep` is tested before `plant`; it only happens when no deposit is within reach and a plant
   is. The station's group row can fall out of step with its tab if future code sets `tab` without
-  calling `syncTabs()` — not reachable today, but a trap for the first "jump to this tab" feature.
+  calling `syncTabs()` — reached by the map peek's way back (M299) and closed in M302: `mapBack` syncs.
   The third hour was walked in M215 (0.197.0): the same contradiction came back through
   `stationMercs` (reputation stamped `xp` over the traits), and a newcomer paid for a hand before
   learning he needs a hull of his own. **Its back half was walked too and is healthy:** a trip closes
@@ -437,10 +437,8 @@ monuments, nodes) join the rung score when their hooks are written.
 
 ## Small tails from almanac issue II
 
-- Target chips in the system view have never been measured against the ether bar — the last seam
-  of «canvas against markup».
-- The 44 px guard walks the pads, the rail and the drawer only; screens are covered by hand in two
-  suites. A sweep over every screen is still to write.
+- ~~Target chips against the ether bar~~ — measured since M302 (`91zzy-screens`).
+- ~~The 44 px sweep over every screen~~ — written in M302 (`91zzy-screens`), both layouts.
 - «В ДОРОГУ» was never argued into the five doors of the M151a design: justify it on the record or
   remove it.
 

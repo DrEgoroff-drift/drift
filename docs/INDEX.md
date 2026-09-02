@@ -26,7 +26,7 @@ $menu                        src/15-input.js:227
 $msg                         src/27z-telemetry.js:38
 $msl                         src/27z-telemetry.js:41
 $nav                         src/27z-telemetry.js:40
-$opts                        src/26-ui-station.js:849
+$opts                        src/26-ui-station.js:850
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:37
 $sh                          src/27z-telemetry.js:8
@@ -265,7 +265,7 @@ BLUE_TAB                     src/01-core.js:48
 blueNoise                    src/01-core.js:49
 BLUEPRINTS                   src/12c-mgr-core.js:662
 BM_WARM                      src/21aa-base-rooms.js:20
-boardLanes                   src/26-ui-station.js:253
+boardLanes                   src/26-ui-station.js:254
 bodyInSystem                 src/16-flight.js:109
 bookAll                      src/12ub-books.js:106
 bookCount                    src/12ub-books.js:108
@@ -701,7 +701,7 @@ drawLanding                  src/19-mode-landing.js:541
 drawLoreMarks                src/12q-lore.js:235
 drawLuxeDeck                 src/03c-hull-luxe.js:109
 drawLuxeSkin                 src/03c-hull-luxe.js:27
-drawMap                      src/18-mode-map.js:124
+drawMap                      src/18-mode-map.js:126
 drawMisFigure                src/11z-misclosure.js:63
 drawModule                   src/21aa-base-rooms.js:384
 drawMonolith                 src/20aa-poi-shapes.js:193
@@ -933,7 +933,7 @@ fleetUniqueName              src/04b-fleet.js:100
 flightCam                    src/16a-space.js:286
 floraOf                      src/20e-species.js:91
 FOE_KINDS                    src/24a-mode-raid.js:17
-foldBlock                    src/26-ui-station.js:199
+foldBlock                    src/26-ui-station.js:200
 FOLK                         src/12u-folk.js:31
 FOLK_IDS                     src/12u-folk.js:81
 folkAll                      src/11ah-offer.js:76
@@ -1384,7 +1384,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:540
+jump                         src/18-mode-map.js:542
 jumpToBase                   src/21a-mode-base.js:315
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -1474,8 +1474,8 @@ landerInk                    tests/91j-art.js:154
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344
 landOnTestPlanet             tests/90-harness.js:71
-LANE_RU                      src/26-ui-station.js:252
-LANE_RX                      src/26-ui-station.js:248
+LANE_RU                      src/26-ui-station.js:253
+LANE_RX                      src/26-ui-station.js:249
 last                         src/28-loop.js:85
 LAST_RUN_DAY                 src/12k-letters.js:40
 lastDroneTick                src/28-loop.js:86
@@ -1602,14 +1602,14 @@ mapBack                      src/18-mode-map.js:111
 MAPBG                        src/18-mode-map.js:61
 mapBox                       src/18-mode-map.js:28
 mapCell                      src/18-mode-map.js:88
-mapCleanSet                  src/18-mode-map.js:123
+mapCleanSet                  src/18-mode-map.js:125
 mapDeck                      src/18-mode-map.js:13
 mapFit                       src/18-mode-map.js:93
 mapNebula                    src/18-mode-map.js:62
 mapPeek                      src/18-mode-map.js:104
 mapRail                      src/18-mode-map.js:17
 mapRange                     src/18-mode-map.js:89
-mapReset                     src/18-mode-map.js:121
+mapReset                     src/18-mode-map.js:123
 mapViewC                     src/18-mode-map.js:82
 mapZoomK                     src/18-mode-map.js:87
 mapZoomSet                   src/18-mode-map.js:90
@@ -2346,8 +2346,8 @@ renderRelays                 src/11ap-relay.js:243
 renderRoute                  src/12r-route.js:349
 renderSiteTab                src/26c-ui-station-site.js:7
 renderStrips                 src/27i-ui-table.js:261
-renderTab                    src/26-ui-station.js:344
-renderTabBody                src/26-ui-station.js:355
+renderTab                    src/26-ui-station.js:345
+renderTabBody                src/26-ui-station.js:356
 renderThings                 src/27i-ui-table.js:292
 REP_MIN                      src/12k-rep.js:16
 REP_WORDS                    src/12k-rep.js:17
@@ -2367,7 +2367,7 @@ RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:79
 resAuto                      src/28-loop.js:114
 resEma                       src/28-loop.js:113
-resetArm                     src/26-ui-station.js:848
+resetArm                     src/26-ui-station.js:849
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
@@ -2639,9 +2639,9 @@ sdYard                       src/12tb-settle-draw2.js:410
 seamAdd                      src/12s-wear.js:181
 seamsAll                     src/12s-wear.js:180
 seamsOf                      src/12s-wear.js:182
-SEC_CAP                      src/26-ui-station.js:222
+SEC_CAP                      src/26-ui-station.js:223
 secHead                      src/26-ui-station.js:172
-secTidy                      src/26-ui-station.js:223
+secTidy                      src/26-ui-station.js:224
 sellCargo                    src/12-economy.js:65
 sellDroneYield               src/12-economy.js:86
 sellQuote                    src/12ab-hold.js:83
@@ -2698,9 +2698,9 @@ SHIFT_TALK                   src/03f-hull-role.js:63
 shiftTalkTick                src/03f-hull-role.js:73
 SHIP_KEYS                    src/03-ships.js:12
 shipData                     src/03-ships.js:13
-shipRow                      src/26-ui-station.js:293
+shipRow                      src/26-ui-station.js:294
 SHIPS                        src/03-ships.js:2
-shipThumb                    src/26-ui-station.js:280
+shipThumb                    src/26-ui-station.js:281
 shipTier                     src/04b-fleet.js:156
 shipZ                        src/16-flight.js:235
 shipZoneR                    src/19f-lander.js:14
@@ -3983,7 +3983,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26-ui-station.js · 58 КБ
   · станция:1
   · заголовки и полосы (M299, docs/DESIGN-screens.md §1a):167
-  · настройки:847
+  · настройки:848
 
 ## src/27b-ui-crew.js · 15 КБ
   · экран экипажа:1
@@ -4352,7 +4352,7 @@ zooTick                      src/11ad-zoo.js:41
   · автотесты: дорожный спутник (M168, M168b):1
   · девятый проход (M168k):251
 
-## tests/91zzy-screens.js · 9 КБ
+## tests/91zzy-screens.js · 13 КБ
   · автотесты: экраны M299 — заголовки, подгляд карты, зал как ввод:1
 
 ## tests/91zzza-trace.js · 5 КБ

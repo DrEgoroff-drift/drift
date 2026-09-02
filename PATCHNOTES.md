@@ -7,6 +7,18 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.299.0 - M302: two guards from almanac issue II, and a trap closed
+
+- **44 px on every screen.** The finger law used to be asserted on the pads, the rail and the
+  menu only; `91zzy-screens` now walks every station tab, the cantina with the counter and a
+  candidate open, the HQ, the ship and suit screens and the desk, and fails on any visible button
+  under 44 px. The «?» and «В ЗАЛ» heading chips became 44 px targets with a 22 px pill inside.
+- **Target chips against the layout.** The edge chips of the system view (`SYS_CHIPS`) are
+  measured against the console, pads, rail, vitals and locus - the last seam of «canvas against
+  markup».
+- **The peek's way back syncs the group row** (`mapBack` calls `syncTabs`) - the trap PLAN named
+  for the first "jump to this tab" feature.
+
 ## 0.298.0 - M301: person cards in the HQ and the crew tab
 
 - The manager card and the hired hand's row follow the cantina's pattern (`DESIGN-screens` §3):

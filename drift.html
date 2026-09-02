@@ -678,8 +678,10 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 .sec{display:flex;align-items:baseline;gap:10px}
 .sec>span:first-child{flex:1 1 auto;min-width:0}
 .sec .cnt{flex:0 0 auto;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:var(--dim)}
-.sec .q{flex:0 0 auto;min-height:0;min-width:0;height:22px;padding:0 9px;font:inherit;font-size:9px;letter-spacing:.08em;
-  color:var(--dim);background:rgba(127,230,216,.06);border:1px solid rgba(127,230,216,.22);border-radius:11px;cursor:pointer}
+.sec .q{flex:0 0 auto;min-height:44px;min-width:44px;height:44px;padding:0 4px;margin:-12px -6px -12px 0;font:inherit;
+  background:none;border:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dim)}
+.sec .q i{font-style:normal;height:22px;line-height:20px;padding:0 9px;font-size:9px;letter-spacing:.08em;
+  background:rgba(127,230,216,.06);border:1px solid rgba(127,230,216,.22);border-radius:11px}
 .sec .q:hover{color:var(--text)}
 .sec.lane{margin-top:14px;padding-top:26px;border-top:1px solid rgba(127,230,216,.12);font-size:11px;letter-spacing:.26em;color:var(--text)}
 .sec.lane:first-child{margin-top:0;border-top:0}
@@ -1467,7 +1469,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.298.0";
+const VER="0.299.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -33924,6 +33926,8 @@ function mapBack(){
   G.mode="dock";
   if(pk.tab&&typeof tab!=="undefined")tab=pk.tab;
   if(typeof $st!=="undefined"&&$st)$st.classList.add("open");
+  /* полоса разделов идёт за вкладкой (ловушка из PLAN: tab без syncTabs) */
+  if(typeof syncTabs==="function")syncTabs();
   if(typeof renderTab==="function")renderTab();
   return true;
 }
@@ -56616,7 +56620,7 @@ function secHead(title,opt){
   const h=el("div","sec"+(opt.lane?" lane":"")+(opt.cls?" "+opt.cls:""),"");
   const t=document.createElement("span");t.textContent=title;h.appendChild(t);
   if(opt.back){
-    const b=document.createElement("button");b.className="cnt q";b.textContent="В ЗАЛ";
+    const b=document.createElement("button");b.className="cnt q";b.innerHTML="<i>В ЗАЛ</i>";
     b.onclick=ev=>{ev.stopPropagation();opt.back();};h.appendChild(b);
   }else if(opt.count!=null){
     const c=document.createElement("span");c.className="cnt";c.textContent=opt.count;h.appendChild(c);
@@ -56626,7 +56630,8 @@ function secHead(title,opt){
     const key="sec:"+(opt.key||title);
     G.seen=G.seen||{};
     if(!G.seen[key]){G.seen[key]=1;secHead.open[key]=true;}
-    const q=document.createElement("button");q.className="q";q.textContent="?";
+    /* чип визуально 22 px, а зона нажатия 44 (закон 44 px): пилюля — внутри кнопки */
+    const q=document.createElement("button");q.className="q";q.innerHTML="<i>?</i>";
     h.appendChild(q);
     n=el("div","sec note",opt.note);
     if(!secHead.open[key])n.style.display="none";

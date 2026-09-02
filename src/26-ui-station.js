@@ -174,7 +174,7 @@ function secHead(title,opt){
   const h=el("div","sec"+(opt.lane?" lane":"")+(opt.cls?" "+opt.cls:""),"");
   const t=document.createElement("span");t.textContent=title;h.appendChild(t);
   if(opt.back){
-    const b=document.createElement("button");b.className="cnt q";b.textContent="В ЗАЛ";
+    const b=document.createElement("button");b.className="cnt q";b.innerHTML="<i>В ЗАЛ</i>";
     b.onclick=ev=>{ev.stopPropagation();opt.back();};h.appendChild(b);
   }else if(opt.count!=null){
     const c=document.createElement("span");c.className="cnt";c.textContent=opt.count;h.appendChild(c);
@@ -184,7 +184,8 @@ function secHead(title,opt){
     const key="sec:"+(opt.key||title);
     G.seen=G.seen||{};
     if(!G.seen[key]){G.seen[key]=1;secHead.open[key]=true;}
-    const q=document.createElement("button");q.className="q";q.textContent="?";
+    /* чип визуально 22 px, а зона нажатия 44 (закон 44 px): пилюля — внутри кнопки */
+    const q=document.createElement("button");q.className="q";q.innerHTML="<i>?</i>";
     h.appendChild(q);
     n=el("div","sec note",opt.note);
     if(!secHead.open[key])n.style.display="none";

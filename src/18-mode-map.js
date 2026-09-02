@@ -115,6 +115,8 @@ function mapBack(){
   G.mode="dock";
   if(pk.tab&&typeof tab!=="undefined")tab=pk.tab;
   if(typeof $st!=="undefined"&&$st)$st.classList.add("open");
+  /* полоса разделов идёт за вкладкой (ловушка из PLAN: tab без syncTabs) */
+  if(typeof syncTabs==="function")syncTabs();
   if(typeof renderTab==="function")renderTab();
   return true;
 }

@@ -664,8 +664,10 @@ body.inbelt .pads button[data-k=fire]{font-size:8px}
 .sec{display:flex;align-items:baseline;gap:10px}
 .sec>span:first-child{flex:1 1 auto;min-width:0}
 .sec .cnt{flex:0 0 auto;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:var(--dim)}
-.sec .q{flex:0 0 auto;min-height:0;min-width:0;height:22px;padding:0 9px;font:inherit;font-size:9px;letter-spacing:.08em;
-  color:var(--dim);background:rgba(127,230,216,.06);border:1px solid rgba(127,230,216,.22);border-radius:11px;cursor:pointer}
+.sec .q{flex:0 0 auto;min-height:44px;min-width:44px;height:44px;padding:0 4px;margin:-12px -6px -12px 0;font:inherit;
+  background:none;border:0;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dim)}
+.sec .q i{font-style:normal;height:22px;line-height:20px;padding:0 9px;font-size:9px;letter-spacing:.08em;
+  background:rgba(127,230,216,.06);border:1px solid rgba(127,230,216,.22);border-radius:11px}
 .sec .q:hover{color:var(--text)}
 .sec.lane{margin-top:14px;padding-top:26px;border-top:1px solid rgba(127,230,216,.12);font-size:11px;letter-spacing:.26em;color:var(--text)}
 .sec.lane:first-child{margin-top:0;border-top:0}
