@@ -64,6 +64,7 @@ function snapshot(){
     walled:G.walled,   /* где расписался на камне (С2): решение игрока — хранится */
     mailed:G.mailed,   /* откуда отправлял открытки (С3): тот же журнал поступков */
     need:G.need,order:G.order,things:G.things,ratios:G.ratios,seenPrices:G.seenPrices,   /* M152e, M151a */
+    hold:G.hold,   /* холдинг (M290): одна карта на весь слой — сдано в аппетит, позже постройки и пай */
     kit:G.kit,kitShelf:G.kitShelf,kitDepot:G.kitDepot,   /* комплект (M152) */
     vega:G.vega,wishDevice:G.wishDevice,   /* Вега (M153) */
     ring:G.ring,exp:G.exp,letters:G.letters,island:G.island,record:G.record,inst:G.inst,trainee:G.trainee,zoo:G.zoo,concert:G.concert,road:G.road,trace:G.trace,duty:G.duty,album:G.album,mail:G.mail,probes:G.probes,win:G.win,spa:G.spa,hol:G.hol,books:G.books,qsl:G.qsl,relay:G.relay,green:G.green,kino:G.kino,penn:G.penn,first:G.first,chess:G.chess,   /* M154–M207, M192 */
@@ -633,6 +634,7 @@ function applySave(s){
   G.post={stage:clamp((s.post&&s.post.stage)|0,0,POST_LINKS.length-1),opened:(s.post&&s.post.opened)?1:0,done:(s.post&&s.post.done)?1:0};
   G.strips=Array.isArray(s.strips)?s.strips.slice(0,8):[];
   G.need=asMap(s.need);
+  G.hold=asMap(s.hold);
   G.order=(s.order&&typeof s.order==="object"&&s.order.to)?s.order:null;
   G.things=Array.isArray(s.things)?s.things.slice(0,40):[];
   G.ratios=asMap(s.ratios);

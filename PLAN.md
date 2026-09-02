@@ -1142,7 +1142,13 @@ nothing from §18 is queued.
 and shown as a fork when stale; the map from the first leg with the next leg lit and «ПРЫЖОК ПО
 МАРШРУТУ»; «ПО МАРШРУТУ · взять/сдать» rows with `buyCargo` (6% spread, an ask that rises with
 purchases and touches the buy price only); a walked road sold for two average loops of what it
-earned, never twice; `ROUTE_MAX = 6`. Next: **step 2, «БЕРЁТ»**.
+earned, never twice; `ROUTE_MAX = 6`.
+
+**M290 (0.287.0) — step 2 built 2026-09-02:** `12ab-hold` — `HOLD_SHIFT`, the appetite by
+station type (+35% on the first N a shift, an addend inside the pressure clamp via
+`marketPrice`), `normsOf` as the one demand object, `sellQuote` behind the hold row and the
+button, the ДОСКА «БЕРЁТ» block, the ether line, `G.hold` as the layer's one map. Next: **step 3,
+the site and the hopper.**
 
 ## Small tails from almanac issue II
 

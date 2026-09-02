@@ -10,7 +10,13 @@ function marketFor(sys){
     for(const k of TRADE_KEYS){m.pressure[k]=(m.pressure[k]||0)*decay;if(m.ask[k])m.ask[k]*=decay;}
     m.t=G.t;
   }
-  const prices={},mul=stTypeOf(sys.station.stype).mkt;   /* торговый узел платит больше, аванпост — меньше */
+  const prices={},C=marketCtx(sys,m);
+  for(const k of TRADE_KEYS)prices[k]=marketPriceCtx(sys,C,k,0);
+  return prices;
+}
+/* множители станции, общие для всех товаров — считаются один раз на котировку */
+function marketCtx(sys,m){
+  const mul=stTypeOf(sys.station.stype).mkt;   /* торговый узел платит больше, аванпост — меньше */
   /* «Монополия» фактора: на плечах его маршрута цена держится выше — вы продаёте
      туда же, куда возит он, и это единственный перк, который игрок чувствует
      собственным кошельком, а не строчкой в сводке домена */
@@ -18,11 +24,20 @@ function marketFor(sys){
   const onRoute=F&&!F.stalled&&mgrPerk(F,"mono")&&F.route.indexOf(sys.sx+","+sys.sy)>=0;
   const boost=onRoute?1.18:1;
   const N=(typeof needOf==="function")?needOf(sys):null;   /* нужда (M152e): ×2 на один привоз */
-  for(const k of TRADE_KEYS)
-    /* занятая система: скупщик один, и он знает, что деваться некуда */
-    prices[k]=Math.max(1,Math.round(base[k]*mul*boost*(N&&N.k===k?NEED_MUL:1)*(typeof expPriceMul==="function"?expPriceMul(k):1)*occPriceMul(sys.sx,sys.sy)*
-                                    clamp(1+(m.pressure[k]||0),.4,1.8)));
-  return prices;
+  return{m,mul,boost,N,occ:occPriceMul(sys.sx,sys.sy)};
+}
+/* цена одного товара; add — слагаемое к давлению ВНУТРИ clamp (аппетит станции,
+   M290): складывается с давлением, а не множится поверх нужды и монополии,
+   и потолок 1.8 остаётся потолком. Занятая система: скупщик один, и он знает,
+   что деваться некуда */
+function marketPriceCtx(sys,C,k,add){
+  const base=sys.station.prices;
+  return Math.max(1,Math.round(base[k]*C.mul*C.boost*(C.N&&C.N.k===k?NEED_MUL:1)*(typeof expPriceMul==="function"?expPriceMul(k):1)*C.occ*
+                               clamp(1+(C.m.pressure[k]||0)+(add||0),.4,1.8)));
+}
+function marketPrice(sys,k,add){
+  marketFor(sys);   /* давление досчитано, запись есть */
+  return marketPriceCtx(sys,marketCtx(sys,G.market[sys.key]),k,add);
 }
 /* ── взять товар с прилавка (M289) ──
    Станция продаёт дороже, чем берёт: BUY_SPREAD поверх её же закупочной цены,
@@ -50,7 +65,12 @@ function buyCargo(sys,k,qty){
 function sellCargo(sys,k,qty){
   qty=Math.min(qty,G.cargo[k]);
   if(qty<=0)return 0;
-  const price=marketFor(sys)[k],revenue=qty*price;
+  /* аппетит станции (M290): первые N в смену — с надбавкой, остальное по обычной.
+     Котировка та же, что видел ряд трюма; съедается ровно то, что сдано */
+  const Q=(typeof sellQuote==="function")?sellQuote(sys,k,qty):{revenue:qty*marketFor(sys)[k],nA:0,priceA:0,base:marketFor(sys)[k]};
+  if(Q.nA&&typeof appetiteEat==="function")appetiteEat(sys,k,Q.nA);
+  const revenue=Q.revenue;
+  sellCargo.last=Q;
   const N=(typeof needOf==="function")?needOf(sys):null;   /* до закрытия: нужда ×2 в заработок маршрута не идёт (M289) */
   earn(revenue,"trade");G.cargo[k]-=qty;
   if(typeof routeEarn==="function")routeEarn(sys,k,qty,revenue,!!(N&&N.k===k));

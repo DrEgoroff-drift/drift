@@ -345,6 +345,7 @@ function renderTabBody(){
       }
     }
     if(typeof needBlock==="function")needBlock();         /* нужда и наряд (M152e) */
+    if(typeof appetiteBlock==="function")appetiteBlock();  /* что станция берёт с надбавкой (M290) */
     if(typeof findsBlock==="function")findsBlock();       /* находки: институту или с рук (M152e) */
     if(typeof kitDepotBlock==="function")kitDepotBlock();   /* склад института: комплект (M152) */
     if(typeof vegaFleaBlock==="function")vegaFleaBlock();   /* дед с лотка (M153) */
@@ -385,17 +386,23 @@ function renderTabBody(){
     let any=false,tot=0;
     for(const k of TRADE_KEYS){
       const q=G.cargo[k];if(!q)continue;any=true;
-      const price=prices[k],base=RES[k].price;tot+=q*price;
+      const price=prices[k],base=RES[k].price;
+      /* котировка с аппетитом (M290): тег говорит правду для первых N единиц и
+         для (N+1)-й — «берут первые 6», а не «выгодно» на весь трюм */
+      const Q=(typeof sellQuote==="function")?sellQuote(G.sys,k,q):{revenue:q*price,nA:0,priceA:price};
+      tot+=Q.revenue;
       let tg=price>base*1.12?"выгодно":(price<base*.9?"дёшево":"обычная цена");
+      if(Q.nA)tg="берут первые "+Q.nA+" по "+Q.priceA+" кр"+(Q.nA<q?", остальное "+price:"");
       if((mkt.pressure[k]||0)<-.05)tg+=" · недавно продавали здесь";
       const r=el("div","row");
       r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+
         "</b><s>"+price+" кр/ед · "+tg+" (база "+base+")</s>"));
-      r.appendChild(el("div","qt",q+"<s>"+(q*price).toLocaleString("ru")+" кр</s>"));
-      const b=el("button","act","ПРОДАТЬ");
-      b.onclick=()=>{const rev=sellCargo(G.sys,k,q);
-        tell("money","Продано на «"+G.st.name+"»: "+RES[k].ru.toLowerCase()+" ×"+q+" · +"+rev.toLocaleString("ru")+" кр",
-             "Продано: "+RES[k].ru+" ×"+q+"\n+"+rev.toLocaleString("ru")+" кр");
+      r.appendChild(el("div","qt",q+"<s>"+Math.round(Q.revenue).toLocaleString("ru")+" кр</s>"));
+      const b=el("button","act"+(Q.nA?" gold":""),"ПРОДАТЬ");
+      b.onclick=()=>{const rev=sellCargo(G.sys,k,q),L=sellCargo.last||{};
+        const extra=L.nA?" · "+L.nA+" с надбавкой":"";
+        tell("money","Продано на «"+G.st.name+"»: "+RES[k].ru.toLowerCase()+" ×"+q+" · +"+rev.toLocaleString("ru")+" кр"+extra,
+             "Продано: "+RES[k].ru+" ×"+q+"\n+"+rev.toLocaleString("ru")+" кр"+extra);
         renderTab();};
       r.appendChild(b);$body.appendChild(r);
     }

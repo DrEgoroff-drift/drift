@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.287.0 - M290: «БЕРЁТ» - the station's appetite, and the layer's clock
+
+Step 2 of the holding plan (`docs/DESIGN-holding.md` §0, §4). Until now every price move the
+player could make pointed down; a price rose only on news.
+
+- **One clock for the layer.** `HOLD_SHIFT` = 20 minutes of real time; nothing ticks, whoever
+  reads catches up from `Date.now()`. A shift is what a quota is counted in.
+- **A station eats by its type.** A combine takes iron 10 · silicon 6 · titanium 4 per shift,
+  a yard titanium 6 · iridium 2, a science station crystals 3 · isotopes 4, a trade node organics
+  6 · ice 8, an outpost ice 6 · organics 4, a bazaar silicon 4 - only what it lists. The first N
+  units of a shift pay **+35%**, the rest the ordinary price and the ordinary pressure down.
+- **The surcharge adds, it does not multiply**: `marketPrice(sys,k,add)` puts it inside the same
+  clamp as pressure, so it stacks with the need and the factor's monopoly without breaking the
+  1.8 ceiling. `marketFor` is now a loop over that one function.
+- **One object called demand.** `normsOf(sys)` lists the need (one delivery, +100%) and the
+  appetite (per shift, +35%) as norms of one shape; buildings will add theirs in step 3.
+- **The row tells the truth before the button.** A hold row on such a station says «берут первые
+  6 по 15 кр, остальное 11» and its sum is the real quote (`sellQuote`); the ПРОДАТЬ button goes
+  gold; the toast names how many went with the surcharge. The ДОСКА gets a «БЕРЁТ» block with what
+  is left this shift; the ether says who pays extra nearby.
+- Stored: only what you sold into the appetite this shift, in one map `G.hold["sx,sy"].ate` -
+  the layer's single save field, loaded through `asMap`.
+- Tests: `91x-hold` (first N at +35%, N+1 at the base price, the shift resets, the sale consumes
+  the norm, the quote equals the sale, save/load, drones sell plain); `91zzw` prints the
+  «холдинг» line.
+
 ## 0.286.0 - M289: the route is an order, not a calculator
 
 Step 1 of the rebuilt holding plan (`docs/DESIGN-holding.md` §2, revised the same day against

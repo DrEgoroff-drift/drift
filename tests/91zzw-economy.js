@@ -46,6 +46,13 @@ TEST_SUITES.push(()=>suite("экономика: замер кр/мин по ис
   let needed=0,needGain=0;
   for(const S of list){const N=needOf(S);if(N){needed++;needGain=Math.max(needGain,marketFor(S)[N.k]*40);}}
   ok(true,"нужда · станций с нуждой сейчас: "+needed+" из "+list.length+" · лучший разовый привоз на 40 ед.: "+needGain+" кр");
+  /* аппетит станции (M290, профиль «холдинг»): кто берёт с надбавкой и сколько это даёт за смену */
+  let appN=0,appBest=0,appBestTxt="";
+  for(const S of list){
+    const A=(typeof appetiteOf==="function")?appetiteOf(S):null;if(!A)continue;appN++;
+    for(const k in A){const gain=A[k]*(appetitePrice(S,k)-marketFor(S)[k]);if(gain>appBest){appBest=gain;appBestTxt=S.station.name+" · "+RES[k].ru.toLowerCase()+" ×"+A[k]+" · +"+gain+" кр";}}
+  }
+  ok(true,"холдинг · аппетит: станций с надбавкой "+appN+" из "+list.length+" · лучшая надбавка за смену "+(appBestTxt||"нет"));
   /* наряды */
   let orders=0,paySum=0,costSum=0;
   for(const S of list){const O=orderOf(S);if(O){orders++;paySum+=O.pay;costSum+=O.qty*RES[O.k].price;}}

@@ -64,6 +64,7 @@ function etherTick(dt){
   if(typeof retEtherLine==="function"){const h=retEtherLine(r);if(h)out=h;}          /* кого ждут (11s) */
   if(typeof rumourEtherLine==="function"){const h=rumourEtherLine(r);if(h)out=h;}    /* слух на приёмнике (11t) */
   if(typeof needEtherLine==="function"){const h=needEtherLine(r);if(h)out=h;}        /* нужда поблизости (M152e) */
+  if(typeof appetiteEtherLine==="function"){const h=appetiteEtherLine(r);if(h)out=h;} /* кто берёт с надбавкой (M290) */
   if(typeof ringEtherLine==="function"){const h=ringEtherLine(r);if(h)out=h;}        /* о том, что ловили (M154) */
   if(typeof misEtherLine==="function"){const h=misEtherLine(r);if(h)out=h;}          /* стойки спорят о времени (M155) */
   if(typeof expEtherLine==="function"){const h=expEtherLine(r);if(h)out=h;}          /* циркуляр: половина эфира (M156) */

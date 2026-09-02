@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 338 · символов верхнего уровня: 3120
+Файлов: 340 · символов верхнего уровня: 3140
 
 ## СИМВОЛЫ
 
@@ -26,7 +26,7 @@ $menu                        src/15-input.js:227
 $msg                         src/27z-telemetry.js:38
 $msl                         src/27z-telemetry.js:41
 $nav                         src/27z-telemetry.js:40
-$opts                        src/26-ui-station.js:736
+$opts                        src/26-ui-station.js:743
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:37
 $sh                          src/27z-telemetry.js:8
@@ -47,7 +47,7 @@ actionKey                    src/15-input.js:144
 addPart                      src/05-parts.js:227
 addPath                      src/25-cockpit.js:154
 addRes                       src/11-log.js:132
-addrForm                     src/11b-speech.js:92
+addrForm                     src/11b-speech.js:93
 adjTo                        src/05-parts.js:23
 AFFIX                        src/05-parts.js:29
 AFFIX_BAD                    src/05-parts.js:46
@@ -80,15 +80,25 @@ ammoRow                      src/16b-missile.js:41
 ANCHOR_CACHE                 src/05-parts.js:140
 angDiff                      src/01-core.js:93
 angWrap                      src/01-core.js:92
+APPETITE                     src/12ab-hold.js:26
+APPETITE_ADD                 src/12ab-hold.js:24
+appetiteAte                  src/12ab-hold.js:46
+appetiteBlock                src/12ab-hold.js:99
+appetiteEat                  src/12ab-hold.js:57
+appetiteEtherLine            src/12ab-hold.js:112
+appetiteLeft                 src/12ab-hold.js:51
+appetiteLine                 src/12ab-hold.js:91
+appetiteOf                   src/12ab-hold.js:38
+appetitePrice                src/12ab-hold.js:66
 applyCrewEvent               src/12b-crew-events.js:214
 applyPadMode                 src/15-input.js:72
 applyPadSize                 src/15-input.js:8
-applySave                    src/14-save.js:195
+applySave                    src/14-save.js:196
 applyVolumes                 src/09-audio.js:40
 apVel                        src/16-flight.js:132
 arrive                       src/16-flight.js:178
 ARTIFACTS                    src/12h-relic.js:48
-asMap                        src/14-save.js:188
+asMap                        src/14-save.js:189
 assignToBase                 src/12a-crew.js:172
 AST_N                        src/24-mode-belt.js:86
 audioHush                    src/09-audio.js:12
@@ -221,9 +231,9 @@ buildAi                      src/12f-mgr-ai.js:29
 builtHere                    src/21c-built.js:19
 builtKey                     src/21c-built.js:17
 builtSpot                    src/21c-built.js:44
-BUY_SPREAD                   src/12-economy.js:33
-buyCargo                     src/12-economy.js:39
-buyPriceFor                  src/12-economy.js:34
+BUY_SPREAD                   src/12-economy.js:48
+buyCargo                     src/12-economy.js:54
+buyPriceFor                  src/12-economy.js:49
 bWall                        src/21aa-base-rooms.js:187
 bWorker                      src/21aa-base-rooms.js:322
 camBtnTick                   src/25g-postcard.js:666
@@ -500,7 +510,7 @@ deedAdd                      src/11ai-ledger.js:53
 DEEDS                        src/11ai-ledger.js:25
 deltaHtml                    src/05-parts.js:293
 depKind                      src/21b-surface-deco.js:367
-deployDrone                  src/12-economy.js:99
+deployDrone                  src/12-economy.js:119
 DEPTH_TIERS                  src/04-mods.js:51
 DESC_MOOD                    src/01-core.js:109
 DESC_TAIL                    src/01-core.js:115
@@ -690,7 +700,7 @@ DRONE_TAIL                   src/12e-drone-flight.js:189
 DRONE_TRIP_BASE              src/12e-drone-flight.js:18
 droneBreakP                  src/12e-drone-flight.js:130
 droneBreaks                  src/12e-drone-flight.js:134
-droneCapacity                src/12-economy.js:94
+droneCapacity                src/12-economy.js:114
 droneFixMs                   src/12e-drone-flight.js:135
 droneHome                    src/12e-drone-flight.js:73
 droneName                    src/12e-drone-flight.js:38
@@ -703,7 +713,7 @@ droneRoutes                  src/12e-drone-flight.js:161
 DRONES                       src/04-mods.js:57
 droneStateRu                 src/12e-drone-flight.js:146
 droneSys                     src/12e-drone-flight.js:62
-droneTarget                  src/12-economy.js:98
+droneTarget                  src/12-economy.js:118
 droneTripMs                  src/12e-drone-flight.js:87
 DUST_COL                     src/16a-space.js:222
 DUST_LAYERS                  src/16a-space.js:244
@@ -1069,10 +1079,15 @@ HOL_BY                       src/11am-holiday.js:26
 HOL_D                        tests/91zzzm-holiday.js:2
 HOL_ETHER                    src/11am-holiday.js:28
 HOL_GREET                    src/11am-holiday.js:45
+HOLD_SHIFT                   src/12ab-hold.js:23
+holdAll                      src/12ab-hold.js:35
 holdDrawPile                 src/27j-ui-hold.js:151
 holDock                      src/11am-holiday.js:87
+holdOf                       src/12ab-hold.js:36
 holdPiece                    src/27j-ui-hold.js:26
 holdPileN                    src/27j-ui-hold.js:22
+holdShift                    src/12ab-hold.js:34
+holdTestStation              tests/91x-hold.js:2
 holEtherLine                 src/11am-holiday.js:77
 HOLIDAYS                     src/11am-holiday.js:22
 holIs                        src/11am-holiday.js:74
@@ -1404,7 +1419,7 @@ lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:125
 loadGame                     src/14a-cloud.js:56
-LOCAL                        src/11b-speech.js:99
+LOCAL                        src/11b-speech.js:100
 LOG_MAX                      src/11-log.js:11
 LOG_PAGE                     src/11-log.js:12
 logAdd                       src/11-log.js:15
@@ -1480,7 +1495,10 @@ mapBox                       src/18-mode-map.js:28
 mapDeck                      src/18-mode-map.js:13
 mapNebula                    src/18-mode-map.js:62
 mapRail                      src/18-mode-map.js:17
+marketCtx                    src/12-economy.js:18
 marketFor                    src/12-economy.js:2
+marketPrice                  src/12-economy.js:38
+marketPriceCtx               src/12-economy.js:33
 MAT_CHAR                     src/18a-material.js:49
 MAT_S                        src/18a-material.js:34
 matCell                      src/18a-material.js:53
@@ -1619,7 +1637,7 @@ nameTell                     src/11u-names.js:32
 navAction                    src/15-input.js:262
 near                         tests/90-harness.js:29
 nearestPOI                   src/20a-poi.js:236
-nearestStation               src/12-economy.js:71
+nearestStation               src/12-economy.js:91
 NEB_COMP                     src/16a-space.js:119
 NEB_JOB                      src/16a-space.js:52
 NEB_MS                       src/16a-space.js:51
@@ -1672,6 +1690,7 @@ noise1                       src/01-core.js:29
 noise2                       src/01-core.js:32
 noise3                       src/24-mode-belt.js:7
 noiseBuf                     src/09-audio.js:65
+normsOf                      src/12ab-hold.js:71
 NPC_SHIPS                    src/03-ships.js:144
 OCC_CALM_MS                  src/13b-occupy.js:205
 OCC_LVL                      src/13b-occupy.js:20
@@ -2023,7 +2042,7 @@ prunePartsBought             src/14-save.js:33
 psPlanet                     tests/91zzzu-post-scenes.js:6
 psSnap                       tests/91zzzu-post-scenes.js:17
 ptr                          src/15-input.js:319
-putOnTable                   src/11b-speech.js:216
+putOnTable                   src/11b-speech.js:217
 QSL_BY                       src/11an-qsl.js:46
 QSL_OPS                      src/11an-qsl.js:24
 QSL_SPREAD                   src/11an-qsl.js:23
@@ -2227,7 +2246,7 @@ RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:29
 resAuto                      src/28-loop.js:114
 resEma                       src/28-loop.js:113
-resetArm                     src/26-ui-station.js:735
+resetArm                     src/26-ui-station.js:742
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
@@ -2408,13 +2427,13 @@ runTests                     tests/90-harness.js:80
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:96
 S2                           src/01-core.js:97
-SAVE_BUDGET                  src/14-save.js:103
+SAVE_BUDGET                  src/14-save.js:104
 SAVE_KEY                     src/14-save.js:6
-saveFatSaid                  src/14-save.js:104
+saveFatSaid                  src/14-save.js:105
 saveGame                     src/14a-cloud.js:38
-saveText                     src/14-save.js:125
-saveTop                      src/14-save.js:119
-saveWeigh                    src/14-save.js:106
+saveText                     src/14-save.js:126
+saveTop                      src/14-save.js:120
+saveWeigh                    src/14-save.js:107
 say                          src/08-state.js:184
 SCALE_KEYS                   src/10-music.js:25
 SCALES                       src/10-music.js:5
@@ -2478,8 +2497,9 @@ sdYard                       src/12tb-settle-draw2.js:410
 seamAdd                      src/12s-wear.js:179
 seamsAll                     src/12s-wear.js:178
 seamsOf                      src/12s-wear.js:180
-sellCargo                    src/12-economy.js:50
-sellDroneYield               src/12-economy.js:63
+sellCargo                    src/12-economy.js:65
+sellDroneYield               src/12-economy.js:83
+sellQuote                    src/12ab-hold.js:83
 setSt                        src/27z-telemetry.js:88
 SETTLE_BUILD                 src/12t-settle.js:31
 SETTLE_BY_K                  src/12t-settle.js:39
@@ -2635,8 +2655,8 @@ speciesBeast                 src/20e-species.js:234
 speciesPlant                 src/20e-species.js:40
 specimenBeast                src/20e-species.js:285
 specimenPlant                src/20e-species.js:134
-speechAll                    src/11b-speech.js:113
-speechHere                   src/11b-speech.js:115
+speechAll                    src/11b-speech.js:114
+speechHere                   src/11b-speech.js:116
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
 sprgba                       src/29i-spa-draw.js:22
@@ -2723,10 +2743,10 @@ STRIP_CHUNK                  src/07-planet.js:73
 STRIP_JOB                    src/07-planet.js:76
 STRIP_MS                     src/07-planet.js:72
 STRIP_PEND                   src/07-planet.js:78
-STRIPS_MAX                   src/11b-speech.js:187
-stripsAll                    src/11b-speech.js:188
-stripSell                    src/11b-speech.js:226
-stripValue                   src/11b-speech.js:189
+STRIPS_MAX                   src/11b-speech.js:188
+stripsAll                    src/11b-speech.js:189
+stripSell                    src/11b-speech.js:227
+stripValue                   src/11b-speech.js:190
 stSet                        src/14-save.js:14
 stTabFuse                    src/26b-ui-station-work.js:201
 stTabInstr                   src/26b-ui-station-work.js:108
@@ -2773,7 +2793,7 @@ tab                          src/26-ui-station.js:3
 TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
-TABLE_REPLY                  src/11b-speech.js:154
+TABLE_REPLY                  src/11b-speech.js:155
 tableBake                    src/27i-ui-table.js:107
 tableBlock                   src/27c-ui-hq.js:607
 tableIsOpen                  src/27i-ui-table.js:23
@@ -2803,7 +2823,7 @@ tapeRate                     src/25b-tape.js:75
 tapeSample                   src/25b-tape.js:54
 tapeScroll                   src/25b-tape.js:97
 tapeStrip                    src/25b-tape.js:187
-tapeTear                     src/11b-speech.js:192
+tapeTear                     src/11b-speech.js:193
 tapeTick                     src/25b-tape.js:79
 tapeUnpack                   src/25b-tape.js:39
 targetPos                    src/16-flight.js:121
@@ -2819,7 +2839,7 @@ TEST_SUITES                  tests/90-harness.js:113
 tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
-tickDrones                   src/12-economy.js:124
+tickDrones                   src/12-economy.js:144
 tickLaunchHold               src/21-mode-surface.js:597
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
@@ -2999,9 +3019,9 @@ vegaTick                     src/11w-vega.js:187
 vegaWish                     src/11w-vega.js:41
 VER                          src/01-core.js:4
 VER_ITER                     src/18d-verlet.js:23
-visitHere                    src/11b-speech.js:83
-visitMark                    src/11b-speech.js:87
-visitsAll                    src/11b-speech.js:82
+visitHere                    src/11b-speech.js:84
+visitMark                    src/11b-speech.js:88
+visitsAll                    src/11b-speech.js:83
 vLink                        src/18d-verlet.js:78
 voice                        src/09-audio.js:84
 VOICE_KEYS                   src/02a-worldmix.js:81
@@ -3360,6 +3380,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12aa-need.js · 17 КБ
   · нужда станции и наряд:1
 
+## src/12ab-hold.js · 8 КБ
+  · холдинг · часы слоя и «БЕРЁТ»:1
+
 ## src/12a-crew.js · 39 КБ
   · наёмники: флот, которым не управляешь напрямую:1
   · приказы:144
@@ -3379,9 +3402,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12d-mgr-face.js · 13 КБ
   · портреты управляющих:1
 
-## src/12-economy.js · 13 КБ
+## src/12-economy.js · 14 КБ
   · живой рынок:1
-  · дроны:70
+  · дроны:90
 
 ## src/12e-drone-flight.js · 17 КБ
   · дроны летают:1
@@ -3524,8 +3547,8 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/14-save.js · 57 КБ
   · сохранение:1
-  · запись не имеет права убить полёт:87
-  · пустая карта возвращается из облака СПИСКОМ:166
+  · запись не имеет права убить полёт:88
+  · пустая карта возвращается из облака СПИСКОМ:167
 
 ## src/15-input.js · 31 КБ
   · экранные кнопки: авто-скрытие и размер:1
@@ -3783,9 +3806,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26b-ui-station-work.js · 15 КБ
   · станция: мастерская и наука:1
 
-## src/26-ui-station.js · 50 КБ
+## src/26-ui-station.js · 51 КБ
   · станция:1
-  · настройки:734
+  · настройки:741
 
 ## src/27b-ui-crew.js · 15 КБ
   · экран экипажа:1
@@ -3975,6 +3998,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91x-finds.js · 6 КБ
   · автотесты: находки в пустоте:1
+
+## tests/91x-hold.js · 5 КБ
+  · автотесты: холдинг · часы слоя и аппетит станции (M290):1
 
 ## tests/91y-settle.js · 10 КБ
   · посёлок: дар, а не приказ:1
