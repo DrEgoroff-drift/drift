@@ -7,6 +7,26 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.303.0 - M306: the station body against the codex; the planet changes too
+
+The holding's «still open» line: the codex pass over the station body (DESIGN-holding §13 — the
+dump, the dome, the strip; baking the forms). The forms were baked in M304 (`stationArt`, one
+sprite with one light); what was missing was the planet's half of §13 and the verdict.
+
+- **The planet changes too** (`drawPlanetWorks`, `17e-station-body`, called after the night
+  lights in `17-mode-system`). Three signs on the day side of the first solid planet, each from
+  its own cause and none of them a figure: the **dump** — a pale double patch with a shadow on the
+  side away from the sun, when a family-A mine is built on rock (regolith, deep drill, dump works);
+  the **dome** — one bright point with a cold halo at the terminator, where a greenhouse or a
+  biostation catches low sun; the **strip** — a straight line where straight lines do not occur,
+  from rung 6 «Полоса». Screen coordinates over the cached disc, like the lights; nothing stored;
+  nothing under r 12 px.
+- **The hangar's cyan** (`17a-station-mod`): the dock's edge line and the welding flash were the
+  one accent with no source on the station; they are now the station's own warm light and a
+  cool grey edge. The verdict on the body is in `docs/ALMANAC.md`, issue I addendum II.
+- Suite `91zzza` (M306 block).
+
+---
 ## 0.302.0 - M305: the cave as a place — round rock, a back wall, and things that lie in it
 
 Three findings after M304 (PLAN «Graphics still open»): the cave was 75–83% empty by the meter

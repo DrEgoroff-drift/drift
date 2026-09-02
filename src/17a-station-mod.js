@@ -126,11 +126,11 @@ function drawStModule(q,S,skipRod){
     ctx.beginPath();ctx.rect(-8*s,-6*s,16*s,12*s);ctx.fill();ctx.stroke();
     ctx.fillStyle="#0a1018";
     ctx.beginPath();ctx.rect(-2*s,-5*s,9*s,10*s);ctx.fill();
-    ctx.strokeStyle="rgba(150,220,255,.4)";
+    ctx.strokeStyle="rgba(150,180,205,.32)";   /* створ без своего цвета: свет у станции один (M306) */
     ctx.beginPath();ctx.moveTo(7*s,-5*s);ctx.lineTo(7*s,5*s);ctx.stroke();
     /* сварка внутри дока вспыхивает */
     if(Math.sin(G.t*.4+q.ph)>.72){
-      ctx.fillStyle="rgba(190,240,255,.9)";
+      ctx.fillStyle="rgba(255,236,200,.9)";
       ctx.beginPath();ctx.arc(3*s,(Math.sin(q.ph*7)*2)*s,1.6*s,0,TAU);ctx.fill();
     }
   }else if(q.sh==="tank"){

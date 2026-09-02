@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 358 · символов верхнего уровня: 3307
+Файлов: 358 · символов верхнего уровня: 3308
 
 ## СИМВОЛЫ
 
@@ -722,6 +722,7 @@ drawPirate                   src/12i-pirate-hull.js:320
 drawPirateBase               src/24a-mode-raid.js:103
 drawPirateSkin               src/03d-hull-marks.js:99
 drawPlanetLights             src/17e-station-body.js:45
+drawPlanetWorks              src/17e-station-body.js:74
 drawPlant                    src/20-life.js:383
 drawPlantAlien               src/20-life.js:197
 drawPOI                      src/20a-poi.js:173
@@ -758,7 +759,7 @@ drawSurface                  src/21e-surface-draw.js:651
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:525
+drawSysHud                   src/17-mode-system.js:526
 drawSysNebula                src/16a-space.js:178
 drawSystem                   src/17-mode-system.js:299
 drawTemple                   src/20aa-poi-shapes.js:50
@@ -3763,10 +3764,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17d-house-shapes.js · 4 КБ
   · дома как язык форм:1
 
-## src/17e-station-body.js · 4 КБ
+## src/17e-station-body.js · 8 КБ
   · тело станции и планеты: что построил игрок, видно:1
 
-## src/17-mode-system.js · 39 КБ
+## src/17-mode-system.js · 40 КБ
   · режим: система:1
 
 ## src/18a-material.js · 21 КБ
@@ -4375,8 +4376,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzy-screens.js · 13 КБ
   · автотесты: экраны M299 — заголовки, подгляд карты, зал как ввод:1
 
-## tests/91zzza-cave-props.js · 2 КБ
+## tests/91zzza-cave-props.js · 4 КБ
   · пещера M305: гладкий обвод и содержимое:1
+  · станция и планета M306: знаки на дневной стороне:32
 
 ## tests/91zzza-trace.js · 5 КБ
 

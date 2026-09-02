@@ -1,7 +1,7 @@
-# Drift â work plan
+# Drift — work plan
 
 Living document: finished milestones collapse to a line, unfinished ones are spelled out.
-Links point at modules in `src/`, never at line numbers â numbers go stale after the first
+Links point at modules in `src/`, never at line numbers — numbers go stale after the first
 edit, module names don't.
 
 Written in English on purpose: this file is read almost every session, and English costs about
@@ -10,10 +10,10 @@ half the tokens. The game itself, its UI and its code comments stay Russian.
 ## Cross-cutting rules
 
 - **What does not move is painted once.** The frame's cost on canvas is raster, not JS (0.87
-  measurement: logic â¤4 ms in every mode; the surface ran at 23 fps because of fifteen full-screen
+  measurement: logic ≤4 ms in every mode; the surface ran at 23 fps because of fifteen full-screen
   fills under a 200-vertex clip, every frame). Anything static under a moving camera goes through
-  `18c-chunks`: world-X chunks (`chunkStore`/`drawChunks`) for long strips â ground, cave rock â
-  and `screenLayer(key, paint)` for screen-space constants â the star's glow, the storm veil. Before
+  `18c-chunks`: world-X chunks (`chunkStore`/`drawChunks`) for long strips — ground, cave rock —
+  and `screenLayer(key, paint)` for screen-space constants — the star's glow, the storm veil. Before
   adding a full-screen gradient, pattern or clipped fill to a draw path, ask whether it changes
   between frames; if not, it is a layer. `prof()` in the console (28-loop) tells where a frame goes,
   JS and raster apart; `prof(30,"drawGround")` tells what one function costs in raster.
@@ -29,7 +29,7 @@ half the tokens. The game itself, its UI and its code comments stay Russian.
   rarity, quality of hired hands and station type.
 - **A large new scene is a new `G.mode`** with its own `update*`/`draw*`, not a rework of an old one.
 - **Background activity is computed lazily** from `Date.now()-lastTick` with an offline cap. No
-  real-time simulation â the model is `tickDrones()` (`12-economy`).
+  real-time simulation — the model is `tickDrones()` (`12-economy`).
 - **After every milestone:** parse check, empty console, a manual scenario, loading an old save.
   Canvas screenshots are not trusted.
 - **Every drawn thing is held against the craft codex before it is called done** (author,
@@ -121,8 +121,8 @@ What the meter still says after it (lookAll, 1280×800, 10 frames):
 | дом | 3 | 4 | — | — | one cold pool per window is not yet a pair |
 | система | 8 | 25 | .20 | 4 | the station body is measured against a nebula; see «Open by design» |
 
-Left from the queue: the **galactic band's second step on the map** (item 6b); the **codex pass
-over the station** (§13: dump, dome, strip) now has a sprite to draw into.
+Left from the queue: the **galactic band's second step on the map** (item 6b) — M308. The codex
+pass over the station — M306.
 
 ### Graphics still open
 
@@ -188,13 +188,14 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M306** (0.303.0) — the station body held against §13 (verdict: holds, ALMANAC addendum II); the planet changes too — dump, dome, strip on the day side (`drawPlanetWorks`).
 - **M305** (0.302.0) — the cave as a place: round rock by smoothed marching squares, a back wall with a body, bones/ropes/tally/camp/branch-end finds; `docs/shot.py` for headless frames and meter numbers.
 - **M304** (0.301.0) — the picture queue as one release: cave to zone I–II with cold glazes baked into the tile, sky brush and `hueToward`, landing horizon and altitude zenith, home panels/boards/study window, station sprite with one light, base halo, rain on the ground.
 - **M303** (0.300.0) — playtest tails of 02.09: the cantina's ВЫСЛУШАТЬ works, station rumours persist as logged, the desk opens over a station (СТОЛ in the header), the home beacon undocks first, the desk lamp ignores grey and ether lines, the parrot's feather layer is sized by the bird box and the perch is off the screens.
 
 ## Done
 
-M1âM32 â the base game (see git history). M33 parts and total rig capacity Â· M34 ship screen with
+M1–M32 — the base game (see git history). M33 parts and total rig capacity · M34 ship screen with
 hull slots Â· M41 WebAudio sound engine Â· M42 generative music with beacons and reverb. Plus the
 split into modules and the `build.ps1` build.
 
@@ -207,14 +208,14 @@ M35 boarding a pirate base on polygons Â· M36 enemy types, consumables, mezzan
 
 Descriptions of finished milestones live in [`docs/PLAN-archive.md`](docs/PLAN-archive.md): they
 remain documentation of the decisions taken, but sit apart so this file can be read in one go.
-Here is only what is still live â cross-cutting rules, the visual queue and the milestone queue.
+Here is only what is still live — cross-cutting rules, the visual queue and the milestone queue.
 
 ---
 
 ### What not to do
 
 Depth of field, chromatic aberration, motion blur, lens dirt. In canvas 2D these either don't
-read, or read as a defect, and blur requires an offscreen redraw with a filter â expensive.
+read, or read as a defect, and blur requires an offscreen redraw with a filter — expensive.
 Vignette and colour shift already give almost the same thing.
 
 ### Rules that are easy to break
@@ -424,8 +425,8 @@ order (`12r-route`), «БЕРЁТ» (`12ab-hold`), site/hopper/`BLD` A–D (`12a
 (`12af-barge`), families E–I through `bldHas` (`12ag-holdfx`), the station body's first pass
 (`17e-station-body`), news/rumours/rival barges (`12ah-holdnews`).
 
-**Still open:** the codex pass over the station body (§13: the dump, the dome, the strip; baking
-the forms) waits for the author's eye on `/dev`. Deeds with no counter yet (pirate bases boarded,
+**Still open:** ~~the codex pass over the station body~~ — M306 (0.303.0): verdict holds, the
+planet's dump/dome/strip drawn. Deeds with no counter yet (pirate bases boarded,
 monuments, nodes) join the rung score when their hooks are written.
 
 

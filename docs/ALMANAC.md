@@ -234,6 +234,25 @@ the galactic band remains queued.
 
 ---
 
+## Issue I — addendum II, 2026-09-03 (0.303.0) — the station body, held against §13
+
+**Станция (тело, M304/M306).** The first exhibit of the addendum of 02.09 was an orange wire
+diagram. Held again after `stationArt`: **тело** ✓ — one dark plate under every module, modules
+filled by family (`ST_MOD_FILL`), rods under the hulls; **обвод** ✓ — one dark contour, the lit
+edge only on the star's half-plane; **один свет** ✓ — a single source-atop gradient from the
+star's direction over the whole assembly, the station's own lights the only light it makes. The
+last unsourced accent — the hangar's cyan edge and flash — is gone in 0.303.0. §13 «the planet
+changes too» is now drawn: dump, dome, strip on the day side (M306). What remains is content, not
+law: the modules still read as a set of parts on rods rather than a hull with parts; that is
+§18.6 territory and waits for the fleet's joint grammar (issue III). Verdict: holds.
+
+**Пещера (M305).** §16 — the far wall is now a zone-I body, the near rock zone II under the
+lamp; the cell-grid outline is gone (smoothed marching squares). Content: bones, ropes, tallies,
+a camp, branch-end finds. Meter at three spots: mass 11/20/5, empty 63/51/79. The lower lake
+hall is the honest remainder — a vault of 78 over a flat floor.
+
+---
+
 ## Reserved — issue III: the fleet
 
 Not written yet, because nothing is drawn yet. `DESIGN-holding.md` §18 designs the state fleet of

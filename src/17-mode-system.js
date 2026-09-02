@@ -422,6 +422,7 @@ function drawSystem(){
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,-1);
     planetDraw(p,x,y,r);
     if(typeof drawPlanetLights==="function")drawPlanetLights(sys,p,x,y,r);   /* огни ваших построек (M296) */
+    if(typeof drawPlanetWorks==="function")drawPlanetWorks(sys,p,x,y,r);     /* отвал, купол, полоса (M306) */
     if(p.ring&&r>5)drawRing(x,y,r,p.ring,1);
     /* конец света виден с орбиты (хвост M114): у обречённой планеты рыжий
        ореол, а когда срок вышел — серая пелена поверх диска и потухший цвет.

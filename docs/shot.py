@@ -35,12 +35,12 @@ setTimeout(function(){
   try{ %s }catch(e){ console.error("shot js: "+e); }
   for(var n=0;n<6;n++){ try{ frame(performance.now()+n*16); }catch(e){} }
   var pre=document.createElement("pre"); pre.id="out"; pre.style.display="none";
-  try{ pre.textContent = %s ? JSON.stringify(Object.assign({scene:%s, ver:VER}, lookFrame())) : "ok"; }
+  try{ var o={scene:%s, ver:VER}; if(%s)Object.assign(o,lookFrame()); if(%s)o.eval=(function(){return eval(%s);})(); pre.textContent=JSON.stringify(o); }
   catch(e){ pre.textContent = JSON.stringify({error:String(e)}); }
   document.body.appendChild(pre); document.title="SHOT_DONE";
 }, %d);
 </script>
-""" % (a.js or "", "true" if a.look else "false", json.dumps(scene), a.delay)
+""" % (a.js or "", json.dumps(scene), "true" if a.look else "false", "true" if a.eval else "false", json.dumps(a.eval or ""), a.delay)
     return html[:cut] + tail + "\n" + extra + "</body></html>"
 
 def main():
@@ -48,6 +48,7 @@ def main():
     ap.add_argument("scenes", nargs="+")
     ap.add_argument("--js", default="")
     ap.add_argument("--look", action="store_true")
+    ap.add_argument("--eval", default="", help="JS expression; its JSON goes into the output line")
     ap.add_argument("--out", default="")
     ap.add_argument("--w", type=int, default=1280)
     ap.add_argument("--h", type=int, default=800)
@@ -72,7 +73,7 @@ def main():
                     "--no-default-browser-check", "--virtual-time-budget=%d" % a.budget]
             subprocess.run(base + ["--screenshot=" + out, url], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
             line = "%s -> %s" % (sc, out)
-            if a.look:
+            if a.look or a.eval:
                 r2 = subprocess.run(base + ["--dump-dom", url], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
                 m = re.search(r'<pre id="out"[^>]*>(.*?)</pre>', r2.stdout or "", re.S)
                 line += "  " + (m.group(1) if m else "(no <pre id=out>)")

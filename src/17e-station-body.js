@@ -62,3 +62,59 @@ function drawPlanetLights(sys,p,x,y,r){
   }
   ctx.restore();
 }
+
+/* ── планета меняется тоже (M306, DESIGN-holding §13) ──
+   Огни на ночной стороне были, а дневная сторона молчала. Три знака, каждый
+   от своей причины и ни один — цифра: ОТВАЛ у шахты — бледное пятно на
+   дневной стороне (любая добыча семьи A с породы: реголит, бурение, отвальный
+   промысел); КУПОЛ оранжереи ловит солнце — одна яркая точка у терминатора с
+   холодным ореолом (оранжерея, биостанция); ПОЛОСА — прямая линия там, где
+   прямых не бывает, с рунга 6 «Полоса» (вы стояли на грунте). Всё в экранных
+   координатах поверх кэшированного диска, как и огни; ничего не хранится. */
+function drawPlanetWorks(sys,p,x,y,r){
+  if(!p||p.type==="gas"||r<12)return;
+  const first=(sys.planets||[]).find(q=>q.type!=="gas");
+  if(first!==p)return;
+  const H=G.hold&&G.hold[sys.key],B=H&&H.bld?H.bld:null;
+  const has=id=>!!(B&&B[id]&&(typeof bldReady!=="function"||bldReady(B[id])));
+  const dump=has("regolith")||has("deepdrill")||has("dumpworks");
+  const dome=has("greenhouse")||has("biostation");
+  const strip=(typeof rungOf==="function")&&rungOf(sys.sx,sys.sy)>=6;
+  if(!dump&&!dome&&!strip)return;
+  /* дневная сторона — к звезде; звезда системы в (0,0) */
+  let ux=-(p.x||0),uy=-(p.y||0);const ln=Math.hypot(ux,uy)||1;ux/=ln;uy/=ln;
+  const vx=-uy,vy=ux;                       /* вдоль лимба */
+  const rr=rng(hashi(p.seed,0x0D0E,7));
+  ctx.save();
+  ctx.beginPath();ctx.arc(x,y,r-1,0,TAU);ctx.clip();
+  if(dump){
+    const d=r*.52, ox=x+ux*d+vx*r*(rr()-.5)*.5, oy=y+uy*d+vy*r*(rr()-.5)*.5;
+    const ang=Math.atan2(vy,vx);
+    ctx.fillStyle="rgba(232,222,200,.30)";
+    ctx.beginPath();ctx.ellipse(ox,oy,r*.13,r*.06,ang,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(216,204,182,.34)";
+    ctx.beginPath();ctx.ellipse(ox+vx*r*.04,oy+vy*r*.04,r*.07,r*.035,ang+.3,0,TAU);ctx.fill();
+    /* тень отвала со стороны от солнца — пятно стало горкой */
+    ctx.fillStyle="rgba(0,0,0,.22)";
+    ctx.beginPath();ctx.ellipse(ox-ux*r*.035,oy-uy*r*.035,r*.11,r*.03,ang,0,TAU);ctx.fill();
+  }
+  if(strip){
+    const d=r*.34, sx=x+ux*d+vx*r*(rr()-.5)*.6, sy=y+uy*d+vy*r*(rr()-.5)*.6;
+    const a=Math.atan2(uy,ux)+(rr()-.5)*1.2, L=r*.16;
+    ctx.strokeStyle="rgba(236,232,220,.55)";ctx.lineWidth=Math.max(1,r*.012);ctx.lineCap="butt";
+    ctx.beginPath();ctx.moveTo(sx-Math.cos(a)*L,sy-Math.sin(a)*L);ctx.lineTo(sx+Math.cos(a)*L,sy+Math.sin(a)*L);ctx.stroke();
+  }
+  if(dome){
+    /* у терминатора: там купол ловит низкое солнце */
+    const a=Math.atan2(uy,ux)+(rr()<.5?1:-1)*(1.05+rr()*.25), d=r*.78;
+    const dx=x+Math.cos(a)*d, dy=y+Math.sin(a)*d;
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const g=ctx.createRadialGradient(dx,dy,0,dx,dy,r*.07);
+    g.addColorStop(0,"rgba(200,255,230,.55)");g.addColorStop(1,"rgba(200,255,230,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(dx,dy,r*.07,0,TAU);ctx.fill();
+    ctx.restore();
+    ctx.fillStyle="rgba(255,255,244,.95)";
+    ctx.beginPath();ctx.arc(dx,dy,Math.max(1.2,r*.014),0,TAU);ctx.fill();
+  }
+  ctx.restore();
+}
