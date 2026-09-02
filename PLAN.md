@@ -89,6 +89,31 @@ the day they are found; this is work that was deliberately not done, or that nee
   right for anything with a man-made light in it, and arguable for a desert at noon. Either scenes
   get per-kind targets or natural daylight is reported without a verdict.
 
+### Picture queue, re-ordered by the second look (2026-09-02, almanac issue I addendum)
+
+Nothing from issue I's picture queue moved between 0.278 and 0.295 — all of that stretch was
+interface and economy. Order below is by what the eye finds worst on the sheet today; laws in
+`docs/DESIGN-craft.md`, verdicts in `docs/ALMANAC.md`.
+
+1. **Cave shadows to zone II–III (§16).** The lamp pool is the only midtone; the rest sits in
+   zone 0–I and the grey rock outlines are the only structure. Lift ambient, cold fill from the
+   flora, keep the lamp the warm source.
+2. **Surface day: air band and a second hue (§13, §12).** The haze covers a third of the sheet
+   (`drawSkyBase`, H*.36) — narrow it to a brush; the far disc is the same olive as flora and
+   ground — give sky and disc their own hue (see the palette rule: mix around the wheel).
+3. **Landing: ground or a haze floor before 600 m (§16).** At 549 m the frame is one value of
+   blue edge to edge, no ground, no corridor. Either the silhouette enters earlier or the haze
+   ends. New item — issue I had marked the frame as holding.
+4. **Home interior furniture pattern (§11).** Unchanged flagship debt: blankets, panel seams,
+   floor tiles — ornament, not fake shading.
+5. **Station body: fill, shadow side, one light.** M296's first pass is an orange wire diagram
+   with cyan accents without a source; it fails «тело, обвод, один свет» before §18.6's checks.
+   Doing it opens almanac issue III.
+6. **Value steps (§16):** the rock around the base rooms is a flat wash; the galactic band on
+   the map needs its second step.
+7. **Small:** the white diagonals across the ground by the house (§14 — a line earns its place);
+   the sky-band width measurements (§13).
+
 ### Graphics still open
 
 - **The cave is 83% empty and it is now a CONTENT number, not a lighting one.** What it needs is
