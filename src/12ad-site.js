@@ -33,6 +33,12 @@ function holdDock(sys){
   const n=held();if(n>0)holdDeed(sys.sx,sys.sy,"cargo",n);
   const H=G.hold&&G.hold[sys.key];
   if(H&&H.bld)for(const id in H.bld)bldTick(sys.key,id);
+  /* лестница (M292): момент о том, что здесь теперь стоит; ★10 — у причала латают */
+  if(typeof rungMoments==="function")rungMoments(sys);
+  if(typeof rungHas==="function"&&rungHas(sys.sx,sys.sy,"cycle")){
+    const mx=stat().hullMax,add=Math.round(mx*.1);
+    if(G.hull<mx&&add>0){G.hull=Math.min(mx,G.hull+add);logAdd("dim","«"+sys.station.name+"», замкнутый цикл: корпус подлатали по-свойски · +"+add);}
+  }
 }
 /* ── очки и ступень (§6) ── */
 function rungPoints(sx,sy){
@@ -85,14 +91,23 @@ function rungGateTxt(sx,sy){
 }
 /* обращение у стойки по ступени (§8.1) */
 function rungAddress(r,sx,sy){
-  if(r>=30){const nm=G.names&&G.names[sx+","+sy];return nm?"с «"+nm+"»":"по имени";}
+  if(r>=30&&(sx===undefined||(typeof rungHas!=="function")||rungHas(sx,sy,"ring"))){const nm=G.names&&G.names[sx+","+sy];return nm?"с «"+nm+"»":"по имени";}
   return r>=25?"начальник трассы":r>=20?"начальник узла":r>=15?"начальник участка":r>=11?"монтажник":r>=5?"наблюдатель":"никак";
 }
 function bldSites(r){return r>=20?3:(r>=15?2:(r>=11?1:0));}
-function bldTierOpen(r,def){
-  if(def.fam==="D")return r>=(def.id==="slipway"?22:25);
-  if(def.fam==="C")return r>=20;
-  return r>=11;
+/* через ★ (M292): площадка — 11, вторая — 15, третья — 20; ярусы — 20 и 25, стапель — 22 */
+function bldSitesAt(sx,sy){
+  if(!rungHas(sx,sy,"site"))return 0;
+  return rungHas(sx,sy,"hub")?3:(rungHas(sx,sy,"site2")?2:1);
+}
+function bldTierOpenAt(sx,sy,def){
+  if(def.fam==="D")return rungHas(sx,sy,def.id==="slipway"?"slipway":"lines");
+  if(def.fam==="C")return rungHas(sx,sy,"hub");
+  return rungHas(sx,sy,"site");
+}
+function bldTierPlanTxt(def){
+  const i=rungIndex(def.fam==="D"?(def.id==="slipway"?"slipway":"lines"):(def.fam==="C"?"hub":"site"));
+  return rungRoman(rungPlanOf(i))+" пятилетке";
 }
 /* ── где можно ставить: тела системы и правило §10.1 ── */
 function sysHasFauna(sys){
@@ -127,16 +142,15 @@ function bldRuleWhy(sys,def){
   return bad.length?"здесь это и так делают: "+bad.map(k=>RES[k].ru.toLowerCase()).join(", "):"";
 }
 function bldWhy(sys,def){
-  const r=rungOf(sys.sx,sys.sy);
-  if(r<11)return"площадка ещё не открыта";
-  if(!bldTierOpen(r,def))return"ярус откроется на ступени "+(def.fam==="D"?(def.id==="slipway"?22:25):20);
+  if(!rungHas(sys.sx,sys.sy,"site"))return"площадка ещё не открыта";
+  if(!bldTierOpenAt(sys.sx,sys.sy,def))return"ярус откроется в "+bldTierPlanTxt(def);
   const H=G.hold&&G.hold[sys.key];
   if(H&&H.bld&&H.bld[def.id])return"уже стоит";
   const a=bldAtWhy(sys,def);if(a)return a;
   return bldRuleWhy(sys,def);
 }
 function bldBuiltHere(sys){const H=G.hold&&G.hold[sys.key];return H&&H.bld?Object.keys(H.bld):[];}
-function bldFreeSites(sys){return Math.max(0,bldSites(rungOf(sys.sx,sys.sy))-bldBuiltHere(sys).length);}
+function bldFreeSites(sys){return Math.max(0,bldSitesAt(sys.sx,sys.sy)-bldBuiltHere(sys).length);}
 /* список: что можно заложить здесь сейчас, и что нельзя — с причиной */
 function bldAvailable(sys){
   const ok=[],no=[];

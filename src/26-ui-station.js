@@ -347,6 +347,7 @@ function renderTabBody(){
     }
     if(typeof needBlock==="function")needBlock();         /* нужда и наряд (M152e) */
     if(typeof appetiteBlock==="function")appetiteBlock();  /* что станция берёт с надбавкой (M290) */
+    if(typeof rungBoardBlock==="function")rungBoardBlock();  /* пятилетка и что здесь стоит (M292) */
     if(typeof findsBlock==="function")findsBlock();       /* находки: институту или с рук (M152e) */
     if(typeof kitDepotBlock==="function")kitDepotBlock();   /* склад института: комплект (M152) */
     if(typeof vegaFleaBlock==="function")vegaFleaBlock();   /* дед с лотка (M153) */

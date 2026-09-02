@@ -241,6 +241,8 @@ function drawMap(){
       ctx.beginPath();ctx.arc(x,y,rr+6,0,TAU);ctx.stroke();}
     if(s.belt){ctx.strokeStyle="rgba(180,190,200,.3)";ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(x,y,rr+10,-.9,2.4);ctx.stroke();}
+    /* кольцо освоения (M292): с ★5, по сегменту на пятилетку, столбик огней по постройкам */
+    if(typeof drawRungRing==="function")drawRungRing(x,y,rr,gx,gy);
     ctx.globalAlpha=1;
     if(here){
       ctx.strokeStyle="rgba(127,230,216,"+(.5+.25*Math.sin(G.t*.06)).toFixed(2)+")";
@@ -327,7 +329,8 @@ function drawMap(){
       (dsel>st.jump+.02?"ВНЕ РАДИУСА — НУЖЕН ГИПЕРДРАЙВ":
        (onRoute?"ПРЫЖОК ПО МАРШРУТУ: ":"ПРЫЖОК: ")+cost+" топлива"+(cost>G.fuel?" — НЕ ХВАТАЕТ":""))]);
     L.push(["rgba(127,230,216,.55)",
-      "СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   "+dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк"]);
+      "СЕКТОР "+G.sel.x+":"+G.sel.y+"   ·   "+dsel.toFixed(2)+" из "+st.jump.toFixed(2)+" пк"+
+      ((typeof rungFootTxt==="function")?rungFootTxt(G.sel.x,G.sel.y):"")]);   /* пятилетка римской цифрой (M292) */
     if(typeof routeOf==="function"&&routeOf().legs.length>=1)
       L.push(["rgba(127,230,216,.75)",routeLine()]);
     Rr.push(["rgba(93,115,130,.85)","ТЕЛ "+G.found.size+" · ВИДОВ "+G.species.size+" · "+

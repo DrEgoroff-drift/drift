@@ -7,6 +7,28 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.289.0 - M292: the ladder visible
+
+Step 4 of the holding plan (`docs/DESIGN-holding.md` §8, §13). The number existed since M291;
+now it has names, and it can be seen.
+
+- **Thirty names in six five-year plans**, РАЗВЕДКА → КОЛЬЦО, each with one line of what now
+  stands. Six starred rungs carry an effect and are the only ones that do: Буй (5, the automat
+  answers on the air), Замкнутый цикл (10, docking patches the hull by a tenth for nothing),
+  Монтажная площадка (11), Литейный модуль (15, a second site), Промышленный узел (20, tier 2
+  and a third site), Узел трасс (25, tier 3), Кольцо (30, they hail you by the name you gave).
+  Every effect is read through one door, `rungHas`, and a test holds that each ★ is asked.
+- **The ring on the map** appears at Буй and grows by a segment per closed plan, a notch from
+  Рубеж, a column of amber lights beside it for the buildings. Stars merely flown through stay
+  bare. The footer gets the plan's Roman numeral and nothing more.
+- **Moments, not numbers.** On docking, what you climbed since last time is said once - the top
+  rung and every ★ passed, and «СИСТЕМА ПЕРЕШЛА В III ПЯТИЛЕТКУ — МОНТАЖ» at a plan's edge. The
+  word «ступень» is not used anywhere the player reads. The ДОСКА carries one line: name, plan,
+  what stands, how they call you here.
+- Sites and tiers now open through the ★ rungs rather than bare numbers, and a locked tier says
+  which plan opens it.
+- Tests: `91x-hold-ladder`.
+
 ## 0.288.0 - M291: the site, the hopper and the share
 
 Step 3 of the holding plan (`docs/DESIGN-holding.md` §3, §6, §9, §10). The author's sentence

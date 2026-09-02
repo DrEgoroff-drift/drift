@@ -7,7 +7,7 @@
 function renderSiteTab(){
   const sys=G.sys;if(!sys||!sys.station)return;
   const r=rungOf(sys.sx,sys.sy),pts=rungPoints(sys.sx,sys.sy);
-  const sites=bldSites(r),built=bldBuiltHere(sys),now=Date.now();
+  const sites=bldSitesAt(sys.sx,sys.sy),built=bldBuiltHere(sys),now=Date.now();
   $body.appendChild(el("div","sec","СТРОЙКА · "+(sites?"ПЛОЩАДОК "+sites+" · ЗАНЯТО "+built.length:"ПЛОЩАДКИ ЕЩЁ НЕТ")+
     " · ЗДЕСЬ ВАС ЗОВУТ: "+rungAddress(r,sys.sx,sys.sy).toUpperCase()));
   if(r<11){

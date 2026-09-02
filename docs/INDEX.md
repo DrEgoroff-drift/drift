@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 344 · символов верхнего уровня: 3199
+Файлов: 346 · символов верхнего уровня: 3216
 
 ## СИМВОЛЫ
 
@@ -26,7 +26,7 @@ $menu                        src/15-input.js:227
 $msg                         src/27z-telemetry.js:38
 $msl                         src/27z-telemetry.js:41
 $nav                         src/27z-telemetry.js:40
-$opts                        src/26-ui-station.js:723
+$opts                        src/26-ui-station.js:724
 $padsEl                      src/15-input.js:4
 $place                       src/27z-telemetry.js:37
 $sh                          src/27z-telemetry.js:8
@@ -48,7 +48,7 @@ actionKey                    src/15-input.js:144
 addPart                      src/05-parts.js:227
 addPath                      src/25-cockpit.js:154
 addRes                       src/11-log.js:132
-addrForm                     src/11b-speech.js:93
+addrForm                     src/11b-speech.js:94
 adjTo                        src/05-parts.js:23
 AFFIX                        src/05-parts.js:29
 AFFIX_BAD                    src/05-parts.js:46
@@ -208,36 +208,38 @@ BLD_FAM_KEYS                 src/12ac-bld.js:23
 BLD_KEYS                     src/12ac-bld.js:92
 BLD_SHIFTS                   src/12ac-bld.js:22
 bldAdd                       src/12ac-bld.js:25
-bldAtWhy                     src/12ad-site.js:102
-bldAvailable                 src/12ad-site.js:141
+bldAtWhy                     src/12ad-site.js:117
+bldAvailable                 src/12ad-site.js:155
 bldB                         src/12ac-bld.js:39
-bldBuiltHere                 src/12ad-site.js:138
-bldBuySrc                    src/12ad-site.js:275
+bldBuiltHere                 src/12ad-site.js:152
+bldBuySrc                    src/12ad-site.js:289
 bldC                         src/12ac-bld.js:63
-bldCanPay                    src/12ad-site.js:147
-bldCollect                   src/12ad-site.js:258
+bldCanPay                    src/12ad-site.js:161
+bldCollect                   src/12ad-site.js:272
 bldCostTxt                   src/12ac-bld.js:120
 bldD                         src/12ac-bld.js:83
-bldEntry                     src/12ad-site.js:187
-bldFeed                      src/12ad-site.js:232
-bldFreeSites                 src/12ad-site.js:139
+bldEntry                     src/12ad-site.js:201
+bldFeed                      src/12ad-site.js:246
+bldFreeSites                 src/12ad-site.js:153
 bldIoTxt                     src/12ac-bld.js:126
-bldLack                      src/12ad-site.js:152
-bldLay                       src/12ad-site.js:163
+bldLack                      src/12ad-site.js:166
+bldLay                       src/12ad-site.js:177
 bldOut                       src/12ac-bld.js:96
-bldPay                       src/12ad-site.js:158
+bldPay                       src/12ad-site.js:172
 bldQuota                     src/12ac-bld.js:95
-bldReady                     src/12ad-site.js:188
-bldRuleWhy                   src/12ad-site.js:123
+bldReady                     src/12ad-site.js:202
+bldRuleWhy                   src/12ad-site.js:138
 bldScale                     src/12ac-bld.js:94
-bldSellInd                   src/12ad-site.js:248
-bldSites                     src/12ad-site.js:91
-bldTick                      src/12ad-site.js:191
-bldTierOpen                  src/12ad-site.js:92
-bldUpgrade                   src/12ad-site.js:175
+bldSellInd                   src/12ad-site.js:262
+bldSites                     src/12ad-site.js:97
+bldSitesAt                   src/12ad-site.js:99
+bldTick                      src/12ad-site.js:205
+bldTierOpenAt                src/12ad-site.js:103
+bldTierPlanTxt               src/12ad-site.js:108
+bldUpgrade                   src/12ad-site.js:189
 bldUpgradeCost               src/12ac-bld.js:98
-bldWant                      src/12ad-site.js:220
-bldWhy                       src/12ad-site.js:129
+bldWant                      src/12ad-site.js:234
+bldWhy                       src/12ad-site.js:144
 BLOOM_CV                     src/19c-light.js:336
 BLOOM_K                      src/19c-light.js:337
 bloomPass                    src/19c-light.js:339
@@ -268,6 +270,7 @@ buildAi                      src/12f-mgr-ai.js:29
 builtHere                    src/21c-built.js:19
 builtKey                     src/21c-built.js:17
 builtSpot                    src/21c-built.js:44
+buoyEtherLine                src/12ae-ladder.js:122
 BUY_SPREAD                   src/12-economy.js:48
 buyCargo                     src/12-economy.js:54
 buyPriceFor                  src/12-economy.js:49
@@ -659,7 +662,7 @@ drawGlyph                    src/12t-settle.js:59
 drawGround                   src/19-mode-landing.js:109
 drawGroundCrumbs             src/19-mode-landing.js:269
 drawGroundGrass              src/19-mode-landing.js:282
-drawHoldMods                 src/12ad-site.js:338
+drawHoldMods                 src/12ad-site.js:352
 drawHomeIn                   src/29d-home-draw.js:9
 drawHomeOut                  src/21f-home-out.js:73
 drawHomeRoom                 src/27e-ui-home.js:42
@@ -695,6 +698,7 @@ drawRingTape                 src/11x-ring.js:107
 drawRoad                     src/27l-road-draw.js:87
 drawRocks                    src/19-mode-landing.js:315
 drawRouteMap                 src/12r-route.js:267
+drawRungRing                 src/12ae-ladder.js:73
 drawScoop                    src/19a-mode-scoop.js:171
 drawSeams                    src/12s-wear.js:181
 drawSkyBase                  src/19c-light.js:296
@@ -1120,13 +1124,13 @@ HOL_GREET                    src/11am-holiday.js:45
 HOLD_CAP_SHIFTS              src/12ad-site.js:21
 HOLD_SHIFT                   src/12ab-hold.js:23
 holdAll                      src/12ab-hold.js:35
-holdCapMul                   src/12ad-site.js:189
-holdDealList                 src/12ad-site.js:301
+holdCapMul                   src/12ad-site.js:203
+holdDealList                 src/12ad-site.js:315
 holdDeed                     src/12ad-site.js:25
 holdDock                     src/12ad-site.js:31
 holdDrawPile                 src/27j-ui-hold.js:151
-holdMods                     src/12ad-site.js:326
-holdNearestEater             src/12ad-site.js:287
+holdMods                     src/12ad-site.js:340
+holdNearestEater             src/12ad-site.js:301
 holDock                      src/11am-holiday.js:87
 holdOf                       src/12ab-hold.js:36
 holdPiece                    src/27j-ui-hold.js:26
@@ -1327,7 +1331,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:436
+jump                         src/18-mode-map.js:439
 jumpToBase                   src/21a-mode-base.js:315
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -1467,7 +1471,7 @@ lightsShutters               src/11g-lights.js:122
 lightsSuns                   src/11g-lights.js:102
 litRGB                       src/19c-light.js:125
 loadGame                     src/14a-cloud.js:56
-LOCAL                        src/11b-speech.js:100
+LOCAL                        src/11b-speech.js:101
 LOG_MAX                      src/11-log.js:11
 LOG_PAGE                     src/11-log.js:12
 logAdd                       src/11-log.js:15
@@ -2090,7 +2094,7 @@ prunePartsBought             src/14-save.js:33
 psPlanet                     tests/91zzzu-post-scenes.js:6
 psSnap                       tests/91zzzu-post-scenes.js:17
 ptr                          src/15-input.js:319
-putOnTable                   src/11b-speech.js:217
+putOnTable                   src/11b-speech.js:218
 QSL_BY                       src/11an-qsl.js:46
 QSL_OPS                      src/11an-qsl.js:24
 QSL_SPREAD                   src/11an-qsl.js:23
@@ -2295,7 +2299,7 @@ RES_AUTO                     src/08-state.js:54
 RES_KEYS                     src/02-world.js:79
 resAuto                      src/28-loop.js:114
 resEma                       src/28-loop.js:113
-resetArm                     src/26-ui-station.js:722
+resetArm                     src/26-ui-station.js:723
 resetWorld                   tests/90-harness.js:32
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
@@ -2472,11 +2476,24 @@ rumourSeedHere               src/11t-rumours.js:54
 rumoursHere                  src/11t-rumours.js:64
 rumourWhere                  src/11t-rumours.js:60
 runAutopilot                 src/16-flight.js:133
+RUNG_PLAN                    src/12ae-ladder.js:12
+RUNG_STARS                   src/12ae-ladder.js:45
 RUNG_T                       src/12ad-site.js:23
-rungAddress                  src/12ad-site.js:87
-rungGateTxt                  src/12ad-site.js:78
-rungOf                       src/12ad-site.js:62
-rungPoints                   src/12ad-site.js:38
+rungAddress                  src/12ad-site.js:93
+rungBoardBlock               src/12ae-ladder.js:113
+rungDef                      src/12ae-ladder.js:46
+rungFootTxt                  src/12ae-ladder.js:68
+rungGateTxt                  src/12ad-site.js:84
+rungHas                      src/12ae-ladder.js:51
+rungIndex                    src/12ae-ladder.js:49
+rungMoments                  src/12ae-ladder.js:92
+rungOf                       src/12ad-site.js:68
+rungOfCached                 src/12ae-ladder.js:60
+rungPlanOf                   src/12ae-ladder.js:47
+rungPoints                   src/12ad-site.js:44
+rungRingSegs                 src/12ae-ladder.js:57
+rungRoman                    src/12ae-ladder.js:48
+RUNGS                        src/12ae-ladder.js:13
 runTests                     tests/90-harness.js:81
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:96
@@ -2710,13 +2727,13 @@ speciesBeast                 src/20e-species.js:234
 speciesPlant                 src/20e-species.js:40
 specimenBeast                src/20e-species.js:285
 specimenPlant                src/20e-species.js:134
-speechAll                    src/11b-speech.js:114
-speechHere                   src/11b-speech.js:116
+speechAll                    src/11b-speech.js:115
+speechHere                   src/11b-speech.js:117
 SPHERE                       src/24-mode-belt.js:50
 SPHERE2                      src/24-mode-belt.js:51
 sprgba                       src/29i-spa-draw.js:22
 SRC_DISCOUNT                 src/12ad-site.js:22
-srcPrice                     src/12ad-site.js:271
+srcPrice                     src/12ad-site.js:285
 ST_GOLD                      src/17c-system-draw.js:117
 ST_GROUPS                    src/26-ui-station.js:69
 ST_MODULES                   src/17a-station-mod.js:14
@@ -2800,10 +2817,10 @@ STRIP_CHUNK                  src/07-planet.js:73
 STRIP_JOB                    src/07-planet.js:76
 STRIP_MS                     src/07-planet.js:72
 STRIP_PEND                   src/07-planet.js:78
-STRIPS_MAX                   src/11b-speech.js:188
-stripsAll                    src/11b-speech.js:189
-stripSell                    src/11b-speech.js:227
-stripValue                   src/11b-speech.js:190
+STRIPS_MAX                   src/11b-speech.js:189
+stripsAll                    src/11b-speech.js:190
+stripSell                    src/11b-speech.js:228
+stripValue                   src/11b-speech.js:191
 stSet                        src/14-save.js:14
 stTabFuse                    src/26b-ui-station-work.js:201
 stTabInstr                   src/26b-ui-station-work.js:108
@@ -2842,9 +2859,9 @@ SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
 SYS_EXOTIC                   src/16a-space.js:14
 sysDanger                    src/01-core.js:103
-sysHasFauna                  src/12ad-site.js:98
+sysHasFauna                  src/12ad-site.js:113
 sysJitter                    src/01-core.js:104
-sysMakes                     src/12ad-site.js:116
+sysMakes                     src/12ad-site.js:131
 sysNebulaTex                 src/16a-space.js:53
 sysPirateBase                src/24a-mode-raid.js:98
 sysStyle                     src/16a-space.js:21
@@ -2852,7 +2869,7 @@ tab                          src/26-ui-station.js:3
 TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
 TAB_LIVE                     src/14a-cloud.js:19
-TABLE_REPLY                  src/11b-speech.js:155
+TABLE_REPLY                  src/11b-speech.js:156
 tableBake                    src/27i-ui-table.js:107
 tableBlock                   src/27c-ui-hq.js:607
 tableIsOpen                  src/27i-ui-table.js:23
@@ -2882,7 +2899,7 @@ tapeRate                     src/25b-tape.js:75
 tapeSample                   src/25b-tape.js:54
 tapeScroll                   src/25b-tape.js:97
 tapeStrip                    src/25b-tape.js:187
-tapeTear                     src/11b-speech.js:193
+tapeTear                     src/11b-speech.js:194
 tapeTick                     src/25b-tape.js:79
 tapeUnpack                   src/25b-tape.js:39
 targetPos                    src/16-flight.js:121
@@ -3078,9 +3095,9 @@ vegaTick                     src/11w-vega.js:187
 vegaWish                     src/11w-vega.js:41
 VER                          src/01-core.js:4
 VER_ITER                     src/18d-verlet.js:23
-visitHere                    src/11b-speech.js:84
-visitMark                    src/11b-speech.js:88
-visitsAll                    src/11b-speech.js:83
+visitHere                    src/11b-speech.js:85
+visitMark                    src/11b-speech.js:89
+visitsAll                    src/11b-speech.js:84
 vLink                        src/18d-verlet.js:78
 voice                        src/09-audio.js:84
 VOICE_KEYS                   src/02a-worldmix.js:81
@@ -3453,8 +3470,11 @@ zooTick                      src/11ad-zoo.js:41
   · жалованье, долг и мораль:423
   · встреча в космосе:552
 
-## src/12ad-site.js · 17 КБ
+## src/12ad-site.js · 18 КБ
   · холдинг · площадка, бункер и пай:1
+
+## src/12ae-ladder.js · 9 КБ
+  · холдинг · лестница видимая:1
 
 ## src/12b-crew-events.js · 17 КБ
   · наёмники: рейс как раздача карт:1
@@ -3874,9 +3894,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/26c-ui-station-site.js · 8 КБ
   · станция · вкладка СТРОЙКА (ВЛАДЕНИЯ):1
 
-## src/26-ui-station.js · 49 КБ
+## src/26-ui-station.js · 50 КБ
   · станция:1
-  · настройки:721
+  · настройки:722
 
 ## src/27b-ui-crew.js · 15 КБ
   · экран экипажа:1
@@ -4069,6 +4089,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91x-hold.js · 5 КБ
   · автотесты: холдинг · часы слоя и аппетит станции (M290):1
+
+## tests/91x-hold-ladder.js · 3 КБ
+  · автотесты: холдинг · лестница видимая (M292):1
 
 ## tests/91x-hold-site.js · 11 КБ
   · автотесты: холдинг · постройки, площадка, бункер (M291):1

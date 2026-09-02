@@ -1154,7 +1154,13 @@ prices), `12ad-site` (rung from counters with gates, sites by rung, the hopper, 
 collecting, промысел stock at 0.7×, industrial goods into a shop, nearest eater, ДЕЛО rows, the
 built body), `26c-ui-station-site` (СТРОЙКА under ВЛАДЕНИЯ); 46 `ind` keys in RES; `SMELT` and the
 smelt tab deleted. Deeds not yet counted (no counter exists): pirate bases boarded, monuments,
-nodes — they join the score when their hooks are written. Next: **step 4, the ladder visible.**
+nodes — they join the score when their hooks are written.
+
+**M292 (0.289.0) — step 4 built 2026-09-02:** `12ae-ladder` — RUNGS (30 names, six ★),
+`rungHas` as the one door to an effect with a test that every ★ is asked, the ring on the map by
+five-year plans with the lights column, the Roman numeral in the footer, moments at docking, the
+board's line, the buoy's ether line; ★10 patches the hull at docking. Next: **step 5, measure**
+(`91zzw` «холдинг» against §16), then the barge.
 
 ## Small tails from almanac issue II
 
