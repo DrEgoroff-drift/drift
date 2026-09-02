@@ -83,9 +83,12 @@ walkthrough). Order, each step shippable on its own:
    line with hop dots, rumour fits you + circle instead of panning away.
 3. **Cantina as hotspots** (§3): the room is the input, below it only the tapped hotspot; one
    person-card component for cantina/HQ/crew/folk; table answers via the barkeep's bubble.
-4. **Board triage** (§2): three lanes К ВАМ / ЗДЕСЬ / ДАЛЕКО, cards of two lines and one verb,
+4. **Headings and layout** (§1a): `.sec` for H2 only, `.note` for explanation (one line, first
+   visit, then a «?» chip), sentence case for card titles, numbers out of prose, length caps
+   24/40/55 asserted by the station-tab autotest.
+5. **Board triage** (§2): three lanes К ВАМ / ЗДЕСЬ / ДАЛЕКО, cards of two lines and one verb,
    seven above the fold, newness dot.
-5. Identify the ship circling the station in the game (§5) — barge, «Сорок-два» or an orbit
+6. Identify the ship circling the station in the game (§5) — barge, «Сорок-два» or an orbit
    capture — and give it a visible cycle or a spoken reason.
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)

@@ -39,7 +39,7 @@ Laws that hold on all five:
 
 1. **One primary verb**, bottom-right, thumb zone. Secondary verbs sit in the row they belong to.
    A verb that cannot fire now is not drawn (the M298 rule for the console, extended to lists).
-2. **A row is title · one line · one verb.** No instructional prose in rows. The *why* of a
+2. **A row is title · one line · one verb.** No instructional prose in rows (layout in §1a). The *why* of a
    mechanic is said once, on the first visit, as a single line under the section head, then never.
 3. **A press changes its own row.** The verb goes, the result comes in the same row in the
    speaker's colour, the row glows for a second, a sound plays. The result *stays* as a record
@@ -53,6 +53,95 @@ Laws that hold on all five:
 7. **Two things with the same name are one thing.** Today «слух» is both the board's rumour
    (`rumoursHere`, a place with a miss) and the table's ether line (`newsAll`). The board keeps
    «слух»; the table row becomes «НОВОСТЬ ИЗ ЭФИРА».
+
+## 1a. Layout and headings — why the long screens read as one grey mass
+
+Measured on the board and the cantina (`26-ui-station`, `27c-ui-hq`, `11*`): 64 section headings,
+median 63 characters, longest 141, all in 10 px caps. At 393 px that is three lines of caps per
+heading. And `.sec` does two jobs — it is the heading class *and* the class of every explanatory
+paragraph («Здесь сидят управляющие: такой берёт домен целиком…»). A paragraph set as a heading
+looks like a heading; the eye cannot find where a section starts, so the page has no starts at
+all. That is the "лонгрид, читаешь нелогично" of the playtest.
+
+Three more habits stack on it: headings chain three things with «·» (name · explanation · count:
+«У СТОЙКИ · КОГО МОЖНО НАНЯТЬ · МЕСТ 2 / 4»); card titles are the only large text (14 px), so
+cards shout louder than the sections that hold them; and rows carry two-to-four-sentence prose in
+11 px under the title.
+
+### Levels — three, and no fourth
+
+| level | what | style | length cap |
+|---|---|---|---|
+| H1 | the place (station name, HQ, the room) | as now, top of the screen | — |
+| H2 | a lane or section (К ВАМ, У СТОЙКИ, ДАЛЕКО) | 10 px caps, letter-spaced, muted | **3 words / 24 chars** |
+| H3 | a card title (a person, a rumour, a need) | 14 px, **sentence case**, full text colour | **1 line / 40 chars** |
+
+Anything that is not one of these is body: 11 px, sentence case, muted, and never wider than
+one line unless the card is expanded.
+
+### Rules
+
+1. **A heading names, it does not explain.** No sentence in an H2, no «·» chain. Counts go to the
+   right edge as a separate muted figure (`У СТОЙКИ            2/4`), not into the words.
+2. **Explanation is a `.note`, never a `.sec`.** New class: 11 px, sentence case, muted, one
+   line (≈55 characters at 393 px). One note per section at most, shown on the first visit to
+   that section and then folded behind a «?» chip on the heading. The two-paragraph "how it
+   works" texts move behind the chip whole; the row never carries them.
+3. **Caps budget: H2 and buttons only.** Card titles, notes, answers, quotes are sentence case.
+   Russian caps in a mono face are the slowest thing on the page; spend them on navigation.
+4. **One line under a title in the collapsed card.** Title · one line · verb. The second tap
+   expands the card in place; that is where the traits, the story text and the numbers live.
+5. **Numbers leave the sentence.** «уровень 2 · до следующего 65 оп · доля 3.0% · оклад 68
+   кр/мин из доли» becomes a right-aligned figures block under the fold, tabular, one figure per
+   line with its unit. Prose keeps only the words («дела ровно», «холодно»).
+6. **Lanes are separated by space, sections by headings.** Between the three lanes of the board a
+   hairline and 32 px; between sections inside a lane the existing 22 px. Two spacings, no more.
+7. **Verbs on buttons: verb first, two words.** НА КАРТУ, НАНЯТЬ, НАЗВАТЬ, ОСТАТЬСЯ. A price may
+   follow as the second segment («НАНЯТЬ · 4 200 кр»); an explanation never does.
+8. **Colour is hierarchy, not decoration.** H2 muted, H3 full text, note muted, a spoken answer
+   in the speaker's colour, gold for money and the one primary verb. Nothing else is coloured.
+9. **The heading test.** Cover everything but the headings; the page must still say what is on it.
+   Today the board's headings read «ТОПЛИВО / ОЧЕРЕДЬ У СТОЙКИ / У СТОЙКИ СЛУШАЮТ / ВЕЗЁТЕ / ЧТО
+   ПРЕДЛАГАЮТ / ДЕЛА ЗДЕСЬ / МЕТЕОСТАНЦИЯ…» thirty times with no grouping. After: «К ВАМ / ЗДЕСЬ
+   / ДАЛЕКО», each with two-to-four short H2s under it.
+
+### Before → after
+
+```
+before   .sec  О ЧЁМ ЗДЕСЬ ГОВОРЯТ · МЕСТА, КОТОРЫХ НЕТ НИ НА ОДНОЙ КАРТЕ
+         .row  ни метки, ни стрелки не будет: слух — это адрес с промахом и человек,
+               которому вы либо верите, либо нет. Записан в тетрадь, страница ЛЮДИ
+         .row  Свёрток, который передают из рук в руки полвека
+               Искать у сектора -3:0, в 3 секторах вокруг · отсюда 3 сектора, примерно 1 прыжок
+               со слов: буфетчица — у рассказчика дрожали руки              [НА КАРТУ]
+
+after    H2    СЛУХИ                                                  2   (?)
+         note  адрес с промахом; метки на карте не будет            (first visit only)
+         H3    Свёрток, который полвека передают из рук в руки
+               сектор −3:0 · 3 сектора · 1 прыжок                          [НА КАРТУ]
+         ▸     со слов буфетчицы — у неё дрожали руки                (second tap)
+```
+
+```
+before   .sec  У СТОЙКИ · КОГО МОЖНО НАНЯТЬ · МЕСТ 2 / 4
+         .sec  Здесь сидят управляющие: такой берёт домен целиком — звено, базы, маршрут
+               или лабораторию, — а не приказ на один рейс. Дороже наёмника втрое и берёт
+               долю с того, что приносит его домен, зато рутину держит сам. …
+
+after    H2    У СТОЙКИ                                              2/4   (?)
+         H3    Луий                                     командир звена
+               немногословный · хорош там, где опасно        [РАССПРОСИТЬ] [НАНЯТЬ · 4 200 кр]
+```
+
+### In code
+
+- `.sec` stays for H2 only; every explanatory `el("div","sec",…)` becomes `el("div","note",…)`
+  and is shortened to one line or moved behind the «?» chip (`secHead(title,count,note)` helper:
+  renders the heading, the count, the chip, and the note on first visit via a `G.seen[key]` flag).
+- `.nm b` drops caps where it has them; `.nm s` keeps 11 px but the row builder refuses a second
+  `<s>` line unless the card is expanded.
+- The 40/24/55-character caps are asserted in the autotest that walks every station tab
+  (`28y-look` scene list): a heading over the cap fails the build the way a size guard does.
 
 ## 2. PLACE — the station hub
 
