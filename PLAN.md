@@ -71,6 +71,23 @@ of *things*), not a target about light.
 **Five passes for a THING.** A thing is finished only with all five; three or fewer and it reads
 as a placeholder:
 
+## Next — M299 screens pass (phone playtest 2026-09-02)
+
+Spec: `docs/DESIGN-screens.md` (five surfaces, seven laws, the hypotheses memo re-examined, a
+walkthrough). Order, each step shippable on its own:
+
+1. **Bugs first** (§8): НА КАРТУ from the board opens the map under the station overlay (peek
+   mode: hide `$st`, НАЗАД returns); two naming features read as one (ИМЯ СИСТЕМЫ off the
+   board, input for ВАШЕ ИМЯ); folk regulars (РЫБА) unlabelled; empty table rows render.
+2. **Map** (§4): you ≠ selected in colour and mark, drag pans, «К СЕБЕ» when off-screen, route
+   line with hop dots, rumour fits you + circle instead of panning away.
+3. **Cantina as hotspots** (§3): the room is the input, below it only the tapped hotspot; one
+   person-card component for cantina/HQ/crew/folk; table answers via the barkeep's bubble.
+4. **Board triage** (§2): three lanes К ВАМ / ЗДЕСЬ / ДАЛЕКО, cards of two lines and one verb,
+   seven above the fold, newness dot.
+5. Identify the ship circling the station in the game (§5) — barge, «Сорок-два» or an orbit
+   capture — and give it a visible cycle or a spoken reason.
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed
