@@ -432,8 +432,8 @@ monuments, nodes) join the rung score when their hooks are written.
 
 - ~~Target chips against the ether bar~~ — measured since M302 (`91zzy-screens`).
 - ~~The 44 px sweep over every screen~~ — written in M302 (`91zzy-screens`), both layouts.
-- «В ДОРОГУ» was never argued into the five doors of the M151a design: justify it on the record or
-  remove it.
+- ~~«В ДОРОГУ» in the five doors~~ — argued on the record 2026-09-03 (`DESIGN-road.md`, Built §4);
+  the door stays.
 
 ## Decisions taken on the author's behalf, so they are not re-litigated
 

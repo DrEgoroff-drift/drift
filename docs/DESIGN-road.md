@@ -66,6 +66,13 @@ All of it is reachable from the existing single-file web game on a phone browser
 3. **Speed sanity as the anti-cheat**: 3–300 km/h counts (standing and planes do not), the
    daily cap does the rest.
 
+4. **The door in the drawer (settled 2026-09-03, author: «оно уже реализовано»).** «В ДОРОГУ»
+   stays one of the five doors beside КОРАБЛЬ · ДЕЛО · СТОЛ · НАСТРОЙКИ. On the record: the
+   companion is a mode the player enters by hand at a moment the game cannot predict (getting
+   into a car), so it needs a door as reachable as the desk — not a setting, and not a page on
+   the site, because it shares the live save. The count is five again since ЭКИПАЖ and ШТАБ
+   merged, so M151a's number holds.
+
 What the screen does: the player's own hull large (same `drawHull`, banked by the gyroscope,
 shaken by the road, flames by speed), stars streaming by speed, the cosmic figure
 (90 km/h × 1 000 000 → «25 000 км/с»), the trip in millions of km, the ice counter, a
