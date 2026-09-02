@@ -78,6 +78,7 @@ function snapshot(){
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,
+    rumLogged:G.rumLogged||"",   /* слухи станции уже записаны в тетрадь (11t): без этого после каждой загрузки они ложились снова */
     tableSeen:G.tableSeen|0,
     /* главный квест: возможности живут недолго, а память людей и тетрадь —
        навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
@@ -424,6 +425,7 @@ function applySave(s){
   G.loreMarks=Array.isArray(s.loreMarks)?s.loreMarks.filter(m=>m&&typeof m==="object"):[];
   /* дела кантины: отвеченные и те, чей исход ещё не пришёл */
   G.dealsDone=asMap(s.dealsDone);
+  G.rumLogged=typeof s.rumLogged==="string"?s.rumLogged:"";
   G.dealsWait=Array.isArray(s.dealsWait)?s.dealsWait:[];
   /* репутация: своя у каждой станции, только от поступков */
   G.rep=asMap(s.rep);

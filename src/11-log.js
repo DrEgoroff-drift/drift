@@ -18,7 +18,11 @@ function logAdd(kind,text){
   if(G.log.length>LOG_MAX)G.log.splice(0,G.log.length-LOG_MAX);
   const open=typeof tableIsOpen==="function"&&tableIsOpen();
   if(open&&typeof tableRender==="function")tableRender();
-  else{
+  /* огонёк и счётчики закладок считают новости, а не всё подряд: серые строки
+     (стыковка, сближение, маяк) и эфир — не новость. Эфир и есть уведомление,
+     он идёт на приёмник живьём; тетрадь его только помнит. Иначе стол горел
+     всегда и огонёк переставал быть сигналом (плейтест 02.09) */
+  else if(kind!=="dim"&&kind!=="ether"){
     G.logNew=(G.logNew|0)+1;
     const p=logPageOf(kind);
     G.logNewBy=G.logNewBy||{};G.logNewBy[p]=(G.logNewBy[p]|0)+1;
@@ -66,6 +70,10 @@ function logBtnLabel(){
   /* точка на кнопке МЕНЮ: ящик закрыт, а на столе что-то новое */
   const mb=document.getElementById("menubtn");
   if(mb)mb.classList.toggle("on",!!n);
+  /* та же фишка на СТОЛе в шапке станции */
+  const sd=document.getElementById("stDesk");
+  if(sd){const e=sd.querySelector("em")||sd;e.textContent="СТОЛ";
+    if(n){const i=document.createElement("i");i.textContent=n>99?"99+":n;e.appendChild(i);}}
 }
 /* страница тетради: строки выбранной закладки, новые — сверху */
 function renderLog(page){

@@ -166,7 +166,14 @@ function cantDealRow(d,full){
   };
   c.appendChild(el("div","nm","<b style='color:#f2b25c'>"+D.ru+"</b><s>"+d.name+" · "+D.who+"</s>"+
     (full?"<s style='color:#cfe3ea;line-height:1.8'>— "+D.text+"</s>":"")));
-  if(!full){const b=el("button","act sm","ВЫСЛУШАТЬ");b.onclick=c.onclick;c.appendChild(b);}
+  if(!full){
+    /* своя ручка, а не ссылка на ручку строки: та отбрасывает нажатия по кнопкам
+       (чтобы ответы внутри карточки не сворачивали её) — и отбрасывала саму
+       ВЫСЛУШАТЬ. Плейтест 02.09: «нажимаешь — ничего не происходит» */
+    const b=el("button","act sm","ВЫСЛУШАТЬ");
+    b.onclick=()=>{cantSel="deal:"+d.key;sfx("ui");renderTab();};
+    c.appendChild(b);
+  }
   $body.appendChild(c);
   if(full){
     const rr=el("div","row");

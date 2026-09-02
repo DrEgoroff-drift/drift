@@ -133,8 +133,8 @@ function mailDock(){
         /* пришёл ход — кладём его в партию этой же цепочки (M192) */
         if(r.mv&&typeof chessTake==="function")chessTake(String(r.ch),r.mv);
       }
-      logAdd("good","Ответ на карточку"+(j.in.length>1?" ×"+j.in.length:""));
-      tell("good","Пришёл ответ на карточку","ПРИШЁЛ ОТВЕТ\nстопка на столе");
+      /* одна строка на событие: раньше tell писал вторую (плейтест 02.09) */
+      tell("good","Пришёл ответ на карточку"+(j.in.length>1?" ×"+j.in.length:""),"ПРИШЁЛ ОТВЕТ\nстопка на столе");
       if(tableOpenNow)tableRender();
     }
   });

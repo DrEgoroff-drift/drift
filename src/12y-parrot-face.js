@@ -262,6 +262,7 @@ function parFoot(c,x,dir,grip,up){
 }
 /* ══ сама птица ══ (0,0) — жёрдочка под лапами */
 function parrotDraw(c,W,H){
+  if(!(W>0&&H>0))return;   /* канва нулевого размера (окно скрыто) — drawImage падает */
   const T=PAR.t;
   const breathe=Math.sin(T*1.35)*1.6, sway=Math.sin(T*.62)*2.0;
   const flap=PAR.flap, lift=PAR.hop;
@@ -324,7 +325,10 @@ function parrotDraw(c,W,H){
   c.scale(tc<0?-Math.max(.34,-tc):Math.max(.34,tc),1);
 
   /* оперение — на своей канве: один свет кладётся на всё разом */
-  const L=parLayer(W,H,kpx);
+  /* слой — по коробке птицы (230×304 единиц вокруг жёрдочки), а не по канве
+     окна: в маленьком окне (M151a: 138×104) слой резал голову и крылья, и
+     птица выходила «обрезанной» (плейтест 02.09) */
+  const L=parLayer(230,304,kpx);
   const g=L.g;
   const beads=[];                      /* огни собираем и зажигаем после света */
   g.save();g.translate(L.ox,L.oy);
@@ -698,7 +702,9 @@ function toggleParrotWin(open){
     const t=document.getElementById("parrotname");
     if(t&&G.parrot)t.textContent="ТРЕПЛО «"+G.parrot.name.toUpperCase()+"»";
     const cv=document.getElementById("parrotcv");
-    if(cv){cv.width=cv.clientWidth*PAR_DPR;cv.height=cv.clientHeight*PAR_DPR;PAR_L=null;}
+    if(cv){cv.width=cv.clientWidth*PAR_DPR;cv.height=cv.clientHeight*PAR_DPR;PAR_L=null;
+      /* окно спрятано правилом экрана (body.screen) — размера нет, открывать нечего */
+      if(!cv.width||!cv.height){parWin=false;w.classList.remove("open");return;}}
     const el=document.getElementById("parrotsay");
     if(el)el.textContent=G.parrot?("из вещей "+G.parrot.who):"";
     parT0=performance.now();parRAF=requestAnimationFrame(parrotFrame);

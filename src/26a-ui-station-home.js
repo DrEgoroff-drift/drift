@@ -46,7 +46,13 @@ function renderBasesTab(st){
       const hc=homeBeaconCost();
       hb.textContent="МАЯК ДОМОЙ · "+hc.toLocaleString("ru")+" КР";
       hb.disabled=G.credits<hc||(G.sx===G.home.sx&&G.sy===G.home.sy);
-      hb.addEventListener("click",()=>{if(homeBeacon()){closeStation();renderTab();}});
+      /* маяк работает из полёта, а кнопка стоит на станции: сперва отстыковка, потом
+         маяк. Раньше было наоборот — маяк отказывал «только из полёта по системе»,
+         и игрок не понимал, из какого полёта (плейтест 02.09) */
+      hb.addEventListener("click",()=>{
+        if(G.mode==="dock"){closeStation();if(G.mode==="dock")return;}
+        if(homeBeacon())renderTab();
+      });
       hr.appendChild(hb);
       $body.appendChild(hr);
       /* ── что дом умеет: по одной строке на ступень, и только на ту, что есть.

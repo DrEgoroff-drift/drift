@@ -752,6 +752,15 @@ body.screen #console{opacity:1}
 #perch{-webkit-appearance:none;pointer-events:auto;background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);
   width:52px;height:52px;padding:4px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
 #perch canvas{width:44px;height:44px}
+/* на экранах пульт садится в полосу заголовка, и жёрдочка там рисовалась
+   кубиком рядом с именем станции — а окно на экранах закрыто, и нажатие
+   давало канву нулевого размера (плейтест 02.09). Птица — вещь полёта */
+body.screen #perch{display:none}
+/* СТОЛ в шапке станции: тетрадь открывается поверх станции, без отстыковки;
+   фишка — как в меню, «сколько пришло» */
+.scr header #stDesk{flex:0 0 auto;margin-left:12px;align-self:center}
+.scr header #stDesk i{font-style:normal;color:var(--void);background:var(--amber);
+  margin-left:7px;padding:1px 5px;border-radius:8px;font-size:9px}
 
 /* ── окно трепла ──
    M151a убрала три плавающих окна (журнал, отчёт, трепло) и вычистила их
@@ -1337,6 +1346,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 <div class="scr" id="station">
   <header>
     <div class="ttl"><b id="stName">—</b><s id="stKind">—</s></div>
+    <button class="act sm" id="stDesk" aria-label="стол"><em>СТОЛ</em></button>
     <div class="wallet"><em id="wCr">0 кр</em><i id="wDt">0 данных</i></div>
   </header>
   <nav class="groups" id="stGroups"></nav>
@@ -1469,7 +1479,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.299.0";
+const VER="0.300.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -12545,7 +12555,11 @@ function logAdd(kind,text){
   if(G.log.length>LOG_MAX)G.log.splice(0,G.log.length-LOG_MAX);
   const open=typeof tableIsOpen==="function"&&tableIsOpen();
   if(open&&typeof tableRender==="function")tableRender();
-  else{
+  /* огонёк и счётчики закладок считают новости, а не всё подряд: серые строки
+     (стыковка, сближение, маяк) и эфир — не новость. Эфир и есть уведомление,
+     он идёт на приёмник живьём; тетрадь его только помнит. Иначе стол горел
+     всегда и огонёк переставал быть сигналом (плейтест 02.09) */
+  else if(kind!=="dim"&&kind!=="ether"){
     G.logNew=(G.logNew|0)+1;
     const p=logPageOf(kind);
     G.logNewBy=G.logNewBy||{};G.logNewBy[p]=(G.logNewBy[p]|0)+1;
@@ -12593,6 +12607,10 @@ function logBtnLabel(){
   /* точка на кнопке МЕНЮ: ящик закрыт, а на столе что-то новое */
   const mb=document.getElementById("menubtn");
   if(mb)mb.classList.toggle("on",!!n);
+  /* та же фишка на СТОЛе в шапке станции */
+  const sd=document.getElementById("stDesk");
+  if(sd){const e=sd.querySelector("em")||sd;e.textContent="СТОЛ";
+    if(n){const i=document.createElement("i");i.textContent=n>99?"99+":n;e.appendChild(i);}}
 }
 /* страница тетради: строки выбранной закладки, новые — сверху */
 function renderLog(page){
@@ -19538,7 +19556,7 @@ function homeBeacon(){
   if(!homeCanRevive())return false;
   const cost=homeBeaconCost();
   if(G.credits<cost){say("Маяк домой\nнужно "+cost.toLocaleString("ru")+" кр");return false;}
-  if(G.mode!=="system"){say("Маяк домой\nтолько из полёта по системе");return false;}
+  if(G.mode!=="system"){say("Маяк домой\nтолько из полёта по системе — сперва отстыкуйтесь");return false;}
   G.credits-=cost;
   G.sx=G.home.sx;G.sy=G.home.sy;G.sys=getSystem(G.sx,G.sy);
   G.ship.x=900;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;
@@ -27513,6 +27531,7 @@ function parFoot(c,x,dir,grip,up){
 }
 /* ══ сама птица ══ (0,0) — жёрдочка под лапами */
 function parrotDraw(c,W,H){
+  if(!(W>0&&H>0))return;   /* канва нулевого размера (окно скрыто) — drawImage падает */
   const T=PAR.t;
   const breathe=Math.sin(T*1.35)*1.6, sway=Math.sin(T*.62)*2.0;
   const flap=PAR.flap, lift=PAR.hop;
@@ -27575,7 +27594,10 @@ function parrotDraw(c,W,H){
   c.scale(tc<0?-Math.max(.34,-tc):Math.max(.34,tc),1);
 
   /* оперение — на своей канве: один свет кладётся на всё разом */
-  const L=parLayer(W,H,kpx);
+  /* слой — по коробке птицы (230×304 единиц вокруг жёрдочки), а не по канве
+     окна: в маленьком окне (M151a: 138×104) слой резал голову и крылья, и
+     птица выходила «обрезанной» (плейтест 02.09) */
+  const L=parLayer(230,304,kpx);
   const g=L.g;
   const beads=[];                      /* огни собираем и зажигаем после света */
   g.save();g.translate(L.ox,L.oy);
@@ -27949,7 +27971,9 @@ function toggleParrotWin(open){
     const t=document.getElementById("parrotname");
     if(t&&G.parrot)t.textContent="ТРЕПЛО «"+G.parrot.name.toUpperCase()+"»";
     const cv=document.getElementById("parrotcv");
-    if(cv){cv.width=cv.clientWidth*PAR_DPR;cv.height=cv.clientHeight*PAR_DPR;PAR_L=null;}
+    if(cv){cv.width=cv.clientWidth*PAR_DPR;cv.height=cv.clientHeight*PAR_DPR;PAR_L=null;
+      /* окно спрятано правилом экрана (body.screen) — размера нет, открывать нечего */
+      if(!cv.width||!cv.height){parWin=false;w.classList.remove("open");return;}}
     const el=document.getElementById("parrotsay");
     if(el)el.textContent=G.parrot?("из вещей "+G.parrot.who):"";
     parT0=performance.now();parRAF=requestAnimationFrame(parrotFrame);
@@ -29074,6 +29098,7 @@ function snapshot(){
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,
     dealsDone:G.dealsDone,dealsWait:G.dealsWait,log:G.log,
+    rumLogged:G.rumLogged||"",   /* слухи станции уже записаны в тетрадь (11t): без этого после каждой загрузки они ложились снова */
     tableSeen:G.tableSeen|0,
     /* главный квест: возможности живут недолго, а память людей и тетрадь —
        навсегда. Закрытая дверь не восстанавливается ни временем, ни загрузкой */
@@ -29420,6 +29445,7 @@ function applySave(s){
   G.loreMarks=Array.isArray(s.loreMarks)?s.loreMarks.filter(m=>m&&typeof m==="object"):[];
   /* дела кантины: отвеченные и те, чей исход ещё не пришёл */
   G.dealsDone=asMap(s.dealsDone);
+  G.rumLogged=typeof s.rumLogged==="string"?s.rumLogged:"";
   G.dealsWait=Array.isArray(s.dealsWait)?s.dealsWait:[];
   /* репутация: своя у каждой станции, только от поступков */
   G.rep=asMap(s.rep);
@@ -55166,8 +55192,8 @@ function mailDock(){
         /* пришёл ход — кладём его в партию этой же цепочки (M192) */
         if(r.mv&&typeof chessTake==="function")chessTake(String(r.ch),r.mv);
       }
-      logAdd("good","Ответ на карточку"+(j.in.length>1?" ×"+j.in.length:""));
-      tell("good","Пришёл ответ на карточку","ПРИШЁЛ ОТВЕТ\nстопка на столе");
+      /* одна строка на событие: раньше tell писал вторую (плейтест 02.09) */
+      tell("good","Пришёл ответ на карточку"+(j.in.length>1?" ×"+j.in.length:""),"ПРИШЁЛ ОТВЕТ\nстопка на столе");
       if(tableOpenNow)tableRender();
     }
   });
@@ -55925,7 +55951,13 @@ function renderBasesTab(st){
       const hc=homeBeaconCost();
       hb.textContent="МАЯК ДОМОЙ · "+hc.toLocaleString("ru")+" КР";
       hb.disabled=G.credits<hc||(G.sx===G.home.sx&&G.sy===G.home.sy);
-      hb.addEventListener("click",()=>{if(homeBeacon()){closeStation();renderTab();}});
+      /* маяк работает из полёта, а кнопка стоит на станции: сперва отстыковка, потом
+         маяк. Раньше было наоборот — маяк отказывал «только из полёта по системе»,
+         и игрок не понимал, из какого полёта (плейтест 02.09) */
+      hb.addEventListener("click",()=>{
+        if(G.mode==="dock"){closeStation();if(G.mode==="dock")return;}
+        if(homeBeacon())renderTab();
+      });
       hr.appendChild(hb);
       $body.appendChild(hr);
       /* ── что дом умеет: по одной строке на ступень, и только на ту, что есть.
@@ -56580,6 +56612,10 @@ document.querySelectorAll("#stTabs button").forEach(b=>b.addEventListener("click
   b.classList.add("on");tab=b.dataset.tab;renderTab();
 }));
 document.getElementById("bUndock").addEventListener("click",closeStation);
+/* тетрадь поверх станции (плейтест 02.09): слухи и дела ложатся на стол, а
+   смотреть их приходилось, отстыковавшись. Стол закрывается своим ЗАКРЫТЬ,
+   станция под ним остаётся */
+document.getElementById("stDesk").addEventListener("click",()=>{sfx("ui");tableToggle(true);});
 document.getElementById("bRefuel").addEventListener("click",()=>{
   const st=stat(),need=Math.ceil(st.fuelMax-G.fuel);
   if(need<=0){say("Баки полны");return;}
@@ -57724,7 +57760,14 @@ function cantDealRow(d,full){
   };
   c.appendChild(el("div","nm","<b style='color:#f2b25c'>"+D.ru+"</b><s>"+d.name+" · "+D.who+"</s>"+
     (full?"<s style='color:#cfe3ea;line-height:1.8'>— "+D.text+"</s>":"")));
-  if(!full){const b=el("button","act sm","ВЫСЛУШАТЬ");b.onclick=c.onclick;c.appendChild(b);}
+  if(!full){
+    /* своя ручка, а не ссылка на ручку строки: та отбрасывает нажатия по кнопкам
+       (чтобы ответы внутри карточки не сворачивали её) — и отбрасывала саму
+       ВЫСЛУШАТЬ. Плейтест 02.09: «нажимаешь — ничего не происходит» */
+    const b=el("button","act sm","ВЫСЛУШАТЬ");
+    b.onclick=()=>{cantSel="deal:"+d.key;sfx("ui");renderTab();};
+    c.appendChild(b);
+  }
   $body.appendChild(c);
   if(full){
     const rr=el("div","row");

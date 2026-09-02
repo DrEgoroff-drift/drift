@@ -175,7 +175,7 @@ function homeBeacon(){
   if(!homeCanRevive())return false;
   const cost=homeBeaconCost();
   if(G.credits<cost){say("Маяк домой\nнужно "+cost.toLocaleString("ru")+" кр");return false;}
-  if(G.mode!=="system"){say("Маяк домой\nтолько из полёта по системе");return false;}
+  if(G.mode!=="system"){say("Маяк домой\nтолько из полёта по системе — сперва отстыкуйтесь");return false;}
   G.credits-=cost;
   G.sx=G.home.sx;G.sy=G.home.sy;G.sys=getSystem(G.sx,G.sy);
   G.ship.x=900;G.ship.y=0;G.ship.vx=0;G.ship.vy=0;

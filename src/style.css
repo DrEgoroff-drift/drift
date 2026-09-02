@@ -738,6 +738,15 @@ body.screen #console{opacity:1}
 #perch{-webkit-appearance:none;pointer-events:auto;background:var(--glass);border:1px solid var(--edge);border-radius:var(--rad-p);
   width:52px;height:52px;padding:4px;cursor:pointer;backdrop-filter:blur(14px) saturate(1.15);box-shadow:var(--lift),var(--glass-hi)}
 #perch canvas{width:44px;height:44px}
+/* на экранах пульт садится в полосу заголовка, и жёрдочка там рисовалась
+   кубиком рядом с именем станции — а окно на экранах закрыто, и нажатие
+   давало канву нулевого размера (плейтест 02.09). Птица — вещь полёта */
+body.screen #perch{display:none}
+/* СТОЛ в шапке станции: тетрадь открывается поверх станции, без отстыковки;
+   фишка — как в меню, «сколько пришло» */
+.scr header #stDesk{flex:0 0 auto;margin-left:12px;align-self:center}
+.scr header #stDesk i{font-style:normal;color:var(--void);background:var(--amber);
+  margin-left:7px;padding:1px 5px;border-radius:8px;font-size:9px}
 
 /* ── окно трепла ──
    M151a убрала три плавающих окна (журнал, отчёт, трепло) и вычистила их

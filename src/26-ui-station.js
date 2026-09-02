@@ -134,6 +134,10 @@ document.querySelectorAll("#stTabs button").forEach(b=>b.addEventListener("click
   b.classList.add("on");tab=b.dataset.tab;renderTab();
 }));
 document.getElementById("bUndock").addEventListener("click",closeStation);
+/* тетрадь поверх станции (плейтест 02.09): слухи и дела ложатся на стол, а
+   смотреть их приходилось, отстыковавшись. Стол закрывается своим ЗАКРЫТЬ,
+   станция под ним остаётся */
+document.getElementById("stDesk").addEventListener("click",()=>{sfx("ui");tableToggle(true);});
 document.getElementById("bRefuel").addEventListener("click",()=>{
   const st=stat(),need=Math.ceil(st.fuelMax-G.fuel);
   if(need<=0){say("Баки полны");return;}

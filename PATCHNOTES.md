@@ -7,6 +7,35 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.300.0 - M303: playtest tails of 2026-09-02
+
+Seven small things a phone playtest (0.299.0) tripped over, fixed the same evening.
+
+- **ВЫСЛУШАТЬ did nothing.** The cantina deal card gave its button the row's own handler, and
+  that handler drops clicks that land on a button (so the answers inside an open card do not
+  fold it) — including the one it was attached to. The button now opens the card itself.
+- **Rumours logged again after every load.** `G.rumLogged` (the "these rumours are already
+  in the notebook" tag) was never saved, so a reload or a cloud pull re-logged the same two
+  rumours into ЛЮДИ. It rides `snapshot()`/`applySave()` now.
+- **The desk over a station.** Rumours and deals land on the desk, and reading them meant
+  undocking. A СТОЛ button in the station header opens the desk on top of the station,
+  with the same "how much came" chip as the menu; ЗАКРЫТЬ returns to the station.
+- **The home beacon from a docked ship.** Its button lives on the station's home tab, but the
+  beacon refused with "only from system flight" — and the player asked which flight. The
+  button undocks first, then fires; the refusal text also says to undock.
+- **The desk lamp lit forever.** Every journal line counted as news: dockings, barge
+  approaches and the receiver's ether lines kept the СТОЛ chip at 16. Grey (`dim`) lines and
+  `ether` no longer count — the ether is its own notification, on the receiver, live.
+- **One line per mail answer.** "Ответ на карточку" and "Пришёл ответ на карточку" were the
+  same event written twice; only the latter remains, with the ×N count.
+- **The parrot, cropped and crashing.** The feather layer was sized by the window canvas
+  (138×104 px after M151a) instead of the bird box (230×304 units), so the head and wings were
+  cut off — the "cropped" parrot of the report. The perch also sat in the header strip of every
+  screen, drawn as a stub next to the station name, and a tap there opened a window that the
+  screen rule hides: canvas of zero size, `drawImage` failure in the journal. The layer follows
+  the bird box, the perch is hidden on screens, and both draw paths refuse a zero canvas.
+
+---
 ## 0.299.0 - M302: two guards from almanac issue II, and a trap closed
 
 - **44 px on every screen.** The finger law used to be asserted on the pads, the rail and the

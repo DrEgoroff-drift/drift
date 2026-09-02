@@ -32,7 +32,8 @@ TEST_SUITES.push(()=>suite("тетрадь: у каждого голоса св�
   eq(G.log.filter(x=>logPageOf(x.k)==="folk").length,1,"в ЛЮДЯХ одна строка");
   eq(G.log.filter(x=>logPageOf(x.k)==="bort").length,2,"на БОРТУ две");
   ok(G.log.find(x=>x.k==="talk").s.indexOf("Стойка")===0,"реплика подписана тем, кто сказал");
-  eq(G.logNew,4,"непрочитанное считается, пока стол закрыт");
+  /* эфир не считается: он живёт на приёмнике, огонёк — для новостей */
+  eq(G.logNew,3,"непрочитанное считается, пока стол закрыт (эфир — нет)");
   tableToggle(true,"ether");
   eq(G.logNew,0,"открыли стол — счётчик обнулён");
   const rows=[...document.querySelectorAll("#loglist .li")];
