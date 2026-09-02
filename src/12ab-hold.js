@@ -85,7 +85,8 @@ function sellQuote(sys,k,qty){
   const base=marketFor(sys)[k]||0;
   const nA=Math.min(qty,appetiteLeft(sys,k));
   const pA=nA?appetitePrice(sys,k):base;
-  return{revenue:nA*pA+(qty-nA)*base,nA,priceA:pA,base};
+  const nB=(typeof bldWant==="function")?Math.min(qty-nA,bldWant(sys,k)):0;   /* в бункер цеха — по обычной, с паем (M291) */
+  return{revenue:nA*pA+(qty-nA)*base,nA,nB,priceA:pA,base};
 }
 /* ── строка «БЕРЁТ» для доски, эфира и ряда трюма ── */
 function appetiteLine(sys,k){

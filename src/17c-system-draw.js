@@ -200,6 +200,7 @@ function drawStation(x,y,Z){
   /* модули идут первым слоем: они висят на штангах вокруг ядра, и ядро типа
      должно перекрывать их, а не наоборот (17a-station-mod) */
   drawStationMods(G.sys);
+  if(typeof drawHoldMods==="function")drawHoldMods(G.sys);   /* что построил игрок (M291) */
   if(ty==="trade"){
     /* раздутые склады и гроздь причалов: контейнеры висят на штангах по бортам */
     stPanels(12,6);

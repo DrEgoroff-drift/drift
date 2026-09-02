@@ -16,8 +16,58 @@ const RES={
      в трюме и разогнали бы инфляцию. У каждого свой глагол добычи. */
   volatiles:{ru:"Летучие газы",col:"#7fe0c8",price:0,rare:"сбор в атмосфере газового гиганта"},
   icecrys:  {ru:"Кристаллы льда",col:"#bfe8ff",price:0,rare:"пояс на дальней орбите"},
-  techcomp: {ru:"Техкомпоненты",col:"#ffb347",price:0,rare:"рейд на пиратскую базу"},
-  alloy:    {ru:"Сплавы",     col:"#d9dde3",price:0,rare:"переплавка на промышленной станции"},
+  techcomp: {ru:"Техкомпоненты",col:"#ffb347",price:0,ind:2,rare:"рейд на пиратскую базу · пай Приборного цеха"},
+  alloy:    {ru:"Сплавы",     col:"#d9dde3",price:0,ind:1,rare:"пай Плавильного цеха · плавильня на базе"},
+  /* Промышленное (M291, DESIGN-holding §9): ярус 1 — передел, 2 — узлы, 3 — крупное.
+     Рынок его не берёт (IND_KEYS вне TRADE_KEYS): оно продаётся туда, где стоит
+     цех, который его ест, по теневой цене (indPrice), и иначе — никуда. */
+  ferro:     {ru:"Ферросплав",      col:"#b7b3a6",price:0,ind:1},
+  roll:      {ru:"Прокат",          col:"#a9b4bf",price:0,ind:1},
+  plate:     {ru:"Обшивка",         col:"#9fb6c8",price:0,ind:1},
+  rebar:     {ru:"Арматура",        col:"#9a9ea4",price:0,ind:1},
+  refr:      {ru:"Огнеупор",        col:"#d1a88a",price:0,ind:1},
+  concrete:  {ru:"Реголитобетон",   col:"#a8a39a",price:0,ind:1},
+  quartz:    {ru:"Кварц",           col:"#e4e9f2",price:0,ind:1},
+  dielec:    {ru:"Диэлектрик",      col:"#c9d7a8",price:0,ind:1},
+  cable:     {ru:"Кабель",          col:"#d69a6a",price:0,ind:1},
+  resin:     {ru:"Смола",           col:"#b08a52",price:0,ind:1},
+  insul:     {ru:"Изолятор",        col:"#c8c2a6",price:0,ind:1},
+  cfiber:    {ru:"Углеволокно",     col:"#5f6870",price:0,ind:1},
+  graphite:  {ru:"Графит",          col:"#6d7378",price:0,ind:1},
+  carbide:   {ru:"Карбид",          col:"#8a8f96",price:0,ind:1},
+  spirit:    {ru:"Спирт",           col:"#d9e8f0",price:0,ind:1},
+  protein:   {ru:"Синтебелок",      col:"#d8c39a",price:0,ind:1},
+  heavyw:    {ru:"Тяжёлая вода",    col:"#8fbfd8",price:0,ind:1},
+  oxygen:    {ru:"Кислород",        col:"#bfe4f0",price:0,ind:1},
+  hydrazine: {ru:"Гидразин",        col:"#c7d98a",price:0,ind:1},
+  cryo:      {ru:"Криоген",         col:"#a9e2f0",price:0,ind:1},
+  thermo:    {ru:"Теплозащита",     col:"#d5c7b0",price:0,ind:1},
+  bearing:   {ru:"Подшипник",       col:"#c9ced4",price:0,ind:2},
+  pump:      {ru:"Насос",           col:"#b5c0c9",price:0,ind:2},
+  optics:    {ru:"Оптика",          col:"#dfe8f5",price:0,ind:2},
+  tube:      {ru:"Радиолампа",      col:"#f0c98a",price:0,ind:2},
+  relay:     {ru:"Реле",            col:"#d9b27a",price:0,ind:2},
+  selsyn:    {ru:"Сельсин",         col:"#c8b9a0",price:0,ind:2},
+  thermoc:   {ru:"Термопара",       col:"#e0b89a",price:0,ind:2},
+  gyro:      {ru:"Гироскоп",        col:"#cfd6de",price:0,ind:2},
+  semi:      {ru:"Полупроводники",  col:"#9fc4d8",price:0,ind:2},
+  supercon:  {ru:"Сверхпроводник",  col:"#a8d8e8",price:0,ind:2},
+  reactorb:  {ru:"Реакторный блок", col:"#f2b88a",price:0,ind:2},
+  accum:     {ru:"Аккумулятор",     col:"#a6c4a0",price:0,ind:2},
+  regen:     {ru:"Регенератор",     col:"#b8dcc8",price:0,ind:2},
+  canned:    {ru:"Консервы",        col:"#d8c8a0",price:0,ind:2},
+  fabric:    {ru:"Гермоткань",      col:"#c0b8d0",price:0,ind:2},
+  film:      {ru:"Гермоплёнка",     col:"#d8d0e8",price:0,ind:2},
+  phosphor:  {ru:"Люминофор",       col:"#e8f0a0",price:0,ind:2},
+  hullsec:   {ru:"Секция корпуса",  col:"#aeb8c4",price:0,ind:3},
+  mline:     {ru:"Станочная линия", col:"#b9b1a0",price:0,ind:3},
+  habblock:  {ru:"Жилой блок",      col:"#d0c4b0",price:0,ind:3},
+  shell:     {ru:"Гермооболочка",   col:"#c8d8e0",price:0,ind:3},
+  mast:      {ru:"Мачта",           col:"#a0a8b0",price:0,ind:3},
+  beam:      {ru:"Причальная балка", col:"#a8a0a0",price:0,ind:3},
+  launchf:   {ru:"Стартовая ферма", col:"#c0b0a0",price:0,ind:3},
+  panel:     {ru:"Фотопанель",      col:"#9ab8d0",price:0,ind:3},
+
   /* Боеприпас (M112): единственная строка трюма, которую расходуют не на верфи,
      а в бою. Рынок её не берёт и лаборатория не считает её сырьём — она занимает
      место, и в этом весь смысл: вооружиться стоит того же, что возить груз. */
@@ -37,8 +87,10 @@ const PAX_KEYS=RES_KEYS.filter(k=>!!RES[k].pax);
    иначе сдвинулась бы генерация уже существующих станций */
 const FAUNA_RES=["carbon","xeno"];
 const RARE_RES=RES_KEYS.filter(k=>!!RES[k].rare);
+/* промышленное (M291): не редкое и не товар — груз для своих цехов */
+const IND_KEYS=RES_KEYS.filter(k=>!!RES[k].ind&&!RES[k].rare);
 const TRADE_KEYS=RES_KEYS.filter(k=>RARE_RES.indexOf(k)<0&&AMMO_KEYS.indexOf(k)<0&&
-  PAX_KEYS.indexOf(k)<0);
+  PAX_KEYS.indexOf(k)<0&&IND_KEYS.indexOf(k)<0);
 const ORE_KEYS=TRADE_KEYS.filter(k=>FAUNA_RES.indexOf(k)<0);
 const PROFILE={
   terran:["iron","silicon","organics","ice"],
@@ -54,11 +106,6 @@ const PROFILE={
   ruin:["silicon","titan","crystal","iron"],
   gas:[]
 };
-/* рецепты промышленной станции: единственный источник сплавов */
-const SMELT=[
-  {ru:"Чёрная плавка",  in:[["iron",4],["silicon",2]],           fee:60},
-  {ru:"Тяжёлая плавка", in:[["titan",2],["iridium",1]],          fee:130}
-];
 const BELT_RES=["iron","silicon","titan","iridium","isotopes","crystal","ice"];
 
 /* ══════════════ миры ══════════════ */

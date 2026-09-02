@@ -5,6 +5,7 @@ let fuseSel=[];   // два корпуса, выбранных под сплав
 function openStation(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
+  if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
   scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
   /* трепло (12x): у прилавка оно слышит цены, а иногда выдаёт то, что слышало
      у вас. Обе стороны одной птицы, и обе — на стыковке */
@@ -67,15 +68,15 @@ function openStation(){
    вкладкой вторая ступень не показывается — нечего выбирать. */
 const ST_GROUPS=[
   {id:"board", ru:"ДОСКА",     tabs:["board"]},   /* M151a: всё, что мир говорит о себе, на одной стене */
-  {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","flea","smelt","scrip"]},
+  {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","flea","scrip"]},
   {id:"ship",  ru:"КОРАБЛЬ",   tabs:["yard","mods","fuse","instr"]},
   {id:"know",  ru:"НАУКА",     tabs:["lab"]},
   {id:"folk",  ru:"ЛЮДИ",      tabs:["crew","cantina"]},
-  {id:"hold",  ru:"ВЛАДЕНИЯ",  tabs:["bases"]}
+  {id:"hold",  ru:"ВЛАДЕНИЯ",  tabs:["bases","site"]}   /* СТРОЙКА (M291): вкладка, не раздел */
 ];
 function stGroupOf(t){const g=ST_GROUPS.find(G0=>G0.tabs.indexOf(t)>=0);return g?g.id:ST_GROUPS[0].id;}
 let stGroup="trade";
-function stTabsHere(){return ["board"].concat(stTypeOf(G.st.stype).tabs);}   /* доска есть у всех (M151a) */
+function stTabsHere(){return ["board"].concat(stTypeOf(G.st.stype).tabs,G.st.stype==="fuel"?[]:["site"]);}   /* доска есть у всех (M151a); стройка — у всех, кроме заправки (M291) */
 function syncTabs(){
   const has=stTabsHere();
   /* раздел живёт, только если у него есть хоть одна вкладка на этой станции */
@@ -430,6 +431,19 @@ function renderTabBody(){
         $body.appendChild(r);
       }
     }
+    /* промышленное (M291): рынок не берёт — ряд называет ближайший свой цех, который ест */
+    if(IND_KEYS.some(k=>G.cargo[k]>0)){
+      $body.appendChild(el("div","sec","ПРОМЫШЛЕННОЕ · РЫНОК НЕ БЕРЁТ · СДАЁТСЯ В СВОЙ ЦЕХ"));
+      for(const k of IND_KEYS){
+        const q=G.cargo[k];if(!q)continue;
+        const e=(typeof holdNearestEater==="function")?holdNearestEater(k):null;
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+          (e?(e.d?"едят на «"+e.name+"» · "+e.d+" "+pl3(e.d,"прыжок","прыжка","прыжков"):"едят здесь — вкладка СТРОЙКА"):"едока пока нет — поставьте цех, который это ест")+"</s>"));
+        r.appendChild(el("div","qt",q+"<s>ед</s>"));
+        $body.appendChild(r);
+      }
+    }
     $body.appendChild(el("div","sec","ЗАКУПОЧНЫЕ ЦЕНЫ ЗДЕСЬ — МЕНЯЮТСЯ ОТ ПРОДАЖ И СО ВРЕМЕНЕМ"));
     for(const k of TRADE_KEYS){
       const r=el("div","row");
@@ -536,6 +550,7 @@ function renderTabBody(){
   else if(tab==="instr"){stTabInstr();}
   else if(tab==="lab"){stTabLab();}
   else if(tab==="fuse"){stTabFuse();}
+  else if(tab==="site"){if(typeof renderSiteTab==="function")renderSiteTab();}
   else if(tab==="bases"){
     renderBasesTab(st);
   }
@@ -678,41 +693,6 @@ function renderTabBody(){
       const b=el("button","act gold","НАНЯТЬ");
       b.disabled=G.credits<m.fee||G.crew.length>=crewCap();
       b.onclick=()=>{if(hireMerc(m))renderTab();};
-      r.appendChild(b);$body.appendChild(r);
-    }
-  }
-  else if(tab==="smelt"){
-    /* сплавы нигде не добываются — только здесь: руда в печь, на выходе слиток.
-       Это единственная точка входа для сырья, которое потом тратится (M40, M37, M46). */
-    $body.appendChild(el("div","sec","ПЕРЕПЛАВКА · СЫРЬЁ ИЗ ТРЮМА → СПЛАВЫ · СПЛАВЫ НЕ ПРОДАЮТСЯ"));
-    /* места в трюме не спрашиваем: плавка всегда съедает больше, чем отдаёт,
-       так что после неё груза становится меньше, а не больше */
-    for(const R of SMELT){
-      const have=Math.min(...R.in.map(([k,q])=>Math.floor(G.cargo[k]/q)));
-      const can=Math.min(have,Math.floor(G.credits/R.fee));
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b style='color:"+RES.alloy.col+"'>"+R.ru+"</b><s>"+
-        R.in.map(([k,q])=>RES[k].ru.toLowerCase()+" ×"+q).join(" + ")+" → сплавы ×1 · "+R.fee+" кр за плавку"+
-        "<br>в трюме хватит на "+have+"</s>"));
-      r.appendChild(el("div","qt",G.cargo.alloy+"<s>сплавов</s>"));
-      const b=el("button","act"+(can?" gold":""),can?"ПЛАВИТЬ ×"+Math.min(can,10):"НЕ ХВАТАЕТ");
-      b.disabled=!can;
-      b.onclick=()=>{
-        const n=Math.min(can,10);
-        for(const [k,q] of R.in)G.cargo[k]-=q*n;
-        G.credits-=R.fee*n;G.cargo.alloy+=n;
-        tell("money","Переплавка на «"+G.st.name+"»: сплавы ×"+n,"Переплавка\nсплавы ×"+n);
-        /* рацпредложение (M152e): первая плавка этого рецепта платит один раз и честно */
-        G.ratios=G.ratios||{};
-        if(!G.ratios[R.ru]){
-          G.ratios[R.ru]=1;const prem=Math.round((R.fee*6+400)/10)*10;
-          earn(prem,"ratio");
-          tell("money","Рацпредложение принято: «"+R.ru+"» · премия "+prem+" кр","РАЦПРЕДЛОЖЕНИЕ\n+"+prem+" кр");
-          if(typeof thingAdd==="function")thingAdd("paper","Рацпредложение · "+R.ru,"принято на «"+G.st.name+"» · премия "+prem+" кр · повторы — просто сплав");
-          if(typeof recordAdd==="function")recordAdd(G.st.name,"рацпредложение: "+R.ru);
-        }
-        renderTab();
-      };
       r.appendChild(b);$body.appendChild(r);
     }
   }

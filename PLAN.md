@@ -1147,8 +1147,14 @@ earned, never twice; `ROUTE_MAX = 6`.
 **M290 (0.287.0) — step 2 built 2026-09-02:** `12ab-hold` — `HOLD_SHIFT`, the appetite by
 station type (+35% on the first N a shift, an addend inside the pressure clamp via
 `marketPrice`), `normsOf` as the one demand object, `sellQuote` behind the hold row and the
-button, the ДОСКА «БЕРЁТ» block, the ether line, `G.hold` as the layer's one map. Next: **step 3,
-the site and the hopper.**
+button, the ДОСКА «БЕРЁТ» block, the ether line, `G.hold` as the layer's one map.
+
+**M291 (0.288.0) — step 3 built 2026-09-02:** `12ac-bld` (BLD, families A–D, 56 rows, shadow
+prices), `12ad-site` (rung from counters with gates, sites by rung, the hopper, feeding on sale,
+collecting, промысел stock at 0.7×, industrial goods into a shop, nearest eater, ДЕЛО rows, the
+built body), `26c-ui-station-site` (СТРОЙКА under ВЛАДЕНИЯ); 46 `ind` keys in RES; `SMELT` and the
+smelt tab deleted. Deeds not yet counted (no counter exists): pirate bases boarded, monuments,
+nodes — they join the score when their hooks are written. Next: **step 4, the ladder visible.**
 
 ## Small tails from almanac issue II
 

@@ -1424,7 +1424,7 @@ body.afoot .ipod{display:none}
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.287.0";
+const VER="0.288.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -1694,8 +1694,58 @@ const RES={
      в трюме и разогнали бы инфляцию. У каждого свой глагол добычи. */
   volatiles:{ru:"Летучие газы",col:"#7fe0c8",price:0,rare:"сбор в атмосфере газового гиганта"},
   icecrys:  {ru:"Кристаллы льда",col:"#bfe8ff",price:0,rare:"пояс на дальней орбите"},
-  techcomp: {ru:"Техкомпоненты",col:"#ffb347",price:0,rare:"рейд на пиратскую базу"},
-  alloy:    {ru:"Сплавы",     col:"#d9dde3",price:0,rare:"переплавка на промышленной станции"},
+  techcomp: {ru:"Техкомпоненты",col:"#ffb347",price:0,ind:2,rare:"рейд на пиратскую базу · пай Приборного цеха"},
+  alloy:    {ru:"Сплавы",     col:"#d9dde3",price:0,ind:1,rare:"пай Плавильного цеха · плавильня на базе"},
+  /* Промышленное (M291, DESIGN-holding §9): ярус 1 — передел, 2 — узлы, 3 — крупное.
+     Рынок его не берёт (IND_KEYS вне TRADE_KEYS): оно продаётся туда, где стоит
+     цех, который его ест, по теневой цене (indPrice), и иначе — никуда. */
+  ferro:     {ru:"Ферросплав",      col:"#b7b3a6",price:0,ind:1},
+  roll:      {ru:"Прокат",          col:"#a9b4bf",price:0,ind:1},
+  plate:     {ru:"Обшивка",         col:"#9fb6c8",price:0,ind:1},
+  rebar:     {ru:"Арматура",        col:"#9a9ea4",price:0,ind:1},
+  refr:      {ru:"Огнеупор",        col:"#d1a88a",price:0,ind:1},
+  concrete:  {ru:"Реголитобетон",   col:"#a8a39a",price:0,ind:1},
+  quartz:    {ru:"Кварц",           col:"#e4e9f2",price:0,ind:1},
+  dielec:    {ru:"Диэлектрик",      col:"#c9d7a8",price:0,ind:1},
+  cable:     {ru:"Кабель",          col:"#d69a6a",price:0,ind:1},
+  resin:     {ru:"Смола",           col:"#b08a52",price:0,ind:1},
+  insul:     {ru:"Изолятор",        col:"#c8c2a6",price:0,ind:1},
+  cfiber:    {ru:"Углеволокно",     col:"#5f6870",price:0,ind:1},
+  graphite:  {ru:"Графит",          col:"#6d7378",price:0,ind:1},
+  carbide:   {ru:"Карбид",          col:"#8a8f96",price:0,ind:1},
+  spirit:    {ru:"Спирт",           col:"#d9e8f0",price:0,ind:1},
+  protein:   {ru:"Синтебелок",      col:"#d8c39a",price:0,ind:1},
+  heavyw:    {ru:"Тяжёлая вода",    col:"#8fbfd8",price:0,ind:1},
+  oxygen:    {ru:"Кислород",        col:"#bfe4f0",price:0,ind:1},
+  hydrazine: {ru:"Гидразин",        col:"#c7d98a",price:0,ind:1},
+  cryo:      {ru:"Криоген",         col:"#a9e2f0",price:0,ind:1},
+  thermo:    {ru:"Теплозащита",     col:"#d5c7b0",price:0,ind:1},
+  bearing:   {ru:"Подшипник",       col:"#c9ced4",price:0,ind:2},
+  pump:      {ru:"Насос",           col:"#b5c0c9",price:0,ind:2},
+  optics:    {ru:"Оптика",          col:"#dfe8f5",price:0,ind:2},
+  tube:      {ru:"Радиолампа",      col:"#f0c98a",price:0,ind:2},
+  relay:     {ru:"Реле",            col:"#d9b27a",price:0,ind:2},
+  selsyn:    {ru:"Сельсин",         col:"#c8b9a0",price:0,ind:2},
+  thermoc:   {ru:"Термопара",       col:"#e0b89a",price:0,ind:2},
+  gyro:      {ru:"Гироскоп",        col:"#cfd6de",price:0,ind:2},
+  semi:      {ru:"Полупроводники",  col:"#9fc4d8",price:0,ind:2},
+  supercon:  {ru:"Сверхпроводник",  col:"#a8d8e8",price:0,ind:2},
+  reactorb:  {ru:"Реакторный блок", col:"#f2b88a",price:0,ind:2},
+  accum:     {ru:"Аккумулятор",     col:"#a6c4a0",price:0,ind:2},
+  regen:     {ru:"Регенератор",     col:"#b8dcc8",price:0,ind:2},
+  canned:    {ru:"Консервы",        col:"#d8c8a0",price:0,ind:2},
+  fabric:    {ru:"Гермоткань",      col:"#c0b8d0",price:0,ind:2},
+  film:      {ru:"Гермоплёнка",     col:"#d8d0e8",price:0,ind:2},
+  phosphor:  {ru:"Люминофор",       col:"#e8f0a0",price:0,ind:2},
+  hullsec:   {ru:"Секция корпуса",  col:"#aeb8c4",price:0,ind:3},
+  mline:     {ru:"Станочная линия", col:"#b9b1a0",price:0,ind:3},
+  habblock:  {ru:"Жилой блок",      col:"#d0c4b0",price:0,ind:3},
+  shell:     {ru:"Гермооболочка",   col:"#c8d8e0",price:0,ind:3},
+  mast:      {ru:"Мачта",           col:"#a0a8b0",price:0,ind:3},
+  beam:      {ru:"Причальная балка", col:"#a8a0a0",price:0,ind:3},
+  launchf:   {ru:"Стартовая ферма", col:"#c0b0a0",price:0,ind:3},
+  panel:     {ru:"Фотопанель",      col:"#9ab8d0",price:0,ind:3},
+
   /* Боеприпас (M112): единственная строка трюма, которую расходуют не на верфи,
      а в бою. Рынок её не берёт и лаборатория не считает её сырьём — она занимает
      место, и в этом весь смысл: вооружиться стоит того же, что возить груз. */
@@ -1715,8 +1765,10 @@ const PAX_KEYS=RES_KEYS.filter(k=>!!RES[k].pax);
    иначе сдвинулась бы генерация уже существующих станций */
 const FAUNA_RES=["carbon","xeno"];
 const RARE_RES=RES_KEYS.filter(k=>!!RES[k].rare);
+/* промышленное (M291): не редкое и не товар — груз для своих цехов */
+const IND_KEYS=RES_KEYS.filter(k=>!!RES[k].ind&&!RES[k].rare);
 const TRADE_KEYS=RES_KEYS.filter(k=>RARE_RES.indexOf(k)<0&&AMMO_KEYS.indexOf(k)<0&&
-  PAX_KEYS.indexOf(k)<0);
+  PAX_KEYS.indexOf(k)<0&&IND_KEYS.indexOf(k)<0);
 const ORE_KEYS=TRADE_KEYS.filter(k=>FAUNA_RES.indexOf(k)<0);
 const PROFILE={
   terran:["iron","silicon","organics","ice"],
@@ -1732,11 +1784,6 @@ const PROFILE={
   ruin:["silicon","titan","crystal","iron"],
   gas:[]
 };
-/* рецепты промышленной станции: единственный источник сплавов */
-const SMELT=[
-  {ru:"Чёрная плавка",  in:[["iron",4],["silicon",2]],           fee:60},
-  {ru:"Тяжёлая плавка", in:[["titan",2],["iridium",1]],          fee:130}
-];
 const BELT_RES=["iron","silicon","titan","iridium","isotopes","crystal","ice"];
 
 /* ══════════════ миры ══════════════ */
@@ -5654,7 +5701,7 @@ const SYS_CACHE=new Map();
 const ST_TYPES=[
   {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods","instr","crew","cantina","bases","scrip"],
    mkt:1.08, fuel:1,    rep:1,    w:d=>2.6-d*1.9},
-  {id:"indust", ru:"Промышленный комбинат",tabs:["market","smelt","mods","crew","cantina","bases","scrip"],
+  {id:"indust", ru:"Промышленный комбинат",tabs:["market","mods","crew","cantina","bases","scrip"],
    mkt:.99,  fuel:.92,  rep:.5,   w:d=>1.5-d*.4},
   {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","instr","barter","crew","cantina","bases","scrip"],
    mkt:.95,  fuel:1.08, rep:.75,  w:d=>1.2-d*.7},
@@ -14584,7 +14631,8 @@ function sellQuote(sys,k,qty){
   const base=marketFor(sys)[k]||0;
   const nA=Math.min(qty,appetiteLeft(sys,k));
   const pA=nA?appetitePrice(sys,k):base;
-  return{revenue:nA*pA+(qty-nA)*base,nA,priceA:pA,base};
+  const nB=(typeof bldWant==="function")?Math.min(qty-nA,bldWant(sys,k)):0;   /* в бункер цеха — по обычной, с паем (M291) */
+  return{revenue:nA*pA+(qty-nA)*base,nA,nB,priceA:pA,base};
 }
 /* ── строка «БЕРЁТ» для доски, эфира и ряда трюма ── */
 function appetiteLine(sys,k){
@@ -14622,6 +14670,137 @@ function appetiteEtherLine(r){
   return pick(["…"+a.S.station.name+" берёт "+ru+" с надбавкой. Первые "+a.n+" — по-хорошему, дальше как всем.",
                "…кто везёт "+ru+" — на "+a.S.station.name+" за него доплачивают. Немного, но каждую смену.",
                "…"+a.S.station.name+": "+ru+" принимают с надбавкой, пока смена не выбрана."],r);
+}
+
+/* ══════════════ холдинг · постройки (BLD) ══════════════
+   M291, шаг 3 (DESIGN-holding §9–§10). Одна константа:
+     BLD[id] = {id, fam, tier, ru, eats, makes, cost, at, note, fx, sh}
+   Семьи A–D — те, что едят и делают ГРУЗ; все работают одним механизмом
+   (бункер и пай, 12ad-site), поэтому 56 строк стоят столько же, сколько восемь.
+   Семьи E–I (хозяйство, флот, люди, оборона, знание) придут по одной, каждая со
+   своим крючком и тестом: строка без крючка не отгружается (§10).
+
+   Числа — из §9/§10 замысла: eats/makes — норма в смену на ×1, ×2 вдвое, ×3 втрое;
+   cost — цена ×1. Цена ×2 = ещё раз ×1 + Станочная линия; ×3 = дважды ×1 + две
+   линии + Жилой блок (bldUpgradeCost).
+
+   Ярус 1 ест только сырьё, ярус 2 — ярус 1 (и ниже второстепенно), ярус 3 —
+   узлы. Правило §10.1 (в 12ad): постройка не ест то, что делает её же система, —
+   иначе не нужен маршрут. */
+const BLD_FAM={
+  A:{ru:"Добыча",  sh:"tank",  note:"делает в смену и продаёт вам по 0.7 цены"},
+  B:{ru:"Передел", sh:"drum",  note:"ест сырьё, платит паем"},
+  C:{ru:"Узлы",    sh:"rack",  note:"ест передел, платит паем"},
+  D:{ru:"Крупное", sh:"hangar",note:"ест узлы, делает то, что ест стройка"}
+};
+const BLD_SHIFTS={1:2,2:4,3:6};        /* монтаж по ярусу, в сменах */
+const BLD_FAM_KEYS=["A","B","C","D"];
+const BLD={};
+function bldAdd(fam,id,ru,eats,makes,cost,at){
+  const tier=fam==="C"?2:(fam==="D"?3:1);
+  BLD[id]={id,fam,tier,ru,eats:eats||{},makes:makes||{},cost,at:at||"any",note:BLD_FAM[fam].note,fx:"share",sh:BLD_FAM[fam].sh};
+}
+/* A · добыча — делает M в смену в запас, продаёт по 0.7; ест ничего */
+bldAdd("A","regolith",  "Реголитовая разработка",null,{iron:12,silicon:6},   {credits:1600,alloy:10,iron:24},    "solid:iron");
+bldAdd("A","deepdrill", "Буровой комплекс",      null,{titan:4,iridium:1},   {credits:2400,alloy:14,iron:30},    "world:rocky,metal,volcanic,desert");
+bldAdd("A","icefield",  "Ледовый промысел",      null,{ice:16},              {credits:1200,alloy:8,iron:20},     "world:ice,ocean,terran");
+bldAdd("A","beltmine",  "Поясной промысел",      null,{crystal:2,isotopes:3},{credits:2800,alloy:16,titan:12},   "belt");
+bldAdd("A","gasfield",  "Газовый промысел",      null,{volatiles:6},         {credits:2200,alloy:12,titan:8},    "gas");
+bldAdd("A","greenhouse","Оранжерея",             null,{organics:10},         {credits:1400,alloy:8,silicon:20},  "world:terran,jungle,ocean");
+bldAdd("A","biostation","Биостанция",            null,{carbon:4,xeno:1},     {credits:3000,alloy:16,organics:24},"fauna");
+bldAdd("A","dumpworks", "Отвальный промысел",    null,{iron:6,silicon:4},    {credits:1000,alloy:6,iron:12},     "mine");
+/* B · передел — ярус 1: цена 1 200 кр · сплавы 8 · 24 главного входа */
+function bldB(id,ru,eats,makes){const main=Object.keys(eats)[0];const cost={credits:1200,alloy:8};cost[main]=24;bldAdd("B",id,ru,eats,makes,cost,"any");}
+bldB("alloyshop",  "Плавильный цех",      {iron:8,silicon:4},           {alloy:2});
+bldB("ferroshop",  "Ферросплавный цех",   {iron:6,titan:2},             {ferro:2});
+bldB("rollshop",   "Прокатный цех",       {iron:8,silicon:2},           {roll:3});
+bldB("plateshop",  "Обшивочный цех",      {titan:6,iron:2},             {plate:2});
+bldB("rebarshop",  "Арматурный цех",      {iron:10},                    {rebar:3});
+bldB("refrshop",   "Огнеупорный цех",     {silicon:6,titan:2},          {refr:2});
+bldB("concshop",   "Бетонный цех",        {silicon:6,ice:4},            {concrete:4});
+bldB("quartzshop", "Кварцевый цех",       {silicon:8},                  {quartz:2});
+bldB("dielecshop", "Диэлектрический цех", {silicon:4,organics:4},       {dielec:2});
+bldB("cableshop",  "Кабельный цех",       {iron:4,iridium:1,organics:2},{cable:2});
+bldB("resinshop",  "Смоляной цех",        {organics:8},                 {resin:3});
+bldB("insulshop",  "Изоляторный цех",     {silicon:4,organics:2},       {insul:2});
+bldB("cfibershop", "Углеволоконный цех",  {carbon:3,organics:3},        {cfiber:2});
+bldB("graphshop",  "Графитовый цех",      {carbon:4},                   {graphite:2});
+bldB("carbideshop","Карбидный цех",       {carbon:2,silicon:4},         {carbide:2});
+bldB("spiritshop", "Спиртовой цех",       {organics:6,ice:4},           {spirit:4});
+bldB("proteinshop","Белковый цех",        {organics:8},                 {protein:3});
+bldB("isoshop",    "Изотопный цех",       {ice:8,isotopes:1},           {heavyw:2});
+bldB("oxyshop",    "Кислородный цех",     {ice:8},                      {oxygen:4});
+bldB("hydrshop",   "Гидразиновый цех",    {ice:4,organics:4},           {hydrazine:2});
+bldB("cryoshop",   "Криогенный цех",      {volatiles:4,ice:2},          {cryo:2});
+bldB("thermoshop", "Теплозащитный цех",   {silicon:4,carbon:2},         {thermo:2});
+/* C · узлы — ярус 2 (со ступени 20): 2 400 кр · сплавы 12 · прокат 6 · 12 главного входа */
+function bldC(id,ru,eats,makes){const main=Object.keys(eats)[0];const cost={credits:2400,alloy:12,roll:6};cost[main]=(cost[main]|0)+12;bldAdd("C",id,ru,eats,makes,cost,"any");}
+bldC("bearingshop", "Подшипниковый цех",      {roll:4,graphite:1},         {bearing:2});
+bldC("pumpshop",    "Насосный цех",           {roll:3,alloy:2,insul:1},    {pump:2});
+bldC("opticshop",   "Оптический цех",         {quartz:4,dielec:1},         {optics:2});
+bldC("tubeshop",    "Ламповый цех",           {quartz:2,cable:1,alloy:1},  {tube:3});
+bldC("relayshop",   "Релейный цех",           {cable:2,insul:2,alloy:1},   {relay:3});
+bldC("selsynshop",  "Сельсинный цех",         {cable:3,roll:1,alloy:1},    {selsyn:2});
+bldC("thermocshop", "Термопарный цех",        {ferro:2,insul:1},           {thermoc:3});
+bldC("gyroshop",    "Гироскопный цех",        {roll:2,alloy:2,cable:1},    {gyro:1});
+bldC("semishop",    "Полупроводниковый цех",  {quartz:3,dielec:2,graphite:1},{semi:2});
+bldC("superconshop","Сверхпроводниковый цех", {cryo:2,cable:2,carbide:1},  {supercon:1});
+bldC("instrshop",   "Приборный цех",          {alloy:2,cable:2,quartz:1},  {techcomp:2});
+bldC("reactorshop", "Реакторный цех",         {heavyw:2,refr:2,ferro:2},   {reactorb:1});
+bldC("accumshop",   "Аккумуляторный цех",     {dielec:2,cable:1,graphite:1},{accum:2});
+bldC("regenshop",   "Регенераторный цех",     {oxygen:2,insul:1,alloy:1},  {regen:2});
+bldC("cannedshop",  "Консервный цех",         {protein:4,spirit:1},        {canned:4});
+bldC("fabricshop",  "Ткацкий цех",            {cfiber:2,resin:2},          {fabric:2});
+bldC("filmshop",    "Плёночный цех",          {resin:3,dielec:1},          {film:3});
+bldC("phosphorshop","Люминофорный цех",       {quartz:2,isotopes:1,dielec:1},{phosphor:2});
+/* D · крупное — ярус 3 (со ступени 25, Стапель — с 22): 4 800 кр · прокат 12 · арматура 8 · подшипник 2 */
+function bldD(id,ru,eats,makes){bldAdd("D",id,ru,eats,makes,{credits:4800,roll:12,rebar:8,bearing:2},"any");}
+bldD("slipway",    "Стапель",            {plate:4,rebar:2,bearing:1},  {hullsec:1});
+bldD("mlineyard",  "Станочный участок",  {bearing:2,relay:2,roll:2},   {mline:1});
+bldD("blockyard",  "Блочный участок",    {concrete:4,film:2,regen:1},  {habblock:1});
+bldD("domeyard",   "Купольный участок",  {fabric:3,rebar:2,optics:1},  {shell:1});
+bldD("mastyard",   "Мачтовый участок",   {rebar:3,cable:2,cfiber:1},   {mast:1});
+bldD("beamyard",   "Балочный участок",   {roll:4,ferro:2,bearing:1},   {beam:1});
+bldD("launchyard", "Стартовый участок",  {refr:3,rebar:2,hydrazine:2}, {launchf:1});
+bldD("panelyard",  "Панельный участок",  {semi:2,film:1,cable:1},      {panel:1});
+const BLD_KEYS=Object.keys(BLD);
+/* норма и выпуск по уровню */
+function bldScale(o,lvl){const out={};for(const k in o)out[k]=o[k]*(lvl|0||1);return out;}
+function bldQuota(def,lvl){return bldScale(def.eats,lvl);}
+function bldOut(def,lvl){return bldScale(def.makes,lvl);}
+/* цена перехода на уровень: ×2 = ещё ×1 + линия; ×3 = дважды ×1 + две линии + жилой блок */
+function bldUpgradeCost(def,toLvl){
+  const c={};
+  const times=toLvl===3?2:1;
+  for(const k in def.cost)c[k]=def.cost[k]*times;
+  c.mline=(c.mline|0)+(toLvl===3?2:1);
+  if(toLvl===3)c.habblock=(c.habblock|0)+1;
+  return c;
+}
+/* теневая цена промышленного товара (§5): (Σ входов × 1.5 + плата) / выпуск —
+   только для сводки, замера и сдачи в цех; рынок её не читает */
+const IND_FEE={1:20,2:60,3:200};
+const _indPrice={};
+function indPrice(k){
+  if(!RES[k])return 0;
+  if(!RES[k].ind)return RES[k].price||(k==="volatiles"?30:(k==="icecrys"?40:0));
+  if(_indPrice[k])return _indPrice[k];
+  const def=BLD_KEYS.map(id=>BLD[id]).find(d=>d.makes[k]);
+  if(!def)return 0;
+  let s=0;for(const i in def.eats)s+=indPrice(i)*def.eats[i];
+  const out=def.makes[k]||1;
+  return _indPrice[k]=Math.round((s*1.5+IND_FEE[def.tier])/out);
+}
+function bldCostTxt(cost){
+  const L=[];
+  if(cost.credits)L.push(cost.credits.toLocaleString("ru")+" кр");
+  for(const k in cost)if(k!=="credits"&&RES[k])L.push("<span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+" "+cost[k]+"</span>");
+  return L.join(" · ");
+}
+function bldIoTxt(def){
+  const e=Object.keys(def.eats).map(k=>RES[k].ru.toLowerCase()+" "+def.eats[k]).join(" + ");
+  const m=Object.keys(def.makes).map(k=>RES[k].ru.toLowerCase()+" "+def.makes[k]).join(" + ");
+  return (e?"ест "+e+" → ":"делает ")+m+" в смену";
 }
 
 /* ══════════════ наёмники: флот, которым не управляешь напрямую ══════════════ */
@@ -15257,6 +15436,348 @@ function drawAllies(zx,zy,Z){
     ctx.fillStyle="rgba(127,230,216,.75)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
     ctx.fillText(A.c.name.toUpperCase(),x,y-26*clamp(Z,.3,1.4)-6);
   }
+}
+
+/* ══════════════ холдинг · площадка, бункер и пай ══════════════
+   M291, шаг 3 (DESIGN-holding §3, §6, §10). Замысел автора одной фразой: «не по
+   рецептам, а если ты возишь, то тебе производят».
+
+   СТУПЕНЬ системы — функция от того, что игрок здесь сделал (rungPoints): посадки,
+   шахты, ячейки базы, отбитый сектор, имя, посёлок, дроны, груз, постройки.
+   Ничего нового не хранится, кроме трёх счётчиков дел (G.hold[key].deeds), у
+   которых раньше не было своей записи. Ступень производная, G.step нет.
+   Имена ступеней и моменты в эфире — шаг 4; здесь только число и ворота.
+
+   БУНКЕР. Постройка ест норму Q в смену, что не привёз игрок — довозит мир.
+   Хранится только своё: bld[id] = {lvl, t0, ready, my{k}, got{k}}. При чтении
+   постройка догоняет по сменам: съедает min(my, Q) вашего, начисляет выпуск в
+   долю съеденного, my тает, got режется тремя сменами выпуска, my — тремя
+   сменами нормы. «Чужой корм» — число, не флот; «доля тает» — бункер пустеет.
+   Кормить = продать на этой станции (sellCargo → bldFeed). Промышленный товар
+   рынок не берёт — его сдают в цех по теневой цене (bldSellInd).
+
+   ДОБЫЧА (семья A) не ест: делает M в смену в запас, режется тремя сменами,
+   продаёт вам по 0.7 местной цены — доля источника и есть скидка. */
+const HOLD_CAP_SHIFTS=3;     /* потолок бункера и пая, в сменах; Накопитель (семья E) удвоит */
+const SRC_DISCOUNT=.7;
+const RUNG_T=[0,1,2,3,5,7,9,11,13,15,18,21,24,27,30,34,38,42,46,50,55,60,65,70,75,81,87,93,99,105,112];
+/* ── дела, у которых не было записи: залежь пробурена, дрон выработал точку, груз привезён ── */
+function holdDeed(sx,sy,kind,n){
+  if(sx===undefined||sy===undefined)return;
+  const H=holdOf(sx+","+sy);H.deeds=H.deeds||{};
+  H.deeds[kind]=Math.max(0,(H.deeds[kind]|0)+(n===undefined?1:n|0));
+}
+/* стыковка: груз, с которым пристыковались сами (баржа не в счёт — F12) */
+function holdDock(sys){
+  if(!sys||!sys.station)return;
+  const n=held();if(n>0)holdDeed(sys.sx,sys.sy,"cargo",n);
+  const H=G.hold&&G.hold[sys.key];
+  if(H&&H.bld)for(const id in H.bld)bldTick(sys.key,id);
+}
+/* ── очки и ступень (§6) ── */
+function rungPoints(sx,sy){
+  const key=sx+","+sy;let p=0;
+  const P=G.place||{};
+  const rec=P[key];if(rec)p+=Math.min(4,rec.n|0);                       /* заходы */
+  let lands=0;for(const k in P)if(k.indexOf(key+"/")===0)lands+=Math.min(2,P[k].n|0);
+  p+=Math.min(4,lands);                                                  /* посадки на тела */
+  let shafts=0;for(const k in (G.mines||{}))if(k.indexOf(key+":")===0)shafts++;
+  p+=Math.min(2,shafts)*2;                                               /* шахты */
+  let cells=0;for(const k in (G.bases||{}))if(k.indexOf(key+":")===0)cells+=((G.bases[k].cells||[]).length|0);
+  p+=Math.min(8,cells);                                                  /* ячейки базы */
+  if(G.occCalm&&G.occCalm[key])p+=3;                                     /* сектор отбит */
+  if(G.names&&G.names[key])p+=2;                                         /* имя */
+  const S=G.settle&&G.settle[key];if(S)p+=Math.min(6,(S.stage|0)*2);     /* посёлок */
+  const rep=G.rep&&G.rep[key];if(rep>0)p+=Math.min(3,rep|0);             /* репутация */
+  if(G.home&&G.home.sx===sx&&G.home.sy===sy)p+=3;                        /* дом */
+  const H=G.hold&&G.hold[key];
+  if(H&&H.deeds){
+    p+=Math.min(6,H.deeds.drone|0);                                      /* дроны, выработавшие точку */
+    p+=Math.min(4,H.deeds.drill|0);                                      /* пробуренные залежи */
+    p+=Math.min(6,Math.floor((H.deeds.cargo|0)/50));                     /* привезённый груз, по 50 */
+  }
+  if(H&&H.bld){let lv=0;for(const id in H.bld)lv+=H.bld[id].lvl|0;p+=Math.min(24,lv*2);}
+  return p;
+}
+function rungOf(sx,sy){
+  const p=rungPoints(sx,sy);let r=0;
+  for(let i=1;i<=30;i++)if(p>=RUNG_T[i])r=i;
+  /* ворота: ступень зовётся тем, что здесь стоит */
+  const key=sx+","+sy,P=G.place||{};
+  const landed=Object.keys(P).some(k=>k.indexOf(key+"/")===0);
+  if(!landed)r=Math.min(r,5);
+  const H=G.hold&&G.hold[key],D=(H&&H.deeds)||{};
+  const droneHere=(G.drones||[]).some(d=>d.sx===sx&&d.sy===sy)||(D.drone|0)>0;
+  if(!((D.drill|0)>0&&droneHere))r=Math.min(r,10);
+  const nb=H&&H.bld?Object.keys(H.bld).length:0;
+  if(nb<1)r=Math.min(r,15);
+  if(nb<3)r=Math.min(r,20);
+  return r;
+}
+/* чего не хватает до площадки — словами игрока, не числом */
+function rungGateTxt(sx,sy){
+  const key=sx+","+sy,P=G.place||{},H=G.hold&&G.hold[key],D=(H&&H.deeds)||{};
+  const L=[];
+  if(!Object.keys(P).some(k=>k.indexOf(key+"/")===0))L.push("сесть на планету");
+  if(!((D.drill|0)>0))L.push("пробурить залежь");
+  if(!((G.drones||[]).some(d=>d.sx===sx&&d.sy===sy)||(D.drone|0)>0))L.push("оставить дрона");
+  return L;
+}
+/* обращение у стойки по ступени (§8.1) */
+function rungAddress(r,sx,sy){
+  if(r>=30){const nm=G.names&&G.names[sx+","+sy];return nm?"с «"+nm+"»":"по имени";}
+  return r>=25?"начальник трассы":r>=20?"начальник узла":r>=15?"начальник участка":r>=11?"монтажник":r>=5?"наблюдатель":"никак";
+}
+function bldSites(r){return r>=20?3:(r>=15?2:(r>=11?1:0));}
+function bldTierOpen(r,def){
+  if(def.fam==="D")return r>=(def.id==="slipway"?22:25);
+  if(def.fam==="C")return r>=20;
+  return r>=11;
+}
+/* ── где можно ставить: тела системы и правило §10.1 ── */
+function sysHasFauna(sys){
+  const P=sys.planets||[];
+  return P.some(p=>p.fauna||p.life||p.beasts)||P.some(p=>["terran","jungle","ocean","toxic"].indexOf(p.type)>=0);
+}
+function bldAtWhy(sys,def){
+  const rule=def.at,P=sys.planets||[],types=P.map(p=>p.type);
+  if(rule==="any")return"";
+  if(rule.indexOf("solid:")===0){const k=rule.slice(6);
+    return P.some(p=>p.type!=="gas"&&(PROFILE[p.type]||[]).indexOf(k)>=0)?"":"нужен твёрдый мир с "+RES[k].ru.toLowerCase();}
+  if(rule.indexOf("world:")===0){const L=rule.slice(6).split(",");
+    return types.some(t=>L.indexOf(t)>=0)?"":"нужен мир: "+L.map(t=>TYPES[t]?TYPES[t].ru:t).join(" / ");}
+  if(rule==="belt")return sys.belt?"":"в системе нет пояса";
+  if(rule==="gas")return types.indexOf("gas")>=0?"":"в системе нет газового гиганта";
+  if(rule==="fauna")return sysHasFauna(sys)?"":"в системе нет фауны";
+  if(rule==="mine")return Object.keys(G.mines||{}).some(k=>k.indexOf(sys.key+":")===0)?"":"здесь ещё не копали шахту";
+  return"";
+}
+/* что система делает сама: профиль её планет и выпуск её построек */
+function sysMakes(sys){
+  const out={};
+  for(const p of (sys.planets||[]))if(p.type!=="gas")for(const k of (PROFILE[p.type]||[]))out[k]=1;
+  const H=G.hold&&G.hold[sys.key];
+  if(H&&H.bld)for(const id in H.bld){const d=BLD[id];if(d)for(const k in d.makes)out[k]=1;}
+  return out;
+}
+function bldRuleWhy(sys,def){
+  if(rungOf(sys.sx,sys.sy)>=29)return"";   /* Полдень: система кормит себя сама */
+  const M=sysMakes(sys);
+  const bad=Object.keys(def.eats).filter(k=>M[k]);
+  return bad.length?"здесь это и так делают: "+bad.map(k=>RES[k].ru.toLowerCase()).join(", "):"";
+}
+function bldWhy(sys,def){
+  const r=rungOf(sys.sx,sys.sy);
+  if(r<11)return"площадка ещё не открыта";
+  if(!bldTierOpen(r,def))return"ярус откроется на ступени "+(def.fam==="D"?(def.id==="slipway"?22:25):20);
+  const H=G.hold&&G.hold[sys.key];
+  if(H&&H.bld&&H.bld[def.id])return"уже стоит";
+  const a=bldAtWhy(sys,def);if(a)return a;
+  return bldRuleWhy(sys,def);
+}
+function bldBuiltHere(sys){const H=G.hold&&G.hold[sys.key];return H&&H.bld?Object.keys(H.bld):[];}
+function bldFreeSites(sys){return Math.max(0,bldSites(rungOf(sys.sx,sys.sy))-bldBuiltHere(sys).length);}
+/* список: что можно заложить здесь сейчас, и что нельзя — с причиной */
+function bldAvailable(sys){
+  const ok=[],no=[];
+  for(const id of BLD_KEYS){const def=BLD[id],why=bldWhy(sys,def);(why?no:ok).push({def,why});}
+  return{ok,no};
+}
+/* ── оплата ── */
+function bldCanPay(cost){
+  if((cost.credits|0)>G.credits)return false;
+  for(const k in cost)if(k!=="credits"&&(G.cargo[k]|0)<cost[k])return false;
+  return true;
+}
+function bldLack(cost){
+  const L=[];
+  if((cost.credits|0)>G.credits)L.push("кр "+Math.round(cost.credits-G.credits));
+  for(const k in cost)if(k!=="credits"&&(G.cargo[k]|0)<cost[k])L.push(RES[k].ru.toLowerCase()+" "+(cost[k]-(G.cargo[k]|0)));
+  return L;
+}
+function bldPay(cost){
+  G.credits-=cost.credits|0;
+  for(const k in cost)if(k!=="credits")G.cargo[k]-=cost[k];
+}
+/* ── заложить, поднять уровень ── */
+function bldLay(sys,id){
+  const def=BLD[id];if(!def||!sys||!sys.station)return"";
+  const why=bldWhy(sys,def);if(why)return why;
+  if(bldFreeSites(sys)<=0)return"все площадки заняты";
+  if(!bldCanPay(def.cost))return"не хватает: "+bldLack(def.cost).join(", ");
+  bldPay(def.cost);
+  const H=holdOf(sys.key);H.bld=H.bld||{};
+  const now=Date.now();
+  H.bld[id]={lvl:1,t0:now,ready:now+BLD_SHIFTS[def.tier]*HOLD_SHIFT,my:{},got:{}};
+  if(typeof recordAdd==="function")recordAdd(sys.station.name,"заложен: "+def.ru);
+  return"";
+}
+function bldUpgrade(sys,id){
+  const def=BLD[id],B=bldEntry(sys.key,id);
+  if(!def||!B)return"нечего поднимать";
+  if(B.lvl>=3)return"выше ×3 не бывает";
+  if(Date.now()<(B.ready||0))return"сперва достроить";
+  const cost=bldUpgradeCost(def,B.lvl+1);
+  if(!bldCanPay(cost))return"не хватает: "+bldLack(cost).join(", ");
+  bldPay(cost);
+  bldTick(sys.key,id);
+  B.lvl++;B.ready=Date.now()+BLD_SHIFTS[def.tier]*HOLD_SHIFT;
+  return"";
+}
+function bldEntry(key,id){const H=G.hold&&G.hold[key];return H&&H.bld?H.bld[id]||null:null;}
+function bldReady(B,now){return !!B&&(now||Date.now())>=(B.ready||0);}
+function holdCapMul(key){return 1;}   /* Накопитель (семья E, шаг 7) вернёт 2 */
+/* ── бункер: догнать по сменам ── */
+function bldTick(key,id,now){
+  const B=bldEntry(key,id),def=BLD[id];
+  if(!B||!def)return;
+  now=now||Date.now();
+  B.my=B.my||{};B.got=B.got||{};
+  if(now<(B.ready||0))return;
+  const t0=Math.max(B.t0||now,B.ready||0);
+  let s=Math.floor((now-t0)/HOLD_SHIFT);
+  if(s<=0)return;
+  s=Math.min(s,72);
+  const cap=HOLD_CAP_SHIFTS*holdCapMul(key);
+  if(def.fam==="A"){
+    /* добыча: запас растёт, режется тремя сменами */
+    const O=bldOut(def,B.lvl);
+    for(const k in O)B.got[k]=Math.min(O[k]*cap,(B.got[k]||0)+O[k]*s);
+  }else{
+    const Q=bldQuota(def,B.lvl),O=bldOut(def,B.lvl);
+    let tot=0;for(const k in Q)tot+=Q[k];
+    for(let i=0;i<s;i++){
+      let ate=0;
+      for(const k in Q){const e=Math.min(B.my[k]|0,Q[k]);B.my[k]=(B.my[k]|0)-e;ate+=e;}
+      if(ate<=0)break;   /* бункер пуст — дальше смены ничьи */
+      const sh=ate/tot;
+      for(const k in O)B.got[k]=Math.min(O[k]*cap,(B.got[k]||0)+O[k]*sh);
+    }
+  }
+  B.t0=t0+s*HOLD_SHIFT;
+}
+/* сколько бункеры здесь возьмут товара k прямо сейчас */
+function bldWant(sys,k){
+  const ids=bldBuiltHere(sys);let want=0;const now=Date.now();
+  for(const id of ids){
+    const def=BLD[id],B=bldEntry(sys.key,id);
+    if(!def||!def.eats[k]||!bldReady(B,now))continue;
+    bldTick(sys.key,id,now);
+    const Q=bldQuota(def,B.lvl)[k];
+    want+=Math.max(0,Q*HOLD_CAP_SHIFTS*holdCapMul(sys.key)-(B.my[k]|0));
+  }
+  return want;
+}
+/* положить в бункеры: возвращает, сколько взяли */
+function bldFeed(sys,k,qty){
+  if(!sys||qty<=0)return 0;
+  const ids=bldBuiltHere(sys);let left=qty|0,fed=0;const now=Date.now();
+  for(const id of ids){
+    if(left<=0)break;
+    const def=BLD[id],B=bldEntry(sys.key,id);
+    if(!def||!def.eats[k]||!bldReady(B,now))continue;
+    bldTick(sys.key,id,now);
+    const Q=bldQuota(def,B.lvl)[k];
+    const room=Math.max(0,Q*HOLD_CAP_SHIFTS*holdCapMul(sys.key)-(B.my[k]|0));
+    const n=Math.min(room,left);
+    if(n>0){B.my[k]=(B.my[k]|0)+n;left-=n;fed+=n;}
+  }
+  return fed;
+}
+/* сдать в цех промышленный товар (рынок его не берёт): по теневой цене, в бункер */
+function bldSellInd(sys,k,qty){
+  qty=Math.min(qty|0,G.cargo[k]|0);
+  if(qty<=0||!RES[k]||!RES[k].ind)return 0;
+  const n=bldFeed(sys,k,qty);
+  if(n<=0)return 0;
+  const price=indPrice(k),rev=n*price;
+  G.cargo[k]-=n;earn(rev,"trade");
+  return rev;
+}
+/* забрать пай или запас в трюм */
+function bldCollect(sys,id){
+  const B=bldEntry(sys.key,id),def=BLD[id];
+  if(!B||!def)return 0;
+  bldTick(sys.key,id);
+  let took=0;
+  if(def.fam==="A")return 0;   /* добыча продаёт, не дарит: bldBuySrc */
+  for(const k in B.got){
+    const n=Math.floor(B.got[k]);if(n<=0)continue;
+    const t=addRes(k,n);B.got[k]-=t;took+=t;
+  }
+  return took;
+}
+/* купить из запаса своего промысла по 0.7 местной цены (или теневой) */
+function srcPrice(sys,k){
+  const p=RES[k].ind?indPrice(k):(TRADE_KEYS.indexOf(k)>=0?marketFor(sys)[k]:indPrice(k));
+  return Math.max(1,Math.round(p*SRC_DISCOUNT));
+}
+function bldBuySrc(sys,id,k,qty){
+  const B=bldEntry(sys.key,id),def=BLD[id];
+  if(!B||!def||def.fam!=="A")return 0;
+  bldTick(sys.key,id);
+  const have=Math.floor(B.got[k]||0),price=srcPrice(sys,k);
+  const free=stat().cargoMax-held();
+  const n=Math.max(0,Math.min(qty|0,have,free,Math.floor(G.credits/price)));
+  if(n<=0)return 0;
+  G.credits-=n*price;G.cargo[k]=(G.cargo[k]|0)+n;B.got[k]-=n;
+  return n;
+}
+/* ближайший едок товара среди своих построек — для ряда трюма (§5) */
+function holdNearestEater(k){
+  const H=G.hold||{};let best=null;
+  for(const key in H){
+    const b=H[key].bld;if(!b)continue;
+    for(const id in b){
+      const def=BLD[id];if(!def||!def.eats[k])continue;
+      const[sx,sy]=key.split(",").map(Number);
+      const d=Math.max(Math.abs(sx-G.sx),Math.abs(sy-G.sy));
+      if(!best||d<best.d){const s=getSystem(sx,sy);best={key,sx,sy,d,def,name:s&&s.station?s.station.name:key};}
+    }
+  }
+  return best;
+}
+/* строки для ДЕЛО: каждая постройка — одна строка */
+function holdDealList(){
+  const H=G.hold||{},out=[];const now=Date.now();
+  for(const key in H){
+    const b=H[key].bld;if(!b)continue;
+    const[sx,sy]=key.split(",").map(Number);
+    const s=getSystem(sx,sy);const nm=s&&s.station?s.station.name:key;
+    for(const id in b){
+      const def=BLD[id],B=b[id];if(!def)continue;
+      bldTick(key,id,now);
+      let state;
+      if(!bldReady(B,now))state="монтаж · готово через "+Math.max(1,Math.ceil((B.ready-now)/60000))+" мин";
+      else if(def.fam==="A"){state="в запасе: "+Object.keys(B.got).map(k=>RES[k].ru.toLowerCase()+" "+Math.floor(B.got[k]||0)).join(", ");}
+      else{
+        const my=Object.keys(def.eats).map(k=>RES[k].ru.toLowerCase()+" "+(B.my[k]|0)).join(", ");
+        const got=Object.keys(B.got).filter(k=>Math.floor(B.got[k])>0).map(k=>RES[k].ru.toLowerCase()+" "+Math.floor(B.got[k])).join(", ");
+        state="в бункере: "+my+(got?" · пай: "+got:" · пая пока нет");
+      }
+      out.push({nm:"«"+nm+"» · "+def.ru+" ×"+B.lvl,state,sx,sy});
+    }
+  }
+  return out;
+}
+/* ── тело станции: одна форма семьи на постройку, уровень — размер ──
+   Кладётся вторым слоем после stationMods (17c-system-draw). Не кэшируется:
+   штатные модули тоже рисуются векторно каждый кадр; проход по кодексу — шаг 8. */
+function holdMods(sys){
+  const ids=bldBuiltHere(sys);if(!ids.length)return[];
+  const now=Date.now(),out=[];
+  ids.forEach((id,i)=>{
+    const def=BLD[id],B=bldEntry(sys.key,id);if(!def||!B)return;
+    const r=rng(hashi(sys.seed,0x0B1D,i+1));
+    const ang=Math.PI*.25+i*(TAU/7)+(r()-.5)*.4;
+    const s=bldReady(B,now)?.55+.25*(B.lvl|0):.4;
+    out.push({id:"b:"+id,ru:def.ru,sh:def.sh,ang,d:40+r()*10,s,ph:r()*TAU});
+  });
+  return out;
+}
+function drawHoldMods(sys){
+  if(typeof drawStModule!=="function")return;
+  for(const q of holdMods(sys))drawStModule(q,sys.station);
 }
 
 /* ══════════════ наёмники: рейс как раздача карт ══════════════ */
@@ -16589,6 +17110,9 @@ function sellCargo(sys,k,qty){
      Котировка та же, что видел ряд трюма; съедается ровно то, что сдано */
   const Q=(typeof sellQuote==="function")?sellQuote(sys,k,qty):{revenue:qty*marketFor(sys)[k],nA:0,priceA:0,base:marketFor(sys)[k]};
   if(Q.nA&&typeof appetiteEat==="function")appetiteEat(sys,k,Q.nA);
+  /* бункеры своих цехов (M291): берут по обычной цене, но с паем; давление вниз
+     двигает только то, чего никто не съел */
+  Q.nB=(typeof bldFeed==="function")?bldFeed(sys,k,qty-Q.nA):0;
   const revenue=Q.revenue;
   sellCargo.last=Q;
   const N=(typeof needOf==="function")?needOf(sys):null;   /* до закрытия: нужда ×2 в заработок маршрута не идёт (M289) */
@@ -16597,7 +17121,7 @@ function sellCargo(sys,k,qty){
   if(typeof needClose==="function")needClose(sys,k);   /* нужда закрыта этим привозом (M152e) */
   G.soldTotal=(G.soldTotal|0)+revenue;   // «пузырь» смотрит на выручку, а не на штуки
   const m=G.market[sys.key];
-  m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
+  m.pressure[k]=clamp((m.pressure[k]||0)-Math.max(0,qty-Q.nA-Q.nB)*.005,-.35,0);
   return revenue;
 }
 function sellDroneYield(sys,k,qty){
@@ -16722,6 +17246,7 @@ function tickDrones(){
     if(d.pool<=0){
       const hrs=Math.max(1,Math.round((now-(d.bornMs||now))/3600000));
       G.drones.splice(i,1);G.droneInventory++;
+      if(typeof holdDeed==="function")holdDeed(d.sx,d.sy,"drone");   /* дело системы (M291) */
       logAdd("money","Дрон "+droneName(d)+" выработал точку: "+(d.sold|0)+" "+
         RES[d.res].ru.toLowerCase()+" · "+(d.earned|0).toLocaleString("ru")+" кр за "+hrs+" ч");
       say("Дрон "+droneName(d)+" вернулся в трюм\nточка выработана · "+
@@ -30819,6 +31344,7 @@ function drawStation(x,y,Z){
   /* модули идут первым слоем: они висят на штангах вокруг ядра, и ядро типа
      должно перекрывать их, а не наоборот (17a-station-mod) */
   drawStationMods(G.sys);
+  if(typeof drawHoldMods==="function")drawHoldMods(G.sys);   /* что построил игрок (M291) */
   if(ty==="trade"){
     /* раздутые склады и гроздь причалов: контейнеры висят на штангах по бортам */
     stPanels(12,6);
@@ -43866,7 +44392,8 @@ function updateSurface(dt){
         /* что взял своими руками — то и можно разболтать у стойки (11aj) */
         if(!G.lastDig||G.lastDig.sx!==G.sx||G.lastDig.sy!==G.sy||
            G.lastDig.pi!==S.p.idx||G.lastDig.res!==dep.res)
-          G.lastDig={sx:G.sx,sy:G.sy,pi:S.p.idx,res:dep.res,n:0};
+          {G.lastDig={sx:G.sx,sy:G.sy,pi:S.p.idx,res:dep.res,n:0};
+           if(typeof holdDeed==="function")holdDeed(G.sx,G.sy,"drill");}   /* дело системы (M291) */
         G.lastDig.n++;
         if(dep.left<=0)say("Залежь выработана\n"+RES[dep.res].ru);
       }
@@ -54839,6 +55366,136 @@ function stTabFuse(){
     ammoRow($body,renderTab);
   }
 
+/* ══════════════ станция · вкладка СТРОЙКА (ВЛАДЕНИЯ) ══════════════
+   M291, шаг 3. Экранов не прибавляется: вкладка живёт в разделе ВЛАДЕНИЯ рядом
+   с базами (91f-ui держит шесть разделов). Наверху — что здесь стоит и что оно
+   вам должно, ниже — что можно заложить, в конце — почему остальное нельзя.
+   Термины впервые встречаются в последствии, а не в справке: «ПЕЧЬ ВЗЯЛА 6 —
+   ЗА ВАМИ ЗАПИСАНЫ СПЛАВЫ». */
+function renderSiteTab(){
+  const sys=G.sys;if(!sys||!sys.station)return;
+  const r=rungOf(sys.sx,sys.sy),pts=rungPoints(sys.sx,sys.sy);
+  const sites=bldSites(r),built=bldBuiltHere(sys),now=Date.now();
+  $body.appendChild(el("div","sec","СТРОЙКА · "+(sites?"ПЛОЩАДОК "+sites+" · ЗАНЯТО "+built.length:"ПЛОЩАДКИ ЕЩЁ НЕТ")+
+    " · ЗДЕСЬ ВАС ЗОВУТ: "+rungAddress(r,sys.sx,sys.sy).toUpperCase()));
+  if(r<11){
+    const gates=rungGateTxt(sys.sx,sys.sy);
+    const need=Math.max(0,RUNG_T[11]-pts);
+    $body.appendChild(el("div","row","<div class='nm'><b>Монтажная площадка откроется, когда система станет вашей</b><s>"+
+      (need>0?"считается всё, что вы здесь сделали: посадки, шахты, база, имя, посёлок, дроны, привезённый груз · сделано на "+pts+" из "+RUNG_T[11]:"дел здесь уже довольно")+
+      (gates.length?"<br>ещё нужно: "+gates.join(", "):"")+"</s></div>"));
+  }
+  /* ── что стоит ── */
+  for(const id of built){
+    const def=BLD[id],B=bldEntry(sys.key,id);if(!def||!B)continue;
+    bldTick(sys.key,id,now);
+    const row=el("div","row");
+    let st;
+    if(!bldReady(B,now))st="монтаж · готово через "+Math.max(1,Math.ceil((B.ready-now)/60000))+" мин";
+    else if(def.fam==="A")st="делает "+Object.keys(def.makes).map(k=>RES[k].ru.toLowerCase()+" "+def.makes[k]*B.lvl).join(", ")+" в смену";
+    else{
+      const Q=bldQuota(def,B.lvl);
+      st="ест "+Object.keys(Q).map(k=>RES[k].ru.toLowerCase()+" "+Q[k]).join(" + ")+" в смену · в бункере "+
+        Object.keys(Q).map(k=>(B.my[k]|0)).join("/")+" · запас на "+HOLD_CAP_SHIFTS*holdCapMul(sys.key)+" смены";
+    }
+    row.appendChild(el("div","nm","<b>"+def.ru+" ×"+B.lvl+"</b><s>"+st+"</s>"));
+    /* поднять уровень */
+    if(B.lvl<3&&bldReady(B,now)){
+      const cost=bldUpgradeCost(def,B.lvl+1),can=bldCanPay(cost);
+      const b=el("button","act sm"+(can?" gold":""),"×"+(B.lvl+1));
+      b.title=bldCostTxt(cost).replace(/<[^>]+>/g,"");
+      b.disabled=!can;
+      b.onclick=()=>{const why=bldUpgrade(sys,id);
+        if(why)say(why);else tell("tech",def.ru+" на «"+G.st.name+"» поднят до ×"+B.lvl,def.ru+"\n×"+B.lvl+" · монтаж идёт");
+        renderTab();};
+      row.appendChild(b);
+    }
+    $body.appendChild(row);
+    if(!bldReady(B,now))continue;
+    if(def.fam==="A"){
+      /* запас промысла — продаётся вам со скидкой */
+      for(const k in def.makes){
+        const have=Math.floor(B.got[k]||0),price=srcPrice(sys,k);
+        const rr=el("div","row");
+        rr.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+" в запасе: "+have+"</b><s>по "+price+" кр — 0.7 цены · копится до "+
+          def.makes[k]*B.lvl*HOLD_CAP_SHIFTS*holdCapMul(sys.key)+"</s>"));
+        const free=Math.max(0,stat().cargoMax-held()),can=Math.min(have,free,Math.floor(G.credits/price));
+        const b=el("button","act"+(can?" gold":""),can?"ВЗЯТЬ ×"+can:"НЕЧЕГО");
+        b.disabled=!can;
+        b.onclick=()=>{const n=bldBuySrc(sys,id,k,can);
+          if(n)tell("money","Взято с промысла на «"+G.st.name+"»: "+RES[k].ru.toLowerCase()+" ×"+n,"С промысла: "+RES[k].ru+" ×"+n);
+          renderTab();};
+        rr.appendChild(b);$body.appendChild(rr);
+      }
+    }else{
+      /* сдать в цех то, что он ест и что есть в трюме */
+      for(const k in def.eats){
+        const have=G.cargo[k]|0;if(!have)continue;
+        const want=Math.min(have,bldWant(sys,k));
+        const price=RES[k].ind?indPrice(k):marketFor(sys)[k];
+        const rr=el("div","row");
+        rr.appendChild(el("div","nm","<b>Сдать в цех: <span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+"</span> ×"+have+"</b><s>"+
+          (want?"возьмёт "+want+" по "+price+" кр · за вами запишут "+Object.keys(def.makes).map(kk=>RES[kk].ru.toLowerCase()).join(", "):"бункер полон — приходите через смену")+"</s></div>"));
+        const b=el("button","act"+(want?" gold":""),"СДАТЬ");
+        b.disabled=!want;
+        b.onclick=()=>{
+          const rev=RES[k].ind?bldSellInd(sys,k,want):sellCargo(sys,k,want);
+          tell("money",def.ru.toUpperCase()+" ВЗЯЛ "+want+" "+RES[k].ru.toUpperCase()+" — ЗА ВАМИ ЗАПИСАНЫ "+Object.keys(def.makes).map(kk=>RES[kk].ru.toUpperCase()).join(", ")+" · +"+rev.toLocaleString("ru")+" кр",
+               def.ru+" взял "+want+"\n+"+rev.toLocaleString("ru")+" кр · пай растёт");
+          renderTab();};
+        rr.appendChild(b);$body.appendChild(rr);
+      }
+      /* пай */
+      const got=Object.keys(B.got).filter(k=>Math.floor(B.got[k])>0);
+      const cap=Object.keys(def.makes).map(k=>RES[k].ru.toLowerCase()+" до "+def.makes[k]*B.lvl*HOLD_CAP_SHIFTS*holdCapMul(sys.key)).join(", ");
+      const rr=el("div","row");
+      rr.appendChild(el("div","nm","<b>Ваш пай: "+(got.length?got.map(k=>"<span style='color:"+RES[k].col+"'>"+RES[k].ru.toLowerCase()+" "+Math.floor(B.got[k])+"</span>").join(", "):"пока ничего")+
+        "</b><s>лежит здесь под вашим именем · "+cap+" · дальше — ничьё</s></div>"));
+      const b=el("button","act"+(got.length?" gold":""),"ЗАБРАТЬ");
+      b.disabled=!got.length;
+      b.onclick=()=>{const n=bldCollect(sys,id);
+        if(n)tell("money","Пай забран на «"+G.st.name+"»: "+n+" ед","Пай\n"+n+" ед в трюм");
+        else say("В трюме нет места");
+        renderTab();};
+      rr.appendChild(b);$body.appendChild(rr);
+    }
+  }
+  /* ── что можно заложить ── */
+  if(r>=11){
+    const A=bldAvailable(sys),free=bldFreeSites(sys);
+    if(A.ok.length){
+      $body.appendChild(el("div","sec",(free?"МОЖНО ЗАЛОЖИТЬ · ":"ПЛОЩАДКИ ЗАНЯТЫ · ")+"МОНТАЖ "+BLD_SHIFTS[1]+"–"+BLD_SHIFTS[3]+" СМЕНЫ ПО ЯРУСУ"));
+      for(const fam of BLD_FAM_KEYS){
+        const L=A.ok.filter(x=>x.def.fam===fam);if(!L.length)continue;
+        for(const x of L){
+          const def=x.def,can=free>0&&bldCanPay(def.cost);
+          const row=el("div","row");
+          row.appendChild(el("div","nm","<b>"+def.ru+"</b><s>"+BLD_FAM[fam].ru.toLowerCase()+" · "+bldIoTxt(def)+"<br>цена: "+bldCostTxt(def.cost)+
+            (!can&&free>0?"<br>не хватает: "+bldLack(def.cost).join(", "):"")+"</s>"));
+          const b=el("button","act"+(can?" gold":""),"ЗАЛОЖИТЬ");
+          b.disabled=!can;
+          b.onclick=()=>{const why=bldLay(sys,def.id);
+            if(why)say(why);
+            else tell("tech","Заложен "+def.ru.toLowerCase()+" на «"+G.st.name+"» · монтаж "+BLD_SHIFTS[def.tier]+" смены",
+                      def.ru+"\nзаложен · монтаж идёт");
+            renderTab();};
+          row.appendChild(b);$body.appendChild(row);
+        }
+      }
+    }
+    if(A.no.length){
+      /* остальное — одной строкой на причину, а не списком в сорок строк */
+      const byWhy={};
+      for(const x of A.no){if(x.why==="уже стоит")continue;(byWhy[x.why]=byWhy[x.why]||[]).push(x.def.ru);}
+      const keys=Object.keys(byWhy);
+      if(keys.length){
+        $body.appendChild(el("div","sec","ЗДЕСЬ НЕ ПОСТАВИТЬ"));
+        for(const w of keys)$body.appendChild(el("div","row","<div class='nm'><b>"+w+"</b><s>"+byWhy[w].length+" — "+byWhy[w].slice(0,4).join(", ")+(byWhy[w].length>4?"…":"")+"</s></div>"));
+      }
+    }
+  }
+}
+
 /* ══════════════ станция ══════════════ */
 const $st=document.getElementById("station"),$body=document.getElementById("stBody");
 let tab="market";
@@ -54846,6 +55503,7 @@ let fuseSel=[];   // два корпуса, выбранных под сплав
 function openStation(){
   G.st=G.sys.station;G.mode="dock";G.ap=null;toggleLog(false);
   mgrTick();mgrRouteVisit(G.sys);routeVisit(G.sys);
+  if(typeof holdDock==="function")holdDock(G.sys);   /* груз, с которым пристыковались, и бункеры (M291) */
   scripVisitReset();          // потолок обмена бонами — на заход (12u-scrip)
   /* трепло (12x): у прилавка оно слышит цены, а иногда выдаёт то, что слышало
      у вас. Обе стороны одной птицы, и обе — на стыковке */
@@ -54908,15 +55566,15 @@ function openStation(){
    вкладкой вторая ступень не показывается — нечего выбирать. */
 const ST_GROUPS=[
   {id:"board", ru:"ДОСКА",     tabs:["board"]},   /* M151a: всё, что мир говорит о себе, на одной стене */
-  {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","flea","smelt","scrip"]},
+  {id:"trade", ru:"ТОРГОВЛЯ",  tabs:["market","barter","flea","scrip"]},
   {id:"ship",  ru:"КОРАБЛЬ",   tabs:["yard","mods","fuse","instr"]},
   {id:"know",  ru:"НАУКА",     tabs:["lab"]},
   {id:"folk",  ru:"ЛЮДИ",      tabs:["crew","cantina"]},
-  {id:"hold",  ru:"ВЛАДЕНИЯ",  tabs:["bases"]}
+  {id:"hold",  ru:"ВЛАДЕНИЯ",  tabs:["bases","site"]}   /* СТРОЙКА (M291): вкладка, не раздел */
 ];
 function stGroupOf(t){const g=ST_GROUPS.find(G0=>G0.tabs.indexOf(t)>=0);return g?g.id:ST_GROUPS[0].id;}
 let stGroup="trade";
-function stTabsHere(){return ["board"].concat(stTypeOf(G.st.stype).tabs);}   /* доска есть у всех (M151a) */
+function stTabsHere(){return ["board"].concat(stTypeOf(G.st.stype).tabs,G.st.stype==="fuel"?[]:["site"]);}   /* доска есть у всех (M151a); стройка — у всех, кроме заправки (M291) */
 function syncTabs(){
   const has=stTabsHere();
   /* раздел живёт, только если у него есть хоть одна вкладка на этой станции */
@@ -55271,6 +55929,19 @@ function renderTabBody(){
         $body.appendChild(r);
       }
     }
+    /* промышленное (M291): рынок не берёт — ряд называет ближайший свой цех, который ест */
+    if(IND_KEYS.some(k=>G.cargo[k]>0)){
+      $body.appendChild(el("div","sec","ПРОМЫШЛЕННОЕ · РЫНОК НЕ БЕРЁТ · СДАЁТСЯ В СВОЙ ЦЕХ"));
+      for(const k of IND_KEYS){
+        const q=G.cargo[k];if(!q)continue;
+        const e=(typeof holdNearestEater==="function")?holdNearestEater(k):null;
+        const r=el("div","row");
+        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+          (e?(e.d?"едят на «"+e.name+"» · "+e.d+" "+pl3(e.d,"прыжок","прыжка","прыжков"):"едят здесь — вкладка СТРОЙКА"):"едока пока нет — поставьте цех, который это ест")+"</s>"));
+        r.appendChild(el("div","qt",q+"<s>ед</s>"));
+        $body.appendChild(r);
+      }
+    }
     $body.appendChild(el("div","sec","ЗАКУПОЧНЫЕ ЦЕНЫ ЗДЕСЬ — МЕНЯЮТСЯ ОТ ПРОДАЖ И СО ВРЕМЕНЕМ"));
     for(const k of TRADE_KEYS){
       const r=el("div","row");
@@ -55377,6 +56048,7 @@ function renderTabBody(){
   else if(tab==="instr"){stTabInstr();}
   else if(tab==="lab"){stTabLab();}
   else if(tab==="fuse"){stTabFuse();}
+  else if(tab==="site"){if(typeof renderSiteTab==="function")renderSiteTab();}
   else if(tab==="bases"){
     renderBasesTab(st);
   }
@@ -55519,41 +56191,6 @@ function renderTabBody(){
       const b=el("button","act gold","НАНЯТЬ");
       b.disabled=G.credits<m.fee||G.crew.length>=crewCap();
       b.onclick=()=>{if(hireMerc(m))renderTab();};
-      r.appendChild(b);$body.appendChild(r);
-    }
-  }
-  else if(tab==="smelt"){
-    /* сплавы нигде не добываются — только здесь: руда в печь, на выходе слиток.
-       Это единственная точка входа для сырья, которое потом тратится (M40, M37, M46). */
-    $body.appendChild(el("div","sec","ПЕРЕПЛАВКА · СЫРЬЁ ИЗ ТРЮМА → СПЛАВЫ · СПЛАВЫ НЕ ПРОДАЮТСЯ"));
-    /* места в трюме не спрашиваем: плавка всегда съедает больше, чем отдаёт,
-       так что после неё груза становится меньше, а не больше */
-    for(const R of SMELT){
-      const have=Math.min(...R.in.map(([k,q])=>Math.floor(G.cargo[k]/q)));
-      const can=Math.min(have,Math.floor(G.credits/R.fee));
-      const r=el("div","row");
-      r.appendChild(el("div","nm","<b style='color:"+RES.alloy.col+"'>"+R.ru+"</b><s>"+
-        R.in.map(([k,q])=>RES[k].ru.toLowerCase()+" ×"+q).join(" + ")+" → сплавы ×1 · "+R.fee+" кр за плавку"+
-        "<br>в трюме хватит на "+have+"</s>"));
-      r.appendChild(el("div","qt",G.cargo.alloy+"<s>сплавов</s>"));
-      const b=el("button","act"+(can?" gold":""),can?"ПЛАВИТЬ ×"+Math.min(can,10):"НЕ ХВАТАЕТ");
-      b.disabled=!can;
-      b.onclick=()=>{
-        const n=Math.min(can,10);
-        for(const [k,q] of R.in)G.cargo[k]-=q*n;
-        G.credits-=R.fee*n;G.cargo.alloy+=n;
-        tell("money","Переплавка на «"+G.st.name+"»: сплавы ×"+n,"Переплавка\nсплавы ×"+n);
-        /* рацпредложение (M152e): первая плавка этого рецепта платит один раз и честно */
-        G.ratios=G.ratios||{};
-        if(!G.ratios[R.ru]){
-          G.ratios[R.ru]=1;const prem=Math.round((R.fee*6+400)/10)*10;
-          earn(prem,"ratio");
-          tell("money","Рацпредложение принято: «"+R.ru+"» · премия "+prem+" кр","РАЦПРЕДЛОЖЕНИЕ\n+"+prem+" кр");
-          if(typeof thingAdd==="function")thingAdd("paper","Рацпредложение · "+R.ru,"принято на «"+G.st.name+"» · премия "+prem+" кр · повторы — просто сплав");
-          if(typeof recordAdd==="function")recordAdd(G.st.name,"рацпредложение: "+R.ru);
-        }
-        renderTab();
-      };
       r.appendChild(b);$body.appendChild(r);
     }
   }
@@ -62295,7 +62932,13 @@ function dealRender(){
     }
   }
 
-  if(!crew.length&&!mgrs.length&&!runs.length&&!bases.length&&!(G.droneInventory|0))
+  /* холдинг (M291): каждая постройка — строка; тычок ведёт курс к ней */
+  const holdL=(typeof holdDealList==="function")?holdDealList():[];
+  if(holdL.length){
+    $dlBody.appendChild(el("div","sec","ХОЛДИНГ · "+holdL.length));
+    for(const h of holdL)dealRow(h.nm,h.state,null,"",(typeof gotoSector==="function")?()=>gotoSector(h.sx,h.sy):null);
+  }
+  if(!crew.length&&!mgrs.length&&!runs.length&&!bases.length&&!holdL.length&&!(G.droneInventory|0))
     $dlBody.appendChild(el("div","row","<div class='nm'><s>на вас пока никто не работает. "+
       "Наёмник ищет работу на станции (ЛЮДИ → ЭКИПАЖ), управляющий сидит в кантине, "+
       "дрона покупают на верфи, база строится с грунта.</s></div>"));

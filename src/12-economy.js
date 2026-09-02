@@ -69,6 +69,9 @@ function sellCargo(sys,k,qty){
      Котировка та же, что видел ряд трюма; съедается ровно то, что сдано */
   const Q=(typeof sellQuote==="function")?sellQuote(sys,k,qty):{revenue:qty*marketFor(sys)[k],nA:0,priceA:0,base:marketFor(sys)[k]};
   if(Q.nA&&typeof appetiteEat==="function")appetiteEat(sys,k,Q.nA);
+  /* бункеры своих цехов (M291): берут по обычной цене, но с паем; давление вниз
+     двигает только то, чего никто не съел */
+  Q.nB=(typeof bldFeed==="function")?bldFeed(sys,k,qty-Q.nA):0;
   const revenue=Q.revenue;
   sellCargo.last=Q;
   const N=(typeof needOf==="function")?needOf(sys):null;   /* до закрытия: нужда ×2 в заработок маршрута не идёт (M289) */
@@ -77,7 +80,7 @@ function sellCargo(sys,k,qty){
   if(typeof needClose==="function")needClose(sys,k);   /* нужда закрыта этим привозом (M152e) */
   G.soldTotal=(G.soldTotal|0)+revenue;   // «пузырь» смотрит на выручку, а не на штуки
   const m=G.market[sys.key];
-  m.pressure[k]=clamp((m.pressure[k]||0)-qty*.005,-.35,0);
+  m.pressure[k]=clamp((m.pressure[k]||0)-Math.max(0,qty-Q.nA-Q.nB)*.005,-.35,0);
   return revenue;
 }
 function sellDroneYield(sys,k,qty){
@@ -202,6 +205,7 @@ function tickDrones(){
     if(d.pool<=0){
       const hrs=Math.max(1,Math.round((now-(d.bornMs||now))/3600000));
       G.drones.splice(i,1);G.droneInventory++;
+      if(typeof holdDeed==="function")holdDeed(d.sx,d.sy,"drone");   /* дело системы (M291) */
       logAdd("money","Дрон "+droneName(d)+" выработал точку: "+(d.sold|0)+" "+
         RES[d.res].ru.toLowerCase()+" · "+(d.earned|0).toLocaleString("ru")+" кр за "+hrs+" ч");
       say("Дрон "+droneName(d)+" вернулся в трюм\nточка выработана · "+

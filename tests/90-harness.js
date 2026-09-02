@@ -45,6 +45,7 @@ function resetWorld(){
   G.crew=[];G.allies=[];G.bases={};G.drones=[];G.droneInventory=0;
   G.rogues=[];G.exiles=[];G.aiRift=null;
   G.relics={};G.relicHint=null;G.bio=0;G.home=null;
+  G.hold={};G.seenPrices={};   /* ленивые карты слоя холдинга и стола цен (M291) */
   /* мир заново — значит и шахты нетронуты, и фронт пиратов пуст */
   G.mines={};G.occ={};G.occCalm={};G.occT=0;G.freed=0;G.quests=[];
   G.nodes={};G.crowns={};G.rareFound=[];G.dealsDone={};G.dealsWait=[];G.rep={};G.poiSeen={};

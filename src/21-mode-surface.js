@@ -525,7 +525,8 @@ function updateSurface(dt){
         /* что взял своими руками — то и можно разболтать у стойки (11aj) */
         if(!G.lastDig||G.lastDig.sx!==G.sx||G.lastDig.sy!==G.sy||
            G.lastDig.pi!==S.p.idx||G.lastDig.res!==dep.res)
-          G.lastDig={sx:G.sx,sy:G.sy,pi:S.p.idx,res:dep.res,n:0};
+          {G.lastDig={sx:G.sx,sy:G.sy,pi:S.p.idx,res:dep.res,n:0};
+           if(typeof holdDeed==="function")holdDeed(G.sx,G.sy,"drill");}   /* дело системы (M291) */
         G.lastDig.n++;
         if(dep.left<=0)say("Залежь выработана\n"+RES[dep.res].ru);
       }

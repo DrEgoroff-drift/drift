@@ -87,7 +87,8 @@ a family of functions), keep the concatenation order, and never split a `const` 
 | `12e-drone-flight` | drones fly: a round trip derived from the clock (no position is ever stored), a dot with a tail between the point and the station, routes as rows, breakdowns that repair themselves by time |
 | `12l-barge` | trade barges: real routes, a barge in distress, wrecks, passengers |
 | `12m-rare` | the hundred rarities: a table of addresses, not a roulette |
-| `12r-route` | the player's own trade ring: legs off the live market, sold or handed to the factor |
+| `12r-route` | the player's own trade ring: legs on the player's own price notes, walked before sold or handed to the factor |
+| `12ab-hold` `12ac-bld` `12ad-site` `26c-ui-station-site` | the holding (`docs/DESIGN-holding.md`): the layer's clock and the station's appetite; the `BLD` table (families A–D, 56 shops on one mechanism); the site, the hopper and the share, the rung of a system from its counters; the СТРОЙКА tab under ВЛАДЕНИЯ |
 | `12s-wear` | the hull ages by hours flown: the look of it, −12% to the hands, service at the yard or at home |
 | `12t-settle` | the settlement: you feed it, they decide what to raise; pays in goods, speaks in glyphs |
 | `15-input` `16-flight` | keys/pads/mouse, starfield, autopilot, trail |

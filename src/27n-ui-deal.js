@@ -149,7 +149,13 @@ function dealRender(){
     }
   }
 
-  if(!crew.length&&!mgrs.length&&!runs.length&&!bases.length&&!(G.droneInventory|0))
+  /* холдинг (M291): каждая постройка — строка; тычок ведёт курс к ней */
+  const holdL=(typeof holdDealList==="function")?holdDealList():[];
+  if(holdL.length){
+    $dlBody.appendChild(el("div","sec","ХОЛДИНГ · "+holdL.length));
+    for(const h of holdL)dealRow(h.nm,h.state,null,"",(typeof gotoSector==="function")?()=>gotoSector(h.sx,h.sy):null);
+  }
+  if(!crew.length&&!mgrs.length&&!runs.length&&!bases.length&&!holdL.length&&!(G.droneInventory|0))
     $dlBody.appendChild(el("div","row","<div class='nm'><s>на вас пока никто не работает. "+
       "Наёмник ищет работу на станции (ЛЮДИ → ЭКИПАЖ), управляющий сидит в кантине, "+
       "дрона покупают на верфи, база строится с грунта.</s></div>"));

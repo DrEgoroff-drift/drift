@@ -8,7 +8,7 @@ const SYS_CACHE=new Map();
 const ST_TYPES=[
   {id:"trade",  ru:"Торговый узел",        tabs:["market","barter","yard","mods","instr","crew","cantina","bases","scrip"],
    mkt:1.08, fuel:1,    rep:1,    w:d=>2.6-d*1.9},
-  {id:"indust", ru:"Промышленный комбинат",tabs:["market","smelt","mods","crew","cantina","bases","scrip"],
+  {id:"indust", ru:"Промышленный комбинат",tabs:["market","mods","crew","cantina","bases","scrip"],
    mkt:.99,  fuel:.92,  rep:.5,   w:d=>1.5-d*.4},
   {id:"yard",   ru:"Верфь",                tabs:["market","yard","mods","instr","barter","crew","cantina","bases","scrip"],
    mkt:.95,  fuel:1.08, rep:.75,  w:d=>1.2-d*.7},

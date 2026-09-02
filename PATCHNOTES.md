@@ -7,6 +7,38 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.288.0 - M291: the site, the hopper and the share
+
+Step 3 of the holding plan (`docs/DESIGN-holding.md` §3, §6, §9, §10). The author's sentence
+made real: «не по рецептам, а если ты возишь, то тебе производят».
+
+- **A system has a rung, computed from what you did there** - visits, landings, shafts, base
+  cells, a retaken sector, a name, a settlement, a home, drones that finished, deposits drilled,
+  cargo you docked with, buildings. Nothing new is stored beyond three small deed counters. At
+  eleven the **монтажная площадка** opens (one site; two at 15, three at 20), gated on a landing,
+  a drilled deposit and a drone. The counter's word for you changes with it.
+- **82 buildings designed, 56 shipped** - the four cargo families as one constant `BLD` on one
+  mechanism: 8 промыслы that make into a stock sold to you at 0.7×, 22 цеха of tier 1 eating raw
+  goods, 18 of tier 2 eating tier 1 (rung 20), 8 участки of tier 3 (rung 25, the Стапель at 22).
+  Each row has its quota, intake → output, cost and where it may stand; **no building eats what
+  its own system makes** - the site says «здесь это и так делают».
+- **The hopper.** Feeding a shop is selling at its station: your units go into its hopper (up to
+  three shifts of its quota), each shift it eats them and credits you the same share of its output
+  under your name, up to three shifts' worth - then production is nobody's until you come back.
+  What you did not bring, the world brings; no fleet is simulated. Sold units the shops ate do not
+  push the price down.
+- **46 industrial goods** in `RES` with `ind`: invisible to the market, the drones and the errands,
+  sold only into a shop that eats them at a shadow price; the hold row names the nearest eater.
+- **СТРОЙКА** - a tab under ВЛАДЕНИЯ, no new section: what stands and what it owes you (ЗАБРАТЬ,
+  ВЗЯТЬ from a промысел, СДАТЬ В ЦЕХ), what can be laid down here with its price, and one line per
+  reason for what cannot. Levels ×2/×3 cost the shop again plus Станочные линии. ДЕЛО lists every
+  building; the station grows a family form per building, sized by level.
+- **ПЕРЕПЛАВКА is gone** (fork 2б): `SMELT`, the smelt tab and its premium are deleted the day the
+  Плавильный цех can pay alloy; alloy also still comes from the base's Плавильня.
+- Tests: `91x-hold-site` - the table's integrity and shadow prices, the rung from counters and its
+  gates, the §10.1 rule, laying down, the hopper's shift, its ceiling, collecting, the промысел's
+  stock and discount, industrial goods into a tier-2 shop, save/load.
+
 ## 0.287.0 - M290: «БЕРЁТ» - the station's appetite, and the layer's clock
 
 Step 2 of the holding plan (`docs/DESIGN-holding.md` §0, §4). Until now every price move the
