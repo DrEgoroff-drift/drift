@@ -348,3 +348,28 @@ TEST_SUITES.push(()=>suite("M317: подпись от габарита и мим
     v.sort((a,b)=>a-b);const p50=v[Math.floor(v.length*.5)],p95=v[Math.floor(v.length*.95)];
     ok(p50<.62,k+": медиана тела "+p50.toFixed(2)+" ниже .62");ok(p95>=.64&&p95<=.88,k+": освещённый борт в VII: p95 "+p95.toFixed(2));}
 }));
+
+/* ══════════════ M318: навесное отделяется тенью, рёбра гофром, трасса на карте — цепочка ══════════════ */
+TEST_SUITES.push(()=>suite("M318: под баком тень на теле, рёбра в два тона, трассы к двум ближайшим",()=>{
+  resetWorld();
+  const lum=(a,x,y)=>{const S=FLEET_SS,g=a.cn.getContext("2d"),d=g.getImageData(Math.round((a.rad+x)*S),Math.round((a.rad+y)*S),2,2).data;
+    let s=0;for(let i=0;i<16;i+=4)s+=(d[i]*.299+d[i+1]*.587+d[i+2]*.114)/255;return s/4;};
+  /* §5 танкер: между баком и телом — тёмная полоса; тело рядом светлее на ступень */
+  {const a=fleetArtOf({k:"tanker",seed:11,name:"X",num:"Л-1",line:1}),hw=a.hw,L=a.L;
+    const sh=lum(a,L*.2,-hw*.19),body=lum(a,L*.2,hw*.05);
+    ok(sh<body-.2,"танкер: тень под баком "+sh.toFixed(2)+" темнее тела "+body.toFixed(2)+" на ступень");}
+  /* §5 рудовоз: тень контейнера на бочке */
+  {const a=fleetArtOf({k:"ore",seed:11,name:"X",num:"Л-1",line:1}),hw=a.hw,L=a.L;
+    const sh=lum(a,L*.25,-hw*.63),body=lum(a,L*.25,hw*.02);
+    ok(sh<body-.2,"рудовоз: тень под контейнером "+sh.toFixed(2)+" против тела "+body.toFixed(2));}
+  /* §5 рефрижератор: гребень и впадина гофра различаются */
+  {const a=fleetArtOf({k:"fridge",seed:11,name:"X",num:"Л-1",line:1}),hw=a.hw,L=a.L;
+    const x0=-L*.45,w=L*.56/10;const c=lum(a,x0+w*6.5,hw*.35),v=lum(a,x0+w*7.5,hw*.35);
+    ok(Math.abs(c-v)>=.06,"рефрижератор: гребень "+c.toFixed(2)+" и впадина "+v.toFixed(2)+" — два тона");}
+  /* §14: четыре станции кучкой — цепочка, не сетка (было бы 6 плеч = 12 штрихов) */
+  {const saveRung=window.rungOf;window.rungOf=()=>12;
+    const st={x:1,y:0};const vis=[[0,0,100,100],[1,0,160,100],[0,1,100,160],[1,1,160,160]].map(q=>({gx:q[0],gy:q[1],s:{sx:q[0],sy:q[1],station:st},x:q[2],y:q[3]}));
+    let strokes=0;const o=ctx.stroke;ctx.stroke=function(){strokes++;return o.apply(ctx,arguments);};
+    drawFleetMap(vis,60);ctx.stroke=o;window.rungOf=saveRung;
+    ok(strokes>=6&&strokes<=8,"четыре станции дали 3–4 плеча, не шесть ("+strokes/2+")");}
+}));

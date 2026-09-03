@@ -449,6 +449,20 @@ same seeds; numbers off the baked sprite, alpha ≥ 40.
 Open from this issue: §5 (ribs, containers and strap-on tanks merging into one tube at 8 px) was
 not ordered and is not paid; §14 still waits for a lived-in save.
 
+**Addendum, 0.315.0 (M318) — the last two laws.** *§5* — paid the way §4 says: a cast shadow
+strip on the body under every strap-on part (tanks, containers, the foreign barges), and the
+рефрижератор's ribs as a two-value corrugation. On the 640-px frame at Z 1.5 the танкер reads
+as six cylinders on a body, the рудовоз as a barrel with four boxes, the рефрижератор as a ribbed
+tube; the почтовик needed nothing, its silhouette is three volumes already. Sprite numbers: body
+under a tank darker by > .2, crest/trough ≥ .06. *§14* — judged on a staged chart (rung forced
+to 12 everywhere): the трасса is in the fleet's two colours and is steerable — it is the chain
+of jumps the fleet flies, and following it puts you where the ladder's services are. What did
+not hold was the mesh: every qualifying pair within 1.6 cells drew a line, ten for a cluster of
+five. Now two nearest neighbours per station, and the line reads as a direction (M318). At the
+default zoom the dashes sit under the map's own links in value and are found by zooming, as every
+line on that chart is — the same limit, not a new one. Issue III has no open law left; what
+remains for the fleet is content (the заявка), not look.
+
 ---
 
 ## ~~Reserved — issue III (continued)~~ — struck 2026-09-03

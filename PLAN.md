@@ -187,6 +187,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M318** (0.315.0) — the fleet's small parts cast shadows on the body, the рефрижератор's ribs as corrugation, трассы on the map as a chain; almanac III closed.
 - **M317** (0.314.0) — the fleet at meeting distance: the six items of almanac III paid (label, zoom ceiling, учебное spine, паром wing, greys a step down, emblem grammar).
 - **M314** (0.311.0) — fleet tails: трассы on the map (§14), the rescuer's call to a barge in distress, wing tiles, the hospital's cross, larger names.
 - **M313** (0.310.0) — the node station «УЗ-1» from rung 25, the black derelict in dangerous empty sectors, the caravan (pirates keep off, fleet pace).
@@ -264,8 +265,9 @@ never touches arithmetic; station modules don't unlock services.
   label from the body's radius and off the chips, the scale to the zoom ceiling, the учебное's
   spine, the паром's wing, the greys a step down with the light reaching the body, and the emblem
   grammar (`fleetGlyph`, thirteen roundels in one construction). Numbers in the 0.314.0 addendum
-  of almanac III. Left there: §5 (small parts merge into one tube at 8 px — not ordered), §14
-  (трассы need a lived-in save).
+  of almanac III. **M318 (0.315.0)** paid the last two: §5 (shadow strips under strap-on parts,
+  the рефрижератор's corrugation) and §14 (the трасса as a chain to two nearest neighbours,
+  judged on a staged chart). Issue III has no open law; the fleet's remainder is the заявка.
   §14 (трассы on the map) is not judged yet: `drawFleetMap` needs a station at rung ≥ 5 and a fresh
   save has none — it wants a lived-in save and its own look.
 

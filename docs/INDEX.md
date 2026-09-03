@@ -689,9 +689,9 @@ drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:241
 drawFindsSystem              src/17b-finds.js:180
 drawFlame                    src/03b-hull-paint.js:10
-drawFleet                    src/12ai-fleet.js:483
-drawFleetMap                 src/12ai-fleet.js:643
-drawFleetShip                src/12ai-fleet.js:439
+drawFleet                    src/12ai-fleet.js:496
+drawFleetMap                 src/12ai-fleet.js:656
+drawFleetShip                src/12ai-fleet.js:452
 drawFoeBody                  src/24ab-raid-foe.js:10
 drawForeground               src/21b-surface-deco.js:249
 drawGlassHUD                 src/24-mode-belt.js:716
@@ -952,19 +952,19 @@ FLEET_TIER_CLS               src/04b-fleet.js:46
 FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16
 fleetArtOf                   src/12ai-fleet.js:102
-fleetCaravanActive           src/12ai-fleet.js:630
+fleetCaravanActive           src/12ai-fleet.js:643
 fleetColor                   src/04b-fleet.js:95
-fleetEscortActive            src/12ai-fleet.js:628
-fleetGlyph                   src/12ai-fleet.js:406
-fleetHailFirst               src/12ai-fleet.js:509
+fleetEscortActive            src/12ai-fleet.js:641
+fleetGlyph                   src/12ai-fleet.js:419
+fleetHailFirst               src/12ai-fleet.js:522
 fleetHere                    src/12ai-fleet.js:50
-fleetInteract                src/12ai-fleet.js:523
-fleetLabelY                  src/12ai-fleet.js:472
-fleetLogKey                  src/12ai-fleet.js:504
+fleetInteract                src/12ai-fleet.js:536
+fleetLabelY                  src/12ai-fleet.js:485
+fleetLogKey                  src/12ai-fleet.js:517
 fleetPos                     src/12ai-fleet.js:89
-fleetPromptRect              src/12ai-fleet.js:463
+fleetPromptRect              src/12ai-fleet.js:476
 fleetRung                    src/12ai-fleet.js:48
-fleetScale                   src/12ai-fleet.js:461
+fleetScale                   src/12ai-fleet.js:474
 fleetUniqueName              src/04b-fleet.js:100
 flightCam                    src/16a-space.js:316
 floraOf                      src/20e-species.js:91
@@ -3607,7 +3607,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ah-holdnews.js · 6 КБ
   · холдинг · слухи, новости и чужие на проданной дороге:1
 
-## src/12ai-fleet.js · 52 КБ
+## src/12ai-fleet.js · 53 КБ
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
 ## src/12b-crew-events.js · 17 КБ
@@ -4412,7 +4412,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzy-screens.js · 13 КБ
   · автотесты: экраны M299 — заголовки, подгляд карты, зал как ввод:1
 
-## tests/91zzza-cave-props.js · 27 КБ
+## tests/91zzza-cave-props.js · 30 КБ
   · пещера M305: гладкий обвод и содержимое:1
   · станция и планета M306: знаки на дневной стороне:32
   · дом M307: мебель из материала, план сеян:58
@@ -4426,6 +4426,7 @@ zooTick                      src/11ad-zoo.js:41
   · M315: пропорции системы, призрачный клик, оклик на рунге 30:267
   · M316: планеты и луны идут в одну сторону:311
   · M317: флот на расстоянии встречи — шесть пунктов альманаха III:320
+  · M318: навесное отделяется тенью, рёбра гофром, трасса на карте — цепочка:352
 
 ## tests/91zzza-trace.js · 5 КБ
 

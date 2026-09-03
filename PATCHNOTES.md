@@ -7,7 +7,26 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.314.0 - M317: the fleet at meeting distance — the six items of almanac III
+## 0.315.0 - M318: the fleet's small parts, and the трасса as a chain
+
+The two laws almanac III left open after M317, `12ai-fleet`:
+
+- **§5 four materials at meeting distance.** Strap-on tanks, containers and the лихтеровоз's
+  barges lie on the body and merged with it at 8 px because the seam was a half-pixel line. Now
+  every such part casts a shadow strip (`shade`, hw·.14, light from −y) onto the body under its
+  lower edge — volume by shadow, not by contour (§4). The рефрижератор's ribs are a two-value
+  corrugation instead of nine hairlines. Measured on the sprite: under a tank the body is darker
+  by more than .2; the corrugation's crest and trough differ by ≥ .06.
+- **§14 the chart is an instrument.** Judged on a staged map (rung forced to 12): the трасса
+  reads in the fleet's two colours and is a chain of jumps the fleet actually flies — but every
+  pair of qualifying neighbours within 1.6 cells got a line, so a cluster of five stations drew
+  ten. `drawFleetMap` now links each station to its two nearest fleet neighbours only; the line
+  reads as a direction. At zoom 1 the dashes sit under the map's own links in value and are found
+  by zooming, as every line on that chart is.
+
+Suite `91zzza` (M318 block). Almanac III addendum 0.315.0 closes the issue's open list.
+
+ the fleet at meeting distance — the six items of almanac III
 
 The 0.313.0 addendum judged the fleet where the player meets it and ordered six things, cheapest
 first. All six, in `12ai-fleet`:

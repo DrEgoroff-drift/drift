@@ -120,6 +120,12 @@ function fleetArtOf(f){
      радиатора. joints: [x, y, длина вдоль корпуса, поперёк] */
   const joints=[];
   const joint=(x,y,l,t)=>joints.push([x,y,l,t]);
+  /* тень навесного (§4, §5 — альманах III, 0.314.0): бак, контейнер, чужая
+     баржа лежат НА теле и на дистанции встречи сливались с ним в одну трубу,
+     потому что шов был линией в полпикселя. Свет сверху (−y): под каждой
+     навесной вещью с её нижней кромки на тело ложится тёмная полоса в hw*.14 —
+     объём читается тенью, а не контуром. Кладётся после тела и до вещи. */
+  const shade=(x0,x1,y,t)=>{polys.push({p:[[x0,y],[x1,y],[x1,y+t],[x0,y+t]],c:5,e:0,col:[52,54,60]});};
   if(f.k==="post"){
     /* «Союз»: шар, колокол, цилиндр, два крыла панелей, стыковочный штырь */
     L=76;hw=9;nose=L*.5;tail=-L*.5;
@@ -146,6 +152,7 @@ function fleetArtOf(f){
     add([[nose*.7,-hw],[nose*.95,-hw*.45],[nose*.95,hw*.45],[nose*.7,hw]],0,1);
     for(const s of [-1,1])for(let j=0;j<2;j++){
       const y=s*(hw*(.55+j*.5)),x0=tail*.8,x1=nose*.55-j*L*.06;
+      if(y+hw*.28<hw)shade(x0,x1,y+hw*.28,hw*.14);
       rect(x0,y-hw*.28,x1,y+hw*.28,j?2:0,1);
       ell(x1,y,L*.03,hw*.28,2,1,10);
       joint(x0+L*.12,y-s*hw*.28,L*.05,hw*.16);joint(x1-L*.12,y-s*hw*.28,L*.05,hw*.16);
@@ -199,6 +206,7 @@ function fleetArtOf(f){
     L=124;hw=12;nose=L*.5;tail=-L*.5;
     rect(tail*.9,-hw*.7,nose*.75,hw*.7,1,1);add([[nose*.75,-hw*.7],[nose*.95,-hw*.25],[nose*.95,hw*.25],[nose*.75,hw*.7]],0,1);
     for(const s of [-1,1])for(let j=0;j<2;j++){const x0=tail*.7+j*L*.36,x1=x0+L*.3,y=s*hw*1.05;
+      if(s<0)shade(x0,x1,y+hw*.35,hw*.14);
       rect(x0,y-hw*.35,x1,y+hw*.35,j?0:2,1);lines.push([x0+L*.1,y-hw*.35,x0+L*.1,y+hw*.35,.4]);lines.push([x0+L*.2,y-hw*.35,x0+L*.2,y+hw*.35,.4]);
       joint(x0+L*.06,y-s*hw*.35,L*.05,hw*.16);joint(x1-L*.06,y-s*hw*.35,L*.05,hw*.16);}
     for(let i=1;i<6;i++){const x=tail*.9+(L*.65)*i/6;lines.push([x,-hw*.7,x,hw*.7,.4]);}
@@ -246,7 +254,11 @@ function fleetArtOf(f){
     /* «Прогресс»: тот же нос, что у почтовика, и длинный ребристый рефрижераторный отсек */
     L=108;hw=9;nose=L*.5;tail=-L*.5;
     rect(tail*.92,-hw*.62,L*.12,hw*.62,0,1);
-    for(let i=1;i<10;i++){const x=tail*.9+(L*.56)*i/10;lines.push([x,-hw*.62,x,hw*.62,.7]);}
+    /* рёбра (§5): не волосяные линии, а гофр в два тона — гребень светлый,
+       впадина на ступень темнее; на 8 px это ещё читается ребристой трубой */
+    for(let i=0;i<10;i++){const x0=tail*.9+(L*.56)*i/10,x1=tail*.9+(L*.56)*(i+1)/10;
+      if(i%2){rect(x0,-hw*.62,x1,hw*.62,1,0);polys[polys.length-1].col=[178,182,189];}
+      lines.push([x0,-hw*.62,x0,hw*.62,.5]);}
     add([[L*.12,-hw*.8],[L*.34,-hw*.55],[L*.34,hw*.55],[L*.12,hw*.8]],1,1);ell(L*.42,0,L*.1,hw*.95,0,1,18);rect(L*.5,-1,nose,1,2);
     for(const s of [-1,1]){rect(-L*.2,s*hw*.7,L*.02,s*hw*2.7,5,1);joint(-L*.09,s*hw*.66,L*.08,hw*.22);}
     ell(tail*.96,0,L*.04,hw*.42,5,1,12);lights.push({x:tail*.98,y:0,c:"eng",r:hw*.36});
@@ -257,6 +269,7 @@ function fleetArtOf(f){
     rect(tail*.9,-hw*.6,nose*.8,hw*.6,1,1);add([[nose*.8,-hw*.6],[nose,-hw*.2],[nose,hw*.2],[nose*.8,hw*.6]],0,1);
     const bc=[[92,84,70],[70,86,96],[96,72,66],[74,92,74]];
     for(let i=0;i<4;i++){const s=i<2?-1:1,x0=tail*.85+(i%2)*L*.42,x1=x0+L*.38,y=s*hw*1.45;
+      if(s<0)shade(x0,x1,y+hw*.5,hw*.14);
       add([[x0,y-hw*.5],[x1,y-hw*.5],[x1,y+hw*.5],[x0,y+hw*.5]],5,1);
       polys[polys.length-1].col=bc[i];
       lines.push([x0+L*.12,y-hw*.5,x0+L*.12,y+hw*.5,.4]);lines.push([x0+L*.26,y-hw*.5,x0+L*.26,y+hw*.5,.4]);
@@ -646,13 +659,18 @@ function drawFleetMap(vis,cell){
   if(!L.length)return;
   ctx.save();ctx.setLineDash([3,4]);ctx.lineWidth=1.2;
   const seen=new Set();
-  for(const a of L)for(const b of L){
-    if(a===b||Math.hypot(a.x-b.x,a.y-b.y)>cell*1.6)continue;
+  /* линия — цепочка, не сетка (§14, альманах III 0.314.0): у каждой станции
+     плечо только к двум ближайшим соседям с флотом; иначе кучка из пяти
+     станций давала десять пунктиров, и трасса переставала быть направлением */
+  for(const a of L){
+    const nb=L.filter(b=>b!==a&&Math.hypot(a.x-b.x,a.y-b.y)<=cell*1.6)
+      .sort((p,q)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(a.x-q.x,a.y-q.y)).slice(0,2);
+    for(const b of nb){
     const key=a.gx<b.gx||(a.gx===b.gx&&a.gy<b.gy)?a.gx+","+a.gy+">"+b.gx+","+b.gy:b.gx+","+b.gy+">"+a.gx+","+a.gy;
     if(seen.has(key))continue;seen.add(key);
     ctx.strokeStyle="rgba(226,120,100,.45)";ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
     ctx.strokeStyle="rgba(236,232,220,.35)";ctx.lineDashOffset=3.5;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.lineDashOffset=0;
-  }
+  }}
   ctx.setLineDash([]);
   for(const v of L){
     if(fleetRung(v.s)<25)continue;
