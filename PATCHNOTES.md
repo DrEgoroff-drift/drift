@@ -7,6 +7,32 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.332.0 - M335: a promise with no code behind it
+
+«A perk without code is a lie» is a law of this project, written in CLAUDE.md and guarded for the
+managers' perk tree since M53. The same law applies to every other table, and nobody was checking
+them. The audit is cheap now that a suite can read the game's own source (M333): for each id in a
+table, count how many times the game mentions it outside its own declaration. Zero means a line in
+a list with nothing behind it — the player sees it, chooses it, and gets nothing.
+
+Of technologies, artifacts and buildings, exactly one came out empty: the artifact **«Карта чужой
+руки»** — «on the map you can see where rare goods are traded», and the deep line «and what is not
+there yet». `relicOn("chart")` is called nowhere. Six of the seven artifacts are wired; this one
+never was.
+
+It is left unwired on purpose, and written down instead of guessed. Rare raw material in this game
+is NOT traded at all — that is a design decision with its own comment in `02-world` («рынок их не
+берёт вовсе», M39, restated after the 03.09 playtest). So «where they trade rare» must mean
+something else — a dock with a rare hull, a bench with rare parts, the rows of the flea market —
+and which of those it is, is the author's call, not a guess to be made at three in the morning.
+The audit therefore carries exactly one named exception, pointing here and at `PLAN.md`; it
+disappears the moment the question is answered.
+
+The two module keys the audit also flagged are a limit of the method, not a finding: module ids
+live as properties (`G.mods.hyper`), and text cannot tell a property from any other word. Modules
+are out of the audit, with that reason written next to it.
+
+---
 ## 0.331.0 - M334: someone else's clock, and an autopilot that has to land
 
 Two suites, both about things the game does on its own while nobody is watching.

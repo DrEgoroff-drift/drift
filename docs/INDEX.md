@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 374 · символов верхнего уровня: 3403
+Файлов: 374 · символов верхнего уровня: 3404
 
 ## СИМВОЛЫ
 
@@ -1859,6 +1859,7 @@ newsSomewhere                src/12p-news.js:28
 newsTick                     src/12p-news.js:153
 nmCalls                      tests/91zzzzy-names.js:27
 nmSource                     tests/91zzzzy-names.js:17
+nmUses                       tests/91zzzzy-names.js:105
 NODE_A                       src/05a-nodes.js:51
 NODE_B                       src/05a-nodes.js:54
 NODE_BY_ID                   src/05a-nodes.js:71
@@ -4616,7 +4617,7 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzy-mem.js · 8 КБ
   · что копится за вечер (M332):1
 
-## tests/91zzzzy-names.js · 7 КБ
+## tests/91zzzzy-names.js · 11 КБ
   · имена, которых нет (M332):1
 
 ## tests/91zzzzy-phys.js · 17 КБ

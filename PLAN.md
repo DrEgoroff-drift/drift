@@ -191,6 +191,19 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
 - **M325** (0.322.0) — the four effects: the lake with reflections and reeds, heat haze, chromatic aberration on hits, the live flare; `18d-postfx`.
+- **M335** (0.332.0) — «a perk without code is a lie», applied to every table the audit can read
+  (`91zzzzy-names`): technologies, artifacts and buildings all have code behind them except one.
+
+### Needs a decision from the author (new, 2026-09-04)
+
+- **The artifact «Карта чужой руки» has no code.** Its lines promise «на карте видно, где торгуют
+  редким» and «и то, чего там ещё нет»; `relicOn("chart")` is called nowhere, and it is the only
+  one of the seven artifacts that is not wired. It was left unwired deliberately: rare raw material
+  is not traded anywhere by design (`02-world`, M39 — «рынок их не берёт вовсе»), so «where they
+  trade rare» must mean something else — a dock holding a rare hull, a bench with rare parts, the
+  rows of the flea market, or the rarities of `12m-rare`. Whichever it is, it is a design decision.
+  The audit carries one named exception until it is answered.
+
 - **M334** (0.331.0) — someone else's clock (`91zzzzy-time`): every epoch stamp in the save shifted
   three days forward and thirty back, then the world lived on — no NaN, no negative or ballooning
   wallet, and the station's shift cannot be rolled back for a second appetite premium. Plus the
