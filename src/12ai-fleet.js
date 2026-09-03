@@ -405,8 +405,27 @@ function drawFleet(zx,zy,Z){
 }
 /* ── позывной и заправка по норме (§18.7 п.1, п.3) ── */
 function fleetLogKey(){return G.sx+","+G.sy;}
+/* ── Кольцо (рунг 30): окликают первыми (§18.8, M315) ──
+   До сих пор эфир отвечал только на ваш позывной. На последней ступени лестницы
+   флот узнаёт борт сам: первый корабль линии, подошедший на семьсот, называет вас
+   раньше, чем вы его. Раз в окно на систему; хранится одно число (`fleetLog`). */
+function fleetHailFirst(sh,F){
+  if(fleetRung(G.sys)<30)return;
+  const bucket=Math.floor(Date.now()/FLEET_PERIOD),key="hail|"+fleetLogKey();
+  G.fleetLog=G.fleetLog||{};
+  if(G.fleetLog[key]===bucket)return;
+  for(const f of F){
+    if(f.k==="derelict"||f.k==="node")continue;
+    const p=fleetPos(f);if(Math.hypot(sh.x-p.x,sh.y-p.y)>700)continue;
+    const C=FLEET_CLASSES[f.k],who=(G.name&&G.name.trim())?G.name.trim():"борт";
+    G.fleetLog[key]=bucket;
+    etherLine("«"+f.name+"» — "+who+"у: …видим вас. Кольцо ваше, идём рядом, если надо. Конец связи.",C.ru);
+    return;
+  }
+}
 function fleetInteract(sh){
   const F=fleetHere(G.sys);if(!F.length)return false;
+  fleetHailFirst(sh,F);
   let near=null,nd=1e9,np=null;
   for(const f of F){const p=fleetPos(f),d=Math.hypot(sh.x-p.x,sh.y-p.y);if(d<nd){nd=d;near=f;np=p;}}
   if(!near||nd>260)return false;

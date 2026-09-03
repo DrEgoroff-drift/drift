@@ -25,7 +25,7 @@ function startLanding(p){
   G.ap=null;
   G.land={p,tr,x:tr.padX+(r()-.5)*(G.opts.easyLand?900:640),y:110,
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
-    g:.019+p.T.grav*.016+p.radius*.00022,over:0,ok:false,auto:G.opts.easyLand};
+    g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
   G.mode="landing";
   say((G.opts.easyLand?"Автоматический заход":"Заход")+" на "+p.name+
     "\nтяготение "+p.T.grav.toFixed(2)+"g");

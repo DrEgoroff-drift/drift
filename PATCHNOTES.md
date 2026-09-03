@@ -7,6 +7,25 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.312.0 - M315: the system's proportions, the ghost click, the hail at rung 30
+
+Three findings from the author's phone (2026-09-03) and the last step of §18.8:
+
+- **Proportions of the system** (`06-galaxy`, `SYS_K_*`): rocky worlds ×1.9 (34–91), gas giants
+  ×1.45, moons ×2.2 (7–20), the star ×1.2, orbits and the belt ×1.55. The station was drawn larger
+  than a planet and the ship larger still; a moon was a six-pixel target. World *types* are still
+  decided by the unscaled orbit (`far`), so no save changes its planets; the RNG stream is untouched.
+  Landing gravity and the ПРМ reading were rescaled to keep their feel.
+- **The ghost click** (`15-input`): a finger on ДЕЙСТВИЕ opened the barge screen *under* itself, and
+  the browser delivered the click to whatever sat under the touch point at release — РАЗОЙТИСЬ in
+  the footer. «Мелькает экран, потом разошлись бортами». Half a second after an act press, clicks on
+  any screen are swallowed. Applies to every screen opened by the pad.
+- **ДЕЙСТВИЕ** no longer breaks mid-word on a 44 px pad (`keep-all`, no letter-spacing).
+- **Кольцо (rung 30) — they hail you first** (`fleetHailFirst`, §18.8): the first fleet ship within
+  700 names you by the captain's name, once per window per system; one number in `fleetLog`.
+- Suite `91zzza` (M315 block).
+
+---
 ## 0.311.0 - M314: the fleet's tails — lines on the map, the rescuer's call, wing tiles, the cross
 
 - **Трассы on the map** (`drawFleetMap`, hooked in `18-mode-map` over the lanes, under the

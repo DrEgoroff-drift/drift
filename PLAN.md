@@ -84,6 +84,10 @@ Left:
    home desk has no section headings, nothing to tidy there. Need/appetite notes are split by
    `secTidy` into head + note; rows there fit one line.
 
+3. ~~System proportions~~ — M315 (0.312.0): bodies and orbits scaled (`SYS_K_*` in `06-galaxy`), the
+   ghost click on screens opened by a pad swallowed, §18.8 complete but for the заявка (rung 21).
+   Left: the ship keeps its `.55` floor at deep zoom-out and reads larger than a small moon there.
+
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
 Everything left open, with the reason it is open. Nothing here is a bug report — bugs are fixed

@@ -85,9 +85,21 @@ for(const ev of ["pointerdown","keydown","touchstart"])
    клавиатура: взялся за клавиши — тебе кнопки не нужны; тронул мышь — нужны. */
 addEventListener("mousemove",padsFadeIn);
 /* ══════════════ ввод ══════════════ */
+/* ── призрачный клик (автор 03.09.2026: «с баржей нельзя взаимодействовать,
+   мелькает экран, потом разошлись бортами») ──
+   Палец жмёт ДЕЙСТВИЕ, экран баржи открывается ПОД пальцем, и браузер
+   доставляет click тому, что оказалось под точкой касания к моменту отпускания,
+   — кнопке РАЗОЙТИСЬ в подвале экрана. Экран открылся и тут же закрылся.
+   Полсекунды после нажатия ДЕЙСТВИЯ клики по экранам не считаются. */
+let actPressT=-1e9;
+addEventListener("click",e=>{
+  if(performance.now()-actPressT<500&&e.target.closest&&e.target.closest(".scr")){
+    e.stopPropagation();e.preventDefault();
+  }
+},true);
 document.querySelectorAll("[data-k]").forEach(b=>{
   const k=b.dataset.k;
-  const on=e=>{e.preventDefault();keys[k]=true;b.classList.add("on");padsFadeIn();
+  const on=e=>{e.preventDefault();keys[k]=true;if(k==="act")actPressT=performance.now();b.classList.add("on");padsFadeIn();
     if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;};
   const off=e=>{e.preventDefault();keys[k]=false;b.classList.remove("on");};
   b.addEventListener("pointerdown",on);b.addEventListener("pointerup",off);

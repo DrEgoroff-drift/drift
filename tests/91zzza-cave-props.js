@@ -263,3 +263,47 @@ TEST_SUITES.push(()=>suite("M314: трассы рисуются между си�
   G.barges=[];delete sys.fleetCache;
   for(const k of ["ferry","hosp"]){const a=fleetArtOf({k,seed:99,name:"X",num:"Л-1",line:1});ok(a.cn.width>0,k+": перерисован без ошибок");}
 }));
+
+/* ══════════════ M315: пропорции системы, призрачный клик, оклик на рунге 30 ══════════════ */
+TEST_SUITES.push(()=>suite("M315: планеты крупнее корабля, спутник под палец, экран не закрывается тем же пальцем, Кольцо окликает первым",()=>{
+  resetWorld();
+  /* пропорции: каменистый мир не меньше 34, спутник не меньше 6, орбиты шире 310 */
+  let rockMin=1e9,moonMin=1e9,gapMin=1e9,n=0;
+  for(let i=0;i<40&&n<60;i++){
+    const s=getSystem(i*7-20,i*3-11);let prev=0;
+    for(const p of s.planets){n++;
+      if(p.type!=="gas")rockMin=Math.min(rockMin,p.radius);
+      for(const m of p.moons)moonMin=Math.min(moonMin,m.radius);
+      if(prev)gapMin=Math.min(gapMin,p.orbit-prev);prev=p.orbit;
+    }
+  }
+  ok(rockMin>=34,"каменистый мир не меньше 34 ("+rockMin.toFixed(1)+")");
+  ok(moonMin>=6,"спутник не меньше 6 ("+moonMin.toFixed(1)+")");
+  ok(gapMin>=310,"орбиты раздвинуты ("+gapMin.toFixed(0)+")");
+  /* тип мира от масштаба не зависит: дом остался тем же */
+  const home=getSystem(0,0);ok(home.planets.length>0&&home.station,"дом на месте");
+  ok(home.station.orbit>home.radius*6+259,"станция снаружи короны");
+  /* призрачный клик: полсекунды после ДЕЙСТВИЯ клик по экрану гасится */
+  const scr=document.getElementById("barge");let hit=0;
+  const btn=document.getElementById("bLeaveBarge");
+  actPressT=performance.now();
+  const h=e=>{hit++;};btn.addEventListener("click",h);
+  const ev=new MouseEvent("click",{bubbles:true,cancelable:true});btn.dispatchEvent(ev);
+  ok(ev.defaultPrevented&&hit===0,"клик под пальцем не дошёл до РАЗОЙТИСЬ");
+  actPressT=-1e9;const ev2=new MouseEvent("click",{bubbles:true,cancelable:true});
+  const modeWas=G.mode;btn.dispatchEvent(ev2);btn.removeEventListener("click",h);
+  ok(hit===1,"обычный клик доходит");G.mode=modeWas;scr.classList.remove("open");
+  /* Кольцо: на рунге 30 первый корабль линии окликает сам */
+  const sys=G.sys;G.mode="system";
+  const b=Math.floor(Date.now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
+  sys.fleetCache={b,list:[{k:"tanker",seed:3,name:"ОКОЁМ",num:"Л-1",line:1,x0:X+400,y0:Y,x1:X+400,y1:Y,bow:0,ph:0}]};
+  G.fleetLog={};G.name="Егоров";
+  const saveRung=window.rungOf;window.rungOf=()=>29;
+  const n0=G.log.length;actEdge=false;fleetInteract(G.ship);
+  eq(G.log.length,n0,"на рунге 29 молчат");
+  window.rungOf=()=>30;fleetInteract(G.ship);fleetInteract(G.ship);
+  const said=G.log.slice(n0).filter(l=>l.k==="ether"&&/ОКОЁМ/.test(l.s));
+  eq(said.length,1,"на рунге 30 окликнули ровно раз за окно");
+  ok(said.length&&said[0].s.indexOf("Егоров")>=0,"назвали по имени");
+  window.rungOf=saveRung;G.name="";delete sys.fleetCache;G.fleetLog={};
+}));

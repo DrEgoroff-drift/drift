@@ -268,8 +268,8 @@ body:not(.inflight) .ipod{display:none}
   box-shadow:0 0 22px rgba(242,178,92,.36),inset 0 0 16px rgba(242,178,92,.24)}
 /* «ДЕЙСТВИЕ» подписывается по месту (СТЫКОВКА, ПОСАДКА, РЕЗАК), поэтому
    текст мелкий и переносится: подпись важнее, чем ровный кегль */
-.pads button[data-k=act]{color:var(--amber);font-size:8px;
-  letter-spacing:.03em;text-align:center;word-break:break-word}
+.pads button[data-k=act]{color:var(--amber);font-size:8px;padding:0 1px;
+  letter-spacing:0;text-align:center;word-break:keep-all;overflow-wrap:normal}
 .pads button[data-k=act]::before{border-color:rgba(242,178,92,.38)}
 /* есть что сделать — кнопка светится, и свет дышит: неподвижное свечение
    глазом читается как заливка, а не как «сюда» */
@@ -1479,7 +1479,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.311.0";
+const VER="0.312.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -5791,12 +5791,19 @@ function keplerPos(a,e,M,argp){
   const ca=Math.cos(argp),sa=Math.sin(argp);
   return {x:x*ca-y*sa,y:x*sa+y*ca};
 }
+/* ── пропорции системы (M315, автор 03.09.2026: «станция больше планеты,
+   корабль тоже больше; в спутник не тыкнуть; летать тесно») ──
+   Тела растут, орбиты раздвигаются, а ТИП мира по-прежнему решает старая,
+   немасштабированная орбита (far=orbit/2200) — иначе у каждого сохранения
+   поменялись бы планеты. Поток случайных чисел не тронут: множители стоят
+   на готовых значениях, лишних вызовов r() нет. */
+const SYS_K_ORBIT=1.55, SYS_K_ROCK=1.9, SYS_K_GAS=1.45, SYS_K_MOON=2.2, SYS_K_STAR=1.2;
 function getSystem(sx,sy){
   const key=sx+","+sy;
   if(SYS_CACHE.has(key))return SYS_CACHE.get(key);
   const seed=hashi(sx,sy,90210), r=rng(seed);
   const cls=STAR_CLASS[Math.min(4,Math.floor(Math.pow(r(),1.6)*5))];
-  const sys={sx,sy,seed,key,name:genName(r),cls,radius:46+r()*54,planets:[],station:null,belt:null};
+  const sys={sx,sy,seed,key,name:genName(r),cls,radius:(46+r()*54)*SYS_K_STAR,planets:[],station:null,belt:null};
   const n=1+Math.floor(r()*6);
   let orbit=340;
   for(let i=0;i<n;i++){
@@ -5818,7 +5825,7 @@ function getSystem(sx,sy){
     /* смесь берёт числа из своего потока (pr2), чтобы не сдвинуть орбиты */
     const Wd=rollWorld(tk,pr2), T=Wd.T;
     /* газовые гиганты заметно крупнее каменистых миров — пропорции читаются на глаз */
-    const radius=tk==="gas"?(78+r()*58):(18+r()*30);
+    const radius=tk==="gas"?(78+r()*58)*SYS_K_GAS:(18+r()*30)*SYS_K_ROCK;
     const nMoons=tk==="gas"?Math.floor(pr2()*4):(pr2()<.35?1:0);
     const moons=[];
     for(let m=0;m<nMoons;m++){
@@ -5830,7 +5837,7 @@ function getSystem(sx,sy){
       moons.push({
         key:key+":"+i+"m"+m,parentIdx:i,idx:m,type:mW.type,mix:mW.mix,mw:mW.mw,T:mW.T,seed:mseed,
         name:sys.name+" "+ROMAN[i]+"-"+(m+1),
-        radius:3+mr()*6,orbit:radius*(2.2+m*1.6)+mr()*20,
+        radius:(3+mr()*6)*SYS_K_MOON,orbit:radius*(1.8+m*.9)+mr()*20,
         ecc:mr()*.12,argp:mr()*TAU,
         ang:mr()*TAU,spd:(mr()<.5?-1:1)*.0026/Math.pow(1+m,1.1),
         rough:clamp(mW.T.rough*(.6+mr()*.8),0,1.2),
@@ -5840,7 +5847,7 @@ function getSystem(sx,sy){
     }
     sys.planets.push({
       key:key+":"+i,idx:i,type:Wd.type,mix:Wd.mix,mw:Wd.mw,T,seed:pseed,
-      name:sys.name+" "+ROMAN[i],radius,orbit,
+      name:sys.name+" "+ROMAN[i],radius,orbit:orbit*SYS_K_ORBIT,
       ecc:.04+pr2()*.28,argp:pr2()*TAU,
       /* орбитальная скорость снижена в разы против прежней — планеты кружат неспешно */
       ang:pr2()*TAU,spd:(pr2()<.5?-1:1)*0.00014/Math.pow(orbit/500,1.4),
@@ -5853,7 +5860,7 @@ function getSystem(sx,sy){
     const rich=[];
     const nres=2+Math.floor(r()*3);
     for(let i=0;i<nres;i++){const k=pick(BELT_RES,r);if(rich.indexOf(k)<0)rich.push(k);}
-    sys.belt={orbit:orbit+240+r()*320,seed:hashi(seed,777,555),res:rich,
+    sys.belt={orbit:(orbit+240+r()*320)*SYS_K_ORBIT,seed:hashi(seed,777,555),res:rich,
       name:"пояс "+genName(r)};
   }
   if((sx===0&&sy===0)||r()<.5){
@@ -16933,8 +16940,27 @@ function drawFleet(zx,zy,Z){
 }
 /* ── позывной и заправка по норме (§18.7 п.1, п.3) ── */
 function fleetLogKey(){return G.sx+","+G.sy;}
+/* ── Кольцо (рунг 30): окликают первыми (§18.8, M315) ──
+   До сих пор эфир отвечал только на ваш позывной. На последней ступени лестницы
+   флот узнаёт борт сам: первый корабль линии, подошедший на семьсот, называет вас
+   раньше, чем вы его. Раз в окно на систему; хранится одно число (`fleetLog`). */
+function fleetHailFirst(sh,F){
+  if(fleetRung(G.sys)<30)return;
+  const bucket=Math.floor(Date.now()/FLEET_PERIOD),key="hail|"+fleetLogKey();
+  G.fleetLog=G.fleetLog||{};
+  if(G.fleetLog[key]===bucket)return;
+  for(const f of F){
+    if(f.k==="derelict"||f.k==="node")continue;
+    const p=fleetPos(f);if(Math.hypot(sh.x-p.x,sh.y-p.y)>700)continue;
+    const C=FLEET_CLASSES[f.k],who=(G.name&&G.name.trim())?G.name.trim():"борт";
+    G.fleetLog[key]=bucket;
+    etherLine("«"+f.name+"» — "+who+"у: …видим вас. Кольцо ваше, идём рядом, если надо. Конец связи.",C.ru);
+    return;
+  }
+}
 function fleetInteract(sh){
   const F=fleetHere(G.sys);if(!F.length)return false;
+  fleetHailFirst(sh,F);
   let near=null,nd=1e9,np=null;
   for(const f of F){const p=fleetPos(f),d=Math.hypot(sh.x-p.x,sh.y-p.y);if(d<nd){nd=d;near=f;np=p;}}
   if(!near||nd>260)return false;
@@ -30474,9 +30500,21 @@ for(const ev of ["pointerdown","keydown","touchstart"])
    клавиатура: взялся за клавиши — тебе кнопки не нужны; тронул мышь — нужны. */
 addEventListener("mousemove",padsFadeIn);
 /* ══════════════ ввод ══════════════ */
+/* ── призрачный клик (автор 03.09.2026: «с баржей нельзя взаимодействовать,
+   мелькает экран, потом разошлись бортами») ──
+   Палец жмёт ДЕЙСТВИЕ, экран баржи открывается ПОД пальцем, и браузер
+   доставляет click тому, что оказалось под точкой касания к моменту отпускания,
+   — кнопке РАЗОЙТИСЬ в подвале экрана. Экран открылся и тут же закрылся.
+   Полсекунды после нажатия ДЕЙСТВИЯ клики по экранам не считаются. */
+let actPressT=-1e9;
+addEventListener("click",e=>{
+  if(performance.now()-actPressT<500&&e.target.closest&&e.target.closest(".scr")){
+    e.stopPropagation();e.preventDefault();
+  }
+},true);
 document.querySelectorAll("[data-k]").forEach(b=>{
   const k=b.dataset.k;
-  const on=e=>{e.preventDefault();keys[k]=true;b.classList.add("on");padsFadeIn();
+  const on=e=>{e.preventDefault();keys[k]=true;if(k==="act")actPressT=performance.now();b.classList.add("on");padsFadeIn();
     if(k!=="act"&&k!=="fire"&&k!=="msl")G.ap=null;};
   const off=e=>{e.preventDefault();keys[k]=false;b.classList.remove("on");};
   b.addEventListener("pointerdown",on);b.addEventListener("pointerup",off);
@@ -37470,7 +37508,7 @@ function startLanding(p){
   G.ap=null;
   G.land={p,tr,x:tr.padX+(r()-.5)*(G.opts.easyLand?900:640),y:110,
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
-    g:.019+p.T.grav*.016+p.radius*.00022,over:0,ok:false,auto:G.opts.easyLand};
+    g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
   G.mode="landing";
   say((G.opts.easyLand?"Автоматический заход":"Заход")+" на "+p.name+
     "\nтяготение "+p.T.grav.toFixed(2)+"g");
@@ -51904,7 +51942,7 @@ const INSTR=[
      let m=(typeof held==="function"?held():0)*.05;
      if(G.sys){
        if(G.sys.belt)m+=6;
-       for(const p of G.sys.planets)m+=p.radius*.05;
+       for(const p of G.sys.planets)m+=p.radius*.028;
      }
      return m;
    }},

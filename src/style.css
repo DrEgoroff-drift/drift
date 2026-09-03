@@ -254,8 +254,8 @@ body:not(.inflight) .ipod{display:none}
   box-shadow:0 0 22px rgba(242,178,92,.36),inset 0 0 16px rgba(242,178,92,.24)}
 /* «ДЕЙСТВИЕ» подписывается по месту (СТЫКОВКА, ПОСАДКА, РЕЗАК), поэтому
    текст мелкий и переносится: подпись важнее, чем ровный кегль */
-.pads button[data-k=act]{color:var(--amber);font-size:8px;
-  letter-spacing:.03em;text-align:center;word-break:break-word}
+.pads button[data-k=act]{color:var(--amber);font-size:8px;padding:0 1px;
+  letter-spacing:0;text-align:center;word-break:keep-all;overflow-wrap:normal}
 .pads button[data-k=act]::before{border-color:rgba(242,178,92,.38)}
 /* есть что сделать — кнопка светится, и свет дышит: неподвижное свечение
    глазом читается как заливка, а не как «сюда» */

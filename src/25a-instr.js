@@ -32,7 +32,7 @@ const INSTR=[
      let m=(typeof held==="function"?held():0)*.05;
      if(G.sys){
        if(G.sys.belt)m+=6;
-       for(const p of G.sys.planets)m+=p.radius*.05;
+       for(const p of G.sys.planets)m+=p.radius*.028;
      }
      return m;
    }},

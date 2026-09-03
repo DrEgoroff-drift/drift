@@ -43,12 +43,19 @@ function keplerPos(a,e,M,argp){
   const ca=Math.cos(argp),sa=Math.sin(argp);
   return {x:x*ca-y*sa,y:x*sa+y*ca};
 }
+/* ── пропорции системы (M315, автор 03.09.2026: «станция больше планеты,
+   корабль тоже больше; в спутник не тыкнуть; летать тесно») ──
+   Тела растут, орбиты раздвигаются, а ТИП мира по-прежнему решает старая,
+   немасштабированная орбита (far=orbit/2200) — иначе у каждого сохранения
+   поменялись бы планеты. Поток случайных чисел не тронут: множители стоят
+   на готовых значениях, лишних вызовов r() нет. */
+const SYS_K_ORBIT=1.55, SYS_K_ROCK=1.9, SYS_K_GAS=1.45, SYS_K_MOON=2.2, SYS_K_STAR=1.2;
 function getSystem(sx,sy){
   const key=sx+","+sy;
   if(SYS_CACHE.has(key))return SYS_CACHE.get(key);
   const seed=hashi(sx,sy,90210), r=rng(seed);
   const cls=STAR_CLASS[Math.min(4,Math.floor(Math.pow(r(),1.6)*5))];
-  const sys={sx,sy,seed,key,name:genName(r),cls,radius:46+r()*54,planets:[],station:null,belt:null};
+  const sys={sx,sy,seed,key,name:genName(r),cls,radius:(46+r()*54)*SYS_K_STAR,planets:[],station:null,belt:null};
   const n=1+Math.floor(r()*6);
   let orbit=340;
   for(let i=0;i<n;i++){
@@ -70,7 +77,7 @@ function getSystem(sx,sy){
     /* смесь берёт числа из своего потока (pr2), чтобы не сдвинуть орбиты */
     const Wd=rollWorld(tk,pr2), T=Wd.T;
     /* газовые гиганты заметно крупнее каменистых миров — пропорции читаются на глаз */
-    const radius=tk==="gas"?(78+r()*58):(18+r()*30);
+    const radius=tk==="gas"?(78+r()*58)*SYS_K_GAS:(18+r()*30)*SYS_K_ROCK;
     const nMoons=tk==="gas"?Math.floor(pr2()*4):(pr2()<.35?1:0);
     const moons=[];
     for(let m=0;m<nMoons;m++){
@@ -82,7 +89,7 @@ function getSystem(sx,sy){
       moons.push({
         key:key+":"+i+"m"+m,parentIdx:i,idx:m,type:mW.type,mix:mW.mix,mw:mW.mw,T:mW.T,seed:mseed,
         name:sys.name+" "+ROMAN[i]+"-"+(m+1),
-        radius:3+mr()*6,orbit:radius*(2.2+m*1.6)+mr()*20,
+        radius:(3+mr()*6)*SYS_K_MOON,orbit:radius*(1.8+m*.9)+mr()*20,
         ecc:mr()*.12,argp:mr()*TAU,
         ang:mr()*TAU,spd:(mr()<.5?-1:1)*.0026/Math.pow(1+m,1.1),
         rough:clamp(mW.T.rough*(.6+mr()*.8),0,1.2),
@@ -92,7 +99,7 @@ function getSystem(sx,sy){
     }
     sys.planets.push({
       key:key+":"+i,idx:i,type:Wd.type,mix:Wd.mix,mw:Wd.mw,T,seed:pseed,
-      name:sys.name+" "+ROMAN[i],radius,orbit,
+      name:sys.name+" "+ROMAN[i],radius,orbit:orbit*SYS_K_ORBIT,
       ecc:.04+pr2()*.28,argp:pr2()*TAU,
       /* орбитальная скорость снижена в разы против прежней — планеты кружат неспешно */
       ang:pr2()*TAU,spd:(pr2()<.5?-1:1)*0.00014/Math.pow(orbit/500,1.4),
@@ -105,7 +112,7 @@ function getSystem(sx,sy){
     const rich=[];
     const nres=2+Math.floor(r()*3);
     for(let i=0;i<nres;i++){const k=pick(BELT_RES,r);if(rich.indexOf(k)<0)rich.push(k);}
-    sys.belt={orbit:orbit+240+r()*320,seed:hashi(seed,777,555),res:rich,
+    sys.belt={orbit:(orbit+240+r()*320)*SYS_K_ORBIT,seed:hashi(seed,777,555),res:rich,
       name:"пояс "+genName(r)};
   }
   if((sx===0&&sy===0)||r()<.5){
