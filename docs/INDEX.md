@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 372 · символов верхнего уровня: 3399
+Файлов: 373 · символов верхнего уровня: 3401
 
 ## СИМВОЛЫ
 
@@ -824,7 +824,7 @@ ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
 el                           src/26-ui-station.js:172
 endPtr                       src/15-input.js:381
-engineLoop                   src/09-audio.js:245
+engineLoop                   src/09-audio.js:266
 enterBase                    src/21a-mode-base.js:68
 enterBelt                    src/24-mode-belt.js:89
 enterCave                    src/22-mode-cave.js:175
@@ -1857,6 +1857,8 @@ newsRender                   src/12p-news.js:184
 newsRivals                   src/12p-news.js:43
 newsSomewhere                src/12p-news.js:28
 newsTick                     src/12p-news.js:153
+nmCalls                      tests/91zzzzy-names.js:27
+nmSource                     tests/91zzzzy-names.js:17
 NODE_A                       src/05a-nodes.js:51
 NODE_B                       src/05a-nodes.js:54
 NODE_BY_ID                   src/05a-nodes.js:71
@@ -2775,7 +2777,7 @@ settleWatch                  src/12t-settle.js:397
 settleWords                  src/12t-settle.js:258
 setTx                        src/27z-telemetry.js:78
 setZoom                      src/15-input.js:318
-sfx                          src/09-audio.js:237
+sfx                          src/09-audio.js:258
 SFX                          src/09-audio.js:97
 SH_DX                        src/03b-hull-paint.js:164
 shatter                      src/24-mode-belt.js:136
@@ -2931,7 +2933,7 @@ stepWorld                    src/28-loop.js:144
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:78
 stGroupOf                    src/26-ui-station.js:77
-stopEngine                   src/09-audio.js:269
+stopEngine                   src/09-audio.js:290
 STORAGE_OK                   src/14-save.js:7
 STORAGE_TOLD                 src/14-save.js:13
 STORIES                      src/12k-stories-a.js:45
@@ -3486,7 +3488,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/09a-roomtone.js · 6 КБ
   · мир слышен: тон места (M178-10):1
 
-## src/09-audio.js · 13 КБ
+## src/09-audio.js · 14 КБ
   · звук: чистый синтез, ни одного файла:1
 
 ## src/10-music.js · 30 КБ
@@ -4611,6 +4613,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzy-mem.js · 8 КБ
   · что копится за вечер (M332):1
+
+## tests/91zzzzy-names.js · 7 КБ
+  · имена, которых нет (M332):1
 
 ## tests/91zzzzy-phys.js · 17 КБ
   · физика мира (M330):1

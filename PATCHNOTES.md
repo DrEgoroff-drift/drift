@@ -7,6 +7,36 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.330.0 - M333: names that do not exist — the game reads its own source
+
+A typo in a sound's name neither crashes nor goes red: `sfx` simply returns when the table has no
+such key. The same holds for a resource key, a journal kind, a station tab — the code calls by
+string, the table has never heard of that string, and the mechanic just does not work. There are
+thousands of such strings; no eye finds this.
+
+There is exactly one way to check it, and it was available all along: the game reads its own
+source. `tests.html` is the game plus the suites in one file, so the whole text of the game is
+`document.scripts[0]` (cut at the suites' first line, or the check finds its own examples — the
+first run did exactly that). The same trick `build.ps1` uses for `typeof` guards on functions that
+do not exist, from the inside and against the tables. `tests/91zzzzy-names`.
+
+Two findings:
+
+- **`sfx("ok")` was called eight times from five modules** — Вега, the island, a closed need, the
+  home twice, the planet three times — and there is no `ok` in `SFX`. The confirmation sound has
+  never played anywhere it was asked for. Written now in the table's own idiom: a third up, two
+  soft triangle notes, longer than the `ui` click so it reads as an answer rather than a press.
+- **A dead button in the station's tab strip**: `<button data-tab="smelt">ПЕРЕПЛАВКА</button>`,
+  while the string `smelt` appears nowhere else in the entire game. `syncTabs` filters the strip
+  by `stTabsHere`, so it could never show — leftover markup from a mechanic that moved. Removed.
+
+Also in this milestone, a lesson already written in CLAUDE.md and paid for again: a heredoc
+through the Bash tool ate `` and put a literal 0x08 byte inside a regular expression. It is
+invisible in every editor and in `sed`; only `cat -A` showed `^H`. The check looked green and
+matched nothing. Anything patched through a heredoc is now grepped for control characters before
+it is trusted.
+
+---
 ## 0.329.0 - M332: what piles up over an evening — the raster, and the freeze it explains
 
 The author's «hard freeze» has been hunted since M238. The fuzzer drives every mode under random

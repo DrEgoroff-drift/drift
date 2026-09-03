@@ -188,6 +188,27 @@ const SFX={
     osc.connect(g);g.connect(SND.sfx);
     osc.start(t);osc.stop(t+(o&&o.d||.09)+.05);freeVoice(osc);
   },
+  /* ── «принято»: две ноты вверх (M332) ──
+     Этот звук звали восемь раз из пяти модулей — Вега, остров, закрытая нужда,
+     дом, планета, — а в таблице его не было, и `sfx` молча выходил. Ни падения,
+     ни строки: подтверждение просто не звучало нигде, где его просили. Нашёл
+     набор «имена: каждый звук, который зовут, есть в таблице» — он читает
+     собственный исходник и сверяет строки с таблицей.
+     Тембр от `ui`, но не щелчок: терция вверх, чуть длиннее и мягче — так
+     слышно, что это ответ, а не нажатие. */
+  ok(o){
+    const c=SND.ctx,t=c.currentTime,v=(o&&o.v||.3);
+    const f0=(o&&o.f||620);
+    for(const [k,dt,mul] of [[1,0,1],[1.26,.075,.8]]){
+      const osc=c.createOscillator(),g=c.createGain();
+      osc.type="triangle";
+      osc.frequency.setValueAtTime(f0*k,t+dt);
+      env(g,t+dt,.006,.11,v*2.2*mul);
+      osc.connect(g);g.connect(SND.sfx);
+      osc.start(t+dt);osc.stop(t+dt+.18);
+      if(dt)freeVoice(osc);
+    }
+  },
   /* голос существа: тембр целиком из его seed — у каждого зверя свой */
   beast(o){
     const c=SND.ctx,t=c.currentTime,r=rng((o&&o.seed||1)>>>0);

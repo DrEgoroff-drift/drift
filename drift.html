@@ -1370,7 +1370,6 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
     <button data-tab="market" class="on">РЫНОК</button>
     <button data-tab="barter">БАРТЕР</button>
     <button data-tab="flea">РЯДЫ</button>
-    <button data-tab="smelt">ПЕРЕПЛАВКА</button>
     <button data-tab="scrip">БОНЫ</button>
     <button data-tab="yard">ВЕРФЬ</button>
     <button data-tab="mods">МОДУЛИ</button>
@@ -1494,7 +1493,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.329.0";
+const VER="0.330.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -6998,6 +6997,27 @@ const SFX={
     env(g,t,.004,(o&&o.d||.09),(o&&o.v||.3)*3);
     osc.connect(g);g.connect(SND.sfx);
     osc.start(t);osc.stop(t+(o&&o.d||.09)+.05);freeVoice(osc);
+  },
+  /* ── «принято»: две ноты вверх (M332) ──
+     Этот звук звали восемь раз из пяти модулей — Вега, остров, закрытая нужда,
+     дом, планета, — а в таблице его не было, и `sfx` молча выходил. Ни падения,
+     ни строки: подтверждение просто не звучало нигде, где его просили. Нашёл
+     набор «имена: каждый звук, который зовут, есть в таблице» — он читает
+     собственный исходник и сверяет строки с таблицей.
+     Тембр от `ui`, но не щелчок: терция вверх, чуть длиннее и мягче — так
+     слышно, что это ответ, а не нажатие. */
+  ok(o){
+    const c=SND.ctx,t=c.currentTime,v=(o&&o.v||.3);
+    const f0=(o&&o.f||620);
+    for(const [k,dt,mul] of [[1,0,1],[1.26,.075,.8]]){
+      const osc=c.createOscillator(),g=c.createGain();
+      osc.type="triangle";
+      osc.frequency.setValueAtTime(f0*k,t+dt);
+      env(g,t+dt,.006,.11,v*2.2*mul);
+      osc.connect(g);g.connect(SND.sfx);
+      osc.start(t+dt);osc.stop(t+dt+.18);
+      if(dt)freeVoice(osc);
+    }
   },
   /* голос существа: тембр целиком из его seed — у каждого зверя свой */
   beast(o){

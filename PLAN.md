@@ -191,6 +191,11 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
 - **M325** (0.322.0) — the four effects: the lake with reflections and reeds, heat haze, chromatic aberration on hits, the live flare; `18d-postfx`.
+- **M333** (0.330.0) — the game reads its own source (`tests/91zzzzy-names`): every name called by
+  string is checked against the table that owns it. `sfx("ok")` was called eight times from five
+  modules and no `ok` existed — the confirmation sound had never played; written now. The station
+  strip carried a dead `ПЕРЕПЛАВКА` button whose `smelt` appears nowhere else in the game;
+  removed. The suite also guards resource keys, journal kinds and station tabs.
 - **M332** (0.329.0) — the raster that piled up: `SYS_CACHE` kept every visited system's baked
   globe unwraps, light overlays and cloud sprites for ever — 28.9 MB per forty systems, growing
   linearly with no ceiling, which is the most likely explanation of the author's «hard freeze»
