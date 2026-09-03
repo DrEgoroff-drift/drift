@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 374 · символов верхнего уровня: 3404
+Файлов: 375 · символов верхнего уровня: 3405
 
 ## СИМВОЛЫ
 
@@ -1604,10 +1604,11 @@ logBtnLabel                  src/11-log.js:60
 logOpen                      src/11-log.js:14
 logPageOf                    src/11-log.js:13
 logTime                      src/11-log.js:54
-look                         src/28y-look.js:212
+look                         src/28y-look.js:231
+LOOK_BASE                    tests/91zzzzy-look.js:21
 LOOK_DAYLIGHT                src/28y-look.js:113
 LOOK_TARGET                  src/28y-look.js:41
-lookAll                      src/28y-look.js:191
+lookAll                      src/28y-look.js:210
 lookFrame                    src/28y-look.js:46
 lookoutSees                  src/12ag-holdfx.js:104
 lookScenes                   src/28y-look.js:129
@@ -4188,7 +4189,7 @@ zooTick                      src/11ad-zoo.js:41
   · prof() — на что уходит кадр:319
   · dbg() — что держит корабль:360
 
-## src/28y-look.js · 16 КБ
+## src/28y-look.js · 17 КБ
   · look() — прибор кадра:1
 
 ## src/28z-fps-probe.js · 9 КБ
@@ -4613,6 +4614,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzy-light.js · 20 КБ
   · свет и свечения (M330):1
+
+## tests/91zzzzy-look.js · 6 КБ
+  · картина не портится молча (M336):1
 
 ## tests/91zzzzy-mem.js · 8 КБ
   · что копится за вечер (M332):1

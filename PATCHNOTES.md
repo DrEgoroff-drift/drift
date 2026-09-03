@@ -7,6 +7,35 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.333.0 - M336: the frame meter was measuring a different scene every time
+
+A net against silent damage to the picture: the frame ledger's numbers, pinned per scene as a
+baseline with wide tolerances (`tests/91zzzzy-look`). It does not judge beauty — the targets in
+`LOOK_TARGET` do that, and some scenes honestly miss them. It catches «this became visibly
+different from what it was, and nobody noticed»: change a cloud's tone and every daylight sky
+darkens; touch a raster cache and a planet stops being baked; reorder layers and contrast leaves.
+No existing suite sees any of that — scenes draw non-empty, buttons click, nothing throws.
+
+Building it turned up a defect in the instrument itself. The «система» scene measured contrast
+0.88 in one run and 0.15 in another, in the same build: it places the ship RELATIVE TO A PLANET,
+and planets live in `SYS_CACHE` and orbit for the whole session. A system entered five minutes in
+stands differently from the same system entered at once, so sometimes the star was in frame and
+sometimes empty space was. Every number the author reads off `lookAll` has been drifting with how
+long the tab had been open — and the fuzzer's promise, «one seed, and the failure repeats exactly»,
+was false for the same reason: its scenes are this same list.
+
+The cure is the rule the whole game already runs on: what is derived is regenerated, not stored.
+A staged scene now takes its system afresh from the seed, so orbits return to their opening phase
+and the scene is the same scene every time. (`lookScenes` in `28y-look`; the scenes that used the
+found system's planets after the jump now take them from `G.sys`, since the object was rebuilt.)
+
+The baseline was then measured on a settled frame — 40 frames per scene, because since M332 the
+raster of a system left behind is released, and the first frames after arriving show a planet as a
+flat disc. The player never sees that frame; the meter should not either.
+
+Suite isolation caught two more fields on the way (`droneIds`, `lastDig`).
+
+---
 ## 0.332.0 - M335: a promise with no code behind it
 
 «A perk without code is a lie» is a law of this project, written in CLAUDE.md and guarded for the

@@ -191,6 +191,12 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
 - **M325** (0.322.0) — the four effects: the lake with reflections and reeds, heat haze, chromatic aberration on hits, the live flare; `18d-postfx`.
+- **M336** (0.333.0) — a baseline for the frame ledger (`91zzzzy-look`), and the instrument defect it
+  exposed: the staged scenes were not reproducible. Planets orbit inside `SYS_CACHE` all session, and
+  the «система» scene places the ship relative to a planet — so the same build measured contrast 0.88
+  or 0.15 depending on how long the session had run, and the fuzzer's «one seed, same failure» was
+  false for the same reason. A staged scene now rebuilds its system from the seed. Baseline measured
+  on a settled frame (40 frames per scene, since M332 releases a left system's raster).
 - **M335** (0.332.0) — «a perk without code is a lie», applied to every table the audit can read
   (`91zzzzy-names`): technologies, artifacts and buildings all have code behind them except one.
 

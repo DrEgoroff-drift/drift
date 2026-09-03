@@ -135,10 +135,28 @@ function lookScenes(){
     }
     return null;
   };
-  const jump=s=>{if(!s)return false;G.sx=s.sx;G.sy=s.sy;G.sys=s;G.ap=null;G.orbit=null;return true;};
+  /* ── сцена обязана повторяться (M336) ──
+     Планеты живут в `SYS_CACHE` и ходят по орбитам весь сеанс: система, в
+     которую прибор пришёл на пятой минуте, стоит иначе, чем на первой. Сцена
+     «система» ставит корабль ОТ планеты, поэтому в кадр попадало то звезда, то
+     пустота — числа кадра гуляли на четверть шкалы (контраст 0.88 против 0.15
+     в одном и том же прогоне), и от этого же было неверно обещание фуззера
+     «seed один — падение повторится в точности».
+     Лечится тем самым правилом, на котором стоит вся игра: эфемерное не
+     хранится, а пересчитывается. Система берётся заново из своего seed —
+     орбиты возвращаются в начальную фазу, сцена становится одной и той же. */
+  const fresh=s=>{
+    if(!s)return s;
+    SYS_CACHE.delete(s.key);
+    return getSystem(s.sx,s.sy);
+  };
+  const jump=s=>{s=fresh(s);if(!s)return false;G.sx=s.sx;G.sy=s.sy;G.sys=s;G.ap=null;G.orbit=null;return true;};
   const land=pred=>{
-    const s=find(q=>(q.planets||[]).some(pred));if(!jump(s))return false;
-    const p=s.planets.find(pred);const tr=genTerrain(p);
+    if(!jump(find(q=>(q.planets||[]).some(pred))))return false;
+    /* планету берём у G.sys, а не у найденной системы: `jump` пересобрал её
+       заново, и объекты старой копии в этом мире больше никому не принадлежат */
+    const p=G.sys.planets.find(pred);if(!p)return false;
+    const tr=genTerrain(p);
     G.land={p,tr,x:tr.padX,y:groundAt(tr,tr.padX)};enterSurface();return true;
   };
   const day=p=>p.type!=="gas"&&p.T.atm!=="отсутствует";
@@ -157,19 +175,20 @@ function lookScenes(){
     if(best)G.t=best.t;
   };
   return [
-    {id:"система",set:()=>{const s=find(q=>q.station&&(q.planets||[]).length>=3);if(!jump(s))return false;
-      G.mode="system";G.ship.x=s.planets[1].x+380;G.ship.y=s.planets[1].y+220;G.zoom=.7;return true;}},
+    {id:"система",set:()=>{if(!jump(find(q=>q.station&&(q.planets||[]).length>=3)))return false;
+      const p1=G.sys.planets[1];
+      G.mode="system";G.ship.x=p1.x+380;G.ship.y=p1.y+220;G.zoom=.7;return true;}},
     {id:"карта",set:()=>{G.mode="map";return true;}},
-    {id:"заход",set:()=>{const s=find(q=>(q.planets||[]).some(p=>p.type!=="gas"));if(!jump(s))return false;
-      const pl=s.planets.find(p=>p.type!=="gas");startLanding(pl);setHour(pl,true);   /* заход меряется днём (M308) */
+    {id:"заход",set:()=>{if(!jump(find(q=>(q.planets||[]).some(p=>p.type!=="gas"))))return false;
+      const pl=G.sys.planets.find(p=>p.type!=="gas");startLanding(pl);setHour(pl,true);   /* заход меряется днём (M308) */
       G.land.y=groundAt(G.land.tr,G.land.x)-560;return true;}},
     {id:"грунт день",set:()=>{if(!land(day))return false;setHour(G.surf.p,true);return true;}},
     {id:"грунт ночь",set:()=>{if(!land(day))return false;setHour(G.surf.p,false);return true;}},
     {id:"шахта",set:()=>{if(!land(day))return false;enterDig();return true;}},
     {id:"пещера",set:()=>{if(!land(day))return false;enterCave();return !!G.cave;}},
-    {id:"пояс",set:()=>{const s=find(q=>!!q.belt);if(!jump(s))return false;enterBelt();return true;}},
-    {id:"черпак",set:()=>{const s=find(q=>(q.planets||[]).some(p=>p.type==="gas"));if(!jump(s))return false;
-      startScoop(s.planets.find(p=>p.type==="gas"));return true;}},
+    {id:"пояс",set:()=>{if(!jump(find(q=>!!q.belt)))return false;enterBelt();return true;}},
+    {id:"черпак",set:()=>{if(!jump(find(q=>(q.planets||[]).some(p=>p.type==="gas"))))return false;
+      startScoop(G.sys.planets.find(p=>p.type==="gas"));return true;}},
     {id:"база",set:()=>{if(!land(day))return false;
       const p=G.surf.p;
       /* деньги и сплавы прибору нужны только чтобы поставить сцену; сохранение
@@ -180,7 +199,7 @@ function lookScenes(){
       enterBase(p);return G.mode==="base";}},
     {id:"дом",set:()=>{if(!G.home)G.home=homeInit();
       G.home.tier=Math.max(4,G.home.tier|0);
-      const s=find(q=>(q.planets||[]).some(day));if(!jump(s))return false;
+      if(!jump(find(q=>(q.planets||[]).some(day))))return false;
       G.home.sx=G.sx;G.home.sy=G.sy;
       if(!land(day))return false;enterHomeIn();return G.mode==="homein";}}
   ];
