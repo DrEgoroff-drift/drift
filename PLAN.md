@@ -131,8 +131,8 @@ Left from the queue: nothing — the band's second step is M308, the station's c
 - ~~The home's furniture is flat boxes~~ / ~~the house is a formula~~ — M307 (0.304.0). Left: the
   interior is still drawn per frame (nothing baked) — measure with `prof()` before baking; the
   settlement's houses and the wintering hut still draw their own and could take `homePlan`.
-- **The system view is 66% empty.** Dust in three planes helped little; what it needs is a nebula
-  that reads and traffic that belongs to the world (barges, drones, other people's ships).
+- ~~The system view is 66% empty~~ — M309 (0.306.0): nebula with a core and a soft edge,
+  shuttles by rung. Still ~80% empty by the meter, and that is space; the next step is the fleet.
 - ~~The approach frame is 80% empty and has two tones~~ — M304 gave it two masses and a light
   corridor, M308 a warm horizon by day. Still 72% empty by the meter: sky is sky.
 - **Strata run parallel to the terrain** — geology is horizontal and cut by the relief, and that is
@@ -183,6 +183,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M309** (0.306.0) — the system: nebula blots fan out with filaments and a dust lane; shuttles station ↔ planets by rung (`17f-sys-traffic`).
 - **M308** (0.305.0) — the approach by day (warm horizon glow on the sun's side), the map band in two value steps, `pair` without a verdict for daylight scenes.
 - **M307** (0.304.0) — the home: furniture out of material by a `fillRect` wrapper, the house out of a seeded plan with signs of habitation by tier.
 - **M306** (0.303.0) — the station body held against §13 (verdict: holds, ALMANAC addendum II); the planet changes too — dump, dome, strip on the day side (`drawPlanetWorks`).

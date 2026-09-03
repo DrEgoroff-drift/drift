@@ -168,11 +168,41 @@ function wcBlots(c2,st,Wc,Hc){
     for(let li=0;li<nL;li++){
       const L=wcDeform(skel.p.slice(),skel.v.slice(),3,r,.62);
       const col=(li%2)?c1:c2c;                    /* чередование, не смешивание */
+      /* ── слои веером по масштабу (M309) ──
+         Слои почти совпадали, и пятно читалось вырезанным из бумаги — одна
+         кромка на всех. Каждый слой ещё и раздут или сжат от центра на
+         ±25 %: край тает лесенкой слоёв, а сердцевина, где они все лежат,
+         остаётся плотной — у туманности появляется ядро и рыхлая кромка. */
+      const sc=.75+r()*.5;
       c2.fillStyle="rgba("+col[0]+","+col[1]+","+col[2]+",.013)";
-      c2.beginPath();c2.moveTo(L.p[0][0],L.p[0][1]);
-      for(let i=1;i<L.p.length;i++)c2.lineTo(L.p[i][0],L.p[i][1]);
+      c2.beginPath();
+      for(let i=0;i<L.p.length;i++){
+        const px=cxp+(L.p[i][0]-cxp)*sc, py=cyp+(L.p[i][1]-cyp)*sc;
+        if(i)c2.lineTo(px,py);else c2.moveTo(px,py);
+      }
       c2.closePath();c2.fill();
     }
+    /* волокна и пылевая жила (M309): структура внутри пятна, не только край.
+       Три светлых нити тоном ядра вдоль поля направлений и одна тёмная
+       лента source-over — у газа есть течение и есть то, что его заслоняет */
+    c2.save();c2.lineCap="round";
+    for(let f=0;f<3;f++){
+      let x=cxp+(r()-.5)*R*.9,y=cyp+(r()-.5)*R*.9;
+      c2.strokeStyle="rgba("+c1[0]+","+c1[1]+","+c1[2]+",.035)";c2.lineWidth=4+r()*8;
+      c2.beginPath();c2.moveTo(x,y);
+      for(let k=0;k<14;k++){const a=dirAt(x,y,st.nseed,1/260)+(r()-.5)*.5;x+=Math.cos(a)*R*.14;y+=Math.sin(a)*R*.14;c2.lineTo(x,y);}
+      c2.stroke();
+    }
+    c2.globalCompositeOperation="source-over";
+    {
+      let x=cxp-R*.9,y=cyp+(r()-.5)*R*.6;
+      c2.strokeStyle="rgba(4,5,9,.30)";c2.lineWidth=5+r()*7;
+      c2.beginPath();c2.moveTo(x,y);
+      for(let k=0;k<16;k++){const a=(r()-.5)*.9;x+=Math.cos(a)*R*.13;y+=Math.sin(a)*R*.13;c2.lineTo(x,y);}
+      c2.stroke();
+    }
+    c2.restore();
+    c2.globalCompositeOperation="lighter";
   }
 }
 function drawSysNebula(sys,cx,cy){

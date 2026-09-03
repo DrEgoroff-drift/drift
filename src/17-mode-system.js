@@ -475,6 +475,7 @@ function drawSystem(){
   if(typeof drawFindsSystem==="function")drawFindsSystem(zx,zy,Z);
   if(typeof relayDrawSystem==="function")relayDrawSystem(zx,zy,Z);
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
+  if(typeof drawSysTraffic==="function")drawSysTraffic(zx,zy,Z);   /* челноки станции (M309) */
   if(typeof drawMooredBarge==="function")drawMooredBarge(zx,zy,Z);   /* своя баржа у Причала (M296) */
   /* дроны идут своими кругами между точкой и станцией (12e-drone-flight) */
   if(typeof drawDronesSystem==="function")drawDronesSystem(zx,zy,Z);

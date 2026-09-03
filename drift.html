@@ -1479,7 +1479,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.305.0";
+const VER="0.306.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -30547,11 +30547,41 @@ function wcBlots(c2,st,Wc,Hc){
     for(let li=0;li<nL;li++){
       const L=wcDeform(skel.p.slice(),skel.v.slice(),3,r,.62);
       const col=(li%2)?c1:c2c;                    /* чередование, не смешивание */
+      /* ── слои веером по масштабу (M309) ──
+         Слои почти совпадали, и пятно читалось вырезанным из бумаги — одна
+         кромка на всех. Каждый слой ещё и раздут или сжат от центра на
+         ±25 %: край тает лесенкой слоёв, а сердцевина, где они все лежат,
+         остаётся плотной — у туманности появляется ядро и рыхлая кромка. */
+      const sc=.75+r()*.5;
       c2.fillStyle="rgba("+col[0]+","+col[1]+","+col[2]+",.013)";
-      c2.beginPath();c2.moveTo(L.p[0][0],L.p[0][1]);
-      for(let i=1;i<L.p.length;i++)c2.lineTo(L.p[i][0],L.p[i][1]);
+      c2.beginPath();
+      for(let i=0;i<L.p.length;i++){
+        const px=cxp+(L.p[i][0]-cxp)*sc, py=cyp+(L.p[i][1]-cyp)*sc;
+        if(i)c2.lineTo(px,py);else c2.moveTo(px,py);
+      }
       c2.closePath();c2.fill();
     }
+    /* волокна и пылевая жила (M309): структура внутри пятна, не только край.
+       Три светлых нити тоном ядра вдоль поля направлений и одна тёмная
+       лента source-over — у газа есть течение и есть то, что его заслоняет */
+    c2.save();c2.lineCap="round";
+    for(let f=0;f<3;f++){
+      let x=cxp+(r()-.5)*R*.9,y=cyp+(r()-.5)*R*.9;
+      c2.strokeStyle="rgba("+c1[0]+","+c1[1]+","+c1[2]+",.035)";c2.lineWidth=4+r()*8;
+      c2.beginPath();c2.moveTo(x,y);
+      for(let k=0;k<14;k++){const a=dirAt(x,y,st.nseed,1/260)+(r()-.5)*.5;x+=Math.cos(a)*R*.14;y+=Math.sin(a)*R*.14;c2.lineTo(x,y);}
+      c2.stroke();
+    }
+    c2.globalCompositeOperation="source-over";
+    {
+      let x=cxp-R*.9,y=cyp+(r()-.5)*R*.6;
+      c2.strokeStyle="rgba(4,5,9,.30)";c2.lineWidth=5+r()*7;
+      c2.beginPath();c2.moveTo(x,y);
+      for(let k=0;k<16;k++){const a=(r()-.5)*.9;x+=Math.cos(a)*R*.13;y+=Math.sin(a)*R*.13;c2.lineTo(x,y);}
+      c2.stroke();
+    }
+    c2.restore();
+    c2.globalCompositeOperation="lighter";
   }
 }
 function drawSysNebula(sys,cx,cy){
@@ -32584,6 +32614,71 @@ function drawPlanetWorks(sys,p,x,y,r){
   ctx.restore();
 }
 
+/* ══════════════ трафик системы: чужие машины, которым тут есть дело (M309) ══════════════ */
+/* Система на 79 % пуста по прибору, и пустота честная: кроме своего корабля и
+   изредка баржи фактора в ней ничего не двигалось. Обжитая система должна
+   ВЫГЛЯДЕТЬ обжитой до всяких цифр (DESIGN-holding §13): буксиры и челноки
+   ходят между станцией и планетами. Сколько их — по ступени лестницы: в
+   дикой системе ни одного, у станции один челнок, дальше по одному на каждые
+   шесть рунгов, не больше четырёх. Ходят по своим дугам туда-обратно, сеяно
+   от семени системы; ничего не хранится и ничего не считается вне кадра —
+   положение это функция времени. Силуэт крошечный: тело, огонь сопла, один
+   мигающий бортовой огонь — движение, а не мигание, поэтому огонь медленный. */
+function sysTraffic(sys){
+  if(sys.traffic)return sys.traffic;
+  const out=[];
+  const st=sys.station;
+  if(!st){return sys.traffic=out;}
+  const rung=(typeof rungOf==="function")?rungOf(sys.sx,sys.sy):0;
+  const n=Math.min(4,1+Math.floor(rung/6));
+  const r=rng((sys.seed^0x7A4F)>>>0);
+  const bodies=(sys.planets||[]).filter(p=>p.type!=="gas");
+  for(let i=0;i<n;i++){
+    const p=bodies.length?bodies[Math.floor(r()*bodies.length)]:null;
+    const B=p?{x:p.x,y:p.y,r:p.radius}:{x:-st.x*.4,y:-st.y*.4,r:20};
+    out.push({ax:st.x,ay:st.y,bx:B.x,by:B.y,br:B.r,
+      bow:(r()-.5)*.5,                     /* изгиб дуги, доля длины */
+      spd:.00009+r()*.00007,ph:r()*TAU,k:.7+r()*.6,blink:r()*TAU});
+  }
+  return sys.traffic=out;
+}
+function drawSysTraffic(zx,zy,Z){
+  const sys=G.sys;if(!sys)return;
+  const T=sysTraffic(sys);if(!T.length)return;
+  const s=clamp(Z,.5,1.5);
+  for(const t of T){
+    /* туда-обратно по дуге; у концов притормаживает — стыковка, а не пролёт */
+    let u=(G.t*t.spd+t.ph/TAU)%1;u=u<.5?u*2:2-u*2;
+    const e=u*u*(3-2*u);
+    const dx=t.bx-t.ax,dy=t.by-t.ay,L=Math.hypot(dx,dy)||1;
+    const nx=-dy/L,ny=dx/L;
+    const bow=Math.sin(e*Math.PI)*t.bow*L;
+    /* не влетать в станцию и в планету: концы дуги отступают от тел */
+    const m0=28/L,m1=(t.br+18)/L;
+    const ee=m0+e*(1-m0-m1);
+    const wx=t.ax+dx*ee+nx*bow, wy=t.ay+dy*ee+ny*bow;
+    const x=zx(wx),y=zy(wy);
+    if(x<-30||x>W+30||y<-30||y>H+30)continue;
+    /* курс — по касательной к дуге */
+    const de=.002, e2=Math.min(1,e+de);
+    const bow2=Math.sin(e2*Math.PI)*t.bow*L;
+    const tx=dx*de+nx*(bow2-bow), ty=dy*de+ny*(bow2-bow);
+    const dir=(u<.5?1:-1);
+    const a=Math.atan2(ty*dir,tx*dir);
+    ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.scale(s*t.k,s*t.k);
+    /* сопло: тёплая точка позади, тело — тёмный корпус с холодной кромкой */
+    const fg=ctx.createRadialGradient(-5,0,0,-5,0,4);
+    fg.addColorStop(0,"rgba(255,214,150,.9)");fg.addColorStop(1,"rgba(255,150,80,0)");
+    ctx.fillStyle=fg;ctx.beginPath();ctx.arc(-5,0,4,0,TAU);ctx.fill();
+    ctx.fillStyle="#232b36";ctx.strokeStyle="rgba(0,0,0,.6)";ctx.lineWidth=.6;
+    ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(-3,-2);ctx.lineTo(-4,0);ctx.lineTo(-3,2);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle="rgba(200,220,240,.5)";ctx.fillRect(-1,-2.2,2.5,.8);
+    /* бортовой огонь: медленно, врозь с остальными */
+    if(Math.sin(G.t*.03+t.blink)>.85){ctx.fillStyle="rgba(255,120,90,.95)";ctx.fillRect(-2,1.4,1.2,1.2);}
+    ctx.restore();
+  }
+}
+
 /* ══════════════ режим: система ══════════════ */
 /* Фишки компаса у кромки кадра, с их прямоугольниками и готовыми целями
    автопилота. Заполняется рисованием (drawSystem), читается тычком (15-input):
@@ -33061,6 +33156,7 @@ function drawSystem(){
   if(typeof drawFindsSystem==="function")drawFindsSystem(zx,zy,Z);
   if(typeof relayDrawSystem==="function")relayDrawSystem(zx,zy,Z);
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
+  if(typeof drawSysTraffic==="function")drawSysTraffic(zx,zy,Z);   /* челноки станции (M309) */
   if(typeof drawMooredBarge==="function")drawMooredBarge(zx,zy,Z);   /* своя баржа у Причала (M296) */
   /* дроны идут своими кругами между точкой и станцией (12e-drone-flight) */
   if(typeof drawDronesSystem==="function")drawDronesSystem(zx,zy,Z);

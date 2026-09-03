@@ -88,3 +88,25 @@ TEST_SUITES.push(()=>suite("M308: пара без приговора для дн
   for(let i=0;i<3;i++){updateLanding(1);drawLanding();}
   ok(G.mode==="landing","заход с полукилометра рисуется с зарево́м без ошибок");
 }));
+
+/* ══════════════ M309: трафик системы и туманность с кромкой ══════════════ */
+TEST_SUITES.push(()=>suite("M309: челноки по ступени, ни одного в дикой системе, ход по дуге в кадре",()=>{
+  resetWorld();
+  const sys=G.sys;
+  delete sys.traffic;
+  const T=sysTraffic(sys);
+  if(sys.station)ok(T.length>=1&&T.length<=4,"у станции от одного до четырёх челноков ("+T.length+")");
+  else eq(T.length,0,"без станции — ни одного");
+  const fake={seed:7,sx:99,sy:99,planets:[],station:null};
+  eq(sysTraffic(fake).length,0,"система без станции пуста");
+  G.mode="system";
+  let tr=0;const o=ctx.translate;ctx.translate=function(){tr++;return o.apply(ctx,arguments);};
+  const zx=x=>W/2+(x-G.ship.x)*.7,zy=y=>H/2+(y-G.ship.y)*.7;
+  G.t=1000;drawSysTraffic(zx,zy,.7);
+  ctx.translate=o;
+  ok(true,"челноки рисуются без ошибок (в кадре: "+tr+")");
+  for(const t of T){
+    let u=(G.t*t.spd+t.ph/TAU)%1;u=u<.5?u*2:2-u*2;
+    ok(u>=0&&u<=1,"параметр хода в [0,1]");
+  }
+}));

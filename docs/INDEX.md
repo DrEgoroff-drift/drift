@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 358 · символов верхнего уровня: 3312
+Файлов: 359 · символов верхнего уровня: 3314
 
 ## СИМВОЛЫ
 
@@ -683,7 +683,7 @@ drawDronesMap                src/12e-drone-flight.js:268
 drawDronesSystem             src/12e-drone-flight.js:191
 drawDustMotes                src/19-mode-landing.js:527
 drawElevator                 src/20aa-poi-shapes.js:91
-drawExhaust                  src/16a-space.js:316
+drawExhaust                  src/16a-space.js:346
 drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:241
 drawFindsSystem              src/17b-finds.js:180
@@ -741,12 +741,12 @@ drawSkyBase                  src/19c-light.js:296
 drawSkyBodies                src/19b-sky.js:96
 drawSkyLayer                 src/19-mode-landing.js:427
 drawSpa                      src/29i-spa-draw.js:41
-drawSpaceDust                src/16a-space.js:245
-drawStarBody                 src/16a-space.js:402
-drawStarHole                 src/16a-space.js:505
-drawStarNeutron              src/16a-space.js:478
+drawSpaceDust                src/16a-space.js:275
+drawStarBody                 src/16a-space.js:432
+drawStarHole                 src/16a-space.js:535
+drawStarNeutron              src/16a-space.js:508
 drawStars                    src/16-flight.js:28
-drawStarSingle               src/16a-space.js:419
+drawStarSingle               src/16a-space.js:449
 drawStation                  src/17c-system-draw.js:416
 drawStationBody              src/17c-system-draw.js:178
 drawStationMods              src/17a-station-mod.js:199
@@ -759,9 +759,10 @@ drawSurface                  src/21e-surface-draw.js:651
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:526
-drawSysNebula                src/16a-space.js:178
+drawSysHud                   src/17-mode-system.js:527
+drawSysNebula                src/16a-space.js:208
 drawSystem                   src/17-mode-system.js:299
+drawSysTraffic               src/17f-sys-traffic.js:29
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:321
 drawTierTrim                 src/03b-hull-paint.js:62
@@ -796,10 +797,10 @@ droneStateRu                 src/12e-drone-flight.js:147
 droneSys                     src/12e-drone-flight.js:62
 droneTarget                  src/12-economy.js:121
 droneTripMs                  src/12e-drone-flight.js:87
-DUST_COL                     src/16a-space.js:222
-DUST_LAYERS                  src/16a-space.js:244
-DUST_TAB                     src/16a-space.js:223
-dustTable                    src/16a-space.js:224
+DUST_COL                     src/16a-space.js:252
+DUST_LAYERS                  src/16a-space.js:274
+DUST_TAB                     src/16a-space.js:253
+dustTable                    src/16a-space.js:254
 earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
@@ -942,7 +943,7 @@ FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16
 fleetColor                   src/04b-fleet.js:95
 fleetUniqueName              src/04b-fleet.js:100
-flightCam                    src/16a-space.js:286
+flightCam                    src/16a-space.js:316
 floraOf                      src/20e-species.js:91
 FOE_KINDS                    src/24a-mode-raid.js:17
 foldBlock                    src/26-ui-station.js:204
@@ -1013,10 +1014,10 @@ globusAim                    src/25f-globus.js:49
 globusDraw                   src/25f-globus.js:81
 globusSys                    tests/91zzzg-globus.js:7
 globusTick                   src/25f-globus.js:70
-GLOW_CACHE                   src/16a-space.js:383
-GLOW_SP                      src/16a-space.js:382
+GLOW_CACHE                   src/16a-space.js:413
+GLOW_SP                      src/16a-space.js:412
 GLOW_TIERS                   src/11i-glow.js:121
-glowBlit                     src/16a-space.js:398
+glowBlit                     src/16a-space.js:428
 glowCaveX                    src/11i-glow.js:139
 glowCorePlanet               src/11i-glow.js:33
 glowDepthAt                  src/11i-glow.js:24
@@ -1029,7 +1030,7 @@ glowGroundLine               src/11i-glow.js:110
 glowIsCore                   src/11i-glow.js:38
 glowPatches                  src/11i-glow.js:73
 glowScan                     src/11i-glow.js:64
-glowSprite                   src/16a-space.js:384
+glowSprite                   src/16a-space.js:414
 glowTier                     src/11i-glow.js:122
 glyphEl                      src/12t-settle.js:79
 glyphHasRunes                src/12t-settle.js:52
@@ -2961,6 +2962,7 @@ sysMakes                     src/12ad-site.js:134
 sysNebulaTex                 src/16a-space.js:53
 sysPirateBase                src/24a-mode-raid.js:98
 sysStyle                     src/16a-space.js:21
+sysTraffic                   src/17f-sys-traffic.js:11
 tab                          src/26-ui-station.js:3
 TAB_CH                       src/14a-cloud.js:21
 TAB_ID                       src/14a-cloud.js:20
@@ -3745,7 +3747,7 @@ zooTick                      src/11ad-zoo.js:41
   · ввод:87
   · полоса вкладок шире экрана:200
 
-## src/16a-space.js · 34 КБ
+## src/16a-space.js · 36 КБ
   · облик системы:1
 
 ## src/16b-missile.js · 9 КБ
@@ -3770,6 +3772,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## src/17e-station-body.js · 8 КБ
   · тело станции и планеты: что построил игрок, видно:1
+
+## src/17f-sys-traffic.js · 4 КБ
+  · трафик системы: чужие машины, которым тут есть дело (M309):1
 
 ## src/17-mode-system.js · 40 КБ
   · режим: система:1
@@ -4380,11 +4385,12 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzy-screens.js · 13 КБ
   · автотесты: экраны M299 — заголовки, подгляд карты, зал как ввод:1
 
-## tests/91zzza-cave-props.js · 6 КБ
+## tests/91zzza-cave-props.js · 7 КБ
   · пещера M305: гладкий обвод и содержимое:1
   · станция и планета M306: знаки на дневной стороне:32
   · дом M307: мебель из материала, план сеян:58
   · M308: дневной свет без приговора, карта и заход рисуются:77
+  · M309: трафик системы и туманность с кромкой:92
 
 ## tests/91zzza-trace.js · 5 КБ
 

@@ -7,6 +7,26 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.306.0 - M309: the system — a nebula with a body, and traffic that belongs to the world
+
+The «Graphics still open» line: the system view is 66–79% empty; dust in three planes helped
+little; what it needs is a nebula that reads and traffic that belongs to the world.
+
+- **The nebula's blots fan out** (`wcBlots`, `16a-space`). The twelve watercolour layers of a blot
+  nearly coincided, so a blot read as a shape cut from paper — one edge for all layers. Each layer
+  is now scaled ±25% about the blot's centre: the core, where all layers overlap, stays dense; the
+  edge melts through a ladder of layers. Inside, three light filaments along the direction field
+  and one dark dust lane laid source-over: the gas has a flow and something that hides it. Baked
+  into the same per-system texture; the frame cost is unchanged.
+- **Shuttles** (`17f-sys-traffic`). A wild system has none; a station has one; one more per six
+  rungs of the ladder, four at most. Each runs station ↔ a solid planet along its own bowed arc,
+  slowing at both ends, position a pure function of time — nothing stored, nothing ticked. The
+  silhouette is a hull the size of a fingernail: body, nozzle glow, one slow navigation light.
+  Drawn after the barges, before the drones.
+- Meter (hold scene, Z .7): pair 3 → 20, tones 10 → 9; mass and empty unchanged — space is space.
+- Suite `91zzza` (M309 block).
+
+---
 ## 0.305.0 - M308: the approach by day, the band in two steps, daylight without a verdict
 
 - **A warm source on the approach** (`19-mode-landing`). A terran world at altitude measured
