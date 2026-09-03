@@ -375,7 +375,13 @@ function drawStationBody(V,S,ty){
     }
     stCore(4,12,false);
   }
-  if(typeof houseMark==="function"&&typeof houseOf==="function")houseMark(houseOf(G.sys),V);   /* знак дома (17d) */
+  /* знак дома (17d). У промышленной по оси стоит факельная труба (−3..3, −28 и
+     выше пламя): знак уходит на левый борт, иначе мачта «Вестового» торчит из
+     сопла, а ковш «Ковша» ложится на конвейер (M326, видео автора 03.09) */
+  if(typeof houseMark==="function"&&typeof houseOf==="function"){
+    const H=houseOf(G.sys);
+    houseMark(H,V,(ty==="indust"&&H&&H.id==="vest")?{x:-21*V.a,y:12}:null);
+  }
 }
 /* ── один свет на всю станцию (M304) ──
    Куски рисовались по одному прямо на экран, и света не было ни у кого: плоский

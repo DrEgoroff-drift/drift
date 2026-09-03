@@ -752,7 +752,7 @@ drawStarHole                 src/16a-space.js:549
 drawStarNeutron              src/16a-space.js:522
 drawStars                    src/16-flight.js:28
 drawStarSingle               src/16a-space.js:463
-drawStation                  src/17c-system-draw.js:416
+drawStation                  src/17c-system-draw.js:422
 drawStationBody              src/17c-system-draw.js:178
 drawStationMods              src/17a-station-mod.js:199
 drawStencils                 src/03d-hull-marks.js:1
@@ -1303,11 +1303,11 @@ hoursOffset                  src/11h-hours.js:52
 HOUSE_BY_ID                  src/12u-scrip.js:27
 houseMark                    src/17d-house-shapes.js:18
 houseOf                      src/12u-scrip.js:35
-housePennant                 src/17d-house-shapes.js:49
+housePennant                 src/17d-house-shapes.js:73
 housePlan                    src/12tb-settle-draw.js:61
 houseRGB                     src/17d-house-shapes.js:16
 HOUSES                       src/12u-scrip.js:21
-houseWallMark                src/17d-house-shapes.js:38
+houseWallMark                src/17d-house-shapes.js:49
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
 hqAiOffer                    src/27c-ui-hq.js:470
@@ -2723,23 +2723,23 @@ settleHandPick               src/12td-settle-hand.js:56
 settleHandPlan               src/12td-settle-hand.js:73
 settleHere                   src/12t-settle.js:107
 settleKeyOf                  src/12t-settle.js:104
-settleLeftBehind             src/12t-settle.js:418
+settleLeftBehind             src/12t-settle.js:425
 settleLine                   src/12t-settle.js:296
 settleMake                   src/12t-settle.js:137
 settleMakes                  src/12t-settle.js:243
 settleMap                    src/12t-settle.js:105
 settleMine                   src/12td-settle-hand.js:35
 settlePlan                   src/12tb-settle-draw.js:101
-settleRaid                   src/12t-settle.js:401
+settleRaid                   src/12t-settle.js:408
 settleRaise                  src/12t-settle.js:179
 settleSpotX                  src/12t-settle.js:131
 settleStockSum               src/12t-settle.js:237
-settleStop                   src/12t-settle.js:432
+settleStop                   src/12t-settle.js:439
 settleTakeHand               src/12td-settle-hand.js:40
 settleTick                   src/12t-settle.js:153
 settleWallHereX              src/12t-settle.js:124
 settleWallX                  src/12t-settle.js:119
-settleWatch                  src/12t-settle.js:390
+settleWatch                  src/12t-settle.js:397
 settleWords                  src/12t-settle.js:258
 setTx                        src/27z-telemetry.js:78
 setZoom                      src/15-input.js:318
@@ -2863,7 +2863,7 @@ SPHERE2                      src/24-mode-belt.js:51
 sprgba                       src/29i-spa-draw.js:22
 SRC_DISCOUNT                 src/12ad-site.js:22
 srcPrice                     src/12ad-site.js:291
-ST_ART                       src/17c-system-draw.js:385
+ST_ART                       src/17c-system-draw.js:391
 ST_GOLD                      src/17c-system-draw.js:120
 ST_GROUPS                    src/26-ui-station.js:69
 ST_MOD_FILL                  src/17a-station-mod.js:66
@@ -2879,7 +2879,7 @@ startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
 stat                         src/08-state.js:142
 STAT_SHOW                    src/05-parts.js:280
-stationArt                   src/17c-system-draw.js:386
+stationArt                   src/17c-system-draw.js:392
 stationDeals                 src/27g-deals.js:141
 stationFleet                 src/04b-fleet.js:163
 stationMercs                 src/12a-crew.js:91
@@ -3811,7 +3811,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17c-system-draw.js · 26 КБ
   · система: кольца, пояс и станция в кадре:1
 
-## src/17d-house-shapes.js · 4 КБ
+## src/17d-house-shapes.js · 6 КБ
   · дома как язык форм:1
 
 ## src/17e-station-body.js · 8 КБ

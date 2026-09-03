@@ -7,6 +7,14 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.323.0 - M326: the house marks as things, not lines
+
+Author's video (2026-09-03): on the industrial station the «Вестовой» mast-and-dish mark stood
+on the flare stack's axis and read as smoke from the nozzle with a hook above the flame — it now
+hangs on the left conveyor arm (`17c`/`17d`). In the settlement the one-pixel cyan sigil on the
+wall (the «галочка» next to the door) became a plaque by the door: shadow, board, faded house
+paint, edge highlight; placed from the same `housePlan` that drew the wall (`12t`).
+
 ## 0.322.0 - M325: the author's effects list, all four — water, heat haze, chromatic hits, the live flare
 
 «Берём все» (2026-09-03). New module `18d-postfx` for the two frame effects; the water lives

@@ -343,9 +343,16 @@ function settleDraw(S,tr,camx,camy,p){
   /* мачта со знаком: единственное, что посёлок под рукой (M198) получает сверх */
   if(typeof settleMine==="function"&&settleMine(S)&&typeof settleHandMast==="function"&&P)
     settleHandMast(P,camx,camy,(typeof sdPal==="function")?sdPal(p):{});
-  if(typeof houseWallMark==="function"&&typeof houseOf==="function"&&P&&P.yards[0]){
-    const v=P.yards[0],ox=v.wx-camx,oy=P.baseY-camy-v.lift;
-    houseWallMark(houseOf(G.sys),ox-v.w/2,oy,v.w,v.h*.66);          /* знак дома на стене (17d) */
+  /* знак дома — табличка у двери первого жилого двора переднего ряда (17d, M326):
+     план дома тот же, что рисовал стену (sdYard: seed+round(wx)), иначе табличка
+     ляжет на дверь или окно */
+  if(typeof houseWallMark==="function"&&typeof houseOf==="function"&&P&&typeof housePlan==="function"){
+    const v=P.yards.find(q=>!q.back&&(q.kind==="dwell"||q.kind==="barn"))||P.yards[0];
+    if(v){
+      const hp=housePlan(P.seed+Math.round(v.wx),null,{barn:v.kind==="barn"});
+      houseWallMark(houseOf(G.sys),v.wx-camx,P.baseY-camy-v.lift,v.w,v.h*hp.wallH,hp,
+        (typeof sdPal==="function")?sdPal(p):null);
+    }
   }
   if(typeof lightsShutters==="function"&&P)for(const v of P.yards)
     if(v.kind==="dwell")lightsShutters(v.wx-camx,P.baseY-camy-v.lift,v.w,v.h*.66);   /* ставни (11g) */
