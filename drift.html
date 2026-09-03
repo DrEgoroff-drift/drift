@@ -1479,7 +1479,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.316.0";
+const VER="0.317.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -24383,15 +24383,8 @@ function tinDraw(T,tr,camx,camy,p){
   ctx.fillStyle=dark;ctx.fillRect(dxm+19,y0-64-ch,18,5);
   /* Дым — рваный, а не цепочка кругов: ровные шарики в столбик читались
      пузырями. Клуб растёт, кренится по ветру и расплывается по горизонтали */
-  if(run)for(let s=0;s<4;s++){
-    const t=((G.t*.7+s*40)%160)/160;
-    const rr=4+t*16;
-    ctx.fillStyle="rgba(200,208,214,"+((1-t)*(1-t)*.22).toFixed(3)+")";
-    ctx.beginPath();
-    ctx.ellipse(dxm+28+(WIND||0)*t*22+Math.sin(t*4+s)*5,y0-66-ch-t*58,
-                rr*1.35,rr*.8,t*.5,0,TAU);
-    ctx.fill();
-  }
+  /* тем же дымом, что у труб посёлка (12tb): по линии тока поля (M320) */
+  if(run&&typeof sdSmoke==="function")sdSmoke(dxm+28,y0-66-ch,(WIND||0),1.6,0x71,7);
   /* ── лента ── наклонная полоса от барабана к бункеру, на двух стойках */
   const ox=sx+76;
   /* Лента — короб, а не проволока: полоса в семь пикселей с тёмным исподом и
@@ -25424,24 +25417,58 @@ function sdPerson(x,y,k,pose,phase,col){
 /* ── дым ──
    Кружочки по прямой читались пузырями. Настоящий столб: клуб растёт, редеет,
    уходит по ветру и рассеивается — и всё это одним слоем, без наложений. */
+/* ── путь дыма по полю (M320, авторский список: curl-noise) ──
+   Клубы шли по прямой с синусоидой — столб качался, но не тёк. Линии тока
+   поля dirAt (01-core) — это и есть curl шума: без расхождения, гладкие,
+   причёсанные. Столб — одна линия тока от жерла: шаг за шагом вверх, с
+   поворотом по полю (поперечная слагающая с весом 1.1, период 140 px — иначе изгибы короче столба гасят друг друга) и сносом ветром, растущим с высотой. Путь
+   считается один раз на трубу (seed) и ветер (четверти) и кэшируется:
+   dirAt в кадре звать незачем. Точки — в местных px от жерла. */
+const SMOKE_PATHS=new Map();
+function smokePath(seed,wind,strength){
+  const wq=Math.round(wind*4)/4,sq=Math.round(strength*4)/4,key=seed+"|"+wq+"|"+sq;
+  let P=SMOKE_PATHS.get(key);if(P)return P;
+  const K=24,ds=70*sq/K;P=[[0,0]];
+  let x=0,y=0;
+  for(let k=0;k<K;k++){
+    const t=k/K,th=dirAt(seed*131+x,y-seed*17,seed|0,1/140);
+    let fx=Math.cos(th),fy=Math.sin(th);
+    if(fy>0){fx=-fx;fy=-fy;}                 /* у линии тока нет знака: берём ветвь, идущую вверх */
+    const vx=fx*1.1+wq*.9*t,vy=-1+fy*.5,nn=Math.hypot(vx,vy)||1;
+    x+=vx/nn*ds;y+=vy/nn*ds;P.push([x,y]);
+  }
+  SMOKE_PATHS.set(key,P);
+  if(SMOKE_PATHS.size>240)SMOKE_PATHS.delete(SMOKE_PATHS.keys().next().value);
+  return P;
+}
 function sdSmoke(x,y,wind,strength,seed,n){
   /* Крупные редкие овалы читались мыльными пузырями в небе (самокритика M169).
      Дым — это МНОГО мелких клубов, плотных у самой трубы и быстро тающих:
      начинается в полтора пикселя, растёт втрое, живёт короткую дугу. */
-  const N=n||10;
+  /* M320: столб был невидим. Клубы начинались в .8 px и гасли кубом к
+     половине пути — над трубой в силу .55 не оставалось ничего, а над очагом
+     дым таял ещё под крышей. Теперь плотность растёт от жерла до пика на
+     .15 пути и тает степенью 1.6 к вершине; путь длиннее (70·сила). */
+  const N=Math.max(n||10,6),P=smokePath(seed|0,wind,strength),K=P.length-1;
+  /* тон от неба (§16): днём дым — ступень ТЕМНЕЕ неба, ночью — светлее; один
+     светлый тон на всё был невидим днём, и дым в игре видели только ночью */
+  const day=(typeof surfNight==="function"&&G.surf&&G.surf.p)?!surfNight(G.surf.p):false;
+  const col=day?"rgba(88,90,98,":"rgba(210,216,224,";
   ctx.save();
   for(let i=0;i<N;i++){
     /* у каждого клуба свой размер, свой снос и своя скорость: ровные одинаковые
        кольца через равный шаг читались позвоночником, а не дымом (M169) */
     const j=h01(i*13+1,seed|0,0x5A0C), j2=h01(i*7+3,seed|0,0x5A0D);
     const t=((G.t*(.5+j*.28)+i*(100/N)+seed*7)%100)/100;
-    const rr=(1.4+t*6.5*(.7+j2*.7))*strength;
-    const a=(1-t)*(1-t)*(1-t)*.34*strength*(.7+j*.6);
-    if(a<=.004)continue;
-    ctx.fillStyle="rgba(210,216,224,"+a.toFixed(3)+")";
+    const rr=(1.2+t*7*(.7+j2*.7))*Math.sqrt(strength);
+    const a=Math.sqrt(strength)*.28*(t<.15?t/.15:Math.pow(1-t,1.6)/Math.pow(.85,1.6))*(.75+j*.5);
+    if(a<=.006)continue;
+    /* клуб едет по линии тока; своя скорость подъёма — свой участок пути */
+    const u=Math.min(K-1e-6,t*K*(.8+j2*.5)),k0=u|0,fr=u-k0;
+    const px=P[k0][0]+(P[k0+1][0]-P[k0][0])*fr,py=P[k0][1]+(P[k0+1][1]-P[k0][1])*fr;
+    ctx.fillStyle=col+(day?a*.8:a).toFixed(3)+")";
     ctx.beginPath();
-    ctx.ellipse(x+wind*t*t*22+Math.sin(t*6+i*1.7)*(2+j*4)*t+(j-.5)*3,
-      y-t*40*strength*(.8+j2*.5),rr*1.2,rr*.9,t*.5,0,TAU);
+    ctx.ellipse(x+px+Math.sin(t*6+i*1.7)*(1+j*2)*t+(j-.5)*3,y+py,rr*1.2,rr*.9,t*.5,0,TAU);
     ctx.fill();
   }
   ctx.restore();

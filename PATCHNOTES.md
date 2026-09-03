@@ -7,7 +7,28 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.316.0 - M319: the ship's zoom floor, the home interior measured — and prof() caught lying
+## 0.317.0 - M320: smoke along the field's streamlines — and smoke that can be seen at all
+
+First item off the author's effects list (curl-noise smoke). `dirAt` (01-core) already *is* curl
+noise — the gradient of fbm turned a quarter — so a column of smoke is one streamline of that
+field, walked upward from the mouth with the field's cross component (weight 1.1, period 140 px)
+and a wind drift growing with height. `smokePath` (`12tb-settle-draw2`) bakes the polyline once
+per chimney and wind quarter; the puffs slide along it, each at its own pace. The tin smelter's
+chimney (`12ta-tin`) uses the same smoke instead of its own ring chain.
+
+What the loupe found on the way: **the settlement's smoke had been invisible since M169.** The
+puffs started at .8 px and faded with the cube of age, so a chimney at strength .55 never made a
+visible pixel and the hearth's column died under the roof; and the one light tone was invisible
+against a daytime sky. Now density grows from the mouth to a peak at .15 of the path and fades to
+the top, the path is 70 px per unit of strength, and the tone follows the sky (§16): a step darker
+by day, lighter by night. Suite `91y-settle` (M320 block).
+
+Also hunted: the "rectangular seams of the sky layer" from the loose-ends list. A step detector
+over the sky third of the frame (night and landing, two window sizes) finds no straight seam; the
+only rectangles were the canvas hint band, the chips, and the `wallset` stand's own loupe overlay.
+Not reproduced; the detector is a one-line `--eval` in `docs/shot.py` when it returns.
+
+ the ship's zoom floor, the home interior measured — and prof() caught lying
 
 - **The ship at deep zoom-out** (`17-mode-system`): the hull kept a `.55` scale floor while the
   world went to ×0.16, so it read larger than a small planet and far larger than a moon. The floor

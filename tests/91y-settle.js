@@ -165,3 +165,24 @@ TEST_SUITES.push(()=>suite("посёлок: дозор и цена чужого 
   ok(String(settleRaid).indexOf("earn(")<0&&String(settleRaid).indexOf("addRes(")<0,
      "налёт ничего игроку не приносит");
 }));
+
+/* ══════════════ M320: дым по линии тока поля ══════════════ */
+TEST_SUITES.push(()=>suite("M320: путь дыма идёт вверх по полю, кэшируется, у разных труб разный",()=>{
+  resetWorld();
+  const P=smokePath(7,0,1);
+  eq(P.length,25,"путь из 25 точек");
+  eq(P[0][0],0,"начало в жерле");
+  ok(P[P.length-1][1]<-30,"верх пути выше жерла: "+P[P.length-1][1].toFixed(1));
+  for(let k=1;k<P.length;k++)ok(P[k][1]<P[k-1][1],"каждый шаг вверх ("+k+")");
+  ok(smokePath(7,0,1)===P,"второй запрос — из кэша");
+  const Q=smokePath(8,0,1);
+  let dev=0;for(let k=0;k<P.length;k++)dev=Math.max(dev,Math.abs(P[k][0]-Q[k][0]));
+  ok(dev>1,"другая труба — другой изгиб: "+dev.toFixed(1));
+  let bend=0;for(let k=0;k<P.length;k++)bend=Math.max(bend,Math.abs(P[k][0]));
+  ok(bend>1.5,"столб не прямая: отклонение "+bend.toFixed(1)+" px");
+  const R=smokePath(7,1.5,1);
+  ok(R[R.length-1][0]>P[P.length-1][0]+4,"ветер сносит верх столба: "+R[R.length-1][0].toFixed(1));
+  let calls=0;const o=ctx.ellipse;ctx.ellipse=function(){calls++;return o.apply(ctx,arguments);};
+  sdSmoke(100,100,.5,1,3,8);ctx.ellipse=o;
+  ok(calls>=4,"клубы нарисованы: "+calls);
+}));

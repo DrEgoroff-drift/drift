@@ -147,11 +147,16 @@ Left from the queue: nothing — the band's second step is M308, the station's c
   reeds wait for water on the surface (none exists yet; see the effects list).
 - ~~Boulders are one silhouette scaled~~ — measured in M316: polygons were already individual, the
   *family* was one; now blob / flat-based block / low slab, chosen by an already-drawn number.
-- **Effects not taken yet from the author's list**: curl-noise smoke for the chimney and the
-  smelter, heat haze over the nozzles, chromatic aberration on hits, water with reflections (there
-  are no water features on the surface at all today — that is a design addition, not a fix).
-- **Rectangular seams of the sky layer** were seen on two screenshots (the landing and the night
-  ground) and never chased down. Not reproduced since; worth one deliberate hunt.
+- **Effects not taken yet from the author's list**: ~~curl-noise smoke for the chimney and the
+  smelter~~ (M320, 0.317.0 — `smokePath` along `dirAt`; and the smoke made visible at all), heat
+  haze over the nozzles, chromatic aberration on hits, water with reflections (there are no water
+  features on the surface at all today — that is a design addition, not a fix). Seen in passing:
+  the station's flare flame (`17c-system-draw`, "пламя пляшет") is inside the baked station sprite
+  since M304, so it does not dance — a live pass over the bake, or accept it still.
+- ~~**Rectangular seams of the sky layer**~~ — hunted 2026-09-03 (M320): a column/row step
+  detector over the sky third of night and landing frames at two window sizes finds nothing but
+  the hint band and the chips; the one rectangle found was the `wallset` stand's own loupe. If it
+  returns, shoot the frame and run the detector (`docs/shot.py --eval`, PATCHNOTES 0.317.0).
 - **The plants as bodies** (M173 #2, half done — clumping is fixed, the plant body itself is still
   the skin only; the text is in the archive).
 
@@ -189,6 +194,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M320** (0.317.0) — smoke along `dirAt` streamlines (curl noise) for chimneys, hearth and the smelter; the smoke made visible at all; the sky-seam hunt closed as not reproduced.
 - **M319** (0.316.0) — the ship's zoom floor .35; the home interior measured by `?g11` (60 fps, no bake needed) and `prof()` caught measuring the software raster.
 - **M318** (0.315.0) — the fleet's small parts cast shadows on the body, the рефрижератор's ribs as corrugation, трассы on the map as a chain; almanac III closed.
 - **M317** (0.314.0) — the fleet at meeting distance: the six items of almanac III paid (label, zoom ceiling, учебное spine, паром wing, greys a step down, emblem grammar).

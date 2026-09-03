@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 360 · символов верхнего уровня: 3338
+Файлов: 360 · символов верхнего уровня: 3340
 
 ## СИМВОЛЫ
 
@@ -2653,7 +2653,7 @@ scrollCueAll                 src/27m-scroll-cue.js:32
 SD_KIND                      src/12tb-settle-draw.js:33
 SD_MAN                       src/12tb-settle-draw.js:31
 sdBody                       src/12tb-settle-draw.js:206
-sdCast                       src/12tb-settle-draw2.js:257
+sdCast                       src/12tb-settle-draw2.js:291
 sdCut                        src/12tc-settle-crafts.js:144
 sdDoor                       src/12tb-settle-draw.js:372
 sdDwell                      src/12tb-settle-draw2.js:11
@@ -2670,14 +2670,14 @@ sdProps                      src/12tb-settle-draw2.js:107
 sdRGB                        src/12tb-settle-draw.js:49
 sdRoof                       src/12tb-settle-draw.js:269
 sdShadow                     src/12tb-settle-draw.js:221
-sdSmoke                      src/12tb-settle-draw2.js:233
+sdSmoke                      src/12tb-settle-draw2.js:257
 sdStill                      src/12tc-settle-crafts.js:226
 sdTerrace                    src/12tb-settle-draw.js:134
 sdWallTex                    src/12tb-settle-draw.js:233
 sdWeir                       src/12tc-settle-crafts.js:49
 sdWindow                     src/12tb-settle-draw.js:334
 sdWoodpile                   src/12tb-settle-draw.js:391
-sdYard                       src/12tb-settle-draw2.js:410
+sdYard                       src/12tb-settle-draw2.js:444
 seamAdd                      src/12s-wear.js:181
 seamsAll                     src/12s-wear.js:180
 seamsOf                      src/12s-wear.js:182
@@ -2704,7 +2704,7 @@ settleAt                     src/12t-settle.js:106
 settleCanHand                src/12td-settle-hand.js:36
 settleCanLive                src/12t-settle.js:110
 settleDraw                   src/12t-settle.js:327
-settleDrawBody               src/12tb-settle-draw2.js:268
+settleDrawBody               src/12tb-settle-draw2.js:302
 settleGive                   src/12t-settle.js:220
 settleHandLine               src/12td-settle-hand.js:65
 settleHandMast               src/12td-settle-hand.js:97
@@ -2812,6 +2812,8 @@ slowRead                     src/11o-slow.js:90
 slowReady                    src/11o-slow.js:71
 slowReply                    src/11o-slow.js:76
 slowSpotX                    src/11o-slow.js:44
+SMOKE_PATHS                  src/12tb-settle-draw2.js:240
+smokePath                    src/12tb-settle-draw2.js:241
 snapshot                     src/14-save.js:42
 SND                          src/09-audio.js:4
 sndWalk                      src/28-loop.js:29
@@ -3710,7 +3712,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12tb-settle-draw.js · 23 КБ
   · посёлок с земли:1
 
-## src/12tb-settle-draw2.js · 25 КБ
+## src/12tb-settle-draw2.js · 28 КБ
   · посёлок: постройки, жители и сам посёлок:1
 
 ## src/12tc-settle-crafts.js · 14 КБ
@@ -4252,8 +4254,9 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91x-ui-fixes.js · 3 КБ
   · автотесты: три правки интерфейса с плейтеста 30.08 (M298):1
 
-## tests/91y-settle.js · 10 КБ
+## tests/91y-settle.js · 11 КБ
   · посёлок: дар, а не приказ:1
+  · M320: дым по линии тока поля:169
 
 ## tests/91zb-scrip.js · 5 КБ
 
