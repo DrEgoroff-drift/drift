@@ -25,6 +25,7 @@ bird has to carry its own stylesheet and code instead of linking to the site's.
 | host | `ssh.dri7887661.nichost.ru`, user `dri7887661` (shared hosting, Nichost) |
 | web root | `~/drift-game.ru/docs/` — served as `http://` and `https://drift-game.ru` |
 | player data | `~/drift-data/` — **outside** the web root, mode 0700, unreachable over HTTP |
+| repo backups | `~/drift-backups/*.bundle` — same rules (0700 dir, 0600 files, HTTP 404); see below |
 | hoster's placeholder | `docs/_hoster-stub.html`, kept so the site can be reverted in one `cp` |
 | PHP | 7.4.33, always on, `password_hash` available |
 
@@ -137,6 +138,38 @@ only when it is genuinely newer than the local one.
 ```bash
 ssh drift "cp ~/drift-game.ru/docs/_hoster-stub.html ~/drift-game.ru/docs/index.html"
 ```
+
+## Backups (added 2026-09-03)
+
+GitHub is not a backup — a force-push overwrites it, as the 2026-09-03 history rewrite showed.
+The whole repository, every ref and all history, goes into **one file** that git can clone
+straight back:
+
+```bash
+git bundle create C:\Claude\drift-backups\drift-YYYYMMDD-<short-sha>.bundle --all
+```
+
+A bundle is only a backup once it has been *restored*: `git bundle verify <file>` should say
+"records a complete history", and `git clone <file> tmp` should land on the same
+`git rev-parse HEAD^{tree}` as the working repository. Both are cheap — do them, the file is
+otherwise a guess.
+
+The off-machine copy sits beside the player data, under the same rules and for the same reason
+(outside the web root, `0700` directory, `0600` file, HTTP 404 — verified, not assumed):
+
+```bash
+ssh drift "mkdir -p ~/drift-backups && chmod 700 ~/drift-backups"
+scp C:\Claude\drift-backups\drift-YYYYMMDD-<short-sha>.bundle drift:~/drift-backups/
+ssh drift "chmod 600 ~/drift-backups/*.bundle; sha256sum ~/drift-backups/*.bundle"
+```
+
+Compare that sum against the local `sha256sum` — an upload to shared hosting that silently
+truncates is exactly the failure a backup must not have.
+
+**Restoring:** `git clone ~/drift-backups/<file>.bundle drift` gives back the full repository,
+history included. Kept next to it on the local machine: `C:\Claude\drift-git-backup-20260903\`,
+a plain copy of `.git` from **before** the history rewrite — the only place the purged
+`docs/shots` revisions and the macaw reference scan still exist.
 
 ## Compression (added 2026-08-22)
 
