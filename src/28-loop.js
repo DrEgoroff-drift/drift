@@ -142,6 +142,9 @@ let SHOT_CLEAN=false;
    кадр зовёт её, и все остальные тоже. Правило то же, что у кнопки, — у вещи
    один хозяин. */
 function stepWorld(dt){
+  /* растр покинутых систем (M332): сравнение двух строк в кадре, работа —
+     только в тот кадр, когда игрок сменил систему */
+  sysRasterTick();
   if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")updateSystem(dt);
   else if(G.mode==="landing")updateLanding(dt);
   else if(G.mode==="surface"){updateSurface(dt);tickLaunchHold(dt);}

@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 371 · символов верхнего уровня: 3392
+Файлов: 372 · символов верхнего уровня: 3399
 
 ## СИМВОЛЫ
 
@@ -489,9 +489,9 @@ CRAFT_TIERS                  src/03-ships.js:80
 craftAffordable              src/03-ships.js:85
 craftAmmo                    src/16b-missile.js:28
 craftPart                    src/03-ships.js:90
-crashAt                      src/28-loop.js:276
-crashN                       src/28-loop.js:271
-crashSay                     src/28-loop.js:291
+crashAt                      src/28-loop.js:279
+crashN                       src/28-loop.js:274
+crashSay                     src/28-loop.js:294
 CREW_EV_BASE                 src/12b-crew-events.js:69
 CREW_EVENTS                  src/12b-crew-events.js:98
 CREW_MODS                    src/12a-crew.js:273
@@ -558,7 +558,7 @@ CUT_RANGE                    src/24-mode-belt.js:184
 cvs                          src/08-state.js:2
 dayK                         src/19c-light.js:68
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:366
+dbg                          src/28-loop.js:369
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:163
@@ -780,7 +780,7 @@ drawWater                    src/21e-surface-draw.js:769
 drawWear                     src/12s-wear.js:101
 drawWeather                  src/19d-weather.js:96
 drawWinter                   src/29g-winter-draw.js:334
-drawWorld                    src/28-loop.js:158
+drawWorld                    src/28-loop.js:161
 drawWreck                    src/20aa-poi-shapes.js:8
 drawWrecksSystem             src/12l-barge.js:362
 DRONE_BREAK_P                src/12e-drone-flight.js:21
@@ -1000,8 +1000,8 @@ folkShut                     src/11ah-offer.js:90
 folkState                    src/12u-folk.js:83
 folkVisit                    src/12u-folk.js:104
 foundBase                    src/21a-mode-base.js:53
-frame                        src/28-loop.js:304
-frameBody                    src/28-loop.js:182
+frame                        src/28-loop.js:307
+frameBody                    src/28-loop.js:185
 freeVoice                    src/09-audio.js:91
 fuelPriceHere                src/12k-rep.js:63
 FUR_TONES                    src/20f-fauna.js:20
@@ -1040,7 +1040,7 @@ geoFaultAt                   src/18b-geology.js:92
 geoFaultX                    src/18b-geology.js:99
 geologyOf                    src/18b-geology.js:45
 geoWob                       src/18b-geology.js:80
-getSystem                    src/06-galaxy.js:53
+getSystem                    src/06-galaxy.js:99
 GIANT                        src/19a-mode-scoop.js:187
 GIANT_KEEP                   src/19a-mode-scoop.js:188
 giantTex                     src/19a-mode-scoop.js:189
@@ -1467,7 +1467,7 @@ keepersFeed                  src/11k-keepers.js:122
 keepersJumpK                 src/11k-keepers.js:75
 keepersRhymeHere             src/11k-keepers.js:58
 keepersSign                  src/11k-keepers.js:114
-keplerPos                    src/06-galaxy.js:39
+keplerPos                    src/06-galaxy.js:85
 keyLabel                     src/15-input.js:144
 keyMap                       src/15-input.js:133
 keyRow                       src/27-ui-ship.js:189
@@ -1691,6 +1691,8 @@ marketPriceCtx               src/12-economy.js:33
 MAT_CHAR                     src/18a-material.js:49
 MAT_S                        src/18a-material.js:34
 matCell                      src/18a-material.js:53
+memPixels                    tests/91zzzzy-mem.js:15
+memTour                      tests/91zzzzy-mem.js:36
 mercFee                      src/12a-crew.js:203
 mergeKeyMap                  src/15-input.js:123
 MGR_CAP                      src/12c-mgr-core.js:8
@@ -2066,7 +2068,7 @@ physShip                     tests/91zzzzy-phys.js:19
 pick                         src/01-core.js:17
 pickKindByBias               src/20-life.js:179
 pickShare                    src/20e-species.js:125
-pickStType                   src/06-galaxy.js:30
+pickStType                   src/06-galaxy.js:76
 PICKUPS                      src/24a-mode-raid.js:24
 pinch0                       src/15-input.js:349
 PIR_ART                      src/12i-pirate-hull.js:18
@@ -2233,7 +2235,7 @@ probeShot                    src/25m-probe.js:85
 probeSpeak                   src/25m-probe.js:100
 probeTarget                  src/25m-probe.js:38
 probeVoice                   src/25m-probe.js:75
-prof                         src/28-loop.js:328
+prof                         src/28-loop.js:331
 PROFILE                      src/02-world.js:103
 profW                        src/03-ships.js:152
 prunePartsBought             src/14-save.js:33
@@ -2899,7 +2901,7 @@ ST_GOLD                      src/17c-system-draw.js:120
 ST_GROUPS                    src/26-ui-station.js:69
 ST_MOD_FILL                  src/17a-station-mod.js:66
 ST_MODULES                   src/17a-station-mod.js:14
-ST_TYPES                     src/06-galaxy.js:8
+ST_TYPES                     src/06-galaxy.js:54
 stackSmoke                   src/17c-system-draw.js:388
 STAR_CLASS                   src/02-world.js:149
 STAR_COLS                    src/16-flight.js:2
@@ -2992,7 +2994,7 @@ stTabInstr                   src/26b-ui-station-work.js:108
 stTabLab                     src/26b-ui-station-work.js:175
 stTabMods                    src/26b-ui-station-work.js:12
 stTabsHere                   src/26-ui-station.js:79
-stTypeOf                     src/06-galaxy.js:27
+stTypeOf                     src/06-galaxy.js:73
 subdivide                    src/24-mode-belt.js:34
 suite                        tests/90-harness.js:15
 suitFailure                  src/23-mode-dig.js:119
@@ -3021,16 +3023,21 @@ svReturn                     src/27-ui-ship.js:6
 svSlot                       src/27-ui-ship.js:4
 swimTestLand                 tests/91zzzc-swim.js:8
 syncTabs                     src/26-ui-station.js:80
+SYS_BAKE_KEEP                src/06-galaxy.js:20
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
 SYS_EXOTIC                   src/16a-space.js:14
-SYS_K_ORBIT                  src/06-galaxy.js:52
+SYS_HOME_KEY                 src/06-galaxy.js:22
+SYS_K_ORBIT                  src/06-galaxy.js:98
+SYS_LRU                      src/06-galaxy.js:21
 sysDanger                    src/01-core.js:103
 sysHasFauna                  src/12ad-site.js:114
 sysJitter                    src/01-core.js:104
 sysMakes                     src/12ad-site.js:134
 sysNebulaTex                 src/16a-space.js:53
 sysPirateBase                src/24a-mode-raid.js:98
+sysRasterDrop                src/06-galaxy.js:23
+sysRasterTick                src/06-galaxy.js:37
 sysStyle                     src/16a-space.js:21
 sysTraffic                   src/17f-sys-traffic.js:11
 tab                          src/26-ui-station.js:3
@@ -3462,8 +3469,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/06c-regions.js · 6 КБ
   · таблица областей: пятнадцать тем на одной решётке:1
 
-## src/06-galaxy.js · 10 КБ
+## src/06-galaxy.js · 14 КБ
   · галактика:1
+  · испечённое живёт не дольше, чем нужно (M332):4
 
 ## src/07-planet.js · 38 КБ
   · текстуры планет:1
@@ -4165,15 +4173,15 @@ zooTick                      src/11ad-zoo.js:41
 ## src/27z-telemetry.js · 29 КБ
   · телеметрия: приборы пишут в DOM:1
 
-## src/28-loop.js · 30 КБ
+## src/28-loop.js · 31 КБ
   · авария:1
   · звук по кадрам:26
   · цикл:84
   · авторазрешение:107
   · развилка режимов — одна на всех (M238):137
-  · кадр, который не убивает игру (M234):263
-  · prof() — на что уходит кадр:316
-  · dbg() — что держит корабль:357
+  · кадр, который не убивает игру (M234):266
+  · prof() — на что уходит кадр:319
+  · dbg() — что держит корабль:360
 
 ## src/28y-look.js · 16 КБ
   · look() — прибор кадра:1
@@ -4600,6 +4608,9 @@ zooTick                      src/11ad-zoo.js:41
 
 ## tests/91zzzzy-light.js · 20 КБ
   · свет и свечения (M330):1
+
+## tests/91zzzzy-mem.js · 8 КБ
+  · что копится за вечер (M332):1
 
 ## tests/91zzzzy-phys.js · 17 КБ
   · физика мира (M330):1

@@ -191,6 +191,13 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
 - **M325** (0.322.0) — the four effects: the lake with reflections and reeds, heat haze, chromatic aberration on hits, the live flare; `18d-postfx`.
+- **M332** (0.329.0) — the raster that piled up: `SYS_CACHE` kept every visited system's baked
+  globe unwraps, light overlays and cloud sprites for ever — 28.9 MB per forty systems, growing
+  linearly with no ceiling, which is the most likely explanation of the author's «hard freeze»
+  (no exception, no console line, the tab simply stops). Systems still live for ever; their raster
+  now lives only for the last six the player was in (`sysRasterTick`, called from `stepWorld`), and
+  every bakery is lazy so a return costs one re-bake. Measured by `tests/91zzzzy-mem`: 4.8 MB per
+  24 systems after the fix, and the document does not grow across twelve full rounds of every tab.
 - **M331** (0.328.0) — the four questions of game QA as a suite (`91zzzzy-play`): can the player
   get stuck, does the game print money, are there dead ends, what happens after death. Four
   defects: being stranded in space with an empty tank was a real softlock (a tow now exists there

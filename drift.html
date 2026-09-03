@@ -1494,7 +1494,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.328.0";
+const VER="0.329.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -5772,6 +5772,52 @@ function regionOfTheme(id){return regionPlace().byId[id]||null;}
 /* ══════════════ галактика ══════════════ */
 function starAt(sx,sy){return (sx===0&&sy===0)||h01(sx,sy,4242)<.52;}
 const SYS_CACHE=new Map();
+/* ══════════════ испечённое живёт не дольше, чем нужно (M332) ══════════════
+   Кэш систем не имеет предела, и это правильно: система — дешёвый объект с
+   числами, а по нему привязано состояние (рынок, аппетит, захват тела). Но на
+   планетах этого объекта висит РАСТР: развёртка глобуса (до 512×256), две
+   накладки света (256×256) и тринадцать спрайтов облаков. Измерено набором
+   «память: вечер прыжков» — сорок систем дают 636 холстов и 28.9 МБ, восемьдесят
+   ровно вдвое больше. Вечер — это не сорок систем, а несколько сотен: счёт
+   идёт на сотни мегабайт, и вкладка встаёт. Именно так и выглядит «жёсткое
+   зависание», которое ищут с M238: ни исключения, ни строки в консоли.
+
+   Правило проекта здесь уже есть — эфемерное не хранится, а пересчитывается.
+   Растр эфемерен по определению: все три пекарни ленивые и умеют печь заново
+   (`planetStrip` возвращает null и становится в очередь, `planetLight` и
+   `cloudsOf` пекут на месте). Поэтому системы остаются в кэше навсегда, а их
+   растр — только у последних шести, где игрок был. Возвращение в недавнюю
+   систему бесплатно, дальнее — стоит одной ленивой перепечки. */
+const SYS_BAKE_KEEP=6;
+const SYS_LRU=[];
+let SYS_HOME_KEY="";
+function sysRasterDrop(sys){
+  let n=0;
+  for(const p of (sys&&sys.planets)||[]){
+    if(p.strip){p.strip=null;p.stripLvl=-1;p.stripWant=0;n++;}
+    if(p.lite){p.lite=null;p.liteLvl=-1;n++;}
+    if(p.clouds){p.clouds=null;n++;}
+  }
+  /* очередь пекарни не должна держать выброшенное: иначе она допечёт то,
+     что только что выкинули, и следующий обход найдёт растр снова */
+  if(typeof STRIP_PEND!=="undefined"&&STRIP_PEND.length)
+    STRIP_PEND=STRIP_PEND.filter(p=>!((sys.planets||[]).indexOf(p)>=0));
+  return n;
+}
+/* зовётся кадром (28-loop): дорого только в тот кадр, когда игрок сменил систему */
+function sysRasterTick(){
+  const key=G.sx+","+G.sy;
+  if(key===SYS_HOME_KEY)return 0;
+  SYS_HOME_KEY=key;
+  const i=SYS_LRU.indexOf(key);
+  if(i>=0)SYS_LRU.splice(i,1);
+  SYS_LRU.push(key);
+  if(SYS_LRU.length<=SYS_BAKE_KEEP)return 0;
+  const keep=new Set(SYS_LRU.slice(-SYS_BAKE_KEEP));
+  let n=0;
+  for(const [k,s] of SYS_CACHE)if(!keep.has(k))n+=sysRasterDrop(s);
+  return n;
+}
 /* Типы станций (M44). Тип — не картинка, а набор возможностей: `tabs` решает,
    какие вкладки вообще существуют на этой станции, множители — насколько выгодно
    тут торговать, чинить и заправляться. Вес зависит от опасности системы:
@@ -67534,6 +67580,9 @@ let SHOT_CLEAN=false;
    кадр зовёт её, и все остальные тоже. Правило то же, что у кнопки, — у вещи
    один хозяин. */
 function stepWorld(dt){
+  /* растр покинутых систем (M332): сравнение двух строк в кадре, работа —
+     только в тот кадр, когда игрок сменил систему */
+  sysRasterTick();
   if(G.mode==="system"||G.mode==="dock"||G.mode==="barge")updateSystem(dt);
   else if(G.mode==="landing")updateLanding(dt);
   else if(G.mode==="surface"){updateSurface(dt);tickLaunchHold(dt);}

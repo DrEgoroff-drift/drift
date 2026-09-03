@@ -7,6 +7,37 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.329.0 - M332: what piles up over an evening — the raster, and the freeze it explains
+
+The author's «hard freeze» has been hunted since M238. The fuzzer drives every mode under random
+hands and finds no crash; the cross-cutting suites (M329) proved no list in the state grows. What
+none of them looked at is the third thing: THE RASTER.
+
+The game bakes pictures — a globe unwrap per planet (up to 512×256), two light overlays (256×256)
+and thirteen cloud sprites — and hangs them on the planet objects, which live in `SYS_CACHE`. That
+cache has no limit, and it should not have one: a system is a cheap object of numbers, and state
+is keyed to it. The raster hanging off it is not cheap. Measured by the new suite
+(`tests/91zzzzy-mem`): forty systems flown through = 636 canvases = **28.9 MB**; eighty systems =
+**58.8 MB**. Exactly linear, with no ceiling at all. An evening is not forty systems, it is a few
+hundred — hundreds of megabytes, and then the tab stops. No exception, no console line: precisely
+what the author describes.
+
+The project's own rule already covers it — what is derived is regenerated, not stored. All three
+bakeries are lazy and can bake again (`planetStrip` returns null and queues itself, `planetLight`
+and `cloudsOf` bake on the spot). So systems stay in the cache for ever, and their raster stays
+only for the last six the player was actually in (`sysRasterTick` in `06-galaxy`, called from
+`stepWorld`). Returning to a recent system is free; returning to a distant one costs one lazy
+re-bake — the same work as the first visit. The map does not bake planet textures at all
+(`planetDraw` is called only from the system view), so nothing there changes.
+
+After the fix: 24 systems = 4.8 MB, 48 systems = 9.3 MB, and a system left long ago holds
+almost nothing. The steady-state frame is untouched — one string comparison per step, and work
+only in the frame where the player changed system.
+
+The same suite also watches the document: twelve full rounds through every desk and station tab
+add one node, not a thousand.
+
+---
 ## 0.328.0 - M331: four questions from game QA, and the four defects they found
 
 The author asked for deep scenario tests «with gamedev experience». That experience comes down to
