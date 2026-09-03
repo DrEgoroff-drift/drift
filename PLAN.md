@@ -183,6 +183,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M310** (0.307.0) — ГЛАВТРАССА opens: `12ai-fleet` with thirteen classes and voices, the paint pipeline, почтовик/танкер/буксир drawn, passage by the ladder, позывной and заправка по норме; almanac issue III.
 - **M309** (0.306.0) — the system: nebula blots fan out with filaments and a dust lane; shuttles station ↔ planets by rung (`17f-sys-traffic`).
 - **M308** (0.305.0) — the approach by day (warm horizon glow on the sun's side), the map band in two value steps, `pair` without a verdict for daylight scenes.
 - **M307** (0.304.0) — the home: furniture out of material by a `fillRect` wrapper, the house out of a seeded plan with signs of habitation by tier.
@@ -239,7 +240,11 @@ never touches arithmetic; station modules don't unlock services.
   Воротник…, a call-sign for the node, no name for the derelict); the refuelling «под расписку»
   rewritten without a book of debt; «груз в попутную» struck. Estimate from the critique: one
   class plus the paint pipeline 2–3 sessions, each next class 1–1.5, the interactions 6–10; the
-  order of drawing is §18.9, the first meeting the почтовик. Not queued.
+  order of drawing is §18.9, the first meeting the почтовик. **Opened as M310 (0.307.0)**: names
+  settled, three classes drawn, the line, позывной and the norm. Queue for the next fleet passes:
+  §8 joints (panels/tanks/radiators meet the hull with a drawn joint), the tanker's strap-on tanks a
+  value step off the hull, hull greys lifted toward white (§16); then сторожевик → плавбаза → паром
+  in the §18.9 order; the interactions in §18.7 order 4–12; the node station «УЗ-1» and the derelict.
 
 - **The road companion** (author, 2026-08-23): phone mode where a real car trip flies your ship —
   GPS speed extrapolated to cosmic, accelerometer banks the hull, mic-driven equalizer, real

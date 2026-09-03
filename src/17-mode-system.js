@@ -232,6 +232,8 @@ function updateSystem(dt){
       }
     }
   }
+  /* флот ГЛАВТРАССЫ: позывной, заправка по норме (12ai) */
+  if(typeof fleetInteract==="function"&&fleetInteract(sh))return;
   /* торговая баржа — к ней можно подойти и сторговаться без стыковки (12l) */
   if(typeof bargeInteract==="function"&&bargeInteract(sh))return;
   /* остов погибшей баржи — обыскать ровно раз (12l) */
@@ -476,6 +478,7 @@ function drawSystem(){
   if(typeof relayDrawSystem==="function")relayDrawSystem(zx,zy,Z);
   if(typeof drawBarges==="function")drawBarges(zx,zy,Z);
   if(typeof drawSysTraffic==="function")drawSysTraffic(zx,zy,Z);   /* челноки станции (M309) */
+  if(typeof drawFleet==="function")drawFleet(zx,zy,Z);               /* флот ГЛАВТРАССЫ (M310) */
   if(typeof drawMooredBarge==="function")drawMooredBarge(zx,zy,Z);   /* своя баржа у Причала (M296) */
   /* дроны идут своими кругами между точкой и станцией (12e-drone-flight) */
   if(typeof drawDronesSystem==="function")drawDronesSystem(zx,zy,Z);

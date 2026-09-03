@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 359 · символов верхнего уровня: 3314
+Файлов: 360 · символов верхнего уровня: 3328
 
 ## СИМВОЛЫ
 
@@ -688,6 +688,8 @@ drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:241
 drawFindsSystem              src/17b-finds.js:180
 drawFlame                    src/03b-hull-paint.js:10
+drawFleet                    src/12ai-fleet.js:207
+drawFleetShip                src/12ai-fleet.js:192
 drawFoeBody                  src/24ab-raid-foe.js:10
 drawForeground               src/21b-surface-deco.js:249
 drawGlassHUD                 src/24-mode-belt.js:716
@@ -759,9 +761,9 @@ drawSurface                  src/21e-surface-draw.js:651
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:527
+drawSysHud                   src/17-mode-system.js:530
 drawSysNebula                src/16a-space.js:208
-drawSystem                   src/17-mode-system.js:299
+drawSystem                   src/17-mode-system.js:301
 drawSysTraffic               src/17f-sys-traffic.js:29
 drawTemple                   src/20aa-poi-shapes.js:50
 drawThingIcon                src/27i-ui-table.js:321
@@ -929,19 +931,31 @@ fleaRec                      src/12ua-flea.js:34
 fleaRender                   src/12ua-flea.js:166
 fleaScrip                    src/12ua-flea.js:108
 FLEET                        src/04b-fleet.js:107
+FLEET_ART                    src/12ai-fleet.js:83
+FLEET_CLASSES                src/12ai-fleet.js:20
 FLEET_EPITH                  src/04b-fleet.js:57
 FLEET_KEYS                   src/04b-fleet.js:148
 FLEET_LUXE                   src/04b-fleet.js:59
 FLEET_MARK                   src/04b-fleet.js:56
 FLEET_N                      src/04b-fleet.js:106
+FLEET_NAMES                  src/12ai-fleet.js:41
+FLEET_NORM_SHIFTS            src/12ai-fleet.js:46
 FLEET_NOTE                   src/04b-fleet.js:61
 FLEET_PAL                    src/04b-fleet.js:87
+FLEET_PERIOD                 src/12ai-fleet.js:45
+FLEET_PLACES                 src/12ai-fleet.js:44
 FLEET_PROFILE                src/04b-fleet.js:34
 FLEET_SEEN                   src/04b-fleet.js:99
 FLEET_TIER_CLS               src/04b-fleet.js:46
 FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16
+fleetArtOf                   src/12ai-fleet.js:84
 fleetColor                   src/04b-fleet.js:95
+fleetHere                    src/12ai-fleet.js:50
+fleetInteract                src/12ai-fleet.js:225
+fleetLogKey                  src/12ai-fleet.js:224
+fleetPos                     src/12ai-fleet.js:72
+fleetRung                    src/12ai-fleet.js:48
 fleetUniqueName              src/04b-fleet.js:100
 flightCam                    src/16a-space.js:316
 floraOf                      src/20e-species.js:91
@@ -1885,7 +1899,7 @@ openStation                  src/26-ui-station.js:5
 OPT_TABS                     src/27-ui-ship.js:444
 optGroups                    src/27-ui-ship.js:447
 optTab                       src/27-ui-ship.js:446
-orbPathOf                    src/17-mode-system.js:288
+orbPathOf                    src/17-mode-system.js:290
 ORDER_WIN                    src/12aa-need.js:74
 orderDeliver                 src/12aa-need.js:114
 orderHere                    src/12aa-need.js:110
@@ -3583,6 +3597,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ah-holdnews.js · 6 КБ
   · холдинг · слухи, новости и чужие на проданной дороге:1
 
+## src/12ai-fleet.js · 19 КБ
+  · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
+
 ## src/12b-crew-events.js · 17 КБ
   · наёмники: рейс как раздача карт:1
 
@@ -3737,7 +3754,7 @@ zooTick                      src/11ad-zoo.js:41
   · облако:65
   · видимое состояние обмена:80
 
-## src/14-save.js · 58 КБ
+## src/14-save.js · 59 КБ
   · сохранение:1
   · запись не имеет права убить полёт:89
   · пустая карта возвращается из облака СПИСКОМ:168
@@ -4385,12 +4402,13 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzy-screens.js · 13 КБ
   · автотесты: экраны M299 — заголовки, подгляд карты, зал как ввод:1
 
-## tests/91zzza-cave-props.js · 7 КБ
+## tests/91zzza-cave-props.js · 10 КБ
   · пещера M305: гладкий обвод и содержимое:1
   · станция и планета M306: знаки на дневной стороне:32
   · дом M307: мебель из материала, план сеян:58
   · M308: дневной свет без приговора, карта и заход рисуются:77
   · M309: трафик системы и туманность с кромкой:92
+  · M310: флот ГЛАВТРАССЫ:114
 
 ## tests/91zzza-trace.js · 5 КБ
 

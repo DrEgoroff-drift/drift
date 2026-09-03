@@ -845,8 +845,12 @@ without its printout.
 
 ## 18. The fleet — bracketed until the measurement of step 5
 
+> **Status (2026-09-03, M310):** opened. `12ai-fleet` carries the thirteen classes with their
+> voices, the paint pipeline, the first three drawings (почтовик, танкер, буксир), passage by the
+> ladder (§18.8), and two of the twelve interactions (позывной, заправка по норме). The rest of
+> §18 is the queue; the 2026-09-02 status below is kept as history.
 > **Status (2026-09-02):** the author said «давай потом», and the same evening «флот запиши в
-> беклог» — it is in `PLAN.md` under «Open by design». What follows is the record of the
+> беклог» — it was in `PLAN.md` under «Open by design». What follows is the record of the
 > evening of 08-31, kept whole because it will be wanted; **nothing in it is queued** (§19). The
 > critique's findings against it stand unanswered on purpose: the class names off real ISS/«Мир»
 > modules and the «Полюс» [F23], the price of thirteen drawings [F17], the debt in «заправка под
@@ -907,7 +911,7 @@ pixels. The ring is the Кольцо of rung 30: the arms are a promise.
 
 The wing went to the ferry and not to the patrol on purpose: a wing belongs to whoever lands.
 
-### 18.4 The places — names undecided (fork 4)
+### 18.4 The places — names settled (fork 4, author 2026-09-03)
 
 A truss station of the lines at rung 25; your own station growing by modules; a black blind
 derelict in the far sectors. The 08-31 names (Заря, Звезда, Причал, Поиск, Рассвет, Наука,
@@ -915,7 +919,13 @@ derelict in the far sectors. The 08-31 names (Заря, Звезда, Прича
 to Сардразль and Тук [F23]; the silhouettes are the donors, the words will be ours — Короб, Кубрик,
 Воротник (`03b-hull-paint` already calls the node that), Тамбур, Погреб — or the buildings' own
 names from §10. The node station by call-sign («УЗ-1», after `11an-qsl`); the derelict without a
-name at all: a black hull, which is its voice. To be settled with the author.
+name at all: a black hull, which is its voice. **Settled 2026-09-03** («флот имена которые ты
+предложил»): the station's modules are Короб, Кубрик, Воротник, Тамбур, Погреб; the node is
+«УЗ-1»; the derelict has no name; the ships carry their own words — Зарница, Окоём, Стремя,
+Ладья, Кремень, Полынь, Застава, Косогор, Тихоход, Северянка, Просвет, Опока, Отмель, Подкова,
+Верста, Лучина (`FLEET_NAMES`, `12ai-fleet`). Refuelling is «по норме» once a shift per system
+with no book of debt (`G.fleetLog` keeps only the shift it was given); «груз в попутную» stays
+struck.
 
 ### 18.5 Paint, lettering, wear
 

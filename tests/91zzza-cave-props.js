@@ -110,3 +110,39 @@ TEST_SUITES.push(()=>suite("M309: челноки по ступени, ни од�
     ok(u>=0&&u<=1,"параметр хода в [0,1]");
   }
 }));
+
+/* ══════════════ M310: флот ГЛАВТРАССЫ ══════════════ */
+TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, три класса нарисованы, позывной и норма",()=>{
+  resetWorld();
+  const sys=G.sys;
+  ok(Object.keys(FLEET_CLASSES).length===13,"тринадцать классов в таблице");
+  ok(Object.values(FLEET_CLASSES).every(c=>c.say&&c.say.length&&c.ru&&c.mark),"у каждого класса голос, имя и знак");
+  eq(Object.values(FLEET_CLASSES).filter(c=>c.art).length,3,"нарисованы три: почтовик, танкер, буксир");
+  const wild={seed:5,sx:77,sy:77,planets:[],station:null};
+  eq(fleetHere(wild).length,0,"в дикой системе флота нет");
+  /* спавн — только нарисованные классы и только по рунгу */
+  const saveRung=window.rungOf;window.rungOf=()=>30;
+  let seen={};
+  for(let i=0;i<12;i++){const s2={seed:100+i,sx:1,sy:i,station:{x:100,y:0},planets:[]};for(const f of fleetHere(s2))seen[f.k]=1;}
+  window.rungOf=saveRung;
+  ok(Object.keys(seen).every(k=>FLEET_CLASSES[k].art),"спавнятся только нарисованные классы");
+  ok(Object.keys(seen).length>=1,"на рунге 30 кто-то из флота ходит ("+Object.keys(seen).join(",")+")");
+  /* положение — функция времени в пределах линии */
+  const f={k:"post",seed:3,name:"ЗАРНИЦА",num:"Л-1425",line:4,x0:-3000,y0:0,x1:3000,y1:0,bow:400,ph:.3};
+  const p=fleetPos(f);ok(isFinite(p.x)&&isFinite(p.y)&&isFinite(p.a)&&p.u>=0&&p.u<1,"позиция конечна, доля в [0,1)");
+  for(const k of ["post","tanker","tug"]){const a=fleetArtOf(Object.assign({},f,{k,seed:k.length}));ok(a.cn.width>0&&a.lights.length>=3,k+": спрайт запечён, огни есть");}
+  /* позывной и норма: танкер рядом, баки пусты */
+  G.mode="system";
+  const b=Math.floor(Date.now()/FLEET_PERIOD);
+  const X=G.ship.x,Y=G.ship.y;
+  sys.fleetCache={b,list:[{k:"tanker",seed:9,name:"ОКОЁМ",num:"Л-1426",line:4,x0:X+60,y0:Y,x1:X+60,y1:Y,bow:0,ph:0}]};
+  G.fleetLog={};G.fuel=1;
+  actEdge=false;ok(fleetInteract(G.ship),"танкер рядом — подсказка есть");
+  ok(G.prompt.indexOf("ЗАПРАВКА ПО НОРМЕ")>=0,"пустому — заправка по норме");
+  actEdge=true;fleetInteract(G.ship);actEdge=false;
+  eq(G.fuel,stat().fuelMax,"залили до полного");
+  G.fuel=1;fleetInteract(G.ship);
+  ok(G.prompt.indexOf("ПОЗЫВНОЙ")>=0,"второй раз в ту же смену — только позывной, без книги долга");
+  const snap=snapshot();ok(snap.fleetLog&&Object.keys(snap.fleetLog).length===1,"норма записана в сейв");
+  delete sys.fleetCache;
+}));

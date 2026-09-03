@@ -7,6 +7,34 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.307.0 - M310: ГЛАВТРАССА — the fleet opens (three classes, the line, the call-sign, the norm)
+
+The fleet was «open by design» since 08-31; the author settled fork 4 on 09-03 (our own names).
+`12ai-fleet`:
+
+- **Thirteen classes in one table** (`FLEET_CLASSES`): donor, class mark, the rung from which the
+  class passes, a voice of two lines, and an `art` flag — only drawn classes spawn. Names our
+  own (`FLEET_NAMES`); the node station's modules Короб/Кубрик/Воротник/Тамбур/Погреб and the
+  call-sign «УЗ-1» in `FLEET_PLACES` for the passes to come.
+- **The paint pipeline** (`fleetArtOf`, one for all classes, §18.5/§1): санкирь under every
+  polygon, greys, the red band the full length, black numerals a third of the hull high, the name
+  above the band, the class mark in a circle with one solid, wear (off-shade patches, soot fanned
+  from the nozzles, the band burnt on top) under one source-atop light. Baked once per ship.
+- **Three drawings**: почтовик («Союз»: bell, sphere, instrument cylinder, two panel wings,
+  probe), танкер («Протон»: fat body, strap-on tanks, a ring of fill necks), буксир (reactor on a
+  boom forward, two flat radiators, bell aft).
+- **Passage by the ladder** (`fleetHere`, `fleetPos`): a system with a station and rung ≥ 5 sees
+  a почтовик, ≥ 16 a танкер, ≥ 19 a буксир, each in about half the ten-minute windows, crossing
+  the system on a bowed line — position a function of `Date.now()`, nothing stored.
+- **Two of the twelve interactions**: ПОЗЫВНОЙ — hail them and they answer in the voice of the
+  class into the ether; ЗАПРАВКА ПО НОРМЕ — a tanker fills an empty tank once a shift per system,
+  no book of debt (`G.fleetLog` persists only the shift). Under 260 units, before the barge's
+  prompt.
+- `docs/ALMANAC.md` issue III opened with the verdict on the three (joints and tank values go to
+  the next pass). `DESIGN-holding.md` §18 status and §18.4 updated.
+- Suite `91zzza` (M310 block).
+
+---
 ## 0.306.0 - M309: the system — a nebula with a body, and traffic that belongs to the world
 
 The «Graphics still open» line: the system view is 66–79% empty; dust in three planes helped

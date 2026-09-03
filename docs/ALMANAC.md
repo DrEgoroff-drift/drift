@@ -253,9 +253,37 @@ hall is the honest remainder — a vault of 78 over a flat floor.
 
 ---
 
-## Reserved — issue III: the fleet
+## Issue III — 2026-09-03 (0.307.0) — the fleet, first three classes
 
-Not written yet, because nothing is drawn yet. `DESIGN-holding.md` §18 designs the state fleet of
+Opened by M310: почтовик, танкер, буксир exist and can be looked at (`docs/shots/x_fleet.png`,
+hold scene, Z 1.5). Held against §18.6:
+
+- **§1 layer order** ✓ — санкирь (a dark under-stroke of every polygon) → greys by part →
+  glazes (the red band, numerals, name, the class mark) → wear (patches off-shade, soot fanned
+  back from the nozzles, the band burnt pink on top) → one light source-atop last. Wear is under
+  the highlight, as the law asks.
+- **§12 values before colour** ✓ — three greys carry the hull; the red band is the only colour.
+- **§3 one ship in the frame** — the stand puts three side by side for this issue; in play they
+  pass one at a time on a ten-minute line.
+- **§13 contour first** ✓ — every part is drawn as a closed polygon with its own dark edge.
+- **§8 one joint grammar** ✗ — not yet: the panels, the strap-on tanks and the radiators meet
+  the hull with no drawn joint; the fleet and the station share no truss vocabulary. First item
+  of the next fleet pass.
+- **§16 zones** — hull greys sit in V–VI, the band in IV; white in VII–VIII is not reached — the
+  hull is «grey-white» in the design and grey in the frame. Lift `C[0]` a step next pass.
+- **By class:** почтовик reads as its donor (sphere–bell–cylinder, two wings); танкер reads as a
+  cylinder with a band, the six strap-on tanks merge into the body (same value) — needs a value
+  step between tanks and hull; буксир reads at once (radiators, reactor forward, bell aft).
+- The lettering: the number reads at Z 1.5, the name does not (4 px). Fine on the hull, so the
+  label under the ship carries the name.
+
+Verdict: the pipeline holds; two findings (joints, tank values) go to the next fleet pass.
+
+---
+
+## Reserved — issue III (continued): the remaining ten classes
+
+Not drawn yet. `DESIGN-holding.md` §18 designs the state fleet of
 **ГЛАВТРАССА** — thirteen classes off real Soviet donors, the truss node station, the silent
 «Полюс» — and §18.6 already holds the whole system against the codex before a line is drawn: §1
 the paint order (dark ground → greys → glazes → wear → highlights, wear *under* the highlights),
