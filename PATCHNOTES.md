@@ -7,6 +7,18 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.320.0 - M323: the plant as a body, not a skin
+
+The tail of M173 #2. 0.140.0 gave every form a gradient, and a gradient is a skin: a leaf stayed
+a paper cut-out with no dark edge against a bright sky, the stem as light as the crown. By the
+rule "many pieces, one body" the body comes first: `drawPlant` (20-life) now paints the plant
+twice - first the whole form as one dense dark mass (.42 of its tone), shifted away from the
+star and down by one to two pixels, then the lit form over it. Every leaf and stem of all twelve
+forms gets a shaded side and a contact edge in one place, the way 0.140.0 gave them light. Near
+plants only: the far ones already fade into the air. Glow, litter and the druse's white edge
+belong to the lit pass alone. The stem's gradient is a step darker than the crown's (1.0 against
+1.22), so the crown reads over it.
+
 ## 0.319.0 - M322: one house plan for the home and the settlement
 
 `housePlan(seed, p, opt)` in `12tb-settle-draw` is now the only place a dwelling is planned:

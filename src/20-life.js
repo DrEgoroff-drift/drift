@@ -380,7 +380,27 @@ function plantGrad(col,h,ux,k0,k1){
   g.addColorStop(1,"rgb("+col.map(v=>clamp(v*k0,0,255)|0).join(",")+")");
   return g;
 }
+/* ── тело, а не кожа (M323, хвост M173 #2) ──
+   0.140.0 дал каждой форме градиент, но градиент — это кожа: лист остался
+   вырезкой из бумаги, стебель той же светлоты, что крона, и на светлом небе
+   ни у одного листа нет тёмного края. Правило «много кусков — одно тело»:
+   тело первым. Растение рисуется дважды — сперва целиком тёмной массой,
+   сдвинутой от света и вниз на пару пикселей (теневая сторона каждого листа
+   и стебля, одна на всю форму), потом освещённым. Все двенадцать форм
+   получают объём в одной точке, как в 0.140.0 — светотень. Только ближний
+   план: дальнее и так уходит в воздух, а второй проход там — цена без пользы.
+   Свечение и опад — только у светлого прохода: у тени они не светятся. */
 function drawPlant(pl,x,y,haze){
+  const near=!pl.scanned&&!(haze>0)&&(pl.h||20)>=12;
+  if(near){
+    const SP=(typeof sunSpot==="function"&&G.surf&&G.surf.p)?sunSpot(G.surf.p):null;
+    const ux=SP?clamp((SP.x-(W*.5))/(W*.5),-1,1)||.6:.6;
+    const d=Math.min(2.4,1.2+(pl.h||20)*.02);
+    plantPaint(Object.assign({},pl,{glow:0,litter:0}),x-ux*d,y+d*.6,haze,true);
+  }
+  plantPaint(pl,x,y,haze,false);
+}
+function plantPaint(pl,x,y,haze,dark){
   const sc=pl.scanned;
   /* сосед не близнец: тон гуляет на ±12% по хэшу места, куртина перестаёт
      быть одним пятном краски */
@@ -400,8 +420,11 @@ function drawPlant(pl,x,y,haze){
   const SP=(typeof sunSpot==="function"&&G.surf&&G.surf.p)?sunSpot(G.surf.p):null;
   const ux=SP?clamp((SP.x-(W*.5))/(W*.5),-1,1)||.6:.6;
   const H0=Math.max(8,pl.h||20);
-  const stemC=sc?"rgba(127,230,216,.85)":plantGrad(tone(pl.stem),H0,ux,.58,1.10);
-  const leafC=sc?"rgba(127,230,216,.55)":plantGrad(tone(pl.leaf),H0,ux,.52,1.16);
+  /* тёмный проход — один плотный тон на стебель и лист: это масса, не краска.
+     Стебель темнее кроны (k1 1.0 против 1.22): крона читается над ним */
+  const shade=c=>"rgb("+tone(c).map(v=>clamp(v*.42,0,255)|0).join(",")+")";
+  const stemC=dark?shade(pl.stem):(sc?"rgba(127,230,216,.85)":plantGrad(tone(pl.stem),H0,ux,.50,1.00));
+  const leafC=dark?shade(pl.leaf):(sc?"rgba(127,230,216,.55)":plantGrad(tone(pl.leaf),H0,ux,.52,1.22));
   /* фототропизм (M174): растение тянется туда, где реально стоит звезда, и
      сила этой тяги — свойство вида. Прежний lean был чистым броском: половина
      кустов кланялась от света. Наклон общий для всей куртины — это и читается
@@ -420,7 +443,7 @@ function drawPlant(pl,x,y,haze){
       ctx.fillStyle=leafC;ctx.beginPath();
       ctx.moveTo(0,0);ctx.lineTo(Math.sin(a)*w,-len*.5);ctx.lineTo(Math.sin(a)*w*.3,-len);
       ctx.lineTo(-Math.sin(a)*w*.2,-len*.5);ctx.closePath();ctx.fill();
-      ctx.strokeStyle=sc?"rgba(127,230,216,.5)":"rgba(255,255,255,.25)";ctx.lineWidth=.6;ctx.stroke();
+      ctx.strokeStyle=dark?"rgba(0,0,0,0)":(sc?"rgba(127,230,216,.5)":"rgba(255,255,255,.25)");ctx.lineWidth=.6;ctx.stroke();
     }
     if(pl.glow){
       ctx.save();ctx.globalCompositeOperation="lighter";

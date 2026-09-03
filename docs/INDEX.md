@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 361 · символов верхнего уровня: 3343
+Файлов: 361 · символов верхнего уровня: 3344
 
 ## СИМВОЛЫ
 
@@ -727,7 +727,7 @@ drawPirateBase               src/24a-mode-raid.js:103
 drawPirateSkin               src/03d-hull-marks.js:99
 drawPlanetLights             src/17e-station-body.js:45
 drawPlanetWorks              src/17e-station-body.js:74
-drawPlant                    src/20-life.js:383
+drawPlant                    src/20-life.js:393
 drawPlantAlien               src/20-life.js:197
 drawPOI                      src/20a-poi.js:173
 drawPortal                   src/20aa-poi-shapes.js:464
@@ -2122,6 +2122,7 @@ PLANT_KINDS                  src/20-life.js:159
 plantGrad                    src/20-life.js:376
 plantLitter                  src/20e-species.js:196
 planTook                     src/11r-plan.js:59
+plantPaint                   src/20-life.js:403
 plantSpeciesName             src/20e-species.js:86
 plantStemForm                src/20e-species.js:27
 plantTraitWord               src/20e-species.js:29
@@ -3876,7 +3877,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/20f-fauna.js · 17 КБ
   · фауна:1
 
-## src/20-life.js · 33 КБ
+## src/20-life.js · 35 КБ
   · астронавт:1
   · флора:142
 

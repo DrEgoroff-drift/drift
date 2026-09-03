@@ -80,7 +80,7 @@ in this order (author, 2026-09-03: «сначала по плану, потом 
 
 1. ~~The settlement's houses and the wintering hut on `homePlan`~~ — M322 (0.319.0): one
    `housePlan` for both; the wintering has no exterior, nothing to unify there.
-2. The plants as bodies (M173 #2).
+2. ~~The plants as bodies (M173 #2)~~ — M323 (0.320.0): the dark mass under every form.
 3. Drones choosing where they sell — decided by the assistant, then built.
 4. Effects, all of them: heat haze over the nozzles, chromatic aberration on hits, water with
    reflections on the surface (a design addition), the station's flare flame live over the bake.
@@ -157,8 +157,7 @@ Left from the queue: nothing — the band's second step is M308, the station's c
   detector over the sky third of night and landing frames at two window sizes finds nothing but
   the hint band and the chips; the one rectangle found was the `wallset` stand's own loupe. If it
   returns, shoot the frame and run the detector (`docs/shot.py --eval`, PATCHNOTES 0.317.0).
-- **The plants as bodies** (M173 #2, half done — clumping is fixed, the plant body itself is still
-  the skin only; the text is in the archive).
+- ~~The plants as bodies~~ — M323 (0.320.0): two passes in `drawPlant`, the dark mass first.
 
 ### Systems
 
@@ -194,6 +193,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M323** (0.320.0) — the plant as a body: a dark mass under every form, the lit form over it; stem a step darker than crown.
 - **M322** (0.319.0) — one `housePlan` for the home and the settlement's izbas; one material table; the settlement's chimney on the slope. Stand defect noted: `shot.py homeout/wallset` hang at load.
 - **M321** (0.318.0) — the §9 walkthrough as a suite in both windows; the course as a state, «К ЦЕЛИ» in flight, the search circle that survives НАЗАД.
 - **M320** (0.317.0) — smoke along `dirAt` streamlines (curl noise) for chimneys, hearth and the smelter; the smoke made visible at all; the sky-seam hunt closed as not reproduced.
