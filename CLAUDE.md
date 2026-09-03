@@ -222,6 +222,12 @@ through, waited out until night, or opened on a phone.
 - **A script parameter shadows a variable of the same name, case-insensitively.**
   `param([switch]$Shots)` plus a later `$shots = Get-ChildItem …` fails with
   "Cannot convert System.Object[] to SwitchParameter".
+- **`prof()` cannot say whether a mode is fast — only what a frame does.** It reads the canvas
+  with `getImageData` every frame, and after a few readbacks Chrome demotes the canvas to software
+  rasterisation: from then on `prof()` measures a CPU raster the player never sees (M319: the home
+  interior read 27 ms, then 24–49 ms *with* a full chunk bake in; `?g11` said 60 fps both ways,
+  and the bake was reverted). Use it to rank draw functions and to mute one and see the delta;
+  for the verdict, `docs/g11.ps1` and nothing else.
 - **Never measure the frame with `--virtual-time-budget`.** It fast-forwards
   timers, so the probe measures the fast-forward. `docs/g11.ps1` runs `?g11`
   correctly; it also leaves the GPU on, because `--disable-gpu` reads ~10 fps in

@@ -1479,7 +1479,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.315.0";
+const VER="0.316.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -33882,7 +33882,9 @@ function drawSystem(){
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);
   ctx.save();ctx.translate(zx(sh.x),zy(sh.y));ctx.rotate(sh.a);
-  ctx.scale(clamp(Z,.55,1.6),clamp(Z,.55,1.6));
+  /* пол масштаба .35, не .55 (M319): на дальнем отъезде корабль в .55 читался
+     крупнее малой луны; ниже .35 он уже не находится глазом */
+  ctx.scale(clamp(Z,.35,1.6),clamp(Z,.35,1.6));
   drawHull(G.shipId,keys.thrust&&G.fuel>0||(G.ap&&G.fuel>0),keys.brake&&G.fuel>0,G.mods.engine,sh.bank);
   /* пусковая видна на силуэте (хвост M112): подвес под корпусом — заряженный
      сплошной, сухой — только обвод с красной меткой. По нему и без панели
@@ -66756,7 +66758,8 @@ function prof(N,mute){
   const M={system:[updateSystem,drawSystem],dock:[updateSystem,drawSystem],barge:[updateSystem,drawSystem],
     map:[()=>{},drawMap],landing:[updateLanding,drawLanding],surface:[updateSurface,drawSurface],
     dig:[updateDig,drawDig],cave:[updateCave,drawCave],belt:[updateBelt,drawBelt],
-    scoop:[updateScoop,drawScoop],base:[updateBase,drawBase],raid:[updateRaid,drawRaid]}[G.mode];
+    scoop:[updateScoop,drawScoop],base:[updateBase,drawBase],raid:[updateRaid,drawRaid],
+    homein:[updateHomeIn,drawHomeIn]}[G.mode];
   if(!M)return {ошибка:"режим "+G.mode+" не профилируется"};
   const names=Object.keys(window).filter(k=>typeof window[k]==="function"&&/^(draw[A-Z]|fill[A-Z]|b[A-Z][a-z]|hud$)/.test(k)&&k!=="drawChunks");
   const T={},orig={};
@@ -67165,6 +67168,9 @@ async function g11Run(){
         const v=S.foes.filter(q=>q.hp>0&&raidLineOfSight(R,S.x,S.z,q.x,q.z));
         if(v.length)S.a=Math.atan2(v[0].x-S.x,v[0].z-S.z);}
     }],
+    /* дом изнутри (M319): растр кадра там был 27 мс в панели; печка стен и
+       обстановки в ломти проверяется только живым rAF, поэтому дом в туре */
+    ["homein",()=>{G.mode="system";G.home=G.home||homeInit();G.home.tier=HOME_TIERS.length;enterHomeIn();}],
     /* дорога (M168k): у неё свой rAF и самый дорогой кадр в игре — поле света
        и длинный шлейф. Мерить её глазами по стенду нельзя, а на телефоне она и
        живёт, поэтому она в пробнике наравне с остальными. Ход и музыку задаём

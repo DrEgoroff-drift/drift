@@ -485,7 +485,9 @@ function drawSystem(){
   drawAllies(zx,zy,Z);
   drawPirateBase(zx,zy,Z);
   ctx.save();ctx.translate(zx(sh.x),zy(sh.y));ctx.rotate(sh.a);
-  ctx.scale(clamp(Z,.55,1.6),clamp(Z,.55,1.6));
+  /* пол масштаба .35, не .55 (M319): на дальнем отъезде корабль в .55 читался
+     крупнее малой луны; ниже .35 он уже не находится глазом */
+  ctx.scale(clamp(Z,.35,1.6),clamp(Z,.35,1.6));
   drawHull(G.shipId,keys.thrust&&G.fuel>0||(G.ap&&G.fuel>0),keys.brake&&G.fuel>0,G.mods.engine,sh.bank);
   /* пусковая видна на силуэте (хвост M112): подвес под корпусом — заряженный
      сплошной, сухой — только обвод с красной меткой. По нему и без панели

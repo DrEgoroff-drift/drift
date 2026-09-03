@@ -556,7 +556,7 @@ CUT_RANGE                    src/24-mode-belt.js:184
 cvs                          src/08-state.js:2
 dayK                         src/19c-light.js:68
 dayKq                        src/19c-light.js:74
-dbg                          src/28-loop.js:364
+dbg                          src/28-loop.js:365
 dcol                         src/21b-surface-deco.js:136
 DEAL_KINDS                   src/27g-deals.js:17
 dealAnswer                   src/27g-deals.js:163
@@ -763,7 +763,7 @@ drawSurface                  src/21e-surface-draw.js:651
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
-drawSysHud                   src/17-mode-system.js:530
+drawSysHud                   src/17-mode-system.js:532
 drawSysNebula                src/16a-space.js:208
 drawSystem                   src/17-mode-system.js:301
 drawSysTraffic               src/17f-sys-traffic.js:29
@@ -3803,7 +3803,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17f-sys-traffic.js · 4 КБ
   · трафик системы: чужие машины, которым тут есть дело (M309):1
 
-## src/17-mode-system.js · 40 КБ
+## src/17-mode-system.js · 41 КБ
   · режим: система:1
 
 ## src/18a-material.js · 21 КБ
@@ -4116,7 +4116,7 @@ zooTick                      src/11ad-zoo.js:41
   · развилка режимов — одна на всех (M238):137
   · кадр, который не убивает игру (M234):262
   · prof() — на что уходит кадр:315
-  · dbg() — что держит корабль:355
+  · dbg() — что держит корабль:356
 
 ## src/28y-look.js · 16 КБ
   · look() — прибор кадра:1

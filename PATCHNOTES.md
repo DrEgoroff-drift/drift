@@ -7,7 +7,23 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
-## 0.315.0 - M318: the fleet's small parts, and the трасса as a chain
+## 0.316.0 - M319: the ship's zoom floor, the home interior measured — and prof() caught lying
+
+- **The ship at deep zoom-out** (`17-mode-system`): the hull kept a `.55` scale floor while the
+  world went to ×0.16, so it read larger than a small planet and far larger than a moon. The floor
+  is `.35` now — smaller than a planet at the far end, still found by eye.
+- **The home interior measured before baking**, as the loose-ends list asked. `prof()` in the
+  browser pane said 27 ms of raster per frame at dpr 2, and a full bake of the room into `18c`
+  chunks was built and measured — and `prof()` still said 24–49 ms with the bake in. The `?g11`
+  probe, with `homein` added to its tour, says **60 fps with and without the bake** (dpr 2). The
+  bake was reverted: no gain to pay for. What was wrong is the instrument — Chrome demotes a canvas
+  to software rasterisation after repeated `getImageData`, and `prof()` reads the canvas every
+  frame, so on the second call it measures the CPU raster the player never sees (a scaled
+  `drawImage` is cheap on the GPU and 10 ms in software). `prof()` stays the tool for *what a
+  frame does* (JS by function, raster by muting); *whether a mode is fast* is `docs/g11.ps1` only.
+  `prof()` now knows the `homein` mode; the probe's tour has it before the road.
+
+ the fleet's small parts, and the трасса as a chain
 
 The two laws almanac III left open after M317, `12ai-fleet`:
 

@@ -329,7 +329,8 @@ function prof(N,mute){
   const M={system:[updateSystem,drawSystem],dock:[updateSystem,drawSystem],barge:[updateSystem,drawSystem],
     map:[()=>{},drawMap],landing:[updateLanding,drawLanding],surface:[updateSurface,drawSurface],
     dig:[updateDig,drawDig],cave:[updateCave,drawCave],belt:[updateBelt,drawBelt],
-    scoop:[updateScoop,drawScoop],base:[updateBase,drawBase],raid:[updateRaid,drawRaid]}[G.mode];
+    scoop:[updateScoop,drawScoop],base:[updateBase,drawBase],raid:[updateRaid,drawRaid],
+    homein:[updateHomeIn,drawHomeIn]}[G.mode];
   if(!M)return {ошибка:"режим "+G.mode+" не профилируется"};
   const names=Object.keys(window).filter(k=>typeof window[k]==="function"&&/^(draw[A-Z]|fill[A-Z]|b[A-Z][a-z]|hud$)/.test(k)&&k!=="drawChunks");
   const T={},orig={};

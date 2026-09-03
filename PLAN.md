@@ -86,7 +86,7 @@ Left:
 
 3. ~~System proportions~~ — M315 (0.312.0): bodies and orbits scaled (`SYS_K_*` in `06-galaxy`), the
    ghost click on screens opened by a pad swallowed, §18.8 complete but for the заявка (rung 21).
-   Left: the ship keeps its `.55` floor at deep zoom-out and reads larger than a small moon there.
+   ~~Left: the ship keeps its `.55` floor at deep zoom-out~~ — `.35` since M319 (0.316.0).
 
 ## Loose ends (as of 2026-08-28, after the graphics run 0.237.0–0.244.0)
 
@@ -132,9 +132,11 @@ Left from the queue: nothing — the band's second step is M308, the station's c
   a back wall, bones, ropes, tallies, a camp, branch-end finds. Left: the lower lake hall is still
   79% empty by the meter — a vault of 78 over a flat floor; if it needs more, it needs a second
   floor level or a lake that fills the frame, not more props.
-- ~~The home's furniture is flat boxes~~ / ~~the house is a formula~~ — M307 (0.304.0). Left: the
-  interior is still drawn per frame (nothing baked) — measure with `prof()` before baking; the
-  settlement's houses and the wintering hut still draw their own and could take `homePlan`.
+- ~~The home's furniture is flat boxes~~ / ~~the house is a formula~~ — M307 (0.304.0). ~~The
+  interior is drawn per frame — measure before baking~~ — measured in M319 (0.316.0): `?g11` says
+  60 fps at dpr 2 with and without a bake, so nothing is baked; `prof()`'s 27 ms was the
+  software-raster artifact (see CLAUDE.md). Left: the settlement's houses and the wintering hut
+  still draw their own and could take `homePlan`.
 - ~~The system view is 66% empty~~ — M309 (0.306.0): nebula with a core and a soft edge,
   shuttles by rung. Still ~80% empty by the meter, and that is space; the next step is the fleet.
 - ~~The approach frame is 80% empty and has two tones~~ — M304 gave it two masses and a light
@@ -187,6 +189,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M319** (0.316.0) — the ship's zoom floor .35; the home interior measured by `?g11` (60 fps, no bake needed) and `prof()` caught measuring the software raster.
 - **M318** (0.315.0) — the fleet's small parts cast shadows on the body, the рефрижератор's ribs as corrugation, трассы on the map as a chain; almanac III closed.
 - **M317** (0.314.0) — the fleet at meeting distance: the six items of almanac III paid (label, zoom ceiling, учебное spine, паром wing, greys a step down, emblem grammar).
 - **M314** (0.311.0) — fleet tails: трассы on the map (§14), the rescuer's call to a barge in distress, wing tiles, the hospital's cross, larger names.
