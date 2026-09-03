@@ -22,6 +22,9 @@ where the lake is deeper than a knee the suit inflates a ring and floats at the 
 at half speed, ▲ jumps out; algae grow on the bottom and ДЕЙСТВИЕ takes +2 organics per bush
 (`waterDeepAt`, `waterAlgae`). Suites 91zzzb/91zzzc cover autoland, panel overlap, button text
 overflow, swimming and the cave prompt.
+The four house marks on the station are redrawn in one language: a small dark body with a rim
+in the house colour on the hull's left shoulder (tanks, scoop, dish, spars) — the «Ковш» bracket
+had been half a hull of pure cyan.
 
 ## 0.324.0 - M327: the scoop is a road now, and the house speaks plainly
 

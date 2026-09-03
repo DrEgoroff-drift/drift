@@ -1303,11 +1303,11 @@ hoursOffset                  src/11h-hours.js:52
 HOUSE_BY_ID                  src/12u-scrip.js:27
 houseMark                    src/17d-house-shapes.js:18
 houseOf                      src/12u-scrip.js:35
-housePennant                 src/17d-house-shapes.js:82
+housePennant                 src/17d-house-shapes.js:96
 housePlan                    src/12tb-settle-draw.js:61
 houseRGB                     src/17d-house-shapes.js:16
 HOUSES                       src/12u-scrip.js:21
-houseWallMark                src/17d-house-shapes.js:58
+houseWallMark                src/17d-house-shapes.js:72
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
 hqAiOffer                    src/27c-ui-hq.js:470
