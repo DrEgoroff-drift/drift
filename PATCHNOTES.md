@@ -7,6 +7,33 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.322.0 - M325: the author's effects list, all four — water, heat haze, chromatic hits, the live flare
+
+«Берём все» (2026-09-03). New module `18d-postfx` for the two frame effects; the water lives
+with the surface (`21e`), the flare with the station (`17c`).
+
+- **Water with reflections.** There was no water on any surface; the reeds of M316 were waiting
+  for it. `waterOf` puts one lake in the deepest hollow of the strip when the strip is wet
+  (`tr.wet`, the same field that paints the globe's green) and the world can be wet at all
+  (terran, jungle, ocean, rocky, ruin; toxic gets acid of its own colour; airless never). The
+  level sits two to three heights below the hollow's rims, the mirror is at least 200 steps or it
+  is a puddle; computed once per terrain. The mirror is a self-copy of the frame: the band above
+  the waterline flipped under it in eight ribbons with a sine shift (ripple), fading with depth;
+  the sky's tone in the body, glints along the wind, a bright thread at the waterline, reeds on
+  both banks. Nothing grows inside the mirror (`drawSurfaceWorld` skips those plants).
+- **Heat haze over the nozzles.** `heatHaze(x,y,w,h,k,seed)` slices the frame behind each
+  nozzle into ribbons across the flame and lays them back with a pixel-and-a-half sine shift —
+  refraction, no colour. Only while thrusting (`exhaustHaze`, 16a); the flare pipe gets the same
+  shimmer.
+- **Chromatic aberration on hits.** `hitFx(k)` from a pirate shot, a rock in the belt, a crash
+  landing; `drawHitFx` (after the world, before the HUD) adds a red copy of the frame shifted
+  left and a blue one shifted right, tinted by multiply in an offscreen and added with lighter,
+  decaying to nothing in about a second. The suite measures the fringes in pixels.
+- **The flare flame lives.** The industrial station's sprite is baked per 18 ticks (M304), so
+  its flame stood still; the flame is now drawn live over the bake, with a hot core and the haze.
+- Stand: the effect frames could not be caught by `shot.py` (the game's own loop overdraws
+  before the capture); the chromatic fringe is asserted by `getImageData` in `91zzy-fx` instead.
+
 ## 0.321.0 - M324: where a drone sells — the keeper decides, from the prices on your desk
 
 Open since M237 («the nearest station»; a route editor would be micromanagement). The author

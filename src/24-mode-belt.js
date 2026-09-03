@@ -242,6 +242,7 @@ function updateBelt(dt){
     if(d<a.r+12&&d>0){
       const dmg=Math.min(26,sp2*5+2);
       G.hull=Math.max(0,G.hull-dmg*dt*.5);
+      if(typeof hitFx==="function")hitFx(.55);
       b.vx-=dx/d*.6;b.vy-=dy/d*.6;b.vz-=dz/d*.6;
       b.hit=14;
       /* касание слышно: вспышка на .22 альфы — единственный сигнал, и корпус

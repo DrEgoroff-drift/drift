@@ -102,6 +102,7 @@ function updateLanding(dt){
     else{
       const dmg=(18+Math.min(42,sp*11))/tol;
       G.hull=Math.max(0,G.hull-dmg);
+      if(typeof hitFx==="function")hitFx(1);
       say("Крушение\nкорпус −"+Math.round(dmg));
     }
   }

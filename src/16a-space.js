@@ -343,6 +343,20 @@ function flightCam(dt,tx,ty,thrusting,speed){
 /* сопло: ядро, факел и раскалённый воздух за ним. Дрожание воздуха подделано
    парой полупрозрачных дуг переменного радиуса — настоящего искажения в
    canvas 2D нет, а глаз читает именно колебание кромки */
+/* марево (M325): прямоугольник кадра за каждым соплом, вдоль факела, дрожит */
+function exhaustHaze(zx,zy,Z){
+  const sh=G.ship,h=hullOf(G.shipId);
+  const ca=Math.cos(sh.a),sa=Math.sin(sh.a);
+  const SZ=shipZ(Z),cx0=zx(sh.x),cy0=zy(sh.y);
+  let i=0;
+  for(const e of h.eng){
+    const px=cx0+(e.x*ca-e.y*sa)*SZ, py=cy0+(e.x*sa+e.y*ca)*SZ;
+    const R=Math.max(2.5,e.r*SZ*2.2),L=R*5.5;
+    const fx=px-ca*L,fy=py-sa*L;
+    const x0=Math.min(px,fx)-R,y0=Math.min(py,fy)-R,w=Math.abs(fx-px)+2*R,hh=Math.abs(fy-py)+2*R;
+    heatHaze(x0,y0,w,hh,.8,i++*2.3);
+  }
+}
 function drawExhaust(zx,zy,Z,thr){
   if(thr<=0)return;
   const sh=G.ship,h=hullOf(G.shipId);

@@ -216,6 +216,7 @@ function drawSurfaceWorld(){
     dg.addColorStop(0,"rgba("+sh.join(",")+",0)");dg.addColorStop(1,"rgba("+sh.join(",")+",.30)");
     ctx.fillStyle=dg;ctx.fillRect(0,H*(SURF_HOR+.04),W,H*(.96-SURF_HOR));
   }
+  drawWater(tr,camx,camy,p);   /* озеро в ложбине, с отражением (M325) */
   drawPOI(tr,camx,camy,p);
   /* средний масштаб между валуном и постройкой — тем же светом и той же
      породой, что грунт под ним (21b-surface-deco) */
@@ -393,8 +394,10 @@ function drawSurfaceWorld(){
       ctx.fillText("ШАХТА",sx,sy-32);
     }
   }
+  const WT=(typeof waterOf==="function")?waterOf(tr,p):null;   /* в зеркале озера ничего не растёт (M325) */
   for(const pl of S.plants){
     const x=pl.x-camx;if(x<-70||x>W+70)continue;
+    if(WT&&pl.x>WT.x0&&pl.x<WT.x1)continue;
     groundShadow(x,pl.y-camy+1,Math.min(22,pl.h*.32),3.2);
     /* растение кланяется от основания: высокое сильнее низкого, у каждого своя
        фаза от координаты — иначе куртина качается одним куском */
@@ -647,6 +650,106 @@ const SURF_BASE=560, SURF_WIDE=1000, SURF_KMAX=2.4;
    двумерен, значит и мерка двумерна: растём настолько, насколько позволяет
    ТЕСНАЯ сторона. 1000 к 560 — это те же 16:9, поэтому на обычном мониторе
    обе стороны говорят одно и то же, а узкий экран получает единицу. */
+/* ── вода (M325) ──
+   На поверхности не было ни одной воды — камыши из M316 ждали её. Озеро
+   ложится в самую глубокую ложбину полосы, если полоса сырая (tr.wet — то же
+   поле, что красит зелёные пятна глобуса) и миру есть чем быть мокрым;
+   на токсичном мире это кислота своего цвета. Уровень — на два-три роста
+   ниже гребней ложбины, зеркало не короче двухсот шагов, иначе это лужа.
+   Считается один раз на рельеф (tr.water) — рельеф не меняется.
+   Отражение — самокопия кадра: полоса над урезом переворачивается под него,
+   режется на ленты со сдвигом по синусу (рябь) и гаснет с глубиной; ветер
+   кладёт блики. Камыш по обоим берегам — тот, что ждал воды. */
+const WATER_MIN_SPAN=200,WATER_DEPTH=46;
+function waterOf(tr,p){
+  if(tr.water!==undefined)return tr.water;
+  tr.water=null;
+  const t=p&&p.type;
+  const liquid=(p&&p.T&&p.T.atm!=="отсутствует")&&(t==="terran"||t==="jungle"||t==="ocean"||t==="toxic"||t==="ruin"||t==="rocky");
+  if(!liquid||(tr.wet||0)<(t==="ocean"?.15:.32))return null;
+  const r=rng((tr.sseed|0)^0x7A7E);
+  /* самая глубокая точка полосы, не под площадкой */
+  let i0=-1,y0=-1e9;
+  for(let i=40;i<tr.N-40;i++){if(Math.abs(i-tr.padI)<70)continue;if(tr.h[i]>y0){y0=tr.h[i];i0=i;}}
+  if(i0<0)return null;
+  const M=(typeof HOME_MAN==="number")?HOME_MAN:17;
+  const level=y0-M*(2.2+r()*1.2);
+  let a=i0,b=i0;
+  while(a>1&&tr.h[a-1]>level)a--;
+  while(b<tr.N-2&&tr.h[b+1]>level)b++;
+  const x0=a*tr.step,x1=b*tr.step;
+  if(x1-x0<WATER_MIN_SPAN)return null;
+  tr.water={x0,x1,y:level,cx:(x0+x1)/2,acid:t==="toxic",seed:tr.sseed|0,reeds:Math.round(4+r()*5)};
+  return tr.water;
+}
+function drawWater(tr,camx,camy,p){
+  const Wt=waterOf(tr,p);
+  if(!Wt)return;
+  const xa=Wt.x0-camx,xb=Wt.x1-camx;
+  if(xb<-40||xa>W+40)return;
+  const y=Wt.y-camy;
+  if(y<0||y>H+20)return;
+  const sky=p.T.sky[1],pal=p.T.pal[Math.min(p.T.pal.length-1,2)];
+  const col=Wt.acid?[120,180,60]:[sky[0]*.78+pal[0]*.12,sky[1]*.82+pal[1]*.12,sky[2]*.9+pal[2]*.1];
+  const wind=(typeof WIND==="number")?WIND:0;
+  /* зеркало: контур — уровень сверху, дно по рельефу */
+  ctx.save();
+  ctx.beginPath();ctx.moveTo(xa,y);ctx.lineTo(xb,y);
+  for(let x=Wt.x1;x>=Wt.x0;x-=tr.step*2)ctx.lineTo(x-camx,groundAt(tr,x)-camy+1);
+  ctx.closePath();ctx.clip();
+  /* толща: у уреза цвет неба, в глубине — тёмный тон породы */
+  const g=ctx.createLinearGradient(0,y,0,y+WATER_DEPTH);
+  g.addColorStop(0,"rgb("+col.map(v=>v|0).join(",")+")");
+  g.addColorStop(1,"rgb("+col.map(v=>(v*.5)|0).join(",")+")");
+  ctx.fillStyle=g;ctx.fillRect(xa,y,xb-xa,WATER_DEPTH+40);
+  /* отражение: полоса над урезом, перевёрнутая, лентами со сдвигом */
+  const hh=Math.min(64,y);
+  if(hh>6){
+    const sx0=Math.max(0,Math.floor(xa)),sw=Math.min(W,Math.ceil(xb))-sx0;
+    if(sw>4){
+      const n=8,bh=hh/n;
+      for(let i=0;i<n;i++){
+        const t=(i+.5)/n;
+        const dx=Math.sin(G.t*.9+i*1.7+Wt.seed)*(1+2*t)+wind*2*t;
+        const syTop=y-hh+i*bh;         /* лента источника, считая от верха полосы */
+        const dyTop=y+(hh-(i+1)*bh);   /* в зеркале верхняя лента ложится глубже всего */
+        ctx.globalAlpha=.5*(1-t*.6);
+        ctx.save();ctx.translate(0,dyTop+bh);ctx.scale(1,-1);
+        ctx.drawImage(cvs,sx0*DPR,syTop*DPR,sw*DPR,Math.ceil(bh)*DPR,sx0+dx,0,sw,Math.ceil(bh));
+        ctx.restore();
+      }
+      ctx.globalAlpha=1;
+    }
+  }
+  /* блики по ветру: короткие светлые штрихи у уреза */
+  ctx.fillStyle="rgba(255,255,255,.22)";
+  const rr=rng(Wt.seed^0x11);
+  for(let i=0;i<14;i++){
+    const fx=Wt.x0+rr()*(Wt.x1-Wt.x0),ph=rr()*TAU,ln=4+rr()*10,dy=2+rr()*10;
+    const a=.5+.5*Math.sin(G.t*.07+ph+wind*3);
+    if(a<.4)continue;
+    ctx.globalAlpha=(a-.4)*.6;
+    ctx.fillRect(fx-camx+Math.sin(G.t*.03+ph)*6,y+dy,ln,1);
+  }
+  ctx.globalAlpha=1;
+  ctx.restore();
+  /* урез: тонкая светлая нить */
+  ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(xa,y+.5);ctx.lineTo(xb,y+.5);ctx.stroke();
+  /* камыш по берегам */
+  const rc=rng(Wt.seed^0x5EED);
+  const reed=(x,n,dir)=>{
+    for(let i=0;i<n;i++){
+      const rx=x+dir*(i*5+rc()*4),ry=groundAt(tr,rx)-camy,h=14+rc()*16;
+      const sw=Math.sin(G.t*.05+rx*.1)*(1.5+wind*3);
+      ctx.strokeStyle="rgba(34,52,28,.85)";ctx.lineWidth=1.1;
+      ctx.beginPath();ctx.moveTo(rx-camx,ry);ctx.quadraticCurveTo(rx-camx+sw*.5,ry-h*.6,rx-camx+sw,ry-h);ctx.stroke();
+      ctx.fillStyle="rgba(78,58,34,.9)";
+      ctx.beginPath();ctx.ellipse(rx-camx+sw,ry-h+2,1.2,3.2,0,0,TAU);ctx.fill();
+    }
+  };
+  reed(Wt.x0-3,Wt.reeds,-1);reed(Wt.x1+3,Wt.reeds,1);
+}
 function surfScale(){return clamp(Math.min(H/SURF_BASE,W/SURF_WIDE),1,SURF_KMAX);}
 function drawSurface(){
   const K=surfScale();

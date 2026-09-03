@@ -82,8 +82,8 @@ in this order (author, 2026-09-03: «сначала по плану, потом 
    `housePlan` for both; the wintering has no exterior, nothing to unify there.
 2. ~~The plants as bodies (M173 #2)~~ — M323 (0.320.0): the dark mass under every form.
 3. ~~Drones choosing where they sell~~ — M324 (0.321.0): the keeper, from the desk's prices.
-4. Effects, all of them: heat haze over the nozzles, chromatic aberration on hits, water with
-   reflections on the surface (a design addition), the station's flare flame live over the bake.
+4. ~~Effects, all of them~~ — M325 (0.322.0): water with reflections, heat haze, chromatic
+   aberration on hits, the flare flame live over the bake. **The queue of 2026-09-03 is closed.**
 
 3. ~~System proportions~~ — M315 (0.312.0): bodies and orbits scaled (`SYS_K_*` in `06-galaxy`), the
    ghost click on screens opened by a pad swallowed, §18.8 complete but for the заявка (rung 21).
@@ -147,12 +147,9 @@ Left from the queue: nothing — the band's second step is M308, the station's c
   reeds wait for water on the surface (none exists yet; see the effects list).
 - ~~Boulders are one silhouette scaled~~ — measured in M316: polygons were already individual, the
   *family* was one; now blob / flat-based block / low slab, chosen by an already-drawn number.
-- **Effects not taken yet from the author's list**: ~~curl-noise smoke for the chimney and the
-  smelter~~ (M320, 0.317.0 — `smokePath` along `dirAt`; and the smoke made visible at all), heat
-  haze over the nozzles, chromatic aberration on hits, water with reflections (there are no water
-  features on the surface at all today — that is a design addition, not a fix). Seen in passing:
-  the station's flare flame (`17c-system-draw`, "пламя пляшет") is inside the baked station sprite
-  since M304, so it does not dance — a live pass over the bake, or accept it still.
+- ~~**Effects from the author's list**~~ — all taken: smoke (M320), and water, heat haze,
+  chromatic hits, the live flare (M325, 0.322.0). Left to judge by eye in play: the lake's
+  walker wades through it (no physics for water — by design, the lake is shallow).
 - ~~**Rectangular seams of the sky layer**~~ — hunted 2026-09-03 (M320): a column/row step
   detector over the sky third of night and landing frames at two window sizes finds nothing but
   the hint band and the chips; the one rectangle found was the `wallset` stand's own loupe. If it
@@ -193,6 +190,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M325** (0.322.0) — the four effects: the lake with reflections and reeds, heat haze, chromatic aberration on hits, the live flare; `18d-postfx`.
 - **M324** (0.321.0) — where a drone sells: the keeper decides from `seenPrices` within three sectors; caption, circle length, one line from him.
 - **M323** (0.320.0) — the plant as a body: a dark mass under every form, the lit form over it; stem a step darker than crown.
 - **M322** (0.319.0) — one `housePlan` for the home and the settlement's izbas; one material table; the settlement's chimney on the slope. Stand defect noted: `shot.py homeout/wallset` hang at load.

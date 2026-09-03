@@ -250,6 +250,7 @@ function frameBody(now){
     if(G.mode==="barge"&&!document.querySelector(".scr.open"))G.mode="system";
     audioTick(dt);
     drawWorld();
+    if(typeof drawHitFx==="function")drawHitFx(dt);   /* хроматика после попадания (M325) */
     hud();
     /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой
        игрок повернулся. Рисуется последней, но до DOM-строки приборов */

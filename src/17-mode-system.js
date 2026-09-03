@@ -472,6 +472,7 @@ function drawSystem(){
   drawTrail(zx,zy,Z);
   /* факел рисуется до корпуса: иначе яркое ядро сопла ложится поверх обшивки */
   drawExhaust(zx,zy,Z,thrusting?1:0);
+  if(thrusting&&typeof heatHaze==="function")exhaustHaze(zx,zy,Z);   /* марево за соплами (M325) */
   drawCombat(zx,zy,Z);
   if(typeof drawWrecksSystem==="function")drawWrecksSystem(zx,zy,Z);
   if(typeof drawFindsSystem==="function")drawFindsSystem(zx,zy,Z);

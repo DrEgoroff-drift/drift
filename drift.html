@@ -1481,7 +1481,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.321.0";
+const VER="0.322.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -29501,6 +29501,7 @@ function updateCombat(dt){
         if(d>0){
           sfx("hit",{v:.55});
           G.hull=Math.max(0,G.hull-d);
+          if(typeof hitFx==="function")hitFx(Math.min(1,.5+d/40));   /* объектив разъезжается (M325) */
           if(G.hull<=0){wreck();return;}
           if(typeof instrKnock==="function")instrKnock();   // попадание может выбить гнездо прибора (хвост M127)
         }
@@ -31537,6 +31538,20 @@ function flightCam(dt,tx,ty,thrusting,speed){
 /* сопло: ядро, факел и раскалённый воздух за ним. Дрожание воздуха подделано
    парой полупрозрачных дуг переменного радиуса — настоящего искажения в
    canvas 2D нет, а глаз читает именно колебание кромки */
+/* марево (M325): прямоугольник кадра за каждым соплом, вдоль факела, дрожит */
+function exhaustHaze(zx,zy,Z){
+  const sh=G.ship,h=hullOf(G.shipId);
+  const ca=Math.cos(sh.a),sa=Math.sin(sh.a);
+  const SZ=shipZ(Z),cx0=zx(sh.x),cy0=zy(sh.y);
+  let i=0;
+  for(const e of h.eng){
+    const px=cx0+(e.x*ca-e.y*sa)*SZ, py=cy0+(e.x*sa+e.y*ca)*SZ;
+    const R=Math.max(2.5,e.r*SZ*2.2),L=R*5.5;
+    const fx=px-ca*L,fy=py-sa*L;
+    const x0=Math.min(px,fx)-R,y0=Math.min(py,fy)-R,w=Math.abs(fx-px)+2*R,hh=Math.abs(fy-py)+2*R;
+    heatHaze(x0,y0,w,hh,.8,i++*2.3);
+  }
+}
 function drawExhaust(zx,zy,Z,thr){
   if(thr<=0)return;
   const sh=G.ship,h=hullOf(G.shipId);
@@ -33249,6 +33264,20 @@ function drawStation(x,y,Z){
   const key=(G.sys.key||"?")+"|"+ty+"|"+nb+"|"+(Math.round(s*4)/4)+"|"+Math.floor(G.t/18)+"|"+SCK;
   const art=stationArt(key,s,V,S,ty,lx,ly);
   ctx.drawImage(art.cn,x-art.R,y-art.R,art.R*2,art.R*2);
+  /* факельная труба живёт поверх выпечки (M325): в спрайте пламя стоит по
+     18 тактов, а факел — единственное на станции, что обязано плясать */
+  if(ty==="indust"){
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    const fl=1.4+Math.abs(Math.sin(G.t*.13+V.ph))*3.4,fl2=Math.abs(Math.sin(G.t*.31+V.ph*2))*.8;
+    ctx.fillStyle="rgba(255,170,70,.85)";
+    ctx.beginPath();ctx.ellipse(fl2*.6,-30-fl*.5,2.2,fl,0,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(255,236,190,.55)";
+    ctx.beginPath();ctx.ellipse(fl2*.4,-29.5-fl*.35,1,fl*.5,0,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(255,120,50,.35)";
+    ctx.beginPath();ctx.arc(2+fl2,-34-fl,3.4,0,TAU);ctx.fill();
+    ctx.restore();
+    if(typeof heatHaze==="function")heatHaze(x-8*s,y-52*s,16*s,20*s,.6,V.ph);
+  }
   /* подпись уходит НИЖЕ корпуса: сорок пикселей — это внутри станции, и имя
      читалось поверх её же переборок (M242) */
   ctx.fillStyle="rgba(242,178,92,.6)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
@@ -33968,6 +33997,7 @@ function drawSystem(){
   drawTrail(zx,zy,Z);
   /* факел рисуется до корпуса: иначе яркое ядро сопла ложится поверх обшивки */
   drawExhaust(zx,zy,Z,thrusting?1:0);
+  if(thrusting&&typeof heatHaze==="function")exhaustHaze(zx,zy,Z);   /* марево за соплами (M325) */
   drawCombat(zx,zy,Z);
   if(typeof drawWrecksSystem==="function")drawWrecksSystem(zx,zy,Z);
   if(typeof drawFindsSystem==="function")drawFindsSystem(zx,zy,Z);
@@ -34755,6 +34785,70 @@ function drawTiles(store,camx,camy,paint){
     const cn=tileAt(store,kx,ky,paint);
     ctx.drawImage(cn,kx*TILE-camx,ky*TILE-camy,TILE,TILE);
   }
+}
+
+/* ══════════════ эффекты кадра: марево, хроматика (M325) ══════════════
+   Из списка автора (эффекты, 2026-09-03: «берём все»). Оба — про сам кадр,
+   а не про мир: они читают уже нарисованное и кладут его обратно чуть иначе.
+   Правила файла:
+   1. Ничего не хранится, кроме силы удара (HIT_FX): состояние — в кадре.
+   2. Самокопия канвы берётся в её собственных пикселях (×DPR): холст крупнее
+      W×H, а ctx считает в CSS-единицах — иначе марево уедет в угол.
+   3. Дорого — только когда есть повод: марево лишь при тяге, хроматика лишь
+      несколько кадров после попадания. В тихом кадре здесь ноль работы. */
+let HIT_FX=0,FX_CN=null;
+function hitFx(k){HIT_FX=Math.max(HIT_FX,clamp(k==null?1:k,0,1));}
+function fxCanvas(){
+  if(!FX_CN||FX_CN.width!==cvs.width||FX_CN.height!==cvs.height){
+    FX_CN=document.createElement("canvas");FX_CN.width=cvs.width;FX_CN.height=cvs.height;
+  }
+  return FX_CN;
+}
+/* ── марево над соплами ──
+   Горячий газ преломляет: то, что за факелом, дрожит. Прямоугольник кадра за
+   соплом режется на полоски поперёк факела, и каждая кладётся обратно со своим
+   сдвигом в пиксель-полтора, бегущим по синусу от времени. Никакого цвета:
+   марево — это искажение, а не свечение. (x0,y0,w,h) — в CSS-единицах. */
+function heatHaze(x0,y0,w,h,k,seed){
+  if(!(w>=4&&h>=4&&k>0))return;
+  const sx0=Math.max(0,Math.floor(x0)),sy0=Math.max(0,Math.floor(y0));
+  const sw=Math.min(W-sx0,Math.ceil(w)),sh=Math.min(H-sy0,Math.ceil(h));
+  if(sw<4||sh<4)return;
+  const n=Math.max(3,Math.min(9,Math.round(sh/4)));
+  const bh=sh/n;
+  ctx.save();ctx.globalAlpha=Math.min(.9,.55+.35*k);
+  for(let i=0;i<n;i++){
+    const t=(i+.5)/n;
+    const dx=Math.sin(G.t*1.35+i*1.9+(seed||0))*(.8+1.4*k)*(1-Math.abs(t-.5))*2;
+    const y=sy0+i*bh;
+    ctx.drawImage(cvs,sx0*DPR,y*DPR,sw*DPR,Math.ceil(bh)*DPR,sx0+dx,y,sw,Math.ceil(bh));
+  }
+  ctx.restore();
+}
+/* ── хроматическая аберрация на попадании ──
+   Удар по корпусу — на мгновение объектив «разъезжается»: красная копия кадра
+   уходит влево, синяя вправо, на контрастных кромках появляются цветные
+   каёмки, и через треть секунды всё сходится обратно. Копия красится
+   умножением на чистый цвет в своём холсте и складывается светом (lighter):
+   середина кадра почти не светлеет, красятся только сдвинутые края. */
+function drawHitFx(dt){
+  if(HIT_FX<=.02){HIT_FX=0;return;}
+  const k=HIT_FX,off=fxCanvas(),o=off.getContext("2d");
+  const dx=(1.5+5*k)*(1+.35*Math.sin(G.t*2.1));
+  ctx.save();
+  for(const [col,sgn] of [["rgb(255,40,40)",-1],["rgb(40,90,255)",1]]){
+    o.setTransform(1,0,0,1,0,0);
+    o.globalCompositeOperation="source-over";
+    o.clearRect(0,0,off.width,off.height);
+    o.drawImage(cvs,0,0);
+    o.globalCompositeOperation="multiply";
+    o.fillStyle=col;o.fillRect(0,0,off.width,off.height);
+    ctx.globalCompositeOperation="lighter";
+    ctx.globalAlpha=.30*k;
+    ctx.drawImage(off,0,0,off.width,off.height,sgn*dx,0,W,H);
+  }
+  ctx.restore();
+  HIT_FX*=Math.exp(-(dt||1)*.22);
 }
 
 /* ══════════════ верле: верёвки и ткань ══════════════
@@ -37813,6 +37907,7 @@ function updateLanding(dt){
     else{
       const dmg=(18+Math.min(42,sp*11))/tol;
       G.hull=Math.max(0,G.hull-dmg);
+      if(typeof hitFx==="function")hitFx(1);
       say("Крушение\nкорпус −"+Math.round(dmg));
     }
   }
@@ -44954,6 +45049,7 @@ function drawSurfaceWorld(){
     dg.addColorStop(0,"rgba("+sh.join(",")+",0)");dg.addColorStop(1,"rgba("+sh.join(",")+",.30)");
     ctx.fillStyle=dg;ctx.fillRect(0,H*(SURF_HOR+.04),W,H*(.96-SURF_HOR));
   }
+  drawWater(tr,camx,camy,p);   /* озеро в ложбине, с отражением (M325) */
   drawPOI(tr,camx,camy,p);
   /* средний масштаб между валуном и постройкой — тем же светом и той же
      породой, что грунт под ним (21b-surface-deco) */
@@ -45131,8 +45227,10 @@ function drawSurfaceWorld(){
       ctx.fillText("ШАХТА",sx,sy-32);
     }
   }
+  const WT=(typeof waterOf==="function")?waterOf(tr,p):null;   /* в зеркале озера ничего не растёт (M325) */
   for(const pl of S.plants){
     const x=pl.x-camx;if(x<-70||x>W+70)continue;
+    if(WT&&pl.x>WT.x0&&pl.x<WT.x1)continue;
     groundShadow(x,pl.y-camy+1,Math.min(22,pl.h*.32),3.2);
     /* растение кланяется от основания: высокое сильнее низкого, у каждого своя
        фаза от координаты — иначе куртина качается одним куском */
@@ -45385,6 +45483,106 @@ const SURF_BASE=560, SURF_WIDE=1000, SURF_KMAX=2.4;
    двумерен, значит и мерка двумерна: растём настолько, насколько позволяет
    ТЕСНАЯ сторона. 1000 к 560 — это те же 16:9, поэтому на обычном мониторе
    обе стороны говорят одно и то же, а узкий экран получает единицу. */
+/* ── вода (M325) ──
+   На поверхности не было ни одной воды — камыши из M316 ждали её. Озеро
+   ложится в самую глубокую ложбину полосы, если полоса сырая (tr.wet — то же
+   поле, что красит зелёные пятна глобуса) и миру есть чем быть мокрым;
+   на токсичном мире это кислота своего цвета. Уровень — на два-три роста
+   ниже гребней ложбины, зеркало не короче двухсот шагов, иначе это лужа.
+   Считается один раз на рельеф (tr.water) — рельеф не меняется.
+   Отражение — самокопия кадра: полоса над урезом переворачивается под него,
+   режется на ленты со сдвигом по синусу (рябь) и гаснет с глубиной; ветер
+   кладёт блики. Камыш по обоим берегам — тот, что ждал воды. */
+const WATER_MIN_SPAN=200,WATER_DEPTH=46;
+function waterOf(tr,p){
+  if(tr.water!==undefined)return tr.water;
+  tr.water=null;
+  const t=p&&p.type;
+  const liquid=(p&&p.T&&p.T.atm!=="отсутствует")&&(t==="terran"||t==="jungle"||t==="ocean"||t==="toxic"||t==="ruin"||t==="rocky");
+  if(!liquid||(tr.wet||0)<(t==="ocean"?.15:.32))return null;
+  const r=rng((tr.sseed|0)^0x7A7E);
+  /* самая глубокая точка полосы, не под площадкой */
+  let i0=-1,y0=-1e9;
+  for(let i=40;i<tr.N-40;i++){if(Math.abs(i-tr.padI)<70)continue;if(tr.h[i]>y0){y0=tr.h[i];i0=i;}}
+  if(i0<0)return null;
+  const M=(typeof HOME_MAN==="number")?HOME_MAN:17;
+  const level=y0-M*(2.2+r()*1.2);
+  let a=i0,b=i0;
+  while(a>1&&tr.h[a-1]>level)a--;
+  while(b<tr.N-2&&tr.h[b+1]>level)b++;
+  const x0=a*tr.step,x1=b*tr.step;
+  if(x1-x0<WATER_MIN_SPAN)return null;
+  tr.water={x0,x1,y:level,cx:(x0+x1)/2,acid:t==="toxic",seed:tr.sseed|0,reeds:Math.round(4+r()*5)};
+  return tr.water;
+}
+function drawWater(tr,camx,camy,p){
+  const Wt=waterOf(tr,p);
+  if(!Wt)return;
+  const xa=Wt.x0-camx,xb=Wt.x1-camx;
+  if(xb<-40||xa>W+40)return;
+  const y=Wt.y-camy;
+  if(y<0||y>H+20)return;
+  const sky=p.T.sky[1],pal=p.T.pal[Math.min(p.T.pal.length-1,2)];
+  const col=Wt.acid?[120,180,60]:[sky[0]*.78+pal[0]*.12,sky[1]*.82+pal[1]*.12,sky[2]*.9+pal[2]*.1];
+  const wind=(typeof WIND==="number")?WIND:0;
+  /* зеркало: контур — уровень сверху, дно по рельефу */
+  ctx.save();
+  ctx.beginPath();ctx.moveTo(xa,y);ctx.lineTo(xb,y);
+  for(let x=Wt.x1;x>=Wt.x0;x-=tr.step*2)ctx.lineTo(x-camx,groundAt(tr,x)-camy+1);
+  ctx.closePath();ctx.clip();
+  /* толща: у уреза цвет неба, в глубине — тёмный тон породы */
+  const g=ctx.createLinearGradient(0,y,0,y+WATER_DEPTH);
+  g.addColorStop(0,"rgb("+col.map(v=>v|0).join(",")+")");
+  g.addColorStop(1,"rgb("+col.map(v=>(v*.5)|0).join(",")+")");
+  ctx.fillStyle=g;ctx.fillRect(xa,y,xb-xa,WATER_DEPTH+40);
+  /* отражение: полоса над урезом, перевёрнутая, лентами со сдвигом */
+  const hh=Math.min(64,y);
+  if(hh>6){
+    const sx0=Math.max(0,Math.floor(xa)),sw=Math.min(W,Math.ceil(xb))-sx0;
+    if(sw>4){
+      const n=8,bh=hh/n;
+      for(let i=0;i<n;i++){
+        const t=(i+.5)/n;
+        const dx=Math.sin(G.t*.9+i*1.7+Wt.seed)*(1+2*t)+wind*2*t;
+        const syTop=y-hh+i*bh;         /* лента источника, считая от верха полосы */
+        const dyTop=y+(hh-(i+1)*bh);   /* в зеркале верхняя лента ложится глубже всего */
+        ctx.globalAlpha=.5*(1-t*.6);
+        ctx.save();ctx.translate(0,dyTop+bh);ctx.scale(1,-1);
+        ctx.drawImage(cvs,sx0*DPR,syTop*DPR,sw*DPR,Math.ceil(bh)*DPR,sx0+dx,0,sw,Math.ceil(bh));
+        ctx.restore();
+      }
+      ctx.globalAlpha=1;
+    }
+  }
+  /* блики по ветру: короткие светлые штрихи у уреза */
+  ctx.fillStyle="rgba(255,255,255,.22)";
+  const rr=rng(Wt.seed^0x11);
+  for(let i=0;i<14;i++){
+    const fx=Wt.x0+rr()*(Wt.x1-Wt.x0),ph=rr()*TAU,ln=4+rr()*10,dy=2+rr()*10;
+    const a=.5+.5*Math.sin(G.t*.07+ph+wind*3);
+    if(a<.4)continue;
+    ctx.globalAlpha=(a-.4)*.6;
+    ctx.fillRect(fx-camx+Math.sin(G.t*.03+ph)*6,y+dy,ln,1);
+  }
+  ctx.globalAlpha=1;
+  ctx.restore();
+  /* урез: тонкая светлая нить */
+  ctx.strokeStyle="rgba(255,255,255,.28)";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(xa,y+.5);ctx.lineTo(xb,y+.5);ctx.stroke();
+  /* камыш по берегам */
+  const rc=rng(Wt.seed^0x5EED);
+  const reed=(x,n,dir)=>{
+    for(let i=0;i<n;i++){
+      const rx=x+dir*(i*5+rc()*4),ry=groundAt(tr,rx)-camy,h=14+rc()*16;
+      const sw=Math.sin(G.t*.05+rx*.1)*(1.5+wind*3);
+      ctx.strokeStyle="rgba(34,52,28,.85)";ctx.lineWidth=1.1;
+      ctx.beginPath();ctx.moveTo(rx-camx,ry);ctx.quadraticCurveTo(rx-camx+sw*.5,ry-h*.6,rx-camx+sw,ry-h);ctx.stroke();
+      ctx.fillStyle="rgba(78,58,34,.9)";
+      ctx.beginPath();ctx.ellipse(rx-camx+sw,ry-h+2,1.2,3.2,0,0,TAU);ctx.fill();
+    }
+  };
+  reed(Wt.x0-3,Wt.reeds,-1);reed(Wt.x1+3,Wt.reeds,1);
+}
 function surfScale(){return clamp(Math.min(H/SURF_BASE,W/SURF_WIDE),1,SURF_KMAX);}
 function drawSurface(){
   const K=surfScale();
@@ -51623,6 +51821,7 @@ function updateBelt(dt){
     if(d<a.r+12&&d>0){
       const dmg=Math.min(26,sp2*5+2);
       G.hull=Math.max(0,G.hull-dmg*dt*.5);
+      if(typeof hitFx==="function")hitFx(.55);
       b.vx-=dx/d*.6;b.vy-=dy/d*.6;b.vz-=dz/d*.6;
       b.hit=14;
       /* касание слышно: вспышка на .22 альфы — единственный сигнал, и корпус
@@ -66816,6 +67015,7 @@ function frameBody(now){
     if(G.mode==="barge"&&!document.querySelector(".scr.open"))G.mode="system";
     audioTick(dt);
     drawWorld();
+    if(typeof drawHitFx==="function")drawHitFx(dt);   /* хроматика после попадания (M325) */
     hud();
     /* приборная стойка (25d) поверх мира: раскрытая аппаратура, к которой
        игрок повернулся. Рисуется последней, но до DOM-строки приборов */

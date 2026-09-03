@@ -439,6 +439,20 @@ function drawStation(x,y,Z){
   const key=(G.sys.key||"?")+"|"+ty+"|"+nb+"|"+(Math.round(s*4)/4)+"|"+Math.floor(G.t/18)+"|"+SCK;
   const art=stationArt(key,s,V,S,ty,lx,ly);
   ctx.drawImage(art.cn,x-art.R,y-art.R,art.R*2,art.R*2);
+  /* факельная труба живёт поверх выпечки (M325): в спрайте пламя стоит по
+     18 тактов, а факел — единственное на станции, что обязано плясать */
+  if(ty==="indust"){
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    const fl=1.4+Math.abs(Math.sin(G.t*.13+V.ph))*3.4,fl2=Math.abs(Math.sin(G.t*.31+V.ph*2))*.8;
+    ctx.fillStyle="rgba(255,170,70,.85)";
+    ctx.beginPath();ctx.ellipse(fl2*.6,-30-fl*.5,2.2,fl,0,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(255,236,190,.55)";
+    ctx.beginPath();ctx.ellipse(fl2*.4,-29.5-fl*.35,1,fl*.5,0,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(255,120,50,.35)";
+    ctx.beginPath();ctx.arc(2+fl2,-34-fl,3.4,0,TAU);ctx.fill();
+    ctx.restore();
+    if(typeof heatHaze==="function")heatHaze(x-8*s,y-52*s,16*s,20*s,.6,V.ph);
+  }
   /* подпись уходит НИЖЕ корпуса: сорок пикселей — это внутри станции, и имя
      читалось поверх её же переборок (M242) */
   ctx.fillStyle="rgba(242,178,92,.6)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="center";
