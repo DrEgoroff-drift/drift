@@ -218,3 +218,41 @@ TEST_SUITES.push(() => suite("сценарий: первый рейс с нул�
   ok(got > refuel, "выручка перекрывает заправку (" + got + " против ~" + refuel + " кр)");
   resetWorld();
 }));
+
+/* ── 7. автопилот доводит, а не наматывает круги ──
+   Он тратит топливо сам, без рук игрока, и это отдельный вид беды: если он не
+   сходится, бак пустеет молча, а пустой бак — то самое состояние, из которого
+   до M331 не было ни одного хода. Проверка простая и честная: включаем его на
+   каждое тело стартовой системы и на звезду, и смотрим два числа — дошёл ли и
+   во что это обошлось. */
+TEST_SUITES.push(() => suite("сценарий: автопилот доводит до цели и не съедает бак", () => {
+  const bad = [], rows = [];
+  let runs = 0;
+  const targets = [];
+  resetWorld();
+  for (const p of G.sys.planets) targets.push({ ru: p.name, ap: { kind: "planet", p, phase: "fly" } });
+  if (G.sys.station) targets.push({ ru: "станция", ap: { kind: "station", phase: "fly" } });
+  targets.push({ ru: "звезда", ap: { kind: "star", phase: "fly" } });
+  for (const T of targets.slice(0, 6)) {
+    resetWorld();
+    const p0 = G.sys.planets[0];
+    G.mode = "system";
+    G.ship.x = (p0 ? p0.orbit : 900) * .6; G.ship.y = -400;
+    G.ship.vx = 0; G.ship.vy = 0; G.fuel = 100;
+    /* цель остаётся той же и после resetWorld: система стартового сектора
+       живёт в SYS_CACHE одним объектом, и её планеты — те же самые */
+    if (T.ap.kind === "planet" && G.sys.planets.indexOf(T.ap.p) < 0) continue;
+    G.ap = T.ap;
+    let f = 0;
+    for (f = 0; f < 4000 && G.ap; f++) { stepWorld(1); G.t += 1; }
+    runs++;
+    const spent = 100 - G.fuel;
+    rows.push(T.ru + ": " + f + " кадров, " + spent.toFixed(1) + " топлива");
+    if (G.ap) bad.push(T.ru + ": не дошёл за 4000 кадров (остаток " + G.fuel.toFixed(1) + ")");
+    if (G.fuel <= 0) bad.push(T.ru + ": высадил бак досуха");
+    if (!Number.isFinite(G.ship.x) || !Number.isFinite(G.ship.vx)) bad.push(T.ru + ": корабль ушёл в NaN");
+  }
+  resetWorld();
+  ok(runs >= 3, "заходов автопилота: " + runs + " · " + rows.join(" · "));
+  eq(bad.slice(0, 3).join(" ;; "), "", "автопилот доводит и оставляет топливо");
+}));

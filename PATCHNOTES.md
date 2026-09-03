@@ -7,6 +7,31 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.331.0 - M334: someone else's clock, and an autopilot that has to land
+
+Two suites, both about things the game does on its own while nobody is watching.
+
+**Someone else's clock** (`tests/91zzzzy-time`). The game is lazy: drones, the market, news,
+shifts and hired hands are all computed from the difference between `Date.now()` and a recorded
+moment. On one machine that difference is always small and positive. But the save travels — the
+cloud carries it between a phone and a desk, and their clocks differ, so it can arrive FROM THE
+FUTURE, and every such difference goes negative. The drones have an explicit guard
+(`Math.max(0,…)`); the other two dozen places had never been asked. The suite shifts every epoch
+stamp inside the save itself — three days forward and thirty days back — loads it, and lives on:
+frames, drone rounds, news. Nothing turns to NaN, the wallet neither goes negative nor balloons,
+and the journal keeps no rubbish. A second suite watches the station's shift specifically: rolling
+the clock back must not hand out a second helping of the appetite premium — that would be the same
+money printer as M331, only through the clock. Both hold.
+
+**The autopilot** has to actually arrive. It burns fuel with no hands on the controls, and an
+empty tank is the state that was a hard softlock until M331 — so an autopilot that circles instead
+of landing empties the tank in silence. Six approaches from the same start: every planet of the
+starting system, the station and the star. All six arrive — 133 to 561 frames, 2.6 to 11 units of
+fuel — and none ends dry.
+
+Suite isolation caught one more field on the way (`droneIds`).
+
+---
 ## 0.330.0 - M333: names that do not exist — the game reads its own source
 
 A typo in a sound's name neither crashes nor goes red: `sfx` simply returns when the table has no

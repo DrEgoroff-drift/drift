@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 373 · символов верхнего уровня: 3401
+Файлов: 374 · символов верхнего уровня: 3403
 
 ## СИМВОЛЫ
 
@@ -3132,6 +3132,8 @@ tinSpotX                     src/12ta-tin.js:80
 tinStrip                     src/12ta-tin.js:194
 tinTakeOut                   src/12ta-tin.js:155
 tinTick                      src/12ta-tin.js:118
+tmCount                      tests/91zzzzy-time.js:26
+tmShift                      tests/91zzzzy-time.js:17
 tnoise                       src/18a-material.js:16
 toggleLog                    src/11-log.js:134
 toggleLoreBoard              src/27h-ui-lore.js:81
@@ -4623,8 +4625,11 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzzzy-place.js · 15 КБ
   · вещи на своих местах (M330):1
 
-## tests/91zzzzy-play.js · 14 КБ
+## tests/91zzzzy-play.js · 16 КБ
   · глубокие сценарии (M331):1
+
+## tests/91zzzzy-time.js · 7 КБ
+  · чужие часы (M334):1
 
 ## tests/91zzzzz-e2e-life.js · 36 КБ
   · сквозной прогон II: сейв, числа, текст, долгий полёт (M329):1
