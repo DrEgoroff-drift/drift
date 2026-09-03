@@ -50,7 +50,7 @@ function scoopSpawn(){
 }
 function startScoop(p){
   G.scoop={p,y:H*.34,vy:0,heat:0,bank:0,got:0,x:0,phase:rng(hashi(p.seed,0x6A5,3))()*TAU,
-    lastWarn:0,shake:0,obs:[],n:0,bump:0,knock:0};
+    lastWarn:0,shake:0,obs:[],n:0,bump:0,knock:0,gain:0};
   scoopSpawn();
   G.mode="scoop";G.ap=null;G.orbit=null;
   for(const k in keys)keys[k]=false;
@@ -70,7 +70,7 @@ function exitScoop(msg){
      то, что игра ни разу не сказала, ЧТО он получил: газы рынок не берёт, и
      строка с их числом читалась пустым звуком. Теперь выход называет едока. */
   say(msg+"\nлетучих газов в трюме: "+G.cargo.volatiles+
-      "\nрынок их не берёт — идут на верфь (сборка и сплав) и в криоцех базы");
+      "\nрынок их не берёт: верфь, криоцех — или сдать торговой барже");
 }
 function updateScoop(dt){
   const S=G.scoop,st=stat();
@@ -139,7 +139,7 @@ function updateScoop(dt){
   const full=held()>=st.cargoMax;
   if(inBand&&!full){
     S.got+=(.008+st.drill*.004)*dt;
-    while(S.got>=1){S.got-=1;if(addRes("volatiles",1))sfx("drill");}
+    while(S.got>=1){S.got-=1;if(addRes("volatiles",1)){S.gain++;sfx("drill");}}
   }
   if(keys.left)S.vy-=.006*dt;      // мелкая доводка рулями, чтобы удержание было точнее
   if(keys.right)S.vy+=.006*dt;
@@ -158,7 +158,14 @@ function updateScoop(dt){
      служат уже полученный нагрев и сам пустой бак. */
   if(G.fuel<=0&&S.y>bb){
     G.prompt="ТОПЛИВО КОНЧИЛОСЬ · АВАРИЙНЫЙ ПОДЪЁМ";
-    exitScoop("Топливо кончилось\nавтомат вытянул на орбиту");
+    /* «Вытягивает если, то груза тоже нет» (автор, 03.09.2026). Верно: на
+       пустом баке корабль поднимают, сбрасывая набранное — иначе провал
+       захода оказывается выгоднее аккуратного выхода. Теряется ровно то, что
+       набрано в этом заходе: чужой груз из трюма никто за борт не бросает. */
+    const lost=S.gain|0;
+    if(lost>0)G.cargo.volatiles=Math.max(0,G.cargo.volatiles-lost);
+    exitScoop(lost>0?"Топливо кончилось\nсборник сброшен, чтобы вытянуть корабль\nпотеряно газов: "+lost
+                    :"Топливо кончилось\nавтомат вытянул на орбиту");
     return;
   }
 }

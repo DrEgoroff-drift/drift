@@ -80,9 +80,14 @@ function bargeNearOther(here){
 /* цена товара на станции назначения — та же, что заплатил бы игрок сам, довезя
    груз. От неё пляшет весь торг с баржой. */
 function bargeDestPrice(b,good){
+  /* редкое сырьё рынок не берёт (02-world), и его «цена назначения» — не
+     котировка станции, а теневая цена цеха, который его ест (indPrice). Без
+     неё редкое считалось по нулю и не продавалось никому. */
+  const shadow=(typeof indPrice==="function"&&RES[good]&&!RES[good].price)?indPrice(good):0;
   const dst=bargeSysAt(b.to)||bargeSysAt(b.from);
-  if(!dst)return Math.max(1,RES[good]?RES[good].price:11);
-  return marketFor(dst)[good]||Math.max(1,RES[good]?RES[good].price:11);
+  const base=Math.max(1,shadow||(RES[good]?RES[good].price:11));
+  if(!dst)return base;
+  return marketFor(dst)[good]||base;
 }
 /* наценка баржи: 8–12% от seed, плюс поправка на норов. Обе цены (и как баржа
    продаёт, и как покупает) ВСЕГДА хуже станции назначения — иначе баржа стала бы
@@ -682,7 +687,36 @@ function renderBarge(){
         [{txt:"−1",dis:canN<1,on:()=>sell(1)},{txt:"−10",dis:canN<1,on:()=>sell(10)},
          {txt:"ВСЁ",dis:canN<1,on:()=>sell(G.cargo[k])}]));
     }
-  }else{
+  }
+  /* ── редкое сырьё сбывают барже ──
+     «Продавать нельзя, а трюм полный, и че делать, зачем мне тогда всё это
+     собирать? Надо куда-то его сбывать. Давай пусть баржи берут» (автор,
+     03.09.2026). Станция и правда не берёт — и не возьмёт: рынок редкого
+     разогнал бы инфляцию (M39). А баржа идёт не на рынок, а к цеху, который
+     это ест, и потому берёт по теневой цене — заметно ниже той, во что сырьё
+     обходится, если пустить его на свою верфь. Трюм перестаёт быть тупиком,
+     а выгоднее по-прежнему тратить сырьё самому. */
+  const rareMine=RARE_RES.filter(k=>G.cargo[k]>0);
+  if(rareMine.length){
+    $bgBody.appendChild(el("div","sec","СБЫТЬ РЕДКОЕ · РЫНОК НЕ БЕРЁТ, А БАРЖА ДОВЕЗЁТ ДО ЦЕХА"));
+    for(const k of rareMine){
+      const p=bargeBuyPrice(b,k);
+      const sell=n=>{
+        n=Math.min(n,G.cargo[k],Math.floor(b.budget/p));
+        if(n<=0){say(b.budget<p?"У баржи не хватает кредитов":"Нет товара");return;}
+        G.cargo[k]-=n;const rev=n*p;earn(rev,"trade");b.budget-=rev;b.dealt+=n;bargeRepNudge(b);
+        G.soldTotal=(G.soldTotal|0)+rev;
+        logAdd("money","Сдано барже: "+RES[k].ru.toLowerCase()+" ×"+n+" по "+p+" кр");
+        renderBarge();
+      };
+      const canN=Math.min(G.cargo[k],Math.floor(b.budget/p));
+      $bgBody.appendChild(bargeElRow(RES[k].ru+" ×"+G.cargo[k],
+        p+" кр/ед · "+(RES[k].use||"идёт в цех")+" — своё дороже, чем эта цена",
+        [{txt:"−1",dis:canN<1,on:()=>sell(1)},{txt:"−10",dis:canN<1,on:()=>sell(10)},
+         {txt:"ВСЁ",dis:canN<1,on:()=>sell(G.cargo[k])}]));
+    }
+  }
+  if(!mine.length&&!rareMine.length){
     $bgBody.appendChild(el("div","row","<div class='nm'><b>Трюм пуст</b>"+
       "<s>барже нечего у вас купить — но её груз можно взять</s></div>"));
   }

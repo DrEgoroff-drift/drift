@@ -7,6 +7,22 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.325.0 - M328: the author's evening list — flame as a body, autoland that lands, a cave that is a cave, swimming
+
+Author's video and list (2026-09-03). The industrial flare was two ellipses jumping by |sin| under a
+frozen copy baked into the sprite («кусками дёргается»); it is one bezier tongue now, smooth on
+two slow sines, core inside, glow outside, and the heat haze around it is gone — it smeared the
+stars into the «white smoke» the author saw. Autoland crashed on rough worlds: the start height
+110 sat inside a mountain 450 m from the pad, and the approach held altitude over the ground
+below rather than the ridge ahead (`landStartY`, look-ahead in `autoLandInputs`; suite 91zzzb
+flies 82 approaches on 21 type·size combinations). At the cave mouth the prompt said «ЗАЛОЖИТЬ
+ШАХТУ» while ДЕЙСТВИЕ entered the cave — the later chain overwrote it (`atCave`). The cave mouth
+is a rock outcrop with an arch, lip, strata and scree, not a half-ellipse on the ground. Water:
+where the lake is deeper than a knee the suit inflates a ring and floats at the waterline, walks
+at half speed, ▲ jumps out; algae grow on the bottom and ДЕЙСТВИЕ takes +2 organics per bush
+(`waterDeepAt`, `waterAlgae`). Suites 91zzzb/91zzzc cover autoland, panel overlap, button text
+overflow, swimming and the cave prompt.
+
 ## 0.324.0 - M327: the scoop is a road now, and the house speaks plainly
 
 Plannotator pass on the live build (2026-09-03), four notes and a postscript.
@@ -28,6 +44,13 @@ line on leaving the atmosphere, print it (`02`, `26`, `19a`).
 used to wait for the fire: the hull burned to a fifth, the automat cut the run, and the whole
 effort read as «ничего не получил». The automat now pulls you out on the remaining momentum with
 the cargo aboard; the heat already taken and the empty tank are the price (`19a`).
+
+**Second pass the same evening, on the author's reply.** «Вытягивает если, то груза тоже нет»:
+the tow now drops exactly what was collected in that run (cargo carried in from before is not
+thrown overboard), so a failed run cannot beat a careful exit. And «продавать нельзя, а трюм
+полный… давай пусть баржи берут»: trading barges buy rare stock at the shadow price of the shop
+that eats it (`indPrice`, ~27 кр for volatiles) — the market still will not touch it, spending it
+yourself is still worth more, but the hold has stopped being a dead end (`12l`, `26`, `19a`).
 
 **The house in human words.** «Оборот» is a word from a ledger: the tier-up line, the progress
 line, the holdings card and the station header now say what it is — everything you earned, and
