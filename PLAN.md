@@ -254,17 +254,31 @@ never touches arithmetic; station modules don't unlock services.
   почта, госпитальное, учебное. **M313 (0.310.0)**: «УЗ-1», the derelict, the caravan. **M314
   (0.311.0)**: трассы on the map, the rescuer's call, the drawing tails. Left: 12 заявка (lend a
   hull for one run — needs the crew order model, its own pass).
-  **The in-play look is done** — almanac issue III, addendum 0.313.0 (fourteen frames
-  `docs/shots/f_*.png`, hold scene, measured not eyeballed). Seven findings, cheapest first:
-  (6) the label sits at a constant y+30 whatever the sprite's radius — it lands on the hull of the
-  tall classes and on the planet chips in a wide frame; (7) `drawFleet` clamps the sprite scale at
-  Z 1.5 while `setZoom` goes to 2.4, so the last third of the zoom grows the world and not the
-  fleet; (5) the учебное's spine is ~1 px at meeting distance and the six spheres read as six
-  objects; (4) the паром's wing is still one flat white plane (open since the 0.308.0 addendum);
-  (2) the hulls reach p95 .84–.90 against a frame whose p95 is .21 — keep the lit side in VII,
-  drop the median a step; (1)+(3) the classes converge into one white tube at meeting distance and
-  saturation is .08–.17 on all fifteen — draw `FLEET_CLASSES[k].mark` at body height in one accent
-  colour per class, the way the госпитальное's cross already works. 1+3 is a pass of its own.
+  **The in-play look is done** — almanac issue III, addendum 0.313.0: fourteen frames
+  (`docs/shots/f_*.png`, hold scene), measured off the baked sprite and the canvas, held against
+  the craft codex law by law. **Palette settled by the author 2026-09-03** («цвет да пусть будут
+  светло серые с красными полосами эмблемами, норм»): light grey hulls, red bands and emblems,
+  nothing else — so a class is never told apart by tinting it, and §11/§16 are paid inside the
+  greys. The work the issue orders, cheapest first:
+  1. **§3** the label is placed by a constant (y+30/+40 from the centre) whatever the sprite's
+     radius (72 px half-height for the почтовик, 210 for «УЗ-1»): it lands on the hull of the tall
+     classes and, in a wide frame, across the planet chips and the prompt band. Offset by the
+     radius, yield to the chips.
+  2. **§8** `drawFleet` clamps the sprite to `clamp(Z,.5,1.5)*.85` while `setZoom` goes to ×2.4 —
+     the last third of the zoom grows the world and not the fleet; at ×2.4 the почтовик is smaller
+     than the barge beside it. The sprite is baked at ×3, so lift the clamp to the ceiling.
+  3. **§13** the учебное's truss is ~1 px at meeting distance and the six spheres read as six
+     objects: thicken the spine or bind the row with a handrail and one shared shadow.
+  4. **§2** the паром's wing is one flat white plane (open since the 0.308.0 addendum): panel lines
+     following the form, a value fall across the span.
+  5. **§11/§16** hull p95 .84–.90 against a frame at .21 — keep the lit side in VII, drop the body
+     median a step (рудовоз .64 and сторожевик .64 are the lit-through ones), shadow side to III–IV.
+  6. **§9** the class marks are a scatter, not a grammar: `FLEET_CLASSES[k].mark` exists for all
+     thirteen but is drawn small, and only the госпитальное's cross survives 8 px. Thirteen emblems
+     in one construction, red, at body height — a pass of its own, and the one that decides whether
+     the classes read at all.
+  §14 (трассы on the map) is not judged yet: `drawFleetMap` needs a station at rung ≥ 5 and a fresh
+  save has none — it wants a lived-in save and its own look.
 
 - **The road companion** (author, 2026-08-23): phone mode where a real car trip flies your ship —
   GPS speed extrapolated to cosmic, accelerometer banks the hull, mic-driven equalizer, real
