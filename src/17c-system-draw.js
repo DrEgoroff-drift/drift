@@ -378,10 +378,28 @@ function drawStationBody(V,S,ty){
   /* знак дома (17d). У промышленной по оси стоит факельная труба (−3..3, −28 и
      выше пламя): знак уходит на левый борт, иначе мачта «Вестового» торчит из
      сопла, а ковш «Ковша» ложится на конвейер (M326, видео автора 03.09) */
-  if(typeof houseMark==="function"&&typeof houseOf==="function"){
-    const H=houseOf(G.sys);
-    houseMark(H,V,(ty==="indust"&&H&&H.id==="vest")?{x:-21*V.a,y:12}:null);
+  if(typeof houseMark==="function"&&typeof houseOf==="function")houseMark(houseOf(G.sys),V);
+}
+/* ── дым факельной трубы (M326) ──
+   Чистая функция, чтобы её можно было судить числами, а не глазом: шесть
+   клубов, у каждого возраст 0…1 по времени. С возрастом клуб ПОДНИМАЕТСЯ
+   (y убывает), СНОСИТСЯ в одну сторону (x монотонно), РАСТЁТ (r) и РЕДЕЕТ
+   (a → 0). Координаты — в единицах спрайта станции (ось трубы x=0, устье
+   y≈−30−fl). Тест 91zzza проверяет ровно эти четыре монотонности. */
+const SMOKE_N=6;
+function stackSmoke(t,ph,fl){
+  const out=[];
+  for(let i=0;i<SMOKE_N;i++){
+    const age=((t*.006+ph*.37+i/SMOKE_N)%1+1)%1;
+    if(age<.04)continue;                              /* только что родился — ещё в пламени */
+    const sway=Math.sin(t*.05+i*1.9)*.6;
+    out.push({age,
+      x:-2-age*16+sway,                               /* снос влево */
+      y:-36-fl-age*22,                                /* подъём */
+      r:1.4+age*4.2,                                  /* рост */
+      a:.22*(1-age)*(1-age)});                        /* редеет */
   }
+  return out;
 }
 /* ── один свет на всю станцию (M304) ──
    Куски рисовались по одному прямо на экран, и света не было ни у кого: плоский
@@ -456,6 +474,13 @@ function drawStation(x,y,Z){
     ctx.beginPath();ctx.ellipse(fl2*.4,-29.5-fl*.35,1,fl*.5,0,0,TAU);ctx.fill();
     ctx.fillStyle="rgba(255,120,50,.35)";
     ctx.beginPath();ctx.arc(2+fl2,-34-fl,3.4,0,TAU);ctx.fill();
+    /* дым (M326): комментарий у трубы десять версий обещал «дым сносит вбок»,
+       а рисовалось только пламя. Клубы считает stackSmoke — он же под тестом:
+       поднимаются, растут, редеют, сносятся в одну сторону */
+    for(const q of stackSmoke(G.t,V.ph,fl)){
+      ctx.fillStyle="rgba(96,92,100,"+q.a.toFixed(3)+")";
+      ctx.beginPath();ctx.arc(q.x,q.y,q.r,0,TAU);ctx.fill();
+    }
     ctx.restore();
     if(typeof heatHaze==="function")heatHaze(x-8*s,y-52*s,16*s,20*s,.6,V.ph);
   }

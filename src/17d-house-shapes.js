@@ -30,9 +30,18 @@ function houseMark(H,V,off){
     ctx.beginPath();ctx.moveTo(-30*V.a,-26);ctx.lineTo(-26*V.a,-14);ctx.lineTo(-14,-14);ctx.lineTo(-12,-26);ctx.stroke();
     ctx.beginPath();ctx.moveTo(-26*V.a,-14);ctx.lineTo(-26*V.a,-8);ctx.lineTo(-14,-8);ctx.lineTo(-14,-14);ctx.closePath();ctx.fill();ctx.stroke();
   }else if(H.id==="vest"){
-    ctx.beginPath();ctx.moveTo(0,-28);ctx.lineTo(0,-46);ctx.stroke();
-    ctx.beginPath();ctx.arc(0,-48,4.5,Math.PI*.15,Math.PI*.85,true);ctx.stroke();
-    ctx.fillStyle=(Math.sin(G.t*.07)>0)?c:rgba(houseRGB(H),.25);ctx.beginPath();ctx.arc(0,-46,1.4,0,TAU);ctx.fill();
+    /* тарелка на кронштейне у левого плеча корпуса (M326). Была мачта в
+       18 единиц от (0,−28) до тарелки в (0,−48) чистым цветом дома: на
+       промышленной она стояла в факеле, а на любой — читалась светящейся
+       проволокой выше самой станции. Теперь чаша — тело с тёмным нутром и
+       кромкой цветом дома, ростом с иллюминатор, и стоит на борту */
+    const bx=-20*V.a, by=-14;
+    ctx.lineWidth=1.1;ctx.strokeStyle=rgba(houseRGB(H),.6);
+    ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx,by-5);ctx.stroke();               /* стойка */
+    ctx.fillStyle="rgba(18,24,32,.92)";
+    ctx.beginPath();ctx.arc(bx,by-8.4,3.4,Math.PI*.08,Math.PI*.92);ctx.closePath();ctx.fill(); /* чаша: тёмное тело */
+    ctx.strokeStyle=c;ctx.beginPath();ctx.arc(bx,by-8.4,3.4,Math.PI*.08,Math.PI*.92);ctx.stroke(); /* кромка */
+    ctx.fillStyle=(Math.sin(G.t*.07)>0)?c:rgba(houseRGB(H),.25);ctx.beginPath();ctx.arc(bx,by-8.6,.8,0,TAU);ctx.fill(); /* облучатель */
   }else if(H.id==="kryl"){
     for(const sx of [-1,1]){ctx.beginPath();ctx.moveTo(sx*8,14);ctx.lineTo(sx*34*V.a,26);ctx.lineTo(sx*30*V.a,30);ctx.lineTo(sx*8,19);ctx.closePath();ctx.fill();ctx.stroke();}
   }

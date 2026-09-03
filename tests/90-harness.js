@@ -16,9 +16,19 @@ function suite(name,fn){
   if(TEST_ONLY&&!name.includes(TEST_ONLY))return;
   _suite=name;
   TEST.lines.push("── "+name);
+  const p0=TEST.pass,f0=TEST.fail;
   try{fn();}
   catch(e){TEST.fail++;TEST.failed.push(name+" · ИСКЛЮЧЕНИЕ: "+(e&&e.message||e));
     TEST.lines.push("  ✗ ИСКЛЮЧЕНИЕ: "+(e&&e.stack||e));}
+  /* учёт по группам (M326): четыре сотни наборов одним столбом никто не
+     читает, отчёт сверху говорит, ГДЕ провалы. Группа — по имени набора:
+     сквозные (прогоны, фуззер, телефон, look) → картинка (что рисуется и как) →
+     интерфейс (экраны, кнопки, вкладки) → остальное — формулы и данные */
+  const g=/^(сквозной|фуззер|прогон|телефон|look\(\))/i.test(name)?"1 сквозные":
+          /рисует|рисуют|силуэт|кадр|корпус|палитр|свет|дым|знак|тон|форм|цвет|тень|масштаб|сцен|факел|стан[цк]/i.test(name)?"2 картинка":
+          /экран|кнопк|вкладк|стол|панел|подсказ|надпис|бланк|карточ|меню|пэд/i.test(name)?"3 интерфейс":"4 формулы и данные";
+  const G0=(TEST.groups||(TEST.groups={}))[g]||(TEST.groups[g]={suites:0,pass:0,fail:0});
+  G0.suites++;G0.pass+=TEST.pass-p0;G0.fail+=TEST.fail-f0;
 }
 function ok(cond,msg){
   if(cond){TEST.pass++;TEST.lines.push("  ✓ "+msg);}
@@ -100,6 +110,9 @@ function runTests(){
     " · пройдено "+TEST.pass+" · наборов "+TEST_SUITES.length+
     (ms>0?" · "+ms+" мс":"");
   TEST.summary=head;
+  const groups=Object.keys(TEST.groups||{}).sort((a,b)=>TEST.groups[b].fail-TEST.groups[a].fail||a.localeCompare(b))
+    .map(g=>{const r=TEST.groups[g];return "  "+(r.fail?"✗":"·")+" "+g+": наборов "+r.suites+", пройдено "+r.pass+(r.fail?", ПРОВАЛОВ "+r.fail:"");});
+  TEST.lines.unshift("ПО ГРУППАМ:\n"+groups.join("\n")+"\n");
   const box=document.createElement("pre");
   box.id="testout";
   box.style.cssText="position:fixed;inset:0;z-index:9999;overflow:auto;margin:0;padding:14px;"+

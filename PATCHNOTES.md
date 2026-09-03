@@ -15,6 +15,16 @@ hangs on the left conveyor arm (`17c`/`17d`). In the settlement the one-pixel cy
 wall (the «галочка» next to the door) became a plaque by the door: shadow, board, faded house
 paint, edge highlight; placed from the same `housePlan` that drew the wall (`12t`).
 
+Second pass the same evening, after the author asked why the fix did not bother me: the
+«Вестовой» mark itself was the ugliness — an 18-unit mast in pure house colour, taller than the
+station. It is now a dish on a bracket at the hull's left shoulder, a dark body with a rim in the
+house colour, the size of a porthole. The flare stack finally smokes (`stackSmoke`, a pure
+function: rises, drifts one way, grows, fades). Tests: a new end-to-end suite (`91zzza`) walks
+every `lookScenes()` scene, checks the frame is not blank, clicks every visible button, and
+judges the flare column by pixels (no cold pixels above the nozzle for any house) and the smoke
+by its four monotonicities; the report now opens with four groups — сквозные, картинка,
+интерфейс, формулы — so a failure says where it is.
+
 ## 0.322.0 - M325: the author's effects list, all four — water, heat haze, chromatic hits, the live flare
 
 «Берём все» (2026-09-03). New module `18d-postfx` for the two frame effects; the water lives

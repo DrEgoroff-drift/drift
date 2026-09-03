@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 363 · символов верхнего уровня: 3355
+Файлов: 364 · символов верхнего уровня: 3357
 
 ## СИМВОЛЫ
 
@@ -752,7 +752,7 @@ drawStarHole                 src/16a-space.js:549
 drawStarNeutron              src/16a-space.js:522
 drawStars                    src/16-flight.js:28
 drawStarSingle               src/16a-space.js:463
-drawStation                  src/17c-system-draw.js:422
+drawStation                  src/17c-system-draw.js:440
 drawStationBody              src/17c-system-draw.js:178
 drawStationMods              src/17a-station-mod.js:199
 drawStencils                 src/03d-hull-marks.js:1
@@ -825,7 +825,7 @@ enterSpa                     src/29h-spa.js:51
 enterSurface                 src/21-mode-surface.js:7
 enterWinter                  src/29f-winter.js:110
 env                          src/09-audio.js:59
-eq                           tests/90-harness.js:28
+eq                           tests/90-harness.js:38
 ETH_CATCH                    src/25l-post-ether.js:28
 ETH_H0                       src/25l-post-ether.js:27
 ETH_HOLD                     src/25l-post-ether.js:29
@@ -1303,11 +1303,11 @@ hoursOffset                  src/11h-hours.js:52
 HOUSE_BY_ID                  src/12u-scrip.js:27
 houseMark                    src/17d-house-shapes.js:18
 houseOf                      src/12u-scrip.js:35
-housePennant                 src/17d-house-shapes.js:73
+housePennant                 src/17d-house-shapes.js:82
 housePlan                    src/12tb-settle-draw.js:61
 houseRGB                     src/17d-house-shapes.js:16
 HOUSES                       src/12u-scrip.js:21
-houseWallMark                src/17d-house-shapes.js:49
+houseWallMark                src/17d-house-shapes.js:58
 HQ_H                         src/27f-hq-room.js:18
 HQ_ORDER                     src/27f-hq-room.js:21
 hqAiOffer                    src/27c-ui-hq.js:470
@@ -1524,7 +1524,7 @@ landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:154
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344
-landOnTestPlanet             tests/90-harness.js:71
+landOnTestPlanet             tests/90-harness.js:81
 LANE_RU                      src/26-ui-station.js:257
 LANE_RX                      src/26-ui-station.js:253
 last                         src/28-loop.js:85
@@ -1806,7 +1806,7 @@ namesMangle                  src/11u-names.js:39
 namesToldAll                 src/11u-names.js:16
 nameTell                     src/11u-names.js:32
 navAction                    src/15-input.js:274
-near                         tests/90-harness.js:29
+near                         tests/90-harness.js:39
 nearestPOI                   src/20a-poi.js:236
 nearestStation               src/12-economy.js:124
 NEB_COMP                     src/16a-space.js:119
@@ -1908,7 +1908,7 @@ offerShutLine                src/11ah-offer.js:278
 offerTake                    src/11ah-offer.js:209
 offerTick                    src/11ah-offer.js:166
 offerVisit                   src/11ah-offer.js:124
-ok                           tests/90-harness.js:23
+ok                           tests/90-harness.js:33
 openBarge                    src/12l-barge.js:592
 openCrewView                 src/27b-ui-crew.js:230
 openDeal                     src/27n-ui-deal.js:163
@@ -2421,7 +2421,7 @@ RES_KEYS                     src/02-world.js:79
 resAuto                      src/28-loop.js:114
 resEma                       src/28-loop.js:113
 resetArm                     src/26-ui-station.js:853
-resetWorld                   tests/90-harness.js:32
+resetWorld                   tests/90-harness.js:42
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19
@@ -2617,7 +2617,7 @@ rungPoints                   src/12ad-site.js:45
 rungRingSegs                 src/12ae-ladder.js:57
 rungRoman                    src/12ae-ladder.js:48
 RUNGS                        src/12ae-ladder.js:13
-runTests                     tests/90-harness.js:81
+runTests                     tests/90-harness.js:91
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:96
 S2                           src/01-core.js:97
@@ -2823,6 +2823,7 @@ slowRead                     src/11o-slow.js:90
 slowReady                    src/11o-slow.js:71
 slowReply                    src/11o-slow.js:76
 slowSpotX                    src/11o-slow.js:44
+SMOKE_N                      src/17c-system-draw.js:389
 SMOKE_PATHS                  src/12tb-settle-draw2.js:246
 smokePath                    src/12tb-settle-draw2.js:247
 snapshot                     src/14-save.js:42
@@ -2863,12 +2864,13 @@ SPHERE2                      src/24-mode-belt.js:51
 sprgba                       src/29i-spa-draw.js:22
 SRC_DISCOUNT                 src/12ad-site.js:22
 srcPrice                     src/12ad-site.js:291
-ST_ART                       src/17c-system-draw.js:391
+ST_ART                       src/17c-system-draw.js:409
 ST_GOLD                      src/17c-system-draw.js:120
 ST_GROUPS                    src/26-ui-station.js:69
 ST_MOD_FILL                  src/17a-station-mod.js:66
 ST_MODULES                   src/17a-station-mod.js:14
 ST_TYPES                     src/06-galaxy.js:8
+stackSmoke                   src/17c-system-draw.js:390
 STAR_CLASS                   src/02-world.js:141
 STAR_COLS                    src/16-flight.js:2
 STAR_LX                      src/16-flight.js:27
@@ -2879,7 +2881,7 @@ startLanding                 src/19-mode-landing.js:2
 startScoop                   src/19a-mode-scoop.js:9
 stat                         src/08-state.js:142
 STAT_SHOW                    src/05-parts.js:280
-stationArt                   src/17c-system-draw.js:392
+stationArt                   src/17c-system-draw.js:410
 stationDeals                 src/27g-deals.js:141
 stationFleet                 src/04b-fleet.js:163
 stationMercs                 src/12a-crew.js:91
@@ -2892,7 +2894,7 @@ stationViz                   src/17c-system-draw.js:111
 statPreview                  src/05-parts.js:271
 stCore                       src/17c-system-draw.js:131
 stDel                        src/14-save.js:26
-steps                        tests/90-harness.js:79
+steps                        tests/90-harness.js:89
 stepWorld                    src/28-loop.js:144
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:78
@@ -3046,7 +3048,7 @@ tell                         src/11-log.js:49
 TELL_SFX                     src/11-log.js:47
 TEST                         tests/90-harness.js:10
 TEST_ONLY                    tests/90-harness.js:14
-TEST_SUITES                  tests/90-harness.js:114
+TEST_SUITES                  tests/90-harness.js:127
 tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
@@ -3808,10 +3810,10 @@ zooTick                      src/11ad-zoo.js:41
 ## src/17b-finds.js · 17 КБ
   · находки в полёте:1
 
-## src/17c-system-draw.js · 26 КБ
+## src/17c-system-draw.js · 28 КБ
   · система: кольца, пояс и станция в кадре:1
 
-## src/17d-house-shapes.js · 6 КБ
+## src/17d-house-shapes.js · 7 КБ
   · дома как язык форм:1
 
 ## src/17e-station-body.js · 8 КБ
@@ -4166,7 +4168,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29i-spa-draw.js · 24 КБ
   · санаторий: веранда:1
 
-## tests/90-harness.js · 8 КБ
+## tests/90-harness.js · 9 КБ
   · автотесты: каркас:1
 
 ## tests/91a-flight.js · 20 КБ
@@ -4454,6 +4456,9 @@ zooTick                      src/11ad-zoo.js:41
   · M316: планеты и луны идут в одну сторону:312
   · M317: флот на расстоянии встречи — шесть пунктов альманаха III:321
   · M318: навесное отделяется тенью, рёбра гофром, трасса на карте — цепочка:353
+
+## tests/91zzza-e2e.js · 6 КБ
+  · сквозной прогон: сцены, кнопки, факел и дым (M326):1
 
 ## tests/91zzza-trace.js · 5 КБ
 
