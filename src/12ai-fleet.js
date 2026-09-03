@@ -208,7 +208,7 @@ function fleetArtOf(f){
     for(let i=1;i<5;i++){const x=tail*.9+(L*.6)*i/5;lines.push([x,-hw*.85,x,hw*.85,.45]);}
     for(const s of [-1,1]){rect(-L*.2,s*hw*.85,L*.05,s*hw*2.4,5,1);joint(-L*.07,s*hw*.82,L*.1,hw*.2);}
     /* красный крест на белом — знак госпиталя во всю высоту */
-    rect(-L*.02,-hw*.5,L*.06,hw*.5,3);rect(-L*.1,-hw*.15,L*.14,hw*.15,3);
+    rect(-L*.02,-hw*.85,L*.06,hw*.85,3);rect(-L*.12,-hw*.2,L*.16,hw*.2,3);
     ell(tail*.94,0,L*.045,hw*.5,5,1,12);lights.push({x:tail*.97,y:0,c:"eng",r:hw*.4});
     lights.push({x:-L*.3,y:-hw*.3,c:"win"});lights.push({x:-L*.3,y:hw*.3,c:"win"});
     band=[[tail*.88,-hw*.62],[-L*.16,-hw*.62],[-L*.16,-hw*.35],[tail*.88,-hw*.35]];
@@ -272,6 +272,7 @@ function fleetArtOf(f){
     add([[tail*.95,-hw*.55],[nose*.92,-hw*.2],[nose,hw*.15],[nose*.92,hw*.5],[tail*.95,hw*.6]],0,1);   /* фюзеляж */
     add([[tail*.95,hw*.15],[nose*.9,hw*.42],[nose,hw*.15],[nose*.92,hw*.5],[tail*.95,hw*.6]],5,1);      /* чёрное брюхо: зона II–III */
     add([[-L*.12,-hw*.5],[nose*.55,-hw*.25],[-L*.05,-hw*3.2],[tail*.85,-hw*3.2]],0,1);                 /* крыло верхнее */
+    for(let i=1;i<5;i++){const y=-hw*.5-(hw*2.7)*i/5;lines.push([tail*.85+(L*.08)*i,y,nose*.55-(L*.14)*i,y,.35]);}   /* плитка крыла: ряды поперёк */
     add([[-L*.12,hw*.55],[nose*.55,hw*.4],[-L*.05,hw*3.2],[tail*.85,hw*3.2]],5,1);                     /* крыло нижнее, чёрное */
     joint(-L*.02,-hw*.5,L*.2,hw*.2);joint(-L*.02,hw*.5,L*.2,hw*.2);
     add([[tail*.98,-hw*.55],[tail*.75,-hw*.55],[tail*.7,-hw*1.9],[tail*.92,-hw*1.9]],1,1);            /* киль */
@@ -333,8 +334,8 @@ function fleetArtOf(f){
   if(band.length){
   ctx.fillStyle="rgba(30,30,34,.9)";ctx.font="bold "+(hw*.9).toFixed(1)+"px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
   ctx.fillText(f.num?f.num.slice(2):f.name,(band[0][0]+band[1][0])/2,(band[1][1]+band[2][1])/2+hw*.62);
-  ctx.font=(hw*.5).toFixed(1)+"px ui-monospace,monospace";ctx.fillStyle="rgba(30,30,34,.75)";
-  ctx.fillText(f.name,(band[0][0]+band[1][0])/2,band[0][1]-hw*.28);
+  ctx.font="bold "+(hw*.62).toFixed(1)+"px ui-monospace,monospace";ctx.fillStyle="rgba(30,30,34,.85)";
+  ctx.fillText(f.name,(band[0][0]+band[1][0])/2,band[0][1]-hw*.34);
   }
   /* знак класса: круг, одна залитая фигура (§18.2) */
   if(band.length){const mx=(band[0][0]+band[1][0])/2+L*.18,my=0;
@@ -427,6 +428,8 @@ function fleetInteract(sh){
   const C=FLEET_CLASSES[near.k];
   /* караван (§18.7 п.6): идти рядом — пираты не подходят, ход медленнее */
   const canCaravan=!(G.caravan&&G.caravan.until>G.t);
+  /* спасатель (п.11): идёт на чужой сигнал и зовёт с собой — если в системе есть баржа в беде */
+  const dist=(near.k==="rescue"&&G.barges)?G.barges.find(b=>b.distress&&!b.done):null;
   const st=stat(), low=G.fuel<st.fuelMax*.6;
   const shift=Math.floor(Date.now()/((typeof HOLD_SHIFT==="number")?HOLD_SHIFT:1800000));
   G.fleetLog=G.fleetLog||{};
@@ -451,11 +454,16 @@ function fleetInteract(sh){
   const schoolKey=fleetLogKey()+"|school";
   const canSchool=near.k==="school"&&!!pupil&&(G.fleetLog[schoolKey]||0)<shift;
   const verb=canFuel?"ЗАПРАВКА ПО НОРМЕ":canTow?"БУКСИР НА ВЕРФЬ":canFix?"РЕМОНТ ПО НОРМЕ":canEscort?"ПРОСИТЬ КОНВОЙ":
-    canMail?"СДАТЬ ПОЧТУ":canRansom?"ВЫКУП ЧЕРЕЗ ГОСПИТАЛЬ · "+Math.round(hostage.ransom*.5).toLocaleString("ru")+" КР":canSchool?"ОТДАТЬ В УЧЁБУ · "+pupil.name.toUpperCase():canCaravan?"ИДТИ КАРАВАНОМ":"ПОЗЫВНОЙ";
+    canMail?"СДАТЬ ПОЧТУ":canRansom?"ВЫКУП ЧЕРЕЗ ГОСПИТАЛЬ · "+Math.round(hostage.ransom*.5).toLocaleString("ru")+" КР":canSchool?"ОТДАТЬ В УЧЁБУ · "+pupil.name.toUpperCase():dist?"ИДТИ НА СИГНАЛ · «"+dist.capName.toUpperCase()+"»":canCaravan?"ИДТИ КАРАВАНОМ":"ПОЗЫВНОЙ";
   G.prompt=C.ru.toUpperCase()+" ГЛАВТРАССЫ «"+near.name+"»"+
     "\nДЕЙСТВИЕ — "+verb;
   if(actEdge){
-    if(!canFuel&&!canTow&&!canFix&&!canEscort&&!canMail&&!canRansom&&!canSchool&&canCaravan){
+    if(dist){
+      const ang=Math.atan2(dist.y-sh.y,dist.x-sh.x),deg=Math.round(((ang/TAU)*360+360)%360);
+      const dd=Math.round(Math.hypot(dist.x-sh.x,dist.y-sh.y));
+      etherLine("«"+near.name+"»: …спасатель. Сигнал с баржи «"+dist.capName+"», курс "+deg+"°, "+dd+". Идём. Кто с нами — за нами.","спасатель");
+      if(typeof say==="function")say("СПАСАТЕЛЬ ИДЁТ НА «"+dist.capName.toUpperCase()+"»\nкурс "+deg+"° · "+dd);
+    }else if(!canFuel&&!canTow&&!canFix&&!canEscort&&!canMail&&!canRansom&&!canSchool&&canCaravan){
       G.caravan={until:G.t+1200,name:near.name};
       etherLine("«"+near.name+"»: …идите рядом, борт. Ход наш, пираты к каравану не суются. Отстанете — сами по себе.",C.ru);
     }else if(canMail){
@@ -509,4 +517,32 @@ function fleetCaravanActive(){
   for(const f of fleetHere(G.sys)){if(f.still)continue;const p=fleetPos(f);if(Math.hypot(sh.x-p.x,sh.y-p.y)<520){ok=true;break;}}
   if(!ok)G.caravan=null;
   return ok;
+}
+
+/* ── трассы на карте (§14: линия заработана управляемостью) ──
+   Между соседними системами, где ходит флот (станция и рунг ≥ 5), пунктир
+   красно-белого цвета флота — по нему можно идти, это и есть трасса. Узловая
+   (рунг ≥ 25) — квадратная засечка у звезды. Рисуется поверх связей, под
+   звёздами; ничего не хранится. */
+function drawFleetMap(vis,cell){
+  const on=v=>!!(v.s&&v.s.station&&fleetRung(v.s)>=5);
+  const L=vis.filter(on);
+  if(!L.length)return;
+  ctx.save();ctx.setLineDash([3,4]);ctx.lineWidth=1.2;
+  const seen=new Set();
+  for(const a of L)for(const b of L){
+    if(a===b||Math.hypot(a.x-b.x,a.y-b.y)>cell*2.3)continue;
+    const key=a.gx<b.gx||(a.gx===b.gx&&a.gy<b.gy)?a.gx+","+a.gy+">"+b.gx+","+b.gy:b.gx+","+b.gy+">"+a.gx+","+a.gy;
+    if(seen.has(key))continue;seen.add(key);
+    ctx.strokeStyle="rgba(226,120,100,.45)";ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    ctx.strokeStyle="rgba(236,232,220,.35)";ctx.lineDashOffset=3.5;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.lineDashOffset=0;
+  }
+  ctx.setLineDash([]);
+  for(const v of L){
+    if(fleetRung(v.s)<25)continue;
+    ctx.strokeStyle="rgba(236,232,220,.7)";ctx.lineWidth=1;
+    ctx.strokeRect(v.x+7,v.y-11,6,6);
+    ctx.fillStyle="rgba(226,120,100,.9)";ctx.fillRect(v.x+8,v.y-10,4,1.5);
+  }
+  ctx.restore();
 }

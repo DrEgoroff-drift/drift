@@ -242,3 +242,24 @@ TEST_SUITES.push(()=>suite("M313: узловая с рунга 25, дерели�
   ok(!fleetCaravanActive(),"флот ушёл — караван распался");
   G.caravan=null;delete sys.fleetCache;
 }));
+
+/* ══════════════ M314: трассы на карте, спасатель зовёт на сигнал ══════════════ */
+TEST_SUITES.push(()=>suite("M314: трассы рисуются между системами флота, спасатель ведёт на баржу в беде",()=>{
+  resetWorld();
+  const saveRung=window.rungOf;window.rungOf=()=>25;
+  const vis=[{gx:0,gy:0,s:{sx:0,sy:0,station:{x:1,y:0}},x:100,y:100},{gx:1,gy:0,s:{sx:1,sy:0,station:{x:1,y:0}},x:160,y:100},{gx:5,gy:5,s:{sx:5,sy:5,station:null},x:400,y:400}];
+  let strokes=0;const o=ctx.stroke;ctx.stroke=function(){strokes++;return o.apply(ctx,arguments);};
+  drawFleetMap(vis,60);ctx.stroke=o;
+  ok(strokes>=2,"между двумя соседями со станцией легла трасса, к дикой — нет ("+strokes+")");
+  window.rungOf=saveRung;
+  G.mode="system";const sys=G.sys;
+  const b=Math.floor(Date.now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
+  sys.fleetCache={b,list:[{k:"rescue",seed:3,name:"ПОЛЫНЬ",num:"Л-1",line:1,x0:X+50,y0:Y,x1:X+50,y1:Y,bow:0,ph:0}]};
+  G.barges=[{seed:1,x:X+900,y:Y-300,vx:0,vy:0,a:0,distress:true,done:0,hp:50,hullMax:100,capName:"Тук",temper:"bold",good:"iron",qty:1,cap:1,budget:1,fac:"x"}];
+  G.caravan=null;actEdge=false;fleetInteract(G.ship);
+  ok(G.prompt.indexOf("ИДТИ НА СИГНАЛ")>=0&&G.prompt.indexOf("ТУК")>=0,"спасатель зовёт на «Тук»");
+  actEdge=true;fleetInteract(G.ship);actEdge=false;
+  ok((G.msg||"").indexOf("СПАСАТЕЛЬ")>=0,"на экране курс и расстояние");
+  G.barges=[];delete sys.fleetCache;
+  for(const k of ["ferry","hosp"]){const a=fleetArtOf({k,seed:99,name:"X",num:"Л-1",line:1});ok(a.cn.width>0,k+": перерисован без ошибок");}
+}));

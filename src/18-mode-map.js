@@ -251,6 +251,8 @@ function drawMap(){
   /* съёмка «Долгого Хода» (12w, M115): их значки поверх вашего листа — ровно
      столько точек, сколько кусков отчёта заработано, и ни одной авансом */
   if(typeof drawSurvey==="function")drawSurvey(cell);
+  /* трассы ГЛАВТРАССЫ (12ai, M314): пунктир между системами, где ходит флот */
+  if(typeof drawFleetMap==="function")drawFleetMap(vis,cell);
   let sel=null,cur=null;
   for(const v of vis){
     const{gx,gy,s,x,y}=v;

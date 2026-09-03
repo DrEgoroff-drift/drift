@@ -7,6 +7,21 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.311.0 - M314: the fleet's tails — lines on the map, the rescuer's call, wing tiles, the cross
+
+- **Трассы on the map** (`drawFleetMap`, hooked in `18-mode-map` over the lanes, under the
+  stars; §14 — a line earned by being steerable): a red-and-white dashed line between neighbouring
+  systems where the fleet passes (a station and rung ≥ 5); a square tick with a red stroke at a
+  system holding the node station (rung ≥ 25). Nothing stored.
+- **Спасатель's «come along»** (§18.7 п.11): if a barge in distress is in the system, the rescuer
+  offers ИДТИ НА СИГНАЛ — it names the barge, gives course and distance into the ether and on
+  screen, and goes; whether you follow is yours.
+- Issue III's small findings: the ferry's wing carries tile rows; the hospital's cross is the
+  full height of the body; the name on the hull is bold and a size larger.
+- Left of §18.7: 12 заявка (the fleet lends a hull for one run) — needs the crew order model.
+- Suite `91zzza` (M314 block).
+
+---
 ## 0.310.0 - M313: the node station «УЗ-1», the black derelict, the caravan
 
 `12ai-fleet`, the places of §18.4 and interaction 6 of §18.7:

@@ -183,6 +183,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M314** (0.311.0) — fleet tails: трассы on the map (§14), the rescuer's call to a barge in distress, wing tiles, the hospital's cross, larger names.
 - **M313** (0.310.0) — the node station «УЗ-1» from rung 25, the black derelict in dangerous empty sectors, the caravan (pirates keep off, fleet pace).
 - **M312** (0.309.0) — the whole fleet drawn (thirteen classes), почта, ransom through the hospital at half, the school.
 - **M311** (0.308.0) — the fleet's second pass: joints (§8), whiter hulls, сторожевик/паром/плавбаза drawn, буксир/плавбаза/сторожевик services, convoy hides you from pirates.
@@ -246,11 +247,10 @@ never touches arithmetic; station modules don't unlock services.
   order of drawing is §18.9, the first meeting the почтовик. **Opened as M310 (0.307.0)**: names
   settled, three classes drawn, the line, позывной and the norm. **M311 (0.308.0)**: joints, whiter
   hulls, сторожевик/паром/плавбаза, services 4/7/10. **M312 (0.309.0)**: the last seven classes,
-  почта, госпитальное, учебное. **M313 (0.310.0)**: «УЗ-1», the derelict, the caravan. Queue: 11
-  спасатель's «come along» (a distress it points you to), 12 заявка (lend a hull for one run —
-  needs the crew order model); the fleet on the map (§14: a steerable trace); the ferry's wing
-  wants panel lines; the hospital's cross the full height; the name lettering on the hull is too
-  small at Z 1.5; movement as `spawnBarges` is done (position = f(time)), consequences only.
+  почта, госпитальное, учебное. **M313 (0.310.0)**: «УЗ-1», the derelict, the caravan. **M314
+  (0.311.0)**: трассы on the map, the rescuer's call, the drawing tails. Left: 12 заявка (lend a
+  hull for one run — needs the crew order model, its own pass); issue III's next look after the
+  author has flown past a few of them on `/dev`.
 
 - **The road companion** (author, 2026-08-23): phone mode where a real car trip flies your ship —
   GPS speed extrapolated to cosmic, accelerometer banks the hull, mic-driven equalizer, real
