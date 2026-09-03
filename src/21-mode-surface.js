@@ -652,10 +652,16 @@ function tickLaunchHold(dt){
     if(lbar)lbar.style.width=clamp(launchHold/36*100,0,100)+"%";
   }
 }
+/* ── буксир: одна цена и одно имя места на все режимы (M331) ──
+   Эвакуация родилась на грунте, но нужна она и в пустоте: топливо тратится
+   только на тягу и тормоз, а тормоз доводит до полной остановки — «погасил
+   последними каплями» это обычное достижимое состояние, из которого раньше не
+   было НИ ОДНОГО хода (17-mode-system зовёт эту же функцию). */
+function evacCost(){return Math.min(4000,Math.round(800+220*Math.hypot(G.sx,G.sy)));}
+function evacFrom(){return (G.surf&&G.surf.p&&G.surf.p.name)||(G.sys&&G.sys.name)||"пустоты";}
 function evacuate(){
-  const S=G.surf;
-  const dist=Math.hypot(G.sx,G.sy);
-  const cost=Math.min(4000,Math.round(800+220*dist));
+  const from=evacFrom();
+  const cost=evacCost();
   if(G.credits<cost){totalLoss();return;}
   G.credits-=cost;
   const dest=nearestStation(G.sx,G.sy);
@@ -666,12 +672,11 @@ function evacuate(){
   G.ship.vx=0;G.ship.vy=0;
   G.mode="system";G.land=null;G.surf=null;
   saveGame(true);
-  logAdd("warn","Эвакуация с "+S.p.name+" за "+cost+" кр · переброшены к "+dest.name);
+  logAdd("warn","Эвакуация с "+from+" за "+cost+" кр · переброшены к "+dest.name);
   say("Эвакуация\n-"+cost+" кр · вы в системе "+dest.name);
 }
 function totalLoss(){
-  const S=G.surf;
-  const pname=S?S.p.name:"поверхности";
+  const pname=evacFrom();
   /* если дом уже есть — возвращаемся туда: смерть перестаёт быть обнулением и
      становится потерей рейса. Обнуление стирало вместе с кораблём всю историю,
      то есть наказывало сильнее, чем игра стоит (12j-home) */

@@ -7,6 +7,53 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.328.0 - M331: four questions from game QA, and the four defects they found
+
+The author asked for deep scenario tests «with gamedev experience». That experience comes down to
+four questions asked of a game before it is given to people, and none of them is about a single
+function: can the player get STUCK; does the game PRINT MONEY; are there DEAD ENDS in the
+interface; and what happens AFTER DEATH. `tests/91zzzzy-play` asks all four.
+
+All four found something.
+
+- **Stranded in space was a real softlock.** Fuel burns only on thrust and brake, and the brake
+  runs down to a full stop — «killed the last of my speed with the last of my fuel» is an
+  ordinary, reachable state, and from it there was not one single move: the rudder needs no fuel
+  but changes nothing, synthesis needs ice and a tech, and evacuation lived only on the ground.
+  The game did not crash and said nothing; it simply ended. Now the same way out as from a
+  planet: a tow to the nearest station for money (`evacCost`/`evacFrom` are shared by both), and
+  if there is nothing to pay with, the same total loss — home, or a new «Стриж». The prompt is
+  taken last, so anything else nearby still wins it, and the tow is never cheaper than fuel.
+- **The counter printed money.** The station's appetite pays +35% for the first units of a shift,
+  while the counter sells at +6% — so «buy here, sell here» made about a quarter of the price out
+  of thin air, without leaving the desk, every shift. Measured: +46 credits a round where by
+  design (M289) every round must be a loss. The premium is payment for BRINGING something, so the
+  shift's quota now shrinks by exactly what the player bought at that same counter. Brought from
+  elsewhere — full premium, as before. After the fix every round is −10 to −30.
+- **The station screen could become a trap.** `closeStation` died on `S.x` and `repairCost` on
+  `.stype` when the docking was released under an open screen (a save loaded from the cloud does
+  exactly that): the one button that must work in every state — the door — was the one that did
+  not. Both now work without a station under them. Found by the crash counter from M329: an
+  exception inside a click handler never reaches the `try/catch` around `.click()`.
+- **`exitDig`** (M329) was the same family, and this is now a rule with a test: the exit works, or
+  the player is left inside.
+
+The suites also nail down what must keep working: an empty tank on a planet always has a way out
+(with money, without money, and with a home to return to); every screen lets the player out (the
+exit is either named — ЗАКРЫТЬ, НАЗАД, РАЗОЙТИСЬ, ОТМЕНА — or standing in the footer); after a
+wreck the player is alive, fuelled, and not left in a loop with the pirates that just took him
+apart; and a first run from zero — land, drill a hold full, launch, sell — comes out ahead of what
+the fuel cost.
+
+Light: the sun-versus-sky law was moved off the frame and onto the paint. Comparing a big cloud
+mass with a small disc through one window is not a fair comparison, and the number drifts with
+window size, weather and hour. The hard law is now asked of the colour itself — the lit side of a
+cloud is mixed from the star's own colour, and it may not be brighter than the star (checked
+across ten stars, dim red ones included; the white base is capped by the star's luminance, so
+clouds under a red dwarf are dark rust rather than white). The frame keeps a soft guard: nothing
+in the sky may be a quarter brighter than the disc.
+
+---
 ## 0.327.0 - M330: places, physics, light — three suites that measure the picture, and two defects out of them
 
 The author asked for three more families of cross-cutting tests: things standing in the wrong

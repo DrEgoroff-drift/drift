@@ -110,8 +110,14 @@ function syncTabs(){
   if(typeof tabsSync==="function"){tabsSync($g);tabsSync(document.getElementById("stTabs"));}
 }
 function repairCost(){
-  /* репутация станции идёт в цену работы: чинят руки, а не рынок (12k-rep) */
-  return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep*repRepairMul()*(typeof holdRepairMul==="function"?holdRepairMul():1)));   /* Ремонтный док (F1) */
+  /* репутация станции идёт в цену работы: чинят руки, а не рынок (12k-rep).
+     Станции под рукой может не быть: экран остаётся открытым, когда стыковку
+     отпустили под ним (загрузка сейва). Цена всё равно обязана быть числом —
+     иначе отрисовка вкладки умирает целиком и экран становится ловушкой
+     (M331, тот же случай, что у closeStation) */
+  const S=G.st||(G.sys&&G.sys.station);
+  if(!S)return 4;
+  return Math.max(4,Math.round(14*stTypeOf(S.stype).rep*repRepairMul()*(typeof holdRepairMul==="function"?holdRepairMul():1)));   /* Ремонтный док (F1) */
 }
 function closeStation(){
   if(typeof vegaLaunchHold==="function"&&vegaLaunchHold())return;   /* зеркало (M153): раз в день — «вы обещали остаться» */
@@ -121,9 +127,18 @@ function closeStation(){
   if(typeof fleaLeave==="function")fleaLeave(G.sys);
   if(typeof traineeFind==="function")traineeFind();   /* заяц в трюме после блошинца (M163) */
   $st.classList.remove("open");G.mode="system";
-  const S=G.st,dx=G.ship.x-S.x,dy=G.ship.y-S.y,d=Math.hypot(dx,dy)||1;
-  G.ship.x=S.x+dx/d*150;G.ship.y=S.y+dy/d*150;
-  G.ship.vx=S.vx;G.ship.vy=S.vy;
+  /* ── дверь обязана открываться всегда (M331) ──
+     Стыковку могут отпустить под открытым экраном: загрузка сейва (своя или
+     приехавшая из облака) ставит `G.st=null`, а экран остаётся. Раньше
+     ОТСТЫКОВАТЬСЯ падала на `S.x` — то есть единственная кнопка, которая
+     обязана работать в любом состоянии, не работала именно тогда, когда она
+     единственная. Нет станции — просто выходим в космос, без отхода от неё. */
+  const S=G.st||(G.sys&&G.sys.station);
+  if(S){
+    const dx=G.ship.x-S.x,dy=G.ship.y-S.y,d=Math.hypot(dx,dy)||1;
+    G.ship.x=S.x+dx/d*150;G.ship.y=S.y+dy/d*150;
+    G.ship.vx=S.vx||0;G.ship.vy=S.vy||0;
+  }
   say("Отстыковка");
   /* запись на выходе — парой к записи на входе (плейтест 30.08.2026): вход
      сохранял 428 кр до ремонта, а всё купленное в доке жило лишь до перезагрузки */

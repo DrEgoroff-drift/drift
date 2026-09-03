@@ -40,7 +40,14 @@ const E2E_CRASHES = [];
   crashSay = function (e, where) {
     let m = "";
     try { m = (e && e.message) || String(e); } catch (_) { m = "?"; }
-    E2E_CRASHES.push(m + (where ? " · " + where : ""));
+    /* адрес обязателен: без него «Cannot read properties of null» это ребус.
+       Берём две первые строки стека — имя функции и её место */
+    let at = "";
+    try {
+      at = String((e && e.stack) || "").split("\n").slice(1, 3)
+        .map(s => s.replace(/^\s*at\s*/, "").replace(/\(file:[^)]*\/tests\.html/, "(").trim()).join(" ← ");
+    } catch (_) { }
+    E2E_CRASHES.push(m + (where ? " · " + where : "") + (at ? " · " + at : "") + " · набор: " + (_suite || "?"));
     return was.apply(this, arguments);
   };
 })();

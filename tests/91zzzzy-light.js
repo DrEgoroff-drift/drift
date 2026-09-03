@@ -46,6 +46,30 @@ function lgBrightest(x0, y0, x1, y1, step) {
   }
   return best;
 }
+/* ── кадр без интерфейса ──
+   Канва рисует не только мир: плашка сообщения, подсказка и чипы ложатся
+   поверх него. Плашка тёмная, и на телефоне она накрывает как раз верх неба —
+   прибор мерил её вместо солнца (rgb 80,74,73 там, где должен быть диск).
+   Свет мира судим по миру: сообщение и подсказку гасим перед съёмкой. */
+function lgClean() {
+  G.msg = ""; G.msgT = 0; G.prompt = "";
+}
+/* самое светлое пятно в круге (или вне круга) — одним и тем же окном для
+   обеих сторон сравнения: иначе диск, попавший на край окна, «темнее» тучи
+   просто потому, что окно стоит не по центру */
+function lgBestNear(cx, cy, x0, y0, x1, y1, rIn, rOut, B) {
+  const b = B || 24;
+  let best = 0, bx = 0, by = 0;
+  for (let y = Math.max(0, y0); y < Math.min(H, y1) - b; y += Math.round(b / 2))
+    for (let x = Math.max(0, x0); x < Math.min(W, x1) - b; x += Math.round(b / 2)) {
+      const d = Math.hypot(x + b / 2 - cx, y + b / 2 - cy);
+      if (rIn != null && d > rIn) continue;
+      if (rOut != null && d < rOut) continue;
+      const l = lgBox(x, y, b, b).lum;
+      if (l > best) { best = l; bx = x; by = y; }
+    }
+  return { lum: best, x: bx, y: by };
+}
 /* час, в который звезда стоит высоко (или низко) — тот же приём, что у
    прибора кадра: час назначается, а не «как выйдет» */
 function lgHour(p, wantDay) {
@@ -65,9 +89,9 @@ TEST_SUITES.push(() => suite("свет: ночь на самом деле тем
   for (const { s, p } of plWorlds(4)) {
     resetWorld();
     const S = plLand(s, p);
-    lgHour(S.p, true); drawWorld();
+    lgHour(S.p, true); lgClean(); drawWorld();
     const day = lgBox(0, H * .55, W, H * .4).lum;
-    lgHour(S.p, false); drawWorld();
+    lgHour(S.p, false); lgClean(); drawWorld();
     const night = lgBox(0, H * .55, W, H * .4).lum;
     rows.push(p.name + " " + day.toFixed(2) + "→" + night.toFixed(2));
     if (!(night < day - .04)) bad.push(p.name + ": день " + day.toFixed(3) + ", ночь " + night.toFixed(3));
@@ -77,40 +101,73 @@ TEST_SUITES.push(() => suite("свет: ночь на самом деле тем
   eq(bad.slice(0, 3).join(" ;; "), "", "грунт ночью темнее, чем днём");
 }));
 
-/* ── 2. солнце стоит там, где его считает свет ──
-   `sunSpot` — единственный хозяин положения светила: от него берут и диск, и
-   лучи, и ободок на скафандре, и направление теней. Если самое светлое место
-   неба разошлось с ним, то тени в кадре положены не от того солнца, которое
-   игрок видит, — а это первое, что читается как «свет неправильный». */
-TEST_SUITES.push(() => suite("свет: ничто в небе не светлее самой звезды", () => {
+/* ── 2а. освещённое не бывает ярче своего света ──
+   Самый твёрдый из законов света, и единственный, который можно спросить не у
+   кадра, а у КРАСКИ: тон освещённой стороны облака берётся из цвета звезды
+   (`starRGB`), и он обязан быть темнее её самой. Так был найден дефект M330:
+   облако мешалось с чистой белой (`lerp(255,…)`) и на планете с плотной
+   атмосферой выходило ярче солнечного диска — в кадре появлялось второе
+   солнце, а тени лежали от первого. Проверка идёт по десятку звёзд разного
+   цвета, включая тусклые красные, под которыми белое облако было бы ярче
+   своего источника заведомо.
+
+   Кадром это судить нельзя: большое пятно облака и маленький диск с ореолом
+   в среднем по окну сравнивать нечестно, и число уезжает от размера окна,
+   погоды и часа. Краска — можно: она одна на все кадры. */
+TEST_SUITES.push(() => suite("свет: облако не ярче своей звезды", () => {
+  const lum = c => .299 * c[0] + .587 * c[1] + .114 * c[2];
+  const bad = [], rows = [];
+  let stars = 0;
+  for (const { s, p } of plWorlds(10)) {
+    G.sx = s.sx; G.sy = s.sy; G.sys = s;
+    const sun = starRGB(), sl = lum(sun);
+    /* та же формула, что печёт спрайт (19e-clouds): основа + подмес цвета звезды */
+    const lit = [0, 1, 2].map(j => lerp(Math.min(212, sl), sun[j], .16));
+    const cir = [0, 1, 2].map(j => lerp(Math.min(224, sl), sun[j], .12));
+    stars++;
+    rows.push(Math.round(sl) + "→" + Math.round(lum(lit)));
+    if (lum(lit) > sl + .5) bad.push(s.name + ": кучевое " + lum(lit).toFixed(0) + " при звезде " + sl.toFixed(0));
+    if (lum(cir) > sl + .5) bad.push(s.name + ": перистое " + lum(cir).toFixed(0) + " при звезде " + sl.toFixed(0));
+  }
+  resetWorld();
+  ok(stars >= 8, "звёзд проверено: " + stars + " (звезда→облако: " + rows.join(", ") + ")");
+  eq(bad.slice(0, 3).join(" ;; "), "", "ни одно облако не ярче светила, которое его освещает");
+}));
+
+/* ── 2б. и в кадре звезда не теряется ──
+   Мягкий сторож поверх твёрдого: пятно неба не имеет права быть ЗАМЕТНО
+   ярче диска. Точную границу здесь провести нельзя (окно, погода, час), но
+   разницу в четверть уже видно глазом — это и есть «второе солнце». */
+TEST_SUITES.push(() => suite("свет: в кадре ничто не спорит со звездой за источник", () => {
   const bad = [], rows = [];
   let checked = 0;
   for (const { s, p } of plWorlds(6)) {
     resetWorld();
     const S = plLand(s, p);
     lgHour(S.p, true);
+    /* небо ЧИСТОЕ: под грозой светило закрыто тучей, и тогда «ярче всех
+       звезда» — неверный закон, а не нарушенный. Погоду снимаем так же, как
+       её снимает стенд (`docs/mkview.ps1`) */
+    S.p.wx = { kind: null };
     const SR = sunSpot(S.p);
     if (!SR.up || SR.alt < .15) continue;
+    lgClean();
     drawWorld();
     /* меряем площадями, а не точками: глаз читает источником не самый яркий
        пиксель, а самое светлое ПЯТНО. Диск с ореолом против всего остального
        неба — от верха кадра до горизонта, дальше 120 px от самого светила */
-    const sun = lgBox(SR.x - 12, SR.y - 12, 24, 24).lum;
     const sky = Math.max(60, Math.min(H * .5, SR.y + H * .18));
-    let other = 0, ox = 0, oy = 0;
-    for (let y = 0; y < sky - 24; y += 24)for (let x = 0; x < W - 24; x += 24) {
-      if (Math.hypot(x + 12 - SR.x, y + 12 - SR.y) < 120) continue;
-      const l = lgBox(x, y, 24, 24).lum;
-      if (l > other) { other = l; ox = x; oy = y; }
-    }
+    const sunB = lgBestNear(SR.x, SR.y, SR.x - 60, SR.y - 60, SR.x + 60, SR.y + 60, 40, null, 24);
+    const oth = lgBestNear(SR.x, SR.y, 0, 0, W, sky, null, 120, 24);
+    const sun = sunB.lum, other = oth.lum, ox = oth.x, oy = oth.y;
     checked++;
     rows.push(p.name + " " + sun.toFixed(2) + "/" + other.toFixed(2));
-    /* ─ закон: источник — самое светлое в кадре ─
-       Иначе в небе появляется второе солнце: глаз считает светом облако, а
-       тени лежат от диска. Так и было до M330 — облако мешалось с чистой
-       белой и выходило ярче диска (0.85 против 0.79). */
-    if (other > sun + .005)
-      bad.push(p.name + ": пятно в " + ox + "," + oy + " ярче звезды (" + other.toFixed(3) + " против " + sun.toFixed(3) + ")");
+    /* ─ мягкая граница ─
+       Твёрдый закон живёт в наборе выше (по краске); здесь ловится грубая
+       поломка: небо, которое светит вместо звезды. Четверть разницы — это
+       уже видно, а не спор о десятых долях. */
+    if (other > sun * 1.25 + .01)
+      bad.push(p.name + ": пятно в " + ox + "," + oy + " заметно ярче звезды (" + other.toFixed(3) + " против " + sun.toFixed(3) + ")");
   }
   resetWorld();
   ok(checked >= 3, "дневных кадров измерено: " + checked + " (звезда/небо: " + rows.join(", ") + ")");
@@ -147,13 +204,13 @@ TEST_SUITES.push(() => suite("свет: у звезды и у фонаря яр�
   const sys = (() => { for (const { s } of plWorlds(6)) if ((s.planets || []).length >= 2) return s; return G.sys; })();
   G.sx = sys.sx; G.sy = sys.sy; G.sys = sys; G.mode = "system";
   G.ship.x = 900; G.ship.y = 300; G.zoom = .7;
-  drawWorld(); halo("звезда");
+  lgClean(); drawWorld(); halo("звезда");
   /* фонарь в пещере */
   for (const { s, p } of plWorlds(3)) {
     resetWorld(); plLand(s, p); enterCave();
     if (!G.cave) continue;
     for (let i = 0; i < 20; i++) { updateCave(1); G.t += 1; }
-    drawWorld(); halo("фонарь");
+    lgClean(); drawWorld(); halo("фонарь");
     break;
   }
   resetWorld();
@@ -171,7 +228,7 @@ TEST_SUITES.push(() => suite("свет: свечение дышит плавно
   const watch = (ru, setup) => {
     resetWorld();
     if (setup() === false) return;
-    drawWorld();
+    lgClean(); drawWorld();
     const c = lgBrightest(0, 0, W, H, 24);
     if (!c) return;
     const box = () => lgBox(Math.max(0, c.x - 24), Math.max(0, c.y - 24), 48, 48).lum;
@@ -212,7 +269,7 @@ TEST_SUITES.push(() => suite("свет: ни одна сцена не выжже
     let set = true;
     try { set = sc.set() !== false; } catch (e) { continue; }
     if (!set || G.mode === "none") continue;
-    try { drawWorld(); } catch (e) { continue; }
+    try { lgClean(); drawWorld(); } catch (e) { continue; }
     scenes++;
     const m = lgBox(0, 0, W, H);
     const pc = m.white * 100;

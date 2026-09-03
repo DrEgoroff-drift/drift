@@ -48,10 +48,28 @@ function appetiteAte(sys,k){
   const a=h&&h.ate&&h.ate[k];
   return (Array.isArray(a)&&a[1]===holdShift())?(a[0]|0):0;
 }
+/* ── взятое у этого же прилавка надбавки не получает (M331) ──
+   Аппетит платит +35% за первые единицы в смену, а прилавок продаёт всего на
+   6% дороже своей же цены (BUY_SPREAD). Значит «купил здесь — тут же сдал
+   здесь» приносило почти треть цены из воздуха, не отходя от стойки, и
+   повторялось каждую смену: тест намерил +46 кр за круг там, где по замыслу
+   (M289) круг обязан быть в минус. Надбавка — плата за ПРИВОЗ, поэтому норма
+   смены уменьшается ровно на то, что игрок здесь же и купил. Привезённое
+   издалека получает надбавку целиком, как и было. */
+function appetiteGotHere(sys,k){
+  const h=G.hold&&G.hold[sys.key];
+  const a=h&&h.here&&h.here[k];
+  return (Array.isArray(a)&&a[1]===holdShift())?(a[0]|0):0;
+}
+function appetiteBought(sys,k,qty){
+  if(!sys||!(qty>0))return;
+  const h=holdOf(sys.key);h.here=h.here||{};
+  h.here[k]=[appetiteGotHere(sys,k)+(qty|0),holdShift()];
+}
 function appetiteLeft(sys,k){
   const A=appetiteOf(sys);
   if(!A||!A[k])return 0;
-  return Math.max(0,A[k]-appetiteAte(sys,k));
+  return Math.max(0,A[k]-appetiteAte(sys,k)-appetiteGotHere(sys,k));
 }
 /* съесть: сколько из qty пойдёт с надбавкой — и запомнить это */
 function appetiteEat(sys,k,qty){

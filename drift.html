@@ -1494,7 +1494,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.327.0";
+const VER="0.328.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -14777,10 +14777,28 @@ function appetiteAte(sys,k){
   const a=h&&h.ate&&h.ate[k];
   return (Array.isArray(a)&&a[1]===holdShift())?(a[0]|0):0;
 }
+/* ── взятое у этого же прилавка надбавки не получает (M331) ──
+   Аппетит платит +35% за первые единицы в смену, а прилавок продаёт всего на
+   6% дороже своей же цены (BUY_SPREAD). Значит «купил здесь — тут же сдал
+   здесь» приносило почти треть цены из воздуха, не отходя от стойки, и
+   повторялось каждую смену: тест намерил +46 кр за круг там, где по замыслу
+   (M289) круг обязан быть в минус. Надбавка — плата за ПРИВОЗ, поэтому норма
+   смены уменьшается ровно на то, что игрок здесь же и купил. Привезённое
+   издалека получает надбавку целиком, как и было. */
+function appetiteGotHere(sys,k){
+  const h=G.hold&&G.hold[sys.key];
+  const a=h&&h.here&&h.here[k];
+  return (Array.isArray(a)&&a[1]===holdShift())?(a[0]|0):0;
+}
+function appetiteBought(sys,k,qty){
+  if(!sys||!(qty>0))return;
+  const h=holdOf(sys.key);h.here=h.here||{};
+  h.here[k]=[appetiteGotHere(sys,k)+(qty|0),holdShift()];
+}
 function appetiteLeft(sys,k){
   const A=appetiteOf(sys);
   if(!A||!A[k])return 0;
-  return Math.max(0,A[k]-appetiteAte(sys,k));
+  return Math.max(0,A[k]-appetiteAte(sys,k)-appetiteGotHere(sys,k));
 }
 /* съесть: сколько из qty пойдёт с надбавкой — и запомнить это */
 function appetiteEat(sys,k,qty){
@@ -18593,6 +18611,9 @@ function buyCargo(sys,k,qty){
   G.credits-=qty*ask;G.cargo[k]=(G.cargo[k]||0)+qty;
   const m=G.market[sys.key];
   m.ask[k]=Math.min(.35,(m.ask[k]||0)+qty*.005);
+  /* и норма смены у этого же прилавка уменьшается на взятое: надбавка платится
+     за привоз, а не за то, что товар обошёл вокруг стойки (M331, 12ab-hold) */
+  appetiteBought(sys,k,qty);
   return qty;
 }
 function sellCargo(sys,k,qty){
@@ -33986,6 +34007,22 @@ function updateSystem(dt){
     }else if(!G.prompt)G.prompt=near.name+" · "+Math.round(nd)+" ед.";
     return;
   }
+  /* ── мёртвый штиль: сигнал бедствия (M331) ──
+     Топливо тратится только на тягу и тормоз, а тормоз доводит до полной
+     остановки — «погасил скорость последними каплями» это обычное достижимое
+     состояние. Руль без тяги ничего не меняет, синтез требует льда и техники,
+     а эвакуация до сих пор жила только на грунте: игра не падала и ничего не
+     говорила — она просто кончалась. Выход тот же, что с планеты: буксир до
+     ближайшей станции за деньги, а нечем платить — полная потеря (дом или
+     новый «Стриж»). Дешевле заправки он не бывает, поэтому «быстрым
+     перелётом» его не сделать. Подсказку берём последней — если рядом планета
+     или станция, у игрока и так есть что нажать. */
+  if(!G.prompt&&G.fuel<=0&&!(G.tech.has("synth")&&G.cargo.ice>0)){
+    const cost=evacCost();
+    G.prompt="ХОДА НЕТ · БАК ПУСТ\nДЕЙСТВИЕ — СИГНАЛ БЕДСТВИЯ · "+
+      (G.credits>=cost?"БУКСИР "+cost+" КР":"ПЛАТИТЬ НЕЧЕМ");
+    if(actEdge){evacuate();return;}
+  }
   if(!G.prompt&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax){
     G.prompt="ДЕЙСТВИЕ — СИНТЕЗ ТОПЛИВА ИЗО ЛЬДА ("+G.cargo.ice+")";
     if(actEdge){
@@ -37646,8 +37683,15 @@ function cloudSprite(p,seed,soft){
      источник, то есть в кадре появлялось второе солнце, а тени при этом
      лежали от первого: §13 «один свет» ломался ровно там, где света больше
      всего. Верхняя точка облака теперь на ступень ниже диска — оно осталось
-     белым облаком, но перестало спорить с тем, что его освещает. */
-  const litC=[0,1,2].map(j=>lerp(212,sun[j],.16));
+     белым облаком, но перестало спорить с тем, что его освещает.
+
+     Второй предел — по самой звезде: под тусклым красным светилом белое
+     облако было бы ярче своего источника, а освещённое ярче света не бывает
+     (§13, §16). Поэтому белая основа не поднимается выше яркости звезды —
+     под красной звездой облака тёмно-рыжие, под белой белые. Сторож —
+     набор «свет: облако не ярче своей звезды» (91zzzzy-light). */
+  const sunL=.299*sun[0]+.587*sun[1]+.114*sun[2];
+  const litC=[0,1,2].map(j=>lerp(Math.min(212,sunL),sun[j],.16));
   const shC=[0,1,2].map(j=>lerp(lerp(210,amb[j],.72),amb[j],.5)*.86);
   const F=(x,y)=>(x<0||y<0||x>=CSW||y>=CSH)?0:fld[y*CSW+x];
   for(let y=0;y<CSH;y++)for(let x=0;x<CSW;x++){
@@ -37685,7 +37729,9 @@ function cirrusSprite(p,seed){
   const cn=document.createElement("canvas");cn.width=W2;cn.height=H2;
   const c=cn.getContext("2d"),img=c.createImageData(W2,H2),d=img.data;
   const sun=starRGB();
-  const col=[0,1,2].map(j=>lerp(255,sun[j],.12));
+  /* тот же предел, что у кучевых (M330): перо не бывает ярче своей звезды */
+  const sunL=.299*sun[0]+.587*sun[1]+.114*sun[2];
+  const col=[0,1,2].map(j=>lerp(Math.min(224,sunL),sun[j],.12));
   for(let y=0;y<H2;y++)for(let x=0;x<W2;x++){
     const o=(y*W2+x)*4;
     /* волокно: шум, растянутый по x, с наклоном — перо, а не полоса */
@@ -47450,10 +47496,16 @@ function tickLaunchHold(dt){
     if(lbar)lbar.style.width=clamp(launchHold/36*100,0,100)+"%";
   }
 }
+/* ── буксир: одна цена и одно имя места на все режимы (M331) ──
+   Эвакуация родилась на грунте, но нужна она и в пустоте: топливо тратится
+   только на тягу и тормоз, а тормоз доводит до полной остановки — «погасил
+   последними каплями» это обычное достижимое состояние, из которого раньше не
+   было НИ ОДНОГО хода (17-mode-system зовёт эту же функцию). */
+function evacCost(){return Math.min(4000,Math.round(800+220*Math.hypot(G.sx,G.sy)));}
+function evacFrom(){return (G.surf&&G.surf.p&&G.surf.p.name)||(G.sys&&G.sys.name)||"пустоты";}
 function evacuate(){
-  const S=G.surf;
-  const dist=Math.hypot(G.sx,G.sy);
-  const cost=Math.min(4000,Math.round(800+220*dist));
+  const from=evacFrom();
+  const cost=evacCost();
   if(G.credits<cost){totalLoss();return;}
   G.credits-=cost;
   const dest=nearestStation(G.sx,G.sy);
@@ -47464,12 +47516,11 @@ function evacuate(){
   G.ship.vx=0;G.ship.vy=0;
   G.mode="system";G.land=null;G.surf=null;
   saveGame(true);
-  logAdd("warn","Эвакуация с "+S.p.name+" за "+cost+" кр · переброшены к "+dest.name);
+  logAdd("warn","Эвакуация с "+from+" за "+cost+" кр · переброшены к "+dest.name);
   say("Эвакуация\n-"+cost+" кр · вы в системе "+dest.name);
 }
 function totalLoss(){
-  const S=G.surf;
-  const pname=S?S.p.name:"поверхности";
+  const pname=evacFrom();
   /* если дом уже есть — возвращаемся туда: смерть перестаёт быть обнулением и
      становится потерей рейса. Обнуление стирало вместе с кораблём всю историю,
      то есть наказывало сильнее, чем игра стоит (12j-home) */
@@ -58910,8 +58961,14 @@ function syncTabs(){
   if(typeof tabsSync==="function"){tabsSync($g);tabsSync(document.getElementById("stTabs"));}
 }
 function repairCost(){
-  /* репутация станции идёт в цену работы: чинят руки, а не рынок (12k-rep) */
-  return Math.max(4,Math.round(14*stTypeOf(G.st.stype).rep*repRepairMul()*(typeof holdRepairMul==="function"?holdRepairMul():1)));   /* Ремонтный док (F1) */
+  /* репутация станции идёт в цену работы: чинят руки, а не рынок (12k-rep).
+     Станции под рукой может не быть: экран остаётся открытым, когда стыковку
+     отпустили под ним (загрузка сейва). Цена всё равно обязана быть числом —
+     иначе отрисовка вкладки умирает целиком и экран становится ловушкой
+     (M331, тот же случай, что у closeStation) */
+  const S=G.st||(G.sys&&G.sys.station);
+  if(!S)return 4;
+  return Math.max(4,Math.round(14*stTypeOf(S.stype).rep*repRepairMul()*(typeof holdRepairMul==="function"?holdRepairMul():1)));   /* Ремонтный док (F1) */
 }
 function closeStation(){
   if(typeof vegaLaunchHold==="function"&&vegaLaunchHold())return;   /* зеркало (M153): раз в день — «вы обещали остаться» */
@@ -58921,9 +58978,18 @@ function closeStation(){
   if(typeof fleaLeave==="function")fleaLeave(G.sys);
   if(typeof traineeFind==="function")traineeFind();   /* заяц в трюме после блошинца (M163) */
   $st.classList.remove("open");G.mode="system";
-  const S=G.st,dx=G.ship.x-S.x,dy=G.ship.y-S.y,d=Math.hypot(dx,dy)||1;
-  G.ship.x=S.x+dx/d*150;G.ship.y=S.y+dy/d*150;
-  G.ship.vx=S.vx;G.ship.vy=S.vy;
+  /* ── дверь обязана открываться всегда (M331) ──
+     Стыковку могут отпустить под открытым экраном: загрузка сейва (своя или
+     приехавшая из облака) ставит `G.st=null`, а экран остаётся. Раньше
+     ОТСТЫКОВАТЬСЯ падала на `S.x` — то есть единственная кнопка, которая
+     обязана работать в любом состоянии, не работала именно тогда, когда она
+     единственная. Нет станции — просто выходим в космос, без отхода от неё. */
+  const S=G.st||(G.sys&&G.sys.station);
+  if(S){
+    const dx=G.ship.x-S.x,dy=G.ship.y-S.y,d=Math.hypot(dx,dy)||1;
+    G.ship.x=S.x+dx/d*150;G.ship.y=S.y+dy/d*150;
+    G.ship.vx=S.vx||0;G.ship.vy=S.vy||0;
+  }
   say("Отстыковка");
   /* запись на выходе — парой к записи на входе (плейтест 30.08.2026): вход
      сохранял 428 кр до ремонта, а всё купленное в доке жило лишь до перезагрузки */

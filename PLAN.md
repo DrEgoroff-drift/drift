@@ -191,6 +191,15 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
 - **M325** (0.322.0) — the four effects: the lake with reflections and reeds, heat haze, chromatic aberration on hits, the live flare; `18d-postfx`.
+- **M331** (0.328.0) — the four questions of game QA as a suite (`91zzzzy-play`): can the player
+  get stuck, does the game print money, are there dead ends, what happens after death. Four
+  defects: being stranded in space with an empty tank was a real softlock (a tow now exists there
+  too, sharing `evacCost`/`evacFrom` with the ground); the station's appetite (+35%) could be fed
+  from that same station's counter (+6%), printing about a quarter of the price per round — the
+  shift's quota now shrinks by what was bought there; `closeStation` and `repairCost` died when the
+  docking was released under an open screen, turning the station into a trap; and the cloud/star
+  law moved off the frame onto the paint (a lit cloud may not be brighter than its own star,
+  checked across ten stars).
 - **M330** (0.327.0) — three suites that measure the picture: places (`91zzzzy-place` — everything
   stands on the ground, the man is never inside stone, the pad is level and clear, the silhouette
   agrees with the collision box), physics (`91zzzzy-phys` — thrust/brake/fuel, the speed ceiling,

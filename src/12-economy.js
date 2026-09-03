@@ -60,6 +60,9 @@ function buyCargo(sys,k,qty){
   G.credits-=qty*ask;G.cargo[k]=(G.cargo[k]||0)+qty;
   const m=G.market[sys.key];
   m.ask[k]=Math.min(.35,(m.ask[k]||0)+qty*.005);
+  /* и норма смены у этого же прилавка уменьшается на взятое: надбавка платится
+     за привоз, а не за то, что товар обошёл вокруг стойки (M331, 12ab-hold) */
+  appetiteBought(sys,k,qty);
   return qty;
 }
 function sellCargo(sys,k,qty){
