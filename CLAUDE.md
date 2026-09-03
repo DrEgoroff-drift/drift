@@ -75,10 +75,17 @@ directory isn't part of the tree it guards — so every clone runs this once:
 git config core.hooksPath .githooks
 ```
 
-New binaries `.gitignore` should generally not admit at all: `docs/shots/*.png` is ignored by
-default and whitelists only the handful `README.md`/`ALMANAC.md`/`PLAN-archive.md` actually cite
-(same pattern as the older `docs/shots/x_*.png` rule) — a design-review shot from a `mk*.ps1`
-stand stays local unless it earns a line there.
+**The default answer for a new picture is no.** `docs/shots/*.png` is ignored and whitelists only
+the 24 frames `README.md`/`ALMANAC.md`/`PLAN-archive.md` actually cite (same pattern as the older
+`docs/shots/x_*.png` rule). A stand's shot stays local unless it earns a line there — and a stand
+is meant to be looked at through `dev.ps1` anyway, which needs no file in git at all.
+
+**A reshoot is not free, and this is what actually grew the 562 MB.** Those 24 frames weigh 24 MB
+and git cannot delta a PNG, so every wholesale reshoot writes the full 24 MB into history *for
+ever*: `scoop.png` alone had piled up 48 MB across its versions. So reshoot the frames a change
+actually touched — `docs/mkshots.ps1 -Shoot` sweeps all twenty scenes and is the expensive habit,
+not the safe one. Never refresh the gallery "while I'm here"; when many frames are genuinely
+stale, that is a deliberate act with the cost said out loud, not a tidy-up.
 
 ## Where things live
 
