@@ -7,6 +7,27 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.313.0 - M316: the surface pass — rocks in three families, cracks by hand, the strata debt struck
+
+The three "Graphics still open" items that did not need the author:
+
+- **Strata parallel to the terrain** — already paid by M267 (0.264.0): strata lie on a datum and the
+  relief cuts them. The Loose-ends line was stale; struck.
+- **Boulders measured, not rebuilt** (`07-planet`, `rocks`): each rock already had its own polygon
+  (6–11 vertices, own radii), so "one silhouette scaled" is false — but the *family* was one, a
+  squashed blob. Now three: the blob, a block with a flat, slanted base sitting on the ground
+  (`tint<.3`), and a low wide slab (`tint>.82`). The family is chosen by a number already drawn:
+  no new RNG calls, no world moves.
+- **Cracks in the mine rock by hand** (`23aa-dig-rock`): every 180–300 px ruler segment is split in
+  five with a perpendicular offset hashed from world coordinates (the branch too) — continuous
+  across tile seams, and reads as a crack following grain instead of a drafting line.
+- **All bodies orbit one way** (`06-galaxy`; the author's phone, 2026-09-03: «по идее такого не бывает»): planets and
+  moons no longer pick a random sense of rotation; the sign roll stays in the RNG stream unread,
+  so eccentricities and phases did not move. Suite `91zzza` (M316 block).
+- The reeds by the water stay unbuilt: there is no water on the surface yet (a design addition,
+  see the effects list).
+
+---
 ## 0.312.0 - M315: the system's proportions, the ghost click, the hail at rung 30
 
 Three findings from the author's phone (2026-09-03) and the last step of §18.8:

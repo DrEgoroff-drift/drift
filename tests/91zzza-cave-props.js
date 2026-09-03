@@ -307,3 +307,12 @@ TEST_SUITES.push(()=>suite("M315: планеты крупнее корабля, 
   ok(said.length&&said[0].s.indexOf("Егоров")>=0,"назвали по имени");
   window.rungOf=saveRung;G.name="";delete sys.fleetCache;G.fleetLog={};
 }));
+
+/* ══════════════ M316: планеты и луны идут в одну сторону ══════════════ */
+TEST_SUITES.push(()=>suite("M316: в системе все тела крутятся в одну сторону",()=>{
+  resetWorld();
+  let bad=0,n=0;
+  for(let i=0;i<30;i++){const s=getSystem(i*5-7,i*2+3);
+    for(const p of s.planets){n++;if(p.spd<=0)bad++;for(const m of p.moons){n++;if(m.spd<=0)bad++;}}}
+  ok(n>30&&bad===0,"ни одной обратной орбиты из "+n);
+}));

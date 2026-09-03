@@ -139,12 +139,12 @@ Left from the queue: nothing — the band's second step is M308, the station's c
   shuttles by rung. Still ~80% empty by the meter, and that is space; the next step is the fleet.
 - ~~The approach frame is 80% empty and has two tones~~ — M304 gave it two masses and a light
   corridor, M308 a warm horizon by day. Still 72% empty by the meter: sky is sky.
-- **Strata run parallel to the terrain** — geology is horizontal and cut by the relief, and that is
-  what makes a cliff read as rock rather than as wallpaper.
-- **Straight lines where a hand belongs**: the reeds by the water, the cracks in the mine rock.
-  Verlet ropes exist now (`18d-verlet`) and the same solver fits the reeds.
-- **Boulders are one silhouette scaled** — the rule of origin, unchecked. Measure before rebuilding:
-  the plants turned out fine when counted (M246), the boulders may not.
+- ~~Strata run parallel to the terrain~~ — was already paid by M267 (datum + relief cuts); the
+  line was stale, struck in M316.
+- ~~Straight lines where a hand belongs~~ — the mine cracks go by hand since M316 (0.313.0). The
+  reeds wait for water on the surface (none exists yet; see the effects list).
+- ~~Boulders are one silhouette scaled~~ — measured in M316: polygons were already individual, the
+  *family* was one; now blob / flat-based block / low slab, chosen by an already-drawn number.
 - **Effects not taken yet from the author's list**: curl-noise smoke for the chimney and the
   smelter, heat haze over the nozzles, chromatic aberration on hits, water with reflections (there
   are no water features on the surface at all today — that is a design addition, not a fix).

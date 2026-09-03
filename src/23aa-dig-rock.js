@@ -222,11 +222,23 @@ function digRockMass(p,camx,camy){
         jx+=Math.cos(ang)*ln;jy+=Math.sin(ang)*ln;
         pts.push([jx,jy]);
       }
+      /* ── рука, а не линейка (M316) ──
+         Отрезок в двести пикселей, проведённый по линейке, читался чертежом.
+         Трещина идёт по зёрнам породы: каждый отрезок дробится на пять, и
+         каждая точка уводится поперёк на хеш от координат — детерминированно,
+         на стыке тайлов линия продолжается сама собой. */
       const draw=(off,style,w)=>{
-        ctx.strokeStyle=style;ctx.lineWidth=w;
+        ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineJoin="round";
         ctx.beginPath();
         ctx.moveTo(pts[0][0]-camx+off,pts[0][1]-camy);
-        for(let k=1;k<pts.length;k++)ctx.lineTo(pts[k][0]-camx+off,pts[k][1]-camy);
+        for(let k=1;k<pts.length;k++){
+          const a=pts[k-1],b=pts[k],nx=-(b[1]-a[1]),ny=(b[0]-a[0]),nl=Math.hypot(nx,ny)||1;
+          for(let s=1;s<=5;s++){
+            const u=s/5, hj=hashi(Math.floor(a[0])+k*7+s,Math.floor(a[1])+j*3,0xC4AC)/4294967296-.5;
+            const d=(s===5)?0:hj*ln*.16;
+            ctx.lineTo(lerp(a[0],b[0],u)+nx/nl*d-camx+off,lerp(a[1],b[1],u)+ny/nl*d-camy);
+          }
+        }
         ctx.stroke();
       };
       draw(0,"rgba(0,3,8,.58)",2+((h>>>28)&1));
@@ -237,7 +249,11 @@ function digRockMass(p,camx,camy){
       ctx.strokeStyle="rgba(0,3,8,.34)";ctx.lineWidth=1.2;
       ctx.beginPath();
       ctx.moveTo(m[0]-camx,m[1]-camy);
-      ctx.lineTo(m[0]-camx+Math.cos(a2)*ln*1.2,m[1]-camy+Math.sin(a2)*ln*1.2);
+      for(let s=1;s<=4;s++){
+        const u=s/4, hj=hashi(Math.floor(m[0])+s,Math.floor(m[1])+j,0xC4AD)/4294967296-.5;
+        const d=(s===4)?0:hj*ln*.14;
+        ctx.lineTo(m[0]-camx+Math.cos(a2)*ln*1.2*u-Math.sin(a2)*d,m[1]-camy+Math.sin(a2)*ln*1.2*u+Math.cos(a2)*d);
+      }
       ctx.stroke();
     }
     /* крап: зерно крупнее пыли материала */

@@ -91,7 +91,7 @@ function getSystem(sx,sy){
         name:sys.name+" "+ROMAN[i]+"-"+(m+1),
         radius:(3+mr()*6)*SYS_K_MOON,orbit:radius*(1.8+m*.9)+mr()*20,
         ecc:mr()*.12,argp:mr()*TAU,
-        ang:mr()*TAU,spd:(mr()<.5?-1:1)*.0026/Math.pow(1+m,1.1),
+        ang:mr()*TAU,spd:(mr(),.0026/Math.pow(1+m,1.1)),   /* знак съеден, число вытянуто: луны идут в одну сторону (M316) */
         rough:clamp(mW.T.rough*(.6+mr()*.8),0,1.2),
         moons:[],x:0,y:0,vx:0,vy:0,tex:null,
         res:worldRes(mW.type,mW.mix,mW.mw)
@@ -101,8 +101,10 @@ function getSystem(sx,sy){
       key:key+":"+i,idx:i,type:Wd.type,mix:Wd.mix,mw:Wd.mw,T,seed:pseed,
       name:sys.name+" "+ROMAN[i],radius,orbit:orbit*SYS_K_ORBIT,
       ecc:.04+pr2()*.28,argp:pr2()*TAU,
+      /* все планеты идут в одну сторону (автор 03.09.2026: «по идее такого не бывает»): диск, из которого
+         они родились, крутился один. Бросок знака оставлен в потоке и не читается, иначе сдвинулись бы эксцентриситеты и углы */
       /* орбитальная скорость снижена в разы против прежней — планеты кружат неспешно */
-      ang:pr2()*TAU,spd:(pr2()<.5?-1:1)*0.00014/Math.pow(orbit/500,1.4),
+      ang:pr2()*TAU,spd:(pr2(),0.00014/Math.pow(orbit/500,1.4)),
       rough:clamp(T.rough*(.6+pr2()*.8),0,1.2),
       moons,x:0,y:0,vx:0,vy:0,tex:null,
       res:worldRes(Wd.type,Wd.mix,Wd.mw)

@@ -1479,7 +1479,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.312.0";
+const VER="0.313.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -5839,7 +5839,7 @@ function getSystem(sx,sy){
         name:sys.name+" "+ROMAN[i]+"-"+(m+1),
         radius:(3+mr()*6)*SYS_K_MOON,orbit:radius*(1.8+m*.9)+mr()*20,
         ecc:mr()*.12,argp:mr()*TAU,
-        ang:mr()*TAU,spd:(mr()<.5?-1:1)*.0026/Math.pow(1+m,1.1),
+        ang:mr()*TAU,spd:(mr(),.0026/Math.pow(1+m,1.1)),   /* знак съеден, число вытянуто: луны идут в одну сторону (M316) */
         rough:clamp(mW.T.rough*(.6+mr()*.8),0,1.2),
         moons:[],x:0,y:0,vx:0,vy:0,tex:null,
         res:worldRes(mW.type,mW.mix,mW.mw)
@@ -5849,8 +5849,10 @@ function getSystem(sx,sy){
       key:key+":"+i,idx:i,type:Wd.type,mix:Wd.mix,mw:Wd.mw,T,seed:pseed,
       name:sys.name+" "+ROMAN[i],radius,orbit:orbit*SYS_K_ORBIT,
       ecc:.04+pr2()*.28,argp:pr2()*TAU,
+      /* все планеты идут в одну сторону (автор 03.09.2026: «по идее такого не бывает»): диск, из которого
+         они родились, крутился один. Бросок знака оставлен в потоке и не читается, иначе сдвинулись бы эксцентриситеты и углы */
       /* орбитальная скорость снижена в разы против прежней — планеты кружат неспешно */
-      ang:pr2()*TAU,spd:(pr2()<.5?-1:1)*0.00014/Math.pow(orbit/500,1.4),
+      ang:pr2()*TAU,spd:(pr2(),0.00014/Math.pow(orbit/500,1.4)),
       rough:clamp(T.rough*(.6+pr2()*.8),0,1.2),
       moons,x:0,y:0,vx:0,vy:0,tex:null,
       res:worldRes(Wd.type,Wd.mix,Wd.mw)
@@ -6422,7 +6424,15 @@ function genTerrain(p,lon0){
       const a=k/n*TAU, q=rad*(.6+r()*.6);
       poly.push([Math.cos(a)*q,Math.sin(a)*q*.72]);
     }
-    rocks.push({x,rad,poly,tint:r(),flip:r()<.5});
+    const tint=r(), flip=r()<.5;
+    /* ── валун не один силуэт (M316) ──
+       Мерили: многоугольник у каждого свой (6–11 вершин, свой радиус), но
+       семейство одно — сплюснутая клякса вокруг центра. Осыпь настоящая — это
+       ещё и ГЛЫБА с плоским низом, севшая на грунт, и низкая ПЛИТА. Семейство
+       решает уже вытянутый tint: лишних вызовов r() нет, миры не сдвинулись. */
+    if(tint<.3){for(const v of poly)if(v[1]>rad*.42)v[1]=rad*.42+v[0]*.12;}          /* глыба: плоский низ с уклоном */
+    else if(tint>.82){for(const v of poly){if(v[1]>rad*.34)v[1]=rad*.34;if(v[1]<-rad*.3)v[1]=-rad*.3;v[0]*=1.35;}}   /* плита: низкая и широкая */
+    rocks.push({x,rad,poly,tint,flip});
   }
   /* влажность полосы — то же поле, что рисует зелёные пятна на глобусе.
      Кладём её в рельеф, чтобы поверхность (21-mode-surface) могла спросить
@@ -48385,11 +48395,23 @@ function digRockMass(p,camx,camy){
         jx+=Math.cos(ang)*ln;jy+=Math.sin(ang)*ln;
         pts.push([jx,jy]);
       }
+      /* ── рука, а не линейка (M316) ──
+         Отрезок в двести пикселей, проведённый по линейке, читался чертежом.
+         Трещина идёт по зёрнам породы: каждый отрезок дробится на пять, и
+         каждая точка уводится поперёк на хеш от координат — детерминированно,
+         на стыке тайлов линия продолжается сама собой. */
       const draw=(off,style,w)=>{
-        ctx.strokeStyle=style;ctx.lineWidth=w;
+        ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineJoin="round";
         ctx.beginPath();
         ctx.moveTo(pts[0][0]-camx+off,pts[0][1]-camy);
-        for(let k=1;k<pts.length;k++)ctx.lineTo(pts[k][0]-camx+off,pts[k][1]-camy);
+        for(let k=1;k<pts.length;k++){
+          const a=pts[k-1],b=pts[k],nx=-(b[1]-a[1]),ny=(b[0]-a[0]),nl=Math.hypot(nx,ny)||1;
+          for(let s=1;s<=5;s++){
+            const u=s/5, hj=hashi(Math.floor(a[0])+k*7+s,Math.floor(a[1])+j*3,0xC4AC)/4294967296-.5;
+            const d=(s===5)?0:hj*ln*.16;
+            ctx.lineTo(lerp(a[0],b[0],u)+nx/nl*d-camx+off,lerp(a[1],b[1],u)+ny/nl*d-camy);
+          }
+        }
         ctx.stroke();
       };
       draw(0,"rgba(0,3,8,.58)",2+((h>>>28)&1));
@@ -48400,7 +48422,11 @@ function digRockMass(p,camx,camy){
       ctx.strokeStyle="rgba(0,3,8,.34)";ctx.lineWidth=1.2;
       ctx.beginPath();
       ctx.moveTo(m[0]-camx,m[1]-camy);
-      ctx.lineTo(m[0]-camx+Math.cos(a2)*ln*1.2,m[1]-camy+Math.sin(a2)*ln*1.2);
+      for(let s=1;s<=4;s++){
+        const u=s/4, hj=hashi(Math.floor(m[0])+s,Math.floor(m[1])+j,0xC4AD)/4294967296-.5;
+        const d=(s===4)?0:hj*ln*.14;
+        ctx.lineTo(m[0]-camx+Math.cos(a2)*ln*1.2*u-Math.sin(a2)*d,m[1]-camy+Math.sin(a2)*ln*1.2*u+Math.cos(a2)*d);
+      }
       ctx.stroke();
     }
     /* крап: зерно крупнее пыли материала */

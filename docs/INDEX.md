@@ -593,20 +593,20 @@ deskItemOf                   src/27ia-desk-top.js:341
 dgy                          src/21b-surface-deco.js:131
 DIG_CELL                     src/23-mode-dig.js:3
 DIG_GEO_K                    src/23-mode-dig.js:9
-DIG_TURF                     src/23aa-dig-rock.js:447
+DIG_TURF                     src/23aa-dig-rock.js:463
 digBedding                   src/23aa-dig-rock.js:118
 digCell                      src/23-mode-dig.js:29
 digCun                       src/23aa-dig-rock.js:158
 digFauna                     src/23-mode-dig.js:234
-digRGB                       src/23aa-dig-rock.js:449
+digRGB                       src/23aa-dig-rock.js:465
 digRockMass                  src/23aa-dig-rock.js:183
 digRockPass                  src/23aa-dig-rock.js:26
-digSMix                      src/23aa-dig-rock.js:448
-digSoil                      src/23aa-dig-rock.js:483
-digSoilBand                  src/23aa-dig-rock.js:476
-digSoilCols                  src/23aa-dig-rock.js:457
-digSurfFringe                src/23aa-dig-rock.js:594
-digSurfY                     src/23aa-dig-rock.js:453
+digSMix                      src/23aa-dig-rock.js:464
+digSoil                      src/23aa-dig-rock.js:499
+digSoilBand                  src/23aa-dig-rock.js:492
+digSoilCols                  src/23aa-dig-rock.js:473
+digSurfFringe                src/23aa-dig-rock.js:610
+digSurfY                     src/23aa-dig-rock.js:469
 digVoidPath                  src/23a-dig-draw.js:4
 dirAt                        src/01-core.js:79
 dispatchEtherLine            src/12ag-holdfx.js:57
@@ -1094,7 +1094,7 @@ grokTeach                    src/12tb-grok.js:144
 grokTick                     src/12tb-grok.js:75
 grokWant                     src/12tb-grok.js:41
 GROUND_BAKING                src/19-mode-landing.js:267
-groundAt                     src/07-planet.js:540
+groundAt                     src/07-planet.js:548
 groundShadow                 src/19-mode-landing.js:411
 GROVE_ETHER                  src/11j-grove.js:23
 groveAll                     src/11j-grove.js:29
@@ -3407,7 +3407,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/06-galaxy.js · 10 КБ
   · галактика:1
 
-## src/07-planet.js · 36 КБ
+## src/07-planet.js · 37 КБ
   · текстуры планет:1
   · вращение:8
   · рельеф:368
@@ -3932,9 +3932,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/22-mode-cave.js · 45 КБ
   · пещера: поле породы в двух измерениях:1
 
-## src/23aa-dig-rock.js · 37 КБ
+## src/23aa-dig-rock.js · 39 КБ
   · шахта: порода:1
-  · почвенный профиль: небо кончается не линейкой:433
+  · почвенный профиль: небо кончается не линейкой:449
 
 ## src/23a-dig-draw.js · 41 КБ
   · шахта: отрисовка:1
@@ -4420,6 +4420,7 @@ zooTick                      src/11ad-zoo.js:41
   · M313: узловая «УЗ-1», чёрный дерелик, караван:214
   · M314: трассы на карте, спасатель зовёт на сигнал:246
   · M315: пропорции системы, призрачный клик, оклик на рунге 30:267
+  · M316: планеты и луны идут в одну сторону:311
 
 ## tests/91zzza-trace.js · 5 КБ
 
