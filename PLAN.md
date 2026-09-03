@@ -192,6 +192,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
   jumps and НА КАРТУ, the map card as a footer line.
 - **M325** (0.322.0) — the four effects: the lake with reflections and reeds, heat haze, chromatic aberration on hits, the live flare; `18d-postfx`.
 - **M326** (0.323.0) — house marks as things: the station mark off the flare axis (video 03.09), the settlement sigil as a plaque by the door instead of a 1-px line on the wall; the mark itself redrawn as a shoulder dish; the flare smokes (`stackSmoke`); e2e suite `91zzza` (scenes not blank, buttons click, flare column by pixels, smoke monotonic); test report grouped in four.
+- **M328** (0.325.0) — flame as one smooth body, no haze; autoland start above the ridge and look-ahead descent; cave prompt wins over the mine; cave mouth as rock outcrop; swimming with a ring, algae → organics; e2e suites 91zzzb/91zzzc (autoland every world, panel overlap, button text, swim, cave prompt).
 - **M324** (0.321.0) — where a drone sells: the keeper decides from `seenPrices` within three sectors; caption, circle length, one line from him.
 - **M323** (0.320.0) — the plant as a body: a dark mass under every form, the lit form over it; stem a step darker than crown.
 - **M322** (0.319.0) — one `housePlan` for the home and the settlement's izbas; one material table; the settlement's chimney on the slope. Stand defect noted: `shot.py homeout/wallset` hang at load.

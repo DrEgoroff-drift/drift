@@ -139,6 +139,14 @@ function enterSurface(){
   /* уезд света (11i): флора светится; на планете ядра устье — там, куда бежит тихий */
   if(typeof glowDressFlora==="function")glowDressFlora(plants);
   if(peep&&typeof glowCaveX==="function"){const gx=glowCaveX(peep,p);if(gx!=null){caveMouth.x=clamp(gx,150,tr.W-150);clearNear(deposits,70);clearNear(plants,50);clearNear(fauna,60);}}
+  /* на дне озера залежей нет (M328): плывя, игрок не бурит — иначе над водой
+     висело «БУРЕНИЕ», а водоросли под ним были недоступны; и залежь в зеркале
+     озера читалась ошибкой, как растение до M325 */
+  if(typeof waterOf==="function"){
+    const Wt=waterOf(tr,p);
+    const drown=arr=>{for(let i=arr.length-1;i>=0;i--){const d=arr[i];if(d.x>Wt.x0&&d.x<Wt.x1&&groundAt(tr,d.x)-Wt.y>14)arr.splice(i,1);}};
+    if(Wt){drown(deposits);drown(plants);}
+  }
   if(peep){
     const wipe=(arr,rad)=>{
       for(let i=arr.length-1;i>=0;i--)if(Math.abs(arr[i].x-peep.x)<rad)arr.splice(i,1);
@@ -248,9 +256,27 @@ function updateSurface(dt){
      подсказки (ДЕЙСТВ у шахты то есть, то нет). Свободное падение — только
      пока реально в прыжке. */
   const gy=groundAt(tr,S.x)-10;
+  /* ── вода (M327): плывём, а не идём по дну ──
+     Автор: «вода есть тёмная, можно под водой ходить, надо придумать механику,
+     чтобы плыть… что-то надувается, и он плавает». Где под ногами глубже
+     колена (14 px), скафандр надувает круг (S.swim 0→1) и держится у уреза,
+     покачиваясь; ход вполсилы, шаг не считается. Ранец работает как с земли:
+     ▲ — выпрыгнуть из воды. Мелководье и берег — обычная ходьба. */
+  const deepW=(typeof waterDeepAt==="function")?waterDeepAt(S,tr):null;
+  const swimNow=!!deepW&&(S.on||S.y>=deepW.y-6);
+  if(swimNow){
+    S.swim=Math.min(1,(S.swim||0)+.07*dt);
+    S.y=deepW.y-5+Math.sin(G.t*.08)*1.1;S.vy=0;S.on=true;S.jetOn=false;
+    S.walkAmp=Math.max(0,S.walkAmp-.2*dt);
+    jetTick(S,S.g,dt,false);
+    if(keys.thrust&&jetCanLift()&&jetKick()){S.vy=-1.6;S.on=false;S.jetOn=true;S.y=deepW.y-9;}   /* выше порога swimNow — иначе прыжок гасится тем же кадром */
+  }else{
+    S.swim=Math.max(0,(S.swim||0)-.1*dt);
+  }
   /* ранец (20d): на земле тяга — толчок вверх, в воздухе — полёт, пока есть
      запас; запас копится на земле. Пик рельефа больше не стена. */
-  if(S.on){
+  if(swimNow){
+  }else if(S.on){
     S.y=gy;S.vy=0;S.jetOn=false;
     jetTick(S,S.g,dt,false);
     if(keys.thrust&&jetCanLift()&&jetKick()){S.vy=-1.6;S.on=false;S.jetOn=true;}
@@ -349,7 +375,20 @@ function updateSurface(dt){
     if(actEdge){instRest();return;}
   }
   /* вход под третьим светом (11g): есть только в соединение и только на планете ядра */
-  if(typeof lightsOpen==="function"&&lightsOpen(S.p)&&Math.abs(lightsEntryX(tr,S.p)-S.x)<34){
+  if(S.swim>.5){
+    /* в воде (M328): плывём — дно не бурят и не сканируют, до него не достать;
+       остаются водоросли и прыжок. Ветка стоит ПЕРВОЙ в цепочке, иначе залежь
+       или растение на дне перебивали её своей подсказкой */
+    const al=(typeof waterAlga==="function")?waterAlga(S,tr):null;
+    if(al){
+      G.prompt="ДЕЙСТВИЕ — СОБРАТЬ ВОДОРОСЛИ · +2 ОРГАНИКИ\n▲ — ВЫПРЫГНУТЬ ИЗ ВОДЫ";
+      if(actEdge){
+        if(held()+2>st.cargoMax)say("Трюм полон");
+        else{al.taken=true;G.cargo.organics=(G.cargo.organics|0)+2;say("Водоросли\nорганика +2");sfx("ui",{f:420,to:520,d:.12,v:.2});}
+      }
+    }else G.prompt="ПЛЫВЁМ · ▲ — ВЫПРЫГНУТЬ ИЗ ВОДЫ · ИЩИТЕ ВОДОРОСЛИ";
+  }
+  else if(typeof lightsOpen==="function"&&lightsOpen(S.p)&&Math.abs(lightsEntryX(tr,S.p)-S.x)<34){
     G.prompt="ДЕЙСТВИЕ — ВОЙТИ ПОД ТРЕТЬИМ СВЕТОМ";
     if(actEdge){lightsEnter();return;}
   }

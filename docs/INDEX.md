@@ -6,11 +6,11 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 365 · символов верхнего уровня: 3363
+Файлов: 366 · символов верхнего уровня: 3367
 
 ## СИМВОЛЫ
 
-$bg                          src/12l-barge.js:590
+$bg                          src/12l-barge.js:595
 $bThr                        src/27z-telemetry.js:39
 $cv                          src/27b-ui-crew.js:6
 $dl                          src/27n-ui-deal.js:18
@@ -112,42 +112,42 @@ autosave                     src/14a-cloud.js:52
 b64dec                       src/14-save.js:29
 b64enc                       src/14-save.js:27
 bankTransform                src/03b-hull-paint.js:48
-BARGE_ART                    src/12l-barge.js:392
+BARGE_ART                    src/12l-barge.js:397
 BARGE_CAP                    src/12l-barge.js:13
 BARGE_CAPNAMES               src/12l-barge.js:23
 BARGE_NAMES                  src/12af-barge.js:20
 BARGE_PERIOD                 src/12l-barge.js:12
-BARGE_SS                     src/12l-barge.js:391
+BARGE_SS                     src/12l-barge.js:396
 BARGE_TEMPER                 src/12l-barge.js:17
 BARGE_TKEYS                  src/12l-barge.js:22
-bargeArtOf                   src/12l-barge.js:393
-bargeAttackers               src/12l-barge.js:157
+bargeArtOf                   src/12l-barge.js:398
+bargeAttackers               src/12l-barge.js:162
 bargeAutoLoad                src/12ag-holdfx.js:35
-bargeBuyPrice                src/12l-barge.js:97
+bargeBuyPrice                src/12l-barge.js:102
 bargeCrewRow                 src/12af-barge.js:136
-bargeCur                     src/12l-barge.js:591
+bargeCur                     src/12l-barge.js:596
 bargeDealList                src/12af-barge.js:121
 bargeDestPrice               src/12l-barge.js:82
-bargeElRow                   src/12l-barge.js:617
-bargeEscortAccept            src/12l-barge.js:293
-bargeEscortAdvance           src/12l-barge.js:292
-bargeEscortEnd               src/12l-barge.js:308
+bargeElRow                   src/12l-barge.js:622
+bargeEscortAccept            src/12l-barge.js:298
+bargeEscortAdvance           src/12l-barge.js:297
+bargeEscortEnd               src/12l-barge.js:313
 bargeHullOk                  src/12af-barge.js:21
-bargeInteract                src/12l-barge.js:266
+bargeInteract                src/12l-barge.js:271
 bargeLegs                    src/12l-barge.js:43
 bargeLine                    src/12af-barge.js:115
 bargeLoad                    src/12af-barge.js:84
-bargeMarkup                  src/12l-barge.js:90
-bargeMineHit                 src/12l-barge.js:193
+bargeMarkup                  src/12l-barge.js:95
+bargeMineHit                 src/12l-barge.js:198
 bargeName                    src/12af-barge.js:25
 bargeNearOther               src/12l-barge.js:70
 bargeNextName                src/12af-barge.js:108
-bargePaxDeliver              src/12l-barge.js:254
-bargeRepNudge                src/12l-barge.js:613
-bargeRescued                 src/12l-barge.js:207
-bargeSellPrice               src/12l-barge.js:94
+bargePaxDeliver              src/12l-barge.js:259
+bargeRepNudge                src/12l-barge.js:618
+bargeRescued                 src/12l-barge.js:212
+bargeSellPrice               src/12l-barge.js:99
 bargeStart                   src/12af-barge.js:37
-bargeSunk                    src/12l-barge.js:230
+bargeSunk                    src/12l-barge.js:235
 bargeSysAt                   src/12l-barge.js:25
 bargeTick                    src/12af-barge.js:49
 bargeUnload                  src/12af-barge.js:99
@@ -437,7 +437,7 @@ cirrusSprite                 src/19e-clouds.js:126
 CKPT                         src/25-cockpit.js:91
 CKPT_STYLE                   src/25-cockpit.js:19
 clamp                        src/01-core.js:7
-closeBarge                   src/12l-barge.js:602
+closeBarge                   src/12l-barge.js:607
 closeDeal                    src/27n-ui-deal.js:169
 closeStation                 src/26-ui-station.js:116
 CLOUD                        src/14-save.js:5
@@ -643,9 +643,9 @@ drawAccountShelf             src/12w-survey.js:99
 drawAllies                   src/12a-crew.js:638
 drawAnomaly                  src/20aa-poi-shapes.js:168
 drawAstronaut                src/20-life.js:4
-drawBarge                    src/12l-barge.js:510
-drawBarges                   src/12l-barge.js:541
-drawBargesMap                src/12l-barge.js:566
+drawBarge                    src/12l-barge.js:515
+drawBarges                   src/12l-barge.js:546
+drawBargesMap                src/12l-barge.js:571
 drawBase                     src/21ac-base-draw.js:43
 drawBaseBuilding             src/21c-built.js:107
 drawBeast                    src/20f-fauna.js:231
@@ -740,7 +740,7 @@ drawRoad                     src/27l-road-draw.js:87
 drawRocks                    src/19-mode-landing.js:340
 drawRouteMap                 src/12r-route.js:267
 drawRungRing                 src/12ae-ladder.js:73
-drawScoop                    src/19a-mode-scoop.js:259
+drawScoop                    src/19a-mode-scoop.js:266
 drawSeams                    src/12s-wear.js:183
 drawSkyBase                  src/19c-light.js:296
 drawSkyBodies                src/19b-sky.js:96
@@ -760,7 +760,7 @@ drawStModule                 src/17a-station-mod.js:80
 drawStrata                   src/18b-geology.js:103
 drawStRod                    src/17a-station-mod.js:72
 drawStRods                   src/17a-station-mod.js:198
-drawSurface                  src/21e-surface-draw.js:754
+drawSurface                  src/21e-surface-draw.js:852
 drawSurfaceHud               src/21e-surface-draw.js:21
 drawSurfaceWorld             src/21e-surface-draw.js:103
 drawSurvey                   src/12w-survey.js:63
@@ -774,13 +774,13 @@ drawTierTrim                 src/03b-hull-paint.js:62
 drawTiles                    src/18c-chunks.js:125
 drawTrail                    src/16-flight.js:362
 drawWallPaper                src/11ae-concert.js:39
-drawWater                    src/21e-surface-draw.js:685
+drawWater                    src/21e-surface-draw.js:769
 drawWear                     src/12s-wear.js:101
 drawWeather                  src/19d-weather.js:96
 drawWinter                   src/29g-winter-draw.js:334
 drawWorld                    src/28-loop.js:158
 drawWreck                    src/20aa-poi-shapes.js:8
-drawWrecksSystem             src/12l-barge.js:357
+drawWrecksSystem             src/12l-barge.js:362
 DRONE_BREAK_P                src/12e-drone-flight.js:21
 DRONE_FIX_MS                 src/12e-drone-flight.js:24
 DRONE_MAX_CATCHUP            src/12e-drone-flight.js:27
@@ -839,7 +839,7 @@ etherTick                    src/11b-speech.js:39
 ethOn                        src/25l-post-ether.js:52
 ethReset                     src/25l-post-ether.js:106
 ethTick                      src/25l-post-ether.js:59
-evacuate                     src/21-mode-surface.js:616
+evacuate                     src/21-mode-surface.js:655
 exhaustHaze                  src/16a-space.js:347
 exileCandidates              src/12g-mgr-rogue.js:123
 exitBase                     src/21a-mode-base.js:82
@@ -1028,9 +1028,9 @@ geoFaultX                    src/18b-geology.js:99
 geologyOf                    src/18b-geology.js:45
 geoWob                       src/18b-geology.js:80
 getSystem                    src/06-galaxy.js:53
-GIANT                        src/19a-mode-scoop.js:180
-GIANT_KEEP                   src/19a-mode-scoop.js:181
-giantTex                     src/19a-mode-scoop.js:182
+GIANT                        src/19a-mode-scoop.js:187
+GIANT_KEEP                   src/19a-mode-scoop.js:188
+giantTex                     src/19a-mode-scoop.js:189
 GIFT_DAY                     src/11at-gift.js:28
 GIFT_DEEDS                   src/11at-gift.js:26
 GIFT_W                       src/11at-gift.js:27
@@ -1542,8 +1542,8 @@ lateAll                      src/11aq-late.js:52
 lateBlock                    src/11aq-late.js:118
 lateLeft                     src/11aq-late.js:57
 lateSit                      src/11aq-late.js:65
-launch                       src/21-mode-surface.js:656
-launchHold                   src/21-mode-surface.js:601
+launch                       src/21-mode-surface.js:695
+launchHold                   src/21-mode-surface.js:640
 layerLevel                   src/10-music.js:326
 ledgerAll                    src/11ai-ledger.js:36
 ledgerNeed                   src/11ai-ledger.js:44
@@ -1910,7 +1910,7 @@ offerTake                    src/11ah-offer.js:209
 offerTick                    src/11ah-offer.js:166
 offerVisit                   src/11ah-offer.js:124
 ok                           tests/90-harness.js:33
-openBarge                    src/12l-barge.js:592
+openBarge                    src/12l-barge.js:597
 openCrewView                 src/27b-ui-crew.js:230
 openDeal                     src/27n-ui-deal.js:163
 openHq                       src/27c-ui-hq.js:611
@@ -2379,7 +2379,7 @@ relicUnequip                 src/12h-relic.js:87
 RELIEF_KEYS                  src/02a-worldmix.js:79
 RELIEF_MIX                   src/07-planet.js:374
 renderAlbum                  src/25g-postcard.js:678
-renderBarge                  src/12l-barge.js:627
+renderBarge                  src/12l-barge.js:632
 renderBasesTab               src/26a-ui-station-home.js:4
 renderBooks                  src/12ub-books.js:141
 renderCantina                src/27c-ui-hq.js:68
@@ -2638,7 +2638,7 @@ SCOOP_PX                     src/19a-mode-scoop.js:16
 scoopBand                    src/19a-mode-scoop.js:29
 scoopBandAt                  src/19a-mode-scoop.js:25
 scoopCenter                  src/19a-mode-scoop.js:17
-scoopScrX                    src/19a-mode-scoop.js:258
+scoopScrX                    src/19a-mode-scoop.js:265
 scoopSpawn                   src/19a-mode-scoop.js:33
 scrapPart                    src/05-parts.js:314
 scrapYield                   src/05-parts.js:306
@@ -2855,7 +2855,7 @@ spaTap                       src/29i-spa-draw.js:503
 spaTestStart                 tests/91zzzl-spa.js:2
 spaTookToday                 src/29i-spa-draw.js:39
 spawnAllies                  src/12a-crew.js:560
-spawnBarges                  src/12l-barge.js:105
+spawnBarges                  src/12l-barge.js:110
 spawnPirates                 src/13-pirates.js:25
 spcol                        src/29i-spa-draw.js:20
 SPEC_KEYS                    src/12a-crew.js:17
@@ -2979,11 +2979,11 @@ SUN_DIR_FLAT                 src/19c-light.js:23
 sunAzQ                       src/19c-light.js:26
 sunDirSet                    src/19c-light.js:30
 sunSpot                      src/19c-light.js:213
-SURF_BASE                    src/21e-surface-draw.js:645
+SURF_BASE                    src/21e-surface-draw.js:707
 SURF_HOR                     src/19c-light.js:212
 surfaceHint                  src/21e-surface-draw.js:4
 surfNight                    src/06a-celest.js:43
-surfScale                    src/21e-surface-draw.js:753
+surfScale                    src/21e-surface-draw.js:851
 SURV_COL                     src/12w-survey.js:57
 SURV_R                       src/12w-survey.js:19
 surveyColor                  src/12w-survey.js:58
@@ -2995,6 +2995,7 @@ svMode                       src/27-ui-ship.js:45
 svRender                     src/27-ui-ship.js:46
 svReturn                     src/27-ui-ship.js:6
 svSlot                       src/27-ui-ship.js:4
+swimTestLand                 tests/91zzzc-swim.js:8
 syncTabs                     src/26-ui-station.js:80
 SYS_CACHE                    src/06-galaxy.js:3
 SYS_CHIPS                    src/17-mode-system.js:6
@@ -3059,7 +3060,7 @@ tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
 tickDrones                   src/12-economy.js:177
-tickLaunchHold               src/21-mode-surface.js:602
+tickLaunchHold               src/21-mode-surface.js:641
 TIER_RU                      src/05-parts.js:51
 tierAt                       src/04-mods.js:56
 tierFromDanger               src/05-parts.js:66
@@ -3112,7 +3113,7 @@ toldOf                       src/11aj-told.js:36
 toldOffBlock                 src/11ar-doors.js:53
 toldWorked                   src/11aj-told.js:41
 toldWorth                    src/11aj-told.js:49
-totalLoss                    src/21-mode-surface.js:633
+totalLoss                    src/21-mode-surface.js:672
 towShare                     src/03f-hull-role.js:87
 TRACE_CAP_DAY                src/11ag-trace.js:46
 TRACE_MARK                   src/11ag-trace.js:32
@@ -3171,7 +3172,7 @@ UNIQUE_TAG                   src/03-ships.js:15
 unlockAudio                  src/09-audio.js:48
 unpackPart                   src/05-parts.js:323
 updateAllies                 src/12a-crew.js:604
-updateBarges                 src/12l-barge.js:160
+updateBarges                 src/12l-barge.js:165
 updateBase                   src/21a-mode-base.js:334
 updateBelt                   src/24-mode-belt.js:185
 updateCave                   src/22-mode-cave.js:251
@@ -3183,7 +3184,7 @@ updateLanding                src/19-mode-landing.js:68
 updateRaid                   src/24a-mode-raid.js:215
 updateScoop                  src/19a-mode-scoop.js:75
 updateSpa                    src/29i-spa-draw.js:510
-updateSurface                src/21-mode-surface.js:184
+updateSurface                src/21-mode-surface.js:192
 updateSystem                 src/17-mode-system.js:7
 updateWinter                 src/29g-winter-draw.js:808
 useBeacon                    src/23-mode-dig.js:82
@@ -3279,8 +3280,11 @@ wallStore                    src/11ah-wall.js:81
 wallWrap                     src/11ae-concert.js:72
 wasBlurred                   src/15-input.js:203
 watchCrew                    src/27b-ui-crew.js:34
-WATER_MIN_SPAN               src/21e-surface-draw.js:663
-waterOf                      src/21e-surface-draw.js:664
+WATER_MIN_SPAN               src/21e-surface-draw.js:725
+waterAlga                    src/21e-surface-draw.js:758
+waterAlgae                   src/21e-surface-draw.js:751
+waterDeepAt                  src/21e-surface-draw.js:764
+waterOf                      src/21e-surface-draw.js:726
 wcBlots                      src/16a-space.js:141
 wcDeform                     src/16a-space.js:128
 wcGauss                      src/16a-space.js:127
@@ -3352,8 +3356,8 @@ worldTables                  src/02a-worldmix.js:86
 wrapCount                    src/18-mode-map.js:42
 wrapLeft                     src/18-mode-map.js:29
 wreck                        src/28-loop.js:2
-wreckInteract                src/12l-barge.js:329
-wrecksHere                   src/12l-barge.js:326
+wreckInteract                src/12l-barge.js:334
+wrecksHere                   src/12l-barge.js:331
 wrgba                        src/29g-winter-draw.js:27
 wtab                         src/02a-worldmix.js:85
 yachtMoraleMul               src/12j-home.js:260
@@ -3698,12 +3702,12 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12k-vega.js · 7 КБ
   · Вега: реплики:1
 
-## src/12l-barge.js · 39 КБ
+## src/12l-barge.js · 42 КБ
   · торговые баржи:1
-  · контракт охраны:288
-  · остовы погибших барж:325
-  · корпус баржи:385
-  · торг с баржой:589
+  · контракт охраны:293
+  · остовы погибших барж:330
+  · корпус баржи:390
+  · торг с баржой:594
 
 ## src/12m-rare.js · 13 КБ
   · редкости: сто адресов, а не рулетка:1
@@ -3851,9 +3855,9 @@ zooTick                      src/11ad-zoo.js:41
   · где у карты пол и где правый борт:3
   · карта: ночное небо, а не схема молекулы:51
 
-## src/19a-mode-scoop.js · 36 КБ
+## src/19a-mode-scoop.js · 37 КБ
   · сбор летучих газов: заход в атмосферу гиганта:1
-  · небо гиганта: полосы, а не лепёшки:165
+  · небо гиганта: полосы, а не лепёшки:172
 
 ## src/19b-sky.js · 33 КБ
   · небо:1
@@ -3938,7 +3942,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21d-battery.js · 4 КБ
   · батарея: оборона, которую строят:1
 
-## src/21e-surface-draw.js · 52 КБ
+## src/21e-surface-draw.js · 59 КБ
   · поверхность: подсказка, HUD и кадр:1
 
 ## src/21f-home-out.js · 21 КБ
@@ -3950,9 +3954,9 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21h-pennant.js · 7 КБ
   · переходящий вымпел:1
 
-## src/21-mode-surface.js · 44 КБ
+## src/21-mode-surface.js · 47 КБ
   · поверхность:1
-  · навигатор и подсказки сверху:672
+  · навигатор и подсказки сверху:711
 
 ## src/22a-cave-deco.js · 34 КБ
   · убранство пещеры: залы, натёки, жилы, вода, кристаллы:1
@@ -4474,6 +4478,9 @@ zooTick                      src/11ad-zoo.js:41
   · сквозной: автопосадка на каждый мир, панели не наслаиваются, текст в кнопках:1
 
 ## tests/91zzzc-home-up.js · 4 КБ
+
+## tests/91zzzc-swim.js · 5 КБ
+  · сквозной: вода и пещера (M328):1
 
 ## tests/91zzzd-roomtone.js · 5 КБ
 
