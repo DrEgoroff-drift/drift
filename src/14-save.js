@@ -73,7 +73,7 @@ function snapshot(){
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
-    wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},
+    wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,
@@ -436,6 +436,7 @@ function applySave(s){
   /* обломки барж: разреженный оверлей по "sx,sy", каждый — список остовов.
      Новое поле с безопасным дефолтом (сквозное правило). */
   G.fleetLog=(s.fleetLog&&typeof s.fleetLog==="object")?s.fleetLog:{};
+  G.fleetEscort=+s.fleetEscort||0;
   G.wrecks={};
   if(s.wrecks&&typeof s.wrecks==="object")
     for(const k in s.wrecks){

@@ -117,7 +117,7 @@ TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, тр�
   const sys=G.sys;
   ok(Object.keys(FLEET_CLASSES).length===13,"тринадцать классов в таблице");
   ok(Object.values(FLEET_CLASSES).every(c=>c.say&&c.say.length&&c.ru&&c.mark),"у каждого класса голос, имя и знак");
-  eq(Object.values(FLEET_CLASSES).filter(c=>c.art).length,3,"нарисованы три: почтовик, танкер, буксир");
+  ok(Object.values(FLEET_CLASSES).filter(c=>c.art).length>=3,"нарисованы хотя бы три: почтовик, танкер, буксир");
   const wild={seed:5,sx:77,sy:77,planets:[],station:null};
   eq(fleetHere(wild).length,0,"в дикой системе флота нет");
   /* спавн — только нарисованные классы и только по рунгу */
@@ -144,5 +144,38 @@ TEST_SUITES.push(()=>suite("M310: флот идёт по лестнице, тр�
   G.fuel=1;fleetInteract(G.ship);
   ok(G.prompt.indexOf("ПОЗЫВНОЙ")>=0,"второй раз в ту же смену — только позывной, без книги долга");
   const snap=snapshot();ok(snap.fleetLog&&Object.keys(snap.fleetLog).length===1,"норма записана в сейв");
+  delete sys.fleetCache;
+}));
+
+/* ══════════════ M311: второй проход флота — три класса, буксир, плавбаза, конвой ══════════════ */
+TEST_SUITES.push(()=>suite("M311: шесть классов нарисованы, буксир латает, плавбаза чинит, конвой прячет от пиратов",()=>{
+  resetWorld();
+  eq(Object.values(FLEET_CLASSES).filter(c=>c.art).length,6,"нарисованы шесть классов");
+  for(const k of ["patrol","ferry","base"]){const a=fleetArtOf({k,seed:k.length+7,name:"X",num:"Л-1",line:1});ok(a.cn.width>0,k+": спрайт запечён");}
+  const sys=G.sys;G.mode="system";
+  const b=Math.floor(Date.now()/FLEET_PERIOD),X=G.ship.x,Y=G.ship.y;
+  const st=stat();
+  const put=k=>{sys.fleetCache={b,list:[{k,seed:3,name:"ТЕСТ",num:"Л-1",line:1,x0:X+50,y0:Y,x1:X+50,y1:Y,bow:0,ph:0}]};};
+  G.fleetLog={};
+  /* буксир: корпус на 10 % — тянут, латают до 40 % */
+  put("tug");G.hull=Math.round(st.hullMax*.1);actEdge=false;fleetInteract(G.ship);
+  ok(G.prompt.indexOf("БУКСИР НА ВЕРФЬ")>=0,"битому корпусу — буксир");
+  actEdge=true;fleetInteract(G.ship);actEdge=false;
+  eq(G.hull,Math.round(st.hullMax*.4),"подлатан до 40 %");
+  fleetInteract(G.ship);ok(G.prompt.indexOf("ПОЗЫВНОЙ")>=0,"второй раз в смену — только позывной");
+  /* плавбаза: ремонт по норме до полного */
+  put("base");G.hull=Math.round(st.hullMax*.5);fleetInteract(G.ship);
+  ok(G.prompt.indexOf("РЕМОНТ ПО НОРМЕ")>=0,"плавбаза чинит");
+  actEdge=true;fleetInteract(G.ship);actEdge=false;eq(G.hull,st.hullMax,"корпус закрыт");
+  /* сторожевик: с доброй репутацией — конвой, пираты не видят */
+  put("patrol");G.rep=G.rep||{};G.rep[G.sx+","+G.sy]=3;G.fleetEscort=0;fleetInteract(G.ship);
+  ok(G.prompt.indexOf("ПРОСИТЬ КОНВОЙ")>=0,"чистому борту — конвой");
+  actEdge=true;fleetInteract(G.ship);actEdge=false;
+  ok(fleetEscortActive(),"конвой действует");
+  G.pirates=[{x:X+100,y:Y,vx:0,vy:0,a:0,aware:true,cool:0,hp:10,hull:10,seed:1}];
+  try{updateCombat(1);}catch(e){}
+  ok(G.pirates.length===0||G.pirates[0].aware===false,"под конвоем пират вас не видит");
+  G.fleetEscort=0;G.pirates=[];
+  const snap=snapshot();ok("fleetEscort" in snap,"конвой в сейве");
   delete sys.fleetCache;
 }));

@@ -107,6 +107,7 @@ function updateCombat(dt){
     const dx=sh.x-p.x,dy=sh.y-p.y,d=Math.hypot(dx,dy)||1;
     if(d<seeRange)p.aware=true;
     else if(d>seeRange*2.4)p.aware=false;
+    if(typeof fleetEscortActive==="function"&&fleetEscortActive())p.aware=false;   /* конвой ГЛАВТРАССЫ (M311) */
     p.thrust=false;
     const pa0=p.a;
     if(p.aware){

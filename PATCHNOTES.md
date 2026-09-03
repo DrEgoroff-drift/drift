@@ -7,6 +7,29 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.308.0 - M311: the fleet's second pass — joints, whiter hulls, three more classes, four services
+
+Issue III's two findings and the next three of §18.9, in `12ai-fleet`:
+
+- **§8 one joint grammar**: every appendage — panel, strap-on tank, radiator, wing, dish mast —
+  now meets the hull through a drawn joint: a dark tie with a light plate and two rivets, the same
+  from the почтовик's panels to the плавбаза's arrays (`joints`). The tanker's strap-on tanks are a
+  value step lighter than the body. Hull greys lifted a step toward white (§16: VII on the lit
+  side).
+- **Three drawings**: сторожевик («Спираль»+«Алмаз»: lifting body with an upturned nose, short
+  wings, a cannon under the cheek), паром («Буран»: delta wing, black belly in zone II–III, white
+  back, three nozzles), плавбаза («Мир»: cylinders of unequal diameter, the node module, five
+  panels at odd angles, a docking port up, lit windows). Six of thirteen are drawn now; the rest
+  stay unspawned.
+- **Four more of the twelve interactions** (§18.7): **буксир** — a hull under 30% is taken in tow
+  and patched to 40% so it makes the yard, once a shift; **плавбаза** — while it is in your system
+  it is your station: hull repaired to full once a shift; **сторожевик** — with reputation ≥ +2 it
+  offers a convoy (ПРОСИТЬ КОНВОЙ): fifteen minutes in which pirates do not see you
+  (`fleetEscortActive`, read in `13-pirates`); with reputation ≤ −2 it inspects the hold and lets
+  you go, this time; **паром** hails only. `G.fleetEscort` persists.
+- Suite `91zzza` (M311 block).
+
+---
 ## 0.307.0 - M310: ГЛАВТРАССА — the fleet opens (three classes, the line, the call-sign, the norm)
 
 The fleet was «open by design» since 08-31; the author settled fork 4 on 09-03 (our own names).

@@ -1479,7 +1479,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.307.0";
+const VER="0.308.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -16558,13 +16558,13 @@ const FLEET_CLASSES={
   fridge:{ru:"рефрижератор", donor:"Прогресс", mark:"кольцо", rung:27, art:0, say:["…рефрижератор. Груз холодный, разговор короткий."]},
   ore:   {ru:"рудовоз",      donor:"Энергия",  mark:"кайло",  rung:27, art:0, say:["…рудовоз. Четыре пакета на борту, идём тяжело."]},
   lighter:{ru:"лихтеровоз",  donor:"семёрка",  mark:"кольцо", rung:27, art:0, say:["…лихтеровоз. Чужие баржи на крестовине, своей нет."]},
-  ferry: {ru:"паром",        donor:"Буран",    mark:"ладонь", rung:21, art:0, say:["…паром. Людей вниз, людей вверх. Груз не берём."]},
-  patrol:{ru:"сторожевик",   donor:"Спираль",  mark:"щит",    rung:21, art:0, say:["…сторожевик. Ваш борт в списках чист. Пока."]},
+  ferry: {ru:"паром",        donor:"Буран",    mark:"ладонь", rung:21, art:1, say:["…паром. Людей вниз, людей вверх. Груз не берём."]},
+  patrol:{ru:"сторожевик",   donor:"Спираль",  mark:"щит",    rung:21, art:1, say:["…сторожевик. Ваш борт в списках чист. Пока."]},
   rescue:{ru:"спасатель",    donor:"Луна-9",   mark:"ладонь", rung:21, art:0, say:["…спасатель. Лепестки закрыты, идём на чужой сигнал."]},
   hosp:  {ru:"госпитальное", donor:"ТКС",      mark:"крест",  rung:21, art:0, say:["…госпитальное. Раненых нет? Тогда не отвлекайте."]},
   school:{ru:"учебное",      donor:"Восток",   mark:"книга",  rung:21, art:0, say:["…учебное. Шесть капсул, шесть голосов, все ваши вопросы уже задавали."]},
   exped: {ru:"экспедиционное",donor:"Салют",   mark:"циркуль",rung:25, art:0, say:["…экспедиционное. Тарелки на вас не смотрим, не тот сектор."]},
-  base:  {ru:"плавбаза",     donor:"Мир",      mark:"кольцо", rung:19, art:0, say:["…плавбаза. Пока стоим здесь — мы вам станция."]}
+  base:  {ru:"плавбаза",     donor:"Мир",      mark:"кольцо", rung:19, art:1, say:["…плавбаза. Пока стоим здесь — мы вам станция."]}
 };
 const FLEET_NAMES=["ЗАРНИЦА","ОКОЁМ","СТРЕМЯ","ЛАДЬЯ","КРЕМЕНЬ","ПОЛЫНЬ","ЗАСТАВА","КОСОГОР",
   "ТИХОХОД","СЕВЕРЯНКА","ПРОСВЕТ","ОПОКА","ОТМЕЛЬ","ПОДКОВА","ВЕРСТА","ЛУЧИНА"];
@@ -16618,8 +16618,13 @@ function fleetArtOf(f){
   const rect=(x0,y0,x1,y1,c,e)=>add([[x0,y0],[x1,y0],[x1,y1],[x0,y1]],c,e);
   const ell=(cx,cy,rx,ry,c,e,n)=>{const p=[];n=n||18;for(let i=0;i<n;i++){const t=i/n*TAU;p.push([cx+Math.cos(t)*rx,cy+Math.sin(t)*ry]);}add(p,c,e);};
   /* палитра: санкирь (тёмная подложка) → серо-белый корпус → красная полоса → медь */
-  const C=[[196,198,202],[150,154,160],[92,96,104],[168,52,44],[128,84,56],[40,44,52]];
+  const C=[[222,224,228],[176,180,186],[104,108,116],[168,52,44],[128,84,56],[40,44,52]];
   let L,hw,nose,tail,band=[];
+  /* стыки (§8, альманах III): всё навесное встречает корпус нарисованным
+     узлом — тёмный хомут и светлая пластина, одна грамматика от панели до
+     радиатора. joints: [x, y, длина вдоль корпуса, поперёк] */
+  const joints=[];
+  const joint=(x,y,l,t)=>joints.push([x,y,l,t]);
   if(f.k==="post"){
     /* «Союз»: шар, колокол, цилиндр, два крыла панелей, стыковочный штырь */
     L=76;hw=9;nose=L*.5;tail=-L*.5;
@@ -16634,6 +16639,7 @@ function fleetArtOf(f){
       rect(-L*.36,s*hw*.7,-L*.12,s*hw*2.9,5,1);
       for(let i=1;i<4;i++){const y=s*(hw*.7+(hw*2.2)*i/4);lines.push([-L*.36,y,-L*.12,y,.5]);}
       lines.push([-L*.24,s*hw*.7,-L*.24,s*hw*2.9,.5]);
+      joint(-L*.24,s*hw*.66,L*.08,hw*.22);
     }
     ell(tail*.95,0,L*.05,hw*.45,5,1,12);            /* сопло */
     lights.push({x:tail*.98,y:0,c:"eng",r:hw*.4});
@@ -16647,12 +16653,55 @@ function fleetArtOf(f){
       const y=s*(hw*(.55+j*.5)),x0=tail*.8,x1=nose*.55-j*L*.06;
       rect(x0,y-hw*.28,x1,y+hw*.28,j?2:0,1);
       ell(x1,y,L*.03,hw*.28,2,1,10);
+      joint(x0+L*.12,y-s*hw*.28,L*.05,hw*.16);joint(x1-L*.12,y-s*hw*.28,L*.05,hw*.16);
     }
     rect(tail*.82,-hw*.42,tail*.62,hw*.42,2,1);     /* кольцо горловин */
     for(let i=0;i<5;i++){const y=-hw*.36+i*hw*.18;rect(tail*.9,y-1,tail*.82,y+1,4);}
     for(let i=1;i<6;i++){const x=tail*.85+(nose*.7-tail*.85)*i/6;lines.push([x,-hw,x,hw,.45]);}
     for(let i=0;i<2;i++){const y=(i-.5)*hw*.9;ell(tail*.95,y,L*.04,hw*.32,5,1,12);lights.push({x:tail*.98,y,c:"eng",r:hw*.3});}
     band=[[tail*.85,-hw*.55],[nose*.65,-hw*.55],[nose*.65,-hw*.25],[tail*.85,-hw*.25]];
+  }else if(f.k==="patrol"){
+    /* «Спираль»+«Алмаз»: несущий корпус с задранным носом, короткие крылья, пушка под скулой */
+    L=88;hw=8;nose=L*.5;tail=-L*.5;
+    add([[tail*.9,-hw*.9],[nose*.5,-hw*.95],[nose*.92,-hw*.3],[nose,hw*.1],[nose*.8,hw*.7],[tail*.9,hw*.9]],0,1);
+    add([[nose*.5,-hw*.95],[nose*.92,-hw*.3],[nose*.7,-hw*1.15],[nose*.3,-hw*1.2]],1,1);     /* задранный нос */
+    for(const s of [-1,1]){add([[-L*.2,s*hw*.9],[L*.12,s*hw*.9],[L*.02,s*hw*2.1],[-L*.16,s*hw*2.1]],1,1);joint(-L*.06,s*hw*.86,L*.14,hw*.22);}
+    rect(nose*.2,hw*.5,nose*.7,hw*.95,5,1);           /* пушка под скулой */
+    rect(nose*.7,hw*.62,nose*.98,hw*.82,5);
+    rect(-L*.1,-hw*.55,L*.2,-hw*.1,2,1);              /* фонарь кабины */
+    for(let i=1;i<4;i++){const x=tail*.8+(L*.5)*i/4;lines.push([x,-hw*.85,x,hw*.85,.4]);}
+    ell(tail*.94,0,L*.04,hw*.5,5,1,12);
+    lights.push({x:tail*.97,y:0,c:"eng",r:hw*.45});
+    band=[[tail*.85,-hw*.6],[nose*.4,-hw*.6],[nose*.4,-hw*.3],[tail*.85,-hw*.3]];
+  }else if(f.k==="ferry"){
+    /* «Буран»: дельта-крыло, чёрное брюхо, белая спина */
+    L=104;hw=9;nose=L*.5;tail=-L*.5;
+    add([[tail*.95,-hw*.55],[nose*.92,-hw*.2],[nose,hw*.15],[nose*.92,hw*.5],[tail*.95,hw*.6]],0,1);   /* фюзеляж */
+    add([[tail*.95,hw*.15],[nose*.9,hw*.42],[nose,hw*.15],[nose*.92,hw*.5],[tail*.95,hw*.6]],5,1);      /* чёрное брюхо: зона II–III */
+    add([[-L*.12,-hw*.5],[nose*.55,-hw*.25],[-L*.05,-hw*3.2],[tail*.85,-hw*3.2]],0,1);                 /* крыло верхнее */
+    add([[-L*.12,hw*.55],[nose*.55,hw*.4],[-L*.05,hw*3.2],[tail*.85,hw*3.2]],5,1);                     /* крыло нижнее, чёрное */
+    joint(-L*.02,-hw*.5,L*.2,hw*.2);joint(-L*.02,hw*.5,L*.2,hw*.2);
+    add([[tail*.98,-hw*.55],[tail*.75,-hw*.55],[tail*.7,-hw*1.9],[tail*.92,-hw*1.9]],1,1);            /* киль */
+    rect(nose*.55,-hw*.35,nose*.85,-hw*.05,2,1);      /* остекление */
+    for(let i=0;i<3;i++){const y=(i-1)*hw*.34;ell(tail*.98,y,L*.035,hw*.17,4,1,10);lights.push({x:tail,y,c:"eng",r:hw*.16});}
+    band=[[tail*.9,-hw*.5],[nose*.5,-hw*.32],[nose*.5,-hw*.12],[tail*.9,-hw*.22]];
+  }else if(f.k==="base"){
+    /* «Мир»: цилиндры разного диаметра, узловой модуль, панели под разными углами */
+    L=150;hw=11;nose=L*.5;tail=-L*.5;
+    rect(tail*.9,-hw*.7,-L*.2,hw*.7,1,1);            /* базовый блок */
+    rect(-L*.2,-hw,L*.06,hw,0,1);                     /* узловой — Воротник */
+    rect(L*.06,-hw*.55,nose*.8,hw*.55,1,1);           /* рабочий отсек */
+    rect(nose*.8,-hw*.35,nose,hw*.35,2,1);
+    for(let i=1;i<5;i++){const x=tail*.9+(L*.7)*i/5;lines.push([x,-hw*.68,x,hw*.68,.45]);}
+    const pan=[[-L*.07,-1,.55],[-L*.07,1,-.35],[L*.3,-1,.15],[L*.3,1,-.2],[tail*.6,-1,-.25]];
+    for(const q of pan){const [x,s,ang]=q;const l=hw*2.6,w=L*.06;const c=Math.cos(ang),sn=Math.sin(ang);
+      const p0=[x,s*hw*.7];const dirx=-sn*s,diry=c*s;
+      add([[p0[0]-w*c,p0[1]-w*sn],[p0[0]+w*c,p0[1]+w*sn],[p0[0]+w*c+dirx*l,p0[1]+w*sn+diry*l],[p0[0]-w*c+dirx*l,p0[1]-w*sn+diry*l]],5,1);
+      joint(x,s*hw*.66,w*1.6,hw*.2);}
+    rect(-L*.17,-hw*1.5,-L*.03,-hw,2,1);joint(-L*.1,-hw*.98,L*.1,hw*.2);   /* стыковочный узел вверх */
+    ell(tail*.95,0,L*.03,hw*.4,5,1,12);lights.push({x:tail*.98,y:0,c:"eng",r:hw*.3});
+    lights.push({x:-L*.07,y:0,c:"win"});lights.push({x:L*.2,y:-hw*.2,c:"win"});
+    band=[[tail*.88,-hw*.55],[-L*.2,-hw*.55],[-L*.2,-hw*.28],[tail*.88,-hw*.28]];
   }else{
     /* ядерный буксир: хребет, реактор на штанге впереди, два плоских радиатора-крыла, колокол сзади */
     L=136;hw=7;nose=L*.5;tail=-L*.5;
@@ -16662,6 +16711,7 @@ function fleetArtOf(f){
     rect(-L*.36,-hw*1.1,-L*.05,hw*1.1,1,1);            /* обитаемый блок */
     for(const s of [-1,1]){
       add([[-L*.28,s*hw*1.1],[nose*.45,s*hw*1.1],[nose*.3,s*hw*4.2],[-L*.15,s*hw*4.2]],5,1);
+      joint(L*.05,s*hw*1.06,L*.22,hw*.3);
       for(let i=1;i<6;i++){const x=-L*.26+(nose*.68)*i/6;lines.push([x,s*hw*1.1,x-L*.02,s*hw*4.1,.35]);}
     }
     add([[tail*.72,-hw*.8],[tail*.92,-hw*1.6],[tail*.92,hw*1.6],[tail*.72,hw*.8]],5,1);
@@ -16682,6 +16732,9 @@ function fleetArtOf(f){
   for(const q of polys){poly(q);const c=C[q.c];ctx.fillStyle="rgb("+c.join(",")+")";ctx.fill();
     ctx.strokeStyle="rgba(0,0,0,"+(q.e?.5:.25)+")";ctx.lineWidth=q.e?.6:.35;ctx.stroke();}
   for(const l of lines){ctx.strokeStyle="rgba(0,0,0,"+(l[4]*.7).toFixed(2)+")";ctx.lineWidth=l[4];ctx.beginPath();ctx.moveTo(l[0],l[1]);ctx.lineTo(l[2],l[3]);ctx.stroke();}
+  for(const j of joints){ctx.fillStyle="rgb(40,44,52)";ctx.fillRect(j[0]-j[2]/2,j[1]-j[3]/2,j[2],j[3]);
+    ctx.fillStyle="rgba(236,236,240,.8)";ctx.fillRect(j[0]-j[2]/2+.6,j[1]-j[3]/2+.5,j[2]-1.2,Math.max(.6,j[3]*.28));
+    ctx.fillStyle="rgba(0,0,0,.5)";ctx.fillRect(j[0]-j[2]*.35,j[1]-j[3]/2,.7,j[3]);ctx.fillRect(j[0]+j[2]*.35,j[1]-j[3]/2,.7,j[3]);}
   /* лессировка: красная полоса во всю длину, номер, имя, знак класса */
   if(band.length){ctx.fillStyle="rgb("+C[3].join(",")+")";ctx.beginPath();ctx.moveTo(band[0][0],band[0][1]);for(let i=1;i<4;i++)ctx.lineTo(band[i][0],band[i][1]);ctx.closePath();ctx.fill();}
   ctx.fillStyle="rgba(30,30,34,.9)";ctx.font="bold "+(hw*.9).toFixed(1)+"px ui-monospace,monospace";ctx.textAlign="center";ctx.textBaseline="middle";
@@ -16725,6 +16778,9 @@ function drawFleetShip(f){
       const on=Math.sin(G.t*.05+(li.g?1.6:0))>.6?.95:.2;
       ctx.fillStyle=(li.g?"rgba(120,240,150,":"rgba(255,90,80,")+on+")";
       ctx.beginPath();ctx.arc(li.x,li.y,1.4,0,TAU);ctx.fill();
+    }else if(li.c==="win"){
+      ctx.fillStyle=(Math.sin(G.t*.03+li.x)>-.4)?"rgba(255,228,170,.9)":"rgba(255,228,170,.4)";
+      ctx.beginPath();ctx.arc(li.x,li.y,1.3,0,TAU);ctx.fill();
     }else if(li.c==="eng"){
       const fg=ctx.createRadialGradient(li.x,li.y,0,li.x,li.y,li.r*1.3);
       fg.addColorStop(0,"rgba(255,214,158,.85)");fg.addColorStop(.5,"rgba(255,150,80,.35)");fg.addColorStop(1,"rgba(255,120,60,0)");
@@ -16761,10 +16817,33 @@ function fleetInteract(sh){
   G.fleetLog=G.fleetLog||{};
   const gave=(G.fleetLog[fleetLogKey()]||0)>=shift-(FLEET_NORM_SHIFTS-1);
   const canFuel=near.k==="tanker"&&low&&!gave;
+  /* буксир: корпус, который не дотянет, тянут на верфь — подлатан до 40 %, чтобы дошёл (§18.7 п.4) */
+  const hurt=G.hull<st.hullMax*.3;
+  const tugKey=fleetLogKey()+"|tug", baseKey=fleetLogKey()+"|base";
+  const canTow=near.k==="tug"&&hurt&&(G.fleetLog[tugKey]||0)<shift;
+  /* плавбаза: пока стоит здесь — она вам станция: ремонт по норме раз в смену (п.7) */
+  const canFix=near.k==="base"&&G.hull<st.hullMax*.9&&(G.fleetLog[baseKey]||0)<shift;
+  /* сторожевик: с доброй репутацией проводит, с худой досматривает (п.10) */
+  const rep=(typeof repAt==="function")?repAt():0;
+  const canEscort=near.k==="patrol"&&rep>=2&&!(G.fleetEscort>G.t);
+  const verb=canFuel?"ЗАПРАВКА ПО НОРМЕ":canTow?"БУКСИР НА ВЕРФЬ":canFix?"РЕМОНТ ПО НОРМЕ":canEscort?"ПРОСИТЬ КОНВОЙ":"ПОЗЫВНОЙ";
   G.prompt=C.ru.toUpperCase()+" ГЛАВТРАССЫ «"+near.name+"»"+
-    "\nДЕЙСТВИЕ — "+(canFuel?"ЗАПРАВКА ПО НОРМЕ":"ПОЗЫВНОЙ");
+    "\nДЕЙСТВИЕ — "+verb;
   if(actEdge){
-    if(canFuel){
+    if(canTow){
+      G.hull=Math.max(G.hull,Math.round(st.hullMax*.4));G.fleetLog[tugKey]=shift;
+      etherLine("«"+near.name+"»: …взяли на буксир. До верфи дотянете сами, дальше — их работа.","буксир");
+      if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","буксир «"+near.name+"» · "+near.num);
+    }else if(canFix){
+      G.hull=st.hullMax;G.fleetLog[baseKey]=shift;
+      etherLine("«"+near.name+"»: …плавбаза. Пока стоим здесь — мы вам станция. Корпус закрыли.","плавбаза");
+      if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","ремонт на плавбазе «"+near.name+"»");
+    }else if(canEscort){
+      G.fleetEscort=G.t+900;
+      etherLine("«"+near.name+"»: …сторожевик. Ваш борт в списках чист — идём рядом. Пятнадцать минут по трассе.","сторожевик");
+    }else if(near.k==="patrol"&&rep<=-2){
+      etherLine("«"+near.name+"»: …сторожевик. Ваш борт в списках. Досмотр: трюм открыть. Чисто. На этот раз.","сторожевик");
+    }else if(canFuel){
       G.fuel=st.fuelMax;G.fleetLog[fleetLogKey()]=shift;
       etherLine("«"+near.name+"»: …по норме, до полного. Расписок не пишем — трасса помнит сама.","танкер");
       if(typeof recordAdd==="function")recordAdd("ГЛАВТРАССА","заправка по норме · «"+near.name+"» · "+near.num);
@@ -16779,6 +16858,9 @@ function fleetInteract(sh){
   }
   return true;
 }
+
+/* конвой сторожевика: пока действует, пираты вас не видят (§18.7 п.6/п.10) */
+function fleetEscortActive(){return G.mode==="system"&&(G.fleetEscort||0)>G.t;}
 
 /* ══════════════ наёмники: рейс как раздача карт ══════════════ */
 /* Наёмник — не альтернатива дрону, а ставка. Дрон даёт маленький надёжный плюс,
@@ -28916,6 +28998,7 @@ function updateCombat(dt){
     const dx=sh.x-p.x,dy=sh.y-p.y,d=Math.hypot(dx,dy)||1;
     if(d<seeRange)p.aware=true;
     else if(d>seeRange*2.4)p.aware=false;
+    if(typeof fleetEscortActive==="function"&&fleetEscortActive())p.aware=false;   /* конвой ГЛАВТРАССЫ (M311) */
     p.thrust=false;
     const pa0=p.a;
     if(p.aware){
@@ -29347,7 +29430,7 @@ function snapshot(){
     fuseGen:G.fuseGen,mines:G.mines,quests:G.quests,rep:G.rep,poiSeen:G.poiSeen,findsSeen:G.findsSeen,
     nodes:G.nodes,crowns:G.crowns,nodeShow:G.nodeShow,rareFound:G.rareFound,pnode:G.pnode,hunted:G.hunted,
     news:G.news,newsMarks:G.newsMarks,newsT:G.newsT,rivals:G.rivals,
-    wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},
+    wrecks:G.wrecks,bargePax:G.bargePax,fleetLog:G.fleetLog||{},fleetEscort:G.fleetEscort||0,
     loreFound:G.loreFound,loreMarks:G.loreMarks,settle:G.settle,tin:G.tin,
     scrip:G.scrip,scripRate:G.scripRate,scripLog:G.scripLog,
     doom:G.doom,doomDead:G.doomDead,parrot:G.parrot,heard:G.heard,grok:G.grok,flea:G.flea,
@@ -29710,6 +29793,7 @@ function applySave(s){
   /* обломки барж: разреженный оверлей по "sx,sy", каждый — список остовов.
      Новое поле с безопасным дефолтом (сквозное правило). */
   G.fleetLog=(s.fleetLog&&typeof s.fleetLog==="object")?s.fleetLog:{};
+  G.fleetEscort=+s.fleetEscort||0;
   G.wrecks={};
   if(s.wrecks&&typeof s.wrecks==="object")
     for(const k in s.wrecks){

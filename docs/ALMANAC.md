@@ -279,6 +279,15 @@ hold scene, Z 1.5). Held against §18.6:
 
 Verdict: the pipeline holds; two findings (joints, tank values) go to the next fleet pass.
 
+**Addendum, 0.308.0 (M311).** Both findings paid: joints drawn in one grammar on all six
+classes; the tanker's tanks a step lighter than the body; hulls in VII on the lit side. Three
+new exhibits (`x_fleet.png`, two rows): **сторожевик** reads as a small lifting body with the
+cannon under the cheek ✓; **паром** — the white delta and the black belly carry the frame's
+biggest value contrast on the sheet, §16 ✓, though the wing is a plain white triangle (needs
+tile lines next pass); **плавбаза** reads as its donor at once — the five panels at odd angles
+are the signature. Open: the name lettering is still too small to read at Z 1.5 on every
+class (the label under the hull carries it); the ferry's wing wants panel lines.
+
 ---
 
 ## Reserved — issue III (continued): the remaining ten classes

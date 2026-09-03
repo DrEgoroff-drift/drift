@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 360 · символов верхнего уровня: 3328
+Файлов: 360 · символов верхнего уровня: 3329
 
 ## СИМВОЛЫ
 
@@ -670,7 +670,7 @@ drawCelest                   src/06a-celest.js:167
 drawChunks                   src/18c-chunks.js:83
 drawClouds                   src/19e-clouds.js:180
 drawCockpit                  src/25-cockpit.js:400
-drawCombat                   src/13-pirates.js:213
+drawCombat                   src/13-pirates.js:214
 drawCrowns                   src/05a-nodes.js:379
 drawCrystalForest            src/20aa-poi-shapes.js:115
 drawDeadBattery              src/20aa-poi-shapes.js:221
@@ -688,8 +688,8 @@ drawFactory                  src/20aa-poi-shapes.js:378
 drawFactRoute                src/13b-occupy.js:241
 drawFindsSystem              src/17b-finds.js:180
 drawFlame                    src/03b-hull-paint.js:10
-drawFleet                    src/12ai-fleet.js:207
-drawFleetShip                src/12ai-fleet.js:192
+drawFleet                    src/12ai-fleet.js:263
+drawFleetShip                src/12ai-fleet.js:245
 drawFoeBody                  src/24ab-raid-foe.js:10
 drawForeground               src/21b-surface-deco.js:249
 drawGlassHUD                 src/24-mode-belt.js:716
@@ -951,9 +951,10 @@ FLEET_TIER_KEYS              src/04b-fleet.js:30
 FLEET_TIERS                  src/04b-fleet.js:16
 fleetArtOf                   src/12ai-fleet.js:84
 fleetColor                   src/04b-fleet.js:95
+fleetEscortActive            src/12ai-fleet.js:335
 fleetHere                    src/12ai-fleet.js:50
-fleetInteract                src/12ai-fleet.js:225
-fleetLogKey                  src/12ai-fleet.js:224
+fleetInteract                src/12ai-fleet.js:281
+fleetLogKey                  src/12ai-fleet.js:280
 fleetPos                     src/12ai-fleet.js:72
 fleetRung                    src/12ai-fleet.js:48
 fleetUniqueName              src/04b-fleet.js:100
@@ -1440,7 +1441,7 @@ keyLabel                     src/15-input.js:132
 keyMap                       src/15-input.js:121
 keyRow                       src/27-ui-ship.js:189
 keys                         src/08-state.js:57
-killPirate                   src/13-pirates.js:180
+killPirate                   src/13-pirates.js:181
 killRock                     src/24-mode-belt.js:151
 KINO_EVERY                   src/27da-kino.js:20
 KINO_REEL                    src/27da-kino.js:23
@@ -1944,7 +1945,7 @@ parrotDraw                   src/12y-parrot-face.js:264
 parrotFind                   src/12x-parrot.js:30
 parrotFrame                  src/12y-parrot-face.js:684
 parrotHas                    src/12x-parrot.js:25
-parrotHeardKill              src/13-pirates.js:176
+parrotHeardKill              src/13-pirates.js:177
 parrotLine                   src/12y-parrot-face.js:641
 parrotPoke                   src/12y-parrot-face.js:657
 parRow                       src/12y-parrot-face.js:141
@@ -3597,7 +3598,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/12ah-holdnews.js · 6 КБ
   · холдинг · слухи, новости и чужие на проданной дороге:1
 
-## src/12ai-fleet.js · 19 КБ
+## src/12ai-fleet.js · 26 КБ
   · ГЛАВТРАССА: флот, который нельзя купить (M310, DESIGN-holding §18):1
 
 ## src/12b-crew-events.js · 17 КБ
@@ -4402,13 +4403,14 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzy-screens.js · 13 КБ
   · автотесты: экраны M299 — заголовки, подгляд карты, зал как ввод:1
 
-## tests/91zzza-cave-props.js · 10 КБ
+## tests/91zzza-cave-props.js · 13 КБ
   · пещера M305: гладкий обвод и содержимое:1
   · станция и планета M306: знаки на дневной стороне:32
   · дом M307: мебель из материала, план сеян:58
   · M308: дневной свет без приговора, карта и заход рисуются:77
   · M309: трафик системы и туманность с кромкой:92
   · M310: флот ГЛАВТРАССЫ:114
+  · M311: второй проход флота — три класса, буксир, плавбаза, конвой:150
 
 ## tests/91zzza-trace.js · 5 КБ
 
