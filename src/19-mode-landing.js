@@ -23,12 +23,23 @@ function startLanding(p){
      а рельеф под ними к этому моменту уже выровнен (21b-surface-deco) */
   genDeco(tr,p);
   G.ap=null;
-  G.land={p,tr,x:tr.padX+(r()-.5)*(G.opts.easyLand?900:640),y:110,
+  const x0=tr.padX+(r()-.5)*(G.opts.easyLand?900:640);
+  G.land={p,tr,x:x0,y:landStartY(tr,x0),
     vx:(r()-.5)*1.3,vy:.35,a:0,gear:0,sq:0,sqv:0,hot:0,
     g:.019+p.T.grav*.016+p.radius*.00012,over:0,ok:false,auto:G.opts.easyLand};
   G.mode="landing";
   say((G.opts.easyLand?"Автоматический заход":"Заход")+" на "+p.name+
     "\nтяготение "+p.T.grav.toFixed(2)+"g");
+}
+/* высота начала захода (M327): было 110 при любом рельефе — на рваных мирах
+   старт в ±450 м от площадки попадал ВНУТРЬ горы, и «автопосадка» разбивалась
+   на первом кадре (тест 91zzzb: slope 66…124 при vx старта). Теперь старт не
+   ниже 150 над самой высокой точкой пути до площадки */
+function landStartY(tr,x){
+  let ridge=groundAt(tr,x);
+  const step=Math.sign(tr.padX-x)*16||16;
+  for(let xx=x;Math.abs(tr.padX-xx)>8&&Math.abs(xx-x)<1400;xx+=step)ridge=Math.min(ridge,groundAt(tr,xx));
+  return Math.min(110,ridge-150);
 }
 function autoLandInputs(L,st){
   /* примитивный, но надёжный автопилот посадки */
@@ -37,8 +48,20 @@ function autoLandInputs(L,st){
   const ex=wantVx-L.vx;
   const wantA=clamp(ex*1.5,-.5,.5);
   L.a+=clamp(wantA-L.a,-.045,.045);
-  const alt=groundAt(L.tr,L.x)-L.y-11;
-  const wantVy=clamp(alt*.02,.25,2.6)*(Math.abs(dx)>140?.35:1);
+  /* высота — над САМОЙ ВЫСОКОЙ точкой пути до площадки, а не над тем, что под
+     ногами (M327). Автор: «при автопосадке на спутник газового гиганта корабль
+     разбивался». Тест 91zzzb показал: на рваных мирах (вулканический,
+     каменистый) заход сбоку со снижением .35 втыкался в склон за 300 м до
+     площадки — slope 28…124 при vx 1.5. Пока далеко — держим ~70 над гребнем
+     пути и можем набирать высоту; снижение по-настоящему — только над площадкой */
+  const far=Math.abs(dx)>140;
+  let ridge=groundAt(L.tr,L.x);
+  if(far){
+    const step=Math.sign(dx)*16;
+    for(let x=L.x;Math.abs(L.tr.padX-x)>8&&Math.abs(x-L.x)<1400;x+=step)ridge=Math.min(ridge,groundAt(L.tr,x));
+  }
+  const alt=(far?ridge:groundAt(L.tr,L.x))-L.y-11;
+  const wantVy=far?clamp((alt-70)*.02,-1.2,1.0):clamp(alt*.02,.25,2.6);
   const thrust=(L.vy>wantVy)||(alt<40&&L.vy>.7);
   return {thrust,brake:Math.abs(dx)<50&&alt<120&&Math.abs(L.vx)>.25};
 }
@@ -95,6 +118,7 @@ function updateLanding(dt){
     const slope=Math.abs(groundAt(tr,L.x+18)-groundAt(tr,L.x-18));
     const tol=(G.tech.has("cera")?1.4:1)*(L.auto?3:1);
     const ok=L.vy<2.15*tol&&Math.abs(L.vx)<1.05*tol&&Math.abs(L.a)<.26*tol&&slope<9*tol;
+    L.touch={vy:+L.vy.toFixed(2),vx:+L.vx.toFixed(2),a:+L.a.toFixed(2),slope:+slope.toFixed(1),tol};  /* что было в момент касания (тест 91zzzb) */
     L.ok=ok;L.over=70;L.vx=0;L.vy=0;
     /* удар: стойки проседают тем глубже, чем жёстче пришли, и отдают пружиной */
     L.gear=1;L.sq=Math.min(1,.3+sp*.3);L.sqv=0;L.hot=1;

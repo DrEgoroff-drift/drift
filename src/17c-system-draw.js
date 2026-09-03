@@ -231,11 +231,9 @@ function drawStationBody(V,S,ty){
     /* факельная труба: пламя пляшет, дым сносит вбок */
     ctx.strokeStyle="rgba(0,0,0,.45)";ctx.lineWidth=.8;ctx.fillStyle="#222a35";
     ctx.beginPath();ctx.rect(-3,-28,6,12);ctx.fill();ctx.stroke();
-    const fl=1.4+Math.abs(Math.sin(G.t*.13+V.ph))*3.4;
-    ctx.fillStyle="rgba(255,170,70,.85)";
-    ctx.beginPath();ctx.ellipse(0,-30-fl*.5,2.2,fl,0,0,TAU);ctx.fill();
-    ctx.fillStyle="rgba(255,120,50,.35)";
-    ctx.beginPath();ctx.arc(2,-34-fl,3.4,0,TAU);ctx.fill();
+    ctx.fillStyle="rgba(0,0,0,.55)";ctx.fillRect(-2.2,-28.6,4.4,1.2);   /* тёмное устье: у пламени есть откуда выходить */
+    /* самого пламени в выпечке НЕТ (M326): спрайт живёт 18 тактов, и застывший
+       язык под живым читался вторым, рваным пламенем — «кусками дёргается» */
   }else if(ty==="yard"){
     /* открытый эллинг: рама, а внутри шпангоуты строящегося корпуса и кран */
     stPanels(10,5);
@@ -467,13 +465,25 @@ function drawStation(x,y,Z){
      18 тактов, а факел — единственное на станции, что обязано плясать */
   if(ty==="indust"){
     ctx.save();ctx.translate(x,y);ctx.scale(s,s);
-    const fl=1.4+Math.abs(Math.sin(G.t*.13+V.ph))*3.4,fl2=Math.abs(Math.sin(G.t*.31+V.ph*2))*.8;
-    ctx.fillStyle="rgba(255,170,70,.85)";
-    ctx.beginPath();ctx.ellipse(fl2*.6,-30-fl*.5,2.2,fl,0,0,TAU);ctx.fill();
-    ctx.fillStyle="rgba(255,236,190,.55)";
-    ctx.beginPath();ctx.ellipse(fl2*.4,-29.5-fl*.35,1,fl*.5,0,0,TAU);ctx.fill();
-    ctx.fillStyle="rgba(255,120,50,.35)";
-    ctx.beginPath();ctx.arc(2+fl2,-34-fl,3.4,0,TAU);ctx.fill();
+    /* язык пламени как тело (M326): было два эллипса и кружок, длина прыгала по
+       |sin| — «кусками дёргается». Теперь одна замкнутая форма — язык с устья
+       (−28) вверх, кончик гуляет по сумме двух медленных синусов (гладко, без
+       изломов), изнутри — светлое ядро той же формы, снаружи — мягкое свечение.
+       Марева здесь больше нет: оно резало звёзды на полосы и читалось белым
+       дымом вокруг огня (жалоба автора 03.09) */
+    const t=G.t*.045+V.ph;
+    const fl=6.2+Math.sin(t*1.7)*1.6+Math.sin(t*2.9+1.3)*.9;          /* длина 3.7…8.7 */
+    const lean=Math.sin(t*1.1+.7)*1.4+Math.sin(t*2.3)*.6;              /* наклон кончика */
+    const tongue=(w,h,dx)=>{                                            /* язык: устье шириной w, высота h */
+      ctx.beginPath();ctx.moveTo(-w,-28);
+      ctx.bezierCurveTo(-w,-28-h*.45,dx-w*.35,-28-h*.8,dx,-28-h);
+      ctx.bezierCurveTo(dx+w*.35,-28-h*.8,w,-28-h*.45,w,-28);ctx.closePath();
+    };
+    ctx.globalCompositeOperation="lighter";
+    ctx.fillStyle="rgba(255,110,40,.16)";tongue(4.2,fl*1.35,lean*1.2);ctx.fill();   /* свечение */
+    ctx.globalCompositeOperation="source-over";
+    ctx.fillStyle="rgba(255,150,54,.92)";tongue(2.3,fl,lean);ctx.fill();            /* тело */
+    ctx.fillStyle="rgba(255,226,160,.9)";tongue(1.1,fl*.55,lean*.5);ctx.fill();      /* ядро */
     /* дым (M326): комментарий у трубы десять версий обещал «дым сносит вбок»,
        а рисовалось только пламя. Клубы считает stackSmoke — он же под тестом:
        поднимаются, растут, редеют, сносятся в одну сторону */
@@ -482,7 +492,6 @@ function drawStation(x,y,Z){
       ctx.beginPath();ctx.arc(q.x,q.y,q.r,0,TAU);ctx.fill();
     }
     ctx.restore();
-    if(typeof heatHaze==="function")heatHaze(x-8*s,y-52*s,16*s,20*s,.6,V.ph);
   }
   /* подпись уходит НИЖЕ корпуса: сорок пикселей — это внутри станции, и имя
      читалось поверх её же переборок (M242) */

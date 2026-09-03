@@ -556,7 +556,9 @@ function renderTabBody(){
       for(const k of RARE_RES){
         const q=G.cargo[k];if(!q)continue;
         const r=el("div","row");
-        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+RES[k].rare+"</s>"));
+        /* сперва «зачем», потом «откуда»: игрок и так знает, где это взял */
+        r.appendChild(el("div","nm","<b style='color:"+RES[k].col+"'>"+RES[k].ru+"</b><s>"+
+          (RES[k].use?RES[k].use+" · добыча: "+RES[k].rare:RES[k].rare)+"</s>"));
         r.appendChild(el("div","qt",q+"<s>ед</s>"));
         $body.appendChild(r);
       }

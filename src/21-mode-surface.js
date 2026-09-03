@@ -183,7 +183,7 @@ function enterSurface(){
 }
 function updateSurface(dt){
   const S=G.surf,tr=S.tr,st=stat();
-  const mv=.62*dt*(typeof kitStat==="function"?kitStat().walk:1);   /* ботинки и вес (M152) */
+  const mv=.62*dt*(typeof kitStat==="function"?kitStat().walk:1)*(S.swim>0?1-.45*S.swim:1);   /* ботинки и вес (M152); в воде — вполсилы (M327) */
   if(keys.left||keys.right)S.walkTarget=null;
   if(keys.left){S.x-=mv;S.face=-1;}
   if(keys.right){S.x+=mv;S.face=1;}
@@ -315,9 +315,13 @@ function updateSurface(dt){
   }
   /* вход в пещеру проверяется раньше залежей и организмов: он редкий и разовый,
      а бурить и сканировать можно где угодно ещё */
-  if(S.cave&&Math.abs(S.cave.x-S.x)<34){
+  const atCave=!!(S.cave&&Math.abs(S.cave.x-S.x)<34);
+  if(atCave){
     G.prompt="ДЕЙСТВИЕ — ВОЙТИ В ПЕЩЕРУ";
     if(actEdge){enterCave();return;}
+    /* подсказку ниже перебивала цепочка «шахта / прыжок» (M327): ДЕЙСТВИЕ
+       вело в пещеру, а на экране стояло «ЗАЛОЖИТЬ ШАХТУ». Обе ветки ниже
+       уступают пещере — см. atCave у шахты и у последнего else */
   }
   /* дверь дома (M170): своя планета, своё крыльцо — и в дом можно войти */
   if(typeof homeDoorX==="function"&&homeHereP(S.p)){
@@ -556,7 +560,7 @@ function updateSurface(dt){
   }else if(dShip<shipZoneR()&&!baseAt(G.sx,G.sy,S.p.idx)&&S.p.type!=="gas"){
     G.prompt="ДЕЙСТВИЕ — ЗАЛОЖИТЬ БАЗУ · 2500 КР + 10 СПЛАВОВ";
     if(actEdge&&foundBase(S.p)){enterBase(S.p);return;}
-  }else if(S.on){
+  }else if(S.on&&!atCave){
     /* ── шахта у планеты одна, и теперь у неё есть адрес (M234) ──
        «Заложить» работало где угодно, а ствол под всеми точками был один и тот
        же: спустился в другом конце карты — и попал в свою же выработку. Автор
@@ -575,7 +579,7 @@ function updateSurface(dt){
   }else if(dShip<shipZoneR()){
     G.prompt=(G.fuel<8?"НЕТ ТОПЛИВА · КНОПКА ВЗЛЁТА — ЭВАКУАЦИЯ":"КНОПКА ВЗЛЁТА — УДЕРЖАТЬ")+
       "\nТРЮМ "+held()+"/"+st.cargoMax+" · СКАФАНДР "+Math.round(S.suit)+"/"+suitMax()+(S.suit<suitMax()?" · ЗАРЯДКА":" · ГОТОВ");
-  }else G.prompt="▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
+  }else if(!atCave)G.prompt="▲ — ПРЫЖОК · ИЩИТЕ ЗАЛЕЖИ";
   /* синтез топлива изо льда доступен и на поверхности, не только в полёте */
   if(dShip<shipZoneR()&&G.tech.has("synth")&&G.cargo.ice>0&&G.fuel<st.fuelMax&&keys.act&&!S.mining){
     const ratio=st.synthRatio,n=Math.min(G.cargo.ice,Math.ceil((st.fuelMax-G.fuel)/ratio));

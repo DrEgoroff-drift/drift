@@ -179,10 +179,10 @@ function goalCard(){
   $body.appendChild(el("div","row",line(tier>=HOME_TIERS.length,
     "Дом · "+tier+" из "+HOME_TIERS.length+" ступеней",
     tier?"построено: "+HOME_TIERS.slice(0,tier).map(t=>t.ru).join(", ")+
-      (homeNext()?"<br>дальше: "+homeNext().ru+" — нужен оборот "+
-        homeNext().t.toLocaleString("ru")+" кр":"<br>дом достроен целиком")
-      :"дома пока нет: он появится сам, когда оборот дойдёт до "+
-       HOME_TIERS[0].t.toLocaleString("ru")+" кр")));
+      (homeNext()?"<br>дальше: "+homeNext().ru+" — на "+
+        homeNext().t.toLocaleString("ru")+" кр заработка":"<br>дом достроен целиком")
+      :"дома пока нет: он появится сам, когда вы заработаете "+
+       HOME_TIERS[0].t.toLocaleString("ru")+" кр — за них ничего не спишут")));
   $body.appendChild(el("div","row",line(!!yacht,
     "Яхта · "+(yacht?"«"+yacht.ru+"»":"нет"),
     yacht?"стоит в ангаре. Трюм смешной, ход прекрасный — она и не должна окупаться"+

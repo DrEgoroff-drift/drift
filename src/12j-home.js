@@ -52,8 +52,13 @@ function homeTurn(sum,why){
     const T=HOME_TIERS[H.tier];
     H.tier++;
     if(H.tier===1){H.sx=G.sx;H.sy=G.sy;H.made=Date.now();}
-    logAdd("good","Дом: "+T.say+" · оборот "+H.turn.toLocaleString("ru")+" кр");
-    say("ДОМ\n"+T.say);
+    /* «Оборот» — слово из ведомости, а не из жизни (плейтест 03.09.2026):
+       «напиши, что не оборот, а типа за то, что заработали, у вас появился
+       дом». Число остаётся — по нему видно, как далеко зашёл, — но называется
+       тем, чем является: всем, что человек заработал. */
+    logAdd("good","Дом: "+T.say+" — на всё, что вы заработали · "+
+      H.turn.toLocaleString("ru")+" кр за плечами");
+    say("ДОМ\n"+T.say+"\nна всё, что вы заработали");
     sfx("ok",{v:.5});
   }
   /* разнарядка (M152e): один раз, на обороте 3 000, план выделяет «Вьюк» —
@@ -62,10 +67,10 @@ function homeTurn(sum,why){
   if(!H.alloc&&H.turn>=3000&&!G.owned.vyuk){
     H.alloc=1;G.owned.vyuk=true;
     if(typeof wearAll==="function")wearAll().vyuk=Math.round(WEAR_FULL*.55);
-    logAdd("good","Разнарядка: план выделил вам «Вьюк» — б/у, потёртый, трюм 150 · переключение на экране КОРАБЛЬ");
+    logAdd("good","Вам выделили «Вьюк» — за наработанное · б/у, потёртый, трюм 150 · переключение на экране КОРАБЛЬ");
     say("РАЗНАРЯДКА\n«Вьюк» выделен планом",220);
     sfx("ok",{v:.6});
-    if(typeof thingAdd==="function")thingAdd("paper","Разнарядка на «Вьюк»","выделен планом по обороту · б/у, с чужим износом · переключение — экран КОРАБЛЬ");
+    if(typeof thingAdd==="function")thingAdd("paper","Разнарядка на «Вьюк»","выделен планом за наработанное · б/у, с чужим износом · переключение — экран КОРАБЛЬ");
   }
 }
 /* ══════════════ домочадец ══════════════
@@ -135,8 +140,8 @@ function homeProgress(){
   if(!N)return {done:true,ru:"дом достроен",frac:1};
   const prev=H.tier?HOME_TIERS[H.tier-1].t:0;
   const frac=clamp((H.turn-prev)/(N.t-prev),0,1);
-  return {done:false,ru:"до ступени «"+N.ru+"» ещё "+
-    Math.max(0,N.t-H.turn).toLocaleString("ru")+" кр оборота",frac,next:N};
+  return {done:false,ru:"ещё "+Math.max(0,N.t-H.turn).toLocaleString("ru")+
+    " кр заработать — и будет «"+N.ru+"»",frac,next:N};
 }
 /* ── дом как безопасное место ──
    Смерть перестаёт быть обнулением и становится потерей рейса: груз и часть

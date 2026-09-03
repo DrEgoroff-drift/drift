@@ -7,6 +7,38 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.324.0 - M327: the scoop is a road now, and the house speaks plainly
+
+Plannotator pass on the live build (2026-09-03), four notes and a postscript.
+
+**Gas giant scoop.** «И че куда их продавать и нафиг они нужны + легко добываются, сделай прям
+на планете, чтобы препятствия там были, чтобы извилисто летать». The collection band no longer
+runs flat across the frame: it winds on a long wave (`scoopCenter`), and the ribbon is drawn from
+the same numbers the collision uses, so the picture cannot lie about the rules. Across the road
+stand three hazards — storm cores that hit the hull and knock you off height, hail clusters that
+scratch small and often, and updraft plumes that do no damage but carry, which is worst near the
+lower edge where being carried means heat (`19a`).
+
+**What the gases are for.** Rare stock is not sold by design, but the game never said what eats
+it: the hold line named only where it was mined. `RES.use` now names the eater — shipyard
+assembly and hull fusion, the cryo shop on a holding — and the market's rare section, plus the
+line on leaving the atmosphere, print it (`02`, `26`, `19a`).
+
+**Out of fuel is a failed run, not an execution.** With an empty tank below the band the scene
+used to wait for the fire: the hull burned to a fifth, the automat cut the run, and the whole
+effort read as «ничего не получил». The automat now pulls you out on the remaining momentum with
+the cargo aboard; the heat already taken and the empty tank are the price (`19a`).
+
+**The house in human words.** «Оборот» is a word from a ledger: the tier-up line, the progress
+line, the holdings card and the station header now say what it is — everything you earned, and
+nothing is written off for it (`12j`, `26a`, `13b`).
+
+**Desktop panel.** The receiver band lay across the station header, and the column cap was
+counted inside `zoom:var(--ui)`, so on a 2560-wide monitor the «column in the middle» spread to
+1890 points — the very thing that block was written to prevent. The cap is divided by the same
+`--ui`, and the receiver gets its own row above the header (`style.css`).
+
+---
 ## 0.323.0 - M326: the house marks as things, not lines
 
 Author's video (2026-09-03): on the industrial station the «Вестовой» mast-and-dish mark stood

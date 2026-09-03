@@ -4,17 +4,60 @@
    слоях и набрать летучие газы. Смысл сцены — узкий коридор высоты: выше
    сборник хватает пустоту, ниже растёт нагрев, а турбулентность всё время
    сбивает с высоты, поэтому это работа руками, а не полоска прогресса. */
-const SCOOP_BAND=[.50,.63];        // коридор сбора в долях высоты экрана
-function scoopBand(){return [H*SCOOP_BAND[0],H*SCOOP_BAND[1]];}
+/* ── коридор больше не линейка ──
+   Плейтест 03.09.2026: «легко добываются, сделай прям на планете, чтобы
+   препятствия там были, чтобы извилисто летать, а не только по прямой, как
+   платформер, чтобы зудело у всех». Так и есть: держать одну высоту полминуты —
+   это не работа руками, это ожидание. Полоса сбора теперь ИДЁТ — она ползёт
+   вверх и вниз длинной волной, и лететь приходится по ней; а поперёк дороги
+   стоят вихревые ядра, восходящие плюмажи и град кристаллов. Полоса остаётся
+   той же толщины: трудность в дороге, а не в игольном ушке. */
+const SCOOP_BAND=[.50,.63];        // толщина коридора в долях высоты экрана (.13H)
+const SCOOP_PX=1.6;                // экранных точек на единицу пути: дальше видно за ~1.3 с
+function scoopCenter(x){
+  const S=G.scoop;if(!S)return H*.565;
+  /* амплитуда набирается за первые сотни единиц: первый заход обязан дать
+     понять правило, а не встретить стеной */
+  const amp=.105*clamp((x-240)/1100,0,1);
+  const w=Math.sin(x/520*TAU+S.phase)*.62+Math.sin(x/197*TAU+S.phase*1.7)*.38;
+  return H*(.565+amp*w);
+}
+function scoopBandAt(x){
+  const h=H*(SCOOP_BAND[1]-SCOOP_BAND[0]),c=scoopCenter(x);
+  return [c-h*.5,c+h*.5];
+}
+function scoopBand(){return scoopBandAt(G.scoop?G.scoop.x:0);}
+/* ── что стоит поперёк ──
+   Три помехи, и каждая просит своего движения: ядро обходят, плюмаж
+   пересекают на разгоне, град пережидают выше или ныряют под него. */
+function scoopSpawn(){
+  const S=G.scoop;
+  while(!S.obs.length||S.obs[S.obs.length-1].x<S.x+900){
+    const n=S.n++;
+    const r=rng(hashi(S.p.seed,n*3701,0x0B11));
+    const x=(S.obs.length?S.obs[S.obs.length-1].x:S.x+520)+150+r()*230;
+    const kind=n<2?0:(r()<.42?0:(r()<.66?1:2));
+    const c=scoopCenter(x),h=H*(SCOOP_BAND[1]-SCOOP_BAND[0]);
+    const side=r()<.5?-1:1;
+    if(kind===0)      S.obs.push({k:0,x,y:c+side*h*(.30+r()*.55),r:26+r()*20,hit:0,sp:(r()<.5?-1:1)*(.4+r()*.8)});
+    else if(kind===1) S.obs.push({k:1,x,y:c,r:20+r()*12,hit:0,up:(r()<.5?-1:1)});
+    else{
+      const nn=4+Math.floor(r()*5);
+      for(let i=0;i<nn;i++)S.obs.push({k:2,x:x+i*26+r()*14,y:c+(r()-.5)*h*1.5,r:6+r()*4,hit:0});
+    }
+  }
+  while(S.obs.length&&S.obs[0].x<S.x-260)S.obs.shift();
+}
 function startScoop(p){
   G.scoop={p,y:H*.34,vy:0,heat:0,bank:0,got:0,x:0,phase:rng(hashi(p.seed,0x6A5,3))()*TAU,
-    lastWarn:0,shake:0};
+    lastWarn:0,shake:0,obs:[],n:0,bump:0,knock:0};
+  scoopSpawn();
   G.mode="scoop";G.ap=null;G.orbit=null;
   for(const k in keys)keys[k]=false;
   document.querySelectorAll(".pads button").forEach(b=>b.classList.remove("on"));
   /* кнопка справа в этом режиме подписана ВЫХОД (28-loop) — подсказка обязана
      звать её тем же словом: «НАЗАД» на экране нет, и взлёт было не найти */
-  say("Заход в атмосферу\n"+p.name+"\n▲ ▼ — высота · держитесь в полосе сбора\nВЫХОД — уход на орбиту");
+  say("Заход в атмосферу\n"+p.name+"\n▲ ▼ — высота · полоса сбора идёт волной, держитесь её\nвихри и град бьют корпус, плюмажи несут\nВЫХОД — уход на орбиту");
 }
 function exitScoop(msg){
   const S=G.scoop,p=S.p;
@@ -23,11 +66,17 @@ function exitScoop(msg){
   G.ship.vx=p.vx||0;G.ship.vy=p.vy||0;
   G.scoop=null;G.mode="system";
   saveGame(true);
-  say(msg+"\nлетучих газов в трюме: "+G.cargo.volatiles);
+  /* «Ничего не получил» (плейтест 03.09.2026) — это не про пустой трюм, а про
+     то, что игра ни разу не сказала, ЧТО он получил: газы рынок не берёт, и
+     строка с их числом читалась пустым звуком. Теперь выход называет едока. */
+  say(msg+"\nлетучих газов в трюме: "+G.cargo.volatiles+
+      "\nрынок их не берёт — идут на верфь (сборка и сплав) и в криоцех базы");
 }
 function updateScoop(dt){
-  const S=G.scoop,st=stat(),[bt,bb]=scoopBand();
+  const S=G.scoop,st=stat();
   S.x+=(5.2+st.thr*.7)*dt;S.phase+=dt*.03;
+  scoopSpawn();
+  const [bt,bb]=scoopBandAt(S.x);
   /* высота: тяга поднимает, тормоз прижимает, и всегда есть снос вниз —
      висеть в коридоре, ничего не трогая, не получится */
   if(keys.thrust&&G.fuel>0){S.vy-=.055*st.thr*dt;G.fuel=Math.max(0,G.fuel-.016*dt);}
@@ -42,6 +91,34 @@ function updateScoop(dt){
   if(S.y<=H*.14+.5&&S.vy<0)S.vy=0;
   S.bank+=(clamp(S.vy*.5,-.7,.7)-S.bank)*Math.min(1,.09*dt);
   S.shake=Math.max(0,S.shake-dt*.05);
+  S.bump=Math.max(0,S.bump-dt*.04);
+  /* ── помехи ──
+     Ядро бьёт корпус и сбивает с высоты, град царапает мелко и часто, плюмаж
+     не вредит вовсе — он несёт, и потому опаснее всего у нижней кромки, где
+     из коридора выносит вниз, в нагрев. */
+  for(const o of S.obs){
+    const dx=o.x-S.x;
+    if(dx>240||dx<-90)continue;
+    if(o.k===1){
+      if(Math.abs(dx)<o.r+16&&Math.abs(S.y-o.y)<H*.22){
+        S.vy+=o.up*.085*dt;S.shake=Math.min(1,S.shake+.012*dt);S.knock=1;
+      }
+      continue;
+    }
+    if(o.k===0)o.y+=Math.sin(S.x*.006+o.x*.01)*o.sp*.5*dt;
+    const d=Math.hypot(dx,S.y-o.y);
+    if(d<o.r+14&&!o.hit){
+      o.hit=1;
+      const heavy=o.k===0;
+      G.hull-=heavy?4.5:1.4;
+      S.vy+=(S.y<o.y?-1:1)*(heavy?.75:.22);
+      S.shake=Math.min(1,S.shake+(heavy?.75:.22));
+      S.bump=1;
+      sfx("hit",{v:heavy?.7:.35});
+      if(G.hull<=0){G.scoop=null;G.mode="system";wreck();return;}
+    }
+  }
+  S.knock=Math.max(0,(S.knock||0)-dt*.08);
   /* нагрев копится только ниже коридора и медленно стравливается выше него */
   if(S.y>bb){
     S.heat=Math.min(120,S.heat+(S.y-bb)*.019*dt);
@@ -74,7 +151,16 @@ function updateScoop(dt){
       inBand?"СБОР ИДЁТ · ДЕРЖИТЕ ВЫСОТУ":
       S.y<bt?"ВЫШЕ КОРИДОРА · СБОРНИК ХВАТАЕТ ПУСТОТУ":"НИЖЕ КОРИДОРА · НАГРЕВ РАСТЁТ")+
     "\nНАГРЕВ "+heat+"% · ГАЗЫ "+G.cargo.volatiles+" · ТРЮМ "+held()+"/"+st.cargoMax;
-  if(G.fuel<=0&&S.y>bb)G.prompt="ТОПЛИВО КОНЧИЛОСЬ · ПОДНЯТЬСЯ НЕЧЕМ";
+  /* Без топлива подняться нечем, и прежде сцена просто дожидалась пожара:
+     корпус горел до пятой части, заход обрывал автомат, и весь труд оставался
+     «ничем» (плейтест 03.09.2026). Пустой бак — провал захода, а не казнь:
+     автомат вытягивает на остатке инерции, собранное остаётся в трюме, платой
+     служат уже полученный нагрев и сам пустой бак. */
+  if(G.fuel<=0&&S.y>bb){
+    G.prompt="ТОПЛИВО КОНЧИЛОСЬ · АВАРИЙНЫЙ ПОДЪЁМ";
+    exitScoop("Топливо кончилось\nавтомат вытянул на орбиту");
+    return;
+  }
 }
 /* ══════════════ небо гиганта: полосы, а не лепёшки ══════════════ */
 /* Первая версия рисовала два десятка полупрозрачных эллипсов на вертикальном
@@ -168,8 +254,10 @@ function giantTex(p){
   while(GIANT.cache.length>GIANT_KEEP)GIANT.cache.shift();
   return cn;
 }
+/* экранная точка ↔ путь: корабль стоит на W*.34, мир течёт мимо */
+function scoopScrX(S,wx){return W*.34+(wx-S.x)*SCOOP_PX;}
 function drawScoop(){
-  const S=G.scoop,p=S.p,[bt,bb]=scoopBand();
+  const S=G.scoop,p=S.p,[bt,bb]=scoopBandAt(S.x);
   const pal=p.T.pal;
   const sh=(S.shake>0?(Math.random()-.5)*S.shake*7:0);
   ctx.save();ctx.translate(0,sh);
@@ -283,35 +371,132 @@ function drawScoop(){
   }
   /* коридор сбора: не две пунктирные линейки поверх мира, а слой более
      плотного газа — он светится и в нём висит взвесь, которую и собирают */
-  const cg=ctx.createLinearGradient(0,bt,0,bb);
-  cg.addColorStop(0,"rgba(127,224,200,0)");
-  cg.addColorStop(.5,"rgba(127,224,200,.22)");
-  cg.addColorStop(1,"rgba(127,224,200,0)");
-  ctx.fillStyle=cg;ctx.fillRect(0,bt,W,bb-bt);
-  /* Полоса терялась в лиловой каше: слой газа плотнее, но по краям его не
-     видно, а игрок ищет глазами именно границу. Кромка идёт через весь кадр
-     штрихом — линейка это или газ, спор решается в пользу читаемости. */
-  for(const yy of [bt,bb]){
-    ctx.save();ctx.setLineDash([9,7]);ctx.lineDashOffset=-(S.x*7)%16;
-    ctx.strokeStyle="rgba(150,240,214,.30)";ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(W,yy);ctx.stroke();ctx.restore();
+  /* ── дорога, а не полка ──
+     Полоса шла ровной лентой через кадр и держать её было нечем — она сама
+     держала. Теперь это ДОРОГА: она уходит вверх и вниз, её видно вперёд на
+     полтора корпуса пути, и лететь надо по ней. Рисуется по тем же
+     координатам, по каким считается столкновение (scoopCenter), иначе
+     картинка врёт про правила. */
+  const hband=H*(SCOOP_BAND[1]-SCOOP_BAND[0]);
+  const STEP=16,cols=[];
+  for(let X=-STEP;X<=W+STEP;X+=STEP)cols.push([X,scoopCenter(S.x+(X-W*.34)/SCOOP_PX)]);
+  function bandPath(off){
+    ctx.beginPath();
+    for(let i=0;i<cols.length;i++){const c=cols[i];
+      if(i)ctx.lineTo(c[0],c[1]+off);else ctx.moveTo(c[0],c[1]+off);}
   }
+  ctx.save();
+  ctx.beginPath();
+  for(let i=0;i<cols.length;i++){const c=cols[i];
+    if(i)ctx.lineTo(c[0],c[1]-hband*.5);else ctx.moveTo(c[0],c[1]-hband*.5);}
+  for(let i=cols.length-1;i>=0;i--)ctx.lineTo(cols[i][0],cols[i][1]+hband*.5);
+  ctx.closePath();
+  ctx.fillStyle="rgba(127,224,200,.17)";ctx.fill();
+  ctx.clip();
+  /* взвесь внутри ленты: она едет вместе с дорогой, а не поперёк неё */
   ctx.fillStyle="rgba(190,255,238,.5)";
-  for(let i=0;i<40;i++){
+  for(let i=0;i<44;i++){
     const rr3=rng(hashi(p.seed,i*97,0x9AD));
-    const yy=bt+rr3()*(bb-bt), spd=3+rr3()*4;
-    const xx=(W+60)-((S.x*spd*12+rr3()*2600)%(W+120));
+    const spd=3+rr3()*4;
+    const xx=(W+60)-((S.x*spd*2.2+rr3()*2600)%(W+120));
+    const yy=scoopCenter(S.x+(xx-W*.34)/SCOOP_PX)+(rr3()-.5)*hband*.86;
     ctx.globalAlpha=.10+rr3()*.35;
     ctx.fillRect(xx,yy,2.4,1.4);
   }
-  ctx.globalAlpha=1;
-  ctx.strokeStyle="rgba(127,224,200,.30)";ctx.lineWidth=1;
-  for(const yy of [bt,bb]){
-    ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(34,yy);
-    ctx.moveTo(W-34,yy);ctx.lineTo(W,yy);ctx.stroke();
+  ctx.globalAlpha=1;ctx.restore();
+  /* Полоса терялась в лиловой каше: слой газа плотнее, но по краям его не
+     видно, а игрок ищет глазами именно границу. Кромка идёт через весь кадр
+     штрихом — линейка это или газ, спор решается в пользу читаемости. */
+  for(const off of [-hband*.5,hband*.5]){
+    ctx.save();ctx.setLineDash([9,7]);ctx.lineDashOffset=-(S.x*7)%16;
+    ctx.strokeStyle="rgba(150,240,214,.34)";ctx.lineWidth=1;
+    bandPath(off);ctx.stroke();ctx.restore();
   }
   ctx.fillStyle="rgba(127,224,200,.55)";ctx.font="9px ui-monospace,monospace";ctx.textAlign="left";
-  ctx.fillText("ПОЛОСА СБОРА",14,bt-6);
+  ctx.fillText("ПОЛОСА СБОРА",14,cols[1][1]-hband*.5-6);
+  /* ── помехи ──
+     Ядро — тело с глазом и завихрением, плюмаж — восходящая струя, град —
+     россыпь колючих кристаллов. Все три рисуются одним светом (§ свод правил):
+     тень снизу, блик сверху, цвет из палитры гиганта. */
+  for(const o of S.obs){
+    const X=scoopScrX(S,o.x);
+    if(X<-160||X>W+160)continue;
+    if(o.k===0){
+      /* ВИХРЬ — тело, а не спираль карандашом: тёмное ядро, горячий обод и
+         рукав, заворачивающийся по ходу. Свет один, сверху-слева, как во всей
+         сцене; поэтому низ у него глухой, а верх задран бликом. */
+      const R=o.r*1.5;
+      const g=ctx.createRadialGradient(X-R*.22,o.y-R*.3,R*.08,X,o.y,R);
+      g.addColorStop(0,"rgba(14,9,20,"+(o.hit?.55:.82)+")");
+      g.addColorStop(.42,"rgba("+p.T.pal[1].join(",")+","+(o.hit?.34:.58)+")");
+      g.addColorStop(.78,"rgba(255,214,168,"+(o.hit?.10:.22)+")");
+      g.addColorStop(1,"rgba(255,214,168,0)");
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(X,o.y,R,0,TAU);ctx.fill();
+      ctx.save();ctx.beginPath();ctx.arc(X,o.y,o.r,0,TAU);ctx.clip();
+      ctx.strokeStyle="rgba(248,236,255,"+(o.hit?.10:.26)+")";ctx.lineWidth=2.4;ctx.lineCap="round";
+      for(const s0 of [0,TAU/2]){
+        ctx.beginPath();
+        for(let a=0;a<TAU*.9;a+=.2){
+          const rr=o.r*(.16+a/(TAU*.9)*.9);
+          const th=a*o.sp+s0+S.x*.02*o.sp;
+          const xx=X+Math.cos(th)*rr,yy=o.y+Math.sin(th)*rr*.82;
+          if(a===0)ctx.moveTo(xx,yy);else ctx.lineTo(xx,yy);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+      ctx.strokeStyle="rgba(10,6,14,.42)";ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(X,o.y+2,o.r*.98,.15,Math.PI-.15);ctx.stroke();
+    }else if(o.k===1){
+      /* ПЛЮМАЖ — восходящая струя, а не прямоугольник: снизу узкое горло,
+         кверху разваливается клубами, края рвутся. Он не бьёт — он несёт. */
+      const up=o.up,hgt=H*.30;
+      ctx.save();
+      const g=ctx.createLinearGradient(X,o.y+hgt*.5*up,X,o.y-hgt*.5*up);
+      g.addColorStop(0,"rgba(255,206,150,.34)");
+      g.addColorStop(.55,"rgba(255,226,190,.16)");
+      g.addColorStop(1,"rgba(255,236,214,0)");
+      ctx.fillStyle=g;
+      ctx.beginPath();
+      for(const sgn of [-1,1]){
+        const seq=sgn<0?[0,1]:[1,0];
+        for(let t=seq[0];sgn<0?t<=1.001:t>=-.001;t+=sgn<0?.06:-.06){
+          const yy=o.y+(t-.5)*hgt*up;
+          const w=o.r*(.45+t*1.5)+Math.sin(t*7+S.x*.04)*o.r*.3;
+          ctx.lineTo(X+sgn*w,yy);
+        }
+      }
+      ctx.closePath();ctx.fill();
+      /* клубы по стволу: пара витков, чтобы струя жила */
+      ctx.globalAlpha=.5;
+      for(let i2=0;i2<5;i2++){
+        const t=(i2/5+((S.x*.012+o.x*.01)%1))%1;
+        const yy=o.y+(t-.5)*hgt*up, rr=o.r*(.4+t*1.1);
+        const cg2=ctx.createRadialGradient(X,yy,0,X,yy,rr);
+        cg2.addColorStop(0,"rgba(255,232,198,"+(.18*(1-t)).toFixed(3)+")");
+        cg2.addColorStop(1,"rgba(255,232,198,0)");
+        ctx.fillStyle=cg2;ctx.beginPath();ctx.arc(X,yy,rr,0,TAU);ctx.fill();
+      }
+      ctx.globalAlpha=1;ctx.restore();
+    }else{
+      /* ГРАД — колотый лёд: тёмная нижняя грань, холодный блик сверху,
+         короткий морозный след позади. Белым ромбиком он читался наклейкой. */
+      ctx.save();ctx.translate(X,o.y);
+      ctx.strokeStyle="rgba(214,238,255,.22)";ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(o.r*.6,0);ctx.lineTo(o.r*.6+16,0);ctx.stroke();
+      ctx.rotate(S.x*.03+o.x);
+      const g=ctx.createLinearGradient(0,-o.r,0,o.r);
+      g.addColorStop(0,"rgba(236,250,255,"+(o.hit?.35:.92)+")");
+      g.addColorStop(.55,"rgba(150,196,224,"+(o.hit?.24:.72)+")");
+      g.addColorStop(1,"rgba(26,40,58,"+(o.hit?.30:.85)+")");
+      ctx.fillStyle=g;
+      ctx.beginPath();
+      for(let a=0;a<TAU;a+=TAU/6)ctx.lineTo(Math.cos(a)*o.r,Math.sin(a)*o.r*.72);
+      ctx.closePath();ctx.fill();
+      ctx.strokeStyle="rgba(8,12,20,.55)";ctx.lineWidth=1;ctx.stroke();
+      ctx.restore();
+    }
+  }
   /* корабль: летит боком, слева направо, с набегающим потоком */
   const sx=W*.34,sy=S.y;
   if(S.y>bb){

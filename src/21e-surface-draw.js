@@ -289,27 +289,64 @@ function drawSurfaceWorld(){
          и глубина. Здесь: губа проёма светлее грунта (её лизнуло небо),
          внутри не чернота, а уходящий вглубь тон породы, и пара камней у
          порога, чтобы вход стоял в земле, а не лежал на ней. */
+      /* ── пещера, а не полукруг (M327) ──
+         Автор: «снаружи это полукруг, надо придумать прям пещеру». Полуэллипс
+         с губой оставался дырой, нарисованной НА земле. Пещера — это прежде
+         всего СКАЛА: выход породы над устьем, в который дыра уходит. Слои по
+         своду (§1, §13): тень под скалой → тёмное тело скалы с неровным
+         силуэтом → проём-арка с неровным краем и глубиной → губа, поймавшая
+         небо → осыпь у порога. Силуэт сеется от x устья: на одной планете
+         пещера всегда одна и та же. */
       const amb=ambRGB(p);
-      /* нутро: сверху ещё чуть подсвечено, вглубь гаснет */
-      const ig=ctx.createLinearGradient(cx,cy-16,cx,cy+2);
-      ig.addColorStop(0,"rgba("+(amb[0]*.30|0)+","+(amb[1]*.32|0)+","+(amb[2]*.36|0)+",1)");
-      ig.addColorStop(.55,"rgba(8,10,13,1)");
-      ig.addColorStop(1,"rgba(4,5,7,1)");
+      const rr=rng(hashi(S.cave.x|0,7,0xCA7E));
+      const rock=(k,a)=>"rgba("+(amb[0]*k|0)+","+(amb[1]*k|0)+","+(amb[2]*k*1.06|0)+","+(a==null?1:a)+")";
+      /* 1. тень под скалой: она стоит на земле, а не приклеена */
+      ctx.fillStyle="rgba(0,0,0,.28)";
+      ctx.beginPath();ctx.ellipse(cx+4,cy+2,54,5,0,0,TAU);ctx.fill();
+      /* 2. тело скалы: девять вершин, левый скат круче, правый — длинный */
+      const top=[];
+      const hw=44+rr()*10, hh=36+rr()*12;
+      for(let i=0;i<=8;i++){
+        const t=i/8, x=cx-hw+t*hw*2;
+        const prof=Math.sin(t*Math.PI)**.7*(1-.25*Math.abs(t-.42));       /* горб, чуть смещённый влево */
+        top.push({x:x+(rr()-.5)*6,y:cy+2-hh*prof-(rr()-.5)*5});
+      }
+      ctx.fillStyle=rock(.46);
+      ctx.beginPath();ctx.moveTo(cx-hw-6,cy+3);
+      for(const q of top)ctx.lineTo(q.x,q.y);
+      ctx.lineTo(cx+hw+6,cy+3);ctx.closePath();ctx.fill();
+      /* слоистость породы: два тёмных горизонта в теле */
+      ctx.strokeStyle=rock(.34,.7);ctx.lineWidth=1.2;
+      for(const k of [.38,.66]){
+        ctx.beginPath();
+        for(let i=0;i<top.length;i++){const q=top[i];ctx.lineTo(q.x+(rr()-.5)*3,q.y+(cy+2-q.y)*k);}
+        ctx.stroke();
+      }
+      /* свет сверху: кромка силуэта светлее — небо лизнуло камень */
+      ctx.strokeStyle=rock(.98,.75);ctx.lineWidth=1.4;
+      ctx.beginPath();for(const q of top)ctx.lineTo(q.x,q.y);ctx.stroke();
+      /* 3. проём: арка с неровным краем, нутро уходит в глубину */
+      const arch=[[-19,1],[-17,-9],[-13,-19],[-6,-26],[3,-27],[11,-21],[16,-11],[18,1]];
+      const ig=ctx.createLinearGradient(cx,cy-26,cx,cy+2);
+      ig.addColorStop(0,rock(.22));ig.addColorStop(.5,"rgba(8,10,13,1)");ig.addColorStop(1,"rgba(3,4,6,1)");
       ctx.fillStyle=ig;
-      ctx.beginPath();ctx.ellipse(cx,cy-2,20,14,0,0,Math.PI,true);ctx.fill();
-      /* губа проёма: светлая дуга по верхнему краю */
-      ctx.strokeStyle="rgba("+(amb[0]*1.1+34|0)+","+(amb[1]*1.1+36|0)+","+(amb[2]*1.15+42|0)+",.6)";
+      ctx.beginPath();for(const [ax,ay] of arch)ctx.lineTo(cx+ax,cy+ay);ctx.closePath();ctx.fill();
+      /* глубина: вторая, меньшая арка темнее — ход поворачивает */
+      ctx.fillStyle="rgba(0,0,0,.55)";
+      ctx.beginPath();ctx.ellipse(cx+2,cy-6,8,11,0,0,TAU);ctx.fill();
+      /* 4. губа проёма: светлая по верхнему краю, где её видит небо */
+      ctx.strokeStyle="rgba("+(amb[0]*1.1+34|0)+","+(amb[1]*1.1+36|0)+","+(amb[2]*1.15+42|0)+",.62)";
       ctx.lineWidth=1.8;
-      ctx.beginPath();ctx.ellipse(cx,cy-2,20,14,0,Math.PI*1.08,Math.PI*1.92);ctx.stroke();
-      /* камни у порога */
-      ctx.fillStyle="rgba("+(amb[0]*.5|0)+","+(amb[1]*.5|0)+","+(amb[2]*.55|0)+",.9)";
-      ctx.beginPath();ctx.ellipse(cx-16,cy-1,5,3.4,-.3,0,TAU);ctx.fill();
-      ctx.beginPath();ctx.ellipse(cx+14,cy,6,3.8,.2,0,TAU);ctx.fill();
-      ctx.fillStyle="rgba(255,255,255,.10)";
-      ctx.beginPath();ctx.ellipse(cx-17,cy-2.4,3.4,1.2,-.3,0,TAU);ctx.fill();
-      ctx.beginPath();ctx.ellipse(cx+12,cy-1.6,4,1.4,.2,0,TAU);ctx.fill();
+      ctx.beginPath();for(let i=1;i<arch.length-1;i++)ctx.lineTo(cx+arch[i][0],cy+arch[i][1]);ctx.stroke();
+      /* 5. осыпь у порога: камни разного размера, светлые макушки */
+      for(let i=0;i<7;i++){
+        const sx=cx+(rr()-.5)*70, r0=1.6+rr()*4, sy=cy-r0*.4+rr()*2;
+        if(Math.abs(sx-cx)<14)continue;                    /* не в проходе */
+        ctx.fillStyle=rock(.5,.95);ctx.beginPath();ctx.ellipse(sx,sy,r0*1.3,r0,rr()-.5,0,TAU);ctx.fill();
+        ctx.fillStyle="rgba(255,255,255,.12)";ctx.beginPath();ctx.ellipse(sx-r0*.3,sy-r0*.5,r0*.7,r0*.35,0,0,TAU);ctx.fill();
+      }
       ctx.fillStyle="rgba(93,115,130,.85)";ctx.font="8px ui-monospace,monospace";ctx.textAlign="center";
-      ctx.fillText("ПЕЩЕРА",cx,cy-24);
+      ctx.fillText("ПЕЩЕРА",cx,cy-hh-14);
     }
   }
   /* ── устье своей шахты (M234) ──
@@ -476,14 +513,39 @@ function drawSurfaceWorld(){
     ctx.beginPath();
     ctx.ellipse(dx2-dp.f*age*5,dy2-1-age*4,1.5+age*4.5,1+age*2.6,0,0,TAU);ctx.fill();
   }
-  if(S.on)groundShadow(x,y+1,7,2);
-  ctx.save();ctx.translate(x,y-1);
+  const swimW=(S.swim>0&&typeof waterOf==="function")?waterOf(tr,p):null;
+  if(S.on&&!swimW)groundShadow(x,y+1,7,2);
+  ctx.save();
+  /* в воде (M327): ниже уреза тела не видно — скафандр режется по воде, а не
+     висит ногами над зеркалом */
+  if(swimW&&S.swim>.5){ctx.beginPath();ctx.rect(x-40,y-80,80,(swimW.y-camy)-(y-80)+1);ctx.clip();}
+  ctx.translate(x,y-1);
   /* ободок берётся из положения звезды: слева она или справа и высоко ли (M172) */
   const SR=sunSpot(p);
   const rim=SR.up?clamp((SR.x-x)/(W*.4),-1,1)*clamp(.35+SR.alt,0,1):0;
   drawAstronaut({face:S.face,amp:S.walkAmp,phase:S.walkPhase,sun:rim,
     air:!S.on,jet:!!S.jetOn,mining:!!S.mining,suitLow:S.suit<25});
   ctx.restore();
+  /* спасательный круг (M327): надувается, когда скафандр входит в воду, —
+     поэтому и плывёт. Тело с обводом и одним светом: рыжий тор, блик сверху,
+     кольца волны от него по зеркалу */
+  if(S.swim>0){
+    const k=S.swim,wy=swimW?swimW.y-camy:y-1;
+    ctx.save();ctx.globalAlpha=k;
+    ctx.strokeStyle="rgba(0,0,0,.35)";ctx.lineWidth=4.6;
+    ctx.beginPath();ctx.ellipse(x,wy-1.5,8.5*k+1,3.4,0,0,TAU);ctx.stroke();
+    ctx.strokeStyle="rgb(226,116,58)";ctx.lineWidth=3.4;
+    ctx.beginPath();ctx.ellipse(x,wy-1.5,8.5*k+1,3.4,0,0,TAU);ctx.stroke();
+    ctx.strokeStyle="rgba(255,226,190,.55)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.ellipse(x,wy-2.6,8.5*k+1,3.2,0,Math.PI*1.12,Math.PI*1.88);ctx.stroke();
+    ctx.strokeStyle="rgba(255,255,255,.22)";ctx.lineWidth=1;
+    for(const ph of [0,.5]){
+      const t=((G.t*.012+ph)%1+1)%1;
+      ctx.globalAlpha=k*(1-t)*.8;
+      ctx.beginPath();ctx.ellipse(x,wy+.5,10+t*22,2+t*4,0,0,TAU);ctx.stroke();
+    }
+    ctx.restore();
+  }
   if(S.mining){
     ctx.strokeStyle="rgba(242,178,92,.7)";ctx.lineWidth=1.5;
     ctx.beginPath();ctx.moveTo(x+S.face*6,y+2);
@@ -682,6 +744,28 @@ function waterOf(tr,p){
   tr.water={x0,x1,y:level,cx:(x0+x1)/2,acid:t==="toxic",seed:tr.sseed|0,reeds:Math.round(4+r()*5)};
   return tr.water;
 }
+/* ── водоросли (M327): что собирают, плавая ──
+   Автор: «надо придумать механику, чтобы плыть… и что-то собирать, водоросли».
+   Кусты на дне озера, сеются от озера, снимаются раз за визит — эфемерны, как
+   залежи. Дают органику: ресурс уже есть, цена и рынок — тоже. */
+function waterAlgae(Wt){
+  if(Wt.algae)return Wt.algae;
+  const r=rng(Wt.seed^0xA16A),n=3+Math.floor(r()*3),span=Wt.x1-Wt.x0;
+  Wt.algae=[];
+  for(let i=0;i<n;i++)Wt.algae.push({x:Wt.x0+span*(.15+.7*(i+r()*.6)/n),h:12+r()*12,ph:r()*TAU,taken:false});
+  return Wt.algae;
+}
+function waterAlga(S,tr){
+  const Wt=(typeof waterOf==="function")?waterOf(tr,S.p):null;
+  if(!Wt)return null;
+  return waterAlgae(Wt).find(a=>!a.taken&&Math.abs(a.x-S.x)<22)||null;
+}
+/* глубоко ли под ногами: плыть, а не идти по дну */
+function waterDeepAt(S,tr){
+  const Wt=(typeof waterOf==="function")?waterOf(tr,S.p):null;
+  if(!Wt||S.x<Wt.x0+6||S.x>Wt.x1-6)return null;
+  return (groundAt(tr,S.x)-Wt.y>14)?Wt:null;
+}
 function drawWater(tr,camx,camy,p){
   const Wt=waterOf(tr,p);
   if(!Wt)return;
@@ -702,6 +786,20 @@ function drawWater(tr,camx,camy,p){
   g.addColorStop(0,"rgb("+col.map(v=>v|0).join(",")+")");
   g.addColorStop(1,"rgb("+col.map(v=>(v*.5)|0).join(",")+")");
   ctx.fillStyle=g;ctx.fillRect(xa,y,xb-xa,WATER_DEPTH+40);
+  /* водоросли (M327): кусты со дна, качаются медленнее камыша — вода вязче ветра */
+  for(const a of waterAlgae(Wt)){
+    if(a.taken)continue;
+    const ax=a.x-camx;if(ax<-24||ax>W+24)continue;
+    const by=groundAt(tr,a.x)-camy,tp=Math.max(y+5,by-a.h);
+    const sw=Math.sin(G.t*.035+a.ph)*3;
+    ctx.strokeStyle="rgba(38,92,54,.88)";ctx.lineWidth=1.7;ctx.lineCap="round";
+    for(let k=-1;k<=1;k++){
+      ctx.beginPath();ctx.moveTo(ax+k*3,by+1);
+      ctx.quadraticCurveTo(ax+k*3+sw*.4,(by+tp)/2,ax+k*4.5+sw,tp+Math.abs(k)*4);ctx.stroke();
+    }
+    ctx.fillStyle="rgba(128,196,96,.75)";                 /* светлые макушки — их и видно с берега */
+    for(let k=-1;k<=1;k++){ctx.beginPath();ctx.arc(ax+k*4.5+sw,tp+Math.abs(k)*4,1.6,0,TAU);ctx.fill();}
+  }
   /* отражение: полоса над урезом, перевёрнутая, лентами со сдвигом */
   const hh=Math.min(64,y);
   if(hh>6){
