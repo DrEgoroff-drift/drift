@@ -7,6 +7,24 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.305.0 - M308: the approach by day, the band in two steps, daylight without a verdict
+
+- **A warm source on the approach** (`19-mode-landing`). A terran world at altitude measured
+  pair 0 — blue air over blue ground, honestly. Now the haze glows the star's colour at the
+  horizon on the sun's side (`SUN_DIR`), strength by the sun's altitude, gone at night: low sun
+  through the air's thickness. The meter's «заход» scene is set to daytime and 560 m like the
+  others («day is day», M243).
+- **The galactic band's second value step** (`18-mode-map`, §16, item 6b of the picture queue): a
+  narrow bright core, 260 grains of star-dust in it, and a wavy dark dust lane cutting the band —
+  two steps instead of one smooth value, the band reads as a body. Baked in the same
+  `screenLayer`.
+- **`pair` for natural daylight is reported without a verdict** (`LOOK_DAYLIGHT` in `28y-look`,
+  decision of 2026-09-03): «грунт день» and «заход» print «·пара N% (дневной свет, без
+  приговора)»; every scene with a man-made light keeps the target. `lookVerdict(m, scene)`.
+- Stand: `docs/mkview.ps1` gains `?s=landing` (`&alt=` metres) and `?s=map`.
+- Suite `91zzza` (M308 block).
+
+---
 ## 0.304.0 - M307: the home — furniture out of material, a house out of a plan
 
 Two «Graphics still open» lines: the home's furniture was flat boxes with no material, and the

@@ -146,6 +146,14 @@ setTimeout(function(){
         requestAnimationFrame(tick);
       })();
     })();
+  }else if(scene==="landing"){
+    /* заход с полукилометра: земля ниже кромки, дымка и зенит держат кадр */
+    var pL=G.sys.planets.find(function(x){return x.type!=="gas";})||G.sys.planets[0];
+    startLanding(pL);
+    G.land.y=groundAt(G.land.tr,G.land.x)-(location.search.indexOf("alt=")>=0?+location.search.split("alt=")[1]:560);
+    G.prompt="";run(4,updateLanding,drawLanding);
+  }else if(scene==="map"){
+    G.mode="map";G.prompt="";run(4,function(){},drawMap);
   }else if(scene==="night"){
     var p=land("terran");hour(p,.78);G.mode="surface";
     G.prompt="";run(6,updateSurface,drawSurface);

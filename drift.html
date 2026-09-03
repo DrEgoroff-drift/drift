@@ -1479,7 +1479,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.304.0";
+const VER="0.305.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -34124,6 +34124,28 @@ function drawMap(){
       g.addColorStop(1,"rgba(150,180,220,0)");
       ctx.fillStyle=g;ctx.fillRect(-L/2,-H*BW[i]/2,L,H*BW[i]);
     }
+    /* ── вторая ступень значения (M308, §16) ──
+       Полоса была одним плавным значением; масса на карте мерилась в 2%.
+       У настоящей полосы есть яркое узкое ядро и тёмная пылевая лента,
+       которая его режет, — две ступени вместо одной, и по ним полоса
+       читается телом, а не подсветкой. Плюс звёздная крошка в ядре. */
+    {
+      const cg2=ctx.createLinearGradient(0,-H*.075,0,H*.075);
+      cg2.addColorStop(0,"rgba(200,214,236,0)");cg2.addColorStop(.5,"rgba(214,224,240,.13)");cg2.addColorStop(1,"rgba(200,214,236,0)");
+      ctx.fillStyle=cg2;ctx.fillRect(-L/2,-H*.075,L,H*.15);
+      const rs=rng(0x3A11);
+      ctx.fillStyle="rgba(230,236,248,.5)";
+      for(let i=0;i<260;i++){const x=(rs()-.5)*L,y=(rs()-.5)*H*.16*(.4+rs()*.6);ctx.fillRect(x,y,rs()<.2?1.2:.8,.8);}
+      ctx.globalCompositeOperation="source-over";
+      const dl=ctx.createLinearGradient(0,-H*.03,0,H*.03);
+      dl.addColorStop(0,"rgba(6,8,14,0)");dl.addColorStop(.5,"rgba(6,8,14,.38)");dl.addColorStop(1,"rgba(6,8,14,0)");
+      ctx.fillStyle=dl;
+      ctx.beginPath();
+      for(let x=-L/2;x<=L/2;x+=40){const y=Math.sin(x*.004)*H*.02+Math.sin(x*.011+1)*H*.01;if(x===-L/2)ctx.moveTo(x,y-H*.03);else ctx.lineTo(x,y-H*.03);}
+      for(let x=L/2;x>=-L/2;x-=40){const y=Math.sin(x*.004)*H*.02+Math.sin(x*.011+1)*H*.01;ctx.lineTo(x,y+H*.03);}
+      ctx.closePath();ctx.fill();
+      ctx.globalCompositeOperation="lighter";
+    }
     /* тёплое ядро полосы — вторая температура листа */
     const cg=ctx.createRadialGradient(-W*.18,0,0,-W*.18,0,W*.34);
     cg.addColorStop(0,"rgba(236,206,160,.10)");
@@ -37355,7 +37377,29 @@ function drawLanding(){
      ровной горизонтальной чертой посреди пустого неба — та самая линейка, от
      которой шахту лечили в M219. Дымка живёт там, где земля встречается с
      воздухом: у кромки грунта, а если та ушла ниже кадра — у нижней кромки. */
-  hazeBand(p,clamp(groundAt(tr,L.x)-camy,H*.30,H*.86),H*.20);   /* пол дымки не ниже .86H (M304) */
+  const hzY=clamp(groundAt(tr,L.x)-camy,H*.30,H*.86);
+  hazeBand(p,hzY,H*.20);   /* пол дымки не ниже .86H (M304) */
+  /* ── тёплый источник на заходе (M308): солнце за дымкой ──
+     Терранский мир с высоты был одной температурой: прибор мерил pair 0, и
+     это честно — синий воздух над синей землёй. Но у горизонта, со стороны
+     солнца, дымка светится ЕГО цветом: низкое солнце сквозь толщу воздуха.
+     Зарево у пола дымки, по SUN_DIR, силой от высоты солнца. */
+  if(p.T.atm!=="отсутствует"&&typeof celSun==="function"){
+    const alt=celSun(p).alt;
+    const k=clamp((alt+.15)/.6,0,1)*(1-clamp(alt-.5,0,1))*.55;
+    if(k>.02){
+      const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)?hex2rgb(G.sys.cls.col):[255,214,150];
+      const wc=[Math.round(sc[0]*.4+153),Math.round(sc[1]*.4+120),Math.round(sc[2]*.3+70)];
+      const gx=W/2+SUN_DIR.x*W*.42, gy=hzY+H*.04;
+      const g=ctx.createRadialGradient(gx,gy,0,gx,gy,W*.36);
+      g.addColorStop(0,"rgba("+wc.join(",")+","+k.toFixed(3)+")");
+      g.addColorStop(.45,"rgba("+wc.join(",")+","+(k*.35).toFixed(3)+")");
+      g.addColorStop(1,"rgba("+wc.join(",")+",0)");
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(gx,gy,W*.36,H*.16,0,0,TAU);ctx.fill();
+      ctx.restore();
+    }
+  }
   /* дальние капли — за грядой и за кораблём, ближние поверх (M242) */
   drawWeather(p,camx,camy,"far");
   drawGround(tr,camx,camy,"rgb("+p.T.pal[2].map(v=>Math.round(v*.6)).join(",")+")",
@@ -66093,10 +66137,15 @@ function lookFrame(){
   };
 }
 /* Приговор по мишеням: строка из галочек, чтобы в консоли было видно сразу */
-function lookVerdict(m){
+/* сцены под естественным дневным светом: одна температура там — не порок, а
+   правда пустыни в полдень; пара печатается справкой, без приговора (M308,
+   решение 2026-09-03) */
+const LOOK_DAYLIGHT=["грунт день","заход"];
+function lookVerdict(m,scene){
   const T=LOOK_TARGET;
   const ok=[];
-  ok.push((m.pair>=T.pair?"✓":"×")+"пара "+m.pair+"% (тепла "+m.warm+"%)");
+  const dayl=scene&&LOOK_DAYLIGHT.indexOf(scene)>=0;
+  ok.push(dayl?("·пара "+m.pair+"% (дневной свет, без приговора)"):((m.pair>=T.pair?"✓":"×")+"пара "+m.pair+"% (тепла "+m.warm+"%)"));
   ok.push((m.mass>=T.mass?"✓":"×")+"массы "+m.mass+"%");
   ok.push((m.edge<=T.edge?"✓":"×")+"кромка "+m.edge+"% (пусто "+m.empty+"%)");
   ok.push((m.contrast>=T.contrast?"✓":"×")+"контраст "+m.contrast);
@@ -66142,7 +66191,8 @@ function lookScenes(){
       G.mode="system";G.ship.x=s.planets[1].x+380;G.ship.y=s.planets[1].y+220;G.zoom=.7;return true;}},
     {id:"карта",set:()=>{G.mode="map";return true;}},
     {id:"заход",set:()=>{const s=find(q=>(q.planets||[]).some(p=>p.type!=="gas"));if(!jump(s))return false;
-      startLanding(s.planets.find(p=>p.type!=="gas"));return true;}},
+      const pl=s.planets.find(p=>p.type!=="gas");startLanding(pl);setHour(pl,true);   /* заход меряется днём (M308) */
+      G.land.y=groundAt(G.land.tr,G.land.x)-560;return true;}},
     {id:"грунт день",set:()=>{if(!land(day))return false;setHour(G.surf.p,true);return true;}},
     {id:"грунт ночь",set:()=>{if(!land(day))return false;setHour(G.surf.p,false);return true;}},
     {id:"шахта",set:()=>{if(!land(day))return false;enterDig();return true;}},
@@ -66185,7 +66235,7 @@ function lookAll(frames){
   try{applySave(snap);}catch(e){}
   G.mode="system";G.land=null;G.surf=null;G.dig=null;G.cave=null;G.base=null;G.hin=null;
   if(typeof console.table==="function")console.table(rows);
-  for(const r of rows)if(!r.ошибка)console.log(r.сцена+": "+lookVerdict(r));
+  for(const r of rows)if(!r.ошибка)console.log(r.сцена+": "+lookVerdict(r,r.сцена));
   return rows;
 }
 /* Один кадр, тот что сейчас на экране: `look()` в консоли во время игры */

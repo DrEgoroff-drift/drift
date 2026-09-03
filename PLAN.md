@@ -98,9 +98,8 @@ the day they are found; this is work that was deliberately not done, or that nee
   micromanagement; the sensible owner of that choice is a manager holding the domain.
 - **Drone attrition.** Deliberately absent: a drone breaks and mends but is never lost. The author
   said leave the drones alone; this stays written down rather than done.
-- **`pair` as a target for natural light.** The meter demands both temperatures in a frame. That is
-  right for anything with a man-made light in it, and arguable for a desert at noon. Either scenes
-  get per-kind targets or natural daylight is reported without a verdict.
+- ~~`pair` as a target for natural light~~ — decided 2026-09-03, M308: daylight scenes
+  (`LOOK_DAYLIGHT`) print the pair as a reference, without a verdict.
 - **Craft plan remainder** (P0–P9, last section of `docs/DESIGN-story-craft.md`; M249–M270 paid
   eight laws of ten). P4 grisaille — a refactor, its own session. P7b the glyph notebook —
   understanding is a state of the head, not a flag; needs the author. P8 the clocks engine — with
@@ -121,8 +120,7 @@ What the meter still says after it (lookAll, 1280×800, 10 frames):
 | дом | 3 | 4 | — | — | one cold pool per window is not yet a pair |
 | система | 8 | 25 | .20 | 4 | the station body is measured against a nebula; see «Open by design» |
 
-Left from the queue: the **galactic band's second step on the map** (item 6b) — M308. The codex
-pass over the station — M306.
+Left from the queue: nothing — the band's second step is M308, the station's codex pass M306.
 
 ### Graphics still open
 
@@ -135,8 +133,8 @@ pass over the station — M306.
   settlement's houses and the wintering hut still draw their own and could take `homePlan`.
 - **The system view is 66% empty.** Dust in three planes helped little; what it needs is a nebula
   that reads and traffic that belongs to the world (barges, drones, other people's ships).
-- **The approach frame (landing) is 80% empty and has two tones.** The landing corridor is still a
-  dotted CAD line and the pad a flat bar.
+- ~~The approach frame is 80% empty and has two tones~~ — M304 gave it two masses and a light
+  corridor, M308 a warm horizon by day. Still 72% empty by the meter: sky is sky.
 - **Strata run parallel to the terrain** — geology is horizontal and cut by the relief, and that is
   what makes a cliff read as rock rather than as wallpaper.
 - **Straight lines where a hand belongs**: the reeds by the water, the cracks in the mine rock.
@@ -185,6 +183,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M308** (0.305.0) — the approach by day (warm horizon glow on the sun's side), the map band in two value steps, `pair` without a verdict for daylight scenes.
 - **M307** (0.304.0) — the home: furniture out of material by a `fillRect` wrapper, the house out of a seeded plan with signs of habitation by tier.
 - **M306** (0.303.0) — the station body held against §13 (verdict: holds, ALMANAC addendum II); the planet changes too — dump, dome, strip on the day side (`drawPlanetWorks`).
 - **M305** (0.302.0) — the cave as a place: round rock by smoothed marching squares, a back wall with a body, bones/ropes/tally/camp/branch-end finds; `docs/shot.py` for headless frames and meter numbers.

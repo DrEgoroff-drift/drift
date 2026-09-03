@@ -107,10 +107,15 @@ function lookFrame(){
   };
 }
 /* Приговор по мишеням: строка из галочек, чтобы в консоли было видно сразу */
-function lookVerdict(m){
+/* сцены под естественным дневным светом: одна температура там — не порок, а
+   правда пустыни в полдень; пара печатается справкой, без приговора (M308,
+   решение 2026-09-03) */
+const LOOK_DAYLIGHT=["грунт день","заход"];
+function lookVerdict(m,scene){
   const T=LOOK_TARGET;
   const ok=[];
-  ok.push((m.pair>=T.pair?"✓":"×")+"пара "+m.pair+"% (тепла "+m.warm+"%)");
+  const dayl=scene&&LOOK_DAYLIGHT.indexOf(scene)>=0;
+  ok.push(dayl?("·пара "+m.pair+"% (дневной свет, без приговора)"):((m.pair>=T.pair?"✓":"×")+"пара "+m.pair+"% (тепла "+m.warm+"%)"));
   ok.push((m.mass>=T.mass?"✓":"×")+"массы "+m.mass+"%");
   ok.push((m.edge<=T.edge?"✓":"×")+"кромка "+m.edge+"% (пусто "+m.empty+"%)");
   ok.push((m.contrast>=T.contrast?"✓":"×")+"контраст "+m.contrast);
@@ -156,7 +161,8 @@ function lookScenes(){
       G.mode="system";G.ship.x=s.planets[1].x+380;G.ship.y=s.planets[1].y+220;G.zoom=.7;return true;}},
     {id:"карта",set:()=>{G.mode="map";return true;}},
     {id:"заход",set:()=>{const s=find(q=>(q.planets||[]).some(p=>p.type!=="gas"));if(!jump(s))return false;
-      startLanding(s.planets.find(p=>p.type!=="gas"));return true;}},
+      const pl=s.planets.find(p=>p.type!=="gas");startLanding(pl);setHour(pl,true);   /* заход меряется днём (M308) */
+      G.land.y=groundAt(G.land.tr,G.land.x)-560;return true;}},
     {id:"грунт день",set:()=>{if(!land(day))return false;setHour(G.surf.p,true);return true;}},
     {id:"грунт ночь",set:()=>{if(!land(day))return false;setHour(G.surf.p,false);return true;}},
     {id:"шахта",set:()=>{if(!land(day))return false;enterDig();return true;}},
@@ -199,7 +205,7 @@ function lookAll(frames){
   try{applySave(snap);}catch(e){}
   G.mode="system";G.land=null;G.surf=null;G.dig=null;G.cave=null;G.base=null;G.hin=null;
   if(typeof console.table==="function")console.table(rows);
-  for(const r of rows)if(!r.ошибка)console.log(r.сцена+": "+lookVerdict(r));
+  for(const r of rows)if(!r.ошибка)console.log(r.сцена+": "+lookVerdict(r,r.сцена));
   return rows;
 }
 /* Один кадр, тот что сейчас на экране: `look()` в консоли во время игры */

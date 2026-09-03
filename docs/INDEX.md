@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 358 · символов верхнего уровня: 3311
+Файлов: 358 · символов верхнего уровня: 3312
 
 ## СИМВОЛЫ
 
@@ -1401,7 +1401,7 @@ jobOffer                     src/12e-mgr-jobs.js:228
 jobPick                      src/12e-mgr-jobs.js:259
 jobRefuse                    src/12e-mgr-jobs.js:57
 jobTick                      src/12e-mgr-jobs.js:287
-jump                         src/18-mode-map.js:542
+jump                         src/18-mode-map.js:564
 jumpToBase                   src/21a-mode-base.js:315
 KEEP_DARK_AFTER              src/11k-keepers.js:48
 KEEP_HABIT                   src/11k-keepers.js:35
@@ -1551,13 +1551,14 @@ logBtnLabel                  src/11-log.js:60
 logOpen                      src/11-log.js:14
 logPageOf                    src/11-log.js:13
 logTime                      src/11-log.js:54
-look                         src/28y-look.js:206
+look                         src/28y-look.js:212
+LOOK_DAYLIGHT                src/28y-look.js:113
 LOOK_TARGET                  src/28y-look.js:41
-lookAll                      src/28y-look.js:185
+lookAll                      src/28y-look.js:191
 lookFrame                    src/28y-look.js:46
 lookoutSees                  src/12ag-holdfx.js:104
-lookScenes                   src/28y-look.js:124
-lookVerdict                  src/28y-look.js:110
+lookScenes                   src/28y-look.js:129
+lookVerdict                  src/28y-look.js:114
 LOOP_OFF                     src/28-loop.js:130
 LORE                         src/12q-lore.js:67
 LORE_ACT                     src/12q-lore.js:47
@@ -3785,7 +3786,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/18d-verlet.js · 7 КБ
   · верле: верёвки и ткань:1
 
-## src/18-mode-map.js · 38 КБ
+## src/18-mode-map.js · 40 КБ
   · карта:1
   · где у карты пол и где правый борт:3
   · карта: ночное небо, а не схема молекулы:51
@@ -3811,7 +3812,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/19f-lander.js · 22 КБ
   · посадочный корабль:1
 
-## src/19-mode-landing.js · 39 КБ
+## src/19-mode-landing.js · 41 КБ
   · посадка:1
 
 ## src/20aa-poi-shapes.js · 30 КБ
@@ -4085,7 +4086,7 @@ zooTick                      src/11ad-zoo.js:41
   · prof() — на что уходит кадр:315
   · dbg() — что держит корабль:355
 
-## src/28y-look.js · 15 КБ
+## src/28y-look.js · 16 КБ
   · look() — прибор кадра:1
 
 ## src/28z-fps-probe.js · 9 КБ
@@ -4379,10 +4380,11 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzy-screens.js · 13 КБ
   · автотесты: экраны M299 — заголовки, подгляд карты, зал как ввод:1
 
-## tests/91zzza-cave-props.js · 5 КБ
+## tests/91zzza-cave-props.js · 6 КБ
   · пещера M305: гладкий обвод и содержимое:1
   · станция и планета M306: знаки на дневной стороне:32
   · дом M307: мебель из материала, план сеян:58
+  · M308: дневной свет без приговора, карта и заход рисуются:77
 
 ## tests/91zzza-trace.js · 5 КБ
 

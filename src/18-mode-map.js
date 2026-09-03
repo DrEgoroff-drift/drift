@@ -149,6 +149,28 @@ function drawMap(){
       g.addColorStop(1,"rgba(150,180,220,0)");
       ctx.fillStyle=g;ctx.fillRect(-L/2,-H*BW[i]/2,L,H*BW[i]);
     }
+    /* ── вторая ступень значения (M308, §16) ──
+       Полоса была одним плавным значением; масса на карте мерилась в 2%.
+       У настоящей полосы есть яркое узкое ядро и тёмная пылевая лента,
+       которая его режет, — две ступени вместо одной, и по ним полоса
+       читается телом, а не подсветкой. Плюс звёздная крошка в ядре. */
+    {
+      const cg2=ctx.createLinearGradient(0,-H*.075,0,H*.075);
+      cg2.addColorStop(0,"rgba(200,214,236,0)");cg2.addColorStop(.5,"rgba(214,224,240,.13)");cg2.addColorStop(1,"rgba(200,214,236,0)");
+      ctx.fillStyle=cg2;ctx.fillRect(-L/2,-H*.075,L,H*.15);
+      const rs=rng(0x3A11);
+      ctx.fillStyle="rgba(230,236,248,.5)";
+      for(let i=0;i<260;i++){const x=(rs()-.5)*L,y=(rs()-.5)*H*.16*(.4+rs()*.6);ctx.fillRect(x,y,rs()<.2?1.2:.8,.8);}
+      ctx.globalCompositeOperation="source-over";
+      const dl=ctx.createLinearGradient(0,-H*.03,0,H*.03);
+      dl.addColorStop(0,"rgba(6,8,14,0)");dl.addColorStop(.5,"rgba(6,8,14,.38)");dl.addColorStop(1,"rgba(6,8,14,0)");
+      ctx.fillStyle=dl;
+      ctx.beginPath();
+      for(let x=-L/2;x<=L/2;x+=40){const y=Math.sin(x*.004)*H*.02+Math.sin(x*.011+1)*H*.01;if(x===-L/2)ctx.moveTo(x,y-H*.03);else ctx.lineTo(x,y-H*.03);}
+      for(let x=L/2;x>=-L/2;x-=40){const y=Math.sin(x*.004)*H*.02+Math.sin(x*.011+1)*H*.01;ctx.lineTo(x,y+H*.03);}
+      ctx.closePath();ctx.fill();
+      ctx.globalCompositeOperation="lighter";
+    }
     /* тёплое ядро полосы — вторая температура листа */
     const cg=ctx.createRadialGradient(-W*.18,0,0,-W*.18,0,W*.34);
     cg.addColorStop(0,"rgba(236,206,160,.10)");

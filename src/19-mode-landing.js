@@ -586,7 +586,29 @@ function drawLanding(){
      ровной горизонтальной чертой посреди пустого неба — та самая линейка, от
      которой шахту лечили в M219. Дымка живёт там, где земля встречается с
      воздухом: у кромки грунта, а если та ушла ниже кадра — у нижней кромки. */
-  hazeBand(p,clamp(groundAt(tr,L.x)-camy,H*.30,H*.86),H*.20);   /* пол дымки не ниже .86H (M304) */
+  const hzY=clamp(groundAt(tr,L.x)-camy,H*.30,H*.86);
+  hazeBand(p,hzY,H*.20);   /* пол дымки не ниже .86H (M304) */
+  /* ── тёплый источник на заходе (M308): солнце за дымкой ──
+     Терранский мир с высоты был одной температурой: прибор мерил pair 0, и
+     это честно — синий воздух над синей землёй. Но у горизонта, со стороны
+     солнца, дымка светится ЕГО цветом: низкое солнце сквозь толщу воздуха.
+     Зарево у пола дымки, по SUN_DIR, силой от высоты солнца. */
+  if(p.T.atm!=="отсутствует"&&typeof celSun==="function"){
+    const alt=celSun(p).alt;
+    const k=clamp((alt+.15)/.6,0,1)*(1-clamp(alt-.5,0,1))*.55;
+    if(k>.02){
+      const sc=(G.sys&&G.sys.cls&&G.sys.cls.col)?hex2rgb(G.sys.cls.col):[255,214,150];
+      const wc=[Math.round(sc[0]*.4+153),Math.round(sc[1]*.4+120),Math.round(sc[2]*.3+70)];
+      const gx=W/2+SUN_DIR.x*W*.42, gy=hzY+H*.04;
+      const g=ctx.createRadialGradient(gx,gy,0,gx,gy,W*.36);
+      g.addColorStop(0,"rgba("+wc.join(",")+","+k.toFixed(3)+")");
+      g.addColorStop(.45,"rgba("+wc.join(",")+","+(k*.35).toFixed(3)+")");
+      g.addColorStop(1,"rgba("+wc.join(",")+",0)");
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(gx,gy,W*.36,H*.16,0,0,TAU);ctx.fill();
+      ctx.restore();
+    }
+  }
   /* дальние капли — за грядой и за кораблём, ближние поверх (M242) */
   drawWeather(p,camx,camy,"far");
   drawGround(tr,camx,camy,"rgb("+p.T.pal[2].map(v=>Math.round(v*.6)).join(",")+")",

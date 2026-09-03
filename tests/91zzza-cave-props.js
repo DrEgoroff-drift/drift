@@ -73,3 +73,18 @@ TEST_SUITES.push(()=>suite("M307: обёртка мебели возвращае
   for(const t of [0,1,2,3,4])homeSigns(300,300,60,{wood:[96,72,50],metal:[104,112,120],stone:[90,90,100]},t,a);
   ok(true,"признаки жизни рисуются на всех ступенях");
 }));
+
+/* ══════════════ M308: дневной свет без приговора, карта и заход рисуются ══════════════ */
+TEST_SUITES.push(()=>suite("M308: пара без приговора для дневных сцен, полоса карты и зарево захода",()=>{
+  resetWorld();
+  const m={pair:3,warm:97,mass:20,edge:5,contrast:.4,tones:5,empty:50};
+  ok(lookVerdict(m,"грунт день").indexOf("без приговора")>=0,"грунт день: пара справкой");
+  ok(lookVerdict(m,"пещера").indexOf("×пара")>=0,"пещера: пара судится");
+  ok(lookVerdict(m).indexOf("×пара")>=0,"без сцены — старое поведение");
+  G.mode="map";drawMap();drawMap();
+  ok(true,"карта с полосой в две ступени нарисована");
+  const p=G.sys.planets.find(q=>q.type!=="gas")||G.sys.planets[0];
+  startLanding(p);G.land.y=groundAt(G.land.tr,G.land.x)-560;
+  for(let i=0;i<3;i++){updateLanding(1);drawLanding();}
+  ok(G.mode==="landing","заход с полукилометра рисуется с зарево́м без ошибок");
+}));
