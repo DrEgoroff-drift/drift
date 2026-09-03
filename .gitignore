@@ -23,3 +23,4 @@ docs/ref/
 # headless frame shots (docs/shot.py) are scratch, except the ones the almanac cites
 docs/shots/x_*.png
 !docs/shots/x_fleet.png
+!docs/shots/x_fleet2.png
