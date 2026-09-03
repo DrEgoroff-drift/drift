@@ -7,6 +7,30 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.304.0 - M307: the home — furniture out of material, a house out of a plan
+
+Two «Graphics still open» lines: the home's furniture was flat boxes with no material, and the
+house outside was assembled by a formula, not a generator (the rule of origin).
+
+- **Furniture out of material** (`hinMaterialize`, `29d-home-draw`). The room's furnishing is two
+  hundred `fillRect` calls in one function; rewriting each is a session. Instead, for the duration
+  of `hinRoomStuff`/`hinFrontStuff` the context's `fillRect` is replaced: every slab over 5×5
+  gets a lighter top third and a darker bottom quarter (one light, from the lamp under the
+  ceiling), a lit top/left edge and a dark bottom/right edge; wood (r>g>b) gets two or three grain
+  lines along the long side, metal a cold streak; whatever stands on the floor gets a contact
+  shadow. Room-wide slabs (floors, walls), holes and translucent fills are skipped. Restored in
+  `finally`.
+- **The house out of a plan** (`homePlan`, `homeSigns`, `21f-home-out`). Width, wall height, roof
+  pitch, roof material (thatch on jungle, tile on rock/desert, plank elsewhere), window offset and
+  the porch's side are seeded from the system's coordinates: the same house every visit, a
+  different house for every player. Signs of habitation grow with the tier: a woodpile from I,
+  barrels from II, fence posts from III.
+- Not done, on purpose: baking the interior into a layer. Nothing in the home is baked; the
+  frame cost was not measured this pass, and a bake without a number is the rule «measure, don't
+  guess» broken. Left in PLAN.
+- Suite `91zzza` (M307 block).
+
+---
 ## 0.303.0 - M306: the station body against the codex; the planet changes too
 
 The holding's «still open» line: the codex pass over the station body (DESIGN-holding §13 — the

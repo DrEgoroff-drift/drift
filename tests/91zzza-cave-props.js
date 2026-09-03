@@ -54,3 +54,22 @@ TEST_SUITES.push(()=>suite("M306: отвал, купол и полоса на п
   ok(true,"на малом диске (r<12) знаки не рисуются и не падают");
   G.hold=save;
 }));
+
+/* ══════════════ дом M307: мебель из материала, план сеян ══════════════ */
+TEST_SUITES.push(()=>suite("M307: обёртка мебели возвращает fillRect, план дома сеян и повторяем",()=>{
+  resetWorld();
+  const orig=ctx.fillRect;
+  let inner=0;
+  hinMaterialize(0,()=>{inner=(ctx.fillRect!==orig)?1:0;ctx.fillStyle="rgb(120,80,50)";ctx.fillRect(10,-20,30,20);ctx.fillStyle="rgba(0,0,0,.2)";ctx.fillRect(0,0,400,400);});
+  eq(inner,1,"внутри обёртки fillRect подменён");
+  ok(ctx.fillRect===orig,"после обёртки fillRect прежний");
+  let threw=false;try{hinMaterialize(0,()=>{throw new Error("x");});}catch(e){threw=true;}
+  ok(threw&&ctx.fillRect===orig,"исключение внутри — fillRect всё равно возвращён");
+  const p=G.sys.planets.find(q=>q.type!=="gas")||G.sys.planets[0];
+  const a=homePlan(p),b=homePlan(p);
+  ok(a.w>=3.1&&a.w<=3.9&&a.roofH>=.8&&a.roofH<=1.2,"план в допусках");
+  eq(JSON.stringify(a),JSON.stringify(b),"один и тот же дом при каждом приходе");
+  ok(["plank","tile","thatch"].indexOf(a.roofKind)>=0,"кровля из тех, что умеет sdRoof");
+  for(const t of [0,1,2,3,4])homeSigns(300,300,60,{wood:[96,72,50],metal:[104,112,120],stone:[90,90,100]},t,a);
+  ok(true,"признаки жизни рисуются на всех ступенях");
+}));

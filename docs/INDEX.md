@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 358 · символов верхнего уровня: 3308
+Файлов: 358 · символов верхнего уровня: 3311
 
 ## СИМВОЛЫ
 
@@ -1142,6 +1142,7 @@ hinFrontStuff                src/29d-home-draw.js:336
 hinGroundRooms               src/29c-home-in.js:28
 hinHasUp                     src/29e-home-up.js:22
 hinHoleX                     src/29e-home-up.js:41
+hinMaterialize               src/29d-home-draw.js:768
 hinNear                      src/29c-home-in.js:229
 hinPal                       src/29d-home-draw.js:6
 hinRoomAt                    src/29c-home-in.js:60
@@ -1222,7 +1223,7 @@ homeBeaconCost               src/12j-home.js:170
 homeCanRebuild               src/12j-home.js:226
 homeCanRevive                src/12j-home.js:146
 homeCrewFigure               src/27e-ui-home.js:680
-homeDoorX                    src/21f-home-out.js:310
+homeDoorX                    src/21f-home-out.js:312
 homeFigure                   src/27e-ui-home.js:613
 homeHas                      src/12j-home.js:24
 homeHereP                    src/21f-home-out.js:26
@@ -1235,6 +1236,7 @@ homeMoraleMul                src/12j-home.js:213
 homeNext                     src/12j-home.js:29
 homeOrderBonus               src/12j-home.js:210
 homeOutPal                   src/21f-home-out.js:57
+homePlan                     src/21f-home-out.js:325
 homePlanet                   src/21f-home-out.js:18
 homeProgress                 src/12j-home.js:132
 homeRebuild                  src/12j-home.js:227
@@ -1245,6 +1247,7 @@ homeSceneClick               src/27e-ui-home.js:628
 homeShade                    src/27e-ui-home.js:696
 homeShow                     src/12j-home.js:196
 homeShowBonus                src/12j-home.js:217
+homeSigns                    src/21f-home-out.js:332
 homeSpotX                    src/21f-home-out.js:34
 homeStore                    src/12j-home.js:189
 homeTurn                     src/12j-home.js:45
@@ -3877,7 +3880,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/21e-surface-draw.js · 47 КБ
   · поверхность: подсказка, HUD и кадр:1
 
-## src/21f-home-out.js · 18 КБ
+## src/21f-home-out.js · 21 КБ
   · дом снаружи:1
 
 ## src/21g-greenhouse.js · 10 КБ
@@ -4091,7 +4094,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29c-home-in.js · 16 КБ
   · дом изнутри: по нему ходят:1
 
-## src/29d-home-draw.js · 46 КБ
+## src/29d-home-draw.js · 49 КБ
   · дом изнутри: кадр:1
 
 ## src/29e-home-up.js · 22 КБ
@@ -4376,9 +4379,10 @@ zooTick                      src/11ad-zoo.js:41
 ## tests/91zzy-screens.js · 13 КБ
   · автотесты: экраны M299 — заголовки, подгляд карты, зал как ввод:1
 
-## tests/91zzza-cave-props.js · 4 КБ
+## tests/91zzza-cave-props.js · 5 КБ
   · пещера M305: гладкий обвод и содержимое:1
   · станция и планета M306: знаки на дневной стороне:32
+  · дом M307: мебель из материала, план сеян:58
 
 ## tests/91zzza-trace.js · 5 КБ
 

@@ -1479,7 +1479,7 @@ body.mapclean .hud,body.mapclean .pads,body.mapclean #console,body.mapclean #pro
 "use strict";
 /* Версия игры. Одна на всё: заставка, журнал, патчноуты (PATCHNOTES.md).
    К формату сохранения отношения не имеет — тот навсегда v:4. */
-const VER="0.303.0";
+const VER="0.304.0";
 /* ══════════════ математика ══════════════ */
 const TAU=Math.PI*2;
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
@@ -44497,7 +44497,8 @@ function drawHomeOut(tr,camx,camy,p){
   const nite=(typeof surfNight==="function")?surfNight(p):0;
   const wind=(typeof WIND==="number")?WIND*2:0;
   const M=HOME_MAN;
-  const w=M*3.4, wallH=M*1.9, roofH=M*.95;           /* дом: два с половиной роста */
+  const plan=homePlan(p);                            /* план сеян (M307) */
+  const w=M*plan.w, wallH=M*plan.wallH, roofH=M*plan.roofH;   /* дом: два с половиной роста */
   /* ── площадка ──
      Дом стоял прямо на склоне, и гараж повисал над обрывом (самокритика M170).
      Под жильё срезают полку — той же рукой, что в посёлке (12tb): подпорная
@@ -44563,7 +44564,7 @@ function drawHomeOut(tr,camx,camy,p){
   lg.addColorStop(1,"rgba(255,240,214,.16)");
   ctx.fillStyle=lg;ctx.fillRect(sx-w/2,gy-wallH,w,wallH);
   sdWallTex(sx-w/2,gy-wallH,w,wallH,"log",0x40E9,pal.wall);
-  sdRoof(sx-w/2,gy-wallH,w,roofH,"plank",{roof:pal.roof,
+  sdRoof(sx-w/2,gy-wallH,w,roofH,plan.roofKind,{roof:pal.roof,
     roofLit:sdMix(pal.roof,[236,214,170],.34),roofDark:sdMix(pal.roof,[12,16,24],.4)},0x40EA);
   /* ── труба и дым: дом живой, пока в нём кто-то есть ──
      Труба стояла от КОНЬКА (`gy-wallH-roofH`), а сидит она на скате, и на её
@@ -44582,7 +44583,7 @@ function drawHomeOut(tr,camx,camy,p){
   if(typeof sdSmoke==="function")
     sdSmoke(chX+chW*.5,chTop-3,wind,.7,3,9);
   /* окно: главный признак жилья — в нём свет */
-  const ww=w*.26,wh=wallH*.30,wx=sx+w*.10,wy=gy-wallH*.70;
+  const ww=w*.26,wh=wallH*.30,wx=sx+w*plan.win,wy=gy-wallH*.70;
   sdWindow(wx,wy,ww,wh,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},
     Math.max(nite,.25),7);
   if(homeHas("living")){                              /* жилая часть — второе окно */
@@ -44590,7 +44591,8 @@ function drawHomeOut(tr,camx,camy,p){
       Math.max(nite,.2),11);
   }
   /* крыльцо и дверь: сюда и входят */
-  const dw=w*.20,dh=wallH*.56,dX=sx-w*.30;
+  const dw=w*.20,dh=wallH*.56,dX=sx+plan.doorSide*-.30*w;
+  homeSigns(sx,gy,w,pal,tier,plan);                 /* признаки жизни по ступени (M307) */
   if(typeof sdDoor==="function")sdDoor(dX,gy,dw,dh,pal.wood,false);
   ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.2));
   ctx.fillRect(dX-3,gy-3,dw+6,3);
@@ -44728,6 +44730,55 @@ function homeDoorX(tr,p){
   const bx=homeSpotX(p,tr);
   if(bx==null)return null;
   return bx-HOME_MAN*3.4*.30;
+}
+
+/* ── план дома сеется, а не задаётся (M307, правило происхождения) ──
+   Дом был формулой: одна ширина, один скат, окно в одном месте у каждого
+   игрока. Теперь план — от координат системы: ширина, высота стен, крутизна
+   и материал крыши (лес — тёс, камень — черепица, лёд и песок — жесть),
+   куда сдвинуто окно, с какой стороны крыльцо; и признаки жизни растут со
+   ступенью — поленница, бочки, столбики ограды, антенна. Один и тот же дом
+   у одного игрока стоит одинаково при каждом приходе. */
+function homePlan(p){
+  const h=hashi(G.sx|0,G.sy|0,0x40E0),r=rng(h);
+  const t=p&&p.type;
+  const roofKind=(t==="jungle")?"thatch":((t==="rocky"||t==="volcanic"||t==="desert"||t==="sand")?"tile":"plank");
+  return {w:3.1+r()*.8,wallH:1.8+r()*.25,roofH:.8+r()*.4,roofKind,
+    win:.04+r()*.14,doorSide:r()<.5?-1:1,pile:r()<.5?-1:1,seed:h};
+}
+function homeSigns(sx,gy,w,pal,tier,plan){
+  const M=HOME_MAN,r=rng(plan.seed^0x51);
+  /* поленница у стены — с первой ступени: в доме топят */
+  if(tier>=1){
+    const px=sx+plan.pile*(w*.5+M*.5), n=3+Math.min(3,tier);
+    for(let row=0;row<2;row++)for(let i=0;i<n-row;i++){
+      const x=px-(n-row)*2.2+i*4.4, y=gy-3-row*3.6;
+      ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.15+r()*.2));
+      ctx.beginPath();ctx.arc(x,y,2,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(236,214,170,.45)";ctx.beginPath();ctx.arc(x,y,.9,0,TAU);ctx.fill();
+    }
+  }
+  /* бочки — со второй: хозяйство */
+  if(tier>=2){
+    const bx=sx-plan.pile*(w*.5+M*.9);
+    for(let i=0;i<2;i++){
+      const x=bx+i*7,h=M*.5;
+      ctx.fillStyle=sdRGB(sdMix(pal.metal,[0,0,0],.25));ctx.fillRect(x-2.6,gy-h,5.2,h);
+      ctx.fillStyle="rgba(226,236,240,.16)";ctx.fillRect(x-2.6,gy-h,1.4,h);
+      ctx.fillStyle="rgba(0,0,0,.3)";ctx.fillRect(x-2.6,gy-h*.35,5.2,.8);ctx.fillRect(x-2.6,gy-h*.75,5.2,.8);
+    }
+  }
+  /* столбики ограды — с третьей: двор стал двором */
+  if(tier>=3){
+    ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.3));
+    const x0=sx-w*1.3,x1=sx+w*1.3;
+    for(let x=x0;x<=x1;x+=M*.55){
+      if(Math.abs(x-sx)<w*.7)continue;
+      ctx.fillRect(x-.8,gy-M*.42,1.6,M*.42);
+    }
+    ctx.fillStyle="rgba(0,0,0,.28)";
+    for(const [a,b] of [[x0,sx-w*.7],[sx+w*.7,x1]])ctx.fillRect(a,gy-M*.3,b-a,.9);
+  }
 }
 
 /* ══════════════ грядка у дома ══════════════
@@ -66747,7 +66798,7 @@ function drawHomeIn(){
   /* ── обстановка ── */
   for(const r of R){
     if(r.x+r.w<camx-60||r.x>camx+vw+60)continue;
-    hinRoomStuff(r,fy,ceil,P);
+    hinMaterialize(fy,()=>hinRoomStuff(r,fy,ceil,P));   /* мебель из материала (M307) */
   }
   /* ── перегородки с проёмами ── */
   for(let i=1;i<R.length;i++){
@@ -66864,7 +66915,7 @@ function drawHomeIn(){
      иначе они не спереди. */
   for(const r of R){
     if(r.x+r.w<camx-80||r.x>camx+vw+80)continue;
-    hinFrontStuff(r,fy,P);
+    hinMaterialize(fy,()=>hinFrontStuff(r,fy,P));
   }
   /* ── свет: по лампе на комнату ── */
   ctx.save();ctx.globalCompositeOperation="lighter";
@@ -67337,6 +67388,51 @@ function hinFigure(x,fy,col,face,pose,walk,name,look){
     ctx.textAlign="center";
     ctx.fillText(name,x,fy-M*1.3);
   }
+}
+
+/* ── мебель из материала, а не из коробок (M307) ──
+   Обстановка дома — две сотни fillRect в одной функции, и каждая вещь была
+   плоской плашкой одного тона: ни грани, ни волокна, ни тени на полу. Дом
+   получил 2/5 по пяти проходам именно за это. Переписывать двести
+   прямоугольников — сессия; вместо этого на время обстановки fillRect
+   подменяется: каждая плашка крупнее 5×5 получает свет по верхней и левой
+   кромке, тень по нижней и правой, дерево (r>g>b) — две-три жилки вдоль,
+   а то, что стоит на полу, — контактную тень. Это тот же закон «много кусков —
+   одно тело» и один свет сверху: лампа в каждой комнате висит под потолком.
+   Полы и стены комнат (широкие плашки в 8 ростов) обёртка пропускает. */
+function hinMaterialize(fy,fn){
+  const c=ctx,orig=c.fillRect;
+  c.fillRect=function(x,y,w,h){
+    orig.call(c,x,y,w,h);
+    if(!(w>=5&&h>=5)||w>HIN_MAN*6||h>HIN_MAN*3)return;
+    const fs=c.fillStyle;if(typeof fs!=="string")return;
+    let r,g,b,a=1;
+    const m=/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?/.exec(fs);
+    if(m){r=+m[1];g=+m[2];b=+m[3];if(m[4]!==undefined)a=+m[4];}
+    else{const h6=/^#([0-9a-f]{6})$/i.exec(fs);if(!h6)return;const v=parseInt(h6[1],16);r=v>>16;g=(v>>8)&255;b=v&255;}
+    if(a<.5)return;
+    const L=(r*.299+g*.587+b*.114);
+    if(L<18)return;                                   /* дыры и тени — не вещи */
+    /* верхняя грань светлее, низ темнее: плашка стала телом с одним светом */
+    c.fillStyle="rgba(255,236,200,.09)";orig.call(c,x,y,w,Math.max(1.5,h*.3));
+    c.fillStyle="rgba(0,0,0,.16)";orig.call(c,x,y+h*.72,w,h*.28);
+    c.fillStyle="rgba(255,240,214,.22)";orig.call(c,x,y,w,1.2);orig.call(c,x,y,1,h);
+    c.fillStyle="rgba(0,0,0,.28)";orig.call(c,x,y+h-1.2,w,1.2);orig.call(c,x+w-1,y,1,h);
+    if(r>g&&g>b&&r-b>18){                             /* дерево: жилки вдоль */
+      c.fillStyle="rgba(0,0,0,.10)";
+      if(w>=h){const st=Math.max(3,h/3);for(let yy=y+st;yy<y+h-2;yy+=st)orig.call(c,x+2,yy,w-4,.8);}
+      else{const st=Math.max(3,w/3);for(let xx=x+st;xx<x+w-2;xx+=st)orig.call(c,xx,y+2,.8,h-4);}
+      c.fillStyle="rgba(255,236,200,.05)";orig.call(c,x+2,y+2,w-4,.8);
+    }else if(Math.abs(r-b)<14&&L>60){                 /* металл: холодный блик полосой */
+      c.fillStyle="rgba(210,226,240,.12)";orig.call(c,x+w*.15,y+1.5,w*.25,Math.max(1,h-3));
+    }
+    if(Math.abs(y+h-fy)<1.6&&w>=8){                   /* стоит на полу — есть тень */
+      c.fillStyle="rgba(0,0,0,.30)";orig.call(c,x-1.5,fy,w+3,1.8);
+      c.fillStyle="rgba(0,0,0,.12)";orig.call(c,x-4,fy+1.8,w+8,1.6);
+    }
+    c.fillStyle=fs;
+  };
+  try{fn();}finally{c.fillRect=orig;}
 }
 
 /* ══════════════ второй этаж жилой части (M178-9) ══════════════

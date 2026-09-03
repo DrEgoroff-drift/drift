@@ -80,7 +80,8 @@ function drawHomeOut(tr,camx,camy,p){
   const nite=(typeof surfNight==="function")?surfNight(p):0;
   const wind=(typeof WIND==="number")?WIND*2:0;
   const M=HOME_MAN;
-  const w=M*3.4, wallH=M*1.9, roofH=M*.95;           /* дом: два с половиной роста */
+  const plan=homePlan(p);                            /* план сеян (M307) */
+  const w=M*plan.w, wallH=M*plan.wallH, roofH=M*plan.roofH;   /* дом: два с половиной роста */
   /* ── площадка ──
      Дом стоял прямо на склоне, и гараж повисал над обрывом (самокритика M170).
      Под жильё срезают полку — той же рукой, что в посёлке (12tb): подпорная
@@ -146,7 +147,7 @@ function drawHomeOut(tr,camx,camy,p){
   lg.addColorStop(1,"rgba(255,240,214,.16)");
   ctx.fillStyle=lg;ctx.fillRect(sx-w/2,gy-wallH,w,wallH);
   sdWallTex(sx-w/2,gy-wallH,w,wallH,"log",0x40E9,pal.wall);
-  sdRoof(sx-w/2,gy-wallH,w,roofH,"plank",{roof:pal.roof,
+  sdRoof(sx-w/2,gy-wallH,w,roofH,plan.roofKind,{roof:pal.roof,
     roofLit:sdMix(pal.roof,[236,214,170],.34),roofDark:sdMix(pal.roof,[12,16,24],.4)},0x40EA);
   /* ── труба и дым: дом живой, пока в нём кто-то есть ──
      Труба стояла от КОНЬКА (`gy-wallH-roofH`), а сидит она на скате, и на её
@@ -165,7 +166,7 @@ function drawHomeOut(tr,camx,camy,p){
   if(typeof sdSmoke==="function")
     sdSmoke(chX+chW*.5,chTop-3,wind,.7,3,9);
   /* окно: главный признак жилья — в нём свет */
-  const ww=w*.26,wh=wallH*.30,wx=sx+w*.10,wy=gy-wallH*.70;
+  const ww=w*.26,wh=wallH*.30,wx=sx+w*plan.win,wy=gy-wallH*.70;
   sdWindow(wx,wy,ww,wh,{wall:pal.wall,wallDark:sdMix(pal.wall,[16,20,28],.42)},
     Math.max(nite,.25),7);
   if(homeHas("living")){                              /* жилая часть — второе окно */
@@ -173,7 +174,8 @@ function drawHomeOut(tr,camx,camy,p){
       Math.max(nite,.2),11);
   }
   /* крыльцо и дверь: сюда и входят */
-  const dw=w*.20,dh=wallH*.56,dX=sx-w*.30;
+  const dw=w*.20,dh=wallH*.56,dX=sx+plan.doorSide*-.30*w;
+  homeSigns(sx,gy,w,pal,tier,plan);                 /* признаки жизни по ступени (M307) */
   if(typeof sdDoor==="function")sdDoor(dX,gy,dw,dh,pal.wood,false);
   ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.2));
   ctx.fillRect(dX-3,gy-3,dw+6,3);
@@ -311,4 +313,53 @@ function homeDoorX(tr,p){
   const bx=homeSpotX(p,tr);
   if(bx==null)return null;
   return bx-HOME_MAN*3.4*.30;
+}
+
+/* ── план дома сеется, а не задаётся (M307, правило происхождения) ──
+   Дом был формулой: одна ширина, один скат, окно в одном месте у каждого
+   игрока. Теперь план — от координат системы: ширина, высота стен, крутизна
+   и материал крыши (лес — тёс, камень — черепица, лёд и песок — жесть),
+   куда сдвинуто окно, с какой стороны крыльцо; и признаки жизни растут со
+   ступенью — поленница, бочки, столбики ограды, антенна. Один и тот же дом
+   у одного игрока стоит одинаково при каждом приходе. */
+function homePlan(p){
+  const h=hashi(G.sx|0,G.sy|0,0x40E0),r=rng(h);
+  const t=p&&p.type;
+  const roofKind=(t==="jungle")?"thatch":((t==="rocky"||t==="volcanic"||t==="desert"||t==="sand")?"tile":"plank");
+  return {w:3.1+r()*.8,wallH:1.8+r()*.25,roofH:.8+r()*.4,roofKind,
+    win:.04+r()*.14,doorSide:r()<.5?-1:1,pile:r()<.5?-1:1,seed:h};
+}
+function homeSigns(sx,gy,w,pal,tier,plan){
+  const M=HOME_MAN,r=rng(plan.seed^0x51);
+  /* поленница у стены — с первой ступени: в доме топят */
+  if(tier>=1){
+    const px=sx+plan.pile*(w*.5+M*.5), n=3+Math.min(3,tier);
+    for(let row=0;row<2;row++)for(let i=0;i<n-row;i++){
+      const x=px-(n-row)*2.2+i*4.4, y=gy-3-row*3.6;
+      ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.15+r()*.2));
+      ctx.beginPath();ctx.arc(x,y,2,0,TAU);ctx.fill();
+      ctx.fillStyle="rgba(236,214,170,.45)";ctx.beginPath();ctx.arc(x,y,.9,0,TAU);ctx.fill();
+    }
+  }
+  /* бочки — со второй: хозяйство */
+  if(tier>=2){
+    const bx=sx-plan.pile*(w*.5+M*.9);
+    for(let i=0;i<2;i++){
+      const x=bx+i*7,h=M*.5;
+      ctx.fillStyle=sdRGB(sdMix(pal.metal,[0,0,0],.25));ctx.fillRect(x-2.6,gy-h,5.2,h);
+      ctx.fillStyle="rgba(226,236,240,.16)";ctx.fillRect(x-2.6,gy-h,1.4,h);
+      ctx.fillStyle="rgba(0,0,0,.3)";ctx.fillRect(x-2.6,gy-h*.35,5.2,.8);ctx.fillRect(x-2.6,gy-h*.75,5.2,.8);
+    }
+  }
+  /* столбики ограды — с третьей: двор стал двором */
+  if(tier>=3){
+    ctx.fillStyle=sdRGB(sdMix(pal.wood,[0,0,0],.3));
+    const x0=sx-w*1.3,x1=sx+w*1.3;
+    for(let x=x0;x<=x1;x+=M*.55){
+      if(Math.abs(x-sx)<w*.7)continue;
+      ctx.fillRect(x-.8,gy-M*.42,1.6,M*.42);
+    }
+    ctx.fillStyle="rgba(0,0,0,.28)";
+    for(const [a,b] of [[x0,sx-w*.7],[sx+w*.7,x1]])ctx.fillRect(a,gy-M*.3,b-a,.9);
+  }
 }

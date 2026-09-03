@@ -130,12 +130,9 @@ pass over the station — M306.
   a back wall, bones, ropes, tallies, a camp, branch-end finds. Left: the lower lake hall is still
   79% empty by the meter — a vault of 78 over a flat floor; if it needs more, it needs a second
   floor level or a lake that fills the frame, not more props.
-- **The home's furniture is flat boxes** with no material, and the floor is plain planks. The house
-  scored 2/5 on the five passes; the outside got its chimney, shadow, laundry and guy-wires, the
-  inside got a window and honest doorways — the furniture is the rest of that work.
-- **The house is still assembled by a formula, not a generator** (the rule of origin). A seeded
-  plan, a roof with material and two slopes, and signs of habitation growing with the tier would
-  also serve the settlement's houses and the wintering hut, which each draw their own today.
+- ~~The home's furniture is flat boxes~~ / ~~the house is a formula~~ — M307 (0.304.0). Left: the
+  interior is still drawn per frame (nothing baked) — measure with `prof()` before baking; the
+  settlement's houses and the wintering hut still draw their own and could take `homePlan`.
 - **The system view is 66% empty.** Dust in three planes helped little; what it needs is a nebula
   that reads and traffic that belongs to the world (barges, drones, other people's ships).
 - **The approach frame (landing) is 80% empty and has two tones.** The landing corridor is still a
@@ -188,6 +185,7 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M289–M297** (0.286–0.294) — the holding in nine steps (see "The holding — built" below).
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
+- **M307** (0.304.0) — the home: furniture out of material by a `fillRect` wrapper, the house out of a seeded plan with signs of habitation by tier.
 - **M306** (0.303.0) — the station body held against §13 (verdict: holds, ALMANAC addendum II); the planet changes too — dump, dome, strip on the day side (`drawPlanetWorks`).
 - **M305** (0.302.0) — the cave as a place: round rock by smoothed marching squares, a back wall with a body, bones/ropes/tally/camp/branch-end finds; `docs/shot.py` for headless frames and meter numbers.
 - **M304** (0.301.0) — the picture queue as one release: cave to zone I–II with cold glazes baked into the tile, sky brush and `hueToward`, landing horizon and altitude zenith, home panels/boards/study window, station sprite with one light, base halo, rain on the ground.

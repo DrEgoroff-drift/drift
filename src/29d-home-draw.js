@@ -163,7 +163,7 @@ function drawHomeIn(){
   /* ── обстановка ── */
   for(const r of R){
     if(r.x+r.w<camx-60||r.x>camx+vw+60)continue;
-    hinRoomStuff(r,fy,ceil,P);
+    hinMaterialize(fy,()=>hinRoomStuff(r,fy,ceil,P));   /* мебель из материала (M307) */
   }
   /* ── перегородки с проёмами ── */
   for(let i=1;i<R.length;i++){
@@ -280,7 +280,7 @@ function drawHomeIn(){
      иначе они не спереди. */
   for(const r of R){
     if(r.x+r.w<camx-80||r.x>camx+vw+80)continue;
-    hinFrontStuff(r,fy,P);
+    hinMaterialize(fy,()=>hinFrontStuff(r,fy,P));
   }
   /* ── свет: по лампе на комнату ── */
   ctx.save();ctx.globalCompositeOperation="lighter";
@@ -753,4 +753,49 @@ function hinFigure(x,fy,col,face,pose,walk,name,look){
     ctx.textAlign="center";
     ctx.fillText(name,x,fy-M*1.3);
   }
+}
+
+/* ── мебель из материала, а не из коробок (M307) ──
+   Обстановка дома — две сотни fillRect в одной функции, и каждая вещь была
+   плоской плашкой одного тона: ни грани, ни волокна, ни тени на полу. Дом
+   получил 2/5 по пяти проходам именно за это. Переписывать двести
+   прямоугольников — сессия; вместо этого на время обстановки fillRect
+   подменяется: каждая плашка крупнее 5×5 получает свет по верхней и левой
+   кромке, тень по нижней и правой, дерево (r>g>b) — две-три жилки вдоль,
+   а то, что стоит на полу, — контактную тень. Это тот же закон «много кусков —
+   одно тело» и один свет сверху: лампа в каждой комнате висит под потолком.
+   Полы и стены комнат (широкие плашки в 8 ростов) обёртка пропускает. */
+function hinMaterialize(fy,fn){
+  const c=ctx,orig=c.fillRect;
+  c.fillRect=function(x,y,w,h){
+    orig.call(c,x,y,w,h);
+    if(!(w>=5&&h>=5)||w>HIN_MAN*6||h>HIN_MAN*3)return;
+    const fs=c.fillStyle;if(typeof fs!=="string")return;
+    let r,g,b,a=1;
+    const m=/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?/.exec(fs);
+    if(m){r=+m[1];g=+m[2];b=+m[3];if(m[4]!==undefined)a=+m[4];}
+    else{const h6=/^#([0-9a-f]{6})$/i.exec(fs);if(!h6)return;const v=parseInt(h6[1],16);r=v>>16;g=(v>>8)&255;b=v&255;}
+    if(a<.5)return;
+    const L=(r*.299+g*.587+b*.114);
+    if(L<18)return;                                   /* дыры и тени — не вещи */
+    /* верхняя грань светлее, низ темнее: плашка стала телом с одним светом */
+    c.fillStyle="rgba(255,236,200,.09)";orig.call(c,x,y,w,Math.max(1.5,h*.3));
+    c.fillStyle="rgba(0,0,0,.16)";orig.call(c,x,y+h*.72,w,h*.28);
+    c.fillStyle="rgba(255,240,214,.22)";orig.call(c,x,y,w,1.2);orig.call(c,x,y,1,h);
+    c.fillStyle="rgba(0,0,0,.28)";orig.call(c,x,y+h-1.2,w,1.2);orig.call(c,x+w-1,y,1,h);
+    if(r>g&&g>b&&r-b>18){                             /* дерево: жилки вдоль */
+      c.fillStyle="rgba(0,0,0,.10)";
+      if(w>=h){const st=Math.max(3,h/3);for(let yy=y+st;yy<y+h-2;yy+=st)orig.call(c,x+2,yy,w-4,.8);}
+      else{const st=Math.max(3,w/3);for(let xx=x+st;xx<x+w-2;xx+=st)orig.call(c,xx,y+2,.8,h-4);}
+      c.fillStyle="rgba(255,236,200,.05)";orig.call(c,x+2,y+2,w-4,.8);
+    }else if(Math.abs(r-b)<14&&L>60){                 /* металл: холодный блик полосой */
+      c.fillStyle="rgba(210,226,240,.12)";orig.call(c,x+w*.15,y+1.5,w*.25,Math.max(1,h-3));
+    }
+    if(Math.abs(y+h-fy)<1.6&&w>=8){                   /* стоит на полу — есть тень */
+      c.fillStyle="rgba(0,0,0,.30)";orig.call(c,x-1.5,fy,w+3,1.8);
+      c.fillStyle="rgba(0,0,0,.12)";orig.call(c,x-4,fy+1.8,w+8,1.6);
+    }
+    c.fillStyle=fs;
+  };
+  try{fn();}finally{c.fillRect=orig;}
 }
