@@ -6,7 +6,7 @@
     grep -n "^rareTake " docs/INDEX.md      # где объявлен символ
     grep -n "^## src/12" docs/INDEX.md      # что за файл и какого размера
 
-Файлов: 366 · символов верхнего уровня: 3367
+Файлов: 367 · символов верхнего уровня: 3377
 
 ## СИМВОЛЫ
 
@@ -189,9 +189,9 @@ battTick                     src/21d-battery.js:36
 bBox                         src/21aa-base-rooms.js:23
 bCrate                       src/21aa-base-rooms.js:270
 bDress                       src/21aa-base-rooms.js:122
-BEACON_COOL                  src/23-mode-dig.js:80
-beaconCool                   src/23-mode-dig.js:81
-beaconTick                   src/23-mode-dig.js:96
+BEACON_COOL                  src/23-mode-dig.js:85
+beaconCool                   src/23-mode-dig.js:86
+beaconTick                   src/23-mode-dig.js:101
 BEAST_ALIEN                  src/20f-fauna.js:45
 BEAST_ALIEN_WORD             src/20e-species.js:213
 BEAST_SHAPES                 src/20f-fauna.js:37
@@ -597,7 +597,7 @@ DIG_TURF                     src/23aa-dig-rock.js:463
 digBedding                   src/23aa-dig-rock.js:118
 digCell                      src/23-mode-dig.js:29
 digCun                       src/23aa-dig-rock.js:158
-digFauna                     src/23-mode-dig.js:234
+digFauna                     src/23-mode-dig.js:239
 digRGB                       src/23aa-dig-rock.js:465
 digRockMass                  src/23aa-dig-rock.js:183
 digRockPass                  src/23aa-dig-rock.js:26
@@ -678,7 +678,7 @@ drawDeadBattery              src/20aa-poi-shapes.js:221
 drawDeco                     src/21b-surface-deco.js:147
 drawDeposit                  src/21b-surface-deco.js:377
 drawDig                      src/23a-dig-draw.js:655
-drawDigFauna                 src/23-mode-dig.js:308
+drawDigFauna                 src/23-mode-dig.js:313
 drawDigWorld                 src/23a-dig-draw.js:45
 drawDronesMap                src/12e-drone-flight.js:272
 drawDronesSystem             src/12e-drone-flight.js:195
@@ -809,6 +809,14 @@ DUST_COL                     src/16a-space.js:252
 DUST_LAYERS                  src/16a-space.js:274
 DUST_TAB                     src/16a-space.js:253
 dustTable                    src/16a-space.js:254
+E2E_CRASHES                  tests/91zzzzz-e2e-life.js:37
+E2E_FRESH                    tests/91zzzzz-e2e-life.js:30
+e2eClickables                tests/91zzzzz-e2e-life.js:54
+e2eFind                      tests/91zzzzz-e2e-life.js:462
+e2eHands                     tests/91zzzzz-e2e-life.js:98
+e2eLate                      tests/91zzzzz-e2e-life.js:391
+e2eLost                      tests/91zzzzz-e2e-life.js:171
+e2eScan                      tests/91zzzzz-e2e-life.js:69
 earn                         src/12j-home.js:38
 ecoBestLeg                   tests/91zzw-economy.js:18
 ecoStations                  tests/91zzw-economy.js:8
@@ -1005,6 +1013,7 @@ fuzzRich                     tests/91zzzz-fuzz.js:66
 fuzzScenes                   tests/91zzzz-fuzz.js:26
 fxCanvas                     src/18d-postfx.js:12
 G                            src/08-state.js:61
+G_BOOT_KEYS                  tests/90-harness.js:53
 g11Fps                       src/28z-fps-probe.js:7
 genBeast                     src/20f-fauna.js:58
 genBeltPOI                   src/24b-belt-poi.js:20
@@ -1524,7 +1533,7 @@ landerGearTick               src/19f-lander.js:15
 landerInk                    tests/91j-art.js:154
 landerLen                    src/19f-lander.js:11
 landingDust                  src/19f-lander.js:344
-landOnTestPlanet             tests/90-harness.js:81
+landOnTestPlanet             tests/90-harness.js:105
 landStartY                   src/19-mode-landing.js:38
 LANE_RU                      src/26-ui-station.js:257
 LANE_RX                      src/26-ui-station.js:253
@@ -2422,7 +2431,7 @@ RES_KEYS                     src/02-world.js:87
 resAuto                      src/28-loop.js:114
 resEma                       src/28-loop.js:113
 resetArm                     src/26-ui-station.js:855
-resetWorld                   tests/90-harness.js:42
+resetWorld                   tests/90-harness.js:55
 resize                       src/08-state.js:22
 RET_BOARD                    src/11s-returners.js:29
 RET_ETHER                    src/11s-returners.js:19
@@ -2618,7 +2627,7 @@ rungPoints                   src/12ad-site.js:45
 rungRingSegs                 src/12ae-ladder.js:57
 rungRoman                    src/12ae-ladder.js:48
 RUNGS                        src/12ae-ladder.js:13
-runTests                     tests/90-harness.js:91
+runTests                     tests/90-harness.js:115
 rxRecord                     src/11x-ring.js:64
 S1                           src/01-core.js:96
 S2                           src/01-core.js:97
@@ -2900,7 +2909,7 @@ stationViz                   src/17c-system-draw.js:111
 statPreview                  src/05-parts.js:271
 stCore                       src/17c-system-draw.js:131
 stDel                        src/14-save.js:26
-steps                        tests/90-harness.js:89
+steps                        tests/90-harness.js:113
 stepWorld                    src/28-loop.js:144
 stGet                        src/14-save.js:8
 stGroup                      src/26-ui-station.js:78
@@ -2971,8 +2980,8 @@ stTabsHere                   src/26-ui-station.js:79
 stTypeOf                     src/06-galaxy.js:27
 subdivide                    src/24-mode-belt.js:34
 suite                        tests/90-harness.js:15
-suitFailure                  src/23-mode-dig.js:114
-suitHit                      src/23-mode-dig.js:107
+suitFailure                  src/23-mode-dig.js:119
+suitHit                      src/23-mode-dig.js:112
 suitMax                      src/12x-suit.js:78
 SUN_DIR                      src/19c-light.js:22
 SUN_DIR_FLAT                 src/19c-light.js:23
@@ -3055,7 +3064,7 @@ tell                         src/11-log.js:49
 TELL_SFX                     src/11-log.js:47
 TEST                         tests/90-harness.js:10
 TEST_ONLY                    tests/90-harness.js:14
-TEST_SUITES                  tests/90-harness.js:127
+TEST_SUITES                  tests/90-harness.js:151
 tfbm                         src/18a-material.js:23
 thingAdd                     src/27i-ui-table.js:37
 thingsAll                    src/27i-ui-table.js:36
@@ -3178,7 +3187,7 @@ updateBelt                   src/24-mode-belt.js:185
 updateCave                   src/22-mode-cave.js:251
 updateCaveDeco               src/22a-cave-deco.js:205
 updateCombat                 src/13-pirates.js:78
-updateDig                    src/23-mode-dig.js:123
+updateDig                    src/23-mode-dig.js:128
 updateHomeIn                 src/29c-home-in.js:160
 updateLanding                src/19-mode-landing.js:68
 updateRaid                   src/24a-mode-raid.js:215
@@ -3187,7 +3196,7 @@ updateSpa                    src/29i-spa-draw.js:510
 updateSurface                src/21-mode-surface.js:192
 updateSystem                 src/17-mode-system.js:7
 updateWinter                 src/29g-winter-draw.js:808
-useBeacon                    src/23-mode-dig.js:82
+useBeacon                    src/23-mode-dig.js:87
 vCloth                       src/18d-verlet.js:41
 vDrawCloth                   src/18d-verlet.js:104
 vDrawRope                    src/18d-verlet.js:90
@@ -3196,6 +3205,7 @@ VEGA_BEAST                   src/12k-vega.js:42
 VEGA_BROKEN                  src/12k-vega.js:56
 VEGA_CALLS                   src/12k-vega.js:17
 VEGA_CAVE                    src/12k-vega.js:40
+VEGA_DEF                     src/11w-vega.js:48
 VEGA_DREAM                   src/12k-vega.js:10
 VEGA_EVICT                   src/12k-vega.js:27
 VEGA_FREE                    src/12k-vega.js:52
@@ -3207,36 +3217,36 @@ VEGA_RELAY                   src/12k-vega.js:22
 VEGA_SICK                    src/12k-vega.js:41
 VEGA_WISHES                  src/12k-vega.js:5
 vegaAboard                   src/11w-vega.js:22
-vegaAmbientTick              src/11w-vega.js:280
+vegaAmbientTick              src/11w-vega.js:290
 vegaAtHome                   src/11w-vega.js:23
-vegaBeastShout               src/11w-vega.js:207
-vegaBoard                    src/11w-vega.js:135
-vegaBroken                   src/11w-vega.js:304
-vegaCantinaBlock             src/11w-vega.js:271
-vegaDayTick                  src/11w-vega.js:56
+vegaBeastShout               src/11w-vega.js:217
+vegaBoard                    src/11w-vega.js:145
+vegaBroken                   src/11w-vega.js:314
+vegaCantinaBlock             src/11w-vega.js:281
+vegaDayTick                  src/11w-vega.js:66
 vegaDeviceBuy                src/11w-vega.js:32
 vegaDeviceOffered            src/11w-vega.js:26
-vegaEvict                    src/11w-vega.js:111
-vegaFleaBlock                src/11w-vega.js:243
+vegaEvict                    src/11w-vega.js:121
+vegaFleaBlock                src/11w-vega.js:253
 vegaHas                      src/11w-vega.js:21
-vegaHomeArrive               src/11w-vega.js:225
-vegaHomeBlock                src/11w-vega.js:257
-vegaHomeFigure               src/11w-vega.js:295
+vegaHomeArrive               src/11w-vega.js:235
+vegaHomeBlock                src/11w-vega.js:267
+vegaHomeFigure               src/11w-vega.js:305
 vegaHullName                 src/11w-vega.js:24
-vegaJump                     src/11w-vega.js:200
-vegaLanded                   src/11w-vega.js:205
-vegaLaunchHold               src/11w-vega.js:234
-vegaMoraleMul                src/11w-vega.js:120
-vegaOffend                   src/11w-vega.js:126
-vegaOffended                 src/11w-vega.js:125
-vegaOuting                   src/11w-vega.js:213
-vegaSeatAct                  src/11w-vega.js:154
-vegaSeatDraw                 src/11w-vega.js:175
-vegaSeatLine                 src/11w-vega.js:148
+vegaJump                     src/11w-vega.js:210
+vegaLanded                   src/11w-vega.js:215
+vegaLaunchHold               src/11w-vega.js:244
+vegaMoraleMul                src/11w-vega.js:130
+vegaOffend                   src/11w-vega.js:136
+vegaOffended                 src/11w-vega.js:135
+vegaOuting                   src/11w-vega.js:223
+vegaSeatAct                  src/11w-vega.js:164
+vegaSeatDraw                 src/11w-vega.js:185
+vegaSeatLine                 src/11w-vega.js:158
 vegaTestBazaar               tests/91zzh-vega.js:7
 vegaTestHome                 tests/91zzh-vega.js:2
-vegaTick                     src/11w-vega.js:187
-vegaWish                     src/11w-vega.js:41
+vegaTick                     src/11w-vega.js:197
+vegaWish                     src/11w-vega.js:52
 VER                          src/01-core.js:4
 VER_ITER                     src/18d-verlet.js:23
 visitHere                    src/11b-speech.js:87
@@ -3363,7 +3373,7 @@ wtab                         src/02a-worldmix.js:85
 yachtMoraleMul               src/12j-home.js:260
 yachtOwned                   src/12j-home.js:253
 YARD_CHANCE                  src/04b-fleet.js:162
-ZAP_COOL                     src/23-mode-dig.js:233
+ZAP_COOL                     src/23-mode-dig.js:238
 ZOO_PEN_CAP                  src/11ad-zoo.js:14
 zooAll                       src/11ad-zoo.js:15
 zooBlock                     src/11ad-zoo.js:72
@@ -3588,7 +3598,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/11v-places.js · 3 КБ
   · и что это, собственно, было:1
 
-## src/11w-vega.js · 19 КБ
+## src/11w-vega.js · 20 КБ
   · Вега: жиличка, которую нельзя выгнать:1
 
 ## src/11x-expedition.js · 16 КБ
@@ -4178,7 +4188,7 @@ zooTick                      src/11ad-zoo.js:41
 ## src/29i-spa-draw.js · 24 КБ
   · санаторий: веранда:1
 
-## tests/90-harness.js · 9 КБ
+## tests/90-harness.js · 12 КБ
   · автотесты: каркас:1
 
 ## tests/91a-flight.js · 20 КБ
@@ -4572,5 +4582,11 @@ zooTick                      src/11ad-zoo.js:41
   · все вкладки рисуются:125
   · тычок в каждую кнопку:158
   · прибор кадра работает:200
+
+## tests/91zzzzz-e2e-life.js · 36 КБ
+  · сквозной прогон II: сейв, числа, текст, долгий полёт (M329):1
+  · поздний вечер:385
+  · вечер за игрой:455
+  · resetWorld обязана возвращать мир, а не почти мир:510
 
 ## tests/99-run.js · 0 КБ

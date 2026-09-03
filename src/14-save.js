@@ -656,7 +656,21 @@ function applySave(s){
   G.kit=null;if(s.kit&&typeof s.kit==="object"){G.kit={};for(const p of KIT_PLACES){const x=s.kit[p];G.kit[p]=(x&&x.p===p)?kitPiece(p,x.cls,x.wear,x.seed):kitPiece(p,1,0,0);if(x&&Array.isArray(x.mods))G.kit[p].mods=x.mods.filter(id=>KIT_MODS[id]).slice(0,2);if(x)G.kit[p].model=clamp(x.model|0,0,2);}}
   G.kitShelf=Array.isArray(s.kitShelf)?s.kitShelf.filter(x=>x&&KIT_PLACES.indexOf(x.p)>=0).map(x=>{const y=kitPiece(x.p,x.cls,x.wear,x.seed);y.model=clamp(x.model|0,0,2);y.mods=Array.isArray(x.mods)?x.mods.filter(id=>KIT_MODS[id]).slice(0,2):[];return y;}).slice(0,12):[];
   G.kitDepot=asMap(s.kitDepot);
-  G.vega=(s.vega&&typeof s.vega==="object"&&s.vega.stage)?Object.assign({broken:[],out:{}},s.vega):null;G.wishDevice=s.wishDevice|0;G.seat=null;
+  /* Вега (M153, чинено M329): набор полей живёт у неё (VEGA_DEF в 11w-vega),
+     здесь он только применяется. Чего в записи нет — то по умолчанию, что
+     пришло не числом — то ноль: null вместо числа приезжает из любого JSON,
+     потому что NaN в нём записывается именно так, и раньше он доезжал до
+     экрана и убивал вкладку. */
+  G.vega=null;
+  if(s.vega&&typeof s.vega==="object"&&s.vega.stage){
+    const V=Object.assign({},VEGA_DEF,s.vega);
+    for(const k in VEGA_DEF)V[k]=Number.isFinite(+V[k])?+V[k]:VEGA_DEF[k];
+    V.broken=Array.isArray(s.vega.broken)?s.vega.broken.slice(0,8):[];
+    V.out=(s.vega.out&&typeof s.vega.out==="object")?s.vega.out:{};
+    V.wish=String(s.vega.wish||"");
+    G.vega=V;
+  }
+  G.wishDevice=s.wishDevice|0;G.seat=null;
   G.ring=(s.ring&&typeof s.ring==="object")?Object.assign({heard:0,tapes:[],left:RING_FIRST,jumps:0},s.ring):null;G.ringNow=null;
   G.exp=(s.exp&&typeof s.exp==="object")?Object.assign({phase:0,day0:0,coll:{},gone:[],gave:0,pax:null},s.exp):null;
   G.letters=asMap(s.letters);

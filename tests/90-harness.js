@@ -38,8 +38,22 @@ function ok(cond,msg){
 function eq(a,b,msg){const h=a===b;ok(h,h?msg:msg+" (получено "+JSON.stringify(a)+", ждали "+JSON.stringify(b)+")");}
 function near(a,b,tol,msg){const h=Math.abs(a-b)<=tol;ok(h,h?msg:msg+" (получено "+a+", ждали ≈"+b+"±"+tol+")");}
 
+/* ── что завелось лениво, тому в новом мире не место (M329) ──
+   Половина состояния игры заводится по случаю: поля нет вовсе, пока игрок не
+   дошёл до него — ни Веги, ни ленты самописца, ни писем с острова. Список
+   полей в resetWorld писан руками и отставал от игры на три десятка имён:
+   забытое поле не роняет ничего сразу, оно переезжает из набора в набор, и
+   набор, зелёный в одиночку, краснеет в общем прогоне (или наоборот — что
+   хуже). Так половинчатая Вега из набора про теплицу доехала до позднего
+   мира, стала там NaN, а через круг сейва — null, и экран БАЗЫ умер на
+   `toFixed`. Список заменён на факт: имена, которые были у G при заводке
+   страницы. Всё, что появилось после, — чужое. Сторож — последний набор
+   в `91zzzzz-e2e-life`: он сверяет мир после resetWorld со снимком, снятым
+   до первого набора. */
+const G_BOOT_KEYS=new Set(Object.keys(G));
 /* полный сброс мира: то же, что «начать заново», но без перезагрузки страницы */
 function resetWorld(){
+  for(const k of Object.keys(G))if(!G_BOOT_KEYS.has(k))delete G[k];
   G.mode="system";G.sx=0;G.sy=0;G.sys=getSystem(0,0);G.zoom=1;
   G.shipId="strizh";G.owned={strizh:true};
   G.ship={x:0,y:-760,vx:0,vy:0,a:0,av:0,bank:0};
@@ -66,6 +80,16 @@ function resetWorld(){
   G.doom=null;G.doomDead={};
   /* трепло (12x): новая игра — ни птицы, ни услышанного */
   G.seen={};G.storyPin={};G.storyFlags={};G.place={};G.odo={lands:0,jumps:0};G.post={stage:0,opened:0,done:0};G.mirror={bearing:0};G.mirrorEcho=null;G.lights={t0:-1,seen:0};G.hours={man:0};G.grove={turn:0,shot:0,cut:0};G.keepers={gone:0,signed:0,fed:0,given:0};G.county={called:0,at:0,answered:0,saw:0};G.charts={have:0,lost:-1};G.quiet={stay:0};G.quietGone=0;G.slow={fig:null,at:-1,round:0};G.pass={lit:0,told:0};G.grown={recip:0};G.plan={took:0,hauled:0};G.ret={seen:0};G.names={};G.namesTold={};
+  /* имена, которые у G были с самого начала, сносом выше не чистятся —
+     их возвращают руками, как и всё остальное в этом списке */
+  G.uniqueShips={};G.wishDevice=0;G.seat=null;
+  /* эти имена у G были с самого начала, поэтому снос выше их не трогает, а
+     руками их не возвращал никто — четырнадцать полей ездили из набора в
+     набор: пойманные капитаны, отметки новостей, обломки, тетрадь блошиного
+     рынка, счёт добрых дел, сказанное людьми (M329, сторож в 91zzzzz) */
+  G.nodeShow=null;G.pnode=null;G.hunted={};G.grok=null;G.flea={got:[]};
+  G.newsMarks={};G.newsT=0;G.wrecks={};G.tableSeen=0;
+  G.offers=[];G.folk={};G.folkSay={};G.ledger={n:0,w:0};G.told=[];
   G.relay={};   /* приёмники (M218): новый мир — ничего не поймано */
   G.late=null;  /* поздний час (M225): в новой игре ещё не сидели */
   G.toldOff=0;  /* тот один (M230): в новой игре ещё молчит */

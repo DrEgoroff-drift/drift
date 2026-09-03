@@ -37,13 +37,23 @@ function vegaDeviceBuy(sys){
   tell("tech","Куплено: «Желание-1» · дед с лотка: «инструкция утеряна, нажимать один раз»","«ЖЕЛАНИЕ-1»\nлежит на столе");
   return true;
 }
+/* ── её запись целиком, одним столбцом (M329) ──
+   У соседки два десятка счётчиков, и половина заводится по случаю: день
+   затмения, час в пещере, сколько раз плакала. Пока набор полей жил только
+   здесь, загрузка (14-save) добавляла к чужой записи ровно два умолчания —
+   и запись, в которой привязанность успела стать NaN (а в JSON это null),
+   возвращалась как есть: экран БАЗЫ падал на `V.att.toFixed(1)`, то есть
+   вкладка умирала целиком. Теперь набор один и у него один хозяин: и заводит
+   Вегу, и чинит её после загрузки этот столбец. */
+const VEGA_DEF={stage:1,day0:0,att:0,away:0,homeDays:0,evict:0,aboard:0,mood:1,offend:-1,
+  parrot2:0,lastDay:0,calls:0,said:0,jumps:0,cried:0,gossipUntil:0,
+  ambT:0,beastT:0,caveT:0,chartDay:0,eclDay:0,holdDay:0,mirror:0};
 /* нажать: любое из трёх — Вега. Прибор понял по-своему */
 function vegaWish(id){
   if(!G.wishDevice||vegaHas())return false;
   const W=VEGA_WISHES.find(w=>w.id===id)||VEGA_WISHES[0];
   G.wishDevice=2;
-  G.vega={stage:1,day0:celDay(),att:0,away:0,homeDays:0,broken:[],evict:0,aboard:0,mood:1,offend:-1,
-          out:{},parrot2:0,lastDay:celDay(),calls:0,wish:W.id,said:0};
+  G.vega=Object.assign({},VEGA_DEF,{day0:celDay(),lastDay:celDay(),broken:[],out:{},wish:W.id});
   const L=thingsAll();const t=L.find(x=>x.k==="wish");if(t){t.ru="«Желание-1» · нажат";t.note="желание: "+W.ru+" · исполнено"+(W.id==="alone"?" с запасом":"")+" · прибор молчит";}
   logAdd("good","«Желание-1»: "+W.ru+" — исполнено"+(W.id==="alone"?" с запасом":""));
   say("ЖЕЛАНИЕ-1\n«"+W.ru+"»\nисполнено"+(W.id==="alone"?" с запасом":""),260);

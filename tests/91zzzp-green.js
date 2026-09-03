@@ -36,7 +36,10 @@ TEST_SUITES.push(()=>suite("грядка: растёт настоящими су
   const dry=greenGrow(b);
   ok(dry>0.3&&dry<0.7,"за трое суток — примерно половина ("+dry.toFixed(2)+")");
   /* Вега на борту: поливает, и растёт быстрее */
-  G.vega={aboard:true,stage:2};
+  /* запись целиком, а не два поля: половинчатая Вега досталась в наследство
+     соседним наборам (resetWorld её не чистил), там дошла до арифметики и
+     стала NaN — а через круг сейва null, на котором падал экран БАЗЫ (M329) */
+  G.vega=Object.assign({},VEGA_DEF,{aboard:1,stage:2,broken:[],out:{},wish:"love"});
   ok(greenWatered(),"есть кому поливать");
   const wet=greenGrow(b);
   ok(wet>dry,"политое растёт быстрее ("+wet.toFixed(2)+" против "+dry.toFixed(2)+")");

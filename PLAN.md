@@ -191,6 +191,14 @@ Grep `docs/PLAN-archive.md` for the milestone number (header "Moved out of PLAN.
 - **M298** (0.295.0) — three interface fixes: the table answers in the row, rumours with distance,
   jumps and НА КАРТУ, the map card as a footer line.
 - **M325** (0.322.0) — the four effects: the lake with reflections and reeds, heat haze, chromatic aberration on hits, the live flare; `18d-postfx`.
+- **M329** (0.326.0) — eight cross-cutting suites (`tests/91zzzzz-e2e-life`): NaN in the state, the
+  save's full circle from every scene, loss of a field on load, a save without any one field, dirt
+  in the player's text, three thousand frames in one flight, everything clickable clicked, a late
+  world, an evening across three systems. Three defects fixed: Вега's record normalised on load
+  (a NaN comes back as `null` from JSON and killed the БАЗЫ tab), `exitDig` guarded against a
+  mine that is already gone, and suite isolation — `resetWorld` now deletes every field the page
+  did not boot with, with a suite guarding it. The frame guard's counter is read at the end of the
+  whole run: a click handler's exception never reached any `try/catch` around `b.click()`.
 - **M326** (0.323.0) — house marks as things: the station mark off the flare axis (video 03.09), the settlement sigil as a plaque by the door instead of a 1-px line on the wall; the mark itself redrawn as a shoulder dish; the flare smokes (`stackSmoke`); e2e suite `91zzza` (scenes not blank, buttons click, flare column by pixels, smoke monotonic); test report grouped in four.
 - **M328** (0.325.0) — flame as one smooth body, no haze; autoland start above the ridge and look-ahead descent; cave prompt wins over the mine; cave mouth as rock outcrop; swimming with a ring, algae → organics; e2e suites 91zzzb/91zzzc (autoland every world, panel overlap, button text, swim, cave prompt).
 - **M324** (0.321.0) — where a drone sells: the keeper decides from `seenPrices` within three sectors; caption, circle length, one line from him.

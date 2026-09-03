@@ -7,6 +7,46 @@ Entries from 0.45.0 onward are written in English (docs are English, the game st
 older entries below are left as they were written — translating history would cost more than it
 could ever save.
 ---
+## 0.326.0 - M329: eight cross-cutting suites, and the isolation they broke
+
+The author asked for more end-to-end tests. The first cross-cutting suite (91zzza) judges the
+picture and the buttons; this one judges what breaks BETWEEN sessions and BY THE END of an
+evening, which is what no hand ever catches: `tests/91zzzzz-e2e-life.js`.
+
+Eight suites. NaN never enters the state (every scene, 120 frames of random hands, a deep walk
+of `G`). The save writes and reads back from every scene, and loses no field on the way — loss,
+not difference: filling `techLvl` with zeroes is the loader's right, dropping the artifact a
+manager wears is not. A save without any one field, and with any one field null, still loads,
+draws and opens a screen — the tabs rotate through the corruptions so each meets a dozen. No
+«undefined», «NaN» or «[object Object]» in the journal, the prompt or anything a tab renders.
+Three thousand frames in one flight grow no list and no save. Everything clickable is clicked —
+`querySelectorAll("button")` finds nothing on the desk since M299 (things are `div.item` with
+`onclick`), so the old «poke every button» suite had been poking the station only. A late world
+(rung 25, six buildings, hired hands) renders and clicks. An evening across three systems —
+land, mine, cave, launch, jump, save at every stop — runs without one exception.
+
+Three defects came out of it, and all three were of the same family: a number that stopped being
+a number.
+
+- **Вега's record**: `applySave` merged the saved object over two defaults, so a field that had
+  become NaN (and NaN is written `null` in JSON) came back null and killed the whole БАЗЫ tab on
+  `V.att.toFixed(1)`. The set of fields now lives with its owner (`VEGA_DEF` in `11w-vega`), and
+  the loader fills what is absent and zeroes what is not a number.
+- **`exitDig` died on `G.dig.p`** when the mine was already gone: the frame and the update have
+  checked `G.mode==="dig"&&G.dig` for ages, the exit checked nothing. A death inside a click
+  handler is invisible — it goes to `window.onerror`, and the player stays underground for good.
+- **Suite isolation**: `resetWorld()` reset a hand-written list of fields while half the state is
+  created lazily. Thirty names it had never heard of, and fourteen more it simply forgot, rode
+  from suite to suite: a half-built Вега from the greenhouse suite reached the late-world suite,
+  turned NaN there, and the tab died. The list is replaced by a fact — the names `G` had when the
+  page booted; anything newer is deleted. A suite guards it: the world after `resetWorld()` is
+  compared with the snapshot taken before the first suite ran.
+
+The frame guard's counter is now read at the end of the whole run: an exception thrown inside a
+click handler never reaches the `try/catch` around `b.click()` — it goes to `window.onerror` — so
+every «we clicked everything and nothing threw» suite had been half blind by construction.
+
+---
 ## 0.325.0 - M328: the author's evening list — flame as a body, autoland that lands, a cave that is a cave, swimming
 
 Author's video and list (2026-09-03). The industrial flare was two ellipses jumping by |sin| under a
