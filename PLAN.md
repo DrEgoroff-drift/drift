@@ -253,8 +253,18 @@ never touches arithmetic; station modules don't unlock services.
   hulls, сторожевик/паром/плавбаза, services 4/7/10. **M312 (0.309.0)**: the last seven classes,
   почта, госпитальное, учебное. **M313 (0.310.0)**: «УЗ-1», the derelict, the caravan. **M314
   (0.311.0)**: трассы on the map, the rescuer's call, the drawing tails. Left: 12 заявка (lend a
-  hull for one run — needs the crew order model, its own pass); issue III's next look after the
-  author has flown past a few of them on `/dev`.
+  hull for one run — needs the crew order model, its own pass).
+  **The in-play look is done** — almanac issue III, addendum 0.313.0 (fourteen frames
+  `docs/shots/f_*.png`, hold scene, measured not eyeballed). Seven findings, cheapest first:
+  (6) the label sits at a constant y+30 whatever the sprite's radius — it lands on the hull of the
+  tall classes and on the planet chips in a wide frame; (7) `drawFleet` clamps the sprite scale at
+  Z 1.5 while `setZoom` goes to 2.4, so the last third of the zoom grows the world and not the
+  fleet; (5) the учебное's spine is ~1 px at meeting distance and the six spheres read as six
+  objects; (4) the паром's wing is still one flat white plane (open since the 0.308.0 addendum);
+  (2) the hulls reach p95 .84–.90 against a frame whose p95 is .21 — keep the lit side in VII,
+  drop the median a step; (1)+(3) the classes converge into one white tube at meeting distance and
+  saturation is .08–.17 on all fifteen — draw `FLEET_CLASSES[k].mark` at body height in one accent
+  colour per class, the way the госпитальное's cross already works. 1+3 is a pass of its own.
 
 - **The road companion** (author, 2026-08-23): phone mode where a real car trip flies your ship —
   GPS speed extrapolated to cosmic, accelerometer banks the hull, mic-driven equalizer, real

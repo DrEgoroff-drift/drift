@@ -306,9 +306,100 @@ its voice. Holds.
 
 ---
 
-## Reserved — issue III (continued): the remaining ten classes
+**Addendum, 0.313.0 (M316) — the fleet as it is met, not as it is displayed.** The three
+addenda above judged the fleet on a stand: three classes side by side, filling the frame. This one
+judges the same drawings where the player actually meets them — fourteen in-play frames
+(`docs/shots/f_*.png`, hold scene: own station, the barge «Тюк» at the pier, one class each at
+Z 1.5; one wide frame at Z 0.75; one at the zoom ceiling 2.4). Numbers come from the baked sprite
+(`fleetArtOf(k).cn`, alpha ≥ 40) and from the canvas itself, not from the eye.
 
-Not drawn yet. `DESIGN-holding.md` §18 designs the state fleet of
+*What the sprite measures* (own canvas, before it is put in the world):
+
+| | on-screen box, px | sprite p50 | p95 | contrast | sat |
+|---|---|---|---|---|---|
+| почтовик | 145 | .34 | .87 | .76 | .09 |
+| танкер | 226 | .47 | .88 | .69 | .11 |
+| буксир | 260 | .25 | .70 | .60 | .10 |
+| рудовоз | 237 | .64 | .89 | .71 | .09 |
+| паром | 199 | .41 | .90 | .80 | .10 |
+| сторожевик | 168 | .64 | .89 | .70 | .08 |
+| учебное | 214 | .51 | .89 | .74 | .09 |
+| плавбаза | 287 | .33 | .84 | .74 | .09 |
+| «УЗ-1» | 421 | .26 | .85 | .74 | .08 |
+| дерелик | 229 | .24 | .25 | .12 | .10 |
+
+(the other five sit inside this spread; every sprite is baked at ×3 the box it is drawn into —
+342–990 px of canvas for a 145–421 px box.)
+
+**1. The classes converge at meeting distance (§5, §13).** On the sheet почтовик, танкер, рудовоз,
+лихтеровоз and рефрижератор are five different donors. At Z 1.5 they are one white tube with a red
+band and a black number: what separates them — ribs, containers, strap-on tanks — is 3–8 px wide
+and merges. Only four survive the distance: паром (the delta), учебное (six spheres), плавбаза
+(the panel fan), госпитальное — and the госпитальное survives because of its **red cross**, the one
+class mark drawn in colour. `FLEET_CLASSES` already carries a `mark` per class (рожок, капля,
+якорь, кайло, щит, ладонь, крест, книга, циркуль, кольцо) and the pipeline draws it small. The fix
+the frame asks for: the mark at body height in one accent colour per class, hull left grey — what
+the cross already proves.
+
+**2. The fleet is the whitest thing in the frame (§16, §12).** Measured on one staged frame: the
+whole canvas p95 = .21, the player's own hull p95 = .51, the fleet's body p95 = .73; on the bare
+sprite 13 of 15 classes reach .84–.90. M311 lifted the hulls into zone VII deliberately, and on a
+white sheet that was right; against a nebula living in zones I–III it reads as porcelain laid on
+soot. The medians say where to spend: рудовоз .64 and сторожевик .64 are lit through, буксир .25
+and «УЗ-1» .26 are right. Keep the lit side in VII, drop the body's median a step, let the shadow
+side fall to III–IV — the ship should meet the frame, not sit on top of it.
+
+**3. One palette for fifteen ships (rich palette).** Saturation 0.08–0.17 on every class, in a
+frame that measures .33 around them. The fleet is a state service and its grey is the design; but a
+service that fields thirteen classes and tells them apart by no colour at all is a decision the
+distance punishes. One accent per class (finding 1) is the cheapest way to pay it, and a
+warm/cold split inside the greys — today they are neutral — the second.
+
+**4. The паром's wing is still a plain white plane (§12).** Flagged open in the 0.308.0 addendum,
+unpaid: sprite p95 .90, the largest single-value mass in any fleet frame. In play it is the
+brightest shape on screen, brighter than the star's own glow. Panel lines and a value fall across
+the span, as that addendum already asked.
+
+**5. The учебное falls into six pieces (§13, one body).** The six spheres of the Восток read, the
+truss between them is a bare rod that is ~1 px at meeting distance: the frame shows six separate
+white objects floating in a row, not one ship. Thicken the spine, or bind the row with a handrail
+and one shared shadow.
+
+**6. The label is placed by a constant, not by the ship (§3).** The name band is drawn at y+30 and
+the class word at y+40 from the ship's centre whatever the sprite's radius (on-screen half-height:
+72 px for the почтовик, 210 px for «УЗ-1»). On the tall classes it lands on the hull — the
+экспедиционное's label runs straight through its own lower boom — and in the wide frame the
+рудовоз's label lay across the planet chip «НЕЙЭЛЬ IV · 1664» and the prompt band underneath it,
+letter on letter. Offset by the sprite radius, and give the fleet's text the same right to be
+pushed aside as the planet chips have.
+
+**7. The zoom ceiling cuts the fleet off (§18.5).** `setZoom` clamps the system view to ×2.4;
+`drawFleet` scales the sprite by `clamp(Z,.5,1.5)*.85`. Over the last third of the zoom the world
+keeps growing and the fleet does not: at ×2.4 the почтовик is smaller than the barge «Тюк» beside
+it, and coming alongside — the one thing a player does when a state ship passes — makes it worse
+rather than better. The sprite is baked at ×3, so the resolution to lift the clamp to the zoom
+ceiling is already paid for.
+
+**What holds.** The дерелик is the best thing in the set: p95 .25, contrast .12, no light of its
+own, and it still reads at meeting distance — black on black, exactly as issue III called it.
+«УЗ-1» keeps its scale honestly — 421 px of box against the почтовик's 145, so the node reads as a
+place and not as a ship (the eye's first verdict here was «same size»; the measurement corrected
+it, which is what the meter is for). The paint pipeline survives the shrink: the red band and the
+three-digit number are legible on every class at Z 1.5, the name on the hull is not — and the
+label under the ship carries it, as designed. The prompts take their verb from the class and the
+ether answers: ЗАПРАВКА ПО НОРМЕ on empty tanks, БУКСИР НА ВЕРФЬ at 12 % hull, silence from the
+black corpse.
+
+**The work this issue orders**, cheapest first: 6 (the label offset — arithmetic), 7 (the clamp),
+5 (the учебное's spine), 4 (the паром's wing), 2 (the value drop), 1+3 (the class marks in colour —
+the one that needs a pass of its own, thirteen small drawings in one grammar).
+
+---
+
+## ~~Reserved — issue III (continued)~~ — struck 2026-09-03
+
+All thirteen are drawn (M310–M313) and judged in the addenda above; the section stays only
+for the design it quotes. `DESIGN-holding.md` §18 designs the state fleet of
 **ГЛАВТРАССА** — thirteen classes off real Soviet donors, the truss node station, the silent
 «Полюс» — and §18.6 already holds the whole system against the codex before a line is drawn: §1
 the paint order (dark ground → greys → glazes → wear → highlights, wear *under* the highlights),
